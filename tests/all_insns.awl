@@ -1,0 +1,140 @@
+	U	M 1.0
+	UN	M 1.1
+	O	M 1.0
+	ON	M 1.1
+	X	M 1.0
+	XN	M 1.1
+	U(
+		UN(
+			U	M 0.0
+			U	M 1.0
+		)
+		UN(
+			U	M 0.0
+			U	M 1.0
+		)
+		U	M 2.0
+	)
+	O(
+		ON(
+			U	M 0.0
+			U	M 1.0
+		)
+		UN(
+			U	M 0.0
+			U	M 1.0
+		)
+		U	M 2.0
+	)
+	X(
+		XN(
+			U	M 0.0
+			U	M 1.0
+		)
+		UN(
+			U	M 0.0
+			U	M 1.0
+		)
+		U	M 2.0
+	)
+	=	A 0.0
+	R	A 0.1
+	S	A 0.2
+	NOT
+	SET
+	CLR
+	SAVE
+	FN	M 0.0
+	FP	M 0.1
+	L	DW#16#31337
+	L	31337
+	==I
+	<>I
+	>I
+	<I
+	>=I
+	<=I
+	==D
+	<>D
+	>D
+	<D
+	>=D
+	<=D
+	TAW
+	TAD
+	L	MD 0
+	L	T 0
+	LC	T 0
+	SPA	_123
+	NOP	0
+_123:	NOP	1
+	SPB	_124
+	NOP	0
+_124:	NOP	1
+	SPBN	_125
+	NOP	0
+_125:	NOP	1
+	SPBNB	_126
+	NOP	0
+_126:	NOP	1
+	SPZ	_127
+	NOP	0
+_127:	NOP	1
+	SPN	_128
+	NOP	0
+_128:	NOP	1
+
+	L	10
+_333:	NOP	0
+	NOP	1
+	LOOP _333
+
+	+I
+	-I
+	*I
+	/I
+	+ 9000
+	+D
+	-D
+	*D
+	/D
+	MOD
+
+	T	AD 7
+
+	L	13
+	L	7331
+	SLD
+	SLD	6
+	SRD
+	SRD	6
+	RLD
+	RLD	6
+	RRD
+	RRD	6
+	RLDA
+	RLDA	6
+	RRDA
+	RRDA	6
+
+	L	S5T#666S
+	SI	T 1
+	SV	T 1
+	SE	T 1
+	SS	T 1
+	SA	T 1
+
+	UD
+	UD	11223344
+	OD
+	OD	11223344
+	XOD
+	XOD	11223344
+
+	TAK
+	PUSH
+	POP
+
+	BLD	2
+	NOP	0
+	NOP	1

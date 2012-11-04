@@ -1,0 +1,197 @@
+#
+# AWL simulator - Operator translator
+# Copyright 2012 Michael Buesch <m@bues.ch>
+#
+# Licensed under the terms of the GNU General Public License version 2.
+#
+
+from util import *
+from awloperators import *
+from awlparser import *
+from awltimers import *
+
+
+class OpDescriptor(object):
+	"Instruction operator descriptor"
+
+	def __init__(self, operType, width, offset, bitOffset, fieldCount):
+		self.operType = operType
+		self.width = width
+		self.offset = offset
+		self.bitOffset = bitOffset
+		self.fieldCount = fieldCount
+
+	def dup(self):
+		return OpDescriptor(self.operType, self.width, self.offset,
+				    self.bitOffset, self.fieldCount)
+
+class AwlOpTranslator(object):
+	"Instruction operator translator"
+
+	constOperTab = {
+		"==0"	: OpDescriptor(AwlOperator.MEM_STW_Z, 1, 0, 0, 1),
+		"<>0"	: OpDescriptor(AwlOperator.MEM_STW_NZ, 1, 0, 0, 1),
+		">0"	: OpDescriptor(AwlOperator.MEM_STW_POS, 1, 0, 0, 1),
+		"<0"	: OpDescriptor(AwlOperator.MEM_STW_NEG, 1, 0, 0, 1),
+		">=0"	: OpDescriptor(AwlOperator.MEM_STW_POSZ, 1, 0, 0, 1),
+		"<=0"	: OpDescriptor(AwlOperator.MEM_STW_NEGZ, 1, 0, 0, 1),
+		"OV"	: OpDescriptor(AwlOperator.MEM_STW, 1, 0, 5, 1),
+		"OS"	: OpDescriptor(AwlOperator.MEM_STW, 1, 0, 4, 1),
+		"UO"	: OpDescriptor(AwlOperator.MEM_STW_UO, 1, 0, 0, 1),
+		"BIE"	: OpDescriptor(AwlOperator.MEM_STW, 1, 0, 8, 1),
+		"E"	: OpDescriptor(AwlOperator.MEM_E, 1, -1, -1, 2),
+		"EB"	: OpDescriptor(AwlOperator.MEM_E, 8, -1, 0, 2),
+		"EW"	: OpDescriptor(AwlOperator.MEM_E, 16, -1, 0, 2),
+		"ED"	: OpDescriptor(AwlOperator.MEM_E, 32, -1, 0, 2),
+		"A"	: OpDescriptor(AwlOperator.MEM_A, 1, -1, -1, 2),
+		"AB"	: OpDescriptor(AwlOperator.MEM_A, 8, -1, 0, 2),
+		"AW"	: OpDescriptor(AwlOperator.MEM_A, 16, -1, 0, 2),
+		"AD"	: OpDescriptor(AwlOperator.MEM_A, 32, -1, 0, 2),
+		"L"	: OpDescriptor(AwlOperator.MEM_L, 1, -1, -1, 2),
+		"LB"	: OpDescriptor(AwlOperator.MEM_L, 8, -1, 0, 2),
+		"LW"	: OpDescriptor(AwlOperator.MEM_L, 16, -1, 0, 2),
+		"LD"	: OpDescriptor(AwlOperator.MEM_L, 32, -1, 0, 2),
+		"M"	: OpDescriptor(AwlOperator.MEM_M, 1, -1, -1, 2),
+		"MB"	: OpDescriptor(AwlOperator.MEM_M, 8, -1, 0, 2),
+		"MW"	: OpDescriptor(AwlOperator.MEM_M, 16, -1, 0, 2),
+		"MD"	: OpDescriptor(AwlOperator.MEM_M, 32, -1, 0, 2),
+		"T"	: OpDescriptor(AwlOperator.MEM_T, 16, -1, 0, 2),
+		"Z"	: OpDescriptor(AwlOperator.MEM_Z, 16, -1, 0, 2),
+		#TODO DBx
+		#TODO DIx
+		#TODO PEx
+		#TODO PAx
+		"__STW"	 : OpDescriptor(AwlOperator.MEM_STW, 1, 0, -1, 2),
+		"__ACCU" : OpDescriptor(AwlOperator.VIRT_ACCU, 32, -1, 0, 2),
+		"__AR"	 : OpDescriptor(AwlOperator.VIRT_AR, 32, -1, 0, 2),
+	}
+
+	@classmethod
+	def op2desc(cls, rawOp):
+		try:
+			#FIXME might match on label
+			return cls.constOperTab[rawOp].dup()
+		except KeyError as e:
+			pass
+		try:
+			immediate = int(rawOp, 10)
+			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
+		except ValueError as e:
+			pass
+		rawOpUpper = rawOp.upper()
+		if rawOpUpper.startswith("S5T#"):
+			p = rawOpUpper[4:]
+			seconds = 0.0
+			while p:
+				if p.endswith("MS"):
+					mult = 0.001
+					p = p[:-2]
+				elif p.endswith("S"):
+					mult = 1.0
+					p = p[:-1]
+				elif p.endswith("M"):
+					mult = 60.0
+					p = p[:-1]
+				elif p.endswith("H"):
+					mult = 3600.0
+					p = p[:-1]
+				else:
+					raise AwlSimError("Invalid time")
+				if not p:
+					raise AwlSimError("Invalid time")
+				num = ""
+				while p and p[-1] in "0123456789":
+					num = p[-1] + num
+					p = p[:-1]
+				if not num:
+					raise AwlSimError("Invalid time")
+				num = int(num, 10)
+				seconds += num * mult
+			s5t = Timer.seconds_to_s5t(seconds)
+			return OpDescriptor(AwlOperator.IMM_S5T, 0, s5t, 0, 1)
+		if rawOpUpper.startswith("B#16#"):
+			try:
+				immediate = int(rawOpUpper[5:], 16)
+				if immediate > 0xFF:
+					raise ValueError
+			except ValueError as e:
+				raise AwlSimError("Invalid immediate")
+			return OpDescriptor(AwlOperator.IMM, 8, immediate, 0, 1)
+		if rawOpUpper.startswith("W#16#"):
+			try:
+				immediate = int(rawOpUpper[5:], 16)
+				if immediate > 0xFFFF:
+					raise ValueError
+			except ValueError as e:
+				raise AwlSimError("Invalid immediate")
+			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
+		if rawOpUpper.startswith("DW#16#"):
+			try:
+				immediate = int(rawOpUpper[6:], 16)
+				if immediate > 0xFFFFFFFF:
+					raise ValueError
+			except ValueError as e:
+				raise AwlSimError("Invalid immediate")
+			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
+		if RawAwlInsn.isValidLabel(rawOp):
+			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOp, 0, 1)
+		#TODO T#
+		#TODO TOD#
+		#TODO C#
+		#TODO immediate L#
+		#TODO date D#
+		#TODO pointer P#x.y
+		#TODO binary immediate
+		#TODO floating point
+		raise AwlSimError("Cannot parse operand: " +\
+				str(rawOp))
+
+	@classmethod
+	def fromRawOperators(cls, rawOps):
+		op = cls.op2desc(rawOps[0])
+		if op.fieldCount == 2:
+			if len(rawOps) < 2:
+				raise AwlSimError("Missing operator")
+			if op.width == 1:
+				if op.offset == 0 and op.bitOffset == -1:
+					try:
+						op.bitOffset = int(rawOps[1], 10)
+					except ValueError as e:
+						if op.operType == AwlOperator.MEM_STW:
+							op.bitOffset = S7StatusWord.getBitnrByName(rawOps[1])
+						else:
+							raise AwlSimError("Invalid bit address")
+				else:
+					assert(op.offset == -1 and op.bitOffset == -1)
+					offset = rawOps[1].split('.')
+					if len(offset) != 2:
+						raise AwlSimError("Invalid bit address")
+					try:
+						op.offset = int(offset[0], 10)
+						op.bitOffset = int(offset[1], 10)
+					except ValueError as e:
+						raise AwlSimError("Invalid bit address")
+			elif op.width == 8:
+				assert(op.offset == -1 and op.bitOffset == 0)
+				try:
+					op.offset = int(rawOps[1], 10)
+				except ValueError as e:
+					raise AwlSimError("Invalid byte address")
+			elif op.width == 16:
+				assert(op.offset == -1 and op.bitOffset == 0)
+				try:
+					op.offset = int(rawOps[1], 10)
+				except ValueError as e:
+					raise AwlSimError("Invalid word address")
+			elif op.width == 32:
+				assert(op.offset == -1 and op.bitOffset == 0)
+				try:
+					op.offset = int(rawOps[1], 10)
+				except ValueError as e:
+					raise AwlSimError("Invalid doubleword address")
+			else:
+				assert(0)
+		return (op.fieldCount,
+			AwlOperator(op.operType, op.width,
+				    op.offset, op.bitOffset)
+			)

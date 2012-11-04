@@ -1,0 +1,27 @@
+	UN	T 10
+	=	M 0.0
+	L	S5T#200MS
+	SV	T 10
+	L	MD 16
+	L	1
+	==D
+	S	M 0.1
+	RRD	1
+	==D
+	R	M 0.1
+	L	MD 16
+	UD	DW#16#FFFFFFFF
+	L	1
+	SPZ	_001
+	TAK
+	U	M 0.0
+	SPBN	_001
+	U	M 0.1
+	SPBN	_000
+	RLD	2
+_000:	RRD	1
+_001:	T	MD 16
+	L	MD 16
+	T	AD 16
+	TAD
+	T	AD 20
