@@ -504,11 +504,17 @@ if __name__ == "__main__":
 		p = AwlParser()
 		p.parseFile(awlSource)
 		s = AwlSim(p.getRawInsns())
+		nextScreenUpdate = 0.0
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")
 			while 1:
 				writeStdout("\x1B[H")
 				s.runCycle()
+				now = time.time()
+				if now < nextScreenUpdate and\
+				   not opt_onecycle:
+					continue
+				nextScreenUpdate = now + 0.1
 				dump = str(s)
 				# Pad lines
 				dump = [ line + (79 - len(line)) * ' ' + '|'
@@ -517,7 +523,6 @@ if __name__ == "__main__":
 				writeStdout(dump)
 				if opt_onecycle:
 					break
-				time.sleep(0.010)
 		finally:
 			writeStdout("\x1B[?25h\x1B[2J\x1B[H")
 			writeStdout(str(s) + '\n')
