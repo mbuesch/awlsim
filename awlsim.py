@@ -508,7 +508,6 @@ if __name__ == "__main__":
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")
 			while 1:
-				writeStdout("\x1B[H")
 				s.runCycle()
 				now = time.time()
 				if now < nextScreenUpdate and\
@@ -520,7 +519,7 @@ if __name__ == "__main__":
 				dump = [ line + (79 - len(line)) * ' ' + '|'
 					 for line in dump.splitlines() ]
 				dump = '\n'.join(dump)
-				writeStdout(dump)
+				writeStdout("\x1B[H" + dump)
 				if opt_onecycle:
 					break
 		finally:
