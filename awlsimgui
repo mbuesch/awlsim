@@ -21,6 +21,57 @@ except ImportError as e:
 from awlsim import *
 
 
+class StateWindow(QWidget):
+	closed = Signal()
+
+	def __init__(self, sim, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout(self))
+		pixmap = QPixmap(16, 16)
+		pixmap.fill(QColor(0, 0, 192))
+		self.setWindowIcon(QIcon(pixmap))
+		self.sim = sim
+
+	def update(self):
+		size, hint = self.size(), self.minimumSizeHint()
+		if size.width() < hint.width() or\
+		   size.height() < hint.height():
+			self.resize(self.minimumSizeHint())
+
+	def closeEvent(self, ev):
+		self.closed.emit()
+		ev.accept()
+
+class State_CPU(StateWindow):
+	def __init__(self, sim, parent=None):
+		StateWindow.__init__(self, sim, parent)
+		self.setWindowTitle("CPU Details")
+
+		self.label = QLabel(self)
+		font = self.label.font()
+		font.setFamily("Mono")
+		font.setFixedPitch(True)
+		font.setKerning(False)
+		self.label.setFont(font)
+		self.layout().addWidget(self.label, 0, 0)
+
+	def update(self):
+		self.label.setText(str(self.sim.getCPU()))
+		StateWindow.update(self)
+
+class State_PAE(StateWindow):
+	def __init__(self, sim, parent=None):
+		StateWindow.__init__(self, sim, parent)
+		self.setWindowTitle("PAE")
+
+	def update(self):
+		#TODO
+		StateWindow.update(self)
+
+class StateWorkspace(QWorkspace):
+	def __init__(self, parent=None):
+		QWorkspace.__init__(self, parent)
+
 class CpuWidget(QWidget):
 	runStateChanged = Signal(bool)
 
@@ -35,32 +86,49 @@ class CpuWidget(QWidget):
 		self.state = self.STATE_STOP
 		self.nextUpdate = 0.0
 
-		group = QGroupBox("Status", self)
+		group = QGroupBox("CPU Status", self)
 		group.setLayout(QGridLayout(group))
-		self.runButton = QRadioButton("RUN", self)
+		self.runButton = QRadioButton("RUN", group)
 		group.layout().addWidget(self.runButton, 0, 0)
-		self.stopButton = QRadioButton("STOP", self)
+		self.stopButton = QRadioButton("STOP", group)
 		group.layout().addWidget(self.stopButton, 1, 0)
 		self.layout().addWidget(group, 0, 0)
 
-		self.stopButton.setChecked(Qt.Checked)
+		group = QGroupBox("Fenster hinzufuegen", self)
+		group.setLayout(QGridLayout(group))
+		self.newCpuStateButton = QPushButton("CPU Details", group)
+		group.layout().addWidget(self.newCpuStateButton, 0, 0)
+		self.newPaeButton = QPushButton("PAE", group)
+		group.layout().addWidget(self.newPaeButton, 0, 1)
+		self.layout().addWidget(group, 0, 1)
 
-		self.dump = QLabel(self)
-		font = self.dump.font()
-		font.setFamily("Mono")
-		font.setFixedPitch(True)
-		font.setKerning(False)
-		self.dump.setFont(font)
-		self.layout().addWidget(self.dump, 1, 0)
+		self.stateWs = StateWorkspace(self)
+		self.stateWs.setScrollBarsEnabled(True)
+		self.layout().addWidget(self.stateWs, 1, 0, 1, 2)
+
+		self.stopButton.setChecked(Qt.Checked)
 
 		self.runButton.toggled.connect(self.__runStateToggled)
 		self.stopButton.toggled.connect(self.__runStateToggled)
+		self.newCpuStateButton.released.connect(self.__newWin_CPU)
+		self.newPaeButton.released.connect(self.__newWin_PAE)
 
 		self.update()
 
+	def __addWindow(self, win):
+		self.stateWs.addWindow(win, Qt.Window)
+		win.show()
+		self.update()
+
+	def __newWin_CPU(self):
+		self.__addWindow(State_CPU(self.mainWidget.getSim(), self))
+
+	def __newWin_PAE(self):
+		self.__addWindow(State_PAE(self.mainWidget.getSim(), self))
+
 	def update(self):
-		state = str(self.mainWidget.getSim().getCPU())
-		self.dump.setText(state)
+		for win in self.stateWs.windowList():
+			win.update()
 
 	def mayUpdate(self):
 		now = time.time()
@@ -73,7 +141,8 @@ class CpuWidget(QWidget):
 		sim = self.mainWidget.getSim()
 		self.state = self.STATE_RUN
 		self.runButton.setChecked(True)
-		self.runButton.setEnabled(False)
+		self.runButton.setEnabled(False) # Redraws the radio button
+		self.runButton.setEnabled(True)
 		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
 		if not ob1_awl.strip():
 			QMessageBox.critical(self, "Kein AWL Code",

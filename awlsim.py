@@ -408,11 +408,11 @@ class S7CPU(object):
 		ret.append("     AR:  " + self.ar1.toHex() + "  " +\
 					  self.ar2.toHex())
 		ret.append(self.__dumpMem("      M:  ",
-					  self.flags, 128))
+					  self.flags, 64))
 		ret.append(self.__dumpMem("    PAE:  ",
-					  self.inputs, 128))
+					  self.inputs, 64))
 		ret.append(self.__dumpMem("    PAA:  ",
-					  self.outputs, 128))
+					  self.outputs, 64))
 		ret.append(" PStack:  " + str(self.parenStack))
 		ret.append("  insn.:  IP:%s    %s" %\
 			   (str(self.ip),
