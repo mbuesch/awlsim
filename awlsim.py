@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # AWL simulator
@@ -9,7 +8,6 @@
 
 import sys
 import time
-import getopt
 
 from awlparser import *
 from awldatatypes import *
@@ -458,71 +456,3 @@ class AwlSim(object):
 
 	def __repr__(self):
 		return str(self.cpu)
-
-if __name__ == "__main__":
-	opt_onecycle = False
-	opt_quiet = False
-
-	def usage():
-		print("%s [OPTIONS] AWL-source" % sys.argv[0])
-		print("")
-		print("Options:")
-		print(" -1|--onecycle         Only run one cycle")
-		print(" -q|--quiet            No status messages")
-
-	def writeStdout(message):
-		if not opt_quiet:
-			sys.stdout.write(message)
-			sys.stdout.flush()
-
-	try:
-		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1q",
-			[ "help", "onecycle", "quiet", ])
-	except getopt.GetoptError as e:
-		print(e)
-		usage()
-		sys.exit(1)
-	for (o, v) in opts:
-		if o in ("-h", "--help"):
-			usage()
-			sys.exit(0)
-		if o in ("-1", "--onecycle"):
-			opt_onecycle = True
-		if o in ("-q", "--quiet"):
-			opt_quiet = True
-	if len(args) != 1:
-		usage()
-		sys.exit(1)
-	awlSource = args[0]
-
-	try:
-		p = AwlParser()
-		p.parseFile(awlSource)
-		s = AwlSim(p.getRawInsns())
-		nextScreenUpdate = 0.0
-		try:
-			writeStdout("\x1B[?25l\x1B[2J")
-			while 1:
-				s.runCycle()
-				now = time.time()
-				if now < nextScreenUpdate and\
-				   not opt_onecycle:
-					continue
-				nextScreenUpdate = now + 0.1
-				dump = str(s)
-				# Pad lines
-				dump = [ line + (79 - len(line)) * ' ' + '|'
-					 for line in dump.splitlines() ]
-				dump = '\n'.join(dump)
-				writeStdout("\x1B[H" + dump)
-				if opt_onecycle:
-					break
-		finally:
-			writeStdout("\x1B[?25h\x1B[2J\x1B[H")
-			writeStdout(str(s) + '\n')
-	except AwlSimError as e:
-		print("-- AWL simulator error --")
-		print(str(e))
-		sys.exit(1)
-	sys.exit(0)

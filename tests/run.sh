@@ -11,6 +11,6 @@ die()
 
 for awl in $basedir/*.awl; do
 	echo "Running test '$(basename "$awl")' ..."
-	python3 "$basedir/../awlsim.py" --quiet --onecycle "$awl" ||\
+	"$basedir/../awlsimcli" --quiet --onecycle "$awl" ||\
 		die "Test failed"
 done
