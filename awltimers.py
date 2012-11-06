@@ -46,6 +46,7 @@ class Timer(object):
 
 	TB_SHIFT	= 12
 	TB_MASK		= 0x3
+	TB_MASK_S	= TB_MASK << TB_SHIFT
 
 	# Shifted timebases
 	TB_10MS_S	= TB_10MS << TB_SHIFT
@@ -101,7 +102,7 @@ class Timer(object):
 	def s5t_to_seconds(s5t):
 		a, b, c = (s5t & 0xF), ((s5t >> 4) & 0xF),\
 			  ((s5t >> 8) & 0xF)
-		if (s5t & 0xC000) or a > 9 or b > 9 or c > 9:
+		if (s5t & ~Timer.TB_MASK_S) > 0x999 or a > 9 or b > 9 or c > 9:
 			raise AwlSimError("Invalid S5T value: %04X" % s5t)
 		return Timer.__s5t_base2sec[
 			(s5t >> Timer.TB_SHIFT) & Timer.TB_MASK] * (\

@@ -133,11 +133,29 @@ class AwlOpTranslator(object):
 			except ValueError as e:
 				raise AwlSimError("Invalid immediate")
 			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
+		if rawOpUpper.startswith("C#"):
+			try:
+				cnt = rawOpUpper[2:]
+				if len(cnt) < 1 or len(cnt) > 3:
+					raise ValueError
+				a, b, c = 0, 0, 0
+				if cnt:
+					a = int(cnt[-1], 10)
+					cnt = cnt[:-1]
+				if cnt:
+					b = int(cnt[-1], 10)
+					cnt = cnt[:-1]
+				if cnt:
+					c = int(cnt[-1], 10)
+					cnt = cnt[:-1]
+				immediate = a | (b << 4) | (c << 8)
+			except ValueError as e:
+				raise AwlSimError("Invalid C# immediate")
+			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
 		if RawAwlInsn.isValidLabel(rawOp):
 			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOp, 0, 1)
 		#TODO T#
 		#TODO TOD#
-		#TODO C#
 		#TODO immediate L#
 		#TODO date D#
 		#TODO pointer P#x.y

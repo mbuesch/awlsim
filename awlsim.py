@@ -281,8 +281,12 @@ class S7CPU(object):
 		return timer.get()
 
 	def fetchZ(self, operator):
-		pass#TODO
-		return 0
+		counter = self.getCounter(operator.offset)
+		if operator.insn.type == AwlInsn.TYPE_L:
+			return counter.getValueBin()
+		elif operator.insn.type == AwlInsn.TYPE_LC:
+			return counter.getValueBCD()
+		return counter.get()
 
 	def fetchVirtACCU(self, operator):
 		return self.getAccu(operator.offset).get()
@@ -355,14 +359,6 @@ class S7CPU(object):
 	def storeD(self, operator, value):
 		pass #TODO
 
-	def storeT(self, operator, value):
-		if value:
-			raise AwlSimError("Cannot store 1 on timer")
-		self.getTimer(operator.offset).reset()
-
-	def storeZ(self, operator, value):
-		pass #TODO
-
 	storeTypeMethods = {
 		AwlOperator.IMM			: __storeInvalid,
 		AwlOperator.IMM_S5T		: __storeInvalid,
@@ -371,8 +367,8 @@ class S7CPU(object):
 		AwlOperator.MEM_M		: storeM,
 		AwlOperator.MEM_L		: storeL,
 		AwlOperator.MEM_D		: storeD,
-		AwlOperator.MEM_T		: storeT,
-		AwlOperator.MEM_Z		: storeZ,
+		AwlOperator.MEM_T		: __storeInvalid,
+		AwlOperator.MEM_Z		: __storeInvalid,
 		AwlOperator.MEM_STW		: __storeInvalid,
 		AwlOperator.MEM_STW_Z		: __storeInvalid,
 		AwlOperator.MEM_STW_NZ		: __storeInvalid,

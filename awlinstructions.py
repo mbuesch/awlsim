@@ -603,10 +603,20 @@ class AwlInsn_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		#TODO MCR
-		if s.VKE:
-			self.cpu.store(self.ops[0], 0)
-		s.OR, s.STA, s.NER = 0, s.VKE, 0
+		oper = self.ops[0]
+		if oper.type == AwlOperator.MEM_Z:
+			if s.VKE:
+				self.cpu.getCounter(oper.offset).reset()
+			s.OR, s.NER = 0, 0
+		elif oper.type == AwlOperator.MEM_T:
+			if s.VKE:
+				self.cpu.getTimer(oper.offset).reset()
+			s.OR, s.NER = 0, 0
+		else:
+			#TODO MCR
+			if s.VKE:
+				self.cpu.store(oper, 0)
+			s.OR, s.STA, s.NER = 0, s.VKE, 0
 
 class AwlInsn_S(AwlInsn):
 	def __init__(self, rawInsn):
@@ -615,10 +625,15 @@ class AwlInsn_S(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		#TODO MCR
-		if s.VKE:
-			self.cpu.store(self.ops[0], 1)
-		s.OR, s.STA, s.NER = 0, s.VKE, 0
+		oper = self.ops[0]
+		if oper.type == AwlOperator.MEM_Z:
+			self.cpu.getCounter(oper.offset).set(s.VKE)
+			s.OR, s.NER = 0, 0
+		else:
+			#TODO MCR
+			if s.VKE:
+				self.cpu.store(oper, 1)
+			s.OR, s.STA, s.NER = 0, s.VKE, 0
 
 class AwlInsn_NOT(AwlInsn):
 	def __init__(self, rawInsn):
@@ -909,6 +924,17 @@ class AwlInsn_TAD(AwlInsn):
 			((accu1 & 0x000000FF) << 24)
 		self.cpu.accu1.set(accu1)
 
+class AwlInsn_FR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_FR, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.MEM_Z:
+			raise AwlSimError("Invalid operator")
+
+	def run(self):
+		counter = self.cpu.getCounter(self.ops[0].offset)
+		counter.run_FR(self.cpu.status.VKE)
+
 class AwlInsn_L(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_L, rawInsn)
@@ -927,6 +953,28 @@ class AwlInsn_LC(AwlInsn):
 		self.cpu.accu2.set(self.cpu.accu1.get())
 		# fetch() does the BCD conversion for us
 		self.cpu.accu1.set(self.cpu.fetch(self.ops[0]))
+
+class AwlInsn_ZV(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ZV, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.MEM_Z:
+			raise AwlSimError("Invalid operator")
+
+	def run(self):
+		counter = self.cpu.getCounter(self.ops[0].offset)
+		counter.run_ZV(self.cpu.status.VKE)
+
+class AwlInsn_ZR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ZR, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.MEM_Z:
+			raise AwlSimError("Invalid operator")
+
+	def run(self):
+		counter = self.cpu.getCounter(self.ops[0].offset)
+		counter.run_ZR(self.cpu.status.VKE)
 
 class AwlInsn_SPA(AwlInsn):
 	def __init__(self, rawInsn):
