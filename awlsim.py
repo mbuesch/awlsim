@@ -71,10 +71,17 @@ class ParenStackElem(object):
 class S7CPU(object):
 	"STEP 7 CPU"
 
-	def __init__(self, ob1_insns):
+	def __init__(self, sim):
+		self.sim = sim
+		self.reset()
+
+	def load(self, ob1_insns):
+		self.reset()
 		for insn in ob1_insns:
 			insn.setCpu(self)
+		self.obs[1] = OB(ob1_insns, self.ob_dbs[1])
 
+	def reset(self):
 		self.dbs = {
 			# User DBs
 		}
@@ -84,7 +91,6 @@ class S7CPU(object):
 		}
 		self.obs = {
 			# OBs
-			1	: OB(ob1_insns, self.ob_dbs[1]),
 		}
 		self.fcs = {
 			# User FCs
@@ -421,10 +427,13 @@ class S7CPU(object):
 		return '\n'.join(ret)
 
 class AwlSim(object):
-	def __init__(self, rawInsns):
+	def __init__(self):
+		self.cpu = S7CPU(self)
+
+	def load(self, ob1_rawInsns):
 		# Translate instructions
 		insns = []
-		for i, rawInsn in enumerate(rawInsns):
+		for i, rawInsn in enumerate(ob1_rawInsns):
 			ex = None
 			try:
 				insn = AwlInsnTranslator.fromRawInsn(rawInsn)
@@ -436,13 +445,12 @@ class AwlSim(object):
 				raise AwlSimError("%s\nline %d: %s" %\
 					(str(rawInsn), rawInsn.getLineNr(),
 					 str(ex)))
-		self.cpu = S7CPU(insns)
+		self.cpu.load(insns)
 
 	def getCPU(self):
 		return self.cpu
 
 	def runCycle(self):
-		#TODO dump the CPU state on exception
 		ex = None
 		try:
 			self.cpu.runCycle()

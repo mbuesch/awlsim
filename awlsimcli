@@ -56,7 +56,8 @@ def main():
 	try:
 		p = AwlParser()
 		p.parseFile(awlSource)
-		s = AwlSim(p.getRawInsns())
+		s = AwlSim()
+		s.load(p.getRawInsns())
 		nextScreenUpdate = 0.0
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")

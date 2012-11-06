@@ -1,0 +1,304 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - GUI
+# Copyright 2012 Michael Buesch <m@bues.ch>
+#
+# Licensed under the terms of the GNU General Public License version 2.
+#
+
+import sys
+import time
+
+try:
+	from PySide.QtCore import *
+	from PySide.QtGui import *
+except ImportError as e:
+	print("PLEASE INSTALL PySide (http://www.pyside.org/)")
+	input("Press enter to continue.")
+	sys.exit(1)
+
+from awlsim import *
+
+
+class CpuWidget(QWidget):
+	runStateChanged = Signal(bool)
+
+	STATE_STOP	= 0
+	STATE_RUN	= 1
+
+	def __init__(self, mainWidget, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout(self))
+
+		self.mainWidget = mainWidget
+		self.state = self.STATE_STOP
+		self.nextUpdate = 0.0
+
+		group = QGroupBox("Status", self)
+		group.setLayout(QGridLayout(group))
+		self.runButton = QRadioButton("RUN", self)
+		group.layout().addWidget(self.runButton, 0, 0)
+		self.stopButton = QRadioButton("STOP", self)
+		group.layout().addWidget(self.stopButton, 1, 0)
+		self.layout().addWidget(group, 0, 0)
+
+		self.stopButton.setChecked(Qt.Checked)
+
+		self.dump = QLabel(self)
+		font = self.dump.font()
+		font.setFamily("Mono")
+		font.setFixedPitch(True)
+		font.setKerning(False)
+		self.dump.setFont(font)
+		self.layout().addWidget(self.dump, 1, 0)
+
+		self.runButton.toggled.connect(self.__runStateToggled)
+		self.stopButton.toggled.connect(self.__runStateToggled)
+
+		self.update()
+
+	def update(self):
+		state = str(self.mainWidget.getSim().getCPU())
+		self.dump.setText(state)
+
+	def mayUpdate(self):
+		now = time.time()
+		if now < self.nextUpdate:
+			return
+		self.nextUpdate = now + 0.1
+		self.update()
+
+	def __run(self):
+		sim = self.mainWidget.getSim()
+		self.state = self.STATE_RUN
+		self.runButton.setChecked(False)
+		self.runButton.setChecked(True)
+		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
+		if not ob1_awl.strip():
+			QMessageBox.critical(self, "Kein AWL Code",
+					     "Kein AWL Code")
+			self.__stop()
+			return
+		try:
+			parser = AwlParser()
+			parser.parseData(ob1_awl)
+			sim.load(parser.getRawInsns())
+		except AwlSimError as e:
+			QMessageBox.critical(self, "Simulator exception",
+					     str(e))
+			self.__stop()
+			return
+		self.runStateChanged.emit(True)
+		while self.state == self.STATE_RUN:
+			try:
+				QApplication.processEvents(QEventLoop.AllEvents, 10)
+				sim.runCycle()
+				self.mayUpdate()
+			except AwlSimError as e:
+				QMessageBox.critical(self, "Simulator exception",
+						     str(e))
+				self.__stop()
+
+	def __stop(self):
+		self.state = self.STATE_STOP
+		self.stopButton.setChecked(True)
+		self.runStateChanged.emit(False)
+
+	def __runStateToggled(self):
+		if self.runButton.isChecked():
+			if self.state != self.STATE_RUN:
+				self.__run()
+		if self.stopButton.isChecked():
+			if self.state != self.STATE_STOP:
+				self.__stop()
+
+class EditWidget(QTextEdit):
+	codeChanged = Signal()
+
+	def __init__(self, parent=None):
+		QTextEdit.__init__(self, parent)
+
+		self.__textChangeBlocked = 0
+		self.textChanged.connect(self.__textChanged)
+
+	def __textChanged(self):
+		if self.__textChangeBlocked:
+			return
+		self.codeChanged.emit()
+
+	def loadCode(self, code):
+		self.__textChangeBlocked += 1
+		self.setPlainText(code)
+		self.__textChangeBlocked -= 1
+
+	def getCode(self):
+		return self.toPlainText()
+
+class MainWidget(QWidget):
+	dirtyChanged = Signal(bool)
+	runStateChanged = Signal(bool)
+
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout(self))
+
+		self.sim = AwlSim()
+
+		self.codeEdit = EditWidget(self)
+		self.layout().addWidget(self.codeEdit, 0, 0)
+
+		self.cpuWidget = CpuWidget(self, self)
+		self.layout().addWidget(self.cpuWidget, 0, 1)
+
+		self.filename = None
+		self.dirty = False
+
+		self.setRunning(False)
+
+		self.codeEdit.codeChanged.connect(self.__codeChanged)
+		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
+
+	def __runStateChanged(self, running):
+		self.codeEdit.setEnabled(not running)
+		self.runStateChanged.emit(running)
+
+	def getSim(self):
+		return self.sim
+
+	def getCodeEditWidget(self):
+		return self.codeEdit
+
+	def __codeChanged(self):
+		self.dirty = True
+		self.dirtyChanged.emit(self.dirty)
+
+	def setRunning(self, running):
+		#FIXME
+		self.codeEdit.setEnabled(not running)
+
+	def loadFile(self, filename):
+		try:
+			fd = open(filename, "r")
+			code = fd.read()
+			fd.close()
+		except IOError as e:
+			QMessageBox.critical(self,
+				"Datei lesen fehlgeschlagen",
+				"Datei lesen fehlgeschlagen:\n" +\
+				str(e))
+			return False
+		self.codeEdit.loadCode(code)
+		self.filename = filename
+		return True
+
+	def load(self):
+		fn, fil = QFileDialog.getOpenFileName(self,
+			"AWL Quelle öffnen", "",
+			"AWL Quelle (*.awl);;"
+			"Alle Dateien (*)")
+		if not fn:
+			return
+		self.loadFile(fn)
+
+	def saveFile(self, filename):
+		if not self.filename:
+			return
+		code = self.codeEdit.getCode()
+		try:
+			# TODO write then move
+			fd = open(filename, "w")
+			fd.write(code)
+			fd.flush()
+			fd.close()
+		except IOError as e:
+			QMessageBox.critical(self,
+				"Datei schreiben fehlgeschlagen",
+				"Datei schreiben fehlgeschlagen:\n" +\
+				str(e))
+			return False
+		self.dirty = False
+		self.dirtyChanged.emit(self.dirty)
+		return True
+
+	def save(self, newFile=False):
+		if newFile:
+			fn, fil = QFileDialog.getSaveFileName(self,
+				"AWL Quelle speichern unter", "",
+				"AWL Quelle (*.awl);;")
+			if not fn:
+				return
+			if not fn.endswith(".awl"):
+				fn += ".awl"
+			self.saveFile(fn)
+		else:
+			if not self.filename:
+				return
+			self.saveFile(self.filename)
+
+class MainWindow(QMainWindow):
+	def __init__(self):
+		QMainWindow.__init__(self)
+
+		self.setWindowTitle("S7 AWL Simulator")
+		self.setCentralWidget(MainWidget(self))
+
+		self.setMenuBar(QMenuBar(self))
+
+		menu = QMenu("&Datei", self)
+		menu.addAction("&Öffnen...", self.load)
+		self.saveAct = menu.addAction("&Speichern", self.save)
+		menu.addAction("&Speichern unter...", self.saveAs)
+		menu.addSeparator()
+		menu.addAction("&Beenden...", self.close)
+		self.menuBar().addMenu(menu)
+
+		menu = QMenu("Hilfe", self)
+		menu.addAction("&Über...", self.about)
+		self.menuBar().addMenu(menu)
+
+		self.tb = QToolBar(self)
+		self.tb.addAction("Öffnen", self.load)
+		self.tbSaveAct = self.tb.addAction("Speichern", self.save)
+		self.addToolBar(self.tb)
+
+		self.__dirtyChanged(False)
+
+		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
+		self.centralWidget().runStateChanged.connect(self.__runStateChanged)
+
+		if len(sys.argv) > 1:
+			self.centralWidget().loadFile(sys.argv[1])
+
+	def __runStateChanged(self, running):
+		self.menuBar().setEnabled(not running)
+		self.tb.setEnabled(not running)
+
+	def __dirtyChanged(self, isDirty):
+		self.saveAct.setEnabled(isDirty)
+		self.tbSaveAct.setEnabled(isDirty)
+
+	def about(self):
+		QMessageBox.information(self, "Über S7 AWL Simulator",
+			"awlsim\n\n"
+			"Copyright 2012 Michael Büsch <m@bues.ch>\n"
+			"Lizenziert unter den Bedingungen der "
+			"GNU GPL version 2.")
+
+	def load(self):
+		self.centralWidget().load()
+
+	def save(self):
+		self.centralWidget().save()
+
+	def saveAs(self):
+		self.centralWidget().save(True)
+
+def main():
+	app = QApplication(sys.argv)
+	mainwnd = MainWindow()
+	mainwnd.show()
+	return app.exec_()
+
+if __name__ == "__main__":
+	sys.exit(main())
