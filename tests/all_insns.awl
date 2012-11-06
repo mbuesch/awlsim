@@ -62,9 +62,12 @@
 	<=D
 	TAW
 	TAD
+	FR	Z 0
 	L	MD 0
 	L	T 0
 	LC	T 0
+	ZV	Z 0
+	ZR	Z 0
 	SPA	_123
 	NOP	0
 _123:	NOP	1
