@@ -72,13 +72,13 @@ class CpuWidget(QWidget):
 	def __run(self):
 		sim = self.mainWidget.getSim()
 		self.state = self.STATE_RUN
-		self.runButton.setChecked(False)
 		self.runButton.setChecked(True)
+		self.runButton.setEnabled(False)
 		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
 		if not ob1_awl.strip():
 			QMessageBox.critical(self, "Kein AWL Code",
 					     "Kein AWL Code")
-			self.__stop()
+			self.stop()
 			return
 		try:
 			parser = AwlParser()
@@ -87,22 +87,23 @@ class CpuWidget(QWidget):
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Simulator exception",
 					     str(e))
-			self.__stop()
+			self.stop()
 			return
 		self.runStateChanged.emit(True)
 		while self.state == self.STATE_RUN:
 			try:
-				QApplication.processEvents(QEventLoop.AllEvents, 10)
+				QApplication.processEvents(QEventLoop.AllEvents, 1)
 				sim.runCycle()
 				self.mayUpdate()
 			except AwlSimError as e:
 				QMessageBox.critical(self, "Simulator exception",
 						     str(e))
-				self.__stop()
+				self.stop()
 
-	def __stop(self):
+	def stop(self):
 		self.state = self.STATE_STOP
 		self.stopButton.setChecked(True)
+		self.runButton.setEnabled(True)
 		self.runStateChanged.emit(False)
 
 	def __runStateToggled(self):
@@ -111,13 +112,15 @@ class CpuWidget(QWidget):
 				self.__run()
 		if self.stopButton.isChecked():
 			if self.state != self.STATE_STOP:
-				self.__stop()
+				self.stop()
 
 class EditWidget(QTextEdit):
 	codeChanged = Signal()
 
 	def __init__(self, parent=None):
 		QTextEdit.__init__(self, parent)
+
+		self.setFontFamily("Mono")
 
 		self.__textChangeBlocked = 0
 		self.textChanged.connect(self.__textChanged)
@@ -154,13 +157,11 @@ class MainWidget(QWidget):
 		self.filename = None
 		self.dirty = False
 
-		self.setRunning(False)
-
 		self.codeEdit.codeChanged.connect(self.__codeChanged)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 
 	def __runStateChanged(self, running):
-		self.codeEdit.setEnabled(not running)
+		self.codeEdit.setReadOnly(running)
 		self.runStateChanged.emit(running)
 
 	def getSim(self):
@@ -169,13 +170,12 @@ class MainWidget(QWidget):
 	def getCodeEditWidget(self):
 		return self.codeEdit
 
+	def getCpuWidget(self):
+		return self.cpuWidget
+
 	def __codeChanged(self):
 		self.dirty = True
 		self.dirtyChanged.emit(self.dirty)
-
-	def setRunning(self, running):
-		#FIXME
-		self.codeEdit.setEnabled(not running)
 
 	def loadFile(self, filename):
 		try:
@@ -277,6 +277,10 @@ class MainWindow(QMainWindow):
 	def __dirtyChanged(self, isDirty):
 		self.saveAct.setEnabled(isDirty)
 		self.tbSaveAct.setEnabled(isDirty)
+
+	def closeEvent(self, ev):
+		self.centralWidget().getCpuWidget().stop()
+		ev.accept()
 
 	def about(self):
 		QMessageBox.information(self, "Über S7 AWL Simulator",
