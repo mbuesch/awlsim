@@ -64,6 +64,44 @@ class State_PAE(StateWindow):
 		StateWindow.__init__(self, sim, parent)
 		self.setWindowTitle("PAE")
 
+		self.addrSpin = QSpinBox(self)
+		self.addrSpin.setPrefix("Addr: ")
+		self.layout().addWidget(self.addrSpin, 0, 0)
+
+		self.widthCombo = QComboBox(self)
+		self.widthCombo.addItem("Byte", 8)
+		self.widthCombo.addItem("Word", 16)
+		self.widthCombo.addItem("DWord", 32)
+		self.layout().addWidget(self.widthCombo, 0, 1)
+
+		self.fmtCombo = QComboBox(self)
+		self.fmtCombo.addItem("Checkboxes", "cb")
+		self.fmtCombo.addItem("Hexadecimal", "hex")
+		self.fmtCombo.addItem("Decimal", "dec")
+		self.fmtCombo.addItem("Dual", "bin")
+		self.layout().addWidget(self.fmtCombo, 0, 2)
+
+		self.addrSpin.valueChanged.connect(self.rebuild)
+		self.widthCombo.currentIndexChanged.connect(self.rebuild)
+		self.fmtCombo.currentIndexChanged.connect(self.rebuild)
+
+		self.rebuild()
+
+	def rebuild(self):
+		index = self.fmtCombo.currentIndex()
+		fmt = self.fmtCombo.itemData(index)
+		if fmt == "cb":
+			pass#TODO
+		elif fmt == "hex":
+			pass#TODO
+		elif fmt == "dec":
+			pass#TODO
+		elif fmt == "bin":
+			pass#TODO
+		else:
+			assert(0)
+		self.update()
+
 	def update(self):
 		#TODO
 		StateWindow.update(self)
