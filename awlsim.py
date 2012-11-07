@@ -60,6 +60,7 @@ class ParenStackElem(object):
 
 	def __init__(self, insnType, statusWord):
 		self.insnType = insnType
+		self.NER = statusWord.NER
 		self.VKE = statusWord.VKE
 		self.OR = statusWord.OR
 

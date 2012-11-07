@@ -568,19 +568,25 @@ class AwlInsn_BEND(AwlInsn):
 		except IndexError as e:
 			raise AwlSimError("Parenthesis stack underflow")
 		if pse.insnType == AwlInsn.TYPE_UB:
-			s.VKE &= pse.VKE
-			s.VKE |= pse.OR
+			if pse.NER:
+				s.VKE &= pse.VKE
+				s.VKE |= pse.OR
 		elif pse.insnType == AwlInsn.TYPE_UNB:
-			s.VKE &= (~pse.VKE) & 1
-			s.VKE |= pse.OR
+			if pse.NER:
+				s.VKE &= (~pse.VKE) & 1
+				s.VKE |= pse.OR
 		elif pse.insnType == AwlInsn.TYPE_OB:
-			s.VKE |= pse.VKE
+			if pse.NER:
+				s.VKE |= pse.VKE
 		elif pse.insnType == AwlInsn.TYPE_ONB:
-			s.VKE |= (~pse.VKE) & 1
+			if pse.NER:
+				s.VKE |= (~pse.VKE) & 1
 		elif pse.insnType == AwlInsn.TYPE_XB:
-			s.VKE ^= pse.VKE
+			if pse.NER:
+				s.VKE ^= pse.VKE
 		elif pse.insnType == AwlInsn.TYPE_XNB:
-			s.VKE ^= (~pse.VKE) & 1
+			if pse.NER:
+				s.VKE ^= (~pse.VKE) & 1
 		else:
 			assert(0)
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
