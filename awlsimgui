@@ -281,7 +281,7 @@ class CpuWidget(QWidget):
 		self.state = self.STATE_STOP
 		self.nextUpdate = 0.0
 
-		group = QGroupBox("CPU Status", self)
+		group = QGroupBox("CPU status", self)
 		group.setLayout(QGridLayout(group))
 		self.runButton = QRadioButton("RUN", group)
 		group.layout().addWidget(self.runButton, 0, 0)
@@ -289,9 +289,9 @@ class CpuWidget(QWidget):
 		group.layout().addWidget(self.stopButton, 1, 0)
 		self.layout().addWidget(group, 0, 0)
 
-		group = QGroupBox("Fenster hinzufuegen", self)
+		group = QGroupBox("Add window", self)
 		group.setLayout(QGridLayout(group))
-		self.newCpuStateButton = QPushButton("CPU Details", group)
+		self.newCpuStateButton = QPushButton("CPU details", group)
 		group.layout().addWidget(self.newCpuStateButton, 0, 0)
 		self.newEButton = QPushButton("E", group)
 		group.layout().addWidget(self.newEButton, 0, 1)
@@ -359,8 +359,8 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(True)
 		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
 		if not ob1_awl.strip():
-			QMessageBox.critical(self, "Kein AWL Code",
-					     "Kein AWL Code")
+			QMessageBox.critical(self, "No STL Code",
+					     "No STL Code")
 			self.stop()
 			return
 		try:
@@ -467,8 +467,8 @@ class MainWidget(QWidget):
 			fd.close()
 		except IOError as e:
 			QMessageBox.critical(self,
-				"Datei lesen fehlgeschlagen",
-				"Datei lesen fehlgeschlagen:\n" +\
+				"File read failed",
+				"File read failed:\n" +\
 				str(e))
 			return False
 		self.codeEdit.loadCode(code)
@@ -477,9 +477,9 @@ class MainWidget(QWidget):
 
 	def load(self):
 		fn, fil = QFileDialog.getOpenFileName(self,
-			"AWL Quelle öffnen", "",
-			"AWL Quelle (*.awl);;"
-			"Alle Dateien (*)")
+			"Open STL source", "",
+			"STL source (*.awl);;"
+			"All files (*)")
 		if not fn:
 			return
 		self.loadFile(fn)
@@ -496,8 +496,8 @@ class MainWidget(QWidget):
 			fd.close()
 		except IOError as e:
 			QMessageBox.critical(self,
-				"Datei schreiben fehlgeschlagen",
-				"Datei schreiben fehlgeschlagen:\n" +\
+				"Failed to write file",
+				"Failed to write file:\n" +\
 				str(e))
 			return False
 		self.dirty = False
@@ -507,8 +507,8 @@ class MainWidget(QWidget):
 	def save(self, newFile=False):
 		if newFile:
 			fn, fil = QFileDialog.getSaveFileName(self,
-				"AWL Quelle speichern unter", "",
-				"AWL Quelle (*.awl);;")
+				"STL source save as", "",
+				"STL source (*.awl);;")
 			if not fn:
 				return
 			if not fn.endswith(".awl"):
@@ -523,26 +523,26 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
-		self.setWindowTitle("S7 AWL Simulator")
+		self.setWindowTitle("S7 STL simulator")
 		self.setCentralWidget(MainWidget(self))
 
 		self.setMenuBar(QMenuBar(self))
 
-		menu = QMenu("&Datei", self)
-		menu.addAction("&Öffnen...", self.load)
-		self.saveAct = menu.addAction("&Speichern", self.save)
-		menu.addAction("&Speichern unter...", self.saveAs)
+		menu = QMenu("&File", self)
+		menu.addAction("&Open...", self.load)
+		self.saveAct = menu.addAction("&Save", self.save)
+		menu.addAction("&Save as...", self.saveAs)
 		menu.addSeparator()
-		menu.addAction("&Beenden...", self.close)
+		menu.addAction("&Exit...", self.close)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("Hilfe", self)
-		menu.addAction("&Über...", self.about)
+		menu = QMenu("Help", self)
+		menu.addAction("&About...", self.about)
 		self.menuBar().addMenu(menu)
 
 		self.tb = QToolBar(self)
-		self.tb.addAction("Öffnen", self.load)
-		self.tbSaveAct = self.tb.addAction("Speichern", self.save)
+		self.tb.addAction("Open", self.load)
+		self.tbSaveAct = self.tb.addAction("Save", self.save)
 		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)
@@ -566,10 +566,10 @@ class MainWindow(QMainWindow):
 		ev.accept()
 
 	def about(self):
-		QMessageBox.information(self, "Über S7 AWL Simulator",
+		QMessageBox.information(self, "About S7 STL simulator",
 			"awlsim\n\n"
 			"Copyright 2012 Michael Büsch <m@bues.ch>\n"
-			"Lizenziert unter den Bedingungen der "
+			"Licensed under the terms of the "
 			"GNU GPL version 2.")
 
 	def load(self):
