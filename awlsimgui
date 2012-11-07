@@ -406,6 +406,7 @@ class EditWidget(QTextEdit):
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setLineWrapMode(QTextEdit.NoWrap)
+		self.setTabStopWidth(self.tabStopWidth() // 2)
 
 		self.setFontFamily("Mono")
 
