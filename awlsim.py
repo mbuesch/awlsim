@@ -351,6 +351,10 @@ class S7CPU(object):
 		except IndexError as e:
 			raise AwlSimError("fetch: Offset out of range")
 
+	def storeE(self, operator, value):
+		#TODO this is only valid from outside of the cycle
+		return self.__storeToByteArray(self.inputs, operator, value)
+
 	def storeA(self, operator, value):
 		return self.__storeToByteArray(self.outputs, operator, value)
 
@@ -366,7 +370,7 @@ class S7CPU(object):
 	storeTypeMethods = {
 		AwlOperator.IMM			: __storeInvalid,
 		AwlOperator.IMM_S5T		: __storeInvalid,
-		AwlOperator.MEM_E		: __storeInvalid,
+		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
 		AwlOperator.MEM_M		: storeM,
 		AwlOperator.MEM_L		: storeL,

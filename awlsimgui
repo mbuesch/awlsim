@@ -23,6 +23,7 @@ from awlsim import *
 
 class StateWindow(QWidget):
 	closed = Signal()
+	cpuStateChanged = Signal()
 
 	def __init__(self, sim, parent=None):
 		QWidget.__init__(self, parent)
@@ -59,13 +60,121 @@ class State_CPU(StateWindow):
 		self.label.setText(str(self.sim.getCPU()))
 		StateWindow.update(self)
 
-class State_PAE(StateWindow):
-	def __init__(self, sim, parent=None):
+class AbstractDisplayWidget(QWidget):
+	ADDRSPACE_E		= AwlOperator.MEM_E
+	ADDRSPACE_A		= AwlOperator.MEM_A
+	ADDRSPACE_M		= AwlOperator.MEM_M
+
+	addrspace2name = {
+		ADDRSPACE_E	: "E",
+		ADDRSPACE_A	: "A",
+		ADDRSPACE_M	: "M",
+	}
+
+	changed = Signal()
+
+	def __init__(self, sim, addrSpace, addr, width, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout(self))
+
+		self.sim = sim
+		self.addrSpace = addrSpace
+		self.addr = addr
+		self.width = width
+
+	def get(self):
+		pass
+
+	def update(self):
+		pass
+
+class BitDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, parent=None):
+		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+					       addr, width, parent)
+
+		self.cbs = []
+		for i in range(self.width):
+			cb = QCheckBox(str(i), self)
+			self.layout().addWidget(cb, 0, self.width - i - 1)
+			self.cbs.append(cb)
+			cb.stateChanged.connect(self.changed)
+
+		self.update()
+
+	def get(self):
+		value = 0
+		for i in range(self.width):
+			if self.cbs[i].checkState() == Qt.Checked:
+				value |= (1 << i)
+		return value
+
+	def update(self):
+		try:
+			oper = AwlOperator(self.addrSpace, self.width, self.addr)
+			value = self.sim.getCPU().fetch(oper)
+		except AwlSimError as e:
+			QMessageBox.critical(self, "Failed to fetch",
+				"Failed to fetch memory:\n" + str(e))
+			return
+		for i in range(self.width):
+			if value & (1 << i):
+				self.cbs[i].setCheckState(Qt.Checked)
+			else:
+				self.cbs[i].setCheckState(Qt.Unchecked)
+
+class HexDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, parent=None):
+		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+					       addr, width, parent)
+		#TODO
+
+		self.update()
+
+	def get(self):
+		pass#TODO
+
+	def update(self):
+		pass#TODO
+
+class DecDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, parent=None):
+		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+					       addr, width, parent)
+		#TODO
+
+		self.update()
+
+	def get(self):
+		pass#TODO
+
+	def update(self):
+		pass#TODO
+
+class BinDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, parent=None):
+		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+					       addr, width, parent)
+		#TODO
+
+		self.update()
+
+	def get(self):
+		pass#TODO
+
+	def update(self):
+		pass#TODO
+
+class State_Mem(StateWindow):
+	def __init__(self, sim, addrSpace, parent=None):
 		StateWindow.__init__(self, sim, parent)
-		self.setWindowTitle("PAE")
+		name = AbstractDisplayWidget.addrspace2name[addrSpace]
+		self.setWindowTitle(name)
+
+		self.addrSpace = addrSpace
 
 		self.addrSpin = QSpinBox(self)
-		self.addrSpin.setPrefix("Addr: ")
+		self.addrSpin.setPrefix(name + " ")
 		self.layout().addWidget(self.addrSpin, 0, 0)
 
 		self.widthCombo = QComboBox(self)
@@ -81,29 +190,77 @@ class State_PAE(StateWindow):
 		self.fmtCombo.addItem("Dual", "bin")
 		self.layout().addWidget(self.fmtCombo, 0, 2)
 
+		self.contentLayout = QGridLayout()
+		self.contentLayout.setContentsMargins(QMargins())
+		self.layout().addLayout(self.contentLayout, 1, 0, 1, 3)
+
+		self.contentWidget = None
+
 		self.addrSpin.valueChanged.connect(self.rebuild)
 		self.widthCombo.currentIndexChanged.connect(self.rebuild)
 		self.fmtCombo.currentIndexChanged.connect(self.rebuild)
 
+		self.__changeBlocked = 0
 		self.rebuild()
 
 	def rebuild(self):
+		if self.contentWidget:
+			self.contentLayout.removeWidget(self.contentWidget)
+			self.contentWidget.deleteLater()
+		self.contentWidget = None
+
+		addr = self.addrSpin.value()
 		index = self.fmtCombo.currentIndex()
 		fmt = self.fmtCombo.itemData(index)
+		index = self.widthCombo.currentIndex()
+		width = self.widthCombo.itemData(index)
+
 		if fmt == "cb":
-			pass#TODO
+			self.contentWidget = BitDisplayWidget(self.sim,
+							      self.addrSpace,
+							      addr, width, self)
+			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "hex":
-			pass#TODO
+			self.contentWidget = HexDisplayWidget(self.sim,
+							      self.addrSpace,
+							      addr, width, self)
+			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "dec":
-			pass#TODO
+			self.contentWidget = DecDisplayWidget(self.sim,
+							      self.addrSpace,
+							      addr, width, self)
+			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "bin":
-			pass#TODO
+			self.contentWidget = BinDisplayWidget(self.sim,
+							      self.addrSpace,
+							      addr, width, self)
+			self.contentLayout.addWidget(self.contentWidget)
 		else:
 			assert(0)
+		self.contentWidget.changed.connect(self.__changed)
 		self.update()
 
+	def __changed(self):
+		if self.__changeBlocked or not self.contentWidget:
+			return
+		value = self.contentWidget.get()
+		addr = self.addrSpin.value()
+		index = self.widthCombo.currentIndex()
+		width = self.widthCombo.itemData(index)
+		try:
+			oper = AwlOperator(self.addrSpace, width, addr) 
+			self.sim.getCPU().store(oper, value)
+		except AwlSimError as e:
+			QMessageBox.critical(self, "Failed to store",
+				"Failed to store memory:\n" + str(e))
+			return
+		self.cpuStateChanged.emit()
+
 	def update(self):
-		#TODO
+		if self.contentWidget:
+			self.__changeBlocked += 1
+			self.contentWidget.update()
+			self.__changeBlocked -= 1
 		StateWindow.update(self)
 
 class StateWorkspace(QWorkspace):
@@ -136,8 +293,12 @@ class CpuWidget(QWidget):
 		group.setLayout(QGridLayout(group))
 		self.newCpuStateButton = QPushButton("CPU Details", group)
 		group.layout().addWidget(self.newCpuStateButton, 0, 0)
-		self.newPaeButton = QPushButton("PAE", group)
-		group.layout().addWidget(self.newPaeButton, 0, 1)
+		self.newEButton = QPushButton("E", group)
+		group.layout().addWidget(self.newEButton, 0, 1)
+		self.newAButton = QPushButton("A", group)
+		group.layout().addWidget(self.newAButton, 0, 2)
+		self.newMButton = QPushButton("M", group)
+		group.layout().addWidget(self.newMButton, 0, 3)
 		self.layout().addWidget(group, 0, 1)
 
 		self.stateWs = StateWorkspace(self)
@@ -149,11 +310,14 @@ class CpuWidget(QWidget):
 		self.runButton.toggled.connect(self.__runStateToggled)
 		self.stopButton.toggled.connect(self.__runStateToggled)
 		self.newCpuStateButton.released.connect(self.__newWin_CPU)
-		self.newPaeButton.released.connect(self.__newWin_PAE)
+		self.newEButton.released.connect(self.__newWin_E)
+		self.newAButton.released.connect(self.__newWin_A)
+		self.newMButton.released.connect(self.__newWin_M)
 
 		self.update()
 
 	def __addWindow(self, win):
+		win.cpuStateChanged.connect(self.update)
 		self.stateWs.addWindow(win, Qt.Window)
 		win.show()
 		self.update()
@@ -161,8 +325,20 @@ class CpuWidget(QWidget):
 	def __newWin_CPU(self):
 		self.__addWindow(State_CPU(self.mainWidget.getSim(), self))
 
-	def __newWin_PAE(self):
-		self.__addWindow(State_PAE(self.mainWidget.getSim(), self))
+	def __newWin_E(self):
+		self.__addWindow(State_Mem(self.mainWidget.getSim(),
+					   AbstractDisplayWidget.ADDRSPACE_E,
+					   self))
+
+	def __newWin_A(self):
+		self.__addWindow(State_Mem(self.mainWidget.getSim(),
+					   AbstractDisplayWidget.ADDRSPACE_A,
+					   self))
+
+	def __newWin_M(self):
+		self.__addWindow(State_Mem(self.mainWidget.getSim(),
+					   AbstractDisplayWidget.ADDRSPACE_M,
+					   self))
 
 	def update(self):
 		for win in self.stateWs.windowList():
