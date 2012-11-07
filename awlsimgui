@@ -403,6 +403,10 @@ class EditWidget(QTextEdit):
 	def __init__(self, parent=None):
 		QTextEdit.__init__(self, parent)
 
+		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.setLineWrapMode(QTextEdit.NoWrap)
+
 		self.setFontFamily("Mono")
 
 		self.__textChangeBlocked = 0
