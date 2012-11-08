@@ -604,7 +604,8 @@ class MainWidget(QWidget):
 		if newFile or not self.filename:
 			fn, fil = QFileDialog.getSaveFileName(self,
 				"STL source save as", "",
-				"STL source (*.awl);;")
+				"STL source (*.awl)",
+				"*.awl")
 			if not fn:
 				return
 			if not fn.endswith(".awl"):
