@@ -972,8 +972,11 @@ class AwlInsn_ITD(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
-		pass#TODO
+		accu1 = self.cpu.accu1.get()
+		accu1 &= 0xFFFF
+		if accu1 & 0x8000:
+			accu1 |= 0xFFFF0000
+		self.cpu.accu1.set(accu1)
 
 class AwlInsn_DTB(AwlInsn):
 	def __init__(self, rawInsn):
