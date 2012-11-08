@@ -173,14 +173,15 @@ class AwlInsn(object):
 	TYPE_NOP	= 155	# NOP
 
 	# Special instructions for debugging of the simulator
-	TYPE_ASSERT_EQ	= 500	# __ASSERT==
-	TYPE_ASSERT_NE	= 501	# __ASSERT<>
-	TYPE_ASSERT_GT	= 502	# __ASSERT>
-	TYPE_ASSERT_LT	= 503	# __ASSERT<
-	TYPE_ASSERT_GE	= 504	# __ASSERT>=
-	TYPE_ASSERT_LE	= 505	# __ASSERT<=
-	TYPE_SLEEP	= 506	# __SLEEP
-	TYPE_STWRST	= 507	# __STWRST
+	TYPE_EXTENDED	= 500
+	TYPE_ASSERT_EQ	= TYPE_EXTENDED + 0	# __ASSERT==
+	TYPE_ASSERT_NE	= TYPE_EXTENDED + 1	# __ASSERT<>
+	TYPE_ASSERT_GT	= TYPE_EXTENDED + 2	# __ASSERT>
+	TYPE_ASSERT_LT	= TYPE_EXTENDED + 3	# __ASSERT<
+	TYPE_ASSERT_GE	= TYPE_EXTENDED + 4	# __ASSERT>=
+	TYPE_ASSERT_LE	= TYPE_EXTENDED + 5	# __ASSERT<=
+	TYPE_SLEEP	= TYPE_EXTENDED + 6	# __SLEEP
+	TYPE_STWRST	= TYPE_EXTENDED + 7	# __STWRST
 
 	name2type = {
 		"U"	: TYPE_U,
@@ -1263,10 +1264,20 @@ class AwlInsn_PL(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_PL, rawInsn)
 		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.IMM:
+			raise AwlSimError("Immediate expected")
 
 	def run(self):
-		s = self.cpu.status
-		pass#TODO
+		oper = self.ops[0]
+		if oper.width == 16:
+			accu1 = self.cpu.accu1.get()
+			value = (accu1 + self.cpu.fetch(oper)) & 0xFFFF
+			self.cpu.accu1.set((accu1 & 0xFFFF0000) | value)
+		elif oper.width == 32:
+			self.cpu.accu1.set(self.cpu.accu1.get() +\
+					   self.cpu.fetch(oper))
+		else:
+			raise AwlSimError("Unexpected operator width")
 
 class AwlInsn_PL_D(AwlInsn):
 	def __init__(self, rawInsn):
