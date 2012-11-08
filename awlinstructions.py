@@ -968,8 +968,10 @@ class AwlInsn_ZV(AwlInsn):
 			raise AwlSimError("Invalid operator")
 
 	def run(self):
+		s = self.cpu.status
 		counter = self.cpu.getCounter(self.ops[0].offset)
 		counter.run_ZV(self.cpu.status.VKE)
+		s.OR, s.NER = 0, 0
 
 class AwlInsn_ZR(AwlInsn):
 	def __init__(self, rawInsn):
@@ -979,8 +981,10 @@ class AwlInsn_ZR(AwlInsn):
 			raise AwlSimError("Invalid operator")
 
 	def run(self):
+		s = self.cpu.status
 		counter = self.cpu.getCounter(self.ops[0].offset)
 		counter.run_ZR(self.cpu.status.VKE)
+		s.OR, s.NER = 0, 0
 
 class AwlInsn_SPA(AwlInsn):
 	def __init__(self, rawInsn):
