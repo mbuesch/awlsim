@@ -180,6 +180,7 @@ class AwlInsn(object):
 	TYPE_ASSERT_GE	= 504	# __ASSERT>=
 	TYPE_ASSERT_LE	= 505	# __ASSERT<=
 	TYPE_SLEEP	= 506	# __SLEEP
+	TYPE_STWRST	= 507	# __STWRST
 
 	name2type = {
 		"U"	: TYPE_U,
@@ -345,6 +346,7 @@ class AwlInsn(object):
 		"__ASSERT>="	: TYPE_ASSERT_GE,
 		"__ASSERT<="	: TYPE_ASSERT_LE,
 		"__SLEEP"	: TYPE_SLEEP,
+		"__STWRST"	: TYPE_STWRST,
 	}
 
 	type2name = { }
@@ -904,6 +906,98 @@ class AwlInsn_LE_D(AwlInsn):
 		else:
 			s.A1, s.A0, s.VKE = 1, 0, 0
 		s.OV, s.OR, s.STA, s.NER = 0, 0, s.VKE, 1
+
+class AwlInsn_BTI(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_BTI, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.get()
+		bcd = accu1 & 0xFFF
+		a, b, c = (bcd & 0xF), ((bcd >> 4) & 0xF), ((bcd >> 8) & 0xF)
+		if bcd > 0x999 or a > 9 or b > 9 or c > 9:
+			raise AwlSimError("Invalid BCD value")
+		binval = (a + (b * 10) + (c * 100)) & 0xFFFF
+		if accu1 & 0x8000:
+			binval = (-binval) & 0xFFFF
+		self.cpu.accu1.set((accu1 & 0xFFFF0000) | binval)
+
+class AwlInsn_ITB(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ITB, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.get()
+		binval, bcd = accu1 & 0xFFFF, 0
+		if binval & 0x8000:
+			binval = (~binval + 1) & 0xFFFF
+			bcd |= 0xF000
+		if binval > 999:
+			s.OV, s.OS = 1, 1
+			return
+		bcd |= binval % 10
+		bcd |= ((binval // 10) % 10) << 4
+		bcd |= ((binval // 100) % 10) << 8
+		self.cpu.accu1.set((accu1 & 0xFFFF0000) | bcd)
+		s.OV, s.OS = 0, 0
+
+class AwlInsn_BTD(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_BTD, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.get()
+		bcd = accu1 & 0x0FFFFFFF
+		a, b, c, d, e, f, g = (bcd & 0xF), ((bcd >> 4) & 0xF),\
+				((bcd >> 8) & 0xF), ((bcd >> 12) & 0xF),\
+				((bcd >> 16) & 0xF), ((bcd >> 20) & 0xF),\
+				((bcd >> 24) & 0xF)
+		if bcd > 0x9999999 or a > 9 or b > 9 or c > 9 or\
+		   d > 9 or e > 9 or f > 9 or g > 9:
+			raise AwlSimError("Invalid BCD value")
+		binval = (a + (b * 10) + (c * 100) + (d * 1000) +\
+			  (e * 10000) + (f * 100000) +\
+			  (g * 1000000)) & 0xFFFFFFFF
+		if accu1 & 0x80000000:
+			binval = (-binval) & 0xFFFFFFFF
+		self.cpu.accu1.set(binval)
+
+class AwlInsn_ITD(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ITD, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		pass#TODO
+
+class AwlInsn_DTB(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_DTB, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		binval, bcd = self.cpu.accu1.get(), 0
+		if binval & 0x80000000:
+			binval = (~binval + 1) & 0xFFFFFFFF
+			bcd |= 0xF0000000
+		if binval > 9999999:
+			s.OV, s.OS = 1, 1
+			return
+		bcd |= binval % 10
+		bcd |= ((binval // 10) % 10) << 4
+		bcd |= ((binval // 100) % 10) << 8
+		bcd |= ((binval // 1000) % 10) << 12
+		bcd |= ((binval // 10000) % 10) << 16
+		bcd |= ((binval // 100000) % 10) << 20
+		bcd |= ((binval // 1000000) % 10) << 24
+		self.cpu.accu1.set(bcd)
+		s.OV, s.OS = 0, 0
 
 class AwlInsn_TAW(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1640,3 +1734,11 @@ class AwlInsn_SLEEP(AwlInsn):
 		msecs = self.cpu.fetch(self.ops[0])
 		time.sleep(float(msecs) / 1000)
 		self.cpu.updateTimestamp()
+
+class AwlInsn_STWRST(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_STWRST, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.status.reset()

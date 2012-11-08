@@ -46,7 +46,7 @@ class S7StatusWord(StatusWord):
 
 	def __init__(self):
 		StatusWord.__init__(self)
-		self.cycleInit()
+		self.reset()
 
 	def getByBitNumber(self, bitNumber):
 		try:
@@ -57,7 +57,7 @@ class S7StatusWord(StatusWord):
 			raise AwlSimError("Status word bit fetch '%d' "
 				"out of range" % bitNumber)
 
-	def cycleInit(self):
+	def reset(self):
 		self.NER = 0	# /ER	=> Erstabfrage
 		self.VKE = 0	# VKE	=> Verknuepfungsergebnis
 		self.STA = 0	# STA	=> Statusbit

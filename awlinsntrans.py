@@ -53,11 +53,11 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_LT_R   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_GE_R   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_LE_R   	: AwlInsn_NotImplemented,
-		AwlInsn.TYPE_BTI    	: AwlInsn_NotImplemented,
-		AwlInsn.TYPE_ITB    	: AwlInsn_NotImplemented,
-		AwlInsn.TYPE_BTD    	: AwlInsn_NotImplemented,
-		AwlInsn.TYPE_ITD    	: AwlInsn_NotImplemented,
-		AwlInsn.TYPE_DTB    	: AwlInsn_NotImplemented,
+		AwlInsn.TYPE_BTI    	: AwlInsn_BTI,
+		AwlInsn.TYPE_ITB    	: AwlInsn_ITB,
+		AwlInsn.TYPE_BTD    	: AwlInsn_BTD,
+		AwlInsn.TYPE_ITD    	: AwlInsn_ITD,
+		AwlInsn.TYPE_DTB    	: AwlInsn_DTB,
 		AwlInsn.TYPE_DTR    	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_INVI   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_INVD   	: AwlInsn_NotImplemented,
@@ -176,6 +176,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_ASSERT_GE	: AwlInsn_ASSERT_GE,
 		AwlInsn.TYPE_ASSERT_LE	: AwlInsn_ASSERT_LE,
 		AwlInsn.TYPE_SLEEP	: AwlInsn_SLEEP,
+		AwlInsn.TYPE_STWRST	: AwlInsn_STWRST,
 	}
 
 	@classmethod

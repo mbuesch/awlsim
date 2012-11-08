@@ -139,7 +139,7 @@ class S7CPU(object):
 		startTime = self.now
 		# Initialize CPU state
 		self.ip, nrInsns, = 0, len(self.obs[1].insns)
-		self.status.cycleInit()
+		self.status.reset()
 		# Run the user program cycle
 		while self.ip < nrInsns:
 			insn = self.obs[1].insns[self.ip]
