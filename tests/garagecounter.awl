@@ -1,0 +1,56 @@
+	// Maximale Anzahl Plaetze
+	L 30
+	T LW 0
+
+	// Vorwaerts
+	U E 0.1			// L1
+	UN E 0.2			// L2
+	S M 4.0			// MVOR
+	UN E 0.1			// L1
+	UN E 0.2			// L2
+	O M 4.1			// MRUECK
+	R M 4.0			// MVOR
+	U M 4.0			// MVOR
+	UN E 0.1			// L1
+	U E 0.2			// L2
+	= A 0.0			// VOR
+
+	// Rueckwaerts
+	UN E 0.1			// L1
+	U E 0.2			// L2
+	S M 4.1			// MRUECK
+	UN E 0.1			// L1
+	UN E 0.2			// L2
+	O M 4.0			// MVOR
+	R M 4.1			// MRUECK
+	U M 4.1			// MRUECK
+	U E 0.1			// L1
+	UN E 0.2			// L2
+	= A 0.1			// RUECK
+
+	// Zaehler
+	U E 0.3			// S1
+	L LW 0
+	ITB
+	S Z 0
+	U A 0.0			// VOR
+	ZR Z 0
+	L Z 0
+	L LW 0
+	<I
+	U A 0.1			// RUECK
+	ZV Z 0
+
+	// Freie Plaetze
+	L Z 0
+	T AB 3
+
+	// Belegte Plaetze
+	L LW 0
+	L Z 0
+	-I
+	T AB 2
+
+	// Schranke auf, wenn noch freie Plaetze
+	U Z 0
+	= A 0.2			// SCHRANKE AUF
