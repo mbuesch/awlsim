@@ -161,6 +161,7 @@ class S7CPU(object):
 		elapsedTime = self.now - startTime
 		self.runtimeSec += elapsedTime
 		if self.cycleCount >= 50:
+			self.runtimeSec = max(self.runtimeSec, 0.00001)
 			self.insnPerSecond = self.insnCount / self.runtimeSec
 			self.avgInsnPerCycle = self.insnCount / self.cycleCount
 			self.cycleCount, self.insnCount, self.runtimeSec =\
