@@ -75,6 +75,7 @@ class AwlOpTranslator(object):
 			pass
 		try:
 			immediate = int(rawOp, 10)
+			#FIXME 32bit? 16bit?
 			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
 		except ValueError as e:
 			pass
