@@ -588,6 +588,10 @@ class MainWidget(QWidget):
 			fd.write(code)
 			fd.flush()
 			fd.close()
+			if os.name.lower() != "posix":
+				# Can't use safe rename on non-POSIX.
+				# Must unlink first.
+				os.unlink(filename)
 			os.rename(tmpFile, filename)
 		except IOError as e:
 			QMessageBox.critical(self,
