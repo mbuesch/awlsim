@@ -25,6 +25,10 @@ from awlcounters import *
 from util import *
 
 
+VERSION_MAJOR = 0
+VERSION_MINOR = 1
+
+
 class FlagByte(GenericByte):
 	"Flag byte"
 
