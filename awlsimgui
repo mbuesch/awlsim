@@ -518,11 +518,14 @@ class MainWidget(QWidget):
 
 		self.sim = AwlSim()
 
+		self.splitter = QSplitter(Qt.Horizontal)
+		self.layout().addWidget(self.splitter, 0, 0)
+
 		self.codeEdit = EditWidget(self)
-		self.layout().addWidget(self.codeEdit, 0, 0)
+		self.splitter.addWidget(self.codeEdit)
 
 		self.cpuWidget = CpuWidget(self, self)
-		self.layout().addWidget(self.cpuWidget, 0, 1)
+		self.splitter.addWidget(self.cpuWidget)
 
 		self.filename = None
 		self.dirty = False
