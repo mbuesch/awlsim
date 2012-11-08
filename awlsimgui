@@ -314,6 +314,7 @@ class CpuWidget(QWidget):
 		self.newAButton.released.connect(self.__newWin_A)
 		self.newMButton.released.connect(self.__newWin_M)
 
+		self.__newWin_CPU()
 		self.update()
 
 	def __addWindow(self, win):
