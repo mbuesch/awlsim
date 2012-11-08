@@ -8,6 +8,7 @@
 #
 
 import sys
+import os
 import time
 
 try:
@@ -575,15 +576,19 @@ class MainWidget(QWidget):
 		self.loadFile(fn)
 
 	def saveFile(self, filename):
-		if not self.filename:
-			return
 		code = self.codeEdit.getCode()
 		try:
-			# TODO write then move
-			fd = open(filename, "w")
+			count = 0
+			while 1:
+				tmpFile = "%s-%d.tmp" % (filename, count)
+				count += 1
+				if not os.path.exists(tmpFile):
+					break
+			fd = open(tmpFile, "w")
 			fd.write(code)
 			fd.flush()
 			fd.close()
+			os.rename(tmpFile, filename)
 		except IOError as e:
 			QMessageBox.critical(self,
 				"Failed to write file",
@@ -592,10 +597,11 @@ class MainWidget(QWidget):
 			return False
 		self.dirty = False
 		self.dirtyChanged.emit(self.dirty)
+		self.filename = filename
 		return True
 
 	def save(self, newFile=False):
-		if newFile:
+		if newFile or not self.filename:
 			fn, fil = QFileDialog.getSaveFileName(self,
 				"STL source save as", "",
 				"STL source (*.awl);;")
@@ -605,8 +611,6 @@ class MainWidget(QWidget):
 				fn += ".awl"
 			self.saveFile(fn)
 		else:
-			if not self.filename:
-				return
 			self.saveFile(self.filename)
 
 class MainWindow(QMainWindow):
