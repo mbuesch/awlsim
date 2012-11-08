@@ -43,6 +43,12 @@ class OutputByte(GenericByte):
 	def __init__(self):
 		GenericByte.__init__(self)
 
+class LocalByte(GenericByte):
+	"L byte"
+
+	def __init__(self):
+		GenericByte.__init__(self)
+
 class Accu(GenericDWord):
 	"Accumulator register"
 
@@ -99,7 +105,6 @@ class S7CPU(object):
 		self.fbs = {
 			# User FBs
 		}
-		#TODO localdata
 		self.status = S7StatusWord()
 		self.accu1 = Accu()
 		self.accu2 = Accu()
@@ -110,6 +115,7 @@ class S7CPU(object):
 		self.flags = [ FlagByte() for _ in range(8192) ]
 		self.inputs = [ InputByte() for _ in range(8192) ]
 		self.outputs = [ OutputByte() for _ in range(8192) ]
+		self.localdata = [ LocalByte() for _ in range(1024) ]
 		self.parenStack = []
 
 		self.ip = None
@@ -270,8 +276,7 @@ class S7CPU(object):
 		return self.__fetchFromByteArray(self.flags, operator)
 
 	def fetchL(self, operator):
-		pass#TODO
-		return 0
+		return self.__fetchFromByteArray(self.localdata, operator)
 
 	def fetchD(self, operator):
 		pass#TODO
@@ -323,7 +328,7 @@ class S7CPU(object):
 
 	def store(self, operator, value):
 		storeMethod = self.storeTypeMethods[operator.type]
-		return storeMethod(self, operator, value)
+		storeMethod(self, operator, value)
 
 	def __storeInvalid(self, operator, value):
 		raise AwlSimError("Invalid store request")
@@ -354,16 +359,16 @@ class S7CPU(object):
 
 	def storeE(self, operator, value):
 		#TODO this is only valid from outside of the cycle
-		return self.__storeToByteArray(self.inputs, operator, value)
+		self.__storeToByteArray(self.inputs, operator, value)
 
 	def storeA(self, operator, value):
-		return self.__storeToByteArray(self.outputs, operator, value)
+		self.__storeToByteArray(self.outputs, operator, value)
 
 	def storeM(self, operator, value):
-		return self.__storeToByteArray(self.flags, operator, value)
+		self.__storeToByteArray(self.flags, operator, value)
 
 	def storeL(self, operator, value):
-		pass #TODO
+		self.__storeToByteArray(self.localdata, operator, value)
 
 	def storeD(self, operator, value):
 		pass #TODO
