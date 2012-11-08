@@ -64,11 +64,13 @@ class AbstractDisplayWidget(QWidget):
 	ADDRSPACE_E		= AwlOperator.MEM_E
 	ADDRSPACE_A		= AwlOperator.MEM_A
 	ADDRSPACE_M		= AwlOperator.MEM_M
+	ADDRSPACE_L		= AwlOperator.MEM_L
 
 	addrspace2name = {
 		ADDRSPACE_E	: "E",
 		ADDRSPACE_A	: "A",
 		ADDRSPACE_M	: "M",
+		ADDRSPACE_L	: "L",
 	}
 
 	changed = Signal()
@@ -123,47 +125,118 @@ class BitDisplayWidget(AbstractDisplayWidget):
 			else:
 				self.cbs[i].setCheckState(Qt.Unchecked)
 
-class HexDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, parent=None):
+class NumberDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, base, addrSpace, addr, width, parent=None):
 		AbstractDisplayWidget.__init__(self, sim, addrSpace,
 					       addr, width, parent)
-		#TODO
+
+		self.base = base
+		self.displayedValue = -1
+
+		self.line = QLineEdit(self)
+		self.line.setAlignment(Qt.AlignRight)
+		self.layout().addWidget(self.line)
+
+		self.line.returnPressed.connect(self.__returnPressed)
+		self.line.textChanged.connect(self.__textChanged)
 
 		self.update()
 
+	def __returnPressed(self):
+		self.changed.emit()
+
+	def __convertValue(self):
+		try:
+			value = int(self.line.text(), self.base)
+			if self.base == 10:
+				if value > (1 << (self.width - 1)) - 1 or\
+				   value < -(1 << (self.width - 1)):
+					raise ValueError
+			else:
+				if value > (1 << self.width) - 1:
+					raise ValueError
+		except ValueError as e:
+			return None
+		return value
+
+	def __textChanged(self):
+		value = self.__convertValue()
+		if value is None:
+			pal = self.palette()
+			pal.setColor(QPalette.Text, Qt.red)
+			self.setPalette(pal)
+		else:
+			pal = self.palette()
+			pal.setColor(QPalette.Text, Qt.black)
+			self.setPalette(pal)
+
 	def get(self):
-		pass#TODO
+		value = self.__convertValue()
+		if value is None:
+			return self.displayedValue
+		return value
 
 	def update(self):
-		pass#TODO
+		try:
+			oper = AwlOperator(self.addrSpace, self.width, self.addr)
+			value = self.sim.getCPU().fetch(oper)
+		except AwlSimError as e:
+			QMessageBox.critical(self, "Failed to fetch",
+				"Failed to fetch memory:\n" + str(e))
+			return
+		if value == self.displayedValue:
+			return
+		self.displayedValue = value
+		if self.base == 2:
+			string = "".join(
+				'1' if (value & (1 << bitnr)) else '0'
+				for bitnr in range(self.width - 1, -1, -1)
+			)
+		elif self.base == 10:
+			if self.width == 8:
+				value &= 0xFF
+				if value & 0x80:
+					value = -((~value + 1) & 0xFF)
+				string = "%d" % value
+			elif self.width == 16:
+				value &= 0xFFFF
+				if value & 0x8000:
+					value = -((~value + 1) & 0xFFFF)
+				string = "%d" % value
+			elif self.width == 32:
+				value &= 0xFFFFFFFF
+				if value & 0x80000000:
+					value = -((~value + 1) & 0xFFFFFFFF)
+				string = "%d" % value
+			else:
+				assert(0)
+		elif self.base == 16:
+			if self.width == 8:
+				string = "%02X" % (value & 0xFF)
+			elif self.width == 16:
+				string = "%04X" % (value & 0xFFFF)
+			elif self.width == 32:
+				string = "%08X" % (value & 0xFFFFFFFF)
+			else:
+				assert(0)
+		else:
+			assert(0)
+		self.line.setText(string)
 
-class DecDisplayWidget(AbstractDisplayWidget):
+class HexDisplayWidget(NumberDisplayWidget):
 	def __init__(self, sim, addrSpace, addr, width, parent=None):
-		AbstractDisplayWidget.__init__(self, sim, addrSpace,
-					       addr, width, parent)
-		#TODO
+		NumberDisplayWidget.__init__(self, sim, 16, addrSpace,
+					     addr, width, parent)
 
-		self.update()
-
-	def get(self):
-		pass#TODO
-
-	def update(self):
-		pass#TODO
-
-class BinDisplayWidget(AbstractDisplayWidget):
+class DecDisplayWidget(NumberDisplayWidget):
 	def __init__(self, sim, addrSpace, addr, width, parent=None):
-		AbstractDisplayWidget.__init__(self, sim, addrSpace,
-					       addr, width, parent)
-		#TODO
+		NumberDisplayWidget.__init__(self, sim, 10, addrSpace,
+					     addr, width, parent)
 
-		self.update()
-
-	def get(self):
-		pass#TODO
-
-	def update(self):
-		pass#TODO
+class BinDisplayWidget(NumberDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, parent=None):
+		NumberDisplayWidget.__init__(self, sim, 2, addrSpace,
+					     addr, width, parent)
 
 class State_Mem(StateWindow):
 	def __init__(self, sim, addrSpace, parent=None):
@@ -299,6 +372,8 @@ class CpuWidget(QWidget):
 		group.layout().addWidget(self.newAButton, 0, 2)
 		self.newMButton = QPushButton("M", group)
 		group.layout().addWidget(self.newMButton, 0, 3)
+		self.newLButton = QPushButton("L", group)
+		group.layout().addWidget(self.newLButton, 0, 4)
 		self.layout().addWidget(group, 0, 1)
 
 		self.stateWs = StateWorkspace(self)
@@ -313,6 +388,7 @@ class CpuWidget(QWidget):
 		self.newEButton.released.connect(self.__newWin_E)
 		self.newAButton.released.connect(self.__newWin_A)
 		self.newMButton.released.connect(self.__newWin_M)
+		self.newLButton.released.connect(self.__newWin_L)
 
 		self.__newWin_CPU()
 		self.update()
@@ -339,6 +415,11 @@ class CpuWidget(QWidget):
 	def __newWin_M(self):
 		self.__addWindow(State_Mem(self.mainWidget.getSim(),
 					   AbstractDisplayWidget.ADDRSPACE_M,
+					   self))
+
+	def __newWin_L(self):
+		self.__addWindow(State_Mem(self.mainWidget.getSim(),
+					   AbstractDisplayWidget.ADDRSPACE_L,
 					   self))
 
 	def update(self):
