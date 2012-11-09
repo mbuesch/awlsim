@@ -932,10 +932,10 @@ class AwlInsn_ITB(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		accu1 = self.cpu.accu1.get()
-		binval, bcd = accu1 & 0xFFFF, 0
-		if binval & 0x8000:
-			binval = (~binval + 1) & 0xFFFF
+		binval, bcd = wordToSignedPyInt(accu1), 0
+		if binval < 0:
 			bcd |= 0xF000
+		binval = abs(binval)
 		if binval > 999:
 			s.OV, s.OS = 1, 1
 			return
@@ -986,10 +986,10 @@ class AwlInsn_DTB(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		binval, bcd = self.cpu.accu1.get(), 0
-		if binval & 0x80000000:
-			binval = (~binval + 1) & 0xFFFFFFFF
+		binval, bcd = dwordToSignedPyInt(self.cpu.accu1.get()), 0
+		if binval < 0:
 			bcd |= 0xF0000000
+		binval = abs(binval)
 		if binval > 9999999:
 			s.OV, s.OS = 1, 1
 			return
