@@ -42,13 +42,14 @@
 	ZV Z 0
 
 	// Freie Plaetze
-	L Z 0
+	LC Z 0
 	T AB 3
 
 	// Belegte Plaetze
 	L LW 0
 	L Z 0
 	-I
+	ITB
 	T AB 2
 
 	// Schranke auf, wenn noch freie Plaetze
