@@ -711,8 +711,8 @@ class AwlInsn_EQ_I(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFF), (accu2 & 0xFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
+			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 1
 		elif accu1 > accu2:
@@ -728,8 +728,8 @@ class AwlInsn_NE_I(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFF), (accu2 & 0xFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
+			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 0
 		elif accu1 > accu2:
@@ -745,8 +745,8 @@ class AwlInsn_GT_I(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFF), (accu2 & 0xFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
+			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 0
 		elif accu1 > accu2:
@@ -762,8 +762,8 @@ class AwlInsn_LT_I(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFF), (accu2 & 0xFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
+			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 0
 		elif accu1 > accu2:
@@ -779,8 +779,8 @@ class AwlInsn_GE_I(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFF), (accu2 & 0xFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
+			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 1
 		elif accu1 > accu2:
@@ -796,8 +796,8 @@ class AwlInsn_LE_I(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFF), (accu2 & 0xFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
+			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 1
 		elif accu1 > accu2:
@@ -813,8 +813,8 @@ class AwlInsn_EQ_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFFFFFF), (accu2 & 0xFFFFFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
+			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 1
 		elif accu1 > accu2:
@@ -830,8 +830,8 @@ class AwlInsn_NE_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFFFFFF), (accu2 & 0xFFFFFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
+			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 0
 		elif accu1 > accu2:
@@ -847,8 +847,8 @@ class AwlInsn_GT_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFFFFFF), (accu2 & 0xFFFFFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
+			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 0
 		elif accu1 > accu2:
@@ -864,8 +864,8 @@ class AwlInsn_LT_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFFFFFF), (accu2 & 0xFFFFFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
+			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 0
 		elif accu1 > accu2:
@@ -881,8 +881,8 @@ class AwlInsn_GE_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFFFFFF), (accu2 & 0xFFFFFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
+			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 1
 		elif accu1 > accu2:
@@ -898,8 +898,8 @@ class AwlInsn_LE_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1, accu2 = self.cpu.accu1.get(), self.cpu.accu2.get()
-		accu1, accu2 = (accu1 & 0xFFFFFFFF), (accu2 & 0xFFFFFFFF)
+		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
+			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
 			s.A1, s.A0, s.VKE = 0, 0, 1
 		elif accu1 > accu2:

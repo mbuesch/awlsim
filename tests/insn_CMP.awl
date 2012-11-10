@@ -1,0 +1,375 @@
+	// Test ==I
+	__STWRST
+	L		123
+	L		123
+	==I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	==I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	==I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	==I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+
+
+	// Test <>I
+	__STWRST
+	L		123
+	L		123
+	<>I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	<>I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	<>I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	<>I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+
+
+	// Test >I
+	__STWRST
+	L		123
+	L		123
+	>I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	>I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	>I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	>I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+
+
+	// Test <I
+	__STWRST
+	L		123
+	L		123
+	<I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	<I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	<I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#0000F123
+	L		DW#16#FFFFF123
+	<I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+
+
+	// Test >=I
+	__STWRST
+	L		123
+	L		123
+	>=I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	>=I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	>=I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	>=I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+
+
+	// Test <=I
+	__STWRST
+	L		123
+	L		123
+	<=I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	<=I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	<=I
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	<=I
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+
+
+
+
+//XXX
+
+
+	// Test ==D
+	__STWRST
+	L		123
+	L		123
+	==D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	==D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	==D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	==D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+
+
+	// Test <>D
+	__STWRST
+	L		123
+	L		123
+	<>D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	<>D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	<>D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	<>D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+
+
+	// Test >D
+	__STWRST
+	L		123
+	L		123
+	>D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	>D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	>D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	>D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+
+
+	// Test <D
+	__STWRST
+	L		123
+	L		123
+	<D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	<D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	<D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#0000F123
+	L		DW#16#FFFFF123
+	<D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+
+
+	// Test >=D
+	__STWRST
+	L		123
+	L		123
+	>=D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	>=D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	>=D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	>=D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+
+
+	// Test <=D
+	__STWRST
+	L		123
+	L		123
+	<=D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		-123
+	L		123
+	<=D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
+	__STWRST
+	L		123
+	L		-123
+	<=D
+	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW A0	0
+	__ASSERT==	__STW A1	1
+	__STWRST
+	L		DW#16#FFFFF123
+	L		DW#16#0000F123
+	<=D
+	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW A0	1
+	__ASSERT==	__STW A1	0
