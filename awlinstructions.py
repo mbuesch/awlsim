@@ -922,7 +922,7 @@ class AwlInsn_BTI(AwlInsn):
 		binval = (a + (b * 10) + (c * 100)) & 0xFFFF
 		if accu1 & 0x8000:
 			binval = (-binval) & 0xFFFF
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | binval)
+		self.cpu.accu1.setWord(binval)
 
 class AwlInsn_ITB(AwlInsn):
 	def __init__(self, rawInsn):
@@ -942,7 +942,7 @@ class AwlInsn_ITB(AwlInsn):
 		bcd |= binval % 10
 		bcd |= ((binval // 10) % 10) << 4
 		bcd |= ((binval // 100) % 10) << 8
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | bcd)
+		self.cpu.accu1.setWord(bcd)
 		s.OV, s.OS = 0, 0
 
 class AwlInsn_BTD(AwlInsn):
@@ -973,11 +973,7 @@ class AwlInsn_ITD(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		accu1 = self.cpu.accu1.get()
-		accu1 &= 0xFFFF
-		if accu1 & 0x8000:
-			accu1 |= 0xFFFF0000
-		self.cpu.accu1.set(accu1)
+		self.cpu.accu1.setDWord(self.cpu.accu1.getSignedWord())
 
 class AwlInsn_DTB(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1166,9 +1162,8 @@ class AwlInsn_LOOP(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
-		accu1l = ((accu1 & 0xFFFF) - 1) & 0xFFFF
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | accu1l)
+		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF
+		self.cpu.accu1.setWord(accu1l)
 		if accu1l != 0:
 			self.cpu.jumpTo(self.ops[0].labelIndex)
 
@@ -1180,10 +1175,9 @@ class AwlInsn_PL_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
-		_sum = (self.cpu.accu2.get() & 0xFFFF) +\
-		       (accu1 & 0xFFFF)
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | (_sum & 0xFFFF))
+		_sum = self.cpu.accu1.getWord() +\
+		       self.cpu.accu2.getWord()
+		self.cpu.accu1.setWord(_sum)
 		if _sum == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif _sum < 0:
@@ -1201,10 +1195,9 @@ class AwlInsn_MI_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
-		diff = (self.cpu.accu2.get() & 0xFFFF) -\
-		       (accu1 & 0xFFFF)
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | (diff & 0xFFFF))
+		diff = self.cpu.accu2.getWord() -\
+		       self.cpu.accu1.getWord()
+		self.cpu.accu1.setWord(diff)
 		if diff == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif diff < 0:
@@ -1222,10 +1215,9 @@ class AwlInsn_MU_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
-		prod = (self.cpu.accu2.get() & 0xFFFF) *\
-		       (accu1 & 0xFFFF)
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | (prod & 0xFFFF))
+		prod = self.cpu.accu2.getWord() *\
+		       self.cpu.accu1.getWord()
+		self.cpu.accu1.setWord(prod)
 		if prod == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif prod < 0:
@@ -1243,14 +1235,13 @@ class AwlInsn_DI_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
 		try:
-			quo = (self.cpu.accu2.get() & 0xFFFF) /\
-			      (accu1 & 0xFFFF)
+			quo = self.cpu.accu2.getWord() /\
+			      self.cpu.accu1.getWord()
 		except ZeroDivisionError as e:
 			s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 			return
-		self.cpu.accu1.set((accu1 & 0xFFFF0000) | (_sum & 0xFFFF))
+		self.cpu.accu1.setWord(quo)
 		if quo == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif quo < 0:
@@ -1270,9 +1261,8 @@ class AwlInsn_PL(AwlInsn):
 	def run(self):
 		oper = self.ops[0]
 		if oper.width == 16:
-			accu1 = self.cpu.accu1.get()
-			value = (accu1 + self.cpu.fetch(oper)) & 0xFFFF
-			self.cpu.accu1.set((accu1 & 0xFFFF0000) | value)
+			self.cpu.accu1.setWord(self.cpu.accu1.getWord() +\
+					       self.cpu.fetch(oper))
 		elif oper.width == 32:
 			self.cpu.accu1.set(self.cpu.accu1.get() +\
 					   self.cpu.fetch(oper))

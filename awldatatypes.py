@@ -28,6 +28,9 @@ class GenericInteger(object):
 			      (value & 0xFFFF)) &\
 			     self.mask
 
+	def setDWord(self, value):
+		self.value = value & 0xFFFFFFFF & self.mask
+
 	def get(self):
 		return self.value
 
@@ -36,6 +39,9 @@ class GenericInteger(object):
 
 	def getWord(self):
 		return self.value & 0xFFFF
+
+	def getDWord(self):
+		return self.value & 0xFFFFFFFF
 
 	def getSignedByte(self):
 		return byteToSignedPyInt(self.value)
