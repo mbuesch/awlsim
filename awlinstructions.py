@@ -1088,7 +1088,22 @@ class AwlInsn_SPA(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		self.cpu.jumpTo(self.ops[0].labelIndex)
+		self.cpu.jumpToLabel(self.ops[0].labelIndex)
+
+class AwlInsn_SPL(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SPL, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.LBL_REF:
+			raise AwlSimError("Jump instruction expects label operand")
+
+	def run(self):
+		defaultJmp = self.cpu.labelIdxToRelJump(self.ops[0].labelIndex)
+		lookup = self.cpu.accu1.getByte() + 1
+		if lookup >= defaultJmp:
+			self.cpu.jumpRelative(defaultJmp)
+		else:
+			self.cpu.jumpRelative(lookup)
 
 class AwlInsn_SPB(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1100,7 +1115,7 @@ class AwlInsn_SPB(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		if s.VKE:
-			self.cpu.jumpTo(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.OR, s.STA, s.VKE, s.NER = 0, 1, 1, 0
 
 class AwlInsn_SPBN(AwlInsn):
@@ -1113,7 +1128,7 @@ class AwlInsn_SPBN(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		if not s.VKE:
-			self.cpu.jumpTo(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.OR, s.STA, s.VKE, s.NER = 0, 1, 1, 0
 
 class AwlInsn_SPBNB(AwlInsn):
@@ -1126,7 +1141,7 @@ class AwlInsn_SPBNB(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		if not s.VKE:
-			self.cpu.jumpTo(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.BIE, s.OR, s.STA, s.VKE, s.NER = s.VKE, 0, 1, 1, 0
 
 class AwlInsn_SPZ(AwlInsn):
@@ -1139,7 +1154,7 @@ class AwlInsn_SPZ(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		if (s.A0 | s.A1) == 0:
-			self.cpu.jumpTo(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
 class AwlInsn_SPN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1151,7 +1166,7 @@ class AwlInsn_SPN(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		if s.A1 ^ s.A0:
-			self.cpu.jumpTo(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
 class AwlInsn_LOOP(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1165,7 +1180,7 @@ class AwlInsn_LOOP(AwlInsn):
 		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF
 		self.cpu.accu1.setWord(accu1l)
 		if accu1l != 0:
-			self.cpu.jumpTo(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
 class AwlInsn_PL_I(AwlInsn):
 	def __init__(self, rawInsn):

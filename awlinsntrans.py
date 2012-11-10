@@ -78,7 +78,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_AUF    	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_TDB    	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_SPA    	: AwlInsn_SPA,
-		AwlInsn.TYPE_SPL    	: AwlInsn_NotImplemented,
+		AwlInsn.TYPE_SPL    	: AwlInsn_SPL,
 		AwlInsn.TYPE_SPB    	: AwlInsn_SPB,
 		AwlInsn.TYPE_SPBN   	: AwlInsn_SPBN,
 		AwlInsn.TYPE_SPBB   	: AwlInsn_NotImplemented,

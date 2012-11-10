@@ -174,12 +174,18 @@ class S7CPU(object):
 			return None
 		return self.obs[1].insns[self.ip]
 
-	def jumpTo(self, labelIndex):
+	def labelIdxToRelJump(self, labelIndex):
 		label = self.obs[1].labels[labelIndex]
 		referencedInsn = label.getInsn()
 		referencedIp = referencedInsn.getIP()
 		assert(referencedIp < len(self.obs[1].insns))
-		self.relativeJump = referencedIp - self.ip
+		return referencedIp - self.ip
+
+	def jumpToLabel(self, labelIndex):
+		self.relativeJump = self.labelIdxToRelJump(labelIndex)
+
+	def jumpRelative(self, insnOffset):
+		self.relativeJump = insnOffset
 
 	def updateTimestamp(self):
 		self.now = time.time()
