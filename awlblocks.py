@@ -14,7 +14,9 @@ from util import *
 class Block(object):
 	def __init__(self, insns, db):
 		self.insns = insns
-		self.labels = AwlLabel.resolveLabels(insns)
+		self.labels = None
+		if insns:
+			self.labels = AwlLabel.resolveLabels(insns)
 		self.db = db
 
 class OB(Block):
@@ -28,3 +30,11 @@ class FB(Block):
 class SFB(Block):
 	def __init__(self, db):
 		Block.__init__(self, None, db)
+
+class FC(Block):
+	def __init__(self, insns):
+		Block.__init__(self, insns, None)
+
+class SFC(Block):
+	def __init__(self):
+		Block.__init__(self, None, None)

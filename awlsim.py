@@ -17,7 +17,6 @@ from awlinsntrans import *
 from awloptrans import *
 from awlblocks import *
 from awldatablocks import *
-from awlfunctions import *
 from awlstatusword import *
 from awllabels import *
 from awltimers import *
@@ -79,6 +78,40 @@ class ParenStackElem(object):
 			(AwlInsn.type2name[self.insnType],
 			 self.VKE, self.OR)
 
+class ObjectCache(object):
+	def __init__(self, createCallback, callbackData=None):
+		self.__createCallback = createCallback
+		self.__callbackData = callbackData
+		self.__cache = []
+
+	def get(self):
+		try:
+			return self.__cache[-1]
+		except IndexError as e:
+			return self.__createCallback(self.__callbackData)
+
+	def put(self, obj):
+		self.__cache.append(obj)
+
+class CallStackElem(object):
+	"Call stack element"
+
+	localdataCache = ObjectCache(lambda _:
+		[ LocalByte() for _ in range(1024) ]
+	)
+
+	def __init__(self, cpu, block):
+		self.cpu = cpu
+		self.status = S7StatusWord()
+		self.parenStack = []
+		self.localdata = self.localdataCache.get()
+		self.insns = block.insns
+		self.labels = block.labels
+		self.db = block.db
+
+	def destroy(self):
+		self.localdataCache.put(self.localdata)
+
 class S7CPU(object):
 	"STEP 7 CPU"
 
@@ -94,15 +127,11 @@ class S7CPU(object):
 		self.reset()
 		for insn in ob1_insns:
 			insn.setCpu(self)
-		self.obs[1] = OB(ob1_insns, self.ob_dbs[1])
+		self.obs[1] = OB(ob1_insns, DB())
 
 	def reset(self):
 		self.dbs = {
 			# User DBs
-		}
-		self.ob_dbs = {
-			# DBs for OBs
-			1	: DB(),
 		}
 		self.obs = {
 			# OBs
@@ -113,7 +142,6 @@ class S7CPU(object):
 		self.fbs = {
 			# User FBs
 		}
-		self.status = S7StatusWord()
 		self.accu1 = Accu()
 		self.accu2 = Accu()
 		self.ar1 = Adressregister()
@@ -123,8 +151,8 @@ class S7CPU(object):
 		self.flags = [ FlagByte() for _ in range(8192) ]
 		self.inputs = [ InputByte() for _ in range(8192) ]
 		self.outputs = [ OutputByte() for _ in range(8192) ]
-		self.localdata = [ LocalByte() for _ in range(1024) ]
-		self.parenStack = []
+		self.callStack = [ ]
+		self.__callStackInit(Block(None, None))
 
 		self.ip = None
 		self.relativeJump = 1
@@ -141,23 +169,34 @@ class S7CPU(object):
 
 		self.updateTimestamp()
 
+	@property
+	def status(self):
+		return self.callStack[-1].status
+
+	@property
+	def parenStack(self):
+		return self.callStack[-1].parenStack
+
 	def __runTimeCheck(self):
 		if self.now - self.cycleStartTime <= self.cycleTimeLimit:
 			return
 		raise AwlSimError("Cycle time exceed %.3f seconds" %\
 				  self.cycleTimeLimit)
 
+	def __callStackInit(self, block):
+		for cse in self.callStack:
+			cse.destroy()
+		self.callStack = [ CallStackElem(self, block) ]
+
 	# Run one cycle of the user program
 	def runCycle(self):
-		self.updateTimestamp()
-		# Start cycle time measurement
-		self.cycleStartTime = self.now
+		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
-		self.ip, nrInsns, = 0, len(self.obs[1].insns)
-		self.status.reset()
+		self.__callStackInit(self.obs[1])
+		self.ip = 0
 		# Run the user program cycle
-		while self.ip < nrInsns:
-			insn = self.obs[1].insns[self.ip]
+		while self.ip < len(self.callStack[-1].insns):
+			insn = self.callStack[-1].insns[self.ip]
 			self.relativeJump = 1
 			insn.run()
 			self.insnCount += 1
@@ -167,7 +206,13 @@ class S7CPU(object):
 			self.ip += self.relativeJump
 		self.ip = None
 		self.cycleCount += 1
-		# End cycle time measurement
+		self.__endCycleTimeMeasurement()
+
+	def __startCycleTimeMeasurement(self):
+		self.updateTimestamp()
+		self.cycleStartTime = self.now
+
+	def __endCycleTimeMeasurement(self):
 		self.updateTimestamp()
 		elapsedTime = self.now - self.cycleStartTime
 		self.runtimeSec += elapsedTime
@@ -181,15 +226,15 @@ class S7CPU(object):
 		self.avgCycleTime = (self.avgCycleTime + elapsedTime) / 2
 
 	def getCurrentInsn(self):
-		if self.ip is None:
+		if self.ip is None or not self.callStack:
 			return None
-		return self.obs[1].insns[self.ip]
+		return self.callStack[-1].insns[self.ip]
 
 	def labelIdxToRelJump(self, labelIndex):
-		label = self.obs[1].labels[labelIndex]
+		label = self.callStack[-1].labels[labelIndex]
 		referencedInsn = label.getInsn()
 		referencedIp = referencedInsn.getIP()
-		assert(referencedIp < len(self.obs[1].insns))
+		assert(referencedIp < len(self.callStack[-1].insns))
 		return referencedIp - self.ip
 
 	def jumpToLabel(self, labelIndex):
@@ -202,7 +247,7 @@ class S7CPU(object):
 		s = self.status
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
-		self.relativeJump = len(self.obs[1].insns) - self.ip
+		self.relativeJump = len(self.callStack[-1].insns) - self.ip
 
 	def updateTimestamp(self):
 		self.now = time.time()
@@ -304,7 +349,8 @@ class S7CPU(object):
 		return self.__fetchFromByteArray(self.flags, operator)
 
 	def fetchL(self, operator):
-		return self.__fetchFromByteArray(self.localdata, operator)
+		return self.__fetchFromByteArray(self.callStack[-1].localdata,
+						 operator)
 
 	def fetchD(self, operator):
 		pass#TODO
@@ -396,7 +442,8 @@ class S7CPU(object):
 		self.__storeToByteArray(self.flags, operator, value)
 
 	def storeL(self, operator, value):
-		self.__storeToByteArray(self.localdata, operator, value)
+		self.__storeToByteArray(self.callStack[-1].localdata,
+					operator, value)
 
 	def storeD(self, operator, value):
 		pass #TODO

@@ -9,13 +9,7 @@
 from util import *
 
 
-class StatusWord(object):
-	"Generic status word"
-
-	def __init__(self):
-		pass
-
-class S7StatusWord(StatusWord):
+class S7StatusWord(object):
 	"STEP 7 status word"
 
 	name2nr = {
@@ -45,7 +39,6 @@ class S7StatusWord(StatusWord):
 				"name: " + str(name))
 
 	def __init__(self):
-		StatusWord.__init__(self)
 		self.reset()
 
 	def getByBitNumber(self, bitNumber):
