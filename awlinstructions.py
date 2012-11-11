@@ -1396,6 +1396,34 @@ class AwlInsn_T(AwlInsn):
 		#TODO MCR
 		self.cpu.store(self.ops[0], self.cpu.accu1.get())
 
+class AwlInsn_BE(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_BE, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.run_BE()
+
+class AwlInsn_BEB(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_BEB, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		if s.VKE:
+			self.cpu.run_BE()
+		else:
+			s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
+
+class AwlInsn_BEA(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_BEA, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.run_BE()
+
 class AwlInsn_SLD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_SLD, rawInsn)

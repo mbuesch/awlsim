@@ -1,0 +1,109 @@
+	// Taktgeber
+	U	M 0.0
+	=	L 0.0
+
+	UN	T 0
+	UN	L 0.0
+	U	E 0.1		// S1 (ein)
+	S	M 0.0
+	UN	T 0
+	U	L 0.0
+	R	M 0.0
+
+	U	E 0.1		// S1 (ein)
+	UN	T 0
+	L	S5T#1S
+	SV	T 0
+
+	// Tag/Nacht Abfrage
+	U	E 0.0		// S0 (Nacht)
+	SPB	n8
+
+	// Status hochzählen
+	U	M 0.0
+	ZV	Z 0
+
+	// Status Sprungleiste
+spl:	L	Z 0
+	SPL	def
+	SPA	_0
+	SPA	ende
+	SPA	ende
+	SPA	ende
+	SPA	ende
+	SPA	ende
+	SPA	ende
+	SPA	_7
+	SPA	ende
+	SPA	_9
+	SPA	_10
+	SPA	ende
+	SPA	ende
+	SPA	ende
+	SPA	_14
+	SPA	_15
+def:	SPA	zrst
+
+_0:	SET
+	R	A 0.0		// Auto Rot
+	R	A 0.1		// Auto Gelb
+	S	A 0.2		// Auto Gruen
+	S	A 1.0		// FG Rot
+	R	A 1.1		// FG Gruen
+	SPA	ende
+
+_7:	SET
+	R	A 0.0		// Auto Rot
+	S	A 0.1		// Auto Gelb
+	R	A 0.2		// Auto Gruen
+	S	A 1.0		// FG Rot
+	R	A 1.1		// FG Gruen
+	SPA	ende
+
+_9:	SET
+	S	A 0.0		// Auto Rot
+	R	A 0.1		// Auto Gelb
+	R	A 0.2		// Auto Gruen
+	S	A 1.0		// FG Rot
+	R	A 1.1		// FG Gruen
+	SPA	ende
+
+_10:	SET
+	S	A 0.0		// Auto Rot
+	R	A 0.1		// Auto Gelb
+	R	A 0.2		// Auto Gruen
+	R	A 1.0		// FG Rot
+	S	A 1.1		// FG Gruen
+	SPA	ende
+
+_14:	SET
+	S	A 0.0		// Auto Rot
+	R	A 0.1		// Auto Gelb
+	R	A 0.2		// Auto Gruen
+	S	A 1.0		// FG Rot
+	R	A 1.1		// FG Gruen
+	SPA	ende
+
+_15:	SET
+	S	A 0.0		// Auto Rot
+	S	A 0.1		// Auto Gelb
+	R	A 0.2		// Auto Gruen
+	S	A 1.0		// FG Rot
+	R	A 1.1		// FG Gruen
+	SPA	ende
+
+zrst:	SET
+	R	Z 0
+	SPA	spl
+
+	// Nachtbetrieb
+n8:	CLR
+	=	A 1.0		// FG Rot
+	=	A 1.1		// FG Gruen
+	=	A 0.0		// Auto Rot
+	=	A 0.2		// Auto Gruen
+	U	M 0.0		// Takt
+	=	A 0.1		// Auto Gelb
+	R	Z 0		// Zaehler ruecksetzen
+
+ende:	BE

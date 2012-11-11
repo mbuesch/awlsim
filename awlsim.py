@@ -84,7 +84,11 @@ class S7CPU(object):
 
 	def __init__(self, sim):
 		self.sim = sim
+		self.setCycleTimeLimit(5.0)
 		self.reset()
+
+	def setCycleTimeLimit(self, newLimit):
+		self.cycleTimeLimit = float(newLimit)
 
 	def load(self, ob1_insns):
 		self.reset()
@@ -131,16 +135,23 @@ class S7CPU(object):
 		self.runtimeSec = 0.0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
+		self.cycleStartTime = 0.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
 
 		self.updateTimestamp()
 
+	def __runTimeCheck(self):
+		if self.now - self.cycleStartTime <= self.cycleTimeLimit:
+			return
+		raise AwlSimError("Cycle time exceed %.3f seconds" %\
+				  self.cycleTimeLimit)
+
 	# Run one cycle of the user program
 	def runCycle(self):
 		self.updateTimestamp()
 		# Start cycle time measurement
-		startTime = self.now
+		self.cycleStartTime = self.now
 		# Initialize CPU state
 		self.ip, nrInsns, = 0, len(self.obs[1].insns)
 		self.status.reset()
@@ -152,13 +163,13 @@ class S7CPU(object):
 			self.insnCount += 1
 			if self.insnCount % 32 == 0:
 				self.updateTimestamp()
-#			print(str(self) + "\n") #XXX
+				self.__runTimeCheck()
 			self.ip += self.relativeJump
 		self.ip = None
 		self.cycleCount += 1
 		# End cycle time measurement
 		self.updateTimestamp()
-		elapsedTime = self.now - startTime
+		elapsedTime = self.now - self.cycleStartTime
 		self.runtimeSec += elapsedTime
 		if self.cycleCount >= 50:
 			self.runtimeSec = max(self.runtimeSec, 0.00001)
@@ -186,6 +197,12 @@ class S7CPU(object):
 
 	def jumpRelative(self, insnOffset):
 		self.relativeJump = insnOffset
+
+	def run_BE(self):
+		s = self.status
+		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
+		# Jump beyond end of block
+		self.relativeJump = len(self.obs[1].insns) - self.ip
 
 	def updateTimestamp(self):
 		self.now = time.time()
