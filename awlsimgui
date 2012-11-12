@@ -58,8 +58,12 @@ class State_CPU(StateWindow):
 		self.label.setFont(font)
 		self.layout().addWidget(self.label, 0, 0)
 
+		self.label.setText("No CPU status available, yet.")
+
 	def update(self):
-		self.label.setText(str(self.sim.getCPU()))
+		newText = str(self.sim.getCPU())
+		if newText:
+			self.label.setText(newText)
 		StateWindow.update(self)
 
 class AbstractDisplayWidget(QWidget):
@@ -435,6 +439,9 @@ class CpuWidget(QWidget):
 		self.nextUpdate = now + 0.1
 		self.update()
 
+	def __blockExitCallback(self, unused):
+		self.mayUpdate()
+
 	def __run(self):
 		sim = self.mainWidget.getSim()
 		self.state = self.STATE_RUN
@@ -451,6 +458,7 @@ class CpuWidget(QWidget):
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
 			sim.load(parser.getRawInsns())
+			sim.getCPU().setBlockExitCallback(self.__blockExitCallback)
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Simulator exception",
 					     str(e))
@@ -461,7 +469,6 @@ class CpuWidget(QWidget):
 			try:
 				QApplication.processEvents(QEventLoop.AllEvents, 1)
 				sim.runCycle()
-				self.mayUpdate()
 			except AwlSimError as e:
 				QMessageBox.critical(self, "Simulator exception",
 						     str(e))

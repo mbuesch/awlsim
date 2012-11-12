@@ -28,6 +28,26 @@ def writeStdout(message):
 		sys.stdout.write(message)
 		sys.stdout.flush()
 
+nextScreenUpdate = 0.0
+lastDump = ""
+
+def blockExitCallback(cpu):
+	global nextScreenUpdate
+	global lastDump
+
+	now = time.time()
+	if now < nextScreenUpdate and\
+	   not opt_onecycle:
+		return
+	nextScreenUpdate = now + 0.1
+	dump = str(cpu)
+	# Pad lines
+	dump = [ line + (79 - len(line)) * ' ' + '|'
+		 for line in dump.splitlines() ]
+	dump = '\n'.join(dump)
+	lastDump = dump
+	writeStdout("\x1B[H" + dump)
+
 def main():
 	global opt_onecycle
 	global opt_quiet
@@ -58,27 +78,17 @@ def main():
 		p.parseFile(awlSource)
 		s = AwlSim()
 		s.load(p.getRawInsns())
-		nextScreenUpdate = 0.0
+		s.getCPU().setBlockExitCallback(blockExitCallback,
+						s.getCPU())
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")
 			while 1:
 				s.runCycle()
-				now = time.time()
-				if now < nextScreenUpdate and\
-				   not opt_onecycle:
-					continue
-				nextScreenUpdate = now + 0.1
-				dump = str(s)
-				# Pad lines
-				dump = [ line + (79 - len(line)) * ' ' + '|'
-					 for line in dump.splitlines() ]
-				dump = '\n'.join(dump)
-				writeStdout("\x1B[H" + dump)
 				if opt_onecycle:
 					break
 		finally:
 			writeStdout("\x1B[?25h\x1B[2J\x1B[H")
-			writeStdout(str(s) + '\n')
+			writeStdout(lastDump + '\n')
 	except AwlSimError as e:
 		print("-- AWL simulator error --")
 		print(str(e))

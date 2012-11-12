@@ -152,10 +152,13 @@ class S7CPU(object):
 		self.inputs = [ InputByte() for _ in range(8192) ]
 		self.outputs = [ OutputByte() for _ in range(8192) ]
 		self.callStack = [ ]
-		self.__callStackInit(Block(None, None))
 
 		self.ip = None
 		self.relativeJump = 1
+
+		# Callbacks
+		self.setBlockExitCallback(lambda x: None)
+		self.setPostRunCallback(lambda x: None)
 
 		# Stats
 		self.cycleCount = 0
@@ -169,10 +172,20 @@ class S7CPU(object):
 
 		self.updateTimestamp()
 
+	def setBlockExitCallback(self, cb, data=None):
+		self.cbBlockExit = cb
+		self.cbBlockExitData = data
+
+	def setPostRunCallback(self, cb, data=None):
+		self.cbPostRun = cb
+		self.cbPostRunData = data
+
+	# Get the active status word
 	@property
 	def status(self):
 		return self.callStack[-1].status
 
+	# Get the active parenthesis stack
 	@property
 	def parenStack(self):
 		return self.callStack[-1].parenStack
@@ -183,27 +196,26 @@ class S7CPU(object):
 		raise AwlSimError("Cycle time exceed %.3f seconds" %\
 				  self.cycleTimeLimit)
 
-	def __callStackInit(self, block):
-		for cse in self.callStack:
-			cse.destroy()
-		self.callStack = [ CallStackElem(self, block) ]
-
 	# Run one cycle of the user program
 	def runCycle(self):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
-		self.__callStackInit(self.obs[1])
+		self.callStack = [ CallStackElem(self, self.obs[1]) ]
 		self.ip = 0
 		# Run the user program cycle
-		while self.ip < len(self.callStack[-1].insns):
-			insn = self.callStack[-1].insns[self.ip]
-			self.relativeJump = 1
-			insn.run()
-			self.insnCount += 1
-			if self.insnCount % 32 == 0:
-				self.updateTimestamp()
-				self.__runTimeCheck()
-			self.ip += self.relativeJump
+		while self.callStack:
+			while self.ip < len(self.callStack[-1].insns):
+				insn = self.callStack[-1].insns[self.ip]
+				self.relativeJump = 1
+				insn.run()
+				self.cbPostRun(self.cbPostRunData)
+				self.insnCount += 1
+				if self.insnCount % 32 == 0:
+					self.updateTimestamp()
+					self.__runTimeCheck()
+				self.ip += self.relativeJump
+			self.cbBlockExit(self.cbBlockExitData)
+			self.callStack.pop().destroy()
 		self.ip = None
 		self.cycleCount += 1
 		self.__endCycleTimeMeasurement()
@@ -226,9 +238,10 @@ class S7CPU(object):
 		self.avgCycleTime = (self.avgCycleTime + elapsedTime) / 2
 
 	def getCurrentInsn(self):
-		if self.ip is None or not self.callStack:
+		try:
+			return self.callStack[-1].insns[self.ip]
+		except IndexError as e:
 			return None
-		return self.callStack[-1].insns[self.ip]
 
 	def labelIdxToRelJump(self, labelIndex):
 		label = self.callStack[-1].labels[labelIndex]
@@ -486,6 +499,8 @@ class S7CPU(object):
 		return '\n'.join(ret)
 
 	def __repr__(self):
+		if not self.callStack:
+			return ""
 		ret = [ "S7-CPU dump:" ]
 		ret.append(" status:  " + str(self.status))
 		ret.append("   ACCU:  " + self.accu1.toHex() + "  " +\
