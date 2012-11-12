@@ -44,6 +44,13 @@ class RawAwlInsn(object):
 			   c == '/' and i + 1 < len(line) and\
 			   line[i + 1] == '/':
 				break
+			if c == ',' and not inQuote:
+				curField = curField.strip()
+				if curField:
+					fields.append(curField)
+				fields.append(',')
+				curField = ""
+				continue
 			if not c.isspace() or inQuote:
 				curField += c
 			if (c.isspace() and not inQuote) or\

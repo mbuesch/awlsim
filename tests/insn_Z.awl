@@ -1,6 +1,6 @@
 	// Test C# immediate
 	L		C#123
-	__ASSERT==	__ACCU 1	291
+	__ASSERT==	__ACCU 1,	291
 
 
 	// Test down counter (ZR)
@@ -10,61 +10,61 @@
 	R		Z 10
 	FR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW VKE,	0
 	L		C#123
 	SET
 	S		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	CLR
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	123
+	__ASSERT==	__ACCU 1,	123
 	SET
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	122
+	__ASSERT==	__ACCU 1,	122
 	CLR
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	122
+	__ASSERT==	__ACCU 1,	122
 	LC		Z 10
-	__ASSERT==	__ACCU 1	C#122
+	__ASSERT==	__ACCU 1,	C#122
 	L		C#1
 	CLR
 	S		Z 10
 	SET
 	S		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	1
+	__ASSERT==	__ACCU 1,	1
 	CLR
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	SET
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW VKE,	0
 	L		Z 10
-	__ASSERT==	__ACCU 1	0
+	__ASSERT==	__ACCU 1,	0
 	CLR
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW VKE,	0
 	SET
 	ZR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW VKE,	0
 	L		Z 10
-	__ASSERT==	__ACCU 1	0
+	__ASSERT==	__ACCU 1,	0
 
 
 	// Test up counter (ZV)
@@ -74,61 +74,61 @@
 	R		Z 10
 	FR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW VKE,	0
 	L		C#123
 	SET
 	S		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	CLR
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	123
+	__ASSERT==	__ACCU 1,	123
 	SET
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	124
+	__ASSERT==	__ACCU 1,	124
 	CLR
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	124
+	__ASSERT==	__ACCU 1,	124
 	LC		Z 10
-	__ASSERT==	__ACCU 1	C#124
+	__ASSERT==	__ACCU 1,	C#124
 	L		C#998
 	CLR
 	S		Z 10
 	SET
 	S		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	998
+	__ASSERT==	__ACCU 1,	998
 	CLR
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	SET
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	999
+	__ASSERT==	__ACCU 1,	999
 	CLR
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	SET
 	ZV		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	1
+	__ASSERT==	__STW VKE,	1
 	L		Z 10
-	__ASSERT==	__ACCU 1	999
+	__ASSERT==	__ACCU 1,	999
 
 
 	// Test FR
@@ -138,33 +138,33 @@
 	R		Z 10
 	FR		Z 10
 	U		Z 10
-	__ASSERT==	__STW VKE	0
+	__ASSERT==	__STW VKE,	0
 	SET
 	ZV		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	1
+	__ASSERT==	__ACCU 1,	1
 	CLR
 	FR		Z 10
 	SET
 	FR		Z 10
 	ZV		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	2
+	__ASSERT==	__ACCU 1,	2
 	ZR		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	1
+	__ASSERT==	__ACCU 1,	1
 	CLR
 	FR		Z 10
 	SET
 	FR		Z 10
 	ZR		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	0
+	__ASSERT==	__ACCU 1,	0
 	SET
 	L		C#321
 	S		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	321
+	__ASSERT==	__ACCU 1,	321
 	CLR
 	FR		Z 10
 	SET
@@ -172,10 +172,10 @@
 	L		C#123
 	S		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	123
+	__ASSERT==	__ACCU 1,	123
 	SET
 	FR		Z 10
 	L		C#888
 	S		Z 10
 	L		Z 10
-	__ASSERT==	__ACCU 1	123
+	__ASSERT==	__ACCU 1,	123

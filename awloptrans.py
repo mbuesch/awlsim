@@ -210,6 +210,12 @@ class AwlOpTranslator(object):
 					raise AwlSimError("Invalid doubleword address")
 			else:
 				assert(0)
+		if len(rawOps) > op.fieldCount:
+			if rawOps[op.fieldCount] != ',':
+				raise AwlSimError("Missing comma in operator list")
+			op.fieldCount += 1 # Consume comma
+			if len(rawOps) <= op.fieldCount:
+				raise AwlSimError("Trailing comma")
 		return (op.fieldCount,
 			AwlOperator(op.operType, op.width,
 				    op.offset, op.bitOffset)

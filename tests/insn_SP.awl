@@ -5,7 +5,7 @@
 	SPA		err0
 	SPA		err0
 def0:	SPA		err0
-err0:	__ASSERT==	1	0
+err0:	__ASSERT==	1,	0
 ok0:	NOP		0
 
 	L		3
@@ -15,7 +15,7 @@ ok0:	NOP		0
 	SPA		err1
 	SPA		ok1
 def1:	SPA		err1
-err1:	__ASSERT==	1	0
+err1:	__ASSERT==	1,	0
 ok1:	NOP		0
 
 	L		4
@@ -24,20 +24,20 @@ ok1:	NOP		0
 	SPA		err2
 	SPA		err2
 def2:	SPA		ok2
-err2:	__ASSERT==	1	0
+err2:	__ASSERT==	1,	0
 ok2:	NOP		0
 
 	L		0
 	SPL		def3
 def3:	SPA		ok3
-err3:	__ASSERT==	1	0
+err3:	__ASSERT==	1,	0
 ok3:	NOP		0
 
 	L		0
 	SPL		def4
 	SPA		ok4
 def4:	SPA		err4
-err4:	__ASSERT==	1	0
+err4:	__ASSERT==	1,	0
 ok4:	NOP		0
 
 
