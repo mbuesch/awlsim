@@ -57,7 +57,11 @@ class AwlOpTranslator(object):
 		"MD"	: OpDescriptor(AwlOperator.MEM_M, 32, -1, 0, 2),
 		"T"	: OpDescriptor(AwlOperator.MEM_T, 16, -1, 0, 2),
 		"Z"	: OpDescriptor(AwlOperator.MEM_Z, 16, -1, 0, 2),
-		#TODO DBx
+		"FC"	: OpDescriptor(AwlOperator.BLKREF_FC, 16, -1, 0, 2),
+		"SFC"	: OpDescriptor(AwlOperator.BLKREF_SFC, 16, -1, 0, 2),
+		"FB"	: OpDescriptor(AwlOperator.BLKREF_FB, 16, -1, 0, 2),
+		"SFB"	: OpDescriptor(AwlOperator.BLKREF_SFB, 16, -1, 0, 2),
+		"DB"	: OpDescriptor(AwlOperator.BLKREF_DB, 16, -1, 0, 2),
 		#TODO DIx
 		#TODO PEx
 		#TODO PAx

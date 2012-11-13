@@ -100,14 +100,14 @@ class CallStackElem(object):
 		[ LocalByte() for _ in range(1024) ]
 	)
 
-	def __init__(self, cpu, block):
+	def __init__(self, cpu, block, db):
 		self.cpu = cpu
 		self.status = S7StatusWord()
 		self.parenStack = []
 		self.localdata = self.localdataCache.get()
 		self.insns = block.insns
 		self.labels = block.labels
-		self.db = block.db
+		self.db = db
 
 	def destroy(self):
 		self.localdataCache.put(self.localdata)
@@ -127,7 +127,7 @@ class S7CPU(object):
 		self.reset()
 		for insn in ob1_insns:
 			insn.setCpu(self)
-		self.obs[1] = OB(ob1_insns, DB())
+		self.obs[1] = OB(ob1_insns)
 
 	def reset(self):
 		self.dbs = {
@@ -200,7 +200,7 @@ class S7CPU(object):
 	def runCycle(self):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
-		self.callStack = [ CallStackElem(self, self.obs[1]) ]
+		self.callStack = [ CallStackElem(self, self.obs[1], DB()) ]
 		self.ip = 0
 		# Run the user program cycle
 		while self.callStack:
@@ -255,6 +255,9 @@ class S7CPU(object):
 
 	def jumpRelative(self, insnOffset):
 		self.relativeJump = insnOffset
+
+	def run_CALL(self, blockOper, dbOper=None):
+		pass#TODO
 
 	def run_BE(self):
 		s = self.status

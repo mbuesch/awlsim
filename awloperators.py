@@ -34,6 +34,12 @@ class AwlOperator(object):
 
 	LBL_REF		= 300	# Label reference
 
+	BLKREF_FC	= 400	# FC reference
+	BLKREF_SFC	= 401	# SFC reference
+	BLKREF_FB	= 402	# FB reference
+	BLKREF_SFB	= 403	# SFB reference
+	BLKREF_DB	= 404	# DB reference
+
 	# Virtual operators used for debugging of the simulator
 	VIRT_ACCU	= 1000	# Accu
 	VIRT_AR		= 1001	# AR
