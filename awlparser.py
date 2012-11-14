@@ -339,9 +339,8 @@ class AwlParser(object):
 				continue
 			self.__parseLine(line)
 
-	def getRawInsns(self):
-		#TODO
-		return self.tree.obs[1].insns
+	def getParseTree(self):
+		return self.tree
 
 if __name__ == "__main__":
 	p = AwlParser()

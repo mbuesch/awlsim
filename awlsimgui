@@ -457,7 +457,7 @@ class CpuWidget(QWidget):
 		try:
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
-			sim.load(parser.getRawInsns())
+			sim.load(parser.getParseTree())
 			sim.getCPU().setBlockExitCallback(self.__blockExitCallback)
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Simulator exception",

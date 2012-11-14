@@ -77,7 +77,7 @@ def main():
 		p = AwlParser()
 		p.parseFile(awlSource)
 		s = AwlSim()
-		s.load(p.getRawInsns())
+		s.load(p.getParseTree())
 		s.getCPU().setBlockExitCallback(blockExitCallback,
 						s.getCPU())
 		try:

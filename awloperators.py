@@ -128,4 +128,5 @@ class AwlOperator(object):
 			return "__ACCU %d" % self.offset
 		elif self.type == self.VIRT_AR:
 			return "__AR %d" % self.offset
+		#TODO
 		assert(0)

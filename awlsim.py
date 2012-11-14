@@ -569,10 +569,10 @@ class AwlSim(object):
 	def __init__(self):
 		self.cpu = S7CPU(self)
 
-	def load(self, ob1_rawInsns):
+	def load(self, parseTree):
 		# Translate instructions
 		insns = []
-		for i, rawInsn in enumerate(ob1_rawInsns):
+		for i, rawInsn in enumerate(parseTree.obs[1].insns):
 			ex = None
 			try:
 				insn = AwlInsnTranslator.fromRawInsn(rawInsn)
