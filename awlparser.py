@@ -27,84 +27,6 @@ class RawAwlInsn(object):
 	def isValidLabel(cls, labelString):
 		return bool(cls.__labelRe.match(labelString))
 
-	@classmethod
-	def parseLine(cls, line, lineNr):
-		line = line.strip()
-		if not line:
-			return None
-		fields = []
-		curField = ""
-		inQuote = False
-		for i, c in enumerate(line):
-			if c == '"':
-				inQuote = not inQuote
-			if c == ';' and not inQuote:
-				break
-			if not inQuote and\
-			   c == '/' and i + 1 < len(line) and\
-			   line[i + 1] == '/':
-				break
-			if c == ',' and not inQuote:
-				curField = curField.strip()
-				if curField:
-					fields.append(curField)
-				fields.append(',')
-				curField = ""
-				continue
-			if not c.isspace() or inQuote:
-				curField += c
-			if (c.isspace() and not inQuote) or\
-			   i == len(line) - 1:
-				curField = curField.strip()
-				if curField:
-					fields.append(curField)
-				curField = ""
-		if curField:
-			fields.append(curField)
-		if inQuote:
-			raise AwlParserError("Unterminated quote: " + line)
-		return cls.parseFields(line, fields, lineNr)
-
-	@classmethod
-	def parseFields(cls, line, fields, lineNr):
-		if not fields:
-			return None
-		insn = cls()
-		insn.setLineNr(lineNr)
-		if fields[0].upper().startswith("FUNCTION"):
-			pass #TODO
-			return None
-		if fields[0].upper().startswith("TITLE"):
-			pass #TODO
-			return None
-		if fields[0].upper().startswith("VERSION"):
-			pass #TODO
-			return None
-		if fields[0].upper().startswith("BEGIN"):
-			pass #TODO
-			return None
-		if fields[0].upper().startswith("NETWORK"):
-			pass #TODO
-			return None
-		if fields[0].upper().startswith("END_FUNCTION"):
-			pass #TODO
-			return None
-		if fields[0].endswith(":"):
-			# First field is a label
-			label = fields[0][0:-1]
-			if not label or not cls.isValidLabel(label):
-				raise AwlParserError("Invalid label: " + line)
-			insn.setLabel(label)
-			fields = fields[1:]
-		if not fields:
-			raise AwlParserError("No instruction name: " + line)
-		insn.setName(fields[0])
-		fields = fields[1:]
-		if fields:
-			# Operators to insn are specified
-			insn.setOperators(fields)
-		return insn
-
 	def __repr__(self):
 		ret = []
 		if self.hasLabel():
@@ -145,12 +67,102 @@ class RawAwlInsn(object):
 	def hasOperators(self):
 		return bool(self.getOperators())
 
+class AwlParseTree(object):
+	def __init__(self):
+		pass#TODO
+
 class AwlParser(object):
 	def __init__(self):
 		self.reset()
 
 	def reset(self):
 		self.insns = []
+
+	def __parseLine(self, line, lineNr):
+		line = line.strip()
+		if not line:
+			return None
+		tokens = []
+		curToken = ""
+		inQuote = False
+		for i, c in enumerate(line):
+			if c == '"':
+				inQuote = not inQuote
+			if c == ';' and not inQuote:
+				break
+			if not inQuote and\
+			   c == '/' and i + 1 < len(line) and\
+			   line[i + 1] == '/':
+				break
+			if tokens and not inQuote and\
+			   c in (',', '=', ':'):
+				curToken = curToken.strip()
+				if curToken:
+					tokens.append(curToken)
+				tokens.append(c)
+				curToken = ""
+				continue
+			if not c.isspace() or inQuote:
+				curToken += c
+			if (c.isspace() and not inQuote) or\
+			   i == len(line) - 1:
+				curToken = curToken.strip()
+				if curToken:
+					tokens.append(curToken)
+				curToken = ""
+		if curToken:
+			tokens.append(curToken)
+		if inQuote:
+			raise AwlParserError("Unterminated quote: " + line)
+		return self.__parseTokens(line, tokens, lineNr)
+
+	def __parseTokens(self, line, tokens, lineNr):
+		if not tokens:
+			return None
+		insn = RawAwlInsn()
+		insn.setLineNr(lineNr)
+		if tokens[0].upper() == "FAMILY":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "AUTHOR":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "DATA_BLOCK":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "FUNCTION":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "TITLE":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "VERSION":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "BEGIN":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "NETWORK":
+			pass #TODO
+			return None
+		if tokens[0].upper() == "END_FUNCTION":
+			pass #TODO
+			return None
+		if tokens[0].endswith(":"):
+			# First token is a label
+			label = tokens[0][0:-1]
+			if not label or not RawAwlInsn.isValidLabel(label):
+				raise AwlParserError("Invalid label: " + line)
+			insn.setLabel(label)
+			tokens = tokens[1:]
+		if not tokens:
+			raise AwlParserError("No instruction name: " + line)
+		insn.setName(tokens[0])
+		tokens = tokens[1:]
+		if tokens:
+			# Operators to insn are specified
+			insn.setOperators(tokens)
+		return insn
 
 	def parseFile(self, filename):
 		try:
@@ -170,7 +182,7 @@ class AwlParser(object):
 			line = line.strip()
 			if not line:
 				continue
-			insn = RawAwlInsn.parseLine(line, lineNr)
+			insn = self.__parseLine(line, lineNr)
 			if not insn:
 				continue
 			self.insns.append(insn)
