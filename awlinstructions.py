@@ -1424,6 +1424,42 @@ class AwlInsn_BEA(AwlInsn):
 	def run(self):
 		self.cpu.run_BE()
 
+class AwlInsn_CALL(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_CALL, rawInsn)
+		self._assertOps((1,2))
+
+	def run(self):
+		s = self.cpu.status
+		if len(self.ops) == 1:
+			self.cpu.run_CALL(self.ops[0])
+		elif len(self.ops) == 2:
+			self.cpu.run_CALL(self.ops[0], self.ops[1])
+		else:
+			assert(0)
+		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
+
+class AwlInsn_CC(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_CC, rawInsn)
+		self._assertOps(1)
+
+	def run(self):
+		s = self.cpu.status
+		if s.VKE:
+			self.cpu.run_CALL(self.ops[0])
+		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
+
+class AwlInsn_UC(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_UC, rawInsn)
+		self._assertOps(1)
+
+	def run(self):
+		s = self.cpu.status
+		self.cpu.run_CALL(self.ops[0])
+		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
+
 class AwlInsn_SLD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_SLD, rawInsn)

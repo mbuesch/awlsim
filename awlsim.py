@@ -104,6 +104,7 @@ class CallStackElem(object):
 		self.cpu = cpu
 		self.status = S7StatusWord()
 		self.parenStack = []
+		self.ip = 0
 		self.localdata = self.localdataCache.get()
 		self.insns = block.insns
 		self.labels = block.labels
@@ -153,7 +154,6 @@ class S7CPU(object):
 		self.outputs = [ OutputByte() for _ in range(8192) ]
 		self.callStack = [ ]
 
-		self.ip = None
 		self.relativeJump = 1
 
 		# Callbacks
@@ -201,22 +201,22 @@ class S7CPU(object):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, self.obs[1], DB()) ]
-		self.ip = 0
 		# Run the user program cycle
 		while self.callStack:
-			while self.ip < len(self.callStack[-1].insns):
-				insn = self.callStack[-1].insns[self.ip]
+			cse = self.callStack[-1]
+			while cse.ip < len(cse.insns):
+				insn = cse.insns[cse.ip]
 				self.relativeJump = 1
 				insn.run()
+				cse.ip += self.relativeJump
+				cse = self.callStack[-1]
 				self.cbPostRun(self.cbPostRunData)
 				self.insnCount += 1
 				if self.insnCount % 32 == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-				self.ip += self.relativeJump
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
-		self.ip = None
 		self.cycleCount += 1
 		self.__endCycleTimeMeasurement()
 
@@ -237,18 +237,25 @@ class S7CPU(object):
 		self.maxCycleTime = max(self.maxCycleTime, elapsedTime)
 		self.avgCycleTime = (self.avgCycleTime + elapsedTime) / 2
 
+	def getCurrentIP(self):
+		try:
+			return self.callStack[-1].ip
+		except IndexError as e:
+			return None
+
 	def getCurrentInsn(self):
 		try:
-			return self.callStack[-1].insns[self.ip]
+			return self.callStack[-1].insns[self.getCurrentIP()]
 		except IndexError as e:
 			return None
 
 	def labelIdxToRelJump(self, labelIndex):
-		label = self.callStack[-1].labels[labelIndex]
+		cse = self.callStack[-1]
+		label = cse.labels[labelIndex]
 		referencedInsn = label.getInsn()
 		referencedIp = referencedInsn.getIP()
-		assert(referencedIp < len(self.callStack[-1].insns))
-		return referencedIp - self.ip
+		assert(referencedIp < len(cse.insns))
+		return referencedIp - cse.ip
 
 	def jumpToLabel(self, labelIndex):
 		self.relativeJump = self.labelIdxToRelJump(labelIndex)
@@ -257,13 +264,42 @@ class S7CPU(object):
 		self.relativeJump = insnOffset
 
 	def run_CALL(self, blockOper, dbOper=None):
-		pass#TODO
+		if blockOper.type == AwlOperator.BLKREF_FC:
+			if dbOper:
+				raise AwlSimError("FC call must not "
+					"have DB operand")
+			try:
+				fc = self.fcs[blockOper.offset]
+			except KeyError as e:
+				raise AwlSimError("Called FC not found")
+			cse = CallStackElem(self, fc, self.callStack[-1].db)
+		elif blockOper.type == AwlOperator.BLKREF_FB:
+			if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
+				raise AwlSimError("FB call must have "
+					"DB operand")
+			try:
+				fb = self.fbs[blockOper.offset]
+			except KeyError as e:
+				raise AwlSimError("Called FB not found")
+			try:
+				db = self.dbs[dbOper.offset]
+			except KeyError as e:
+				raise AwlSimError("DB used in FB call not found")
+			cse = CallStackElem(self, fb, db)
+		elif blockOper.type == AwlOperand.BLKREF_SFC:
+			raise AwlSimError("SFC calls not implemented, yet")
+		elif blockOper.type == AwlOperand.BLKREF_SFB:
+			raise AwlSimError("SFB calls not implemented, yet")
+		else:
+			raise AwlSimError("Invalid CALL operand")
+		self.callStack.append(cse)
 
 	def run_BE(self):
 		s = self.status
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
-		self.relativeJump = len(self.callStack[-1].insns) - self.ip
+		cse = self.callStack[-1]
+		self.relativeJump = len(cse.insns) - cse.ip
 
 	def updateTimestamp(self):
 		self.now = time.time()
@@ -518,7 +554,7 @@ class S7CPU(object):
 					  self.outputs, 64))
 		ret.append(" PStack:  " + str(self.parenStack))
 		ret.append("  insn.:  IP:%s    %s" %\
-			   (str(self.ip),
+			   (str(self.getCurrentIP()),
 			    str(self.getCurrentInsn())))
 		ret.append("  speed:  %d insn/s  %.01f insn/cy  "
 			   "ctAvg:%.04fs  "
