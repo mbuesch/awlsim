@@ -122,6 +122,14 @@ class AwlParser(object):
 		self.state = newState
 		self.flatLayout = False
 
+	def __inAnyHeader(self):
+		if self.flatLayout:
+			return False
+		return self.state in (self.STATE_IN_DB_HDR,
+				      self.STATE_IN_FB_HDR,
+				      self.STATE_IN_FC_HDR,
+				      self.STATE_IN_OB_HDR)
+
 	def __parseLine(self, line):
 		line = line.strip()
 		if not line:
@@ -138,14 +146,16 @@ class AwlParser(object):
 			   c == '/' and i + 1 < len(line) and\
 			   line[i + 1] == '/':
 				break
-			if tokens and not inQuote and\
-			   c in (',', '=', ':'):
-				curToken = curToken.strip()
-				if curToken:
-					tokens.append(curToken)
-				tokens.append(c)
-				curToken = ""
-				continue
+			if tokens and not inQuote:
+				if (self.__inAnyHeader() and\
+				    c in ('=', ':')) or\
+				   (c == ','):
+					curToken = curToken.strip()
+					if curToken:
+						tokens.append(curToken)
+					tokens.append(c)
+					curToken = ""
+					continue
 			if not c.isspace() or inQuote:
 				curToken += c
 			if (c.isspace() and not inQuote) or\
