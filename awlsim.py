@@ -156,7 +156,9 @@ class S7CPU(object):
 		for fcNumber in parseTree.fcs.keys():
 			insns = self.__translateInsns(parseTree.fcs[fcNumber].insns)
 			self.fcs[fcNumber] = FC(insns)
-		#TODO DBs
+		for dbNumber in parseTree.dbs.keys():
+			#TODO
+			self.dbs[dbNumber] = DB()
 
 	def reset(self):
 		self.dbs = {
