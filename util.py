@@ -6,9 +6,51 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
+import os
+import random
+
 
 class AwlSimError(Exception):
 	pass
+
+class AwlParserError(Exception):
+	pass
+
+def awlFileRead(filename):
+	try:
+		fd = open(filename, "r", encoding="latin_1")
+		data = fd.read()
+		fd.close()
+	except IOError as e:
+		raise AwlParserError("Failed to read '%s': %s" %\
+			(filename, str(e)))
+	return data
+
+def awlFileWrite(filename, data):
+	for count in range(1000):
+		tmpFile = "%s-%d-%d.tmp" %\
+			(filename, random.randint(0, 0xFFFF), count)
+		if not os.path.exists(tmpFile):
+			break
+	else:
+		raise AwlParserError("Could not create temporary file")
+	try:
+		fd = open(tmpFile, "w", encoding="latin_1")
+		fd.write(data)
+		fd.flush()
+		fd.close()
+		if os.name.lower() != "posix":
+			# Can't use safe rename on non-POSIX.
+			# Must unlink first.
+			os.unlink(filename)
+		os.rename(tmpFile, filename)
+	except (IOError, OSError) as e:
+		raise AwlParserError("Failed to write file:\n" + str(e))
+	finally:
+		try:
+			os.unlink(tmpFile)
+		except (IOError, OSError):
+			pass
 
 def byteToSignedPyInt(byte):
 	if byte & 0x80:

@@ -561,16 +561,12 @@ class MainWidget(QWidget):
 
 	def loadFile(self, filename):
 		try:
-			fd = open(filename, "r")
-			code = fd.read()
-			fd.close()
-		except IOError as e:
+			data = awlFileRead(filename)
+		except AwlParserError as e:
 			QMessageBox.critical(self,
-				"File read failed",
-				"File read failed:\n" +\
-				str(e))
+				"File read failed", str(e))
 			return False
-		self.codeEdit.loadCode(code)
+		self.codeEdit.loadCode(data)
 		self.filename = filename
 		return True
 
@@ -586,26 +582,10 @@ class MainWidget(QWidget):
 	def saveFile(self, filename):
 		code = self.codeEdit.getCode()
 		try:
-			count = 0
-			while 1:
-				tmpFile = "%s-%d.tmp" % (filename, count)
-				count += 1
-				if not os.path.exists(tmpFile):
-					break
-			fd = open(tmpFile, "w")
-			fd.write(code)
-			fd.flush()
-			fd.close()
-			if os.name.lower() != "posix":
-				# Can't use safe rename on non-POSIX.
-				# Must unlink first.
-				os.unlink(filename)
-			os.rename(tmpFile, filename)
-		except IOError as e:
+			awlFileWrite(filename, code)
+		except AwlParserError as e:
 			QMessageBox.critical(self,
-				"Failed to write file",
-				"Failed to write file:\n" +\
-				str(e))
+				"Failed to write file", str(e))
 			return False
 		self.dirty = False
 		self.dirtyChanged.emit(self.dirty)

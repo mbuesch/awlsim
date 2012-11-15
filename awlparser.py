@@ -10,9 +10,8 @@
 import sys
 import re
 
+from util import *
 
-class AwlParserError(Exception):
-	pass
 
 class RawAwlInsn(object):
 	def __init__(self):
@@ -317,14 +316,7 @@ class AwlParser(object):
 		self.tree.obs[self.tree.curBlockIndex].insns.append(insn)
 
 	def parseFile(self, filename):
-		try:
-			fd = open(filename, "r")
-			data = fd.read()
-			fd.close()
-		except IOError as e:
-			raise AwlParserError("Failed to read '%s': %s" %\
-				(filename, str(e)))
-		self.parseData(data)
+		self.parseData(awlFileRead(filename))
 
 	def parseData(self, data):
 		self.reset()
