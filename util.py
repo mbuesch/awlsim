@@ -27,6 +27,7 @@ def awlFileRead(filename):
 	return data
 
 def awlFileWrite(filename, data):
+	data = "\r\n".join(data.splitlines()) + "\r\n"
 	for count in range(1000):
 		tmpFile = "%s-%d-%d.tmp" %\
 			(filename, random.randint(0, 0xFFFF), count)
