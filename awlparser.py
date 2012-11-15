@@ -278,13 +278,9 @@ class AwlParser(object):
 		if tokens[0].upper() == "END_FUNCTION_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
-		if tokens[0].upper() == "NETWORK":
-			pass#TODO
-			return
-		if tokens[0].upper() == "TITLE":
-			pass#TODO
-			return
-		pass#TODO
+		if tokens[0].upper() == "NETWORK" or\
+		   tokens[0].upper() == "TITLE":
+			return # ignore
 		insn = self.__parseInstruction(line, tokens)
 		self.tree.fbs[self.tree.curBlockIndex].insns.append(insn)
 
@@ -298,13 +294,9 @@ class AwlParser(object):
 		if tokens[0].upper() == "END_FUNCTION":
 			self.__setState(self.STATE_GLOBAL)
 			return
-		if tokens[0].upper() == "NETWORK":
-			pass#TODO
-			return
-		if tokens[0].upper() == "TITLE":
-			pass#TODO
-			return
-		pass#TODO
+		if tokens[0].upper() == "NETWORK" or\
+		   tokens[0].upper() == "TITLE":
+			return # ignore
 		insn = self.__parseInstruction(line, tokens)
 		self.tree.fcs[self.tree.curBlockIndex].insns.append(insn)
 
@@ -318,13 +310,9 @@ class AwlParser(object):
 		if tokens[0].upper() == "END_ORGANIZATION_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
-		if tokens[0].upper() == "NETWORK":
-			pass#TODO
-			return
-		if tokens[0].upper() == "TITLE":
-			pass#TODO
-			return
-		pass#TODO
+		if tokens[0].upper() == "NETWORK" or\
+		   tokens[0].upper() == "TITLE":
+			return # ignore
 		insn = self.__parseInstruction(line, tokens)
 		self.tree.obs[self.tree.curBlockIndex].insns.append(insn)
 
