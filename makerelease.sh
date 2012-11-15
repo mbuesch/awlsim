@@ -23,6 +23,14 @@ hook_get_version()
 
 hook_regression_tests()
 {
+	# Test if .AWL files are in DOS format
+	for awl in "$1"/tests/*.awl; do
+		file "$awl" | grep -qe 'CRLF line terminators' || {
+			die "ERROR: 'tests/$(basename "$awl")' is not in DOS format."
+		}
+	done
+
+	# Run selftests
 	sh "$1/tests/run.sh"
 }
 
