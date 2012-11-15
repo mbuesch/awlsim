@@ -19,9 +19,12 @@ class AwlOperator(object):
 	MEM_A		= 101	# Output
 	MEM_M		= 102	# Flags
 	MEM_L		= 103	# Localstack
-	MEM_D		= 104	# Datamodule
-	MEM_T		= 105	# Timer
-	MEM_Z		= 106	# Counter
+	MEM_DB		= 104	# Global datablock
+	MEM_DI		= 105	# Instance datablock
+	MEM_T		= 106	# Timer
+	MEM_Z		= 107	# Counter
+	MEM_PA		= 108	# Peripheral output
+	MEM_PE		= 109	# Peripheral input
 
 	MEM_STW		= 200	# Status word bit read
 	MEM_STW_Z	= 201	# Status word "==0" read
@@ -39,6 +42,7 @@ class AwlOperator(object):
 	BLKREF_FB	= 402	# FB reference
 	BLKREF_SFB	= 403	# SFB reference
 	BLKREF_DB	= 404	# DB reference
+	BLKREF_DI	= 405	# DI reference
 
 	# Virtual operators used for debugging of the simulator
 	VIRT_ACCU	= 1000	# Accu
@@ -81,7 +85,6 @@ class AwlOperator(object):
 		MEM_A		: "A",
 		MEM_M		: "M",
 		MEM_L		: "L",
-		MEM_D		: "D",
 		MEM_T		: "T",
 		MEM_Z		: "Z",
 	}
@@ -107,7 +110,7 @@ class AwlOperator(object):
 				return "%sW %d" % (pfx, self.offset)
 			elif self.width == 32:
 				return "%sD %d" % (pfx, self.offset)
-		elif self.type == self.MEM_D:
+		elif self.type == self.MEM_DB:
 			if self.width == 1:
 				return "DBX %d.%d" % (self.offset, self.bitOffset)
 			elif self.width == 8:
@@ -116,10 +119,33 @@ class AwlOperator(object):
 				return "DBW %d" % self.offset
 			elif self.width == 32:
 				return "DBD %d" % self.offset
+		elif self.type == self.MEM_DI:
+			if self.width == 1:
+				return "DIX %d.%d" % (self.offset, self.bitOffset)
+			elif self.width == 8:
+				return "DIB %d" % self.offset
+			elif self.width == 16:
+				return "DIW %d" % self.offset
+			elif self.width == 32:
+				return "DID %d" % self.offset
 		elif self.type == self.MEM_T:
 			return "T %d" % self.offset
 		elif self.type == self.MEM_Z:
 			return "Z %d" % self.offset
+		elif self.type == self.MEM_PA:
+			if self.width == 8:
+				return "PAB %d" % self.offset
+			elif self.width == 16:
+				return "PAW %d" % self.offset
+			elif self.width == 32:
+				return "PAD %d" % self.offset
+		elif self.type == self.MEM_PE:
+			if self.width == 8:
+				return "PEB %d" % self.offset
+			elif self.width == 16:
+				return "PEW %d" % self.offset
+			elif self.width == 32:
+				return "PED %d" % self.offset
 		elif self.type == self.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name[self.bitOffset]
 		elif self.type == self.LBL_REF:
@@ -134,6 +160,8 @@ class AwlOperator(object):
 			return "SFB %d" % self.offset
 		elif self.type == self.BLKREF_DB:
 			return "DB %d" % self.offset
+		elif self.type == self.BLKREF_DI:
+			return "DI %d" % self.offset
 		elif self.type == self.VIRT_ACCU:
 			return "__ACCU %d" % self.offset
 		elif self.type == self.VIRT_AR:

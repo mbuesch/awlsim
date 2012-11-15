@@ -369,7 +369,10 @@ class S7CPU(object):
 			raise AwlSimError("Parenthesis stack overflow")
 
 	def fetch(self, operator):
-		fetchMethod = self.fetchTypeMethods[operator.type]
+		try:
+			fetchMethod = self.fetchTypeMethods[operator.type]
+		except KeyError:
+			raise AwlSimError("Invalid fetch request")
 		return fetchMethod(self, operator)
 
 	def fetchIMM(self, operator):
@@ -438,7 +441,19 @@ class S7CPU(object):
 		return self.__fetchFromByteArray(self.callStack[-1].localdata,
 						 operator)
 
-	def fetchD(self, operator):
+	def fetchDB(self, operator):
+		pass#TODO
+		return 0
+
+	def fetchDI(self, operator):
+		pass#TODO
+		return 0
+
+	def fetchPA(self, operator):
+		pass#TODO
+		return 0
+
+	def fetchPE(self, operator):
 		pass#TODO
 		return 0
 
@@ -471,9 +486,12 @@ class S7CPU(object):
 		AwlOperator.MEM_A		: fetchA,
 		AwlOperator.MEM_M		: fetchM,
 		AwlOperator.MEM_L		: fetchL,
-		AwlOperator.MEM_D		: fetchD,
+		AwlOperator.MEM_DB		: fetchDB,
+		AwlOperator.MEM_DI		: fetchDI,
 		AwlOperator.MEM_T		: fetchT,
 		AwlOperator.MEM_Z		: fetchZ,
+		AwlOperator.MEM_PA		: fetchPA,
+		AwlOperator.MEM_PE		: fetchPE,
 		AwlOperator.MEM_STW		: fetchSTW,
 		AwlOperator.MEM_STW_Z		: fetchSTW_Z,
 		AwlOperator.MEM_STW_NZ		: fetchSTW_NZ,
@@ -487,11 +505,11 @@ class S7CPU(object):
 	}
 
 	def store(self, operator, value):
-		storeMethod = self.storeTypeMethods[operator.type]
+		try:
+			storeMethod = self.storeTypeMethods[operator.type]
+		except KeyError:
+			raise AwlSimError("Invalid store request")
 		storeMethod(self, operator, value)
-
-	def __storeInvalid(self, operator, value):
-		raise AwlSimError("Invalid store request")
 
 	def __storeToByteArray(self, array, operator, value):
 		width, byteOff, bitOff =\
@@ -531,29 +549,27 @@ class S7CPU(object):
 		self.__storeToByteArray(self.callStack[-1].localdata,
 					operator, value)
 
-	def storeD(self, operator, value):
+	def storeDB(self, operator, value):
+		pass #TODO
+
+	def storeDI(self, operator, value):
+		pass #TODO
+
+	def storePA(self, operator, value):
+		pass #TODO
+
+	def storePE(self, operator, value):
 		pass #TODO
 
 	storeTypeMethods = {
-		AwlOperator.IMM			: __storeInvalid,
-		AwlOperator.IMM_S5T		: __storeInvalid,
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
 		AwlOperator.MEM_M		: storeM,
 		AwlOperator.MEM_L		: storeL,
-		AwlOperator.MEM_D		: storeD,
-		AwlOperator.MEM_T		: __storeInvalid,
-		AwlOperator.MEM_Z		: __storeInvalid,
-		AwlOperator.MEM_STW		: __storeInvalid,
-		AwlOperator.MEM_STW_Z		: __storeInvalid,
-		AwlOperator.MEM_STW_NZ		: __storeInvalid,
-		AwlOperator.MEM_STW_POS		: __storeInvalid,
-		AwlOperator.MEM_STW_NEG		: __storeInvalid,
-		AwlOperator.MEM_STW_POSZ	: __storeInvalid,
-		AwlOperator.MEM_STW_NEGZ	: __storeInvalid,
-		AwlOperator.MEM_STW_UO		: __storeInvalid,
-		AwlOperator.VIRT_ACCU		: __storeInvalid,
-		AwlOperator.VIRT_AR		: __storeInvalid,
+		AwlOperator.MEM_DB		: storeDB,
+		AwlOperator.MEM_DI		: storeDI,
+		AwlOperator.MEM_PA		: storePA,
+		AwlOperator.MEM_PE		: storePE,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):
