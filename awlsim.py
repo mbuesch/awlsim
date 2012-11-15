@@ -147,7 +147,16 @@ class S7CPU(object):
 	def load(self, parseTree):
 		# Translate instructions
 		self.reset()
-		self.obs[1] = OB(self.__translateInsns(parseTree.obs[1].insns))
+		for obNumber in parseTree.obs.keys():
+			insns = self.__translateInsns(parseTree.obs[obNumber].insns)
+			self.obs[obNumber] = OB(insns)
+		for fbNumber in parseTree.fbs.keys():
+			insns = self.__translateInsns(parseTree.fbs[fbNumber].insns)
+			self.fbs[fbNumber] = FB(insns)
+		for fcNumber in parseTree.fcs.keys():
+			insns = self.__translateInsns(parseTree.fcs[fcNumber].insns)
+			self.fcs[fcNumber] = FC(insns)
+		#TODO DBs
 
 	def reset(self):
 		self.dbs = {
