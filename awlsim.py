@@ -124,11 +124,30 @@ class S7CPU(object):
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
 
-	def load(self, ob1_insns):
-		self.reset()
-		for insn in ob1_insns:
+	def __translateInsn(self, rawInsn, ip):
+		ex = None
+		try:
+			insn = AwlInsnTranslator.fromRawInsn(rawInsn)
 			insn.setCpu(self)
-		self.obs[1] = OB(ob1_insns)
+			insn.setIP(ip)
+		except AwlSimError as e:
+			ex = e
+		if ex:
+			raise AwlSimError("%s\nline %d: %s" %\
+				(str(rawInsn), rawInsn.getLineNr(),
+				 str(ex)))
+		return insn
+
+	def __translateInsns(self, rawInsns):
+		insns = []
+		for ip, rawInsn in enumerate(rawInsns):
+			insns.append(self.__translateInsn(rawInsn, ip))
+		return insns
+
+	def load(self, parseTree):
+		# Translate instructions
+		self.reset()
+		self.obs[1] = OB(self.__translateInsns(parseTree.obs[1].insns))
 
 	def reset(self):
 		self.dbs = {
@@ -570,21 +589,7 @@ class AwlSim(object):
 		self.cpu = S7CPU(self)
 
 	def load(self, parseTree):
-		# Translate instructions
-		insns = []
-		for i, rawInsn in enumerate(parseTree.obs[1].insns):
-			ex = None
-			try:
-				insn = AwlInsnTranslator.fromRawInsn(rawInsn)
-				insn.setIP(i)
-				insns.append(insn)
-			except AwlSimError as e:
-				ex = e
-			if ex:
-				raise AwlSimError("%s\nline %d: %s" %\
-					(str(rawInsn), rawInsn.getLineNr(),
-					 str(ex)))
-		self.cpu.load(insns)
+		self.cpu.load(parseTree)
 
 	def getCPU(self):
 		return self.cpu
