@@ -230,7 +230,8 @@ class AwlParser(object):
 			raise AwlParserError("Invalid value")
 
 		if self.flatLayout:
-			self.tree.obs[1] = RawAwlOB(1)
+			if not self.tree.obs:
+				self.tree.obs[1] = RawAwlOB(1)
 			insn = self.__parseInstruction(line, tokens)
 			self.tree.obs[1].insns.append(insn)
 			return
