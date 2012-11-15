@@ -230,6 +230,7 @@ class AwlParser(object):
 			raise AwlParserError("Invalid value")
 
 		if self.flatLayout:
+			self.tree.obs[1] = RawAwlOB(1)
 			insn = self.__parseInstruction(line, tokens)
 			self.tree.obs[1].insns.append(insn)
 			return
@@ -321,7 +322,6 @@ class AwlParser(object):
 	def parseData(self, data):
 		self.reset()
 		self.lineNr = 0
-		self.tree.obs[1] = RawAwlOB(1)
 		for line in data.splitlines():
 			self.lineNr += 1
 			line = line.strip()

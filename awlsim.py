@@ -159,6 +159,10 @@ class S7CPU(object):
 		for dbNumber in parseTree.dbs.keys():
 			#TODO
 			self.dbs[dbNumber] = DB()
+		try:
+			self.obs[1]
+		except KeyError:
+			raise AwlSimError("No OB1 defined")
 
 	def reset(self):
 		self.dbs = {
