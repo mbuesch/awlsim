@@ -21,9 +21,8 @@ hook_get_version()
 	version="$maj.$min"
 }
 
-hook_testbuild()
+hook_regression_tests()
 {
-	default_hook_testbuild "$@"
 	sh "$1/tests/run.sh"
 }
 
