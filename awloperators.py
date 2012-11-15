@@ -124,9 +124,18 @@ class AwlOperator(object):
 			return "__STW " + S7StatusWord.nr2name[self.bitOffset]
 		elif self.type == self.LBL_REF:
 			return self.label
+		elif self.type == self.BLKREF_FC:
+			return "FC %d" % self.offset
+		elif self.type == self.BLKREF_SFC:
+			return "SFC %d" % self.offset
+		elif self.type == self.BLKREF_FB:
+			return "FB %d" % self.offset
+		elif self.type == self.BLKREF_SFB:
+			return "SFB %d" % self.offset
+		elif self.type == self.BLKREF_DB:
+			return "DB %d" % self.offset
 		elif self.type == self.VIRT_ACCU:
 			return "__ACCU %d" % self.offset
 		elif self.type == self.VIRT_AR:
 			return "__AR %d" % self.offset
-		#TODO
 		assert(0)

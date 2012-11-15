@@ -396,9 +396,9 @@ class AwlInsn(object):
 		pass
 
 	def __repr__(self):
-		ret = [ AwlInsn.type2name[self.type] ]
-		ret.extend(str(op) for op in self.ops)
-		return ' '.join(ret)
+		return AwlInsn.type2name[self.type] +\
+			(' ' if self.ops else '') +\
+			', '.join(str(op) for op in self.ops)
 
 class AwlInsn_NotImplemented(AwlInsn):
 	def __init__(self, rawInsn):
