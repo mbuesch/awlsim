@@ -450,8 +450,8 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(True)
 		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
 		if not ob1_awl.strip():
-			QMessageBox.critical(self, "No STL Code",
-					     "No STL Code")
+			QMessageBox.critical(self, "No AWL Code",
+					     "No AWL Code")
 			self.stop()
 			return
 		try:
@@ -576,8 +576,8 @@ class MainWidget(QWidget):
 
 	def load(self):
 		fn, fil = QFileDialog.getOpenFileName(self,
-			"Open STL source", "",
-			"STL source (*.awl);;"
+			"Open AWL source", "",
+			"AWL source (*.awl);;"
 			"All files (*)")
 		if not fn:
 			return
@@ -615,8 +615,8 @@ class MainWidget(QWidget):
 	def save(self, newFile=False):
 		if newFile or not self.filename:
 			fn, fil = QFileDialog.getSaveFileName(self,
-				"STL source save as", "",
-				"STL source (*.awl)",
+				"AWL source save as", "",
+				"AWL source (*.awl)",
 				"*.awl")
 			if not fn:
 				return
@@ -630,7 +630,7 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
-		self.setWindowTitle("S7 STL simulator")
+		self.setWindowTitle("S7 AWL simulator")
 		self.setCentralWidget(MainWidget(self))
 
 		self.setMenuBar(QMenuBar(self))
@@ -694,11 +694,11 @@ class MainWindow(QMainWindow):
 		text.append("\nUnsupported instructions (%d):\n" % len(unsuppTypes))
 		text.append(" ,  ".join(unsuppInsns) + "\n")
 		QMessageBox.information(self,
-			"About S7 STL simulator instructions",
+			"About S7 AWL simulator instructions",
 			"".join(text))
 
 	def about(self):
-		QMessageBox.information(self, "About S7 STL simulator",
+		QMessageBox.information(self, "About S7 AWL simulator",
 			"awlsim\n\n"
 			"Copyright 2012 Michael Büsch <m@bues.ch>\n"
 			"Licensed under the terms of the "
