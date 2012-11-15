@@ -186,6 +186,7 @@ class S7CPU(object):
 		self.flags = [ FlagByte() for _ in range(8192) ]
 		self.inputs = [ InputByte() for _ in range(8192) ]
 		self.outputs = [ OutputByte() for _ in range(8192) ]
+		self.globDB = None
 		self.callStack = [ ]
 
 		self.relativeJump = 1
@@ -321,8 +322,10 @@ class S7CPU(object):
 				raise AwlSimError("DB used in FB call not found")
 			cse = CallStackElem(self, fb, db)
 		elif blockOper.type == AwlOperand.BLKREF_SFC:
+			#TODO
 			raise AwlSimError("SFC calls not implemented, yet")
 		elif blockOper.type == AwlOperand.BLKREF_SFB:
+			#TODO
 			raise AwlSimError("SFB calls not implemented, yet")
 		else:
 			raise AwlSimError("Invalid CALL operand")
@@ -442,12 +445,17 @@ class S7CPU(object):
 						 operator)
 
 	def fetchDB(self, operator):
-		pass#TODO
-		return 0
+		if not self.globDB:
+			raise AwlSimError("Fetch from global DB, "
+				"but no DB is opened")
+		return self.globDB.fetch(operator)
 
 	def fetchDI(self, operator):
-		pass#TODO
-		return 0
+		cse = self.callStack[-1]
+		if not cse.db:
+			raise AwlSimError("Fetch from instance DI, "
+				"but no DI is opened")
+		return cse.db.fetch(operator)
 
 	def fetchPA(self, operator):
 		pass#TODO
@@ -550,10 +558,17 @@ class S7CPU(object):
 					operator, value)
 
 	def storeDB(self, operator, value):
-		pass #TODO
+		if not self.globDB:
+			raise AwlSimError("Store to global DB, "
+				"but no DB is opened")
+		self.globDB.store(operator, value)
 
 	def storeDI(self, operator, value):
-		pass #TODO
+		cse = self.callStack[-1]
+		if not cse.db:
+			raise AwlSimError("Store to instance DI, "
+				"but no DI is opened")
+		cse.db.store(operator, value)
 
 	def storePA(self, operator, value):
 		pass #TODO

@@ -12,3 +12,10 @@ from util import *
 class DB(object):
 	def __init__(self):
 		pass
+
+	def fetch(self, operator):
+		pass#TODO
+		return 0
+
+	def store(self, operator, value):
+		pass#TODO
