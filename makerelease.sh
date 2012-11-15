@@ -35,4 +35,5 @@ hook_regression_tests()
 }
 
 project=awlsim
+default_compress=zip
 makerelease "$@"
