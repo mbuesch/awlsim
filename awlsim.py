@@ -255,6 +255,10 @@ class S7CPU(object):
 		self.cycleCount += 1
 		self.__endCycleTimeMeasurement()
 
+	def inCycle(self):
+		# Return true, if we are in runCycle().
+		return bool(self.callStack)
+
 	def __startCycleTimeMeasurement(self):
 		self.updateTimestamp()
 		self.cycleStartTime = self.now
@@ -544,7 +548,8 @@ class S7CPU(object):
 			raise AwlSimError("fetch: Offset out of range")
 
 	def storeE(self, operator, value):
-		#TODO this is only valid from outside of the cycle
+		if self.inCycle():
+			raise AwlSimError("Can't store to E")
 		self.__storeToByteArray(self.inputs, operator, value)
 
 	def storeA(self, operator, value):
