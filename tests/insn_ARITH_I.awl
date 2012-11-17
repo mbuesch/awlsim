@@ -175,6 +175,17 @@
 
 
 	__STWRST
+	L		18
+	L		4
+	/I
+	__ASSERT==	__ACCU 1,	DW#16#00020004
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
 	L		L#32768
 	L		L#32768
 	+I

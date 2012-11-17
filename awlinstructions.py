@@ -1252,13 +1252,16 @@ class AwlInsn_DI_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
+		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\
+			       self.cpu.accu1.getSignedDWord()
 		try:
-			quo = self.cpu.accu2.getSignedDWord() //\
-			      self.cpu.accu1.getSignedDWord()
+			quo = accu2 // accu1
+			mod = accu2 % accu1
 		except ZeroDivisionError:
 			s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 			return
-		self.cpu.accu1.setDWord(quo)
+		self.cpu.accu1.setDWord(((mod & 0xFFFF) << 16) |\
+					(quo & 0xFFFF))
 		if quo == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif quo < 0:
