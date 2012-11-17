@@ -1190,12 +1190,13 @@ class AwlInsn_PL_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		_sum = self.cpu.accu1.getWord() +\
-		       self.cpu.accu2.getWord()
+		_sum = self.cpu.accu1.getSignedWord() +\
+		       self.cpu.accu2.getSignedWord()
 		self.cpu.accu1.setWord(_sum)
-		if _sum == 0:
+		accu1 = self.cpu.accu1.getSignedWord()
+		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
-		elif _sum < 0:
+		elif accu1 < 0:
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
@@ -1210,12 +1211,13 @@ class AwlInsn_MI_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		diff = self.cpu.accu2.getWord() -\
-		       self.cpu.accu1.getWord()
+		diff = self.cpu.accu2.getSignedWord() -\
+		       self.cpu.accu1.getSignedWord()
 		self.cpu.accu1.setWord(diff)
-		if diff == 0:
+		accu1 = self.cpu.accu1.getSignedWord()
+		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
-		elif diff < 0:
+		elif accu1 < 0:
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
@@ -1230,9 +1232,9 @@ class AwlInsn_MU_I(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
-		prod = self.cpu.accu2.getWord() *\
-		       self.cpu.accu1.getWord()
-		self.cpu.accu1.setWord(prod)
+		prod = self.cpu.accu2.getSignedWord() *\
+		       self.cpu.accu1.getSignedWord()
+		self.cpu.accu1.setDWord(prod)
 		if prod == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif prod < 0:
@@ -1251,12 +1253,12 @@ class AwlInsn_DI_I(AwlInsn):
 		#TODO 4-accu CPU
 		s = self.cpu.status
 		try:
-			quo = self.cpu.accu2.getWord() /\
-			      self.cpu.accu1.getWord()
-		except ZeroDivisionError as e:
+			quo = self.cpu.accu2.getSignedDWord() //\
+			      self.cpu.accu1.getSignedDWord()
+		except ZeroDivisionError:
 			s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 			return
-		self.cpu.accu1.setWord(quo)
+		self.cpu.accu1.setDWord(quo)
 		if quo == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif quo < 0:
@@ -1276,11 +1278,11 @@ class AwlInsn_PL(AwlInsn):
 	def run(self):
 		oper = self.ops[0]
 		if oper.width == 16:
-			self.cpu.accu1.setWord(self.cpu.accu1.getWord() +\
+			self.cpu.accu1.setWord(self.cpu.accu1.getSignedWord() +\
 					       self.cpu.fetch(oper))
 		elif oper.width == 32:
-			self.cpu.accu1.set(self.cpu.accu1.get() +\
-					   self.cpu.fetch(oper))
+			self.cpu.accu1.setDWord(self.cpu.accu1.getSignedDWord() +\
+						self.cpu.fetch(oper))
 		else:
 			raise AwlSimError("Unexpected operator width")
 
@@ -1292,6 +1294,7 @@ class AwlInsn_PL_D(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
+		#TODO signed
 		_sum = self.cpu.accu2.get() + self.cpu.accu1.get()
 		self.cpu.accu1.set(_sum & 0xFFFFFFFF)
 		if _sum == 0:
@@ -1311,6 +1314,7 @@ class AwlInsn_MI_D(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
+		#TODO signed
 		diff = self.cpu.accu2.get() - self.cpu.accu1.get()
 		self.cpu.accu1.set(diff & 0xFFFFFFFF)
 		if diff == 0:
@@ -1330,6 +1334,7 @@ class AwlInsn_MU_D(AwlInsn):
 	def run(self):
 		#TODO 4-accu CPU
 		s = self.cpu.status
+		#TODO signed
 		prod = self.cpu.accu2.get() * self.cpu.accu1.get()
 		self.cpu.accu1.set(prod & 0xFFFFFFFF)
 		if prod == 0:
@@ -1350,6 +1355,7 @@ class AwlInsn_DI_D(AwlInsn):
 		s = self.cpu.status
 		#TODO 4-accu CPU
 		s = self.cpu.status
+		#TODO signed
 		try:
 			quo = self.cpu.accu2.get() / self.cpu.accu1.get()
 		except ZeroDivisionError as e:
@@ -1374,6 +1380,7 @@ class AwlInsn_MOD(AwlInsn):
 		s = self.cpu.status
 		#TODO 4-accu CPU
 		s = self.cpu.status
+		#TODO signed
 		try:
 			rem = self.cpu.accu2.get() % self.cpu.accu1.get()
 		except ZeroDivisionError as e:

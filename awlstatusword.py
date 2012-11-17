@@ -50,6 +50,9 @@ class S7StatusWord(object):
 			raise AwlSimError("Status word bit fetch '%d' "
 				"out of range" % bitNumber)
 
+	def getWord(self):
+		pass#TODO
+
 	def reset(self):
 		self.NER = 0	# /ER	=> Erstabfrage
 		self.VKE = 0	# VKE	=> Verknuepfungsergebnis
@@ -63,7 +66,7 @@ class S7StatusWord(object):
 
 	def __repr__(self):
 		ret = []
-		for i in range(self.NR_BITS):
+		for i in range(self.NR_BITS - 1, -1, -1):
 			ret.append("%s=%d" % (
 				self.nr2name[i],
 				self.getByBitNumber(i)

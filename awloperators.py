@@ -95,7 +95,10 @@ class AwlOperator(object):
 		except KeyError as e:
 			pass
 		if self.type == self.IMM:
-			return str(self.immediate)
+			if self.width == 16:
+				return str(self.immediate)
+			elif self.width == 32:
+				return "L#" + str(self.immediate)
 		elif self.type == self.IMM_S5T:
 			return "S5T#" #TODO
 		elif self.type in (self.MEM_A, self.MEM_E,

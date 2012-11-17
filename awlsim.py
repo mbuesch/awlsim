@@ -389,7 +389,12 @@ class S7CPU(object):
 		return operator.immediate
 
 	def fetchSTW(self, operator):
-		return self.status.getByBitNumber(operator.bitOffset)
+		if operator.width == 1:
+			return self.status.getByBitNumber(operator.bitOffset)
+		elif operator.width == 16:
+			return self.status.getWord()
+		else:
+			assert(0)
 
 	def fetchSTW_Z(self, operator):
 		return (~self.status.A0 & ~self.status.A1) & 1

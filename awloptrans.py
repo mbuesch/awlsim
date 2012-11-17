@@ -77,6 +77,7 @@ class AwlOpTranslator(object):
 		"PAB"	: OpDescriptor(AwlOperator.MEM_PA, 8, -1, 0, 2),
 		"PAW"	: OpDescriptor(AwlOperator.MEM_PA, 16, -1, 0, 2),
 		"PAD"	: OpDescriptor(AwlOperator.MEM_PA, 32, -1, 0, 2),
+		"STW"	 : OpDescriptor(AwlOperator.MEM_STW, 16, 0, 0, 1),
 		"__STW"	 : OpDescriptor(AwlOperator.MEM_STW, 1, 0, -1, 2),
 		"__ACCU" : OpDescriptor(AwlOperator.VIRT_ACCU, 32, -1, 0, 2),
 		"__AR"	 : OpDescriptor(AwlOperator.VIRT_AR, 32, -1, 0, 2),
@@ -90,9 +91,9 @@ class AwlOpTranslator(object):
 		except KeyError as e:
 			pass
 		try:
-			immediate = int(rawOp, 10)
-			#FIXME 32bit? 16bit?
-			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
+			immediate = int(rawOp, 10) & 0xFFFF
+			#TODO overflow error
+			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
 		except ValueError as e:
 			pass
 		rawOpUpper = rawOp.upper()
@@ -150,6 +151,13 @@ class AwlOpTranslator(object):
 			except ValueError as e:
 				raise AwlSimError("Invalid immediate")
 			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
+		if rawOpUpper.startswith("L#"):
+			try:
+				immediate = int(rawOpUpper[2:], 10) & 0xFFFFFFFF
+				#TODO overflow error
+			except ValueError as e:
+				raise AwlSimError("Invalid immediate")
+			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
 		if rawOpUpper.startswith("C#"):
 			try:
 				cnt = rawOpUpper[2:]
@@ -173,7 +181,6 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOp, 0, 1)
 		#TODO T#
 		#TODO TOD#
-		#TODO immediate L#
 		#TODO date D#
 		#TODO pointer P#x.y
 		#TODO binary immediate
