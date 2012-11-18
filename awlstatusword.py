@@ -64,6 +64,25 @@ class S7StatusWord(object):
 		self.A1 = 0	# A1	=> Ergebnisanzeige 1
 		self.BIE = 0	# BIE	=> Binaerergebnis
 
+	def setForFloatingPoint(self, dword):
+		noSign, s = dword & 0x7FFFFFFF, self
+		if noSign == 0: # zero
+			s.A1, s.A0, s.OV = 0, 0, 0
+		elif noSign < 0x00800000: # denorm
+			s.A1, s.A0, s.OV, s.OS = 0, 0, 1, 1
+		elif noSign >= 0x7F800000:
+			if noSign == 0x7F800000: # inf
+				if dword & 0x80000000:
+					s.A1, s.A0, s.OV, s.OS = 0, 1, 1, 1
+				else:
+					s.A1, s.A0, s.OV, s.OS = 1, 0, 1, 1
+			else: # nan
+				s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
+		elif dword & 0x80000000:
+			s.A1, s.A0, s.OV = 0, 1, 0
+		else:
+			s.A1, s.A0, s.OV = 1, 0, 0
+
 	def __repr__(self):
 		ret = []
 		for i in range(self.NR_BITS - 1, -1, -1):

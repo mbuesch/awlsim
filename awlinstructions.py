@@ -1409,6 +1409,60 @@ class AwlInsn_MOD(AwlInsn):
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
 
+class AwlInsn_PL_R(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_PL_R, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
+			       self.cpu.accu1.getPyFloat()
+		_sum = accu2 + accu1
+		self.cpu.accu1.setPyFloat(_sum)
+		self.cpu.status.setForFloatingPoint(self.cpu.accu1.getDWord())
+
+class AwlInsn_MI_R(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_MI_R, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
+			       self.cpu.accu1.getPyFloat()
+		diff = accu2 - accu1
+		self.cpu.accu1.setPyFloat(diff)
+		self.cpu.status.setForFloatingPoint(self.cpu.accu1.getDWord())
+
+class AwlInsn_MU_R(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_MU_R, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
+			       self.cpu.accu1.getPyFloat()
+		prod = accu2 * accu1
+		self.cpu.accu1.setPyFloat(prod)
+		self.cpu.status.setForFloatingPoint(self.cpu.accu1.getDWord())
+
+class AwlInsn_DI_R(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_DI_R, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
+			       self.cpu.accu1.getPyFloat()
+		try:
+			quo = accu2 / accu1
+		except ZeroDivisionError:
+			if accu2 >= 0.0:
+				quo = 0x7F800000
+			else:
+				quo = 0xFF800000
+		self.cpu.accu1.setPyFloat(quo)
+		self.cpu.status.setForFloatingPoint(self.cpu.accu1.getDWord())
+
 class AwlInsn_T(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_T, rawInsn)

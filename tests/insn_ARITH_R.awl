@@ -1,0 +1,142 @@
+	__STWRST
+	L		1.0
+	L		1.0
+	+R
+	__ASSERT==	__ACCU 1,	2.0
+	__ASSERT==	__ACCU 1,	DW#16#40000000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		1.0
+	L		-1.0
+	+R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		-1.0
+	L		-1.0
+	+R
+	__ASSERT==	__ACCU 1,	-2.0
+	__ASSERT==	__ACCU 1,	DW#16#C0000000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		1.0
+	L		1.0
+	-R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__ACCU 1,	DW#16#00000000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		1.0
+	L		-1.0
+	-R
+	__ASSERT==	__ACCU 1,	2.0
+	__ASSERT==	__ACCU 1,	DW#16#40000000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		-1.0
+	L		-1.0
+	-R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__ACCU 1,	DW#16#00000000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		3.0
+	L		2.0
+	*R
+	__ASSERT==	__ACCU 1,	6.0
+	__ASSERT==	__ACCU 1,	DW#16#40C00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		3.0
+	L		-2.0
+	*R
+	__ASSERT==	__ACCU 1,	-6.0
+	__ASSERT==	__ACCU 1,	DW#16#C0C00000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		-3.0
+	L		-2.0
+	*R
+	__ASSERT==	__ACCU 1,	6.0
+	__ASSERT==	__ACCU 1,	DW#16#40C00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		3.0
+	L		2.0
+	/R
+	__ASSERT==	__ACCU 1,	1.5
+	__ASSERT==	__ACCU 1,	DW#16#3FC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		3.0
+	L		-2.0
+	/R
+	__ASSERT==	__ACCU 1,	-1.5
+	__ASSERT==	__ACCU 1,	DW#16#BFC00000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		-3.0
+	L		-2.0
+	/R
+	__ASSERT==	__ACCU 1,	1.5
+	__ASSERT==	__ACCU 1,	DW#16#3FC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0

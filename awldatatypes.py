@@ -31,6 +31,9 @@ class GenericInteger(object):
 	def setDWord(self, value):
 		self.value = value & 0xFFFFFFFF & self.mask
 
+	def setPyFloat(self, pyfl):
+		self.value = pyFloatToDWord(pyfl)
+
 	def get(self):
 		return self.value
 
@@ -51,6 +54,9 @@ class GenericInteger(object):
 
 	def getSignedDWord(self):
 		return dwordToSignedPyInt(self.value)
+
+	def getPyFloat(self):
+		return dwordToPyFloat(self.value)
 
 	def setBit(self, bitNumber):
 		self.value = (self.value | (1 << bitNumber)) & self.mask
