@@ -610,7 +610,8 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
-		self.setWindowTitle("S7 AWL simulator")
+		self.setWindowTitle("S7 AWL simulator v%d.%d" %\
+				    (VERSION_MAJOR, VERSION_MINOR))
 		self.setCentralWidget(MainWidget(self))
 
 		self.setMenuBar(QMenuBar(self))
@@ -679,10 +680,11 @@ class MainWindow(QMainWindow):
 
 	def about(self):
 		QMessageBox.information(self, "About S7 AWL simulator",
-			"awlsim\n\n"
+			"awlsim version %d.%d\n\n"
 			"Copyright 2012 Michael Büsch <m@bues.ch>\n"
 			"Licensed under the terms of the "
-			"GNU GPL version 2.")
+			"GNU GPL version 2." %\
+			(VERSION_MAJOR, VERSION_MINOR))
 
 	def load(self):
 		self.centralWidget().load()
