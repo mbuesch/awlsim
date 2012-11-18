@@ -91,10 +91,20 @@ class AwlOpTranslator(object):
 		except KeyError as e:
 			pass
 		try:
-			immediate = int(rawOp, 10) & 0xFFFF
-			#TODO overflow error
-			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
-		except ValueError as e:
+			immediate = int(rawOp, 10)
+			if immediate > 32767 or immediate < -32768:
+				raise AwlSimError("16-bit immediate overflow")
+			immediate &= 0xFFFF
+			return OpDescriptor(AwlOperator.IMM, 16,
+					    immediate, 0, 1)
+		except ValueError:
+			pass
+		try:
+			immediate = float(rawOp)
+			immediate = pyFloatToDWord(immediate)
+			return OpDescriptor(AwlOperator.IMM_REAL, 32,
+					    immediate, 0, 1)
+		except ValueError:
 			pass
 		rawOpUpper = rawOp.upper()
 		if rawOpUpper.startswith("S5T#"):
@@ -153,8 +163,11 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
 		if rawOpUpper.startswith("L#"):
 			try:
-				immediate = int(rawOpUpper[2:], 10) & 0xFFFFFFFF
-				#TODO overflow error
+				immediate = int(rawOpUpper[2:], 10)
+				if immediate > 2147483647 or\
+				   immediate < -2147483648:
+					raise AwlSimError("32-bit immediate overflow")
+				immediate &= 0xFFFFFFFF
 			except ValueError as e:
 				raise AwlSimError("Invalid immediate")
 			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
@@ -184,7 +197,6 @@ class AwlOpTranslator(object):
 		#TODO date D#
 		#TODO pointer P#x.y
 		#TODO binary immediate
-		#TODO floating point
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOp))
 

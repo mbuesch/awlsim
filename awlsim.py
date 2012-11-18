@@ -385,6 +385,9 @@ class S7CPU(object):
 	def fetchIMM(self, operator):
 		return operator.immediate
 
+	def fetchIMM_REAL(self, operator):
+		return operator.immediate
+
 	def fetchIMM_S5T(self, operator):
 		return operator.immediate
 
@@ -498,6 +501,7 @@ class S7CPU(object):
 
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
+		AwlOperator.IMM_REAL		: fetchIMM_REAL,
 		AwlOperator.IMM_S5T		: fetchIMM_S5T,
 		AwlOperator.MEM_E		: fetchE,
 		AwlOperator.MEM_A		: fetchA,

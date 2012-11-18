@@ -13,7 +13,8 @@ from util import *
 class AwlOperator(object):
 	# Operator types
 	IMM		= 0	# Immediate value (constant)
-	IMM_S5T		= 1	# S5T immediate
+	IMM_REAL	= 1	# Real
+	IMM_S5T		= 2	# S5T immediate
 
 	MEM_E		= 100	# Input
 	MEM_A		= 101	# Output
@@ -99,6 +100,8 @@ class AwlOperator(object):
 				return str(self.immediate)
 			elif self.width == 32:
 				return "L#" + str(self.immediate)
+		if self.type == self.IMM_REAL:
+			return str(dwordToPyFloat(self.immediate))
 		elif self.type == self.IMM_S5T:
 			return "S5T#" #TODO
 		elif self.type in (self.MEM_A, self.MEM_E,

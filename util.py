@@ -8,6 +8,7 @@
 
 import os
 import random
+import struct
 
 
 class AwlSimError(Exception):
@@ -67,3 +68,17 @@ def dwordToSignedPyInt(dword):
 	if dword & 0x80000000:
 		return -((~dword + 1) & 0xFFFFFFFF)
 	return dword & 0xFFFFFFFF
+
+def pyFloatToDWord(pyfl):
+	buf = struct.pack('>f', pyfl)
+	return (buf[0] << 24) |\
+	       (buf[1] << 16) |\
+	       (buf[2] << 8) |\
+	       buf[3]
+
+def dwordToPyFloat(dword):
+	buf = bytes( ((dword >> 24) & 0xFF,
+		      (dword >> 16) & 0xFF,
+		      (dword >> 8) & 0xFF,
+		      dword & 0xFF) )
+	return struct.unpack('>f', buf)[0]
