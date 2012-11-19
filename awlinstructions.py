@@ -1232,6 +1232,66 @@ class AwlInsn_SPN(AwlInsn):
 		if s.A1 ^ s.A0:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
+class AwlInsn_SPP(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SPP, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.LBL_REF:
+			raise AwlSimError("Jump instruction expects label operand")
+
+	def run(self):
+		s = self.cpu.status
+		if ~s.A0 & s.A1 & 1:
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
+
+class AwlInsn_SPM(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SPM, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.LBL_REF:
+			raise AwlSimError("Jump instruction expects label operand")
+
+	def run(self):
+		s = self.cpu.status
+		if s.A0 & ~s.A1 & 1:
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
+
+class AwlInsn_SPPZ(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SPPZ, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.LBL_REF:
+			raise AwlSimError("Jump instruction expects label operand")
+
+	def run(self):
+		s = self.cpu.status
+		if s.A0 == 0:
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
+
+class AwlInsn_SPMZ(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SPMZ, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.LBL_REF:
+			raise AwlSimError("Jump instruction expects label operand")
+
+	def run(self):
+		s = self.cpu.status
+		if s.A1 == 0:
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
+
+class AwlInsn_SPU(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SPU, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.LBL_REF:
+			raise AwlSimError("Jump instruction expects label operand")
+
+	def run(self):
+		s = self.cpu.status
+		if s.A0 & s.A1:
+			self.cpu.jumpToLabel(self.ops[0].labelIndex)
+
 class AwlInsn_LOOP(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_LOOP, rawInsn)
