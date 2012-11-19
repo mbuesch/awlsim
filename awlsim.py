@@ -590,6 +590,14 @@ class S7CPU(object):
 	def storePE(self, operator, value):
 		pass #TODO
 
+	def storeSTW(self, operator, value):
+		if operator.width == 1:
+			raise AwlSimError("Cannot store to individual STW bits")
+		elif operator.width == 16:
+			pass #TODO
+		else:
+			assert(0)
+
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
@@ -599,6 +607,7 @@ class S7CPU(object):
 		AwlOperator.MEM_DI		: storeDI,
 		AwlOperator.MEM_PA		: storePA,
 		AwlOperator.MEM_PE		: storePE,
+		AwlOperator.MEM_STW		: storeSTW,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):
