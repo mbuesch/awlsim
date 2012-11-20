@@ -1,14 +1,46 @@
-	//TODO
+	__STWRST
+	SPA		_1
+	__ASSERT==	1,	2
+_1:	NOP		0
 
-	SPA	_123
-	NOP	0
-_123:	NOP	1
-	SPB	_124
-	NOP	0
-_124:	NOP	1
-	SPBN	_125
-	NOP	0
-_125:	NOP	1
+
+	__STWRST
+	SET
+	SPA		_2
+	__ASSERT==	1,	2
+_2:	NOP		0
+
+
+	__STWRST
+	SPB		_3
+	SPA		_4
+_3:	__ASSERT==	1,	2
+_4:	NOP		0
+
+
+	__STWRST
+	SET
+	SPB		_5
+	__ASSERT==	1,	2
+_5:	NOP		0
+
+
+	__STWRST
+	SET
+	SPBN		_6
+	SPA		_7
+_6:	__ASSERT==	1,	2
+_7:	NOP		0
+
+
+	__STWRST
+	SPBN		_8
+	__ASSERT==	1,	2
+_8:	NOP		0
+
+
+
+//TODO
 	SPBNB	_126
 	NOP	0
 _126:	NOP	1
@@ -19,7 +51,12 @@ _127:	NOP	1
 	NOP	0
 _128:	NOP	1
 
-	L	10
-_333:	NOP	0
-	NOP	1
-	LOOP _333
+
+	L		15
+	L		10
+_333:	TAK
+	INC		1
+	TAK
+	LOOP		_333
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__ACCU 2,	25
