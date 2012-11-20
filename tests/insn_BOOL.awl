@@ -3,6 +3,26 @@
 
 
 	__STWRST
+	__ASSERT==	__STW VKE,	0
+	SET
+	__ASSERT==	__STW VKE,	1
+	CLR
+	__ASSERT==	__STW VKE,	0
+	NOT
+	__ASSERT==	__STW VKE,	1
+	NOT
+	__ASSERT==	__STW VKE,	0
+	SAVE
+	__ASSERT==	__STW BIE,	0
+	NOT
+	SAVE
+	__ASSERT==	__STW BIE,	1
+	NOT
+	SAVE
+	__ASSERT==	__STW BIE,	0
+
+
+	__STWRST
 	U		M 0.0
 	=		M 16.0
 	__ASSERT==	M 16.0,		1
@@ -12,6 +32,40 @@
 	U		M 0.1
 	=		M 16.0
 	__ASSERT==	M 16.0,		0
+
+
+	__STWRST
+	CLR
+	=		M 16.0
+	__ASSERT==	M 16.0,		0
+	SET
+	S		M 16.0
+	__ASSERT==	M 16.0,		1
+	R		M 16.0
+	__ASSERT==	M 16.0,		0
+
+
+	__STWRST
+	CLR
+	=		M 16.0
+	__ASSERT==	M 16.0,		0
+	CLR
+	S		M 16.0
+	__ASSERT==	M 16.0,		0
+	R		M 16.0
+	__ASSERT==	M 16.0,		0
+
+
+	__STWRST
+	CLR
+	=		M 16.0
+	__ASSERT==	M 16.0,		0
+	SET
+	S		M 16.0
+	__ASSERT==	M 16.0,		1
+	CLR
+	R		M 16.0
+	__ASSERT==	M 16.0,		1
 
 
 	__STWRST

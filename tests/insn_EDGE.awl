@@ -1,0 +1,66 @@
+	CLR
+	=		M 0.0
+	__STWRST
+	__ASSERT==	M 0.0,		0
+	CLR
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		0
+	CLR
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		0
+	SET
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	M 0.0,		1
+	SET
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		1
+	CLR
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		0
+	SET
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	M 0.0,		1
+	SET
+	FP		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		1
+
+
+	CLR
+	=		M 0.0
+	__STWRST
+	__ASSERT==	M 0.0,		0
+	SET
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		1
+	SET
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		1
+	CLR
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	M 0.0,		0
+	CLR
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		0
+	SET
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		1
+	CLR
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	M 0.0,		0
+	CLR
+	FN		M 0.0
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	M 0.0,		0
