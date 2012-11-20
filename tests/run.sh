@@ -9,8 +9,22 @@ die()
 	exit 1
 }
 
-for awl in $basedir/*.awl; do
+# $1=awl_file
+run_test()
+{
+	local awl="$1"
+
 	echo "Running test '$(basename "$awl")' ..."
-	"$basedir/../awlsimcli" --quiet --onecycle "$awl" ||\
+	"$basedir/../awlsimcli" --quiet --onecycle --extended-insns "$awl" ||\
 		die "Test failed"
-done
+}
+
+if [ $# -eq 0 ]; then
+	for awl in "$basedir"/*.awl; do
+		run_test "$awl"
+	done
+else
+	for opt in "$@"; do
+		run_test "$basedir/$(basename "$opt")"
+	done
+fi

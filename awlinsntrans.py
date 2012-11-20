@@ -180,11 +180,14 @@ class AwlInsnTranslator(object):
 	}
 
 	@classmethod
-	def fromRawInsn(cls, rawInsn):
+	def fromRawInsn(cls, rawInsn, enableExtendedInsns=False):
 		try:
 			insnType = AwlInsn.name2type[rawInsn.getName().upper()]
+			if insnType >= AwlInsn.TYPE_EXTENDED and\
+			   not enableExtendedInsns:
+				raise KeyError
 			insnClass = cls.type2class[insnType]
-		except KeyError as e:
+		except KeyError:
 			raise AwlSimError("Cannot translate instruction: '%s'" %\
 				rawInsn.getName())
 		return insnClass(rawInsn)

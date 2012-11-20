@@ -14,6 +14,7 @@ from awlsim import *
 
 opt_onecycle = False
 opt_quiet = False
+opt_extInsns = False
 
 
 def usage():
@@ -53,11 +54,12 @@ def blockExitCallback(cpu):
 def main():
 	global opt_onecycle
 	global opt_quiet
+	global opt_extInsns
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1q",
-			[ "help", "onecycle", "quiet", ])
+			"h1qx",
+			[ "help", "onecycle", "quiet", "extended-insns", ])
 	except getopt.GetoptError as e:
 		print(e)
 		usage()
@@ -70,6 +72,8 @@ def main():
 			opt_onecycle = True
 		if o in ("-q", "--quiet"):
 			opt_quiet = True
+		if o in ("-x", "--extended-insns"):
+			opt_extInsns = True
 	if len(args) != 1:
 		usage()
 		return 1
@@ -79,9 +83,10 @@ def main():
 		p = AwlParser()
 		p.parseFile(awlSource)
 		s = AwlSim()
+		cpu = s.getCPU()
+		cpu.enableExtendedInsns(opt_extInsns)
 		s.load(p.getParseTree())
-		s.getCPU().setBlockExitCallback(blockExitCallback,
-						s.getCPU())
+		cpu.setBlockExitCallback(blockExitCallback, cpu)
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")
 			while 1:

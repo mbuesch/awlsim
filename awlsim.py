@@ -120,6 +120,10 @@ class S7CPU(object):
 		self.sim = sim
 		self.setCycleTimeLimit(5.0)
 		self.reset()
+		self.__extendedInsnsEnabled = False
+
+	def enableExtendedInsns(self, en=True):
+		self.__extendedInsnsEnabled = en
 
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
@@ -127,7 +131,8 @@ class S7CPU(object):
 	def __translateInsn(self, rawInsn, ip):
 		ex = None
 		try:
-			insn = AwlInsnTranslator.fromRawInsn(rawInsn)
+			insn = AwlInsnTranslator.fromRawInsn(rawInsn,
+				self.__extendedInsnsEnabled)
 			insn.setCpu(self)
 			insn.setIP(ip)
 		except AwlSimError as e:
