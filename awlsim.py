@@ -25,7 +25,7 @@ from util import *
 
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 2
+VERSION_MINOR = 3
 
 
 class FlagByte(GenericByte):
