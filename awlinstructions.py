@@ -419,9 +419,7 @@ class AwlInsn_U(AwlInsn):
 			s.VKE &= s.STA
 			s.VKE |= s.OR
 		else:
-			s.VKE = s.STA
-		s.NER = 1
-		#TODO OR bit
+			s.VKE, s.NER = s.STA, 1
 
 class AwlInsn_UN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -435,9 +433,7 @@ class AwlInsn_UN(AwlInsn):
 			s.VKE &= ~s.STA & 1
 			s.VKE |= s.OR
 		else:
-			s.VKE = ~s.STA & 1
-		s.NER = 1
-		#TODO OR bit
+			s.VKE, s.NER = (~s.STA & 1), 1
 
 class AwlInsn_O(AwlInsn):
 	def __init__(self, rawInsn):
