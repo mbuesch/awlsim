@@ -70,13 +70,11 @@ class AbstractDisplayWidget(QWidget):
 	ADDRSPACE_E		= AwlOperator.MEM_E
 	ADDRSPACE_A		= AwlOperator.MEM_A
 	ADDRSPACE_M		= AwlOperator.MEM_M
-	ADDRSPACE_L		= AwlOperator.MEM_L
 
 	addrspace2name = {
 		ADDRSPACE_E	: "E",
 		ADDRSPACE_A	: "A",
 		ADDRSPACE_M	: "M",
-		ADDRSPACE_L	: "L",
 	}
 
 	changed = Signal()
@@ -378,8 +376,6 @@ class CpuWidget(QWidget):
 		group.layout().addWidget(self.newAButton, 0, 2)
 		self.newMButton = QPushButton("M", group)
 		group.layout().addWidget(self.newMButton, 0, 3)
-		self.newLButton = QPushButton("L", group)
-		group.layout().addWidget(self.newLButton, 0, 4)
 		self.layout().addWidget(group, 0, 1)
 
 		self.stateWs = StateWorkspace(self)
@@ -394,7 +390,6 @@ class CpuWidget(QWidget):
 		self.newEButton.released.connect(self.__newWin_E)
 		self.newAButton.released.connect(self.__newWin_A)
 		self.newMButton.released.connect(self.__newWin_M)
-		self.newLButton.released.connect(self.__newWin_L)
 
 		self.__newWin_CPU()
 		self.update()
@@ -421,11 +416,6 @@ class CpuWidget(QWidget):
 	def __newWin_M(self):
 		self.__addWindow(State_Mem(self.mainWidget.getSim(),
 					   AbstractDisplayWidget.ADDRSPACE_M,
-					   self))
-
-	def __newWin_L(self):
-		self.__addWindow(State_Mem(self.mainWidget.getSim(),
-					   AbstractDisplayWidget.ADDRSPACE_L,
 					   self))
 
 	def update(self):
