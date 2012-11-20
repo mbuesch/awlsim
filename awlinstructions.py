@@ -1890,19 +1890,79 @@ class AwlInsn_SA(AwlInsn):
 		timer = self.cpu.getTimer(timerNumber)
 		timer.run_SA(self.cpu.accu1.get())
 
+class AwlInsn_UW(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_UW, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getWord()
+		if self.ops:
+			accu2 = self.ops[0].immediate
+		else:
+			accu2 = self.cpu.accu2.getWord()
+		accu1 &= accu2
+		self.cpu.accu1.setWord(accu1)
+		s.A1 = 1 if accu1 else 0
+		s.A0, s.OV = 0, 0
+
+class AwlInsn_OW(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_OW, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getWord()
+		if self.ops:
+			accu2 = self.ops[0].immediate
+		else:
+			accu2 = self.cpu.accu2.getWord()
+		accu1 |= accu2
+		self.cpu.accu1.setWord(accu1)
+		s.A1 = 1 if accu1 else 0
+		s.A0, s.OV = 0, 0
+
+class AwlInsn_XOW(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_XOW, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getWord()
+		if self.ops:
+			accu2 = self.ops[0].immediate
+		else:
+			accu2 = self.cpu.accu2.getWord()
+		accu1 ^= accu2
+		self.cpu.accu1.setWord(accu1)
+		s.A1 = 1 if accu1 else 0
+		s.A0, s.OV = 0, 0
+
 class AwlInsn_UD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_UD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			accu2 = self.cpu.fetch(self.ops[0])
+			accu2 = self.ops[0].immediate
 		else:
-			accu2 = self.cpu.accu2.get()
+			accu2 = self.cpu.accu2.getDWord()
 		accu1 &= accu2
+		self.cpu.accu1.setDWord(accu1)
 		s.A1 = 1 if accu1 else 0
 		s.A0, s.OV = 0, 0
 
@@ -1910,15 +1970,18 @@ class AwlInsn_OD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_OD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			accu2 = self.cpu.fetch(self.ops[0])
+			accu2 = self.ops[0].immediate
 		else:
-			accu2 = self.cpu.accu2.get()
+			accu2 = self.cpu.accu2.getDWord()
 		accu1 |= accu2
+		self.cpu.accu1.setDWord(accu1)
 		s.A1 = 1 if accu1 else 0
 		s.A0, s.OV = 0, 0
 
@@ -1926,15 +1989,18 @@ class AwlInsn_XOD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_XOD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
 		s = self.cpu.status
-		accu1 = self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			accu2 = self.cpu.fetch(self.ops[0])
+			accu2 = self.ops[0].immediate
 		else:
-			accu2 = self.cpu.accu2.get()
+			accu2 = self.cpu.accu2.getDWord()
 		accu1 ^= accu2
+		self.cpu.accu1.setDWord(accu1)
 		s.A1 = 1 if accu1 else 0
 		s.A0, s.OV = 0, 0
 
@@ -1968,10 +2034,7 @@ class AwlInsn_INC(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_INC, rawInsn)
 		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.IMM or\
-		   self.ops[0].immediate > 255 or\
-		   self.ops[0].immediate < 0:
-			raise AwlSimError("Invalid operator")
+		self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() +\
@@ -1981,10 +2044,7 @@ class AwlInsn_DEC(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_DEC, rawInsn)
 		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.IMM or\
-		   self.ops[0].immediate > 255 or\
-		   self.ops[0].immediate < 0:
-			raise AwlSimError("Invalid operator")
+		self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() -\
@@ -2024,9 +2084,7 @@ class AwlInsn_NOP(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_NOP, rawInsn)
 		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.IMM or\
-		   (self.ops[0].immediate != 0 and self.ops[0].immediate != 1):
-			raise AwlSimError("Invalid NOP operator")
+		self.ops[0].assertType(AwlOperator.IMM, 0, 1)
 
 	def run(self):
 		pass # NOP

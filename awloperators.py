@@ -71,6 +71,19 @@ class AwlOperator(object):
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
 
+	def assertType(self, types, lowerLimit=None, upperLimit=None):
+		if not isinstance(types, list) and\
+		   not isinstance(types, tuple):
+			types = [ types, ]
+		if not self.type in types:
+			raise AwlSimError("Operator is type is invalid")
+		if lowerLimit is not None:
+			if self.offset < lowerLimit:
+				raise AwlSimError("Operator value too small")
+		if upperLimit is not None:
+			if self.offset > upperLimit:
+				raise AwlSimError("Operator value too big")
+
 	type2str = {
 		MEM_STW_Z	: "==0",
                 MEM_STW_NZ	: "<>0",
