@@ -110,7 +110,6 @@ class Timer(object):
 
 	# Get the timer status (Q)
 	def get(self):
-		#FIXME should this really check deadline?
 		self.__checkDeadline()
 		return self.status
 
@@ -132,7 +131,6 @@ class Timer(object):
 
 	# Get the remaining time, in seconds
 	def __getTimevalSeconds(self):
-		#FIXME should this really check deadline?
 		self.__checkDeadline()
 		if not self.running:
 			return 0
