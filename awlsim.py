@@ -675,10 +675,9 @@ class AwlSim(object):
 		except AwlSimError as e:
 			ex = e
 		if ex:
-			raise AwlSimError("%s\nline %d: %s" %\
-				(str(self.cpu),
-				 self.cpu.getCurrentInsn().getLineNr(),
-				 str(ex)))
+			raise AwlSimError("ERROR at AWL line %d: %s\n\n%s" %\
+				(self.cpu.getCurrentInsn().getLineNr(),
+				 str(ex), str(self.cpu)))
 
 	def __repr__(self):
 		return str(self.cpu)
