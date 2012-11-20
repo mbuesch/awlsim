@@ -998,6 +998,60 @@ class AwlInsn_DTB(AwlInsn):
 		self.cpu.accu1.set(bcd)
 		s.OV, s.OS = 0, 0
 
+class AwlInsn_INVI(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_INVI, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.accu1.setWord(~self.cpu.accu1.getWord())
+
+class AwlInsn_INVD(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_INVD, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.accu1.setDWord(~self.cpu.accu1.getDWord())
+
+class AwlInsn_NEGI(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_NEGI, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		value = -(self.cpu.accu1.getSignedWord())
+		self.cpu.accu1.setWord(value)
+		accu1 = self.cpu.accu1.getSignedWord()
+		if accu1 == 0:
+			s.A1, s.A0, s.OV = 0, 0, 0
+		elif accu1 < 0:
+			s.A1, s.A0, s.OV = 0, 1, 0
+		else:
+			s.A1, s.A0, s.OV = 1, 0, 0
+		if value > 0x7FFF or value < -32768:
+			s.OV, s.OS = 1, 1
+
+class AwlInsn_NEGD(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_NEGD, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		value = -(self.cpu.accu1.getSignedDWord())
+		self.cpu.accu1.setDWord(value)
+		accu1 = self.cpu.accu1.getSignedDWord()
+		if accu1 == 0:
+			s.A1, s.A0, s.OV = 0, 0, 0
+		elif accu1 < 0:
+			s.A1, s.A0, s.OV = 0, 1, 0
+		else:
+			s.A1, s.A0, s.OV = 1, 0, 0
+		if value > 0x7FFFFFFF or value < -2147483648:
+			s.OV, s.OS = 1, 1
+
 class AwlInsn_TAW(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_TAW, rawInsn)
