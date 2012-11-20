@@ -1910,6 +1910,54 @@ class AwlInsn_POP(AwlInsn):
 	def run(self):
 		self.cpu.accu1.set(self.cpu.accu2.get())
 
+class AwlInsn_INC(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_INC, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.IMM or\
+		   self.ops[0].immediate > 255 or\
+		   self.ops[0].immediate < 0:
+			raise AwlSimError("Invalid operator")
+
+	def run(self):
+		self.cpu.accu1.setByte(self.cpu.accu1.getByte() +\
+				       self.ops[0].immediate)
+
+class AwlInsn_DEC(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_DEC, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.IMM or\
+		   self.ops[0].immediate > 255 or\
+		   self.ops[0].immediate < 0:
+			raise AwlSimError("Invalid operator")
+
+	def run(self):
+		self.cpu.accu1.setByte(self.cpu.accu1.getByte() -\
+				       self.ops[0].immediate)
+
+class AwlInsn_INCAR1(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_INCAR1, rawInsn)
+		self._assertOps((0, 1))
+
+	def run(self):
+		if self.ops:
+			pass#TODO
+		else:
+			pass#TODO
+
+class AwlInsn_INCAR2(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_INCAR2, rawInsn)
+		self._assertOps((0, 1))
+
+	def run(self):
+		if self.ops:
+			pass#TODO
+		else:
+			pass#TODO
+
 class AwlInsn_BLD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_BLD, rawInsn)

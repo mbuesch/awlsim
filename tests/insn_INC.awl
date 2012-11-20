@@ -1,0 +1,63 @@
+	L		0
+	INC		1
+	__ASSERT==	__ACCU 1,	1
+
+	L		1
+	INC		0
+	__ASSERT==	__ACCU 1,	1
+
+	L		1
+	INC		1
+	__ASSERT==	__ACCU 1,	2
+
+	L		0
+	INC		255
+	__ASSERT==	__ACCU 1,	255
+
+	L		1
+	INC		255
+	__ASSERT==	__ACCU 1,	0
+
+	L		2
+	INC		255
+	__ASSERT==	__ACCU 1,	1
+
+	L		DW#16#00000100
+	INC		255
+	__ASSERT==	__ACCU 1,	DW#16#000001FF
+
+	L		DW#16#000001FF
+	INC		255
+	__ASSERT==	__ACCU 1,	DW#16#000001FE
+
+	L		0
+	DEC		1
+	__ASSERT==	__ACCU 1,	255
+
+	L		1
+	DEC		0
+	__ASSERT==	__ACCU 1,	1
+
+	L		1
+	DEC		1
+	__ASSERT==	__ACCU 1,	0
+
+	L		0
+	DEC		255
+	__ASSERT==	__ACCU 1,	1
+
+	L		1
+	DEC		255
+	__ASSERT==	__ACCU 1,	2
+
+	L		2
+	DEC		255
+	__ASSERT==	__ACCU 1,	3
+
+	L		DW#16#00000100
+	DEC		255
+	__ASSERT==	__ACCU 1,	DW#16#00000101
+
+	L		DW#16#000001FF
+	DEC		255
+	__ASSERT==	__ACCU 1,	DW#16#00000100
