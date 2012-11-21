@@ -480,6 +480,9 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(True)
 		self.runStateChanged.emit(False)
 
+	def getState(self):
+		return self.state
+
 	def __runStateToggled(self):
 		if self.runButton.isChecked():
 			if self.state != self.STATE_RUN:
@@ -771,6 +774,9 @@ class MainWidget(QWidget):
 		self.codeEdit.codeChanged.connect(self.__codeChanged)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 
+	def isDirty(self):
+		return self.dirty
+
 	def __runStateChanged(self, running):
 		self.codeEdit.setReadOnly(running)
 		self.runStateChanged.emit(running)
@@ -831,9 +837,9 @@ class MainWidget(QWidget):
 				return
 			if not fn.endswith(".awl"):
 				fn += ".awl"
-			self.saveFile(fn)
+			return self.saveFile(fn)
 		else:
-			self.saveFile(self.filename)
+			return self.saveFile(self.filename)
 
 class MainWindow(QMainWindow):
 	def __init__(self):
@@ -881,8 +887,34 @@ class MainWindow(QMainWindow):
 		self.tbSaveAct.setEnabled(isDirty)
 
 	def closeEvent(self, ev):
+		cpuWidget = self.centralWidget().getCpuWidget()
+		if cpuWidget.getState() != CpuWidget.STATE_STOP:
+			res = QMessageBox.question(self,
+				"CPU is in RUN state",
+				"CPU is in RUN state.\n"
+				"STOP CPU and quit application?",
+				QMessageBox.Yes | QMessageBox.No,
+				QMessageBox.Yes)
+			if res != QMessageBox.Yes:
+				ev.ignore()
+				return
 		self.centralWidget().getCpuWidget().stop()
+		if self.centralWidget().isDirty():
+			res = QMessageBox.question(self,
+				"Unsaved AWL code",
+				"The editor contains unsaved AWL code.\n"
+				"AWL code will be lost by exiting without saving.",
+				QMessageBox.Discard | QMessageBox.Save | QMessageBox.Cancel,
+				QMessageBox.Cancel)
+			if res == QMessageBox.Save:
+				if not self.centralWidget().save():
+					ev.ignore()
+					return
+			elif res == QMessageBox.Cancel:
+				ev.ignore()
+				return
 		ev.accept()
+		QMainWindow.closeEvent(self, ev)
 
 	def aboutInsns(self):
 		suppTypes, unsuppTypes = [], []
