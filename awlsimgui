@@ -526,7 +526,9 @@ class CpuStatsSubWidget(EditSubWidget):
 		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
 
 class CpuStatsEntry(object):
-	def __init__(self, statusWord, accu1, accu2):
+	def __init__(self, stamp, statusWord, accu1, accu2):
+		self.stamp = stamp
+		self.obsolete = False
 		self.statusWord = statusWord.getWord()
 		self.accu1 = accu1.getDWord()
 		self.accu2 = accu2.getDWord()
@@ -583,6 +585,7 @@ class EditWidget(QPlainTextEdit):
 	def resetCpuStats(self):
 		self.__lineCpuStats = { }
 		self.__cpuStatsCount = 0
+		self.__cpuStatsStamp = 0
 		self.__updateMargins()
 		self.cpuStatsWidget.update()
 
@@ -591,7 +594,8 @@ class EditWidget(QPlainTextEdit):
 		if not self.__cpuStatsEnabled or not insn:
 			return
 		self.__lineCpuStats[insn.getLineNr() - 1] =\
-			CpuStatsEntry(cpu.status,
+			CpuStatsEntry(self.__cpuStatsStamp,
+				      cpu.status,
 				      cpu.getAccu(1),
 				      cpu.getAccu(2))
 		self.__cpuStatsCount += 1
@@ -599,10 +603,14 @@ class EditWidget(QPlainTextEdit):
 	def updateCpuStats_afterBlock(self, cpu):
 		if not self.__cpuStatsEnabled:
 			return
+		# Update the 'obsolete'-flag based on the timestamp
+		for ent in self.__lineCpuStats.values():
+			ent.obsolete = (ent.stamp != self.__cpuStatsStamp)
+		self.__cpuStatsStamp += 1
+		# Update the stats widget
 		if self.__cpuStatsCount >= 500:
 			self.__cpuStatsCount = 0
 			self.cpuStatsWidget.update()
-		pass#TODO
 
 	def __forwardWheelEvent(self, ev):
 		self.wheelEvent(ev)
@@ -701,7 +709,6 @@ class EditWidget(QPlainTextEdit):
 		p.fillRect(rect, Qt.lightGray)
 		rect.setWidth(3)
 		p.fillRect(rect, Qt.white)
-		p.setPen(Qt.black)
 
 		block = self.firstVisibleBlock()
 		bn = block.blockNumber()
@@ -711,6 +718,10 @@ class EditWidget(QPlainTextEdit):
 		while block.isValid() and top <= ev.rect().bottom():
 			statsEnt = self.__lineCpuStats.get(bn)
 			if statsEnt and block.isVisible() and bottom >= ev.rect().top():
+				if statsEnt.obsolete:
+					p.setPen(Qt.darkGray)
+				else:
+					p.setPen(Qt.black)
 				p.drawText(5, top,
 					   self.cpuStatsWidget.width(),
 					   self.fontMetrics().height(),
