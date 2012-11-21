@@ -119,6 +119,8 @@ class S7CPU(object):
 	def __init__(self, sim):
 		self.sim = sim
 		self.setCycleTimeLimit(5.0)
+		self.setBlockExitCallback(None)
+		self.setPostInsnCallback(None)
 		self.reset()
 		self.__extendedInsnsEnabled = False
 
@@ -196,10 +198,6 @@ class S7CPU(object):
 
 		self.relativeJump = 1
 
-		# Callbacks
-		self.setBlockExitCallback(lambda x: None)
-		self.setPostRunCallback(lambda x: None)
-
 		# Stats
 		self.cycleCount = 0
 		self.insnCount = 0
@@ -213,12 +211,16 @@ class S7CPU(object):
 		self.updateTimestamp()
 
 	def setBlockExitCallback(self, cb, data=None):
+		if not cb:
+			cb = lambda x: None
 		self.cbBlockExit = cb
 		self.cbBlockExitData = data
 
-	def setPostRunCallback(self, cb, data=None):
-		self.cbPostRun = cb
-		self.cbPostRunData = data
+	def setPostInsnCallback(self, cb, data=None):
+		if not cb:
+			cb = lambda x: None
+		self.cbPostInsn = cb
+		self.cbPostInsnData = data
 
 	# Get the active status word
 	@property
@@ -248,9 +250,9 @@ class S7CPU(object):
 				insn = cse.insns[cse.ip]
 				self.relativeJump = 1
 				insn.run()
+				self.cbPostInsn(self.cbPostInsnData)
 				cse.ip += self.relativeJump
 				cse = self.callStack[-1]
-				self.cbPostRun(self.cbPostRunData)
 				self.insnCount += 1
 				if self.insnCount % 32 == 0:
 					self.updateTimestamp()

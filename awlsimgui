@@ -364,6 +364,8 @@ class CpuWidget(QWidget):
 		group.layout().addWidget(self.runButton, 0, 0)
 		self.stopButton = QRadioButton("STOP", group)
 		group.layout().addWidget(self.stopButton, 1, 0)
+		self.onlineViewCheckBox = QCheckBox("Online diagnostics", group)
+		group.layout().addWidget(self.onlineViewCheckBox, 2, 0)
 		self.layout().addWidget(group, 0, 0)
 
 		group = QGroupBox("Add window", self)
@@ -386,6 +388,7 @@ class CpuWidget(QWidget):
 
 		self.runButton.toggled.connect(self.__runStateToggled)
 		self.stopButton.toggled.connect(self.__runStateToggled)
+		self.onlineViewCheckBox.stateChanged.connect(self.__updateOnlineViewState)
 		self.newCpuStateButton.released.connect(self.__newWin_CPU)
 		self.newEButton.released.connect(self.__newWin_E)
 		self.newAButton.released.connect(self.__newWin_A)
@@ -432,9 +435,14 @@ class CpuWidget(QWidget):
 	def __blockExitCallback(self, unused):
 		self.mayUpdate()
 
+	def __postInsnCallback(self, cpu):
+		self.mainWidget.codeEdit.updateCpuStats(cpu)
+
 	def __run(self):
 		sim = self.mainWidget.getSim()
 		self.state = self.STATE_RUN
+		self.__updateOnlineViewState()
+		self.mainWidget.codeEdit.resetCpuStats()
 		self.runButton.setChecked(True)
 		self.runButton.setEnabled(False) # Redraws the radio button
 		self.runButton.setEnabled(True)
@@ -478,21 +486,235 @@ class CpuWidget(QWidget):
 			if self.state != self.STATE_STOP:
 				self.stop()
 
-class EditWidget(QTextEdit):
+	def __updateOnlineViewState(self):
+		en = self.onlineViewCheckBox.checkState() == Qt.Checked
+		self.mainWidget.codeEdit.enableCpuStats(en)
+		cpu = self.mainWidget.getSim().getCPU()
+		if en:
+			cpu.setPostInsnCallback(self.__postInsnCallback, cpu)
+		else:
+			cpu.setPostInsnCallback(None)
+
+class EditSubWidget(QWidget):
+	needRepaint = Signal(QPaintEvent)
+	wasScrolled = Signal(QWheelEvent)
+
+	def __init__(self, editWidget):
+		QWidget.__init__(self, editWidget)
+		self.editWidget = editWidget
+
+	def paintEvent(self, ev):
+		self.needRepaint.emit(ev)
+
+	def wheelEvent(self, ev):
+		self.wasScrolled.emit(ev)
+
+class LineNumSubWidget(EditSubWidget):
+	def __init__(self, editWidget):
+		EditSubWidget.__init__(self, editWidget)
+
+	def sizeHint(self):
+		return QSize(self.editWidget.lineNumWidgetWidth(), 0)
+
+class CpuStatsSubWidget(EditSubWidget):
+	def __init__(self, editWidget):
+		EditSubWidget.__init__(self, editWidget)
+
+	def sizeHint(self):
+		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
+
+class CpuStatsEntry(object):
+	def __init__(self, statusWord, accu1, accu2):
+		self.statusWord = statusWord.getWord()
+		self.accu1 = accu1.getDWord()
+		self.accu2 = accu2.getDWord()
+
+	@staticmethod
+	def getTextWidth():
+		return 3 + 2 + 8 + 2 + 8
+
+	def __repr__(self):
+		return "%03X  %08X  %08X" %\
+			(self.statusWord,
+			 self.accu1, self.accu2)
+
+class EditWidget(QPlainTextEdit):
 	codeChanged = Signal()
 
 	def __init__(self, parent=None):
-		QTextEdit.__init__(self, parent)
+		QPlainTextEdit.__init__(self, parent)
 
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.setLineWrapMode(QTextEdit.NoWrap)
+		self.setLineWrapMode(QPlainTextEdit.NoWrap)
 		self.setTabStopWidth(self.tabStopWidth() // 2)
 
-		self.setFontFamily("Mono")
+		self.lineNumWidget = LineNumSubWidget(self)
+		self.cpuStatsWidget = CpuStatsSubWidget(self)
+
+		self.__updateFonts()
+		self.enableCpuStats(False)
+		self.resetCpuStats()
 
 		self.__textChangeBlocked = 0
 		self.textChanged.connect(self.__textChanged)
+
+		self.blockCountChanged.connect(self.__updateMargins)
+		self.updateRequest.connect(self.__updateExtraWidgets)
+		self.lineNumWidget.needRepaint.connect(self.__repaintLineNumWidget)
+		self.cpuStatsWidget.needRepaint.connect(self.__repaintCpuStatsWidget)
+		self.lineNumWidget.wasScrolled.connect(self.__forwardWheelEvent)
+		self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
+
+	def __updateFonts(self):
+		fmt = self.currentCharFormat()
+		fmt.setFontFamily("Mono")
+		fmt.setFontKerning(False)
+		fmt.setFontFixedPitch(True)
+		self.setCurrentCharFormat(fmt)
+
+	def enableCpuStats(self, enabled=True):
+		self.__cpuStatsEnabled = enabled
+		self.__updateMargins()
+		self.__updateCpuStatsWidgetGeo()
+
+	def resetCpuStats(self):
+		self.__lineCpuStats = { }
+		self.__cpuStatsCount = 0
+		self.__updateMargins()
+		self.cpuStatsWidget.update()
+
+	def updateCpuStats(self, cpu):
+		if not self.__cpuStatsEnabled:
+			return
+		insn = cpu.getCurrentInsn()
+		if not insn:
+			return
+		ent = CpuStatsEntry(cpu.status,
+				    cpu.getAccu(1),
+				    cpu.getAccu(2))
+		self.__lineCpuStats[insn.getLineNr() - 1] = ent
+		self.__cpuStatsCount += 1
+		if self.__cpuStatsCount >= 500:
+			self.__cpuStatsCount = 0
+			self.cpuStatsWidget.update()
+
+	def __forwardWheelEvent(self, ev):
+		self.wheelEvent(ev)
+
+	def lineNumWidgetWidth(self):
+		digi, bcnt = 1, self.blockCount()
+		while bcnt > 9:
+			digi, bcnt = digi + 1, bcnt // 10
+		digi += 1 # colon
+		return 5 + 5 + digi * self.fontMetrics().width('0')
+
+	def cpuStatsWidgetWidth(self):
+		if not self.__cpuStatsEnabled:
+			return 0
+		return 5 + 5 + CpuStatsEntry.getTextWidth() * self.fontMetrics().width('0')
+
+	def __updateMargins(self):
+		self.setViewportMargins(self.lineNumWidgetWidth(), 0,
+					self.cpuStatsWidgetWidth(), 0)
+
+	def sizeHint(self):
+		sh = QPlainTextEdit.sizeHint(self)
+		sh.setWidth(500 +\
+			    self.lineNumWidgetWidth() +\
+			    self.cpuStatsWidgetWidth())
+		return sh
+
+	def __updateLineNumWidgetGeo(self):
+		cont = self.contentsRect()
+		rect = QRect(cont.left(),
+			     cont.top(),
+			     self.lineNumWidgetWidth(),
+			     cont.height())
+		self.lineNumWidget.setGeometry(rect)
+
+	def __updateCpuStatsWidgetGeo(self):
+		if self.__cpuStatsEnabled:
+			vp, cont = self.viewport(), self.contentsRect()
+			rect = QRect(vp.width() + self.lineNumWidgetWidth(),
+				     cont.top(),
+				     self.cpuStatsWidgetWidth(),
+				     cont.height())
+			self.cpuStatsWidget.setGeometry(rect)
+			self.cpuStatsWidget.show()
+		else:
+			self.cpuStatsWidget.hide()
+
+	def __updateExtraWidgets(self, rect, dy):
+		if dy:
+			self.lineNumWidget.scroll(0, dy)
+			self.cpuStatsWidget.scroll(0, dy)
+			return
+		self.lineNumWidget.update(0, rect.y(),
+			self.lineNumWidget.width(),
+			rect.height())
+		self.cpuStatsWidget.update(0, rect.y(),
+			self.cpuStatsWidget.width(),
+			rect.height())
+		if rect.contains(self.viewport().rect()):
+			self.__updateMargins()
+
+	def resizeEvent(self, ev):
+		QPlainTextEdit.resizeEvent(self, ev)
+		self.__updateLineNumWidgetGeo()
+		self.__updateCpuStatsWidgetGeo()
+
+	def __repaintLineNumWidget(self, ev):
+		p = QPainter(self.lineNumWidget)
+		rect = ev.rect()
+		p.fillRect(rect, Qt.lightGray)
+		rect.setLeft(rect.left() + rect.width() - 3)
+		rect.setWidth(3)
+		p.fillRect(rect, Qt.white)
+		p.setPen(Qt.black)
+
+		block = self.firstVisibleBlock()
+		bn = block.blockNumber()
+		top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+		bottom = top + self.blockBoundingRect(block).height()
+
+		while block.isValid() and top <= ev.rect().bottom():
+			if block.isVisible() and bottom >= ev.rect().top():
+				p.drawText(-5, top,
+					   self.lineNumWidget.width(),
+					   self.fontMetrics().height(),
+					   Qt.AlignRight,
+					   str(bn + 1) + ':')
+			block = block.next()
+			top = bottom
+			bottom = top + self.blockBoundingRect(block).height()
+			bn += 1
+
+	def __repaintCpuStatsWidget(self, ev):
+		p = QPainter(self.cpuStatsWidget)
+		rect = ev.rect()
+		p.fillRect(rect, Qt.lightGray)
+		rect.setWidth(3)
+		p.fillRect(rect, Qt.white)
+		p.setPen(Qt.black)
+
+		block = self.firstVisibleBlock()
+		bn = block.blockNumber()
+		top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+		bottom = top + self.blockBoundingRect(block).height()
+
+		while block.isValid() and top <= ev.rect().bottom():
+			statsEnt = self.__lineCpuStats.get(bn)
+			if statsEnt and block.isVisible() and bottom >= ev.rect().top():
+				p.drawText(5, top,
+					   self.cpuStatsWidget.width(),
+					   self.fontMetrics().height(),
+					   Qt.AlignLeft,
+					   str(statsEnt))
+			block = block.next()
+			top = bottom
+			bottom = top + self.blockBoundingRect(block).height()
+			bn += 1
 
 	def __textChanged(self):
 		if self.__textChangeBlocked:
@@ -502,6 +724,7 @@ class EditWidget(QTextEdit):
 	def loadCode(self, code):
 		self.__textChangeBlocked += 1
 		self.setPlainText(code)
+		self.resetCpuStats()
 		self.__textChangeBlocked -= 1
 
 	def getCode(self):

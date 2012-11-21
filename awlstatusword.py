@@ -51,7 +51,9 @@ class S7StatusWord(object):
 				"out of range" % bitNumber)
 
 	def getWord(self):
-		pass#TODO
+		return self.NER | (self.VKE << 1) | (self.STA << 2) |\
+		       (self.OR << 3) | (self.OS << 4) | (self.OV << 5) |\
+		       (self.A0 << 6) | (self.A1 << 7) | (self.BIE << 8)
 
 	def reset(self):
 		self.NER = 0	# /ER	=> Erstabfrage
@@ -63,6 +65,19 @@ class S7StatusWord(object):
 		self.A0 = 0	# A0	=> Ergebnisanzeige 0
 		self.A1 = 0	# A1	=> Ergebnisanzeige 1
 		self.BIE = 0	# BIE	=> Binaerergebnis
+
+	def copy(self):
+		new = S7StatusWord()
+		new.NER = self.NER
+		new.VKE = self.VKE
+		new.STA = self.STA
+		new.OR = self.OR
+		new.OS = self.OS
+		new.OV = self.OV
+		new.A0 = self.A0
+		new.A1 = self.A1
+		new.BIE = self.BIE
+		return new
 
 	def setForFloatingPoint(self, dword):
 		noSign, s = dword & 0x7FFFFFFF, self
