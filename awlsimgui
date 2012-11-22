@@ -473,6 +473,7 @@ class CpuWidget(QWidget):
 				QMessageBox.critical(self, "Simulator exception",
 						     str(e))
 				self.stop()
+		self.mainWidget.codeEdit.redrawCpuStats()
 
 	def stop(self):
 		self.state = self.STATE_STOP
@@ -513,6 +514,20 @@ class EditSubWidget(QWidget):
 
 	def wheelEvent(self, ev):
 		self.wasScrolled.emit(ev)
+
+	def getPainter(self):
+		p = QPainter(self)
+		font = p.font()
+		font.setFamily("Mono")
+		p.setFont(font)
+		return p
+
+class HeaderSubWidget(EditSubWidget):
+	def __init__(self, editWidget):
+		EditSubWidget.__init__(self, editWidget)
+
+	def sizeHint(self):
+		return QSize(0, self.editWidget.headerHeight())
 
 class LineNumSubWidget(EditSubWidget):
 	def __init__(self, editWidget):
@@ -556,20 +571,23 @@ class EditWidget(QPlainTextEdit):
 		self.setLineWrapMode(QPlainTextEdit.NoWrap)
 		self.setTabStopWidth(self.tabStopWidth() // 2)
 
+		self.headerWidget = HeaderSubWidget(self)
 		self.lineNumWidget = LineNumSubWidget(self)
 		self.cpuStatsWidget = CpuStatsSubWidget(self)
 
 		self.__updateFonts()
 		self.enableCpuStats(False)
-		self.resetCpuStats()
+		self.resetCpuStats(True)
 
 		self.__textChangeBlocked = 0
 		self.textChanged.connect(self.__textChanged)
 
 		self.blockCountChanged.connect(self.__updateMargins)
 		self.updateRequest.connect(self.__updateExtraWidgets)
+		self.headerWidget.needRepaint.connect(self.__repaintHeaderWidget)
 		self.lineNumWidget.needRepaint.connect(self.__repaintLineNumWidget)
 		self.cpuStatsWidget.needRepaint.connect(self.__repaintCpuStatsWidget)
+		self.headerWidget.wasScrolled.connect(self.__forwardWheelEvent)
 		self.lineNumWidget.wasScrolled.connect(self.__forwardWheelEvent)
 		self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
 
@@ -583,13 +601,16 @@ class EditWidget(QPlainTextEdit):
 	def enableCpuStats(self, enabled=True):
 		self.__cpuStatsEnabled = enabled
 		self.__updateMargins()
-		self.__updateCpuStatsWidgetGeo()
+		self.__updateGeo()
 
-	def resetCpuStats(self):
+	def resetCpuStats(self, force=False):
+		if not force and not self.__lineCpuStats:
+			return
 		self.__lineCpuStats = { }
 		self.__cpuStatsCount = 0
 		self.__cpuStatsStamp = 0
 		self.__updateMargins()
+		self.headerWidget.update()
 		self.cpuStatsWidget.update()
 
 	def updateCpuStats_afterInsn(self, cpu):
@@ -615,6 +636,11 @@ class EditWidget(QPlainTextEdit):
 			self.__cpuStatsCount = 0
 			self.cpuStatsWidget.update()
 
+	def redrawCpuStats(self):
+		if not self.__cpuStatsEnabled:
+			return
+		self.cpuStatsWidget.update()
+
 	def __forwardWheelEvent(self, ev):
 		self.wheelEvent(ev)
 
@@ -630,9 +656,16 @@ class EditWidget(QPlainTextEdit):
 			return 0
 		return 5 + 5 + CpuStatsEntry.getTextWidth() * self.fontMetrics().width('0')
 
+	def headerHeight(self):
+		if not self.__cpuStatsEnabled:
+			return 0
+		return 5 + 5 + self.fontMetrics().height()
+
 	def __updateMargins(self):
-		self.setViewportMargins(self.lineNumWidgetWidth(), 0,
-					self.cpuStatsWidgetWidth(), 0)
+		self.setViewportMargins(self.lineNumWidgetWidth(),
+					self.headerHeight(),
+					self.cpuStatsWidgetWidth(),
+					0)
 
 	def sizeHint(self):
 		sh = QPlainTextEdit.sizeHint(self)
@@ -641,10 +674,18 @@ class EditWidget(QPlainTextEdit):
 			    self.cpuStatsWidgetWidth())
 		return sh
 
-	def __updateLineNumWidgetGeo(self):
+	def __updateHeaderWidgetGeo(self):
 		cont = self.contentsRect()
 		rect = QRect(cont.left(),
 			     cont.top(),
+			     cont.width(),
+			     self.headerHeight())
+		self.headerWidget.setGeometry(rect)
+
+	def __updateLineNumWidgetGeo(self):
+		cont = self.contentsRect()
+		rect = QRect(cont.left(),
+			     cont.top() + self.headerHeight(),
 			     self.lineNumWidgetWidth(),
 			     cont.height())
 		self.lineNumWidget.setGeometry(rect)
@@ -653,7 +694,7 @@ class EditWidget(QPlainTextEdit):
 		if self.__cpuStatsEnabled:
 			vp, cont = self.viewport(), self.contentsRect()
 			rect = QRect(vp.width() + self.lineNumWidgetWidth(),
-				     cont.top(),
+				     cont.top() + self.headerHeight(),
 				     self.cpuStatsWidgetWidth(),
 				     cont.height())
 			self.cpuStatsWidget.setGeometry(rect)
@@ -661,11 +702,20 @@ class EditWidget(QPlainTextEdit):
 		else:
 			self.cpuStatsWidget.hide()
 
+	def __updateGeo(self):
+		self.__updateHeaderWidgetGeo()
+		self.__updateLineNumWidgetGeo()
+		self.__updateCpuStatsWidgetGeo()
+
 	def __updateExtraWidgets(self, rect, dy):
 		if dy:
+			self.headerWidget.scroll(0, dy)
 			self.lineNumWidget.scroll(0, dy)
 			self.cpuStatsWidget.scroll(0, dy)
 			return
+		self.headerWidget.update(0, rect.y(),
+			self.headerWidget.width(),
+			rect.height())
 		self.lineNumWidget.update(0, rect.y(),
 			self.lineNumWidget.width(),
 			rect.height())
@@ -677,11 +727,26 @@ class EditWidget(QPlainTextEdit):
 
 	def resizeEvent(self, ev):
 		QPlainTextEdit.resizeEvent(self, ev)
-		self.__updateLineNumWidgetGeo()
-		self.__updateCpuStatsWidgetGeo()
+		self.__updateGeo()
+
+	def __repaintHeaderWidget(self, ev):
+		p = self.headerWidget.getPainter()
+		rect = ev.rect()
+		p.fillRect(rect, Qt.lightGray)
+		p.setPen(Qt.black)
+
+		# Map the starting point
+		pt = self.cpuStatsWidget.mapToGlobal(QPoint(0, 0))
+		pt = self.headerWidget.mapFromGlobal(pt)
+
+		p.drawText(pt.x() + 5, 5,
+			   self.headerWidget.width() - pt.x() - 5,
+			   self.headerWidget.height(),
+			   Qt.AlignLeft,
+			   "STW  ACCU 1    ACCU 2")
 
 	def __repaintLineNumWidget(self, ev):
-		p = QPainter(self.lineNumWidget)
+		p = self.lineNumWidget.getPainter()
 		rect = ev.rect()
 		p.fillRect(rect, Qt.lightGray)
 		rect.setLeft(rect.left() + rect.width() - 3)
@@ -707,7 +772,7 @@ class EditWidget(QPlainTextEdit):
 			bn += 1
 
 	def __repaintCpuStatsWidget(self, ev):
-		p = QPainter(self.cpuStatsWidget)
+		p = self.cpuStatsWidget.getPainter()
 		rect = ev.rect()
 		p.fillRect(rect, Qt.lightGray)
 		rect.setWidth(3)
@@ -738,6 +803,7 @@ class EditWidget(QPlainTextEdit):
 	def __textChanged(self):
 		if self.__textChangeBlocked:
 			return
+		self.resetCpuStats()
 		self.codeChanged.emit()
 
 	def loadCode(self, code):
