@@ -518,6 +518,9 @@ class EditSubWidget(QWidget):
 		p = QPainter(self)
 		font = p.font()
 		font.setFamily("Mono")
+		font.setKerning(False)
+		font.setFixedPitch(True)
+		font.setStyleStrategy(QFont.PreferBitmap)
 		p.setFont(font)
 		return p
 
@@ -611,6 +614,7 @@ class EditWidget(QPlainTextEdit):
 		fmt.setFontFamily("Mono")
 		fmt.setFontKerning(False)
 		fmt.setFontFixedPitch(True)
+		fmt.setFontStyleStrategy(QFont.PreferBitmap)
 		self.setCurrentCharFormat(fmt)
 
 	def enableCpuStats(self, enabled=True):
@@ -820,6 +824,7 @@ class EditWidget(QPlainTextEdit):
 			bn += 1
 
 	def __textChanged(self):
+		self.__updateFonts()
 		if self.__textChangeBlocked:
 			return
 		self.resetCpuStats()
