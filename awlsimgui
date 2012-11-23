@@ -748,7 +748,7 @@ class EditWidget(QPlainTextEdit):
 
 		if self.__runStateCopy == CpuWidget.STATE_RUN:
 			p.drawText(5, 5,
-				   self.__charWidth,
+				   self.__charWidth + 1,
 				   self.headerWidget.height(),
 				   Qt.AlignLeft,
 				   self.__aniChars[self.__hdrAniStat])
