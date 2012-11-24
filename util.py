@@ -71,14 +71,33 @@ def dwordToSignedPyInt(dword):
 
 def pyFloatToDWord(pyfl):
 	buf = struct.pack('>f', pyfl)
-	return (buf[0] << 24) |\
-	       (buf[1] << 16) |\
-	       (buf[2] << 8) |\
-	       buf[3]
+	dword = (buf[0] << 24) |\
+		(buf[1] << 16) |\
+		(buf[2] << 8) |\
+		buf[3]
+	if isDenormalPyFloat(pyfl):
+		# Denormal floats are equal to zero on the S7 CPU.
+		# OV and OS flags are set in the StatusWord handler.
+		dword = 0x00000000
+	elif (dword & 0x7FFFFFFF) > 0x7F800000:
+		# NaNs are always all-ones on the S7 CPU.
+		dword = 0xFFFFFFFF
+	return dword
 
 def dwordToPyFloat(dword):
-	buf = bytes( ((dword >> 24) & 0xFF,
-		      (dword >> 16) & 0xFF,
-		      (dword >> 8) & 0xFF,
-		      dword & 0xFF) )
-	return struct.unpack('>f', buf)[0]
+	return struct.unpack('>f',
+		bytes( ((dword >> 24) & 0xFF,
+			(dword >> 16) & 0xFF,
+			(dword >> 8) & 0xFF,
+			dword & 0xFF)
+		)
+	)[0]
+
+# The smallest normalized positive 32-bit float.
+minNormPosFloat32 = dwordToPyFloat(0x00000001)
+# The biggest normalized negative 32-bit float.
+maxNormNegFloat32 = dwordToPyFloat(0x80000001)
+
+def isDenormalPyFloat(pyfl):
+	return (pyfl > 0.0 and pyfl < minNormPosFloat32) or\
+	       (pyfl < 0.0 and pyfl > maxNormNegFloat32)

@@ -545,6 +545,9 @@ class CpuStatsSubWidget(EditSubWidget):
 	def sizeHint(self):
 		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
 
+	def getBanner(self):
+		return "STW         ACCU 1    ACCU 2"
+
 class CpuStatsEntry(object):
 	def __init__(self, stamp, statusWord, accu1, accu2):
 		self.stamp = stamp
@@ -555,12 +558,16 @@ class CpuStatsEntry(object):
 
 	@staticmethod
 	def getTextWidth():
-		return 3 + 2 + 8 + 2 + 8
+		return 7 + 2 + 8 + 2 + 8
 
 	def __repr__(self):
-		return "%03X  %08X  %08X" %\
-			(self.statusWord,
-			 self.accu1, self.accu2)
+		stw = []
+		for i in range(S7StatusWord.NR_BITS - 1, -1, -1):
+			stw.append('1' if (self.statusWord & (1 << i)) else '0')
+			if i % 4 == 0 and i:
+				stw.append('_')
+		return "%s  %08X  %08X" %\
+			("".join(stw), self.accu1, self.accu2)
 
 class EditWidget(QPlainTextEdit):
 	codeChanged = Signal()
@@ -766,7 +773,7 @@ class EditWidget(QPlainTextEdit):
 				   self.headerWidget.width() - pt.x() - 5,
 				   self.headerWidget.height(),
 				   Qt.AlignLeft,
-				   "STW  ACCU 1    ACCU 2")
+				   self.cpuStatsWidget.getBanner())
 
 	def __repaintLineNumWidget(self, ev):
 		p = self.lineNumWidget.getPainter()

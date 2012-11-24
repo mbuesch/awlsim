@@ -140,3 +140,63 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test:  Inf * 0.0 = NaN
+	__STWRST
+	L		DW#16#7F800000
+	L		0.0
+	*R
+	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  -Inf * 0.0 = NaN
+	__STWRST
+	L		DW#16#FF800000
+	L		0.0
+	*R
+	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  denormalized
+	__STWRST
+	L		DW#16#00000001
+	L		2.0
+	/R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  pos / 0.0 = +inf
+	__STWRST
+	L		1.5
+	L		0.0
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#7F800000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  neg / 0.0 = -inf
+	__STWRST
+	L		-1.5
+	L		0.0
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#FF800000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1

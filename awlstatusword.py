@@ -79,23 +79,31 @@ class S7StatusWord(object):
 		new.BIE = self.BIE
 		return new
 
-	def setForFloatingPoint(self, dword):
-		noSign, s = dword & 0x7FFFFFFF, self
-		if noSign == 0: # zero
-			s.A1, s.A0, s.OV = 0, 0, 0
-		elif noSign < 0x00800000: # denorm
+	def setForFloatingPoint(self, pyFloat):
+		dword = pyFloatToDWord(pyFloat)
+		dwordNoSign, s = dword & 0x7FFFFFFF, self
+		if isDenormalPyFloat(pyFloat) or\
+		   (dwordNoSign < 0x00800000 and dwordNoSign != 0):
+			# denorm
 			s.A1, s.A0, s.OV, s.OS = 0, 0, 1, 1
-		elif noSign >= 0x7F800000:
-			if noSign == 0x7F800000: # inf
+		elif dwordNoSign == 0:
+			# zero
+			s.A1, s.A0, s.OV = 0, 0, 0
+		elif dwordNoSign >= 0x7F800000:
+			if dwordNoSign == 0x7F800000:
+				# inf
 				if dword & 0x80000000:
 					s.A1, s.A0, s.OV, s.OS = 0, 1, 1, 1
 				else:
 					s.A1, s.A0, s.OV, s.OS = 1, 0, 1, 1
-			else: # nan
+			else:
+				# nan
 				s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 		elif dword & 0x80000000:
+			# norm neg
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
+			# norm pos
 			s.A1, s.A0, s.OV = 1, 0, 0
 
 	def __repr__(self):
