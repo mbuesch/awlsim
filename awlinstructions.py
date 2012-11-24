@@ -7,6 +7,7 @@
 #
 
 import time
+import math
 
 from util import *
 from awloperators import *
@@ -1727,6 +1728,67 @@ class AwlInsn_DI_R(AwlInsn):
 				quo = dwordToPyFloat(0xFF800000)
 		self.cpu.accu1.setPyFloat(quo)
 		self.cpu.status.setForFloatingPoint(quo)
+
+class AwlInsn_ABS(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ABS, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.accu1.setPyFloat(abs(self.cpu.accu1.getPyFloat()))
+
+class AwlInsn_SQR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SQR, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.getPyFloat()
+		accu1 **= 2
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_SQRT(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SQRT, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.getPyFloat()
+		try:
+			accu1 = math.sqrt(accu1)
+		except ValueError:
+			accu1 = dwordToPyFloat(0xFFFFFFFF)
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_EXP(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_EXP, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.getPyFloat()
+		accu1 = math.exp(accu1)
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_LN(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_LN, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.getPyFloat()
+		try:
+			if accu1 == 0.0:
+				accu1 = dwordToPyFloat(0xFF800000)
+			else:
+				accu1 = math.log(accu1)
+		except ValueError:
+			accu1 = dwordToPyFloat(0xFFFFFFFF)
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
 
 class AwlInsn_T(AwlInsn):
 	def __init__(self, rawInsn):

@@ -222,3 +222,140 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: abs(pos)
+	__STWRST
+	L		1.5
+	ABS
+	__ASSERT==	__ACCU 1,	1.5
+
+
+	// Test: abs(neg)
+	__STWRST
+	L		-1.5
+	ABS
+	__ASSERT==	__ACCU 1,	1.5
+
+
+	// Test: pos^2
+	__STWRST
+	L		1.5
+	SQR
+	__ASSERT==	__ACCU 1,	2.25
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: neg^2
+	__STWRST
+	L		-1.5
+	SQR
+	__ASSERT==	__ACCU 1,	2.25
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sqrt(pos)
+	__STWRST
+	L		9.0
+	SQRT
+	__ASSERT==	__ACCU 1,	3.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sqrt(-0.0)
+	__STWRST
+	L		-0.0
+	SQRT
+	__ASSERT==	__ACCU 1,	-0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sqrt(-1.5)
+	__STWRST
+	L		-1.5
+	SQRT
+	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF	//FIXME?
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: exp(0.0)
+	__STWRST
+	L		0.0
+	EXP
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: exp(1.5)
+	__STWRST
+	L		1.5
+	EXP
+	__ASSERT==	__ACCU 1,	DW#16#408F69FF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: exp(-1.5)
+	__STWRST
+	L		-1.5
+	EXP
+	__ASSERT==	__ACCU 1,	DW#16#3E647C3C
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: ln(0.0)
+	__STWRST
+	L		0.0
+	LN
+	__ASSERT==	__ACCU 1,	DW#16#FF800000	//FIXME?
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: ln(1.5)
+	__STWRST
+	L		1.5
+	LN
+	__ASSERT==	__ACCU 1,	DW#16#3ECF991F
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: ln(-1.5)
+	__STWRST
+	L		-1.5
+	LN
+	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF	//FIXME?
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
