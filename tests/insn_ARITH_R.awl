@@ -200,3 +200,25 @@
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
+
+
+	// Test: -pos
+	__STWRST
+	L		1.5
+	NEGR
+	__ASSERT==	__ACCU 1,	-1.5
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: -neg
+	__STWRST
+	L		-1.5
+	NEGR
+	__ASSERT==	__ACCU 1,	1.5
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0

@@ -1130,6 +1130,16 @@ class AwlInsn_NEGD(AwlInsn):
 		if value > 0x7FFFFFFF or value < -2147483648:
 			s.OV, s.OS = 1, 1
 
+class AwlInsn_NEGR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_NEGR, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = -(self.cpu.accu1.getPyFloat())
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
 class AwlInsn_TAW(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_TAW, rawInsn)
