@@ -1940,49 +1940,138 @@ class AwlInsn_UC(AwlInsn):
 		self.cpu.run_CALL(self.ops[0])
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
+class AwlInsn_SSI(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SSI, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getSignedWord()
+		if self.ops:
+			count = self.ops[0].immediate
+		else:
+			count = self.cpu.accu2.getByte()
+		if count <= 0:
+			return
+		count = min(count, 16)
+		s.A1, s.A0, s.OV = (accu1 >> (count - 1)) & 1, 0, 0
+		accu1 >>= count
+		self.cpu.accu1.setWord(accu1)
+
+class AwlInsn_SSD(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SSD, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getSignedDWord()
+		if self.ops:
+			count = self.ops[0].immediate
+		else:
+			count = self.cpu.accu2.getByte()
+		if count <= 0:
+			return
+		count = min(count, 32)
+		s.A1, s.A0, s.OV = (accu1 >> (count - 1)) & 1, 0, 0
+		accu1 >>= count
+		self.cpu.accu1.setDWord(accu1)
+
+class AwlInsn_SLW(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SLW, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getWord()
+		if self.ops:
+			count = self.ops[0].immediate
+		else:
+			count = self.cpu.accu2.getByte()
+		if count <= 0:
+			return
+		count = min(count, 16)
+		s.A1, s.A0, s.OV = (accu1 >> (16 - count)) & 1, 0, 0
+		accu1 <<= count
+		self.cpu.accu1.setWord(accu1)
+
+class AwlInsn_SRW(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SRW, rawInsn)
+		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getWord()
+		if self.ops:
+			count = self.ops[0].immediate
+		else:
+			count = self.cpu.accu2.getByte()
+		if count <= 0:
+			return
+		count = min(count, 16)
+		s.A1, s.A0, s.OV = (accu1 >> (count - 1)) & 1, 0, 0
+		accu1 >>= count
+		self.cpu.accu1.setWord(accu1)
+
 class AwlInsn_SLD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_SLD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		s = self.cpu.status
-		count, accu = 1, self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0])
+			count = self.ops[0].immediate
+		else:
+			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
-		count = max(0, count % 32)
-		accu = (accu & 0xFFFFFFFF) << count
-		s.A1 = (accu >> 32) & 1
-		accu &= 0xFFFFFFFF
-		self.cpu.accu1.set(accu)
-		s.A0, s.OV = 0, 0
+		count = min(count, 32)
+		s.A1, s.A0, s.OV = (accu1 >> (32 - count)) & 1, 0, 0
+		accu1 <<= count
+		self.cpu.accu1.setDWord(accu1)
 
 class AwlInsn_SRD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_SRD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		s = self.cpu.status
-		count, accu = 1, self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0])
+			count = self.ops[0].immediate
+		else:
+			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
-		count = max(0, count % 32)
-		accu <<= 1
-		accu >>= count
-		s.A1 = accu & 1
-		accu >>= 1
-		self.cpu.accu1.set(accu)
-		s.A0, s.OV = 0, 0
+		count = min(count, 32)
+		s.A1, s.A0, s.OV = (accu1 >> (count - 1)) & 1, 0, 0
+		accu1 >>= count
+		self.cpu.accu1.setDWord(accu1)
 
 class AwlInsn_RLD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_RLD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		s = self.cpu.status
@@ -2002,6 +2091,8 @@ class AwlInsn_RRD(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_RRD, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		s = self.cpu.status
@@ -2021,6 +2112,8 @@ class AwlInsn_RLDA(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_RLDA, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		s = self.cpu.status
@@ -2041,6 +2134,8 @@ class AwlInsn_RRDA(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_RRDA, rawInsn)
 		self._assertOps((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 		s = self.cpu.status
