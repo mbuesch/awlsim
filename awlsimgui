@@ -546,7 +546,7 @@ class CpuStatsSubWidget(EditSubWidget):
 		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
 
 	def getBanner(self):
-		return "STW         ACCU 1    ACCU 2"
+		return "STW          ACCU 1    ACCU 2"
 
 class CpuStatsEntry(object):
 	def __init__(self, stamp, statusWord, accu1, accu2):
@@ -558,7 +558,7 @@ class CpuStatsEntry(object):
 
 	@staticmethod
 	def getTextWidth():
-		return 7 + 2 + 8 + 2 + 8
+		return 11 + 2 + 8 + 2 + 8
 
 	def __repr__(self):
 		stw = []
