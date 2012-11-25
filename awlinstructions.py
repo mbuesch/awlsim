@@ -1725,9 +1725,9 @@ class AwlInsn_DI_R(AwlInsn):
 			quo = accu2 / accu1
 		except ZeroDivisionError:
 			if accu2 >= 0.0:
-				quo = dwordToPyFloat(0x7F800000)
+				quo = posInfFloat
 			else:
-				quo = dwordToPyFloat(0xFF800000)
+				quo = negInfFloat
 		self.cpu.accu1.setPyFloat(quo)
 		self.cpu.status.setForFloatingPoint(quo)
 
@@ -1760,7 +1760,7 @@ class AwlInsn_SQRT(AwlInsn):
 		try:
 			accu1 = math.sqrt(accu1)
 		except ValueError:
-			accu1 = dwordToPyFloat(0xFFFFFFFF)
+			accu1 = nanFloat
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.status.setForFloatingPoint(accu1)
 
@@ -1784,11 +1784,11 @@ class AwlInsn_LN(AwlInsn):
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			if accu1 == 0.0:
-				accu1 = dwordToPyFloat(0xFF800000)
+				accu1 = negInfFloat
 			else:
 				accu1 = math.log(accu1)
 		except ValueError:
-			accu1 = dwordToPyFloat(0xFFFFFFFF)
+			accu1 = nanFloat
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.status.setForFloatingPoint(accu1)
 
@@ -1826,9 +1826,9 @@ class AwlInsn_TAN(AwlInsn):
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
 		if pyFloatEqual(accu1, math.pi / 2):
-			accu1 = dwordToPyFloat(0x7F800000)
+			accu1 = posInfFloat
 		elif pyFloatEqual(accu1, -math.pi / 2):
-			accu1 = dwordToPyFloat(0xFF800000)
+			accu1 = negInfFloat
 		else:
 			accu1 = math.tan(accu1)
 			for extremum in (-1.0, 0.0, 1.0):

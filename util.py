@@ -102,6 +102,13 @@ maxNormNegFloat32 = dwordToPyFloat(0x80000001)
 # The biggest normalized positive 32-bit float.
 maxNormPosFloat32 = dwordToPyFloat(0x7F7FFFFF)
 
+# Positive infinity as a python float
+posInfFloat = dwordToPyFloat(0x7F800000)
+# Negative infinity as a python float
+negInfFloat = dwordToPyFloat(0xFF800000)
+# NaN as a python float
+nanFloat = dwordToPyFloat(0xFFFFFFFF)
+
 def isDenormalPyFloat(pyfl):
 	return (pyfl > 0.0 and pyfl < minNormPosFloat32) or\
 	       (pyfl < 0.0 and pyfl > maxNormNegFloat32)
