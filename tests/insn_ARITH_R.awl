@@ -607,3 +607,146 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: asin(0.0)
+	__STWRST
+	L		0.0
+	ASIN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: asin(-0.0)
+	__STWRST
+	L		-0.0
+	ASIN
+	__ASSERT==	__ACCU 1,	-0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: asin(1.0)
+	__STWRST
+	L		1.0
+	ASIN
+	__ASSERT==	__ACCU 1,	MD 8	// PI/2
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(-1.0)
+	__STWRST
+	L		-1.0
+	ASIN
+	__ASSERT==	__ACCU 1,	MD 12	// -PI/2
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: acos(1.0)
+	__STWRST
+	L		1.0
+	ACOS
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: acos(0.0)
+	__STWRST
+	L		0.0
+	ACOS
+	__ASSERT==	__ACCU 1,	MD 8	// PI/2
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: acos(-1.0)
+	__STWRST
+	L		-1.0
+	ACOS
+	__ASSERT==	__ACCU 1,	MD 0	// PI
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(0.0)
+	__STWRST
+	L		0.0
+	ATAN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(-0.0)
+	__STWRST
+	L		-0.0
+	ATAN
+	__ASSERT==	__ACCU 1,	-0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(1.0)
+	__STWRST
+	L		1.0
+	ATAN
+	__ASSERT==	__ACCU 1,	MD 16	// PI/4
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(inf)
+	__STWRST
+	L		DW#16#7F800000
+	ATAN
+	__ASSERT==	__ACCU 1,	MD 8	// PI/2
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(-inf)
+	__STWRST
+	L		DW#16#FF800000
+	ATAN
+	__ASSERT==	__ACCU 1,	MD 12	// -PI/2
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(-1.0)
+	__STWRST
+	L		-1.0
+	ATAN
+	__ASSERT==	__ACCU 1,	MD 20	// -PI/4
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0

@@ -1837,6 +1837,36 @@ class AwlInsn_TAN(AwlInsn):
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.status.setForFloatingPoint(accu1)
 
+class AwlInsn_ASIN(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ASIN, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = math.asin(self.cpu.accu1.getPyFloat())
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_ACOS(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ACOS, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = math.acos(self.cpu.accu1.getPyFloat())
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_ATAN(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ATAN, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = math.atan(self.cpu.accu1.getPyFloat())
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
 class AwlInsn_T(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_T, rawInsn)
