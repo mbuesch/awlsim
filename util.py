@@ -95,9 +95,23 @@ def dwordToPyFloat(dword):
 
 # The smallest normalized positive 32-bit float.
 minNormPosFloat32 = dwordToPyFloat(0x00000001)
+# The smallest normalized negative 32-bit float.
+minNormNegFloat32 = dwordToPyFloat(0xFF7FFFFF)
 # The biggest normalized negative 32-bit float.
 maxNormNegFloat32 = dwordToPyFloat(0x80000001)
+# The biggest normalized positive 32-bit float.
+maxNormPosFloat32 = dwordToPyFloat(0x7F7FFFFF)
 
 def isDenormalPyFloat(pyfl):
 	return (pyfl > 0.0 and pyfl < minNormPosFloat32) or\
 	       (pyfl < 0.0 and pyfl > maxNormNegFloat32)
+
+def pyFloatEqual(pyfl0, pyfl1):
+	return abs(pyfl0 - pyfl1) < 0.000001
+
+def floatEqual(fl0, fl1):
+	if not isinstance(fl0, float):
+		fl0 = dwordToPyFloat(fl0)
+	if not isinstance(fl1, float):
+		fl1 = dwordToPyFloat(fl1)
+	return pyFloatEqual(fl0, fl1)

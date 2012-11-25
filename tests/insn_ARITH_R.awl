@@ -1,3 +1,33 @@
+	// Precalculate constants
+	// MD 0 = PI
+	// MD 4 = -PI
+	// MD 8 = PI/2
+	// MD 12 = -PI/2
+	// MD 16 = PI/4
+	// MD 20 = -PI/4
+	L		__CNST_PI
+	T		MD 0
+	NEGR
+	T		MD 4
+
+	L		__CNST_PI
+	L		2.0
+	/R
+	T		MD 8
+	NEGR
+	T		MD 12
+
+	L		__CNST_PI
+	L		4.0
+	/R
+	T		MD 16
+	NEGR
+	T		MD 20
+
+
+	// Run tests
+
+
 	__STWRST
 	L		1.0
 	L		1.0
@@ -359,3 +389,221 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: sin(0.0 deg)
+	__STWRST
+	L		0.0
+	SIN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(-0.0 deg)
+	__STWRST
+	L		-0.0
+	SIN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(90.0 deg)
+	__STWRST
+	L		MD 8	// PI/2
+	SIN
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(180.0 deg)
+	__STWRST
+	L		MD 0	// PI
+	SIN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(-90.0 deg)
+	__STWRST
+	L		MD 12	// -PI/2
+	SIN
+	__ASSERT==	__ACCU 1,	-1.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(-180.0 deg)
+	__STWRST
+	L		MD 4	// -PI
+	SIN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: cos(0.0 deg)
+	__STWRST
+	L		0.0
+	COS
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: cos(-0.0 deg)
+	__STWRST
+	L		-0.0
+	COS
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: cos(90.0 deg)
+	__STWRST
+	L		MD 8	// PI/2
+	COS
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: cos(180.0 deg)
+	__STWRST
+	L		MD 0	// PI
+	COS
+	__ASSERT==	__ACCU 1,	-1.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: cos(-90.0 deg)
+	__STWRST
+	L		MD 12	// -PI/2
+	COS
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: cos(-180.0 deg)
+	__STWRST
+	L		MD 4	// -PI
+	COS
+	__ASSERT==	__ACCU 1,	-1.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: tan(0.0 deg)
+	__STWRST
+	L		0.0
+	TAN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: tan(-0.0 deg)
+	__STWRST
+	L		-0.0
+	TAN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: tan(45.0 deg)
+	__STWRST
+	L		MD 16	// PI/4
+	TAN
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: tan(90.0 deg)
+	__STWRST
+	L		MD 8	// PI/2
+	TAN
+	__ASSERT==	__ACCU 1,	DW#16#7F800000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: tan(180.0 deg)
+	__STWRST
+	L		MD 0	// PI
+	TAN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: tan(-45.0 deg)
+	__STWRST
+	L		MD 20	// -PI/4
+	TAN
+	__ASSERT==	__ACCU 1,	-1.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: tan(-90.0 deg)
+	__STWRST
+	L		MD 12	// -PI/2
+	TAN
+	__ASSERT==	__ACCU 1,	DW#16#FF800000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: tan(-180.0 deg)
+	__STWRST
+	L		MD 4	// -PI
+	TAN
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0

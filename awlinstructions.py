@@ -174,15 +174,16 @@ class AwlInsn(object):
 	TYPE_NOP	= 155	# NOP
 
 	# Special instructions for debugging of the simulator
-	TYPE_EXTENDED	= 500
-	TYPE_ASSERT_EQ	= TYPE_EXTENDED + 0	# __ASSERT==
-	TYPE_ASSERT_NE	= TYPE_EXTENDED + 1	# __ASSERT<>
-	TYPE_ASSERT_GT	= TYPE_EXTENDED + 2	# __ASSERT>
-	TYPE_ASSERT_LT	= TYPE_EXTENDED + 3	# __ASSERT<
-	TYPE_ASSERT_GE	= TYPE_EXTENDED + 4	# __ASSERT>=
-	TYPE_ASSERT_LE	= TYPE_EXTENDED + 5	# __ASSERT<=
-	TYPE_SLEEP	= TYPE_EXTENDED + 6	# __SLEEP
-	TYPE_STWRST	= TYPE_EXTENDED + 7	# __STWRST
+	TYPE_EXTENDED		= 500
+	TYPE_ASSERT_EQ		= TYPE_EXTENDED + 0	# __ASSERT==
+	TYPE_ASSERT_EQ_R	= TYPE_EXTENDED + 1	# __ASSERT==R
+	TYPE_ASSERT_NE		= TYPE_EXTENDED + 2	# __ASSERT<>
+	TYPE_ASSERT_GT		= TYPE_EXTENDED + 3	# __ASSERT>
+	TYPE_ASSERT_LT		= TYPE_EXTENDED + 4	# __ASSERT<
+	TYPE_ASSERT_GE		= TYPE_EXTENDED + 5	# __ASSERT>=
+	TYPE_ASSERT_LE		= TYPE_EXTENDED + 6	# __ASSERT<=
+	TYPE_SLEEP		= TYPE_EXTENDED + 7	# __SLEEP
+	TYPE_STWRST		= TYPE_EXTENDED + 8	# __STWRST
 
 	name2type = {
 		"U"	: TYPE_U,
@@ -342,6 +343,7 @@ class AwlInsn(object):
 		"NOP"	: TYPE_NOP,
 
 		"__ASSERT=="	: TYPE_ASSERT_EQ,
+		"__ASSERT==R"	: TYPE_ASSERT_EQ_R,
 		"__ASSERT<>"	: TYPE_ASSERT_NE,
 		"__ASSERT>"	: TYPE_ASSERT_GT,
 		"__ASSERT<"	: TYPE_ASSERT_LT,
@@ -1790,6 +1792,51 @@ class AwlInsn_LN(AwlInsn):
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.status.setForFloatingPoint(accu1)
 
+class AwlInsn_SIN(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SIN, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = math.sin(self.cpu.accu1.getPyFloat())
+		for extremum in (-1.0, 0.0, 1.0):
+			if pyFloatEqual(accu1, extremum):
+				accu1 = extremum
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_COS(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_COS, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = math.cos(self.cpu.accu1.getPyFloat())
+		for extremum in (-1.0, 0.0, 1.0):
+			if pyFloatEqual(accu1, extremum):
+				accu1 = extremum
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
+class AwlInsn_TAN(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_TAN, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.getPyFloat()
+		if pyFloatEqual(accu1, math.pi / 2):
+			accu1 = dwordToPyFloat(0x7F800000)
+		elif pyFloatEqual(accu1, -math.pi / 2):
+			accu1 = dwordToPyFloat(0xFF800000)
+		else:
+			accu1 = math.tan(accu1)
+			for extremum in (-1.0, 0.0, 1.0):
+				if pyFloatEqual(accu1, extremum):
+					accu1 = extremum
+		self.cpu.accu1.setPyFloat(accu1)
+		self.cpu.status.setForFloatingPoint(accu1)
+
 class AwlInsn_T(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_T, rawInsn)
@@ -2249,6 +2296,19 @@ class AwlInsn_ASSERT_EQ(AwlInsn):
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 == val1):
+			raise AwlSimError("Assertion failed")
+		s.NER = 0
+
+class AwlInsn_ASSERT_EQ_R(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ASSERT_EQ_R, rawInsn)
+		self._assertOps(2)
+
+	def run(self):
+		s = self.cpu.status
+		val0 = self.cpu.fetch(self.ops[0])
+		val1 = self.cpu.fetch(self.ops[1])
+		if not floatEqual(val0, val1):
 			raise AwlSimError("Assertion failed")
 		s.NER = 0
 

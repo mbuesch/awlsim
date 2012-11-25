@@ -5,6 +5,8 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
+import math
+
 from util import *
 from awloperators import *
 from awlparser import *
@@ -81,6 +83,10 @@ class AwlOpTranslator(object):
 		"__STW"	 : OpDescriptor(AwlOperator.MEM_STW, 1, 0, -1, 2),
 		"__ACCU" : OpDescriptor(AwlOperator.VIRT_ACCU, 32, -1, 0, 2),
 		"__AR"	 : OpDescriptor(AwlOperator.VIRT_AR, 32, -1, 0, 2),
+		"__CNST_PI" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					   pyFloatToDWord(math.pi), 0, 1),
+		"__CNST_E" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					  pyFloatToDWord(math.e), 0, 1),
 	}
 
 	@classmethod
@@ -202,6 +208,7 @@ class AwlOpTranslator(object):
 
 	@classmethod
 	def fromRawOperators(cls, rawOps):
+		#TODO disable extended operands by default
 		op = cls.op2desc(rawOps[0])
 		if op.fieldCount == 2:
 			if len(rawOps) < 2:
