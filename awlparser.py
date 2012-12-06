@@ -243,6 +243,9 @@ class AwlParser(object):
 		insn.setLineNr(self.lineNr)
 		if tokens[0].endswith(":"):
 			# First token is a label
+			if len(tokens) <= 1:
+				raise AwlParserError("Invalid standalone "
+					"label: " + line)
 			label = tokens[0][0:-1]
 			if not label or not RawAwlInsn.isValidLabel(label):
 				raise AwlParserError("Invalid label: " + line)
