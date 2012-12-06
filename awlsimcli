@@ -96,7 +96,7 @@ def main():
 		finally:
 			writeStdout("\x1B[?25h\x1B[2J\x1B[H")
 			writeStdout(lastDump + '\n')
-	except AwlSimError as e:
+	except (AwlSimError, AwlParserError) as e:
 		print("-- AWL simulator error --")
 		print(str(e))
 		return 1
