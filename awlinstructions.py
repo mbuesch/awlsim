@@ -1079,6 +1079,15 @@ class AwlInsn_DTB(AwlInsn):
 		self.cpu.accu1.set(bcd)
 		s.OV, s.OS = 0, 0
 
+class AwlInsn_DTR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_DTR, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		accu1 = self.cpu.accu1.getSignedDWord()
+		self.cpu.accu1.setPyFloat(float(accu1))
+
 class AwlInsn_INVI(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_INVI, rawInsn)

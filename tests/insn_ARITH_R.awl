@@ -750,3 +750,17 @@
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: 1 -> 1.0
+	__STWRST
+	L		1
+	DTR
+	__ASSERT==	__ACCU 1,	1.0
+
+
+	// Test: -1 -> -1.0
+	__STWRST
+	L		L#-1
+	DTR
+	__ASSERT==	__ACCU 1,	-1.0

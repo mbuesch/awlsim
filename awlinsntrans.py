@@ -58,7 +58,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_BTD    	: AwlInsn_BTD,
 		AwlInsn.TYPE_ITD    	: AwlInsn_ITD,
 		AwlInsn.TYPE_DTB    	: AwlInsn_DTB,
-		AwlInsn.TYPE_DTR    	: AwlInsn_NotImplemented,
+		AwlInsn.TYPE_DTR    	: AwlInsn_DTR,
 		AwlInsn.TYPE_INVI   	: AwlInsn_INVI,
 		AwlInsn.TYPE_INVD   	: AwlInsn_INVD,
 		AwlInsn.TYPE_NEGI   	: AwlInsn_NEGI,
