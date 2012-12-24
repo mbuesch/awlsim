@@ -66,7 +66,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_NEGR   	: AwlInsn_NEGR,
 		AwlInsn.TYPE_TAW    	: AwlInsn_TAW,
 		AwlInsn.TYPE_TAD    	: AwlInsn_TAD,
-		AwlInsn.TYPE_RND    	: AwlInsn_NotImplemented,
+		AwlInsn.TYPE_RND    	: AwlInsn_RND,
 		AwlInsn.TYPE_TRUNC  	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_RNDP   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_RNDN   	: AwlInsn_NotImplemented,
