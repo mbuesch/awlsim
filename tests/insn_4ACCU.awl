@@ -1,0 +1,128 @@
+	// Switch to 4-accu mode
+	__SSPEC		0,	4
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	+I
+	__ASSERT==	__ACCU 1,	3
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	-I
+	__ASSERT==	__ACCU 1,	-1
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	*I
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	/I
+	__ASSERT==	__ACCU 1,	DW#16#00010000
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	+D
+	__ASSERT==	__ACCU 1,	3
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	-D
+	__ASSERT==	__ACCU 1,	L#-1
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	*D
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	/D
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	MOD
+	__ASSERT==	__ACCU 1,	1
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
