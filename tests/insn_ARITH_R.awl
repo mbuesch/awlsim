@@ -837,3 +837,74 @@
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
 
+
+	// Test: TRUNC(1.1)
+	__STWRST
+	L		1.1
+	TRUNC
+	__ASSERT==	__ACCU 1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: TRUNC(1.5)
+	__STWRST
+	L		1.5
+	TRUNC
+	__ASSERT==	__ACCU 1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: TRUNC(2.5)
+	__STWRST
+	L		2.5
+	TRUNC
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: TRUNC(-1.1)
+	__STWRST
+	L		-1.1
+	TRUNC
+	__ASSERT==	__ACCU 1,	L#-1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: TRUNC(-1.5)
+	__STWRST
+	L		-1.5
+	TRUNC
+	__ASSERT==	__ACCU 1,	L#-1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: TRUNC(-2.5)
+	__STWRST
+	L		-2.5
+	TRUNC
+	__ASSERT==	__ACCU 1,	L#-2
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: TRUNC(3000000000.0)
+	__STWRST
+	L		3000000000.0
+	TRUNC
+	__ASSERT==	__ACCU 1,	3000000000.0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: TRUNC(NAN)
+	__STWRST
+	L		DW#16#FFFFFFFF
+	TRUNC
+	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
