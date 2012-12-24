@@ -113,6 +113,17 @@ class CallStackElem(object):
 	def destroy(self):
 		self.localdataCache.put(self.localdata)
 
+class McrStackElem(object):
+	"MCR stack element"
+
+	def __init__(self, statusWord):
+		self.VKE = statusWord.VKE
+
+	def __bool__(self):
+		return bool(self.VKE)
+
+	__nonzero__ = __bool__
+
 class S7CPUSpecs(object):
 	"STEP 7 CPU Specifications"
 
@@ -278,6 +289,8 @@ class S7CPU(object):
 		self.ar2 = Adressregister()
 		self.globDB = None
 		self.callStack = [ ]
+		self.setMcrActive(False)
+		self.mcrStack = [ ]
 
 		self.relativeJump = 1
 
@@ -467,6 +480,27 @@ class S7CPU(object):
 
 	def getSpecs(self):
 		return self.specs
+
+	def setMcrActive(self, active):
+		self.mcrActive = active
+
+	def mcrIsOn(self):
+		if not self.mcrActive:
+			return True
+		if all(self.mcrStack):
+			return True
+		return False
+
+	def mcrStackAppend(self, statusWord):
+		self.mcrStack.append(McrStackElem(statusWord))
+		if len(self.mcrStack) > 8:
+			raise AwlSimError("MCR stack overflow")
+
+	def mcrStackPop(self):
+		try:
+			return self.mcrStack.pop()
+		except IndexError:
+			raise AwlSimError("MCR stack underflow")
 
 	def parenStackAppend(self, insnType, statusWord):
 		self.parenStack.append(ParenStackElem(insnType, statusWord))

@@ -605,9 +605,11 @@ class AwlInsn_ASSIGN(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		#TODO MCR
-		self.cpu.store(self.ops[0], s.VKE)
-		s.OR, s.STA, s.NER = 0, s.VKE, 0
+		s.STA = s.VKE
+		if not self.cpu.mcrIsOn():
+			s.STA = 0
+		self.cpu.store(self.ops[0], s.STA)
+		s.OR, s.NER = 0, 0
 
 class AwlInsn_R(AwlInsn):
 	def __init__(self, rawInsn):
@@ -626,8 +628,7 @@ class AwlInsn_R(AwlInsn):
 				self.cpu.getTimer(oper.offset).reset()
 			s.OR, s.NER = 0, 0
 		else:
-			#TODO MCR
-			if s.VKE:
+			if s.VKE and self.cpu.mcrIsOn():
 				self.cpu.store(oper, 0)
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
 
@@ -643,8 +644,7 @@ class AwlInsn_S(AwlInsn):
 			self.cpu.getCounter(oper.offset).set(s.VKE)
 			s.OR, s.NER = 0, 0
 		else:
-			#TODO MCR
-			if s.VKE:
+			if s.VKE and self.cpu.mcrIsOn():
 				self.cpu.store(oper, 1)
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
 
@@ -1974,8 +1974,10 @@ class AwlInsn_T(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		#TODO MCR
-		self.cpu.store(self.ops[0], self.cpu.accu1.get())
+		if self.cpu.mcrIsOn():
+			self.cpu.store(self.ops[0], self.cpu.accu1.get())
+		else:
+			self.cpu.store(self.ops[0], 0)
 
 class AwlInsn_BE(AwlInsn):
 	def __init__(self, rawInsn):
@@ -2040,6 +2042,42 @@ class AwlInsn_UC(AwlInsn):
 		s = self.cpu.status
 		self.cpu.run_CALL(self.ops[0])
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
+
+class AwlInsn_MCRB(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_MCRB, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		self.cpu.mcrStackAppend(s)
+		s.OR, s.STA, s.NER = 0, 1, 0
+
+class AwlInsn_BMCR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_BMCR, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		self.cpu.mcrStackPop()
+		s.OR, s.STA, s.NER = 0, 1, 0
+
+class AwlInsn_MCRA(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_MCRA, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.setMcrActive(True)
+
+class AwlInsn_MCRD(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_MCRD, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.setMcrActive(False)
 
 class AwlInsn_SSI(AwlInsn):
 	def __init__(self, rawInsn):

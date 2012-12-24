@@ -1,0 +1,75 @@
+	__STWRST
+	MCRA
+	SET
+	MCR(
+	SET
+	MCR(
+	SET
+	=		A 0.0
+	)MCR
+	)MCR
+	MCRD
+	__ASSERT==	A 0.0,		1
+
+
+	__STWRST
+	MCRA
+	CLR
+	MCR(
+	SET
+	MCR(
+	SET
+	=		A 0.0
+	)MCR
+	)MCR
+	MCRD
+	__ASSERT==	A 0.0,		0
+
+
+	__STWRST
+	MCRD
+	CLR
+	MCR(
+	SET
+	=		A 0.0
+	)MCR
+	__ASSERT==	A 0.0,		1
+
+
+	__STWRST
+	SET
+	=		A 0.0
+	__ASSERT==	A 0.0,		1
+	MCRA
+	CLR
+	MCR(
+	SET
+	R		A 0.0
+	)MCR
+	MCRD
+	__ASSERT==	A 0.0,		1
+
+
+	__STWRST
+	CLR
+	=		A 0.0
+	__ASSERT==	A 0.0,		0
+	MCRA
+	CLR
+	MCR(
+	SET
+	S		A 0.0
+	)MCR
+	MCRD
+	__ASSERT==	A 0.0,		0
+
+
+	__STWRST
+	L		1
+	MCRA
+	CLR
+	MCR(
+	T		MD 0
+	)MCR
+	MCRD
+	__ASSERT==	MD 0,		0
