@@ -113,11 +113,75 @@ class CallStackElem(object):
 	def destroy(self):
 		self.localdataCache.put(self.localdata)
 
+class S7CPUSpecs(object):
+	"STEP 7 CPU Specifications"
+
+	def __init__(self, cpu):
+		self.cpu = None
+		self.setNrAccus(2)
+		self.setNrTimers(2048)
+		self.setNrCounters(2048)
+		self.setNrFlags(8192)
+		self.setNrInputs(8192)
+		self.setNrOutputs(8192)
+		self.cpu = cpu
+
+	def setNrAccus(self, count):
+		if count not in (2, 4):
+			raise AwlSimError("Invalid number of accus")
+		self.nrAccus = count
+		if self.cpu:
+			self.cpu.reset()
+
+	def getNrAccus(self):
+		return self.nrAccus
+
+	def setNrTimers(self, count):
+		self.nrTimers = count
+		if self.cpu:
+			self.cpu.reset()
+
+	def getNrTimers(self):
+		return self.nrTimers
+
+	def setNrCounters(self, count):
+		self.nrCounters = count
+		if self.cpu:
+			self.cpu.reset()
+
+	def getNrCounters(self):
+		return self.nrCounters
+
+	def setNrFlags(self, count):
+		self.nrFlags = count
+		if self.cpu:
+			self.cpu.reset()
+
+	def getNrFlags(self):
+		return self.nrFlags
+
+	def setNrInputs(self, count):
+		self.nrInputs = count
+		if self.cpu:
+			self.cpu.reset()
+
+	def getNrInputs(self):
+		return self.nrInputs
+
+	def setNrOutputs(self, count):
+		self.nrOutputs = count
+		if self.cpu:
+			self.cpu.reset()
+
+	def getNrOutputs(self):
+		return self.nrOutputs
+
 class S7CPU(object):
 	"STEP 7 CPU"
 
 	def __init__(self, sim):
 		self.sim = sim
+		self.specs = S7CPUSpecs(self)
 		self.setCycleTimeLimit(5.0)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
@@ -184,15 +248,25 @@ class S7CPU(object):
 		self.fbs = {
 			# User FBs
 		}
-		self.accu1 = Accu()
-		self.accu2 = Accu()
+		self.accu1, self.accu2 = Accu(), Accu()
+		if self.specs.getNrAccus() == 2:
+			self.accu3, self.accu4 = None, None
+		elif self.specs.getNrAccus() == 4:
+			self.accu3, self.accu4 = Accu(), Accu()
+		else:
+			assert(0)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
-		self.timers = [ Timer(self, i) for i in range(2048) ]
-		self.counters = [ Counter(self, i) for i in range(2048) ]
-		self.flags = [ FlagByte() for _ in range(8192) ]
-		self.inputs = [ InputByte() for _ in range(8192) ]
-		self.outputs = [ OutputByte() for _ in range(8192) ]
+		self.timers = [ Timer(self, i)
+				for i in range(self.specs.getNrTimers()) ]
+		self.counters = [ Counter(self, i)
+				  for i in range(self.specs.getNrCounters()) ]
+		self.flags = [ FlagByte()
+			       for _ in range(self.specs.getNrFlags()) ]
+		self.inputs = [ InputByte()
+				for _ in range(self.specs.getNrInputs()) ]
+		self.outputs = [ OutputByte()
+				 for _ in range(self.specs.getNrOutputs()) ]
 		self.globDB = None
 		self.callStack = [ ]
 
@@ -221,6 +295,10 @@ class S7CPU(object):
 			cb = lambda x: None
 		self.cbPostInsn = cb
 		self.cbPostInsnData = data
+
+	@property
+	def is4accu(self):
+		return self.accu4 is not None
 
 	# Get the active status word
 	@property
@@ -376,6 +454,9 @@ class S7CPU(object):
 			return self.counters[index]
 		except IndexError as e:
 			raise AwlSimError("Fetched invalid counter %d" % index)
+
+	def getSpecs(self):
+		return self.specs
 
 	def parenStackAppend(self, insnType, statusWord):
 		self.parenStack.append(ParenStackElem(insnType, statusWord))
