@@ -1979,6 +1979,16 @@ class AwlInsn_T(AwlInsn):
 		else:
 			self.cpu.store(self.ops[0], 0)
 
+class AwlInsn_TAR(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_TAR, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		oldAr1 = self.cpu.ar1.get()
+		self.cpu.ar1.set(self.cpu.ar2.get())
+		self.cpu.ar2.set(oldAr1)
+
 class AwlInsn_BE(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_BE, rawInsn)

@@ -123,7 +123,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_LAR1   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_LAR2   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_T	    	: AwlInsn_T,
-		AwlInsn.TYPE_TAR    	: AwlInsn_NotImplemented,
+		AwlInsn.TYPE_TAR    	: AwlInsn_TAR,
 		AwlInsn.TYPE_TAR1   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_TAR2   	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_BE	    	: AwlInsn_BE,
