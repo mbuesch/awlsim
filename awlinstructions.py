@@ -184,6 +184,7 @@ class AwlInsn(object):
 	TYPE_ASSERT_LE		= TYPE_EXTENDED + 6	# __ASSERT<=
 	TYPE_SLEEP		= TYPE_EXTENDED + 7	# __SLEEP
 	TYPE_STWRST		= TYPE_EXTENDED + 8	# __STWRST
+	TYPE_SSPEC		= TYPE_EXTENDED + 9	# __SSPEC
 
 	name2type = {
 		"U"	: TYPE_U,
@@ -351,6 +352,7 @@ class AwlInsn(object):
 		"__ASSERT<="	: TYPE_ASSERT_LE,
 		"__SLEEP"	: TYPE_SLEEP,
 		"__STWRST"	: TYPE_STWRST,
+		"__SSPEC"	: TYPE_SSPEC,
 	}
 
 	type2name = { }
@@ -1539,11 +1541,13 @@ class AwlInsn_PL_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		_sum = self.cpu.accu1.getSignedWord() +\
 		       self.cpu.accu2.getSignedWord()
 		self.cpu.accu1.setWord(_sum)
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		accu1 = self.cpu.accu1.getSignedWord()
 		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
@@ -1560,11 +1564,13 @@ class AwlInsn_MI_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		diff = self.cpu.accu2.getSignedWord() -\
 		       self.cpu.accu1.getSignedWord()
 		self.cpu.accu1.setWord(diff)
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		accu1 = self.cpu.accu1.getSignedWord()
 		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
@@ -1581,11 +1587,13 @@ class AwlInsn_MU_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		prod = self.cpu.accu2.getSignedWord() *\
 		       self.cpu.accu1.getSignedWord()
 		self.cpu.accu1.setDWord(prod)
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		if prod == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif prod < 0:
@@ -1601,10 +1609,12 @@ class AwlInsn_DI_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		accu2, accu1 = self.cpu.accu2.getSignedWord(),\
 			       self.cpu.accu1.getSignedWord()
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		try:
 			quo = abs(accu2) // abs(accu1)
 			if int(accu1 < 0) ^ int(accu2 < 0):
@@ -1650,11 +1660,13 @@ class AwlInsn_PL_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		_sum = self.cpu.accu2.getSignedDWord() +\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(_sum)
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		accu1 = self.cpu.accu1.getSignedDWord()
 		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
@@ -1671,11 +1683,13 @@ class AwlInsn_MI_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		diff = self.cpu.accu2.getSignedDWord() -\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(diff)
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		accu1 = self.cpu.accu1.getSignedDWord()
 		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
@@ -1692,11 +1706,13 @@ class AwlInsn_MU_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		#TODO 4-accu CPU
 		s = self.cpu.status
 		prod = self.cpu.accu2.getSignedDWord() *\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(prod)
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		if prod == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
 		elif prod < 0:
@@ -1713,10 +1729,11 @@ class AwlInsn_DI_D(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		#TODO 4-accu CPU
-		s = self.cpu.status
 		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\
 			       self.cpu.accu1.getSignedDWord()
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		try:
 			quo = abs(accu2) // abs(accu1)
 			if int(accu1 < 0) ^ int(accu2 < 0):
@@ -1741,10 +1758,11 @@ class AwlInsn_MOD(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		#TODO 4-accu CPU
-		s = self.cpu.status
 		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\
 			       self.cpu.accu1.getSignedDWord()
+		if self.cpu.is4accu:
+			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
 		try:
 			rem = abs(accu2) % abs(accu1)
 			if accu2 < 0:
@@ -2435,6 +2453,28 @@ class AwlInsn_POP(AwlInsn):
 	def run(self):
 		self.cpu.accu1.set(self.cpu.accu2.get())
 
+class AwlInsn_ENT(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_ENT, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		if not self.cpu.is4accu:
+			raise AwlSimError("ENT not supported on 2-accu CPU")
+		self.cpu.accu4.setDWord(self.cpu.accu3.getDWord())
+		self.cpu.accu3.setDWord(self.cpu.accu2.getDWord())
+
+class AwlInsn_LEAVE(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_LEAVE, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		if not self.cpu.is4accu:
+			raise AwlSimError("LEAVE not supported on 2-accu CPU")
+		self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
+		self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
+
 class AwlInsn_INC(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_INC, rawInsn)
@@ -2602,3 +2642,16 @@ class AwlInsn_STWRST(AwlInsn):
 
 	def run(self):
 		self.cpu.status.reset()
+
+class AwlInsn_SSPEC(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_SSPEC, rawInsn)
+		self._assertOps(2)
+
+	def run(self):
+		target = self.cpu.fetch(self.ops[0])
+		value = self.cpu.fetch(self.ops[1])
+		if target == 0:
+			self.cpu.specs.setNrAccus(value)
+		else:
+			raise AwlSimError("Unsupported SSPEC target")

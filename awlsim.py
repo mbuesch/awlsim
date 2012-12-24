@@ -131,7 +131,7 @@ class S7CPUSpecs(object):
 			raise AwlSimError("Invalid number of accus")
 		self.nrAccus = count
 		if self.cpu:
-			self.cpu.reset()
+			self.cpu.reallocate()
 
 	def getNrAccus(self):
 		return self.nrAccus
@@ -139,7 +139,7 @@ class S7CPUSpecs(object):
 	def setNrTimers(self, count):
 		self.nrTimers = count
 		if self.cpu:
-			self.cpu.reset()
+			self.cpu.reallocate()
 
 	def getNrTimers(self):
 		return self.nrTimers
@@ -147,7 +147,7 @@ class S7CPUSpecs(object):
 	def setNrCounters(self, count):
 		self.nrCounters = count
 		if self.cpu:
-			self.cpu.reset()
+			self.cpu.reallocate()
 
 	def getNrCounters(self):
 		return self.nrCounters
@@ -155,7 +155,7 @@ class S7CPUSpecs(object):
 	def setNrFlags(self, count):
 		self.nrFlags = count
 		if self.cpu:
-			self.cpu.reset()
+			self.cpu.reallocate()
 
 	def getNrFlags(self):
 		return self.nrFlags
@@ -163,7 +163,7 @@ class S7CPUSpecs(object):
 	def setNrInputs(self, count):
 		self.nrInputs = count
 		if self.cpu:
-			self.cpu.reset()
+			self.cpu.reallocate()
 
 	def getNrInputs(self):
 		return self.nrInputs
@@ -171,7 +171,7 @@ class S7CPUSpecs(object):
 	def setNrOutputs(self, count):
 		self.nrOutputs = count
 		if self.cpu:
-			self.cpu.reset()
+			self.cpu.reallocate()
 
 	def getNrOutputs(self):
 		return self.nrOutputs
@@ -235,6 +235,31 @@ class S7CPU(object):
 		except KeyError:
 			raise AwlSimError("No OB1 defined")
 
+	def reallocate(self, force=False):
+		if force or (self.specs.getNrAccus() == 4) != self.is4accu:
+			self.accu1, self.accu2 = Accu(), Accu()
+			if self.specs.getNrAccus() == 2:
+				self.accu3, self.accu4 = None, None
+			elif self.specs.getNrAccus() == 4:
+				self.accu3, self.accu4 = Accu(), Accu()
+			else:
+				assert(0)
+		if force or self.specs.getNrTimers() != len(self.timers):
+			self.timers = [ Timer(self, i)
+					for i in range(self.specs.getNrTimers()) ]
+		if force or self.specs.getNrCounters() != len(self.counters):
+			self.counters = [ Counter(self, i)
+					  for i in range(self.specs.getNrCounters()) ]
+		if force or self.specs.getNrFlags() != len(self.flags):
+			self.flags = [ FlagByte()
+				       for _ in range(self.specs.getNrFlags()) ]
+		if force or self.specs.getNrInputs() != len(self.inputs):
+			self.inputs = [ InputByte()
+					for _ in range(self.specs.getNrInputs()) ]
+		if force or self.specs.getNrOutputs() != len(self.outputs):
+			self.outputs = [ OutputByte()
+					 for _ in range(self.specs.getNrOutputs()) ]
+
 	def reset(self):
 		self.dbs = {
 			# User DBs
@@ -248,25 +273,9 @@ class S7CPU(object):
 		self.fbs = {
 			# User FBs
 		}
-		self.accu1, self.accu2 = Accu(), Accu()
-		if self.specs.getNrAccus() == 2:
-			self.accu3, self.accu4 = None, None
-		elif self.specs.getNrAccus() == 4:
-			self.accu3, self.accu4 = Accu(), Accu()
-		else:
-			assert(0)
+		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
-		self.timers = [ Timer(self, i)
-				for i in range(self.specs.getNrTimers()) ]
-		self.counters = [ Counter(self, i)
-				  for i in range(self.specs.getNrCounters()) ]
-		self.flags = [ FlagByte()
-			       for _ in range(self.specs.getNrFlags()) ]
-		self.inputs = [ InputByte()
-				for _ in range(self.specs.getNrInputs()) ]
-		self.outputs = [ OutputByte()
-				 for _ in range(self.specs.getNrOutputs()) ]
 		self.globDB = None
 		self.callStack = [ ]
 
@@ -434,9 +443,10 @@ class S7CPU(object):
 		return self.status
 
 	def getAccu(self, index):
-		if index < 1 or index > 2:
+		if index < 1 or index > self.specs.getNrAccus():
 			raise AwlSimError("Invalid ACCU offset")
-		return (self.accu1, self.accu2)[index - 1]
+		return (self.accu1, self.accu2,
+			self.accu3, self.accu4)[index - 1]
 
 	def getAR(self, index):
 		if index < 1 or index > 2:
@@ -718,8 +728,14 @@ class S7CPU(object):
 			return ""
 		ret = [ "S7-CPU dump:" ]
 		ret.append(" status:  " + str(self.status))
-		ret.append("   ACCU:  " + self.accu1.toHex() + "  " +\
-					  self.accu2.toHex())
+		if self.is4accu:
+			accus = [ accu.toHex()
+				  for accu in (self.accu1, self.accu2,
+				  	       self.accu3, self.accu4) ]
+		else:
+			accus = [ accu.toHex()
+				  for accu in (self.accu1, self.accu2) ]
+		ret.append("   ACCU:  " + "  ".join(accus))
 		ret.append("     AR:  " + self.ar1.toHex() + "  " +\
 					  self.ar2.toHex())
 		ret.append(self.__dumpMem("      M:  ",

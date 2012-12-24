@@ -160,8 +160,8 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_TAK    	: AwlInsn_TAK,
 		AwlInsn.TYPE_PUSH   	: AwlInsn_PUSH,
 		AwlInsn.TYPE_POP    	: AwlInsn_POP,
-		AwlInsn.TYPE_ENT    	: AwlInsn_NotImplemented,
-		AwlInsn.TYPE_LEAVE  	: AwlInsn_NotImplemented,
+		AwlInsn.TYPE_ENT    	: AwlInsn_ENT,
+		AwlInsn.TYPE_LEAVE  	: AwlInsn_LEAVE,
 		AwlInsn.TYPE_INC    	: AwlInsn_INC,
 		AwlInsn.TYPE_DEC    	: AwlInsn_DEC,
 		AwlInsn.TYPE_INCAR1 	: AwlInsn_INCAR1,
@@ -178,6 +178,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_ASSERT_LE		: AwlInsn_ASSERT_LE,
 		AwlInsn.TYPE_SLEEP		: AwlInsn_SLEEP,
 		AwlInsn.TYPE_STWRST		: AwlInsn_STWRST,
+		AwlInsn.TYPE_SSPEC		: AwlInsn_SSPEC,
 	}
 
 	@classmethod

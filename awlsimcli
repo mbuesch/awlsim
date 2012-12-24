@@ -13,6 +13,7 @@ from awlsim import *
 
 
 opt_onecycle = False
+opt_fouraccu = False
 opt_quiet = False
 opt_extInsns = False
 
@@ -24,6 +25,7 @@ def usage():
 	print("")
 	print("Options:")
 	print(" -1|--onecycle         Only run one cycle")
+	print(" -4|--fouraccu         Enable 4-accu mode")
 	print(" -q|--quiet            No status messages")
 
 def writeStdout(message):
@@ -53,6 +55,7 @@ def blockExitCallback(cpu):
 
 def main():
 	global opt_onecycle
+	global opt_fouraccu
 	global opt_quiet
 	global opt_extInsns
 
@@ -70,6 +73,8 @@ def main():
 			return 0
 		if o in ("-1", "--onecycle"):
 			opt_onecycle = True
+		if o in ("-4", "--fouraccu"):
+			opt_fouraccu = True
 		if o in ("-q", "--quiet"):
 			opt_quiet = True
 		if o in ("-x", "--extended-insns"):
@@ -85,6 +90,7 @@ def main():
 		s = AwlSim()
 		cpu = s.getCPU()
 		cpu.enableExtendedInsns(opt_extInsns)
+		cpu.getSpecs().setNrAccus(4 if opt_fouraccu else 2)
 		s.load(p.getParseTree())
 		cpu.setBlockExitCallback(blockExitCallback, cpu)
 		try:
