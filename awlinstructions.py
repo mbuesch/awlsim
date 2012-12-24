@@ -1231,6 +1231,26 @@ class AwlInsn_RNDP(AwlInsn):
 			return
 		self.cpu.accu1.setDWord(rounded)
 
+class AwlInsn_RNDN(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_RNDN, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getPyFloat()
+		try:
+			rounded = int(accu1)
+			if rounded < 0 and\
+			   not pyFloatEqual(float(rounded), accu1):
+				rounded -= 1
+			if accu1 > 2147483647 or accu1 < -2147483648:
+				raise ValueError
+		except ValueError:
+			s.OV, s.OS = 1, 1
+			return
+		self.cpu.accu1.setDWord(rounded)
+
 class AwlInsn_FR(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_FR, rawInsn)
