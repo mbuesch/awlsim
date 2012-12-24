@@ -846,6 +846,46 @@ class EditWidget(QPlainTextEdit):
 	def getCode(self):
 		return self.toPlainText()
 
+class CpuConfigDialog(QDialog):
+	def __init__(self, parent, sim):
+		QDialog.__init__(self, parent)
+		self.sim = sim
+		self.setWindowTitle("CPU configuration")
+
+		self.__updateBlocked = 0
+
+		self.setLayout(QGridLayout(self))
+
+		label = QLabel("Number of accumulator registers", self)
+		self.layout().addWidget(label, 0, 0)
+		self.accuCombo = QComboBox(self)
+		self.accuCombo.addItem("2 accus", 2)
+		self.accuCombo.addItem("4 accus", 4)
+		self.layout().addWidget(self.accuCombo, 0, 1)
+
+		self.closeButton = QPushButton("Close", self)
+		self.layout().addWidget(self.closeButton, 1, 1)
+
+		self.accuCombo.currentIndexChanged.connect(self.__accuConfigChanged)
+		self.closeButton.released.connect(self.accept)
+
+		self.loadConfig()
+
+	def loadConfig(self):
+		specs = self.sim.getCPU().getSpecs()
+		self.__updateBlocked += 1
+		index = self.accuCombo.findData(specs.getNrAccus())
+		assert(index >= 0)
+		self.accuCombo.setCurrentIndex(index)
+		self.__updateBlocked -= 1
+
+	def __accuConfigChanged(self):
+		if self.__updateBlocked:
+			return
+		specs = self.sim.getCPU().getSpecs()
+		index = self.accuCombo.currentIndex()
+		specs.setNrAccus(self.accuCombo.itemData(index))
+
 class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)
 	runStateChanged = Signal(int)
@@ -939,6 +979,10 @@ class MainWidget(QWidget):
 		else:
 			return self.saveFile(self.filename)
 
+	def cpuConfig(self):
+		dlg = CpuConfigDialog(self, self.sim)
+		dlg.exec_()
+
 class MainWindow(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
@@ -955,6 +999,10 @@ class MainWindow(QMainWindow):
 		menu.addAction("&Save as...", self.saveAs)
 		menu.addSeparator()
 		menu.addAction("&Exit...", self.close)
+		self.menuBar().addMenu(menu)
+
+		menu = QMenu("&Simulator", self)
+		menu.addAction("&CPU config...", self.cpuConfig)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("Help", self)
@@ -1053,6 +1101,9 @@ class MainWindow(QMainWindow):
 
 	def saveAs(self):
 		self.centralWidget().save(True)
+
+	def cpuConfig(self):
+		self.centralWidget().cpuConfig()
 
 def main():
 	app = QApplication(sys.argv)

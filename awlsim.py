@@ -773,11 +773,14 @@ class S7CPU(object):
 		ret.append("     AR:  " + self.ar1.toHex() + "  " +\
 					  self.ar2.toHex())
 		ret.append(self.__dumpMem("      M:  ",
-					  self.flags, 64))
+					  self.flags,
+					  min(64, self.specs.getNrFlags())))
 		ret.append(self.__dumpMem("    PAE:  ",
-					  self.inputs, 64))
+					  self.inputs,
+					  min(64, self.specs.getNrInputs())))
 		ret.append(self.__dumpMem("    PAA:  ",
-					  self.outputs, 64))
+					  self.outputs,
+					  min(64, self.specs.getNrOutputs())))
 		ret.append(" PStack:  " + str(self.parenStack))
 		ret.append("  insn.:  IP:%s    %s" %\
 			   (str(self.getCurrentIP()),
