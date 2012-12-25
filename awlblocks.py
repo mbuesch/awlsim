@@ -11,28 +11,47 @@ from util import *
 
 
 class Block(object):
-	def __init__(self, insns):
+	def __init__(self, insns, index):
 		self.insns = insns
 		self.labels = None
+		self.index = index
 		if insns:
 			self.labels = AwlLabel.resolveLabels(insns)
 
+	def __repr__(self):
+		return "Block %d" % self.index
+
 class OB(Block):
-	def __init__(self, insns):
-		Block.__init__(self, insns)
+	def __init__(self, insns, index):
+		Block.__init__(self, insns, index)
+
+	def __repr__(self):
+		return "OB %d" % self.index
 
 class FB(Block):
-	def __init__(self, insns):
-		Block.__init__(self, insns)
+	def __init__(self, insns, index):
+		Block.__init__(self, insns, index)
+
+	def __repr__(self):
+		return "FB %d" % self.index
 
 class SFB(Block):
-	def __init__(self):
-		Block.__init__(self, None)
+	def __init__(self, index):
+		Block.__init__(self, None, index)
+
+	def __repr__(self):
+		return "SFB %d" % self.index
 
 class FC(Block):
-	def __init__(self, insns):
-		Block.__init__(self, insns)
+	def __init__(self, insns, index):
+		Block.__init__(self, insns, index)
+
+	def __repr__(self):
+		return "FC %d" % self.index
 
 class SFC(Block):
-	def __init__(self):
-		Block.__init__(self, None)
+	def __init__(self, index):
+		Block.__init__(self, None, index)
+
+	def __repr__(self):
+		return "SFC %d" % self.index

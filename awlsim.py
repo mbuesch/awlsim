@@ -114,15 +114,25 @@ class CallStackElem(object):
 		self.ip = 0
 		self.localdata = self.localdataCache.get(cpu)
 		assert(len(self.localdata) == cpu.specs.getNrLocalbytes())
-		self.insns = block.insns
-		self.labels = block.labels
+		self.block = block
 		self.db = db
+
+	@property
+	def insns(self):
+		return self.block.insns
+
+	@property
+	def labels(self):
+		return self.block.labels
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.
 		if len(self.localdata) == self.cpu.specs.getNrLocalbytes():
 			self.localdataCache.put(self.localdata)
 		self.localdata = None
+
+	def __repr__(self):
+		return str(self.block)
 
 class McrStackElem(object):
 	"MCR stack element"
@@ -251,16 +261,16 @@ class S7CPU(object):
 		self.reset()
 		for obNumber in parseTree.obs.keys():
 			insns = self.__translateInsns(parseTree.obs[obNumber].insns)
-			self.obs[obNumber] = OB(insns)
+			self.obs[obNumber] = OB(insns, obNumber)
 		for fbNumber in parseTree.fbs.keys():
 			insns = self.__translateInsns(parseTree.fbs[fbNumber].insns)
-			self.fbs[fbNumber] = FB(insns)
+			self.fbs[fbNumber] = FB(insns, fbNumber)
 		for fcNumber in parseTree.fcs.keys():
 			insns = self.__translateInsns(parseTree.fcs[fcNumber].insns)
-			self.fcs[fcNumber] = FC(insns)
+			self.fcs[fcNumber] = FC(insns, fcNumber)
 		for dbNumber in parseTree.dbs.keys():
 			#TODO
-			self.dbs[dbNumber] = DB()
+			self.dbs[dbNumber] = DB(dbNumber)
 		try:
 			self.obs[1]
 		except KeyError:
@@ -363,7 +373,7 @@ class S7CPU(object):
 	def runCycle(self):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
-		self.callStack = [ CallStackElem(self, self.obs[1], DB()) ]
+		self.callStack = [ CallStackElem(self, self.obs[1], None) ]
 		# Run the user program cycle
 		while self.callStack:
 			cse = self.callStack[-1]
@@ -469,6 +479,24 @@ class S7CPU(object):
 		# Jump beyond end of block
 		cse = self.callStack[-1]
 		self.relativeJump = len(cse.insns) - cse.ip
+
+	def run_AUF(self, dbOper):
+		try:
+			db = self.dbs[dbOper.offset]
+		except KeyError:
+			raise AwlSimError("Datablock %i does not exist" %\
+					  dbOper.offset)
+		if dbOper.type == AwlOperator.BLKREF_DB:
+			self.globDB = db
+		elif dbOper.type == AwlOperator.BLKREF_DI:
+			self.callStack[-1].db = db
+		else:
+			raise AwlSimError("Invalid DB reference in AUF")
+
+	def run_TDB(self):
+		cse = self.callStack[-1]
+		# Swap global and instance DB
+		cse.db, self.globDB = self.globDB, cse.db
 
 	def updateTimestamp(self):
 		self.now = time.time()
@@ -802,7 +830,21 @@ class S7CPU(object):
 		ret.append(self.__dumpMem("    PAA:  ",
 					  self.outputs,
 					  min(64, self.specs.getNrOutputs())))
-		ret.append(" PStack:  " + str(self.parenStack))
+		pstack = str(self.parenStack) if self.parenStack else "Empty"
+		ret.append(" PStack:  " + pstack)
+		ret.append(" GlobDB:  %s" % str(self.globDB))
+		if self.callStack:
+			elems = [ str(cse) for cse in self.callStack ]
+			elems = " => ".join(elems)
+			ret.append(" CStack:  depth:%d  stack: %s" %\
+				   (len(self.callStack), elems))
+			cse = self.callStack[-1]
+			ret.append(self.__dumpMem("      L:  ",
+						  cse.localdata,
+						  min(16, self.specs.getNrLocalbytes())))
+			ret.append(" InstDB:  %s" % str(cse.db))
+		else:
+			ret.append(" CStack:  Empty")
 		ret.append("  insn.:  IP:%s    %s" %\
 			   (str(self.getCurrentIP()),
 			    str(self.getCurrentInsn())))

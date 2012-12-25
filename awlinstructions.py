@@ -1309,6 +1309,25 @@ class AwlInsn_ZR(AwlInsn):
 		counter.run_ZR(self.cpu.status.VKE)
 		s.OR, s.NER = 0, 0
 
+class AwlInsn_AUF(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_AUF, rawInsn)
+		self._assertOps(1)
+		if self.ops[0].type != AwlOperator.BLKREF_DB and\
+		   self.ops[0].type != AwlOperator.BLKREF_DI:
+			raise AwlSimError("Invalid operator")
+
+	def run(self):
+		self.cpu.run_AUF(self.ops[0])
+
+class AwlInsn_TDB(AwlInsn):
+	def __init__(self, rawInsn):
+		AwlInsn.__init__(self, AwlInsn.TYPE_TDB, rawInsn)
+		self._assertOps(0)
+
+	def run(self):
+		self.cpu.run_TDB()
+
 class AwlInsn_SPA(AwlInsn):
 	def __init__(self, rawInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_SPA, rawInsn)

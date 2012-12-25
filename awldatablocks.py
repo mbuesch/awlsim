@@ -10,8 +10,8 @@ from util import *
 
 
 class DB(object):
-	def __init__(self):
-		pass
+	def __init__(self, index):
+		self.index = index
 
 	def fetch(self, operator):
 		pass#TODO
@@ -19,3 +19,6 @@ class DB(object):
 
 	def store(self, operator, value):
 		pass#TODO
+
+	def __repr__(self):
+		return "DB %d" % self.index
