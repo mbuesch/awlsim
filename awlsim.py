@@ -85,7 +85,7 @@ class ObjectCache(object):
 
 	def get(self, callbackData=None):
 		try:
-			return self.__cache[-1]
+			return self.__cache.pop()
 		except IndexError as e:
 			return self.__createCallback(callbackData)
 
