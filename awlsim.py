@@ -224,6 +224,7 @@ class S7CPU(object):
 		self.sim = sim
 		self.specs = S7CPUSpecs(self)
 		self.setCycleTimeLimit(5.0)
+		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
 		self.reset()
@@ -341,6 +342,12 @@ class S7CPU(object):
 
 		self.updateTimestamp()
 
+	def setCycleExitCallback(self, cb, data=None):
+		if not cb:
+			cb = lambda x: None
+		self.cbCycleExit = cb
+		self.cbCycleExitData = data
+
 	def setBlockExitCallback(self, cb, data=None):
 		if not cb:
 			cb = lambda x: None
@@ -394,6 +401,7 @@ class S7CPU(object):
 					self.__runTimeCheck()
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
+		self.cbCycleExit(self.cbCycleExitData)
 		self.cycleCount += 1
 		self.__endCycleTimeMeasurement()
 

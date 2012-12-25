@@ -432,6 +432,9 @@ class CpuWidget(QWidget):
 		self.nextUpdate = now + 0.1
 		self.update()
 
+	def __cycleExitCallback(self, cpu):
+		self.mainWidget.codeEdit.updateCpuStats_afterCycle(cpu)
+
 	def __blockExitCallback(self, cpu):
 		self.mayUpdate()
 		self.mainWidget.codeEdit.updateCpuStats_afterBlock(cpu)
@@ -457,8 +460,9 @@ class CpuWidget(QWidget):
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
 			sim.load(parser.getParseTree())
-			sim.getCPU().setBlockExitCallback(self.__blockExitCallback,
-							  sim.getCPU())
+			cpu = sim.getCPU()
+			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
+			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
 		except (AwlSimError, AwlParserError) as e:
 			QMessageBox.critical(self, "Simulator exception",
 					     str(e))
@@ -661,11 +665,14 @@ class EditWidget(QPlainTextEdit):
 		# Update the 'obsolete'-flag based on the timestamp
 		for ent in self.__lineCpuStats.values():
 			ent.obsolete = (ent.stamp != self.__cpuStatsStamp)
-		self.__cpuStatsStamp += 1
 		# Update the stats widget
 		if self.__cpuStatsCount >= 500:
 			self.__cpuStatsCount = 0
 			self.cpuStatsWidget.update()
+
+	def updateCpuStats_afterCycle(self, cpu):
+		if self.__cpuStatsEnabled:
+			self.__cpuStatsStamp += 1
 
 	def __forwardWheelEvent(self, ev):
 		self.wheelEvent(ev)
