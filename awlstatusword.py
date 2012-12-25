@@ -109,7 +109,7 @@ class S7StatusWord(object):
 	def __repr__(self):
 		ret = []
 		for i in range(self.NR_BITS - 1, -1, -1):
-			ret.append("%s=%d" % (
+			ret.append("%s:%d" % (
 				self.nr2name[i],
 				self.getByBitNumber(i)
 			))
