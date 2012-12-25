@@ -214,7 +214,10 @@ class AwlParser(object):
 				self.__setState(self.STATE_IN_DB_HDR)
 				if tokens[1].upper() != "DB":
 					raise AwlParserError("Invalid DB name")
-				dbNumber = int(tokens[2], 10)
+				try:
+					dbNumber = int(tokens[2], 10)
+				except ValueError:
+					raise AwlParserError("Invalid DB number")
 				self.tree.dbs[dbNumber] = RawAwlDB(dbNumber)
 				self.tree.curBlockIndex = dbNumber
 				return
@@ -222,7 +225,10 @@ class AwlParser(object):
 				self.__setState(self.STATE_IN_FB_HDR)
 				if tokens[1].upper() != "FB":
 					raise AwlParserError("Invalid FB name")
-				fbNumber = int(tokens[2], 10)
+				try:
+					fbNumber = int(tokens[2], 10)
+				except ValueError:
+					raise AwlParserError("Invalid FB number")
 				self.tree.fbs[fbNumber] = RawAwlFB(fbNumber)
 				self.tree.curBlockIndex = fbNumber
 				return
@@ -230,7 +236,10 @@ class AwlParser(object):
 				self.__setState(self.STATE_IN_FC_HDR)
 				if tokens[1].upper() != "FC":
 					raise AwlParserError("Invalid FC name")
-				fcNumber = int(tokens[2], 10)
+				try:
+					fcNumber = int(tokens[2], 10)
+				except ValueError:
+					raise AwlParserError("Invalid FC number")
 				self.tree.fcs[fcNumber] = RawAwlFC(fcNumber)
 				self.tree.curBlockIndex = fcNumber
 				return
@@ -238,7 +247,10 @@ class AwlParser(object):
 				self.__setState(self.STATE_IN_OB_HDR)
 				if tokens[1].upper() != "OB":
 					raise AwlParserError("Invalid OB name")
-				obNumber = int(tokens[2], 10)
+				try:
+					obNumber = int(tokens[2], 10)
+				except ValueError:
+					raise AwlParserError("Invalid OB number")
 				self.tree.obs[obNumber] = RawAwlOB(obNumber)
 				self.tree.curBlockIndex = obNumber
 				return
@@ -385,7 +397,14 @@ class AwlParser(object):
 			line = line.strip()
 			if not line:
 				continue
-			self.__parseLine(line)
+			ex = None
+			try:
+				self.__parseLine(line)
+			except AwlParserError as e:
+				ex = e
+			if ex:
+				raise AwlParserError("Parser ERROR at AWL line %d: %s\n%s" %\
+					(self.lineNr, line, str(ex)))
 
 	def getParseTree(self):
 		return self.tree
