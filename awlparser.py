@@ -129,12 +129,10 @@ class AwlParser(object):
 
 	def reset(self):
 		self.state = self.STATE_GLOBAL
-		self.flatLayout = True
 		self.tree = AwlParseTree()
 
 	def __setState(self, newState):
 		self.state = newState
-		self.flatLayout = False
 
 	def __inAnyHeader(self):
 		if self.flatLayout:
@@ -144,6 +142,12 @@ class AwlParser(object):
 				      self.STATE_IN_FB_HDR,
 				      self.STATE_IN_FC_HDR,
 				      self.STATE_IN_OB_HDR)
+
+	def __inAnyHeaderOrGlobal(self):
+		if self.flatLayout:
+			return False
+		return self.__inAnyHeader() or\
+		       self.state == self.STATE_GLOBAL
 
 	def __parseLine(self, line):
 		line = line.strip()
@@ -156,15 +160,18 @@ class AwlParser(object):
 			if c == '"':
 				inQuote = not inQuote
 			if c == ';' and not inQuote:
+				# Semicolon ends statement.
 				break
 			if not inQuote and\
 			   c == '/' and i + 1 < len(line) and\
 			   line[i + 1] == '/':
+				# This is a //comment. Stop parsing line.
 				break
 			if tokens and not inQuote:
-				if (self.__inAnyHeader() and\
+				if (self.__inAnyHeaderOrGlobal() and\
 				    c in ('=', ':')) or\
 				   (c == ','):
+					# Handle non-space token separators.
 					curToken = curToken.strip()
 					if curToken:
 						tokens.append(curToken)
@@ -175,6 +182,7 @@ class AwlParser(object):
 				curToken += c
 			if (c.isspace() and not inQuote) or\
 			   i == len(line) - 1:
+				# Handle space token separator and end of line.
 				curToken = curToken.strip()
 				if curToken:
 					tokens.append(curToken)
@@ -186,7 +194,8 @@ class AwlParser(object):
 		if not tokens:
 			return None
 
-		if self.state == self.STATE_GLOBAL:
+		if self.state == self.STATE_GLOBAL or\
+		   self.flatLayout:
 			return self.__parseTokens_global(line, tokens)
 		if self.state == self.STATE_IN_DB_HDR:
 			return self.__parseTokens_db_hdr(line, tokens)
@@ -209,6 +218,13 @@ class AwlParser(object):
 		assert(0)
 
 	def __parseTokens_global(self, line, tokens):
+		if self.flatLayout:
+			insn = self.__parseInstruction(line, tokens)
+			if not self.tree.obs:
+				self.tree.obs[1] = RawAwlOB(1)
+			self.tree.obs[1].insns.append(insn)
+			return
+
 		try:
 			if tokens[0].upper() == "DATA_BLOCK":
 				self.__setState(self.STATE_IN_DB_HDR)
@@ -258,15 +274,7 @@ class AwlParser(object):
 			raise AwlParserError("Missing token")
 		except ValueError as e:
 			raise AwlParserError("Invalid value")
-
-		if self.flatLayout:
-			if not self.tree.obs:
-				self.tree.obs[1] = RawAwlOB(1)
-			insn = self.__parseInstruction(line, tokens)
-			self.tree.obs[1].insns.append(insn)
-			return
-
-		raise AwlParserError("Trailing foo")
+		raise AwlParserError("Unknown statement")
 
 	def __parseInstruction(self, line, tokens):
 		insn = RawAwlInsn()
@@ -392,6 +400,8 @@ class AwlParser(object):
 	def parseData(self, data):
 		self.reset()
 		self.lineNr = 0
+		self.flatLayout = not re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*',
+					       data, re.DOTALL | re.MULTILINE)
 		for line in data.splitlines():
 			self.lineNr += 1
 			line = line.strip()
