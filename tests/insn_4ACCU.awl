@@ -2,6 +2,36 @@
 	__SSPEC		0,	4
 
 
+	// Test: ENT/LEAVE
+	__STWRST
+	L		1337
+	L		31337
+	ENT
+	L		1
+	ENT
+	L		2
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__ACCU 2,	1
+	__ASSERT==	__ACCU 3,	31337
+	__ASSERT==	__ACCU 4,	1337
+	LEAVE
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__ACCU 2,	31337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+	LEAVE
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__ACCU 2,	1337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+	LEAVE
+	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__ACCU 2,	1337
+	__ASSERT==	__ACCU 3,	1337
+	__ASSERT==	__ACCU 4,	1337
+
+
+	// Test: 4-accu +I
 	__STWRST
 	L		1337
 	L		31337
@@ -16,6 +46,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu -I
 	__STWRST
 	L		1337
 	L		31337
@@ -30,6 +61,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu *I
 	__STWRST
 	L		1337
 	L		31337
@@ -44,6 +76,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu /I
 	__STWRST
 	L		1337
 	L		31337
@@ -58,6 +91,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu +D
 	__STWRST
 	L		1337
 	L		31337
@@ -72,6 +106,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu -D
 	__STWRST
 	L		1337
 	L		31337
@@ -86,6 +121,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu *D
 	__STWRST
 	L		1337
 	L		31337
@@ -100,6 +136,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu /D
 	__STWRST
 	L		1337
 	L		31337
@@ -114,6 +151,7 @@
 	__ASSERT==	__ACCU 4,	1337
 
 
+	// Test: 4-accu MOD
 	__STWRST
 	L		1337
 	L		31337
