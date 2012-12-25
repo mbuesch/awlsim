@@ -79,39 +79,50 @@ class ParenStackElem(object):
 			 self.VKE, self.OR)
 
 class ObjectCache(object):
-	def __init__(self, createCallback, callbackData=None):
+	def __init__(self, createCallback):
 		self.__createCallback = createCallback
-		self.__callbackData = callbackData
-		self.__cache = []
+		self.reset()
 
-	def get(self):
+	def get(self, callbackData=None):
 		try:
 			return self.__cache[-1]
 		except IndexError as e:
-			return self.__createCallback(self.__callbackData)
+			return self.__createCallback(callbackData)
 
 	def put(self, obj):
 		self.__cache.append(obj)
 
+	def reset(self):
+		self.__cache = []
+
 class CallStackElem(object):
 	"Call stack element"
 
-	localdataCache = ObjectCache(lambda _:
-		[ LocalByte() for _ in range(1024) ]
+	localdataCache = ObjectCache(lambda cpu:
+		[ LocalByte()
+		  for _ in range(cpu.specs.getNrLocalbytes()) ]
 	)
+
+	@classmethod
+	def resetCache(cls):
+		cls.localdataCache.reset()
 
 	def __init__(self, cpu, block, db):
 		self.cpu = cpu
 		self.status = S7StatusWord()
 		self.parenStack = []
 		self.ip = 0
-		self.localdata = self.localdataCache.get()
+		self.localdata = self.localdataCache.get(cpu)
+		assert(len(self.localdata) == cpu.specs.getNrLocalbytes())
 		self.insns = block.insns
 		self.labels = block.labels
 		self.db = db
 
 	def destroy(self):
-		self.localdataCache.put(self.localdata)
+		# Only put it back into the cache, if the size didn't change.
+		if len(self.localdata) == self.cpu.specs.getNrLocalbytes():
+			self.localdataCache.put(self.localdata)
+		self.localdata = None
 
 class McrStackElem(object):
 	"MCR stack element"
@@ -135,6 +146,7 @@ class S7CPUSpecs(object):
 		self.setNrFlags(8192)
 		self.setNrInputs(8192)
 		self.setNrOutputs(8192)
+		self.setNrLocalbytes(1024)
 		self.cpu = cpu
 
 	def setNrAccus(self, count):
@@ -186,6 +198,14 @@ class S7CPUSpecs(object):
 
 	def getNrOutputs(self):
 		return self.nrOutputs
+
+	def setNrLocalbytes(self, count):
+		self.nrLocalbytes = count
+		if self.cpu:
+			self.cpu.reallocate()
+
+	def getNrLocalbytes(self):
+		return self.nrLocalbytes
 
 class S7CPU(object):
 	"STEP 7 CPU"
@@ -270,6 +290,7 @@ class S7CPU(object):
 		if force or self.specs.getNrOutputs() != len(self.outputs):
 			self.outputs = [ OutputByte()
 					 for _ in range(self.specs.getNrOutputs()) ]
+		CallStackElem.resetCache()
 
 	def reset(self):
 		self.dbs = {
