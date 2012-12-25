@@ -71,8 +71,22 @@ class RawAwlBlock(object):
 		self.index = index
 
 class RawAwlDB(RawAwlBlock):
+	class Field(object):
+		def __init__(self, name, value, type):
+			self.name = name
+			self.value = value
+			self.type = type
+
 	def __init__(self, index):
 		RawAwlBlock.__init__(self, index)
+		self.fields = []
+		self.fb = None
+
+	def getByName(self, name):
+		for field in self.fields:
+			if field.name == name:
+				return field
+		return None
 
 class RawAwlOB(RawAwlBlock):
 	def __init__(self, index):
@@ -101,13 +115,14 @@ class AwlParseTree(object):
 class AwlParser(object):
 	STATE_GLOBAL		= 0
 	STATE_IN_DB_HDR		= 1
-	STATE_IN_DB		= 2
-	STATE_IN_FB_HDR		= 3
-	STATE_IN_FB		= 4
-	STATE_IN_FC_HDR		= 5
-	STATE_IN_FC		= 6
-	STATE_IN_OB_HDR		= 7
-	STATE_IN_OB		= 8
+	STATE_IN_DB_HDR_STRUCT	= 2
+	STATE_IN_DB		= 3
+	STATE_IN_FB_HDR		= 4
+	STATE_IN_FB		= 5
+	STATE_IN_FC_HDR		= 6
+	STATE_IN_FC		= 7
+	STATE_IN_OB_HDR		= 8
+	STATE_IN_OB		= 9
 
 	def __init__(self):
 		self.reset()
@@ -125,6 +140,7 @@ class AwlParser(object):
 		if self.flatLayout:
 			return False
 		return self.state in (self.STATE_IN_DB_HDR,
+				      self.STATE_IN_DB_HDR_STRUCT,
 				      self.STATE_IN_FB_HDR,
 				      self.STATE_IN_FC_HDR,
 				      self.STATE_IN_OB_HDR)
@@ -174,6 +190,8 @@ class AwlParser(object):
 			return self.__parseTokens_global(line, tokens)
 		if self.state == self.STATE_IN_DB_HDR:
 			return self.__parseTokens_db_hdr(line, tokens)
+		if self.state == self.STATE_IN_DB_HDR_STRUCT:
+			return self.__parseTokens_db_hdr_struct(line, tokens)
 		if self.state == self.STATE_IN_DB:
 			return self.__parseTokens_db(line, tokens)
 		if self.state == self.STATE_IN_FB_HDR:
@@ -264,13 +282,49 @@ class AwlParser(object):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_DB)
 			return
+		if tokens[0].upper() == "STRUCT":
+			self.__setState(self.STATE_IN_DB_HDR_STRUCT)
+			return
+		if tokens[0].upper() in ("FB", "SFB"):
+			try:
+				if len(tokens) != 2:
+					raise ValueError
+				fbName = tokens[0].upper()
+				fbNumber = int(tokens[1], 10)
+			except ValueError:
+				raise AwlParserError("Invalid FB/SFB binding")
+			db = self.tree.dbs[self.tree.curBlockIndex]
+			db.fb = (fbName, fbNumber)
+			return
 		pass#TODO
+
+	def __parseTokens_db_hdr_struct(self, line, tokens):
+		if tokens[0].upper() == "END_STRUCT":
+			self.__setState(self.STATE_IN_DB_HDR)
+			return
+		if len(tokens) == 3 and tokens[1] == ":":
+			name, type = tokens[0], tokens[2]
+			db = self.tree.dbs[self.tree.curBlockIndex]
+			field = RawAwlDB.Field(name, None, type)
+			db.fields.append(field)
+		else:
+			raise AwlParserError("Unknown tokens: " + line)
 
 	def __parseTokens_db(self, line, tokens):
 		if tokens[0].upper() == "END_DATA_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
-		pass#TODO
+		if len(tokens) == 3 and tokens[1] == ":=":
+			name, value = tokens[0], tokens[2]
+			db = self.tree.dbs[self.tree.curBlockIndex]
+			field = db.getByName(name)
+			if field:
+				field.value = value
+			else:
+				field = RawAwlDB.Field(name, value, None)
+				db.fields.append(field)
+		else:
+			raise AwlParserError("Unknown tokens: " + line)
 
 	def __parseTokens_fb_hdr(self, line, tokens):
 		if tokens[0].upper() == "BEGIN":

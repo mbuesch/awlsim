@@ -256,6 +256,9 @@ class S7CPU(object):
 			insns.append(self.__translateInsn(rawInsn, ip))
 		return insns
 
+	def __translateDB(self, db, rawDB):
+		pass#TODO
+
 	def load(self, parseTree):
 		# Translate instructions
 		self.reset()
@@ -269,8 +272,9 @@ class S7CPU(object):
 			insns = self.__translateInsns(parseTree.fcs[fcNumber].insns)
 			self.fcs[fcNumber] = FC(insns, fcNumber)
 		for dbNumber in parseTree.dbs.keys():
-			#TODO
-			self.dbs[dbNumber] = DB(dbNumber)
+			db = DB(dbNumber)
+			self.__translateDB(db, parseTree.dbs[dbNumber])
+			self.dbs[dbNumber] = db
 		try:
 			self.obs[1]
 		except KeyError:
