@@ -25,11 +25,11 @@ hook_regression_tests()
 {
 	for awl in "$1"/tests/*.awl; do
 		# Check CR/LF
-		file "$awl" | grep -qe 'CRLF line terminators' || {
+		file -L "$awl" | grep -qe 'CRLF line terminators' || {
 			die "ERROR: 'tests/$(basename "$awl")' is not in DOS format."
 		}
 		# Check file encoding
-		file "$awl" | grep -qEe '(ISO-8859 text)|(ASCII text)' || {
+		file -L "$awl" | grep -qEe '(ISO-8859 text)|(ASCII text)' || {
 			die "ERROR: 'tests/$(basename "$awl")' invalid file encoding."
 		}
 	done
