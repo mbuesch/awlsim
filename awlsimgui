@@ -562,14 +562,17 @@ class CpuWidget(QWidget):
 		self.update()
 
 	def __cycleExitCallback(self, cpu):
-		self.mainWidget.codeEdit.updateCpuStats_afterCycle(cpu)
+		if self.state == self.STATE_RUN:
+			self.mainWidget.codeEdit.updateCpuStats_afterCycle(cpu)
 
 	def __blockExitCallback(self, cpu):
-		self.mayUpdate()
-		self.mainWidget.codeEdit.updateCpuStats_afterBlock(cpu)
+		if self.state == self.STATE_RUN:
+			self.mayUpdate()
+			self.mainWidget.codeEdit.updateCpuStats_afterBlock(cpu)
 
 	def __postInsnCallback(self, cpu):
-		self.mainWidget.codeEdit.updateCpuStats_afterInsn(cpu)
+		if self.state == self.STATE_RUN:
+			self.mainWidget.codeEdit.updateCpuStats_afterInsn(cpu)
 
 	def __run(self):
 		sim = self.mainWidget.getSim()
@@ -609,6 +612,8 @@ class CpuWidget(QWidget):
 		self.runStateChanged.emit(self.state)
 
 	def stop(self):
+		if self.state == self.STATE_STOP:
+			return
 		self.state = self.STATE_STOP
 		self.stopButton.setChecked(True)
 		self.runButton.setEnabled(True)
@@ -972,8 +977,8 @@ class EditWidget(QPlainTextEdit):
 		self.__updateFonts()
 		if self.__textChangeBlocked:
 			return
-		self.resetCpuStats()
 		self.codeChanged.emit()
+		self.resetCpuStats()
 
 	def loadCode(self, code):
 		self.__textChangeBlocked += 1
@@ -1047,6 +1052,7 @@ class MainWidget(QWidget):
 		self.dirty = False
 
 		self.codeEdit.codeChanged.connect(self.__codeChanged)
+		self.codeEdit.codeChanged.connect(self.cpuWidget.stop)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 		self.runStateChanged.connect(self.codeEdit.runStateChanged)
 
@@ -1054,7 +1060,6 @@ class MainWidget(QWidget):
 		return self.dirty
 
 	def __runStateChanged(self, newState):
-		self.codeEdit.setReadOnly(newState == CpuWidget.STATE_RUN)
 		self.runStateChanged.emit(newState)
 
 	def getSim(self):
