@@ -174,10 +174,10 @@
 
 	// Test:  Inf * 0.0 = NaN
 	__STWRST
-	L		DW#16#7F800000
+	L		__CNST_PINF
 	L		0.0
 	*R
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__ACCU 1,	__CNST_NAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -186,10 +186,10 @@
 
 	// Test:  -Inf * 0.0 = NaN
 	__STWRST
-	L		DW#16#FF800000
+	L		__CNST_NINF
 	L		0.0
 	*R
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__ACCU 1,	__CNST_NAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -213,7 +213,7 @@
 	L		1.5
 	L		0.0
 	/R
-	__ASSERT==	__ACCU 1,	DW#16#7F800000
+	__ASSERT==	__ACCU 1,	__CNST_PINF
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	1
@@ -225,7 +225,7 @@
 	L		-1.5
 	L		0.0
 	/R
-	__ASSERT==	__ACCU 1,	DW#16#FF800000
+	__ASSERT==	__ACCU 1,	__CNST_NINF
 	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -316,7 +316,7 @@
 	__STWRST
 	L		-1.5
 	SQRT
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF	//FIXME?
+	__ASSERT==	__ACCU 1,	__CNST_NAN	//FIXME?
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -360,7 +360,7 @@
 	__STWRST
 	L		0.0
 	LN
-	__ASSERT==	__ACCU 1,	DW#16#FF800000	//FIXME?
+	__ASSERT==	__ACCU 1,	__CNST_NINF	//FIXME?
 	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1

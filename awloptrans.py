@@ -87,6 +87,12 @@ class AwlOpTranslator(object):
 					   pyFloatToDWord(math.pi), 0, 1),
 		"__CNST_E" : OpDescriptor(AwlOperator.IMM_REAL, 32,
 					  pyFloatToDWord(math.e), 0, 1),
+		"__CNST_PINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					     posInfDWord, 0, 1),
+		"__CNST_NINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					     negInfDWord, 0, 1),
+		"__CNST_NAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					    nanDWord, 0, 1),
 	}
 
 	@classmethod

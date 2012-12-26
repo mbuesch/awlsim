@@ -411,8 +411,8 @@
 
 	// Test:  NaN not equal to NaN
 	__STWRST
-	L		DW#16#FFFFFFFF
-	L		DW#16#FFFFFFFF
+	L		__CNST_NAN
+	L		__CNST_NAN
 	==R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1
