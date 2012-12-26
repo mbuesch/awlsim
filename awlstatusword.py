@@ -124,4 +124,4 @@ class S7StatusWord(object):
 				self.nr2name[i],
 				self.getByBitNumber(i)
 			))
-		return ', '.join(ret)
+		return '  '.join(ret)

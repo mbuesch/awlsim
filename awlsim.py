@@ -22,6 +22,7 @@ from awllabels import *
 from awltimers import *
 from awlcounters import *
 from util import *
+from lfsr import *
 
 
 VERSION_MAJOR = 0
@@ -222,6 +223,7 @@ class S7CPU(object):
 
 	def __init__(self, sim):
 		self.sim = sim
+		self.prng = Simple_PRNG()
 		self.specs = S7CPUSpecs(self)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
@@ -333,6 +335,7 @@ class S7CPU(object):
 		# Stats
 		self.cycleCount = 0
 		self.insnCount = 0
+		self.insnCountMod = 32
 		self.runtimeSec = 0.0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
@@ -396,9 +399,10 @@ class S7CPU(object):
 				cse.ip += self.relativeJump
 				cse = self.callStack[-1]
 				self.insnCount += 1
-				if self.insnCount % 32 == 0:
+				if self.insnCount % self.insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
+					self.insnCountMod = self.prng.getBits(7) + 1
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
 		self.cbCycleExit(self.cbCycleExitData)
