@@ -901,11 +901,14 @@ class EditWidget(QPlainTextEdit):
 		p.fillRect(ev.rect(), Qt.lightGray)
 
 		if self.__runStateCopy == CpuWidget.STATE_RUN:
-			p.drawText(5, 5,
-				   self.__charWidth + 1,
-				   self.headerWidget.height(),
-				   Qt.AlignLeft,
-				   self.__aniChars[self.__hdrAniStat])
+			runText = self.__aniChars[self.__hdrAniStat]
+		else:
+			runText = "-- CPU STOPPED --"
+		p.drawText(5, 5,
+			   self.__charWidth * len(runText) + 1,
+			   self.headerWidget.height(),
+			   Qt.AlignLeft,
+			   runText)
 
 		if self.__cpuStatsEnabled:
 			# Map the starting point
