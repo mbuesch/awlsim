@@ -192,4 +192,8 @@ class AwlInsnTranslator(object):
 		except KeyError:
 			raise AwlSimError("Cannot translate instruction: '%s'" %\
 				rawInsn.getName())
-		return insnClass(rawInsn)
+		insn = insnClass(rawInsn)
+		if not enableExtendedInsns:
+			if any(op.isExtended for op in insn.ops):
+				raise AwlSimError("Extended operands disabled")
+		return insn

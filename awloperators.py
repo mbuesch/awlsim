@@ -56,6 +56,7 @@ class AwlOperator(object):
 		self.bitOffset = bitOffset
 		self.labelIndex = None
 		self.insn = None
+		self.isExtended = False
 
 	def setInsn(self, newInsn):
 		self.insn = newInsn

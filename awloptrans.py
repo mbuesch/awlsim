@@ -208,7 +208,6 @@ class AwlOpTranslator(object):
 
 	@classmethod
 	def fromRawOperators(cls, rawOps):
-		#TODO disable extended operands by default
 		op = cls.op2desc(rawOps[0])
 		if op.fieldCount == 2:
 			if len(rawOps) < 2:
@@ -258,7 +257,10 @@ class AwlOpTranslator(object):
 			op.fieldCount += 1 # Consume comma
 			if len(rawOps) <= op.fieldCount:
 				raise AwlSimError("Trailing comma")
-		return (op.fieldCount,
-			AwlOperator(op.operType, op.width,
-				    op.offset, op.bitOffset)
-			)
+
+		operator = AwlOperator(op.operType, op.width,
+				       op.offset, op.bitOffset)
+		if rawOps[0].startswith("__"):
+			operator.isExtended = True
+
+		return (op.fieldCount, operator)
