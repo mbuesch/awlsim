@@ -767,6 +767,7 @@ class EditWidget(QPlainTextEdit):
 			return
 		self.__lineCpuStats = { }
 		self.__cpuStatsCount = 0
+		self.__cpuStatsUpdate = 1
 		self.__cpuStatsStamp = 0
 		self.__updateMargins()
 		self.headerWidget.update()
@@ -795,8 +796,9 @@ class EditWidget(QPlainTextEdit):
 		for ent in self.__lineCpuStats.values():
 			ent.obsolete = (ent.stamp != self.__cpuStatsStamp)
 		# Update the stats widget
-		if self.__cpuStatsCount >= 500:
+		if self.__cpuStatsCount >= self.__cpuStatsUpdate:
 			self.__cpuStatsCount = 0
+			self.__cpuStatsUpdate = cpu.getSimplePRNG().getBits(8) + 1
 			self.cpuStatsWidget.update()
 
 	def updateCpuStats_afterCycle(self, cpu):

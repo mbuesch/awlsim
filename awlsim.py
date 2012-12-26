@@ -223,7 +223,7 @@ class S7CPU(object):
 
 	def __init__(self, sim):
 		self.sim = sim
-		self.prng = Simple_PRNG()
+		self.simplePRNG = Simple_PRNG()
 		self.specs = S7CPUSpecs(self)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
@@ -231,6 +231,9 @@ class S7CPU(object):
 		self.setPostInsnCallback(None)
 		self.reset()
 		self.__extendedInsnsEnabled = False
+
+	def getSimplePRNG(self):
+		return self.simplePRNG
 
 	def enableExtendedInsns(self, en=True):
 		self.__extendedInsnsEnabled = en
@@ -402,7 +405,7 @@ class S7CPU(object):
 				if self.insnCount % self.insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-					self.insnCountMod = self.prng.getBits(7) + 1
+					self.insnCountMod = self.simplePRNG.getBits(7) + 1
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
 		self.cbCycleExit(self.cbCycleExitData)
