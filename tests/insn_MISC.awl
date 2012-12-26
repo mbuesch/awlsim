@@ -28,3 +28,51 @@
 	POP
 	__ASSERT==	__ACCU 1,	DW#16#01234567
 	__ASSERT==	__ACCU 2,	DW#16#01234567
+
+
+	// Test: STW write
+	__STWRST
+	L		W#16#FFFF
+	T		STW
+	__ASSERT==	__STW 0,	1
+	__ASSERT==	__STW 1,	1
+	__ASSERT==	__STW 2,	1
+	__ASSERT==	__STW 3,	1
+	__ASSERT==	__STW 4,	1
+	__ASSERT==	__STW 5,	1
+	__ASSERT==	__STW 6,	1
+	__ASSERT==	__STW 7,	1
+	__ASSERT==	__STW 8,	1
+	L		0
+	T		STW
+	__ASSERT==	__STW 0,	0
+	__ASSERT==	__STW 1,	0
+	__ASSERT==	__STW 2,	0
+	__ASSERT==	__STW 3,	0
+	__ASSERT==	__STW 4,	0
+	__ASSERT==	__STW 5,	0
+	__ASSERT==	__STW 6,	0
+	__ASSERT==	__STW 7,	0
+	__ASSERT==	__STW 8,	0
+	L		W#16#AAAA
+	T		STW
+	__ASSERT==	__STW 0,	0
+	__ASSERT==	__STW 1,	1
+	__ASSERT==	__STW 2,	0
+	__ASSERT==	__STW 3,	1
+	__ASSERT==	__STW 4,	0
+	__ASSERT==	__STW 5,	1
+	__ASSERT==	__STW 6,	0
+	__ASSERT==	__STW 7,	1
+	__ASSERT==	__STW 8,	0
+	L		W#16#5555
+	T		STW
+	__ASSERT==	__STW 0,	1
+	__ASSERT==	__STW 1,	0
+	__ASSERT==	__STW 2,	1
+	__ASSERT==	__STW 3,	0
+	__ASSERT==	__STW 4,	1
+	__ASSERT==	__STW 5,	0
+	__ASSERT==	__STW 6,	1
+	__ASSERT==	__STW 7,	0
+	__ASSERT==	__STW 8,	1

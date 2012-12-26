@@ -55,6 +55,17 @@ class S7StatusWord(object):
 		       (self.OR << 3) | (self.OS << 4) | (self.OV << 5) |\
 		       (self.A0 << 6) | (self.A1 << 7) | (self.BIE << 8)
 
+	def setWord(self, word):
+		self.NER = 1 if (word & (1 << 0)) else 0
+		self.VKE = 1 if (word & (1 << 1)) else 0
+		self.STA = 1 if (word & (1 << 2)) else 0
+		self.OR = 1 if (word & (1 << 3)) else 0
+		self.OS = 1 if (word & (1 << 4)) else 0
+		self.OV = 1 if (word & (1 << 5)) else 0
+		self.A0 = 1 if (word & (1 << 6)) else 0
+		self.A1 = 1 if (word & (1 << 7)) else 0
+		self.BIE = 1 if (word & (1 << 8)) else 0
+
 	def reset(self):
 		self.NER = 0	# /ER	=> Erstabfrage
 		self.VKE = 0	# VKE	=> Verknuepfungsergebnis

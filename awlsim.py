@@ -787,7 +787,7 @@ class S7CPU(object):
 		if operator.width == 1:
 			raise AwlSimError("Cannot store to individual STW bits")
 		elif operator.width == 16:
-			pass #TODO
+			self.status.setWord(value)
 		else:
 			assert(0)
 
