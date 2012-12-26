@@ -54,6 +54,16 @@ def awlFileWrite(filename, data):
 		except (IOError, OSError):
 			pass
 
+def swapEndianWord(word):
+	return ((word & 0x00FF) << 8) |\
+	       ((word & 0xFF00) >> 8)
+
+def swapEndianDWord(dword):
+	return ((dword & 0x000000FF) << 24) |\
+	       ((dword & 0x0000FF00) << 8) |\
+	       ((dword & 0x00FF0000) >> 8) |\
+	       ((dword & 0xFF000000) >> 24)
+
 def byteToSignedPyInt(byte):
 	if byte & 0x80:
 		return -((~byte + 1) & 0xFF)
