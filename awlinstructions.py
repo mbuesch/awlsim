@@ -367,7 +367,8 @@ class AwlInsn(object):
 		self.ops = []
 		rawOps = rawInsn.getOperators()
 		while rawOps:
-			cons, oper = AwlOpTranslator.fromRawOperators(rawOps)
+			cons, oper = AwlOpTranslator.fromRawOperators(rawInsn,
+								      rawOps)
 			oper.setInsn(self)
 			self.ops.append(oper)
 			rawOps = rawOps[cons:]

@@ -90,13 +90,17 @@ class AwlOpTranslator(object):
 	}
 
 	@classmethod
-	def op2desc(cls, rawOp):
+	def op2desc(cls, rawInsn, rawOp):
+		if rawInsn.block.hasLabel(rawOp):
+			# Label reference
+			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOp, 0, 1)
 		try:
-			#FIXME might match on label
+			# Constant operator (from table)
 			return cls.constOperTab[rawOp].dup()
 		except KeyError as e:
 			pass
 		try:
+			# Immediate integer
 			immediate = int(rawOp, 10)
 			if immediate > 32767 or immediate < -32768:
 				raise AwlSimError("16-bit immediate overflow")
@@ -106,6 +110,7 @@ class AwlOpTranslator(object):
 		except ValueError:
 			pass
 		try:
+			# Immediate float
 			immediate = float(rawOp)
 			immediate = pyFloatToDWord(immediate)
 			return OpDescriptor(AwlOperator.IMM_REAL, 32,
@@ -196,8 +201,6 @@ class AwlOpTranslator(object):
 			except ValueError as e:
 				raise AwlSimError("Invalid C# immediate")
 			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
-		if RawAwlInsn.isValidLabel(rawOp):
-			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOp, 0, 1)
 		#TODO T#
 		#TODO TOD#
 		#TODO date D#
@@ -207,8 +210,8 @@ class AwlOpTranslator(object):
 				str(rawOp))
 
 	@classmethod
-	def fromRawOperators(cls, rawOps):
-		op = cls.op2desc(rawOps[0])
+	def fromRawOperators(cls, rawInsn, rawOps):
+		op = cls.op2desc(rawInsn, rawOps[0])
 		if op.fieldCount == 2:
 			if len(rawOps) < 2:
 				raise AwlSimError("Missing operator")

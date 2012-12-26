@@ -14,7 +14,8 @@ from util import *
 
 
 class RawAwlInsn(object):
-	def __init__(self):
+	def __init__(self, block):
+		self.block = block
 		self.lineNr = 0
 		self.label = None
 		self.name = None
@@ -24,6 +25,8 @@ class RawAwlInsn(object):
 
 	@classmethod
 	def isValidLabel(cls, labelString):
+		# Checks if string is a valid label or
+		# label reference (without colons).
 		return bool(cls.__labelRe.match(labelString))
 
 	def __repr__(self):
@@ -67,8 +70,24 @@ class RawAwlInsn(object):
 		return bool(self.getOperators())
 
 class RawAwlBlock(object):
-	def __init__(self, index):
+	def __init__(self, tree, index):
+		self.tree = tree
 		self.index = index
+
+	def hasLabel(self, string):
+		return False
+
+class RawAwlCodeBlock(RawAwlBlock):
+	def __init__(self, tree, index):
+		RawAwlBlock.__init__(self, tree, index)
+		self.insns = []
+
+	def hasLabel(self, string):
+		if RawAwlInsn.isValidLabel(string):
+			for insn in self.insns:
+				if insn.getLabel() == string:
+					return True
+		return False
 
 class RawAwlDB(RawAwlBlock):
 	class Field(object):
@@ -77,8 +96,8 @@ class RawAwlDB(RawAwlBlock):
 			self.value = value
 			self.type = type
 
-	def __init__(self, index):
-		RawAwlBlock.__init__(self, index)
+	def __init__(self, tree, index):
+		RawAwlBlock.__init__(self, tree, index)
 		self.fields = []
 		self.fb = None
 
@@ -88,20 +107,17 @@ class RawAwlDB(RawAwlBlock):
 				return field
 		return None
 
-class RawAwlOB(RawAwlBlock):
-	def __init__(self, index):
-		RawAwlBlock.__init__(self, index)
-		self.insns = []
+class RawAwlOB(RawAwlCodeBlock):
+	def __init__(self, tree, index):
+		RawAwlCodeBlock.__init__(self, tree, index)
 
-class RawAwlFB(RawAwlBlock):
-	def __init__(self, index):
-		RawAwlBlock.__init__(self, index)
-		self.insns = []
+class RawAwlFB(RawAwlCodeBlock):
+	def __init__(self, tree, index):
+		RawAwlCodeBlock.__init__(self, tree, index)
 
-class RawAwlFC(RawAwlBlock):
-	def __init__(self, index):
-		RawAwlBlock.__init__(self, index)
-		self.insns = []
+class RawAwlFC(RawAwlCodeBlock):
+	def __init__(self, tree, index):
+		RawAwlCodeBlock.__init__(self, tree, index)
 
 class AwlParseTree(object):
 	def __init__(self):
@@ -110,7 +126,7 @@ class AwlParseTree(object):
 		self.fcs = {}
 		self.obs = {}
 
-		self.curBlockIndex = None
+		self.curBlock = None
 
 class AwlParser(object):
 	STATE_GLOBAL		= 0
@@ -219,9 +235,11 @@ class AwlParser(object):
 
 	def __parseTokens_global(self, line, tokens):
 		if self.flatLayout:
-			insn = self.__parseInstruction(line, tokens)
 			if not self.tree.obs:
-				self.tree.obs[1] = RawAwlOB(1)
+				self.tree.obs[1] = RawAwlOB(self.tree, 1)
+			if not self.tree.curBlock:
+				self.tree.curBlock = self.tree.obs[1]
+			insn = self.__parseInstruction(line, tokens)
 			self.tree.obs[1].insns.append(insn)
 			return
 
@@ -234,8 +252,8 @@ class AwlParser(object):
 					dbNumber = int(tokens[2], 10)
 				except ValueError:
 					raise AwlParserError("Invalid DB number")
-				self.tree.dbs[dbNumber] = RawAwlDB(dbNumber)
-				self.tree.curBlockIndex = dbNumber
+				self.tree.curBlock = RawAwlDB(self.tree, dbNumber)
+				self.tree.dbs[dbNumber] = self.tree.curBlock
 				return
 			if tokens[0].upper() == "FUNCTION_BLOCK":
 				self.__setState(self.STATE_IN_FB_HDR)
@@ -245,8 +263,8 @@ class AwlParser(object):
 					fbNumber = int(tokens[2], 10)
 				except ValueError:
 					raise AwlParserError("Invalid FB number")
-				self.tree.fbs[fbNumber] = RawAwlFB(fbNumber)
-				self.tree.curBlockIndex = fbNumber
+				self.tree.curBlock = RawAwlFB(self.tree, fbNumber)
+				self.tree.fbs[fbNumber] = self.tree.curBlock
 				return
 			if tokens[0].upper() == "FUNCTION":
 				self.__setState(self.STATE_IN_FC_HDR)
@@ -256,8 +274,8 @@ class AwlParser(object):
 					fcNumber = int(tokens[2], 10)
 				except ValueError:
 					raise AwlParserError("Invalid FC number")
-				self.tree.fcs[fcNumber] = RawAwlFC(fcNumber)
-				self.tree.curBlockIndex = fcNumber
+				self.tree.curBlock = RawAwlFC(self.tree, fcNumber)
+				self.tree.fcs[fcNumber] = self.tree.curBlock
 				return
 			if tokens[0].upper() == "ORGANIZATION_BLOCK":
 				self.__setState(self.STATE_IN_OB_HDR)
@@ -267,8 +285,8 @@ class AwlParser(object):
 					obNumber = int(tokens[2], 10)
 				except ValueError:
 					raise AwlParserError("Invalid OB number")
-				self.tree.obs[obNumber] = RawAwlOB(obNumber)
-				self.tree.curBlockIndex = obNumber
+				self.tree.curBlock = RawAwlOB(self.tree, obNumber)
+				self.tree.obs[obNumber] = self.tree.curBlock
 				return
 		except IndexError as e:
 			raise AwlParserError("Missing token")
@@ -277,7 +295,7 @@ class AwlParser(object):
 		raise AwlParserError("Unknown statement")
 
 	def __parseInstruction(self, line, tokens):
-		insn = RawAwlInsn()
+		insn = RawAwlInsn(self.tree.curBlock)
 		insn.setLineNr(self.lineNr)
 		if tokens[0].endswith(":"):
 			# First token is a label
@@ -313,8 +331,7 @@ class AwlParser(object):
 				fbNumber = int(tokens[1], 10)
 			except ValueError:
 				raise AwlParserError("Invalid FB/SFB binding")
-			db = self.tree.dbs[self.tree.curBlockIndex]
-			db.fb = (fbName, fbNumber)
+			self.tree.curBlock.fb = (fbName, fbNumber)
 			return
 		pass#TODO
 
@@ -324,9 +341,8 @@ class AwlParser(object):
 			return
 		if len(tokens) == 3 and tokens[1] == ":":
 			name, type = tokens[0], tokens[2]
-			db = self.tree.dbs[self.tree.curBlockIndex]
 			field = RawAwlDB.Field(name, None, type)
-			db.fields.append(field)
+			self.tree.curBlock.fields.append(field)
 		else:
 			raise AwlParserError("Unknown tokens: " + line)
 
@@ -336,7 +352,7 @@ class AwlParser(object):
 			return
 		if len(tokens) == 3 and tokens[1] == ":=":
 			name, value = tokens[0], tokens[2]
-			db = self.tree.dbs[self.tree.curBlockIndex]
+			db = self.tree.curBlock
 			field = db.getByName(name)
 			if field:
 				field.value = value
@@ -360,7 +376,7 @@ class AwlParser(object):
 		   tokens[0].upper() == "TITLE":
 			return # ignore
 		insn = self.__parseInstruction(line, tokens)
-		self.tree.fbs[self.tree.curBlockIndex].insns.append(insn)
+		self.tree.curBlock.insns.append(insn)
 
 	def __parseTokens_fc_hdr(self, line, tokens):
 		if tokens[0].upper() == "BEGIN":
@@ -376,7 +392,7 @@ class AwlParser(object):
 		   tokens[0].upper() == "TITLE":
 			return # ignore
 		insn = self.__parseInstruction(line, tokens)
-		self.tree.fcs[self.tree.curBlockIndex].insns.append(insn)
+		self.tree.curBlock.insns.append(insn)
 
 	def __parseTokens_ob_hdr(self, line, tokens):
 		if tokens[0].upper() == "BEGIN":
@@ -392,7 +408,7 @@ class AwlParser(object):
 		   tokens[0].upper() == "TITLE":
 			return # ignore
 		insn = self.__parseInstruction(line, tokens)
-		self.tree.obs[self.tree.curBlockIndex].insns.append(insn)
+		self.tree.curBlock.insns.append(insn)
 
 	def parseFile(self, filename):
 		self.parseData(awlFileRead(filename))
