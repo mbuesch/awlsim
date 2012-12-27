@@ -1,57 +1,116 @@
 	// Start timer and let it expire
-	CLR
+	__STWRST
+	L		0
 	SA		T 10
 	SET
 	R		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	0
 	SET
-	L		S5T#100MS
+	L		W#16#0010
 	SA		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
 	__SLEEP		101
 	U		T 10
-	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
 
 
-	// Start timer and reset VKE before it expires
-	CLR
+	// Start timer and reset VKE
+	__STWRST
+	L		0
 	SA		T 10
 	SET
 	R		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	0
 	SET
-	L		S5T#100MS
+	L		W#16#0010
 	SA		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
+	__SLEEP		101
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
 	CLR
+	L		W#16#0010
 	SA		T 10
 	U		T 10
-	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT>=	__ACCU 1,	5
 	__SLEEP		101
 	U		T 10
 	__ASSERT==	__STW VKE,	0
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
+
+
+	// Retrigger
+	__STWRST
+	L		0
+	SA		T 10
+	SET
+	R		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	0
+	SET
+	L		W#16#0010
+	SA		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
+	CLR
+	L		W#16#0010
+	SA		T 10
+	__SLEEP		20
+	SET
+	SA		T 10
+	L		T 10
+	__ASSERT>=	__ACCU 1,	2
+	__SLEEP		101
+	L		T 10
+	__ASSERT==	__ACCU 1,	__ACCU 2
 
 
 	// Reset signal
-	CLR
+	__STWRST
+	L		0
 	SA		T 10
 	SET
 	R		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	0
 	SET
-	L		S5T#100MS
+	L		W#16#0010
 	SA		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__ACCU 1,	0
+	CLR
+	L		W#16#0010
+	SA		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	1
+	L		T 10
+	__ASSERT>=	__ACCU 1,	5
 	SET
 	R		T 10
 	U		T 10
 	__ASSERT==	__STW VKE,	0
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
 	__SLEEP		101
 	U		T 10
 	__ASSERT==	__STW VKE,	0
+	L		T 10
+	__ASSERT==	__ACCU 1,	0
