@@ -27,6 +27,7 @@ def usage():
 	print(" -1|--onecycle         Only run one cycle")
 	print(" -4|--fouraccu         Enable 4-accu mode")
 	print(" -q|--quiet            No status messages")
+	print(" -x|--extended-insns   Enable extended instructions")
 
 def writeStdout(message):
 	if not opt_quiet:

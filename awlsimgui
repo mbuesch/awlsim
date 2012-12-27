@@ -10,6 +10,7 @@
 import sys
 import os
 import time
+import getopt
 
 try:
 	from PySide.QtCore import *
@@ -21,6 +22,10 @@ except ImportError as e:
 
 from awlsim import *
 from awlinsntrans import *
+
+
+opt_awlSource = None
+opt_extInsns = False
 
 
 class StateWindow(QWidget):
@@ -1041,6 +1046,8 @@ class MainWidget(QWidget):
 		self.setLayout(QGridLayout(self))
 
 		self.sim = AwlSim()
+		if opt_extInsns:
+			self.sim.getCPU().enableExtendedInsns(True)
 
 		self.splitter = QSplitter(Qt.Horizontal)
 		self.layout().addWidget(self.splitter, 0, 0)
@@ -1167,8 +1174,8 @@ class MainWindow(QMainWindow):
 		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
 		self.centralWidget().runStateChanged.connect(self.__runStateChanged)
 
-		if len(sys.argv) > 1:
-			self.centralWidget().loadFile(sys.argv[1])
+		if opt_awlSource:
+			self.centralWidget().loadFile(opt_awlSource)
 
 	def __runStateChanged(self, newState):
 		self.menuBar().setEnabled(newState == CpuWidget.STATE_STOP)
@@ -1251,7 +1258,39 @@ class MainWindow(QMainWindow):
 	def cpuConfig(self):
 		self.centralWidget().cpuConfig()
 
+def usage():
+	print("awlsimgui version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
+	print("")
+	print("%s [OPTIONS] [AWL-source]" % sys.argv[0])
+	print("")
+	print("Options:")
+	print(" -x|--extended-insns   Enable extended instructions")
+
 def main():
+	global opt_awlSource
+	global opt_extInsns
+
+	try:
+		(opts, args) = getopt.getopt(sys.argv[1:],
+			"hx",
+			[ "help", "extended-insns", ])
+	except getopt.GetoptError as e:
+		print(e)
+		usage()
+		return 1
+	for (o, v) in opts:
+		if o in ("-h", "--help"):
+			usage()
+			return 0
+		if o in ("-x", "--extended-insns"):
+			opt_extInsns = True
+	if args:
+		if len(args) == 1:
+			opt_awlSource = args[0]
+		else:
+			usage()
+			return 1
+
 	app = QApplication(sys.argv)
 	mainwnd = MainWindow()
 	mainwnd.show()
