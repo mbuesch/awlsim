@@ -148,6 +148,7 @@ class Timer(object):
 				self.status = 1
 				self.__start(s5t)
 		else:
+			self.__checkDeadline()
 			self.running, self.status = False, 0
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
@@ -167,6 +168,7 @@ class Timer(object):
 				self.status = 0
 				self.__start(s5t)
 		else:
+			self.__checkDeadline()
 			self.running = False
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
@@ -182,6 +184,7 @@ class Timer(object):
 		self.deadlineCallback = self.__cb_clearStatus
 		s = self.cpu.status
 		if s.VKE & ~self.prevVKE: # Pos edge
+			self.__checkDeadline()
 			self.status, self.running = 1, False
 		if ~s.VKE & self.prevVKE: # Neg edge
 			self.status = 1
