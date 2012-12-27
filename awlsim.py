@@ -26,7 +26,7 @@ from lfsr import *
 
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 5
+VERSION_MINOR = 6
 
 
 class FlagByte(GenericByte):
