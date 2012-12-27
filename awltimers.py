@@ -61,6 +61,7 @@ class Timer(object):
 		self.timebase = self.TB_10MS
 		self.deadlineCallback = None
 		self.deadline = 0.0
+		self.remaining = 0.0
 		self.status = 0
 		self.running = False
 
@@ -115,34 +116,35 @@ class Timer(object):
 
 	# Reset (R) timer
 	def reset(self):
-		self.running, self.status = False, 0
+		self.running, self.status, self.remaining =\
+			False, 0, 0.0
 
 	# Return the timer value in binary
 	def getTimevalBin(self):
-		return int(round(
-			self.__getTimevalSeconds() / \
+		return round(
+			self.__getRemainingSeconds() / \
 			Timer.__s5t_base2sec[self.timebase]
-		))
+		)
 
 	# Return the timer value in S5T BCD format
 	def getTimevalS5T(self):
 		return self.__seconds_to_s5t_table[self.timebase](
-				self.__getTimevalSeconds())
+				self.__getRemainingSeconds())
 
 	# Get the remaining time, in seconds
-	def __getTimevalSeconds(self):
+	def __getRemainingSeconds(self):
 		self.__checkDeadline()
-		if not self.running:
-			return 0
-		remaining = self.deadline - self.cpu.now
-		assert(remaining >= 0.0)
-		return remaining
+		return self.remaining
+
+	# Update the remaining time value
+	def __updateRemaining(self):
+		self.remaining = max(0.0, self.deadline - self.cpu.now)
 
 	def run_SI(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
 		s = self.cpu.status
 		if s.VKE:
-			if not self.prevVKE:
+			if not self.prevVKE: # Pos edge
 				self.status = 1
 				self.__start(s5t)
 		else:
@@ -152,7 +154,7 @@ class Timer(object):
 	def run_SV(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
 		s = self.cpu.status
-		if s.VKE & ~self.prevVKE:
+		if s.VKE & ~self.prevVKE: # Pos edge
 			self.status = 1
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
@@ -161,7 +163,7 @@ class Timer(object):
 		self.deadlineCallback = self.__cb_setStatus
 		s = self.cpu.status
 		if s.VKE:
-			if not self.prevVKE:
+			if not self.prevVKE: # Pos edge
 				self.status = 0
 				self.__start(s5t)
 		else:
@@ -171,7 +173,7 @@ class Timer(object):
 	def run_SS(self, s5t):
 		self.deadlineCallback = self.__cb_setStatus
 		s = self.cpu.status
-		if s.VKE & ~self.prevVKE:
+		if s.VKE & ~self.prevVKE: # Pos edge
 			self.status = 0
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
@@ -179,29 +181,29 @@ class Timer(object):
 	def run_SA(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
 		s = self.cpu.status
-		if s.VKE:
-			if not self.prevVKE:
-				self.status = 1
-				self.__start(s5t)
-		else:
-			self.running, self.status = False, 0
+		if s.VKE & ~self.prevVKE: # Pos edge
+			self.status, self.running = 1, False
+		if ~s.VKE & self.prevVKE: # Neg edge
+			self.status = 1
+			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def __start(self, s5t):
 		self.timebase = (s5t >> self.TB_SHIFT) & self.TB_MASK
 		self.deadline = self.cpu.now + Timer.s5t_to_seconds(s5t)
+		self.__updateRemaining()
 		self.running = True
 
 	def __checkDeadline(self):
-		if self.running and self.cpu.now >= self.deadline:
-			self.deadlineCallback()
+		if self.running:
+			self.__updateRemaining()
+			if self.remaining <= 0.0:
+				self.deadlineCallback()
 
 	# Deadline callback - set status
 	def __cb_setStatus(self):
-		self.running = False
-		self.status = 1
+		self.running, self.status = False, 1
 
 	# Deadline callback - clear status
 	def __cb_clearStatus(self):
-		self.running = False
-		self.status = 0
+		self.running, self.status = False, 0
