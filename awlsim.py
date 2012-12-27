@@ -338,7 +338,7 @@ class S7CPU(object):
 		# Stats
 		self.cycleCount = 0
 		self.insnCount = 0
-		self.insnCountMod = 32
+		self.insnCountMod = self.simplePRNG.getBits(7) + 1
 		self.runtimeSec = 0.0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
