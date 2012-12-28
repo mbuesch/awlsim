@@ -722,9 +722,6 @@ class EditWidget(QPlainTextEdit):
 		self.mainWidget = mainWidget
 
 		self.__updateFonts()
-		self.__charWidth = self.fontMetrics().width('0')
-		self.__charHeight = self.fontMetrics().height()
-
 
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
@@ -766,6 +763,8 @@ class EditWidget(QPlainTextEdit):
 		fmt.setFontFixedPitch(True)
 		fmt.setFontStyleStrategy(QFont.PreferBitmap)
 		self.setCurrentCharFormat(fmt)
+		self.__charWidth = self.fontMetrics().width('X')
+		self.__charHeight = self.fontMetrics().height()
 
 	def enableCpuStats(self, enabled=True):
 		self.__cpuStatsEnabled = enabled
