@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # AWL parser
@@ -101,6 +100,9 @@ class RawAwlDB(RawAwlBlock):
 		self.fields = []
 		self.fb = None
 
+	def isInstanceDB(self):
+		return bool(self.fb)
+
 	def getByName(self, name):
 		for field in self.fields:
 			if field.name == name:
@@ -140,6 +142,23 @@ class AwlParser(object):
 	STATE_IN_OB_HDR		= 8
 	STATE_IN_OB		= 9
 
+	class TokenizerState(object):
+		def __init__(self):
+			self.reset()
+
+		def reset(self):
+			self.tokens = []
+			self.curToken = ""
+			self.inComment = False
+			self.inQuote = False
+			self.inParens = False
+
+		def tokenEnd(self):
+			self.curToken = self.curToken.strip()
+			if self.curToken:
+				self.tokens.append(self.curToken)
+			self.curToken = ""
+
 	def __init__(self):
 		self.reset()
 
@@ -165,81 +184,111 @@ class AwlParser(object):
 		return self.__inAnyHeader() or\
 		       self.state == self.STATE_GLOBAL
 
-	def __parseLine(self, line):
-		line = line.strip()
-		if not line:
-			return None
-		tokens = []
-		curToken = ""
-		inQuote = False
-		for i, c in enumerate(line):
+	def __tokenize(self, data):
+		self.reset()
+		self.lineNr = 1
+
+		data = data.strip()
+		if not data:
+			return
+
+		t = self.TokenizerState()
+		for i, c in enumerate(data):
+			if t.inComment:
+				# Consume all comment chars up to \n
+				if c == '\n':
+					self.lineNr += 1
+					t.inComment = False
+				continue
 			if c == '"':
-				inQuote = not inQuote
-			if c == ';' and not inQuote:
+				# Quote begin or end
+				t.inQuote = not t.inQuote
+			if t.inQuote:
+				t.curToken += c
+				continue
+			if c == ';':
 				# Semicolon ends statement.
-				break
-			if not inQuote and\
-			   c == '/' and i + 1 < len(line) and\
-			   line[i + 1] == '/':
-				# This is a //comment. Stop parsing line.
-				break
-			if tokens and not inQuote:
+				self.__parseTokens(t)
+				continue
+			if c == '/' and i + 1 < len(data) and\
+			   data[i + 1] == '/':
+				# A //comment ends the statement.
+				self.__parseTokens(t)
+				t.inComment = True
+				continue
+			if t.tokens:
+				if c == '(':
+					# Parenthesis begin
+					t.inParens = True
+					t.curToken += c
+					t.tokenEnd()
+					continue
+				if t.inParens and c == ')':
+					# Parenthesis end
+					t.inParens = False
+					t.tokenEnd()
+					t.tokens.append(c)
+					continue
 				if (self.__inAnyHeaderOrGlobal() and\
 				    c in ('=', ':')) or\
 				   (c == ','):
 					# Handle non-space token separators.
-					curToken = curToken.strip()
-					if curToken:
-						tokens.append(curToken)
-					tokens.append(c)
-					curToken = ""
+					t.tokenEnd()
+					t.tokens.append(c)
 					continue
-			if not c.isspace() or inQuote:
-				curToken += c
-			if (c.isspace() and not inQuote) or\
-			   i == len(line) - 1:
-				# Handle space token separator and end of line.
-				curToken = curToken.strip()
-				if curToken:
-					tokens.append(curToken)
-				curToken = ""
-		if curToken:
-			tokens.append(curToken)
-		if inQuote:
-			raise AwlParserError("Unterminated quote: " + line)
+			if c == '\n' and not t.inParens:
+				self.__parseTokens(t)
+				self.lineNr += 1
+				continue
+			if c.isspace():
+				t.tokenEnd()
+			else:
+				t.curToken += c
+		if t.inQuote:
+			raise AwlParserError("Unterminated quote")
+		if t.inParens:
+			raise AwlParserError("Unterminated parenthesis pair")
+		if t.tokens:
+			self.__parseTokens(t)
+
+	def __parseTokens(self, tokenizerState):
+		tokenizerState.tokenEnd()
+		tokens = tokenizerState.tokens
 		if not tokens:
-			return None
+			return
 
 		if self.state == self.STATE_GLOBAL or\
 		   self.flatLayout:
-			return self.__parseTokens_global(line, tokens)
-		if self.state == self.STATE_IN_DB_HDR:
-			return self.__parseTokens_db_hdr(line, tokens)
-		if self.state == self.STATE_IN_DB_HDR_STRUCT:
-			return self.__parseTokens_db_hdr_struct(line, tokens)
-		if self.state == self.STATE_IN_DB:
-			return self.__parseTokens_db(line, tokens)
-		if self.state == self.STATE_IN_FB_HDR:
-			return self.__parseTokens_fb_hdr(line, tokens)
-		if self.state == self.STATE_IN_FB:
-			return self.__parseTokens_fb(line, tokens)
-		if self.state == self.STATE_IN_FC_HDR:
-			return self.__parseTokens_fc_hdr(line, tokens)
-		if self.state == self.STATE_IN_FC:
-			return self.__parseTokens_fc(line, tokens)
-		if self.state == self.STATE_IN_OB_HDR:
-			return self.__parseTokens_ob_hdr(line, tokens)
-		if self.state == self.STATE_IN_OB:
-			return self.__parseTokens_ob(line, tokens)
-		assert(0)
+			self.__parseTokens_global(tokens)
+		elif self.state == self.STATE_IN_DB_HDR:
+			self.__parseTokens_db_hdr(tokens)
+		elif self.state == self.STATE_IN_DB_HDR_STRUCT:
+			self.__parseTokens_db_hdr_struct(tokens)
+		elif self.state == self.STATE_IN_DB:
+			self.__parseTokens_db(tokens)
+		elif self.state == self.STATE_IN_FB_HDR:
+			self.__parseTokens_fb_hdr(tokens)
+		elif self.state == self.STATE_IN_FB:
+			self.__parseTokens_fb(tokens)
+		elif self.state == self.STATE_IN_FC_HDR:
+			self.__parseTokens_fc_hdr(tokens)
+		elif self.state == self.STATE_IN_FC:
+			self.__parseTokens_fc(tokens)
+		elif self.state == self.STATE_IN_OB_HDR:
+			self.__parseTokens_ob_hdr(tokens)
+		elif self.state == self.STATE_IN_OB:
+			self.__parseTokens_ob(tokens)
+		else:
+			assert(0)
+		tokenizerState.reset()
 
-	def __parseTokens_global(self, line, tokens):
+	def __parseTokens_global(self, tokens):
 		if self.flatLayout:
 			if not self.tree.obs:
 				self.tree.obs[1] = RawAwlOB(self.tree, 1)
 			if not self.tree.curBlock:
 				self.tree.curBlock = self.tree.obs[1]
-			insn = self.__parseInstruction(line, tokens)
+			insn = self.__parseInstruction(tokens)
 			self.tree.obs[1].insns.append(insn)
 			return
 
@@ -294,21 +343,20 @@ class AwlParser(object):
 			raise AwlParserError("Invalid value")
 		raise AwlParserError("Unknown statement")
 
-	def __parseInstruction(self, line, tokens):
+	def __parseInstruction(self, tokens):
 		insn = RawAwlInsn(self.tree.curBlock)
 		insn.setLineNr(self.lineNr)
 		if tokens[0].endswith(":"):
 			# First token is a label
 			if len(tokens) <= 1:
-				raise AwlParserError("Invalid standalone "
-					"label: " + line)
+				raise AwlParserError("Invalid standalone label")
 			label = tokens[0][0:-1]
 			if not label or not RawAwlInsn.isValidLabel(label):
-				raise AwlParserError("Invalid label: " + line)
+				raise AwlParserError("Invalid label")
 			insn.setLabel(label)
 			tokens = tokens[1:]
 		if not tokens:
-			raise AwlParserError("No instruction name: " + line)
+			raise AwlParserError("No instruction name")
 		insn.setName(tokens[0])
 		tokens = tokens[1:]
 		if tokens:
@@ -316,7 +364,7 @@ class AwlParser(object):
 			insn.setOperators(tokens)
 		return insn
 
-	def __parseTokens_db_hdr(self, line, tokens):
+	def __parseTokens_db_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_DB)
 			return
@@ -335,7 +383,7 @@ class AwlParser(object):
 			return
 		pass#TODO
 
-	def __parseTokens_db_hdr_struct(self, line, tokens):
+	def __parseTokens_db_hdr_struct(self, tokens):
 		if tokens[0].upper() == "END_STRUCT":
 			self.__setState(self.STATE_IN_DB_HDR)
 			return
@@ -344,9 +392,9 @@ class AwlParser(object):
 			field = RawAwlDB.Field(name, None, type)
 			self.tree.curBlock.fields.append(field)
 		else:
-			raise AwlParserError("Unknown tokens: " + line)
+			raise AwlParserError("Unknown tokens")
 
-	def __parseTokens_db(self, line, tokens):
+	def __parseTokens_db(self, tokens):
 		if tokens[0].upper() == "END_DATA_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
@@ -360,81 +408,70 @@ class AwlParser(object):
 				field = RawAwlDB.Field(name, value, None)
 				db.fields.append(field)
 		else:
-			raise AwlParserError("Unknown tokens: " + line)
+			raise AwlParserError("Unknown tokens")
 
-	def __parseTokens_fb_hdr(self, line, tokens):
+	def __parseTokens_fb_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_FB)
 			return
 		pass#TODO
 
-	def __parseTokens_fb(self, line, tokens):
+	def __parseTokens_fb(self, tokens):
 		if tokens[0].upper() == "END_FUNCTION_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
 		if tokens[0].upper() == "NETWORK" or\
 		   tokens[0].upper() == "TITLE":
 			return # ignore
-		insn = self.__parseInstruction(line, tokens)
+		insn = self.__parseInstruction(tokens)
 		self.tree.curBlock.insns.append(insn)
 
-	def __parseTokens_fc_hdr(self, line, tokens):
+	def __parseTokens_fc_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_FC)
 			return
 		pass#TODO
 
-	def __parseTokens_fc(self, line, tokens):
+	def __parseTokens_fc(self, tokens):
 		if tokens[0].upper() == "END_FUNCTION":
 			self.__setState(self.STATE_GLOBAL)
 			return
 		if tokens[0].upper() == "NETWORK" or\
 		   tokens[0].upper() == "TITLE":
 			return # ignore
-		insn = self.__parseInstruction(line, tokens)
+		insn = self.__parseInstruction(tokens)
 		self.tree.curBlock.insns.append(insn)
 
-	def __parseTokens_ob_hdr(self, line, tokens):
+	def __parseTokens_ob_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_OB)
 			return
 		pass#TODO
 
-	def __parseTokens_ob(self, line, tokens):
+	def __parseTokens_ob(self, tokens):
 		if tokens[0].upper() == "END_ORGANIZATION_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
 		if tokens[0].upper() == "NETWORK" or\
 		   tokens[0].upper() == "TITLE":
 			return # ignore
-		insn = self.__parseInstruction(line, tokens)
+		insn = self.__parseInstruction(tokens)
 		self.tree.curBlock.insns.append(insn)
 
 	def parseFile(self, filename):
 		self.parseData(awlFileRead(filename))
 
 	def parseData(self, data):
-		self.reset()
-		self.lineNr = 0
 		self.flatLayout = not re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*',
 					       data, re.DOTALL | re.MULTILINE)
-		for line in data.splitlines():
-			self.lineNr += 1
-			line = line.strip()
-			if not line:
-				continue
-			ex = None
-			try:
-				self.__parseLine(line)
-			except AwlParserError as e:
-				ex = e
-			if ex:
-				raise AwlParserError("Parser ERROR at AWL line %d: %s\n%s" %\
-					(self.lineNr, line, str(ex)))
+		ex = None
+		try:
+			self.__tokenize(data)
+		except AwlParserError as e:
+			ex = e
+		if ex:
+			raise AwlParserError("Parser ERROR at AWL line %d:\n%s" %\
+				(self.lineNr, str(ex)))
 
 	def getParseTree(self):
 		return self.tree
-
-if __name__ == "__main__":
-	p = AwlParser()
-	p.parseFile(sys.argv[1])
