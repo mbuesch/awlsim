@@ -56,10 +56,13 @@ class AwlOperator(object):
 		self.bitOffset = bitOffset
 		self.labelIndex = None
 		self.insn = None
-		self.isExtended = False
+		self.setExtended(False)
 
 	def setInsn(self, newInsn):
 		self.insn = newInsn
+
+	def setExtended(self, isExtended):
+		self.isExtended = isExtended
 
 	@property
 	def immediate(self):

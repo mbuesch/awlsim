@@ -76,3 +76,10 @@
 	__ASSERT==	__STW 6,	1
 	__ASSERT==	__STW 7,	0
 	__ASSERT==	__STW 8,	1
+
+
+	// Test B#(...) immediate
+	L		B#(66, 99)
+	__ASSERT==	__ACCU 1,	DW#16#00004263
+	L		B#(66, 99, 88, 55)
+	__ASSERT==	__ACCU 1,	DW#16#42635837

@@ -30,7 +30,7 @@ class OpDescriptor(object):
 class AwlOpTranslator(object):
 	"Instruction operator translator"
 
-	constOperTab = {
+	__constOperTab = {
 		"==0"	: OpDescriptor(AwlOperator.MEM_STW_Z, 1, 0, 0, 1),
 		"<>0"	: OpDescriptor(AwlOperator.MEM_STW_NZ, 1, 0, 0, 1),
 		">0"	: OpDescriptor(AwlOperator.MEM_STW_POS, 1, 0, 0, 1),
@@ -95,19 +95,64 @@ class AwlOpTranslator(object):
 					    nanDWord, 0, 1),
 	}
 
-	@classmethod
-	def op2desc(cls, rawInsn, rawOp):
-		if rawInsn.block.hasLabel(rawOp):
+	def __init__(self, insn):
+		self.insn = insn
+
+	def __translateAddressOperator(self, opDesc, rawOps):
+		if len(rawOps) < 1:
+			raise AwlSimError("Missing address operator")
+		if opDesc.width == 1:
+			if opDesc.offset == 0 and opDesc.bitOffset == -1:
+				try:
+					opDesc.bitOffset = int(rawOps[0], 10)
+				except ValueError as e:
+					if opDesc.operType == AwlOperator.MEM_STW:
+						opDesc.bitOffset = S7StatusWord.getBitnrByName(rawOps[0])
+					else:
+						raise AwlSimError("Invalid bit address")
+			else:
+				assert(opDesc.offset == -1 and opDesc.bitOffset == -1)
+				offset = rawOps[0].split('.')
+				if len(offset) != 2:
+					raise AwlSimError("Invalid bit address")
+				try:
+					opDesc.offset = int(offset[0], 10)
+					opDesc.bitOffset = int(offset[1], 10)
+				except ValueError as e:
+					raise AwlSimError("Invalid bit address")
+		elif opDesc.width == 8:
+			assert(opDesc.offset == -1 and opDesc.bitOffset == 0)
+			try:
+				opDesc.offset = int(rawOps[0], 10)
+			except ValueError as e:
+				raise AwlSimError("Invalid byte address")
+		elif opDesc.width == 16:
+			assert(opDesc.offset == -1 and opDesc.bitOffset == 0)
+			try:
+				opDesc.offset = int(rawOps[0], 10)
+			except ValueError as e:
+				raise AwlSimError("Invalid word address")
+		elif opDesc.width == 32:
+			assert(opDesc.offset == -1 and opDesc.bitOffset == 0)
+			try:
+				opDesc.offset = int(rawOps[0], 10)
+			except ValueError as e:
+				raise AwlSimError("Invalid doubleword address")
+		else:
+			assert(0)
+
+	def __doTrans(self, rawInsn, rawOps):
+		if rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
-			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOp, 0, 1)
+			return OpDescriptor(AwlOperator.LBL_REF, 0, rawOps[0], 0, 1)
 		try:
 			# Constant operator (from table)
-			return cls.constOperTab[rawOp].dup()
+			return self.__constOperTab[rawOps[0]].dup()
 		except KeyError as e:
 			pass
 		try:
 			# Immediate integer
-			immediate = int(rawOp, 10)
+			immediate = int(rawOps[0], 10)
 			if immediate > 32767 or immediate < -32768:
 				raise AwlSimError("16-bit immediate overflow")
 			immediate &= 0xFFFF
@@ -117,13 +162,13 @@ class AwlOpTranslator(object):
 			pass
 		try:
 			# Immediate float
-			immediate = float(rawOp)
+			immediate = float(rawOps[0])
 			immediate = pyFloatToDWord(immediate)
 			return OpDescriptor(AwlOperator.IMM_REAL, 32,
 					    immediate, 0, 1)
 		except ValueError:
 			pass
-		rawOpUpper = rawOp.upper()
+		rawOpUpper = rawOps[0].upper()
 		if rawOpUpper.startswith("S5T#"):
 			p = rawOpUpper[4:]
 			seconds = 0.0
@@ -154,6 +199,51 @@ class AwlOpTranslator(object):
 				seconds += num * mult
 			s5t = Timer.seconds_to_s5t(seconds)
 			return OpDescriptor(AwlOperator.IMM_S5T, 0, s5t, 0, 1)
+		if rawOpUpper.startswith("2#"):
+			try:
+				string = rawOpUpper[2:].replace('_', '')
+				immediate = int(string, 2)
+				if immediate > 0xFFFFFFFF:
+					raise ValueError
+			except ValueError as e:
+				raise AwlSimError("Invalid immediate")
+			size = 32 if (immediate > 0xFFFF) else 16
+			return OpDescriptor(AwlOperator.IMM, size, immediate, 0, 1)
+		if rawOpUpper.startswith("B#("):
+			try:
+				if len(rawOps) >= 5 and\
+				   rawOps[2] == ',' and\
+				   rawOps[4] == ')':
+					size, fields = 16, 5
+					a, b = int(rawOps[1], 10),\
+					       int(rawOps[3], 10)
+					if a < 0 or a > 0xFF or\
+					   b < 0 or b > 0xFF:
+						raise ValueError
+					immediate = (a << 8) | b
+				elif len(rawOps) >= 9 and\
+				     rawOps[2] == ',' and\
+				     rawOps[4] == ',' and\
+				     rawOps[6] == ',' and\
+				     rawOps[8] == ')':
+					size, fields = 32, 9
+					a, b, c, d = int(rawOps[1], 10),\
+						     int(rawOps[3], 10),\
+						     int(rawOps[5], 10),\
+						     int(rawOps[7], 10)
+					if a < 0 or a > 0xFF or\
+					   b < 0 or b > 0xFF or\
+					   c < 0 or c > 0xFF or\
+					   d < 0 or d > 0xFF:
+						raise ValueError
+					immediate = (a << 24) | (b << 16) |\
+						    (c << 8) | d
+				else:
+					raise ValueError
+			except ValueError as e:
+				raise AwlSimError("Invalid immediate")
+			return OpDescriptor(AwlOperator.IMM, size, immediate,
+					    0, fields)
 		if rawOpUpper.startswith("B#16#"):
 			try:
 				immediate = int(rawOpUpper[5:], 16)
@@ -211,65 +301,29 @@ class AwlOpTranslator(object):
 		#TODO TOD#
 		#TODO date D#
 		#TODO pointer P#x.y
-		#TODO binary immediate
 		raise AwlSimError("Cannot parse operand: " +\
-				str(rawOp))
+				str(rawOps[0]))
 
-	@classmethod
-	def fromRawOperators(cls, rawInsn, rawOps):
-		op = cls.op2desc(rawInsn, rawOps[0])
-		if op.fieldCount == 2:
-			if len(rawOps) < 2:
-				raise AwlSimError("Missing operator")
-			if op.width == 1:
-				if op.offset == 0 and op.bitOffset == -1:
-					try:
-						op.bitOffset = int(rawOps[1], 10)
-					except ValueError as e:
-						if op.operType == AwlOperator.MEM_STW:
-							op.bitOffset = S7StatusWord.getBitnrByName(rawOps[1])
-						else:
-							raise AwlSimError("Invalid bit address")
-				else:
-					assert(op.offset == -1 and op.bitOffset == -1)
-					offset = rawOps[1].split('.')
-					if len(offset) != 2:
-						raise AwlSimError("Invalid bit address")
-					try:
-						op.offset = int(offset[0], 10)
-						op.bitOffset = int(offset[1], 10)
-					except ValueError as e:
-						raise AwlSimError("Invalid bit address")
-			elif op.width == 8:
-				assert(op.offset == -1 and op.bitOffset == 0)
-				try:
-					op.offset = int(rawOps[1], 10)
-				except ValueError as e:
-					raise AwlSimError("Invalid byte address")
-			elif op.width == 16:
-				assert(op.offset == -1 and op.bitOffset == 0)
-				try:
-					op.offset = int(rawOps[1], 10)
-				except ValueError as e:
-					raise AwlSimError("Invalid word address")
-			elif op.width == 32:
-				assert(op.offset == -1 and op.bitOffset == 0)
-				try:
-					op.offset = int(rawOps[1], 10)
-				except ValueError as e:
-					raise AwlSimError("Invalid doubleword address")
-			else:
-				assert(0)
-		if len(rawOps) > op.fieldCount:
-			if rawOps[op.fieldCount] != ',':
-				raise AwlSimError("Missing comma in operator list")
-			op.fieldCount += 1 # Consume comma
-			if len(rawOps) <= op.fieldCount:
-				raise AwlSimError("Trailing comma")
+	def translateFrom(self, rawInsn):
+		rawOps = rawInsn.getOperators()
+		while rawOps:
+			opDesc = self.__doTrans(rawInsn, rawOps)
 
-		operator = AwlOperator(op.operType, op.width,
-				       op.offset, op.bitOffset)
-		if rawOps[0].startswith("__"):
-			operator.isExtended = True
+			if opDesc.fieldCount == 2 and\
+			   (opDesc.offset == -1 or opDesc.bitOffset == -1):
+				self.__translateAddressOperator(opDesc, rawOps[1:])
 
-		return (op.fieldCount, operator)
+			if len(rawOps) > opDesc.fieldCount:
+				if rawOps[opDesc.fieldCount] != ',':
+					raise AwlSimError("Missing comma in operator list")
+				opDesc.fieldCount += 1 # Consume comma
+				if len(rawOps) <= opDesc.fieldCount:
+					raise AwlSimError("Trailing comma")
+
+			operator = AwlOperator(opDesc.operType, opDesc.width,
+					       opDesc.offset, opDesc.bitOffset)
+			operator.setInsn(self.insn)
+			operator.setExtended(rawOps[0].startswith("__"))
+
+			self.insn.ops.append(operator)
+			rawOps = rawOps[opDesc.fieldCount : ]

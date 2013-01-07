@@ -365,13 +365,8 @@ class AwlInsn(object):
 		self.cpu = None
 		self.ip = None
 		self.ops = []
-		rawOps = rawInsn.getOperators()
-		while rawOps:
-			cons, oper = AwlOpTranslator.fromRawOperators(rawInsn,
-								      rawOps)
-			oper.setInsn(self)
-			self.ops.append(oper)
-			rawOps = rawOps[cons:]
+		opTrans = AwlOpTranslator(self)
+		opTrans.translateFrom(rawInsn)
 
 	def _assertOps(self, count):
 		if isinstance(count, int):
