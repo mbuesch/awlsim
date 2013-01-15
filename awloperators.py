@@ -190,3 +190,52 @@ class AwlOperator(object):
 		elif self.type == self.VIRT_AR:
 			return "__AR %d" % self.offset
 		assert(0)
+
+	@classmethod
+	def fetchFromByteArray(cls, array, operator):
+		width, byteOff, bitOff =\
+			operator.width, operator.offset, operator.bitOffset
+		try:
+			if width == 1:
+				return array[byteOff].getBit(bitOff)
+			elif width == 8:
+				assert(bitOff == 0)
+				return array[byteOff].get()
+			elif width == 16:
+				assert(bitOff == 0)
+				return (array[byteOff].get() << 8) |\
+				       array[byteOff + 1].get()
+			elif width == 32:
+				assert(bitOff == 0)
+				return (array[byteOff].get() << 24) |\
+				       (array[byteOff + 1].get() << 16) |\
+				       (array[byteOff + 2].get() << 8) |\
+				       array[byteOff + 3].get()
+		except IndexError as e:
+			raise AwlSimError("fetch: Operator offset out of range")
+		assert(0)
+
+	@classmethod
+	def storeToByteArray(cls, array, operator, value):
+		width, byteOff, bitOff =\
+			operator.width, operator.offset, operator.bitOffset
+		try:
+			if width == 1:
+				array[byteOff].setBitValue(bitOff, value)
+			elif width == 8:
+				assert(bitOff == 0)
+				array[byteOff].set(value)
+			elif width == 16:
+				assert(bitOff == 0)
+				array[byteOff].set(value >> 8)
+				array[byteOff + 1].set(value)
+			elif width == 32:
+				assert(bitOff == 0)
+				array[byteOff].set(value >> 24)
+				array[byteOff + 1].set(value >> 16)
+				array[byteOff + 2].set(value >> 8)
+				array[byteOff + 3].set(value)
+			else:
+				assert(0)
+		except IndexError as e:
+			raise AwlSimError("store: Operator offset out of range")

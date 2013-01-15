@@ -262,11 +262,34 @@ class S7CPU(object):
 			insns.append(self.__translateInsn(rawInsn, ip))
 		return insns
 
-	def __translateDB(self, db, rawDB):
-		pass#TODO
+	def __translateDBField(self, db, name, value, type):
+		dtype = AwlDataType.makeByName(type)
+		value = dtype.parseImmediate(value)
+		db.addField(fieldData = value,
+			    size = dtype.width,
+			    name = name)
+
+	def __translateDB(self, rawDB):
+		db = DB(rawDB.index)
+		if rawDB.isInstanceDB():
+			if any(f.type for f in rawDB.fields):
+				raise AwlSimError("DB %d is an instance DB, but "
+					"declares a data structure." % rawDB.index)
+			#TODO
+			raise AwlSimError("Instance DBs not supported, yet.")
+		else:
+			for f in rawDB.fields:
+				if not f.type:
+					raise AwlSimError(
+						"DB %d assigns field '%s', "
+						"but does not declare it." %\
+						(rawDB.index, f.name))
+				self.__translateDBField(db, f.name,
+							f.value, f.type)
+		return db
 
 	def load(self, parseTree):
-		# Translate instructions
+		# Translate the AWL tree
 		self.reset()
 		for obNumber in parseTree.obs.keys():
 			insns = self.__translateInsns(parseTree.obs[obNumber].insns)
@@ -278,8 +301,7 @@ class S7CPU(object):
 			insns = self.__translateInsns(parseTree.fcs[fcNumber].insns)
 			self.fcs[fcNumber] = FC(insns, fcNumber)
 		for dbNumber in parseTree.dbs.keys():
-			db = DB(dbNumber)
-			self.__translateDB(db, parseTree.dbs[dbNumber])
+			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
 		try:
 			self.obs[1]
@@ -620,41 +642,18 @@ class S7CPU(object):
 	def fetchSTW_UO(self, operator):
 		return self.status.A0 & self.status.A1
 
-	def __fetchFromByteArray(self, array, operator):
-		width, byteOff, bitOff =\
-			operator.width, operator.offset, operator.bitOffset
-		try:
-			if width == 1:
-				return array[byteOff].getBit(bitOff)
-			elif width == 8:
-				assert(bitOff == 0)
-				return array[byteOff].get()
-			elif width == 16:
-				assert(bitOff == 0)
-				return (array[byteOff].get() << 8) |\
-				       array[byteOff + 1].get()
-			elif width == 32:
-				assert(bitOff == 0)
-				return (array[byteOff].get() << 24) |\
-				       (array[byteOff + 1].get() << 16) |\
-				       (array[byteOff + 2].get() << 8) |\
-				       array[byteOff + 3].get()
-		except IndexError as e:
-			raise AwlSimError("fetch: Offset out of range")
-		assert(0)
-
 	def fetchE(self, operator):
-		return self.__fetchFromByteArray(self.inputs, operator)
+		return AwlOperator.fetchFromByteArray(self.inputs, operator)
 
 	def fetchA(self, operator):
-		return self.__fetchFromByteArray(self.outputs, operator)
+		return AwlOperator.fetchFromByteArray(self.outputs, operator)
 
 	def fetchM(self, operator):
-		return self.__fetchFromByteArray(self.flags, operator)
+		return AwlOperator.fetchFromByteArray(self.flags, operator)
 
 	def fetchL(self, operator):
-		return self.__fetchFromByteArray(self.callStack[-1].localdata,
-						 operator)
+		return AwlOperator.fetchFromByteArray(self.callStack[-1].localdata,
+						      operator)
 
 	def fetchDB(self, operator):
 		if not self.globDB:
@@ -732,44 +731,20 @@ class S7CPU(object):
 			raise AwlSimError("Invalid store request")
 		storeMethod(self, operator, value)
 
-	def __storeToByteArray(self, array, operator, value):
-		width, byteOff, bitOff =\
-			operator.width, operator.offset, operator.bitOffset
-		try:
-			if width == 1:
-				array[byteOff].setBitValue(bitOff, value)
-			elif width == 8:
-				assert(bitOff == 0)
-				array[byteOff].set(value)
-			elif width == 16:
-				assert(bitOff == 0)
-				array[byteOff].set(value >> 8)
-				array[byteOff + 1].set(value)
-			elif width == 32:
-				assert(bitOff == 0)
-				array[byteOff].set(value >> 24)
-				array[byteOff + 1].set(value >> 16)
-				array[byteOff + 2].set(value >> 8)
-				array[byteOff + 3].set(value)
-			else:
-				assert(0)
-		except IndexError as e:
-			raise AwlSimError("fetch: Offset out of range")
-
 	def storeE(self, operator, value):
 		if self.inCycle():
 			raise AwlSimError("Can't store to E")
-		self.__storeToByteArray(self.inputs, operator, value)
+		AwlOperator.storeToByteArray(self.inputs, operator, value)
 
 	def storeA(self, operator, value):
-		self.__storeToByteArray(self.outputs, operator, value)
+		AwlOperator.storeToByteArray(self.outputs, operator, value)
 
 	def storeM(self, operator, value):
-		self.__storeToByteArray(self.flags, operator, value)
+		AwlOperator.storeToByteArray(self.flags, operator, value)
 
 	def storeL(self, operator, value):
-		self.__storeToByteArray(self.callStack[-1].localdata,
-					operator, value)
+		AwlOperator.storeToByteArray(self.callStack[-1].localdata,
+					     operator, value)
 
 	def storeDB(self, operator, value):
 		if not self.globDB:

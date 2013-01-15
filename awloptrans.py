@@ -9,6 +9,7 @@ import math
 
 from util import *
 from awloperators import *
+from awldatatypes import *
 from awlparser import *
 from awltimers import *
 
@@ -150,153 +151,58 @@ class AwlOpTranslator(object):
 			return self.__constOperTab[rawOps[0]].dup()
 		except KeyError as e:
 			pass
-		try:
-			# Immediate integer
-			immediate = int(rawOps[0], 10)
-			if immediate > 32767 or immediate < -32768:
-				raise AwlSimError("16-bit immediate overflow")
+		# Immediate integer
+		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
+		if immediate is not None:
 			immediate &= 0xFFFF
 			return OpDescriptor(AwlOperator.IMM, 16,
 					    immediate, 0, 1)
-		except ValueError:
-			pass
-		try:
-			# Immediate float
-			immediate = float(rawOps[0])
-			immediate = pyFloatToDWord(immediate)
+		# Immediate float
+		immediate = AwlDataType.tryParseImmediate_REAL(rawOps[0])
+		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_REAL, 32,
 					    immediate, 0, 1)
-		except ValueError:
-			pass
-		rawOpUpper = rawOps[0].upper()
-		if rawOpUpper.startswith("S5T#"):
-			p = rawOpUpper[4:]
-			seconds = 0.0
-			while p:
-				if p.endswith("MS"):
-					mult = 0.001
-					p = p[:-2]
-				elif p.endswith("S"):
-					mult = 1.0
-					p = p[:-1]
-				elif p.endswith("M"):
-					mult = 60.0
-					p = p[:-1]
-				elif p.endswith("H"):
-					mult = 3600.0
-					p = p[:-1]
-				else:
-					raise AwlSimError("Invalid time")
-				if not p:
-					raise AwlSimError("Invalid time")
-				num = ""
-				while p and p[-1] in "0123456789":
-					num = p[-1] + num
-					p = p[:-1]
-				if not num:
-					raise AwlSimError("Invalid time")
-				num = int(num, 10)
-				seconds += num * mult
-			s5t = Timer.seconds_to_s5t(seconds)
-			return OpDescriptor(AwlOperator.IMM_S5T, 0, s5t, 0, 1)
-		if rawOpUpper.startswith("2#"):
-			try:
-				string = rawOpUpper[2:].replace('_', '')
-				immediate = int(string, 2)
-				if immediate > 0xFFFFFFFF:
-					raise ValueError
-			except ValueError as e:
-				raise AwlSimError("Invalid immediate")
+		# S5Time immediate
+		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_S5T, 0,
+					    immediate, 0, 1)
+		# Binary immediate
+		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
+		if immediate is not None:
 			size = 32 if (immediate > 0xFFFF) else 16
-			return OpDescriptor(AwlOperator.IMM, size, immediate, 0, 1)
-		if rawOpUpper.startswith("B#("):
-			try:
-				if len(rawOps) >= 5 and\
-				   rawOps[2] == ',' and\
-				   rawOps[4] == ')':
-					size, fields = 16, 5
-					a, b = int(rawOps[1], 10),\
-					       int(rawOps[3], 10)
-					if a < 0 or a > 0xFF or\
-					   b < 0 or b > 0xFF:
-						raise ValueError
-					immediate = (a << 8) | b
-				elif len(rawOps) >= 9 and\
-				     rawOps[2] == ',' and\
-				     rawOps[4] == ',' and\
-				     rawOps[6] == ',' and\
-				     rawOps[8] == ')':
-					size, fields = 32, 9
-					a, b, c, d = int(rawOps[1], 10),\
-						     int(rawOps[3], 10),\
-						     int(rawOps[5], 10),\
-						     int(rawOps[7], 10)
-					if a < 0 or a > 0xFF or\
-					   b < 0 or b > 0xFF or\
-					   c < 0 or c > 0xFF or\
-					   d < 0 or d > 0xFF:
-						raise ValueError
-					immediate = (a << 24) | (b << 16) |\
-						    (c << 8) | d
-				else:
-					raise ValueError
-			except ValueError as e:
-				raise AwlSimError("Invalid immediate")
+			return OpDescriptor(AwlOperator.IMM, size,
+					    immediate, 0, 1)
+		# Byte array immediate
+		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
+		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, size, immediate,
 					    0, fields)
-		if rawOpUpper.startswith("B#16#"):
-			try:
-				immediate = int(rawOpUpper[5:], 16)
-				if immediate > 0xFF:
-					raise ValueError
-			except ValueError as e:
-				raise AwlSimError("Invalid immediate")
-			return OpDescriptor(AwlOperator.IMM, 8, immediate, 0, 1)
-		if rawOpUpper.startswith("W#16#"):
-			try:
-				immediate = int(rawOpUpper[5:], 16)
-				if immediate > 0xFFFF:
-					raise ValueError
-			except ValueError as e:
-				raise AwlSimError("Invalid immediate")
-			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
-		if rawOpUpper.startswith("DW#16#"):
-			try:
-				immediate = int(rawOpUpper[6:], 16)
-				if immediate > 0xFFFFFFFF:
-					raise ValueError
-			except ValueError as e:
-				raise AwlSimError("Invalid immediate")
-			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
-		if rawOpUpper.startswith("L#"):
-			try:
-				immediate = int(rawOpUpper[2:], 10)
-				if immediate > 2147483647 or\
-				   immediate < -2147483648:
-					raise AwlSimError("32-bit immediate overflow")
-				immediate &= 0xFFFFFFFF
-			except ValueError as e:
-				raise AwlSimError("Invalid immediate")
-			return OpDescriptor(AwlOperator.IMM, 32, immediate, 0, 1)
-		if rawOpUpper.startswith("C#"):
-			try:
-				cnt = rawOpUpper[2:]
-				if len(cnt) < 1 or len(cnt) > 3:
-					raise ValueError
-				a, b, c = 0, 0, 0
-				if cnt:
-					a = int(cnt[-1], 10)
-					cnt = cnt[:-1]
-				if cnt:
-					b = int(cnt[-1], 10)
-					cnt = cnt[:-1]
-				if cnt:
-					c = int(cnt[-1], 10)
-					cnt = cnt[:-1]
-				immediate = a | (b << 4) | (c << 8)
-			except ValueError as e:
-				raise AwlSimError("Invalid C# immediate")
-			return OpDescriptor(AwlOperator.IMM, 16, immediate, 0, 1)
+		# Hex byte immediate
+		immediate = AwlDataType.tryParseImmediate_HexByte(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM, 8,
+					    immediate, 0, 1)
+		# Hex word immediate
+		immediate = AwlDataType.tryParseImmediate_HexWord(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM, 16,
+					    immediate, 0, 1)
+		# Hex dword immediate
+		immediate = AwlDataType.tryParseImmediate_HexDWord(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM, 32,
+					    immediate, 0, 1)
+		# Long integer immediate
+		immediate = AwlDataType.tryParseImmediate_DINT(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM, 32,
+					    immediate, 0, 1)
+		# BCD word immediate
+		immediate = AwlDataType.tryParseImmediate_BCD_word(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM, 16,
+					    immediate, 0, 1)
 		#TODO T#
 		#TODO TOD#
 		#TODO date D#

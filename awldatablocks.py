@@ -7,18 +7,43 @@
 #
 
 from util import *
+from awloperators import *
+from awldatatypes import *
 
+
+class DBByte(GenericByte):
+	def __init__(self, value=0):
+		GenericByte.__init__(self, value)
 
 class DB(object):
+	class Field(object):
+		def __init__(self, name, offset, size):
+			self.name = name
+			self.offset = offset
+			self.size = size
+
 	def __init__(self, index):
 		self.index = index
+		self.dataBytes = []
+		self.fields = { }
+
+	def addField(self, fieldData, size, name=None):
+		for i in range(size // 8 - 1, -1, -1):
+			d = (fieldData >> (i * 8)) & 0xFF
+			self.dataBytes.append(DBByte(d))
+		if name:
+			f = self.Field(name,
+				       len(self.dataBytes) - size,
+				       size)
+			self.fields[name] = f
 
 	def fetch(self, operator):
-		pass#TODO
-		return 0
+		return AwlOperator.fetchFromByteArray(self.dataBytes,
+						      operator)
 
 	def store(self, operator, value):
-		pass#TODO
+		AwlOperator.storeToByteArray(self.dataBytes,
+					     operator, value)
 
 	def __repr__(self):
 		return "DB %d" % self.index
