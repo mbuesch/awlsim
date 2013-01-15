@@ -229,6 +229,7 @@ class S7CPU(object):
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
+		self.setDirectPeripheralCallback(None)
 		self.reset()
 		self.__extendedInsnsEnabled = False
 
@@ -372,21 +373,27 @@ class S7CPU(object):
 
 	def setCycleExitCallback(self, cb, data=None):
 		if not cb:
-			cb = lambda x: None
+			cb = lambda data: None
 		self.cbCycleExit = cb
 		self.cbCycleExitData = data
 
 	def setBlockExitCallback(self, cb, data=None):
 		if not cb:
-			cb = lambda x: None
+			cb = lambda data: None
 		self.cbBlockExit = cb
 		self.cbBlockExitData = data
 
 	def setPostInsnCallback(self, cb, data=None):
 		if not cb:
-			cb = lambda x: None
+			cb = lambda data: None
 		self.cbPostInsn = cb
 		self.cbPostInsnData = data
+
+	def setDirectPeripheralCallback(self, cb, data=None):
+		if not cb:
+			cb = lambda data, operator: None
+		self.cbDirectPeripheral = cb
+		self.cbDirectPeripheralData = data
 
 	@property
 	def is4accu(self):
@@ -668,13 +675,10 @@ class S7CPU(object):
 				"but no DI is opened")
 		return cse.db.fetch(operator)
 
-	def fetchPA(self, operator):
-		pass#TODO
-		return 0
-
 	def fetchPE(self, operator):
-		pass#TODO
-		return 0
+		self.cbDirectPeripheral(self.cbDirectPeripheralData,
+					operator)
+		return AwlOperator.fetchFromByteArray(self.inputs, operator)
 
 	def fetchT(self, operator):
 		timer = self.getTimer(operator.offset)
@@ -710,7 +714,6 @@ class S7CPU(object):
 		AwlOperator.MEM_DI		: fetchDI,
 		AwlOperator.MEM_T		: fetchT,
 		AwlOperator.MEM_Z		: fetchZ,
-		AwlOperator.MEM_PA		: fetchPA,
 		AwlOperator.MEM_PE		: fetchPE,
 		AwlOperator.MEM_STW		: fetchSTW,
 		AwlOperator.MEM_STW_Z		: fetchSTW_Z,
@@ -760,10 +763,9 @@ class S7CPU(object):
 		cse.db.store(operator, value)
 
 	def storePA(self, operator, value):
-		pass #TODO
-
-	def storePE(self, operator, value):
-		pass #TODO
+		AwlOperator.storeToByteArray(self.outputs, operator, value)
+		self.cbDirectPeripheral(self.cbDirectPeripheralData,
+					operator)
 
 	def storeSTW(self, operator, value):
 		if operator.width == 1:
@@ -781,7 +783,6 @@ class S7CPU(object):
 		AwlOperator.MEM_DB		: storeDB,
 		AwlOperator.MEM_DI		: storeDI,
 		AwlOperator.MEM_PA		: storePA,
-		AwlOperator.MEM_PE		: storePE,
 		AwlOperator.MEM_STW		: storeSTW,
 	}
 

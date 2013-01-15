@@ -579,6 +579,9 @@ class CpuWidget(QWidget):
 		if self.state == self.STATE_RUN:
 			self.mainWidget.codeEdit.updateCpuStats_afterInsn(cpu)
 
+	def __directPeripheralCallback(self, cpu, operator):
+		pass#TODO
+
 	def __run(self):
 		sim = self.mainWidget.getSim()
 		self.state = self.STATE_RUN
@@ -600,6 +603,8 @@ class CpuWidget(QWidget):
 			cpu = sim.getCPU()
 			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
+			cpu.setDirectPeripheralCallback(
+				self.__directPeripheralCallback, cpu)
 		except (AwlSimError, AwlParserError) as e:
 			QMessageBox.critical(self, "Simulator exception",
 					     str(e))
