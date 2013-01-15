@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # AWL simulator - instructions
-# Copyright 2012 Michael Buesch <m@bues.ch>
+# Copyright 2012-2013 Michael Buesch <m@bues.ch>
 #
 # Licensed under the terms of the GNU General Public License version 2.
 #
