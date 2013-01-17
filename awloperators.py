@@ -15,6 +15,7 @@ class AwlOperator(object):
 	IMM		= 0	# Immediate value (constant)
 	IMM_REAL	= 1	# Real
 	IMM_S5T		= 2	# S5T immediate
+	IMM_TIME	= 3	# T# immediate
 
 	MEM_E		= 100	# Input
 	MEM_A		= 101	# Output
@@ -121,6 +122,8 @@ class AwlOperator(object):
 			return str(dwordToPyFloat(self.immediate))
 		elif self.type == self.IMM_S5T:
 			return "S5T#" #TODO
+		elif self.type == self.IMM_TIME:
+			return "T#" #TODO
 		elif self.type in (self.MEM_A, self.MEM_E,
 				   self.MEM_M, self.MEM_L):
 			pfx = self.type2prefix[self.type]

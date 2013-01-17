@@ -204,7 +204,10 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 16,
 					    immediate, 0, 1)
-		#TODO T#
+		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_TIME, 0,
+					    immediate, 0, 1)
 		#TODO TOD#
 		#TODO date D#
 		#TODO pointer P#x.y

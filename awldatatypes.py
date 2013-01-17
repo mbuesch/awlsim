@@ -149,7 +149,8 @@ class AwlDataType(object):
 				value = self.tryParseImmediate_S5T(
 						tokens[0])
 			elif self.type == self.TYPE_TIME:
-				pass#TODO
+				value = self.tryParseImmediate_TIME(
+						tokens[0])
 			elif self.type == self.TYPE_DATE:
 				pass#TODO
 			elif self.type == self.TYPE_TOD:
@@ -230,11 +231,9 @@ class AwlDataType(object):
 		return immediate
 
 	@classmethod
-	def tryParseImmediate_S5T(cls, token):
+	def __parseGenericTime(cls, token):
 		token = token.upper()
-		if not token.startswith("S5T#"):
-			return None
-		p = token[4:]
+		p = token
 		seconds = 0.0
 		while p:
 			if p.endswith("MS"):
@@ -249,6 +248,9 @@ class AwlDataType(object):
 			elif p.endswith("H"):
 				mult = 3600.0
 				p = p[:-1]
+			elif p.endswith("D"):
+				mult = 86400.0
+				p = p[:-1]
 			else:
 				raise AwlSimError("Invalid time")
 			if not p:
@@ -261,8 +263,27 @@ class AwlDataType(object):
 				raise AwlSimError("Invalid time")
 			num = int(num, 10)
 			seconds += num * mult
+		return seconds
+
+	@classmethod
+	def tryParseImmediate_S5T(cls, token):
+		token = token.upper()
+		if not token.startswith("S5T#"):
+			return None
+		seconds = cls.__parseGenericTime(token[4:])
 		s5t = Timer.seconds_to_s5t(seconds)
 		return s5t
+
+	@classmethod
+	def tryParseImmediate_TIME(cls, token):
+		token = token.upper()
+		if not token.startswith("T#"):
+			return None
+		seconds = cls.__parseGenericTime(token[2:])
+		msec = int(seconds * 1000)
+		if msec > 0x7FFFFFFF:
+			raise AwlSimError("T# time too big")
+		return msec
 
 	@classmethod
 	def tryParseImmediate_Bin(cls, token):
