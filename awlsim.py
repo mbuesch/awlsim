@@ -23,6 +23,7 @@ from awltimers import *
 from awlcounters import *
 from util import *
 from lfsr import *
+from objectcache import *
 
 
 VERSION_MAJOR = 0
@@ -78,23 +79,6 @@ class ParenStackElem(object):
 		return '(insn="%s" VKE=%s OR=%d)' %\
 			(AwlInsn.type2name[self.insnType],
 			 self.VKE, self.OR)
-
-class ObjectCache(object):
-	def __init__(self, createCallback):
-		self.__createCallback = createCallback
-		self.reset()
-
-	def get(self, callbackData=None):
-		try:
-			return self.__cache.pop()
-		except IndexError as e:
-			return self.__createCallback(callbackData)
-
-	def put(self, obj):
-		self.__cache.append(obj)
-
-	def reset(self):
-		self.__cache = []
 
 class CallStackElem(object):
 	"Call stack element"
