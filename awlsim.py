@@ -494,38 +494,51 @@ class S7CPU(object):
 	def jumpRelative(self, insnOffset):
 		self.relativeJump = insnOffset
 
+	def __call_FC(self, blockOper, dbOper):
+		if dbOper:
+			raise AwlSimError("FC call must not "
+				"have DB operand")
+		try:
+			fc = self.fcs[blockOper.offset]
+		except KeyError as e:
+			raise AwlSimError("Called FC not found")
+		return CallStackElem(self, fc, self.callStack[-1].db)
+
+	def __call_FB(self, blockOper, dbOper):
+		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
+			raise AwlSimError("FB call must have "
+				"DB operand")
+		try:
+			fb = self.fbs[blockOper.offset]
+		except KeyError as e:
+			raise AwlSimError("Called FB not found")
+		try:
+			db = self.dbs[dbOper.offset]
+		except KeyError as e:
+			raise AwlSimError("DB used in FB call not found")
+		return CallStackElem(self, fb, db)
+
+	def __call_SFC(self, blockOper, dbOper):
+		#TODO
+		raise AwlSimError("SFC calls not implemented, yet")
+
+	def __call_SFB(self, blockOper, dbOper):
+		#TODO
+		raise AwlSimError("SFB calls not implemented, yet")
+
+	__callHelpers = {
+		AwlOperator.BLKREF_FC	: __call_FC,
+		AwlOperator.BLKREF_FB	: __call_FB,
+		AwlOperator.BLKREF_SFC	: __call_SFC,
+		AwlOperator.BLKREF_SFB	: __call_SFB,
+	}
+
 	def run_CALL(self, blockOper, dbOper=None):
-		if blockOper.type == AwlOperator.BLKREF_FC:
-			if dbOper:
-				raise AwlSimError("FC call must not "
-					"have DB operand")
-			try:
-				fc = self.fcs[blockOper.offset]
-			except KeyError as e:
-				raise AwlSimError("Called FC not found")
-			cse = CallStackElem(self, fc, self.callStack[-1].db)
-		elif blockOper.type == AwlOperator.BLKREF_FB:
-			if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
-				raise AwlSimError("FB call must have "
-					"DB operand")
-			try:
-				fb = self.fbs[blockOper.offset]
-			except KeyError as e:
-				raise AwlSimError("Called FB not found")
-			try:
-				db = self.dbs[dbOper.offset]
-			except KeyError as e:
-				raise AwlSimError("DB used in FB call not found")
-			cse = CallStackElem(self, fb, db)
-		elif blockOper.type == AwlOperand.BLKREF_SFC:
-			#TODO
-			raise AwlSimError("SFC calls not implemented, yet")
-		elif blockOper.type == AwlOperand.BLKREF_SFB:
-			#TODO
-			raise AwlSimError("SFB calls not implemented, yet")
-		else:
+		try:
+			callHelper = self.__callHelpers[blockOper.type]
+		except KeyError:
 			raise AwlSimError("Invalid CALL operand")
-		self.callStack.append(cse)
+		self.callStack.append(callHelper(self, blockOper, dbOper))
 
 	def run_BE(self):
 		s = self.status
