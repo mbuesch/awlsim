@@ -223,7 +223,7 @@ class AwlDataType(object):
 	@classmethod
 	def tryParseImmediate_REAL(cls, token):
 		try:
-			immediate = float(token[0])
+			immediate = float(token)
 			immediate = pyFloatToDWord(immediate)
 		except ValueError:
 			return None

@@ -400,10 +400,9 @@ class S7CPU(object):
 		return self.callStack[-1].parenStack
 
 	def __runTimeCheck(self):
-		if self.now - self.cycleStartTime <= self.cycleTimeLimit:
-			return
-		raise AwlSimError("Cycle time exceed %.3f seconds" %\
-				  self.cycleTimeLimit)
+		if self.now - self.cycleStartTime > self.cycleTimeLimit:
+			raise AwlSimError("Cycle time exceed %.3f seconds" %\
+					  self.cycleTimeLimit)
 
 	# Run one cycle of the user program
 	def runCycle(self):
