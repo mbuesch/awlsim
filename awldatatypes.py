@@ -287,7 +287,7 @@ class AwlDataType(object):
 			if len(tokens) >= 5 and\
 			   tokens[2] == ',' and\
 			   tokens[4] == ')':
-				size, fields = 16, 5
+				fields = 5
 				a, b = int(tokens[1], 10),\
 				       int(tokens[3], 10)
 				if a < 0 or a > 0xFF or\
@@ -299,7 +299,7 @@ class AwlDataType(object):
 			     tokens[4] == ',' and\
 			     tokens[6] == ',' and\
 			     tokens[8] == ')':
-				size, fields = 32, 9
+				fields = 9
 				a, b, c, d = int(tokens[1], 10),\
 					     int(tokens[3], 10),\
 					     int(tokens[5], 10),\

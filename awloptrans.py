@@ -176,6 +176,7 @@ class AwlOpTranslator(object):
 		# Byte array immediate
 		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
 		if immediate is not None:
+			size = 32 if fields == 9 else 16
 			return OpDescriptor(AwlOperator.IMM, size, immediate,
 					    0, fields)
 		# Hex byte immediate
