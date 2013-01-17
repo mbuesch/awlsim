@@ -476,7 +476,8 @@ class S7CPU(object):
 
 	def getCurrentInsn(self):
 		try:
-			return self.callStack[-1].insns[self.getCurrentIP()]
+			cse = self.callStack[-1]
+			return cse.insns[cse.ip]
 		except IndexError as e:
 			return None
 
