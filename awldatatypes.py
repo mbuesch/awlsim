@@ -357,10 +357,10 @@ class AwlDataType(object):
 		return immediate
 
 class GenericInteger(object):
-	def __init__(self, value, mask):
+	def __init__(self, value, width):
+		assert(width > 0 and width <= 32)
 		self.value = value
-		self.mask = mask
-		assert(mask <= 0xFFFFFFFF)
+		self.mask = ((1 << width) - 1) & 0xFFFFFFFF
 
 	def set(self, value):
 		self.value = value & self.mask
@@ -432,12 +432,12 @@ class GenericInteger(object):
 
 class GenericByte(GenericInteger):
 	def __init__(self, value=0):
-		GenericInteger.__init__(self, value, 0xFF)
+		GenericInteger.__init__(self, value, 8)
 
 class GenericWord(GenericInteger):
 	def __init__(self, value=0):
-		GenericInteger.__init__(self, value, 0xFFFF)
+		GenericInteger.__init__(self, value, 16)
 
 class GenericDWord(GenericInteger):
 	def __init__(self, value=0):
-		GenericInteger.__init__(self, value, 0xFFFFFFFF)
+		GenericInteger.__init__(self, value, 32)
