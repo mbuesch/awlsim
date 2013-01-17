@@ -167,6 +167,23 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_S5T, 0,
 					    immediate, 0, 1)
+		# Time immediate
+		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_TIME, 0,
+					    immediate, 0, 1)
+		# TOD immediate
+		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_TOD, 0,
+					    immediate, 0, 1)
+		# Date immediate
+		immediate = AwlDataType.tryParseImmediate_Date(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_DATE, 0,
+					    immediate, 0, 1)
+		# Pointer immediate
+		#TODO
 		# Binary immediate
 		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
 		if immediate is not None:
@@ -204,13 +221,6 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 16,
 					    immediate, 0, 1)
-		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
-		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_TIME, 0,
-					    immediate, 0, 1)
-		#TODO TOD#
-		#TODO date D#
-		#TODO pointer P#x.y
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 

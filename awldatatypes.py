@@ -286,6 +286,20 @@ class AwlDataType(object):
 		return msec
 
 	@classmethod
+	def tryParseImmediate_TOD(cls, token):
+		token = token.upper()
+		if not token.startswith("TOD#"):
+			return None
+		raise AwlSimError("TOD# not implemented, yet")#TODO
+
+	@classmethod
+	def tryParseImmediate_Date(cls, token):
+		token = token.upper()
+		if not token.startswith("D#"):
+			return None
+		raise AwlSimError("D# not implemented, yet")#TODO
+
+	@classmethod
 	def tryParseImmediate_Bin(cls, token):
 		token = token.upper()
 		if not token.startswith("2#"):

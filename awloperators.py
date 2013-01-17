@@ -16,6 +16,8 @@ class AwlOperator(object):
 	IMM_REAL	= 1	# Real
 	IMM_S5T		= 2	# S5T immediate
 	IMM_TIME	= 3	# T# immediate
+	IMM_DATE	= 4	# D# immediate
+	IMM_TOD		= 5	# TOD# immediate
 
 	MEM_E		= 100	# Input
 	MEM_A		= 101	# Output
@@ -124,6 +126,10 @@ class AwlOperator(object):
 			return "S5T#" #TODO
 		elif self.type == self.IMM_TIME:
 			return "T#" #TODO
+		elif self.type == self.IMM_DATE:
+			return "D#" #TODO
+		elif self.type == self.IMM_TOD:
+			return "TOD#" #TODO
 		elif self.type in (self.MEM_A, self.MEM_E,
 				   self.MEM_M, self.MEM_L):
 			pfx = self.type2prefix[self.type]
