@@ -66,8 +66,10 @@ TITLE = This is DB 1
 STRUCT
 	VAR1 : INT		// DBW0: VAR1 => 16 bit signed int
 	VAR2 : DWORD	// DBD2: VAR2 => 32 bit unsigned dword
+	VAR3 : WORD		// DBW6: VAR3 => 16 bit unsigned word
 END_STRUCT
 BEGIN
 	VAR1 := 1337
 	VAR2 := DW#16#DEADBEEF
+	VAR3 := B#(1, 2)
 END_DATA_BLOCK

@@ -40,6 +40,10 @@ class AwlDataType(object):
 		"CHAR"		: TYPE_CHAR,
 	}
 
+	__id2name = { }
+	for name, type in __name2id.items():
+		__id2name[type] = name
+
 	type2width = {
 		TYPE_BOOL	: 1,
 		TYPE_BYTE	: 8,
@@ -79,6 +83,14 @@ class AwlDataType(object):
 					  nameString)
 
 	@classmethod
+	def type2name(cls, type):
+		try:
+			return cls.__id2name[type]
+		except KeyError:
+			raise AwlSimError("Invalid data type: " +\
+					  str(type))
+
+	@classmethod
 	def make(cls, type):
 		return cls(type, cls.type2width[type],
 			   cls.type2signed[type])
@@ -92,53 +104,62 @@ class AwlDataType(object):
 		self.width = width
 		self.signed = signed
 
-	def parseImmediate(self, string):
-		if self.type == self.TYPE_BOOL:
-			value = self.tryParseImmediate_BOOL(string)
-		elif self.type == self.TYPE_BYTE:
-			value = self.tryParseImmediate_HexByte(string)
-		elif self.type == self.TYPE_WORD:
-			value = self.tryParseImmediate_Bin(string)
-			if value is None:
-				value = self.tryParseImmediate_HexWord(string)
-			if value is None:
-				value = self.tryParseImmediate_BCD(string)
-			if value is None:
-				value = self.tryParseImmediate_ByteArray(string)
-				if value > 0xFFFF:
-					raise AwlSimError("Word-byte-array "
-						"bigger than 16 bit")
-		elif self.type == self.TYPE_DWORD:
-			value = self.tryParseImmediate_Bin(string)
-			if value is None:
-				value = self.tryParseImmediate_HexDWord(string)
-			if value is None:
-				value = self.tryParseImmediate_ByteArray(string)
-		elif self.type == self.TYPE_INT:
-			value = self.tryParseImmediate_INT(string)
-		elif self.type == self.TYPE_DINT:
-			value = self.tryParseImmediate_DINT(string)
-		elif self.type == self.TYPE_REAL:
-			value = self.tryParseImmediate_REAL(string)
-		elif self.type == self.TYPE_S5T:
-			value = self.tryParseImmediate_S5T(string)
-		elif self.type == self.TYPE_TIME:
-			value = None
-			pass#TODO
-		elif self.type == self.TYPE_DATE:
-			value = None
-			pass#TODO
-		elif self.type == self.TYPE_TOD:
-			value = None
-			pass#TODO
-		elif self.type == self.TYPE_CHAR:
-			value = None
-			pass#TODO
-		else:
-			assert(0)
+	def parseImmediate(self, tokens):
+		value = None
+		if len(tokens) == 9:
+			if self.type == self.TYPE_DWORD:
+				value, fields = self.tryParseImmediate_ByteArray(
+							tokens)
+		elif len(tokens) == 5:
+			if self.type == self.TYPE_WORD:
+				value, fields = self.tryParseImmediate_ByteArray(
+							tokens)
+		elif len(tokens) == 1:
+			if self.type == self.TYPE_BOOL:
+				value = self.tryParseImmediate_BOOL(
+						tokens[0])
+			elif self.type == self.TYPE_BYTE:
+				value = self.tryParseImmediate_HexByte(
+						tokens[0])
+			elif self.type == self.TYPE_WORD:
+				value = self.tryParseImmediate_Bin(
+						tokens[0])
+				if value is None:
+					value = self.tryParseImmediate_HexWord(
+							tokens[0])
+				if value is None:
+					value = self.tryParseImmediate_BCD(
+							tokens[0])
+			elif self.type == self.TYPE_DWORD:
+				value = self.tryParseImmediate_Bin(
+						tokens[0])
+				if value is None:
+					value = self.tryParseImmediate_HexDWord(
+							tokens[0])
+			elif self.type == self.TYPE_INT:
+				value = self.tryParseImmediate_INT(
+						tokens[0])
+			elif self.type == self.TYPE_DINT:
+				value = self.tryParseImmediate_DINT(
+						tokens[0])
+			elif self.type == self.TYPE_REAL:
+				value = self.tryParseImmediate_REAL(
+						tokens[0])
+			elif self.type == self.TYPE_S5T:
+				value = self.tryParseImmediate_S5T(
+						tokens[0])
+			elif self.type == self.TYPE_TIME:
+				pass#TODO
+			elif self.type == self.TYPE_DATE:
+				pass#TODO
+			elif self.type == self.TYPE_TOD:
+				pass#TODO
+			elif self.type == self.TYPE_CHAR:
+				pass#TODO
 		if value is None:
-			raise AwlSimError("Immediate value does "
-				"not match data type")
+			raise AwlSimError("Immediate value '%s' does "
+				"not match data type '%s'" %\
+				("".join(tokens), self.type2name(self.type)))
 		return value
 
 	@classmethod
@@ -259,8 +280,6 @@ class AwlDataType(object):
 
 	@classmethod
 	def tryParseImmediate_ByteArray(cls, tokens):
-		if isinstance(tokens, str):
-			assert(0)#TODO
 		tokens = [ t.upper() for t in tokens ]
 		if not tokens[0].startswith("B#("):
 			return None, None

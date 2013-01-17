@@ -263,9 +263,9 @@ class S7CPU(object):
 			insns.append(self.__translateInsn(rawInsn, ip))
 		return insns
 
-	def __translateDBField(self, db, name, value, type):
+	def __translateDBField(self, db, name, valueTokens, type):
 		dtype = AwlDataType.makeByName(type)
-		value = dtype.parseImmediate(value)
+		value = dtype.parseImmediate(valueTokens)
 		db.addField(fieldData = value,
 			    size = dtype.width,
 			    name = name)
@@ -285,8 +285,14 @@ class S7CPU(object):
 						"DB %d assigns field '%s', "
 						"but does not declare it." %\
 						(rawDB.index, f.name))
+				if f.valueTokens is None:
+					raise AwlSimError(
+						"DB %d declares field '%s', "
+						"but does not initialize." %\
+						(rawDB.index, f.name))
 				self.__translateDBField(db, f.name,
-							f.value, f.type)
+							f.valueTokens,
+							f.type)
 		return db
 
 	def load(self, parseTree):

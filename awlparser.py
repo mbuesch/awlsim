@@ -90,9 +90,9 @@ class RawAwlCodeBlock(RawAwlBlock):
 
 class RawAwlDB(RawAwlBlock):
 	class Field(object):
-		def __init__(self, name, value, type):
+		def __init__(self, name, valueTokens, type):
 			self.name = name
-			self.value = value
+			self.valueTokens = valueTokens
 			self.type = type
 
 	def __init__(self, tree, index):
@@ -398,14 +398,15 @@ class AwlParser(object):
 		if tokens[0].upper() == "END_DATA_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
-		if len(tokens) == 3 and tokens[1] == ":=":
-			name, value = tokens[0], tokens[2]
+		if len(tokens) >= 3 and tokens[1] == ":=":
+			name, valueTokens = tokens[0], tokens[2:]
 			db = self.tree.curBlock
 			field = db.getByName(name)
 			if field:
-				field.value = value
+				field.valueTokens = valueTokens
 			else:
-				field = RawAwlDB.Field(name, value, None)
+				field = RawAwlDB.Field(name, valueTokens,
+						       None)
 				db.fields.append(field)
 		else:
 			raise AwlParserError("Unknown tokens")
