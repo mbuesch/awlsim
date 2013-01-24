@@ -131,16 +131,26 @@ class AwlParseTree(object):
 		self.curBlock = None
 
 class AwlParser(object):
-	STATE_GLOBAL		= 0
-	STATE_IN_DB_HDR		= 1
-	STATE_IN_DB_HDR_STRUCT	= 2
-	STATE_IN_DB		= 3
-	STATE_IN_FB_HDR		= 4
-	STATE_IN_FB		= 5
-	STATE_IN_FC_HDR		= 6
-	STATE_IN_FC		= 7
-	STATE_IN_OB_HDR		= 8
-	STATE_IN_OB		= 9
+	STATE_GLOBAL			= 0
+	STATE_IN_DB_HDR			= 100
+	STATE_IN_DB_HDR_STRUCT		= 101
+	STATE_IN_DB			= 102
+	STATE_IN_FB_HDR			= 200
+	STATE_IN_FB_HDR_VAR		= 201
+	STATE_IN_FB_HDR_VARIN		= 202
+	STATE_IN_FB_HDR_VAROUT		= 203
+	STATE_IN_FB_HDR_VARINOUT	= 204
+	STATE_IN_FB_HDR_VARTEMP		= 205
+	STATE_IN_FB			= 206
+	STATE_IN_FC_HDR			= 300
+	STATE_IN_FC_HDR_VARIN		= 301
+	STATE_IN_FC_HDR_VAROUT		= 302
+	STATE_IN_FC_HDR_VARINOUT	= 303
+	STATE_IN_FC_HDR_VARTEMP		= 304
+	STATE_IN_FC			= 305
+	STATE_IN_OB_HDR			= 400
+	STATE_IN_OB_HDR_VARTEMP		= 401
+	STATE_IN_OB			= 402
 
 	class TokenizerState(object):
 		def __init__(self):
@@ -268,14 +278,34 @@ class AwlParser(object):
 			self.__parseTokens_db(tokens)
 		elif self.state == self.STATE_IN_FB_HDR:
 			self.__parseTokens_fb_hdr(tokens)
+		elif self.state == self.STATE_IN_FB_HDR_VAR:
+			pass#TODO
+		elif self.state == self.STATE_IN_FB_HDR_VARIN:
+			pass#TODO
+		elif self.state == self.STATE_IN_FB_HDR_VAROUT:
+			pass#TODO
+		elif self.state == self.STATE_IN_FB_HDR_VARINOUT:
+			pass#TODO
+		elif self.state == self.STATE_IN_FB_HDR_VARTEMP:
+			pass#TODO
 		elif self.state == self.STATE_IN_FB:
 			self.__parseTokens_fb(tokens)
 		elif self.state == self.STATE_IN_FC_HDR:
 			self.__parseTokens_fc_hdr(tokens)
+		elif self.state == self.STATE_IN_FC_HDR_VARIN:
+			pass#TODO
+		elif self.state == self.STATE_IN_FC_HDR_VAROUT:
+			pass#TODO
+		elif self.state == self.STATE_IN_FC_HDR_VARINOUT:
+			pass#TODO
+		elif self.state == self.STATE_IN_FC_HDR_VARTEMP:
+			pass#TODO
 		elif self.state == self.STATE_IN_FC:
 			self.__parseTokens_fc(tokens)
 		elif self.state == self.STATE_IN_OB_HDR:
 			self.__parseTokens_ob_hdr(tokens)
+		elif self.state == self.STATE_IN_OB_HDR_VARTEMP:
+			pass#TODO
 		elif self.state == self.STATE_IN_OB:
 			self.__parseTokens_ob(tokens)
 		else:
@@ -367,11 +397,11 @@ class AwlParser(object):
 	def __parseTokens_db_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_DB)
-			return
-		if tokens[0].upper() == "STRUCT":
+		elif tokens[0].upper() == "TITLE":
+			pass#TODO
+		elif tokens[0].upper() == "STRUCT":
 			self.__setState(self.STATE_IN_DB_HDR_STRUCT)
-			return
-		if tokens[0].upper() in ("FB", "SFB"):
+		elif tokens[0].upper() in ("FB", "SFB"):
 			try:
 				if len(tokens) != 2:
 					raise ValueError
@@ -380,8 +410,8 @@ class AwlParser(object):
 			except ValueError:
 				raise AwlParserError("Invalid FB/SFB binding")
 			self.tree.curBlock.fb = (fbName, fbNumber)
-			return
-		pass#TODO
+		else:
+			raise AwlParserError("Unknown tokens")
 
 	def __parseTokens_db_hdr_struct(self, tokens):
 		if tokens[0].upper() == "END_STRUCT":
@@ -414,8 +444,20 @@ class AwlParser(object):
 	def __parseTokens_fb_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_FB)
-			return
-		pass#TODO
+		elif tokens[0].upper() == "TITLE":
+			pass#TODO
+		elif tokens[0].upper() == "VAR":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_INPUT":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_OUTPUT":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_IN_OUT":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_TEMP":
+			pass#TODO
+		else:
+			raise AwlParserError("Unknown token")
 
 	def __parseTokens_fb(self, tokens):
 		if tokens[0].upper() == "END_FUNCTION_BLOCK":
@@ -430,8 +472,18 @@ class AwlParser(object):
 	def __parseTokens_fc_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_FC)
-			return
-		pass#TODO
+		elif tokens[0].upper() == "TITLE":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_INPUT":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_OUTPUT":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_IN_OUT":
+			pass#TODO
+		elif tokens[0].upper() == "VAR_TEMP":
+			pass#TODO
+		else:
+			raise AwlParserError("Unknown token")
 
 	def __parseTokens_fc(self, tokens):
 		if tokens[0].upper() == "END_FUNCTION":
@@ -446,8 +498,12 @@ class AwlParser(object):
 	def __parseTokens_ob_hdr(self, tokens):
 		if tokens[0].upper() == "BEGIN":
 			self.__setState(self.STATE_IN_OB)
-			return
-		pass#TODO
+		elif tokens[0].upper() == "VAR_TEMP":
+			pass#TODO
+		elif tokens[0].upper() == "TITLE":
+			pass#TODO
+		else:
+			raise AwlParserError("Unknown token")
 
 	def __parseTokens_ob(self, tokens):
 		if tokens[0].upper() == "END_ORGANIZATION_BLOCK":

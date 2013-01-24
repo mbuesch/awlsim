@@ -252,11 +252,18 @@ class S7CPU(object):
 	def __translateDB(self, rawDB):
 		db = DB(rawDB.index)
 		if rawDB.isInstanceDB():
-			if any(f.type for f in rawDB.fields):
-				raise AwlSimError("DB %d is an instance DB, but "
-					"declares a data structure." % rawDB.index)
-			#TODO
-			raise AwlSimError("Instance DBs not supported, yet.")
+			fbName, fbNumber = rawDB.fb
+			for f in rawDB.fields:
+				if f.type:
+					raise AwlSimError("DB %d is an "
+						"instance DB, but it also "
+						"declares a data structure." %\
+						rawDB.index)
+				raise AwlSimError("Instance DBs not supported, yet.")
+				#TODO type
+				self.__translateDBField(db, f.name,
+							f.valueTokens,
+							fieldType)
 		else:
 			for f in rawDB.fields:
 				if not f.type:
