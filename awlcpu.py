@@ -209,6 +209,7 @@ class S7CPU(object):
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
 		self.setDirectPeripheralCallback(None)
+		self.setScreenUpdateCallback(None)
 		self.reset()
 		self.__extendedInsnsEnabled = False
 
@@ -386,6 +387,15 @@ class S7CPU(object):
 			cb = lambda data, operator: None
 		self.cbDirectPeripheral = cb
 		self.cbDirectPeripheralData = data
+
+	def setScreenUpdateCallback(self, cb, data=None):
+		if not cb:
+			cb = lambda data: None
+		self.cbScreenUpdate = cb
+		self.cbScreenUpdateData = data
+
+	def requestScreenUpdate(self):
+		self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	@property
 	def is4accu(self):

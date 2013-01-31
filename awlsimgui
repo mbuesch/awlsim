@@ -582,6 +582,12 @@ class CpuWidget(QWidget):
 	def __directPeripheralCallback(self, cpu, operator):
 		pass#TODO
 
+	def __screenUpdateCallback(self, cpu):
+		self.__postInsnCallback(cpu)
+		self.__blockExitCallback(cpu)
+		self.__cycleExitCallback(cpu)
+		QApplication.processEvents(QEventLoop.AllEvents, 1)
+
 	def __run(self):
 		sim = self.mainWidget.getSim()
 		self.state = self.STATE_RUN
@@ -605,6 +611,8 @@ class CpuWidget(QWidget):
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
 			cpu.setDirectPeripheralCallback(
 				self.__directPeripheralCallback, cpu)
+			cpu.setScreenUpdateCallback(
+				self.__screenUpdateCallback, cpu)
 		except (AwlSimError, AwlParserError) as e:
 			QMessageBox.critical(self, "Simulator exception",
 					     str(e))

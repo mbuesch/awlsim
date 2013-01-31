@@ -2695,11 +2695,16 @@ class AwlInsn_SLEEP(AwlInsn):
 
 	def run(self):
 		msecs = self.cpu.fetch(self.ops[0])
-		secs = float(msecs) / 1000
-		if secs >= self.cpu.cycleTimeLimit:
+
+		if float(msecs) / 1000 >= self.cpu.cycleTimeLimit:
 			raise AwlSimError("__SLEEP time exceed cycle time limit")
-		time.sleep(secs)
-		self.cpu.updateTimestamp()
+
+		while msecs > 0:
+			m = min(50, msecs)
+			time.sleep(float(m) / 1000)
+			self.cpu.updateTimestamp()
+			self.cpu.requestScreenUpdate()
+			msecs -= m
 
 class AwlInsn_STWRST(AwlInsn):
 	def __init__(self, rawInsn):
