@@ -476,3 +476,39 @@ class GenericWord(GenericInteger):
 class GenericDWord(GenericInteger):
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 32)
+
+class FlagByte(GenericByte):
+	"Flag byte"
+
+	def __init__(self):
+		GenericByte.__init__(self)
+
+class InputByte(GenericByte):
+	"PAE byte"
+
+	def __init__(self):
+		GenericByte.__init__(self)
+
+class OutputByte(GenericByte):
+	"PAA byte"
+
+	def __init__(self):
+		GenericByte.__init__(self)
+
+class LocalByte(GenericByte):
+	"L byte"
+
+	def __init__(self):
+		GenericByte.__init__(self)
+
+class Accu(GenericDWord):
+	"Accumulator register"
+
+	def __init__(self):
+		GenericDWord.__init__(self)
+
+class Adressregister(GenericDWord):
+	"Address register"
+
+	def __init__(self):
+		GenericDWord.__init__(self)

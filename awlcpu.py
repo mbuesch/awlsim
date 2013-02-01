@@ -20,49 +20,13 @@ from awlstatusword import *
 from awllabels import *
 from awltimers import *
 from awlcounters import *
+from awlcallstack import *
 from util import *
 from lfsr import *
-from objectcache import *
 
 from system_sfc import *
 from system_sfb import *
 
-
-class FlagByte(GenericByte):
-	"Flag byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
-
-class InputByte(GenericByte):
-	"PAE byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
-
-class OutputByte(GenericByte):
-	"PAA byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
-
-class LocalByte(GenericByte):
-	"L byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
-
-class Accu(GenericDWord):
-	"Accumulator register"
-
-	def __init__(self):
-		GenericDWord.__init__(self)
-
-class Adressregister(GenericDWord):
-	"Address register"
-
-	def __init__(self):
-		GenericDWord.__init__(self)
 
 class ParenStackElem(object):
 	"Parenthesis stack element"
@@ -77,45 +41,6 @@ class ParenStackElem(object):
 		return '(insn="%s" VKE=%s OR=%d)' %\
 			(AwlInsn.type2name[self.insnType],
 			 self.VKE, self.OR)
-
-class CallStackElem(object):
-	"Call stack element"
-
-	localdataCache = ObjectCache(lambda cpu:
-		[ LocalByte()
-		  for _ in range(cpu.specs.getNrLocalbytes()) ]
-	)
-
-	@classmethod
-	def resetCache(cls):
-		cls.localdataCache.reset()
-
-	def __init__(self, cpu, block, db):
-		self.cpu = cpu
-		self.status = S7StatusWord()
-		self.parenStack = []
-		self.ip = 0
-		self.localdata = self.localdataCache.get(cpu)
-		assert(len(self.localdata) == cpu.specs.getNrLocalbytes())
-		self.block = block
-		self.db = db
-
-	@property
-	def insns(self):
-		return self.block.insns
-
-	@property
-	def labels(self):
-		return self.block.labels
-
-	def destroy(self):
-		# Only put it back into the cache, if the size didn't change.
-		if len(self.localdata) == self.cpu.specs.getNrLocalbytes():
-			self.localdataCache.put(self.localdata)
-		self.localdata = None
-
-	def __repr__(self):
-		return str(self.block)
 
 class McrStackElem(object):
 	"MCR stack element"
