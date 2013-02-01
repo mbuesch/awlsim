@@ -605,7 +605,6 @@ class CpuWidget(QWidget):
 		try:
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
-			sim.load(parser.getParseTree())
 			cpu = sim.getCPU()
 			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
@@ -613,6 +612,7 @@ class CpuWidget(QWidget):
 				self.__directPeripheralCallback, cpu)
 			cpu.setScreenUpdateCallback(
 				self.__screenUpdateCallback, cpu)
+			sim.load(parser.getParseTree())
 		except (AwlSimError, AwlParserError) as e:
 			QMessageBox.critical(self, "Simulator exception",
 					     str(e))

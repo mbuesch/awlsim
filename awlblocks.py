@@ -39,6 +39,9 @@ class SFB(Block):
 	def __init__(self, index):
 		Block.__init__(self, None, index)
 
+	def run(self, cpu, dbOper):
+		pass # Reimplement this method
+
 	def __repr__(self):
 		return "SFB %d" % self.index
 
@@ -52,6 +55,9 @@ class FC(Block):
 class SFC(Block):
 	def __init__(self, index):
 		Block.__init__(self, None, index)
+
+	def run(self, cpu):
+		pass # Reimplement this method
 
 	def __repr__(self):
 		return "SFC %d" % self.index

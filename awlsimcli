@@ -92,8 +92,8 @@ def main():
 		cpu = s.getCPU()
 		cpu.enableExtendedInsns(opt_extInsns)
 		cpu.getSpecs().setNrAccus(4 if opt_fouraccu else 2)
-		s.load(p.getParseTree())
 		cpu.setBlockExitCallback(blockExitCallback, cpu)
+		s.load(p.getParseTree())
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")
 			while 1:

@@ -24,6 +24,9 @@ from util import *
 from lfsr import *
 from objectcache import *
 
+from system_sfc import *
+from system_sfb import *
+
 
 class FlagByte(GenericByte):
 	"Flag byte"
@@ -416,11 +419,10 @@ class S7CPU(object):
 			raise AwlSimError("Cycle time exceed %.3f seconds" %\
 					  self.cycleTimeLimit)
 
-	# Run one cycle of the user program
-	def runCycle(self):
+	def __runBlock(self, block):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
-		self.callStack = [ CallStackElem(self, self.obs[1], None) ]
+		self.callStack = [ CallStackElem(self, block, None) ]
 		# Run the user program cycle
 		while self.callStack:
 			cse = self.callStack[-1]
@@ -442,8 +444,25 @@ class S7CPU(object):
 		self.cycleCount += 1
 		self.__endCycleTimeMeasurement()
 
+	# Run startup code
+	def startup(self):
+		self.updateTimestamp()
+		self.cpuStartupTime = self.now
+
+		# Run startup OB
+		for obNumber in (102, 101, 100):
+			ob = self.obs.get(obNumber)
+			if ob is not None:
+				self.__runBlock(ob)
+				break
+
+	# Run one cycle of the user program
+	def runCycle(self):
+		self.__runBlock(self.obs[1])
+
 	def inCycle(self):
 		# Return true, if we are in runCycle().
+		#FIXME
 		return bool(self.callStack)
 
 	def __startCycleTimeMeasurement(self):
@@ -515,12 +534,26 @@ class S7CPU(object):
 		return CallStackElem(self, fb, db)
 
 	def __call_SFC(self, blockOper, dbOper):
-		#TODO
-		raise AwlSimError("SFC calls not implemented, yet")
+		if dbOper:
+			raise AwlSimError("SFC call must not "
+				"have DB operand")
+		try:
+			sfc = SFC_table[blockOper.offset]
+		except KeyError as e:
+			raise AwlSimError("SFC %d not implemented, yet" %\
+					  blockOper.offset)
+		sfc.run(self)
 
 	def __call_SFB(self, blockOper, dbOper):
-		#TODO
-		raise AwlSimError("SFB calls not implemented, yet")
+		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
+			raise AwlSimError("SFB call must have "
+				"DB operand")
+		try:
+			sfb = SFB_table[blockOper.offset]
+		except KeyError as e:
+			raise AwlSimError("SFB %d not implemented, yet" %\
+					  blockOper.offset)
+		sfb.run(self, dbOper)
 
 	__callHelpers = {
 		AwlOperator.BLKREF_FC	: __call_FC,
@@ -534,7 +567,9 @@ class S7CPU(object):
 			callHelper = self.__callHelpers[blockOper.type]
 		except KeyError:
 			raise AwlSimError("Invalid CALL operand")
-		self.callStack.append(callHelper(self, blockOper, dbOper))
+		newCse = callHelper(self, blockOper, dbOper)
+		if newCse:
+			self.callStack.append(newCse)
 
 	def run_BE(self):
 		s = self.status
@@ -562,6 +597,7 @@ class S7CPU(object):
 		cse.db, self.globDB = self.globDB, cse.db
 
 	def updateTimestamp(self):
+		# self.now is a floating point count of seconds since the epoch.
 		self.now = time.time()
 
 	def getStatusWord(self):

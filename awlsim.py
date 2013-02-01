@@ -20,6 +20,7 @@ class AwlSim(object):
 
 	def load(self, parseTree):
 		self.cpu.load(parseTree)
+		self.cpu.startup()
 
 	def getCPU(self):
 		return self.cpu
