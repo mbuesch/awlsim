@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - CPU
+# AWL simulator - CPU call stack
 # Copyright 2012-2013 Michael Buesch <m@bues.ch>
 #
 # Licensed under the terms of the GNU General Public License version 2.

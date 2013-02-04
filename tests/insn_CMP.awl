@@ -409,6 +409,201 @@
 	__ASSERT==	__STW OS,	0
 
 
+	// Test <>R
+	__STWRST
+	L		1.5
+	L		1.5
+	<>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		1.5
+	<>R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		1.5
+	L		-1.5
+	<>R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		-1.5
+	<>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test >R
+	__STWRST
+	L		1.5
+	L		1.5
+	>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		1.5
+	>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		1.5
+	L		-1.5
+	>R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		-1.5
+	>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test <R
+	__STWRST
+	L		1.5
+	L		1.5
+	<R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		1.5
+	<R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		1.5
+	L		-1.5
+	<R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		-1.5
+	<R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test >=R
+	__STWRST
+	L		1.5
+	L		1.5
+	>=R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		1.5
+	>=R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		1.5
+	L		-1.5
+	>=R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		-1.5
+	>=R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test <=R
+	__STWRST
+	L		1.5
+	L		1.5
+	<=R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		1.5
+	<=R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		1.5
+	L		-1.5
+	<=R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	L		-1.5
+	L		-1.5
+	<=R
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
 	// Test:  NaN not equal to NaN
 	__STWRST
 	L		__CNST_NAN
@@ -422,3 +617,4 @@
 
 
 	//TODO What about:  NaN <>R Nan
+
