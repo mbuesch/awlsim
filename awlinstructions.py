@@ -915,10 +915,14 @@ class AwlInsn_EQ_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		diff = self.cpu.accu2.getPyFloat() -\
-		       self.cpu.accu1.getPyFloat()
-		s.setForFloatingPoint(diff)
-		s.STA = (~s.A0 & ~s.A1) & 1
+		if isNaN(self.cpu.accu1.getDWord()) or\
+		   isNaN(self.cpu.accu2.getDWord()):
+			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
+		else:
+			diff = self.cpu.accu2.getPyFloat() -\
+			       self.cpu.accu1.getPyFloat()
+			s.setForFloatingPoint(diff)
+			s.STA = (~s.A0 & ~s.A1) & 1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1
 
 class AwlInsn_NE_R(AwlInsn):
@@ -928,10 +932,14 @@ class AwlInsn_NE_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		diff = self.cpu.accu2.getPyFloat() -\
-		       self.cpu.accu1.getPyFloat()
-		s.setForFloatingPoint(diff)
-		s.STA = s.A0 | s.A1
+		if isNaN(self.cpu.accu1.getDWord()) or\
+		   isNaN(self.cpu.accu2.getDWord()):
+			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
+		else:
+			diff = self.cpu.accu2.getPyFloat() -\
+			       self.cpu.accu1.getPyFloat()
+			s.setForFloatingPoint(diff)
+			s.STA = s.A0 | s.A1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1
 
 class AwlInsn_GT_R(AwlInsn):
@@ -941,10 +949,14 @@ class AwlInsn_GT_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		diff = self.cpu.accu2.getPyFloat() -\
-		       self.cpu.accu1.getPyFloat()
-		s.setForFloatingPoint(diff)
-		s.STA = (~s.A0 & s.A1) & 1
+		if isNaN(self.cpu.accu1.getDWord()) or\
+		   isNaN(self.cpu.accu2.getDWord()):
+			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
+		else:
+			diff = self.cpu.accu2.getPyFloat() -\
+			       self.cpu.accu1.getPyFloat()
+			s.setForFloatingPoint(diff)
+			s.STA = (~s.A0 & s.A1) & 1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1
 
 class AwlInsn_LT_R(AwlInsn):
@@ -954,10 +966,14 @@ class AwlInsn_LT_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		diff = self.cpu.accu2.getPyFloat() -\
-		       self.cpu.accu1.getPyFloat()
-		s.setForFloatingPoint(diff)
-		s.STA = (s.A0 & ~s.A1) & 1
+		if isNaN(self.cpu.accu1.getDWord()) or\
+		   isNaN(self.cpu.accu2.getDWord()):
+			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
+		else:
+			diff = self.cpu.accu2.getPyFloat() -\
+			       self.cpu.accu1.getPyFloat()
+			s.setForFloatingPoint(diff)
+			s.STA = (s.A0 & ~s.A1) & 1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1
 
 class AwlInsn_GE_R(AwlInsn):
@@ -967,10 +983,14 @@ class AwlInsn_GE_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		diff = self.cpu.accu2.getPyFloat() -\
-		       self.cpu.accu1.getPyFloat()
-		s.setForFloatingPoint(diff)
-		s.STA = ~s.A0 & 1
+		if isNaN(self.cpu.accu1.getDWord()) or\
+		   isNaN(self.cpu.accu2.getDWord()):
+			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
+		else:
+			diff = self.cpu.accu2.getPyFloat() -\
+			       self.cpu.accu1.getPyFloat()
+			s.setForFloatingPoint(diff)
+			s.STA = ~s.A0 & 1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1
 
 class AwlInsn_LE_R(AwlInsn):
@@ -980,10 +1000,14 @@ class AwlInsn_LE_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.status
-		diff = self.cpu.accu2.getPyFloat() -\
-		       self.cpu.accu1.getPyFloat()
-		s.setForFloatingPoint(diff)
-		s.STA = ~s.A1 & 1
+		if isNaN(self.cpu.accu1.getDWord()) or\
+		   isNaN(self.cpu.accu2.getDWord()):
+			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
+		else:
+			diff = self.cpu.accu2.getPyFloat() -\
+			       self.cpu.accu1.getPyFloat()
+			s.setForFloatingPoint(diff)
+			s.STA = ~s.A1 & 1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1
 
 class AwlInsn_BTI(AwlInsn):

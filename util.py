@@ -122,6 +122,9 @@ negInfFloat = dwordToPyFloat(negInfDWord)
 nanDWord = 0xFFFFFFFF
 nanFloat = dwordToPyFloat(nanDWord)
 
+def isNaN(dword):
+	return dword > 0xFF800000
+
 def isDenormalPyFloat(pyfl):
 	return (pyfl > 0.0 and pyfl < minNormPosFloat32) or\
 	       (pyfl < 0.0 and pyfl > maxNormNegFloat32)
