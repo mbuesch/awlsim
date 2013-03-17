@@ -92,8 +92,10 @@ class AwlOpTranslator(object):
 					     posInfDWord, 0, 1),
 		"__CNST_NINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
 					     negInfDWord, 0, 1),
-		"__CNST_NAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					    nanDWord, 0, 1),
+		"__CNST_PNAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					     pNaNDWord, 0, 1),
+		"__CNST_NNAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
+					     nNaNDWord, 0, 1),
 	}
 
 	def __init__(self, insn):

@@ -177,7 +177,7 @@
 	L		__CNST_PINF
 	L		0.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -189,7 +189,7 @@
 	L		__CNST_NINF
 	L		0.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -316,7 +316,7 @@
 	__STWRST
 	L		-1.5
 	SQRT
-	__ASSERT==	__ACCU 1,	__CNST_NAN	//FIXME?
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -360,8 +360,19 @@
 	__STWRST
 	L		0.0
 	LN
-	__ASSERT==	__ACCU 1,	__CNST_NINF	//FIXME?
-	__ASSERT==	__STW A1,	0
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: ln(-0.0)
+	__STWRST
+	L		-0.0
+	LN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
@@ -382,7 +393,7 @@
 	__STWRST
 	L		-1.5
 	LN
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF	//FIXME?
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -829,11 +840,20 @@
 	__ASSERT==	__STW OS,	1
 
 
-	// Test: RND(NAN)
+	// Test: RND(nNAN)
 	__STWRST
-	L		DW#16#FFFFFFFF
+	L		__CNST_NNAN
 	RND
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND(pNAN)
+	__STWRST
+	L		__CNST_PNAN
+	RND
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
 
@@ -901,11 +921,20 @@
 	__ASSERT==	__STW OS,	1
 
 
-	// Test: TRUNC(NAN)
+	// Test: TRUNC(nNAN)
 	__STWRST
-	L		DW#16#FFFFFFFF
+	L		__CNST_NNAN
 	TRUNC
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: TRUNC(pNAN)
+	__STWRST
+	L		__CNST_PNAN
+	TRUNC
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
 
@@ -973,11 +1002,20 @@
 	__ASSERT==	__STW OS,	1
 
 
-	// Test: RND+(NAN)
+	// Test: RND+(nNAN)
 	__STWRST
-	L		DW#16#FFFFFFFF
+	L		__CNST_NNAN
 	RND+
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND+(pNAN)
+	__STWRST
+	L		__CNST_PNAN
+	RND+
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
 
@@ -1045,10 +1083,19 @@
 	__ASSERT==	__STW OS,	1
 
 
-	// Test: RND-(NAN)
+	// Test: RND-(nNAN)
 	__STWRST
-	L		DW#16#FFFFFFFF
+	L		__CNST_NNAN
 	RND-
-	__ASSERT==	__ACCU 1,	DW#16#FFFFFFFF
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND-(pNAN)
+	__STWRST
+	L		__CNST_PNAN
+	RND-
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1

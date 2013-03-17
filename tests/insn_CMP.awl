@@ -408,8 +408,17 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 	__STWRST
-	L		__CNST_NAN
-	L		__CNST_NAN
+	L		__CNST_NNAN
+	L		__CNST_NNAN
+	==R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		__CNST_PNAN
+	L		__CNST_PNAN
 	==R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1
@@ -456,8 +465,17 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 	__STWRST
-	L		__CNST_NAN
-	L		__CNST_NAN
+	L		__CNST_NNAN
+	L		__CNST_NNAN
+	<>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		__CNST_PNAN
+	L		__CNST_PNAN
 	<>R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1
@@ -504,8 +522,17 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 	__STWRST
-	L		__CNST_NAN
-	L		__CNST_NAN
+	L		__CNST_NNAN
+	L		__CNST_NNAN
+	>R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		__CNST_PNAN
+	L		__CNST_PNAN
 	>R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1
@@ -552,8 +579,17 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 	__STWRST
-	L		__CNST_NAN
-	L		__CNST_NAN
+	L		__CNST_NNAN
+	L		__CNST_NNAN
+	<R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		__CNST_PNAN
+	L		__CNST_PNAN
 	<R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1
@@ -600,8 +636,17 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 	__STWRST
-	L		__CNST_NAN
-	L		__CNST_NAN
+	L		__CNST_NNAN
+	L		__CNST_NNAN
+	>=R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		__CNST_PNAN
+	L		__CNST_PNAN
 	>=R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1
@@ -648,8 +693,17 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 	__STWRST
-	L		__CNST_NAN
-	L		__CNST_NAN
+	L		__CNST_NNAN
+	L		__CNST_NNAN
+	<=R
+	__ASSERT==	__STW VKE,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		__CNST_PNAN
+	L		__CNST_PNAN
 	<=R
 	__ASSERT==	__STW VKE,	0
 	__ASSERT==	__STW A0,	1

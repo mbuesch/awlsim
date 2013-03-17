@@ -118,12 +118,16 @@ posInfFloat = dwordToPyFloat(posInfDWord)
 # Negative infinity
 negInfDWord = 0xFF800000
 negInfFloat = dwordToPyFloat(negInfDWord)
-# NaN
-nanDWord = 0xFFFFFFFF
-nanFloat = dwordToPyFloat(nanDWord)
+# Positive NaN
+pNaNDWord = 0x7FFFFFFF
+# Negative NaN
+nNaNDWord = 0xFFFFFFFF
+nNaNFloat = dwordToPyFloat(nNaNDWord)
 
+
+# Check if dword is positive or negative NaN
 def isNaN(dword):
-	return dword > 0xFF800000
+	return (dword & 0x7FFFFFFF) > 0x7F800000
 
 def isDenormalPyFloat(pyfl):
 	return (pyfl > 0.0 and pyfl < minNormPosFloat32) or\

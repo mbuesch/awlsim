@@ -1900,8 +1900,10 @@ class AwlInsn_SQRT(AwlInsn):
 		try:
 			accu1 = math.sqrt(accu1)
 		except ValueError:
-			accu1 = nanFloat
-		self.cpu.accu1.setPyFloat(accu1)
+			self.cpu.accu1.setDWord(pNaNDWord)
+			accu1 = nNaNFloat
+		else:
+			self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.status.setForFloatingPoint(accu1)
 
 class AwlInsn_EXP(AwlInsn):
@@ -1924,12 +1926,13 @@ class AwlInsn_LN(AwlInsn):
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			if accu1 == 0.0:
-				accu1 = negInfFloat
-			else:
-				accu1 = math.log(accu1)
+				raise ValueError
+			accu1 = math.log(accu1)
 		except ValueError:
-			accu1 = nanFloat
-		self.cpu.accu1.setPyFloat(accu1)
+			self.cpu.accu1.setDWord(pNaNDWord)
+			accu1 = nNaNFloat
+		else:
+			self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.status.setForFloatingPoint(accu1)
 
 class AwlInsn_SIN(AwlInsn):
