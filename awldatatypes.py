@@ -24,6 +24,7 @@ class AwlDataType(object):
 	TYPE_DATE	= 9
 	TYPE_TOD	= 10
 	TYPE_CHAR	= 11
+	TYPE_ARRAY	= 12
 
 	__name2id = {
 		"BOOL"		: TYPE_BOOL,
@@ -38,12 +39,14 @@ class AwlDataType(object):
 		"DATE"		: TYPE_DATE,
 		"TIME_OF_DAY"	: TYPE_TOD,
 		"CHAR"		: TYPE_CHAR,
+		"ARRAY"		: TYPE_ARRAY,
 	}
 
 	__id2name = { }
 	for name, type in __name2id.items():
 		__id2name[type] = name
 
+	# Width table for trivial types
 	type2width = {
 		TYPE_BOOL	: 1,
 		TYPE_BYTE	: 8,
@@ -59,6 +62,7 @@ class AwlDataType(object):
 		TYPE_CHAR	: 8,
 	}
 
+	# Signedness table for trivial types
 	type2signed = {
 		TYPE_BOOL	: False,
 		TYPE_BYTE	: False,
@@ -66,7 +70,7 @@ class AwlDataType(object):
 		TYPE_DWORD	: False,
 		TYPE_INT	: True,
 		TYPE_DINT	: True,
-		TYPE_REAL	: False,
+		TYPE_REAL	: True,
 		TYPE_S5T	: False,
 		TYPE_TIME	: False,
 		TYPE_DATE	: False,
@@ -75,15 +79,18 @@ class AwlDataType(object):
 	}
 
 	@classmethod
-	def name2type(cls, nameString):
+	def name2type(cls, nameTokens):
+		if isinstance(nameTokens, str):
+			nameTokens = [ nameTokens ]
 		try:
-			return cls.__name2id[nameString.upper()]
-		except KeyError:
+			return cls.__name2id[nameTokens[0].upper()]
+		except (KeyError, IndexError) as e:
 			raise AwlSimError("Invalid data type name: " +\
-					  nameString)
+					  nameTokens[0] if len(nameTokens) else "None")
 
 	@classmethod
 	def type2name(cls, type):
+		#TODO
 		try:
 			return cls.__id2name[type]
 		except KeyError:
@@ -91,18 +98,33 @@ class AwlDataType(object):
 					  str(type))
 
 	@classmethod
-	def make(cls, type):
-		return cls(type, cls.type2width[type],
-			   cls.type2signed[type])
+	def makeByName(cls, nameTokens):
+		type = cls.name2type(nameTokens)
+		if type == cls.TYPE_ARRAY:
+			print("ARRAY!")#XXX
+			openIdx = listIndex(nameTokens, "[")
+			elipsisIdx = listIndex(nameTokens, "..")
+			closeIdx = listIndex(nameTokens, "]")
+			ofIdx = listIndex(nameTokens, "OF")
+			if len(nameTokens) >= 8 and\
+			   openIdx == 1 and elipsisIdx == 3 and\
+			   closeIdx == 5 and ofIdx == 6:
+				print(nameTokens)#XXX
+				pass#TODO
+			else:
+				raise AwlSimError("Invalid ARRAY definition")
+		else:
+			return cls(type = type,
+				   width = cls.type2width[type],
+				   signed = cls.type2signed[type])
 
-	@classmethod
-	def makeByName(cls, nameString):
-		return cls.make(cls.name2type(nameString))
-
-	def __init__(self, type, width, signed):
+	def __init__(self, type, width, signed,
+		     startIndex=None, subType=None):
 		self.type = type
 		self.width = width
 		self.signed = signed
+		self.startIndex = startIndex
+		self.subType = subType
 
 	def parseImmediate(self, tokens):
 		value = None

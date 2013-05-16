@@ -171,8 +171,34 @@ class S7CPU(object):
 			insns.append(self.__translateInsn(rawInsn, ip))
 		return insns
 
-	def __translateDBField(self, db, name, valueTokens, type):
-		dtype = AwlDataType.makeByName(type)
+	def __translateInterfaceField(self, rawVar):
+		dtype = AwlDataType.makeByName(rawVar.typeTokens)
+		if rawVar.valueTokens is None:
+			initialValue = None
+		else:
+			initialValue = dtype.parseImmediate(rawVar.valueTokens)
+		field = BlockInterface.Field(name = rawVar.name,
+					     type = dtype,
+					     initialValue = initialValue)
+		return field
+
+	def __translateCodeBlock(self, rawBlock, blockClass):
+		insns = self.__translateInsns(rawBlock.insns)
+		block = blockClass(insns, rawBlock.index)
+		for rawVar in rawBlock.vars_in:
+			block.interface.addField_IN(self.__translateInterfaceField(rawVar))
+		for rawVar in rawBlock.vars_out:
+			block.interface.addField_OUT(self.__translateInterfaceField(rawVar))
+		for rawVar in rawBlock.vars_inout:
+			block.interface.addField_INOUT(self.__translateInterfaceField(rawVar))
+		for rawVar in rawBlock.vars_static:
+			block.interface.addField_STAT(self.__translateInterfaceField(rawVar))
+		for rawVar in rawBlock.vars_temp:
+			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
+		return block
+
+	def __translateDBField(self, db, name, valueTokens, typeTokens):
+		dtype = AwlDataType.makeByName(typeTokens)
 		value = dtype.parseImmediate(valueTokens)
 		db.addField(fieldData = value,
 			    size = dtype.width,
@@ -183,19 +209,20 @@ class S7CPU(object):
 		if rawDB.isInstanceDB():
 			fbName, fbNumber = rawDB.fb
 			for f in rawDB.fields:
-				if f.type:
+				if f.typeTokens:
 					raise AwlSimError("DB %d is an "
 						"instance DB, but it also "
 						"declares a data structure." %\
 						rawDB.index)
 				raise AwlSimError("Instance DBs not supported, yet.")
 				#TODO type
+				#TODO initialValue
 				self.__translateDBField(db, f.name,
 							f.valueTokens,
-							fieldType)
+							fieldTypeTokens)
 		else:
 			for f in rawDB.fields:
-				if not f.type:
+				if not f.typeTokens:
 					raise AwlSimError(
 						"DB %d assigns field '%s', "
 						"but does not declare it." %\
@@ -207,21 +234,22 @@ class S7CPU(object):
 						(rawDB.index, f.name))
 				self.__translateDBField(db, f.name,
 							f.valueTokens,
-							f.type)
+							f.typeTokens)
 		return db
 
 	def load(self, parseTree):
 		# Translate the AWL tree
 		self.reset()
 		for obNumber in parseTree.obs.keys():
-			insns = self.__translateInsns(parseTree.obs[obNumber].insns)
-			self.obs[obNumber] = OB(insns, obNumber)
+			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)
+			self.obs[obNumber] = ob
 		for fbNumber in parseTree.fbs.keys():
-			insns = self.__translateInsns(parseTree.fbs[fbNumber].insns)
-			self.fbs[fbNumber] = FB(insns, fbNumber)
+			fb = self.__translateCodeBlock(parseTree.fbs[fbNumber], FB)
+			self.fbs[fbNumber] = fb
 		for fcNumber in parseTree.fcs.keys():
-			insns = self.__translateInsns(parseTree.fcs[fcNumber].insns)
-			self.fcs[fcNumber] = FC(insns, fcNumber)
+			fc = self.__translateCodeBlock(parseTree.fcs[fcNumber], FC)
+			#TODO alloc bounce-DB for FC interface
+			self.fcs[fcNumber] = fc
 		for dbNumber in parseTree.dbs.keys():
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db

@@ -94,10 +94,10 @@ class RawAwlCodeBlock(RawAwlBlock):
 		return False
 
 class RawAwlDataField(object):
-	def __init__(self, name, valueTokens, type):
+	def __init__(self, name, valueTokens, typeTokens):
 		self.name = name
 		self.valueTokens = valueTokens
-		self.type = type
+		self.typeTokens = typeTokens
 
 class RawAwlDB(RawAwlBlock):
 	def __init__(self, tree, index):
@@ -421,14 +421,18 @@ class AwlParser(object):
 				mayHaveInitval=True):
 		if tokens[0].upper() == endToken:
 			return False
-		if len(tokens) == 3 and tokens[1] == ":":
-			name, type = tokens[0], tokens[2]
-			field = RawAwlDataField(name, None, type)
-			varList.append(field)
-		elif mayHaveInitval and\
-		     len(tokens) >= 5 and tokens[1] == ":" and tokens[3] == ":=":
-			name, type, val = tokens[0], tokens[2], tokens[4:]
+		colonIdx = listIndex(tokens, ":")
+		assignIdx = listIndex(tokens, ":=")
+		if mayHaveInitval and colonIdx == 1 and assignIdx > colonIdx + 1:
+			name = tokens[0]
+			type = tokens[colonIdx+1:assignIdx]
+			val = tokens[assignIdx+1:]
 			field = RawAwlDataField(name, val, type)
+			varList.append(field)
+		elif colonIdx == 1:
+			name = tokens[0]
+			type = tokens[colonIdx+1:]
+			field = RawAwlDataField(name, None, type)
 			varList.append(field)
 		else:
 			raise AwlParserError("In variable section: Unknown tokens")
@@ -538,19 +542,22 @@ class AwlParser(object):
 	def __parseTokens_fc_hdr_varin(self, tokens):
 		if not self.__parse_var_generic(tokens,
 				varList = self.tree.curBlock.vars_in,
-				endToken = "END_VAR"):
+				endToken = "END_VAR",
+				mayHaveInitval=False):
 			self.__setState(self.STATE_IN_FC_HDR)
 
 	def __parseTokens_fc_hdr_varout(self, tokens):
 		if not self.__parse_var_generic(tokens,
 				varList = self.tree.curBlock.vars_out,
-				endToken = "END_VAR"):
+				endToken = "END_VAR",
+				mayHaveInitval=False):
 			self.__setState(self.STATE_IN_FC_HDR)
 
 	def __parseTokens_fc_hdr_varinout(self, tokens):
 		if not self.__parse_var_generic(tokens,
 				varList = self.tree.curBlock.vars_inout,
-				endToken = "END_VAR"):
+				endToken = "END_VAR",
+				mayHaveInitval=False):
 			self.__setState(self.STATE_IN_FC_HDR)
 
 	def __parseTokens_fc_hdr_vartemp(self, tokens):

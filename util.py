@@ -142,3 +142,12 @@ def floatEqual(fl0, fl1):
 	if not isinstance(fl1, float):
 		fl1 = dwordToPyFloat(fl1)
 	return pyFloatEqual(fl0, fl1)
+
+# Returns the index of a list element, or -1 if not found.
+def listIndex(_list, value, start=0, stop=-1):
+	if stop < 0:
+		stop = len(_list)
+	try:
+		return _list.index(value, start, stop)
+	except ValueError:
+		return -1
