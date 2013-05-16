@@ -203,10 +203,6 @@ class AwlParser(object):
 		self.reset()
 		self.lineNr = 1
 
-		data = data.strip()
-		if not data:
-			return
-
 		t = self.TokenizerState()
 		for i, c in enumerate(data):
 			if c == '\n':
