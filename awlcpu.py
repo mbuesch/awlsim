@@ -7,6 +7,7 @@
 #
 
 import time
+import random
 
 from awlparser import *
 from awldatatypes import *
@@ -22,7 +23,6 @@ from awltimers import *
 from awlcounters import *
 from awlcallstack import *
 from util import *
-from lfsr import *
 
 from system_sfc import *
 from system_sfb import *
@@ -130,7 +130,6 @@ class S7CPU(object):
 
 	def __init__(self, sim):
 		self.sim = sim
-		self.simplePRNG = Simple_PRNG()
 		self.specs = S7CPUSpecs(self)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
@@ -140,9 +139,6 @@ class S7CPU(object):
 		self.setScreenUpdateCallback(None)
 		self.reset()
 		self.__extendedInsnsEnabled = False
-
-	def getSimplePRNG(self):
-		return self.simplePRNG
 
 	def enableExtendedInsns(self, en=True):
 		self.__extendedInsnsEnabled = en
@@ -311,7 +307,7 @@ class S7CPU(object):
 		# Stats
 		self.cycleCount = 0
 		self.insnCount = 0
-		self.insnCountMod = self.simplePRNG.getBits(7) + 1
+		self.insnCountMod = random.randint(0, 127) + 1
 		self.runtimeSec = 0.0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
@@ -391,7 +387,7 @@ class S7CPU(object):
 				if self.insnCount % self.insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-					self.insnCountMod = self.simplePRNG.getBits(7) + 1
+					self.insnCountMod = random.randint(0, 127) + 1
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
 		self.cbCycleExit(self.cbCycleExitData)

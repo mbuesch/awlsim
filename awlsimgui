@@ -18,6 +18,7 @@ if isPyPy:
 
 import os
 import time
+import random
 import getopt
 
 try:
@@ -828,7 +829,7 @@ class EditWidget(QPlainTextEdit):
 		# Update the stats widget
 		if self.__cpuStatsCount >= self.__cpuStatsUpdate:
 			self.__cpuStatsCount = 0
-			self.__cpuStatsUpdate = cpu.getSimplePRNG().getBits(8) + 1
+			self.__cpuStatsUpdate = random.randint(0, 255) + 1
 			self.cpuStatsWidget.update()
 
 	def updateCpuStats_afterCycle(self, cpu):
