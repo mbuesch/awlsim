@@ -115,6 +115,8 @@ def main():
 		printError("-- AWL simulator error --")
 		printError(str(e))
 		return 1
+	except KeyboardInterrupt as e:
+		pass
 	return 0
 
 if __name__ == "__main__":
