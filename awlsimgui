@@ -8,6 +8,14 @@
 #
 
 import sys
+from util import *
+
+if isPyPy:
+	# PySide does not work on PyPy, yet.
+	print("Running awlsimgui on the PyPy interpreter is not supported.")
+	print("Please use CPython 2.7 or CPython 3.x")
+	sys.exit(1)
+
 import os
 import time
 import getopt
