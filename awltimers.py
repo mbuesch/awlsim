@@ -121,10 +121,10 @@ class Timer(object):
 
 	# Return the timer value in binary
 	def getTimevalBin(self):
-		return round(
+		return int(round(
 			self.__getRemainingSeconds() / \
 			Timer.__s5t_base2sec[self.timebase]
-		)
+		))
 
 	# Return the timer value in S5T BCD format
 	def getTimevalS5T(self):
