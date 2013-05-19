@@ -108,7 +108,6 @@ class AwlDataType(object):
 	def makeByName(cls, nameTokens):
 		type = cls.name2type(nameTokens)
 		if type == cls.TYPE_ARRAY:
-			print("ARRAY!")#XXX
 			openIdx = listIndex(nameTokens, "[")
 			elipsisIdx = listIndex(nameTokens, "..")
 			closeIdx = listIndex(nameTokens, "]")
@@ -116,7 +115,6 @@ class AwlDataType(object):
 			if len(nameTokens) >= 8 and\
 			   openIdx == 1 and elipsisIdx == 3 and\
 			   closeIdx == 5 and ofIdx == 6:
-				print(nameTokens)#XXX
 				pass#TODO
 			else:
 				raise AwlSimError("Invalid ARRAY definition")

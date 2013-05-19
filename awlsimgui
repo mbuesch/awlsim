@@ -12,8 +12,8 @@ from util import *
 
 if isPyPy:
 	# PySide does not work on PyPy, yet.
-	print("Running awlsimgui on the PyPy interpreter is not supported.")
-	print("Please use CPython 2.7 or CPython 3.x")
+	printError("Running awlsimgui on the PyPy interpreter is not supported.")
+	printError("Please use CPython 2.7 or CPython 3.x")
 	sys.exit(1)
 
 import os
@@ -24,7 +24,7 @@ try:
 	from PySide.QtCore import *
 	from PySide.QtGui import *
 except ImportError as e:
-	print("PLEASE INSTALL PySide (http://www.pyside.org/)")
+	printError("PLEASE INSTALL PySide (http://www.pyside.org/)")
 	input("Press enter to continue.")
 	sys.exit(1)
 
@@ -1279,12 +1279,12 @@ class MainWindow(QMainWindow):
 		self.centralWidget().cpuConfig()
 
 def usage():
-	print("awlsimgui version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
-	print("")
-	print("%s [OPTIONS] [AWL-source]" % sys.argv[0])
-	print("")
-	print("Options:")
-	print(" -x|--extended-insns   Enable extended instructions")
+	printInfo("awlsimgui version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
+	printInfo("")
+	printInfo("%s [OPTIONS] [AWL-source]" % sys.argv[0])
+	printInfo("")
+	printInfo("Options:")
+	printInfo(" -x|--extended-insns   Enable extended instructions")
 
 def main():
 	global opt_awlSource
@@ -1295,7 +1295,7 @@ def main():
 			"hx",
 			[ "help", "extended-insns", ])
 	except getopt.GetoptError as e:
-		print(e)
+		printError(e)
 		usage()
 		return 1
 	for (o, v) in opts:

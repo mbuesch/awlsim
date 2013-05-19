@@ -35,6 +35,18 @@ def py23(py2, py3):
 		return py2
 	raise AwlSimError("Failed to detect Python version")
 
+# Info message helper
+def printInfo(text):
+	sys.stdout.write(text)
+	sys.stdout.write("\n")
+	sys.stdout.flush()
+
+# Error message helper
+def printError(text):
+	sys.stderr.write(text)
+	sys.stderr.write("\n")
+	sys.stderr.flush()
+
 def awlFileRead(filename):
 	try:
 		fd = open(filename, "rb")
