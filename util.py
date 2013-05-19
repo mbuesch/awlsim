@@ -35,6 +35,10 @@ def py23(py2, py3):
 		return py2
 	raise AwlSimError("Failed to detect Python version")
 
+# Always map input() to text input
+if isPy2Compat:
+	input = raw_input
+
 # Info message helper
 def printInfo(text):
 	sys.stdout.write(text)
