@@ -1204,7 +1204,25 @@ class AwlInsn_RND(AwlInsn):
 		AwlInsn.__init__(self, AwlInsn.TYPE_RND, rawInsn)
 		self._assertOps(0)
 
-	def run(self):
+	def __run_python2(self):
+		s = self.cpu.status
+		accu1 = self.cpu.accu1.getPyFloat()
+		try:
+			accu1_floor = int(accu1)
+			if abs(accu1 - accu1_floor) == 0.5:
+				accu1 = accu1_floor
+				if accu1 & 1:
+					accu1 += 1 if accu1 > 0 else -1
+			else:
+				accu1 = int(round(accu1))
+			if accu1 > 2147483647 or accu1 < -2147483648:
+				raise ValueError
+		except ValueError:
+			s.OV, s.OS = 1, 1
+			return
+		self.cpu.accu1.setDWord(accu1)
+
+	def __run_python3(self):
 		s = self.cpu.status
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
@@ -1215,6 +1233,8 @@ class AwlInsn_RND(AwlInsn):
 			s.OV, s.OS = 1, 1
 			return
 		self.cpu.accu1.setDWord(accu1)
+
+	run = py23(__run_python2, __run_python3)
 
 class AwlInsn_TRUNC(AwlInsn):
 	def __init__(self, rawInsn):
