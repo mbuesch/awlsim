@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 #
 # AWL simulator - utility functions
-# Copyright 2012 Michael Buesch <m@bues.ch>
+# Copyright 2012-2013 Michael Buesch <m@bues.ch>
 #
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
+import sys
 import os
 import random
 import struct
@@ -17,12 +18,19 @@ class AwlSimError(Exception):
 class AwlParserError(Exception):
 	pass
 
+# Python 2/3 helper selection
+def py23(py2, py3):
+	if sys.version_info[0] >= 3:
+		return py3
+	return py2
+
 def awlFileRead(filename):
 	try:
-		fd = open(filename, "r", encoding="latin_1")
+		fd = open(filename, "rb")
 		data = fd.read()
+		data = data.decode("latin_1")
 		fd.close()
-	except IOError as e:
+	except (IOError, UnicodeError) as e:
 		raise AwlParserError("Failed to read '%s': %s" %\
 			(filename, str(e)))
 	return data
@@ -37,8 +45,8 @@ def awlFileWrite(filename, data):
 	else:
 		raise AwlParserError("Could not create temporary file")
 	try:
-		fd = open(tmpFile, "w", encoding="latin_1")
-		fd.write(data)
+		fd = open(tmpFile, "wb")
+		fd.write(data.encode("latin_1"))
 		fd.flush()
 		fd.close()
 		if os.name.lower() != "posix":
@@ -46,7 +54,7 @@ def awlFileWrite(filename, data):
 			# Must unlink first.
 			os.unlink(filename)
 		os.rename(tmpFile, filename)
-	except (IOError, OSError) as e:
+	except (IOError, OSError, UnicodeError) as e:
 		raise AwlParserError("Failed to write file:\n" + str(e))
 	finally:
 		try:
@@ -79,12 +87,25 @@ def dwordToSignedPyInt(dword):
 		return -((~dword + 1) & 0xFFFFFFFF)
 	return dword & 0xFFFFFFFF
 
-def pyFloatToDWord(pyfl):
+def __rawPyFloatToDWord_python2(pyfl):
 	buf = struct.pack('>f', pyfl)
-	dword = (buf[0] << 24) |\
-		(buf[1] << 16) |\
-		(buf[2] << 8) |\
-		buf[3]
+	return (ord(buf[0]) << 24) |\
+	       (ord(buf[1]) << 16) |\
+	       (ord(buf[2]) << 8) |\
+	       ord(buf[3])
+
+def __rawPyFloatToDWord_python3(pyfl):
+	buf = struct.pack('>f', pyfl)
+	return (buf[0] << 24) |\
+	       (buf[1] << 16) |\
+	       (buf[2] << 8) |\
+	       buf[3]
+
+rawPyFloatToDWord = py23(__rawPyFloatToDWord_python2,
+			 __rawPyFloatToDWord_python3)
+
+def pyFloatToDWord(pyfl):
+	dword = rawPyFloatToDWord(pyfl)
 	if isDenormalPyFloat(pyfl):
 		# Denormal floats are equal to zero on the S7 CPU.
 		# OV and OS flags are set in the StatusWord handler.
@@ -94,7 +115,15 @@ def pyFloatToDWord(pyfl):
 		dword = 0xFFFFFFFF
 	return dword
 
-def dwordToPyFloat(dword):
+def __dwordToPyFloat_python2(dword):
+	return struct.unpack('>f',
+		chr((dword >> 24) & 0xFF) +\
+		chr((dword >> 16) & 0xFF) +\
+		chr((dword >> 8) & 0xFF) +\
+		chr(dword & 0xFF)
+	)[0]
+
+def __dwordToPyFloat_python3(dword):
 	return struct.unpack('>f',
 		bytes( ((dword >> 24) & 0xFF,
 			(dword >> 16) & 0xFF,
@@ -102,6 +131,9 @@ def dwordToPyFloat(dword):
 			dword & 0xFF)
 		)
 	)[0]
+
+dwordToPyFloat = py23(__dwordToPyFloat_python2,
+		      __dwordToPyFloat_python3)
 
 # The smallest normalized positive 32-bit float.
 minNormPosFloat32 = dwordToPyFloat(0x00000001)
