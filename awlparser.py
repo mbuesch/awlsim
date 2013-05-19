@@ -242,7 +242,7 @@ class AwlParser(object):
 					t.tokens.append(c)
 					continue
 				if (self.__inAnyHeaderOrGlobal() and\
-				    c in ('=', ':')) or\
+				    c in ('=', ':', '[', ']', '..')) or\
 				   (c == ','):
 					# Handle non-space token separators.
 					t.tokenEnd()
