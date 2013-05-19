@@ -143,6 +143,9 @@ def floatEqual(fl0, fl1):
 		fl1 = dwordToPyFloat(fl1)
 	return pyFloatEqual(fl0, fl1)
 
+def intDivRoundUp(n, d):
+	return (n + d - 1) // d
+
 # Returns the index of a list element, or -1 if not found.
 def listIndex(_list, value, start=0, stop=-1):
 	if stop < 0:
