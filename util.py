@@ -213,3 +213,14 @@ def listIndex(_list, value, start=0, stop=-1):
 		return _list.index(value, start, stop)
 	except ValueError:
 		return -1
+
+def str2bool(string, default=False):
+	s = string.lower()
+	if s in ("true", "yes", "on"):
+		return True
+	if s in ("false", "no", "off"):
+		return False
+	try:
+		return bool(int(s, 10))
+	except ValueError:
+		return default

@@ -17,6 +17,7 @@ opt_onecycle = False
 opt_fouraccu = False
 opt_quiet = False
 opt_extInsns = False
+opt_rng = False
 
 
 def usage():
@@ -29,6 +30,7 @@ def usage():
 	printInfo(" -4|--fouraccu         Enable 4-accu mode")
 	printInfo(" -q|--quiet            No status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
+	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 
 def writeStdout(message):
 	if not opt_quiet:
@@ -60,11 +62,13 @@ def main():
 	global opt_fouraccu
 	global opt_quiet
 	global opt_extInsns
+	global opt_rng
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qx",
-			[ "help", "onecycle", "quiet", "extended-insns", ])
+			"h1qxr:",
+			[ "help", "onecycle", "quiet", "extended-insns",
+			  "rng=", ])
 	except getopt.GetoptError as e:
 		printError(e)
 		usage()
@@ -81,6 +85,8 @@ def main():
 			opt_quiet = True
 		if o in ("-x", "--extended-insns"):
 			opt_extInsns = True
+		if o in ("-r", "--rng"):
+			opt_rng = str2bool(v)
 	if len(args) != 1:
 		usage()
 		return 1
@@ -91,6 +97,7 @@ def main():
 		p.parseFile(awlSource)
 		s = AwlSim()
 		cpu = s.getCPU()
+		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)
 		cpu.getSpecs().setNrAccus(4 if opt_fouraccu else 2)
 		cpu.setBlockExitCallback(blockExitCallback, cpu)

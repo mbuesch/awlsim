@@ -131,6 +131,7 @@ class S7CPU(object):
 	def __init__(self, sim):
 		self.sim = sim
 		self.specs = S7CPUSpecs(self)
+		self.enableRNG(False)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
@@ -145,6 +146,14 @@ class S7CPU(object):
 
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
+
+	def enableRNG(self, enabled=True):
+		self.__rngEnabled = enabled
+
+	def getRandomInt(self, minval, maxval):
+		if self.__rngEnabled:
+			return random.randint(minval, maxval)
+		return (maxval - minval) // 2 + minval
 
 	def __translateInsn(self, rawInsn, ip):
 		ex = None
@@ -307,7 +316,7 @@ class S7CPU(object):
 		# Stats
 		self.cycleCount = 0
 		self.insnCount = 0
-		self.insnCountMod = random.randint(0, 127) + 1
+		self.insnCountMod = self.getRandomInt(0, 127) + 1
 		self.runtimeSec = 0.0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
@@ -387,7 +396,7 @@ class S7CPU(object):
 				if self.insnCount % self.insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-					self.insnCountMod = random.randint(0, 127) + 1
+					self.insnCountMod = self.getRandomInt(0, 127) + 1
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
 		self.cbCycleExit(self.cbCycleExitData)
