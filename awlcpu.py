@@ -195,6 +195,7 @@ class S7CPU(object):
 			block.interface.addField_STAT(self.__translateInterfaceField(rawVar))
 		for rawVar in rawBlock.vars_temp:
 			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
+		block.interface.allocate()
 		return block
 
 	def __translateDBField(self, db, name, valueTokens, typeTokens):

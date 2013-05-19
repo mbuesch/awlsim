@@ -7,6 +7,7 @@
 #
 
 from awllabels import *
+from awlstruct import *
 from util import *
 
 
@@ -38,6 +39,15 @@ class BlockInterface(object):
 
 	def addField_TEMP(self, field):
 		self.fields_TEMP.append(field)
+
+	def __buildDataStructure(self):
+		self.struct = AwlStruct()
+		pass#TODO
+
+	def allocate(self):
+		self.__buildDataStructure()
+		# Allocate the data structure
+		self.structInstance = AwlStructInstance(self.struct)
 
 class Block(object):
 	def __init__(self, insns, index, interface):

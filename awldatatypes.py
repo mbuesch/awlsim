@@ -10,6 +10,13 @@ from util import *
 from awltimers import *
 
 
+class AwlOffset(object):
+	"Memory area offset"
+
+	def __init__(self, byteOffset, bitOffset):
+		self.byteOffset = byteOffset
+		self.bitOffset = bitOffset
+
 class AwlDataType(object):
 	# Data type IDs
 	TYPE_BOOL	= 0

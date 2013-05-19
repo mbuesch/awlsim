@@ -28,9 +28,12 @@ class DB(object):
 		self.fields = { }
 
 	def addField(self, fieldData, size, name=None):
+		#FIXME alignment
+		# Allocate the data bytes and set field data (big endian)
 		for i in range(size // 8 - 1, -1, -1):
 			d = (fieldData >> (i * 8)) & 0xFF
 			self.dataBytes.append(DBByte(d))
+		# Create a named field for the data area.
 		if name:
 			f = self.Field(name,
 				       len(self.dataBytes) - size,
