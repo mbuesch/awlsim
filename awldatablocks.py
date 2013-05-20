@@ -9,43 +9,38 @@
 from util import *
 from awloperators import *
 from awldatatypes import *
+from awlstruct import *
 
-
-class DBByte(GenericByte):
-	def __init__(self, value=0):
-		GenericByte.__init__(self, value)
 
 class DB(object):
-	class Field(object):
-		def __init__(self, name, offset, size):
-			self.name = name
-			self.offset = offset
-			self.size = size
-
-	def __init__(self, index):
+	def __init__(self, index, fb=None):
 		self.index = index
-		self.dataBytes = []
-		self.fields = { }
+		self.fb = fb		# The FB, if this is an instance-DB.
+		if fb:
+			# The data structure is declared by the interface.
+			self.__struct = None
+		else:
+			self.__struct = AwlStruct()
+		self.structInstance = None
 
-	def addField(self, fieldData, size, name=None):
-		#FIXME alignment
-		# Allocate the data bytes and set field data (big endian)
-		for i in range(size // 8 - 1, -1, -1):
-			d = (fieldData >> (i * 8)) & 0xFF
-			self.dataBytes.append(DBByte(d))
-		# Create a named field for the data area.
-		if name:
-			f = self.Field(name,
-				       len(self.dataBytes) - size,
-				       size)
-			self.fields[name] = f
+	@property
+	def struct(self):
+		if self.fb:
+			return self.fb.interface.struct
+		return self.__struct
+
+	def isInstanceDB(self):
+		return bool(self.fb)
+
+	def allocate(self):
+		self.structInstance = AwlStructInstance(self.struct)
 
 	def fetch(self, operator):
-		return AwlOperator.fetchFromByteArray(self.dataBytes,
+		return AwlOperator.fetchFromByteArray(self.structInstance.dataBytes,
 						      operator)
 
 	def store(self, operator, value):
-		AwlOperator.storeToByteArray(self.dataBytes,
+		AwlOperator.storeToByteArray(self.structInstance.dataBytes,
 					     operator, value)
 
 	def __repr__(self):

@@ -19,35 +19,65 @@ class BlockInterface(object):
 			self.initialValue = initialValue
 
 	def __init__(self):
+		self.struct = None
+		self.fieldNameMap = {}
 		self.fields_IN = []
 		self.fields_OUT = []
 		self.fields_INOUT = []
 		self.fields_STAT = []
 		self.fields_TEMP = []
 
+	def __addField(self, field):
+		if field.name in self.fieldNameMap:
+			raise AwlSimError("Data structure name '%s' is ambiguous." %\
+				field.name)
+		self.fieldNameMap[field.name] = field
+
 	def addField_IN(self, field):
+		self.__addField(field)
 		self.fields_IN.append(field)
 
 	def addField_OUT(self, field):
+		self.__addField(field)
 		self.fields_OUT.append(field)
 
 	def addField_INOUT(self, field):
+		self.__addField(field)
 		self.fields_INOUT.append(field)
 
 	def addField_STAT(self, field):
+		self.__addField(field)
 		self.fields_STAT.append(field)
 
 	def addField_TEMP(self, field):
+		self.__addField(field)
 		self.fields_TEMP.append(field)
 
-	def __buildDataStructure(self):
-		self.struct = AwlStruct()
-		pass#TODO
+	def __buildField(self, field, isFirst):
+		if isFirst:
+			self.struct.addFieldAligned(field.name,
+						    field.type.width, 2)
+		else:
+			self.struct.addFieldNaturallyAligned(field.name,
+							     field.type.width)
 
-	def allocate(self):
-		self.__buildDataStructure()
-		# Allocate the data structure
-		self.structInstance = AwlStructInstance(self.struct)
+	def buildDataStructure(self):
+		self.struct = AwlStruct()
+		for i, field in enumerate(self.fields_IN):
+			self.__buildField(field, i==0)
+		for i, field in enumerate(self.fields_OUT):
+			self.__buildField(field, i==0)
+		for i, field in enumerate(self.fields_INOUT):
+			self.__buildField(field, i==0)
+		for i, field in enumerate(self.fields_STAT):
+			self.__buildField(field, i==0)
+
+	def getFieldByName(self, name):
+		try:
+			return self.fieldNameMap[name]
+		except KeyError:
+			raise AwlSimError("Data structure field '%s' does not exist." %\
+				name)
 
 class Block(object):
 	def __init__(self, insns, index, interface):

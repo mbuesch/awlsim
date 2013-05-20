@@ -13,16 +13,22 @@ from awldatatypes import *
 class AwlStructField(object):
 	"Data structure field"
 
-	def __init__(self, name, offset, size, initialValue=0):
+	def __init__(self, name, offset, bitSize, initialValue=0):
 		self.name = name
 		self.offset = offset
-		self.size = size # Size, in bits
+		self.__bitSize = bitSize # Size, in bits
+		assert(self.__bitSize in (1, 8, 16, 32))
 		self.initialValue = initialValue
 
-	# Return size, in bytes
+	# Return size, in bits.
+	@property
+	def bitSize(self):
+		return self.__bitSize
+
+	# Return size, in bytes.
 	@property
 	def byteSize(self):
-		return intDivRoundUp(self.size, 8)
+		return intDivRoundUp(self.bitSize, 8)
 
 class AwlStruct(object):
 	"Data structure"
@@ -36,23 +42,36 @@ class AwlStruct(object):
 		if not self.fields:
 			return 0
 		lastField = self.fields[-1]
-		return lastField.byteOffset + lastField.byteSize
+		return lastField.offset.byteOffset + lastField.byteSize
 
-	def addField(self, name, size):
-		if not size:
+	def addField(self, name, bitSize):
+		if not bitSize:
 			return
-		offset = self.getSize()
-		field = AwlStructField(name, offset, size)
+		if bitSize == 1 and self.fields and\
+		   self.fields[-1].bitSize == 1 and\
+		   self.fields[-1].offset.bitOffset < 7:
+			# Consecutive bitfields are merged into one byte
+			offset = AwlOffset(self.fields[-1].offset.byteOffset,
+					   self.fields[-1].offset.bitOffset + 1)
+		else:
+			offset = AwlOffset(self.getSize())
+		field = AwlStructField(name, offset, bitSize)
 		self.fields.append(field)
 		if name:
 			self.name2field[name] = field
 
-	def addFieldAligned(self, name, size, alignment):
-		padding = alignment - self.getSize() % alignment
-		if padding == alignment:
+	def addFieldAligned(self, name, bitSize, byteAlignment):
+		padding = byteAlignment - self.getSize() % byteAlignment
+		if padding == byteAlignment:
 			padding = 0
-		self.addField(None, padding)
-		self.addField(name, size)
+		self.addField(None, padding * 8)
+		self.addField(name, bitSize)
+
+	def addFieldNaturallyAligned(self, name, bitSize):
+		alignment = 1
+		if bitSize > 8:
+			alignment = 2
+		self.addFieldAligned(name, bitSize, alignment)
 
 	def getField(self, name):
 		try:
@@ -82,9 +101,9 @@ class AwlStructInstance(object):
 				b = (value >> ((bsize - i - 1) * 8)) & 0xFF
 				self.dataBytes.append(AwlStructInstanceByte(b))
 
-	def getData(self, offset, size):
-		if size % 8 == 0:
-			nrBytes, value = size // 8, 0
+	def getData(self, offset, bitSize):
+		if bitSize % 8 == 0:
+			nrBytes, value = bitSize // 8, 0
 			off = offset.byteOffset
 			assert(offset.bitOffset == 0)
 			while nrBytes:
@@ -92,13 +111,13 @@ class AwlStructInstance(object):
 				nrBytes -= 1
 				off += 1
 			return value
-		if size == 1:
+		if bitSize == 1:
 			return self.dataBytes[offset.byteOffset].getBit(offset.bitOffset)
-		raise AwlSimError("Invalid struct fetch size of %d" % size)
+		raise AwlSimError("Invalid struct fetch of %d bits" % bitSize)
 
-	def setData(self, offset, size, value):
-		if size % 8 == 0:
-			nrBytes = size // 8
+	def setData(self, offset, bitSize, value):
+		if bitSize % 8 == 0:
+			nrBytes = bitSize // 8
 			off = offset.byteOffset + nrBytes - 1
 			assert(offset.bitOffset == 0)
 			while nrBytes:
@@ -107,16 +126,16 @@ class AwlStructInstance(object):
 				nrBytes -= 1
 				off -= 1
 			return
-		if size == 1:
+		if bitSize == 1:
 			self.dataBytes[offset.byteOffset].setBitValue(
 				offset.bitOffset, value)
 			return
-		raise AwlSimError("Invalid struct write size of %d" % size)
+		raise AwlSimError("Invalid struct write of %d bits" % bitSize)
 
 	def getFieldData(self, name):
 		field = self.struct.getField(name)
-		return self.getData(field.offset, field.size)
+		return self.getData(field.offset, field.bitSize)
 
 	def setFieldData(self, name, value):
 		field = self.struct.getField(name)
-		self.setData(field.offset, field.size, value)
+		self.setData(field.offset, field.bitSize, value)

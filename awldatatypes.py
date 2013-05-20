@@ -13,7 +13,7 @@ from awltimers import *
 class AwlOffset(object):
 	"Memory area offset"
 
-	def __init__(self, byteOffset, bitOffset):
+	def __init__(self, byteOffset, bitOffset=0):
 		self.byteOffset = byteOffset
 		self.bitOffset = bitOffset
 

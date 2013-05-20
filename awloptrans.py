@@ -17,6 +17,7 @@ from awltimers import *
 class OpDescriptor(object):
 	"Instruction operator descriptor"
 
+	#TODO use AwlOffset
 	def __init__(self, operType, width, offset, bitOffset, fieldCount):
 		self.operType = operType
 		self.width = width

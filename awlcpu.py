@@ -200,48 +200,64 @@ class S7CPU(object):
 			block.interface.addField_STAT(self.__translateInterfaceField(rawVar))
 		for rawVar in rawBlock.vars_temp:
 			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
-		block.interface.allocate()
+		block.interface.buildDataStructure()
 		return block
 
-	def __translateDBField(self, db, name, valueTokens, typeTokens):
-		dtype = AwlDataType.makeByName(typeTokens)
-		value = dtype.parseImmediate(valueTokens)
-		db.addField(fieldData = value,
-			    size = dtype.width,
-			    name = name)
+	def __translateGlobalDB(self, rawDB):
+		db = DB(rawDB.index, None)
+		# Create the data structure fields
+		for f in rawDB.fields:
+			if not f.typeTokens:
+				raise AwlSimError(
+					"DB %d assigns field '%s', "
+					"but does not declare it." %\
+					(rawDB.index, f.name))
+			if f.valueTokens is None:
+				raise AwlSimError(
+					"DB %d declares field '%s', "
+					"but does not initialize." %\
+					(rawDB.index, f.name))
+			dtype = AwlDataType.makeByName(f.typeTokens)
+			db.struct.addFieldNaturallyAligned(f.name, dtype.width)
+		# Allocate the data structure fields
+		db.allocate()
+		# Initialize the data structure fields
+		for f in rawDB.fields:
+			dtype = AwlDataType.makeByName(f.typeTokens)
+			value = dtype.parseImmediate(f.valueTokens)
+			db.structInstance.setFieldData(f.name, value)
+		return db
+
+	def __translateInstanceDB(self, rawDB):
+		fbName, fbNumber = rawDB.fb
+		try:
+			fb = self.fbs[fbNumber]
+		except KeyError:
+			raise AwlSimError("Instance DB %d references FB %d, "
+				"but FB %d does not exist." %\
+				(rawDB.index, fbNumber, fbNumber))
+		db = DB(rawDB.index, fb)
+		interface = fb.interface
+		# Sanity checks
+		for f in rawDB.fields:
+			if f.typeTokens:
+				raise AwlSimError("DB %d is an "
+					"instance DB, but it also "
+					"declares a data structure." %\
+					rawDB.index)
+		# Allocate the data structure fields
+		db.allocate()
+		# Initialize the data structure fields
+		for f in rawDB.fields:
+			dtype = interface.getFieldByName(f.name).type
+			value = dtype.parseImmediate(f.valueTokens)
+			db.structInstance.setFieldData(f.name, value)
+		return db
 
 	def __translateDB(self, rawDB):
-		db = DB(rawDB.index)
 		if rawDB.isInstanceDB():
-			fbName, fbNumber = rawDB.fb
-			for f in rawDB.fields:
-				if f.typeTokens:
-					raise AwlSimError("DB %d is an "
-						"instance DB, but it also "
-						"declares a data structure." %\
-						rawDB.index)
-				raise AwlSimError("Instance DBs not supported, yet.")
-				#TODO type
-				#TODO initialValue
-				self.__translateDBField(db, f.name,
-							f.valueTokens,
-							fieldTypeTokens)
-		else:
-			for f in rawDB.fields:
-				if not f.typeTokens:
-					raise AwlSimError(
-						"DB %d assigns field '%s', "
-						"but does not declare it." %\
-						(rawDB.index, f.name))
-				if f.valueTokens is None:
-					raise AwlSimError(
-						"DB %d declares field '%s', "
-						"but does not initialize." %\
-						(rawDB.index, f.name))
-				self.__translateDBField(db, f.name,
-							f.valueTokens,
-							f.typeTokens)
-		return db
+			return self.__translateInstanceDB(rawDB)
+		return self.__translateGlobalDB(rawDB)
 
 	def load(self, parseTree):
 		# Translate the AWL tree
