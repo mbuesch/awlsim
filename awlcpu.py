@@ -425,7 +425,7 @@ class S7CPU(object):
 		self.cpuStartupTime = self.now
 
 		# Run startup OB
-		for obNumber in (102, 101, 100):
+		for obNumber in (100, 101, 102):
 			ob = self.obs.get(obNumber)
 			if ob is not None:
 				self.__runBlock(ob)
