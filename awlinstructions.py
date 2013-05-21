@@ -2094,9 +2094,9 @@ class AwlInsn_CALL(AwlInsn):
 	def run(self):
 		s = self.cpu.status
 		if len(self.ops) == 1:
-			self.cpu.run_CALL(self.ops[0])
+			self.cpu.run_CALL(self.ops[0], None, self.params)
 		elif len(self.ops) == 2:
-			self.cpu.run_CALL(self.ops[0], self.ops[1])
+			self.cpu.run_CALL(self.ops[0], self.ops[1], self.params)
 		else:
 			assert(0)
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0

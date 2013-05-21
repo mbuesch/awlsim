@@ -8,6 +8,7 @@
 
 from awldatatypes import *
 from awlstatusword import *
+from awlparameters import *
 from objectcache import *
 from util import *
 
@@ -24,7 +25,7 @@ class CallStackElem(object):
 	def resetCache(cls):
 		cls.localdataCache.reset()
 
-	def __init__(self, cpu, block, db):
+	def __init__(self, cpu, block, db=None, parameters=()):
 		self.cpu = cpu
 		self.status = S7StatusWord()
 		self.parenStack = []
@@ -34,6 +35,12 @@ class CallStackElem(object):
 		self.block = block
 		self.db = db
 
+		self.inboundParams = [ param for param in parameters
+				       if param.isInbound(block.interface) ]
+		self.outboundParams = [ param for param in parameters
+					if param.isOutbound(block.interface) ]
+		self.handleInParameters()
+
 	@property
 	def insns(self):
 		return self.block.insns
@@ -41,6 +48,22 @@ class CallStackElem(object):
 	@property
 	def labels(self):
 		return self.block.labels
+
+	# Transfer data into DBI
+	def handleInParameters(self):
+		for param in self.inboundParams:
+			self.db.structInstance.setFieldData(
+				param.lvalueName,
+				self.cpu.fetch(param.rvalueOp)
+			)
+
+	# Transfer data out of DBI
+	def handleOutParameters(self):
+		for param in self.outboundParams:
+			self.cpu.store(
+				param.rvalueOp,
+				self.db.structInstance.getFieldData(param.lvalueName)
+			)
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.

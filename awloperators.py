@@ -253,13 +253,3 @@ class AwlOperator(object):
 				assert(0)
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset out of range")
-
-class AwlParamAssign(object):
-	"Parameter assignment in CALL"
-
-	def __init__(self, lvalueName, rvalueOp):
-		self.lvalueName = lvalueName
-		self.rvalueOp = rvalueOp
-
-	def __repr__(self):
-		return "%s := %s" % (self.lvalueName, str(self.rvalueOp))

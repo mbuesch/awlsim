@@ -1,9 +1,7 @@
 ORGANIZATION_BLOCK OB 100
 BEGIN
-	// Open DB
+	// Check initial DB 1 values
 	AUF		DB 1
-
-	// Check initial DB values
 	L		DBW 0
 	__ASSERT==	__ACCU 1,	1337
 	L		DBD 2
@@ -17,6 +15,19 @@ BEGIN
 	L		DBW 10
 	__ASSERT==	__ACCU 1,	42
 
+	// Check initial DB 2 values
+	AUF		DB 2
+	L		DBW 0
+	__ASSERT==	__ACCU 1,	123
+	L		DBW 2
+	__ASSERT==	__ACCU 1,	456
+	L		DBB 4
+	__ASSERT==	__ACCU 1,	1
+	L		DBB 5
+	__ASSERT==	__ACCU 1,	0
+	L		DBD 6
+	__ASSERT==	__ACCU 1,	DW#16#77777777
+
 	SET
 	=		M 0.0
 END_ORGANIZATION_BLOCK
@@ -28,10 +39,8 @@ BEGIN
 	// OB 100 execution sanity check
 	__ASSERT==	M 0.0,		1
 
-	// Open DB
+	// Modify the DB 1
 	AUF		DB 1
-
-	// Modify the DB
 	L		9876
 	T		DBW 6
 	L		5432
@@ -41,7 +50,7 @@ BEGIN
 	SET
 	=		DBX 8.2
 
-	// Check the DB values
+	// Check the DB 1 values
 	L		DBW 0
 	__ASSERT==	__ACCU 1,	1337
 	L		DBD 2
@@ -54,6 +63,18 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	L		DBW 10
 	__ASSERT==	__ACCU 1,	5432
+
+
+	// FB 1 call test
+	CLR
+	=		M 18.0
+	CALL		FB 1, DB 2 (
+		INPUT_VAR	:= 8877,
+		OUTPUT_VAR	:= MW 16,
+		INOUT_VAR	:= M 18.0
+	)
+	__ASSERT==	MW 16,		4433
+	__ASSERT==	M 18.0,		1
 END_ORGANIZATION_BLOCK
 
 
@@ -79,8 +100,29 @@ FUNCTION_BLOCK FB 1
 	VAR_INPUT
 		INPUT_VAR	: INT
 	END_VAR
+	VAR_OUTPUT
+		OUTPUT_VAR	: INT
+	END_VAR
+	VAR_IN_OUT
+		INOUT_VAR	: BOOL
+	END_VAR
+	VAR
+		STAT_VAR	: DWORD
+	END_VAR
 BEGIN
-	NOP 0
+	L		DIW 0
+	__ASSERT==	__ACCU 1,	8877
+
+	L		4433
+	T		DIW 2
+
+	U		DIX 4.0
+	__ASSERT==	__STW VKE,	0
+	SET
+	=		DIX 4.0
+
+	L		DID 6
+	__ASSERT==	__ACCU 1,	DW#16#77777777
 END_FUNCTION_BLOCK
 
 
@@ -113,4 +155,7 @@ TITLE = instance DB for FB 1
 FB 1
 BEGIN
 	INPUT_VAR	:= 123
+	OUTPUT_VAR	:= 456
+	INOUT_VAR	:= True
+	STAT_VAR	:= DW#16#77777777
 END_DATA_BLOCK

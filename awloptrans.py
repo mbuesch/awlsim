@@ -9,6 +9,7 @@ import math
 
 from util import *
 from awloperators import *
+from awlparameters import *
 from awldatatypes import *
 from awlparser import *
 from awltimers import *
@@ -330,9 +331,12 @@ class AwlOpTranslator(object):
 			param = AwlParamAssign(lvalueName, rvalueOp)
 			insn.params.append(param)
 
-			if commaIdx < 0:
-				break
-			rawOps = rawOps[commaIdx + 1 : ]
+			rawOps = rawOps[opDesc.fieldCount + 2 : ]
+			if rawOps:
+				if rawOps[0] == ',':
+					rawOps = rawOps[1:]
+				else:
+					raise AwlSimError("Missing comma in parameter list")
 
 	def translateFrom(self, rawInsn):
 		rawOps = rawInsn.getOperators()

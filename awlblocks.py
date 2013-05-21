@@ -13,9 +13,17 @@ from util import *
 
 class BlockInterface(object):
 	class Field(object):
-		def __init__(self, name, type, initialValue=None):
+		FTYPE_UNKNOWN	= -1
+		FTYPE_IN	= 0
+		FTYPE_OUT	= 1
+		FTYPE_INOUT	= 2
+		FTYPE_STAT	= 3
+		FTYPE_TEMP	= 4
+
+		def __init__(self, name, dataType, initialValue=None):
 			self.name = name
-			self.type = type
+			self.dataType = dataType
+			self.fieldType = self.FTYPE_UNKNOWN
 			self.initialValue = initialValue
 
 	def __init__(self):
@@ -34,32 +42,37 @@ class BlockInterface(object):
 		self.fieldNameMap[field.name] = field
 
 	def addField_IN(self, field):
+		field.fieldType = field.FTYPE_IN
 		self.__addField(field)
 		self.fields_IN.append(field)
 
 	def addField_OUT(self, field):
+		field.fieldType = field.FTYPE_OUT
 		self.__addField(field)
 		self.fields_OUT.append(field)
 
 	def addField_INOUT(self, field):
+		field.fieldType = field.FTYPE_INOUT
 		self.__addField(field)
 		self.fields_INOUT.append(field)
 
 	def addField_STAT(self, field):
+		field.fieldType = field.FTYPE_STAT
 		self.__addField(field)
 		self.fields_STAT.append(field)
 
 	def addField_TEMP(self, field):
+		field.fieldType = field.FTYPE_TEMP
 		self.__addField(field)
 		self.fields_TEMP.append(field)
 
 	def __buildField(self, field, isFirst):
 		if isFirst:
 			self.struct.addFieldAligned(field.name,
-						    field.type.width, 2)
+						    field.dataType.width, 2)
 		else:
 			self.struct.addFieldNaturallyAligned(field.name,
-							     field.type.width)
+							     field.dataType.width)
 
 	def buildDataStructure(self):
 		self.struct = AwlStruct()

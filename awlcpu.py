@@ -183,7 +183,7 @@ class S7CPU(object):
 		else:
 			initialValue = dtype.parseImmediate(rawVar.valueTokens)
 		field = BlockInterface.Field(name = rawVar.name,
-					     type = dtype,
+					     dataType = dtype,
 					     initialValue = initialValue)
 		return field
 
@@ -249,7 +249,7 @@ class S7CPU(object):
 		db.allocate()
 		# Initialize the data structure fields
 		for f in rawDB.fields:
-			dtype = interface.getFieldByName(f.name).type
+			dtype = interface.getFieldByName(f.name).dataType
 			value = dtype.parseImmediate(f.valueTokens)
 			db.structInstance.setFieldData(f.name, value)
 		return db
@@ -397,7 +397,7 @@ class S7CPU(object):
 	def __runBlock(self, block):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
-		self.callStack = [ CallStackElem(self, block, None) ]
+		self.callStack = [ CallStackElem(self, block) ]
 		# Run the user program cycle
 		while self.callStack:
 			cse = self.callStack[-1]
@@ -413,6 +413,7 @@ class S7CPU(object):
 					self.updateTimestamp()
 					self.__runTimeCheck()
 					self.insnCountMod = self.getRandomInt(0, 127) + 1
+			cse.handleOutParameters()
 			self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
 		self.cbCycleExit(self.cbCycleExitData)
@@ -484,7 +485,7 @@ class S7CPU(object):
 	def jumpRelative(self, insnOffset):
 		self.relativeJump = insnOffset
 
-	def __call_FC(self, blockOper, dbOper):
+	def __call_FC(self, blockOper, dbOper, parameters):
 		if dbOper:
 			raise AwlSimError("FC call must not "
 				"have DB operand")
@@ -492,9 +493,9 @@ class S7CPU(object):
 			fc = self.fcs[blockOper.offset]
 		except KeyError as e:
 			raise AwlSimError("Called FC not found")
-		return CallStackElem(self, fc, self.callStack[-1].db)
+		return CallStackElem(self, fc, self.callStack[-1].db, parameters)
 
-	def __call_FB(self, blockOper, dbOper):
+	def __call_FB(self, blockOper, dbOper, parameters):
 		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
 			raise AwlSimError("FB call must have "
 				"DB operand")
@@ -506,7 +507,12 @@ class S7CPU(object):
 			db = self.dbs[dbOper.offset]
 		except KeyError as e:
 			raise AwlSimError("DB used in FB call not found")
-		return CallStackElem(self, fb, db)
+		if not db.isInstanceDB():
+			raise AwlSimError("DB %d is not an instance DB" % dbOper.offset)
+		if db.fb.index != fb.index:
+			raise AwlSimError("DB %d is not an instance DB for FB %d" %\
+				(dbOper.offset, blockOper.offset))
+		return CallStackElem(self, fb, db, parameters)
 
 	def __call_SFC(self, blockOper, dbOper):
 		if dbOper:
@@ -537,12 +543,12 @@ class S7CPU(object):
 		AwlOperator.BLKREF_SFB	: __call_SFB,
 	}
 
-	def run_CALL(self, blockOper, dbOper=None):
+	def run_CALL(self, blockOper, dbOper=None, parameters=()):
 		try:
 			callHelper = self.__callHelpers[blockOper.type]
 		except KeyError:
 			raise AwlSimError("Invalid CALL operand")
-		newCse = callHelper(self, blockOper, dbOper)
+		newCse = callHelper(self, blockOper, dbOper, parameters)
 		if newCse:
 			self.callStack.append(newCse)
 
@@ -728,6 +734,9 @@ class S7CPU(object):
 	def fetchVirtAR(self, operator):
 		return self.getAR(operator.offset).get()
 
+	def fetchNAMED_LOCAL(self, operator):
+		raise AwlSimError("NAMED_LOCAL fetch not supported, yet") #TODO
+
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
 		AwlOperator.IMM_REAL		: fetchIMM_REAL,
@@ -749,6 +758,7 @@ class S7CPU(object):
 		AwlOperator.MEM_STW_POSZ	: fetchSTW_POSZ,
 		AwlOperator.MEM_STW_NEGZ	: fetchSTW_NEGZ,
 		AwlOperator.MEM_STW_UO		: fetchSTW_UO,
+		AwlOperator.NAMED_LOCAL		: fetchNAMED_LOCAL,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
 	}
@@ -801,6 +811,9 @@ class S7CPU(object):
 		else:
 			assert(0)
 
+	def storeNAMED_LOCAL(self, operator, value):
+		raise AwlSimError("NAMED_LOCAL store not supported, yet") #TODO
+
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
@@ -810,6 +823,7 @@ class S7CPU(object):
 		AwlOperator.MEM_DI		: storeDI,
 		AwlOperator.MEM_PA		: storePA,
 		AwlOperator.MEM_STW		: storeSTW,
+		AwlOperator.NAMED_LOCAL		: storeNAMED_LOCAL,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):

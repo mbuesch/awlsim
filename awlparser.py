@@ -201,7 +201,7 @@ class AwlParser(object):
 
 	def __tokenize(self, data):
 		self.reset()
-		self.lineNr = 1
+		self.lineNr = 0
 
 		t = self.TokenizerState()
 		for i, c in enumerate(data):
