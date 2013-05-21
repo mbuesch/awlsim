@@ -18,23 +18,26 @@ class AwlSim(object):
 	def __init__(self):
 		self.cpu = S7CPU(self)
 
+	def __handleSimException(self, e):
+		raise AwlSimError("ERROR at AWL line %d: %s\n\n%s" %\
+			(self.cpu.getCurrentInsn().getLineNr(),
+			 str(e), str(self.cpu)))
+
 	def load(self, parseTree):
 		self.cpu.load(parseTree)
-		self.cpu.startup()
+		try:
+			self.cpu.startup()
+		except AwlSimError as e:
+			self.__handleSimException(e)
 
 	def getCPU(self):
 		return self.cpu
 
 	def runCycle(self):
-		ex = None
 		try:
 			self.cpu.runCycle()
 		except AwlSimError as e:
-			ex = e
-		if ex:
-			raise AwlSimError("ERROR at AWL line %d: %s\n\n%s" %\
-				(self.cpu.getCurrentInsn().getLineNr(),
-				 str(ex), str(self.cpu)))
+			self.__handleSimException(e)
 
 	def __repr__(self):
 		return str(self.cpu)
