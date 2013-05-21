@@ -255,9 +255,17 @@ class S7CPU(object):
 		return db
 
 	def __translateDB(self, rawDB):
+		if rawDB.index < 0:
+			raise AwlSimError("DB number %d is invalid" % rawDB.index)
 		if rawDB.isInstanceDB():
 			return self.__translateInstanceDB(rawDB)
 		return self.__translateGlobalDB(rawDB)
+
+	def __allocateFCBounceDB(self, fc):
+		dbNumber = -abs(fc.index) # Use negative FC number as bounce-DB number
+		db = DB(dbNumber, fc)
+		db.allocate()
+		return db
 
 	def load(self, parseTree):
 		# Translate the AWL tree
@@ -270,8 +278,9 @@ class S7CPU(object):
 			self.fbs[fbNumber] = fb
 		for fcNumber in parseTree.fcs.keys():
 			fc = self.__translateCodeBlock(parseTree.fcs[fcNumber], FC)
-			#TODO alloc bounce-DB for FC interface
 			self.fcs[fcNumber] = fc
+			bounceDB = self.__allocateFCBounceDB(fc)
+			self.dbs[bounceDB.index] = bounceDB
 		for dbNumber in parseTree.dbs.keys():
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
@@ -493,7 +502,13 @@ class S7CPU(object):
 			fc = self.fcs[blockOper.offset]
 		except KeyError as e:
 			raise AwlSimError("Called FC not found")
-		return CallStackElem(self, fc, self.callStack[-1].db, parameters)
+		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
+		if fc.interface.fieldCount != len(parameters):
+			raise AwlSimError("Call interface mismatch. "
+				"Passed %d parameters, but expected %d." %\
+				(len(parameters), fc.interface.fieldCount))
+		return CallStackElem(self, fc, self.callStack[-1].instanceDB,
+				     bounceDB, parameters)
 
 	def __call_FB(self, blockOper, dbOper, parameters):
 		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
@@ -509,10 +524,10 @@ class S7CPU(object):
 			raise AwlSimError("DB used in FB call not found")
 		if not db.isInstanceDB():
 			raise AwlSimError("DB %d is not an instance DB" % dbOper.offset)
-		if db.fb.index != fb.index:
+		if db.codeBlock.index != fb.index:
 			raise AwlSimError("DB %d is not an instance DB for FB %d" %\
 				(dbOper.offset, blockOper.offset))
-		return CallStackElem(self, fb, db, parameters)
+		return CallStackElem(self, fb, db, db, parameters)
 
 	def __call_SFC(self, blockOper, dbOper):
 		if dbOper:
@@ -575,7 +590,7 @@ class S7CPU(object):
 	def run_TDB(self):
 		cse = self.callStack[-1]
 		# Swap global and instance DB
-		cse.db, self.globDB = self.globDB, cse.db
+		cse.instanceDB, self.globDB = self.globDB, cse.instanceDB
 
 	def updateTimestamp(self):
 		# self.now is a floating point count of seconds since the epoch.
@@ -702,10 +717,10 @@ class S7CPU(object):
 
 	def fetchDI(self, operator):
 		cse = self.callStack[-1]
-		if not cse.db:
+		if not cse.instanceDB:
 			raise AwlSimError("Fetch from instance DI, "
 				"but no DI is opened")
-		return cse.db.fetch(operator)
+		return cse.instanceDB.fetch(operator)
 
 	def fetchPE(self, operator):
 		self.cbDirectPeripheral(self.cbDirectPeripheralData,
@@ -735,7 +750,13 @@ class S7CPU(object):
 		return self.getAR(operator.offset).get()
 
 	def fetchNAMED_LOCAL(self, operator):
-		raise AwlSimError("NAMED_LOCAL fetch not supported, yet") #TODO
+		cse = self.callStack[-1]
+		interfaceDB = cse.interfaceDB
+		if not interfaceDB:
+			raise AwlSimError("Fetch from named local variable, but "
+				"no interface is declared.")
+		#TODO name should be statically resolved
+		return interfaceDB.structInstance.getFieldData(operator.offset)
 
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
@@ -793,10 +814,10 @@ class S7CPU(object):
 
 	def storeDI(self, operator, value):
 		cse = self.callStack[-1]
-		if not cse.db:
+		if not cse.instanceDB:
 			raise AwlSimError("Store to instance DI, "
 				"but no DI is opened")
-		cse.db.store(operator, value)
+		cse.instanceDB.store(operator, value)
 
 	def storePA(self, operator, value):
 		AwlOperator.storeToByteArray(self.outputs, operator, value)
@@ -812,7 +833,13 @@ class S7CPU(object):
 			assert(0)
 
 	def storeNAMED_LOCAL(self, operator, value):
-		raise AwlSimError("NAMED_LOCAL store not supported, yet") #TODO
+		cse = self.callStack[-1]
+		interfaceDB = cse.interfaceDB
+		if not interfaceDB:
+			raise AwlSimError("Store to named local variable, but "
+				"no interface is declared.")
+		#TODO name should be statically resolved
+		interfaceDB.structInstance.setFieldData(operator.offset, value)
 
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
@@ -877,7 +904,7 @@ class S7CPU(object):
 			ret.append(self.__dumpMem("      L:  ",
 						  cse.localdata,
 						  min(16, self.specs.getNrLocalbytes())))
-			ret.append(" InstDB:  %s" % str(cse.db))
+			ret.append(" InstDB:  %s" % str(cse.instanceDB))
 		else:
 			ret.append(" CStack:  Empty")
 		ret.append("  insn.:  IP:%s    %s" %\

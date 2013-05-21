@@ -92,6 +92,10 @@ class BlockInterface(object):
 			raise AwlSimError("Data structure field '%s' does not exist." %\
 				name)
 
+	@property
+	def fieldCount(self):
+		return len(self.fieldNameMap)
+
 class Block(object):
 	def __init__(self, insns, index, interface):
 		self.insns = insns

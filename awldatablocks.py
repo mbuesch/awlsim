@@ -13,10 +13,10 @@ from awlstruct import *
 
 
 class DB(object):
-	def __init__(self, index, fb=None):
+	def __init__(self, index, codeBlock=None):
 		self.index = index
-		self.fb = fb		# The FB, if this is an instance-DB.
-		if fb:
+		self.codeBlock = codeBlock	# The FB or FC, if this is an instance/bounce-DB.
+		if self.codeBlock:
 			# The data structure is declared by the interface.
 			self.__struct = None
 		else:
@@ -25,12 +25,12 @@ class DB(object):
 
 	@property
 	def struct(self):
-		if self.fb:
-			return self.fb.interface.struct
+		if self.codeBlock:
+			return self.codeBlock.interface.struct
 		return self.__struct
 
 	def isInstanceDB(self):
-		return bool(self.fb)
+		return bool(self.codeBlock)
 
 	def allocate(self):
 		self.structInstance = AwlStructInstance(self.struct)

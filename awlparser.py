@@ -354,6 +354,7 @@ class AwlParser(object):
 					fcNumber = int(tokens[2], 10)
 				except ValueError:
 					raise AwlParserError("Invalid FC number")
+				#TODO RET_VAL type
 				self.tree.curBlock = RawAwlFC(self.tree, fcNumber)
 				self.tree.fcs[fcNumber] = self.tree.curBlock
 				return

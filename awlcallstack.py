@@ -25,7 +25,8 @@ class CallStackElem(object):
 	def resetCache(cls):
 		cls.localdataCache.reset()
 
-	def __init__(self, cpu, block, db=None, parameters=()):
+	def __init__(self, cpu, block, instanceDB=None,
+		     interfaceDB=None, parameters=()):
 		self.cpu = cpu
 		self.status = S7StatusWord()
 		self.parenStack = []
@@ -33,7 +34,8 @@ class CallStackElem(object):
 		self.localdata = self.localdataCache.get(cpu)
 		assert(len(self.localdata) == cpu.specs.getNrLocalbytes())
 		self.block = block
-		self.db = db
+		self.instanceDB = instanceDB
+		self.interfaceDB = interfaceDB if interfaceDB else instanceDB
 
 		self.inboundParams = [ param for param in parameters
 				       if param.isInbound(block.interface) ]
@@ -52,7 +54,7 @@ class CallStackElem(object):
 	# Transfer data into DBI
 	def handleInParameters(self):
 		for param in self.inboundParams:
-			self.db.structInstance.setFieldData(
+			self.interfaceDB.structInstance.setFieldData(
 				param.lvalueName,
 				self.cpu.fetch(param.rvalueOp)
 			)
@@ -62,7 +64,7 @@ class CallStackElem(object):
 		for param in self.outboundParams:
 			self.cpu.store(
 				param.rvalueOp,
-				self.db.structInstance.getFieldData(param.lvalueName)
+				self.interfaceDB.structInstance.getFieldData(param.lvalueName)
 			)
 
 	def destroy(self):
