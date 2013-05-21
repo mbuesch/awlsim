@@ -1,0 +1,41 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
+	// no overflow
+	// start	= 1000
+	// end		= 3000
+	// diff		= 2000
+	L		3000
+	L		1000
+	-D
+	UD		DW#16#7FFFFFFF
+	T		MD 0
+
+
+	// overflow
+	// start	= 2147483646
+	// end		= 5
+	// diff		= 7
+	L		5
+	L		L#2147483646
+	-D
+	UD		DW#16#7FFFFFFF
+	T		MD 4
+
+
+	// overflow
+	// start	= 2147483646
+	// end		= 2000000000
+	// diff		= 2000000002
+	L		L#2000000000
+	L		L#2147483646
+	-D
+	UD		DW#16#7FFFFFFF
+	T		MD 8
+
+
+	__ASSERT==	MD 0,	2000
+	__ASSERT==	MD 4,	7
+	__ASSERT==	MD 8,	L#2000000002
+
+END_ORGANIZATION_BLOCK
