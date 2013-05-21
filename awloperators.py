@@ -48,10 +48,13 @@ class AwlOperator(object):
 	BLKREF_DB	= 404	# DB reference
 	BLKREF_DI	= 405	# DI reference
 
+	NAMED_LOCAL	= 500	# Named local reference (#abc)
+
 	# Virtual operators used for debugging of the simulator
 	VIRT_ACCU	= 1000	# Accu
 	VIRT_AR		= 1001	# AR
 
+	# TODO: Use AwlOffset
 	def __init__(self, type, width, offset, bitOffset=0):
 		self.type = type
 		self.width = width
@@ -194,6 +197,8 @@ class AwlOperator(object):
 			return "DB %d" % self.offset
 		elif self.type == self.BLKREF_DI:
 			return "DI %d" % self.offset
+		elif self.type == self.NAMED_LOCAL:
+			return "#%s" % self.offset
 		elif self.type == self.VIRT_ACCU:
 			return "__ACCU %d" % self.offset
 		elif self.type == self.VIRT_AR:
@@ -248,3 +253,13 @@ class AwlOperator(object):
 				assert(0)
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset out of range")
+
+class AwlParamAssign(object):
+	"Parameter assignment in CALL"
+
+	def __init__(self, lvalueName, rvalueOp):
+		self.lvalueName = lvalueName
+		self.rvalueOp = rvalueOp
+
+	def __repr__(self):
+		return "%s := %s" % (self.lvalueName, str(self.rvalueOp))

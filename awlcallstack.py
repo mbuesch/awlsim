@@ -50,5 +50,3 @@ class CallStackElem(object):
 
 	def __repr__(self):
 		return str(self.block)
-
-

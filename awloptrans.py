@@ -156,7 +156,8 @@ class AwlOpTranslator(object):
 	def __init__(self, insn):
 		self.insn = insn
 
-	def __translateAddressOperator(self, opDesc, rawOps):
+	@classmethod
+	def __translateAddressOperator(cls, opDesc, rawOps):
 		if len(rawOps) < 1:
 			raise AwlSimError("Missing address operator")
 		if opDesc.width == 1:
@@ -199,16 +200,24 @@ class AwlOpTranslator(object):
 		else:
 			assert(0)
 
-	def __doTrans(self, rawInsn, rawOps):
-		if rawInsn.block.hasLabel(rawOps[0]):
+	@classmethod
+	def __doTrans(cls, rawInsn, rawOps):
+		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
 			return OpDescriptor(AwlOperator.LBL_REF, 0,
 					    AwlOffset(rawOps[0], 0), 1)
 		try:
 			# Constant operator (from table)
-			return self.__constOperTab[rawOps[0]].dup()
+			return cls.__constOperTab[rawOps[0]].dup()
 		except KeyError as e:
 			pass
+		# Local variable
+		if rawOps[0].startswith('#'):
+			return OpDescriptor(AwlOperator.NAMED_LOCAL, 0,
+					    AwlOffset(rawOps[0][1:], 0), 1)
+		# Symbolic name
+		if rawOps[0].startswith('"') and rawOps[0].endswith('"'):
+			pass#TODO
 		# Immediate integer
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
 		if immediate is not None:
@@ -282,26 +291,76 @@ class AwlOpTranslator(object):
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
+	@classmethod
+	def translateOp(cls, rawInsn, rawOps):
+		opDesc = cls.__doTrans(rawInsn, rawOps)
+
+		if opDesc.fieldCount == 2 and\
+		   (opDesc.offset.byteOffset == -1 or opDesc.offset.bitOffset == -1):
+			cls.__translateAddressOperator(opDesc, rawOps[1:])
+
+		operator = AwlOperator(opDesc.operType, opDesc.width,
+				       opDesc.offset.byteOffset, opDesc.offset.bitOffset)
+		operator.setExtended(rawOps[0].startswith("__"))
+
+		return opDesc, operator
+
+	def __translateParameterList(self, insn, rawInsn, rawOps):
+		while rawOps:
+			if len(rawOps) < 3:
+				raise AwlSimError("Invalid parameter assignment")
+			if rawOps[1] != ':=':
+				raise AwlSimError("Missing assignment operator (:=) "
+					"in parameter assignment")
+
+			# Extract l-value and r-value
+			commaIdx = listIndex(rawOps, ',', 2)
+			lvalueName = rawOps[0]
+			if commaIdx < 0:
+				rvalueTokens = rawOps[2:]
+			else:
+				rvalueTokens = rawOps[2:commaIdx]
+			if not rvalueTokens:
+				raise AwlSimError("No R-Value in parameter assignment")
+
+			# Translate r-value
+			opDesc, rvalueOp = self.translateOp(None, rvalueTokens)
+
+			# Create assignment
+			param = AwlParamAssign(lvalueName, rvalueOp)
+			insn.params.append(param)
+
+			if commaIdx < 0:
+				break
+			rawOps = rawOps[commaIdx + 1 : ]
+
 	def translateFrom(self, rawInsn):
 		rawOps = rawInsn.getOperators()
 		while rawOps:
-			opDesc = self.__doTrans(rawInsn, rawOps)
-
-			if opDesc.fieldCount == 2 and\
-			   (opDesc.offset.byteOffset == -1 or opDesc.offset.bitOffset == -1):
-				self.__translateAddressOperator(opDesc, rawOps[1:])
-
-			if len(rawOps) > opDesc.fieldCount:
-				if rawOps[opDesc.fieldCount] != ',':
-					raise AwlSimError("Missing comma in operator list")
-				opDesc.fieldCount += 1 # Consume comma
-				if len(rawOps) <= opDesc.fieldCount:
-					raise AwlSimError("Trailing comma")
-
-			operator = AwlOperator(opDesc.operType, opDesc.width,
-					       opDesc.offset.byteOffset, opDesc.offset.bitOffset)
+			opDesc, operator = self.translateOp(rawInsn, rawOps)
 			operator.setInsn(self.insn)
-			operator.setExtended(rawOps[0].startswith("__"))
 
 			self.insn.ops.append(operator)
+
+			if len(rawOps) > opDesc.fieldCount:
+				if rawInsn.name.upper() == "CALL" and\
+				   rawOps[opDesc.fieldCount] == '(':
+					try:
+						endIdx = rawOps.index(')', opDesc.fieldCount)
+					except ValueError:
+						raise AwlSimError("Missing closing parenthesis")
+					# Translate the call parameters
+					self.__translateParameterList(self.insn, rawInsn,
+								      rawOps[opDesc.fieldCount + 1: endIdx])
+					# Consume all tokens between (and including) parenthesis.
+					opDesc.fieldCount = endIdx + 1
+					if len(rawOps) > opDesc.fieldCount:
+						raise AwlSimError("Trailing character after closing parenthesis")
+				elif rawOps[opDesc.fieldCount] == ',':
+					opDesc.fieldCount += 1 # Consume comma
+					if len(rawOps) <= opDesc.fieldCount:
+						raise AwlSimError("Trailing comma")
+				else:
+					raise AwlSimError("Missing comma in operator list")
+
 			rawOps = rawOps[opDesc.fieldCount : ]

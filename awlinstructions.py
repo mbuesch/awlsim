@@ -364,7 +364,8 @@ class AwlInsn(object):
 		self.rawInsn = rawInsn
 		self.cpu = None
 		self.ip = None
-		self.ops = []
+		self.ops = []		# Operators
+		self.params = []	# Parameter assignments (for CALL)
 		opTrans = AwlOpTranslator(self)
 		opTrans.translateFrom(rawInsn)
 
@@ -397,9 +398,15 @@ class AwlInsn(object):
 		pass
 
 	def __repr__(self):
-		return AwlInsn.type2name[self.type] +\
-			(' ' if self.ops else '') +\
-			', '.join(str(op) for op in self.ops)
+		ret = [ AwlInsn.type2name[self.type] ]
+		if self.ops:
+			ret.append(" ")
+			ret.append(", ".join(str(op) for op in self.ops))
+		if self.params:
+			ret.append(" ( ")
+			ret.append(", ".join(str(param) for param in self.params))
+			ret.append(" )")
+		return "".join(ret)
 
 class AwlInsn_NotImplemented(AwlInsn):
 	def __init__(self, rawInsn):
