@@ -1,5 +1,6 @@
 ORGANIZATION_BLOCK OB 100
 BEGIN
+	// Open DB
 	AUF		DB 1
 
 	// Check initial DB values
@@ -15,12 +16,19 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	L		DBW 10
 	__ASSERT==	__ACCU 1,	42
+
+	SET
+	=		M 0.0
 END_ORGANIZATION_BLOCK
 
 
 
 ORGANIZATION_BLOCK OB 1
 BEGIN
+	// OB 100 execution sanity check
+	__ASSERT==	M 0.0,		1
+
+	// Open DB
 	AUF		DB 1
 
 	// Modify the DB
