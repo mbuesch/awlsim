@@ -27,7 +27,9 @@ class BlockInterface(object):
 			self.initialValue = initialValue
 
 	def __init__(self):
-		self.struct = None
+		self.struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)
+		self.tempStruct = None # Local-stack structure (TEMP)
+
 		self.fieldNameMap = {}
 		self.fields_IN = []
 		self.fields_OUT = []
@@ -35,10 +37,20 @@ class BlockInterface(object):
 		self.fields_STAT = []
 		self.fields_TEMP = []
 
+		self.interfaceFieldCount = 0
+		self.staticFieldCount = 0
+		self.tempFieldCount = 0
+
 	def __addField(self, field):
 		if field.name in self.fieldNameMap:
 			raise AwlSimError("Data structure name '%s' is ambiguous." %\
 				field.name)
+		if field.fieldType == BlockInterface.Field.FTYPE_TEMP:
+			self.tempFieldCount += 1
+		elif field.fieldType == BlockInterface.Field.FTYPE_STAT:
+			self.staticFieldCount += 1
+		else:
+			self.interfaceFieldCount += 1
 		self.fieldNameMap[field.name] = field
 
 	def addField_IN(self, field):
@@ -66,24 +78,30 @@ class BlockInterface(object):
 		self.__addField(field)
 		self.fields_TEMP.append(field)
 
-	def __buildField(self, field, isFirst):
+	def __buildField(self, struct, field, isFirst):
 		if isFirst:
-			self.struct.addFieldAligned(field.name,
-						    field.dataType.width, 2)
+			struct.addFieldAligned(field.name,
+					       field.dataType.width, 2)
 		else:
-			self.struct.addFieldNaturallyAligned(field.name,
-							     field.dataType.width)
+			struct.addFieldNaturallyAligned(field.name,
+							field.dataType.width)
 
 	def buildDataStructure(self):
+		# Build interface-DB structure
 		self.struct = AwlStruct()
 		for i, field in enumerate(self.fields_IN):
-			self.__buildField(field, i==0)
+			self.__buildField(self.struct, field, i==0)
 		for i, field in enumerate(self.fields_OUT):
-			self.__buildField(field, i==0)
+			self.__buildField(self.struct, field, i==0)
 		for i, field in enumerate(self.fields_INOUT):
-			self.__buildField(field, i==0)
+			self.__buildField(self.struct, field, i==0)
 		for i, field in enumerate(self.fields_STAT):
-			self.__buildField(field, i==0)
+			self.__buildField(self.struct, field, i==0)
+
+		# Build local-stack structure
+		self.tempStruct = AwlStruct()
+		for i, field in enumerate(self.fields_TEMP):
+			self.__buildField(self.tempStruct, field, i==0)
 
 	def getFieldByName(self, name):
 		try:
@@ -91,10 +109,6 @@ class BlockInterface(object):
 		except KeyError:
 			raise AwlSimError("Data structure field '%s' does not exist." %\
 				name)
-
-	@property
-	def fieldCount(self):
-		return len(self.fieldNameMap)
 
 class Block(object):
 	def __init__(self, insns, index, interface):

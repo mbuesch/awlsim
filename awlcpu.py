@@ -267,6 +267,41 @@ class S7CPU(object):
 		db.allocate()
 		return db
 
+	def __resolveNamedLocalSym(self, block, oper):
+		# Translate local symbols (#abc)
+		assert(oper.type == AwlOperator.NAMED_LOCAL)
+		interfaceField = block.interface.getFieldByName(oper.offset)
+		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
+		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
+		   interfaceField.fieldType == interfaceField.FTYPE_INOUT or\
+		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
+			# Translate to interface-DB access
+			structField = block.interface.struct.getField(oper.offset)
+			oper.setType(AwlOperator.INTERF_DB)
+		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
+			# Translate to local-stack access
+			structField = block.interface.tempStruct.getField(oper.offset)
+			oper.setType(AwlOperator.MEM_L)
+		else:
+			assert(0)
+		oper.setWidth(structField.bitSize)
+		oper.setOffset(structField.offset.byteOffset,
+			       structField.offset.bitOffset)
+
+	def __resolveSymbols_block(self, block):
+		for insn in block.insns:
+			for oper in insn.ops:
+				if oper.type == AwlOperator.NAMED_LOCAL:
+					self.__resolveNamedLocalSym(block, oper)
+
+	def __resolveSymbols(self):
+		for ob in self.obs.values():
+			self.__resolveSymbols_block(ob)
+		for fb in self.fbs.values():
+			self.__resolveSymbols_block(fb)
+		for fc in self.fcs.values():
+			self.__resolveSymbols_block(fc)
+
 	def load(self, parseTree):
 		# Translate the AWL tree
 		self.reset()
@@ -284,6 +319,7 @@ class S7CPU(object):
 		for dbNumber in parseTree.dbs.keys():
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
+		self.__resolveSymbols()
 		try:
 			self.obs[1]
 		except KeyError:
@@ -503,10 +539,10 @@ class S7CPU(object):
 		except KeyError as e:
 			raise AwlSimError("Called FC not found")
 		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
-		if fc.interface.fieldCount != len(parameters):
+		if fc.interface.interfaceFieldCount != len(parameters):
 			raise AwlSimError("Call interface mismatch. "
 				"Passed %d parameters, but expected %d." %\
-				(len(parameters), fc.interface.fieldCount))
+				(len(parameters), fc.interface.interfaceFieldCount))
 		return CallStackElem(self, fc, self.callStack[-1].instanceDB,
 				     bounceDB, parameters)
 
@@ -722,6 +758,13 @@ class S7CPU(object):
 				"but no DI is opened")
 		return cse.instanceDB.fetch(operator)
 
+	def fetchINTERF_DB(self, operator):
+		cse = self.callStack[-1]
+		if not cse.interfaceDB:
+			raise AwlSimError("Fetch from block interface, but "
+				"no interface is declared.")
+		return cse.interfaceDB.fetch(operator)
+
 	def fetchPE(self, operator):
 		self.cbDirectPeripheral(self.cbDirectPeripheralData,
 					operator)
@@ -749,15 +792,6 @@ class S7CPU(object):
 	def fetchVirtAR(self, operator):
 		return self.getAR(operator.offset).get()
 
-	def fetchNAMED_LOCAL(self, operator):
-		cse = self.callStack[-1]
-		interfaceDB = cse.interfaceDB
-		if not interfaceDB:
-			raise AwlSimError("Fetch from named local variable, but "
-				"no interface is declared.")
-		#TODO name should be statically resolved
-		return interfaceDB.structInstance.getFieldData(operator.offset)
-
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
 		AwlOperator.IMM_REAL		: fetchIMM_REAL,
@@ -779,7 +813,7 @@ class S7CPU(object):
 		AwlOperator.MEM_STW_POSZ	: fetchSTW_POSZ,
 		AwlOperator.MEM_STW_NEGZ	: fetchSTW_NEGZ,
 		AwlOperator.MEM_STW_UO		: fetchSTW_UO,
-		AwlOperator.NAMED_LOCAL		: fetchNAMED_LOCAL,
+		AwlOperator.INTERF_DB		: fetchINTERF_DB,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
 	}
@@ -819,6 +853,13 @@ class S7CPU(object):
 				"but no DI is opened")
 		cse.instanceDB.store(operator, value)
 
+	def storeINTERF_DB(self, operator, value):
+		cse = self.callStack[-1]
+		if not cse.interfaceDB:
+			raise AwlSimError("Store to block interface, but "
+				"no interface is declared.")
+		cse.interfaceDB.store(operator, value)
+
 	def storePA(self, operator, value):
 		AwlOperator.storeToByteArray(self.outputs, operator, value)
 		self.cbDirectPeripheral(self.cbDirectPeripheralData,
@@ -832,15 +873,6 @@ class S7CPU(object):
 		else:
 			assert(0)
 
-	def storeNAMED_LOCAL(self, operator, value):
-		cse = self.callStack[-1]
-		interfaceDB = cse.interfaceDB
-		if not interfaceDB:
-			raise AwlSimError("Store to named local variable, but "
-				"no interface is declared.")
-		#TODO name should be statically resolved
-		interfaceDB.structInstance.setFieldData(operator.offset, value)
-
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
@@ -850,7 +882,7 @@ class S7CPU(object):
 		AwlOperator.MEM_DI		: storeDI,
 		AwlOperator.MEM_PA		: storePA,
 		AwlOperator.MEM_STW		: storeSTW,
-		AwlOperator.NAMED_LOCAL		: storeNAMED_LOCAL,
+		AwlOperator.INTERF_DB		: storeINTERF_DB,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):

@@ -49,6 +49,7 @@ class AwlOperator(object):
 	BLKREF_DI	= 405	# DI reference
 
 	NAMED_LOCAL	= 500	# Named local reference (#abc)
+	INTERF_DB	= 501	# Interface-DB access (translated NAMED_LOCAL)
 
 	# Virtual operators used for debugging of the simulator
 	VIRT_ACCU	= 1000	# Accu
@@ -69,6 +70,16 @@ class AwlOperator(object):
 
 	def setExtended(self, isExtended):
 		self.isExtended = isExtended
+
+	def setType(self, newType):
+		self.type = newType
+
+	def setOffset(self, newByteOffset, newBitOffset):
+		self.offset = newByteOffset
+		self.bitOffset = newBitOffset
+
+	def setWidth(self, newWidth):
+		self.width = newWidth
 
 	@property
 	def immediate(self):
@@ -199,6 +210,8 @@ class AwlOperator(object):
 			return "DI %d" % self.offset
 		elif self.type == self.NAMED_LOCAL:
 			return "#%s" % self.offset
+		elif self.type == self.INTERF_DB:
+			return "__INTERFACE_DB" #FIXME
 		elif self.type == self.VIRT_ACCU:
 			return "__ACCU %d" % self.offset
 		elif self.type == self.VIRT_AR:
