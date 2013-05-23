@@ -10,5 +10,5 @@ setup(	name		= "awlsim",
 	author_email	= "m@bues.ch",
 	url		= "http://bues.ch/cms/hacking/awlsim.html",
 	packages	= [ "awlsim", ],
-	scripts		= [ "awlsimcli", "awlsimgui", ],
+	scripts		= [ "awlsimcli", "awlsimgui", "linuxcnc/awlsim-linuxcnc-hal" ],
 )

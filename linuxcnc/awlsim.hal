@@ -1,0 +1,13 @@
+# ---------------------------------------
+# --- Awlsim
+# --- LinuxCNC HAL configuration file
+# ------
+
+loadusr -Wn awlsim awlsim-linuxcnc-hal
+
+
+# --- Device config ---
+#setp	awlsim.config.NAME				1
+
+# --- Machine state ---
+#net	SIGNAME		halui.XXX		=> awlsim.XXX
