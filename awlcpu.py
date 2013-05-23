@@ -375,6 +375,7 @@ class S7CPU(object):
 		self.ar2 = Adressregister()
 		self.globDB = None
 		self.callStack = [ ]
+		self.callStackTop = None
 		self.setMcrActive(False)
 		self.mcrStack = [ ]
 
@@ -421,15 +422,10 @@ class S7CPU(object):
 	def is4accu(self):
 		return self.accu4 is not None
 
-	# Get the active status word
-	@property
-	def status(self):
-		return self.callStack[-1].status
-
 	# Get the active parenthesis stack
 	@property
 	def parenStack(self):
-		return self.callStack[-1].parenStack
+		return self.callStackTop.parenStack
 
 	def __runTimeCheck(self):
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:
@@ -442,14 +438,15 @@ class S7CPU(object):
 		self.callStack = [ CallStackElem(self, block) ]
 		# Run the user program cycle
 		while self.callStack:
-			cse = self.callStack[-1]
+			cse = self.callStackTop = self.callStack[-1]
+			self.status = cse.status # Keep a reference to the status word locally
 			while cse.ip < len(cse.insns):
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
 				if self.cbPostInsn:
 					self.cbPostInsn(self.cbPostInsnData)
 				cse.ip += self.relativeJump
-				cse, self.insnCount = self.callStack[-1], self.insnCount + 1
+				cse, self.insnCount = self.callStackTop, self.insnCount + 1
 				if self.insnCount % self.insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
@@ -503,19 +500,19 @@ class S7CPU(object):
 
 	def getCurrentIP(self):
 		try:
-			return self.callStack[-1].ip
+			return self.callStackTop.ip
 		except IndexError as e:
 			return None
 
 	def getCurrentInsn(self):
 		try:
-			cse = self.callStack[-1]
+			cse = self.callStackTop
 			return cse.insns[cse.ip]
 		except IndexError as e:
 			return None
 
 	def labelIdxToRelJump(self, labelIndex):
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		label = cse.labels[labelIndex]
 		referencedInsn = label.getInsn()
 		referencedIp = referencedInsn.getIP()
@@ -543,7 +540,7 @@ class S7CPU(object):
 				"====  The block interface is:\n%s\n====" %\
 				(len(parameters), fc.interface.interfaceFieldCount,
 				 str(fc.interface)))
-		return CallStackElem(self, fc, self.callStack[-1].instanceDB,
+		return CallStackElem(self, fc, self.callStackTop.instanceDB,
 				     bounceDB, parameters)
 
 	def __call_FB(self, blockOper, dbOper, parameters):
@@ -602,12 +599,14 @@ class S7CPU(object):
 		newCse = callHelper(self, blockOper, dbOper, parameters)
 		if newCse:
 			self.callStack.append(newCse)
+			self.callStackTop = newCse
+			self.status = newCse.status # Keep a reference to the status word locally
 
 	def run_BE(self):
 		s = self.status
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		self.relativeJump = len(cse.insns) - cse.ip
 
 	def run_AUF(self, dbOper):
@@ -619,12 +618,12 @@ class S7CPU(object):
 		if dbOper.type == AwlOperator.BLKREF_DB:
 			self.globDB = db
 		elif dbOper.type == AwlOperator.BLKREF_DI:
-			self.callStack[-1].db = db
+			self.callStackTop.db = db
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
 
 	def run_TDB(self):
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		# Swap global and instance DB
 		cse.instanceDB, self.globDB = self.globDB, cse.instanceDB
 
@@ -742,7 +741,7 @@ class S7CPU(object):
 		return AwlOperator.fetchFromByteArray(self.flags, operator)
 
 	def fetchL(self, operator):
-		return AwlOperator.fetchFromByteArray(self.callStack[-1].localdata,
+		return AwlOperator.fetchFromByteArray(self.callStackTop.localdata,
 						      operator)
 
 	def fetchDB(self, operator):
@@ -752,14 +751,14 @@ class S7CPU(object):
 		return self.globDB.fetch(operator)
 
 	def fetchDI(self, operator):
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		if not cse.instanceDB:
 			raise AwlSimError("Fetch from instance DI, "
 				"but no DI is opened")
 		return cse.instanceDB.fetch(operator)
 
 	def fetchINTERF_DB(self, operator):
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		if not cse.interfaceDB:
 			raise AwlSimError("Fetch from block interface, but "
 				"no interface is declared.")
@@ -838,7 +837,7 @@ class S7CPU(object):
 		AwlOperator.storeToByteArray(self.flags, operator, value)
 
 	def storeL(self, operator, value):
-		AwlOperator.storeToByteArray(self.callStack[-1].localdata,
+		AwlOperator.storeToByteArray(self.callStackTop.localdata,
 					     operator, value)
 
 	def storeDB(self, operator, value):
@@ -848,14 +847,14 @@ class S7CPU(object):
 		self.globDB.store(operator, value)
 
 	def storeDI(self, operator, value):
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		if not cse.instanceDB:
 			raise AwlSimError("Store to instance DI, "
 				"but no DI is opened")
 		cse.instanceDB.store(operator, value)
 
 	def storeINTERF_DB(self, operator, value):
-		cse = self.callStack[-1]
+		cse = self.callStackTop
 		if not cse.interfaceDB:
 			raise AwlSimError("Store to block interface, but "
 				"no interface is declared.")
