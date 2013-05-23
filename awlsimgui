@@ -809,7 +809,7 @@ class EditWidget(QPlainTextEdit):
 			return
 		self.__lineCpuStats[insn.getLineNr() - 1] =\
 			CpuStatsEntry(self.__cpuStatsStamp,
-				      cpu.status,
+				      cpu.getStatusWord(),
 				      cpu.getAccu(1),
 				      cpu.getAccu(2))
 		self.__cpuStatsCount += 1
