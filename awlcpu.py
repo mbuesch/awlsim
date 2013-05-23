@@ -394,37 +394,28 @@ class S7CPU(object):
 		self.updateTimestamp()
 
 	def setCycleExitCallback(self, cb, data=None):
-		if not cb:
-			cb = lambda data: None
 		self.cbCycleExit = cb
 		self.cbCycleExitData = data
 
 	def setBlockExitCallback(self, cb, data=None):
-		if not cb:
-			cb = lambda data: None
 		self.cbBlockExit = cb
 		self.cbBlockExitData = data
 
 	def setPostInsnCallback(self, cb, data=None):
-		if not cb:
-			cb = lambda data: None
 		self.cbPostInsn = cb
 		self.cbPostInsnData = data
 
 	def setDirectPeripheralCallback(self, cb, data=None):
-		if not cb:
-			cb = lambda data, operator: None
 		self.cbDirectPeripheral = cb
 		self.cbDirectPeripheralData = data
 
 	def setScreenUpdateCallback(self, cb, data=None):
-		if not cb:
-			cb = lambda data: None
 		self.cbScreenUpdate = cb
 		self.cbScreenUpdateData = data
 
 	def requestScreenUpdate(self):
-		self.cbScreenUpdate(self.cbScreenUpdateData)
+		if self.cbScreenUpdate:
+			self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	@property
 	def is4accu(self):
@@ -456,7 +447,8 @@ class S7CPU(object):
 				insn = cse.insns[cse.ip]
 				self.relativeJump = 1
 				insn.run()
-				self.cbPostInsn(self.cbPostInsnData)
+				if self.cbPostInsn:
+					self.cbPostInsn(self.cbPostInsnData)
 				cse.ip += self.relativeJump
 				cse = self.callStack[-1]
 				self.insnCount += 1
@@ -465,9 +457,11 @@ class S7CPU(object):
 					self.__runTimeCheck()
 					self.insnCountMod = self.getRandomInt(0, 127) + 1
 			cse.handleOutParameters()
-			self.cbBlockExit(self.cbBlockExitData)
+			if self.cbBlockExit:
+				self.cbBlockExit(self.cbBlockExitData)
 			self.callStack.pop().destroy()
-		self.cbCycleExit(self.cbCycleExitData)
+		if self.cbCycleExit:
+			self.cbCycleExit(self.cbCycleExitData)
 		self.cycleCount += 1
 		self.__endCycleTimeMeasurement()
 
@@ -774,8 +768,9 @@ class S7CPU(object):
 		return cse.interfaceDB.fetch(operator)
 
 	def fetchPE(self, operator):
-		self.cbDirectPeripheral(self.cbDirectPeripheralData,
-					operator)
+		if self.cbDirectPeripheral:
+			self.cbDirectPeripheral(self.cbDirectPeripheralData,
+						operator)
 		return AwlOperator.fetchFromByteArray(self.inputs, operator)
 
 	def fetchT(self, operator):
@@ -870,8 +865,9 @@ class S7CPU(object):
 
 	def storePA(self, operator, value):
 		AwlOperator.storeToByteArray(self.outputs, operator, value)
-		self.cbDirectPeripheral(self.cbDirectPeripheralData,
-					operator)
+		if self.cbDirectPeripheral:
+			self.cbDirectPeripheral(self.cbDirectPeripheralData,
+						operator)
 
 	def storeSTW(self, operator, value):
 		if operator.width == 1:
