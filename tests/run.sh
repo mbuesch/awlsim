@@ -81,3 +81,5 @@ while [ $# -ge 1 ]; do
 done
 
 do_tests "$@"
+
+exit 0
