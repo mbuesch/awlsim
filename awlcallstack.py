@@ -32,7 +32,6 @@ class CallStackElem(object):
 		self.parenStack = []
 		self.ip = 0
 		self.localdata = self.localdataCache.get(cpu)
-		assert(len(self.localdata) == cpu.specs.getNrLocalbytes())
 		self.block = block
 		self.instanceDB = instanceDB
 		self.interfaceDB = interfaceDB if interfaceDB else instanceDB
@@ -43,13 +42,9 @@ class CallStackElem(object):
 					if param.isOutbound(block.interface) ]
 		self.handleInParameters()
 
-	@property
-	def insns(self):
-		return self.block.insns
-
-	@property
-	def labels(self):
-		return self.block.labels
+		# Keep a reference to the instructions and labels list locally.
+		self.insns = self.block.insns
+		self.labels = self.block.labels
 
 	# Transfer data into DBI
 	def handleInParameters(self):

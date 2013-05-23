@@ -444,14 +444,12 @@ class S7CPU(object):
 		while self.callStack:
 			cse = self.callStack[-1]
 			while cse.ip < len(cse.insns):
-				insn = cse.insns[cse.ip]
-				self.relativeJump = 1
+				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
 				if self.cbPostInsn:
 					self.cbPostInsn(self.cbPostInsnData)
 				cse.ip += self.relativeJump
-				cse = self.callStack[-1]
-				self.insnCount += 1
+				cse, self.insnCount = self.callStack[-1], self.insnCount + 1
 				if self.insnCount % self.insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
