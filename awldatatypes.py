@@ -20,20 +20,22 @@ class AwlOffset(object):
 
 class AwlDataType(object):
 	# Data type IDs
-	TYPE_VOID	= 0
-	TYPE_BOOL	= 1
-	TYPE_BYTE	= 2
-	TYPE_WORD	= 3
-	TYPE_DWORD	= 4
-	TYPE_INT	= 5
-	TYPE_DINT	= 6
-	TYPE_REAL	= 7
-	TYPE_S5T	= 8
-	TYPE_TIME	= 9
-	TYPE_DATE	= 10
-	TYPE_TOD	= 11
-	TYPE_CHAR	= 12
-	TYPE_ARRAY	= 13
+	enum.start
+	TYPE_VOID	= enum.item
+	TYPE_BOOL	= enum.item
+	TYPE_BYTE	= enum.item
+	TYPE_WORD	= enum.item
+	TYPE_DWORD	= enum.item
+	TYPE_INT	= enum.item
+	TYPE_DINT	= enum.item
+	TYPE_REAL	= enum.item
+	TYPE_S5T	= enum.item
+	TYPE_TIME	= enum.item
+	TYPE_DATE	= enum.item
+	TYPE_TOD	= enum.item
+	TYPE_CHAR	= enum.item
+	TYPE_ARRAY	= enum.item
+	enum.end
 
 	__name2id = {
 		"VOID"		: TYPE_VOID,

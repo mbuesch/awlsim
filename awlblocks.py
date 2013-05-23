@@ -13,12 +13,14 @@ from util import *
 
 class BlockInterface(object):
 	class Field(object):
-		FTYPE_UNKNOWN	= -1
-		FTYPE_IN	= 0
-		FTYPE_OUT	= 1
-		FTYPE_INOUT	= 2
-		FTYPE_STAT	= 3
-		FTYPE_TEMP	= 4
+		enum.start = -1
+		FTYPE_UNKNOWN	= enum.item
+		FTYPE_IN	= enum.item
+		FTYPE_OUT	= enum.item
+		FTYPE_INOUT	= enum.item
+		FTYPE_STAT	= enum.item
+		FTYPE_TEMP	= enum.item
+		enum.end
 
 		def __init__(self, name, dataType, initialValue=None):
 			self.name = name

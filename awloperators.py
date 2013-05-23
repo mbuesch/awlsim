@@ -11,49 +11,52 @@ from util import *
 
 
 class AwlOperator(object):
-	# Operator types
-	IMM		= 0	# Immediate value (constant)
-	IMM_REAL	= 1	# Real
-	IMM_S5T		= 2	# S5T immediate
-	IMM_TIME	= 3	# T# immediate
-	IMM_DATE	= 4	# D# immediate
-	IMM_TOD		= 5	# TOD# immediate
+	enum.start	# Operator types
 
-	MEM_E		= 100	# Input
-	MEM_A		= 101	# Output
-	MEM_M		= 102	# Flags
-	MEM_L		= 103	# Localstack
-	MEM_DB		= 104	# Global datablock
-	MEM_DI		= 105	# Instance datablock
-	MEM_T		= 106	# Timer
-	MEM_Z		= 107	# Counter
-	MEM_PA		= 108	# Peripheral output
-	MEM_PE		= 109	# Peripheral input
+	IMM		= enum.item	# Immediate value (constant)
+	IMM_REAL	= enum.item	# Real
+	IMM_S5T		= enum.item	# S5T immediate
+	IMM_TIME	= enum.item	# T# immediate
+	IMM_DATE	= enum.item	# D# immediate
+	IMM_TOD		= enum.item	# TOD# immediate
 
-	MEM_STW		= 200	# Status word bit read
-	MEM_STW_Z	= 201	# Status word "==0" read
-	MEM_STW_NZ	= 202	# Status word "<>0" read
-	MEM_STW_POS	= 203	# Status word ">0" read
-	MEM_STW_NEG	= 204	# Status word "<0" read
-	MEM_STW_POSZ	= 205	# Status word ">=0" read
-	MEM_STW_NEGZ	= 206	# Status word "<=0" read
-	MEM_STW_UO	= 207	# Status word "UO" read
+	MEM_E		= enum.item	# Input
+	MEM_A		= enum.item	# Output
+	MEM_M		= enum.item	# Flags
+	MEM_L		= enum.item	# Localstack
+	MEM_DB		= enum.item	# Global datablock
+	MEM_DI		= enum.item	# Instance datablock
+	MEM_T		= enum.item	# Timer
+	MEM_Z		= enum.item	# Counter
+	MEM_PA		= enum.item	# Peripheral output
+	MEM_PE		= enum.item	# Peripheral input
 
-	LBL_REF		= 300	# Label reference
+	MEM_STW		= enum.item	# Status word bit read
+	MEM_STW_Z	= enum.item	# Status word "==0" read
+	MEM_STW_NZ	= enum.item	# Status word "<>0" read
+	MEM_STW_POS	= enum.item	# Status word ">0" read
+	MEM_STW_NEG	= enum.item	# Status word "<0" read
+	MEM_STW_POSZ	= enum.item	# Status word ">=0" read
+	MEM_STW_NEGZ	= enum.item	# Status word "<=0" read
+	MEM_STW_UO	= enum.item	# Status word "UO" read
 
-	BLKREF_FC	= 400	# FC reference
-	BLKREF_SFC	= 401	# SFC reference
-	BLKREF_FB	= 402	# FB reference
-	BLKREF_SFB	= 403	# SFB reference
-	BLKREF_DB	= 404	# DB reference
-	BLKREF_DI	= 405	# DI reference
+	LBL_REF		= enum.item	# Label reference
 
-	NAMED_LOCAL	= 500	# Named local reference (#abc)
-	INTERF_DB	= 501	# Interface-DB access (translated NAMED_LOCAL)
+	BLKREF_FC	= enum.item	# FC reference
+	BLKREF_SFC	= enum.item	# SFC reference
+	BLKREF_FB	= enum.item	# FB reference
+	BLKREF_SFB	= enum.item	# SFB reference
+	BLKREF_DB	= enum.item	# DB reference
+	BLKREF_DI	= enum.item	# DI reference
+
+	NAMED_LOCAL	= enum.item	# Named local reference (#abc)
+	INTERF_DB	= enum.item	# Interface-DB access (translated NAMED_LOCAL)
 
 	# Virtual operators used for debugging of the simulator
-	VIRT_ACCU	= 1000	# Accu
-	VIRT_AR		= 1001	# AR
+	VIRT_ACCU	= enum.item	# Accu
+	VIRT_AR		= enum.item	# AR
+
+	enum.end	# Operator types
 
 	# TODO: Use AwlOffset
 	def __init__(self, type, width, offset, bitOffset=0):

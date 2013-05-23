@@ -138,26 +138,28 @@ class AwlParseTree(object):
 		self.curBlock = None
 
 class AwlParser(object):
-	STATE_GLOBAL			= 0
-	STATE_IN_DB_HDR			= 100
-	STATE_IN_DB_HDR_STRUCT		= 101
-	STATE_IN_DB			= 102
-	STATE_IN_FB_HDR			= 200
-	STATE_IN_FB_HDR_VAR		= 201
-	STATE_IN_FB_HDR_VARIN		= 202
-	STATE_IN_FB_HDR_VAROUT		= 203
-	STATE_IN_FB_HDR_VARINOUT	= 204
-	STATE_IN_FB_HDR_VARTEMP		= 205
-	STATE_IN_FB			= 206
-	STATE_IN_FC_HDR			= 300
-	STATE_IN_FC_HDR_VARIN		= 301
-	STATE_IN_FC_HDR_VAROUT		= 302
-	STATE_IN_FC_HDR_VARINOUT	= 303
-	STATE_IN_FC_HDR_VARTEMP		= 304
-	STATE_IN_FC			= 305
-	STATE_IN_OB_HDR			= 400
-	STATE_IN_OB_HDR_VARTEMP		= 401
-	STATE_IN_OB			= 402
+	enum.start
+	STATE_GLOBAL			= enum.item
+	STATE_IN_DB_HDR			= enum.item
+	STATE_IN_DB_HDR_STRUCT		= enum.item
+	STATE_IN_DB			= enum.item
+	STATE_IN_FB_HDR			= enum.item
+	STATE_IN_FB_HDR_VAR		= enum.item
+	STATE_IN_FB_HDR_VARIN		= enum.item
+	STATE_IN_FB_HDR_VAROUT		= enum.item
+	STATE_IN_FB_HDR_VARINOUT	= enum.item
+	STATE_IN_FB_HDR_VARTEMP		= enum.item
+	STATE_IN_FB			= enum.item
+	STATE_IN_FC_HDR			= enum.item
+	STATE_IN_FC_HDR_VARIN		= enum.item
+	STATE_IN_FC_HDR_VAROUT		= enum.item
+	STATE_IN_FC_HDR_VARINOUT	= enum.item
+	STATE_IN_FC_HDR_VARTEMP		= enum.item
+	STATE_IN_FC			= enum.item
+	STATE_IN_OB_HDR			= enum.item
+	STATE_IN_OB_HDR_VARTEMP		= enum.item
+	STATE_IN_OB			= enum.item
+	enum.end
 
 	class TokenizerState(object):
 		def __init__(self):

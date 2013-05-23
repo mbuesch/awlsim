@@ -108,3 +108,46 @@ def str2bool(string, default=False):
 		return bool(int(s, 10))
 	except ValueError:
 		return default
+
+class EnumerationHelper(object):
+	"Enumeration helper"
+
+	def __init__(self):
+		self.__num = None
+
+	@property
+	def start(self):
+		assert(self.__num is None)
+		self.__num = 0
+		return None
+
+	@start.setter
+	def start(self, startNumber):
+		assert(self.__num is None)
+		self.__num = startNumber
+
+	@property
+	def end(self):
+		self.__num = None
+		return None
+
+	@property
+	def item(self):
+		number = self.itemNoInc
+		self.__num += 1
+		return number
+
+	@property
+	def itemNoInc(self):
+		assert(self.__num is not None)
+		return self.__num
+
+	def itemAt(self, number):
+		assert(self.__num is not None)
+		self.__num = number + 1
+		return number
+
+	def __repr__(self):
+		return "enum(%s)" % str(self.__num)
+
+enum = EnumerationHelper()
