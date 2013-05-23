@@ -7,6 +7,7 @@
 #
 
 from util import *
+from awldatatypehelpers import *
 
 
 def _seconds_to_s5t_tb10ms(seconds):

@@ -7,6 +7,7 @@
 #
 
 from util import *
+from awldatatypehelpers import *
 
 
 class S7StatusWord(object):

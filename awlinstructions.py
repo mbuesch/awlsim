@@ -13,6 +13,7 @@ from util import *
 from awloperators import *
 from awloptrans import *
 from awlparser import *
+from awldatatypehelpers import *
 
 
 class AwlInsn(object):
