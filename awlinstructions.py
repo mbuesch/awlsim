@@ -423,7 +423,7 @@ class AwlInsn_U(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA = self.cpu.fetch(self.ops[0])
 		if s.NER:
 			s.VKE &= s.STA
@@ -437,7 +437,7 @@ class AwlInsn_UN(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA = self.cpu.fetch(self.ops[0])
 		if s.NER:
 			s.VKE &= ~s.STA & 1
@@ -451,7 +451,7 @@ class AwlInsn_O(AwlInsn):
 		self._assertOps((0, 1))
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if self.ops:
 			s.STA = self.cpu.fetch(self.ops[0])
 			if s.NER:
@@ -469,7 +469,7 @@ class AwlInsn_ON(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA = self.cpu.fetch(self.ops[0])
 		if s.NER:
 			s.VKE |= ~s.STA & 1
@@ -483,7 +483,7 @@ class AwlInsn_X(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA = self.cpu.fetch(self.ops[0])
 		if s.NER:
 			s.VKE ^= s.STA
@@ -497,7 +497,7 @@ class AwlInsn_XN(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA = self.cpu.fetch(self.ops[0])
 		if s.NER:
 			s.VKE ^= ~s.STA & 1
@@ -511,7 +511,7 @@ class AwlInsn_UB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.parenStackAppend(AwlInsn.TYPE_UB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -521,7 +521,7 @@ class AwlInsn_UNB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.parenStackAppend(AwlInsn.TYPE_UNB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -531,7 +531,7 @@ class AwlInsn_OB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.parenStackAppend(AwlInsn.TYPE_OB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -541,7 +541,7 @@ class AwlInsn_ONB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.parenStackAppend(AwlInsn.TYPE_ONB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -551,7 +551,7 @@ class AwlInsn_XB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.parenStackAppend(AwlInsn.TYPE_XB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -561,7 +561,7 @@ class AwlInsn_XNB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.parenStackAppend(AwlInsn.TYPE_XNB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -571,7 +571,7 @@ class AwlInsn_BEND(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		try:
 			pse = self.cpu.parenStack.pop()
 		except IndexError as e:
@@ -609,7 +609,7 @@ class AwlInsn_ASSIGN(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA = s.VKE
 		if not self.cpu.mcrIsOn():
 			s.STA = 0
@@ -622,7 +622,7 @@ class AwlInsn_R(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		oper = self.ops[0]
 		if oper.type == AwlOperator.MEM_Z:
 			if s.VKE:
@@ -643,7 +643,7 @@ class AwlInsn_S(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		oper = self.ops[0]
 		if oper.type == AwlOperator.MEM_Z:
 			self.cpu.getCounter(oper.offset).set(s.VKE)
@@ -659,7 +659,7 @@ class AwlInsn_NOT(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.STA, s.VKE = 1, (~s.VKE & 1)
 
 class AwlInsn_SET(AwlInsn):
@@ -668,7 +668,7 @@ class AwlInsn_SET(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.OR, s.STA, s.VKE, s.NER = 0, 1, 1, 0
 
 class AwlInsn_CLR(AwlInsn):
@@ -677,7 +677,7 @@ class AwlInsn_CLR(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.OR, s.STA, s.VKE, s.NER = 0, 0, 0, 0
 
 class AwlInsn_SAVE(AwlInsn):
@@ -686,7 +686,7 @@ class AwlInsn_SAVE(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		s.BIE = s.VKE
 
 class AwlInsn_FN(AwlInsn):
@@ -695,7 +695,7 @@ class AwlInsn_FN(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		fm = self.cpu.fetch(self.ops[0])
 		self.cpu.store(self.ops[0], s.VKE)
 		s.OR, s.STA, s.NER = 0, s.VKE, 1
@@ -707,7 +707,7 @@ class AwlInsn_FP(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		fm = self.cpu.fetch(self.ops[0])
 		self.cpu.store(self.ops[0], s.VKE)
 		s.OR, s.STA, s.NER = 0, s.VKE, 1
@@ -719,7 +719,7 @@ class AwlInsn_EQ_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
 			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
@@ -736,7 +736,7 @@ class AwlInsn_NE_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
 			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
@@ -753,7 +753,7 @@ class AwlInsn_GT_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
 			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
@@ -770,7 +770,7 @@ class AwlInsn_LT_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
 			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
@@ -787,7 +787,7 @@ class AwlInsn_GE_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
 			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
@@ -804,7 +804,7 @@ class AwlInsn_LE_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedWord(),\
 			       self.cpu.accu2.getSignedWord()
 		if accu1 == accu2:
@@ -821,7 +821,7 @@ class AwlInsn_EQ_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
 			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
@@ -838,7 +838,7 @@ class AwlInsn_NE_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
 			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
@@ -855,7 +855,7 @@ class AwlInsn_GT_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
 			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
@@ -872,7 +872,7 @@ class AwlInsn_LT_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
 			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
@@ -889,7 +889,7 @@ class AwlInsn_GE_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
 			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
@@ -906,7 +906,7 @@ class AwlInsn_LE_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1, accu2 = self.cpu.accu1.getSignedDWord(),\
 			       self.cpu.accu2.getSignedDWord()
 		if accu1 == accu2:
@@ -923,7 +923,7 @@ class AwlInsn_EQ_R(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
@@ -940,7 +940,7 @@ class AwlInsn_NE_R(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
@@ -957,7 +957,7 @@ class AwlInsn_GT_R(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
@@ -974,7 +974,7 @@ class AwlInsn_LT_R(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
@@ -991,7 +991,7 @@ class AwlInsn_GE_R(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
@@ -1008,7 +1008,7 @@ class AwlInsn_LE_R(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0
@@ -1041,7 +1041,7 @@ class AwlInsn_ITB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.get()
 		binval, bcd = wordToSignedPyInt(accu1), 0
 		if binval < 0:
@@ -1092,7 +1092,7 @@ class AwlInsn_DTB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		binval, bcd = dwordToSignedPyInt(self.cpu.accu1.get()), 0
 		if binval < 0:
 			bcd |= 0xF0000000
@@ -1141,7 +1141,7 @@ class AwlInsn_NEGI(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		value = -(self.cpu.accu1.getSignedWord())
 		self.cpu.accu1.setWord(value)
 		accu1 = self.cpu.accu1.getSignedWord()
@@ -1160,7 +1160,7 @@ class AwlInsn_NEGD(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		value = -(self.cpu.accu1.getSignedDWord())
 		self.cpu.accu1.setDWord(value)
 		accu1 = self.cpu.accu1.getSignedDWord()
@@ -1181,7 +1181,7 @@ class AwlInsn_NEGR(AwlInsn):
 	def run(self):
 		accu1 = -(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_TAW(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1214,7 +1214,7 @@ class AwlInsn_RND(AwlInsn):
 		self._assertOps(0)
 
 	def __run_python2(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1_floor = int(accu1)
@@ -1232,7 +1232,7 @@ class AwlInsn_RND(AwlInsn):
 		self.cpu.accu1.setDWord(accu1)
 
 	def __run_python3(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1 = int(round(accu1))
@@ -1251,7 +1251,7 @@ class AwlInsn_TRUNC(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1 = int(accu1)
@@ -1268,7 +1268,7 @@ class AwlInsn_RNDP(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			rounded = int(accu1)
@@ -1288,7 +1288,7 @@ class AwlInsn_RNDN(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			rounded = int(accu1)
@@ -1311,7 +1311,7 @@ class AwlInsn_FR(AwlInsn):
 
 	def run(self):
 		counter = self.cpu.getCounter(self.ops[0].offset)
-		counter.run_FR(self.cpu.status.VKE)
+		counter.run_FR(self.cpu.callStackTop.status.VKE)
 
 class AwlInsn_L(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1340,9 +1340,9 @@ class AwlInsn_ZV(AwlInsn):
 			raise AwlSimError("Invalid operator")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		counter = self.cpu.getCounter(self.ops[0].offset)
-		counter.run_ZV(self.cpu.status.VKE)
+		counter.run_ZV(self.cpu.callStackTop.status.VKE)
 		s.OR, s.NER = 0, 0
 
 class AwlInsn_ZR(AwlInsn):
@@ -1353,9 +1353,9 @@ class AwlInsn_ZR(AwlInsn):
 			raise AwlSimError("Invalid operator")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		counter = self.cpu.getCounter(self.ops[0].offset)
-		counter.run_ZR(self.cpu.status.VKE)
+		counter.run_ZR(self.cpu.callStackTop.status.VKE)
 		s.OR, s.NER = 0, 0
 
 class AwlInsn_AUF(AwlInsn):
@@ -1410,7 +1410,7 @@ class AwlInsn_SPB(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.VKE:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.OR, s.STA, s.VKE, s.NER = 0, 1, 1, 0
@@ -1423,7 +1423,7 @@ class AwlInsn_SPBN(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if not s.VKE:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.OR, s.STA, s.VKE, s.NER = 0, 1, 1, 0
@@ -1436,7 +1436,7 @@ class AwlInsn_SPBB(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.VKE:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.BIE, s.OR, s.STA, s.VKE, s.NER = s.VKE, 0, 1, 1, 0
@@ -1449,7 +1449,7 @@ class AwlInsn_SPBNB(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if not s.VKE:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.BIE, s.OR, s.STA, s.VKE, s.NER = s.VKE, 0, 1, 1, 0
@@ -1462,7 +1462,7 @@ class AwlInsn_SPBI(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.BIE:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.OR, s.STA, s.NER = 0, 1, 0
@@ -1475,7 +1475,7 @@ class AwlInsn_SPBIN(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if not s.BIE:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 		s.OR, s.STA, s.NER = 0, 1, 0
@@ -1488,7 +1488,7 @@ class AwlInsn_SPO(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.OV:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1500,7 +1500,7 @@ class AwlInsn_SPS(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.OS:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 			s.OS = 0
@@ -1513,7 +1513,7 @@ class AwlInsn_SPZ(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if (s.A0 | s.A1) == 0:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1525,7 +1525,7 @@ class AwlInsn_SPN(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.A1 ^ s.A0:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1537,7 +1537,7 @@ class AwlInsn_SPP(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if ~s.A0 & s.A1 & 1:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1549,7 +1549,7 @@ class AwlInsn_SPM(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.A0 & ~s.A1 & 1:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1561,7 +1561,7 @@ class AwlInsn_SPPZ(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.A0 == 0:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1573,7 +1573,7 @@ class AwlInsn_SPMZ(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.A1 == 0:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1585,7 +1585,7 @@ class AwlInsn_SPU(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.A0 & s.A1:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
 
@@ -1597,7 +1597,7 @@ class AwlInsn_LOOP(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF
 		self.cpu.accu1.setWord(accu1l)
 		if accu1l != 0:
@@ -1609,7 +1609,7 @@ class AwlInsn_PL_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		_sum = self.cpu.accu1.getSignedWord() +\
 		       self.cpu.accu2.getSignedWord()
 		self.cpu.accu1.setWord(_sum)
@@ -1632,7 +1632,7 @@ class AwlInsn_MI_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		diff = self.cpu.accu2.getSignedWord() -\
 		       self.cpu.accu1.getSignedWord()
 		self.cpu.accu1.setWord(diff)
@@ -1655,7 +1655,7 @@ class AwlInsn_MU_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		prod = self.cpu.accu2.getSignedWord() *\
 		       self.cpu.accu1.getSignedWord()
 		self.cpu.accu1.setDWord(prod)
@@ -1677,7 +1677,7 @@ class AwlInsn_DI_I(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu2, accu1 = self.cpu.accu2.getSignedWord(),\
 			       self.cpu.accu1.getSignedWord()
 		if self.cpu.is4accu:
@@ -1728,7 +1728,7 @@ class AwlInsn_PL_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		_sum = self.cpu.accu2.getSignedDWord() +\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(_sum)
@@ -1751,7 +1751,7 @@ class AwlInsn_MI_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		diff = self.cpu.accu2.getSignedDWord() -\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(diff)
@@ -1774,7 +1774,7 @@ class AwlInsn_MU_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		prod = self.cpu.accu2.getSignedDWord() *\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(prod)
@@ -1796,7 +1796,7 @@ class AwlInsn_DI_D(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\
 			       self.cpu.accu1.getSignedDWord()
 		if self.cpu.is4accu:
@@ -1825,7 +1825,7 @@ class AwlInsn_MOD(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\
 			       self.cpu.accu1.getSignedDWord()
 		if self.cpu.is4accu:
@@ -1856,7 +1856,7 @@ class AwlInsn_PL_R(AwlInsn):
 			       self.cpu.accu1.getPyFloat()
 		_sum = accu2 + accu1
 		self.cpu.accu1.setPyFloat(_sum)
-		self.cpu.status.setForFloatingPoint(_sum)
+		self.cpu.callStackTop.status.setForFloatingPoint(_sum)
 
 class AwlInsn_MI_R(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1868,7 +1868,7 @@ class AwlInsn_MI_R(AwlInsn):
 			       self.cpu.accu1.getPyFloat()
 		diff = accu2 - accu1
 		self.cpu.accu1.setPyFloat(diff)
-		self.cpu.status.setForFloatingPoint(diff)
+		self.cpu.callStackTop.status.setForFloatingPoint(diff)
 
 class AwlInsn_MU_R(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1880,7 +1880,7 @@ class AwlInsn_MU_R(AwlInsn):
 			       self.cpu.accu1.getPyFloat()
 		prod = accu2 * accu1
 		self.cpu.accu1.setPyFloat(prod)
-		self.cpu.status.setForFloatingPoint(prod)
+		self.cpu.callStackTop.status.setForFloatingPoint(prod)
 
 class AwlInsn_DI_R(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1898,7 +1898,7 @@ class AwlInsn_DI_R(AwlInsn):
 			else:
 				quo = negInfFloat
 		self.cpu.accu1.setPyFloat(quo)
-		self.cpu.status.setForFloatingPoint(quo)
+		self.cpu.callStackTop.status.setForFloatingPoint(quo)
 
 class AwlInsn_ABS(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1917,7 +1917,7 @@ class AwlInsn_SQR(AwlInsn):
 		accu1 = self.cpu.accu1.getPyFloat()
 		accu1 **= 2
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_SQRT(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1933,7 +1933,7 @@ class AwlInsn_SQRT(AwlInsn):
 			accu1 = nNaNFloat
 		else:
 			self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_EXP(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1944,7 +1944,7 @@ class AwlInsn_EXP(AwlInsn):
 		accu1 = self.cpu.accu1.getPyFloat()
 		accu1 = math.exp(accu1)
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_LN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1962,7 +1962,7 @@ class AwlInsn_LN(AwlInsn):
 			accu1 = nNaNFloat
 		else:
 			self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_SIN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1975,7 +1975,7 @@ class AwlInsn_SIN(AwlInsn):
 			if pyFloatEqual(accu1, extremum):
 				accu1 = extremum
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_COS(AwlInsn):
 	def __init__(self, rawInsn):
@@ -1988,7 +1988,7 @@ class AwlInsn_COS(AwlInsn):
 			if pyFloatEqual(accu1, extremum):
 				accu1 = extremum
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_TAN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -2007,7 +2007,7 @@ class AwlInsn_TAN(AwlInsn):
 				if pyFloatEqual(accu1, extremum):
 					accu1 = extremum
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_ASIN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -2017,7 +2017,7 @@ class AwlInsn_ASIN(AwlInsn):
 	def run(self):
 		accu1 = math.asin(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_ACOS(AwlInsn):
 	def __init__(self, rawInsn):
@@ -2027,7 +2027,7 @@ class AwlInsn_ACOS(AwlInsn):
 	def run(self):
 		accu1 = math.acos(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_ATAN(AwlInsn):
 	def __init__(self, rawInsn):
@@ -2037,7 +2037,7 @@ class AwlInsn_ATAN(AwlInsn):
 	def run(self):
 		accu1 = math.atan(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.status.setForFloatingPoint(accu1)
+		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
 class AwlInsn_T(AwlInsn):
 	def __init__(self, rawInsn):
@@ -2074,7 +2074,7 @@ class AwlInsn_BEB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.VKE:
 			self.cpu.run_BE()
 		else:
@@ -2094,7 +2094,7 @@ class AwlInsn_CALL(AwlInsn):
 		self._assertOps((1,2))
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if len(self.ops) == 1:
 			self.cpu.run_CALL(self.ops[0], None, self.params)
 		elif len(self.ops) == 2:
@@ -2109,7 +2109,7 @@ class AwlInsn_CC(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		if s.VKE:
 			self.cpu.run_CALL(self.ops[0])
 		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
@@ -2120,7 +2120,7 @@ class AwlInsn_UC(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.run_CALL(self.ops[0])
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
@@ -2130,7 +2130,7 @@ class AwlInsn_MCRB(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.mcrStackAppend(s)
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -2140,7 +2140,7 @@ class AwlInsn_BMCR(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		self.cpu.mcrStackPop()
 		s.OR, s.STA, s.NER = 0, 1, 0
 
@@ -2168,7 +2168,7 @@ class AwlInsn_SSI(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getSignedWord()
 		if self.ops:
 			count = self.ops[0].immediate
@@ -2189,7 +2189,7 @@ class AwlInsn_SSD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getSignedDWord()
 		if self.ops:
 			count = self.ops[0].immediate
@@ -2210,7 +2210,7 @@ class AwlInsn_SLW(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
 			count = self.ops[0].immediate
@@ -2231,7 +2231,7 @@ class AwlInsn_SRW(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
 			count = self.ops[0].immediate
@@ -2252,7 +2252,7 @@ class AwlInsn_SLD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			count = self.ops[0].immediate
@@ -2273,7 +2273,7 @@ class AwlInsn_SRD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			count = self.ops[0].immediate
@@ -2294,7 +2294,7 @@ class AwlInsn_RLD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
 			count = self.cpu.fetch(self.ops[0])
@@ -2315,7 +2315,7 @@ class AwlInsn_RRD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
 			count = self.cpu.fetch(self.ops[0])
@@ -2336,7 +2336,7 @@ class AwlInsn_RLDA(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
 			count = self.cpu.fetch(self.ops[0])
@@ -2358,7 +2358,7 @@ class AwlInsn_RRDA(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
 			count = self.cpu.fetch(self.ops[0])
@@ -2440,7 +2440,7 @@ class AwlInsn_UW(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
 			accu2 = self.ops[0].immediate
@@ -2459,7 +2459,7 @@ class AwlInsn_OW(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
 			accu2 = self.ops[0].immediate
@@ -2478,7 +2478,7 @@ class AwlInsn_XOW(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
 			accu2 = self.ops[0].immediate
@@ -2497,7 +2497,7 @@ class AwlInsn_UD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			accu2 = self.ops[0].immediate
@@ -2516,7 +2516,7 @@ class AwlInsn_OD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			accu2 = self.ops[0].immediate
@@ -2535,7 +2535,7 @@ class AwlInsn_XOD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			accu2 = self.ops[0].immediate
@@ -2659,7 +2659,7 @@ class AwlInsn_ASSERT_EQ(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 == val1):
@@ -2672,7 +2672,7 @@ class AwlInsn_ASSERT_EQ_R(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not floatEqual(val0, val1):
@@ -2685,7 +2685,7 @@ class AwlInsn_ASSERT_NE(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 != val1):
@@ -2698,7 +2698,7 @@ class AwlInsn_ASSERT_GT(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 > val1):
@@ -2711,7 +2711,7 @@ class AwlInsn_ASSERT_LT(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 < val1):
@@ -2724,7 +2724,7 @@ class AwlInsn_ASSERT_GE(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 >= val1):
@@ -2737,7 +2737,7 @@ class AwlInsn_ASSERT_LE(AwlInsn):
 		self._assertOps(2)
 
 	def run(self):
-		s = self.cpu.status
+		s = self.cpu.callStackTop.status
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 <= val1):
@@ -2768,7 +2768,7 @@ class AwlInsn_STWRST(AwlInsn):
 		self._assertOps(0)
 
 	def run(self):
-		self.cpu.status.reset()
+		self.cpu.callStackTop.status.reset()
 
 class AwlInsn_SSPEC(AwlInsn):
 	def __init__(self, rawInsn):
