@@ -1295,7 +1295,7 @@ def main():
 			"hx",
 			[ "help", "extended-insns", ])
 	except getopt.GetoptError as e:
-		printError(e)
+		printError(str(e))
 		usage()
 		return 1
 	for (o, v) in opts:
