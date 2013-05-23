@@ -51,6 +51,9 @@ def printError(text):
 	sys.stderr.write("\n")
 	sys.stderr.flush()
 
+# Warning message helper
+printWarning = printError
+
 def awlFileRead(filename):
 	try:
 		fd = open(filename, "rb")
