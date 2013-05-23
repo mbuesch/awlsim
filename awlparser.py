@@ -85,6 +85,7 @@ class RawAwlCodeBlock(RawAwlBlock):
 		self.vars_inout = []
 		self.vars_static = []
 		self.vars_temp = []
+		self.retTypeTokens = None
 
 	def hasLabel(self, string):
 		if RawAwlInsn.isValidLabel(string):
@@ -123,8 +124,9 @@ class RawAwlFB(RawAwlCodeBlock):
 		RawAwlCodeBlock.__init__(self, tree, index)
 
 class RawAwlFC(RawAwlCodeBlock):
-	def __init__(self, tree, index):
+	def __init__(self, tree, index, retTypeTokens):
 		RawAwlCodeBlock.__init__(self, tree, index)
+		self.retTypeTokens = retTypeTokens
 
 class AwlParseTree(object):
 	def __init__(self):
@@ -354,8 +356,13 @@ class AwlParser(object):
 					fcNumber = int(tokens[2], 10)
 				except ValueError:
 					raise AwlParserError("Invalid FC number")
-				#TODO RET_VAL type
-				self.tree.curBlock = RawAwlFC(self.tree, fcNumber)
+				if tokens[3] != ':':
+					raise AwlParserError("Missing colon after FC number")
+				retTypeTokens = tokens[4:]
+				if not retTypeTokens:
+					raise AwlParserError("Missing FC return type")
+				self.tree.curBlock = RawAwlFC(self.tree, fcNumber,
+							      retTypeTokens)
 				self.tree.fcs[fcNumber] = self.tree.curBlock
 				return
 			if tokens[0].upper() == "ORGANIZATION_BLOCK":

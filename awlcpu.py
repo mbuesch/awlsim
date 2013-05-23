@@ -194,6 +194,12 @@ class S7CPU(object):
 			block.interface.addField_IN(self.__translateInterfaceField(rawVar))
 		for rawVar in rawBlock.vars_out:
 			block.interface.addField_OUT(self.__translateInterfaceField(rawVar))
+		if rawBlock.retTypeTokens:
+			dtype = AwlDataType.makeByName(rawBlock.retTypeTokens)
+			if dtype.type != AwlDataType.TYPE_VOID:
+				field = BlockInterface.Field(name = "RET_VAL",
+							     dataType = dtype)
+				block.interface.addField_OUT(field)
 		for rawVar in rawBlock.vars_inout:
 			block.interface.addField_INOUT(self.__translateInterfaceField(rawVar))
 		for rawVar in rawBlock.vars_static:
@@ -541,8 +547,10 @@ class S7CPU(object):
 		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
 		if fc.interface.interfaceFieldCount != len(parameters):
 			raise AwlSimError("Call interface mismatch. "
-				"Passed %d parameters, but expected %d." %\
-				(len(parameters), fc.interface.interfaceFieldCount))
+				"Passed %d parameters, but expected %d.\n"
+				"====  The block interface is:\n%s\n====" %\
+				(len(parameters), fc.interface.interfaceFieldCount,
+				 str(fc.interface)))
 		return CallStackElem(self, fc, self.callStack[-1].instanceDB,
 				     bounceDB, parameters)
 

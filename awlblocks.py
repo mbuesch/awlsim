@@ -110,6 +110,20 @@ class BlockInterface(object):
 			raise AwlSimError("Data structure field '%s' does not exist." %\
 				name)
 
+	def __repr__(self):
+		ret = []
+		for flist, fname in ((self.fields_IN, "VAR_IN"),
+				     (self.fields_OUT, "VAR_OUT"),
+				     (self.fields_INOUT, "VAR_IN_OUT")):
+			if not flist:
+				continue
+			ret.append(fname)
+			for field in flist:
+				ret.append("  %s : %s;" %\
+					   (field.name, str(field.dataType)))
+			ret.append("END_VAR")
+		return '\n'.join(ret)
+
 class Block(object):
 	def __init__(self, insns, index, interface):
 		self.insns = insns

@@ -19,21 +19,23 @@ class AwlOffset(object):
 
 class AwlDataType(object):
 	# Data type IDs
-	TYPE_BOOL	= 0
-	TYPE_BYTE	= 1
-	TYPE_WORD	= 2
-	TYPE_DWORD	= 3
-	TYPE_INT	= 4
-	TYPE_DINT	= 5
-	TYPE_REAL	= 6
-	TYPE_S5T	= 7
-	TYPE_TIME	= 8
-	TYPE_DATE	= 9
-	TYPE_TOD	= 10
-	TYPE_CHAR	= 11
-	TYPE_ARRAY	= 12
+	TYPE_VOID	= 0
+	TYPE_BOOL	= 1
+	TYPE_BYTE	= 2
+	TYPE_WORD	= 3
+	TYPE_DWORD	= 4
+	TYPE_INT	= 5
+	TYPE_DINT	= 6
+	TYPE_REAL	= 7
+	TYPE_S5T	= 8
+	TYPE_TIME	= 9
+	TYPE_DATE	= 10
+	TYPE_TOD	= 11
+	TYPE_CHAR	= 12
+	TYPE_ARRAY	= 13
 
 	__name2id = {
+		"VOID"		: TYPE_VOID,
 		"BOOL"		: TYPE_BOOL,
 		"BYTE"		: TYPE_BYTE,
 		"WORD"		: TYPE_WORD,
@@ -55,6 +57,7 @@ class AwlDataType(object):
 
 	# Width table for trivial types
 	type2width = {
+		TYPE_VOID	: 0,
 		TYPE_BOOL	: 1,
 		TYPE_BYTE	: 8,
 		TYPE_WORD	: 16,
@@ -71,6 +74,7 @@ class AwlDataType(object):
 
 	# Signedness table for trivial types
 	type2signed = {
+		TYPE_VOID	: False,
 		TYPE_BOOL	: False,
 		TYPE_BYTE	: False,
 		TYPE_WORD	: False,
@@ -189,6 +193,9 @@ class AwlDataType(object):
 				"not match data type '%s'" %\
 				("".join(tokens), self.type2name(self.type)))
 		return value
+
+	def __repr__(self):
+		return self.type2name(self.type)
 
 	@classmethod
 	def tryParseImmediate_BOOL(cls, token):
