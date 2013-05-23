@@ -20,7 +20,28 @@ run_test()
 		die "Test failed"
 }
 
-for interpreter in python3 python2.7 pypy; do
+opt_interpreter=
+
+while [ $# -ge 1 ]; do
+	[ "$(echo "$1" | cut -c1)" != "-" ] && break
+
+	case "$1" in
+	-i|--interpreter)
+		shift
+		opt_interpreter="$1"
+		which "$opt_interpreter" >/dev/null 2>&1 ||\
+			die "Interpreter '${opt_interpreter}' not found"
+		;;
+	*)
+		echo "Unknown option: $1"
+		exit 1
+		;;
+	esac
+	shift
+done
+
+for interpreter in "$opt_interpreter" python3 python2.7 pypy; do
+	[ -z "$interpreter" ] && continue
 	which "$interpreter" >/dev/null 2>&1 || {
 		echo "=== WARNING: '$interpreter' interpreter not found. Test skipped."
 		echo
@@ -38,4 +59,6 @@ for interpreter in python3 python2.7 pypy; do
 		done
 	fi
 	echo
+
+	[ -n "$opt_interpreter" ] && break
 done
