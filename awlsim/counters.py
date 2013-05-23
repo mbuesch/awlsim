@@ -6,7 +6,7 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from util import *
+from awlsim.util import *
 
 
 class Counter(object):

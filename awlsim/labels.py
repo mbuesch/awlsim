@@ -6,9 +6,9 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from awlparser import *
-from awloperators import *
-from util import *
+from awlsim.parser import *
+from awlsim.operators import *
+from awlsim.util import *
 
 
 class AwlLabel(object):

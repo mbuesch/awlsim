@@ -6,8 +6,8 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from awlblocks import *
-from util import *
+from awlsim.blocks import *
+from awlsim.util import *
 
 
 class SFC64(SFC):

@@ -5,9 +5,9 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from util import *
-from awlinstructions import *
-from awlparser import *
+from awlsim.util import *
+from awlsim.instructions import *
+from awlsim.parser import *
 
 
 class AwlInsnTranslator(object):

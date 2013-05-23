@@ -6,11 +6,11 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from awldatatypes import *
-from awlstatusword import *
-from awlparameters import *
-from objectcache import *
-from util import *
+from awlsim.datatypes import *
+from awlsim.statusword import *
+from awlsim.parameters import *
+from awlsim.objectcache import *
+from awlsim.util import *
 
 
 class CallStackElem(object):

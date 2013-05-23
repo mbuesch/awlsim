@@ -9,7 +9,7 @@
 import sys
 import re
 
-from util import *
+from awlsim.util import *
 
 
 class RawAwlInsn(object):

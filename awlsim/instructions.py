@@ -9,11 +9,11 @@
 import time
 import math
 
-from util import *
-from awloperators import *
-from awloptrans import *
-from awlparser import *
-from awldatatypehelpers import *
+from awlsim.util import *
+from awlsim.operators import *
+from awlsim.optrans import *
+from awlsim.parser import *
+from awlsim.datatypehelpers import *
 
 
 class AwlInsn(object):

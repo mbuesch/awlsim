@@ -7,12 +7,12 @@
 
 import math
 
-from util import *
-from awloperators import *
-from awlparameters import *
-from awldatatypes import *
-from awlparser import *
-from awltimers import *
+from awlsim.util import *
+from awlsim.operators import *
+from awlsim.parameters import *
+from awlsim.datatypes import *
+from awlsim.parser import *
+from awlsim.timers import *
 
 
 class OpDescriptor(object):

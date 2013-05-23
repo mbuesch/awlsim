@@ -6,8 +6,8 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from awlcpu import *
-from util import *
+from awlsim.cpu import *
+from awlsim.util import *
 
 
 VERSION_MAJOR = 0

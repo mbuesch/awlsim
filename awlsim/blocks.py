@@ -6,9 +6,9 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from awllabels import *
-from awlstruct import *
-from util import *
+from awlsim.labels import *
+from awlsim.datastructure import *
+from awlsim.util import *
 
 
 class BlockInterface(object):

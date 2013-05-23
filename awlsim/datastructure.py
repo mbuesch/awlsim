@@ -6,8 +6,8 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from util import *
-from awldatatypes import *
+from awlsim.util import *
+from awlsim.datatypes import *
 
 
 class AwlStructField(object):

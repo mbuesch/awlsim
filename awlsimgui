@@ -8,7 +8,7 @@
 #
 
 import sys
-from util import *
+from awlsim.util import *
 
 if isPyPy:
 	# PySide does not work on PyPy, yet.
@@ -29,7 +29,7 @@ except ImportError as e:
 	sys.exit(1)
 
 from awlsim import *
-from awlinsntrans import *
+from awlsim.insntrans import *
 
 
 opt_awlSource = None

@@ -6,9 +6,9 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from util import *
-from awltimers import *
-from awldatatypehelpers import *
+from awlsim.util import *
+from awlsim.timers import *
+from awlsim.datatypehelpers import *
 
 
 class AwlOffset(object):

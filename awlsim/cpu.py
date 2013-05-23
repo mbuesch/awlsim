@@ -9,23 +9,23 @@
 import time
 import random
 
-from awlparser import *
-from awldatatypes import *
-from awlinstructions import *
-from awloperators import *
-from awlinsntrans import *
-from awloptrans import *
-from awlblocks import *
-from awldatablocks import *
-from awlstatusword import *
-from awllabels import *
-from awltimers import *
-from awlcounters import *
-from awlcallstack import *
-from util import *
+from awlsim.parser import *
+from awlsim.datatypes import *
+from awlsim.instructions import *
+from awlsim.operators import *
+from awlsim.insntrans import *
+from awlsim.optrans import *
+from awlsim.blocks import *
+from awlsim.datablocks import *
+from awlsim.statusword import *
+from awlsim.labels import *
+from awlsim.timers import *
+from awlsim.counters import *
+from awlsim.callstack import *
+from awlsim.util import *
 
-from system_sfc import *
-from system_sfb import *
+from awlsim.system_sfc import *
+from awlsim.system_sfb import *
 
 
 class ParenStackElem(object):

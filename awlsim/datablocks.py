@@ -6,10 +6,10 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from util import *
-from awloperators import *
-from awldatatypes import *
-from awlstruct import *
+from awlsim.util import *
+from awlsim.operators import *
+from awlsim.datatypes import *
+from awlsim.datastructure import *
 
 
 class DB(object):

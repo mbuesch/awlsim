@@ -6,8 +6,8 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
-from awlstatusword import *
-from util import *
+from awlsim.statusword import *
+from awlsim.util import *
 
 
 class AwlOperator(object):
