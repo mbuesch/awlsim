@@ -53,10 +53,7 @@ class AwlDataType(object):
 		"CHAR"		: TYPE_CHAR,
 		"ARRAY"		: TYPE_ARRAY,
 	}
-
-	__id2name = { }
-	for name, type in __name2id.items():
-		__id2name[type] = name
+	__id2name = pivotDict(__name2id)
 
 	# Width table for trivial types
 	type2width = {
