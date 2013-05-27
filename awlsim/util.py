@@ -154,3 +154,11 @@ class EnumerationHelper(object):
 		return "enum(%s)" % str(self.__num)
 
 enum = EnumerationHelper()
+
+def pivotDict(inDict):
+	outDict = {}
+	for key, value in inDict.items():
+		if value in outDict:
+			raise KeyError("Ambiguous key in pivot dict")
+		outDict[value] = key
+	return outDict
