@@ -24,10 +24,7 @@ class S7StatusWord(object):
 		"A1"	: 7,
 		"BIE"	: 8,
 	}
-
-	nr2name = { }
-	for name, type in name2nr.items():
-		nr2name[type] = name
+	nr2name = pivotDict(name2nr)
 
 	NR_BITS = 9
 
