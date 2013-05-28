@@ -13,6 +13,7 @@ from awlsim.parameters import *
 from awlsim.datatypes import *
 from awlsim.parser import *
 from awlsim.timers import *
+from awlsim.cpuspecs import *
 
 
 class OpDescriptor(object):
@@ -33,7 +34,7 @@ class OpDescriptor(object):
 class AwlOpTranslator(object):
 	"Instruction operator translator"
 
-	__constOperTab = {
+	__constOperTab_german = {
 		"==0"	: OpDescriptor(AwlOperator.MEM_STW_Z, 1,
 				       AwlOffset(0, 0), 1),
 		"<>0"	: OpDescriptor(AwlOperator.MEM_STW_NZ, 1,
@@ -154,8 +155,41 @@ class AwlOpTranslator(object):
 					     AwlOffset(nNaNDWord, 0), 1),
 	}
 
-	def __init__(self, insn):
+	__english2german = {
+		"I"	: "E",
+		"IB"	: "EB",
+		"IW"	: "EW",
+		"ID"	: "ED",
+		"Q"	: "A",
+		"QB"	: "AB",
+		"QW"	: "AW",
+		"QD"	: "AD",
+		"C"	: "Z",
+		"BR"	: "BIE",
+		"PIB"	: "PEB",
+		"PIW"	: "PEW",
+		"PID"	: "PED",
+		"PQB"	: "PAB",
+		"PQW"	: "PAW",
+		"PQD"	: "PAD",
+	}
+	__german2english = pivotDict(__english2german)
+
+	# Create a constOperTab for english mnemonics
+	__constOperTab_english = {}
+	for name, type in __constOperTab_german.items():
+		try:
+			name = __german2english[name]
+		except KeyError:
+			pass
+		__constOperTab_english[name] = type
+
+	def __init__(self, insn, mnemonics=None):
 		self.insn = insn
+		if mnemonics is None and insn is not None:
+			mnemonics = insn.getCpu().getSpecs().getMnemonics()
+		assert(mnemonics is not None)
+		self.mnemonics = mnemonics
 
 	@classmethod
 	def __translateAddressOperator(cls, opDesc, rawOps):
@@ -202,14 +236,19 @@ class AwlOpTranslator(object):
 			assert(0)
 
 	@classmethod
-	def __doTrans(cls, rawInsn, rawOps):
+	def __doTrans(cls, mnemonics, rawInsn, rawOps):
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
 			return OpDescriptor(AwlOperator.LBL_REF, 0,
 					    AwlOffset(rawOps[0], 0), 1)
 		try:
 			# Constant operator (from table)
-			return cls.__constOperTab[rawOps[0]].dup()
+			if mnemonics == S7CPUSpecs.MNEMONICS_DE:
+				return cls.__constOperTab_german[rawOps[0]].dup()
+			elif mnemonics == S7CPUSpecs.MNEMONICS_EN:
+				return cls.__constOperTab_english[rawOps[0]].dup()
+			else:
+				assert(0)
 		except KeyError as e:
 			pass
 		# Local variable
@@ -293,8 +332,8 @@ class AwlOpTranslator(object):
 				str(rawOps[0]))
 
 	@classmethod
-	def translateOp(cls, rawInsn, rawOps):
-		opDesc = cls.__doTrans(rawInsn, rawOps)
+	def __translateOp(cls, mnemonics, rawInsn, rawOps):
+		opDesc = cls.__doTrans(mnemonics, rawInsn, rawOps)
 
 		if opDesc.fieldCount == 2 and\
 		   (opDesc.offset.byteOffset == -1 or opDesc.offset.bitOffset == -1):
@@ -306,7 +345,7 @@ class AwlOpTranslator(object):
 
 		return opDesc, operator
 
-	def __translateParameterList(self, insn, rawInsn, rawOps):
+	def __translateParameterList(self, mnemonics,  insn, rawInsn, rawOps):
 		while rawOps:
 			if len(rawOps) < 3:
 				raise AwlSimError("Invalid parameter assignment")
@@ -325,11 +364,12 @@ class AwlOpTranslator(object):
 				raise AwlSimError("No R-Value in parameter assignment")
 
 			# Translate r-value
-			opDesc, rvalueOp = self.translateOp(None, rvalueTokens)
+			opDesc, rvalueOp = self.__translateOp(mnemonics, None, rvalueTokens)
 
 			# Create assignment
 			param = AwlParamAssign(lvalueName, rvalueOp)
-			insn.params.append(param)
+			if insn:
+				insn.params.append(param)
 
 			rawOps = rawOps[opDesc.fieldCount + 2 : ]
 			if rawOps:
@@ -341,10 +381,11 @@ class AwlOpTranslator(object):
 	def translateFrom(self, rawInsn):
 		rawOps = rawInsn.getOperators()
 		while rawOps:
-			opDesc, operator = self.translateOp(rawInsn, rawOps)
+			opDesc, operator = self.__translateOp(self.mnemonics, rawInsn, rawOps)
 			operator.setInsn(self.insn)
 
-			self.insn.ops.append(operator)
+			if self.insn:
+				self.insn.ops.append(operator)
 
 			if len(rawOps) > opDesc.fieldCount:
 				if rawInsn.name.upper() == "CALL" and\
@@ -354,7 +395,7 @@ class AwlOpTranslator(object):
 					except ValueError:
 						raise AwlSimError("Missing closing parenthesis")
 					# Translate the call parameters
-					self.__translateParameterList(self.insn, rawInsn,
+					self.__translateParameterList(self.mnemonics, self.insn, rawInsn,
 								      rawOps[opDesc.fieldCount + 1: endIdx])
 					# Consume all tokens between (and including) parenthesis.
 					opDesc.fieldCount = endIdx + 1

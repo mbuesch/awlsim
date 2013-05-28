@@ -614,6 +614,8 @@ class CpuWidget(QWidget):
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
 			cpu = sim.getCPU()
+			specs = cpu.getSpecs()
+			specs.setMnemonics(S7CPUSpecs.MNEMONICS_AUTO)
 			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
 			cpu.setDirectPeripheralCallback(

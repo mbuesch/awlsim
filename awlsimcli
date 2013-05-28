@@ -10,6 +10,7 @@
 import getopt
 
 from awlsim import *
+from awlsim.cpu import *
 
 
 opt_onecycle = False
@@ -17,6 +18,7 @@ opt_fouraccu = False
 opt_quiet = False
 opt_extInsns = False
 opt_rng = False
+opt_mnemonics = S7CPUSpecs.MNEMONICS_AUTO
 
 
 def usage():
@@ -30,6 +32,7 @@ def usage():
 	printInfo(" -q|--quiet            No status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
+	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
 
 def writeStdout(message):
 	if not opt_quiet:
@@ -62,12 +65,13 @@ def main():
 	global opt_quiet
 	global opt_extInsns
 	global opt_rng
+	global opt_mnemonics
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qxr:",
+			"h1qxr:m:",
 			[ "help", "onecycle", "quiet", "extended-insns",
-			  "rng=", ])
+			  "rng=", "mnemonics=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -86,6 +90,16 @@ def main():
 			opt_extInsns = True
 		if o in ("-r", "--rng"):
 			opt_rng = str2bool(v)
+		if o in ("-m", "--mnemonics"):
+			if v.lower() == "en":
+				opt_mnemonics = S7CPUSpecs.MNEMONICS_EN
+			elif v.lower() == "de":
+				opt_mnemonics = S7CPUSpecs.MNEMONICS_DE
+			elif v.lower() == "auto":
+				opt_mnemonics = S7CPUSpecs.MNEMONICS_AUTO
+			else:
+				printError("-m|--mnemonics: Invalid mnemonics type")
+				sys.exit(1)
 	if len(args) != 1:
 		usage()
 		return 1
@@ -96,9 +110,11 @@ def main():
 		p.parseFile(awlSource)
 		s = AwlSim()
 		cpu = s.getCPU()
+		specs = cpu.getSpecs()
+		specs.setMnemonics(opt_mnemonics)
+		specs.setNrAccus(4 if opt_fouraccu else 2)
 		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)
-		cpu.getSpecs().setNrAccus(4 if opt_fouraccu else 2)
 		cpu.setBlockExitCallback(blockExitCallback, cpu)
 		s.load(p.getParseTree())
 		try:

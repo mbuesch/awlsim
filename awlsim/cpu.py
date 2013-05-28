@@ -9,6 +9,7 @@
 import time
 import random
 
+from awlsim.cpuspecs import *
 from awlsim.parser import *
 from awlsim.datatypes import *
 from awlsim.instructions import *
@@ -53,78 +54,6 @@ class McrStackElem(object):
 
 	__nonzero__ = __bool__
 
-class S7CPUSpecs(object):
-	"STEP 7 CPU Specifications"
-
-	def __init__(self, cpu):
-		self.cpu = None
-		self.setNrAccus(2)
-		self.setNrTimers(2048)
-		self.setNrCounters(2048)
-		self.setNrFlags(8192)
-		self.setNrInputs(8192)
-		self.setNrOutputs(8192)
-		self.setNrLocalbytes(1024)
-		self.cpu = cpu
-
-	def setNrAccus(self, count):
-		if count not in (2, 4):
-			raise AwlSimError("Invalid number of accus")
-		self.nrAccus = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrAccus(self):
-		return self.nrAccus
-
-	def setNrTimers(self, count):
-		self.nrTimers = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrTimers(self):
-		return self.nrTimers
-
-	def setNrCounters(self, count):
-		self.nrCounters = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrCounters(self):
-		return self.nrCounters
-
-	def setNrFlags(self, count):
-		self.nrFlags = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrFlags(self):
-		return self.nrFlags
-
-	def setNrInputs(self, count):
-		self.nrInputs = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrInputs(self):
-		return self.nrInputs
-
-	def setNrOutputs(self, count):
-		self.nrOutputs = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrOutputs(self):
-		return self.nrOutputs
-
-	def setNrLocalbytes(self, count):
-		self.nrLocalbytes = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def getNrLocalbytes(self):
-		return self.nrLocalbytes
-
 class S7CPU(object):
 	"STEP 7 CPU"
 
@@ -139,10 +68,13 @@ class S7CPU(object):
 		self.setDirectPeripheralCallback(None)
 		self.setScreenUpdateCallback(None)
 		self.reset()
-		self.__extendedInsnsEnabled = False
+		self.enableExtendedInsns(False)
 
 	def enableExtendedInsns(self, en=True):
 		self.__extendedInsnsEnabled = en
+
+	def extendedInsnsEnabled(self):
+		return self.__extendedInsnsEnabled
 
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
@@ -155,12 +87,41 @@ class S7CPU(object):
 			return random.randint(minval, maxval)
 		return (maxval - minval) // 2 + minval
 
+	def __detectMnemonics(self, parseTree):
+		specs = self.getSpecs()
+		if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+			return
+		codeBlocks = list(parseTree.obs.values())
+		codeBlocks.extend(parseTree.fbs.values())
+		codeBlocks.extend(parseTree.fcs.values())
+		counts = {
+			S7CPUSpecs.MNEMONICS_EN		: 0,
+			S7CPUSpecs.MNEMONICS_DE		: 0,
+		}
+		for block in codeBlocks:
+			for rawInsn in block.insns:
+				for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
+						  S7CPUSpecs.MNEMONICS_DE):
+					ret = AwlInsnTranslator.name2type(rawInsn.getName(),
+									  mnemonics)
+					if ret is not None:
+						counts[mnemonics] += 1
+					try:
+						optrans = AwlOpTranslator(None, mnemonics)
+						optrans.translateFrom(rawInsn)
+					except AwlSimError:
+						pass
+					else:
+						counts[mnemonics] += 1
+		if counts[S7CPUSpecs.MNEMONICS_EN] >= counts[S7CPUSpecs.MNEMONICS_DE]:
+			specs.setMnemonics(S7CPUSpecs.MNEMONICS_EN)
+		else:
+			specs.setMnemonics(S7CPUSpecs.MNEMONICS_DE)
+
 	def __translateInsn(self, rawInsn, ip):
 		ex = None
 		try:
-			insn = AwlInsnTranslator.fromRawInsn(rawInsn,
-				self.__extendedInsnsEnabled)
-			insn.setCpu(self)
+			insn = AwlInsnTranslator.fromRawInsn(self, rawInsn)
 			insn.setIP(ip)
 		except AwlSimError as e:
 			ex = e
@@ -310,6 +271,7 @@ class S7CPU(object):
 
 	def load(self, parseTree):
 		# Translate the AWL tree
+		self.__detectMnemonics(parseTree)
 		self.reset()
 		for obNumber in parseTree.obs.keys():
 			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)
