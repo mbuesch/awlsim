@@ -89,7 +89,7 @@ class S7CPU(object):
 
 	def __detectMnemonics(self, parseTree):
 		specs = self.getSpecs()
-		if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+		if specs.getConfiguredMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
 			return
 		codeBlocks = list(parseTree.obs.values())
 		codeBlocks.extend(parseTree.fbs.values())
@@ -114,9 +114,9 @@ class S7CPU(object):
 					else:
 						counts[mnemonics] += 1
 		if counts[S7CPUSpecs.MNEMONICS_EN] >= counts[S7CPUSpecs.MNEMONICS_DE]:
-			specs.setMnemonics(S7CPUSpecs.MNEMONICS_EN)
+			specs.setDetectedMnemonics(S7CPUSpecs.MNEMONICS_EN)
 		else:
-			specs.setMnemonics(S7CPUSpecs.MNEMONICS_DE)
+			specs.setDetectedMnemonics(S7CPUSpecs.MNEMONICS_DE)
 
 	def __translateInsn(self, rawInsn, ip):
 		ex = None

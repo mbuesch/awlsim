@@ -20,7 +20,7 @@ class S7CPUSpecs(object):
 
 	def __init__(self, cpu):
 		self.cpu = None
-		self.setMnemonics(self.MNEMONICS_AUTO)
+		self.setConfiguredMnemonics(self.MNEMONICS_AUTO)
 		self.setNrAccus(2)
 		self.setNrTimers(2048)
 		self.setNrCounters(2048)
@@ -30,11 +30,20 @@ class S7CPUSpecs(object):
 		self.setNrLocalbytes(1024)
 		self.cpu = cpu
 
-	def setMnemonics(self, mnemonics):
-		self.mnemonics = mnemonics
+	def setConfiguredMnemonics(self, mnemonics):
+		self.__configuredMnemonics = mnemonics
+		self.setDetectedMnemonics(self.MNEMONICS_AUTO)
+
+	def setDetectedMnemonics(self, mnemonics):
+		self.__detectedMnemonics = mnemonics
+
+	def getConfiguredMnemonics(self):
+		return self.__configuredMnemonics
 
 	def getMnemonics(self):
-		return self.mnemonics
+		if self.__configuredMnemonics == self.MNEMONICS_AUTO:
+			return self.__detectedMnemonics
+		return self.__configuredMnemonics
 
 	def setNrAccus(self, count):
 		if count not in (2, 4):

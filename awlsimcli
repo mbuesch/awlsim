@@ -111,7 +111,7 @@ def main():
 		s = AwlSim()
 		cpu = s.getCPU()
 		specs = cpu.getSpecs()
-		specs.setMnemonics(opt_mnemonics)
+		specs.setConfiguredMnemonics(opt_mnemonics)
 		specs.setNrAccus(4 if opt_fouraccu else 2)
 		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)

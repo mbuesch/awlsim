@@ -614,8 +614,6 @@ class CpuWidget(QWidget):
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
 			cpu = sim.getCPU()
-			specs = cpu.getSpecs()
-			specs.setMnemonics(S7CPUSpecs.MNEMONICS_AUTO)
 			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
 			cpu.setDirectPeripheralCallback(
@@ -1036,10 +1034,19 @@ class CpuConfigDialog(QDialog):
 		self.accuCombo.addItem("4 accus", 4)
 		self.layout().addWidget(self.accuCombo, 0, 1)
 
+		label = QLabel("Mnemonics", self)
+		self.layout().addWidget(label, 1, 0)
+		self.mnemonicsCombo = QComboBox(self)
+		self.mnemonicsCombo.addItem("Automatic", S7CPUSpecs.MNEMONICS_AUTO)
+		self.mnemonicsCombo.addItem("English", S7CPUSpecs.MNEMONICS_EN)
+		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
+		self.layout().addWidget(self.mnemonicsCombo, 1, 1)
+
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 1, 1)
+		self.layout().addWidget(self.closeButton, 2, 1)
 
 		self.accuCombo.currentIndexChanged.connect(self.__accuConfigChanged)
+		self.mnemonicsCombo.currentIndexChanged.connect(self.__mnemonicsConfigChanged)
 		self.closeButton.released.connect(self.accept)
 
 		self.loadConfig()
@@ -1047,9 +1054,15 @@ class CpuConfigDialog(QDialog):
 	def loadConfig(self):
 		specs = self.sim.getCPU().getSpecs()
 		self.__updateBlocked += 1
+
 		index = self.accuCombo.findData(specs.getNrAccus())
 		assert(index >= 0)
 		self.accuCombo.setCurrentIndex(index)
+
+		index = self.mnemonicsCombo.findData(specs.getConfiguredMnemonics())
+		assert(index >= 0)
+		self.mnemonicsCombo.setCurrentIndex(index)
+
 		self.__updateBlocked -= 1
 
 	def __accuConfigChanged(self):
@@ -1058,6 +1071,13 @@ class CpuConfigDialog(QDialog):
 		specs = self.sim.getCPU().getSpecs()
 		index = self.accuCombo.currentIndex()
 		specs.setNrAccus(self.accuCombo.itemData(index))
+
+	def __mnemonicsConfigChanged(self):
+		if self.__updateBlocked:
+			return
+		specs = self.sim.getCPU().getSpecs()
+		index = self.mnemonicsCombo.currentIndex()
+		specs.setConfiguredMnemonics(self.mnemonicsCombo.itemData(index))
 
 class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)
