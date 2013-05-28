@@ -191,8 +191,7 @@ class AwlOpTranslator(object):
 		assert(mnemonics is not None)
 		self.mnemonics = mnemonics
 
-	@classmethod
-	def __translateAddressOperator(cls, opDesc, rawOps):
+	def __translateAddressOperator(self, opDesc, rawOps):
 		if len(rawOps) < 1:
 			raise AwlSimError("Missing address operator")
 		if opDesc.width == 1:
@@ -235,18 +234,17 @@ class AwlOpTranslator(object):
 		else:
 			assert(0)
 
-	@classmethod
-	def __doTrans(cls, mnemonics, rawInsn, rawOps):
+	def __doTrans(self, rawInsn, rawOps):
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
 			return OpDescriptor(AwlOperator.LBL_REF, 0,
 					    AwlOffset(rawOps[0], 0), 1)
 		try:
 			# Constant operator (from table)
-			if mnemonics == S7CPUSpecs.MNEMONICS_DE:
-				return cls.__constOperTab_german[rawOps[0]].dup()
-			elif mnemonics == S7CPUSpecs.MNEMONICS_EN:
-				return cls.__constOperTab_english[rawOps[0]].dup()
+			if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
+				return self.__constOperTab_german[rawOps[0]].dup()
+			elif self.mnemonics == S7CPUSpecs.MNEMONICS_EN:
+				return self.__constOperTab_english[rawOps[0]].dup()
 			else:
 				assert(0)
 		except KeyError as e:
@@ -331,13 +329,12 @@ class AwlOpTranslator(object):
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
-	@classmethod
-	def __translateOp(cls, mnemonics, rawInsn, rawOps):
-		opDesc = cls.__doTrans(mnemonics, rawInsn, rawOps)
+	def __translateOp(self, rawInsn, rawOps):
+		opDesc = self.__doTrans(rawInsn, rawOps)
 
 		if opDesc.fieldCount == 2 and\
 		   (opDesc.offset.byteOffset == -1 or opDesc.offset.bitOffset == -1):
-			cls.__translateAddressOperator(opDesc, rawOps[1:])
+			self.__translateAddressOperator(opDesc, rawOps[1:])
 
 		operator = AwlOperator(opDesc.operType, opDesc.width,
 				       opDesc.offset.byteOffset, opDesc.offset.bitOffset)
@@ -345,7 +342,7 @@ class AwlOpTranslator(object):
 
 		return opDesc, operator
 
-	def __translateParameterList(self, mnemonics,  insn, rawInsn, rawOps):
+	def __translateParameterList(self, rawInsn, rawOps):
 		while rawOps:
 			if len(rawOps) < 3:
 				raise AwlSimError("Invalid parameter assignment")
@@ -364,12 +361,12 @@ class AwlOpTranslator(object):
 				raise AwlSimError("No R-Value in parameter assignment")
 
 			# Translate r-value
-			opDesc, rvalueOp = self.__translateOp(mnemonics, None, rvalueTokens)
+			opDesc, rvalueOp = self.__translateOp(None, rvalueTokens)
 
 			# Create assignment
 			param = AwlParamAssign(lvalueName, rvalueOp)
-			if insn:
-				insn.params.append(param)
+			if self.insn:
+				self.insn.params.append(param)
 
 			rawOps = rawOps[opDesc.fieldCount + 2 : ]
 			if rawOps:
@@ -381,7 +378,7 @@ class AwlOpTranslator(object):
 	def translateFrom(self, rawInsn):
 		rawOps = rawInsn.getOperators()
 		while rawOps:
-			opDesc, operator = self.__translateOp(self.mnemonics, rawInsn, rawOps)
+			opDesc, operator = self.__translateOp(rawInsn, rawOps)
 			operator.setInsn(self.insn)
 
 			if self.insn:
@@ -395,7 +392,7 @@ class AwlOpTranslator(object):
 					except ValueError:
 						raise AwlSimError("Missing closing parenthesis")
 					# Translate the call parameters
-					self.__translateParameterList(self.mnemonics, self.insn, rawInsn,
+					self.__translateParameterList(rawInsn,
 								      rawOps[opDesc.fieldCount + 1: endIdx])
 					# Consume all tokens between (and including) parenthesis.
 					opDesc.fieldCount = endIdx + 1
