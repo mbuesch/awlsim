@@ -6,9 +6,37 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
+from awlsim.datatypes import *
 from awlsim.statusword import *
 from awlsim.util import *
 
+
+class AwlIndirectOp(object):
+	"Indirect addressing operand"
+
+	enum.start
+	AR_1		= enum.item	# Use AR1
+	AR_2		= enum.item	# Use AR2
+	enum.end
+
+	# Pointer area encodings
+	enum.start = 0x80
+	AREA_P		= enum.item	# Peripheral area
+	AREA_E		= enum.item	# Input
+	AREA_A		= enum.item	# Output
+	AREA_M		= enum.item	# Flags
+	AREA_DB		= enum.item	# Global datablock
+	AREA_DI		= enum.item	# Instance datablock
+	AREA_L		= enum.item	# Localstack
+	AREA_VL		= enum.item	# Parent localstack
+	enum.end
+
+	def __init__(self, area, width, addressRegister, offsetOper):
+		self.area = area
+		self.width = width
+		assert(width in (1, 8, 16, 32))
+		self.addressRegister = addressRegister
+		self.offsetOper = offsetOper
 
 class AwlOperator(object):
 	enum.start	# Operator types
@@ -58,12 +86,10 @@ class AwlOperator(object):
 
 	enum.end	# Operator types
 
-	# TODO: Use AwlOffset
-	def __init__(self, type, width, offset, bitOffset=0):
+	def __init__(self, type, width, value):
 		self.type = type
 		self.width = width
-		self.offset = offset
-		self.bitOffset = bitOffset
+		self.value = value
 		self.labelIndex = None
 		self.insn = None
 		self.setExtended(False)
@@ -78,19 +104,19 @@ class AwlOperator(object):
 		self.type = newType
 
 	def setOffset(self, newByteOffset, newBitOffset):
-		self.offset = newByteOffset
-		self.bitOffset = newBitOffset
+		#TODO
+		self.value = AwlOffset(newByteOffset, newBitOffset)
 
 	def setWidth(self, newWidth):
 		self.width = newWidth
 
 	@property
 	def immediate(self):
-		return self.offset
+		return self.value
 
 	@property
 	def label(self):
-		return self.offset
+		return self.value
 
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
@@ -100,12 +126,12 @@ class AwlOperator(object):
 		   not isinstance(types, tuple):
 			types = [ types, ]
 		if not self.type in types:
-			raise AwlSimError("Operator is type is invalid")
+			raise AwlSimError("Operator type is invalid")
 		if lowerLimit is not None:
-			if self.offset < lowerLimit:
+			if self.value < lowerLimit:
 				raise AwlSimError("Operator value too small")
 		if upperLimit is not None:
-			if self.offset > upperLimit:
+			if self.value > upperLimit:
 				raise AwlSimError("Operator value too big")
 
 	type2str = {
@@ -152,91 +178,87 @@ class AwlOperator(object):
 			pfx = self.type2prefix[self.type]
 			if self.width == 1:
 				return "%s %d.%d" %\
-					(pfx, self.offset, self.bitOffset)
+					(pfx, self.value.byteOffset, self.value.bitOffset)
 			elif self.width == 8:
-				return "%sB %d" % (pfx, self.offset)
+				return "%sB %d" % (pfx, self.value.byteOffset)
 			elif self.width == 16:
-				return "%sW %d" % (pfx, self.offset)
+				return "%sW %d" % (pfx, self.value.byteOffset)
 			elif self.width == 32:
-				return "%sD %d" % (pfx, self.offset)
+				return "%sD %d" % (pfx, self.value.byteOffset)
 		elif self.type == self.MEM_DB:
 			if self.width == 1:
-				return "DBX %d.%d" % (self.offset, self.bitOffset)
+				return "DBX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
 			elif self.width == 8:
-				return "DBB %d" % self.offset
+				return "DBB %d" % self.value.byteOffset
 			elif self.width == 16:
-				return "DBW %d" % self.offset
+				return "DBW %d" % self.value.byteOffset
 			elif self.width == 32:
-				return "DBD %d" % self.offset
+				return "DBD %d" % self.value.byteOffset
 		elif self.type == self.MEM_DI:
 			if self.width == 1:
-				return "DIX %d.%d" % (self.offset, self.bitOffset)
+				return "DIX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
 			elif self.width == 8:
-				return "DIB %d" % self.offset
+				return "DIB %d" % self.value.byteOffset
 			elif self.width == 16:
-				return "DIW %d" % self.offset
+				return "DIW %d" % self.value.byteOffset
 			elif self.width == 32:
-				return "DID %d" % self.offset
+				return "DID %d" % self.value.byteOffset
 		elif self.type == self.MEM_T:
-			return "T %d" % self.offset
+			return "T %d" % self.value.byteOffset
 		elif self.type == self.MEM_Z:
-			return "Z %d" % self.offset
+			return "Z %d" % self.value.byteOffset
 		elif self.type == self.MEM_PA:
 			if self.width == 8:
-				return "PAB %d" % self.offset
+				return "PAB %d" % self.value.byteOffset
 			elif self.width == 16:
-				return "PAW %d" % self.offset
+				return "PAW %d" % self.value.byteOffset
 			elif self.width == 32:
-				return "PAD %d" % self.offset
+				return "PAD %d" % self.value.byteOffset
 		elif self.type == self.MEM_PE:
 			if self.width == 8:
-				return "PEB %d" % self.offset
+				return "PEB %d" % self.value.byteOffset
 			elif self.width == 16:
-				return "PEW %d" % self.offset
+				return "PEW %d" % self.value.byteOffset
 			elif self.width == 32:
-				return "PED %d" % self.offset
+				return "PED %d" % self.value.byteOffset
 		elif self.type == self.MEM_STW:
-			return "__STW " + S7StatusWord.nr2name[self.bitOffset]
+			return "__STW " + S7StatusWord.nr2name[self.value.bitOffset]
 		elif self.type == self.LBL_REF:
 			return self.label
 		elif self.type == self.BLKREF_FC:
-			return "FC %d" % self.offset
+			return "FC %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_SFC:
-			return "SFC %d" % self.offset
+			return "SFC %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_FB:
-			return "FB %d" % self.offset
+			return "FB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_SFB:
-			return "SFB %d" % self.offset
+			return "SFB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_DB:
-			return "DB %d" % self.offset
+			return "DB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_DI:
-			return "DI %d" % self.offset
+			return "DI %d" % self.value.byteOffset
 		elif self.type == self.NAMED_LOCAL:
-			return "#%s" % self.offset
+			return "#%s" % self.value
 		elif self.type == self.INTERF_DB:
 			return "__INTERFACE_DB" #FIXME
 		elif self.type == self.VIRT_ACCU:
-			return "__ACCU %d" % self.offset
+			return "__ACCU %d" % self.value
 		elif self.type == self.VIRT_AR:
-			return "__AR %d" % self.offset
+			return "__AR %d" % self.value
 		assert(0)
 
 	@classmethod
 	def fetchFromByteArray(cls, array, operator):
-		width, byteOff, bitOff =\
-			operator.width, operator.offset, operator.bitOffset
+		width, byteOff = operator.width, operator.value.byteOffset
 		try:
 			if width == 1:
-				return array[byteOff].getBit(bitOff)
+				return array[byteOff].getBit(operator.value.bitOffset)
 			elif width == 8:
-				assert(bitOff == 0)
 				return array[byteOff].get()
 			elif width == 16:
-				assert(bitOff == 0)
 				return (array[byteOff].get() << 8) |\
 				       array[byteOff + 1].get()
 			elif width == 32:
-				assert(bitOff == 0)
 				return (array[byteOff].get() << 24) |\
 				       (array[byteOff + 1].get() << 16) |\
 				       (array[byteOff + 2].get() << 8) |\
@@ -247,20 +269,16 @@ class AwlOperator(object):
 
 	@classmethod
 	def storeToByteArray(cls, array, operator, value):
-		width, byteOff, bitOff =\
-			operator.width, operator.offset, operator.bitOffset
+		width, byteOff = operator.width, operator.value.byteOffset
 		try:
 			if width == 1:
-				array[byteOff].setBitValue(bitOff, value)
+				array[byteOff].setBitValue(operator.value.bitOffset, value)
 			elif width == 8:
-				assert(bitOff == 0)
 				array[byteOff].set(value)
 			elif width == 16:
-				assert(bitOff == 0)
 				array[byteOff].set(value >> 8)
 				array[byteOff + 1].set(value)
 			elif width == 32:
-				assert(bitOff == 0)
 				array[byteOff].set(value >> 24)
 				array[byteOff + 1].set(value >> 16)
 				array[byteOff + 2].set(value >> 8)

@@ -25,11 +25,17 @@ class OpDescriptor(object):
 		self.offset = offset
 		self.fieldCount = fieldCount
 
+		self.indirectOpDesc = None
+
 	def dup(self):
+		#FIXME
+		if isinstance(self.offset, AwlOffset):
+			offset = AwlOffset(self.offset.byteOffset,
+					   self.offset.bitOffset)
+		else:
+			offset = self.offset
 		return OpDescriptor(self.operType, self.width,
-				    AwlOffset(self.offset.byteOffset,
-				    	      self.offset.bitOffset),
-				    self.fieldCount)
+				    offset, self.fieldCount)
 
 class AwlOpTranslator(object):
 	"Instruction operator translator"
@@ -140,19 +146,17 @@ class AwlOpTranslator(object):
 		"__AR"	 : OpDescriptor(AwlOperator.VIRT_AR, 32,
 					AwlOffset(-1, 0), 2),
 		"__CNST_PI" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					   AwlOffset(pyFloatToDWord(math.pi), 0),
-					   1),
+					   pyFloatToDWord(math.pi), 1),
 		"__CNST_E" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					  AwlOffset(pyFloatToDWord(math.e), 0),
-					  1),
+					  pyFloatToDWord(math.e), 1),
 		"__CNST_PINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     AwlOffset(posInfDWord, 0), 1),
+					     posInfDWord, 1),
 		"__CNST_NINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     AwlOffset(negInfDWord, 0), 1),
+					     negInfDWord, 1),
 		"__CNST_PNAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     AwlOffset(pNaNDWord, 0), 1),
+					     pNaNDWord, 1),
 		"__CNST_NNAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     AwlOffset(nNaNDWord, 0), 1),
+					     nNaNDWord, 1),
 	}
 
 	__english2german = {
@@ -194,6 +198,11 @@ class AwlOpTranslator(object):
 	def __translateAddressOperator(self, opDesc, rawOps):
 		if len(rawOps) < 1:
 			raise AwlSimError("Missing address operator")
+		if rawOps[0] == '[':
+			# Indirect addressing
+			pass#TODO
+			raise AwlSimError("Indirect addressing not implemented, yet")
+		# Direct addressing
 		if opDesc.width == 1:
 			if opDesc.offset.byteOffset == 0 and opDesc.offset.bitOffset == -1:
 				try:
@@ -238,7 +247,7 @@ class AwlOpTranslator(object):
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
 			return OpDescriptor(AwlOperator.LBL_REF, 0,
-					    AwlOffset(rawOps[0], 0), 1)
+					    rawOps[0], 1)
 		try:
 			# Constant operator (from table)
 			if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
@@ -252,7 +261,7 @@ class AwlOpTranslator(object):
 		# Local variable
 		if rawOps[0].startswith('#'):
 			return OpDescriptor(AwlOperator.NAMED_LOCAL, 0,
-					    AwlOffset(rawOps[0][1:], 0), 1)
+					    rawOps[0][1:], 1)
 		# Symbolic name
 		if rawOps[0].startswith('"') and rawOps[0].endswith('"'):
 			pass#TODO
@@ -261,32 +270,32 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			immediate &= 0xFFFF
 			return OpDescriptor(AwlOperator.IMM, 16,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Immediate float
 		immediate = AwlDataType.tryParseImmediate_REAL(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_REAL, 32,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# S5Time immediate
 		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_S5T, 0,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Time immediate
 		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_TIME, 0,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# TOD immediate
 		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_TOD, 0,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Date immediate
 		immediate = AwlDataType.tryParseImmediate_Date(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM_DATE, 0,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Pointer immediate
 		#TODO
 		# Binary immediate
@@ -294,38 +303,38 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			size = 32 if (immediate > 0xFFFF) else 16
 			return OpDescriptor(AwlOperator.IMM, size,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Byte array immediate
 		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
 		if immediate is not None:
 			size = 32 if fields == 9 else 16
 			return OpDescriptor(AwlOperator.IMM, size,
-					    AwlOffset(immediate, 0), fields)
+					    immediate, fields)
 		# Hex byte immediate
 		immediate = AwlDataType.tryParseImmediate_HexByte(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 8,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Hex word immediate
 		immediate = AwlDataType.tryParseImmediate_HexWord(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 16,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Hex dword immediate
 		immediate = AwlDataType.tryParseImmediate_HexDWord(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 32,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# Long integer immediate
 		immediate = AwlDataType.tryParseImmediate_DINT(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 32,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		# BCD word immediate
 		immediate = AwlDataType.tryParseImmediate_BCD_word(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 16,
-					    AwlOffset(immediate, 0), 1)
+					    immediate, 1)
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
@@ -337,7 +346,7 @@ class AwlOpTranslator(object):
 			self.__translateAddressOperator(opDesc, rawOps[1:])
 
 		operator = AwlOperator(opDesc.operType, opDesc.width,
-				       opDesc.offset.byteOffset, opDesc.offset.bitOffset)
+				       opDesc.offset)
 		operator.setExtended(rawOps[0].startswith("__"))
 
 		return opDesc, operator

@@ -237,17 +237,17 @@ class S7CPU(object):
 	def __resolveNamedLocalSym(self, block, oper):
 		# Translate local symbols (#abc)
 		assert(oper.type == AwlOperator.NAMED_LOCAL)
-		interfaceField = block.interface.getFieldByName(oper.offset)
+		interfaceField = block.interface.getFieldByName(oper.value)
 		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
 		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
 		   interfaceField.fieldType == interfaceField.FTYPE_INOUT or\
 		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
 			# Translate to interface-DB access
-			structField = block.interface.struct.getField(oper.offset)
+			structField = block.interface.struct.getField(oper.value)
 			oper.setType(AwlOperator.INTERF_DB)
 		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
 			# Translate to local-stack access
-			structField = block.interface.tempStruct.getField(oper.offset)
+			structField = block.interface.tempStruct.getField(oper.value)
 			oper.setType(AwlOperator.MEM_L)
 		else:
 			assert(0)
@@ -491,7 +491,7 @@ class S7CPU(object):
 			raise AwlSimError("FC call must not "
 				"have DB operand")
 		try:
-			fc = self.fcs[blockOper.offset]
+			fc = self.fcs[blockOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("Called FC not found")
 		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
@@ -509,18 +509,18 @@ class S7CPU(object):
 			raise AwlSimError("FB call must have "
 				"DB operand")
 		try:
-			fb = self.fbs[blockOper.offset]
+			fb = self.fbs[blockOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("Called FB not found")
 		try:
-			db = self.dbs[dbOper.offset]
+			db = self.dbs[dbOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("DB used in FB call not found")
 		if not db.isInstanceDB():
-			raise AwlSimError("DB %d is not an instance DB" % dbOper.offset)
+			raise AwlSimError("DB %d is not an instance DB" % dbOper.value.byteOffset)
 		if db.codeBlock.index != fb.index:
 			raise AwlSimError("DB %d is not an instance DB for FB %d" %\
-				(dbOper.offset, blockOper.offset))
+				(dbOper.value.byteOffset, blockOper.value.byteOffset))
 		return CallStackElem(self, fb, db, db, parameters)
 
 	def __call_SFC(self, blockOper, dbOper):
@@ -528,10 +528,10 @@ class S7CPU(object):
 			raise AwlSimError("SFC call must not "
 				"have DB operand")
 		try:
-			sfc = SFC_table[blockOper.offset]
+			sfc = SFC_table[blockOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("SFC %d not implemented, yet" %\
-					  blockOper.offset)
+					  blockOper.value.byteOffset)
 		sfc.run(self)
 
 	def __call_SFB(self, blockOper, dbOper):
@@ -539,10 +539,10 @@ class S7CPU(object):
 			raise AwlSimError("SFB call must have "
 				"DB operand")
 		try:
-			sfb = SFB_table[blockOper.offset]
+			sfb = SFB_table[blockOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("SFB %d not implemented, yet" %\
-					  blockOper.offset)
+					  blockOper.value.byteOffset)
 		sfb.run(self, dbOper)
 
 	__callHelpers = {
@@ -571,10 +571,10 @@ class S7CPU(object):
 
 	def run_AUF(self, dbOper):
 		try:
-			db = self.dbs[dbOper.offset]
+			db = self.dbs[dbOper.value.byteOffset]
 		except KeyError:
 			raise AwlSimError("Datablock %i does not exist" %\
-					  dbOper.offset)
+					  dbOper.value.byteOffset)
 		if dbOper.type == AwlOperator.BLKREF_DB:
 			self.globDB = db
 		elif dbOper.type == AwlOperator.BLKREF_DI:
@@ -664,7 +664,7 @@ class S7CPU(object):
 
 	def fetchSTW(self, operator):
 		if operator.width == 1:
-			return self.callStackTop.status.getByBitNumber(operator.bitOffset)
+			return self.callStackTop.status.getByBitNumber(operator.value.bitOffset)
 		elif operator.width == 16:
 			return self.callStackTop.status.getWord()
 		else:
@@ -731,7 +731,7 @@ class S7CPU(object):
 		return AwlOperator.fetchFromByteArray(self.inputs, operator)
 
 	def fetchT(self, operator):
-		timer = self.getTimer(operator.offset)
+		timer = self.getTimer(operator.value.byteOffset)
 		if operator.insn.type == AwlInsn.TYPE_L:
 			return timer.getTimevalBin()
 		elif operator.insn.type == AwlInsn.TYPE_LC:
@@ -739,7 +739,7 @@ class S7CPU(object):
 		return timer.get()
 
 	def fetchZ(self, operator):
-		counter = self.getCounter(operator.offset)
+		counter = self.getCounter(operator.value.byteOffset)
 		if operator.insn.type == AwlInsn.TYPE_L:
 			return counter.getValueBin()
 		elif operator.insn.type == AwlInsn.TYPE_LC:
@@ -747,10 +747,10 @@ class S7CPU(object):
 		return counter.get()
 
 	def fetchVirtACCU(self, operator):
-		return self.getAccu(operator.offset).get()
+		return self.getAccu(operator.value.byteOffset).get()
 
 	def fetchVirtAR(self, operator):
-		return self.getAR(operator.offset).get()
+		return self.getAR(operator.value.byteOffset).get()
 
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,

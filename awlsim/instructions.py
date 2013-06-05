@@ -677,11 +677,11 @@ class AwlInsn_R(AwlInsn):
 		oper = self.ops[0]
 		if oper.type == AwlOperator.MEM_Z:
 			if s.VKE:
-				self.cpu.getCounter(oper.offset).reset()
+				self.cpu.getCounter(oper.value.byteOffset).reset()
 			s.OR, s.NER = 0, 0
 		elif oper.type == AwlOperator.MEM_T:
 			if s.VKE:
-				self.cpu.getTimer(oper.offset).reset()
+				self.cpu.getTimer(oper.value.byteOffset).reset()
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and self.cpu.mcrIsOn():
@@ -697,7 +697,7 @@ class AwlInsn_S(AwlInsn):
 		s = self.cpu.callStackTop.status
 		oper = self.ops[0]
 		if oper.type == AwlOperator.MEM_Z:
-			self.cpu.getCounter(oper.offset).set(s.VKE)
+			self.cpu.getCounter(oper.value.byteOffset).set(s.VKE)
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and self.cpu.mcrIsOn():
@@ -1361,7 +1361,7 @@ class AwlInsn_FR(AwlInsn):
 			raise AwlSimError("Invalid operator")
 
 	def run(self):
-		counter = self.cpu.getCounter(self.ops[0].offset)
+		counter = self.cpu.getCounter(self.ops[0].value.byteOffset)
 		counter.run_FR(self.cpu.callStackTop.status.VKE)
 
 class AwlInsn_L(AwlInsn):
@@ -1392,7 +1392,7 @@ class AwlInsn_ZV(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		counter = self.cpu.getCounter(self.ops[0].offset)
+		counter = self.cpu.getCounter(self.ops[0].value.byteOffset)
 		counter.run_ZV(self.cpu.callStackTop.status.VKE)
 		s.OR, s.NER = 0, 0
 
@@ -1405,7 +1405,7 @@ class AwlInsn_ZR(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		counter = self.cpu.getCounter(self.ops[0].offset)
+		counter = self.cpu.getCounter(self.ops[0].value.byteOffset)
 		counter.run_ZR(self.cpu.callStackTop.status.VKE)
 		s.OR, s.NER = 0, 0
 
@@ -2431,7 +2431,7 @@ class AwlInsn_SI(AwlInsn):
 			raise AwlSimError("Timer expected")
 
 	def run(self):
-		timerNumber = self.ops[0].offset
+		timerNumber = self.ops[0].value.byteOffset
 		timer = self.cpu.getTimer(timerNumber)
 		timer.run_SI(self.cpu.accu1.get())
 
@@ -2443,7 +2443,7 @@ class AwlInsn_SV(AwlInsn):
 			raise AwlSimError("Timer expected")
 
 	def run(self):
-		timerNumber = self.ops[0].offset
+		timerNumber = self.ops[0].value.byteOffset
 		timer = self.cpu.getTimer(timerNumber)
 		timer.run_SV(self.cpu.accu1.get())
 
@@ -2455,7 +2455,7 @@ class AwlInsn_SE(AwlInsn):
 			raise AwlSimError("Timer expected")
 
 	def run(self):
-		timerNumber = self.ops[0].offset
+		timerNumber = self.ops[0].value.byteOffset
 		timer = self.cpu.getTimer(timerNumber)
 		timer.run_SE(self.cpu.accu1.get())
 
@@ -2467,7 +2467,7 @@ class AwlInsn_SS(AwlInsn):
 			raise AwlSimError("Timer expected")
 
 	def run(self):
-		timerNumber = self.ops[0].offset
+		timerNumber = self.ops[0].value.byteOffset
 		timer = self.cpu.getTimer(timerNumber)
 		timer.run_SS(self.cpu.accu1.get())
 
@@ -2479,7 +2479,7 @@ class AwlInsn_SA(AwlInsn):
 			raise AwlSimError("Timer expected")
 
 	def run(self):
-		timerNumber = self.ops[0].offset
+		timerNumber = self.ops[0].value.byteOffset
 		timer = self.cpu.getTimer(timerNumber)
 		timer.run_SA(self.cpu.accu1.get())
 
