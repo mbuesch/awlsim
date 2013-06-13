@@ -36,7 +36,7 @@ class AwlLabel(object):
 			for op in insn.ops:
 				if op.type != AwlOperator.LBL_REF:
 					continue
-				labelIndex = AwlLabel.findInList(labels, op.label)
+				labelIndex = AwlLabel.findInList(labels, op.value)
 				if labelIndex is None:
 					raise AwlSimError("line %d: Referenced label not found" %\
 						insn.getLineNr())

@@ -87,10 +87,6 @@ class AwlOperator(object):
 	def setWidth(self, newWidth):
 		self.width = newWidth
 
-	@property
-	def label(self):
-		return self.value
-
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
 
@@ -197,7 +193,7 @@ class AwlOperator(object):
 		elif self.type == self.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name[self.value.bitOffset]
 		elif self.type == self.LBL_REF:
-			return self.label
+			return self.value
 		elif self.type == self.BLKREF_FC:
 			return "FC %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_SFC:
