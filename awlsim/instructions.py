@@ -2222,7 +2222,7 @@ class AwlInsn_SSI(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getSignedWord()
 		if self.ops:
-			count = self.ops[0].immediate
+			count = self.ops[0].value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
@@ -2243,7 +2243,7 @@ class AwlInsn_SSD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getSignedDWord()
 		if self.ops:
-			count = self.ops[0].immediate
+			count = self.ops[0].value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
@@ -2264,7 +2264,7 @@ class AwlInsn_SLW(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
-			count = self.ops[0].immediate
+			count = self.ops[0].value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
@@ -2285,7 +2285,7 @@ class AwlInsn_SRW(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
-			count = self.ops[0].immediate
+			count = self.ops[0].value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
@@ -2306,7 +2306,7 @@ class AwlInsn_SLD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			count = self.ops[0].immediate
+			count = self.ops[0].value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
@@ -2327,7 +2327,7 @@ class AwlInsn_SRD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			count = self.ops[0].immediate
+			count = self.ops[0].value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
@@ -2494,7 +2494,7 @@ class AwlInsn_UW(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
-			accu2 = self.ops[0].immediate
+			accu2 = self.ops[0].value
 		else:
 			accu2 = self.cpu.accu2.getWord()
 		accu1 &= accu2
@@ -2513,7 +2513,7 @@ class AwlInsn_OW(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
-			accu2 = self.ops[0].immediate
+			accu2 = self.ops[0].value
 		else:
 			accu2 = self.cpu.accu2.getWord()
 		accu1 |= accu2
@@ -2532,7 +2532,7 @@ class AwlInsn_XOW(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getWord()
 		if self.ops:
-			accu2 = self.ops[0].immediate
+			accu2 = self.ops[0].value
 		else:
 			accu2 = self.cpu.accu2.getWord()
 		accu1 ^= accu2
@@ -2551,7 +2551,7 @@ class AwlInsn_UD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			accu2 = self.ops[0].immediate
+			accu2 = self.ops[0].value
 		else:
 			accu2 = self.cpu.accu2.getDWord()
 		accu1 &= accu2
@@ -2570,7 +2570,7 @@ class AwlInsn_OD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			accu2 = self.ops[0].immediate
+			accu2 = self.ops[0].value
 		else:
 			accu2 = self.cpu.accu2.getDWord()
 		accu1 |= accu2
@@ -2589,7 +2589,7 @@ class AwlInsn_XOD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			accu2 = self.ops[0].immediate
+			accu2 = self.ops[0].value
 		else:
 			accu2 = self.cpu.accu2.getDWord()
 		accu1 ^= accu2
@@ -2653,7 +2653,7 @@ class AwlInsn_INC(AwlInsn):
 
 	def run(self):
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() +\
-				       self.ops[0].immediate)
+				       self.ops[0].value)
 
 class AwlInsn_DEC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
@@ -2663,7 +2663,7 @@ class AwlInsn_DEC(AwlInsn):
 
 	def run(self):
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() -\
-				       self.ops[0].immediate)
+				       self.ops[0].value)
 
 class AwlInsn_INCAR1(AwlInsn):
 	def __init__(self, cpu, rawInsn):

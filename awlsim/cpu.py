@@ -654,13 +654,13 @@ class S7CPU(object):
 		return fetchMethod(self, operator)
 
 	def fetchIMM(self, operator):
-		return operator.immediate
+		return operator.value
 
 	def fetchIMM_REAL(self, operator):
-		return operator.immediate
+		return operator.value
 
 	def fetchIMM_S5T(self, operator):
-		return operator.immediate
+		return operator.value
 
 	def fetchIMM_PTR(self, operator):
 		return operator.value.toPointerValue()

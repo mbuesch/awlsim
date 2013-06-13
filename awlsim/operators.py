@@ -88,10 +88,6 @@ class AwlOperator(object):
 		self.width = newWidth
 
 	@property
-	def immediate(self):
-		return self.value
-
-	@property
 	def label(self):
 		return self.value
 
@@ -137,11 +133,11 @@ class AwlOperator(object):
 			pass
 		if self.type == self.IMM:
 			if self.width == 16:
-				return str(self.immediate)
+				return str(self.value)
 			elif self.width == 32:
-				return "L#" + str(self.immediate)
+				return "L#" + str(self.value)
 		if self.type == self.IMM_REAL:
-			return str(dwordToPyFloat(self.immediate))
+			return str(dwordToPyFloat(self.value))
 		elif self.type == self.IMM_S5T:
 			return "S5T#" #TODO
 		elif self.type == self.IMM_TIME:
