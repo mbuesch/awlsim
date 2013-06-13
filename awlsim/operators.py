@@ -11,33 +11,6 @@ from awlsim.statusword import *
 from awlsim.util import *
 
 
-class AwlIndirectOp(object):
-	"Indirect addressing operand"
-
-	enum.start
-	AR_1		= enum.item	# Use AR1
-	AR_2		= enum.item	# Use AR2
-	enum.end
-
-	# Pointer area encodings
-	enum.start = 0x80
-	AREA_P		= enum.item	# Peripheral area
-	AREA_E		= enum.item	# Input
-	AREA_A		= enum.item	# Output
-	AREA_M		= enum.item	# Flags
-	AREA_DB		= enum.item	# Global datablock
-	AREA_DI		= enum.item	# Instance datablock
-	AREA_L		= enum.item	# Localstack
-	AREA_VL		= enum.item	# Parent localstack
-	enum.end
-
-	def __init__(self, area, width, addressRegister, offsetOper):
-		self.area = area
-		self.width = width
-		assert(width in (1, 8, 16, 32))
-		self.addressRegister = addressRegister
-		self.offsetOper = offsetOper
-
 class AwlOperator(object):
 	enum.start	# Operator types
 
@@ -47,11 +20,13 @@ class AwlOperator(object):
 	IMM_TIME	= enum.item	# T# immediate
 	IMM_DATE	= enum.item	# D# immediate
 	IMM_TOD		= enum.item	# TOD# immediate
+	IMM_PTR		= enum.item	# Pointer immediate
 
 	MEM_E		= enum.item	# Input
 	MEM_A		= enum.item	# Output
 	MEM_M		= enum.item	# Flags
 	MEM_L		= enum.item	# Localstack
+	MEM_VL		= enum.item	# Parent localstack (indirect access)
 	MEM_DB		= enum.item	# Global datablock
 	MEM_DI		= enum.item	# Instance datablock
 	MEM_T		= enum.item	# Timer
@@ -79,6 +54,8 @@ class AwlOperator(object):
 
 	NAMED_LOCAL	= enum.item	# Named local reference (#abc)
 	INTERF_DB	= enum.item	# Interface-DB access (translated NAMED_LOCAL)
+
+	INDIRECT	= enum.item	# Indirect access
 
 	# Virtual operators used for debugging of the simulator
 	VIRT_ACCU	= enum.item	# Accu
@@ -287,3 +264,116 @@ class AwlOperator(object):
 				assert(0)
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset out of range")
+
+class AwlIndirectOp(AwlOperator):
+	"Indirect addressing operand"
+
+	# Address register
+	enum.start
+	AR_NONE		= enum.item		# No address register
+	AR_1		= enum.itemAt(1)	# Use AR1
+	AR_2		= enum.itemAt(2)	# Use AR2
+	enum.end
+
+	# Pointer area constants
+	AREA_SHIFT	= 24
+	AREA_MASK	= 0xFF << AREA_SHIFT
+
+	# Pointer area encodings
+	enum.start	= 0x80
+	AREA_NONE	= 0
+	AREA_P		= enum.item << AREA_SHIFT  # Peripheral area
+	AREA_E		= enum.item << AREA_SHIFT  # Input
+	AREA_A		= enum.item << AREA_SHIFT  # Output
+	AREA_M		= enum.item << AREA_SHIFT  # Flags
+	AREA_DB		= enum.item << AREA_SHIFT  # Global datablock
+	AREA_DI		= enum.item << AREA_SHIFT  # Instance datablock
+	AREA_L		= enum.item << AREA_SHIFT  # Localstack
+	AREA_VL		= enum.item << AREA_SHIFT  # Parent localstack
+	enum.end
+
+	# Convert area code to operator type for fetch operations
+	area2optype_fetch = {
+		AREA_P		: AwlOperator.MEM_PE,
+		AREA_E		: AwlOperator.MEM_E,
+		AREA_A		: AwlOperator.MEM_A,
+		AREA_M		: AwlOperator.MEM_M,
+		AREA_DB		: AwlOperator.MEM_DB,
+		AREA_DI		: AwlOperator.MEM_DI,
+		AREA_L		: AwlOperator.MEM_L,
+		AREA_VL		: AwlOperator.MEM_VL,
+	}
+
+	# Convert area code to operator type for store operations
+	area2optype_store = {
+		AREA_P		: AwlOperator.MEM_PA,
+		AREA_E		: AwlOperator.MEM_E,
+		AREA_A		: AwlOperator.MEM_A,
+		AREA_M		: AwlOperator.MEM_M,
+		AREA_DB		: AwlOperator.MEM_DB,
+		AREA_DI		: AwlOperator.MEM_DI,
+		AREA_L		: AwlOperator.MEM_L,
+		AREA_VL		: AwlOperator.MEM_VL,
+	}
+
+	def __init__(self, area, width, addressRegister, offsetOper):
+		AwlOperator.__init__(self,
+				     type = AwlOperator.INDIRECT,
+				     width = width,
+				     value = None)
+		assert(width in (1, 8, 16, 32))
+		self.area = area
+		self.addressRegister = addressRegister
+		self.offsetOper = offsetOper
+
+	# Resolve this indirect operator to a direct operator.
+	def resolve(self, cpu, store=True):
+		offsetOper = self.offsetOper
+		# Construct the pointer
+		if self.addressRegister == AwlIndirectOp.AR_NONE:
+			# Indirect access
+			if self.area == AwlIndirectOp.AREA_NONE:
+				raise AwlSimError("Area-spanning access not "
+					"possible in indirect access without "
+					"address register.")
+			if offsetOper.type not in (AwlOperator.MEM_M,
+						   AwlOperator.MEM_L,
+						   AwlOperator.MEM_DB,
+						   AwlOperator.MEM_DI):
+				raise AwlSimError("Offset operator in indirect "
+					"access is not a valid memory offset.")
+			if offsetOper.width != 32:
+				raise AwlSimError("Offset operator in indirect "
+					"access is not of DWORD width.")
+			offsetValue = cpu.fetch(offsetOper)
+			pointer = (self.area | (offsetValue & 0x00FFFFFF))
+		else:
+			# Register-indirect access
+			if offsetOper.type != AwlOperator.IMM_PTR:
+				raise AwlSimError("Offset operator in "
+					"register-indirect access is not a "
+					"pointer immediate.")
+			offsetValue = cpu.fetch(offsetOper)
+			if self.area == AwlIndirectOp.AREA_NONE:
+				# Area-spanning access
+				pointer = (cpu.getAR(self.addressRegister) +\
+					   offsetValue) & 0xFFFFFFFF
+			else:
+				# Area-internal access
+				pointer = ((cpu.getAR(operator.addressRegister) +
+					    offsetValue) & 0x00FFFFFF) |\
+					  self.area
+		# Create a direct operator
+		try:
+			if store:
+				optype = AwlIndirectOp.area2optype_store[
+						pointer & AwlIndirectOp.AREA_MASK]
+			else:
+				optype = AwlIndirectOp.area2optype_fetch[
+						pointer & AwlIndirectOp.AREA_MASK]
+		except KeyError:
+			raise AwlSimError("Invalid area code %02Xh" %\
+				((pointer & AwlIndirectOp.AREA_MASK) >>\
+				 AwlIndirectOp.AREA_SHIFT))
+		return AwlOperator(optype, operator.width,
+				   AwlOffset.fromPointerValue(pointer))

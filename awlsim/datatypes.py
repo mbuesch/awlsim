@@ -18,6 +18,15 @@ class AwlOffset(object):
 		self.byteOffset = byteOffset
 		self.bitOffset = bitOffset
 
+	@classmethod
+	def fromPointerValue(cls, value):
+		return AwlOffset((value & 0x00FFFFF8) >> 3,
+				 (value & 0x7))
+
+	def toPointerValue(self):
+		return ((self.byteOffset << 3) & 0x00FFFFF8) |\
+		       (self.bitOffset & 0x7)
+
 class AwlDataType(object):
 	# Data type IDs
 	enum.start

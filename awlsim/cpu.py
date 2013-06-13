@@ -662,6 +662,9 @@ class S7CPU(object):
 	def fetchIMM_S5T(self, operator):
 		return operator.immediate
 
+	def fetchIMM_PTR(self, operator):
+		return operator.value.toPointerValue()
+
 	def fetchSTW(self, operator):
 		if operator.width == 1:
 			return self.callStackTop.status.getByBitNumber(operator.value.bitOffset)
@@ -703,6 +706,14 @@ class S7CPU(object):
 	def fetchL(self, operator):
 		return AwlOperator.fetchFromByteArray(self.callStackTop.localdata,
 						      operator)
+
+	def fetchVL(self, operator):
+		try:
+			cse = self.callStack[-2]
+		except IndexError:
+			raise AwlSimError("Fetch of parent localstack, "
+				"but no parent present.")
+		return AwlOperator.fetchFromByteArray(cse.localdata, operator)
 
 	def fetchDB(self, operator):
 		if not self.globDB:
@@ -746,6 +757,9 @@ class S7CPU(object):
 			return counter.getValueBCD()
 		return counter.get()
 
+	def fetchINDIRECT(self, operator):
+		return self.fetch(operator.resolve(self, False))
+
 	def fetchVirtACCU(self, operator):
 		return self.getAccu(operator.value.byteOffset).get()
 
@@ -756,10 +770,12 @@ class S7CPU(object):
 		AwlOperator.IMM			: fetchIMM,
 		AwlOperator.IMM_REAL		: fetchIMM_REAL,
 		AwlOperator.IMM_S5T		: fetchIMM_S5T,
+		AwlOperator.IMM_PTR		: fetchIMM_PTR,
 		AwlOperator.MEM_E		: fetchE,
 		AwlOperator.MEM_A		: fetchA,
 		AwlOperator.MEM_M		: fetchM,
 		AwlOperator.MEM_L		: fetchL,
+		AwlOperator.MEM_VL		: fetchVL,
 		AwlOperator.MEM_DB		: fetchDB,
 		AwlOperator.MEM_DI		: fetchDI,
 		AwlOperator.MEM_T		: fetchT,
@@ -774,6 +790,7 @@ class S7CPU(object):
 		AwlOperator.MEM_STW_NEGZ	: fetchSTW_NEGZ,
 		AwlOperator.MEM_STW_UO		: fetchSTW_UO,
 		AwlOperator.INTERF_DB		: fetchINTERF_DB,
+		AwlOperator.INDIRECT		: fetchINDIRECT,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
 	}
@@ -799,6 +816,14 @@ class S7CPU(object):
 	def storeL(self, operator, value):
 		AwlOperator.storeToByteArray(self.callStackTop.localdata,
 					     operator, value)
+
+	def storeVL(self, operator, value):
+		try:
+			cse = self.callStack[-2]
+		except IndexError:
+			raise AwlSimError("Store to parent localstack, "
+				"but no parent present.")
+		AwlOperator.storeToByteArray(cse.localdata, operator, value)
 
 	def storeDB(self, operator, value):
 		if not self.globDB:
@@ -834,16 +859,21 @@ class S7CPU(object):
 		else:
 			assert(0)
 
+	def storeINDIRECT(self, operator, value):
+		self.store(operator.resolve(self, True), value)
+
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
 		AwlOperator.MEM_M		: storeM,
 		AwlOperator.MEM_L		: storeL,
+		AwlOperator.MEM_VL		: storeVL,
 		AwlOperator.MEM_DB		: storeDB,
 		AwlOperator.MEM_DI		: storeDI,
 		AwlOperator.MEM_PA		: storePA,
 		AwlOperator.MEM_STW		: storeSTW,
 		AwlOperator.INTERF_DB		: storeINTERF_DB,
+		AwlOperator.INDIRECT		: storeINDIRECT,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):
