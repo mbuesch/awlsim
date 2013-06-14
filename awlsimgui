@@ -130,7 +130,8 @@ class BitDisplayWidget(AbstractDisplayWidget):
 
 	def update(self):
 		try:
-			oper = AwlOperator(self.addrSpace, self.width, self.addr)
+			oper = AwlOperator(self.addrSpace, self.width,
+					   AwlOffset(self.addr))
 			value = self.sim.getCPU().fetch(oper)
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Failed to fetch",
@@ -195,7 +196,8 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 
 	def update(self):
 		try:
-			oper = AwlOperator(self.addrSpace, self.width, self.addr)
+			oper = AwlOperator(self.addrSpace, self.width,
+					   AwlOffset(self.addr))
 			value = self.sim.getCPU().fetch(oper)
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Failed to fetch",
@@ -338,7 +340,8 @@ class State_Mem(StateWindow):
 		index = self.widthCombo.currentIndex()
 		width = self.widthCombo.itemData(index)
 		try:
-			oper = AwlOperator(self.addrSpace, width, addr) 
+			oper = AwlOperator(self.addrSpace, width,
+					   AwlOffset(addr))
 			self.sim.getCPU().store(oper, value)
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Failed to store",
@@ -414,7 +417,8 @@ class State_LCD(StateWindow):
 		endian = self.getEndian()
 
 		try:
-			oper = AwlOperator(AwlOperator.MEM_A, width, addr)
+			oper = AwlOperator(AwlOperator.MEM_A, width,
+					   AwlOffset(addr))
 			value = self.sim.getCPU().fetch(oper)
 		except AwlSimError as e:
 			QMessageBox.critical(self, "Failed to fetch",
