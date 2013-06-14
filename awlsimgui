@@ -1205,8 +1205,6 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("Help", self)
-		menu.addAction("&Instruction support...", self.aboutInsns)
-		menu.addSeparator()
 		menu.addAction("&About...", self.about)
 		self.menuBar().addMenu(menu)
 
@@ -1260,29 +1258,6 @@ class MainWindow(QMainWindow):
 				return
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
-
-	def aboutInsns(self):
-		suppTypes, unsuppTypes = [], []
-		for insnType in AwlInsnTranslator.type2class.keys():
-			if insnType == AwlInsn.TYPE_INVALID or\
-			   insnType >= AwlInsn.TYPE_EXTENDED:
-				continue
-			cls = AwlInsnTranslator.type2class[insnType]
-			if cls == AwlInsn_NotImplemented:
-				unsuppTypes.append(insnType)
-			else:
-				suppTypes.append(insnType)
-		text = [ "Supported instructions (%d):\n" % len(suppTypes) ]
-		suppInsns = [ AwlInsn.type2name[t] for t in suppTypes ]
-		suppInsns.sort()
-		unsuppInsns = [ AwlInsn.type2name[t] for t in unsuppTypes ]
-		unsuppInsns.sort()
-		text.append(" ,  ".join(suppInsns) + "\n")
-		text.append("\nUnsupported instructions (%d):\n" % len(unsuppTypes))
-		text.append(" ,  ".join(unsuppInsns) + "\n")
-		QMessageBox.information(self,
-			"About S7 AWL simulator instructions",
-			"".join(text))
 
 	def about(self):
 		QMessageBox.information(self, "About S7 AWL simulator",
