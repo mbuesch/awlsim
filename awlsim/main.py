@@ -11,7 +11,7 @@ from awlsim.util import *
 
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 9
+VERSION_MINOR = 10
 
 
 class AwlSim(object):
