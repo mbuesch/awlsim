@@ -1,0 +1,11 @@
+=== Incomplete awlsim TODO list ===
+
+- AUTHOR/FAMILY header fields
+- Indirect addressing (pointers)
+- ANY pointer
+- DBx.DBxx addressing
+- DATE_AND_TIME data type
+- Symbols
+- OB1 header
+- Pushbuttons in E/A GUI
+- Advanced editor features
