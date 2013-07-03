@@ -8,6 +8,5 @@
 - Symbols
 - OB1 header
 - English mnemonics for status-word bits
-- Pushbuttons in E/A GUI
 - User defined data types (UDT)
 - Advanced editor features

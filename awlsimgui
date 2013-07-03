@@ -108,18 +108,41 @@ class AbstractDisplayWidget(QWidget):
 		pass
 
 class BitDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, parent=None):
+	def __init__(self, sim, addrSpace, addr, width,
+		     parent=None,
+		     displayPushButtons=True):
 		AbstractDisplayWidget.__init__(self, sim, addrSpace,
 					       addr, width, parent)
 
 		self.cbs = []
+		self.pbs = []
+		self.prevButtonStates = []
 		for i in range(self.width):
 			cb = QCheckBox(str(i), self)
 			self.layout().addWidget(cb, 0, self.width - i - 1)
 			self.cbs.append(cb)
 			cb.stateChanged.connect(self.changed)
+			if displayPushButtons:
+				pb = QPushButton("", self)
+				self.layout().addWidget(pb, 1, self.width - i - 1)
+				self.pbs.append(pb)
+				self.prevButtonStates.append(False)
+				pb.pressed.connect(self.__buttonUpdate)
+				pb.released.connect(self.__buttonUpdate)
 
 		self.update()
+
+	def __buttonUpdate(self):
+		for i, pb in enumerate(self.pbs):
+			pressed = bool(pb.isDown())
+			if pressed == self.prevButtonStates[i]:
+				continue
+			self.prevButtonStates[i] = pressed
+
+			if self.cbs[i].checkState() == Qt.Checked:
+				self.cbs[i].setCheckState(Qt.Unchecked)
+			else:
+				self.cbs[i].setCheckState(Qt.Checked)
 
 	def get(self):
 		value = 0
@@ -310,7 +333,8 @@ class State_Mem(StateWindow):
 		if fmt == "cb":
 			self.contentWidget = BitDisplayWidget(self.sim,
 							      self.addrSpace,
-							      addr, width, self)
+							      addr, width, self,
+							      displayPushButtons=True)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "hex":
 			self.contentWidget = HexDisplayWidget(self.sim,
