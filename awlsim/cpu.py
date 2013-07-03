@@ -234,9 +234,11 @@ class S7CPU(object):
 		db.allocate()
 		return db
 
+	# Translate local symbols (#abc)
 	def __resolveNamedLocalSym(self, block, oper):
-		# Translate local symbols (#abc)
-		assert(oper.type == AwlOperator.NAMED_LOCAL)
+		if oper.type != AwlOperator.NAMED_LOCAL:
+			return oper
+
 		interfaceField = block.interface.getFieldByName(oper.value)
 		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
 		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
@@ -244,22 +246,28 @@ class S7CPU(object):
 		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
 			# Translate to interface-DB access
 			structField = block.interface.struct.getField(oper.value)
-			oper.setType(AwlOperator.INTERF_DB)
+			if structField.dataType in BlockInterface.callByRef_Types:
+				# "call by reference"
+				assert(0)
+				pass#TODO
+			else:
+				# "call by value"
+				newOperType = AwlOperator.INTERF_DB
 		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
 			# Translate to local-stack access
 			structField = block.interface.tempStruct.getField(oper.value)
-			oper.setType(AwlOperator.MEM_L)
+			newOperType = AwlOperator.MEM_L
 		else:
 			assert(0)
-		oper.setWidth(structField.bitSize)
-		oper.setOffset(structField.offset.byteOffset,
-			       structField.offset.bitOffset)
+		return AwlOperator(type=newOperType,
+				   width=structField.bitSize,
+				   value=structField.offset.dup())
 
 	def __resolveSymbols_block(self, block):
 		for insn in block.insns:
-			for oper in insn.ops:
-				if oper.type == AwlOperator.NAMED_LOCAL:
-					self.__resolveNamedLocalSym(block, oper)
+			for i in range(len(insn.ops)):
+				insn.ops[i] = self.__resolveNamedLocalSym(block,
+								insn.ops[i])
 
 	def __resolveSymbols(self):
 		for ob in self.obs.values():

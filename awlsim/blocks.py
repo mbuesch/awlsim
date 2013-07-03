@@ -8,6 +8,7 @@
 
 from awlsim.labels import *
 from awlsim.datastructure import *
+from awlsim.datatypes import *
 from awlsim.util import *
 
 
@@ -27,6 +28,12 @@ class BlockInterface(object):
 			self.dataType = dataType
 			self.fieldType = self.FTYPE_UNKNOWN
 			self.initialValue = initialValue
+
+	# Data-types that must be passed "by-reference" to FCs/FBs.
+	callByRef_Types = (
+		AwlDataType.TYPE_TIMER,
+		AwlDataType.TYPE_COUNTER,
+	)
 
 	def __init__(self):
 		self.struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)

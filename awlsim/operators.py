@@ -78,16 +78,6 @@ class AwlOperator(object):
 	def setExtended(self, isExtended):
 		self.isExtended = isExtended
 
-	def setType(self, newType):
-		self.type = newType
-
-	def setOffset(self, newByteOffset, newBitOffset):
-		#TODO
-		self.value = AwlOffset(newByteOffset, newBitOffset)
-
-	def setWidth(self, newWidth):
-		self.width = newWidth
-
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
 
