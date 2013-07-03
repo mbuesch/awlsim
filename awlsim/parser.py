@@ -175,15 +175,18 @@ class AwlParser(object):
 	STATE_IN_FB_HDR_VAROUT		= enum.item
 	STATE_IN_FB_HDR_VARINOUT	= enum.item
 	STATE_IN_FB_HDR_VARTEMP		= enum.item
+	STATE_IN_FB_HDR_ATTR		= enum.item
 	STATE_IN_FB			= enum.item
 	STATE_IN_FC_HDR			= enum.item
 	STATE_IN_FC_HDR_VARIN		= enum.item
 	STATE_IN_FC_HDR_VAROUT		= enum.item
 	STATE_IN_FC_HDR_VARINOUT	= enum.item
 	STATE_IN_FC_HDR_VARTEMP		= enum.item
+	STATE_IN_FC_HDR_ATTR		= enum.item
 	STATE_IN_FC			= enum.item
 	STATE_IN_OB_HDR			= enum.item
 	STATE_IN_OB_HDR_VARTEMP		= enum.item
+	STATE_IN_OB_HDR_ATTR		= enum.item
 	STATE_IN_OB			= enum.item
 	enum.end
 
@@ -272,7 +275,7 @@ class AwlParser(object):
 					t.tokens.append(c)
 					continue
 				if (self.__inAnyHeaderOrGlobal() and\
-				    c in ('=', ':', '[', ']', '..')) or\
+				    c in ('=', ':', '[', ']', '..', '{', '}')) or\
 				   (c == ','):
 					# Handle non-space token separators.
 					t.tokenEnd()
@@ -319,6 +322,8 @@ class AwlParser(object):
 			self.__parseTokens_fb_hdr_varinout(tokens)
 		elif self.state == self.STATE_IN_FB_HDR_VARTEMP:
 			self.__parseTokens_fb_hdr_vartemp(tokens)
+		elif self.state == self.STATE_IN_FB_HDR_ATTR:
+			self.__parseTokens_fb_hdr_attr(tokens)
 		elif self.state == self.STATE_IN_FB:
 			self.__parseTokens_fb(tokens)
 		elif self.state == self.STATE_IN_FC_HDR:
@@ -331,12 +336,16 @@ class AwlParser(object):
 			self.__parseTokens_fc_hdr_varinout(tokens)
 		elif self.state == self.STATE_IN_FC_HDR_VARTEMP:
 			self.__parseTokens_fc_hdr_vartemp(tokens)
+		elif self.state == self.STATE_IN_FC_HDR_ATTR:
+			self.__parseTokens_fc_hdr_attr(tokens)
 		elif self.state == self.STATE_IN_FC:
 			self.__parseTokens_fc(tokens)
 		elif self.state == self.STATE_IN_OB_HDR:
 			self.__parseTokens_ob_hdr(tokens)
 		elif self.state == self.STATE_IN_OB_HDR_VARTEMP:
 			self.__parseTokens_ob_hdr_vartemp(tokens)
+		elif self.state == self.STATE_IN_OB_HDR_ATTR:
+			self.__parseTokens_ob_hdr_attr(tokens)
 		elif self.state == self.STATE_IN_OB:
 			self.__parseTokens_ob(tokens)
 		else:
@@ -513,6 +522,10 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_FB_HDR_VARINOUT)
 		elif name == "VAR_TEMP":
 			self.__setState(self.STATE_IN_FB_HDR_VARTEMP)
+		elif name == "{":
+			#TODO: parse attributes
+			if tokens[-1] != "}":
+				self.__setState(self.STATE_IN_FB_HDR_ATTR)
 		else:
 			raise AwlParserError("In FB: Unknown token: %s" % name)
 
@@ -547,6 +560,11 @@ class AwlParser(object):
 				mayHaveInitval = False):
 			self.__setState(self.STATE_IN_FB_HDR)
 
+	def __parseTokens_fb_hdr_attr(self, tokens):
+		#TODO: parse attributes
+		if tokens[-1] == "}":
+			self.__setState(self.STATE_IN_FB_HDR)
+
 	def __parseTokens_fb(self, tokens):
 		name = tokens[0].upper()
 		if name == "END_FUNCTION_BLOCK":
@@ -571,6 +589,10 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_FC_HDR_VARINOUT)
 		elif name == "VAR_TEMP":
 			self.__setState(self.STATE_IN_FC_HDR_VARTEMP)
+		elif name == "{":
+			#TODO: parse attributes
+			if tokens[-1] != "}":
+				self.__setState(self.STATE_IN_FC_HDR_ATTR)
 		else:
 			raise AwlParserError("In FC header: Unknown token: %s" % name)
 
@@ -602,6 +624,11 @@ class AwlParser(object):
 				mayHaveInitval=False):
 			self.__setState(self.STATE_IN_FC_HDR)
 
+	def __parseTokens_fc_hdr_attr(self, tokens):
+		#TODO: parse attributes
+		if tokens[-1] == "}":
+			self.__setState(self.STATE_IN_FC_HDR)
+
 	def __parseTokens_fc(self, tokens):
 		name = tokens[0].upper()
 		if name == "END_FUNCTION":
@@ -620,6 +647,10 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_OB_HDR_VARTEMP)
 		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
 			self.tree.curBlock.addDescriptor(tokens)
+		elif name == "{":
+			#TODO: parse attributes
+			if tokens[-1] != "}":
+				self.__setState(self.STATE_IN_OB_HDR_ATTR)
 		else:
 			raise AwlParserError("In OB header: Unknown token: %s" % name)
 
@@ -628,6 +659,11 @@ class AwlParser(object):
 				varList = self.tree.curBlock.vars_temp,
 				endToken = "END_VAR",
 				mayHaveInitval=False):
+			self.__setState(self.STATE_IN_OB_HDR)
+
+	def __parseTokens_ob_hdr_attr(self, tokens):
+		#TODO: parse attributes
+		if tokens[-1] == "}":
 			self.__setState(self.STATE_IN_OB_HDR)
 
 	def __parseTokens_ob(self, tokens):

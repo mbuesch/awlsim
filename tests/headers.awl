@@ -1,5 +1,7 @@
 ORGANIZATION_BLOCK OB 1
 	TITLE		= This is the title
+	{ attribute1 := 'value 1';
+	  attribute2 := 'value 2' }
 	AUTHOR		: This is the author
 	FAMILY		: This is the family
 	NAME		: This is the name
@@ -19,6 +21,7 @@ END_ORGANIZATION_BLOCK
 
 FUNCTION FC 1: VOID
 	TITLE		= This is the title
+	{ attribute1 := 'value 1';  attribute2 := 'value 2' }
 	AUTHOR		: This is the author
 	FAMILY		: This is the family
 	NAME		: This is the name
@@ -47,6 +50,7 @@ END_FUNCTION
 
 FUNCTION_BLOCK FB 1
 	TITLE		= This is the title
+	{ attribute1 := 'value 1';  attribute2 := 'value 2' }
 	AUTHOR		: This is the author
 	FAMILY		: This is the family
 	NAME		: This is the name
