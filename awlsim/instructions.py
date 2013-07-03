@@ -371,7 +371,7 @@ class AwlInsn(object):
 		"JBI"	: "SPBI",
 		"JNBI"	: "SPBIN",
 		"JCN"	: "SPBN",
-		"JNB"	: "SPBNBN",
+		"JNB"	: "SPBNB",
 		"JL"	: "SPL",
 		"JM"	: "SPM",
 		"JMZ"	: "SPMZ",
@@ -397,6 +397,9 @@ class AwlInsn(object):
 		"CU"	: "ZV",
 	}
 	german2english = pivotDict(english2german)
+	# Sanity check of english2german table
+	for __englishName, __germanName in english2german.items():
+		assert(__germanName in name2type_german)
 
 	# Create a name2type dict for english mnemonics using the translation dict.
 	name2type_english = {}
