@@ -1,9 +1,9 @@
 ORGANIZATION_BLOCK OB 1
 	TITLE		= This is the title
-	AUTHOR		= This is the author
-	FAMILY		= This is the family
-	NAME		= This is the name
-	VERSION		= 0.1
+	AUTHOR		: This is the author
+	FAMILY		: This is the family
+	NAME		: This is the name
+	VERSION		: 0.1
 	VAR_TEMP
 		// Temporary variables
 	END_VAR
@@ -19,10 +19,10 @@ END_ORGANIZATION_BLOCK
 
 FUNCTION FC 1: VOID
 	TITLE		= This is the title
-	AUTHOR		= This is the author
-	FAMILY		= This is the family
-	NAME		= This is the name
-	VERSION		= 0.1
+	AUTHOR		: This is the author
+	FAMILY		: This is the family
+	NAME		: This is the name
+	VERSION		: 0.1
 	VAR_INPUT
 		// Input variables
 	END_VAR
@@ -47,10 +47,10 @@ END_FUNCTION
 
 FUNCTION_BLOCK FB 1
 	TITLE		= This is the title
-	AUTHOR		= This is the author
-	FAMILY		= This is the family
-	NAME		= This is the name
-	VERSION		= 0.1
+	AUTHOR		: This is the author
+	FAMILY		: This is the family
+	NAME		: This is the name
+	VERSION		: 0.1
 	VAR
 		// Static variables
 	END_VAR
@@ -78,10 +78,10 @@ END_FUNCTION_BLOCK
 
 DATA_BLOCK DB 1
 	TITLE		= This is the title
-	AUTHOR		= This is the author
-	FAMILY		= This is the family
-	NAME		= This is the name
-	VERSION		= 0.1
+	AUTHOR		: This is the author
+	FAMILY		: This is the family
+	NAME		: This is the name
+	VERSION		: 0.1
 	STRUCT
 		// Data structure
 	END_STRUCT
@@ -92,10 +92,10 @@ END_DATA_BLOCK
 DATA_BLOCK DB 2
 	FB 1
 	TITLE		= This is the title
-	AUTHOR		= This is the author
-	FAMILY		= This is the family
-	NAME		= This is the name
-	VERSION		= 0.1
+	AUTHOR		: This is the author
+	FAMILY		: This is the family
+	NAME		: This is the name
+	VERSION		: 0.1
 BEGIN
 END_DATA_BLOCK
 
@@ -103,9 +103,9 @@ END_DATA_BLOCK
 DATA_BLOCK DB 3
 	SFB 1
 	TITLE		= This is the title
-	AUTHOR		= This is the author
-	FAMILY		= This is the family
-	NAME		= This is the name
-	VERSION		= 0.1
+	AUTHOR		: This is the author
+	FAMILY		: This is the family
+	NAME		: This is the name
+	VERSION		: 0.1
 BEGIN
 END_DATA_BLOCK

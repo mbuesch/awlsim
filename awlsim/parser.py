@@ -85,11 +85,11 @@ class RawAwlBlock(object):
 		assert(len(tokens) >= 1 and tokens[0].upper())
 		name = tokens[0].upper()
 		try:
-			if tokens[1] != "=":
+			if tokens[1] not in ("=", ":"):
 				raise IndexError
 		except IndexError:
 			raise AwlParserError("Invalid header format: "
-				"Missing '=' character.")
+				"Missing '=' or ':' character.")
 		if self.descriptors[name] is not None:
 			raise AwlParserError("Header '%s' specified multiple times." %\
 				name)
