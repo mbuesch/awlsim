@@ -13,17 +13,17 @@ from awlsim.datatypes import *
 class AwlStructField(object):
 	"Data structure field"
 
-	def __init__(self, name, offset, bitSize, initialValue=0):
+	def __init__(self, name, offset, dataType, initialValue=0):
 		self.name = name
 		self.offset = offset
-		self.__bitSize = bitSize # Size, in bits
-		assert(self.__bitSize in (1, 8, 16, 32, 64))
+		self.dataType = dataType
 		self.initialValue = initialValue
+		assert(self.bitSize in (1, 8, 16, 32, 64))
 
 	# Return size, in bits.
 	@property
 	def bitSize(self):
-		return self.__bitSize
+		return self.dataType.width
 
 	# Return size, in bytes.
 	@property
@@ -44,10 +44,8 @@ class AwlStruct(object):
 		lastField = self.fields[-1]
 		return lastField.offset.byteOffset + lastField.byteSize
 
-	def addField(self, name, bitSize):
-		if not bitSize:
-			return
-		if bitSize == 1 and self.fields and\
+	def addField(self, name, dataType):
+		if dataType.width == 1 and self.fields and\
 		   self.fields[-1].bitSize == 1 and\
 		   self.fields[-1].offset.bitOffset < 7:
 			# Consecutive bitfields are merged into one byte
@@ -55,23 +53,25 @@ class AwlStruct(object):
 					   self.fields[-1].offset.bitOffset + 1)
 		else:
 			offset = AwlOffset(self.getSize())
-		field = AwlStructField(name, offset, bitSize)
+		field = AwlStructField(name, offset, dataType)
 		self.fields.append(field)
 		if name:
 			self.name2field[name] = field
 
-	def addFieldAligned(self, name, bitSize, byteAlignment):
+	def addFieldAligned(self, name, dataType, byteAlignment):
 		padding = byteAlignment - self.getSize() % byteAlignment
 		if padding == byteAlignment:
 			padding = 0
-		self.addField(None, padding * 8)
-		self.addField(name, bitSize)
+		while padding:
+			self.addField(None, AwlDataType.makeByName("BYTE"))
+			padding -= 1
+		self.addField(name, dataType)
 
-	def addFieldNaturallyAligned(self, name, bitSize):
+	def addFieldNaturallyAligned(self, name, dataType):
 		alignment = 1
-		if bitSize > 8:
+		if dataType.width > 8:
 			alignment = 2
-		self.addFieldAligned(name, bitSize, alignment)
+		self.addFieldAligned(name, dataType, alignment)
 
 	def getField(self, name):
 		try:

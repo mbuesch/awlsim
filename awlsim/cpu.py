@@ -185,7 +185,7 @@ class S7CPU(object):
 					"but does not initialize." %\
 					(rawDB.index, f.name))
 			dtype = AwlDataType.makeByName(f.typeTokens)
-			db.struct.addFieldNaturallyAligned(f.name, dtype.width)
+			db.struct.addFieldNaturallyAligned(f.name, dtype)
 		# Allocate the data structure fields
 		db.allocate()
 		# Initialize the data structure fields

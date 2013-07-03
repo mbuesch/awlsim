@@ -83,10 +83,10 @@ class BlockInterface(object):
 	def __buildField(self, struct, field, isFirst):
 		if isFirst:
 			struct.addFieldAligned(field.name,
-					       field.dataType.width, 2)
+					       field.dataType, 2)
 		else:
 			struct.addFieldNaturallyAligned(field.name,
-							field.dataType.width)
+							field.dataType)
 
 	def buildDataStructure(self):
 		# Build interface-DB structure
