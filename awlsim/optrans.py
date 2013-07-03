@@ -93,9 +93,9 @@ class AwlOpTranslator(object):
 				       AwlOffset(-1, 0), 2),
 		"MD"	: OpDescriptor(AwlOperator.MEM_M, 32,
 				       AwlOffset(-1, 0), 2),
-		"T"	: OpDescriptor(AwlOperator.MEM_T, -1,
+		"T"	: OpDescriptor(AwlOperator.MEM_T, 16,
 				       AwlOffset(-1, 0), 2),
-		"Z"	: OpDescriptor(AwlOperator.MEM_Z, -1,
+		"Z"	: OpDescriptor(AwlOperator.MEM_Z, 16,
 				       AwlOffset(-1, 0), 2),
 		"FC"	: OpDescriptor(AwlOperator.BLKREF_FC, 16,
 				       AwlOffset(-1, 0), 2),
@@ -240,12 +240,6 @@ class AwlOpTranslator(object):
 				opDesc.offset.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid doubleword address")
-		elif opDesc.width == -1:
-			# For T and Z
-			try:
-				opDesc.offset.byteOffset = int(rawOps[0], 10)
-			except ValueError as e:
-				raise AwlSimError("Invalid address")
 		else:
 			assert(0)
 
