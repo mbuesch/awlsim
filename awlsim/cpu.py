@@ -646,11 +646,27 @@ class S7CPU(object):
 		if len(self.parenStack) > 7:
 			raise AwlSimError("Parenthesis stack overflow")
 
-	def fetch(self, operator):
+	def fetch(self, operator, enforceWidth=()):
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid fetch request")
+		# Check width of fetch operation
+		if operator.width not in enforceWidth and enforceWidth:
+			width = operator.width
+			# Special handling for T and Z
+			if operator.type in (AwlOperator.MEM_T,
+					     AwlOperator.MEM_Z):
+				if operator.insn.type in (AwlInsn.TYPE_L,
+							  AwlInsn.TYPE_LC):
+					width = 32
+				else:
+					width = 1
+			if width not in enforceWidth:
+				raise AwlSimError("Data fetch of %d bits, "
+					"but only %s bits are allowed." %\
+					(width,
+					 intListToHumanStr(enforceWidth)))
 		return fetchMethod(self, operator)
 
 	def fetchIMM(self, operator):
@@ -795,11 +811,18 @@ class S7CPU(object):
 		AwlOperator.VIRT_AR		: fetchVirtAR,
 	}
 
-	def store(self, operator, value):
+	def store(self, operator, value, enforceWidth=()):
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid store request")
+		# Check width of store operation
+		if operator.width not in enforceWidth and enforceWidth:
+			raise AwlSimError("Data store of %d bits, "
+				"but only %s bits are allowed." %\
+				(operator.width,
+				 intListToHumanStr(enforceWidth)))
+
 		storeMethod(self, operator, value)
 
 	def storeE(self, operator, value):

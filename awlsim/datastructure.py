@@ -17,7 +17,7 @@ class AwlStructField(object):
 		self.name = name
 		self.offset = offset
 		self.__bitSize = bitSize # Size, in bits
-		assert(self.__bitSize in (1, 8, 16, 32))
+		assert(self.__bitSize in (1, 8, 16, 32, 64))
 		self.initialValue = initialValue
 
 	# Return size, in bits.

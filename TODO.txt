@@ -1,11 +1,13 @@
 === Incomplete awlsim TODO list ===
 
+- Parsing of attributes
 - Indirect addressing (pointers)
 - ANY pointer
 - DBx.DBxx addressing
-- DATE_AND_TIME data type
+- Parsing of various immediates (see optrans.py and datatypes.py)
 - Symbols
 - OB1 header
 - English mnemonics for status-word bits
 - Pushbuttons in E/A GUI
+- User defined data types (UDT)
 - Advanced editor features

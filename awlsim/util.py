@@ -112,6 +112,16 @@ def str2bool(string, default=False):
 	except ValueError:
 		return default
 
+# Convert an integer list to a human readable string.
+# Example: [1, 2, 3]  ->  "1, 2 or 3"
+def intListToHumanStr(ilist, lastSep="or"):
+	if not ilist:
+		return ""
+	string = ", ".join(("%d" % i) for i in ilist)
+	# Replace last comma with 'lastSep'
+	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
+	return string
+
 class EnumerationHelper(object):
 	"Enumeration helper"
 

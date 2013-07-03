@@ -20,6 +20,7 @@ class AwlOperator(object):
 	IMM_TIME	= enum.item	# T# immediate
 	IMM_DATE	= enum.item	# D# immediate
 	IMM_TOD		= enum.item	# TOD# immediate
+	IMM_DT		= enum.item	# DT# immediate
 	IMM_PTR		= enum.item	# Pointer immediate
 
 	MEM_E		= enum.item	# Input

@@ -41,6 +41,7 @@ class AwlDataType(object):
 	TYPE_S5T	= enum.item
 	TYPE_TIME	= enum.item
 	TYPE_DATE	= enum.item
+	TYPE_DT		= enum.item
 	TYPE_TOD	= enum.item
 	TYPE_CHAR	= enum.item
 	TYPE_ARRAY	= enum.item
@@ -58,6 +59,7 @@ class AwlDataType(object):
 		"S5TIME"	: TYPE_S5T,
 		"TIME"		: TYPE_TIME,
 		"DATE"		: TYPE_DATE,
+		"DATE_AND_TIME"	: TYPE_DT,
 		"TIME_OF_DAY"	: TYPE_TOD,
 		"CHAR"		: TYPE_CHAR,
 		"ARRAY"		: TYPE_ARRAY,
@@ -77,6 +79,7 @@ class AwlDataType(object):
 		TYPE_S5T	: 16,
 		TYPE_TIME	: 32,
 		TYPE_DATE	: 16,
+		TYPE_DT		: 64,
 		TYPE_TOD	: 32,
 		TYPE_CHAR	: 8,
 	}
@@ -94,6 +97,7 @@ class AwlDataType(object):
 		TYPE_S5T	: False,
 		TYPE_TIME	: False,
 		TYPE_DATE	: False,
+		TYPE_DT		: False,
 		TYPE_TOD	: False,
 		TYPE_CHAR	: False,
 	}
@@ -192,6 +196,8 @@ class AwlDataType(object):
 				value = self.tryParseImmediate_TIME(
 						tokens[0])
 			elif self.type == self.TYPE_DATE:
+				pass#TODO
+			elif self.type == self.TYPE_DT:
 				pass#TODO
 			elif self.type == self.TYPE_TOD:
 				pass#TODO
@@ -331,9 +337,10 @@ class AwlDataType(object):
 	@classmethod
 	def tryParseImmediate_TOD(cls, token):
 		token = token.upper()
-		if not token.startswith("TOD#"):
+		if not token.startswith("TOD#") and\
+		   not token.startswith("TIME_OF_DAY#"):
 			return None
-		raise AwlSimError("TOD# not implemented, yet")#TODO
+		raise AwlSimError("TIME_OF_DAY# not implemented, yet")#TODO
 
 	@classmethod
 	def tryParseImmediate_Date(cls, token):
@@ -341,6 +348,14 @@ class AwlDataType(object):
 		if not token.startswith("D#"):
 			return None
 		raise AwlSimError("D# not implemented, yet")#TODO
+
+	@classmethod
+	def tryParseImmediate_DT(cls, token):
+		token = token.upper()
+		if not token.startswith("DT#") and\
+		   not token.startswith("DATE_AND_TIME#"):
+			return None
+		raise AwlSimError("DATE_AND_TIME# not implemented, yet")#TODO
 
 	@classmethod
 	def tryParseImmediate_Bin(cls, token):

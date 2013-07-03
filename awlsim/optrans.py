@@ -93,9 +93,9 @@ class AwlOpTranslator(object):
 				       AwlOffset(-1, 0), 2),
 		"MD"	: OpDescriptor(AwlOperator.MEM_M, 32,
 				       AwlOffset(-1, 0), 2),
-		"T"	: OpDescriptor(AwlOperator.MEM_T, 16,
+		"T"	: OpDescriptor(AwlOperator.MEM_T, -1,
 				       AwlOffset(-1, 0), 2),
-		"Z"	: OpDescriptor(AwlOperator.MEM_Z, 16,
+		"Z"	: OpDescriptor(AwlOperator.MEM_Z, -1,
 				       AwlOffset(-1, 0), 2),
 		"FC"	: OpDescriptor(AwlOperator.BLKREF_FC, 16,
 				       AwlOffset(-1, 0), 2),
@@ -240,6 +240,12 @@ class AwlOpTranslator(object):
 				opDesc.offset.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid doubleword address")
+		elif opDesc.width == -1:
+			# For T and Z
+			try:
+				opDesc.offset.byteOffset = int(rawOps[0], 10)
+			except ValueError as e:
+				raise AwlSimError("Invalid address")
 		else:
 			assert(0)
 
@@ -279,22 +285,27 @@ class AwlOpTranslator(object):
 		# S5Time immediate
 		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_S5T, 0,
+			return OpDescriptor(AwlOperator.IMM_S5T, 16,
 					    immediate, 1)
 		# Time immediate
 		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_TIME, 0,
+			return OpDescriptor(AwlOperator.IMM_TIME, 32,
 					    immediate, 1)
-		# TOD immediate
+		# TIME_OF_DAY immediate
 		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_TOD, 0,
+			return OpDescriptor(AwlOperator.IMM_TOD, 32,
 					    immediate, 1)
 		# Date immediate
 		immediate = AwlDataType.tryParseImmediate_Date(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_DATE, 0,
+			return OpDescriptor(AwlOperator.IMM_DATE, 16,
+					    immediate, 1)
+		# DATE_AND_TIME immediate
+		immediate = AwlDataType.tryParseImmediate_DT(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_DT, 64,
 					    immediate, 1)
 		# Pointer immediate
 		#TODO

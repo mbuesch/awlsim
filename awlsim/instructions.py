@@ -478,7 +478,7 @@ class AwlInsn_U(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA = self.cpu.fetch(self.ops[0])
+		s.STA = self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
 			s.VKE &= s.STA
 			s.VKE |= s.OR
@@ -492,7 +492,7 @@ class AwlInsn_UN(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA = self.cpu.fetch(self.ops[0])
+		s.STA = self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
 			s.VKE &= ~s.STA & 1
 			s.VKE |= s.OR
@@ -507,7 +507,7 @@ class AwlInsn_O(AwlInsn):
 	def run(self):
 		s = self.cpu.callStackTop.status
 		if self.ops:
-			s.STA = self.cpu.fetch(self.ops[0])
+			s.STA = self.cpu.fetch(self.ops[0], (1,))
 			if s.NER:
 				s.VKE |= s.STA
 			else:
@@ -524,7 +524,7 @@ class AwlInsn_ON(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA = self.cpu.fetch(self.ops[0])
+		s.STA = self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
 			s.VKE |= ~s.STA & 1
 		else:
@@ -538,7 +538,7 @@ class AwlInsn_X(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA = self.cpu.fetch(self.ops[0])
+		s.STA = self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
 			s.VKE ^= s.STA
 		else:
@@ -552,7 +552,7 @@ class AwlInsn_XN(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA = self.cpu.fetch(self.ops[0])
+		s.STA = self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
 			s.VKE ^= ~s.STA & 1
 		else:
@@ -667,7 +667,7 @@ class AwlInsn_ASSIGN(AwlInsn):
 		s.STA = s.VKE
 		if not self.cpu.mcrIsOn():
 			s.STA = 0
-		self.cpu.store(self.ops[0], s.STA)
+		self.cpu.store(self.ops[0], s.STA, (1,))
 		s.OR, s.NER = 0, 0
 
 class AwlInsn_R(AwlInsn):
@@ -688,7 +688,7 @@ class AwlInsn_R(AwlInsn):
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and self.cpu.mcrIsOn():
-				self.cpu.store(oper, 0)
+				self.cpu.store(oper, 0, (1,))
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
 
 class AwlInsn_S(AwlInsn):
@@ -704,7 +704,7 @@ class AwlInsn_S(AwlInsn):
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and self.cpu.mcrIsOn():
-				self.cpu.store(oper, 1)
+				self.cpu.store(oper, 1, (1,))
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
 
 class AwlInsn_NOT(AwlInsn):
@@ -750,8 +750,8 @@ class AwlInsn_FN(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		fm = self.cpu.fetch(self.ops[0])
-		self.cpu.store(self.ops[0], s.VKE)
+		fm = self.cpu.fetch(self.ops[0], (1,))
+		self.cpu.store(self.ops[0], s.VKE, (1,))
 		s.OR, s.STA, s.NER = 0, s.VKE, 1
 		s.VKE = (~s.VKE & fm) & 1
 
@@ -762,8 +762,8 @@ class AwlInsn_FP(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		fm = self.cpu.fetch(self.ops[0])
-		self.cpu.store(self.ops[0], s.VKE)
+		fm = self.cpu.fetch(self.ops[0], (1,))
+		self.cpu.store(self.ops[0], s.VKE, (1,))
 		s.OR, s.STA, s.NER = 0, s.VKE, 1
 		s.VKE = (s.VKE & ~fm) & 1
 
@@ -1374,7 +1374,7 @@ class AwlInsn_L(AwlInsn):
 
 	def run(self):
 		self.cpu.accu2.set(self.cpu.accu1.get())
-		self.cpu.accu1.set(self.cpu.fetch(self.ops[0]))
+		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], (8, 16, 32)))
 
 class AwlInsn_LC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
@@ -1382,9 +1382,10 @@ class AwlInsn_LC(AwlInsn):
 		self._assertOps(1)
 
 	def run(self):
+		#FIXME check whether operator is valid for LC
 		self.cpu.accu2.set(self.cpu.accu1.get())
 		# fetch() does the BCD conversion for us
-		self.cpu.accu1.set(self.cpu.fetch(self.ops[0]))
+		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], (8, 16, 32)))
 
 class AwlInsn_ZV(AwlInsn):
 	def __init__(self, cpu, rawInsn):
@@ -2100,9 +2101,9 @@ class AwlInsn_T(AwlInsn):
 
 	def run(self):
 		if self.cpu.mcrIsOn():
-			self.cpu.store(self.ops[0], self.cpu.accu1.get())
+			self.cpu.store(self.ops[0], self.cpu.accu1.get(), (8, 16, 32))
 		else:
-			self.cpu.store(self.ops[0], 0)
+			self.cpu.store(self.ops[0], 0, (8, 16, 32))
 
 class AwlInsn_TAR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
@@ -2351,7 +2352,7 @@ class AwlInsn_RLD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0])
+			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
 		if count <= 0:
 			return
 		count = max(0, count % 32)
@@ -2372,7 +2373,7 @@ class AwlInsn_RRD(AwlInsn):
 		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0])
+			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
 		if count <= 0:
 			return
 		count = max(0, count % 32)
@@ -2393,7 +2394,7 @@ class AwlInsn_RLDA(AwlInsn):
 		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0])
+			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
 		if count > 0:
 			s.A0, s.OV = 0, 0
 		count = max(0, count % 32)
@@ -2415,7 +2416,7 @@ class AwlInsn_RRDA(AwlInsn):
 		s = self.cpu.callStackTop.status
 		count, accu = 1, self.cpu.accu1.get()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0])
+			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
 		if count > 0:
 			s.A0, s.OV = 0, 0
 		count = max(0, count % 32)
@@ -2727,8 +2728,8 @@ class AwlInsn_ASSERT_EQ_R(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		val0 = self.cpu.fetch(self.ops[0])
-		val1 = self.cpu.fetch(self.ops[1])
+		val0 = self.cpu.fetch(self.ops[0], (32,))
+		val1 = self.cpu.fetch(self.ops[1], (32,))
 		if not floatEqual(val0, val1):
 			raise AwlSimError("Assertion failed")
 		s.NER = 0
