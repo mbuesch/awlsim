@@ -212,9 +212,9 @@ class AwlOperator(object):
 		elif self.type == self.INTERF_DB:
 			return "__INTERFACE_DB" #FIXME
 		elif self.type == self.VIRT_ACCU:
-			return "__ACCU %d" % self.value
+			return "__ACCU %d" % self.value.byteOffset
 		elif self.type == self.VIRT_AR:
-			return "__AR %d" % self.value
+			return "__AR %d" % self.value.byteOffset
 		assert(0)
 
 	@classmethod
