@@ -524,7 +524,7 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_FB_HDR_VARTEMP)
 		elif name == "{":
 			#TODO: parse attributes
-			if tokens[-1] != "}":
+			if "}" not in tokens:
 				self.__setState(self.STATE_IN_FB_HDR_ATTR)
 		else:
 			raise AwlParserError("In FB: Unknown token: %s" % name)
@@ -562,7 +562,7 @@ class AwlParser(object):
 
 	def __parseTokens_fb_hdr_attr(self, tokens):
 		#TODO: parse attributes
-		if tokens[-1] == "}":
+		if "}" in tokens:
 			self.__setState(self.STATE_IN_FB_HDR)
 
 	def __parseTokens_fb(self, tokens):
@@ -591,7 +591,7 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_FC_HDR_VARTEMP)
 		elif name == "{":
 			#TODO: parse attributes
-			if tokens[-1] != "}":
+			if "}" not in tokens:
 				self.__setState(self.STATE_IN_FC_HDR_ATTR)
 		else:
 			raise AwlParserError("In FC header: Unknown token: %s" % name)
@@ -626,7 +626,7 @@ class AwlParser(object):
 
 	def __parseTokens_fc_hdr_attr(self, tokens):
 		#TODO: parse attributes
-		if tokens[-1] == "}":
+		if "}" in tokens:
 			self.__setState(self.STATE_IN_FC_HDR)
 
 	def __parseTokens_fc(self, tokens):
@@ -649,7 +649,7 @@ class AwlParser(object):
 			self.tree.curBlock.addDescriptor(tokens)
 		elif name == "{":
 			#TODO: parse attributes
-			if tokens[-1] != "}":
+			if "}" not in tokens:
 				self.__setState(self.STATE_IN_OB_HDR_ATTR)
 		else:
 			raise AwlParserError("In OB header: Unknown token: %s" % name)
@@ -663,7 +663,7 @@ class AwlParser(object):
 
 	def __parseTokens_ob_hdr_attr(self, tokens):
 		#TODO: parse attributes
-		if tokens[-1] == "}":
+		if "}" in tokens:
 			self.__setState(self.STATE_IN_OB_HDR)
 
 	def __parseTokens_ob(self, tokens):
