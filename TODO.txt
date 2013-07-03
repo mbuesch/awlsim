@@ -1,6 +1,5 @@
 === Incomplete awlsim TODO list ===
 
-- AUTHOR/FAMILY header fields
 - Indirect addressing (pointers)
 - ANY pointer
 - DBx.DBxx addressing
