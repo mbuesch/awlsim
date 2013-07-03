@@ -7,5 +7,6 @@
 - DATE_AND_TIME data type
 - Symbols
 - OB1 header
+- English mnemonics for status-word bits
 - Pushbuttons in E/A GUI
 - Advanced editor features
