@@ -84,12 +84,16 @@ class RawAwlBlock(object):
 	def addDescriptor(self, tokens):
 		assert(len(tokens) >= 1 and tokens[0].upper())
 		name = tokens[0].upper()
+		if name == "TITLE":
+			expectedSep = "="
+		else:
+			expectedSep = ":"
 		try:
-			if tokens[1] not in ("=", ":"):
+			if tokens[1] != expectedSep:
 				raise IndexError
 		except IndexError:
 			raise AwlParserError("Invalid header format: "
-				"Missing '=' or ':' character.")
+				"Missing '%s' character." % expectedSep)
 		if self.descriptors[name] is not None:
 			raise AwlParserError("Header '%s' specified multiple times." %\
 				name)
