@@ -45,6 +45,8 @@ class AwlDataType(object):
 	TYPE_TOD	= enum.item
 	TYPE_CHAR	= enum.item
 	TYPE_ARRAY	= enum.item
+	TYPE_TIMER	= enum.item
+	TYPE_COUNTER	= enum.item
 	enum.end
 
 	__name2id = {
@@ -63,6 +65,8 @@ class AwlDataType(object):
 		"TIME_OF_DAY"	: TYPE_TOD,
 		"CHAR"		: TYPE_CHAR,
 		"ARRAY"		: TYPE_ARRAY,
+		"TIMER"		: TYPE_TIMER,
+		"COUNTER"	: TYPE_COUNTER,
 	}
 	__id2name = pivotDict(__name2id)
 
@@ -82,25 +86,16 @@ class AwlDataType(object):
 		TYPE_DT		: 64,
 		TYPE_TOD	: 32,
 		TYPE_CHAR	: 8,
+		TYPE_TIMER	: 16,
+		TYPE_COUNTER	: 16,
 	}
 
-	# Signedness table for trivial types
-	type2signed = {
-		TYPE_VOID	: False,
-		TYPE_BOOL	: False,
-		TYPE_BYTE	: False,
-		TYPE_WORD	: False,
-		TYPE_DWORD	: False,
-		TYPE_INT	: True,
-		TYPE_DINT	: True,
-		TYPE_REAL	: True,
-		TYPE_S5T	: False,
-		TYPE_TIME	: False,
-		TYPE_DATE	: False,
-		TYPE_DT		: False,
-		TYPE_TOD	: False,
-		TYPE_CHAR	: False,
-	}
+	# Table of trivial types with sign
+	signedTypes = (
+		TYPE_INT,
+		TYPE_DINT,
+		TYPE_REAL,
+	)
 
 	@classmethod
 	def name2type(cls, nameTokens):
@@ -138,7 +133,7 @@ class AwlDataType(object):
 		else:
 			return cls(type = type,
 				   width = cls.type2width[type],
-				   signed = cls.type2signed[type])
+				   signed = (type in cls.signedTypes))
 
 	def __init__(self, type, width, signed,
 		     startIndex=None, subType=None):
@@ -158,6 +153,13 @@ class AwlDataType(object):
 			if self.type == self.TYPE_WORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)
+		elif len(tokens) == 2:
+			if self.type == self.TYPE_TIMER:
+				if tokens[0].upper() == "T":
+					value = self.tryParseImmediate_INT(tokens[1])
+			elif self.type == self.TYPE_COUNTER:
+				if tokens[0].upper() in ("C", "Z"):
+					value = self.tryParseImmediate_INT(tokens[1])
 		elif len(tokens) == 1:
 			if self.type == self.TYPE_BOOL:
 				value = self.tryParseImmediate_BOOL(
@@ -206,7 +208,7 @@ class AwlDataType(object):
 		if value is None:
 			raise AwlSimError("Immediate value '%s' does "
 				"not match data type '%s'" %\
-				("".join(tokens), self.type2name(self.type)))
+				(" ".join(tokens), self.type2name(self.type)))
 		return value
 
 	def __repr__(self):
