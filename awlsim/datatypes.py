@@ -18,6 +18,9 @@ class AwlOffset(object):
 		self.byteOffset = byteOffset
 		self.bitOffset = bitOffset
 
+	def dup(self):
+		return AwlOffset(self.byteOffset, self.bitOffset)
+
 	@classmethod
 	def fromPointerValue(cls, value):
 		return AwlOffset((value & 0x00FFFFF8) >> 3,
