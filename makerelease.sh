@@ -21,19 +21,39 @@ hook_get_version()
 	version="$maj.$min"
 }
 
+# $1=file
+__check_text_encoding()
+{
+	local file="$1"
+
+	# Check CR/LF
+	file -L "$file" | grep -qe 'CRLF line terminators' || {
+		die "ERROR: '$file' is not in DOS format."
+	}
+	# Check file encoding
+	file -L "$file" | grep -qEe '(ISO-8859 text)|(ASCII text)' || {
+		die "ERROR: '$file' invalid file encoding."
+	}
+}
+
+# $1=directory
+__check_test_dir_encoding()
+{
+	local directory="$1"
+
+	for entry in "$directory"/*; do
+		[ -d "$entry" ] && {
+			__check_test_dir_encoding "$entry"
+			continue
+		}
+		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
+		__check_text_encoding "$entry"
+	done
+}
+
 hook_regression_tests()
 {
-	for awl in "$1"/tests/*.awl; do
-		# Check CR/LF
-		file -L "$awl" | grep -qe 'CRLF line terminators' || {
-			die "ERROR: 'tests/$(basename "$awl")' is not in DOS format."
-		}
-		# Check file encoding
-		file -L "$awl" | grep -qEe '(ISO-8859 text)|(ASCII text)' || {
-			die "ERROR: 'tests/$(basename "$awl")' invalid file encoding."
-		}
-	done
-
+	__check_test_dir_encoding "$1"/tests
 	# Run selftests
 	sh "$1/tests/run.sh"
 }
