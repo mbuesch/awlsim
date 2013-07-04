@@ -131,6 +131,7 @@ class AwlDataType(object):
 			   openIdx == 1 and elipsisIdx == 3 and\
 			   closeIdx == 5 and ofIdx == 6:
 				pass#TODO
+				raise AwlSimError("ARRAYs not supported, yet")
 			else:
 				raise AwlSimError("Invalid ARRAY definition")
 		else:

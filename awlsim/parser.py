@@ -220,11 +220,11 @@ class AwlParser(object):
 	def __inAnyHeader(self):
 		if self.flatLayout:
 			return False
-		return self.state in (self.STATE_IN_DB_HDR,
-				      self.STATE_IN_DB_HDR_STRUCT,
-				      self.STATE_IN_FB_HDR,
-				      self.STATE_IN_FC_HDR,
-				      self.STATE_IN_OB_HDR)
+		return self.state not in (self.STATE_GLOBAL,
+					  self.STATE_IN_DB,
+					  self.STATE_IN_FB,
+					  self.STATE_IN_FC,
+					  self.STATE_IN_OB)
 
 	def __inAnyHeaderOrGlobal(self):
 		if self.flatLayout:
