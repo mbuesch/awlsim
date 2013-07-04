@@ -146,14 +146,20 @@ class AwlOperator(object):
 			elif self.width == 32:
 				return "%sD %d" % (pfx, self.value.byteOffset)
 		elif self.type == self.MEM_DB:
+			if self.value.dbNumber is None:
+				dbPrefix = ""
+			else:
+				dbPrefix = "DB%d." % self.value.dbNumber
 			if self.width == 1:
-				return "DBX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
+				return "%sDBX %d.%d" % (dbPrefix,
+							self.value.byteOffset,
+							self.value.bitOffset)
 			elif self.width == 8:
-				return "DBB %d" % self.value.byteOffset
+				return "%sDBB %d" % (dbPrefix, self.value.byteOffset)
 			elif self.width == 16:
-				return "DBW %d" % self.value.byteOffset
+				return "%sDBW %d" % (dbPrefix, self.value.byteOffset)
 			elif self.width == 32:
-				return "DBD %d" % self.value.byteOffset
+				return "%sDBD %d" % (dbPrefix, self.value.byteOffset)
 		elif self.type == self.MEM_DI:
 			if self.width == 1:
 				return "DIX %d.%d" % (self.value.byteOffset, self.value.bitOffset)

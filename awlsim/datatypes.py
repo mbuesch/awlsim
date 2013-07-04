@@ -30,6 +30,17 @@ class AwlOffset(object):
 		return ((self.byteOffset << 3) & 0x00FFFFF8) |\
 		       (self.bitOffset & 0x7)
 
+class AwlDbOffset(AwlOffset):
+	"DB memory area offset"
+
+	def __init__(self, dbNumber, byteOffset, bitOffset=0):
+		AwlOffset.__init__(self, byteOffset, bitOffset)
+		self.dbNumber = dbNumber
+
+	def dup(self):
+		return AwlDbOffset(self.dbNumber,
+				   self.byteOffset, self.bitOffset)
+
 class AwlDataType(object):
 	# Data type IDs
 	enum.start

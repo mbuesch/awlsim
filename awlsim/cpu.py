@@ -757,10 +757,18 @@ class S7CPU(object):
 		return AwlOperator.fetchFromByteArray(cse.localdata, operator)
 
 	def fetchDB(self, operator):
-		if not self.globDB:
-			raise AwlSimError("Fetch from global DB, "
-				"but no DB is opened")
-		return self.globDB.fetch(operator)
+		if operator.value.dbNumber is None:
+			db = self.globDB
+			if not db:
+				raise AwlSimError("Fetch from global DB, "
+					"but no DB is opened")
+		else:
+			try:
+				db = self.dbs[operator.value.dbNumber]
+			except KeyError:
+				raise AwlSimError("Fetch from DB %d, but DB "
+					"does not exist" % operator.value.dbNumber)
+		return db.fetch(operator)
 
 	def fetchDI(self, operator):
 		cse = self.callStackTop
@@ -875,10 +883,18 @@ class S7CPU(object):
 		AwlOperator.storeToByteArray(cse.localdata, operator, value)
 
 	def storeDB(self, operator, value):
-		if not self.globDB:
-			raise AwlSimError("Store to global DB, "
-				"but no DB is opened")
-		self.globDB.store(operator, value)
+		if operator.value.dbNumber is None:
+			db = self.globDB
+			if not db:
+				raise AwlSimError("Store to global DB, "
+					"but no DB is opened")
+		else:
+			try:
+				db = self.dbs[operator.value.dbNumber]
+			except KeyError:
+				raise AwlSimError("Store to DB %d, but DB "
+					"does not exist" % operator.value.dbNumber)
+		db.store(operator, value)
 
 	def storeDI(self, operator, value):
 		cse = self.callStackTop

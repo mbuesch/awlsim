@@ -3,7 +3,6 @@
 - Parsing of attributes
 - Indirect addressing (pointers)
 - ANY pointer
-- DBx.DBxx addressing
 - ARRAYs
 - Parsing of various immediates (see optrans.py and datatypes.py)
 - Symbols

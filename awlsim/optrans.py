@@ -6,6 +6,7 @@
 #
 
 import math
+import re
 
 from awlsim.util import *
 from awlsim.operators import *
@@ -29,9 +30,9 @@ class OpDescriptor(object):
 
 	def dup(self):
 		#FIXME
-		if isinstance(self.offset, AwlOffset):
-			offset = AwlOffset(self.offset.byteOffset,
-					   self.offset.bitOffset)
+		if isinstance(self.offset, AwlOffset) or\
+		   isinstance(self.offset, AwlDbOffset):
+			offset = self.offset.dup()
 		else:
 			offset = self.offset
 		return OpDescriptor(self.operType, self.width,
@@ -110,13 +111,13 @@ class AwlOpTranslator(object):
 		"DI"	: OpDescriptor(AwlOperator.BLKREF_DI, 16,
 				       AwlOffset(-1, 0), 2),
 		"DBX"	: OpDescriptor(AwlOperator.MEM_DB, 1,
-				       AwlOffset(-1, -1), 2),
+				       AwlDbOffset(None, -1, -1), 2),
 		"DBB"	: OpDescriptor(AwlOperator.MEM_DB, 8,
-				       AwlOffset(-1, 0), 2),
+				       AwlDbOffset(None, -1, 0), 2),
 		"DBW"	: OpDescriptor(AwlOperator.MEM_DB, 16,
-				       AwlOffset(-1, 0), 2),
+				       AwlDbOffset(None, -1, 0), 2),
 		"DBD"	: OpDescriptor(AwlOperator.MEM_DB, 32,
-				       AwlOffset(-1, 0), 2),
+				       AwlDbOffset(None, -1, 0), 2),
 		"DIX"	: OpDescriptor(AwlOperator.MEM_DI, 1,
 				       AwlOffset(-1, -1), 2),
 		"DIB"	: OpDescriptor(AwlOperator.MEM_DI, 8,
@@ -340,6 +341,19 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 16,
 					    immediate, 1)
+		# DBx.DB[XBWD] addressing
+		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])
+		if match:
+			dbNumber = int(match.group(1))
+			width = {
+				"X"	: 1,
+				"B"	: 8,
+				"W"	: 16,
+				"D"	: 32,
+			}[match.group(2)]
+			offset = AwlDbOffset(dbNumber, -1, -1 if (width == 1) else 0)
+			return OpDescriptor(AwlOperator.MEM_DB, width,
+					    offset, 2)
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 

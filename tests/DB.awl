@@ -28,6 +28,20 @@ BEGIN
 	L		DBD 6
 	__ASSERT==	__ACCU 1,	DW#16#77777777
 
+	// Check direct DB fetch
+	L		DB1.DBW 0
+	__ASSERT==	__ACCU 1,	1337
+	L		DB1.DBD 2
+	__ASSERT==	__ACCU 1,	DW#16#DEADBEEF
+	L		DB1.DBW 6
+	__ASSERT==	__ACCU 1,	W#16#0102
+	L		DB1.DBB 8
+	__ASSERT==	__ACCU 1,	3
+	L		DB1.DBB 9
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBW 10
+	__ASSERT==	__ACCU 1,	42
+
 	SET
 	=		M 0.0
 END_ORGANIZATION_BLOCK
@@ -63,6 +77,27 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	L		DBW 10
 	__ASSERT==	__ACCU 1,	5432
+
+
+	// Check direct DB store
+	AUF		DB 2	// DB 2 on purpose
+	L		2244
+	T		DB1.DBW 6
+	L		L#1008901
+	T		DB1.DBD 2
+	SET
+	=		DB1.DBX 8.0
+	L		42
+	T		DB1.DBB 9
+
+	L		DB1.DBW 6
+	__ASSERT==	__ACCU 1,	2244
+	L		DB1.DBD 2
+	__ASSERT==	__ACCU 1,	L#1008901
+	U		DB1.DBX 8.0
+	__ASSERT==	__STW VKE,	1
+	L		DB1.DBB 9
+	__ASSERT==	__ACCU 1,	42
 
 
 	// FB 1 call test
