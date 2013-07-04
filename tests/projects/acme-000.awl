@@ -1,0 +1,529 @@
+DATA_BLOCK DB 1
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   DB_VAR : INT  := 20;	//Temporary placeholder variable
+   DB_VAR1_1 : INT  := 11;	//sf
+  END_STRUCT ;	
+BEGIN
+   DB_VAR := 0; 
+   DB_VAR1_1 := 11; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 2
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   DB_VAR : INT  := 22;	//Temporary placeholder variable
+   DB_VAR1 : INT  := 2;	//Temporary placeholder variable1
+   DB_VAR2 : INT  := 11;	//AWQ
+  END_STRUCT ;	
+BEGIN
+   DB_VAR := 0; 
+   DB_VAR1 := 2; 
+   DB_VAR2 := 11; 
+END_DATA_BLOCK
+
+FUNCTION FC 182 : VOID
+TITLE =P R O C E S S   F A U L T   
+AUTHOR : Xaadem
+FAMILY : MEASURE
+NAME : PROC_FLT
+VERSION : 0.1
+
+
+VAR_INPUT
+  Alarm_Acknowledge : BOOL ;	//Alarm Acknowledge
+  INPUT : BOOL ;	//High High limit exceeded
+  ALARM : BOOL ;	//Generate an alarm
+END_VAR
+VAR_OUTPUT
+  ALARM_OUT : BOOL ;	//High High Alarm
+  LIMIT_OUT : BOOL ;	//Limit reached
+  HORN : BOOL ;	//One shot (Pulse) for assign a fault horn
+  LIMIT : INT ;	//Visualisation
+END_VAR
+VAR_IN_OUT
+  STATUS : WORD ;	//Status flag for save the internal flags until next call
+END_VAR
+VAR_TEMP
+  HORN_HH : BOOL ;	//Internal flag horn pulse
+  Spare01 : BOOL ;	//Internal flag horn pulse
+  Spare02 : BOOL ;	//Internal flag horn pulse
+  Spare03 : BOOL ;	//Internal flag horn pulse
+  Spare04 : BOOL ;	//Internal flag horn pulse
+  Spare05 : BOOL ;	//Internal flag horn pulse
+  Spare06 : BOOL ;	//Internal flag horn pulse
+  HORN_SPARE : BOOL ;	//Internal flag horn pulse
+  Spare_1_0 : BOOL ;	//Spare
+  Spare_1_1 : BOOL ;	//Spare
+  Spare_1_2 : BOOL ;	//Spare
+  Spare_1_3 : BOOL ;	//Spare
+  Spare_1_4 : BOOL ;	//Spare
+  Alarm_reset : BOOL ;	//Alarm acknowledge
+  Spare_1_6 : BOOL ;	//Spare
+  Spare_1_7 : BOOL ;	//Spare
+  Alarm_Not_Acknowl : BOOL ;	//HH Alarm still not acknowledged
+  Aux_Pulse_Alarm : BOOL ;	//H  Alarm still not acknowledged
+  Aux_Pulse_Horn : BOOL ;	//L Alarm still not acknowledged
+  LL_Alarm_Not_Acknowl : BOOL ;	//LL Alarm still not acknowledged
+  LOOP_Alarm_Not_Acknowl : BOOL ;	//LOOP Alarm still not acknowledged
+  FAULT1_Alarm_Not_Acknowl : BOOL ;	//Fault 1 Alarm still not acknowledged
+  FAULT2_Alarm_Not_Acknowl : BOOL ;	//Fault 2 Alarm still not acknowledged
+  Spare_Alarm_Not_Acknowl : BOOL ;	//Spare Alarm still not acknowledged
+  HH_Static_Alarm : BOOL ;	//HH Static Alarm
+  H_Static_Alarm : BOOL ;	//H  Static Alarm
+  L_Static_Alarm : BOOL ;	//L Static Alarm
+  LL_Static_Alarm : BOOL ;	//LL Static Alarm
+  LOOP_Static_Alarm : BOOL ;	//LOOP Static Alarm
+  FAULT1_Static_Alarm : BOOL ;	//Fault 1 Static Alarm
+  FAULT2_Static_Alarm : BOOL ;	//Fault 2 Static Alarm
+  Spare_Static_Alarm : BOOL ;	//Spare Static Alarm
+  Dummy : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Alarm Reset
+
+      A     #Alarm_Acknowledge; 
+      =     #Alarm_reset; 
+NETWORK
+TITLE =restore status flags auxiliary for pulses
+
+      L     #STATUS; 
+      T     LW     2; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     2; 
+      T     #LIMIT; 
+      NOP   0; 
+NETWORK
+TITLE =HH_ALARM: New alarm not acknowledged, Horn pulse
+
+      A     #Alarm_reset; 
+      R     #Alarm_Not_Acknowl; 
+      A     #INPUT; 
+      A     #ALARM; 
+      FP    #Aux_Pulse_Alarm; 
+      S     #Alarm_Not_Acknowl; 
+      A     #Alarm_Not_Acknowl; 
+      =     L      5.0; 
+      A     L      5.0; 
+      FP    #Aux_Pulse_Horn; 
+      =     #HORN; 
+      A     L      5.0; 
+      JNB   _001; 
+      L     4; 
+      T     #LIMIT; 
+_001: NOP   0; 
+NETWORK
+TITLE =ALARM: Static fault acknowledged or not
+
+      O     #Alarm_Not_Acknowl; 
+      O     ; 
+      A     #INPUT; 
+      A     #ALARM; 
+      =     #ALARM_OUT; 
+      =     #HH_Static_Alarm; 
+NETWORK
+TITLE =Alarm acknowledged, but still existing
+
+      AN    #Alarm_Not_Acknowl; 
+      A     #INPUT; 
+      JNB   _002; 
+      L     5; 
+      T     #LIMIT; 
+_002: NOP   0; 
+NETWORK
+TITLE =Limit reached, but no alarm
+
+      A     #INPUT; 
+      AN    #ALARM; 
+      AN    #Alarm_Not_Acknowl; 
+      JNB   _003; 
+      L     3; 
+      T     #LIMIT; 
+_003: NOP   0; 
+NETWORK
+TITLE =Limit reached
+
+      A     #INPUT; 
+      =     #LIMIT_OUT; 
+NETWORK
+TITLE =Store static fault flags status flags auxiliary for set pulses
+
+      L     LW     2; 
+      T     #STATUS; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 1 : VOID
+TITLE =GROUP 00: General Control 
+AUTHOR : Xaadem
+FAMILY : GENERAL
+NAME : GENERAL
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+//******************************************************************************
+//       C O N S T A N T     H I G H   -   S I G N A L
+//******************************************************************************
+      O     M     20.1; 
+      ON    M     20.1; 
+      =     M     20.1; 
+NETWORK
+TITLE =
+//******************************************************************************
+//       C O N S T A N T    L O W   -   S I G N A L
+//******************************************************************************
+      A     M     20.0; 
+      AN    M     20.0; 
+      =     M     20.0; 
+NETWORK
+TITLE =
+//*****************************************************************************
+//           I N D I C A T I O N    M A I N   S W I T C H   D R I V E S
+//*****************************************************************************
+      O     I      5.1; 
+      O     I      1.3; 
+      =     Q      4.6; 
+NETWORK
+TITLE =
+//*****************************************************************************
+//        C O N T A C T O R   B Y P A S S   E M E R G E N C Y   E N D
+//*****************************************************************************
+      A     I      5.2; 
+      =     Q      4.7; 
+NETWORK
+TITLE =Control Desk +C010
+//*****************************************************************************
+//              S E L E C T   M A N U A L   M O D E
+//*****************************************************************************
+      A     I      0.5; 
+      AN    I      0.6; 
+      AN    I      0.7; 
+      =     M     29.0; 
+      A     M     29.0; 
+      O     I      1.3; 
+      =     Q      0.4; 
+NETWORK
+TITLE =Control Desk +C010
+//****************************************************************************    
+// 
+// S E L E C T   A U T O M A T I C   F R O M    C O N T R O L   D E S K
+//*****************************************************************************
+      AN    I      0.5; 
+      A     I      0.6; 
+      AN    I      0.7; 
+      =     M     29.1; 
+      A     M     29.1; 
+      O     I      1.3; 
+      =     Q      0.5; 
+NETWORK
+TITLE =Control Desk +C010
+//****************************************************************************    
+// 
+// S E L E C T   A U T O M A T I C   F R O M    C C R   
+//*****************************************************************************
+      AN    I      0.5; 
+      AN    I      0.6; 
+      A     I      0.7; 
+      =     M     29.2; 
+      A     M     29.2; 
+      O     I      1.3; 
+      =     Q      0.6; 
+NETWORK
+TITLE =Yard conveyor on
+//****************************************************************************    
+//                  I N D I C A T I O N   P A N E L  
+//*****************************************************************************
+      O     I      4.2; 
+      O     I      1.3; 
+      =     Q      1.5; 
+NETWORK
+TITLE =Yard conveyor bypass
+//****************************************************************************    
+//                  I N D I C A T I O N   P A N E L  
+//*****************************************************************************
+      O     I      1.6; 
+      O     I      1.3; 
+      =     Q      1.6; 
+NETWORK
+TITLE =
+//******************************************************************************
+//       O V E R A L L    R E S E T
+//******************************************************************************
+      A(    ; 
+      O     M     20.5; 
+      O(    ; 
+      A     M    114.0; 
+      FP    M     20.6; 
+      )     ; 
+      )     ; 
+      L     S5T#10S; 
+      SF    T      4; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      4; 
+      =     M     20.7; 
+NETWORK
+TITLE =
+//******************************************************************************
+//                C O U N T E R   O P E R A T I N G   H O U R S
+//******************************************************************************
+NETWORK
+TITLE =Control Desk +C010
+//==============================================================================
+//                C O N T R O L   V O L T A G E   O N
+//==============================================================================
+      O     I      0.2; 
+      O     I      1.3; 
+      =     Q      4.3; 
+NETWORK
+TITLE =
+//===============================================================================
+//                         E M E R G E N C Y   -   O F F
+//===============================================================================
+      A     I      0.3; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I      0.4; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      0.2; 
+      BLD   103; 
+      CALL FC   182 (
+           Alarm_Acknowledge        := L      0.0,
+           INPUT                    := L      0.1,
+           ALARM                    := L      0.2,
+           ALARM_OUT                := M    114.0,
+           LIMIT_OUT                := M    114.1,
+           HORN                     := M    114.2,
+           LIMIT                    := DB1.DBW    2,
+           STATUS                   := DB1.DBW    0);
+      NOP   0; 
+NETWORK
+TITLE =
+//******************************************************************************
+//         M A I N   S W I T C H   M O T O R   D R I V E S
+//******************************************************************************
+NETWORK
+TITLE =
+//******************************************************************************
+//     F U N D A M E N T A L   I N T E R L O C K   F R O M   C C R
+//******************************************************************************
+NETWORK
+TITLE =Indication at Control Desk +C010
+//===============================================================================
+//                         E M E R G E N C Y   -   O F F
+//===============================================================================
+      O     M    114.0; 
+      O     I      1.3; 
+      =     Q      0.2; 
+NETWORK
+TITLE =Reset Emergency off relais
+//===============================================================================
+//                         E M E R G E N C Y   -   O F F
+//===============================================================================
+      A     I      0.3; 
+      =     Q      0.3; 
+NETWORK
+TITLE =
+//===============================================================================
+//                         F U S E   F A U L T
+//===============================================================================
+NETWORK
+TITLE =
+//===============================================================================
+//           M O T O R    F A U L T   ( F U S E   T R I P P E D   A T   M C C)
+//===============================================================================
+NETWORK
+TITLE =Switch on the horn
+//===============================================================================
+//S U M M A R Y   O F   F A U L T   P U L S E S   T O   A S S I G N   T H E
+//                                   H O R N
+//===============================================================================
+      O     M    114.2; 
+      O     M    115.2; 
+      O     M    101.2; 
+      O     M     22.0; 
+      O     M    206.2; 
+      O     M    207.2; 
+      =     M     23.7; 
+NETWORK
+TITLE =Summary: Faults
+//===============================================================================
+//       S U M M A R Y   O F   A L L   F A U L T S
+//===============================================================================
+      O     M    114.0; 
+      O     M    115.0; 
+      O     M    101.0; 
+      O     M     24.0; 
+      O     M    206.0; 
+      O     M    207.0; 
+      =     L      0.0; 
+      O     L      0.0; 
+      O     I      1.3; 
+      =     Q      1.0; 
+      A     L      0.0; 
+      BLD   102; 
+      =     Q      0.1; 
+      A     L      0.0; 
+      BLD   102; 
+      =     Q      3.4; 
+NETWORK
+TITLE =Control Desk +C010
+//***************************************************************************** 
+//                       H O R N   A C K N O W L E D G E
+//*****************************************************************************
+      A     M     23.7; 
+      S     Q      1.1; 
+      A(    ; 
+      O     I      1.5; 
+      O     M     20.5; 
+      )     ; 
+      R     Q      1.1; 
+      NOP   0; 
+NETWORK
+TITLE =Alarm acknowledge
+//****************************************************************************** 
+//                       A L A R M   A C K N O W L E D G E
+//******************************************************************************
+      O     M     20.7; 
+      O     I      1.4; 
+      =     M     21.0; 
+NETWORK
+TITLE =Reset Frequency Converter from Panel
+//****************************************************************************** 
+//                       A L A R M   A C K N O W L E D G E
+//******************************************************************************
+      O     M     48.0; 
+      O     M     20.0; 
+      =     L      0.0; 
+      AN    L      0.0; 
+      A     M     20.1; 
+      =     Q      4.4; 
+      AN    L      0.0; 
+      A     M     20.1; 
+      =     Q      4.5; 
+NETWORK
+TITLE =Request start-up warning
+//******************************************************************************
+//           S T A R T   U P   W A R N I N G
+//******************************************************************************
+      A(    ; 
+      A(    ; 
+      A     M     35.1; 
+      A     M     35.0; 
+      A     M     44.0; 
+      AN    M     38.3; 
+      FP    M     29.3; 
+      O(    ; 
+      A     I      1.2; 
+      FP    M     28.0; 
+      )     ; 
+      )     ; 
+      S     M     27.2; 
+      A(    ; 
+      AN    M     44.1; 
+      FP    M     47.0; 
+      O     T      3; 
+      O     M     20.7; 
+      O(    ; 
+      A     M     38.3; 
+      FP    M     38.7; 
+      )     ; 
+      O(    ; 
+      A     I      1.2; 
+      FP    M     29.4; 
+      A     Q      0.0; 
+      )     ; 
+      )     ; 
+      R     M     27.2; 
+      A     M     27.2; 
+      )     ; 
+      A     M     10.7; 
+      =     Q      0.0; 
+NETWORK
+TITLE =Start-up pre-warning time
+//******************************************************************************
+//                     S T A R T   U P   W A R N I N G
+//******************************************************************************
+      A     M     27.2; 
+      L     S5T#5S; 
+      SD    T      2; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      2; 
+      =     M     27.3; 
+NETWORK
+TITLE =Start-up time
+//******************************************************************************
+//                     S T A R T   U P   W A R N I N G
+//******************************************************************************
+      A(    ; 
+      A     M     27.2; 
+      L     S5T#5S; 
+      SD    T      5; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      5; 
+      )     ; 
+      L     S5T#5S; 
+      SE    T      3; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =Call FC 3
+//******************************************************************************
+//                     C A L L   F U N C T I O N S
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+NETWORK
+TITLE =Call FC 10
+//******************************************************************************
+//                     C A L L   F U N C T I O N S
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+END_FUNCTION
+
+ORGANIZATION_BLOCK OB 1
+TITLE = "Main Program Sweep (Cycle)"
+AUTHOR : Xaadem
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+  OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+  OB1_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB1_OB_NUMBR : BYTE ;	//1 (Organization block 1, OB1)
+  OB1_RESERVED_1 : BYTE ;	//Reserved for system
+  OB1_RESERVED_2 : BYTE ;	//Reserved for system
+  OB1_PREV_CYCLE : INT ;	//Cycle time of previous OB1 scan (milliseconds)
+  OB1_MIN_CYCLE : INT ;	//Minimum cycle time of OB1 (milliseconds)
+  OB1_MAX_CYCLE : INT ;	//Maximum cycle time of OB1 (milliseconds)
+  OB1_DATE_TIME : DATE_AND_TIME ;	//Date and time OB1 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      UC    FC     1; 
+NETWORK
+TITLE =
+
+END_ORGANIZATION_BLOCK
+

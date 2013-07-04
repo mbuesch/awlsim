@@ -30,6 +30,24 @@ run_test()
 	echo " [$(cat "$test_time_file")]"
 }
 
+# $1=interpreter, $2=directory
+run_test_directory()
+{
+	local interpreter="$1"
+	local directory="$2"
+
+	echo "--- Entering directory '$directory'"
+	for entry in "$directory"/*; do
+		[ -d "$entry" ] && {
+			run_test_directory "$interpreter" "$entry"
+			continue
+		}
+		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
+		run_test "$interpreter" "$entry"
+	done
+	echo "--- Leaving directory '$directory'"
+}
+
 # $@=testfiles
 do_tests()
 {
@@ -43,12 +61,10 @@ do_tests()
 
 		echo "=== Running tests with '$interpreter' interpreter."
 		if [ $# -eq 0 ]; then
-			for awl in "$basedir"/*.awl; do
-				run_test "$interpreter" "$awl"
-			done
+			run_test_directory "$interpreter" "$basedir"
 		else
 			for opt in "$@"; do
-				run_test "$interpreter" "$basedir/$(basename "$opt")"
+				run_test "$interpreter" "$opt"
 			done
 		fi
 		echo
