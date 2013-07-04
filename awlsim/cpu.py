@@ -246,10 +246,26 @@ class S7CPU(object):
 		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
 			# Translate to interface-DB access
 			structField = block.interface.struct.getField(oper.value)
-			if structField.dataType in BlockInterface.callByRef_Types:
+			if structField.dataType.type in BlockInterface.callByRef_Types:
 				# "call by reference"
-				assert(0)
-				pass#TODO
+				offsetOper = AwlOperator(type=AwlOperator.INTERF_DB,
+							 width=structField.dataType.width,
+							 value=structField.offset.dup())
+				if structField.dataType.type == AwlDataType.TYPE_TIMER:
+					area = AwlIndirectOp.EXT_AREA_T
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_COUNTER:
+					area = AwlIndirectOp.EXT_AREA_Z
+					width = 16
+				else:
+					assert(0)
+				newOper = AwlIndirectOp(
+					area=area,
+					width=width,
+					addressRegister=AwlIndirectOp.AR_NONE,
+					offsetOper=offsetOper)
+				newOper.setInsn(oper.insn)
+				return newOper
 			else:
 				# "call by value"
 				newOperType = AwlOperator.INTERF_DB
@@ -660,7 +676,8 @@ class S7CPU(object):
 		except KeyError:
 			raise AwlSimError("Invalid fetch request")
 		# Check width of fetch operation
-		if operator.width not in enforceWidth and enforceWidth:
+		if operator.width not in enforceWidth and enforceWidth and\
+		   operator.type != AwlOperator.INDIRECT:
 			width = operator.width
 			# Special handling for T and Z
 			if operator.type in (AwlOperator.MEM_T,
@@ -782,6 +799,7 @@ class S7CPU(object):
 		return counter.get()
 
 	def fetchINDIRECT(self, operator):
+		#TODO pass enforceWidth down
 		return self.fetch(operator.resolve(self, False))
 
 	def fetchVirtACCU(self, operator):

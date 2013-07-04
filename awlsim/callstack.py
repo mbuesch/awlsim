@@ -7,6 +7,7 @@
 #
 
 from awlsim.datatypes import *
+from awlsim.blocks import *
 from awlsim.statusword import *
 from awlsim.parameters import *
 from awlsim.objectcache import *
@@ -49,10 +50,14 @@ class CallStackElem(object):
 	# Transfer data into DBI
 	def handleInParameters(self):
 		for param in self.inboundParams:
-			self.interfaceDB.structInstance.setFieldData(
-				param.lvalueName,
-				self.cpu.fetch(param.rvalueOp)
-			)
+			structField = self.interfaceDB.structInstance.struct.getField(param.lvalueName)
+			if structField.dataType.type in BlockInterface.callByRef_Types:
+				data = param.rvalueOp.value.byteOffset
+			else:
+				data = self.cpu.fetch(param.rvalueOp)
+			self.interfaceDB.structInstance.setData(structField.offset,
+								structField.bitSize,
+								data)
 
 	# Transfer data out of DBI
 	def handleOutParameters(self):
