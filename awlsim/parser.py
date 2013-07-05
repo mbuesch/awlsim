@@ -283,14 +283,17 @@ class AwlParser(object):
 					continue
 				if (self.__inAnyHeaderOrGlobal() and\
 				    c in ('=', ':', '[', ']', '..', '{', '}')) or\
-				   (c == ','):
+				   (c == ',') or\
+				   (c == '=' and len(t.tokens) == 1 and not t.curToken):
 					# Handle non-space token separators.
 					t.finishCurToken()
 					t.addToken(c)
 					continue
-			if c in ('\n', ';') and not t.inParens:
-				self.__parseTokens(t)
-				continue
+			if not t.inParens:
+				if c == '\n' or\
+				   (c == ';' and not (len(t.tokens) >= 2 and t.tokens[1] == '=')):
+					self.__parseTokens(t)
+					continue
 			if c.isspace():
 				t.finishCurToken()
 			else:
