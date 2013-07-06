@@ -116,10 +116,10 @@ def str2bool(string, default=False):
 
 # Convert an integer list to a human readable string.
 # Example: [1, 2, 3]  ->  "1, 2 or 3"
-def intListToHumanStr(ilist, lastSep="or"):
-	if not ilist:
+def listToHumanStr(lst, lastSep="or"):
+	if not lst:
 		return ""
-	string = ", ".join(("%d" % i) for i in ilist)
+	string = ", ".join(str(i) for i in lst)
 	# Replace last comma with 'lastSep'
 	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
 	return string

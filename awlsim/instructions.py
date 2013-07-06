@@ -430,7 +430,7 @@ class AwlInsn(object):
 		counts = toList(counts)
 		if len(self.ops) not in counts:
 			raise AwlSimError("Invalid number of operators. "
-				"Expected %s." % intListToHumanStr(counts),
+				"Expected %s." % listToHumanStr(counts),
 				insn=self)
 
 	def getRawInsn(self):

@@ -709,7 +709,7 @@ class S7CPU(object):
 				raise AwlSimError("Data fetch of %d bits, "
 					"but only %s bits are allowed." %\
 					(width,
-					 intListToHumanStr(enforceWidth)))
+					 listToHumanStr(enforceWidth)))
 		return fetchMethod(self, operator)
 
 	def fetchIMM(self, operator):
@@ -873,7 +873,7 @@ class S7CPU(object):
 			raise AwlSimError("Data store of %d bits, "
 				"but only %s bits are allowed." %\
 				(operator.width,
-				 intListToHumanStr(enforceWidth)))
+				 listToHumanStr(enforceWidth)))
 
 		storeMethod(self, operator, value)
 

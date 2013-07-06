@@ -64,6 +64,56 @@ class AwlOperator(object):
 
 	enum.end	# Operator types
 
+	# Type to string map
+	type2str = {
+		IMM		: "IMMEDIATE",
+		IMM_REAL	: "REAL",
+		IMM_S5T		: "S5T",
+		IMM_TIME	: "TIME",
+		IMM_DATE	: "DATE",
+		IMM_TOD		: "TOD",
+		IMM_DT		: "DT",
+		IMM_PTR		: "P#",
+	
+		MEM_E		: "E",
+		MEM_A		: "A",
+		MEM_M		: "M",
+		MEM_L		: "L",
+		MEM_VL		: "VL",
+		MEM_DB		: "DB",
+		MEM_DI		: "DI",
+		MEM_T		: "T",
+		MEM_Z		: "Z",
+		MEM_PA		: "PA",
+		MEM_PE		: "PE",
+
+		MEM_STW		: "STW",
+		MEM_STW_Z	: "==0",
+		MEM_STW_NZ	: "<>0",
+		MEM_STW_POS	: ">0",
+		MEM_STW_NEG	: "<0",
+		MEM_STW_POSZ	: ">=0",
+		MEM_STW_NEGZ	: "<=0",
+		MEM_STW_UO	: "UO",
+
+		LBL_REF		: "LABEL",
+	
+		BLKREF_FC	: "FC_BLOCK",
+		BLKREF_SFC	: "SFC_BLOCK",
+		BLKREF_FB	: "FB_BLOCK",
+		BLKREF_SFB	: "SFB_BLOCK",
+		BLKREF_DB	: "DB_BLOCK",
+		BLKREF_DI	: "DI_BLOCK",
+	
+		NAMED_LOCAL	: "#LOCAL",
+		INTERF_DB	: "__INTERFACE_DB",
+	
+		INDIRECT	: "__INDIRECT",
+	
+		VIRT_ACCU	: "__ACCU",
+		VIRT_AR		: "__AR",
+	}
+
 	def __init__(self, type, width, value, insn=None):
 		self.type = type
 		self.width = width
@@ -81,11 +131,17 @@ class AwlOperator(object):
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
 
+	def _raiseTypeError(self, actualType, expectedTypes):
+		expectedTypes = [ self.type2str[t] for t in expectedTypes ]
+		raise AwlSimError("Invalid operator type. Got %s, but expected %s." %\
+			(self.type2str[actualType],
+			 listToHumanStr(expectedTypes)),
+			insn=self.insn)
+
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
 		types = toList(types)
 		if not self.type in types:
-			raise AwlSimError("Invalid operator type.",
-					  insn=self.insn)#FIXME print expected
+			self._raiseTypeError(self.type, types)
 		if lowerLimit is not None:
 			if self.value < lowerLimit:
 				raise AwlSimError("Operator value too small",
@@ -98,25 +154,6 @@ class AwlOperator(object):
 	def resolve(self, store=True):
 		# This already is a direct operator.
 		return self
-
-	type2str = {
-		MEM_STW_Z	: "==0",
-                MEM_STW_NZ	: "<>0",
-                MEM_STW_POS	: ">0",
-                MEM_STW_NEG	: "<0",
-                MEM_STW_POSZ	: ">=0",
-                MEM_STW_NEGZ	: "<=0",
-                MEM_STW_UO	: "UO",
-	}
-
-	type2prefix = {
-		MEM_E		: "E",
-		MEM_A		: "A",
-		MEM_M		: "M",
-		MEM_L		: "L",
-		MEM_T		: "T",
-		MEM_Z		: "Z",
-	}
 
 	def __repr__(self):
 		try:
@@ -140,7 +177,7 @@ class AwlOperator(object):
 			return "TOD#" #TODO
 		elif self.type in (self.MEM_A, self.MEM_E,
 				   self.MEM_M, self.MEM_L):
-			pfx = self.type2prefix[self.type]
+			pfx = self.type2str[self.type]
 			if self.width == 1:
 				return "%s %d.%d" %\
 					(pfx, self.value.byteOffset, self.value.bitOffset)
@@ -213,7 +250,7 @@ class AwlOperator(object):
 		elif self.type == self.INTERF_DB:
 			return "__INTERFACE_DB" #FIXME
 		elif self.type == self.INDIRECT:
-			return "__INDIRECT" #FIXME
+			assert(0) # Overloaded in AwlIndirectOp
 		elif self.type == self.VIRT_ACCU:
 			return "__ACCU %d" % self.value.byteOffset
 		elif self.type == self.VIRT_AR:
@@ -326,8 +363,7 @@ class AwlIndirectOp(AwlOperator):
 		types = toList(types)
 		if not self.area2optype_fetch[self.area] in types and\
 		   not self.area2optype_store[self.area] in types:
-			raise AwlSimError("Invalid operator type.",
-					  insn=self.insn)#FIXME print expected
+			self._raiseTypeError(self.area2optype_fetch[self.area], types)
 		assert(lowerLimit is None)
 		assert(upperLimit is None)
 
@@ -364,7 +400,7 @@ class AwlIndirectOp(AwlOperator):
 			if offsetOper.width not in possibleWidths:
 				raise AwlSimError("Offset operator in indirect "
 					"access is not of %s bit width." %\
-					intListToHumanStr(possibleWidths))
+					listToHumanStr(possibleWidths))
 			offsetValue = self.insn.cpu.fetch(offsetOper)
 			pointer = (self.area | (offsetValue & 0x00FFFFFF))
 		else:
@@ -400,3 +436,6 @@ class AwlIndirectOp(AwlOperator):
 		else:
 			directOffset = AwlOffset(pointer & AwlIndirectOp.ADDRESS_MASK)
 		return AwlOperator(optype, self.width, directOffset, self.insn)
+
+	def __repr__(self):
+		return "__INDIRECT" #TODO
