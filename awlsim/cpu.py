@@ -293,6 +293,25 @@ class S7CPU(object):
 		for fc in self.fcs.values():
 			self.__resolveSymbols_block(fc)
 
+	# Run static error checks for code block
+	def __staticSanityChecks_block(self, block):
+		for insn in block.insns:
+			insn.staticSanityChecks()
+
+	# Run static error checks
+	def __staticSanityChecks(self):
+		try:
+			self.obs[1]
+		except KeyError:
+			raise AwlSimError("No OB1 defined")
+
+		for ob in self.obs.values():
+			self.__staticSanityChecks_block(ob)
+		for fb in self.fbs.values():
+			self.__staticSanityChecks_block(fb)
+		for fc in self.fcs.values():
+			self.__staticSanityChecks_block(fc)
+
 	def load(self, parseTree):
 		# Translate the AWL tree
 		self.__detectMnemonics(parseTree)
@@ -312,10 +331,7 @@ class S7CPU(object):
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
 		self.__resolveSymbols()
-		try:
-			self.obs[1]
-		except KeyError:
-			raise AwlSimError("No OB1 defined")
+		self.__staticSanityChecks()
 
 	def reallocate(self, force=False):
 		if force or (self.specs.getNrAccus() == 4) != self.is4accu:
@@ -492,6 +508,8 @@ class S7CPU(object):
 	def getCurrentInsn(self):
 		try:
 			cse = self.callStackTop
+			if not cse:
+				return None
 			return cse.insns[cse.ip]
 		except IndexError as e:
 			return None
@@ -808,7 +826,7 @@ class S7CPU(object):
 
 	def fetchINDIRECT(self, operator):
 		#TODO pass enforceWidth down
-		return self.fetch(operator.resolve(self, False))
+		return self.fetch(operator.resolve(False))
 
 	def fetchVirtACCU(self, operator):
 		return self.getAccu(operator.value.byteOffset).get()
@@ -925,7 +943,7 @@ class S7CPU(object):
 			assert(0)
 
 	def storeINDIRECT(self, operator, value):
-		self.store(operator.resolve(self, True), value)
+		self.store(operator.resolve(True), value)
 
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,

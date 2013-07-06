@@ -82,17 +82,22 @@ class AwlOperator(object):
 		self.labelIndex = newLabelIndex
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
-		if not isinstance(types, list) and\
-		   not isinstance(types, tuple):
-			types = [ types, ]
+		types = toList(types)
 		if not self.type in types:
-			raise AwlSimError("Operator type is invalid")
+			raise AwlSimError("Invalid operator type.",
+					  insn=self.insn)#FIXME print expected
 		if lowerLimit is not None:
 			if self.value < lowerLimit:
-				raise AwlSimError("Operator value too small")
+				raise AwlSimError("Operator value too small",
+						  insn=self.insn)
 		if upperLimit is not None:
 			if self.value > upperLimit:
-				raise AwlSimError("Operator value too big")
+				raise AwlSimError("Operator value too big",
+						  insn=self.insn)
+
+	def resolve(self, store=True):
+		# This already is a direct operator.
+		return self
 
 	type2str = {
 		MEM_STW_Z	: "==0",
@@ -288,7 +293,7 @@ class AwlIndirectOp(AwlOperator):
 	EXT_AREA_T	= 0x01FF000000	# Timer
 	EXT_AREA_Z	= 0x02FF000000	# Counter
 
-	# Convert area code to operator type for fetch operations
+	# Map for converting area code to operator type for fetch operations
 	area2optype_fetch = {
 		AREA_P		: AwlOperator.MEM_PE,
 		AREA_E		: AwlOperator.MEM_E,
@@ -302,17 +307,9 @@ class AwlIndirectOp(AwlOperator):
 		EXT_AREA_Z	: AwlOperator.MEM_Z,
 	}
 
-	# Convert area code to operator type for store operations
-	area2optype_store = {
-		AREA_P		: AwlOperator.MEM_PA,
-		AREA_E		: AwlOperator.MEM_E,
-		AREA_A		: AwlOperator.MEM_A,
-		AREA_M		: AwlOperator.MEM_M,
-		AREA_DB		: AwlOperator.MEM_DB,
-		AREA_DI		: AwlOperator.MEM_DI,
-		AREA_L		: AwlOperator.MEM_L,
-		AREA_VL		: AwlOperator.MEM_VL,
-	}
+	# Map for converting area code to operator type for store operations
+	area2optype_store = area2optype_fetch.copy()
+	area2optype_store[AREA_P] = AwlOperator.MEM_PA
 
 	def __init__(self, area, width, addressRegister, offsetOper, insn=None):
 		AwlOperator.__init__(self,
@@ -325,8 +322,17 @@ class AwlIndirectOp(AwlOperator):
 		self.addressRegister = addressRegister
 		self.offsetOper = offsetOper
 
+	def assertType(self, types, lowerLimit=None, upperLimit=None):
+		types = toList(types)
+		if not self.area2optype_fetch[self.area] in types and\
+		   not self.area2optype_store[self.area] in types:
+			raise AwlSimError("Invalid operator type.",
+					  insn=self.insn)#FIXME print expected
+		assert(lowerLimit is None)
+		assert(upperLimit is None)
+
 	# Resolve this indirect operator to a direct operator.
-	def resolve(self, cpu, store=True):
+	def resolve(self, store=True):
 		bitwiseDirectOffset = True
 		offsetOper = self.offsetOper
 		# Construct the pointer
@@ -359,7 +365,7 @@ class AwlIndirectOp(AwlOperator):
 				raise AwlSimError("Offset operator in indirect "
 					"access is not of %s bit width." %\
 					intListToHumanStr(possibleWidths))
-			offsetValue = cpu.fetch(offsetOper)
+			offsetValue = self.insn.cpu.fetch(offsetOper)
 			pointer = (self.area | (offsetValue & 0x00FFFFFF))
 		else:
 			# Register-indirect access
@@ -367,14 +373,14 @@ class AwlIndirectOp(AwlOperator):
 				raise AwlSimError("Offset operator in "
 					"register-indirect access is not a "
 					"pointer immediate.")
-			offsetValue = cpu.fetch(offsetOper)
+			offsetValue = self.insn.cpu.fetch(offsetOper)
 			if self.area == AwlIndirectOp.AREA_NONE:
 				# Area-spanning access
-				pointer = (cpu.getAR(self.addressRegister) +\
+				pointer = (self.insn.cpu.getAR(self.addressRegister) +\
 					   offsetValue) & 0xFFFFFFFF
 			else:
 				# Area-internal access
-				pointer = ((cpu.getAR(self.addressRegister) +
+				pointer = ((self.insn.cpu.getAR(self.addressRegister) +
 					    offsetValue) & 0x00FFFFFF) |\
 					  self.area
 		# Create a direct operator

@@ -422,11 +422,16 @@ class AwlInsn(object):
 		opTrans = AwlOpTranslator(self)
 		opTrans.translateFrom(rawInsn)
 
-	def _assertOps(self, count):
-		if isinstance(count, int):
-			count = [count]
-		if len(self.ops) not in count:
-			raise AwlSimError("Invalid Operator")
+	def staticSanityChecks(self):
+		"Run static sanity checks"
+		pass # Default none
+
+	def assertOpCount(self, counts):
+		counts = toList(counts)
+		if len(self.ops) not in counts:
+			raise AwlSimError("Invalid number of operators. "
+				"Expected %s." % intListToHumanStr(counts),
+				insn=self)
 
 	def getRawInsn(self):
 		return self.rawInsn
@@ -474,7 +479,7 @@ class AwlInsn_NotImplemented(AwlInsn):
 class AwlInsn_U(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_U, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -488,7 +493,7 @@ class AwlInsn_U(AwlInsn):
 class AwlInsn_UN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_UN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -502,7 +507,7 @@ class AwlInsn_UN(AwlInsn):
 class AwlInsn_O(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_O, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -520,7 +525,7 @@ class AwlInsn_O(AwlInsn):
 class AwlInsn_ON(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ON, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -534,7 +539,7 @@ class AwlInsn_ON(AwlInsn):
 class AwlInsn_X(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_X, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -548,7 +553,7 @@ class AwlInsn_X(AwlInsn):
 class AwlInsn_XN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_XN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -562,7 +567,7 @@ class AwlInsn_XN(AwlInsn):
 class AwlInsn_UB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_UB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -572,7 +577,7 @@ class AwlInsn_UB(AwlInsn):
 class AwlInsn_UNB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_UNB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -582,7 +587,7 @@ class AwlInsn_UNB(AwlInsn):
 class AwlInsn_OB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_OB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -592,7 +597,7 @@ class AwlInsn_OB(AwlInsn):
 class AwlInsn_ONB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ONB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -602,7 +607,7 @@ class AwlInsn_ONB(AwlInsn):
 class AwlInsn_XB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_XB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -612,7 +617,7 @@ class AwlInsn_XB(AwlInsn):
 class AwlInsn_XNB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_XNB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -622,7 +627,7 @@ class AwlInsn_XNB(AwlInsn):
 class AwlInsn_BEND(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BEND, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -660,7 +665,7 @@ class AwlInsn_BEND(AwlInsn):
 class AwlInsn_ASSIGN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSIGN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -673,11 +678,11 @@ class AwlInsn_ASSIGN(AwlInsn):
 class AwlInsn_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_R, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		oper = self.ops[0]
+		oper = self.ops[0].resolve(True)
 		if oper.type == AwlOperator.MEM_Z:
 			if s.VKE:
 				self.cpu.getCounter(oper.value.byteOffset).reset()
@@ -694,11 +699,11 @@ class AwlInsn_R(AwlInsn):
 class AwlInsn_S(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_S, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		oper = self.ops[0]
+		oper = self.ops[0].resolve(True)
 		if oper.type == AwlOperator.MEM_Z:
 			self.cpu.getCounter(oper.value.byteOffset).set(s.VKE)
 			s.OR, s.NER = 0, 0
@@ -710,7 +715,7 @@ class AwlInsn_S(AwlInsn):
 class AwlInsn_NOT(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NOT, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -719,7 +724,7 @@ class AwlInsn_NOT(AwlInsn):
 class AwlInsn_SET(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_CLR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -728,7 +733,7 @@ class AwlInsn_SET(AwlInsn):
 class AwlInsn_CLR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_CLR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -737,7 +742,7 @@ class AwlInsn_CLR(AwlInsn):
 class AwlInsn_SAVE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SAVE, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -746,7 +751,7 @@ class AwlInsn_SAVE(AwlInsn):
 class AwlInsn_FN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_FN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -758,7 +763,7 @@ class AwlInsn_FN(AwlInsn):
 class AwlInsn_FP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_FP, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -770,7 +775,7 @@ class AwlInsn_FP(AwlInsn):
 class AwlInsn_EQ_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_EQ_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -787,7 +792,7 @@ class AwlInsn_EQ_I(AwlInsn):
 class AwlInsn_NE_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NE_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -804,7 +809,7 @@ class AwlInsn_NE_I(AwlInsn):
 class AwlInsn_GT_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GT_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -821,7 +826,7 @@ class AwlInsn_GT_I(AwlInsn):
 class AwlInsn_LT_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LT_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -838,7 +843,7 @@ class AwlInsn_LT_I(AwlInsn):
 class AwlInsn_GE_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GE_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -855,7 +860,7 @@ class AwlInsn_GE_I(AwlInsn):
 class AwlInsn_LE_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LE_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -872,7 +877,7 @@ class AwlInsn_LE_I(AwlInsn):
 class AwlInsn_EQ_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_EQ_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -889,7 +894,7 @@ class AwlInsn_EQ_D(AwlInsn):
 class AwlInsn_NE_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NE_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -906,7 +911,7 @@ class AwlInsn_NE_D(AwlInsn):
 class AwlInsn_GT_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GT_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -923,7 +928,7 @@ class AwlInsn_GT_D(AwlInsn):
 class AwlInsn_LT_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LT_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -940,7 +945,7 @@ class AwlInsn_LT_D(AwlInsn):
 class AwlInsn_GE_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GE_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -957,7 +962,7 @@ class AwlInsn_GE_D(AwlInsn):
 class AwlInsn_LE_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LE_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -974,7 +979,7 @@ class AwlInsn_LE_D(AwlInsn):
 class AwlInsn_EQ_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_EQ_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -991,7 +996,7 @@ class AwlInsn_EQ_R(AwlInsn):
 class AwlInsn_NE_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NE_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1008,7 +1013,7 @@ class AwlInsn_NE_R(AwlInsn):
 class AwlInsn_GT_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GT_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1025,7 +1030,7 @@ class AwlInsn_GT_R(AwlInsn):
 class AwlInsn_LT_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LT_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1042,7 +1047,7 @@ class AwlInsn_LT_R(AwlInsn):
 class AwlInsn_GE_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GE_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1059,7 +1064,7 @@ class AwlInsn_GE_R(AwlInsn):
 class AwlInsn_LE_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LE_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1076,7 +1081,7 @@ class AwlInsn_LE_R(AwlInsn):
 class AwlInsn_BTI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BTI, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.get()
@@ -1092,7 +1097,7 @@ class AwlInsn_BTI(AwlInsn):
 class AwlInsn_ITB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ITB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1113,7 +1118,7 @@ class AwlInsn_ITB(AwlInsn):
 class AwlInsn_BTD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BTD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.get()
@@ -1135,7 +1140,7 @@ class AwlInsn_BTD(AwlInsn):
 class AwlInsn_ITD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ITD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.accu1.setDWord(self.cpu.accu1.getSignedWord())
@@ -1143,7 +1148,7 @@ class AwlInsn_ITD(AwlInsn):
 class AwlInsn_DTB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DTB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1167,7 +1172,7 @@ class AwlInsn_DTB(AwlInsn):
 class AwlInsn_DTR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DTR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.getSignedDWord()
@@ -1176,7 +1181,7 @@ class AwlInsn_DTR(AwlInsn):
 class AwlInsn_INVI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INVI, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.accu1.setWord(~self.cpu.accu1.getWord())
@@ -1184,7 +1189,7 @@ class AwlInsn_INVI(AwlInsn):
 class AwlInsn_INVD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INVD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.accu1.setDWord(~self.cpu.accu1.getDWord())
@@ -1192,7 +1197,7 @@ class AwlInsn_INVD(AwlInsn):
 class AwlInsn_NEGI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NEGI, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1211,7 +1216,7 @@ class AwlInsn_NEGI(AwlInsn):
 class AwlInsn_NEGD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NEGD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1230,7 +1235,7 @@ class AwlInsn_NEGD(AwlInsn):
 class AwlInsn_NEGR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NEGR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = -(self.cpu.accu1.getPyFloat())
@@ -1240,7 +1245,7 @@ class AwlInsn_NEGR(AwlInsn):
 class AwlInsn_TAW(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAW, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.get()
@@ -1252,7 +1257,7 @@ class AwlInsn_TAW(AwlInsn):
 class AwlInsn_TAD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.get()
@@ -1265,7 +1270,7 @@ class AwlInsn_TAD(AwlInsn):
 class AwlInsn_RND(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RND, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def __run_python2(self):
 		s = self.cpu.callStackTop.status
@@ -1302,7 +1307,7 @@ class AwlInsn_RND(AwlInsn):
 class AwlInsn_TRUNC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TRUNC, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1319,7 +1324,7 @@ class AwlInsn_TRUNC(AwlInsn):
 class AwlInsn_RNDP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RNDP, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1339,7 +1344,7 @@ class AwlInsn_RNDP(AwlInsn):
 class AwlInsn_RNDN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RNDN, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1359,18 +1364,19 @@ class AwlInsn_RNDN(AwlInsn):
 class AwlInsn_FR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_FR, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_Z:
-			raise AwlSimError("Invalid operator")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_Z)
 
 	def run(self):
-		counter = self.cpu.getCounter(self.ops[0].value.byteOffset)
-		counter.run_FR(self.cpu.callStackTop.status.VKE)
+		self.cpu.getCounter(self.ops[0].resolve(True).value.byteOffset
+			).run_FR(self.cpu.callStackTop.status.VKE)
 
 class AwlInsn_L(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_L, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		self.cpu.accu2.set(self.cpu.accu1.get())
@@ -1379,7 +1385,7 @@ class AwlInsn_L(AwlInsn):
 class AwlInsn_LC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LC, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		#FIXME check whether operator is valid for LC
@@ -1390,33 +1396,33 @@ class AwlInsn_LC(AwlInsn):
 class AwlInsn_ZV(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ZV, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_Z:
-			raise AwlSimError("Invalid operator")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_Z)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		counter = self.cpu.getCounter(self.ops[0].value.byteOffset)
-		counter.run_ZV(self.cpu.callStackTop.status.VKE)
+		self.cpu.getCounter(self.ops[0].resolve(True).value.byteOffset).run_ZV(s.VKE)
 		s.OR, s.NER = 0, 0
 
 class AwlInsn_ZR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ZR, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_Z:
-			raise AwlSimError("Invalid operator")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_Z)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		counter = self.cpu.getCounter(self.ops[0].value.byteOffset)
-		counter.run_ZR(self.cpu.callStackTop.status.VKE)
+		self.cpu.getCounter(self.ops[0].resolve(True).value.byteOffset).run_ZR(s.VKE)
 		s.OR, s.NER = 0, 0
 
 class AwlInsn_AUF(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_AUF, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.BLKREF_DB and\
 		   self.ops[0].type != AwlOperator.BLKREF_DI:
 			raise AwlSimError("Invalid operator")
@@ -1427,7 +1433,7 @@ class AwlInsn_AUF(AwlInsn):
 class AwlInsn_TDB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TDB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.run_TDB()
@@ -1435,7 +1441,7 @@ class AwlInsn_TDB(AwlInsn):
 class AwlInsn_SPA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPA, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1445,7 +1451,7 @@ class AwlInsn_SPA(AwlInsn):
 class AwlInsn_SPL(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPL, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1460,7 +1466,7 @@ class AwlInsn_SPL(AwlInsn):
 class AwlInsn_SPB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPB, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1473,7 +1479,7 @@ class AwlInsn_SPB(AwlInsn):
 class AwlInsn_SPBN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1486,7 +1492,7 @@ class AwlInsn_SPBN(AwlInsn):
 class AwlInsn_SPBB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBB, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1499,7 +1505,7 @@ class AwlInsn_SPBB(AwlInsn):
 class AwlInsn_SPBNB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBNB, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1512,7 +1518,7 @@ class AwlInsn_SPBNB(AwlInsn):
 class AwlInsn_SPBI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBI, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1525,7 +1531,7 @@ class AwlInsn_SPBI(AwlInsn):
 class AwlInsn_SPBIN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBIN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1538,7 +1544,7 @@ class AwlInsn_SPBIN(AwlInsn):
 class AwlInsn_SPO(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPO, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1550,7 +1556,7 @@ class AwlInsn_SPO(AwlInsn):
 class AwlInsn_SPS(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPS, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1563,7 +1569,7 @@ class AwlInsn_SPS(AwlInsn):
 class AwlInsn_SPZ(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPZ, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1575,7 +1581,7 @@ class AwlInsn_SPZ(AwlInsn):
 class AwlInsn_SPN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPN, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1587,7 +1593,7 @@ class AwlInsn_SPN(AwlInsn):
 class AwlInsn_SPP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPP, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1599,7 +1605,7 @@ class AwlInsn_SPP(AwlInsn):
 class AwlInsn_SPM(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPM, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1611,7 +1617,7 @@ class AwlInsn_SPM(AwlInsn):
 class AwlInsn_SPPZ(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPPZ, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1623,7 +1629,7 @@ class AwlInsn_SPPZ(AwlInsn):
 class AwlInsn_SPMZ(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPMZ, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1635,7 +1641,7 @@ class AwlInsn_SPMZ(AwlInsn):
 class AwlInsn_SPU(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPU, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1647,7 +1653,7 @@ class AwlInsn_SPU(AwlInsn):
 class AwlInsn_LOOP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LOOP, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
@@ -1661,7 +1667,7 @@ class AwlInsn_LOOP(AwlInsn):
 class AwlInsn_PL_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PL_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1684,7 +1690,7 @@ class AwlInsn_PL_I(AwlInsn):
 class AwlInsn_MI_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MI_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1707,7 +1713,7 @@ class AwlInsn_MI_I(AwlInsn):
 class AwlInsn_MU_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MU_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1729,7 +1735,7 @@ class AwlInsn_MU_I(AwlInsn):
 class AwlInsn_DI_I(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DI_I, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1762,7 +1768,7 @@ class AwlInsn_DI_I(AwlInsn):
 class AwlInsn_PL(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PL, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.IMM:
 			raise AwlSimError("Immediate expected")
 
@@ -1780,7 +1786,7 @@ class AwlInsn_PL(AwlInsn):
 class AwlInsn_PL_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PL_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1803,7 +1809,7 @@ class AwlInsn_PL_D(AwlInsn):
 class AwlInsn_MI_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MI_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1826,7 +1832,7 @@ class AwlInsn_MI_D(AwlInsn):
 class AwlInsn_MU_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MU_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1848,7 +1854,7 @@ class AwlInsn_MU_D(AwlInsn):
 class AwlInsn_DI_D(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DI_D, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1877,7 +1883,7 @@ class AwlInsn_DI_D(AwlInsn):
 class AwlInsn_MOD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MOD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -1904,7 +1910,7 @@ class AwlInsn_MOD(AwlInsn):
 class AwlInsn_PL_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PL_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
@@ -1916,7 +1922,7 @@ class AwlInsn_PL_R(AwlInsn):
 class AwlInsn_MI_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MI_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
@@ -1928,7 +1934,7 @@ class AwlInsn_MI_R(AwlInsn):
 class AwlInsn_MU_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MU_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
@@ -1940,7 +1946,7 @@ class AwlInsn_MU_R(AwlInsn):
 class AwlInsn_DI_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DI_R, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
@@ -1958,7 +1964,7 @@ class AwlInsn_DI_R(AwlInsn):
 class AwlInsn_ABS(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ABS, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.accu1.setPyFloat(abs(self.cpu.accu1.getPyFloat()))
@@ -1966,7 +1972,7 @@ class AwlInsn_ABS(AwlInsn):
 class AwlInsn_SQR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SQR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
@@ -1977,7 +1983,7 @@ class AwlInsn_SQR(AwlInsn):
 class AwlInsn_SQRT(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SQRT, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
@@ -1993,7 +1999,7 @@ class AwlInsn_SQRT(AwlInsn):
 class AwlInsn_EXP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_EXP, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
@@ -2004,7 +2010,7 @@ class AwlInsn_EXP(AwlInsn):
 class AwlInsn_LN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LN, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
@@ -2022,7 +2028,7 @@ class AwlInsn_LN(AwlInsn):
 class AwlInsn_SIN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SIN, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = math.sin(self.cpu.accu1.getPyFloat())
@@ -2035,7 +2041,7 @@ class AwlInsn_SIN(AwlInsn):
 class AwlInsn_COS(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_COS, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = math.cos(self.cpu.accu1.getPyFloat())
@@ -2048,7 +2054,7 @@ class AwlInsn_COS(AwlInsn):
 class AwlInsn_TAN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAN, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
@@ -2067,7 +2073,7 @@ class AwlInsn_TAN(AwlInsn):
 class AwlInsn_ASIN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASIN, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = math.asin(self.cpu.accu1.getPyFloat())
@@ -2077,7 +2083,7 @@ class AwlInsn_ASIN(AwlInsn):
 class AwlInsn_ACOS(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ACOS, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = math.acos(self.cpu.accu1.getPyFloat())
@@ -2087,7 +2093,7 @@ class AwlInsn_ACOS(AwlInsn):
 class AwlInsn_ATAN(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ATAN, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		accu1 = math.atan(self.cpu.accu1.getPyFloat())
@@ -2097,7 +2103,7 @@ class AwlInsn_ATAN(AwlInsn):
 class AwlInsn_T(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_T, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		if self.cpu.mcrIsOn():
@@ -2108,7 +2114,7 @@ class AwlInsn_T(AwlInsn):
 class AwlInsn_TAR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		oldAr1 = self.cpu.ar1.get()
@@ -2118,7 +2124,7 @@ class AwlInsn_TAR(AwlInsn):
 class AwlInsn_BE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BE, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.run_BE()
@@ -2126,7 +2132,7 @@ class AwlInsn_BE(AwlInsn):
 class AwlInsn_BEB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BEB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2138,7 +2144,7 @@ class AwlInsn_BEB(AwlInsn):
 class AwlInsn_BEA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BEA, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.run_BE()
@@ -2146,7 +2152,7 @@ class AwlInsn_BEA(AwlInsn):
 class AwlInsn_CALL(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn)
-		self._assertOps((1,2))
+		self.assertOpCount((1,2))
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2161,7 +2167,7 @@ class AwlInsn_CALL(AwlInsn):
 class AwlInsn_CC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_CC, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2172,7 +2178,7 @@ class AwlInsn_CC(AwlInsn):
 class AwlInsn_UC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_UC, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2182,7 +2188,7 @@ class AwlInsn_UC(AwlInsn):
 class AwlInsn_MCRB(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MCRB, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2192,7 +2198,7 @@ class AwlInsn_MCRB(AwlInsn):
 class AwlInsn_BMCR(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BMCR, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2202,7 +2208,7 @@ class AwlInsn_BMCR(AwlInsn):
 class AwlInsn_MCRA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MCRA, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.setMcrActive(True)
@@ -2210,7 +2216,7 @@ class AwlInsn_MCRA(AwlInsn):
 class AwlInsn_MCRD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_MCRD, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.setMcrActive(False)
@@ -2218,7 +2224,7 @@ class AwlInsn_MCRD(AwlInsn):
 class AwlInsn_SSI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SSI, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2239,7 +2245,7 @@ class AwlInsn_SSI(AwlInsn):
 class AwlInsn_SSD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SSD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2260,7 +2266,7 @@ class AwlInsn_SSD(AwlInsn):
 class AwlInsn_SLW(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SLW, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2281,7 +2287,7 @@ class AwlInsn_SLW(AwlInsn):
 class AwlInsn_SRW(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SRW, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2302,7 +2308,7 @@ class AwlInsn_SRW(AwlInsn):
 class AwlInsn_SLD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SLD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2323,7 +2329,7 @@ class AwlInsn_SLD(AwlInsn):
 class AwlInsn_SRD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SRD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2344,7 +2350,7 @@ class AwlInsn_SRD(AwlInsn):
 class AwlInsn_RLD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RLD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2365,7 +2371,7 @@ class AwlInsn_RLD(AwlInsn):
 class AwlInsn_RRD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RRD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2386,7 +2392,7 @@ class AwlInsn_RRD(AwlInsn):
 class AwlInsn_RLDA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RLDA, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2408,7 +2414,7 @@ class AwlInsn_RLDA(AwlInsn):
 class AwlInsn_RRDA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RRDA, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
@@ -2430,67 +2436,67 @@ class AwlInsn_RRDA(AwlInsn):
 class AwlInsn_SI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SI, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_T:
-			raise AwlSimError("Timer expected")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_T)
 
 	def run(self):
-		timerNumber = self.ops[0].value.byteOffset
-		timer = self.cpu.getTimer(timerNumber)
-		timer.run_SI(self.cpu.accu1.get())
+		self.cpu.getTimer(self.ops[0].resolve(True).value.byteOffset
+			).run_SI(self.cpu.accu1.get())
 
 class AwlInsn_SV(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SV, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_T:
-			raise AwlSimError("Timer expected")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_T)
 
 	def run(self):
-		timerNumber = self.ops[0].value.byteOffset
-		timer = self.cpu.getTimer(timerNumber)
-		timer.run_SV(self.cpu.accu1.get())
+		self.cpu.getTimer(self.ops[0].resolve(True).value.byteOffset
+			).run_SV(self.cpu.accu1.get())
 
 class AwlInsn_SE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SE, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_T:
-			raise AwlSimError("Timer expected")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_T)
 
 	def run(self):
-		timerNumber = self.ops[0].value.byteOffset
-		timer = self.cpu.getTimer(timerNumber)
-		timer.run_SE(self.cpu.accu1.get())
+		self.cpu.getTimer(self.ops[0].resolve(True).value.byteOffset
+			).run_SE(self.cpu.accu1.get())
 
 class AwlInsn_SS(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SS, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_T:
-			raise AwlSimError("Timer expected")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_T)
 
 	def run(self):
-		timerNumber = self.ops[0].value.byteOffset
-		timer = self.cpu.getTimer(timerNumber)
-		timer.run_SS(self.cpu.accu1.get())
+		self.cpu.getTimer(self.ops[0].resolve(True).value.byteOffset
+			).run_SS(self.cpu.accu1.get())
 
 class AwlInsn_SA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SA, rawInsn)
-		self._assertOps(1)
-		if self.ops[0].type != AwlOperator.MEM_T:
-			raise AwlSimError("Timer expected")
+		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType(AwlOperator.MEM_T)
 
 	def run(self):
-		timerNumber = self.ops[0].value.byteOffset
-		timer = self.cpu.getTimer(timerNumber)
-		timer.run_SA(self.cpu.accu1.get())
+		self.cpu.getTimer(self.ops[0].resolve(True).value.byteOffset
+			).run_SA(self.cpu.accu1.get())
 
 class AwlInsn_UW(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_UW, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
 
@@ -2509,7 +2515,7 @@ class AwlInsn_UW(AwlInsn):
 class AwlInsn_OW(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_OW, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
 
@@ -2528,7 +2534,7 @@ class AwlInsn_OW(AwlInsn):
 class AwlInsn_XOW(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_XOW, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 0xFFFF)
 
@@ -2547,7 +2553,7 @@ class AwlInsn_XOW(AwlInsn):
 class AwlInsn_UD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_UD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM)
 
@@ -2566,7 +2572,7 @@ class AwlInsn_UD(AwlInsn):
 class AwlInsn_OD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_OD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM)
 
@@ -2585,7 +2591,7 @@ class AwlInsn_OD(AwlInsn):
 class AwlInsn_XOD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_XOD, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM)
 
@@ -2604,7 +2610,7 @@ class AwlInsn_XOD(AwlInsn):
 class AwlInsn_TAK(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAK, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		oldAccu1 = self.cpu.accu1.get()
@@ -2614,7 +2620,7 @@ class AwlInsn_TAK(AwlInsn):
 class AwlInsn_PUSH(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PUSH, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.accu2.set(self.cpu.accu1.get())
@@ -2622,7 +2628,7 @@ class AwlInsn_PUSH(AwlInsn):
 class AwlInsn_POP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_POP, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.accu1.set(self.cpu.accu2.get())
@@ -2630,7 +2636,7 @@ class AwlInsn_POP(AwlInsn):
 class AwlInsn_ENT(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ENT, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		if not self.cpu.is4accu:
@@ -2641,7 +2647,7 @@ class AwlInsn_ENT(AwlInsn):
 class AwlInsn_LEAVE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LEAVE, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		if not self.cpu.is4accu:
@@ -2652,7 +2658,7 @@ class AwlInsn_LEAVE(AwlInsn):
 class AwlInsn_INC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INC, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
@@ -2662,7 +2668,7 @@ class AwlInsn_INC(AwlInsn):
 class AwlInsn_DEC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DEC, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
@@ -2672,7 +2678,7 @@ class AwlInsn_DEC(AwlInsn):
 class AwlInsn_INCAR1(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR1, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 
 	def run(self):
 		if self.ops:
@@ -2683,7 +2689,7 @@ class AwlInsn_INCAR1(AwlInsn):
 class AwlInsn_INCAR2(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR2, rawInsn)
-		self._assertOps((0, 1))
+		self.assertOpCount((0, 1))
 
 	def run(self):
 		if self.ops:
@@ -2694,7 +2700,7 @@ class AwlInsn_INCAR2(AwlInsn):
 class AwlInsn_BLD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BLD, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		pass # NOP
@@ -2702,7 +2708,7 @@ class AwlInsn_BLD(AwlInsn):
 class AwlInsn_NOP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NOP, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 		self.ops[0].assertType(AwlOperator.IMM, 0, 1)
 
 	def run(self):
@@ -2711,7 +2717,7 @@ class AwlInsn_NOP(AwlInsn):
 class AwlInsn_ASSERT_EQ(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_EQ, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2724,7 +2730,7 @@ class AwlInsn_ASSERT_EQ(AwlInsn):
 class AwlInsn_ASSERT_EQ_R(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_EQ_R, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2737,7 +2743,7 @@ class AwlInsn_ASSERT_EQ_R(AwlInsn):
 class AwlInsn_ASSERT_NE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_NE, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2750,7 +2756,7 @@ class AwlInsn_ASSERT_NE(AwlInsn):
 class AwlInsn_ASSERT_GT(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_GT, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2763,7 +2769,7 @@ class AwlInsn_ASSERT_GT(AwlInsn):
 class AwlInsn_ASSERT_LT(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_LT, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2776,7 +2782,7 @@ class AwlInsn_ASSERT_LT(AwlInsn):
 class AwlInsn_ASSERT_GE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_GE, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2789,7 +2795,7 @@ class AwlInsn_ASSERT_GE(AwlInsn):
 class AwlInsn_ASSERT_LE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_LE, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
@@ -2802,7 +2808,7 @@ class AwlInsn_ASSERT_LE(AwlInsn):
 class AwlInsn_SLEEP(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SLEEP, rawInsn)
-		self._assertOps(1)
+		self.assertOpCount(1)
 
 	def run(self):
 		msecs = self.cpu.fetch(self.ops[0])
@@ -2820,7 +2826,7 @@ class AwlInsn_SLEEP(AwlInsn):
 class AwlInsn_STWRST(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_STWRST, rawInsn)
-		self._assertOps(0)
+		self.assertOpCount(0)
 
 	def run(self):
 		self.cpu.callStackTop.status.reset()
@@ -2828,7 +2834,7 @@ class AwlInsn_STWRST(AwlInsn):
 class AwlInsn_SSPEC(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SSPEC, rawInsn)
-		self._assertOps(2)
+		self.assertOpCount(2)
 
 	def run(self):
 		target = self.cpu.fetch(self.ops[0])

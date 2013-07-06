@@ -1,3 +1,6 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
 	// Start timer and let it expire
 	__STWRST
 	L		0
@@ -75,3 +78,36 @@
 	__ASSERT==	__STW VKE,	0
 	L		T 10
 	__ASSERT==	__ACCU 1,	0
+
+
+	// Test timer parameter
+	AUF		DB 1
+	L		DBW 0
+	__ASSERT==	__ACCU 1,	24
+	CALL FB 1, DB 1 (
+		TIMER_VAR	:= T 42
+	)
+END_ORGANIZATION_BLOCK
+
+
+FUNCTION_BLOCK FB 1
+	VAR_INPUT
+		TIMER_VAR	: TIMER
+	END_VAR
+BEGIN
+	L		DIW 0
+	__ASSERT==	__ACCU 1,	42
+	L		#TIMER_VAR
+	__ASSERT==	__ACCU 1,	0
+	U		#TIMER_VAR
+	__ASSERT==	__STW VKE,	0
+
+	SV		#TIMER_VAR
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 1
+	FB 1
+BEGIN
+	TIMER_VAR	:= T 24
+END_DATA_BLOCK

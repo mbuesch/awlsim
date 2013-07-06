@@ -13,7 +13,9 @@ import struct
 
 
 class AwlSimError(Exception):
-	pass
+	def __init__(self, message, insn=None):
+		Exception.__init__(self, message)
+		self.insn = insn
 
 class AwlParserError(Exception):
 	pass
@@ -121,6 +123,15 @@ def intListToHumanStr(ilist, lastSep="or"):
 	# Replace last comma with 'lastSep'
 	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
 	return string
+
+# Returns value, if value is a list.
+# Otherwise returns a list with value as element.
+def toList(value):
+	if isinstance(value, list):
+		return value
+	if isinstance(value, tuple):
+		return list(value)
+	return [ value, ]
 
 class EnumerationHelper(object):
 	"Enumeration helper"
