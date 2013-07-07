@@ -285,6 +285,9 @@ class S7CPU(object):
 			for i in range(len(insn.ops)):
 				insn.ops[i] = self.__resolveNamedLocalSym(block,
 								insn.ops[i])
+			for i in range(len(insn.params)):
+				insn.params[i].rvalueOp = self.__resolveNamedLocalSym(block,
+								insn.params[i].rvalueOp)
 
 	def __resolveSymbols(self):
 		for ob in self.obs.values():
@@ -693,7 +696,8 @@ class S7CPU(object):
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
-			raise AwlSimError("Invalid fetch request")
+			raise AwlSimError("Invalid fetch request: %s" %\
+				AwlOperator.type2str[operator.type])
 		# Check width of fetch operation
 		if operator.width not in enforceWidth and enforceWidth and\
 		   operator.type != AwlOperator.INDIRECT:
