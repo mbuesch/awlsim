@@ -39,8 +39,9 @@ class ParenStackElem(object):
 		self.OR = statusWord.OR
 
 	def __repr__(self):
+		type2name = AwlInsn.type2name_english #TODO: select ger or eng depending on mnemonics
 		return '(insn="%s" VKE=%s OR=%d)' %\
-			(AwlInsn.type2name[self.insnType],
+			(type2name[self.insnType],
 			 self.VKE, self.OR)
 
 class McrStackElem(object):
@@ -878,8 +879,6 @@ class S7CPU(object):
 		storeMethod(self, operator, value)
 
 	def storeE(self, operator, value):
-		if self.inCycle():
-			raise AwlSimError("Can't store to E")
 		AwlOperator.storeToByteArray(self.inputs, operator, value)
 
 	def storeA(self, operator, value):

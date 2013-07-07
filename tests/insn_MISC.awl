@@ -4,6 +4,32 @@
 	NOP		0
 
 
+	// Test: "A" load/store
+	L		DW#16#12345678
+	T		AB 0
+	T		AW 2
+	T		AD 4
+	L		AB 0
+	__ASSERT==	__ACCU 1,	DW#16#00000078
+	L		AW 2
+	__ASSERT==	__ACCU 1,	DW#16#00005678
+	L		AD 4
+	__ASSERT==	__ACCU 1,	DW#16#12345678
+
+
+	// Test: "E" load/store
+	L		DW#16#12345678
+	T		EB 0
+	T		EW 2
+	T		ED 4
+	L		EB 0
+	__ASSERT==	__ACCU 1,	DW#16#00000078
+	L		EW 2
+	__ASSERT==	__ACCU 1,	DW#16#00005678
+	L		ED 4
+	__ASSERT==	__ACCU 1,	DW#16#12345678
+
+
 	// Test: TAK
 	L		DW#16#01234567
 	L		DW#16#89ABCDEF
