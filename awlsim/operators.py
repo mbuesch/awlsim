@@ -156,10 +156,6 @@ class AwlOperator(object):
 		return self
 
 	def __repr__(self):
-		try:
-			return self.type2str[self.type]
-		except KeyError as e:
-			pass
 		if self.type == self.IMM:
 			if self.width == 16:
 				return str(self.value)
@@ -255,7 +251,10 @@ class AwlOperator(object):
 			return "__ACCU %d" % self.value.byteOffset
 		elif self.type == self.VIRT_AR:
 			return "__AR %d" % self.value.byteOffset
-		assert(0)
+		try:
+			return self.type2str[self.type]
+		except KeyError:
+			assert(0)
 
 	@classmethod
 	def fetchFromByteArray(cls, array, operator):
