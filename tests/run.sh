@@ -64,7 +64,11 @@ do_tests()
 			run_test_directory "$interpreter" "$basedir"
 		else
 			for opt in "$@"; do
-				run_test "$interpreter" "$opt"
+				if [ -d "$opt" ]; then
+					run_test_directory "$interpreter" "$opt"
+				else
+					run_test "$interpreter" "$opt"
+				fi
 			done
 		fi
 		echo
