@@ -33,6 +33,9 @@ class BlockInterface(object):
 	callByRef_Types = (
 		AwlDataType.TYPE_TIMER,
 		AwlDataType.TYPE_COUNTER,
+		AwlDataType.TYPE_BLOCK_DB,
+		AwlDataType.TYPE_BLOCK_FB,
+		AwlDataType.TYPE_BLOCK_FC,
 	)
 
 	def __init__(self):

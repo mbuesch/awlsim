@@ -98,12 +98,12 @@ class AwlOperator(object):
 
 		LBL_REF		: "LABEL",
 	
-		BLKREF_FC	: "FC_BLOCK",
-		BLKREF_SFC	: "SFC_BLOCK",
-		BLKREF_FB	: "FB_BLOCK",
-		BLKREF_SFB	: "SFB_BLOCK",
-		BLKREF_DB	: "DB_BLOCK",
-		BLKREF_DI	: "DI_BLOCK",
+		BLKREF_FC	: "BLOCK_FC",
+		BLKREF_SFC	: "BLOCK_SFC",
+		BLKREF_FB	: "BLOCK_FB",
+		BLKREF_SFB	: "BLOCK_SFB",
+		BLKREF_DB	: "BLOCK_DB",
+		BLKREF_DI	: "BLOCK_DI",
 	
 		NAMED_LOCAL	: "#LOCAL",
 		INTERF_DB	: "__INTERFACE_DB",
@@ -326,21 +326,27 @@ class AwlIndirectOp(AwlOperator):
 
 	# Extended area encodings. Only used for internal purposes.
 	# These are not used in the interpreted AWL code.
-	EXT_AREA_T	= 0x01FF000000	# Timer
-	EXT_AREA_Z	= 0x02FF000000	# Counter
+	EXT_AREA_T		= 0x01FF000000	# Timer
+	EXT_AREA_Z		= 0x02FF000000	# Counter
+	EXT_AREA_BLKREF_DB	= 0x03FF000000	# DB block reference
+	EXT_AREA_BLKREF_FB	= 0x04FF000000	# FB block reference
+	EXT_AREA_BLKREF_FC	= 0x05FF000000	# FC block reference
 
 	# Map for converting area code to operator type for fetch operations
 	area2optype_fetch = {
-		AREA_P		: AwlOperator.MEM_PE,
-		AREA_E		: AwlOperator.MEM_E,
-		AREA_A		: AwlOperator.MEM_A,
-		AREA_M		: AwlOperator.MEM_M,
-		AREA_DB		: AwlOperator.MEM_DB,
-		AREA_DI		: AwlOperator.MEM_DI,
-		AREA_L		: AwlOperator.MEM_L,
-		AREA_VL		: AwlOperator.MEM_VL,
-		EXT_AREA_T	: AwlOperator.MEM_T,
-		EXT_AREA_Z	: AwlOperator.MEM_Z,
+		AREA_P			: AwlOperator.MEM_PE,
+		AREA_E			: AwlOperator.MEM_E,
+		AREA_A			: AwlOperator.MEM_A,
+		AREA_M			: AwlOperator.MEM_M,
+		AREA_DB			: AwlOperator.MEM_DB,
+		AREA_DI			: AwlOperator.MEM_DI,
+		AREA_L			: AwlOperator.MEM_L,
+		AREA_VL			: AwlOperator.MEM_VL,
+		EXT_AREA_T		: AwlOperator.MEM_T,
+		EXT_AREA_Z		: AwlOperator.MEM_Z,
+		EXT_AREA_BLKREF_DB	: AwlOperator.BLKREF_DB,
+		EXT_AREA_BLKREF_FB	: AwlOperator.BLKREF_FB,
+		EXT_AREA_BLKREF_FC	: AwlOperator.BLKREF_FC,
 	}
 
 	# Map for converting area code to operator type for store operations

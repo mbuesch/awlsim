@@ -1,0 +1,3857 @@
+DATA_BLOCK DB 1
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   HandShake : BOOL ;	//Temporary placeholder variable
+   Profibus_Control : BOOL ;	
+   Alarm_Common : BOOL ;	
+   Central_Local : BOOL ;	
+   Feedback_Run : BOOL ;	
+   Profibus_Alarm : BOOL ;	
+   Spare_06 : BOOL ;	
+   Spare_07 : BOOL ;	
+   Rapping_51_Local : BOOL ;	
+   Spare_011 : BOOL ;	
+   Rapping_51_Return : BOOL ;	
+   Rapping_51_Ready : BOOL ;	
+   Rapping_52_Local : BOOL ;	
+   Spare_015 : BOOL ;	
+   Rapping_52_Return : BOOL ;	
+   Rapping_52_Ready : BOOL ;	
+   Rapping_53_Local : BOOL ;	
+   Spare_021 : BOOL ;	
+   Rapping_53_Return : BOOL ;	
+   Rapping_53_Ready : BOOL ;	
+   Rapping_61_Local : BOOL ;	
+   Spare_025 : BOOL ;	
+   Rapping_61_Return : BOOL ;	
+   Rapping_61_Ready : BOOL ;	
+   Rapping_62_Local : BOOL ;	
+   Spare_031 : BOOL ;	
+   Rapping_62_Return : BOOL ;	
+   Rapping_62_Ready : BOOL ;	
+   Rapping_63_Local : BOOL ;	
+   Spare_035 : BOOL ;	
+   Rapping_63_Return : BOOL ;	
+   Rapping_63_Ready : BOOL ;	
+   Rotary_71_Local : BOOL ;	
+   Rotary_71_Speed : BOOL ;	
+   Rotary_71_Return : BOOL ;	
+   Rotary_71_Ready : BOOL ;	
+   Rotary_72_Local : BOOL ;	
+   Rotary_72_Speed : BOOL ;	
+   Rotary_72_Return : BOOL ;	
+   Rotary_72_Ready : BOOL ;	
+   Rotary_81_Local : BOOL ;	
+   Rotary_81_Speed : BOOL ;	
+   Rotary_81_Return : BOOL ;	
+   Rotary_81_Ready : BOOL ;	
+   Rotary_82_Local : BOOL ;	
+   Rotary_82_Speed : BOOL ;	
+   Rotary_82_Return : BOOL ;	
+   Rotary_82_Ready : BOOL ;	
+   Circuit_Breaker_C1 : BOOL ;	
+   Circuit_Breaker_c2 : BOOL ;	
+   Trans_1_Ready : BOOL ;	
+   Trans_1_Fault : BOOL ;	
+   Trans_1_Return : BOOL ;	
+   Trans_2_Ready : BOOL ;	
+   Trans_2_Fault : BOOL ;	
+   Trans_2_Return : BOOL ;	
+   Trans_3_Ready : BOOL ;	
+   Trans_3_Fault : BOOL ;	
+   Trans_3_Return : BOOL ;	
+   spare8_9 : INT ;	
+   Field_1_KV : INT ;	
+   Field_1_mA : INT ;	
+   Field_2_KV : INT ;	
+   Field_2_mA : INT ;	
+   Field_3_KV : INT ;	
+   Field_3_mA : INT ;	
+  END_STRUCT ;	
+BEGIN
+   HandShake := FALSE; 
+   Profibus_Control := FALSE; 
+   Alarm_Common := FALSE; 
+   Central_Local := FALSE; 
+   Feedback_Run := FALSE; 
+   Profibus_Alarm := FALSE; 
+   Spare_06 := FALSE; 
+   Spare_07 := FALSE; 
+   Rapping_51_Local := FALSE; 
+   Spare_011 := FALSE; 
+   Rapping_51_Return := FALSE; 
+   Rapping_51_Ready := FALSE; 
+   Rapping_52_Local := FALSE; 
+   Spare_015 := FALSE; 
+   Rapping_52_Return := FALSE; 
+   Rapping_52_Ready := FALSE; 
+   Rapping_53_Local := FALSE; 
+   Spare_021 := FALSE; 
+   Rapping_53_Return := FALSE; 
+   Rapping_53_Ready := FALSE; 
+   Rapping_61_Local := FALSE; 
+   Spare_025 := FALSE; 
+   Rapping_61_Return := FALSE; 
+   Rapping_61_Ready := FALSE; 
+   Rapping_62_Local := FALSE; 
+   Spare_031 := FALSE; 
+   Rapping_62_Return := FALSE; 
+   Rapping_62_Ready := FALSE; 
+   Rapping_63_Local := FALSE; 
+   Spare_035 := FALSE; 
+   Rapping_63_Return := FALSE; 
+   Rapping_63_Ready := FALSE; 
+   Rotary_71_Local := FALSE; 
+   Rotary_71_Speed := FALSE; 
+   Rotary_71_Return := FALSE; 
+   Rotary_71_Ready := FALSE; 
+   Rotary_72_Local := FALSE; 
+   Rotary_72_Speed := FALSE; 
+   Rotary_72_Return := FALSE; 
+   Rotary_72_Ready := FALSE; 
+   Rotary_81_Local := FALSE; 
+   Rotary_81_Speed := FALSE; 
+   Rotary_81_Return := FALSE; 
+   Rotary_81_Ready := FALSE; 
+   Rotary_82_Local := FALSE; 
+   Rotary_82_Speed := FALSE; 
+   Rotary_82_Return := FALSE; 
+   Rotary_82_Ready := FALSE; 
+   Circuit_Breaker_C1 := FALSE; 
+   Circuit_Breaker_c2 := FALSE; 
+   Trans_1_Ready := FALSE; 
+   Trans_1_Fault := FALSE; 
+   Trans_1_Return := FALSE; 
+   Trans_2_Ready := FALSE; 
+   Trans_2_Fault := FALSE; 
+   Trans_2_Return := FALSE; 
+   Trans_3_Ready := FALSE; 
+   Trans_3_Fault := FALSE; 
+   Trans_3_Return := FALSE; 
+   spare8_9 := 0; 
+   Field_1_KV := 0; 
+   Field_1_mA := 0; 
+   Field_2_KV := 0; 
+   Field_2_mA := 0; 
+   Field_3_KV := 0; 
+   Field_3_mA := 0; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 2
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   Emergency_Stop_71 : BOOL ;	
+   Speed_Switch_71 : BOOL ;	
+   Contactor_FB_71 : BOOL ;	
+   Circuit_Breaker_71 : BOOL ;	
+   Emergency_Stop_72 : BOOL ;	
+   Speed_Switch_72 : BOOL ;	
+   Contactor_FB_72 : BOOL ;	
+   Circuit_Breaker_72 : BOOL ;	
+   Emergency_Stop_81 : BOOL ;	
+   Speed_Switch_81 : BOOL ;	
+   Contactor_FB_81 : BOOL ;	
+   Circuit_Breaker_81 : BOOL ;	
+   Emergency_Stop_82 : BOOL ;	
+   Speed_Switch_82 : BOOL ;	
+   Contactor_FB_82 : BOOL ;	
+   Circuit_Breaker_82 : BOOL ;	
+   Emergency_Stop_51 : BOOL ;	
+   Contactor_FB_51 : BOOL ;	
+   Circuit_Breaker_51 : BOOL ;	
+   Emergency_Stop_52 : BOOL ;	
+   Contactor_FB_52 : BOOL ;	
+   Circuit_Breaker_52 : BOOL ;	
+   Emergency_Stop_53 : BOOL ;	
+   Contactor_FB_53 : BOOL ;	
+   Circuit_Breaker_53 : BOOL ;	
+   Emergency_Stop_61 : BOOL ;	
+   Contactor_FB_61 : BOOL ;	
+   Circuit_Breaker_61 : BOOL ;	
+   Emergency_Stop_62 : BOOL ;	
+   Contactor_FB_62 : BOOL ;	
+   Circuit_Breaker_62 : BOOL ;	
+   Emergency_Stop_63 : BOOL ;	
+   Contactor_FB_63 : BOOL ;	
+   Circuit_Breaker_63 : BOOL ;	
+   Circuit_Breaker_C1_Alarm : BOOL ;	
+   SPARE_1 : BOOL ;	
+   SPARE_2 : BOOL ;	
+   Circuit_Breaker_C4_Alarm : BOOL ;	
+   PROFIBUS_ALARM : BOOL ;	
+  END_STRUCT ;	
+BEGIN
+   Emergency_Stop_71 := FALSE; 
+   Speed_Switch_71 := FALSE; 
+   Contactor_FB_71 := FALSE; 
+   Circuit_Breaker_71 := FALSE; 
+   Emergency_Stop_72 := FALSE; 
+   Speed_Switch_72 := FALSE; 
+   Contactor_FB_72 := FALSE; 
+   Circuit_Breaker_72 := FALSE; 
+   Emergency_Stop_81 := FALSE; 
+   Speed_Switch_81 := FALSE; 
+   Contactor_FB_81 := FALSE; 
+   Circuit_Breaker_81 := FALSE; 
+   Emergency_Stop_82 := FALSE; 
+   Speed_Switch_82 := FALSE; 
+   Contactor_FB_82 := FALSE; 
+   Circuit_Breaker_82 := FALSE; 
+   Emergency_Stop_51 := FALSE; 
+   Contactor_FB_51 := FALSE; 
+   Circuit_Breaker_51 := FALSE; 
+   Emergency_Stop_52 := FALSE; 
+   Contactor_FB_52 := FALSE; 
+   Circuit_Breaker_52 := FALSE; 
+   Emergency_Stop_53 := FALSE; 
+   Contactor_FB_53 := FALSE; 
+   Circuit_Breaker_53 := FALSE; 
+   Emergency_Stop_61 := FALSE; 
+   Contactor_FB_61 := FALSE; 
+   Circuit_Breaker_61 := FALSE; 
+   Emergency_Stop_62 := FALSE; 
+   Contactor_FB_62 := FALSE; 
+   Circuit_Breaker_62 := FALSE; 
+   Emergency_Stop_63 := FALSE; 
+   Contactor_FB_63 := FALSE; 
+   Circuit_Breaker_63 := FALSE; 
+   Circuit_Breaker_C1_Alarm := FALSE; 
+   SPARE_1 := FALSE; 
+   SPARE_2 := FALSE; 
+   Circuit_Breaker_C4_Alarm := FALSE; 
+   PROFIBUS_ALARM := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK FB 1
+TITLE =One Way Motor
+VERSION : 0.1
+
+
+VAR_INPUT
+  Central_Local : BOOL ;	
+  LB_Start : BOOL ;	
+  LB_Stop : BOOL ;	
+  Emergency_Stop : BOOL ;	
+  Single_Start : BOOL ;	
+  Group_Start : BOOL ;	
+  Group_Stop : BOOL ;	
+  Interlock : BOOL ;	
+  Speed_Switch : BOOL ;	
+  Contactor : BOOL ;	
+  Circuit_Breaker : BOOL ;	
+  Clock : BOOL ;	
+  reset : BOOL ;	
+  Delay_Time : TIMER ;	
+  Group_ON_Timer : TIMER ;	
+  ON_Delay : S5TIME ;	
+  Group_Off_Timer : TIMER ;	
+  Off_Delay : S5TIME ;	
+END_VAR
+VAR_OUTPUT
+  Speed_Switch_Fault : BOOL ;	
+  Contactor_Fault : BOOL ;	
+  CB_Fault : BOOL ;	
+  Interlock_Fault : BOOL ;	
+  Warning : BOOL ;	
+  Common_Alarm : BOOL ;	
+  Motor_ON : BOOL ;	
+END_VAR
+VAR
+  Temp1 : BOOL ;	
+  temp2 : BOOL ;	
+  temp3 : BOOL ;	
+  temp4 : BOOL ;	
+  temp5 : BOOL ;	
+  temp6 : BOOL ;	
+  temp7 : BOOL ;	
+  temp8 : BOOL ;	
+  temp9 : BOOL ;	
+  temp10 : BOOL ;	
+  temp11 : BOOL ;	
+  temp12 : BOOL ;	
+  temp13 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+//If System Change to Local Mode then Motor Turn Off
+      AN    #Central_Local; 
+      FP    #temp7; 
+      R     #Temp1; 
+NETWORK
+TITLE =Start by Local Box
+
+      A     #Emergency_Stop; 
+      AN    #Central_Local; 
+      A     #LB_Start; 
+      S     #Temp1; 
+      A(    ; 
+      ON    #Emergency_Stop; 
+      O     ; 
+      AN    #Central_Local; 
+      AN    #LB_Stop; 
+      O     #temp8; 
+      )     ; 
+      R     #Temp1; 
+      A     #Temp1; 
+      =     #Motor_ON; 
+NETWORK
+TITLE =Start Single
+
+      A     #Emergency_Stop; 
+      A     #Central_Local; 
+      A     #Single_Start; 
+      S     #Temp1; 
+      A(    ; 
+      ON    #Emergency_Stop; 
+      O(    ; 
+      AN    #Single_Start; 
+      FP    #temp11; 
+      A     #Central_Local; 
+      )     ; 
+      O     #temp8; 
+      )     ; 
+      R     #Temp1; 
+      A     #Temp1; 
+      =     #Motor_ON; 
+NETWORK
+TITLE =
+
+      A     #Interlock; 
+      A     #Central_Local; 
+      A     #Group_Start; 
+      L     #ON_Delay; 
+      SD    #Group_ON_Timer; 
+NETWORK
+TITLE =
+
+      A     #Central_Local; 
+      A(    ; 
+      O     #Group_Stop; 
+      O     #Group_Start; 
+      )     ; 
+      L     #Off_Delay; 
+      SF    #Group_Off_Timer; 
+NETWORK
+TITLE =
+
+      A     #Group_ON_Timer; 
+      A     #Emergency_Stop; 
+      S     #Temp1; 
+      A(    ; 
+      ON    #Emergency_Stop; 
+      O(    ; 
+      AN    #Group_Off_Timer; 
+      FP    #temp12; 
+      )     ; 
+      O     ; 
+      AN    #Single_Start; 
+      A     #Common_Alarm; 
+      A     #Central_Local; 
+      )     ; 
+      R     #Temp1; 
+      A     #Temp1; 
+      =     #Motor_ON; 
+NETWORK
+TITLE =Delay for Checking Feedback
+
+      A     #Motor_ON; 
+      L     S5T#5S; 
+      SD    #Delay_Time; 
+NETWORK
+TITLE =Checking Contactor Feedback
+
+      AN    #Contactor; 
+      A     #Delay_Time; 
+      A     #Motor_ON; 
+      S     #temp3; 
+      A     #reset; 
+      R     #temp3; 
+      A     #temp3; 
+      =     #Contactor_Fault; 
+NETWORK
+TITLE =Checking Speed Switch Feedback
+
+      AN    #Speed_Switch; 
+      A     #Delay_Time; 
+      A     #Motor_ON; 
+      S     #temp4; 
+      A     #reset; 
+      R     #temp4; 
+      A     #temp4; 
+      =     #Speed_Switch_Fault; 
+NETWORK
+TITLE =Checking Circuit Breaker Feedback
+
+      A     #Circuit_Breaker; 
+      S     #temp5; 
+      A     #reset; 
+      R     #temp5; 
+      A     #temp5; 
+      =     #CB_Fault; 
+NETWORK
+TITLE =Checking Interlocking
+
+      AN    #Interlock; 
+      A     #Motor_ON; 
+      S     #temp6; 
+      A     #reset; 
+      R     #temp6; 
+      A     #temp6; 
+      =     #Interlock_Fault; 
+NETWORK
+TITLE =Make Common Alarm
+//If System in Central Mode Dont Check Interlock
+      O     #Contactor_Fault; 
+      O     #Speed_Switch_Fault; 
+      O     #CB_Fault; 
+      =     #temp8; 
+NETWORK
+TITLE =
+
+      A     #Interlock_Fault; 
+      A     #Central_Local; 
+      O     #temp8; 
+      =     #Common_Alarm; 
+NETWORK
+TITLE =Blancking Alarm
+
+      A(    ; 
+      O     #Common_Alarm; 
+      ON    #Emergency_Stop; 
+      )     ; 
+      A     #Clock; 
+      =     #Warning; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK DB 71
+TITLE =
+VERSION : 0.0
+
+ FB 1
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Group_Start := FALSE; 
+   Group_Stop := FALSE; 
+   Interlock := FALSE; 
+   Speed_Switch := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Delay_Time := T 0; 
+   Group_ON_Timer := T 0; 
+   ON_Delay := S5T#0MS; 
+   Group_Off_Timer := T 0; 
+   Off_Delay := S5T#0MS; 
+   Speed_Switch_Fault := FALSE; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Interlock_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := FALSE; 
+   temp10 := FALSE; 
+   temp11 := FALSE; 
+   temp12 := FALSE; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 72
+TITLE =
+VERSION : 0.0
+
+ FB 1
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Group_Start := FALSE; 
+   Group_Stop := FALSE; 
+   Interlock := FALSE; 
+   Speed_Switch := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Delay_Time := T 0; 
+   Group_ON_Timer := T 0; 
+   ON_Delay := S5T#0MS; 
+   Group_Off_Timer := T 0; 
+   Off_Delay := S5T#0MS; 
+   Speed_Switch_Fault := FALSE; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Interlock_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := FALSE; 
+   temp10 := FALSE; 
+   temp11 := FALSE; 
+   temp12 := FALSE; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 81
+TITLE =
+VERSION : 0.0
+
+ FB 1
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Group_Start := FALSE; 
+   Group_Stop := FALSE; 
+   Interlock := FALSE; 
+   Speed_Switch := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Delay_Time := T 0; 
+   Group_ON_Timer := T 0; 
+   ON_Delay := S5T#0MS; 
+   Group_Off_Timer := T 0; 
+   Off_Delay := S5T#0MS; 
+   Speed_Switch_Fault := FALSE; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Interlock_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := FALSE; 
+   temp10 := FALSE; 
+   temp11 := FALSE; 
+   temp12 := FALSE; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 82
+TITLE =
+VERSION : 0.0
+
+ FB 1
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Group_Start := FALSE; 
+   Group_Stop := FALSE; 
+   Interlock := FALSE; 
+   Speed_Switch := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Delay_Time := T 0; 
+   Group_ON_Timer := T 0; 
+   ON_Delay := S5T#0MS; 
+   Group_Off_Timer := T 0; 
+   Off_Delay := S5T#0MS; 
+   Speed_Switch_Fault := FALSE; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Interlock_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := FALSE; 
+   temp10 := FALSE; 
+   temp11 := FALSE; 
+   temp12 := FALSE; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK FB 3
+TITLE =Rapping Motor
+VERSION : 0.1
+
+
+VAR_INPUT
+  Central_Local : BOOL ;	
+  LB_Start : BOOL ;	
+  LB_Stop : BOOL ;	
+  Emergency_Stop : BOOL ;	
+  Single_Start : BOOL ;	
+  Sequential_Start : BOOL ;	
+  Contactor : BOOL ;	
+  Circuit_Breaker : BOOL ;	
+  Clock : BOOL ;	
+  reset : BOOL ;	
+  Synchronize : BOOL ;	
+  Delay_Time : TIMER ;	
+  ON_Timer_1 : TIMER ;	
+  ON_Time_1 : INT ;	
+  Off_Timer_1 : TIMER ;	
+  Off_Time_1 : INT ;	
+  ON_Timer_2 : TIMER ;	
+  ON_Time_2 : INT ;	
+  Off_Timer_2 : TIMER ;	
+  Off_Time_2 : INT ;	
+END_VAR
+VAR_OUTPUT
+  Contactor_Fault : BOOL ;	
+  CB_Fault : BOOL ;	
+  Warning : BOOL ;	
+  Common_Alarm : BOOL ;	
+  Motor_ON : BOOL ;	
+END_VAR
+VAR
+  Temp1 : BOOL ;	
+  temp2 : BOOL ;	
+  temp3 : BOOL ;	
+  temp4 : BOOL ;	
+  temp5 : BOOL ;	
+  temp6 : BOOL ;	
+  temp7 : BOOL ;	
+  temp8 : BOOL ;	
+  temp9 : WORD ;	
+  temp10 : WORD ;	
+  temp11 : WORD ;	
+  temp12 : WORD ;	
+  temp13 : BOOL ;	
+END_VAR
+VAR_TEMP
+  TempS5 : S5TIME ;	
+  temp : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+//If System Change to Local Mode then Motor Turn Off
+      AN    #Central_Local; 
+      FP    #temp2; 
+      R     #Temp1; 
+NETWORK
+TITLE =Start by Local Box
+
+      A     #Emergency_Stop; 
+      AN    #Common_Alarm; 
+      AN    #Central_Local; 
+      A     #LB_Start; 
+      S     #Temp1; 
+      A(    ; 
+      ON    #Emergency_Stop; 
+      O     ; 
+      AN    #Central_Local; 
+      AN    #LB_Stop; 
+      O     #Common_Alarm; 
+      )     ; 
+      R     #Temp1; 
+      A     #Temp1; 
+      =     #Motor_ON; 
+NETWORK
+TITLE =Start Single
+
+      A     #Emergency_Stop; 
+      AN    #Common_Alarm; 
+      A     #Central_Local; 
+      A     #Single_Start; 
+      S     #Temp1; 
+      A(    ; 
+      ON    #Emergency_Stop; 
+      O(    ; 
+      AN    #Single_Start; 
+      FP    #temp3; 
+      A     #Central_Local; 
+      )     ; 
+      O     #Common_Alarm; 
+      )     ; 
+      R     #Temp1; 
+      A     #Temp1; 
+      =     #Motor_ON; 
+NETWORK
+TITLE =
+
+      A     #Motor_ON; 
+      L     S5T#5S; 
+      SD    #Delay_Time; 
+NETWORK
+TITLE =
+
+      A     #Motor_ON; 
+      A     #Delay_Time; 
+      AN    #Contactor; 
+      S     #Contactor_Fault; 
+      A     #reset; 
+      R     #Contactor_Fault; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #Circuit_Breaker; 
+      S     #CB_Fault; 
+      A     #reset; 
+      R     #CB_Fault; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      ON    #Emergency_Stop; 
+      O     #Contactor_Fault; 
+      O     #CB_Fault; 
+      =     L      4.0; 
+      A     L      4.0; 
+      BLD   102; 
+      =     #Common_Alarm; 
+      A     L      4.0; 
+      A     #Clock; 
+      =     #Warning; 
+NETWORK
+TITLE =
+
+      L     #ON_Time_1; 
+      L     999; 
+      >=I   ; 
+      =     L      4.0; 
+      A(    ; 
+      A(    ; 
+      A     L      4.0; 
+      JNB   _001; 
+      L     #ON_Time_1; 
+      L     10; 
+      /I    ; 
+      T     #temp; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_001: A     BR; 
+      )     ; 
+      JNB   _002; 
+      L     #temp; 
+      ITB   ; 
+      T     #temp9; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_002: A     BR; 
+      )     ; 
+      JNB   _003; 
+      L     #temp9; 
+      L     W#16#3000; 
+      OW    ; 
+      T     #temp9; 
+_003: NOP   0; 
+      A(    ; 
+      AN    L      4.0; 
+      JNB   _004; 
+      L     #ON_Time_1; 
+      ITB   ; 
+      T     #temp9; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_004: A     BR; 
+      )     ; 
+      JNB   _005; 
+      L     #temp9; 
+      L     W#16#2000; 
+      OW    ; 
+      T     #temp9; 
+_005: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #Off_Time_1; 
+      L     999; 
+      >=I   ; 
+      =     L      4.0; 
+      A(    ; 
+      A(    ; 
+      A     L      4.0; 
+      JNB   _006; 
+      L     #Off_Time_1; 
+      L     10; 
+      /I    ; 
+      T     #temp; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_006: A     BR; 
+      )     ; 
+      JNB   _007; 
+      L     #temp; 
+      ITB   ; 
+      T     #temp10; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_007: A     BR; 
+      )     ; 
+      JNB   _008; 
+      L     #temp10; 
+      L     W#16#3000; 
+      OW    ; 
+      T     #temp10; 
+_008: NOP   0; 
+      A(    ; 
+      AN    L      4.0; 
+      JNB   _009; 
+      L     #Off_Time_1; 
+      ITB   ; 
+      T     #temp10; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_009: A     BR; 
+      )     ; 
+      JNB   _00a; 
+      L     #temp10; 
+      L     W#16#2000; 
+      OW    ; 
+      T     #temp10; 
+_00a: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #ON_Time_2; 
+      L     999; 
+      >=I   ; 
+      =     L      4.0; 
+      A(    ; 
+      A(    ; 
+      A     L      4.0; 
+      JNB   _00b; 
+      L     #ON_Time_2; 
+      L     10; 
+      /I    ; 
+      T     #temp; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00b: A     BR; 
+      )     ; 
+      JNB   _00c; 
+      L     #temp; 
+      ITB   ; 
+      T     #temp11; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00c: A     BR; 
+      )     ; 
+      JNB   _00d; 
+      L     #temp11; 
+      L     W#16#3000; 
+      OW    ; 
+      T     #temp11; 
+_00d: NOP   0; 
+      A(    ; 
+      AN    L      4.0; 
+      JNB   _00e; 
+      L     #ON_Time_2; 
+      ITB   ; 
+      T     #temp11; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00e: A     BR; 
+      )     ; 
+      JNB   _00f; 
+      L     #temp11; 
+      L     W#16#2000; 
+      OW    ; 
+      T     #temp11; 
+_00f: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #Off_Time_2; 
+      L     999; 
+      >=I   ; 
+      =     L      4.0; 
+      A(    ; 
+      A(    ; 
+      A     L      4.0; 
+      JNB   _010; 
+      L     #Off_Time_2; 
+      L     10; 
+      /I    ; 
+      T     #temp; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_010: A     BR; 
+      )     ; 
+      JNB   _011; 
+      L     #temp; 
+      ITB   ; 
+      T     #temp12; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_011: A     BR; 
+      )     ; 
+      JNB   _012; 
+      L     #temp12; 
+      L     W#16#3000; 
+      OW    ; 
+      T     #temp12; 
+_012: NOP   0; 
+      A(    ; 
+      AN    L      4.0; 
+      JNB   _013; 
+      L     #Off_Time_2; 
+      ITB   ; 
+      T     #temp12; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_013: A     BR; 
+      )     ; 
+      JNB   _014; 
+      L     #temp12; 
+      L     W#16#2000; 
+      OW    ; 
+      T     #temp12; 
+_014: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #Synchronize; 
+      FP    #temp8; 
+      NOT   ; 
+      AN    #Off_Timer_2; 
+      A     #Central_Local; 
+      A     #Sequential_Start; 
+      =     #temp4; 
+NETWORK
+TITLE =
+
+      L     #temp9; 
+      T     #TempS5; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #temp4; 
+      L     #TempS5; 
+      SD    #ON_Timer_1; 
+NETWORK
+TITLE =
+
+      A     #ON_Timer_1; 
+      A     #Central_Local; 
+      A     #Sequential_Start; 
+      =     #temp5; 
+NETWORK
+TITLE =
+
+      L     #temp10; 
+      T     #TempS5; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #temp5; 
+      L     #TempS5; 
+      SD    #Off_Timer_1; 
+NETWORK
+TITLE =
+
+      A     #Off_Timer_1; 
+      A     #Central_Local; 
+      A     #Sequential_Start; 
+      =     #temp6; 
+NETWORK
+TITLE =
+
+      L     #temp11; 
+      T     #TempS5; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+
+
+//    A     #temp6
+//   L     #temp11
+//  SD    #ON_Timer_2
+      A     #temp6; 
+      L     #TempS5; 
+      SD    #ON_Timer_2; 
+NETWORK
+TITLE =
+
+      A     #ON_Timer_2; 
+      A     #Central_Local; 
+      A     #Sequential_Start; 
+      =     #temp7; 
+NETWORK
+TITLE =
+
+      L     #temp12; 
+      T     #TempS5; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #temp7; 
+      L     #TempS5; 
+      SD    #Off_Timer_2; 
+NETWORK
+TITLE =
+
+      A     #Synchronize; 
+      FP    #temp13; 
+      JC    next; 
+NETWORK
+TITLE =
+
+      A     #Central_Local; 
+      A     #Emergency_Stop; 
+      A     #Sequential_Start; 
+      A(    ; 
+      A(    ; 
+      X     #ON_Timer_1; 
+      X     #Off_Timer_1; 
+      )     ; 
+      NOT   ; 
+      )     ; 
+      AN    #ON_Timer_2; 
+      O     #Temp1; 
+      =     #Motor_ON; 
+NETWORK
+TITLE =
+
+next: A     #temp13; 
+      =     #temp13; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK DB 51
+TITLE =
+VERSION : 0.0
+
+ FB 3
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Sequential_Start := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Synchronize := FALSE; 
+   Delay_Time := T 0; 
+   ON_Timer_1 := T 0; 
+   ON_Time_1 := 0; 
+   Off_Timer_1 := T 0; 
+   Off_Time_1 := 0; 
+   ON_Timer_2 := T 0; 
+   ON_Time_2 := 0; 
+   Off_Timer_2 := T 0; 
+   Off_Time_2 := 0; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := W#16#0; 
+   temp10 := W#16#0; 
+   temp11 := W#16#0; 
+   temp12 := W#16#0; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 52
+TITLE =
+VERSION : 0.0
+
+ FB 3
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Sequential_Start := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Synchronize := FALSE; 
+   Delay_Time := T 0; 
+   ON_Timer_1 := T 0; 
+   ON_Time_1 := 0; 
+   Off_Timer_1 := T 0; 
+   Off_Time_1 := 0; 
+   ON_Timer_2 := T 0; 
+   ON_Time_2 := 0; 
+   Off_Timer_2 := T 0; 
+   Off_Time_2 := 0; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := W#16#0; 
+   temp10 := W#16#0; 
+   temp11 := W#16#0; 
+   temp12 := W#16#0; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 53
+TITLE =
+VERSION : 0.0
+
+ FB 3
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Sequential_Start := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Synchronize := FALSE; 
+   Delay_Time := T 0; 
+   ON_Timer_1 := T 0; 
+   ON_Time_1 := 0; 
+   Off_Timer_1 := T 0; 
+   Off_Time_1 := 0; 
+   ON_Timer_2 := T 0; 
+   ON_Time_2 := 0; 
+   Off_Timer_2 := T 0; 
+   Off_Time_2 := 0; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := W#16#0; 
+   temp10 := W#16#0; 
+   temp11 := W#16#0; 
+   temp12 := W#16#0; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 61
+TITLE =
+VERSION : 0.0
+
+ FB 3
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Sequential_Start := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Synchronize := FALSE; 
+   Delay_Time := T 0; 
+   ON_Timer_1 := T 0; 
+   ON_Time_1 := 0; 
+   Off_Timer_1 := T 0; 
+   Off_Time_1 := 0; 
+   ON_Timer_2 := T 0; 
+   ON_Time_2 := 0; 
+   Off_Timer_2 := T 0; 
+   Off_Time_2 := 0; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := W#16#0; 
+   temp10 := W#16#0; 
+   temp11 := W#16#0; 
+   temp12 := W#16#0; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 62
+TITLE =
+VERSION : 0.0
+
+ FB 3
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Sequential_Start := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Synchronize := FALSE; 
+   Delay_Time := T 0; 
+   ON_Timer_1 := T 0; 
+   ON_Time_1 := 0; 
+   Off_Timer_1 := T 0; 
+   Off_Time_1 := 0; 
+   ON_Timer_2 := T 0; 
+   ON_Time_2 := 0; 
+   Off_Timer_2 := T 0; 
+   Off_Time_2 := 0; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := W#16#0; 
+   temp10 := W#16#0; 
+   temp11 := W#16#0; 
+   temp12 := W#16#0; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 63
+TITLE =
+VERSION : 0.0
+
+ FB 3
+BEGIN
+   Central_Local := FALSE; 
+   LB_Start := FALSE; 
+   LB_Stop := FALSE; 
+   Emergency_Stop := FALSE; 
+   Single_Start := FALSE; 
+   Sequential_Start := FALSE; 
+   Contactor := FALSE; 
+   Circuit_Breaker := FALSE; 
+   Clock := FALSE; 
+   reset := FALSE; 
+   Synchronize := FALSE; 
+   Delay_Time := T 0; 
+   ON_Timer_1 := T 0; 
+   ON_Time_1 := 0; 
+   Off_Timer_1 := T 0; 
+   Off_Time_1 := 0; 
+   ON_Timer_2 := T 0; 
+   ON_Time_2 := 0; 
+   Off_Timer_2 := T 0; 
+   Off_Time_2 := 0; 
+   Contactor_Fault := FALSE; 
+   CB_Fault := FALSE; 
+   Warning := FALSE; 
+   Common_Alarm := FALSE; 
+   Motor_ON := FALSE; 
+   Temp1 := FALSE; 
+   temp2 := FALSE; 
+   temp3 := FALSE; 
+   temp4 := FALSE; 
+   temp5 := FALSE; 
+   temp6 := FALSE; 
+   temp7 := FALSE; 
+   temp8 := FALSE; 
+   temp9 := W#16#0; 
+   temp10 := W#16#0; 
+   temp11 := W#16#0; 
+   temp12 := W#16#0; 
+   temp13 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION FC 6 : VOID
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  Input_Bit0 : BOOL ;	
+  Input_Bit1 : BOOL ;	
+  Input_Bit2 : BOOL ;	
+  Input_Bit3 : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  Output_Bit0 : BOOL ;	
+  Output_Bit1 : BOOL ;	
+  Output_Bit2 : BOOL ;	
+  Output_Bit3 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A     #Input_Bit0; 
+      =     #Output_Bit0; 
+NETWORK
+TITLE =
+
+      A     #Input_Bit1; 
+      =     #Output_Bit1; 
+NETWORK
+TITLE =
+
+      A     #Input_Bit2; 
+      =     #Output_Bit2; 
+NETWORK
+TITLE =
+
+      A     #Input_Bit3; 
+      =     #Output_Bit3; 
+END_FUNCTION
+
+FUNCTION FC 20 : VOID
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  MAX : INT ;	
+  MIN : INT ;	
+END_VAR
+VAR_IN_OUT
+  INPUT_VALUE : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #INPUT_VALUE; 
+      L     #MAX; 
+      >=I   ; 
+      =     L      0.0; 
+      A     L      0.0; 
+      JNB   _001; 
+      L     #MAX; 
+      T     #INPUT_VALUE; 
+_001: NOP   0; 
+      AN    L      0.0; 
+      A(    ; 
+      L     #INPUT_VALUE; 
+      L     #MIN; 
+      <=I   ; 
+      )     ; 
+      JNB   _002; 
+      L     #MIN; 
+      T     #INPUT_VALUE; 
+_002: NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 1 : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      8.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      8.4; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      8.2; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     41.6; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      0.5; 
+      BLD   103; 
+      A     Q     21.5; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I     40.4; 
+      =     L      0.7; 
+      BLD   103; 
+      A     I      8.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     I      8.6; 
+      =     L      1.1; 
+      BLD   103; 
+      A     I      8.7; 
+      =     L      1.2; 
+      BLD   103; 
+      A     M      2.6; 
+      =     L      1.3; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.4; 
+      BLD   103; 
+      CALL FB     1 , DB    71 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Group_Start              := L      0.5,
+           Group_Stop               := L      0.6,
+           Interlock                := L      0.7,
+           Speed_Switch             := L      1.0,
+           Contactor                := L      1.1,
+           Circuit_Breaker          := L      1.2,
+           Clock                    := L      1.3,
+           reset                    := L      1.4,
+           Delay_Time               := T     39,
+           Group_ON_Timer           := T     40,
+           ON_Delay                 := S5T#5S,
+           Group_Off_Timer          := T     41,
+           Off_Delay                := S5T#7S,
+           Speed_Switch_Fault       := DB2.DBX    0.1,
+           Contactor_Fault          := DB2.DBX    0.2,
+           CB_Fault                 := DB2.DBX    0.3,
+           Motor_ON                 := Q     21.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      9.1; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      9.2; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      9.0; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     41.7; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      0.5; 
+      BLD   103; 
+      A     Q     21.6; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I     40.4; 
+      =     L      0.7; 
+      BLD   103; 
+      A     I      9.3; 
+      =     L      1.0; 
+      BLD   103; 
+      A     I      9.4; 
+      =     L      1.1; 
+      BLD   103; 
+      A     I      9.5; 
+      =     L      1.2; 
+      BLD   103; 
+      A     M      2.6; 
+      =     L      1.3; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.4; 
+      BLD   103; 
+      CALL FB     1 , DB    72 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Group_Start              := L      0.5,
+           Group_Stop               := L      0.6,
+           Interlock                := L      0.7,
+           Speed_Switch             := L      1.0,
+           Contactor                := L      1.1,
+           Circuit_Breaker          := L      1.2,
+           Clock                    := L      1.3,
+           reset                    := L      1.4,
+           Delay_Time               := T     42,
+           Group_ON_Timer           := T     43,
+           ON_Delay                 := S5T#2S,
+           Group_Off_Timer          := T     44,
+           Off_Delay                := S5T#10S,
+           Speed_Switch_Fault       := DB2.DBX    0.5,
+           Contactor_Fault          := DB2.DBX    0.6,
+           CB_Fault                 := DB2.DBX    0.7,
+           Motor_ON                 := Q     21.4);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      9.7; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I     12.0; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      9.6; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.0; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      0.5; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      0.6; 
+      BLD   103; 
+      A     Q     21.3; 
+      =     L      0.7; 
+      BLD   103; 
+      A     I     12.1; 
+      =     L      1.0; 
+      BLD   103; 
+      A     I     12.2; 
+      =     L      1.1; 
+      BLD   103; 
+      A     I     12.3; 
+      =     L      1.2; 
+      BLD   103; 
+      A     M      2.6; 
+      =     L      1.3; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.4; 
+      BLD   103; 
+      CALL FB     1 , DB    81 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Group_Start              := L      0.5,
+           Group_Stop               := L      0.6,
+           Interlock                := L      0.7,
+           Speed_Switch             := L      1.0,
+           Contactor                := L      1.1,
+           Circuit_Breaker          := L      1.2,
+           Clock                    := L      1.3,
+           reset                    := L      1.4,
+           Delay_Time               := T     45,
+           Group_ON_Timer           := T     46,
+           ON_Delay                 := S5T#4S,
+           Group_Off_Timer          := T     47,
+           Off_Delay                := S5T#10S,
+           Speed_Switch_Fault       := DB2.DBX    1.1,
+           Contactor_Fault          := DB2.DBX    1.2,
+           CB_Fault                 := DB2.DBX    1.3,
+           Motor_ON                 := Q     21.5);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I     12.5; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I     12.6; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I     12.4; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.1; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      0.5; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      0.6; 
+      BLD   103; 
+      A     Q     21.4; 
+      =     L      0.7; 
+      BLD   103; 
+      A     I     12.7; 
+      =     L      1.0; 
+      BLD   103; 
+      A     I     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      A     I     13.1; 
+      =     L      1.2; 
+      BLD   103; 
+      A     M      2.6; 
+      =     L      1.3; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.4; 
+      BLD   103; 
+      CALL FB     1 , DB    82 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Group_Start              := L      0.5,
+           Group_Stop               := L      0.6,
+           Interlock                := L      0.7,
+           Speed_Switch             := L      1.0,
+           Contactor                := L      1.1,
+           Circuit_Breaker          := L      1.2,
+           Clock                    := L      1.3,
+           reset                    := L      1.4,
+           Delay_Time               := T     48,
+           Group_ON_Timer           := T     49,
+           ON_Delay                 := S5T#5S,
+           Group_Off_Timer          := T     50,
+           Off_Delay                := S5T#4S,
+           Speed_Switch_Fault       := DB2.DBX    1.5,
+           Contactor_Fault          := DB2.DBX    1.6,
+           CB_Fault                 := DB2.DBX    1.7,
+           Motor_ON                 := Q     21.6);
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION_BLOCK FB 2
+TITLE =Scale Data
+VERSION : 0.1
+
+
+VAR_INPUT
+  PIW_INPUT : INT ;	
+  FULL_SCALE_INSTRUMENT : DINT ;	
+  FULL_SCALE_REAL : DINT ;	
+  Defult_Setting : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  OUTPUT_MESSUR : DINT ;	
+  PERCENT : DINT ;	
+END_VAR
+VAR_IN_OUT
+  Gain : DINT ;	
+  Offset : DINT ;	
+END_VAR
+VAR_TEMP
+  TEMP1 : DINT ;	
+  TEMP2 : DINT ;	
+  TEMP3 : DINT ;	
+  TEMP4 : DINT ;	
+  TEMP5 : DINT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+NETWORK
+TITLE =
+
+      L     #PIW_INPUT; 
+      ITD   ; 
+      T     #TEMP1; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      =     L     20.0; 
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      A     L     20.0; 
+      JNB   _001; 
+      L     #TEMP1; 
+      L     #Offset; 
+      -D    ; 
+      T     #TEMP5; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_001: A     BR; 
+      )     ; 
+      JNB   _002; 
+      L     #TEMP5; 
+      L     #FULL_SCALE_INSTRUMENT; 
+      *D    ; 
+      T     #TEMP2; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_002: A     BR; 
+      )     ; 
+      JNB   _003; 
+      L     #TEMP2; 
+      L     #Gain; 
+      /D    ; 
+      T     #TEMP3; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_003: A     BR; 
+      )     ; 
+      JNB   _004; 
+      L     #TEMP3; 
+      L     L#1; 
+      *D    ; 
+      T     #OUTPUT_MESSUR; 
+_004: NOP   0; 
+      A(    ; 
+      A     L     20.0; 
+      JNB   _005; 
+      L     #TEMP3; 
+      L     L#100; 
+      *D    ; 
+      T     #TEMP4; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_005: A     BR; 
+      )     ; 
+      JNB   _006; 
+      L     #TEMP4; 
+      L     #FULL_SCALE_REAL; 
+      /D    ; 
+      T     #PERCENT; 
+_006: NOP   0; 
+      A     L     20.0; 
+      A(    ; 
+      L     #Gain; 
+      L     L#35000; 
+      >D    ; 
+      )     ; 
+      JNB   _007; 
+      L     L#35000; 
+      T     #Gain; 
+_007: NOP   0; 
+      A     L     20.0; 
+      A(    ; 
+      L     #Gain; 
+      L     L#6000; 
+      <D    ; 
+      )     ; 
+      JNB   _008; 
+      L     L#6000; 
+      T     #Gain; 
+_008: NOP   0; 
+      A     L     20.0; 
+      A(    ; 
+      L     #Offset; 
+      L     L#7000; 
+      >D    ; 
+      )     ; 
+      JNB   _009; 
+      L     L#7000; 
+      T     #Offset; 
+_009: NOP   0; 
+      A     L     20.0; 
+      A(    ; 
+      L     #Offset; 
+      L     L#-7000; 
+      <D    ; 
+      )     ; 
+      JNB   _00a; 
+      L     L#-7000; 
+      T     #Offset; 
+_00a: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     #Defult_Setting; 
+      JNB   _00b; 
+      L     L#0; 
+      T     #Offset; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_00b: A     BR; 
+      )     ; 
+      JNB   _00c; 
+      L     L#27648; 
+      T     #Gain; 
+_00c: NOP   0; 
+END_FUNCTION_BLOCK
+
+FUNCTION FC 2 : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+      A     M      2.5; 
+      FP    M     10.7; 
+      JNB   _001; 
+      L     MW     4; 
+      L     1; 
+      +I    ; 
+      T     MW     4; 
+_001: NOP   0; 
+NETWORK
+TITLE =
+
+      A     M      5.2; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I     40.2; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     13.1; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I     40.3; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    0.0,
+           Output_Bit1              := DB1.DBX    0.1,
+           Output_Bit2              := DB1.DBX    0.2,
+           Output_Bit3              := DB1.DBX    0.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     13.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     13.4; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.2; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    0.4,
+           Output_Bit1              := DB1.DBX    0.5,
+           Output_Bit2              := DB1.DBX    0.6,
+           Output_Bit3              := DB1.DBX    0.7);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      0.2; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      0.5; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      0.6; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    1.0,
+           Output_Bit1              := DB1.DBX    1.1,
+           Output_Bit2              := DB1.DBX    1.2,
+           Output_Bit3              := DB1.DBX    1.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      0.7; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      1.2; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      1.3; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    1.4,
+           Output_Bit1              := DB1.DBX    1.5,
+           Output_Bit2              := DB1.DBX    1.6,
+           Output_Bit3              := DB1.DBX    1.7);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      1.4; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      1.7; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      4.0; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    2.0,
+           Output_Bit1              := DB1.DBX    2.1,
+           Output_Bit2              := DB1.DBX    2.2,
+           Output_Bit3              := DB1.DBX    2.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      4.1; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      4.4; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      4.5; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    2.4,
+           Output_Bit1              := DB1.DBX    2.5,
+           Output_Bit2              := DB1.DBX    2.6,
+           Output_Bit3              := DB1.DBX    2.7);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      4.6; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      5.1; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      5.2; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    3.0,
+           Output_Bit1              := DB1.DBX    3.1,
+           Output_Bit2              := DB1.DBX    3.2,
+           Output_Bit3              := DB1.DBX    3.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      5.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     10.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      5.6; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      5.7; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    3.4,
+           Output_Bit1              := DB1.DBX    3.5,
+           Output_Bit2              := DB1.DBX    3.6,
+           Output_Bit3              := DB1.DBX    3.7);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      8.2; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      8.5; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      8.6; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      8.7; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    4.0,
+           Output_Bit1              := DB1.DBX    4.1,
+           Output_Bit2              := DB1.DBX    4.2,
+           Output_Bit3              := DB1.DBX    4.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      9.0; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      9.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      9.4; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      9.5; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    4.4,
+           Output_Bit1              := DB1.DBX    4.5,
+           Output_Bit2              := DB1.DBX    4.6,
+           Output_Bit3              := DB1.DBX    4.7);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      9.6; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I     12.1; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I     12.2; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I     12.3; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    5.0,
+           Output_Bit1              := DB1.DBX    5.1,
+           Output_Bit2              := DB1.DBX    5.2,
+           Output_Bit3              := DB1.DBX    5.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     12.4; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I     12.7; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I     13.0; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I     13.1; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    5.4,
+           Output_Bit1              := DB1.DBX    5.5,
+           Output_Bit2              := DB1.DBX    5.6,
+           Output_Bit3              := DB1.DBX    5.7);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      0.0; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      0.1; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     10.2; 
+      =     L      0.2; 
+      BLD   103; 
+      A     M     10.2; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB1.DBX    6.0,
+           Output_Bit1              := DB1.DBX    6.1,
+           Output_Bit2              := DB1.DBX    6.2,
+           Output_Bit3              := DB1.DBX    6.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     DB1.DBB    0; 
+      T     QB    40; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _002; 
+      L     DB1.DBB    1; 
+      T     QB    41; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_002: A     BR; 
+      )     ; 
+      JNB   _003; 
+      L     DB1.DBB    2; 
+      T     QB    42; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_003: A     BR; 
+      )     ; 
+      JNB   _004; 
+      L     DB1.DBB    3; 
+      T     QB    43; 
+_004: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     DB1.DBB    4; 
+      T     QB    44; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _005; 
+      L     DB1.DBB    5; 
+      T     QB    45; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_005: A     BR; 
+      )     ; 
+      JNB   _006; 
+      L     DB1.DBB    6; 
+      T     QB    46; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_006: A     BR; 
+      )     ; 
+      JNB   _007; 
+      L     DB1.DBB    7; 
+      T     QB    47; 
+_007: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     DB1.DBB    8; 
+      T     QB    48; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _008; 
+      L     DB1.DBB    9; 
+      T     QB    49; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_008: A     BR; 
+      )     ; 
+      JNB   _009; 
+      L     DB1.DBB   10; 
+      T     QB    50; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_009: A     BR; 
+      )     ; 
+      JNB   _00a; 
+      L     DB1.DBB   11; 
+      T     QB    51; 
+_00a: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     DB1.DBB   12; 
+      T     QB    52; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _00b; 
+      L     DB1.DBB   13; 
+      T     QB    53; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_00b: A     BR; 
+      )     ; 
+      JNB   _00c; 
+      L     DB1.DBB   14; 
+      T     QB    54; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_00c: A     BR; 
+      )     ; 
+      JNB   _00d; 
+      L     DB1.DBB   15; 
+      T     QB    55; 
+_00d: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     DB1.DBB   16; 
+      T     QB    56; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _00e; 
+      L     DB1.DBB   17; 
+      T     QB    57; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_00e: A     BR; 
+      )     ; 
+      JNB   _00f; 
+      L     DB1.DBB   18; 
+      T     QB    58; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_00f: A     BR; 
+      )     ; 
+      JNB   _010; 
+      L     DB1.DBB   19; 
+      T     QB    59; 
+_010: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB1.DBB   20; 
+      T     QB    60; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _011; 
+      L     DB1.DBB   21; 
+      T     QB    61; 
+_011: NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 3 : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =Handshake Fault
+
+      A     I     40.0; 
+      L     S5T#10S; 
+      SS    T      2; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      2; 
+      =     L      0.0; 
+      AN    L      0.0; 
+      =     M     13.4; 
+      A     L      0.0; 
+      BLD   102; 
+      =     DB2.DBX    4.6; 
+NETWORK
+TITLE =Motors Faults
+
+      A(    ; 
+      O     DB51.DBX   20.3; 
+      O     DB52.DBX   20.3; 
+      O     DB53.DBX   20.3; 
+      O     DB61.DBX   20.3; 
+      O     DB62.DBX   20.3; 
+      O     DB63.DBX   20.3; 
+      O     DB71.DBX   12.5; 
+      O     DB72.DBX   12.5; 
+      O     DB81.DBX   12.5; 
+      O     DB82.DBX   12.5; 
+      )     ; 
+      NOT   ; 
+      =     M     13.1; 
+NETWORK
+TITLE =
+
+      AN    I      0.2; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I      0.7; 
+      =     L      0.1; 
+      BLD   103; 
+      AN    I      1.4; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      4.1; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB2.DBX    2.0,
+           Output_Bit1              := DB2.DBX    2.3,
+           Output_Bit2              := DB2.DBX    2.6,
+           Output_Bit3              := DB2.DBX    3.1);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    I      4.6; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I      5.3; 
+      =     L      0.1; 
+      BLD   103; 
+      AN    I      8.2; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      9.0; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB2.DBX    3.4,
+           Output_Bit1              := DB2.DBX    3.7,
+           Output_Bit2              := DB2.DBX    0.0,
+           Output_Bit3              := DB2.DBX    0.4);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    I      9.6; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I     12.4; 
+      =     L      0.1; 
+      BLD   103; 
+      AN    I      0.0; 
+      =     L      0.2; 
+      BLD   103; 
+      AN    I      0.1; 
+      =     L      0.3; 
+      BLD   103; 
+      CALL FC     6 (
+           Input_Bit0               := L      0.0,
+           Input_Bit1               := L      0.1,
+           Input_Bit2               := L      0.2,
+           Input_Bit3               := L      0.3,
+           Output_Bit0              := DB2.DBX    1.0,
+           Output_Bit1              := DB2.DBX    1.4,
+           Output_Bit2              := DB2.DBX    4.2,
+           Output_Bit3              := DB2.DBX    4.5);
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION_BLOCK FB 4
+TITLE =Calculat Timeing Priode
+VERSION : 0.1
+
+
+VAR_INPUT
+  C1ON : INT ;	//Collecting 1 ON Time
+  C1Off : INT ;	//Collecting 1 Off Time
+  D1ON : INT ;	//Discharge 1 ON Time
+  C2ON : INT ;	//Collecting 2 ON Time
+  D2ON : INT ;	//Discharge 2 ON Time
+  C3ON : INT ;	//Collecting 3 ON Time
+  D3ON : INT ;	//Discharge 3 ON Time
+END_VAR
+VAR_OUTPUT
+  C1ON_1 : INT ;	//Collecting 1 ON Time
+  C1Off_1 : INT ;	//Collecting 1 Off Time
+  D1ON_1 : INT ;	//Discharge 1 ON Time
+  D1Off_1 : INT ;	//Discharge 1 Off Time 1
+  D1Off_2 : INT ;	//Discharge 1 Off Time 2
+  C2ON_1 : INT ;	//Collecting 2 ON Time
+  C2Off_1 : INT ;	//Collecting 2 Off Time 1
+  C2Off_2 : INT ;	//Collecting 2 Off Time 2
+  D2ON_1 : INT ;	//Discharge 2 ON Time 1
+  D2ON_2 : INT ;	//Discharge 2 ON Time 2
+  D2Off_1 : INT ;	//Discharge 2 Off Time
+  C3ON_1 : INT ;	//Collecting 3 ON Time
+  C3Off_1 : INT ;	//Collecting 3 Off Time 1
+  C3Off_2 : INT ;	//Collecting 3 Off Time 2
+  D3ON_1 : INT ;	//Discharge 3 ON Time 1
+  D3ON_2 : INT ;	//Discharge 3 ON Time 2
+  D3Off_1 : INT ;	//Discharge 3 Off Time
+END_VAR
+VAR_TEMP
+  temp1 : INT ;	
+  temp2 : INT ;	
+  temp3 : INT ;	
+  temp4 : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      L     #C1ON; 
+      T     #C1ON_1; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _001; 
+      L     #C2ON; 
+      T     #C2ON_1; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_001: A     BR; 
+      )     ; 
+      JNB   _002; 
+      L     #C3ON; 
+      T     #C3ON_1; 
+_002: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     #C1Off; 
+      L     1; 
+      /I    ; 
+      T     #C1Off_1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _003; 
+      L     #D1ON; 
+      T     #D1ON_1; 
+_003: NOP   0; 
+NETWORK
+TITLE =Field 1 Discharg Off Time 1&2
+
+      A(    ; 
+      L     #C1Off; 
+      L     #D1ON; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _004; 
+      L     #temp1; 
+      L     2; 
+      /I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_004: A     BR; 
+      =     L      8.0; 
+      A(    ; 
+      A     L      8.0; 
+      JNB   _005; 
+      L     #temp1; 
+      L     #C1ON; 
+      +I    ; 
+      T     #temp2; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_005: A     BR; 
+      )     ; 
+      JNB   _006; 
+      L     #temp2; 
+      L     1; 
+      /I    ; 
+      T     #D1Off_1; 
+_006: NOP   0; 
+      A     L      8.0; 
+      JNB   _007; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D1Off_2; 
+_007: NOP   0; 
+NETWORK
+TITLE =Field 2 Collecting Off Time 1
+
+      A(    ; 
+      L     #C1Off; 
+      L     #C2ON; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _008; 
+      L     #temp1; 
+      L     2; 
+      /I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_008: A     BR; 
+      =     L      8.0; 
+      A     L      8.0; 
+      JNB   _009; 
+      L     #temp1; 
+      L     #C1ON; 
+      +I    ; 
+      T     #C2Off_1; 
+_009: NOP   0; 
+      A     L      8.0; 
+      JNB   _00a; 
+      L     #temp1; 
+      L     #C1ON; 
+      +I    ; 
+      T     #temp2; 
+_00a: NOP   0; 
+NETWORK
+TITLE =Field 2 Collecting Off Time 2
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     #C1ON; 
+      L     #C1Off; 
+      +I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _00b; 
+      L     #temp1; 
+      L     2; 
+      *I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00b: A     BR; 
+      )     ; 
+      JNB   _00c; 
+      L     #temp1; 
+      L     #C2ON; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00c: A     BR; 
+      )     ; 
+      JNB   _00d; 
+      L     #temp1; 
+      L     #temp2; 
+      -I    ; 
+      T     #temp2; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00d: A     BR; 
+      )     ; 
+      JNB   _00e; 
+      L     #temp2; 
+      L     1; 
+      /I    ; 
+      T     #C2Off_2; 
+_00e: NOP   0; 
+NETWORK
+TITLE =Field 2 Discharge Off Time
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     #C1ON; 
+      L     #C1Off; 
+      +I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _00f; 
+      L     #temp1; 
+      L     2; 
+      *I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_00f: A     BR; 
+      )     ; 
+      JNB   _010; 
+      L     #temp1; 
+      T     #temp2; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_010: A     BR; 
+      )     ; 
+      JNB   _011; 
+      L     #temp1; 
+      L     #D2ON; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_011: A     BR; 
+      =     L      8.0; 
+      A     L      8.0; 
+      JNB   _012; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D2Off_1; 
+_012: NOP   0; 
+      A     L      8.0; 
+      JNB   _013; 
+      L     #temp1; 
+      T     #temp3; 
+_013: NOP   0; 
+NETWORK
+TITLE =Field 2 Discharge ON Time 1
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     #C1Off; 
+      L     #temp1; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _014; 
+      L     #temp1; 
+      L     2; 
+      /I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_014: A     BR; 
+      )     ; 
+      JNB   _015; 
+      L     #temp1; 
+      L     #C1ON; 
+      +I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_015: A     BR; 
+      )     ; 
+      JNB   _016; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D2ON_1; 
+_016: NOP   0; 
+NETWORK
+TITLE =Field 2 Discharge ON Time 2
+
+      A(    ; 
+      A(    ; 
+      L     #temp2; 
+      L     #temp1; 
+      -I    ; 
+      T     #temp2; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _017; 
+      L     #temp2; 
+      L     #temp3; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_017: A     BR; 
+      )     ; 
+      JNB   _018; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D2ON_2; 
+_018: NOP   0; 
+NETWORK
+TITLE =Field 3 Collecting Off Time 2
+
+      A(    ; 
+      L     #C1Off; 
+      L     #C3ON; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _019; 
+      L     #temp1; 
+      L     2; 
+      /I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_019: A     BR; 
+      =     L      8.0; 
+      A(    ; 
+      A     L      8.0; 
+      JNB   _01a; 
+      L     #temp1; 
+      L     #C1ON; 
+      +I    ; 
+      T     #temp3; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_01a: A     BR; 
+      )     ; 
+      JNB   _01b; 
+      L     #temp3; 
+      L     1; 
+      /I    ; 
+      T     #C3Off_2; 
+_01b: NOP   0; 
+      A     L      8.0; 
+      JNB   _01c; 
+      L     #temp1; 
+      L     #C1ON; 
+      +I    ; 
+      T     #temp2; 
+_01c: NOP   0; 
+NETWORK
+TITLE =Field 3 Collecting Off Time 1
+
+      A(    ; 
+      A(    ; 
+      L     #C1Off; 
+      L     #C1ON; 
+      +I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _01d; 
+      L     #temp1; 
+      L     #temp2; 
+      +I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_01d: A     BR; 
+      )     ; 
+      JNB   _01e; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #C3Off_1; 
+_01e: NOP   0; 
+NETWORK
+TITLE =Field 3 Discharge Off Time
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     #C1ON; 
+      L     #C1Off; 
+      +I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _01f; 
+      L     #temp1; 
+      L     2; 
+      *I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_01f: A     BR; 
+      )     ; 
+      JNB   _020; 
+      L     #temp1; 
+      T     #temp2; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_020: A     BR; 
+      )     ; 
+      JNB   _021; 
+      L     #temp1; 
+      L     #D3ON; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_021: A     BR; 
+      =     L      8.0; 
+      A     L      8.0; 
+      JNB   _022; 
+      L     #temp1; 
+      T     #temp3; 
+_022: NOP   0; 
+      A     L      8.0; 
+      JNB   _023; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D3Off_1; 
+_023: NOP   0; 
+NETWORK
+TITLE =Field 3 Discharge ON Time 2
+
+      A(    ; 
+      A(    ; 
+      L     #C1Off; 
+      L     #temp3; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _024; 
+      L     #temp1; 
+      L     2; 
+      /I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_024: A     BR; 
+      )     ; 
+      JNB   _025; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D3ON_2; 
+_025: NOP   0; 
+NETWORK
+TITLE =Field 3 Discharge ON Time 1
+
+      A(    ; 
+      A(    ; 
+      L     #temp2; 
+      L     #temp1; 
+      -I    ; 
+      T     #temp2; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _026; 
+      L     #temp2; 
+      L     #temp3; 
+      -I    ; 
+      T     #temp1; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_026: A     BR; 
+      )     ; 
+      JNB   _027; 
+      L     #temp1; 
+      L     1; 
+      /I    ; 
+      T     #D3ON_1; 
+_027: NOP   0; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK DB 50
+TITLE =
+VERSION : 0.0
+
+ FB 4
+BEGIN
+   C1ON := 0; 
+   C1Off := 0; 
+   D1ON := 0; 
+   C2ON := 0; 
+   D2ON := 0; 
+   C3ON := 0; 
+   D3ON := 0; 
+   C1ON_1 := 0; 
+   C1Off_1 := 0; 
+   D1ON_1 := 0; 
+   D1Off_1 := 0; 
+   D1Off_2 := 0; 
+   C2ON_1 := 0; 
+   C2Off_1 := 0; 
+   C2Off_2 := 0; 
+   D2ON_1 := 0; 
+   D2ON_2 := 0; 
+   D2Off_1 := 0; 
+   C3ON_1 := 0; 
+   C3Off_1 := 0; 
+   C3Off_2 := 0; 
+   D3ON_1 := 0; 
+   D3ON_2 := 0; 
+   D3Off_1 := 0; 
+END_DATA_BLOCK
+
+FUNCTION FC 4 : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+      A     M      2.5; 
+      AN    M      2.5; 
+      =     M     10.3; 
+      A     M     10.3; 
+      NOT   ; 
+      =     M     10.2; 
+NETWORK
+TITLE =
+
+      O     I     40.1; 
+      O     M     10.1; 
+      =     M     13.0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     13.2; 
+      FP    M     16.0; 
+      JNB   _001; 
+      L     MB    20; 
+      T     MB    15; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+_001: A     BR; 
+      )     ; 
+      JNB   _002; 
+      L     0; 
+      T     MB    20; 
+_002: NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     13.2; 
+      FN    M     16.1; 
+      JNB   _003; 
+      L     MB    15; 
+      T     MB    20; 
+_003: NOP   0; 
+NETWORK
+TITLE =
+
+      O     I     41.2; 
+      O     I     41.1; 
+      =     M     21.0; 
+NETWORK
+TITLE =
+
+      A     I     41.2; 
+      A     Q     21.5; 
+      A     Q     21.5; 
+      =     M     21.1; 
+NETWORK
+TITLE =
+
+      A     I     41.2; 
+      A     M     21.1; 
+      O     ; 
+      A     I     41.3; 
+      A     I     40.3; 
+      =     M     21.2; 
+NETWORK
+TITLE =
+
+      A     M     21.2; 
+      A     I     41.2; 
+      L     S5T#5S; 
+      SD    T     52; 
+NETWORK
+TITLE =
+
+      A     T     52; 
+      A     I     41.2; 
+      O     ; 
+      A     I     41.4; 
+      A     I     40.3; 
+      =     M     21.3; 
+NETWORK
+TITLE =
+
+      A     M     21.3; 
+      A     I     41.2; 
+      L     S5T#5S; 
+      SD    T     53; 
+NETWORK
+TITLE =
+
+      A     T     53; 
+      A     I     41.2; 
+      O     ; 
+      A     I     41.5; 
+      A     I     40.3; 
+      =     M     21.4; 
+END_FUNCTION
+
+FUNCTION FC 5 : VOID
+TITLE =Chek Data to Load in Range
+VERSION : 0.1
+
+
+VAR_TEMP
+  Discharge_ON_Time : INT ;	
+  Discharge_ON_2 : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Field 1 Collecting Rapping ON Time
+
+      CALL FC    20 (
+           MAX                      := 120,
+           MIN                      := 20,
+           INPUT_VALUE              := DB50.DBW    0);
+      NOP   0; 
+NETWORK
+TITLE =Field 1 Collecting Rapping Off Time
+
+      CALL FC    20 (
+           MAX                      := 2500,
+           MIN                      := 1000,
+           INPUT_VALUE              := DB50.DBW    2);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     DB50.DBW    0; 
+      L     DB50.DBW    2; 
+      +I    ; 
+      T     #Discharge_ON_Time; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   _001; 
+      L     #Discharge_ON_Time; 
+      L     DB50.DBW    0; 
+      +I    ; 
+      T     #Discharge_ON_2; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_001: A     BR; 
+      )     ; 
+      JNB   _002; 
+      L     #Discharge_ON_Time; 
+      L     DB50.DBW    4; 
+      -I    ; 
+      T     MW    54; 
+      AN    OV; 
+      SAVE  ; 
+      CLR   ; 
+_002: A     BR; 
+      )     ; 
+      JNB   _003; 
+      L     #Discharge_ON_Time; 
+      L     2; 
+      *I    ; 
+      T     #Discharge_ON_Time; 
+_003: NOP   0; 
+NETWORK
+TITLE =Field 1 Discharge Rapping ON Time
+
+      CALL FC    20 (
+           MAX                      := DB50.DBW    2,
+           MIN                      := 1000,
+           INPUT_VALUE              := DB50.DBW    4);
+      NOP   0; 
+NETWORK
+TITLE =Field 2 Collecting Rapping ON Time
+
+      CALL FC    20 (
+           MAX                      := 120,
+           MIN                      := 20,
+           INPUT_VALUE              := DB50.DBW    6);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #Discharge_ON_Time; 
+      L     DB50.DBW    6; 
+      -I    ; 
+      T     MW    50; 
+      NOP   0; 
+NETWORK
+TITLE =Field 2 Discharge Rapping ON Time
+
+      CALL FC    20 (
+           MAX                      := #Discharge_ON_Time,
+           MIN                      := #Discharge_ON_2,
+           INPUT_VALUE              := DB50.DBW    8);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #Discharge_ON_Time; 
+      L     DB50.DBW    8; 
+      -I    ; 
+      T     MW    56; 
+      NOP   0; 
+NETWORK
+TITLE =Field 3 Collecting Rapping ON Time
+
+      CALL FC    20 (
+           MAX                      := 120,
+           MIN                      := 20,
+           INPUT_VALUE              := DB50.DBW   10);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #Discharge_ON_Time; 
+      L     DB50.DBW   10; 
+      -I    ; 
+      T     MW    52; 
+      NOP   0; 
+NETWORK
+TITLE =Field 3 Discharge Rapping ON Time
+
+      CALL FC    20 (
+           MAX                      := #Discharge_ON_Time,
+           MIN                      := #Discharge_ON_2,
+           INPUT_VALUE              := DB50.DBW   12);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #Discharge_ON_Time; 
+      L     DB50.DBW   12; 
+      -I    ; 
+      T     MW    58; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 7 : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      0.3; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      0.4; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      0.2; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.2; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.1; 
+      =     L      0.5; 
+      BLD   103; 
+      A     I      0.5; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I      0.6; 
+      =     L      0.7; 
+      BLD   103; 
+      A     M      2.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      CALL FB     3 , DB    51 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Sequential_Start         := L      0.5,
+           Contactor                := L      0.6,
+           Circuit_Breaker          := L      0.7,
+           Clock                    := L      1.0,
+           reset                    := L      1.1,
+           Delay_Time               := T     10,
+           ON_Timer_1               := T     11,
+           ON_Time_1                := DB50.DBW   14,
+           Off_Timer_1              := T     12,
+           Off_Time_1               := DB50.DBW   16,
+           ON_Timer_2               := T     13,
+           Off_Timer_2              := T     14,
+           Contactor_Fault          := DB2.DBX    2.1,
+           CB_Fault                 := DB2.DBX    2.2,
+           Motor_ON                 := Q     20.0);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      1.0; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      1.1; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      0.7; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.3; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.1; 
+      =     L      0.5; 
+      BLD   103; 
+      A     I      1.2; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I      1.3; 
+      =     L      0.7; 
+      BLD   103; 
+      A     M      2.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      CALL FB     3 , DB    52 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Sequential_Start         := L      0.5,
+           Contactor                := L      0.6,
+           Circuit_Breaker          := L      0.7,
+           Clock                    := L      1.0,
+           reset                    := L      1.1,
+           Delay_Time               := T     15,
+           ON_Timer_1               := T     16,
+           Off_Timer_1              := T     17,
+           Off_Time_1               := DB50.DBW   26,
+           ON_Timer_2               := T     18,
+           ON_Time_2                := DB50.DBW   24,
+           Off_Timer_2              := T     19,
+           Off_Time_2               := DB50.DBW   28,
+           Contactor_Fault          := DB2.DBX    2.4,
+           CB_Fault                 := DB2.DBX    2.5,
+           Motor_ON                 := Q     20.1);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      1.5; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      1.6; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      1.4; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.4; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.1; 
+      =     L      0.5; 
+      BLD   103; 
+      A     I      1.7; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I      4.0; 
+      =     L      0.7; 
+      BLD   103; 
+      A     M      2.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      CALL FB     3 , DB    53 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Sequential_Start         := L      0.5,
+           Contactor                := L      0.6,
+           Circuit_Breaker          := L      0.7,
+           Clock                    := L      1.0,
+           reset                    := L      1.1,
+           Delay_Time               := T     20,
+           ON_Timer_1               := T     21,
+           Off_Timer_1              := T     51,
+           Off_Time_1               := DB50.DBW   38,
+           ON_Timer_2               := T     22,
+           ON_Time_2                := DB50.DBW   36,
+           Off_Timer_2              := T     23,
+           Off_Time_2               := DB50.DBW   40,
+           Contactor_Fault          := DB2.DBX    2.7,
+           CB_Fault                 := DB2.DBX    3.0,
+           Motor_ON                 := Q     20.2);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      4.2; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      4.3; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      4.1; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.5; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.1; 
+      =     L      0.5; 
+      BLD   103; 
+      A     I      4.3; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I      4.5; 
+      =     L      0.7; 
+      BLD   103; 
+      A     M      2.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      CALL FB     3 , DB    61 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Sequential_Start         := L      0.5,
+           Contactor                := L      0.6,
+           Circuit_Breaker          := L      0.7,
+           Clock                    := L      1.0,
+           reset                    := L      1.1,
+           Delay_Time               := T     24,
+           ON_Timer_1               := T     25,
+           ON_Time_1                := 0,
+           Off_Timer_1              := T     26,
+           Off_Time_1               := DB50.DBW   20,
+           ON_Timer_2               := T     27,
+           ON_Time_2                := DB50.DBW   18,
+           Off_Timer_2              := T     28,
+           Off_Time_2               := DB50.DBW   22,
+           Contactor_Fault          := DB2.DBX    3.2,
+           CB_Fault                 := DB2.DBX    3.3,
+           Motor_ON                 := Q     20.3);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      4.7; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      5.0; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      4.6; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.6; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.1; 
+      =     L      0.5; 
+      BLD   103; 
+      A     I      5.1; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I      5.2; 
+      =     L      0.7; 
+      BLD   103; 
+      A     M      2.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      CALL FB     3 , DB    62 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Sequential_Start         := L      0.5,
+           Contactor                := L      0.6,
+           Circuit_Breaker          := L      0.7,
+           Clock                    := L      1.0,
+           reset                    := L      1.1,
+           Delay_Time               := T     29,
+           ON_Timer_1               := T     30,
+           ON_Time_1                := DB50.DBW   30,
+           Off_Timer_1              := T     31,
+           Off_Time_1               := DB50.DBW   34,
+           ON_Timer_2               := T     32,
+           ON_Time_2                := DB50.DBW   32,
+           Off_Timer_2              := T     33,
+           Off_Time_2               := 0,
+           Contactor_Fault          := DB2.DBX    3.5,
+           CB_Fault                 := DB2.DBX    3.6,
+           Motor_ON                 := Q     20.4);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I     40.3; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      5.4; 
+      =     L      0.1; 
+      BLD   103; 
+      A     I      5.5; 
+      =     L      0.2; 
+      BLD   103; 
+      A     I      5.3; 
+      =     L      0.3; 
+      BLD   103; 
+      A     I     42.7; 
+      =     L      0.4; 
+      BLD   103; 
+      A     M     21.1; 
+      =     L      0.5; 
+      BLD   103; 
+      A     I      5.6; 
+      =     L      0.6; 
+      BLD   103; 
+      A     I      5.7; 
+      =     L      0.7; 
+      BLD   103; 
+      A     M      2.5; 
+      =     L      1.0; 
+      BLD   103; 
+      A     M     13.0; 
+      =     L      1.1; 
+      BLD   103; 
+      CALL FB     3 , DB    63 (
+           Central_Local            := L      0.0,
+           LB_Start                 := L      0.1,
+           LB_Stop                  := L      0.2,
+           Emergency_Stop           := L      0.3,
+           Single_Start             := L      0.4,
+           Sequential_Start         := L      0.5,
+           Contactor                := L      0.6,
+           Circuit_Breaker          := L      0.7,
+           Clock                    := L      1.0,
+           reset                    := L      1.1,
+           Delay_Time               := T     34,
+           ON_Timer_1               := T     35,
+           ON_Time_1                := DB50.DBW   42,
+           Off_Timer_1              := T     36,
+           Off_Time_1               := DB50.DBW   46,
+           ON_Timer_2               := T     37,
+           ON_Time_2                := DB50.DBW   44,
+           Off_Timer_2              := T     38,
+           Contactor_Fault          := DB2.DBX    4.0,
+           CB_Fault                 := DB2.DBX    4.1,
+           Motor_ON                 := Q     20.5);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     DB51.DBX   20.4; 
+      FP    M     14.0; 
+      JNB   _001; 
+      L     MW     8; 
+      L     1; 
+      +I    ; 
+      T     MW     8; 
+_001: NOP   0; 
+END_FUNCTION
+
+ORGANIZATION_BLOCK OB 1
+TITLE = "Main Program Sweep (Cycle)"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+  OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+  OB1_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB1_OB_NUMBR : BYTE ;	//1 (Organization block 1, OB1)
+  OB1_RESERVED_1 : BYTE ;	//Reserved for system
+  OB1_RESERVED_2 : BYTE ;	//Reserved for system
+  OB1_PREV_CYCLE : INT ;	//Cycle time of previous OB1 scan (milliseconds)
+  OB1_MIN_CYCLE : INT ;	//Minimum cycle time of OB1 (milliseconds)
+  OB1_MAX_CYCLE : INT ;	//Maximum cycle time of OB1 (milliseconds)
+  OB1_DATE_TIME : DATE_AND_TIME ;	//Date and time OB1 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      CALL FC     4 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     1 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     2 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     3 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     5 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     7 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FB     4 , DB    50 ;
+      NOP   0; 
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 82
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : WORD ;	
+  TEMP7 : BOOL ;	
+  TEMP8 : BOOL ;	
+  TEMP9 : BOOL ;	
+  TEMP10 : BOOL ;	
+  TEMP11 : BOOL ;	
+  TEMP12 : BOOL ;	
+  TEMP13 : BOOL ;	
+  TEMP14 : BOOL ;	
+  TEMP15 : BYTE ;	
+  TEMP16 : BOOL ;	
+  TEMP17 : BOOL ;	
+  TEMP18 : BOOL ;	
+  TEMP19 : BOOL ;	
+  TEMP20 : BOOL ;	
+  TEMP21 : BOOL ;	
+  TEMP22 : BOOL ;	
+  TEMP23 : BOOL ;	
+  TEMP24 : BOOL ;	
+  TEMP25 : BOOL ;	
+  TEMP26 : BOOL ;	
+  TEMP27 : BOOL ;	
+  TEMP28 : BOOL ;	
+  TEMP29 : BOOL ;	
+  TEMP30 : BOOL ;	
+  TEMP31 : BOOL ;	
+  TEMP32 : DATE_AND_TIME ;	
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 85
+TITLE = "Organization Block (OB) Not Loaded Fault"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB85_EV_CLASS : BYTE ;	//16#35 Event class 3
+  OB85_FLT_ID : BYTE ;	//16#XX, Fault identification code
+  OB85_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB85_OB_NUMBR : BYTE ;	//85 (Organization block 85, OB85)
+  OB85_RESERVED_1 : BYTE ;	//Reserved for system
+  OB85_RESERVED_2 : BYTE ;	//Reserved for system
+  OB85_RESERVED_3 : INT ;	//Reserved for system
+  OB85_ERR_EV_CLASS : BYTE ;	//Class of event causing error
+  OB85_ERR_EV_NUM : BYTE ;	//Number of event causing error
+  OB85_OB_PRIOR : BYTE ;	//Priority of OB causing error
+  OB85_OB_NUM : BYTE ;	//Number of OB causing error
+  OB85_DATE_TIME : DATE_AND_TIME ;	//Date and time OB85 started   
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 86
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : WORD ;	
+  //TEMP7 : ARRAY  [0 .. 31 ] OF BOOL ;	
+  TEMP8 : DATE_AND_TIME ;	
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 87
+TITLE = "Communication Fault"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB87_EV_CLASS : BYTE ;	//16#39 Event class 3
+  OB87_FLT_ID : BYTE ;	//16#XX, Fault identifcation code
+  OB87_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB87_OB_NUMBR : BYTE ;	//87 (Organization block 87, OB87)
+  OB87_RESERVED_1 : BYTE ;	//Reserved for system
+  OB87_RESERVED_2 : BYTE ;	//Reserved for system
+  OB87_RESERVED_3 : WORD ;	//Reserved for system
+  OB87_RESERVED_4 : DWORD ;	//Reserved for system
+  OB87_DATE_TIME : DATE_AND_TIME ;	//Date and time OB87 started
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 121
+TITLE = "Programming Error"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB121_EV_CLASS : BYTE ;	//16#25, Event class 2, Entering event state, Internal fault event
+  OB121_SW_FLT : BYTE ;	//16#XX Software programming fault
+  OB121_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB121_OB_NUMBR : BYTE ;	//121 (Organization block 121, OB121)
+  OB121_BLK_TYPE : BYTE ;	//16#88/8A/8B/8C/8E Type of block fault occured in
+  OB121_RESERVED_1 : BYTE ;	//Reserved for system
+  OB121_FLT_REG : WORD ;	//16#XX Specific register that caused fault
+  OB121_BLK_NUM : WORD ;	//Number of block that programming fault occured in
+  OB121_PRG_ADDR : WORD ;	//Address in block where programming fault occured
+  OB121_DATE_TIME : DATE_AND_TIME ;	//Date and time OB121 started
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 122
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : WORD ;	
+  TEMP7 : WORD ;	
+  TEMP8 : WORD ;	
+  TEMP9 : DATE_AND_TIME ;	
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+

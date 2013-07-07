@@ -1423,9 +1423,10 @@ class AwlInsn_AUF(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_AUF, rawInsn)
 		self.assertOpCount(1)
-		if self.ops[0].type != AwlOperator.BLKREF_DB and\
-		   self.ops[0].type != AwlOperator.BLKREF_DI:
-			raise AwlSimError("Invalid operator")
+
+	def staticSanityChecks(self):
+		self.ops[0].assertType((AwlOperator.BLKREF_DB,
+					AwlOperator.BLKREF_DI))
 
 	def run(self):
 		self.cpu.run_AUF(self.ops[0])

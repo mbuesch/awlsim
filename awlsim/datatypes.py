@@ -61,6 +61,9 @@ class AwlDataType(object):
 	TYPE_ARRAY	= enum.item
 	TYPE_TIMER	= enum.item
 	TYPE_COUNTER	= enum.item
+	TYPE_BLOCK_DB	= enum.item
+	TYPE_BLOCK_FB	= enum.item
+	TYPE_BLOCK_FC	= enum.item
 	enum.end
 
 	__name2id = {
@@ -81,6 +84,9 @@ class AwlDataType(object):
 		"ARRAY"		: TYPE_ARRAY,
 		"TIMER"		: TYPE_TIMER,
 		"COUNTER"	: TYPE_COUNTER,
+		"BLOCK_DB"	: TYPE_BLOCK_DB,
+		"BLOCK_FB"	: TYPE_BLOCK_FB,
+		"BLOCK_FC"	: TYPE_BLOCK_FC,
 	}
 	__id2name = pivotDict(__name2id)
 
@@ -102,6 +108,9 @@ class AwlDataType(object):
 		TYPE_CHAR	: 8,
 		TYPE_TIMER	: 16,
 		TYPE_COUNTER	: 16,
+		TYPE_BLOCK_DB	: 16,
+		TYPE_BLOCK_FB	: 16,
+		TYPE_BLOCK_FC	: 16,
 	}
 
 	# Table of trivial types with sign
@@ -158,7 +167,8 @@ class AwlDataType(object):
 		self.startIndex = startIndex
 		self.subType = subType
 
-	def parseImmediate(self, tokens):
+	# Parse an immediate, constrained by our datatype.
+	def parseMatchingImmediate(self, tokens):
 		value = None
 		if len(tokens) == 9:
 			if self.type == self.TYPE_DWORD:
@@ -174,6 +184,18 @@ class AwlDataType(object):
 					value = self.tryParseImmediate_INT(tokens[1])
 			elif self.type == self.TYPE_COUNTER:
 				if tokens[0].upper() in ("C", "Z"):
+					value = self.tryParseImmediate_INT(tokens[1])
+			elif self.type == self.TYPE_BLOCK_DB:
+				if tokens[0].upper() == "DB":
+					value = self.tryParseImmediate_INT(tokens[1])
+			elif self.type == self.TYPE_BLOCK_FB:
+				if tokens[0].upper() == "FB":
+					value = self.tryParseImmediate_INT(tokens[1])
+			elif self.type == self.TYPE_BLOCK_FC:
+				if tokens[0].upper() == "FC":
+					value = self.tryParseImmediate_INT(tokens[1])
+			elif self.type == self.TYPE_BLOCK_SDB:
+				if tokens[0].upper() == "SDB":
 					value = self.tryParseImmediate_INT(tokens[1])
 		elif len(tokens) == 1:
 			if self.type == self.TYPE_BOOL:

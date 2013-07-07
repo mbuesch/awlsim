@@ -143,7 +143,7 @@ class S7CPU(object):
 		if rawVar.valueTokens is None:
 			initialValue = None
 		else:
-			initialValue = dtype.parseImmediate(rawVar.valueTokens)
+			initialValue = dtype.parseMatchingImmediate(rawVar.valueTokens)
 		field = BlockInterface.Field(name = rawVar.name,
 					     dataType = dtype,
 					     initialValue = initialValue)
@@ -192,7 +192,7 @@ class S7CPU(object):
 		# Initialize the data structure fields
 		for f in rawDB.fields:
 			dtype = AwlDataType.makeByName(f.typeTokens)
-			value = dtype.parseImmediate(f.valueTokens)
+			value = dtype.parseMatchingImmediate(f.valueTokens)
 			db.structInstance.setFieldData(f.name, value)
 		return db
 
@@ -218,7 +218,7 @@ class S7CPU(object):
 		# Initialize the data structure fields
 		for f in rawDB.fields:
 			dtype = interface.getFieldByName(f.name).dataType
-			value = dtype.parseImmediate(f.valueTokens)
+			value = dtype.parseMatchingImmediate(f.valueTokens)
 			db.structInstance.setFieldData(f.name, value)
 		return db
 
@@ -257,6 +257,15 @@ class S7CPU(object):
 					width = 16
 				elif structField.dataType.type == AwlDataType.TYPE_COUNTER:
 					area = AwlIndirectOp.EXT_AREA_Z
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_DB:
+					area = AwlIndirectOp.EXT_AREA_BLKREF_DB
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FB:
+					area = AwlIndirectOp.EXT_AREA_BLKREF_FB
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FC:
+					area = AwlIndirectOp.EXT_AREA_BLKREF_FC
 					width = 16
 				else:
 					assert(0)
@@ -616,6 +625,7 @@ class S7CPU(object):
 		self.relativeJump = len(cse.insns) - cse.ip
 
 	def run_AUF(self, dbOper):
+		dbOper = dbOper.resolve()
 		try:
 			db = self.dbs[dbOper.value.byteOffset]
 		except KeyError:
