@@ -1,5 +1,5 @@
 DATA_BLOCK DB 1
-TITLE =yalanci63@yahoo.com
+TITLE =
 AUTHOR : Xaadem
 VERSION : 0.1
 
@@ -10,6 +10,130 @@ VERSION : 0.1
 BEGIN
    OUT_FIL := 2.000000e+001; 
 END_DATA_BLOCK
+
+FUNCTION FC 170 : WORD
+TITLE =SCALING VALUES
+//
+AUTHOR : SEA
+FAMILY : CONVERT
+NAME : SCALE
+VERSION : 2.0
+
+
+VAR_INPUT
+  IN : INT ;	// input value to be scaled
+  HI_LIM : REAL ;	// upper limit in engineering units
+  LO_LIM : REAL ;	// lower limit in engineering units 
+  BIPOLAR : BOOL ;	// 1=bipolar; 0=unipolar
+END_VAR
+VAR_OUTPUT
+  OUT : REAL ;	// result of the scale conversion
+END_VAR
+VAR_TEMP
+  IN_REAL : REAL ;	// input value as a REAL number
+  K1 : REAL ;	// low limit for input value
+  K2 : REAL ;	// high limit for input value
+  SPAN : REAL ;	// HI_LIM - LO_LIM
+  TEMP1 : REAL ;	// temporary result
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+//
+// set K1 and K2 constants based upon BIPOLAR
+//
+      SET   ; // if(BIPOLAR=0)
+      A     #BIPOLAR; //   .
+      JC    EL01; // {
+      L     0.000000e+000; //   K1=0
+      T     #K1; //     .
+      JU    EI01; // } else {
+EL01: L     -2.764800e+004; //   K1=-27648.0
+      T     #K1; //     .
+EI01: NOP   0; // }
+      L     2.764800e+004; // K2=+27648.0
+      T     #K2; //   .
+//
+// convert input (IN) to real
+//
+      L     #IN; // ACC1=IN
+      ITD   ; // convert to double integer 
+      DTR   ; // convert to real
+      T     #IN_REAL; // IN_REAL-IN as a real
+//
+// determine SPAN = HI_LIM - LO_LIM
+//
+      L     #HI_LIM; // SPAN=HI_LIM-LO_LIM
+      L     #LO_LIM; // .
+      -R    ; // .
+      T     #SPAN; // .
+//
+// If the input value is outside the K1 and K2 range, the output
+// is clamped to the nearer of either the LO_LIM or the HI_LIM 
+// and an error is logged. If the input value is exactly at a limit the
+// output will be set to the computed limit with no error returned.
+//
+      L     #IN_REAL; // if(IN_REAL<K1)
+      L     #K1; //   .
+      >=R   ; //   .
+      JC    EL02; // {
+      L     8; //   error
+      T     #RET_VAL; //     .
+      L     #SPAN; //   if(SPAN<0)
+      L     0.000000e+000; //     .
+      <R    ; //     .
+      JCN   EL03; //   {
+      L     #HI_LIM; //     ACC1=HI_LIM
+      JU    EI03; //   } else {
+EL03: L     #LO_LIM; //     ACC1=LO_LIM
+EI03: NOP   0; //   } 
+      T     #OUT; //   OUT=ACC1
+      JU    FAIL; //   error
+EL02: POP   ; // } else {
+      L     #K2; //   if(IN_REAL>K2)
+      <=R   ; //     .
+      JC    EI04; //   {
+      L     8; //     error
+      T     #RET_VAL; //       .
+      L     #SPAN; //     if(SPAN<0)
+      L     0.000000e+000; //     {
+      <R    ; //         .
+      JCN   EL05; //         .
+      L     #LO_LIM; //       ACC1=LO_LIM
+      JU    EI05; //     } else {
+EL05: L     #HI_LIM; //       ACC1=HI_LIM
+EI05: NOP   0; //     } 
+      T     #OUT; //     OUT=ACC1
+      JU    FAIL; //     error
+EI04: NOP   0; //   }
+      NOP   0; // }
+//
+// scale the input
+//
+      L     #K2; // TEMP1=K2-K1
+      L     #K1; //   .
+      -R    ; //   .
+      T     #TEMP1; //   .
+      L     #IN_REAL; // IN_REAL-K1
+      L     #K1; //   .
+      -R    ; //   .
+      L     #TEMP1; // divide by TEMP1
+      /R    ; //   .
+      L     #SPAN; // multiply by SPAN
+      *R    ; //   .
+      L     #LO_LIM; // add LO_LIM
+      +R    ; //   .
+      T     #OUT; // OUT=scale(IN_REAL)
+//
+// set BR bit : no error-set BR bit to 1; with error-set BR bit to 0.
+//
+      L     0; // return error code 0
+      T     #RET_VAL; //
+      SET   ; // RLO = 1 (NO ERROR)
+      JU    SVBR; // 
+FAIL: CLR   ; // RLO = 0 (ERROR)
+SVBR: SAVE  ; // BR = RLO
+END_FUNCTION
 
 FUNCTION FC 185 : VOID
 TITLE =F I L T E R    
@@ -154,28 +278,12 @@ M002: A     M     20.1;
       BEC   ; 
 END_FUNCTION
 
-
-FUNCTION FC 170 : WORD
-VAR_INPUT
-	IN	: WORD;
-	HI_LIM	: REAL;
-	LO_LIM	: REAL;
-	BIPOLAR	: BOOL;
-END_VAR
-VAR_OUTPUT
-	OUT	: REAL;
-END_VAR
-BEGIN
-	NOP	0; // Dummy function
-END_FUNCTION
-
-
 ORGANIZATION_BLOCK OB 1
 TITLE = "Main Program Sweep (Cycle)"
 AUTHOR : Xaadem
 VERSION : 0.1
 
-//This Program Filter the input of Analoge Input
+
 VAR_TEMP
   OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
   OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
