@@ -451,9 +451,9 @@ class S7CPU(object):
 		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, block) ]
+		cse = self.callStackTop = self.callStack[-1]
 		# Run the user program cycle
 		while self.callStack:
-			cse = self.callStackTop = self.callStack[-1]
 			while cse.ip < len(cse.insns):
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
@@ -465,10 +465,13 @@ class S7CPU(object):
 					self.updateTimestamp()
 					self.__runTimeCheck()
 					self.insnCountMod = self.getRandomInt(0, 127) + 1
-			cse.handleOutParameters()
 			if self.cbBlockExit:
 				self.cbBlockExit(self.cbBlockExitData)
-			self.callStack.pop().destroy()
+			prevCse = self.callStack.pop()
+			if self.callStack:
+				cse = self.callStackTop = self.callStack[-1]
+				prevCse.handleOutParameters()
+			prevCse.destroy()
 		if self.cbCycleExit:
 			self.cbCycleExit(self.cbCycleExitData)
 		self.cycleCount += 1

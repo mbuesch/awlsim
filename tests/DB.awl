@@ -105,20 +105,20 @@ BEGIN
 	=		M 18.0
 	CALL		FB 1, DB 2 (
 		INPUT_VAR	:= 8877,
-		OUTPUT_VAR	:= MW 16,
+		OUTPUT_VAR	:= LW 16,
 		INOUT_VAR	:= M 18.0
 	)
-	__ASSERT==	MW 16,		4433
+	__ASSERT==	LW 16,		4433
 	__ASSERT==	M 18.0,		1
 
 
 	// FC 1 call test
 	L		1616
-	T		MW 16
+	T		LW 16
 	L		2020
 	T		MW 20
 	CALL		FC 1 (
-		INPUT_WORD	:= MW 16,
+		INPUT_WORD	:= LW 16,
 		INPUT_FC	:= FC 2,
 		INPUT_FB	:= FB 1,
 		INPUT_DB	:= DB 1,
