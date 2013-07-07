@@ -1,0 +1,8630 @@
+DATA_BLOCK DB 1
+AUTHOR : 
+FAMILY : GRP_DB
+NAME : Gen_DB
+VERSION : 0.0
+
+
+  STRUCT 	
+   STAT0 : WORD ;	
+   STAT1 : BYTE ;	
+   STAT2 : BYTE ;	
+   STAT3 : INT ;	
+   STAT4 : INT ;	
+   STAT5 : INT ;	
+   STAT6 : INT ;	
+   STAT7 : INT ;	
+   STAT8 : INT ;	
+   STAT9 : INT ;	
+   STAT10 : INT ;	
+   STAT11 : INT ;	
+   STAT12 : INT ;	
+   STAT13 : INT ;	
+   STAT14 : INT ;	
+   STAT15 : INT ;	
+   STAT16 : INT ;	
+   STAT17 : INT ;	
+   STAT18 : INT ;	
+   STAT19 : INT ;	
+   STAT20 : INT ;	
+   STAT21 : INT ;	
+   STAT22 : INT ;	
+   STAT23 : INT ;	
+   STAT24 : REAL ;	
+   STAT25 : REAL ;	
+   STAT26 : REAL ;	
+   STAT27 : REAL ;	
+   STAT28 : REAL ;	
+   STAT29 : REAL ;	
+   STAT30 : REAL ;	
+   STAT31 : REAL ;	
+   STAT32 : REAL ;	
+   STAT33 : REAL ;	
+   STAT34 : REAL ;	
+   STAT35 : REAL ;	
+   STAT36 : REAL ;	
+   STAT37 : REAL ;	
+   STAT38 : REAL ;	
+   STAT39 : REAL ;	
+   STAT40 : REAL ;	
+   STAT41 : REAL ;	
+   STAT42 : REAL ;	
+   STAT43 : INT ;	
+   STAT44 : INT ;	
+   STAT45 : INT ;	
+   STAT46 : INT ;	
+   STAT47 : INT ;	
+   STAT48 : INT ;	
+   STAT49 : INT ;	
+   STAT50 : INT ;	
+   STAT51 : INT ;	
+   STAT52 : INT ;	
+   STAT53 : WORD ;	
+   STAT54 : WORD ;	
+   STAT55 : WORD ;	
+   STAT56 : REAL ;	
+   STAT57 : REAL ;	
+   STAT58 : REAL ;	
+   STAT59 : REAL ;	
+   STAT60 : REAL ;	
+   STAT61 : REAL ;	
+   STAT62 : REAL ;	
+   STAT63 : REAL ;	
+   STAT64 : REAL ;	
+   STAT65 : REAL ;	
+   STAT66 : REAL ;	
+   STAT67 : REAL ;	
+   STAT68 : REAL ;	
+   STAT69 : REAL ;	
+   STAT70 : REAL ;	
+   STAT71 : REAL ;	
+   STAT72 : REAL ;	
+   STAT73 : REAL ;	
+   STAT74 : REAL ;	
+   STAT75 : REAL ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := W#16#0; 
+   STAT1 := B#16#0; 
+   STAT2 := B#16#0; 
+   STAT3 := 0; 
+   STAT4 := 2; 
+   STAT5 := 2; 
+   STAT6 := 0; 
+   STAT7 := 2; 
+   STAT8 := 0; 
+   STAT9 := 0; 
+   STAT10 := 0; 
+   STAT11 := 0; 
+   STAT12 := 0; 
+   STAT13 := 0; 
+   STAT14 := 0; 
+   STAT15 := 0; 
+   STAT16 := 0; 
+   STAT17 := 0; 
+   STAT18 := 0; 
+   STAT19 := 0; 
+   STAT20 := 0; 
+   STAT21 := 0; 
+   STAT22 := 0; 
+   STAT23 := 0; 
+   STAT24 := 0.000000e+000; 
+   STAT25 := 0.000000e+000; 
+   STAT26 := 0.000000e+000; 
+   STAT27 := 0.000000e+000; 
+   STAT28 := 0.000000e+000; 
+   STAT29 := 0.000000e+000; 
+   STAT30 := 0.000000e+000; 
+   STAT31 := 0.000000e+000; 
+   STAT32 := 0.000000e+000; 
+   STAT33 := 0.000000e+000; 
+   STAT34 := 0.000000e+000; 
+   STAT35 := 0.000000e+000; 
+   STAT36 := 0.000000e+000; 
+   STAT37 := 0.000000e+000; 
+   STAT38 := 0.000000e+000; 
+   STAT39 := 0.000000e+000; 
+   STAT40 := 0.000000e+000; 
+   STAT41 := 0.000000e+000; 
+   STAT42 := 0.000000e+000; 
+   STAT43 := 0; 
+   STAT44 := 0; 
+   STAT45 := 0; 
+   STAT46 := 0; 
+   STAT47 := 0; 
+   STAT48 := 0; 
+   STAT49 := 0; 
+   STAT50 := 0; 
+   STAT51 := 0; 
+   STAT52 := 0; 
+   STAT53 := W#16#0; 
+   STAT54 := W#16#0; 
+   STAT55 := W#16#0; 
+   STAT56 := 0.000000e+000; 
+   STAT57 := 0.000000e+000; 
+   STAT58 := 0.000000e+000; 
+   STAT59 := 0.000000e+000; 
+   STAT60 := 0.000000e+000; 
+   STAT61 := 0.000000e+000; 
+   STAT62 := 0.000000e+000; 
+   STAT63 := 0.000000e+000; 
+   STAT64 := 0.000000e+000; 
+   STAT65 := 0.000000e+000; 
+   STAT66 := 0.000000e+000; 
+   STAT67 := 0.000000e+000; 
+   STAT68 := 0.000000e+000; 
+   STAT69 := 0.000000e+000; 
+   STAT70 := 0.000000e+000; 
+   STAT71 := 0.000000e+000; 
+   STAT72 := 0.000000e+000; 
+   STAT73 := 0.000000e+000; 
+   STAT74 := 0.000000e+000; 
+   STAT75 := 0.000000e+000; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 2
+AUTHOR : 
+FAMILY : General
+NAME : Time_Val
+VERSION : 0.0
+
+
+  STRUCT 	
+   STAT0 : S5TIME ;	
+   STAT1 : S5TIME ;	
+   STAT2 : S5TIME ;	
+   STAT3 : S5TIME ;	
+   STAT4 : S5TIME ;	
+   STAT5 : S5TIME ;	
+   STAT6 : S5TIME ;	
+   STAT7 : S5TIME ;	
+   STAT8 : S5TIME ;	
+   STAT9 : S5TIME ;	
+   STAT10 : S5TIME ;	
+   STAT11 : S5TIME ;	
+   STAT12 : S5TIME ;	
+   STAT13 : S5TIME ;	
+   STAT14 : S5TIME ;	
+   STAT15 : S5TIME ;	
+   STAT16 : S5TIME ;	
+   STAT17 : S5TIME ;	
+   STAT18 : S5TIME ;	
+   STAT19 : S5TIME ;	
+   STAT20 : S5TIME ;	
+   STAT21 : S5TIME ;	
+   STAT22 : S5TIME ;	
+   STAT23 : S5TIME ;	
+   STAT24 : S5TIME ;	
+   STAT25 : S5TIME ;	
+   STAT26 : S5TIME ;	
+   STAT27 : S5TIME ;	
+   STAT28 : S5TIME ;	
+   STAT29 : S5TIME ;	
+   STAT30 : S5TIME ;	
+   STAT31 : S5TIME ;	
+   STAT32 : S5TIME ;	
+   STAT33 : S5TIME ;	
+   STAT34 : S5TIME ;	
+   STAT35 : S5TIME ;	
+   STAT36 : S5TIME ;	
+   STAT37 : S5TIME ;	
+   STAT38 : S5TIME ;	
+   STAT39 : S5TIME ;	
+   STAT40 : S5TIME ;	
+   STAT41 : S5TIME ;	
+   STAT42 : S5TIME ;	
+   STAT43 : S5TIME ;	
+   STAT44 : S5TIME ;	
+   STAT45 : S5TIME ;	
+   STAT46 : S5TIME ;	
+   STAT47 : S5TIME ;	
+   STAT48 : S5TIME ;	
+   STAT49 : S5TIME ;	
+   STAT50 : S5TIME ;	
+   STAT51 : S5TIME ;	
+   STAT52 : S5TIME ;	
+   STAT53 : S5TIME ;	
+   STAT54 : S5TIME ;	
+   STAT55 : S5TIME ;	
+   STAT56 : S5TIME ;	
+   STAT57 : S5TIME ;	
+   STAT58 : S5TIME ;	
+   STAT59 : S5TIME ;	
+   STAT60 : S5TIME ;	
+   STAT61 : S5TIME ;	
+   STAT62 : S5TIME ;	
+   STAT63 : S5TIME ;	
+   STAT64 : S5TIME ;	
+   STAT65 : S5TIME ;	
+   STAT66 : S5TIME ;	
+   STAT67 : S5TIME ;	
+   STAT68 : S5TIME ;	
+   STAT69 : S5TIME ;	
+   STAT70 : S5TIME ;	
+   STAT71 : S5TIME ;	
+   STAT72 : S5TIME ;	
+   STAT73 : S5TIME ;	
+   STAT74 : S5TIME ;	
+   STAT75 : S5TIME ;	
+   STAT76 : S5TIME ;	
+   STAT77 : S5TIME ;	
+   STAT78 : S5TIME ;	
+   STAT79 : S5TIME ;	
+   STAT80 : S5TIME ;	
+   STAT81 : S5TIME ;	
+   STAT82 : S5TIME ;	
+   STAT83 : S5TIME ;	
+   STAT84 : S5TIME ;	
+   STAT85 : S5TIME ;	
+   STAT86 : S5TIME ;	
+   STAT87 : S5TIME ;	
+   STAT88 : S5TIME ;	
+   STAT89 : S5TIME ;	
+   STAT90 : S5TIME ;	
+   STAT91 : S5TIME ;	
+   STAT92 : S5TIME ;	
+   STAT93 : S5TIME ;	
+   STAT94 : S5TIME ;	
+   STAT95 : S5TIME ;	
+   STAT96 : S5TIME ;	
+   STAT97 : S5TIME ;	
+   STAT98 : S5TIME ;	
+   STAT99 : S5TIME ;	
+   STAT100 : S5TIME ;	
+   STAT101 : S5TIME ;	
+   STAT102 : S5TIME ;	
+   STAT103 : S5TIME ;	
+   STAT104 : S5TIME ;	
+   STAT105 : S5TIME ;	
+   STAT106 : S5TIME ;	
+   STAT107 : S5TIME ;	
+   STAT108 : S5TIME ;	
+   STAT109 : S5TIME ;	
+   STAT110 : S5TIME ;	
+   STAT111 : S5TIME ;	
+   STAT112 : S5TIME ;	
+   STAT113 : S5TIME ;	
+   STAT114 : S5TIME ;	
+   STAT115 : S5TIME ;	
+   STAT116 : S5TIME ;	
+   STAT117 : S5TIME ;	
+   STAT118 : S5TIME ;	
+   STAT119 : S5TIME ;	
+   STAT120 : S5TIME ;	
+   STAT121 : S5TIME ;	
+   STAT122 : S5TIME ;	
+   STAT123 : S5TIME ;	
+   STAT124 : S5TIME ;	
+   STAT125 : S5TIME ;	
+   STAT126 : S5TIME ;	
+   STAT127 : S5TIME ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := S5T#0MS; 
+   STAT1 := S5T#0MS; 
+   STAT2 := S5T#15S; 
+   STAT3 := S5T#1S; 
+   STAT4 := S5T#100MS; 
+   STAT5 := S5T#1M30S; 
+   STAT6 := S5T#0MS; 
+   STAT7 := S5T#0MS; 
+   STAT8 := S5T#50MS; 
+   STAT9 := S5T#50MS; 
+   STAT10 := S5T#2M; 
+   STAT11 := S5T#50MS; 
+   STAT12 := S5T#50MS; 
+   STAT13 := S5T#2S; 
+   STAT14 := S5T#2S; 
+   STAT15 := S5T#3S; 
+   STAT16 := S5T#1S; 
+   STAT17 := S5T#1S; 
+   STAT18 := S5T#20S; 
+   STAT19 := S5T#1S; 
+   STAT20 := S5T#100MS; 
+   STAT21 := S5T#100MS; 
+   STAT22 := S5T#5S; 
+   STAT23 := S5T#5S; 
+   STAT24 := S5T#5M; 
+   STAT25 := S5T#8S; 
+   STAT26 := S5T#7M; 
+   STAT27 := S5T#2H; 
+   STAT28 := S5T#10S; 
+   STAT29 := S5T#10S; 
+   STAT30 := S5T#3S; 
+   STAT31 := S5T#5S; 
+   STAT32 := S5T#10S; 
+   STAT33 := S5T#15S; 
+   STAT34 := S5T#2H; 
+   STAT35 := S5T#30M; 
+   STAT36 := S5T#30M; 
+   STAT37 := S5T#10S; 
+   STAT38 := S5T#10S; 
+   STAT39 := S5T#4M; 
+   STAT40 := S5T#30S; 
+   STAT41 := S5T#30S; 
+   STAT42 := S5T#5S; 
+   STAT43 := S5T#3S; 
+   STAT44 := S5T#1M30S; 
+   STAT45 := S5T#5S; 
+   STAT46 := S5T#0MS; 
+   STAT47 := S5T#0MS; 
+   STAT48 := S5T#0MS; 
+   STAT49 := S5T#0MS; 
+   STAT50 := S5T#0MS; 
+   STAT51 := S5T#0MS; 
+   STAT52 := S5T#0MS; 
+   STAT53 := S5T#0MS; 
+   STAT54 := S5T#0MS; 
+   STAT55 := S5T#0MS; 
+   STAT56 := S5T#0MS; 
+   STAT57 := S5T#0MS; 
+   STAT58 := S5T#0MS; 
+   STAT59 := S5T#0MS; 
+   STAT60 := S5T#0MS; 
+   STAT61 := S5T#0MS; 
+   STAT62 := S5T#0MS; 
+   STAT63 := S5T#0MS; 
+   STAT64 := S5T#0MS; 
+   STAT65 := S5T#0MS; 
+   STAT66 := S5T#0MS; 
+   STAT67 := S5T#0MS; 
+   STAT68 := S5T#0MS; 
+   STAT69 := S5T#0MS; 
+   STAT70 := S5T#0MS; 
+   STAT71 := S5T#0MS; 
+   STAT72 := S5T#0MS; 
+   STAT73 := S5T#0MS; 
+   STAT74 := S5T#0MS; 
+   STAT75 := S5T#0MS; 
+   STAT76 := S5T#0MS; 
+   STAT77 := S5T#0MS; 
+   STAT78 := S5T#0MS; 
+   STAT79 := S5T#0MS; 
+   STAT80 := S5T#0MS; 
+   STAT81 := S5T#0MS; 
+   STAT82 := S5T#0MS; 
+   STAT83 := S5T#0MS; 
+   STAT84 := S5T#0MS; 
+   STAT85 := S5T#0MS; 
+   STAT86 := S5T#0MS; 
+   STAT87 := S5T#0MS; 
+   STAT88 := S5T#0MS; 
+   STAT89 := S5T#0MS; 
+   STAT90 := S5T#0MS; 
+   STAT91 := S5T#0MS; 
+   STAT92 := S5T#0MS; 
+   STAT93 := S5T#0MS; 
+   STAT94 := S5T#0MS; 
+   STAT95 := S5T#0MS; 
+   STAT96 := S5T#0MS; 
+   STAT97 := S5T#0MS; 
+   STAT98 := S5T#0MS; 
+   STAT99 := S5T#0MS; 
+   STAT100 := S5T#0MS; 
+   STAT101 := S5T#0MS; 
+   STAT102 := S5T#0MS; 
+   STAT103 := S5T#0MS; 
+   STAT104 := S5T#0MS; 
+   STAT105 := S5T#0MS; 
+   STAT106 := S5T#0MS; 
+   STAT107 := S5T#0MS; 
+   STAT108 := S5T#0MS; 
+   STAT109 := S5T#0MS; 
+   STAT110 := S5T#0MS; 
+   STAT111 := S5T#0MS; 
+   STAT112 := S5T#0MS; 
+   STAT113 := S5T#0MS; 
+   STAT114 := S5T#0MS; 
+   STAT115 := S5T#0MS; 
+   STAT116 := S5T#0MS; 
+   STAT117 := S5T#0MS; 
+   STAT118 := S5T#0MS; 
+   STAT119 := S5T#0MS; 
+   STAT120 := S5T#0MS; 
+   STAT121 := S5T#0MS; 
+   STAT122 := S5T#0MS; 
+   STAT123 := S5T#0MS; 
+   STAT124 := S5T#0MS; 
+   STAT125 := S5T#0MS; 
+   STAT126 := S5T#0MS; 
+   STAT127 := S5T#0MS; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 3
+AUTHOR : 
+VERSION : 0.1
+
+
+  STRUCT 	
+   STAT0 : INT ;	
+   STAT1 : INT ;	
+   STAT2 : INT ;	
+   STAT3 : INT ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := 0; 
+   STAT1 := 0; 
+   STAT2 := 0; 
+   STAT3 := 0; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 4
+AUTHOR : 
+NAME : DB_ENCOD
+VERSION : 0.1
+
+
+  STRUCT 	
+   STAT0 : REAL ;	
+   STAT1 : REAL ;	
+   STAT2 : REAL ;	
+   STAT3 : REAL ;	
+   STAT4 : REAL ;	
+   STAT5 : REAL ;	
+   STAT6 : REAL ;	
+   STAT7 : REAL ;	
+   STAT8 : REAL ;	
+   STAT9 : REAL ;	
+   STAT10 : REAL ;	
+   STAT11 : REAL ;	
+   STAT12 : REAL ;	
+   STAT13 : REAL ;	
+   STAT14 : REAL ;	
+   STAT15 : REAL ;	
+   STAT16 : REAL ;	
+   STAT17 : REAL ;	
+   STAT18 : REAL ;	
+   STAT19 : REAL ;	
+   STAT20 : REAL ;	
+   STAT21 : REAL ;	
+   STAT22 : REAL ;	
+   STAT23 : REAL ;	
+   STAT24 : REAL ;	
+   STAT25 : REAL ;	
+   STAT26 : REAL ;	
+   STAT27 : REAL ;	
+   STAT28 : REAL ;	
+   STAT29 : REAL ;	
+   STAT30 : REAL ;	
+   STAT31 : REAL ;	
+   STAT32 : REAL ;	
+   STAT33 : REAL ;	
+   STAT34 : REAL ;	
+   STAT35 : REAL ;	
+   STAT36 : REAL ;	
+   STAT37 : REAL ;	
+   STAT38 : REAL ;	
+   STAT39 : REAL ;	
+   STAT40 : REAL ;	
+   STAT41 : REAL ;	
+   STAT42 : REAL ;	
+   STAT43 : REAL ;	
+   STAT44 : REAL ;	
+   STAT45 : REAL ;	
+   STAT46 : REAL ;	
+   STAT47 : REAL ;	
+   STAT48 : REAL ;	
+   STAT49 : REAL ;	
+   STAT50 : REAL ;	
+   STAT51 : REAL ;	
+   STAT52 : REAL ;	
+   STAT53 : REAL ;	
+   STAT54 : REAL ;	
+   STAT55 : REAL ;	
+   STAT56 : REAL ;	
+   STAT57 : REAL ;	
+   STAT58 : S5TIME ;	
+   STAT59 : S5TIME ;	
+   STAT60 : S5TIME ;	
+   STAT61 : S5TIME ;	
+   STAT62 : S5TIME ;	
+   STAT63 : S5TIME ;	
+   STAT64 : S5TIME ;	
+   STAT65 : S5TIME ;	
+   STAT66 : S5TIME ;	
+   STAT67 : S5TIME ;	
+   STAT68 : S5TIME ;	
+   STAT69 : S5TIME ;	
+   STAT70 : S5TIME ;	
+   STAT71 : S5TIME ;	
+   STAT72 : S5TIME ;	
+   STAT73 : S5TIME ;	
+   STAT74 : S5TIME ;	
+   STAT75 : S5TIME ;	
+   STAT76 : S5TIME ;	
+   STAT77 : S5TIME ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := 3.270000e+002; 
+   STAT1 := 4.070000e+002; 
+   STAT2 := 1.500000e+001; 
+   STAT3 := 5.000000e+002; 
+   STAT4 := 0.000000e+000; 
+   STAT5 := 4.500000e+001; 
+   STAT6 := 2.500000e+001; 
+   STAT7 := 2.500000e+001; 
+   STAT8 := 7.000000e+001; 
+   STAT9 := 0.000000e+000; 
+   STAT10 := 0.000000e+000; 
+   STAT11 := 1.400000e+002; 
+   STAT12 := 0.000000e+000; 
+   STAT13 := 0.000000e+000; 
+   STAT14 := 2.000000e+001; 
+   STAT15 := 0.000000e+000; 
+   STAT16 := 0.000000e+000; 
+   STAT17 := 0.000000e+000; 
+   STAT18 := 5.000000e+001; 
+   STAT19 := 1.000000e+002; 
+   STAT20 := 1.500000e+002; 
+   STAT21 := 2.000000e+002; 
+   STAT22 := 2.500000e+002; 
+   STAT23 := 3.000000e+002; 
+   STAT24 := 3.500000e+002; 
+   STAT25 := 4.000000e+002; 
+   STAT26 := 4.500000e+002; 
+   STAT27 := 5.000000e+002; 
+   STAT28 := 5.500000e+002; 
+   STAT29 := 6.000000e+002; 
+   STAT30 := 6.500000e+002; 
+   STAT31 := 7.000000e+002; 
+   STAT32 := 7.500000e+002; 
+   STAT33 := 8.000000e+002; 
+   STAT34 := 8.500000e+002; 
+   STAT35 := 9.000000e+002; 
+   STAT36 := 9.500000e+002; 
+   STAT37 := 1.000000e+003; 
+   STAT38 := 2.000000e+002; 
+   STAT39 := 1.900000e+002; 
+   STAT40 := 1.800000e+002; 
+   STAT41 := 1.700000e+002; 
+   STAT42 := 1.600000e+002; 
+   STAT43 := 1.500000e+002; 
+   STAT44 := 1.400000e+002; 
+   STAT45 := 1.300000e+002; 
+   STAT46 := 1.200000e+002; 
+   STAT47 := 1.100000e+002; 
+   STAT48 := 1.000000e+002; 
+   STAT49 := 9.000000e+001; 
+   STAT50 := 8.000000e+001; 
+   STAT51 := 7.000000e+001; 
+   STAT52 := 6.000000e+001; 
+   STAT53 := 5.000000e+001; 
+   STAT54 := 4.000000e+001; 
+   STAT55 := 3.000000e+001; 
+   STAT56 := 2.000000e+001; 
+   STAT57 := 1.000000e+001; 
+   STAT58 := S5T#5S; 
+   STAT59 := S5T#5S; 
+   STAT60 := S5T#5S; 
+   STAT61 := S5T#5S; 
+   STAT62 := S5T#5S; 
+   STAT63 := S5T#5S; 
+   STAT64 := S5T#5S; 
+   STAT65 := S5T#5S; 
+   STAT66 := S5T#5S; 
+   STAT67 := S5T#5S; 
+   STAT68 := S5T#5S; 
+   STAT69 := S5T#5S; 
+   STAT70 := S5T#5S; 
+   STAT71 := S5T#5S; 
+   STAT72 := S5T#5S; 
+   STAT73 := S5T#5S; 
+   STAT74 := S5T#5S; 
+   STAT75 := S5T#5S; 
+   STAT76 := S5T#5S; 
+   STAT77 := S5T#5S; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 10
+AUTHOR : 
+FAMILY : GENERAL
+NAME : DB_GRP1
+VERSION : 0.0
+
+
+  STRUCT 	
+   STAT0 : WORD ;	
+   STAT1 : INT ;	
+   STAT2 : INT ;	
+   STAT3 : INT ;	
+   STAT4 : INT ;	
+   STAT5 : INT ;	
+   STAT6 : INT ;	
+   STAT7 : INT ;	
+   STAT8 : INT ;	
+   STAT9 : INT ;	
+   STAT10 : INT ;	
+   STAT11 : INT ;	
+   STAT12 : INT ;	
+   STAT13 : INT ;	
+   STAT14 : INT ;	
+   STAT15 : INT ;	
+   STAT16 : INT ;	
+   STAT17 : INT ;	
+   STAT18 : INT ;	
+   STAT19 : INT ;	
+   STAT20 : INT ;	
+   STAT21 : INT ;	
+   STAT22 : WORD ;	
+   STAT23 : WORD ;	
+   STAT24 : WORD ;	
+   STAT25 : WORD ;	
+   STAT26 : WORD ;	
+   STAT27 : WORD ;	
+   STAT28 : WORD ;	
+   STAT29 : WORD ;	
+   STAT30 : WORD ;	
+   STAT31 : WORD ;	
+   STAT32 : WORD ;	
+   STAT33 : WORD ;	
+   STAT34 : WORD ;	
+   STAT35 : WORD ;	
+   STAT36 : WORD ;	
+   STAT37 : WORD ;	
+   STAT38 : INT ;	
+   STAT39 : INT ;	
+   STAT40 : INT ;	
+   STAT41 : INT ;	
+   STAT42 : INT ;	
+   STAT43 : INT ;	
+   STAT44 : INT ;	
+   STAT45 : INT ;	
+   STAT46 : INT ;	
+   STAT47 : INT ;	
+   STAT48 : INT ;	
+   STAT49 : INT ;	
+   STAT50 : INT ;	
+   STAT51 : INT ;	
+   STAT52 : INT ;	
+   STAT53 : INT ;	
+   STAT54 : INT ;	
+   STAT55 : INT ;	
+   STAT56 : INT ;	
+   STAT57 : INT ;	
+   STAT58 : REAL ;	
+   STAT59 : REAL ;	
+   STAT60 : REAL ;	
+   STAT61 : REAL ;	
+   STAT62 : REAL ;	
+   STAT63 : REAL ;	
+   STAT64 : INT ;	
+   STAT65 : INT ;	
+   STAT66 : REAL ;	
+   STAT67 : REAL ;	
+   STAT68 : REAL ;	
+   STAT69 : REAL ;	
+   STAT70 : REAL ;	
+   STAT71 : REAL ;	
+   STAT72 : REAL ;	
+   STAT73 : REAL ;	
+   STAT74 : REAL  := 3.000000e+001;	
+   STAT75 : REAL  := 2.500000e+001;	
+   STAT76 : REAL  := 1.500000e+001;	
+   STAT77 : REAL  := 2.000000e+001;	
+   STAT78 : INT ;	
+   STAT79 : INT ;	
+   STAT80 : REAL ;	
+   STAT81 : REAL ;	
+   STAT82 : REAL ;	
+   STAT83 : REAL ;	
+   STAT84 : REAL ;	
+   STAT85 : REAL ;	
+   STAT86 : REAL ;	
+   STAT87 : REAL ;	
+   STAT88 : REAL ;	
+   STAT89 : REAL ;	
+   STAT90 : REAL ;	
+   STAT91 : REAL ;	
+   STAT92 : REAL ;	
+   STAT93 : REAL ;	
+   STAT94 : REAL ;	
+   STAT95 : REAL ;	
+   STAT96 : REAL ;	
+   STAT97 : REAL ;	
+   STAT98 : INT ;	
+   STAT99 : INT ;	
+   STAT100 : INT ;	
+   STAT101 : INT ;	
+   STAT102 : INT ;	
+   STAT103 : INT ;	
+   STAT104 : INT ;	
+   STAT105 : INT ;	
+   STAT106 : INT ;	
+   STAT107 : INT ;	
+   STAT108 : INT ;	
+   STAT109 : INT ;	
+   STAT110 : INT ;	
+   STAT111 : INT ;	
+   STAT112 : INT ;	
+   STAT113 : INT ;	
+   STAT114 : INT ;	
+   STAT115 : INT ;	
+   STAT116 : INT ;	
+   STAT117 : INT ;	
+   STAT118 : INT ;	
+   STAT119 : INT ;	
+   STAT120 : INT ;	
+   STAT121 : INT ;	
+   STAT122 : INT ;	
+   STAT123 : INT ;	
+   STAT124 : INT ;	
+   STAT125 : INT ;	
+   STAT126 : INT ;	
+   STAT127 : INT ;	
+   STAT128 : INT ;	
+   STAT129 : INT ;	
+   STAT130 : INT ;	
+   STAT131 : INT ;	
+   STAT132 : INT ;	
+   STAT133 : INT ;	
+   STAT134 : INT ;	
+   STAT135 : INT ;	
+   STAT136 : INT ;	
+   STAT137 : INT ;	
+   STAT138 : INT ;	
+   STAT139 : INT ;	
+   STAT140 : INT ;	
+   STAT141 : INT ;	
+   STAT142 : INT ;	
+   STAT143 : INT ;	
+   STAT144 : INT ;	
+   STAT145 : INT ;	
+   STAT146 : INT ;	
+   STAT147 : INT ;	
+   STAT148 : INT ;	
+   STAT149 : INT ;	
+   STAT150 : INT ;	
+   STAT151 : INT ;	
+   STAT152 : INT ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := W#16#0; 
+   STAT1 := 0; 
+   STAT2 := 0; 
+   STAT3 := 0; 
+   STAT4 := 0; 
+   STAT5 := 2; 
+   STAT6 := 0; 
+   STAT7 := 0; 
+   STAT8 := 0; 
+   STAT9 := 2; 
+   STAT10 := 2; 
+   STAT11 := 2; 
+   STAT12 := 0; 
+   STAT13 := 2; 
+   STAT14 := 2; 
+   STAT15 := 2; 
+   STAT16 := 0; 
+   STAT17 := 0; 
+   STAT18 := 0; 
+   STAT19 := 0; 
+   STAT20 := 0; 
+   STAT21 := 0; 
+   STAT22 := W#16#0; 
+   STAT23 := W#16#0; 
+   STAT24 := W#16#0; 
+   STAT25 := W#16#0; 
+   STAT26 := W#16#0; 
+   STAT27 := W#16#0; 
+   STAT28 := W#16#0; 
+   STAT29 := W#16#0; 
+   STAT30 := W#16#0; 
+   STAT31 := W#16#0; 
+   STAT32 := W#16#0; 
+   STAT33 := W#16#0; 
+   STAT34 := W#16#0; 
+   STAT35 := W#16#0; 
+   STAT36 := W#16#0; 
+   STAT37 := W#16#0; 
+   STAT38 := 2; 
+   STAT39 := 2; 
+   STAT40 := 2; 
+   STAT41 := 2; 
+   STAT42 := 0; 
+   STAT43 := 0; 
+   STAT44 := 0; 
+   STAT45 := 0; 
+   STAT46 := 0; 
+   STAT47 := 2; 
+   STAT48 := 2; 
+   STAT49 := 2; 
+   STAT50 := 3; 
+   STAT51 := 3; 
+   STAT52 := 2; 
+   STAT53 := 2; 
+   STAT54 := 2; 
+   STAT55 := 2; 
+   STAT56 := 2; 
+   STAT57 := 0; 
+   STAT58 := 0.000000e+000; 
+   STAT59 := 0.000000e+000; 
+   STAT60 := 0.000000e+000; 
+   STAT61 := 0.000000e+000; 
+   STAT62 := 0.000000e+000; 
+   STAT63 := 1.000000e+002; 
+   STAT64 := 12; 
+   STAT65 := 0; 
+   STAT66 := 7.500000e+001; 
+   STAT67 := 2.500000e+001; 
+   STAT68 := 1.800000e+001; 
+   STAT69 := 1.000000e+001; 
+   STAT70 := 0.000000e+000; 
+   STAT71 := 0.000000e+000; 
+   STAT72 := 0.000000e+000; 
+   STAT73 := 0.000000e+000; 
+   STAT74 := 3.000000e+001; 
+   STAT75 := 2.600000e+001; 
+   STAT76 := 1.500000e+001; 
+   STAT77 := 2.500000e+001; 
+   STAT78 := 0; 
+   STAT79 := 0; 
+   STAT80 := 0.000000e+000; 
+   STAT81 := 8.680556e-002; 
+   STAT82 := 8.738426e+001; 
+   STAT83 := 0.000000e+000; 
+   STAT84 := 0.000000e+000; 
+   STAT85 := 0.000000e+000; 
+   STAT86 := 0.000000e+000; 
+   STAT87 := 0.000000e+000; 
+   STAT88 := 0.000000e+000; 
+   STAT89 := 0.000000e+000; 
+   STAT90 := 0.000000e+000; 
+   STAT91 := 0.000000e+000; 
+   STAT92 := 0.000000e+000; 
+   STAT93 := 0.000000e+000; 
+   STAT94 := 0.000000e+000; 
+   STAT95 := 0.000000e+000; 
+   STAT96 := 0.000000e+000; 
+   STAT97 := 0.000000e+000; 
+   STAT98 := 0; 
+   STAT99 := 0; 
+   STAT100 := 0; 
+   STAT101 := 0; 
+   STAT102 := 0; 
+   STAT103 := 0; 
+   STAT104 := 0; 
+   STAT105 := 0; 
+   STAT106 := 0; 
+   STAT107 := 0; 
+   STAT108 := 0; 
+   STAT109 := 0; 
+   STAT110 := 0; 
+   STAT111 := 0; 
+   STAT112 := 0; 
+   STAT113 := 0; 
+   STAT114 := 0; 
+   STAT115 := 0; 
+   STAT116 := 0; 
+   STAT117 := 0; 
+   STAT118 := 0; 
+   STAT119 := 2; 
+   STAT120 := 2; 
+   STAT121 := 2; 
+   STAT122 := 2; 
+   STAT123 := 2; 
+   STAT124 := 2; 
+   STAT125 := 2; 
+   STAT126 := 2; 
+   STAT127 := 2; 
+   STAT128 := 2; 
+   STAT129 := 2; 
+   STAT130 := 2; 
+   STAT131 := 2; 
+   STAT132 := 2; 
+   STAT133 := 2; 
+   STAT134 := 2; 
+   STAT135 := 2; 
+   STAT136 := 0; 
+   STAT137 := 2; 
+   STAT138 := 2; 
+   STAT139 := 2; 
+   STAT140 := 2; 
+   STAT141 := 2; 
+   STAT142 := 2; 
+   STAT143 := 2; 
+   STAT144 := 2; 
+   STAT145 := 2; 
+   STAT146 := 3; 
+   STAT147 := 3; 
+   STAT148 := 2; 
+   STAT149 := 2; 
+   STAT150 := 2; 
+   STAT151 := 2; 
+   STAT152 := 2; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 179
+AUTHOR : 
+FAMILY : GENERAL
+NAME : STATUS
+VERSION : 0.1
+
+
+  STRUCT 	
+   STAT0 : REAL ;	
+   STAT1 : REAL ;	
+   STAT2 : REAL ;	
+   STAT3 : REAL ;	
+   STAT4 : REAL ;	
+   STAT5 : REAL ;	
+   STAT6 : REAL ;	
+   STAT7 : REAL ;	
+   STAT8 : REAL ;	
+   STAT9 : REAL ;	
+   STAT10 : REAL ;	
+   STAT11 : REAL ;	
+   STAT12 : REAL ;	
+   STAT13 : REAL ;	
+   STAT14 : REAL ;	
+   STAT15 : REAL ;	
+   STAT16 : REAL ;	
+   STAT17 : REAL ;	
+   STAT18 : REAL ;	
+   STAT19 : REAL ;	
+   STAT20 : REAL ;	
+   STAT21 : REAL ;	
+   STAT22 : REAL ;	
+   STAT23 : REAL ;	
+   STAT24 : REAL ;	
+   STAT25 : REAL ;	
+   STAT26 : REAL ;	
+   STAT27 : REAL ;	
+   STAT28 : REAL ;	
+   STAT29 : REAL ;	
+   STAT30 : REAL ;	
+   STAT31 : REAL ;	
+   STAT32 : REAL ;	
+   STAT33 : REAL ;	
+   STAT34 : REAL ;	
+   STAT35 : REAL ;	
+   STAT36 : REAL ;	
+   STAT37 : REAL ;	
+   STAT38 : REAL ;	
+   STAT39 : REAL ;	
+   STAT40 : REAL ;	
+   STAT41 : REAL ;	
+   STAT42 : REAL ;	
+   STAT43 : REAL ;	
+   STAT44 : REAL ;	
+   STAT45 : REAL ;	
+   STAT46 : REAL ;	
+   STAT47 : REAL ;	
+   STAT48 : REAL ;	
+   STAT49 : REAL ;	
+   STAT50 : WORD ;	
+   STAT51 : WORD ;	
+   STAT52 : WORD ;	
+   STAT53 : WORD ;	
+   STAT54 : WORD ;	
+   STAT55 : WORD ;	
+   STAT56 : WORD ;	
+   STAT57 : WORD ;	
+   STAT58 : WORD ;	
+   STAT59 : WORD ;	
+   STAT60 : WORD ;	
+   STAT61 : WORD ;	
+   STAT62 : WORD ;	
+   STAT63 : WORD ;	
+   STAT64 : WORD ;	
+   STAT65 : WORD ;	
+   STAT66 : WORD ;	
+   STAT67 : WORD ;	
+   STAT68 : WORD ;	
+   STAT69 : WORD ;	
+   STAT70 : WORD ;	
+   STAT71 : WORD ;	
+   STAT72 : WORD ;	
+   STAT73 : WORD ;	
+   STAT74 : WORD ;	
+   STAT75 : WORD ;	
+   STAT76 : WORD ;	
+   STAT77 : WORD ;	
+   STAT78 : WORD ;	
+   STAT79 : WORD ;	
+   STAT80 : WORD ;	
+   STAT81 : WORD ;	
+   STAT82 : WORD ;	
+   STAT83 : WORD ;	
+   STAT84 : WORD ;	
+   STAT85 : WORD ;	
+   STAT86 : WORD ;	
+   STAT87 : WORD ;	
+   STAT88 : WORD ;	
+   STAT89 : WORD ;	
+   STAT90 : WORD ;	
+   STAT91 : WORD ;	
+   STAT92 : WORD ;	
+   STAT93 : WORD ;	
+   STAT94 : WORD ;	
+   STAT95 : WORD ;	
+   STAT96 : WORD ;	
+   STAT97 : WORD ;	
+   STAT98 : WORD ;	
+   STAT99 : WORD ;	
+   STAT100 : WORD ;	
+   STAT101 : WORD ;	
+   STAT102 : WORD ;	
+   STAT103 : WORD ;	
+   STAT104 : WORD ;	
+   STAT105 : WORD ;	
+   STAT106 : WORD ;	
+   STAT107 : WORD ;	
+   STAT108 : WORD ;	
+   STAT109 : WORD ;	
+   STAT110 : WORD ;	
+   STAT111 : WORD ;	
+   STAT112 : WORD ;	
+   STAT113 : WORD ;	
+   STAT114 : WORD ;	
+   STAT115 : WORD ;	
+   STAT116 : WORD ;	
+   STAT117 : WORD ;	
+   STAT118 : WORD ;	
+   STAT119 : WORD ;	
+   STAT120 : WORD ;	
+   STAT121 : WORD ;	
+   STAT122 : WORD ;	
+   STAT123 : WORD ;	
+   STAT124 : WORD ;	
+   STAT125 : WORD ;	
+   STAT126 : WORD ;	
+   STAT127 : WORD ;	
+   STAT128 : WORD ;	
+   STAT129 : WORD ;	
+   STAT130 : WORD ;	
+   STAT131 : WORD ;	
+   STAT132 : WORD ;	
+   STAT133 : WORD ;	
+   STAT134 : WORD ;	
+   STAT135 : WORD ;	
+   STAT136 : WORD ;	
+   STAT137 : WORD ;	
+   STAT138 : WORD ;	
+   STAT139 : WORD ;	
+   STAT140 : WORD ;	
+   STAT141 : WORD ;	
+   STAT142 : WORD ;	
+   STAT143 : WORD ;	
+   STAT144 : WORD ;	
+   STAT145 : WORD ;	
+   STAT146 : WORD ;	
+   STAT147 : WORD ;	
+   STAT148 : WORD ;	
+   STAT149 : WORD ;	
+   STAT150 : WORD ;	
+   STAT151 : INT ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := -1.000000e+001; 
+   STAT1 := 0.000000e+000; 
+   STAT2 := 8.680556e-002; 
+   STAT3 := 0.000000e+000; 
+   STAT4 := 0.000000e+000; 
+   STAT5 := 8.738426e+001; 
+   STAT6 := 2.670000e+002; 
+   STAT7 := 2.670000e+002; 
+   STAT8 := 2.670000e+002; 
+   STAT9 := 2.670000e+002; 
+   STAT10 := 2.670000e+002; 
+   STAT11 := 0.000000e+000; 
+   STAT12 := 0.000000e+000; 
+   STAT13 := 0.000000e+000; 
+   STAT14 := 0.000000e+000; 
+   STAT15 := 0.000000e+000; 
+   STAT16 := 0.000000e+000; 
+   STAT17 := 0.000000e+000; 
+   STAT18 := 0.000000e+000; 
+   STAT19 := 0.000000e+000; 
+   STAT20 := 0.000000e+000; 
+   STAT21 := 0.000000e+000; 
+   STAT22 := 0.000000e+000; 
+   STAT23 := 0.000000e+000; 
+   STAT24 := 0.000000e+000; 
+   STAT25 := 0.000000e+000; 
+   STAT26 := 0.000000e+000; 
+   STAT27 := 0.000000e+000; 
+   STAT28 := 0.000000e+000; 
+   STAT29 := 0.000000e+000; 
+   STAT30 := 0.000000e+000; 
+   STAT31 := 0.000000e+000; 
+   STAT32 := 0.000000e+000; 
+   STAT33 := 0.000000e+000; 
+   STAT34 := 0.000000e+000; 
+   STAT35 := 0.000000e+000; 
+   STAT36 := 0.000000e+000; 
+   STAT37 := 0.000000e+000; 
+   STAT38 := 0.000000e+000; 
+   STAT39 := 0.000000e+000; 
+   STAT40 := 0.000000e+000; 
+   STAT41 := 0.000000e+000; 
+   STAT42 := 0.000000e+000; 
+   STAT43 := 0.000000e+000; 
+   STAT44 := 0.000000e+000; 
+   STAT45 := 0.000000e+000; 
+   STAT46 := 0.000000e+000; 
+   STAT47 := 0.000000e+000; 
+   STAT48 := 0.000000e+000; 
+   STAT49 := 0.000000e+000; 
+   STAT50 := W#16#0; 
+   STAT51 := W#16#0; 
+   STAT52 := W#16#0; 
+   STAT53 := W#16#0; 
+   STAT54 := W#16#0; 
+   STAT55 := W#16#0; 
+   STAT56 := W#16#0; 
+   STAT57 := W#16#0; 
+   STAT58 := W#16#0; 
+   STAT59 := W#16#0; 
+   STAT60 := W#16#0; 
+   STAT61 := W#16#0; 
+   STAT62 := W#16#0; 
+   STAT63 := W#16#0; 
+   STAT64 := W#16#0; 
+   STAT65 := W#16#0; 
+   STAT66 := W#16#0; 
+   STAT67 := W#16#0; 
+   STAT68 := W#16#0; 
+   STAT69 := W#16#0; 
+   STAT70 := W#16#0; 
+   STAT71 := W#16#0; 
+   STAT72 := W#16#0; 
+   STAT73 := W#16#0; 
+   STAT74 := W#16#0; 
+   STAT75 := W#16#0; 
+   STAT76 := W#16#0; 
+   STAT77 := W#16#0; 
+   STAT78 := W#16#0; 
+   STAT79 := W#16#0; 
+   STAT80 := W#16#0; 
+   STAT81 := W#16#0; 
+   STAT82 := W#16#0; 
+   STAT83 := W#16#0; 
+   STAT84 := W#16#0; 
+   STAT85 := W#16#0; 
+   STAT86 := W#16#0; 
+   STAT87 := W#16#0; 
+   STAT88 := W#16#0; 
+   STAT89 := W#16#0; 
+   STAT90 := W#16#0; 
+   STAT91 := W#16#0; 
+   STAT92 := W#16#0; 
+   STAT93 := W#16#0; 
+   STAT94 := W#16#0; 
+   STAT95 := W#16#0; 
+   STAT96 := W#16#0; 
+   STAT97 := W#16#0; 
+   STAT98 := W#16#0; 
+   STAT99 := W#16#0; 
+   STAT100 := W#16#0; 
+   STAT101 := W#16#0; 
+   STAT102 := W#16#0; 
+   STAT103 := W#16#0; 
+   STAT104 := W#16#0; 
+   STAT105 := W#16#0; 
+   STAT106 := W#16#0; 
+   STAT107 := W#16#0; 
+   STAT108 := W#16#0; 
+   STAT109 := W#16#0; 
+   STAT110 := W#16#0; 
+   STAT111 := W#16#0; 
+   STAT112 := W#16#0; 
+   STAT113 := W#16#0; 
+   STAT114 := W#16#0; 
+   STAT115 := W#16#0; 
+   STAT116 := W#16#0; 
+   STAT117 := W#16#0; 
+   STAT118 := W#16#0; 
+   STAT119 := W#16#0; 
+   STAT120 := W#16#0; 
+   STAT121 := W#16#0; 
+   STAT122 := W#16#0; 
+   STAT123 := W#16#0; 
+   STAT124 := W#16#0; 
+   STAT125 := W#16#0; 
+   STAT126 := W#16#0; 
+   STAT127 := W#16#0; 
+   STAT128 := W#16#0; 
+   STAT129 := W#16#0; 
+   STAT130 := W#16#0; 
+   STAT131 := W#16#0; 
+   STAT132 := W#16#0; 
+   STAT133 := W#16#0; 
+   STAT134 := W#16#0; 
+   STAT135 := W#16#0; 
+   STAT136 := W#16#0; 
+   STAT137 := W#16#0; 
+   STAT138 := W#16#0; 
+   STAT139 := W#16#0; 
+   STAT140 := W#16#0; 
+   STAT141 := W#16#0; 
+   STAT142 := W#16#0; 
+   STAT143 := W#16#0; 
+   STAT144 := W#16#0; 
+   STAT145 := W#16#0; 
+   STAT146 := W#16#0; 
+   STAT147 := W#16#0; 
+   STAT148 := W#16#0; 
+   STAT149 := W#16#0; 
+   STAT150 := W#16#0; 
+   STAT151 := 0; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 181
+AUTHOR : 
+FAMILY : GENERAL
+NAME : STATUS
+VERSION : 0.1
+
+
+  STRUCT 	
+   STAT0 : WORD ;	
+   STAT1 : WORD ;	
+   STAT2 : WORD ;	
+   STAT3 : WORD ;	
+   STAT4 : WORD ;	
+   STAT5 : WORD ;	
+   STAT6 : WORD ;	
+   STAT7 : WORD ;	
+   STAT8 : WORD ;	
+   STAT9 : WORD ;	
+   STAT10 : WORD ;	
+   STAT11 : WORD ;	
+   STAT12 : WORD ;	
+   STAT13 : WORD ;	
+   STAT14 : WORD ;	
+   STAT15 : WORD ;	
+   STAT16 : WORD ;	
+   STAT17 : WORD ;	
+   STAT18 : WORD ;	
+   STAT19 : WORD ;	
+   STAT20 : WORD ;	
+   STAT21 : WORD ;	
+   STAT22 : WORD ;	
+   STAT23 : WORD ;	
+   STAT24 : WORD ;	
+   STAT25 : WORD ;	
+   STAT26 : WORD ;	
+   STAT27 : WORD ;	
+   STAT28 : WORD ;	
+   STAT29 : WORD ;	
+   STAT30 : WORD ;	
+   STAT31 : WORD ;	
+   STAT32 : WORD ;	
+   STAT33 : WORD ;	
+   STAT34 : WORD ;	
+   STAT35 : WORD ;	
+   STAT36 : WORD ;	
+   STAT37 : WORD ;	
+   STAT38 : WORD ;	
+   STAT39 : WORD ;	
+   STAT40 : WORD ;	
+   STAT41 : WORD ;	
+   STAT42 : WORD ;	
+   STAT43 : WORD ;	
+   STAT44 : WORD ;	
+   STAT45 : WORD ;	
+   STAT46 : WORD ;	
+   STAT47 : WORD ;	
+   STAT48 : WORD ;	
+   STAT49 : WORD ;	
+   STAT50 : WORD ;	
+   STAT51 : WORD ;	
+   STAT52 : WORD ;	
+   STAT53 : WORD ;	
+   STAT54 : WORD ;	
+   STAT55 : WORD ;	
+   STAT56 : WORD ;	
+   STAT57 : WORD ;	
+   STAT58 : WORD ;	
+   STAT59 : WORD ;	
+   STAT60 : WORD ;	
+   STAT61 : WORD ;	
+   STAT62 : WORD ;	
+   STAT63 : WORD ;	
+   STAT64 : WORD ;	
+   STAT65 : WORD ;	
+   STAT66 : WORD ;	
+   STAT67 : WORD ;	
+   STAT68 : WORD ;	
+   STAT69 : WORD ;	
+   STAT70 : WORD ;	
+   STAT71 : WORD ;	
+   STAT72 : WORD ;	
+   STAT73 : WORD ;	
+   STAT74 : WORD ;	
+   STAT75 : WORD ;	
+   STAT76 : WORD ;	
+   STAT77 : WORD ;	
+   STAT78 : WORD ;	
+   STAT79 : WORD ;	
+   STAT80 : WORD ;	
+   STAT81 : WORD ;	
+   STAT82 : WORD ;	
+   STAT83 : WORD ;	
+   STAT84 : WORD ;	
+   STAT85 : WORD ;	
+   STAT86 : WORD ;	
+   STAT87 : WORD ;	
+   STAT88 : WORD ;	
+   STAT89 : WORD ;	
+   STAT90 : WORD ;	
+   STAT91 : WORD ;	
+   STAT92 : WORD ;	
+   STAT93 : WORD ;	
+   STAT94 : WORD ;	
+   STAT95 : WORD ;	
+   STAT96 : WORD ;	
+   STAT97 : WORD ;	
+   STAT98 : WORD ;	
+   STAT99 : WORD ;	
+   STAT100 : WORD ;	
+   STAT101 : WORD ;	
+   STAT102 : WORD ;	
+   STAT103 : WORD ;	
+   STAT104 : WORD ;	
+   STAT105 : WORD ;	
+   STAT106 : WORD ;	
+   STAT107 : WORD ;	
+   STAT108 : WORD ;	
+   STAT109 : WORD ;	
+   STAT110 : WORD ;	
+   STAT111 : WORD ;	
+   STAT112 : WORD ;	
+   STAT113 : WORD ;	
+   STAT114 : WORD ;	
+   STAT115 : WORD ;	
+   STAT116 : WORD ;	
+   STAT117 : WORD ;	
+   STAT118 : WORD ;	
+   STAT119 : WORD ;	
+   STAT120 : WORD ;	
+   STAT121 : WORD ;	
+   STAT122 : WORD ;	
+   STAT123 : WORD ;	
+   STAT124 : WORD ;	
+   STAT125 : WORD ;	
+   STAT126 : WORD ;	
+   STAT127 : WORD ;	
+   STAT128 : WORD ;	
+   STAT129 : WORD ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := W#16#0; 
+   STAT1 := W#16#0; 
+   STAT2 := W#16#0; 
+   STAT3 := W#16#0; 
+   STAT4 := W#16#0; 
+   STAT5 := W#16#0; 
+   STAT6 := W#16#0; 
+   STAT7 := W#16#0; 
+   STAT8 := W#16#0; 
+   STAT9 := W#16#0; 
+   STAT10 := W#16#0; 
+   STAT11 := W#16#0; 
+   STAT12 := W#16#0; 
+   STAT13 := W#16#0; 
+   STAT14 := W#16#0; 
+   STAT15 := W#16#0; 
+   STAT16 := W#16#0; 
+   STAT17 := W#16#0; 
+   STAT18 := W#16#0; 
+   STAT19 := W#16#0; 
+   STAT20 := W#16#0; 
+   STAT21 := W#16#0; 
+   STAT22 := W#16#0; 
+   STAT23 := W#16#0; 
+   STAT24 := W#16#0; 
+   STAT25 := W#16#0; 
+   STAT26 := W#16#0; 
+   STAT27 := W#16#0; 
+   STAT28 := W#16#0; 
+   STAT29 := W#16#0; 
+   STAT30 := W#16#0; 
+   STAT31 := W#16#0; 
+   STAT32 := W#16#0; 
+   STAT33 := W#16#0; 
+   STAT34 := W#16#0; 
+   STAT35 := W#16#0; 
+   STAT36 := W#16#0; 
+   STAT37 := W#16#0; 
+   STAT38 := W#16#0; 
+   STAT39 := W#16#0; 
+   STAT40 := W#16#0; 
+   STAT41 := W#16#0; 
+   STAT42 := W#16#0; 
+   STAT43 := W#16#0; 
+   STAT44 := W#16#0; 
+   STAT45 := W#16#0; 
+   STAT46 := W#16#0; 
+   STAT47 := W#16#0; 
+   STAT48 := W#16#0; 
+   STAT49 := W#16#0; 
+   STAT50 := W#16#0; 
+   STAT51 := W#16#0; 
+   STAT52 := W#16#0; 
+   STAT53 := W#16#0; 
+   STAT54 := W#16#0; 
+   STAT55 := W#16#0; 
+   STAT56 := W#16#0; 
+   STAT57 := W#16#0; 
+   STAT58 := W#16#0; 
+   STAT59 := W#16#0; 
+   STAT60 := W#16#0; 
+   STAT61 := W#16#0; 
+   STAT62 := W#16#0; 
+   STAT63 := W#16#0; 
+   STAT64 := W#16#0; 
+   STAT65 := W#16#0; 
+   STAT66 := W#16#0; 
+   STAT67 := W#16#0; 
+   STAT68 := W#16#0; 
+   STAT69 := W#16#0; 
+   STAT70 := W#16#0; 
+   STAT71 := W#16#0; 
+   STAT72 := W#16#0; 
+   STAT73 := W#16#0; 
+   STAT74 := W#16#0; 
+   STAT75 := W#16#0; 
+   STAT76 := W#16#0; 
+   STAT77 := W#16#0; 
+   STAT78 := W#16#0; 
+   STAT79 := W#16#0; 
+   STAT80 := W#16#0; 
+   STAT81 := W#16#0; 
+   STAT82 := W#16#0; 
+   STAT83 := W#16#0; 
+   STAT84 := W#16#0; 
+   STAT85 := W#16#0; 
+   STAT86 := W#16#0; 
+   STAT87 := W#16#0; 
+   STAT88 := W#16#0; 
+   STAT89 := W#16#0; 
+   STAT90 := W#16#0; 
+   STAT91 := W#16#0; 
+   STAT92 := W#16#0; 
+   STAT93 := W#16#0; 
+   STAT94 := W#16#0; 
+   STAT95 := W#16#0; 
+   STAT96 := W#16#0; 
+   STAT97 := W#16#0; 
+   STAT98 := W#16#0; 
+   STAT99 := W#16#0; 
+   STAT100 := W#16#0; 
+   STAT101 := W#16#0; 
+   STAT102 := W#16#0; 
+   STAT103 := W#16#0; 
+   STAT104 := W#16#0; 
+   STAT105 := W#16#0; 
+   STAT106 := W#16#0; 
+   STAT107 := W#16#0; 
+   STAT108 := W#16#0; 
+   STAT109 := W#16#0; 
+   STAT110 := W#16#0; 
+   STAT111 := W#16#0; 
+   STAT112 := W#16#0; 
+   STAT113 := W#16#0; 
+   STAT114 := W#16#0; 
+   STAT115 := W#16#0; 
+   STAT116 := W#16#0; 
+   STAT117 := W#16#0; 
+   STAT118 := W#16#0; 
+   STAT119 := W#16#0; 
+   STAT120 := W#16#0; 
+   STAT121 := W#16#0; 
+   STAT122 := W#16#0; 
+   STAT123 := W#16#0; 
+   STAT124 := W#16#0; 
+   STAT125 := W#16#0; 
+   STAT126 := W#16#0; 
+   STAT127 := W#16#0; 
+   STAT128 := W#16#0; 
+   STAT129 := W#16#0; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 182
+AUTHOR : 
+FAMILY : GENERAL
+NAME : STATUS
+VERSION : 0.1
+
+
+  STRUCT 	
+   STAT0 : WORD ;	
+   STAT1 : WORD ;	
+   STAT2 : WORD ;	
+   STAT3 : WORD ;	
+   STAT4 : WORD ;	
+   STAT5 : WORD ;	
+   STAT6 : WORD ;	
+   STAT7 : WORD ;	
+   STAT8 : WORD ;	
+   STAT9 : WORD ;	
+   STAT10 : WORD ;	
+   STAT11 : WORD ;	
+   STAT12 : WORD ;	
+   STAT13 : WORD ;	
+   STAT14 : WORD ;	
+   STAT15 : WORD ;	
+   STAT16 : WORD ;	
+   STAT17 : WORD ;	
+   STAT18 : WORD ;	
+   STAT19 : WORD ;	
+   STAT20 : WORD ;	
+   STAT21 : WORD ;	
+   STAT22 : WORD ;	
+   STAT23 : WORD ;	
+   STAT24 : WORD ;	
+   STAT25 : WORD ;	
+   STAT26 : WORD ;	
+   STAT27 : WORD ;	
+   STAT28 : WORD ;	
+   STAT29 : WORD ;	
+   STAT30 : WORD ;	
+   STAT31 : WORD ;	
+   STAT32 : WORD ;	
+   STAT33 : WORD ;	
+   STAT34 : WORD ;	
+   STAT35 : WORD ;	
+   STAT36 : WORD ;	
+   STAT37 : WORD ;	
+   STAT38 : WORD ;	
+   STAT39 : WORD ;	
+   STAT40 : WORD ;	
+   STAT41 : WORD ;	
+   STAT42 : WORD ;	
+   STAT43 : WORD ;	
+   STAT44 : WORD ;	
+   STAT45 : WORD ;	
+   STAT46 : WORD ;	
+   STAT47 : WORD ;	
+   STAT48 : WORD ;	
+   STAT49 : WORD ;	
+   STAT50 : WORD ;	
+   STAT51 : WORD ;	
+   STAT52 : WORD ;	
+   STAT53 : WORD ;	
+   STAT54 : WORD ;	
+   STAT55 : WORD ;	
+   STAT56 : WORD ;	
+   STAT57 : WORD ;	
+   STAT58 : WORD ;	
+   STAT59 : WORD ;	
+   STAT60 : WORD ;	
+   STAT61 : WORD ;	
+   STAT62 : WORD ;	
+   STAT63 : WORD ;	
+   STAT64 : WORD ;	
+   STAT65 : WORD ;	
+   STAT66 : WORD ;	
+   STAT67 : WORD ;	
+   STAT68 : WORD ;	
+   STAT69 : WORD ;	
+   STAT70 : WORD ;	
+   STAT71 : WORD ;	
+   STAT72 : WORD ;	
+   STAT73 : WORD ;	
+   STAT74 : WORD ;	
+   STAT75 : WORD ;	
+   STAT76 : WORD ;	
+   STAT77 : WORD ;	
+   STAT78 : WORD ;	
+   STAT79 : WORD ;	
+   STAT80 : WORD ;	
+   STAT81 : WORD ;	
+   STAT82 : WORD ;	
+   STAT83 : WORD ;	
+   STAT84 : WORD ;	
+   STAT85 : WORD ;	
+   STAT86 : WORD ;	
+   STAT87 : WORD ;	
+   STAT88 : WORD ;	
+   STAT89 : WORD ;	
+   STAT90 : WORD ;	
+   STAT91 : WORD ;	
+   STAT92 : WORD ;	
+   STAT93 : WORD ;	
+   STAT94 : WORD ;	
+   STAT95 : WORD ;	
+   STAT96 : WORD ;	
+   STAT97 : WORD ;	
+   STAT98 : WORD ;	
+   STAT99 : WORD ;	
+   STAT100 : WORD ;	
+   STAT101 : WORD ;	
+   STAT102 : WORD ;	
+   STAT103 : WORD ;	
+   STAT104 : WORD ;	
+   STAT105 : WORD ;	
+   STAT106 : WORD ;	
+   STAT107 : WORD ;	
+   STAT108 : WORD ;	
+   STAT109 : WORD ;	
+   STAT110 : WORD ;	
+   STAT111 : WORD ;	
+   STAT112 : WORD ;	
+   STAT113 : WORD ;	
+   STAT114 : WORD ;	
+   STAT115 : WORD ;	
+   STAT116 : WORD ;	
+   STAT117 : WORD ;	
+   STAT118 : WORD ;	
+   STAT119 : WORD ;	
+   STAT120 : WORD ;	
+   STAT121 : WORD ;	
+   STAT122 : WORD ;	
+   STAT123 : WORD ;	
+   STAT124 : WORD ;	
+   STAT125 : WORD ;	
+   STAT126 : WORD ;	
+   STAT127 : WORD ;	
+   STAT128 : WORD ;	
+   STAT129 : WORD ;	
+   STAT130 : WORD ;	
+   STAT131 : WORD ;	
+   STAT132 : WORD ;	
+   STAT133 : WORD ;	
+   STAT134 : WORD ;	
+   STAT135 : WORD ;	
+   STAT136 : WORD ;	
+   STAT137 : WORD ;	
+   STAT138 : WORD ;	
+   STAT139 : WORD ;	
+   STAT140 : WORD ;	
+   STAT141 : WORD ;	
+   STAT142 : WORD ;	
+   STAT143 : WORD ;	
+   STAT144 : WORD ;	
+   STAT145 : WORD ;	
+   STAT146 : WORD ;	
+   STAT147 : WORD ;	
+   STAT148 : WORD ;	
+   STAT149 : WORD ;	
+   STAT150 : WORD ;	
+   STAT151 : WORD ;	
+   STAT152 : WORD ;	
+   STAT153 : WORD ;	
+   STAT154 : WORD ;	
+   STAT155 : WORD ;	
+   STAT156 : WORD ;	
+   STAT157 : WORD ;	
+   STAT158 : WORD ;	
+   STAT159 : WORD ;	
+   STAT160 : WORD ;	
+   STAT161 : WORD ;	
+   STAT162 : WORD ;	
+   STAT163 : WORD ;	
+   STAT164 : WORD ;	
+   STAT165 : WORD ;	
+   STAT166 : WORD ;	
+   STAT167 : WORD ;	
+   STAT168 : WORD ;	
+   STAT169 : WORD ;	
+   STAT170 : WORD ;	
+   STAT171 : WORD ;	
+   STAT172 : WORD ;	
+   STAT173 : WORD ;	
+   STAT174 : WORD ;	
+   STAT175 : WORD ;	
+   STAT176 : WORD ;	
+   STAT177 : WORD ;	
+   STAT178 : WORD ;	
+   STAT179 : WORD ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := W#16#0; 
+   STAT1 := W#16#0; 
+   STAT2 := W#16#0; 
+   STAT3 := W#16#0; 
+   STAT4 := W#16#0; 
+   STAT5 := W#16#0; 
+   STAT6 := W#16#0; 
+   STAT7 := W#16#0; 
+   STAT8 := W#16#0; 
+   STAT9 := W#16#0; 
+   STAT10 := W#16#0; 
+   STAT11 := W#16#0; 
+   STAT12 := W#16#0; 
+   STAT13 := W#16#0; 
+   STAT14 := W#16#0; 
+   STAT15 := W#16#0; 
+   STAT16 := W#16#0; 
+   STAT17 := W#16#0; 
+   STAT18 := W#16#0; 
+   STAT19 := W#16#0; 
+   STAT20 := W#16#0; 
+   STAT21 := W#16#0; 
+   STAT22 := W#16#0; 
+   STAT23 := W#16#0; 
+   STAT24 := W#16#0; 
+   STAT25 := W#16#0; 
+   STAT26 := W#16#0; 
+   STAT27 := W#16#300; 
+   STAT28 := W#16#0; 
+   STAT29 := W#16#0; 
+   STAT30 := W#16#0; 
+   STAT31 := W#16#0; 
+   STAT32 := W#16#400; 
+   STAT33 := W#16#0; 
+   STAT34 := W#16#0; 
+   STAT35 := W#16#0; 
+   STAT36 := W#16#0; 
+   STAT37 := W#16#0; 
+   STAT38 := W#16#0; 
+   STAT39 := W#16#0; 
+   STAT40 := W#16#0; 
+   STAT41 := W#16#0; 
+   STAT42 := W#16#0; 
+   STAT43 := W#16#0; 
+   STAT44 := W#16#0; 
+   STAT45 := W#16#0; 
+   STAT46 := W#16#0; 
+   STAT47 := W#16#0; 
+   STAT48 := W#16#0; 
+   STAT49 := W#16#0; 
+   STAT50 := W#16#0; 
+   STAT51 := W#16#0; 
+   STAT52 := W#16#0; 
+   STAT53 := W#16#0; 
+   STAT54 := W#16#0; 
+   STAT55 := W#16#0; 
+   STAT56 := W#16#0; 
+   STAT57 := W#16#0; 
+   STAT58 := W#16#0; 
+   STAT59 := W#16#0; 
+   STAT60 := W#16#0; 
+   STAT61 := W#16#0; 
+   STAT62 := W#16#0; 
+   STAT63 := W#16#0; 
+   STAT64 := W#16#0; 
+   STAT65 := W#16#0; 
+   STAT66 := W#16#0; 
+   STAT67 := W#16#0; 
+   STAT68 := W#16#0; 
+   STAT69 := W#16#0; 
+   STAT70 := W#16#0; 
+   STAT71 := W#16#0; 
+   STAT72 := W#16#0; 
+   STAT73 := W#16#0; 
+   STAT74 := W#16#0; 
+   STAT75 := W#16#0; 
+   STAT76 := W#16#0; 
+   STAT77 := W#16#0; 
+   STAT78 := W#16#0; 
+   STAT79 := W#16#0; 
+   STAT80 := W#16#0; 
+   STAT81 := W#16#0; 
+   STAT82 := W#16#0; 
+   STAT83 := W#16#0; 
+   STAT84 := W#16#0; 
+   STAT85 := W#16#0; 
+   STAT86 := W#16#0; 
+   STAT87 := W#16#0; 
+   STAT88 := W#16#0; 
+   STAT89 := W#16#0; 
+   STAT90 := W#16#0; 
+   STAT91 := W#16#0; 
+   STAT92 := W#16#0; 
+   STAT93 := W#16#0; 
+   STAT94 := W#16#0; 
+   STAT95 := W#16#0; 
+   STAT96 := W#16#0; 
+   STAT97 := W#16#0; 
+   STAT98 := W#16#0; 
+   STAT99 := W#16#0; 
+   STAT100 := W#16#0; 
+   STAT101 := W#16#0; 
+   STAT102 := W#16#0; 
+   STAT103 := W#16#0; 
+   STAT104 := W#16#0; 
+   STAT105 := W#16#0; 
+   STAT106 := W#16#0; 
+   STAT107 := W#16#0; 
+   STAT108 := W#16#0; 
+   STAT109 := W#16#0; 
+   STAT110 := W#16#0; 
+   STAT111 := W#16#0; 
+   STAT112 := W#16#0; 
+   STAT113 := W#16#0; 
+   STAT114 := W#16#0; 
+   STAT115 := W#16#0; 
+   STAT116 := W#16#0; 
+   STAT117 := W#16#0; 
+   STAT118 := W#16#0; 
+   STAT119 := W#16#0; 
+   STAT120 := W#16#0; 
+   STAT121 := W#16#0; 
+   STAT122 := W#16#0; 
+   STAT123 := W#16#0; 
+   STAT124 := W#16#0; 
+   STAT125 := W#16#0; 
+   STAT126 := W#16#0; 
+   STAT127 := W#16#0; 
+   STAT128 := W#16#0; 
+   STAT129 := W#16#0; 
+   STAT130 := W#16#0; 
+   STAT131 := W#16#0; 
+   STAT132 := W#16#0; 
+   STAT133 := W#16#0; 
+   STAT134 := W#16#0; 
+   STAT135 := W#16#0; 
+   STAT136 := W#16#0; 
+   STAT137 := W#16#0; 
+   STAT138 := W#16#0; 
+   STAT139 := W#16#0; 
+   STAT140 := W#16#0; 
+   STAT141 := W#16#0; 
+   STAT142 := W#16#0; 
+   STAT143 := W#16#0; 
+   STAT144 := W#16#0; 
+   STAT145 := W#16#0; 
+   STAT146 := W#16#0; 
+   STAT147 := W#16#0; 
+   STAT148 := W#16#0; 
+   STAT149 := W#16#0; 
+   STAT150 := W#16#0; 
+   STAT151 := W#16#0; 
+   STAT152 := W#16#0; 
+   STAT153 := W#16#0; 
+   STAT154 := W#16#0; 
+   STAT155 := W#16#0; 
+   STAT156 := W#16#0; 
+   STAT157 := W#16#0; 
+   STAT158 := W#16#0; 
+   STAT159 := W#16#0; 
+   STAT160 := W#16#0; 
+   STAT161 := W#16#0; 
+   STAT162 := W#16#0; 
+   STAT163 := W#16#0; 
+   STAT164 := W#16#0; 
+   STAT165 := W#16#0; 
+   STAT166 := W#16#0; 
+   STAT167 := W#16#0; 
+   STAT168 := W#16#0; 
+   STAT169 := W#16#0; 
+   STAT170 := W#16#0; 
+   STAT171 := W#16#0; 
+   STAT172 := W#16#0; 
+   STAT173 := W#16#0; 
+   STAT174 := W#16#0; 
+   STAT175 := W#16#0; 
+   STAT176 := W#16#0; 
+   STAT177 := W#16#0; 
+   STAT178 := W#16#0; 
+   STAT179 := W#16#0; 
+END_DATA_BLOCK
+
+DATA_BLOCK DB 191
+AUTHOR : 
+FAMILY : GENERAL
+NAME : STATUS
+VERSION : 0.0
+
+
+  STRUCT 	
+   STAT0 : INT ;	
+   STAT1 : WORD ;	
+   STAT2 : WORD ;	
+   STAT3 : WORD ;	
+   STAT4 : WORD ;	
+   STAT5 : WORD ;	
+   STAT6 : WORD ;	
+   STAT7 : WORD ;	
+   STAT8 : WORD ;	
+   STAT9 : WORD ;	
+   STAT10 : WORD ;	
+   STAT11 : WORD ;	
+   STAT12 : WORD ;	
+   STAT13 : WORD ;	
+   STAT14 : WORD ;	
+   STAT15 : WORD ;	
+   STAT16 : WORD ;	
+   STAT17 : WORD ;	
+   STAT18 : WORD ;	
+   STAT19 : WORD ;	
+   STAT20 : WORD ;	
+   STAT21 : INT ;	
+   STAT22 : INT ;	
+   STAT23 : INT ;	
+   STAT24 : INT ;	
+   STAT25 : INT ;	
+   STAT26 : INT ;	
+   STAT27 : INT ;	
+   STAT28 : INT ;	
+   STAT29 : INT ;	
+   STAT30 : INT ;	
+   STAT31 : INT ;	
+   STAT32 : INT ;	
+   STAT33 : INT ;	
+   STAT34 : INT ;	
+   STAT35 : INT ;	
+   STAT36 : INT ;	
+   STAT37 : INT ;	
+   STAT38 : INT ;	
+   STAT39 : INT ;	
+   STAT40 : INT ;	
+   STAT41 : INT ;	
+   STAT42 : INT ;	
+   STAT43 : INT ;	
+   STAT44 : INT ;	
+   STAT45 : INT ;	
+   STAT46 : INT ;	
+   STAT47 : INT ;	
+   STAT48 : INT ;	
+   STAT49 : INT ;	
+   STAT50 : INT ;	
+   STAT51 : INT ;	
+   STAT52 : INT ;	
+   STAT53 : INT ;	
+   STAT54 : INT ;	
+   STAT55 : INT ;	
+   STAT56 : INT ;	
+   STAT57 : INT ;	
+   STAT58 : INT ;	
+   STAT59 : INT ;	
+   STAT60 : INT ;	
+   STAT61 : INT ;	
+   STAT62 : INT ;	
+   STAT63 : INT ;	
+   STAT64 : INT ;	
+   STAT65 : INT ;	
+   STAT66 : INT ;	
+   STAT67 : INT ;	
+   STAT68 : INT ;	
+   STAT69 : INT ;	
+   STAT70 : INT ;	
+   STAT71 : INT ;	
+   STAT72 : INT ;	
+   STAT73 : INT ;	
+   STAT74 : INT ;	
+   STAT75 : INT ;	
+   STAT76 : INT ;	
+   STAT77 : INT ;	
+   STAT78 : INT ;	
+   STAT79 : INT ;	
+   STAT80 : INT ;	
+   STAT81 : INT ;	
+   STAT82 : INT ;	
+   STAT83 : INT ;	
+   STAT84 : INT ;	
+   STAT85 : INT ;	
+   STAT86 : INT ;	
+   STAT87 : INT ;	
+   STAT88 : INT ;	
+   STAT89 : INT ;	
+   STAT90 : INT ;	
+   STAT91 : INT ;	
+   STAT92 : INT ;	
+   STAT93 : INT ;	
+   STAT94 : INT ;	
+   STAT95 : INT ;	
+   STAT96 : INT ;	
+   STAT97 : INT ;	
+   STAT98 : INT ;	
+   STAT99 : INT ;	
+   STAT100 : INT ;	
+   STAT101 : INT ;	
+   STAT102 : INT ;	
+   STAT103 : INT ;	
+   STAT104 : INT ;	
+   STAT105 : INT ;	
+   STAT106 : INT ;	
+   STAT107 : INT ;	
+   STAT108 : INT ;	
+   STAT109 : INT ;	
+   STAT110 : INT ;	
+   STAT111 : INT ;	
+   STAT112 : INT ;	
+   STAT113 : INT ;	
+   STAT114 : INT ;	
+   STAT115 : INT ;	
+   STAT116 : INT ;	
+   STAT117 : INT ;	
+   STAT118 : INT ;	
+   STAT119 : INT ;	
+   STAT120 : INT ;	
+   STAT121 : REAL ;	
+   STAT122 : REAL ;	
+   STAT123 : REAL ;	
+   STAT124 : REAL ;	
+   STAT125 : REAL ;	
+   STAT126 : REAL ;	
+   STAT127 : REAL ;	
+   STAT128 : REAL ;	
+   STAT129 : REAL ;	
+   STAT130 : REAL ;	
+  END_STRUCT ;	
+BEGIN
+   STAT0 := 0; 
+   STAT1 := W#16#0; 
+   STAT2 := W#16#0; 
+   STAT3 := W#16#0; 
+   STAT4 := W#16#0; 
+   STAT5 := W#16#0; 
+   STAT6 := W#16#0; 
+   STAT7 := W#16#0; 
+   STAT8 := W#16#0; 
+   STAT9 := W#16#0; 
+   STAT10 := W#16#0; 
+   STAT11 := W#16#0; 
+   STAT12 := W#16#0; 
+   STAT13 := W#16#0; 
+   STAT14 := W#16#0; 
+   STAT15 := W#16#0; 
+   STAT16 := W#16#0; 
+   STAT17 := W#16#0; 
+   STAT18 := W#16#0; 
+   STAT19 := W#16#0; 
+   STAT20 := W#16#0; 
+   STAT21 := 0; 
+   STAT22 := 0; 
+   STAT23 := 0; 
+   STAT24 := 0; 
+   STAT25 := 0; 
+   STAT26 := 0; 
+   STAT27 := 0; 
+   STAT28 := 0; 
+   STAT29 := 0; 
+   STAT30 := 0; 
+   STAT31 := 0; 
+   STAT32 := 0; 
+   STAT33 := 0; 
+   STAT34 := 0; 
+   STAT35 := 0; 
+   STAT36 := 0; 
+   STAT37 := 0; 
+   STAT38 := 0; 
+   STAT39 := 0; 
+   STAT40 := 0; 
+   STAT41 := 0; 
+   STAT42 := 0; 
+   STAT43 := 0; 
+   STAT44 := 0; 
+   STAT45 := 0; 
+   STAT46 := 0; 
+   STAT47 := 0; 
+   STAT48 := 0; 
+   STAT49 := 0; 
+   STAT50 := 0; 
+   STAT51 := 0; 
+   STAT52 := 0; 
+   STAT53 := 0; 
+   STAT54 := 0; 
+   STAT55 := 0; 
+   STAT56 := 0; 
+   STAT57 := 0; 
+   STAT58 := 0; 
+   STAT59 := 0; 
+   STAT60 := 0; 
+   STAT61 := 0; 
+   STAT62 := 0; 
+   STAT63 := 0; 
+   STAT64 := 0; 
+   STAT65 := 0; 
+   STAT66 := 0; 
+   STAT67 := 0; 
+   STAT68 := 0; 
+   STAT69 := 0; 
+   STAT70 := 0; 
+   STAT71 := 0; 
+   STAT72 := 0; 
+   STAT73 := 0; 
+   STAT74 := 0; 
+   STAT75 := 0; 
+   STAT76 := 0; 
+   STAT77 := 0; 
+   STAT78 := 0; 
+   STAT79 := 0; 
+   STAT80 := 0; 
+   STAT81 := 0; 
+   STAT82 := 0; 
+   STAT83 := 0; 
+   STAT84 := 0; 
+   STAT85 := 0; 
+   STAT86 := 0; 
+   STAT87 := 0; 
+   STAT88 := 0; 
+   STAT89 := 0; 
+   STAT90 := 0; 
+   STAT91 := 0; 
+   STAT92 := 0; 
+   STAT93 := 0; 
+   STAT94 := 0; 
+   STAT95 := 0; 
+   STAT96 := 0; 
+   STAT97 := 0; 
+   STAT98 := 0; 
+   STAT99 := 0; 
+   STAT100 := 0; 
+   STAT101 := 0; 
+   STAT102 := 0; 
+   STAT103 := 0; 
+   STAT104 := 0; 
+   STAT105 := 0; 
+   STAT106 := 0; 
+   STAT107 := 0; 
+   STAT108 := 0; 
+   STAT109 := 0; 
+   STAT110 := 0; 
+   STAT111 := 0; 
+   STAT112 := 0; 
+   STAT113 := 0; 
+   STAT114 := 0; 
+   STAT115 := 0; 
+   STAT116 := 0; 
+   STAT117 := 0; 
+   STAT118 := 0; 
+   STAT119 := 0; 
+   STAT120 := 0; 
+   STAT121 := 0.000000e+000; 
+   STAT122 := 0.000000e+000; 
+   STAT123 := 0.000000e+000; 
+   STAT124 := 0.000000e+000; 
+   STAT125 := 0.000000e+000; 
+   STAT126 := 0.000000e+000; 
+   STAT127 := 0.000000e+000; 
+   STAT128 := 0.000000e+000; 
+   STAT129 := 0.000000e+000; 
+   STAT130 := 0.000000e+000; 
+END_DATA_BLOCK
+
+FUNCTION FC 170 : WORD
+AUTHOR :
+FAMILY : CONVERT
+NAME : SCALE
+VERSION : 2.0
+
+
+VAR_INPUT
+  IN0 : INT ;	
+  IN1 : REAL ;	
+  IN2 : REAL ;	
+  IN3 : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  OUT4 : REAL ;	
+END_VAR
+VAR_TEMP
+  TEMP5 : REAL ;	
+  TEMP6 : REAL ;	
+  TEMP7 : REAL ;	
+  TEMP8 : REAL ;	
+  TEMP9 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      SET   ; 
+      A     #IN3; 
+      JC    M001; 
+      L     0.000000e+000; 
+      T     #TEMP6; 
+      JU    M002; 
+M001: L     -2.764800e+004; 
+      T     #TEMP6; 
+M002: NOP   0; 
+      L     2.764800e+004; 
+      T     #TEMP7; 
+      L     #IN0; 
+      ITD   ; 
+      DTR   ; 
+      T     #TEMP5; 
+      L     #IN1; 
+      L     #IN2; 
+      -R    ; 
+      T     #TEMP8; 
+      L     #TEMP5; 
+      L     #TEMP6; 
+      >=R   ; 
+      JC    M003; 
+      L     8; 
+      T     #RET_VAL; 
+      L     #TEMP8; 
+      L     0.000000e+000; 
+      <R    ; 
+      JCN   M004; 
+      L     #IN1; 
+      JU    M005; 
+M004: L     #IN2; 
+M005: NOP   0; 
+      T     #OUT4; 
+      JU    M006; 
+M003: POP   ; 
+      L     #TEMP7; 
+      <=R   ; 
+      JC    M007; 
+      L     8; 
+      T     #RET_VAL; 
+      L     #TEMP8; 
+      L     0.000000e+000; 
+      <R    ; 
+      JCN   M008; 
+      L     #IN2; 
+      JU    M009; 
+M008: L     #IN1; 
+M009: NOP   0; 
+      T     #OUT4; 
+      JU    M006; 
+M007: NOP   0; 
+      NOP   0; 
+      L     #TEMP7; 
+      L     #TEMP6; 
+      -R    ; 
+      T     #TEMP9; 
+      L     #TEMP5; 
+      L     #TEMP6; 
+      -R    ; 
+      L     #TEMP9; 
+      /R    ; 
+      L     #TEMP8; 
+      *R    ; 
+      L     #IN2; 
+      +R    ; 
+      T     #OUT4; 
+      L     0; 
+      T     #RET_VAL; 
+      SET   ; 
+      JU    M00a; 
+M006: CLR   ; 
+M00a: SAVE  ; 
+END_FUNCTION
+
+FUNCTION FC 185 : VOID
+AUTHOR : 
+FAMILY : MEASURE
+NAME : FILTER
+VERSION : 0.1
+
+
+VAR_INPUT
+  IN0 : REAL ;	
+  IN1 : REAL ;	
+  IN2 : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  OUT3 : REAL ;	
+END_VAR
+VAR_IN_OUT
+  IO4 : REAL ;	
+END_VAR
+VAR_TEMP
+  TEMP5 : REAL ;	
+  TEMP6 : REAL ;	
+  TEMP7 : REAL ;	
+  TEMP8 : REAL ;	
+  TEMP9 : REAL ;	
+  TEMP10 : REAL ;	
+  TEMP11 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #IN0; 
+      T     #TEMP5; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #IN2; 
+      JC    M001; 
+NETWORK
+TITLE =
+
+M002: L     #IN0; 
+      T     #OUT3; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP5; 
+      T     #IO4; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.1; 
+      JC    M003; 
+NETWORK
+TITLE =
+
+M001: A(    ; 
+      L     #TEMP5; 
+      L     #IO4; 
+      ==R   ; 
+      )     ; 
+      JNB   M004; 
+      L     #TEMP5; 
+      T     #OUT3; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP5; 
+      L     #IO4; 
+      ==R   ; 
+      SAVE  ; 
+      BEC   ; 
+NETWORK
+TITLE =
+
+      L     #IN1; 
+      L     0.000000e+000; 
+      <R    ; 
+      JC    M002; 
+NETWORK
+TITLE =
+
+      L     #IN1; 
+      L     1.000000e+002; 
+      >R    ; 
+      JC    M002; 
+NETWORK
+TITLE =
+
+      L     #TEMP5; 
+      L     #IO4; 
+      -R    ; 
+      T     #TEMP6; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IN1; 
+      T     #TEMP8; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP8; 
+      L     #TEMP6; 
+      *R    ; 
+      T     #TEMP9; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP9; 
+      L     1.000000e+002; 
+      /R    ; 
+      T     #TEMP10; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IO4; 
+      L     #TEMP10; 
+      +R    ; 
+      T     #IO4; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IO4; 
+      T     #OUT3; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+M003: A     M     20.1; 
+      SAVE  ; 
+      BEC   ; 
+END_FUNCTION
+
+FUNCTION FC 171 : WORD
+AUTHOR : 
+FAMILY : CONVERT
+NAME : UNSCALE
+VERSION : 2.0
+
+
+VAR_INPUT
+  IN0 : REAL ;	
+  IN1 : REAL ;	
+  IN2 : REAL ;	
+  IN3 : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  OUT4 : INT ;	
+END_VAR
+VAR_TEMP
+  TEMP5 : REAL ;	
+  TEMP6 : REAL ;	
+  TEMP7 : REAL ;	
+  TEMP8 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      SET   ; 
+      A     #IN3; 
+      JC    M001; 
+      L     0.000000e+000; 
+      T     #TEMP5; 
+      JU    M002; 
+M001: L     -2.764800e+004; 
+      T     #TEMP5; 
+M002: NOP   0; 
+      L     2.764800e+004; 
+      T     #TEMP6; 
+      L     #IN1; 
+      L     #IN2; 
+      -R    ; 
+      T     #TEMP7; 
+      L     #TEMP7; 
+      L     0.000000e+000; 
+      <R    ; 
+      JCN   M003; 
+      L     #IN0; 
+      L     #IN1; 
+      >=R   ; 
+      JC    M004; 
+      L     8; 
+      T     #RET_VAL; 
+      L     #TEMP5; 
+      JU    M005; 
+M004: NOP   0; 
+      POP   ; 
+      L     #IN2; 
+      <=R   ; 
+      JC    M006; 
+      L     8; 
+      T     #RET_VAL; 
+      L     #TEMP6; 
+      JU    M005; 
+M006: NOP   0; 
+      JU    M007; 
+M003: L     #IN0; 
+      L     #IN2; 
+      >=R   ; 
+      JC    M008; 
+      L     8; 
+      T     #RET_VAL; 
+      L     #TEMP5; 
+      JU    M005; 
+M008: NOP   0; 
+      POP   ; 
+      L     #IN1; 
+      <=R   ; 
+      JC    M009; 
+      L     8; 
+      T     #RET_VAL; 
+      L     #TEMP6; 
+      JU    M005; 
+M009: NOP   0; 
+M007: NOP   0; 
+      JU    M00a; 
+M005: TRUNC ; 
+      T     #OUT4; 
+      JU    M00b; 
+M00a: L     #TEMP6; 
+      L     #TEMP5; 
+      -R    ; 
+      T     #TEMP8; 
+      L     #IN0; 
+      L     #IN2; 
+      -R    ; 
+      L     #TEMP7; 
+      /R    ; 
+      L     #TEMP8; 
+      *R    ; 
+      L     #TEMP5; 
+      +R    ; 
+      TRUNC ; 
+      T     #OUT4; 
+      L     0; 
+      T     #RET_VAL; 
+      SET   ; 
+      JU    M00c; 
+M00b: CLR   ; 
+M00c: SAVE  ; 
+END_FUNCTION
+
+FUNCTION FC 179 : VOID
+AUTHOR : 
+FAMILY : MEASURE
+NAME : ANALOG
+VERSION : 0.1
+
+
+VAR_INPUT
+  IN0 : INT ;	
+  IN1 : REAL ;	
+  IN2 : REAL ;	
+  IN3 : REAL ;	
+  IN4 : REAL ;	
+  IN5 : REAL ;	
+  IN6 : REAL ;	
+  IN7 : REAL ;	
+  IN8 : REAL ;	
+  IN9 : BOOL ;	
+  IN10 : BOOL ;	
+  IN11 : BOOL ;	
+  IN12 : BOOL ;	
+  IN13 : BOOL ;	
+  IN14 : BOOL ;	
+  IN15 : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  OUT16 : REAL ;	
+  OUT17 : BOOL ;	
+  OUT18 : BOOL ;	
+  OUT19 : BOOL ;	
+  OUT20 : BOOL ;	
+  OUT21 : BOOL ;	
+  OUT22 : BOOL ;	
+  OUT23 : INT ;	
+  OUT24 : INT ;	
+  OUT25 : INT ;	
+  OUT26 : INT ;	
+  OUT27 : INT ;	
+  OUT28 : BOOL ;	
+  OUT29 : BOOL ;	
+  OUT30 : BOOL ;	
+  OUT31 : BOOL ;	
+  OUT32 : BOOL ;	
+END_VAR
+VAR_IN_OUT
+  IO33 : REAL ;	
+  IO34 : WORD ;	
+  IO35 : WORD ;	
+END_VAR
+VAR_TEMP
+  TEMP36 : WORD ;	
+  TEMP37 : REAL ;	
+  TEMP38 : REAL ;	
+  TEMP39 : REAL ;	
+  TEMP40 : REAL ;	
+  TEMP41 : INT ;	
+  TEMP42 : BOOL ;	
+  TEMP43 : BOOL ;	
+  TEMP44 : BOOL ;	
+  TEMP45 : BOOL ;	
+  TEMP46 : BOOL ;	
+  TEMP47 : BOOL ;	
+  TEMP48 : BOOL ;	
+  TEMP49 : BOOL ;	
+  TEMP50 : BOOL ;	
+  TEMP51 : BOOL ;	
+  TEMP52 : BOOL ;	
+  TEMP53 : BOOL ;	
+  TEMP54 : BOOL ;	
+  TEMP55 : BOOL ;	
+  TEMP56 : BOOL ;	
+  TEMP57 : BOOL ;	
+  TEMP58 : BOOL ;	
+  TEMP59 : BOOL ;	
+  TEMP60 : BOOL ;	
+  TEMP61 : BOOL ;	
+  TEMP62 : BOOL ;	
+  TEMP63 : BOOL ;	
+  TEMP64 : BOOL ;	
+  TEMP65 : BOOL ;	
+  TEMP66 : BOOL ;	
+  TEMP67 : BOOL ;	
+  TEMP68 : BOOL ;	
+  TEMP69 : BOOL ;	
+  TEMP70 : BOOL ;	
+  TEMP71 : BOOL ;	
+  TEMP72 : BOOL ;	
+  TEMP73 : BOOL ;	
+  TEMP74 : BOOL ;	
+  TEMP75 : BOOL ;	
+  TEMP76 : BOOL ;	
+  TEMP77 : BOOL ;	
+  TEMP78 : BOOL ;	
+  TEMP79 : BOOL ;	
+  TEMP80 : BOOL ;	
+  TEMP81 : BOOL ;	
+  TEMP82 : BOOL ;	
+  TEMP83 : BOOL ;	
+  TEMP84 : BOOL ;	
+  TEMP85 : BOOL ;	
+  TEMP86 : BOOL ;	
+  TEMP87 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      O(    ; 
+      L     #IN0; 
+      L     -2000; 
+      <I    ; 
+      )     ; 
+      O(    ; 
+      L     #IN0; 
+      L     29000; 
+      >I    ; 
+      )     ; 
+      =     L     26.0; 
+      A     L     26.0; 
+      =     #TEMP87; 
+      A     #TEMP87; 
+      =     #OUT21; 
+      A     L     26.0; 
+      AN    #IN14; 
+      JNB   M014; 
+      L     3; 
+      T     #OUT27; 
+M014: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP87; 
+      JNB   M015; 
+      L     #IN0; 
+      T     #TEMP41; 
+M015: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP87; 
+      AN    #IN9; 
+      JNB   M016; 
+      L     0; 
+      T     #TEMP41; 
+M016: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP87; 
+      A     #IN9; 
+      JNB   M001; 
+      L     27648; 
+      T     #TEMP41; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     L     26.0; 
+      BLD   103; 
+      CALL FC   170 (
+           IN0                      := #TEMP41,
+           IN1                      := #IN1,
+           IN2                      := #IN2,
+           IN3                      := L     26.0,
+           RET_VAL                  := #TEMP36,
+           OUT4                     := #TEMP37);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.5; 
+      =     L     26.0; 
+      BLD   103; 
+      CALL FC   185 (
+           IN0                      := #TEMP37,
+           IN1                      := #IN8,
+           IN2                      := L     26.0,
+           OUT3                     := #TEMP38,
+           IO4                      := #IO33);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      L     2; 
+      T     #OUT23; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+      A     BR; 
+      )     ; 
+      JNB   M002; 
+      L     2; 
+      T     #OUT24; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+M002: A     BR; 
+      )     ; 
+      JNB   M003; 
+      L     2; 
+      T     #OUT25; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+M003: A     BR; 
+      )     ; 
+      JNB   M004; 
+      L     2; 
+      T     #OUT26; 
+      SET   ; 
+      SAVE  ; 
+      CLR   ; 
+M004: A     BR; 
+      )     ; 
+      JNB   M005; 
+      L     2; 
+      T     #OUT27; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IN4; 
+      L     #IN3; 
+      -R    ; 
+      T     #TEMP40; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #IN4; 
+      >R    ; 
+      )     ; 
+      S     #OUT17; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #TEMP40; 
+      <R    ; 
+      )     ; 
+      R     #OUT17; 
+      A     #OUT17; 
+      )     ; 
+      =     #TEMP86; 
+      A     #TEMP86; 
+      AN    #IN10; 
+      AN    #TEMP42; 
+      JNB   M006; 
+      L     3; 
+      T     #OUT23; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IN5; 
+      L     #IN3; 
+      -R    ; 
+      T     #TEMP40; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #IN5; 
+      >R    ; 
+      )     ; 
+      S     #OUT18; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #TEMP40; 
+      <R    ; 
+      )     ; 
+      R     #OUT18; 
+      A     #OUT18; 
+      )     ; 
+      =     #TEMP85; 
+      A     #TEMP85; 
+      AN    #IN11; 
+      AN    #TEMP43; 
+      JNB   M007; 
+      L     3; 
+      T     #OUT24; 
+M007: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IN6; 
+      L     #IN3; 
+      +R    ; 
+      T     #TEMP39; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #IN6; 
+      <R    ; 
+      )     ; 
+      S     #OUT19; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #TEMP39; 
+      >R    ; 
+      )     ; 
+      R     #OUT19; 
+      A     #OUT19; 
+      )     ; 
+      =     #TEMP84; 
+      A     #TEMP84; 
+      AN    #IN12; 
+      AN    #TEMP44; 
+      JNB   M008; 
+      L     3; 
+      T     #OUT25; 
+M008: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IN7; 
+      L     #IN3; 
+      +R    ; 
+      T     #TEMP39; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #IN7; 
+      <R    ; 
+      )     ; 
+      S     #OUT20; 
+      A(    ; 
+      L     #TEMP38; 
+      L     #TEMP39; 
+      >R    ; 
+      )     ; 
+      R     #OUT20; 
+      A     #OUT20; 
+      )     ; 
+      =     #TEMP83; 
+      A     #TEMP83; 
+      AN    #IN13; 
+      AN    #TEMP45; 
+      JNB   M009; 
+      L     3; 
+      T     #OUT26; 
+M009: NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP38; 
+      T     #OUT16; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+NETWORK
+TITLE =
+
+      A     #IN15; 
+      =     #TEMP82; 
+NETWORK
+TITLE =
+
+      L     #IO35; 
+      T     LW    22; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IO34; 
+      T     LW    20; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN15; 
+      R     #TEMP42; 
+      A     #TEMP86; 
+      A     #IN10; 
+      FP    #TEMP58; 
+      S     #TEMP42; 
+      A     #TEMP42; 
+      =     L     26.0; 
+      A     L     26.0; 
+      FP    #TEMP66; 
+      =     #TEMP74; 
+      A     L     26.0; 
+      JNB   M00a; 
+      L     4; 
+      T     #OUT23; 
+M00a: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN15; 
+      R     #TEMP43; 
+      A     #TEMP85; 
+      A     #IN11; 
+      FP    #TEMP59; 
+      S     #TEMP43; 
+      A     #TEMP43; 
+      =     L     26.0; 
+      A     L     26.0; 
+      FP    #TEMP67; 
+      =     #TEMP75; 
+      A     L     26.0; 
+      JNB   M00b; 
+      L     4; 
+      T     #OUT24; 
+M00b: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN15; 
+      R     #TEMP44; 
+      A     #TEMP84; 
+      A     #IN12; 
+      FP    #TEMP60; 
+      S     #TEMP44; 
+      A     #TEMP44; 
+      =     L     26.0; 
+      A     L     26.0; 
+      FP    #TEMP68; 
+      =     #TEMP76; 
+      A     L     26.0; 
+      JNB   M00c; 
+      L     4; 
+      T     #OUT25; 
+M00c: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN15; 
+      R     #TEMP45; 
+      A     #TEMP83; 
+      A     #IN13; 
+      FP    #TEMP61; 
+      S     #TEMP45; 
+      A     #TEMP45; 
+      =     L     26.0; 
+      A     L     26.0; 
+      FP    #TEMP69; 
+      =     #TEMP77; 
+      A     L     26.0; 
+      JNB   M00d; 
+      L     4; 
+      T     #OUT26; 
+M00d: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN15; 
+      R     #TEMP46; 
+      A     #TEMP87; 
+      A     #IN14; 
+      FP    #TEMP62; 
+      S     #TEMP46; 
+      A     #TEMP46; 
+      =     L     26.0; 
+      A     L     26.0; 
+      FP    #TEMP70; 
+      =     #TEMP78; 
+      A     L     26.0; 
+      JNB   M00e; 
+      L     4; 
+      T     #OUT27; 
+M00e: NOP   0; 
+NETWORK
+TITLE =
+
+      O     #TEMP42; 
+      O     ; 
+      A     #TEMP86; 
+      A     #IN10; 
+      =     #OUT28; 
+      =     #TEMP50; 
+NETWORK
+TITLE =
+
+      O     #TEMP43; 
+      O     ; 
+      A     #TEMP85; 
+      A     #IN11; 
+      =     #OUT29; 
+      =     #TEMP51; 
+NETWORK
+TITLE =
+
+      O     #TEMP44; 
+      O     ; 
+      A     #TEMP84; 
+      A     #IN12; 
+      =     #OUT30; 
+      =     #TEMP52; 
+NETWORK
+TITLE =
+
+      O     #TEMP45; 
+      O     ; 
+      A     #TEMP83; 
+      A     #IN13; 
+      =     #OUT31; 
+      =     #TEMP53; 
+NETWORK
+TITLE =
+
+      O     #TEMP46; 
+      O     ; 
+      A     #TEMP87; 
+      A     #IN14; 
+      =     #OUT32; 
+      =     #TEMP54; 
+NETWORK
+TITLE =
+
+      AN    #TEMP42; 
+      A     #TEMP86; 
+      A     #IN10; 
+      JNB   M00f; 
+      L     5; 
+      T     #OUT23; 
+M00f: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP43; 
+      A     #TEMP85; 
+      A     #IN11; 
+      JNB   M010; 
+      L     5; 
+      T     #OUT24; 
+M010: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP44; 
+      A     #TEMP84; 
+      A     #IN12; 
+      JNB   M011; 
+      L     5; 
+      T     #OUT25; 
+M011: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP45; 
+      A     #TEMP83; 
+      A     #IN13; 
+      JNB   M012; 
+      L     5; 
+      T     #OUT26; 
+M012: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP46; 
+      A     #TEMP87; 
+      A     #IN14; 
+      JNB   M013; 
+      L     5; 
+      T     #OUT27; 
+M013: NOP   0; 
+NETWORK
+TITLE =
+
+      O     #TEMP74; 
+      O     #TEMP75; 
+      O     #TEMP76; 
+      O     #TEMP77; 
+      O     #TEMP78; 
+      =     #OUT22; 
+NETWORK
+TITLE =
+
+      L     LW    20; 
+      T     #IO34; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW    22; 
+      T     #IO35; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 180 : VOID
+AUTHOR : 
+FAMILY : DRIVE
+NAME : S_DRIVE
+VERSION : 0.1
+
+
+VAR_INPUT
+  IN0 : BOOL ;	
+  IN1 : BOOL ;	
+  IN2 : BOOL ;	
+  IN3 : BOOL ;	
+  IN4 : BOOL ;	
+  IN5 : BOOL ;	
+  IN6 : BOOL ;	
+  IN7 : BOOL ;	
+  IN8 : WORD ;	
+  IN9 : COUNTER ;	
+END_VAR
+VAR_OUTPUT
+  OUT10 : INT ;	
+  OUT11 : BOOL ;	
+  OUT12 : BOOL ;	
+  OUT13 : BOOL ;	
+END_VAR
+VAR_IN_OUT
+  IO14 : WORD ;	
+  IO15 : WORD ;	
+END_VAR
+VAR_TEMP
+  TEMP16 : BOOL ;	
+  TEMP17 : BOOL ;	
+  TEMP18 : BOOL ;	
+  TEMP19 : BOOL ;	
+  TEMP20 : BOOL ;	
+  TEMP21 : BOOL ;	
+  TEMP22 : BOOL ;	
+  TEMP23 : BOOL ;	
+  TEMP24 : BOOL ;	
+  TEMP25 : BOOL ;	
+  TEMP26 : BOOL ;	
+  TEMP27 : BOOL ;	
+  TEMP28 : BOOL ;	
+  TEMP29 : BOOL ;	
+  TEMP30 : BOOL ;	
+  TEMP31 : BOOL ;	
+  TEMP32 : BOOL ;	
+  TEMP33 : BOOL ;	
+  TEMP34 : BOOL ;	
+  TEMP35 : BOOL ;	
+  TEMP36 : BOOL ;	
+  TEMP37 : BOOL ;	
+  TEMP38 : BOOL ;	
+  TEMP39 : BOOL ;	
+  TEMP40 : BOOL ;	
+  TEMP41 : BOOL ;	
+  TEMP42 : BOOL ;	
+  TEMP43 : BOOL ;	
+  TEMP44 : BOOL ;	
+  TEMP45 : BOOL ;	
+  TEMP46 : BOOL ;	
+  TEMP47 : BOOL ;	
+  TEMP48 : BOOL ;	
+  TEMP49 : BOOL ;	
+  TEMP50 : BOOL ;	
+  TEMP51 : BOOL ;	
+  TEMP52 : BOOL ;	
+  TEMP53 : BOOL ;	
+  TEMP54 : BOOL ;	
+  TEMP55 : BOOL ;	
+  TEMP56 : BOOL ;	
+  TEMP57 : BOOL ;	
+  TEMP58 : BOOL ;	
+  TEMP59 : BOOL ;	
+  TEMP60 : BOOL ;	
+  TEMP61 : BOOL ;	
+  TEMP62 : BOOL ;	
+  TEMP63 : BOOL ;	
+  TEMP64 : BYTE ;	
+  TEMP65 : BYTE ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #IO15; 
+      T     LW     2; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IO14; 
+      T     LW     4; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN6; 
+      =     #TEMP58; 
+      A     #TEMP58; 
+      FP    #TEMP48; 
+      =     #TEMP56; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A     #IN2; 
+      A     #TEMP57; 
+      A     #IN5; 
+      S     #TEMP50; 
+      A     #IN1; 
+      R     #TEMP50; 
+      A     #TEMP50; 
+      )     ; 
+      O     ; 
+      A     #IN5; 
+      A     #IN2; 
+      =     #TEMP43; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      AN    #IN2; 
+      A     #TEMP57; 
+      S     #TEMP53; 
+      A     #IN1; 
+      R     #TEMP53; 
+      A     #TEMP53; 
+      )     ; 
+      ON    #IN2; 
+      =     #TEMP40; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      AN    #IN3; 
+      A     #IN2; 
+      S     #TEMP54; 
+      A     #IN1; 
+      R     #TEMP54; 
+      A     #TEMP54; 
+      )     ; 
+      ON    #IN3; 
+      =     #TEMP41; 
+NETWORK
+TITLE =
+
+      AN    #IN4; 
+      A     #OUT11; 
+      A(    ; 
+      A(    ; 
+      A     #OUT11; 
+      A     M     10.5; 
+      CD    #IN9; 
+      BLD   101; 
+      A     #OUT11; 
+      L     #IN8; 
+      S     #IN9; 
+      AN    #OUT11; 
+      R     #IN9; 
+      NOP   0; 
+      NOP   0; 
+      A     #IN9; 
+      )     ; 
+      NOT   ; 
+      )     ; 
+      A     #TEMP57; 
+      AN    #TEMP50; 
+      AN    #TEMP49; 
+      A     #IN2; 
+      A     #IN3; 
+      S     #TEMP42; 
+      A     #IN1; 
+      R     #TEMP42; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A(    ; 
+      O     #TEMP42; 
+      O     #TEMP41; 
+      O     #TEMP40; 
+      O     #TEMP43; 
+      )     ; 
+      FP    #TEMP60; 
+      S     #TEMP59; 
+      A     #IN1; 
+      R     #TEMP59; 
+      A     #TEMP59; 
+      )     ; 
+      O     #TEMP42; 
+      O     #TEMP40; 
+      O     #TEMP43; 
+      =     #OUT12; 
+NETWORK
+TITLE =
+
+      A     #TEMP42; 
+      FP    #TEMP61; 
+      O(    ; 
+      A     #TEMP41; 
+      FP    #TEMP62; 
+      )     ; 
+      O(    ; 
+      A     #TEMP40; 
+      FP    #TEMP63; 
+      )     ; 
+      O(    ; 
+      A     #TEMP43; 
+      FP    #TEMP55; 
+      )     ; 
+      =     #OUT13; 
+NETWORK
+TITLE =
+
+      A     #TEMP56; 
+      AN    #OUT12; 
+      S     #TEMP57; 
+      A(    ; 
+      ON    #IN0; 
+      O     #TEMP59; 
+      O     #IN7; 
+      ON    #IN3; 
+      )     ; 
+      R     #TEMP57; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     #TEMP58; 
+      O     #OUT11; 
+      )     ; 
+      A     #TEMP57; 
+      A     #IN2; 
+      A     #IN3; 
+      AN    #TEMP59; 
+      =     #OUT11; 
+NETWORK
+TITLE =
+
+      L     2; 
+      T     #OUT10; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #IN4; 
+      AN    #OUT12; 
+      A     #IN3; 
+      JNB   M001; 
+      L     2; 
+      T     #OUT10; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP59; 
+      JNB   M002; 
+      L     4; 
+      T     #OUT10; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP59; 
+      A(    ; 
+      O     #TEMP42; 
+      O     #TEMP40; 
+      O     #TEMP43; 
+      )     ; 
+      JNB   M003; 
+      L     5; 
+      T     #OUT10; 
+M003: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN4; 
+      A     #TEMP57; 
+      A     #IN3; 
+      JNB   M004; 
+      L     3; 
+      T     #OUT10; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP59; 
+      AN    #IN3; 
+      JNB   M005; 
+      L     6; 
+      T     #OUT10; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #IN4; 
+      AN    #TEMP59; 
+      A     #OUT11; 
+      JNB   M006; 
+      L     8; 
+      T     #OUT10; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     2; 
+      T     #IO15; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     4; 
+      T     #IO14; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 181 : VOID
+AUTHOR : 
+FAMILY : DRIVE
+NAME : S_DRIVE
+VERSION : 0.1
+
+
+VAR_INPUT
+  IN0 : BOOL ;	
+  IN1 : BOOL ;	
+  IN2 : BOOL ;	
+  IN3 : BOOL ;	
+  IN4 : BOOL ;	
+  IN5 : BOOL ;	
+  IN6 : BOOL ;	
+  IN7 : BOOL ;	
+  IN8 : BOOL ;	
+  IN9 : BOOL ;	
+  IN10 : WORD ;	
+  IN11 : COUNTER ;	
+END_VAR
+VAR_OUTPUT
+  OUT12 : INT ;	
+  OUT13 : BOOL ;	
+  OUT14 : BOOL ;	
+  OUT15 : BOOL ;	
+  OUT16 : BOOL ;	
+END_VAR
+VAR_IN_OUT
+  IO17 : WORD ;	
+  IO18 : WORD ;	
+END_VAR
+VAR_TEMP
+  TEMP19 : BOOL ;	
+  TEMP20 : BOOL ;	
+  TEMP21 : BOOL ;	
+  TEMP22 : BOOL ;	
+  TEMP23 : BOOL ;	
+  TEMP24 : BOOL ;	
+  TEMP25 : BOOL ;	
+  TEMP26 : BOOL ;	
+  TEMP27 : BOOL ;	
+  TEMP28 : BOOL ;	
+  TEMP29 : BOOL ;	
+  TEMP30 : BOOL ;	
+  TEMP31 : BOOL ;	
+  TEMP32 : BOOL ;	
+  TEMP33 : BOOL ;	
+  TEMP34 : BOOL ;	
+  TEMP35 : BOOL ;	
+  TEMP36 : BOOL ;	
+  TEMP37 : BOOL ;	
+  TEMP38 : BOOL ;	
+  TEMP39 : BOOL ;	
+  TEMP40 : BOOL ;	
+  TEMP41 : BOOL ;	
+  TEMP42 : BOOL ;	
+  TEMP43 : BOOL ;	
+  TEMP44 : BOOL ;	
+  TEMP45 : BOOL ;	
+  TEMP46 : BOOL ;	
+  TEMP47 : BOOL ;	
+  TEMP48 : BOOL ;	
+  TEMP49 : BOOL ;	
+  TEMP50 : BOOL ;	
+  TEMP51 : BOOL ;	
+  TEMP52 : BOOL ;	
+  TEMP53 : BOOL ;	
+  TEMP54 : BOOL ;	
+  TEMP55 : BOOL ;	
+  TEMP56 : BOOL ;	
+  TEMP57 : BOOL ;	
+  TEMP58 : BOOL ;	
+  TEMP59 : BOOL ;	
+  TEMP60 : BOOL ;	
+  TEMP61 : BOOL ;	
+  TEMP62 : BOOL ;	
+  TEMP63 : BOOL ;	
+  TEMP64 : BOOL ;	
+  TEMP65 : BOOL ;	
+  TEMP66 : BOOL ;	
+  TEMP67 : BYTE ;	
+  TEMP68 : BYTE ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #IO18; 
+      T     LW     2; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IO17; 
+      T     LW     4; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A     #IN3; 
+      A     #TEMP60; 
+      A     #IN7; 
+      S     #TEMP53; 
+      A     #IN2; 
+      R     #TEMP53; 
+      A     #TEMP53; 
+      )     ; 
+      O     ; 
+      A     #IN7; 
+      A     #IN3; 
+      =     #TEMP46; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      AN    #IN3; 
+      A     #TEMP60; 
+      S     #TEMP56; 
+      A     #IN2; 
+      R     #TEMP56; 
+      A     #TEMP56; 
+      )     ; 
+      ON    #IN3; 
+      =     #TEMP43; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      AN    #IN4; 
+      AN    #IN3; 
+      S     #TEMP57; 
+      A     #IN2; 
+      R     #TEMP57; 
+      A     #TEMP57; 
+      )     ; 
+      ON    #IN4; 
+      =     #TEMP44; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      AN    #IN5; 
+      A     #OUT13; 
+      O     ; 
+      AN    #IN6; 
+      A     #OUT14; 
+      )     ; 
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      O     #OUT13; 
+      O     #OUT14; 
+      )     ; 
+      A     M     10.5; 
+      CD    #IN11; 
+      BLD   101; 
+      A(    ; 
+      O     #OUT13; 
+      O     #OUT14; 
+      )     ; 
+      L     #IN10; 
+      S     #IN11; 
+      AN    #OUT13; 
+      AN    #OUT14; 
+      R     #IN11; 
+      NOP   0; 
+      NOP   0; 
+      A     #IN11; 
+      )     ; 
+      NOT   ; 
+      )     ; 
+      AN    #TEMP53; 
+      A     #IN3; 
+      A     #IN4; 
+      S     #TEMP45; 
+      A     #IN2; 
+      R     #TEMP45; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A(    ; 
+      O     #TEMP45; 
+      O     #TEMP44; 
+      O     #TEMP43; 
+      O     #TEMP46; 
+      )     ; 
+      FP    #TEMP63; 
+      S     #TEMP62; 
+      A     #IN2; 
+      R     #TEMP62; 
+      A     #TEMP62; 
+      )     ; 
+      O     #TEMP45; 
+      O     #TEMP43; 
+      O     #TEMP46; 
+      =     #OUT15; 
+NETWORK
+TITLE =
+
+      A     #TEMP45; 
+      FP    #TEMP64; 
+      O(    ; 
+      A     #TEMP44; 
+      FP    #TEMP65; 
+      )     ; 
+      O(    ; 
+      A     #TEMP43; 
+      FP    #TEMP66; 
+      )     ; 
+      O(    ; 
+      A     #TEMP46; 
+      FP    #TEMP58; 
+      )     ; 
+      =     #OUT16; 
+NETWORK
+TITLE =
+
+      A     #IN8; 
+      AN    #IN9; 
+      A     #IN0; 
+      A     #IN3; 
+      A     #IN4; 
+      AN    #OUT15; 
+      =     #OUT13; 
+NETWORK
+TITLE =
+
+      A     #IN9; 
+      AN    #IN8; 
+      A     #IN1; 
+      A     #IN3; 
+      A     #IN4; 
+      AN    #OUT15; 
+      =     #OUT14; 
+NETWORK
+TITLE =
+
+      L     2; 
+      T     #OUT12; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #IN5; 
+      AN    #IN6; 
+      AN    #OUT15; 
+      A     #IN4; 
+      JNB   M001; 
+      L     2; 
+      T     #OUT12; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP62; 
+      JNB   M002; 
+      L     8; 
+      T     #OUT12; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP62; 
+      A(    ; 
+      O     #TEMP45; 
+      O     #TEMP43; 
+      O     #TEMP46; 
+      )     ; 
+      JNB   M003; 
+      L     9; 
+      T     #OUT12; 
+M003: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN5; 
+      A     #OUT13; 
+      A     #IN4; 
+      JNB   M004; 
+      L     3; 
+      T     #OUT12; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN6; 
+      A     #OUT14; 
+      A     #IN4; 
+      JNB   M006; 
+      L     5; 
+      T     #OUT12; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP62; 
+      AN    #IN4; 
+      JNB   M007; 
+      L     10; 
+      T     #OUT12; 
+M007: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      AN    #IN5; 
+      AN    #TEMP62; 
+      A     #OUT13; 
+      O     ; 
+      AN    #IN6; 
+      AN    #TEMP62; 
+      A     #OUT14; 
+      )     ; 
+      JNB   M005; 
+      L     12; 
+      T     #OUT12; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     2; 
+      T     #IO18; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     4; 
+      T     #IO17; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 182 : VOID
+AUTHOR : 
+FAMILY : MEASURE
+NAME : PROC_FLT
+VERSION : 0.1
+
+
+VAR_INPUT
+  IN0 : BOOL ;	
+  IN1 : BOOL ;	
+  IN2 : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  OUT3 : BOOL ;	
+  OUT4 : BOOL ;	
+  OUT5 : BOOL ;	
+  OUT6 : INT ;	
+END_VAR
+VAR_IN_OUT
+  IO7 : WORD ;	
+END_VAR
+VAR_TEMP
+  TEMP8 : BOOL ;	
+  TEMP9 : BOOL ;	
+  TEMP10 : BOOL ;	
+  TEMP11 : BOOL ;	
+  TEMP12 : BOOL ;	
+  TEMP13 : BOOL ;	
+  TEMP14 : BOOL ;	
+  TEMP15 : BOOL ;	
+  TEMP16 : BOOL ;	
+  TEMP17 : BOOL ;	
+  TEMP18 : BOOL ;	
+  TEMP19 : BOOL ;	
+  TEMP20 : BOOL ;	
+  TEMP21 : BOOL ;	
+  TEMP22 : BOOL ;	
+  TEMP23 : BOOL ;	
+  TEMP24 : BOOL ;	
+  TEMP25 : BOOL ;	
+  TEMP26 : BOOL ;	
+  TEMP27 : BOOL ;	
+  TEMP28 : BOOL ;	
+  TEMP29 : BOOL ;	
+  TEMP30 : BOOL ;	
+  TEMP31 : BOOL ;	
+  TEMP32 : BOOL ;	
+  TEMP33 : BOOL ;	
+  TEMP34 : BOOL ;	
+  TEMP35 : BOOL ;	
+  TEMP36 : BOOL ;	
+  TEMP37 : BOOL ;	
+  TEMP38 : BOOL ;	
+  TEMP39 : BOOL ;	
+  TEMP40 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A     #IN0; 
+      =     #TEMP21; 
+NETWORK
+TITLE =
+
+      L     #IO7; 
+      T     LW     2; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     2; 
+      T     #OUT6; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP21; 
+      R     #TEMP24; 
+      A     #IN1; 
+      A     #IN2; 
+      FP    #TEMP25; 
+      S     #TEMP24; 
+      A     #TEMP24; 
+      =     L      5.0; 
+      A     L      5.0; 
+      FP    #TEMP26; 
+      =     #OUT5; 
+      A     L      5.0; 
+      JNB   M001; 
+      L     4; 
+      T     #OUT6; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      O     #TEMP24; 
+      O     ; 
+      A     #IN1; 
+      A     #IN2; 
+      =     #OUT3; 
+      =     #TEMP32; 
+NETWORK
+TITLE =
+
+      AN    #TEMP24; 
+      A     #IN1; 
+      JNB   M002; 
+      L     5; 
+      T     #OUT6; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN1; 
+      AN    #IN2; 
+      AN    #TEMP24; 
+      JNB   M003; 
+      L     3; 
+      T     #OUT6; 
+M003: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN1; 
+      =     #OUT4; 
+NETWORK
+TITLE =
+
+      L     LW     2; 
+      T     #IO7; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 183 : VOID
+AUTHOR : 
+FAMILY : DRIVE
+NAME : S_DRIVE
+VERSION : 0.1
+
+
+VAR_INPUT
+  IN0 : BOOL ;	
+  IN1 : BOOL ;	
+  IN2 : BOOL ;	
+  IN3 : BOOL ;	
+  IN4 : BOOL ;	
+  IN5 : BOOL ;	
+  IN6 : BOOL ;	
+  IN7 : BOOL ;	
+  IN8 : BOOL ;	
+  IN9 : BOOL ;	
+  IN10 : BOOL ;	
+  IN11 : WORD ;	
+  IN12 : COUNTER ;	
+END_VAR
+VAR_OUTPUT
+  OUT13 : INT ;	
+  OUT14 : BOOL ;	
+  OUT15 : BOOL ;	
+  OUT16 : BOOL ;	
+  OUT17 : BOOL ;	
+END_VAR
+VAR_IN_OUT
+  IO18 : WORD ;	
+  IO19 : WORD ;	
+END_VAR
+VAR_TEMP
+  TEMP20 : BOOL ;	
+  TEMP21 : BOOL ;	
+  TEMP22 : BOOL ;	
+  TEMP23 : BOOL ;	
+  TEMP24 : BOOL ;	
+  TEMP25 : BOOL ;	
+  TEMP26 : BOOL ;	
+  TEMP27 : BOOL ;	
+  TEMP28 : BOOL ;	
+  TEMP29 : BOOL ;	
+  TEMP30 : BOOL ;	
+  TEMP31 : BOOL ;	
+  TEMP32 : BOOL ;	
+  TEMP33 : BOOL ;	
+  TEMP34 : BOOL ;	
+  TEMP35 : BOOL ;	
+  TEMP36 : BOOL ;	
+  TEMP37 : BOOL ;	
+  TEMP38 : BOOL ;	
+  TEMP39 : BOOL ;	
+  TEMP40 : BOOL ;	
+  TEMP41 : BOOL ;	
+  TEMP42 : BOOL ;	
+  TEMP43 : BOOL ;	
+  TEMP44 : BOOL ;	
+  TEMP45 : BOOL ;	
+  TEMP46 : BOOL ;	
+  TEMP47 : BOOL ;	
+  TEMP48 : BOOL ;	
+  TEMP49 : BOOL ;	
+  TEMP50 : BOOL ;	
+  TEMP51 : BOOL ;	
+  TEMP52 : BOOL ;	
+  TEMP53 : BOOL ;	
+  TEMP54 : BOOL ;	
+  TEMP55 : BOOL ;	
+  TEMP56 : BOOL ;	
+  TEMP57 : BOOL ;	
+  TEMP58 : BOOL ;	
+  TEMP59 : BOOL ;	
+  TEMP60 : BOOL ;	
+  TEMP61 : BOOL ;	
+  TEMP62 : BOOL ;	
+  TEMP63 : BOOL ;	
+  TEMP64 : BOOL ;	
+  TEMP65 : BOOL ;	
+  TEMP66 : BOOL ;	
+  TEMP67 : BOOL ;	
+  TEMP68 : BYTE ;	
+  TEMP69 : BYTE ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #IO19; 
+      T     LW     2; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IO18; 
+      T     LW     4; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     #IN8; 
+      O     #IN10; 
+      )     ; 
+      =     #TEMP62; 
+      A     #TEMP62; 
+      FP    #TEMP52; 
+      =     #TEMP60; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A     #IN3; 
+      A(    ; 
+      O     #TEMP61; 
+      O     #TEMP53; 
+      )     ; 
+      A     #IN7; 
+      S     #TEMP54; 
+      A     #IN2; 
+      R     #TEMP54; 
+      A     #TEMP54; 
+      )     ; 
+      O     ; 
+      A     #IN7; 
+      A     #IN3; 
+      =     #TEMP47; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      AN    #IN3; 
+      A(    ; 
+      O     #TEMP61; 
+      O     #TEMP53; 
+      )     ; 
+      S     #TEMP57; 
+      A     #IN2; 
+      R     #TEMP57; 
+      A     #TEMP57; 
+      )     ; 
+      ON    #IN3; 
+      =     #TEMP44; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      AN    #IN4; 
+      AN    #IN3; 
+      S     #TEMP58; 
+      A     #IN2; 
+      R     #TEMP58; 
+      A     #TEMP58; 
+      )     ; 
+      ON    #IN4; 
+      =     #TEMP45; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      AN    #IN5; 
+      A     #OUT14; 
+      O     ; 
+      AN    #IN6; 
+      A     #OUT15; 
+      )     ; 
+      A(    ; 
+      A(    ; 
+      A(    ; 
+      O     #OUT14; 
+      O     #OUT15; 
+      )     ; 
+      A     M     10.5; 
+      CD    #IN12; 
+      BLD   101; 
+      A(    ; 
+      O     #OUT14; 
+      O     #OUT15; 
+      )     ; 
+      L     #IN11; 
+      S     #IN12; 
+      AN    #OUT14; 
+      AN    #OUT15; 
+      R     #IN12; 
+      NOP   0; 
+      NOP   0; 
+      A     #IN12; 
+      )     ; 
+      NOT   ; 
+      )     ; 
+      A(    ; 
+      O     #TEMP61; 
+      O     #TEMP53; 
+      )     ; 
+      AN    #TEMP54; 
+      A     #IN3; 
+      A     #IN4; 
+      S     #TEMP46; 
+      A     #IN2; 
+      R     #TEMP46; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A(    ; 
+      O     #TEMP46; 
+      O     #TEMP45; 
+      O     #TEMP44; 
+      O     #TEMP47; 
+      )     ; 
+      FP    #TEMP64; 
+      S     #TEMP63; 
+      A     #IN2; 
+      R     #TEMP63; 
+      A     #TEMP63; 
+      )     ; 
+      O     #TEMP46; 
+      O     #TEMP44; 
+      O     #TEMP47; 
+      =     #OUT16; 
+NETWORK
+TITLE =
+
+      A     #TEMP46; 
+      FP    #TEMP65; 
+      O(    ; 
+      A     #TEMP45; 
+      FP    #TEMP66; 
+      )     ; 
+      O(    ; 
+      A     #TEMP44; 
+      FP    #TEMP67; 
+      )     ; 
+      O(    ; 
+      A     #TEMP47; 
+      FP    #TEMP59; 
+      )     ; 
+      =     #OUT17; 
+NETWORK
+TITLE =
+
+      A     #TEMP60; 
+      A     #IN8; 
+      AN    #OUT16; 
+      S     #TEMP61; 
+      A(    ; 
+      ON    #IN0; 
+      O     #TEMP63; 
+      O     #IN9; 
+      O     #OUT15; 
+      ON    #IN4; 
+      )     ; 
+      R     #TEMP61; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP60; 
+      A     #IN10; 
+      AN    #OUT16; 
+      S     #TEMP53; 
+      A(    ; 
+      ON    #IN1; 
+      O     #TEMP63; 
+      O     #IN9; 
+      O     #OUT14; 
+      ON    #IN4; 
+      )     ; 
+      R     #TEMP53; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     #IN8; 
+      O     #OUT14; 
+      )     ; 
+      A     #TEMP61; 
+      A     #IN3; 
+      A     #IN4; 
+      AN    #TEMP63; 
+      =     #OUT14; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     #IN10; 
+      O     #OUT15; 
+      )     ; 
+      A     #TEMP53; 
+      A     #IN3; 
+      A     #IN4; 
+      AN    #TEMP63; 
+      =     #OUT15; 
+NETWORK
+TITLE =
+
+      L     2; 
+      T     #OUT13; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #IN5; 
+      AN    #IN6; 
+      AN    #OUT16; 
+      A     #IN4; 
+      JNB   M001; 
+      L     2; 
+      T     #OUT13; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #TEMP63; 
+      JNB   M002; 
+      L     8; 
+      T     #OUT13; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP63; 
+      A(    ; 
+      O     #TEMP46; 
+      O     #TEMP44; 
+      O     #TEMP47; 
+      )     ; 
+      JNB   M003; 
+      L     9; 
+      T     #OUT13; 
+M003: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN5; 
+      A     #TEMP61; 
+      A     #IN4; 
+      JNB   M004; 
+      L     3; 
+      T     #OUT13; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN6; 
+      A     #TEMP53; 
+      A     #IN4; 
+      JNB   M006; 
+      L     5; 
+      T     #OUT13; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      AN    #TEMP63; 
+      AN    #IN4; 
+      JNB   M007; 
+      L     10; 
+      T     #OUT13; 
+M007: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      AN    #IN5; 
+      AN    #TEMP63; 
+      A     #OUT14; 
+      O     ; 
+      AN    #IN6; 
+      AN    #TEMP63; 
+      A     #OUT15; 
+      )     ; 
+      JNB   M005; 
+      L     12; 
+      T     #OUT13; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     2; 
+      T     #IO19; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     4; 
+      T     #IO18; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 11 : VOID
+AUTHOR : 
+FAMILY : DRIVES
+NAME : DRIVES
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      O     I      3.1; 
+      O     I      1.3; 
+      =     Q      2.4; 
+NETWORK
+TITLE =
+
+      O     I      3.2; 
+      O     I      1.3; 
+      =     Q      2.5; 
+NETWORK
+TITLE =
+
+      O     M    116.0; 
+      O     I      1.3; 
+      =     Q      3.2; 
+NETWORK
+TITLE =
+
+      A     I      7.6; 
+      AN    I      7.3; 
+      AN    I      7.4; 
+      A     I      7.5; 
+      =     M    116.2; 
+NETWORK
+TITLE =
+
+      A     I      7.6; 
+      AN    I      7.3; 
+      A     I      7.4; 
+      AN    I      7.5; 
+      =     M    116.3; 
+NETWORK
+TITLE =
+
+      AN    I      7.6; 
+      A     I      7.3; 
+      AN    I      7.4; 
+      A     I      7.5; 
+      =     L      4.0; 
+      A     L      4.0; 
+      BLD   102; 
+      =     M    116.4; 
+      O     L      4.0; 
+      O     I      1.3; 
+      =     Q      3.0; 
+NETWORK
+TITLE =
+
+      A     M    116.4; 
+      A     M    151.3; 
+      FP    M    117.0; 
+      S     M      0.1; 
+      A     M      0.2; 
+      FP    M    117.1; 
+      R     M      0.1; 
+      A     M      0.1; 
+      =     L      4.0; 
+      O     L      4.0; 
+      O     I      1.3; 
+      =     Q      1.2; 
+      A     L      4.0; 
+      BLD   102; 
+      =     Q      4.2; 
+NETWORK
+TITLE =
+
+      A     M    116.4; 
+      A     M    151.2; 
+      FP    M    117.2; 
+      S     M      0.2; 
+      A     M      0.1; 
+      FP    M    117.3; 
+      R     M      0.2; 
+      A     M      0.2; 
+      =     L      4.0; 
+      O     L      4.0; 
+      O     I      1.3; 
+      =     Q      1.3; 
+      A     L      4.0; 
+      BLD   102; 
+      =     Q      4.7; 
+NETWORK
+TITLE =
+
+      A     I      7.6; 
+      A     I      7.3; 
+      A     I      7.4; 
+      A     I      7.5; 
+      =     M    116.5; 
+NETWORK
+TITLE =
+
+      A     I      7.6; 
+      A     I      7.3; 
+      AN    I      7.4; 
+      A     I      7.5; 
+      =     M    116.6; 
+NETWORK
+TITLE =
+
+      A     M    151.2; 
+      AN    I      0.5; 
+      S     M      1.0; 
+      A     M    151.3; 
+      AN    I      0.5; 
+      R     M      1.0; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M    151.3; 
+      AN    I      0.5; 
+      S     M      1.1; 
+      A     M    151.2; 
+      AN    I      0.5; 
+      R     M      1.1; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      A     M     27.3; 
+      A     I      3.1; 
+      AN    I      3.2; 
+      A     I      2.6; 
+      A     M    150.5; 
+      A     M    116.0; 
+      A     I      4.5; 
+      =     M    150.0; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      A     M     27.3; 
+      A     I      3.1; 
+      AN    I      3.2; 
+      A     I      2.7; 
+      A     M    150.6; 
+      A     M    116.0; 
+      A     I      4.5; 
+      =     M    150.1; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     29.0; 
+      A     M     27.3; 
+      AN    I      3.1; 
+      A     I      3.2; 
+      A     I      2.6; 
+      A     M    116.0; 
+      A     I      4.5; 
+      O(    ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     44.1; 
+      A(    ; 
+      O     M      1.0; 
+      O     ; 
+      A     M      0.2; 
+      AN    M      1.1; 
+      AN    M      1.0; 
+      )     ; 
+      A(    ; 
+      A     I      8.7; 
+      L     DB2.DBW   38; 
+      SD    T     19; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     19; 
+      )     ; 
+      A(    ; 
+      O     M     27.3; 
+      O(    ; 
+      A     I      8.6; 
+      FP    M    124.1; 
+      )     ; 
+      )     ; 
+      AN    M    150.3; 
+      )     ; 
+      O(    ; 
+      A(    ; 
+      A(    ; 
+      O(    ; 
+      A(    ; 
+      A     M    119.2; 
+      S     M    220.1; 
+      A     T     13; 
+      R     M    220.1; 
+      A     M    220.1; 
+      )     ; 
+      L     DB2.DBW   62; 
+      SD    T     32; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     32; 
+      )     ; 
+      O     M    119.0; 
+      )     ; 
+      L     DB2.DBW   26; 
+      SE    T     13; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     13; 
+      )     ; 
+      NOT   ; 
+      FP    M    120.0; 
+      A     M     44.1; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      )     ; 
+      )     ; 
+      A     M    150.5; 
+      AN    M    150.3; 
+      =     M    150.2; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     29.0; 
+      A     M     27.3; 
+      AN    I      3.1; 
+      A     I      3.2; 
+      A     I      2.7; 
+      A     M    116.0; 
+      A     I      4.5; 
+      O(    ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     44.1; 
+      A(    ; 
+      O     M      1.1; 
+      O     ; 
+      A     M      0.1; 
+      AN    M      1.1; 
+      AN    M      1.0; 
+      )     ; 
+      A     T     19; 
+      AN    M    150.2; 
+      A(    ; 
+      O     M     27.3; 
+      O(    ; 
+      A     I      8.6; 
+      FP    M    124.0; 
+      )     ; 
+      )     ; 
+      )     ; 
+      O(    ; 
+      A(    ; 
+      A(    ; 
+      O(    ; 
+      A(    ; 
+      A     M    119.1; 
+      S     M    220.0; 
+      A     T     14; 
+      R     M    220.0; 
+      A     M    220.0; 
+      )     ; 
+      L     DB2.DBW   62; 
+      SD    T     31; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     31; 
+      )     ; 
+      O     M    119.3; 
+      )     ; 
+      L     DB2.DBW   28; 
+      SE    T     14; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     14; 
+      )     ; 
+      NOT   ; 
+      FP    M    120.1; 
+      A     M     44.1; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      )     ; 
+      )     ; 
+      A     M    150.6; 
+      AN    M    150.2; 
+      =     M    150.3; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A     M    151.3; 
+      A     M    116.5; 
+      S     M      0.3; 
+      A     M    151.2; 
+      R     M      0.3; 
+      A     M      0.3; 
+      )     ; 
+      L     DB2.DBW   22; 
+      SD    T     11; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     11; 
+      )     ; 
+      =     M    119.0; 
+      A     M    119.0; 
+      O(    ; 
+      A     M    151.2; 
+      A(    ; 
+      A(    ; 
+      A     M    151.2; 
+      A     M    116.6; 
+      S     M      0.5; 
+      A     M    151.3; 
+      R     M      0.5; 
+      A     M      0.5; 
+      )     ; 
+      L     DB2.DBW   16; 
+      SD    T      8; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      8; 
+      )     ; 
+      =     M    119.1; 
+      A     M    119.1; 
+      )     ; 
+      O(    ; 
+      A     M    151.3; 
+      A(    ; 
+      A(    ; 
+      A     M    151.3; 
+      A     M    116.2; 
+      S     M      0.6; 
+      A     M    151.2; 
+      R     M      0.6; 
+      A     M      0.6; 
+      )     ; 
+      L     DB2.DBW   18; 
+      SD    T      9; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      9; 
+      )     ; 
+      =     M    119.2; 
+      A     M    119.2; 
+      )     ; 
+      O(    ; 
+      A     M    151.2; 
+      A(    ; 
+      A(    ; 
+      A     M    151.2; 
+      A     M    116.3; 
+      S     M      0.4; 
+      A     M    151.3; 
+      R     M      0.4; 
+      A     M      0.4; 
+      )     ; 
+      L     DB2.DBW   24; 
+      SD    T     12; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     12; 
+      )     ; 
+      =     M    119.3; 
+      A     M    119.3; 
+      )     ; 
+      =     M    118.5; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      A(    ; 
+      ON    I      3.0; 
+      O     ; 
+      A     M    120.6; 
+      AN    I      1.7; 
+      )     ; 
+      O(    ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      AN    M     44.1; 
+      )     ; 
+      O(    ; 
+      A     M     44.1; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A(    ; 
+      A     M    118.5; 
+      FP    M    118.6; 
+      =     M    120.6; 
+      A     M    120.6; 
+      )     ; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A(    ; 
+      AN    I      8.6; 
+      L     DB2.DBW   48; 
+      SD    T     24; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     24; 
+      )     ; 
+      O     M     11.1; 
+      O     M     20.5; 
+      =     M    150.4; 
+NETWORK
+TITLE =
+
+      AN    M    204.0; 
+      A     M    121.7; 
+      AN    M    195.0; 
+      AN    M    196.0; 
+      AN    M    197.0; 
+      AN    M    198.0; 
+      AN    M    206.0; 
+      AN    M    207.0; 
+      AN    M    158.0; 
+      AN    M    166.0; 
+      A(    ; 
+      AN    I      1.7; 
+      A     M    116.4; 
+      NOT   ; 
+      )     ; 
+      AN    M    209.0; 
+      AN    M    210.0; 
+      AN    M    217.0; 
+      =     M    150.5; 
+NETWORK
+TITLE =
+
+      AN    M    204.0; 
+      A     M    121.7; 
+      AN    M    195.0; 
+      AN    M    196.0; 
+      AN    M    197.0; 
+      AN    M    198.0; 
+      AN    M    206.0; 
+      AN    M    207.0; 
+      AN    M    158.0; 
+      AN    M    166.0; 
+      AN    M    209.0; 
+      AN    M    210.0; 
+      A(    ; 
+      AN    I      1.7; 
+      A     M    116.4; 
+      NOT   ; 
+      )     ; 
+      AN    M    217.0; 
+      =     M    150.6; 
+NETWORK
+TITLE =
+
+      A     M    150.5; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M    150.6; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.4; 
+      BLD   103; 
+      A     I      5.5; 
+      A     Q      6.1; 
+      =     L      4.5; 
+      BLD   103; 
+      A     I      5.5; 
+      A     Q      6.0; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M    202.4; 
+      =     L      4.7; 
+      BLD   103; 
+      A(    ; 
+      O     M    150.0; 
+      O     M    150.2; 
+      )     ; 
+      =     L      5.0; 
+      BLD   103; 
+      A     M    150.4; 
+      =     L      5.1; 
+      BLD   103; 
+      A(    ; 
+      O     M    150.1; 
+      O     M    150.3; 
+      )     ; 
+      =     L      5.2; 
+      BLD   103; 
+      CALL FC   183 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := L      5.0,
+           IN9                      := L      5.1,
+           IN10                     := L      5.2,
+           IN11                     := W#16#15,
+           IN12                     := C      0,
+           OUT13                    := DB10.DBW   10,
+           OUT14                    := M    151.2,
+           OUT15                    := M    151.3,
+           OUT16                    := M    151.0,
+           OUT17                    := M    151.1,
+           IO18                     := DB181.DBW    2,
+           IO19                     := DB10.DBW   44);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M    151.2; 
+      A     I      5.4; 
+      =     L      4.0; 
+      A     L      4.0; 
+      BLD   102; 
+      =     Q      6.1; 
+      O     L      4.0; 
+      O     I      1.3; 
+      =     Q      2.2; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M    151.3; 
+      O     M    151.2; 
+      )     ; 
+      A     I      5.4; 
+      =     L      4.0; 
+      A     L      4.0; 
+      BLD   102; 
+      =     Q      6.0; 
+      A     L      4.0; 
+      A     M    151.3; 
+      O     I      1.3; 
+      =     Q      2.3; 
+NETWORK
+TITLE =
+
+      O(    ; 
+      A(    ; 
+      O     M    151.2; 
+      O     M    151.3; 
+      )     ; 
+      L     DB2.DBW   20; 
+      SF    T     10; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     10; 
+      )     ; 
+      O     M     20.1; 
+      =     Q      5.0; 
+END_FUNCTION
+
+FUNCTION FC 13 : VOID
+AUTHOR : 
+FAMILY : DRIVES
+NAME : DRIVES
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     29.0; 
+      A     I      2.0; 
+      O     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     44.1; 
+      AN    M    157.4; 
+      A     M    157.3; 
+      AN    M    174.0; 
+      )     ; 
+      FP    M    157.0; 
+      =     M    157.1; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      AN    I      2.1; 
+      O     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      AN    M     44.1; 
+      A(    ; 
+      AN    I      8.7; 
+      L     DB2.DBW   58; 
+      SD    T     29; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     29; 
+      )     ; 
+      O     M     11.1; 
+      O     M     20.5; 
+      =     M    157.2; 
+NETWORK
+TITLE =
+
+      AN    M    167.0; 
+      AN    M    206.0; 
+      AN    M    207.0; 
+      =     M    157.3; 
+NETWORK
+TITLE =
+
+      A     M    157.3; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     I      8.3; 
+      =     L      4.4; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      4.5; 
+      BLD   103; 
+      A     M    157.1; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M    157.2; 
+      =     L      4.7; 
+      BLD   103; 
+      CALL FC   180 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := W#16#2,
+           IN9                      := C      5,
+           OUT10                    := DB10.DBW   18,
+           OUT11                    := Q      6.2,
+           OUT12                    := M    157.4,
+           OUT13                    := M    157.5,
+           IO14                     := DB181.DBW   10,
+           IO15                     := DB10.DBW   52);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O     I      8.3; 
+      O     I      1.3; 
+      =     Q      1.7; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     29.0; 
+      A     I      2.0; 
+      O     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      AN    M    161.4; 
+      A     M    161.3; 
+      AN    M    174.0; 
+      A     M     20.0; 
+      )     ; 
+      A     M     20.0; 
+      FP    M    161.0; 
+      =     M    161.1; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      AN    I      2.1; 
+      O     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     20.1; 
+      O     M     20.1; 
+      =     M    161.2; 
+NETWORK
+TITLE =
+
+      AN    M    167.0; 
+      AN    M    206.0; 
+      AN    M    207.0; 
+      A     M     20.0; 
+      =     M    161.3; 
+NETWORK
+TITLE =
+
+      A     M    161.3; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     I     10.6; 
+      =     L      4.4; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      4.5; 
+      BLD   103; 
+      A     M    161.1; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M    161.2; 
+      =     L      4.7; 
+      BLD   103; 
+      CALL FC   180 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := W#16#2,
+           IN9                      := C     12,
+           OUT10                    := DB10.DBW   22,
+           OUT11                    := M     20.2,
+           OUT12                    := M    161.4,
+           OUT13                    := M    161.5,
+           IO14                     := DB181.DBW   24,
+           IO15                     := DB10.DBW   56);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      A(    ; 
+      O     I      2.2; 
+      O     ; 
+      AN    I      8.5; 
+      A     Q      6.0; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      A(    ; 
+      O(    ; 
+      A     M    116.6; 
+      BLD   100; 
+      FN    M    223.0; 
+      )     ; 
+      O(    ; 
+      A     M    116.2; 
+      BLD   100; 
+      FN    M    223.1; 
+      )     ; 
+      )     ; 
+      L     DB4.DBW  248; 
+      SF    T     45; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     45; 
+      )     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     44.1; 
+      A(    ; 
+      O(    ; 
+      AN    I      8.5; 
+      L     DB2.DBW   60; 
+      SF    T     30; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     30; 
+      )     ; 
+      O     M     20.1; 
+      )     ; 
+      =     M    159.1; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      A     I      2.3; 
+      =     M    159.4; 
+NETWORK
+TITLE =
+
+      A     I      8.3; 
+      AN    M    175.0; 
+      AN    M    116.0; 
+      =     M    159.5; 
+NETWORK
+TITLE =
+
+      AN    M    116.1; 
+      A     I      8.3; 
+      AN    M    179.0; 
+      =     M    159.0; 
+NETWORK
+TITLE =
+
+      A     M    159.5; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M    159.0; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.4; 
+      BLD   103; 
+      A     Q      6.5; 
+      =     L      4.5; 
+      BLD   103; 
+      A     Q      6.6; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      4.7; 
+      BLD   103; 
+      A     M    159.1; 
+      =     L      5.0; 
+      BLD   103; 
+      A     M    159.4; 
+      =     L      5.1; 
+      BLD   103; 
+      CALL FC   181 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := L      5.0,
+           IN9                      := L      5.1,
+           IN10                     := W#16#5,
+           IN11                     := C      6,
+           OUT12                    := DB10.DBW   20,
+           OUT13                    := M    121.0,
+           OUT14                    := M    121.1,
+           OUT15                    := M    160.0,
+           OUT16                    := M    160.1,
+           IO17                     := DB181.DBW   12,
+           IO18                     := DB10.DBW   54);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M    121.0; 
+      O     M    121.1; 
+      )     ; 
+      L     DB2.DBW   30; 
+      SD    T     15; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     15; 
+      =     Q      6.4; 
+NETWORK
+TITLE =
+
+      O     M    121.0; 
+      O     M    121.1; 
+      =     L      4.0; 
+      A     L      4.0; 
+      JNB   M001; 
+      L     DB4.DBD   56; 
+      T     DB4.DBD   60; 
+M001: NOP   0; 
+      AN    L      4.0; 
+      JNB   M002; 
+      L     0.000000e+000; 
+      T     DB4.DBD   60; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      A     M    121.1; 
+      L     DB2.DBW   32; 
+      SD    T     16; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     16; 
+      =     Q      6.6; 
+NETWORK
+TITLE =
+
+      A     M    121.0; 
+      L     DB2.DBW   34; 
+      SD    T     17; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     17; 
+      =     Q      6.5; 
+NETWORK
+TITLE =
+
+      O     Q      6.5; 
+      O     I      1.3; 
+      =     Q      2.0; 
+NETWORK
+TITLE =
+
+      O     Q      6.6; 
+      O     I      1.3; 
+      =     Q      2.1; 
+END_FUNCTION
+
+FUNCTION FC 14 : VOID
+AUTHOR : 
+FAMILY : DRIVES
+NAME : DRIVES
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     29.0; 
+      A     M     27.3; 
+      A     I      2.4; 
+      A     I     10.3; 
+      O     ; 
+      AN    I     10.3; 
+      A     I     10.5; 
+      A     I     10.4; 
+      O     ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     44.1; 
+      A     M     27.3; 
+      A     I     10.3; 
+      )     ; 
+      FP    M    163.0; 
+      =     M    163.1; 
+NETWORK
+TITLE =
+
+      A     M     29.0; 
+      AN    I      2.5; 
+      O(    ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      AN    M     44.1; 
+      A(    ; 
+      AN    M    151.2; 
+      AN    M    151.3; 
+      L     DB2.DBW   56; 
+      SD    T     28; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     28; 
+      )     ; 
+      )     ; 
+      O(    ; 
+      A(    ; 
+      O     M     29.2; 
+      O     M     29.1; 
+      )     ; 
+      A     M     44.1; 
+      A     I      8.6; 
+      A(    ; 
+      A(    ; 
+      AN    M    151.2; 
+      AN    M    151.3; 
+      L     DB2.DBW   78; 
+      SD    T     39; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     39; 
+      )     ; 
+      FP    M    221.2; 
+      )     ; 
+      )     ; 
+      O     ; 
+      AN    I     10.3; 
+      AN    I     10.5; 
+      O     M     11.1; 
+      O     M     20.5; 
+      =     M    163.2; 
+NETWORK
+TITLE =
+
+      AN    M    206.0; 
+      AN    M    207.0; 
+      AN    M    182.0; 
+      AN    M    183.0; 
+      AN    M    208.0; 
+      AN    M    212.0; 
+      AN    M    211.0; 
+      A(    ; 
+      A(    ; 
+      AN    Q      6.0; 
+      A     I      8.7; 
+      A     I      8.6; 
+      L     DB2.DBW   52; 
+      SD    T     26; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     26; 
+      )     ; 
+      NOT   ; 
+      )     ; 
+      =     M    163.3; 
+NETWORK
+TITLE =
+
+      A     M    163.3; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     I      8.7; 
+      =     L      4.4; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      4.5; 
+      BLD   103; 
+      A     M    163.1; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M    163.2; 
+      =     L      4.7; 
+      BLD   103; 
+      CALL FC   180 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := W#16#2,
+           IN9                      := C      9,
+           OUT10                    := DB10.DBW   26,
+           OUT11                    := Q      6.3,
+           OUT12                    := M    163.4,
+           OUT13                    := M    163.5,
+           IO14                     := DB181.DBW   18,
+           IO15                     := DB10.DBW   60);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      8.7; 
+      =     L      4.0; 
+      A     L      4.0; 
+      BLD   102; 
+      =     Q      3.6; 
+      O     L      4.0; 
+      O     I      1.3; 
+      =     Q      4.5; 
+END_FUNCTION
+
+FUNCTION FC 15 : VOID
+AUTHOR : 
+FAMILY : DRIVES
+NAME : DRIVES
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A     I      0.2; 
+      AN    M    164.4; 
+      A(    ; 
+      A(    ; 
+      O     Q      0.0; 
+      O     I      1.0; 
+      O     I      2.0; 
+      O     I      2.2; 
+      O     I      2.3; 
+      O     I      2.4; 
+      O     I      2.6; 
+      O     I      2.7; 
+      O(    ; 
+      A     I      4.1; 
+      FP    M    218.1; 
+      )     ; 
+      )     ; 
+      =     M    218.0; 
+      A     M    218.0; 
+      )     ; 
+      FP    M    164.0; 
+      =     M    164.1; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     38.0; 
+      A(    ; 
+      O     I     11.4; 
+      O     I     12.5; 
+      )     ; 
+      L     DB2.DBW   54; 
+      SD    T     27; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     27; 
+      )     ; 
+      FP    M    218.3; 
+      =     M    164.2; 
+NETWORK
+TITLE =
+
+      A     M     20.1; 
+      =     M    164.3; 
+NETWORK
+TITLE =
+
+      A     M    164.3; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     I     11.4; 
+      =     L      4.4; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      4.5; 
+      BLD   103; 
+      A     M    164.1; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M    164.2; 
+      =     L      4.7; 
+      BLD   103; 
+      CALL FC   180 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := W#16#2,
+           IN9                      := C     10,
+           OUT10                    := DB10.DBW   28,
+           OUT11                    := Q      5.6,
+           OUT12                    := M    164.4,
+           OUT13                    := M    164.5,
+           IO14                     := DB181.DBW   20,
+           IO15                     := DB10.DBW   62);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      0.2; 
+      AN    M    165.4; 
+      A     M    218.0; 
+      FP    M    165.0; 
+      =     M    165.1; 
+NETWORK
+TITLE =
+
+      A     T     27; 
+      FP    M    218.2; 
+      =     M    165.2; 
+NETWORK
+TITLE =
+
+      A     M     20.1; 
+      =     M    165.3; 
+NETWORK
+TITLE =
+
+      A     M    165.3; 
+      =     L      4.0; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L      4.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.2; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      4.3; 
+      BLD   103; 
+      A     I     12.5; 
+      =     L      4.4; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      4.5; 
+      BLD   103; 
+      A     M    165.1; 
+      =     L      4.6; 
+      BLD   103; 
+      A     M    165.2; 
+      =     L      4.7; 
+      BLD   103; 
+      CALL FC   180 (
+           IN0                      := L      4.0,
+           IN1                      := L      4.1,
+           IN2                      := L      4.2,
+           IN3                      := L      4.3,
+           IN4                      := L      4.4,
+           IN5                      := L      4.5,
+           IN6                      := L      4.6,
+           IN7                      := L      4.7,
+           IN8                      := W#16#2,
+           IN9                      := C     11,
+           OUT10                    := DB10.DBW   30,
+           OUT11                    := Q      5.7,
+           OUT12                    := M    165.4,
+           OUT13                    := M    165.5,
+           IO14                     := DB181.DBW   22,
+           IO15                     := DB10.DBW   64);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      AN    M    187.0; 
+      AN    M    191.0; 
+      AN    M    188.0; 
+      AN    M    192.0; 
+      AN    M    189.0; 
+      AN    M    193.0; 
+      AN    M    190.0; 
+      AN    M    194.0; 
+      A     I     11.4; 
+      A     I     12.5; 
+      =     M    121.7; 
+      A     M    121.7; 
+      O     I      1.3; 
+      =     Q      2.6; 
+END_FUNCTION
+
+FUNCTION FC 20 : VOID
+AUTHOR : 
+FAMILY : ANALOGUE
+NAME : ANALOGUE
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : WORD ;	
+  TEMP1 : REAL ;	
+  TEMP2 : REAL ;	
+  TEMP3 : REAL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     ID   105; 
+      DTR   ; 
+      T     #TEMP2; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP2; 
+      L     1.000000e+000; 
+      /R    ; 
+      T     DB4.DBD    0; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L     14.0; 
+      BLD   103; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     0.000000e+000; 
+      ==R   ; 
+      )     ; 
+      =     L     14.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L     14.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L     14.0,
+           IN1                      := L     14.1,
+           IN2                      := L     14.2,
+           OUT3                     := M    123.0,
+           OUT4                     := M    123.1,
+           OUT5                     := M    123.2,
+           OUT6                     := DB10.DBW  374,
+           IO7                      := DB182.DBW   80);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M    200.6; 
+      A     M     20.1; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M001; 
+      L     DW#16#80000000; 
+      T     QD   105; 
+M001: NOP   0; 
+      AN    L     14.0; 
+      JNB   M002; 
+      L     DW#16#0; 
+      T     QD   105; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      L     DB4.DBD    0; 
+      L     DB4.DBD    4; 
+      >=R   ; 
+      =     M    116.0; 
+      =     Q      4.1; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   12; 
+      >=R   ; 
+      )     ; 
+      A(    ; 
+      A(    ; 
+      O     M    116.3; 
+      O     M    116.5; 
+      )     ; 
+      FP    M    122.0; 
+      )     ; 
+      S     M    122.1; 
+      A     Q      6.6; 
+      R     M    122.1; 
+      A     M    122.1; 
+      =     L     14.0; 
+      A     L     14.0; 
+      BLD   102; 
+      =     Q      3.7; 
+      O     L     14.0; 
+      O     I      1.3; 
+      =     Q      1.4; 
+NETWORK
+TITLE =
+
+      L     DB4.DBD    0; 
+      L     DB4.DBD    8; 
+      <=R   ; 
+      =     M    116.1; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M    150.0; 
+      O     M    150.1; 
+      )     ; 
+      FP    M    200.1; 
+      JNB   M003; 
+      L     DB4.DBD   20; 
+      T     DB4.DBD   28; 
+M003: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M    150.2; 
+      O     M    150.3; 
+      )     ; 
+      FP    M    200.2; 
+      JNB   M004; 
+      L     DB4.DBD   24; 
+      T     DB4.DBD   28; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     L     14.0; 
+      BLD   103; 
+      CALL FC   171 (
+           IN0                      := DB4.DBD   28,
+           IN1                      := 1.000000e+002,
+           IN2                      := 0.000000e+000,
+           IN3                      := L     14.0,
+           RET_VAL                  := #TEMP0,
+           OUT4                     := PQW  258);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     I      7.7; 
+      FP    M    118.0; 
+      JNB   M005; 
+      L     DB4.DBD   36; 
+      L     1.000000e+000; 
+      +R    ; 
+      T     DB4.DBD   36; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      L     DB4.DBD   36; 
+      L     1.000000e+000; 
+      *R    ; 
+      T     DB4.DBD   40; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A(    ; 
+      A     M    151.3; 
+      L     DB2.DBW   40; 
+      SF    T     20; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     20; 
+      )     ; 
+      A(    ; 
+      O     M    116.5; 
+      O     M    116.2; 
+      )     ; 
+      O     ; 
+      A(    ; 
+      A     M    151.2; 
+      L     DB2.DBW   42; 
+      SF    T     21; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     21; 
+      )     ; 
+      A(    ; 
+      O     M    116.3; 
+      O     M    116.6; 
+      )     ; 
+      )     ; 
+      FP    M    118.2; 
+      JNB   M006; 
+      L     0.000000e+000; 
+      T     DB4.DBD   36; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      L     DB4.DBD   40; 
+      L     DB4.DBD   44; 
+      >=R   ; 
+      =     M    118.4; 
+NETWORK
+TITLE =
+
+      L     DB4.DBD    0; 
+      L     DB4.DBD   72; 
+      <=R   ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M007; 
+      L     DB4.DBD  152; 
+      T     DB4.DBD   44; 
+M007: NOP   0; 
+      A     L     14.0; 
+      JNB   M008; 
+      L     DB4.DBW  232; 
+      T     DB2.DBW   62; 
+M008: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   72; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   76; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M009; 
+      L     DB4.DBD  156; 
+      T     DB4.DBD   44; 
+M009: NOP   0; 
+      A     L     14.0; 
+      JNB   M00a; 
+      L     DB4.DBW  234; 
+      T     DB2.DBW   62; 
+M00a: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   76; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   80; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M00b; 
+      L     DB4.DBD  160; 
+      T     DB4.DBD   44; 
+M00b: NOP   0; 
+      A     L     14.0; 
+      JNB   M00c; 
+      L     DB4.DBW  236; 
+      T     DB2.DBW   62; 
+M00c: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   80; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   84; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M00d; 
+      L     DB4.DBD  164; 
+      T     DB4.DBD   44; 
+M00d: NOP   0; 
+      A     L     14.0; 
+      JNB   M00e; 
+      L     DB4.DBW  238; 
+      T     DB2.DBW   62; 
+M00e: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   84; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   88; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M00f; 
+      L     DB4.DBD  168; 
+      T     DB4.DBD   44; 
+M00f: NOP   0; 
+      A     L     14.0; 
+      JNB   M010; 
+      L     DB4.DBW  240; 
+      T     DB2.DBW   62; 
+M010: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   88; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   92; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M011; 
+      L     DB4.DBD  172; 
+      T     DB4.DBD   44; 
+M011: NOP   0; 
+      A     L     14.0; 
+      JNB   M012; 
+      L     DB4.DBW  242; 
+      T     DB2.DBW   62; 
+M012: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   92; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   96; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M013; 
+      L     DB4.DBD  176; 
+      T     DB4.DBD   44; 
+M013: NOP   0; 
+      A     L     14.0; 
+      JNB   M014; 
+      L     DB4.DBW  244; 
+      T     DB2.DBW   62; 
+M014: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD   96; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  100; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M015; 
+      L     DB4.DBD  180; 
+      T     DB4.DBD   44; 
+M015: NOP   0; 
+      A     L     14.0; 
+      JNB   M016; 
+      L     DB4.DBW  246; 
+      T     DB2.DBW   62; 
+M016: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  100; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  104; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M017; 
+      L     DB4.DBD  184; 
+      T     DB4.DBD   44; 
+M017: NOP   0; 
+      A     L     14.0; 
+      JNB   M018; 
+      L     DB4.DBW  248; 
+      T     DB2.DBW   62; 
+M018: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  104; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  108; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M019; 
+      L     DB4.DBD  188; 
+      T     DB4.DBD   44; 
+M019: NOP   0; 
+      A     L     14.0; 
+      JNB   M01a; 
+      L     DB4.DBW  250; 
+      T     DB2.DBW   62; 
+M01a: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  108; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  112; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M01b; 
+      L     DB4.DBD  192; 
+      T     DB4.DBD   44; 
+M01b: NOP   0; 
+      A     L     14.0; 
+      JNB   M01c; 
+      L     DB4.DBW  252; 
+      T     DB2.DBW   62; 
+M01c: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  112; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  116; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M01d; 
+      L     DB4.DBD  196; 
+      T     DB4.DBD   44; 
+M01d: NOP   0; 
+      A     L     14.0; 
+      JNB   M01e; 
+      L     DB4.DBW  254; 
+      T     DB2.DBW   62; 
+M01e: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  116; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  120; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M01f; 
+      L     DB4.DBD  200; 
+      T     DB4.DBD   44; 
+M01f: NOP   0; 
+      A     L     14.0; 
+      JNB   M020; 
+      L     DB4.DBW  256; 
+      T     DB2.DBW   62; 
+M020: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  120; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  124; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M021; 
+      L     DB4.DBD  204; 
+      T     DB4.DBD   44; 
+M021: NOP   0; 
+      A     L     14.0; 
+      JNB   M022; 
+      L     DB4.DBW  258; 
+      T     DB2.DBW   62; 
+M022: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  124; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  128; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M023; 
+      L     DB4.DBD  208; 
+      T     DB4.DBD   44; 
+M023: NOP   0; 
+      A     L     14.0; 
+      JNB   M024; 
+      L     DB4.DBW  260; 
+      T     DB2.DBW   62; 
+M024: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  128; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  132; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M025; 
+      L     DB4.DBD  212; 
+      T     DB4.DBD   44; 
+M025: NOP   0; 
+      A     L     14.0; 
+      JNB   M026; 
+      L     DB4.DBW  262; 
+      T     DB2.DBW   62; 
+M026: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  132; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  136; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M027; 
+      L     DB4.DBD  216; 
+      T     DB4.DBD   44; 
+M027: NOP   0; 
+      A     L     14.0; 
+      JNB   M028; 
+      L     DB4.DBW  264; 
+      T     DB2.DBW   62; 
+M028: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  136; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  140; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M029; 
+      L     DB4.DBD  220; 
+      T     DB4.DBD   44; 
+M029: NOP   0; 
+      A     L     14.0; 
+      JNB   M02a; 
+      L     DB4.DBW  266; 
+      T     DB2.DBW   62; 
+M02a: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  140; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  144; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M02b; 
+      L     DB4.DBD  224; 
+      T     DB4.DBD   44; 
+M02b: NOP   0; 
+      A     L     14.0; 
+      JNB   M02c; 
+      L     DB4.DBW  268; 
+      T     DB2.DBW   62; 
+M02c: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  144; 
+      >R    ; 
+      )     ; 
+      A(    ; 
+      L     DB4.DBD    0; 
+      L     DB4.DBD  148; 
+      <=R   ; 
+      )     ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M02d; 
+      L     DB4.DBD  228; 
+      T     DB4.DBD   44; 
+M02d: NOP   0; 
+      A     L     14.0; 
+      JNB   M02e; 
+      L     DB4.DBW  270; 
+      T     DB2.DBW   62; 
+M02e: NOP   0; 
+NETWORK
+TITLE =
+
+      L     DB4.DBD    0; 
+      L     DB4.DBD  148; 
+      >R    ; 
+      =     L     14.0; 
+      A     L     14.0; 
+      JNB   M02f; 
+      L     DB4.DBD  228; 
+      T     DB4.DBD   44; 
+M02f: NOP   0; 
+      A     L     14.0; 
+      JNB   M030; 
+      L     DB4.DBW  270; 
+      T     DB2.DBW   62; 
+M030: NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     L     14.0; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.1; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.2; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.3; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.4; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.5; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L     14.6; 
+      BLD   103; 
+      CALL FC   179 (
+           IN0                      := PIW  272,
+           IN1                      := 1.000000e+002,
+           IN2                      := 0.000000e+000,
+           IN3                      := 0.000000e+000,
+           IN4                      := DB10.DBD  160,
+           IN5                      := DB10.DBD  164,
+           IN6                      := DB10.DBD  168,
+           IN7                      := DB10.DBD  172,
+           IN8                      := 1.000000e+002,
+           IN9                      := L     14.0,
+           IN10                     := L     14.1,
+           IN11                     := L     14.2,
+           IN12                     := L     14.3,
+           IN13                     := L     14.4,
+           IN14                     := L     14.5,
+           IN15                     := L     14.6,
+           OUT16                    := DB10.DBD  200,
+           OUT17                    := M    176.0,
+           OUT18                    := M    176.1,
+           OUT19                    := M    176.2,
+           OUT20                    := M    176.3,
+           OUT21                    := M    176.4,
+           OUT22                    := M    176.5,
+           OUT23                    := DB10.DBW  100,
+           OUT24                    := DB10.DBW  102,
+           OUT25                    := DB10.DBW  104,
+           OUT26                    := DB10.DBW  106,
+           OUT27                    := DB10.DBW  108,
+           OUT28                    := M    177.0,
+           OUT29                    := M    177.1,
+           OUT30                    := M    177.2,
+           OUT31                    := M    177.3,
+           OUT32                    := M    177.4,
+           IO33                     := DB179.DBD    8,
+           IO34                     := DB179.DBW  202,
+           IO35                     := DB179.DBW  302);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     L     14.0; 
+      BLD   103; 
+      CALL FC   171 (
+           IN0                      := DB10.DBD  200,
+           IN1                      := 1.000000e+002,
+           IN2                      := 0.000000e+000,
+           IN3                      := L     14.0,
+           RET_VAL                  := #TEMP0,
+           OUT4                     := PQW  256);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     L     14.0; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.1; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.2; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.3; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L     14.4; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L     14.5; 
+      BLD   103; 
+      A     M     21.0; 
+      =     L     14.6; 
+      BLD   103; 
+      CALL FC   179 (
+           IN0                      := PIW  274,
+           IN1                      := 1.000000e+002,
+           IN2                      := 0.000000e+000,
+           IN3                      := 0.000000e+000,
+           IN4                      := DB10.DBD  176,
+           IN5                      := DB10.DBD  180,
+           IN6                      := DB10.DBD  184,
+           IN7                      := DB10.DBD  188,
+           IN8                      := 1.000000e+002,
+           IN9                      := L     14.0,
+           IN10                     := L     14.1,
+           IN11                     := L     14.2,
+           IN12                     := L     14.3,
+           IN13                     := L     14.4,
+           IN14                     := L     14.5,
+           IN15                     := L     14.6,
+           OUT16                    := DB10.DBD  204,
+           OUT17                    := M    214.0,
+           OUT18                    := M    214.1,
+           OUT19                    := M    214.2,
+           OUT20                    := M    214.3,
+           OUT21                    := M    214.4,
+           OUT22                    := M    214.5,
+           OUT23                    := DB10.DBW  364,
+           OUT24                    := DB10.DBW  366,
+           OUT25                    := DB10.DBW  368,
+           OUT26                    := DB10.DBW  370,
+           OUT27                    := DB10.DBW  372,
+           OUT28                    := M    215.0,
+           OUT29                    := M    215.1,
+           OUT30                    := M    215.2,
+           OUT31                    := M    215.3,
+           OUT32                    := M    215.4,
+           IO33                     := DB179.DBD   20,
+           IO34                     := DB179.DBW  208,
+           IO35                     := DB179.DBW  308);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     L     14.0; 
+      BLD   103; 
+      CALL FC   171 (
+           IN0                      := DB4.DBD   60,
+           IN1                      := 1.000000e+002,
+           IN2                      := 0.000000e+000,
+           IN3                      := L     14.0,
+           RET_VAL                  := #TEMP0,
+           OUT4                     := PQW  260);
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 21 : VOID
+AUTHOR : 
+FAMILY : DIGITAL
+NAME : DIGITAL
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      8.0; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    155.0,
+           OUT4                     := M    155.1,
+           OUT5                     := M    155.2,
+           OUT6                     := DB10.DBW   76,
+           IO7                      := DB182.DBW    2);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      8.1; 
+      =     L      2.1; 
+      BLD   103; 
+      AN    I      3.4; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    158.0,
+           OUT4                     := M    158.1,
+           OUT5                     := M    158.2,
+           OUT6                     := DB10.DBW   78,
+           IO7                      := DB182.DBW    4);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      8.2; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    166.0,
+           OUT4                     := M    166.1,
+           OUT5                     := M    166.2,
+           OUT6                     := DB10.DBW   80,
+           IO7                      := DB182.DBW    6);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M    166.0; 
+      =     Q      4.0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I     10.0; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    170.0,
+           OUT4                     := M    170.1,
+           OUT5                     := M    170.2,
+           OUT6                     := DB10.DBW   94,
+           IO7                      := DB182.DBW   10);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     10.2; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    167.0,
+           OUT4                     := M    167.1,
+           OUT5                     := M    167.2,
+           OUT6                     := DB10.DBW   82,
+           IO7                      := DB182.DBW    8);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     10.1; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    174.0,
+           OUT4                     := M    174.1,
+           OUT5                     := M    174.2,
+           OUT6                     := DB10.DBW   96,
+           IO7                      := DB182.DBW   12);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      9.7; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    175.0,
+           OUT4                     := M    175.1,
+           OUT5                     := M    175.2,
+           OUT6                     := DB10.DBW   98,
+           IO7                      := DB182.DBW   14);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      8.4; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    179.0,
+           OUT4                     := M    179.1,
+           OUT5                     := M    179.2,
+           OUT6                     := DB10.DBW  110,
+           IO7                      := DB182.DBW   16);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      8.5; 
+      =     L      2.1; 
+      BLD   103; 
+      A(    ; 
+      A     Q      6.0; 
+      AN    I      8.5; 
+      L     DB2.DBW   66; 
+      SD    T     33; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     33; 
+      )     ; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    180.0,
+           OUT4                     := M    180.1,
+           OUT5                     := M    180.2,
+           OUT6                     := DB10.DBW  112,
+           IO7                      := DB182.DBW   18);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      8.6; 
+      =     L      2.1; 
+      BLD   103; 
+      A(    ; 
+      A     I      8.7; 
+      L     DB2.DBW   36; 
+      SD    T     18; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     18; 
+      )     ; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    181.0,
+           OUT4                     := M    181.1,
+           OUT5                     := M    181.2,
+           OUT6                     := DB10.DBW  310,
+           IO7                      := DB182.DBW   20);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      9.0; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    182.0,
+           OUT4                     := M    182.1,
+           OUT5                     := M    182.2,
+           OUT6                     := DB10.DBW  312,
+           IO7                      := DB182.DBW   22);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      9.1; 
+      A     Q      6.3; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    183.0,
+           OUT4                     := M    183.1,
+           OUT5                     := M    183.2,
+           OUT6                     := DB10.DBW  314,
+           IO7                      := DB182.DBW   24);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      9.2; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    208.0,
+           OUT4                     := M    208.1,
+           OUT5                     := M    208.2,
+           OUT6                     := DB10.DBW  354,
+           IO7                      := DB182.DBW   70);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      9.3; 
+      =     L      2.1; 
+      BLD   103; 
+      AN    I      3.4; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    212.0,
+           OUT4                     := M    212.1,
+           OUT5                     := M    212.2,
+           OUT6                     := DB10.DBW  356,
+           IO7                      := DB182.DBW   72);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      9.4; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    209.0,
+           OUT4                     := M    209.1,
+           OUT5                     := M    209.2,
+           OUT6                     := DB10.DBW  358,
+           IO7                      := DB182.DBW   74);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      9.5; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    210.0,
+           OUT4                     := M    210.1,
+           OUT5                     := M    210.2,
+           OUT6                     := DB10.DBW  360,
+           IO7                      := DB182.DBW   76);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A(    ; 
+      AN    I      9.6; 
+      A     I      8.7; 
+      L     DB2.DBW   84; 
+      SD    T     42; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     42; 
+      )     ; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    211.0,
+           OUT4                     := M    211.1,
+           OUT5                     := M    211.2,
+           OUT6                     := DB10.DBW  362,
+           IO7                      := DB182.DBW   78);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     11.2; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    222.0,
+           OUT4                     := M    222.1,
+           OUT5                     := M    222.2,
+           OUT6                     := DB10.DBW  376,
+           IO7                      := DB182.DBW   84);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     11.3; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    185.0,
+           OUT4                     := M    185.1,
+           OUT5                     := M    185.2,
+           OUT6                     := DB10.DBW  316,
+           IO7                      := DB182.DBW   26);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     12.4; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    186.0,
+           OUT4                     := M    186.1,
+           OUT5                     := M    186.2,
+           OUT6                     := DB10.DBW  318,
+           IO7                      := DB182.DBW   28);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I     11.5; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    187.0,
+           OUT4                     := M    187.1,
+           OUT5                     := M    187.2,
+           OUT6                     := DB10.DBW  320,
+           IO7                      := DB182.DBW   30);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     12.0; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    188.0,
+           OUT4                     := M    188.1,
+           OUT5                     := M    188.2,
+           OUT6                     := DB10.DBW  322,
+           IO7                      := DB182.DBW   32);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     12.1; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    189.0,
+           OUT4                     := M    189.1,
+           OUT5                     := M    189.2,
+           OUT6                     := DB10.DBW  324,
+           IO7                      := DB182.DBW   34);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     12.2; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    190.0,
+           OUT4                     := M    190.1,
+           OUT5                     := M    190.2,
+           OUT6                     := DB10.DBW  326,
+           IO7                      := DB182.DBW   36);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I     12.6; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    191.0,
+           OUT4                     := M    191.1,
+           OUT5                     := M    191.2,
+           OUT6                     := DB10.DBW  328,
+           IO7                      := DB182.DBW   38);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     13.0; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    192.0,
+           OUT4                     := M    192.1,
+           OUT5                     := M    192.2,
+           OUT6                     := DB10.DBW  330,
+           IO7                      := DB182.DBW   40);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     13.1; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    193.0,
+           OUT4                     := M    193.1,
+           OUT5                     := M    193.2,
+           OUT6                     := DB10.DBW  332,
+           IO7                      := DB182.DBW   42);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I     13.2; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    194.0,
+           OUT4                     := M    194.1,
+           OUT5                     := M    194.2,
+           OUT6                     := DB10.DBW  334,
+           IO7                      := DB182.DBW   44);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      5.6; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    195.0,
+           OUT4                     := M    195.1,
+           OUT5                     := M    195.2,
+           OUT6                     := DB10.DBW  336,
+           IO7                      := DB182.DBW   46);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      5.7; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    196.0,
+           OUT4                     := M    196.1,
+           OUT5                     := M    196.2,
+           OUT6                     := DB10.DBW  338,
+           IO7                      := DB182.DBW   48);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      7.2; 
+      =     L      2.1; 
+      BLD   103; 
+      AN    I      3.3; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    198.0,
+           OUT4                     := M    198.1,
+           OUT5                     := M    198.2,
+           OUT6                     := DB10.DBW  340,
+           IO7                      := DB182.DBW   50);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A     I      7.1; 
+      =     L      2.1; 
+      BLD   103; 
+      AN    I      3.3; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    197.0,
+           OUT4                     := M    197.1,
+           OUT5                     := M    197.2,
+           OUT6                     := DB10.DBW  342,
+           IO7                      := DB182.DBW   52);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      AN    I      5.3; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    204.0,
+           OUT4                     := M    204.1,
+           OUT5                     := M    204.2,
+           OUT6                     := DB10.DBW  346,
+           IO7                      := DB182.DBW   62);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      2.0; 
+      BLD   103; 
+      A(    ; 
+      A(    ; 
+      O     Q      6.0; 
+      O     Q      6.1; 
+      )     ; 
+      L     DB2.DBW   50; 
+      SD    T     25; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     25; 
+      )     ; 
+      A(    ; 
+      ON    I      6.0; 
+      ON    I      6.1; 
+      )     ; 
+      =     M    216.0; 
+      A     M    216.0; 
+      =     L      2.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      2.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      2.0,
+           IN1                      := L      2.1,
+           IN2                      := L      2.2,
+           OUT3                     := M    217.0,
+           OUT4                     := M    217.1,
+           OUT5                     := M    217.2,
+           OUT6                     := DB10.DBW  348,
+           IO7                      := DB182.DBW   82);
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 3 : VOID
+AUTHOR : 
+FAMILY : Alarm
+NAME : Alarm
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =
+
+      A     M    206.0; 
+      =     DB3.DBX    1.0; 
+NETWORK
+TITLE =
+
+      A     M    115.0; 
+      =     DB3.DBX    1.1; 
+NETWORK
+TITLE =
+
+      A     M    101.0; 
+      =     DB3.DBX    1.2; 
+NETWORK
+TITLE =
+
+      A     M    114.0; 
+      =     DB3.DBX    1.3; 
+NETWORK
+TITLE =
+
+      A     DB10.DBX   45.2; 
+      =     DB3.DBX    1.4; 
+NETWORK
+TITLE =
+
+      A     M    195.0; 
+      =     DB3.DBX    1.5; 
+NETWORK
+TITLE =
+
+      A     M    196.0; 
+      =     DB3.DBX    1.6; 
+NETWORK
+TITLE =
+
+      A     M    198.0; 
+      =     DB3.DBX    1.7; 
+NETWORK
+TITLE =
+
+      A     M    197.0; 
+      =     DB3.DBX    0.0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    0.1; 
+NETWORK
+TITLE =
+
+      A     M    155.0; 
+      =     DB3.DBX    0.2; 
+NETWORK
+TITLE =
+
+      A     M    158.0; 
+      =     DB3.DBX    0.3; 
+NETWORK
+TITLE =
+
+      A     M    166.0; 
+      =     DB3.DBX    0.4; 
+NETWORK
+TITLE =
+
+      A     DB10.DBX   53.2; 
+      =     DB3.DBX    0.5; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    0.6; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    0.7; 
+NETWORK
+TITLE =
+
+      A     M    170.0; 
+      =     DB3.DBX    3.0; 
+NETWORK
+TITLE =
+
+      A     M    174.0; 
+      =     DB3.DBX    3.1; 
+NETWORK
+TITLE =
+
+      A     M    167.0; 
+      =     DB3.DBX    3.2; 
+NETWORK
+TITLE =
+
+      A     M    175.0; 
+      =     DB3.DBX    3.3; 
+NETWORK
+TITLE =
+
+      A     M    179.0; 
+      =     DB3.DBX    3.4; 
+NETWORK
+TITLE =
+
+      A     M    180.0; 
+      =     DB3.DBX    3.5; 
+NETWORK
+TITLE =
+
+      A     M    181.0; 
+      =     DB3.DBX    3.6; 
+NETWORK
+TITLE =
+
+      A     DB10.DBX   61.2; 
+      =     DB3.DBX    3.7; 
+NETWORK
+TITLE =
+
+      A     M    182.0; 
+      =     DB3.DBX    2.0; 
+NETWORK
+TITLE =
+
+      A     M    183.0; 
+      =     DB3.DBX    2.1; 
+NETWORK
+TITLE =
+
+      A     M    208.0; 
+      =     DB3.DBX    2.2; 
+NETWORK
+TITLE =
+
+      A     M    212.0; 
+      =     DB3.DBX    2.3; 
+NETWORK
+TITLE =
+
+      A     M    209.0; 
+      =     DB3.DBX    2.4; 
+NETWORK
+TITLE =
+
+      A     M    210.0; 
+      =     DB3.DBX    2.5; 
+NETWORK
+TITLE =
+
+      A     M    211.0; 
+      =     DB3.DBX    2.6; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    2.7; 
+NETWORK
+TITLE =
+
+      A     M    123.0; 
+      =     DB3.DBX    5.0; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    5.1; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    5.2; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    5.3; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      =     DB3.DBX    5.4; 
+NETWORK
+TITLE =
+
+      A     DB10.DBX   63.2; 
+      =     DB3.DBX    5.5; 
+NETWORK
+TITLE =
+
+      A     M    185.0; 
+      =     DB3.DBX    5.6; 
+NETWORK
+TITLE =
+
+      A     M    187.0; 
+      =     DB3.DBX    5.7; 
+NETWORK
+TITLE =
+
+      A     M    188.0; 
+      =     DB3.DBX    4.0; 
+NETWORK
+TITLE =
+
+      A     M    189.0; 
+      =     DB3.DBX    4.1; 
+NETWORK
+TITLE =
+
+      A     M    190.0; 
+      =     DB3.DBX    4.2; 
+NETWORK
+TITLE =
+
+      A     DB10.DBX   65.2; 
+      =     DB3.DBX    4.3; 
+NETWORK
+TITLE =
+
+      A     M    186.0; 
+      =     DB3.DBX    4.4; 
+NETWORK
+TITLE =
+
+      A     M    191.0; 
+      =     DB3.DBX    4.5; 
+NETWORK
+TITLE =
+
+      A     M    192.0; 
+      =     DB3.DBX    4.6; 
+NETWORK
+TITLE =
+
+      A     M    193.0; 
+      =     DB3.DBX    4.7; 
+NETWORK
+TITLE =
+
+      A     M    194.0; 
+      =     DB3.DBX    7.0; 
+NETWORK
+TITLE =
+
+      A     M    204.0; 
+      =     DB3.DBX    7.1; 
+NETWORK
+TITLE =
+
+      A     DB10.DBX   57.2; 
+      =     DB3.DBX    7.2; 
+NETWORK
+TITLE =
+
+      A     M    207.0; 
+      =     DB3.DBX    7.3; 
+NETWORK
+TITLE =
+
+      A     M    217.0; 
+      =     DB3.DBX    7.4; 
+NETWORK
+TITLE =
+
+      A     M    222.0; 
+      =     DB3.DBX    7.5; 
+END_FUNCTION
+
+FUNCTION FC 10 : VOID
+AUTHOR : 
+FAMILY : GENERAL
+NAME : GENERAL
+VERSION : 0.0
+
+
+VAR_TEMP
+  TEMP0 : BOOL ;	
+  TEMP1 : BOOL ;	
+  TEMP2 : BOOL ;	
+  TEMP3 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      A     I      1.0; 
+      A     I      1.1; 
+      A     M     29.1; 
+      A     M     35.0; 
+      O     ; 
+      A     I      4.1; 
+      A     M     29.2; 
+      A     M     35.0; 
+      =     #TEMP0; 
+NETWORK
+TITLE =
+
+      AN    I      1.1; 
+      A     M     29.1; 
+      O     ; 
+      AN    I      4.1; 
+      A     M     29.2; 
+      =     #TEMP1; 
+NETWORK
+TITLE =
+
+      A     M     44.1; 
+      A     M     29.1; 
+      O     I      1.3; 
+      =     Q      0.7; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M     29.1; 
+      O     M     29.0; 
+      O     ; 
+      A(    ; 
+      A     I      4.6; 
+      L     S5T#2M; 
+      SF    T     46; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     46; 
+      )     ; 
+      A     M     29.2; 
+      O     I      4.2; 
+      )     ; 
+      AN    M    114.0; 
+      AN    M    207.0; 
+      AN    M    206.0; 
+      AN    M    167.0; 
+      AN    M    206.0; 
+      AN    M    207.0; 
+      A     I     10.3; 
+      AN    M    209.0; 
+      AN    M    210.0; 
+      AN    M    211.0; 
+      A     M    121.7; 
+      AN    M    122.1; 
+      AN    M    123.0; 
+      AN    M    155.0; 
+      AN    M    158.0; 
+      AN    M    166.0; 
+      AN    M    175.0; 
+      AN    M    179.0; 
+      AN    M    208.0; 
+      AN    M    163.4; 
+      AN    M    212.0; 
+      A(    ; 
+      A     M      0.1; 
+      AN    I      4.3; 
+      O     ; 
+      A     M      0.2; 
+      AN    I      4.4; 
+      )     ; 
+      A     M    150.5; 
+      A     M    150.6; 
+      AN    M    151.0; 
+      AN    M    180.0; 
+      A(    ; 
+      A     Q      6.0; 
+      AN    I      8.3; 
+      NOT   ; 
+      )     ; 
+      =     M     35.1; 
+NETWORK
+TITLE =
+
+      A     M     35.1; 
+      AN    M    174.0; 
+      =     M     35.0; 
+NETWORK
+TITLE =
+
+      A     M     29.2; 
+      A     M     35.0; 
+      =     Q      3.3; 
+NETWORK
+TITLE =
+
+      O     M     29.2; 
+      O     M     29.1; 
+      =     Q      7.0; 
+NETWORK
+TITLE =
+
+      AN    I      8.7; 
+      AN    I      5.5; 
+      AN    I      8.3; 
+      =     M     38.0; 
+NETWORK
+TITLE =
+
+      A     M     38.0; 
+      FP    M     38.1; 
+      =     M     38.2; 
+NETWORK
+TITLE =
+
+      A     I      8.7; 
+      A(    ; 
+      A     I      5.5; 
+      L     DB2.DBW   46; 
+      SF    T     23; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T     23; 
+      )     ; 
+      A     I      8.3; 
+      A     I     11.4; 
+      A     I     12.5; 
+      =     L      1.0; 
+      A     L      1.0; 
+      BLD   102; 
+      =     M     38.3; 
+      A     L      1.0; 
+      A     M     44.1; 
+      S     Q      3.5; 
+      A(    ; 
+      ON    M     44.1; 
+      O     ; 
+      A     I      0.6; 
+      AN    I      1.1; 
+      O     ; 
+      A     I      0.7; 
+      AN    I      4.1; 
+      )     ; 
+      R     Q      3.5; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     35.0; 
+      A     #TEMP0; 
+      AN    #TEMP1; 
+      AN    M     38.3; 
+      FP    M     29.5; 
+      =     M     44.0; 
+      A     M     44.0; 
+      S     M     44.1; 
+      A(    ; 
+      O     M     20.7; 
+      ON    M     35.1; 
+      O     M     11.1; 
+      O     M     38.2; 
+      O     #TEMP1; 
+      O     M    114.0; 
+      )     ; 
+      R     M     44.1; 
+      A     M     44.1; 
+      )     ; 
+      A     M     38.3; 
+      O     ; 
+      AN    M     38.3; 
+      A     M     44.1; 
+      A     M     10.6; 
+      O     I      1.3; 
+      =     Q      3.1; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M     29.0; 
+      O     M     29.1; 
+      )     ; 
+      FP    M     11.2; 
+      O     M    114.0; 
+      =     M     11.1; 
+NETWORK
+TITLE =
+
+      O     M    155.0; 
+      O     M    158.0; 
+      O     M    166.0; 
+      O     M    170.0; 
+      O     M    167.0; 
+      O     M    174.0; 
+      O     M    175.0; 
+      O     M    179.0; 
+      O     M    180.0; 
+      O     M    181.0; 
+      O     M    182.0; 
+      O     M    183.0; 
+      O     M    208.0; 
+      O     M    212.0; 
+      O     M    209.0; 
+      O     M    210.0; 
+      O     M    211.0; 
+      O     M    185.0; 
+      O     M    186.0; 
+      O     M    187.0; 
+      O     M    188.0; 
+      O     M    189.0; 
+      O     M    190.0; 
+      O     M    191.0; 
+      O     M    192.0; 
+      O     M    193.0; 
+      O     M    194.0; 
+      O     M    195.0; 
+      O     M    196.0; 
+      O     M    198.0; 
+      O     M    197.0; 
+      O     M    204.0; 
+      O     M    151.0; 
+      O     M    157.4; 
+      O     M    161.4; 
+      O     M    160.0; 
+      O     M    163.4; 
+      O     M    164.4; 
+      O     M    165.4; 
+      O     M    123.0; 
+      O     M    217.0; 
+      O     M    222.0; 
+      =     M     24.0; 
+NETWORK
+TITLE =
+
+      O     M    155.2; 
+      O     M    158.2; 
+      O     M    166.2; 
+      O     M    170.2; 
+      O     M    167.2; 
+      O     M    174.2; 
+      O     M    175.2; 
+      O     M    179.2; 
+      O     M    180.2; 
+      O     M    181.2; 
+      O     M    182.2; 
+      O     M    183.2; 
+      O     M    208.2; 
+      O     M    212.2; 
+      O     M    209.2; 
+      O     M    210.2; 
+      O     M    211.2; 
+      O     M    185.2; 
+      O     M    186.2; 
+      O     M    187.2; 
+      O     M    188.2; 
+      O     M    189.2; 
+      O     M    190.2; 
+      O     M    191.2; 
+      O     M    192.2; 
+      O     M    193.2; 
+      O     M    194.2; 
+      O     M    195.2; 
+      O     M    196.2; 
+      O     M    198.2; 
+      O     M    197.2; 
+      O     M    204.2; 
+      O     M    151.1; 
+      O     M    157.5; 
+      O     M    161.5; 
+      O     M    160.1; 
+      O     M    163.5; 
+      O     M    164.5; 
+      O     M    165.5; 
+      O     M     20.0; 
+      O     M    123.2; 
+      O     M    217.2; 
+      O     M    222.2; 
+      =     M     22.0; 
+NETWORK
+TITLE =
+
+      CALL FC    11 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC    13 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC    14 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC    15 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC    20 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC    21 ;
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 191 : VOID
+AUTHOR : 
+FAMILY : ZEITEN
+NAME : S_EVERZ
+VERSION : 0.0
+
+
+VAR_INPUT
+  IN0 : BOOL ;	
+  IN1 : BOOL ;	
+END_VAR
+VAR_IN_OUT
+  IO2 : INT ;	
+  IO3 : INT ;	
+  IO4 : INT ;	
+  IO5 : INT ;	
+  IO6 : INT ;	
+  IO7 : WORD ;	
+END_VAR
+VAR_TEMP
+  TEMP8 : BOOL ;	
+  TEMP9 : BOOL ;	
+  TEMP10 : BOOL ;	
+  TEMP11 : BOOL ;	
+  TEMP12 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #IO7; 
+      T     LW     0; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN0; 
+      A     M     10.5; 
+      FP    #TEMP8; 
+      JNB   M001; 
+      L     #IO6; 
+      L     1; 
+      +I    ; 
+      T     #IO6; 
+M001: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN0; 
+      A(    ; 
+      L     #IO6; 
+      L     60; 
+      >=I   ; 
+      )     ; 
+      FP    #TEMP9; 
+      JNB   M002; 
+      L     #IO5; 
+      L     1; 
+      +I    ; 
+      T     #IO5; 
+M002: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN0; 
+      A(    ; 
+      L     #IO5; 
+      L     60; 
+      >=I   ; 
+      )     ; 
+      FP    #TEMP10; 
+      JNB   M003; 
+      L     #IO4; 
+      L     1; 
+      +I    ; 
+      T     #IO4; 
+M003: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN0; 
+      A(    ; 
+      L     #IO4; 
+      L     24; 
+      >=I   ; 
+      )     ; 
+      FP    #TEMP11; 
+      JNB   M004; 
+      L     #IO3; 
+      L     1; 
+      +I    ; 
+      T     #IO3; 
+M004: NOP   0; 
+NETWORK
+TITLE =
+
+      A     #IN0; 
+      A(    ; 
+      L     #IO3; 
+      L     365; 
+      >=I   ; 
+      )     ; 
+      FP    #TEMP12; 
+      JNB   M005; 
+      L     #IO2; 
+      L     1; 
+      +I    ; 
+      T     #IO2; 
+M005: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O(    ; 
+      L     #IO6; 
+      L     60; 
+      >=I   ; 
+      )     ; 
+      O     #IN1; 
+      )     ; 
+      JNB   M006; 
+      L     0; 
+      T     #IO6; 
+M006: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O(    ; 
+      L     #IO5; 
+      L     60; 
+      >=I   ; 
+      )     ; 
+      O     #IN1; 
+      )     ; 
+      JNB   M007; 
+      L     0; 
+      T     #IO5; 
+M007: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O(    ; 
+      L     #IO4; 
+      L     24; 
+      >=I   ; 
+      )     ; 
+      O     #IN1; 
+      )     ; 
+      JNB   M008; 
+      L     0; 
+      T     #IO4; 
+M008: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O(    ; 
+      L     #IO3; 
+      L     365; 
+      >=I   ; 
+      )     ; 
+      O     #IN1; 
+      )     ; 
+      JNB   M009; 
+      L     0; 
+      T     #IO3; 
+M009: NOP   0; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O(    ; 
+      L     #IO2; 
+      L     32767; 
+      >=I   ; 
+      )     ; 
+      O     #IN1; 
+      )     ; 
+      JNB   M00a; 
+      L     0; 
+      T     #IO2; 
+M00a: NOP   0; 
+NETWORK
+TITLE =
+
+      L     LW     0; 
+      T     #IO7; 
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 1 : VOID
+AUTHOR : 
+FAMILY : GENERAL
+NAME : GENERAL
+VERSION : 0.0
+
+BEGIN
+NETWORK
+TITLE =
+
+      O     M     20.1; 
+      ON    M     20.1; 
+      =     M     20.1; 
+NETWORK
+TITLE =
+
+      A     M     20.0; 
+      AN    M     20.0; 
+      =     M     20.0; 
+NETWORK
+TITLE =
+
+      O     I      5.1; 
+      O     I      1.3; 
+      =     Q      4.6; 
+NETWORK
+TITLE =
+
+      A     I      3.4; 
+      =     Q      7.1; 
+NETWORK
+TITLE =
+
+      A     I      3.3; 
+      =     Q      7.2; 
+NETWORK
+TITLE =
+
+      A     I      0.5; 
+      AN    I      0.6; 
+      AN    I      0.7; 
+      =     M     29.0; 
+      A     M     29.0; 
+      O     I      1.3; 
+      =     Q      0.4; 
+NETWORK
+TITLE =
+
+      AN    I      0.5; 
+      A     I      0.6; 
+      AN    I      0.7; 
+      =     M     29.1; 
+      A     M     29.1; 
+      O     I      1.3; 
+      =     Q      0.5; 
+NETWORK
+TITLE =
+
+      AN    I      0.5; 
+      AN    I      0.6; 
+      A     I      0.7; 
+      =     M     29.2; 
+      A     M     29.2; 
+      O     I      1.3; 
+      =     Q      0.6; 
+NETWORK
+TITLE =
+
+      O     I      4.2; 
+      O     I      1.3; 
+      =     Q      1.5; 
+NETWORK
+TITLE =
+
+      O     I      4.5; 
+      O     I      1.3; 
+      =     Q      2.7; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M     20.5; 
+      O(    ; 
+      A     M    114.0; 
+      FP    M     20.6; 
+      )     ; 
+      )     ; 
+      L     DB2.DBW    8; 
+      SF    T      4; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      4; 
+      =     M     20.7; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      O     M     20.0; 
+      O     M     20.0; 
+      O     M     20.0; 
+      )     ; 
+      =     L      0.0; 
+      BLD   103; 
+      A     M     20.0; 
+      =     L      0.1; 
+      BLD   103; 
+      CALL FC   191 (
+           IN0                      := L      0.0,
+           IN1                      := L      0.1,
+           IO2                      := DB191.DBW  202,
+           IO3                      := DB191.DBW  162,
+           IO4                      := DB191.DBW  122,
+           IO5                      := DB191.DBW   82,
+           IO6                      := DB191.DBW   42,
+           IO7                      := DB191.DBW    2);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O     I      0.2; 
+      O     I      1.3; 
+      =     Q      4.3; 
+NETWORK
+TITLE =
+
+      A     I      0.3; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I      0.4; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      0.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      0.0,
+           IN1                      := L      0.1,
+           IN2                      := L      0.2,
+           OUT3                     := M    114.0,
+           OUT4                     := M    114.1,
+           OUT5                     := M    114.2,
+           OUT6                     := DB1.DBW    6,
+           IO7                      := DB182.DBW   58);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I      5.1; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      0.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      0.0,
+           IN1                      := L      0.1,
+           IN2                      := L      0.2,
+           OUT3                     := M    206.0,
+           OUT4                     := M    206.1,
+           OUT5                     := M    206.2,
+           OUT6                     := DB10.DBW  350,
+           IO7                      := DB182.DBW   66);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      4.0; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      0.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      0.0,
+           IN1                      := L      0.1,
+           IN2                      := L      0.2,
+           OUT3                     := M    207.0,
+           OUT4                     := M    207.1,
+           OUT5                     := M    207.2,
+           OUT6                     := DB10.DBW  352,
+           IO7                      := DB182.DBW   68);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O     M    114.0; 
+      O     I      1.3; 
+      =     Q      0.2; 
+NETWORK
+TITLE =
+
+      A     I      0.3; 
+      =     Q      0.3; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      0.0; 
+      BLD   103; 
+      AN    I      0.0; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      0.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      0.0,
+           IN1                      := L      0.1,
+           IN2                      := L      0.2,
+           OUT3                     := M    115.0,
+           OUT4                     := M    115.1,
+           OUT5                     := M    115.2,
+           OUT6                     := DB1.DBW    8,
+           IO7                      := DB182.DBW   60);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      A     M     21.0; 
+      =     L      0.0; 
+      BLD   103; 
+      A     I      0.1; 
+      =     L      0.1; 
+      BLD   103; 
+      A     M     20.1; 
+      =     L      0.2; 
+      BLD   103; 
+      CALL FC   182 (
+           IN0                      := L      0.0,
+           IN1                      := L      0.1,
+           IN2                      := L      0.2,
+           OUT3                     := M    101.0,
+           OUT4                     := M    101.1,
+           OUT5                     := M    101.2,
+           OUT6                     := DB1.DBW   12,
+           IO7                      := DB182.DBW   56);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O     M    114.2; 
+      O     M    115.2; 
+      O     M    101.2; 
+      O     M     22.0; 
+      O     M    206.2; 
+      O     M    207.2; 
+      =     M     23.7; 
+NETWORK
+TITLE =
+
+      O     M    114.0; 
+      O     M    115.0; 
+      O     M    101.0; 
+      O     M     24.0; 
+      O     M    206.0; 
+      O     M    207.0; 
+      =     L      0.0; 
+      O     L      0.0; 
+      O     I      1.3; 
+      =     Q      1.0; 
+      A     L      0.0; 
+      BLD   102; 
+      =     Q      3.4; 
+NETWORK
+TITLE =
+
+      A     M     23.7; 
+      S     Q      1.1; 
+      A(    ; 
+      O     I      1.5; 
+      O     M     20.5; 
+      )     ; 
+      R     Q      1.1; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      O     M     20.7; 
+      O     I      1.4; 
+      =     M     21.0; 
+      =     Q      5.1; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     35.1; 
+      A     M     35.0; 
+      A     M     44.0; 
+      AN    M     38.3; 
+      FP    M     29.3; 
+      O(    ; 
+      A     I      1.2; 
+      FP    M     28.0; 
+      )     ; 
+      )     ; 
+      S     M     27.2; 
+      A(    ; 
+      AN    M     44.1; 
+      FP    M     47.0; 
+      O     T      3; 
+      O     M     20.7; 
+      O(    ; 
+      A     M     38.3; 
+      FP    M     38.7; 
+      )     ; 
+      O(    ; 
+      A     I      1.2; 
+      FP    M     29.4; 
+      A     Q      0.0; 
+      )     ; 
+      )     ; 
+      R     M     27.2; 
+      A     M     27.2; 
+      =     L      0.0; 
+      A     L      0.0; 
+      A     M     10.7; 
+      =     Q      0.0; 
+      A     L      0.0; 
+      BLD   102; 
+      =     Q      0.1; 
+NETWORK
+TITLE =
+
+      A     M     27.2; 
+      L     DB2.DBW    4; 
+      SD    T      2; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      2; 
+      =     M     27.3; 
+NETWORK
+TITLE =
+
+      A(    ; 
+      A     M     27.2; 
+      L     DB2.DBW   10; 
+      SD    T      5; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      A     T      5; 
+      )     ; 
+      L     DB2.DBW    6; 
+      SE    T      3; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     3 ;
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC    10 ;
+      NOP   0; 
+END_FUNCTION
+
+FUNCTION FC 186 : VOID
+AUTHOR : 
+FAMILY : GENERAL
+NAME : BYTECOMP
+VERSION : 0.0
+
+
+VAR_INPUT
+  IN0 : BYTE ;	
+  IN1 : BYTE ;	
+END_VAR
+VAR_OUTPUT
+  OUT2 : BOOL ;	
+  OUT3 : BOOL ;	
+  OUT4 : BOOL ;	
+  OUT5 : BOOL ;	
+END_VAR
+VAR_TEMP
+  TEMP6 : INT ;	
+  TEMP7 : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      L     #IN0; 
+      T     #TEMP6; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #IN1; 
+      T     #TEMP7; 
+      NOP   0; 
+NETWORK
+TITLE =
+
+      L     #TEMP6; 
+      L     #TEMP7; 
+      ==I   ; 
+      =     #OUT2; 
+NETWORK
+TITLE =
+
+      L     #TEMP6; 
+      L     #TEMP7; 
+      <>I   ; 
+      =     #OUT3; 
+NETWORK
+TITLE =
+
+      L     #TEMP6; 
+      L     #TEMP7; 
+      >I    ; 
+      =     #OUT4; 
+NETWORK
+TITLE =
+
+      L     #TEMP6; 
+      L     #TEMP7; 
+      <I    ; 
+      =     #OUT5; 
+END_FUNCTION
+
+ORGANIZATION_BLOCK OB 1
+VERSION : 0.1
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : INT ;	
+  TEMP7 : INT ;	
+  TEMP8 : INT ;	
+  TEMP9 : DATE_AND_TIME ;	
+  TEMP10 : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      CALL FC   186 (
+           IN0                      := #TEMP1,
+           IN1                      := B#16#1,
+           OUT2                     := M     20.5,
+           OUT3                     := M     20.2,
+           OUT4                     := M     20.2,
+           OUT5                     := M     20.2);
+      NOP   0; 
+NETWORK
+TITLE =
+
+      CALL FC     1 ;
+      NOP   0; 
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 85
+VERSION : 0.0
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : INT ;	
+  TEMP7 : BYTE ;	
+  TEMP8 : BYTE ;	
+  TEMP9 : BYTE ;	
+  TEMP10 : BYTE ;	
+  TEMP11 : DATE_AND_TIME ;	
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 86
+VERSION : 0.0
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : WORD ;	
+ // TEMP7 : ARRAY  [0 .. 31 ] OF BOOL ;	
+  TEMP8 : DATE_AND_TIME ;	
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK OB 122
+VERSION : 0.0
+
+
+VAR_TEMP
+  TEMP0 : BYTE ;	
+  TEMP1 : BYTE ;	
+  TEMP2 : BYTE ;	
+  TEMP3 : BYTE ;	
+  TEMP4 : BYTE ;	
+  TEMP5 : BYTE ;	
+  TEMP6 : WORD ;	
+  TEMP7 : WORD ;	
+  TEMP8 : WORD ;	
+  TEMP9 : DATE_AND_TIME ;	
+END_VAR
+BEGIN
+END_ORGANIZATION_BLOCK
+
