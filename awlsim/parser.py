@@ -269,7 +269,7 @@ class AwlParser(object):
 				t.inComment = True
 				continue
 			if t.tokens:
-				if c == '(':
+				if c == '(' and not t.curToken:
 					# Parenthesis begin
 					t.inParens = True
 					t.addCharacter(c)
