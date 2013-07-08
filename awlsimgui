@@ -19,6 +19,7 @@ if isPyPy:
 import os
 import time
 import getopt
+import traceback
 
 try:
 	from PySide.QtCore import *
@@ -35,6 +36,15 @@ from awlsim.insntrans import *
 opt_awlSource = None
 opt_extInsns = False
 
+
+def handleFatalException(parentWidget=None):
+	QMessageBox.critical(parentWidget,
+		"A fatal exception occurred",
+		"A fatal exception occurred:\n\n"
+		"%s\n\n"
+		"Awlsim will be terminated." %\
+		(traceback.format_exc(),))
+	sys.exit(1)
 
 class StateWindow(QWidget):
 	closed = Signal()
@@ -654,6 +664,8 @@ class CpuWidget(QWidget):
 					     str(e))
 			self.stop()
 			return
+		except Exception:
+			handleFatalException(self)
 		self.runStateChanged.emit(self.state)
 		while self.state == self.STATE_RUN:
 			try:
@@ -663,6 +675,8 @@ class CpuWidget(QWidget):
 				QMessageBox.critical(self, "Simulator exception",
 						     str(e))
 				self.stop()
+			except Exception:
+				handleFatalException(self)
 		self.runStateChanged.emit(self.state)
 
 	def stop(self):
