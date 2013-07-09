@@ -40,7 +40,7 @@ VAR_INPUT
 END_VAR
 BEGIN
 	CALL FC 4 (
-		INPVAR		:= #INPVAR2,
+		INPVAR		:= #INPVAR2,	// This is a parameter
 	)
 END_FUNCTION
 

@@ -264,8 +264,10 @@ class AwlParser(object):
 				continue
 			if c == '/' and i + 1 < len(data) and\
 			   data[i + 1] == '/':
-				# A //comment ends the statement.
-				self.__parseTokens(t)
+				# A //comment ends the statement, but only if
+				# not in parenthesis.
+				if not t.inParens:
+					self.__parseTokens(t)
 				t.inComment = True
 				continue
 			if t.tokens:
