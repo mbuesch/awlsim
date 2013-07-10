@@ -194,9 +194,6 @@ class AwlDataType(object):
 			elif self.type == self.TYPE_BLOCK_FC:
 				if tokens[0].upper() == "FC":
 					value = self.tryParseImmediate_INT(tokens[1])
-			elif self.type == self.TYPE_BLOCK_SDB:
-				if tokens[0].upper() == "SDB":
-					value = self.tryParseImmediate_INT(tokens[1])
 		elif len(tokens) == 1:
 			if self.type == self.TYPE_BOOL:
 				value = self.tryParseImmediate_BOOL(
@@ -241,7 +238,8 @@ class AwlDataType(object):
 			elif self.type == self.TYPE_TOD:
 				pass#TODO
 			elif self.type == self.TYPE_CHAR:
-				pass#TODO
+				value = self.tryParseImmediate_CHAR(
+						tokens[0])
 		if value is None:
 			raise AwlSimError("Immediate value '%s' does "
 				"not match data type '%s'" %\
@@ -352,6 +350,28 @@ class AwlDataType(object):
 			num = int(num, 10)
 			seconds += num * mult
 		return seconds
+
+	@classmethod
+	def __tryParseImmediate_STRING(cls, token, maxLen):
+		if not token.startswith("'") or\
+		   not token.endswith("'"):
+			return None
+		token = token[1:-1]
+		if len(token) > maxLen:
+			raise AwlSimError("String too long (>%d characters)" % maxLen)
+		value = 0
+		for c in token:
+			value <<= 8
+			value |= ord(c)
+		return value
+
+	@classmethod
+	def tryParseImmediate_STRING(cls, token):
+		return cls.__tryParseImmediate_STRING(token, 4)
+
+	@classmethod
+	def tryParseImmediate_CHAR(cls, token):
+		return cls.__tryParseImmediate_STRING(token, 1)
 
 	@classmethod
 	def tryParseImmediate_S5T(cls, token):

@@ -341,6 +341,11 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator.IMM, 16,
 					    immediate, 1)
+		# String immediate
+		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM, 32,
+					    immediate, 1)
 		# DBx.DB[XBWD] addressing
 		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])
 		if match:
