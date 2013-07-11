@@ -303,8 +303,8 @@ class AwlParser(object):
 					t.addToken(c)
 					continue
 				if (self.__inAnyHeaderOrGlobal() and\
-				    c in ('=', ':', '[', ']', '..', '{', '}')) or\
-				   (c == ',') or\
+				    c in ('=', ':', '..', '{', '}')) or\
+				   c in (',', '[', ']') or\
 				   (c == '=' and len(t.tokens) == 1 and not t.curToken):
 					# Handle non-space token separators.
 					t.finishCurToken()
