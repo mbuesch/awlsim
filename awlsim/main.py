@@ -26,7 +26,7 @@ class AwlSim(object):
 			curInsn = self.cpu.getCurrentInsn()
 			if curInsn:
 				line = " at AWL line %d" % curInsn.getLineNr()
-		raise AwlSimError("ERROR%s: %s\n\n%s" %\
+		raise AwlSimError("ERROR%s:    %s\n\n%s" %\
 			(line, str(e), str(self.cpu)))
 
 	def load(self, parseTree):
