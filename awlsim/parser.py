@@ -31,12 +31,10 @@ class RawAwlInsn(object):
 	def __repr__(self):
 		ret = []
 		if self.hasLabel():
-			ret.append(self.getLabel() + ':\t')
-		else:
-			ret.append('\t')
+			ret.append(self.getLabel() + ':  ')
 		ret.append(self.getName())
 		ret.extend(self.getOperators())
-		return "\t".join(ret)
+		return " ".join(ret)
 
 	def setLineNr(self, newLineNr):
 		self.lineNr = newLineNr
