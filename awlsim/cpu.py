@@ -397,15 +397,17 @@ class S7CPU(object):
 		self.relativeJump = 1
 
 		# Stats
-		self.cycleCount = 0
-		self.insnCount = 0
-		self.insnCountMod = self.getRandomInt(0, 127) + 1
-		self.runtimeSec = 0.0
+		self.__insnCount = 0
+		self.__insnCountMod = self.getRandomInt(0, 127) + 1
+		self.__cycleCount = 0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
 		self.cycleStartTime = 0.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
+		self.__speedMeasureStartTime = 0
+		self.__speedMeasureStartInsnCount = 0
+		self.__speedMeasureStartCycleCount = 0
 
 		self.updateTimestamp()
 
@@ -442,13 +444,7 @@ class S7CPU(object):
 	def parenStack(self):
 		return self.callStackTop.parenStack
 
-	def __runTimeCheck(self):
-		if self.now - self.cycleStartTime > self.cycleTimeLimit:
-			raise AwlSimError("Cycle time exceed %.3f seconds" %\
-					  self.cycleTimeLimit)
-
 	def __runBlock(self, block):
-		self.__startCycleTimeMeasurement()
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, block) ]
 		cse = self.callStackTop = self.callStack[-1]
@@ -460,11 +456,12 @@ class S7CPU(object):
 				if self.cbPostInsn:
 					self.cbPostInsn(self.cbPostInsnData)
 				cse.ip += self.relativeJump
-				cse, self.insnCount = self.callStackTop, self.insnCount + 1
-				if self.insnCount % self.insnCountMod == 0:
+				cse, self.__insnCount = self.callStackTop,\
+							(self.__insnCount + 1) & 0x00FFFFFF
+				if self.__insnCount % self.__insnCountMod == 0:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-					self.insnCountMod = self.getRandomInt(0, 127) + 1
+					self.__insnCountMod = self.getRandomInt(0, 127) + 1
 			if self.cbBlockExit:
 				self.cbBlockExit(self.cbBlockExitData)
 			prevCse = self.callStack.pop()
@@ -474,13 +471,13 @@ class S7CPU(object):
 			prevCse.destroy()
 		if self.cbCycleExit:
 			self.cbCycleExit(self.cbCycleExitData)
-		self.cycleCount += 1
-		self.__endCycleTimeMeasurement()
 
 	# Run startup code
 	def startup(self):
 		self.updateTimestamp()
-		self.cpuStartupTime = self.now
+		self.__speedMeasureStartTime = self.now
+		self.__speedMeasureStartInsnCount = 0
+		self.__speedMeasureStartCycleCount = 0
 
 		# Run startup OB
 		for obNumber in (100, 101, 102):
@@ -491,29 +488,51 @@ class S7CPU(object):
 
 	# Run one cycle of the user program
 	def runCycle(self):
-		self.__runBlock(self.obs[1])
-
-	def inCycle(self):
-		# Return true, if we are in runCycle().
-		#FIXME
-		return bool(self.callStack)
-
-	def __startCycleTimeMeasurement(self):
+		# Update timekeeping
 		self.updateTimestamp()
 		self.cycleStartTime = self.now
 
-	def __endCycleTimeMeasurement(self):
+		# Run the actual OB1 code
+		self.__runBlock(self.obs[1])
+
+		# Update timekeeping and statistics
 		self.updateTimestamp()
-		elapsedTime = self.now - self.cycleStartTime
-		self.runtimeSec += elapsedTime
-		if self.cycleCount >= 50:
-			self.runtimeSec = max(self.runtimeSec, 0.00001)
-			self.insnPerSecond = self.insnCount / self.runtimeSec
-			self.avgInsnPerCycle = self.insnCount / self.cycleCount
-			self.cycleCount, self.insnCount, self.runtimeSec =\
-				0, 0, 0.0
-		self.maxCycleTime = max(self.maxCycleTime, elapsedTime)
-		self.avgCycleTime = (self.avgCycleTime + elapsedTime) / 2
+		self.__cycleCount = (self.__cycleCount + 1) & 0x00FFFFFF
+
+		# Evaluate speed measurement
+		elapsedTime = self.now - self.__speedMeasureStartTime
+		if elapsedTime >= 1.0:
+			# Calculate instruction and cycle counts.
+			cycleCount = (self.__cycleCount - self.__speedMeasureStartCycleCount) &\
+				     0x00FFFFFF
+			insnCount = (self.__insnCount - self.__speedMeasureStartInsnCount) &\
+				    0x00FFFFFF
+
+			# Calculate instruction statistics.
+			self.insnPerSecond = insnCount / elapsedTime
+			self.avgInsnPerCycle = insnCount / cycleCount
+
+			# Get the average cycle time over the measurement period.
+			cycleTime = elapsedTime / cycleCount
+
+			# Store overall-average cycle time and maximum cycle time.
+			self.maxCycleTime = max(self.maxCycleTime, cycleTime)
+			self.avgCycleTime = (self.avgCycleTime + cycleTime) / 2
+
+			# Reset the counters
+			self.__speedMeasureStartTime = self.now
+			self.__speedMeasureStartInsnCount = self.__insnCount
+			self.__speedMeasureStartCycleCount = self.__cycleCount
+
+	# Update the CPU time
+	def updateTimestamp(self):
+		# self.now is a floating point count of seconds since the epoch.
+		self.now = time.time()
+
+	def __runTimeCheck(self):
+		if self.now - self.cycleStartTime > self.cycleTimeLimit:
+			raise AwlSimError("Cycle time exceed %.3f seconds" %\
+					  self.cycleTimeLimit)
 
 	def getCurrentIP(self):
 		try:
@@ -645,10 +664,6 @@ class S7CPU(object):
 		cse = self.callStackTop
 		# Swap global and instance DB
 		cse.instanceDB, self.globDB = self.globDB, cse.instanceDB
-
-	def updateTimestamp(self):
-		# self.now is a floating point count of seconds since the epoch.
-		self.now = time.time()
 
 	def getStatusWord(self):
 		return self.callStackTop.status
