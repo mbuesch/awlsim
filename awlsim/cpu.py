@@ -733,15 +733,6 @@ class S7CPU(object):
 	def fetchIMM(self, operator):
 		return operator.value
 
-	def fetchIMM_REAL(self, operator):
-		return operator.value
-
-	def fetchIMM_S5T(self, operator):
-		return operator.value
-
-	def fetchIMM_PTR(self, operator):
-		return operator.value
-
 	def fetchSTW(self, operator):
 		if operator.width == 1:
 			return self.callStackTop.status.getByBitNumber(operator.value.bitOffset)
@@ -854,9 +845,9 @@ class S7CPU(object):
 
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
-		AwlOperator.IMM_REAL		: fetchIMM_REAL,
-		AwlOperator.IMM_S5T		: fetchIMM_S5T,
-		AwlOperator.IMM_PTR		: fetchIMM_PTR,
+		AwlOperator.IMM_REAL		: fetchIMM,
+		AwlOperator.IMM_S5T		: fetchIMM,
+		AwlOperator.IMM_PTR		: fetchIMM,
 		AwlOperator.MEM_E		: fetchE,
 		AwlOperator.MEM_A		: fetchA,
 		AwlOperator.MEM_M		: fetchM,
