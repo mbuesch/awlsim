@@ -740,7 +740,7 @@ class S7CPU(object):
 		return operator.value
 
 	def fetchIMM_PTR(self, operator):
-		return operator.value.toPointerValue()
+		return operator.value
 
 	def fetchSTW(self, operator):
 		if operator.width == 1:

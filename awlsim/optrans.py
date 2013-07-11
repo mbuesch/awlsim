@@ -303,7 +303,10 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator.IMM_DT, 64,
 					    immediate, 1)
 		# Pointer immediate
-		#TODO
+		immediate, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
+		if immediate is not None:
+			return OpDescriptor(AwlOperator.IMM_PTR, 32,
+					    immediate, fields)
 		# Binary immediate
 		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
 		if immediate is not None:
@@ -365,7 +368,8 @@ class AwlOpTranslator(object):
 	def __translateOp(self, rawInsn, rawOps):
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
-		if opDesc.fieldCount == 2 and\
+		if not isinstance(opDesc.offset, int) and\
+		   opDesc.fieldCount == 2 and\
 		   (opDesc.offset.byteOffset == -1 or opDesc.offset.bitOffset == -1):
 			self.__translateAddressOperator(opDesc, rawOps[1:])
 

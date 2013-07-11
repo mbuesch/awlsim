@@ -417,6 +417,55 @@ class AwlDataType(object):
 		raise AwlSimError("DATE_AND_TIME# not implemented, yet")#TODO
 
 	@classmethod
+	def __parsePtrOffset(cls, string):
+		try:
+			values = string.split(".")
+			if len(values) != 2:
+				raise ValueError
+			byteOffset = int(values[0], 10)
+			bitOffset = int(values[1], 10)
+			if bitOffset < 0 or bitOffset > 7 or\
+			   byteOffset < 0 or byteOffset > 0x1FFFFF:
+				raise ValueError
+			return (byteOffset << 3) | bitOffset
+		except ValueError:
+			raise AwlSimError("Invalid pointer offset")
+
+	@classmethod
+	def tryParseImmediate_Pointer(cls, tokens):
+		prefix = tokens[0].upper()
+		if not prefix.startswith("P#"):
+			return None, None
+		prefix = prefix[2:] # Strip P#
+		try:
+			if prefix == "P":
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x80000000
+				return ptr, 2
+			elif prefix in ("E", "I"):
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x81000000
+				return ptr, 2
+			elif prefix in ("A", "Q"):
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x82000000
+				return ptr, 2
+			elif prefix == "M":
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x83000000
+				return ptr, 2
+			elif prefix == "L":
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x86000000
+				return ptr, 2
+			else:
+				# Area-internal pointer
+				ptr = cls.__parsePtrOffset(prefix)
+				return ptr, 1
+		except IndexError:
+			raise AwlSimError("Invalid pointer immediate")
+
+	@classmethod
 	def tryParseImmediate_Bin(cls, token):
 		token = token.upper()
 		if not token.startswith("2#"):
