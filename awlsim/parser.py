@@ -197,8 +197,10 @@ class AwlParser(object):
 			self.tokensLineNr = -1
 			self.curToken = ""
 			self.inComment = False
-			self.inQuote = False
+			self.inDoubleQuote = False
+			self.inSingleQuote = False
 			self.inParens = False
+			self.inAssignment = False
 
 		def addCharacter(self, c):
 			if not self.curToken:
@@ -256,10 +258,20 @@ class AwlParser(object):
 				if c == '\n':
 					t.inComment = False
 				continue
+			if t.inAssignment:
+				if c == '\n':
+					t.inAssignment = False
+					self.__parseTokens(t)
+				else:
+					t.addCharacter(c)
+				continue
 			if c == '"':
-				# Quote begin or end
-				t.inQuote = not t.inQuote
-			if t.inQuote:
+				# Double quote begin or end
+				t.inDoubleQuote = not t.inDoubleQuote
+			if c == "'":
+				# Single quote begin or end
+				t.inSingleQuote = not t.inSingleQuote
+			if t.inSingleQuote or t.inDoubleQuote:
 				t.addCharacter(c)
 				continue
 			if c == '/' and i + 1 < len(data) and\
@@ -269,6 +281,12 @@ class AwlParser(object):
 				if not t.inParens:
 					self.__parseTokens(t)
 				t.inComment = True
+				continue
+			if c == '=' and len(t.tokens) == 1 and not t.curToken:
+				# NAME = VALUE assignment
+				t.inAssignment = True
+				t.addCharacter(c)
+				t.finishCurToken()
 				continue
 			if t.tokens:
 				if (c == '(' and t.tokens[0].endswith(':') and len(t.tokens) >= 2) or\
@@ -293,15 +311,14 @@ class AwlParser(object):
 					t.addToken(c)
 					continue
 			if not t.inParens:
-				if c == '\n' or\
-				   (c == ';' and not (len(t.tokens) >= 2 and t.tokens[1] == '=')):
+				if c in ('\n', ';'):
 					self.__parseTokens(t)
 					continue
 			if c.isspace():
 				t.finishCurToken()
 			else:
 				t.addCharacter(c)
-		if t.inQuote:
+		if t.inSingleQuote or t.inDoubleQuote:
 			raise AwlParserError("Unterminated quote")
 		if t.inParens:
 			raise AwlParserError("Unterminated parenthesis pair")
