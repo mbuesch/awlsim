@@ -122,6 +122,20 @@ class AwlOperator(object):
 		self.insn = insn
 		self.setExtended(False)
 
+	# Make a deep copy, except for "insn".
+	def dup(self):
+		if isinstance(self.value, int):
+			dupValue = self.value
+		else:
+			dupValue = self.value.dup()
+		oper = AwlOperator(type = self.type,
+				   width = self.width,
+				   value = dupValue,
+				   insn = self.insn)
+		oper.setExtended(self.isExtended)
+		oper.setLabelIndex(self.labelIndex)
+		return oper
+
 	def setInsn(self, newInsn):
 		self.insn = newInsn
 
@@ -363,6 +377,14 @@ class AwlIndirectOp(AwlOperator):
 		self.area = area
 		self.addressRegister = addressRegister
 		self.offsetOper = offsetOper
+
+	# Make a deep copy, except for "insn".
+	def dup(self):
+		return AwlIndirectOp(area = self.area,
+				     width = self.width,
+				     addressRegister = self.addressRegister,
+				     offsetOper = self.offsetOper.dup(),
+				     insn = self.insn)
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
 		types = toList(types)

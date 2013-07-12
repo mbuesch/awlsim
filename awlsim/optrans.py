@@ -20,144 +20,137 @@ from awlsim.cpuspecs import *
 class OpDescriptor(object):
 	"Instruction operator descriptor"
 
-	def __init__(self, operType, width, offset, fieldCount):
-		self.operType = operType
-		self.width = width
-		self.offset = offset
+	# operator => AwlOperator or AwlIndirectOp
+	# fieldCount => Number of consumed tokens
+	def __init__(self, operator, fieldCount):
+		self.operator = operator
 		self.fieldCount = fieldCount
 
-		self.indirectOpDesc = None
-
+	# Make a deep copy
 	def dup(self):
-		#FIXME
-		if isinstance(self.offset, AwlOffset) or\
-		   isinstance(self.offset, AwlDbOffset):
-			offset = self.offset.dup()
-		else:
-			offset = self.offset
-		return OpDescriptor(self.operType, self.width,
-				    offset, self.fieldCount)
+		return OpDescriptor(operator = self.operator.dup(),
+				    fieldCount = self.fieldCount)
 
 class AwlOpTranslator(object):
 	"Instruction operator translator"
 
 	__constOperTab_german = {
-		"==0"	: OpDescriptor(AwlOperator.MEM_STW_Z, 1,
-				       AwlOffset(0, 0), 1),
-		"<>0"	: OpDescriptor(AwlOperator.MEM_STW_NZ, 1,
-				       AwlOffset(0, 0), 1),
-		">0"	: OpDescriptor(AwlOperator.MEM_STW_POS, 1,
-				       AwlOffset(0, 0), 1),
-		"<0"	: OpDescriptor(AwlOperator.MEM_STW_NEG, 1,
-				       AwlOffset(0, 0), 1),
-		">=0"	: OpDescriptor(AwlOperator.MEM_STW_POSZ, 1,
-				       AwlOffset(0, 0), 1),
-		"<=0"	: OpDescriptor(AwlOperator.MEM_STW_NEGZ, 1,
-				       AwlOffset(0, 0), 1),
-		"OV"	: OpDescriptor(AwlOperator.MEM_STW, 1,
-				       AwlOffset(0, 5), 1),
-		"OS"	: OpDescriptor(AwlOperator.MEM_STW, 1,
-				       AwlOffset(0, 4), 1),
-		"UO"	: OpDescriptor(AwlOperator.MEM_STW_UO, 1,
-				       AwlOffset(0, 0), 1),
-		"BIE"	: OpDescriptor(AwlOperator.MEM_STW, 1,
-				       AwlOffset(0, 8), 1),
-		"E"	: OpDescriptor(AwlOperator.MEM_E, 1,
-				       AwlOffset(-1, -1), 2),
-		"EB"	: OpDescriptor(AwlOperator.MEM_E, 8,
-				       AwlOffset(-1, 0), 2),
-		"EW"	: OpDescriptor(AwlOperator.MEM_E, 16,
-				       AwlOffset(-1, 0), 2),
-		"ED"	: OpDescriptor(AwlOperator.MEM_E, 32,
-				       AwlOffset(-1, 0), 2),
-		"A"	: OpDescriptor(AwlOperator.MEM_A, 1,
-				       AwlOffset(-1, -1), 2),
-		"AB"	: OpDescriptor(AwlOperator.MEM_A, 8,
-				       AwlOffset(-1, 0), 2),
-		"AW"	: OpDescriptor(AwlOperator.MEM_A, 16,
-				       AwlOffset(-1, 0), 2),
-		"AD"	: OpDescriptor(AwlOperator.MEM_A, 32,
-				       AwlOffset(-1, 0), 2),
-		"L"	: OpDescriptor(AwlOperator.MEM_L, 1,
-				       AwlOffset(-1, -1), 2),
-		"LB"	: OpDescriptor(AwlOperator.MEM_L, 8,
-				       AwlOffset(-1, 0), 2),
-		"LW"	: OpDescriptor(AwlOperator.MEM_L, 16,
-				       AwlOffset(-1, 0), 2),
-		"LD"	: OpDescriptor(AwlOperator.MEM_L, 32,
-				       AwlOffset(-1, 0), 2),
-		"M"	: OpDescriptor(AwlOperator.MEM_M, 1,
-				       AwlOffset(-1, -1), 2),
-		"MB"	: OpDescriptor(AwlOperator.MEM_M, 8,
-				       AwlOffset(-1, 0), 2),
-		"MW"	: OpDescriptor(AwlOperator.MEM_M, 16,
-				       AwlOffset(-1, 0), 2),
-		"MD"	: OpDescriptor(AwlOperator.MEM_M, 32,
-				       AwlOffset(-1, 0), 2),
-		"T"	: OpDescriptor(AwlOperator.MEM_T, 16,
-				       AwlOffset(-1, 0), 2),
-		"Z"	: OpDescriptor(AwlOperator.MEM_Z, 16,
-				       AwlOffset(-1, 0), 2),
-		"FC"	: OpDescriptor(AwlOperator.BLKREF_FC, 16,
-				       AwlOffset(-1, 0), 2),
-		"SFC"	: OpDescriptor(AwlOperator.BLKREF_SFC, 16,
-				       AwlOffset(-1, 0), 2),
-		"FB"	: OpDescriptor(AwlOperator.BLKREF_FB, 16,
-				       AwlOffset(-1, 0), 2),
-		"SFB"	: OpDescriptor(AwlOperator.BLKREF_SFB, 16,
-				       AwlOffset(-1, 0), 2),
-		"DB"	: OpDescriptor(AwlOperator.BLKREF_DB, 16,
-				       AwlOffset(-1, 0), 2),
-		"DI"	: OpDescriptor(AwlOperator.BLKREF_DI, 16,
-				       AwlOffset(-1, 0), 2),
-		"DBX"	: OpDescriptor(AwlOperator.MEM_DB, 1,
-				       AwlDbOffset(None, -1, -1), 2),
-		"DBB"	: OpDescriptor(AwlOperator.MEM_DB, 8,
-				       AwlDbOffset(None, -1, 0), 2),
-		"DBW"	: OpDescriptor(AwlOperator.MEM_DB, 16,
-				       AwlDbOffset(None, -1, 0), 2),
-		"DBD"	: OpDescriptor(AwlOperator.MEM_DB, 32,
-				       AwlDbOffset(None, -1, 0), 2),
-		"DIX"	: OpDescriptor(AwlOperator.MEM_DI, 1,
-				       AwlOffset(-1, -1), 2),
-		"DIB"	: OpDescriptor(AwlOperator.MEM_DI, 8,
-				       AwlOffset(-1, 0), 2),
-		"DIW"	: OpDescriptor(AwlOperator.MEM_DI, 16,
-				       AwlOffset(-1, 0), 2),
-		"DID"	: OpDescriptor(AwlOperator.MEM_DI, 32,
-				       AwlOffset(-1, 0), 2),
-		"PEB"	: OpDescriptor(AwlOperator.MEM_PE, 8,
-				       AwlOffset(-1, 0), 2),
-		"PEW"	: OpDescriptor(AwlOperator.MEM_PE, 16,
-				       AwlOffset(-1, 0), 2),
-		"PED"	: OpDescriptor(AwlOperator.MEM_PE, 32,
-				       AwlOffset(-1, 0), 2),
-		"PAB"	: OpDescriptor(AwlOperator.MEM_PA, 8,
-				       AwlOffset(-1, 0), 2),
-		"PAW"	: OpDescriptor(AwlOperator.MEM_PA, 16,
-				       AwlOffset(-1, 0), 2),
-		"PAD"	: OpDescriptor(AwlOperator.MEM_PA, 32,
-				       AwlOffset(-1, 0), 2),
-		"STW"	 : OpDescriptor(AwlOperator.MEM_STW, 16,
-					AwlOffset(0, 0), 1),
-		"__STW"	 : OpDescriptor(AwlOperator.MEM_STW, 1,
-					AwlOffset(0, -1), 2),
-		"__ACCU" : OpDescriptor(AwlOperator.VIRT_ACCU, 32,
-					AwlOffset(-1, 0), 2),
-		"__AR"	 : OpDescriptor(AwlOperator.VIRT_AR, 32,
-					AwlOffset(-1, 0), 2),
-		"__CNST_PI" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					   pyFloatToDWord(math.pi), 1),
-		"__CNST_E" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					  pyFloatToDWord(math.e), 1),
-		"__CNST_PINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     posInfDWord, 1),
-		"__CNST_NINF" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     negInfDWord, 1),
-		"__CNST_PNAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     pNaNDWord, 1),
-		"__CNST_NNAN" : OpDescriptor(AwlOperator.IMM_REAL, 32,
-					     nNaNDWord, 1),
+		"==0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_Z, 1,
+				       AwlOffset(0, 0)), 1),
+		"<>0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_NZ, 1,
+				       AwlOffset(0, 0)), 1),
+		">0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_POS, 1,
+				       AwlOffset(0, 0)), 1),
+		"<0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_NEG, 1,
+				       AwlOffset(0, 0)), 1),
+		">=0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_POSZ, 1,
+				       AwlOffset(0, 0)), 1),
+		"<=0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_NEGZ, 1,
+				       AwlOffset(0, 0)), 1),
+		"OV"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW, 1,
+				       AwlOffset(0, 5)), 1),
+		"OS"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW, 1,
+				       AwlOffset(0, 4)), 1),
+		"UO"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_UO, 1,
+				       AwlOffset(0, 0)), 1),
+		"BIE"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW, 1,
+				       AwlOffset(0, 8)), 1),
+		"E"	: OpDescriptor(AwlOperator(AwlOperator.MEM_E, 1,
+				       AwlOffset(-1, -1)), 2),
+		"EB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_E, 8,
+				       AwlOffset(-1, 0)), 2),
+		"EW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_E, 16,
+				       AwlOffset(-1, 0)), 2),
+		"ED"	: OpDescriptor(AwlOperator(AwlOperator.MEM_E, 32,
+				       AwlOffset(-1, 0)), 2),
+		"A"	: OpDescriptor(AwlOperator(AwlOperator.MEM_A, 1,
+				       AwlOffset(-1, -1)), 2),
+		"AB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_A, 8,
+				       AwlOffset(-1, 0)), 2),
+		"AW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_A, 16,
+				       AwlOffset(-1, 0)), 2),
+		"AD"	: OpDescriptor(AwlOperator(AwlOperator.MEM_A, 32,
+				       AwlOffset(-1, 0)), 2),
+		"L"	: OpDescriptor(AwlOperator(AwlOperator.MEM_L, 1,
+				       AwlOffset(-1, -1)), 2),
+		"LB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_L, 8,
+				       AwlOffset(-1, 0)), 2),
+		"LW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_L, 16,
+				       AwlOffset(-1, 0)), 2),
+		"LD"	: OpDescriptor(AwlOperator(AwlOperator.MEM_L, 32,
+				       AwlOffset(-1, 0)), 2),
+		"M"	: OpDescriptor(AwlOperator(AwlOperator.MEM_M, 1,
+				       AwlOffset(-1, -1)), 2),
+		"MB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_M, 8,
+				       AwlOffset(-1, 0)), 2),
+		"MW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_M, 16,
+				       AwlOffset(-1, 0)), 2),
+		"MD"	: OpDescriptor(AwlOperator(AwlOperator.MEM_M, 32,
+				       AwlOffset(-1, 0)), 2),
+		"T"	: OpDescriptor(AwlOperator(AwlOperator.MEM_T, 16,
+				       AwlOffset(-1, 0)), 2),
+		"Z"	: OpDescriptor(AwlOperator(AwlOperator.MEM_Z, 16,
+				       AwlOffset(-1, 0)), 2),
+		"FC"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_FC, 16,
+				       AwlOffset(-1, 0)), 2),
+		"SFC"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_SFC, 16,
+				       AwlOffset(-1, 0)), 2),
+		"FB"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_FB, 16,
+				       AwlOffset(-1, 0)), 2),
+		"SFB"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_SFB, 16,
+				       AwlOffset(-1, 0)), 2),
+		"DB"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_DB, 16,
+				       AwlOffset(-1, 0)), 2),
+		"DI"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_DI, 16,
+				       AwlOffset(-1, 0)), 2),
+		"DBX"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 1,
+				       AwlDbOffset(None, -1, -1)), 2),
+		"DBB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 8,
+				       AwlDbOffset(None, -1, 0)), 2),
+		"DBW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 16,
+				       AwlDbOffset(None, -1, 0)), 2),
+		"DBD"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 32,
+				       AwlDbOffset(None, -1, 0)), 2),
+		"DIX"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DI, 1,
+				       AwlOffset(-1, -1)), 2),
+		"DIB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DI, 8,
+				       AwlOffset(-1, 0)), 2),
+		"DIW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DI, 16,
+				       AwlOffset(-1, 0)), 2),
+		"DID"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DI, 32,
+				       AwlOffset(-1, 0)), 2),
+		"PEB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_PE, 8,
+				       AwlOffset(-1, 0)), 2),
+		"PEW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_PE, 16,
+				       AwlOffset(-1, 0)), 2),
+		"PED"	: OpDescriptor(AwlOperator(AwlOperator.MEM_PE, 32,
+				       AwlOffset(-1, 0)), 2),
+		"PAB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_PA, 8,
+				       AwlOffset(-1, 0)), 2),
+		"PAW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_PA, 16,
+				       AwlOffset(-1, 0)), 2),
+		"PAD"	: OpDescriptor(AwlOperator(AwlOperator.MEM_PA, 32,
+				       AwlOffset(-1, 0)), 2),
+		"STW"	 : OpDescriptor(AwlOperator(AwlOperator.MEM_STW, 16,
+					AwlOffset(0, 0)), 1),
+		"__STW"	 : OpDescriptor(AwlOperator(AwlOperator.MEM_STW, 1,
+					AwlOffset(0, -1)), 2),
+		"__ACCU" : OpDescriptor(AwlOperator(AwlOperator.VIRT_ACCU, 32,
+					AwlOffset(-1, 0)), 2),
+		"__AR"	 : OpDescriptor(AwlOperator(AwlOperator.VIRT_AR, 32,
+					AwlOffset(-1, 0)), 2),
+		"__CNST_PI" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					   pyFloatToDWord(math.pi)), 1),
+		"__CNST_E" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					  pyFloatToDWord(math.e)), 1),
+		"__CNST_PINF" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					     posInfDWord), 1),
+		"__CNST_NINF" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					     negInfDWord), 1),
+		"__CNST_PNAN" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					     pNaNDWord), 1),
+		"__CNST_NNAN" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					     nNaNDWord), 1),
 	}
 
 	__english2german = {
@@ -204,41 +197,46 @@ class AwlOpTranslator(object):
 			pass#TODO
 			raise AwlSimError("Indirect addressing not implemented, yet")
 		# Direct addressing
-		if opDesc.width == 1:
-			if opDesc.offset.byteOffset == 0 and opDesc.offset.bitOffset == -1:
+		if opDesc.operator.width == 1:
+			if opDesc.operator.value.byteOffset == 0 and\
+			   opDesc.operator.value.bitOffset == -1:
 				try:
-					opDesc.offset.bitOffset = int(rawOps[0], 10)
+					opDesc.operator.value.bitOffset = int(rawOps[0], 10)
 				except ValueError as e:
-					if opDesc.operType == AwlOperator.MEM_STW:
-						opDesc.offset.bitOffset = S7StatusWord.getBitnrByName(rawOps[0])
+					if opDesc.operator.type == AwlOperator.MEM_STW:
+						opDesc.operator.value.bitOffset = S7StatusWord.getBitnrByName(rawOps[0])
 					else:
 						raise AwlSimError("Invalid bit address")
 			else:
-				assert(opDesc.offset.byteOffset == -1 and opDesc.offset.bitOffset == -1)
+				assert(opDesc.operator.value.byteOffset == -1 and\
+				       opDesc.operator.value.bitOffset == -1)
 				offset = rawOps[0].split('.')
 				if len(offset) != 2:
 					raise AwlSimError("Invalid bit address")
 				try:
-					opDesc.offset.byteOffset = int(offset[0], 10)
-					opDesc.offset.bitOffset = int(offset[1], 10)
+					opDesc.operator.value.byteOffset = int(offset[0], 10)
+					opDesc.operator.value.bitOffset = int(offset[1], 10)
 				except ValueError as e:
 					raise AwlSimError("Invalid bit address")
-		elif opDesc.width == 8:
-			assert(opDesc.offset.byteOffset == -1 and opDesc.offset.bitOffset == 0)
+		elif opDesc.operator.width == 8:
+			assert(opDesc.operator.value.byteOffset == -1 and\
+			       opDesc.operator.value.bitOffset == 0)
 			try:
-				opDesc.offset.byteOffset = int(rawOps[0], 10)
+				opDesc.operator.value.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid byte address")
-		elif opDesc.width == 16:
-			assert(opDesc.offset.byteOffset == -1 and opDesc.offset.bitOffset == 0)
+		elif opDesc.operator.width == 16:
+			assert(opDesc.operator.value.byteOffset == -1 and\
+			       opDesc.operator.value.bitOffset == 0)
 			try:
-				opDesc.offset.byteOffset = int(rawOps[0], 10)
+				opDesc.operator.value.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid word address")
-		elif opDesc.width == 32:
-			assert(opDesc.offset.byteOffset == -1 and opDesc.offset.bitOffset == 0)
+		elif opDesc.operator.width == 32:
+			assert(opDesc.operator.value.byteOffset == -1 and
+			       opDesc.operator.value.bitOffset == 0)
 			try:
-				opDesc.offset.byteOffset = int(rawOps[0], 10)
+				opDesc.operator.value.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid doubleword address")
 		else:
@@ -247,8 +245,8 @@ class AwlOpTranslator(object):
 	def __doTrans(self, rawInsn, rawOps):
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
-			return OpDescriptor(AwlOperator.LBL_REF, 0,
-					    rawOps[0], 1)
+			return OpDescriptor(AwlOperator(AwlOperator.LBL_REF, 0,
+					    rawOps[0]), 1)
 		try:
 			# Constant operator (from table)
 			if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
@@ -261,8 +259,8 @@ class AwlOpTranslator(object):
 			pass
 		# Local variable
 		if rawOps[0].startswith('#'):
-			return OpDescriptor(AwlOperator.NAMED_LOCAL, 0,
-					    rawOps[0][1:], 1)
+			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL, 0,
+					    rawOps[0][1:]), 1)
 		# Symbolic name
 		if rawOps[0].startswith('"') and rawOps[0].endswith('"'):
 			pass#TODO
@@ -270,85 +268,85 @@ class AwlOpTranslator(object):
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			return OpDescriptor(AwlOperator.IMM, 16,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 16,
+					    immediate), 1)
 		# Immediate float
 		immediate = AwlDataType.tryParseImmediate_REAL(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_REAL, 32,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
+					    immediate), 1)
 		# S5Time immediate
 		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_S5T, 16,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_S5T, 16,
+					    immediate), 1)
 		# Time immediate
 		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_TIME, 32,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_TIME, 32,
+					    immediate), 1)
 		# TIME_OF_DAY immediate
 		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_TOD, 32,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_TOD, 32,
+					    immediate), 1)
 		# Date immediate
 		immediate = AwlDataType.tryParseImmediate_Date(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_DATE, 16,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_DATE, 16,
+					    immediate), 1)
 		# DATE_AND_TIME immediate
 		immediate = AwlDataType.tryParseImmediate_DT(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_DT, 64,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_DT, 64,
+					    immediate), 1)
 		# Pointer immediate
 		immediate, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM_PTR, 32,
-					    immediate, fields)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_PTR, 32,
+					    immediate), fields)
 		# Binary immediate
 		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
 		if immediate is not None:
 			size = 32 if (immediate > 0xFFFF) else 16
-			return OpDescriptor(AwlOperator.IMM, size,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, size,
+					    immediate), 1)
 		# Byte array immediate
 		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
 		if immediate is not None:
 			size = 32 if fields == 9 else 16
-			return OpDescriptor(AwlOperator.IMM, size,
-					    immediate, fields)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, size,
+					    immediate), fields)
 		# Hex byte immediate
 		immediate = AwlDataType.tryParseImmediate_HexByte(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM, 8,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 8,
+					    immediate), 1)
 		# Hex word immediate
 		immediate = AwlDataType.tryParseImmediate_HexWord(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM, 16,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 16,
+					    immediate), 1)
 		# Hex dword immediate
 		immediate = AwlDataType.tryParseImmediate_HexDWord(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM, 32,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 32,
+					    immediate), 1)
 		# Long integer immediate
 		immediate = AwlDataType.tryParseImmediate_DINT(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM, 32,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 32,
+					    immediate), 1)
 		# BCD word immediate
 		immediate = AwlDataType.tryParseImmediate_BCD_word(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM, 16,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 16,
+					    immediate), 1)
 		# String immediate
 		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator.IMM, 32,
-					    immediate, 1)
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 32,
+					    immediate), 1)
 		# DBx.DB[XBWD] addressing
 		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])
 		if match:
@@ -360,24 +358,23 @@ class AwlOpTranslator(object):
 				"D"	: 32,
 			}[match.group(2)]
 			offset = AwlDbOffset(dbNumber, -1, -1 if (width == 1) else 0)
-			return OpDescriptor(AwlOperator.MEM_DB, width,
-					    offset, 2)
+			return OpDescriptor(AwlOperator(AwlOperator.MEM_DB, width,
+					    offset), 2)
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
 	def __translateOp(self, rawInsn, rawOps):
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
-		if not isinstance(opDesc.offset, int) and\
+		if not isinstance(opDesc.operator.value, int) and\
 		   opDesc.fieldCount == 2 and\
-		   (opDesc.offset.byteOffset == -1 or opDesc.offset.bitOffset == -1):
+		   (opDesc.operator.value.byteOffset == -1 or\
+		    opDesc.operator.value.bitOffset == -1):
 			self.__translateAddressOperator(opDesc, rawOps[1:])
 
-		operator = AwlOperator(opDesc.operType, opDesc.width,
-				       opDesc.offset)
-		operator.setExtended(rawOps[0].startswith("__"))
+		opDesc.operator.setExtended(rawOps[0].startswith("__"))
 
-		return opDesc, operator
+		return opDesc
 
 	def __translateParameterList(self, rawInsn, rawOps):
 		while rawOps:
@@ -398,10 +395,10 @@ class AwlOpTranslator(object):
 				raise AwlSimError("No R-Value in parameter assignment")
 
 			# Translate r-value
-			opDesc, rvalueOp = self.__translateOp(None, rvalueTokens)
+			opDesc = self.__translateOp(None, rvalueTokens)
 
 			# Create assignment
-			param = AwlParamAssign(lvalueName, rvalueOp)
+			param = AwlParamAssign(lvalueName, opDesc.operator)
 			if self.insn:
 				self.insn.params.append(param)
 
@@ -415,11 +412,11 @@ class AwlOpTranslator(object):
 	def translateFrom(self, rawInsn):
 		rawOps = rawInsn.getOperators()
 		while rawOps:
-			opDesc, operator = self.__translateOp(rawInsn, rawOps)
-			operator.setInsn(self.insn)
+			opDesc = self.__translateOp(rawInsn, rawOps)
+			opDesc.operator.setInsn(self.insn)
 
 			if self.insn:
-				self.insn.ops.append(operator)
+				self.insn.ops.append(opDesc.operator)
 
 			if len(rawOps) > opDesc.fieldCount:
 				if rawInsn.name.upper() == "CALL" and\
