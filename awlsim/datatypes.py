@@ -30,6 +30,9 @@ class AwlOffset(object):
 		return ((self.byteOffset << 3) & 0x00FFFFF8) |\
 		       (self.bitOffset & 0x7)
 
+	def __repr__(self):
+		return "%d.%d" % (self.byteOffset, self.bitOffset)
+
 class AwlDbOffset(AwlOffset):
 	"DB memory area offset"
 
@@ -40,6 +43,11 @@ class AwlDbOffset(AwlOffset):
 	def dup(self):
 		return AwlDbOffset(self.dbNumber,
 				   self.byteOffset, self.bitOffset)
+
+	def __repr__(self):
+		return "DB%d(%d.%d)" % (self.dbNumber,
+					self.byteOffset,
+					self.bitOffset)
 
 class AwlDataType(object):
 	# Data type IDs

@@ -189,13 +189,17 @@ class AwlOpTranslator(object):
 		assert(mnemonics is not None)
 		self.mnemonics = mnemonics
 
+	def __translateIndirectAddressing(self, opDesc, rawOps):
+		pass#TODO
+		raise AwlSimError("Indirect addressing not implemented, yet")
+
 	def __translateAddressOperator(self, opDesc, rawOps):
 		if len(rawOps) < 1:
 			raise AwlSimError("Missing address operator")
 		if rawOps[0] == '[':
 			# Indirect addressing
-			pass#TODO
-			raise AwlSimError("Indirect addressing not implemented, yet")
+			self.__translateIndirectAddressing(opDesc, rawOps)
+			return
 		# Direct addressing
 		if opDesc.operator.width == 1:
 			if opDesc.operator.value.byteOffset == 0 and\
@@ -257,12 +261,17 @@ class AwlOpTranslator(object):
 				assert(0)
 		except KeyError as e:
 			pass
+		token0 = rawOps[0].upper()
 		# Local variable
-		if rawOps[0].startswith('#'):
+		if token0.startswith('#'):
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL, 0,
-					    rawOps[0][1:]), 1)
+							rawOps[0][1:]), 1)
+		# Pointer to local variable
+		if token0.startswith("P##"):
+			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL_PTR, 0,
+							rawOps[0][3:]), 1)
 		# Symbolic name
-		if rawOps[0].startswith('"') and rawOps[0].endswith('"'):
+		if token0.startswith('"') and token0.endswith('"'):
 			pass#TODO
 		# Immediate integer
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])

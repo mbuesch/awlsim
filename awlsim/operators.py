@@ -54,6 +54,7 @@ class AwlOperator(object):
 	BLKREF_DI	= enum.item	# DI reference
 
 	NAMED_LOCAL	= enum.item	# Named local reference (#abc)
+	NAMED_LOCAL_PTR	= enum.item	# Pointer to named local (P##abc)
 	INTERF_DB	= enum.item	# Interface-DB access (translated NAMED_LOCAL)
 
 	INDIRECT	= enum.item	# Indirect access

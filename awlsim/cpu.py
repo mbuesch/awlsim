@@ -292,13 +292,40 @@ class S7CPU(object):
 				   width=structField.bitSize,
 				   value=structField.offset.dup())
 
+	# Translate local symbol pointers (P##abc)
+	def __resolveNamedLocalPointer(self, block, oper):
+		if oper.type != AwlOperator.NAMED_LOCAL_PTR:
+			return oper
+
+		interfaceField = block.interface.getFieldByName(oper.value)
+		structField = block.interface.struct.getField(oper.value)
+
+		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
+		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
+		   interfaceField.fieldType == interfaceField.FTYPE_INOUT or\
+		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
+			ptrValue = structField.offset.toPointerValue()
+			area = AwlIndirectOp.AREA_DI
+		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
+			ptrValue = structField.offset.toPointerValue()
+			area = AwlIndirectOp.AREA_L
+		else:
+			assert(0)
+		return AwlOperator(type = AwlOperator.IMM_PTR,
+				   width = 32,
+				   value = (area | ptrValue))
+
 	def __resolveSymbols_block(self, block):
 		for insn in block.insns:
 			for i in range(len(insn.ops)):
 				insn.ops[i] = self.__resolveNamedLocalSym(block,
 								insn.ops[i])
+				insn.ops[i] = self.__resolveNamedLocalPointer(block,
+								insn.ops[i])
 			for i in range(len(insn.params)):
 				insn.params[i].rvalueOp = self.__resolveNamedLocalSym(block,
+								insn.params[i].rvalueOp)
+				insn.params[i].rvalueOp = self.__resolveNamedLocalPointer(block,
 								insn.params[i].rvalueOp)
 
 	def __resolveSymbols(self):

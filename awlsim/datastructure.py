@@ -13,6 +13,10 @@ from awlsim.datatypes import *
 class AwlStructField(object):
 	"Data structure field"
 
+	# name => Field name string
+	# offset => Field offset as AwlOffset
+	# dataType => AwlDataType
+	# initialValue => The initilization value
 	def __init__(self, name, offset, dataType, initialValue=0):
 		self.name = name
 		self.offset = offset
