@@ -15,6 +15,37 @@ BEGIN
 	__ASSERT==	__ACCU 1,	DW#16#86000029
 
 
+	// Test address register instructions
+	L		P#885.3
+	LAR1
+	L		P#886.2
+	LAR2
+	__ASSERT==	__ACCU 1,	P#886.2
+	__ASSERT==	__ACCU 2,	P#885.3
+	__ASSERT==	__AR 1,		P#885.3
+	__ASSERT==	__AR 2,		P#886.2
+	+AR1		P#1.1
+	__ASSERT==	__AR 1,		P#886.4
+	+AR2		P#5.1
+	__ASSERT==	__AR 2,		P#891.3
+	LAR1		P#12.3
+	LAR2		P#32.1
+	__ASSERT==	__AR 1,		P#12.3
+	__ASSERT==	__AR 2,		P#32.1
+	L		111
+	L		222
+	TAR1
+	__ASSERT==	__ACCU 1,	P#12.3
+	__ASSERT==	__ACCU 2,	222
+	TAR2
+	__ASSERT==	__ACCU 1,	P#32.1
+	__ASSERT==	__ACCU 2,	P#12.3
+	TAR1		LD 0
+	TAR2		LD 4
+	__ASSERT==	LD 0,		P#12.3
+	__ASSERT==	LD 4,		P#32.1
+
+
 	CALL FB 1, DB 1 (
 		IN_VAL_0	:= 6666,
 		IN_VAL_1	:= 6767,

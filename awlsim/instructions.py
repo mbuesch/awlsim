@@ -2101,6 +2101,28 @@ class AwlInsn_ATAN(AwlInsn):
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
 
+class AwlInsn_LAR1(AwlInsn):
+	def __init__(self, cpu, rawInsn):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LAR1, rawInsn)
+		self.assertOpCount((0, 1))
+
+	def run(self):
+		if self.ops:
+			self.cpu.ar1.set(self.cpu.fetch(self.ops[0], (32,)))
+		else:
+			self.cpu.ar1.set(self.cpu.accu1.get())
+
+class AwlInsn_LAR2(AwlInsn):
+	def __init__(self, cpu, rawInsn):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LAR2, rawInsn)
+		self.assertOpCount((0, 1))
+
+	def run(self):
+		if self.ops:
+			self.cpu.ar2.set(self.cpu.fetch(self.ops[0], (32,)))
+		else:
+			self.cpu.ar2.set(self.cpu.accu1.get())
+
 class AwlInsn_T(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_T, rawInsn)
@@ -2121,6 +2143,30 @@ class AwlInsn_TAR(AwlInsn):
 		oldAr1 = self.cpu.ar1.get()
 		self.cpu.ar1.set(self.cpu.ar2.get())
 		self.cpu.ar2.set(oldAr1)
+
+class AwlInsn_TAR1(AwlInsn):
+	def __init__(self, cpu, rawInsn):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR1, rawInsn)
+		self.assertOpCount((0, 1))
+
+	def run(self):
+		if self.ops:
+			self.cpu.store(self.ops[0], self.cpu.ar1.get(), (32,))
+		else:
+			self.cpu.accu2.set(self.cpu.accu1.get())
+			self.cpu.accu1.set(self.cpu.ar1.get())
+
+class AwlInsn_TAR2(AwlInsn):
+	def __init__(self, cpu, rawInsn):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR2, rawInsn)
+		self.assertOpCount((0, 1))
+
+	def run(self):
+		if self.ops:
+			self.cpu.store(self.ops[0], self.cpu.ar2.get(), (32,))
+		else:
+			self.cpu.accu2.set(self.cpu.accu1.get())
+			self.cpu.accu1.set(self.cpu.ar2.get())
 
 class AwlInsn_BE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
@@ -2680,23 +2726,35 @@ class AwlInsn_INCAR1(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR1, rawInsn)
 		self.assertOpCount((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM_PTR)
 
 	def run(self):
+		ar = self.cpu.ar1.get()
 		if self.ops:
-			pass#TODO
+			ar = (ar & 0xFF000000) |\
+			     (((ar & 0x00FFFFFF) + self.ops[0].value) & 0x00FFFFFF)
 		else:
-			pass#TODO
+			ar = (ar & 0xFF000000) |\
+			     (((ar & 0x00FFFFFF) + self.cpu.accu1.getSignedWord()) & 0x00FFFFFF)
+		self.cpu.ar1.set(ar)
 
 class AwlInsn_INCAR2(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR2, rawInsn)
 		self.assertOpCount((0, 1))
+		if self.ops:
+			self.ops[0].assertType(AwlOperator.IMM_PTR)
 
 	def run(self):
+		ar = self.cpu.ar2.get()
 		if self.ops:
-			pass#TODO
+			ar = (ar & 0xFF000000) |\
+			     (((ar & 0x00FFFFFF) + self.ops[0].value) & 0x00FFFFFF)
 		else:
-			pass#TODO
+			ar = (ar & 0xFF000000) |\
+			     (((ar & 0x00FFFFFF) + self.cpu.accu1.getSignedWord()) & 0x00FFFFFF)
+		self.cpu.ar2.set(ar)
 
 class AwlInsn_BLD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
