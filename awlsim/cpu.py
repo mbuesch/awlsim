@@ -95,26 +95,29 @@ class S7CPU(object):
 		codeBlocks = list(parseTree.obs.values())
 		codeBlocks.extend(parseTree.fbs.values())
 		codeBlocks.extend(parseTree.fcs.values())
-		counts = {
+		errorCounts = {
 			S7CPUSpecs.MNEMONICS_EN		: 0,
 			S7CPUSpecs.MNEMONICS_DE		: 0,
 		}
-		for block in codeBlocks:
-			for rawInsn in block.insns:
-				for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
-						  S7CPUSpecs.MNEMONICS_DE):
+		for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
+				  S7CPUSpecs.MNEMONICS_DE):
+			for block in codeBlocks:
+				for rawInsn in block.insns:
 					ret = AwlInsnTranslator.name2type(rawInsn.getName(),
 									  mnemonics)
-					if ret is not None:
-						counts[mnemonics] += 1
+					if ret is None:
+						errorCounts[mnemonics] += 1
 					try:
 						optrans = AwlOpTranslator(None, mnemonics)
 						optrans.translateFrom(rawInsn)
 					except AwlSimError:
-						pass
-					else:
-						counts[mnemonics] += 1
-		if counts[S7CPUSpecs.MNEMONICS_EN] >= counts[S7CPUSpecs.MNEMONICS_DE]:
+						errorCounts[mnemonics] += 1
+			if errorCounts[mnemonics] == 0:
+				# No error. Use these mnemonics.
+				specs.setDetectedMnemonics(mnemonics)
+				return
+		# Select the mnemonics with the lower error count.
+		if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
 			specs.setDetectedMnemonics(S7CPUSpecs.MNEMONICS_EN)
 		else:
 			specs.setDetectedMnemonics(S7CPUSpecs.MNEMONICS_DE)
