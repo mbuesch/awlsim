@@ -52,29 +52,39 @@ class CallStackElem(object):
 
 		# Handle parameters
 		self.__outboundParams = []
-		for param in parameters:
-			if param.isOutbound(block.interface):
-				# This is an outbound parameter.
-				self.__outboundParams.append(param)
-			if param.isInbound(block.interface):
-				# This is an inbound parameter.
-				# Transfer data into DBI
-				structField = self.interfaceDB.structInstance.struct.getField(param.lvalueName)
-				if structField.dataType.type in BlockInterface.callByRef_Types:
-					data = param.rvalueOp.value.byteOffset
-				else:
-					data = self.cpu.fetch(param.rvalueOp)
-				self.interfaceDB.structInstance.setData(structField.offset,
-									structField.bitSize,
-									data)
+		if parameters:
+			interface, struct, structInstance, callByRef_Types =\
+				block.interface, \
+				self.interfaceDB.structInstance.struct, \
+				self.interfaceDB.structInstance, \
+				BlockInterface.callByRef_Types
+			for param in parameters:
+				if param.isOutbound(interface):
+					# This is an outbound parameter.
+					self.__outboundParams.append(param)
+				if param.isInbound(interface):
+					# This is an inbound parameter.
+					# Transfer data into DBI
+					structField = struct.getField(param.lvalueName)
+					if structField.dataType.type in callByRef_Types:
+						data = param.rvalueOp.value.byteOffset
+					else:
+						data = cpu.fetch(param.rvalueOp)
+					structInstance.setData(structField.offset,
+							       structField.bitSize,
+							       data)
 
 	# Transfer data out of DBI
 	def handleOutParameters(self):
-		for param in self.__outboundParams:
-			self.cpu.store(
-				param.rvalueOp,
-				self.interfaceDB.structInstance.getFieldData(param.lvalueName)
-			)
+		if self.__outboundParams:
+			cpu, structInstance =\
+				self.cpu, \
+				self.interfaceDB.structInstance
+			for param in self.__outboundParams:
+				cpu.store(
+					param.rvalueOp,
+					structInstance.getFieldData(param.lvalueName)
+				)
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.
