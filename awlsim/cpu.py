@@ -377,29 +377,29 @@ class S7CPU(object):
 		self.__staticSanityChecks()
 
 	def reallocate(self, force=False):
-		if force or (self.specs.getNrAccus() == 4) != self.is4accu:
+		if force or (self.specs.nrAccus == 4) != self.is4accu:
 			self.accu1, self.accu2 = Accu(), Accu()
-			if self.specs.getNrAccus() == 2:
+			if self.specs.nrAccus == 2:
 				self.accu3, self.accu4 = None, None
-			elif self.specs.getNrAccus() == 4:
+			elif self.specs.nrAccus == 4:
 				self.accu3, self.accu4 = Accu(), Accu()
 			else:
 				assert(0)
-		if force or self.specs.getNrTimers() != len(self.timers):
+		if force or self.specs.nrTimers != len(self.timers):
 			self.timers = [ Timer(self, i)
-					for i in range(self.specs.getNrTimers()) ]
-		if force or self.specs.getNrCounters() != len(self.counters):
+					for i in range(self.specs.nrTimers) ]
+		if force or self.specs.nrCounters != len(self.counters):
 			self.counters = [ Counter(self, i)
-					  for i in range(self.specs.getNrCounters()) ]
-		if force or self.specs.getNrFlags() != len(self.flags):
+					  for i in range(self.specs.nrCounters) ]
+		if force or self.specs.nrFlags != len(self.flags):
 			self.flags = [ FlagByte()
-				       for _ in range(self.specs.getNrFlags()) ]
-		if force or self.specs.getNrInputs() != len(self.inputs):
+				       for _ in range(self.specs.nrFlags) ]
+		if force or self.specs.nrInputs != len(self.inputs):
 			self.inputs = [ InputByte()
-					for _ in range(self.specs.getNrInputs()) ]
-		if force or self.specs.getNrOutputs() != len(self.outputs):
+					for _ in range(self.specs.nrInputs) ]
+		if force or self.specs.nrOutputs != len(self.outputs):
 			self.outputs = [ OutputByte()
-					 for _ in range(self.specs.getNrOutputs()) ]
+					 for _ in range(self.specs.nrOutputs) ]
 		CallStackElem.resetCache()
 
 	def reset(self):
@@ -699,7 +699,7 @@ class S7CPU(object):
 		return self.callStackTop.status
 
 	def getAccu(self, index):
-		if index < 1 or index > self.specs.getNrAccus():
+		if index < 1 or index > self.specs.nrAccus:
 			raise AwlSimError("Invalid ACCU offset")
 		return (self.accu1, self.accu2,
 			self.accu3, self.accu4)[index - 1]
@@ -1043,13 +1043,13 @@ class S7CPU(object):
 					  self.ar2.toHex())
 		ret.append(self.__dumpMem("      M:  ",
 					  self.flags,
-					  min(64, self.specs.getNrFlags())))
+					  min(64, self.specs.nrFlags)))
 		ret.append(self.__dumpMem("    PAE:  ",
 					  self.inputs,
-					  min(64, self.specs.getNrInputs())))
+					  min(64, self.specs.nrInputs)))
 		ret.append(self.__dumpMem("    PAA:  ",
 					  self.outputs,
-					  min(64, self.specs.getNrOutputs())))
+					  min(64, self.specs.nrOutputs)))
 		pstack = str(self.parenStack) if self.parenStack else "Empty"
 		ret.append(" PStack:  " + pstack)
 		ret.append(" GlobDB:  %s" % str(self.globDB))
@@ -1061,7 +1061,7 @@ class S7CPU(object):
 			cse = self.callStack[-1]
 			ret.append(self.__dumpMem("      L:  ",
 						  cse.localdata,
-						  min(16, self.specs.getNrLocalbytes())))
+						  min(16, self.specs.nrLocalbytes)))
 			ret.append(" InstDB:  %s" % str(cse.instanceDB))
 		else:
 			ret.append(" CStack:  Empty")

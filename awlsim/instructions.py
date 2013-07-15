@@ -2888,7 +2888,7 @@ class AwlInsn_STWRST(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		self.cpu.callStackTop.status.reset()
+		self.cpu.callStackTop.status.setWord(0)
 
 class AwlInsn_SSPEC(AwlInsn):
 	def __init__(self, cpu, rawInsn):

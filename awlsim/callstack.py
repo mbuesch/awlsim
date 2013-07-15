@@ -19,7 +19,7 @@ class CallStackElem(object):
 
 	localdataCache = ObjectCache(lambda cpu:
 		[ LocalByte()
-		  for _ in range(cpu.specs.getNrLocalbytes()) ]
+		  for _ in range(cpu.specs.nrLocalbytes) ]
 	)
 
 	@classmethod
@@ -28,40 +28,49 @@ class CallStackElem(object):
 
 	def __init__(self, cpu, block, instanceDB=None,
 		     interfaceDB=None, parameters=()):
-		self.cpu = cpu
-		self.status = S7StatusWord()
-		self.parenStack = []
-		self.ip = 0
-		self.localdata = self.localdataCache.get(cpu)
-		self.block = block
-		self.instanceDB = instanceDB
-		self.interfaceDB = interfaceDB if interfaceDB else instanceDB
+		(self.cpu,
+		 self.status,
+		 self.parenStack,
+		 self.ip,
+		 self.localdata,
+		 self.block,
+		 self.insns,
+		 self.labels,
+		 self.instanceDB,
+		 self.interfaceDB) = (
+			cpu,
+			S7StatusWord(),
+			[],
+			0,
+			self.localdataCache.get(cpu),
+			block,
+			block.insns,
+			block.labels,
+			instanceDB,
+			interfaceDB if interfaceDB else instanceDB,
+		)
 
-		self.inboundParams = [ param for param in parameters
-				       if param.isInbound(block.interface) ]
-		self.outboundParams = [ param for param in parameters
-					if param.isOutbound(block.interface) ]
-		self.handleInParameters()
-
-		# Keep a reference to the instructions and labels list locally.
-		self.insns = self.block.insns
-		self.labels = self.block.labels
-
-	# Transfer data into DBI
-	def handleInParameters(self):
-		for param in self.inboundParams:
-			structField = self.interfaceDB.structInstance.struct.getField(param.lvalueName)
-			if structField.dataType.type in BlockInterface.callByRef_Types:
-				data = param.rvalueOp.value.byteOffset
-			else:
-				data = self.cpu.fetch(param.rvalueOp)
-			self.interfaceDB.structInstance.setData(structField.offset,
-								structField.bitSize,
-								data)
+		# Handle parameters
+		self.__outboundParams = []
+		for param in parameters:
+			if param.isOutbound(block.interface):
+				# This is an outbound parameter.
+				self.__outboundParams.append(param)
+			if param.isInbound(block.interface):
+				# This is an inbound parameter.
+				# Transfer data into DBI
+				structField = self.interfaceDB.structInstance.struct.getField(param.lvalueName)
+				if structField.dataType.type in BlockInterface.callByRef_Types:
+					data = param.rvalueOp.value.byteOffset
+				else:
+					data = self.cpu.fetch(param.rvalueOp)
+				self.interfaceDB.structInstance.setData(structField.offset,
+									structField.bitSize,
+									data)
 
 	# Transfer data out of DBI
 	def handleOutParameters(self):
-		for param in self.outboundParams:
+		for param in self.__outboundParams:
 			self.cpu.store(
 				param.rvalueOp,
 				self.interfaceDB.structInstance.getFieldData(param.lvalueName)
@@ -69,9 +78,8 @@ class CallStackElem(object):
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.
-		if len(self.localdata) == self.cpu.specs.getNrLocalbytes():
+		if len(self.localdata) == self.cpu.specs.nrLocalbytes:
 			self.localdataCache.put(self.localdata)
-		self.localdata = None
 
 	def __repr__(self):
 		return str(self.block)

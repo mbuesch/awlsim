@@ -3,6 +3,7 @@
 - Parsing of attributes
 - Areacode 87 for P## in FCs
 - ANY pointer
+- Multiinstance
 - ARRAYs
 - Parsing of various immediates (see optrans.py and datatypes.py)
 - Symbols

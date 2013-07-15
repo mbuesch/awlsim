@@ -52,53 +52,32 @@ class S7CPUSpecs(object):
 		if self.cpu:
 			self.cpu.reallocate()
 
-	def getNrAccus(self):
-		return self.nrAccus
-
 	def setNrTimers(self, count):
 		self.nrTimers = count
 		if self.cpu:
 			self.cpu.reallocate()
-
-	def getNrTimers(self):
-		return self.nrTimers
 
 	def setNrCounters(self, count):
 		self.nrCounters = count
 		if self.cpu:
 			self.cpu.reallocate()
 
-	def getNrCounters(self):
-		return self.nrCounters
-
 	def setNrFlags(self, count):
 		self.nrFlags = count
 		if self.cpu:
 			self.cpu.reallocate()
-
-	def getNrFlags(self):
-		return self.nrFlags
 
 	def setNrInputs(self, count):
 		self.nrInputs = count
 		if self.cpu:
 			self.cpu.reallocate()
 
-	def getNrInputs(self):
-		return self.nrInputs
-
 	def setNrOutputs(self, count):
 		self.nrOutputs = count
 		if self.cpu:
 			self.cpu.reallocate()
 
-	def getNrOutputs(self):
-		return self.nrOutputs
-
 	def setNrLocalbytes(self, count):
 		self.nrLocalbytes = count
 		if self.cpu:
 			self.cpu.reallocate()
-
-	def getNrLocalbytes(self):
-		return self.nrLocalbytes

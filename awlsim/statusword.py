@@ -37,7 +37,16 @@ class S7StatusWord(object):
 				"name: " + str(name))
 
 	def __init__(self):
-		self.reset()
+		(self.NER,	# /ER	=> Erstabfrage
+		 self.VKE,	# VKE	=> Verknuepfungsergebnis
+		 self.STA,	# STA	=> Statusbit
+		 self.OR,	# OR	=> Oderbit
+		 self.OS,	# OS	=> Ueberlauf speichernd
+		 self.OV,	# OV	=> Ueberlauf
+		 self.A0,	# A0	=> Ergebnisanzeige 0
+		 self.A1,	# A1	=> Ergebnisanzeige 1
+		 self.BIE,	# BIE	=> Binaerergebnis
+		) = 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 	def getByBitNumber(self, bitNumber):
 		try:
@@ -63,17 +72,6 @@ class S7StatusWord(object):
 		self.A0 = 1 if (word & (1 << 6)) else 0
 		self.A1 = 1 if (word & (1 << 7)) else 0
 		self.BIE = 1 if (word & (1 << 8)) else 0
-
-	def reset(self):
-		self.NER = 0	# /ER	=> Erstabfrage
-		self.VKE = 0	# VKE	=> Verknuepfungsergebnis
-		self.STA = 0	# STA	=> Statusbit
-		self.OR = 0	# OR	=> Oderbit
-		self.OS = 0	# OS	=> Ueberlauf speichernd
-		self.OV = 0	# OV	=> Ueberlauf
-		self.A0 = 0	# A0	=> Ergebnisanzeige 0
-		self.A1 = 0	# A1	=> Ergebnisanzeige 1
-		self.BIE = 0	# BIE	=> Binaerergebnis
 
 	def copy(self):
 		new = S7StatusWord()
