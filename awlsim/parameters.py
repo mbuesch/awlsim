@@ -6,6 +6,8 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
+from awlsim.datastructure import *
+from awlsim.datablocks import *
 from awlsim.blocks import *
 from awlsim.util import *
 
@@ -44,6 +46,16 @@ class AwlParamAssign(object):
 		self.__reassignMethods(interface)
 		# Call the re-assigned method
 		return self.isOutbound(None)
+
+	def __getLvalueStructField_static(self, interfaceDB):
+		return self.__LvaluestructField
+
+	# Get the AwlStructField corresponding to this parameter lvalue
+	def getLvalueStructField(self, interfaceDB):
+		self.__LvaluestructField = interfaceDB.structInstance.struct.getField(self.lvalueName)
+		self.getLvalueStructField = self.__getLvalueStructField_static
+		# Call the re-assigned method
+		return self.getLvalueStructField(None)
 
 	def __repr__(self):
 		return "%s := %s" % (self.lvalueName, str(self.rvalueOp))

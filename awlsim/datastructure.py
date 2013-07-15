@@ -22,17 +22,12 @@ class AwlStructField(object):
 		self.offset = offset
 		self.dataType = dataType
 		self.initialValue = initialValue
+
+		# Store a copy of the data type size, in bits and bytes.
+		self.bitSize = self.dataType.width
+		self.byteSize = intDivRoundUp(self.bitSize, 8)
+
 		assert(self.bitSize in (1, 8, 16, 32, 64))
-
-	# Return size, in bits.
-	@property
-	def bitSize(self):
-		return self.dataType.width
-
-	# Return size, in bytes.
-	@property
-	def byteSize(self):
-		return intDivRoundUp(self.bitSize, 8)
 
 class AwlStruct(object):
 	"Data structure"
@@ -105,21 +100,23 @@ class AwlStructInstance(object):
 				b = (value >> ((bsize - i - 1) * 8)) & 0xFF
 				self.dataBytes.append(AwlStructInstanceByte(b))
 
-	def getData(self, offset, bitSize):
+	def getFieldData(self, field):
+		offset, bitSize = field.offset, field.bitSize
 		if bitSize % 8 == 0:
-			nrBytes, value = bitSize // 8, 0
-			off = offset.byteOffset
+			nrBytes, value, off = bitSize // 8, 0, offset.byteOffset
 			assert(offset.bitOffset == 0)
 			while nrBytes:
 				value = (value << 8) | self.dataBytes[off].get()
 				nrBytes -= 1
 				off += 1
 			return value
-		if bitSize == 1:
+		elif bitSize == 1:
 			return self.dataBytes[offset.byteOffset].getBit(offset.bitOffset)
-		raise AwlSimError("Invalid struct fetch of %d bits" % bitSize)
+		else:
+			raise AwlSimError("Invalid struct fetch of %d bits" % bitSize)
 
-	def setData(self, offset, bitSize, value):
+	def setFieldData(self, field, value):
+		offset, bitSize = field.offset, field.bitSize
 		if bitSize % 8 == 0:
 			nrBytes = bitSize // 8
 			off = offset.byteOffset + nrBytes - 1
@@ -129,17 +126,14 @@ class AwlStructInstance(object):
 				value >>= 8
 				nrBytes -= 1
 				off -= 1
-			return
-		if bitSize == 1:
+		elif bitSize == 1:
 			self.dataBytes[offset.byteOffset].setBitValue(
 				offset.bitOffset, value)
-			return
-		raise AwlSimError("Invalid struct write of %d bits" % bitSize)
+		else:
+			raise AwlSimError("Invalid struct write of %d bits" % bitSize)
 
-	def getFieldData(self, name):
-		field = self.struct.getField(name)
-		return self.getData(field.offset, field.bitSize)
+	def getFieldDataByName(self, name):
+		return self.getFieldData(self.struct.getField(name))
 
-	def setFieldData(self, name, value):
-		field = self.struct.getField(name)
-		self.setData(field.offset, field.bitSize, value)
+	def setFieldDataByName(self, name, value):
+		self.setFieldData(self.struct.getField(name), value)

@@ -53,37 +53,36 @@ class CallStackElem(object):
 		# Handle parameters
 		self.__outboundParams = []
 		if parameters:
-			interface, struct, structInstance, callByRef_Types =\
+			blockInterface, interfaceDB, structInstance, callByRef_Types =\
 				block.interface, \
-				self.interfaceDB.structInstance.struct, \
+				self.interfaceDB, \
 				self.interfaceDB.structInstance, \
 				BlockInterface.callByRef_Types
 			for param in parameters:
-				if param.isOutbound(interface):
+				if param.isOutbound(blockInterface):
 					# This is an outbound parameter.
 					self.__outboundParams.append(param)
-				if param.isInbound(interface):
+				if param.isInbound(blockInterface):
 					# This is an inbound parameter.
 					# Transfer data into DBI
-					structField = struct.getField(param.lvalueName)
+					structField = param.getLvalueStructField(interfaceDB)
 					if structField.dataType.type in callByRef_Types:
 						data = param.rvalueOp.value.byteOffset
 					else:
 						data = cpu.fetch(param.rvalueOp)
-					structInstance.setData(structField.offset,
-							       structField.bitSize,
-							       data)
+					structInstance.setFieldData(structField, data)
 
 	# Transfer data out of DBI
 	def handleOutParameters(self):
 		if self.__outboundParams:
-			cpu, structInstance =\
+			cpu, interfaceDB, structInstance =\
 				self.cpu, \
+				self.interfaceDB, \
 				self.interfaceDB.structInstance
 			for param in self.__outboundParams:
 				cpu.store(
 					param.rvalueOp,
-					structInstance.getFieldData(param.lvalueName)
+					structInstance.getFieldData(param.getLvalueStructField(interfaceDB))
 				)
 
 	def destroy(self):

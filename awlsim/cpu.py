@@ -196,7 +196,7 @@ class S7CPU(object):
 		for f in rawDB.fields:
 			dtype = AwlDataType.makeByName(f.typeTokens)
 			value = dtype.parseMatchingImmediate(f.valueTokens)
-			db.structInstance.setFieldData(f.name, value)
+			db.structInstance.setFieldDataByName(f.name, value)
 		return db
 
 	def __translateInstanceDB(self, rawDB):
@@ -222,7 +222,7 @@ class S7CPU(object):
 		for f in rawDB.fields:
 			dtype = interface.getFieldByName(f.name).dataType
 			value = dtype.parseMatchingImmediate(f.valueTokens)
-			db.structInstance.setFieldData(f.name, value)
+			db.structInstance.setFieldDataByName(f.name, value)
 		return db
 
 	def __translateDB(self, rawDB):
