@@ -435,6 +435,7 @@ class S7CPU(object):
 		self.cycleStartTime = 0.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
+		self.startupTime = 0.0
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
@@ -508,6 +509,7 @@ class S7CPU(object):
 		self.__speedMeasureStartTime = self.now
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
+		self.startupTime = self.now
 
 		# Run startup OB
 		for obNumber in (100, 101, 102):
@@ -1029,7 +1031,10 @@ class S7CPU(object):
 	def __repr__(self):
 		if not self.callStack:
 			return ""
-		ret = [ "S7-CPU dump:" ]
+		self.updateTimestamp()
+		ret = []
+		ret.append("=== S7-CPU dump ===  (t: %.01fs)" %\
+			   (self.now - self.startupTime))
 		ret.append(" status:  " + str(self.callStackTop.status))
 		if self.is4accu:
 			accus = [ accu.toHex()
@@ -1039,8 +1044,9 @@ class S7CPU(object):
 			accus = [ accu.toHex()
 				  for accu in (self.accu1, self.accu2) ]
 		ret.append("   ACCU:  " + "  ".join(accus))
-		ret.append("     AR:  " + self.ar1.toHex() + "  " +\
-					  self.ar2.toHex())
+		ars = [ "%s (%s)" % (ar.toHex(), ar.toPointerString())
+			for ar in (self.ar1, self.ar2) ]
+		ret.append("     AR:  " + "  ".join(ars))
 		ret.append(self.__dumpMem("      M:  ",
 					  self.flags,
 					  min(64, self.specs.nrFlags)))

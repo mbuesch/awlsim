@@ -686,3 +686,24 @@ class Adressregister(GenericDWord):
 
 	def __init__(self):
 		GenericDWord.__init__(self)
+
+	def toPointerString(self):
+		value = self.getDWord()
+		area = (value >> 24) & 0xFF
+		if area:
+			if area == 0x81:
+				prefix = "E"
+			elif area == 0x82:
+				prefix = "A"
+			elif area == 0x83:
+				prefix = "M"
+			elif area == 0x86:
+				prefix = "L"
+			else:
+				prefix = "(%02X)" % area
+			prefix += " "
+		else:
+			prefix = ""
+		byteOffset = (value & 0x00FFFFFF) >> 3
+		bitOffset = value & 7
+		return "P#%s%d.%d" % (prefix, byteOffset, bitOffset)
