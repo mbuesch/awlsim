@@ -699,6 +699,7 @@ class CpuWidget(QWidget):
 		if newState != self.state:
 			self.state = newState
 			self.runStateChanged.emit(self.state)
+			QApplication.processEvents(QEventLoop.AllEvents, 1000)
 
 	def __runStateToggled(self):
 		if self.runButton.isChecked():
