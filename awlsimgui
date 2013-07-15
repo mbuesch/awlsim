@@ -17,7 +17,6 @@ if isPyPy:
 	sys.exit(1)
 
 import os
-import time
 import getopt
 import traceback
 
@@ -524,8 +523,13 @@ class StateWorkspace(QWorkspace):
 class CpuWidget(QWidget):
 	runStateChanged = Signal(int)
 
-	STATE_STOP	= 0
-	STATE_RUN	= 1
+	enum.start
+	STATE_STOP	= enum.item
+	STATE_PARSE	= enum.item
+	STATE_INIT	= enum.item
+	STATE_LOAD	= enum.item
+	STATE_RUN	= enum.item
+	enum.end
 
 	def __init__(self, mainWidget, parent=None):
 		QWidget.__init__(self, parent)
@@ -608,11 +612,10 @@ class CpuWidget(QWidget):
 		for win in self.stateWs.windowList():
 			win.update()
 
-	def mayUpdate(self):
-		now = time.time()
-		if now < self.nextUpdate:
+	def mayUpdate(self, cpu):
+		if cpu.now < self.nextUpdate:
 			return
-		self.nextUpdate = now + 0.1
+		self.nextUpdate = cpu.now + 0.15
 		self.update()
 
 	def __cycleExitCallback(self, cpu):
@@ -621,7 +624,7 @@ class CpuWidget(QWidget):
 
 	def __blockExitCallback(self, cpu):
 		if self.state == self.STATE_RUN:
-			self.mayUpdate()
+			self.mayUpdate(cpu)
 			self.mainWidget.codeEdit.updateCpuStats_afterBlock(cpu)
 
 	def __postInsnCallback(self, cpu):
@@ -635,13 +638,12 @@ class CpuWidget(QWidget):
 		self.__postInsnCallback(cpu)
 		self.__blockExitCallback(cpu)
 		self.__cycleExitCallback(cpu)
-		QApplication.processEvents(QEventLoop.AllEvents, 1)
+		QApplication.processEvents(QEventLoop.AllEvents, 100)
 
 	def __run(self):
 		sim = self.mainWidget.getSim()
-		self.state = self.STATE_RUN
 		self.__updateOnlineViewState()
-		self.mainWidget.codeEdit.resetCpuStats()
+		self.__setState(self.STATE_PARSE)
 		self.runButton.setChecked(True)
 		self.runButton.setEnabled(False) # Redraws the radio button
 		self.runButton.setEnabled(True)
@@ -654,6 +656,7 @@ class CpuWidget(QWidget):
 		try:
 			parser = AwlParser()
 			parser.parseData(ob1_awl)
+			self.__setState(self.STATE_INIT)
 			cpu = sim.getCPU()
 			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
@@ -661,6 +664,7 @@ class CpuWidget(QWidget):
 				self.__directPeripheralCallback, cpu)
 			cpu.setScreenUpdateCallback(
 				self.__screenUpdateCallback, cpu)
+			self.__setState(self.STATE_LOAD)
 			sim.load(parser.getParseTree())
 		except (AwlSimError, AwlParserError) as e:
 			QMessageBox.critical(self, "Simulator exception",
@@ -669,10 +673,10 @@ class CpuWidget(QWidget):
 			return
 		except Exception:
 			handleFatalException(self)
-		self.runStateChanged.emit(self.state)
+		self.__setState(self.STATE_RUN)
 		while self.state == self.STATE_RUN:
 			try:
-				QApplication.processEvents(QEventLoop.AllEvents, 1)
+				QApplication.processEvents(QEventLoop.AllEvents, 100)
 				sim.runCycle()
 			except AwlSimError as e:
 				QMessageBox.critical(self, "Simulator exception",
@@ -680,21 +684,25 @@ class CpuWidget(QWidget):
 				self.stop()
 			except Exception:
 				handleFatalException(self)
-		self.runStateChanged.emit(self.state)
 
 	def stop(self):
 		if self.state == self.STATE_STOP:
 			return
-		self.state = self.STATE_STOP
 		self.stopButton.setChecked(True)
 		self.runButton.setEnabled(True)
+		self.__setState(self.STATE_STOP)
 
 	def getState(self):
 		return self.state
 
+	def __setState(self, newState):
+		if newState != self.state:
+			self.state = newState
+			self.runStateChanged.emit(self.state)
+
 	def __runStateToggled(self):
 		if self.runButton.isChecked():
-			if self.state != self.STATE_RUN:
+			if self.state == self.STATE_STOP:
 				self.__run()
 		if self.stopButton.isChecked():
 			if self.state != self.STATE_STOP:
@@ -818,6 +826,8 @@ class EditWidget(QPlainTextEdit):
 
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
+		if newState == CpuWidget.STATE_PARSE:
+			self.resetCpuStats()
 		if self.__cpuStatsEnabled:
 			self.cpuStatsWidget.update()
 		self.headerWidget.update()
@@ -973,7 +983,12 @@ class EditWidget(QPlainTextEdit):
 		if self.__runStateCopy == CpuWidget.STATE_RUN:
 			runText = self.__aniChars[self.__hdrAniStat]
 		else:
-			runText = "-- CPU STOPPED --"
+			runText = {
+				CpuWidget.STATE_STOP:	"-- CPU STOPPED --",
+				CpuWidget.STATE_PARSE:	"Parsing code...",
+				CpuWidget.STATE_INIT:	"Initializing simulator...",
+				CpuWidget.STATE_LOAD:	"Loading code...",
+			}[self.__runStateCopy]
 		p.drawText(5, 5,
 			   self.__charWidth * len(runText) + 1,
 			   self.headerWidget.height(),
