@@ -674,16 +674,16 @@ class CpuWidget(QWidget):
 		except Exception:
 			handleFatalException(self)
 		self.__setState(self.STATE_RUN)
-		while self.state == self.STATE_RUN:
-			try:
+		try:
+			while self.state == self.STATE_RUN:
 				QApplication.processEvents(QEventLoop.AllEvents, 100)
 				sim.runCycle()
-			except AwlSimError as e:
-				QMessageBox.critical(self, "Simulator exception",
-						     str(e))
-				self.stop()
-			except Exception:
-				handleFatalException(self)
+		except AwlSimError as e:
+			QMessageBox.critical(self, "Simulator exception",
+					     str(e))
+			self.stop()
+		except Exception:
+			handleFatalException(self)
 
 	def stop(self):
 		if self.state == self.STATE_STOP:
