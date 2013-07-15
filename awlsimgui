@@ -21,6 +21,9 @@ import time
 import getopt
 import traceback
 
+if isPy2Compat:
+	input = raw_input
+
 try:
 	from PySide.QtCore import *
 	from PySide.QtGui import *
@@ -29,7 +32,7 @@ except ImportError as e:
 	input("Press enter to continue.")
 	sys.exit(1)
 
-from awlsim import *
+from awlsim.main import *
 from awlsim.insntrans import *
 
 

@@ -7,19 +7,25 @@
 # Licensed under the terms of the GNU General Public License version 2.
 #
 
+import sys
 import getopt
-
-from awlsim import *
-from awlsim.cpu import *
+import time
+import traceback
 
 
 opt_onecycle = False
-opt_fouraccu = False
 opt_quiet = False
-opt_extInsns = False
-opt_rng = False
-opt_mnemonics = S7CPUSpecs.MNEMONICS_AUTO
 
+
+def printInfo(text):
+	sys.stdout.write(text)
+	sys.stdout.write("\n")
+	sys.stdout.flush()
+
+def printError(text):
+	sys.stderr.write(text)
+	sys.stderr.write("\n")
+	sys.stderr.flush()
 
 def usage():
 	printInfo("awlsim version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
@@ -33,6 +39,7 @@ def usage():
 	printInfo(" -x|--extended-insns   Enable extended instructions")
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
+#	printInfo(" -C|--cython           Use Cython core")
 
 def writeStdout(message):
 	if not opt_quiet:
@@ -61,17 +68,19 @@ def blockExitCallback(cpu):
 
 def main():
 	global opt_onecycle
-	global opt_fouraccu
 	global opt_quiet
-	global opt_extInsns
-	global opt_rng
-	global opt_mnemonics
+
+	opt_fouraccu = False
+	opt_extInsns = False
+	opt_rng = False
+	opt_mnemonics = "auto"
+	opt_cython = False
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qxr:m:",
+			"h1qxr:m:C",
 			[ "help", "onecycle", "quiet", "extended-insns",
-			  "rng=", "mnemonics=", ])
+			  "rng=", "mnemonics=", "cython", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -91,19 +100,33 @@ def main():
 		if o in ("-r", "--rng"):
 			opt_rng = str2bool(v)
 		if o in ("-m", "--mnemonics"):
-			if v.lower() == "en":
-				opt_mnemonics = S7CPUSpecs.MNEMONICS_EN
-			elif v.lower() == "de":
-				opt_mnemonics = S7CPUSpecs.MNEMONICS_DE
-			elif v.lower() == "auto":
-				opt_mnemonics = S7CPUSpecs.MNEMONICS_AUTO
-			else:
+			opt_mnemonics = v.lower()
+			if opt_mnemonics not in ("en", "de", "auto"):
 				printError("-m|--mnemonics: Invalid mnemonics type")
 				sys.exit(1)
+		if o in ("-C", "--cython"):
+			opt_cython = True
 	if len(args) != 1:
 		usage()
 		return 1
 	awlSource = args[0]
+
+	if opt_cython:
+		from awlsim_cython.main import AwlSim
+		from awlsim_cython.parser import AwlParser
+		from awlsim_cython.cpuspecs import S7CPUSpecs
+		from awlsim_cython.util import AwlSimError, AwlParserError
+	else:
+		from awlsim.main import AwlSim
+		from awlsim.parser import AwlParser
+		from awlsim.cpuspecs import S7CPUSpecs
+		from awlsim.util import AwlSimError, AwlParserError
+
+	opt_mnemonics = {
+		"en"	: S7CPUSpecs.MNEMONICS_EN,
+		"de"	: S7CPUSpecs.MNEMONICS_DE,
+		"auto"	: S7CPUSpecs.MNEMONICS_AUTO,
+	}[opt_mnemonics]
 
 	try:
 		p = AwlParser()
