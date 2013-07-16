@@ -13,12 +13,72 @@ import struct
 
 
 class AwlSimError(Exception):
-	def __init__(self, message, insn=None):
+	def __init__(self, message, cpu=None,
+		     rawInsn=None, insn=None, lineNr=None):
 		Exception.__init__(self, message)
+		self.cpu = cpu
+		self.rawInsn = rawInsn
+		self.insn = insn
+		self.lineNr = lineNr
+
+	def setCpu(self, cpu):
+		self.cpu = cpu
+
+	def getCpu(self):
+		return self.cpu
+
+	def setRawInsn(self, rawInsn):
+		self.rawInsn = rawInsn
+
+	def getRawInsn(self):
+		return self.rawInsn
+
+	def setInsn(self, insn):
 		self.insn = insn
 
-class AwlParserError(Exception):
-	pass
+	def getInsn(self):
+		return self.insn
+
+	def setLineNr(self, lineNr):
+		self.lineNr = lineNr
+
+	# Try to get the AWL-code line number where the
+	# exception occurred. Returns None on failure.
+	def getLineNr(self):
+		if self.lineNr is not None:
+			return self.lineNr
+		if self.rawInsn:
+			return self.rawInsn.getLineNr()
+		if self.insn:
+			return self.insn.getLineNr()
+		if self.cpu:
+			curInsn = self.cpu.getCurrentInsn()
+			if curInsn:
+				return curInsn.getLineNr()
+		return None
+
+	def getLineNrStr(self, errorStr="<unknown>"):
+		lineNr = self.getLineNr()
+		if lineNr is not None:
+			return "%d" % lineNr
+		return errorStr
+
+	def getFailingInsnStr(self, errorStr=""):
+		if self.rawInsn:
+			return str(self.rawInsn)
+		if self.insn:
+			return str(self.insn)
+		if self.cpu:
+			curInsn = self.cpu.getCurrentInsn()
+			if curInsn:
+				return str(curInsn)
+		return errorStr
+
+class AwlParserError(AwlSimError):
+	def __init__(self, message, lineNr=None):
+		AwlSimError.__init__(self,
+				     message = message,
+				     lineNr = lineNr)
 
 # isPyPy is True, if the interpreter is PyPy.
 isPyPy = "PyPy" in sys.version

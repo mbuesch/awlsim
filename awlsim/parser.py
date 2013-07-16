@@ -711,14 +711,11 @@ class AwlParser(object):
 	def parseData(self, data):
 		self.flatLayout = not re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*',
 					       data, re.DOTALL | re.MULTILINE)
-		ex = None
 		try:
 			self.__tokenize(data)
 		except AwlParserError as e:
-			ex = e
-		if ex:
-			raise AwlParserError("Parser ERROR at AWL line %d:\n%s" %\
-				(self.lineNr, str(ex)))
+			e.setLineNr(self.lineNr)
+			raise e
 
 	def getParseTree(self):
 		return self.tree

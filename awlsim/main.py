@@ -19,15 +19,11 @@ class AwlSim(object):
 		self.cpu = S7CPU(self)
 
 	def __handleSimException(self, e):
-		line = ""
-		if e.insn:
-			line = " at AWL line %d" % e.insn.getLineNr()
-		else:
-			curInsn = self.cpu.getCurrentInsn()
-			if curInsn:
-				line = " at AWL line %d" % curInsn.getLineNr()
-		raise AwlSimError("ERROR%s:    %s\n\n%s" %\
-			(line, str(e), str(self.cpu)))
+		if not e.getCpu():
+			# The CPU reference is not set, yet.
+			# Set it to the current CPU.
+			e.setCpu(self.cpu)
+		raise e
 
 	def load(self, parseTree):
 		try:

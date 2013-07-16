@@ -48,6 +48,51 @@ def handleFatalException(parentWidget=None):
 		(traceback.format_exc(),))
 	sys.exit(1)
 
+class MessageBox(QMessageBox):
+	def __init__(self, parent, title, text, details=None):
+		QMessageBox.__init__(self, parent)
+
+		self.setWindowTitle(title)
+
+		self.setText(text)
+		self.setIcon(QMessageBox.Critical)
+
+		if details:
+			self.setDetailedText(details)
+
+	@classmethod
+	def error(cls, parent, text, details=None):
+		return cls(parent, "Awlsim - simulator error",
+			   text, details).exec_()
+
+	@classmethod
+	def handleAwlSimError(cls, parent, description, exception):
+		cpu = exception.getCpu()
+		text = "A simulator exception occurred:"
+		if description:
+			text += "\n"
+			text += "    " + description + "."
+		text += "\n\n"
+		text += "    " + str(exception)
+		text += "\n\n"
+		insnStr = exception.getFailingInsnStr()
+		if insnStr:
+			text += "    At statement:\n"
+			text += "    AWL line %s:    %s" % (exception.getLineNrStr(),
+							    insnStr)
+		else:
+			text += "    At AWL line %s" % exception.getLineNrStr()
+		details = None
+		if cpu:
+			details = str(exception) + "\n\n" + str(cpu)
+		return cls.error(parent, text, details)
+
+	@classmethod
+	def handleAwlParserError(cls, parent, exception):
+		return cls.handleAwlSimError(parent = parent,
+					     description = None,
+					     exception = exception)
+
 class StateWindow(QWidget):
 	closed = Signal()
 	cpuStateChanged = Signal()
@@ -169,8 +214,8 @@ class BitDisplayWidget(AbstractDisplayWidget):
 					   AwlOffset(self.addr))
 			value = self.sim.getCPU().fetch(oper)
 		except AwlSimError as e:
-			QMessageBox.critical(self, "Failed to fetch",
-				"Failed to fetch memory:\n" + str(e))
+			MessageBox.handleAwlSimError(self,
+				"Failed to fetch memory", e)
 			return
 		for i in range(self.width):
 			if value & (1 << i):
@@ -235,8 +280,8 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 					   AwlOffset(self.addr))
 			value = self.sim.getCPU().fetch(oper)
 		except AwlSimError as e:
-			QMessageBox.critical(self, "Failed to fetch",
-				"Failed to fetch memory:\n" + str(e))
+			MessageBox.handleAwlSimError(self,
+				"Failed to fetch memory", e)
 			return
 		if value == self.displayedValue:
 			return
@@ -380,8 +425,8 @@ class State_Mem(StateWindow):
 					   AwlOffset(addr))
 			self.sim.getCPU().store(oper, value)
 		except AwlSimError as e:
-			QMessageBox.critical(self, "Failed to store",
-				"Failed to store memory:\n" + str(e))
+			MessageBox.handleAwlSimError(self,
+				"Failed to store memory", e)
 			return
 		self.cpuStateChanged.emit()
 
@@ -457,8 +502,8 @@ class State_LCD(StateWindow):
 					   AwlOffset(addr))
 			value = self.sim.getCPU().fetch(oper)
 		except AwlSimError as e:
-			QMessageBox.critical(self, "Failed to fetch",
-				"Failed to fetch memory:\n" + str(e))
+			MessageBox.handleAwlSimError(self,
+				"Failed to fetch memory", e)
 			return
 
 		if endian == "le":
@@ -649,8 +694,7 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(True)
 		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
 		if not ob1_awl.strip():
-			QMessageBox.critical(self, "No AWL Code",
-					     "No AWL Code")
+			MessageBox.error(self, "No AWL code")
 			self.stop()
 			return
 		try:
@@ -666,9 +710,13 @@ class CpuWidget(QWidget):
 				self.__screenUpdateCallback, cpu)
 			self.__setState(self.STATE_LOAD)
 			sim.load(parser.getParseTree())
-		except (AwlSimError, AwlParserError) as e:
-			QMessageBox.critical(self, "Simulator exception",
-					     str(e))
+		except AwlParserError as e:
+			MessageBox.handleAwlParserError(self, e)
+			self.stop()
+			return
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Error while loading code", e)
 			self.stop()
 			return
 		except Exception:
@@ -679,8 +727,8 @@ class CpuWidget(QWidget):
 				QApplication.processEvents(QEventLoop.AllEvents, 100)
 				sim.runCycle()
 		except AwlSimError as e:
-			QMessageBox.critical(self, "Simulator exception",
-					     str(e))
+			MessageBox.handleAwlSimError(self,
+				"Error while executing code", e)
 			self.stop()
 		except Exception:
 			handleFatalException(self)

@@ -128,11 +128,9 @@ class S7CPU(object):
 			insn = AwlInsnTranslator.fromRawInsn(self, rawInsn)
 			insn.setIP(ip)
 		except AwlSimError as e:
-			ex = e
-		if ex:
-			raise AwlSimError("%s\nline %d: %s" %\
-				(str(rawInsn), rawInsn.getLineNr(),
-				 str(ex)))
+			if e.getRawInsn() is None:
+				e.setRawInsn(rawInsn)
+			raise e
 		return insn
 
 	def __translateInsns(self, rawInsns):
