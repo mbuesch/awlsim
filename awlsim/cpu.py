@@ -1033,7 +1033,7 @@ class S7CPU(object):
 		ret = []
 		ret.append("=== S7-CPU dump ===  (t: %.01fs)" %\
 			   (self.now - self.startupTime))
-		ret.append(" status:  " + str(self.callStackTop.status))
+		ret.append("    STW:  " + str(self.callStackTop.status))
 		if self.is4accu:
 			accus = [ accu.toHex()
 				  for accu in (self.accu1, self.accu2,
@@ -1041,7 +1041,7 @@ class S7CPU(object):
 		else:
 			accus = [ accu.toHex()
 				  for accu in (self.accu1, self.accu2) ]
-		ret.append("   ACCU:  " + "  ".join(accus))
+		ret.append("   Accu:  " + "  ".join(accus))
 		ars = [ "%s (%s)" % (ar.toHex(), ar.toPointerString())
 			for ar in (self.ar1, self.ar2) ]
 		ret.append("     AR:  " + "  ".join(ars))
@@ -1060,7 +1060,7 @@ class S7CPU(object):
 		if self.callStack:
 			elems = [ str(cse) for cse in self.callStack ]
 			elems = " => ".join(elems)
-			ret.append(" CStack:  depth:%d  stack: %s" %\
+			ret.append("  Calls:  depth:%d   %s" %\
 				   (len(self.callStack), elems))
 			cse = self.callStack[-1]
 			ret.append(self.__dumpMem("      L:  ",
@@ -1068,11 +1068,12 @@ class S7CPU(object):
 						  min(16, self.specs.nrLocalbytes)))
 			ret.append(" InstDB:  %s" % str(cse.instanceDB))
 		else:
-			ret.append(" CStack:  Empty")
-		ret.append("  insn.:  IP:%s    %s" %\
+			ret.append("  Calls:  None")
+		curInsn = self.getCurrentInsn()
+		ret.append("   Stmt:  IP:%s   %s" %\
 			   (str(self.getCurrentIP()),
-			    str(self.getCurrentInsn())))
-		ret.append("  speed:  %d insn/s  %.01f insn/cy  "
+			    str(curInsn) if curInsn else ""))
+		ret.append("  Speed:  %d stmt/s  %.01f stmt/cyc  "
 			   "ctAvg:%.04fs  "
 			   "ctMax:%.04fs" %\
 			   (int(round(self.insnPerSecond)),
