@@ -1209,7 +1209,7 @@ class CpuConfigDialog(QDialog):
 		specs = self.sim.getCPU().getSpecs()
 		self.__updateBlocked += 1
 
-		index = self.accuCombo.findData(specs.getNrAccus())
+		index = self.accuCombo.findData(specs.nrAccus)
 		assert(index >= 0)
 		self.accuCombo.setCurrentIndex(index)
 
