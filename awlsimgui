@@ -406,6 +406,15 @@ class State_Mem(StateWindow):
 		else:
 			db = None
 
+		if fmt == "cb":
+			# If checkboxes are selected with word or dword
+			# width, change to hex display.
+			if width != 8:
+				index = self.fmtCombo.findData("hex")
+				# This will re-trigger the "rebuild" slot.
+				self.fmtCombo.setCurrentIndex(index)
+				return
+
 		name, longName = AbstractDisplayWidget.addrspace2name[self.addrSpace]
 		width2suffix = {
 			8	: "B",
