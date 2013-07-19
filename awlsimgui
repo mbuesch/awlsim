@@ -143,10 +143,10 @@ class AbstractDisplayWidget(QWidget):
 	ADDRSPACE_DB		= AwlOperator.MEM_DB
 
 	addrspace2name = {
-		ADDRSPACE_E	: "I",
-		ADDRSPACE_A	: "Q",
-		ADDRSPACE_M	: "M",
-		ADDRSPACE_DB	: "DB",
+		ADDRSPACE_E	: ("I", "Inputs"),
+		ADDRSPACE_A	: ("Q", "Outputs"),
+		ADDRSPACE_M	: ("M", "Flags"),
+		ADDRSPACE_DB	: ("DB", "Data block"),
 	}
 
 	changed = Signal()
@@ -406,7 +406,7 @@ class State_Mem(StateWindow):
 		else:
 			db = None
 
-		name = AbstractDisplayWidget.addrspace2name[self.addrSpace]
+		name, longName = AbstractDisplayWidget.addrspace2name[self.addrSpace]
 		width2suffix = {
 			8	: "B",
 			16	: "W",
@@ -414,7 +414,7 @@ class State_Mem(StateWindow):
 		}
 		name += width2suffix[width]
 		self.addrSpin.setPrefix(name + "  ")
-		self.setWindowTitle(name)
+		self.setWindowTitle(longName)
 
 		if fmt == "cb":
 			self.contentWidget = BitDisplayWidget(self.sim,
