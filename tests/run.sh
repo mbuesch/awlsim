@@ -25,7 +25,8 @@ run_test()
 
 	echo -n "Running test '$(basename "$awl")' ..."
 	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$basedir/../awlsimcli" --quiet --onecycle --extended-insns "$awl" ||\
+	"$interpreter" "$basedir/../awlsimcli" --quiet --onecycle --extended-insns \
+		--hardware dummy:param0=value0:param1=value1 "$awl" ||\
 		die "Test failed"
 	echo " [$(cat "$test_time_file")]"
 }

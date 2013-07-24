@@ -21,14 +21,15 @@
 
 from awlsim.cpu import *
 from awlsim.util import *
+from awlsim.version import *
+from awlsim.hardware import *
 
-
-VERSION_MAJOR = 0
-VERSION_MINOR = 13
+import importlib
 
 
 class AwlSim(object):
 	def __init__(self):
+		self.__registeredHardware = []
 		self.cpu = S7CPU(self)
 
 	def __handleSimException(self, e):
@@ -38,9 +39,15 @@ class AwlSim(object):
 			e.setCpu(self.cpu)
 		raise e
 
+	def shutdown(self):
+		for hw in self.__registeredHardware:
+			hw.shutdown()
+
 	def load(self, parseTree):
 		try:
 			self.cpu.load(parseTree)
+			for hw in self.__registeredHardware:
+				hw.startup()
 			self.cpu.startup()
 		except AwlSimError as e:
 			self.__handleSimException(e)
@@ -50,9 +57,52 @@ class AwlSim(object):
 
 	def runCycle(self):
 		try:
+			for hw in self.__registeredHardware:
+				hw.readInputs()
 			self.cpu.runCycle()
+			for hw in self.__registeredHardware:
+				hw.writeOutputs()
 		except AwlSimError as e:
 			self.__handleSimException(e)
+
+	def registerHardware(self, hwClassInst):
+		"""Register a new hardware interface."""
+
+		self.__registeredHardware.append(hwClassInst)
+
+	def registerHardwareClass(self, hwClass, parameters={}):
+		"""Register a new hardware interface class.
+		'parameters' is a dict of hardware specific parameters.
+		Returns the instance of the hardware class."""
+
+		hwClassInst = hwClass(sim = self,
+				      parameters = parameters)
+		self.registerHardware(hwClassInst)
+		return hwClassInst
+
+	def loadHardwareModule(self, name):
+		"""Load a hardware interface module and
+		register the interface.
+		'name' is the name of the module to load (without 'awlsimhw_' prefix).
+		Returns the HardwareInterface class."""
+
+		# Construct the python module name
+		moduleName = "awlsimhw_%s" % name
+		# Try to import the module
+		try:
+			mod = importlib.import_module(moduleName)
+		except ImportError as e:
+			raise AwlSimError("Failed to import hardware interface "
+				"module '%s' (import name '%s'): %s" %\
+				(name, moduleName, str(e)))
+		# Fetch and instantiate the interface object
+		hwClassName = "HardwareInterface"
+		hwClass = getattr(mod, hwClassName, None)
+		if not hwClass:
+			raise AwlSimError("Hardware module '%s' (import name '%s') "
+				"does not have a '%s' class." %\
+				(name, moduleName, hwClassName))
+		return hwClass
 
 	def __repr__(self):
 		return str(self.cpu)

@@ -44,6 +44,7 @@ except ImportError as e:
 	input("Press enter to continue.")
 	sys.exit(1)
 
+from awlsim.version import *
 from awlsim.main import *
 from awlsim.insntrans import *
 
@@ -771,25 +772,28 @@ class CpuWidget(QWidget):
 		except AwlParserError as e:
 			MessageBox.handleAwlParserError(self, e)
 			self.stop()
+			sim.shutdown()
 			return
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)
 			self.stop()
+			sim.shutdown()
 			return
 		except Exception:
 			handleFatalException(self)
 		self.__setState(self.STATE_RUN)
 		try:
 			while self.state == self.STATE_RUN:
-				QApplication.processEvents(QEventLoop.AllEvents, 100)
 				sim.runCycle()
+				QApplication.processEvents(QEventLoop.AllEvents, 100)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Error while executing code", e)
 			self.stop()
 		except Exception:
 			handleFatalException(self)
+		sim.shutdown()
 
 	def stop(self):
 		if self.state == self.STATE_STOP:

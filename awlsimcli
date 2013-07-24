@@ -40,6 +40,7 @@ def printError(text):
 	sys.stderr.flush()
 
 def usage():
+	from awlsim.version import VERSION_MAJOR, VERSION_MINOR
 	printInfo("awlsim version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
 	printInfo("")
 	printInfo("%s [OPTIONS] AWL-source" % sys.argv[0])
@@ -52,6 +53,12 @@ def usage():
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
 #	printInfo(" -C|--cython           Use Cython core")
+	printInfo("")
+	printInfo("Loading hardware modules:")
+	printInfo(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
+	printInfo("")
+	printInfo(" Where NAME is the name of the hardware module.")
+	printInfo(" PARAM=VAL are optional hardware specific parameters.")
 
 def writeStdout(message):
 	if not opt_quiet:
@@ -91,12 +98,13 @@ def main():
 	opt_rng = False
 	opt_mnemonics = "auto"
 	opt_cython = False
+	opt_hwmods = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qxr:m:C",
+			"h1qxr:m:CH:",
 			[ "help", "onecycle", "quiet", "extended-insns",
-			  "rng=", "mnemonics=", "cython", ])
+			  "rng=", "mnemonics=", "cython", "hardware=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -122,6 +130,28 @@ def main():
 				sys.exit(1)
 		if o in ("-C", "--cython"):
 			opt_cython = True
+		if o in ("-H", "--hardware"):
+			try:
+				v = v.split(':')
+				if not v:
+					raise ValueError
+				name = v[0]
+				params = {}
+				for pstr in v[1:]:
+					if not pstr:
+						continue
+					i = pstr.find('=')
+					if i < 0:
+						raise ValueError
+					pname = pstr[:i]
+					pval = pstr[i+1:]
+					if not pname or not pval:
+						raise ValueError
+					params[pname] = pval
+				opt_hwmods.append( (name, params) )
+			except (ValueError, IndexError) as e:
+				printError("-H|--hardware: Invalid module name or parameters")
+				sys.exit(1)
 	if len(args) != 1:
 		usage()
 		return 1
@@ -144,12 +174,21 @@ def main():
 		"auto"	: S7CPUSpecs.MNEMONICS_AUTO,
 	}[opt_mnemonics]
 
+	s = None
 	try:
 		writeStdout("Parsing code...\n")
 		p = AwlParser()
 		p.parseFile(awlSource)
 		writeStdout("Initializing simulator...\n")
 		s = AwlSim()
+
+		# Load hardware modules
+		for name, parameters in opt_hwmods:
+			writeStdout("Loading hardware module '%s'...\n" % name)
+			hwClass = s.loadHardwareModule(name)
+			s.registerHardwareClass(hwClass = hwClass,
+						parameters = parameters)
+
 		cpu = s.getCPU()
 		specs = cpu.getSpecs()
 		specs.setConfiguredMnemonics(opt_mnemonics)
@@ -176,6 +215,9 @@ def main():
 		return 1
 	except KeyboardInterrupt as e:
 		pass
+	finally:
+		if s:
+			s.shutdown()
 	return 0
 
 if __name__ == "__main__":

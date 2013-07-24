@@ -7,7 +7,7 @@ import shutil
 import hashlib
 from distutils.core import setup
 from distutils.extension import Extension
-from awlsim.main import VERSION_MAJOR, VERSION_MINOR
+from awlsim.version import VERSION_MAJOR, VERSION_MINOR
 
 
 def pyCythonPatch(toFile, fromFile):
@@ -77,8 +77,8 @@ setup(	name		= "awlsim",
 	author		= "Michael Buesch",
 	author_email	= "m@bues.ch",
 	url		= "http://bues.ch/cms/hacking/awlsim.html",
-	packages	= [ "awlsim", ],
-	scripts		= [ "awlsimcli", "awlsimgui", "linuxcnc/awlsim-linuxcnc-hal" ],
+	packages	= [ "awlsim", "awlsimhw_dummy", ],
+	scripts		= [ "awlsimcli", "awlsimgui", ],
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules
 )
