@@ -19,6 +19,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from awlsim.util import AwlSimError
+
 
 class AbstractHardwareInterface(object):
 	"""Abstract hardware interface class.
@@ -98,3 +100,56 @@ class AbstractHardwareInterface(object):
 
 	def __repr__(self):
 		return "HardwareInterface: %s" % self.name
+
+	def raiseException(self, errorText):
+		"""Throw an exception."""
+		raise AwlSimError("[%s hardware module] %s" %\
+				  (self.name, errorText))
+
+	def paramErrorHandler(self, name, errorText):
+		"""Default parameter error handler."""
+		self.raiseException("Parameter '%s': %s" % (name, errorText))
+
+	def getParam_str(self, name, defaultValue=""):
+		"""Get a string parameter from the parameter list."""
+		try:
+			value = self.parameters[name]
+		except KeyError:
+			return defaultValue
+		return value
+
+	def getParam_int(self, name, defaultValue=0, minValue=None, maxValue=None):
+		"""Get an integer parameter from the parameter list."""
+		value = self.getParam_str(name, None)
+		if value is None:
+			return defaultValue
+		try:
+			value = int(value)
+		except ValueError:
+			self.paramErrorHandler(name,
+				"Value '%s' is not a valid integer." % str(value))
+		if minValue is not None:
+			if value < minValue:
+				self.paramErrorHandler(name,
+					"Value '%d' is too small." % value)
+		if maxValue is not None:
+			if value > maxValue:
+				self.paramErrorHandler(name,
+					"Value '%d' is too big." % value)
+		return value
+
+	def getParam_bool(self, name, defaultValue=False):
+		"""Get a boolean parameter from the parameter list."""
+		value = self.getParam_str(name, None)
+		if value is None:
+			return defaultValue
+		if value.lower() in ("true", "yes", "on"):
+			return True
+		if value.lower() in ("false", "no", "off"):
+			return False
+		try:
+			value = int(value, 10)
+		except ValueError:
+			self.paramErrorHandler(name,
+				"Value '%s' is not a valid boolean." % str(value))
+		return bool(value)
