@@ -196,7 +196,7 @@ def main():
 		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)
 		cpu.setBlockExitCallback(blockExitCallback, cpu)
-		writeStdout("Loading code...\n")
+		writeStdout("Initializing CPU...\n")
 		s.load(p.getParseTree())
 		try:
 			writeStdout("\x1B[?25l\x1B[2J")
