@@ -35,22 +35,23 @@ except (ImportError, RuntimeError) as e:
 class HardwareInterface(AbstractHardwareInterface):
 	name = "PyProfibus"
 
+	# Hardware-specific parameters
+	paramDescs = [
+		HwParamDesc_int("debug", minValue = 0),
+		HwParamDesc_int("masterClass",
+				defaultValue = 1,
+				minValue = 1, maxValue = 2),
+		HwParamDesc_int("masterAddr",
+				defaultValue = 1,
+				minValue = 0, maxValue = 126),
+		HwParamDesc_int("spiDev", minValue = 0),
+		HwParamDesc_int("spiChip", minValue = 0),
+	]
+
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
 						   sim = sim,
 						   parameters = parameters)
-		self.__parseParameters()
-
-	def __parseParameters(self):
-		self.param_debug = self.getParam_int("debug", minValue = 0)
-		self.param_masterClass = self.getParam_int("masterClass",
-					defaultValue = 1,
-					minValue = 1, maxValue = 2)
-		self.param_masterAddr = self.getParam_int("masterAddr",
-					defaultValue = 1,
-					minValue = 0, maxValue = 126)
-		self.param_spiDev = self.getParam_int("spiDev", minValue = 0)
-		self.param_spiChip = self.getParam_int("spiChip", minValue = 0)
 
 	def __setupSlaves(self):
 		#TODO: Rewrite. Must be configurable.
@@ -78,16 +79,16 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.phy = None
 		self.master = None
 		try:
-			self.phy = PHY.CpPhy(device = self.param_spiDev,
-					     chipselect = self.param_spiChip,
-					     debug = True if (self.param_debug >= 2) else False)
-			if self.param_masterClass == 1:
+			self.phy = PHY.CpPhy(device = self.getParam("spiDev"),
+					     chipselect = self.getParam("spiChip"),
+					     debug = True if (self.getParam("debug") >= 2) else False)
+			if self.getParam("masterClass") == 1:
 				DPM_cls = DPM.DPM1
 			else:
 				DPM_cls = DPM.DPM2
 			self.master = DPM_cls(phy = self.phy,
-					      masterAddr = self.param_masterAddr,
-					      debug = True if (self.param_debug >= 1) else False)
+					      masterAddr = self.getParam("masterAddr"),
+					      debug = True if (self.getParam("debug") >= 1) else False)
 			self.__setupSlaves()
 			self.master.initialize()
 		except PHY.PhyError as e:

@@ -22,6 +22,71 @@
 from awlsim.util import AwlSimError
 
 
+class HwParamDesc(object):
+	"""Abstract hardware parameter descriptor."""
+
+	class ParseError(Exception):
+		pass
+
+	def __init__(self, name):
+		self.name = name
+
+	def parse(self, value):
+		raise NotImplementedError
+
+class HwParamDesc_str(HwParamDesc):
+	"""String hardware parameter descriptor."""
+
+	def __init__(self, name, defaultValue=""):
+		HwParamDesc.__init__(self, name)
+		self.defaultValue = defaultValue
+
+	def parse(self, value):
+		return value
+
+class HwParamDesc_int(HwParamDesc):
+	"""Integer hardware parameter descriptor."""
+
+	def __init__(self, name,
+		     defaultValue=0, minValue=None, maxValue=None):
+		HwParamDesc.__init__(self, name)
+		self.defaultValue = defaultValue
+		self.minValue = minValue
+		self.maxValue = maxValue
+
+	def parse(self, value):
+		try:
+			value = int(value)
+		except ValueError:
+			raise self.ParseError("Value '%s' is not a valid integer." %\
+					      str(value))
+		if self.minValue is not None:
+			if value < self.minValue:
+				raise self.ParseError("Value '%d' is too small." % value)
+		if self.maxValue is not None:
+			if value > self.maxValue:
+				raise self.ParseError("Value '%d' is too big." % value)
+		return value
+
+class HwParamDesc_bool(HwParamDesc):
+	"""Boolean hardware parameter descriptor."""
+
+	def __init__(self, name, defaultValue=False):
+		HwParamDesc.__init__(self, name)
+		self.defaultValue = defaultValue
+
+	def parse(self, value):
+		if value.lower() in ("true", "yes", "on"):
+			return True
+		if value.lower() in ("false", "no", "off"):
+			return False
+		try:
+			value = int(value, 10)
+		except ValueError:
+			raise self.ParseError("Value '%s' is not a valid boolean." %\
+				str(value))
+		return bool(value)
+
 class AbstractHardwareInterface(object):
 	"""Abstract hardware interface class.
 	This class must be subclassed in the hardware interface module.
@@ -31,13 +96,30 @@ class AbstractHardwareInterface(object):
 	# The name of the module. Overload in the subclass.
 	name = "<unnamed>"
 
+	# The parameter descriptors.
+	paramDescs = []
+	# The standard parameters.
+	__standardParamDescs = [
+		HwParamDesc_int("inputAddressBase",
+				defaultValue = 0, minValue = 0),
+		HwParamDesc_int("outputAddressBase",
+				defaultValue = 0, minValue = 0),
+	]
+
+	@classmethod
+	def getParamDescs(cls):
+		"""Get all parameter descriptors for this class."""
+		descs = cls.__standardParamDescs[:]
+		descs.extend(cls.paramDescs)
+		return descs
+
 	def __init__(self, sim, parameters={}):
 		"""Constructs the abstract hardware interface.
 		'sim' is the AwlSim instance.
 		'parameters' is a dict of hardware specific parameters."""
 		self.sim = sim
-		self.parameters = parameters
 		self.__running = False
+		self.__parseParameters(parameters)
 
 	def startup(self):
 		"""Initialize access to the hardware."""
@@ -110,46 +192,24 @@ class AbstractHardwareInterface(object):
 		"""Default parameter error handler."""
 		self.raiseException("Parameter '%s': %s" % (name, errorText))
 
-	def getParam_str(self, name, defaultValue=""):
-		"""Get a string parameter from the parameter list."""
+	def __getParamDescFor(self, name):
+		return [d for d in self.getParamDescs() if d.name == name][0]
+
+	def __parseParameters(self, parameters):
+		self.__parameters = {}
+		for name, value in parameters.items():
+			try:
+				desc = self.__getParamDescFor(name)
+			except IndexError:
+				self.paramErrorHandler(name, "Invalid parameter")
+			try:
+				self.__parameters[name] = desc.parse(value)
+			except HwParamDesc.ParseError as e:
+				self.paramErrorHandler(name, str(e))
+
+	def getParam(self, name):
+		desc = self.__getParamDescFor(name)
 		try:
-			value = self.parameters[name]
+			return self.__parameters[name]
 		except KeyError:
-			return defaultValue
-		return value
-
-	def getParam_int(self, name, defaultValue=0, minValue=None, maxValue=None):
-		"""Get an integer parameter from the parameter list."""
-		value = self.getParam_str(name, None)
-		if value is None:
-			return defaultValue
-		try:
-			value = int(value)
-		except ValueError:
-			self.paramErrorHandler(name,
-				"Value '%s' is not a valid integer." % str(value))
-		if minValue is not None:
-			if value < minValue:
-				self.paramErrorHandler(name,
-					"Value '%d' is too small." % value)
-		if maxValue is not None:
-			if value > maxValue:
-				self.paramErrorHandler(name,
-					"Value '%d' is too big." % value)
-		return value
-
-	def getParam_bool(self, name, defaultValue=False):
-		"""Get a boolean parameter from the parameter list."""
-		value = self.getParam_str(name, None)
-		if value is None:
-			return defaultValue
-		if value.lower() in ("true", "yes", "on"):
-			return True
-		if value.lower() in ("false", "no", "off"):
-			return False
-		try:
-			value = int(value, 10)
-		except ValueError:
-			self.paramErrorHandler(name,
-				"Value '%s' is not a valid boolean." % str(value))
-		return bool(value)
+			return desc.defaultValue
