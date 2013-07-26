@@ -29,7 +29,7 @@ class AbstractHardwareInterface(object):
 	# The name of the module. Overload in the subclass.
 	name = "<unnamed>"
 
-	def __init__(self, sim, parameters):
+	def __init__(self, sim, parameters={}):
 		"""Constructs the abstract hardware interface.
 		'sim' is the AwlSim instance.
 		'parameters' is a dict of hardware specific parameters."""
