@@ -136,3 +136,13 @@ def floatEqual(fl0, fl1):
 
 def intDivRoundUp(n, d):
 	return (n + d - 1) // d
+
+def __isInteger_python2(value):
+	return isinstance(value, int) or\
+	       isinstance(value, long)
+
+def __isInteger_python3(value):
+	return isinstance(value, int)
+
+isInteger = py23(__isInteger_python2,
+		 __isInteger_python3)

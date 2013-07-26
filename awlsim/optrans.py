@@ -388,7 +388,7 @@ class AwlOpTranslator(object):
 	def __translateOp(self, rawInsn, rawOps):
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
-		if not isinstance(opDesc.operator.value, int) and\
+		if not isInteger(opDesc.operator.value) and\
 		   opDesc.fieldCount == 2 and\
 		   (opDesc.operator.value.byteOffset == -1 or\
 		    opDesc.operator.value.bitOffset == -1):

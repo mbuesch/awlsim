@@ -138,7 +138,7 @@ class AwlOperator(object):
 
 	# Make a deep copy, except for "insn".
 	def dup(self):
-		if isinstance(self.value, int):
+		if isInteger(self.value):
 			dupValue = self.value
 		else:
 			dupValue = self.value.dup()
