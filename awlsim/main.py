@@ -31,6 +31,8 @@ class AwlSim(object):
 	def __init__(self):
 		self.__registeredHardware = []
 		self.cpu = S7CPU(self)
+		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
+		self.cpu.setPeripheralWriteCallback(self.__peripheralWriteCallback)
 
 	def __handleSimException(self, e):
 		if not e.getCpu():
@@ -103,6 +105,30 @@ class AwlSim(object):
 				"does not have a '%s' class." %\
 				(name, moduleName, hwClassName))
 		return hwClass
+
+	def __peripheralReadCallback(self, userData, width, offset):
+		# The CPU issued a direct peripheral read access.
+		# Poke all registered hardware modules, but only return the value
+		# from the last module returning a valid value.
+
+		retValue = None
+		for hw in self.__registeredHardware:
+			value = hw.directReadInput(width, offset)
+			if value is not None:
+				retValue = value
+		return retValue
+
+	def __peripheralWriteCallback(self, userData, width, offset, value):
+		# The CPU issued a direct peripheral write access.
+		# Send the write request down to all hardware modules.
+		# Returns true, if any hardware accepted the value.
+
+		retOk = False
+		for hw in self.__registeredHardware:
+			ok = hw.directWriteOutput(width, offset, value)
+			if not retOk:
+				retOk = ok
+		return retOk
 
 	def __repr__(self):
 		return str(self.cpu)

@@ -32,6 +32,39 @@ BEGIN
 	__ASSERT==	__ACCU 1,	DW#16#12345678
 
 
+	// Test: Direct peripheral read
+	// Note: This test only succeeds on dummy hardware.
+	L		DW#16#87654321
+	T		ED 10
+	L		PEB 10
+	__ASSERT==	__ACCU 1,	DW#16#00000087
+	L		PEW 10
+	__ASSERT==	__ACCU 1,	DW#16#00008765
+	L		PED 10
+	__ASSERT==	__ACCU 1,	DW#16#87654321
+
+
+	// Test; Direct peripheral write
+	L		0
+	T		AD 10
+	L		DW#16#87654321
+	T		PAB 10
+	L		AD 10
+	__ASSERT==	__ACCU 1,	DW#16#21000000
+	L		0
+	T		AD 10
+	L		DW#16#87654321
+	T		PAW 10
+	L		AD 10
+	__ASSERT==	__ACCU 1,	DW#16#43210000
+	L		0
+	T		AD 10
+	L		DW#16#87654321
+	T		PAD 10
+	L		AD 10
+	__ASSERT==	__ACCU 1,	DW#16#87654321
+
+
 	// Test: TAK
 	L		DW#16#01234567
 	L		DW#16#89ABCDEF

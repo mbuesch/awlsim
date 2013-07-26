@@ -79,7 +79,8 @@ class S7CPU(object):
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
-		self.setDirectPeripheralCallback(None)
+		self.setPeripheralReadCallback(None)
+		self.setPeripheralWriteCallback(None)
 		self.setScreenUpdateCallback(None)
 		self.reset()
 		self.enableExtendedInsns(False)
@@ -465,9 +466,13 @@ class S7CPU(object):
 		self.cbPostInsn = cb
 		self.cbPostInsnData = data
 
-	def setDirectPeripheralCallback(self, cb, data=None):
-		self.cbDirectPeripheral = cb
-		self.cbDirectPeripheralData = data
+	def setPeripheralReadCallback(self, cb, data=None):
+		self.cbPeripheralRead = cb
+		self.cbPeripheralReadData = data
+
+	def setPeripheralWriteCallback(self, cb, data=None):
+		self.cbPeripheralWrite = cb
+		self.cbPeripheralWriteData = data
 
 	def setScreenUpdateCallback(self, cb, data=None):
 		self.cbScreenUpdate = cb
@@ -879,9 +884,17 @@ class S7CPU(object):
 		return cse.interfaceDB.fetch(operator)
 
 	def fetchPE(self, operator):
-		if self.cbDirectPeripheral:
-			self.cbDirectPeripheral(self.cbDirectPeripheralData,
-						operator)
+		value = None
+		if self.cbPeripheralRead:
+			value = self.cbPeripheralRead(self.cbPeripheralReadData,
+						      operator.width,
+						      operator.value.byteOffset)
+		if value is None:
+			raise AwlSimError("There is no hardware to handle "
+				"the direct peripheral fetch. "
+				"(width=%d, offset=%d)" %\
+				(operator.width, operator.value.byteOffset))
+		AwlOperator.storeToByteArray(self.inputs, operator, value)
 		return AwlOperator.fetchFromByteArray(self.inputs, operator)
 
 	def fetchT(self, operator):
@@ -1004,9 +1017,18 @@ class S7CPU(object):
 
 	def storePA(self, operator, value):
 		AwlOperator.storeToByteArray(self.outputs, operator, value)
-		if self.cbDirectPeripheral:
-			self.cbDirectPeripheral(self.cbDirectPeripheralData,
-						operator)
+		ok = False
+		if self.cbPeripheralWrite:
+			ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,
+						    operator.width,
+						    operator.value.byteOffset,
+						    value)
+		if not ok:
+			raise AwlSimError("There is no hardware to handle "
+				"the direct peripheral store. "
+				"(width=%d, offset=%d, value=0x%X)" %\
+				(operator.width, operator.value.byteOffset,
+				 value))
 
 	def storeSTW(self, operator, value):
 		if operator.width == 1:

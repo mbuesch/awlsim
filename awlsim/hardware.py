@@ -77,7 +77,9 @@ class AbstractHardwareInterface(object):
 		"""Direct peripheral input data read operation.
 		'accessWidth' is the width of the access, in bits.
 		'accessOffset' is the byte offset of the access.
-		The read data is returned. 'None' is returned on failure.
+		The read data is returned.
+		'None' is returned if the 'accessOffset' is not in
+		this hardware's range.
 		Overload this method, if the hardware has inputs and
 		supports direct peripheral access."""
 		return None
@@ -87,9 +89,12 @@ class AbstractHardwareInterface(object):
 		'accessWidth' is the width of the access, in bits.
 		'accessOffset' is the byte offset of the access.
 		'data' is the data to write.
+		True is returned, if the hardware successfully stored the value.
+		False is returned, if the 'accessOffset' is not in this
+		hardware's range.
 		Overload this method, if the hardware has outputs and
 		supports direct peripheral access."""
-		pass
+		return False
 
 	def __repr__(self):
 		return "HardwareInterface: %s" % self.name
