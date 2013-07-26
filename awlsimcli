@@ -48,7 +48,8 @@ def usage():
 	printInfo("Options:")
 	printInfo(" -1|--onecycle         Only run one cycle")
 	printInfo(" -4|--fouraccu         Enable 4-accu mode")
-	printInfo(" -q|--quiet            No status messages")
+	printInfo(" -D|--no-cpu-dump      Do not show CPU status while running")
+	printInfo(" -q|--quiet            Do not show any status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
@@ -68,7 +69,7 @@ def writeStdout(message):
 nextScreenUpdate = 0.0
 lastDump = ""
 
-def blockExitCallback(cpu):
+def cpuDumpCallback(cpu):
 	global nextScreenUpdate
 	if cpu.now < nextScreenUpdate and\
 	   not opt_onecycle:
@@ -93,6 +94,7 @@ def main():
 	global opt_onecycle
 	global opt_quiet
 
+	opt_noCpuDump = False
 	opt_fouraccu = False
 	opt_extInsns = False
 	opt_rng = False
@@ -102,8 +104,8 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qxr:m:CH:",
-			[ "help", "onecycle", "quiet", "extended-insns",
+			"h1qDxr:m:CH:",
+			[ "help", "onecycle", "quiet", "no-cpu-dump", "extended-insns",
 			  "rng=", "mnemonics=", "cython", "hardware=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -119,6 +121,8 @@ def main():
 			opt_fouraccu = True
 		if o in ("-q", "--quiet"):
 			opt_quiet = True
+		if o in ("-D", "--no-cpu-dump"):
+			opt_noCpuDump = True
 		if o in ("-x", "--extended-insns"):
 			opt_extInsns = True
 		if o in ("-r", "--rng"):
@@ -195,18 +199,22 @@ def main():
 		specs.setNrAccus(4 if opt_fouraccu else 2)
 		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)
-		cpu.setBlockExitCallback(blockExitCallback, cpu)
+		if not opt_noCpuDump and not opt_quiet:
+			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		writeStdout("Initializing CPU...\n")
 		s.load(p.getParseTree())
+		writeStdout("[Initialization finished - CPU is executing user code]\n")
 		try:
-			writeStdout("\x1B[?25l\x1B[2J")
+			if not opt_noCpuDump:
+				writeStdout("\x1B[?25l\x1B[2J")
 			while 1:
 				s.runCycle()
 				if opt_onecycle:
 					break
 		finally:
-			writeStdout("\x1B[?25h\x1B[2J\x1B[H")
-			writeStdout(lastDump + '\n')
+			if not opt_noCpuDump and not opt_quiet:
+				writeStdout("\x1B[?25h\x1B[2J\x1B[H")
+				writeStdout(lastDump + '\n')
 	except AwlParserError as e:
 		handleSimError("AWL parser error", e)
 		return 1
