@@ -107,9 +107,16 @@ class MessageBox(QMessageBox):
 					     description = None,
 					     exception = exception)
 
+class StoreRequest(object):
+	"""CPU store request buffer."""
+
+	def __init__(self, operator, value, failureCallback=None):
+		self.operator = operator
+		self.value = value
+		self.failureCallback = failureCallback
+
 class StateWindow(QWidget):
 	closed = Signal()
-	cpuStateChanged = Signal()
 
 	def __init__(self, sim, parent=None):
 		QWidget.__init__(self, parent)
@@ -118,12 +125,23 @@ class StateWindow(QWidget):
 		pixmap.fill(QColor(0, 0, 192))
 		self.setWindowIcon(QIcon(pixmap))
 		self.sim = sim
+		self.storeRequests = []
 
 	def update(self):
 		size, hint = self.size(), self.minimumSizeHint()
 		if size.width() < hint.width() or\
 		   size.height() < hint.height():
-			self.resize(self.minimumSizeHint())
+			self.resize(hint)
+
+	# Queue a CPU store request for handling in PAA-push
+	def queueStoreRequest(self, storeRequest):
+		self.storeRequests.append(storeRequest)
+
+	# Get the queued CPU store requests
+	def getQueuedStoreRequests(self):
+		queue = self.storeRequests
+		self.storeRequests = []
+		return queue
 
 	def closeEvent(self, ev):
 		self.closed.emit()
@@ -466,6 +484,10 @@ class State_Mem(StateWindow):
 		self.contentWidget.setEnabled(True)
 		self.update()
 
+	def __storeFailureCallback(self):
+		# A CPU store request related to this widget failed
+		self.contentWidget.setEnabled(False)
+
 	def __changed(self):
 		if self.__changeBlocked or not self.contentWidget:
 			return
@@ -473,13 +495,9 @@ class State_Mem(StateWindow):
 		addr = self.addrSpin.value()
 		index = self.widthCombo.currentIndex()
 		width = self.widthCombo.itemData(index)
-		try:
-			self.sim.getCPU().store(self.contentWidget._createOperator(),
-						value)
-		except AwlSimError as e:
-			self.contentWidget.setEnabled(False)
-			return
-		self.cpuStateChanged.emit()
+		self.queueStoreRequest(StoreRequest(self.contentWidget._createOperator(),
+						    value,
+						    self.__storeFailureCallback))
 
 	def update(self):
 		if self.contentWidget:
@@ -616,6 +634,43 @@ class StateWorkspace(QWorkspace):
 	def __init__(self, parent=None):
 		QWorkspace.__init__(self, parent)
 
+class GuiPseudoHardwareInterface(AbstractHardwareInterface):
+	"""Input/output to the CPU is handled by this pseudo
+	hardware interface."""
+
+	name = "GUI"
+
+	def __init__(self, sim, cpuWidget):
+		AbstractHardwareInterface.__init__(self, sim = sim)
+		self.cpuWidget = cpuWidget
+		self.cpu = cpuWidget.sim.getCPU()
+
+		self.__nextUpdate = 0.0
+
+	def readInputs(self):
+		# Read the "hardware inputs" a.k.a. GUI buttons.
+		# This is done by processing the queued store-requests.
+		for storeRequest in self.cpuWidget.getQueuedStoreRequests():
+			try:
+				self.cpu.store(storeRequest.operator,
+					       storeRequest.value)
+			except AwlSimError as e:
+				if storeRequest.failureCallback:
+					storeRequest.failureCallback()
+
+	def writeOutputs(self):
+		# Write the "hardware outputs" a.k.a. GUI display elements.
+		# This is only done one in a while for performance reasons.
+		if self.cpu.now >= self.__nextUpdate:
+			self.__nextUpdate = self.cpu.now + 0.15
+			self.cpuWidget.update()
+
+	def directReadInput(self, accessWidth, accessOffset):
+		return None#TODO
+
+	def directWriteOutput(self, accessWidth, accessOffset, data):
+		pass#TODO
+
 class CpuWidget(QWidget):
 	runStateChanged = Signal(int)
 
@@ -632,8 +687,13 @@ class CpuWidget(QWidget):
 		self.setLayout(QGridLayout(self))
 
 		self.mainWidget = mainWidget
+		self.sim = mainWidget.getSim()
 		self.state = self.STATE_STOP
-		self.nextUpdate = 0.0
+		self.__nextCpuWidgetUpdate = 0.0
+
+		self.pseudoHw = GuiPseudoHardwareInterface(sim = self.sim,
+							   cpuWidget = self)
+		self.sim.registerHardware(self.pseudoHw)
 
 		group = QGroupBox("CPU status", self)
 		group.setLayout(QGridLayout(group))
@@ -681,7 +741,6 @@ class CpuWidget(QWidget):
 		self.update()
 
 	def __addWindow(self, win):
-		win.cpuStateChanged.connect(self.update)
 		self.stateWs.addWindow(win, Qt.Window)
 		win.show()
 		self.update()
@@ -716,11 +775,12 @@ class CpuWidget(QWidget):
 		for win in self.stateWs.windowList():
 			win.update()
 
-	def mayUpdate(self, cpu):
-		if cpu.now < self.nextUpdate:
-			return
-		self.nextUpdate = cpu.now + 0.15
-		self.update()
+	# Get the queued CPU store requests
+	def getQueuedStoreRequests(self):
+		reqList = []
+		for win in self.stateWs.windowList():
+			reqList.extend(win.getQueuedStoreRequests())
+		return reqList
 
 	def __cycleExitCallback(self, cpu):
 		if self.state == self.STATE_RUN:
@@ -728,15 +788,19 @@ class CpuWidget(QWidget):
 
 	def __blockExitCallback(self, cpu):
 		if self.state == self.STATE_RUN:
-			self.mayUpdate(cpu)
 			self.mainWidget.codeEdit.updateCpuStats_afterBlock(cpu)
+
+			# Special case: May update the CPU-state-widgets (if any)
+			# on block exit.
+			if cpu.now >= self.__nextCpuWidgetUpdate:
+				self.__nextCpuWidgetUpdate = cpu.now + 0.15
+				for win in self.stateWs.windowList():
+					if isinstance(win, State_CPU):
+						win.update()
 
 	def __postInsnCallback(self, cpu):
 		if self.state == self.STATE_RUN:
 			self.mainWidget.codeEdit.updateCpuStats_afterInsn(cpu)
-
-	def __directPeripheralCallback(self, cpu, operator):
-		pass#TODO
 
 	def __screenUpdateCallback(self, cpu):
 		self.__postInsnCallback(cpu)
@@ -763,8 +827,6 @@ class CpuWidget(QWidget):
 			cpu = sim.getCPU()
 			cpu.setBlockExitCallback(self.__blockExitCallback, cpu)
 			cpu.setCycleExitCallback(self.__cycleExitCallback, cpu)
-			cpu.setDirectPeripheralCallback(
-				self.__directPeripheralCallback, cpu)
 			cpu.setScreenUpdateCallback(
 				self.__screenUpdateCallback, cpu)
 			self.__setState(self.STATE_LOAD)
