@@ -567,10 +567,19 @@ class S7CPU(object):
 			self.__speedMeasureStartInsnCount = self.__insnCount
 			self.__speedMeasureStartCycleCount = self.__cycleCount
 
-	# Update the CPU time
-	def updateTimestamp(self):
-		# self.now is a floating point count of seconds since the epoch.
+	def __updateTimestamp_perf(self):
+		self.now = time.perf_counter()
+
+	def __updateTimestamp_time(self):
 		self.now = time.time()
+
+	# Construct updateTimestamp() method.
+	# updateTimestamp() updates self.now, which is a
+	# floating point count of seconds.
+	if hasattr(time, "perf_counter"):
+		updateTimestamp = __updateTimestamp_perf
+	else:
+		updateTimestamp = __updateTimestamp_time
 
 	def __runTimeCheck(self):
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:
