@@ -45,6 +45,7 @@ BEGIN
 
 
 	// Test; Direct peripheral write
+	// Note: This test only succeeds on dummy hardware.
 	L		0
 	T		AD 10
 	L		DW#16#87654321
