@@ -82,9 +82,9 @@ class AwlSim(object):
 		self.registerHardware(hwClassInst)
 		return hwClassInst
 
-	def loadHardwareModule(self, name):
-		"""Load a hardware interface module and
-		register the interface.
+	@classmethod
+	def loadHardwareModule(cls, name):
+		"""Load a hardware interface module.
 		'name' is the name of the module to load (without 'awlsimhw_' prefix).
 		Returns the HardwareInterface class."""
 

@@ -189,9 +189,8 @@ def main():
 	try:
 		if opt_hwinfos:
 			# Just print the hardware-infos and exit.
-			s = AwlSim()
 			for name in opt_hwinfos:
-				cls = s.loadHardwareModule(name)
+				cls = AwlSim.loadHardwareModule(name)
 				printInfo(cls.getModuleInfo())
 			return 0
 
