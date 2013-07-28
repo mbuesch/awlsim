@@ -666,10 +666,14 @@ class GuiPseudoHardwareInterface(AbstractHardwareInterface):
 			self.cpuWidget.update()
 
 	def directReadInput(self, accessWidth, accessOffset):
-		return None#TODO
+		#TODO: Read input widgets. As workaround we just read the current CPU value.
+		return self.sim.cpu.fetch(AwlOperator(AwlOperator.MEM_E,
+						      accessWidth,
+						      AwlOffset(accessOffset)))
 
 	def directWriteOutput(self, accessWidth, accessOffset, data):
-		pass#TODO
+		#TODO: Trigger output widgets update.
+		return True
 
 class CpuWidget(QWidget):
 	runStateChanged = Signal(int)
