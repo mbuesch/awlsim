@@ -40,12 +40,13 @@ run_test_directory()
 
 	echo "--- Entering directory '$directory'"
 	for entry in "$directory"/*; do
-		[ -d "$entry" ] && {
-			run_test_directory "$interpreter" "$entry"
-			continue
-		}
+		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
 		run_test "$interpreter" "$entry"
+	done
+	for entry in "$directory"/*; do
+		[ -d "$entry" ] || continue
+		run_test_directory "$interpreter" "$entry"
 	done
 	echo "--- Leaving directory '$directory'"
 }
