@@ -22,15 +22,6 @@
 from awlsim.hardware import *
 from awlsim.util import *
 
-try:
-	import pyprofibus.dp_master as DPM
-	import pyprofibus.dp as DP
-	import pyprofibus.fdl as FDL
-	import pyprofibus.phy as PHY
-except (ImportError, RuntimeError) as e:
-	raise AwlSimError("Failed to import PROFIBUS protocol stack "
-		"module 'pyprofibus':\n%s" % str(e))
-
 
 class HardwareInterface(AbstractHardwareInterface):
 	name = "PyProfibus"
@@ -67,14 +58,14 @@ class HardwareInterface(AbstractHardwareInterface):
 
 	def __setupSlaves(self):
 		#TODO: Rewrite. Must be configurable.
-		et200s = DPM.DpSlaveDesc(identNumber = 0x806A,
-					 slaveAddr = 8,
-					 inputAddressRangeSize = 1,
-					 outputAddressRangeSize = 2)
-		for elem in (DP.DpCfgDataElement(0),
-			     DP.DpCfgDataElement(0x20),
-			     DP.DpCfgDataElement(0x20),
-			     DP.DpCfgDataElement(0x10)):
+		et200s = self.DPM.DpSlaveDesc(identNumber = 0x806A,
+					      slaveAddr = 8,
+					      inputAddressRangeSize = 1,
+					      outputAddressRangeSize = 2)
+		for elem in (self.DP.DpCfgDataElement(0),
+			     self.DP.DpCfgDataElement(0x20),
+			     self.DP.DpCfgDataElement(0x20),
+			     self.DP.DpCfgDataElement(0x10)):
 			et200s.chkCfgTelegram.addCfgDataElement(elem)
 		et200s.setPrmTelegram.addUserPrmData([0x11 | 0x40])
 		et200s.setSyncMode(True)
@@ -91,17 +82,33 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.cachedInputs = []
 
 	def doStartup(self):
+		# Import the PROFIBUS hardware access modules
+		# and keep references to it.
+		try:
+			import pyprofibus.dp_master
+			import pyprofibus.dp
+			import pyprofibus.fdl
+			import pyprofibus.phy
+			self.DPM = pyprofibus.dp_master
+			self.DP = pyprofibus.dp
+			self.FDL = pyprofibus.fdl
+			self.PHY = pyprofibus.phy
+		except (ImportError, RuntimeError) as e:
+			self.raiseException("Failed to import PROFIBUS protocol stack "
+				"module 'pyprofibus':\n%s" % str(e))
+
+		# Initialize the DPM
 		self.phy = None
 		self.master = None
 		try:
-			self.phy = PHY.CpPhy(device = self.getParam("spiDev"),
-					     chipselect = self.getParam("spiChip"),
-					     debug = True if (self.getParam("debug") >= 2) else False)
+			self.phy = self.PHY.CpPhy(device = self.getParam("spiDev"),
+						  chipselect = self.getParam("spiChip"),
+						  debug = True if (self.getParam("debug") >= 2) else False)
 			self.phy.profibusSetPhyConfig(baudrate = self.getParam("baud"))
 			if self.getParam("masterClass") == 1:
-				DPM_cls = DPM.DPM1
+				DPM_cls = self.DPM.DPM1
 			else:
-				DPM_cls = DPM.DPM2
+				DPM_cls = self.DPM.DPM2
 			self.master = DPM_cls(phy = self.phy,
 					      masterAddr = self.getParam("masterAddr"),
 					      debug = True if (self.getParam("debug") >= 1) else False)
@@ -109,13 +116,13 @@ class HardwareInterface(AbstractHardwareInterface):
 			self.master.initialize()
 			self.slaveList = self.master.getSlaveList()
 			self.cachedInputs = [None] * len(self.slaveList)
-		except PHY.PhyError as e:
+		except self.PHY.PhyError as e:
 			self.raiseException("PHY error: %s" % str(e))
 			self.__cleanup()
-		except DP.DpError as e:
+		except self.DP.DpError as e:
 			self.raiseException("Profibus-DP error: %s" % str(e))
 			self.__cleanup()
-		except FDL.FdlError as e:
+		except self.FDL.FdlError as e:
 			self.raiseException("Fieldbug Data Link error: %s" % str(e))
 			self.__cleanup()
 
