@@ -37,15 +37,27 @@ class HardwareInterface(AbstractHardwareInterface):
 
 	# Hardware-specific parameters
 	paramDescs = [
-		HwParamDesc_int("debug", minValue = 0),
+		HwParamDesc_int("debug",
+				minValue = 0,
+				description = "Debug level."),
+		HwParamDesc_int("baud",
+				defaultValue = 19200,
+				minValue = 9600, maxValue = 12000000,
+				description = "The PROFIBUS baud rate."),
 		HwParamDesc_int("masterClass",
 				defaultValue = 1,
-				minValue = 1, maxValue = 2),
+				minValue = 1, maxValue = 2,
+				description = "The DP-Master class."),
 		HwParamDesc_int("masterAddr",
 				defaultValue = 1,
-				minValue = 0, maxValue = 126),
-		HwParamDesc_int("spiDev", minValue = 0),
-		HwParamDesc_int("spiChip", minValue = 0),
+				minValue = 0, maxValue = 126,
+				description = "The DP-Address of the master."),
+		HwParamDesc_int("spiDev",
+				minValue = 0,
+				description = "The SPI device number."),
+		HwParamDesc_int("spiChip",
+				minValue = 0,
+				description = "The SPI device chip-select number."),
 	]
 
 	def __init__(self, sim, parameters={}):
@@ -85,6 +97,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			self.phy = PHY.CpPhy(device = self.getParam("spiDev"),
 					     chipselect = self.getParam("spiChip"),
 					     debug = True if (self.getParam("debug") >= 2) else False)
+			self.phy.profibusSetPhyConfig(baudrate = self.getParam("baud"))
 			if self.getParam("masterClass") == 1:
 				DPM_cls = DPM.DPM1
 			else:
