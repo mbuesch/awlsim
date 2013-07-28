@@ -27,6 +27,10 @@ from awlsim.datatypes import AwlOffset
 class HardwareInterface(AbstractHardwareInterface):
 	name = "dummy"
 
+	paramDescs = [
+		HwParamDesc_bool("dummyParam"),
+	]
+
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
 						   sim = sim,
@@ -45,11 +49,15 @@ class HardwareInterface(AbstractHardwareInterface):
 		pass # Do nothing
 
 	def directReadInput(self, accessWidth, accessOffset):
+		if accessOffset < self.inputAddressBase:
+			return None
 		# Just read the current value from the CPU and return it.
 		return self.sim.cpu.fetch(AwlOperator(AwlOperator.MEM_E,
 						      accessWidth,
 						      AwlOffset(accessOffset)))
 
 	def directWriteOutput(self, accessWidth, accessOffset, data):
+		if accessOffset < self.outputAddressBase:
+			return False
 		# Just pretend we wrote it somewhere.
 		return True

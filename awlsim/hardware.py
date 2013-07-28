@@ -121,6 +121,10 @@ class AbstractHardwareInterface(object):
 		self.__running = False
 		self.__parseParameters(parameters)
 
+		# Get the base addresses for convenience.
+		self.inputAddressBase = self.getParam("inputAddressBase")
+		self.outputAddressBase = self.getParam("outputAddressBase")
+
 	def startup(self):
 		"""Initialize access to the hardware."""
 		if not self.__running:
@@ -192,23 +196,37 @@ class AbstractHardwareInterface(object):
 		"""Default parameter error handler."""
 		self.raiseException("Parameter '%s': %s" % (name, errorText))
 
-	def __getParamDescFor(self, name):
-		return [d for d in self.getParamDescs() if d.name == name][0]
-
 	def __parseParameters(self, parameters):
+		# Create a dict for mapping parameter names to descriptors.
+		self.__paramNameToDesc = {}
+		for paramDesc in self.getParamDescs():
+			self.__paramNameToDesc[paramDesc.name] = paramDesc
+
+		# Parse the parameters.
 		self.__parameters = {}
 		for name, value in parameters.items():
 			try:
-				desc = self.__getParamDescFor(name)
-			except IndexError:
-				self.paramErrorHandler(name, "Invalid parameter")
+				desc = self.__paramNameToDesc[name]
+			except KeyError:
+				self.paramErrorHandler(name,
+					"Invalid parameter. The parameter '%s' is "
+					"unknown in the '%s' hardware module." %\
+					(name, self.name))
 			try:
 				self.__parameters[name] = desc.parse(value)
 			except HwParamDesc.ParseError as e:
 				self.paramErrorHandler(name, str(e))
 
 	def getParam(self, name):
-		desc = self.__getParamDescFor(name)
+		"""This is the main method to get a parameter value.
+		'name' is the name string of the parameter."""
+
+		try:
+			desc = self.__paramNameToDesc[name]
+		except KeyError:
+			# Programming error: getParam() was called with a name
+			# that was not declared in paramDescs.
+			assert(0)
 		try:
 			return self.__parameters[name]
 		except KeyError:
