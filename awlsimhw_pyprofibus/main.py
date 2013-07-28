@@ -147,18 +147,21 @@ class HardwareInterface(AbstractHardwareInterface):
 		assert(not self.cachedInputs)
 
 	def writeOutputs(self):
-		address = self.outputAddressBase
-		for slave in self.slaveList:
-			# Get the output data from the CPU
-			outData = self.sim.cpu.fetchOutputRange(address,
-								slave.outputAddressRangeSize)
-			# Send it to the slave and request the input data.
-			inData = self.master.dataExchange(slave.slaveAddr,
-							  outData)
-			# Cache the input data for the readInputs() call.
-			self.cachedInputs.append(inData)
-			# Adjust the address base for the next slave.
-			address += slave.outputAddressRangeSize
+		try:
+			address = self.outputAddressBase
+			for slave in self.slaveList:
+				# Get the output data from the CPU
+				outData = self.sim.cpu.fetchOutputRange(address,
+						slave.outputAddressRangeSize)
+				# Send it to the slave and request the input data.
+				inData = self.master.dataExchange(slave.slaveAddr,
+								  outData)
+				# Cache the input data for the readInputs() call.
+				self.cachedInputs.append(inData)
+				# Adjust the address base for the next slave.
+				address += slave.outputAddressRangeSize
+		except (self.PHY.PhyError, self.DP.DpError, self.FDL.FdlError) as e:
+			self.raiseException("Hardware error: %s" % str(e))
 
 	def directReadInput(self, accessWidth, accessOffset):
 		return None#TODO
