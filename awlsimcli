@@ -161,7 +161,7 @@ def main():
 				printError("-H|--hardware: Invalid module name or parameters")
 				sys.exit(1)
 		if o in ("-I", "--hardware-info"):
-			opt_hwinfos.append(v)
+			opt_hwinfos.append(v.split(':')[0])
 	if len(args) != 1 and not opt_hwinfos:
 		usage()
 		return 1
