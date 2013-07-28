@@ -56,7 +56,9 @@ class HardwareInterface(AbstractHardwareInterface):
 	def __setupSlaves(self):
 		#TODO: Rewrite. Must be configurable.
 		et200s = DPM.DpSlaveDesc(identNumber = 0x806A,
-					 slaveAddr = 8)
+					 slaveAddr = 8,
+					 inputAddressRangeSize = 1,
+					 outputAddressRangeSize = 2)
 		for elem in (DP.DpCfgDataElement(0),
 			     DP.DpCfgDataElement(0x20),
 			     DP.DpCfgDataElement(0x20),
@@ -66,7 +68,7 @@ class HardwareInterface(AbstractHardwareInterface):
 		et200s.setSyncMode(True)
 		et200s.setFreezeMode(True)
 		et200s.setGroupMask(1)
-		et200s.setWatchdog(300)
+		et200s.setWatchdog(5000)
 		self.master.addSlave(et200s)
 
 	def __cleanup(self):
@@ -74,6 +76,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			self.master.destroy()
 		self.master = None
 		self.phy = None
+		self.cachedInputs = []
 
 	def doStartup(self):
 		self.phy = None
@@ -91,6 +94,8 @@ class HardwareInterface(AbstractHardwareInterface):
 					      debug = True if (self.getParam("debug") >= 1) else False)
 			self.__setupSlaves()
 			self.master.initialize()
+			self.slaveList = self.master.getSlaveList()
+			self.cachedInputs = [None] * len(self.slaveList)
 		except PHY.PhyError as e:
 			self.raiseException("PHY error: %s" % str(e))
 			self.__cleanup()
@@ -105,10 +110,35 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.__cleanup()
 
 	def readInputs(self):
-		pass#TODO
+		address = self.inputAddressBase
+		for slave in self.slaveList:
+			# Get the cached slave-data
+			inData = self.cachedInputs.pop(0)
+			if not inData:
+				continue
+			if len(inData) != slave.inputAddressRangeSize:
+				self.raiseException("Input data from slave '%s' has "
+					"invalid length %d (expected %d)" %\
+					(str(slave), len(inData),
+					 slave.inputAddressRangeSize))
+			self.sim.cpu.storeInputRange(address, inData)
+			# Adjust the address base for the next slave.
+			address += slave.inputAddressRangeSize
+		assert(not self.cachedInputs)
 
 	def writeOutputs(self):
-		pass#TODO
+		address = self.outputAddressBase
+		for slave in self.slaveList:
+			# Get the output data from the CPU
+			outData = self.sim.cpu.fetchOutputRange(address,
+								slave.outputAddressRangeSize)
+			# Send it to the slave and request the input data.
+			inData = self.master.dataExchange(slave.slaveAddr,
+							  outData)
+			# Cache the input data for the readInputs() call.
+			self.cachedInputs.append(inData)
+			# Adjust the address base for the next slave.
+			address += slave.outputAddressRangeSize
 
 	def directReadInput(self, accessWidth, accessOffset):
 		return None#TODO

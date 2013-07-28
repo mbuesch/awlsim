@@ -777,6 +777,20 @@ class S7CPU(object):
 		if len(self.parenStack) > 7:
 			raise AwlSimError("Parenthesis stack overflow")
 
+	# Fetch a range in the 'output' memory area.
+	# 'byteOffset' is the byte offset into the output area.
+	# 'byteCount' is the number if bytes to fetch.
+	# Returns a list of byte-values.
+	def fetchOutputRange(self, byteOffset, byteCount):
+		return [ d.get() for d in self.outputs[byteOffset : byteOffset + byteCount] ]
+
+	# Store a range in the 'input' memory area.
+	# 'byteOffset' is the byte offset into the input area.
+	# 'data' is a list by byte-values.
+	def storeInputRange(self, byteOffset, data):
+		for i, dataByte in enumerate(data):
+			self.inputs[byteOffset + i].set(dataByte)
+
 	def fetch(self, operator, enforceWidth=()):
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
