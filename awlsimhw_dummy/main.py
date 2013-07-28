@@ -28,7 +28,8 @@ class HardwareInterface(AbstractHardwareInterface):
 	name = "dummy"
 
 	paramDescs = [
-		HwParamDesc_bool("dummyParam"),
+		HwParamDesc_bool("dummyParam",
+				 description = "Unused dummy parameter"),
 	]
 
 	def __init__(self, sim, parameters={}):

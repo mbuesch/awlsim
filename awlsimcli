@@ -57,6 +57,8 @@ def usage():
 	printInfo("")
 	printInfo("Loading hardware modules:")
 	printInfo(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
+	printInfo("Print module information:")
+	printInfo(" -I|--hardware-info NAME")
 	printInfo("")
 	printInfo(" Where NAME is the name of the hardware module.")
 	printInfo(" PARAM=VAL are optional hardware specific parameters.")
@@ -101,12 +103,14 @@ def main():
 	opt_mnemonics = "auto"
 	opt_cython = False
 	opt_hwmods = []
+	opt_hwinfos = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qDxr:m:CH:",
+			"h1qDxr:m:CH:I:",
 			[ "help", "onecycle", "quiet", "no-cpu-dump", "extended-insns",
-			  "rng=", "mnemonics=", "cython", "hardware=", ])
+			  "rng=", "mnemonics=", "cython",
+			  "hardware=", "hardware-info=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -156,10 +160,13 @@ def main():
 			except (ValueError, IndexError) as e:
 				printError("-H|--hardware: Invalid module name or parameters")
 				sys.exit(1)
-	if len(args) != 1:
+		if o in ("-I", "--hardware-info"):
+			opt_hwinfos.append(v)
+	if len(args) != 1 and not opt_hwinfos:
 		usage()
 		return 1
-	awlSource = args[0]
+	if args:
+		awlSource = args[0]
 
 	if opt_cython:
 		from awlsim_cython.main import AwlSim
@@ -180,6 +187,14 @@ def main():
 
 	s = None
 	try:
+		if opt_hwinfos:
+			# Just print the hardware-infos and exit.
+			s = AwlSim()
+			for name in opt_hwinfos:
+				cls = s.loadHardwareModule(name)
+				printInfo(cls.getModuleInfo())
+			return 0
+
 		writeStdout("Parsing code...\n")
 		p = AwlParser()
 		p.parseFile(awlSource)

@@ -28,8 +28,11 @@ class HwParamDesc(object):
 	class ParseError(Exception):
 		pass
 
-	def __init__(self, name):
+	typeStr = "<NoType>"
+
+	def __init__(self, name, description=""):
 		self.name = name
+		self.description = description
 
 	def parse(self, value):
 		raise NotImplementedError
@@ -37,8 +40,10 @@ class HwParamDesc(object):
 class HwParamDesc_str(HwParamDesc):
 	"""String hardware parameter descriptor."""
 
-	def __init__(self, name, defaultValue=""):
-		HwParamDesc.__init__(self, name)
+	typeStr = "string"
+
+	def __init__(self, name, defaultValue="", description=""):
+		HwParamDesc.__init__(self, name, description)
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
@@ -47,9 +52,12 @@ class HwParamDesc_str(HwParamDesc):
 class HwParamDesc_int(HwParamDesc):
 	"""Integer hardware parameter descriptor."""
 
+	typeStr = "integer"
+
 	def __init__(self, name,
-		     defaultValue=0, minValue=None, maxValue=None):
-		HwParamDesc.__init__(self, name)
+		     defaultValue=0, minValue=None, maxValue=None,
+		     description=""):
+		HwParamDesc.__init__(self, name, description)
 		self.defaultValue = defaultValue
 		self.minValue = minValue
 		self.maxValue = maxValue
@@ -71,8 +79,10 @@ class HwParamDesc_int(HwParamDesc):
 class HwParamDesc_bool(HwParamDesc):
 	"""Boolean hardware parameter descriptor."""
 
-	def __init__(self, name, defaultValue=False):
-		HwParamDesc.__init__(self, name)
+	typeStr = "boolean"
+
+	def __init__(self, name, defaultValue=False, description=""):
+		HwParamDesc.__init__(self, name, description)
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
@@ -101,9 +111,11 @@ class AbstractHardwareInterface(object):
 	# The standard parameters.
 	__standardParamDescs = [
 		HwParamDesc_int("inputAddressBase",
-				defaultValue = 0, minValue = 0),
+				defaultValue = 0, minValue = 0,
+				description = "Start address in input address range"),
 		HwParamDesc_int("outputAddressBase",
-				defaultValue = 0, minValue = 0),
+				defaultValue = 0, minValue = 0,
+				description = "Start address in output address range"),
 	]
 
 	@classmethod
@@ -112,6 +124,20 @@ class AbstractHardwareInterface(object):
 		descs = cls.__standardParamDescs[:]
 		descs.extend(cls.paramDescs)
 		return descs
+
+	@classmethod
+	def getModuleInfo(cls):
+		"""Get module information. Returns a string."""
+		ret = []
+		ret.append("Hardware module '%s':" % cls.name)
+		ret.append("")
+		ret.append("Parameters:")
+		for desc in cls.getParamDescs():
+			ret.append(" %s = %s (default: %s)%s" %\
+				(desc.name, desc.typeStr.upper(),
+				 str(desc.defaultValue),
+				 ("  -  " + desc.description) if desc.description else ""))
+		return "\n".join(ret)
 
 	def __init__(self, sim, parameters={}):
 		"""Constructs the abstract hardware interface.
