@@ -1,57 +1,448 @@
+	// Test SPA
 	__STWRST
-	SPA		_1
+	SPA		_101
 	__ASSERT==	1,	2
-_1:	NOP		0
-
+_101:	NOP		0
 
 	__STWRST
 	SET
-	SPA		_2
+	SPA		_102
 	__ASSERT==	1,	2
-_2:	NOP		0
+_102:	NOP		0
 
 
+	// Test SPB
 	__STWRST
-	SPB		_3
-	SPA		_4
-_3:	__ASSERT==	1,	2
-_4:	NOP		0
-
+	SPB		_201
+	SPA		_202
+_201:	__ASSERT==	1,	2
+_202:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
 
 	__STWRST
 	SET
-	SPB		_5
+	SPB		_203
 	__ASSERT==	1,	2
-_5:	NOP		0
+_203:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
 
+
+	// Test SPBN
+	__STWRST
+	SET
+	SPBN		_301
+	SPA		_302
+_301:	__ASSERT==	1,	2
+_302:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	SPBN		_303
+	__ASSERT==	1,	2
+_303:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
+
+
+	// Test SPBB
+	__STWRST
+	SPBB		_401
+	SPA		_402
+_401:	__ASSERT==	1,	2
+_402:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW BIE,	0
 
 	__STWRST
 	SET
-	SPBN		_6
-	SPA		_7
-_6:	__ASSERT==	1,	2
-_7:	NOP		0
+	SPBB		_403
+	__ASSERT==	1,	2
+_403:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW BIE,	1
 
+
+	// Test SPBNB
+	__STWRST
+	SET
+	SPBNB		_501
+	SPA		_502
+_501:	__ASSERT==	1,	2
+_502:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW BIE,	1
 
 	__STWRST
-	SPBN		_8
+	SPBNB		_503
 	__ASSERT==	1,	2
-_8:	NOP		0
+_503:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW VKE,	1
+	__ASSERT==	__STW BIE,	0
 
 
+	// Test SPBI
+	__STWRST
+	SPBI		_601
+	SPA		_602
+_601:	__ASSERT==	1,	2
+_602:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW BIE,	0
 
-//TODO
-	SPBNB	_126
-	NOP	0
-_126:	NOP	1
-	SPZ	_127
-	NOP	0
-_127:	NOP	1
-	SPN	_128
-	NOP	0
-_128:	NOP	1
+	__STWRST
+	L		W#16#0100
+	T		STW
+	SPBI		_603
+	__ASSERT==	1,	2
+_603:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW BIE,	1
 
 
+	// Test SPBIN
+	__STWRST
+	L		W#16#0100
+	T		STW
+	SPBIN		_701
+	SPA		_702
+_701:	__ASSERT==	1,	2
+_702:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW BIE,	1
+
+	__STWRST
+	SPBIN		_703
+	__ASSERT==	1,	2
+_703:	NOP		0
+	__ASSERT==	__STW OR,	0
+	__ASSERT==	__STW STA,	1
+	__ASSERT==	__STW BIE,	0
+
+
+	// Test SPO
+	__STWRST
+	SPO		_801
+	SPA		_802
+_801:	__ASSERT==	1,	2
+_802:	NOP		0
+	__ASSERT==	__STW OV,	0
+
+	__STWRST
+	L		W#16#0020
+	T		STW
+	SPO		_803
+	__ASSERT==	1,	2
+_803:	NOP		0
+	__ASSERT==	__STW OV,	1
+
+
+	// Test SPS
+	__STWRST
+	SPS		_901
+	SPA		_902
+_901:	__ASSERT==	1,	2
+_902:	NOP		0
+	__ASSERT==	__STW OS,	0
+
+	__STWRST
+	L		W#16#0010
+	T		STW
+	__ASSERT==	__STW OS,	1
+	SPS		_903
+	__ASSERT==	1,	2
+_903:	NOP		0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test SPZ
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPZ		_A01
+	SPA		_A02
+_A01:	__ASSERT==	1,	2
+_A02:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPZ		_A03
+	SPA		_A04
+_A03:	__ASSERT==	1,	2
+_A04:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPZ		_A05
+	SPA		_A06
+_A05:	__ASSERT==	1,	2
+_A06:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	SPZ		_A07
+	__ASSERT==	1,	2
+_A07:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+
+	// Test SPN
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPN		_B01
+	__ASSERT==	1,	2
+_B01:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPN		_B02
+	__ASSERT==	1,	2
+_B02:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPN		_B03
+	SPA		_B04
+_B03:	__ASSERT==	1,	2
+_B04:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	SPN		_B05
+	SPA		_B06
+_B05:	__ASSERT==	1,	2
+_B06:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+
+	// Test SPP
+	__STWRST
+	SPP		_C01
+	SPA		_C02
+_C01:	__ASSERT==	1,	2
+_C02:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPP		_C03
+	__ASSERT==	1,	2
+_C03:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPP		_C04
+	SPA		_C05
+_C04:	__ASSERT==	1,	2
+_C05:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPP		_C06
+	SPA		_C07
+_C06:	__ASSERT==	1,	2
+_C07:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+
+	// Test SPM
+	__STWRST
+	SPM		_D01
+	SPA		_D02
+_D01:	__ASSERT==	1,	2
+_D02:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPM		_D03
+	SPA		_D04
+_D03:	__ASSERT==	1,	2
+_D04:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPM		_D05
+	__ASSERT==	1,	2
+_D05:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPM		_D06
+	SPA		_D07
+_D06:	__ASSERT==	1,	2
+_D07:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+
+	// Test SPPZ
+	__STWRST
+	SPPZ		_E01
+	__ASSERT==	1,	2
+_E01:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPPZ		_E02
+	__ASSERT==	1,	2
+_E02:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPPZ		_E03
+	SPA		_E04
+_E03:	__ASSERT==	1,	2
+_E04:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPPZ		_E05
+	SPA		_E06
+_E05:	__ASSERT==	1,	2
+_E06:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+
+	// Test SPMZ
+	__STWRST
+	SPMZ		_F01
+	__ASSERT==	1,	2
+_F01:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPMZ		_F02
+	SPA		_F03
+_F02:	__ASSERT==	1,	2
+_F03:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPMZ		_F04
+	__ASSERT==	1,	2
+_F04:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPMZ		_F05
+	SPA		_F06
+_F05:	__ASSERT==	1,	2
+_F06:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+
+	// Test SPU
+	__STWRST
+	SPU		_G01
+	SPA		_G02
+_G01:	__ASSERT==	1,	2
+_G02:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#0080
+	T		STW
+	SPU		_G03
+	SPA		_G04
+_G03:	__ASSERT==	1,	2
+_G04:	NOP		0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+
+	__STWRST
+	L		W#16#0040
+	T		STW
+	SPU		_G05
+	SPA		_G06
+_G05:	__ASSERT==	1,	2
+_G06:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	0
+
+	__STWRST
+	L		W#16#00C0
+	T		STW
+	SPU		_G07
+	__ASSERT==	1,	2
+_G07:	NOP		0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A1,	1
+
+
+	// Test LOOP
 	L		15
 	L		10
 _333:	TAK
@@ -60,8 +451,6 @@ _333:	TAK
 	LOOP		_333
 	__ASSERT==	__ACCU 1,	0
 	__ASSERT==	__ACCU 2,	25
-
-
 
 
 	// Test SPL
