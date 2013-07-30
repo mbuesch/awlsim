@@ -2416,17 +2416,18 @@ class AwlInsn_RLD(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		count, accu = 1, self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
+			count = self.ops[0].value
+		else:
+			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
 		count = max(0, count % 32)
-		accu &= 0xFFFFFFFF
-		accu = ((accu << count) | (accu >> (32 - count))) & 0xFFFFFFFF
-		self.cpu.accu1.set(accu)
-		#TODO A1
-		s.A0, s.OV = 0, 0
+		accu1 &= 0xFFFFFFFF
+		accu1 = ((accu1 << count) | (accu1 >> (32 - count))) & 0xFFFFFFFF
+		self.cpu.accu1.set(accu1)
+		s.A0, s.A1, s.OV = 0, accu1 & 1, 0
 
 class AwlInsn_RRD(AwlInsn):
 	def __init__(self, cpu, rawInsn):
@@ -2437,61 +2438,50 @@ class AwlInsn_RRD(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		count, accu = 1, self.cpu.accu1.get()
+		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
-			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
+			count = self.ops[0].value
+		else:
+			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
 		count = max(0, count % 32)
-		accu &= 0xFFFFFFFF
-		accu = ((accu >> count) | (accu << (32 - count))) & 0xFFFFFFFF
-		self.cpu.accu1.set(accu)
-		#TODO A1
-		s.A0, s.OV = 0, 0
+		accu1 &= 0xFFFFFFFF
+		accu1 = ((accu1 >> count) | (accu1 << (32 - count))) & 0xFFFFFFFF
+		self.cpu.accu1.set(accu1)
+		s.A0, s.A1, s.OV = 0, (accu1 >> 31) & 1, 0
 
 class AwlInsn_RLDA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RLDA, rawInsn)
-		self.assertOpCount((0, 1))
-		if self.ops:
-			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		count, accu = 1, self.cpu.accu1.get()
-		if self.ops:
-			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
-		if count > 0:
-			s.A0, s.OV = 0, 0
-		count = max(0, count % 32)
-		accu &= 0xFFFFFFFF
-		accu |= (s.A1 & 1) << 32
-		accu = ((accu << count) | (accu >> (33 - count))) & 0x1FFFFFFFF
-		s.A1 = (accu >> 32) & 1
-		accu &= 0xFFFFFFFF
-		self.cpu.accu1.set(accu)
+		accu1, count = self.cpu.accu1.getDWord(), 1
+		s.A0, s.OV = 0, 0
+		accu1 &= 0xFFFFFFFF
+		accu1 |= (s.A1 & 1) << 32
+		accu1 = ((accu1 << count) | (accu1 >> (33 - count))) & 0x1FFFFFFFF
+		s.A1 = (accu1 >> 32) & 1
+		accu1 &= 0xFFFFFFFF
+		self.cpu.accu1.set(accu1)
 
 class AwlInsn_RRDA(AwlInsn):
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RRDA, rawInsn)
-		self.assertOpCount((0, 1))
-		if self.ops:
-			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+		self.assertOpCount(0)
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		count, accu = 1, self.cpu.accu1.get()
-		if self.ops:
-			count = self.cpu.fetch(self.ops[0], (8, 16, 32))
-		if count > 0:
-			s.A0, s.OV = 0, 0
-		count = max(0, count % 32)
-		accu &= 0xFFFFFFFF
-		accu |= (s.A1 & 1) << 32
-		accu = ((accu >> count) | (accu << (33 - count))) & 0x1FFFFFFFF
-		s.A1 = (accu >> 32) & 1
-		accu &= 0xFFFFFFFF
-		self.cpu.accu1.set(accu)
+		accu1, count = self.cpu.accu1.getDWord(), 1
+		s.A0, s.OV = 0, 0
+		accu1 &= 0xFFFFFFFF
+		accu1 |= (s.A1 & 1) << 32
+		accu1 = ((accu1 >> count) | (accu1 << (33 - count))) & 0x1FFFFFFFF
+		s.A1 = (accu1 >> 32) & 1
+		accu1 &= 0xFFFFFFFF
+		self.cpu.accu1.set(accu1)
 
 class AwlInsn_SI(AwlInsn):
 	def __init__(self, cpu, rawInsn):
