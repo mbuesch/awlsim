@@ -30,20 +30,37 @@ class HwParamDesc(object):
 
 	typeStr = "<NoType>"
 
-	def __init__(self, name, description=""):
+	def __init__(self, name, description="", mandatory=False):
 		self.name = name
 		self.description = description
+		self.mandatory = mandatory
 
 	def parse(self, value):
 		raise NotImplementedError
+
+class HwParamDesc_pyobject(HwParamDesc):
+	"""Generic object parameter descriptor."""
+
+	typeStr = "PyObject"
+
+	def __init__(self, name, pyTypeDesc, description="", mandatory=False):
+		HwParamDesc.__init__(self, name, description, mandatory)
+		self.pyTypeDesc = pyTypeDesc
+
+	def parse(self, value):
+		if str(type(value)) != self.pyTypeDesc:
+			raise self.ParseError("Parameter '%s' is of unknown type. "
+				"Expected '%s', but got '%s'." %\
+				(self.name, self.pyTypeDesc, str(type(value))))
+		return value
 
 class HwParamDesc_str(HwParamDesc):
 	"""String hardware parameter descriptor."""
 
 	typeStr = "string"
 
-	def __init__(self, name, defaultValue="", description=""):
-		HwParamDesc.__init__(self, name, description)
+	def __init__(self, name, defaultValue="", description="", mandatory=False):
+		HwParamDesc.__init__(self, name, description, mandatory)
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
@@ -56,8 +73,8 @@ class HwParamDesc_int(HwParamDesc):
 
 	def __init__(self, name,
 		     defaultValue=0, minValue=None, maxValue=None,
-		     description=""):
-		HwParamDesc.__init__(self, name, description)
+		     description="", mandatory=False):
+		HwParamDesc.__init__(self, name, description, mandatory)
 		self.defaultValue = defaultValue
 		self.minValue = minValue
 		self.maxValue = maxValue
@@ -81,8 +98,9 @@ class HwParamDesc_bool(HwParamDesc):
 
 	typeStr = "boolean"
 
-	def __init__(self, name, defaultValue=False, description=""):
-		HwParamDesc.__init__(self, name, description)
+	def __init__(self, name, defaultValue=False,
+		     description="", mandatory=False):
+		HwParamDesc.__init__(self, name, description, mandatory)
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
@@ -133,9 +151,13 @@ class AbstractHardwareInterface(object):
 		ret.append("")
 		ret.append("Parameters:")
 		for desc in cls.getParamDescs():
-			ret.append(" %s = %s (default: %s)%s" %\
+			if desc.mandatory:
+				defStr = "mandatory"
+			else:
+				defStr = "default: %s" % str(getattr(desc, "defaultValue", None))
+			ret.append(" %s = %s (%s)%s" %\
 				(desc.name, desc.typeStr.upper(),
-				 str(desc.defaultValue),
+				 defStr,
 				 ("  -  " + desc.description) if desc.description else ""))
 		return "\n".join(ret)
 
@@ -243,6 +265,14 @@ class AbstractHardwareInterface(object):
 			except HwParamDesc.ParseError as e:
 				self.paramErrorHandler(name, str(e))
 
+		# Check mandatory parameters
+		for name, desc in self.__paramNameToDesc.items():
+			if not desc.mandatory:
+				continue
+			if name not in self.__parameters.keys():
+				self.paramErrorHandler(name,
+					"Mandatory parameter not specified")
+
 	def getParam(self, name):
 		"""This is the main method to get a parameter value.
 		'name' is the name string of the parameter."""
@@ -256,4 +286,4 @@ class AbstractHardwareInterface(object):
 		try:
 			return self.__parameters[name]
 		except KeyError:
-			return desc.defaultValue
+			return getattr(desc, "defaultValue", None)
