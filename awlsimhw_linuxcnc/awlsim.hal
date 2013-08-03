@@ -3,9 +3,26 @@
 # --- LinuxCNC HAL configuration file
 # ------
 
+# --- Load the awlsim HAL userspace module ---
+# Parameters:
+#  --input-base		: S7 input base-address byte-offset to use for the HAL module.
+#			  If 0 is used, address-mapping will start at I 0.0
+#			  If 1 is used, address-mapping will start at I 1.0
+#			  etc...
+#  --output-base	: S7 output base-address byte-offset to use for the HAL module.
+#			  If 0 is used, address-mapping will start at Q 0.0
+#			  If 1 is used, address-mapping will start at Q 1.0
+#			  etc...
+#  --input-size		: Size of the input area mapping, in bytes.
+#  --output-size	: Size of the output area mapping, in bytes.
+#  Last argument	: The S7 AWL/STL program to run.
 loadusr -Wn awlsim awlsim-linuxcnc-hal --input-base 0 --input-size 32 --output-base 0 --output-size 32 /tmp/PROGRAM.awl
 
 # --- Enable the used input pins ---
+# All input pins are deactivated by default.
+# So all input pins connected below, should be activated here by writing
+# a '1' to the '.active' pin.
+# Deactivated input pins will not be forwarded to the PLC program by awlsim.
 setp	awlsim.input.bit.0.0.active		1
 setp	awlsim.input.u32.4.active		1
 setp	awlsim.input.s32.8.active		1
