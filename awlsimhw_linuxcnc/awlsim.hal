@@ -3,11 +3,22 @@
 # --- LinuxCNC HAL configuration file
 # ------
 
-loadusr -Wn awlsim awlsim-linuxcnc-hal
+loadusr -Wn awlsim awlsim-linuxcnc-hal --input-base 0 --input-size 32 --output-base 0 --output-size 32 /tmp/PROGRAM.awl
 
+# --- Enable the used input pins ---
+setp	awlsim.input.bit.0.0.active		1
+setp	awlsim.input.u32.4.active		1
+setp	awlsim.input.s32.8.active		1
+setp	awlsim.input.float.12.active		1
 
-# --- Device config ---
-#setp	awlsim.config.NAME				1
+# --- Connect input pins ---
+net	awlsim-in-bit-0-0	foobar.val0		=> awlsim.input.bit.0.0
+net	awlsim-in-u32-4		foobar.val1		=> awlsim.input.u32.4
+net	awlsim-in-s32-8		foobar.val2		=> awlsim.input.u32.8
+net	awlsim-in-float-12	foobar.val3		=> awlsim.input.float.12
 
-# --- Machine state ---
-#net	SIGNAME		halui.XXX		=> awlsim.XXX
+# --- Connect output pins --
+net	awlsim-out-bit-0-0	awlsim.output.bit.0.0	<= bizbaz.val0
+net	awlsim-out-u32-4	awlsim.output.u32.4	<= bizbaz.val1
+net	awlsim-out-s32-8	awlsim.output.s32.8	<= bizbaz.val2
+net	awlsim-out-float-12	awlsim.output.float.12	<= bizbaz.val3

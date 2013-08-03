@@ -1,0 +1,189 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - LinuxCNC HAL module
+#
+# Copyright 2013 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+
+import sys
+import os
+import getopt
+
+from awlsim.main import AwlSim
+from awlsim.parser import AwlParser
+from awlsim.util import AwlSimError, AwlParserError, printInfo, printWarning, printError
+from awlsim.version import VERSION_MAJOR, VERSION_MINOR
+
+try:
+	import hal as LinuxCNC_HAL
+except ImportError as e:
+	printError("Failed to import LinuxCNC HAL module: %s" % str(e))
+	sys.exit(1)
+
+
+# Check presence of LinuxCNC. Returns True, if LinuxCNC is detected.
+# Raises KeyboardInterrupt, is LinuxCNC is not detected.
+def checkLinuxCNC():
+	for lockname in ("/tmp/linuxcnc.lock", "/tmp/emc.lock"):
+		try:
+			os.stat(lockname)
+			return True
+		except OSError:
+			pass
+	printError("LinuxCNC: doesn't seem to be running")
+	raise KeyboardInterrupt
+
+# Create the LinuxCNC HAL pins
+def createHalPins(hal,
+		  inputBase, inputSize,
+		  outputBase, outputSize):
+	HAL_BIT, HAL_U32, HAL_S32, HAL_FLOAT = \
+		LinuxCNC_HAL.HAL_BIT, LinuxCNC_HAL.HAL_U32, \
+		LinuxCNC_HAL.HAL_S32, LinuxCNC_HAL.HAL_FLOAT
+	HAL_IN, HAL_OUT, HAL_RO, HAL_RW = \
+		LinuxCNC_HAL.HAL_IN, LinuxCNC_HAL.HAL_OUT, \
+		LinuxCNC_HAL.HAL_RO, LinuxCNC_HAL.HAL_RW
+
+	# Create the input pins
+	for i in range(inputBase, inputBase + inputSize):
+		for bit in range(8):
+			hal.newpin("input.bit.%d.%d" % (i, bit), HAL_BIT, HAL_IN)
+			hal.newparam("input.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
+		if inputBase + inputSize - i < 4:
+			continue
+		hal.newpin("input.u32.%d" % i, HAL_U32, HAL_IN)
+		hal.newparam("input.u32.%d.active" % i, HAL_BIT, HAL_RW)
+		hal.newpin("input.s32.%d" % i, HAL_S32, HAL_IN)
+		hal.newparam("input.s32.%d.active" % i, HAL_BIT, HAL_RW)
+		hal.newpin("input.float.%d" % i, HAL_FLOAT, HAL_IN)
+		hal.newparam("input.float.%d.active" % i, HAL_BIT, HAL_RW)
+
+	# Create the output pins
+	for i in range(outputBase, outputBase + outputSize):
+		for bit in range(8):
+			hal.newpin("output.bit.%d.%d" % (i, bit), HAL_BIT, HAL_OUT)
+		if outputBase + outputSize - i < 4:
+			continue
+		hal.newpin("output.u32.%d" % i, HAL_U32, HAL_OUT)
+		hal.newpin("output.s32.%d" % i, HAL_S32, HAL_OUT)
+		hal.newpin("output.float.%d" % i, HAL_FLOAT, HAL_OUT)
+
+def usage():
+	printInfo("awlsim-linuxcnc-hal version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
+	printInfo("")
+	printInfo("%s [OPTIONS] AWL-source" % sys.argv[0])
+	printInfo("")
+	printInfo("Options:")
+	printInfo(" -i|--input-size 32      The input area size, in bytes.")
+	printInfo(" -I|--input-base 0       The AWL input address base.")
+	printInfo(" -o|--output-size 32     The output area size, in bytes.")
+	printInfo(" -O|--output-base 0      The AWL output address base.")
+
+def main():
+	opt_inputSize = 32
+	opt_inputBase = 0
+	opt_outputSize = 32
+	opt_outputBase = 0
+
+	try:
+		(opts, args) = getopt.getopt(sys.argv[1:],
+			"hi:I:o:O:",
+			[ "help", "input-size=", "input-base=",
+			  "output-size=", "output-base=", ])
+	except getopt.GetoptError as e:
+		printError(str(e))
+		usage()
+		return 1
+	for (o, v) in opts:
+		if o in ("-h", "--help"):
+			usage()
+			return 0
+		if o in ("-i", "--input-size"):
+			try:
+				opt_inputSize = int(v)
+			except ValueError:
+				printError("-i|--input-size: Invalid argument")
+				return 1
+		if o in ("-I", "--input-base"):
+			try:
+				opt_inputBase = int(v)
+			except ValueError:
+				printError("-I|--input-base: Invalid argument")
+				return 1
+		if o in ("-o", "--output-size"):
+			try:
+				opt_outputSize = int(v)
+			except ValueError:
+				printError("-o|--output-size: Invalid argument")
+				return 1
+		if o in ("-O", "--output-base"):
+			try:
+				opt_outputBase = int(v)
+			except ValueError:
+				printError("-O|--output-base: Invalid argument")
+				return 1
+	if len(args) != 1:
+		usage()
+		return 1
+	awlSource = args[0]
+
+#	try:
+#		os.nice(-5)
+#	except OSError as e:
+#		printWarning("WARNING: Failed to renice LinuxCNC "
+#			"awlsim HAL module: %s" % str(e))
+
+	try:
+		hal = LinuxCNC_HAL.component("awlsim")
+		createHalPins(hal,
+			      opt_inputBase, opt_inputSize,
+			      opt_outputBase, opt_outputSize)
+
+		p = AwlParser()
+		p.parseFile(awlSource)
+
+		s = AwlSim()
+
+		# Load the hardware interface layer
+		parameters = {
+			"hal"			: hal,
+			"inputAddressBase"	: str(opt_inputBase),
+			"outputAddressBase"	: str(opt_outputBase),
+			"inputSize"		: str(opt_inputSize),
+			"outputSize"		: str(opt_outputSize),
+		}
+		hwClass = s.loadHardwareModule("linuxcnc")
+		s.registerHardwareClass(hwClass = hwClass,
+					parameters = parameters)
+
+		# Load the program
+		s.load(p.getParseTree())
+
+		# Run cyclic execution
+		while checkLinuxCNC():
+			s.runCycle()
+	except KeyboardInterrupt as e:
+		printInfo("Awlsim LinuxCNC HAL module shutdown")
+	except (AwlParserError, AwlSimError) as e:
+		printError(e.getReport())
+		return 1
+	return 0
+
+if __name__ == "__main__":
+	sys.exit(main())
