@@ -84,14 +84,6 @@ def cpuDumpCallback(cpu):
 	lastDump = dump
 	writeStdout("\x1B[H" + dump)
 
-def handleSimError(title, exception):
-	printError("-- %s --" % title)
-	printError("ERROR at line %s:" % exception.getLineNrStr())
-	printError("  " + str(exception))
-	cpu = exception.getCpu()
-	if cpu:
-		printError("\n" + str(cpu))
-
 def main():
 	global opt_onecycle
 	global opt_quiet
@@ -229,11 +221,8 @@ def main():
 			if not opt_noCpuDump and not opt_quiet:
 				writeStdout("\x1B[?25h\x1B[2J\x1B[H")
 				writeStdout(lastDump + '\n')
-	except AwlParserError as e:
-		handleSimError("AWL parser error", e)
-		return 1
-	except AwlSimError as e:
-		handleSimError("AWL simulator error", e)
+	except (AwlParserError, AwlSimError) as e:
+		printError(e.getReport())
 		return 1
 	except KeyboardInterrupt as e:
 		pass

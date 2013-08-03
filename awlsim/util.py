@@ -87,11 +87,26 @@ class AwlSimError(Exception):
 				return str(curInsn)
 		return errorStr
 
+	def doGetReport(self, title):
+		ret = [ "-- %s --\n" % title ]
+		ret.append("ERROR at line %s:\n" % self.getLineNrStr())
+		ret.append("  \n" + str(self))
+		cpu = self.getCpu()
+		if cpu:
+			ret.append("\n%s\n" % str(cpu))
+		return "".join(ret)
+
+	def getReport(self):
+		return self.doGetReport("AWL simulator error")
+
 class AwlParserError(AwlSimError):
 	def __init__(self, message, lineNr=None):
 		AwlSimError.__init__(self,
 				     message = message,
 				     lineNr = lineNr)
+
+	def getReport(self):
+		return self.doGetReport("AWL parser error")
 
 # isPyPy is True, if the interpreter is PyPy.
 isPyPy = "PyPy" in sys.version
