@@ -90,7 +90,7 @@ class AwlSimError(Exception):
 	def doGetReport(self, title):
 		ret = [ "-- %s --\n" % title ]
 		ret.append("ERROR at line %s:\n" % self.getLineNrStr())
-		ret.append("  \n" + str(self))
+		ret.append("  \n%s\n" % str(self))
 		cpu = self.getCpu()
 		if cpu:
 			ret.append("\n%s\n" % str(cpu))
