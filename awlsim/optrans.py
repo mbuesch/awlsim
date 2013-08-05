@@ -48,6 +48,12 @@ class AwlOpTranslator(object):
 	"Instruction operator translator"
 
 	__constOperTab_german = {
+		"B"	: OpDescriptor(AwlOperator(AwlOperator.UNSPEC, 8,
+				       AwlOffset(-1, -1)), 2),
+		"W"	: OpDescriptor(AwlOperator(AwlOperator.UNSPEC, 16,
+				       AwlOffset(-1, -1)), 2),
+		"D"	: OpDescriptor(AwlOperator(AwlOperator.UNSPEC, 32,
+				       AwlOffset(-1, -1)), 2),
 		"==0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_Z, 1,
 				       AwlOffset(0, 0)), 1),
 		"<>0"	: OpDescriptor(AwlOperator(AwlOperator.MEM_STW_NZ, 1,
@@ -203,16 +209,79 @@ class AwlOpTranslator(object):
 		self.mnemonics = mnemonics
 
 	def __translateIndirectAddressing(self, opDesc, rawOps):
-		pass#TODO
-		raise AwlSimError("Indirect addressing not implemented, yet")
+		# rawOps starts _after_ the opening bracket '['
+		try:
+			if rawOps[0].upper() in ("AR1", "AR2"):
+				# Register-indirect access:  "L W [AR1, P#0.0]"
+				ar = {
+					"AR1"	: AwlIndirectOp.AR_1,
+					"AR2"	: AwlIndirectOp.AR_2,
+				}[rawOps[0].upper()]
+				if rawOps[1] != ',':
+					raise AwlSimError("Missing comma in register-indirect "
+						"addressing operator")
+				offsetPtr, fields = AwlDataType.tryParseImmediate_Pointer(rawOps[2:])
+				if fields != 1:
+					raise AwlSimError("Invalid offset pointer in "
+						"register indirect addressing operator")
+				if rawOps[3] != ']':
+					raise AwlSimError("Missing closing brackets in "
+						"register indirect addressing operator")
+				offsetOp = AwlOperator(type = AwlOperator.IMM_PTR,
+						       width = 32,
+						       value = offsetPtr,
+						       insn = opDesc.operator.insn)
+				try:
+					area = AwlIndirectOp.optype2area[opDesc.operator.type]
+				except KeyError:
+					raise AwlSimError("Invalid memory area type in "
+						"register indirect addressing operator")
+				indirectOp = AwlIndirectOp(area = area,
+							   width = opDesc.operator.width,
+							   addressRegister = ar,
+							   offsetOper = offsetOp,
+							   insn = opDesc.operator.insn)
+				fieldCount = 4	# ARx + comma + P# + ]
+			else:
+				# Indirect access:  "L MW [MD 42]"
+				# Translate the offset operator
+				offsetOpDesc = self.__translateOp(None, rawOps)
+				if rawOps[offsetOpDesc.fieldCount] != ']':
+					raise AwlSimError("Missing closing brackets in "
+						"indirect addressing operator")
+				offsetOp = offsetOpDesc.operator
+				if offsetOp.type == AwlOperator.INDIRECT:
+					raise AwlSimError("Only direct operators supported "
+						"inside of indirect operator brackets.")
+				try:
+					area = AwlIndirectOp.optype2area[opDesc.operator.type]
+				except KeyError:
+					raise AwlSimError("Invalid memory area type in "
+						"indirect addressing operator")
+				if area == AwlIndirectOp.AREA_NONE:
+					raise AwlSimError("No memory area code specified in "
+						"indirect addressing operator")
+				indirectOp = AwlIndirectOp(area = area,
+							   width = opDesc.operator.width,
+							   addressRegister = AwlIndirectOp.AR_NONE,
+							   offsetOper = offsetOp,
+							   insn = opDesc.operator.insn)
+				fieldCount = offsetOpDesc.fieldCount + 1  # offsetOperator + ]
+		except IndexError:
+			raise AwlSimError("Invalid indirect addressing operator")
+		# Adjust the operator descriptor
+		opDesc.operator = indirectOp
+		opDesc.fieldCount += fieldCount
 
 	def __translateAddressOperator(self, opDesc, rawOps):
 		if len(rawOps) < 1:
 			raise AwlSimError("Missing address operator")
 		if rawOps[0] == '[':
 			# Indirect addressing
-			self.__translateIndirectAddressing(opDesc, rawOps)
+			self.__translateIndirectAddressing(opDesc, rawOps[1:])
 			return
+		if opDesc.operator.type == AwlOperator.UNSPEC:
+			raise AwlSimError("No memory area specified in operator")
 		# Direct addressing
 		if opDesc.operator.width == 1:
 			if opDesc.operator.value.byteOffset == 0 and\
@@ -275,6 +344,16 @@ class AwlOpTranslator(object):
 		except KeyError as e:
 			pass
 		token0 = rawOps[0].upper()
+		# Bitwise indirect addressing
+		if token0 == '[':
+			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
+			# Create a descriptor for the (yet) unspecified bitwise access.
+			opDesc = OpDescriptor(AwlOperator(AwlOperator.UNSPEC, 1,
+							  AwlOffset(-1, -1)), 1)
+			# And hand over to indirect address parsing.
+			self.__translateIndirectAddressing(opDesc, rawOps[1:])
+			assert(opDesc.operator.type != AwlOperator.UNSPEC)
+			return opDesc
 		# Local variable
 		if token0.startswith('#'):
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL, 0,
@@ -394,7 +473,9 @@ class AwlOpTranslator(object):
 		    opDesc.operator.value.bitOffset == -1):
 			self.__translateAddressOperator(opDesc, rawOps[1:])
 
+		assert(opDesc.operator.type != AwlOperator.UNSPEC)
 		opDesc.operator.setExtended(rawOps[0].startswith("__"))
+		opDesc.operator.setInsn(self.insn)
 
 		return opDesc
 
@@ -435,7 +516,6 @@ class AwlOpTranslator(object):
 		rawOps = rawInsn.getOperators()
 		while rawOps:
 			opDesc = self.__translateOp(rawInsn, rawOps)
-			opDesc.operator.setInsn(self.insn)
 
 			if self.insn:
 				self.insn.ops.append(opDesc.operator)

@@ -332,11 +332,19 @@ class S7CPU(object):
 			for i in range(len(insn.ops)):
 				insn.ops[i] = self.__resolveNamedLocalSym(block,
 								insn.ops[i])
+				if insn.ops[i].type == AwlOperator.INDIRECT:
+					insn.ops[i].offsetOper = \
+						self.__resolveNamedLocalSym(block,
+								insn.ops[i].offsetOper)
 				insn.ops[i] = self.__resolveNamedLocalPointer(block,
 								insn.ops[i])
 			for i in range(len(insn.params)):
 				insn.params[i].rvalueOp = self.__resolveNamedLocalSym(block,
 								insn.params[i].rvalueOp)
+				if insn.params[i].rvalueOp.type == AwlOperator.INDIRECT:
+					insn.params[i].rvalueOp.offsetOper =\
+						self.__resolveNamedLocalSym(block,
+								insn.params[i].rvalueOp.offsetOper)
 				insn.params[i].rvalueOp = self.__resolveNamedLocalPointer(block,
 								insn.params[i].rvalueOp)
 
