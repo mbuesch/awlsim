@@ -135,6 +135,39 @@ BEGIN
 	__ASSERT==	__ACCU 1,	DW#16#12345678
 
 
+	// Indirect counter access
+	L		10
+	T		LD 0
+	L		Z [LD 0]
+	__ASSERT==	__ACCU 1,	0
+	SET
+	ZV		Z 10
+	CLR
+	ZV		Z [LD 0]
+	L		Z [LD 0]
+	__ASSERT==	__ACCU 1,	1
+
+
+	// Indirect timer access
+	L		10
+	T		LD 0
+	L		T [LD 0]
+	__ASSERT==	__ACCU 1,	0
+	SET
+	L		W#16#0999
+	SI		T 10
+	__SLEEP		50
+	L		T [LD 0]
+	__ASSERT<>	__ACCU 1,	0
+	CLR
+	L		W#16#0999
+	SI		T [LD 0]
+	L		T [LD 0]
+	__SLEEP		50
+	L		T [LD 0]
+	__ASSERT==	__ACCU 1,	__ACCU 2
+
+
 	CALL FB 1, DB 1 (
 		IN_VAL_0	:= 6666,
 		IN_VAL_1	:= 6767,
