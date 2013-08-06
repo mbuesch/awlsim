@@ -466,6 +466,14 @@ class AwlDataType(object):
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x83000000
 				return ptr, 2
+			elif prefix == "DBX":
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x84000000
+				return ptr, 2
+			elif prefix == "DIX":
+				ptr = cls.__parsePtrOffset(tokens[1]) |\
+					0x85000000
+				return ptr, 2
 			elif prefix == "L":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x86000000
