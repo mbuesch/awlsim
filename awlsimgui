@@ -200,12 +200,11 @@ class AbstractDisplayWidget(QWidget):
 		pass
 
 	def _createOperator(self):
+		dbNumber = None
 		if self.addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
-			return AwlOperator(self.addrSpace, self.width,
-					   AwlDbOffset(self.db, self.addr))
-		else:
-			return AwlOperator(self.addrSpace, self.width,
-					   AwlOffset(self.addr))
+			dbNumber = self.db
+		return AwlOperator(self.addrSpace, self.width,
+				   AwlOffset(self.addr, dbNumber=dbNumber))
 
 class BitDisplayWidget(AbstractDisplayWidget):
 	def __init__(self, sim, addrSpace, addr, width, db,

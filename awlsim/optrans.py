@@ -123,13 +123,13 @@ class AwlOpTranslator(object):
 		"DI"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_DI, 16,
 				       AwlOffset(-1, 0)), 2),
 		"DBX"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 1,
-				       AwlDbOffset(None, -1, -1)), 2),
+				       AwlOffset(-1, -1)), 2),
 		"DBB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 8,
-				       AwlDbOffset(None, -1, 0)), 2),
+				       AwlOffset(-1, 0)), 2),
 		"DBW"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 16,
-				       AwlDbOffset(None, -1, 0)), 2),
+				       AwlOffset(-1, 0)), 2),
 		"DBD"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 32,
-				       AwlDbOffset(None, -1, 0)), 2),
+				       AwlOffset(-1, 0)), 2),
 		"DIX"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DI, 1,
 				       AwlOffset(-1, -1)), 2),
 		"DIB"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DI, 8,
@@ -473,7 +473,8 @@ class AwlOpTranslator(object):
 				"W"	: 16,
 				"D"	: 32,
 			}[match.group(2)]
-			offset = AwlDbOffset(dbNumber, -1, -1 if (width == 1) else 0)
+			offset = AwlOffset(-1, -1 if (width == 1) else 0,
+					   dbNumber = dbNumber)
 			return OpDescriptor(AwlOperator(AwlOperator.MEM_DB, width,
 					    offset), 2)
 		raise AwlSimError("Cannot parse operand: " +\

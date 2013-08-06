@@ -27,12 +27,15 @@ from awlsim.datatypehelpers import *
 class AwlOffset(object):
 	"Memory area offset"
 
-	def __init__(self, byteOffset, bitOffset=0):
+	def __init__(self, byteOffset, bitOffset=0, dbNumber=None):
 		self.byteOffset = byteOffset
 		self.bitOffset = bitOffset
+		self.dbNumber = dbNumber
 
 	def dup(self):
-		return AwlOffset(self.byteOffset, self.bitOffset)
+		return AwlOffset(self.byteOffset,
+				 self.bitOffset,
+				 self.dbNumber)
 
 	@classmethod
 	def fromPointerValue(cls, value):
@@ -44,23 +47,11 @@ class AwlOffset(object):
 		       (self.bitOffset & 0x7)
 
 	def __repr__(self):
+		if self.dbNumber is not None:
+			return "DB%d(%d.%d)" % (self.dbNumber,
+						self.byteOffset,
+						self.bitOffset)
 		return "%d.%d" % (self.byteOffset, self.bitOffset)
-
-class AwlDbOffset(AwlOffset):
-	"DB memory area offset"
-
-	def __init__(self, dbNumber, byteOffset, bitOffset=0):
-		AwlOffset.__init__(self, byteOffset, bitOffset)
-		self.dbNumber = dbNumber
-
-	def dup(self):
-		return AwlDbOffset(self.dbNumber,
-				   self.byteOffset, self.bitOffset)
-
-	def __repr__(self):
-		return "DB%d(%d.%d)" % (self.dbNumber,
-					self.byteOffset,
-					self.bitOffset)
 
 class AwlDataType(object):
 	# Data type IDs
