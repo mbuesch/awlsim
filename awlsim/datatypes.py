@@ -36,8 +36,8 @@ class AwlOffset(object):
 
 	@classmethod
 	def fromPointerValue(cls, value):
-		return AwlOffset((value & 0x00FFFFF8) >> 3,
-				 (value & 0x7))
+		return cls((value & 0x00FFFFF8) >> 3,
+			   (value & 0x7))
 
 	def toPointerValue(self):
 		return ((self.byteOffset << 3) & 0x00FFFFF8) |\
