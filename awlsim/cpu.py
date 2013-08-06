@@ -311,15 +311,16 @@ class S7CPU(object):
 			return oper
 
 		interfaceField = block.interface.getFieldByName(oper.value)
-		structField = block.interface.struct.getField(oper.value)
 
 		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
 		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
 		   interfaceField.fieldType == interfaceField.FTYPE_INOUT or\
 		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
+			structField = block.interface.struct.getField(oper.value)
 			ptrValue = structField.offset.toPointerValue()
 			area = AwlIndirectOp.AREA_DI
 		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
+			structField = block.interface.tempStruct.getField(oper.value)
 			ptrValue = structField.offset.toPointerValue()
 			area = AwlIndirectOp.AREA_L
 		else:
