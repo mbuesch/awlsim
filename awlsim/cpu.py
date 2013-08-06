@@ -36,6 +36,7 @@ from awlsim.labels import *
 from awlsim.timers import *
 from awlsim.counters import *
 from awlsim.callstack import *
+from awlsim.obtemp import *
 from awlsim.util import *
 
 from awlsim.system_sfc import *
@@ -382,6 +383,12 @@ class S7CPU(object):
 		for obNumber in parseTree.obs.keys():
 			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)
 			self.obs[obNumber] = ob
+			# Create the TEMP-preset handler table
+			try:
+				presetHandlerClass = OBTempPresets_table[obNumber]
+			except KeyError:
+				presetHandlerClass = OBTempPresets_dummy
+			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
 		for fbNumber in parseTree.fbs.keys():
 			fb = self.__translateCodeBlock(parseTree.fbs[fbNumber], FB)
 			self.fbs[fbNumber] = fb
@@ -435,6 +442,7 @@ class S7CPU(object):
 		self.fbs = {
 			# User FBs
 		}
+		self.obTempPresetHandlers = { }
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
@@ -453,6 +461,7 @@ class S7CPU(object):
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
 		self.cycleStartTime = 0.0
+		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
 		self.startupTime = 0.0
@@ -499,10 +508,12 @@ class S7CPU(object):
 	def parenStack(self):
 		return self.callStackTop.parenStack
 
-	def __runBlock(self, block):
+	def __runOB(self, block):
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, block) ]
 		cse = self.callStackTop = self.callStack[-1]
+		# Populate the TEMP region
+		self.obTempPresetHandlers[block.index].generate(cse.localdata)
 		# Run the user program cycle
 		while self.callStack:
 			while cse.ip < len(cse.insns):
@@ -539,7 +550,7 @@ class S7CPU(object):
 		for obNumber in (100, 101, 102):
 			ob = self.obs.get(obNumber)
 			if ob is not None:
-				self.__runBlock(ob)
+				self.__runOB(ob)
 				break
 
 	# Run one cycle of the user program
@@ -549,7 +560,7 @@ class S7CPU(object):
 		self.cycleStartTime = self.now
 
 		# Run the actual OB1 code
-		self.__runBlock(self.obs[1])
+		self.__runOB(self.obs[1])
 
 		# Update timekeeping and statistics
 		self.updateTimestamp()
@@ -573,6 +584,7 @@ class S7CPU(object):
 
 			# Store overall-average cycle time and maximum cycle time.
 			self.maxCycleTime = max(self.maxCycleTime, cycleTime)
+			self.minCycleTime = min(self.minCycleTime, cycleTime)
 			self.avgCycleTime = (self.avgCycleTime + cycleTime) / 2
 
 			# Reset the counters
@@ -1139,11 +1151,10 @@ class S7CPU(object):
 		ret.append("   Stmt:  IP:%s   %s" %\
 			   (str(self.getCurrentIP()),
 			    str(curInsn) if curInsn else ""))
-		ret.append("  Speed:  %d stmt/s  %.01f stmt/cyc  "
-			   "ctAvg:%.04fs  "
-			   "ctMax:%.04fs" %\
+		ret.append("  Speed:  %d stmt/s  %.01f stmt/cycle" %\
 			   (int(round(self.insnPerSecond)),
-			    self.avgInsnPerCycle,
-			    self.avgCycleTime,
+			    self.avgInsnPerCycle))
+		ret.append(" CycleT:  avg:%.06fs  min:%.06fs  max:%.06fs" %\
+			   (self.avgCycleTime, self.minCycleTime,
 			    self.maxCycleTime))
 		return '\n'.join(ret)
