@@ -80,7 +80,7 @@ class CallStackElem(object):
 					# Transfer data into DBI
 					structField = param.getLvalueStructField(interfaceDB)
 					if structField.dataType.type in callByRef_Types:
-						data = param.rvalueOp.value.byteOffset
+						data = param.rvalueOp.resolve().value.byteOffset
 					else:
 						data = cpu.fetch(param.rvalueOp)
 					structInstance.setFieldData(structField, data)
