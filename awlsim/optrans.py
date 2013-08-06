@@ -261,6 +261,21 @@ class AwlOpTranslator(object):
 				if area == AwlIndirectOp.AREA_NONE:
 					raise AwlSimError("No memory area code specified in "
 						"indirect addressing operator")
+				if area in (AwlIndirectOp.EXT_AREA_T,
+					    AwlIndirectOp.EXT_AREA_Z,
+					    AwlIndirectOp.EXT_AREA_BLKREF_DB,
+					    AwlIndirectOp.EXT_AREA_BLKREF_FC,
+					    AwlIndirectOp.EXT_AREA_BLKREF_FB):
+					expectedOffsetOpWidth = 16
+				else:
+					expectedOffsetOpWidth = 32
+				if offsetOp.type != AwlOperator.NAMED_LOCAL and\
+				   offsetOp.width != expectedOffsetOpWidth:
+					#TODO: We should also check for NAMED_LOCAL
+					raise AwlSimError("Offset operator in "
+						"indirect addressing operator has invalid width. "
+						"Got %d bit, but expected %d bit." %\
+						(offsetOp.width, expectedOffsetOpWidth))
 				indirectOp = AwlIndirectOp(area = area,
 							   width = opDesc.operator.width,
 							   addressRegister = AwlIndirectOp.AR_NONE,
