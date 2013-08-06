@@ -20,6 +20,7 @@
 #
 
 import time
+import datetime
 import random
 
 from awlsim.cpuspecs import *
@@ -606,6 +607,34 @@ class S7CPU(object):
 		updateTimestamp = __updateTimestamp_perf
 	else:
 		updateTimestamp = __updateTimestamp_time
+
+	__dateAndTimeWeekdayMap = {
+		0	: 2,	# monday
+		1	: 3,	# tuesday
+		2	: 4,	# wednesday
+		3	: 5,	# thursday
+		4	: 6,	# friday
+		5	: 7,	# saturday
+		6	: 1,	# sunday
+	}
+
+	# Make a DATE_AND_TIME for the current wall-time and
+	# store it in byteArray, which is a list of GenericByte objects.
+	# If byteArray is smaller than 8 bytes, an IndexError is raised.
+	def makeCurrentDateAndTime(self, byteArray):
+		dt = datetime.datetime.now()
+		year, month, day, hour, minute, second, msec =\
+			dt.year, dt.month, dt.day, dt.hour, \
+			dt.minute, dt.second, dt.microsecond // 1000
+		byteArray[0].set((year % 10) | (((year // 10) % 10) << 4))
+		byteArray[1].set((month % 10) | (((month // 10) % 10) << 4))
+		byteArray[2].set((day % 10) | (((day // 10) % 10) << 4))
+		byteArray[3].set((hour % 10) | (((hour // 10) % 10) << 4))
+		byteArray[4].set((minute % 10) | (((minute // 10) % 10) << 4))
+		byteArray[5].set((second % 10) | (((second // 10) % 10) << 4))
+		byteArray[6].set(((msec // 10) % 10) | (((msec // 100) % 10) << 4))
+		byteArray[7].set(((msec % 10) << 4) |\
+				 self.__dateAndTimeWeekdayMap[dt.weekday()])
 
 	def __runTimeCheck(self):
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:

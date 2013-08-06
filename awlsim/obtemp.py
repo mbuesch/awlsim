@@ -91,7 +91,7 @@ class OB1TempPresets(OBTempPresets):
 			localdata[10].set(maxMs >> 8)
 			localdata[11].set(maxMs)
 			# Byte 12-19: OB1_DATE_TIME
-			pass#TODO
+			cpu.makeCurrentDateAndTime(localdata[12:])
 		except IndexError:
 			self.tempUnderflow()
 

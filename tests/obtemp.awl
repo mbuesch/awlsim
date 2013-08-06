@@ -41,12 +41,59 @@ BEGIN
 	__ASSERT<=	__ACCU 1,	W#16#7FFF
 
 	LAR1		P##OB1_DATE_TIME
-	L		D [AR1, P#0.0]
-	L		D [AR1, P#4.0]
-	//TODO checks
+	L		B [AR1, P#0.0]	// year
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	__ASSERT>=	MB 0,		B#16#13
+	L		B [AR1, P#1.0]	// month
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	__ASSERT<=	MB 0,		B#16#12
+	L		B [AR1, P#2.0]	// day
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	__ASSERT<=	MB 0,		B#16#31
+	L		B [AR1, P#3.0]	// hour
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	__ASSERT<=	MB 0,		B#16#24
+	L		B [AR1, P#4.0]	// minute
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	__ASSERT<=	MB 0,		B#16#60
+	L		B [AR1, P#5.0]	// second
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	__ASSERT<=	MB 0,		B#16#60
+	L		B [AR1, P#6.0]	// millisecond upper
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	L		B [AR1, P#7.0]	// millisecond lower / weekday
+	T		MB 0
+	CALL		FC 1 (BCD_BYTE := MB 0)
+	L		MB 0
+	UD		DW#16#0000000F
+	__ASSERT>=	__ACCU 1,	1
+	__ASSERT<=	__ACCU 1,	7
 
 	__ASSERT<=	#OB1_PREV_CYCLE,	#OB1_MAX_CYCLE
 	__ASSERT>=	#OB1_PREV_CYCLE,	#OB1_MIN_CYCLE
 	__ASSERT>=	#OB1_MAX_CYCLE,		#OB1_MIN_CYCLE
 
 END_ORGANIZATION_BLOCK
+
+
+FUNCTION FC 1 : VOID
+TITLE = Check whether BCD_BYTE is a valid BCD value
+VAR_INPUT
+	BCD_BYTE	: BYTE
+END_VAR
+BEGIN
+	L		#BCD_BYTE
+	UD		DW#16#0000000F
+	__ASSERT<=	__ACCU 1,	9
+	L		#BCD_BYTE
+	SRD		4
+	UD		DW#16#0000000F
+	__ASSERT<=	__ACCU 1,	9
+END_FUNCTION
