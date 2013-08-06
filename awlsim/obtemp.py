@@ -79,9 +79,9 @@ class OB1TempPresets(OBTempPresets):
 			# Byte 5: OB1_RESERVED_2
 			localdata[5].set(0x00)
 			# Byte 6-7: OB1_PREV_CYCLE
-			#         We write the average cycle time instead
-			#         of the previous cycle time,
-			#         because we don't measure each cycle.
+			#           We write the average cycle time instead
+			#           of the previous cycle time,
+			#           because we don't measure each cycle.
 			localdata[6].set(avgMs >> 8)
 			localdata[7].set(avgMs)
 			# Byte 8-9: OB1_MIN_CYCLE
