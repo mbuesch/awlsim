@@ -208,19 +208,264 @@ BEGIN
 
 	L		DW#16#AABBCCDD
 	T		MD 1
+	L		1
+	T		MW 12
+	L		2
+	T		MW 14
 	CALL FB 2, DB 2 (
-		IN_VAL_0	:= MD [#ONE_PTR_VAL]
+		IN_VAL_0	:= MD [#ONE_PTR_VAL],
+		DB_VAL		:= DB [MW 14],
+		FC_VAL		:= FC [MW 12],
+		FB_VAL		:= FB [MW 12],
 	)
+
+
+	// Test all memory-indirect accesses
+	AUF		DB 1
+	L		P#8.0
+	T		LD 0
+	U		E [LD 0]
+	=		E [LD 0]
+	U		A [LD 0]
+	=		A [LD 0]
+	U		L [LD 0]
+	=		L [LD 0]
+	U		DIX [LD 0]
+	=		DIX [LD 0]
+	U		DBX [LD 0]
+	=		DBX [LD 0]
+	L		EB [LD 0]
+	T		EB [LD 0]
+	L		AB [LD 0]
+	T		AB [LD 0]
+	L		MB [LD 0]
+	T		MB [LD 0]
+	L		LB [LD 0]
+	T		LB [LD 0]
+	L		PEB [LD 0]
+	T		PAB [LD 0]
+	L		DBB [LD 0]
+	T		DBB [LD 0]
+	L		DIB [LD 0]
+	T		DIB [LD 0]
+	L		EW [LD 0]
+	T		EW [LD 0]
+	L		AW [LD 0]
+	T		AW [LD 0]
+	L		MW [LD 0]
+	T		MW [LD 0]
+	L		LW [LD 0]
+	T		LW [LD 0]
+	L		PEW [LD 0]
+	T		PAW [LD 0]
+	L		DBW [LD 0]
+	T		DBW [LD 0]
+	L		DIW [LD 0]
+	T		DIW [LD 0]
+	L		ED [LD 0]
+	T		ED [LD 0]
+	L		AD [LD 0]
+	T		AD [LD 0]
+	L		MD [LD 0]
+	T		MD [LD 0]
+	L		LD [LD 0]
+	T		LD [LD 0]
+	L		PED [LD 0]
+	T		PAD [LD 0]
+	L		DBD [LD 0]
+	T		DBD [LD 0]
+	L		DID [LD 0]
+	T		DID [LD 0]
+	L		0
+	T		LW 0
+	L		T [LW 0]
+	L		Z [LW 0]
+
+	// Test all register-indirect accesses
+	AUF		DB 1
+	LAR1		P#8.0
+	U		E [AR1, P#0.0]
+	=		E [AR1, P#0.0]
+	LAR1		P#E 8.0
+	U		[AR1, P#0.0]
+	=		[AR1, P#0.0]
+	LAR1		P#8.0
+	U		A [AR1, P#0.0]
+	=		A [AR1, P#0.0]
+	LAR1		P#A 8.0
+	U		[AR1, P#0.0]
+	=		[AR1, P#0.0]
+	LAR1		P#8.0
+	U		M [AR1, P#0.0]
+	=		M [AR1, P#0.0]
+	LAR1		P#M 8.0
+	U		[AR1, P#0.0]
+	=		[AR1, P#0.0]
+	LAR1		P#8.0
+	U		L [AR1, P#0.0]
+	=		L [AR1, P#0.0]
+	LAR1		P#L 8.0
+	U		[AR1, P#0.0]
+	=		[AR1, P#0.0]
+	LAR1		P#8.0
+	U		DIX [AR1, P#0.0]
+	=		DIX [AR1, P#0.0]
+	LAR1		P#DIX 8.0
+	U		[AR1, P#0.0]
+	=		[AR1, P#0.0]
+	LAR1		P#8.0
+	U		DBX [AR1, P#0.0]
+	=		DBX [AR1, P#0.0]
+	LAR1		P#DBX 8.0
+	U		[AR1, P#0.0]
+	=		[AR1, P#0.0]
+
+	LAR1		P#8.0
+	L		EB [AR1, P#0.0]
+	T		EB [AR1, P#0.0]
+	LAR1		P#E 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+	LAR1		P#8.0
+	L		AB [AR1, P#0.0]
+	T		AB [AR1, P#0.0]
+	LAR1		P#A 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+	LAR1		P#8.0
+	L		MB [AR1, P#0.0]
+	T		MB [AR1, P#0.0]
+	LAR1		P#M 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+	LAR1		P#8.0
+	L		LB [AR1, P#0.0]
+	T		LB [AR1, P#0.0]
+	LAR1		P#L 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+	LAR1		P#8.0
+	L		PEB [AR1, P#0.0]
+	T		PAB [AR1, P#0.0]
+	LAR1		P#P 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+	LAR1		P#8.0
+	L		DBB [AR1, P#0.0]
+	T		DBB [AR1, P#0.0]
+	LAR1		P#DBX 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+	LAR1		P#8.0
+	L		DIB [AR1, P#0.0]
+	T		DIB [AR1, P#0.0]
+	LAR1		P#DIX 8.0
+	L		B [AR1, P#0.0]
+	T		B [AR1, P#0.0]
+
+	LAR1		P#8.0
+	L		EW [AR1, P#0.0]
+	T		EW [AR1, P#0.0]
+	LAR1		P#E 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+	LAR1		P#8.0
+	L		AW [AR1, P#0.0]
+	T		AW [AR1, P#0.0]
+	LAR1		P#A 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+	LAR1		P#8.0
+	L		MW [AR1, P#0.0]
+	T		MW [AR1, P#0.0]
+	LAR1		P#M 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+	LAR1		P#8.0
+	L		LW [AR1, P#0.0]
+	T		LW [AR1, P#0.0]
+	LAR1		P#L 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+	LAR1		P#8.0
+	L		PEW [AR1, P#0.0]
+	T		PAW [AR1, P#0.0]
+	LAR1		P#P 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+	LAR1		P#8.0
+	L		DBW [AR1, P#0.0]
+	T		DBW [AR1, P#0.0]
+	LAR1		P#DBX 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+	LAR1		P#8.0
+	L		DIW [AR1, P#0.0]
+	T		DIW [AR1, P#0.0]
+	LAR1		P#DIX 8.0
+	L		W [AR1, P#0.0]
+	T		W [AR1, P#0.0]
+
+	LAR1		P#8.0
+	L		ED [AR1, P#0.0]
+	T		ED [AR1, P#0.0]
+	LAR1		P#E 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
+	LAR1		P#8.0
+	L		AD [AR1, P#0.0]
+	T		AD [AR1, P#0.0]
+	LAR1		P#A 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
+	LAR1		P#8.0
+	L		MD [AR1, P#0.0]
+	T		MD [AR1, P#0.0]
+	LAR1		P#M 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
+	LAR1		P#8.0
+	L		LD [AR1, P#0.0]
+	T		LD [AR1, P#0.0]
+	LAR1		P#L 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
+	LAR1		P#8.0
+	L		PED [AR1, P#0.0]
+	T		PAD [AR1, P#0.0]
+	LAR1		P#P 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
+	LAR1		P#8.0
+	L		DBD [AR1, P#0.0]
+	T		DBD [AR1, P#0.0]
+	LAR1		P#DBX 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
+	LAR1		P#8.0
+	L		DID [AR1, P#0.0]
+	T		DID [AR1, P#0.0]
+	LAR1		P#DIX 8.0
+	L		D [AR1, P#0.0]
+	T		D [AR1, P#0.0]
 END_FUNCTION_BLOCK
 
 
 FUNCTION_BLOCK FB 2
 	VAR_INPUT
 		IN_VAL_0	: DWORD
+		DB_VAL		: BLOCK_DB
+		FC_VAL		: BLOCK_FC
+		FB_VAL		: BLOCK_FB
 	END_VAR
 BEGIN
 	L		#IN_VAL_0
 	__ASSERT==	__ACCU 1,	DW#16#AABBCCDD
+
+	AUF		#DB_VAL
+	L		DBD 0
+	L		#IN_VAL_0
+	__ASSERT==	__ACCU 1,	__ACCU 2
 END_FUNCTION_BLOCK
 
 
