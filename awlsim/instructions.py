@@ -198,7 +198,7 @@ class AwlInsn(object):
 	TYPE_ASSERT_LE		= enum.item 	# __ASSERT<=
 	TYPE_SLEEP		= enum.item 	# __SLEEP
 	TYPE_STWRST		= enum.item 	# __STWRST
-	TYPE_SSPEC		= enum.item 	# __SSPEC
+	TYPE_FEATURE		= enum.item 	# __FEATURE
 	enum.end
 
 	name2type_german = {
@@ -367,7 +367,7 @@ class AwlInsn(object):
 		"__ASSERT<="	: TYPE_ASSERT_LE,
 		"__SLEEP"	: TYPE_SLEEP,
 		"__STWRST"	: TYPE_STWRST,
-		"__SSPEC"	: TYPE_SSPEC,
+		"__FEATURE"	: TYPE_FEATURE,
 	}
 	type2name_german = pivotDict(name2type_german)
 
@@ -2893,15 +2893,20 @@ class AwlInsn_STWRST(AwlInsn):
 	def run(self):
 		self.cpu.callStackTop.status.setWord(0)
 
-class AwlInsn_SSPEC(AwlInsn):
+class AwlInsn_FEATURE(AwlInsn):
 	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SSPEC, rawInsn)
-		self.assertOpCount(2)
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_FEATURE, rawInsn)
+		self.assertOpCount((1, 2))
 
 	def run(self):
 		target = self.cpu.fetch(self.ops[0])
-		value = self.cpu.fetch(self.ops[1])
+		value = None
+		if len(self.ops) >= 2:
+			value = self.cpu.fetch(self.ops[1])
+
 		if target == 0:
-			self.cpu.specs.setNrAccus(value)
+			if value is not None:
+				self.cpu.specs.setNrAccus(value)
+			self.cpu.accu1.set(self.cpu.specs.nrAccus)
 		else:
-			raise AwlSimError("Unsupported SSPEC target")
+			raise AwlSimError("Unsupported __FEATURE target")

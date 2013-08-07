@@ -192,7 +192,7 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_ASSERT_LE		: AwlInsn_ASSERT_LE,
 		AwlInsn.TYPE_SLEEP		: AwlInsn_SLEEP,
 		AwlInsn.TYPE_STWRST		: AwlInsn_STWRST,
-		AwlInsn.TYPE_SSPEC		: AwlInsn_SSPEC,
+		AwlInsn.TYPE_FEATURE		: AwlInsn_FEATURE,
 	}
 
 	@classmethod

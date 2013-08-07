@@ -1,5 +1,5 @@
 	// Switch to 4-accu mode
-	__SSPEC		0,	4
+	__FEATURE	0,	4
 
 
 	// Test: ENT/LEAVE
