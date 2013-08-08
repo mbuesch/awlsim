@@ -105,7 +105,7 @@ END_DATA_BLOCK
 
 
 DATA_BLOCK DB 3
-	SFB 1
+	SFB -1
 	TITLE		= This is the title
 	AUTHOR		: This is the author
 	FAMILY		: This is the family

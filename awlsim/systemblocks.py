@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - SFCs
+# AWL simulator - System-blocks
 #
 # Copyright 2012-2013 Michael Buesch <m@bues.ch>
 #
@@ -19,44 +19,38 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.systemblocks import *
-from awlsim.util import *
+from awlsim.instructions import *
+from awlsim.blocks import *
 
 
-class SFCm1(SFC):
-	"""SFC -1: __NOP"""
-
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, -1)
-
-	def run(self):
-		pass # No operation
-
-class SFCm2(SFC):
-	"""SFC -2: __REBOOT"""
-
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, -2)
-
-		self.interface.addField_IN(
-			BlockInterface.Field(name = "REBOOT_TYPE",
-					     dataType = AwlDataType.makeByName("INT"))
-		)
+class SystemBlock(Block):
+	def __init__(self, cpu, index, interface):
+		insns = [
+			AwlInsn_GENERIC_CALL(cpu, self.run),
+		]
+		Block.__init__(self, insns, index, interface)
+		self.cpu = cpu
 
 	def run(self):
-		pass#TODO REBOOT_TYPE
-		raise SoftRebootRequest("SFC -2 soft reboot request")
+		# Reimplement this method
+		raise NotImplementedError
 
-class SFC64(SFC):
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, 64)
+class SFBInterface(FBInterface):
+	pass
 
-	def run(self):
-		pass#TODO
+class SFB(SystemBlock):
+	def __init__(self, cpu, index):
+		SystemBlock.__init__(self, cpu, index, SFBInterface())
 
-SFC_table = {
-	-1	: SFCm1,
-	-2	: SFCm2,
+	def __repr__(self):
+		return "SFB %d" % self.index
 
-	64	: SFC64,
-}
+class SFCInterface(FCInterface):
+	pass
+
+class SFC(SystemBlock):
+	def __init__(self, cpu, index):
+		SystemBlock.__init__(self, cpu, index, SFCInterface())
+
+	def __repr__(self):
+		return "SFC %d" % self.index

@@ -214,13 +214,18 @@ class S7CPU(object):
 		return db
 
 	def __translateInstanceDB(self, rawDB):
-		fbName, fbNumber = rawDB.fb
+		fbStr = "SFB" if rawDB.fb.isSFB else "FB"
 		try:
-			fb = self.fbs[fbNumber]
+			if rawDB.fb.isSFB:
+				fb = self.sfbs[rawDB.fb.fbNumber]
+			else:
+				fb = self.fbs[rawDB.fb.fbNumber]
 		except KeyError:
-			raise AwlSimError("Instance DB %d references FB %d, "
-				"but FB %d does not exist." %\
-				(rawDB.index, fbNumber, fbNumber))
+			raise AwlSimError("Instance DB %d references %s %d, "
+				"but %s %d does not exist." %\
+				(rawDB.index,
+				 fbStr, rawDB.fb.fbNumber,
+				 fbStr, rawDB.fb.fbNumber))
 		db = DB(rawDB.index, fb)
 		interface = fb.interface
 		# Sanity checks
@@ -246,8 +251,16 @@ class S7CPU(object):
 			return self.__translateInstanceDB(rawDB)
 		return self.__translateGlobalDB(rawDB)
 
-	def __allocateFCBounceDB(self, fc):
-		dbNumber = -abs(fc.index) # Use negative FC number as bounce-DB number
+	def __allocateFCBounceDB(self, fc, isSFC):
+		if isSFC:
+			# Use negative FC number with an offset as bounce-DB number
+			if fc.index >= 0:
+				dbNumber = -abs(fc.index) - (1 << 32)
+			else:
+				dbNumber = -abs(fc.index) - (1 << 33)
+		else:
+			# Use negative FC number as bounce-DB number
+			dbNumber = -abs(fc.index)
 		db = DB(dbNumber, fc)
 		db.allocate()
 		return db
@@ -379,9 +392,11 @@ class S7CPU(object):
 			self.__staticSanityChecks_block(fc)
 
 	def load(self, parseTree):
-		# Translate the AWL tree
+		# Mnemonics autodetection
 		self.__detectMnemonics(parseTree)
+		# Reset the CPU
 		self.reset()
+		# Translate OBs
 		for obNumber in parseTree.obs.keys():
 			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)
 			self.obs[obNumber] = ob
@@ -391,18 +406,35 @@ class S7CPU(object):
 			except KeyError:
 				presetHandlerClass = OBTempPresets_dummy
 			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
+		# Translate FBs
 		for fbNumber in parseTree.fbs.keys():
 			fb = self.__translateCodeBlock(parseTree.fbs[fbNumber], FB)
 			self.fbs[fbNumber] = fb
+		# Translate FCs
 		for fcNumber in parseTree.fcs.keys():
 			fc = self.__translateCodeBlock(parseTree.fcs[fcNumber], FC)
 			self.fcs[fcNumber] = fc
-			bounceDB = self.__allocateFCBounceDB(fc)
+			bounceDB = self.__allocateFCBounceDB(fc, False)
 			self.dbs[bounceDB.index] = bounceDB
+		# Create the SFB tables
+		for sfbNumber in SFB_table.keys():
+			sfb = SFB_table[sfbNumber](self)
+			sfb.interface.buildDataStructure()
+			self.sfbs[sfbNumber] = sfb
+		# Create the SFC tables
+		for sfcNumber in SFC_table.keys():
+			sfc = SFC_table[sfcNumber](self)
+			sfc.interface.buildDataStructure()
+			self.sfcs[sfcNumber] = sfc
+			bounceDB = self.__allocateFCBounceDB(sfc, True)
+			self.dbs[bounceDB.index] = bounceDB
+		# Translate DBs
 		for dbNumber in parseTree.dbs.keys():
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
+		# Resolve symbolic instructions and operators
 		self.__resolveSymbols()
+		# Run some static sanity checks on the code
 		self.__staticSanityChecks()
 
 	def reallocate(self, force=False):
@@ -438,13 +470,21 @@ class S7CPU(object):
 		self.obs = {
 			# OBs
 		}
+		self.obTempPresetHandlers = {
+			# OB TEMP-preset handlers
+		}
 		self.fcs = {
 			# User FCs
 		}
 		self.fbs = {
 			# User FBs
 		}
-		self.obTempPresetHandlers = { }
+		self.sfcs = {
+			# System SFCs
+		}
+		self.sfbs = {
+			# System SFBs
+		}
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
@@ -702,32 +742,56 @@ class S7CPU(object):
 			raise AwlSimError("DB used in FB call not found")
 		if not db.isInstanceDB():
 			raise AwlSimError("DB %d is not an instance DB" % dbOper.value.byteOffset)
+		# TODO check if this is an FB-DB
 		if db.codeBlock.index != fb.index:
 			raise AwlSimError("DB %d is not an instance DB for FB %d" %\
 				(dbOper.value.byteOffset, blockOper.value.byteOffset))
 		return CallStackElem(self, fb, db, db, parameters)
 
-	def __call_SFC(self, blockOper, dbOper):
+	def __call_SFC(self, blockOper, dbOper, parameters):
 		if dbOper:
 			raise AwlSimError("SFC call must not "
 				"have DB operand")
 		try:
-			sfc = SFC_table[blockOper.value.byteOffset]
+			sfc = self.sfcs[blockOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("SFC %d not implemented, yet" %\
 					  blockOper.value.byteOffset)
-		sfc.run(self)
+		# Get bounce-DB
+		if sfc.index >= 0:
+			dbNumber = -abs(sfc.index) - (1 << 32)
+		else:
+			dbNumber = -abs(sfc.index) - (1 << 33)
+		bounceDB = self.dbs[dbNumber]
+		if sfc.interface.interfaceFieldCount != len(parameters):
+			raise AwlSimError("Call interface mismatch. "
+				"Passed %d parameters, but expected %d.\n"
+				"====  The block interface is:\n%s\n====" %\
+				(len(parameters), sfc.interface.interfaceFieldCount,
+				 str(sfc.interface)))
+		return CallStackElem(self, sfc, self.callStackTop.instanceDB,
+				     bounceDB, parameters)
 
-	def __call_SFB(self, blockOper, dbOper):
+	def __call_SFB(self, blockOper, dbOper, parameters):
 		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
 			raise AwlSimError("SFB call must have "
 				"DB operand")
 		try:
-			sfb = SFB_table[blockOper.value.byteOffset]
+			sfb = self.sfbs[blockOper.value.byteOffset]
 		except KeyError as e:
 			raise AwlSimError("SFB %d not implemented, yet" %\
 					  blockOper.value.byteOffset)
-		sfb.run(self, dbOper)
+		try:
+			db = self.dbs[dbOper.value.byteOffset]
+		except KeyError as e:
+			raise AwlSimError("DB used in SFB call not found")
+		if not db.isInstanceDB():
+			raise AwlSimError("DB %d is not an instance DB" % dbOper.value.byteOffset)
+		# TODO check if this is an SFB-DB
+		if db.codeBlock.index != sfb.index:
+			raise AwlSimError("DB %d is not an instance DB for SFB %d" %\
+				(dbOper.value.byteOffset, blockOper.value.byteOffset))
+		return CallStackElem(self, sfb, db, db, parameters)
 
 	__callHelpers = {
 		AwlOperator.BLKREF_FC	: __call_FC,

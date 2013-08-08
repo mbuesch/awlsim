@@ -102,3 +102,10 @@ class AwlParserError(AwlSimError):
 
 	def getReport(self):
 		return self.doGetReport("AWL parser error")
+
+class SoftRebootRequest(Exception):
+	"""Soft-reboot request, handled by toplevel simulator.
+	On soft-reboot, the upstart-OBs are executed.
+	Memory is not cleared."""
+
+	pass

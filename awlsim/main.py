@@ -41,6 +41,16 @@ class AwlSim(object):
 			e.setCpu(self.cpu)
 		raise e
 
+	def __handleSoftRebootRequest(self, e):
+		try:
+			try:
+				# Run the CPU startup sequence again
+				self.cpu.startup()
+			except SoftRebootRequest as e:
+				raise AwlSimError("Recursive reboot request")
+		except AwlSimError as e:
+			self.__handleSimException(e)
+
 	def shutdown(self):
 		for hw in self.__registeredHardware:
 			hw.shutdown()
@@ -50,7 +60,10 @@ class AwlSim(object):
 			self.cpu.load(parseTree)
 			for hw in self.__registeredHardware:
 				hw.startup()
-			self.cpu.startup()
+			try:
+				self.cpu.startup()
+			except SoftRebootRequest as e:
+				self.__handleSoftRebootRequest(e)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
@@ -66,6 +79,8 @@ class AwlSim(object):
 				hw.writeOutputs()
 		except AwlSimError as e:
 			self.__handleSimException(e)
+		except SoftRebootRequest as e:
+			self.__handleSoftRebootRequest(e)
 
 	def registerHardware(self, hwClassInst):
 		"""Register a new hardware interface."""

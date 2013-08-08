@@ -199,6 +199,8 @@ class AwlInsn(object):
 	TYPE_SLEEP		= enum.item 	# __SLEEP
 	TYPE_STWRST		= enum.item 	# __STWRST
 	TYPE_FEATURE		= enum.item 	# __FEATURE
+	# Special instructions for internal usage
+	TYPE_GENERIC_CALL	= enum.item	# No mnemonic
 	enum.end
 
 	name2type_german = {
@@ -432,8 +434,9 @@ class AwlInsn(object):
 		self.ops = []		# Operators
 		self.params = []	# Parameter assignments (for CALL)
 
-		opTrans = AwlOpTranslator(self)
-		opTrans.translateFrom(rawInsn)
+		if rawInsn:
+			opTrans = AwlOpTranslator(self)
+			opTrans.translateFrom(rawInsn)
 
 	def staticSanityChecks(self):
 		"Run static sanity checks"
@@ -459,6 +462,8 @@ class AwlInsn(object):
 		return self.cpu
 
 	def getLineNr(self):
+		if not self.rawInsn:
+			return -1
 		return self.rawInsn.getLineNr()
 
 	def run(self):
@@ -471,7 +476,10 @@ class AwlInsn(object):
 		if self.cpu and\
 		   self.cpu.getSpecs().getMnemonics() == S7CPUSpecs.MNEMONICS_DE:
 			type2name = AwlInsn.type2name_german
-		name = type2name[self.type]
+		try:
+			name = type2name[self.type]
+		except KeyError:
+			name = "<unknown>"
 		ret.append(name)
 		if self.ops:
 			ret.append(" ")
@@ -2910,3 +2918,14 @@ class AwlInsn_FEATURE(AwlInsn):
 			self.cpu.accu1.set(self.cpu.specs.nrAccus)
 		else:
 			raise AwlSimError("Unsupported __FEATURE target")
+
+class AwlInsn_GENERIC_CALL(AwlInsn):
+	"""Generic callback pseudo-instruction.
+	This instruction calls the supplied callback."""
+
+	def __init__(self, cpu, callback):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GENERIC_CALL, None)
+		self.callback = callback
+
+	def run(self):
+		self.callback()

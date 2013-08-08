@@ -147,6 +147,8 @@ class BlockInterface(object):
 				ret.append("  %s : %s;" %\
 					   (field.name, str(field.dataType)))
 			ret.append("END_VAR")
+		if not ret:
+			ret = [ "<None>" ]
 		return '\n'.join(ret)
 
 class Block(object):
@@ -191,19 +193,6 @@ class FB(Block):
 	def __repr__(self):
 		return "FB %d" % self.index
 
-class SFBInterface(FBInterface):
-	pass
-
-class SFB(Block):
-	def __init__(self, index):
-		Block.__init__(self, None, index, SFBInterface())
-
-	def run(self, cpu, dbOper):
-		pass # Reimplement this method
-
-	def __repr__(self):
-		return "SFB %d" % self.index
-
 class FCInterface(BlockInterface):
 	def addField_STAT(self, field):
 		raise AwlSimError("Static VAR not possible in an FC")
@@ -214,16 +203,3 @@ class FC(Block):
 
 	def __repr__(self):
 		return "FC %d" % self.index
-
-class SFCInterface(FCInterface):
-	pass
-
-class SFC(Block):
-	def __init__(self, index):
-		Block.__init__(self, None, index, SFCInterface())
-
-	def run(self, cpu):
-		pass # Reimplement this method
-
-	def __repr__(self):
-		return "SFC %d" % self.index

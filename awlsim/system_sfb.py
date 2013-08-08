@@ -19,10 +19,19 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.blocks import *
+from awlsim.systemblocks import *
 from awlsim.util import *
 
 
+class SFBm1(SFB):
+	"""SFB -1: __NOP"""
+
+	def __init__(self, cpu):
+		SFB.__init__(self, cpu, -1)
+
+	def run(self):
+		pass # No operation
 
 SFB_table = {
+	-1	: SFBm1,
 }

@@ -41,7 +41,7 @@ class AwlLabel(object):
 		labels = []
 		for i, insn in enumerate(insns):
 			rawInsn = insn.getRawInsn()
-			if not rawInsn.hasLabel():
+			if not rawInsn or not rawInsn.hasLabel():
 				continue
 			labels.append(AwlLabel(insn, rawInsn.getLabel()))
 		# Resolve label references
