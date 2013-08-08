@@ -51,11 +51,20 @@ class SFCm2(SFC):
 			raise AwlSimError("SFC -2: Unknown REBOOT_TYPE %d" % rebootType)
 
 class SFC64(SFC):
+	"""SFC 64: TIME_TCK"""
+
 	def __init__(self, cpu):
 		SFC.__init__(self, cpu, 64)
 
+		self.interface.addField_OUT(
+			BlockInterface.Field(name = "RET_VAL",
+					     dataType = AwlDataType.makeByName("TIME"))
+		)
+
 	def run(self):
-		pass#TODO
+		# Return a 31-bit millisecond representation of "now".
+		self.storeInterfaceFieldByName("RET_VAL",
+			int(self.cpu.now * 1000) & 0x7FFFFFFF)
 
 SFC_table = {
 	-1	: SFCm1,

@@ -41,6 +41,12 @@ class SystemBlock(Block):
 		operator = self.interface.getOperatorForFieldName(name, False)
 		return self.cpu.fetch(operator)
 
+	# Store a value to a block-interface field.
+	def storeInterfaceFieldByName(self, name, value):
+		#TODO: We should cache the operator.
+		operator = self.interface.getOperatorForFieldName(name, False)
+		return self.cpu.store(operator, value)
+
 class SFBInterface(FBInterface):
 	pass
 
