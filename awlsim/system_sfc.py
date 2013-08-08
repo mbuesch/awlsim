@@ -44,8 +44,11 @@ class SFCm2(SFC):
 		)
 
 	def run(self):
-		pass#TODO REBOOT_TYPE
-		raise SoftRebootRequest("SFC -2 soft reboot request")
+		rebootType = wordToSignedPyInt(self.fetchInterfaceFieldByName("REBOOT_TYPE"))
+		if rebootType == 1:
+			raise SoftRebootRequest("SFC -2 soft reboot request")
+		else:
+			raise AwlSimError("SFC -2: Unknown REBOOT_TYPE %d" % rebootType)
 
 class SFC64(SFC):
 	def __init__(self, cpu):

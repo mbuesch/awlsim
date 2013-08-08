@@ -35,6 +35,12 @@ class SystemBlock(Block):
 		# Reimplement this method
 		raise NotImplementedError
 
+	# Fetch the value of a block-interface field.
+	def fetchInterfaceFieldByName(self, name):
+		#TODO: We should cache the operator.
+		operator = self.interface.getOperatorForFieldName(name, False)
+		return self.cpu.fetch(operator)
+
 class SFBInterface(FBInterface):
 	pass
 

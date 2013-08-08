@@ -22,6 +22,7 @@
 from awlsim.labels import *
 from awlsim.datastructure import *
 from awlsim.datatypes import *
+from awlsim.operators import *
 from awlsim.util import *
 
 
@@ -68,7 +69,7 @@ class BlockInterface(object):
 
 	def __addField(self, field):
 		if field.name in self.fieldNameMap:
-			raise AwlSimError("Data structure name '%s' is ambiguous." %\
+			raise AwlSimError("Data structure field name '%s' is ambiguous." %\
 				field.name)
 		if field.fieldType == BlockInterface.Field.FTYPE_TEMP:
 			self.tempFieldCount += 1
@@ -134,6 +135,71 @@ class BlockInterface(object):
 		except KeyError:
 			raise AwlSimError("Data structure field '%s' does not exist." %\
 				name)
+
+	def getOperatorForFieldName(self, name, wantPointer):
+		return self.getOperatorForField(self.getFieldByName(name),
+						wantPointer)
+
+	# Get an AwlOperator that addresses the specified interfaceField.
+	# If wantPointer is true, an IMM_PTR AwlOperator to the interfaceField
+	# is returned.
+	def getOperatorForField(self, interfaceField, wantPointer):
+		if interfaceField.fieldType == interfaceField.FTYPE_TEMP:
+			structField = self.tempStruct.getField(interfaceField.name)
+
+			if wantPointer:
+				ptrValue = structField.offset.toPointerValue()
+				return AwlOperator(type = AwlOperator.IMM_PTR,
+						   width = 32,
+						   value = (AwlIndirectOp.AREA_L |\
+							    ptrValue))
+
+			# Translate to local-stack access
+			operType = AwlOperator.MEM_L
+		else: # IN/OUT/INOUT/STAT
+			structField = self.struct.getField(interfaceField.name)
+
+			if wantPointer:
+				ptrValue = structField.offset.toPointerValue()
+				return AwlOperator(type = AwlOperator.IMM_PTR,
+						   width = 32,
+						   value = (AwlIndirectOp.AREA_DI |\
+							    ptrValue))
+
+			# Translate to interface-DB access
+			if structField.dataType.type in BlockInterface.callByRef_Types:
+				# "call by reference"
+				offsetOper = AwlOperator(type=AwlOperator.INTERF_DB,
+							 width=structField.dataType.width,
+							 value=structField.offset.dup())
+				if structField.dataType.type == AwlDataType.TYPE_TIMER:
+					area = AwlIndirectOp.EXT_AREA_T
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_COUNTER:
+					area = AwlIndirectOp.EXT_AREA_Z
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_DB:
+					area = AwlIndirectOp.EXT_AREA_BLKREF_DB
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FB:
+					area = AwlIndirectOp.EXT_AREA_BLKREF_FB
+					width = 16
+				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FC:
+					area = AwlIndirectOp.EXT_AREA_BLKREF_FC
+					width = 16
+				else:
+					assert(0)
+				return AwlIndirectOp(
+					area=area,
+					width=width,
+					addressRegister=AwlIndirectOp.AR_NONE,
+					offsetOper=offsetOper)
+			else:
+				# "call by value"
+				operType = AwlOperator.INTERF_DB
+		return AwlOperator(type=operType,
+				   width=structField.bitSize,
+				   value=structField.offset.dup())
 
 	def __repr__(self):
 		ret = []

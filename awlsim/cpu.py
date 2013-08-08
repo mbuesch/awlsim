@@ -267,81 +267,19 @@ class S7CPU(object):
 
 	# Translate local symbols (#abc)
 	def __resolveNamedLocalSym(self, block, oper):
-		if oper.type != AwlOperator.NAMED_LOCAL:
-			return oper
-
-		interfaceField = block.interface.getFieldByName(oper.value)
-		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
-		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
-		   interfaceField.fieldType == interfaceField.FTYPE_INOUT or\
-		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
-			# Translate to interface-DB access
-			structField = block.interface.struct.getField(oper.value)
-			if structField.dataType.type in BlockInterface.callByRef_Types:
-				# "call by reference"
-				offsetOper = AwlOperator(type=AwlOperator.INTERF_DB,
-							 width=structField.dataType.width,
-							 value=structField.offset.dup())
-				if structField.dataType.type == AwlDataType.TYPE_TIMER:
-					area = AwlIndirectOp.EXT_AREA_T
-					width = 16
-				elif structField.dataType.type == AwlDataType.TYPE_COUNTER:
-					area = AwlIndirectOp.EXT_AREA_Z
-					width = 16
-				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_DB:
-					area = AwlIndirectOp.EXT_AREA_BLKREF_DB
-					width = 16
-				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FB:
-					area = AwlIndirectOp.EXT_AREA_BLKREF_FB
-					width = 16
-				elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FC:
-					area = AwlIndirectOp.EXT_AREA_BLKREF_FC
-					width = 16
-				else:
-					assert(0)
-				newOper = AwlIndirectOp(
-					area=area,
-					width=width,
-					addressRegister=AwlIndirectOp.AR_NONE,
-					offsetOper=offsetOper)
-				newOper.setInsn(oper.insn)
-				return newOper
-			else:
-				# "call by value"
-				newOperType = AwlOperator.INTERF_DB
-		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
-			# Translate to local-stack access
-			structField = block.interface.tempStruct.getField(oper.value)
-			newOperType = AwlOperator.MEM_L
-		else:
-			assert(0)
-		return AwlOperator(type=newOperType,
-				   width=structField.bitSize,
-				   value=structField.offset.dup())
+		if oper.type == AwlOperator.NAMED_LOCAL:
+			newOper = block.interface.getOperatorForFieldName(oper.value, False)
+			newOper.setInsn(oper.insn)
+			return newOper
+		return oper
 
 	# Translate local symbol pointers (P##abc)
 	def __resolveNamedLocalPointer(self, block, oper):
-		if oper.type != AwlOperator.NAMED_LOCAL_PTR:
-			return oper
-
-		interfaceField = block.interface.getFieldByName(oper.value)
-
-		if interfaceField.fieldType == interfaceField.FTYPE_IN or\
-		   interfaceField.fieldType == interfaceField.FTYPE_OUT or\
-		   interfaceField.fieldType == interfaceField.FTYPE_INOUT or\
-		   interfaceField.fieldType == interfaceField.FTYPE_STAT:
-			structField = block.interface.struct.getField(oper.value)
-			ptrValue = structField.offset.toPointerValue()
-			area = AwlIndirectOp.AREA_DI
-		elif interfaceField.fieldType == interfaceField.FTYPE_TEMP:
-			structField = block.interface.tempStruct.getField(oper.value)
-			ptrValue = structField.offset.toPointerValue()
-			area = AwlIndirectOp.AREA_L
-		else:
-			assert(0)
-		return AwlOperator(type = AwlOperator.IMM_PTR,
-				   width = 32,
-				   value = (area | ptrValue))
+		if oper.type == AwlOperator.NAMED_LOCAL_PTR:
+			newOper = block.interface.getOperatorForFieldName(oper.value, True)
+			newOper.setInsn(oper.insn)
+			return newOper
+		return oper
 
 	def __resolveSymbols_block(self, block):
 		for insn in block.insns:
