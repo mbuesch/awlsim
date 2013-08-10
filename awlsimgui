@@ -1278,17 +1278,23 @@ class CpuConfigDialog(QDialog):
 		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
 		self.layout().addWidget(self.mnemonicsCombo, 1, 1)
 
+		self.obTempCheckBox = QCheckBox("Enable writing of OB TEMP "
+			"entry-variables", self)
+		self.layout().addWidget(self.obTempCheckBox, 2, 0, 1, 2)
+
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 2, 1)
+		self.layout().addWidget(self.closeButton, 3, 1)
 
 		self.accuCombo.currentIndexChanged.connect(self.__accuConfigChanged)
 		self.mnemonicsCombo.currentIndexChanged.connect(self.__mnemonicsConfigChanged)
+		self.obTempCheckBox.stateChanged.connect(self.__obTempConfigChanged)
 		self.closeButton.released.connect(self.accept)
 
 		self.loadConfig()
 
 	def loadConfig(self):
-		specs = self.sim.getCPU().getSpecs()
+		cpu = self.sim.getCPU()
+		specs = cpu.getSpecs()
 		self.__updateBlocked += 1
 
 		index = self.accuCombo.findData(specs.nrAccus)
@@ -1298,6 +1304,11 @@ class CpuConfigDialog(QDialog):
 		index = self.mnemonicsCombo.findData(specs.getConfiguredMnemonics())
 		assert(index >= 0)
 		self.mnemonicsCombo.setCurrentIndex(index)
+
+		self.obTempCheckBox.setCheckState(
+			Qt.Checked if cpu.obTempPresetsEnabled() else\
+			Qt.Unchecked
+		)
 
 		self.__updateBlocked -= 1
 
@@ -1314,6 +1325,12 @@ class CpuConfigDialog(QDialog):
 		specs = self.sim.getCPU().getSpecs()
 		index = self.mnemonicsCombo.currentIndex()
 		specs.setConfiguredMnemonics(self.mnemonicsCombo.itemData(index))
+
+	def __obTempConfigChanged(self):
+		if self.__updateBlocked:
+			return
+		cpu = self.sim.getCPU()
+		cpu.enableObTempPresets(self.obTempCheckBox.checkState() == Qt.Checked)
 
 class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)
