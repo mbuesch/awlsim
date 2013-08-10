@@ -186,10 +186,12 @@ class AwlOperator(object):
 
 	def __repr__(self):
 		if self.type == self.IMM:
+			if self.width == 8:
+				return str(byteToSignedPyInt(self.value))
 			if self.width == 16:
-				return str(self.value)
+				return str(wordToSignedPyInt(self.value))
 			elif self.width == 32:
-				return "L#" + str(self.value)
+				return "L#" + str(dwordToSignedPyInt(self.value))
 		if self.type == self.IMM_REAL:
 			return str(dwordToPyFloat(self.value))
 		elif self.type == self.IMM_S5T:
