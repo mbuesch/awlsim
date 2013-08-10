@@ -2913,11 +2913,17 @@ class AwlInsn_FEATURE(AwlInsn):
 			value = self.cpu.fetch(self.ops[1])
 
 		if target == 0:
+			# Set/get the number of accumulator registers.
 			if value is not None:
 				self.cpu.specs.setNrAccus(value)
 			self.cpu.accu1.set(self.cpu.specs.nrAccus)
+		elif target == 1:
+			# Set/get the enable-status of OB-temp writing.
+			if value is not None:
+				self.cpu.enableObTempPresets(value)
+			self.cpu.accu1.set(int(self.cpu.obTempPresetsEnabled()))
 		else:
-			raise AwlSimError("Unsupported __FEATURE target")
+			raise AwlSimError("Unsupported __FEATURE target %d" % target)
 
 class AwlInsn_GENERIC_CALL(AwlInsn):
 	"""Generic callback pseudo-instruction.

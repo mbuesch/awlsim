@@ -86,9 +86,16 @@ class S7CPU(object):
 		self.setScreenUpdateCallback(None)
 		self.reset()
 		self.enableExtendedInsns(False)
+		self.enableObTempPresets(False)
+
+	def enableObTempPresets(self, en=True):
+		self.__obTempPresetsEnabled = bool(en)
+
+	def obTempPresetsEnabled(self):
+		return self.__obTempPresetsEnabled
 
 	def enableExtendedInsns(self, en=True):
-		self.__extendedInsnsEnabled = en
+		self.__extendedInsnsEnabled = bool(en)
 
 	def extendedInsnsEnabled(self):
 		return self.__extendedInsnsEnabled
@@ -97,7 +104,7 @@ class S7CPU(object):
 		self.cycleTimeLimit = float(newLimit)
 
 	def enableRNG(self, enabled=True):
-		self.__rngEnabled = enabled
+		self.__rngEnabled = bool(enabled)
 
 	def getRandomInt(self, minval, maxval):
 		if self.__rngEnabled:
@@ -492,8 +499,9 @@ class S7CPU(object):
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, block) ]
 		cse = self.callStackTop = self.callStack[-1]
-		# Populate the TEMP region
-		self.obTempPresetHandlers[block.index].generate(cse.localdata)
+		if self.__obTempPresetsEnabled:
+			# Populate the TEMP region
+			self.obTempPresetHandlers[block.index].generate(cse.localdata)
 		# Run the user program cycle
 		while self.callStack:
 			while cse.ip < len(cse.insns):

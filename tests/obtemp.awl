@@ -1,3 +1,24 @@
+ORGANIZATION_BLOCK OB 100
+BEGIN
+
+	// Check if OB-temp writing is enabled
+	__FEATURE	1
+	L		0
+	<>D
+	SPB isen
+
+	// Enable OB-temp presets
+	__FEATURE	1,	1
+	// Reboot
+	CALL		SFC -2 (
+		REBOOT_TYPE := 1
+	)
+
+isen:	NOP		0
+
+END_ORGANIZATION_BLOCK
+
+
 ORGANIZATION_BLOCK OB 1
 VAR_TEMP
 	OB1_EV_CLASS		: BYTE
