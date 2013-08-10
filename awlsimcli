@@ -29,6 +29,17 @@ opt_onecycle = False
 opt_quiet = False
 
 
+def str2bool(string, default=False):
+	s = string.lower()
+	if s in ("true", "yes", "on"):
+		return True
+	if s in ("false", "no", "off"):
+		return False
+	try:
+		return bool(int(s, 10))
+	except ValueError:
+		return default
+
 def printInfo(text):
 	sys.stdout.write(text)
 	sys.stdout.write("\n")
@@ -51,6 +62,7 @@ def usage():
 	printInfo(" -D|--no-cpu-dump      Do not show CPU status while running")
 	printInfo(" -q|--quiet            Do not show any status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
+	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
 #	printInfo(" -C|--cython           Use Cython core")
@@ -91,6 +103,7 @@ def main():
 	opt_noCpuDump = False
 	opt_fouraccu = False
 	opt_extInsns = False
+	opt_obtemp = False
 	opt_rng = False
 	opt_mnemonics = "auto"
 	opt_cython = False
@@ -99,9 +112,9 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qDxr:m:CH:I:",
+			"h1qDxt:r:m:CH:I:",
 			[ "help", "onecycle", "quiet", "no-cpu-dump", "extended-insns",
-			  "rng=", "mnemonics=", "cython",
+			  "obtemp=", "rng=", "mnemonics=", "cython",
 			  "hardware=", "hardware-info=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -121,6 +134,8 @@ def main():
 			opt_noCpuDump = True
 		if o in ("-x", "--extended-insns"):
 			opt_extInsns = True
+		if o in ("-t", "--obtemp"):
+			opt_obtemp = str2bool(v)
 		if o in ("-r", "--rng"):
 			opt_rng = str2bool(v)
 		if o in ("-m", "--mnemonics"):
@@ -203,6 +218,7 @@ def main():
 		specs = cpu.getSpecs()
 		specs.setConfiguredMnemonics(opt_mnemonics)
 		specs.setNrAccus(4 if opt_fouraccu else 2)
+		cpu.enableObTempPresets(opt_obtemp)
 		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)
 		if not opt_noCpuDump and not opt_quiet:

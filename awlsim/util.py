@@ -106,17 +106,6 @@ def listIndex(_list, value, start=0, stop=-1):
 	except ValueError:
 		return -1
 
-def str2bool(string, default=False):
-	s = string.lower()
-	if s in ("true", "yes", "on"):
-		return True
-	if s in ("false", "no", "off"):
-		return False
-	try:
-		return bool(int(s, 10))
-	except ValueError:
-		return default
-
 # Convert an integer list to a human readable string.
 # Example: [1, 2, 3]  ->  "1, 2 or 3"
 def listToHumanStr(lst, lastSep="or"):
