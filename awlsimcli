@@ -24,6 +24,8 @@ import sys
 import getopt
 import traceback
 
+from awlsim import *
+
 
 opt_onecycle = False
 opt_quiet = False
@@ -51,7 +53,6 @@ def printError(text):
 	sys.stderr.flush()
 
 def usage():
-	from awlsim.version import VERSION_MAJOR, VERSION_MINOR
 	printInfo("awlsim version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
 	printInfo("")
 	printInfo("%s [OPTIONS] AWL-source" % sys.argv[0])
@@ -65,7 +66,6 @@ def usage():
 	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
-#	printInfo(" -C|--cython           Use Cython core")
 	printInfo("")
 	printInfo("Loading hardware modules:")
 	printInfo(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
@@ -106,15 +106,14 @@ def main():
 	opt_obtemp = False
 	opt_rng = False
 	opt_mnemonics = "auto"
-	opt_cython = False
 	opt_hwmods = []
 	opt_hwinfos = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qDxt:r:m:CH:I:",
+			"h1qDxt:r:m:H:I:",
 			[ "help", "onecycle", "quiet", "no-cpu-dump", "extended-insns",
-			  "obtemp=", "rng=", "mnemonics=", "cython",
+			  "obtemp=", "rng=", "mnemonics=",
 			  "hardware=", "hardware-info=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -143,8 +142,6 @@ def main():
 			if opt_mnemonics not in ("en", "de", "auto"):
 				printError("-m|--mnemonics: Invalid mnemonics type")
 				sys.exit(1)
-		if o in ("-C", "--cython"):
-			opt_cython = True
 		if o in ("-H", "--hardware"):
 			try:
 				v = v.split(':')
@@ -174,17 +171,6 @@ def main():
 		return 1
 	if args:
 		awlSource = args[0]
-
-	if opt_cython:
-		from awlsim_cython.main import AwlSim
-		from awlsim_cython.parser import AwlParser
-		from awlsim_cython.cpuspecs import S7CPUSpecs
-		from awlsim_cython.util import AwlSimError, AwlParserError
-	else:
-		from awlsim.main import AwlSim
-		from awlsim.parser import AwlParser
-		from awlsim.cpuspecs import S7CPUSpecs
-		from awlsim.util import AwlSimError, AwlParserError
 
 	opt_mnemonics = {
 		"en"	: S7CPUSpecs.MNEMONICS_EN,

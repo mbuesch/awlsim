@@ -20,7 +20,7 @@
 #
 
 import sys
-from awlsim.util import *
+from awlsim import *
 
 if isPyPy:
 	# PySide does not work on PyPy, yet.
@@ -41,10 +41,6 @@ except ImportError as e:
 
 import os
 import traceback
-
-from awlsim.version import *
-from awlsim.main import *
-from awlsim.insntrans import *
 
 
 def handleFatalException(parentWidget=None):
