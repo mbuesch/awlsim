@@ -19,9 +19,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.cpu import *
-from awlsim.util import *
 from awlsim.version import *
+from awlsim.util import *
+from awlsim.parser import *
+from awlsim.cpu import *
 from awlsim.hardware import *
 
 import importlib

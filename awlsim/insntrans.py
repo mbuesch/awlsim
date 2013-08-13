@@ -19,7 +19,7 @@
 #
 
 from awlsim.util import *
-from awlsim.instructions import *
+from awlsim.instructions.all_insns import *
 from awlsim.parser import *
 from awlsim.cpuspecs import *
 

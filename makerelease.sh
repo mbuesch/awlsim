@@ -58,6 +58,9 @@ hook_regression_tests()
 	sh "$1/tests/run.sh"
 }
 
+# Do not testbuild Cython modules by default
+[ -z "$NOCYTHON" ] && export NOCYTHON=1
+
 project=awlsim
 default_compress=zip
 makerelease "$@"

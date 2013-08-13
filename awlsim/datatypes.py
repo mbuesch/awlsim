@@ -169,13 +169,13 @@ class AwlDataType(object):
 		else:
 			return cls(type = type,
 				   width = cls.type2width[type],
-				   signed = (type in cls.signedTypes))
+				   isSigned = (type in cls.signedTypes))
 
-	def __init__(self, type, width, signed,
+	def __init__(self, type, width, isSigned,
 		     startIndex=None, subType=None):
 		self.type = type
 		self.width = width
-		self.signed = signed
+		self.isSigned = isSigned
 		self.startIndex = startIndex
 		self.subType = subType
 

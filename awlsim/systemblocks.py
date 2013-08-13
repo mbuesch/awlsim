@@ -19,7 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.instructions import *
+from awlsim.instructions.insn_generic_call import *
 from awlsim.blocks import *
 
 

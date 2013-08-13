@@ -26,7 +26,7 @@ import random
 from awlsim.cpuspecs import *
 from awlsim.parser import *
 from awlsim.datatypes import *
-from awlsim.instructions import *
+from awlsim.instructions.all_insns import *
 from awlsim.operators import *
 from awlsim.insntrans import *
 from awlsim.optrans import *
