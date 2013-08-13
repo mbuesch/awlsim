@@ -2,6 +2,8 @@
 
 import sys
 import os
+import platform
+import errno
 import re
 import shutil
 import hashlib
@@ -9,6 +11,24 @@ from distutils.core import setup
 from distutils.extension import Extension
 from awlsim.version import VERSION_MAJOR, VERSION_MINOR
 
+
+def makedirs(path, mode):
+	try:
+		os.makedirs(path, mode)
+	except OSError as e:
+		if e.errno == errno.EEXIST:
+			return
+		raise
+
+def hashFile(path):
+	if sys.version_info[0] < 3:
+		ExpectedException = IOError
+	else:
+		ExpectedException = FileNotFoundError
+	try:
+		return hashlib.sha1(open(path, "rb").read()).hexdigest()
+	except ExpectedException as e:
+		return None
 
 def pyCythonPatch(toFile, fromFile):
 	print("cython-patch: patching file '%s' to '%s'" %\
@@ -36,37 +56,38 @@ def pyCythonPatch(toFile, fromFile):
 	infd.close()
 	outfd.flush()
 	outfd.close()
-	try:
-		toFileHash = hashlib.sha1(open(toFile, "rb").read()).hexdigest()
-	except FileNotFoundError:
-		pass
-	else:
-		newFileHash = hashlib.sha1(open(tmpFile, "rb").read()).hexdigest()
-		if toFileHash == newFileHash:
-			print("(already up to date)")
-			return
+	toFileHash = hashFile(toFile)
+	newFileHash = hashFile(tmpFile)
+	if toFileHash is not None and\
+	   toFileHash == newFileHash:
+		print("(already up to date)")
+		os.unlink(tmpFile)
+		return
 	os.rename(tmpFile, toFile)
 
 def addCythonModules(Cython_build_ext):
 	global cmdclass
 	global ext_modules
 
-	modDir = "./awlsim/"
-	buildDir = "./build/awlsim_cython_patched/"
+	modDir = os.path.join(os.curdir, "awlsim")
+	buildDir = os.path.join(os.curdir, "build", "awlsim_cython-patched.%s-%s-%d.%d" %\
+		(platform.system().lower(),
+		 platform.machine().lower(),
+		 sys.version_info[0], sys.version_info[1])
+	)
 
-	if not os.path.exists("./setup.py") or\
+	if not os.path.exists(os.path.join(os.curdir, "setup.py")) or\
 	   not os.path.exists(modDir) or\
 	   not os.path.isdir(modDir):
 		raise Exception("Wrong directory. "
 			"Execute setup.py from within the awlsim directory.")
 
-	os.makedirs(buildDir, 0o755, True)
+	makedirs(buildDir, 0o755)
 
 	for dirpath, dirnames, filenames in os.walk(modDir):
-		p = dirpath.split("/")
-		p = p[p.index("awlsim") + 1 : ]
-		p = [ ent for ent in p if ent ]
-		subpath = "/".join(p) # Path relative to modDir
+		subpath = os.path.relpath(dirpath, modDir)
+		if subpath == os.curdir:
+			subpath = ""
 
 		if subpath.startswith("gui"):
 			continue
@@ -74,16 +95,16 @@ def addCythonModules(Cython_build_ext):
 			if filename == "__init__.py":
 				continue
 			if filename.endswith(".py"):
-				fromFile = dirpath + "/" + filename
-				toDir = buildDir + "/" + subpath
-				toFile = toDir + "/" + filename.replace(".py", ".pyx")
+				fromFile = os.path.join(dirpath, filename)
+				toDir = os.path.join(buildDir, subpath)
+				toFile = os.path.join(toDir, filename.replace(".py", ".pyx"))
 
-				os.makedirs(toDir, 0o755, True)
+				makedirs(toDir, 0o755)
 				pyCythonPatch(toFile, fromFile)
 
 				modname = [ "awlsim_cython" ]
 				if subpath:
-					modname.extend(subpath.split("/"))
+					modname.extend(subpath.split(os.sep))
 				modname.append(filename[:-3]) # Strip .py
 				modname = ".".join(modname)
 
@@ -93,9 +114,6 @@ def addCythonModules(Cython_build_ext):
 	cmdclass["build_ext"] = Cython_build_ext
 
 def tryBuildCythonModules():
-	if sys.version_info[0] < 3:
-		print("WARNING: Not building CYTHON modules for Python 2")
-		return
 	try:
 		if int(os.getenv("NOCYTHON", "0")):
 			print("Skipping build of CYTHON modules due to "
