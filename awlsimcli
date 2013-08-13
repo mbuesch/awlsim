@@ -187,6 +187,10 @@ def main():
 				printInfo(cls.getModuleInfo())
 			return 0
 
+		if awlsim_useCython:
+			writeStdout("*** Using accelerated CYTHON core "
+				    "(AWLSIMCYTHON environment variable is set)\n")
+
 		writeStdout("Parsing code...\n")
 		p = AwlParser()
 		p.parseFile(awlSource)

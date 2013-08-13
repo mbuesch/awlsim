@@ -28,6 +28,10 @@ if isPyPy:
 	printError("Please use CPython 2.7 or CPython 3.x")
 	sys.exit(1)
 
+if awlsim_useCython:
+	print("*** Using accelerated CYTHON core "
+	      "(AWLSIMCYTHON environment variable is set)")
+
 if isPy2Compat:
 	input = raw_input
 
