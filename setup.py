@@ -40,12 +40,16 @@ def pyCythonPatch(toFile, fromFile):
 		stripLine = line.strip()
 
 		if not stripLine.endswith("#<no-cython-patch"):
-			# Uncomment all lines starting with #>cython
-			if stripLine.startswith("#>cython"):
-				line = re.sub(r'#>cython\s*', "", line)
+			# Uncomment all lines containing <cython>
+			if "<cython>" in stripLine:
+				line = re.sub(r'#?<cython>\s*', "", line)
+				if line.startswith("#"):
+					line = line[1:]
+				if not line.endswith("\n"):
+					line += "\n"
 
-			# Comment all lines ending in #<no-cython
-			if stripLine.endswith("#<no-cython"):
+			# Comment all lines containing <no-cython>
+			if "<no-cython>" in stripLine:
 				line = "#" + line
 
 			# Patch the import statements
