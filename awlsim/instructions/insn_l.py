@@ -28,5 +28,5 @@ class AwlInsn_L(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		self.cpu.accu2.set(self.cpu.accu1.get())
+		self.cpu.accu2.copyFrom(self.cpu.accu1)
 		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], (8, 16, 32)))

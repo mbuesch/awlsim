@@ -31,5 +31,5 @@ class AwlInsn_TAR2(AwlInsn):
 		if self.ops:
 			self.cpu.store(self.ops[0], self.cpu.ar2.get(), (32,))
 		else:
-			self.cpu.accu2.set(self.cpu.accu1.get())
-			self.cpu.accu1.set(self.cpu.ar2.get())
+			self.cpu.accu2.copyFrom(self.cpu.accu1)
+			self.cpu.accu1.copyFrom(self.cpu.ar2)

@@ -583,6 +583,9 @@ class GenericInteger(object):
 		self.value = value
 		self.mask = ((1 << width) - 1) & 0xFFFFFFFF
 
+	def copyFrom(self, other):
+		self.value = other.value & self.mask
+
 	def set(self, value):
 		self.value = value & self.mask
 
@@ -639,7 +642,7 @@ class GenericInteger(object):
 			self.clearBit(bitNumber)
 
 	def getBit(self, bitNumber):
-		return 1 if (self.value & (1 << bitNumber)) else 0
+		return (self.value >> bitNumber) & 1
 
 	def toHex(self):
 		if self.mask == 0xFF:

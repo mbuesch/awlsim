@@ -28,4 +28,4 @@ class AwlInsn_PUSH(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		self.cpu.accu2.set(self.cpu.accu1.get())
+		self.cpu.accu2.copyFrom(self.cpu.accu1)

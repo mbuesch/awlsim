@@ -29,5 +29,5 @@ class AwlInsn_TAK(AwlInsn):
 
 	def run(self):
 		oldAccu1 = self.cpu.accu1.get()
-		self.cpu.accu1.set(self.cpu.accu2.get())
+		self.cpu.accu1.copyFrom(self.cpu.accu2)
 		self.cpu.accu2.set(oldAccu1)

@@ -28,4 +28,4 @@ class AwlInsn_POP(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		self.cpu.accu1.set(self.cpu.accu2.get())
+		self.cpu.accu1.copyFrom(self.cpu.accu2)
