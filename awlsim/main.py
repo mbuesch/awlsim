@@ -29,11 +29,55 @@ import importlib
 
 
 class AwlSim(object):
-	def __init__(self):
+	def __init__(self, profileLevel=0):
 		self.__registeredHardware = []
 		self.cpu = S7CPU(self)
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
 		self.cpu.setPeripheralWriteCallback(self.__peripheralWriteCallback)
+
+		self.__setProfiler(profileLevel)
+
+	def __setProfiler(self, profileLevel):
+		self.__profileLevel = profileLevel
+		if self.__profileLevel <= 0:
+			return
+
+		try:
+			import cProfile as profileModule
+		except ImportError:
+			profileModule = None
+		self.__profileModule = profileModule
+		try:
+			import pstats as pstatsModule
+		except ImportError:
+			pstatsModule = None
+		self.__pstatsModule = pstatsModule
+
+		if not self.__profileModule or\
+		   not self.__pstatsModule:
+			raise AwlSimError("Failed to load cProfile/pstats modules. "
+				"Cannot enable profiling.")
+
+		self.__profiler = self.__profileModule.Profile()
+
+	def __profileStart(self):
+		self.__profiler.enable()
+
+	def __profileStop(self):
+		self.__profiler.disable()
+
+	def getProfileStats(self):
+		if self.__profileLevel <= 0:
+			return None
+
+		import io
+		sio = io.StringIO()
+		ps = self.__pstatsModule.Stats(self.__profiler,
+					       stream = sio)
+		ps.sort_stats("cumulative")
+		ps.print_stats()
+
+		return sio.getvalue()
 
 	def __handleSimException(self, e):
 		if not e.getCpu():
@@ -57,6 +101,9 @@ class AwlSim(object):
 			hw.shutdown()
 
 	def load(self, parseTree):
+		if self.__profileLevel >= 2:
+			self.__profileStart()
+
 		try:
 			self.cpu.load(parseTree)
 			for hw in self.__registeredHardware:
@@ -68,10 +115,16 @@ class AwlSim(object):
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
+		if self.__profileLevel >= 2:
+			self.__profileStop()
+
 	def getCPU(self):
 		return self.cpu
 
 	def runCycle(self):
+		if self.__profileLevel >= 1:
+			self.__profileStart()
+
 		try:
 			for hw in self.__registeredHardware:
 				hw.readInputs()
@@ -82,6 +135,9 @@ class AwlSim(object):
 			self.__handleSimException(e)
 		except SoftRebootRequest as e:
 			self.__handleSoftRebootRequest(e)
+
+		if self.__profileLevel >= 1:
+			self.__profileStop()
 
 	def registerHardware(self, hwClassInst):
 		"""Register a new hardware interface."""

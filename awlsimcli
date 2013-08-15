@@ -66,6 +66,7 @@ def usage():
 	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
 	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
+	printInfo(" -P|--profile 0        Set profiling level (Default: 0)")
 	printInfo("")
 	printInfo("Loading hardware modules:")
 	printInfo(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
@@ -108,13 +109,14 @@ def main():
 	opt_mnemonics = "auto"
 	opt_hwmods = []
 	opt_hwinfos = []
+	opt_profile = 0
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qDxt:r:m:H:I:",
+			"h1qDxt:r:m:H:I:P:",
 			[ "help", "onecycle", "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "rng=", "mnemonics=",
-			  "hardware=", "hardware-info=", ])
+			  "hardware=", "hardware-info=", "profile=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -166,6 +168,11 @@ def main():
 				sys.exit(1)
 		if o in ("-I", "--hardware-info"):
 			opt_hwinfos.append(v.split(':')[0])
+		if o in ("-P", "--profile"):
+			try:
+				opt_profile = int(v)
+			except ValueError:
+				printError("-P|--profile: Invalid profile level")
 	if len(args) != 1 and not opt_hwinfos:
 		usage()
 		return 1
@@ -195,7 +202,7 @@ def main():
 		p = AwlParser()
 		p.parseFile(awlSource)
 		writeStdout("Initializing simulator...\n")
-		s = AwlSim()
+		s = AwlSim(profileLevel = opt_profile)
 
 		# Load hardware modules
 		for name, parameters in opt_hwmods:
@@ -234,6 +241,10 @@ def main():
 		pass
 	finally:
 		if s:
+			ps = s.getProfileStats()
+			if ps:
+				writeStdout(ps)
+				writeStdout("\n")
 			s.shutdown()
 	return 0
 
