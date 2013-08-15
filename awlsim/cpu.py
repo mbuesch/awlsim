@@ -654,86 +654,30 @@ class S7CPU(object):
 		self.relativeJump = insnOffset
 
 	def __call_FC(self, blockOper, dbOper, parameters):
-		if dbOper:
-			raise AwlSimError("FC call must not "
-				"have DB operand")
-		try:
-			fc = self.fcs[blockOper.value.byteOffset]
-		except KeyError as e:
-			raise AwlSimError("Called FC not found")
+		fc = self.fcs[blockOper.value.byteOffset]
 		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
-		if fc.interface.interfaceFieldCount != len(parameters):
-			raise AwlSimError("Call interface mismatch. "
-				"Passed %d parameters, but expected %d.\n"
-				"====  The block interface is:\n%s\n====" %\
-				(len(parameters), fc.interface.interfaceFieldCount,
-				 str(fc.interface)))
 		return CallStackElem(self, fc, self.callStackTop.instanceDB,
 				     bounceDB, parameters)
 
 	def __call_FB(self, blockOper, dbOper, parameters):
-		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
-			raise AwlSimError("FB call must have "
-				"DB operand")
-		try:
-			fb = self.fbs[blockOper.value.byteOffset]
-		except KeyError as e:
-			raise AwlSimError("Called FB not found")
-		try:
-			db = self.dbs[dbOper.value.byteOffset]
-		except KeyError as e:
-			raise AwlSimError("DB used in FB call not found")
-		if not db.isInstanceDB():
-			raise AwlSimError("DB %d is not an instance DB" % dbOper.value.byteOffset)
-		# TODO check if this is an FB-DB
-		if db.codeBlock.index != fb.index:
-			raise AwlSimError("DB %d is not an instance DB for FB %d" %\
-				(dbOper.value.byteOffset, blockOper.value.byteOffset))
+		fb = self.fbs[blockOper.value.byteOffset]
+		db = self.dbs[dbOper.value.byteOffset]
 		return CallStackElem(self, fb, db, db, parameters)
 
 	def __call_SFC(self, blockOper, dbOper, parameters):
-		if dbOper:
-			raise AwlSimError("SFC call must not "
-				"have DB operand")
-		try:
-			sfc = self.sfcs[blockOper.value.byteOffset]
-		except KeyError as e:
-			raise AwlSimError("SFC %d not implemented, yet" %\
-					  blockOper.value.byteOffset)
+		sfc = self.sfcs[blockOper.value.byteOffset]
 		# Get bounce-DB
 		if sfc.index >= 0:
 			dbNumber = -abs(sfc.index) - (1 << 32)
 		else:
 			dbNumber = -abs(sfc.index) - (1 << 33)
 		bounceDB = self.dbs[dbNumber]
-		if sfc.interface.interfaceFieldCount != len(parameters):
-			raise AwlSimError("Call interface mismatch. "
-				"Passed %d parameters, but expected %d.\n"
-				"====  The block interface is:\n%s\n====" %\
-				(len(parameters), sfc.interface.interfaceFieldCount,
-				 str(sfc.interface)))
 		return CallStackElem(self, sfc, self.callStackTop.instanceDB,
 				     bounceDB, parameters)
 
 	def __call_SFB(self, blockOper, dbOper, parameters):
-		if not dbOper or dbOper.type != AwlOperator.BLKREF_DB:
-			raise AwlSimError("SFB call must have "
-				"DB operand")
-		try:
-			sfb = self.sfbs[blockOper.value.byteOffset]
-		except KeyError as e:
-			raise AwlSimError("SFB %d not implemented, yet" %\
-					  blockOper.value.byteOffset)
-		try:
-			db = self.dbs[dbOper.value.byteOffset]
-		except KeyError as e:
-			raise AwlSimError("DB used in SFB call not found")
-		if not db.isInstanceDB():
-			raise AwlSimError("DB %d is not an instance DB" % dbOper.value.byteOffset)
-		# TODO check if this is an SFB-DB
-		if db.codeBlock.index != sfb.index:
-			raise AwlSimError("DB %d is not an instance DB for SFB %d" %\
-				(dbOper.value.byteOffset, blockOper.value.byteOffset))
+		sfb = self.sfbs[blockOper.value.byteOffset]
+		db = self.dbs[dbOper.value.byteOffset]
 		return CallStackElem(self, sfb, db, db, parameters)
 
 	__callHelpers = {
