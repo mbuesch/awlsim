@@ -28,7 +28,7 @@ class AwlInsn_T(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		if self.cpu.mcrIsOn():
-			self.cpu.store(self.ops[0], self.cpu.accu1.get(), (8, 16, 32))
-		else:
+		if self.cpu.mcrActive and not self.cpu.mcrIsOn():
 			self.cpu.store(self.ops[0], 0, (8, 16, 32))
+		else:
+			self.cpu.store(self.ops[0], self.cpu.accu1.get(), (8, 16, 32))
