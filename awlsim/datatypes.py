@@ -581,7 +581,7 @@ class GenericInteger(object):
 	def __init__(self, value, width):
 		assert(width > 0 and width <= 32)
 		self.value = value
-		self.mask = ((1 << width) - 1) & 0xFFFFFFFF
+		self.mask = int(((1 << width) - 1) & 0xFFFFFFFF)
 
 	def copyFrom(self, other):
 		self.value = other.value & self.mask
