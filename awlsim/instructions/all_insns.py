@@ -20,7 +20,6 @@ from awlsim.instructions.insn_bmcr import *
 from awlsim.instructions.insn_btd import *
 from awlsim.instructions.insn_bti import *
 from awlsim.instructions.insn_call import *
-from awlsim.instructions.insn_cc import *
 from awlsim.instructions.insn_clr import *
 from awlsim.instructions.insn_cos import *
 from awlsim.instructions.insn_dec import *
@@ -151,7 +150,6 @@ from awlsim.instructions.insn_tdb import *
 from awlsim.instructions.insn_t import *
 from awlsim.instructions.insn_trunc import *
 from awlsim.instructions.insn_ub import *
-from awlsim.instructions.insn_uc import *
 from awlsim.instructions.insn_ud import *
 from awlsim.instructions.insn_unb import *
 from awlsim.instructions.insn_un import *
