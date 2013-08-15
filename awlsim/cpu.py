@@ -398,14 +398,11 @@ class S7CPU(object):
 			self.counters = [ Counter(self, i)
 					  for i in range(self.specs.nrCounters) ]
 		if force or self.specs.nrFlags != len(self.flags):
-			self.flags = [ FlagByte()
-				       for _ in range(self.specs.nrFlags) ]
+			self.flags = ByteArray(self.specs.nrFlags)
 		if force or self.specs.nrInputs != len(self.inputs):
-			self.inputs = [ InputByte()
-					for _ in range(self.specs.nrInputs) ]
+			self.inputs = ByteArray(self.specs.nrInputs)
 		if force or self.specs.nrOutputs != len(self.outputs):
-			self.outputs = [ OutputByte()
-					 for _ in range(self.specs.nrOutputs) ]
+			self.outputs = ByteArray(self.specs.nrOutputs)
 		CallStackElem.resetCache()
 
 	def reset(self):
@@ -607,20 +604,20 @@ class S7CPU(object):
 	# Make a DATE_AND_TIME for the current wall-time and
 	# store it in byteArray, which is a list of GenericByte objects.
 	# If byteArray is smaller than 8 bytes, an IndexError is raised.
-	def makeCurrentDateAndTime(self, byteArray):
+	def makeCurrentDateAndTime(self, byteArray, offset):
 		dt = datetime.datetime.now()
 		year, month, day, hour, minute, second, msec =\
 			dt.year, dt.month, dt.day, dt.hour, \
 			dt.minute, dt.second, dt.microsecond // 1000
-		byteArray[0].set((year % 10) | (((year // 10) % 10) << 4))
-		byteArray[1].set((month % 10) | (((month // 10) % 10) << 4))
-		byteArray[2].set((day % 10) | (((day // 10) % 10) << 4))
-		byteArray[3].set((hour % 10) | (((hour // 10) % 10) << 4))
-		byteArray[4].set((minute % 10) | (((minute // 10) % 10) << 4))
-		byteArray[5].set((second % 10) | (((second // 10) % 10) << 4))
-		byteArray[6].set(((msec // 10) % 10) | (((msec // 100) % 10) << 4))
-		byteArray[7].set(((msec % 10) << 4) |\
-				 self.__dateAndTimeWeekdayMap[dt.weekday()])
+		byteArray[offset] = (year % 10) | (((year // 10) % 10) << 4)
+		byteArray[offset + 1] = (month % 10) | (((month // 10) % 10) << 4)
+		byteArray[offset + 2] = (day % 10) | (((day // 10) % 10) << 4)
+		byteArray[offset + 3] = (hour % 10) | (((hour // 10) % 10) << 4)
+		byteArray[offset + 4] = (minute % 10) | (((minute // 10) % 10) << 4)
+		byteArray[offset + 5] = (second % 10) | (((second // 10) % 10) << 4)
+		byteArray[offset + 6] = ((msec // 10) % 10) | (((msec // 100) % 10) << 4)
+		byteArray[offset + 7] = ((msec % 10) << 4) |\
+					self.__dateAndTimeWeekdayMap[dt.weekday()]
 
 	def __runTimeCheck(self):
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:
@@ -909,17 +906,16 @@ class S7CPU(object):
 		return self.callStackTop.status.A0 & self.callStackTop.status.A1
 
 	def fetchE(self, operator):
-		return AwlOperator.fetchFromByteArray(self.inputs, operator)
+		return self.inputs.fetch(operator.value, operator.width)
 
 	def fetchA(self, operator):
-		return AwlOperator.fetchFromByteArray(self.outputs, operator)
+		return self.outputs.fetch(operator.value, operator.width)
 
 	def fetchM(self, operator):
-		return AwlOperator.fetchFromByteArray(self.flags, operator)
+		return self.flags.fetch(operator.value, operator.width)
 
 	def fetchL(self, operator):
-		return AwlOperator.fetchFromByteArray(self.callStackTop.localdata,
-						      operator)
+		return self.callStackTop.localdata.fetch(operator.value, operator.width)
 
 	def fetchVL(self, operator):
 		try:
@@ -927,7 +923,7 @@ class S7CPU(object):
 		except IndexError:
 			raise AwlSimError("Fetch of parent localstack, "
 				"but no parent present.")
-		return AwlOperator.fetchFromByteArray(cse.localdata, operator)
+		return cse.localdata.fetch(operator.value, operator.width)
 
 	def fetchDB(self, operator):
 		if operator.value.dbNumber is None:
@@ -968,8 +964,8 @@ class S7CPU(object):
 				"the direct peripheral fetch. "
 				"(width=%d, offset=%d)" %\
 				(operator.width, operator.value.byteOffset))
-		AwlOperator.storeToByteArray(self.inputs, operator, value)
-		return AwlOperator.fetchFromByteArray(self.inputs, operator)
+		self.inputs.store(operator.value, operator.width, value)
+		return self.inputs.fetch(operator.value, operator.width)
 
 	def fetchT(self, operator):
 		timer = self.getTimer(operator.value.byteOffset)
@@ -1041,17 +1037,16 @@ class S7CPU(object):
 		storeMethod(self, operator, value)
 
 	def storeE(self, operator, value):
-		AwlOperator.storeToByteArray(self.inputs, operator, value)
+		self.inputs.store(operator.value, operator.width, value)
 
 	def storeA(self, operator, value):
-		AwlOperator.storeToByteArray(self.outputs, operator, value)
+		self.outputs.store(operator.value, operator.width, value)
 
 	def storeM(self, operator, value):
-		AwlOperator.storeToByteArray(self.flags, operator, value)
+		self.flags.store(operator.value, operator.width, value)
 
 	def storeL(self, operator, value):
-		AwlOperator.storeToByteArray(self.callStackTop.localdata,
-					     operator, value)
+		self.callStackTop.localdata.store(operator.value, operator.width, value)
 
 	def storeVL(self, operator, value):
 		try:
@@ -1059,7 +1054,7 @@ class S7CPU(object):
 		except IndexError:
 			raise AwlSimError("Store to parent localstack, "
 				"but no parent present.")
-		AwlOperator.storeToByteArray(cse.localdata, operator, value)
+		cse.localdata.store(operator.value, operator.width, value)
 
 	def storeDB(self, operator, value):
 		if operator.value.dbNumber is None:
@@ -1090,7 +1085,7 @@ class S7CPU(object):
 		cse.interfaceDB.store(operator, value)
 
 	def storePA(self, operator, value):
-		AwlOperator.storeToByteArray(self.outputs, operator, value)
+		self.outputs.store(operator.value, operator.width, value)
 		ok = False
 		if self.cbPeripheralWrite:
 			ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,
@@ -1132,7 +1127,7 @@ class S7CPU(object):
 	def __dumpMem(self, prefix, memArray, maxLen):
 		ret, line, first, count, i = [], [], True, 0, 0
 		while i < maxLen:
-			line.append(memArray[i].toHex())
+			line.append("%02X" % memArray[i])
 			count += 1
 			if count >= 16:
 				if not first:

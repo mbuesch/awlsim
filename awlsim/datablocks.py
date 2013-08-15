@@ -49,12 +49,10 @@ class DB(object):
 		self.structInstance = AwlStructInstance(self.struct)
 
 	def fetch(self, operator):
-		return AwlOperator.fetchFromByteArray(self.structInstance.dataBytes,
-						      operator)
+		return self.structInstance.dataBytes.fetch(operator.value, operator.width)
 
 	def store(self, operator, value):
-		AwlOperator.storeToByteArray(self.structInstance.dataBytes,
-					     operator, value)
+		self.structInstance.dataBytes.store(operator.value, operator.width, value)
 
 	def __repr__(self):
 		return "DB %d" % self.index

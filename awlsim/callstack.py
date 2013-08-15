@@ -30,10 +30,7 @@ from awlsim.util import *
 class CallStackElem(object):
 	"Call stack element"
 
-	localdataCache = ObjectCache(lambda cpu:
-		[ LocalByte()
-		  for _ in range(cpu.specs.nrLocalbytes) ]
-	)
+	localdataCache = ObjectCache(lambda cpu: ByteArray(cpu.specs.nrLocalbytes))
 
 	@classmethod
 	def resetCache(cls):

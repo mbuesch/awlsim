@@ -651,10 +651,6 @@ class GenericInteger(object):
 		else:
 			assert(0)
 
-class GenericByte(GenericInteger):
-	def __init__(self, value=0):
-		GenericInteger.__init__(self, value, 8)
-
 class GenericWord(GenericInteger):
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 16)
@@ -663,29 +659,51 @@ class GenericDWord(GenericInteger):
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 32)
 
-class FlagByte(GenericByte):
-	"Flag byte"
+class ByteArray(bytearray):
+	def __init__(self, size):
+		bytearray.__init__(self, int(size))
 
-	def __init__(self):
-		GenericByte.__init__(self)
+	def fetch(self, offset, width):
+		byteOffset = offset.byteOffset
+		try:
+			if width == 1:
+				return (self[byteOffset] >> offset.bitOffset) & 1
+			elif width == 8:
+				return self[byteOffset]
+			elif width == 16:
+				return (self[byteOffset] << 8) |\
+				       self[byteOffset + 1]
+			elif width == 32:
+				return (self[byteOffset] << 24) |\
+				       (self[byteOffset + 1] << 16) |\
+				       (self[byteOffset + 2] << 8) |\
+				       self[byteOffset + 3]
+		except IndexError as e:
+			raise AwlSimError("fetch: Operator offset out of range")
+		assert(0)
 
-class InputByte(GenericByte):
-	"PAE byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
-
-class OutputByte(GenericByte):
-	"PAA byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
-
-class LocalByte(GenericByte):
-	"L byte"
-
-	def __init__(self):
-		GenericByte.__init__(self)
+	def store(self, offset, width, value):
+		byteOffset = offset.byteOffset
+		try:
+			if width == 1:
+				if value:
+					self[byteOffset] |= 1 << offset.bitOffset
+				else:
+					self[byteOffset] &= ~(1 << offset.bitOffset)
+			elif width == 8:
+				self[byteOffset] = value & 0xFF
+			elif width == 16:
+				self[byteOffset] = (value >> 8) & 0xFF
+				self[byteOffset + 1] = value & 0xFF
+			elif width == 32:
+				self[byteOffset] = (value >> 24) & 0xFF
+				self[byteOffset + 1] = (value >> 16) & 0xFF
+				self[byteOffset + 2] = (value >> 8) & 0xFF
+				self[byteOffset + 3] = value & 0xFF
+			else:
+				assert(0)
+		except IndexError as e:
+			raise AwlSimError("store: Operator offset out of range")
 
 class Accu(GenericDWord):
 	"Accumulator register"

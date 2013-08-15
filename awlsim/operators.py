@@ -287,47 +287,6 @@ class AwlOperator(object):
 		except KeyError:
 			assert(0)
 
-	@classmethod
-	def fetchFromByteArray(cls, array, operator):
-		width, byteOff = operator.width, operator.value.byteOffset
-		try:
-			if width == 1:
-				return array[byteOff].getBit(operator.value.bitOffset)
-			elif width == 8:
-				return array[byteOff].get()
-			elif width == 16:
-				return (array[byteOff].get() << 8) |\
-				       array[byteOff + 1].get()
-			elif width == 32:
-				return (array[byteOff].get() << 24) |\
-				       (array[byteOff + 1].get() << 16) |\
-				       (array[byteOff + 2].get() << 8) |\
-				       array[byteOff + 3].get()
-		except IndexError as e:
-			raise AwlSimError("fetch: Operator offset out of range")
-		assert(0)
-
-	@classmethod
-	def storeToByteArray(cls, array, operator, value):
-		width, byteOff = operator.width, operator.value.byteOffset
-		try:
-			if width == 1:
-				array[byteOff].setBitValue(operator.value.bitOffset, value)
-			elif width == 8:
-				array[byteOff].set(value)
-			elif width == 16:
-				array[byteOff].set(value >> 8)
-				array[byteOff + 1].set(value)
-			elif width == 32:
-				array[byteOff].set(value >> 24)
-				array[byteOff + 1].set(value >> 16)
-				array[byteOff + 2].set(value >> 8)
-				array[byteOff + 3].set(value)
-			else:
-				assert(0)
-		except IndexError as e:
-			raise AwlSimError("store: Operator offset out of range")
-
 class AwlIndirectOp(AwlOperator):
 	"Indirect addressing operand"
 

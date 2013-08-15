@@ -67,31 +67,31 @@ class OB1TempPresets(OBTempPresets):
 			avgMs = min(max(avgMs, minMs), maxMs)
 
 			# Byte 0: OB1_EV_CLASS
-			localdata[0].set(0x11)
+			localdata[0] = 0x11
 			# Byte 1: OB1_SCAN_1
-			localdata[1].set(0x03)
+			localdata[1] = 0x03
 			# Byte 2: OB1_PRIORITY
-			localdata[2].set(0x01)
+			localdata[2] = 0x01
 			# Byte 3: OB1_OB_NUMBR
-			localdata[3].set(0x01)
+			localdata[3] = 0x01
 			# Byte 4: OB1_RESERVED_1
-			localdata[4].set(0x00)
+			localdata[4] = 0x00
 			# Byte 5: OB1_RESERVED_2
-			localdata[5].set(0x00)
+			localdata[5] = 0x00
 			# Byte 6-7: OB1_PREV_CYCLE
 			#           We write the average cycle time instead
 			#           of the previous cycle time,
 			#           because we don't measure each cycle.
-			localdata[6].set(avgMs >> 8)
-			localdata[7].set(avgMs)
+			localdata[6] = (avgMs >> 8) & 0xFF
+			localdata[7] = avgMs & 0xFF
 			# Byte 8-9: OB1_MIN_CYCLE
-			localdata[8].set(minMs >> 8)
-			localdata[9].set(minMs)
+			localdata[8] = (minMs >> 8) & 0xFF
+			localdata[9] = minMs & 0xFF
 			# Byte 10-11: OB1_MAX_CYCLE
-			localdata[10].set(maxMs >> 8)
-			localdata[11].set(maxMs)
+			localdata[10] = (maxMs >> 8) & 0xFF
+			localdata[11] = maxMs & 0xFF
 			# Byte 12-19: OB1_DATE_TIME
-			cpu.makeCurrentDateAndTime(localdata[12:])
+			cpu.makeCurrentDateAndTime(localdata, 12)
 		except IndexError:
 			self.tempUnderflow()
 
