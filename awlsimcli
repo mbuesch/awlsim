@@ -243,6 +243,8 @@ def main():
 		if s:
 			ps = s.getProfileStats()
 			if ps:
+				writeStdout("\n\nProfile stats (level %d) follow:\n" %\
+					    opt_profile)
 				writeStdout(ps)
 				writeStdout("\n")
 			s.shutdown()
