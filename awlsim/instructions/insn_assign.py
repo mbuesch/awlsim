@@ -29,8 +29,8 @@ class AwlInsn_ASSIGN(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA = s.VKE
-		if not self.cpu.mcrIsOn():
-			s.STA = 0
+		if self.cpu.mcrActive and not self.cpu.mcrIsOn():
+			s.OR, s.STA, s.NER = 0, 0, 0
+		else:
+			s.OR, s.STA, s.NER = 0, s.VKE, 0
 		self.cpu.store(self.ops[0], s.STA, (1,))
-		s.OR, s.NER = 0, 0
