@@ -28,10 +28,9 @@ class AwlInsn_U(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
-		s.STA = self.cpu.fetch(self.ops[0], (1,))
+		s, STA = self.cpu.callStackTop.status,\
+			self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
-			s.VKE &= s.STA
-			s.VKE |= s.OR
+			s.STA, s.VKE = STA, ((s.VKE & STA) | s.OR)
 		else:
-			s.VKE, s.NER = s.STA, 1
+			s.STA, s.VKE, s.NER = STA, STA, 1

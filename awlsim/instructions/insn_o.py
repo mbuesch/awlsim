@@ -27,15 +27,20 @@ class AwlInsn_O(AwlInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_O, rawInsn)
 		self.assertOpCount((0, 1))
 
-	def run(self):
-		s = self.cpu.callStackTop.status
 		if self.ops:
-			s.STA = self.cpu.fetch(self.ops[0], (1,))
-			if s.NER:
-				s.VKE |= s.STA
-			else:
-				s.VKE = s.STA
-			s.OR, s.NER = 0, 1
+			self.run = self.__run_withOps
 		else:
-			# UND vor ODER
-			s.OR, s.STA, s.NER = s.VKE, 1, 0
+			self.run = self.__run_noOps
+
+	def __run_withOps(self):
+		s, STA = self.cpu.callStackTop.status,\
+			self.cpu.fetch(self.ops[0], (1,))
+		if s.NER:
+			s.OR, s.STA, s.VKE, s.NER = 0, STA, (s.VKE | STA), 1
+		else:
+			s.OR, s.STA, s.VKE, s.NER = 0, STA, STA, 1
+
+	def __run_noOps(self):
+		s = self.cpu.callStackTop.status
+		# UND vor ODER
+		s.OR, s.STA, s.NER = s.VKE, 1, 0
