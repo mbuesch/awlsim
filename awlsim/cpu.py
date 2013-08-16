@@ -756,11 +756,7 @@ class S7CPU(object):
 		self.mcrActive = active
 
 	def mcrIsOn(self):
-		if not self.mcrActive:
-			return True
-		if all(self.mcrStack):
-			return True
-		return False
+		return (not self.mcrActive or all(self.mcrStack))
 
 	def mcrStackAppend(self, statusWord):
 		self.mcrStack.append(McrStackElem(statusWord))

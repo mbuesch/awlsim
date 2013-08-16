@@ -28,12 +28,12 @@ class AwlInsn_S(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
-		oper = self.ops[0].resolve(True)
+		s, oper = self.cpu.callStackTop.status,\
+			self.ops[0].resolve(True)
 		if oper.type == AwlOperator.MEM_Z:
 			self.cpu.getCounter(oper.value.byteOffset).set(s.VKE)
 			s.OR, s.NER = 0, 0
 		else:
-			if s.VKE and self.cpu.mcrIsOn():
+			if s.VKE and (not self.cpu.mcrActive or self.cpu.mcrIsOn()):
 				self.cpu.store(oper, 1, (1,))
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
