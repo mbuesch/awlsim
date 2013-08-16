@@ -777,16 +777,15 @@ class S7CPU(object):
 	# Fetch a range in the 'output' memory area.
 	# 'byteOffset' is the byte offset into the output area.
 	# 'byteCount' is the number if bytes to fetch.
-	# Returns a list of byte-values.
+	# Returns a bytearray.
 	def fetchOutputRange(self, byteOffset, byteCount):
-		return [ d.get() for d in self.outputs[byteOffset : byteOffset + byteCount] ]
+		return self.outputs[byteOffset : byteOffset + byteCount]
 
 	# Store a range in the 'input' memory area.
 	# 'byteOffset' is the byte offset into the input area.
-	# 'data' is a list by byte-values.
+	# 'data' is a bytearray.
 	def storeInputRange(self, byteOffset, data):
-		for i, dataByte in enumerate(data):
-			self.inputs[byteOffset + i].set(dataByte)
+		self.inputs[byteOffset : byteOffset + len(data)] = data
 
 	def fetch(self, operator, enforceWidth=()):
 		try:
