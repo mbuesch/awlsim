@@ -788,14 +788,16 @@ class S7CPU(object):
 		self.inputs[byteOffset : byteOffset + len(data)] = data
 
 	def fetch(self, operator, enforceWidth=()):
+		if operator.type == AwlOperator.INDIRECT:
+			return self.fetch(operator.resolve(False), enforceWidth)
+
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid fetch request: %s" %\
 				AwlOperator.type2str[operator.type])
 		# Check width of fetch operation
-		if operator.width not in enforceWidth and enforceWidth and\
-		   operator.type != AwlOperator.INDIRECT:
+		if operator.width not in enforceWidth and enforceWidth:
 			width = operator.width
 			# Special handling for T and Z
 			if operator.type in (AwlOperator.MEM_T,
@@ -922,10 +924,6 @@ class S7CPU(object):
 			return counter.getValueBCD()
 		return counter.get()
 
-	def fetchINDIRECT(self, operator):
-		#TODO pass enforceWidth down
-		return self.fetch(operator.resolve(False))
-
 	def fetchVirtACCU(self, operator):
 		return self.getAccu(operator.value.byteOffset).get()
 
@@ -956,12 +954,15 @@ class S7CPU(object):
 		AwlOperator.MEM_STW_NEGZ	: fetchSTW_NEGZ,
 		AwlOperator.MEM_STW_UO		: fetchSTW_UO,
 		AwlOperator.INTERF_DB		: fetchINTERF_DB,
-		AwlOperator.INDIRECT		: fetchINDIRECT,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
 	}
 
 	def store(self, operator, value, enforceWidth=()):
+		if operator.type == AwlOperator.INDIRECT:
+			self.store(operator.resolve(True), value, enforceWidth)
+			return
+
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:
@@ -1046,9 +1047,6 @@ class S7CPU(object):
 		else:
 			assert(0)
 
-	def storeINDIRECT(self, operator, value):
-		self.store(operator.resolve(True), value)
-
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
@@ -1060,7 +1058,6 @@ class S7CPU(object):
 		AwlOperator.MEM_PA		: storePA,
 		AwlOperator.MEM_STW		: storeSTW,
 		AwlOperator.INTERF_DB		: storeINTERF_DB,
-		AwlOperator.INDIRECT		: storeINDIRECT,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):
