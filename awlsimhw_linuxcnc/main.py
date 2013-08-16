@@ -43,24 +43,28 @@ class HardwareInterface(AbstractHardwareInterface):
 		AbstractHardwareInterface.__init__(self,
 						   sim = sim,
 						   parameters = parameters)
+		self.linuxCNC_initialized = False
 
 	def doStartup(self):
-		try:
-			import hal as LinuxCNC_HAL
-			self.LinuxCNC_HAL = LinuxCNC_HAL
-		except ImportError as e:
-			self.raiseException("Failed to import LinuxCNC HAL module"
-				":\n%s" % str(e))
+		if not self.linuxCNC_initialized:
+			try:
+				import hal as LinuxCNC_HAL
+				self.LinuxCNC_HAL = LinuxCNC_HAL
+			except ImportError as e:
+				self.raiseException("Failed to import LinuxCNC HAL module"
+					":\n%s" % str(e))
 
-		# Get the LinuxCNC-HAL-component object
-		self.hal = self.getParam("hal")
+			# Get the LinuxCNC-HAL-component object
+			self.hal = self.getParam("hal")
 
-		# Get parameters
-		self.inputSize = self.getParam("inputSize")
-		self.outputSize = self.getParam("outputSize")
+			# Get parameters
+			self.inputSize = self.getParam("inputSize")
+			self.outputSize = self.getParam("outputSize")
 
-		# Signal LinuxCNC that we are ready.
-		self.hal.ready()
+			# Signal LinuxCNC that we are ready.
+			self.hal.ready()
+
+			self.linuxCNC_initialized = True
 
 	def doShutdown(self):
 		pass

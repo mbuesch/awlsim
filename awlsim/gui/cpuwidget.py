@@ -217,6 +217,11 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(True)
 		self.__setState(self.STATE_STOP)
 
+	def run(self):
+		if self.state != self.STATE_STOP:
+			return
+		self.runButton.setChecked(True)
+
 	def getState(self):
 		return self.state
 

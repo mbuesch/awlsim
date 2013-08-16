@@ -178,6 +178,15 @@ class MainWindow(QMainWindow):
 	def runEventLoop(self):
 		return self.qApplication.exec_()
 
+	def getSim(self):
+		return self.centralWidget().getSim()
+
+	def cpuRun(self):
+		self.centralWidget().getCpuWidget().run()
+
+	def cpuStop(self):
+		self.centralWidget().getCpuWidget().stop()
+
 	def __runStateChanged(self, newState):
 		self.menuBar().setEnabled(newState == CpuWidget.STATE_STOP)
 		self.tb.setEnabled(newState == CpuWidget.STATE_STOP)

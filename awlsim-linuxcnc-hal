@@ -37,6 +37,17 @@ except ImportError as e:
 	sys.exit(1)
 
 
+def str2bool(string, default=False):
+	s = string.lower()
+	if s in ("true", "yes", "on"):
+		return True
+	if s in ("false", "no", "off"):
+		return False
+	try:
+		return bool(int(s, 10))
+	except ValueError:
+		return default
+
 # Check presence of LinuxCNC. Returns True, if LinuxCNC is detected.
 # Raises KeyboardInterrupt, is LinuxCNC is not detected.
 def checkLinuxCNC():
@@ -84,6 +95,21 @@ def createHalPins(hal,
 		hal.newpin("output.s32.%d" % i, HAL_S32, HAL_OUT)
 		hal.newpin("output.float.%d" % i, HAL_FLOAT, HAL_OUT)
 
+def loadHardwareModule(awlSim, hal,
+		       inputBase, outputBase,
+		       inputSize, outputSize):
+	# Load the hardware interface layer
+	parameters = {
+		"hal"			: hal,
+		"inputAddressBase"	: str(inputBase),
+		"outputAddressBase"	: str(outputBase),
+		"inputSize"		: str(inputSize),
+		"outputSize"		: str(outputSize),
+	}
+	hwClass = awlSim.loadHardwareModule("linuxcnc")
+	awlSim.registerHardwareClass(hwClass = hwClass,
+				     parameters = parameters)
+
 def usage():
 	printInfo("awlsim-linuxcnc-hal version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
 	printInfo("")
@@ -94,18 +120,20 @@ def usage():
 	printInfo(" -I|--input-base 0       The AWL input address base.")
 	printInfo(" -o|--output-size 32     The output area size, in bytes.")
 	printInfo(" -O|--output-base 0      The AWL output address base.")
+	printInfo(" -g|--gui 1/0            Enable/disable the GUI (default off).")
 
 def main():
 	opt_inputSize = 32
 	opt_inputBase = 0
 	opt_outputSize = 32
 	opt_outputBase = 0
+	opt_gui = False
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hi:I:o:O:",
+			"hi:I:o:O:g:",
 			[ "help", "input-size=", "input-base=",
-			  "output-size=", "output-base=", ])
+			  "output-size=", "output-base=", "gui=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -138,6 +166,8 @@ def main():
 			except ValueError:
 				printError("-O|--output-base: Invalid argument")
 				return 1
+		if o in ("-g", "--gui"):
+			opt_gui = str2bool(v)
 	if len(args) != 1:
 		usage()
 		return 1
@@ -155,29 +185,33 @@ def main():
 			      opt_inputBase, opt_inputSize,
 			      opt_outputBase, opt_outputSize)
 
-		p = AwlParser()
-		p.parseFile(awlSource)
+		if opt_gui:
+			from awlsim.gui import MainWindow
 
-		s = AwlSim()
+			mainwnd = MainWindow.start(initialAwlSource = awlSource)
+			s = mainwnd.getSim()
+		else:
+			p = AwlParser()
+			p.parseFile(awlSource)
+			s = AwlSim()
 
-		# Load the hardware interface layer
-		parameters = {
-			"hal"			: hal,
-			"inputAddressBase"	: str(opt_inputBase),
-			"outputAddressBase"	: str(opt_outputBase),
-			"inputSize"		: str(opt_inputSize),
-			"outputSize"		: str(opt_outputSize),
-		}
-		hwClass = s.loadHardwareModule("linuxcnc")
-		s.registerHardwareClass(hwClass = hwClass,
-					parameters = parameters)
+		loadHardwareModule(awlSim = s, hal = hal,
+				   inputBase = opt_inputBase,
+				   outputBase = opt_outputBase,
+				   inputSize = opt_inputSize,
+				   outputSize = opt_outputSize)
 
-		# Load the program
-		s.load(p.getParseTree())
+		if opt_gui:
+			mainwnd.cpuRun()
+			#TODO checkLinuxCNC() is not called.
+			mainwnd.runEventLoop()
+		else:
+			# Load the program
+			s.load(p.getParseTree())
 
-		# Run cyclic execution
-		while checkLinuxCNC():
-			s.runCycle()
+			# Run cyclic execution
+			while checkLinuxCNC():
+				s.runCycle()
 	except KeyboardInterrupt as e:
 		printInfo("Awlsim LinuxCNC HAL module shutdown")
 	except (AwlParserError, AwlSimError) as e:
