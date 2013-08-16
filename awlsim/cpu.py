@@ -47,14 +47,19 @@ from awlsim.system_sfb import *
 class ParenStackElem(object):
 	"Parenthesis stack element"
 
-	def __init__(self, insnType, statusWord):
+	def __init__(self, cpu, insnType, statusWord):
+		self.cpu = cpu
 		self.insnType = insnType
 		self.NER = statusWord.NER
 		self.VKE = statusWord.VKE
 		self.OR = statusWord.OR
 
 	def __repr__(self):
-		type2name = AwlInsn.type2name_english #TODO: select ger or eng depending on mnemonics
+		mnemonics = self.cpu.specs.getMnemonics()
+		type2name = {
+			S7CPUSpecs.MNEMONICS_EN : AwlInsn.type2name_english,
+			S7CPUSpecs.MNEMONICS_DE : AwlInsn.type2name_german,
+		}[mnemonics]
 		return '(insn="%s" VKE=%s OR=%d)' %\
 			(type2name[self.insnType],
 			 self.VKE, self.OR)
@@ -770,7 +775,7 @@ class S7CPU(object):
 			raise AwlSimError("MCR stack underflow")
 
 	def parenStackAppend(self, insnType, statusWord):
-		self.parenStack.append(ParenStackElem(insnType, statusWord))
+		self.parenStack.append(ParenStackElem(self, insnType, statusWord))
 		if len(self.parenStack) > 7:
 			raise AwlSimError("Parenthesis stack overflow")
 
