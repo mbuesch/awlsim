@@ -32,4 +32,4 @@ class AwlInsn_FP(AwlInsn):
 		fm = self.cpu.fetch(self.ops[0], (1,))
 		self.cpu.store(self.ops[0], s.VKE, (1,))
 		s.OR, s.STA, s.NER = 0, s.VKE, 1
-		s.VKE = (s.VKE & ~fm) & 1
+		s.VKE = s.VKE & (fm ^ 1)

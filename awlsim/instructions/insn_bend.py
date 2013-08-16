@@ -38,7 +38,7 @@ class AwlInsn_BEND(AwlInsn):
 				s.VKE &= pse.VKE
 				s.VKE |= pse.OR
 		elif pse.insnType == AwlInsn.TYPE_UNB:
-			s.VKE = (~s.VKE) & 1
+			s.VKE = s.VKE ^ 1
 			if pse.NER:
 				s.VKE &= pse.VKE
 				s.VKE |= pse.OR
@@ -46,14 +46,14 @@ class AwlInsn_BEND(AwlInsn):
 			if pse.NER:
 				s.VKE |= pse.VKE
 		elif pse.insnType == AwlInsn.TYPE_ONB:
-			s.VKE = (~s.VKE) & 1
+			s.VKE = s.VKE ^ 1
 			if pse.NER:
 				s.VKE |= pse.VKE
 		elif pse.insnType == AwlInsn.TYPE_XB:
 			if pse.NER:
 				s.VKE ^= pse.VKE
 		elif pse.insnType == AwlInsn.TYPE_XNB:
-			s.VKE = (~s.VKE) & 1
+			s.VKE = s.VKE ^ 1
 			if pse.NER:
 				s.VKE ^= pse.VKE & 1
 		else:

@@ -31,7 +31,7 @@ class AwlInsn_XN(AwlInsn):
 		s = self.cpu.callStackTop.status
 		s.STA = self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
-			s.VKE ^= ~s.STA & 1
+			s.VKE ^= s.STA ^ 1
 		else:
-			s.VKE = ~s.STA & 1
+			s.VKE = s.STA ^ 1
 		s.OR, s.NER = 0, 1

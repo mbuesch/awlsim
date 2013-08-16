@@ -824,22 +824,22 @@ class S7CPU(object):
 			assert(0)
 
 	def fetchSTW_Z(self, operator):
-		return (~self.callStackTop.status.A0 & ~self.callStackTop.status.A1) & 1
+		return (self.callStackTop.status.A0 ^ 1) & (self.callStackTop.status.A1 ^ 1)
 
 	def fetchSTW_NZ(self, operator):
 		return self.callStackTop.status.A0 | self.callStackTop.status.A1
 
 	def fetchSTW_POS(self, operator):
-		return (~self.callStackTop.status.A0 & self.callStackTop.status.A1) & 1
+		return (self.callStackTop.status.A0 ^ 1) & self.callStackTop.status.A1
 
 	def fetchSTW_NEG(self, operator):
-		return (self.callStackTop.status.A0 & ~self.callStackTop.status.A1) & 1
+		return self.callStackTop.status.A0 & (self.callStackTop.status.A1 ^ 1)
 
 	def fetchSTW_POSZ(self, operator):
-		return ~self.callStackTop.status.A0 & 1
+		return self.callStackTop.status.A0 ^ 1
 
 	def fetchSTW_NEGZ(self, operator):
-		return ~self.callStackTop.status.A1 & 1
+		return self.callStackTop.status.A1 ^ 1
 
 	def fetchSTW_UO(self, operator):
 		return self.callStackTop.status.A0 & self.callStackTop.status.A1

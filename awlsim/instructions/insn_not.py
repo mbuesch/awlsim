@@ -29,4 +29,4 @@ class AwlInsn_NOT(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		s.STA, s.VKE = 1, (~s.VKE & 1)
+		s.STA, s.VKE = 1, (s.VKE ^ 1)

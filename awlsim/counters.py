@@ -45,7 +45,7 @@ class Counter(object):
 		return bcd
 
 	def set(self, VKE):
-		if (~self.prevVKE_S & VKE) & 1:
+		if ~self.prevVKE_S & VKE:
 			counterBCD = self.cpu.accu1.get()
 			a, b, c = (counterBCD & 0xF),\
 				  ((counterBCD >> 4) & 0xF),\
@@ -59,20 +59,20 @@ class Counter(object):
 		self.counter = 0
 
 	def run_FR(self, VKE):
-		if (~self.prevVKE_FR & VKE) & 1:
+		if ~self.prevVKE_FR & VKE:
 			self.prevVKE_S = 0
 			self.prevVKE_ZV = 0
 			self.prevVKE_ZR = 0
 		self.prevVKE_FR = VKE
 
 	def run_ZV(self, VKE):
-		if (~self.prevVKE_ZV & VKE) & 1:
+		if ~self.prevVKE_ZV & VKE:
 			if self.counter < 999:
 				self.counter += 1
 		self.prevVKE_ZV = VKE
 
 	def run_ZR(self, VKE):
-		if (~self.prevVKE_ZR & VKE) & 1:
+		if ~self.prevVKE_ZR & VKE:
 			if self.counter > 0:
 				self.counter -= 1
 		self.prevVKE_ZR = VKE

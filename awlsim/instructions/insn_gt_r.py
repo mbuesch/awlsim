@@ -36,5 +36,5 @@ class AwlInsn_GT_R(AwlInsn):
 			diff = self.cpu.accu2.getPyFloat() -\
 			       self.cpu.accu1.getPyFloat()
 			s.setForFloatingPoint(diff)
-			s.STA = (~s.A0 & s.A1) & 1
+			s.STA = (s.A0 ^ 1) & s.A1
 		s.OR, s.VKE, s.NER = 0, s.STA, 1

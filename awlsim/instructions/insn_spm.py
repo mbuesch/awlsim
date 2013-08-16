@@ -31,5 +31,5 @@ class AwlInsn_SPM(AwlInsn):
 
 	def run(self):
 		s = self.cpu.callStackTop.status
-		if s.A0 & ~s.A1 & 1:
+		if s.A0 & (s.A1 ^ 1):
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)
