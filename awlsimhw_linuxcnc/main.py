@@ -66,16 +66,16 @@ class HardwareInterface(AbstractHardwareInterface):
 		pass
 
 	@staticmethod
-	def __storeDWord(dataList, offset, dword):
-		dataList[offset] = (dword >> 24) & 0xFF
-		dataList[offset + 1] = (dword >> 16) & 0xFF
-		dataList[offset + 2] = (dword >> 8) & 0xFF
-		dataList[offset + 3] = dword & 0xFF
+	def __storeDWord(bytearr, offset, dword):
+		bytearr[offset] = (dword >> 24) & 0xFF
+		bytearr[offset + 1] = (dword >> 16) & 0xFF
+		bytearr[offset + 2] = (dword >> 8) & 0xFF
+		bytearr[offset + 3] = dword & 0xFF
 
 	def readInputs(self):
 		hal, base, size = self.hal, self.inputAddressBase, self.inputSize
 		# Start with empty data
-		inData = [ 0 ] * size
+		inData = bytearray(size)
 		# Get the data from the HAL pins
 		for offset in range(size):
 			address = base + offset
