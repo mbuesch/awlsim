@@ -31,27 +31,6 @@ opt_onecycle = False
 opt_quiet = False
 
 
-def str2bool(string, default=False):
-	s = string.lower()
-	if s in ("true", "yes", "on"):
-		return True
-	if s in ("false", "no", "off"):
-		return False
-	try:
-		return bool(int(s, 10))
-	except ValueError:
-		return default
-
-def printInfo(text):
-	sys.stdout.write(text)
-	sys.stdout.write("\n")
-	sys.stdout.flush()
-
-def printError(text):
-	sys.stderr.write(text)
-	sys.stderr.write("\n")
-	sys.stderr.flush()
-
 def usage():
 	printInfo("awlsim version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
 	printInfo("")

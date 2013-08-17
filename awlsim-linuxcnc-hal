@@ -27,7 +27,7 @@ import getopt
 
 from awlsim.main import AwlSim
 from awlsim.parser import AwlParser
-from awlsim.util import AwlSimError, AwlParserError, printInfo, printWarning, printError
+from awlsim.util import AwlSimError, AwlParserError, printInfo, printWarning, printError, str2bool
 from awlsim.version import VERSION_MAJOR, VERSION_MINOR
 
 try:
@@ -36,17 +36,6 @@ except ImportError as e:
 	printError("Failed to import LinuxCNC HAL module: %s" % str(e))
 	sys.exit(1)
 
-
-def str2bool(string, default=False):
-	s = string.lower()
-	if s in ("true", "yes", "on"):
-		return True
-	if s in ("false", "no", "off"):
-		return False
-	try:
-		return bool(int(s, 10))
-	except ValueError:
-		return default
 
 # Check presence of LinuxCNC. Returns True, if LinuxCNC is detected.
 # Raises KeyboardInterrupt, is LinuxCNC is not detected.

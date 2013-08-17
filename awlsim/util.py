@@ -116,6 +116,17 @@ def listToHumanStr(lst, lastSep="or"):
 	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
 	return string
 
+def str2bool(string, default=False):
+	s = string.lower()
+	if s in ("true", "yes", "on", "enable", "enabled"):
+		return True
+	if s in ("false", "no", "off", "disable", "disabled"):
+		return False
+	try:
+		return bool(int(s, 10))
+	except ValueError:
+		return default
+
 # Returns value, if value is a list.
 # Otherwise returns a list with value as element.
 def toList(value):
