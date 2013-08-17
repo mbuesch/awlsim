@@ -170,7 +170,7 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(True)
 		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
 		if not ob1_awl.strip():
-			MessageBox.error(self, "No AWL code")
+			MessageBox.error(self, "No AWL/STL code available. Cannot run.")
 			self.stop()
 			return
 		try:

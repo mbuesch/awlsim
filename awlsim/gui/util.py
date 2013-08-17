@@ -87,10 +87,10 @@ class MessageBox(QMessageBox):
 		insnStr = exception.getFailingInsnStr()
 		if insnStr:
 			text += "    At statement:\n"
-			text += "    AWL line %s:    %s" % (exception.getLineNrStr(),
+			text += "    AWL/STL line %s:    %s" % (exception.getLineNrStr(),
 							    insnStr)
 		else:
-			text += "    At AWL line %s" % exception.getLineNrStr()
+			text += "    At AWL/STL line %s" % exception.getLineNrStr()
 		details = None
 		if cpu:
 			details = str(exception) + "\n\n" + str(cpu)

@@ -84,7 +84,7 @@ class MainWidget(QWidget):
 
 	def load(self):
 		fn, fil = QFileDialog.getOpenFileName(self,
-			"Open AWL source", "",
+			"Open AWL/STL source", "",
 			"AWL source (*.awl);;"
 			"All files (*)")
 		if not fn:
@@ -107,7 +107,7 @@ class MainWidget(QWidget):
 	def save(self, newFile=False):
 		if newFile or not self.filename:
 			fn, fil = QFileDialog.getSaveFileName(self,
-				"AWL source save as", "",
+				"AWL/STL source save as", "",
 				"AWL source (*.awl)",
 				"*.awl")
 			if not fn:
@@ -140,7 +140,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.__init__(self)
 		self.qApplication = qApplication
 
-		self.setWindowTitle("S7 AWL simulator v%d.%d" %\
+		self.setWindowTitle("S7 AWL/STL simulator v%d.%d" %\
 				    (VERSION_MAJOR, VERSION_MINOR))
 		self.setCentralWidget(MainWidget(self, enableExtInstructions))
 
@@ -210,9 +210,9 @@ class MainWindow(QMainWindow):
 		self.centralWidget().getCpuWidget().stop()
 		if self.centralWidget().isDirty():
 			res = QMessageBox.question(self,
-				"Unsaved AWL code",
-				"The editor contains unsaved AWL code.\n"
-				"AWL code will be lost by exiting without saving.",
+				"Unsaved AWL/STL code",
+				"The editor contains unsaved AWL/STL code.\n"
+				"AWL/STL code will be lost by exiting without saving.",
 				QMessageBox.Discard | QMessageBox.Save | QMessageBox.Cancel,
 				QMessageBox.Cancel)
 			if res == QMessageBox.Save:
@@ -226,7 +226,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.closeEvent(self, ev)
 
 	def about(self):
-		QMessageBox.information(self, "About S7 AWL simulator",
+		QMessageBox.information(self, "About S7 AWL/STL simulator",
 			"awlsim version %d.%d\n\n"
 			"Copyright 2012-2013 Michael Büsch <m@bues.ch>\n"
 			"Licensed under the terms of the "
