@@ -201,7 +201,10 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 
 	def __convertValue(self):
 		try:
-			value = int(self.line.text(), self.base)
+			textValue = self.line.text()
+			if self.base == 2:
+				textValue = textValue.replace('_', '').replace(' ', '')
+			value = int(textValue, self.base)
 			if self.base == 10:
 				if value > (1 << (self.width - 1)) - 1 or\
 				   value < -(1 << (self.width - 1)):
@@ -232,10 +235,12 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 			return
 		self.displayedValue = value
 		if self.base == 2:
-			string = "".join(
-				'1' if (value & (1 << bitnr)) else '0'
-				for bitnr in range(self.width - 1, -1, -1)
-			)
+			string = []
+			for bitnr in range(self.width - 1, -1, -1):
+				string.append('1' if ((value >> bitnr) & 1) else '0')
+				if bitnr and bitnr % 4 == 0:
+					string.append('_')
+			string = ''.join(string)
 		elif self.base == 10:
 			if self.width == 8:
 				value &= 0xFF
