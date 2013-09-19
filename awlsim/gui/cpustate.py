@@ -364,9 +364,9 @@ class State_Mem(StateWindow):
 
 		self.fmtCombo = QComboBox(self)
 		self.fmtCombo.addItem("Checkboxes", "cb")
-		self.fmtCombo.addItem("Hexadecimal", "hex")
-		self.fmtCombo.addItem("Decimal", "dec")
 		self.fmtCombo.addItem("Dual", "bin")
+		self.fmtCombo.addItem("Decimal", "dec")
+		self.fmtCombo.addItem("Hexadecimal", "hex")
 		self.fmtCombo.addItem("Real", "real")
 		self.layout().addWidget(self.fmtCombo, 0, x)
 		x += 1
