@@ -455,6 +455,10 @@ class State_Mem(StateWindow):
 		self.contentWidget.changed.connect(self.__changed)
 		self.contentWidget.setEnabled(True)
 		self.update()
+		QTimer.singleShot(0, self.__finalizeRebuild)
+
+	def __finalizeRebuild(self):
+		self.resize(self.sizeHint())
 
 	def __storeFailureCallback(self):
 		# A CPU store request related to this widget failed
