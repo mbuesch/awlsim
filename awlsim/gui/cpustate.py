@@ -130,41 +130,44 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		AbstractDisplayWidget.__init__(self, sim, addrSpace,
 					       addr, width, db, parent)
 
-		self.cbs = []
-		self.pbs = []
-		self.prevButtonStates = []
-		for i in range(self.width):
+		self.cbs = {}
+		self.pbs = {}
+		self.prevButtonStates = {}
+		y = 0
+		for i in range(self.width - 1, -1, -1):
 			cb = QCheckBox(str(i), self)
-			self.layout().addWidget(cb, 0, self.width - i - 1)
-			self.cbs.append(cb)
+			self.layout().addWidget(cb, y + 0, (self.width - i - 1) % 8)
+			self.cbs[i] = cb
 			cb.stateChanged.connect(self.changed)
 			if displayPushButtons:
 				pb = QPushButton("", self)
-				self.layout().addWidget(pb, 1, self.width - i - 1)
-				self.pbs.append(pb)
-				self.prevButtonStates.append(False)
+				self.layout().addWidget(pb, y + 1, (self.width - i - 1) % 8)
+				self.pbs[i] = pb
+				self.prevButtonStates[i] = False
 				pb.pressed.connect(self.__buttonUpdate)
 				pb.released.connect(self.__buttonUpdate)
+			if i and i % 8 == 0:
+				y += 2
 
 		self.update()
 
 	def __buttonUpdate(self):
-		for i, pb in enumerate(self.pbs):
+		for bitNr, pb in self.pbs.items():
 			pressed = bool(pb.isDown())
-			if pressed == self.prevButtonStates[i]:
+			if pressed == self.prevButtonStates[bitNr]:
 				continue
-			self.prevButtonStates[i] = pressed
+			self.prevButtonStates[bitNr] = pressed
 
-			if self.cbs[i].checkState() == Qt.Checked:
-				self.cbs[i].setCheckState(Qt.Unchecked)
+			if self.cbs[bitNr].checkState() == Qt.Checked:
+				self.cbs[bitNr].setCheckState(Qt.Unchecked)
 			else:
-				self.cbs[i].setCheckState(Qt.Checked)
+				self.cbs[bitNr].setCheckState(Qt.Checked)
 
 	def get(self):
 		value = 0
-		for i in range(self.width):
-			if self.cbs[i].checkState() == Qt.Checked:
-				value |= (1 << i)
+		for bitNr, cb in self.cbs.items():
+			if cb.checkState() == Qt.Checked:
+				value |= (1 << bitNr)
 		return value
 
 	def update(self):
@@ -173,11 +176,11 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		except AwlSimError as e:
 			self.setEnabled(False)
 			return
-		for i in range(self.width):
-			if value & (1 << i):
-				self.cbs[i].setCheckState(Qt.Checked)
+		for bitNr in range(self.width):
+			if (value >> bitNr) & 1:
+				self.cbs[bitNr].setCheckState(Qt.Checked)
 			else:
-				self.cbs[i].setCheckState(Qt.Unchecked)
+				self.cbs[bitNr].setCheckState(Qt.Unchecked)
 
 class NumberDisplayWidget(AbstractDisplayWidget):
 	def __init__(self, sim, base, addrSpace, addr, width, db, parent=None):
@@ -402,15 +405,7 @@ class State_Mem(StateWindow):
 		else:
 			db = None
 
-		if fmt == "cb":
-			# If checkboxes are selected with word or dword
-			# width, change to hex display.
-			if width != 8:
-				index = self.fmtCombo.findData("hex")
-				# This will re-trigger the "rebuild" slot.
-				self.fmtCombo.setCurrentIndex(index)
-				return
-		elif fmt == "real":
+		if fmt == "real":
 			# If REAL is selected with byte or word width,
 			# change to dword width.
 			if width != 32:
