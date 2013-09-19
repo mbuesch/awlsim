@@ -113,6 +113,16 @@ class AbstractDisplayWidget(QWidget):
 		return AwlOperator(self.addrSpace, self.width,
 				   AwlOffset(self.addr, dbNumber=dbNumber))
 
+	def _showValueValidity(self, valid):
+		if valid:
+			pal = self.palette()
+			pal.setColor(QPalette.Text, Qt.black)
+			self.setPalette(pal)
+		else:
+			pal = self.palette()
+			pal.setColor(QPalette.Text, Qt.red)
+			self.setPalette(pal)
+
 class BitDisplayWidget(AbstractDisplayWidget):
 	def __init__(self, sim, addrSpace, addr, width, db,
 		     parent=None,
@@ -204,15 +214,7 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 		return value
 
 	def __textChanged(self):
-		value = self.__convertValue()
-		if value is None:
-			pal = self.palette()
-			pal.setColor(QPalette.Text, Qt.red)
-			self.setPalette(pal)
-		else:
-			pal = self.palette()
-			pal.setColor(QPalette.Text, Qt.black)
-			self.setPalette(pal)
+		self._showValueValidity(self.__convertValue() is not None)
 
 	def get(self):
 		value = self.__convertValue()
@@ -280,6 +282,56 @@ class BinDisplayWidget(NumberDisplayWidget):
 		NumberDisplayWidget.__init__(self, sim, 2, addrSpace,
 					     addr, width, db, parent)
 
+class RealDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
+		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+					       addr, width, db, parent)
+
+		self.displayedValue = -1
+
+		self.line = QLineEdit(self)
+		self.line.setAlignment(Qt.AlignRight)
+		self.layout().addWidget(self.line)
+
+		self.line.returnPressed.connect(self.__returnPressed)
+		self.line.textChanged.connect(self.__textChanged)
+
+		self.update()
+
+	def __returnPressed(self):
+		self.changed.emit()
+
+	def __convertValue(self):
+		try:
+			value = pyFloatToDWord(float(self.line.text()))
+		except ValueError as e:
+			return None
+		return value
+
+	def __textChanged(self):
+		self._showValueValidity(self.__convertValue() is not None)
+
+	def get(self):
+		value = self.__convertValue()
+		if value is None:
+			return self.displayedValue
+		return value
+
+	def update(self):
+		if self.width == 32:
+			try:
+				value = self.sim.getCPU().fetch(self._createOperator())
+			except AwlSimError as e:
+				self.setEnabled(False)
+				return
+			if value == self.displayedValue:
+				return
+			self.displayedValue = value
+			string = str(dwordToPyFloat(value))
+		else:
+			string = "Not DWORD"
+		self.line.setText(string)
+
 class State_Mem(StateWindow):
 	def __init__(self, sim, addrSpace, parent=None):
 		StateWindow.__init__(self, sim, parent)
@@ -310,6 +362,7 @@ class State_Mem(StateWindow):
 		self.fmtCombo.addItem("Hexadecimal", "hex")
 		self.fmtCombo.addItem("Decimal", "dec")
 		self.fmtCombo.addItem("Dual", "bin")
+		self.fmtCombo.addItem("Real", "real")
 		self.layout().addWidget(self.fmtCombo, 0, x)
 		x += 1
 
@@ -352,6 +405,14 @@ class State_Mem(StateWindow):
 				# This will re-trigger the "rebuild" slot.
 				self.fmtCombo.setCurrentIndex(index)
 				return
+		elif fmt == "real":
+			# If REAL is selected with byte or word width,
+			# change to dword width.
+			if width != 32:
+				index = self.widthCombo.findData(32)
+				# This will re-trigger the "rebuild" slot.
+				self.widthCombo.setCurrentIndex(index)
+				return
 
 		name, longName = AbstractDisplayWidget.addrspace2name[self.addrSpace]
 		width2suffix = {
@@ -383,6 +444,11 @@ class State_Mem(StateWindow):
 			self.contentWidget = BinDisplayWidget(self.sim,
 							      self.addrSpace,
 							      addr, width, db, self)
+			self.contentLayout.addWidget(self.contentWidget)
+		elif fmt == "real":
+			self.contentWidget = RealDisplayWidget(self.sim,
+							       self.addrSpace,
+							       addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		else:
 			assert(0)
