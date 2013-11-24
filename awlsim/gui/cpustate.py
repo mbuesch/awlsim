@@ -113,6 +113,16 @@ class AbstractDisplayWidget(QWidget):
 		return AwlOperator(self.addrSpace, self.width,
 				   AwlOffset(self.addr, dbNumber=dbNumber))
 
+	def _showValueValidity(self, valid):
+		if valid:
+			pal = self.palette()
+			pal.setColor(QPalette.Text, Qt.black)
+			self.setPalette(pal)
+		else:
+			pal = self.palette()
+			pal.setColor(QPalette.Text, Qt.red)
+			self.setPalette(pal)
+
 class BitDisplayWidget(AbstractDisplayWidget):
 	def __init__(self, sim, addrSpace, addr, width, db,
 		     parent=None,
@@ -120,41 +130,44 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		AbstractDisplayWidget.__init__(self, sim, addrSpace,
 					       addr, width, db, parent)
 
-		self.cbs = []
-		self.pbs = []
-		self.prevButtonStates = []
-		for i in range(self.width):
+		self.cbs = {}
+		self.pbs = {}
+		self.prevButtonStates = {}
+		y = 0
+		for i in range(self.width - 1, -1, -1):
 			cb = QCheckBox(str(i), self)
-			self.layout().addWidget(cb, 0, self.width - i - 1)
-			self.cbs.append(cb)
+			self.layout().addWidget(cb, y + 0, (self.width - i - 1) % 8)
+			self.cbs[i] = cb
 			cb.stateChanged.connect(self.changed)
 			if displayPushButtons:
 				pb = QPushButton("", self)
-				self.layout().addWidget(pb, 1, self.width - i - 1)
-				self.pbs.append(pb)
-				self.prevButtonStates.append(False)
+				self.layout().addWidget(pb, y + 1, (self.width - i - 1) % 8)
+				self.pbs[i] = pb
+				self.prevButtonStates[i] = False
 				pb.pressed.connect(self.__buttonUpdate)
 				pb.released.connect(self.__buttonUpdate)
+			if i and i % 8 == 0:
+				y += 2
 
 		self.update()
 
 	def __buttonUpdate(self):
-		for i, pb in enumerate(self.pbs):
+		for bitNr, pb in self.pbs.items():
 			pressed = bool(pb.isDown())
-			if pressed == self.prevButtonStates[i]:
+			if pressed == self.prevButtonStates[bitNr]:
 				continue
-			self.prevButtonStates[i] = pressed
+			self.prevButtonStates[bitNr] = pressed
 
-			if self.cbs[i].checkState() == Qt.Checked:
-				self.cbs[i].setCheckState(Qt.Unchecked)
+			if self.cbs[bitNr].checkState() == Qt.Checked:
+				self.cbs[bitNr].setCheckState(Qt.Unchecked)
 			else:
-				self.cbs[i].setCheckState(Qt.Checked)
+				self.cbs[bitNr].setCheckState(Qt.Checked)
 
 	def get(self):
 		value = 0
-		for i in range(self.width):
-			if self.cbs[i].checkState() == Qt.Checked:
-				value |= (1 << i)
+		for bitNr, cb in self.cbs.items():
+			if cb.checkState() == Qt.Checked:
+				value |= (1 << bitNr)
 		return value
 
 	def update(self):
@@ -163,11 +176,11 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		except AwlSimError as e:
 			self.setEnabled(False)
 			return
-		for i in range(self.width):
-			if value & (1 << i):
-				self.cbs[i].setCheckState(Qt.Checked)
+		for bitNr in range(self.width):
+			if (value >> bitNr) & 1:
+				self.cbs[bitNr].setCheckState(Qt.Checked)
 			else:
-				self.cbs[i].setCheckState(Qt.Unchecked)
+				self.cbs[bitNr].setCheckState(Qt.Unchecked)
 
 class NumberDisplayWidget(AbstractDisplayWidget):
 	def __init__(self, sim, base, addrSpace, addr, width, db, parent=None):
@@ -191,7 +204,10 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 
 	def __convertValue(self):
 		try:
-			value = int(self.line.text(), self.base)
+			textValue = self.line.text()
+			if self.base == 2:
+				textValue = textValue.replace('_', '').replace(' ', '')
+			value = int(textValue, self.base)
 			if self.base == 10:
 				if value > (1 << (self.width - 1)) - 1 or\
 				   value < -(1 << (self.width - 1)):
@@ -204,15 +220,7 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 		return value
 
 	def __textChanged(self):
-		value = self.__convertValue()
-		if value is None:
-			pal = self.palette()
-			pal.setColor(QPalette.Text, Qt.red)
-			self.setPalette(pal)
-		else:
-			pal = self.palette()
-			pal.setColor(QPalette.Text, Qt.black)
-			self.setPalette(pal)
+		self._showValueValidity(self.__convertValue() is not None)
 
 	def get(self):
 		value = self.__convertValue()
@@ -230,10 +238,12 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 			return
 		self.displayedValue = value
 		if self.base == 2:
-			string = "".join(
-				'1' if (value & (1 << bitnr)) else '0'
-				for bitnr in range(self.width - 1, -1, -1)
-			)
+			string = []
+			for bitnr in range(self.width - 1, -1, -1):
+				string.append('1' if ((value >> bitnr) & 1) else '0')
+				if bitnr and bitnr % 4 == 0:
+					string.append('_')
+			string = ''.join(string)
 		elif self.base == 10:
 			if self.width == 8:
 				value &= 0xFF
@@ -280,6 +290,56 @@ class BinDisplayWidget(NumberDisplayWidget):
 		NumberDisplayWidget.__init__(self, sim, 2, addrSpace,
 					     addr, width, db, parent)
 
+class RealDisplayWidget(AbstractDisplayWidget):
+	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
+		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+					       addr, width, db, parent)
+
+		self.displayedValue = -1
+
+		self.line = QLineEdit(self)
+		self.line.setAlignment(Qt.AlignRight)
+		self.layout().addWidget(self.line)
+
+		self.line.returnPressed.connect(self.__returnPressed)
+		self.line.textChanged.connect(self.__textChanged)
+
+		self.update()
+
+	def __returnPressed(self):
+		self.changed.emit()
+
+	def __convertValue(self):
+		try:
+			value = pyFloatToDWord(float(self.line.text()))
+		except ValueError as e:
+			return None
+		return value
+
+	def __textChanged(self):
+		self._showValueValidity(self.__convertValue() is not None)
+
+	def get(self):
+		value = self.__convertValue()
+		if value is None:
+			return self.displayedValue
+		return value
+
+	def update(self):
+		if self.width == 32:
+			try:
+				value = self.sim.getCPU().fetch(self._createOperator())
+			except AwlSimError as e:
+				self.setEnabled(False)
+				return
+			if value == self.displayedValue:
+				return
+			self.displayedValue = value
+			string = str(dwordToPyFloat(value))
+		else:
+			string = "Not DWORD"
+		self.line.setText(string)
+
 class State_Mem(StateWindow):
 	def __init__(self, sim, addrSpace, parent=None):
 		StateWindow.__init__(self, sim, parent)
@@ -307,9 +367,10 @@ class State_Mem(StateWindow):
 
 		self.fmtCombo = QComboBox(self)
 		self.fmtCombo.addItem("Checkboxes", "cb")
-		self.fmtCombo.addItem("Hexadecimal", "hex")
-		self.fmtCombo.addItem("Decimal", "dec")
 		self.fmtCombo.addItem("Dual", "bin")
+		self.fmtCombo.addItem("Decimal", "dec")
+		self.fmtCombo.addItem("Hexadecimal", "hex")
+		self.fmtCombo.addItem("Real", "real")
 		self.layout().addWidget(self.fmtCombo, 0, x)
 		x += 1
 
@@ -344,13 +405,13 @@ class State_Mem(StateWindow):
 		else:
 			db = None
 
-		if fmt == "cb":
-			# If checkboxes are selected with word or dword
-			# width, change to hex display.
-			if width != 8:
-				index = self.fmtCombo.findData("hex")
+		if fmt == "real":
+			# If REAL is selected with byte or word width,
+			# change to dword width.
+			if width != 32:
+				index = self.widthCombo.findData(32)
 				# This will re-trigger the "rebuild" slot.
-				self.fmtCombo.setCurrentIndex(index)
+				self.widthCombo.setCurrentIndex(index)
 				return
 
 		name, longName = AbstractDisplayWidget.addrspace2name[self.addrSpace]
@@ -384,11 +445,20 @@ class State_Mem(StateWindow):
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
+		elif fmt == "real":
+			self.contentWidget = RealDisplayWidget(self.sim,
+							       self.addrSpace,
+							       addr, width, db, self)
+			self.contentLayout.addWidget(self.contentWidget)
 		else:
 			assert(0)
 		self.contentWidget.changed.connect(self.__changed)
 		self.contentWidget.setEnabled(True)
 		self.update()
+		QTimer.singleShot(0, self.__finalizeRebuild)
+
+	def __finalizeRebuild(self):
+		self.resize(self.sizeHint())
 
 	def __storeFailureCallback(self):
 		# A CPU store request related to this widget failed

@@ -719,7 +719,7 @@ class S7CPU(object):
 		if dbOper.type == AwlOperator.BLKREF_DB:
 			self.globDB = db
 		elif dbOper.type == AwlOperator.BLKREF_DI:
-			self.callStackTop.db = db
+			self.callStackTop.instanceDB = db
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
 
@@ -935,6 +935,20 @@ class S7CPU(object):
 	def fetchVirtAR(self, operator):
 		return self.getAR(operator.value.byteOffset).get()
 
+	def fetchVirtDBR(self, operator):
+		if operator.value.byteOffset == 1:
+			if self.globDB:
+				return self.globDB.index
+		elif operator.value.byteOffset == 2:
+			if self.callStackTop.instanceDB:
+				return self.callStackTop.instanceDB.index
+		else:
+			raise AwlSimError("Invalid __DBR %d. "
+				"Must be 1 for DB-register or "
+				"2 for DI-register." %\
+				operator.value.byteOffset)
+		return 0
+
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
 		AwlOperator.IMM_REAL		: fetchIMM,
@@ -961,6 +975,7 @@ class S7CPU(object):
 		AwlOperator.INTERF_DB		: fetchINTERF_DB,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
+		AwlOperator.VIRT_DBR		: fetchVirtDBR,
 	}
 
 	def store(self, operator, value, enforceWidth=()):

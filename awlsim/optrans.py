@@ -158,6 +158,8 @@ class AwlOpTranslator(object):
 					AwlOffset(-1, 0)), 2),
 		"__AR"	 : OpDescriptor(AwlOperator(AwlOperator.VIRT_AR, 32,
 					AwlOffset(-1, 0)), 2),
+		"__DBR"	 : OpDescriptor(AwlOperator(AwlOperator.VIRT_DBR, 16,
+					AwlOffset(-1, 0)), 2),
 		"__CNST_PI" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
 					   pyFloatToDWord(math.pi)), 1),
 		"__CNST_E" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
