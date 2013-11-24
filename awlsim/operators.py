@@ -76,6 +76,7 @@ class AwlOperator(object):
 	# Virtual operators used for debugging of the simulator
 	VIRT_ACCU	= enum.item	# Accu
 	VIRT_AR		= enum.item	# AR
+	VIRT_DBR	= enum.item	# DB and DI registers
 
 	enum.end	# Operator types
 
@@ -282,6 +283,8 @@ class AwlOperator(object):
 			return "__ACCU %d" % self.value.byteOffset
 		elif self.type == self.VIRT_AR:
 			return "__AR %d" % self.value.byteOffset
+		elif self.type == self.VIRT_DBR:
+			return "__DBR %d" % self.value.byteOffset
 		try:
 			return self.type2str[self.type]
 		except KeyError:
