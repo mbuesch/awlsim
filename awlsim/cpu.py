@@ -947,7 +947,7 @@ class S7CPU(object):
 				"Must be 1 for DB-register or "
 				"2 for DI-register." %\
 				operator.value.byteOffset)
-		return -1
+		return 0
 
 	fetchTypeMethods = {
 		AwlOperator.IMM			: fetchIMM,
