@@ -47,15 +47,17 @@ def dwordToSignedPyInt(dword):
 		return -((~dword + 1) & 0xFFFFFFFF)
 	return dword & 0xFFFFFFFF
 
+__floatStruct = struct.Struct('>f')
+
 def __rawPyFloatToDWord_python2(pyfl):
-	buf = struct.pack('>f', pyfl)
+	buf = __floatStruct.pack(pyfl)
 	return (ord(buf[0]) << 24) |\
 	       (ord(buf[1]) << 16) |\
 	       (ord(buf[2]) << 8) |\
 	       ord(buf[3])
 
 def __rawPyFloatToDWord_python3(pyfl):
-	buf = struct.pack('>f', pyfl)
+	buf =__floatStruct.pack(pyfl)
 	return (buf[0] << 24) |\
 	       (buf[1] << 16) |\
 	       (buf[2] << 8) |\
@@ -76,7 +78,7 @@ def pyFloatToDWord(pyfl):
 	return dword
 
 def __dwordToPyFloat_python2(dword):
-	return struct.unpack('>f',
+	return __floatStruct.unpack(
 		chr((dword >> 24) & 0xFF) +\
 		chr((dword >> 16) & 0xFF) +\
 		chr((dword >> 8) & 0xFF) +\
@@ -84,7 +86,7 @@ def __dwordToPyFloat_python2(dword):
 	)[0]
 
 def __dwordToPyFloat_python3(dword):
-	return struct.unpack('>f',
+	return __floatStruct.unpack(
 		bytes( ((dword >> 24) & 0xFF,
 			(dword >> 16) & 0xFF,
 			(dword >> 8) & 0xFF,
