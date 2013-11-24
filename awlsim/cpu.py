@@ -719,7 +719,7 @@ class S7CPU(object):
 		if dbOper.type == AwlOperator.BLKREF_DB:
 			self.globDB = db
 		elif dbOper.type == AwlOperator.BLKREF_DI:
-			self.callStackTop.db = db
+			self.callStackTop.instanceDB = db
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
 
