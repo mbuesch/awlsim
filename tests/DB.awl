@@ -1,5 +1,22 @@
 ORGANIZATION_BLOCK OB 100
 BEGIN
+	// Check DB/DI register assignments
+	__ASSERT==	__DBR 1,	0
+	__ASSERT==	__DBR 2,	0
+	AUF		DB 1
+	__ASSERT==	__DBR 1,	1
+	__ASSERT==	__DBR 2,	0
+	AUF		DB 2
+	__ASSERT==	__DBR 1,	2
+	__ASSERT==	__DBR 2,	0
+	AUF		DI 1
+	__ASSERT==	__DBR 1,	2
+	__ASSERT==	__DBR 2,	1
+	AUF		DI 2
+	__ASSERT==	__DBR 1,	2
+	__ASSERT==	__DBR 2,	2
+
+
 	// Check initial DB 1 values
 	AUF		DB 1
 	L		DBW 0
