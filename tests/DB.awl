@@ -45,19 +45,34 @@ BEGIN
 	L		DBD 6
 	__ASSERT==	__ACCU 1,	DW#16#77777777
 
+
 	// Check direct DB fetch
+	AUF		DB 2
+	__ASSERT==	__DBR 1,	2
 	L		DB1.DBW 0
+	__ASSERT==	__DBR 1,	1
 	__ASSERT==	__ACCU 1,	1337
 	L		DB1.DBD 2
+	__ASSERT==	__DBR 1,	1
 	__ASSERT==	__ACCU 1,	DW#16#DEADBEEF
 	L		DB1.DBW 6
+	__ASSERT==	__DBR 1,	1
 	__ASSERT==	__ACCU 1,	W#16#0102
 	L		DB1.DBB 8
+	__ASSERT==	__DBR 1,	1
 	__ASSERT==	__ACCU 1,	3
 	L		DB1.DBB 9
+	__ASSERT==	__DBR 1,	1
 	__ASSERT==	__ACCU 1,	0
 	L		DB1.DBW 10
+	__ASSERT==	__DBR 1,	1
 	__ASSERT==	__ACCU 1,	42
+	AUF		DB 1
+	__ASSERT==	__DBR 1,	1
+	L		DB2.DBW 0
+	__ASSERT==	__DBR 1,	2
+	__ASSERT==	__ACCU 1,	123
+
 
 	SET
 	=		M 0.0

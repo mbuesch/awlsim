@@ -498,12 +498,17 @@ class S7CPU(object):
 		return self.callStackTop.parenStack
 
 	def __runOB(self, block):
+		# Update timekeeping
+		self.updateTimestamp()
+		self.cycleStartTime = self.now
+
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, block) ]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
 			self.obTempPresetHandlers[block.index].generate(cse.localdata)
+
 		# Run the user program cycle
 		while self.callStack:
 			while cse.ip < len(cse.insns):
@@ -545,10 +550,6 @@ class S7CPU(object):
 
 	# Run one cycle of the user program
 	def runCycle(self):
-		# Update timekeeping
-		self.updateTimestamp()
-		self.cycleStartTime = self.now
-
 		# Run the actual OB1 code
 		self.__runOB(self.obs[1])
 
@@ -872,18 +873,16 @@ class S7CPU(object):
 		return cse.localdata.fetch(operator.value, operator.width)
 
 	def fetchDB(self, operator):
-		if operator.value.dbNumber is None:
-			db = self.globDB
-			if not db:
-				raise AwlSimError("Fetch from global DB, "
-					"but no DB is opened")
-		else:
-			try:
-				db = self.dbs[operator.value.dbNumber]
-			except KeyError:
-				raise AwlSimError("Fetch from DB %d, but DB "
-					"does not exist" % operator.value.dbNumber)
-		return db.fetch(operator)
+		if operator.value.dbNumber is not None:
+			# This is a fully qualified access (DBx.DBx X)
+			# Open the data block first.
+			self.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
+						 AwlOffset(operator.value.dbNumber),
+						 operator.insn))
+		if not self.globDB:
+			raise AwlSimError("Fetch from global DB, "
+				"but no DB is opened")
+		return self.globDB.fetch(operator)
 
 	def fetchDI(self, operator):
 		cse = self.callStackTop
