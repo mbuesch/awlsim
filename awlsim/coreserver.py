@@ -28,7 +28,179 @@ import socket
 import select
 import errno
 import signal
+import struct
 
+
+class TransferError(Exception):
+	pass
+
+class AwlSimMessage(object):
+	hdrStruct = struct.Struct(">HHI")
+
+	HDR_MAGIC		= 0x5710
+	HDR_LENGTH		= hdrStruct.size
+
+	enum.start
+	MSG_ID_PING		= enum.item
+	MSG_ID_PONG		= enum.item
+	MSG_ID_LOAD_CODE	= enum.item
+	MSG_ID_LOAD_HW		= enum.item
+	MSG_ID_SET_OPT		= enum.item
+	MSG_ID_GET_CPUDUMP	= enum.item
+	MSG_ID_CPUDUMP		= enum.item
+	enum.end
+
+	def __init__(self, msgId):
+		self.msgId = msgId
+
+	def toBytes(self, payloadLength=0):
+		return self.hdrStruct.pack(self.HDR_MAGIC,
+					   self.msgId,
+					   payloadLength)
+
+	@classmethod
+	def fromBytes(cls, payload):
+		raise NotImplementedError
+
+	def send(self, sock):
+		sock.sendall(self.toBytes())
+
+class AwlSimMessage_PING(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PING)
+
+	@classmethod
+	def fromBytes(cls, payload):
+		return AwlSimMessage_PING()
+
+class AwlSimMessage_PONG(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PONG)
+
+	@classmethod
+	def fromBytes(cls, payload):
+		return AwlSimMessage_PONG()
+
+class AwlSimMessage_LOAD_CODE(AwlSimMessage):
+	def __init__(self, code):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_CODE)
+		self.code = code
+
+	def toBytes(self):
+		code = self.code.encode()
+		payload = struct.pack(">%ds" % len(code), code)
+		return AwlSimMessage.toBytes(self, len(payload)) +\
+			payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			code = payload.decode()
+		except UnicodeError:
+			raise TransferError("Unicode error")
+		return cls(code)
+
+class AwlSimMessage_LOAD_HW(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_HW)
+
+	def toBytes(self):
+		pass#TODO
+
+	@classmethod
+	def fromBytes(cls, payload):
+		pass#TODO
+
+class AwlSimMessage_SET_OPT(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_SET_OPT)
+
+	def toBytes(self):
+		pass#TODO
+
+	@classmethod
+	def fromBytes(cls, payload):
+		pass#TODO
+
+class AwlSimMessage_GET_CPUDUMP(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_CPUDUMP)
+
+class AwlSimMessage_CPUDUMP(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUDUMP)
+
+	def toBytes(self):
+		pass#TODO
+
+	@classmethod
+	def fromBytes(cls, payload):
+		pass#TODO
+
+class AwlSimMessageReceiver(object):
+	class ClientDied(Exception): pass
+
+	id2class = {
+		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
+		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
+		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
+		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
+		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
+		AwlSimMessage.MSG_ID_GET_CPUDUMP	: AwlSimMessage_GET_CPUDUMP,
+		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
+	}
+
+	def __init__(self, sock):
+		self.sock = sock
+		self.buf = b""
+		self.msgId = None
+		self.payloadLen = None
+
+		self.sock.setblocking(False)
+
+	def receive(self):
+		hdrLen = AwlSimMessage.HDR_LENGTH
+		if len(self.buf) < hdrLen:
+			data = self.sock.recv(hdrLen - len(self.buf))
+			if not data:
+				# The remote end closed the connection
+				raise self.ClientDied()
+			self.buf += data
+			if len(self.buf) < hdrLen:
+				return None
+			magic, self.msgId, self.payloadLen =\
+				AwlSimMessage.hdrStruct.unpack(self.buf)
+			if magic != AwlSimMessage.HDR_MAGIC:
+				raise AwlSimError("Received message with invalid "
+					"magic value (was 0x%04X, expected 0x%04X)." %\
+					(magic, AwlSimMessage.HDR_MAGIC))
+			if self.payloadLen:
+				return None
+		if len(self.buf) < hdrLen + self.payloadLen:
+			data = self.sock.recv(hdrLen + self.payloadLen - len(self.buf))
+			if not data:
+				# The remote end closed the connection
+				raise self.ClientDied()
+			self.buf += data
+			if len(self.buf) < hdrLen + self.payloadLen:
+				return None
+		try:
+			cls = self.id2class[self.msgId]
+		except KeyError:
+			raise AwlSimError("Received unknown message: 0x%04X" %\
+				self.msgId)
+		msg = cls.fromBytes(self.buf[hdrLen : ])
+		self.buf, self.msgId, self.payloadLen = b"", None, None
+		return msg
+
+	def receiveBlocking(self):
+		try:
+			self.sock.setblocking(True)
+			#TODO timeout
+			msg = self.receive()
+		finally:
+			self.sock.setblocking(False)
+		return msg
 
 class AwlSimServer(object):
 	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
@@ -43,8 +215,9 @@ class AwlSimServer(object):
 	class Client(object):
 		"""Client information."""
 
-		def __init__(self, socket):
-			self.socket = socket
+		def __init__(self, sock):
+			self.socket = sock
+			self.receiver = AwlSimMessageReceiver(sock)
 
 	@classmethod
 	def execute(cls):
@@ -71,6 +244,7 @@ class AwlSimServer(object):
 		self.state = self.STATE_INIT
 		self.sim = None
 		self.socket = None
+		self.receiver = None
 		self.clients = []
 
 	def runFromEnvironment(self, env=None):
@@ -102,10 +276,50 @@ class AwlSimServer(object):
 		rlist.extend(client.socket for client in self.clients)
 		self.__selectRlist = rlist
 
-	def __handleClientComm(self, client):
+	def __rx_PING(self, client):
+		AwlSimMessage_PONG().send(client.socket)
+
+	def __rx_LOAD_CODE(self, client):
 		pass#TODO
 
+	def __rx_LOAD_HW(self, client):
+		pass#TODO
+
+	def __rx_SET_OPT(self, client):
+		pass#TODO
+
+	def __rx_GET_CPUDUMP(self, client):
+		pass#TODO
+
+	__msgRxHandlers = {
+		AwlSimMessage.MSG_ID_PING		: __rx_PING,
+		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
+		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
+		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
+		AwlSimMessage.MSG_ID_GET_CPUDUMP	: __rx_GET_CPUDUMP,
+	}
+
+	def __handleClientComm(self, client):
+		try:
+			msg = client.receiver.receive()
+		except (AwlSimMessageReceiver.ClientDied, TransferError) as e:
+			host, port = client.socket.getpeername()
+			printInfo("AwlSimServer: Client '%s:%d' died" %\
+				(host, port))
+			self.__clientRemove(client)
+			return
+		if not msg:
+			return
+		try:
+			handler = self.__msgRxHandlers[msg.msgId]
+		except KeyError:
+			printInfo("AwlSimServer: Received unsupported "
+				"message 0x%02X" % msg.msgId)
+			return
+		handler(self, client)
+
 	def __handleCommunication(self):
+		#TODO do this in a loop until no data left?
 		try:
 			rlist, wlist, xlist = select.select(self.__selectRlist, [], [], 0)
 		except Exception as e:
@@ -163,14 +377,20 @@ class AwlSimServer(object):
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
 		host, port = addrInfo
-		clientSock.setblocking(False)
-		printInfo("AwlSimServer: Client %s:%d connected" % (host, port))
+		printInfo("AwlSimServer: Client '%s:%d' connected" % (host, port))
 
 		client = self.Client(clientSock)
+		self.__clientAdd(client)
+
+		return client
+
+	def __clientAdd(self, client):
 		self.clients.append(client)
 		self.__rebuildSelectReadList()
 
-		return client
+	def __clientRemove(self, client):
+		self.clients.remove(client)
+		self.__rebuildSelectReadList()
 
 	def close(self):
 		"""Closes all client sockets and the main socket."""
@@ -256,6 +476,15 @@ class AwlSimClient(object):
 				(host, port, str(e)))
 		printInfo("AwlSimClient: Connected.")
 		self.socket = sock
+		self.receiver = AwlSimMessageReceiver(sock)
+
+		try:
+			AwlSimMessage_PING().send(sock)
+			msg = self.receiver.receiveBlocking()
+			if msg.msgId != AwlSimMessage.MSG_ID_PONG:
+				raise TransferError()
+		except TransferError as e:
+			raise AwlSimError("AwlSimClient: PING to server failed")
 
 	def shutdown(self):
 		"""Shutdown all sockets and spawned processes."""
@@ -268,6 +497,23 @@ class AwlSimClient(object):
 			self.serverProcess.terminate()
 			self.serverProcess.wait()
 			self.serverProcess = None
+
+	def loadCode(self, code):
+		pass#TODO
+
+	def loadHardwareModule(self, name, parameters):
+		pass#TODO
+
+	def setCpuSpec(self, name, value):
+		pass#TODO
+
+	def setOptions(self,
+		       obTempPresetsEnabled,
+		       extendedInsnsEnabled):
+		pass#TODO
+
+	def getCpuDump(self):
+		pass#TODO
 
 if __name__ == "__main__":
 	sys.exit(AwlSimServer.execute())
