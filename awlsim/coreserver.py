@@ -319,13 +319,14 @@ class AwlSimServer(object):
 		handler(self, client)
 
 	def __handleCommunication(self):
-		#TODO do this in a loop until no data left?
-		try:
-			rlist, wlist, xlist = select.select(self.__selectRlist, [], [], 0)
-		except Exception as e:
-			raise AwlSimError("AwlSimServer: Communication error. "
-				"'select' failed")
-		if rlist:
+		while 1:
+			try:
+				rlist, wlist, xlist = select.select(self.__selectRlist, [], [], 0)
+			except Exception as e:
+				raise AwlSimError("AwlSimServer: Communication error. "
+					"'select' failed")
+			if not rlist:
+				break
 			if self.socket in rlist:
 				rlist.remove(self.socket)
 				self.__accept()
