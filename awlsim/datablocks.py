@@ -26,7 +26,12 @@ from awlsim.datastructure import *
 
 
 class DB(object):
-	def __init__(self, index, codeBlock=None):
+	PERM_READ	= 1 << 0
+	PERM_WRITE	= 1 << 1
+
+	def __init__(self, index, codeBlock=None,
+		     permissions=(PERM_READ|PERM_WRITE)):
+		self.setPermissions(permissions)
 		self.index = index
 		self.codeBlock = codeBlock	# The FB or FC, if this is an instance/bounce-DB.
 		if self.codeBlock:
@@ -35,6 +40,17 @@ class DB(object):
 		else:
 			self.__struct = AwlStruct()
 		self.structInstance = None
+
+	def setPermissions(self, newPermissions):
+		self.permissions = newPermissions
+		if self.permissions & self.PERM_READ:
+			self.fetch = self.__fetch
+		else:
+			self.fetch = self.__fetch_noPermission
+		if self.permissions & self.PERM_WRITE:
+			self.store = self.__store
+		else:
+			self.store = self.__store_noPermission
 
 	@property
 	def struct(self):
@@ -48,11 +64,23 @@ class DB(object):
 	def allocate(self):
 		self.structInstance = AwlStructInstance(self.struct)
 
-	def fetch(self, operator):
+	def __fetch(self, operator):
 		return self.structInstance.dataBytes.fetch(operator.value, operator.width)
 
-	def store(self, operator, value):
+	def __fetch_noPermission(self, operator):
+		raise AwlSimError("Fetch from read protected DB %d" % self.index)
+
+	fetch = __fetch
+
+	def __store(self, operator, value):
 		self.structInstance.dataBytes.store(operator.value, operator.width, value)
 
+	def __store_noPermission(self, operator, value):
+		raise AwlSimError("Store to write protected DB %d" % self.index)
+
+	store = __store
+
 	def __repr__(self):
+		if self.index == 0:
+			return "--"
 		return "DB %d" % self.index
