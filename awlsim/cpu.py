@@ -435,7 +435,8 @@ class S7CPU(object):
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
-		self.globDB = None
+		self.dbRegister = None # May hold an instance of class DB
+		self.diRegister = None # May hold an instance of class DB
 		self.callStack = [ ]
 		self.callStackTop = None
 		self.setMcrActive(False)
@@ -528,7 +529,7 @@ class S7CPU(object):
 			prevCse = self.callStack.pop()
 			if self.callStack:
 				cse = self.callStackTop = self.callStack[-1]
-				prevCse.handleOutParameters()
+				prevCse.handleBlockExit()
 			prevCse.destroy()
 		if self.cbCycleExit:
 			self.cbCycleExit(self.cbCycleExitData)
@@ -662,13 +663,14 @@ class S7CPU(object):
 	def __call_FC(self, blockOper, dbOper, parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
 		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
-		return CallStackElem(self, fc, self.callStackTop.instanceDB,
-				     bounceDB, parameters)
+		return CallStackElem(self, fc, bounceDB, parameters)
 
 	def __call_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
-		return CallStackElem(self, fb, db, db, parameters)
+		cse = CallStackElem(self, fb, db, parameters)
+		self.dbRegister, self.diRegister = self.diRegister, db
+		return cse
 
 	def __call_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
@@ -678,13 +680,14 @@ class S7CPU(object):
 		else:
 			dbNumber = -abs(sfc.index) - (1 << 33)
 		bounceDB = self.dbs[dbNumber]
-		return CallStackElem(self, sfc, self.callStackTop.instanceDB,
-				     bounceDB, parameters)
+		return CallStackElem(self, sfc, bounceDB, parameters)
 
 	def __call_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
-		return CallStackElem(self, sfb, db, db, parameters)
+		cse = CallStackElem(self, sfb, db, parameters)
+		self.dbRegister, self.diRegister = self.diRegister, db
+		return cse
 
 	__callHelpers = {
 		AwlOperator.BLKREF_FC	: __call_FC,
@@ -718,16 +721,15 @@ class S7CPU(object):
 			raise AwlSimError("Datablock %i does not exist" %\
 					  dbOper.value.byteOffset)
 		if dbOper.type == AwlOperator.BLKREF_DB:
-			self.globDB = db
+			self.dbRegister = db
 		elif dbOper.type == AwlOperator.BLKREF_DI:
-			self.callStackTop.instanceDB = db
+			self.diRegister = db
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
 
 	def run_TDB(self):
-		cse = self.callStackTop
 		# Swap global and instance DB
-		cse.instanceDB, self.globDB = self.globDB, cse.instanceDB
+		self.diRegister, self.dbRegister = self.dbRegister, self.diRegister
 
 	def getStatusWord(self):
 		return self.callStackTop.status
@@ -879,17 +881,16 @@ class S7CPU(object):
 			self.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
 						 AwlOffset(operator.value.dbNumber),
 						 operator.insn))
-		if not self.globDB:
+		if not self.dbRegister:
 			raise AwlSimError("Fetch from global DB, "
 				"but no DB is opened")
-		return self.globDB.fetch(operator)
+		return self.dbRegister.fetch(operator)
 
 	def fetchDI(self, operator):
-		cse = self.callStackTop
-		if not cse.instanceDB:
+		if not self.diRegister:
 			raise AwlSimError("Fetch from instance DI, "
 				"but no DI is opened")
-		return cse.instanceDB.fetch(operator)
+		return self.diRegister.fetch(operator)
 
 	def fetchINTERF_DB(self, operator):
 		cse = self.callStackTop
@@ -936,11 +937,11 @@ class S7CPU(object):
 
 	def fetchVirtDBR(self, operator):
 		if operator.value.byteOffset == 1:
-			if self.globDB:
-				return self.globDB.index
+			if self.dbRegister:
+				return self.dbRegister.index
 		elif operator.value.byteOffset == 2:
-			if self.callStackTop.instanceDB:
-				return self.callStackTop.instanceDB.index
+			if self.diRegister:
+				return self.diRegister.index
 		else:
 			raise AwlSimError("Invalid __DBR %d. "
 				"Must be 1 for DB-register or "
@@ -1017,7 +1018,7 @@ class S7CPU(object):
 
 	def storeDB(self, operator, value):
 		if operator.value.dbNumber is None:
-			db = self.globDB
+			db = self.dbRegister
 			if not db:
 				raise AwlSimError("Store to global DB, "
 					"but no DB is opened")
@@ -1030,11 +1031,10 @@ class S7CPU(object):
 		db.store(operator, value)
 
 	def storeDI(self, operator, value):
-		cse = self.callStackTop
-		if not cse.instanceDB:
+		if not self.diRegister:
 			raise AwlSimError("Store to instance DI, "
 				"but no DI is opened")
-		cse.instanceDB.store(operator, value)
+		self.diRegister.store(operator, value)
 
 	def storeINTERF_DB(self, operator, value):
 		cse = self.callStackTop
@@ -1124,7 +1124,8 @@ class S7CPU(object):
 					  min(64, self.specs.nrOutputs)))
 		pstack = str(self.parenStack) if self.parenStack else "Empty"
 		ret.append(" PStack:  " + pstack)
-		ret.append(" GlobDB:  %s" % str(self.globDB))
+		ret.append("     DB:  %s" % str(self.dbRegister))
+		ret.append("     DI:  %s" % str(self.diRegister))
 		if self.callStack:
 			elems = [ str(cse) for cse in self.callStack ]
 			elems = " => ".join(elems)
@@ -1134,7 +1135,6 @@ class S7CPU(object):
 			ret.append(self.__dumpMem("      L:  ",
 						  cse.localdata,
 						  min(16, self.specs.nrLocalbytes)))
-			ret.append(" InstDB:  %s" % str(cse.instanceDB))
 		else:
 			ret.append("  Calls:  None")
 		curInsn = self.getCurrentInsn()

@@ -36,8 +36,7 @@ class CallStackElem(object):
 	def resetCache(cls):
 		cls.localdataCache.reset()
 
-	def __init__(self, cpu, block, instanceDB=None,
-		     interfaceDB=None, parameters=()):
+	def __init__(self, cpu, block, interfaceDB=None, parameters=()):
 		(self.cpu,
 		 self.status,
 		 self.parenStack,
@@ -46,8 +45,9 @@ class CallStackElem(object):
 		 self.block,
 		 self.insns,
 		 self.labels,
-		 self.instanceDB,
-		 self.interfaceDB) = (
+		 self.interfaceDB,
+		 self.prevDbRegister,
+		 self.prevDiRegister) = (
 			cpu,
 			S7StatusWord(),
 			[],
@@ -56,8 +56,9 @@ class CallStackElem(object):
 			block,
 			block.insns,
 			block.labels,
-			instanceDB,
-			interfaceDB if interfaceDB else instanceDB,
+			interfaceDB,
+			cpu.dbRegister,
+			cpu.diRegister,
 		)
 
 		# Handle parameters
@@ -82,8 +83,9 @@ class CallStackElem(object):
 						data = cpu.fetch(param.rvalueOp)
 					structInstance.setFieldData(structField, data)
 
-	# Transfer data out of DBI
-	def handleOutParameters(self):
+	# Handle the exit from this code block.
+	def handleBlockExit(self):
+		# Transfer data out of DBI
 		if self.__outboundParams:
 			cpu, interfaceDB, structInstance =\
 				self.cpu, \
@@ -94,6 +96,13 @@ class CallStackElem(object):
 					param.rvalueOp,
 					structInstance.getFieldData(param.getLvalueStructField(interfaceDB))
 				)
+		# Assign the DB/DI registers
+		if self.block.interface.requiresInstanceDB:
+			# We are returning from an FB
+			self.cpu.dbRegister, self.cpu.diRegister = self.interfaceDB, self.prevDiRegister
+		else:
+			# We are returning from an FC
+			self.cpu.dbRegister, self.cpu.diRegister = self.prevDbRegister, self.prevDiRegister
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.

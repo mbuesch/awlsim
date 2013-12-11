@@ -52,6 +52,9 @@ class BlockInterface(object):
 		AwlDataType.TYPE_BLOCK_FC,
 	)
 
+	# Set to true for FBs and SFBs
+	requiresInstanceDB = False
+
 	def __init__(self):
 		self.struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)
 		self.tempStruct = None # Local-stack structure (TEMP)
@@ -250,7 +253,7 @@ class OB(Block):
 		return "OB %d" % self.index
 
 class FBInterface(BlockInterface):
-	pass
+	requiresInstanceDB = True
 
 class FB(Block):
 	def __init__(self, insns, index):
