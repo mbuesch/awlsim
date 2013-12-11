@@ -82,5 +82,5 @@ class DB(object):
 
 	def __repr__(self):
 		if self.index == 0:
-			return "--"
+			return "DB --"
 		return "DB %d" % self.index
