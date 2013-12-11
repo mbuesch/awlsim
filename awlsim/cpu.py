@@ -412,7 +412,8 @@ class S7CPU(object):
 
 	def reset(self):
 		self.dbs = {
-			# User DBs
+			# DBs
+			0 : DB(0, permissions = 0), # read/write-protected system-DB
 		}
 		self.obs = {
 			# OBs
@@ -435,8 +436,8 @@ class S7CPU(object):
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
-		self.dbRegister = None # May hold an instance of class DB
-		self.diRegister = None # May hold an instance of class DB
+		self.dbRegister = self.dbs[0]
+		self.diRegister = self.dbs[0]
 		self.callStack = [ ]
 		self.callStackTop = None
 		self.setMcrActive(False)
@@ -505,6 +506,7 @@ class S7CPU(object):
 
 		# Initialize CPU state
 		self.callStack = [ CallStackElem(self, block) ]
+		self.dbRegister = self.diRegister = self.dbs[0]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
