@@ -60,7 +60,7 @@ class AwlSimMessage(object):
 
 	@classmethod
 	def fromBytes(cls, payload):
-		raise NotImplementedError
+		return cls()
 
 	def send(self, sock):
 		sock.sendall(self.toBytes())
@@ -69,17 +69,9 @@ class AwlSimMessage_PING(AwlSimMessage):
 	def __init__(self):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PING)
 
-	@classmethod
-	def fromBytes(cls, payload):
-		return AwlSimMessage_PING()
-
 class AwlSimMessage_PONG(AwlSimMessage):
 	def __init__(self):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PONG)
-
-	@classmethod
-	def fromBytes(cls, payload):
-		return AwlSimMessage_PONG()
 
 class AwlSimMessage_LOAD_CODE(AwlSimMessage):
 	def __init__(self, code):
@@ -87,17 +79,18 @@ class AwlSimMessage_LOAD_CODE(AwlSimMessage):
 		self.code = code
 
 	def toBytes(self):
-		code = self.code.encode()
-		payload = struct.pack(">%ds" % len(code), code)
-		return AwlSimMessage.toBytes(self, len(payload)) +\
-			payload
+		try:
+			code = self.code.encode()
+			return AwlSimMessage.toBytes(self, len(code)) + code
+		except UnicodeError:
+			raise TransferError("LOAD_CODE: Unicode error")
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
 			code = payload.decode()
 		except UnicodeError:
-			raise TransferError("Unicode error")
+			raise TransferError("LOAD_CODE: Unicode error")
 		return cls(code)
 
 class AwlSimMessage_LOAD_HW(AwlSimMessage):
@@ -127,18 +120,27 @@ class AwlSimMessage_GET_CPUDUMP(AwlSimMessage):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_CPUDUMP)
 
 class AwlSimMessage_CPUDUMP(AwlSimMessage):
-	def __init__(self):
+	def __init__(self, dumpText):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUDUMP)
+		self.dumpText = dumpText
 
 	def toBytes(self):
-		pass#TODO
+		try:
+			dumpBytes = self.dumpText.encode()
+			return AwlSimMessage.toBytes(self, len(dumpBytes)) + dumpBytes
+		except UnicodeError:
+			raise TransferError("CPUDUMP: Unicode error")
 
 	@classmethod
 	def fromBytes(cls, payload):
-		pass#TODO
+		try:
+			dumpText = payload.decode()
+		except UnicodeError:
+			raise TransferError("CPUDUMP: Unicode error")
+		return cls(dumpText)
 
 class AwlSimMessageReceiver(object):
-	class ClientDied(Exception): pass
+	class RemoteEndDied(Exception): pass
 
 	id2class = {
 		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
@@ -164,7 +166,7 @@ class AwlSimMessageReceiver(object):
 			data = self.sock.recv(hdrLen - len(self.buf))
 			if not data:
 				# The remote end closed the connection
-				raise self.ClientDied()
+				raise self.RemoteEndDied()
 			self.buf += data
 			if len(self.buf) < hdrLen:
 				return None
@@ -180,7 +182,7 @@ class AwlSimMessageReceiver(object):
 			data = self.sock.recv(hdrLen + self.payloadLen - len(self.buf))
 			if not data:
 				# The remote end closed the connection
-				raise self.ClientDied()
+				raise self.RemoteEndDied()
 			self.buf += data
 			if len(self.buf) < hdrLen + self.payloadLen:
 				return None
@@ -276,23 +278,27 @@ class AwlSimServer(object):
 		rlist.extend(client.socket for client in self.clients)
 		self.__selectRlist = rlist
 
-	def __rx_PING(self, client):
+	def __rx_PING(self, client, msg):
 		AwlSimMessage_PONG().send(client.socket)
 
-	def __rx_LOAD_CODE(self, client):
+	def __rx_PONG(self, client, msg):
+		printInfo("AwlSimServer: Received PONG")
+
+	def __rx_LOAD_CODE(self, client, msg):
 		pass#TODO
 
-	def __rx_LOAD_HW(self, client):
+	def __rx_LOAD_HW(self, client, msg):
 		pass#TODO
 
-	def __rx_SET_OPT(self, client):
+	def __rx_SET_OPT(self, client, msg):
 		pass#TODO
 
-	def __rx_GET_CPUDUMP(self, client):
-		pass#TODO
+	def __rx_GET_CPUDUMP(self, client, msg):
+		AwlSimMessage_CPUDUMP(str(self.sim.cpu)).send(client.socket)
 
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
+		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
@@ -302,11 +308,17 @@ class AwlSimServer(object):
 	def __handleClientComm(self, client):
 		try:
 			msg = client.receiver.receive()
-		except (AwlSimMessageReceiver.ClientDied, TransferError) as e:
+		except AwlSimMessageReceiver.RemoteEndDied as e:
 			host, port = client.socket.getpeername()
 			printInfo("AwlSimServer: Client '%s:%d' died" %\
 				(host, port))
 			self.__clientRemove(client)
+			return
+		except (TransferError, socket.error) as e:
+			host, port = client.socket.getpeername()
+			printInfo("AwlSimServer: Client '%s:%d' data "
+				"transfer error:\n" %\
+				(host, port, str(e)))
 			return
 		if not msg:
 			return
@@ -316,7 +328,7 @@ class AwlSimServer(object):
 			printInfo("AwlSimServer: Received unsupported "
 				"message 0x%02X" % msg.msgId)
 			return
-		handler(self, client)
+		handler(self, client, msg)
 
 	def __handleCommunication(self):
 		while 1:
@@ -499,6 +511,52 @@ class AwlSimClient(object):
 			self.serverProcess.wait()
 			self.serverProcess = None
 
+	def __rx_PING(self, msg):
+		AwlSimMessage_PONG().send(client.socket)
+
+	def handle_PONG(self):
+		printInfo("AwlSimClient: Received PONG")
+
+	def __rx_PONG(self, msg):
+		self.handle_PONG()
+
+	def handle_CPUDUMP(self, dumpText):
+		pass # Don't do anything by default
+
+	def __rx_CPUDUMP(self, msg):
+		self.handle_CPUDUMP(msg.dumpText)
+
+	__msgRxHandlers = {
+		AwlSimMessage.MSG_ID_PING		: __rx_PING,
+		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
+		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
+	}
+
+	def processMessages(self):
+		try:
+			msg = self.receiver.receive()
+		except socket.error as e:
+			if e.errno == errno.EAGAIN:
+				return None
+			host, port = self.socket.getpeername()
+			raise AwlSimError("AwlSimClient: "
+				"I/O error in connection to server '%s:%d':\n%s" %\
+				(host, port, str(e)))
+		except (AwlSimMessageReceiver.RemoteEndDied, TransferError) as e:
+			host, port = self.socket.getpeername()
+			raise AwlSimError("AwlSimClient: "
+				"Connection to server '%s:%s' died. "
+				"Failed to receive message." %\
+				(host, port))
+		if not msg:
+			return
+		try:
+			handler = self.__msgRxHandlers[msg.msgId]
+		except KeyError:
+			raise AwlSimError("AwlSimClient: Receive unsupported "
+				"message 0x%02X" % msg.msgId)
+		handler(self, msg)
+
 	def loadCode(self, code):
 		pass#TODO
 
@@ -513,8 +571,10 @@ class AwlSimClient(object):
 		       extendedInsnsEnabled):
 		pass#TODO
 
-	def getCpuDump(self):
-		pass#TODO
+	def requestCpuDump(self):
+		AwlSimMessage_GET_CPUDUMP().send(self.socket)
 
 if __name__ == "__main__":
+	# Run a server process.
+	# Parameters are passed via environment.
 	sys.exit(AwlSimServer.execute())
