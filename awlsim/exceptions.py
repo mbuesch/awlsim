@@ -103,6 +103,13 @@ class AwlParserError(AwlSimError):
 	def getReport(self):
 		return self.doGetReport("AWL parser error")
 
+class AwlSimErrorText(AwlSimError):
+	def __init__(self, errorText):
+		AwlSimError.__init__(self, message = errorText)
+
+	def getReport(self):
+		return str(self)
+
 class SoftRebootRequest(Exception):
 	"""Soft-reboot request, handled by toplevel simulator.
 	On soft-reboot, the upstart-OBs are executed.
