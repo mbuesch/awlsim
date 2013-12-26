@@ -497,7 +497,7 @@ class AwlSimServer(object):
 			try:
 				if self.state == self.STATE_RUN:
 					if self.sim.cpu.now >= nextComm:
-						nextComm = self.sim.cpu.now + 0.05
+						nextComm = self.sim.cpu.now + 0.01
 						self.__handleCommunication()
 					sim.runCycle()
 				else:
