@@ -246,14 +246,14 @@ class AwlSimMessageTransceiver(object):
 	def send(self, msg):
 		msg.seq = self.txSeqCount
 		self.txSeqCount = (self.txSeqCount + 1) & 0xFFFF
-		while True:#FIXME
+
+		offset, data = 0, msg.toBytes()
+		while offset < len(data):
 			try:
-				self.sock.sendall(msg.toBytes())
+				offset += self.sock.send(data[offset : ])
 			except socket.error as e:
-				if e.errno == errno.EAGAIN:
-					continue
-				raise
-			break
+				if e.errno != errno.EAGAIN:
+					raise TransferError(str(e))
 
 	def receive(self):
 		hdrLen = AwlSimMessage.HDR_LENGTH
@@ -491,6 +491,9 @@ class AwlSimServer(object):
 				msg = AwlSimMessage_EXCEPTION(e.getReport())
 				for client in self.clients:
 					client.transceiver.send(msg)
+				self.state = self.STATE_INIT
+			except TransferError as e:
+				printError("AwlSimServer: Transfer error: " + str(e))
 				self.state = self.STATE_INIT
 
 	def __listen(self, host, port):
