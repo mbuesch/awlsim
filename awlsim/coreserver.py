@@ -491,13 +491,17 @@ class AwlSimServer(object):
 		self.__rebuildSelectReadList()
 
 		self.sim = sim = AwlSim()
+		nextComm = 0.0
 
 		while self.state != self.STATE_EXIT:
 			try:
-				self.__handleCommunication()
 				if self.state == self.STATE_RUN:
+					if self.sim.cpu.now >= nextComm:
+						nextComm = self.sim.cpu.now + 0.05
+						self.__handleCommunication()
 					sim.runCycle()
 				else:
+					self.__handleCommunication()
 					time.sleep(0.01)
 			except (AwlSimError, AwlParserError) as e:
 				msg = AwlSimMessage_EXCEPTION(e.getReport())
