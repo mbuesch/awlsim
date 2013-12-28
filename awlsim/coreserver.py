@@ -21,9 +21,11 @@
 
 from awlsim.main import *
 from awlsim.parser import *
+from awlsim.cpuspecs import *
 
 import sys
 import os
+import distutils.spawn
 import subprocess
 import socket
 import select
@@ -211,38 +213,42 @@ class AwlSimMessage_LOAD_HW(AwlSimMessage):
 		return cls(name = name, paramDict = paramDict)
 
 class AwlSimMessage_SET_OPT(AwlSimMessage):
-	# Payload struct:
-	#	Flags (32 bit)
-	#	Dump interval milliseconds (32 bit)
-	plStruct = struct.Struct(">II")
-
-	def __init__(self,
-		     obTempPresetsEnabled,
-		     extendedInsnsEnabled,
-		     periodicDumpInterval):
+	def __init__(self, name, value):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_SET_OPT)
-		self.obTempPresetsEnabled = obTempPresetsEnabled
-		self.extendedInsnsEnabled = extendedInsnsEnabled
-		self.periodicDumpInterval = periodicDumpInterval
+		self.name = name
+		self.value = value
+
+	def getIntValue(self):
+		try:
+			return int(self.value)
+		except ValueError as e:
+			raise AwlSimError("SET_OPT: Value is not an integer")
+
+	def getBoolValue(self):
+		try:
+			return bool(self.value)
+		except ValueError as e:
+			raise AwlSimError("SET_OPT: Value is not a boolean")
 
 	def toBytes(self):
-		flags = 0
-		flags |= (1 << 0) if self.obTempPresetsEnabled else 0
-		flags |= (1 << 1) if self.extendedInsnsEnabled else 0
-		payload = self.plStruct.pack(flags,
-					     self.periodicDumpInterval)
+		try:
+			payload = packString(self.name)
+			payload += packString(self.value)
+		except ValueError as e:
+			raise TransferError("SET_OPT: Invalid data format")
 		return AwlSimMessage.toBytes(self, len(payload)) + payload
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			flags, periodicDumpInterval =\
-				cls.plStruct.unpack(payload)
-		except struct.error as e:
+			offset = 0
+			name, count = unpackString(payload, offset)
+			offset += count
+			value, count = unpackString(payload, offset)
+			offset += count
+		except ValueError as e:
 			raise TransferError("SET_OPT: Invalid data format")
-		return cls(obTempPresetsEnabled = bool(flags & (1 << 0)),
-			   extendedInsnsEnabled = bool(flags & (1 << 1)),
-			   periodicDumpInterval = periodicDumpInterval)
+		return cls(name = name, value = value)
 
 class AwlSimMessage_CPUDUMP(AwlSimMessage):
 	def __init__(self, dumpText):
@@ -468,18 +474,23 @@ class AwlSimServer(object):
 	def __rx_SET_OPT(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 
-		if msg.obTempPresetsEnabled:
+		if msg.name == "ob_temp_presets":
 			pass#TODO
-
-		if msg.extendedInsnsEnabled:
+		elif msg.name == "extended_insns":
 			pass#TODO
-
-		client.dumpInterval = msg.periodicDumpInterval
-		if client.dumpInterval:
-			client.nextDump = self.sim.cpu.now
+		elif msg.name == "periodic_dump_int":
+			client.dumpInterval = msg.getIntValue()
+			if client.dumpInterval:
+				client.nextDump = self.sim.cpu.now
+			else:
+				client.nextDump = None
+			self.__updateCpuBlockExitCallback()
+		elif msg.name == "mnemonics":
+			pass#TODO
+		elif msg.name == "nr_accus":
+			pass#TODO
 		else:
-			client.nextDump = None
-		self.__updateCpuBlockExitCallback()
+			status = AwlSimMessage_REPLY.STAT_FAIL
 
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
@@ -649,6 +660,12 @@ class AwlSimClient(object):
 
 		if self.serverProcess:
 			raise AwlSimError("Server already running")
+		if interpreter:
+			full = distutils.spawn.find_executable(interpreter)
+			if not full:
+				raise AwlSimError("Failed to find interpreter "
+						  "executable '%s'" % interpreter)
+			interpreter = full
 		if not interpreter:
 			interpreter = sys.executable
 		assert(interpreter)
@@ -800,19 +817,26 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 
-	def setCpuSpec(self, name, value):
-		pass#TODO
-
-	def setOptions(self,
-		       obTempPresetsEnabled = False,
-		       extendedInsnsEnabled = False,
-		       periodicDumpInterval = 0):
-		msg = AwlSimMessage_SET_OPT(obTempPresetsEnabled = obTempPresetsEnabled,
-					    extendedInsnsEnabled = extendedInsnsEnabled,
-					    periodicDumpInterval = periodicDumpInterval)
+	def __setOption(self, name, value):
+		msg = AwlSimMessage_SET_OPT(name, value)
 		status = self.__sendAndWaitReply(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
-			raise AwlSimError("AwlSimClient: Failed to set options")
+			raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
+
+	def enableOBTempPresets(self, enable=True):
+		self.__setOption("ob_temp_presets", str(int(bool(enable))))
+
+	def enableExtendedInsns(self, enable=True):
+		self.__setOption("extended_insns", str(int(bool(enable))))
+
+	def setPeriodicDumpInterval(self, interval=0):
+		self.__setOption("periodic_dump_int", str(int(interval)))
+
+	def setMnemonics(self, mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
+		self.__setOption("mnemonics", str(int(mnemonics)))
+
+	def setNrAccus(self, nrAccus=2):
+		self.__setOption("nr_accus", str(int(nrAccus)))
 
 if __name__ == "__main__":
 	# Run a server process.
