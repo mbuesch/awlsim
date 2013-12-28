@@ -206,6 +206,14 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlSimError(self,
 				"Error while executing code", e)
 			self.stop()
+		except MaintenanceRequest as e:
+			if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+				print("Shutting down, as requested...")
+				sim.shutdown()
+				QApplication.exit(0)
+				return
+			else:
+				assert(0)
 		except Exception:
 			handleFatalException(self)
 		sim.shutdown()

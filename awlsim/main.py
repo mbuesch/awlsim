@@ -88,6 +88,10 @@ class AwlSim(object):
 
 	def __handleMaintenanceRequest(self, e):
 		try:
+			if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+				# This is handled in the toplevel loop, so
+				# re-raise the exception.
+				raise
 			try:
 				if e.requestType == MaintenanceRequest.TYPE_SOFTREBOOT:
 					# Run the CPU startup sequence again

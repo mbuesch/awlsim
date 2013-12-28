@@ -51,6 +51,25 @@ class SFCm2(SFC):
 		else:
 			raise AwlSimError("SFC -2: Unknown REBOOT_TYPE %d" % rebootType)
 
+class SFCm3(SFC):
+	"""SFC -3: __SHUTDOWN"""
+
+	def __init__(self, cpu):
+		SFC.__init__(self, cpu, -3)
+
+		self.interface.addField_IN(
+			BlockInterface.Field(name = "SHUTDOWN_TYPE",
+					     dataType = AwlDataType.makeByName("INT"))
+		)
+
+	def run(self):
+		shutdownType = wordToSignedPyInt(self.fetchInterfaceFieldByName("SHUTDOWN_TYPE"))
+		if shutdownType == 1:
+			raise MaintenanceRequest(MaintenanceRequest.TYPE_SHUTDOWN,
+						 "SFC -3 shutdown request")
+		else:
+			raise AwlSimError("SFC -3: Unknown SHUTDOWN_TYPE %d" % shutdownType)
+
 class SFC64(SFC):
 	"""SFC 64: TIME_TCK"""
 
@@ -70,6 +89,7 @@ class SFC64(SFC):
 SFC_table = {
 	-1	: SFCm1,
 	-2	: SFCm2,
+	-3	: SFCm3,
 
 	64	: SFC64,
 }
