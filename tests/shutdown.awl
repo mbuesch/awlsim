@@ -1,0 +1,9 @@
+	U		E 0.0
+	=		A 0.0
+
+	// Exit the simulator process
+	CALL SFC -3 (
+		SHUTDOWN_TYPE := 1
+	)
+	// Here be dragons
+	__ASSERT==	1, 2
