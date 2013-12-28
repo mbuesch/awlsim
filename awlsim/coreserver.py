@@ -628,14 +628,26 @@ class AwlSimServer(object):
 			self.sim = None
 
 		for client in self.clients:
-			client.socket.shutdown(socket.SHUT_RDWR)
-			client.socket.close()
+			try:
+				client.socket.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				client.socket.close()
+			except socket.error as e:
+				pass
 			client.socket = None
 		self.clients = []
 
 		if self.socket:
-			self.socket.shutdown(socket.SHUT_RDWR)
-			self.socket.close()
+			try:
+				self.socket.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				self.socket.close()
+			except socket.error as e:
+				pass
 			self.socket = None
 
 	def signalHandler(self, sig, frame):
@@ -727,8 +739,14 @@ class AwlSimClient(object):
 		"""Shutdown all sockets and spawned processes."""
 
 		if self.socket:
-			self.socket.shutdown(socket.SHUT_RDWR)
-			self.socket.close()
+			try:
+				self.socket.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				self.socket.close()
+			except socket.error as e:
+				pass
 			self.socket = None
 		if self.serverProcess:
 			self.serverProcess.terminate()
