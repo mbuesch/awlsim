@@ -86,13 +86,16 @@ class AwlSim(object):
 			e.setCpu(self.cpu)
 		raise e
 
-	def __handleSoftRebootRequest(self, e):
+	def __handleMaintenanceRequest(self, e):
 		try:
 			try:
-				# Run the CPU startup sequence again
-				self.cpu.startup()
-			except SoftRebootRequest as e:
-				raise AwlSimError("Recursive reboot request")
+				if e.requestType == MaintenanceRequest.TYPE_SOFTREBOOT:
+					# Run the CPU startup sequence again
+					self.cpu.startup()
+				else:
+					assert(0)
+			except MaintenanceRequest as e:
+				raise AwlSimError("Recursive maintenance request")
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
@@ -110,8 +113,8 @@ class AwlSim(object):
 				hw.startup()
 			try:
 				self.cpu.startup()
-			except SoftRebootRequest as e:
-				self.__handleSoftRebootRequest(e)
+			except MaintenanceRequest as e:
+				self.__handleMaintenanceRequest(e)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
@@ -133,8 +136,8 @@ class AwlSim(object):
 				hw.writeOutputs()
 		except AwlSimError as e:
 			self.__handleSimException(e)
-		except SoftRebootRequest as e:
-			self.__handleSoftRebootRequest(e)
+		except MaintenanceRequest as e:
+			self.__handleMaintenanceRequest(e)
 
 		if self.__profileLevel >= 1:
 			self.__profileStop()

@@ -19,6 +19,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from awlsim.enumeration import *
+
 
 class AwlSimError(Exception):
 	def __init__(self, message, cpu=None,
@@ -110,9 +112,14 @@ class AwlSimErrorText(AwlSimError):
 	def getReport(self):
 		return str(self)
 
-class SoftRebootRequest(Exception):
-	"""Soft-reboot request, handled by toplevel simulator.
-	On soft-reboot, the upstart-OBs are executed.
-	Memory is not cleared."""
+class MaintenanceRequest(Exception):
+	enum.start
+	# Soft-reboot request, handled by toplevel simulator.
+	# On soft-reboot, the upstart-OBs are executed.
+	# Memory is not cleared.
+	TYPE_SOFTREBOOT		= enum.item
+	enum.end
 
-	pass
+	def __init__(self, requestType, message=""):
+		Exception.__init__(self, message)
+		self.requestType = requestType
