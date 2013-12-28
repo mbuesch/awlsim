@@ -571,13 +571,13 @@ class AwlSimServer(object):
 			msg = client.transceiver.receive()
 		except AwlSimMessageTransceiver.RemoteEndDied as e:
 			host, port = client.socket.getpeername()
-			printInfo("AwlSimServer: Client '%s:%d' died" %\
+			printInfo("AwlSimServer: Client '%s (port %d)' died" %\
 				(host, port))
 			self.__clientRemove(client)
 			return
 		except (TransferError, socket.error) as e:
 			host, port = client.socket.getpeername()
-			printInfo("AwlSimServer: Client '%s:%d' data "
+			printInfo("AwlSimServer: Client '%s (port %d)' data "
 				"transfer error:\n" %\
 				(host, port, str(e)))
 			return
@@ -639,12 +639,15 @@ class AwlSimServer(object):
 		"""Listen on 'host':'port'."""
 
 		self.close()
-		printInfo("AwlSimServer: Listening on %s:%d..." % (host, port))
+		printInfo("AwlSimServer: Listening on %s (port %d)..." % (host, port))
 		try:
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			family, socktype, proto, canonname, sockaddr =\
+				socket.getaddrinfo(host, port, socket.AF_INET,
+						   0, socket.SOL_TCP)[0]
+			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			sock.setblocking(False)
-			sock.bind((host, port))
+			sock.bind(sockaddr)
 			sock.listen(5)
 		except socket.error as e:
 			raise AwlSimError("AwlSimServer: Failed to create server "
@@ -665,8 +668,8 @@ class AwlSimServer(object):
 			   e.errno == errno.EAGAIN:
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
-		host, port = addrInfo
-		printInfo("AwlSimServer: Client '%s:%d' connected" % (host, port))
+		host, port = addrInfo[0], addrInfo[1]
+		printInfo("AwlSimServer: Client '%s (port %d)' connected" % (host, port))
 
 		client = self.Client(clientSock)
 		self.__clientAdd(client)
@@ -751,25 +754,28 @@ class AwlSimClient(object):
 		host -> The hostname or IP address to connect to.
 		port -> The port to connect to."""
 
-		printInfo("AwlSimClient: Connecting to server %s:%d..." %\
+		printInfo("AwlSimClient: Connecting to server '%s (port %d)'..." %\
 			(host, port))
 		try:
-			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			family, socktype, proto, canonname, sockaddr =\
+				socket.getaddrinfo(host, port, socket.AF_INET,
+						   0, socket.SOL_TCP)[0]
+			sock = socket.socket(family, socktype)
 			count = 0
 			while 1:
 				try:
-					sock.connect((host, port))
+					sock.connect(sockaddr)
 				except ConnectionRefusedError as e:
 					count += 1
 					if count >= 100:
 						raise AwlSimError("Timeout connecting "
-							"to AwlSimServer %s:%d" %\
+							"to AwlSimServer %s (port %d)" %\
 							(host, port))
 					time.sleep(0.1)
 					continue
 				break
 		except socket.error as e:
-			raise AwlSimError("Failed to connect to AwlSimServer %s:%d: %s" %\
+			raise AwlSimError("Failed to connect to AwlSimServer %s (port %d): %s" %\
 				(host, port, str(e)))
 		printInfo("AwlSimClient: Connected.")
 		self.socket = sock
@@ -849,7 +855,7 @@ class AwlSimClient(object):
 				return None
 			host, port = self.socket.getpeername()
 			raise AwlSimError("AwlSimClient: "
-				"I/O error in connection to server '%s:%d':\n%s" %\
+				"I/O error in connection to server '%s (port %d)':\n%s" %\
 				(host, port, str(e)))
 		except (AwlSimMessageTransceiver.RemoteEndDied, TransferError) as e:
 			host, port = self.socket.getpeername()
