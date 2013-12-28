@@ -359,11 +359,15 @@ class S7CPU(object):
 			self.dbs[bounceDB.index] = bounceDB
 		# Create the SFB tables
 		for sfbNumber in SFB_table.keys():
+			if sfbNumber < 0 and not self.__extendedInsnsEnabled:
+				continue
 			sfb = SFB_table[sfbNumber](self)
 			sfb.interface.buildDataStructure()
 			self.sfbs[sfbNumber] = sfb
 		# Create the SFC tables
 		for sfcNumber in SFC_table.keys():
+			if sfcNumber < 0 and not self.__extendedInsnsEnabled:
+				continue
 			sfc = SFC_table[sfcNumber](self)
 			sfc.interface.buildDataStructure()
 			self.sfcs[sfcNumber] = sfc
