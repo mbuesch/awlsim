@@ -834,9 +834,12 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
 	}
 
-	def processMessages(self):
+	def processMessages(self, blocking=False):
 		try:
-			msg = self.transceiver.receive()
+			if blocking:
+				msg = self.transceiver.receiveBlocking()
+			else:
+				msg = self.transceiver.receive()
 		except socket.error as e:
 			if e.errno == errno.EAGAIN:
 				return None
