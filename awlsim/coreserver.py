@@ -32,6 +32,27 @@ import signal
 import struct
 
 
+_strLenStruct = struct.Struct(">H")
+
+def packString(string):
+	try:
+		data = string.encode("utf-8", "strict")
+		return _strLenStruct.pack(len(data)) + data
+	except (UnicodeError, struct.error) as e:
+		raise ValueError
+
+def unpackString(data, offset = 0):
+	try:
+		(length, ) = _strLenStruct.unpack_from(data, offset)
+		strBytes = data[offset + _strLenStruct.size :
+				offset + _strLenStruct.size + length]
+		if len(strBytes) != length:
+			raise ValueError
+		return (strBytes.decode("utf-8", "strict"),
+			_strLenStruct.size + length)
+	except (UnicodeError, struct.error) as e:
+		raise ValueError
+
 class TransferError(Exception):
 	pass
 
@@ -156,15 +177,38 @@ class AwlSimMessage_LOAD_CODE(AwlSimMessage):
 		return cls(code)
 
 class AwlSimMessage_LOAD_HW(AwlSimMessage):
-	def __init__(self):
+	def __init__(self, name, paramDict):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_HW)
+		self.name = name
+		self.paramDict = paramDict
 
 	def toBytes(self):
-		pass#TODO
+		payload = b""
+		try:
+			payload += packString(self.name)
+			for pname, pval in self.paramDict.items():
+				payload += packString(pname)
+				payload += packString(pval)
+			return AwlSimMessage.toBytes(self, len(payload)) + payload
+		except (ValueError) as e:
+			raise TransferError("LOAD_HW: Invalid data format")
 
 	@classmethod
 	def fromBytes(cls, payload):
-		pass#TODO
+		paramDict = {}
+		offset = 0
+		try:
+			name, count = unpackString(payload, offset)
+			offset += count
+			while offset < len(payload):
+				pname, count = unpackString(payload, offset)
+				offset += count
+				pval, count = unpackString(payload, offset)
+				offset += count
+				paramDict[pname] = pval
+		except (ValueError) as e:
+			raise TransferError("LOAD_HW: Invalid data format")
+		return cls(name = name, paramDict = paramDict)
 
 class AwlSimMessage_SET_OPT(AwlSimMessage):
 	# Payload struct:
@@ -224,13 +268,14 @@ class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass
 
 	id2class = {
+		AwlSimMessage.MSG_ID_REPLY		: AwlSimMessage_REPLY,
+		AwlSimMessage.MSG_ID_EXCEPTION		: AwlSimMessage_EXCEPTION,
 		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
 		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
-		AwlSimMessage.MSG_ID_REPLY		: AwlSimMessage_REPLY,
 	}
 
 	def __init__(self, sock):
@@ -414,7 +459,10 @@ class AwlSimServer(object):
 
 	def __rx_LOAD_HW(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
-		pass#TODO
+		printInfo("Loading hardware module '%s'..." % msg.name)
+		hwClass = self.sim.loadHardwareModule(msg.name)
+		self.sim.registerHardwareClass(hwClass = hwClass,
+					       parameters = msg.paramDict)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_SET_OPT(self, client, msg):
@@ -745,8 +793,12 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load code")
 
-	def loadHardwareModule(self, name, parameters):
-		pass#TODO
+	def loadHardwareModule(self, name, parameters={}):
+		msg = AwlSimMessage_LOAD_HW(name = name,
+					    paramDict = parameters)
+		status = self.__sendAndWaitReply(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 
 	def setCpuSpec(self, name, value):
 		pass#TODO
