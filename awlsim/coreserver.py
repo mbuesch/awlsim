@@ -378,7 +378,7 @@ class AwlSimServer(object):
 			self.socket = sock
 			self.transceiver = AwlSimMessageTransceiver(sock)
 			self.dumpInterval = 0
-			self.nextDump = None
+			self.nextDump = 0
 
 	@classmethod
 	def start(cls, listenHost, listenPort, forkInterpreter=None):
