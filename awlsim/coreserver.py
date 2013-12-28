@@ -76,6 +76,7 @@ class AwlSimMessage(object):
 	MSG_ID_EXCEPTION	= enum.item
 	MSG_ID_PING		= enum.item
 	MSG_ID_PONG		= enum.item
+	MSG_ID_RUNSTATE		= enum.item
 	MSG_ID_LOAD_CODE	= enum.item
 	MSG_ID_LOAD_HW		= enum.item
 	MSG_ID_SET_OPT		= enum.item
@@ -137,6 +138,30 @@ class AwlSimMessage_PING(AwlSimMessage):
 class AwlSimMessage_PONG(AwlSimMessage):
 	def __init__(self):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PONG)
+
+class AwlSimMessage_RUNSTATE(AwlSimMessage):
+	enum.start
+	STATE_STOP	= enum.item
+	STATE_RUN	= enum.item
+	enum.end
+
+	plStruct = struct.Struct(">H")
+
+	def __init__(self, runState):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RUNSTATE)
+		self.runState = runState
+
+	def toBytes(self):
+		pl = self.plStruct.pack(self.runState)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			(runState, ) = cls.plStruct.unpack(payload)
+		except struct.error as e:
+			raise TransferError("RUNSTATE: Invalid data format")
+		return cls(runState)
 
 class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	def __init__(self, exceptionText):
@@ -278,6 +303,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_EXCEPTION		: AwlSimMessage_EXCEPTION,
 		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
+		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
@@ -462,15 +488,15 @@ class AwlSimServer(object):
 
 	def __cpuBlockExitCallback(self, userData):
 		now = self.sim.cpu.now
-		if any(now >= c.nextDump for c in self.clients):
+		if any(c.dumpInterval and now >= c.nextDump for c in self.clients):
 			msg = AwlSimMessage_CPUDUMP(str(self.sim.cpu))
 			for client in self.clients:
-				if now >= client.nextDump:
+				if client.dumpInterval and now >= client.nextDump:
 					client.nextDump = now + client.dumpInterval / 1000.0
 					client.transceiver.send(msg)
 
 	def __updateCpuBlockExitCallback(self):
-		if any(c.nextDump is not None for c in self.clients):
+		if any(c.dumpInterval for c in self.clients):
 			self.sim.cpu.setBlockExitCallback(self.__cpuBlockExitCallback, None)
 		else:
 			self.sim.cpu.setBlockExitCallback(None)
@@ -481,13 +507,23 @@ class AwlSimServer(object):
 	def __rx_PONG(self, client, msg):
 		printInfo("AwlSimServer: Received PONG")
 
+	def __rx_RUNSTATE(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		if msg.runState == msg.STATE_STOP:
+			self.state = self.STATE_INIT
+		elif msg.runState == msg.STATE_RUN:
+			self.state = self.STATE_RUN
+		else:
+			status = AwlSimMessage_REPLY.STAT_FAIL
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_LOAD_CODE(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		parser = AwlParser()
 		parser.parseData(msg.code)
+		self.state = self.STATE_INIT
 		self.sim.load(parser.getParseTree())
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
-		self.state = self.STATE_RUN
 
 	def __rx_LOAD_HW(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
@@ -523,6 +559,7 @@ class AwlSimServer(object):
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
+		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
@@ -836,6 +873,16 @@ class AwlSimClient(object):
 			time.sleep(0.01)
 			count += 10
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
+
+	def setRunState(self, run=True):
+		if run:
+			runState = AwlSimMessage_RUNSTATE.STATE_RUN
+		else:
+			runState = AwlSimMessage_RUNSTATE.STATE_STOP
+		msg = AwlSimMessage_RUNSTATE(runState)
+		status = self.__sendAndWaitReply(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to set run state")
 
 	def loadCode(self, code):
 		msg = AwlSimMessage_LOAD_CODE(code)

@@ -178,6 +178,7 @@ def runWithServerBackend(awlSource):
 			client.connectToServer()
 
 		writeStdout("Initializing simulator...\n")
+		client.setRunState(False)
 
 		# Load hardware modules
 		for name, parameters in opt_hwmods:
@@ -196,6 +197,7 @@ def runWithServerBackend(awlSource):
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
 		client.loadCode(awlFileRead(awlSource))
+		client.setRunState(True)
 
 		# Run the client-side event loop
 		writeStdout("[Initialization finished - Remote-CPU is executing user code]\n")
