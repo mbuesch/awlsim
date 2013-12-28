@@ -43,7 +43,6 @@ def usage():
 	printInfo(" -q|--quiet            Do not show any status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
 	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
-	printInfo(" -r|--rng 1/0          Enable/disable the RNG (Default: off)")
 	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
 	printInfo(" -P|--profile 0        Set profiling level (Default: 0)")
 	printInfo("")
@@ -84,7 +83,6 @@ def main():
 	opt_fouraccu = False
 	opt_extInsns = False
 	opt_obtemp = False
-	opt_rng = False
 	opt_mnemonics = "auto"
 	opt_hwmods = []
 	opt_hwinfos = []
@@ -92,9 +90,9 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1qDxt:r:m:H:I:P:",
+			"h1qDxt:m:H:I:P:",
 			[ "help", "onecycle", "quiet", "no-cpu-dump", "extended-insns",
-			  "obtemp=", "rng=", "mnemonics=",
+			  "obtemp=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -116,8 +114,6 @@ def main():
 			opt_extInsns = True
 		if o in ("-t", "--obtemp"):
 			opt_obtemp = str2bool(v)
-		if o in ("-r", "--rng"):
-			opt_rng = str2bool(v)
 		if o in ("-m", "--mnemonics"):
 			opt_mnemonics = v.lower()
 			if opt_mnemonics not in ("en", "de", "auto"):
@@ -195,7 +191,6 @@ def main():
 		specs.setConfiguredMnemonics(opt_mnemonics)
 		specs.setNrAccus(4 if opt_fouraccu else 2)
 		cpu.enableObTempPresets(opt_obtemp)
-		cpu.enableRNG(opt_rng)
 		cpu.enableExtendedInsns(opt_extInsns)
 		if not opt_noCpuDump and not opt_quiet:
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
