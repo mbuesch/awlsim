@@ -156,6 +156,7 @@ setup(	name		= "awlsim",
 			    "awlsimhw_pyprofibus", ],
 	scripts		= [ "awlsimcli",
 			    "awlsimgui",
+			    "awlsim-server",
 			    "awlsim-linuxcnc-hal", ],
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules

@@ -360,8 +360,10 @@ class AwlSimMessageTransceiver(object):
 		return msg
 
 class AwlSimServer(object):
-	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
+	DEFAULT_HOST	= "localhost"
 	DEFAULT_PORT	= 4151
+
+	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
 
 	enum.start
 	STATE_INIT	= enum.item
@@ -379,7 +381,31 @@ class AwlSimServer(object):
 			self.nextDump = None
 
 	@classmethod
-	def execute(cls):
+	def start(cls, listenHost, listenPort, forkInterpreter=None):
+		"""Start a new server.
+		If 'forkInterpreter' is not None, spawn a subprocess.
+		If 'forkInterpreter' is None, run the server in this process."""
+
+		environment = {
+			AwlSimServer.ENV_MAGIC		: AwlSimServer.ENV_MAGIC,
+			"AWLSIM_CORESERVER_HOST"	: str(listenHost),
+			"AWLSIM_CORESERVER_PORT"	: str(listenPort),
+		}
+
+		if forkInterpreter is None:
+			return cls._execute(environment)
+		else:
+			interp = distutils.spawn.find_executable(forkInterpreter)
+			if not interp:
+				raise AwlSimError("Failed to find interpreter "
+						  "executable '%s'" % forkInterpreter)
+			serverProcess = subprocess.Popen([interp, "-m", "awlsim.coreserver"],
+							 env = environment,
+							 shell = False)
+			return serverProcess
+
+	@classmethod
+	def _execute(cls, env=None):
 		"""Execute the server process.
 		Returns the exit() return value."""
 
@@ -388,7 +414,7 @@ class AwlSimServer(object):
 			server = AwlSimServer()
 			for sig in (signal.SIGTERM, signal.SIGINT):
 				signal.signal(sig, server.signalHandler)
-			server.runFromEnvironment()
+			server.runFromEnvironment(env)
 		except AwlSimError as e:
 			print(e.getReport())
 			retval = 1
@@ -662,7 +688,7 @@ class AwlSimClient(object):
 		self.transceiver = None
 
 	def spawnServer(self, interpreter=None,
-			listenHost="localhost",
+			listenHost=AwlSimServer.DEFAULT_HOST,
 			listenPort=AwlSimServer.DEFAULT_PORT):
 		"""Spawn a new AwlSim-core server process.
 		interpreter -> The python interpreter to use.
@@ -672,27 +698,16 @@ class AwlSimClient(object):
 
 		if self.serverProcess:
 			raise AwlSimError("Server already running")
-		if interpreter:
-			full = distutils.spawn.find_executable(interpreter)
-			if not full:
-				raise AwlSimError("Failed to find interpreter "
-						  "executable '%s'" % interpreter)
-			interpreter = full
 		if not interpreter:
 			interpreter = sys.executable
 		assert(interpreter)
-		environment = {
-			AwlSimServer.ENV_MAGIC		: AwlSimServer.ENV_MAGIC,
-			"AWLSIM_CORESERVER_HOST"	: str(listenHost),
-			"AWLSIM_CORESERVER_PORT"	: str(listenPort),
-		}
-		self.serverProcess = subprocess.Popen([interpreter, "-m", "awlsim.coreserver"],
-						      env = environment,
-						      shell = False)
-		return self.serverProcess.pid
+
+		self.serverProcess = AwlSimServer.start(listenHost = listenHost,
+							listenPort = listenPort,
+							forkInterpreter = interpreter)
 
 	def connectToServer(self,
-			    host="localhost",
+			    host=AwlSimServer.DEFAULT_HOST,
 			    port=AwlSimServer.DEFAULT_PORT):
 		"""Connect to a AwlSim-core server.
 		host -> The hostname or IP address to connect to.
@@ -859,4 +874,4 @@ class AwlSimClient(object):
 if __name__ == "__main__":
 	# Run a server process.
 	# Parameters are passed via environment.
-	sys.exit(AwlSimServer.execute())
+	sys.exit(AwlSimServer._execute())
