@@ -48,7 +48,7 @@ def usage():
 	printInfo("")
 	printInfo("Server backend related options:")
 	printInfo(" -c|--connect IP:PORT  Connect to server backend")
-	printInfo(" -b|--spawn-backend    Spawn a new server backend and connect to it")
+	printInfo(" -b|--spawn-backend    Spawn a new backend server and connect to it")
 	printInfo(" -i|--interpreter EXE  Set the backend interpreter executable")
 	printInfo("")
 	printInfo("Loading hardware modules:")
@@ -164,7 +164,12 @@ def runWithServerBackend(awlSource):
 		client = TextInterfaceAwlSimClient()
 		if opt_spawnBackend:
 			writeStdout("Spawning core server...\n")
-			client.spawnServer(interpreter = opt_interpreter)
+			host, port = AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT
+			if opt_connect:
+				host, port = opt_connect
+			client.spawnServer(interpreter = opt_interpreter,
+					   listenHost = host,
+					   listenPort = port)
 		writeStdout("Connecting to core server...\n")
 		if opt_connect:
 			client.connectToServer(host = opt_connect[0],
@@ -345,9 +350,6 @@ def main():
 		printError(e.getReport())
 		return 1
 
-	if opt_spawnBackend and opt_connect:
-		printError("Can only do either --connect or --spawn-backend.")
-		return 1
 	if opt_interpreter and not opt_spawnBackend:
 		printError("Selected an --interpreter, but no "
 			   "--spawn-backend was requested.")
