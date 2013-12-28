@@ -376,11 +376,12 @@ class AwlSimMessageTransceiver(object):
 		self.buf, self.msgId, self.seq, self.payloadLen = b"", None, None, None
 		return msg
 
-	def receiveBlocking(self):
+	def receiveBlocking(self, timeoutSec=None):
 		try:
-			self.sock.setblocking(True)
-			#TODO timeout
+			self.sock.settimeout(timeoutSec)
 			msg = self.receive()
+		except socket.timeout:
+			return None
 		finally:
 			self.sock.setblocking(False)
 		return msg
@@ -778,7 +779,10 @@ class AwlSimClient(object):
 		# Ping the server
 		try:
 			self.transceiver.send(AwlSimMessage_PING())
-			msg = self.transceiver.receiveBlocking()
+			msg = self.transceiver.receiveBlocking(timeoutSec = 5.0)
+			if not msg:
+				raise AwlSimError("AwlSimClient: Server did not "
+					"respond to PING request.")
 			if msg.msgId != AwlSimMessage.MSG_ID_PONG:
 				raise AwlSimError("AwlSimClient: Server did not "
 					"respond properly to PING request. "
