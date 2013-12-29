@@ -475,7 +475,7 @@ class AwlSimServer(object):
 		return retval
 
 	def __init__(self):
-		self.state = self.STATE_INIT
+		self.__setRunState(self.STATE_INIT)
 		self.sim = None
 		self.socket = None
 		self.clients = []
@@ -510,6 +510,11 @@ class AwlSimServer(object):
 
 		self.run(host, port)
 
+	def __setRunState(self, runstate):
+		self.state = runstate
+		# Make a shortcut variable for RUN
+		self.__running = bool(runstate == self.STATE_RUN)
+
 	def __rebuildSelectReadList(self):
 		rlist = [ self.socket ]
 		rlist.extend(client.socket for client in self.clients)
@@ -539,9 +544,9 @@ class AwlSimServer(object):
 	def __rx_RUNSTATE(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		if msg.runState == msg.STATE_STOP:
-			self.state = self.STATE_INIT
+			self.__setRunState(self.STATE_INIT)
 		elif msg.runState == msg.STATE_RUN:
-			self.state = self.STATE_RUN
+			self.__setRunState(self.STATE_RUN)
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
@@ -550,7 +555,7 @@ class AwlSimServer(object):
 		status = AwlSimMessage_REPLY.STAT_OK
 		parser = AwlParser()
 		parser.parseData(msg.code)
-		self.state = self.STATE_INIT
+		self.__setRunState(self.STATE_INIT)
 		self.sim.load(parser.getParseTree())
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
@@ -643,19 +648,28 @@ class AwlSimServer(object):
 		self.__listen(host, port)
 		self.__rebuildSelectReadList()
 
-		self.sim = sim = AwlSim()
+		self.sim = AwlSim()
 		nextComm = 0.0
 
 		while self.state != self.STATE_EXIT:
 			try:
-				if self.state == self.STATE_RUN:
-					if self.sim.cpu.now >= nextComm:
-						nextComm = self.sim.cpu.now + 0.01
+				sim = self.sim
+				cpu = self.sim.cpu
+
+				if self.state == self.STATE_INIT:
+					while self.state == self.STATE_INIT:
 						self.__handleCommunication()
-					sim.runCycle()
-				else:
-					self.__handleCommunication()
-					time.sleep(0.01)
+						time.sleep(0.01)
+					continue
+
+				if self.state == self.STATE_RUN:
+					while self.__running:
+						if cpu.now >= nextComm:
+							nextComm = cpu.now + 0.01
+							self.__handleCommunication()
+						sim.runCycle()
+					continue
+
 			except (AwlSimError, AwlParserError) as e:
 				msg = AwlSimMessage_EXCEPTION(e.getReport())
 				for client in self.clients:
@@ -664,7 +678,7 @@ class AwlSimServer(object):
 					except TransferError as e:
 						printError("AwlSimServer: Failed to forward "
 							   "exception to client.")
-				self.state = self.STATE_INIT
+				self.__setRunState(self.STATE_INIT)
 			except MaintenanceRequest as e:
 				try:
 					if self.clients:
@@ -675,7 +689,7 @@ class AwlSimServer(object):
 					pass
 			except TransferError as e:
 				printError("AwlSimServer: Transfer error: " + str(e))
-				self.state = self.STATE_INIT
+				self.__setRunState(self.STATE_INIT)
 
 	def __listen(self, host, port):
 		"""Listen on 'host':'port'."""
@@ -762,7 +776,7 @@ class AwlSimServer(object):
 	def signalHandler(self, sig, frame):
 		printInfo("AwlSimServer: Received signal %d" % sig)
 		if sig in (signal.SIGTERM, signal.SIGINT):
-			self.state = self.STATE_EXIT
+			self.__setRunState(self.STATE_EXIT)
 
 class AwlSimClient(object):
 	def __init__(self):
