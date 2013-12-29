@@ -1,0 +1,413 @@
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - PLC core server
+#
+# Copyright 2013 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+from awlsim.coreserver.messages import *
+
+from awlsim.main import *
+from awlsim.parser import *
+from awlsim.cpuspecs import *
+
+import sys
+import os
+import distutils.spawn
+import subprocess
+import select
+import signal
+import socket
+import errno
+import time
+
+
+class AwlSimServer(object):
+	DEFAULT_HOST	= "localhost"
+	DEFAULT_PORT	= 4151
+
+	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
+
+	enum.start
+	STATE_INIT	= enum.item
+	STATE_RUN	= enum.item
+	STATE_EXIT	= enum.item
+	enum.end
+
+	class Client(object):
+		"""Client information."""
+
+		def __init__(self, sock):
+			self.socket = sock
+			self.transceiver = AwlSimMessageTransceiver(sock)
+			self.dumpInterval = 0
+			self.nextDump = 0
+
+	@classmethod
+	def start(cls, listenHost, listenPort, forkInterpreter=None):
+		"""Start a new server.
+		If 'forkInterpreter' is not None, spawn a subprocess.
+		If 'forkInterpreter' is None, run the server in this process."""
+
+		environment = {
+			AwlSimServer.ENV_MAGIC		: AwlSimServer.ENV_MAGIC,
+			"AWLSIM_CORESERVER_HOST"	: str(listenHost),
+			"AWLSIM_CORESERVER_PORT"	: str(listenPort),
+			"AWLSIM_CORESERVER_LOGLEVEL"	: str(Logging.getLoglevel()),
+		}
+
+		if forkInterpreter is None:
+			return cls._execute(environment)
+		else:
+			interp = distutils.spawn.find_executable(forkInterpreter)
+			if not interp:
+				raise AwlSimError("Failed to find interpreter "
+						  "executable '%s'" % forkInterpreter)
+			serverProcess = subprocess.Popen([interp, "-m", "awlsim.coreserver.server"],
+							 env = environment,
+							 shell = False)
+			return serverProcess
+
+	@classmethod
+	def _execute(cls, env=None):
+		"""Execute the server process.
+		Returns the exit() return value."""
+
+		server, retval = None, 0
+		try:
+			server = AwlSimServer()
+			for sig in (signal.SIGTERM, signal.SIGINT):
+				signal.signal(sig, server.signalHandler)
+			server.runFromEnvironment(env)
+		except AwlSimError as e:
+			print(e.getReport())
+			retval = 1
+		except KeyboardInterrupt:
+			print("Interrupted.")
+		finally:
+			if server:
+				server.close()
+		return retval
+
+	def __init__(self):
+		self.__setRunState(self.STATE_INIT)
+		self.sim = None
+		self.socket = None
+		self.clients = []
+
+	def runFromEnvironment(self, env=None):
+		"""Run the server.
+		Configuration is passed via environment variables in 'env'.
+		If 'env' is not passed, os.environ is used."""
+
+		if not env:
+			env = dict(os.environ)
+
+		try:
+			loglevel = int(env.get("AWLSIM_CORESERVER_LOGLEVEL"))
+		except (TypeError, ValueError) as e:
+			raise AwlSimError("AwlSimServer: No loglevel specified")
+		Logging.setLoglevel(loglevel)
+
+		if self.socket:
+			raise AwlSimError("AwlSimServer: Already running")
+
+		if env.get(self.ENV_MAGIC) != self.ENV_MAGIC:
+			raise AwlSimError("AwlSimServer: Missing magic value")
+
+		host = env.get("AWLSIM_CORESERVER_HOST")
+		if not host:
+			raise AwlSimError("AwlSimServer: No listen host specified")
+		try:
+			port = int(env.get("AWLSIM_CORESERVER_PORT"))
+		except (TypeError, ValueError) as e:
+			raise AwlSimError("AwlSimServer: No listen port specified")
+
+		self.run(host, port)
+
+	def __setRunState(self, runstate):
+		self.state = runstate
+		# Make a shortcut variable for RUN
+		self.__running = bool(runstate == self.STATE_RUN)
+
+	def __rebuildSelectReadList(self):
+		rlist = [ self.socket ]
+		rlist.extend(client.socket for client in self.clients)
+		self.__selectRlist = rlist
+
+	def __cpuBlockExitCallback(self, userData):
+		now = self.sim.cpu.now
+		if any(c.dumpInterval and now >= c.nextDump for c in self.clients):
+			msg = AwlSimMessage_CPUDUMP(str(self.sim.cpu))
+			for client in self.clients:
+				if client.dumpInterval and now >= client.nextDump:
+					client.nextDump = now + client.dumpInterval / 1000.0
+					client.transceiver.send(msg)
+
+	def __updateCpuBlockExitCallback(self):
+		if any(c.dumpInterval for c in self.clients):
+			self.sim.cpu.setBlockExitCallback(self.__cpuBlockExitCallback, None)
+		else:
+			self.sim.cpu.setBlockExitCallback(None)
+
+	def __rx_PING(self, client, msg):
+		client.transceiver.send(AwlSimMessage_PONG())
+
+	def __rx_PONG(self, client, msg):
+		printInfo("AwlSimServer: Received PONG")
+
+	def __rx_RUNSTATE(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		if msg.runState == msg.STATE_STOP:
+			self.__setRunState(self.STATE_INIT)
+		elif msg.runState == msg.STATE_RUN:
+			self.__setRunState(self.STATE_RUN)
+		else:
+			status = AwlSimMessage_REPLY.STAT_FAIL
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_LOAD_CODE(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		parser = AwlParser()
+		parser.parseData(msg.code)
+		self.__setRunState(self.STATE_INIT)
+		self.sim.load(parser.getParseTree())
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_LOAD_HW(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		printInfo("Loading hardware module '%s'..." % msg.name)
+		hwClass = self.sim.loadHardwareModule(msg.name)
+		self.sim.registerHardwareClass(hwClass = hwClass,
+					       parameters = msg.paramDict)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_SET_OPT(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+
+		if msg.name == "loglevel":
+			Logging.setLoglevel(msg.getIntValue())
+		elif msg.name == "ob_temp_presets":
+			self.sim.cpu.enableObTempPresets(msg.getBoolValue())
+		elif msg.name == "extended_insns":
+			self.sim.cpu.enableExtendedInsns(msg.getBoolValue())
+		elif msg.name == "periodic_dump_int":
+			client.dumpInterval = msg.getIntValue()
+			if client.dumpInterval:
+				client.nextDump = self.sim.cpu.now
+			else:
+				client.nextDump = None
+			self.__updateCpuBlockExitCallback()
+		elif msg.name == "mnemonics":
+			self.sim.cpu.getSpecs().setConfiguredMnemonics(msg.getIntValue())
+		elif msg.name == "nr_accus":
+			self.sim.cpu.getSpecs().setNrAccus(msg.getIntValue())
+		else:
+			status = AwlSimMessage_REPLY.STAT_FAIL
+
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	__msgRxHandlers = {
+		AwlSimMessage.MSG_ID_PING		: __rx_PING,
+		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
+		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
+		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
+		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
+		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
+	}
+
+	def __handleClientComm(self, client):
+		try:
+			msg = client.transceiver.receive()
+		except AwlSimMessageTransceiver.RemoteEndDied as e:
+			host, port = client.socket.getpeername()
+			printInfo("AwlSimServer: Client '%s (port %d)' died" %\
+				(host, port))
+			self.__clientRemove(client)
+			return
+		except (TransferError, socket.error) as e:
+			host, port = client.socket.getpeername()
+			printInfo("AwlSimServer: Client '%s (port %d)' data "
+				"transfer error:\n" %\
+				(host, port, str(e)))
+			return
+		if not msg:
+			return
+		try:
+			handler = self.__msgRxHandlers[msg.msgId]
+		except KeyError:
+			printInfo("AwlSimServer: Received unsupported "
+				"message 0x%02X" % msg.msgId)
+			return
+		handler(self, client, msg)
+
+	def __handleCommunication(self):
+		while 1:
+			try:
+				rlist, wlist, xlist = select.select(self.__selectRlist, [], [], 0)
+			except Exception as e:
+				raise AwlSimError("AwlSimServer: Communication error. "
+					"'select' failed")
+			if not rlist:
+				break
+			if self.socket in rlist:
+				rlist.remove(self.socket)
+				self.__accept()
+			for sock in rlist:
+				client = [ c for c in self.clients if c.socket is sock ][0]
+				self.__handleClientComm(client)
+
+	def run(self, host, port):
+		"""Run the server on 'host':'port'."""
+
+		self.__listen(host, port)
+		self.__rebuildSelectReadList()
+
+		self.sim = AwlSim()
+		nextComm = 0.0
+
+		while self.state != self.STATE_EXIT:
+			try:
+				sim = self.sim
+				cpu = self.sim.cpu
+
+				if self.state == self.STATE_INIT:
+					while self.state == self.STATE_INIT:
+						self.__handleCommunication()
+						time.sleep(0.01)
+					continue
+
+				if self.state == self.STATE_RUN:
+					while self.__running:
+						if cpu.now >= nextComm:
+							nextComm = cpu.now + 0.01
+							self.__handleCommunication()
+						sim.runCycle()
+					continue
+
+			except (AwlSimError, AwlParserError) as e:
+				msg = AwlSimMessage_EXCEPTION(e.getReport())
+				for client in self.clients:
+					try:
+						client.transceiver.send(msg)
+					except TransferError as e:
+						printError("AwlSimServer: Failed to forward "
+							   "exception to client.")
+				self.__setRunState(self.STATE_INIT)
+			except MaintenanceRequest as e:
+				try:
+					if self.clients:
+						# Forward it to the first client
+						msg = AwlSimMessage_MAINTREQ(e.requestType)
+						self.clients[0].transceiver.send(msg)
+				except TransferError as e:
+					pass
+			except TransferError as e:
+				printError("AwlSimServer: Transfer error: " + str(e))
+				self.__setRunState(self.STATE_INIT)
+
+	def __listen(self, host, port):
+		"""Listen on 'host':'port'."""
+
+		self.close()
+		printInfo("AwlSimServer: Listening on %s (port %d)..." % (host, port))
+		try:
+			family, socktype, proto, canonname, sockaddr =\
+				socket.getaddrinfo(host, port, socket.AF_INET,
+						   0, socket.SOL_TCP)[0]
+			sock = socket.socket(family, socktype)
+			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			sock.setblocking(False)
+			sock.bind(sockaddr)
+			sock.listen(5)
+		except socket.error as e:
+			raise AwlSimError("AwlSimServer: Failed to create server "
+				"socket: " + str(e))
+		self.socket = sock
+
+	def __accept(self):
+		"""Accept a client connection.
+		Returns the Client instance or None."""
+
+		if not self.socket:
+			raise AwlSimError("AwlSimServer: No server socket")
+
+		try:
+			clientSock, addrInfo = self.socket.accept()
+		except socket.error as e:
+			if e.errno == errno.EWOULDBLOCK or\
+			   e.errno == errno.EAGAIN:
+				return None
+			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
+		host, port = addrInfo[0], addrInfo[1]
+		printInfo("AwlSimServer: Client '%s (port %d)' connected" % (host, port))
+
+		client = self.Client(clientSock)
+		self.__clientAdd(client)
+
+		return client
+
+	def __clientAdd(self, client):
+		self.clients.append(client)
+		self.__rebuildSelectReadList()
+
+	def __clientRemove(self, client):
+		self.clients.remove(client)
+		self.__rebuildSelectReadList()
+
+	def close(self):
+		"""Closes all client sockets and the main socket."""
+
+		if self.socket:
+			printInfo("AwlSimServer: Shutting down.")
+
+		if self.sim:
+			self.sim.shutdown()
+			self.sim = None
+
+		for client in self.clients:
+			try:
+				client.socket.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				client.socket.close()
+			except socket.error as e:
+				pass
+			client.socket = None
+		self.clients = []
+
+		if self.socket:
+			try:
+				self.socket.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				self.socket.close()
+			except socket.error as e:
+				pass
+			self.socket = None
+
+	def signalHandler(self, sig, frame):
+		printInfo("AwlSimServer: Received signal %d" % sig)
+		if sig in (signal.SIGTERM, signal.SIGINT):
+			self.__setRunState(self.STATE_EXIT)
+
+if __name__ == "__main__":
+	# Run a server process.
+	# Parameters are passed via environment.
+	sys.exit(AwlSimServer._execute())
