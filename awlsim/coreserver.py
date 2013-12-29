@@ -438,6 +438,7 @@ class AwlSimServer(object):
 			AwlSimServer.ENV_MAGIC		: AwlSimServer.ENV_MAGIC,
 			"AWLSIM_CORESERVER_HOST"	: str(listenHost),
 			"AWLSIM_CORESERVER_PORT"	: str(listenPort),
+			"AWLSIM_CORESERVER_LOGLEVEL"	: str(Logging.getLoglevel()),
 		}
 
 		if forkInterpreter is None:
@@ -486,6 +487,12 @@ class AwlSimServer(object):
 
 		if not env:
 			env = dict(os.environ)
+
+		try:
+			loglevel = int(env.get("AWLSIM_CORESERVER_LOGLEVEL"))
+		except (TypeError, ValueError) as e:
+			raise AwlSimError("AwlSimServer: No loglevel specified")
+		Logging.setLoglevel(loglevel)
 
 		if self.socket:
 			raise AwlSimError("AwlSimServer: Already running")

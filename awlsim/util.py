@@ -65,6 +65,10 @@ class Logging(object):
 		cls._loglevel = loglevel
 
 	@classmethod
+	def getLoglevel(cls):
+		return cls._loglevel
+
+	@classmethod
 	def printDebug(cls, text):
 		if cls._loglevel >= cls.LOG_DEBUG:
 			sys.stdout.write(text)
