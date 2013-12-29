@@ -537,7 +537,9 @@ class AwlSimServer(object):
 	def __rx_SET_OPT(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 
-		if msg.name == "ob_temp_presets":
+		if msg.name == "loglevel":
+			Logging.setLoglevel(msg.getIntValue())
+		elif msg.name == "ob_temp_presets":
 			pass#TODO
 		elif msg.name == "extended_insns":
 			pass#TODO
@@ -915,6 +917,10 @@ class AwlSimClient(object):
 		status = self.__sendAndWaitReply(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
+
+	def setLoglevel(self, level=Logging.LOG_INFO):
+		Logging.setLoglevel(level)
+		self.__setOption("loglevel", str(int(level)))
 
 	def enableOBTempPresets(self, enable=True):
 		self.__setOption("ob_temp_presets", str(int(bool(enable))))

@@ -88,6 +88,9 @@ def cpuDumpCallback(cpu):
 	nextScreenUpdate = cpu.now + 0.1
 	emitCpuDump(str(cpu))
 
+def makeLoglevel():
+	return Logging.LOG_ERROR if opt_quiet else Logging.LOG_INFO
+
 def run(awlSource):
 	s = None
 	try:
@@ -178,6 +181,7 @@ def runWithServerBackend(awlSource):
 			client.connectToServer()
 
 		writeStdout("Initializing simulator...\n")
+		client.setLoglevel(makeLoglevel())
 		client.setRunState(False)
 
 		# Load hardware modules
@@ -333,6 +337,8 @@ def main():
 		return 1
 	if args:
 		awlSource = args[0]
+
+	Logging.setLoglevel(makeLoglevel())
 
 	opt_mnemonics = {
 		"en"	: S7CPUSpecs.MNEMONICS_EN,

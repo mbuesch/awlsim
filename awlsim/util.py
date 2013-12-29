@@ -45,17 +45,54 @@ def py23(py2, py3):
 		return py2
 	raise AwlSimError("Failed to detect Python version")
 
-# Info message helper
-def printInfo(text):
-	sys.stdout.write(text)
-	sys.stdout.write("\n")
-	sys.stdout.flush()
+class Logging(object):
+	enum.start
+	LOG_NONE	= enum.item
+	LOG_ERROR	= enum.item
+	LOG_INFO	= enum.item
+	LOG_DEBUG	= enum.item
+	enum.end
 
-# Error message helper
+	_loglevel = LOG_INFO
+
+	@classmethod
+	def setLoglevel(cls, loglevel):
+		if loglevel not in (cls.LOG_NONE,
+				    cls.LOG_ERROR,
+				    cls.LOG_INFO,
+				    cls.LOG_DEBUG):
+			raise AwlSimError("Invalid log level '%d'" % loglevel)
+		cls._loglevel = loglevel
+
+	@classmethod
+	def printDebug(cls, text):
+		if cls._loglevel >= cls.LOG_DEBUG:
+			sys.stdout.write(text)
+			sys.stdout.write("\n")
+			sys.stdout.flush()
+
+	@classmethod
+	def printInfo(cls, text):
+		if cls._loglevel >= cls.LOG_INFO:
+			sys.stdout.write(text)
+			sys.stdout.write("\n")
+			sys.stdout.flush()
+
+	@classmethod
+	def printError(cls, text):
+		if cls._loglevel >= cls.LOG_ERROR:
+			sys.stderr.write(text)
+			sys.stderr.write("\n")
+			sys.stderr.flush()
+
+def printDebug(text):
+	Logging.printDebug(text)
+
+def printInfo(text):
+	Logging.printInfo(text)
+
 def printError(text):
-	sys.stderr.write(text)
-	sys.stderr.write("\n")
-	sys.stderr.flush()
+	Logging.printError(text)
 
 # Warning message helper
 printWarning = printError
