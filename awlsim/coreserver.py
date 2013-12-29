@@ -81,6 +81,7 @@ class AwlSimMessage(object):
 	MSG_ID_LOAD_HW		= enum.item
 	MSG_ID_SET_OPT		= enum.item
 	MSG_ID_CPUDUMP		= enum.item
+	MSG_ID_MAINTREQ		= enum.item
 	enum.end
 
 	def __init__(self, msgId, seq=0):
@@ -295,6 +296,25 @@ class AwlSimMessage_CPUDUMP(AwlSimMessage):
 			raise TransferError("CPUDUMP: Unicode error")
 		return cls(dumpText)
 
+class AwlSimMessage_MAINTREQ(AwlSimMessage):
+	plStruct = struct.Struct(">H")
+
+	def __init__(self, requestType):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MAINTREQ)
+		self.requestType = requestType
+
+	def toBytes(self):
+		pl = self.plStruct.pack(self.requestType)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			(requestType, ) = cls.plStruct.unpack(payload)
+		except struct.error as e:
+			raise TransferError("MAINTREQ: Invalid data format")
+		return cls(requestType)
+
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass
 
@@ -308,6 +328,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
 		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
+		AwlSimMessage.MSG_ID_MAINTREQ		: AwlSimMessage_MAINTREQ,
 	}
 
 	def __init__(self, sock):
@@ -540,9 +561,9 @@ class AwlSimServer(object):
 		if msg.name == "loglevel":
 			Logging.setLoglevel(msg.getIntValue())
 		elif msg.name == "ob_temp_presets":
-			pass#TODO
+			self.sim.cpu.enableObTempPresets(msg.getBoolValue())
 		elif msg.name == "extended_insns":
-			pass#TODO
+			self.sim.cpu.enableExtendedInsns(msg.getBoolValue())
 		elif msg.name == "periodic_dump_int":
 			client.dumpInterval = msg.getIntValue()
 			if client.dumpInterval:
@@ -551,9 +572,9 @@ class AwlSimServer(object):
 				client.nextDump = None
 			self.__updateCpuBlockExitCallback()
 		elif msg.name == "mnemonics":
-			pass#TODO
+			self.sim.cpu.getSpecs().setConfiguredMnemonics(msg.getIntValue())
 		elif msg.name == "nr_accus":
-			pass#TODO
+			self.sim.cpu.getSpecs().setNrAccus(msg.getIntValue())
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 
@@ -631,8 +652,20 @@ class AwlSimServer(object):
 			except (AwlSimError, AwlParserError) as e:
 				msg = AwlSimMessage_EXCEPTION(e.getReport())
 				for client in self.clients:
-					client.transceiver.send(msg)
+					try:
+						client.transceiver.send(msg)
+					except TransferError as e:
+						printError("AwlSimServer: Failed to forward "
+							   "exception to client.")
 				self.state = self.STATE_INIT
+			except MaintenanceRequest as e:
+				try:
+					if self.clients:
+						# Forward it to the first client
+						msg = AwlSimMessage_MAINTREQ(e.requestType)
+						self.clients[0].transceiver.send(msg)
+				except TransferError as e:
+					pass
 			except TransferError as e:
 				printError("AwlSimServer: Transfer error: " + str(e))
 				self.state = self.STATE_INIT
@@ -767,14 +800,16 @@ class AwlSimClient(object):
 			while 1:
 				try:
 					sock.connect(sockaddr)
-				except ConnectionRefusedError as e:
-					count += 1
-					if count >= 100:
-						raise AwlSimError("Timeout connecting "
-							"to AwlSimServer %s (port %d)" %\
-							(host, port))
-					time.sleep(0.1)
-					continue
+				except (OSError, socket.error) as e:
+					if e.errno == errno.ECONNREFUSED:
+						count += 1
+						if count >= 100:
+							raise AwlSimError("Timeout connecting "
+								"to AwlSimServer %s (port %d)" %\
+								(host, port))
+						time.sleep(0.1)
+						continue
+					raise
 				break
 		except socket.error as e:
 			raise AwlSimError("Failed to connect to AwlSimServer %s (port %d): %s" %\
@@ -838,12 +873,20 @@ class AwlSimClient(object):
 	def __rx_CPUDUMP(self, msg):
 		self.handle_CPUDUMP(msg.dumpText)
 
+	def __rx_MAINTREQ(self, msg):
+		if msg.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+			raise MaintenanceRequest(msg.requestType)
+		else:
+			printError("Received unknown maintenance request: %d" %\
+				   msg.requestType)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_REPLY		: __rx_REPLY,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
+		AwlSimMessage.MSG_ID_MAINTREQ		: __rx_MAINTREQ,
 	}
 
 	def processMessages(self, blocking=False):
@@ -870,7 +913,7 @@ class AwlSimClient(object):
 		try:
 			handler = self.__msgRxHandlers[msg.msgId]
 		except KeyError:
-			raise AwlSimError("AwlSimClient: Receive unsupported "
+			raise AwlSimError("AwlSimClient: Received unsupported "
 				"message 0x%02X" % msg.msgId)
 		handler(self, msg)
 

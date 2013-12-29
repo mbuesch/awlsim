@@ -17,16 +17,18 @@ cleanup()
 	}
 }
 
-# $1=interpreter $2=awl_file
+# $1=interpreter $2=awl_file ($3..$x additional options to awlsimcli)
 run_test()
 {
 	local interpreter="$1"
 	local awl="$2"
+	shift; shift
 
 	echo -n "Running test '$(basename "$awl")' ..."
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$basedir/../awlsimcli" --quiet --onecycle --extended-insns \
 		--hardware dummy:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
+		"$@" \
 		"$awl" ||\
 		die "Test failed"
 	echo " [$(cat "$test_time_file")]"
@@ -51,6 +53,20 @@ run_test_directory()
 	echo "--- Leaving directory '$directory'"
 }
 
+# Run coreserver tests.
+# $1=interpreter
+run_server_tests()
+{
+	local interpreter="$1"
+
+	echo "--- Running coreserver tests"
+	for testfile in shutdown.awl; do
+		run_test "$interpreter" "$basedir/$testfile" \
+			--spawn-backend --interpreter "$interpreter"
+	done
+	echo "--- Finished coreserver tests"
+}
+
 # $@=testfiles
 do_tests()
 {
@@ -65,6 +81,7 @@ do_tests()
 		echo "=== Running tests with '$interpreter' interpreter."
 		if [ $# -eq 0 ]; then
 			run_test_directory "$interpreter" "$basedir"
+			run_server_tests "$interpreter"
 		else
 			for opt in "$@"; do
 				if [ -d "$opt" ]; then

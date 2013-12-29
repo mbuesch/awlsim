@@ -44,6 +44,10 @@ class S7CPUSpecs(object):
 		self.cpu = cpu
 
 	def setConfiguredMnemonics(self, mnemonics):
+		if mnemonics not in (self.MNEMONICS_AUTO,
+				     self.MNEMONICS_EN,
+				     self.MNEMONICS_DE):
+			raise AwlSimError("Invalid mnemonics configuration: %d" % mnemonics)
 		self.__configuredMnemonics = mnemonics
 		self.setDetectedMnemonics(self.MNEMONICS_AUTO)
 
