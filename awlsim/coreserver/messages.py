@@ -19,6 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from awlsim.coreserver.memarea import *
 from awlsim.util import *
 from awlsim.cpuspecs import *
 
@@ -56,6 +57,8 @@ class AwlSimMessage(object):
 	MSG_ID_MAINTREQ		= enum.item
 	MSG_ID_GET_CPUSPECS	= enum.item
 	MSG_ID_CPUSPECS		= enum.item
+	MSG_ID_REQ_MEMORY	= enum.item
+	MSG_ID_MEMORY		= enum.item
 	enum.end
 
 	_strLenStruct = struct.Struct(">H")
@@ -357,6 +360,114 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 		cpuspecs.setNrLocalbytes(nrLocalbytes)
 		return cls(cpuspecs)
 
+class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
+	# Payload header struct:
+	#	flags (32 bit)
+	#	repetition factor (32 bit)
+	plHdrStruct = struct.Struct(">II")
+
+	# Payload memory area struct:
+	#	memType (8 bit)
+	#	flags (8 bit)
+	#	index (16 bit)
+	#	start (32 bit)
+	#	length (32 bit)
+	plAreaStruct = struct.Struct(">BBHII")
+
+	# Flags
+	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
+
+	def __init__(self, flags, repetitionFactor, memAreas):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_REQ_MEMORY)
+		self.flags = flags
+		self.repetitionFactor = repetitionFactor
+		self.memAreas = memAreas
+
+	def toBytes(self):
+		pl = self.plHdrStruct.pack(self.flags,
+					   self.repetitionFactor)
+		for memArea in self.memAreas:
+			pl += self.plAreaStruct.pack(memArea.memType,
+						     memArea.flags,
+						     memArea.index,
+						     memArea.start,
+						     memArea.length)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			offset = 0
+			flags, repetitionFactor =\
+				self.plHdrStruct.unpack_from(payload, offset)
+			offset += self.plHdrStruct.size
+			memAreas = []
+			while offset < len(payload):
+				memType, mFlags, index, start, length =\
+					self.plAreaStruct.unpack_from(payload, offset)
+				offset += self.plAreaStruct.size
+				memAreas.append(MemoryArea(memType, mFlags, index, start, length))
+		except struct.error as e:
+			raise TransferError("REQ_MEMORY: Invalid data format")
+		return cls(flags, repetitionFactor, memAreas)
+
+class AwlSimMessage_MEMORY(AwlSimMessage):
+	# Payload header struct:
+	#	flags (32 bit)
+	plHdrStruct = struct.Struct(">I")
+
+	# Payload memory area struct:
+	#	memType (8 bit)
+	#	flags (8 bit)
+	#	index (16 bit)
+	#	start (32 bit)
+	#	length (32 bit)
+	#	the actual binary data (variable length)
+	plAreaStruct = struct.Struct(">BBHII")
+
+	# Flags
+	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
+
+	def __init__(self, flags, memAreasData):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MEMORY)
+		self.memAreasData = memAreasData
+
+	def toBytes(self):
+		pl = [ self.plHdrStruct.pack(self.flags) ]
+		for memAreaData in self.memAreasData:
+			pl.append(self.plAreaStruct.pack(memArea.memType,
+							 memArea.flags,
+							 memArea.index,
+							 memArea.start,
+							 len(memArea.data)))
+			pl.append(memArea.data) #FIXME padding to 32bit?
+		pl = b''.join(pl)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			offset = 0
+			(flags, ) = self.plHdrStruct.unpack_from(payload, offset)
+			offset += self.plHdrStruct.size
+			memAreasData = []
+			while offset < len(payload):
+				memType, mFlags, index, start, length =\
+					self.plAreaStruct.unpack_from(payload, offset)
+				offset += self.plAreaStruct.size
+				#FIXME pad length to 32bit?
+				data = payload[offset : offset + length]
+				if len(data) != length:
+					raise IndexError
+				memAreasData.append(MemoryAreaData(memType,
+								   mFlags,
+								   index,
+								   start,
+								   data))
+		except (struct.error, IndexError) as e:
+			raise TransferError("MEMORY: Invalid data format")
+		return cls(flags, memAreasData)
+
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass
 
@@ -373,6 +484,8 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_MAINTREQ		: AwlSimMessage_MAINTREQ,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: AwlSimMessage_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: AwlSimMessage_CPUSPECS,
+		AwlSimMessage.MSG_ID_REQ_MEMORY		: AwlSimMessage_REQ_MEMORY,
+		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
 	}
 
 	def __init__(self, sock):

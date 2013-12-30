@@ -150,6 +150,16 @@ class AwlSimClient(object):
 			printError("Received unknown maintenance request: %d" %\
 				   msg.requestType)
 
+	def handle_MEMORY(self, memAreasData):
+		pass # Don't do anything by default
+
+	def __rx_MEMORY(self, msg):
+		self.handle_MEMORY(msg.memAreasData)
+		if msg.flags & msg.FLG_SYNC:
+			# The server should never send us a synchronous
+			# memory image. So just output an error message.
+			printError("Received synchronous memory request")
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_REPLY		: __rx_NOP,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
@@ -158,6 +168,7 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
 		AwlSimMessage.MSG_ID_MAINTREQ		: __rx_MAINTREQ,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
+		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 	}
 
 	def processMessages(self, blocking=False):
@@ -262,3 +273,31 @@ class AwlSimClient(object):
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set cpuspecs")
+
+	# Set the memory areas we are interested in receiving
+	# dumps for in the server.
+	# memAreas is a list of MemoryArea instances.
+	# The repetitionFactor tells whether to
+	#  - only run the request once (repetitionFactor=0)
+	#  - repeat on n'th every cycle (repetitionFactor=n)
+	# If sync is true, wait for a reply from the server.
+	def setMemoryReadRequests(self, memAreas, repetitionFactor=0, sync=False):
+		self.transceiver.send(
+			AwlSimMessage_REQ_MEMORY(0, repetitionFactor, memAreas)
+		)
+		if sync:
+			status = self.__sendAndWaitFor_REPLY(msg)
+			if status != AwlSimMessage_REPLY.STAT_OK:
+				raise AwlSimError("AwlSimClient: Failed to set memory read reqs")
+
+	# Write memory areas in the server.
+	# memAreasData is a list of MemoryAreaData instances.
+	# If sync is true, wait for a reply from the server.
+	def writeMemory(self, memAreasData, sync=False):
+		self.transceiver.send(
+			AwlSimMessage_MEMORY(0, memAreasData)
+		)
+		if sync:
+			status = self.__sendAndWaitFor_REPLY(msg)
+			if status != AwlSimMessage_REPLY.STAT_OK:
+				raise AwlSimError("AwlSimClient: Failed to write to memory")

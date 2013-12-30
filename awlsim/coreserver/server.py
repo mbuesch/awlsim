@@ -52,10 +52,18 @@ class AwlSimServer(object):
 		"""Client information."""
 
 		def __init__(self, sock):
+			# Socket
 			self.socket = sock
 			self.transceiver = AwlSimMessageTransceiver(sock)
+
+			# CPU-dump
 			self.dumpInterval = 0
 			self.nextDump = 0
+
+			# Memory read requests
+			self.memReadRequests = []
+			self.repetitionFactor = 0
+			self.repetitionCount = 0
 
 	@classmethod
 	def start(cls, listenHost, listenPort, forkInterpreter=None):
@@ -226,6 +234,22 @@ class AwlSimServer(object):
 		self.sim.cpu.getSpecs().assignFrom(msg.cpuspecs)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_REQ_MEMORY(self, client, msg):
+		client.memReadRequests = msg.memAreas
+		client.repetitionFactor = msg.repetitionFactor
+		client.repetitionCount = client.repetitionFactor
+		if msg.flags & msg.FLG_SYNC:
+			client.transceiver.send(AwlSimMessage_REPLY.make(
+				msg, AwlSimMessage_REPLY.STAT_OK)
+			)
+
+	def __rx_MEMORY(self, client, msg):
+		pass#TODO
+		if msg.flags & msg.FLG_SYNC:
+			client.transceiver.send(AwlSimMessage_REPLY.make(
+				msg, AwlSimMessage_REPLY.STAT_OK)
+			)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
@@ -235,6 +259,8 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
+		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
+		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 	}
 
 	def __handleClientComm(self, client):
@@ -278,6 +304,21 @@ class AwlSimServer(object):
 				client = [ c for c in self.clients if c.socket is sock ][0]
 				self.__handleClientComm(client)
 
+	def __handleOneMemReadReq(self, client, memArea):
+		pass#TODO
+
+	def __handleMemReadReqs(self):
+		for client in self.clients:
+			if not client.memReadRequests:
+				continue
+			client.repetitionCount -= 1
+			if client.repetitionCount <= 0:
+				for req in client.memReadRequests:
+					self.__handleOneMemReadReq(client, req)
+				client.repetitionCount = self.repetitionFactor
+				if not self.repetitionFactor:
+					self.memReadRequests = []
+
 	def run(self, host, port):
 		"""Run the server on 'host':'port'."""
 
@@ -290,7 +331,6 @@ class AwlSimServer(object):
 		while self.state != self.STATE_EXIT:
 			try:
 				sim = self.sim
-				cpu = self.sim.cpu
 
 				if self.state == self.STATE_INIT:
 					while self.state == self.STATE_INIT:
@@ -300,10 +340,9 @@ class AwlSimServer(object):
 
 				if self.state == self.STATE_RUN:
 					while self.__running:
-						if cpu.now >= nextComm:
-							nextComm = cpu.now + 0.01
-							self.__handleCommunication()
+						self.__handleCommunication()
 						sim.runCycle()
+						self.__handleMemReadReqs()
 					continue
 
 			except (AwlSimError, AwlParserError) as e:
