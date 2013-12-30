@@ -31,7 +31,7 @@ class S7CPUSpecs(object):
 	MNEMONICS_DE		= enum.item
 	enum.end
 
-	def __init__(self, cpu):
+	def __init__(self, cpu=None):
 		self.cpu = None
 		self.setConfiguredMnemonics(self.MNEMONICS_AUTO)
 		self.setNrAccus(2)
@@ -42,6 +42,16 @@ class S7CPUSpecs(object):
 		self.setNrOutputs(8192)
 		self.setNrLocalbytes(1024)
 		self.cpu = cpu
+
+	def assignFrom(self, otherCpuSpecs):
+		self.setConfiguredMnemonics(otherCpuSpecs.getConfiguredMnemonics())
+		self.setNrAccus(otherCpuSpecs.nrAccus)
+		self.setNrTimers(otherCpuSpecs.nrTimers)
+		self.setNrCounters(otherCpuSpecs.nrCounters)
+		self.setNrFlags(otherCpuSpecs.nrFlags)
+		self.setNrInputs(otherCpuSpecs.nrInputs)
+		self.setNrOutputs(otherCpuSpecs.nrOutputs)
+		self.setNrLocalbytes(otherCpuSpecs.nrLocalbytes)
 
 	def setConfiguredMnemonics(self, mnemonics):
 		if mnemonics not in (self.MNEMONICS_AUTO,

@@ -20,6 +20,7 @@
 #
 
 from awlsim.util import *
+from awlsim.cpuspecs import *
 
 import struct
 import socket
@@ -53,6 +54,8 @@ class AwlSimMessage(object):
 	MSG_ID_SET_OPT		= enum.item
 	MSG_ID_CPUDUMP		= enum.item
 	MSG_ID_MAINTREQ		= enum.item
+	MSG_ID_GET_CPUSPECS	= enum.item
+	MSG_ID_CPUSPECS		= enum.item
 	enum.end
 
 	_strLenStruct = struct.Struct(">H")
@@ -309,6 +312,51 @@ class AwlSimMessage_MAINTREQ(AwlSimMessage):
 			raise TransferError("MAINTREQ: Invalid data format")
 		return cls(requestType)
 
+class AwlSimMessage_GET_CPUSPECS(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_CPUSPECS)
+
+class AwlSimMessage_CPUSPECS(AwlSimMessage):
+	plStruct = struct.Struct(">32I")
+
+	def __init__(self, cpuspecs):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUSPECS)
+		self.cpuspecs = cpuspecs
+		self.cpuspecs.cpu = None
+
+	def toBytes(self):
+		pl = self.plStruct.pack(self.cpuspecs.getConfiguredMnemonics(),
+					self.cpuspecs.nrAccus,
+					self.cpuspecs.nrTimers,
+					self.cpuspecs.nrCounters,
+					self.cpuspecs.nrFlags,
+					self.cpuspecs.nrInputs,
+					self.cpuspecs.nrOutputs,
+					self.cpuspecs.nrLocalbytes,
+					*( (0,) * 24 ) # padding
+		)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			data = cls.plStruct.unpack(payload)
+			(mnemonics, nrAccus, nrTimers,
+			 nrCounters, nrFlags, nrInputs,
+			 nrOutputs, nrLocalbytes) = data[:8]
+		except struct.error as e:
+			raise TransferError("CPUSPECS: Invalid data format")
+		cpuspecs = S7CPUSpecs()
+		cpuspecs.setConfiguredMnemonics(mnemonics)
+		cpuspecs.setNrAccus(nrAccus)
+		cpuspecs.setNrTimers(nrTimers)
+		cpuspecs.setNrCounters(nrCounters)
+		cpuspecs.setNrFlags(nrFlags)
+		cpuspecs.setNrInputs(nrInputs)
+		cpuspecs.setNrOutputs(nrOutputs)
+		cpuspecs.setNrLocalbytes(nrLocalbytes)
+		return cls(cpuspecs)
+
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass
 
@@ -323,6 +371,8 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
 		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
 		AwlSimMessage.MSG_ID_MAINTREQ		: AwlSimMessage_MAINTREQ,
+		AwlSimMessage.MSG_ID_GET_CPUSPECS	: AwlSimMessage_GET_CPUSPECS,
+		AwlSimMessage.MSG_ID_CPUSPECS		: AwlSimMessage_CPUSPECS,
 	}
 
 	def __init__(self, sock):

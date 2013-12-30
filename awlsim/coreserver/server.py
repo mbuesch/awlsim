@@ -212,13 +212,18 @@ class AwlSimServer(object):
 			else:
 				client.nextDump = None
 			self.__updateCpuBlockExitCallback()
-		elif msg.name == "mnemonics":
-			self.sim.cpu.getSpecs().setConfiguredMnemonics(msg.getIntValue())
-		elif msg.name == "nr_accus":
-			self.sim.cpu.getSpecs().setNrAccus(msg.getIntValue())
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_GET_CPUSPECS(self, client, msg):
+		reply = AwlSimMessage_CPUSPECS(self.sim.cpu.getSpecs())
+		client.transceiver.send(reply)
+
+	def __rx_CPUSPECS(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.sim.cpu.getSpecs().assignFrom(msg.cpuspecs)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	__msgRxHandlers = {
@@ -228,6 +233,8 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
+		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
+		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
 	}
 
 	def __handleClientComm(self, client):

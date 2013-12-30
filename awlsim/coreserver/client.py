@@ -87,7 +87,7 @@ class AwlSimClient(object):
 		printInfo("AwlSimClient: Connected.")
 		self.socket = sock
 		self.transceiver = AwlSimMessageTransceiver(sock)
-		self.lastReply = None
+		self.lastRxMsg = None
 
 		# Ping the server
 		try:
@@ -122,8 +122,8 @@ class AwlSimClient(object):
 			self.serverProcess.wait()
 			self.serverProcess = None
 
-	def __rx_REPLY(self, msg):
-		self.lastReply = msg
+	def __rx_NOP(self, msg):
+		pass # Nothing
 
 	def __rx_EXCEPTION(self, msg):
 		raise AwlSimErrorText(msg.exceptionText)
@@ -151,12 +151,13 @@ class AwlSimClient(object):
 				   msg.requestType)
 
 	__msgRxHandlers = {
-		AwlSimMessage.MSG_ID_REPLY		: __rx_REPLY,
+		AwlSimMessage.MSG_ID_REPLY		: __rx_NOP,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
 		AwlSimMessage.MSG_ID_MAINTREQ		: __rx_MAINTREQ,
+		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
 	}
 
 	def processMessages(self, blocking=False):
@@ -180,6 +181,7 @@ class AwlSimClient(object):
 				(host, port))
 		if not msg:
 			return
+		self.lastRxMsg = msg
 		try:
 			handler = self.__msgRxHandlers[msg.msgId]
 		except KeyError:
@@ -187,20 +189,25 @@ class AwlSimClient(object):
 				"message 0x%02X" % msg.msgId)
 		handler(self, msg)
 
-	def __sendAndWaitReply(self, msg, timeoutMs=10000):
-		self.transceiver.send(msg)
+	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeoutMs=3000):
+		self.transceiver.send(txMsg)
 		count = 0
-		while count < timeoutMs:
+		while count < waitTimeoutMs:
 			self.processMessages()
-			reply = self.lastReply
-			if reply and\
-			   reply.inReplyToId == msg.msgId and\
-			   reply.inReplyToSeq == msg.seq:
-				self.lastReply = None
-				return reply.status
+			rxMsg = self.lastRxMsg
+			if rxMsg and checkRxMsg(rxMsg):
+				self.lastRxMsg = None
+				return rxMsg
 			time.sleep(0.01)
 			count += 10
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
+
+	def __sendAndWaitFor_REPLY(self, msg, timeoutMs=3000):
+		def checkRxMsg(rxMsg):
+			return rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and\
+			       rxMsg.inReplyToId == msg.msgId and\
+			       rxMsg.inReplyToSeq == msg.seq
+		return self.__sendAndWait(msg, checkRxMsg, timeoutMs).status
 
 	def setRunState(self, run=True):
 		if run:
@@ -208,26 +215,26 @@ class AwlSimClient(object):
 		else:
 			runState = AwlSimMessage_RUNSTATE.STATE_STOP
 		msg = AwlSimMessage_RUNSTATE(runState)
-		status = self.__sendAndWaitReply(msg)
+		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set run state")
 
 	def loadCode(self, code):
 		msg = AwlSimMessage_LOAD_CODE(code)
-		status = self.__sendAndWaitReply(msg)
+		status = self.__sendAndWaitFor_REPLY(msg, 10000)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load code")
 
 	def loadHardwareModule(self, name, parameters={}):
 		msg = AwlSimMessage_LOAD_HW(name = name,
 					    paramDict = parameters)
-		status = self.__sendAndWaitReply(msg)
+		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 
 	def __setOption(self, name, value):
 		msg = AwlSimMessage_SET_OPT(name, value)
-		status = self.__sendAndWaitReply(msg)
+		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
 
@@ -244,8 +251,14 @@ class AwlSimClient(object):
 	def setPeriodicDumpInterval(self, interval=0):
 		self.__setOption("periodic_dump_int", str(int(interval)))
 
-	def setMnemonics(self, mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
-		self.__setOption("mnemonics", str(int(mnemonics)))
+	def getCpuSpecs(self):
+		msg = AwlSimMessage_GET_CPUSPECS()
+		rxMsg = self.__sendAndWait(msg,
+			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSPECS)
+		return rxMsg.cpuspecs
 
-	def setNrAccus(self, nrAccus=2):
-		self.__setOption("nr_accus", str(int(nrAccus)))
+	def setCpuSpecs(self, cpuspecs):
+		msg = AwlSimMessage_CPUSPECS(cpuspecs)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to set cpuspecs")
