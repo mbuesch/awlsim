@@ -51,9 +51,11 @@ class AwlSimServer(object):
 	class Client(object):
 		"""Client information."""
 
-		def __init__(self, sock):
+		def __init__(self, sock, host, port):
 			# Socket
 			self.socket = sock
+			self.host = host
+			self.port = port
 			self.transceiver = AwlSimMessageTransceiver(sock)
 
 			# CPU-dump
@@ -267,16 +269,14 @@ class AwlSimServer(object):
 		try:
 			msg = client.transceiver.receive()
 		except AwlSimMessageTransceiver.RemoteEndDied as e:
-			host, port = client.socket.getpeername()
 			printInfo("AwlSimServer: Client '%s (port %d)' died" %\
-				(host, port))
+				(client.host, client.port))
 			self.__clientRemove(client)
 			return
 		except (TransferError, socket.error) as e:
-			host, port = client.socket.getpeername()
 			printInfo("AwlSimServer: Client '%s (port %d)' data "
-				"transfer error:\n" %\
-				(host, port, str(e)))
+				"transfer error:\n%s" %\
+				(client.host, client.port, str(e)))
 			return
 		if not msg:
 			return
@@ -394,6 +394,7 @@ class AwlSimServer(object):
 
 		try:
 			clientSock, addrInfo = self.socket.accept()
+			clientHost, clientPort = addrInfo[:2]
 		except socket.error as e:
 			if e.errno == errno.EWOULDBLOCK or\
 			   e.errno == errno.EAGAIN:
@@ -402,7 +403,7 @@ class AwlSimServer(object):
 		host, port = addrInfo[0], addrInfo[1]
 		printInfo("AwlSimServer: Client '%s (port %d)' connected" % (host, port))
 
-		client = self.Client(clientSock)
+		client = self.Client(clientSock, clientHost, clientPort)
 		self.__clientAdd(client)
 
 		return client
