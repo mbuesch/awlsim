@@ -244,23 +244,23 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 
 	def __setOption(self, name, value):
-		msg = AwlSimMessage_SET_OPT(name, value)
+		msg = AwlSimMessage_SET_OPT(name, str(value))
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
 
 	def setLoglevel(self, level=Logging.LOG_INFO):
 		Logging.setLoglevel(level)
-		self.__setOption("loglevel", str(int(level)))
+		self.__setOption("loglevel", int(level))
 
 	def enableOBTempPresets(self, enable=True):
-		self.__setOption("ob_temp_presets", str(int(bool(enable))))
+		self.__setOption("ob_temp_presets", int(bool(enable)))
 
 	def enableExtendedInsns(self, enable=True):
-		self.__setOption("extended_insns", str(int(bool(enable))))
+		self.__setOption("extended_insns", int(bool(enable)))
 
 	def setPeriodicDumpInterval(self, interval=0):
-		self.__setOption("periodic_dump_int", str(int(interval)))
+		self.__setOption("periodic_dump_int", int(interval))
 
 	def getCpuSpecs(self):
 		msg = AwlSimMessage_GET_CPUSPECS()
