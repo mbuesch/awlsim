@@ -663,9 +663,6 @@ class GenericDWord(GenericInteger):
 		GenericInteger.__init__(self, value, 32)
 
 class ByteArray(bytearray):
-	def __init__(self, size):
-		bytearray.__init__(self, int(size))
-
 	def fetch(self, offset, width):
 		byteOffset = offset.byteOffset
 		try:

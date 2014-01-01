@@ -150,11 +150,11 @@ class AwlSimClient(object):
 			printError("Received unknown maintenance request: %d" %\
 				   msg.requestType)
 
-	def handle_MEMORY(self, memAreasData):
+	def handle_MEMORY(self, memAreas):
 		pass # Don't do anything by default
 
 	def __rx_MEMORY(self, msg):
-		self.handle_MEMORY(msg.memAreasData)
+		self.handle_MEMORY(msg.memAreas)
 		if msg.flags & msg.FLG_SYNC:
 			# The server should never send us a synchronous
 			# memory image. So just output an error message.
@@ -275,7 +275,7 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to set cpuspecs")
 
 	# Set the memory areas we are interested in receiving
-	# dumps for in the server.
+	# dumps for, in the server.
 	# memAreas is a list of MemoryArea instances.
 	# The repetitionFactor tells whether to
 	#  - only run the request once (repetitionFactor=0)
@@ -291,11 +291,11 @@ class AwlSimClient(object):
 				raise AwlSimError("AwlSimClient: Failed to set memory read reqs")
 
 	# Write memory areas in the server.
-	# memAreasData is a list of MemoryAreaData instances.
+	# memAreas is a list of MemoryAreaData instances.
 	# If sync is true, wait for a reply from the server.
-	def writeMemory(self, memAreasData, sync=False):
+	def writeMemory(self, memAreas, sync=False):
 		self.transceiver.send(
-			AwlSimMessage_MEMORY(0, memAreasData)
+			AwlSimMessage_MEMORY(0, memAreas)
 		)
 		if sync:
 			status = self.__sendAndWaitFor_REPLY(msg)

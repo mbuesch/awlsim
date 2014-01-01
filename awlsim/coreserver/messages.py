@@ -399,13 +399,13 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 		try:
 			offset = 0
 			flags, repetitionFactor =\
-				self.plHdrStruct.unpack_from(payload, offset)
-			offset += self.plHdrStruct.size
+				cls.plHdrStruct.unpack_from(payload, offset)
+			offset += cls.plHdrStruct.size
 			memAreas = []
 			while offset < len(payload):
 				memType, mFlags, index, start, length =\
-					self.plAreaStruct.unpack_from(payload, offset)
-				offset += self.plAreaStruct.size
+					cls.plAreaStruct.unpack_from(payload, offset)
+				offset += cls.plAreaStruct.size
 				memAreas.append(MemoryArea(memType, mFlags, index, start, length))
 		except struct.error as e:
 			raise TransferError("REQ_MEMORY: Invalid data format")
@@ -428,13 +428,14 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 	# Flags
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
 
-	def __init__(self, flags, memAreasData):
+	def __init__(self, flags, memAreas):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MEMORY)
-		self.memAreasData = memAreasData
+		self.flags = flags
+		self.memAreas = memAreas
 
 	def toBytes(self):
 		pl = [ self.plHdrStruct.pack(self.flags) ]
-		for memAreaData in self.memAreasData:
+		for memArea in self.memAreas:
 			pl.append(self.plAreaStruct.pack(memArea.memType,
 							 memArea.flags,
 							 memArea.index,
@@ -448,25 +449,23 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 	def fromBytes(cls, payload):
 		try:
 			offset = 0
-			(flags, ) = self.plHdrStruct.unpack_from(payload, offset)
-			offset += self.plHdrStruct.size
-			memAreasData = []
+			(flags, ) = cls.plHdrStruct.unpack_from(payload, offset)
+			offset += cls.plHdrStruct.size
+			memAreas = []
 			while offset < len(payload):
 				memType, mFlags, index, start, length =\
-					self.plAreaStruct.unpack_from(payload, offset)
-				offset += self.plAreaStruct.size
+					cls.plAreaStruct.unpack_from(payload, offset)
+				offset += cls.plAreaStruct.size
 				#FIXME pad length to 32bit?
 				data = payload[offset : offset + length]
+				offset += length
 				if len(data) != length:
 					raise IndexError
-				memAreasData.append(MemoryAreaData(memType,
-								   mFlags,
-								   index,
-								   start,
-								   data))
+				memAreas.append(MemoryArea(memType, mFlags, index,
+							   start, length, data))
 		except (struct.error, IndexError) as e:
 			raise TransferError("MEMORY: Invalid data format")
-		return cls(flags, memAreasData)
+		return cls(flags, memAreas)
 
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass

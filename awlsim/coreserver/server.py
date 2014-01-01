@@ -63,7 +63,7 @@ class AwlSimServer(object):
 			self.nextDump = 0
 
 			# Memory read requests
-			self.memReadRequests = []
+			self.memReadRequestMsg = None
 			self.repetitionFactor = 0
 			self.repetitionCount = 0
 
@@ -237,7 +237,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_REQ_MEMORY(self, client, msg):
-		client.memReadRequests = msg.memAreas
+		client.memReadRequestMsg = AwlSimMessage_MEMORY(0, msg.memAreas)
 		client.repetitionFactor = msg.repetitionFactor
 		client.repetitionCount = client.repetitionFactor
 		if msg.flags & msg.FLG_SYNC:
@@ -246,7 +246,9 @@ class AwlSimServer(object):
 			)
 
 	def __rx_MEMORY(self, client, msg):
-		pass#TODO
+		cpu = self.sim.cpu
+		for memArea in msg.memAreas:
+			memArea.writeToCpu(cpu)
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(
 				msg, AwlSimMessage_REPLY.STAT_OK)
@@ -304,20 +306,19 @@ class AwlSimServer(object):
 				client = [ c for c in self.clients if c.socket is sock ][0]
 				self.__handleClientComm(client)
 
-	def __handleOneMemReadReq(self, client, memArea):
-		pass#TODO
-
 	def __handleMemReadReqs(self):
 		for client in self.clients:
-			if not client.memReadRequests:
+			if not client.memReadRequestMsg:
 				continue
 			client.repetitionCount -= 1
 			if client.repetitionCount <= 0:
-				for req in client.memReadRequests:
-					self.__handleOneMemReadReq(client, req)
-				client.repetitionCount = self.repetitionFactor
-				if not self.repetitionFactor:
-					self.memReadRequests = []
+				cpu, memAreas = self.sim.cpu, client.memReadRequestMsg.memAreas
+				for memArea in memAreas:
+					memArea.readFromCpu(cpu)
+				client.transceiver.send(client.memReadRequestMsg)
+				client.repetitionCount = client.repetitionFactor
+				if not client.repetitionFactor:
+					self.memReadRequestMsg = None
 
 	def run(self, host, port):
 		"""Run the server on 'host':'port'."""
