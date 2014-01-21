@@ -148,6 +148,7 @@ setup(	name		= "awlsim",
 	author		= "Michael Buesch",
 	author_email	= "m@bues.ch",
 	url		= "http://bues.ch/cms/hacking/awlsim.html",
+	download_url	= "http://bues.ch/awlsim/awlsim-%d.%d.zip" % (VERSION_MAJOR, VERSION_MINOR),
 	packages	= [ "awlsim",
 			    "awlsim/coreserver",
 			    "awlsim/gui",
@@ -161,6 +162,9 @@ setup(	name		= "awlsim",
 			    "awlsim-linuxcnc-hal", ],
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
+	keywords	= [ "AWL", "STL", "SPS", "PLC", "Step 7",
+			    "Siemens", "emulator", "simulator",
+			    "PROFIBUS", "LinuxCNC", ],
 	classifiers	= [
 		"Development Status :: 4 - Beta",
 		"Environment :: Console",
@@ -184,5 +188,17 @@ setup(	name		= "awlsim",
 		"Topic :: Software Development :: Interpreters",
 		"Topic :: Software Development :: Testing",
 		"Topic :: System :: Emulators",
-	]
+	],
+	long_description = """
+Awlsim is a free Step 7 AWL/STL/PLC simulator.
+
+Depending on the host machine and the Python interpreter used, it achieves
+good performance of several thousand to millions of AWL/STL instructions
+per second.
+German and english AWL/STL mnemonics are supported. 
+S7-300 and S7-400 CPUs (with 2 and 4 accus) are supported.
+
+Awlsim has got a hardware interface with existing PROFIBUS-DP (proof-of-concept)
+and LinuxCNC plug-in modules.
+"""
 )
