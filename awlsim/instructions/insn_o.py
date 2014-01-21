@@ -33,7 +33,7 @@ class AwlInsn_O(AwlInsn):
 			self.run = self.__run_noOps
 
 	def __run_withOps(self):
-		s, STA = self.cpu.callStackTop.status,\
+		s, STA = self.cpu.statusWord,\
 			self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
 			s.OR, s.STA, s.VKE, s.NER = 0, STA, (s.VKE | STA), 1
@@ -41,6 +41,6 @@ class AwlInsn_O(AwlInsn):
 			s.OR, s.STA, s.VKE, s.NER = 0, STA, STA, 1
 
 	def __run_noOps(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		# UND vor ODER
 		s.OR, s.STA, s.NER = s.VKE, 1, 0

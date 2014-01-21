@@ -28,7 +28,7 @@ class AwlInsn_MU_D(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		prod = self.cpu.accu2.getSignedDWord() *\
 		       self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(prod)

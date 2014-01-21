@@ -33,4 +33,4 @@ class AwlInsn_COS(AwlInsn):
 			if pyFloatEqual(accu1, extremum):
 				accu1 = extremum
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
+		self.cpu.statusWord.setForFloatingPoint(accu1)

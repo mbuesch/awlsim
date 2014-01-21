@@ -28,7 +28,7 @@ class AwlInsn_NEGD(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		value = -(self.cpu.accu1.getSignedDWord())
 		self.cpu.accu1.setDWord(value)
 		accu1 = self.cpu.accu1.getSignedDWord()

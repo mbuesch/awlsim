@@ -28,7 +28,7 @@ class AwlInsn_DI_I(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu2, accu1 = self.cpu.accu2.getSignedWord(),\
 			       self.cpu.accu1.getSignedWord()
 		if self.cpu.is4accu:

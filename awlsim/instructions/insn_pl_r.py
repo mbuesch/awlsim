@@ -32,4 +32,4 @@ class AwlInsn_PL_R(AwlInsn):
 			       self.cpu.accu1.getPyFloat()
 		_sum = accu2 + accu1
 		self.cpu.accu1.setPyFloat(_sum)
-		self.cpu.callStackTop.status.setForFloatingPoint(_sum)
+		self.cpu.statusWord.setForFloatingPoint(_sum)

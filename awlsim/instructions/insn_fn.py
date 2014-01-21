@@ -28,7 +28,7 @@ class AwlInsn_FN(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		fm = self.cpu.fetch(self.ops[0], (1,))
 		self.cpu.store(self.ops[0], s.VKE, (1,))
 		s.OR, s.STA, s.NER = 0, s.VKE, 1

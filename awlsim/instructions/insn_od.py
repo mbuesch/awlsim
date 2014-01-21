@@ -30,7 +30,7 @@ class AwlInsn_OD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			accu2 = self.ops[0].value

@@ -28,7 +28,7 @@ class AwlInsn_TRUNC(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1 = int(accu1)

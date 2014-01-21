@@ -28,7 +28,7 @@ class AwlInsn_ASSIGN(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if self.cpu.mcrActive and not self.cpu.mcrIsOn():
 			s.OR, s.STA, s.NER = 0, 0, 0
 		else:

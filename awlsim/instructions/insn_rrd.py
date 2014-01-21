@@ -30,7 +30,7 @@ class AwlInsn_RRD(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
 		if self.ops:
 			count = self.ops[0].value

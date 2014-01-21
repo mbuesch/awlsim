@@ -28,7 +28,7 @@ class AwlInsn_ASSERT_EQ_R(AwlInsn):
 		self.assertOpCount(2)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		val0 = self.cpu.fetch(self.ops[0], (32,))
 		val1 = self.cpu.fetch(self.ops[1], (32,))
 		if not floatEqual(val0, val1):

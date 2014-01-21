@@ -45,6 +45,32 @@ BEGIN
 END_FUNCTION
 
 
+FUNCTION FC 6 : VOID
+BEGIN
+	// Only check OV and OS bits
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	0
+	L		1
+	L		1
+	+I
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+END_FUNCTION
+
+
+FUNCTION FC 7 : VOID
+BEGIN
+	// Trigger an overflow
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	L		30000
+	L		30000
+	+I
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+END_FUNCTION
+
+
 ORGANIZATION_BLOCK OB 1
 BEGIN
 	CALL		FC 1
@@ -77,4 +103,20 @@ BEGIN
 	CALL FC 5 (
 		INPVAR2		:= 9976,
 	)
+
+	// Test OV/OS bits over call boundaries
+	__STWRST
+	L		30000
+	L		30000
+	+I
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	CALL FC 6
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+	__STWRST
+	CALL FC 7
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	0
+
 END_ORGANIZATION_BLOCK

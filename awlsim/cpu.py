@@ -154,8 +154,13 @@ class S7CPU(object):
 
 	def __translateInsns(self, rawInsns):
 		insns = []
+		# Translate raw instructions to simulator instructions
 		for ip, rawInsn in enumerate(rawInsns):
 			insns.append(self.__translateInsn(rawInsn, ip))
+		# If the last instruction is not BE or BEA, add an implicit BE
+		if not insns or insns[-1].type not in (AwlInsn.TYPE_BE,
+						       AwlInsn.TYPE_BEA):
+			insns.append(AwlInsn_BE(cpu = self, rawInsn = None))
 		return insns
 
 	def __translateInterfaceField(self, rawVar):
@@ -437,6 +442,7 @@ class S7CPU(object):
 		self.callStackTop = None
 		self.setMcrActive(False)
 		self.mcrStack = [ ]
+		self.statusWord = S7StatusWord()
 
 		self.relativeJump = 1
 
@@ -704,7 +710,7 @@ class S7CPU(object):
 			self.callStackTop = newCse
 
 	def run_BE(self):
-		s = self.callStackTop.status
+		s = self.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
 		cse = self.callStackTop
@@ -729,7 +735,7 @@ class S7CPU(object):
 		self.diRegister, self.dbRegister = self.dbRegister, self.diRegister
 
 	def getStatusWord(self):
-		return self.callStackTop.status
+		return self.statusWord
 
 	def getAccu(self, index):
 		if index < 1 or index > self.specs.nrAccus:
@@ -824,32 +830,32 @@ class S7CPU(object):
 
 	def fetchSTW(self, operator):
 		if operator.width == 1:
-			return self.callStackTop.status.getByBitNumber(operator.value.bitOffset)
+			return self.statusWord.getByBitNumber(operator.value.bitOffset)
 		elif operator.width == 16:
-			return self.callStackTop.status.getWord()
+			return self.statusWord.getWord()
 		else:
 			assert(0)
 
 	def fetchSTW_Z(self, operator):
-		return (self.callStackTop.status.A0 ^ 1) & (self.callStackTop.status.A1 ^ 1)
+		return (self.statusWord.A0 ^ 1) & (self.statusWord.A1 ^ 1)
 
 	def fetchSTW_NZ(self, operator):
-		return self.callStackTop.status.A0 | self.callStackTop.status.A1
+		return self.statusWord.A0 | self.statusWord.A1
 
 	def fetchSTW_POS(self, operator):
-		return (self.callStackTop.status.A0 ^ 1) & self.callStackTop.status.A1
+		return (self.statusWord.A0 ^ 1) & self.statusWord.A1
 
 	def fetchSTW_NEG(self, operator):
-		return self.callStackTop.status.A0 & (self.callStackTop.status.A1 ^ 1)
+		return self.statusWord.A0 & (self.statusWord.A1 ^ 1)
 
 	def fetchSTW_POSZ(self, operator):
-		return self.callStackTop.status.A0 ^ 1
+		return self.statusWord.A0 ^ 1
 
 	def fetchSTW_NEGZ(self, operator):
-		return self.callStackTop.status.A1 ^ 1
+		return self.statusWord.A1 ^ 1
 
 	def fetchSTW_UO(self, operator):
-		return self.callStackTop.status.A0 & self.callStackTop.status.A1
+		return self.statusWord.A0 & self.statusWord.A1
 
 	def fetchE(self, operator):
 		return self.inputs.fetch(operator.value, operator.width)
@@ -1059,7 +1065,7 @@ class S7CPU(object):
 		if operator.width == 1:
 			raise AwlSimError("Cannot store to individual STW bits")
 		elif operator.width == 16:
-			self.callStackTop.status.setWord(value)
+			self.statusWord.setWord(value)
 		else:
 			assert(0)
 
@@ -1098,7 +1104,7 @@ class S7CPU(object):
 		ret = []
 		ret.append("=== S7-CPU dump ===  (t: %.01fs)" %\
 			   (self.now - self.startupTime))
-		ret.append("    STW:  " + str(self.callStackTop.status))
+		ret.append("    STW:  " + str(self.statusWord))
 		if self.is4accu:
 			accus = [ accu.toHex()
 				  for accu in (self.accu1, self.accu2,

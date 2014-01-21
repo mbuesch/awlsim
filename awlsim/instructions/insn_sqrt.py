@@ -36,4 +36,4 @@ class AwlInsn_SQRT(AwlInsn):
 			accu1 = nNaNFloat
 		else:
 			self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
+		self.cpu.statusWord.setForFloatingPoint(accu1)

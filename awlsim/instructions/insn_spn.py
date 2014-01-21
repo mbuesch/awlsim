@@ -30,6 +30,6 @@ class AwlInsn_SPN(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.A1 ^ s.A0:
 			self.cpu.jumpToLabel(self.ops[0].labelIndex)

@@ -28,5 +28,5 @@ class AwlInsn_NOT(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		s.STA, s.VKE = 1, (s.VKE ^ 1)

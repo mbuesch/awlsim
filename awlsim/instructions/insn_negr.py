@@ -30,4 +30,4 @@ class AwlInsn_NEGR(AwlInsn):
 	def run(self):
 		accu1 = -(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.callStackTop.status.setForFloatingPoint(accu1)
+		self.cpu.statusWord.setForFloatingPoint(accu1)

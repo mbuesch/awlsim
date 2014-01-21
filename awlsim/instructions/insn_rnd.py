@@ -28,7 +28,7 @@ class AwlInsn_RND(AwlInsn):
 		self.assertOpCount(0)
 
 	def __run_python2(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1_floor = int(accu1)
@@ -46,7 +46,7 @@ class AwlInsn_RND(AwlInsn):
 		self.cpu.accu1.setDWord(accu1)
 
 	def __run_python3(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1 = int(round(accu1))

@@ -32,4 +32,4 @@ class AwlInsn_MI_R(AwlInsn):
 			       self.cpu.accu1.getPyFloat()
 		diff = accu2 - accu1
 		self.cpu.accu1.setPyFloat(diff)
-		self.cpu.callStackTop.status.setForFloatingPoint(diff)
+		self.cpu.statusWord.setForFloatingPoint(diff)

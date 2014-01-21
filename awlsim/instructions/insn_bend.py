@@ -28,7 +28,7 @@ class AwlInsn_BEND(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		try:
 			pse = self.cpu.parenStack.pop()
 		except IndexError as e:

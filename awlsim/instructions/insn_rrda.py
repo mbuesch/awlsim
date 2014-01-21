@@ -28,7 +28,7 @@ class AwlInsn_RRDA(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		accu1, count = self.cpu.accu1.getDWord(), 1
 		s.A0, s.OV = 0, 0
 		accu1 &= 0xFFFFFFFF

@@ -122,12 +122,12 @@ class AwlInsn_CALL(AwlInsn_AbstractCall):
 
 	def __run_CALL_FC(self):
 		self.cpu.run_CALL(self.ops[0], None, self.params)
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
 	def __run_CALL_FB(self):
 		self.cpu.run_CALL(self.ops[0], self.ops[1], self.params)
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
 class AwlInsn_CC(AwlInsn_AbstractCall):
@@ -136,7 +136,7 @@ class AwlInsn_CC(AwlInsn_AbstractCall):
 		self.assertOpCount(1)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.VKE:
 			self.cpu.run_CALL(self.ops[0])
 		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
@@ -148,5 +148,5 @@ class AwlInsn_UC(AwlInsn_AbstractCall):
 
 	def run(self):
 		self.cpu.run_CALL(self.ops[0])
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0

@@ -38,4 +38,4 @@ class AwlInsn_DI_R(AwlInsn):
 			else:
 				quo = negInfFloat
 		self.cpu.accu1.setPyFloat(quo)
-		self.cpu.callStackTop.status.setForFloatingPoint(quo)
+		self.cpu.statusWord.setForFloatingPoint(quo)

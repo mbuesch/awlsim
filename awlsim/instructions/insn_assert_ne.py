@@ -28,7 +28,7 @@ class AwlInsn_ASSERT_NE(AwlInsn):
 		self.assertOpCount(2)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])
 		if not (val0 != val1):

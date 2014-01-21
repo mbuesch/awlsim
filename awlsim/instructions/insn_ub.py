@@ -28,6 +28,6 @@ class AwlInsn_UB(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		self.cpu.parenStackAppend(AwlInsn.TYPE_UB, s)
 		s.OR, s.STA, s.NER = 0, 1, 0

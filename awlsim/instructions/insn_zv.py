@@ -31,6 +31,6 @@ class AwlInsn_ZV(AwlInsn):
 		self.ops[0].assertType(AwlOperator.MEM_Z)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		self.cpu.getCounter(self.ops[0].resolve(True).value.byteOffset).run_ZV(s.VKE)
 		s.OR, s.NER = 0, 0

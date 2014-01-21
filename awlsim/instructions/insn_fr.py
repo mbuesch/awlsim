@@ -32,4 +32,4 @@ class AwlInsn_FR(AwlInsn):
 
 	def run(self):
 		self.cpu.getCounter(self.ops[0].resolve(True).value.byteOffset
-			).run_FR(self.cpu.callStackTop.status.VKE)
+			).run_FR(self.cpu.statusWord.VKE)

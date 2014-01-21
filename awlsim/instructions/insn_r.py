@@ -28,7 +28,7 @@ class AwlInsn_R(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		s, oper = self.cpu.callStackTop.status,\
+		s, oper = self.cpu.statusWord,\
 			self.ops[0].resolve(True)
 		if oper.type == AwlOperator.MEM_Z:
 			if s.VKE:

@@ -21,7 +21,6 @@
 
 from awlsim.datatypes import *
 from awlsim.blocks import *
-from awlsim.statusword import *
 from awlsim.parameters import *
 from awlsim.objectcache import *
 from awlsim.util import *
@@ -38,7 +37,6 @@ class CallStackElem(object):
 
 	def __init__(self, cpu, block, interfaceDB=None, parameters=()):
 		(self.cpu,
-		 self.status,
 		 self.parenStack,
 		 self.ip,
 		 self.localdata,
@@ -49,7 +47,6 @@ class CallStackElem(object):
 		 self.prevDbRegister,
 		 self.prevDiRegister) = (
 			cpu,
-			S7StatusWord(),
 			[],
 			0,
 			self.localdataCache.get(cpu),

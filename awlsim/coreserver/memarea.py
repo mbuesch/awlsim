@@ -94,7 +94,7 @@ class MemoryArea(object):
 				"Must be 1 or 16." % self.start)
 
 	def __read_STW(self, cpu):
-		stw = cpu.callStackTop.status.getWord()
+		stw = cpu.statusWord.getWord()
 		self.data, self.length = bytes(((stw >> 8) & 0xFF, stw & 0xFF)), 2
 
 	__readHandlers = {

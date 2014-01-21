@@ -156,7 +156,7 @@ class Timer(object):
 
 	def run_SI(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.VKE:
 			if not self.prevVKE: # Pos edge
 				self.status = 1
@@ -168,7 +168,7 @@ class Timer(object):
 
 	def run_SV(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.VKE & ~self.prevVKE: # Pos edge
 			self.status = 1
 			self.__start(s5t)
@@ -176,7 +176,7 @@ class Timer(object):
 
 	def run_SE(self, s5t):
 		self.deadlineCallback = self.__cb_setStatus
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.VKE:
 			if not self.prevVKE: # Pos edge
 				self.status = 0
@@ -188,7 +188,7 @@ class Timer(object):
 
 	def run_SS(self, s5t):
 		self.deadlineCallback = self.__cb_setStatus
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.VKE & ~self.prevVKE: # Pos edge
 			self.status = 0
 			self.__start(s5t)
@@ -196,7 +196,7 @@ class Timer(object):
 
 	def run_SA(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if s.VKE & ~self.prevVKE: # Pos edge
 			self.__checkDeadline()
 			self.status, self.running = 1, False

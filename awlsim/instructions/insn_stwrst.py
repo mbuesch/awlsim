@@ -28,4 +28,4 @@ class AwlInsn_STWRST(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		self.cpu.callStackTop.status.setWord(0)
+		self.cpu.statusWord.setWord(0)

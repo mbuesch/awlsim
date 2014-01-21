@@ -28,7 +28,7 @@ class AwlInsn_EQ_R(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		if isNaN(self.cpu.accu1.getDWord()) or\
 		   isNaN(self.cpu.accu2.getDWord()):
 			s.A0, s.A1, s.OV, s.OS, s.STA = 1, 1, 1, 1, 0

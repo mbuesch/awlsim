@@ -32,4 +32,4 @@ class AwlInsn_MU_R(AwlInsn):
 			       self.cpu.accu1.getPyFloat()
 		prod = accu2 * accu1
 		self.cpu.accu1.setPyFloat(prod)
-		self.cpu.callStackTop.status.setForFloatingPoint(prod)
+		self.cpu.statusWord.setForFloatingPoint(prod)

@@ -28,5 +28,5 @@ class AwlInsn_SAVE(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
-		s = self.cpu.callStackTop.status
+		s = self.cpu.statusWord
 		s.BIE = s.VKE
