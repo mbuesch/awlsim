@@ -44,4 +44,4 @@ class AwlInsn_DTB(AwlInsn):
 		bcd |= ((binval // 100000) % 10) << 20
 		bcd |= ((binval // 1000000) % 10) << 24
 		self.cpu.accu1.set(bcd)
-		s.OV, s.OS = 0, 0
+		s.OV = 0

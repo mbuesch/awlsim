@@ -41,4 +41,4 @@ class AwlInsn_ITB(AwlInsn):
 		bcd |= ((binval // 10) % 10) << 4
 		bcd |= ((binval // 100) % 10) << 8
 		self.cpu.accu1.setWord(bcd)
-		s.OV, s.OS = 0, 0
+		s.OV = 0

@@ -28,6 +28,10 @@
 	ITB
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
+	L		321
+	ITB
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	1
 
 
 	// Check BTD
@@ -59,4 +63,8 @@
 	__ASSERT==	__STW OS,	0
 	DTB
 	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	L		L#7654321
+	DTB
+	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	1
