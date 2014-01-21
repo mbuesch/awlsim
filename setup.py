@@ -145,6 +145,7 @@ tryBuildCythonModules()
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
 	description	= "Step 7 AWL/STL/PLC simulator",
+	license		= "GNU General Public License v2 or later",
 	author		= "Michael Buesch",
 	author_email	= "m@bues.ch",
 	url		= "http://bues.ch/cms/hacking/awlsim.html",
