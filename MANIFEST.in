@@ -1,0 +1,9 @@
+include awlsim-win32.bat
+include COPYING.txt
+include EXAMPLE.awl
+include TODO.txt
+include awlsimhw_linuxcnc/awlsim.hal
+graft tests
+
+prune build
+prune ./build

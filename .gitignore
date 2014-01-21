@@ -1,3 +1,4 @@
 build/
 awlsim_cython
+MANIFEST
 *.swp
