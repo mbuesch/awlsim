@@ -69,12 +69,30 @@ def pyCythonPatch(toFile, fromFile):
 		return
 	os.rename(tmpFile, toFile)
 
-def addCythonModules(Cython_build_ext):
-	global cmdclass
+cythonBuildDir = None
+cythonBuildFiles = []
+
+def patchCythonModules():
+	global cythonBuildDir
+	global cythonBuildFiles
+
+	assert(cythonBuildDir)
+	makedirs(cythonBuildDir, 0o755)
+
+	for fromFile, toDir, pyxFilename in cythonBuildFiles:
+		toFile = os.path.join(toDir, pyxFilename)
+
+		makedirs(toDir, 0o755)
+		pyCythonPatch(toFile, fromFile)
+
+def registerCythonModules():
 	global ext_modules
+	global cythonBuildDir
+	global cythonBuildFiles
 
 	modDir = os.path.join(os.curdir, "awlsim")
-	buildDir = os.path.join(os.curdir, "build", "awlsim_cython-patched.%s-%s-%d.%d" %\
+	# Make path to the cython patch-build-dir
+	cythonBuildDir = os.path.join(os.curdir, "build", "awlsim_cython-patched.%s-%s-%d.%d" %\
 		(platform.system().lower(),
 		 platform.machine().lower(),
 		 sys.version_info[0], sys.version_info[1])
@@ -86,8 +104,7 @@ def addCythonModules(Cython_build_ext):
 		raise Exception("Wrong directory. "
 			"Execute setup.py from within the awlsim directory.")
 
-	makedirs(buildDir, 0o755)
-
+	# Walk the "awlsim" module
 	for dirpath, dirnames, filenames in os.walk(modDir):
 		subpath = os.path.relpath(dirpath, modDir)
 		if subpath == os.curdir:
@@ -99,23 +116,25 @@ def addCythonModules(Cython_build_ext):
 			if filename == "__init__.py":
 				continue
 			if filename.endswith(".py"):
+				pyxFilename = filename.replace(".py", ".pyx")
 				fromFile = os.path.join(dirpath, filename)
-				toDir = os.path.join(buildDir, subpath)
-				toFile = os.path.join(toDir, filename.replace(".py", ".pyx"))
+				toDir = os.path.join(cythonBuildDir, subpath)
+				toFile = os.path.join(toDir, pyxFilename)
 
-				makedirs(toDir, 0o755)
-				pyCythonPatch(toFile, fromFile)
+				# Remember the filenames for the build
+				cythonBuildFiles.append( (fromFile, toDir, pyxFilename) )
 
+				# Construct the new cython module name
 				modname = [ "awlsim_cython" ]
 				if subpath:
 					modname.extend(subpath.split(os.sep))
 				modname.append(filename[:-3]) # Strip .py
 				modname = ".".join(modname)
 
+				# Create a distutils Extension for the module
 				ext_modules.append(
 					Extension(modname, [toFile])
 				)
-	cmdclass["build_ext"] = Cython_build_ext
 
 def tryBuildCythonModules():
 	try:
@@ -131,11 +150,19 @@ def tryBuildCythonModules():
 		return
 	try:
 		from Cython.Distutils import build_ext as Cython_build_ext
-		addCythonModules(Cython_build_ext)
 	except ImportError as e:
 		print("WARNING: Could not build the CYTHON modules: "
 		      "%s" % str(e))
 		print("--> Is Cython installed?")
+		return
+
+	class MyCythonBuildExt(Cython_build_ext):
+		def build_extensions(self):
+			# First patch the files, the run the normal build
+			patchCythonModules()
+			Cython_build_ext.build_extensions(self)
+	cmdclass["build_ext"] = MyCythonBuildExt
+	registerCythonModules()
 
 cmdclass = {}
 ext_modules = []
