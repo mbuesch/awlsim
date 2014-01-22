@@ -148,6 +148,10 @@ def tryBuildCythonModules():
 		print("WARNING: Not building CYTHON modules on '%s' platform." %\
 		      os.name)
 		return
+	if "bdist_wininst" in sys.argv:
+		print("WARNING: Omitting CYTHON modules while building "
+		      "Windows installer.")
+		return
 	try:
 		from Cython.Distutils import build_ext as Cython_build_ext
 	except ImportError as e:
