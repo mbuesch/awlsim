@@ -1,4 +1,3 @@
-include awlsim-win32.bat
 include COPYING.txt
 include EXAMPLE.awl
 include TODO.txt
