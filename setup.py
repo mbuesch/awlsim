@@ -173,6 +173,14 @@ ext_modules = []
 # Try to build the Cython modules. This might fail.
 tryBuildCythonModules()
 
+# Workaround for mbcs codec bug in distutils
+# http://bugs.python.org/issue10945
+import codecs
+try:
+	codecs.lookup("mbcs")
+except LookupError:
+	codecs.register(lambda name: codecs.lookup("ascii") if name == "mbcs" else None)
+
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
 	description	= "Step 7 AWL/STL/PLC simulator",
