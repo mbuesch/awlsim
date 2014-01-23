@@ -170,6 +170,7 @@ def tryBuildCythonModules():
 
 cmdclass = {}
 ext_modules = []
+extraScripts = []
 # Try to build the Cython modules. This might fail.
 tryBuildCythonModules()
 
@@ -180,6 +181,16 @@ try:
 	codecs.lookup("mbcs")
 except LookupError:
 	codecs.register(lambda name: codecs.lookup("ascii") if name == "mbcs" else None)
+
+# Add win postinstall script
+try:
+	idx = sys.argv.index("bdist_wininst")
+	if idx > 0:
+		sys.argv.insert(idx + 1, "--install-script")
+		sys.argv.insert(idx + 2, "awlsim-wininst-postinstall.py")
+		extraScripts.append("awlsim-wininst-postinstall.py")
+except ValueError:
+	pass
 
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
@@ -200,7 +211,7 @@ setup(	name		= "awlsim",
 			    "awlsimgui",
 			    "awlsim-server",
 			    "awlsim-linuxcnc-hal",
-			    "awlsim-win.bat", ],
+			    "awlsim-win.bat", ] + extraScripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
 	keywords	= [ "AWL", "STL", "SPS", "PLC", "Step 7",
