@@ -62,5 +62,5 @@ hook_regression_tests()
 [ -z "$NOCYTHON" ] && export NOCYTHON=1
 
 project=awlsim
-default_archives=zip,py-sdist,py-bdist-wininst
+default_archives=py-sdist,py-bdist-wininst
 makerelease "$@"
