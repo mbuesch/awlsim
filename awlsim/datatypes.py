@@ -76,6 +76,7 @@ class AwlDataType(object):
 	TYPE_BLOCK_DB	= enum.item # DB number type
 	TYPE_BLOCK_FB	= enum.item # FB number type
 	TYPE_BLOCK_FC	= enum.item # FC number type
+	TYPE_DB_X	= enum.item # DBx type
 	TYPE_OB_X	= enum.item # OBx type
 	TYPE_FC_X	= enum.item # FCx type
 	TYPE_SFC_X	= enum.item # SFCx type
@@ -106,6 +107,7 @@ class AwlDataType(object):
 		"BLOCK_DB"	: TYPE_BLOCK_DB,
 		"BLOCK_FB"	: TYPE_BLOCK_FB,
 		"BLOCK_FC"	: TYPE_BLOCK_FC,
+		"DB"		: TYPE_DB_X,
 		"OB"		: TYPE_OB_X,
 		"FC"		: TYPE_FC_X,
 		"SFC"		: TYPE_SFC_X,
@@ -139,6 +141,7 @@ class AwlDataType(object):
 		TYPE_BLOCK_DB	: 16,
 		TYPE_BLOCK_FB	: 16,
 		TYPE_BLOCK_FC	: 16,
+		TYPE_DB_X	: -1,
 		TYPE_OB_X	: 0,
 		TYPE_FC_X	: 0,
 		TYPE_SFC_X	: 0,
@@ -171,7 +174,8 @@ class AwlDataType(object):
 		subType = None
 		if type == cls.TYPE_ARRAY:
 			raise AwlSimError("ARRAYs not supported, yet") #TODO
-		elif type in (cls.TYPE_OB_X,
+		elif type in (cls.TYPE_DB_X,
+			      cls.TYPE_OB_X,
 			      cls.TYPE_FC_X,
 			      cls.TYPE_SFC_X,
 			      cls.TYPE_FB_X,
@@ -281,7 +285,8 @@ class AwlDataType(object):
 	def __repr__(self):
 		if self.type == self.TYPE_ARRAY:
 			return "ARRAY" #TODO
-		elif self.type in (self.TYPE_OB_X,
+		elif self.type in (self.TYPE_DB_X,
+				   self.TYPE_OB_X,
 				   self.TYPE_FC_X,
 				   self.TYPE_SFC_X,
 				   self.TYPE_FB_X,
