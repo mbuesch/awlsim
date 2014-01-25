@@ -73,9 +73,16 @@ class AwlDataType(object):
 	TYPE_ARRAY	= enum.item
 	TYPE_TIMER	= enum.item
 	TYPE_COUNTER	= enum.item
-	TYPE_BLOCK_DB	= enum.item
-	TYPE_BLOCK_FB	= enum.item
-	TYPE_BLOCK_FC	= enum.item
+	TYPE_BLOCK_DB	= enum.item # DB number type
+	TYPE_BLOCK_FB	= enum.item # FB number type
+	TYPE_BLOCK_FC	= enum.item # FC number type
+	TYPE_OB_X	= enum.item # OBx type
+	TYPE_FC_X	= enum.item # FCx type
+	TYPE_SFC_X	= enum.item # SFCx type
+	TYPE_FB_X	= enum.item # FBx type
+	TYPE_SFB_X	= enum.item # SFBx type
+	TYPE_UDT_X	= enum.item # UDTx type
+	TYPE_VAT_X	= enum.item # VATx type
 	enum.end
 
 	__name2id = {
@@ -99,10 +106,18 @@ class AwlDataType(object):
 		"BLOCK_DB"	: TYPE_BLOCK_DB,
 		"BLOCK_FB"	: TYPE_BLOCK_FB,
 		"BLOCK_FC"	: TYPE_BLOCK_FC,
+		"OB"		: TYPE_OB_X,
+		"FC"		: TYPE_FC_X,
+		"SFC"		: TYPE_SFC_X,
+		"FB"		: TYPE_FB_X,
+		"SFB"		: TYPE_SFB_X,
+		"UDT"		: TYPE_UDT_X,
+		"VAT"		: TYPE_VAT_X,
 	}
 	__id2name = pivotDict(__name2id)
 
-	# Width table for trivial types
+	# Width table for types
+	# -1 => Type width must be calculated
 	type2width = {
 		TYPE_VOID	: 0,
 		TYPE_BOOL	: 1,
@@ -118,11 +133,19 @@ class AwlDataType(object):
 		TYPE_DT		: 64,
 		TYPE_TOD	: 32,
 		TYPE_CHAR	: 8,
+		TYPE_ARRAY	: -1,
 		TYPE_TIMER	: 16,
 		TYPE_COUNTER	: 16,
 		TYPE_BLOCK_DB	: 16,
 		TYPE_BLOCK_FB	: 16,
 		TYPE_BLOCK_FC	: 16,
+		TYPE_OB_X	: 0,
+		TYPE_FC_X	: 0,
+		TYPE_SFC_X	: 0,
+		TYPE_FB_X	: -1,
+		TYPE_SFB_X	: -1,
+		TYPE_UDT_X	: -1,
+		TYPE_VAT_X	: 0,
 	}
 
 	# Table of trivial types with sign
@@ -133,9 +156,8 @@ class AwlDataType(object):
 	)
 
 	@classmethod
-	def name2type(cls, nameTokens):
-		if isinstance(nameTokens, str):
-			nameTokens = [ nameTokens ]
+	def _name2typeid(cls, nameTokens):
+		nameTokens = toList(nameTokens)
 		try:
 			return cls.__name2id[nameTokens[0].upper()]
 		except (KeyError, IndexError) as e:
@@ -143,41 +165,39 @@ class AwlDataType(object):
 					  nameTokens[0] if len(nameTokens) else "None")
 
 	@classmethod
-	def type2name(cls, type):
-		#TODO
-		try:
-			return cls.__id2name[type]
-		except KeyError:
-			raise AwlSimError("Invalid data type: " +\
-					  str(type))
-
-	@classmethod
 	def makeByName(cls, nameTokens):
-		type = cls.name2type(nameTokens)
+		type = cls._name2typeid(nameTokens)
+		index = None
+		subType = None
 		if type == cls.TYPE_ARRAY:
-			openIdx = listIndex(nameTokens, "[")
-			elipsisIdx = listIndex(nameTokens, "..")
-			closeIdx = listIndex(nameTokens, "]")
-			ofIdx = listIndex(nameTokens, "OF")
-			if len(nameTokens) >= 8 and\
-			   openIdx == 1 and elipsisIdx == 3 and\
-			   closeIdx == 5 and ofIdx == 6:
-				pass#TODO
-				raise AwlSimError("ARRAYs not supported, yet")
-			else:
-				raise AwlSimError("Invalid ARRAY definition")
-		else:
-			return cls(type = type,
-				   width = cls.type2width[type],
-				   isSigned = (type in cls.signedTypes))
+			raise AwlSimError("ARRAYs not supported, yet") #TODO
+		elif type in (cls.TYPE_OB_X,
+			      cls.TYPE_FC_X,
+			      cls.TYPE_SFC_X,
+			      cls.TYPE_FB_X,
+			      cls.TYPE_SFB_X,
+			      cls.TYPE_UDT_X):
+			if len(nameTokens) < 2:
+				raise AwlSimError("Invalid '%s' block data type" %\
+					nameTokens[0])
+			blockNumber = cls.tryParseImmediate_INT(nameTokens[1])
+			if blockNumber is None:
+				raise AwlSimError("Invalid '%s' block data type "\
+					"index" % nameTokens[0])
+			index = blockNumber
+		return cls(type = type,
+			   width = cls.type2width[type],
+			   isSigned = (type in cls.signedTypes),
+			   index = index,
+			   subType = subType)
 
 	def __init__(self, type, width, isSigned,
-		     startIndex=None, subType=None):
+		     index=None, subType=None):
 		self.type = type
 		self.width = width
 		self.isSigned = isSigned
-		self.startIndex = startIndex
-		self.subType = subType
+		self.index = index
+		self.subType = subType		#TODO
 
 	# Parse an immediate, constrained by our datatype.
 	def parseMatchingImmediate(self, tokens):
@@ -255,11 +275,27 @@ class AwlDataType(object):
 		if value is None:
 			raise AwlSimError("Immediate value '%s' does "
 				"not match data type '%s'" %\
-				(" ".join(tokens), self.type2name(self.type)))
+				(" ".join(tokens), str(self)))
 		return value
 
 	def __repr__(self):
-		return self.type2name(self.type)
+		if self.type == self.TYPE_ARRAY:
+			return "ARRAY" #TODO
+		elif self.type in (self.TYPE_OB_X,
+				   self.TYPE_FC_X,
+				   self.TYPE_SFC_X,
+				   self.TYPE_FB_X,
+				   self.TYPE_SFB_X,
+				   self.TYPE_UDT_X):
+			return "%s %d" % (
+				self.__id2name[self.type],
+				self.index,
+			)
+		try:
+			return self.__id2name[self.type]
+		except KeyError:
+			raise AwlSimError("Invalid data type: " +\
+					  str(type))
 
 	@classmethod
 	def tryParseImmediate_BOOL(cls, token):

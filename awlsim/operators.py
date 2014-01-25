@@ -63,8 +63,11 @@ class AwlOperator(object):
 	BLKREF_SFC	= enum.item	# SFC reference
 	BLKREF_FB	= enum.item	# FB reference
 	BLKREF_SFB	= enum.item	# SFB reference
+	BLKREF_UDT	= enum.item	# UDT reference
 	BLKREF_DB	= enum.item	# DB reference
 	BLKREF_DI	= enum.item	# DI reference
+	BLKREF_OB	= enum.item	# OB reference (only symbol table)
+	BLKREF_VAT	= enum.item	# VAT reference (only symbol table)
 
 	NAMED_LOCAL	= enum.item	# Named local reference (#abc)
 	NAMED_LOCAL_PTR	= enum.item	# Pointer to named local (P##abc)
@@ -90,7 +93,7 @@ class AwlOperator(object):
 		IMM_TOD		: "TOD",
 		IMM_DT		: "DT",
 		IMM_PTR		: "P#",
-	
+
 		MEM_E		: "E",
 		MEM_A		: "A",
 		MEM_M		: "M",
@@ -113,19 +116,22 @@ class AwlOperator(object):
 		MEM_STW_UO	: "UO",
 
 		LBL_REF		: "LABEL",
-	
+
 		BLKREF_FC	: "BLOCK_FC",
 		BLKREF_SFC	: "BLOCK_SFC",
 		BLKREF_FB	: "BLOCK_FB",
 		BLKREF_SFB	: "BLOCK_SFB",
+		BLKREF_UDT	: "BLOCK_UDT",
 		BLKREF_DB	: "BLOCK_DB",
 		BLKREF_DI	: "BLOCK_DI",
-	
+		BLKREF_OB	: "BLOCK_OB",
+		BLKREF_VAT	: "BLOCK_VAT",
+
 		NAMED_LOCAL	: "#LOCAL",
 		INTERF_DB	: "__INTERFACE_DB",
-	
+
 		INDIRECT	: "__INDIRECT",
-	
+
 		VIRT_ACCU	: "__ACCU",
 		VIRT_AR		: "__AR",
 	}
@@ -269,10 +275,16 @@ class AwlOperator(object):
 			return "FB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_SFB:
 			return "SFB %d" % self.value.byteOffset
+		elif self.type == self.BLKREF_UDT:
+			return "UDT %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_DB:
 			return "DB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_DI:
 			return "DI %d" % self.value.byteOffset
+		elif self.type == self.BLKREF_OB:
+			return "OB %d" % self.value.byteOffset
+		elif self.type == self.BLKREF_VAT:
+			return "VAT %d" % self.value.byteOffset
 		elif self.type == self.NAMED_LOCAL:
 			return "#%s" % self.value
 		elif self.type == self.INTERF_DB:

@@ -128,7 +128,7 @@ class S7CPU(object):
 						errorCounts[mnemonics] += 1
 					try:
 						optrans = AwlOpTranslator(None, mnemonics)
-						optrans.translateFrom(rawInsn)
+						optrans.translateFromRawInsn(rawInsn)
 					except AwlSimError:
 						errorCounts[mnemonics] += 1
 			if errorCounts[mnemonics] == 0:

@@ -435,7 +435,7 @@ class AwlInsn(object):
 
 		if rawInsn:
 			opTrans = AwlOpTranslator(self)
-			opTrans.translateFrom(rawInsn)
+			opTrans.translateFromRawInsn(rawInsn)
 
 	def staticSanityChecks(self):
 		"Run static sanity checks"

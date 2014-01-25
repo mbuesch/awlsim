@@ -118,9 +118,15 @@ class AwlOpTranslator(object):
 				       AwlOffset(-1, 0)), 2),
 		"SFB"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_SFB, 16,
 				       AwlOffset(-1, 0)), 2),
+		"UDT"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_UDT, 16,
+				       AwlOffset(-1, 0)), 2),
 		"DB"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_DB, 16,
 				       AwlOffset(-1, 0)), 2),
 		"DI"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_DI, 16,
+				       AwlOffset(-1, 0)), 2),
+		"OB"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_OB, 16,
+				       AwlOffset(-1, 0)), 2),
+		"VAT"	: OpDescriptor(AwlOperator(AwlOperator.BLKREF_VAT, 16,
 				       AwlOffset(-1, 0)), 2),
 		"DBX"	: OpDescriptor(AwlOperator(AwlOperator.MEM_DB, 1,
 				       AwlOffset(-1, -1)), 2),
@@ -247,7 +253,7 @@ class AwlOpTranslator(object):
 			else:
 				# Indirect access:  "L MW [MD 42]"
 				# Translate the offset operator
-				offsetOpDesc = self.__translateOp(None, rawOps)
+				offsetOpDesc = self.translateOp(None, rawOps)
 				if rawOps[offsetOpDesc.fieldCount] != ']':
 					raise AwlSimError("Missing closing brackets in "
 						"indirect addressing operator")
@@ -482,7 +488,7 @@ class AwlOpTranslator(object):
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
-	def __translateOp(self, rawInsn, rawOps):
+	def translateOp(self, rawInsn, rawOps):
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
 		if not isInteger(opDesc.operator.value) and\
@@ -516,7 +522,7 @@ class AwlOpTranslator(object):
 				raise AwlSimError("No R-Value in parameter assignment")
 
 			# Translate r-value
-			opDesc = self.__translateOp(None, rvalueTokens)
+			opDesc = self.translateOp(None, rvalueTokens)
 
 			# Create assignment
 			param = AwlParamAssign(lvalueName, opDesc.operator)
@@ -530,10 +536,10 @@ class AwlOpTranslator(object):
 				else:
 					raise AwlSimError("Missing comma in parameter list")
 
-	def translateFrom(self, rawInsn):
+	def translateFromRawInsn(self, rawInsn):
 		rawOps = rawInsn.getOperators()
 		while rawOps:
-			opDesc = self.__translateOp(rawInsn, rawOps)
+			opDesc = self.translateOp(rawInsn, rawOps)
 
 			if self.insn:
 				self.insn.ops.append(opDesc.operator)
