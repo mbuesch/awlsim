@@ -101,18 +101,19 @@ def printError(text):
 # Warning message helper
 printWarning = printError
 
-def awlFileRead(filename):
+def awlFileRead(filename, encoding="latin_1"):
 	try:
 		fd = open(filename, "rb")
 		data = fd.read()
-		data = data.decode("latin_1")
+		if encoding != "binary":
+			data = data.decode(encoding)
 		fd.close()
 	except (IOError, UnicodeError) as e:
 		raise AwlParserError("Failed to read '%s': %s" %\
 			(filename, str(e)))
 	return data
 
-def awlFileWrite(filename, data):
+def awlFileWrite(filename, data, encoding="latin_1"):
 	data = "\r\n".join(data.splitlines()) + "\r\n"
 	for count in range(1000):
 		tmpFile = "%s-%d-%d.tmp" %\
@@ -123,7 +124,9 @@ def awlFileWrite(filename, data):
 		raise AwlParserError("Could not create temporary file")
 	try:
 		fd = open(tmpFile, "wb")
-		fd.write(data.encode("latin_1"))
+		if encoding != "binary":
+			data = data.encode(encodint)
+		fd.write(data)
 		fd.flush()
 		fd.close()
 		if os.name.lower() != "posix":

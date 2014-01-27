@@ -21,6 +21,7 @@
 #
 
 import sys
+import os
 import getopt
 import traceback
 
@@ -34,7 +35,7 @@ class TextInterfaceAwlSimClient(AwlSimClient):
 def usage():
 	printInfo("awlsim version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
 	printInfo("")
-	printInfo("%s [OPTIONS] AWL-source" % sys.argv[0])
+	printInfo("%s [OPTIONS] <AWL-source or awlsim-project file>" % sys.argv[0])
 	printInfo("")
 	printInfo("Options:")
 	printInfo(" -1|--onecycle         Only run one cycle")
@@ -95,16 +96,27 @@ def assignCpuSpecs(specs):
 	specs.setConfiguredMnemonics(opt_mnemonics)
 	specs.setNrAccus(4 if opt_fouraccu else 2)
 
-def run(awlSource):
+def readInputFile(inputFile):
+	if Project.fileIsProject(inputFile):
+		project = Project.fromFile(inputFile)
+	else:
+		# make a fake project
+		project = Project(projectFile = None,
+				  awlFiles = [ inputFile, ])
+	return project
+
+def run(inputFile):
 	s = None
 	try:
 		if awlsim_useCython:
 			writeStdout("*** Using accelerated CYTHON core "
 				    "(AWLSIMCYTHON environment variable is set)\n")
 
+		project = readInputFile(inputFile)
+
 		writeStdout("Parsing code...\n")
 		p = AwlParser()
-		p.parseFile(awlSource)
+		p.parseFile(project.awlFiles[0])
 		writeStdout("Initializing simulator...\n")
 		s = AwlSim(profileLevel = opt_profile)
 
@@ -156,7 +168,7 @@ def run(awlSource):
 			s.shutdown()
 	return 0
 
-def runWithServerBackend(awlSource):
+def runWithServerBackend(inputFile):
 	client = None
 	try:
 		if awlsim_useCython:
@@ -164,6 +176,8 @@ def runWithServerBackend(awlSource):
 				   "with the backend server. Please remove the "
 				   "AWLSIMCYTHON environment variable.")
 			return 1
+
+		project = readInputFile(inputFile)
 
 		# Connect to the server
 		client = TextInterfaceAwlSimClient()
@@ -203,7 +217,7 @@ def runWithServerBackend(awlSource):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		client.loadCode(awlFileRead(awlSource))
+		client.loadCode(awlFileRead(project.awlFiles[0]))
 		client.setRunState(True)
 
 		# Run the client-side event loop
@@ -339,7 +353,7 @@ def main():
 		usage()
 		return 1
 	if args:
-		awlSource = args[0]
+		inputFile = args[0]
 
 	Logging.setLoglevel(makeLoglevel())
 
@@ -366,8 +380,8 @@ def main():
 		return 1
 
 	if opt_spawnBackend or opt_connect:
-		return runWithServerBackend(awlSource)
-	return run(awlSource)
+		return runWithServerBackend(inputFile)
+	return run(inputFile)
 
 if __name__ == "__main__":
 	sys.exit(main())
