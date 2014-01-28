@@ -1,0 +1,13 @@
+	__STWRST
+	U		"sym_M_0.0"
+	__ASSERT==	__STW VKE,	0
+	SET
+	=		M 0.0
+	__STWRST
+	U		"sym_M_0.0"
+	__ASSERT==	__STW VKE,	1
+	CLR
+	=		"sym_M_0.0"
+	__STWRST
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0

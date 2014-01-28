@@ -1,0 +1,11 @@
+[AWLSIM_PROJECT]
+file_version=0
+date=1990-01-01 00:00:00.000000
+
+[CPU]
+nr_awl_files=1
+awl_file_0=symbols.awl
+
+[SYMBOLS]
+nr_sym_tab_files=1
+sym_tab_file_0=symbols.asc
