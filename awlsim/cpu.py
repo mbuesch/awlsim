@@ -351,6 +351,9 @@ class S7CPU(object):
 		self.__detectMnemonics(parseTree)
 		# Translate OBs
 		for obNumber in parseTree.obs.keys():
+			if obNumber in self.obs:
+				raise AwlSimError("Multiple definitions of "\
+					"OB %d" % obNumber)
 			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)
 			self.obs[obNumber] = ob
 			# Create the TEMP-preset handler table
@@ -361,38 +364,47 @@ class S7CPU(object):
 			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
 		# Translate FBs
 		for fbNumber in parseTree.fbs.keys():
+			if fbNumber in self.fbs:
+				raise AwlSimError("Multiple definitions of "\
+					"FB %d" % fbNumber)
 			fb = self.__translateCodeBlock(parseTree.fbs[fbNumber], FB)
 			self.fbs[fbNumber] = fb
 		# Translate FCs
 		for fcNumber in parseTree.fcs.keys():
+			if fcNumber in self.fcs:
+				raise AwlSimError("Multiple definitions of "\
+					"FC %d" % fcNumber)
 			fc = self.__translateCodeBlock(parseTree.fcs[fcNumber], FC)
 			self.fcs[fcNumber] = fc
 			bounceDB = self.__allocateFCBounceDB(fc, False)
 			self.dbs[bounceDB.index] = bounceDB
-		# Create the SFB tables
-		for sfbNumber in SFB_table.keys():
-			if sfbNumber < 0 and not self.__extendedInsnsEnabled:
-				continue
-			sfb = SFB_table[sfbNumber](self)
-			sfb.interface.buildDataStructure()
-			self.sfbs[sfbNumber] = sfb
-		# Create the SFC tables
-		for sfcNumber in SFC_table.keys():
-			if sfcNumber < 0 and not self.__extendedInsnsEnabled:
-				continue
-			sfc = SFC_table[sfcNumber](self)
-			sfc.interface.buildDataStructure()
-			self.sfcs[sfcNumber] = sfc
-			bounceDB = self.__allocateFCBounceDB(sfc, True)
-			self.dbs[bounceDB.index] = bounceDB
+
+		if not self.sfbs:
+			# Create the SFB tables
+			for sfbNumber in SFB_table.keys():
+				if sfbNumber < 0 and not self.__extendedInsnsEnabled:
+					continue
+				sfb = SFB_table[sfbNumber](self)
+				sfb.interface.buildDataStructure()
+				self.sfbs[sfbNumber] = sfb
+		if not self.sfcs:
+			# Create the SFC tables
+			for sfcNumber in SFC_table.keys():
+				if sfcNumber < 0 and not self.__extendedInsnsEnabled:
+					continue
+				sfc = SFC_table[sfcNumber](self)
+				sfc.interface.buildDataStructure()
+				self.sfcs[sfcNumber] = sfc
+				bounceDB = self.__allocateFCBounceDB(sfc, True)
+				self.dbs[bounceDB.index] = bounceDB
+
 		# Translate DBs
 		for dbNumber in parseTree.dbs.keys():
+			if dbNumber in self.dbs:
+				raise AwlSimError("Multiple definitions of "\
+					"DB %d" % dbNumber)
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
-		# Resolve symbolic instructions and operators
-		self.__resolveSymbols()
-		# Run some static sanity checks on the code
-		self.__staticSanityChecks()
 
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
@@ -546,6 +558,11 @@ class S7CPU(object):
 
 	# Run startup code
 	def startup(self):
+		# Resolve symbolic instructions and operators
+		self.__resolveSymbols()
+		# Run some static sanity checks on the code
+		self.__staticSanityChecks()
+
 		self.updateTimestamp()
 		self.__speedMeasureStartTime = self.now
 		self.__speedMeasureStartInsnCount = 0
