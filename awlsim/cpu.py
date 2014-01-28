@@ -340,8 +340,6 @@ class S7CPU(object):
 	def load(self, parseTree):
 		# Mnemonics autodetection
 		self.__detectMnemonics(parseTree)
-		# Reset the CPU
-		self.reset()
 		# Translate OBs
 		for obNumber in parseTree.obs.keys():
 			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)

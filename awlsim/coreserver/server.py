@@ -180,11 +180,18 @@ class AwlSimServer(object):
 	def __rx_PONG(self, client, msg):
 		printInfo("AwlSimServer: Received PONG")
 
+	def __rx_RESET(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.__setRunState(self.STATE_INIT)
+		self.sim.reset()
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_RUNSTATE(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		if msg.runState == msg.STATE_STOP:
 			self.__setRunState(self.STATE_INIT)
 		elif msg.runState == msg.STATE_RUN:
+			self.sim.startup()
 			self.__setRunState(self.STATE_RUN)
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
@@ -257,6 +264,7 @@ class AwlSimServer(object):
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
+		AwlSimMessage.MSG_ID_RESET		: __rx_RESET,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,

@@ -37,6 +37,9 @@ class AwlSim(object):
 
 		self.__setProfiler(profileLevel)
 
+	def getCPU(self):
+		return self.cpu
+
 	def __setProfiler(self, profileLevel):
 		self.__profileLevel = profileLevel
 		if self.__profileLevel <= 0:
@@ -107,12 +110,29 @@ class AwlSim(object):
 		for hw in self.__registeredHardware:
 			hw.shutdown()
 
+	def reset(self):
+		try:
+			self.cpu.reset()
+		except AwlSimError as e:
+			self.__handleSimException(e)
+
 	def load(self, parseTree):
 		if self.__profileLevel >= 2:
 			self.__profileStart()
 
 		try:
 			self.cpu.load(parseTree)
+		except AwlSimError as e:
+			self.__handleSimException(e)
+
+		if self.__profileLevel >= 2:
+			self.__profileStop()
+
+	def startup(self):
+		if self.__profileLevel >= 2:
+			self.__profileStart()
+
+		try:
 			for hw in self.__registeredHardware:
 				hw.startup()
 			try:
@@ -124,9 +144,6 @@ class AwlSim(object):
 
 		if self.__profileLevel >= 2:
 			self.__profileStop()
-
-	def getCPU(self):
-		return self.cpu
 
 	def runCycle(self):
 		if self.__profileLevel >= 1:

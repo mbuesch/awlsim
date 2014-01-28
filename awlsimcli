@@ -115,8 +115,12 @@ def run(inputFile):
 		project = readInputFile(inputFile)
 
 		writeStdout("Parsing code...\n")
-		p = AwlParser()
-		p.parseFile(project.awlFiles[0])
+		parseTrees = []
+		for awlFile in project.awlFiles:
+			p = AwlParser()
+			p.parseFile(awlFile)
+			parseTrees.append(p.getParseTree())
+
 		writeStdout("Initializing simulator...\n")
 		s = AwlSim(profileLevel = opt_profile)
 
@@ -134,7 +138,10 @@ def run(inputFile):
 		if not opt_noCpuDump and not opt_quiet:
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		writeStdout("Initializing CPU...\n")
-		s.load(p.getParseTree())
+		s.reset()
+		for parseTree in parseTrees:
+			s.load(parseTree)
+		s.startup()
 		writeStdout("[Initialization finished - CPU is executing user code]\n")
 		try:
 			if not opt_noCpuDump:
@@ -199,6 +206,7 @@ def runWithServerBackend(inputFile):
 		writeStdout("Initializing simulator...\n")
 		client.setLoglevel(makeLoglevel())
 		client.setRunState(False)
+		client.reset()
 
 		# Load hardware modules
 		for name, parameters in opt_hwmods:
@@ -217,7 +225,8 @@ def runWithServerBackend(inputFile):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		client.loadCode(awlFileRead(project.awlFiles[0]))
+		for awlFile in project.awlFiles:
+			client.loadCode(awlFileRead(awlFile))
 		client.setRunState(True)
 
 		# Run the client-side event loop

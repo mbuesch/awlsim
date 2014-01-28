@@ -220,6 +220,12 @@ class AwlSimClient(object):
 			       rxMsg.inReplyToSeq == msg.seq
 		return self.__sendAndWait(msg, checkRxMsg, timeoutMs).status
 
+	def reset(self):
+		msg = AwlSimMessage_RESET()
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to reset CPU")
+
 	def setRunState(self, run=True):
 		if run:
 			runState = AwlSimMessage_RUNSTATE.STATE_RUN

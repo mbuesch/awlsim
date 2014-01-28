@@ -49,6 +49,7 @@ class AwlSimMessage(object):
 	MSG_ID_EXCEPTION	= enum.item
 	MSG_ID_PING		= enum.item
 	MSG_ID_PONG		= enum.item
+	MSG_ID_RESET		= enum.item
 	MSG_ID_RUNSTATE		= enum.item
 	MSG_ID_LOAD_CODE	= enum.item
 	MSG_ID_LOAD_HW		= enum.item
@@ -139,6 +140,10 @@ class AwlSimMessage_PING(AwlSimMessage):
 class AwlSimMessage_PONG(AwlSimMessage):
 	def __init__(self):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PONG)
+
+class AwlSimMessage_RESET(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RESET)
 
 class AwlSimMessage_RUNSTATE(AwlSimMessage):
 	enum.start
@@ -475,6 +480,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_EXCEPTION		: AwlSimMessage_EXCEPTION,
 		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
+		AwlSimMessage.MSG_ID_RESET		: AwlSimMessage_RESET,
 		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
