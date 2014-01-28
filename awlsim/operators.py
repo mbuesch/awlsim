@@ -69,6 +69,7 @@ class AwlOperator(object):
 	BLKREF_OB	= enum.item	# OB reference (only symbol table)
 	BLKREF_VAT	= enum.item	# VAT reference (only symbol table)
 
+	SYMBOLIC	= enum.item	# Classic symbolic reference ("xyz")
 	NAMED_LOCAL	= enum.item	# Named local reference (#abc)
 	NAMED_LOCAL_PTR	= enum.item	# Pointer to named local (P##abc)
 	INTERF_DB	= enum.item	# Interface-DB access (translated NAMED_LOCAL)

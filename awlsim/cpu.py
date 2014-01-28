@@ -283,8 +283,19 @@ class S7CPU(object):
 		db.allocate()
 		return db
 
+	# Translate classic symbols ("abc")
+	def __resolveClassicSym(self, block, insn, oper):
+		if oper.type == AwlOperator.SYMBOLIC:
+			symbol = self.symbolTable.findByName(oper.value)
+			if not symbol:
+				raise AwlSimError("Symbol \"%s\" not found in "
+					"symbol table." % oper.value,
+					insn = insn)
+			oper = symbol.operator
+		return oper
+
 	# Translate local symbols (#abc)
-	def __resolveNamedLocalSym(self, block, oper):
+	def __resolveNamedLocalSym(self, block, insn, oper):
 		if oper.type == AwlOperator.NAMED_LOCAL:
 			newOper = block.interface.getOperatorForFieldName(oper.value, False)
 			newOper.setInsn(oper.insn)
@@ -292,7 +303,7 @@ class S7CPU(object):
 		return oper
 
 	# Translate local symbol pointers (P##abc)
-	def __resolveNamedLocalPointer(self, block, oper):
+	def __resolveNamedLocalPointer(self, block, insn, oper):
 		if oper.type == AwlOperator.NAMED_LOCAL_PTR:
 			newOper = block.interface.getOperatorForFieldName(oper.value, True)
 			newOper.setInsn(oper.insn)
@@ -302,23 +313,33 @@ class S7CPU(object):
 	def __resolveSymbols_block(self, block):
 		for insn in block.insns:
 			for i in range(len(insn.ops)):
+				insn.ops[i] = self.__resolveClassicSym(block,
+								insn, insn.ops[i])
 				insn.ops[i] = self.__resolveNamedLocalSym(block,
-								insn.ops[i])
+								insn, insn.ops[i])
 				if insn.ops[i].type == AwlOperator.INDIRECT:
 					insn.ops[i].offsetOper = \
+						self.__resolveClassicSym(block,
+								insn, insn.ops[i].offsetOper)
+					insn.ops[i].offsetOper = \
 						self.__resolveNamedLocalSym(block,
-								insn.ops[i].offsetOper)
+								insn, insn.ops[i].offsetOper)
 				insn.ops[i] = self.__resolveNamedLocalPointer(block,
-								insn.ops[i])
+								insn, insn.ops[i])
 			for i in range(len(insn.params)):
+				insn.params[i].rvalueOp = self.__resolveClassicSym(block,
+								insn, insn.params[i].rvalueOp)
 				insn.params[i].rvalueOp = self.__resolveNamedLocalSym(block,
-								insn.params[i].rvalueOp)
+								insn, insn.params[i].rvalueOp)
 				if insn.params[i].rvalueOp.type == AwlOperator.INDIRECT:
 					insn.params[i].rvalueOp.offsetOper =\
+						self.__resolveClassicSym(block,
+								insn, insn.params[i].rvalueOp.offsetOper)
+					insn.params[i].rvalueOp.offsetOper =\
 						self.__resolveNamedLocalSym(block,
-								insn.params[i].rvalueOp.offsetOper)
+								insn, insn.params[i].rvalueOp.offsetOper)
 				insn.params[i].rvalueOp = self.__resolveNamedLocalPointer(block,
-								insn.params[i].rvalueOp)
+								insn, insn.params[i].rvalueOp)
 
 	def __resolveSymbols(self):
 		for ob in self.obs.values():

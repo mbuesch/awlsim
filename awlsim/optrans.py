@@ -387,7 +387,8 @@ class AwlOpTranslator(object):
 							rawOps[0][3:]), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
-			pass#TODO
+			return OpDescriptor(AwlOperator(AwlOperator.SYMBOLIC, 0,
+							rawOps[0][1:-1]), 1)
 		# Immediate integer
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
 		if immediate is not None:

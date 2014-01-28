@@ -6,6 +6,10 @@ BEGIN
 	CALL		FB 1, DB 2 (
 		INPUT_VAR := 1
 	)
+
+	U		"test_symbol_E"
+	=		"test_symbol_A"
+
 END_ORGANIZATION_BLOCK
 
 
