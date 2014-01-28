@@ -128,6 +128,18 @@ class AwlSim(object):
 		if self.__profileLevel >= 2:
 			self.__profileStop()
 
+	def loadSymbolTable(self, symTab):
+		if self.__profileLevel >= 2:
+			self.__profileStart()
+
+		try:
+			self.cpu.loadSymbolTable(symTab)
+		except AwlSimError as e:
+			self.__handleSimException(e)
+
+		if self.__profileLevel >= 2:
+			self.__profileStop()
+
 	def startup(self):
 		if self.__profileLevel >= 2:
 			self.__profileStart()

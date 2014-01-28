@@ -73,7 +73,7 @@ class Project(object):
 				path = p.get("CPU", "awl_file_%d" % i)
 				awlFiles.append(cls.__generic2path(path, projectDir))
 
-			nrSymTab = p.getint("SYMBOLS", "nr_symtab_files")
+			nrSymTab = p.getint("SYMBOLS", "nr_sym_tab_files")
 			if nrSymTab < 0 or nrSymTab > 0xFFFF:
 				raise AwlSimError("Project file: Invalid number of "
 					"symbol table files: %d" % nrSymTab)
@@ -131,7 +131,7 @@ class Project(object):
 			lines.append("awl_file_%d=%s" % (i, path))
 		lines.append("")
 		lines.append("[SYMBOLS]")
-		lines.append("nr_symtab_files=%d" % len(self.symTabFiles))
+		lines.append("nr_sym_tab_files=%d" % len(self.symTabFiles))
 		for i, symTabFile in enumerate(self.symTabFiles):
 			path = self.__path2generic(symTabFile, projectDir)
 			lines.append("sym_tab_file_%d=%s" % (i, symTabFile))

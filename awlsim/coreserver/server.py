@@ -205,6 +205,15 @@ class AwlSimServer(object):
 		self.sim.load(parser.getParseTree())
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_LOAD_SYMTAB(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		symbolTable = SymTabParser.parseData(msg.symTabText,
+						     autodetectFormat = True,
+						     mnemonics = self.sim.cpu.getSpecs().getMnemonics())
+		self.__setRunState(self.STATE_INIT)
+		self.sim.loadSymbolTable(symbolTable)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_LOAD_HW(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		printInfo("Loading hardware module '%s'..." % msg.name)
@@ -267,6 +276,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_RESET		: __rx_RESET,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
+		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: __rx_LOAD_SYMTAB,
 		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,

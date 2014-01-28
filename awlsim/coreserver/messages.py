@@ -51,6 +51,7 @@ class AwlSimMessage(object):
 	MSG_ID_PONG		= enum.item
 	MSG_ID_RESET		= enum.item
 	MSG_ID_RUNSTATE		= enum.item
+	MSG_ID_LOAD_SYMTAB	= enum.item
 	MSG_ID_LOAD_CODE	= enum.item
 	MSG_ID_LOAD_HW		= enum.item
 	MSG_ID_SET_OPT		= enum.item
@@ -188,6 +189,26 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 		except UnicodeError:
 			raise TransferError("EXCEPTION: Unicode error")
 		return cls(text)
+
+class AwlSimMessage_LOAD_SYMTAB(AwlSimMessage):
+	def __init__(self, symTabText):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_SYMTAB)
+		self.symTabText = symTabText
+
+	def toBytes(self):
+		try:
+			data = self.symTabText.encode()
+			return AwlSimMessage.toBytes(self, len(data)) + data
+		except UnicodeError:
+			raise TransferError("LOAD_SYMTAB: Unicode error")
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			symTabText = payload.decode()
+		except UnicodeError:
+			raise TransferError("LOAD_SYMTAB: Unicode error")
+		return cls(symTabText)
 
 class AwlSimMessage_LOAD_CODE(AwlSimMessage):
 	def __init__(self, code):
@@ -482,6 +503,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
 		AwlSimMessage.MSG_ID_RESET		: AwlSimMessage_RESET,
 		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
+		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: AwlSimMessage_LOAD_SYMTAB,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
 		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,

@@ -25,6 +25,7 @@ import random
 
 from awlsim.cpuspecs import *
 from awlsim.parser import *
+from awlsim.symbolparser import *
 from awlsim.datatypes import *
 from awlsim.instructions.all_insns import *
 from awlsim.operators import *
@@ -406,6 +407,9 @@ class S7CPU(object):
 			db = self.__translateDB(parseTree.dbs[dbNumber])
 			self.dbs[dbNumber] = db
 
+	def loadSymbolTable(self, symbolTable):
+		self.symbolTable.merge(symbolTable)
+
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
 			self.accu1, self.accu2 = Accu(), Accu()
@@ -452,6 +456,7 @@ class S7CPU(object):
 		self.sfbs = {
 			# System SFBs
 		}
+		self.symbolTable = SymbolTable()
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()

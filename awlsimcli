@@ -120,6 +120,12 @@ def run(inputFile):
 			p = AwlParser()
 			p.parseFile(awlFile)
 			parseTrees.append(p.getParseTree())
+		symTables = []
+		for symTabFile in project.symTabFiles:
+			tab = SymTabParser.parseFile(symTabFile,
+						     autodetectFormat = True,
+						     mnemonics = opt_mnemonics)
+			symTables.append(tab)
 
 		writeStdout("Initializing simulator...\n")
 		s = AwlSim(profileLevel = opt_profile)
@@ -141,6 +147,8 @@ def run(inputFile):
 		s.reset()
 		for parseTree in parseTrees:
 			s.load(parseTree)
+		for symTable in symTables:
+			s.loadSymbolTable(symTable)
 		s.startup()
 		writeStdout("[Initialization finished - CPU is executing user code]\n")
 		try:
@@ -227,6 +235,8 @@ def runWithServerBackend(inputFile):
 		writeStdout("Initializing CPU...\n")
 		for awlFile in project.awlFiles:
 			client.loadCode(awlFileRead(awlFile))
+		for symTabFile in project.symTabFiles:
+			client.loadSymbolTable(awlFileRead(symTabFile))
 		client.setRunState(True)
 
 		# Run the client-side event loop

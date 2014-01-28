@@ -242,6 +242,12 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load code")
 
+	def loadSymbolTable(self, symTabText):
+		msg = AwlSimMessage_LOAD_SYMTAB(symTabText)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to load symbol table")
+
 	def loadHardwareModule(self, name, parameters={}):
 		msg = AwlSimMessage_LOAD_HW(name = name,
 					    paramDict = parameters)
