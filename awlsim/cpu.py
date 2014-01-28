@@ -118,6 +118,7 @@ class S7CPU(object):
 			S7CPUSpecs.MNEMONICS_EN		: 0,
 			S7CPUSpecs.MNEMONICS_DE		: 0,
 		}
+		detected = None
 		for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
 				  S7CPUSpecs.MNEMONICS_DE):
 			for block in codeBlocks:
@@ -133,13 +134,21 @@ class S7CPU(object):
 						errorCounts[mnemonics] += 1
 			if errorCounts[mnemonics] == 0:
 				# No error. Use these mnemonics.
-				specs.setDetectedMnemonics(mnemonics)
-				return
-		# Select the mnemonics with the lower error count.
-		if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
-			specs.setDetectedMnemonics(S7CPUSpecs.MNEMONICS_EN)
-		else:
-			specs.setDetectedMnemonics(S7CPUSpecs.MNEMONICS_DE)
+				detected = mnemonics
+		if detected is None:
+			# Select the mnemonics with the lower error count.
+			if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
+				detected = S7CPUSpecs.MNEMONICS_EN
+			else:
+				detected = S7CPUSpecs.MNEMONICS_DE
+		if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+			# Autodetected mnemonics were already set before
+			if specs.getMnemonics() != detected:
+				raise AwlSimError("Cannot mix multiple AWL files with "\
+					"distinct mnemonics. This error may be caused by "\
+					"incorrect autodetection. "\
+					"Force mnemonics to EN or DE to avoid this error.")
+		specs.setDetectedMnemonics(detected)
 
 	def __translateInsn(self, rawInsn, ip):
 		ex = None
