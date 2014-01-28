@@ -24,6 +24,13 @@ run_test()
 	local awl="$2"
 	shift; shift
 
+	# Check whether a project file with the same basename exists
+	# If it exist, run that instead of the raw AWL file
+	local dir="$(dirname "$awl")"
+	local base="$(basename "$awl" .awl)"
+	local awlpro="${dir}/${base}.awlpro"
+	[ -r "$awlpro" ] && awl="$awlpro"
+
 	echo -n "Running test '$(basename "$awl")' ..."
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$basedir/../awlsimcli" --quiet --onecycle --extended-insns \
