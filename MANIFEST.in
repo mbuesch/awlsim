@@ -1,5 +1,7 @@
 include COPYING.txt
 include EXAMPLE.awl
+include EXAMPLE.asc
+include EXAMPLE.awlpro
 include TODO.txt
 include awlsimhw_linuxcnc/awlsim.hal
 graft tests
