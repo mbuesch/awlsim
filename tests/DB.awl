@@ -174,6 +174,8 @@ BEGIN
 	__ASSERT==	__DBR 1,	11
 	__ASSERT==	__DBR 2,	13
 
+
+	// Check DBNO, DINO, DBLG and DILG operators
 	AUF		DB 1
 	AUF		DI 2
 	L		DBNO
