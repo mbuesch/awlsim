@@ -179,18 +179,16 @@ class Timer(object):
 		s = self.cpu.statusWord
 		if s.VKE:
 			if not self.prevVKE: # Pos edge
-				self.status = 0
 				self.__start(s5t)
 		else:
 			self.__checkDeadline()
-			self.running = False
+			self.running, self.status = False, 0
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SS(self, s5t):
 		self.deadlineCallback = self.__cb_setStatus
 		s = self.cpu.statusWord
 		if s.VKE & ~self.prevVKE: # Pos edge
-			self.status = 0
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 

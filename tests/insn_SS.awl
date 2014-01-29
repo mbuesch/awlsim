@@ -52,6 +52,35 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 
 
+	// Start timer and reset VKE after it expired
+	__STWRST
+	L		0
+	SS		T 10
+	SET
+	R		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	0
+	SET
+	L		W#16#0010
+	SS		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	0
+	__SLEEP		101
+	U		T 10
+	__ASSERT==	__STW VKE,	1
+	CLR
+	SS		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	1
+	__SLEEP		101
+	U		T 10
+	__ASSERT==	__STW VKE,	1
+	SET
+	SS		T 10
+	U		T 10
+	__ASSERT==	__STW VKE,	1
+
+
 	// Reset signal
 	__STWRST
 	L		0
