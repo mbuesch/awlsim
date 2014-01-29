@@ -145,10 +145,10 @@ def run(inputFile):
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		writeStdout("Initializing CPU...\n")
 		s.reset()
-		for parseTree in parseTrees:
-			s.load(parseTree)
 		for symTable in symTables:
 			s.loadSymbolTable(symTable)
+		for parseTree in parseTrees:
+			s.load(parseTree)
 		s.startup()
 		writeStdout("[Initialization finished - CPU is executing user code]\n")
 		try:
@@ -233,10 +233,10 @@ def runWithServerBackend(inputFile):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		for awlFile in project.awlFiles:
-			client.loadCode(awlFileRead(awlFile))
 		for symTabFile in project.symTabFiles:
 			client.loadSymbolTable(awlFileRead(symTabFile))
+		for awlFile in project.awlFiles:
+			client.loadCode(awlFileRead(awlFile))
 		client.setRunState(True)
 
 		# Run the client-side event loop

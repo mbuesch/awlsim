@@ -413,37 +413,57 @@ class AwlParser(object):
 		try:
 			if t.tokens[0].upper() == "DATA_BLOCK":
 				self.__setState(self.STATE_IN_DB_HDR)
-				if t.tokens[1].upper() != "DB":
-					raise AwlParserError("Invalid DB name")
-				try:
-					dbNumber = int(t.tokens[2], 10)
-				except ValueError:
-					raise AwlParserError("Invalid DB number")
+				if t.tokens[1].startswith('"') and\
+				   t.tokens[1].endswith('"'):
+					# DB name is symbolic
+					dbNumber = t.tokens[1][1:-1]
+				else:
+					# DB name is absolute
+					if t.tokens[1].upper() != "DB":
+						raise AwlParserError("Invalid DB name")
+					try:
+						dbNumber = int(t.tokens[2], 10)
+					except ValueError:
+						raise AwlParserError("Invalid DB number")
 				self.tree.curBlock = RawAwlDB(self.tree, dbNumber)
 				self.tree.dbs[dbNumber] = self.tree.curBlock
 				return
 			if t.tokens[0].upper() == "FUNCTION_BLOCK":
 				self.__setState(self.STATE_IN_FB_HDR)
-				if t.tokens[1].upper() != "FB":
-					raise AwlParserError("Invalid FB name")
-				try:
-					fbNumber = int(t.tokens[2], 10)
-				except ValueError:
-					raise AwlParserError("Invalid FB number")
+				if t.tokens[1].startswith('"') and\
+				   t.tokens[1].endswith('"'):
+					# FB name is symbolic
+					fbNumber = t.tokens[1][1:-1]
+				else:
+					# FB name is absolute
+					if t.tokens[1].upper() != "FB":
+						raise AwlParserError("Invalid FB name")
+					try:
+						fbNumber = int(t.tokens[2], 10)
+					except ValueError:
+						raise AwlParserError("Invalid FB number")
 				self.tree.curBlock = RawAwlFB(self.tree, fbNumber)
 				self.tree.fbs[fbNumber] = self.tree.curBlock
 				return
 			if t.tokens[0].upper() == "FUNCTION":
 				self.__setState(self.STATE_IN_FC_HDR)
-				if t.tokens[1].upper() != "FC":
-					raise AwlParserError("Invalid FC name")
-				try:
-					fcNumber = int(t.tokens[2], 10)
-				except ValueError:
-					raise AwlParserError("Invalid FC number")
-				if t.tokens[3] != ':':
+				if t.tokens[1].startswith('"') and\
+				   t.tokens[1].endswith('"'):
+					# FC name is symbolic
+					fcNumber = t.tokens[1][1:-1]
+					tIdx = 2
+				else:
+					# FC name is absolute
+					if t.tokens[1].upper() != "FC":
+						raise AwlParserError("Invalid FC name")
+					try:
+						fcNumber = int(t.tokens[2], 10)
+					except ValueError:
+						raise AwlParserError("Invalid FC number")
+					tIdx = 3
+				if t.tokens[tIdx] != ':':
 					raise AwlParserError("Missing colon after FC number")
-				retTypeTokens = t.tokens[4:]
+				retTypeTokens = t.tokens[tIdx + 1 : ]
 				if not retTypeTokens:
 					raise AwlParserError("Missing FC return type")
 				self.tree.curBlock = RawAwlFC(self.tree, fcNumber,
@@ -452,12 +472,18 @@ class AwlParser(object):
 				return
 			if t.tokens[0].upper() == "ORGANIZATION_BLOCK":
 				self.__setState(self.STATE_IN_OB_HDR)
-				if t.tokens[1].upper() != "OB":
-					raise AwlParserError("Invalid OB name")
-				try:
-					obNumber = int(t.tokens[2], 10)
-				except ValueError:
-					raise AwlParserError("Invalid OB number")
+				if t.tokens[1].startswith('"') and\
+				   t.tokens[1].endswith('"'):
+					# OB name is symbolic
+					obNumber = t.tokens[1][1:-1]
+				else:
+					# OB name is absolute
+					if t.tokens[1].upper() != "OB":
+						raise AwlParserError("Invalid OB name")
+					try:
+						obNumber = int(t.tokens[2], 10)
+					except ValueError:
+						raise AwlParserError("Invalid OB number")
 				self.tree.curBlock = RawAwlOB(self.tree, obNumber)
 				self.tree.obs[obNumber] = self.tree.curBlock
 				return

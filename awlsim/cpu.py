@@ -294,6 +294,19 @@ class S7CPU(object):
 			oper = symbol.operator
 		return oper
 
+	# Translate symbolic OB/FB/FC/DB block name
+	def __resolveBlockName(self, blockTypeId, blockName):
+		if isString(blockName):
+			symbol = self.symbolTable.findByName(blockName)
+			if not symbol:
+				raise AwlSimError("Symbolic block name \"%s\" "
+					"not found in symbol table." % blockName)
+			if symbol.type.type != blockTypeId:
+				raise AwlSimError("Symbolic block name \"%s\" "
+					"has an invalid type." % blockName)
+			return symbol.operator.value.byteOffset
+		return blockName
+
 	# Translate local symbols (#abc)
 	def __resolveNamedLocalSym(self, block, insn, oper):
 		if oper.type == AwlOperator.NAMED_LOCAL:
@@ -372,11 +385,14 @@ class S7CPU(object):
 		# Mnemonics autodetection
 		self.__detectMnemonics(parseTree)
 		# Translate OBs
-		for obNumber in parseTree.obs.keys():
+		for obNumber, rawOB in parseTree.obs.items():
+			obNumber = self.__resolveBlockName(AwlDataType.TYPE_OB_X,
+							   obNumber)
 			if obNumber in self.obs:
 				raise AwlSimError("Multiple definitions of "\
 					"OB %d" % obNumber)
-			ob = self.__translateCodeBlock(parseTree.obs[obNumber], OB)
+			rawOB.index = obNumber
+			ob = self.__translateCodeBlock(rawOB, OB)
 			self.obs[obNumber] = ob
 			# Create the TEMP-preset handler table
 			try:
@@ -385,18 +401,24 @@ class S7CPU(object):
 				presetHandlerClass = OBTempPresets_dummy
 			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
 		# Translate FBs
-		for fbNumber in parseTree.fbs.keys():
+		for fbNumber, rawFB in parseTree.fbs.items():
+			fbNumber = self.__resolveBlockName(AwlDataType.TYPE_FB_X,
+							   fbNumber)
 			if fbNumber in self.fbs:
 				raise AwlSimError("Multiple definitions of "\
 					"FB %d" % fbNumber)
-			fb = self.__translateCodeBlock(parseTree.fbs[fbNumber], FB)
+			rawFB.index = fbNumber
+			fb = self.__translateCodeBlock(rawFB, FB)
 			self.fbs[fbNumber] = fb
 		# Translate FCs
-		for fcNumber in parseTree.fcs.keys():
+		for fcNumber, rawFC in parseTree.fcs.items():
+			fcNumber = self.__resolveBlockName(AwlDataType.TYPE_FC_X,
+							   fcNumber)
 			if fcNumber in self.fcs:
 				raise AwlSimError("Multiple definitions of "\
 					"FC %d" % fcNumber)
-			fc = self.__translateCodeBlock(parseTree.fcs[fcNumber], FC)
+			rawFC.index = fcNumber
+			fc = self.__translateCodeBlock(rawFC, FC)
 			self.fcs[fcNumber] = fc
 			bounceDB = self.__allocateFCBounceDB(fc, False)
 			self.dbs[bounceDB.index] = bounceDB
@@ -421,11 +443,14 @@ class S7CPU(object):
 				self.dbs[bounceDB.index] = bounceDB
 
 		# Translate DBs
-		for dbNumber in parseTree.dbs.keys():
+		for dbNumber, rawDB in parseTree.dbs.items():
+			dbNumber = self.__resolveBlockName(AwlDataType.TYPE_DB_X,
+							   dbNumber)
 			if dbNumber in self.dbs:
 				raise AwlSimError("Multiple definitions of "\
 					"DB %d" % dbNumber)
-			db = self.__translateDB(parseTree.dbs[dbNumber])
+			rawDB.index = dbNumber
+			db = self.__translateDB(rawDB)
 			self.dbs[dbNumber] = db
 
 	def loadSymbolTable(self, symbolTable):

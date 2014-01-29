@@ -148,3 +148,13 @@ def __isInteger_python3(value):
 
 isInteger = py23(__isInteger_python2,
 		 __isInteger_python3)
+
+def __isString_python2(value):
+	return isinstance(value, unicode) or\
+	       isinstance(value, str)
+
+def __isString_python3(value):
+	return isinstance(value, str)
+
+isString = py23(__isString_python2,
+		__isString_python3)
