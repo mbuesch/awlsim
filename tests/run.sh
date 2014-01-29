@@ -25,7 +25,7 @@ run_test()
 	shift; shift
 
 	# Check whether a project file with the same basename exists
-	# If it exist, run that instead of the raw AWL file
+	# If it exists, run that instead of the raw AWL file
 	local dir="$(dirname "$awl")"
 	local base="$(basename "$awl" .awl)"
 	local awlpro="${dir}/${base}.awlpro"
