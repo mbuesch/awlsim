@@ -48,6 +48,11 @@ class AwlOperator(object):
 	MEM_PA		= enum.item	# Peripheral output
 	MEM_PE		= enum.item	# Peripheral input
 
+	MEM_DBLG	= enum.item	# DB-register: DB length
+	MEM_DBNO	= enum.item	# DB-register: DB number
+	MEM_DILG	= enum.item	# DI-register: DB length
+	MEM_DINO	= enum.item	# DI-register: DB number
+
 	MEM_STW		= enum.item	# Status word bit read
 	MEM_STW_Z	= enum.item	# Status word "==0" read
 	MEM_STW_NZ	= enum.item	# Status word "<>0" read
@@ -106,6 +111,11 @@ class AwlOperator(object):
 		MEM_Z		: "Z",
 		MEM_PA		: "PA",
 		MEM_PE		: "PE",
+
+		MEM_DBLG	: "DBLG",
+		MEM_DBNO	: "DBNO",
+		MEM_DILG	: "DILG",
+		MEM_DINO	: "DINO",
 
 		MEM_STW		: "STW",
 		MEM_STW_Z	: "==0",

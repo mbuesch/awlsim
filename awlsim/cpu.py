@@ -903,6 +903,18 @@ class S7CPU(object):
 	def fetchIMM(self, operator):
 		return operator.value
 
+	def fetchDBLG(self, operator):
+		return self.dbRegister.struct.getSize()
+
+	def fetchDBNO(self, operator):
+		return self.dbRegister.index
+
+	def fetchDILG(self, operator):
+		return self.diRegister.struct.getSize()
+
+	def fetchDINO(self, operator):
+		return self.diRegister.index
+
 	def fetchSTW(self, operator):
 		if operator.width == 1:
 			return self.statusWord.getByBitNumber(operator.value.bitOffset)
@@ -1042,6 +1054,10 @@ class S7CPU(object):
 		AwlOperator.MEM_T		: fetchT,
 		AwlOperator.MEM_Z		: fetchZ,
 		AwlOperator.MEM_PE		: fetchPE,
+		AwlOperator.MEM_DBLG		: fetchDBLG,
+		AwlOperator.MEM_DBNO		: fetchDBNO,
+		AwlOperator.MEM_DILG		: fetchDILG,
+		AwlOperator.MEM_DINO		: fetchDINO,
 		AwlOperator.MEM_STW		: fetchSTW,
 		AwlOperator.MEM_STW_Z		: fetchSTW_Z,
 		AwlOperator.MEM_STW_NZ		: fetchSTW_NZ,
