@@ -183,7 +183,9 @@ class CpuWidget(QWidget):
 			cpu.setScreenUpdateCallback(
 				self.__screenUpdateCallback, cpu)
 			self.__setState(self.STATE_LOAD)
+			sim.reset()
 			sim.load(parser.getParseTree())
+			sim.startup()
 		except AwlParserError as e:
 			MessageBox.handleAwlParserError(self, e)
 			self.stop()
