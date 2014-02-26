@@ -125,7 +125,7 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 	try:
 		fd = open(tmpFile, "wb")
 		if encoding != "binary":
-			data = data.encode(encodint)
+			data = data.encode(encoding)
 		fd.write(data)
 		fd.flush()
 		fd.close()
