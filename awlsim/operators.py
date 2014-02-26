@@ -296,8 +296,12 @@ class AwlOperator(object):
 			return "OB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_VAT:
 			return "VAT %d" % self.value.byteOffset
+		elif self.type == self.SYMBOLIC:
+			return '"%s"' % self.value
 		elif self.type == self.NAMED_LOCAL:
 			return "#%s" % self.value
+		elif self.type == self.NAMED_LOCAL_PTR:
+			return "P##%s" % self.value
 		elif self.type == self.INTERF_DB:
 			return "__INTERFACE_DB" #FIXME
 		elif self.type == self.INDIRECT:
