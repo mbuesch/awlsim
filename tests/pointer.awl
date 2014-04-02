@@ -179,6 +179,9 @@ BEGIN
 		IN_VAL_0	:= 5555,
 		IN_VAL_1	:= 5656,
 	)
+
+	CALL FC 2
+
 END_ORGANIZATION_BLOCK
 
 
@@ -482,6 +485,82 @@ BEGIN
 END_FUNCTION
 
 
+FUNCTION FC 2 : VOID
+TITLE =Extended address register instruction tests
+BEGIN
+	// Open the data blocks
+	AUF		DB 3
+	AUF		DI 3
+	// Initialize the memory areas
+	L		P#42.0
+	T		MD 0
+	L		P#43.0
+	T		LD 0
+	L		P#44.0
+	T		DBD 0
+	L		P#45.0
+	T		DID 4
+	LAR2		P#46.0
+	L		P#47.0
+	T		MD 42
+
+
+	// Test LAR1
+	LAR1		MD 0
+	__ASSERT==	__AR 1,		P#42.0
+	LAR1		LD 0
+	__ASSERT==	__AR 1,		P#43.0
+	LAR1		DBD 0
+	__ASSERT==	__AR 1,		P#44.0
+	LAR1		DID 4
+	__ASSERT==	__AR 1,		P#45.0
+	LAR1		AR2
+	__ASSERT==	__AR 1,		P#46.0
+
+	// Test LAR2
+	LAR2		MD 0
+	__ASSERT==	__AR 2,		P#42.0
+	LAR2		LD 0
+	__ASSERT==	__AR 2,		P#43.0
+	LAR2		DBD 0
+	__ASSERT==	__AR 2,		P#44.0
+	LAR2		DID 4
+	__ASSERT==	__AR 2,		P#45.0
+
+	// Test TAR1
+	LAR1		P#142.7
+	LAR2		P#143.1
+	TAR1		MD 0
+	__ASSERT==	MD 0,		P#142.7
+	TAR1		LD 0
+	__ASSERT==	LD 0,		P#142.7
+	TAR1		DBD 0
+	__ASSERT==	DBD 0,		P#142.7
+	TAR1		DID 4
+	__ASSERT==	DID 4,		P#142.7
+	TAR1		AR2
+	__ASSERT==	__AR 2,		P#142.7
+
+	// Test TAR2
+	LAR1		P#142.7
+	LAR2		P#143.1
+	TAR2		MD 0
+	__ASSERT==	MD 0,		P#143.1
+	TAR2		LD 0
+	__ASSERT==	LD 0,		P#143.1
+	TAR2		DBD 0
+	__ASSERT==	DBD 0,		P#143.1
+	TAR2		DID 4
+	__ASSERT==	DID 4,		P#143.1
+
+
+	// Test offset wrapping
+	LAR1		P#41.7
+	L		MD [AR1,P#0.1]
+	__ASSERT==	__ACCU 1,	P#47.0
+END_FUNCTION
+
+
 DATA_BLOCK DB 1
 	FB 1
 BEGIN
@@ -493,4 +572,15 @@ END_DATA_BLOCK
 DATA_BLOCK DB 2
 	FB 2
 BEGIN
+END_DATA_BLOCK
+
+
+DATA_BLOCK DB 3
+STRUCT
+	pointer_0 : DWORD
+	pointer_1 : DWORD
+END_STRUCT
+BEGIN
+	pointer_0 := DW#16#0
+	pointer_1 := DW#16#0
 END_DATA_BLOCK

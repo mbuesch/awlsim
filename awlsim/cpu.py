@@ -915,6 +915,9 @@ class S7CPU(object):
 	def fetchDINO(self, operator):
 		return self.diRegister.index
 
+	def fetchAR2(self, operator):
+		return self.getAR(2).get()
+
 	def fetchSTW(self, operator):
 		if operator.width == 1:
 			return self.statusWord.getByBitNumber(operator.value.bitOffset)
@@ -1058,6 +1061,7 @@ class S7CPU(object):
 		AwlOperator.MEM_DBNO		: fetchDBNO,
 		AwlOperator.MEM_DILG		: fetchDILG,
 		AwlOperator.MEM_DINO		: fetchDINO,
+		AwlOperator.MEM_AR2		: fetchAR2,
 		AwlOperator.MEM_STW		: fetchSTW,
 		AwlOperator.MEM_STW_Z		: fetchSTW_Z,
 		AwlOperator.MEM_STW_NZ		: fetchSTW_NZ,
@@ -1152,6 +1156,9 @@ class S7CPU(object):
 				(operator.width, operator.value.byteOffset,
 				 value))
 
+	def storeAR2(self, operator, value):
+		self.getAR(2).set(value)
+
 	def storeSTW(self, operator, value):
 		if operator.width == 1:
 			raise AwlSimError("Cannot store to individual STW bits")
@@ -1169,6 +1176,7 @@ class S7CPU(object):
 		AwlOperator.MEM_DB		: storeDB,
 		AwlOperator.MEM_DI		: storeDI,
 		AwlOperator.MEM_PA		: storePA,
+		AwlOperator.MEM_AR2		: storeAR2,
 		AwlOperator.MEM_STW		: storeSTW,
 		AwlOperator.INTERF_DB		: storeINTERF_DB,
 	}

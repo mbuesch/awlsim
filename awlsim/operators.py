@@ -52,6 +52,7 @@ class AwlOperator(object):
 	MEM_DBNO	= enum.item	# DB-register: DB number
 	MEM_DILG	= enum.item	# DI-register: DB length
 	MEM_DINO	= enum.item	# DI-register: DB number
+	MEM_AR2		= enum.item	# AR2 register
 
 	MEM_STW		= enum.item	# Status word bit read
 	MEM_STW_Z	= enum.item	# Status word "==0" read
@@ -116,6 +117,7 @@ class AwlOperator(object):
 		MEM_DBNO	: "DBNO",
 		MEM_DILG	: "DILG",
 		MEM_DINO	: "DINO",
+		MEM_AR2		: "AR2",
 
 		MEM_STW		: "STW",
 		MEM_STW_Z	: "==0",
