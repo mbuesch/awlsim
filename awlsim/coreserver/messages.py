@@ -20,8 +20,8 @@
 #
 
 from awlsim.coreserver.memarea import *
-from awlsim.util import *
-from awlsim.cpuspecs import *
+from awlsim.core.util import *
+from awlsim.core.cpuspecs import *
 
 import struct
 import socket

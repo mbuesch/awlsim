@@ -25,10 +25,10 @@ import sys
 import os
 import getopt
 
-from awlsim.main import AwlSim
-from awlsim.parser import AwlParser
-from awlsim.util import AwlSimError, AwlParserError, printInfo, printWarning, printError, str2bool
-from awlsim.version import VERSION_MAJOR, VERSION_MINOR
+from awlsim.core.main import AwlSim
+from awlsim.core.parser import AwlParser
+from awlsim.core.util import AwlSimError, AwlParserError, printInfo, printWarning, printError, str2bool
+from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR
 
 try:
 	import hal as LinuxCNC_HAL

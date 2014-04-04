@@ -25,7 +25,8 @@ import os
 import getopt
 import traceback
 
-from awlsim import *
+from awlsim.core import *
+from awlsim.coreserver import *
 
 
 class TextInterfaceAwlSimClient(AwlSimClient):
@@ -108,7 +109,8 @@ def readInputFile(inputFile):
 def run(inputFile):
 	s = None
 	try:
-		if awlsim_useCython:
+		import awlsim.cython_helper
+		if awlsim.cython_helper.shouldUseCython():
 			writeStdout("*** Using accelerated CYTHON core "
 				    "(AWLSIMCYTHON environment variable is set)\n")
 
@@ -186,7 +188,8 @@ def run(inputFile):
 def runWithServerBackend(inputFile):
 	client = None
 	try:
-		if awlsim_useCython:
+		import awlsim.cython_helper
+		if awlsim.cython_helper.shouldUseCython():
 			printError("The accelerated CYTHON core currently is incompatible "
 				   "with the backend server. Please remove the "
 				   "AWLSIMCYTHON environment variable.")

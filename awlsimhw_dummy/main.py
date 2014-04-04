@@ -19,9 +19,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.hardware import *
-from awlsim.operators import AwlOperator
-from awlsim.datatypes import AwlOffset
+from awlsim.core.hardware import *
+from awlsim.core.operators import AwlOperator
+from awlsim.core.datatypes import AwlOffset
 
 
 class HardwareInterface(AbstractHardwareInterface):

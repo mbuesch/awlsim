@@ -19,7 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.util import *
+from awlsim.core.util import *
 
 
 class MemoryArea(object):

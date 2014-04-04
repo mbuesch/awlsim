@@ -23,7 +23,7 @@
 import sys
 import getopt
 
-from awlsim import *
+from awlsim.core import *
 
 
 def usage():

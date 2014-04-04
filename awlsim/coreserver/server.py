@@ -21,9 +21,9 @@
 
 from awlsim.coreserver.messages import *
 
-from awlsim.main import *
-from awlsim.parser import *
-from awlsim.cpuspecs import *
+from awlsim.core.main import *
+from awlsim.core.parser import *
+from awlsim.core.cpuspecs import *
 
 import sys
 import os

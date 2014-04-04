@@ -9,7 +9,7 @@ import shutil
 import hashlib
 from distutils.core import setup
 from distutils.extension import Extension
-from awlsim.version import VERSION_MAJOR, VERSION_MINOR
+from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR
 
 
 def makedirs(path, mode):
@@ -200,9 +200,10 @@ setup(	name		= "awlsim",
 	author_email	= "m@bues.ch",
 	url		= "http://bues.ch/cms/hacking/awlsim.html",
 	packages	= [ "awlsim",
+			    "awlsim/core",
+			    "awlsim/core/instructions",
 			    "awlsim/coreserver",
 			    "awlsim/gui",
-			    "awlsim/instructions",
 			    "awlsimhw_dummy",
 			    "awlsimhw_linuxcnc",
 			    "awlsimhw_pyprofibus", ],

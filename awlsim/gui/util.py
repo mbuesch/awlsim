@@ -20,7 +20,8 @@
 #
 
 import sys
-from awlsim import *
+from awlsim.core import *
+import awlsim.cython_helper
 
 if isPyPy:
 	# PySide does not work on PyPy, yet.
@@ -28,7 +29,7 @@ if isPyPy:
 	printError("Please use CPython 2.7 or CPython 3.x")
 	sys.exit(1)
 
-if awlsim_useCython:
+if awlsim.cython_helper.shouldUseCython():
 	print("*** Using accelerated CYTHON core "
 	      "(AWLSIMCYTHON environment variable is set)")
 
