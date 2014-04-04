@@ -46,12 +46,12 @@ def py23(py2, py3):
 	raise AwlSimError("Failed to detect Python version")
 
 class Logging(object):
-	enum.start
-	LOG_NONE	= enum.item
-	LOG_ERROR	= enum.item
-	LOG_INFO	= enum.item
-	LOG_DEBUG	= enum.item
-	enum.end
+	EnumGen.start
+	LOG_NONE	= EnumGen.item
+	LOG_ERROR	= EnumGen.item
+	LOG_INFO	= EnumGen.item
+	LOG_DEBUG	= EnumGen.item
+	EnumGen.end
 
 	_loglevel = LOG_INFO
 

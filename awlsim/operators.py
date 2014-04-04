@@ -25,70 +25,70 @@ from awlsim.util import *
 
 
 class AwlOperator(object):
-	enum.start	# Operator types
+	EnumGen.start	# Operator types
 
-	IMM		= enum.item	# Immediate value (constant)
-	IMM_REAL	= enum.item	# Real
-	IMM_S5T		= enum.item	# S5T immediate
-	IMM_TIME	= enum.item	# T# immediate
-	IMM_DATE	= enum.item	# D# immediate
-	IMM_TOD		= enum.item	# TOD# immediate
-	IMM_DT		= enum.item	# DT# immediate
-	IMM_PTR		= enum.item	# Pointer immediate
+	IMM		= EnumGen.item	# Immediate value (constant)
+	IMM_REAL	= EnumGen.item	# Real
+	IMM_S5T		= EnumGen.item	# S5T immediate
+	IMM_TIME	= EnumGen.item	# T# immediate
+	IMM_DATE	= EnumGen.item	# D# immediate
+	IMM_TOD		= EnumGen.item	# TOD# immediate
+	IMM_DT		= EnumGen.item	# DT# immediate
+	IMM_PTR		= EnumGen.item	# Pointer immediate
 
-	MEM_E		= enum.item	# Input
-	MEM_A		= enum.item	# Output
-	MEM_M		= enum.item	# Flags
-	MEM_L		= enum.item	# Localstack
-	MEM_VL		= enum.item	# Parent localstack (indirect access)
-	MEM_DB		= enum.item	# Global datablock
-	MEM_DI		= enum.item	# Instance datablock
-	MEM_T		= enum.item	# Timer
-	MEM_Z		= enum.item	# Counter
-	MEM_PA		= enum.item	# Peripheral output
-	MEM_PE		= enum.item	# Peripheral input
+	MEM_E		= EnumGen.item	# Input
+	MEM_A		= EnumGen.item	# Output
+	MEM_M		= EnumGen.item	# Flags
+	MEM_L		= EnumGen.item	# Localstack
+	MEM_VL		= EnumGen.item	# Parent localstack (indirect access)
+	MEM_DB		= EnumGen.item	# Global datablock
+	MEM_DI		= EnumGen.item	# Instance datablock
+	MEM_T		= EnumGen.item	# Timer
+	MEM_Z		= EnumGen.item	# Counter
+	MEM_PA		= EnumGen.item	# Peripheral output
+	MEM_PE		= EnumGen.item	# Peripheral input
 
-	MEM_DBLG	= enum.item	# DB-register: DB length
-	MEM_DBNO	= enum.item	# DB-register: DB number
-	MEM_DILG	= enum.item	# DI-register: DB length
-	MEM_DINO	= enum.item	# DI-register: DB number
-	MEM_AR2		= enum.item	# AR2 register
+	MEM_DBLG	= EnumGen.item	# DB-register: DB length
+	MEM_DBNO	= EnumGen.item	# DB-register: DB number
+	MEM_DILG	= EnumGen.item	# DI-register: DB length
+	MEM_DINO	= EnumGen.item	# DI-register: DB number
+	MEM_AR2		= EnumGen.item	# AR2 register
 
-	MEM_STW		= enum.item	# Status word bit read
-	MEM_STW_Z	= enum.item	# Status word "==0" read
-	MEM_STW_NZ	= enum.item	# Status word "<>0" read
-	MEM_STW_POS	= enum.item	# Status word ">0" read
-	MEM_STW_NEG	= enum.item	# Status word "<0" read
-	MEM_STW_POSZ	= enum.item	# Status word ">=0" read
-	MEM_STW_NEGZ	= enum.item	# Status word "<=0" read
-	MEM_STW_UO	= enum.item	# Status word "UO" read
+	MEM_STW		= EnumGen.item	# Status word bit read
+	MEM_STW_Z	= EnumGen.item	# Status word "==0" read
+	MEM_STW_NZ	= EnumGen.item	# Status word "<>0" read
+	MEM_STW_POS	= EnumGen.item	# Status word ">0" read
+	MEM_STW_NEG	= EnumGen.item	# Status word "<0" read
+	MEM_STW_POSZ	= EnumGen.item	# Status word ">=0" read
+	MEM_STW_NEGZ	= EnumGen.item	# Status word "<=0" read
+	MEM_STW_UO	= EnumGen.item	# Status word "UO" read
 
-	LBL_REF		= enum.item	# Label reference
+	LBL_REF		= EnumGen.item	# Label reference
 
-	BLKREF_FC	= enum.item	# FC reference
-	BLKREF_SFC	= enum.item	# SFC reference
-	BLKREF_FB	= enum.item	# FB reference
-	BLKREF_SFB	= enum.item	# SFB reference
-	BLKREF_UDT	= enum.item	# UDT reference
-	BLKREF_DB	= enum.item	# DB reference
-	BLKREF_DI	= enum.item	# DI reference
-	BLKREF_OB	= enum.item	# OB reference (only symbol table)
-	BLKREF_VAT	= enum.item	# VAT reference (only symbol table)
+	BLKREF_FC	= EnumGen.item	# FC reference
+	BLKREF_SFC	= EnumGen.item	# SFC reference
+	BLKREF_FB	= EnumGen.item	# FB reference
+	BLKREF_SFB	= EnumGen.item	# SFB reference
+	BLKREF_UDT	= EnumGen.item	# UDT reference
+	BLKREF_DB	= EnumGen.item	# DB reference
+	BLKREF_DI	= EnumGen.item	# DI reference
+	BLKREF_OB	= EnumGen.item	# OB reference (only symbol table)
+	BLKREF_VAT	= EnumGen.item	# VAT reference (only symbol table)
 
-	SYMBOLIC	= enum.item	# Classic symbolic reference ("xyz")
-	NAMED_LOCAL	= enum.item	# Named local reference (#abc)
-	NAMED_LOCAL_PTR	= enum.item	# Pointer to named local (P##abc)
-	INTERF_DB	= enum.item	# Interface-DB access (translated NAMED_LOCAL)
+	SYMBOLIC	= EnumGen.item	# Classic symbolic reference ("xyz")
+	NAMED_LOCAL	= EnumGen.item	# Named local reference (#abc)
+	NAMED_LOCAL_PTR	= EnumGen.item	# Pointer to named local (P##abc)
+	INTERF_DB	= EnumGen.item	# Interface-DB access (translated NAMED_LOCAL)
 
-	INDIRECT	= enum.item	# Indirect access
-	UNSPEC		= enum.item	# Not (yet) specified memory region
+	INDIRECT	= EnumGen.item	# Indirect access
+	UNSPEC		= EnumGen.item	# Not (yet) specified memory region
 
 	# Virtual operators used for debugging of the simulator
-	VIRT_ACCU	= enum.item	# Accu
-	VIRT_AR		= enum.item	# AR
-	VIRT_DBR	= enum.item	# DB and DI registers
+	VIRT_ACCU	= EnumGen.item	# Accu
+	VIRT_AR		= EnumGen.item	# AR
+	VIRT_DBR	= EnumGen.item	# DB and DI registers
 
-	enum.end	# Operator types
+	EnumGen.end	# Operator types
 
 	# Type to string map
 	type2str = {

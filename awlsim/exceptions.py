@@ -113,15 +113,15 @@ class AwlSimErrorText(AwlSimError):
 		return str(self)
 
 class MaintenanceRequest(Exception):
-	enum.start
+	EnumGen.start
 	# Soft-reboot request, handled by the simulator core.
 	# On soft-reboot, the upstart-OBs are executed.
 	# Memory is not cleared.
-	TYPE_SOFTREBOOT		= enum.item
+	TYPE_SOFTREBOOT		= EnumGen.item
 	# Regular-shutdown request, handled by toplevel simulator.
 	# This exception is handed up to the toplevel loop.
-	TYPE_SHUTDOWN		= enum.item
-	enum.end
+	TYPE_SHUTDOWN		= EnumGen.item
+	EnumGen.end
 
 	def __init__(self, requestType, message=""):
 		Exception.__init__(self, message)

@@ -28,14 +28,14 @@ from awlsim.util import *
 
 class BlockInterface(object):
 	class Field(object):
-		enum.start = -1
-		FTYPE_UNKNOWN	= enum.item
-		FTYPE_IN	= enum.item
-		FTYPE_OUT	= enum.item
-		FTYPE_INOUT	= enum.item
-		FTYPE_STAT	= enum.item
-		FTYPE_TEMP	= enum.item
-		enum.end
+		EnumGen.start = -1
+		FTYPE_UNKNOWN	= EnumGen.item
+		FTYPE_IN	= EnumGen.item
+		FTYPE_OUT	= EnumGen.item
+		FTYPE_INOUT	= EnumGen.item
+		FTYPE_STAT	= EnumGen.item
+		FTYPE_TEMP	= EnumGen.item
+		EnumGen.end
 
 		def __init__(self, name, dataType, initialValue=None):
 			self.name = name

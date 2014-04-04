@@ -42,11 +42,11 @@ class AwlSimServer(object):
 
 	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
 
-	enum.start
-	STATE_INIT	= enum.item
-	STATE_RUN	= enum.item
-	STATE_EXIT	= enum.item
-	enum.end
+	EnumGen.start
+	STATE_INIT	= EnumGen.item
+	STATE_RUN	= EnumGen.item
+	STATE_EXIT	= EnumGen.item
+	EnumGen.end
 
 	class Client(object):
 		"""Client information."""

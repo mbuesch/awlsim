@@ -23,16 +23,16 @@ from awlsim.util import *
 
 
 class MemoryArea(object):
-	enum.start
-	TYPE_E		= enum.item # input memory
-	TYPE_A		= enum.item # output memory
-	TYPE_M		= enum.item # flags memory
-	TYPE_L		= enum.item # localdata memory
-	TYPE_DB		= enum.item # DB memory
-	TYPE_T		= enum.item # timer
-	TYPE_Z		= enum.item # counter
-	TYPE_STW	= enum.item # status word
-	enum.end
+	EnumGen.start
+	TYPE_E		= EnumGen.item # input memory
+	TYPE_A		= EnumGen.item # output memory
+	TYPE_M		= EnumGen.item # flags memory
+	TYPE_L		= EnumGen.item # localdata memory
+	TYPE_DB		= EnumGen.item # DB memory
+	TYPE_T		= EnumGen.item # timer
+	TYPE_Z		= EnumGen.item # counter
+	TYPE_STW	= EnumGen.item # status word
+	EnumGen.end
 
 	def __init__(self, memType, flags, index, start, length, data=None):
 		self.memType = memType

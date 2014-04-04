@@ -20,8 +20,8 @@
 #
 
 
-class EnumerationHelper(object):
-	"Enumeration helper"
+class MagicEnumerationGenerator(object):
+	"Magic enumeration generator"
 
 	def __init__(self):
 		self.__num = None
@@ -59,6 +59,6 @@ class EnumerationHelper(object):
 		return number
 
 	def __repr__(self):
-		return "enum(%s)" % str(self.__num)
+		return "EnumGen(num = %s)" % str(self.__num)
 
-enum = EnumerationHelper()
+EnumGen = MagicEnumerationGenerator()

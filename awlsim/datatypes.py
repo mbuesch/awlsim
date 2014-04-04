@@ -55,36 +55,36 @@ class AwlOffset(object):
 
 class AwlDataType(object):
 	# Data type IDs
-	enum.start
-	TYPE_VOID	= enum.item
-	TYPE_BOOL	= enum.item
-	TYPE_BYTE	= enum.item
-	TYPE_WORD	= enum.item
-	TYPE_DWORD	= enum.item
-	TYPE_INT	= enum.item
-	TYPE_DINT	= enum.item
-	TYPE_REAL	= enum.item
-	TYPE_S5T	= enum.item
-	TYPE_TIME	= enum.item
-	TYPE_DATE	= enum.item
-	TYPE_DT		= enum.item
-	TYPE_TOD	= enum.item
-	TYPE_CHAR	= enum.item
-	TYPE_ARRAY	= enum.item
-	TYPE_TIMER	= enum.item
-	TYPE_COUNTER	= enum.item
-	TYPE_BLOCK_DB	= enum.item # DB number type
-	TYPE_BLOCK_FB	= enum.item # FB number type
-	TYPE_BLOCK_FC	= enum.item # FC number type
-	TYPE_DB_X	= enum.item # DBx type
-	TYPE_OB_X	= enum.item # OBx type
-	TYPE_FC_X	= enum.item # FCx type
-	TYPE_SFC_X	= enum.item # SFCx type
-	TYPE_FB_X	= enum.item # FBx type
-	TYPE_SFB_X	= enum.item # SFBx type
-	TYPE_UDT_X	= enum.item # UDTx type
-	TYPE_VAT_X	= enum.item # VATx type
-	enum.end
+	EnumGen.start
+	TYPE_VOID	= EnumGen.item
+	TYPE_BOOL	= EnumGen.item
+	TYPE_BYTE	= EnumGen.item
+	TYPE_WORD	= EnumGen.item
+	TYPE_DWORD	= EnumGen.item
+	TYPE_INT	= EnumGen.item
+	TYPE_DINT	= EnumGen.item
+	TYPE_REAL	= EnumGen.item
+	TYPE_S5T	= EnumGen.item
+	TYPE_TIME	= EnumGen.item
+	TYPE_DATE	= EnumGen.item
+	TYPE_DT		= EnumGen.item
+	TYPE_TOD	= EnumGen.item
+	TYPE_CHAR	= EnumGen.item
+	TYPE_ARRAY	= EnumGen.item
+	TYPE_TIMER	= EnumGen.item
+	TYPE_COUNTER	= EnumGen.item
+	TYPE_BLOCK_DB	= EnumGen.item # DB number type
+	TYPE_BLOCK_FB	= EnumGen.item # FB number type
+	TYPE_BLOCK_FC	= EnumGen.item # FC number type
+	TYPE_DB_X	= EnumGen.item # DBx type
+	TYPE_OB_X	= EnumGen.item # OBx type
+	TYPE_FC_X	= EnumGen.item # FCx type
+	TYPE_SFC_X	= EnumGen.item # SFCx type
+	TYPE_FB_X	= EnumGen.item # FBx type
+	TYPE_SFB_X	= EnumGen.item # SFBx type
+	TYPE_UDT_X	= EnumGen.item # UDTx type
+	TYPE_VAT_X	= EnumGen.item # VATx type
+	EnumGen.end
 
 	__name2id = {
 		"VOID"		: TYPE_VOID,

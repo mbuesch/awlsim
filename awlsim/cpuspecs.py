@@ -25,11 +25,11 @@ from awlsim.util import *
 class S7CPUSpecs(object):
 	"STEP 7 CPU Specifications"
 
-	enum.start
-	MNEMONICS_AUTO		= enum.item
-	MNEMONICS_EN		= enum.item
-	MNEMONICS_DE		= enum.item
-	enum.end
+	EnumGen.start
+	MNEMONICS_AUTO		= EnumGen.item
+	MNEMONICS_EN		= EnumGen.item
+	MNEMONICS_DE		= EnumGen.item
+	EnumGen.end
 
 	def __init__(self, cpu=None):
 		self.cpu = None

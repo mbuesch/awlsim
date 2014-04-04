@@ -181,31 +181,31 @@ class AwlParseTree(object):
 		self.curBlock = None
 
 class AwlParser(object):
-	enum.start
-	STATE_GLOBAL			= enum.item
-	STATE_IN_DB_HDR			= enum.item
-	STATE_IN_DB_HDR_STRUCT		= enum.item
-	STATE_IN_DB			= enum.item
-	STATE_IN_FB_HDR			= enum.item
-	STATE_IN_FB_HDR_VAR		= enum.item
-	STATE_IN_FB_HDR_VARIN		= enum.item
-	STATE_IN_FB_HDR_VAROUT		= enum.item
-	STATE_IN_FB_HDR_VARINOUT	= enum.item
-	STATE_IN_FB_HDR_VARTEMP		= enum.item
-	STATE_IN_FB_HDR_ATTR		= enum.item
-	STATE_IN_FB			= enum.item
-	STATE_IN_FC_HDR			= enum.item
-	STATE_IN_FC_HDR_VARIN		= enum.item
-	STATE_IN_FC_HDR_VAROUT		= enum.item
-	STATE_IN_FC_HDR_VARINOUT	= enum.item
-	STATE_IN_FC_HDR_VARTEMP		= enum.item
-	STATE_IN_FC_HDR_ATTR		= enum.item
-	STATE_IN_FC			= enum.item
-	STATE_IN_OB_HDR			= enum.item
-	STATE_IN_OB_HDR_VARTEMP		= enum.item
-	STATE_IN_OB_HDR_ATTR		= enum.item
-	STATE_IN_OB			= enum.item
-	enum.end
+	EnumGen.start
+	STATE_GLOBAL			= EnumGen.item
+	STATE_IN_DB_HDR			= EnumGen.item
+	STATE_IN_DB_HDR_STRUCT		= EnumGen.item
+	STATE_IN_DB			= EnumGen.item
+	STATE_IN_FB_HDR			= EnumGen.item
+	STATE_IN_FB_HDR_VAR		= EnumGen.item
+	STATE_IN_FB_HDR_VARIN		= EnumGen.item
+	STATE_IN_FB_HDR_VAROUT		= EnumGen.item
+	STATE_IN_FB_HDR_VARINOUT	= EnumGen.item
+	STATE_IN_FB_HDR_VARTEMP		= EnumGen.item
+	STATE_IN_FB_HDR_ATTR		= EnumGen.item
+	STATE_IN_FB			= EnumGen.item
+	STATE_IN_FC_HDR			= EnumGen.item
+	STATE_IN_FC_HDR_VARIN		= EnumGen.item
+	STATE_IN_FC_HDR_VAROUT		= EnumGen.item
+	STATE_IN_FC_HDR_VARINOUT	= EnumGen.item
+	STATE_IN_FC_HDR_VARTEMP		= EnumGen.item
+	STATE_IN_FC_HDR_ATTR		= EnumGen.item
+	STATE_IN_FC			= EnumGen.item
+	STATE_IN_OB_HDR			= EnumGen.item
+	STATE_IN_OB_HDR_VARTEMP		= EnumGen.item
+	STATE_IN_OB_HDR_ATTR		= EnumGen.item
+	STATE_IN_OB			= EnumGen.item
+	EnumGen.end
 
 	class TokenizerState(object):
 		def __init__(self, parser):

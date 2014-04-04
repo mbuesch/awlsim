@@ -27,13 +27,13 @@ from awlsim.gui.cpustate import *
 class CpuWidget(QWidget):
 	runStateChanged = Signal(int)
 
-	enum.start
-	STATE_STOP	= enum.item
-	STATE_PARSE	= enum.item
-	STATE_INIT	= enum.item
-	STATE_LOAD	= enum.item
-	STATE_RUN	= enum.item
-	enum.end
+	EnumGen.start
+	STATE_STOP	= EnumGen.item
+	STATE_PARSE	= EnumGen.item
+	STATE_INIT	= EnumGen.item
+	STATE_LOAD	= EnumGen.item
+	STATE_RUN	= EnumGen.item
+	EnumGen.end
 
 	def __init__(self, mainWidget, parent=None):
 		QWidget.__init__(self, parent)

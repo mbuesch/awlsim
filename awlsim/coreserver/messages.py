@@ -44,24 +44,24 @@ class AwlSimMessage(object):
 	HDR_MAGIC		= 0x5710
 	HDR_LENGTH		= hdrStruct.size
 
-	enum.start
-	MSG_ID_REPLY		= enum.item # Generic status reply
-	MSG_ID_EXCEPTION	= enum.item
-	MSG_ID_PING		= enum.item
-	MSG_ID_PONG		= enum.item
-	MSG_ID_RESET		= enum.item
-	MSG_ID_RUNSTATE		= enum.item
-	MSG_ID_LOAD_SYMTAB	= enum.item
-	MSG_ID_LOAD_CODE	= enum.item
-	MSG_ID_LOAD_HW		= enum.item
-	MSG_ID_SET_OPT		= enum.item
-	MSG_ID_CPUDUMP		= enum.item
-	MSG_ID_MAINTREQ		= enum.item
-	MSG_ID_GET_CPUSPECS	= enum.item
-	MSG_ID_CPUSPECS		= enum.item
-	MSG_ID_REQ_MEMORY	= enum.item
-	MSG_ID_MEMORY		= enum.item
-	enum.end
+	EnumGen.start
+	MSG_ID_REPLY		= EnumGen.item # Generic status reply
+	MSG_ID_EXCEPTION	= EnumGen.item
+	MSG_ID_PING		= EnumGen.item
+	MSG_ID_PONG		= EnumGen.item
+	MSG_ID_RESET		= EnumGen.item
+	MSG_ID_RUNSTATE		= EnumGen.item
+	MSG_ID_LOAD_SYMTAB	= EnumGen.item
+	MSG_ID_LOAD_CODE	= EnumGen.item
+	MSG_ID_LOAD_HW		= EnumGen.item
+	MSG_ID_SET_OPT		= EnumGen.item
+	MSG_ID_CPUDUMP		= EnumGen.item
+	MSG_ID_MAINTREQ		= EnumGen.item
+	MSG_ID_GET_CPUSPECS	= EnumGen.item
+	MSG_ID_CPUSPECS		= EnumGen.item
+	MSG_ID_REQ_MEMORY	= EnumGen.item
+	MSG_ID_MEMORY		= EnumGen.item
+	EnumGen.end
 
 	_strLenStruct = struct.Struct(">H")
 
@@ -102,10 +102,10 @@ class AwlSimMessage(object):
 		return cls()
 
 class AwlSimMessage_REPLY(AwlSimMessage):
-	enum.start
-	STAT_OK		= enum.item
-	STAT_FAIL	= enum.item
-	enum.end
+	EnumGen.start
+	STAT_OK		= EnumGen.item
+	STAT_FAIL	= EnumGen.item
+	EnumGen.end
 
 	plStruct = struct.Struct(">HHH")
 
@@ -147,10 +147,10 @@ class AwlSimMessage_RESET(AwlSimMessage):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RESET)
 
 class AwlSimMessage_RUNSTATE(AwlSimMessage):
-	enum.start
-	STATE_STOP	= enum.item
-	STATE_RUN	= enum.item
-	enum.end
+	EnumGen.start
+	STATE_STOP	= EnumGen.item
+	STATE_RUN	= EnumGen.item
+	EnumGen.end
 
 	plStruct = struct.Struct(">H")
 
