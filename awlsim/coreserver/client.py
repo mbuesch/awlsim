@@ -25,12 +25,12 @@ from awlsim.coreserver.messages import *
 import sys
 import socket
 import errno
+import time
 
 
 class AwlSimClient(object):
 	def __init__(self):
 		self.serverProcess = None
-		self.socket = None
 		self.transceiver = None
 
 	def spawnServer(self, interpreter=None,
@@ -77,7 +77,7 @@ class AwlSimClient(object):
 							raise AwlSimError("Timeout connecting "
 								"to AwlSimServer %s (port %d)" %\
 								(host, port))
-						time.sleep(0.1)
+						self.sleep(0.1)
 						continue
 					raise
 				break
@@ -85,7 +85,6 @@ class AwlSimClient(object):
 			raise AwlSimError("Failed to connect to AwlSimServer %s (port %d): %s" %\
 				(host, port, str(e)))
 		printInfo("AwlSimClient: Connected.")
-		self.socket = sock
 		self.transceiver = AwlSimMessageTransceiver(sock)
 		self.lastRxMsg = None
 
@@ -107,16 +106,9 @@ class AwlSimClient(object):
 	def shutdown(self):
 		"""Shutdown all sockets and spawned processes."""
 
-		if self.socket:
-			try:
-				self.socket.shutdown(socket.SHUT_RDWR)
-			except socket.error as e:
-				pass
-			try:
-				self.socket.close()
-			except socket.error as e:
-				pass
-			self.socket = None
+		if self.transceiver:
+			self.transceiver.shutdown()
+			self.transceiver = None
 		if self.serverProcess:
 			self.serverProcess.terminate()
 			self.serverProcess.wait()
@@ -172,6 +164,8 @@ class AwlSimClient(object):
 	}
 
 	def processMessages(self, blocking=False):
+		if not self.transceiver:
+			return
 		try:
 			if blocking:
 				msg = self.transceiver.receiveBlocking()
@@ -200,6 +194,9 @@ class AwlSimClient(object):
 				"message 0x%02X" % msg.msgId)
 		handler(self, msg)
 
+	def sleep(self, seconds):
+		time.sleep(seconds)
+
 	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeoutMs=3000):
 		self.transceiver.send(txMsg)
 		count = 0
@@ -209,7 +206,7 @@ class AwlSimClient(object):
 			if rxMsg and checkRxMsg(rxMsg):
 				self.lastRxMsg = None
 				return rxMsg
-			time.sleep(0.01)
+			self.sleep(0.01)
 			count += 10
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
 
@@ -227,6 +224,8 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to reset CPU")
 
 	def setRunState(self, run=True):
+		if not self.transceiver:
+			return False
 		if run:
 			runState = AwlSimMessage_RUNSTATE.STATE_RUN
 		else:
@@ -235,12 +234,16 @@ class AwlSimClient(object):
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set run state")
+		return True
 
 	def loadCode(self, code):
+		if not self.transceiver:
+			return False
 		msg = AwlSimMessage_LOAD_CODE(code)
 		status = self.__sendAndWaitFor_REPLY(msg, 10000)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load code")
+		return True
 
 	def loadSymbolTable(self, symTabText):
 		msg = AwlSimMessage_LOAD_SYMTAB(symTabText)
@@ -249,42 +252,53 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load symbol table")
 
 	def loadHardwareModule(self, name, parameters={}):
+		if not self.transceiver:
+			return False
 		msg = AwlSimMessage_LOAD_HW(name = name,
 					    paramDict = parameters)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
+		return True
 
 	def __setOption(self, name, value):
+		if not self.transceiver:
+			return False
 		msg = AwlSimMessage_SET_OPT(name, str(value))
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
+		return True
 
 	def setLoglevel(self, level=Logging.LOG_INFO):
 		Logging.setLoglevel(level)
-		self.__setOption("loglevel", int(level))
+		return self.__setOption("loglevel", int(level))
 
 	def enableOBTempPresets(self, enable=True):
-		self.__setOption("ob_temp_presets", int(bool(enable)))
+		return self.__setOption("ob_temp_presets", int(bool(enable)))
 
 	def enableExtendedInsns(self, enable=True):
-		self.__setOption("extended_insns", int(bool(enable)))
+		return self.__setOption("extended_insns", int(bool(enable)))
 
 	def setPeriodicDumpInterval(self, interval=0):
-		self.__setOption("periodic_dump_int", int(interval))
+		return self.__setOption("periodic_dump_int", int(interval))
 
 	def getCpuSpecs(self):
+		if not self.transceiver:
+			return None
 		msg = AwlSimMessage_GET_CPUSPECS()
 		rxMsg = self.__sendAndWait(msg,
 			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSPECS)
 		return rxMsg.cpuspecs
 
 	def setCpuSpecs(self, cpuspecs):
+		if not self.transceiver:
+			return False
 		msg = AwlSimMessage_CPUSPECS(cpuspecs)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set cpuspecs")
+		return True
 
 	# Set the memory areas we are interested in receiving
 	# dumps for, in the server.
@@ -294,22 +308,32 @@ class AwlSimClient(object):
 	#  - repeat on n'th every cycle (repetitionFactor=n)
 	# If sync is true, wait for a reply from the server.
 	def setMemoryReadRequests(self, memAreas, repetitionFactor=0, sync=False):
-		self.transceiver.send(
-			AwlSimMessage_REQ_MEMORY(0, repetitionFactor, memAreas)
-		)
+		if not self.transceiver:
+			return False
+		msg = AwlSimMessage_REQ_MEMORY(0, repetitionFactor, memAreas)
 		if sync:
+			msg.flags |= msg.FLG_SYNC
 			status = self.__sendAndWaitFor_REPLY(msg)
 			if status != AwlSimMessage_REPLY.STAT_OK:
-				raise AwlSimError("AwlSimClient: Failed to set memory read reqs")
+				raise AwlSimError("AwlSimClient: Failed to set "
+					"memory read reqs")
+		else:
+			self.transceiver.send(msg)
+		return True
 
 	# Write memory areas in the server.
 	# memAreas is a list of MemoryAreaData instances.
 	# If sync is true, wait for a reply from the server.
 	def writeMemory(self, memAreas, sync=False):
-		self.transceiver.send(
-			AwlSimMessage_MEMORY(0, memAreas)
-		)
+		if not self.transceiver:
+			return False
+		msg = AwlSimMessage_MEMORY(0, memAreas)
 		if sync:
+			msg.flags |= msg.FLG_SYNC
 			status = self.__sendAndWaitFor_REPLY(msg)
 			if status != AwlSimMessage_REPLY.STAT_OK:
-				raise AwlSimError("AwlSimClient: Failed to write to memory")
+				raise AwlSimError("AwlSimClient: Failed to write "
+					"to memory")
+		else:
+			self.transceiver.send(msg)
+		return True

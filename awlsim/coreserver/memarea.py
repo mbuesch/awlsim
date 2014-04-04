@@ -62,7 +62,7 @@ class MemoryArea(object):
 				"nonexistent DB %d" % self.index)
 		if not (db.permissions & db.PERM_READ):
 			raise AwlSimError("MemoryArea: Read access to "
-				"read-protedted DB %d" % self.index)
+				"read-protected DB %d" % self.index)
 		self.data = db.structInstance.dataBytes[self.start : self.start + self.length]
 
 	def __read_T(self, cpu):
@@ -125,7 +125,7 @@ class MemoryArea(object):
 				"nonexistent DB %d" % self.index)
 		if not (db.permissions & db.PERM_WRITE):
 			raise AwlSimError("MemoryArea: Write access to "
-				"write-protedted DB %d" % self.index)
+				"write-protected DB %d" % self.index)
 		db.structInstance.dataBytes[self.start : self.start + self.length] = self.data
 
 	__writeHandlers = {
@@ -153,8 +153,32 @@ class MemoryArea(object):
 		except (IndexError, TypeError) as e:
 			raise AwlSimError("Invalid MemoryArea write")
 
+	# Check whether another area overlaps with this one.
+	# Doesn't compare the flags.
+	# Doesn't compare the data.
+	def overlapsWith(self, other):
+		if self.memType != other.memType or\
+		   self.index != other.index:
+			return False
+		if self.memType in (self.TYPE_T, self.TYPE_Z, self.TYPE_STW):
+			return self.start == other.start and\
+			       self.length == other.length
+		if self.length and other.length:
+			selfEnd = self.start + self.length - 1
+			otherEnd = other.start + other.length - 1
+			if selfEnd < other.start or\
+			   otherEnd < self.start:
+				return False
+		elif self.length != other.length:
+			return False # One length is zero and the other isn't
+		return True
+
+	def overlapsWithAny(self, otherMemAreas):
+		return any(self.overlapsWith(a) for a in otherMemAreas)
+
 	def __repr__(self):
 		return "MemoryArea(memType=%d, flags=0x%02X, index=%d, "\
-			"start=%d, length=%d, len(data)=%d)" %\
+			"start=%d, length=%d, len(data)=%s)" %\
 			(self.memType, self.flags, self.index,
-			 self.start, self.length, len(self.data))
+			 self.start, self.length,
+			 str(len(self.data)) if self.data is not None else "None")

@@ -529,6 +529,18 @@ class AwlSimMessageTransceiver(object):
 
 		self.sock.setblocking(False)
 
+	def shutdown(self):
+		if self.sock:
+			try:
+				self.sock.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				self.sock.close()
+			except socket.error as e:
+				pass
+			self.sock = None
+
 	def send(self, msg):
 		msg.seq = self.txSeqCount
 		self.txSeqCount = (self.txSeqCount + 1) & 0xFFFF

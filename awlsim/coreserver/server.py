@@ -156,7 +156,7 @@ class AwlSimServer(object):
 
 	def __rebuildSelectReadList(self):
 		rlist = [ self.socket ]
-		rlist.extend(client.socket for client in self.clients)
+		rlist.extend(client.transceiver.sock for client in self.clients)
 		self.__selectRlist = rlist
 
 	def __cpuBlockExitCallback(self, userData):
@@ -446,14 +446,8 @@ class AwlSimServer(object):
 			self.sim = None
 
 		for client in self.clients:
-			try:
-				client.socket.shutdown(socket.SHUT_RDWR)
-			except socket.error as e:
-				pass
-			try:
-				client.socket.close()
-			except socket.error as e:
-				pass
+			client.transceiver.shutdown()
+			client.transceiver = None
 			client.socket = None
 		self.clients = []
 
