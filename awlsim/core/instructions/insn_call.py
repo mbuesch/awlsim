@@ -25,40 +25,61 @@ from awlsim.core.instructions.main import *
 class AwlInsn_AbstractCall(AwlInsn):
 	def staticSanityChecks(self):
 		if len(self.ops) == 1:
-			# FC/SFC call
+			# "CALL FC/SFC" or "UC/CC FC/SFC/FB/SFB"
 			blockOper = self.ops[0]
 
 			if blockOper.type == AwlOperator.BLKREF_FC:
 				try:
-					fc = self.cpu.fcs[blockOper.value.byteOffset]
+					codeBlock = self.cpu.fcs[blockOper.value.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FC not found",
 						rawInsn = self.rawInsn)
 			elif blockOper.type == AwlOperator.BLKREF_SFC:
 				try:
-					fc = self.cpu.sfcs[blockOper.value.byteOffset]
+					codeBlock = self.cpu.sfcs[blockOper.value.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFC %d not implemented, yet" %\
 						blockOper.value.byteOffset,
 						rawInsn = self.rawInsn)
-			elif blockOper.type == AwlOperator.BLKREF_FB or\
-			     blockOper.type == AwlOperator.BLKREF_SFB:
-				raise AwlSimError("Missing DB in function "
-					"block call",
-					rawInsn = self.rawInsn)
+			elif blockOper.type == AwlOperator.BLKREF_FB:
+				if self.type == AwlInsn.TYPE_CALL:
+					raise AwlSimError("Missing DB in function "
+						"block call",
+						rawInsn = self.rawInsn)
+				try:
+					codeBlock = self.cpu.fbs[blockOper.value.byteOffset]
+				except KeyError as e:
+					raise AwlSimError("Called FB not found",
+						rawInsn = self.rawInsn)
+			elif blockOper.type == AwlOperator.BLKREF_SFB:
+				if self.type == AwlInsn.TYPE_CALL:
+					raise AwlSimError("Missing DB in system function "
+						"block call",
+						rawInsn = self.rawInsn)
+				try:
+					codeBlock = self.cpu.sfbs[blockOper.value.byteOffset]
+				except KeyError as e:
+					raise AwlSimError("SFB %d not implemented, yet" %\
+						blockOper.value.byteOffset,
+						rawInsn = self.rawInsn)
+			elif blockOper.type == AwlOperator.INDIRECT:
+				# Indirect call. (like UC FC[MW 0])
+				codeBlock = None
 			else:
 				raise AwlSimError("Invalid CALL operand",
 					rawInsn = self.rawInsn)
 
-			if fc.interface.interfaceFieldCount != len(self.params):
+			if self.type == AwlInsn.TYPE_CALL and\
+			   codeBlock and\
+			   codeBlock.interface.interfaceFieldCount != len(self.params):
 				raise AwlSimError("Call interface mismatch. "
 					"Passed %d parameters, but expected %d.\n"
 					"====  The block interface is:\n%s\n====" %\
-					(len(self.params), fc.interface.interfaceFieldCount,
-					 str(fc.interface)),
+					(len(self.params), codeBlock.interface.interfaceFieldCount,
+					 str(codeBlock.interface)),
 					rawInsn = self.rawInsn)
 		elif len(self.ops) == 2:
-			# FB/SFB call
+			# "CALL FB/SFB"
 			blockOper = self.ops[0]
 			dbOper = self.ops[1]
 
@@ -121,12 +142,12 @@ class AwlInsn_CALL(AwlInsn_AbstractCall):
 			self.run = self.__run_CALL_FB
 
 	def __run_CALL_FC(self):
-		self.cpu.run_CALL(self.ops[0], None, self.params)
+		self.cpu.run_CALL(self.ops[0], None, self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
 	def __run_CALL_FB(self):
-		self.cpu.run_CALL(self.ops[0], self.ops[1], self.params)
+		self.cpu.run_CALL(self.ops[0], self.ops[1], self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
@@ -138,7 +159,7 @@ class AwlInsn_CC(AwlInsn_AbstractCall):
 	def run(self):
 		s = self.cpu.statusWord
 		if s.VKE:
-			self.cpu.run_CALL(self.ops[0])
+			self.cpu.run_CALL(self.ops[0], None, (), True)
 		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
 
 class AwlInsn_UC(AwlInsn_AbstractCall):
@@ -147,6 +168,6 @@ class AwlInsn_UC(AwlInsn_AbstractCall):
 		self.assertOpCount(1)
 
 	def run(self):
-		self.cpu.run_CALL(self.ops[0])
+		self.cpu.run_CALL(self.ops[0], None, (), True)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0

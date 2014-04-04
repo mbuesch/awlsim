@@ -743,12 +743,20 @@ class S7CPU(object):
 		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
 		return CallStackElem(self, fc, bounceDB, parameters)
 
+	def __call_RAW_FC(self, blockOper, dbOper, parameters):
+		fc = self.fcs[blockOper.value.byteOffset]
+		return CallStackElem(self, fc, None, (), True)
+
 	def __call_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
 		cse = CallStackElem(self, fb, db, parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
+
+	def __call_RAW_FB(self, blockOper, dbOper, parameters):
+		fb = self.fbs[blockOper.value.byteOffset]
+		return CallStackElem(self, fb, self.diRegister, (), True)
 
 	def __call_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
@@ -760,12 +768,29 @@ class S7CPU(object):
 		bounceDB = self.dbs[dbNumber]
 		return CallStackElem(self, sfc, bounceDB, parameters)
 
+	def __call_RAW_SFC(self, blockOper, dbOper, parameters):
+		sfc = self.sfcs[blockOper.value.byteOffset]
+		return CallStackElem(self, sfc, None, (), True)
+
 	def __call_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
 		cse = CallStackElem(self, sfb, db, parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
+
+	def __call_RAW_SFB(self, blockOper, dbOper, parameters):
+		sfb = self.sfbs[blockOper.value.byteOffset]
+		return CallStackElem(self, sfb, self.diRegister, (), True)
+
+	def __call_INDIRECT(self, blockOper, dbOper, parameters):
+		blockOper = blockOper.resolve()
+		callHelper = self.__rawCallHelpers[blockOper.type]
+		try:
+			return callHelper(self, blockOper, dbOper, parameters)
+		except KeyError as e:
+			raise AwlSimError("Code block %d not found in indirect call" %\
+					  blockOper.value.byteOffset)
 
 	__callHelpers = {
 		AwlOperator.BLKREF_FC	: __call_FC,
@@ -774,9 +799,20 @@ class S7CPU(object):
 		AwlOperator.BLKREF_SFB	: __call_SFB,
 	}
 
-	def run_CALL(self, blockOper, dbOper=None, parameters=()):
+	__rawCallHelpers = {
+		AwlOperator.BLKREF_FC	: __call_RAW_FC,
+		AwlOperator.BLKREF_FB	: __call_RAW_FB,
+		AwlOperator.BLKREF_SFC	: __call_RAW_SFC,
+		AwlOperator.BLKREF_SFB	: __call_RAW_SFB,
+		AwlOperator.INDIRECT	: __call_INDIRECT,
+	}
+
+	def run_CALL(self, blockOper, dbOper=None, parameters=(), raw=False):
 		try:
-			callHelper = self.__callHelpers[blockOper.type]
+			if raw:
+				callHelper = self.__rawCallHelpers[blockOper.type]
+			else:
+				callHelper = self.__callHelpers[blockOper.type]
 		except KeyError:
 			raise AwlSimError("Invalid CALL operand")
 		newCse = callHelper(self, blockOper, dbOper, parameters)

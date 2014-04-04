@@ -35,7 +35,8 @@ class CallStackElem(object):
 	def resetCache(cls):
 		cls.localdataCache.reset()
 
-	def __init__(self, cpu, block, interfaceDB=None, parameters=()):
+	def __init__(self, cpu, block, interfaceDB=None, parameters=(),
+		     isRawCall=False):
 		(self.cpu,
 		 self.parenStack,
 		 self.ip,
@@ -44,6 +45,7 @@ class CallStackElem(object):
 		 self.insns,
 		 self.labels,
 		 self.interfaceDB,
+		 self.isRawCall,
 		 self.prevDbRegister,
 		 self.prevDiRegister) = (
 			cpu,
@@ -54,13 +56,14 @@ class CallStackElem(object):
 			block.insns,
 			block.labels,
 			interfaceDB,
+			isRawCall,
 			cpu.dbRegister,
 			cpu.diRegister,
 		)
 
 		# Handle parameters
 		self.__outboundParams = []
-		if parameters:
+		if parameters and not isRawCall:
 			blockInterface, interfaceDB, structInstance, callByRef_Types =\
 				block.interface, \
 				self.interfaceDB, \
@@ -82,6 +85,8 @@ class CallStackElem(object):
 
 	# Handle the exit from this code block.
 	def handleBlockExit(self):
+		if self.isRawCall:
+			return
 		# Transfer data out of DBI
 		if self.__outboundParams:
 			cpu, interfaceDB, structInstance =\

@@ -1,3 +1,10 @@
+FUNCTION_BLOCK FB 1
+BEGIN
+	L		W#16#4321
+	T		MW 0
+END_FUNCTION_BLOCK
+
+
 FUNCTION FC 1 : VOID
 BEGIN
 	L		W#16#1234
@@ -118,5 +125,40 @@ BEGIN
 	CALL FC 7
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	0
+
+
+	// Test raw FB call
+	UC		FB 1
+	SET
+	CC		FB 1
+
+
+	// Test indirect calls
+	L		0
+	T		MW 0
+	L		1
+	T		MW 50
+	CLR
+	UC		FC [MW 50]
+	L		MW 0
+	__ASSERT==	__ACCU 1,	W#16#6789
+	L		0
+	T		MW 0
+	SET
+	CC		FC [MW 50]
+	L		MW 0
+	__ASSERT==	__ACCU 1,	W#16#6789
+	L		0
+	T		MW 0
+	CLR
+	UC		FB [MW 50]
+	L		MW 0
+	__ASSERT==	__ACCU 1,	W#16#4321
+	L		0
+	T		MW 0
+	SET
+	CC		FB [MW 50]
+	L		MW 0
+	__ASSERT==	__ACCU 1,	W#16#4321
 
 END_ORGANIZATION_BLOCK
