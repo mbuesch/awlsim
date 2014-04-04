@@ -8,7 +8,7 @@ def shouldUseCython():
 		try:
 			__useCython = bool(int(os.getenv("AWLSIMCYTHON", "0")))
 		except ValueError:
-				__useCython = False
+			__useCython = False
 	return __useCython
 
 def cythonImportError(modname, message):
