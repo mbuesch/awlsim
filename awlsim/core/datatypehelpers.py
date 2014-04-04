@@ -158,3 +158,71 @@ def __isString_python3(value):
 
 isString = py23(__isString_python2,
 		__isString_python3)
+
+class WordPacker:
+	"""Pack/unpack bytes/words/dwords into/from a byte stream."""
+
+	_wordStruct = struct.Struct(">H")
+	_dwordStruct = struct.Struct(">I")
+
+	@staticmethod
+	def __fromBytes_8(buf, byteOffset):
+		return buf[byteOffset]
+
+	@staticmethod
+	def __fromBytes_16(buf, byteOffset):
+		return WordExtract._wordStruct.unpack(
+			buf[byteOffset : byteOffset+ 2]
+		)[0]
+
+	@staticmethod
+	def __fromBytes_32(buf, byteOffset):
+		return WordExtract._dwordStruct.unpack(
+			buf[byteOffset : byteOffset + 4]
+		)[0]
+
+	__fromBytesHandlers = {
+		8	: __fromBytes_8,
+		16	: __fromBytes_16,
+		32	: __fromBytes_32,
+	}
+
+	@staticmethod
+	def __toBytes_8(buf, byteOffset, value):
+		buf[byteOffset] = value & 0xFF
+
+	@staticmethod
+	def __toBytes_16(buf, byteOffset, value):
+		if byteOffset + 2 > len(buf):
+			raise IndexError
+		buf[byteOffset : byteOffset + 2] =\
+			WordExtract._wordStruct.pack(value & 0xFFFF)
+
+	@staticmethod
+	def __toBytes_32(buf, byteOffset, value):
+		if byteOffset + 4 > len(buf):
+			raise IndexError
+		buf[byteOffset : byteOffset + 4] =\
+			WordExtract._dwordStruct.pack(value & 0xFFFFFFFF)
+
+	__toBytesHandlers = {
+		8	: __toBytes_8,
+		16	: __toBytes_16,
+		32	: __toBytes_32,
+	}
+
+	@classmethod
+	def fromBytes(cls, byteBuffer, bitWidth, byteOffset=0):
+		try:
+			handler = self.__fromBytesHandlers[bitWidth]
+			return handler(byteBuffer, byteOffset)
+		except (IndexError, struct.error) as e:
+			raise AwlSimError("Failed to unpack %d bits from buffer" % bitWidth)
+
+	@classmethod
+	def toBytes(cls, byteBuffer, bitWidth, byteOffset=0, value=0):
+		try:
+			handler = self.__toBytesHandlers[bitWidth]
+			handler(byteBuffer, byteOffset, value)
+		except (IndexError, struct.error) as e:
+			raise AwlSimError("Failed to pack %d bits into buffer" % bitWidth)
