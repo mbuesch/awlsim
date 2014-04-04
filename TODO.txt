@@ -1,6 +1,5 @@
 === Incomplete awlsim TODO list ===
 
-- Indirect FC/FB addressing in UC/CC
 - Parsing of attributes
 - Areacode 87 for P## in FCs
 - ANY pointer
