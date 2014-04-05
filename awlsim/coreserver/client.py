@@ -164,6 +164,7 @@ class AwlSimClient(object):
 	}
 
 	def processMessages(self, blocking=False):
+		self.lastRxMsg = None
 		if not self.transceiver:
 			return
 		try:
@@ -173,7 +174,7 @@ class AwlSimClient(object):
 				msg = self.transceiver.receive()
 		except socket.error as e:
 			if e.errno == errno.EAGAIN:
-				return None
+				return
 			host, port = self.socket.getpeername()
 			raise AwlSimError("AwlSimClient: "
 				"I/O error in connection to server '%s (port %d)':\n%s" %\
@@ -197,25 +198,28 @@ class AwlSimClient(object):
 	def sleep(self, seconds):
 		time.sleep(seconds)
 
-	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeoutMs=3000):
+	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeout=3.0):
 		self.transceiver.send(txMsg)
-		count = 0
-		while count < waitTimeoutMs:
+		now = time.monotonic()
+		end = now + waitTimeout
+		while now < end:
 			self.processMessages()
 			rxMsg = self.lastRxMsg
-			if rxMsg and checkRxMsg(rxMsg):
-				self.lastRxMsg = None
-				return rxMsg
-			self.sleep(0.01)
-			count += 10
+			if rxMsg:
+				if checkRxMsg(rxMsg):
+					return rxMsg
+			else:
+				# Queue is empty.
+				pass#XXX self.sleep(0.01)
+			now = time.monotonic()
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
 
-	def __sendAndWaitFor_REPLY(self, msg, timeoutMs=3000):
+	def __sendAndWaitFor_REPLY(self, msg, timeout=3.0):
 		def checkRxMsg(rxMsg):
 			return rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and\
 			       rxMsg.inReplyToId == msg.msgId and\
 			       rxMsg.inReplyToSeq == msg.seq
-		return self.__sendAndWait(msg, checkRxMsg, timeoutMs).status
+		return self.__sendAndWait(msg, checkRxMsg, timeout).status
 
 	def reset(self):
 		msg = AwlSimMessage_RESET()
@@ -240,7 +244,7 @@ class AwlSimClient(object):
 		if not self.transceiver:
 			return False
 		msg = AwlSimMessage_LOAD_CODE(code)
-		status = self.__sendAndWaitFor_REPLY(msg, 10000)
+		status = self.__sendAndWaitFor_REPLY(msg, 10.0)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load code")
 		return True
