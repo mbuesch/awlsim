@@ -19,11 +19,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-from awlsim.coreserver.messages import *
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
 
 from awlsim.core.main import *
 from awlsim.core.parser import *
 from awlsim.core.cpuspecs import *
+
+from awlsim.coreserver.messages import *
 
 import sys
 import os

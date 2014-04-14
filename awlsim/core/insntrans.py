@@ -18,6 +18,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
 from awlsim.core.util import *
 from awlsim.core.instructions.all_insns import *
 from awlsim.core.parser import *

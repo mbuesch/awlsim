@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - instructions
+# AWL simulator - utility functions
 #
 # Copyright 2012-2013 Michael Buesch <m@bues.ch>
 #
@@ -22,29 +22,37 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.instructions.main import *
+import sys
 
 
-class AwlInsn_DTB(AwlInsn):
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DTB, rawInsn)
-		self.assertOpCount(0)
+# isPyPy is True, if the interpreter is PyPy.
+isPyPy = "PyPy" in sys.version
 
-	def run(self):
-		s = self.cpu.statusWord
-		binval, bcd = dwordToSignedPyInt(self.cpu.accu1.get()), 0
-		if binval < 0:
-			bcd |= 0xF0000000
-		binval = abs(binval)
-		if binval > 9999999:
-			s.OV, s.OS = 1, 1
-			return
-		bcd |= binval % 10
-		bcd |= ((binval // 10) % 10) << 4
-		bcd |= ((binval // 100) % 10) << 8
-		bcd |= ((binval // 1000) % 10) << 12
-		bcd |= ((binval // 10000) % 10) << 16
-		bcd |= ((binval // 100000) % 10) << 20
-		bcd |= ((binval // 1000000) % 10) << 24
-		self.cpu.accu1.set(bcd)
-		s.OV = 0
+# isPy3Compat is True, if the interpreter is Python 3 compatible.
+isPy3Compat = sys.version_info[0] == 3
+
+# isPy2Compat is True, if the interpreter is Python 2 compatible.
+isPy2Compat = sys.version_info[0] == 2
+
+# Python 2/3 helper selection
+def py23(py2, py3):
+	if isPy3Compat:
+		return py3
+	if isPy2Compat:
+		return py2
+	raise Exception("Failed to detect Python version")
+
+# input() compatibility.
+# Force Python3 behavior
+if isPy2Compat:
+	input = raw_input
+
+# range() compatibility.
+# Force Python3 behavior
+if isPy2Compat:
+	range = xrange
+
+# Compat wrapper for monotonic time
+import time
+monotonic_time = py23(lambda: time.clock(),
+		      lambda: time.monotonic())

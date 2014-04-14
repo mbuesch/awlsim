@@ -19,6 +19,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
 from awlsim.coreserver.server import *
 from awlsim.coreserver.messages import *
 
@@ -200,7 +203,7 @@ class AwlSimClient(object):
 
 	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeout=3.0):
 		self.transceiver.send(txMsg)
-		now = time.monotonic()
+		now = monotonic_time()
 		end = now + waitTimeout
 		while now < end:
 			self.processMessages()
@@ -211,7 +214,7 @@ class AwlSimClient(object):
 			else:
 				# Queue is empty.
 				pass#XXX self.sleep(0.01)
-			now = time.monotonic()
+			now = monotonic_time()
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
 
 	def __sendAndWaitFor_REPLY(self, msg, timeout=3.0):

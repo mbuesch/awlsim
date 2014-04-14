@@ -19,6 +19,10 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
+
 class ObjectCache(object):
 	def __init__(self, createCallback):
 		self.__createCallback = createCallback

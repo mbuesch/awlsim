@@ -19,6 +19,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
 import sys
 from awlsim.core import *
 import awlsim.cython_helper
@@ -32,9 +35,6 @@ if isPyPy:
 if awlsim.cython_helper.shouldUseCython():
 	print("*** Using accelerated CYTHON core "
 	      "(AWLSIMCYTHON environment variable is set)")
-
-if isPy2Compat:
-	input = raw_input
 
 try:
 	from PySide.QtCore import *

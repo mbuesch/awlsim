@@ -1,3 +1,6 @@
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
 from awlsim.core.instructions.insn_abs import *
 from awlsim.core.instructions.insn_acos import *
 from awlsim.core.instructions.insn_asin import *

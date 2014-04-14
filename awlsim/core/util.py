@@ -19,6 +19,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
 from awlsim.core.exceptions import *
 from awlsim.core.enumeration import *
 
@@ -27,23 +30,6 @@ import os
 import random
 import struct
 
-
-# isPyPy is True, if the interpreter is PyPy.
-isPyPy = "PyPy" in sys.version
-
-# isPy3Compat is True, if the interpreter is Python 3 compatible.
-isPy3Compat = sys.version_info[0] == 3
-
-# isPy2Compat is True, if the interpreter is Python 2 compatible.
-isPy2Compat = sys.version_info[0] == 2
-
-# Python 2/3 helper selection
-def py23(py2, py3):
-	if isPy3Compat:
-		return py3
-	if isPy2Compat:
-		return py2
-	raise AwlSimError("Failed to detect Python version")
 
 class Logging(object):
 	EnumGen.start
