@@ -54,5 +54,4 @@ if isPy2Compat:
 
 # Compat wrapper for monotonic time
 import time
-monotonic_time = py23(lambda: time.clock(),
-		      lambda: time.monotonic())
+monotonic_time = getattr(time, "monotonic", time.clock)
