@@ -42,7 +42,7 @@ class AwlSimMessage(object):
 	#	Reserved (16 bit)
 	#	Payload length (32 bit)
 	#	Payload (optional)
-	hdrStruct = struct.Struct(">HHHHI")
+	hdrStruct = struct.Struct(str(">HHHHI"))
 
 	HDR_MAGIC		= 0x5710
 	HDR_LENGTH		= hdrStruct.size
@@ -66,7 +66,7 @@ class AwlSimMessage(object):
 	MSG_ID_MEMORY		= EnumGen.item
 	EnumGen.end
 
-	_strLenStruct = struct.Struct(">H")
+	_strLenStruct = struct.Struct(str(">H"))
 
 	@classmethod
 	def packString(cls, string):
@@ -110,7 +110,7 @@ class AwlSimMessage_REPLY(AwlSimMessage):
 	STAT_FAIL	= EnumGen.item
 	EnumGen.end
 
-	plStruct = struct.Struct(">HHH")
+	plStruct = struct.Struct(str(">HHH"))
 
 	@classmethod
 	def make(cls, inReplyToMsg, status):
@@ -155,7 +155,7 @@ class AwlSimMessage_RUNSTATE(AwlSimMessage):
 	STATE_RUN	= EnumGen.item
 	EnumGen.end
 
-	plStruct = struct.Struct(">H")
+	plStruct = struct.Struct(str(">H"))
 
 	def __init__(self, runState):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RUNSTATE)
@@ -326,7 +326,7 @@ class AwlSimMessage_CPUDUMP(AwlSimMessage):
 		return cls(dumpText)
 
 class AwlSimMessage_MAINTREQ(AwlSimMessage):
-	plStruct = struct.Struct(">H")
+	plStruct = struct.Struct(str(">H"))
 
 	def __init__(self, requestType):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MAINTREQ)
@@ -349,7 +349,7 @@ class AwlSimMessage_GET_CPUSPECS(AwlSimMessage):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_CPUSPECS)
 
 class AwlSimMessage_CPUSPECS(AwlSimMessage):
-	plStruct = struct.Struct(">32I")
+	plStruct = struct.Struct(str(">32I"))
 
 	def __init__(self, cpuspecs):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUSPECS)
@@ -393,7 +393,7 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 	# Payload header struct:
 	#	flags (32 bit)
 	#	repetition factor (32 bit)
-	plHdrStruct = struct.Struct(">II")
+	plHdrStruct = struct.Struct(str(">II"))
 
 	# Payload memory area struct:
 	#	memType (8 bit)
@@ -401,7 +401,7 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 	#	index (16 bit)
 	#	start (32 bit)
 	#	length (32 bit)
-	plAreaStruct = struct.Struct(">BBHII")
+	plAreaStruct = struct.Struct(str(">BBHII"))
 
 	# Flags
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
@@ -443,7 +443,7 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 class AwlSimMessage_MEMORY(AwlSimMessage):
 	# Payload header struct:
 	#	flags (32 bit)
-	plHdrStruct = struct.Struct(">I")
+	plHdrStruct = struct.Struct(str(">I"))
 
 	# Payload memory area struct:
 	#	memType (8 bit)
@@ -452,7 +452,7 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 	#	start (32 bit)
 	#	length (32 bit)
 	#	the actual binary data (variable length)
-	plAreaStruct = struct.Struct(">BBHII")
+	plAreaStruct = struct.Struct(str(">BBHII"))
 
 	# Flags
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.

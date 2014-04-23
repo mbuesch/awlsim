@@ -50,7 +50,7 @@ def dwordToSignedPyInt(dword):
 		return -((~dword + 1) & 0xFFFFFFFF)
 	return dword & 0xFFFFFFFF
 
-__floatStruct = struct.Struct('>f')
+__floatStruct = struct.Struct(str('>f'))
 
 def __rawPyFloatToDWord_python2(pyfl):
 	buf = __floatStruct.pack(pyfl)
@@ -165,8 +165,8 @@ isString = py23(__isString_python2,
 class __WordPacker:
 	"""Pack/unpack bytes/words/dwords into/from a byte stream."""
 
-	_wordStruct = struct.Struct(">H")
-	_dwordStruct = struct.Struct(">I")
+	_wordStruct = struct.Struct(str(">H"))
+	_dwordStruct = struct.Struct(str(">I"))
 
 	def __fromBytes_8(self, buf, byteOffset):
 		return buf[byteOffset]
