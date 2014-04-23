@@ -290,6 +290,9 @@ class AwlSimClient(object):
 	def setPeriodicDumpInterval(self, interval=0):
 		return self.__setOption("periodic_dump_int", int(interval))
 
+	def setCycleTimeLimit(self, seconds=5.0):
+		return self.__setOption("cycle_time_limit", float(seconds))
+
 	def getCpuSpecs(self):
 		if not self.transceiver:
 			return None

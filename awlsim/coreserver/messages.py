@@ -285,6 +285,12 @@ class AwlSimMessage_SET_OPT(AwlSimMessage):
 		except ValueError as e:
 			raise AwlSimError("SET_OPT: Value is not a boolean")
 
+	def getFloatValue(self):
+		try:
+			return float(self.value)
+		except ValueError as e:
+			raise AwlSimError("SET_OPT: Value is not a float")
+
 	def toBytes(self):
 		try:
 			payload = self.packString(self.name)

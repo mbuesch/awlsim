@@ -241,6 +241,8 @@ class AwlSimServer(object):
 			else:
 				client.nextDump = None
 			self.__updateCpuBlockExitCallback()
+		elif msg.name == "cycle_time_limit":
+			self.sim.cpu.setCycleTimeLimit(msg.getFloatValue())
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 

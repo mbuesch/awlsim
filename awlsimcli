@@ -43,6 +43,7 @@ def usage():
 	printInfo("")
 	printInfo("Options:")
 	printInfo(" -1|--onecycle         Only run one cycle")
+	printInfo(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
 	printInfo(" -4|--fouraccu         Enable 4-accu mode")
 	printInfo(" -D|--no-cpu-dump      Do not show CPU status while running")
 	printInfo(" -q|--quiet            Do not show any status messages")
@@ -148,6 +149,7 @@ def run(inputFile):
 		cpu.enableExtendedInsns(opt_extInsns)
 		if not opt_noCpuDump and not opt_quiet:
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
+		cpu.setCycleTimeLimit(opt_cycletime)
 		writeStdout("Initializing CPU...\n")
 		s.reset()
 		for symTable in symTables:
@@ -233,6 +235,7 @@ def runWithServerBackend(inputFile):
 			client.setPeriodicDumpInterval(300)
 		client.enableOBTempPresets(opt_obtemp)
 		client.enableExtendedInsns(opt_extInsns)
+		client.setCycleTimeLimit(opt_cycletime)
 		specs = client.getCpuSpecs()
 		assignCpuSpecs(specs)
 		client.setCpuSpecs(specs)
@@ -273,6 +276,7 @@ def runWithServerBackend(inputFile):
 
 def main():
 	global opt_onecycle
+	global opt_cycletime
 	global opt_quiet
 	global opt_noCpuDump
 	global opt_fouraccu
@@ -287,6 +291,7 @@ def main():
 	global opt_interpreter
 
 	opt_onecycle = False
+	opt_cycletime = 5.0
 	opt_quiet = False
 	opt_noCpuDump = False
 	opt_fouraccu = False
@@ -302,8 +307,9 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h14qDxt:m:H:I:P:c:bi:",
-			[ "help", "onecycle", "fouraccu", "quiet", "no-cpu-dump", "extended-insns",
+			"h1C:4qDxt:m:H:I:P:c:bi:",
+			[ "help", "onecycle", "cycle-time=", "fouraccu",
+			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "connect=", "spawn-backend", "interpreter=", ])
@@ -317,6 +323,12 @@ def main():
 			return 0
 		if o in ("-1", "--onecycle"):
 			opt_onecycle = True
+		if o in ("-C", "--cycle-time"):
+			try:
+				opt_cycletime = float(v)
+			except ValueError:
+				printError("-C|--cycle-time: Invalid time format")
+				sys.exit(1)
 		if o in ("-4", "--fouraccu"):
 			opt_fouraccu = True
 		if o in ("-q", "--quiet"):
