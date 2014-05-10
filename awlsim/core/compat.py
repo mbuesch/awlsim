@@ -23,10 +23,21 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 import sys
+import os
 
 
 # isPyPy is True, if the interpreter is PyPy.
-isPyPy = "PyPy" in sys.version
+isPyPy = "PyPy" in sys.version or\
+	 "pypy" in os.path.basename(sys.executable)
+
+# isJython is True, if the interpreter is Jython.
+try:
+	import java as __javaModule
+except ImportError as e:
+	__javaModule = None
+isJython = "OpenJDK" in sys.version or\
+	   "jython" in os.path.basename(sys.executable) or\
+	   __javaModule is not None
 
 # isPy3Compat is True, if the interpreter is Python 3 compatible.
 isPy3Compat = sys.version_info[0] == 3

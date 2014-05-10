@@ -1,5 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*$py.class
+
 build/
 dist/
 awlsim_cython
 MANIFEST
+
 *.swp
