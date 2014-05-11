@@ -17,6 +17,15 @@ cleanup()
 	}
 }
 
+# $1=interpreter
+# Returns version on stdout as:  MAJOR MINOR PATCHLEVEL
+get_interpreter_version()
+{
+	local interpreter="$1"
+
+	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);'
+}
+
 # $1=interpreter $2=awl_file ($3..$x additional options to awlsimcli)
 run_test()
 {
@@ -78,12 +87,23 @@ run_server_tests()
 # $@=testfiles
 do_tests()
 {
-	for interpreter in "$opt_interpreter" python3 python2.7 pypy; do
+	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython; do
 		[ -z "$interpreter" ] && continue
 		which "$interpreter" >/dev/null 2>&1 || {
 			echo "=== WARNING: '$interpreter' interpreter not found. Test skipped."
 			echo
-			continue
+			[ -n "$opt_interpreter" ] && break || continue
+		}
+
+		local interp_ver="$(get_interpreter_version "$interpreter")"
+		local interp_ver_dot="$(echo "$interp_ver" | tr ' ' '.')"
+		local interp_major="$(echo "$interp_ver" | cut -d' ' -f 1)"
+		local interp_minor="$(echo "$interp_ver" | cut -d' ' -f 2)"
+
+		[ "$interp_major" -eq 2 -a "$interp_minor" -lt 7 ] && {
+			echo "=== WARNING: '$interpreter' interpreter version '$interp_ver_dot' too old. Test skipped."
+			echo
+			[ -n "$opt_interpreter" ] && break || continue
 		}
 
 		echo "=== Running tests with '$interpreter' interpreter."
