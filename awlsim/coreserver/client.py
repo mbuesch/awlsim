@@ -66,8 +66,7 @@ class AwlSimClient(object):
 			(host, port))
 		try:
 			family, socktype, proto, canonname, sockaddr =\
-				socket.getaddrinfo(host, port, socket.AF_INET,
-						   0, socket.SOL_TCP)[0]
+				socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)[0]
 			sock = socket.socket(family, socktype)
 			count = 0
 			while 1:
