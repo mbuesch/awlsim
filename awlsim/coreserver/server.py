@@ -397,8 +397,7 @@ class AwlSimServer(object):
 		printInfo("AwlSimServer: Listening on %s (port %d)..." % (host, port))
 		try:
 			family, socktype, proto, canonname, sockaddr =\
-				socket.getaddrinfo(host, port, socket.AF_INET,
-						   0, socket.SOL_TCP)[0]
+				socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)[0]
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			sock.setblocking(False)
