@@ -312,6 +312,17 @@
 	__ASSERT==	__STW OS,	0
 
 
+	// Test: sqrt(-0.5)
+	__STWRST
+	L		-0.5
+	SQRT
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: sqrt(-1.5)
 	__STWRST
 	L		-1.5
