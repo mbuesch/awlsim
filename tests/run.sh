@@ -87,7 +87,7 @@ run_server_tests()
 # $@=testfiles
 do_tests()
 {
-	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython; do
+	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython ipy; do
 		[ -z "$interpreter" ] && continue
 		which "$interpreter" >/dev/null 2>&1 || {
 			echo "=== WARNING: '$interpreter' interpreter not found. Test skipped."
