@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,21 +23,13 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 import sys
-import os
 
 
 # isPyPy is True, if the interpreter is PyPy.
-isPyPy = "PyPy" in sys.version or\
-	 "pypy" in os.path.basename(sys.executable)
+isPyPy = "PyPy" in sys.version
 
 # isJython is True, if the interpreter is Jython.
-try:
-	import java as __javaModule
-except ImportError as e:
-	__javaModule = None
-isJython = "OpenJDK" in sys.version or\
-	   "jython" in os.path.basename(sys.executable) or\
-	   __javaModule is not None
+isJython = sys.platform.lower().startswith("java")
 
 # isPy3Compat is True, if the interpreter is Python 3 compatible.
 isPy3Compat = sys.version_info[0] == 3
