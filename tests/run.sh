@@ -23,7 +23,7 @@ get_interpreter_version()
 {
 	local interpreter="$1"
 
-	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);'
+	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
 }
 
 # $1=interpreter $2=awl_file ($3..$x additional options to awlsimcli)
