@@ -31,6 +31,10 @@ isPyPy = "PyPy" in sys.version
 # isJython is True, if the interpreter is Jython.
 isJython = sys.platform.lower().startswith("java")
 
+# isIronPython is True, if the interpreter is IronPython
+isIronPython = "IronPython" in sys.version
+assert not isIronPython, "The IronPython interpreter is not supported, yet."
+
 # isPy3Compat is True, if the interpreter is Python 3 compatible.
 isPy3Compat = sys.version_info[0] == 3
 
