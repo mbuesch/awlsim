@@ -44,7 +44,11 @@ class Project(object):
 
 	@classmethod
 	def dataIsProject(cls, data):
-		return data.lstrip().startswith(b"[AWLSIM_PROJECT]")
+		magic = b"[AWLSIM_PROJECT]"
+		if isIronPython and isinstance(data, str):
+			# XXX: Workaround for IronPython data type issue
+			magic = magic.decode("UTF-8")
+		return data.lstrip().startswith(magic)
 
 	@classmethod
 	def fileIsProject(cls, filename):
