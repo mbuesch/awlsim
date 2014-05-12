@@ -27,6 +27,7 @@ import sys
 import getopt
 
 from awlsim.core import *
+from awlsim.coreserver import *
 
 
 def usage():
