@@ -81,6 +81,11 @@ class AwlSimClient(object):
 								(host, port))
 						self.sleep(0.1)
 						continue
+					if isJython and\
+					   e.strerror.endswith("java.nio.channels.CancelledKeyException"):
+						# XXX Jython workaround: Ignore this exception
+						printInfo("Warning: Jython connect workaround")
+						continue
 					raise
 				break
 		except socket.error as e:
@@ -112,8 +117,15 @@ class AwlSimClient(object):
 			self.transceiver.shutdown()
 			self.transceiver = None
 		if self.serverProcess:
-			self.serverProcess.terminate()
-			self.serverProcess.wait()
+			try:
+				self.serverProcess.terminate()
+				self.serverProcess.wait()
+			except NameError:
+				# XXX: Workaround: Jython currently does not implement terminate
+				if not isJython:
+					raise
+				printInfo("AwlSimClient: Jython Popen.terminate workaround: "
+					  "Not terminating server.")
 			self.serverProcess = None
 
 	def __rx_NOP(self, msg):
