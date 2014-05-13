@@ -1,0 +1,4 @@
+sh_test()
+{
+	true
+}

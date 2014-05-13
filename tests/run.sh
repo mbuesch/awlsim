@@ -26,8 +26,8 @@ get_interpreter_version()
 	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
 }
 
-# $1=interpreter $2=awl_file ($3..$x additional options to awlsimcli)
-run_test()
+# $1=interpreter $2=awl_file ($3ff additional options to awlsimcli)
+run_awl_test()
 {
 	local interpreter="$1"
 	local awl="$2"
@@ -40,7 +40,6 @@ run_test()
 	local awlpro="${dir}/${base}.awlpro"
 	[ -r "$awlpro" ] && awl="$awlpro"
 
-	echo -n "Running test '$(basename "$awl")' ..."
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$basedir/../awlsimcli" --quiet --onecycle --extended-insns \
 		--hardware dummy:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
@@ -48,7 +47,50 @@ run_test()
 		"$@" \
 		"$awl" ||\
 		die "Test failed"
-	echo " [$(cat "$test_time_file")]"
+	echo "[OK: $(cat "$test_time_file")]"
+}
+
+# $1=interpreter $2=sh_file
+run_sh_test()
+{
+	local interpreter="$1"
+	local sh_file="$2"
+	shift; shift
+
+	[ -x "$sh_file" ] && die "SH-file '$sh_file' must NOT be executable"
+
+	# Source the test file
+	. "$basedir/sh-test.defaults"
+	. "$sh_file"
+
+	# Run the test
+	( sh_test "$interpreter" )
+	local result=$?
+
+	[ $result -eq 0 ] || die "Test failed with error code $result"
+	echo "[OK]"
+}
+
+# $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsimcli or testfile)
+run_test()
+{
+	local interpreter="$1"
+	local testfile="$2"
+	shift; shift
+
+	# Don't run ourself
+	[ "$(basename "$testfile")" = "run.sh" ] && return
+
+	echo -n "Running test '$(basename "$testfile")' ... "
+
+	# Check the file type and run the tester
+	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" ]; then
+		run_awl_test "$interpreter" "$testfile" "$@"
+	elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
+		run_sh_test "$interpreter" "$testfile" "$@"
+	else
+		die "Test file type of '$testfile' not recognized"
+	fi
 }
 
 # $1=interpreter, $2=directory
@@ -58,30 +100,24 @@ run_test_directory()
 	local directory="$2"
 
 	echo "--- Entering directory '$directory'"
+	# run .awl(pro) tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
 		run_test "$interpreter" "$entry"
 	done
+	# run .sh tests
+	for entry in "$directory"/*; do
+		[ -d "$entry" ] && continue
+		[ "$(echo -n "$entry" | tail -c3)" = ".sh" ] || continue
+		run_test "$interpreter" "$entry"
+	done
+	# Recurse into subdirectories
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] || continue
 		run_test_directory "$interpreter" "$entry"
 	done
 	echo "--- Leaving directory '$directory'"
-}
-
-# Run coreserver tests.
-# $1=interpreter
-run_server_tests()
-{
-	local interpreter="$1"
-
-	echo "--- Running coreserver tests"
-	for testfile in shutdown.awl; do
-		run_test "$interpreter" "$basedir/$testfile" \
-			--spawn-backend --interpreter "$interpreter"
-	done
-	echo "--- Finished coreserver tests"
 }
 
 # $@=testfiles
@@ -109,7 +145,6 @@ do_tests()
 		echo "=== Running tests with '$interpreter' interpreter."
 		if [ $# -eq 0 ]; then
 			run_test_directory "$interpreter" "$basedir"
-			run_server_tests "$interpreter"
 		else
 			for opt in "$@"; do
 				if [ -d "$opt" ]; then
