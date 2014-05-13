@@ -26,7 +26,6 @@ from awlsim.core.util import *
 
 import datetime
 import os
-import io
 
 if isPy2Compat:
 	from ConfigParser import SafeConfigParser as _ConfigParser
@@ -34,6 +33,12 @@ if isPy2Compat:
 else:
 	from configparser import ConfigParser as _ConfigParser
 	from configparser import Error as _ConfigParserError
+
+if isIronPython and isPy2Compat:
+	# XXX: Workaround for IronPython's buggy io.StringIO
+	from StringIO import StringIO
+else:
+	from io import StringIO
 
 
 class Project(object):
@@ -64,7 +69,7 @@ class Project(object):
 		symTabFiles = []
 		try:
 			p = _ConfigParser()
-			p.readfp(io.StringIO(text), projectFile)
+			p.readfp(StringIO(text), projectFile)
 			version = p.getint("AWLSIM_PROJECT", "file_version")
 			expectedVersion = 0
 			if version != expectedVersion:
