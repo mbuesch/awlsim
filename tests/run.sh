@@ -1,7 +1,11 @@
 #!/bin/sh
 
+# basedir is the root of the test directory in the package
 basedir="$(dirname "$0")"
 [ "$(echo "$basedir" | cut -c1)" = '/' ] || basedir="$PWD/$basedir"
+
+# rootdir is the root of the package
+rootdir="$basedir/.."
 
 die()
 {
@@ -41,7 +45,7 @@ run_awl_test()
 	[ -r "$awlpro" ] && awl="$awlpro"
 
 	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$basedir/../awlsimcli" --quiet --onecycle --extended-insns \
+	"$interpreter" "$rootdir/awlsimcli" --quiet --onecycle --extended-insns \
 		--hardware dummy:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 		--cycle-time 60 \
 		"$@" \
@@ -58,6 +62,8 @@ run_sh_test()
 	shift; shift
 
 	[ -x "$sh_file" ] && die "SH-file '$sh_file' must NOT be executable"
+
+	[ "$(echo "$sh_file" | cut -c1)" = '/' ] || local sh_file="./$sh_file"
 
 	# Source the test file
 	. "$basedir/sh-test.defaults"

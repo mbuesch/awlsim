@@ -4,5 +4,9 @@ sh_test()
 {
 	local interpreter="$1"
 
-	#TODO
+	cd "$rootdir" || die "Failed to change to rootdir '$rootdir'"
+
+	# Quick test to awlsim-server
+	"$interpreter" ./awlsim-server -h >/dev/null ||\
+		die "Call to awlsim-server -h failed"
 }
