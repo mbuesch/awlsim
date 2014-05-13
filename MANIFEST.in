@@ -5,6 +5,7 @@ include EXAMPLE.awlpro
 include TODO.txt
 include awlsimhw_linuxcnc/awlsim.hal
 graft tests
+graft fake
 
 prune build
 prune ./build
