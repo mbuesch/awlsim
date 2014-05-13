@@ -27,11 +27,11 @@ from awlsim.core.parser import *
 from awlsim.core.cpuspecs import *
 
 from awlsim.coreserver.messages import *
+from awlsim.coreserver.subprocess_wrapper import *
 
 import sys
 import os
 import distutils.spawn
-import subprocess
 import select
 import signal
 import socket
@@ -90,9 +90,9 @@ class AwlSimServer(object):
 			if not interp:
 				raise AwlSimError("Failed to find interpreter "
 						  "executable '%s'" % forkInterpreter)
-			serverProcess = subprocess.Popen([interp, "-m", "awlsim.coreserver.server"],
-							 env = environment,
-							 shell = False)
+			serverProcess = PopenWrapper([interp, "-m", "awlsim.coreserver.server"],
+						     env = environment,
+						     shell = False)
 			return serverProcess
 
 	@classmethod

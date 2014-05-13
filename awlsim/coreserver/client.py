@@ -117,15 +117,8 @@ class AwlSimClient(object):
 			self.transceiver.shutdown()
 			self.transceiver = None
 		if self.serverProcess:
-			try:
-				self.serverProcess.terminate()
-				self.serverProcess.wait()
-			except NameError:
-				# XXX: Workaround: Jython currently does not implement terminate
-				if not isJython:
-					raise
-				printInfo("AwlSimClient: Jython Popen.terminate workaround: "
-					  "Not terminating server.")
+			self.serverProcess.terminate()
+			self.serverProcess.wait()
 			self.serverProcess = None
 
 	def __rx_NOP(self, msg):
