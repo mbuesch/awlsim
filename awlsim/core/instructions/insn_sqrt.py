@@ -33,8 +33,6 @@ class AwlInsn_SQRT(AwlInsn):
 	def run(self):
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
-			if isJython and accu1 < 0.0: # XXX jython workaround
-				raise ValueError
 			accu1 = math.sqrt(accu1)
 		except ValueError:
 			self.cpu.accu1.setDWord(pNaNDWord)

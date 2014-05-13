@@ -35,8 +35,6 @@ class AwlInsn_LN(AwlInsn):
 		try:
 			if accu1 == 0.0:
 				raise ValueError
-			if isJython and accu1 < 0.0: # XXX jython workaround
-				raise ValueError
 			accu1 = math.log(accu1)
 		except ValueError:
 			self.cpu.accu1.setDWord(pNaNDWord)
