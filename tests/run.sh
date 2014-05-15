@@ -87,7 +87,7 @@ run_test()
 	# Don't run ourself
 	[ "$(basename "$testfile")" = "run.sh" ] && return
 
-	echo -n "Running test '$(basename "$testfile")' ... "
+	echo -n "Running test '$(basename "$testfile")' with '$(basename "$interpreter")' ... "
 
 	# Check the file type and run the tester
 	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" ]; then
