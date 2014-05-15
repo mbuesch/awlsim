@@ -51,8 +51,12 @@ class Project(object):
 	def dataIsProject(cls, data):
 		magic = b"[AWLSIM_PROJECT]"
 		if isIronPython and isinstance(data, str):
-			# XXX: Workaround for IronPython data type issue
-			magic = magic.decode("UTF-8")
+			try:
+				"a".startswith(b"a") # Test for ipy byte conversion bug
+			except TypeError:
+				# XXX: Workaround for IronPython byte conversion bug
+				printInfo("Applying workaround for IronPython byte conversion bug")
+				magic = magic.decode("UTF-8")
 		return data.lstrip().startswith(magic)
 
 	@classmethod
