@@ -565,7 +565,12 @@ class AwlSimMessageTransceiver(object):
 	def receive(self):
 		hdrLen = AwlSimMessage.HDR_LENGTH
 		if len(self.buf) < hdrLen:
-			data = self.sock.recv(hdrLen - len(self.buf))
+			try:
+				data = self.sock.recv(hdrLen - len(self.buf))
+			except socket.error as e:
+				if e.errno == errno.EWOULDBLOCK:
+					return None
+				raise
 			if not data:
 				# The remote end closed the connection
 				raise self.RemoteEndDied()
