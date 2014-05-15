@@ -25,6 +25,7 @@ from awlsim.core.util import *
 
 if isIronPython:
 	import os
+	import signal
 else:
 	import subprocess
 
@@ -32,13 +33,16 @@ class PopenWrapper(object):
 	def __init__(self, argv, env, shell):
 		self.__noWait = False
 		if isIronPython:
-			os.popen(" ".join(argv))
+			self.__pid = os.spawnve(os.P_NOWAIT, argv[0], argv, env)
 		else:
 			self.__proc = subprocess.Popen(argv, env = env, shell = shell)
 
 	def terminate(self):
 		if isIronPython:
-			pass#TODO
+			try:
+				os.kill(self.__pid, signal.SIGTERM)
+			except ValueError:
+				pass
 		else:
 			try:
 				self.__proc.terminate()
