@@ -33,7 +33,9 @@ class PopenWrapper(object):
 	def __init__(self, argv, env, shell):
 		self.__noWait = False
 		if isIronPython:
-			self.__pid = os.spawnve(os.P_NOWAIT, argv[0], argv, env)
+			childenv = dict(os.environ)
+			childenv.update(env)
+			self.__pid = os.spawnve(os.P_NOWAIT, argv[0], argv, childenv)
 		else:
 			self.__proc = subprocess.Popen(argv, env = env, shell = shell)
 
