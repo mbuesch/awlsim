@@ -182,12 +182,12 @@ class AwlSimClient(object):
 		except socket.error as e:
 			if e.errno == errno.EAGAIN:
 				return
-			host, port = self.socket.getpeername()
+			host, port = self.transceiver.sock.getpeername()
 			raise AwlSimError("AwlSimClient: "
 				"I/O error in connection to server '%s (port %d)':\n%s" %\
 				(host, port, str(e)))
 		except (AwlSimMessageTransceiver.RemoteEndDied, TransferError) as e:
-			host, port = self.socket.getpeername()
+			host, port = self.transceiver.sock.getpeername()
 			raise AwlSimError("AwlSimClient: "
 				"Connection to server '%s:%s' died. "
 				"Failed to receive message." %\
