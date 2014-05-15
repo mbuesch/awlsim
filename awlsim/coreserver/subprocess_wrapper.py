@@ -24,10 +24,7 @@ from awlsim.core.compat import *
 from awlsim.core.util import *
 
 if isIronPython:
-	import warnings
-	warnings.filterwarnings("ignore")
-	import popen2
-	warnings.resetwarnings()
+	import os
 else:
 	import subprocess
 
@@ -35,11 +32,7 @@ class PopenWrapper(object):
 	def __init__(self, argv, env, shell):
 		self.__noWait = False
 		if isIronPython:
-			if shell:
-				cmd = " ".join(argv)
-			else:
-				cmd = argv
-			child_stdout, child_stdin = popen2.popen2(argv)
+			os.popen(" ".join(argv))
 		else:
 			self.__proc = subprocess.Popen(argv, env = env, shell = shell)
 
