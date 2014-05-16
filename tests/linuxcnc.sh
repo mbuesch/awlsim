@@ -8,7 +8,9 @@ sh_test()
 
 	modpath="$rootdir/fake/linuxcnc_fake_hal"
 
-	PYTHONPATH="$modpath" JYTHONPATH="$modpath" \
+	PYTHONPATH="$modpath:$PYTHONPATH" \
+	JYTHONPATH="$modpath:$JYTHONPATH" \
+	IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \
 		"$interpreter" ./awlsim-linuxcnc-hal \
 		--check-cnc 0 --onecycle EXAMPLE.awl
 }
