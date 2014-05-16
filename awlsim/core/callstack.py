@@ -102,7 +102,7 @@ class CallStackElem(object):
 					structInstance.getFieldData(param.getLvalueStructField(interfaceDB))
 				)
 		# Assign the DB/DI registers
-		if self.block.interface.requiresInstanceDB:
+		if self.block.interface.hasInstanceDB:
 			# We are returning from an FB
 			self.cpu.dbRegister, self.cpu.diRegister = self.interfaceDB, self.prevDiRegister
 		else:
