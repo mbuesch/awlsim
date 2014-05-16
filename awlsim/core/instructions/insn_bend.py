@@ -30,35 +30,59 @@ class AwlInsn_BEND(AwlInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BEND, rawInsn)
 		self.assertOpCount(0)
 
-	def run(self):
+	def __run_UB(self, pse):
 		s = self.cpu.statusWord
+		if pse.NER:
+			s.VKE &= pse.VKE
+			s.VKE |= pse.OR
+		s.OR, s.STA, s.NER = pse.OR, 1, 1
+
+	def __run_UNB(self, pse):
+		s = self.cpu.statusWord
+		s.VKE = s.VKE ^ 1
+		if pse.NER:
+			s.VKE &= pse.VKE
+			s.VKE |= pse.OR
+		s.OR, s.STA, s.NER = pse.OR, 1, 1
+
+	def __run_OB(self, pse):
+		s = self.cpu.statusWord
+		if pse.NER:
+			s.VKE |= pse.VKE
+		s.OR, s.STA, s.NER = pse.OR, 1, 1
+
+	def __run_ONB(self, pse):
+		s = self.cpu.statusWord
+		s.VKE = s.VKE ^ 1
+		if pse.NER:
+			s.VKE |= pse.VKE
+		s.OR, s.STA, s.NER = pse.OR, 1, 1
+
+	def __run_XB(self, pse):
+		s = self.cpu.statusWord
+		if pse.NER:
+			s.VKE ^= pse.VKE
+		s.OR, s.STA, s.NER = pse.OR, 1, 1
+
+	def __run_XNB(self, pse):
+		s = self.cpu.statusWord
+		s.VKE = s.VKE ^ 1
+		if pse.NER:
+			s.VKE ^= pse.VKE & 1
+		s.OR, s.STA, s.NER = pse.OR, 1, 1
+
+	__typeCalls = {
+		AwlInsn.TYPE_UB		: __run_UB,
+		AwlInsn.TYPE_UNB	: __run_UNB,
+		AwlInsn.TYPE_OB		: __run_OB,
+		AwlInsn.TYPE_ONB	: __run_ONB,
+		AwlInsn.TYPE_XB		: __run_XB,
+		AwlInsn.TYPE_XNB	: __run_XNB,
+	}
+
+	def run(self):
 		try:
-			pse = self.cpu.parenStack.pop()
+			pse = self.cpu.callStackTop.parenStack.pop()
 		except IndexError as e:
 			raise AwlSimError("Parenthesis stack underflow")
-		if pse.insnType == AwlInsn.TYPE_UB:
-			if pse.NER:
-				s.VKE &= pse.VKE
-				s.VKE |= pse.OR
-		elif pse.insnType == AwlInsn.TYPE_UNB:
-			s.VKE = s.VKE ^ 1
-			if pse.NER:
-				s.VKE &= pse.VKE
-				s.VKE |= pse.OR
-		elif pse.insnType == AwlInsn.TYPE_OB:
-			if pse.NER:
-				s.VKE |= pse.VKE
-		elif pse.insnType == AwlInsn.TYPE_ONB:
-			s.VKE = s.VKE ^ 1
-			if pse.NER:
-				s.VKE |= pse.VKE
-		elif pse.insnType == AwlInsn.TYPE_XB:
-			if pse.NER:
-				s.VKE ^= pse.VKE
-		elif pse.insnType == AwlInsn.TYPE_XNB:
-			s.VKE = s.VKE ^ 1
-			if pse.NER:
-				s.VKE ^= pse.VKE & 1
-		else:
-			assert(0)
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		return self.__typeCalls[pse.insnType](self, pse)

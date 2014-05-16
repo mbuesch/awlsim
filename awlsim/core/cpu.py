@@ -521,7 +521,6 @@ class S7CPU(object):
 
 		# Stats
 		self.__insnCount = 0
-		self.__insnCountMod = 64
 		self.__cycleCount = 0
 		self.insnPerSecond = 0.0
 		self.avgInsnPerCycle = 0.0
@@ -568,11 +567,6 @@ class S7CPU(object):
 	def is4accu(self):
 		return self.accu4 is not None
 
-	# Get the active parenthesis stack
-	@property
-	def parenStack(self):
-		return self.callStackTop.parenStack
-
 	def __runOB(self, block):
 		# Update timekeeping
 		self.updateTimestamp()
@@ -595,11 +589,10 @@ class S7CPU(object):
 					self.cbPostInsn(self.cbPostInsnData)
 				cse.ip += self.relativeJump
 				cse, self.__insnCount = self.callStackTop,\
-							(self.__insnCount + 1) & 0x00FFFFFF
-				if self.__insnCount % self.__insnCountMod == 0:
+							(self.__insnCount + 1) & 0x3FFFFFFF
+				if not self.__insnCount % 64:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-					self.__insnCountMod = 64
 			if self.cbBlockExit:
 				self.cbBlockExit(self.cbBlockExitData)
 			prevCse = self.callStack.pop()
@@ -637,16 +630,16 @@ class S7CPU(object):
 
 		# Update timekeeping and statistics
 		self.updateTimestamp()
-		self.__cycleCount = (self.__cycleCount + 1) & 0x00FFFFFF
+		self.__cycleCount = (self.__cycleCount + 1) & 0x3FFFFFFF
 
 		# Evaluate speed measurement
 		elapsedTime = self.now - self.__speedMeasureStartTime
 		if elapsedTime >= 1.0:
 			# Calculate instruction and cycle counts.
 			cycleCount = (self.__cycleCount - self.__speedMeasureStartCycleCount) &\
-				     0x00FFFFFF
+				     0x3FFFFFFF
 			insnCount = (self.__insnCount - self.__speedMeasureStartInsnCount) &\
-				    0x00FFFFFF
+				    0x3FFFFFFF
 
 			# Calculate instruction statistics.
 			self.insnPerSecond = insnCount / elapsedTime
@@ -658,7 +651,7 @@ class S7CPU(object):
 			# Store overall-average cycle time and maximum cycle time.
 			self.maxCycleTime = max(self.maxCycleTime, cycleTime)
 			self.minCycleTime = min(self.minCycleTime, cycleTime)
-			self.avgCycleTime = (self.avgCycleTime + cycleTime) / 2
+			self.avgCycleTime = (self.avgCycleTime + cycleTime) / 2.0
 
 			# Reset the counters
 			self.__speedMeasureStartTime = self.now
@@ -895,8 +888,9 @@ class S7CPU(object):
 			raise AwlSimError("MCR stack underflow")
 
 	def parenStackAppend(self, insnType, statusWord):
-		self.parenStack.append(ParenStackElem(self, insnType, statusWord))
-		if len(self.parenStack) > 7:
+		cse = self.callStackTop
+		cse.parenStack.append(ParenStackElem(self, insnType, statusWord))
+		if len(cse.parenStack) > 7:
 			raise AwlSimError("Parenthesis stack overflow")
 
 	# Fetch a range in the 'output' memory area.
@@ -1263,7 +1257,7 @@ class S7CPU(object):
 		ret.append(self.__dumpMem("    PAA:  ",
 					  self.outputs,
 					  min(64, self.specs.nrOutputs)))
-		pstack = str(self.parenStack) if self.parenStack else "Empty"
+		pstack = str(self.callStackTop.parenStack) if self.callStackTop.parenStack else "Empty"
 		ret.append(" PStack:  " + pstack)
 		ret.append("     DB:  %s" % str(self.dbRegister))
 		ret.append("     DI:  %s" % str(self.diRegister))
