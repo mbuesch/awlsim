@@ -46,11 +46,11 @@ class AwlParamAssign(object):
 	def __reassignMethods(self, interface):
 		self.isInbound, self.isOutbound = self.__retFalse, self.__retFalse
 		field = interface.getFieldByName(self.lvalueName)
-		if field.fieldType == BlockInterface.Field.FTYPE_IN or\
-		   field.fieldType == BlockInterface.Field.FTYPE_INOUT:
+		if field.fieldType == BlockInterfaceField.FTYPE_IN or\
+		   field.fieldType == BlockInterfaceField.FTYPE_INOUT:
 			self.isInbound = self.__retTrue
-		if field.fieldType == BlockInterface.Field.FTYPE_OUT or\
-		   field.fieldType == BlockInterface.Field.FTYPE_INOUT:
+		if field.fieldType == BlockInterfaceField.FTYPE_OUT or\
+		   field.fieldType == BlockInterfaceField.FTYPE_INOUT:
 			self.isOutbound = self.__retTrue
 
 	def isInbound(self, interface):

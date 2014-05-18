@@ -182,9 +182,9 @@ class S7CPU(object):
 			initialValue = None
 		else:
 			initialValue = dtype.parseMatchingImmediate(rawVar.valueTokens)
-		field = BlockInterface.Field(name = rawVar.name,
-					     dataType = dtype,
-					     initialValue = initialValue)
+		field = BlockInterfaceField(name = rawVar.name,
+					    dataType = dtype,
+					    initialValue = initialValue)
 		return field
 
 	def __translateCodeBlock(self, rawBlock, blockClass):
@@ -197,8 +197,8 @@ class S7CPU(object):
 		if rawBlock.retTypeTokens:
 			dtype = AwlDataType.makeByName(rawBlock.retTypeTokens)
 			if dtype.type != AwlDataType.TYPE_VOID:
-				field = BlockInterface.Field(name = "RET_VAL",
-							     dataType = dtype)
+				field = BlockInterfaceField(name = "RET_VAL",
+							    dataType = dtype)
 				block.interface.addField_OUT(field)
 		for rawVar in rawBlock.vars_inout:
 			block.interface.addField_INOUT(self.__translateInterfaceField(rawVar))

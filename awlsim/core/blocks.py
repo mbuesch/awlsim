@@ -29,23 +29,33 @@ from awlsim.core.operators import *
 from awlsim.core.util import *
 
 
+class BlockInterfaceField(object):
+	EnumGen.start = -1
+	FTYPE_UNKNOWN	= EnumGen.item
+	FTYPE_IN	= EnumGen.item
+	FTYPE_OUT	= EnumGen.item
+	FTYPE_INOUT	= EnumGen.item
+	FTYPE_STAT	= EnumGen.item
+	FTYPE_TEMP	= EnumGen.item
+	EnumGen.end
+
+	def __init__(self, name, dataType, initialValue=None):
+		# name -> The name string of the field, as defined
+		#         in the block interface definition.
+		# dataType -> One of AwlDataType instance.
+		# initialValue -> Initial value for this field, as defined in
+		#                 the block interface definition.
+		self.name = name
+		self.dataType = dataType
+		self.fieldType = self.FTYPE_UNKNOWN
+		self.initialValue = initialValue
+
+class BlockInterfaceFieldRef(object):
+	def __init__(self, field, pointer):
+		self.field = field
+		self.pointer = pointer
+
 class BlockInterface(object):
-	class Field(object):
-		EnumGen.start = -1
-		FTYPE_UNKNOWN	= EnumGen.item
-		FTYPE_IN	= EnumGen.item
-		FTYPE_OUT	= EnumGen.item
-		FTYPE_INOUT	= EnumGen.item
-		FTYPE_STAT	= EnumGen.item
-		FTYPE_TEMP	= EnumGen.item
-		EnumGen.end
-
-		def __init__(self, name, dataType, initialValue=None):
-			self.name = name
-			self.dataType = dataType
-			self.fieldType = self.FTYPE_UNKNOWN
-			self.initialValue = initialValue
-
 	# Data-types that must be passed "by-reference" to FCs/FBs.
 	callByRef_Types = (
 		AwlDataType.TYPE_TIMER,
@@ -74,13 +84,20 @@ class BlockInterface(object):
 		self.staticFieldCount = 0
 		self.tempFieldCount = 0
 
+	@property
+	def fields_IN_OUT_INOUT(self):
+		ret = self.fields_IN[:]
+		ret.extend(self.fields_OUT)
+		ret.extend(self.fields_INOUT)
+		return ret
+
 	def __addField(self, field):
 		if field.name in self.fieldNameMap:
 			raise AwlSimError("Data structure field name '%s' is ambiguous." %\
 				field.name)
-		if field.fieldType == BlockInterface.Field.FTYPE_TEMP:
+		if field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			self.tempFieldCount += 1
-		elif field.fieldType == BlockInterface.Field.FTYPE_STAT:
+		elif field.fieldType == BlockInterfaceField.FTYPE_STAT:
 			self.staticFieldCount += 1
 		else:
 			self.interfaceFieldCount += 1
@@ -120,16 +137,19 @@ class BlockInterface(object):
 							field.dataType)
 
 	def buildDataStructure(self):
-		# Build interface-DB structure
-		self.struct = AwlStruct()
-		for i, field in enumerate(self.fields_IN):
-			self.__buildField(self.struct, field, i==0)
-		for i, field in enumerate(self.fields_OUT):
-			self.__buildField(self.struct, field, i==0)
-		for i, field in enumerate(self.fields_INOUT):
-			self.__buildField(self.struct, field, i==0)
-		for i, field in enumerate(self.fields_STAT):
-			self.__buildField(self.struct, field, i==0)
+		if self.hasInstanceDB or 1:#XXX
+			# Build interface-DB structure for the FB
+			self.struct = AwlStruct()
+			for i, field in enumerate(self.fields_IN):
+				self.__buildField(self.struct, field, i==0)
+			for i, field in enumerate(self.fields_OUT):
+				self.__buildField(self.struct, field, i==0)
+			for i, field in enumerate(self.fields_INOUT):
+				self.__buildField(self.struct, field, i==0)
+			for i, field in enumerate(self.fields_STAT):
+				self.__buildField(self.struct, field, i==0)
+		else:
+			assert(not self.fields_STAT)
 
 		# Build local-stack structure
 		self.tempStruct = AwlStruct()

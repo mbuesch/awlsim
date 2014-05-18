@@ -42,8 +42,8 @@ class SFCm2(SFC):
 		SFC.__init__(self, cpu, -2)
 
 		self.interface.addField_IN(
-			BlockInterface.Field(name = "REBOOT_TYPE",
-					     dataType = AwlDataType.makeByName("INT"))
+			BlockInterfaceField(name = "REBOOT_TYPE",
+					    dataType = AwlDataType.makeByName("INT"))
 		)
 
 	def run(self):
@@ -61,8 +61,8 @@ class SFCm3(SFC):
 		SFC.__init__(self, cpu, -3)
 
 		self.interface.addField_IN(
-			BlockInterface.Field(name = "SHUTDOWN_TYPE",
-					     dataType = AwlDataType.makeByName("INT"))
+			BlockInterfaceField(name = "SHUTDOWN_TYPE",
+					    dataType = AwlDataType.makeByName("INT"))
 		)
 
 	def run(self):
@@ -80,8 +80,8 @@ class SFC64(SFC):
 		SFC.__init__(self, cpu, 64)
 
 		self.interface.addField_OUT(
-			BlockInterface.Field(name = "RET_VAL",
-					     dataType = AwlDataType.makeByName("TIME"))
+			BlockInterfaceField(name = "RET_VAL",
+					    dataType = AwlDataType.makeByName("TIME"))
 		)
 
 	def run(self):
