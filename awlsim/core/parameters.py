@@ -43,7 +43,7 @@ class AwlParamAssign(object):
 
 	# Re-assign the isInbound() and isOutbound() methods
 	# to methods return static values.
-	def __reassignMethods(self, interface):
+	def __reassignInboundOutboundMethods(self, interface):
 		self.isInbound, self.isOutbound = self.__retFalse, self.__retFalse
 		field = interface.getFieldByName(self.lvalueName)
 		if field.fieldType == BlockInterfaceField.FTYPE_IN or\
@@ -54,12 +54,12 @@ class AwlParamAssign(object):
 			self.isOutbound = self.__retTrue
 
 	def isInbound(self, interface):
-		self.__reassignMethods(interface)
+		self.__reassignInboundOutboundMethods(interface)
 		# Call the re-assigned method
 		return self.isInbound(None)
 
 	def isOutbound(self, interface):
-		self.__reassignMethods(interface)
+		self.__reassignInboundOutboundMethods(interface)
 		# Call the re-assigned method
 		return self.isOutbound(None)
 
@@ -68,7 +68,9 @@ class AwlParamAssign(object):
 
 	# Get the AwlStructField corresponding to this parameter lvalue
 	def getLvalueStructField(self, interfaceDB):
+		# Find the l-value struct field
 		self.__LvaluestructField = interfaceDB.structInstance.struct.getField(self.lvalueName)
+		# Re-assign this method to return the found and stored static value.
 		self.getLvalueStructField = self.__getLvalueStructField_static
 		# Call the re-assigned method
 		return self.getLvalueStructField(None)
