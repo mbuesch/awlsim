@@ -153,6 +153,10 @@ class AwlOperator(object):
 	}
 
 	def __init__(self, type, width, value, insn=None):
+		# type -> The operator type ID number. See "Operator types" above.
+		# width -> The bit width of the access.
+		# value -> The value. May be an AwlOffset or a string (depends on type).
+		# insn -> The instruction this operator is used in. May be None.
 		self.type = type
 		self.width = width
 		self.value = value
@@ -331,7 +335,7 @@ class AwlIndirectOp(AwlOperator):
 	AR_2		= 2	# Use AR2
 
 	# Address area mask
-	ADDRESS_MASK	= 0x0000FFFFFF
+	ADDRESS_MASK	= 0x0000FFFFFF #FIXME should be 0x7FFFF
 
 	# Pointer area constants
 	AREA_SHIFT	= 24
@@ -386,6 +390,20 @@ class AwlIndirectOp(AwlOperator):
 	optype2area[AwlOperator.UNSPEC] = AREA_NONE
 
 	def __init__(self, area, width, addressRegister, offsetOper, insn=None):
+		# area -> The area code for this indirect operation.
+		#         AREA_... or EXT_AREA_...
+		#         This corresponds to the area code in AWL pointer format.
+		# width -> The width (in bits) of the region that is being adressed.
+		# addressRegister -> One of:
+		#                    AR_NONE => This is a memory-indirect access.
+		#                    AR_1 => This is a register-indirect access with AR1.
+		#                    AR_2 => This is a register-indirect access with AR2.
+		# offsetOper -> This is the AwlOperator for the offset.
+		#               For memory-indirect access, this must be an AwlOperator
+		#               with "type in __possibleOffsetOperTypes".
+		#               For register-indirect access, this must be an AwlOperator
+		#               with "type==IMM_PTR".
+		# insn -> The instruction this operator is used in. May be None.
 		AwlOperator.__init__(self,
 				     type = AwlOperator.INDIRECT,
 				     width = width,
@@ -429,7 +447,7 @@ class AwlIndirectOp(AwlOperator):
 		offsetOper = self.offsetOper
 		# Construct the pointer
 		if self.addressRegister == AwlIndirectOp.AR_NONE:
-			# Indirect access
+			# Memory-indirect access
 			if self.area == AwlIndirectOp.AREA_NONE:
 				raise AwlSimError("Area-spanning access not "
 					"possible in indirect access without "
