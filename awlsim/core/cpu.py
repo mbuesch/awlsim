@@ -272,20 +272,6 @@ class S7CPU(object):
 			return self.__translateInstanceDB(rawDB)
 		return self.__translateGlobalDB(rawDB)
 
-	def __allocateFCBounceDB(self, fc, isSFC):
-		if isSFC:
-			# Use negative FC number with an offset as bounce-DB number
-			if fc.index >= 0:
-				dbNumber = -abs(fc.index) - (1 << 32)
-			else:
-				dbNumber = -abs(fc.index) - (1 << 33)
-		else:
-			# Use negative FC number as bounce-DB number
-			dbNumber = -abs(fc.index)
-		db = DB(dbNumber, fc)
-		db.allocate()
-		return db
-
 	# Translate classic symbols ("abc")
 	def __resolveClassicSym(self, block, insn, oper):
 		if oper.type == AwlOperator.SYMBOLIC:
@@ -310,20 +296,31 @@ class S7CPU(object):
 			return symbol.operator.value.byteOffset
 		return blockName
 
-	# Translate local symbols (#abc)
-	def __resolveNamedLocalSym(self, block, insn, oper):
-		if oper.type == AwlOperator.NAMED_LOCAL:
-			newOper = block.interface.getOperatorForFieldName(oper.value, False)
-			newOper.setInsn(oper.insn)
-			return newOper
-		return oper
+	# Translate local symbols (#abc or P##abc)
+	# If pointer is false, try to resolve #abc.
+	# If pointer is true, try to resolve P##abc.
+	def resolveNamedLocal(self, block, insn, oper, pointer=False):
+		if pointer:
+			if oper.type != AwlOperator.NAMED_LOCAL_PTR:
+				return oper
+		else:
+			if oper.type != AwlOperator.NAMED_LOCAL:
+				return oper
 
-	# Translate local symbol pointers (P##abc)
-	def __resolveNamedLocalPointer(self, block, insn, oper):
-		if oper.type == AwlOperator.NAMED_LOCAL_PTR:
-			newOper = block.interface.getOperatorForFieldName(oper.value, True)
+		field = block.interface.getFieldByName(oper.value)
+		if block.interface.hasInstanceDB or\
+		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
+			# This is an FB or a TEMP access. Translate the operator
+			# to a DI/TEMP access.
+			newOper = block.interface.getOperatorForFieldName(oper.value, pointer)
 			newOper.setInsn(oper.insn)
 			return newOper
+		else:
+			# This is an FC. Accesses to local symbols
+			# are resolved at runtime.
+			# Just set the value to the interface index.
+			index = block.interface.getFieldIndex(oper.value)
+			oper.interfaceIndex = index
 		return oper
 
 	def __resolveSymbols_block(self, block):
@@ -331,32 +328,39 @@ class S7CPU(object):
 			for i in range(len(insn.ops)):
 				insn.ops[i] = self.__resolveClassicSym(block,
 								insn, insn.ops[i])
-				insn.ops[i] = self.__resolveNamedLocalSym(block,
-								insn, insn.ops[i])
+				insn.ops[i] = self.resolveNamedLocal(block,
+								insn, insn.ops[i],
+								pointer=False)
 				if insn.ops[i].type == AwlOperator.INDIRECT:
 					insn.ops[i].offsetOper = \
 						self.__resolveClassicSym(block,
 								insn, insn.ops[i].offsetOper)
 					insn.ops[i].offsetOper = \
-						self.__resolveNamedLocalSym(block,
-								insn, insn.ops[i].offsetOper)
-				insn.ops[i] = self.__resolveNamedLocalPointer(block,
-								insn, insn.ops[i])
+						self.resolveNamedLocal(block,
+								insn, insn.ops[i].offsetOper,
+								pointer=False)
+				insn.ops[i] = self.resolveNamedLocal(block,
+								insn, insn.ops[i],
+								pointer=True)
 			for i in range(len(insn.params)):
 				insn.params[i].rvalueOp = self.__resolveClassicSym(block,
 								insn, insn.params[i].rvalueOp)
-				insn.params[i].rvalueOp = self.__resolveNamedLocalSym(block,
-								insn, insn.params[i].rvalueOp)
+				insn.params[i].rvalueOp = self.resolveNamedLocal(block,
+								insn, insn.params[i].rvalueOp,
+								pointer=False)
 				if insn.params[i].rvalueOp.type == AwlOperator.INDIRECT:
 					insn.params[i].rvalueOp.offsetOper =\
 						self.__resolveClassicSym(block,
 								insn, insn.params[i].rvalueOp.offsetOper)
 					insn.params[i].rvalueOp.offsetOper =\
-						self.__resolveNamedLocalSym(block,
-								insn, insn.params[i].rvalueOp.offsetOper)
-				insn.params[i].rvalueOp = self.__resolveNamedLocalPointer(block,
-								insn, insn.params[i].rvalueOp)
+						self.resolveNamedLocal(block,
+								insn, insn.params[i].rvalueOp.offsetOper,
+								pointer=False)
+				insn.params[i].rvalueOp = self.resolveNamedLocal(block,
+								insn, insn.params[i].rvalueOp,
+								pointer=True)
 
+	# Resolve all symbols (global and local) on all blocks, as far as possible.
 	def __resolveSymbols(self):
 		for ob in self.obs.values():
 			self.__resolveSymbols_block(ob)
@@ -364,6 +368,12 @@ class S7CPU(object):
 			self.__resolveSymbols_block(fb)
 		for fc in self.fcs.values():
 			self.__resolveSymbols_block(fc)
+		for sfc in self.sfcs.values():
+			self.__resolveSymbols_block(sfc)
+			sfc.resolveHardwiredSymbols()
+		for sfb in self.sfbs.values():
+			self.__resolveSymbols_block(sfb)
+			sfb.resolveHardwiredSymbols()
 
 	# Run static error checks for code block
 	def __staticSanityChecks_block(self, block):
@@ -423,8 +433,6 @@ class S7CPU(object):
 			rawFC.index = fcNumber
 			fc = self.__translateCodeBlock(rawFC, FC)
 			self.fcs[fcNumber] = fc
-			bounceDB = self.__allocateFCBounceDB(fc, False)
-			self.dbs[bounceDB.index] = bounceDB
 
 		if not self.sfbs:
 			# Create the SFB tables
@@ -442,8 +450,6 @@ class S7CPU(object):
 				sfc = SFC_table[sfcNumber](self)
 				sfc.interface.buildDataStructure()
 				self.sfcs[sfcNumber] = sfc
-				bounceDB = self.__allocateFCBounceDB(sfc, True)
-				self.dbs[bounceDB.index] = bounceDB
 
 		# Translate DBs
 		for dbNumber, rawDB in parseTree.dbs.items():
@@ -736,8 +742,7 @@ class S7CPU(object):
 
 	def __call_FC(self, blockOper, dbOper, parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
-		bounceDB = self.dbs[-abs(fc.index)] # Get bounce-DB
-		return CallStackElem(self, fc, bounceDB, parameters)
+		return CallStackElem(self, fc, None, parameters)
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
@@ -756,13 +761,7 @@ class S7CPU(object):
 
 	def __call_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
-		# Get bounce-DB
-		if sfc.index >= 0:
-			dbNumber = -abs(sfc.index) - (1 << 32)
-		else:
-			dbNumber = -abs(sfc.index) - (1 << 33)
-		bounceDB = self.dbs[dbNumber]
-		return CallStackElem(self, sfc, bounceDB, parameters)
+		return CallStackElem(self, sfc, None, parameters)
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
@@ -907,9 +906,6 @@ class S7CPU(object):
 		self.inputs[byteOffset : byteOffset + len(data)] = data
 
 	def fetch(self, operator, enforceWidth=()):
-		if operator.type == AwlOperator.INDIRECT:
-			return self.fetch(operator.resolve(False), enforceWidth)
-
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
@@ -926,32 +922,33 @@ class S7CPU(object):
 					width = 32
 				else:
 					width = 1
-			if width not in enforceWidth:
+			if operator.type != operator.INDIRECT and width != 0 and\
+			   width not in enforceWidth:
 				raise AwlSimError("Data fetch of %d bits, "
 					"but only %s bits are allowed." %\
 					(width,
 					 listToHumanStr(enforceWidth)))
-		return fetchMethod(self, operator)
+		return fetchMethod(self, operator, enforceWidth)
 
-	def fetchIMM(self, operator):
+	def fetchIMM(self, operator, enforceWidth):
 		return operator.value
 
-	def fetchDBLG(self, operator):
+	def fetchDBLG(self, operator, enforceWidth):
 		return self.dbRegister.struct.getSize()
 
-	def fetchDBNO(self, operator):
+	def fetchDBNO(self, operator, enforceWidth):
 		return self.dbRegister.index
 
-	def fetchDILG(self, operator):
+	def fetchDILG(self, operator, enforceWidth):
 		return self.diRegister.struct.getSize()
 
-	def fetchDINO(self, operator):
+	def fetchDINO(self, operator, enforceWidth):
 		return self.diRegister.index
 
-	def fetchAR2(self, operator):
+	def fetchAR2(self, operator, enforceWidth):
 		return self.getAR(2).get()
 
-	def fetchSTW(self, operator):
+	def fetchSTW(self, operator, enforceWidth):
 		if operator.width == 1:
 			return self.statusWord.getByBitNumber(operator.value.bitOffset)
 		elif operator.width == 16:
@@ -959,40 +956,40 @@ class S7CPU(object):
 		else:
 			assert(0)
 
-	def fetchSTW_Z(self, operator):
+	def fetchSTW_Z(self, operator, enforceWidth):
 		return (self.statusWord.A0 ^ 1) & (self.statusWord.A1 ^ 1)
 
-	def fetchSTW_NZ(self, operator):
+	def fetchSTW_NZ(self, operator, enforceWidth):
 		return self.statusWord.A0 | self.statusWord.A1
 
-	def fetchSTW_POS(self, operator):
+	def fetchSTW_POS(self, operator, enforceWidth):
 		return (self.statusWord.A0 ^ 1) & self.statusWord.A1
 
-	def fetchSTW_NEG(self, operator):
+	def fetchSTW_NEG(self, operator, enforceWidth):
 		return self.statusWord.A0 & (self.statusWord.A1 ^ 1)
 
-	def fetchSTW_POSZ(self, operator):
+	def fetchSTW_POSZ(self, operator, enforceWidth):
 		return self.statusWord.A0 ^ 1
 
-	def fetchSTW_NEGZ(self, operator):
+	def fetchSTW_NEGZ(self, operator, enforceWidth):
 		return self.statusWord.A1 ^ 1
 
-	def fetchSTW_UO(self, operator):
+	def fetchSTW_UO(self, operator, enforceWidth):
 		return self.statusWord.A0 & self.statusWord.A1
 
-	def fetchE(self, operator):
+	def fetchE(self, operator, enforceWidth):
 		return self.inputs.fetch(operator.value, operator.width)
 
-	def fetchA(self, operator):
+	def fetchA(self, operator, enforceWidth):
 		return self.outputs.fetch(operator.value, operator.width)
 
-	def fetchM(self, operator):
+	def fetchM(self, operator, enforceWidth):
 		return self.flags.fetch(operator.value, operator.width)
 
-	def fetchL(self, operator):
+	def fetchL(self, operator, enforceWidth):
 		return self.callStackTop.localdata.fetch(operator.value, operator.width)
 
-	def fetchVL(self, operator):
+	def fetchVL(self, operator, enforceWidth):
 		try:
 			cse = self.callStack[-2]
 		except IndexError:
@@ -1000,7 +997,7 @@ class S7CPU(object):
 				"but no parent present.")
 		return cse.localdata.fetch(operator.value, operator.width)
 
-	def fetchDB(self, operator):
+	def fetchDB(self, operator, enforceWidth):
 		if operator.value.dbNumber is not None:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
@@ -1012,20 +1009,13 @@ class S7CPU(object):
 				"but no DB is opened")
 		return self.dbRegister.fetch(operator)
 
-	def fetchDI(self, operator):
+	def fetchDI(self, operator, enforceWidth):
 		if not self.diRegister:
 			raise AwlSimError("Fetch from instance DI, "
 				"but no DI is opened")
 		return self.diRegister.fetch(operator)
 
-	def fetchINTERF_DB(self, operator):
-		cse = self.callStackTop
-		if not cse.interfaceDB:
-			raise AwlSimError("Fetch from block interface, but "
-				"no interface is declared.")
-		return cse.interfaceDB.fetch(operator)
-
-	def fetchPE(self, operator):
+	def fetchPE(self, operator, enforceWidth):
 		value = None
 		if self.cbPeripheralRead:
 			value = self.cbPeripheralRead(self.cbPeripheralReadData,
@@ -1039,7 +1029,7 @@ class S7CPU(object):
 		self.inputs.store(operator.value, operator.width, value)
 		return self.inputs.fetch(operator.value, operator.width)
 
-	def fetchT(self, operator):
+	def fetchT(self, operator, enforceWidth):
 		timer = self.getTimer(operator.value.byteOffset)
 		if operator.insn.type == AwlInsn.TYPE_L:
 			return timer.getTimevalBin()
@@ -1047,7 +1037,7 @@ class S7CPU(object):
 			return timer.getTimevalS5T()
 		return timer.get()
 
-	def fetchZ(self, operator):
+	def fetchZ(self, operator, enforceWidth):
 		counter = self.getCounter(operator.value.byteOffset)
 		if operator.insn.type == AwlInsn.TYPE_L:
 			return counter.getValueBin()
@@ -1055,13 +1045,24 @@ class S7CPU(object):
 			return counter.getValueBCD()
 		return counter.get()
 
-	def fetchVirtACCU(self, operator):
+	def fetchNAMED_LOCAL(self, operator, enforceWidth):
+		# load from an FC interface field.
+		return self.fetch(self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False),
+				  enforceWidth)
+
+	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
+		return self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False).makePointer()
+
+	def fetchINDIRECT(self, operator, enforceWidth):
+		return self.fetch(operator.resolve(False), enforceWidth)
+
+	def fetchVirtACCU(self, operator, enforceWidth):
 		return self.getAccu(operator.value.byteOffset).get()
 
-	def fetchVirtAR(self, operator):
+	def fetchVirtAR(self, operator, enforceWidth):
 		return self.getAR(operator.value.byteOffset).get()
 
-	def fetchVirtDBR(self, operator):
+	def fetchVirtDBR(self, operator, enforceWidth):
 		if operator.value.byteOffset == 1:
 			if self.dbRegister:
 				return self.dbRegister.index
@@ -1103,43 +1104,41 @@ class S7CPU(object):
 		AwlOperator.MEM_STW_POSZ	: fetchSTW_POSZ,
 		AwlOperator.MEM_STW_NEGZ	: fetchSTW_NEGZ,
 		AwlOperator.MEM_STW_UO		: fetchSTW_UO,
-		AwlOperator.INTERF_DB		: fetchINTERF_DB,
+		AwlOperator.NAMED_LOCAL		: fetchNAMED_LOCAL,
+		AwlOperator.NAMED_LOCAL_PTR	: fetchNAMED_LOCAL_PTR,
+		AwlOperator.INDIRECT		: fetchINDIRECT,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
 		AwlOperator.VIRT_DBR		: fetchVirtDBR,
 	}
 
 	def store(self, operator, value, enforceWidth=()):
-		if operator.type == AwlOperator.INDIRECT:
-			self.store(operator.resolve(True), value, enforceWidth)
-			return
-
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid store request")
 		# Check width of store operation
 		if operator.width not in enforceWidth and enforceWidth:
-			raise AwlSimError("Data store of %d bits, "
-				"but only %s bits are allowed." %\
-				(operator.width,
-				 listToHumanStr(enforceWidth)))
+			if operator.type != operator.INDIRECT and operator.width != 0:
+				raise AwlSimError("Data store of %d bits, "
+					"but only %s bits are allowed." %\
+					(operator.width,
+					 listToHumanStr(enforceWidth)))
+		storeMethod(self, operator, value, enforceWidth)
 
-		storeMethod(self, operator, value)
-
-	def storeE(self, operator, value):
+	def storeE(self, operator, value, enforceWidth):
 		self.inputs.store(operator.value, operator.width, value)
 
-	def storeA(self, operator, value):
+	def storeA(self, operator, value, enforceWidth):
 		self.outputs.store(operator.value, operator.width, value)
 
-	def storeM(self, operator, value):
+	def storeM(self, operator, value, enforceWidth):
 		self.flags.store(operator.value, operator.width, value)
 
-	def storeL(self, operator, value):
+	def storeL(self, operator, value, enforceWidth):
 		self.callStackTop.localdata.store(operator.value, operator.width, value)
 
-	def storeVL(self, operator, value):
+	def storeVL(self, operator, value, enforceWidth):
 		try:
 			cse = self.callStack[-2]
 		except IndexError:
@@ -1147,7 +1146,7 @@ class S7CPU(object):
 				"but no parent present.")
 		cse.localdata.store(operator.value, operator.width, value)
 
-	def storeDB(self, operator, value):
+	def storeDB(self, operator, value, enforceWidth):
 		if operator.value.dbNumber is None:
 			db = self.dbRegister
 			if not db:
@@ -1161,20 +1160,13 @@ class S7CPU(object):
 					"does not exist" % operator.value.dbNumber)
 		db.store(operator, value)
 
-	def storeDI(self, operator, value):
+	def storeDI(self, operator, value, enforceWidth):
 		if not self.diRegister:
 			raise AwlSimError("Store to instance DI, "
 				"but no DI is opened")
 		self.diRegister.store(operator, value)
 
-	def storeINTERF_DB(self, operator, value):
-		cse = self.callStackTop
-		if not cse.interfaceDB:
-			raise AwlSimError("Store to block interface, but "
-				"no interface is declared.")
-		cse.interfaceDB.store(operator, value)
-
-	def storePA(self, operator, value):
+	def storePA(self, operator, value, enforceWidth):
 		self.outputs.store(operator.value, operator.width, value)
 		ok = False
 		if self.cbPeripheralWrite:
@@ -1189,16 +1181,24 @@ class S7CPU(object):
 				(operator.width, operator.value.byteOffset,
 				 value))
 
-	def storeAR2(self, operator, value):
+	def storeAR2(self, operator, value, enforceWidth):
 		self.getAR(2).set(value)
 
-	def storeSTW(self, operator, value):
+	def storeSTW(self, operator, value, enforceWidth):
 		if operator.width == 1:
 			raise AwlSimError("Cannot store to individual STW bits")
 		elif operator.width == 16:
 			self.statusWord.setWord(value)
 		else:
 			assert(0)
+
+	def storeNAMED_LOCAL(self, operator, value, enforceWidth):
+		# store to an FC interface field.
+		self.store(self.callStackTop.interfRefs[operator.interfaceIndex].resolve(True),
+			   value, enforceWidth)
+
+	def storeINDIRECT(self, operator, value, enforceWidth):
+		self.store(operator.resolve(True), value, enforceWidth)
 
 	storeTypeMethods = {
 		AwlOperator.MEM_E		: storeE,
@@ -1211,7 +1211,8 @@ class S7CPU(object):
 		AwlOperator.MEM_PA		: storePA,
 		AwlOperator.MEM_AR2		: storeAR2,
 		AwlOperator.MEM_STW		: storeSTW,
-		AwlOperator.INTERF_DB		: storeINTERF_DB,
+		AwlOperator.NAMED_LOCAL		: storeNAMED_LOCAL,
+		AwlOperator.INDIRECT		: storeINDIRECT,
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):

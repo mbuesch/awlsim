@@ -24,6 +24,7 @@ from awlsim.core.compat import *
 
 from awlsim.core.datatypes import *
 from awlsim.core.statusword import *
+from awlsim.core.lstack import *
 from awlsim.core.util import *
 
 
@@ -51,12 +52,6 @@ class AwlOperator(object):
 	MEM_PA		= EnumGen.item	# Peripheral output
 	MEM_PE		= EnumGen.item	# Peripheral input
 
-	MEM_DBLG	= EnumGen.item	# DB-register: DB length
-	MEM_DBNO	= EnumGen.item	# DB-register: DB number
-	MEM_DILG	= EnumGen.item	# DI-register: DB length
-	MEM_DINO	= EnumGen.item	# DI-register: DB number
-	MEM_AR2		= EnumGen.item	# AR2 register
-
 	MEM_STW		= EnumGen.item	# Status word bit read
 	MEM_STW_Z	= EnumGen.item	# Status word "==0" read
 	MEM_STW_NZ	= EnumGen.item	# Status word "<>0" read
@@ -66,7 +61,12 @@ class AwlOperator(object):
 	MEM_STW_NEGZ	= EnumGen.item	# Status word "<=0" read
 	MEM_STW_UO	= EnumGen.item	# Status word "UO" read
 
-	LBL_REF		= EnumGen.item	# Label reference
+	MEM_DBLG	= EnumGen.item	# DB-register: DB length
+	MEM_DBNO	= EnumGen.item	# DB-register: DB number
+	MEM_DILG	= EnumGen.item	# DI-register: DB length
+	MEM_DINO	= EnumGen.item	# DI-register: DB number
+
+	MEM_AR2		= EnumGen.item	# AR2 register
 
 	BLKREF_FC	= EnumGen.item	# FC reference
 	BLKREF_SFC	= EnumGen.item	# SFC reference
@@ -78,15 +78,16 @@ class AwlOperator(object):
 	BLKREF_OB	= EnumGen.item	# OB reference (only symbol table)
 	BLKREF_VAT	= EnumGen.item	# VAT reference (only symbol table)
 
+	LBL_REF		= EnumGen.item	# Label reference
 	SYMBOLIC	= EnumGen.item	# Classic symbolic reference ("xyz")
 	NAMED_LOCAL	= EnumGen.item	# Named local reference (#abc)
 	NAMED_LOCAL_PTR	= EnumGen.item	# Pointer to named local (P##abc)
-	INTERF_DB	= EnumGen.item	# Interface-DB access (translated NAMED_LOCAL)
 
 	INDIRECT	= EnumGen.item	# Indirect access
 	UNSPEC		= EnumGen.item	# Not (yet) specified memory region
 
-	# Virtual operators used for debugging of the simulator
+	# Virtual operators used internally in awlsim, only.
+	# These operators do not have standard AWL mnemonics.
 	VIRT_ACCU	= EnumGen.item	# Accu
 	VIRT_AR		= EnumGen.item	# AR
 	VIRT_DBR	= EnumGen.item	# DB and DI registers
@@ -144,12 +145,12 @@ class AwlOperator(object):
 		BLKREF_VAT	: "BLOCK_VAT",
 
 		NAMED_LOCAL	: "#LOCAL",
-		INTERF_DB	: "__INTERFACE_DB",
 
 		INDIRECT	: "__INDIRECT",
 
 		VIRT_ACCU	: "__ACCU",
 		VIRT_AR		: "__AR",
+		VIRT_DBR	: "__DBR",
 	}
 
 	def __init__(self, type, width, value, insn=None):
@@ -163,6 +164,7 @@ class AwlOperator(object):
 		self.labelIndex = None
 		self.insn = insn
 		self.isExtended = False
+		# The symbol resolver may also put a "self.interfaceIndex" number in here.
 
 	# Make a deep copy, except for "insn".
 	def dup(self):
@@ -195,6 +197,9 @@ class AwlOperator(object):
 			insn=self.insn)
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
+		if self.type == AwlOperator.NAMED_LOCAL or\
+		   self.type == AwlOperator.NAMED_LOCAL_PTR:
+			return #FIXME we should check type for these, too.
 		types = toList(types)
 		if not self.type in types:
 			self._raiseTypeError(self.type, types)
@@ -207,9 +212,23 @@ class AwlOperator(object):
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 
+	# Resolve this indirect operator to a direct operator.
 	def resolve(self, store=True):
 		# This already is a direct operator.
+		if self.type == self.NAMED_LOCAL:
+			# This is a named-local access (#abc).
+			# Resolve it to an interface-operator.
+			return self.insn.cpu.callStackTop.interfRefs[self.interfaceIndex].resolve()
 		return self
+
+	# Make an area-spanning pointer (32 bit) to this memory area.
+	def makePointer(self):
+		try:
+			area = AwlIndirectOp.optype2area[self.type]
+		except KeyError as e:
+			raise AwlSimError("Could not transform operator '%s' "
+				"into a pointer." % str(self))
+		return area | self.value.toPointerValue()
 
 	def __repr__(self):
 		if self.type == self.IMM:
@@ -230,7 +249,7 @@ class AwlOperator(object):
 		elif self.type == self.IMM_TOD:
 			return "TOD#" #TODO
 		elif self.type in (self.MEM_A, self.MEM_E,
-				   self.MEM_M, self.MEM_L):
+				   self.MEM_M, self.MEM_L, self.MEM_VL):
 			pfx = self.type2str[self.type]
 			if self.width == 1:
 				return "%s %d.%d" %\
@@ -311,8 +330,6 @@ class AwlOperator(object):
 			return "#%s" % self.value
 		elif self.type == self.NAMED_LOCAL_PTR:
 			return "P##%s" % self.value
-		elif self.type == self.INTERF_DB:
-			return "__INTERFACE_DB" #FIXME
 		elif self.type == self.INDIRECT:
 			assert(0) # Overloaded in AwlIndirectOp
 		elif self.type == self.VIRT_ACCU:
@@ -360,7 +377,6 @@ class AwlIndirectOp(AwlOperator):
 	EXT_AREA_BLKREF_DB	= 0x03FF000000	# DB block reference
 	EXT_AREA_BLKREF_FB	= 0x04FF000000	# FB block reference
 	EXT_AREA_BLKREF_FC	= 0x05FF000000	# FC block reference
-	EXT_AREA_INTERF_DB	= 0x06FF000000	# INTERF_DB
 
 	# Map for converting area code to operator type for fetch operations
 	area2optype_fetch = {
@@ -377,7 +393,6 @@ class AwlIndirectOp(AwlOperator):
 		EXT_AREA_BLKREF_DB	: AwlOperator.BLKREF_DB,
 		EXT_AREA_BLKREF_FB	: AwlOperator.BLKREF_FB,
 		EXT_AREA_BLKREF_FC	: AwlOperator.BLKREF_FC,
-		EXT_AREA_INTERF_DB	: AwlOperator.INTERF_DB,
 	}
 
 	# Map for converting area code to operator type for store operations
@@ -438,8 +453,7 @@ class AwlIndirectOp(AwlOperator):
 	__possibleOffsetOperTypes = (AwlOperator.MEM_M,
 				     AwlOperator.MEM_L,
 				     AwlOperator.MEM_DB,
-				     AwlOperator.MEM_DI,
-				     AwlOperator.INTERF_DB)
+				     AwlOperator.MEM_DI)
 
 	# Resolve this indirect operator to a direct operator.
 	def resolve(self, store=True):
@@ -508,6 +522,12 @@ class AwlIndirectOp(AwlOperator):
 				"(Computed offset is: %s)" %\
 				(self.width, str(directOffset)))
 		return AwlOperator(optype, self.width, directOffset, self.insn)
+
+	def makePointer(self):
+		# This is a programming error.
+		# The caller should resolve() the operator first.
+		raise AwlSimError("BUG: Can not transform indirect operator "
+			"into a pointer. Resolve it first.")
 
 	def __repr__(self):
 		return "__INDIRECT" #TODO

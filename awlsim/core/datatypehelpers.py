@@ -162,7 +162,7 @@ def __isString_python3(value):
 isString = py23(__isString_python2,
 		__isString_python3)
 
-class __WordPacker:
+class _WordPacker:
 	"""Pack/unpack bytes/words/dwords into/from a byte stream."""
 
 	_wordStruct = struct.Struct(str(">H"))
@@ -172,12 +172,12 @@ class __WordPacker:
 		return buf[byteOffset]
 
 	def __fromBytes_16(self, buf, byteOffset):
-		return WordExtract._wordStruct.unpack(
+		return _WordPacker._wordStruct.unpack(
 			buf[byteOffset : byteOffset+ 2]
 		)[0]
 
 	def __fromBytes_32(self, buf, byteOffset):
-		return WordExtract._dwordStruct.unpack(
+		return _WordPacker._dwordStruct.unpack(
 			buf[byteOffset : byteOffset + 4]
 		)[0]
 
@@ -194,13 +194,13 @@ class __WordPacker:
 		if byteOffset + 2 > len(buf):
 			raise IndexError
 		buf[byteOffset : byteOffset + 2] =\
-			WordExtract._wordStruct.pack(value & 0xFFFF)
+			_WordPacker._wordStruct.pack(value & 0xFFFF)
 
 	def __toBytes_32(self, buf, byteOffset, value):
 		if byteOffset + 4 > len(buf):
 			raise IndexError
 		buf[byteOffset : byteOffset + 4] =\
-			WordExtract._dwordStruct.pack(value & 0xFFFFFFFF)
+			_WordPacker._dwordStruct.pack(value & 0xFFFFFFFF)
 
 	__toBytesHandlers = {
 		8	: __toBytes_8,
@@ -222,4 +222,4 @@ class __WordPacker:
 		except (IndexError, struct.error) as e:
 			raise AwlSimError("Failed to pack %d bits into buffer" % bitWidth)
 
-WordPacker = __WordPacker()
+WordPacker = _WordPacker()

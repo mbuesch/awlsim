@@ -50,11 +50,6 @@ class BlockInterfaceField(object):
 		self.fieldType = self.FTYPE_UNKNOWN
 		self.initialValue = initialValue
 
-class BlockInterfaceFieldRef(object):
-	def __init__(self, field, pointer):
-		self.field = field
-		self.pointer = pointer
-
 class BlockInterface(object):
 	# Data-types that must be passed "by-reference" to FCs/FBs.
 	callByRef_Types = (
@@ -69,6 +64,10 @@ class BlockInterface(object):
 	# Set to true for FBs and SFBs
 	hasInstanceDB = False
 
+	# The number of allocated bytes on startup.
+	# This is only non-zero for OBs
+	startupTempAllocation = 0
+
 	def __init__(self):
 		self.struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)
 		self.tempStruct = None # Local-stack structure (TEMP)
@@ -80,9 +79,10 @@ class BlockInterface(object):
 		self.fields_STAT = []
 		self.fields_TEMP = []
 
-		self.interfaceFieldCount = 0
-		self.staticFieldCount = 0
-		self.tempFieldCount = 0
+		self.interfaceFieldCount = 0	# The number of interface fields
+		self.staticFieldCount = 0	# The number of static fields
+		self.tempFieldCount = 0		# The number of temp fields
+		self.tempAllocation = 0		# The number of allocated TEMP bytes
 
 	@property
 	def fields_IN_OUT_INOUT(self):
@@ -137,8 +137,8 @@ class BlockInterface(object):
 							field.dataType)
 
 	def buildDataStructure(self):
-		if self.hasInstanceDB or 1:#XXX
-			# Build interface-DB structure for the FB
+		if self.hasInstanceDB:
+			# Build instance-DB structure for the FB
 			self.struct = AwlStruct()
 			for i, field in enumerate(self.fields_IN):
 				self.__buildField(self.struct, field, i==0)
@@ -149,12 +149,18 @@ class BlockInterface(object):
 			for i, field in enumerate(self.fields_STAT):
 				self.__buildField(self.struct, field, i==0)
 		else:
-			assert(not self.fields_STAT)
+			# An FC does not have an instance-DB
+			assert(not self.fields_STAT) # No static data.
 
 		# Build local-stack structure
 		self.tempStruct = AwlStruct()
 		for i, field in enumerate(self.fields_TEMP):
 			self.__buildField(self.tempStruct, field, i==0)
+		self.tempAllocation = self.tempStruct.getSize()
+		# If the OB-interface did not specify all automatic TEMP-fields,
+		# just force allocate them, so the lstack-allocator will not be confused.
+		if self.tempAllocation < self.startupTempAllocation:
+			self.tempAllocation = self.startupTempAllocation
 
 	def getFieldByName(self, name):
 		try:
@@ -191,8 +197,8 @@ class BlockInterface(object):
 
 		structField = self.struct.getField(interfaceField.name)
 
-		#TODO: check for FC (hasInstanceDB) and pass values by ref instead
-		#      of bounce-DB.
+		# FC-parameters cannot be resolved statically.
+		assert(self.hasInstanceDB)
 
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
@@ -201,10 +207,10 @@ class BlockInterface(object):
 					   value = (AwlIndirectOp.AREA_DI |\
 						    ptrValue))
 
-		# Translate to interface-DB access
+		# Translate to instance-DB access
 		if structField.dataType.type in BlockInterface.callByRef_Types:
 			# "call by reference"
-			offsetOper = AwlOperator(type=AwlOperator.INTERF_DB,
+			offsetOper = AwlOperator(type=AwlOperator.MEM_DI,
 						 width=structField.dataType.width,
 						 value=structField.offset.dup())
 			if structField.dataType.type == AwlDataType.TYPE_TIMER:
@@ -230,9 +236,18 @@ class BlockInterface(object):
 				addressRegister=AwlIndirectOp.AR_NONE,
 				offsetOper=offsetOper)
 		# "call by value"
-		return AwlOperator(type=AwlOperator.INTERF_DB,
+		return AwlOperator(type=AwlOperator.MEM_DI,
 				   width=structField.bitSize,
 				   value=structField.offset.dup())
+
+	# Get a stable index number for an IN, OUT or INOUT field.
+	# (This method is slow)
+	def getFieldIndex(self, name):
+		for i, field in enumerate(self.fields_IN_OUT_INOUT):
+			if field.name == name:
+				return i
+		raise AwlSimError("Interface field '%s' is not part of IN, OUT "
+			"or IN_OUT declaration." % name)
 
 	def __repr__(self):
 		ret = []
@@ -263,6 +278,8 @@ class Block(object):
 		return "Block %d" % self.index
 
 class OBInterface(BlockInterface):
+	startupTempAllocation = 20
+
 	def addField_IN(self, field):
 		raise AwlSimError("VAR_INPUT not possible in an OB")
 

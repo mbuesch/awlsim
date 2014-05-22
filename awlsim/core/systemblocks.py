@@ -40,15 +40,25 @@ class SystemBlock(Block):
 
 	# Fetch the value of a block-interface field.
 	def fetchInterfaceFieldByName(self, name):
-		#TODO: We should cache the operator.
-		operator = self.interface.getOperatorForFieldName(name, False)
-		return self.cpu.fetch(operator)
+		return self.cpu.fetch(self.__interfaceOpers[name])
 
 	# Store a value to a block-interface field.
 	def storeInterfaceFieldByName(self, name, value):
-		#TODO: We should cache the operator.
-		operator = self.interface.getOperatorForFieldName(name, False)
-		return self.cpu.store(operator, value)
+		return self.cpu.store(self.__interfaceOpers[name], value)
+
+	# Resolve hard wired symbolic accesses
+	# (i.e. accesses not done in AWL instructions)
+	def resolveHardwiredSymbols(self):
+		self.__interfaceOpers = {}
+		for field in self.interface.fields_IN_OUT_INOUT:
+			# Create a scratch-operator for the access.
+			oper = AwlOperator(AwlOperator.NAMED_LOCAL, 0,
+					   field.name)
+			# Resolve the scratch-operator.
+			oper = self.cpu.resolveNamedLocal(block=self, insn=None,
+							  oper=oper, pointer=False)
+			# Store the scratch operator for later use.
+			self.__interfaceOpers[field.name] = oper
 
 class SFBInterface(FBInterface):
 	pass
