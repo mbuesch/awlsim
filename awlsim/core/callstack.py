@@ -113,7 +113,8 @@ class CallStackElem(object):
 						translator = self.__paramTrans[param.rvalueOp.type]
 					except KeyError as e:
 						raise AwlSimError("Do not know how to translate "
-							"FC parameter '%s' for call." %\
+							"FC parameter '%s' for call. The specified "
+							"actual-parameter is not allowed in this call." %\
 							str(param))
 					self.interfRefs[param.getInterfaceFieldIndex(blockInterface)] =\
 						translator(self, param.rvalueOp)
@@ -193,10 +194,6 @@ class CallStackElem(object):
 			return self.__trans_MEM_DB(oper)
 		assert(0)
 
-	def __trans_INDIRECT(self, oper):
-		pass#TODO
-		assert(0)
-
 	# FC call parameter translators
 	__paramTrans = {
 		AwlOperator.IMM			: __trans_IMM,
@@ -225,8 +222,6 @@ class CallStackElem(object):
 		AwlOperator.BLKREF_DB		: __trans_BLKREF,
 
 		AwlOperator.NAMED_LOCAL		: __trans_NAMED_LOCAL,
-
-		AwlOperator.INDIRECT		: __trans_INDIRECT,
 	}
 
 	# Handle the exit from this code block.
