@@ -74,7 +74,7 @@ class CallStackElem(object):
 			cpu.diRegister,
 		)
 		self.localdata = self.lalloc.localdata
-		self.localdata.allocation = block.interface.tempAllocation
+		self.lalloc.allocation = block.interface.tempAllocation
 
 		# Handle parameters
 		self.__outboundParams = []
