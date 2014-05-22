@@ -911,44 +911,54 @@ class S7CPU(object):
 		except KeyError:
 			raise AwlSimError("Invalid fetch request: %s" %\
 				AwlOperator.type2str[operator.type])
-		# Check width of fetch operation
-		if operator.width not in enforceWidth and enforceWidth:
-			width = operator.width
-			# Special handling for T and Z
-			if operator.type in (AwlOperator.MEM_T,
-					     AwlOperator.MEM_Z):
-				if operator.insn.type in (AwlInsn.TYPE_L,
-							  AwlInsn.TYPE_LC):
-					width = 32
-				else:
-					width = 1
-			if operator.type != operator.INDIRECT and width != 0 and\
-			   width not in enforceWidth:
-				raise AwlSimError("Data fetch of %d bits, "
-					"but only %s bits are allowed." %\
-					(width,
-					 listToHumanStr(enforceWidth)))
 		return fetchMethod(self, operator, enforceWidth)
 
+	def __fetchWidthError(self, operator, enforceWidth):
+		raise AwlSimError("Data fetch of %d bits, "
+			"but only %s bits are allowed." %\
+			(operator.width,
+			 listToHumanStr(enforceWidth)))
+
 	def fetchIMM(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return operator.value
 
 	def fetchDBLG(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.dbRegister.struct.getSize()
 
 	def fetchDBNO(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.dbRegister.index
 
 	def fetchDILG(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.diRegister.struct.getSize()
 
 	def fetchDINO(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.diRegister.index
 
 	def fetchAR2(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.getAR(2).get()
 
 	def fetchSTW(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		if operator.width == 1:
 			return self.statusWord.getByBitNumber(operator.value.bitOffset)
 		elif operator.width == 16:
@@ -957,39 +967,75 @@ class S7CPU(object):
 			assert(0)
 
 	def fetchSTW_Z(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return (self.statusWord.A0 ^ 1) & (self.statusWord.A1 ^ 1)
 
 	def fetchSTW_NZ(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.statusWord.A0 | self.statusWord.A1
 
 	def fetchSTW_POS(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return (self.statusWord.A0 ^ 1) & self.statusWord.A1
 
 	def fetchSTW_NEG(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.statusWord.A0 & (self.statusWord.A1 ^ 1)
 
 	def fetchSTW_POSZ(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.statusWord.A0 ^ 1
 
 	def fetchSTW_NEGZ(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.statusWord.A1 ^ 1
 
 	def fetchSTW_UO(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.statusWord.A0 & self.statusWord.A1
 
 	def fetchE(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.inputs.fetch(operator.value, operator.width)
 
 	def fetchA(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.outputs.fetch(operator.value, operator.width)
 
 	def fetchM(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.flags.fetch(operator.value, operator.width)
 
 	def fetchL(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.callStackTop.localdata.fetch(operator.value, operator.width)
 
 	def fetchVL(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		try:
 			cse = self.callStack[-2]
 		except IndexError:
@@ -998,6 +1044,9 @@ class S7CPU(object):
 		return cse.localdata.fetch(operator.value, operator.width)
 
 	def fetchDB(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		if operator.value.dbNumber is not None:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
@@ -1010,12 +1059,18 @@ class S7CPU(object):
 		return self.dbRegister.fetch(operator)
 
 	def fetchDI(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		if not self.diRegister:
 			raise AwlSimError("Fetch from instance DI, "
 				"but no DI is opened")
 		return self.diRegister.fetch(operator)
 
 	def fetchPE(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		value = None
 		if self.cbPeripheralRead:
 			value = self.cbPeripheralRead(self.cbPeripheralReadData,
@@ -1030,18 +1085,34 @@ class S7CPU(object):
 		return self.inputs.fetch(operator.value, operator.width)
 
 	def fetchT(self, operator, enforceWidth):
+		insnType = operator.insn.type
+		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
+			width = 32
+		else:
+			width = 1
+		if width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		timer = self.getTimer(operator.value.byteOffset)
-		if operator.insn.type == AwlInsn.TYPE_L:
+		if insnType == AwlInsn.TYPE_L:
 			return timer.getTimevalBin()
-		elif operator.insn.type == AwlInsn.TYPE_LC:
+		elif insnType == AwlInsn.TYPE_LC:
 			return timer.getTimevalS5T()
 		return timer.get()
 
 	def fetchZ(self, operator, enforceWidth):
+		insnType = operator.insn.type
+		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
+			width = 32
+		else:
+			width = 1
+		if width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		counter = self.getCounter(operator.value.byteOffset)
-		if operator.insn.type == AwlInsn.TYPE_L:
+		if insnType == AwlInsn.TYPE_L:
 			return counter.getValueBin()
-		elif operator.insn.type == AwlInsn.TYPE_LC:
+		elif insnType == AwlInsn.TYPE_LC:
 			return counter.getValueBCD()
 		return counter.get()
 
@@ -1057,12 +1128,21 @@ class S7CPU(object):
 		return self.fetch(operator.resolve(False), enforceWidth)
 
 	def fetchVirtACCU(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.getAccu(operator.value.byteOffset).get()
 
 	def fetchVirtAR(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		return self.getAR(operator.value.byteOffset).get()
 
 	def fetchVirtDBR(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
 		if operator.value.byteOffset == 1:
 			if self.dbRegister:
 				return self.dbRegister.index
@@ -1117,28 +1197,42 @@ class S7CPU(object):
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid store request")
-		# Check width of store operation
-		if operator.width not in enforceWidth and enforceWidth:
-			if operator.type != operator.INDIRECT and operator.width != 0:
-				raise AwlSimError("Data store of %d bits, "
-					"but only %s bits are allowed." %\
-					(operator.width,
-					 listToHumanStr(enforceWidth)))
 		storeMethod(self, operator, value, enforceWidth)
 
+	def __storeWidthError(self, operator, enforceWidth):
+		raise AwlSimError("Data store of %d bits, "
+			"but only %s bits are allowed." %\
+			(operator.width,
+			 listToHumanStr(enforceWidth)))
+
 	def storeE(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		self.inputs.store(operator.value, operator.width, value)
 
 	def storeA(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		self.outputs.store(operator.value, operator.width, value)
 
 	def storeM(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		self.flags.store(operator.value, operator.width, value)
 
 	def storeL(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		self.callStackTop.localdata.store(operator.value, operator.width, value)
 
 	def storeVL(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		try:
 			cse = self.callStack[-2]
 		except IndexError:
@@ -1147,6 +1241,9 @@ class S7CPU(object):
 		cse.localdata.store(operator.value, operator.width, value)
 
 	def storeDB(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		if operator.value.dbNumber is None:
 			db = self.dbRegister
 			if not db:
@@ -1161,12 +1258,18 @@ class S7CPU(object):
 		db.store(operator, value)
 
 	def storeDI(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		if not self.diRegister:
 			raise AwlSimError("Store to instance DI, "
 				"but no DI is opened")
 		self.diRegister.store(operator, value)
 
 	def storePA(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		self.outputs.store(operator.value, operator.width, value)
 		ok = False
 		if self.cbPeripheralWrite:
@@ -1182,9 +1285,15 @@ class S7CPU(object):
 				 value))
 
 	def storeAR2(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		self.getAR(2).set(value)
 
 	def storeSTW(self, operator, value, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__storeWidthError(operator, enforceWidth)
+
 		if operator.width == 1:
 			raise AwlSimError("Cannot store to individual STW bits")
 		elif operator.width == 16:
