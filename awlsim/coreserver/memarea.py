@@ -46,16 +46,16 @@ class MemoryArea(object):
 		self.data = data
 
 	def __read_E(self, cpu):
-		self.data = cpu.inputs[self.start : self.start + self.length]
+		self.data = bytes(cpu.inputs[self.start : self.start + self.length])
 
 	def __read_A(self, cpu):
-		self.data = cpu.outputs[self.start : self.start + self.length]
+		self.data = bytes(cpu.outputs[self.start : self.start + self.length])
 
 	def __read_M(self, cpu):
-		self.data = cpu.flags[self.start : self.start + self.length]
+		self.data = bytes(cpu.flags[self.start : self.start + self.length])
 
 	def __read_L(self, cpu):
-		self.data = cpu.callStackTop.localdata[self.start : self.start + self.length]
+		self.data = bytes(cpu.callStackTop.localdata[self.start : self.start + self.length])
 
 	def __read_DB(self, cpu):
 		try:
@@ -66,7 +66,7 @@ class MemoryArea(object):
 		if not (db.permissions & db.PERM_READ):
 			raise AwlSimError("MemoryArea: Read access to "
 				"read-protected DB %d" % self.index)
-		self.data = db.structInstance.dataBytes[self.start : self.start + self.length]
+		self.data = bytes(db.structInstance.dataBytes[self.start : self.start + self.length])
 
 	def __read_T(self, cpu):
 		try:
