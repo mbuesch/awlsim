@@ -361,7 +361,6 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 	def __init__(self, cpuspecs):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUSPECS)
 		self.cpuspecs = cpuspecs
-		self.cpuspecs.cpu = None
 
 	def toBytes(self):
 		pl = self.plStruct.pack(self.cpuspecs.getConfiguredMnemonics(),
