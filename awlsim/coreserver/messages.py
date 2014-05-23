@@ -282,7 +282,7 @@ class AwlSimMessage_SET_OPT(AwlSimMessage):
 
 	def getBoolValue(self):
 		try:
-			return bool(self.value)
+			return bool(self.getIntValue())
 		except ValueError as e:
 			raise AwlSimError("SET_OPT: Value is not a boolean")
 
