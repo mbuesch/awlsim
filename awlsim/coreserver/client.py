@@ -81,8 +81,7 @@ class AwlSimClient(object):
 		printInfo("AwlSimClient: Connecting to server '%s (port %d)'..." %\
 			(host, port))
 		try:
-			family, socktype, proto, canonname, sockaddr =\
-				socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)[0]
+			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
 			sock = socket.socket(family, socktype)
 			count = 0
 			while 1:

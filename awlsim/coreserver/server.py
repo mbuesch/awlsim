@@ -73,6 +73,33 @@ class AwlSimServer(object):
 			self.repetitionCount = 0
 
 	@classmethod
+	def getaddrinfo(cls, host, port):
+		family, socktype, proto, canonname, sockaddr =\
+			socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)[0]
+		return (family, socktype, sockaddr)
+
+	@classmethod
+	def portIsUnused(cls, host, port):
+		sock = None
+		result = True
+		try:
+			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+			sock = socket.socket(family, socktype)
+			sock.bind(sockaddr)
+		except socket.error as e:
+			result = False
+		if sock:
+			try:
+				sock.shutdown(socket.SHUT_RDWR)
+			except socket.error as e:
+				pass
+			try:
+				sock.close()
+			except socket.error as e:
+				pass
+		return result
+
+	@classmethod
 	def findExecutable(cls, executable):
 		return distutils.spawn.find_executable(executable)
 
@@ -448,8 +475,7 @@ class AwlSimServer(object):
 		self.close()
 		printInfo("AwlSimServer: Listening on %s (port %d)..." % (host, port))
 		try:
-			family, socktype, proto, canonname, sockaddr =\
-				socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)[0]
+			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			sock.setblocking(False)
