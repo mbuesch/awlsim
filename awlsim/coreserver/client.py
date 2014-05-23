@@ -40,20 +40,36 @@ class AwlSimClient(object):
 			listenHost=AwlSimServer.DEFAULT_HOST,
 			listenPort=AwlSimServer.DEFAULT_PORT):
 		"""Spawn a new AwlSim-core server process.
-		interpreter -> The python interpreter to use.
+		interpreter -> The python interpreter to use. Must be either:
+			       - None: Use sys.executable as interpreter.
+			       - a string: Use the specified interpreter binary.
+			       - list of strings: Try with the interpreters in the
+			                          list, until the first working one is found.
 		listenHost -> The hostname or IP address to listen on.
 		listenPort -> The port to listen on.
 		Returns the spawned process' PID."""
 
 		if self.serverProcess:
 			raise AwlSimError("Server already running")
-		if not interpreter:
-			interpreter = sys.executable
-		assert(interpreter)
 
-		self.serverProcess = AwlSimServer.start(listenHost = listenHost,
-							listenPort = listenPort,
-							forkInterpreter = interpreter)
+		if interpreter is None:
+			interpreter = [ sys.executable, ]
+		elif not isinstance(interpreter, list) and\
+		     not isinstance(interpreter, tuple):
+			interpreter = [ interpreter, ]
+
+		for interp in interpreter:
+			if not AwlSimServer.findExecutable(interp):
+				continue
+			self.serverProcess = AwlSimServer.start(listenHost = listenHost,
+								listenPort = listenPort,
+								forkInterpreter = interp)
+			break
+		else:
+			raise AwlSimError("Unable to fork an awlsim core server with "
+				"any of the supplied Python interpreters: %s\n"
+				"No interpreter found." %\
+				str(interpreter))
 
 	def connectToServer(self,
 			    host=AwlSimServer.DEFAULT_HOST,

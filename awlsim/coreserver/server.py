@@ -73,6 +73,10 @@ class AwlSimServer(object):
 			self.repetitionCount = 0
 
 	@classmethod
+	def findExecutable(cls, executable):
+		return distutils.spawn.find_executable(executable)
+
+	@classmethod
 	def start(cls, listenHost, listenPort, forkInterpreter=None):
 		"""Start a new server.
 		If 'forkInterpreter' is not None, spawn a subprocess.
@@ -88,7 +92,8 @@ class AwlSimServer(object):
 		if forkInterpreter is None:
 			return cls._execute(environment)
 		else:
-			interp = distutils.spawn.find_executable(forkInterpreter)
+			interp = cls.findExecutable(forkInterpreter)
+			printInfo("Forking awlsim core server with interpreter '%s'" % interp)
 			if not interp:
 				raise AwlSimError("Failed to find interpreter "
 						  "executable '%s'" % forkInterpreter)

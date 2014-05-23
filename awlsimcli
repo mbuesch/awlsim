@@ -205,7 +205,6 @@ def runWithServerBackend(inputFile):
 		# Connect to the server
 		client = TextInterfaceAwlSimClient()
 		if opt_spawnBackend:
-			writeStdout("Spawning core server...\n")
 			host, port = AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT
 			if opt_connect:
 				host, port = opt_connect
