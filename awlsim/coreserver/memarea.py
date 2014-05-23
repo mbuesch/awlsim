@@ -26,6 +26,7 @@ from awlsim.core.util import *
 
 
 class MemoryArea(object):
+	# Possible memType values
 	EnumGen.start
 	TYPE_E		= EnumGen.item # input memory
 	TYPE_A		= EnumGen.item # output memory
@@ -37,13 +38,25 @@ class MemoryArea(object):
 	TYPE_STW	= EnumGen.item # status word
 	EnumGen.end
 
-	def __init__(self, memType, flags, index, start, length, data=None):
+	# Possible flags
+	FLG_ERR_READ	= 0x01
+	FLG_ERR_WRITE	= 0x02
+
+	def __init__(self, memType, flags, index, start, length, data=b''):
 		self.memType = memType
 		self.flags = flags
 		self.index = index
 		self.start = start
 		self.length = length
 		self.data = data
+
+	def __raiseReadErr(self, exception):
+		self.flags |= self.FLG_ERR_READ
+		raise exception
+
+	def __raiseWriteErr(self, exception):
+		self.flags |= self.FLG_ERR_WRITE
+		raise exception
 
 	def __read_E(self, cpu):
 		self.data = bytes(cpu.inputs[self.start : self.start + self.length])
@@ -61,40 +74,52 @@ class MemoryArea(object):
 		try:
 			db = cpu.dbs[self.index]
 		except KeyError:
-			raise AwlSimError("MemoryArea: Read access to "
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read access to "
 				"nonexistent DB %d" % self.index)
+			)
 		if not (db.permissions & db.PERM_READ):
-			raise AwlSimError("MemoryArea: Read access to "
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read access to "
 				"read-protected DB %d" % self.index)
+			)
 		self.data = bytes(db.structInstance.dataBytes[self.start : self.start + self.length])
 
 	def __read_T(self, cpu):
 		try:
 			timer = cpu.timers[self.index]
 		except IndexError as e:
-			raise AwlSimError("MemoryArea: Invalid timer index %d" % self.index)
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Invalid timer index %d" % self.index)
+			)
 		if self.start == 1:
 			self.data, self.length = b'\x01' if timerget() else b'\x00', 1
 		elif self.start == 16:
 			v = timer.getTimevalBin()
 			self.data, self.length = bytes(((v >> 8) & 0xFF, v & 0xFF)), 2
 		else:
-			raise AwlSimError("MemoryArea: Invalid start=%d in timer read. "
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Invalid start=%d in timer read. "
 				"Must be 1 or 16." % self.start)
+			)
 
 	def __read_Z(self, cpu):
 		try:
 			counter = cpu.timers[self.index]
 		except IndexError as e:
-			raise AwlSimError("MemoryArea: Invalid counter index %d" % self.index)
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Invalid counter index %d" % self.index)
+			)
 		if self.start == 1:
 			self.data, self.length = b'\x01' if counter.get() else b'\x00', 1
 		elif self.start == 16:
 			v = counter.getValueBin()
 			self.data, self.length = bytes(((v >> 8) & 0xFF, v & 0xFF)), 2
 		else:
-			raise AwlSimError("MemoryArea: Invalid start=%d in counter read. "
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Invalid start=%d in counter read. "
 				"Must be 1 or 16." % self.start)
+			)
 
 	def __read_STW(self, cpu):
 		stw = cpu.statusWord.getWord()
@@ -124,11 +149,15 @@ class MemoryArea(object):
 		try:
 			db = cpu.dbs[self.index]
 		except KeyError:
-			raise AwlSimError("MemoryArea: Write access to "
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Write access to "
 				"nonexistent DB %d" % self.index)
+			)
 		if not (db.permissions & db.PERM_WRITE):
-			raise AwlSimError("MemoryArea: Write access to "
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Write access to "
 				"write-protected DB %d" % self.index)
+			)
 		db.structInstance.dataBytes[self.start : self.start + self.length] = self.data
 
 	__writeHandlers = {
@@ -142,19 +171,27 @@ class MemoryArea(object):
 		try:
 			self.__readHandlers[self.memType](self, cpu)
 		except KeyError:
-			raise AwlSimError("Invalid MemoryArea memType %d "
+			self.__raiseReadErr(
+				AwlSimError("Invalid MemoryArea memType %d "
 				"in read operation" % self.memType)
+			)
 		except (IndexError, TypeError) as e:
-			raise AwlSimError("Invalid MemoryArea read")
+			self.__raiseReadErr(
+				AwlSimError("Invalid MemoryArea read")
+			)
 
 	def writeToCpu(self, cpu):
 		try:
 			self.__writeHandlers[self.memType](self, cpu)
 		except KeyError:
-			raise AwlSimError("Invalid MemoryArea memType %d "
+			self.__raiseWriteErr(
+				AwlSimError("Invalid MemoryArea memType %d "
 				"in write operation" % self.memType)
+			)
 		except (IndexError, TypeError) as e:
-			raise AwlSimError("Invalid MemoryArea write")
+			self.__raiseWriteErr(
+				AwlSimError("Invalid MemoryArea write")
+			)
 
 	# Check whether another area overlaps with this one.
 	# Doesn't compare the flags.

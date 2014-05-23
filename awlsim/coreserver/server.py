@@ -347,12 +347,21 @@ class AwlSimServer(object):
 
 	def __rx_MEMORY(self, client, msg):
 		cpu = self.sim.cpu
+		status = AwlSimMessage_REPLY.STAT_OK
 		for memArea in msg.memAreas:
-			memArea.writeToCpu(cpu)
+			try:
+				memArea.writeToCpu(cpu)
+			except AwlSimError as e:
+				if memArea.flags & (MemoryArea.FLG_ERR_READ |\
+						    MemoryArea.FLG_ERR_WRITE):
+					# Just signal failure to the client.
+					status = AwlSimMessage_REPLY.STAT_FAIL
+				else:
+					# This is a serious fault.
+					# Re-raise the exception.
+					raise
 		if msg.flags & msg.FLG_SYNC:
-			client.transceiver.send(AwlSimMessage_REPLY.make(
-				msg, AwlSimMessage_REPLY.STAT_OK)
-			)
+			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
@@ -416,7 +425,20 @@ class AwlSimServer(object):
 			if client.repetitionCount <= 0:
 				cpu, memAreas = self.sim.cpu, client.memReadRequestMsg.memAreas
 				for memArea in memAreas:
-					memArea.readFromCpu(cpu)
+					memArea.flags = 0
+					try:
+						memArea.readFromCpu(cpu)
+					except AwlSimError as e:
+						if memArea.flags & (MemoryArea.FLG_ERR_READ |\
+								    MemoryArea.FLG_ERR_WRITE):
+							# We do not forward this as an exception.
+							# The client is supposed to check the error bits.
+							# Just continue as usual.
+							pass
+						else:
+							# This is a serious fault.
+							# Re-raise the exception.
+							raise
 				client.transceiver.send(client.memReadRequestMsg)
 				client.repetitionCount = client.repetitionFactor
 				if not client.repetitionFactor:
