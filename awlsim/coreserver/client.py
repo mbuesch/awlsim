@@ -159,6 +159,12 @@ class AwlSimClient(object):
 			# memory image. So just output an error message.
 			printError("Received synchronous memory request")
 
+	def handle_INSNSTATE(self, msg):
+		pass # Don't do anything by default
+
+	def __rx_INSNSTATE(self, msg):
+		self.handle_INSNSTATE(msg)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_REPLY		: __rx_NOP,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
@@ -168,12 +174,13 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_MAINTREQ		: __rx_MAINTREQ,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
+		AwlSimMessage.MSG_ID_INSNSTATE		: __rx_INSNSTATE,
 	}
 
 	def processMessages(self, blocking=False):
 		self.lastRxMsg = None
 		if not self.transceiver:
-			return
+			return False
 		try:
 			if blocking:
 				msg = self.transceiver.receiveBlocking()
@@ -181,7 +188,7 @@ class AwlSimClient(object):
 				msg = self.transceiver.receive()
 		except socket.error as e:
 			if e.errno == errno.EAGAIN:
-				return
+				return False
 			host, port = self.transceiver.sock.getpeername()
 			raise AwlSimError("AwlSimClient: "
 				"I/O error in connection to server '%s (port %d)':\n%s" %\
@@ -193,7 +200,7 @@ class AwlSimClient(object):
 				"Failed to receive message." %\
 				(host, port))
 		if not msg:
-			return
+			return False
 		self.lastRxMsg = msg
 		try:
 			handler = self.__msgRxHandlers[msg.msgId]
@@ -201,6 +208,7 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Received unsupported "
 				"message 0x%02X" % msg.msgId)
 		handler(self, msg)
+		return True
 
 	def sleep(self, seconds):
 		time.sleep(seconds)
@@ -210,9 +218,8 @@ class AwlSimClient(object):
 		now = monotonic_time()
 		end = now + waitTimeout
 		while now < end:
-			self.processMessages()
-			rxMsg = self.lastRxMsg
-			if rxMsg:
+			if self.processMessages():
+				rxMsg = self.lastRxMsg
 				if checkRxMsg(rxMsg):
 					return rxMsg
 			else:
@@ -296,6 +303,9 @@ class AwlSimClient(object):
 
 	def setCycleTimeLimit(self, seconds=5.0):
 		return self.__setOption("cycle_time_limit", float(seconds))
+
+	def setInsnStateDump(self, enable=True):
+		return self.__setOption("insn_state_dump", int(bool(enable)))
 
 	def getCpuSpecs(self):
 		if not self.transceiver:
