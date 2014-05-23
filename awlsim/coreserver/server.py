@@ -163,6 +163,8 @@ class AwlSimServer(object):
 		# Make a shortcut variable for RUN
 		self.__running = bool(runstate == self.STATE_RUN)
 
+		self.__insnSerial = 0
+
 	def __rebuildSelectReadList(self):
 		rlist = [ self.socket ]
 		rlist.extend(client.transceiver.sock for client in self.clients)
@@ -183,6 +185,7 @@ class AwlSimServer(object):
 		if not insn:
 			return
 		msg = AwlSimMessage_INSNSTATE(insn.getLineNr() & 0xFFFFFFFF,
+					      self.__insnSerial,
 					      0,
 					      cpu.statusWord.getWord(),
 					      cpu.accu1.get(),
@@ -194,6 +197,10 @@ class AwlSimServer(object):
 		for client in self.clients:
 			if client.insnStateDump:
 				client.transceiver.send(msg)
+		self.__insnSerial += 1
+
+	def __cpuCycleExitCallback(self, userData):
+		self.__insnSerial = 0
 
 	def __updateCpuBlockExitCallback(self):
 		if any(c.dumpInterval for c in self.clients):
@@ -206,6 +213,12 @@ class AwlSimServer(object):
 			self.sim.cpu.setPostInsnCallback(self.__cpuPostInsnCallback, None)
 		else:
 			self.sim.cpu.setPostInsnCallback(None)
+
+	def __updateCpuCycleExitCallback(self):
+		if any(c.insnStateDump for c in self.clients):
+			self.sim.cpu.setCycleExitCallback(self.__cpuCycleExitCallback, None)
+		else:
+			self.sim.cpu.setCycleExitCallback(None)
 
 	def __rx_PING(self, client, msg):
 		client.transceiver.send(AwlSimMessage_PONG())
@@ -276,6 +289,7 @@ class AwlSimServer(object):
 		elif msg.name == "insn_state_dump":
 			client.insnStateDump = msg.getBoolValue()
 			self.__updateCpuPostInsnCallback()
+			self.__updateCpuCycleExitCallback()
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 

@@ -506,6 +506,7 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	# Payload data struct:
 	#	AWL line number (32 bit)
+	#	Serial number. Reset to 0 on cycle exit. (32 bit)
 	#	Flags (16 bit)
 	#	CPU status word (16 bit)
 	#	CPU ACCU 1 (32 bit)
@@ -514,11 +515,12 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	#	CPU AR 2 (32 bit)
 	#	CPU DB register (16 bit)
 	#	CPU DI register (16 bit)
-	plDataStruct = struct.Struct(">IHHIIIIHH")
+	plDataStruct = struct.Struct(">IIHHIIIIHH")
 
-	def __init__(self, lineNr, flags, stw, accu1, accu2, ar1, ar2, db, di):
+	def __init__(self, lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE)
 		self.lineNr = lineNr
+		self.serial = serial
 		self.flags = flags
 		self.stw = stw
 		self.accu1 = accu1
@@ -529,7 +531,7 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 		self.di = di
 
 	def toBytes(self):
-		pl = self.plDataStruct.pack(self.lineNr,
+		pl = self.plDataStruct.pack(self.lineNr, self.serial,
 			self.flags, self.stw, self.accu1, self.accu2,
 			self.ar1, self.ar2, self.db, self.di)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
@@ -537,11 +539,11 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			lineNr, flags, stw, accu1, accu2, ar1, ar2, db, di =\
+			lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di =\
 				cls.plDataStruct.unpack_from(payload, 0)
 		except (struct.error, IndexError) as e:
 			raise TransferError("INSNSTATE: Invalid data format")
-		return cls(lineNr, flags, stw, accu1, accu2, ar1, ar2, db, di)
+		return cls(lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di)
 
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass
