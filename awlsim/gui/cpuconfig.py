@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU configuration widget
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,9 +26,9 @@ from awlsim.gui.util import *
 
 
 class CpuConfigDialog(QDialog):
-	def __init__(self, parent, sim):
+	def __init__(self, parent, simClient):
 		QDialog.__init__(self, parent)
-		self.sim = sim
+		self.simClient = simClient
 		self.setWindowTitle("CPU configuration")
 
 		self.__updateBlocked = 0
@@ -57,14 +57,14 @@ class CpuConfigDialog(QDialog):
 		self.closeButton = QPushButton("Close", self)
 		self.layout().addWidget(self.closeButton, 3, 1)
 
-		self.accuCombo.currentIndexChanged.connect(self.__accuConfigChanged)
-		self.mnemonicsCombo.currentIndexChanged.connect(self.__mnemonicsConfigChanged)
-		self.obTempCheckBox.stateChanged.connect(self.__obTempConfigChanged)
+		self.accuCombo.currentIndexChanged.connect(self.__configChanged)
+		self.mnemonicsCombo.currentIndexChanged.connect(self.__configChanged)
+		self.obTempCheckBox.stateChanged.connect(self.__configChanged)
 		self.closeButton.released.connect(self.accept)
 
-		self.loadConfig()
-
+#FIXME this should be loaded from .awlpro file
 	def loadConfig(self):
+		return#XXX
 		cpu = self.sim.getCPU()
 		specs = cpu.getSpecs()
 		self.__updateBlocked += 1
@@ -84,22 +84,19 @@ class CpuConfigDialog(QDialog):
 
 		self.__updateBlocked -= 1
 
-	def __accuConfigChanged(self):
-		if self.__updateBlocked:
-			return
-		specs = self.sim.getCPU().getSpecs()
-		index = self.accuCombo.currentIndex()
-		specs.setNrAccus(self.accuCombo.itemData(index))
+	def uploadToCPU(self):
+		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
+		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
+		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 
-	def __mnemonicsConfigChanged(self):
-		if self.__updateBlocked:
-			return
-		specs = self.sim.getCPU().getSpecs()
-		index = self.mnemonicsCombo.currentIndex()
-		specs.setConfiguredMnemonics(self.mnemonicsCombo.itemData(index))
+		specs = self.simClient.getCpuSpecs()
+		if specs:
+			specs.setConfiguredMnemonics(mnemonics)
+			specs.setNrAccus(nrAccus)
+			self.simClient.setCpuSpecs(specs)
+		self.simClient.enableOBTempPresets(obTempEnabled)
 
-	def __obTempConfigChanged(self):
+	def __configChanged(self):
 		if self.__updateBlocked:
 			return
-		cpu = self.sim.getCPU()
-		cpu.enableObTempPresets(self.obTempCheckBox.checkState() == Qt.Checked)
+		self.uploadToCPU()

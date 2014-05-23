@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI main window
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@ from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.cpuconfig import *
 
+from awlsim.coreserver.client import *
+
 
 class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)
@@ -35,8 +37,9 @@ class MainWidget(QWidget):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
 
-		self.sim = AwlSim()
-		self.sim.getCPU().enableExtendedInsns(enableExtInstructions)
+		self.__initSim(enableExtInstructions)
+
+		self.configDialog = CpuConfigDialog(self, self.simClient)
 
 		self.splitter = QSplitter(Qt.Horizontal)
 		self.layout().addWidget(self.splitter, 0, 0)
@@ -55,14 +58,18 @@ class MainWidget(QWidget):
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 		self.runStateChanged.connect(self.codeEdit.runStateChanged)
 
+	def __initSim(self, enableExtInsns):
+		self.simClient = GuiAwlSimClient()
+		self.simClient.enableExtendedInsns(enableExtInsns)
+
 	def isDirty(self):
 		return self.dirty
 
 	def __runStateChanged(self, newState):
 		self.runStateChanged.emit(newState)
 
-	def getSim(self):
-		return self.sim
+	def getSimClient(self):
+		return self.simClient
 
 	def getCodeEditWidget(self):
 		return self.codeEdit
@@ -122,8 +129,7 @@ class MainWidget(QWidget):
 			return self.saveFile(self.filename)
 
 	def cpuConfig(self):
-		dlg = CpuConfigDialog(self, self.sim)
-		dlg.exec_()
+		self.configDialog.exec_()
 
 class MainWindow(QMainWindow):
 	@classmethod
@@ -181,8 +187,8 @@ class MainWindow(QMainWindow):
 	def runEventLoop(self):
 		return self.qApplication.exec_()
 
-	def getSim(self):
-		return self.centralWidget().getSim()
+	def getSimClient(self):
+		return self.centralWidget().getSimClient()
 
 	def cpuRun(self):
 		self.centralWidget().getCpuWidget().run()

@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI edit widget
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,9 +78,9 @@ class CpuStatsEntry(object):
 	def __init__(self, stamp, statusWord, accu1, accu2):
 		self.stamp = stamp
 		self.obsolete = False
-		self.statusWord = statusWord.getWord()
-		self.accu1 = accu1.getDWord()
-		self.accu2 = accu2.getDWord()
+		self.statusWord = statusWord
+		self.accu1 = accu1
+		self.accu2 = accu2
 
 	@staticmethod
 	def getTextWidth():
@@ -103,6 +103,10 @@ class EditWidget(QPlainTextEdit):
 	def __init__(self, mainWidget):
 		QPlainTextEdit.__init__(self, mainWidget)
 		self.mainWidget = mainWidget
+
+		self.__aniTimer = QTimer(self)
+		self.__aniTimer.setSingleShot(False)
+		self.__aniTimer.timeout.connect(self.__animation)
 
 		self.__updateFonts()
 
@@ -135,8 +139,12 @@ class EditWidget(QPlainTextEdit):
 
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
-		if newState == CpuWidget.STATE_PARSE:
+		if newState == CpuWidget.STATE_INIT:
 			self.resetCpuStats()
+		if newState == CpuWidget.STATE_RUN:
+			self.__aniTimer.start(200)
+		else:
+			self.__aniTimer.stop()
 		if self.__cpuStatsEnabled:
 			self.cpuStatsWidget.update()
 		self.headerWidget.update()
@@ -167,37 +175,35 @@ class EditWidget(QPlainTextEdit):
 		self.headerWidget.update()
 		self.cpuStatsWidget.update()
 
-	def updateCpuStats_afterInsn(self, cpu):
-		insn = cpu.getCurrentInsn()
-		if not self.__cpuStatsEnabled or not insn:
-			return
-		self.__lineCpuStats[insn.getLineNr() - 1] =\
-			CpuStatsEntry(self.__cpuStatsStamp,
-				      cpu.getStatusWord(),
-				      cpu.getAccu(1),
-				      cpu.getAccu(2))
-		self.__cpuStatsCount += 1
-
-	def updateCpuStats_afterBlock(self, cpu):
-		if cpu.now >= self.__nextHdrUpdate:
-			self.__nextHdrUpdate = cpu.now + 0.2
-			self.__hdrAniStat = (self.__hdrAniStat + 1) %\
-					    len(self.__aniChars)
-			self.headerWidget.update()
+	def updateCpuStats_afterInsn(self, insnDumpMsg):
+		# insnDumpMsg => AwlSimMessage_INSNDUMP instance
 		if not self.__cpuStatsEnabled:
 			return
-		# Update the 'obsolete'-flag based on the timestamp
-		for ent in self.__lineCpuStats.values():
-			ent.obsolete = (ent.stamp != self.__cpuStatsStamp)
+		# Save the instruction dump
+		self.__lineCpuStats[insnDumpMsg.lineNr] =\
+			CpuStatsEntry(self.__cpuStatsStamp,
+				      insnDumpMsg.stw,
+				      insnDumpMsg.accu1,
+				      insnDumpMsg.accu2)
 		# Update the stats widget
+		self.__cpuStatsCount += 1
 		if self.__cpuStatsCount >= self.__cpuStatsUpdate:
 			self.__cpuStatsCount = 0
 			self.__cpuStatsUpdate = 128
 			self.cpuStatsWidget.update()
 
-	def updateCpuStats_afterCycle(self, cpu):
-		if self.__cpuStatsEnabled:
+		# First instruction in cycle?
+		if insnDumpMsg.serial == 0:
+			# Update the 'obsolete'-flag based on the timestamp
+			for ent in self.__lineCpuStats.values():
+				ent.obsolete = (ent.stamp != self.__cpuStatsStamp)
+			# Advance the timestamp
 			self.__cpuStatsStamp += 1
+
+	def __animation(self):
+		self.__hdrAniStat = (self.__hdrAniStat + 1) %\
+				    len(self.__aniChars)
+		self.headerWidget.update()
 
 	def __forwardWheelEvent(self, ev):
 		self.wheelEvent(ev)
@@ -294,7 +300,6 @@ class EditWidget(QPlainTextEdit):
 		else:
 			runText = {
 				CpuWidget.STATE_STOP:	"-- CPU STOPPED --",
-				CpuWidget.STATE_PARSE:	"Parsing code...",
 				CpuWidget.STATE_INIT:	"Initializing simulator...",
 				CpuWidget.STATE_LOAD:	"Loading code...",
 			}[self.__runStateCopy]
@@ -354,7 +359,7 @@ class EditWidget(QPlainTextEdit):
 		bottom = top + self.blockBoundingRect(block).height()
 
 		while block.isValid() and top <= ev.rect().bottom():
-			statsEnt = self.__lineCpuStats.get(bn)
+			statsEnt = self.__lineCpuStats.get(bn + 1)
 			if statsEnt and block.isVisible() and bottom >= ev.rect().top():
 				if statsEnt.obsolete:
 					p.setPen(Qt.darkGray)

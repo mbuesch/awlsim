@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU state widgets
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,16 +26,18 @@ from awlsim.gui.util import *
 
 
 class StateWindow(QWidget):
-	closed = Signal()
+	# Window-close signal
+	closed = Signal(QWidget)
+	# Config-change (address, type, etc...) signal
+	configChanged = Signal(QWidget)
 
-	def __init__(self, sim, parent=None):
+	def __init__(self, client, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
 		pixmap = QPixmap(16, 16)
 		pixmap.fill(QColor(0, 0, 192))
 		self.setWindowIcon(QIcon(pixmap))
-		self.sim = sim
-		self.storeRequests = []
+		self.client = client
 
 	def update(self):
 		size, hint = self.size(), self.minimumSizeHint()
@@ -43,23 +45,29 @@ class StateWindow(QWidget):
 		   size.height() < hint.height():
 			self.resize(hint)
 
-	# Queue a CPU store request for handling in PAA-push
-	def queueStoreRequest(self, storeRequest):
-		self.storeRequests.append(storeRequest)
+	# Get a list of MemoryArea instances for the memory
+	# areas covered by this window.
+	def getMemoryAreas(self):
+		return []
 
-	# Get the queued CPU store requests
-	def getQueuedStoreRequests(self):
-		queue = self.storeRequests
-		self.storeRequests = []
-		return queue
+	# Try to write memory to this window.
+	# The window might reject the request, if this memory
+	# doesn't belong to it.
+	def setMemory(self, memArea):
+		return False
+
+	def setMemories(self, memAreas):
+		for memArea in memAreas:
+			self.setMemory(memArea)
 
 	def closeEvent(self, ev):
-		self.closed.emit()
+		self.closed.emit(self)
 		ev.accept()
+		self.deleteLater()
 
 class State_CPU(StateWindow):
-	def __init__(self, sim, parent=None):
-		StateWindow.__init__(self, sim, parent)
+	def __init__(self, client, parent=None):
+		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("CPU Details")
 
 		self.label = QLabel(self)
@@ -72,11 +80,9 @@ class State_CPU(StateWindow):
 
 		self.label.setText("No CPU status available, yet.")
 
-	def update(self):
-		newText = str(self.sim.getCPU())
-		if newText:
-			self.label.setText(newText)
-		StateWindow.update(self)
+	def setDumpText(self, text):
+		self.label.setText(text)
+		self.update()
 
 class AbstractDisplayWidget(QWidget):
 	ADDRSPACE_E		= AwlOperator.MEM_E
@@ -91,13 +97,20 @@ class AbstractDisplayWidget(QWidget):
 		ADDRSPACE_DB	: ("DB", "Data block"),
 	}
 
+	addrspace2memarea = {
+		ADDRSPACE_E	: MemoryArea.TYPE_E,
+		ADDRSPACE_A	: MemoryArea.TYPE_A,
+		ADDRSPACE_M	: MemoryArea.TYPE_M,
+		ADDRSPACE_DB	: MemoryArea.TYPE_DB,
+	}
+
 	changed = Signal()
 
-	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
+	def __init__(self, client, addrSpace, addr, width, db, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
 
-		self.sim = sim
+		self.client = client
 		self.addrSpace = addrSpace
 		self.addr = addr
 		self.width = width
@@ -106,15 +119,11 @@ class AbstractDisplayWidget(QWidget):
 	def get(self):
 		pass
 
-	def update(self):
+	# Set a byte in this display widget.
+	# offset -> The relative byte offset
+	# value -> The byte value
+	def setByte(self, offset, value):
 		pass
-
-	def _createOperator(self):
-		dbNumber = None
-		if self.addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
-			dbNumber = self.db
-		return AwlOperator(self.addrSpace, self.width,
-				   AwlOffset(self.addr, dbNumber=dbNumber))
 
 	def _showValueValidity(self, valid):
 		if valid:
@@ -127,10 +136,10 @@ class AbstractDisplayWidget(QWidget):
 			self.setPalette(pal)
 
 class BitDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, db,
+	def __init__(self, client, addrSpace, addr, width, db,
 		     parent=None,
 		     displayPushButtons=True):
-		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+		AbstractDisplayWidget.__init__(self, client, addrSpace,
 					       addr, width, db, parent)
 
 		self.cbs = {}
@@ -173,21 +182,18 @@ class BitDisplayWidget(AbstractDisplayWidget):
 				value |= (1 << bitNr)
 		return value
 
-	def update(self):
-		try:
-			value = self.sim.getCPU().fetch(self._createOperator())
-		except AwlSimError as e:
-			self.setEnabled(False)
-			return
-		for bitNr in range(self.width):
-			if (value >> bitNr) & 1:
+	def setByte(self, offset, value):
+		bitBase = ((self.width // 8) - 1 - offset) * 8
+		for bitNr in range(bitBase, bitBase + 8):
+			if value & 1:
 				self.cbs[bitNr].setCheckState(Qt.Checked)
 			else:
 				self.cbs[bitNr].setCheckState(Qt.Unchecked)
+			value >>= 1
 
 class NumberDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, sim, base, addrSpace, addr, width, db, parent=None):
-		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+	def __init__(self, client, base, addrSpace, addr, width, db, parent=None):
+		AbstractDisplayWidget.__init__(self, client, addrSpace,
 					       addr, width, db, parent)
 
 		self.base = base
@@ -231,15 +237,16 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 			return self.displayedValue
 		return value
 
-	def update(self):
-		try:
-			value = self.sim.getCPU().fetch(self._createOperator())
-		except AwlSimError as e:
-			self.setEnabled(False)
-			return
-		if value == self.displayedValue:
-			return
-		self.displayedValue = value
+	def setByte(self, offset, value):
+		mask = ~(0xFF << (self.width - 8 - (offset * 8))) & 0xFFFFFFFF
+		value = (value << (self.width - 8 - (offset * 8))) & 0xFFFFFFFF
+		value = (self.displayedValue & mask) | value
+		if self.displayedValue != value:
+			self.displayedValue = value
+			self.__displayValue()
+
+	def __displayValue(self):
+		value = self.displayedValue
 		if self.base == 2:
 			string = []
 			for bitnr in range(self.width - 1, -1, -1):
@@ -279,23 +286,23 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 		self.line.setText(string)
 
 class HexDisplayWidget(NumberDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
-		NumberDisplayWidget.__init__(self, sim, 16, addrSpace,
+	def __init__(self, client, addrSpace, addr, width, db, parent=None):
+		NumberDisplayWidget.__init__(self, client, 16, addrSpace,
 					     addr, width, db, parent)
 
 class DecDisplayWidget(NumberDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
-		NumberDisplayWidget.__init__(self, sim, 10, addrSpace,
+	def __init__(self, client, addrSpace, addr, width, db, parent=None):
+		NumberDisplayWidget.__init__(self, client, 10, addrSpace,
 					     addr, width, db, parent)
 
 class BinDisplayWidget(NumberDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
-		NumberDisplayWidget.__init__(self, sim, 2, addrSpace,
+	def __init__(self, client, addrSpace, addr, width, db, parent=None):
+		NumberDisplayWidget.__init__(self, client, 2, addrSpace,
 					     addr, width, db, parent)
 
 class RealDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, sim, addrSpace, addr, width, db, parent=None):
-		AbstractDisplayWidget.__init__(self, sim, addrSpace,
+	def __init__(self, client, addrSpace, addr, width, db, parent=None):
+		AbstractDisplayWidget.__init__(self, client, addrSpace,
 					       addr, width, db, parent)
 
 		self.displayedValue = -1
@@ -328,24 +335,25 @@ class RealDisplayWidget(AbstractDisplayWidget):
 			return self.displayedValue
 		return value
 
-	def update(self):
-		if self.width == 32:
-			try:
-				value = self.sim.getCPU().fetch(self._createOperator())
-			except AwlSimError as e:
-				self.setEnabled(False)
-				return
-			if value == self.displayedValue:
-				return
+	def setByte(self, offset, value):
+		mask = ~(0xFF << (self.width - 8 - (offset * 8))) & 0xFFFFFFFF
+		value = (value << (self.width - 8 - (offset * 8))) & 0xFFFFFFFF
+		value = (self.displayedValue & mask) | value
+		if self.displayedValue != value:
 			self.displayedValue = value
+			self.__displayValue()
+
+	def __displayValue(self):
+		value = self.displayedValue
+		if self.width == 32:
 			string = str(dwordToPyFloat(value))
 		else:
 			string = "Not DWORD"
 		self.line.setText(string)
 
 class State_Mem(StateWindow):
-	def __init__(self, sim, addrSpace, parent=None):
-		StateWindow.__init__(self, sim, parent)
+	def __init__(self, client, addrSpace, parent=None):
+		StateWindow.__init__(self, client, parent)
 
 		self.addrSpace = addrSpace
 
@@ -428,28 +436,28 @@ class State_Mem(StateWindow):
 		self.setWindowTitle(longName)
 
 		if fmt == "cb":
-			self.contentWidget = BitDisplayWidget(self.sim,
+			self.contentWidget = BitDisplayWidget(self.client,
 							      self.addrSpace,
 							      addr, width, db, self,
 							      displayPushButtons=True)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "hex":
-			self.contentWidget = HexDisplayWidget(self.sim,
+			self.contentWidget = HexDisplayWidget(self.client,
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "dec":
-			self.contentWidget = DecDisplayWidget(self.sim,
+			self.contentWidget = DecDisplayWidget(self.client,
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "bin":
-			self.contentWidget = BinDisplayWidget(self.sim,
+			self.contentWidget = BinDisplayWidget(self.client,
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "real":
-			self.contentWidget = RealDisplayWidget(self.sim,
+			self.contentWidget = RealDisplayWidget(self.client,
 							       self.addrSpace,
 							       addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
@@ -460,35 +468,69 @@ class State_Mem(StateWindow):
 		self.update()
 		QTimer.singleShot(0, self.__finalizeRebuild)
 
+		self.configChanged.emit(self)
+
 	def __finalizeRebuild(self):
 		self.resize(self.sizeHint())
-
-	def __storeFailureCallback(self):
-		# A CPU store request related to this widget failed
-		self.contentWidget.setEnabled(False)
 
 	def __changed(self):
 		if self.__changeBlocked or not self.contentWidget:
 			return
 		value = self.contentWidget.get()
-		addr = self.addrSpin.value()
-		index = self.widthCombo.currentIndex()
-		width = self.widthCombo.itemData(index)
-		self.queueStoreRequest(StoreRequest(self.contentWidget._createOperator(),
-						    value,
-						    self.__storeFailureCallback))
+		width = self.widthCombo.itemData(self.widthCombo.currentIndex())
 
-	def update(self):
-		if self.contentWidget:
-			self.__changeBlocked += 1
-			self.contentWidget.update()
-			self.__changeBlocked -= 1
-		StateWindow.update(self)
+		memArea = self.__makeMemoryArea()
+		memArea.data = bytearray(width // 8)
+		WordPacker.toBytes(memArea.data, width, 0, value)
+
+		self.client.writeMemory((memArea,))
+
+	def __makeMemoryArea(self):
+		dbIndex = 0
+		if self.addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
+			dbIndex = self.dbSpin.value()
+		addr = self.addrSpin.value()
+		nrBits = self.widthCombo.itemData(self.widthCombo.currentIndex())
+
+		return MemoryArea(memType = AbstractDisplayWidget.addrspace2memarea[self.addrSpace],
+				  flags = 0,
+				  index = dbIndex,
+				  start = addr,
+				  length = nrBits // 8)
+
+	def getMemoryAreas(self):
+		return ( self.__makeMemoryArea(), )
+
+	def setMemory(self, memArea):
+		if not self.contentWidget:
+			return False
+		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
+			self.contentWidget.setEnabled(False)
+			return False
+		thisArea = self.__makeMemoryArea()
+		if not thisArea.overlapsWith(memArea):
+			return False
+		thisStart, thisEnd = thisArea.start, thisArea.start + thisArea.length - 1
+
+		self.__changeBlocked += 1
+		addr = memArea.start
+		for value in memArea.data:
+			if addr > thisEnd:
+				break
+			if addr >= thisStart:
+				self.contentWidget.setByte(addr - thisStart,
+							   value)
+			addr += 1
+		self.__changeBlocked -= 1
+		self.update()
+		return True
 
 class State_LCD(StateWindow):
-	def __init__(self, sim, parent=None):
-		StateWindow.__init__(self, sim, parent)
+	def __init__(self, client, parent=None):
+		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("LCD")
+
+		self.displayedValue = 0
 
 		self.addrSpin = QSpinBox(self)
 		self.addrSpin.setPrefix("A ")
@@ -538,21 +580,57 @@ class State_LCD(StateWindow):
 
 	def rebuild(self):
 		self.update()
+		self.configChanged.emit(self)
 
-	def update(self):
+	def __makeMemoryArea(self):
+		nrBits = self.widthCombo.itemData(self.widthCombo.currentIndex())
+		addr = self.addrSpin.value()
+
+		return MemoryArea(memType = MemoryArea.TYPE_A,
+				  flags = 0,
+				  index = 0,
+				  start = addr,
+				  length = nrBits // 8)
+
+	def getMemoryAreas(self):
+		return ( self.__makeMemoryArea(), )
+
+	def setMemory(self, memArea):
+		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
+			return False
+		thisArea = self.__makeMemoryArea()
+		if not thisArea.overlapsWith(memArea):
+			return False
+		thisStart, thisEnd = thisArea.start, thisArea.start + thisArea.length - 1
+
+		self.__changeBlocked += 1
+		addr = memArea.start
+		for value in memArea.data:
+			if addr > thisEnd:
+				break
+			if addr >= thisStart:
+				self.__setByte(addr - thisStart,
+					       value)
+			addr += 1
+		self.__changeBlocked -= 1
+		self.update()
+		return True
+
+	def __setByte(self, offset, value):
+		width = self.getDataWidth()
+		mask = ~(0xFF << (width - 8 - (offset * 8))) & 0xFFFFFFFF
+		value = (value << (width - 8 - (offset * 8))) & 0xFFFFFFFF
+		value = (self.displayedValue & mask) | value
+		if self.displayedValue != value:
+			self.displayedValue = value
+			self.__displayValue()
+
+	def __displayValue(self):
 		addr = self.addrSpin.value()
 		width = self.getDataWidth()
 		fmt = self.getFormat()
 		endian = self.getEndian()
-
-		try:
-			oper = AwlOperator(AwlOperator.MEM_A, width,
-					   AwlOffset(addr))
-			value = self.sim.getCPU().fetch(oper)
-		except AwlSimError as e:
-			MessageBox.handleAwlSimError(self,
-				"Failed to fetch memory", e)
-			return
+		value = self.displayedValue
 
 		if endian == "le":
 			if width == 16:
@@ -601,13 +679,10 @@ class State_LCD(StateWindow):
 				assert(0)
 		else:
 			assert(0)
-
 		self.__changeBlocked += 1
 		self.lcd.setDigitCount(len(value))
 		self.lcd.display(value)
 		self.__changeBlocked -= 1
-
-		StateWindow.update(self)
 
 class StateWorkspace(QWorkspace):
 	def __init__(self, parent=None):

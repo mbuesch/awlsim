@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI utility functions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.core.compat import *
 
 import sys
 from awlsim.core import *
+from awlsim.coreserver import *
 import awlsim.cython_helper
 
 if isPyPy or isJython:
@@ -102,11 +103,3 @@ class MessageBox(QMessageBox):
 		return cls.handleAwlSimError(parent = parent,
 					     description = None,
 					     exception = exception)
-
-class StoreRequest(object):
-	"""CPU store request buffer."""
-
-	def __init__(self, operator, value, failureCallback=None):
-		self.operator = operator
-		self.value = value
-		self.failureCallback = failureCallback
