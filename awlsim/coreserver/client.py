@@ -325,8 +325,13 @@ class AwlSimClient(object):
 	def setCycleTimeLimit(self, seconds=5.0):
 		return self.__setOption("cycle_time_limit", float(seconds))
 
-	def setInsnStateDump(self, enable=True):
-		return self.__setOption("insn_state_dump", int(bool(enable)))
+	# Set instruction state dumping.
+	# fromLine, toLine is the range of AWL line numbers for which
+	# dumping is enabled.
+	# If fromLine=0, dumping is disabled.
+	def setInsnStateDump(self, fromLine=1, toLine=0x7FFFFFFF):
+		return self.__setOption("insn_state_dump",
+					"%d-%d" % (fromLine, toLine))
 
 	def getCpuSpecs(self):
 		if not self.transceiver:

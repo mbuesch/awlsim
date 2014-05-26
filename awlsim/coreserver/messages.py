@@ -274,6 +274,9 @@ class AwlSimMessage_SET_OPT(AwlSimMessage):
 		self.name = name
 		self.value = value
 
+	def getStrValue(self):
+		return self.value
+
 	def getIntValue(self):
 		try:
 			return int(self.value)
