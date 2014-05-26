@@ -46,7 +46,7 @@ run_awl_test()
 
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$rootdir/awlsimcli" --quiet --onecycle --extended-insns \
-		--hardware dummy:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
+		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 		--cycle-time 60 \
 		"$@" \
 		"$awl" ||\
