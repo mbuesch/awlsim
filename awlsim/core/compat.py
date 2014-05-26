@@ -61,3 +61,9 @@ if isPy2Compat:
 # Compat wrapper for monotonic time
 import time
 monotonic_time = getattr(time, "monotonic", time.clock)
+
+# BlockingIOError dummy
+try:
+	BlockingIOError
+except NameError:
+	class BlockingIOError(object): pass

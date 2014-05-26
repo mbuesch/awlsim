@@ -602,8 +602,10 @@ class AwlSimMessageTransceiver(object):
 		while offset < len(data):
 			try:
 				offset += self.sock.send(data[offset : ])
-			except socket.error as e:
-				if e.errno != errno.EAGAIN:
+			except (socket.error, BlockingIOError) as e:
+				if e.errno != errno.EAGAIN and\
+				   e.errno != errno.EWOULDBLOCK and\
+				   not isinstance(e, BlockingIOError):
 					raise TransferError(str(e))
 
 	def receive(self, timeout):
@@ -614,8 +616,10 @@ class AwlSimMessageTransceiver(object):
 		if len(self.buf) < hdrLen:
 			try:
 				data = self.sock.recv(hdrLen - len(self.buf))
-			except socket.error as e:
-				if e.errno == errno.EWOULDBLOCK:
+			except (socket.error, BlockingIOError) as e:
+				if e.errno == errno.EAGAIN or\
+				   e.errno == errno.EWOULDBLOCK or\
+				   isinstance(e, BlockingIOError):
 					return None
 				raise
 			if not data:

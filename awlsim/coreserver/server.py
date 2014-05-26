@@ -521,8 +521,9 @@ class AwlSimServer(object):
 		try:
 			clientSock, addrInfo = self.socket.accept()
 			clientHost, clientPort = addrInfo[:2]
-		except socket.error as e:
-			if e.errno == errno.EWOULDBLOCK or\
+		except (socket.error, BlockingIOError) as e:
+			if isinstance(e, BlockingIOError) or\
+			   e.errno == errno.EWOULDBLOCK or\
 			   e.errno == errno.EAGAIN:
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))

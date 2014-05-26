@@ -202,9 +202,11 @@ class AwlSimClient(object):
 			return False
 		try:
 			msg = self.transceiver.receive(timeout)
-		except socket.error as e:
+		except (socket.error, BlockingIOError) as e:
 			if isinstance(e, socket.timeout) or\
-			   e.errno == errno.EAGAIN:
+			   isinstance(e, BlockingIOError) or\
+			   e.errno == errno.EAGAIN or\
+			   e.errno == errno.EWOULDBLOCK:
 				return False
 			host, port = self.transceiver.sock.getpeername()
 			print(type(e))
