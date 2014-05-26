@@ -109,23 +109,26 @@ class AwlSimServer(object):
 		If 'forkInterpreter' is not None, spawn a subprocess.
 		If 'forkInterpreter' is None, run the server in this process."""
 
-		environment = {
-			AwlSimServer.ENV_MAGIC		: AwlSimServer.ENV_MAGIC,
-			"AWLSIM_CORESERVER_HOST"	: str(listenHost),
-			"AWLSIM_CORESERVER_PORT"	: str(listenPort),
-			"AWLSIM_CORESERVER_LOGLEVEL"	: str(Logging.getLoglevel()),
-		}
+		# Prepare the environment for the server process.
+		# Inherit from the starter and add awlsim specific variables.
+		env = dict(os.environ)
+		env[AwlSimServer.ENV_MAGIC]		= AwlSimServer.ENV_MAGIC
+		env["AWLSIM_CORESERVER_HOST"]		= str(listenHost)
+		env["AWLSIM_CORESERVER_PORT"]		= str(listenPort)
+		env["AWLSIM_CORESERVER_LOGLEVEL"]	= str(Logging.getLoglevel())
 
 		if forkInterpreter is None:
-			return cls._execute(environment)
+			# Do not fork. Just run the server in this process.
+			return cls._execute(env)
 		else:
+			# Fork a new interpreter process and run server.py as module.
 			interp = cls.findExecutable(forkInterpreter)
 			printInfo("Forking awlsim core server with interpreter '%s'" % interp)
 			if not interp:
 				raise AwlSimError("Failed to find interpreter "
 						  "executable '%s'" % forkInterpreter)
 			serverProcess = PopenWrapper([interp, "-m", "awlsim.coreserver.server"],
-						     env = environment,
+						     env = env,
 						     shell = False)
 			return serverProcess
 
