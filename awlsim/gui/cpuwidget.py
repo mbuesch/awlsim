@@ -183,7 +183,7 @@ class CpuWidget(QWidget):
 			for port in range(firstPort, lastPort + 1):
 				if not AwlSimServer.portIsUnused(host, port):
 					continue
-				client.spawnServer(interpreter = ["pypy", sys.executable, "python", "python3"],
+				client.spawnServer(interpreter = ["pypy", sys.executable, "python3", "python2", "python", "py"],
 						   listenHost = host,
 						   listenPort = port)
 				client.connectToServer(host = host,
@@ -220,9 +220,10 @@ class CpuWidget(QWidget):
 		try:
 			# The main loop
 			while self.state == self.STATE_RUN:
-				#TODO: We should block on the server socket, with timeout.
-				while client.processMessages(False):
+				# Receive messages, until we hit a timeout
+				while client.processMessages(0.1):
 					pass
+				# Process GUI events
 				QApplication.processEvents(QEventLoop.AllEvents)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
