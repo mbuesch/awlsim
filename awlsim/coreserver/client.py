@@ -113,7 +113,7 @@ class AwlSimClient(object):
 		# Ping the server
 		try:
 			self.transceiver.send(AwlSimMessage_PING())
-			msg = self.transceiver.receiveBlocking(timeoutSec = 5.0)
+			msg = self.transceiver.receive(timeout = 5.0)
 			if not msg:
 				raise AwlSimError("AwlSimClient: Server did not "
 					"respond to PING request.")
@@ -192,22 +192,26 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_INSNSTATE		: __rx_INSNSTATE,
 	}
 
-	def processMessages(self, blocking=False):
+	# Main message processing
+	# timeout: None -> Blocking. Block until packet is received.
+	#          0 -> No timeout (= Nonblocking). Return immediately.
+	#          x -> Timeout, in seconds.
+	def processMessages(self, timeout=None):
 		self.lastRxMsg = None
 		if not self.transceiver:
 			return False
 		try:
-			if blocking:
-				msg = self.transceiver.receiveBlocking()
-			else:
-				msg = self.transceiver.receive()
+			msg = self.transceiver.receive(timeout)
 		except socket.error as e:
-			if e.errno == errno.EAGAIN:
+			if isinstance(e, socket.timeout) or\
+			   e.errno == errno.EAGAIN:
 				return False
 			host, port = self.transceiver.sock.getpeername()
+			print(type(e))
 			raise AwlSimError("AwlSimClient: "
-				"I/O error in connection to server '%s (port %d)':\n%s" %\
-				(host, port, str(e)))
+				"I/O error in connection to server '%s (port %d)':\n"
+				"%s (errno = %s)" %\
+				(host, port, str(e), str(e.errno)))
 		except (AwlSimMessageTransceiver.RemoteEndDied, TransferError) as e:
 			host, port = self.transceiver.sock.getpeername()
 			raise AwlSimError("AwlSimClient: "

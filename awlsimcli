@@ -253,7 +253,7 @@ def runWithServerBackend(inputFile):
 			if not opt_noCpuDump:
 				clearConsole()
 			while True:
-				client.processMessages(True)
+				client.processMessages(None)
 		finally:
 			if not opt_noCpuDump and not opt_quiet:
 				clearConsole()

@@ -380,7 +380,7 @@ class AwlSimServer(object):
 
 	def __handleClientComm(self, client):
 		try:
-			msg = client.transceiver.receive()
+			msg = client.transceiver.receive(0.0)
 		except AwlSimMessageTransceiver.RemoteEndDied as e:
 			printInfo("AwlSimServer: Client '%s (port %d)' died" %\
 				(client.host, client.port))

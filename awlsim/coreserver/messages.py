@@ -579,7 +579,8 @@ class AwlSimMessageTransceiver(object):
 		self.seq = None
 		self.payloadLen = None
 
-		self.sock.setblocking(False)
+		self.__timeout = None
+		self.sock.settimeout(self.__timeout)
 
 	def shutdown(self):
 		if self.sock:
@@ -605,7 +606,10 @@ class AwlSimMessageTransceiver(object):
 				if e.errno != errno.EAGAIN:
 					raise TransferError(str(e))
 
-	def receive(self):
+	def receive(self, timeout):
+		if timeout != self.__timeout:
+			self.sock.settimeout(timeout)
+			self.__timeout = timeout
 		hdrLen = AwlSimMessage.HDR_LENGTH
 		if len(self.buf) < hdrLen:
 			try:
@@ -648,14 +652,4 @@ class AwlSimMessageTransceiver(object):
 		msg = cls.fromBytes(self.buf[hdrLen : ])
 		msg.seq = self.seq
 		self.buf, self.msgId, self.seq, self.payloadLen = b"", None, None, None
-		return msg
-
-	def receiveBlocking(self, timeoutSec=None):
-		try:
-			self.sock.settimeout(timeoutSec)
-			msg = self.receive()
-		except socket.timeout:
-			return None
-		finally:
-			self.sock.setblocking(False)
 		return msg
