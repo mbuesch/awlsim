@@ -280,9 +280,9 @@ class CpuWidget(QWidget):
 			client = self.mainWidget.getSimClient()
 			if en:
 				fromLine, toLine = self.mainWidget.codeEdit.getVisibleLineRange()
-				client.setInsnStateDump(fromLine, toLine)
+				client.setInsnStateDump(fromLine, toLine, sync=False)
 			else:
-				client.setInsnStateDump(0, 0)
+				client.setInsnStateDump(0, 0, sync=False)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to setup instruction dumping", e)
