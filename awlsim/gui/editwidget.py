@@ -90,7 +90,7 @@ class CpuStatsEntry(object):
 
 	def __repr__(self):
 		if self.pruned:
-			return "..."
+			return "[ ... ]"
 		stw = []
 		for i in range(S7StatusWord.NR_BITS - 1, -1, -1):
 			stw.append('1' if (self.statusWord & (1 << i)) else '0')
@@ -154,20 +154,27 @@ class EditWidget(QPlainTextEdit):
 			self.cpuStatsWidget.update()
 		self.headerWidget.update()
 
-	def getVisibleLineRange(self):
+	def __eachVisibleLine(self):
 		block = self.firstVisibleBlock()
 		top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
 		bottom = top + self.blockBoundingRect(block).height()
 
-		firstVisibleLine = block.blockNumber() + 1
-		lastVisibleLine = firstVisibleLine
-		while block.isValid() and top <= self.viewport().rect().bottom():
-			if block.isVisible():
-				lastVisibleLine = block.blockNumber() + 1
+		while block.isValid() and\
+		      block.isVisible() and\
+		      top <= self.viewport().rect().bottom():
+			yield (block.blockNumber() + 1, top)
 			block = block.next()
 			top = bottom
 			bottom = top + self.blockBoundingRect(block).height()
 
+	def getVisibleLineRange(self):
+		firstVisibleLine = lastVisibleLine = 0
+		for lineNr, yOffset in self.__eachVisibleLine():
+			if firstVisibleLine == 0 or\
+			   lineNr < firstVisibleLine:
+				firstVisibleLine = lineNr
+			if lineNr > lastVisibleLine:
+				lastVisibleLine = lineNr
 		return firstVisibleLine, lastVisibleLine
 
 	def __updateFonts(self):
@@ -322,6 +329,12 @@ class EditWidget(QPlainTextEdit):
 		QPlainTextEdit.resizeEvent(self, ev)
 		self.__updateGeo()
 
+	__runStateToText = {
+		CpuWidget.STATE_STOP	: "-- CPU STOPPED --",
+		CpuWidget.STATE_INIT	: "Initializing simulator...",
+		CpuWidget.STATE_LOAD	: "Loading code...",
+	}
+
 	def __repaintHeaderWidget(self, ev):
 		p = self.headerWidget.getPainter()
 		p.fillRect(ev.rect(), Qt.lightGray)
@@ -329,11 +342,7 @@ class EditWidget(QPlainTextEdit):
 		if self.__runStateCopy == CpuWidget.STATE_RUN:
 			runText = self.__aniChars[self.__hdrAniStat]
 		else:
-			runText = {
-				CpuWidget.STATE_STOP:	"-- CPU STOPPED --",
-				CpuWidget.STATE_INIT:	"Initializing simulator...",
-				CpuWidget.STATE_LOAD:	"Loading code...",
-			}[self.__runStateCopy]
+			runText = self.__runStateToText[self.__runStateCopy]
 		p.drawText(5, 5,
 			   self.__charWidth * len(runText) + 1,
 			   self.headerWidget.height(),
@@ -360,22 +369,12 @@ class EditWidget(QPlainTextEdit):
 		p.fillRect(rect, Qt.white)
 		p.setPen(Qt.black)
 
-		block = self.firstVisibleBlock()
-		bn = block.blockNumber()
-		top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-		bottom = top + self.blockBoundingRect(block).height()
-
-		while block.isValid() and top <= ev.rect().bottom():
-			if block.isVisible() and bottom >= ev.rect().top():
-				p.drawText(-5, top,
-					   self.lineNumWidget.width(),
-					   self.__charHeight,
-					   Qt.AlignRight,
-					   str(bn + 1) + ':')
-			block = block.next()
-			top = bottom
-			bottom = top + self.blockBoundingRect(block).height()
-			bn += 1
+		for lineNr, yOffset in self.__eachVisibleLine():
+			p.drawText(-5, yOffset,
+				   self.lineNumWidget.width(),
+				   self.__charHeight,
+				   Qt.AlignRight,
+				   "%d:" % lineNr)
 
 	def __repaintCpuStatsWidget(self, ev):
 		p = self.cpuStatsWidget.getPainter()
@@ -384,27 +383,18 @@ class EditWidget(QPlainTextEdit):
 		rect.setWidth(3)
 		p.fillRect(rect, Qt.white)
 
-		block = self.firstVisibleBlock()
-		bn = block.blockNumber()
-		top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-		bottom = top + self.blockBoundingRect(block).height()
-
-		while block.isValid() and top <= ev.rect().bottom():
-			statsEnt = self.__lineCpuStats.get(bn + 1)
-			if statsEnt and block.isVisible() and bottom >= ev.rect().top():
+		for lineNr, yOffset in self.__eachVisibleLine():
+			statsEnt = self.__lineCpuStats.get(lineNr)
+			if statsEnt:
 				if statsEnt.obsolete:
 					p.setPen(Qt.darkGray)
 				else:
 					p.setPen(Qt.black)
-				p.drawText(5, top,
+				p.drawText(5, yOffset,
 					   self.cpuStatsWidget.width(),
 					   self.__charHeight,
 					   Qt.AlignLeft,
 					   str(statsEnt))
-			block = block.next()
-			top = bottom
-			bottom = top + self.blockBoundingRect(block).height()
-			bn += 1
 
 	def __textChanged(self):
 		self.__updateFonts()
