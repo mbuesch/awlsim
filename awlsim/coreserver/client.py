@@ -297,13 +297,16 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 		return True
 
-	def __setOption(self, name, value):
+	def __setOption(self, name, value, sync=True):
 		if not self.transceiver:
 			return False
 		msg = AwlSimMessage_SET_OPT(name, str(value))
-		status = self.__sendAndWaitFor_REPLY(msg)
-		if status != AwlSimMessage_REPLY.STAT_OK:
-			raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
+		if sync:
+			status = self.__sendAndWaitFor_REPLY(msg)
+			if status != AwlSimMessage_REPLY.STAT_OK:
+				raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
+		else:
+			self.transceiver.send(msg)
 		return True
 
 	def setLoglevel(self, level=Logging.LOG_INFO):
@@ -326,9 +329,10 @@ class AwlSimClient(object):
 	# fromLine, toLine is the range of AWL line numbers for which
 	# dumping is enabled.
 	# If fromLine=0, dumping is disabled.
-	def setInsnStateDump(self, fromLine=1, toLine=0x7FFFFFFF):
+	def setInsnStateDump(self, fromLine=1, toLine=0x7FFFFFFF, sync=True):
 		return self.__setOption("insn_state_dump",
-					"%d-%d" % (fromLine, toLine))
+					"%d-%d" % (fromLine, toLine),
+					sync = sync)
 
 	def getCpuSpecs(self):
 		if not self.transceiver:
