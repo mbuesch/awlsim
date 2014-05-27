@@ -79,6 +79,7 @@ class CpuStatsEntry(object):
 	def __init__(self, stamp, statusWord, accu1, accu2):
 		self.stamp = stamp
 		self.obsolete = False
+		self.pruned = False
 		self.statusWord = statusWord
 		self.accu1 = accu1
 		self.accu2 = accu2
@@ -88,6 +89,8 @@ class CpuStatsEntry(object):
 		return 11 + 2 + 8 + 2 + 8
 
 	def __repr__(self):
+		if self.pruned:
+			return "..."
 		stw = []
 		for i in range(S7StatusWord.NR_BITS - 1, -1, -1):
 			stw.append('1' if (self.statusWord & (1 << i)) else '0')
@@ -219,6 +222,13 @@ class EditWidget(QPlainTextEdit):
 			# Advance the timestamp
 			self.__cpuStatsStamp += 1
 
+	def __pruneInvisibleCpuStats(self):
+		firstLine, lastLine = self.getVisibleLineRange()
+		for line, stats in self.__lineCpuStats.items():
+			if line < firstLine or line > lastLine:
+				stats.pruned = True
+				stats.obsolete = True
+
 	def __animation(self):
 		self.__hdrAniStat = (self.__hdrAniStat + 1) %\
 				    len(self.__aniChars)
@@ -293,6 +303,7 @@ class EditWidget(QPlainTextEdit):
 			self.headerWidget.scroll(0, dy)
 			self.lineNumWidget.scroll(0, dy)
 			self.cpuStatsWidget.scroll(0, dy)
+			self.__pruneInvisibleCpuStats()
 			self.visibleRangeChanged.emit()
 			return
 		self.headerWidget.update(0, rect.y(),
