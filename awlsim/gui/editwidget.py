@@ -26,6 +26,13 @@ from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 
 
+def _setFontParams(font):
+	font.setFamily("courier")
+	font.setPointSize(10)
+	font.setKerning(False)
+	font.setFixedPitch(True)
+	font.setStyleHint(QFont.TypeWriter, QFont.PreferBitmap)
+
 class EditSubWidget(QWidget):
 	needRepaint = Signal(QPaintEvent)
 	wasScrolled = Signal(QWheelEvent)
@@ -44,10 +51,7 @@ class EditSubWidget(QWidget):
 	def getPainter(self):
 		p = QPainter(self)
 		font = p.font()
-		font.setFamily("Mono")
-		font.setKerning(False)
-		font.setFixedPitch(True)
-		font.setStyleStrategy(QFont.PreferBitmap)
+		_setFontParams(font)
 		p.setFont(font)
 		return p
 
@@ -73,7 +77,7 @@ class CpuStatsSubWidget(EditSubWidget):
 		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
 
 	def getBanner(self):
-		return "STW          ACCU 1    ACCU 2"
+		return "STW          ACCU 1    ACCU 2  "
 
 class CpuStatsEntry(object):
 	def __init__(self, stamp, statusWord, accu1, accu2):
@@ -83,10 +87,6 @@ class CpuStatsEntry(object):
 		self.statusWord = statusWord
 		self.accu1 = accu1
 		self.accu2 = accu2
-
-	@staticmethod
-	def getTextWidth():
-		return 11 + 2 + 8 + 2 + 8
 
 	def __repr__(self):
 		if self.pruned:
@@ -179,12 +179,13 @@ class EditWidget(QPlainTextEdit):
 
 	def __updateFonts(self):
 		fmt = self.currentCharFormat()
-		fmt.setFontFamily("Mono")
-		fmt.setFontKerning(False)
-		fmt.setFontFixedPitch(True)
-		fmt.setFontStyleStrategy(QFont.PreferBitmap)
+		font = fmt.font()
+		_setFontParams(font)
+		fmt.setFont(font)
 		self.setCurrentCharFormat(fmt)
-		self.__charWidth = self.fontMetrics().width('X')
+		font = self.font()
+		_setFontParams(font)
+		self.setFont(font)
 		self.__charHeight = self.fontMetrics().height()
 
 	def enableCpuStats(self, enabled=True, force=False):
@@ -249,12 +250,14 @@ class EditWidget(QPlainTextEdit):
 		while bcnt > 9:
 			digi, bcnt = digi + 1, bcnt // 10
 		digi += 1 # colon
-		return 5 + 5 + digi * self.__charWidth
+		metr = self.lineNumWidget.fontMetrics()
+		return 5 + 5 + metr.width("_" * digi)
 
 	def cpuStatsWidgetWidth(self):
 		if not self.__cpuStatsEnabled:
 			return 0
-		return 5 + 5 + CpuStatsEntry.getTextWidth() * self.__charWidth
+		metr = self.cpuStatsWidget.fontMetrics()
+		return 5 + 5 + metr.width(self.cpuStatsWidget.getBanner().replace(" ", "_"))
 
 	def headerHeight(self):
 		return 5 + 5 + self.__charHeight
@@ -343,8 +346,9 @@ class EditWidget(QPlainTextEdit):
 			runText = self.__aniChars[self.__hdrAniStat]
 		else:
 			runText = self.__runStateToText[self.__runStateCopy]
+		metr = self.headerWidget.fontMetrics()
 		p.drawText(5, 5,
-			   self.__charWidth * len(runText) + 1,
+			   metr.width(runText.replace(" ", "_")),
 			   self.headerWidget.height(),
 			   Qt.AlignLeft,
 			   runText)
