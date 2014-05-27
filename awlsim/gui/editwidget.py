@@ -36,6 +36,7 @@ class EditSubWidget(QWidget):
 
 	def paintEvent(self, ev):
 		self.needRepaint.emit(ev)
+		ev.accept()
 
 	def wheelEvent(self, ev):
 		self.wasScrolled.emit(ev)
@@ -97,6 +98,7 @@ class CpuStatsEntry(object):
 
 class EditWidget(QPlainTextEdit):
 	codeChanged = Signal()
+	visibleRangeChanged = Signal()
 
 	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
 
@@ -122,7 +124,7 @@ class EditWidget(QPlainTextEdit):
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
-		self.enableCpuStats(False)
+		self.enableCpuStats(enabled=False, force=True)
 		self.resetCpuStats(True)
 
 		self.__textChangeBlocked = 0
@@ -149,6 +151,22 @@ class EditWidget(QPlainTextEdit):
 			self.cpuStatsWidget.update()
 		self.headerWidget.update()
 
+	def getVisibleLineRange(self):
+		block = self.firstVisibleBlock()
+		top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+		bottom = top + self.blockBoundingRect(block).height()
+
+		firstVisibleLine = block.blockNumber() + 1
+		lastVisibleLine = firstVisibleLine
+		while block.isValid() and top <= self.viewport().rect().bottom():
+			if block.isVisible():
+				lastVisibleLine = block.blockNumber() + 1
+			block = block.next()
+			top = bottom
+			bottom = top + self.blockBoundingRect(block).height()
+
+		return firstVisibleLine, lastVisibleLine
+
 	def __updateFonts(self):
 		fmt = self.currentCharFormat()
 		fmt.setFontFamily("Mono")
@@ -159,10 +177,11 @@ class EditWidget(QPlainTextEdit):
 		self.__charWidth = self.fontMetrics().width('X')
 		self.__charHeight = self.fontMetrics().height()
 
-	def enableCpuStats(self, enabled=True):
-		self.__cpuStatsEnabled = enabled
-		self.__updateMargins()
-		self.__updateGeo()
+	def enableCpuStats(self, enabled=True, force=False):
+		if force or enabled != self.__cpuStatsEnabled:
+			self.__cpuStatsEnabled = enabled
+			self.__updateMargins()
+			self.__updateGeo()
 
 	def resetCpuStats(self, force=False):
 		if not force and not self.__lineCpuStats:
@@ -274,6 +293,7 @@ class EditWidget(QPlainTextEdit):
 			self.headerWidget.scroll(0, dy)
 			self.lineNumWidget.scroll(0, dy)
 			self.cpuStatsWidget.scroll(0, dy)
+			self.visibleRangeChanged.emit()
 			return
 		self.headerWidget.update(0, rect.y(),
 			self.headerWidget.width(),

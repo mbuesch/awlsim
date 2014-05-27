@@ -49,6 +49,8 @@ class CpuWidget(QWidget):
 		client.haveInsnDump.connect(self.mainWidget.codeEdit.updateCpuStats_afterInsn)
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
 
+		self.mainWidget.codeEdit.visibleRangeChanged.connect(self.__updateOnlineViewState)
+
 		group = QGroupBox("CPU status", self)
 		group.setLayout(QGridLayout(group))
 		self.runButton = QRadioButton("RUN", group)
@@ -274,5 +276,14 @@ class CpuWidget(QWidget):
 	def __updateOnlineViewState(self):
 		en = self.onlineViewCheckBox.checkState() == Qt.Checked
 		self.mainWidget.codeEdit.enableCpuStats(en)
-		client = self.mainWidget.getSimClient()
-		client.setInsnStateDump(en)
+		try:
+			client = self.mainWidget.getSimClient()
+			if en:
+				fromLine, toLine = self.mainWidget.codeEdit.getVisibleLineRange()
+				client.setInsnStateDump(fromLine, toLine)
+			else:
+				client.setInsnStateDump(0, 0)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to setup instruction dumping", e)
+			return
