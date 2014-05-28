@@ -59,16 +59,37 @@ class MemoryArea(object):
 		raise exception
 
 	def __read_E(self, cpu):
-		self.data = bytes(cpu.inputs[self.start : self.start + self.length])
+		end = self.start + self.length
+		if end > len(cpu.inputs):
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read range error")
+			)
+		self.data = bytes(cpu.inputs[self.start : end])
 
 	def __read_A(self, cpu):
-		self.data = bytes(cpu.outputs[self.start : self.start + self.length])
+		end = self.start + self.length
+		if end > len(cpu.outputs):
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read range error")
+			)
+		self.data = bytes(cpu.outputs[self.start : end])
 
 	def __read_M(self, cpu):
-		self.data = bytes(cpu.flags[self.start : self.start + self.length])
+		end = self.start + self.length
+		if end > len(cpu.flags):
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read range error")
+			)
+		self.data = bytes(cpu.flags[self.start : end])
 
 	def __read_L(self, cpu):
-		self.data = bytes(cpu.callStackTop.localdata[self.start : self.start + self.length])
+		localdata = cpu.callStackTop.localdata
+		end = self.start + self.length
+		if end > len(localdata):
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read range error")
+			)
+		self.data = bytes(localdata[self.start : end])
 
 	def __read_DB(self, cpu):
 		try:
@@ -83,7 +104,13 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Read access to "
 				"read-protected DB %d" % self.index)
 			)
-		self.data = bytes(db.structInstance.dataBytes[self.start : self.start + self.length])
+		dataBytes = db.structInstance.dataBytes
+		end = self.start + self.length
+		if end > len(dataBytes):
+			self.__raiseReadErr(
+				AwlSimError("MemoryArea: Read range error")
+			)
+		self.data = bytes(dataBytes[self.start : end])
 
 	def __read_T(self, cpu):
 		try:
@@ -137,13 +164,28 @@ class MemoryArea(object):
 	}
 
 	def __write_E(self, cpu):
-		cpu.inputs[self.start : self.start + self.length] = self.data
+		end = self.start + self.length
+		if end > len(cpu.inputs):
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Write range error")
+			)
+		cpu.inputs[self.start : end] = self.data
 
 	def __write_A(self, cpu):
-		cpu.outputs[self.start : self.start + self.length] = self.data
+		end = self.start + self.length
+		if end > len(cpu.outputs):
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Write range error")
+			)
+		cpu.outputs[self.start : end] = self.data
 
 	def __write_M(self, cpu):
-		cpu.flags[self.start : self.start + self.length] = self.data
+		end = self.start + self.length
+		if end > len(cpu.flags):
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Write range error")
+			)
+		cpu.flags[self.start : end] = self.data
 
 	def __write_DB(self, cpu):
 		try:
@@ -158,7 +200,13 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Write access to "
 				"write-protected DB %d" % self.index)
 			)
-		db.structInstance.dataBytes[self.start : self.start + self.length] = self.data
+		dataBytes = db.structInstance.dataBytes
+		end = self.start + self.length
+		if end > len(dataBytes):
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Write range error")
+			)
+		dataBytes[self.start : end] = self.data
 
 	__writeHandlers = {
 		TYPE_E		: __write_E,
