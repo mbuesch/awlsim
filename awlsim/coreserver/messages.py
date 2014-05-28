@@ -582,8 +582,17 @@ class AwlSimMessageTransceiver(object):
 		self.seq = None
 		self.payloadLen = None
 
-		self.__timeout = None
-		self.sock.settimeout(self.__timeout)
+		try:
+			self.__timeout = None
+			self.sock.settimeout(self.__timeout)
+
+			if self.sock.family in (socket.AF_INET, socket.AF_INET6) and\
+			   self.sock.type == socket.SOCK_STREAM:
+				self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
+			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
+		except socket.error as e:
+			raise AwlSimError("Failed to initialize socket: %s" % str(e))
 
 	def shutdown(self):
 		if self.sock:
@@ -597,7 +606,11 @@ class AwlSimMessageTransceiver(object):
 				pass
 			self.sock = None
 
-	def send(self, msg):
+	def send(self, msg, timeout=None):
+		if timeout != self.__timeout:
+			self.sock.settimeout(timeout)
+			self.__timeout = timeout
+
 		msg.seq = self.txSeqCount
 		self.txSeqCount = (self.txSeqCount + 1) & 0xFFFF
 
@@ -608,13 +621,15 @@ class AwlSimMessageTransceiver(object):
 			except (socket.error, BlockingIOError) as e:
 				if e.errno != errno.EAGAIN and\
 				   e.errno != errno.EWOULDBLOCK and\
-				   not isinstance(e, BlockingIOError):
+				   not isinstance(e, BlockingIOError) and\
+				   not isinstance(e, socket.timeout):
 					raise TransferError(str(e))
 
-	def receive(self, timeout):
+	def receive(self, timeout=0.0):
 		if timeout != self.__timeout:
 			self.sock.settimeout(timeout)
 			self.__timeout = timeout
+
 		hdrLen = AwlSimMessage.HDR_LENGTH
 		if len(self.buf) < hdrLen:
 			try:
