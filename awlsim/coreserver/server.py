@@ -74,7 +74,7 @@ class AwlSimServer(object):
 	@classmethod
 	def getaddrinfo(cls, host, port):
 		family, socktype = socket.AF_INET, socket.SOCK_STREAM
-		if os.name == "posix" and host == "localhost":
+		if os.name == "posix" and host == "localhost" and False: #XXX disabled, for now
 			# We are on posix OS. Instead of AF_INET on localhost,
 			# we use Unix domain sockets.
 			family, socktype = socket.AF_UNIX, socket.SOCK_STREAM
