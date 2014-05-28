@@ -538,7 +538,7 @@ class State_LCD(StateWindow):
 		self.displayedValue = 0
 
 		self.addrSpin = QSpinBox(self)
-		self.addrSpin.setPrefix("A ")
+		self.addrSpin.setPrefix("Q ")
 		self.addrSpin.setMinimum(0)
 		self.addrSpin.setMaximum(0xFFFF)
 		self.layout().addWidget(self.addrSpin, 0, 0)
