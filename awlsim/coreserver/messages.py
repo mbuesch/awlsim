@@ -575,8 +575,9 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 	}
 
-	def __init__(self, sock):
+	def __init__(self, sock, peerInfoString):
 		self.sock = sock
+		self.peerInfoString = peerInfoString
 
 		# Transmit status
 		self.txSeqCount = 0

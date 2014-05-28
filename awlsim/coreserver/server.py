@@ -54,12 +54,10 @@ class AwlSimServer(object):
 	class Client(object):
 		"""Client information."""
 
-		def __init__(self, sock, host, port):
+		def __init__(self, sock, peerInfoString):
 			# Socket
 			self.socket = sock
-			self.host = host
-			self.port = port
-			self.transceiver = AwlSimMessageTransceiver(sock)
+			self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
 
 			# CPU-dump
 			self.dumpInterval = 0
@@ -75,8 +73,15 @@ class AwlSimServer(object):
 
 	@classmethod
 	def getaddrinfo(cls, host, port):
-		family, socktype, proto, canonname, sockaddr =\
-			socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM)[0]
+		family, socktype = socket.AF_INET, socket.SOCK_STREAM
+		if os.name == "posix" and host == "localhost":
+			# We are on posix OS. Instead of AF_INET on localhost,
+			# we use Unix domain sockets.
+			family, socktype = socket.AF_UNIX, socket.SOCK_STREAM
+			sockaddr = "/tmp/awlsim-server-%d.socket" % port
+		else:
+			family, socktype, proto, canonname, sockaddr =\
+				socket.getaddrinfo(host, port, family, socktype)[0]
 		return (family, socktype, sockaddr)
 
 	@classmethod
@@ -85,6 +90,13 @@ class AwlSimServer(object):
 		result = True
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+			if family == socket.AF_UNIX:
+				try:
+					os.stat(sockaddr)
+				except OSError as e:
+					if e.errno == errno.ENOENT:
+						return True
+				return False
 			sock = socket.socket(family, socktype)
 			sock.bind(sockaddr)
 		except socket.error as e:
@@ -159,6 +171,7 @@ class AwlSimServer(object):
 		self.__setRunState(self.STATE_INIT)
 		self.sim = None
 		self.socket = None
+		self.unixSockPath = None
 		self.clients = []
 
 	def runFromEnvironment(self, env=None):
@@ -401,14 +414,13 @@ class AwlSimServer(object):
 		try:
 			msg = client.transceiver.receive(0.0)
 		except AwlSimMessageTransceiver.RemoteEndDied as e:
-			printInfo("AwlSimServer: Client '%s (port %d)' died" %\
-				(client.host, client.port))
+			printInfo("AwlSimServer: Client '%s' died" % client.transceiver.peerInfoString)
 			self.__clientRemove(client)
 			return
 		except (TransferError, socket.error) as e:
-			printInfo("AwlSimServer: Client '%s (port %d)' data "
+			printInfo("AwlSimServer: Client '%s' data "
 				"transfer error:\n%s" %\
-				(client.host, client.port, str(e)))
+				(client.transceiver.peerInfoString, str(e)))
 			return
 		if not msg:
 			return
@@ -514,9 +526,14 @@ class AwlSimServer(object):
 		"""Listen on 'host':'port'."""
 
 		self.close()
-		printInfo("AwlSimServer: Listening on %s (port %d)..." % (host, port))
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+			if family == socket.AF_UNIX:
+				self.unixSockPath = sockaddr
+				readableSockaddr = sockaddr
+			else:
+				readableSockaddr = "%s:%s" % sockaddr[:2]
+			printInfo("AwlSimServer: Listening on %s..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			sock.setblocking(False)
@@ -536,17 +553,19 @@ class AwlSimServer(object):
 
 		try:
 			clientSock, addrInfo = self.socket.accept()
-			clientHost, clientPort = addrInfo[:2]
+			if self.unixSockPath:
+				peerInfoString = self.unixSockPath
+			else:
+				peerInfoString = "%s:%d" % addrInfo[:2]
 		except (socket.error, BlockingIOError) as e:
 			if isinstance(e, BlockingIOError) or\
 			   e.errno == errno.EWOULDBLOCK or\
 			   e.errno == errno.EAGAIN:
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
-		host, port = addrInfo[0], addrInfo[1]
-		printInfo("AwlSimServer: Client '%s (port %d)' connected" % (host, port))
+		printInfo("AwlSimServer: Client '%s' connected" % peerInfoString)
 
-		client = self.Client(clientSock, clientHost, clientPort)
+		client = self.Client(clientSock, peerInfoString)
 		self.__clientAdd(client)
 
 		return client
@@ -585,6 +604,12 @@ class AwlSimServer(object):
 			except socket.error as e:
 				pass
 			self.socket = None
+		if self.unixSockPath:
+			try:
+				os.unlink(self.unixSockPath)
+			except OSError as e:
+				pass
+			self.unixSockPath = None
 
 	def signalHandler(self, sig, frame):
 		printInfo("AwlSimServer: Received signal %d" % sig)

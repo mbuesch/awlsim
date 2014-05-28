@@ -78,22 +78,25 @@ class AwlSimClient(object):
 		host -> The hostname or IP address to connect to.
 		port -> The port to connect to."""
 
-		printInfo("AwlSimClient: Connecting to server '%s (port %d)'..." %\
-			(host, port))
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+			if family == socket.AF_UNIX:
+				readableSockaddr = sockaddr
+			else:
+				readableSockaddr = "%s:%s" % sockaddr[:2]
+			printInfo("AwlSimClient: Connecting to server '%s'..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			count = 0
 			while 1:
 				try:
 					sock.connect(sockaddr)
 				except (OSError, socket.error) as e:
-					if e.errno == errno.ECONNREFUSED:
+					if e.errno == errno.ECONNREFUSED or\
+					   e.errno == errno.ENOENT:
 						count += 1
 						if count >= 100:
 							raise AwlSimError("Timeout connecting "
-								"to AwlSimServer %s (port %d)" %\
-								(host, port))
+								"to AwlSimServer %s" % readableSockaddr)
 						self.sleep(0.1)
 						continue
 					if isJython and\
@@ -104,10 +107,10 @@ class AwlSimClient(object):
 					raise
 				break
 		except socket.error as e:
-			raise AwlSimError("Failed to connect to AwlSimServer %s (port %d): %s" %\
-				(host, port, str(e)))
+			raise AwlSimError("Failed to connect to AwlSimServer %s: %s" %\
+				(readableSockaddr, str(e)))
 		printInfo("AwlSimClient: Connected.")
-		self.transceiver = AwlSimMessageTransceiver(sock)
+		self.transceiver = AwlSimMessageTransceiver(sock, readableSockaddr)
 		self.lastRxMsg = None
 
 		# Ping the server
@@ -208,18 +211,15 @@ class AwlSimClient(object):
 			   e.errno == errno.EAGAIN or\
 			   e.errno == errno.EWOULDBLOCK:
 				return False
-			host, port = self.transceiver.sock.getpeername()
-			print(type(e))
 			raise AwlSimError("AwlSimClient: "
-				"I/O error in connection to server '%s (port %d)':\n"
+				"I/O error in connection to server '%s':\n"
 				"%s (errno = %s)" %\
-				(host, port, str(e), str(e.errno)))
+				(self.transceiver.peerInfoString, str(e), str(e.errno)))
 		except (AwlSimMessageTransceiver.RemoteEndDied, TransferError) as e:
-			host, port = self.transceiver.sock.getpeername()
 			raise AwlSimError("AwlSimClient: "
-				"Connection to server '%s:%s' died. "
+				"Connection to server '%s' died. "
 				"Failed to receive message." %\
-				(host, port))
+				self.transceiver.peerInfoString)
 		if not msg:
 			return False
 		self.lastRxMsg = msg
