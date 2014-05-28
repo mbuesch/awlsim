@@ -243,7 +243,7 @@ class MainWindow(QMainWindow):
 	def about(self):
 		QMessageBox.information(self, "About S7 AWL/STL simulator",
 			"awlsim version %d.%d\n\n"
-			"Copyright 2012-2013 Michael Büsch <m@bues.ch>\n"
+			"Copyright 2012-2014 Michael Büsch <m@bues.ch>\n"
 			"Licensed under the terms of the "
 			"GNU GPL version 2 or (at your option) "
 			"any later version." %\
