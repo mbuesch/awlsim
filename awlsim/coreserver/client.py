@@ -80,10 +80,10 @@ class AwlSimClient(object):
 
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
-			if family == socket.AF_UNIX:
+			if family == AF_UNIX:
 				readableSockaddr = sockaddr
 			else:
-				readableSockaddr = "%s:%s" % sockaddr[:2]
+				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
 			printInfo("AwlSimClient: Connecting to server '%s'..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			count = 0

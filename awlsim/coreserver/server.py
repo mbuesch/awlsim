@@ -38,6 +38,11 @@ import socket
 import errno
 import time
 
+if hasattr(socket, "AF_UNIX"):
+	AF_UNIX = socket.AF_UNIX
+else:
+	AF_UNIX = None
+
 
 class AwlSimServer(object):
 	DEFAULT_HOST	= "localhost"
@@ -77,7 +82,7 @@ class AwlSimServer(object):
 		if os.name == "posix" and host == "localhost" and False: #XXX disabled, for now
 			# We are on posix OS. Instead of AF_INET on localhost,
 			# we use Unix domain sockets.
-			family, socktype = socket.AF_UNIX, socket.SOCK_STREAM
+			family, socktype = AF_UNIX, socket.SOCK_STREAM
 			sockaddr = "/tmp/awlsim-server-%d.socket" % port
 		else:
 			family, socktype, proto, canonname, sockaddr =\
@@ -90,7 +95,7 @@ class AwlSimServer(object):
 		result = True
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
-			if family == socket.AF_UNIX:
+			if family == AF_UNIX:
 				try:
 					os.stat(sockaddr)
 				except OSError as e:
@@ -528,11 +533,11 @@ class AwlSimServer(object):
 		self.close()
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
-			if family == socket.AF_UNIX:
+			if family == AF_UNIX:
 				self.unixSockPath = sockaddr
 				readableSockaddr = sockaddr
 			else:
-				readableSockaddr = "%s:%s" % sockaddr[:2]
+				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
 			printInfo("AwlSimServer: Listening on %s..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
