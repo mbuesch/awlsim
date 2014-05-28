@@ -110,12 +110,12 @@ class AwlSim(object):
 			self.__handleSimException(e)
 
 	def shutdown(self):
-		for hw in self.__registeredHardware:
-			hw.shutdown()
+		self.unregisterAllHardware()
 
 	def reset(self):
 		try:
 			self.cpu.reset()
+			self.unregisterAllHardware()
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
@@ -177,6 +177,11 @@ class AwlSim(object):
 
 		if self.__profileLevel >= 1:
 			self.__profileStop()
+
+	def unregisterAllHardware(self):
+		for hw in self.__registeredHardware:
+			hw.shutdown()
+		self.__registeredHardware = []
 
 	def registerHardware(self, hwClassInst):
 		"""Register a new hardware interface."""

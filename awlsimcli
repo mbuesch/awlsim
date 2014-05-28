@@ -135,6 +135,7 @@ def run(inputFile):
 
 		writeStdout("Initializing simulator...\n")
 		s = AwlSim(profileLevel = opt_profile)
+		s.reset()
 
 		# Load hardware modules
 		for name, parameters in opt_hwmods:
@@ -151,7 +152,6 @@ def run(inputFile):
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		cpu.setCycleTimeLimit(opt_cycletime)
 		writeStdout("Initializing CPU...\n")
-		s.reset()
 		for symTable in symTables:
 			s.loadSymbolTable(symTable)
 		for parseTree in parseTrees:

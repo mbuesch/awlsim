@@ -484,9 +484,9 @@ class AwlSimServer(object):
 
 				if self.state == self.STATE_RUN:
 					while self.__running:
-						self.__handleCommunication()
 						sim.runCycle()
 						self.__handleMemReadReqs()
+						self.__handleCommunication()
 					continue
 
 			except (AwlSimError, AwlParserError) as e:
