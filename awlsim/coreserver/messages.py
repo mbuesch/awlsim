@@ -24,6 +24,7 @@ from awlsim.core.compat import *
 
 from awlsim.coreserver.memarea import *
 from awlsim.core.util import *
+from awlsim.core.datatypehelpers import *
 from awlsim.core.cpuspecs import *
 
 import struct
@@ -459,9 +460,10 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 	#	flags (8 bit)
 	#	index (16 bit)
 	#	start (32 bit)
-	#	length (32 bit)
-	#	the actual binary data (variable length)
-	plAreaStruct = struct.Struct(str(">BBHII"))
+	#	specified length (32 bit)
+	#	actual length (32 bit)
+	#	the actual binary data (variable length, padded to 32-bit boundary)
+	plAreaStruct = struct.Struct(str(">BBHIII"))
 
 	# Flags
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
@@ -474,12 +476,16 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 	def toBytes(self):
 		pl = [ self.plHdrStruct.pack(self.flags) ]
 		for memArea in self.memAreas:
+			actualLength = len(memArea.data)
 			pl.append(self.plAreaStruct.pack(memArea.memType,
 							 memArea.flags,
 							 memArea.index,
 							 memArea.start,
-							 len(memArea.data)))
-			pl.append(memArea.data) #FIXME padding to 32bit?
+							 memArea.length,
+							 actualLength))
+			pl.append(memArea.data)
+			# Pad to a 32-bit boundary
+			pl.append(b'\x00' * (round_up(actualLength, 4) - actualLength))
 		pl = b''.join(pl)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
@@ -491,13 +497,12 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 			offset += cls.plHdrStruct.size
 			memAreas = []
 			while offset < len(payload):
-				memType, mFlags, index, start, length =\
+				memType, mFlags, index, start, length, actualLength =\
 					cls.plAreaStruct.unpack_from(payload, offset)
 				offset += cls.plAreaStruct.size
-				#FIXME pad length to 32bit?
-				data = payload[offset : offset + length]
-				offset += length
-				if len(data) != length:
+				data = payload[offset : offset + actualLength]
+				offset += round_up(actualLength, 4)
+				if len(data) != actualLength:
 					raise IndexError
 				memAreas.append(MemoryArea(memType, mFlags, index,
 							   start, length, data))
