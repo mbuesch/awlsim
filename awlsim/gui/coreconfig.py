@@ -43,11 +43,11 @@ class CoreConfigDialog(QDialog):
 		self.layout().addWidget(self.spawnServerCheckBox, 0, 0, 1, 2)
 
 		self.interpreterListLabel = QLabel("Python interpreter for core "
-			"(colon separated list;\n"
+			"(semicolon separated list;\n"
 			"First in list is tried first):", self)
 		self.layout().addWidget(self.interpreterListLabel, 1, 0)
 		self.interpreterList = QLineEdit(self)
-		self.interpreterList.setText(" : ".join(DEFAULT_INTERPRETERS))
+		self.interpreterList.setText("; ".join(DEFAULT_INTERPRETERS))
 		self.layout().addWidget(self.interpreterList, 1, 1)
 
 		self.hostLabel = QLabel("Connect to awlsim core server host:", self)
@@ -92,7 +92,7 @@ class CoreConfigDialog(QDialog):
 
 	def getInterpreterList(self):
 		assert(self.shouldSpawnServer())
-		return [ i.strip() for i in self.interpreterList.text().split(":") ]
+		return [ i.strip() for i in self.interpreterList.text().split(";") ]
 
 	def getSpawnPortRange(self):
 		assert(self.shouldSpawnServer())
