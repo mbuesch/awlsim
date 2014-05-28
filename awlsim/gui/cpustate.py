@@ -362,10 +362,14 @@ class State_Mem(StateWindow):
 		if addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
 			self.dbSpin = QSpinBox(self)
 			self.dbSpin.setPrefix("DB ")
+			self.dbSpin.setMinimum(0)
+			self.dbSpin.setMaximum(0xFFFF)
 			self.layout().addWidget(self.dbSpin, 0, x)
 			x += 1
 
 		self.addrSpin = QSpinBox(self)
+		self.addrSpin.setMinimum(0)
+		self.addrSpin.setMaximum(0xFFFF)
 		self.layout().addWidget(self.addrSpin, 0, x)
 		x += 1
 
@@ -535,6 +539,8 @@ class State_LCD(StateWindow):
 
 		self.addrSpin = QSpinBox(self)
 		self.addrSpin.setPrefix("A ")
+		self.addrSpin.setMinimum(0)
+		self.addrSpin.setMaximum(0xFFFF)
 		self.layout().addWidget(self.addrSpin, 0, 0)
 
 		self.widthCombo = QComboBox(self)
