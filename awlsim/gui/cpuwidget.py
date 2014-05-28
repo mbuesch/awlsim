@@ -199,6 +199,8 @@ class CpuWidget(QWidget):
 				port = self.mainWidget.coreConfigDialog.getConnectPort()
 			client.connectToServer(host = host,
 					       port = port)
+			client.setRunState(False)
+			client.reset()
 
 			self.mainWidget.cpuConfigDialog.uploadToCPU()
 			self.__uploadMemReadAreas()
@@ -220,6 +222,9 @@ class CpuWidget(QWidget):
 			client.shutdown()
 			return
 		except Exception:
+			try:
+				client.setRunState(False)
+			except: pass
 			client.shutdown()
 			handleFatalException(self)
 		self.__setState(self.STATE_RUN)
@@ -244,8 +249,14 @@ class CpuWidget(QWidget):
 			else:
 				assert(0)
 		except Exception:
+			try:
+				client.setRunState(False)
+			except: pass
 			client.shutdown()
 			handleFatalException(self)
+		try:
+			client.setRunState(False)
+		except: pass
 		client.shutdown()
 
 	def stop(self):
