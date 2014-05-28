@@ -179,24 +179,28 @@ class CpuWidget(QWidget):
 			return
 
 		try:
-			host = AwlSimServer.DEFAULT_HOST
-			firstPort = AwlSimServer.DEFAULT_PORT
-			lastPort = AwlSimServer.DEFAULT_PORT + 4095
-			for port in range(firstPort, lastPort + 1):
-				if not AwlSimServer.portIsUnused(host, port):
-					continue
-				client.spawnServer(interpreter = ["pypy", sys.executable, "python3", "python2", "python", "py"],
-						   listenHost = host,
-						   listenPort = port)
-				client.connectToServer(host = host,
-						       port = port)
-				break
+			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
+				firstPort, lastPort = self.mainWidget.coreConfigDialog.getSpawnPortRange()
+				interp = self.mainWidget.coreConfigDialog.getInterpreterList()
+				host = AwlSimServer.DEFAULT_HOST
+				for port in range(firstPort, lastPort + 1):
+					if not AwlSimServer.portIsUnused(host, port):
+						continue
+					client.spawnServer(interpreter = interp,
+							   listenHost = host,
+							   listenPort = port)
+					break
+				else:
+					raise AwlSimError("Did not find a free port to run the "
+						"awlsim core server on.\nTried port %d to %d on '%s'." %\
+						(firstPort, lastPort, host))
 			else:
-				raise AwlSimError("Did not find a free port to run the "
-					"awlsim core server on.\nTried port %d to %d on '%s'." %\
-					(firstPort, lastPort, host))
+				host = self.mainWidget.coreConfigDialog.getConnectHost()
+				port = self.mainWidget.coreConfigDialog.getConnectPort()
+			client.connectToServer(host = host,
+					       port = port)
 
-			self.mainWidget.configDialog.uploadToCPU()
+			self.mainWidget.cpuConfigDialog.uploadToCPU()
 			self.__uploadMemReadAreas()
 			self.__updateOnlineViewState()
 

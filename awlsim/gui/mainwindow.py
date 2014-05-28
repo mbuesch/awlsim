@@ -25,6 +25,7 @@ from awlsim.core.compat import *
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.cpuconfig import *
+from awlsim.gui.coreconfig import *
 
 from awlsim.coreserver.client import *
 
@@ -39,7 +40,8 @@ class MainWidget(QWidget):
 
 		self.__initSim(enableExtInstructions)
 
-		self.configDialog = CpuConfigDialog(self, self.simClient)
+		self.cpuConfigDialog = CpuConfigDialog(self, self.simClient)
+		self.coreConfigDialog = CoreConfigDialog(self, self.simClient)
 
 		self.splitter = QSplitter(Qt.Horizontal)
 		self.layout().addWidget(self.splitter, 0, 0)
@@ -129,7 +131,10 @@ class MainWidget(QWidget):
 			return self.saveFile(self.filename)
 
 	def cpuConfig(self):
-		self.configDialog.exec_()
+		self.cpuConfigDialog.exec_()
+
+	def coreConfig(self):
+		self.coreConfigDialog.exec_()
 
 class MainWindow(QMainWindow):
 	@classmethod
@@ -164,6 +169,7 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Simulator", self)
+		menu.addAction("&Awlsim core settings...", self.coreConfig)
 		menu.addAction("&CPU config...", self.cpuConfig)
 		self.menuBar().addMenu(menu)
 
@@ -254,3 +260,6 @@ class MainWindow(QMainWindow):
 
 	def cpuConfig(self):
 		self.centralWidget().cpuConfig()
+
+	def coreConfig(self):
+		self.centralWidget().coreConfig()
