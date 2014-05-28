@@ -35,6 +35,10 @@ def swapEndianDWord(dword):
 	       ((dword & 0x00FF0000) >> 8) |\
 	       ((dword & 0xFF000000) >> 24)
 
+# Round up integer 'n' to a multiple of integer 's'
+def round_up(n, s):
+	return ((n + s - 1) // s) * s
+
 def byteToSignedPyInt(byte):
 	if byte & 0x80:
 		return -((~byte + 1) & 0xFF)
