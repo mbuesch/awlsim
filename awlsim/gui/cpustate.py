@@ -504,13 +504,14 @@ class State_Mem(StateWindow):
 	def setMemory(self, memArea):
 		if not self.contentWidget:
 			return False
-		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
-			self.contentWidget.setEnabled(False)
-			return False
 		thisArea = self.__makeMemoryArea()
 		if not thisArea.overlapsWith(memArea):
 			return False
 		thisStart, thisEnd = thisArea.start, thisArea.start + thisArea.length - 1
+
+		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
+			self.contentWidget.setEnabled(False)
+			return False
 
 		self.__changeBlocked += 1
 		addr = memArea.start
@@ -596,12 +597,14 @@ class State_LCD(StateWindow):
 		return ( self.__makeMemoryArea(), )
 
 	def setMemory(self, memArea):
-		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
-			return False
 		thisArea = self.__makeMemoryArea()
 		if not thisArea.overlapsWith(memArea):
 			return False
 		thisStart, thisEnd = thisArea.start, thisArea.start + thisArea.length - 1
+
+		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
+			#TODO
+			return False
 
 		self.__changeBlocked += 1
 		addr = memArea.start
