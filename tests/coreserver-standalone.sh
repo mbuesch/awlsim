@@ -8,5 +8,5 @@ sh_test()
 
 	# Quick test to awlsim-server
 	"$interpreter" ./awlsim-server -h >/dev/null ||\
-		die "Call to awlsim-server -h failed"
+		test_failed "Call to awlsim-server -h failed"
 }
