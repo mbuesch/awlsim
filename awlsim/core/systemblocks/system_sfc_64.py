@@ -41,5 +41,6 @@ class SFC64(SFC):
 
 	def run(self):
 		# Return a 31-bit millisecond representation of "now".
+		self.cpu.updateTimestamp()
 		self.storeInterfaceFieldByName("RET_VAL",
 			int(self.cpu.now * 1000) & 0x7FFFFFFF)
