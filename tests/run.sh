@@ -186,6 +186,17 @@ do_tests()
 	done
 }
 
+show_help()
+{
+	echo "awlsim unit test script"
+	echo
+	echo "Usage: run.sh [OPTIONS] [testscript.awl/.sh]"
+	echo
+	echo "Options:"
+	echo " -i|--interpreter INTER        Use INTER as interpreter for the tests"
+	echo " -s|--softfail                 Do not abort on single test failures"
+}
+
 trap cleanup_and_exit INT TERM
 trap cleanup EXIT
 test_time_file="$(mktemp --tmpdir=/tmp awlsim-test-time.XXXXXX)"
@@ -197,6 +208,10 @@ while [ $# -ge 1 ]; do
 	[ "$(echo "$1" | cut -c1)" != "-" ] && break
 
 	case "$1" in
+	-h|--help)
+		show_help
+		exit 0
+		;;
 	-i|--interpreter)
 		shift
 		opt_interpreter="$1"
