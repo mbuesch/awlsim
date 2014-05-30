@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - SFCs
+# AWL simulator - SFBs
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,20 +26,34 @@ from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.util import *
 
 
-class SFC64(SFC):
-	"""SFC 64: TIME_TCK"""
+class SFB5(SFB):
+	"""SFB 5: TOF"""
 
 	interfaceFields = {
-		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "RET_VAL",
+		BlockInterfaceField.FTYPE_IN	: (
+			BlockInterfaceField(name = "IN",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "PT",
 					    dataType = AwlDataType.makeByName("TIME")),
-		)
+		),
+		BlockInterfaceField.FTYPE_OUT	: (
+			BlockInterfaceField(name = "Q",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "ET",
+					    dataType = AwlDataType.makeByName("TIME")),
+		),
+		BlockInterfaceField.FTYPE_STAT	: (
+			BlockInterfaceField(name = "STATE",
+					    dataType = AwlDataType.makeByName("BYTE")),
+			BlockInterfaceField(name = "STIME",
+					    dataType = AwlDataType.makeByName("TIME")),
+			BlockInterfaceField(name = "ATIME",
+					    dataType = AwlDataType.makeByName("TIME")),
+		),
 	}
 
 	def __init__(self, cpu):
-		SFC.__init__(self, cpu, 64)
+		SFB.__init__(self, cpu, 5)
 
 	def run(self):
-		# Return a 31-bit millisecond representation of "now".
-		self.storeInterfaceFieldByName("RET_VAL",
-			int(self.cpu.now * 1000) & 0x7FFFFFFF)
+		pass#TODO

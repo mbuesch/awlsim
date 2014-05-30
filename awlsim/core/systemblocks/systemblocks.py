@@ -27,12 +27,41 @@ from awlsim.core.blocks import *
 
 
 class SystemBlock(Block):
+	# Interface fields. To be overridden by the subclass.
+	interfaceFields = {
+		BlockInterfaceField.FTYPE_IN	: (),
+		BlockInterfaceField.FTYPE_OUT	: (),
+		BlockInterfaceField.FTYPE_INOUT	: (),
+		BlockInterfaceField.FTYPE_STAT	: (),
+	}
+
 	def __init__(self, cpu, index, interface):
 		insns = [
 			AwlInsn_GENERIC_CALL(cpu, self.run),
 		]
 		Block.__init__(self, insns, index, interface)
 		self.cpu = cpu
+
+		# Register the interface.
+		for ftype in (BlockInterfaceField.FTYPE_IN,
+			      BlockInterfaceField.FTYPE_OUT,
+			      BlockInterfaceField.FTYPE_INOUT,
+			      BlockInterfaceField.FTYPE_STAT):
+			try:
+				fields = self.interfaceFields[ftype]
+			except KeyError:
+				continue
+			for field in fields:
+				if ftype == BlockInterfaceField.FTYPE_IN:
+					self.interface.addField_IN(field)
+				elif ftype == BlockInterfaceField.FTYPE_OUT:
+					self.interface.addField_OUT(field)
+				elif ftype == BlockInterfaceField.FTYPE_INOUT:
+					self.interface.addField_INOUT(field)
+				elif ftype == BlockInterfaceField.FTYPE_STAT:
+					self.interface.addField_STAT(field)
+				else:
+					assert(0)
 
 	def run(self):
 		# Reimplement this method

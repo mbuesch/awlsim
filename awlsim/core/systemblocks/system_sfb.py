@@ -23,8 +23,20 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.systemblocks.system_sfb_m1 import *
+from awlsim.core.systemblocks.system_sfb_0 import *
+from awlsim.core.systemblocks.system_sfb_1 import *
+from awlsim.core.systemblocks.system_sfb_2 import *
+from awlsim.core.systemblocks.system_sfb_3 import *
+from awlsim.core.systemblocks.system_sfb_4 import *
+from awlsim.core.systemblocks.system_sfb_5 import *
 
 
 SFB_table = {
 	-1	: SFBm1,	# __NOP
+	0	: SFB0,		# CTU
+	1	: SFB1,		# CTD
+	2	: SFB2,		# CTUD
+	3	: SFB3,		# TP
+	4	: SFB4,		# TON
+	5	: SFB5,		# TOF
 }

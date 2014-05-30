@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - SFCs
+# AWL simulator - SFBs
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,23 +26,40 @@ from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.util import *
 
 
-class SFCm2(SFC):
-	"""SFC -2: __REBOOT"""
+class SFB2(SFB):
+	"""SFB 2: CTUD"""
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "REBOOT_TYPE",
+			BlockInterfaceField(name = "CU",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "CD",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "R",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "LOAD",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "PV",
 					    dataType = AwlDataType.makeByName("INT")),
+		),
+		BlockInterfaceField.FTYPE_OUT	: (
+			BlockInterfaceField(name = "QU",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "QD",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "CV",
+					    dataType = AwlDataType.makeByName("INT")),
+		),
+		BlockInterfaceField.FTYPE_STAT	: (
+			BlockInterfaceField(name = "CUO",
+					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name = "CDO",
+					    dataType = AwlDataType.makeByName("BOOL")),
 		),
 	}
 
 	def __init__(self, cpu):
-		SFC.__init__(self, cpu, -2)
+		SFB.__init__(self, cpu, 2)
 
 	def run(self):
-		rebootType = wordToSignedPyInt(self.fetchInterfaceFieldByName("REBOOT_TYPE"))
-		if rebootType == 1:
-			raise MaintenanceRequest(MaintenanceRequest.TYPE_SOFTREBOOT,
-						 "SFC -2 soft reboot request")
-		else:
-			raise AwlSimError("SFC -2: Unknown REBOOT_TYPE %d" % rebootType)
+		pass#TODO
