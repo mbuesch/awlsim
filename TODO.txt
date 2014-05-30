@@ -1,7 +1,7 @@
 === Incomplete awlsim TODO list ===
 
+- Early error, if constant is assigned to FB/FC OUT/INOUT parameter.
 - Parsing of attributes
-- Areacode 87 for P## in FCs
 - ANY pointer
 - Multiinstance
 - ARRAYs
