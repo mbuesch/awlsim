@@ -123,7 +123,7 @@ class CallStackElem(object):
 		# 'oper' is an immediate.
 		# Allocate space in the caller-L-stack.
 		lalloc = self.cpu.callStackTop.lalloc
-		loff = lalloc.alloc(oper.width // 8)
+		loff = lalloc.alloc((oper.width // 8) if (oper.width > 8) else 1)
 		# Write the immediate to the allocated space.
 		WordPacker.toBytes(lalloc.localdata, oper.width, loff, oper.value)
 		# Make an operator for the allocated space.
@@ -147,7 +147,7 @@ class CallStackElem(object):
 		# 'oper' is a VL-stack reference (i.e. the L-stack of the caller's caller).
 		# Allocate space in the caller-L-stack and copy the data.
 		lalloc = self.cpu.callStackTop.lalloc
-		loff = lalloc.alloc(oper.width // 8)
+		loff = lalloc.alloc((oper.width // 8) if (oper.width > 8) else 1)
 		# Write the value to the allocated space.
 		WordPacker.toBytes(lalloc.localdata, oper.width, loff,
 				   self.cpu.fetch(oper))
