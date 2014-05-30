@@ -402,6 +402,11 @@ class AwlOpTranslator(object):
 		if token0.startswith('"') and token0.endswith('"'):
 			return OpDescriptor(AwlOperator(AwlOperator.SYMBOLIC, 0,
 							rawOps[0][1:-1]), 1)
+		# Immediate boolean
+		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
+		if immediate is not None:
+			return OpDescriptor(AwlOperator(AwlOperator.IMM, 1,
+					                immediate), 1)
 		# Immediate integer
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
 		if immediate is not None:
