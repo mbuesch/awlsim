@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - SFBs
+# AWL simulator - SFCs
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,19 +22,22 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.util import *
 
 
-class SFBm1(SFB):
-	"""SFB -1: __NOP"""
+class SFC64(SFC):
+	"""SFC 64: TIME_TCK"""
 
 	def __init__(self, cpu):
-		SFB.__init__(self, cpu, -1)
+		SFC.__init__(self, cpu, 64)
+
+		self.interface.addField_OUT(
+			BlockInterfaceField(name = "RET_VAL",
+					    dataType = AwlDataType.makeByName("TIME"))
+		)
 
 	def run(self):
-		pass # No operation
-
-SFB_table = {
-	-1	: SFBm1,
-}
+		# Return a 31-bit millisecond representation of "now".
+		self.storeInterfaceFieldByName("RET_VAL",
+			int(self.cpu.now * 1000) & 0x7FFFFFFF)
