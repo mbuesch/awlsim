@@ -1016,9 +1016,9 @@ TITLE =
 
 
 
-//    A     #temp6
-//   L     #temp11
-//  SD    #ON_Timer_2
+      A     #temp6
+      L     #temp11
+      SD    #ON_Timer_2
       A     #temp6; 
       L     #TempS5; 
       SD    #ON_Timer_2; 
