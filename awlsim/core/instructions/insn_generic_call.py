@@ -34,4 +34,19 @@ class AwlInsn_GENERIC_CALL(AwlInsn):
 		self.callback = callback
 
 	def run(self):
-		self.callback()
+		try:
+			self.callback()
+		except AwlSimError as e:
+			# An exception occurred. We try to blame that on the
+			# instruction calling us, so the user gets a
+			# sane error message.
+			if len(self.cpu.callStack) >= 2:
+				cse = self.cpu.callStack[-2] # Previous stack frame
+				ip = cse.ip - 1
+				if ip >= 0 and ip < len(cse.insns):
+					# Assign the calling instruction to the exception.
+					insn = cse.insns[ip]
+					e.setInsn(insn)
+					e.setRawInsn(None)
+					raise e
+			raise # Out of luck

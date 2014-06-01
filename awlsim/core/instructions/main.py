@@ -362,16 +362,17 @@ class AwlInsn(object):
 		"BLD"	: TYPE_BLD,
 		"NOP"	: TYPE_NOP,
 
-		"__ASSERT=="	: TYPE_ASSERT_EQ,
-		"__ASSERT==R"	: TYPE_ASSERT_EQ_R,
-		"__ASSERT<>"	: TYPE_ASSERT_NE,
-		"__ASSERT>"	: TYPE_ASSERT_GT,
-		"__ASSERT<"	: TYPE_ASSERT_LT,
-		"__ASSERT>="	: TYPE_ASSERT_GE,
-		"__ASSERT<="	: TYPE_ASSERT_LE,
-		"__SLEEP"	: TYPE_SLEEP,
-		"__STWRST"	: TYPE_STWRST,
-		"__FEATURE"	: TYPE_FEATURE,
+		"__ASSERT=="		: TYPE_ASSERT_EQ,
+		"__ASSERT==R"		: TYPE_ASSERT_EQ_R,
+		"__ASSERT<>"		: TYPE_ASSERT_NE,
+		"__ASSERT>"		: TYPE_ASSERT_GT,
+		"__ASSERT<"		: TYPE_ASSERT_LT,
+		"__ASSERT>="		: TYPE_ASSERT_GE,
+		"__ASSERT<="		: TYPE_ASSERT_LE,
+		"__SLEEP"		: TYPE_SLEEP,
+		"__STWRST"		: TYPE_STWRST,
+		"__FEATURE"		: TYPE_FEATURE,
+		"__GENERIC_CALL__"	: TYPE_GENERIC_CALL,
 	}
 	type2name_german = pivotDict(name2type_german)
 
@@ -481,7 +482,7 @@ class AwlInsn(object):
 		try:
 			name = type2name[self.type]
 		except KeyError:
-			name = "<unknown>"
+			name = "<unknown type %d>" % self.type
 		ret.append(name)
 		if self.ops:
 			ret.append(" ")
