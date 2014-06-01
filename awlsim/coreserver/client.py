@@ -74,7 +74,7 @@ class AwlSimClient(object):
 			#XXX Workaround: Jython's socket module does not like connecting
 			# to a starting server. Wait a few seconds for the server
 			# to start listening on the socket.
-			time.sleep(3)
+			time.sleep(10)
 
 	def connectToServer(self,
 			    host=AwlSimServer.DEFAULT_HOST,
