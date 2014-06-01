@@ -54,4 +54,18 @@ class SFB0(SFB):
 		SFB.__init__(self, cpu, 0)
 
 	def run(self):
-		pass#TODO
+		# CU pos-edge detection
+		CU = self.fetchInterfaceFieldByName("CU")
+		CU_pos_edge = CU & ~self.fetchInterfaceFieldByName("CUO") & 1
+		self.storeInterfaceFieldByName("CUO", CU)
+
+		CV = self.fetchInterfaceFieldByName("CV")
+		if self.fetchInterfaceFieldByName("R"): # Counter reset
+			CV = 0
+		elif CU_pos_edge and CV < 32767: # Count up
+			CV += 1
+		self.storeInterfaceFieldByName("CV", CV)
+
+		# Update Q-status
+		self.storeInterfaceFieldByName("Q",
+			1 if CV >= self.fetchInterfaceFieldByName("PV") else 0)
