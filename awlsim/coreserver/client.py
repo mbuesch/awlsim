@@ -70,6 +70,11 @@ class AwlSimClient(object):
 				"any of the supplied Python interpreters: %s\n"
 				"No interpreter found." %\
 				str(interpreter))
+		if isJython:
+			#XXX Workaround: Jython's socket module does not like connecting
+			# to a starting server. Wait a few seconds for the server
+			# to start listening on the socket.
+			time.sleep(3)
 
 	def connectToServer(self,
 			    host=AwlSimServer.DEFAULT_HOST,
