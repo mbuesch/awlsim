@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFCm2(SFC):
-	"""SFC -2: __REBOOT"""
+	name = (-2, "__REBOOT", None)
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
@@ -35,9 +35,6 @@ class SFCm2(SFC):
 					    dataType = AwlDataType.makeByName("INT")),
 		),
 	}
-
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, -2)
 
 	def run(self):
 		rebootType = wordToSignedPyInt(self.fetchInterfaceFieldByName("REBOOT_TYPE"))

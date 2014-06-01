@@ -64,6 +64,22 @@ def usage():
 	printInfo("")
 	printInfo(" Where NAME is the name of the hardware module.")
 	printInfo(" PARAM=VAL are optional hardware specific parameters.")
+	printInfo("")
+	printInfo("Other options:")
+	printInfo(" --list-sfc            Print a list of all supported SFCs")
+	printInfo(" --list-sfb            Print a list of all supported SFBs")
+
+def printSysblockInfo(blockTable, prefix, withExtended):
+	for block in sorted(blockTable.values(),
+			    key = lambda b: b.name[0]):
+		number, name, desc = block.name
+		if number < 0 and not withExtended:
+			continue
+		if desc:
+			desc = "  (%s)" % desc
+		else:
+			desc = ""
+		printInfo("  %s %d  \"%s\"%s" % (prefix, number, name, desc))
 
 def writeStdout(message):
 	if not opt_quiet:
@@ -311,7 +327,8 @@ def main():
 			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
-			  "connect=", "spawn-backend", "interpreter=", ])
+			  "connect=", "spawn-backend", "interpreter=",
+			  "list-sfc", "list-sfb", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -385,6 +402,14 @@ def main():
 			opt_spawnBackend = True
 		if o in ("-i", "--interpreter"):
 			opt_interpreter = v
+		if o == "--list-sfc":
+			printInfo("The supported system functions (SFCs) are:")
+			printSysblockInfo(SFC_table, "SFC", opt_extInsns)
+			return 0
+		if o == "--list-sfb":
+			printInfo("The supported system function blocks (SFBs) are:")
+			printSysblockInfo(SFB_table, "SFB", opt_extInsns)
+			return 0
 	if len(args) != 1 and not opt_hwinfos:
 		usage()
 		return 1

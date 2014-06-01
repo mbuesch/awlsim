@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFCm3(SFC):
-	"""SFC -3: __SHUTDOWN"""
+	name = (-3, "__SHUTDOWN", None)
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
@@ -35,9 +35,6 @@ class SFCm3(SFC):
 					    dataType = AwlDataType.makeByName("INT")),
 		),
 	}
-
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, -3)
 
 	def run(self):
 		shutdownType = wordToSignedPyInt(self.fetchInterfaceFieldByName("SHUTDOWN_TYPE"))

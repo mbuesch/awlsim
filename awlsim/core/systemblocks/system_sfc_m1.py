@@ -27,10 +27,7 @@ from awlsim.core.util import *
 
 
 class SFCm1(SFC):
-	"""SFC -1: __NOP"""
-
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, -1)
+	name = (-1, "__NOP", None)
 
 	def run(self):
 		pass # No operation

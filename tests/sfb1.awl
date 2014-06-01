@@ -1,13 +1,13 @@
 ORGANIZATION_BLOCK OB 1
 BEGIN
 	//TODO
-	CALL	SFB 1, DB 1 (
-		CD	:= FALSE,
-		LOAD	:= FALSE,
-		PV	:= 0,
-		Q	:= M 0.0,
-		CV	:= MW 2,
-	)
+//	CALL	SFB 1, DB 1 (
+//		CD	:= FALSE,
+//		LOAD	:= FALSE,
+//		PV	:= 0,
+//		Q	:= M 0.0,
+//		CV	:= MW 2,
+//	)
 END_ORGANIZATION_BLOCK
 
 

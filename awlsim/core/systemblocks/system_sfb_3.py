@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFB3(SFB):
-	"""SFB 3: TP"""
+	name = (3, "TP", "IEC 1131-3 timed pulse")
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
@@ -52,8 +52,6 @@ class SFB3(SFB):
 		),
 	}
 
-	def __init__(self, cpu):
-		SFB.__init__(self, cpu, 3)
-
 	def run(self):
 		pass#TODO
+		raise AwlSimError("SFB 3 \"TP\" not implemented, yet.")

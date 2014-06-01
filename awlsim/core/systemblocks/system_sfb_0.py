@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFB0(SFB):
-	"""SFB 0: CTU"""
+	name = (0, "CTU", "IEC 1131-3 up counter")
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
@@ -49,9 +49,6 @@ class SFB0(SFB):
 					    dataType = AwlDataType.makeByName("BOOL")),
 		),
 	}
-
-	def __init__(self, cpu):
-		SFB.__init__(self, cpu, 0)
 
 	def run(self):
 		# CU pos-edge detection

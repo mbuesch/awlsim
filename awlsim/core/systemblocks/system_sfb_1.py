@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFB1(SFB):
-	"""SFB 1: CTD"""
+	name = (1, "CTD", "IEC 1131-3 down counter")
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
@@ -50,8 +50,6 @@ class SFB1(SFB):
 		),
 	}
 
-	def __init__(self, cpu):
-		SFB.__init__(self, cpu, 1)
-
 	def run(self):
 		pass#TODO
+		raise AwlSimError("SFB 1 \"CTD\" not implemented, yet.")

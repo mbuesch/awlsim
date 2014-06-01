@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFC64(SFC):
-	"""SFC 64: TIME_TCK"""
+	name = (64, "TIME_TCK", "time tick")
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_OUT	: (
@@ -35,9 +35,6 @@ class SFC64(SFC):
 					    dataType = AwlDataType.makeByName("TIME")),
 		)
 	}
-
-	def __init__(self, cpu):
-		SFC.__init__(self, cpu, 64)
 
 	def run(self):
 		# Return a 31-bit millisecond representation of "now".

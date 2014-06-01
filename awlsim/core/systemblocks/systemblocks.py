@@ -27,6 +27,10 @@ from awlsim.core.blocks import *
 
 
 class SystemBlock(Block):
+	# The block identification. To be overridden by the subclass.
+	# The tuple is: (number, name, short_description)
+	name = (-1, "<unknown>", None)
+
 	# Interface fields. To be overridden by the subclass.
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (),
@@ -35,11 +39,11 @@ class SystemBlock(Block):
 		BlockInterfaceField.FTYPE_STAT	: (),
 	}
 
-	def __init__(self, cpu, index, interface):
+	def __init__(self, cpu, interface):
 		insns = [
 			AwlInsn_GENERIC_CALL(cpu, self.run),
 		]
-		Block.__init__(self, insns, index, interface)
+		Block.__init__(self, insns, self.name[0], interface)
 		self.cpu = cpu
 
 		# Register the interface.
@@ -93,8 +97,8 @@ class SFBInterface(FBInterface):
 	pass
 
 class SFB(SystemBlock):
-	def __init__(self, cpu, index):
-		SystemBlock.__init__(self, cpu, index, SFBInterface())
+	def __init__(self, cpu):
+		SystemBlock.__init__(self, cpu, SFBInterface())
 
 	def __repr__(self):
 		return "SFB %d" % self.index
@@ -103,8 +107,8 @@ class SFCInterface(FCInterface):
 	pass
 
 class SFC(SystemBlock):
-	def __init__(self, cpu, index):
-		SystemBlock.__init__(self, cpu, index, SFCInterface())
+	def __init__(self, cpu):
+		SystemBlock.__init__(self, cpu, SFCInterface())
 
 	def __repr__(self):
 		return "SFC %d" % self.index

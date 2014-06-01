@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFB5(SFB):
-	"""SFB 5: TOF"""
+	name = (5, "TOF", "IEC 1131-3 delayed reset")
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
@@ -52,8 +52,6 @@ class SFB5(SFB):
 		),
 	}
 
-	def __init__(self, cpu):
-		SFB.__init__(self, cpu, 5)
-
 	def run(self):
 		pass#TODO
+		raise AwlSimError("SFB 5 \"TOF\" not implemented, yet.")
