@@ -589,6 +589,8 @@ class AwlSimMessageTransceiver(object):
 		self.payloadLen = None
 
 		try:
+			if isJython: #XXX Workaround
+				self.sock.setblocking(True)
 			self.__timeout = None
 			self.sock.settimeout(self.__timeout)
 
