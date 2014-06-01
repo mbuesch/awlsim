@@ -51,5 +51,17 @@ class SFB1(SFB):
 	}
 
 	def run(self):
-		pass#TODO
-		raise AwlSimError("SFB 1 \"CTD\" not implemented, yet.")
+		# CD pos-edge detection
+		CD = self.fetchInterfaceFieldByName("CD")
+		CD_pos_edge = CD & ~self.fetchInterfaceFieldByName("CDO") & 1
+		self.storeInterfaceFieldByName("CDO", CD)
+
+		CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("CV"))
+		if self.fetchInterfaceFieldByName("LOAD"): # Counter load
+			CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("PV"))
+		elif CD_pos_edge and CV > -32768: # Count down
+			CV -= 1
+		self.storeInterfaceFieldByName("CV", CV)
+
+		# Update Q-status
+		self.storeInterfaceFieldByName("Q", 1 if CV <= 0 else 0)
