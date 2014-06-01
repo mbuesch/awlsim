@@ -79,7 +79,7 @@ class SystemBlock(Block):
 	# (i.e. accesses not done in AWL instructions)
 	def resolveHardwiredSymbols(self):
 		self.__interfaceOpers = {}
-		for field in self.interface.fields_IN_OUT_INOUT:
+		for field in self.interface.fields_IN_OUT_INOUT_STAT:
 			# Create a scratch-operator for the access.
 			oper = AwlOperator(AwlOperator.NAMED_LOCAL, 0,
 					   field.name)

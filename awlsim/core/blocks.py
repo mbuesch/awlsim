@@ -91,6 +91,12 @@ class BlockInterface(object):
 		ret.extend(self.fields_INOUT)
 		return ret
 
+	@property
+	def fields_IN_OUT_INOUT_STAT(self):
+		ret = self.fields_IN_OUT_INOUT # don't copy
+		ret.extend(self.fields_STAT)
+		return ret
+
 	def __addField(self, field):
 		if field.name in self.fieldNameMap:
 			raise AwlSimError("Data structure field name '%s' is ambiguous." %\
