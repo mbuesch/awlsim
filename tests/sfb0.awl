@@ -13,7 +13,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -27,7 +27,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -41,7 +41,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -55,7 +55,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -69,7 +69,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -83,7 +83,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 
@@ -99,7 +99,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -113,7 +113,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -127,7 +127,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -141,7 +141,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 
@@ -160,7 +160,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	32766
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -174,7 +174,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	32767
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -188,7 +188,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	32767
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -202,7 +202,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	32767
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -216,7 +216,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	32767
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 	CALL	SFB 0, DB 1 (
@@ -230,7 +230,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	32767
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	1
 
 	CALL	SFB 0, DB 1 (
@@ -244,7 +244,7 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-	U		DB1.DBX 8.0	// CTO
+	U		DB1.DBX 8.0	// CUO
 	__ASSERT==	__STW VKE,	0
 
 END_ORGANIZATION_BLOCK
