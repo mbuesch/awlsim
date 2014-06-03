@@ -136,13 +136,21 @@ class AwlSimClient(object):
 	def shutdown(self):
 		"""Shutdown all sockets and spawned processes."""
 
-		if self.transceiver:
-			self.transceiver.shutdown()
-			self.transceiver = None
 		if self.serverProcess:
+			try:
+				msg = AwlSimMessage_SHUTDOWN()
+				status = self.__sendAndWaitFor_REPLY(msg)
+				if status != AwlSimMessage_REPLY.STAT_OK:
+					printError("AwlSimClient: Failed to shut down server via message")
+			except (AwlSimError, MaintenanceRequest) as e:
+				pass
+
 			self.serverProcess.terminate()
 			self.serverProcess.wait()
 			self.serverProcess = None
+		if self.transceiver:
+			self.transceiver.shutdown()
+			self.transceiver = None
 
 	def __rx_NOP(self, msg):
 		pass # Nothing

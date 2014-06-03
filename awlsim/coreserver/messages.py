@@ -54,6 +54,7 @@ class AwlSimMessage(object):
 	MSG_ID_PING		= EnumGen.item
 	MSG_ID_PONG		= EnumGen.item
 	MSG_ID_RESET		= EnumGen.item
+	MSG_ID_SHUTDOWN		= EnumGen.item
 	MSG_ID_RUNSTATE		= EnumGen.item
 	MSG_ID_LOAD_SYMTAB	= EnumGen.item
 	MSG_ID_LOAD_CODE	= EnumGen.item
@@ -150,6 +151,10 @@ class AwlSimMessage_PONG(AwlSimMessage):
 class AwlSimMessage_RESET(AwlSimMessage):
 	def __init__(self):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RESET)
+
+class AwlSimMessage_SHUTDOWN(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_SHUTDOWN)
 
 class AwlSimMessage_RUNSTATE(AwlSimMessage):
 	EnumGen.start
@@ -561,6 +566,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
 		AwlSimMessage.MSG_ID_RESET		: AwlSimMessage_RESET,
+		AwlSimMessage.MSG_ID_SHUTDOWN		: AwlSimMessage_SHUTDOWN,
 		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: AwlSimMessage_LOAD_SYMTAB,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,

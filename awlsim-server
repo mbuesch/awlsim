@@ -82,13 +82,15 @@ def main():
 			assert(interpreter)
 			serverProcess = AwlSimServer.start(listenHost = opt_listen[0],
 							   listenPort = opt_listen[1],
-							   forkInterpreter = interpreter)
+							   forkInterpreter = interpreter,
+							   commandMask = 0)
 			printInfo("Started awlsim server process (PID: %d)" %\
 				  serverProcess.pid)
 		else:
 			exitCode = AwlSimServer.start(listenHost = opt_listen[0],
 						      listenPort = opt_listen[1],
-						      forkInterpreter = None)
+						      forkInterpreter = None,
+						      commandMask = 0)
 	except AwlSimError as e:
 		printError(e.getReport())
 		return 1

@@ -56,6 +56,9 @@ class AwlSimServer(object):
 	STATE_EXIT	= EnumGen.item
 	EnumGen.end
 
+	# Command mask bits
+	CMDMSK_SHUTDOWN	= (1 << 0) # Allow shutdown command
+
 	class Client(object):
 		"""Client information."""
 
@@ -122,7 +125,9 @@ class AwlSimServer(object):
 		return distutils.spawn.find_executable(executable)
 
 	@classmethod
-	def start(cls, listenHost, listenPort, forkInterpreter=None):
+	def start(cls, listenHost, listenPort,
+		  forkInterpreter=None,
+		  commandMask=CMDMSK_SHUTDOWN):
 		"""Start a new server.
 		If 'forkInterpreter' is not None, spawn a subprocess.
 		If 'forkInterpreter' is None, run the server in this process."""
@@ -132,8 +137,9 @@ class AwlSimServer(object):
 		env = dict(os.environ)
 		env[AwlSimServer.ENV_MAGIC]		= AwlSimServer.ENV_MAGIC
 		env["AWLSIM_CORESERVER_HOST"]		= str(listenHost)
-		env["AWLSIM_CORESERVER_PORT"]		= str(listenPort)
+		env["AWLSIM_CORESERVER_PORT"]		= str(int(listenPort))
 		env["AWLSIM_CORESERVER_LOGLEVEL"]	= str(Logging.getLoglevel())
+		env["AWLSIM_CORESERVER_CMDMSK"]		= str(int(commandMask))
 
 		if forkInterpreter is None:
 			# Do not fork. Just run the server in this process.
@@ -158,14 +164,14 @@ class AwlSimServer(object):
 		server, retval = None, 0
 		try:
 			server = AwlSimServer()
-			for sig in (signal.SIGTERM, signal.SIGINT):
+			for sig in (signal.SIGTERM, ):
 				signal.signal(sig, server.signalHandler)
 			server.runFromEnvironment(env)
 		except AwlSimError as e:
 			print(e.getReport())
 			retval = 1
 		except KeyboardInterrupt:
-			print("Interrupted.")
+			print("AwlSimServer: Interrupted.")
 		finally:
 			if server:
 				server.close()
@@ -174,6 +180,7 @@ class AwlSimServer(object):
 	def __init__(self):
 		self.state = -1
 		self.__setRunState(self.STATE_INIT)
+		self.commandMask = 0
 		self.sim = None
 		self.socket = None
 		self.unixSockPath = None
@@ -207,7 +214,12 @@ class AwlSimServer(object):
 		except (TypeError, ValueError) as e:
 			raise AwlSimError("AwlSimServer: No listen port specified")
 
-		self.run(host, port)
+		try:
+			commandMask = int(env.get("AWLSIM_CORESERVER_CMDMSK"))
+		except (TypeError, ValueError) as e:
+			raise AwlSimError("AwlSimServer: No command mask specified")
+
+		self.run(host, port, commandMask)
 
 	def __setRunState(self, runstate):
 		if self.state == self.STATE_EXIT:
@@ -290,6 +302,14 @@ class AwlSimServer(object):
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.__setRunState(self.STATE_INIT)
 		self.sim.reset()
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_SHUTDOWN(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_FAIL
+		if self.commandMask & AwlSimServer.CMDMSK_SHUTDOWN:
+			printInfo("AwlSimServer: Exiting due to shutdown command")
+			self.__setRunState(self.STATE_EXIT)
+			status = AwlSimMessage_REPLY.STAT_OK
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_RUNSTATE(self, client, msg):
@@ -404,6 +424,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
 		AwlSimMessage.MSG_ID_RESET		: __rx_RESET,
+		AwlSimMessage.MSG_ID_SHUTDOWN		: __rx_SHUTDOWN,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: __rx_LOAD_SYMTAB,
@@ -480,8 +501,10 @@ class AwlSimServer(object):
 				if not client.repetitionFactor:
 					self.memReadRequestMsg = None
 
-	def run(self, host, port):
+	def run(self, host, port, commandMask):
 		"""Run the server on 'host':'port'."""
+
+		self.commandMask = commandMask
 
 		self.__listen(host, port)
 		self.__rebuildSelectReadList()

@@ -27,6 +27,7 @@ import sys
 import os
 import getopt
 import traceback
+import signal
 
 from awlsim.core import *
 from awlsim.coreserver import *
@@ -289,6 +290,12 @@ def runWithServerBackend(inputFile):
 			client.shutdown()
 	return 0
 
+def __signalHandler(sig, frame):
+	printInfo("Received signal %d" % sig)
+	if sig == signal.SIGTERM:
+		# Raise SIGINT. It will shut down everything.
+		os.kill(os.getpid(), signal.SIGINT)
+
 def main():
 	global opt_onecycle
 	global opt_cycletime
@@ -434,6 +441,8 @@ def main():
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())
 		return 1
+
+	signal.signal(signal.SIGTERM, __signalHandler)
 
 	if opt_interpreter and not opt_spawnBackend:
 		printError("Selected an --interpreter, but no "
