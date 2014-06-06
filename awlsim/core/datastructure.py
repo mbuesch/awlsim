@@ -32,12 +32,10 @@ class AwlStructField(object):
 	# name => Field name string
 	# offset => Field offset as AwlOffset
 	# dataType => AwlDataType
-	# initialValue => The initilization value
-	def __init__(self, name, offset, dataType, initialValue=0):
+	def __init__(self, name, offset, dataType):
 		self.name = name
 		self.offset = offset
 		self.dataType = dataType
-		self.initialValue = initialValue
 
 		# Store a copy of the data type size, in bits and bytes.
 		self.bitSize = self.dataType.width
@@ -52,8 +50,15 @@ class AwlStruct(object):
 		self.fields = []
 		self.name2field = {}
 
-	# Return size, in bytes.
+	# Return aligned size, in bytes.
 	def getSize(self):
+		size = self.__getUnalignedSize()
+		if size % 2:
+			size += 1
+		return size
+
+	# Return unaligned size, in bytes.
+	def __getUnalignedSize(self):
 		if not self.fields:
 			return 0
 		lastField = self.fields[-1]
@@ -67,14 +72,14 @@ class AwlStruct(object):
 			offset = AwlOffset(self.fields[-1].offset.byteOffset,
 					   self.fields[-1].offset.bitOffset + 1)
 		else:
-			offset = AwlOffset(self.getSize())
+			offset = AwlOffset(self.__getUnalignedSize())
 		field = AwlStructField(name, offset, dataType)
 		self.fields.append(field)
 		if name:
 			self.name2field[name] = field
 
 	def addFieldAligned(self, name, dataType, byteAlignment):
-		padding = byteAlignment - self.getSize() % byteAlignment
+		padding = byteAlignment - self.__getUnalignedSize() % byteAlignment
 		if padding == byteAlignment:
 			padding = 0
 		while padding:
@@ -102,20 +107,8 @@ class AwlStructInstance(object):
 		self.__allocate()
 
 	def __allocate(self):
-		# Calculate the size of the data structure, in bytes
-		size = sum(field.byteSize for field in self.struct.fields)
-
 		# Allocate the structure
-		self.dataBytes = ByteArray(size)
-		# Initialize the structure
-		offset = 0
-		for field in self.struct.fields:
-			bsize = field.byteSize
-			value = field.initialValue
-			for i in range(field.byteSize):
-				b = (value >> ((bsize - i - 1) * 8)) & 0xFF
-				self.dataBytes[offset + i] = b
-			offset += bsize
+		self.dataBytes = ByteArray(self.struct.getSize())
 
 	def getFieldData(self, field):
 		return self.dataBytes.fetch(field.offset, field.bitSize)

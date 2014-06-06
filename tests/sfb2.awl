@@ -1,6 +1,13 @@
 ORGANIZATION_BLOCK OB 1
 BEGIN
 
+	// Check instance-DB length
+	AUF		DB 1
+	L		DBLG
+	__ASSERT==	__ACCU 1,	10
+	AUF		DB 0
+
+
 	// Check Preset
 	CALL	SFB 2, DB 1 (
 		CU	:= FALSE,
