@@ -1,16 +1,1140 @@
 ORGANIZATION_BLOCK OB 1
 BEGIN
-	//TODO
-//	CALL	SFB 2, DB 1 (
-//		CU	:= FALSE,
-//		CD	:= FALSE,
-//		R	:= FALSE,
-//		LOAD	:= FALSE,
-//		PV	:= 0,
-//		QU	:= M 0.0,
-//		QD	:= M 0.1,
-//		CV	:= MW 2,
-//	)
+
+	// Check Preset
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= TRUE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= TRUE,
+		PV	:= -2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= TRUE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+
+	// Test Reset
+	L		2
+	T		DB1.DBW 6	// CV
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= TRUE,
+		LOAD	:= FALSE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	L		2
+	T		DB1.DBW 6	// CV
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= TRUE,
+		LOAD	:= TRUE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	L		2
+	T		DB1.DBW 6	// CV
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= TRUE,
+		LOAD	:= FALSE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	L		2
+	T		DB1.DBW 6	// CV
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= TRUE,
+		LOAD	:= FALSE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 2,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	// Test down counter
+	L		2
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+
+	// Test up counter
+	L		-2
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+
+	// Test simultaneous up/down
+	L		2
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	2
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	L		-32768
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	L		32767
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+
+	// Test down limit
+	L		-32767
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= TRUE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	-32768
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	1
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= TRUE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	10
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+
+	// Test up limit
+	L		32766
+	T		DB1.DBW 6	// CV
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32766
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= TRUE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= FALSE,
+		PV	:= 0,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	32767
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	1
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+	CALL	SFB 2, DB 1 (
+		CU	:= FALSE,
+		CD	:= FALSE,
+		R	:= FALSE,
+		LOAD	:= TRUE,
+		PV	:= 10,
+		QU	:= M 0.0,
+		QD	:= M 0.1,
+		CV	:= MW 2,
+	)
+	L		MW 2
+	__ASSERT==	__ACCU 1,	10
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.0	// CUO
+	__ASSERT==	__STW VKE,	0
+	U		DB1.DBX 8.1	// CDO
+	__ASSERT==	__STW VKE,	0
+
+
 END_ORGANIZATION_BLOCK
 
 

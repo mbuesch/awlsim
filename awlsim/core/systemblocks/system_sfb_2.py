@@ -59,5 +59,29 @@ class SFB2(SFB):
 	}
 
 	def run(self):
-		pass#TODO
-		raise AwlSimError("SFB 2 \"CTUD\" not implemented, yet.")
+		# CU pos-edge detection
+		CU = self.fetchInterfaceFieldByName("CU")
+		CU_pos_edge = CU & ~self.fetchInterfaceFieldByName("CUO") & 1
+		self.storeInterfaceFieldByName("CUO", CU)
+
+		# CD pos-edge detection
+		CD = self.fetchInterfaceFieldByName("CD")
+		CD_pos_edge = CD & ~self.fetchInterfaceFieldByName("CDO") & 1
+		self.storeInterfaceFieldByName("CDO", CD)
+
+		# Count
+		PV = wordToSignedPyInt(self.fetchInterfaceFieldByName("PV"))
+		CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("CV"))
+		if self.fetchInterfaceFieldByName("R"): # Counter reset
+			CV = 0
+		elif self.fetchInterfaceFieldByName("LOAD"): # Counter load
+			CV = PV
+		elif CD_pos_edge and not CU_pos_edge and CV > -32768: # Count down
+			CV -= 1
+		elif CU_pos_edge and not CD_pos_edge and CV < 32767: # Count up
+			CV += 1
+		self.storeInterfaceFieldByName("CV", CV)
+
+		# Update Q-status
+		self.storeInterfaceFieldByName("QU", 1 if CV >= PV else 0)
+		self.storeInterfaceFieldByName("QD", 1 if CV <= 0 else 0)
