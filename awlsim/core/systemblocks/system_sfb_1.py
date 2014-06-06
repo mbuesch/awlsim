@@ -59,9 +59,10 @@ class SFB1(SFB):
 		CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("CV"))
 		if self.fetchInterfaceFieldByName("LOAD"): # Counter load
 			CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("PV"))
+			self.storeInterfaceFieldByName("CV", CV)
 		elif CD_pos_edge and CV > -32768: # Count down
 			CV -= 1
-		self.storeInterfaceFieldByName("CV", CV)
+			self.storeInterfaceFieldByName("CV", CV)
 
 		# Update Q-status
 		self.storeInterfaceFieldByName("Q", 1 if CV <= 0 else 0)
