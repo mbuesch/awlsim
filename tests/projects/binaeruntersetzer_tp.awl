@@ -1,0 +1,51 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
+	// Taktgeber
+	UN	M 0.0
+	=	L 0.0
+	CALL	SFB 3, DB 1 (
+		IN	:= L 0.0,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+
+	// Taktausgabe
+	X	A 0.0
+	XN	M 0.0
+	=	A 0.0
+
+
+	// Schieberegister
+	L	MD 16
+	L	1
+	==D
+	S	M 0.1
+	RRD	1
+	==D
+	R	M 0.1
+	L	MD 16
+	UD	DW#16#FFFFFFFF
+	L	1
+	SPZ	_001
+	TAK
+	UN	M 0.0
+	SPBN	_001
+	U	M 0.1
+	SPBN	_000
+	RLD	2
+_000:	RRD	1
+_001:	T	MD 16
+	L	MD 16
+	T	AD 16
+	TAD
+	T	AD 20
+
+END_ORGANIZATION_BLOCK
+
+
+DATA_BLOCK DB 1
+	SFB 3
+BEGIN
+END_DATA_BLOCK

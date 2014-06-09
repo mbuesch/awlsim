@@ -52,6 +52,52 @@ class SFB3(SFB):
 		),
 	}
 
+	# STATE bits
+	STATE_RUNNING		= 1 << 0
+	STATE_FINISHED		= 1 << 1
+
 	def run(self):
-		pass#TODO
-		raise AwlSimError("SFB 3 \"TP\" not implemented, yet.")
+		PT = dwordToSignedPyInt(self.fetchInterfaceFieldByName("PT"))
+		if PT <= 0:
+			# Invalid PT. Abort and reset state.
+			# A PT of zero is used to reset the timer.
+			if PT == 0:
+				# S7 resets IN here, for whatever weird reason.
+				self.storeInterfaceFieldByName("IN", 0)
+			self.storeInterfaceFieldByName("Q", 0)
+			self.storeInterfaceFieldByName("ET", 0)
+			self.storeInterfaceFieldByName("STATE", 0)
+			return
+
+		# Get the current time, as S7-time value (31-bit milliseconds)
+		ATIME = int(self.cpu.now * 1000.0) & 0x7FFFFFFF
+
+		STATE = self.fetchInterfaceFieldByName("STATE")
+		IN = self.fetchInterfaceFieldByName("IN")
+		if IN and not (STATE & (self.STATE_RUNNING | self.STATE_FINISHED)):
+			# IN is true and we are not running, yet.
+			# Start the timer.
+			self.storeInterfaceFieldByName("STIME", ATIME)
+			STATE |= self.STATE_RUNNING
+			self.storeInterfaceFieldByName("STATE", STATE)
+		if STATE & self.STATE_RUNNING:
+			# The timer is running.
+			STIME = self.fetchInterfaceFieldByName("STIME")
+			self.storeInterfaceFieldByName("ATIME", ATIME)
+			ET = (ATIME - STIME) & 0x7FFFFFFF
+			if ET >= PT:
+				# Time elapsed.
+				ET = PT
+				self.storeInterfaceFieldByName("Q", 0)
+				STATE &= ~self.STATE_RUNNING
+				STATE |= self.STATE_FINISHED
+				self.storeInterfaceFieldByName("STATE", STATE)
+			else:
+				self.storeInterfaceFieldByName("Q", 1)
+			self.storeInterfaceFieldByName("ET", ET)
+		if not IN and (STATE & self.STATE_FINISHED):
+			# IN is false and we are finished.
+			# Shut down the timer.
+			STATE &= ~self.STATE_FINISHED
+			self.storeInterfaceFieldByName("STATE", STATE)
+			self.storeInterfaceFieldByName("ET", 0)
