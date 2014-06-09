@@ -1,5 +1,13 @@
 ORGANIZATION_BLOCK OB 1
 BEGIN
+
+	// Check instance-DB length
+	AUF		DB 1
+	L		DBLG
+	__ASSERT==	__ACCU 1,	22
+	AUF		DB 0
+
+
 	//TODO
 //	CALL	SFB 4, DB 1 (
 //		IN	:= FALSE,
