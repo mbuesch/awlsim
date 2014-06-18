@@ -73,6 +73,8 @@ def usage():
 def printSysblockInfo(blockTable, prefix, withExtended):
 	for block in sorted(blockTable.values(),
 			    key = lambda b: b.name[0]):
+		if block.broken:
+			continue
 		number, name, desc = block.name
 		if number < 0 and not withExtended:
 			continue

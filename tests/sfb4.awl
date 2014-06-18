@@ -7,14 +7,45 @@ BEGIN
 	__ASSERT==	__ACCU 1,	22
 	AUF		DB 0
 
+BE //TODO
 
-	//TODO
-//	CALL	SFB 4, DB 1 (
-//		IN	:= FALSE,
-//		PT	:= T#0s,
-//		Q	:= M 0.0,
-//		ET	:= MD 2,
-//	)
+	// Check TON
+	CALL	SFB 4, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#0S,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 14	// STIME
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	__ASSERT>=	__ACCU 1,	__ACCU 2
+
+	CALL	SFB 4, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#100MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 14	// STIME
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	__ASSERT>=	__ACCU 1,	__ACCU 2
+
+
+
 END_ORGANIZATION_BLOCK
 
 

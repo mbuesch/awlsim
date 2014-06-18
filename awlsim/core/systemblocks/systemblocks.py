@@ -39,6 +39,9 @@ class SystemBlock(Block):
 		BlockInterfaceField.FTYPE_STAT	: (),
 	}
 
+	# Set to True by the subclass, if the implementation is incomplete.
+	broken = False
+
 	def __init__(self, cpu, interface):
 		insns = [
 			AwlInsn_GENERIC_CALL(cpu, self.run),

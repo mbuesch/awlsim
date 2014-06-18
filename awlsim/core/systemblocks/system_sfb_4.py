@@ -52,6 +52,8 @@ class SFB4(SFB):
 		),
 	}
 
+	broken = True #TODO
+
 	def run(self):
 		pass#TODO
 		raise AwlSimError("SFB 4 \"TON\" not implemented, yet.")

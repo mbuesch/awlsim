@@ -52,6 +52,8 @@ class SFB5(SFB):
 		),
 	}
 
+	broken = True # TODO
+
 	def run(self):
 		pass#TODO
 		raise AwlSimError("SFB 5 \"TOF\" not implemented, yet.")
