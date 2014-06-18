@@ -50,6 +50,18 @@ class BlockInterfaceField(object):
 		self.fieldType = self.FTYPE_UNKNOWN
 		self.initialValue = initialValue
 
+	def __repr__(self):
+		ftype = {
+			self.FTYPE_UNKNOWN	: "UNKNOWN",
+			self.FTYPE_IN		: "IN",
+			self.FTYPE_OUT		: "OUT",
+			self.FTYPE_INOUT	: "IN_OUT",
+			self.FTYPE_STAT		: "STAT",
+			self.FTYPE_TEMP		: "TEMP",
+		}[self.fieldType]
+		return "(%s)  %s : %s" %\
+			(ftype, self.name, str(self.dataType))
+
 class BlockInterface(object):
 	# Data-types that must be passed "by-reference" to FCs/FBs.
 	callByRef_Types = (

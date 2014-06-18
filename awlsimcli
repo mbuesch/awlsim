@@ -68,9 +68,11 @@ def usage():
 	printInfo("")
 	printInfo("Other options:")
 	printInfo(" --list-sfc            Print a list of all supported SFCs")
+	printInfo(" --list-sfc-verbose    Verbose SFC list")
 	printInfo(" --list-sfb            Print a list of all supported SFBs")
+	printInfo(" --list-sfb-verbose    Verbose SFB list")
 
-def printSysblockInfo(blockTable, prefix, withExtended):
+def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
 	for block in sorted(blockTable.values(),
 			    key = lambda b: b.name[0]):
 		if block.broken:
@@ -83,6 +85,17 @@ def printSysblockInfo(blockTable, prefix, withExtended):
 		else:
 			desc = ""
 		printInfo("  %s %d  \"%s\"%s" % (prefix, number, name, desc))
+		if withInterface:
+			for ftype in (BlockInterfaceField.FTYPE_IN,
+				      BlockInterfaceField.FTYPE_OUT,
+				      BlockInterfaceField.FTYPE_INOUT):
+				try:
+					fields = block.interfaceFields[ftype]
+				except KeyError:
+					continue
+				for field in fields:
+					field.fieldType = ftype
+					printInfo("        %s" % str(field))
 
 def writeStdout(message):
 	if not opt_quiet:
@@ -337,7 +350,8 @@ def main():
 			  "obtemp=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "connect=", "spawn-backend", "interpreter=",
-			  "list-sfc", "list-sfb", ])
+			  "list-sfc", "list-sfc-verbose",
+			  "list-sfb", "list-sfb-verbose", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -411,13 +425,15 @@ def main():
 			opt_spawnBackend = True
 		if o in ("-i", "--interpreter"):
 			opt_interpreter = v
-		if o == "--list-sfc":
+		if o in ("--list-sfc", "--list-sfc-verbose"):
 			printInfo("The supported system functions (SFCs) are:")
-			printSysblockInfo(SFC_table, "SFC", opt_extInsns)
+			printSysblockInfo(SFC_table, "SFC", opt_extInsns,
+					  o.endswith("verbose"))
 			return 0
-		if o == "--list-sfb":
+		if o in ("--list-sfb", "--list-sfb-verbose"):
 			printInfo("The supported system function blocks (SFBs) are:")
-			printSysblockInfo(SFB_table, "SFB", opt_extInsns)
+			printSysblockInfo(SFB_table, "SFB", opt_extInsns,
+					  o.endswith("verbose"))
 			return 0
 	if len(args) != 1 and not opt_hwinfos:
 		usage()
