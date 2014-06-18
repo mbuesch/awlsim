@@ -19,6 +19,11 @@ sh_test()
 
 	"$interpreter" ./awlsimcli --list-sfc >/dev/null ||\
 		test_failed "Call to awlsimcli --list-sfc failed"
+	"$interpreter" ./awlsimcli --list-sfc-verbose >/dev/null ||\
+		test_failed "Call to awlsimcli --list-sfc-verbose failed"
 	"$interpreter" ./awlsimcli --list-sfb >/dev/null ||\
 		test_failed "Call to awlsimcli --list-sfb failed"
+	"$interpreter" ./awlsimcli --list-sfb-verbose >/dev/null ||\
+		test_failed "Call to awlsimcli --list-sfb-verbose failed"
+
 }
