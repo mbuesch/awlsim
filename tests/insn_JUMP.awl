@@ -452,6 +452,12 @@ _333:	TAK
 	__ASSERT==	__ACCU 1,	0
 	__ASSERT==	__ACCU 2,	25
 
+	// Test LOOP underrun
+	L		0
+	LOOP		_334
+	__ASSERT==	1,	2	// Should not be reached
+_334:	__ASSERT==	__ACCU 1,	DW#16#0000FFFF
+
 
 	// Test SPL
 	L		0
