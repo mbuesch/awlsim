@@ -186,6 +186,9 @@ class CpuWidget(QWidget):
 				for port in range(firstPort, lastPort + 1):
 					if not AwlSimServer.portIsUnused(host, port):
 						continue
+					# XXX: There is a race-window here. Another process might
+					#      allocate the port that we just checked
+					#      before our server is able to allocate it.
 					client.spawnServer(interpreter = interp,
 							   listenHost = host,
 							   listenPort = port)
