@@ -27,7 +27,11 @@ from awlsim.core.datatypehelpers import *
 
 
 class S7StatusWord(object):
-	"STEP 7 status word"
+	"""STEP 7 status word
+	The instance of this class holds the following nine
+	attributes. One for each STW bit:
+	NER, VKE, STA, OR, OS, OV, A0, A1, BIE
+	"""
 
 	name2nr = {
 		"/ER"	: 0,
@@ -52,23 +56,58 @@ class S7StatusWord(object):
 			raise AwlSimError("Invalid status word bit "
 				"name: " + str(name))
 
-	def __init__(self):
-		(self.NER,	# /ER	=> Erstabfrage
-		 self.VKE,	# VKE	=> Verknuepfungsergebnis
-		 self.STA,	# STA	=> Statusbit
-		 self.OR,	# OR	=> Oderbit
-		 self.OS,	# OS	=> Ueberlauf speichernd
-		 self.OV,	# OV	=> Ueberlauf
-		 self.A0,	# A0	=> Ergebnisanzeige 0
-		 self.A1,	# A1	=> Ergebnisanzeige 1
-		 self.BIE,	# BIE	=> Binaerergebnis
-		) = 0, 0, 0, 0, 0, 0, 0, 0, 0
+	def __getattr__(self, name):
+		# Return 0 as default value for all STW bits,
+		# if they were not set, yet.
+		if name in ("NER", "VKE", "STA", "OR", "OS",
+			    "OV", "A0", "A1", "BIE"):
+			setattr(self, name, 0)
+			return 0
+		# Fail for all other attributes
+		raise AttributeError
+
+	def __getNER(self):
+		return self.NER
+
+	def __getVKE(self):
+		return self.VKE
+
+	def __getSTA(self):
+		return self.STA
+
+	def __getOR(self):
+		return self.OR
+
+	def __getOS(self):
+		return self.OS
+
+	def __getOV(self):
+		return self.OV
+
+	def __getA0(self):
+		return self.A0
+
+	def __getA1(self):
+		return self.A1
+
+	def __getBIE(self):
+		return self.BIE
+
+	__bitnr2getter = (
+		__getNER,
+		__getVKE,
+		__getSTA,
+		__getOR,
+		__getOS,
+		__getOV,
+		__getA0,
+		__getA1,
+		__getBIE,
+	)
 
 	def getByBitNumber(self, bitNumber):
 		try:
-			return (self.NER, self.VKE, self.STA, self.OR,
-				self.OS, self.OV, self.A0, self.A1,
-				self.BIE)[bitNumber]
+			return self.__bitnr2getter[bitNumber](self)
 		except IndexError as e:
 			raise AwlSimError("Status word bit fetch '%d' "
 				"out of range" % bitNumber)
@@ -79,17 +118,17 @@ class S7StatusWord(object):
 		       (self.A0 << 6) | (self.A1 << 7) | (self.BIE << 8)
 
 	def setWord(self, word):
-		self.NER = 1 if (word & (1 << 0)) else 0
-		self.VKE = 1 if (word & (1 << 1)) else 0
-		self.STA = 1 if (word & (1 << 2)) else 0
-		self.OR = 1 if (word & (1 << 3)) else 0
-		self.OS = 1 if (word & (1 << 4)) else 0
-		self.OV = 1 if (word & (1 << 5)) else 0
-		self.A0 = 1 if (word & (1 << 6)) else 0
-		self.A1 = 1 if (word & (1 << 7)) else 0
-		self.BIE = 1 if (word & (1 << 8)) else 0
+		self.NER = word & 1
+		self.VKE = (word >> 1) & 1
+		self.STA = (word >> 2) & 1
+		self.OR = (word >> 3) & 1
+		self.OS = (word >> 4) & 1
+		self.OV = (word >> 5) & 1
+		self.A0 = (word >> 6) & 1
+		self.A1 = (word >> 7) & 1
+		self.BIE = (word >> 8) & 1
 
-	def copy(self):
+	def dup(self):
 		new = S7StatusWord()
 		new.NER = self.NER
 		new.VKE = self.VKE
@@ -104,30 +143,30 @@ class S7StatusWord(object):
 
 	def setForFloatingPoint(self, pyFloat):
 		dword = pyFloatToDWord(pyFloat)
-		dwordNoSign, s = dword & 0x7FFFFFFF, self
+		dwordNoSign = dword & 0x7FFFFFFF
 		if isDenormalPyFloat(pyFloat) or\
 		   (dwordNoSign < 0x00800000 and dwordNoSign != 0):
 			# denorm
-			s.A1, s.A0, s.OV, s.OS = 0, 0, 1, 1
+			self.A1, self.A0, self.OV, self.OS = 0, 0, 1, 1
 		elif dwordNoSign == 0:
 			# zero
-			s.A1, s.A0, s.OV = 0, 0, 0
+			self.A1, self.A0, self.OV = 0, 0, 0
 		elif dwordNoSign >= 0x7F800000:
 			if dwordNoSign == 0x7F800000:
 				# inf
 				if dword & 0x80000000:
-					s.A1, s.A0, s.OV, s.OS = 0, 1, 1, 1
+					self.A1, self.A0, self.OV, self.OS = 0, 1, 1, 1
 				else:
-					s.A1, s.A0, s.OV, s.OS = 1, 0, 1, 1
+					self.A1, self.A0, self.OV, self.OS = 1, 0, 1, 1
 			else:
 				# nan
-				s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
+				self.A1, self.A0, self.OV, self.OS = 1, 1, 1, 1
 		elif dword & 0x80000000:
 			# norm neg
-			s.A1, s.A0, s.OV = 0, 1, 0
+			self.A1, self.A0, self.OV = 0, 1, 0
 		else:
 			# norm pos
-			s.A1, s.A0, s.OV = 1, 0, 0
+			self.A1, self.A0, self.OV = 1, 0, 0
 
 	def __repr__(self):
 		ret = []
