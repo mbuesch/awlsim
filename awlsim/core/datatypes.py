@@ -31,9 +31,8 @@ class AwlOffset(object):
 	"Memory area offset"
 
 	def __init__(self, byteOffset, bitOffset=0, dbNumber=None):
-		self.byteOffset = byteOffset
-		self.bitOffset = bitOffset
-		self.dbNumber = dbNumber
+		self.byteOffset, self.bitOffset, self.dbNumber =\
+			byteOffset, bitOffset, dbNumber
 
 	def dup(self):
 		return AwlOffset(self.byteOffset,
