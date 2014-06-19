@@ -353,9 +353,6 @@ class AwlIndirectOp(AwlOperator):
 	AR_1		= 1	# Use AR1
 	AR_2		= 2	# Use AR2
 
-	# Address area mask
-	ADDRESS_MASK	= 0x0000FFFFFF #FIXME should be 0x7FFFF
-
 	# Pointer area constants
 	AREA_SHIFT	= 24
 	AREA_MASK	= 0x00FF000000
@@ -483,14 +480,14 @@ class AwlIndirectOp(AwlOperator):
 					"access is not of %s bit width." %\
 					listToHumanStr(possibleWidths))
 			offsetValue = self.insn.cpu.fetch(offsetOper)
-			pointer = (self.area | (offsetValue & 0x00FFFFFF))
+			pointer = (self.area | (offsetValue & 0x0007FFFF))
 		else:
 			# Register-indirect access
 			if offsetOper.type != AwlOperator.IMM_PTR:
 				raise AwlSimError("Offset operator in "
 					"register-indirect access is not a "
 					"pointer immediate.")
-			offsetValue = self.insn.cpu.fetch(offsetOper)
+			offsetValue = self.insn.cpu.fetch(offsetOper) & 0x0007FFFF
 			if self.area == AwlIndirectOp.AREA_NONE:
 				# Area-spanning access
 				pointer = (self.insn.cpu.getAR(self.addressRegister).get() +\
@@ -498,7 +495,7 @@ class AwlIndirectOp(AwlOperator):
 			else:
 				# Area-internal access
 				pointer = ((self.insn.cpu.getAR(self.addressRegister).get() +
-					    offsetValue) & 0x00FFFFFF) |\
+					    offsetValue) & 0x0007FFFF) |\
 					  self.area
 		# Create a direct operator
 		try:
@@ -517,7 +514,7 @@ class AwlIndirectOp(AwlOperator):
 			directOffset = AwlOffset.fromPointerValue(pointer)
 		else:
 			# 'pointer' is a byte offset
-			directOffset = AwlOffset(pointer & AwlIndirectOp.ADDRESS_MASK)
+			directOffset = AwlOffset(pointer & 0x0000FFFF)
 		if self.width != 1 and directOffset.bitOffset:
 			raise AwlSimError("Bit offset (lowest three bits) in %d-bit "
 				"indirect addressing is not zero. "
