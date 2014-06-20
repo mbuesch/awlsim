@@ -373,6 +373,8 @@ class AwlDataType(object):
 
 	@classmethod
 	def __parseGenericTime(cls, token):
+		# Parse T# or S5T# time formats.
+		# The prefix is already stripped.
 		token = token.upper()
 		p = token
 		seconds = 0.0
@@ -405,6 +407,26 @@ class AwlDataType(object):
 			num = int(num, 10)
 			seconds += num * mult
 		return seconds
+
+	@classmethod
+	def formatTime(cls, seconds):
+		# Format a seconds value into time format.
+		d = int(seconds // 86400)
+		seconds -= d * 86400
+		h = int(seconds // 3600)
+		seconds -= h * 3600
+		m = int(seconds // 60)
+		seconds -= m * 60
+		s = int(seconds)
+		seconds -= s
+		ms = int(seconds * 1000.0)
+		ret = []
+		for v, b in ((d, "d"), (h, "h"), (m, "m"), (s, "s"), (ms, "ms")):
+			if v:
+				ret.append("%d%s" % (v, b))
+		if not ret:
+			return "0ms"
+		return "".join(ret)
 
 	@classmethod
 	def __tryParseImmediate_STRING(cls, token, maxLen):

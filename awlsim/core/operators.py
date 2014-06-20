@@ -243,9 +243,10 @@ class AwlOperator(object):
 		if self.type == self.IMM_REAL:
 			return str(dwordToPyFloat(self.value))
 		elif self.type == self.IMM_S5T:
-			return "S5T#" #TODO
+			seconds = Timer.s5t_to_seconds(self.value)
+			return "S5T#" + AwlDataType.formatTime(seconds)
 		elif self.type == self.IMM_TIME:
-			return "T#" #TODO
+			return "T#" + AwlDataType.formatTime(self.value / 1000.0)
 		elif self.type == self.IMM_DATE:
 			return "D#" #TODO
 		elif self.type == self.IMM_TOD:
