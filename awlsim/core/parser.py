@@ -309,6 +309,7 @@ class AwlParser(object):
 				t.finishCurToken()
 				continue
 			if t.tokens:
+				# This is not the first token of the statement.
 				if (c == '(' and t.tokens[0].endswith(':') and len(t.tokens) >= 2) or\
 				   (c == '(' and not t.tokens[0].endswith(':')):
 					# Parenthesis begin
@@ -327,6 +328,14 @@ class AwlParser(object):
 				   c in (',', '[', ']') or\
 				   (c == '=' and len(t.tokens) == 1 and not t.curToken):
 					# Handle non-space token separators.
+					t.finishCurToken()
+					t.addToken(c)
+					continue
+			else:
+				# This is the first token of the statement.
+				if c == '[':
+					# This is the start of an array subscript.
+					# Handle it as separator.
 					t.finishCurToken()
 					t.addToken(c)
 					continue
@@ -572,7 +581,11 @@ class AwlParser(object):
 		if t.tokens[0].upper() == "END_DATA_BLOCK":
 			self.__setState(self.STATE_GLOBAL)
 			return
-		if len(t.tokens) >= 3 and t.tokens[1] == ":=":
+		if len(t.tokens) >= 6 and t.tokens[1] == "[":
+			# Array subscript assignment
+			pass#TODO
+		elif len(t.tokens) >= 3 and t.tokens[1] == ":=":
+			# Variable assignment
 			name, valueTokens = t.tokens[0], t.tokens[2:]
 			db = self.tree.curBlock
 			field = db.getByName(name)
