@@ -22,6 +22,7 @@ test_failed()
 	else
 		echo "$*"
 		echo "^^^ TEST FAILED ^^^"
+		[ $global_retval -eq 0 ] && global_retval=1
 	fi
 }
 
@@ -229,6 +230,7 @@ while [ $# -ge 1 ]; do
 	shift
 done
 
+global_retval=0
 do_tests "$@"
 
-exit 0
+exit $global_retval
