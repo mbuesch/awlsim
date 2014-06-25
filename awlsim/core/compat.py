@@ -57,6 +57,11 @@ if isPy2Compat:
 if isPy2Compat:
 	range = xrange
 
+# reduce() compatibility.
+# Force Python2 behavior
+if isPy3Compat:
+	from functools import reduce
+
 # Compat wrapper for monotonic time
 import time
 monotonic_time = getattr(time, "monotonic", time.clock)
