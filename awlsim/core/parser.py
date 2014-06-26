@@ -26,6 +26,7 @@ import sys
 import re
 
 from awlsim.core.util import *
+from awlsim.core.datatypes import *
 
 
 class RawAwlInsn(object):
@@ -135,10 +136,19 @@ class RawAwlCodeBlock(RawAwlBlock):
 		return False
 
 class RawAwlDataField(object):
-	def __init__(self, name, valueTokens, typeTokens):
+	def __init__(self, name, valueTokens, typeTokens,
+		     dimensions=None):
+		"""name -> The data field name string.
+		valueTokens -> List of tokens for the value. Or None, if no value.
+		               If this is an array (that is dimensions is not None),
+			       valueTokens is a list of value token strings.
+		typeTokens -> List of tokens for the data type.
+		dimensions -> List of array dimensions, where each dimension is a
+		              tuple of (start, end). Or None, if this is not an array."""
 		self.name = name
 		self.valueTokens = valueTokens
 		self.typeTokens = typeTokens
+		self.dimensions = dimensions
 
 class RawAwlDB(RawAwlBlock):
 	class FBRef(object):
@@ -271,6 +281,7 @@ class AwlParser(object):
 
 		t = self.TokenizerState(self)
 		for i, c in enumerate(data):
+			cNext = data[i + 1] if i + 1 < len(data) else None
 			if c == '\n':
 				self.lineNr += 1
 			if t.inComment:
@@ -328,8 +339,18 @@ class AwlParser(object):
 				   c in (',', '[', ']') or\
 				   (c == '=' and len(t.tokens) == 1 and not t.curToken):
 					# Handle non-space token separators.
-					t.finishCurToken()
-					t.addToken(c)
+					if c == ':' and cNext == '=':
+						# We are at the 'colon' character of a ':=' assignment.
+						t.finishCurToken()
+						t.addCharacter(c)
+					elif c == '=' and t.curToken == ':':
+						# We are at the 'equal' character of a ':=' assignment.
+						t.addCharacter(c)
+						t.finishCurToken()
+					else:
+						# Any other non-space token separator.
+						t.finishCurToken()
+						t.addToken(c)
 					continue
 			else:
 				# This is the first token of the statement.
@@ -548,6 +569,15 @@ class AwlParser(object):
 		else:
 			raise AwlParserError("In DB header: Unknown token: %s" % name)
 
+	def __parseArrayInitializer(self, valueList, tokens):
+		"""Parse an ARRAY initializer. That is either of:
+		1, 2, 3, 4
+		4 (1, 2, 3, 4)
+		or similar.
+		valueList -> The result list. Each element is a string.
+		tokens -> The tokens to parse."""
+		pass#TODO
+
 	def __parse_var_generic(self, t, varList,
 				endToken,
 				mayHaveInitval=True):
@@ -555,26 +585,87 @@ class AwlParser(object):
 			return False
 		colonIdx = listIndex(t.tokens, ":")
 		assignIdx = listIndex(t.tokens, ":=")
-		if mayHaveInitval and colonIdx == 1 and assignIdx > colonIdx + 1:
+		if len(t.tokens) >= 10 and\
+		   colonIdx == 1 and t.tokens[colonIdx+1].upper() == "ARRAY":
+			# This is an array variable.
+			ofIdx = listIndex(t.tokens, "OF",
+					  translate=lambda i, v: v.upper())
+			if assignIdx >= 0:
+				# We have an array initializer.
+				if not mayHaveInitval:
+					raise AwlParserError("In variable section: "
+						"Invalid ARRAY initializer")
+				if assignIdx < ofIdx + 2:
+					raise AwlParserError("In variable section: "
+						"Invalid ARRAY initializer placement")
+			if t.tokens[colonIdx+2] != "[":
+				raise AwlParserError("In variable section: "
+					"Invalid ARRAY definition")
+			closeIdx = listIndex(t.tokens, "]")
+			if closeIdx < colonIdx + 6 or\
+			   ofIdx < colonIdx + 7 or\
+			   closeIdx + 1 != ofIdx:
+				raise AwlParserError("In variable section: "
+					"Invalid ARRAY definition")
+			dimTokens = t.tokens[colonIdx+3 : closeIdx]
+			dimensions = []
+			while dimTokens:
+				if len(dimTokens) < 3:
+					raise AwlParserError("In variable section: "
+						"Invalid ARRAY dimensions")
+				if dimTokens[1] != "..":
+					raise AwlParserError("In variable section: "
+						"Invalid ARRAY dimensions")
+				try:
+					dimensions.append( (int(dimTokens[0]),
+							    int(dimTokens[2])) )
+				except ValueError as e:
+					raise AwlSimError("In variable section: "
+						"Invalid ARRAY dimensions")
+				if dimensions[-1][0] > dimensions[-1][1]:
+					raise AwlParserError("In variable section: "
+						"ARRAY dimension error. "
+						"Start bigger than end.")
+				if len(dimensions) > 6:
+					raise AwlParserError("In variable section: "
+						"Too many dimensions in ARRAY (max 6)")
+				dimTokens = dimTokens[3:]
+				if dimTokens and dimTokens[0] == ",":
+					dimTokens = dimTokens[1:]
 			name = t.tokens[0]
-			type = t.tokens[colonIdx+1:assignIdx]
-			val = t.tokens[assignIdx+1:]
-			field = RawAwlDataField(name, val, type)
-			varList.append(field)
-		elif colonIdx == 1:
-			name = t.tokens[0]
-			type = t.tokens[colonIdx+1:]
-			field = RawAwlDataField(name, None, type)
-			varList.append(field)
+			if assignIdx >= 0:
+				type = t.tokens[ofIdx+1:assignIdx]
+			else:
+				type = t.tokens[ofIdx+1:]
+			nrElems = AwlDataType.arrayDimensionsToNrElements(dimensions)
+			value = [ None, ] * nrElems
+			if assignIdx >= 0:
+				# Parse the ARRAY initializer (:= ...)
+				initTokens = t.tokens[assignIdx+1:]
+				self.__parseArrayInitializer(value,
+							     initTokens)
 		else:
-			raise AwlParserError("In variable section: Unknown tokens")
+			# This is a normal non-array variable.
+			dimensions = None
+			if mayHaveInitval and colonIdx == 1 and assignIdx > colonIdx + 1:
+				name = t.tokens[0]
+				type = t.tokens[colonIdx+1:assignIdx]
+				value = t.tokens[assignIdx+1:]
+			elif colonIdx == 1:
+				name = t.tokens[0]
+				type = t.tokens[colonIdx+1:]
+				value = None
+			else:
+				raise AwlParserError("In variable section: Unknown tokens")
+		field = RawAwlDataField(name, value, type, dimensions)
+		varList.append(field)
+
 		return True
 
 	def __parseTokens_db_hdr_struct(self, t):
 		if not self.__parse_var_generic(t,
 				varList = self.tree.curBlock.fields,
-				endToken = "END_STRUCT",
-				mayHaveInitval = False):
+				endToken = "END_STRUCT"):
 			self.__setState(self.STATE_IN_DB_HDR)
 
 	def __parseTokens_db(self, t):
@@ -583,7 +674,14 @@ class AwlParser(object):
 			return
 		if len(t.tokens) >= 6 and t.tokens[1] == "[":
 			# Array subscript assignment
-			pass#TODO
+			name = t.tokens[0]
+			db = self.tree.curBlock
+			field = db.getByName(name)
+			if field:
+				pass#TODO
+			else:
+				#FIXME this must be done later
+				raise AwlParserError("Initialization of incomplete array type")
 		elif len(t.tokens) >= 3 and t.tokens[1] == ":=":
 			# Variable assignment
 			name, valueTokens = t.tokens[0], t.tokens[2:]

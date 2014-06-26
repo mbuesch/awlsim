@@ -37,11 +37,16 @@ class AwlStructField(object):
 		self.offset = offset
 		self.dataType = dataType
 
-		# Store a copy of the data type size, in bits and bytes.
-		self.bitSize = self.dataType.width
-		self.byteSize = intDivRoundUp(self.bitSize, 8)
+		if self.dataType.type == AwlDataType.TYPE_ARRAY:
+			assert(0) # This should never happen.
+		else:
+			self.bitSize = self.dataType.width
+			self.byteSize = intDivRoundUp(self.bitSize, 8)
+			assert(self.bitSize in (0, 1, 8, 16, 32, 64))
 
-		assert(self.bitSize in (1, 8, 16, 32, 64))
+	def __repr__(self):
+		return "AwlStructField(%s, %s, %s)" %\
+			(str(self.name), str(self.offset), str(self.dataType))
 
 class AwlStruct(object):
 	"Data structure"
@@ -64,19 +69,45 @@ class AwlStruct(object):
 		lastField = self.fields[-1]
 		return lastField.offset.byteOffset + lastField.byteSize
 
-	def addField(self, name, dataType):
-		if dataType.width == 1 and self.fields and\
-		   self.fields[-1].bitSize == 1 and\
-		   self.fields[-1].offset.bitOffset < 7:
-			# Consecutive bitfields are merged into one byte
-			offset = AwlOffset(self.fields[-1].offset.byteOffset,
-					   self.fields[-1].offset.bitOffset + 1)
-		else:
-			offset = AwlOffset(self.__getUnalignedSize())
-		field = AwlStructField(name, offset, dataType)
+	def __registerField(self, field):
 		self.fields.append(field)
-		if name:
-			self.name2field[name] = field
+		if field.name:
+			self.name2field[field.name] = field
+
+	@classmethod
+	def makeArrayChildName(cls, baseName, linearIndex):
+		return "%s[%d]" % (baseName, linearIndex)
+
+	def addField(self, name, dataType):
+		if dataType.type == dataType.TYPE_ARRAY:
+			# Add an ARRAY.
+			# First add a zero-length field with the array's name.
+			offset = AwlOffset(self.__getUnalignedSize())
+			field = AwlStructField(name, offset,
+					       AwlDataType.makeByName("VOID"))
+			self.__registerField(field)
+			# Add fields for each array entry.
+			for i, childType in enumerate(dataType.children):
+				childName = self.makeArrayChildName(name, i)
+				self.addField(childName, childType)
+			# Add a zero-length array-end guard field,
+			# to enforce alignment of following fields.
+			offset = AwlOffset(self.__getUnalignedSize())
+			field = AwlStructField(None, offset,
+					       AwlDataType.makeByName("VOID"))
+			self.__registerField(field)
+		else:
+			# Add a single data type.
+			if dataType.width == 1 and self.fields and\
+			   self.fields[-1].bitSize == 1 and\
+			   self.fields[-1].offset.bitOffset < 7:
+				# Consecutive bitfields are merged into one byte
+				offset = AwlOffset(self.fields[-1].offset.byteOffset,
+						   self.fields[-1].offset.bitOffset + 1)
+			else:
+				offset = AwlOffset(self.__getUnalignedSize())
+			field = AwlStructField(name, offset, dataType)
+			self.__registerField(field)
 
 	def addFieldAligned(self, name, dataType, byteAlignment):
 		padding = byteAlignment - self.__getUnalignedSize() % byteAlignment
@@ -89,7 +120,8 @@ class AwlStruct(object):
 
 	def addFieldNaturallyAligned(self, name, dataType):
 		alignment = 1
-		if dataType.width > 8:
+		if dataType.type == dataType.TYPE_ARRAY or\
+		   dataType.width > 8:
 			alignment = 2
 		self.addFieldAligned(name, dataType, alignment)
 
@@ -98,6 +130,9 @@ class AwlStruct(object):
 			return self.name2field[name]
 		except KeyError:
 			raise AwlSimError("Data structure field '%s' not found" % name)
+
+	def __repr__(self):
+		return "\n".join(str(field) for field in self.fields)
 
 class AwlStructInstance(object):
 	"Data structure instance"

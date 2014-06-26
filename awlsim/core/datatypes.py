@@ -160,6 +160,15 @@ class AwlDataType(object):
 		TYPE_REAL,
 	)
 
+	# Convert a list of array dimensions into a number of elements.
+	@classmethod
+	def arrayDimensionsToNrElements(cls, dimensions):
+		assert(dimensions is not None)
+		assert(len(dimensions) >= 1 and len(dimensions) <= 6)
+		nrElems = reduce(lambda a, b: a * (b[1] - b[0] + 1),
+				 dimensions, 1)
+		return nrElems
+
 	@classmethod
 	def _name2typeid(cls, nameTokens):
 		nameTokens = toList(nameTokens)
@@ -170,12 +179,11 @@ class AwlDataType(object):
 					  nameTokens[0] if len(nameTokens) else "None")
 
 	@classmethod
-	def makeByName(cls, nameTokens):
+	def makeByName(cls, nameTokens, arrayDimensions=None):
 		type = cls._name2typeid(nameTokens)
 		index = None
-		subType = None
 		if type == cls.TYPE_ARRAY:
-			raise AwlSimError("ARRAYs not supported, yet") #TODO
+			raise AwlSimError("Nested ARRAYs are not allowed")
 		elif type in (cls.TYPE_DB_X,
 			      cls.TYPE_OB_X,
 			      cls.TYPE_FC_X,
@@ -191,24 +199,73 @@ class AwlDataType(object):
 				raise AwlSimError("Invalid '%s' block data type "\
 					"index" % nameTokens[0])
 			index = blockNumber
-		return cls(type = type,
-			   width = cls.type2width[type],
-			   isSigned = (type in cls.signedTypes),
-			   index = index,
-			   subType = subType)
+		if arrayDimensions:
+			# An ARRAY is to be constructed.
+			nrArrayElements = cls.arrayDimensionsToNrElements(arrayDimensions)
+			elementType = cls(type = type,
+					  width = cls.type2width[type],
+					  isSigned = (type in cls.signedTypes),
+					  index = index)
+			# Make a tuple of children types.
+			# Each element is a ref to the same AwlDataType instance.
+			children = tuple([ elementType, ] * nrArrayElements)
+			return cls(type = cls.TYPE_ARRAY,
+				   width = nrArrayElements,
+				   isSigned = (type in cls.signedTypes),
+				   index = index,
+				   children = children,
+				   arrayDimensions = arrayDimensions)
+		else:
+			return cls(type = type,
+				   width = cls.type2width[type],
+				   isSigned = (type in cls.signedTypes),
+				   index = index)
 
 	def __init__(self, type, width, isSigned,
-		     index=None, subType=None):
-		self.type = type
-		self.width = width
-		self.isSigned = isSigned
-		self.index = index
-		self.subType = subType		#TODO
+		     index=None, children=None,
+		     arrayDimensions=None):
+		self.type = type		# The TYPE_... for this datatype
+		self.width = width		# The width, in bits. If type==TYPE_ARRAY, this is the number of elements.
+		self.isSigned = isSigned	# True, if this type is signed
+		self.index = index		# The Index number, if any. May be None
+		self.children = children	# The children AwlDataTypes, if ARRAY.
+		self.arrayDimensions = arrayDimensions # The ARRAY's dimensions
+
+	# Convert array indices into a one dimensional index for this array.
+	# 'indices' are the indices as written in the AWL operator
+	# from left to right.
+	def arrayIndicesCollapse(self, *indices):
+		if len(indices) < 1 or len(indices) > 6:
+			raise AwlSimError("Invalid number of array indices")
+		assert(self.type == self.TYPE_ARRAY)
+		signif = self.arrayIndexSignificances()
+		assert(len(indices) == len(signif))
+		resIndex = 0
+		for i, idx in enumerate(indices):
+			resIndex += idx * signif[i]
+		return resIndex
+
+	# Get the array dimension sizes. Returns a tuple of integers.
+	def arrayDimSizes(self):
+		assert(self.type == self.TYPE_ARRAY)
+		return tuple(end - start + 1
+			     for start, end in self.arrayDimensions)
+
+	# Get the array index significances. Returns a tuple of integers.
+	def arrayIndexSignificances(self):
+		assert(self.type == self.TYPE_ARRAY)
+		sizes = self.arrayDimSizes()
+		signif = [ 1, ]
+		for size in sizes[:0:-1]:
+			signif.append(size * signif[-1])
+		return tuple(signif[::-1])
 
 	# Parse an immediate, constrained by our datatype.
 	def parseMatchingImmediate(self, tokens):
 		value = None
-		if len(tokens) == 9:
+		if tokens is None:
+			value = 0
+		elif len(tokens) == 9:
 			if self.type == self.TYPE_DWORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)

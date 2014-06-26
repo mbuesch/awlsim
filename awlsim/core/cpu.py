@@ -222,15 +222,21 @@ class S7CPU(object):
 					"DB %d declares field '%s', "
 					"but does not initialize." %\
 					(rawDB.index, f.name))
-			dtype = AwlDataType.makeByName(f.typeTokens)
+			dtype = AwlDataType.makeByName(f.typeTokens, f.dimensions)
 			db.struct.addFieldNaturallyAligned(f.name, dtype)
 		# Allocate the data structure fields
 		db.allocate()
 		# Initialize the data structure fields
 		for f in rawDB.fields:
-			dtype = AwlDataType.makeByName(f.typeTokens)
-			value = dtype.parseMatchingImmediate(f.valueTokens)
-			db.structInstance.setFieldDataByName(f.name, value)
+			dtype = AwlDataType.makeByName(f.typeTokens, f.dimensions)
+			if dtype.type == AwlDataType.TYPE_ARRAY:
+				for i, valueTokens in enumerate(f.valueTokens):
+					value = dtype.parseMatchingImmediate(valueTokens)
+					name = AwlStruct.makeArrayChildName(f.name, i)
+					db.structInstance.setFieldDataByName(name, value)
+			else:
+				value = dtype.parseMatchingImmediate(f.valueTokens)
+				db.structInstance.setFieldDataByName(f.name, value)
 		return db
 
 	def __translateInstanceDB(self, rawDB):
