@@ -129,9 +129,12 @@ def cpuDumpCallback(cpu):
 def makeLoglevel():
 	return Logging.LOG_ERROR if opt_quiet else Logging.LOG_INFO
 
-def assignCpuSpecs(specs):
-	specs.setConfiguredMnemonics(opt_mnemonics)
-	specs.setNrAccus(4 if opt_fouraccu else 2)
+def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
+	cpuSpecs.assignFrom(projectCpuSpecs)
+	if opt_mnemonics is not None:
+		cpuSpecs.setConfiguredMnemonics(opt_mnemonics)
+	if opt_nrAccus is not None:
+		cpuSpecs.setNrAccus(opt_nrAccus)
 
 def readInputFile(inputFile):
 	if Project.fileIsProject(inputFile):
@@ -160,9 +163,12 @@ def run(inputFile):
 			parseTrees.append(p.getParseTree())
 		symTables = []
 		for symTabFile in project.symTabFiles:
+			mnemonics = project.cpuSpecs.getConfiguredMnemonics()
+			if opt_mnemonics is not None:
+				mnemonics = opt_mnemonics
 			tab = SymTabParser.parseFile(symTabFile,
 						     autodetectFormat = True,
-						     mnemonics = opt_mnemonics)
+						     mnemonics = mnemonics)
 			symTables.append(tab)
 
 		writeStdout("Initializing simulator...\n")
@@ -177,7 +183,7 @@ def run(inputFile):
 						parameters = parameters)
 
 		cpu = s.getCPU()
-		assignCpuSpecs(cpu.getSpecs())
+		assignCpuSpecs(cpu.getSpecs(), project.cpuSpecs)
 		cpu.enableObTempPresets(opt_obtemp)
 		cpu.enableExtendedInsns(opt_extInsns)
 		if not opt_noCpuDump and not opt_quiet:
@@ -268,7 +274,7 @@ def runWithServerBackend(inputFile):
 		client.enableExtendedInsns(opt_extInsns)
 		client.setCycleTimeLimit(opt_cycletime)
 		specs = client.getCpuSpecs()
-		assignCpuSpecs(specs)
+		assignCpuSpecs(specs, project.cpuSpecs)
 		client.setCpuSpecs(specs)
 
 		# Fire up the core
@@ -316,7 +322,7 @@ def main():
 	global opt_cycletime
 	global opt_quiet
 	global opt_noCpuDump
-	global opt_fouraccu
+	global opt_nrAccus
 	global opt_extInsns
 	global opt_obtemp
 	global opt_mnemonics
@@ -331,10 +337,10 @@ def main():
 	opt_cycletime = 5.0
 	opt_quiet = False
 	opt_noCpuDump = False
-	opt_fouraccu = False
+	opt_nrAccus = None
 	opt_extInsns = False
 	opt_obtemp = False
-	opt_mnemonics = "auto"
+	opt_mnemonics = None
 	opt_hwmods = []
 	opt_hwinfos = []
 	opt_profile = 0
@@ -369,7 +375,7 @@ def main():
 				printError("-C|--cycle-time: Invalid time format")
 				sys.exit(1)
 		if o in ("-4", "--fouraccu"):
-			opt_fouraccu = True
+			opt_nrAccus = 4
 		if o in ("-q", "--quiet"):
 			opt_quiet = True
 		if o in ("-D", "--no-cpu-dump"):
@@ -444,6 +450,7 @@ def main():
 	Logging.setLoglevel(makeLoglevel())
 
 	opt_mnemonics = {
+		None	: None,
 		"en"	: S7CPUSpecs.MNEMONICS_EN,
 		"de"	: S7CPUSpecs.MNEMONICS_DE,
 		"auto"	: S7CPUSpecs.MNEMONICS_AUTO,

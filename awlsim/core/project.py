@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+from awlsim.core.cpuspecs import *
 from awlsim.core.util import *
 
 import datetime
@@ -42,10 +43,13 @@ else:
 
 
 class Project(object):
-	def __init__(self, projectFile, awlFiles=[], symTabFiles=[]):
+	def __init__(self, projectFile, awlFiles=[], symTabFiles=[], cpuSpecs=None):
 		self.projectFile = projectFile
 		self.awlFiles = awlFiles
 		self.symTabFiles = symTabFiles
+		if not cpuSpecs:
+			cpuSpecs = S7CPUSpecs()
+		self.cpuSpecs = cpuSpecs
 
 	@classmethod
 	def dataIsProject(cls, data):
@@ -71,6 +75,7 @@ class Project(object):
 		projectDir = os.path.dirname(projectFile)
 		awlFiles = []
 		symTabFiles = []
+		cpuSpecs = S7CPUSpecs()
 		try:
 			p = _ConfigParser()
 			p.readfp(StringIO(text), projectFile)
@@ -81,6 +86,7 @@ class Project(object):
 					"File version is %d, but expected %d." %\
 					(version, expectedVersion))
 
+			# CPU section
 			nrAwl = p.getint("CPU", "nr_awl_files")
 			if nrAwl < 0 or nrAwl > 0xFFFF:
 				raise AwlSimError("Project file: Invalid number of "\
@@ -88,7 +94,14 @@ class Project(object):
 			for i in range(nrAwl):
 				path = p.get("CPU", "awl_file_%d" % i)
 				awlFiles.append(cls.__generic2path(path, projectDir))
+			if p.has_option("CPU", "mnemonics"):
+				mnemonics = p.getint("CPU", "mnemonics")
+				cpuSpecs.setConfiguredMnemonics(mnemonics)
+			if p.has_option("CPU", "nr_accus"):
+				nrAccus = p.getint("CPU", "nr_accus")
+				cpuSpecs.setNrAccus(nrAccus)
 
+			# SYMBOLS section
 			nrSymTab = p.getint("SYMBOLS", "nr_sym_tab_files")
 			if nrSymTab < 0 or nrSymTab > 0xFFFF:
 				raise AwlSimError("Project file: Invalid number of "
@@ -102,7 +115,8 @@ class Project(object):
 
 		return cls(projectFile = projectFile,
 			   awlFiles = awlFiles,
-			   symTabFiles = symTabFiles)
+			   symTabFiles = symTabFiles,
+			   cpuSpecs = cpuSpecs)
 
 	@classmethod
 	def fromFile(cls, filename):
@@ -145,6 +159,8 @@ class Project(object):
 		for i, awlFile in enumerate(self.awlFiles):
 			path = self.__path2generic(awlFile, projectDir)
 			lines.append("awl_file_%d=%s" % (i, path))
+		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
+		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
 		lines.append("")
 		lines.append("[SYMBOLS]")
 		lines.append("nr_sym_tab_files=%d" % len(self.symTabFiles))

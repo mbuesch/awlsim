@@ -622,11 +622,18 @@ class S7CPU(object):
 		self.startupTime = self.now
 
 		# Run startup OB
-		for obNumber in (100, 101, 102):
-			ob = self.obs.get(obNumber)
-			if ob is not None:
-				self.__runOB(ob)
-				break
+		if 102 in self.obs and self.is4accu:
+			# Cold start.
+			# This is only done on 4xx-series CPUs.
+			self.__runOB(self.obs[102])
+		elif 100 in self.obs:
+			# Warm start.
+			# This really is a cold start, because remanent
+			# resources were reset. However we could not execute
+			# OB 102, so this is a fallback.
+			# This is not 100% compliant with real CPUs, but it probably
+			# is sane behavior.
+			self.__runOB(self.obs[100])
 
 	# Run one cycle of the user program
 	def runCycle(self):

@@ -28,6 +28,8 @@ from awlsim.core.util import *
 class S7CPUSpecs(object):
 	"STEP 7 CPU Specifications"
 
+	# Mnemonic identifiers
+	# Note: These numbers are .awlpro file ABI.
 	EnumGen.start
 	MNEMONICS_AUTO		= EnumGen.item
 	MNEMONICS_EN		= EnumGen.item

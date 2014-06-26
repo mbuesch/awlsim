@@ -30,6 +30,12 @@ END_ORGANIZATION_BLOCK
 
 ORGANIZATION_BLOCK OB 1
 BEGIN
+	// assert 2-accus
+	__FEATURE	0
+	__ASSERT==	__ACCU 1,	2
+
+
+	// check that OB 100 was executed
 	L		MD 0
 	__ASSERT==	__ACCU 1,	100
 END_ORGANIZATION_BLOCK
