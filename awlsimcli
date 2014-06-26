@@ -45,12 +45,13 @@ def usage():
 	printInfo("Options:")
 	printInfo(" -1|--onecycle         Only run one cycle")
 	printInfo(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
-	printInfo(" -4|--fouraccu         Enable 4-accu mode")
+	printInfo(" -2|--twoaccu          Force 2-accu mode")
+	printInfo(" -4|--fouraccu         Force 4-accu mode")
 	printInfo(" -D|--no-cpu-dump      Do not show CPU status while running")
 	printInfo(" -q|--quiet            Do not show any status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
 	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
-	printInfo(" -m|--mnemonics auto   Mnemonics type: en, de, auto (default)")
+	printInfo(" -m|--mnemonics auto   Force mnemonics type: en, de, auto")
 	printInfo(" -P|--profile 0        Set profiling level (Default: 0)")
 	printInfo("")
 	printInfo("Server backend related options:")
@@ -350,8 +351,8 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1C:4qDxt:m:H:I:P:c:bi:",
-			[ "help", "onecycle", "cycle-time=", "fouraccu",
+			"h1C:24qDxt:m:H:I:P:c:bi:",
+			[ "help", "onecycle", "cycle-time=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
@@ -374,6 +375,8 @@ def main():
 			except ValueError:
 				printError("-C|--cycle-time: Invalid time format")
 				sys.exit(1)
+		if o in ("-2", "--twoaccu"):
+			opt_nrAccus = 2
 		if o in ("-4", "--fouraccu"):
 			opt_nrAccus = 4
 		if o in ("-q", "--quiet"):
