@@ -527,7 +527,7 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	#	CPU AR 2 (32 bit)
 	#	CPU DB register (16 bit)
 	#	CPU DI register (16 bit)
-	plDataStruct = struct.Struct(">IIHHIIIIHH")
+	plDataStruct = struct.Struct(str(">IIHHIIIIHH"))
 
 	def __init__(self, lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE)
