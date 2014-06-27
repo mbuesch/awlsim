@@ -176,14 +176,9 @@ class S7CPU(object):
 		return insns
 
 	def __translateInterfaceField(self, rawVar):
-		dtype = AwlDataType.makeByName(rawVar.typeTokens)
-		if rawVar.valueTokens is None:
-			initialValue = None
-		else:
-			initialValue = dtype.parseMatchingImmediate(rawVar.valueTokens)
+		dtype = AwlDataType.makeByName(rawVar.typeTokens, rawVar.dimensions)
 		field = BlockInterfaceField(name = rawVar.name,
-					    dataType = dtype,
-					    initialValue = initialValue)
+					    dataType = dtype)
 		return field
 
 	def __translateCodeBlock(self, rawBlock, blockClass):
@@ -194,6 +189,7 @@ class S7CPU(object):
 		for rawVar in rawBlock.vars_out:
 			block.interface.addField_OUT(self.__translateInterfaceField(rawVar))
 		if rawBlock.retTypeTokens:
+			#FIXME ARRAY?
 			dtype = AwlDataType.makeByName(rawBlock.retTypeTokens)
 			if dtype.type != AwlDataType.TYPE_VOID:
 				field = BlockInterfaceField(name = "RET_VAL",
@@ -265,6 +261,7 @@ class S7CPU(object):
 		db.allocate()
 		# Initialize the data structure fields
 		for f in rawDB.fields:
+			#TODO ARRAY
 			dtype = interface.getFieldByName(f.name).dataType
 			value = dtype.parseMatchingImmediate(f.valueTokens)
 			db.structInstance.setFieldDataByName(f.name, value)

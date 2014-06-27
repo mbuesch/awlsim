@@ -39,16 +39,13 @@ class BlockInterfaceField(object):
 	FTYPE_TEMP	= EnumGen.item
 	EnumGen.end
 
-	def __init__(self, name, dataType, initialValue=None):
+	def __init__(self, name, dataType):
 		# name -> The name string of the field, as defined
 		#         in the block interface definition.
 		# dataType -> One of AwlDataType instance.
-		# initialValue -> Initial value for this field, as defined in
-		#                 the block interface definition.
 		self.name = name
 		self.dataType = dataType
 		self.fieldType = self.FTYPE_UNKNOWN
-		self.initialValue = initialValue
 
 	def __repr__(self):
 		ftype = {
