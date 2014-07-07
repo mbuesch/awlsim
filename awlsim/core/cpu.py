@@ -177,7 +177,8 @@ class S7CPU(object):
 
 	def __translateInterfaceField(self, rawVar):
 		dtype = AwlDataType.makeByName(rawVar.typeTokens, rawVar.dimensions)
-		field = BlockInterfaceField(name = rawVar.name,
+		assert(len(rawVar.idents) == 1) #TODO no structs, yet
+		field = BlockInterfaceField(name = rawVar.idents[0].name,
 					    dataType = dtype)
 		return field
 
@@ -189,9 +190,10 @@ class S7CPU(object):
 		for rawVar in rawBlock.vars_out:
 			block.interface.addField_OUT(self.__translateInterfaceField(rawVar))
 		if rawBlock.retTypeTokens:
-			#FIXME ARRAY?
+			# ARRAY is not supported for RET_VAL. So make non-array dtype.
 			dtype = AwlDataType.makeByName(rawBlock.retTypeTokens)
 			if dtype.type != AwlDataType.TYPE_VOID:
+				# Ok, we have a RET_VAL.
 				field = BlockInterfaceField(name = "RET_VAL",
 							    dataType = dtype)
 				block.interface.addField_OUT(field)
@@ -204,35 +206,44 @@ class S7CPU(object):
 		block.interface.buildDataStructure()
 		return block
 
+	# Initialize a DB (global or instance) data field from a raw data-init.
+	def __initDBField(self, db, dataType, rawDataInit):
+		if dataType.type == AwlDataType.TYPE_ARRAY:
+			index = dataType.arrayIndicesCollapse(*rawDataInit.idents[-1].indices)
+			value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
+			name = AwlStruct.makeArrayChildName(rawDataInit.idents[-1].name, index)
+			db.structInstance.setFieldDataByName(name, value)
+		else:
+			value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
+			db.structInstance.setFieldDataByName(rawDataInit.idents[-1].name, value)
+
 	def __translateGlobalDB(self, rawDB):
 		db = DB(rawDB.index, None)
 		# Create the data structure fields
-		for f in rawDB.fields:
-			if not f.typeTokens:
-				raise AwlSimError(
-					"DB %d assigns field '%s', "
-					"but does not declare it." %\
-					(rawDB.index, f.name))
-			if f.valueTokens is None:
+		for field in rawDB.fields:
+			assert(len(field.idents) == 1) #TODO no structs, yet
+			if not rawDB.getFieldInit(field):
 				raise AwlSimError(
 					"DB %d declares field '%s', "
 					"but does not initialize." %\
-					(rawDB.index, f.name))
-			dtype = AwlDataType.makeByName(f.typeTokens, f.dimensions)
-			db.struct.addFieldNaturallyAligned(f.name, dtype)
+					(rawDB.index, field.idents[0].name))
+			dtype = AwlDataType.makeByName(field.typeTokens,
+						       field.dimensions)
+			db.struct.addFieldNaturallyAligned(field.idents[0].name,
+							   dtype)
 		# Allocate the data structure fields
 		db.allocate()
 		# Initialize the data structure fields
-		for f in rawDB.fields:
-			dtype = AwlDataType.makeByName(f.typeTokens, f.dimensions)
-			if dtype.type == AwlDataType.TYPE_ARRAY:
-				for i, valueTokens in enumerate(f.valueTokens):
-					value = dtype.parseMatchingImmediate(valueTokens)
-					name = AwlStruct.makeArrayChildName(f.name, i)
-					db.structInstance.setFieldDataByName(name, value)
-			else:
-				value = dtype.parseMatchingImmediate(f.valueTokens)
-				db.structInstance.setFieldDataByName(f.name, value)
+		for field, init in rawDB.allFieldInits():
+			if not field:
+				raise AwlSimError(
+					"DB %d assigns field '%s', "
+					"but does not declare it." %\
+					(rawDB.index, init.getIdentString()))
+			assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
+			dtype = AwlDataType.makeByName(field.typeTokens,
+						       field.dimensions)
+			self.__initDBField(db, dtype, init)
 		return db
 
 	def __translateInstanceDB(self, rawDB):
@@ -251,20 +262,18 @@ class S7CPU(object):
 		db = DB(rawDB.index, fb)
 		interface = fb.interface
 		# Sanity checks
-		for f in rawDB.fields:
-			if f.typeTokens:
-				raise AwlSimError("DB %d is an "
-					"instance DB, but it also "
-					"declares a data structure." %\
-					rawDB.index)
+		if rawDB.fields:
+			raise AwlSimError("DB %d is an "
+				"instance DB, but it also "
+				"declares a data structure." %\
+				rawDB.index)
 		# Allocate the data structure fields
 		db.allocate()
 		# Initialize the data structure fields
-		for f in rawDB.fields:
-			#TODO ARRAY
-			dtype = interface.getFieldByName(f.name).dataType
-			value = dtype.parseMatchingImmediate(f.valueTokens)
-			db.structInstance.setFieldDataByName(f.name, value)
+		for init in rawDB.fieldInits:
+			assert(len(init.idents) == 1) #TODO no structs, yet
+			dtype = interface.getFieldByName(init.idents[-1].name).dataType
+			self.__initDBField(db, dtype, init)
 		return db
 
 	def __translateDB(self, rawDB):

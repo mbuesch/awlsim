@@ -240,9 +240,11 @@ class AwlDataType(object):
 		assert(self.type == self.TYPE_ARRAY)
 		signif = self.arrayIndexSignificances()
 		assert(len(indices) == len(signif))
+		assert(len(indices) == len(self.arrayDimensions))
 		resIndex = 0
 		for i, idx in enumerate(indices):
-			resIndex += idx * signif[i]
+			startIdx = self.arrayDimensions[i][0]
+			resIndex += (idx - startIdx) * signif[i]
 		return resIndex
 
 	# Get the array dimension sizes. Returns a tuple of integers.
@@ -262,41 +264,45 @@ class AwlDataType(object):
 
 	# Parse an immediate, constrained by our datatype.
 	def parseMatchingImmediate(self, tokens):
+		typeId = self.type
+		if typeId == self.TYPE_ARRAY:
+			typeId = self.children[0].type
+
 		value = None
 		if tokens is None:
 			value = 0
 		elif len(tokens) == 9:
-			if self.type == self.TYPE_DWORD:
+			if typeId == self.TYPE_DWORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)
 		elif len(tokens) == 5:
-			if self.type == self.TYPE_WORD:
+			if typeId == self.TYPE_WORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)
 		elif len(tokens) == 2:
-			if self.type == self.TYPE_TIMER:
+			if typeId == self.TYPE_TIMER:
 				if tokens[0].upper() == "T":
 					value = self.tryParseImmediate_INT(tokens[1])
-			elif self.type == self.TYPE_COUNTER:
+			elif typeId == self.TYPE_COUNTER:
 				if tokens[0].upper() in ("C", "Z"):
 					value = self.tryParseImmediate_INT(tokens[1])
-			elif self.type == self.TYPE_BLOCK_DB:
+			elif typeId == self.TYPE_BLOCK_DB:
 				if tokens[0].upper() == "DB":
 					value = self.tryParseImmediate_INT(tokens[1])
-			elif self.type == self.TYPE_BLOCK_FB:
+			elif typeId == self.TYPE_BLOCK_FB:
 				if tokens[0].upper() == "FB":
 					value = self.tryParseImmediate_INT(tokens[1])
-			elif self.type == self.TYPE_BLOCK_FC:
+			elif typeId == self.TYPE_BLOCK_FC:
 				if tokens[0].upper() == "FC":
 					value = self.tryParseImmediate_INT(tokens[1])
 		elif len(tokens) == 1:
-			if self.type == self.TYPE_BOOL:
+			if typeId == self.TYPE_BOOL:
 				value = self.tryParseImmediate_BOOL(
 						tokens[0])
-			elif self.type == self.TYPE_BYTE:
+			elif typeId == self.TYPE_BYTE:
 				value = self.tryParseImmediate_HexByte(
 						tokens[0])
-			elif self.type == self.TYPE_WORD:
+			elif typeId == self.TYPE_WORD:
 				value = self.tryParseImmediate_Bin(
 						tokens[0])
 				if value is None:
@@ -305,34 +311,34 @@ class AwlDataType(object):
 				if value is None:
 					value = self.tryParseImmediate_BCD(
 							tokens[0])
-			elif self.type == self.TYPE_DWORD:
+			elif typeId == self.TYPE_DWORD:
 				value = self.tryParseImmediate_Bin(
 						tokens[0])
 				if value is None:
 					value = self.tryParseImmediate_HexDWord(
 							tokens[0])
-			elif self.type == self.TYPE_INT:
+			elif typeId == self.TYPE_INT:
 				value = self.tryParseImmediate_INT(
 						tokens[0])
-			elif self.type == self.TYPE_DINT:
+			elif typeId == self.TYPE_DINT:
 				value = self.tryParseImmediate_DINT(
 						tokens[0])
-			elif self.type == self.TYPE_REAL:
+			elif typeId == self.TYPE_REAL:
 				value = self.tryParseImmediate_REAL(
 						tokens[0])
-			elif self.type == self.TYPE_S5T:
+			elif typeId == self.TYPE_S5T:
 				value = self.tryParseImmediate_S5T(
 						tokens[0])
-			elif self.type == self.TYPE_TIME:
+			elif typeId == self.TYPE_TIME:
 				value = self.tryParseImmediate_TIME(
 						tokens[0])
-			elif self.type == self.TYPE_DATE:
+			elif typeId == self.TYPE_DATE:
 				pass#TODO
-			elif self.type == self.TYPE_DT:
+			elif typeId == self.TYPE_DT:
 				pass#TODO
-			elif self.type == self.TYPE_TOD:
+			elif typeId == self.TYPE_TOD:
 				pass#TODO
-			elif self.type == self.TYPE_CHAR:
+			elif typeId == self.TYPE_CHAR:
 				value = self.tryParseImmediate_CHAR(
 						tokens[0])
 		if value is None:
