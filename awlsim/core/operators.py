@@ -22,13 +22,14 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+from awlsim.core.dynattrs import *
 from awlsim.core.datatypes import *
 from awlsim.core.statusword import *
 from awlsim.core.lstack import *
 from awlsim.core.util import *
 
 
-class AwlOperator(object):
+class AwlOperator(DynAttrs):
 	EnumGen.start	# Operator types
 
 	IMM		= EnumGen.item	# Immediate value (constant)
@@ -153,18 +154,26 @@ class AwlOperator(object):
 		VIRT_DBR	: "__DBR",
 	}
 
+	# Dynamic attributes
+	dynAttrs = {
+		# Extended-operator flag.
+		"isExtended"		: False,
+
+		# Possible label index.
+		"labelIndex"		: None,
+
+		# Interface index number.
+		# May be set by the symbol resolver.
+		"interfaceIndex"	: None,
+	}
+
 	def __init__(self, type, width, value, insn=None):
 		# type -> The operator type ID number. See "Operator types" above.
 		# width -> The bit width of the access.
 		# value -> The value. May be an AwlOffset or a string (depends on type).
 		# insn -> The instruction this operator is used in. May be None.
-		self.type = type
-		self.width = width
-		self.value = value
-		self.labelIndex = None
-		self.insn = insn
-		self.isExtended = False
-		# The symbol resolver may also put a "self.interfaceIndex" number in here.
+		self.type, self.width, self.value, self.insn =\
+			type, width, value, insn
 
 	# Make a deep copy, except for "insn".
 	def dup(self):
@@ -178,6 +187,7 @@ class AwlOperator(object):
 				   insn = self.insn)
 		oper.setExtended(self.isExtended)
 		oper.setLabelIndex(self.labelIndex)
+		oper.interfaceIndex = self.interfaceIndex
 		return oper
 
 	def setInsn(self, newInsn):
@@ -424,10 +434,8 @@ class AwlIndirectOp(AwlOperator):
 				     width = width,
 				     value = None,
 				     insn = insn)
-		assert(width in (1, 8, 16, 32))
-		self.area = area
-		self.addressRegister = addressRegister
-		self.offsetOper = offsetOper
+		self.area, self.addressRegister, self.offsetOper =\
+			area, addressRegister, offsetOper
 
 	# Make a deep copy, except for "insn".
 	def dup(self):
