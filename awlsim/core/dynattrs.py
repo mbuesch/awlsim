@@ -31,12 +31,16 @@ class DynAttrs(object):
 	# Dict of dynamic attributes.
 	# Key is the attribute name.
 	# Value is the initial attribute value.
+	# If value is a callable, it is called with (self, name) as arguments
+	# to retrieve the actual value.
 	dynAttrs = {}
 
 	def __getattr__(self, name):
 		# Create the attribute, if it is in the dynAttrs dict.
 		if name in self.dynAttrs:
 			value = self.dynAttrs[name]
+			if callable(value):
+				value = value(self, name)
 			setattr(self, name, value)
 			return value
 		# Fail for all other attributes
