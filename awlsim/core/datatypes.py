@@ -22,22 +22,28 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+from awlsim.core.dynattrs import *
 from awlsim.core.util import *
 from awlsim.core.timers import *
 from awlsim.core.datatypehelpers import *
 
 
-class AwlOffset(object):
+class AwlOffset(DynAttrs):
 	"Memory area offset"
 
-	def __init__(self, byteOffset, bitOffset=0, dbNumber=None):
-		self.byteOffset, self.bitOffset, self.dbNumber =\
-			byteOffset, bitOffset, dbNumber
+	dynAttrs = {
+		"dbNumber"	: None,
+	}
+
+	def __init__(self, byteOffset, bitOffset=0):
+		self.byteOffset, self.bitOffset =\
+			byteOffset, bitOffset
 
 	def dup(self):
-		return AwlOffset(self.byteOffset,
-				 self.bitOffset,
-				 self.dbNumber)
+		offset = AwlOffset(self.byteOffset,
+				   self.bitOffset)
+		offset.dbNumber = self.dbNumber
+		return offset
 
 	@classmethod
 	def fromPointerValue(cls, value):

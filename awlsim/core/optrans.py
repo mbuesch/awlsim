@@ -400,6 +400,7 @@ class AwlOpTranslator(object):
 							rawOps[0][3:]), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
+			#TODO symbolic fully qualified access
 			return OpDescriptor(AwlOperator(AwlOperator.SYMBOLIC, 0,
 							rawOps[0][1:-1]), 1)
 		# Immediate boolean
@@ -490,7 +491,7 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator(AwlOperator.IMM, 32,
 					    immediate), 1)
-		# DBx.DB[XBWD] addressing
+		# DBx.DBX/B/W/D addressing
 		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])
 		if match:
 			dbNumber = int(match.group(1))
@@ -500,10 +501,20 @@ class AwlOpTranslator(object):
 				"W"	: 16,
 				"D"	: 32,
 			}[match.group(2)]
-			offset = AwlOffset(-1, -1 if (width == 1) else 0,
-					   dbNumber = dbNumber)
+			offset = AwlOffset(-1, -1 if (width == 1) else 0)
+			offset.dbNumber = dbNumber
 			return OpDescriptor(AwlOperator(AwlOperator.MEM_DB, width,
 					    offset), 2)
+		# DBx.VARIABLE adressing
+		match = re.match(r'^DB(\d+)\.(.+)$', rawOps[0])
+		if match:
+			if len(rawOps) == 1:
+				# DBx.VARIABLE adressing
+				pass#TODO
+			elif len(rawOps) >= 4 and\
+			     rawOps[1] == '[' and rawOps[-1] == ']':
+				# DBx.ARRAY[x, y, z] adressing
+				pass#TODO
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
