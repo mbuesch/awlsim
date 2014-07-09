@@ -38,11 +38,11 @@ class AwlStructField(object):
 		self.dataType = dataType
 
 		if self.dataType.type == AwlDataType.TYPE_ARRAY:
-			assert(0) # This should never happen.
+			self.bitSize = 0
 		else:
 			self.bitSize = self.dataType.width
-			self.byteSize = intDivRoundUp(self.bitSize, 8)
-			assert(self.bitSize in (0, 1, 8, 16, 32, 64))
+		self.byteSize = intDivRoundUp(self.bitSize, 8)
+		assert(self.bitSize in (0, 1, 8, 16, 32, 64))
 
 	def __repr__(self):
 		return "AwlStructField(%s, %s, %s)" %\
@@ -82,9 +82,9 @@ class AwlStruct(object):
 		if dataType.type == dataType.TYPE_ARRAY:
 			# Add an ARRAY.
 			# First add a zero-length field with the array's name.
+			# It has the data type 'ARRAY' and is informational only.
 			offset = AwlOffset(self.__getUnalignedSize())
-			field = AwlStructField(name, offset,
-					       AwlDataType.makeByName("VOID"))
+			field = AwlStructField(name, offset, dataType)
 			self.__registerField(field)
 			# Add fields for each array entry.
 			for i, childType in enumerate(dataType.children):

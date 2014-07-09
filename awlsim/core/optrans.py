@@ -1,7 +1,7 @@
 #
 # AWL simulator - Operator translator
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -400,7 +400,6 @@ class AwlOpTranslator(object):
 							rawOps[0][3:]), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
-			#TODO symbolic fully qualified access
 			return OpDescriptor(AwlOperator(AwlOperator.SYMBOLIC, 0,
 							rawOps[0][1:-1]), 1)
 		# Immediate boolean
@@ -506,15 +505,36 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator(AwlOperator.MEM_DB, width,
 					    offset), 2)
 		# DBx.VARIABLE adressing
-		match = re.match(r'^DB(\d+)\.(.+)$', rawOps[0])
+		match = re.match(r'^((?:DB\d+)|(?:"[^"]+"))\.(.+)$', rawOps[0])
 		if match:
-			if len(rawOps) == 1:
-				# DBx.VARIABLE adressing
-				pass#TODO
-			elif len(rawOps) >= 4 and\
-			     rawOps[1] == '[' and rawOps[-1] == ']':
+			offset = AwlOffset(None, None)
+			db = match.group(1)
+			if db.startswith("DB"):
+				offset.dbNumber = int(db[2:])
+			else:
+				offset.dbName = db[1:-1]
+			offset.varName = match.group(2)
+			if len(rawOps) >= 4 and rawOps[1] == '[':
 				# DBx.ARRAY[x, y, z] adressing
-				pass#TODO
+				offset.indices = []
+				count = 2
+				try:
+					while rawOps[count] != ']':
+						offset.indices.append(int(rawOps[count]))
+						count += 1
+						if count < len(rawOps) and rawOps[count] == ',':
+							count += 1
+					count += 1 # closing braces
+				except (ValueError, IndexError) as e:
+					raise AwlSimError("Invalid array index")
+				if len(offset.indices) < 1 or len(offset.indices) > 6:
+					raise AwlSimError("Invalid number of array indices")
+				return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
+						    offset), count)
+			else:
+				# DBx.VARIABLE adressing
+				return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
+						    offset), 1)
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 

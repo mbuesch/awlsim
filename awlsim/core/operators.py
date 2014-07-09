@@ -2,7 +2,7 @@
 #
 # AWL simulator - operators
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@ class AwlOperator(DynAttrs):
 	SYMBOLIC	= EnumGen.item	# Classic symbolic reference ("xyz")
 	NAMED_LOCAL	= EnumGen.item	# Named local reference (#abc)
 	NAMED_LOCAL_PTR	= EnumGen.item	# Pointer to named local (P##abc)
+	NAMED_DBVAR	= EnumGen.item	# Named DB variable reference (DBx.VAR)
 
 	INDIRECT	= EnumGen.item	# Indirect access
 	UNSPEC		= EnumGen.item	# Not (yet) specified memory region
@@ -144,8 +145,6 @@ class AwlOperator(DynAttrs):
 		BLKREF_DI	: "BLOCK_DI",
 		BLKREF_OB	: "BLOCK_OB",
 		BLKREF_VAT	: "BLOCK_VAT",
-
-		NAMED_LOCAL	: "#LOCAL",
 
 		INDIRECT	: "__INDIRECT",
 
@@ -343,6 +342,8 @@ class AwlOperator(DynAttrs):
 			return "#%s" % self.value
 		elif self.type == self.NAMED_LOCAL_PTR:
 			return "P##%s" % self.value
+		elif self.type == self.NAMED_DBVAR:
+			return str(self.value) # value is AwlOffset
 		elif self.type == self.INDIRECT:
 			assert(0) # Overloaded in AwlIndirectOp
 		elif self.type == self.VIRT_ACCU:

@@ -2,7 +2,7 @@
 #
 # AWL data types
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,17 @@ class AwlOffset(DynAttrs):
 	"Memory area offset"
 
 	dynAttrs = {
+		# A DB-number for fully qualified access, or None.
 		"dbNumber"	: None,
+
+		# A symbolic DB-name for fully qualified access, or None.
+		"dbName"	: None,
+
+		# A DB-variable name for fully qualified access, or None.
+		"varName"	: None,
+
+		# List of Variable indices for fully qualified array access, or None.
+		"indices"	: None,
 	}
 
 	def __init__(self, byteOffset, bitOffset=0):
@@ -55,11 +65,24 @@ class AwlOffset(DynAttrs):
 		       (self.bitOffset & 0x7)
 
 	def __repr__(self):
+		prefix = ""
 		if self.dbNumber is not None:
-			return "DB%d(%d.%d)" % (self.dbNumber,
-						self.byteOffset,
-						self.bitOffset)
-		return "%d.%d" % (self.byteOffset, self.bitOffset)
+			prefix = "DB%d" % self.dbNumber
+		if self.dbName is not None:
+			prefix = '"%s"' % self.dbName
+		if self.varName is not None:
+			indices = ""
+			if self.indices is not None:
+				indices = "[%s]" % ",".join(str(i) for i in self.indices)
+			if prefix:
+				return prefix + "." + self.varName + indices
+			return "#%s%s" % (self.varName, indices)
+		else:
+			if prefix:
+				prefix = prefix + ".DBX "
+			return "%s%d.%d" % (prefix,
+					    self.byteOffset,
+					    self.bitOffset)
 
 class AwlDataType(object):
 	# Data type IDs

@@ -334,7 +334,59 @@ class S7CPU(object):
 			oper.interfaceIndex = index
 		return oper
 
+	# Translate named fully qualified accesses (DBx.VARx)
+	def __resolveNamedFullyQualified(self, block, insn, oper):
+		if oper.type != AwlOperator.NAMED_DBVAR:
+			return oper
+
+		# Resolve the symbolic DB name, if needed
+		assert(oper.value.dbNumber is not None or\
+		       oper.value.dbName is not None)
+		if oper.value.dbNumber is None:
+			symbol = self.symbolTable.findByName(oper.value.dbName)
+			if not symbol:
+				raise AwlSimError("Symbol \"%s\" specified as DB in "
+					"fully qualified operator not found." %\
+					oper.value.dbName)
+			if symbol.type.type != AwlDataType.TYPE_DB_X:
+				raise AwlSimError("Symbol \"%s\" specified as DB in "
+					"fully qualified operator is not a DB-symbol." %\
+					oper.value.dbName)
+			oper.value.dbNumber = symbol.operator.value.byteOffset
+
+		# Get the DB
+		try:
+			db = self.dbs[oper.value.dbNumber]
+		except KeyError as e:
+			raise AwlSimError("DB %d specified in fully qualified "
+				"operator does not exist." % oper.value.dbNumber)
+
+		# Get the data structure field descriptor
+		# and construct the AwlOffset.
+		field = db.struct.getField(oper.value.varName)
+		if oper.value.indices is not None:
+			# This is an array access.
+			if field.dataType.type != AwlDataType.TYPE_ARRAY:
+				raise AwlSimError("Indexed variable '%s' in fully qualified "
+					"DB access is not an ARRAY." %\
+					oper.value.varName)
+			index = field.dataType.arrayIndicesCollapse(*oper.value.indices)
+			# Get the actual data field
+			name = AwlStruct.makeArrayChildName(oper.value.varName, index)
+			field = db.struct.getField(name)
+		# Extract the offset data
+		offset = field.offset.dup()
+		width = field.bitSize
+		offset.dbNumber = oper.value.dbNumber
+
+		# Construct an absolute operator
+		return AwlOperator(type = AwlOperator.MEM_DB,
+				   width = width,
+				   value = offset,
+				   insn = oper.insn)
+
 	def __resolveSymbols_block(self, block):
+		#FIXME better error handling. Assign AwlSimError.insn
 		for insn in block.insns:
 			for i in range(len(insn.ops)):
 				insn.ops[i] = self.__resolveClassicSym(block,
@@ -342,6 +394,8 @@ class S7CPU(object):
 				insn.ops[i] = self.resolveNamedLocal(block,
 								insn, insn.ops[i],
 								pointer=False)
+				insn.ops[i] = self.__resolveNamedFullyQualified(block,
+								insn, insn.ops[i])
 				if insn.ops[i].type == AwlOperator.INDIRECT:
 					insn.ops[i].offsetOper = \
 						self.__resolveClassicSym(block,
@@ -359,6 +413,8 @@ class S7CPU(object):
 				insn.params[i].rvalueOp = self.resolveNamedLocal(block,
 								insn, insn.params[i].rvalueOp,
 								pointer=False)
+				insn.params[i].rvalueOp = self.__resolveNamedFullyQualified(block,
+								insn, insn.params[i].rvalueOp)
 				if insn.params[i].rvalueOp.type == AwlOperator.INDIRECT:
 					insn.params[i].rvalueOp.offsetOper =\
 						self.__resolveClassicSym(block,
@@ -1142,6 +1198,11 @@ class S7CPU(object):
 	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
 		return self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False).makePointer()
 
+	def fetchNAMED_DBVAR(self, operator, enforceWidth):
+		# All legit accesses will have been translated to absolute addressing already
+		raise AwlSimError("Fully qualified load from DB variable "
+			"is not supported in this place.")
+
 	def fetchINDIRECT(self, operator, enforceWidth):
 		return self.fetch(operator.resolve(False), enforceWidth)
 
@@ -1207,6 +1268,7 @@ class S7CPU(object):
 		AwlOperator.MEM_STW_UO		: fetchSTW_UO,
 		AwlOperator.NAMED_LOCAL		: fetchNAMED_LOCAL,
 		AwlOperator.NAMED_LOCAL_PTR	: fetchNAMED_LOCAL_PTR,
+		AwlOperator.NAMED_DBVAR		: fetchNAMED_DBVAR,
 		AwlOperator.INDIRECT		: fetchINDIRECT,
 		AwlOperator.VIRT_ACCU		: fetchVirtACCU,
 		AwlOperator.VIRT_AR		: fetchVirtAR,
@@ -1327,6 +1389,11 @@ class S7CPU(object):
 		self.store(self.callStackTop.interfRefs[operator.interfaceIndex].resolve(True),
 			   value, enforceWidth)
 
+	def storeNAMED_DBVAR(self, operator, value, enforceWidth):
+		# All legit accesses will have been translated to absolute addressing already
+		raise AwlSimError("Fully qualified store to DB variable "
+			"is not supported in this place.")
+
 	def storeINDIRECT(self, operator, value, enforceWidth):
 		self.store(operator.resolve(True), value, enforceWidth)
 
@@ -1342,6 +1409,7 @@ class S7CPU(object):
 		AwlOperator.MEM_AR2		: storeAR2,
 		AwlOperator.MEM_STW		: storeSTW,
 		AwlOperator.NAMED_LOCAL		: storeNAMED_LOCAL,
+		AwlOperator.NAMED_DBVAR		: storeNAMED_DBVAR,
 		AwlOperator.INDIRECT		: storeINDIRECT,
 	}
 

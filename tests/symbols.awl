@@ -1,3 +1,15 @@
+DATA_BLOCK "Data_1"
+STRUCT
+	VAR0		: INT
+END_STRUCT
+BEGIN
+	VAR0		:= 123
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Test symbolic M access
 	__STWRST
 	U		"sym_M_0.0"
 	__ASSERT==	__STW VKE,	0
@@ -11,3 +23,10 @@
 	__STWRST
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
+
+
+	// Test symbolic fully qualified access
+	L		"Data_1".VAR0
+	__ASSERT==	__ACCU 1,	123
+
+END_ORGANIZATION_BLOCK
