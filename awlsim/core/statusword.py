@@ -22,11 +22,12 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+from awlsim.core.dynattrs import *
 from awlsim.core.util import *
 from awlsim.core.datatypehelpers import *
 
 
-class S7StatusWord(object):
+class S7StatusWord(DynAttrs):
 	"""STEP 7 status word
 	The instance of this class holds the following nine
 	attributes. One for each STW bit:
@@ -48,6 +49,19 @@ class S7StatusWord(object):
 
 	NR_BITS = 9
 
+	# Dynamic attributes
+	dynAttrs = {
+		"NER"	: 0,
+		"VKE"	: 0,
+		"STA"	: 0,
+		"OR"	: 0,
+		"OS"	: 0,
+		"OV"	: 0,
+		"A0"	: 0,
+		"A1"	: 0,
+		"BIE"	: 0,
+	}
+
 	@classmethod
 	def getBitnrByName(cls, name):
 		try:
@@ -55,16 +69,6 @@ class S7StatusWord(object):
 		except KeyError as e:
 			raise AwlSimError("Invalid status word bit "
 				"name: " + str(name))
-
-	def __getattr__(self, name):
-		# Return 0 as default value for all STW bits,
-		# if they were not set, yet.
-		if name in ("NER", "VKE", "STA", "OR", "OS",
-			    "OV", "A0", "A1", "BIE"):
-			setattr(self, name, 0)
-			return 0
-		# Fail for all other attributes
-		raise AttributeError
 
 	def __getNER(self):
 		return self.NER
