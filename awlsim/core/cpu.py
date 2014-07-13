@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -210,12 +210,11 @@ class S7CPU(object):
 	def __initDBField(self, db, dataType, rawDataInit):
 		if dataType.type == AwlDataType.TYPE_ARRAY:
 			index = dataType.arrayIndicesCollapse(*rawDataInit.idents[-1].indices)
-			value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
-			name = AwlStruct.makeArrayChildName(rawDataInit.idents[-1].name, index)
-			db.structInstance.setFieldDataByName(name, value)
 		else:
-			value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
-			db.structInstance.setFieldDataByName(rawDataInit.idents[-1].name, value)
+			index = None
+		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
+		db.structInstance.setFieldDataByName(rawDataInit.idents[-1].name,
+						     index, value)
 
 	def __translateGlobalDB(self, rawDB):
 		db = DB(rawDB.index, None)
@@ -286,10 +285,10 @@ class S7CPU(object):
 	# Translate classic symbols ("abc")
 	def __resolveClassicSym(self, block, insn, oper):
 		if oper.type == AwlOperator.SYMBOLIC:
-			symbol = self.symbolTable.findByName(oper.value)
+			symbol = self.symbolTable.findByName(oper.value.varName)
 			if not symbol:
 				raise AwlSimError("Symbol \"%s\" not found in "
-					"symbol table." % oper.value,
+					"symbol table." % oper.value.varName,
 					insn = insn)
 			oper = symbol.operator
 		return oper
@@ -318,19 +317,36 @@ class S7CPU(object):
 			if oper.type != AwlOperator.NAMED_LOCAL:
 				return oper
 
-		field = block.interface.getFieldByName(oper.value)
+		# Get the interface field for this variable
+		field = block.interface.getFieldByName(oper.value.varName)
+
+		# Sanity checks
+		if field.dataType.type == AwlDataType.TYPE_ARRAY:
+			if not oper.value.indices:
+				raise AwlSimError("Cannot address array #%s "
+					"without subscript list." %\
+					oper.value.varName)
+		else:
+			if oper.value.indices:
+				raise AwlSimError("Trying to subscript array, "
+					"but #%s is not an array." %\
+					oper.value.varName)
+
 		if block.interface.hasInstanceDB or\
 		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			# This is an FB or a TEMP access. Translate the operator
 			# to a DI/TEMP access.
-			newOper = block.interface.getOperatorForFieldName(oper.value, pointer)
+			newOper = block.interface.getOperatorForField(oper.value.varName,
+								      oper.value.indices,
+								      pointer)
 			newOper.setInsn(oper.insn)
 			return newOper
 		else:
 			# This is an FC. Accesses to local symbols
 			# are resolved at runtime.
 			# Just set the value to the interface index.
-			index = block.interface.getFieldIndex(oper.value)
+			#TODO array
+			index = block.interface.getFieldIndex(oper.value.varName)
 			oper.interfaceIndex = index
 		return oper
 
@@ -364,7 +380,14 @@ class S7CPU(object):
 		# Get the data structure field descriptor
 		# and construct the AwlOffset.
 		field = db.struct.getField(oper.value.varName)
-		if oper.value.indices is not None:
+		if oper.value.indices is None:
+			# Non-array access.
+			if field.dataType.type == AwlDataType.TYPE_ARRAY:
+				#TODO this happens for parameter passing
+				raise AwlSimError("Variable '%s' in fully qualified "
+					"DB access is an ARRAY." %\
+					oper.value.varName)
+		else:
 			# This is an array access.
 			if field.dataType.type != AwlDataType.TYPE_ARRAY:
 				raise AwlSimError("Indexed variable '%s' in fully qualified "
@@ -372,8 +395,7 @@ class S7CPU(object):
 					oper.value.varName)
 			index = field.dataType.arrayIndicesCollapse(*oper.value.indices)
 			# Get the actual data field
-			name = AwlStruct.makeArrayChildName(oper.value.varName, index)
-			field = db.struct.getField(name)
+			field = db.struct.getField(oper.value.varName, index)
 		# Extract the offset data
 		offset = field.offset.dup()
 		width = field.bitSize

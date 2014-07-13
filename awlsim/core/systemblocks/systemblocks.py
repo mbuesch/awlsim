@@ -88,8 +88,10 @@ class SystemBlock(Block):
 		self.__interfaceOpers = {}
 		for field in self.interface.fields_IN_OUT_INOUT_STAT:
 			# Create a scratch-operator for the access.
+			offset = AwlOffset(None, None)
+			offset.varName = field.name
 			oper = AwlOperator(AwlOperator.NAMED_LOCAL, 0,
-					   field.name)
+					   offset)
 			# Resolve the scratch-operator.
 			oper = self.cpu.resolveNamedLocal(block=self, insn=None,
 							  oper=oper, pointer=False)

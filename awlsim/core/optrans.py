@@ -364,6 +364,25 @@ class AwlOpTranslator(object):
 		else:
 			assert(0)
 
+	# Translate array indices.
+	# The first token is the opening brace '['.
+	# Returns tuple: (list_of_indices, consumed_tokens_count)
+	def __translateArrayIndices(self, tokens):
+		indices = []
+		count = 1
+		try:
+			while tokens[count] != ']':
+				indices.append(int(tokens[count]))
+				count += 1
+				if count < len(tokens) and tokens[count] == ',':
+					count += 1
+			count += 1 # closing braces
+		except (ValueError, IndexError) as e:
+			raise AwlSimError("Invalid array index")
+		if len(indices) < 1 or len(indices) > 6:
+			raise AwlSimError("Invalid number of array indices")
+		return (indices, count)
+
 	def __doTrans(self, rawInsn, rawOps):
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
@@ -392,16 +411,27 @@ class AwlOpTranslator(object):
 			return opDesc
 		# Local variable
 		if token0.startswith('#'):
+			offset = AwlOffset(None, None)
+			offset.varName = rawOps[0][1:]
+			count = 1
+			if len(rawOps) >= 4 and rawOps[1] == '[':
+				# This is an array variable
+				offset.indices, cnt = self.__translateArrayIndices(rawOps[1:])
+				count += cnt
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL, 0,
-							rawOps[0][1:]), 1)
+							offset), count)
 		# Pointer to local variable
 		if token0.startswith("P##"):
+			offset = AwlOffset(None, None)
+			offset.varName = rawOps[0][3:]
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL_PTR, 0,
-							rawOps[0][3:]), 1)
+							offset), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
+			offset = AwlOffset(None, None)
+			offset.varName = rawOps[0][1:-1]
 			return OpDescriptor(AwlOperator(AwlOperator.SYMBOLIC, 0,
-							rawOps[0][1:-1]), 1)
+							offset), 1)
 		# Immediate boolean
 		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
 		if immediate is not None:
@@ -514,27 +544,13 @@ class AwlOpTranslator(object):
 			else:
 				offset.dbName = db[1:-1]
 			offset.varName = match.group(2)
+			count = 1
 			if len(rawOps) >= 4 and rawOps[1] == '[':
 				# DBx.ARRAY[x, y, z] adressing
-				offset.indices = []
-				count = 2
-				try:
-					while rawOps[count] != ']':
-						offset.indices.append(int(rawOps[count]))
-						count += 1
-						if count < len(rawOps) and rawOps[count] == ',':
-							count += 1
-					count += 1 # closing braces
-				except (ValueError, IndexError) as e:
-					raise AwlSimError("Invalid array index")
-				if len(offset.indices) < 1 or len(offset.indices) > 6:
-					raise AwlSimError("Invalid number of array indices")
-				return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
-						    offset), count)
-			else:
-				# DBx.VARIABLE adressing
-				return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
-						    offset), 1)
+				offset.indices, cnt = self.__translateArrayIndices(rawOps[1:])
+				count += cnt
+			return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
+					    offset), count)
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 

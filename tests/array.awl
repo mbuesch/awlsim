@@ -1,0 +1,392 @@
+DATA_BLOCK DB 99
+TITLE = Main data block
+VERSION : 0.1
+STRUCT 	
+	VAR0	: ARRAY  [1 .. 2] OF INT;
+	VAR1	: ARRAY  [1 .. 2] OF INT  := 1, 2;
+	VAR2	: ARRAY  [1 .. 2, 1 .. 2] OF INT  := 1, 2, 3, 4;
+	VAR3	: ARRAY  [-2 .. -1] OF INT := -2, -1;
+	VAR4	: ARRAY  [1 .. 2, 1 .. 2, 1 .. 2, 1 .. 2, 1 .. 2, 1 .. 2] OF INT := 4 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+	VAR5	: ARRAY  [0 .. 9 ] OF INT := 5 (1, 2);
+	VAR6	: ARRAY  [1 .. 2, 1 .. 10, 1 .. 5 ] OF INT := 5 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20);
+	VAR7	: ARRAY  [1 .. 14 ] OF BOOL := 7 (TRUE, FALSE);
+	VAR8	: ARRAY  [1 .. 3 ] OF BOOL := TRUE, FALSE, TRUE;
+	VAR9	: ARRAY  [1 .. 1 ] OF INT := 42;
+//	VAR10	: STRUCT
+//		VAR10_1		: INT  := 101;
+//		VAR10_2		: ARRAY  [1 .. 2 ] OF INT  := 1, 2;
+//		VAR10_3		: ARRAY  [1 .. 2 ] OF STRUCT
+//			VAR10_3_1	: INT  := 1031;
+//			VAR10_3_2	: ARRAY  [1 .. 2 ] OF INT  := 1, 2;
+//		END_STRUCT;
+//	END_STRUCT;
+END_STRUCT;
+BEGIN
+	VAR0[1]				:= 0;
+	VAR0[2]				:= 0;
+	VAR1[1]				:= -30000;
+	VAR1[2]				:= 30000;
+	VAR2[1, 1]			:= 1;
+	VAR2[1, 2]			:= 2;
+	VAR2[2, 1]			:= 3;
+	VAR2[2, 2]			:= 4;
+	VAR3[-2]			:= -2;
+	VAR3[-1]			:= -1;
+	VAR4[1, 1, 1, 1, 1, 1]		:= 1;
+	VAR4[1, 1, 1, 1, 1, 2]		:= 2;
+	VAR4[1, 1, 1, 1, 2, 1]		:= 3;
+	VAR4[1, 1, 1, 1, 2, 2]		:= 4;
+	VAR4[1, 1, 1, 2, 1, 1]		:= 5;
+	VAR4[1, 1, 1, 2, 1, 2]		:= 6;
+	VAR4[1, 1, 1, 2, 2, 1]		:= 7;
+	VAR4[1, 1, 1, 2, 2, 2]		:= 8;
+	VAR4[1, 1, 2, 1, 1, 1]		:= 9;
+	VAR4[1, 1, 2, 1, 1, 2]		:= 10;
+	VAR4[1, 1, 2, 1, 2, 1]		:= 11;
+	VAR4[1, 1, 2, 1, 2, 2]		:= 12;
+	VAR4[1, 1, 2, 2, 1, 1]		:= 13;
+	VAR4[1, 1, 2, 2, 1, 2]		:= 14;
+	VAR4[1, 1, 2, 2, 2, 1]		:= 15;
+	VAR4[1, 1, 2, 2, 2, 2]		:= 16;
+	VAR4[1, 2, 1, 1, 1, 1]		:= 1;
+	VAR4[1, 2, 1, 1, 1, 2]		:= 2;
+	VAR4[1, 2, 1, 1, 2, 1]		:= 3;
+	VAR4[1, 2, 1, 1, 2, 2]		:= 4;
+	VAR4[1, 2, 1, 2, 1, 1]		:= 5;
+	VAR4[1, 2, 1, 2, 1, 2]		:= 6;
+	VAR4[1, 2, 1, 2, 2, 1]		:= 7;
+	VAR4[1, 2, 1, 2, 2, 2]		:= 8;
+	VAR4[1, 2, 2, 1, 1, 1]		:= 9;
+	VAR4[1, 2, 2, 1, 1, 2]		:= 10;
+	VAR4[1, 2, 2, 1, 2, 1]		:= 11;
+	VAR4[1, 2, 2, 1, 2, 2]		:= 12;
+	VAR4[1, 2, 2, 2, 1, 1]		:= 13;
+	VAR4[1, 2, 2, 2, 1, 2]		:= 14;
+	VAR4[1, 2, 2, 2, 2, 1]		:= 15;
+	VAR4[1, 2, 2, 2, 2, 2]		:= 16;
+	VAR4[2, 1, 1, 1, 1, 1]		:= 1;
+	VAR4[2, 1, 1, 1, 1, 2]		:= 2;
+	VAR4[2, 1, 1, 1, 2, 1]		:= 3;
+	VAR4[2, 1, 1, 1, 2, 2]		:= 4;
+	VAR4[2, 1, 1, 2, 1, 1]		:= 5;
+	VAR4[2, 1, 1, 2, 1, 2]		:= 6;
+	VAR4[2, 1, 1, 2, 2, 1]		:= 7;
+	VAR4[2, 1, 1, 2, 2, 2]		:= 8;
+	VAR4[2, 1, 2, 1, 1, 1]		:= 9;
+	VAR4[2, 1, 2, 1, 1, 2]		:= 10;
+	VAR4[2, 1, 2, 1, 2, 1]		:= 11;
+	VAR4[2, 1, 2, 1, 2, 2]		:= 12;
+	VAR4[2, 1, 2, 2, 1, 1]		:= 13;
+	VAR4[2, 1, 2, 2, 1, 2]		:= 14;
+	VAR4[2, 1, 2, 2, 2, 1]		:= 15;
+	VAR4[2, 1, 2, 2, 2, 2]		:= 16;
+	VAR4[2, 2, 1, 1, 1, 1]		:= 1;
+	VAR4[2, 2, 1, 1, 1, 2]		:= 2;
+	VAR4[2, 2, 1, 1, 2, 1]		:= 3;
+	VAR4[2, 2, 1, 1, 2, 2]		:= 4;
+	VAR4[2, 2, 1, 2, 1, 1]		:= 5;
+	VAR4[2, 2, 1, 2, 1, 2]		:= 6;
+	VAR4[2, 2, 1, 2, 2, 1]		:= 7;
+	VAR4[2, 2, 1, 2, 2, 2]		:= 8;
+	VAR4[2, 2, 2, 1, 1, 1]		:= 9;
+	VAR4[2, 2, 2, 1, 1, 2]		:= 10;
+	VAR4[2, 2, 2, 1, 2, 1]		:= 11;
+	VAR4[2, 2, 2, 1, 2, 2]		:= 12;
+	VAR4[2, 2, 2, 2, 1, 1]		:= 13;
+	VAR4[2, 2, 2, 2, 1, 2]		:= 14;
+	VAR4[2, 2, 2, 2, 2, 1]		:= 15;
+	VAR4[2, 2, 2, 2, 2, 2]		:= 16;
+	VAR5[0]				:= 1;
+	VAR5[1]				:= 2;
+	VAR5[2]				:= 1;
+	VAR5[3]				:= 2;
+	VAR5[4]				:= 1;
+	VAR5[5]				:= 2;
+	VAR5[6]				:= 1;
+	VAR5[7]				:= 2;
+	VAR5[8]				:= 1;
+	VAR5[9]				:= 2;
+	VAR6[1, 1, 1]			:= 1;
+	VAR6[1, 1, 2]			:= 2;
+	VAR6[1, 1, 3]			:= 3;
+	VAR6[1, 1, 4]			:= 4;
+	VAR6[1, 1, 5]			:= 5;
+	VAR6[1, 2, 1]			:= 6;
+	VAR6[1, 2, 2]			:= 7;
+	VAR6[1, 2, 3]			:= 8;
+	VAR6[1, 2, 4]			:= 9;
+	VAR6[1, 2, 5]			:= 10;
+	VAR6[1, 3, 1]			:= 11;
+	VAR6[1, 3, 2]			:= 12;
+	VAR6[1, 3, 3]			:= 13;
+	VAR6[1, 3, 4]			:= 14;
+	VAR6[1, 3, 5]			:= 15;
+	VAR6[1, 4, 1]			:= 16;
+	VAR6[1, 4, 2]			:= 17;
+	VAR6[1, 4, 3]			:= 18;
+	VAR6[1, 4, 4]			:= 19;
+	VAR6[1, 4, 5]			:= 20;
+	VAR6[1, 5, 1]			:= 1;
+	VAR6[1, 5, 2]			:= 2;
+	VAR6[1, 5, 3]			:= 3;
+	VAR6[1, 5, 4]			:= 4;
+	VAR6[1, 5, 5]			:= 5;
+	VAR6[1, 6, 1]			:= 6;
+	VAR6[1, 6, 2]			:= 7;
+	VAR6[1, 6, 3]			:= 8;
+	VAR6[1, 6, 4]			:= 9;
+	VAR6[1, 6, 5]			:= 10;
+	VAR6[1, 7, 1]			:= 11;
+	VAR6[1, 7, 2]			:= 12;
+	VAR6[1, 7, 3]			:= 13;
+	VAR6[1, 7, 4]			:= 14;
+	VAR6[1, 7, 5]			:= 15;
+	VAR6[1, 8, 1]			:= 16;
+	VAR6[1, 8, 2]			:= 17;
+	VAR6[1, 8, 3]			:= 18;
+	VAR6[1, 8, 4]			:= 19;
+	VAR6[1, 8, 5]			:= 20;
+	VAR6[1, 9, 1]			:= 1;
+	VAR6[1, 9, 2]			:= 2;
+	VAR6[1, 9, 3]			:= 3;
+	VAR6[1, 9, 4]			:= 4;
+	VAR6[1, 9, 5]			:= 5;
+	VAR6[1, 10, 1]			:= 6;
+	VAR6[1, 10, 2]			:= 7;
+	VAR6[1, 10, 3]			:= 8;
+	VAR6[1, 10, 4]			:= 9;
+	VAR6[1, 10, 5]			:= 10;
+	VAR6[2, 1, 1]			:= 11;
+	VAR6[2, 1, 2]			:= 12;
+	VAR6[2, 1, 3]			:= 13;
+	VAR6[2, 1, 4]			:= 14;
+	VAR6[2, 1, 5]			:= 15;
+	VAR6[2, 2, 1]			:= 16;
+	VAR6[2, 2, 2]			:= 17;
+	VAR6[2, 2, 3]			:= 18;
+	VAR6[2, 2, 4]			:= 19;
+	VAR6[2, 2, 5]			:= 20;
+	VAR6[2, 3, 1]			:= 1;
+	VAR6[2, 3, 2]			:= 2;
+	VAR6[2, 3, 3]			:= 3;
+	VAR6[2, 3, 4]			:= 4;
+	VAR6[2, 3, 5]			:= 5;
+	VAR6[2, 4, 1]			:= 6;
+	VAR6[2, 4, 2]			:= 7;
+	VAR6[2, 4, 3]			:= 8;
+	VAR6[2, 4, 4]			:= 9;
+	VAR6[2, 4, 5]			:= 10;
+	VAR6[2, 5, 1]			:= 11;
+	VAR6[2, 5, 2]			:= 12;
+	VAR6[2, 5, 3]			:= 13;
+	VAR6[2, 5, 4]			:= 14;
+	VAR6[2, 5, 5]			:= 15;
+	VAR6[2, 6, 1]			:= 16;
+	VAR6[2, 6, 2]			:= 17;
+	VAR6[2, 6, 3]			:= 18;
+	VAR6[2, 6, 4]			:= 19;
+	VAR6[2, 6, 5]			:= 20;
+	VAR6[2, 7, 1]			:= 1;
+	VAR6[2, 7, 2]			:= 2;
+	VAR6[2, 7, 3]			:= 3;
+	VAR6[2, 7, 4]			:= 4;
+	VAR6[2, 7, 5]			:= 5;
+	VAR6[2, 8, 1]			:= 6;
+	VAR6[2, 8, 2]			:= 7;
+	VAR6[2, 8, 3]			:= 8;
+	VAR6[2, 8, 4]			:= 9;
+	VAR6[2, 8, 5]			:= 10;
+	VAR6[2, 9, 1]			:= 11;
+	VAR6[2, 9, 2]			:= 12;
+	VAR6[2, 9, 3]			:= 13;
+	VAR6[2, 9, 4]			:= 14;
+	VAR6[2, 9, 5]			:= 15;
+	VAR6[2, 10, 1]			:= 16;
+	VAR6[2, 10, 2]			:= 17;
+	VAR6[2, 10, 3]			:= 18;
+	VAR6[2, 10, 4]			:= 19;
+	VAR6[2, 10, 5]			:= 20;
+	VAR7[1]				:= TRUE;
+	VAR7[2]				:= FALSE;
+	VAR7[3]				:= TRUE;
+	VAR7[4]				:= FALSE;
+	VAR7[5]				:= TRUE;
+	VAR7[6]				:= FALSE;
+	VAR7[7]				:= TRUE;
+	VAR7[8]				:= FALSE;
+	VAR7[9]				:= TRUE;
+	VAR7[10]			:= FALSE;
+	VAR7[11]			:= TRUE;
+	VAR7[12]			:= FALSE;
+	VAR7[13]			:= TRUE;
+	VAR7[14]			:= FALSE;
+	VAR8[1]				:= TRUE;
+	VAR8[2]				:= FALSE;
+	VAR8[3]				:= TRUE;
+	VAR9[1]				:= 42;
+//	VAR10.VAR10_1			:= 101;
+//	VAR10.VAR10_2[1]		:= 1;
+//	VAR10.VAR10_2[2]		:= 2;
+//	VAR10.VAR10_3[1].VAR10_3_1	:= 1031;
+//	VAR10.VAR10_3[1].VAR10_3_2[1]	:= 1;
+//	VAR10.VAR10_3[1].VAR10_3_2[2]	:= 2;
+//	VAR10.VAR10_3[2].VAR10_3_1	:= 1031;
+//	VAR10.VAR10_3[2].VAR10_3_2[1]	:= 1;
+//	VAR10.VAR10_3[2].VAR10_3_2[2]	:= 2;
+END_DATA_BLOCK
+
+
+FUNCTION_BLOCK FB 1
+VAR_INPUT
+	VAR0	: ARRAY [1 .. 2] OF INT;
+	VAR1	: ARRAY [1 .. 2, 0 .. 1] OF INT;
+	SELECT	: INT;
+END_VAR
+BEGIN
+	L		#SELECT
+	SPL		ERR
+	SPA		M000
+	SPA		M001
+ERR:	__ASSERT==	1,		2	// Wrong #SELECT
+
+
+	// Check instance-DB initial values
+M000:	L		#VAR0[1]
+	__ASSERT==	__ACCU 1,	1
+	L		DIW 0
+	__ASSERT==	__ACCU 1,	1
+	L		#VAR0[2]
+	__ASSERT==	__ACCU 1,	2
+	L		DIW 2
+	__ASSERT==	__ACCU 1,	2
+	L		#VAR1[1, 0]
+	__ASSERT==	__ACCU 1,	100
+	L		DIW 4
+	__ASSERT==	__ACCU 1,	100
+	L		#VAR1[1, 1]
+	__ASSERT==	__ACCU 1,	101
+	L		DIW 6
+	__ASSERT==	__ACCU 1,	101
+	L		#VAR1[2, 0]
+	__ASSERT==	__ACCU 1,	102
+	L		DIW 8
+	__ASSERT==	__ACCU 1,	102
+	L		#VAR1[2, 1]
+	__ASSERT==	__ACCU 1,	103
+	L		DIW 10
+	__ASSERT==	__ACCU 1,	103
+	BEA
+
+
+	// Check passed parameters
+M001:	L		#VAR0[1]
+	__ASSERT==	__ACCU 1,	91
+	L		DIW 0
+	__ASSERT==	__ACCU 1,	91
+	L		#VAR0[2]
+	__ASSERT==	__ACCU 1,	92
+	L		DIW 2
+	__ASSERT==	__ACCU 1,	92
+	L		#VAR1[1, 0]
+	__ASSERT==	__ACCU 1,	9100
+	L		DIW 4
+	__ASSERT==	__ACCU 1,	9100
+	L		#VAR1[1, 1]
+	__ASSERT==	__ACCU 1,	9101
+	L		DIW 6
+	__ASSERT==	__ACCU 1,	9101
+	L		#VAR1[2, 0]
+	__ASSERT==	__ACCU 1,	9102
+	L		DIW 8
+	__ASSERT==	__ACCU 1,	9102
+	L		#VAR1[2, 1]
+	__ASSERT==	__ACCU 1,	9103
+	L		DIW 10
+	__ASSERT==	__ACCU 1,	9103
+	BEA
+
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 1
+TITLE = FB 1 instance DB
+FB 1
+BEGIN
+	VAR0[1]		:= 1;
+	VAR0[2]		:= 2;
+	VAR1[1, 0]	:= 100;
+	VAR1[1, 1]	:= 101;
+	VAR1[2, 0]	:= 102;
+	VAR1[2, 1]	:= 103;
+	SELECT		:= 0;
+END_DATA_BLOCK
+
+DATA_BLOCK DB 2
+TITLE = FB 1 parameter passing DB
+STRUCT
+	VAR0	: ARRAY [1 .. 2] OF INT;
+	VAR1	: ARRAY [1 .. 2, 0 .. 1] OF INT;
+END_STRUCT
+BEGIN
+	VAR0[1]		:= 91;
+	VAR0[2]		:= 92;
+	VAR1[1, 0]	:= 9100;
+	VAR1[1, 1]	:= 9101;
+	VAR1[2, 0]	:= 9102;
+	VAR1[2, 1]	:= 9103;
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
+	// Check DB99 initial values
+	L		DB99.VAR0[1]
+	__ASSERT==	__ACCU 1,	0
+	L		DB99.DBW 0
+	__ASSERT==	__ACCU 1,	0
+	L		DB99.VAR0[2]
+	__ASSERT==	__ACCU 1,	0
+	L		DB99.DBW 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB99.VAR1[1]
+	__ASSERT==	__ACCU 1,	-30000
+	L		DB99.DBW 4
+	__ASSERT==	__ACCU 1,	-30000
+	L		DB99.VAR1[2]
+	__ASSERT==	__ACCU 1,	30000
+	L		DB99.DBW 6
+	__ASSERT==	__ACCU 1,	30000
+	L		DB99.VAR2[1, 1]
+	__ASSERT==	__ACCU 1,	1
+	L		DB99.DBW 8
+	__ASSERT==	__ACCU 1,	1
+	L		DB99.VAR2[1, 2]
+	__ASSERT==	__ACCU 1,	2
+	L		DB99.DBW 10
+	__ASSERT==	__ACCU 1,	2
+	L		DB99.VAR2[2, 1]
+	__ASSERT==	__ACCU 1,	3
+	L		DB99.DBW 12
+	__ASSERT==	__ACCU 1,	3
+	L		DB99.VAR2[2, 2]
+	__ASSERT==	__ACCU 1,	4
+	L		DB99.DBW 14
+	__ASSERT==	__ACCU 1,	4
+
+
+	// Call FB 1 without array parameter passing
+	CALL FB 1, DB 1 (
+		SELECT	:= 0,
+	)
+
+	// Call FB 1 with array parameter passing
+//TODO	CALL FB 1, DB 1 (
+//		VAR0	:= DB2.VAR0,
+//		VAR1	:= DB2.VAR1,
+//		SELECT	:= 1,
+//	)
+
+	//TODO FC-tests
+
+END_ORGANIZATION_BLOCK

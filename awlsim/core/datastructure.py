@@ -125,7 +125,9 @@ class AwlStruct(object):
 			alignment = 2
 		self.addFieldAligned(name, dataType, alignment)
 
-	def getField(self, name):
+	def getField(self, name, arrayIndex=None):
+		if arrayIndex is not None:
+			name = self.makeArrayChildName(name, arrayIndex)
 		try:
 			return self.name2field[name]
 		except KeyError:
@@ -151,8 +153,8 @@ class AwlStructInstance(object):
 	def setFieldData(self, field, value):
 		self.dataBytes.store(field.offset, field.bitSize, value)
 
-	def getFieldDataByName(self, name):
-		return self.getFieldData(self.struct.getField(name))
+	def getFieldDataByName(self, name, arrayIndex=None):
+		return self.getFieldData(self.struct.getField(name, arrayIndex))
 
-	def setFieldDataByName(self, name, value):
-		self.setFieldData(self.struct.getField(name), value)
+	def setFieldDataByName(self, name, arrayIndex, value):
+		self.setFieldData(self.struct.getField(name, arrayIndex), value)

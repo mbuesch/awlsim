@@ -337,11 +337,11 @@ class AwlOperator(DynAttrs):
 		elif self.type == self.BLKREF_VAT:
 			return "VAT %d" % self.value.byteOffset
 		elif self.type == self.SYMBOLIC:
-			return '"%s"' % self.value
+			return '"%s"' % self.value.varName
 		elif self.type == self.NAMED_LOCAL:
-			return "#%s" % self.value
+			return "#%s" % self.value.varName
 		elif self.type == self.NAMED_LOCAL_PTR:
-			return "P##%s" % self.value
+			return "P##%s" % self.value.varName
 		elif self.type == self.NAMED_DBVAR:
 			return str(self.value) # value is AwlOffset
 		elif self.type == self.INDIRECT:
