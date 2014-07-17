@@ -1,10 +1,14 @@
 === Incomplete awlsim TODO list ===
 
+S7 compatibility:
 - STRUCTs
 - User defined data types (UDT)
-- Support for .awlpro in awlsimgui
-- Early error, if constant is assigned to FB/FC OUT/INOUT parameter.
 - Parsing of attributes
+- POINTER and DB-pointer immediates
 - ANY pointer
 - Multiinstance
+
+nice to have:
+- Support for .awlpro in awlsimgui
+- Throw an early error, if constant is assigned to FB/FC OUT/INOUT parameter.
 - English mnemonics for status-word bits

@@ -1,0 +1,23 @@
+awlsim - STEP 7 compatibility
+=============================
+
+The execution of AWL/STL programs by awlsim is supposed to be fully
+compatible with the execution of compiled AWL/STL programs on the real
+Siemens S7 CPU.
+However, there currently are some known differences. These are listed below.
+
+- First of all: Any undocumented difference between awlsim and STEP 7 is
+  considered to be a bug.
+
+- awlsim does not implement all features of STEP 7, yet.
+  See TODO.txt for a list of missing features.
+
+- awlsim does not compile AWL/STL to MC7 code and it cannot execute MC7 code.
+  On startup awlsim translates the AWL/STL code to an awlsim specific in-memory
+  representation of the code. There is no byte-code representation for this
+  code.
+
+- Some key concepts, such as CALL or memory indirect adressing are implemented
+  natively on awlsim. That means CALL is not a macro in awlsim. This improves
+  runtime performance. From a user's perspective there should not be any
+  functional difference visible. Any such difference is a bug.
