@@ -1,6 +1,7 @@
 === Incomplete awlsim TODO list ===
 
 S7 compatibility:
+- ARRAYs in block interfaces
 - STRUCTs
 - User defined data types (UDT)
 - Parsing of attributes

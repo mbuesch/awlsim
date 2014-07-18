@@ -5,9 +5,8 @@ The execution of AWL/STL programs by awlsim is supposed to be fully
 compatible with the execution of compiled AWL/STL programs on the real
 Siemens S7 CPU.
 However, there currently are some known differences. These are listed below.
-
-- First of all: Any undocumented difference between awlsim and STEP 7 is
-  considered to be a bug.
+Any undocumented difference between awlsim and STEP 7 is considered to be a
+bug that should be reported.
 
 - awlsim does not implement all features of STEP 7, yet.
   See TODO.txt for a list of missing features.
