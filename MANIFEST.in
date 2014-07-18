@@ -3,6 +3,7 @@ include EXAMPLE.awl
 include EXAMPLE.asc
 include EXAMPLE.awlpro
 include TODO.txt
+include COMPATIBILITY.txt
 include awlsimhw_linuxcnc/awlsim.hal
 graft tests
 graft fake
