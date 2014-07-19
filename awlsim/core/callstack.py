@@ -88,13 +88,17 @@ class CallStackElem(object):
 				# Copy the inbound data into the instance DB
 				# and add the outbound parameters to the list.
 				for param in parameters:
-					if param.isOutbound(blockInterface):
+					#TODO param interface and instanceDB assignments should
+					#     be done at translation time.
+					param.interface, param.instanceDB =\
+						blockInterface, instanceDB
+					if param.isOutbound:
 						# This is an outbound parameter.
 						self.__outboundParams.append(param)
-					if param.isInbound(blockInterface):
+					if param.isInbound:
 						# This is an inbound parameter.
 						# Transfer data into DBI
-						structField = param.getLvalueStructField(instanceDB)
+						structField = param.lValueStructField
 						if structField.dataType.type in callByRef_Types:
 							data = param.rvalueOp.resolve().value.byteOffset
 						else:
@@ -116,7 +120,7 @@ class CallStackElem(object):
 							"FC parameter '%s' for call. The specified "
 							"actual-parameter is not allowed in this call." %\
 							str(param))
-					self.interfRefs[param.getInterfaceFieldIndex(blockInterface)] =\
+					self.interfRefs[param.interfaceFieldIndex] =\
 						translator(self, param.rvalueOp)
 
 	def __trans_IMM(self, oper):
@@ -159,11 +163,12 @@ class CallStackElem(object):
 
 	def __trans_MEM_DB(self, oper):
 		# A parameter is forwarded from an FB to an FC.
+		#FIXME the data should be copied to VL
+		#      That also means we need to copy it back into the DB, if var is OUT or INOUT
 		if oper.value.dbNumber is not None:
 			# This is a fully qualified DB access.
 			# Just forward it.
 			return oper
-		#FIXME the data should be copied
 		offset = oper.value.dup()
 		offset.dbNumber = self.cpu.dbRegister.index
 		return AwlOperator(oper.MEM_DB,
@@ -173,7 +178,8 @@ class CallStackElem(object):
 
 	def __trans_MEM_DI(self, oper):
 		# A parameter is forwarded from an FB to an FC.
-		#FIXME the data should be copied
+		#FIXME the data should be copied to VL
+		#      That also means we need to copy it back into the DB, if var is OUT or INOUT
 		offset = oper.value.dup()
 		offset.dbNumber = self.cpu.diRegister.index
 		return AwlOperator(oper.MEM_DB,
@@ -238,7 +244,7 @@ class CallStackElem(object):
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
-						structInstance.getFieldData(param.getLvalueStructField(instanceDB))
+						structInstance.getFieldData(param.lValueStructField)
 					)
 			# Assign the DB/DI registers.
 			self.cpu.dbRegister, self.cpu.diRegister = self.instanceDB, self.prevDiRegister

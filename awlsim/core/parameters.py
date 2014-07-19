@@ -2,7 +2,7 @@
 #
 # AWL simulator - call parameters
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,65 +26,56 @@ from awlsim.core.datastructure import *
 from awlsim.core.datablocks import *
 from awlsim.core.blocks import *
 from awlsim.core.util import *
+from awlsim.core.dynattrs import *
 
 
-class AwlParamAssign(object):
+class AwlParamAssign(DynAttrs):
 	"Parameter assignment for CALL"
+
+	dynAttrs = {
+		# isInbound attribute is True, if this is an
+		# IN or IN_OUT parameter assignment.
+		"isInbound"	: lambda self, name: self.__isInbound(),
+
+		# isOutbound attribute is True, if this is an
+		# OUT or IN_OUT parameter assignment.
+		"isOutbound"	: lambda self, name: self.__isOutbound(),
+
+		# lValueStructField attribute is the AwlStructField corresponding
+		# to this parameter's l-value.
+		"lValueStructField"	: lambda self, name: self.__lValueStructField(),
+
+		# interfaceFieldIndex attribute is the index number for the
+		# parameter assignment l-value in the block interface refs.
+		"interfaceFieldIndex"	: lambda self, name: self.__interfaceFieldIndex(),
+	}
 
 	def __init__(self, lvalueName, rvalueOp):
 		self.lvalueName = lvalueName
 		self.rvalueOp = rvalueOp
+		self.interface = None
+		self.instanceDB = None
 
-	def __retTrue(self, interface):
-		return True
+	def __isInbound(self):
+		field = self.interface.getFieldByName(self.lvalueName)
+		return field.fieldType == BlockInterfaceField.FTYPE_IN or\
+		       field.fieldType == BlockInterfaceField.FTYPE_INOUT
 
-	def __retFalse(self, interface):
-		return False
-
-	# Re-assign the isInbound() and isOutbound() methods
-	# to methods return static values.
-	def __reassignInboundOutboundMethods(self, interface):
-		self.isInbound, self.isOutbound = self.__retFalse, self.__retFalse
-		field = interface.getFieldByName(self.lvalueName)
-		if field.fieldType == BlockInterfaceField.FTYPE_IN or\
-		   field.fieldType == BlockInterfaceField.FTYPE_INOUT:
-			self.isInbound = self.__retTrue
-		if field.fieldType == BlockInterfaceField.FTYPE_OUT or\
-		   field.fieldType == BlockInterfaceField.FTYPE_INOUT:
-			self.isOutbound = self.__retTrue
-
-	def isInbound(self, interface):
-		self.__reassignInboundOutboundMethods(interface)
-		# Call the re-assigned method
-		return self.isInbound(None)
-
-	def isOutbound(self, interface):
-		self.__reassignInboundOutboundMethods(interface)
-		# Call the re-assigned method
-		return self.isOutbound(None)
+	def __isOutbound(self):
+		field = self.interface.getFieldByName(self.lvalueName)
+		return field.fieldType == BlockInterfaceField.FTYPE_OUT or\
+		       field.fieldType == BlockInterfaceField.FTYPE_INOUT
 
 	def __getLvalueStructField_static(self, instanceDB):
 		return self.__LvaluestructField
 
-	# Get the AwlStructField corresponding to this parameter lvalue
-	def getLvalueStructField(self, instanceDB):
+	def __lValueStructField(self):
 		# Find the l-value struct field
-		self.__LvaluestructField = instanceDB.structInstance.struct.getField(self.lvalueName)
-		# Re-assign this method to return the found and stored static value.
-		self.getLvalueStructField = self.__getLvalueStructField_static
-		# Call the re-assigned method
-		return self.getLvalueStructField(None)
+		return self.instanceDB.structInstance.struct.getField(self.lvalueName)
 
-	def __getInterfaceFieldIndex_static(self, interface):
-		return self.__LvalueInterfIndex
-
-	def getInterfaceFieldIndex(self, interface):
+	def __interfaceFieldIndex(self):
 		# Find the index number for the l-value
-		self.__LvalueInterfIndex = interface.getFieldIndex(self.lvalueName)
-		# Re-assign this method to return the found and stored static index value.
-		self.getInterfaceFieldIndex = self.__getInterfaceFieldIndex_static
-		# Call the re-assigned method
-		return self.getInterfaceFieldIndex(None)
+		return self.interface.getFieldIndex(self.lvalueName)
 
 	def __repr__(self):
 		return "%s := %s" % (self.lvalueName, str(self.rvalueOp))
