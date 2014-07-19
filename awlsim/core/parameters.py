@@ -66,9 +66,6 @@ class AwlParamAssign(DynAttrs):
 		return field.fieldType == BlockInterfaceField.FTYPE_OUT or\
 		       field.fieldType == BlockInterfaceField.FTYPE_INOUT
 
-	def __getLvalueStructField_static(self, instanceDB):
-		return self.__LvaluestructField
-
 	def __lValueStructField(self):
 		# Find the l-value struct field
 		return self.instanceDB.structInstance.struct.getField(self.lvalueName)

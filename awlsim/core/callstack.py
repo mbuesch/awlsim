@@ -113,6 +113,9 @@ class CallStackElem(object):
 				#                 the FC interface r-value.
 				self.interfRefs = {}
 				for param in parameters:
+					#TODO param interface assignment should
+					#     be done at translation time.
+					param.interface = blockInterface
 					try:
 						translator = self.__paramTrans[param.rvalueOp.type]
 					except KeyError as e:
