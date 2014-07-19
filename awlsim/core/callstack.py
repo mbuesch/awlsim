@@ -117,17 +117,17 @@ class CallStackElem(object):
 					#     be done at translation time.
 					param.interface = blockInterface
 					try:
-						translator = self.__paramTrans[param.rvalueOp.type]
+						trans = self.__paramTrans[param.rvalueOp.type]
 					except KeyError as e:
 						raise AwlSimError("Do not know how to translate "
 							"FC parameter '%s' for call. The specified "
 							"actual-parameter is not allowed in this call." %\
 							str(param))
-					self.interfRefs[param.interfaceFieldIndex] =\
-						translator(self, param.rvalueOp)
+					self.interfRefs[param.interfaceFieldIndex] = trans(self, param)
 
-	def __trans_IMM(self, oper):
-		# 'oper' is an immediate.
+	def __trans_IMM(self, param):
+		# r-value is an immediate.
+		oper = param.rvalueOp
 		# Allocate space in the caller-L-stack.
 		lalloc = self.cpu.callStackTop.lalloc
 		loff = lalloc.alloc((oper.width // 8) if (oper.width > 8) else 1)
@@ -139,19 +139,20 @@ class CallStackElem(object):
 				   AwlOffset(loff, 0),
 				   oper.insn)
 
-	def __trans_MEM(self, oper):
-		# 'oper' is a memory access.
-		return oper
+	def __trans_MEM(self, param):
+		# r-value is a memory access.
+		return param.rvalueOp
 
-	def __trans_MEM_L(self, oper):
-		# 'oper' is an L-stack memory access.
+	def __trans_MEM_L(self, param):
+		# r-value is an L-stack memory access.
+		oper = param.rvalueOp
 		return AwlOperator(oper.MEM_VL,
 				   oper.width,
 				   oper.value,
 				   oper.insn)
 
-	def __trans_MEM_VL(self, oper):
-		# 'oper' is a VL-stack reference (i.e. the L-stack of the caller's caller).
+	def __do_trans_MEM_VL(self, param, oper):
+		# r-value is a VL-stack reference (i.e. the L-stack of the caller's caller).
 		# Allocate space in the caller-L-stack and copy the data.
 		lalloc = self.cpu.callStackTop.lalloc
 		loff = lalloc.alloc((oper.width // 8) if (oper.width > 8) else 1)
@@ -164,7 +165,10 @@ class CallStackElem(object):
 				   AwlOffset(loff, 0),
 				   oper.insn)
 
-	def __trans_MEM_DB(self, oper):
+	def __trans_MEM_VL(self, param):
+		return self.__do_trans_MEM_VL(param, param.rvalueOp)
+
+	def __do_trans_MEM_DB(self, param, oper):
 		# A parameter is forwarded from an FB to an FC.
 		#FIXME the data should be copied to VL
 		#      That also means we need to copy it back into the DB, if var is OUT or INOUT
@@ -179,8 +183,12 @@ class CallStackElem(object):
 				   offset,
 				   oper.insn)
 
-	def __trans_MEM_DI(self, oper):
+	def __trans_MEM_DB(self, param):
+		return self.__do_trans_MEM_DB(param, param.rvalueOp)
+
+	def __trans_MEM_DI(self, param):
 		# A parameter is forwarded from an FB to an FC.
+		oper = param.rvalueOp
 		#FIXME the data should be copied to VL
 		#      That also means we need to copy it back into the DB, if var is OUT or INOUT
 		offset = oper.value.dup()
@@ -190,17 +198,17 @@ class CallStackElem(object):
 				   offset,
 				   oper.insn)
 
-	def __trans_BLKREF(self, oper):
-		# 'oper' is a block reference (e.g. 'FC 1', 'DB 10', ...)
-		return oper
+	def __trans_BLKREF(self, param):
+		# r-value is a block reference (e.g. 'FC 1', 'DB 10', ...)
+		return param.rvalueOp
 
-	def __trans_NAMED_LOCAL(self, oper):
-		# 'oper' is a named-local (#abc)
-		oper = self.cpu.callStackTop.interfRefs[oper.interfaceIndex]
+	def __trans_NAMED_LOCAL(self, param):
+		# r-value is a named-local (#abc)
+		oper = self.cpu.callStackTop.interfRefs[param.rvalueOp.interfaceIndex]
 		if oper.type == oper.MEM_VL:
-			return self.__trans_MEM_VL(oper)
+			return self.__do_trans_MEM_VL(param, oper)
 		if oper.type == oper.MEM_DB:
-			return self.__trans_MEM_DB(oper)
+			return self.__do_trans_MEM_DB(param, oper)
 		assert(0)
 
 	# FC call parameter translators
