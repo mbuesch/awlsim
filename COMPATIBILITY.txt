@@ -20,3 +20,9 @@ bug that should be reported.
   natively on awlsim. That means CALL is not a macro in awlsim. This improves
   runtime performance. From a user's perspective there should not be any
   functional difference visible. Any such difference is a bug.
+
+- Undefined behavior is not emulated.
+  For example: If reading uninitialized L-stack space on STEP 7 always yields
+  a certain reproducible result, that does not mean that this AWL/STL code does
+  the same thing on awlsim.
+  Reading uninitialized memory is undefined.
