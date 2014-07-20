@@ -108,6 +108,13 @@ class AwlParserError(AwlSimError):
 	def getReport(self):
 		return self.doGetReport("AWL parser error")
 
+class AwlSimBug(AwlSimError):
+	def __init__(self, message, *args, **kwargs):
+		message = "AWLSIM BUG: %s\n"\
+			"This bug should be reported to the awlsim developers." %\
+			str(message)
+		AwlSimError.__init__(self, message, *args, **kwargs)
+
 class AwlSimErrorText(AwlSimError):
 	def __init__(self, errorText):
 		AwlSimError.__init__(self, message = errorText)
