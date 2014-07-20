@@ -48,6 +48,10 @@ class AwlParamAssign(DynAttrs):
 		# interfaceFieldIndex attribute is the index number for the
 		# parameter assignment l-value in the block interface refs.
 		"interfaceFieldIndex"	: lambda self, name: self.__interfaceFieldIndex(),
+
+		# scratchSpaceOp attribute holds the possible AwlOperator for
+		# scratch space allocation.
+		"scratchSpaceOp"	: None,
 	}
 
 	def __init__(self, lvalueName, rvalueOp):
