@@ -36,14 +36,18 @@ class LStackAllocator(object):
 		# 'allocation' is the current number of allocated bytes
 		self.allocation = 0
 
-	# Allocate a number of bytes on the L-stack.
-	# Returns the offset the bytes are allocated on.
-	def alloc(self, nrBytes):
-		#FIXME handle alignment?
+	# Allocate a number of bits on the L-stack.
+	# Returns an AwlOffset as the offset the bits are allocated on.
+	def alloc(self, nrBits):
+		#FIXME handle alignment.
+		#      For now we just alloc unaligned full bytes.
+		nrBytes = intDivRoundUp(nrBits, 8)
+
 		#FIXME honor direct L-stack accesses in the code
+		#      and adjust the offset accordingly.
 		offset = self.allocation
 		self.allocation += nrBytes
 		if self.allocation >= len(self.localdata):
 			raise AwlSimError("Cannot allocate data on L-stack: "
 				"overflow")
-		return offset
+		return AwlOffset(offset)

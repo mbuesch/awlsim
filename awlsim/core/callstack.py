@@ -122,15 +122,16 @@ class CallStackElem(object):
 	def __trans_copyToVL(self, param, rvalueOp):
 		# Allocate space in the caller-L-stack.
 		lalloc = self.cpu.callStackTop.lalloc
-		loff = lalloc.alloc((rvalueOp.width // 8) if (rvalueOp.width > 8) else 1)
+		loffset = lalloc.alloc(rvalueOp.width)
 		if param.isInbound:
 			# Write the value to the allocated space.
-			WordPacker.toBytes(lalloc.localdata, rvalueOp.width, loff,
+			WordPacker.toBytes(lalloc.localdata, rvalueOp.width,
+					   loffset.byteOffset,
 					   self.cpu.fetch(rvalueOp))
 		# Make an operator for the allocated space.
 		oper = AwlOperator(AwlOperator.MEM_VL,
 				   rvalueOp.width,
-				   AwlOffset(loff, 0),
+				   loffset,
 				   rvalueOp.insn)
 		# If outbound, save param and operator for return from CALL.
 		if param.isOutbound:
