@@ -326,7 +326,9 @@ class AwlOpTranslator(object):
 					opDesc.operator.value.bitOffset = int(rawOps[0], 10)
 				except ValueError as e:
 					if opDesc.operator.type == AwlOperator.MEM_STW:
-						opDesc.operator.value.bitOffset = S7StatusWord.getBitnrByName(rawOps[0])
+						opDesc.operator.value.bitOffset =\
+							S7StatusWord.getBitnrByName(rawOps[0],
+										    self.mnemonics)
 					else:
 						raise AwlSimError("Invalid bit address")
 			else:

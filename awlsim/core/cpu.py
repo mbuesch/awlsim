@@ -1442,11 +1442,13 @@ class S7CPU(object):
 	def __repr__(self):
 		if not self.callStack:
 			return ""
+		mnemonics = self.specs.getMnemonics()
+		isEnglish = (mnemonics == S7CPUSpecs.MNEMONICS_EN)
 		self.updateTimestamp()
 		ret = []
 		ret.append("=== S7-CPU dump ===  (t: %.01fs)" %\
 			   (self.now - self.startupTime))
-		ret.append("    STW:  " + str(self.statusWord))
+		ret.append("    STW:  " + self.statusWord.getString(mnemonics))
 		if self.is4accu:
 			accus = [ accu.toHex()
 				  for accu in (self.accu1, self.accu2,
@@ -1461,10 +1463,12 @@ class S7CPU(object):
 		ret.append(self.__dumpMem("      M:  ",
 					  self.flags,
 					  min(64, self.specs.nrFlags)))
-		ret.append(self.__dumpMem("    PAE:  ",
+		prefix = "      I:  " if isEnglish else "      E:  "
+		ret.append(self.__dumpMem(prefix,
 					  self.inputs,
 					  min(64, self.specs.nrInputs)))
-		ret.append(self.__dumpMem("    PAA:  ",
+		prefix = "      Q:  " if isEnglish else "      A:  "
+		ret.append(self.__dumpMem(prefix,
 					  self.outputs,
 					  min(64, self.specs.nrOutputs)))
 		pstack = str(self.callStackTop.parenStack) if self.callStackTop.parenStack else "Empty"

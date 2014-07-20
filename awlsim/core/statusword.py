@@ -2,7 +2,7 @@
 #
 # AWL simulator - status word
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ from awlsim.core.compat import *
 from awlsim.core.dynattrs import *
 from awlsim.core.util import *
 from awlsim.core.datatypehelpers import *
+from awlsim.core.cpuspecs import *
 
 
 class S7StatusWord(DynAttrs):
@@ -34,7 +35,7 @@ class S7StatusWord(DynAttrs):
 	NER, VKE, STA, OR, OS, OV, A0, A1, BIE
 	"""
 
-	name2nr = {
+	name2nr_german = {
 		"/ER"	: 0,
 		"VKE"	: 1,
 		"STA"	: 2,
@@ -45,7 +46,20 @@ class S7StatusWord(DynAttrs):
 		"A1"	: 7,
 		"BIE"	: 8,
 	}
-	nr2name = pivotDict(name2nr)
+	nr2name_german = pivotDict(name2nr_german)
+
+	__english2german = {
+		"/FC"	: "/ER",
+		"RLO"	: "VKE",
+		"STA"	: "STA",
+		"OR"	: "OR",
+		"OS"	: "OS",
+		"OV"	: "OV",
+		"CC1"	: "A1",
+		"CC0"	: "A0",
+		"BR"	: "BIE",
+	}
+	__german2english = pivotDict(__english2german)
 
 	NR_BITS = 9
 
@@ -63,9 +77,12 @@ class S7StatusWord(DynAttrs):
 	}
 
 	@classmethod
-	def getBitnrByName(cls, name):
+	def getBitnrByName(cls, name, mnemonics):
+		assert(mnemonics != S7CPUSpecs.MNEMONICS_AUTO)
 		try:
-			return cls.name2nr[name]
+			if mnemonics == S7CPUSpecs.MNEMONICS_EN:
+				name = cls.__english2german[name]
+			return cls.name2nr_german[name]
 		except KeyError as e:
 			raise AwlSimError("Invalid status word bit "
 				"name: " + str(name))
@@ -172,11 +189,15 @@ class S7StatusWord(DynAttrs):
 			# norm pos
 			self.A1, self.A0, self.OV = 1, 0, 0
 
-	def __repr__(self):
+	def getString(self, mnemonics):
+		assert(mnemonics != S7CPUSpecs.MNEMONICS_AUTO)
 		ret = []
 		for i in range(self.NR_BITS - 1, -1, -1):
-			ret.append("%s:%d" % (
-				self.nr2name[i],
-				self.getByBitNumber(i)
-			))
+			name = self.nr2name_german[i]
+			if mnemonics == S7CPUSpecs.MNEMONICS_EN:
+				name = self.__german2english[name]
+			ret.append("%s:%d" % (name, self.getByBitNumber(i)))
 		return '  '.join(ret)
+
+	def __repr__(self):
+		return self.getString(S7CPUSpecs.MNEMONICS_DE)
