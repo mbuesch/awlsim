@@ -812,12 +812,10 @@ class S7CPU(object):
 			return None
 
 	def labelIdxToRelJump(self, labelIndex):
+		# Translate a label index into a relative IP offset.
 		cse = self.callStackTop
-		label = cse.labels[labelIndex]
-		referencedInsn = label.getInsn()
-		referencedIp = referencedInsn.getIP()
-		assert(referencedIp < len(cse.insns))
-		return referencedIp - cse.ip
+		label = cse.block.labels[labelIndex]
+		return label.getInsn().getIP() - cse.ip
 
 	def jumpToLabel(self, labelIndex):
 		self.relativeJump = self.labelIdxToRelJump(labelIndex)

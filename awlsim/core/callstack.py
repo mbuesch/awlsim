@@ -50,31 +50,18 @@ class CallStackElem(object):
 		# parameters -> An iterable of AwlParamAssign instances
 		#               representing the parameter assignments in CALL insn.
 		# isRawCall -> True, if the calling instruction was UC or CC.
-		(self.cpu,
-		 self.parenStack,
-		 self.ip,
-		 self.lalloc,
-		 self.block,
-		 self.insns,
-		 self.labels,
-		 self.isRawCall,
-		 self.instanceDB,
-		 self.prevDbRegister,
-		 self.prevDiRegister) = (
-			cpu,
-			[],
-			0,
-			self.lallocCache.get(cpu),
-			block,
-			block.insns,
-			block.labels,
-			isRawCall,
-			instanceDB,
-			cpu.dbRegister,
-			cpu.diRegister,
-		)
-		self.localdata = self.lalloc.localdata
+		self.cpu = cpu
+		self.parenStack = []
+		self.ip = 0
+		self.block = block
+		self.insns = block.insns
+		self.isRawCall = isRawCall
+		self.instanceDB = instanceDB
+		self.prevDbRegister = cpu.dbRegister
+		self.prevDiRegister = cpu.diRegister
+		self.lalloc = self.lallocCache.get(cpu)
 		self.lalloc.allocation = block.interface.tempAllocation
+		self.localdata = self.lalloc.localdata
 
 		# Handle parameters
 		self.__outboundParams = []
