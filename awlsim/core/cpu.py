@@ -408,46 +408,35 @@ class S7CPU(object):
 				   insn = oper.insn)
 
 	def __resolveSymbols_block(self, block):
-		#FIXME better error handling. Assign AwlSimError.insn
 		for insn in block.insns:
-			for i in range(len(insn.ops)):
-				insn.ops[i] = self.__resolveClassicSym(block,
-								insn, insn.ops[i])
-				insn.ops[i] = self.resolveNamedLocal(block,
-								insn, insn.ops[i],
-								pointer=False)
-				insn.ops[i] = self.__resolveNamedFullyQualified(block,
-								insn, insn.ops[i])
-				if insn.ops[i].type == AwlOperator.INDIRECT:
-					insn.ops[i].offsetOper = \
-						self.__resolveClassicSym(block,
-								insn, insn.ops[i].offsetOper)
-					insn.ops[i].offsetOper = \
-						self.resolveNamedLocal(block,
-								insn, insn.ops[i].offsetOper,
-								pointer=False)
-				insn.ops[i] = self.resolveNamedLocal(block,
-								insn, insn.ops[i],
-								pointer=True)
-			for i in range(len(insn.params)):
-				insn.params[i].rvalueOp = self.__resolveClassicSym(block,
-								insn, insn.params[i].rvalueOp)
-				insn.params[i].rvalueOp = self.resolveNamedLocal(block,
-								insn, insn.params[i].rvalueOp,
-								pointer=False)
-				insn.params[i].rvalueOp = self.__resolveNamedFullyQualified(block,
-								insn, insn.params[i].rvalueOp)
-				if insn.params[i].rvalueOp.type == AwlOperator.INDIRECT:
-					insn.params[i].rvalueOp.offsetOper =\
-						self.__resolveClassicSym(block,
-								insn, insn.params[i].rvalueOp.offsetOper)
-					insn.params[i].rvalueOp.offsetOper =\
-						self.resolveNamedLocal(block,
-								insn, insn.params[i].rvalueOp.offsetOper,
-								pointer=False)
-				insn.params[i].rvalueOp = self.resolveNamedLocal(block,
-								insn, insn.params[i].rvalueOp,
-								pointer=True)
+			try:
+				for i, oper in enumerate(insn.ops):
+					oper = self.__resolveClassicSym(block, insn, oper)
+					oper = self.resolveNamedLocal(block, insn, oper, False)
+					oper = self.__resolveNamedFullyQualified(block, insn, oper)
+					if oper.type == AwlOperator.INDIRECT:
+						oper.offsetOper = self.__resolveClassicSym(block,
+									insn, oper.offsetOper)
+						oper.offsetOper = self.resolveNamedLocal(block,
+									insn, oper.offsetOper, False)
+					oper = self.resolveNamedLocal(block, insn, oper, True)
+					insn.ops[i] = oper
+				for param in insn.params:
+					oper = param.rvalueOp
+					oper = self.__resolveClassicSym(block, insn, oper)
+					oper = self.resolveNamedLocal(block, insn, oper, False)
+					oper = self.__resolveNamedFullyQualified(block, insn, oper)
+					if oper.type == AwlOperator.INDIRECT:
+						oper.offsetOper = self.__resolveClassicSym(block,
+									insn, oper.offsetOper)
+						oper.offsetOper = self.resolveNamedLocal(block,
+									insn, oper.offsetOper, False)
+					oper = self.resolveNamedLocal(block, insn, oper, False)
+					param.rvalueOp = oper
+			except AwlSimError as e:
+				if not e.getInsn():
+					e.setInsn(insn)
+				raise e
 
 	# Resolve all symbols (global and local) on all blocks, as far as possible.
 	def __resolveSymbols(self):
