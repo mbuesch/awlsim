@@ -535,7 +535,7 @@ class AwlIndirectOp(AwlOperator):
 	def makePointer(self):
 		# This is a programming error.
 		# The caller should resolve() the operator first.
-		raise AwlSimError("BUG: Can not transform indirect operator "
+		raise AwlSimBug("Can not transform indirect operator "
 			"into a pointer. Resolve it first.")
 
 	def __repr__(self):
