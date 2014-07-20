@@ -1436,6 +1436,8 @@ class S7CPU(object):
 	}
 
 	def __dumpMem(self, prefix, memArray, maxLen):
+		if not memArray:
+			return prefix + "--"
 		ret, line, first, count, i = [], [], True, 0, 0
 		while i < maxLen:
 			line.append("%02X" % memArray[i])
@@ -1487,18 +1489,17 @@ class S7CPU(object):
 			elems = " => ".join(elems)
 			ret.append("  Calls:  depth:%d   %s" %\
 				   (len(self.callStack), elems))
-			cse = self.callStack[-1]
+			localdata = self.callStack[-1].localdata
 			ret.append(self.__dumpMem("      L:  ",
-						  cse.localdata,
+						  localdata,
 						  min(16, self.specs.nrLocalbytes)))
 			try:
-				cse = self.callStack[-2]
+				localdata = self.callStack[-2].localdata
 			except IndexError:
-				pass
-			else:
-				ret.append(self.__dumpMem("     VL:  ",
-							  cse.localdata,
-							  min(16, self.specs.nrLocalbytes)))
+				localdata = None
+			ret.append(self.__dumpMem("     VL:  ",
+						  localdata,
+						  min(16, self.specs.nrLocalbytes)))
 		else:
 			ret.append("  Calls:  None")
 		curInsn = self.getCurrentInsn()
