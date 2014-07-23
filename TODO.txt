@@ -12,4 +12,3 @@ S7 compatibility:
 nice to have:
 - Support for .awlpro in awlsimgui
 - Throw an early error, if constant is assigned to FB/FC OUT/INOUT parameter.
-- English mnemonics for status-word bits
