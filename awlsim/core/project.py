@@ -35,12 +35,6 @@ else:
 	from configparser import ConfigParser as _ConfigParser
 	from configparser import Error as _ConfigParserError
 
-if isIronPython and isPy2Compat:
-	# XXX: Workaround for IronPython's buggy io.StringIO
-	from StringIO import StringIO
-else:
-	from io import StringIO
-
 
 class Project(object):
 	def __init__(self, projectFile, awlFiles=[], symTabFiles=[], cpuSpecs=None):

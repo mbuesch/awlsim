@@ -71,3 +71,11 @@ try:
 	BlockingIOError
 except NameError:
 	class BlockingIOError(object): pass
+
+# Import StringIO
+if isIronPython and isPy2Compat:
+	# XXX: Workaround for IronPython's buggy io.StringIO
+	from StringIO import StringIO
+else:
+	from io import StringIO
+from io import BytesIO

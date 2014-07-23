@@ -76,8 +76,7 @@ class AwlSim(object):
 		if self.__profileLevel <= 0:
 			return None
 
-		import io
-		sio = io.StringIO()
+		sio = StringIO()
 		ps = self.__pstatsModule.Stats(self.__profiler,
 					       stream = sio)
 		ps.sort_stats("cumulative")
