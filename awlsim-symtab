@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - Symbol table parser
+#
+# Copyright 2014 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.core.compat import *
+
+import sys
+import getopt
+
+from awlsim.core.version import *
+from awlsim.core.symbolparser import *
+
+
+def usage():
+	printInfo("awlsim-symtab symbol table parser, version %d.%d" %\
+		  (VERSION_MAJOR, VERSION_MINOR))
+	printInfo("")
+	printInfo("%s [OPTIONS] <inputfile> [outputfile]" % sys.argv[0])
+	printInfo("")
+	printInfo("If inputfile is -, stdin is used.")
+	printInfo("If outputfile is - or omitted, stdout is used.")
+	printInfo("")
+	printInfo("Options:")
+	printInfo(" -I|--input-format FMT     Input file format.")
+	printInfo("                           FMT may be one of: auto, csv, asc")
+	printInfo("                           Default: auto")
+	printInfo(" -O|--output-format FMT    Input file format.")
+	printInfo("                           FMT may be one of: csv, readable-csv, asc")
+	printInfo("                           Default: readable-csv")
+	printInfo("")
+	printInfo("Example usage for converting .ASC to readable .CSV:")
+	printInfo(" awlsim-symtab -I asc -O readable-csv symbols.asc symbols.csv")
+
+def main():
+	opt_inputParser = None
+	opt_outputFormat = "readable-csv"
+	opt_infile = "-"
+	opt_outfile = "-"
+
+	try:
+		(opts, args) = getopt.getopt(sys.argv[1:],
+			"hI:O:",
+			[ "help", "input-format=", "output-format=", ])
+	except getopt.GetoptError as e:
+		printError(str(e))
+		usage()
+		return 1
+	for (o, v) in opts:
+		if o in ("-h", "--help"):
+			usage()
+			return 0
+		if o in ("-I", "--input-format"):
+			if v.lower() == "auto":
+				opt_inputParser = None
+			elif v.lower() in ("csv", "readable-csv"):
+				opt_inputParser = SymTabParser_CSV
+			elif v.lower() == "asc":
+				opt_inputParser = SymTabParser_ASC
+			else:
+				printError("Invalid --input-format")
+				return 1
+		if o in ("-O", "--output-format"):
+			opt_outputFormat = v.lower()
+			if opt_outputFormat not in ("csv", "readable-csv", "asc"):
+				printError("Invalid --output-format")
+				return 1
+	if len(args) == 1:
+		opt_infile = args[0]
+	elif len(args) == 2:
+		opt_infile = args[0]
+		opt_outfile = args[1]
+	else:
+		usage()
+		return 1
+
+	try:
+		if opt_infile == "-":
+			if isPy2Compat:
+				inDataBytes = sys.stdin.read()
+			else:
+				inDataBytes = sys.stdin.buffer.read()
+		else:
+			inDataBytes = awlFileRead(opt_infile,
+						  encoding="binary")
+
+		if opt_inputParser:
+			tab = opt_inputParser.parseData(inDataBytes,
+							autodetectFormat=False)
+		else:
+			tab = SymTabParser.parseData(inDataBytes,
+						     autodetectFormat=True)
+
+		if opt_outputFormat == "csv":
+			outDataBytes = tab.toCSV()
+		elif opt_outputFormat == "readable-csv":
+			outDataBytes = tab.toReadableCSV()
+		elif opt_outputFormat == "asc":
+			outDataBytes = tab.toASC()
+		else:
+			assert(0)
+
+		if opt_outfile == "-":
+			if isPy2Compat:
+				sys.stdout.write(outDataBytes)
+				sys.stdout.flush()
+			else:
+				sys.stdout.buffer.write(outDataBytes)
+				sys.stdout.buffer.flush()
+		else:
+			try:
+				fd = open(opt_outfile, "wb")
+				fd.write(outDataBytes)
+				fd.close()
+			except IOError as e:
+				printError("Failed to write output file '%s': %s" %\
+					   (opt_outfile, str(e)))
+				return 1
+	except AwlSimError as e:
+		printError(e.getReport())
+		return 1
+	return 0
+
+if __name__ == "__main__":
+	sys.exit(main())
