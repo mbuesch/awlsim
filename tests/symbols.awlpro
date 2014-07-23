@@ -8,4 +8,4 @@ awl_file_0=symbols.awl
 
 [SYMBOLS]
 nr_sym_tab_files=1
-sym_tab_file_0=symbols.asc
+sym_tab_file_0=symbols.csv
