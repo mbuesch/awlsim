@@ -84,12 +84,15 @@ class Symbol(object):
 			operator = self.__csvRecord(self.operator)
 			type = self.__csvRecord(self.type)
 			comment = self.__csvRecord(self.comment)
-			namePadding = b" " * (24 - len(name))
-			operatorPadding = b" " * (11 - len(operator))
-			typePadding = b" " * (9 - len(type))
-			return b''.join((name, b';', namePadding, b' ',
-					 operator, b';', operatorPadding, b' ',
-					 type, b';', typePadding, b' ',
+			namePadding = b" " * (24 - len(name)) + b" "
+			operatorPadding = b" " * (11 - len(operator)) + b" "
+			if comment:
+				typePadding = b" " * (9 - len(type)) + b" "
+			else:
+				typePadding = b""
+			return b''.join((name, b';', namePadding,
+					 operator, b';', operatorPadding,
+					 type, b';', typePadding,
 					 comment, b'\r\n'))
 		except UnicodeError as e:
 			raise AwlSimError("Unicode error while trying to generate "
