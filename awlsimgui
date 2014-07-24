@@ -3,7 +3,7 @@
 #
 # AWL simulator - GUI
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,10 @@ def usage():
 	printInfo("%s [OPTIONS] [AWL-source]" % sys.argv[0])
 	printInfo("")
 	printInfo("Options:")
-	printInfo(" -x|--extended-insns   Enable extended instructions")
+	printInfo(" -h|--help             Print this help text")
 
 def main():
 	opt_awlSource = None
-	opt_extInsns = False
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
@@ -52,8 +51,6 @@ def main():
 		if o in ("-h", "--help"):
 			usage()
 			return 0
-		if o in ("-x", "--extended-insns"):
-			opt_extInsns = True
 	if args:
 		if len(args) == 1:
 			opt_awlSource = args[0]
@@ -61,8 +58,7 @@ def main():
 			usage()
 			return 1
 
-	mainwnd = MainWindow.start(initialAwlSource = opt_awlSource,
-				   enableExtendedInstructions = opt_extInsns)
+	mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
 	return mainwnd.runEventLoop()
 
 if __name__ == "__main__":

@@ -54,12 +54,17 @@ class CpuConfigDialog(QDialog):
 			"entry-variables", self)
 		self.layout().addWidget(self.obTempCheckBox, 2, 0, 1, 2)
 
+		self.extInsnsCheckBox = QCheckBox("Enable extended "
+			"non-standard instructions", self)
+		self.layout().addWidget(self.extInsnsCheckBox, 3, 0, 1, 2)
+
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 3, 1)
+		self.layout().addWidget(self.closeButton, 4, 1)
 
 		self.accuCombo.currentIndexChanged.connect(self.__configChanged)
 		self.mnemonicsCombo.currentIndexChanged.connect(self.__configChanged)
 		self.obTempCheckBox.stateChanged.connect(self.__configChanged)
+		self.extInsnsCheckBox.stateChanged.connect(self.__configChanged)
 		self.closeButton.released.connect(self.accept)
 
 #FIXME this should be loaded from .awlpro file
@@ -88,6 +93,7 @@ class CpuConfigDialog(QDialog):
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
+		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
 
 		specs = self.simClient.getCpuSpecs()
 		if specs:
@@ -95,6 +101,7 @@ class CpuConfigDialog(QDialog):
 			specs.setNrAccus(nrAccus)
 			self.simClient.setCpuSpecs(specs)
 		self.simClient.enableOBTempPresets(obTempEnabled)
+		self.simClient.enableExtendedInsns(extInsnsEnabled)
 
 	def __configChanged(self):
 		if self.__updateBlocked:

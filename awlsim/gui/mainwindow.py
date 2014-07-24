@@ -34,11 +34,11 @@ class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)
 	runStateChanged = Signal(int)
 
-	def __init__(self, parent=None, enableExtInstructions=False):
+	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
 
-		self.__initSim(enableExtInstructions)
+		self.simClient = GuiAwlSimClient()
 
 		self.cpuConfigDialog = CpuConfigDialog(self, self.simClient)
 		self.coreConfigDialog = CoreConfigDialog(self, self.simClient)
@@ -59,10 +59,6 @@ class MainWidget(QWidget):
 		self.codeEdit.codeChanged.connect(self.cpuWidget.stop)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 		self.runStateChanged.connect(self.codeEdit.runStateChanged)
-
-	def __initSim(self, enableExtInsns):
-		self.simClient = GuiAwlSimClient()
-		self.simClient.enableExtendedInsns(enableExtInsns)
 
 	def isDirty(self):
 		return self.dirty
@@ -140,23 +136,21 @@ class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
 		  qApplication = None,
-		  initialAwlSource = None,
-		  enableExtendedInstructions = False):
+		  initialAwlSource = None):
 		if not qApplication:
 			qApplication = QApplication(sys.argv)
 		mainwnd = cls(qApplication,
-			      initialAwlSource,
-			      enableExtendedInstructions)
+			      initialAwlSource)
 		mainwnd.show()
 		return mainwnd
 
-	def __init__(self, qApplication, awlSource=None, enableExtInstructions=False):
+	def __init__(self, qApplication, awlSource=None):
 		QMainWindow.__init__(self)
 		self.qApplication = qApplication
 
-		self.setWindowTitle("S7 AWL/STL simulator v%d.%d" %\
+		self.setWindowTitle("Awlsim - AWL/STL PLC simulator v%d.%d" %\
 				    (VERSION_MAJOR, VERSION_MINOR))
-		self.setCentralWidget(MainWidget(self, enableExtInstructions))
+		self.setCentralWidget(MainWidget(self))
 
 		self.setMenuBar(QMenuBar(self))
 
