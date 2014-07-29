@@ -194,7 +194,7 @@ except ValueError:
 
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
-	description	= "Step 7 AWL/STL PLC simulator",
+	description	= "S7 AWL/STL Soft-PLC",
 	license		= "GNU General Public License v2 or later",
 	author		= "Michael Buesch",
 	author_email	= "m@bues.ch",
