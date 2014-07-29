@@ -201,24 +201,16 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 		return cls(text)
 
 class AwlSimMessage_LOAD_SYMTAB(AwlSimMessage):
-	def __init__(self, symTabText):
+	def __init__(self, symTabBytes):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_SYMTAB)
-		self.symTabText = symTabText
+		self.symTabBytes = symTabBytes
 
 	def toBytes(self):
-		try:
-			data = self.symTabText.encode()
-			return AwlSimMessage.toBytes(self, len(data)) + data
-		except UnicodeError:
-			raise TransferError("LOAD_SYMTAB: Unicode error")
+		return AwlSimMessage.toBytes(self, len(self.symTabBytes)) + self.symTabBytes
 
 	@classmethod
 	def fromBytes(cls, payload):
-		try:
-			symTabText = payload.decode()
-		except UnicodeError:
-			raise TransferError("LOAD_SYMTAB: Unicode error")
-		return cls(symTabText)
+		return cls(payload)
 
 class AwlSimMessage_LOAD_CODE(AwlSimMessage):
 	def __init__(self, code):

@@ -333,7 +333,7 @@ class AwlSimServer(object):
 
 	def __rx_LOAD_SYMTAB(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
-		symbolTable = SymTabParser.parseData(msg.symTabText,
+		symbolTable = SymTabParser.parseData(msg.symTabBytes,
 						     autodetectFormat = True,
 						     mnemonics = self.sim.cpu.getSpecs().getMnemonics())
 		self.__setRunState(self.STATE_INIT)

@@ -281,7 +281,8 @@ def runWithServerBackend(inputFile):
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
 		for symTabFile in project.symTabFiles:
-			client.loadSymbolTable(awlFileRead(symTabFile))
+			client.loadSymbolTable(awlFileRead(symTabFile,
+							   encoding="binary"))
 		for awlFile in project.awlFiles:
 			client.loadCode(awlFileRead(awlFile))
 		client.setRunState(True)

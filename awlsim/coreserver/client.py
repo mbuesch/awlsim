@@ -294,8 +294,8 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load code")
 		return True
 
-	def loadSymbolTable(self, symTabText):
-		msg = AwlSimMessage_LOAD_SYMTAB(symTabText)
+	def loadSymbolTable(self, symTabBytes):
+		msg = AwlSimMessage_LOAD_SYMTAB(symTabBytes)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load symbol table")
