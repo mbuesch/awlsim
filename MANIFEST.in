@@ -4,6 +4,7 @@ include EXAMPLE.awlpro
 include EXAMPLE.csv
 include TODO.txt
 include COMPATIBILITY.txt
+include awlsim-wininst-postinstall.py
 include awlsimhw_linuxcnc/awlsim.hal
 graft tests
 graft fake
