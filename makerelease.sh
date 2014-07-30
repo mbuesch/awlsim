@@ -59,5 +59,5 @@ hook_regression_tests()
 }
 
 project=awlsim
-default_archives=py-sdist,py-bdist-wininst
+default_archives=py-sdist
 makerelease "$@"
