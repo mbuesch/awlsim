@@ -189,9 +189,15 @@ class CpuWidget(QWidget):
 					# XXX: There is a race-window here. Another process might
 					#      allocate the port that we just checked
 					#      before our server is able to allocate it.
-					client.spawnServer(interpreter = interp,
-							   listenHost = host,
-							   listenPort = port)
+					if isWinStandalone:
+						# Run the py2exe standalone server process
+						client.spawnServer(serverExecutable = "server.exe",
+								   listenHost = host,
+								   listenPort = port)
+					else:
+						client.spawnServer(interpreter = interp,
+								   listenHost = host,
+								   listenPort = port)
 					break
 				else:
 					raise AwlSimError("Did not find a free port to run the "

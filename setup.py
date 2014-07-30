@@ -10,6 +10,10 @@ import hashlib
 from distutils.core import setup
 from distutils.extension import Extension
 from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR
+try:
+	import py2exe
+except ImportError as e:
+	py2exe = None
 
 
 def makedirs(path, mode):
@@ -171,6 +175,7 @@ def tryBuildCythonModules():
 cmdclass = {}
 ext_modules = []
 extraScripts = []
+extraKeywords = {}
 # Try to build the Cython modules. This might fail.
 tryBuildCythonModules()
 
@@ -191,6 +196,9 @@ try:
 		extraScripts.append("awlsim-wininst-postinstall.py")
 except ValueError:
 	pass
+
+if py2exe:
+	extraKeywords["console"] = [ "awlsimgui", "awlsim/coreserver/server.py", ]
 
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
@@ -251,5 +259,6 @@ setup(	name		= "awlsim",
 		"Topic :: Software Development :: Testing",
 		"Topic :: System :: Emulators",
 	],
-	long_description = open("README.txt").read()
+	long_description = open("README.txt").read(),
+	**extraKeywords
 )
