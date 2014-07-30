@@ -81,11 +81,9 @@ class Project(object):
 					(version, expectedVersion))
 
 			# CPU section
-			nrAwl = p.getint("CPU", "nr_awl_files")
-			if nrAwl < 0 or nrAwl > 0xFFFF:
-				raise AwlSimError("Project file: Invalid number of "\
-					"AWL files: %d" % nrAwl)
-			for i in range(nrAwl):
+			for i in range(0xFFFF):
+				if not p.has_option("CPU", "awl_file_%d" % i):
+					break
 				path = p.get("CPU", "awl_file_%d" % i)
 				awlFiles.append(cls.__generic2path(path, projectDir))
 			if p.has_option("CPU", "mnemonics"):
@@ -96,11 +94,9 @@ class Project(object):
 				cpuSpecs.setNrAccus(nrAccus)
 
 			# SYMBOLS section
-			nrSymTab = p.getint("SYMBOLS", "nr_sym_tab_files")
-			if nrSymTab < 0 or nrSymTab > 0xFFFF:
-				raise AwlSimError("Project file: Invalid number of "
-					"symbol table files: %d" % nrSymTab)
-			for i in range(nrSymTab):
+			for i in range(0xFFFF):
+				if not p.has_option("SYMBOLS", "sym_tab_file_%d" % i):
+					break
 				path = p.get("SYMBOLS", "sym_tab_file_%d" % i)
 				symTabFiles.append(cls.__generic2path(path, projectDir))
 
@@ -149,7 +145,6 @@ class Project(object):
 		lines.append("date=%s" % str(datetime.datetime.utcnow()))
 		lines.append("")
 		lines.append("[CPU]")
-		lines.append("nr_awl_files=%d" % len(self.awlFiles))
 		for i, awlFile in enumerate(self.awlFiles):
 			path = self.__path2generic(awlFile, projectDir)
 			lines.append("awl_file_%d=%s" % (i, path))
@@ -157,7 +152,6 @@ class Project(object):
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
 		lines.append("")
 		lines.append("[SYMBOLS]")
-		lines.append("nr_sym_tab_files=%d" % len(self.symTabFiles))
 		for i, symTabFile in enumerate(self.symTabFiles):
 			path = self.__path2generic(symTabFile, projectDir)
 			lines.append("sym_tab_file_%d=%s" % (i, symTabFile))

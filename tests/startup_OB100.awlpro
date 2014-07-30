@@ -3,10 +3,8 @@ file_version=0
 date=1990-01-01 00:00:00.000000
 
 [CPU]
-nr_awl_files=1
 awl_file_0=startup_OB100.awl
 mnemonics=0
 nr_accus=4
 
 [SYMBOLS]
-nr_sym_tab_files=0
