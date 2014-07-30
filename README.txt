@@ -15,7 +15,7 @@ COMPATIBILITY.txt and TODO.txt files. If you find any undocumented bugs and
 incompatibilities to a real PLC CPU, please contact us.
 
 Awlsim is Open Source Free Software licensed under the GNU General Public
-License v2. That means it's available in full source code and you are
+License v2+. That means it's available in full source code and you are
 encouraged to improve it and contribute your changes back to the community.
 Awlsim is free of charge, too.
 
