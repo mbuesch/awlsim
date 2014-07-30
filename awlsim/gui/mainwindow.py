@@ -148,7 +148,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.__init__(self)
 		self.qApplication = qApplication
 
-		self.setWindowTitle("Awlsim - AWL/STL PLC simulator v%d.%d" %\
+		self.setWindowTitle("Awlsim - AWL/STL Soft-PLC v%d.%d" %\
 				    (VERSION_MAJOR, VERSION_MINOR))
 		self.setCentralWidget(MainWidget(self))
 
@@ -235,7 +235,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.closeEvent(self, ev)
 
 	def about(self):
-		QMessageBox.information(self, "About S7 AWL/STL simulator",
+		QMessageBox.information(self, "About AWL/STL Soft-PLC",
 			"awlsim version %d.%d\n\n"
 			"Copyright 2012-2014 Michael Büsch <m@bues.ch>\n"
 			"Licensed under the terms of the "
