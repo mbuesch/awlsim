@@ -187,6 +187,7 @@ class EditWidget(QPlainTextEdit):
 		_setFontParams(font)
 		self.setFont(font)
 		self.__charHeight = self.fontMetrics().height()
+		self.setTabStopWidth(self.fontMetrics().width("X") * 8)
 
 	def enableCpuStats(self, enabled=True, force=False):
 		if force or enabled != self.__cpuStatsEnabled:

@@ -1,14 +1,14 @@
 ORGANIZATION_BLOCK OB 1
 BEGIN
-	CALL		FC 1
-	CALL		FC 2
-	CALL		FC 3
-	CALL		FB 1, DB 2 (
+	CALL	FC 1
+	CALL	FC 2
+	CALL	FC 3
+	CALL	FB 1, DB 2 (
 		INPUT_VAR := 1
 	)
 
-//	U		"test_symbol_E"
-//	=		"test_symbol_A"
+//	U	"test_symbol_E"
+//	=	"test_symbol_A"
 
 END_ORGANIZATION_BLOCK
 
@@ -16,8 +16,8 @@ END_ORGANIZATION_BLOCK
 
 FUNCTION FC 1: VOID
 BEGIN
-	U		E 0.0
-	=		A 0.0
+	U	E 0.0
+	=	A 0.0
 END_FUNCTION
 
 
@@ -25,36 +25,36 @@ END_FUNCTION
 FUNCTION FC 2: VOID
 TITLE = Shift register
 BEGIN
-	UN		T 10
-	=		M 0.0
-	L		S5T#200MS
-	SV		T 10
+	UN	T 10
+	=	M 0.0
+	L	S5T#200MS
+	SV	T 10
 
-	L		MD 4
-	L		1
+	L	MD 4
+	L	1
 	==D
-	S		M 0.1
-	RRD		1
+	S	M 0.1
+	RRD	1
 	==D
-	R		M 0.1
+	R	M 0.1
 
-	L		MD 4
-	UD		L#-1
-	L		1
-	SPZ		_001
+	L	MD 4
+	UD	L#-1
+	L	1
+	SPZ	_001
 	TAK
-	U		M 0.0
-	SPBN		_001
-	U		M 0.1
-	SPBN		_000
-	RLD		2
-_000:	RRD		1
-_001:	T		MD 4
+	U	M 0.0
+	SPBN	_001
+	U	M 0.1
+	SPBN	_000
+	RLD	2
+_000:	RRD	1
+_001:	T	MD 4
 
-	L		MD 4
-	T		AD 4
+	L	MD 4
+	T	AD 4
 	TAD
-	T		AD 8
+	T	AD 8
 END_FUNCTION
 
 
@@ -62,9 +62,9 @@ END_FUNCTION
 FUNCTION FC 3: VOID
 TITLE = DB usage example
 BEGIN
-	AUF		DB 1
-	L		DBD 2
-	T		MD 16
+	AUF	DB 1
+	L	DBD 2
+	T	MD 16
 END_FUNCTION
 
 
@@ -82,9 +82,9 @@ END_FUNCTION_BLOCK
 DATA_BLOCK DB 1
 TITLE = This is global DB 1
 STRUCT
-	VAR1 : INT		// DBW0: VAR1 => 16 bit signed int
+	VAR1 : INT	// DBW0: VAR1 => 16 bit signed int
 	VAR2 : DWORD	// DBD2: VAR2 => 32 bit unsigned dword
-	VAR3 : WORD		// DBW6: VAR3 => 16 bit unsigned word
+	VAR3 : WORD	// DBW6: VAR3 => 16 bit unsigned word
 END_STRUCT
 BEGIN
 	VAR1 := 1337
