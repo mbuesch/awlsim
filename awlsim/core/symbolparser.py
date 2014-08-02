@@ -165,11 +165,10 @@ class SymTabParser(object):
 	implementations = []
 
 	@classmethod
-	def parseFile(cls, filename,
-		      autodetectFormat=True,
-		      mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
-		dataBytes = awlFileRead(filename, encoding="binary")
-		return cls.parseData(dataBytes, autodetectFormat, mnemonics)
+	def parseSource(cls, source,
+			autodetectFormat=True,
+			mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
+		return cls.parseData(source.sourceBytes, autodetectFormat, mnemonics)
 
 	@classmethod
 	def parseData(cls, dataBytes,

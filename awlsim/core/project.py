@@ -25,6 +25,7 @@ from awlsim.core.compat import *
 from awlsim.core.cpuspecs import *
 from awlsim.core.util import *
 
+import base64, binascii
 import datetime
 import os
 
@@ -36,11 +37,56 @@ else:
 	from configparser import Error as _ConfigParserError
 
 
+class GenericSource(object):
+	SRCTYPE = "<generic>"
+
+	def __init__(self, identifier, filepath, sourceBytes):
+		assert(identifier)
+		self.identifier = identifier
+		self.filepath = filepath
+		self.sourceBytes = sourceBytes
+
+	def isFileBacked(self):
+		return bool(self.filepath)
+
+	def toBase64(self):
+		return base64.b64encode(self.sourceBytes).decode("ascii")
+
+	@classmethod
+	def fromFile(cls, identifier, filepath):
+		try:
+			data = awlFileRead(filepath, encoding="binary")
+		except AwlSimError as e:
+			raise AwlSimError("Project: Could not read %s "
+				"source file '%s':\n%s" %\
+				(cls.SRCTYPE, filepath, str(e)))
+		return cls(identifier, filepath, data)
+
+	@classmethod
+	def fromBase64(cls, identifier, b64):
+		try:
+			data = base64.b64decode(b64, validate=True)
+		except (TypeError, binascii.Error) as e:
+			raise AwlSimError("Project: %s source '%s' "
+				"has invalid base64 encoding." %\
+				(cls.SRCTYPE, identifier))
+		return cls(identifier, None, data)
+
+	def __repr__(self):
+		return "%s%s %s" % ("" if self.isFileBacked() else "project ",
+				    self.SRCTYPE, self.identifier)
+
+class AwlSource(GenericSource):
+	SRCTYPE = "AWL/STL"
+
+class SymTabSource(GenericSource):
+	SRCTYPE = "symbol table"
+
 class Project(object):
-	def __init__(self, projectFile, awlFiles=[], symTabFiles=[], cpuSpecs=None):
+	def __init__(self, projectFile, awlSources=[], symTabSources=[], cpuSpecs=None):
 		self.projectFile = projectFile
-		self.awlFiles = awlFiles
-		self.symTabFiles = symTabFiles
+		self.awlSources = awlSources
+		self.symTabSources = symTabSources
 		if not cpuSpecs:
 			cpuSpecs = S7CPUSpecs()
 		self.cpuSpecs = cpuSpecs
@@ -67,8 +113,8 @@ class Project(object):
 			raise AwlSimError("Project file: The data is "\
 				"not an awlsim project.")
 		projectDir = os.path.dirname(projectFile)
-		awlFiles = []
-		symTabFiles = []
+		awlSources = []
+		symTabSources = []
 		cpuSpecs = S7CPUSpecs()
 		try:
 			p = _ConfigParser()
@@ -82,10 +128,19 @@ class Project(object):
 
 			# CPU section
 			for i in range(0xFFFF):
-				if not p.has_option("CPU", "awl_file_%d" % i):
+				option = "awl_file_%d" % i
+				if not p.has_option("CPU", option):
 					break
-				path = p.get("CPU", "awl_file_%d" % i)
-				awlFiles.append(cls.__generic2path(path, projectDir))
+				path = p.get("CPU", option)
+				src = AwlSource.fromFile(path, cls.__generic2path(path, projectDir))
+				awlSources.append(src)
+			for i in range(0xFFFF):
+				option = "awl_%d" % i
+				if not p.has_option("CPU", option):
+					break
+				awlBase64 = p.get("CPU", option)
+				src = AwlSource.fromBase64("#%d" % i, awlBase64)
+				awlSources.append(src)
 			if p.has_option("CPU", "mnemonics"):
 				mnemonics = p.getint("CPU", "mnemonics")
 				cpuSpecs.setConfiguredMnemonics(mnemonics)
@@ -95,17 +150,26 @@ class Project(object):
 
 			# SYMBOLS section
 			for i in range(0xFFFF):
-				if not p.has_option("SYMBOLS", "sym_tab_file_%d" % i):
+				option = "sym_tab_file_%d" % i
+				if not p.has_option("SYMBOLS", option):
 					break
-				path = p.get("SYMBOLS", "sym_tab_file_%d" % i)
-				symTabFiles.append(cls.__generic2path(path, projectDir))
+				path = p.get("SYMBOLS", option)
+				src = SymTabSource.fromFile(path, cls.__generic2path(path, projectDir))
+				symTabSources.append(src)
+			for i in range(0xFFFF):
+				option = "sym_tab_%d" % i
+				if not p.has_option("SYMBOLS", option):
+					break
+				symTabBase64 = p.get("SYMBOLS", option)
+				src = SymTabSource.fromBase64("#%d" % i, symTabBase64)
+				symTabSources.append(src)
 
 		except _ConfigParserError as e:
 			raise AwlSimError("Project parser error: " + str(e))
 
 		return cls(projectFile = projectFile,
-			   awlFiles = awlFiles,
-			   symTabFiles = symTabFiles,
+			   awlSources = awlSources,
+			   symTabSources = symTabSources,
 			   cpuSpecs = cpuSpecs)
 
 	@classmethod
@@ -144,17 +208,28 @@ class Project(object):
 		lines.append("file_version=0")
 		lines.append("date=%s" % str(datetime.datetime.utcnow()))
 		lines.append("")
+
 		lines.append("[CPU]")
-		for i, awlFile in enumerate(self.awlFiles):
-			path = self.__path2generic(awlFile, projectDir)
+		fileBackedSources = (src for src in self.awlSources if src.isFileBacked())
+		embeddedSources = (src for src in self.awlSources if not src.isFileBacked())
+		for i, awlSrc in enumerate(fileBackedSources):
+			path = self.__path2generic(awlSrc.filepath, projectDir)
 			lines.append("awl_file_%d=%s" % (i, path))
+		for i, awlSrc in enumerate(embeddedSources):
+			lines.append("awl_%d=%s" % (i, awlSrc.toBase64()))
 		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
 		lines.append("")
+
 		lines.append("[SYMBOLS]")
-		for i, symTabFile in enumerate(self.symTabFiles):
-			path = self.__path2generic(symTabFile, projectDir)
-			lines.append("sym_tab_file_%d=%s" % (i, symTabFile))
+		fileBackedSources = (src for src in self.symTabSources if src.isFileBacked())
+		embeddedSources = (src for src in self.symTabSources if not src.isFileBacked())
+		for i, symSrc in enumerate(fileBackedSources):
+			path = self.__path2generic(symSrc.filepath, projectDir)
+			lines.append("sym_tab_file_%d=%s" % (i, path))
+		for i, symSrc in enumerate(embeddedSources):
+			lines.append("sym_tab_%d=%s" % (i, symSrc.toBase64()))
+
 		return "\r\n".join(lines)
 
 	def toFile(self, projectFile=None):

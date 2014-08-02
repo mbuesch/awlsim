@@ -142,8 +142,9 @@ def readInputFile(inputFile):
 		project = Project.fromFile(inputFile)
 	else:
 		# make a fake project
+		awlSrc = AwlSource.fromFile(inputFile, inputFile)
 		project = Project(projectFile = None,
-				  awlFiles = [ inputFile, ])
+				  awlSources = [ awlSrc, ])
 	return project
 
 def run(inputFile):
@@ -158,18 +159,18 @@ def run(inputFile):
 
 		writeStdout("Parsing code...\n")
 		parseTrees = []
-		for awlFile in project.awlFiles:
+		for awlSrc in project.awlSources:
 			p = AwlParser()
-			p.parseFile(awlFile)
+			p.parseSource(awlSrc)
 			parseTrees.append(p.getParseTree())
 		symTables = []
-		for symTabFile in project.symTabFiles:
+		for symTabSrc in project.symTabSources:
 			mnemonics = project.cpuSpecs.getConfiguredMnemonics()
 			if opt_mnemonics is not None:
 				mnemonics = opt_mnemonics
-			tab = SymTabParser.parseFile(symTabFile,
-						     autodetectFormat = True,
-						     mnemonics = mnemonics)
+			tab = SymTabParser.parseSource(symTabSrc,
+						       autodetectFormat = True,
+						       mnemonics = mnemonics)
 			symTables.append(tab)
 
 		writeStdout("Initializing simulator...\n")
@@ -280,11 +281,10 @@ def runWithServerBackend(inputFile):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		for symTabFile in project.symTabFiles:
-			client.loadSymbolTable(awlFileRead(symTabFile,
-							   encoding="binary"))
-		for awlFile in project.awlFiles:
-			client.loadCode(awlFileRead(awlFile))
+		for symTabSrc in project.symTabSources:
+			client.loadSymbolTable(symTabSrc)
+		for awlSrc in project.awlSources:
+			client.loadCode(awlSrc)
 		client.setRunState(True)
 
 		# Run the client-side event loop

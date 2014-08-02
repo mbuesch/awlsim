@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server messages
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from awlsim.coreserver.memarea import *
 from awlsim.core.util import *
 from awlsim.core.datatypehelpers import *
 from awlsim.core.cpuspecs import *
+from awlsim.core.project import *
 
 import struct
 import socket
@@ -45,7 +46,7 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5710
+	HDR_MAGIC		= 0x5711
 	HDR_LENGTH		= hdrStruct.size
 
 	EnumGen.start
@@ -69,27 +70,46 @@ class AwlSimMessage(object):
 	MSG_ID_INSNSTATE	= EnumGen.item
 	EnumGen.end
 
-	_strLenStruct = struct.Struct(str(">H"))
+	_bytesLenStruct = struct.Struct(str(">I"))
 
 	@classmethod
 	def packString(cls, string):
 		try:
-			data = string.encode("utf-8", "strict")
-			return cls._strLenStruct.pack(len(data)) + data
-		except (UnicodeError, struct.error) as e:
+			if not string:
+				string = ""
+			return cls.packBytes(string.encode("utf-8", "strict"))
+		except UnicodeError as e:
+			raise ValueError
+
+	@classmethod
+	def packBytes(cls, _bytes):
+		try:
+			if not _bytes:
+				_bytes = b""
+			if len(_bytes) > 0xFFFFFFFF:
+				raise ValueError
+			return cls._bytesLenStruct.pack(len(_bytes)) + _bytes
+		except struct.error as e:
 			raise ValueError
 
 	@classmethod
 	def unpackString(cls, data, offset = 0):
 		try:
-			(length, ) = cls._strLenStruct.unpack_from(data, offset)
-			strBytes = data[offset + cls._strLenStruct.size :
-					offset + cls._strLenStruct.size + length]
-			if len(strBytes) != length:
+			_bytes, count = cls.unpackBytes(data, offset)
+			return (_bytes.decode("utf-8", "strict"), count)
+		except UnicodeError as e:
+			raise ValueError
+
+	@classmethod
+	def unpackBytes(cls, data, offset = 0):
+		try:
+			(length, ) = cls._bytesLenStruct.unpack_from(data, offset)
+			_bytes = data[offset + cls._bytesLenStruct.size :
+				      offset + cls._bytesLenStruct.size + length]
+			if len(_bytes) != length:
 				raise ValueError
-			return (strBytes.decode("utf-8", "strict"),
-				cls._strLenStruct.size + length)
-		except (UnicodeError, struct.error) as e:
+			return (_bytes, cls._bytesLenStruct.size + length)
+		except struct.error as e:
 			raise ValueError
 
 	def __init__(self, msgId, seq=0):
@@ -200,37 +220,44 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 			raise TransferError("EXCEPTION: Unicode error")
 		return cls(text)
 
-class AwlSimMessage_LOAD_SYMTAB(AwlSimMessage):
-	def __init__(self, symTabBytes):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_SYMTAB)
-		self.symTabBytes = symTabBytes
+class _AwlSimMessage_source(AwlSimMessage):
+	sourceClass = None
 
-	def toBytes(self):
-		return AwlSimMessage.toBytes(self, len(self.symTabBytes)) + self.symTabBytes
-
-	@classmethod
-	def fromBytes(cls, payload):
-		return cls(payload)
-
-class AwlSimMessage_LOAD_CODE(AwlSimMessage):
-	def __init__(self, code):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_CODE)
-		self.code = code
+	def __init__(self, msgId, source):
+		AwlSimMessage.__init__(self, msgId)
+		self.source = source
 
 	def toBytes(self):
 		try:
-			code = self.code.encode()
-			return AwlSimMessage.toBytes(self, len(code)) + code
-		except UnicodeError:
-			raise TransferError("LOAD_CODE: Unicode error")
+			pl = self.packString(self.source.identifier) +\
+				self.packString(self.source.filepath) +\
+				self.packBytes(self.source.sourceBytes)
+			return AwlSimMessage.toBytes(self, len(pl)) + pl
+		except ValueError:
+			raise TransferError("SOURCE: Data format error")
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			code = payload.decode()
-		except UnicodeError:
-			raise TransferError("LOAD_CODE: Unicode error")
-		return cls(code)
+			identifier, count = cls.unpackString(payload)
+			filepath, cnt = cls.unpackString(payload, count)
+			count += cnt
+			sourceBytes, cnt = cls.unpackBytes(payload, count)
+		except ValueError:
+			raise TransferError("SOURCE: Data format error")
+		return cls(cls.sourceClass(identifier, filepath, sourceBytes))
+
+class AwlSimMessage_LOAD_SYMTAB(_AwlSimMessage_source):
+	sourceClass = SymTabSource
+
+	def __init__(self, source):
+		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_LOAD_SYMTAB, source)
+
+class AwlSimMessage_LOAD_CODE(_AwlSimMessage_source):
+	sourceClass = AwlSource
+
+	def __init__(self, source):
+		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_LOAD_CODE, source)
 
 class AwlSimMessage_LOAD_HW(AwlSimMessage):
 	def __init__(self, name, paramDict):

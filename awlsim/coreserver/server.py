@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -338,16 +338,16 @@ class AwlSimServer(object):
 	def __rx_LOAD_CODE(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		parser = AwlParser()
-		parser.parseData(msg.code)
+		parser.parseSource(msg.source)
 		self.__setRunState(self.STATE_INIT)
 		self.sim.load(parser.getParseTree())
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_SYMTAB(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
-		symbolTable = SymTabParser.parseData(msg.symTabBytes,
-						     autodetectFormat = True,
-						     mnemonics = self.sim.cpu.getSpecs().getMnemonics())
+		symbolTable = SymTabParser.parseSource(msg.source,
+					autodetectFormat = True,
+					mnemonics = self.sim.cpu.getSpecs().getMnemonics())
 		self.__setRunState(self.STATE_INIT)
 		self.sim.loadSymbolTable(symbolTable)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))

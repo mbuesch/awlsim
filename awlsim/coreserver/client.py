@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server client
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -299,17 +299,17 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to set run state")
 		return True
 
-	def loadCode(self, code):
+	def loadCode(self, codeSource):
 		if not self.transceiver:
 			return False
-		msg = AwlSimMessage_LOAD_CODE(code)
+		msg = AwlSimMessage_LOAD_CODE(codeSource)
 		status = self.__sendAndWaitFor_REPLY(msg, 10.0)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load code")
 		return True
 
-	def loadSymbolTable(self, symTabBytes):
-		msg = AwlSimMessage_LOAD_SYMTAB(symTabBytes)
+	def loadSymbolTable(self, symTabSource):
+		msg = AwlSimMessage_LOAD_SYMTAB(symTabSource)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load symbol table")

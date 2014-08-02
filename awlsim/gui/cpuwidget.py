@@ -172,9 +172,15 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(False) # Redraws the radio button
 		self.runButton.setEnabled(True)
 
-		ob1_awl = self.mainWidget.getCodeEditWidget().getCode()
-		if not ob1_awl.strip():
+		awlCode = self.mainWidget.getCodeEditWidget().getCode()
+		if not awlCode.strip():
 			MessageBox.error(self, "No AWL/STL code available. Cannot run.")
+			self.stop()
+			return
+		try:
+			awlCode = awlCode.encode("latin_1")
+		except UnicodeError:
+			MessageBox.error(self, "AWL/STL code contains invalid characters.")
 			self.stop()
 			return
 
@@ -217,7 +223,7 @@ class CpuWidget(QWidget):
 
 			self.__setState(self.STATE_LOAD)
 			client.loadHardwareModule("dummy")
-			client.loadCode(ob1_awl)
+			client.loadCode(AwlSource("gui", None, awlCode))
 			client.setRunState(True)
 		except AwlParserError as e:
 			MessageBox.handleAwlParserError(self, e)

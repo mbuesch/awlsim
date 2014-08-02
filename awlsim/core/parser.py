@@ -2,7 +2,7 @@
 #
 # AWL parser
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import re
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
+from awlsim.core.project import *
 
 
 class RawAwlInsn(object):
@@ -265,6 +266,8 @@ class AwlParseTree(object):
 
 		self.curBlock = None
 
+		self.fileId = ""
+
 class AwlParser(object):
 	EnumGen.start
 	STATE_GLOBAL			= EnumGen.item
@@ -347,8 +350,9 @@ class AwlParser(object):
 		return self.__inAnyHeader() or\
 		       self.state == self.STATE_GLOBAL
 
-	def __tokenize(self, data):
+	def __tokenize(self, data, fileId):
 		self.reset()
+		self.tree.fileId = fileId
 		self.lineNr = 1
 
 		t = self.TokenizerState(self)
@@ -966,16 +970,25 @@ class AwlParser(object):
 		insn = self.__parseInstruction(t)
 		self.tree.curBlock.insns.append(insn)
 
-	def parseFile(self, filename):
-		self.parseData(awlFileRead(filename))
+	def parseSource(self, awlSource):
+		"""Parse an AWL source.
+		awlSource is an AwlSource instance."""
+		self.parseData(awlSource.sourceBytes, str(awlSource))
 
-	def parseData(self, data):
+	def parseData(self, dataBytes, fileId=""):
+		try:
+			data = dataBytes.decode("latin_1")
+		except UnicodeError as e:
+			raise AwlParserError("Could not decode AWL/STL charset.")
+		#FIXME: This check will trigger, if there is no OB, which may happen
+		#       for projects with multiple awl files.
 		self.flatLayout = not re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*',
 					       data, re.DOTALL | re.MULTILINE)
 		try:
-			self.__tokenize(data)
+			self.__tokenize(data, fileId)
 		except AwlParserError as e:
 			e.setLineNr(self.lineNr)
+			e.setFileId(fileId)
 			raise e
 
 	def getParseTree(self):

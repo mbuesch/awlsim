@@ -3,7 +3,7 @@
 #
 # AWL simulator - LinuxCNC HAL module
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,9 +27,9 @@ import sys
 import os
 import getopt
 
-from awlsim.core.main import AwlSim
-from awlsim.core.parser import AwlParser
-from awlsim.core.util import AwlSimError, AwlParserError, printInfo, printWarning, printError, str2bool
+from awlsim.core.main import *
+from awlsim.core.parser import *
+from awlsim.core.util import *
 from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR
 
 try:
@@ -177,7 +177,7 @@ def main():
 	if len(args) != 1:
 		usage()
 		return 1
-	awlSource = args[0]
+	awlFile = args[0]
 
 #	try:
 #		os.nice(-5)
@@ -198,7 +198,8 @@ def main():
 			s = mainwnd.getSim()
 		else:
 			p = AwlParser()
-			p.parseFile(awlSource)
+			p.parseSource(AwlSource(awlFile, awlFile,
+						awlFileRead(awlFile, encoding="binary")))
 			s = AwlSim()
 
 		loadHardwareModule(awlSim = s, hal = hal,
