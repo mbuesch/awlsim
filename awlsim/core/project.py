@@ -40,11 +40,14 @@ else:
 class GenericSource(object):
 	SRCTYPE = "<generic>"
 
-	def __init__(self, identifier, filepath, sourceBytes):
+	def __init__(self, identifier, filepath="", sourceBytes=b""):
 		assert(identifier)
 		self.identifier = identifier
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
+
+	def dup(self):
+		raise NotImplementedError
 
 	def isFileBacked(self):
 		return bool(self.filepath)
@@ -79,8 +82,16 @@ class GenericSource(object):
 class AwlSource(GenericSource):
 	SRCTYPE = "AWL/STL"
 
+	def dup(self):
+		return AwlSource(self.identifier, self.filepath,
+				 self.sourceBytes[:])
+
 class SymTabSource(GenericSource):
 	SRCTYPE = "symbol table"
+
+	def dup(self):
+		return SymTabSource(self.identifier, self.filepath,
+				    self.sourceBytes[:])
 
 class Project(object):
 	def __init__(self, projectFile, awlSources=[], symTabSources=[], cpuSpecs=None):
