@@ -295,6 +295,8 @@ class AwlParser(object):
 	STATE_IN_OB			= EnumGen.item
 	EnumGen.end
 
+	TEXT_ENCODING = "latin_1"
+
 	class TokenizerState(object):
 		def __init__(self, parser):
 			self.parser = parser
@@ -977,7 +979,7 @@ class AwlParser(object):
 
 	def parseData(self, dataBytes, fileId=""):
 		try:
-			data = dataBytes.decode("latin_1")
+			data = dataBytes.decode(self.TEXT_ENCODING)
 		except UnicodeError as e:
 			raise AwlParserError("Could not decode AWL/STL charset.")
 		#FIXME: This check will trigger, if there is no OB, which may happen
