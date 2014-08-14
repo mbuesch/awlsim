@@ -383,7 +383,7 @@ class AwlSimClient(object):
 	# memAreas is a list of MemoryArea instances.
 	# The repetitionFactor tells whether to
 	#  - only run the request once (repetitionFactor=0)
-	#  - repeat on n'th every cycle (repetitionFactor=n)
+	#  - repeat on every n'th cycle (repetitionFactor=n)
 	# If sync is true, wait for a reply from the server.
 	def setMemoryReadRequests(self, memAreas, repetitionFactor=0, sync=False):
 		if not self.transceiver:
