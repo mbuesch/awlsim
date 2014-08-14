@@ -100,7 +100,8 @@ def awlFileRead(filename, encoding="latin_1"):
 	return data
 
 def awlFileWrite(filename, data, encoding="latin_1"):
-	data = "\r\n".join(data.splitlines()) + "\r\n"
+	if encoding != "binary":
+		data = "\r\n".join(data.splitlines()) + "\r\n"
 	for count in range(1000):
 		tmpFile = "%s-%d-%d.tmp" %\
 			(filename, random.randint(0, 0xFFFF), count)
