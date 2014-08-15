@@ -24,6 +24,7 @@ from awlsim.core.compat import *
 
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
+from awlsim.gui.projectwidget import *
 from awlsim.gui.cpuconfig import *
 from awlsim.gui.coreconfig import *
 
@@ -40,14 +41,13 @@ class MainWidget(QWidget):
 
 		self.simClient = GuiAwlSimClient()
 
-		self.cpuConfigDialog = CpuConfigDialog(self, self.simClient)
 		self.coreConfigDialog = CoreConfigDialog(self, self.simClient)
 
 		self.splitter = QSplitter(Qt.Horizontal)
 		self.layout().addWidget(self.splitter, 0, 0)
 
-		self.codeEdit = EditWidget(self)
-		self.splitter.addWidget(self.codeEdit)
+		self.projectWidget = ProjectWidget(self)
+		self.splitter.addWidget(self.projectWidget)
 
 		self.cpuWidget = CpuWidget(self, self)
 		self.splitter.addWidget(self.cpuWidget)
@@ -55,10 +55,13 @@ class MainWidget(QWidget):
 		self.filename = None
 		self.dirty = False
 
-		self.codeEdit.codeChanged.connect(self.__codeChanged)
-		self.codeEdit.codeChanged.connect(self.cpuWidget.stop)
+		self.projectWidget.codeChanged.connect(self.__somethingChanged)
+		self.projectWidget.symTabChanged.connect(self.__somethingChanged)
+		self.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
-		self.runStateChanged.connect(self.codeEdit.runStateChanged)
+		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
+		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
+		self.runStateChanged.connect(self.projectWidget.updateRunState)
 
 	def isDirty(self):
 		return self.dirty
@@ -69,30 +72,36 @@ class MainWidget(QWidget):
 	def getSimClient(self):
 		return self.simClient
 
-	def getCodeEditWidget(self):
-		return self.codeEdit
-
 	def getCpuWidget(self):
 		return self.cpuWidget
 
-	def __codeChanged(self):
+	def getProject(self):
+		return self.projectWidget.getProject()
+
+	def __somethingChanged(self):
+		self.cpuWidget.stop()
 		self.dirty = True
 		self.dirtyChanged.emit(self.dirty)
 
 	def loadFile(self, filename):
 		try:
-			data = awlFileRead(filename)
-		except AwlParserError as e:
+			res = self.projectWidget.loadProjectFile(filename)
+			if not res:
+				return False
+		except AwlSimError as e:
 			QMessageBox.critical(self,
-				"File read failed", str(e))
+				"Failed to load project file", str(e))
 			return False
-		self.codeEdit.loadCode(data)
 		self.filename = filename
+		self.dirty = not bool(self.getProject().getProjectFile())
+		self.dirtyChanged.emit(self.dirty)
 		return True
 
 	def load(self):
 		fn, fil = QFileDialog.getOpenFileName(self,
-			"Open AWL/STL source", "",
+			"Open project", "",
+			"Awlsim project or AWL/STL source (*.awlpro *.awl);;"
+			"Awlsim project (*.awlpro);;"
 			"AWL source (*.awl);;"
 			"All files (*)")
 		if not fn:
@@ -100,12 +109,15 @@ class MainWidget(QWidget):
 		self.loadFile(fn)
 
 	def saveFile(self, filename):
-		code = self.codeEdit.getCode()
 		try:
-			awlFileWrite(filename, code)
-		except AwlParserError as e:
+			res = self.projectWidget.saveProjectFile(filename)
+			if res == 0: # Failure
+				return False
+			elif res < 0: # Force save-as
+				return self.save(newFile=True)
+		except AwlSimError as e:
 			QMessageBox.critical(self,
-				"Failed to write file", str(e))
+				"Failed to write project file", str(e))
 			return False
 		self.dirty = False
 		self.dirtyChanged.emit(self.dirty)
@@ -115,19 +127,23 @@ class MainWidget(QWidget):
 	def save(self, newFile=False):
 		if newFile or not self.filename:
 			fn, fil = QFileDialog.getSaveFileName(self,
-				"AWL/STL source save as", "",
-				"AWL source (*.awl)",
-				"*.awl")
+				"Awlsim project save as", "",
+				"Awlsim project (*.awlpro)",
+				"*.awlpro")
 			if not fn:
 				return
-			if not fn.endswith(".awl"):
-				fn += ".awl"
+			if not fn.endswith(".awlpro"):
+				fn += ".awlpro"
 			return self.saveFile(fn)
 		else:
 			return self.saveFile(self.filename)
 
 	def cpuConfig(self):
-		self.cpuConfigDialog.exec_()
+		project = self.getProject()
+		dlg = CpuConfigDialog(self, self.simClient)
+		dlg.loadFromProject(project)
+		if dlg.exec_() == dlg.Accepted:
+			dlg.saveToProject(project)
 
 	def coreConfig(self):
 		self.coreConfigDialog.exec_()
@@ -162,6 +178,17 @@ class MainWindow(QMainWindow):
 		menu.addAction("&Exit...", self.close)
 		self.menuBar().addMenu(menu)
 
+		menu = QMenu("&Templates", self)
+		menu.addAction("Insert &OB", self.insertOB)
+		menu.addAction("Insert F&C", self.insertFC)
+		menu.addAction("Insert F&B", self.insertFB)
+		menu.addAction("Insert &instance-DB", self.insertInstanceDB)
+		menu.addAction("Insert &DB", self.insertGlobalDB)
+		menu.addSeparator()
+		menu.addAction("Insert FC C&ALL", self.insertFCcall)
+		menu.addAction("Insert FB CA&LL", self.insertFBcall)
+		self.menuBar().addMenu(menu)
+
 		menu = QMenu("&Simulator", self)
 		menu.addAction("&Awlsim core settings...", self.coreConfig)
 		menu.addAction("&CPU config...", self.cpuConfig)
@@ -183,6 +210,27 @@ class MainWindow(QMainWindow):
 
 		if awlSource:
 			self.centralWidget().loadFile(awlSource)
+
+	def insertOB(self):
+		pass#TODO
+
+	def insertFC(self):
+		pass#TODO
+
+	def insertFB(self):
+		pass#TODO
+
+	def insertInstanceDB(self):
+		pass#TODO
+
+	def insertGlobalDB(self):
+		pass#TODO
+
+	def insertFCcall(self):
+		pass#TODO
+
+	def insertFBcall(self):
+		pass#TODO
 
 	def runEventLoop(self):
 		return self.qApplication.exec_()

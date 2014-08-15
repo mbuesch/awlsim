@@ -60,13 +60,14 @@ def handleFatalException(parentWidget=None):
 
 
 class MessageBox(QMessageBox):
-	def __init__(self, parent, title, text, details=None):
+	def __init__(self, parent, title, text,
+		     details=None, icon=QMessageBox.Critical):
 		QMessageBox.__init__(self, parent)
 
 		self.setWindowTitle(title)
 
 		self.setText(text)
-		self.setIcon(QMessageBox.Critical)
+		self.setIcon(icon)
 
 		if details:
 			self.setDetailedText(details)
@@ -75,6 +76,11 @@ class MessageBox(QMessageBox):
 	def error(cls, parent, text, details=None):
 		return cls(parent, "Awlsim - simulator error",
 			   text, details).exec_()
+
+	@classmethod
+	def warning(cls, parent, text, details=None):
+		return cls(parent, "Awlsim - simulator warning",
+			   text, details, QMessageBox.Warning).exec_()
 
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception):

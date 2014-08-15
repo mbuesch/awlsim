@@ -31,8 +31,6 @@ class CpuConfigDialog(QDialog):
 		self.simClient = simClient
 		self.setWindowTitle("CPU configuration")
 
-		self.__updateBlocked = 0
-
 		self.setLayout(QGridLayout(self))
 
 		label = QLabel("Number of accumulator registers", self)
@@ -61,18 +59,10 @@ class CpuConfigDialog(QDialog):
 		self.closeButton = QPushButton("Close", self)
 		self.layout().addWidget(self.closeButton, 4, 1)
 
-		self.accuCombo.currentIndexChanged.connect(self.__configChanged)
-		self.mnemonicsCombo.currentIndexChanged.connect(self.__configChanged)
-		self.obTempCheckBox.stateChanged.connect(self.__configChanged)
-		self.extInsnsCheckBox.stateChanged.connect(self.__configChanged)
 		self.closeButton.released.connect(self.accept)
 
-#FIXME this should be loaded from .awlpro file
-	def loadConfig(self):
-		return#XXX
-		cpu = self.sim.getCPU()
-		specs = cpu.getSpecs()
-		self.__updateBlocked += 1
+	def loadFromProject(self, project):
+		specs = project.getCpuSpecs()
 
 		index = self.accuCombo.findData(specs.nrAccus)
 		assert(index >= 0)
@@ -83,27 +73,23 @@ class CpuConfigDialog(QDialog):
 		self.mnemonicsCombo.setCurrentIndex(index)
 
 		self.obTempCheckBox.setCheckState(
-			Qt.Checked if cpu.obTempPresetsEnabled() else\
+			Qt.Checked if project.getObTempPresetsEn() else\
 			Qt.Unchecked
 		)
 
-		self.__updateBlocked -= 1
+		self.extInsnsCheckBox.setCheckState(
+			Qt.Checked if project.getExtInsnsEn() else\
+			Qt.Unchecked
+		)
 
-	def uploadToCPU(self):
+	def saveToProject(self, project):
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
 
-		specs = self.simClient.getCpuSpecs()
-		if specs:
-			specs.setConfiguredMnemonics(mnemonics)
-			specs.setNrAccus(nrAccus)
-			self.simClient.setCpuSpecs(specs)
-		self.simClient.enableOBTempPresets(obTempEnabled)
-		self.simClient.enableExtendedInsns(extInsnsEnabled)
-
-	def __configChanged(self):
-		if self.__updateBlocked:
-			return
-		self.uploadToCPU()
+		specs = project.getCpuSpecs()
+		specs.setConfiguredMnemonics(mnemonics)
+		specs.setNrAccus(nrAccus)
+		project.setObTempPresetsEn(obTempEnabled)
+		project.setExtInsnsEn(extInsnsEnabled)

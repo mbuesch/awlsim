@@ -52,6 +52,18 @@ class GenericSource(object):
 	def isFileBacked(self):
 		return bool(self.filepath)
 
+	def writeFileBacking(self):
+		"Write the backing file, if any."
+		if not self.isFileBacked():
+			return
+		awlFileWrite(self.filepath, self.sourceBytes, encoding="binary")
+
+	def forceNonFileBacked(self, newIdentifier):
+		"Convert this source to a non-file-backed source."
+		if self.isFileBacked():
+			self.filepath = ""
+			self.identifier = newIdentifier
+
 	def toBase64(self):
 		return base64.b64encode(self.sourceBytes).decode("ascii")
 
@@ -94,13 +106,52 @@ class SymTabSource(GenericSource):
 				    self.sourceBytes[:])
 
 class Project(object):
-	def __init__(self, projectFile, awlSources=[], symTabSources=[], cpuSpecs=None):
-		self.projectFile = projectFile
-		self.awlSources = awlSources
-		self.symTabSources = symTabSources
+	def __init__(self, projectFile, awlSources=[], symTabSources=[],
+		     cpuSpecs=None, obTempPresetsEn=False, extInsnsEn=False):
+		self.setProjectFile(projectFile)
+		self.setAwlSources(awlSources)
+		self.setSymTabSources(symTabSources)
 		if not cpuSpecs:
 			cpuSpecs = S7CPUSpecs()
+		self.setCpuSpecs(cpuSpecs)
+		self.setObTempPresetsEn(obTempPresetsEn)
+		self.setExtInsnsEn(extInsnsEn)
+
+	def setProjectFile(self, filename):
+		self.projectFile = filename
+
+	def getProjectFile(self):
+		return self.projectFile
+
+	def setAwlSources(self, awlSources):
+		self.awlSources = awlSources
+
+	def getAwlSources(self):
+		return self.awlSources
+
+	def setSymTabSources(self, symTabSources):
+		self.symTabSources = symTabSources
+
+	def getSymTabSources(self):
+		return self.symTabSources
+
+	def setCpuSpecs(self, cpuSpecs):
 		self.cpuSpecs = cpuSpecs
+
+	def getCpuSpecs(self):
+		return self.cpuSpecs
+
+	def setObTempPresetsEn(self, obTempPresetsEn):
+		self.obTempPresetsEn = obTempPresetsEn
+
+	def getObTempPresetsEn(self):
+		return self.obTempPresetsEn
+
+	def setExtInsnsEn(self, extInsnsEn):
+		self.extInsnsEn = extInsnsEn
+
+	def getExtInsnsEn(self):
+		return self.extInsnsEn
 
 	@classmethod
 	def dataIsProject(cls, data):
@@ -127,6 +178,8 @@ class Project(object):
 		awlSources = []
 		symTabSources = []
 		cpuSpecs = S7CPUSpecs()
+		obTempPresetsEn = False
+		extInsnsEn = False
 		try:
 			p = _ConfigParser()
 			p.readfp(StringIO(text), projectFile)
@@ -158,6 +211,10 @@ class Project(object):
 			if p.has_option("CPU", "nr_accus"):
 				nrAccus = p.getint("CPU", "nr_accus")
 				cpuSpecs.setNrAccus(nrAccus)
+			if p.has_option("CPU", "ob_startinfo_enable"):
+				obTempPresetsEn = p.getboolean("CPU", "ob_startinfo_enable")
+			if p.has_option("CPU", "ext_insns_enable"):
+				extInsnsEn = p.getboolean("CPU", "ext_insns_enable")
 
 			# SYMBOLS section
 			for i in range(0xFFFF):
@@ -181,7 +238,9 @@ class Project(object):
 		return cls(projectFile = projectFile,
 			   awlSources = awlSources,
 			   symTabSources = symTabSources,
-			   cpuSpecs = cpuSpecs)
+			   cpuSpecs = cpuSpecs,
+			   obTempPresetsEn = obTempPresetsEn,
+			   extInsnsEn = extInsnsEn)
 
 	@classmethod
 	def fromFile(cls, filename):
@@ -230,6 +289,8 @@ class Project(object):
 			lines.append("awl_%d=%s" % (i, awlSrc.toBase64()))
 		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
+		lines.append("ob_startinfo_enable=%d" % int(bool(self.obTempPresetsEn)))
+		lines.append("ext_insns_enable=%d" % int(bool(self.extInsnsEn)))
 		lines.append("")
 
 		lines.append("[SYMBOLS]")
@@ -251,3 +312,14 @@ class Project(object):
 				"No file name specified.")
 		text = self.toText(projectFile)
 		awlFileWrite(projectFile, text, encoding="utf8")
+		for awlSrc in self.awlSources:
+			awlSrc.writeFileBacking()
+		for symSrc in self.symTabSources:
+			symSrc.writeFileBacking()
+
+	def allFileBackingsToInternal(self):
+		"Convert all file backed sources to internal sources."
+		for i, awlSrc in enumerate(self.awlSources):
+			awlSrc.forceNonFileBacked("#%d" % i)
+		for i, symSrc in enumerate(self.symTabSources):
+			symSrc.forceNonFileBacked("#%d" % i)

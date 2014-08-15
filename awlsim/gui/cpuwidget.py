@@ -28,7 +28,12 @@ from awlsim.gui.awlsimclient import *
 
 
 class CpuWidget(QWidget):
+	# Signal: The CPU run-state changed
 	runStateChanged = Signal(int)
+	# Signal: The online-diag state changed
+	onlineDiagChanged = Signal(bool)
+	# Signal: Have a new instruction dump
+	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
 
 	EnumGen.start
 	STATE_STOP	= EnumGen.item
@@ -46,10 +51,8 @@ class CpuWidget(QWidget):
 
 		client = self.mainWidget.getSimClient()
 		client.haveCpuDump.connect(self.__handleCpuDump)
-		client.haveInsnDump.connect(self.mainWidget.codeEdit.updateCpuStats_afterInsn)
+		client.haveInsnDump.connect(self.haveInsnDump)
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
-
-		self.mainWidget.codeEdit.visibleRangeChanged.connect(self.__updateOnlineViewState)
 
 		group = QGroupBox("CPU status", self)
 		group.setLayout(QGridLayout(group))
@@ -172,17 +175,8 @@ class CpuWidget(QWidget):
 		self.runButton.setEnabled(False) # Redraws the radio button
 		self.runButton.setEnabled(True)
 
-		awlCode = self.mainWidget.getCodeEditWidget().getCode()
-		if not awlCode.strip():
-			MessageBox.error(self, "No AWL/STL code available. Cannot run.")
-			self.stop()
-			return
-		try:
-			awlCode = awlCode.encode("latin_1")
-		except UnicodeError:
-			MessageBox.error(self, "AWL/STL code contains invalid characters.")
-			self.stop()
-			return
+		project = self.mainWidget.getProject()
+		awlSources = self.mainWidget.projectWidget.getAwlSources()
 
 		try:
 			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
@@ -217,13 +211,17 @@ class CpuWidget(QWidget):
 			client.setRunState(False)
 			client.reset()
 
-			self.mainWidget.cpuConfigDialog.uploadToCPU()
+			client.setCpuSpecs(project.getCpuSpecs())
+			client.enableOBTempPresets(project.getObTempPresetsEn())
+			client.enableExtendedInsns(project.getExtInsnsEn())
+
 			self.__uploadMemReadAreas()
 			self.__updateOnlineViewState()
 
 			self.__setState(self.STATE_LOAD)
 			client.loadHardwareModule("dummy")
-			client.loadCode(AwlSource("gui", None, awlCode))
+			for awlSource in awlSources:
+				client.loadCode(awlSource)
 			client.setRunState(True)
 		except AwlParserError as e:
 			MessageBox.handleAwlParserError(self, e)
@@ -304,12 +302,15 @@ class CpuWidget(QWidget):
 				self.stop()
 
 	def __updateOnlineViewState(self):
-		en = self.onlineViewCheckBox.checkState() == Qt.Checked
-		self.mainWidget.codeEdit.enableCpuStats(en)
+		onlineDiagEn = self.onlineViewCheckBox.checkState() == Qt.Checked
+		self.onlineDiagChanged.emit(onlineDiagEn)
+
+	def updateVisibleLineRange(self, source, fromLine, toLine):
+		onlineDiagEn = self.onlineViewCheckBox.checkState() == Qt.Checked
 		try:
 			client = self.mainWidget.getSimClient()
-			if en:
-				fromLine, toLine = self.mainWidget.codeEdit.getVisibleLineRange()
+			#TODO also send source identity to client
+			if onlineDiagEn and source:
 				client.setInsnStateDump(fromLine, toLine, sync=False)
 			else:
 				client.setInsnStateDump(0, 0, sync=False)

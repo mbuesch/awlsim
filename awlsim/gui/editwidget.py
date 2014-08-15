@@ -124,6 +124,7 @@ class EditWidget(QPlainTextEdit):
 		self.lineNumWidget = LineNumSubWidget(self)
 		self.cpuStatsWidget = CpuStatsSubWidget(self)
 
+		self.__source = AwlSource("<gui>")
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
@@ -141,6 +142,46 @@ class EditWidget(QPlainTextEdit):
 		self.headerWidget.wasScrolled.connect(self.__forwardWheelEvent)
 		self.lineNumWidget.wasScrolled.connect(self.__forwardWheelEvent)
 		self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
+
+	def setSource(self, source):
+		self.__textChangeBlocked += 1
+		try:
+			self.__source = source.dup()
+			self.__source.sourceBytes = b""
+			sourceBytes = source.sourceBytes
+			try:
+				sourceText = sourceBytes.decode(AwlParser.TEXT_ENCODING,
+								errors="strict")
+			except UnicodeError:
+				MessageBox.error(self, "The AWL/STL code contains "
+					"non-%s-characters. These were ignored and stripped "
+					"from the code." % AwlParser.TEXT_ENCODING)
+				sourceText = sourceBytes.decode(AwlParser.TEXT_ENCODING,
+								errors="ignore")
+			self.setPlainText(sourceText)
+			self.resetCpuStats()
+		finally:
+			self.__textChangeBlocked -= 1
+
+	def getSource(self):
+		source = self.__source.dup()
+		sourceText = self.toPlainText()
+		# Convert to DOS-style line endings
+		sourceText = "\r\n".join(sourceText.splitlines()) + "\r\n"
+		# Convert to binary
+		try:
+			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,
+							errors="strict")
+			source.sourceBytes = sourceBytes
+		except UnicodeError:
+			MessageBox.error(self, "The AWL/STL code contains "
+				"non-%s-characters. These were ignored and stripped "
+				"from the code." % AwlParser.TEXT_ENCODING)
+			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,
+							errors="ignore")
+			source.sourceBytes = sourceBytes
+			self.setSource(source)
+		return source
 
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
@@ -407,12 +448,3 @@ class EditWidget(QPlainTextEdit):
 			return
 		self.codeChanged.emit()
 		self.resetCpuStats()
-
-	def loadCode(self, code):
-		self.__textChangeBlocked += 1
-		self.setPlainText(code)
-		self.resetCpuStats()
-		self.__textChangeBlocked -= 1
-
-	def getCode(self):
-		return self.toPlainText()
