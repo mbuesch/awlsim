@@ -151,13 +151,15 @@ class AwlSimClient(object):
 		"""Shutdown all sockets and spawned processes."""
 
 		if self.serverProcess:
-			try:
-				msg = AwlSimMessage_SHUTDOWN()
-				status = self.__sendAndWaitFor_REPLY(msg)
-				if status != AwlSimMessage_REPLY.STAT_OK:
-					printError("AwlSimClient: Failed to shut down server via message")
-			except (AwlSimError, MaintenanceRequest) as e:
-				pass
+			if self.transceiver:
+				try:
+					msg = AwlSimMessage_SHUTDOWN()
+					status = self.__sendAndWaitFor_REPLY(msg)
+					if status != AwlSimMessage_REPLY.STAT_OK:
+						printError("AwlSimClient: Failed to shut "
+							"down server via message")
+				except (AwlSimError, MaintenanceRequest) as e:
+					pass
 
 			self.serverProcess.terminate()
 			self.serverProcess.wait()
