@@ -50,12 +50,13 @@ import traceback
 
 
 def handleFatalException(parentWidget=None):
+	text = str(traceback.format_exc())
+	print("Fatal exception:\n", text)
 	QMessageBox.critical(parentWidget,
 		"A fatal exception occurred",
 		"A fatal exception occurred:\n\n"
 		"%s\n\n"
-		"Awlsim will be terminated." %\
-		(traceback.format_exc(),))
+		"Awlsim will be terminated." % text)
 	sys.exit(1)
 
 
