@@ -88,11 +88,12 @@ class GenericSource(object):
 	@classmethod
 	def fromBase64(cls, identNr, name, b64):
 		try:
-			data = base64.b64decode(b64, validate=True)
+			data = base64.b64decode(b64)
 		except (TypeError, binascii.Error) as e:
+			print(e)
 			raise AwlSimError("Project: %s source '%s' "
 				"has invalid base64 encoding." %\
-				(cls.SRCTYPE, identNr))
+				(cls.SRCTYPE, name))
 		return cls(identNr, name, None, data)
 
 	def __repr__(self):
