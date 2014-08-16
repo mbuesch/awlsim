@@ -148,6 +148,27 @@ class MainWidget(QWidget):
 	def coreConfig(self):
 		self.coreConfigDialog.exec_()
 
+	def insertOB(self):
+		self.projectWidget.insertOB()
+
+	def insertFC(self):
+		self.projectWidget.insertFC()
+
+	def insertFB(self):
+		self.projectWidget.insertFB()
+
+	def insertInstanceDB(self):
+		self.projectWidget.insertInstanceDB()
+
+	def insertGlobalDB(self):
+		self.projectWidget.insertGlobalDB()
+
+	def insertFCcall(self):
+		self.projectWidget.insertFCcall()
+
+	def insertFBcall(self):
+		self.projectWidget.insertFBcall()
+
 class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
@@ -212,25 +233,25 @@ class MainWindow(QMainWindow):
 			self.centralWidget().loadFile(awlSource)
 
 	def insertOB(self):
-		pass#TODO
+		self.centralWidget().insertOB()
 
 	def insertFC(self):
-		pass#TODO
+		self.centralWidget().insertFC()
 
 	def insertFB(self):
-		pass#TODO
+		self.centralWidget().insertFB()
 
 	def insertInstanceDB(self):
-		pass#TODO
+		self.centralWidget().insertInstanceDB()
 
 	def insertGlobalDB(self):
-		pass#TODO
+		self.centralWidget().insertGlobalDB()
 
 	def insertFCcall(self):
-		pass#TODO
+		self.centralWidget().insertFCcall()
 
 	def insertFBcall(self):
-		pass#TODO
+		self.centralWidget().insertFBcall()
 
 	def runEventLoop(self):
 		return self.qApplication.exec_()

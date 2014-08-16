@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+from awlsim.core.templates import *
+
 from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
 
@@ -153,3 +155,35 @@ class ProjectWidget(QWidget):
 			self.awlTabs.setSources(self.__project.getAwlSources())
 #TODO			self.symTabs.setSources(self.__project.getSymTabSources())
 		return 1
+
+	def __pasteAwlText(self, text):
+		if self.stack.currentWidget() == self.awlTabs:
+			self.awlTabs.pasteText(text)
+		else:
+			QMessageBox.information(self,
+				"Please select AWL/STL source",
+				"Can not paste template.\n\n"
+				"Please move the text cursor to the place "
+				"in the AWL/STL code where you want to paste "
+				"the template to.")
+
+	def insertOB(self):
+		self.__pasteAwlText(awlTemplate_OB)
+
+	def insertFC(self):
+		self.__pasteAwlText(awlTemplate_FC)
+
+	def insertFB(self):
+		self.__pasteAwlText(awlTemplate_FB)
+
+	def insertInstanceDB(self):
+		self.__pasteAwlText(awlTemplate_instanceDB)
+
+	def insertGlobalDB(self):
+		self.__pasteAwlText(awlTemplate_globalDB)
+
+	def insertFCcall(self):
+		self.__pasteAwlText(awlTemplate_FCcall)
+
+	def insertFBcall(self):
+		self.__pasteAwlText(awlTemplate_FBcall)

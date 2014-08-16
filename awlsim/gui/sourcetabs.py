@@ -217,6 +217,11 @@ class AwlSourceTabWidget(SourceTabWidget):
 			pass#TODO
 			self.sourceChanged.emit()
 
+	def pasteText(self, text):
+		editWidget = self.currentWidget()
+		if editWidget:
+			editWidget.insertPlainText(text)
+
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	
 
