@@ -43,10 +43,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 
 	# Override sleep handler
 	def sleep(self, seconds):
-		end = time.monotonic() + seconds
+		end = monotonic_time() + seconds
 		eventFlags = QEventLoop.AllEvents |\
 			     QEventLoop.ExcludeUserInputEvents
-		while time.monotonic() < end:
+		while monotonic_time() < end:
 			QApplication.processEvents(eventFlags, 10)
 			QThread.msleep(10)
 
