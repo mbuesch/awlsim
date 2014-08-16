@@ -430,10 +430,11 @@ class AwlInsn(object):
 	type2name_english = pivotDict(name2type_english)
 
 	def __init__(self, cpu, type, rawInsn):
+		self.cpu = cpu
 		self.type = type
 		self.rawInsn = rawInsn
-		self.cpu = cpu
-		self.ip = None
+		self.fileNr = -1	# AWL file number
+		self.ip = None		# Instruction pointer (IP)
 		self.ops = []		# Operators
 		self.params = []	# Parameter assignments (for CALL)
 
@@ -460,6 +461,9 @@ class AwlInsn(object):
 
 	def setIP(self, newIp):
 		self.ip = newIp
+
+	def setFileNr(self, newFileNr):
+		self.fileNr = newFileNr
 
 	def getCpu(self):
 		return self.cpu

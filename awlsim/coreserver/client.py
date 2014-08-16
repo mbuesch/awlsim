@@ -355,11 +355,27 @@ class AwlSimClient(object):
 	# Set instruction state dumping.
 	# fromLine, toLine is the range of AWL line numbers for which
 	# dumping is enabled.
-	# If fromLine=0, dumping is disabled.
-	def setInsnStateDump(self, fromLine=1, toLine=0x7FFFFFFF, sync=True):
-		return self.__setOption("insn_state_dump",
-					"%d-%d" % (fromLine, toLine),
-					sync = sync)
+	def setInsnStateDump(self, enable=True,
+			     fileNr=0, fromLine=1, toLine=0x7FFFFFFF,
+			     sync=True):
+		if not self.transceiver:
+			return None
+		msg = AwlSimMessage_INSNSTATE_CONFIG(
+			flags = 0,
+			fileNr = fileNr,
+			fromLine = fromLine,
+			toLine = toLine)
+		if enable:
+			msg.flags |= msg.FLG_CLEAR
+		else:
+			msg.flags |= msg.FLG_CLEAR_ONLY
+		if sync:
+			msg.flags |= msg.FLG_SYNC
+			status = self.__sendAndWaitFor_REPLY(msg)
+			if status != AwlSimMessage_REPLY.STAT_OK:
+				raise AwlSimError("AwlSimClient: Failed to set insn state dump")
+		else:
+			self.transceiver.send(msg)
 
 	def getCpuSpecs(self):
 		if not self.transceiver:

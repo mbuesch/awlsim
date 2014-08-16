@@ -68,6 +68,7 @@ class AwlSimMessage(object):
 	MSG_ID_REQ_MEMORY	= EnumGen.item
 	MSG_ID_MEMORY		= EnumGen.item
 	MSG_ID_INSNSTATE	= EnumGen.item
+	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -536,45 +537,88 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 
 class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	# Payload data struct:
+	#	AWL file ident number (32 bit)
 	#	AWL line number (32 bit)
 	#	Serial number. Reset to 0 on cycle exit. (32 bit)
-	#	Flags (16 bit)
+	#	Flags (16 bit) (currently unused. Set to 0)
 	#	CPU status word (16 bit)
 	#	CPU ACCU 1 (32 bit)
 	#	CPU ACCU 2 (32 bit)
+	#	CPU ACCU 3 (32 bit)
+	#	CPU ACCU 4 (32 bit)
 	#	CPU AR 1 (32 bit)
 	#	CPU AR 2 (32 bit)
 	#	CPU DB register (16 bit)
 	#	CPU DI register (16 bit)
-	plDataStruct = struct.Struct(str(">IIHHIIIIHH"))
+	plDataStruct = struct.Struct(str(">IIIHHIIIIIIHH"))
 
-	def __init__(self, lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di):
+	def __init__(self, fileNr, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE)
+		self.fileNr = fileNr
 		self.lineNr = lineNr
 		self.serial = serial
 		self.flags = flags
 		self.stw = stw
 		self.accu1 = accu1
 		self.accu2 = accu2
+		self.accu3 = accu3
+		self.accu4 = accu4
 		self.ar1 = ar1
 		self.ar2 = ar2
 		self.db = db
 		self.di = di
 
 	def toBytes(self):
-		pl = self.plDataStruct.pack(self.lineNr, self.serial,
+		pl = self.plDataStruct.pack(
+			self.fileNr, self.lineNr, self.serial,
 			self.flags, self.stw, self.accu1, self.accu2,
-			self.ar1, self.ar2, self.db, self.di)
+			self.accu3, self.accu4, self.ar1, self.ar2,
+			self.db, self.di)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di =\
+			fileNr, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di =\
 				cls.plDataStruct.unpack_from(payload, 0)
 		except (struct.error, IndexError) as e:
 			raise TransferError("INSNSTATE: Invalid data format")
-		return cls(lineNr, serial, flags, stw, accu1, accu2, ar1, ar2, db, di)
+		return cls(fileNr, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di)
+
+class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
+	# Payload data struct:
+	#	Flags (32 bit)
+	#	AWL file ident number (32 bit)
+	#	From AWL line (32 bit)
+	#	To AWL line (32 bit)
+	plDataStruct = struct.Struct(str(">IIII"))
+
+	# Flags:
+	FLG_SYNC		= 1 << 0 # Synchronous status reply.
+	FLG_CLEAR_ONLY		= 1 << 1 # Just clear current settings.
+	FLG_CLEAR		= 1 << 2 # Clear, then apply settings.
+
+	def __init__(self, flags, fileNr, fromLine, toLine):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE_CONFIG)
+		self.flags = flags
+		self.fileNr = fileNr
+		self.fromLine = fromLine
+		self.toLine = toLine
+
+	def toBytes(self):
+		pl = self.plDataStruct.pack(
+			self.flags, self.fileNr,
+			self.fromLine, self.toLine)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			flags, fileNr, fromLine, toLine =\
+				cls.plDataStruct.unpack_from(payload, 0)
+		except (struct.error, IndexError) as e:
+			raise TransferError("INSNSTATE_CONFIG: Invalid data format")
+		return cls(flags, fileNr, fromLine, toLine)
 
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass
@@ -598,6 +642,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: AwlSimMessage_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
+		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
 	}
 
 	def __init__(self, sock, peerInfoString):

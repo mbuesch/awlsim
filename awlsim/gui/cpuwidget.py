@@ -309,11 +309,13 @@ class CpuWidget(QWidget):
 		onlineDiagEn = self.onlineViewCheckBox.checkState() == Qt.Checked
 		try:
 			client = self.mainWidget.getSimClient()
-			#TODO also send source identity to client
 			if onlineDiagEn and source:
-				client.setInsnStateDump(fromLine, toLine, sync=False)
+				client.setInsnStateDump(enable=True,
+							fileNr=0,#TODO
+							fromLine=fromLine, toLine=toLine,
+							sync=False)
 			else:
-				client.setInsnStateDump(0, 0, sync=False)
+				client.setInsnStateDump(enable=False, sync=False)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to setup instruction dumping", e)

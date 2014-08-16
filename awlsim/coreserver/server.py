@@ -70,9 +70,11 @@ class AwlSimServer(object):
 			# CPU-dump
 			self.dumpInterval = 0
 			self.nextDump = 0
-			# Instruction state dump
-			self.insnStateDump_fromLine = 0
-			self.insnStateDump_toLine = 0
+
+			# Instruction state dump: Enabled lines.
+			# dict key: AWL file number.
+			# dict values: range() of AWL line numbers.
+			self.insnStateDump_enabledLines = {}
 
 			# Memory read requests
 			self.memReadRequestMsg = None
@@ -262,20 +264,24 @@ class AwlSimServer(object):
 		insn = cpu.getCurrentInsn()
 		if not insn:
 			return
-		lineNr, msg = insn.getLineNr(), None
+		fileNr, lineNr, msg = insn.fileNr, insn.getLineNr(), None
 		for client in self.clients:
-			if client.insnStateDump_fromLine == 0 or\
-			   lineNr < client.insnStateDump_fromLine or\
-			   lineNr > client.insnStateDump_toLine:
+			try:
+				if lineNr not in client.insnStateDump_enabledLines[fileNr]:
+					continue
+			except KeyError:
 				continue
 			if not msg:
 				msg = AwlSimMessage_INSNSTATE(
+					fileNr & 0xFFFFFFFF,
 					lineNr & 0xFFFFFFFF,
 					self.__insnSerial,
 					0,
 					cpu.statusWord.getWord(),
 					cpu.accu1.get(),
 					cpu.accu2.get(),
+					cpu.accu3.get(),
+					cpu.accu4.get(),
 					cpu.ar1.get(),
 					cpu.ar2.get(),
 					cpu.dbRegister.index & 0xFFFF,
@@ -293,13 +299,13 @@ class AwlSimServer(object):
 			self.sim.cpu.setBlockExitCallback(None)
 
 	def __updateCpuPostInsnCallback(self):
-		if any(c.insnStateDump_fromLine != 0 for c in self.clients):
+		if any(c.insnStateDump_enabledLines for c in self.clients):
 			self.sim.cpu.setPostInsnCallback(self.__cpuPostInsnCallback, None)
 		else:
 			self.sim.cpu.setPostInsnCallback(None)
 
 	def __updateCpuCycleExitCallback(self):
-		if any(c.insnStateDump_fromLine != 0 for c in self.clients):
+		if any(c.insnStateDump_enabledLines for c in self.clients):
 			self.sim.cpu.setCycleExitCallback(self.__cpuCycleExitCallback, None)
 		else:
 			self.sim.cpu.setCycleExitCallback(None)
@@ -378,19 +384,6 @@ class AwlSimServer(object):
 			self.__updateCpuBlockExitCallback()
 		elif msg.name == "cycle_time_limit":
 			self.sim.cpu.setCycleTimeLimit(msg.getFloatValue())
-		elif msg.name == "insn_state_dump":
-			val = msg.getStrValue().split("-")
-			try:
-				if len(val) != 2:
-					raise ValueError
-				fromLine = int(val[0])
-				toLine = int(val[1])
-			except ValueError as e:
-				raise AwlSimError("insn_state_dump: invalid value")
-			client.insnStateDump_fromLine = fromLine
-			client.insnStateDump_toLine = toLine
-			self.__updateCpuPostInsnCallback()
-			self.__updateCpuCycleExitCallback()
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 
@@ -432,6 +425,18 @@ class AwlSimServer(object):
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_INSNSTATE_CONFIG(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		if msg.flags & (msg.FLG_CLEAR | msg.FLG_CLEAR_ONLY):
+			client.insnStateDump_enabledLines = {}
+		if not (msg.flags & msg.FLG_CLEAR_ONLY):
+			rnge = range(msg.fromLine, msg.toLine + 1)
+			client.insnStateDump_enabledLines[msg.fileNr] = rnge
+		self.__updateCpuPostInsnCallback()
+		self.__updateCpuCycleExitCallback()
+		if msg.flags & msg.FLG_SYNC:
+			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
@@ -446,6 +451,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
+		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
 	}
 
 	def __handleClientComm(self, client):

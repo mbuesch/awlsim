@@ -158,6 +158,7 @@ class S7CPU(object):
 		try:
 			insn = AwlInsnTranslator.fromRawInsn(self, rawInsn)
 			insn.setIP(ip)
+			insn.setFileNr(self.__currentAwlFileNr)
 		except AwlSimError as e:
 			if e.getRawInsn() is None:
 				e.setRawInsn(rawInsn)
@@ -540,18 +541,16 @@ class S7CPU(object):
 			db = self.__translateDB(rawDB)
 			self.dbs[dbNumber] = db
 
+		self.__currentAwlFileNr += 1
+
 	def loadSymbolTable(self, symbolTable):
 		self.symbolTable.merge(symbolTable)
 
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
-			self.accu1, self.accu2 = Accu(), Accu()
-			if self.specs.nrAccus == 2:
-				self.accu3, self.accu4 = None, None
-			elif self.specs.nrAccus == 4:
-				self.accu3, self.accu4 = Accu(), Accu()
-			else:
-				assert(0)
+			self.accu1, self.accu2, self.accu3, self.accu4 =\
+				Accu(), Accu(), Accu(), Accu()
+			self.is4accu = (self.specs.nrAccus == 4)
 		if force or self.specs.nrTimers != len(self.timers):
 			self.timers = [ Timer(self, i)
 					for i in range(self.specs.nrTimers) ]
@@ -567,6 +566,7 @@ class S7CPU(object):
 		CallStackElem.resetCache()
 
 	def reset(self):
+		self.__currentAwlFileNr = 0
 		self.dbs = {
 			# DBs
 			0 : DB(0, permissions = 0), # read/write-protected system-DB
@@ -590,6 +590,7 @@ class S7CPU(object):
 			# System SFBs
 		}
 		self.symbolTable = SymbolTable()
+		self.is4accu = False
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
 		self.ar2 = Adressregister()
@@ -646,10 +647,6 @@ class S7CPU(object):
 	def requestScreenUpdate(self):
 		if self.cbScreenUpdate:
 			self.cbScreenUpdate(self.cbScreenUpdateData)
-
-	@property
-	def is4accu(self):
-		return self.accu4 is not None
 
 	def __runOB(self, block):
 		# Update timekeeping
