@@ -124,7 +124,7 @@ class EditWidget(QPlainTextEdit):
 		self.lineNumWidget = LineNumSubWidget(self)
 		self.cpuStatsWidget = CpuStatsSubWidget(self)
 
-		self.__source = AwlSource("<gui>")
+		self.__source = AwlSource(AwlSource.newIdentNr())
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0

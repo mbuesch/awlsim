@@ -40,11 +40,19 @@ else:
 class GenericSource(object):
 	SRCTYPE = "<generic>"
 
-	def __init__(self, identifier, filepath="", sourceBytes=b""):
-		assert(identifier)
-		self.identifier = identifier
+	__nextIdentNr = 0
+
+	def __init__(self, identNr, name="", filepath="", sourceBytes=b""):
+		self.identNr = identNr
+		self.name = name
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
+
+	@staticmethod
+	def newIdentNr():
+		identNr = GenericSource.__nextIdentNr
+		GenericSource.__nextIdentNr = (GenericSource.__nextIdentNr + 1) & 0x7FFFFFFF
+		return identNr
 
 	def dup(self):
 		raise NotImplementedError
@@ -58,51 +66,51 @@ class GenericSource(object):
 			return
 		awlFileWrite(self.filepath, self.sourceBytes, encoding="binary")
 
-	def forceNonFileBacked(self, newIdentifier):
+	def forceNonFileBacked(self, newName):
 		"Convert this source to a non-file-backed source."
 		if self.isFileBacked():
 			self.filepath = ""
-			self.identifier = newIdentifier
+			self.name = newName
 
 	def toBase64(self):
 		return base64.b64encode(self.sourceBytes).decode("ascii")
 
 	@classmethod
-	def fromFile(cls, identifier, filepath):
+	def fromFile(cls, identNr, name, filepath):
 		try:
 			data = awlFileRead(filepath, encoding="binary")
 		except AwlSimError as e:
 			raise AwlSimError("Project: Could not read %s "
 				"source file '%s':\n%s" %\
 				(cls.SRCTYPE, filepath, str(e)))
-		return cls(identifier, filepath, data)
+		return cls(identNr, name, filepath, data)
 
 	@classmethod
-	def fromBase64(cls, identifier, b64):
+	def fromBase64(cls, identNr, name, b64):
 		try:
 			data = base64.b64decode(b64, validate=True)
 		except (TypeError, binascii.Error) as e:
 			raise AwlSimError("Project: %s source '%s' "
 				"has invalid base64 encoding." %\
-				(cls.SRCTYPE, identifier))
-		return cls(identifier, None, data)
+				(cls.SRCTYPE, identNr))
+		return cls(identNr, name, None, data)
 
 	def __repr__(self):
-		return "%s%s %s" % ("" if self.isFileBacked() else "project ",
-				    self.SRCTYPE, self.identifier)
+		return "%s%s %d %s" % ("" if self.isFileBacked() else "project ",
+				    self.SRCTYPE, self.identNr, self.name)
 
 class AwlSource(GenericSource):
 	SRCTYPE = "AWL/STL"
 
 	def dup(self):
-		return AwlSource(self.identifier, self.filepath,
+		return AwlSource(self.identNr, self.name, self.filepath,
 				 self.sourceBytes[:])
 
 class SymTabSource(GenericSource):
 	SRCTYPE = "symbol table"
 
 	def dup(self):
-		return SymTabSource(self.identifier, self.filepath,
+		return SymTabSource(self.identNr, self.name, self.filepath,
 				    self.sourceBytes[:])
 
 class Project(object):
@@ -196,14 +204,16 @@ class Project(object):
 				if not p.has_option("CPU", option):
 					break
 				path = p.get("CPU", option)
-				src = AwlSource.fromFile(path, cls.__generic2path(path, projectDir))
+				sourceId = AwlSource.newIdentNr()
+				src = AwlSource.fromFile(sourceId, path, cls.__generic2path(path, projectDir))
 				awlSources.append(src)
 			for i in range(0xFFFF):
 				option = "awl_%d" % i
 				if not p.has_option("CPU", option):
 					break
 				awlBase64 = p.get("CPU", option)
-				src = AwlSource.fromBase64("#%d" % i, awlBase64)
+				sourceId = AwlSource.newIdentNr()
+				src = AwlSource.fromBase64(sourceId, "#%d" % sourceId, awlBase64)
 				awlSources.append(src)
 			if p.has_option("CPU", "mnemonics"):
 				mnemonics = p.getint("CPU", "mnemonics")
@@ -222,14 +232,16 @@ class Project(object):
 				if not p.has_option("SYMBOLS", option):
 					break
 				path = p.get("SYMBOLS", option)
-				src = SymTabSource.fromFile(path, cls.__generic2path(path, projectDir))
+				sourceId = SymTabSource.newIdentNr()
+				src = SymTabSource.fromFile(sourceId, path, cls.__generic2path(path, projectDir))
 				symTabSources.append(src)
 			for i in range(0xFFFF):
 				option = "sym_tab_%d" % i
 				if not p.has_option("SYMBOLS", option):
 					break
 				symTabBase64 = p.get("SYMBOLS", option)
-				src = SymTabSource.fromBase64("#%d" % i, symTabBase64)
+				sourceId = SymTabSource.newIdentNr()
+				src = SymTabSource.fromBase64(sourceId, "#%d" % sourceId, symTabBase64)
 				symTabSources.append(src)
 
 		except _ConfigParserError as e:

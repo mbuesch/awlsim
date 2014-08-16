@@ -28,13 +28,14 @@ from awlsim.core.enumeration import *
 class AwlSimError(Exception):
 	def __init__(self, message, cpu=None,
 		     rawInsn=None, insn=None, lineNr=None,
-		     fileId=None):
+		     sourceId=None, sourceName=None):
 		Exception.__init__(self, message)
 		self.cpu = cpu
 		self.rawInsn = rawInsn
 		self.insn = insn
 		self.lineNr = lineNr
-		self.fileId = fileId
+		self.sourceId = sourceId
+		self.sourceName = sourceName
 
 	def setCpu(self, cpu):
 		self.cpu = cpu
@@ -54,11 +55,17 @@ class AwlSimError(Exception):
 	def getInsn(self):
 		return self.insn
 
-	def setFileId(self, fileId):
-		self.fileId = fileId
+	def setSourceId(self, sourceId):
+		self.sourceId = sourceId
 
-	def getFileId(self):
-		return self.fileId
+	def getSourceId(self):
+		return self.sourceId
+
+	def setSourceName(self, sourceName):
+		self.sourceName = sourceName
+
+	def getSourceName(self):
+		return self.sourceName
 
 	def setLineNr(self, lineNr):
 		self.lineNr = lineNr
@@ -96,14 +103,14 @@ class AwlSimError(Exception):
 		return errorStr
 
 	def doGetReport(self, title):
-		fileId = self.getFileId()
-		if fileId:
-			fileId += " "
+		sourceName = self.getSourceName()
+		if sourceName:
+			sourceName += " "
 		else:
-			fileId = ""
+			sourceName = ""
 		ret = [ "-- %s --\n" % title ]
 		ret.append("ERROR at %sline %s:\n" %\
-			   (fileId, self.getLineNrStr()))
+			   (sourceName, self.getLineNrStr()))
 		ret.append("  \n%s\n" % str(self))
 		cpu = self.getCpu()
 		if cpu:

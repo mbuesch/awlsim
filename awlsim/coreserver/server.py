@@ -72,7 +72,7 @@ class AwlSimServer(object):
 			self.nextDump = 0
 
 			# Instruction state dump: Enabled lines.
-			# dict key: AWL file number.
+			# dict key: AWL source ID number.
 			# dict values: range() of AWL line numbers.
 			self.insnStateDump_enabledLines = {}
 
@@ -264,16 +264,16 @@ class AwlSimServer(object):
 		insn = cpu.getCurrentInsn()
 		if not insn:
 			return
-		fileNr, lineNr, msg = insn.fileNr, insn.getLineNr(), None
+		sourceId, lineNr, msg = insn.getSourceId(), insn.getLineNr(), None
 		for client in self.clients:
 			try:
-				if lineNr not in client.insnStateDump_enabledLines[fileNr]:
+				if lineNr not in client.insnStateDump_enabledLines[sourceId]:
 					continue
 			except KeyError:
 				continue
 			if not msg:
 				msg = AwlSimMessage_INSNSTATE(
-					fileNr & 0xFFFFFFFF,
+					sourceId & 0xFFFFFFFF,
 					lineNr & 0xFFFFFFFF,
 					self.__insnSerial,
 					0,
@@ -431,7 +431,7 @@ class AwlSimServer(object):
 			client.insnStateDump_enabledLines = {}
 		if not (msg.flags & msg.FLG_CLEAR_ONLY):
 			rnge = range(msg.fromLine, msg.toLine + 1)
-			client.insnStateDump_enabledLines[msg.fileNr] = rnge
+			client.insnStateDump_enabledLines[msg.sourceId] = rnge
 		self.__updateCpuPostInsnCallback()
 		self.__updateCpuCycleExitCallback()
 		if msg.flags & msg.FLG_SYNC:

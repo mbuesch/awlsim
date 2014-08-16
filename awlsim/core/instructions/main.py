@@ -433,7 +433,6 @@ class AwlInsn(object):
 		self.cpu = cpu
 		self.type = type
 		self.rawInsn = rawInsn
-		self.fileNr = -1	# AWL file number
 		self.ip = None		# Instruction pointer (IP)
 		self.ops = []		# Operators
 		self.params = []	# Parameter assignments (for CALL)
@@ -462,11 +461,13 @@ class AwlInsn(object):
 	def setIP(self, newIp):
 		self.ip = newIp
 
-	def setFileNr(self, newFileNr):
-		self.fileNr = newFileNr
-
 	def getCpu(self):
 		return self.cpu
+
+	def getSourceId(self):
+		if not self.rawInsn:
+			return None
+		return self.rawInsn.getSourceId()
 
 	def getLineNr(self):
 		if not self.rawInsn:

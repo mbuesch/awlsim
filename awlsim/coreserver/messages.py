@@ -224,13 +224,18 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 class _AwlSimMessage_source(AwlSimMessage):
 	sourceClass = None
 
+	# Payload header struct:
+	#	Source identifier (32 bit)
+	plStruct = struct.Struct(str(">I"))
+
 	def __init__(self, msgId, source):
 		AwlSimMessage.__init__(self, msgId)
 		self.source = source
 
 	def toBytes(self):
 		try:
-			pl = self.packString(self.source.identifier) +\
+			pl = self.plStruct.pack(self.source.identNr) +\
+				self.packString(self.source.name) +\
 				self.packString(self.source.filepath) +\
 				self.packBytes(self.source.sourceBytes)
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
@@ -240,13 +245,16 @@ class _AwlSimMessage_source(AwlSimMessage):
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			identifier, count = cls.unpackString(payload)
+			(identNr, ) = cls.plStruct.unpack_from(payload, 0)
+			count = cls.plStruct.size
+			name, cnt = cls.unpackString(payload, count)
+			count += cnt
 			filepath, cnt = cls.unpackString(payload, count)
 			count += cnt
 			sourceBytes, cnt = cls.unpackBytes(payload, count)
-		except ValueError:
+		except (ValueError, struct.error) as e:
 			raise TransferError("SOURCE: Data format error")
-		return cls(cls.sourceClass(identifier, filepath, sourceBytes))
+		return cls(cls.sourceClass(identNr, name, filepath, sourceBytes))
 
 class AwlSimMessage_LOAD_SYMTAB(_AwlSimMessage_source):
 	sourceClass = SymTabSource
@@ -537,7 +545,7 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 
 class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	# Payload data struct:
-	#	AWL file ident number (32 bit)
+	#	AWL source ident number (32 bit)
 	#	AWL line number (32 bit)
 	#	Serial number. Reset to 0 on cycle exit. (32 bit)
 	#	Flags (16 bit) (currently unused. Set to 0)
@@ -552,9 +560,9 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	#	CPU DI register (16 bit)
 	plDataStruct = struct.Struct(str(">IIIHHIIIIIIHH"))
 
-	def __init__(self, fileNr, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di):
+	def __init__(self, sourceId, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE)
-		self.fileNr = fileNr
+		self.sourceId = sourceId
 		self.lineNr = lineNr
 		self.serial = serial
 		self.flags = flags
@@ -570,7 +578,7 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 
 	def toBytes(self):
 		pl = self.plDataStruct.pack(
-			self.fileNr, self.lineNr, self.serial,
+			self.sourceId, self.lineNr, self.serial,
 			self.flags, self.stw, self.accu1, self.accu2,
 			self.accu3, self.accu4, self.ar1, self.ar2,
 			self.db, self.di)
@@ -579,16 +587,16 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			fileNr, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di =\
+			sourceId, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di =\
 				cls.plDataStruct.unpack_from(payload, 0)
 		except (struct.error, IndexError) as e:
 			raise TransferError("INSNSTATE: Invalid data format")
-		return cls(fileNr, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di)
+		return cls(sourceId, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di)
 
 class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 	# Payload data struct:
 	#	Flags (32 bit)
-	#	AWL file ident number (32 bit)
+	#	AWL source ident number (32 bit)
 	#	From AWL line (32 bit)
 	#	To AWL line (32 bit)
 	plDataStruct = struct.Struct(str(">IIII"))
@@ -598,27 +606,27 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 	FLG_CLEAR_ONLY		= 1 << 1 # Just clear current settings.
 	FLG_CLEAR		= 1 << 2 # Clear, then apply settings.
 
-	def __init__(self, flags, fileNr, fromLine, toLine):
+	def __init__(self, flags, sourceId, fromLine, toLine):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE_CONFIG)
 		self.flags = flags
-		self.fileNr = fileNr
+		self.sourceId = sourceId
 		self.fromLine = fromLine
 		self.toLine = toLine
 
 	def toBytes(self):
 		pl = self.plDataStruct.pack(
-			self.flags, self.fileNr,
+			self.flags, self.sourceId,
 			self.fromLine, self.toLine)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			flags, fileNr, fromLine, toLine =\
+			flags, sourceId, fromLine, toLine =\
 				cls.plDataStruct.unpack_from(payload, 0)
 		except (struct.error, IndexError) as e:
 			raise TransferError("INSNSTATE_CONFIG: Invalid data format")
-		return cls(flags, fileNr, fromLine, toLine)
+		return cls(flags, sourceId, fromLine, toLine)
 
 class AwlSimMessageTransceiver(object):
 	class RemoteEndDied(Exception): pass

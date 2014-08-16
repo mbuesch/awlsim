@@ -33,6 +33,7 @@ from awlsim.core.project import *
 class RawAwlInsn(object):
 	def __init__(self, block):
 		self.block = block
+		self.sourceId = None
 		self.lineNr = 0
 		self.label = None
 		self.name = None
@@ -53,6 +54,12 @@ class RawAwlInsn(object):
 		ret.append(self.getName())
 		ret.extend(self.getOperators())
 		return " ".join(ret)
+
+	def setSourceId(self, sourceId):
+		self.sourceId = sourceId
+
+	def getSourceId(self):
+		return self.sourceId
 
 	def setLineNr(self, newLineNr):
 		self.lineNr = newLineNr
@@ -266,7 +273,8 @@ class AwlParseTree(object):
 
 		self.curBlock = None
 
-		self.fileId = ""
+		self.sourceId = None
+		self.sourceName = None
 
 class AwlParser(object):
 	EnumGen.start
@@ -352,9 +360,10 @@ class AwlParser(object):
 		return self.__inAnyHeader() or\
 		       self.state == self.STATE_GLOBAL
 
-	def __tokenize(self, data, fileId):
+	def __tokenize(self, data, sourceId, sourceName):
 		self.reset()
-		self.tree.fileId = fileId
+		self.tree.sourceId = sourceId
+		self.tree.sourceName = sourceName
 		self.lineNr = 1
 
 		t = self.TokenizerState(self)
@@ -607,6 +616,7 @@ class AwlParser(object):
 	def __parseInstruction(self, t):
 		insn = RawAwlInsn(self.tree.curBlock)
 		insn.setLineNr(t.tokensLineNr)
+		insn.setSourceId(self.tree.sourceId)
 		if t.tokens[0].endswith(":"):
 			# First token is a label
 			if len(t.tokens) <= 1:
@@ -975,9 +985,11 @@ class AwlParser(object):
 	def parseSource(self, awlSource):
 		"""Parse an AWL source.
 		awlSource is an AwlSource instance."""
-		self.parseData(awlSource.sourceBytes, str(awlSource))
+		self.parseData(awlSource.sourceBytes,
+			       sourceId = awlSource.identNr,
+			       sourceName = awlSource.name)
 
-	def parseData(self, dataBytes, fileId=""):
+	def parseData(self, dataBytes, sourceId=None, sourceName=None):
 		try:
 			data = dataBytes.decode(self.TEXT_ENCODING)
 		except UnicodeError as e:
@@ -987,10 +999,11 @@ class AwlParser(object):
 		self.flatLayout = not re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*',
 					       data, re.DOTALL | re.MULTILINE)
 		try:
-			self.__tokenize(data, fileId)
+			self.__tokenize(data, sourceId, sourceName)
 		except AwlParserError as e:
 			e.setLineNr(self.lineNr)
-			e.setFileId(fileId)
+			e.setSourceId(sourceId)
+			e.setSourceName(sourceName)
 			raise e
 
 	def getParseTree(self):

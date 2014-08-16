@@ -155,7 +155,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 			return
 		self.clear()
 		for awlSource in awlSources:
-			editWidget = self.addEditWidget(awlSource.identifier)
+			editWidget = self.addEditWidget(awlSource.name)
 			editWidget.setSource(awlSource)
 
 	def addNewEditWidget(self):

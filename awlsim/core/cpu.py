@@ -158,7 +158,6 @@ class S7CPU(object):
 		try:
 			insn = AwlInsnTranslator.fromRawInsn(self, rawInsn)
 			insn.setIP(ip)
-			insn.setFileNr(self.__currentAwlFileNr)
 		except AwlSimError as e:
 			if e.getRawInsn() is None:
 				e.setRawInsn(rawInsn)
@@ -541,8 +540,6 @@ class S7CPU(object):
 			db = self.__translateDB(rawDB)
 			self.dbs[dbNumber] = db
 
-		self.__currentAwlFileNr += 1
-
 	def loadSymbolTable(self, symbolTable):
 		self.symbolTable.merge(symbolTable)
 
@@ -566,7 +563,6 @@ class S7CPU(object):
 		CallStackElem.resetCache()
 
 	def reset(self):
-		self.__currentAwlFileNr = 0
 		self.dbs = {
 			# DBs
 			0 : DB(0, permissions = 0), # read/write-protected system-DB

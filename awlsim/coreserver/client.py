@@ -356,13 +356,13 @@ class AwlSimClient(object):
 	# fromLine, toLine is the range of AWL line numbers for which
 	# dumping is enabled.
 	def setInsnStateDump(self, enable=True,
-			     fileNr=0, fromLine=1, toLine=0x7FFFFFFF,
+			     sourceId=0, fromLine=1, toLine=0x7FFFFFFF,
 			     sync=True):
 		if not self.transceiver:
 			return None
 		msg = AwlSimMessage_INSNSTATE_CONFIG(
 			flags = 0,
-			fileNr = fileNr,
+			sourceId = sourceId,
 			fromLine = fromLine,
 			toLine = toLine)
 		if enable:
