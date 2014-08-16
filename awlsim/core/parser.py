@@ -989,15 +989,27 @@ class AwlParser(object):
 			       sourceId = awlSource.identNr,
 			       sourceName = awlSource.name)
 
+	@classmethod
+	def sourceIsFlat(cls, sourceText):
+		"""Returns whether the source is 'flat'.
+		A flat source is one without block definitions and
+		just plain AWL code."""
+		haveDB = re.match(r'.*^\s*DATA_BLOCK\s+.*', sourceText,
+				  re.DOTALL | re.MULTILINE)
+		haveFB = re.match(r'.*^\s*FUNCTION_BLOCK\s+.*', sourceText,
+				  re.DOTALL | re.MULTILINE)
+		haveFC = re.match(r'.*^\s*FUNCTION\s+.*', sourceText,
+				  re.DOTALL | re.MULTILINE)
+		haveOB = re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*', sourceText,
+				  re.DOTALL | re.MULTILINE)
+		return not haveDB and not haveFB and not haveFC and not haveOB
+
 	def parseData(self, dataBytes, sourceId=None, sourceName=None):
 		try:
 			data = dataBytes.decode(self.TEXT_ENCODING)
 		except UnicodeError as e:
 			raise AwlParserError("Could not decode AWL/STL charset.")
-		#FIXME: This check will trigger, if there is no OB, which may happen
-		#       for projects with multiple awl files.
-		self.flatLayout = not re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*',
-					       data, re.DOTALL | re.MULTILINE)
+		self.flatLayout = self.sourceIsFlat(data)
 		try:
 			self.__tokenize(data, sourceId, sourceName)
 		except AwlParserError as e:
