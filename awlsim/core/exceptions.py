@@ -105,7 +105,7 @@ class AwlSimError(Exception):
 	def doGetReport(self, title):
 		sourceName = self.getSourceName()
 		if sourceName:
-			sourceName += " "
+			sourceName = "source '%s' " % sourceName
 		else:
 			sourceName = ""
 		ret = [ "-- %s --\n" % title ]
