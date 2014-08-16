@@ -26,11 +26,17 @@ from awlsim.gui.editwidget import *
 from awlsim.gui.util import *
 
 
+class ParamEditDialog(QDialog):
+	def __init__(self, parent=None):
+		QDialog.__init__(self, parent)
+
 class SourceTabCorner(QWidget):
 	# Signal: Add new source
 	add = Signal()
 	# Signal: Delete current source
 	delete = Signal()
+	# Signal: Rename current source
+	rename = Signal()
 	# Signal: Edit current source parameters
 	params = Signal()
 
@@ -44,8 +50,9 @@ class SourceTabCorner(QWidget):
 		self.menu = QMenu(self)
 		self.menu.addAction("&Add %s" % itemName, self.__add)
 		self.menu.addAction("&Delete %s" % itemName, self.__delete)
-		self.menu.addSeparator()
-		self.menu.addAction("&Edit %s parameters..." % itemName, self.__params)
+		self.menu.addAction("&Rename %s" % itemName, self.__rename)
+#TODO		self.menu.addSeparator()
+#TODO		self.menu.addAction("&Edit %s parameters..." % itemName, self.__params)
 
 		self.menuButton = QPushButton("&Action", self)
 		self.menuButton.setMenu(self.menu)
@@ -56,6 +63,9 @@ class SourceTabCorner(QWidget):
 
 	def __delete(self):
 		self.delete.emit()
+
+	def __rename(self):
+		self.rename.emit()
 
 	def __params(self):
 		self.params.emit()
@@ -72,7 +82,6 @@ class SourceTabWidget(QTabWidget):
 
 		self.setMovable(True)
 		self.actionButton = SourceTabCorner(itemName, self)
-		self.actionButton.setEnabled(False)#XXX
 		self.setCornerWidget(self.actionButton, Qt.TopRightCorner)
 
 	def allTabWidgets(self):
@@ -105,10 +114,11 @@ class AwlSourceTabWidget(SourceTabWidget):
 
 		self.onlineDiagEnabled = False
 
-		self.addEditWidget("AWL/STL")#XXX
+		self.addEditWidget()
 
-		self.actionButton.add.connect(self.addNewEditWidget)
+		self.actionButton.add.connect(self.addEditWidget)
 		self.actionButton.delete.connect(self.deleteCurrent)
+		self.actionButton.rename.connect(self.renameCurrent)
 		self.actionButton.params.connect(self.editParams)
 		self.currentChanged.connect(self.__currentChanged)
 
@@ -116,7 +126,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = self.currentWidget()
 		if editWidget:
 			fromLine, toLine = editWidget.getVisibleLineRange()
-			source = editWidget.getSource()
+			source = editWidget.getSourceRef()
 			self.visibleLinesChanged.emit(source, fromLine, toLine)
 		else:
 			self.visibleLinesChanged.emit(None, -1, -1)
@@ -125,6 +135,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if self.onlineDiagEnabled:
 			for editWidget in self.allTabWidgets():
 				editWidget.enableCpuStats(False)
+				editWidget.resetCpuStats()
 			if index >= 0:
 				editWidget = self.widget(index)
 				editWidget.enableCpuStats(True)
@@ -148,36 +159,63 @@ class AwlSourceTabWidget(SourceTabWidget):
 
 	def getSources(self):
 		"Returns a list of AwlSource()s"
-		return [ edit.getSource() for edit in self.allTabWidgets() ]
+		return [ edit.getFullSource() for edit in self.allTabWidgets() ]
+
+	def __updateTabTexts(self):
+		for i in range(self.count()):
+			self.setTabText(i, self.widget(i).getSourceRef().name)
+		self.sourceChanged.emit()
 
 	def setSources(self, awlSources):
 		if not awlSources:
 			return
 		self.clear()
 		for awlSource in awlSources:
-			editWidget = self.addEditWidget(awlSource.name)
+			index, editWidget = self.addEditWidget()
+			self.setTabText(index, awlSource.name)
 			editWidget.setSource(awlSource)
 
-	def addNewEditWidget(self):
-		return self.addEditWidget("Unnamed source")
-
-	def addEditWidget(self, tabTitleText):
+	def addEditWidget(self):
 		editWidget = EditWidget(self)
 		editWidget.codeChanged.connect(self.sourceChanged)
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
-		self.addTab(editWidget, tabTitleText)
+		index = self.addTab(editWidget, editWidget.getSourceRef().name)
+		self.setCurrentIndex(index)
 		self.sourceChanged.emit()
-		return editWidget
+		return index, editWidget
 
 	def deleteCurrent(self):
 		index = self.currentIndex()
 		if index >= 0 and self.count() > 1:
-			self.removeTab(index)
-			self.sourceChanged.emit()
+			text = self.tabText(index)
+			res = QMessageBox.question(self,
+				"Delete %s" % text,
+				"Delete source '%s'?" % text,
+				QMessageBox.Yes, QMessageBox.No)
+			if res == QMessageBox.Yes:
+				self.removeTab(index)
+				self.sourceChanged.emit()
+
+	def renameCurrent(self):
+		index = self.currentIndex()
+		if index >= 0:
+			text = self.tabText(index)
+			newText, ok = QInputDialog.getText(self,
+					"Rename %s" % text,
+					"New name for current source:",
+					QLineEdit.Normal,
+					text)
+			if ok and newText != text:
+				editWidget = self.widget(index)
+				source = editWidget.getSourceRef()
+				source.name = newText
+				self.__updateTabTexts()
 
 	def editParams(self):
-		pass#TODO
-		self.sourceChanged.emit()
+		dlg = ParamEditDialog(self)
+		if dlg.exec_() == dlg.Accepted:
+			pass#TODO
+			self.sourceChanged.emit()
 
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	

@@ -124,7 +124,8 @@ class EditWidget(QPlainTextEdit):
 		self.lineNumWidget = LineNumSubWidget(self)
 		self.cpuStatsWidget = CpuStatsSubWidget(self)
 
-		self.__source = AwlSource(AwlSource.newIdentNr())
+		self.__source = AwlSource(identNr = AwlSource.newIdentNr(),
+					  name = "Unnamed source")
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
@@ -163,7 +164,7 @@ class EditWidget(QPlainTextEdit):
 		finally:
 			self.__textChangeBlocked -= 1
 
-	def getSource(self):
+	def getFullSource(self):
 		source = self.__source.dup()
 		sourceText = self.toPlainText()
 		# Convert to DOS-style line endings
@@ -182,6 +183,9 @@ class EditWidget(QPlainTextEdit):
 			source.sourceBytes = sourceBytes
 			self.setSource(source)
 		return source
+
+	def getSourceRef(self):
+		return self.__source
 
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
@@ -250,6 +254,9 @@ class EditWidget(QPlainTextEdit):
 	def updateCpuStats_afterInsn(self, insnDumpMsg):
 		# insnDumpMsg => AwlSimMessage_INSNDUMP instance
 		if not self.__cpuStatsEnabled:
+			return
+		if insnDumpMsg.sourceId != self.__source.identNr:
+			# Discard old messages that were still in the queue.
 			return
 		# Save the instruction dump
 		self.__lineCpuStats[insnDumpMsg.lineNr] =\

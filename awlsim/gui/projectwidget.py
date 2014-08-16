@@ -92,10 +92,6 @@ class ProjectWidget(QWidget):
 
 	def __loadProject(self, project):
 		self.__project = project
-		if len(self.__project.getAwlSources()) > 1:
-			#TODO
-			raise AwlSimError("No support for projects with "
-				"multiple AWL sources, yet.")
 		if self.__project.getSymTabSources():
 			#TODO
 			raise AwlSimError("No support for projects with "
