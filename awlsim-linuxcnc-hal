@@ -197,9 +197,12 @@ def main():
 			mainwnd = MainWindow.start(initialAwlSource = awlSource)
 			s = mainwnd.getSim()
 		else:
+			source = AwlSource(identNr = AwlSource.newIdentNr(),
+					   name = awlFile,
+					   filepath = awlFile,
+					   sourceBytes = awlFileRead(awlFile, encoding="binary"))
 			p = AwlParser()
-			p.parseSource(AwlSource(awlFile, awlFile,
-						awlFileRead(awlFile, encoding="binary")))
+			p.parseSource(source)
 			s = AwlSim()
 
 		loadHardwareModule(awlSim = s, hal = hal,
