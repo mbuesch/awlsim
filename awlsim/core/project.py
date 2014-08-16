@@ -209,12 +209,22 @@ class Project(object):
 				src = AwlSource.fromFile(sourceId, path, cls.__generic2path(path, projectDir))
 				awlSources.append(src)
 			for i in range(0xFFFF):
-				option = "awl_%d" % i
-				if not p.has_option("CPU", option):
+				srcOption = "awl_%d" % i
+				nameOption = "awl_name_%d" % i
+				if not p.has_option("CPU", srcOption):
 					break
-				awlBase64 = p.get("CPU", option)
+				awlBase64 = p.get("CPU", srcOption)
+				name = None
+				if p.has_option("CPU", nameOption):
+					try:
+						name = base64.b64decode(p.get("CPU", nameOption))
+						name = name.decode("utf-8", "ignore")
+					except (TypeError, binascii.Error) as e:
+						pass
+				if name is None:
+					name = "AWL/STL #%d" % i
 				sourceId = AwlSource.newIdentNr()
-				src = AwlSource.fromBase64(sourceId, "#%d" % sourceId, awlBase64)
+				src = AwlSource.fromBase64(sourceId, name, awlBase64)
 				awlSources.append(src)
 			if p.has_option("CPU", "mnemonics"):
 				mnemonics = p.getint("CPU", "mnemonics")
@@ -237,12 +247,22 @@ class Project(object):
 				src = SymTabSource.fromFile(sourceId, path, cls.__generic2path(path, projectDir))
 				symTabSources.append(src)
 			for i in range(0xFFFF):
-				option = "sym_tab_%d" % i
+				srcOption = "sym_tab_%d" % i
+				nameOption = "sym_tab_name_%d" % i
 				if not p.has_option("SYMBOLS", option):
 					break
 				symTabBase64 = p.get("SYMBOLS", option)
+				name = None
+				if p.has_option("SYMBOLS", nameOption):
+					try:
+						name = base64.b64decode(p.get("SYMBOLS", nameOption))
+						name = name.decode("utf-8", "ignore")
+					except (TypeError, binascii.Error) as e:
+						pass
+				if name is None:
+					name = "Symbol table #%d" % i
 				sourceId = SymTabSource.newIdentNr()
-				src = SymTabSource.fromBase64(sourceId, "#%d" % sourceId, symTabBase64)
+				src = SymTabSource.fromBase64(sourceId, name, symTabBase64)
 				symTabSources.append(src)
 
 		except _ConfigParserError as e:
@@ -300,6 +320,9 @@ class Project(object):
 			lines.append("awl_file_%d=%s" % (i, path))
 		for i, awlSrc in enumerate(embeddedSources):
 			lines.append("awl_%d=%s" % (i, awlSrc.toBase64()))
+			name = awlSrc.name.encode("utf-8", "ignore")
+			name = base64.b64encode(name).decode("ascii")
+			lines.append("awl_name_%d=%s" % (i, name))
 		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
 		lines.append("ob_startinfo_enable=%d" % int(bool(self.obTempPresetsEn)))
@@ -314,6 +337,9 @@ class Project(object):
 			lines.append("sym_tab_file_%d=%s" % (i, path))
 		for i, symSrc in enumerate(embeddedSources):
 			lines.append("sym_tab_%d=%s" % (i, symSrc.toBase64()))
+			name = symSrc.name.encode("utf-8", "ignore")
+			name = base64.b64encode(name).decode("ascii")
+			lines.append("sym_name_%d=%s" % (i, name))
 
 		return "\r\n".join(lines)
 
@@ -333,6 +359,6 @@ class Project(object):
 	def allFileBackingsToInternal(self):
 		"Convert all file backed sources to internal sources."
 		for i, awlSrc in enumerate(self.awlSources):
-			awlSrc.forceNonFileBacked("#%d" % i)
+			awlSrc.forceNonFileBacked("AWL/STL #%d" % i)
 		for i, symSrc in enumerate(self.symTabSources):
-			symSrc.forceNonFileBacked("#%d" % i)
+			symSrc.forceNonFileBacked("Symbol table #%d" % i)
