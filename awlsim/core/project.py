@@ -90,7 +90,6 @@ class GenericSource(object):
 		try:
 			data = base64.b64decode(b64)
 		except (TypeError, binascii.Error) as e:
-			print(e)
 			raise AwlSimError("Project: %s source '%s' "
 				"has invalid base64 encoding." %\
 				(cls.SRCTYPE, name))
@@ -249,9 +248,9 @@ class Project(object):
 			for i in range(0xFFFF):
 				srcOption = "sym_tab_%d" % i
 				nameOption = "sym_tab_name_%d" % i
-				if not p.has_option("SYMBOLS", option):
+				if not p.has_option("SYMBOLS", srcOption):
 					break
-				symTabBase64 = p.get("SYMBOLS", option)
+				symTabBase64 = p.get("SYMBOLS", srcOption)
 				name = None
 				if p.has_option("SYMBOLS", nameOption):
 					try:
