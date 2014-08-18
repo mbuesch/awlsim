@@ -144,6 +144,7 @@ class MainWidget(QWidget):
 		dlg.loadFromProject(project)
 		if dlg.exec_() == dlg.Accepted:
 			dlg.saveToProject(project)
+			self.__somethingChanged()
 
 	def coreConfig(self):
 		self.coreConfigDialog.exec_()

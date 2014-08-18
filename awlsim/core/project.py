@@ -354,10 +354,3 @@ class Project(object):
 			awlSrc.writeFileBacking()
 		for symSrc in self.symTabSources:
 			symSrc.writeFileBacking()
-
-	def allFileBackingsToInternal(self):
-		"Convert all file backed sources to internal sources."
-		for i, awlSrc in enumerate(self.awlSources):
-			awlSrc.forceNonFileBacked("AWL/STL #%d" % i)
-		for i, symSrc in enumerate(self.symTabSources):
-			symSrc.forceNonFileBacked("Symbol table #%d" % i)

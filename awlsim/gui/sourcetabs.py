@@ -40,6 +40,8 @@ class SourceTabCorner(QWidget):
 	rename = Signal()
 	# Signal: Edit current source parameters
 	params = Signal()
+	# Signal: Integrate source
+	integrate = Signal()
 
 	def __init__(self, itemName, parent=None):
 		QWidget.__init__(self, parent)
@@ -50,12 +52,15 @@ class SourceTabCorner(QWidget):
 
 		self.menu = QMenu(self)
 		self.menu.addAction("&Add %s" % itemName, self.__add)
-		self.menu.addAction("&Delete %s" % itemName, self.__delete)
-		self.menu.addAction("&Rename %s" % itemName, self.__rename)
-#TODO		self.menu.addSeparator()
+		self.menu.addAction("&Delete %s..." % itemName, self.__delete)
+		self.menu.addAction("&Rename %s..." % itemName, self.__rename)
+		self.menu.addSeparator()
 #TODO		self.menu.addAction("&Edit %s parameters..." % itemName, self.__params)
+		self.__integrateAction = self.menu.addAction("&Integrate %s into project..." % itemName,
+							     self.__integrate)
+		self.showIntegrateButton(False)
 
-		self.menuButton = QPushButton("&Action", self)
+		self.menuButton = QPushButton("&" + itemName[0].upper() + itemName[1:], self)
 		self.menuButton.setMenu(self.menu)
 		self.layout().addWidget(self.menuButton, 0, 0)
 
@@ -71,6 +76,20 @@ class SourceTabCorner(QWidget):
 	def __params(self):
 		self.params.emit()
 
+	def __integrate(self):
+		res = QMessageBox.question(self,
+			"Integrate current %s" % self.itemName,
+			"The current %s is stored in an external file.\n"
+			"Do you want to integrate this file info "
+			"the awlsim project file (.awlpro)?" %\
+			self.itemName,
+			QMessageBox.Yes, QMessageBox.No)
+		if res == QMessageBox.Yes:
+			self.integrate.emit()
+
+	def showIntegrateButton(self, show=True):
+		self.__integrateAction.setVisible(show)
+
 class SourceTabWidget(QTabWidget):
 	"Abstract source tab-widget"
 
@@ -85,6 +104,24 @@ class SourceTabWidget(QTabWidget):
 		self.actionButton = SourceTabCorner(itemName, self)
 		self.setCornerWidget(self.actionButton, Qt.TopRightCorner)
 
+		self.actionButton.integrate.connect(self.integrateSource)
+		self.currentChanged.connect(self.__currentChanged)
+
+	def __currentChanged(self, index):
+		self.updateActionMenu()
+
+	def updateActionMenu(self):
+		curWidget = self.currentWidget()
+		showIntegrate = False
+		if curWidget:
+			showIntegrate = curWidget.getSourceRef().isFileBacked()
+		self.actionButton.showIntegrateButton(showIntegrate)
+
+	def updateTabTexts(self):
+		for i in range(self.count()):
+			self.setTabText(i, self.widget(i).getSourceRef().name)
+		self.sourceChanged.emit()
+
 	def allTabWidgets(self):
 		for i in range(self.count()):
 			yield self.widget(i)
@@ -98,10 +135,18 @@ class SourceTabWidget(QTabWidget):
 		pass
 
 	def getSources(self):
-		return []
+		"Returns a list of sources"
+		return [ w.getFullSource() for w in self.allTabWidgets() ]
 
 	def setSources(self, sources):
 		raise NotImplementedError
+
+	def integrateSource(self):
+		curWidget = self.currentWidget()
+		if curWidget:
+			curWidget.getSourceRef().forceNonFileBacked(self.actionButton.itemName)
+			self.updateActionMenu()
+			self.updateTabTexts()
 
 class AwlSourceTabWidget(SourceTabWidget):
 	"AWL source tab-widget"
@@ -158,15 +203,6 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if editWidget:
 			editWidget.updateCpuStats_afterInsn(insnDumpMsg)
 
-	def getSources(self):
-		"Returns a list of AwlSource()s"
-		return [ edit.getFullSource() for edit in self.allTabWidgets() ]
-
-	def __updateTabTexts(self):
-		for i in range(self.count()):
-			self.setTabText(i, self.widget(i).getSourceRef().name)
-		self.sourceChanged.emit()
-
 	def setSources(self, awlSources):
 		self.clear()
 		if not awlSources:
@@ -176,6 +212,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 			index, editWidget = self.addEditWidget()
 			self.setTabText(index, awlSource.name)
 			editWidget.setSource(awlSource)
+		self.updateActionMenu()
 
 	def addEditWidget(self):
 		editWidget = EditWidget(self)
@@ -183,6 +220,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
 		index = self.addTab(editWidget, editWidget.getSourceRef().name)
 		self.setCurrentIndex(index)
+		self.updateActionMenu()
 		self.sourceChanged.emit()
 		return index, editWidget
 
@@ -211,7 +249,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 				editWidget = self.widget(index)
 				source = editWidget.getSourceRef()
 				source.name = newText
-				self.__updateTabTexts()
+				self.updateTabTexts()
 
 	def editParams(self):
 		dlg = ParamEditDialog(self)
@@ -237,15 +275,6 @@ class SymSourceTabWidget(SourceTabWidget):
 		self.actionButton.rename.connect(self.renameCurrent)
 		self.actionButton.params.connect(self.editParams)
 
-	def getSources(self):
-		"Returns a list of SymTabSource()s"
-		return [ symTabView.model().getFullSource() for symTabView in self.allTabWidgets() ]
-
-	def __updateTabTexts(self):
-		for i in range(self.count()):
-			self.setTabText(i, self.widget(i).model().getSourceRef().name)
-		self.sourceChanged.emit()
-
 	def setSources(self, symTabSources):
 		self.clear()
 		if not symTabSources:
@@ -255,6 +284,7 @@ class SymSourceTabWidget(SourceTabWidget):
 			index, symTabView = self.addSymTable()
 			self.setTabText(index, symTabSource.name)
 			symTabView.model().setSource(symTabSource)
+		self.updateActionMenu()
 
 	def addSymTable(self):
 		symTabView = SymTabView(self)
@@ -262,6 +292,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		symTabView.model().sourceChanged.connect(self.sourceChanged)
 		index = self.addTab(symTabView, symTabView.model().getSourceRef().name)
 		self.setCurrentIndex(index)
+		self.updateActionMenu()
 		self.sourceChanged.emit()
 		return index, symTabView
 
@@ -288,9 +319,9 @@ class SymSourceTabWidget(SourceTabWidget):
 					text)
 			if ok and newText != text:
 				symTabView = self.widget(index)
-				source = symTabView.model().getSourceRef()
+				source = symTabView.getSourceRef()
 				source.name = newText
-				self.__updateTabTexts()
+				self.updateTabTexts()
 
 	def editParams(self):
 		pass#TODO

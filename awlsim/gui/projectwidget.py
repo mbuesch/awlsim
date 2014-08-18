@@ -148,10 +148,19 @@ class ProjectWidget(QWidget):
 		awlSrcs = self.getAwlSources()
 		symTabSrcs = self.getSymTabSources()
 		if not all(awlSrcs) or not all(symTabSrcs):
+			# Failed to generate some sources
 			return 0
+		if any(src.isFileBacked() for src in awlSrcs) or\
+		   any(src.isFileBacked() for src in symTabSrcs):
+			QMessageBox.information(self,
+				"Project contains external sources",
+				"The project contains external sources.\n"
+				"It is strongly recommended to integrate "
+				"external sources into the project.\n"
+				"Click on 'integrate source into project' "
+				"in the source menu.")
 		self.__project.setAwlSources(awlSrcs)
 		self.__project.setSymTabSources(symTabSrcs)
-		self.__project.allFileBackingsToInternal()
 		self.__project.setProjectFile(filename)
 		self.__project.toFile()
 		if self.__isAdHocProject:
