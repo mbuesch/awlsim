@@ -365,6 +365,11 @@ class AwlOpTranslator(object):
 				raise AwlSimError("Invalid doubleword address")
 		else:
 			assert(0)
+		if opDesc.operator.type != AwlOperator.MEM_STW and\
+		   opDesc.operator.value.bitOffset > 7:
+			raise AwlSimError("Invalid bit offset %d. "
+				"Biggest possible bit offset is 7." %\
+				opDesc.operator.value.bitOffset)
 
 	# Translate array indices.
 	# The first token is the opening brace '['.
@@ -390,17 +395,17 @@ class AwlOpTranslator(object):
 			# Label reference
 			return OpDescriptor(AwlOperator(AwlOperator.LBL_REF, 0,
 					    rawOps[0]), 1)
+		token0 = rawOps[0].upper()
 		try:
 			# Constant operator (from table)
 			if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
-				return self.__constOperTab_german[rawOps[0]].dup()
+				return self.__constOperTab_german[token0].dup()
 			elif self.mnemonics == S7CPUSpecs.MNEMONICS_EN:
-				return self.__constOperTab_english[rawOps[0]].dup()
+				return self.__constOperTab_english[token0].dup()
 			else:
 				assert(0)
 		except KeyError as e:
 			pass
-		token0 = rawOps[0].upper()
 		# Bitwise indirect addressing
 		if token0 == '[':
 			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
