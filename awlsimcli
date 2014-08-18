@@ -188,8 +188,8 @@ def run(inputFile):
 
 		cpu = s.getCPU()
 		assignCpuSpecs(cpu.getSpecs(), project.cpuSpecs)
-		cpu.enableObTempPresets(opt_obtemp)
-		cpu.enableExtendedInsns(opt_extInsns)
+		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
+		cpu.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
 		if not opt_noCpuDump and not opt_quiet:
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		cpu.setCycleTimeLimit(opt_cycletime)
@@ -274,8 +274,8 @@ def runWithServerBackend(inputFile):
 			client.setPeriodicDumpInterval(0)
 		else:
 			client.setPeriodicDumpInterval(300)
-		client.enableOBTempPresets(opt_obtemp)
-		client.enableExtendedInsns(opt_extInsns)
+		client.enableOBTempPresets(project.getObTempPresetsEn() or opt_obtemp)
+		client.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
 		client.setCycleTimeLimit(opt_cycletime)
 		specs = client.getCpuSpecs()
 		assignCpuSpecs(specs, project.cpuSpecs)
