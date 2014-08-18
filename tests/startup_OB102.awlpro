@@ -1,10 +1,14 @@
 [AWLSIM_PROJECT]
 file_version=0
-date=1990-01-01 00:00:00.000000
+date=2014-08-18 17:37:12.788664
 
 [CPU]
 awl_file_0=startup_OB102.awl
 mnemonics=0
 nr_accus=4
+ob_startinfo_enable=0
+ext_insns_enable=1
 
 [SYMBOLS]
+sym_tab_0=
+sym_tab_name_0=VW5uYW1lZCBzeW1ib2wgdGFibGU=
