@@ -42,13 +42,13 @@ class ProjectWidget(QWidget):
 		self.setLayout(QGridLayout())
 
 		self.__project = Project(None) # Empty project
+		self.__isAdHocProject = False
 
 		hbox = QHBoxLayout()
 		self.srcButton = QRadioButton("Sources", self)
 		self.srcButton.setChecked(True)
 		hbox.addWidget(self.srcButton)
 		self.symTabButton = QRadioButton("Symbol tables", self)
-		self.symTabButton.setEnabled(False)#TODO
 		hbox.addWidget(self.symTabButton)
 		hbox.addStretch()
 		self.layout().addLayout(hbox, 0, 0)
@@ -92,14 +92,14 @@ class ProjectWidget(QWidget):
 		"Returns a list of AwlSource()s"
 		return self.awlTabs.getSources()
 
+	def getSymTabSources(self):
+		"Returns a list of SymTabSource()s"
+		return self.symTabs.getSources()
+
 	def __loadProject(self, project):
 		self.__project = project
-		if self.__project.getSymTabSources():
-			#TODO
-			raise AwlSimError("No support for projects with "
-				"symbol tables, yet.")
 		self.awlTabs.setSources(self.__project.getAwlSources())
-#TODO		self.symTabs.setSources(self.__project.getSymTabSources())
+		self.symTabs.setSources(self.__project.getSymTabSources())
 
 	def __loadPlainAwlSource(self, filename):
 		project = Project(None) # Create an ad-hoc project
@@ -108,6 +108,7 @@ class ProjectWidget(QWidget):
 					    filepath = filename), ]
 		project.setAwlSources(srcs)
 		self.__loadProject(project)
+		self.__isAdHocProject = True
 		QMessageBox.information(self,
 			"Opened plain AWL/STL file",
 			"The plain AWL/STL source file \n'%s'\n has sucessfully "
@@ -125,8 +126,7 @@ class ProjectWidget(QWidget):
 		return 1
 
 	def saveProjectFile(self, filename):
-		isAdHoc = not self.__project.getProjectFile()
-		if isAdHoc:
+		if self.__isAdHocProject:
 			srcs = self.__project.getAwlSources()
 			assert(len(srcs) == 1)
 			if filename == srcs[0].filepath:
@@ -145,15 +145,20 @@ class ProjectWidget(QWidget):
 				# The user has to choose a new project file name.
 				# Signal this to our caller.
 				return -1
-		self.__project.setProjectFile(filename)
-		self.__project.setAwlSources(self.getAwlSources())
-#TODO		self.__project.setSymTabSources(
+		awlSrcs = self.getAwlSources()
+		symTabSrcs = self.getSymTabSources()
+		if not all(awlSrcs) or not all(symTabSrcs):
+			return 0
+		self.__project.setAwlSources(awlSrcs)
+		self.__project.setSymTabSources(symTabSrcs)
 		self.__project.allFileBackingsToInternal()
+		self.__project.setProjectFile(filename)
 		self.__project.toFile()
-		if isAdHoc:
+		if self.__isAdHocProject:
 			# We got converted to a real project. Update the tabs.
 			self.awlTabs.setSources(self.__project.getAwlSources())
-#TODO			self.symTabs.setSources(self.__project.getSymTabSources())
+			self.symTabs.setSources(self.__project.getSymTabSources())
+			self.__isAdHocProject = False
 		return 1
 
 	def __pasteAwlText(self, text):

@@ -42,13 +42,94 @@ csv.register_dialect("awlsim_symtab", AwlsimSymTabCSVDialect)
 class Symbol(object):
 	"""One symbol."""
 
-	def __init__(self, name, operator, type, comment=""):
-		self.name = name		# The symbol name string
-		self.operator = operator	# The symbol address (AwlOperator)
-		self.type = type		# The symbol type (AwlDataType)
-		self.comment = comment		# The comment string
+	def __init__(self, name=None, operator=None, type=None, comment="",
+		     mnemonics=S7CPUSpecs.MNEMONICS_AUTO,
+		     lineNr=None):
+		self.setName(name)		# The symbol name string
+		self.setOperator(operator)	# The symbol address (AwlOperator)
+		self.setType(type)		# The symbol type (AwlDataType)
+		self.setComment(comment)	# The comment string
+		self.setMnemonics(mnemonics)
+		self.setLineNr(lineNr)
+
+	def isValid(self):
+		return self.name and self.operator and self.type
+
+	def setName(self, newName):
+		if newName is not None and len(newName) > 24:
+			raise AwlSimError("Symbol table parser: Symbol name '%s' is "
+				"too long. Maximum is 24 characters." % newName)
+		self.name = newName
+
+	def getName(self):
+		return self.name
+
+	def setOperator(self, newOperator):
+		self.operator = newOperator
+
+	def setOperatorString(self, newOperatorString):
+		for m in (S7CPUSpecs.MNEMONICS_EN, S7CPUSpecs.MNEMONICS_DE):
+			if self.mnemonics != S7CPUSpecs.MNEMONICS_AUTO and\
+			   self.mnemonics != m:
+				continue
+			try:
+				opTrans = AwlOpTranslator(insn = None,
+							  mnemonics = m)
+				opDesc = opTrans.translateOp(rawInsn = None,
+							     rawOps = newOperatorString.split())
+				self.setOperator(opDesc.operator)
+				return
+			except AwlSimError as e:
+				pass
+		raise AwlSimError("Symbol table parser: Can't parse symbol "
+			"address '%s' in line %s" %\
+			(newOperatorString, self.getLineNrString()))
+
+	def getOperator(self):
+		return self.operator
+
+	def getOperatorString(self):
+		return str(self.getOperator())
+
+	def setType(self, newType):
+		self.type = newType
+
+	def setTypeString(self, newTypeString):
+		try:
+			awlType = AwlDataType.makeByName(newTypeString.split())
+		except AwlSimError as e:
+			raise AwlSimError("Symbol table parser: Can't parse symbol "
+				"type '%s' in line %s" %\
+				(newTypeString, self.getLineNrString()))
+		self.type = awlType
+
+	def getType(self):
+		return self.type
+
+	def getTypeString(self):
+		return str(self.getType())
+
+	def setComment(self, newComment):
+		if newComment is not None and len(newComment) > 80:
+			raise AwlSimError("Symbol table parser: Symbol comment string of symbol '%s' is "
+				"too long. Maximum is 80 characters." % self.name)
+		self.comment = newComment
+
+	def getComment(self):
+		return self.comment
+
+	def setMnemonics(self, newMnemonics):
+		self.mnemonics = newMnemonics
+
+	def setLineNr(self, newLineNr):
+		self.lineNr = newLineNr
+
+	def getLineNrString(self):
+		return self.lineNr if self.lineNr is not None else "<unknown>"
 
 	def nameIsEqual(self, otherName):
+		if self.name is None or otherName is None:
+			return False
 		return self.name.upper() == otherName.upper()
 
 	def __csvRecord(self, value):
@@ -64,6 +145,10 @@ class Symbol(object):
 	def toCSV(self):
 		# Returns compact CSV of this symbol.
 		# Return type is bytes.
+		if not self.isValid():
+			name = self.name if self.name else "<no name>"
+			raise AwlSimError("Symbol '%s' is incomplete. "
+				"Cannot generate symbol information." % name)
 		try:
 			name = self.__csvRecord(self.name)
 			operator = self.__csvRecord(self.operator)
@@ -79,6 +164,10 @@ class Symbol(object):
 		# Returns human readable, but also machine processable
 		# CSV of this symbol.
 		# Return type is bytes.
+		if not self.isValid():
+			name = self.name if self.name else "<no name>"
+			raise AwlSimError("Symbol '%s' is incomplete. "
+				"Cannot generate symbol information." % name)
 		try:
 			name = self.__csvRecord(self.name)
 			operator = self.__csvRecord(self.operator)
@@ -101,6 +190,10 @@ class Symbol(object):
 	def toASC(self):
 		# Returns ASC format of this symbol.
 		# Return type is bytes.
+		if not self.isValid():
+			name = self.name if self.name else "<no name>"
+			raise AwlSimError("Symbol '%s' is incomplete. "
+				"Cannot generate symbol information." % name)
 		try:
 			name = str(self.name).encode(SymTabParser_ASC.ENCODING)
 			operator = str(self.operator).encode(SymTabParser_ASC.ENCODING)
@@ -155,7 +248,7 @@ class SymbolTable(object):
 		return b"".join(s.toASC() for s in self.symbols)
 
 	def __repr__(self):
-		return self.toReadableCSV()
+		return self.toReadableCSV().decode(SymTabParser_CSV.ENCODING)
 
 class SymTabParser(object):
 	"""Abstract symbol table parser."""
@@ -175,6 +268,8 @@ class SymTabParser(object):
 		      autodetectFormat=True,
 		      mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
 		try:
+			if not dataBytes.strip():
+				return SymbolTable()
 			if autodetectFormat:
 				for implCls in cls.implementations:
 					if implCls._probe(dataBytes):
@@ -231,40 +326,24 @@ class SymTabParser(object):
 		if not symAddr:
 			raise AwlSimError("Symbol table parser: Symbol '%s' lacks "
 				"an address (line %d)" % (symName, lineNr))
-		if len(symName) > 24:
-			raise AwlSimError("Symbol table parser: Symbol name '%s' is "
-				"too long. Maximum is 24 characters." % symName)
 		if len(symAddr) > 11:
 			raise AwlSimError("Symbol table parser: Symbol address string of symbol '%s' is "
 				"too long. Maximum is 11 characters." % symName)
 		if len(symType) > 9:
 			raise AwlSimError("Symbol table parser: Symbol type string of symbol '%s' is "
 				"too long. Maximum is 9 characters." % symName)
-		if len(symComment) > 80:
-			raise AwlSimError("Symbol table parser: Symbol comment string of symbol '%s' is "
-				"too long. Maximum is 80 characters." % symName)
 		if symAddr.startswith("VAT") and not symType:
 			symType = symAddr
 		if not symType:
 			raise AwlSimError("Symbol table parser: Symbol '%s' lacks "
 				"a type (line %d)" % (symName, lineNr))
-		try:
-			awlType = AwlDataType.makeByName(symType.split())
-		except AwlSimError as e:
-			raise AwlSimError("Symbol table parser: Can't parse symbol "
-				"type '%s' in line %d" % (symType, lineNr))
-		try:
-			opTrans = AwlOpTranslator(insn = None,
-						  mnemonics = self.mnemonics)
-			opDesc = opTrans.translateOp(rawInsn = None,
-						     rawOps = symAddr.split())
-		except AwlSimError as e:
-			raise AwlSimError("Symbol table parser: Can't parse symbol "
-				"address '%s' in line %d" % (symAddr, lineNr))
-		return Symbol(name = symName,
-			      operator = opDesc.operator,
-			      type = awlType,
-			      comment = symComment)
+		sym = Symbol(name = symName,
+			     comment = symComment,
+			     mnemonics = self.mnemonics,
+			     lineNr = lineNr)
+		sym.setOperatorString(symAddr)
+		sym.setTypeString(symType)
+		return sym
 
 class SymTabParser_ASC(SymTabParser):
 	def _parse(self, dataBytes, probeOnly=False):

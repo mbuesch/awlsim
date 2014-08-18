@@ -338,7 +338,7 @@ class Project(object):
 			lines.append("sym_tab_%d=%s" % (i, symSrc.toBase64()))
 			name = symSrc.name.encode("utf-8", "ignore")
 			name = base64.b64encode(name).decode("ascii")
-			lines.append("sym_name_%d=%s" % (i, name))
+			lines.append("sym_tab_name_%d=%s" % (i, name))
 
 		return "\r\n".join(lines)
 

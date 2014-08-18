@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.gui.editwidget import *
+from awlsim.gui.symtabwidget import *
 from awlsim.gui.util import *
 
 
@@ -167,9 +168,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.sourceChanged.emit()
 
 	def setSources(self, awlSources):
-		if not awlSources:
-			return
 		self.clear()
+		if not awlSources:
+			self.addEditWidget()
+			return
 		for awlSource in awlSources:
 			index, editWidget = self.addEditWidget()
 			self.setTabText(index, awlSource.name)
@@ -227,3 +229,68 @@ class SymSourceTabWidget(SourceTabWidget):
 
 	def __init__(self, parent=None):
 		SourceTabWidget.__init__(self, "symbol table", parent)
+
+		self.addSymTable()
+
+		self.actionButton.add.connect(self.addSymTable)
+		self.actionButton.delete.connect(self.deleteCurrent)
+		self.actionButton.rename.connect(self.renameCurrent)
+		self.actionButton.params.connect(self.editParams)
+
+	def getSources(self):
+		"Returns a list of SymTabSource()s"
+		return [ symTabView.model().getFullSource() for symTabView in self.allTabWidgets() ]
+
+	def __updateTabTexts(self):
+		for i in range(self.count()):
+			self.setTabText(i, self.widget(i).model().getSourceRef().name)
+		self.sourceChanged.emit()
+
+	def setSources(self, symTabSources):
+		self.clear()
+		if not symTabSources:
+			self.addSymTable()
+			return
+		for symTabSource in symTabSources:
+			index, symTabView = self.addSymTable()
+			self.setTabText(index, symTabSource.name)
+			symTabView.model().setSource(symTabSource)
+
+	def addSymTable(self):
+		symTabView = SymTabView(self)
+		symTabView.setSymTab(SymbolTable())
+		symTabView.model().sourceChanged.connect(self.sourceChanged)
+		index = self.addTab(symTabView, symTabView.model().getSourceRef().name)
+		self.setCurrentIndex(index)
+		self.sourceChanged.emit()
+		return index, symTabView
+
+	def deleteCurrent(self):
+		index = self.currentIndex()
+		if index >= 0 and self.count() > 1:
+			text = self.tabText(index)
+			res = QMessageBox.question(self,
+				"Delete %s" % text,
+				"Delete symbol table '%s'?" % text,
+				QMessageBox.Yes, QMessageBox.No)
+			if res == QMessageBox.Yes:
+				self.removeTab(index)
+				self.sourceChanged.emit()
+
+	def renameCurrent(self):
+		index = self.currentIndex()
+		if index >= 0:
+			text = self.tabText(index)
+			newText, ok = QInputDialog.getText(self,
+					"Rename %s" % text,
+					"New name for current symbol table:",
+					QLineEdit.Normal,
+					text)
+			if ok and newText != text:
+				symTabView = self.widget(index)
+				source = symTabView.model().getSourceRef()
+				source.name = newText
+				self.__updateTabTexts()
+
+	def editParams(self):
+		pass#TODO
