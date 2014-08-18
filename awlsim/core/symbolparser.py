@@ -68,6 +68,9 @@ class Symbol(object):
 		self.operator = newOperator
 
 	def setOperatorString(self, newOperatorString):
+		if not newOperatorString.strip():
+			self.setOperator(None)
+			return
 		for m in (S7CPUSpecs.MNEMONICS_EN, S7CPUSpecs.MNEMONICS_DE):
 			if self.mnemonics != S7CPUSpecs.MNEMONICS_AUTO and\
 			   self.mnemonics != m:
@@ -89,25 +92,34 @@ class Symbol(object):
 		return self.operator
 
 	def getOperatorString(self):
-		return str(self.getOperator())
+		operator = self.getOperator()
+		if operator:
+			return str(operator)
+		return ""
 
 	def setType(self, newType):
 		self.type = newType
 
 	def setTypeString(self, newTypeString):
+		if not newTypeString:
+			self.setType(None)
+			return
 		try:
 			awlType = AwlDataType.makeByName(newTypeString.split())
 		except AwlSimError as e:
 			raise AwlSimError("Symbol table parser: Can't parse symbol "
 				"type '%s' in line %s" %\
 				(newTypeString, self.getLineNrString()))
-		self.type = awlType
+		self.setType(awlType)
 
 	def getType(self):
 		return self.type
 
 	def getTypeString(self):
-		return str(self.getType())
+		type = self.getType()
+		if type:
+			return str(type)
+		return ""
 
 	def setComment(self, newComment):
 		if newComment is not None and len(newComment) > 80:

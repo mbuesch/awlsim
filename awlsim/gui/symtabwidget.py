@@ -38,6 +38,13 @@ class SymTabModel(QAbstractTableModel):
 	def getSymTab(self):
 		return self.symTab
 
+	def deleteSymbol(self, row):
+		if row >= 0 and row < len(self.symTab.symbols):
+			self.beginResetModel()
+			del self.symTab.symbols[row]
+			self.endResetModel()
+			self.sourceChanged.emit()
+
 	def rowCount(self, parent=QModelIndex()):
 		return len(self.symTab.symbols) + 1
 
@@ -137,6 +144,24 @@ class SymTabModel(QAbstractTableModel):
 class SymTabView(QTableView):
 	def __init__(self, parent=None):
 		QTableView.__init__(self, parent)
+
+		self.pressed.connect(self.__handleMousePress)
+
+	def deleteSym(self, index=None):
+		if not index:
+			index = self.currentIndex()
+		if not index:
+			return
+		self.model().deleteSymbol(index.row())
+
+	def __handleMousePress(self, index):
+		btns = QApplication.mouseButtons()
+		if btns & Qt.RightButton:
+			pass#TODO context menu
+
+	def keyPressEvent(self, ev):
+		if ev.key() == Qt.Key_Delete:
+			self.deleteSym()
 
 	def setSymTab(self, symTab):
 		self.setModel(SymTabModel(symTab))
