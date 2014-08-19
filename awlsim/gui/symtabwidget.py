@@ -147,6 +147,13 @@ class SymTabView(QTableView):
 
 		self.pressed.connect(self.__handleMousePress)
 
+	def resizeEvent(self, event):
+		hdr = self.horizontalHeader()
+		if hdr.sectionSize(0) < 150:
+			hdr.resizeSection(0, 150)
+		if hdr.sectionSize(3) < 200:
+			hdr.resizeSection(3, 200)
+
 	def deleteSym(self, index=None):
 		if not index:
 			index = self.currentIndex()
