@@ -178,6 +178,9 @@ class CpuWidget(QWidget):
 		project = self.mainWidget.getProject()
 		awlSources = self.mainWidget.projectWidget.getAwlSources()
 		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
+		if not all(awlSources) or not all(symTabSources):
+			self.stop()
+			return
 
 		try:
 			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
