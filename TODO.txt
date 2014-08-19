@@ -10,5 +10,4 @@ S7 compatibility:
 - Multiinstance
 
 nice to have:
-- Support for .awlpro in awlsimgui
 - Throw an early error, if constant is assigned to FB/FC OUT/INOUT parameter.
