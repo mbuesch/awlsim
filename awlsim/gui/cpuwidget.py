@@ -177,6 +177,7 @@ class CpuWidget(QWidget):
 
 		project = self.mainWidget.getProject()
 		awlSources = self.mainWidget.projectWidget.getAwlSources()
+		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
 
 		try:
 			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
@@ -220,6 +221,8 @@ class CpuWidget(QWidget):
 
 			self.__setState(self.STATE_LOAD)
 			client.loadHardwareModule("dummy")
+			for symTabSource in symTabSources:
+				client.loadSymbolTable(symTabSource)
 			for awlSource in awlSources:
 				client.loadCode(awlSource)
 			client.setRunState(True)
