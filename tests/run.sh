@@ -56,13 +56,6 @@ run_awl_test()
 	local awl="$2"
 	shift; shift
 
-	# Check whether a project file with the same basename exists
-	# If it exists, run that instead of the raw AWL file
-	local dir="$(dirname "$awl")"
-	local base="$(basename "$awl" .awl)"
-	local awlpro="${dir}/${base}.awlpro"
-	[ -r "$awlpro" ] && awl="$awlpro"
-
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$rootdir/awlsimcli" --quiet --onecycle --extended-insns \
 		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
@@ -111,7 +104,8 @@ run_test()
 	echo -n "Running test '$(basename "$testfile")' with '$(basename "$interpreter")' ... "
 
 	# Check the file type and run the tester
-	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" ]; then
+	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" -o\
+	     "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
 		run_awl_test "$interpreter" "$testfile" "$@"
 	elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
 		run_sh_test "$interpreter" "$testfile" "$@"
@@ -127,10 +121,17 @@ run_test_directory()
 	local directory="$2"
 
 	echo "--- Entering directory '$directory'"
-	# run .awl(pro) tests
+	# run .awlpro tests
+	for entry in "$directory"/*; do
+		[ -d "$entry" ] && continue
+		[ "$(echo -n "$entry" | tail -c7)" = ".awlpro" ] || continue
+		run_test "$interpreter" "$entry"
+	done
+	# run .awl tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
+		[ -e "${entry}pro" ] && continue
 		run_test "$interpreter" "$entry"
 	done
 	# run .sh tests
