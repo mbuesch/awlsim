@@ -328,7 +328,7 @@ class AwlParser(object):
 		def finishCurToken(self):
 			self.curToken = self.curToken.strip()
 			if self.curToken:
-				self.tokens.append(self.curToken)
+				self.addToken(self.curToken)
 			self.curToken = ""
 
 		def finishStatement(self):

@@ -38,14 +38,16 @@ class OpDescriptor(object):
 
 	# operator => AwlOperator or AwlIndirectOp
 	# fieldCount => Number of consumed tokens
-	def __init__(self, operator, fieldCount):
+	def __init__(self, operator, fieldCount, stripLeadingChars=0):
 		self.operator = operator
 		self.fieldCount = fieldCount
+		self.stripLeadingChars = stripLeadingChars
 
 	# Make a deep copy
 	def dup(self):
 		return OpDescriptor(operator = self.operator.dup(),
-				    fieldCount = self.fieldCount)
+				    fieldCount = self.fieldCount,
+				    stripLeadingChars = self.stripLeadingChars)
 
 class AwlOpTranslator(object):
 	"Instruction operator translator"
@@ -396,14 +398,16 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator(AwlOperator.LBL_REF, 0,
 					    rawOps[0]), 1)
 		token0 = rawOps[0].upper()
+		# Constant operator (from table)
+		if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
+			operTable = self.__constOperTab_german
+		elif self.mnemonics == S7CPUSpecs.MNEMONICS_EN:
+			operTable = self.__constOperTab_english
+		else:
+			assert(0)
 		try:
-			# Constant operator (from table)
-			if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
-				return self.__constOperTab_german[token0].dup()
-			elif self.mnemonics == S7CPUSpecs.MNEMONICS_EN:
-				return self.__constOperTab_english[token0].dup()
-			else:
-				assert(0)
+			# Try constant operator
+			return operTable[token0].dup()
 		except KeyError as e:
 			pass
 		# Bitwise indirect addressing
@@ -558,17 +562,43 @@ class AwlOpTranslator(object):
 				count += cnt
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
 					    offset), count)
+		# Try convenience operators.
+		# A convenience operator is one that lacks otherwise required white space.
+		# We thus actively support lazy programmers, yay.
+		# For example:
+		#	= M0.0
+		# (Note the missing white space between M and 0.0)
+		for name, opDesc in operTable.items():
+			if isinstance(opDesc.operator.value, AwlOffset) and\
+			   opDesc.operator.value.byteOffset >= 0 and\
+			   opDesc.operator.value.bitOffset >= 0:
+				# Only for operators with bit/byte addresses.
+				continue
+			try:
+				# Try convenience operator
+				if token0.startswith(name) and\
+				   token0[len(name)].isdigit():
+					opDesc = opDesc.dup()
+					opDesc.stripLeadingChars = len(name)
+					opDesc.fieldCount -= 1
+					return opDesc
+			except IndexError:
+				pass
 		raise AwlSimError("Cannot parse operand: " +\
 				str(rawOps[0]))
 
 	def translateOp(self, rawInsn, rawOps):
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
-		if not isInteger(opDesc.operator.value) and\
-		   opDesc.fieldCount == 2 and\
+		if isinstance(opDesc.operator.value, AwlOffset) and\
 		   (opDesc.operator.value.byteOffset == -1 or\
 		    opDesc.operator.value.bitOffset == -1):
-			self.__translateAddressOperator(opDesc, rawOps[1:])
+			if opDesc.stripLeadingChars:
+				strippedRawOps = rawOps[:]
+				strippedRawOps[0] = strippedRawOps[0][opDesc.stripLeadingChars : ]
+				self.__translateAddressOperator(opDesc, strippedRawOps)
+			else:
+				self.__translateAddressOperator(opDesc, rawOps[1:])
 
 		assert(opDesc.operator.type != AwlOperator.UNSPEC)
 		opDesc.operator.setExtended(rawOps[0].startswith("__"))
