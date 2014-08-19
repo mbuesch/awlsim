@@ -28,7 +28,7 @@ from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
 
 
-class ProjectWidget(QWidget):
+class ProjectWidget(QTabWidget):
 	# Signal: Some source changed
 	codeChanged = Signal()
 	# Signal: Some symbol table changed
@@ -38,31 +38,19 @@ class ProjectWidget(QWidget):
 	visibleLinesChanged = Signal(AwlSource, int, int)
 
 	def __init__(self, parent=None):
-		QWidget.__init__(self, parent)
-		self.setLayout(QGridLayout())
+		QTabWidget.__init__(self, parent)
 
 		self.__project = Project(None) # Empty project
 		self.__isAdHocProject = False
 
-		hbox = QHBoxLayout()
-		self.srcButton = QRadioButton("Sources", self)
-		self.srcButton.setChecked(True)
-		hbox.addWidget(self.srcButton)
-		self.symTabButton = QRadioButton("Symbol tables", self)
-		hbox.addWidget(self.symTabButton)
-		hbox.addStretch()
-		self.layout().addLayout(hbox, 0, 0)
-
 		self.awlTabs = AwlSourceTabWidget(self)
 		self.symTabs = SymSourceTabWidget(self)
 
-		self.stack = QStackedWidget(self)
-		self.stack.addWidget(self.awlTabs)
-		self.stack.addWidget(self.symTabs)
-		self.layout().addWidget(self.stack, 1, 0)
+		self.addTab(self.awlTabs, "Sources")
+		self.addTab(self.symTabs, "Symbol tables")
+		self.setTabToolTip(0, "Enter your AWL/STL program here")
+		self.setTabToolTip(1, "Enter your symbol table here")
 
-		self.srcButton.toggled.connect(self.__mainSelectionChanged)
-		self.symTabButton.toggled.connect(self.__mainSelectionChanged)
 		self.awlTabs.sourceChanged.connect(self.codeChanged)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.awlTabs.visibleLinesChanged.connect(self.visibleLinesChanged)
@@ -72,12 +60,6 @@ class ProjectWidget(QWidget):
 
 	def handleInsnDump(self, insnDumpMsg):
 		self.awlTabs.handleInsnDump(insnDumpMsg)
-
-	def __mainSelectionChanged(self):
-		if self.srcButton.isChecked():
-			self.stack.setCurrentWidget(self.awlTabs)
-		elif self.symTabButton.isChecked():
-			self.stack.setCurrentWidget(self.symTabs)
 
 	def updateRunState(self, newRunState):
 		self.awlTabs.updateRunState(newRunState)
@@ -171,7 +153,7 @@ class ProjectWidget(QWidget):
 		return 1
 
 	def __pasteAwlText(self, text):
-		if self.stack.currentWidget() == self.awlTabs:
+		if self.currentWidget() == self.awlTabs:
 			self.awlTabs.pasteText(text)
 		else:
 			QMessageBox.information(self,
