@@ -106,9 +106,13 @@ class SourceTabWidget(QTabWidget):
 
 		self.actionButton.integrate.connect(self.integrateSource)
 		self.currentChanged.connect(self.__currentChanged)
+		self.tabBar().tabMoved.connect(self.__tabMoved)
 
 	def __currentChanged(self, index):
 		self.updateActionMenu()
+
+	def __tabMoved(self, fromIdx, toIdx):
+		self.sourceChanged.emit()
 
 	def updateActionMenu(self):
 		curWidget = self.currentWidget()
