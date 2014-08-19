@@ -315,7 +315,7 @@ class AwlOperator(DynAttrs):
 			elif self.width == 32:
 				return "PED %d" % self.value.byteOffset
 		elif self.type == self.MEM_STW:
-			return "__STW " + S7StatusWord.nr2name[self.value.bitOffset]
+			return "__STW " + S7StatusWord.nr2name_german[self.value.bitOffset]
 		elif self.type == self.LBL_REF:
 			return self.value
 		elif self.type == self.BLKREF_FC:
