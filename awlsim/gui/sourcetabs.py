@@ -217,6 +217,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 			self.setTabText(index, awlSource.name)
 			editWidget.setSource(awlSource)
 		self.updateActionMenu()
+		self.setCurrentIndex(0)
 
 	def addEditWidget(self):
 		editWidget = EditWidget(self)
@@ -289,6 +290,7 @@ class SymSourceTabWidget(SourceTabWidget):
 			self.setTabText(index, symTabSource.name)
 			symTabView.model().setSource(symTabSource)
 		self.updateActionMenu()
+		self.setCurrentIndex(0)
 
 	def addSymTable(self):
 		symTabView = SymTabView(self)
