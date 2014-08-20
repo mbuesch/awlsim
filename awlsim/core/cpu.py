@@ -285,7 +285,7 @@ class S7CPU(object):
 	# Translate classic symbols ("abc")
 	def __resolveClassicSym(self, block, insn, oper):
 		if oper.type == AwlOperator.SYMBOLIC:
-			symbol = self.symbolTable.findByName(oper.value.varName)
+			symbol = self.symbolTable.findOneByName(oper.value.varName)
 			if not symbol:
 				raise AwlSimError("Symbol \"%s\" not found in "
 					"symbol table." % oper.value.varName,
@@ -296,7 +296,7 @@ class S7CPU(object):
 	# Translate symbolic OB/FB/FC/DB block name
 	def __resolveBlockName(self, blockTypeId, blockName):
 		if isString(blockName):
-			symbol = self.symbolTable.findByName(blockName)
+			symbol = self.symbolTable.findOneByName(blockName)
 			if not symbol:
 				raise AwlSimError("Symbolic block name \"%s\" "
 					"not found in symbol table." % blockName)
@@ -359,7 +359,7 @@ class S7CPU(object):
 		assert(oper.value.dbNumber is not None or\
 		       oper.value.dbName is not None)
 		if oper.value.dbNumber is None:
-			symbol = self.symbolTable.findByName(oper.value.dbName)
+			symbol = self.symbolTable.findOneByName(oper.value.dbName)
 			if not symbol:
 				raise AwlSimError("Symbol \"%s\" specified as DB in "
 					"fully qualified operator not found." %\

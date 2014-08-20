@@ -44,16 +44,40 @@ class Symbol(object):
 
 	def __init__(self, name=None, operator=None, type=None, comment="",
 		     mnemonics=S7CPUSpecs.MNEMONICS_AUTO,
-		     lineNr=None):
+		     lineNr=None, symTab=None):
 		self.setName(name)		# The symbol name string
 		self.setOperator(operator)	# The symbol address (AwlOperator)
 		self.setType(type)		# The symbol type (AwlDataType)
 		self.setComment(comment)	# The comment string
 		self.setMnemonics(mnemonics)
 		self.setLineNr(lineNr)
+		self.setSymTab(symTab)
 
 	def isValid(self):
-		return self.name and self.operator and self.type
+		return self.name and self.operator and self.type and self.isUnique()
+
+	def isUnique(self):
+		if not self.symTab:
+			return True
+		for sym in self.symTab.findByName(self.name):
+			if sym is not self:
+				return False
+		return True
+
+	def validate(self):
+		name = self.name if self.name else "<no name>"
+		if not self.isUnique():
+			raise AwlSimError("Symbol '%s' is not unique in the symbol table. "
+				"Cannot generate symbol information." % name)
+		if not self.isValid():
+			raise AwlSimError("Symbol '%s' is incomplete. "
+				"Cannot generate symbol information." % name)
+
+	def setSymTab(self, symTab):
+		self.symTab = symTab
+
+	def getSymTab(self):
+		return self.symTab
 
 	def setName(self, newName):
 		if newName is not None and len(newName) > 24:
@@ -157,10 +181,7 @@ class Symbol(object):
 	def toCSV(self):
 		# Returns compact CSV of this symbol.
 		# Return type is bytes.
-		if not self.isValid():
-			name = self.name if self.name else "<no name>"
-			raise AwlSimError("Symbol '%s' is incomplete. "
-				"Cannot generate symbol information." % name)
+		self.validate()
 		try:
 			name = self.__csvRecord(self.name)
 			operator = self.__csvRecord(self.operator)
@@ -176,10 +197,7 @@ class Symbol(object):
 		# Returns human readable, but also machine processable
 		# CSV of this symbol.
 		# Return type is bytes.
-		if not self.isValid():
-			name = self.name if self.name else "<no name>"
-			raise AwlSimError("Symbol '%s' is incomplete. "
-				"Cannot generate symbol information." % name)
+		self.validate()
 		try:
 			name = self.__csvRecord(self.name)
 			operator = self.__csvRecord(self.operator)
@@ -202,10 +220,7 @@ class Symbol(object):
 	def toASC(self):
 		# Returns ASC format of this symbol.
 		# Return type is bytes.
-		if not self.isValid():
-			name = self.name if self.name else "<no name>"
-			raise AwlSimError("Symbol '%s' is incomplete. "
-				"Cannot generate symbol information." % name)
+		self.validate()
 		try:
 			name = str(self.name).encode(SymTabParser_ASC.ENCODING)
 			operator = str(self.operator).encode(SymTabParser_ASC.ENCODING)
@@ -234,16 +249,25 @@ class SymbolTable(object):
 		self.symbols = []
 
 	def add(self, symbol):
-		if self.findByName(symbol.name):
+		if any(self.findByName(symbol.name)):
 			raise AwlSimError("Multiple definitions of "
 				"symbol '%s'" % symbol.name)
 		self.symbols.append(symbol)
+		symbol.setSymTab(self)
 
 	def findByName(self, name):
 		for symbol in self.symbols:
 			if symbol.nameIsEqual(name):
-				return symbol
-		return None
+				yield symbol
+
+	def findOneByName(self, name):
+		foundSyms = tuple(self.findByName(name))
+		if not foundSyms:
+			return None
+		if len(foundSyms) != 1:
+			raise AwlSimError("Multiple definitions of "
+				"symbol '%s'" % symbol.name)
+		return foundSyms[0]
 
 	def merge(self, other):
 		"""Merge 'other' into 'self'"""
