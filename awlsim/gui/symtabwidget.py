@@ -54,8 +54,8 @@ class SymTabModel(QAbstractTableModel):
 	def data(self, index, role=Qt.DisplayRole):
 		if not index:
 			return None
+		row, column = index.row(), index.column()
 		if role in (Qt.DisplayRole, Qt.EditRole):
-			row, column = index.row(), index.column()
 			if row >= len(self.symTab.symbols):
 				return None
 			sym = self.symTab.symbols[row]
@@ -67,6 +67,18 @@ class SymTabModel(QAbstractTableModel):
 				return sym.getTypeString()
 			else:
 				return sym.getComment()
+		elif role == Qt.BackgroundRole:
+			if row >= len(self.symTab.symbols) or\
+			   self.symTab.symbols[row].isValid():
+				return QBrush(QColor("white"))
+			return QBrush(QColor("red"))
+		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
+			return (
+				"The symbol name.\n(The name is case insensitive.)",
+				"The symbol address.\nFor example:  M 0.0  or  QW 0",
+				"The symbol data type.\nFor example: BOOL  or  INT",
+				"",
+			)[column]
 		return None
 
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
