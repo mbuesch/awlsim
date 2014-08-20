@@ -106,13 +106,13 @@ class SymTabModel(QAbstractTableModel):
 				sym = self.symTab.symbols[row]
 			try:
 				if column == 0:
-					sym.setName(value)
+					sym.setName(value.strip())
 				elif column == 1:
 					sym.setOperatorString(value)
 				elif column == 2:
 					sym.setTypeString(value)
 				else:
-					sym.setComment(value)
+					sym.setComment(value.strip())
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(None,
 					"Invalid symbol information", e)
