@@ -22,8 +22,6 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.templates import *
-
 from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
 
@@ -164,22 +162,22 @@ class ProjectWidget(QTabWidget):
 				"the template to.")
 
 	def insertOB(self):
-		self.__pasteAwlText(awlTemplate_OB)
+		self.__pasteAwlText(Templates.getOB(1))
 
 	def insertFC(self):
-		self.__pasteAwlText(awlTemplate_FC)
+		self.__pasteAwlText(Templates.getFC(1))
 
 	def insertFB(self):
-		self.__pasteAwlText(awlTemplate_FB)
+		self.__pasteAwlText(Templates.getFB(1))
 
 	def insertInstanceDB(self):
-		self.__pasteAwlText(awlTemplate_instanceDB)
+		self.__pasteAwlText(Templates.getInstanceDB(1, 1))
 
 	def insertGlobalDB(self):
-		self.__pasteAwlText(awlTemplate_globalDB)
+		self.__pasteAwlText(Templates.getGlobalDB(1))
 
 	def insertFCcall(self):
-		self.__pasteAwlText(awlTemplate_FCcall)
+		self.__pasteAwlText(Templates.getFCcall(1))
 
 	def insertFBcall(self):
-		self.__pasteAwlText(awlTemplate_FBcall)
+		self.__pasteAwlText(Templates.getFBcall(1, 1))

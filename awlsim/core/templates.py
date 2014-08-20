@@ -23,7 +23,9 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 
-awlTemplate_OB = """ORGANIZATION_BLOCK OB xxx
+class Templates(object):
+	# OB template
+	__templateOB = """ORGANIZATION_BLOCK OB @@NR@@
 	TITLE		= Insert title here
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
@@ -50,8 +52,8 @@ NETWORK
 END_ORGANIZATION_BLOCK
 """
 
-
-awlTemplate_FC = """FUNCTION FC xxx : VOID
+	# FC template
+	__templateFC = """FUNCTION FC @@NR@@ : VOID
 	TITLE		= Insert title here
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
@@ -76,8 +78,8 @@ NETWORK
 END_FUNCTION
 """
 
-
-awlTemplate_FB = """FUNCTION_BLOCK FB xxx
+	# FB template
+	__templateFB = """FUNCTION_BLOCK FB @@NR@@
 	TITLE		= Insert title here
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
@@ -105,9 +107,9 @@ NETWORK
 END_FUNCTION_BLOCK
 """
 
-
-awlTemplate_instanceDB = """DATA_BLOCK DB xxx
-	FB xxx		// Insert FB name here
+	# Instance-DB template
+	__templateIDB = """DATA_BLOCK DB @@DBNR@@
+	FB @@FBNR@@
 	TITLE		= Insert title here
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
@@ -118,8 +120,8 @@ BEGIN
 END_DATA_BLOCK
 """
 
-
-awlTemplate_globalDB = """DATA_BLOCK DB xxx
+	# Global-DB template
+	__templateGDB = """DATA_BLOCK DB @@NR@@
 	TITLE		= Insert title here
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
@@ -135,17 +137,61 @@ BEGIN
 END_DATA_BLOCK
 """
 
-
-awlTemplate_FCcall = """	CALL FC xxx (
+	# FC-call template
+	__templateFCcall = """	CALL FC @@NR@@ (
 		// ... Insert parameter assignments here ...
 		// VARIABLE	:= MW 0,
 		// RET_VAL	:= MW 2,
 	)
 """
 
-
-awlTemplate_FBcall = """	CALL FB xxx, DB xxx (
+	# FB-call template
+	__templateFBcall = """	CALL FB @@FBNR@@, DB @@DBNR@@ (
 		// ... Insert parameter assignments here ...
 		// VARIABLE	:= MW 0,
 	)
 """
+
+	@classmethod
+	def getOB(cls, number):
+		awl = cls.__templateOB[:]
+		awl = awl.replace("@@NR@@", "%d" % number)
+		return awl
+
+	@classmethod
+	def getFC(cls, number):
+		awl = cls.__templateFC[:]
+		awl = awl.replace("@@NR@@", "%d" % number)
+		return awl
+
+	@classmethod
+	def getFB(cls, number):
+		awl = cls.__templateFB[:]
+		awl = awl.replace("@@NR@@", "%d" % number)
+		return awl
+
+	@classmethod
+	def getInstanceDB(cls, dbNumber, fbNumber):
+		awl = cls.__templateIDB[:]
+		awl = awl.replace("@@DBNR@@", "%d" % dbNumber)
+		awl = awl.replace("@@FBNR@@", "%d" % fbNumber)
+		return awl
+
+	@classmethod
+	def getGlobalDB(cls, number):
+		awl = cls.__templateGDB[:]
+		awl = awl.replace("@@NR@@", "%d" % number)
+		return awl
+
+	@classmethod
+	def getFCcall(cls, number):
+		awl = cls.__templateFCcall[:]
+		awl = awl.replace("@@NR@@", "%d" % number)
+		return awl
+
+	@classmethod
+	def getFBcall(cls, fbNumber, dbNumber):
+		awl = cls.__templateFBcall[:]
+		awl = awl.replace("@@FBNR@@", "%d" % fbNumber)
+		awl = awl.replace("@@DBNR@@", "%d" % dbNumber)
+		return awl
