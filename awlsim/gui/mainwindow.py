@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&PLC", self)
-		menu.addAction("&Awlsim core settings...", self.coreConfig)
+		menu.addAction("&Server connection...", self.coreConfig)
 		menu.addAction("&CPU config...", self.cpuConfig)
 		self.menuBar().addMenu(menu)
 
