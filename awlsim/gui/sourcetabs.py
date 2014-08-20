@@ -27,10 +27,6 @@ from awlsim.gui.symtabwidget import *
 from awlsim.gui.util import *
 
 
-class ParamEditDialog(QDialog):
-	def __init__(self, parent=None):
-		QDialog.__init__(self, parent)
-
 class SourceTabCorner(QWidget):
 	# Signal: Add new source
 	add = Signal()
@@ -38,8 +34,6 @@ class SourceTabCorner(QWidget):
 	delete = Signal()
 	# Signal: Rename current source
 	rename = Signal()
-	# Signal: Edit current source parameters
-	params = Signal()
 	# Signal: Integrate source
 	integrate = Signal()
 
@@ -55,7 +49,6 @@ class SourceTabCorner(QWidget):
 		self.menu.addAction("&Delete %s..." % itemName, self.__delete)
 		self.menu.addAction("&Rename %s..." % itemName, self.__rename)
 		self.menu.addSeparator()
-#TODO		self.menu.addAction("&Edit %s parameters..." % itemName, self.__params)
 		self.__integrateAction = self.menu.addAction("&Integrate %s into project..." % itemName,
 							     self.__integrate)
 		self.showIntegrateButton(False)
@@ -72,9 +65,6 @@ class SourceTabCorner(QWidget):
 
 	def __rename(self):
 		self.rename.emit()
-
-	def __params(self):
-		self.params.emit()
 
 	def __integrate(self):
 		res = QMessageBox.question(self,
@@ -169,7 +159,6 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.actionButton.add.connect(self.addEditWidget)
 		self.actionButton.delete.connect(self.deleteCurrent)
 		self.actionButton.rename.connect(self.renameCurrent)
-		self.actionButton.params.connect(self.editParams)
 		self.currentChanged.connect(self.__currentChanged)
 
 	def __emitVisibleLinesSignal(self):
@@ -256,12 +245,6 @@ class AwlSourceTabWidget(SourceTabWidget):
 				source.name = newText
 				self.updateTabTexts()
 
-	def editParams(self):
-		dlg = ParamEditDialog(self)
-		if dlg.exec_() == dlg.Accepted:
-			pass#TODO
-			self.sourceChanged.emit()
-
 	def pasteText(self, text):
 		editWidget = self.currentWidget()
 		if editWidget:
@@ -278,7 +261,6 @@ class SymSourceTabWidget(SourceTabWidget):
 		self.actionButton.add.connect(self.addSymTable)
 		self.actionButton.delete.connect(self.deleteCurrent)
 		self.actionButton.rename.connect(self.renameCurrent)
-		self.actionButton.params.connect(self.editParams)
 
 	def setSources(self, symTabSources):
 		self.clear()
@@ -328,6 +310,3 @@ class SymSourceTabWidget(SourceTabWidget):
 				source = symTabView.getSourceRef()
 				source.name = newText
 				self.updateTabTexts()
-
-	def editParams(self):
-		pass#TODO
