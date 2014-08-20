@@ -54,7 +54,7 @@ class SymTabModel(QAbstractTableModel):
 	def data(self, index, role=Qt.DisplayRole):
 		if not index:
 			return None
-		if role == Qt.DisplayRole:
+		if role in (Qt.DisplayRole, Qt.EditRole):
 			row, column = index.row(), index.column()
 			if row >= len(self.symTab.symbols):
 				return None
