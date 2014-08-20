@@ -211,7 +211,7 @@ class MainWindow(QMainWindow):
 		menu.addAction("Insert FB CA&LL", self.insertFBcall)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&Simulator", self)
+		menu = QMenu("&PLC", self)
 		menu.addAction("&Awlsim core settings...", self.coreConfig)
 		menu.addAction("&CPU config...", self.cpuConfig)
 		self.menuBar().addMenu(menu)

@@ -120,7 +120,7 @@ class SymTabModel(QAbstractTableModel):
 	def getFullSource(self):
 		source = self.__source.dup()
 		try:
-			source.sourceBytes = self.symTab.toReadableCSV()
+			source.sourceBytes = self.symTab.toASC()
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(None,
 				"Symbol table contains invalid characters", e)
