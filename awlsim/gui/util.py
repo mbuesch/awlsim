@@ -29,7 +29,7 @@ import awlsim.cython_helper
 
 if isPyPy or isJython:
 	# PySide does not work on PyPy or Jython, yet.
-	printError("Running awlsimgui on the PyPy or Jython interpreter is not supported.")
+	printError("Running awlsim-gui on the PyPy or Jython interpreter is not supported.")
 	printError("Please use CPython 2.7 or CPython 3.x")
 	sys.exit(1)
 

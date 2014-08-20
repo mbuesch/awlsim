@@ -198,7 +198,7 @@ except ValueError:
 	pass
 
 if py2exe:
-	extraKeywords["console"] = [ "awlsimgui", "awlsim/coreserver/server.py", ]
+	extraKeywords["console"] = [ "awlsim-gui", "awlsim/coreserver/server.py", ]
 
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
@@ -217,8 +217,8 @@ setup(	name		= "awlsim",
 			    "awlsimhw_dummy",
 			    "awlsimhw_linuxcnc",
 			    "awlsimhw_pyprofibus", ],
-	scripts		= [ "awlsimcli",
-			    "awlsimgui",
+	scripts		= [ "awlsim-cli",
+			    "awlsim-gui",
 			    "awlsim-server",
 			    "awlsim-symtab",
 			    "awlsim-linuxcnc-hal",

@@ -49,7 +49,7 @@ get_interpreter_version()
 	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
 }
 
-# $1=interpreter $2=awl_file ($3ff additional options to awlsimcli)
+# $1=interpreter $2=awl_file ($3ff additional options to awlsim-cli)
 run_awl_test()
 {
 	local interpreter="$1"
@@ -57,7 +57,7 @@ run_awl_test()
 	shift; shift
 
 	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$rootdir/awlsimcli" --quiet --onecycle --extended-insns \
+	"$interpreter" "$rootdir/awlsim-cli" --quiet --onecycle --extended-insns \
 		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 		--cycle-time 60 \
 		"$@" \
@@ -91,7 +91,7 @@ run_sh_test()
 	echo "[OK]"
 }
 
-# $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsimcli or testfile)
+# $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-cli or testfile)
 run_test()
 {
 	local interpreter="$1"

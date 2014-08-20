@@ -36,8 +36,8 @@ isIronPython = "IronPython" in sys.version
 
 # isWinStandalone is True, if this is a Windows standalone package (py2exe)
 isWinStandalone = os.name == "nt" and\
-		  (sys.executable.endswith("awlsimgui.exe") or\
-		   sys.executable.endswith("awlsimcli.exe"))
+		  (sys.executable.endswith("awlsim-gui.exe") or\
+		   sys.executable.endswith("awlsim-cli.exe"))
 
 # isPy3Compat is True, if the interpreter is Python 3 compatible.
 isPy3Compat = sys.version_info[0] == 3
