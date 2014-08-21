@@ -546,6 +546,9 @@ class AwlParser(object):
 					except ValueError:
 						raise AwlParserError("Invalid DB number")
 				self.tree.curBlock = RawAwlDB(self.tree, dbNumber)
+				if dbNumber in self.tree.dbs:
+					raise AwlParserError("Multiple definitions "
+						"of DB %s" % str(dbNumber))
 				self.tree.dbs[dbNumber] = self.tree.curBlock
 				return
 			if t.tokens[0].upper() == "FUNCTION_BLOCK":
@@ -563,6 +566,9 @@ class AwlParser(object):
 					except ValueError:
 						raise AwlParserError("Invalid FB number")
 				self.tree.curBlock = RawAwlFB(self.tree, fbNumber)
+				if fbNumber in self.tree.fbs:
+					raise AwlParserError("Multiple definitions "
+						"of FB %s" % str(fbNumber))
 				self.tree.fbs[fbNumber] = self.tree.curBlock
 				return
 			if t.tokens[0].upper() == "FUNCTION":
@@ -588,6 +594,9 @@ class AwlParser(object):
 					raise AwlParserError("Missing FC return type")
 				self.tree.curBlock = RawAwlFC(self.tree, fcNumber,
 							      retTypeTokens)
+				if fcNumber in self.tree.fcs:
+					raise AwlParserError("Multiple definitions "
+						"of FC %s" % str(fcNumber))
 				self.tree.fcs[fcNumber] = self.tree.curBlock
 				return
 			if t.tokens[0].upper() == "ORGANIZATION_BLOCK":
@@ -605,6 +614,9 @@ class AwlParser(object):
 					except ValueError:
 						raise AwlParserError("Invalid OB number")
 				self.tree.curBlock = RawAwlOB(self.tree, obNumber)
+				if obNumber in self.tree.obs:
+					raise AwlParserError("Multiple definitions "
+						"of OB %s" % str(obNumber))
 				self.tree.obs[obNumber] = self.tree.curBlock
 				return
 		except IndexError as e:
