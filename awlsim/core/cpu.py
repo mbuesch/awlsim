@@ -742,19 +742,12 @@ class S7CPU(object):
 			self.__speedMeasureStartInsnCount = self.__insnCount
 			self.__speedMeasureStartCycleCount = self.__cycleCount
 
-	def __updateTimestamp_perf(self):
-		self.now = time.perf_counter()
+	__getTime = getattr(time, "perf_counter", time.time)
 
-	def __updateTimestamp_time(self):
-		self.now = time.time()
-
-	# Construct updateTimestamp() method.
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
-	if hasattr(time, "perf_counter"):
-		updateTimestamp = __updateTimestamp_perf
-	else:
-		updateTimestamp = __updateTimestamp_time
+	def updateTimestamp(self):
+		self.now = self.__getTime()
 
 	__dateAndTimeWeekdayMap = {
 		0	: 2,	# monday
