@@ -318,7 +318,28 @@ END_DATA_BLOCK
 """
 
 	@classmethod
-	def getOB(cls, number):
+	def __removeVerboseness(cls, awl):
+		newAwl = []
+		for line in awl.splitlines():
+			stripped = line.strip()
+			if stripped.startswith("TITLE") or\
+			   stripped.startswith("AUTHOR") or\
+			   stripped.startswith("VERSION") or\
+			   stripped.startswith("NETWORK") or\
+			   stripped.startswith("// ..."):
+				continue
+			if stripped.startswith("// Input variables") or\
+			   stripped.startswith("// Output variables") or\
+			   stripped.startswith("// In/out variables") or\
+			   stripped.startswith("// Temporary variables") or\
+			   stripped.startswith("// Static variables"):
+				newAwl.append("\t\t")
+				continue
+			newAwl.append(line)
+		return "\n".join(newAwl)
+
+	@classmethod
+	def getOB(cls, number, verbose):
 		awl = cls.__templateOB[:]
 		awl = awl.replace("@@NR@@", "%d" % number)
 		for rnge, tempvars in cls.__obTempVars:
@@ -328,42 +349,56 @@ END_DATA_BLOCK
 				break
 		else:
 			awl = awl.replace("@@TEMPVARS@@", "")
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl
 
 	@classmethod
-	def getFC(cls, number):
+	def getFC(cls, number, verbose):
 		awl = cls.__templateFC[:]
 		awl = awl.replace("@@NR@@", "%d" % number)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl
 
 	@classmethod
-	def getFB(cls, number):
+	def getFB(cls, number, verbose):
 		awl = cls.__templateFB[:]
 		awl = awl.replace("@@NR@@", "%d" % number)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl
 
 	@classmethod
-	def getInstanceDB(cls, dbNumber, fbNumber):
+	def getInstanceDB(cls, dbNumber, fbNumber, verbose):
 		awl = cls.__templateIDB[:]
 		awl = awl.replace("@@DBNR@@", "%d" % dbNumber)
 		awl = awl.replace("@@FBNR@@", "%d" % fbNumber)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl
 
 	@classmethod
-	def getGlobalDB(cls, number):
+	def getGlobalDB(cls, number, verbose):
 		awl = cls.__templateGDB[:]
 		awl = awl.replace("@@NR@@", "%d" % number)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl
 
 	@classmethod
-	def getFCcall(cls, number):
+	def getFCcall(cls, number, verbose):
 		awl = cls.__templateFCcall[:]
 		awl = awl.replace("@@NR@@", "%d" % number)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl
 
 	@classmethod
-	def getFBcall(cls, fbNumber, dbNumber):
+	def getFBcall(cls, fbNumber, dbNumber, verbose):
 		awl = cls.__templateFBcall[:]
 		awl = awl.replace("@@FBNR@@", "%d" % fbNumber)
 		awl = awl.replace("@@DBNR@@", "%d" % dbNumber)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
 		return awl

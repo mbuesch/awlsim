@@ -26,6 +26,56 @@ from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
 
 
+class TemplateDialog(QDialog):
+	def __init__(self, blockName, verboseBlockName=None, extra=None, parent=None):
+		QDialog.__init__(self, parent)
+		self.setLayout(QGridLayout())
+
+		if not verboseBlockName:
+			verboseBlockName = blockName
+
+		self.setWindowTitle("Insert %s template" % verboseBlockName)
+
+		label = QLabel("Insert %s template." % verboseBlockName, self)
+		self.layout().addWidget(label, 0, 0, 1, 2)
+
+		label = QLabel("%s number:" % verboseBlockName, self)
+		self.layout().addWidget(label, 1, 0)
+		self.blockNr = QSpinBox(self)
+		self.blockNr.setMinimum(1)
+		self.blockNr.setMaximum(0xFFFF)
+		self.blockNr.setValue(1)
+		self.blockNr.setPrefix(blockName + " ")
+		self.layout().addWidget(self.blockNr, 1, 1)
+
+		if extra:
+			label = QLabel("%s number:" % extra, self)
+			self.layout().addWidget(label, 2, 0)
+			self.extraNr = QSpinBox(self)
+			self.extraNr.setMinimum(1)
+			self.extraNr.setMaximum(0xFFFF)
+			self.extraNr.setValue(1)
+			self.extraNr.setPrefix(extra + " ")
+			self.layout().addWidget(self.extraNr, 2, 1)
+
+		self.verbose = QCheckBox("Generate verbose code", self)
+		self.verbose.setCheckState(Qt.Checked)
+		self.layout().addWidget(self.verbose, 3, 0, 1, 2)
+
+		self.okButton = QPushButton("&Paste code", self)
+		self.layout().addWidget(self.okButton, 4, 0, 1, 2)
+
+		self.okButton.released.connect(self.accept)
+
+	def getBlockNumber(self):
+		return self.blockNr.value()
+
+	def getExtraNumber(self):
+		return self.extraNr.value()
+
+	def getVerbose(self):
+		return self.verbose.checkState() == Qt.Checked
+
 class ProjectWidget(QTabWidget):
 	# Signal: Some source changed
 	codeChanged = Signal()
@@ -162,22 +212,45 @@ class ProjectWidget(QTabWidget):
 				"the template to.")
 
 	def insertOB(self):
-		self.__pasteAwlText(Templates.getOB(1))
+		dlg = TemplateDialog("OB", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getOB(dlg.getBlockNumber(),
+							    dlg.getVerbose()))
 
 	def insertFC(self):
-		self.__pasteAwlText(Templates.getFC(1))
+		dlg = TemplateDialog("FC", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFC(dlg.getBlockNumber(),
+							    dlg.getVerbose()))
 
 	def insertFB(self):
-		self.__pasteAwlText(Templates.getFB(1))
+		dlg = TemplateDialog("FB", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFB(dlg.getBlockNumber(),
+							    dlg.getVerbose()))
 
 	def insertInstanceDB(self):
-		self.__pasteAwlText(Templates.getInstanceDB(1, 1))
+		dlg = TemplateDialog("DB", "Instance-DB", extra="FB", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getInstanceDB(dlg.getBlockNumber(),
+								    dlg.getExtraNumber(),
+								    dlg.getVerbose()))
 
 	def insertGlobalDB(self):
-		self.__pasteAwlText(Templates.getGlobalDB(1))
+		dlg = TemplateDialog("DB", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
+								  dlg.getVerbose()))
 
 	def insertFCcall(self):
-		self.__pasteAwlText(Templates.getFCcall(1))
+		dlg = TemplateDialog("FC", "FC call", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFCcall(dlg.getBlockNumber(),
+								dlg.getVerbose()))
 
 	def insertFBcall(self):
-		self.__pasteAwlText(Templates.getFBcall(1, 1))
+		dlg = TemplateDialog("FB", "FB call", extra="DB", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
+								dlg.getExtraNumber(),
+								dlg.getVerbose()))
