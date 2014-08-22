@@ -90,6 +90,7 @@ class ProjectWidget(QTabWidget):
 
 		self.__project = Project(None) # Empty project
 		self.__isAdHocProject = False
+		self.__warnedFileBacked = False
 
 		self.awlTabs = AwlSourceTabWidget(self)
 		self.symTabs = SymSourceTabWidget(self)
@@ -130,6 +131,7 @@ class ProjectWidget(QTabWidget):
 		self.__project = project
 		self.awlTabs.setSources(self.__project.getAwlSources())
 		self.symTabs.setSources(self.__project.getSymTabSources())
+		self.__warnedFileBacked = False
 
 	def __loadPlainAwlSource(self, filename):
 		project = Project(None) # Create an ad-hoc project
@@ -180,8 +182,9 @@ class ProjectWidget(QTabWidget):
 		if not all(awlSrcs) or not all(symTabSrcs):
 			# Failed to generate some sources
 			return 0
-		if any(src.isFileBacked() for src in awlSrcs) or\
-		   any(src.isFileBacked() for src in symTabSrcs):
+		if (any(src.isFileBacked() for src in awlSrcs) or\
+		    any(src.isFileBacked() for src in symTabSrcs)) and\
+		    not self.__warnedFileBacked:
 			QMessageBox.information(self,
 				"Project contains external sources",
 				"The project contains external sources.\n"
@@ -189,6 +192,7 @@ class ProjectWidget(QTabWidget):
 				"external sources into the project.\n"
 				"Click on 'integrate source into project' "
 				"in the source menu.")
+			self.__warnedFileBacked = True
 		self.__project.setAwlSources(awlSrcs)
 		self.__project.setSymTabSources(symTabSrcs)
 		self.__project.setProjectFile(filename)
