@@ -46,6 +46,7 @@ class S7CPUSpecs(object):
 		self.setNrInputs(8192)
 		self.setNrOutputs(8192)
 		self.setNrLocalbytes(1024)
+		self.setClockMemByte(-1)
 		self.cpu = cpu
 
 	def assignFrom(self, otherCpuSpecs):
@@ -57,6 +58,7 @@ class S7CPUSpecs(object):
 		self.setNrInputs(otherCpuSpecs.nrInputs)
 		self.setNrOutputs(otherCpuSpecs.nrOutputs)
 		self.setNrLocalbytes(otherCpuSpecs.nrLocalbytes)
+		self.setClockMemByte(otherCpuSpecs.clockMemByte)
 
 	def setConfiguredMnemonics(self, mnemonics):
 		if mnemonics not in (self.MNEMONICS_AUTO,
@@ -111,5 +113,10 @@ class S7CPUSpecs(object):
 
 	def setNrLocalbytes(self, count):
 		self.nrLocalbytes = count
+		if self.cpu:
+			self.cpu.reallocate()
+
+	def setClockMemByte(self, byteAddress):
+		self.clockMemByte = byteAddress
 		if self.cpu:
 			self.cpu.reallocate()

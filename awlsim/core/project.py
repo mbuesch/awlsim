@@ -231,6 +231,9 @@ class Project(object):
 			if p.has_option("CPU", "nr_accus"):
 				nrAccus = p.getint("CPU", "nr_accus")
 				cpuSpecs.setNrAccus(nrAccus)
+			if p.has_option("CPU", "clock_memory_byte"):
+				clockMemByte = p.getint("CPU", "clock_memory_byte")
+				cpuSpecs.setClockMemByte(clockMemByte)
 			if p.has_option("CPU", "ob_startinfo_enable"):
 				obTempPresetsEn = p.getboolean("CPU", "ob_startinfo_enable")
 			if p.has_option("CPU", "ext_insns_enable"):
@@ -324,6 +327,7 @@ class Project(object):
 			lines.append("awl_name_%d=%s" % (i, name))
 		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
+		lines.append("clock_memory_byte=%d" % self.cpuSpecs.clockMemByte)
 		lines.append("ob_startinfo_enable=%d" % int(bool(self.obTempPresetsEn)))
 		lines.append("ext_insns_enable=%d" % int(bool(self.extInsnsEn)))
 		lines.append("")

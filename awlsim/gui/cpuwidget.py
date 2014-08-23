@@ -265,6 +265,8 @@ class CpuWidget(QWidget):
 				client.shutdown()
 				QApplication.exit(0)
 				return
+			elif e.requestType == MaintenanceRequest.TYPE_STOP:
+				self.stop()
 			else:
 				assert(0)
 		except Exception:

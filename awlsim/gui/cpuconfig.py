@@ -25,6 +25,25 @@ from awlsim.core.compat import *
 from awlsim.gui.util import *
 
 
+class ClockMemSpinBox(QSpinBox):
+	def __init__(self, parent=None):
+		QSpinBox.__init__(self, parent)
+
+		self.setMinimum(-1)
+		self.setMaximum(0xFFFF)
+		self.setValue(-1)
+		self.setPrefix("MB ")
+
+	def textFromValue(self, value):
+		if value < 0:
+			return "<disabled>"
+		return QSpinBox.textFromValue(self, value)
+
+	def valueFromText(self, text):
+		if text == "<disabled>":
+			return -1
+		return QSpinBox.valueFromText(self, text)
+
 class CpuConfigDialog(QDialog):
 	def __init__(self, parent, simClient):
 		QDialog.__init__(self, parent)
@@ -40,24 +59,29 @@ class CpuConfigDialog(QDialog):
 		self.accuCombo.addItem("4 accus", 4)
 		self.layout().addWidget(self.accuCombo, 0, 1)
 
-		label = QLabel("Mnemonics", self)
+		label = QLabel("Clock memory byte", self)
 		self.layout().addWidget(label, 1, 0)
+		self.clockMemSpin = ClockMemSpinBox(self)
+		self.layout().addWidget(self.clockMemSpin, 1, 1)
+
+		label = QLabel("Mnemonics", self)
+		self.layout().addWidget(label, 2, 0)
 		self.mnemonicsCombo = QComboBox(self)
 		self.mnemonicsCombo.addItem("Automatic", S7CPUSpecs.MNEMONICS_AUTO)
 		self.mnemonicsCombo.addItem("English", S7CPUSpecs.MNEMONICS_EN)
 		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
-		self.layout().addWidget(self.mnemonicsCombo, 1, 1)
+		self.layout().addWidget(self.mnemonicsCombo, 2, 1)
 
 		self.obTempCheckBox = QCheckBox("Enable writing of OB TEMP "
 			"entry-variables", self)
-		self.layout().addWidget(self.obTempCheckBox, 2, 0, 1, 2)
+		self.layout().addWidget(self.obTempCheckBox, 3, 0, 1, 2)
 
 		self.extInsnsCheckBox = QCheckBox("Enable extended "
 			"non-standard instructions", self)
-		self.layout().addWidget(self.extInsnsCheckBox, 3, 0, 1, 2)
+		self.layout().addWidget(self.extInsnsCheckBox, 4, 0, 1, 2)
 
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 4, 1)
+		self.layout().addWidget(self.closeButton, 5, 1)
 
 		self.closeButton.released.connect(self.accept)
 
@@ -67,6 +91,8 @@ class CpuConfigDialog(QDialog):
 		index = self.accuCombo.findData(specs.nrAccus)
 		assert(index >= 0)
 		self.accuCombo.setCurrentIndex(index)
+
+		self.clockMemSpin.setValue(specs.clockMemByte)
 
 		index = self.mnemonicsCombo.findData(specs.getConfiguredMnemonics())
 		assert(index >= 0)
@@ -85,11 +111,13 @@ class CpuConfigDialog(QDialog):
 	def saveToProject(self, project):
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
+		clockMemByte = self.clockMemSpin.value()
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
 
 		specs = project.getCpuSpecs()
 		specs.setConfiguredMnemonics(mnemonics)
 		specs.setNrAccus(nrAccus)
+		specs.setClockMemByte(clockMemByte)
 		project.setObTempPresetsEn(obTempEnabled)
 		project.setExtInsnsEn(extInsnsEnabled)

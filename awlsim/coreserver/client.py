@@ -190,7 +190,8 @@ class AwlSimClient(object):
 		self.handle_CPUDUMP(msg.dumpText)
 
 	def __rx_MAINTREQ(self, msg):
-		if msg.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+		if msg.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
+				       MaintenanceRequest.TYPE_STOP):
 			raise MaintenanceRequest(msg.requestType)
 		else:
 			printError("Received unknown maintenance request: %d" %\

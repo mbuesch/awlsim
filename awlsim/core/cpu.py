@@ -597,6 +597,7 @@ class S7CPU(object):
 		self.setMcrActive(False)
 		self.mcrStack = [ ]
 		self.statusWord = S7StatusWord()
+		self.__clockMemByteOffset = None
 
 		self.relativeJump = 1
 
@@ -693,6 +694,14 @@ class S7CPU(object):
 		self.__speedMeasureStartCycleCount = 0
 		self.startupTime = self.now
 
+		if self.specs.clockMemByte >= 0:
+			self.__clockMemByteOffset = AwlOffset(self.specs.clockMemByte)
+		else:
+			self.__clockMemByteOffset = None
+		self.__nextClockMemTime = self.now + 0.05
+		self.__clockMemCount = 0
+		self.__clockMemCountLCM = math_lcm(2, 4, 5, 8, 10, 16, 20)
+
 		# Run startup OB
 		if 102 in self.obs and self.is4accu:
 			# Cold start.
@@ -747,7 +756,39 @@ class S7CPU(object):
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
 	def updateTimestamp(self):
+		# Update the system time
 		self.now = self.__getTime()
+		# Update the clock memory byte
+		if self.__clockMemByteOffset:
+			try:
+				if self.now >= self.__nextClockMemTime:
+					self.__nextClockMemTime += 0.05
+					value = self.flags.fetch(self.__clockMemByteOffset, 8)
+					value ^= 0x01 # 0.1s period
+					count = self.__clockMemCount + 1
+					self.__clockMemCount = count
+					if not count % 2:
+						value ^= 0x02 # 0.2s period
+					if not count % 4:
+						value ^= 0x04 # 0.4s period
+					if not count % 5:
+						value ^= 0x08 # 0.5s period
+					if not count % 8:
+						value ^= 0x10 # 0.8s period
+					if not count % 10:
+						value ^= 0x20 # 1.0s period
+					if not count % 16:
+						value ^= 0x40 # 1.6s period
+					if not count % 20:
+						value ^= 0x80 # 2.0s period
+					if count >= self.__clockMemCountLCM:
+						self.__clockMemCount = 0
+					self.flags.store(self.__clockMemByteOffset, 8, value)
+			except AwlSimError as e:
+				raise AwlSimError("Failed to generate clock "
+					"memory signal:\n" + str(e) +\
+					"\n\nThe configured clock memory byte "
+					"address might be invalid." )
 
 	__dateAndTimeWeekdayMap = {
 		0	: 2,	# monday

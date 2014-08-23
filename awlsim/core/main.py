@@ -93,7 +93,8 @@ class AwlSim(object):
 
 	def __handleMaintenanceRequest(self, e):
 		try:
-			if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+			if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
+					     MaintenanceRequest.TYPE_STOP):
 				# This is handled in the toplevel loop, so
 				# re-raise the exception.
 				raise

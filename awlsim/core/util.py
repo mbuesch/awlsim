@@ -29,6 +29,7 @@ import sys
 import os
 import random
 import struct
+import fractions
 
 
 class Logging(object):
@@ -182,3 +183,12 @@ def pivotDict(inDict):
 			raise KeyError("Ambiguous key in pivot dict")
 		outDict[value] = key
 	return outDict
+
+# Get "Greatest Common Divisor"
+def math_gcd(*args):
+	return reduce(fractions.gcd, args)
+
+# Get "Least Common Multiple"
+def math_lcm(*args):
+	return reduce(lambda x, y: x * y // math_gcd(x, y),
+		      args)

@@ -51,6 +51,7 @@ def usage():
 	printInfo(" -q|--quiet            Do not show any status messages")
 	printInfo(" -x|--extended-insns   Enable extended instructions")
 	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
+	printInfo(" -T|--clock-mem ADDR   Force clock memory address (Default: off)")
 	printInfo(" -m|--mnemonics auto   Force mnemonics type: en, de, auto")
 	printInfo(" -P|--profile 0        Set profiling level (Default: 0)")
 	printInfo("")
@@ -136,6 +137,8 @@ def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
 		cpuSpecs.setConfiguredMnemonics(opt_mnemonics)
 	if opt_nrAccus is not None:
 		cpuSpecs.setNrAccus(opt_nrAccus)
+	if opt_clockMem is not None:
+		cpuSpecs.setClockMemByte(opt_clockMem)
 
 def readInputFile(inputFile):
 	if Project.fileIsProject(inputFile):
@@ -217,7 +220,8 @@ def run(inputFile):
 	except KeyboardInterrupt as e:
 		pass
 	except MaintenanceRequest as e:
-		if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
+				     MaintenanceRequest.TYPE_STOP):
 			writeStdout("Shutting down, as requested...\n")
 		else:
 			assert(0)
@@ -304,7 +308,8 @@ def runWithServerBackend(inputFile):
 		printError(e.getReport())
 		return 1
 	except MaintenanceRequest as e:
-		if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
+				     MaintenanceRequest.TYPE_STOP):
 			writeStdout("Shutting down, as requested...\n")
 		else:
 			assert(0)
@@ -329,6 +334,7 @@ def main():
 	global opt_nrAccus
 	global opt_extInsns
 	global opt_obtemp
+	global opt_clockMem
 	global opt_mnemonics
 	global opt_hwmods
 	global opt_hwinfos
@@ -344,6 +350,7 @@ def main():
 	opt_nrAccus = None
 	opt_extInsns = False
 	opt_obtemp = False
+	opt_clockMem = None
 	opt_mnemonics = None
 	opt_hwmods = []
 	opt_hwinfos = []
@@ -354,10 +361,10 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1C:24qDxt:m:H:I:P:c:bi:",
+			"h1C:24qDxt:T:m:H:I:P:c:bi:",
 			[ "help", "onecycle", "cycle-time=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "extended-insns",
-			  "obtemp=", "mnemonics=",
+			  "obtemp=", "clock-mem=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "connect=", "spawn-backend", "interpreter=",
 			  "list-sfc", "list-sfc-verbose",
@@ -390,6 +397,13 @@ def main():
 			opt_extInsns = True
 		if o in ("-t", "--obtemp"):
 			opt_obtemp = str2bool(v)
+		if o in ("-T", "--clock-mem"):
+			try:
+				opt_clockMem = int(v)
+				if opt_clockMem < -1 or opt_clockMem > 0xFFFF:
+					raise ValueError
+			except ValueError:
+				printError("-T|--clock-mem: Invalid byte address")
 		if o in ("-m", "--mnemonics"):
 			opt_mnemonics = v.lower()
 			if opt_mnemonics not in ("en", "de", "auto"):

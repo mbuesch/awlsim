@@ -152,6 +152,9 @@ class MaintenanceRequest(Exception):
 	# Regular-shutdown request, handled by toplevel simulator.
 	# This exception is handed up to the toplevel loop.
 	TYPE_SHUTDOWN		= EnumGen.item
+	# CPU-STOP request, handled by toplevel simulator.
+	# This exception is handed up to the toplevel loop.
+	TYPE_STOP		= EnumGen.item
 	EnumGen.end
 
 	def __init__(self, requestType, message=""):
