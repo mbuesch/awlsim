@@ -231,6 +231,13 @@ def main():
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())
 		return 1
+	except MaintenanceRequest as e:
+		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
+				     MaintenanceRequest.TYPE_STOP):
+			return 0
+		else:
+			printError("Received invalid maintenance request %d" %\
+				   e.requestType)
 	return 0
 
 if __name__ == "__main__":
