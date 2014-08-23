@@ -684,3 +684,6 @@
 		U	M 0.1
 	)
 	__ASSERT==	__STW VKE,	0
+
+
+	CALL SFC 46 // STOP CPU

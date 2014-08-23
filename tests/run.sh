@@ -57,7 +57,7 @@ run_awl_test()
 	shift; shift
 
 	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$rootdir/awlsim-cli" --quiet --onecycle --extended-insns \
+	"$interpreter" "$rootdir/awlsim-cli" --quiet --extended-insns \
 		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 		--cycle-time 60 \
 		"$@" \
@@ -125,14 +125,25 @@ run_test_directory()
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c7)" = ".awlpro" ] || continue
-		run_test "$interpreter" "$entry"
+
+		local extra=
+		[ "$(basename "$entry")" = "EXAMPLE.awlpro" -o\
+		  "$(basename $(dirname "$entry"))" = "projects" ] &&\
+			local extra=--onecycle
+
+		run_test "$interpreter" "$entry" $extra
 	done
 	# run .awl tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
 		[ -e "${entry}pro" ] && continue
-		run_test "$interpreter" "$entry"
+
+		local extra=
+		[ "$(basename $(dirname "$entry"))" = "projects" ] &&\
+			local extra=--onecycle
+
+		run_test "$interpreter" "$entry" $extra
 	done
 	# run .sh tests
 	for entry in "$directory"/*; do

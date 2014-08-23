@@ -710,3 +710,6 @@
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
+
+
+	CALL SFC 46 // STOP CPU

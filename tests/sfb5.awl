@@ -15,6 +15,9 @@ BEGIN
 //		Q	:= M 0.0,
 //		ET	:= MD 2,
 //	)
+
+
+	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
 
 

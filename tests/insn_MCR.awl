@@ -73,3 +73,6 @@
 	)MCR
 	MCRD
 	__ASSERT==	MD 0,		0
+
+
+	CALL SFC 46 // STOP CPU

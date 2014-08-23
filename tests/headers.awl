@@ -16,6 +16,9 @@ NETWORK
 NETWORK
 	TITLE = This is the second network title
 	NOP 0
+
+
+	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
 
 

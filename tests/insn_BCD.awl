@@ -68,3 +68,6 @@
 	DTB
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	1
+
+
+	CALL SFC 46 // STOP CPU

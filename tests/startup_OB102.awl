@@ -18,4 +18,7 @@ BEGIN
 	// check that OB 102 was executed
 	L		MD 0
 	__ASSERT==	__ACCU 1,	102
+
+
+	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
