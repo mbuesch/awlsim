@@ -26,23 +26,9 @@ from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.util import *
 
 
-class SFCm3(SFC):
-	name = (-3, "__SHUTDOWN", None)
-
-	interfaceFields = {
-		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "SHUTDOWN_TYPE",
-					    dataType = AwlDataType.makeByName("INT")),
-		),
-	}
+class SFC46(SFC):
+	name = (46, "STP", "STOP CPU")
 
 	def run(self):
-		shutdownType = wordToSignedPyInt(self.fetchInterfaceFieldByName("SHUTDOWN_TYPE"))
-		if shutdownType == 1:
-			raise MaintenanceRequest(MaintenanceRequest.TYPE_SHUTDOWN,
-						 "SFC -3 shutdown request")
-		elif shutdownType == 2:
-			raise MaintenanceRequest(MaintenanceRequest.TYPE_STOP,
-						 "SFC -3 stop request")
-		else:
-			raise AwlSimError("SFC -3: Unknown SHUTDOWN_TYPE %d" % shutdownType)
+		raise MaintenanceRequest(MaintenanceRequest.TYPE_STOP,
+					 "CALL SFC 46")

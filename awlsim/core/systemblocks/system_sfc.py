@@ -25,6 +25,7 @@ from awlsim.core.compat import *
 from awlsim.core.systemblocks.system_sfc_m3 import *
 from awlsim.core.systemblocks.system_sfc_m2 import *
 from awlsim.core.systemblocks.system_sfc_m1 import *
+from awlsim.core.systemblocks.system_sfc_46 import *
 from awlsim.core.systemblocks.system_sfc_64 import *
 
 
@@ -33,5 +34,6 @@ SFC_table = {
 	-2	: SFCm2,	# __REBOOT
 	-1	: SFCm1,	# __NOP
 
+	46	: SFC46,	# STP
 	64	: SFC64,	# TIME_TCK
 }
