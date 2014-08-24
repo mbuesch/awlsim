@@ -45,6 +45,13 @@ class SymTabModel(QAbstractTableModel):
 			self.endResetModel()
 			self.sourceChanged.emit()
 
+	def moveSymbol(self, fromRow, toRow):
+		self.beginResetModel()
+		sym = self.symTab.symbols.pop(fromRow)
+		self.symTab.symbols.insert(toRow, sym)
+		self.endResetModel()
+		self.sourceChanged.emit()
+
 	def rowCount(self, parent=QModelIndex()):
 		return len(self.symTab.symbols) + 1
 
@@ -157,7 +164,23 @@ class SymTabView(QTableView):
 	def __init__(self, parent=None):
 		QTableView.__init__(self, parent)
 
+		self.verticalHeader().setMovable(True)
+		self.verticalHeader().sectionMoved.connect(self.__rowMoved)
+
 		self.pressed.connect(self.__handleMousePress)
+
+	def __rebuild(self):
+		model = self.model()
+		yscroll = self.verticalScrollBar().value()
+		xscroll = self.horizontalScrollBar().value()
+		self.setModel(None)
+		self.setModel(model)
+		self.verticalScrollBar().setValue(yscroll)
+		self.horizontalScrollBar().setValue(xscroll)
+
+	def __rowMoved(self, logicalIndex, oldVisualIndex, newVisualIndex):
+		self.model().moveSymbol(oldVisualIndex, newVisualIndex)
+		self.__rebuild()
 
 	def resizeEvent(self, event):
 		hdr = self.horizontalHeader()
