@@ -36,6 +36,8 @@ class SourceTabCorner(QWidget):
 	rename = Signal()
 	# Signal: Integrate source
 	integrate = Signal()
+	# Signal: Export source
+	export = Signal()
 
 	def __init__(self, itemName, parent=None):
 		QWidget.__init__(self, parent)
@@ -52,6 +54,7 @@ class SourceTabCorner(QWidget):
 		self.__integrateAction = self.menu.addAction("&Integrate %s into project..." % itemName,
 							     self.__integrate)
 		self.showIntegrateButton(False)
+		self.menu.addAction("&Export %s..." % itemName, self.__export)
 
 		self.menuButton = QPushButton("&" + itemName[0].upper() + itemName[1:], self)
 		self.menuButton.setMenu(self.menu)
@@ -79,6 +82,9 @@ class SourceTabCorner(QWidget):
 
 	def showIntegrateButton(self, show=True):
 		self.__integrateAction.setVisible(show)
+
+	def __export(self):
+		self.export.emit()
 
 class SourceTabWidget(QTabWidget):
 	"Abstract source tab-widget"
@@ -159,6 +165,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.actionButton.add.connect(self.addEditWidget)
 		self.actionButton.delete.connect(self.deleteCurrent)
 		self.actionButton.rename.connect(self.renameCurrent)
+		self.actionButton.export.connect(self.exportCurrent)
 		self.currentChanged.connect(self.__currentChanged)
 
 	def __emitVisibleLinesSignal(self):
@@ -245,6 +252,27 @@ class AwlSourceTabWidget(SourceTabWidget):
 				source.name = newText
 				self.updateTabTexts()
 
+	def exportCurrent(self):
+		editWidget = self.currentWidget()
+		if not editWidget:
+			return
+		source = editWidget.getFullSource()
+		if not source:
+			return
+		fn, fil = QFileDialog.getSaveFileName(self,
+			"AWL/STL source export", "",
+			"AWL/STL source file (*.awl)",
+			"*.awl")
+		if not fn:
+			return
+		if not fn.endswith(".awl"):
+			fn += ".awl"
+		try:
+			awlFileWrite(fn, source.sourceBytes, encoding="binary")
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to export source", e)
+
 	def pasteText(self, text):
 		editWidget = self.currentWidget()
 		if editWidget:
@@ -261,6 +289,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		self.actionButton.add.connect(self.addSymTable)
 		self.actionButton.delete.connect(self.deleteCurrent)
 		self.actionButton.rename.connect(self.renameCurrent)
+		self.actionButton.export.connect(self.exportCurrent)
 
 	def setSources(self, symTabSources):
 		self.clear()
@@ -310,3 +339,24 @@ class SymSourceTabWidget(SourceTabWidget):
 				source = symTabView.getSourceRef()
 				source.name = newText
 				self.updateTabTexts()
+
+	def exportCurrent(self):
+		symTabView = self.currentWidget()
+		if not symTabView:
+			return
+		source = symTabView.getFullSource()
+		if not source:
+			return
+		fn, fil = QFileDialog.getSaveFileName(self,
+			"Symbol table export", "",
+			"Symbol table file (*.asc)",
+			"*.asc")
+		if not fn:
+			return
+		if not fn.endswith(".asc"):
+			fn += ".asc"
+		try:
+			awlFileWrite(fn, source.sourceBytes, encoding="binary")
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to export symbol table", e)
