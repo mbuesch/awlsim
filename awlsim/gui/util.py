@@ -75,18 +75,18 @@ class MessageBox(QMessageBox):
 
 	@classmethod
 	def error(cls, parent, text, details=None):
-		return cls(parent, "Awlsim - simulator error",
+		return cls(parent, "Awlsim - error",
 			   text, details).exec_()
 
 	@classmethod
 	def warning(cls, parent, text, details=None):
-		return cls(parent, "Awlsim - simulator warning",
+		return cls(parent, "Awlsim - warning",
 			   text, details, QMessageBox.Warning).exec_()
 
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception):
 		cpu = exception.getCpu()
-		text = "A simulator exception occurred:"
+		text = "An exception occurred:"
 		if description:
 			text += "\n"
 			text += "    " + description + "."
@@ -96,10 +96,12 @@ class MessageBox(QMessageBox):
 		insnStr = exception.getFailingInsnStr()
 		if insnStr:
 			text += "    At statement:\n"
-			text += "    AWL/STL line %s:    %s" % (exception.getLineNrStr(),
-							    insnStr)
+			text += "    Line %s:    %s" % (exception.getLineNrStr(),
+							insnStr)
 		else:
-			text += "    At AWL/STL line %s" % exception.getLineNrStr()
+			lineNr = exception.getLineNr()
+			if lineNr is not None:
+				text += "    At line %d" % lineNr
 		details = None
 		if cpu:
 			details = str(exception) + "\n\n" + str(cpu)
