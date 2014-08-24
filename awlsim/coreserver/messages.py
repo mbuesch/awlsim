@@ -202,24 +202,26 @@ class AwlSimMessage_RUNSTATE(AwlSimMessage):
 		return cls(runState)
 
 class AwlSimMessage_EXCEPTION(AwlSimMessage):
-	def __init__(self, exceptionText):
+	def __init__(self, exception):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_EXCEPTION)
-		self.exceptionText = exceptionText
+		self.exception = exception
 
 	def toBytes(self):
 		try:
-			textBytes = self.exceptionText.encode()
-			return AwlSimMessage.toBytes(self, len(textBytes)) + textBytes
-		except UnicodeError:
-			raise TransferError("EXCEPTION: Unicode error")
+			pl = self.packString(self.exception.getReport(verbose = False)) +\
+			     self.packString(self.exception.getReport(verbose = True))
+			return AwlSimMessage.toBytes(self, len(pl)) + pl
+		except ValueError:
+			raise TransferError("EXCEPTION: Encoding error")
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			text = payload.decode()
-		except UnicodeError:
-			raise TransferError("EXCEPTION: Unicode error")
-		return cls(text)
+			text, count = cls.unpackString(payload)
+			verboseText, count = cls.unpackString(payload, count)
+		except ValueError:
+			raise TransferError("EXCEPTION: Encoding error")
+		return cls(AwlSimErrorText(text, verboseText))
 
 class _AwlSimMessage_source(AwlSimMessage):
 	sourceClass = None

@@ -54,58 +54,84 @@ def handleFatalException(parentWidget=None):
 	print("Fatal exception:\n", text)
 	QMessageBox.critical(parentWidget,
 		"A fatal exception occurred",
+		"<pre>"
 		"A fatal exception occurred:\n\n"
 		"%s\n\n"
-		"Awlsim will be terminated." % text)
+		"Awlsim will be terminated."
+		"</pre>" % text)
 	sys.exit(1)
 
 
-class MessageBox(QMessageBox):
+class MessageBox(QDialog):
 	def __init__(self, parent, title, text,
-		     details=None, icon=QMessageBox.Critical):
-		QMessageBox.__init__(self, parent)
-
+		     verboseText=None, icon=QMessageBox.Critical):
+		QDialog.__init__(self, parent)
+		self.setLayout(QGridLayout())
 		self.setWindowTitle(title)
 
-		self.setText(text)
-		self.setIcon(icon)
+		self.text = "<pre>" + text + "\n</pre>"
+		self.verboseText = None
+		if verboseText and verboseText.strip() != text.strip():
+			self.verboseText = "<pre>" + verboseText + "\n</pre>"
 
-		if details:
-			self.setDetailedText(details)
+		self.textBox = QLabel(self)
+		self.textBox.setTextInteractionFlags(Qt.TextSelectableByMouse |\
+						     Qt.TextSelectableByKeyboard |\
+						     Qt.LinksAccessibleByMouse |\
+						     Qt.LinksAccessibleByKeyboard)
+		self.layout().addWidget(self.textBox, 0, 0, 1, 3)
+
+		if self.verboseText:
+			self.verboseCheckBox = QCheckBox("Show verbose information", self)
+			self.layout().addWidget(self.verboseCheckBox, 1, 0, 1, 3)
+		else:
+			self.verboseCheckBox = None
+
+		self.okButton = QPushButton("&Ok", self)
+		self.layout().addWidget(self.okButton, 2, 1)
+
+		self.__updateText()
+
+		self.okButton.released.connect(self.accept)
+		if self.verboseCheckBox:
+			self.verboseCheckBox.stateChanged.connect(self.__updateText)
+
+	def __updateText(self):
+		if self.verboseCheckBox and\
+		   self.verboseCheckBox.checkState() == Qt.Checked:
+			self.textBox.setText(self.verboseText)
+		else:
+			self.textBox.setText(self.text)
 
 	@classmethod
-	def error(cls, parent, text, details=None):
-		return cls(parent, "Awlsim - error",
-			   text, details).exec_()
+	def error(cls, parent, text, verboseText=None):
+		dlg = cls(parent = parent,
+			  title = "Awlsim - Error",
+			  text = text,
+			  verboseText = verboseText,
+			  icon = QMessageBox.Critical)
+		return dlg.exec_()
 
 	@classmethod
-	def warning(cls, parent, text, details=None):
-		return cls(parent, "Awlsim - warning",
-			   text, details, QMessageBox.Warning).exec_()
+	def warning(cls, parent, text, verboseText=None):
+		dlg = cls(parent = parent,
+			  title = "Awlsim - Warning",
+			  text = text,
+			  verboseText = verboseText,
+			  icon = QMessageBox.Warning)
+		return dlg.exec_()
 
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception):
-		cpu = exception.getCpu()
-		text = "An exception occurred:"
-		if description:
-			text += "\n"
-			text += "    " + description + "."
-		text += "\n\n"
-		text += "    " + str(exception)
-		text += "\n\n"
-		insnStr = exception.getFailingInsnStr()
-		if insnStr:
-			text += "    At statement:\n"
-			text += "    Line %s:    %s" % (exception.getLineNrStr(),
-							insnStr)
-		else:
-			lineNr = exception.getLineNr()
-			if lineNr is not None:
-				text += "    At line %d" % lineNr
-		details = None
-		if cpu:
-			details = str(exception) + "\n\n" + str(cpu)
-		return cls.error(parent, text, details)
+		def maketext(verbose):
+			text = "An exception occurred:"
+			if description:
+				text += "\n"
+				text += "  " + description + "."
+			text += "\n\n"
+			text += exception.getReport(verbose)
+			return text
+		return cls.error(parent, maketext(False), maketext(True))
 
 	@classmethod
 	def handleAwlParserError(cls, parent, exception):

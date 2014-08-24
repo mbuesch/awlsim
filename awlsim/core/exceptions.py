@@ -102,23 +102,30 @@ class AwlSimError(Exception):
 				return str(curInsn)
 		return errorStr
 
-	def doGetReport(self, title):
+	def doGetReport(self, title, verbose=True):
 		sourceName = self.getSourceName()
 		if sourceName:
 			sourceName = "source '%s' " % sourceName
 		else:
 			sourceName = ""
-		ret = [ "-- %s --\n" % title ]
+		ret = [ "%s:\n\n" % title ]
 		ret.append("ERROR at %sline %s:\n" %\
 			   (sourceName, self.getLineNrStr()))
-		ret.append("  \n%s\n" % str(self))
-		cpu = self.getCpu()
-		if cpu:
-			ret.append("\n%s\n" % str(cpu))
+		insnStr = self.getFailingInsnStr()
+		if insnStr:
+			ret.append("  %s\n" % insnStr)
+		ret.append("\n  %s\n" % str(self))
+		if verbose:
+			cpu = self.getCpu()
+			if cpu:
+				ret.append("\n%s\n" % str(cpu))
 		return "".join(ret)
 
-	def getReport(self):
-		return self.doGetReport("AWL simulator error")
+	def getReport(self, verbose=True):
+		return self.doGetReport("Awlsim error", verbose)
+
+	def __repr__(self):
+		return self.getReport()
 
 class AwlParserError(AwlSimError):
 	def __init__(self, message, lineNr=None):
@@ -126,8 +133,8 @@ class AwlParserError(AwlSimError):
 				     message = message,
 				     lineNr = lineNr)
 
-	def getReport(self):
-		return self.doGetReport("AWL parser error")
+	def getReport(self, verbose=True):
+		return self.doGetReport("AWL parser error", verbose)
 
 class AwlSimBug(AwlSimError):
 	def __init__(self, message, *args, **kwargs):
@@ -137,10 +144,15 @@ class AwlSimBug(AwlSimError):
 		AwlSimError.__init__(self, message, *args, **kwargs)
 
 class AwlSimErrorText(AwlSimError):
-	def __init__(self, errorText):
+	def __init__(self, errorText, verboseErrorText):
 		AwlSimError.__init__(self, message = errorText)
+		if not verboseErrorText:
+			verboseErrorText = errorText
+		self.verboseErrorText = verboseErrorText
 
-	def getReport(self):
+	def getReport(self, verbose=True):
+		if verbose:
+			return self.verboseErrorText
 		return str(self)
 
 class MaintenanceRequest(Exception):

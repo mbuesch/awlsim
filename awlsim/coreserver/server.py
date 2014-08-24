@@ -548,7 +548,7 @@ class AwlSimServer(object):
 					continue
 
 			except (AwlSimError, AwlParserError) as e:
-				msg = AwlSimMessage_EXCEPTION(e.getReport())
+				msg = AwlSimMessage_EXCEPTION(e)
 				for client in self.clients:
 					try:
 						client.transceiver.send(msg)

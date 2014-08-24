@@ -172,7 +172,7 @@ class AwlSimClient(object):
 		pass # Nothing
 
 	def __rx_EXCEPTION(self, msg):
-		raise AwlSimErrorText(msg.exceptionText)
+		raise msg.exception
 
 	def __rx_PING(self, msg):
 		self.transceiver.send(AwlSimMessage_PONG())
