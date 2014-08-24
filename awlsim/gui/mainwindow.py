@@ -305,7 +305,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.closeEvent(self, ev)
 
 	def about(self):
-		QMessageBox.information(self, "About AWL/STL Soft-PLC",
+		QMessageBox.about(self, "About AWL/STL Soft-PLC",
 			"awlsim version %d.%d\n\n"
 			"Copyright 2012-2014 Michael Büsch <m@bues.ch>\n"
 			"Licensed under the terms of the "
