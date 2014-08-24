@@ -1,0 +1,155 @@
+FUNCTION "Ampelsteuerung" : VOID
+TITLE =
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =Takt/Zähler
+
+      U     "Takt_0.5Hz"; 
+      ZV    Z      0; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      U(    ; 
+      O(    ; 
+      L     MW    12; 
+      L     16; 
+      ==I   ; 
+      )     ; 
+      O     "S0"; 
+      ON    "S1"; 
+      )     ; 
+      R     Z      0; 
+      L     Z      0; 
+      T     MW    12; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =Autoampel Rot
+
+      U(    ; 
+      L     MW    12; 
+      L     9; 
+      >=I   ; 
+      )     ; 
+      U     "S1"; 
+      UN    "S0"; 
+      =     "H1"; 
+NETWORK
+TITLE =Autoampel Gelb
+
+      U(    ; 
+      U(    ; 
+      L     MW    12; 
+      L     7; 
+      >=I   ; 
+      )     ; 
+      UN    "H1"; 
+      O(    ; 
+      L     MW    12; 
+      L     15; 
+      >=I   ; 
+      )     ; 
+      )     ; 
+      U     "S1"; 
+      O     ; 
+      U     "S0"; 
+      U     "Takt_0.5Hz"; 
+      =     "H2"; 
+NETWORK
+TITLE =Autoampel Grün
+
+      U(    ; 
+      L     MW    12; 
+      L     7; 
+      <=I   ; 
+      )     ; 
+      UN    "H2"; 
+      U     "S1"; 
+      UN    "S0"; 
+      =     "H3"; 
+NETWORK
+TITLE =Fußgängeranpel Rot
+
+      U(    ; 
+      O(    ; 
+      L     MW    12; 
+      L     14; 
+      >=I   ; 
+      )     ; 
+      O(    ; 
+      L     MW    12; 
+      L     10; 
+      <=I   ; 
+      )     ; 
+      )     ; 
+      U     "S1"; 
+      UN    "H5"; 
+      UN    "S0"; 
+      =     "H4"; 
+NETWORK
+TITLE =Fußgängerampel Grün
+
+      U(    ; 
+      L     MW    12; 
+      L     10; 
+      >=I   ; 
+      )     ; 
+      U(    ; 
+      L     MW    12; 
+      L     14; 
+      <=I   ; 
+      )     ; 
+      U     "S1"; 
+      UN    "H4"; 
+      UN    "S0"; 
+      =     "H5"; 
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+TITLE = "Main Program Sweep (Cycle)"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+  OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+  OB1_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB1_OB_NUMBR : BYTE ;	//1 (Organization block 1, OB1)
+  OB1_RESERVED_1 : BYTE ;	//Reserved for system
+  OB1_RESERVED_2 : BYTE ;	//Reserved for system
+  OB1_PREV_CYCLE : INT ;	//Cycle time of previous OB1 scan (milliseconds)
+  OB1_MIN_CYCLE : INT ;	//Minimum cycle time of OB1 (milliseconds)
+  OB1_MAX_CYCLE : INT ;	//Maximum cycle time of OB1 (milliseconds)
+  OB1_DATE_TIME : DATE_AND_TIME ;	//Date and time OB1 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      CALL "Ampelsteuerung" ;
+      NOP   0; 
+END_ORGANIZATION_BLOCK
+
+
+ORGANIZATION_BLOCK OB 100
+	TITLE		=
+	VERSION		: 0.1
+	VAR_TEMP
+		OB100_EV_CLASS   : BYTE;          // B#16#13, Event class 1, Entering event state, Event logged in diagnostic buffer
+		OB100_STRTUP     : BYTE;          // B#16#81/82/83/84 Method of startup
+		OB100_PRIORITY   : BYTE;          // Priority of OB execution
+		OB100_OB_NUMBR   : BYTE;          // 100 (Organization block 100, OB 100)
+		OB100_RESERVED_1 : BYTE;
+		OB100_RESERVED_2 : BYTE;
+		OB100_STOP       : WORD;          // Event that caused CPU to stop (W#16#4XXX)
+		OB100_STRT_INFO  : DWORD;         // Information on how system started
+		OB100_DATE_TIME  : DATE_AND_TIME; // Date and time OB 100 started
+	END_VAR
+BEGIN
+	// Ampel einschalten
+	SET;
+	=	"S1";
+END_ORGANIZATION_BLOCK
