@@ -1,0 +1,144 @@
+FUNCTION_BLOCK FB 1
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL  := TRUE;	
+  T3_4 : BOOL  := TRUE;	
+  T4_5 : BOOL  := TRUE;	
+  T5_6 : BOOL  := TRUE;	
+  T6_7 : BOOL  := TRUE;	
+  T7_8 : BOOL  := TRUE;	
+  T8_9 : BOOL  := TRUE;	
+  T9_10 : BOOL  := TRUE;	
+  T10_11 : BOOL  := TRUE;	
+  T11_12 : BOOL  := TRUE;	
+  T12_13 : BOOL  := TRUE;	
+  T13_14 : BOOL  := TRUE;	
+  T14_15 : BOOL  := TRUE;	
+  T15_16 : BOOL  := TRUE;	
+  T16_17 : BOOL  := TRUE;	
+  T17_18 : BOOL  := TRUE;	
+  T18_19 : BOOL  := TRUE;	
+  T19_20 : BOOL  := TRUE;	
+  T20_21 : BOOL  := TRUE;	
+  T21_22 : BOOL  := TRUE;	
+  T22_23 : BOOL  := TRUE;	
+  T23_24 : BOOL  := TRUE;	
+  T24_25 : BOOL  := TRUE;	
+  T25_26 : BOOL  := TRUE;	
+  T26_27 : BOOL  := TRUE;	
+  T27_28 : BOOL  := TRUE;	
+  T28_29 : BOOL  := TRUE;	
+  T29_30 : BOOL  := TRUE;	
+  T30_31 : BOOL  := TRUE;	
+  T31_32 : BOOL  := TRUE;	
+  T32_1 : BOOL  := TRUE;	
+  RESET : BOOL ;	
+  WEITER_MB : BOOL ;	
+  WEITER_OB : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  SCHRITT_NR : INT ;	
+END_VAR
+VAR
+  SM : INT ;	//Schrittmerker
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U     #RESET; // Kein Reset?
+      SPBN  krst; // Sprung zu Bedingungsprüfung
+
+      L     0; // Schrittmerker rücksetzen
+      T     #SM; 
+      SPA   ende; 
+
+krst: U     #WEITER_OB; // Weiter ohne Bedingung?
+      SPB   weit; // Sprung zu "weiter"
+
+      U     #WEITER_MB; // Nicht weiter mit Bedingung?
+      SPBN  ende; // Sprung zum Ende
+
+      L     #SM; 
+      L     1; 
+      SLD   ; // accu2 = (1 << #SM)
+      L     DID    0; // Transitionen in accu1 laden
+      TAD   ; // Transitionen Bytereihenfolge tauschen
+      UD    ; // Transitionen mit (1 << #SM) maskieren
+      SPZ   ende; // Akt. Transition nicht aktiv? -> Ende
+
+weit: L     #SM; // Schrittmerker inkrementieren
+      INC   1; 
+      UD    DW#16#1F; 
+      T     #SM; 
+
+ende: L     #SM; // Schrittnummer ausgeben
+      INC   1; 
+      T     #SCHRITT_NR; 
+
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 1
+	FB 1
+BEGIN
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+	VAR_TEMP
+		OB1_EV_CLASS   : BYTE;          // Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+		OB1_SCAN_1     : BYTE;          // 1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+		OB1_PRIORITY   : BYTE;          // Priority of OB execution
+		OB1_OB_NUMBR   : BYTE;          // 1 (Organization block 1, OB 1)
+		OB1_RESERVED_1 : BYTE;
+		OB1_RESERVED_2 : BYTE;
+		OB1_PREV_CYCLE : INT;           // Cycle time of previous OB 1 scan (milliseconds)
+		OB1_MIN_CYCLE  : INT;           // Minimum cycle time of OB 1 (milliseconds)
+		OB1_MAX_CYCLE  : INT;           // Maximum cycle time of OB 1 (milliseconds)
+		OB1_DATE_TIME  : DATE_AND_TIME; // Date and time OB 1 started
+	END_VAR
+BEGIN
+	CALL FB 1, DB 1 (
+		T1_2		:= E 0.0,
+		T2_3		:= E 0.1,
+		T3_4		:= E 0.2,
+		T4_5		:= E 0.3,
+		T5_6		:= E 0.4,
+		T6_7		:= E 0.5,
+		T7_8		:= E 0.6,
+		T8_9		:= E 0.7,
+		T9_10		:= E 1.0,
+		T10_11		:= E 1.1,
+		T11_12		:= E 1.2,
+		T12_13		:= E 1.3,
+		T13_14		:= E 1.4,
+		T14_15		:= E 1.5,
+		T15_16		:= E 1.6,
+		T16_17		:= E 1.7,
+		T17_18		:= E 2.0,
+		T18_19		:= E 2.1,
+		T19_20		:= E 2.2,
+		T20_21		:= E 2.3,
+		T21_22		:= E 2.4,
+		T22_23		:= E 2.5,
+		T23_24		:= E 2.6,
+		T24_25		:= E 2.7,
+		T25_26		:= E 3.0,
+		T26_27		:= E 3.1,
+		T27_28		:= E 3.2,
+		T28_29		:= E 3.3,
+		T29_30		:= E 3.4,
+		T30_31		:= E 3.5,
+		T31_32		:= E 3.6,
+		T32_1		:= E 3.7,
+		RESET		:= E 4.0,
+		WEITER_MB	:= E 4.1,
+		WEITER_OB	:= E 4.2,
+		SCHRITT_NR	:= AW 0,
+	)
+END_ORGANIZATION_BLOCK
