@@ -200,10 +200,10 @@ class RawAwlDataField(object):
 
 class RawAwlDB(RawAwlBlock):
 	class FBRef(object):
-		def __init__(self, fbName, fbNumber, isSFB):
-			self.fbName = fbName
+		def __init__(self, fbNumber=None, isSFB=None, fbSymbol=None):
 			self.fbNumber = fbNumber
 			self.isSFB = isSFB
+			self.fbSymbol = fbSymbol
 
 	def __init__(self, tree, index):
 		RawAwlBlock.__init__(self, tree, index)
@@ -663,9 +663,11 @@ class AwlParser(object):
 				fbNumber = int(t.tokens[1], 10)
 			except ValueError:
 				raise AwlParserError("Invalid FB/SFB binding")
-			self.tree.curBlock.fb = RawAwlDB.FBRef(fbName = fbName,
-							       fbNumber = fbNumber,
+			self.tree.curBlock.fb = RawAwlDB.FBRef(fbNumber = fbNumber,
 							       isSFB = (name == "SFB"))
+		elif name.startswith('"') and name.endswith('"'):
+			fbSymbol = name[1:-1]
+			self.tree.curBlock.fb = RawAwlDB.FBRef(fbSymbol = fbSymbol)
 		else:
 			raise AwlParserError("In DB header: Unknown token: %s" % name)
 

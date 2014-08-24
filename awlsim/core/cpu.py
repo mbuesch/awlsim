@@ -246,18 +246,28 @@ class S7CPU(object):
 		return db
 
 	def __translateInstanceDB(self, rawDB):
-		fbStr = "SFB" if rawDB.fb.isSFB else "FB"
+		if rawDB.fb.fbSymbol is None:
+			fbStr = "SFB" if rawDB.fb.isSFB else "FB"
+			fbNumber = rawDB.fb.fbNumber
+			isSFB = rawDB.fb.isSFB
+		else:
+			fbStr = '"%s"' % rawDB.fb.fbSymbol
+			fbNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_FB_X,
+								 AwlDataType.TYPE_SFB_X),
+								rawDB.fb.fbSymbol)
+			isSFB = sym.type.type == AwlDataType.TYPE_SFB_X
+
 		try:
-			if rawDB.fb.isSFB:
-				fb = self.sfbs[rawDB.fb.fbNumber]
+			if isSFB:
+				fb = self.sfbs[fbNumber]
 			else:
-				fb = self.fbs[rawDB.fb.fbNumber]
+				fb = self.fbs[fbNumber]
 		except KeyError:
 			raise AwlSimError("Instance DB %d references %s %d, "
 				"but %s %d does not exist." %\
 				(rawDB.index,
-				 fbStr, rawDB.fb.fbNumber,
-				 fbStr, rawDB.fb.fbNumber))
+				 fbStr, fbNumber,
+				 fbStr, fbNumber))
 		db = DB(rawDB.index, fb)
 		interface = fb.interface
 		# Sanity checks
@@ -294,17 +304,17 @@ class S7CPU(object):
 		return oper
 
 	# Translate symbolic OB/FB/FC/DB block name
-	def __resolveBlockName(self, blockTypeId, blockName):
+	def __resolveBlockName(self, blockTypeIds, blockName):
 		if isString(blockName):
 			symbol = self.symbolTable.findOneByName(blockName)
 			if not symbol:
 				raise AwlSimError("Symbolic block name \"%s\" "
 					"not found in symbol table." % blockName)
-			if symbol.type.type != blockTypeId:
+			if symbol.type.type not in blockTypeIds:
 				raise AwlSimError("Symbolic block name \"%s\" "
 					"has an invalid type." % blockName)
-			return symbol.operator.value.byteOffset
-		return blockName
+			return symbol.operator.value.byteOffset, symbol
+		return blockName, None
 
 	# Translate local symbols (#abc or P##abc)
 	# If pointer is false, try to resolve #abc.
@@ -477,8 +487,8 @@ class S7CPU(object):
 		self.__detectMnemonics(parseTree)
 		# Translate OBs
 		for obNumber, rawOB in parseTree.obs.items():
-			obNumber = self.__resolveBlockName(AwlDataType.TYPE_OB_X,
-							   obNumber)
+			obNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_OB_X,),
+								obNumber)
 			if obNumber in self.obs:
 				raise AwlSimError("Multiple definitions of "\
 					"OB %d" % obNumber)
@@ -493,8 +503,8 @@ class S7CPU(object):
 			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
 		# Translate FBs
 		for fbNumber, rawFB in parseTree.fbs.items():
-			fbNumber = self.__resolveBlockName(AwlDataType.TYPE_FB_X,
-							   fbNumber)
+			fbNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_FB_X,),
+								fbNumber)
 			if fbNumber in self.fbs:
 				raise AwlSimError("Multiple definitions of "\
 					"FB %d" % fbNumber)
@@ -503,8 +513,8 @@ class S7CPU(object):
 			self.fbs[fbNumber] = fb
 		# Translate FCs
 		for fcNumber, rawFC in parseTree.fcs.items():
-			fcNumber = self.__resolveBlockName(AwlDataType.TYPE_FC_X,
-							   fcNumber)
+			fcNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_FC_X,),
+								fcNumber)
 			if fcNumber in self.fcs:
 				raise AwlSimError("Multiple definitions of "\
 					"FC %d" % fcNumber)
@@ -531,8 +541,10 @@ class S7CPU(object):
 
 		# Translate DBs
 		for dbNumber, rawDB in parseTree.dbs.items():
-			dbNumber = self.__resolveBlockName(AwlDataType.TYPE_DB_X,
-							   dbNumber)
+			dbNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_DB_X,
+								 AwlDataType.TYPE_FB_X,
+								 AwlDataType.TYPE_SFB_X),
+								dbNumber)
 			if dbNumber in self.dbs:
 				raise AwlSimError("Multiple definitions of "\
 					"DB %d" % dbNumber)
