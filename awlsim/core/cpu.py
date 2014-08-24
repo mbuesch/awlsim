@@ -300,7 +300,9 @@ class S7CPU(object):
 				raise AwlSimError("Symbol \"%s\" not found in "
 					"symbol table." % oper.value.varName,
 					insn = insn)
-			oper = symbol.operator
+			newOper = symbol.operator.dup()
+			newOper.setInsn(oper.insn)
+			return newOper
 		return oper
 
 	# Translate symbolic OB/FB/FC/DB block name

@@ -51,5 +51,16 @@ BEGIN
 	)
 
 
+	// Test symbolic timer/counter access
+	CLR
+	SI		"symbolic timer"
+	U		"symbolic timer"
+	=		M 0.0
+	CLR
+	ZR		"symbolic counter"
+	U		"symbolic counter"
+	=		M 0.0
+
+
 	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
