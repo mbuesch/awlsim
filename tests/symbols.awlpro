@@ -1,13 +1,14 @@
 [AWLSIM_PROJECT]
 file_version=0
-date=2014-08-18 17:37:01.792527
+date=2014-08-24 20:47:57.679832
 
 [CPU]
 awl_file_0=symbols.awl
 mnemonics=0
 nr_accus=2
+clock_memory_byte=-1
 ob_startinfo_enable=0
 ext_insns_enable=1
 
 [SYMBOLS]
-sym_tab_file_0=symbols.csv
+sym_tab_file_0=symbols.asc
