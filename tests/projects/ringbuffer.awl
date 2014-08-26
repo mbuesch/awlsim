@@ -1,0 +1,224 @@
+FUNCTION_BLOCK "Ringpuffer"
+TITLE =Ringpuffer (FIFO) mit 32-bit breiten Elementen
+VERSION : 0.1
+
+
+VAR_INPUT
+  eingabe : BOOL ;	
+  ausgabe : BOOL ;	
+  eingabe_wert : DWORD ;	
+  reset : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  ausgabe_wert : DWORD ;	
+  ueberlauf : BOOL ;	
+  unterlauf : BOOL ;	
+  fuellstand : INT ;	
+END_VAR
+VAR
+  fm_eingabe : BOOL ;	
+  fm_ausgabe : BOOL ;	
+  anzahl_belegt : INT ;	
+  ptr_eingabe : DWORD ;	
+  ptr_ausgabe : DWORD ;	
+  elemente : ARRAY  [0 .. 31 ] OF DWORD ;	
+END_VAR
+VAR_TEMP
+  max_anzahl_elemente : INT ;	
+  zaehler : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Konstanten definieren
+
+      L     32; // Groesse des "elemente" Arrays
+      T     #max_anzahl_elemente; 
+
+NETWORK
+TITLE =Ringpuffer entladen
+
+      U     #ausgabe; // "ausgabe" positive Flanke?
+      FP    #fm_ausgabe; 
+      SPBN  end1; // Nein? Dann Ende.
+
+      L     #anzahl_belegt; 
+      L     0; 
+      ==D   ; // anzahl_belegt == 0?
+      SPBN  nunt; // ... dann kein Unterlauf
+      SET   ; 
+      =     #unterlauf; // ... sonst Unterlauf anzeigen
+      L     0; 
+      T     #ausgabe_wert; 
+      SPA   end1; // Und Ende.
+
+nunt: L     P##elemente; 
+      L     #ptr_ausgabe; 
+      +D    ; // AR1 = element_0 + ptr_ausgabe
+      LAR1  ; // AR1 zeigt auf das erste belegte Element
+
+      L     D [AR1,P#0.0]; 
+      T     #ausgabe_wert; // ausgabe_wert = erstes belegtes Element
+      L     0; // Element nullen. (Nicht unbedingt noetig)
+      T     D [AR1,P#0.0]; 
+
+      L     #anzahl_belegt; 
+      L     1; 
+      -D    ; // anzahl_belegt -= 1
+      T     #anzahl_belegt; 
+
+      L     #ptr_ausgabe; 
+      L     P#4.0; 
+      +D    ; // ptr_ausgabe += 4
+      T     #ptr_ausgabe; 
+
+      L     #max_anzahl_elemente; 
+      L     P#4.0; 
+      *D    ; // akku = Pointer auf Ringende
+      L     #ptr_ausgabe; 
+      >D    ; // ptr_ausgabe < Ringende
+      SPB   end0; // ... dann Ende
+      L     P#0.0; // ... sonst ptr_ausgabe = P#0.0
+      T     #ptr_ausgabe; 
+
+end0: CLR   ; 
+      =     #ueberlauf; // Fehleranzeigen zuruecksetzen
+      =     #unterlauf; 
+
+end1: NOP   0; 
+
+NETWORK
+TITLE =Ringpuffer beladen
+
+      U     #eingabe; // "eingabe" positive Flanke?
+      FP    #fm_eingabe; 
+      SPBN  end3; // Nein? Dann Ende.
+
+      L     #anzahl_belegt; 
+      L     #max_anzahl_elemente; 
+      <D    ; // anzahl_belegt < max_anzahl?
+      SPB   nueb; // ... dann kein Ueberlauf
+      SET   ; 
+      =     #ueberlauf; // ... sonst Ueberlauf anzeigen
+      SPA   end3; // Und Ende.
+
+nueb: L     P##elemente; 
+      L     #ptr_eingabe; 
+      +D    ; // AR1 = element_0 + ptr_eingabe
+      LAR1  ; // AR1 zeigt auf das erste freie Element
+
+      L     #eingabe_wert; 
+      T     D [AR1,P#0.0]; // Erstes freies Element = eingabe_wert
+
+      L     #anzahl_belegt; 
+      L     1; 
+      +D    ; // anzahl_belegt += 1
+      T     #anzahl_belegt; 
+
+      L     #ptr_eingabe; 
+      L     P#4.0; 
+      +D    ; // ptr_eingabe += 4
+      T     #ptr_eingabe; 
+
+      L     #max_anzahl_elemente; 
+      L     P#4.0; 
+      *D    ; // akku = Pointer auf Ringende
+      L     #ptr_eingabe; 
+      >D    ; // ptr_eingabe < Ringende
+      SPB   end2; // ... dann Ende
+      L     P#0.0; // ... sonst ptr_eingabe = P#0.0
+      T     #ptr_eingabe; 
+
+end2: CLR   ; 
+      =     #ueberlauf; // Fehleranzeigen zuruecksetzen
+      =     #unterlauf; 
+
+end3: NOP   0; 
+
+NETWORK
+TITLE =Reset-Signal verarbeiten
+
+      U     #reset; 
+      SPBN  nrst; 
+
+// Statische Variablen und Ausgaenge nullen
+      L     0; 
+      T     #ausgabe_wert; 
+      T     #fuellstand; 
+      T     #anzahl_belegt; 
+      T     #ptr_eingabe; 
+      T     #ptr_ausgabe; 
+      CLR   ; 
+      =     #ueberlauf; 
+      =     #unterlauf; 
+
+// Alle Elemente nullen.
+// Dies ist nicht unbedingt notwendig, aber zur Fehlersuche sinnvoll.
+      L     #max_anzahl_elemente; 
+next: T     #zaehler; 
+      L     1; 
+      -D    ; 
+      L     P#4.0; 
+      *D    ; 
+      L     P##elemente; 
+      +D    ; 
+      LAR1  ; 
+      L     0; 
+      T     D [AR1,P#0.0]; 
+      L     #zaehler; 
+      LOOP  next; 
+
+nrst: NOP   0; 
+
+NETWORK
+TITLE =Fuellstand ausgeben
+
+      L     #anzahl_belegt; 
+      T     #fuellstand; 
+
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK "DB_Ringpuffer"
+	"Ringpuffer"
+BEGIN
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+	VAR_TEMP
+		OB1_EV_CLASS   : BYTE;          // Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+		OB1_SCAN_1     : BYTE;          // 1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+		OB1_PRIORITY   : BYTE;          // Priority of OB execution
+		OB1_OB_NUMBR   : BYTE;          // 1 (Organization block 1, OB 1)
+		OB1_RESERVED_1 : BYTE;
+		OB1_RESERVED_2 : BYTE;
+		OB1_PREV_CYCLE : INT;           // Cycle time of previous OB 1 scan (milliseconds)
+		OB1_MIN_CYCLE  : INT;           // Minimum cycle time of OB 1 (milliseconds)
+		OB1_MAX_CYCLE  : INT;           // Maximum cycle time of OB 1 (milliseconds)
+		OB1_DATE_TIME  : DATE_AND_TIME; // Date and time OB 1 started
+	END_VAR
+BEGIN
+	U	"clock_100ms"
+	=	E 0.0
+	U	"clock_200ms"
+	=	E 0.1
+	L	L#31337
+	T	ED 2
+	U	A 0.0
+	=	E 0.2
+
+	CALL "Ringpuffer", "DB_Ringpuffer" (
+		eingabe		:= E 0.0,
+		ausgabe		:= E 0.1,
+		eingabe_wert	:= ED 2,
+		reset		:= E 0.2,
+		ausgabe_wert	:= AD 2,
+		ueberlauf	:= A 0.0,
+		unterlauf	:= A 0.1,
+		fuellstand	:= AW 6,
+	)
+	L	ED 2
+	L	AD 2
+	L	AW 6
+
+END_ORGANIZATION_BLOCK
