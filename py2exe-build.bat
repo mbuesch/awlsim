@@ -35,6 +35,7 @@ copy COMPATIBILITY.txt %distdir%\
 copy TODO.txt %distdir%\
 xcopy doc\foreign-licenses %distdir%\licenses\ /E
 copy COPYING.txt %distdir%\licenses\AWLSIM-LICENSE.txt
+move %distdir%\server.exe %distdir%\awlsim-backend-server.exe
 
 rem ---
 rem Create the distribution archive
