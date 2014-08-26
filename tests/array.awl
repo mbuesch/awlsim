@@ -275,6 +275,13 @@ M000:	L		#VAR0[1]
 	__ASSERT==	__ACCU 1,	103
 	L		DIW 10
 	__ASSERT==	__ACCU 1,	103
+
+	L		P##VAR0 // Ptr to array name is ptr to first element
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	LAR1
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	1
+
 	BEA
 
 
@@ -303,6 +310,13 @@ M001:	L		#VAR0[1]
 	__ASSERT==	__ACCU 1,	9103
 	L		DIW 10
 	__ASSERT==	__ACCU 1,	9103
+
+	L		P##VAR0 // Ptr to array name is ptr to first element
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	LAR1
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	91
+
 	BEA
 
 END_FUNCTION_BLOCK

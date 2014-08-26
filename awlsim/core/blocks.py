@@ -208,7 +208,11 @@ class BlockInterface(object):
 
 		if interfaceField.dataType.type == AwlDataType.TYPE_ARRAY:
 			# Get the linear array index.
-			arrayIndex = interfaceField.dataType.arrayIndicesCollapse(*indices)
+			if indices:
+				arrayIndex = interfaceField.dataType.arrayIndicesCollapse(*indices)
+			else:
+				assert(wantPointer)
+				arrayIndex = 0
 		else:
 			arrayIndex = None
 

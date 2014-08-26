@@ -334,7 +334,8 @@ class S7CPU(object):
 
 		# Sanity checks
 		if field.dataType.type == AwlDataType.TYPE_ARRAY:
-			if not oper.value.indices:
+			if not oper.value.indices and\
+			   oper.type != AwlOperator.NAMED_LOCAL_PTR:
 				raise AwlSimError("Cannot address array #%s "
 					"without subscript list." %\
 					oper.value.varName)
