@@ -11,4 +11,3 @@ S7 compatibility:
 
 nice to have:
 - Throw an early error, if constant is assigned to FB/FC OUT/INOUT parameter.
-- source export from GUI
