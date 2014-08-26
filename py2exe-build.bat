@@ -7,6 +7,7 @@ set /p version= < version.txt
 
 set distdir=awlsim-win-standalone-%version%
 set zipfile=awlsim-win-standalone-%version%.zip
+set bindir=%distdir%\awlsim-bin
 
 echo Building standalone Windows executable for awlsim v%version%...
 
@@ -16,8 +17,10 @@ rem Create the py2exe distribution
 rem ---
 rd /s /q build 2>NUL
 rd /s /q %distdir% 2>NUL
+mkdir %distdir%
+mkdir %bindir%
 py setup.py py2exe ^
-	--dist-dir=%distdir% ^
+	--dist-dir=%bindir% ^
 	--optimize=2 ^
 	--bundle-files=3 ^
 	--compressed ^
@@ -35,7 +38,14 @@ copy COMPATIBILITY.txt %distdir%\
 copy TODO.txt %distdir%\
 xcopy doc\foreign-licenses %distdir%\licenses\ /E
 copy COPYING.txt %distdir%\licenses\AWLSIM-LICENSE.txt
-move %distdir%\server.exe %distdir%\awlsim-backend-server.exe
+move %bindir%\server.exe %bindir%\awlsim-backend-server.exe
+
+rem ---
+rem Make startup wrapper
+rem ---
+set wrapper=%distdir%\awlsim.bat
+echo @echo off> %wrapper%
+echo start /Dawlsim-bin awlsim-gui.exe %%1>> %wrapper%
 
 rem ---
 rem Create the distribution archive
