@@ -43,8 +43,8 @@ def usage():
 	printInfo("%s [OPTIONS] <AWL-source or awlsim-project file>" % sys.argv[0])
 	printInfo("")
 	printInfo("Options:")
-	printInfo(" -1|--onecycle         Only run one cycle")
 	printInfo(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
+	printInfo(" -M|--max-runtime SEC  CPU will be stopped after SEC seconds (default: off)")
 	printInfo(" -2|--twoaccu          Force 2-accu mode")
 	printInfo(" -4|--fouraccu         Force 4-accu mode")
 	printInfo(" -D|--no-cpu-dump      Do not show CPU status while running")
@@ -122,11 +122,9 @@ def emitCpuDump(dump):
 
 def cpuDumpCallback(cpu):
 	global nextScreenUpdate
-	if cpu.now < nextScreenUpdate and\
-	   not opt_onecycle:
-		return
-	nextScreenUpdate = cpu.now + 0.1
-	emitCpuDump(str(cpu))
+	if cpu.now >= nextScreenUpdate:
+		nextScreenUpdate = cpu.now + 0.1
+		emitCpuDump(str(cpu))
 
 def makeLoglevel():
 	return Logging.LOG_ERROR if opt_quiet else Logging.LOG_INFO
@@ -196,6 +194,7 @@ def run(inputFile):
 		if not opt_noCpuDump and not opt_quiet:
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		cpu.setCycleTimeLimit(opt_cycletime)
+		cpu.setRunTimeLimit(opt_maxRuntime)
 		writeStdout("Initializing CPU...\n")
 		for symTable in symTables:
 			s.loadSymbolTable(symTable)
@@ -208,8 +207,6 @@ def run(inputFile):
 				clearConsole()
 			while 1:
 				s.runCycle()
-				if opt_onecycle:
-					break
 		finally:
 			if not opt_noCpuDump and not opt_quiet:
 				clearConsole()
@@ -221,10 +218,12 @@ def run(inputFile):
 		pass
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
-				     MaintenanceRequest.TYPE_STOP):
-			writeStdout("Shutting down, as requested...\n")
+				     MaintenanceRequest.TYPE_STOP,
+				     MaintenanceRequest.TYPE_RTTIMEOUT):
+			writeStdout("Shutting down, as requested (%s)...\n" % str(e))
 		else:
-			assert(0)
+			writeStdout("Received unknown maintenance request "
+				    "(%d: %s)...\n" % (e.requestType, str(e)))
 	finally:
 		if s:
 			ps = s.getProfileStats()
@@ -281,6 +280,7 @@ def runWithServerBackend(inputFile):
 		client.enableOBTempPresets(project.getObTempPresetsEn() or opt_obtemp)
 		client.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
 		client.setCycleTimeLimit(opt_cycletime)
+		client.setRunTimeLimit(opt_maxRuntime)
 		specs = client.getCpuSpecs()
 		assignCpuSpecs(specs, project.cpuSpecs)
 		client.setCpuSpecs(specs)
@@ -309,10 +309,12 @@ def runWithServerBackend(inputFile):
 		return 1
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
-				     MaintenanceRequest.TYPE_STOP):
-			writeStdout("Shutting down, as requested...\n")
+				     MaintenanceRequest.TYPE_STOP,
+				     MaintenanceRequest.TYPE_RTTIMEOUT):
+			writeStdout("Shutting down, as requested (%s)...\n" % str(e))
 		else:
-			assert(0)
+			writeStdout("Received unknown maintenance request "
+				    "(%d: %s)...\n" % (e.requestType, str(e)))
 	except KeyboardInterrupt as e:
 		pass
 	finally:
@@ -327,8 +329,8 @@ def __signalHandler(sig, frame):
 		os.kill(os.getpid(), signal.SIGINT)
 
 def main():
-	global opt_onecycle
 	global opt_cycletime
+	global opt_maxRuntime
 	global opt_quiet
 	global opt_noCpuDump
 	global opt_nrAccus
@@ -343,8 +345,8 @@ def main():
 	global opt_spawnBackend
 	global opt_interpreter
 
-	opt_onecycle = False
 	opt_cycletime = 5.0
+	opt_maxRuntime = -1.0
 	opt_quiet = False
 	opt_noCpuDump = False
 	opt_nrAccus = None
@@ -361,8 +363,8 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"h1C:24qDxt:T:m:H:I:P:c:bi:",
-			[ "help", "onecycle", "cycle-time=", "twoaccu", "fouraccu",
+			"hC:M:24qDxt:T:m:H:I:P:c:bi:",
+			[ "help", "cycle-time=", "max-runtime=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "clock-mem=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
@@ -377,13 +379,17 @@ def main():
 		if o in ("-h", "--help"):
 			usage()
 			return 0
-		if o in ("-1", "--onecycle"):
-			opt_onecycle = True
 		if o in ("-C", "--cycle-time"):
 			try:
 				opt_cycletime = float(v)
 			except ValueError:
 				printError("-C|--cycle-time: Invalid time format")
+				sys.exit(1)
+		if o in ("-M", "--max-runtime"):
+			try:
+				opt_maxRuntime = float(v)
+			except ValueError:
+				printError("-M|--max-runtime: Invalid time format")
 				sys.exit(1)
 		if o in ("-2", "--twoaccu"):
 			opt_nrAccus = 2

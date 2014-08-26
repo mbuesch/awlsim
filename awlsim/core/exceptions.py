@@ -167,6 +167,9 @@ class MaintenanceRequest(Exception):
 	# CPU-STOP request, handled by toplevel simulator.
 	# This exception is handed up to the toplevel loop.
 	TYPE_STOP		= EnumGen.item
+	# CPU-STOP due to runtime timeout.
+	# This exception is handed up to the toplevel loop.
+	TYPE_RTTIMEOUT		= EnumGen.item
 	EnumGen.end
 
 	def __init__(self, requestType, message=""):

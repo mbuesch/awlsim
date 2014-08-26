@@ -374,21 +374,23 @@ class AwlSimMessage_CPUDUMP(AwlSimMessage):
 class AwlSimMessage_MAINTREQ(AwlSimMessage):
 	plStruct = struct.Struct(str(">H"))
 
-	def __init__(self, requestType):
+	def __init__(self, maintRequest):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MAINTREQ)
-		self.requestType = requestType
+		self.maintRequest = maintRequest
 
 	def toBytes(self):
-		pl = self.plStruct.pack(self.requestType)
+		pl = self.plStruct.pack(self.maintRequest.requestType) +\
+		     self.packString(str(self.maintRequest))
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			(requestType, ) = cls.plStruct.unpack(payload)
-		except struct.error as e:
+			(requestType, ) = cls.plStruct.unpack_from(payload, 0)
+			msg, count = cls.unpackString(payload, cls.plStruct.size)
+		except (struct.error, ValueError) as e:
 			raise TransferError("MAINTREQ: Invalid data format")
-		return cls(requestType)
+		return cls(MaintenanceRequest(requestType, msg))
 
 class AwlSimMessage_GET_CPUSPECS(AwlSimMessage):
 	def __init__(self):

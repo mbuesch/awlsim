@@ -384,6 +384,8 @@ class AwlSimServer(object):
 			self.__updateCpuBlockExitCallback()
 		elif msg.name == "cycle_time_limit":
 			self.sim.cpu.setCycleTimeLimit(msg.getFloatValue())
+		elif msg.name == "runtime_limit":
+			self.sim.cpu.setRunTimeLimit(msg.getFloatValue())
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 
@@ -560,7 +562,7 @@ class AwlSimServer(object):
 				try:
 					if self.clients:
 						# Forward it to the first client
-						msg = AwlSimMessage_MAINTREQ(e.requestType)
+						msg = AwlSimMessage_MAINTREQ(e)
 						self.clients[0].transceiver.send(msg)
 				except TransferError as e:
 					pass

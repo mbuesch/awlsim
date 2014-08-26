@@ -129,7 +129,7 @@ run_test_directory()
 		local extra=
 		[ "$(basename "$entry")" = "EXAMPLE.awlpro" -o\
 		  "$(basename $(dirname "$entry"))" = "projects" ] &&\
-			local extra=--onecycle
+			local extra="--max-runtime 1.0"
 
 		run_test "$interpreter" "$entry" $extra
 	done
@@ -141,7 +141,7 @@ run_test_directory()
 
 		local extra=
 		[ "$(basename $(dirname "$entry"))" = "projects" ] &&\
-			local extra=--onecycle
+			local extra="--max-runtime 1.0"
 
 		run_test "$interpreter" "$entry" $extra
 	done

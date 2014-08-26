@@ -110,6 +110,9 @@ class S7CPU(object):
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
 
+	def setRunTimeLimit(self, timeoutSeconds=0.0):
+		self.__runtimeLimit = timeoutSeconds if timeoutSeconds > 0.0 else None
+
 	def __detectMnemonics(self, parseTree):
 		specs = self.getSpecs()
 		if specs.getConfiguredMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
@@ -613,6 +616,7 @@ class S7CPU(object):
 		self.mcrStack = [ ]
 		self.statusWord = S7StatusWord()
 		self.__clockMemByteOffset = None
+		self.setRunTimeLimit()
 
 		self.relativeJump = 1
 
@@ -625,7 +629,7 @@ class S7CPU(object):
 		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
-		self.startupTime = 0.0
+		self.startupTime = self.__getTime()
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
@@ -804,6 +808,11 @@ class S7CPU(object):
 					"memory signal:\n" + str(e) +\
 					"\n\nThe configured clock memory byte "
 					"address might be invalid." )
+		# Check whether the runtime timeout exceeded
+		if self.__runtimeLimit is not None:
+			if self.now - self.startupTime >= self.__runtimeLimit:
+				raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
+					"CPU runtime timeout")
 
 	__dateAndTimeWeekdayMap = {
 		0	: 2,	# monday

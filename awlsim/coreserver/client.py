@@ -190,12 +190,7 @@ class AwlSimClient(object):
 		self.handle_CPUDUMP(msg.dumpText)
 
 	def __rx_MAINTREQ(self, msg):
-		if msg.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
-				       MaintenanceRequest.TYPE_STOP):
-			raise MaintenanceRequest(msg.requestType)
-		else:
-			printError("Received unknown maintenance request: %d" %\
-				   msg.requestType)
+		raise msg.maintRequest
 
 	def handle_MEMORY(self, memAreas):
 		pass # Don't do anything by default
@@ -354,6 +349,9 @@ class AwlSimClient(object):
 
 	def setCycleTimeLimit(self, seconds=5.0):
 		return self.__setOption("cycle_time_limit", float(seconds))
+
+	def setRunTimeLimit(self, seconds=0.0):
+		return self.__setOption("runtime_limit", float(seconds))
 
 	# Set instruction state dumping.
 	# fromLine, toLine is the range of AWL line numbers for which

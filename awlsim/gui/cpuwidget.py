@@ -265,10 +265,12 @@ class CpuWidget(QWidget):
 				client.shutdown()
 				QApplication.exit(0)
 				return
-			elif e.requestType == MaintenanceRequest.TYPE_STOP:
+			elif e.requestType == MaintenanceRequest.TYPE_STOP or\
+			     e.requestType == MaintenanceRequest.TYPE_RTTIMEOUT:
 				self.stop()
 			else:
-				assert(0)
+				print("Unknown maintenance request %d" % e.requestType)
+				self.stop()
 		except Exception:
 			try:
 				client.setRunState(False)
