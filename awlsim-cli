@@ -3,7 +3,7 @@
 #
 # AWL simulator - Commandline interface
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ def run(inputFile):
 						       mnemonics = mnemonics)
 			symTables.append(tab)
 
-		writeStdout("Initializing simulator...\n")
+		writeStdout("Initializing core...\n")
 		s = AwlSim(profileLevel = opt_profile)
 		s.reset()
 
@@ -263,7 +263,7 @@ def runWithServerBackend(inputFile):
 		else:
 			client.connectToServer()
 
-		writeStdout("Initializing simulator...\n")
+		writeStdout("Initializing core...\n")
 		client.setLoglevel(makeLoglevel())
 		client.setRunState(False)
 		client.reset()
