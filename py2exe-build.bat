@@ -38,7 +38,7 @@ copy COMPATIBILITY.txt %distdir%\
 copy TODO.txt %distdir%\
 xcopy doc\foreign-licenses %distdir%\licenses\ /E
 copy COPYING.txt %distdir%\licenses\AWLSIM-LICENSE.txt
-move %bindir%\server.exe %bindir%\awlsim-backend-server.exe
+move %bindir%\server.exe %bindir%\awlsim-gui-backend-server.exe
 
 rem ---
 rem Make startup wrapper

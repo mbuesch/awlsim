@@ -198,7 +198,11 @@ except ValueError:
 	pass
 
 if py2exe:
-	extraKeywords["console"] = [ "awlsim-gui", "awlsim/coreserver/server.py", ]
+	extraKeywords["console"] = [ "awlsim-cli",
+				     "awlsim-gui",
+				     "awlsim-server",
+				     "awlsim-symtab",
+				     "awlsim/coreserver/server.py", ]
 
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
