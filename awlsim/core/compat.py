@@ -25,6 +25,10 @@ import sys
 import os
 
 
+# Convenient operating system identifiers
+osIsWindows = os.name == "nt" or os.name == "ce"
+osIsPosix = os.name == "posix" or os.name == "java"
+
 # isPyPy is True, if the interpreter is PyPy.
 isPyPy = "PyPy" in sys.version
 
@@ -35,7 +39,7 @@ isJython = sys.platform.lower().startswith("java")
 isIronPython = "IronPython" in sys.version
 
 # isWinStandalone is True, if this is a Windows standalone package (py2exe)
-isWinStandalone = os.name == "nt" and\
+isWinStandalone = osIsWindows and\
 		  (sys.executable.endswith("awlsim-gui.exe") or\
 		   sys.executable.endswith("awlsim-cli.exe"))
 

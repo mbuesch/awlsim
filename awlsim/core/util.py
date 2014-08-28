@@ -117,7 +117,7 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 		fd.write(data)
 		fd.flush()
 		fd.close()
-		if os.name.lower() != "posix":
+		if not osIsPosix:
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.
 			os.unlink(filename)
