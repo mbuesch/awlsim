@@ -110,15 +110,22 @@ lastDump = ""
 def clearConsole():
 	# Make cursor visible, clear console and
 	# move cursor to homeposition.
-	writeStdout("\x1B[?25h\x1B[2J\x1B[H")
+	if osIsPosix:
+		writeStdout("\x1B[?25h\x1B[2J\x1B[H")
+	elif osIsWindows:
+		os.system("cls")
 
 def emitCpuDump(dump):
 	# Pad lines
-	dump = '\n'.join(line + (79 - len(line)) * ' ' + '|'
+	dump = '\n'.join(line + (78 - len(line)) * ' ' + '|'
 			 for line in dump.splitlines())
 	global lastDump
 	lastDump = dump
-	writeStdout("\x1B[H" + dump)
+	if osIsPosix:
+		writeStdout("\x1B[H" + dump)
+	else:
+		clearConsole()
+		writeStdout(dump)
 
 def cpuDumpCallback(cpu):
 	global nextScreenUpdate
