@@ -195,7 +195,7 @@ class CpuWidget(QWidget):
 					#      before our server is able to allocate it.
 					if isWinStandalone:
 						# Run the py2exe standalone server process
-						client.spawnServer(serverExecutable = "awlsim-gui-backend-server.exe",
+						client.spawnServer(serverExecutable = "awlsim-server-module.exe",
 								   listenHost = host,
 								   listenPort = port)
 					else:

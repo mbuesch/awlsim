@@ -58,7 +58,8 @@ def usage():
 	printInfo("Server backend related options:")
 	printInfo(" -c|--connect IP:PORT  Connect to server backend")
 	printInfo(" -b|--spawn-backend    Spawn a new backend server and connect to it")
-	printInfo(" -i|--interpreter EXE  Set the backend interpreter executable")
+	if not isWinStandalone:
+		printInfo(" -i|--interpreter EXE  Set the backend interpreter executable")
 	printInfo("")
 	printInfo("Loading hardware modules:")
 	printInfo(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
@@ -260,9 +261,14 @@ def runWithServerBackend(inputFile):
 			host, port = AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT
 			if opt_connect:
 				host, port = opt_connect
-			client.spawnServer(interpreter = opt_interpreter,
-					   listenHost = host,
-					   listenPort = port)
+			if isWinStandalone:
+				client.spawnServer(serverExecutable = "awlsim-server-module.exe",
+						   listenHost = host,
+						   listenPort = port)
+			else:
+				client.spawnServer(interpreter = opt_interpreter,
+						   listenHost = host,
+						   listenPort = port)
 		writeStdout("Connecting to core server...\n")
 		if opt_connect:
 			client.connectToServer(host = opt_connect[0],
@@ -463,6 +469,9 @@ def main():
 		if o in ("-b", "--spawn-backend"):
 			opt_spawnBackend = True
 		if o in ("-i", "--interpreter"):
+			if isWinStandalone:
+				printError("-i|--interpreter not supported on win-standalone")
+				sys.exit(1)
 			opt_interpreter = v
 		if o in ("--list-sfc", "--list-sfc-verbose"):
 			printInfo("The supported system functions (SFCs) are:")
