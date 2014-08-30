@@ -46,7 +46,18 @@ get_interpreter_version()
 {
 	local interpreter="$1"
 
+	[ "$interpreter" = "cython" ] && local interpreter=python2
+	[ "$interpreter" = "cython3" ] && local interpreter=python3
+
 	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
+}
+
+# $1=program_name
+have_prog()
+{
+	local program="$1"
+
+	which "$program" >/dev/null 2>&1
 }
 
 # $1=interpreter $2=awl_file ($3ff additional options to awlsim-cli)
@@ -55,6 +66,26 @@ run_awl_test()
 	local interpreter="$1"
 	local awl="$2"
 	shift; shift
+
+	export PYTHONPATH=
+	export AWLSIMCYTHON=
+
+	if [ "$interpreter" = "cython" ]; then
+		for i in "$rootdir"/build/lib.linux-*-2.*; do
+			export PYTHONPATH="$i"
+			break
+		done
+		export AWLSIMCYTHON=2
+		local interpreter=python2
+		echo "$PYTHONPATH"
+	elif [ "$interpreter" = "cython3" ]; then
+		for i in "$rootdir"/build/lib.linux-*-3.*; do
+			export PYTHONPATH="$i"
+			break
+		done
+		export AWLSIMCYTHON=2
+		local interpreter=python3
+	fi
 
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$rootdir/awlsim-cli" --quiet --extended-insns \
@@ -74,6 +105,11 @@ run_sh_test()
 	local interpreter="$1"
 	local sh_file="$2"
 	shift; shift
+
+	[ "$interpreter" = "cython" -o "$interpreter" = "cython3" ] && {
+		echo "[SKIPPED] on $interpreter"
+		return
+	}
 
 	[ -x "$sh_file" ] && die "SH-file '$sh_file' must NOT be executable"
 
@@ -159,16 +195,41 @@ run_test_directory()
 	echo "--- Leaving directory '$directory'"
 }
 
+# $1=interpreter
+warn_skipped()
+{
+	local interpreter="$1"
+
+	echo "=== WARNING: '$interpreter' interpreter not found. Test skipped."
+	echo
+}
+
 # $@=testfiles
 do_tests()
 {
-	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython ipy; do
+	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython ipy cython3; do
 		[ -z "$interpreter" ] && continue
-		which "$interpreter" >/dev/null 2>&1 || {
-			echo "=== WARNING: '$interpreter' interpreter not found. Test skipped."
-			echo
-			[ -n "$opt_interpreter" ] && break || continue
-		}
+
+		if [ "$interpreter" = "cython" ]; then
+			have_prog "$interpreter" && have_prog python2 || {
+				warn_skipped "$interpreter"
+				[ -n "$opt_interpreter" ] && break || continue
+			}
+			cd "$rootdir" || die "cd to $rootdir failed"
+			python2 ./setup.py build || die "'python2 ./setup.py build' failed"
+		elif [ "$interpreter" = "cython3" ]; then
+			have_prog "$interpreter" && have_prog python3 || {
+				warn_skipped "$interpreter"
+				[ -n "$opt_interpreter" ] && break || continue
+			}
+			cd "$rootdir" || die "cd to $rootdir failed"
+			python3 ./setup.py build || die "'python3 ./setup.py build' failed"
+		else
+			have_prog "$interpreter" || {
+				warn_skipped "$interpreter"
+				[ -n "$opt_interpreter" ] && break || continue
+			}
+		fi
 
 		local interp_ver="$(get_interpreter_version "$interpreter")"
 		local interp_ver_dot="$(echo "$interp_ver" | tr ' ' '.')"
@@ -181,7 +242,7 @@ do_tests()
 			[ -n "$opt_interpreter" ] && break || continue
 		}
 
-		echo "=== Running tests with '$interpreter' interpreter."
+		echo "=== Running tests with '$interpreter'"
 		if [ $# -eq 0 ]; then
 			run_test_directory "$interpreter" "$basedir"
 		else
@@ -228,7 +289,8 @@ while [ $# -ge 1 ]; do
 	-i|--interpreter)
 		shift
 		opt_interpreter="$1"
-		which "$opt_interpreter" >/dev/null 2>&1 ||\
+		[ "$opt_interpreter" = "cython2" ] && opt_interpreter="cython"
+		have_prog "$opt_interpreter" ||\
 			die "Interpreter '${opt_interpreter}' not found"
 		;;
 	-s|--softfail)
