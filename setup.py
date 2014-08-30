@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
+
 import sys
 import os
 import platform
@@ -34,6 +36,21 @@ def hashFile(path):
 	except ExpectedException as e:
 		return None
 
+def __fileopIfChanged(fromFile, toFile, fileop):
+	toFileHash = hashFile(toFile)
+	if toFileHash is not None:
+		fromFileHash = hashFile(fromFile)
+		if toFileHash == fromFileHash:
+			return False
+	fileop(fromFile, toFile)
+	return True
+
+def copyIfChanged(fromFile, toFile):
+	return __fileopIfChanged(fromFile, toFile, shutil.copy2)
+
+def moveIfChanged(fromFile, toFile):
+	return __fileopIfChanged(fromFile, toFile, os.rename)
+
 def pyCythonPatch(toFile, fromFile):
 	print("cython-patch: patching file '%s' to '%s'" %\
 	      (fromFile, toFile))
@@ -64,35 +81,43 @@ def pyCythonPatch(toFile, fromFile):
 	infd.close()
 	outfd.flush()
 	outfd.close()
-	toFileHash = hashFile(toFile)
-	newFileHash = hashFile(tmpFile)
-	if toFileHash is not None and\
-	   toFileHash == newFileHash:
+	if not moveIfChanged(tmpFile, toFile):
 		print("(already up to date)")
 		os.unlink(tmpFile)
-		return
-	os.rename(tmpFile, toFile)
 
-cythonBuildDir = None
-cythonBuildFiles = []
+class CythonBuildUnit(object):
+	def __init__(self, baseName, fromPy, fromPxd, toDir, toPyx, toPxd):
+		self.baseName = baseName
+		self.fromPy = fromPy
+		self.fromPxd = fromPxd
+		self.toDir = toDir
+		self.toPyx = toPyx
+		self.toPxd = toPxd
+
+cythonBuildUnits = []
 
 def patchCythonModules():
-	global cythonBuildDir
-	global cythonBuildFiles
-
-	assert(cythonBuildDir)
-	makedirs(cythonBuildDir, 0o755)
-
-	for fromFile, toDir, pyxFilename in cythonBuildFiles:
-		toFile = os.path.join(toDir, pyxFilename)
-
-		makedirs(toDir, 0o755)
-		pyCythonPatch(toFile, fromFile)
+	for unit in cythonBuildUnits:
+		makedirs(unit.toDir, 0o755)
+		if unit.baseName == "__init__":
+			# Make a dummy-__init__
+			if not os.path.isfile(unit.toPyx):
+				fd = open(unit.toPyx, "w")
+				fd.write("\n")
+				fd.close()
+		else:
+			# Generate the .pyx
+			pyCythonPatch(unit.toPyx, unit.fromPy)
+		# Copy the .pxd, if any
+		if os.path.isfile(unit.fromPxd):
+			print("copying pxd file from '%s' to '%s'..." %\
+			      (unit.fromPxd, unit.toPxd))
+			if not copyIfChanged(unit.fromPxd, unit.toPxd):
+				print("(already up to date)")
 
 def registerCythonModules():
 	global ext_modules
-	global cythonBuildDir
-	global cythonBuildFiles
+	global cythonBuildUnits
 
 	modDir = os.path.join(os.curdir, "awlsim")
 	# Make path to the cython patch-build-dir
@@ -117,27 +142,29 @@ def registerCythonModules():
 		if subpath.startswith("gui"):
 			continue
 		for filename in filenames:
-			if filename == "__init__.py":
-				continue
 			if filename.endswith(".py"):
-				pyxFilename = filename.replace(".py", ".pyx")
-				fromFile = os.path.join(dirpath, filename)
+				baseName = filename[:-3] # Strip .py
+
+				fromPy = os.path.join(dirpath, baseName + ".py")
+				fromPxd = os.path.join(dirpath, baseName + ".pxd")
 				toDir = os.path.join(cythonBuildDir, subpath)
-				toFile = os.path.join(toDir, pyxFilename)
+				toPyx = os.path.join(toDir, baseName + ".pyx")
+				toPxd = os.path.join(toDir, baseName + ".pxd")
 
 				# Remember the filenames for the build
-				cythonBuildFiles.append( (fromFile, toDir, pyxFilename) )
+				unit = CythonBuildUnit(baseName, fromPy, fromPxd, toDir, toPyx, toPxd)
+				cythonBuildUnits.append(unit)
 
 				# Construct the new cython module name
 				modname = [ "awlsim_cython" ]
 				if subpath:
 					modname.extend(subpath.split(os.sep))
-				modname.append(filename[:-3]) # Strip .py
+				modname.append(baseName)
 				modname = ".".join(modname)
 
 				# Create a distutils Extension for the module
 				ext_modules.append(
-					Extension(modname, [toFile])
+					Extension(modname, [toPyx])
 				)
 
 def tryBuildCythonModules():
