@@ -734,71 +734,97 @@ class AwlDataType(object):
 			raise AwlSimError("Invalid immediate")
 		return immediate
 
-class GenericInteger(object):
-	def __init__(self, value, width):
+class GenericInteger(object): #+cdef
+
+#@cy	cdef public uint32_t value
+#@cy	cdef public uint32_t mask
+
+	def __init__(self, value, width): #@nocy
+#@cy	def __init__(self, int64_t value, uint8_t width):
+#@cy		cdef uint64_t one
+
 		assert(width > 0 and width <= 32)
 		self.value = value
-		self.mask = int(((1 << width) - 1) & 0xFFFFFFFF)
+		one = 1
+		self.mask = int(((one << width) - 1) & 0xFFFFFFFF)
 
-	def copyFrom(self, other):
+	def copyFrom(self, other): #@nocy
+#@cy	cpdef copyFrom(self, GenericInteger other):
 		self.value = other.value & self.mask
 
-	def set(self, value):
+	def set(self, value): #@nocy
+#@cy	cpdef set(self, int64_t value):
 		self.value = value & self.mask
 
-	def setByte(self, value):
+	def setByte(self, value): #@nocy
+#@cy	cpdef setByte(self, int64_t value):
 		self.value = ((self.value & 0xFFFFFF00) |\
 			      (value & 0xFF)) &\
 			     self.mask
 
-	def setWord(self, value):
+	def setWord(self, value): #@nocy
+#@cy	cpdef setWord(self, int64_t value):
 		self.value = ((self.value & 0xFFFF0000) |\
 			      (value & 0xFFFF)) &\
 			     self.mask
 
-	def setDWord(self, value):
+	def setDWord(self, value): #@nocy
+#@cy	cpdef setDWord(self, int64_t value):
 		self.value = value & 0xFFFFFFFF & self.mask
 
-	def setPyFloat(self, pyfl):
+	def setPyFloat(self, pyfl): #@nocy
+#@cy	cpdef setPyFloat(self, pyfl):
 		self.value = pyFloatToDWord(pyfl)
 
-	def get(self):
+	def get(self): #@nocy
+#@cy	cpdef uint32_t get(self):
 		return self.value
 
-	def getByte(self):
+	def getByte(self): #@nocy
+#@cy	cpdef uint8_t getByte(self):
 		return self.value & 0xFF
 
-	def getWord(self):
+	def getWord(self): #@nocy
+#@cy	cpdef uint16_t getWord(self):
 		return self.value & 0xFFFF
 
-	def getDWord(self):
+	def getDWord(self): #@nocy
+#@cy	cpdef uint32_t getDWord(self):
 		return self.value & 0xFFFFFFFF
 
-	def getSignedByte(self):
+	def getSignedByte(self): #@nocy
+#@cy	cpdef int8_t getSignedByte(self):
 		return byteToSignedPyInt(self.value)
 
-	def getSignedWord(self):
+	def getSignedWord(self): #@nocy
+#@cy	cpdef int16_t getSignedWord(self):
 		return wordToSignedPyInt(self.value)
 
-	def getSignedDWord(self):
+	def getSignedDWord(self): #@nocy
+#@cy	cpdef int32_t getSignedDWord(self):
 		return dwordToSignedPyInt(self.value)
 
-	def getPyFloat(self):
+	def getPyFloat(self): #@nocy
+#@cy	cpdef getPyFloat(self):
 		return dwordToPyFloat(self.value)
 
-	def setBit(self, bitNumber):
+	def setBit(self, bitNumber): #@nocy
+#@cy	cpdef setBit(self, uint8_t bitNumber):
 		self.value = (self.value | (1 << bitNumber)) & self.mask
 
-	def clearBit(self, bitNumber):
+	def clearBit(self, bitNumber): #@nocy
+#@cy	cpdef clearBit(self, uint8_t bitNumber):
 		self.value &= ~(1 << bitNumber)
 
-	def setBitValue(self, bitNumber, value):
+	def setBitValue(self, bitNumber, value): #@nocy
+#@cy	cpdef setBitValue(self, uint8_t bitNumber, uint8_t value):
 		if value:
 			self.setBit(bitNumber)
 		else:
 			self.clearBit(bitNumber)
 
-	def getBit(self, bitNumber):
+	def getBit(self, bitNumber): #@nocy
+#@cy	cpdef unsigned char getBit(self, uint8_t bitNumber):
 		return (self.value >> bitNumber) & 1
 
 	def toHex(self):
@@ -811,16 +837,19 @@ class GenericInteger(object):
 		else:
 			assert(0)
 
-class GenericWord(GenericInteger):
+class GenericWord(GenericInteger): #+cdef
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 16)
 
-class GenericDWord(GenericInteger):
+class GenericDWord(GenericInteger): #+cdef
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 32)
 
 class ByteArray(bytearray):
-	def fetch(self, offset, width):
+	def fetch(self, offset, width): #@nocy
+#@cy	def fetch(self, offset, uint8_t width):
+#@cy		cdef uint32_t byteOffset
+
 		byteOffset = offset.byteOffset
 		try:
 			if width == 1:
@@ -839,7 +868,10 @@ class ByteArray(bytearray):
 			raise AwlSimError("fetch: Operator offset out of range")
 		assert(0)
 
-	def store(self, offset, width, value):
+	def store(self, offset, width, value): #@nocy
+#@cy	def store(self, offset, uint8_t width, int64_t value):
+#@cy		cdef uint32_t byteOffset
+
 		byteOffset = offset.byteOffset
 		try:
 			if width == 1:
@@ -862,13 +894,13 @@ class ByteArray(bytearray):
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset out of range")
 
-class Accu(GenericDWord):
+class Accu(GenericDWord): #+cdef
 	"Accumulator register"
 
 	def __init__(self):
 		GenericDWord.__init__(self)
 
-class Adressregister(GenericDWord):
+class Adressregister(GenericDWord): #+cdef
 	"Address register"
 
 	def __init__(self):

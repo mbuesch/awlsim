@@ -28,7 +28,8 @@ from awlsim.core.datatypehelpers import *
 from awlsim.core.cpuspecs import *
 
 
-class S7StatusWord(DynAttrs):
+class S7StatusWord(DynAttrs): #@nocy
+#cdef class S7StatusWord(object): #@cy
 	"""STEP 7 status word
 	The instance of this class holds the following nine
 	attributes. One for each STW bit:
@@ -75,6 +76,16 @@ class S7StatusWord(DynAttrs):
 		"A1"	: 0,
 		"BIE"	: 0,
 	}
+
+#@cy	cdef public _Bool NER
+#@cy	cdef public _Bool VKE
+#@cy	cdef public _Bool STA
+#@cy	cdef public _Bool OR
+#@cy	cdef public _Bool OS
+#@cy	cdef public _Bool OV
+#@cy	cdef public _Bool A0
+#@cy	cdef public _Bool A1
+#@cy	cdef public _Bool BIE
 
 	@classmethod
 	def getBitnrByName(cls, name, mnemonics):
@@ -133,12 +144,14 @@ class S7StatusWord(DynAttrs):
 			raise AwlSimError("Status word bit fetch '%d' "
 				"out of range" % bitNumber)
 
-	def getWord(self):
+	def getWord(self): #@nocy
+#@cy	cpdef uint16_t getWord(self):
 		return self.NER | (self.VKE << 1) | (self.STA << 2) |\
 		       (self.OR << 3) | (self.OS << 4) | (self.OV << 5) |\
 		       (self.A0 << 6) | (self.A1 << 7) | (self.BIE << 8)
 
-	def setWord(self, word):
+	def setWord(self, word): #@nocy
+#@cy	cpdef setWord(self, uint16_t word):
 		self.NER = word & 1
 		self.VKE = (word >> 1) & 1
 		self.STA = (word >> 2) & 1
@@ -149,7 +162,8 @@ class S7StatusWord(DynAttrs):
 		self.A1 = (word >> 7) & 1
 		self.BIE = (word >> 8) & 1
 
-	def dup(self):
+	def dup(self): #@nocy
+#@cy	cpdef dup(self):
 		new = S7StatusWord()
 		new.NER = self.NER
 		new.VKE = self.VKE
