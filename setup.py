@@ -51,6 +51,14 @@ def copyIfChanged(fromFile, toFile):
 def moveIfChanged(fromFile, toFile):
 	return __fileopIfChanged(fromFile, toFile, os.rename)
 
+def makeDummyFile(path):
+	if os.path.isfile(path):
+		return
+	print("creating dummy file '%s'" % path)
+	fd = open(path, "w")
+	fd.write("\n")
+	fd.close()
+
 def pyCythonPatch(toFile, fromFile):
 	print("cython-patch: patching file '%s' to '%s'" %\
 	      (fromFile, toFile))
@@ -100,11 +108,9 @@ def patchCythonModules():
 	for unit in cythonBuildUnits:
 		makedirs(unit.toDir, 0o755)
 		if unit.baseName == "__init__":
-			# Make a dummy-__init__
-			if not os.path.isfile(unit.toPyx):
-				fd = open(unit.toPyx, "w")
-				fd.write("\n")
-				fd.close()
+			# Make a dummy-__init__.py(x)
+			makeDummyFile(unit.toPyx)
+			makeDummyFile(os.path.join(unit.toDir, "__init__.py"))
 		else:
 			# Generate the .pyx
 			pyCythonPatch(unit.toPyx, unit.fromPy)
@@ -192,6 +198,13 @@ def tryBuildCythonModules():
 		return
 
 	class MyCythonBuildExt(Cython_build_ext):
+		def build_extension(self, ext):
+			if ext.name.endswith("__init__"):
+				toPy = os.path.join(self.build_lib, *ext.name.split('.')) + ".py"
+				makeDummyFile(toPy)
+			else:
+				Cython_build_ext.build_extension(self, ext)
+
 		def build_extensions(self):
 			# First patch the files, the run the normal build
 			patchCythonModules()
