@@ -70,16 +70,34 @@ def pyCythonPatch(toFile, fromFile):
 
 		if not stripLine.endswith("#<no-cython-patch"):
 			# Uncomment all lines containing <cython>
-			if "<cython>" in stripLine:
-				line = re.sub(r'#?<cython>\s*', "", line)
+			if "#@cy" in stripLine:
+				line = line.replace("#@cy", "")
 				if line.startswith("#"):
 					line = line[1:]
 				if not line.endswith("\n"):
 					line += "\n"
 
+			# Sprinkle magic cdef, as requested by #+cdef
+			if "#+cdef" in stripLine:
+				if stripLine.startswith("class"):
+					line = line.replace("class", "cdef class")
+				else:
+					line = line.replace("def", "cdef")
+
 			# Comment all lines containing <no-cython>
-			if "<no-cython>" in stripLine:
+			if "#@nocy" in stripLine:
 				line = "#" + line
+
+			# Automagic types
+			line = re.sub(r'\b_Bool\b', "unsigned char", line)
+			line = re.sub(r'\bint8_t\b', "signed char", line)
+			line = re.sub(r'\buint8_t\b', "unsigned char", line)
+			line = re.sub(r'\bint16_t\b', "signed short", line)
+			line = re.sub(r'\buint16_t\b', "unsigned short", line)
+			line = re.sub(r'\bint32_t\b', "signed int", line)
+			line = re.sub(r'\buint32_t\b', "unsigned int", line)
+			line = re.sub(r'\bint64_t\b', "signed long long", line)
+			line = re.sub(r'\buint64_t\b', "unsigned long long", line)
 
 			# Patch the import statements
 			line = re.sub(r'^from awlsim\.', "from awlsim_cython.", line)
