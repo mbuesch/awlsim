@@ -88,8 +88,8 @@ class GenericSource(object):
 	@classmethod
 	def fromBase64(cls, identNr, name, b64):
 		try:
-			data = base64.b64decode(b64)
-		except (TypeError, binascii.Error) as e:
+			data = base64.b64decode(b64.encode("ascii"))
+		except (TypeError, binascii.Error, UnicodeError) as e:
 			raise AwlSimError("Project: %s source '%s' "
 				"has invalid base64 encoding." %\
 				(cls.SRCTYPE, name))
