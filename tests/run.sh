@@ -46,7 +46,7 @@ get_interpreter_version()
 {
 	local interpreter="$1"
 
-	[ "$interpreter" = "cython" ] && local interpreter=python2
+	[ "$interpreter" = "cython" -o "$interpreter" = "cython2" ] && local interpreter=python2
 	[ "$interpreter" = "cython3" ] && local interpreter=python3
 
 	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
@@ -67,17 +67,13 @@ run_awl_test()
 	local awl="$2"
 	shift; shift
 
-	export PYTHONPATH=
-	export AWLSIMCYTHON=
-
-	if [ "$interpreter" = "cython" ]; then
+	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
 		for i in "$rootdir"/build/lib.linux-*-2.*; do
 			export PYTHONPATH="$i"
 			break
 		done
 		export AWLSIMCYTHON=2
 		local interpreter=python2
-		echo "$PYTHONPATH"
 	elif [ "$interpreter" = "cython3" ]; then
 		for i in "$rootdir"/build/lib.linux-*-3.*; do
 			export PYTHONPATH="$i"
@@ -85,8 +81,12 @@ run_awl_test()
 		done
 		export AWLSIMCYTHON=2
 		local interpreter=python3
+	else
+		export PYTHONPATH=
+		export AWLSIMCYTHON=
 	fi
 
+	local ok=1
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$rootdir/awlsim-cli" --quiet --extended-insns \
 		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
@@ -94,9 +94,12 @@ run_awl_test()
 		"$@" \
 		"$awl" || {
 			test_failed "Test '$(basename "$awl")' FAILED"
-			return
+			local ok=0
 	}
-	echo "[OK: $(cat "$test_time_file")]"
+	[ $ok -ne 0 ] && echo "[OK: $(cat "$test_time_file")]"
+
+	export PYTHONPATH=
+	export AWLSIMCYTHON=
 }
 
 # $1=interpreter $2=sh_file
@@ -106,7 +109,7 @@ run_sh_test()
 	local sh_file="$2"
 	shift; shift
 
-	[ "$interpreter" = "cython" -o "$interpreter" = "cython3" ] && {
+	[ "$interpreter" = "cython" -o "$interpreter" = "cython2" -o "$interpreter" = "cython3" ] && {
 		echo "[SKIPPED] on $interpreter"
 		return
 	}
@@ -207,15 +210,18 @@ warn_skipped()
 # $@=testfiles
 do_tests()
 {
-	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython ipy cython3; do
+	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython ipy cython2 cython3; do
 		[ -z "$interpreter" ] && continue
 
-		if [ "$interpreter" = "cython" ]; then
+		if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
+			[ "$interpreter" = "cython2" ] && ! have_prog "cython2" &&\
+				interpreter="cython" # Fallback
 			have_prog "$interpreter" && have_prog python2 || {
 				warn_skipped "$interpreter"
 				[ -n "$opt_interpreter" ] && break || continue
 			}
 			cd "$rootdir" || die "cd to $rootdir failed"
+			echo "=== Building awlsim with python2"
 			python2 ./setup.py build || die "'python2 ./setup.py build' failed"
 		elif [ "$interpreter" = "cython3" ]; then
 			have_prog "$interpreter" && have_prog python3 || {
@@ -223,6 +229,7 @@ do_tests()
 				[ -n "$opt_interpreter" ] && break || continue
 			}
 			cd "$rootdir" || die "cd to $rootdir failed"
+			echo "=== Building awlsim with python3"
 			python3 ./setup.py build || die "'python3 ./setup.py build' failed"
 		else
 			have_prog "$interpreter" || {
@@ -258,6 +265,11 @@ do_tests()
 
 		[ -n "$opt_interpreter" ] && break
 	done
+	if [ $global_retval -eq 0 ]; then
+		echo "All tests succeeded"
+	else
+		echo "Some tests FAILED"
+	fi
 }
 
 show_help()
@@ -289,7 +301,6 @@ while [ $# -ge 1 ]; do
 	-i|--interpreter)
 		shift
 		opt_interpreter="$1"
-		[ "$opt_interpreter" = "cython2" ] && opt_interpreter="cython"
 		have_prog "$opt_interpreter" ||\
 			die "Interpreter '${opt_interpreter}' not found"
 		;;
