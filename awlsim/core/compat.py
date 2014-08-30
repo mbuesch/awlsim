@@ -80,7 +80,7 @@ monotonic_time = getattr(time, "monotonic", time.clock)
 try:
 	BlockingIOError
 except NameError:
-	class BlockingIOError(object): pass
+	class BlockingIOError(BaseException): pass
 
 # Import StringIO
 if isIronPython and isPy2Compat:
