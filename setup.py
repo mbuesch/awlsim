@@ -70,7 +70,7 @@ def pyCythonPatch(toFile, fromFile):
 		stripLine = line.strip()
 
 		if not stripLine.endswith("#<no-cython-patch"):
-			# Uncomment all lines containing <cython>
+			# Uncomment all lines containing #@cy
 			if "#@cy" in stripLine:
 				line = line.replace("#@cy", "")
 				if line.startswith("#"):
@@ -85,7 +85,7 @@ def pyCythonPatch(toFile, fromFile):
 				else:
 					line = line.replace("def", "cdef")
 
-			# Comment all lines containing <no-cython>
+			# Comment all lines containing #@nocy
 			if "#@nocy" in stripLine:
 				line = "#" + line
 
