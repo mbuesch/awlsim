@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,14 +33,20 @@ class AwlInsn_SLEEP(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
-		msecs = self.cpu.fetch(self.ops[0])
+		sleepMsecs = self.cpu.fetch(self.ops[0])
+		sleepSecs = sleepMsecs / 1000.0
 
-		if float(msecs) / 1000 >= self.cpu.cycleTimeLimit:
+		if sleepSecs >= self.cpu.cycleTimeLimit:
 			raise AwlSimError("__SLEEP time exceed cycle time limit")
 
-		while msecs > 0:
-			m = min(50, msecs)
-			time.sleep(float(m) / 1000)
+		self.cpu.updateTimestamp()
+		start = self.cpu.now
+		while 1:
 			self.cpu.updateTimestamp()
-			self.cpu.requestScreenUpdate()
-			msecs -= m
+			slept = self.cpu.now - start
+			remaining = sleepSecs - slept
+			if remaining <= 0.0:
+				break
+			if remaining >= 0.1:
+				self.cpu.requestScreenUpdate()
+				time.sleep(0.05)
