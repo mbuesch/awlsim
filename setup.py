@@ -18,7 +18,7 @@ except ImportError as e:
 	py2exe = None
 
 
-def makedirs(path, mode):
+def makedirs(path, mode=0o755):
 	try:
 		os.makedirs(path, mode)
 	except OSError as e:
@@ -55,6 +55,7 @@ def makeDummyFile(path):
 	if os.path.isfile(path):
 		return
 	print("creating dummy file '%s'" % path)
+	makedirs(os.path.dirname(path))
 	fd = open(path, "w")
 	fd.write("\n")
 	fd.close()
@@ -124,7 +125,7 @@ cythonBuildUnits = []
 
 def patchCythonModules():
 	for unit in cythonBuildUnits:
-		makedirs(unit.toDir, 0o755)
+		makedirs(unit.toDir)
 		if unit.baseName == "__init__":
 			# Make a dummy-__init__.py(x)
 			makeDummyFile(unit.toPyx)
