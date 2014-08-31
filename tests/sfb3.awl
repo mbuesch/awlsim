@@ -28,7 +28,7 @@ BEGIN
 
 	CALL	SFB 3, DB 1 (
 		IN	:= FALSE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
@@ -45,7 +45,7 @@ BEGIN
 
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
@@ -60,18 +60,18 @@ BEGIN
 	L		DB1.DBD 18	// ATIME
 	__ASSERT>=	__ACCU 1,	__ACCU 2
 
-	__SLEEP		90
+	__SLEEP		400
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 	L		MD 2
-	__ASSERT>	__ACCU 1,	80
-	__ASSERT<	__ACCU 1,	100
+	__ASSERT>	__ACCU 1,	400
+	__ASSERT<	__ACCU 1,	500
 	L		DB1.DBB 12	// STATE
 	__ASSERT==	__ACCU 1,	1
 	L		DB1.DBD 14	// STIME
@@ -79,17 +79,17 @@ BEGIN
 	L		DB1.DBD 18	// ATIME
 	__ASSERT>=	__ACCU 1,	__ACCU 2
 
-	__SLEEP		11
+	__SLEEP		250
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
-	__ASSERT==	__ACCU 1,	100
+	__ASSERT==	__ACCU 1,	500
 	L		DB1.DBB 12	// STATE
 	__ASSERT==	__ACCU 1,	2
 	L		DB1.DBD 14	// STIME
@@ -99,7 +99,7 @@ BEGIN
 
 	CALL	SFB 3, DB 1 (
 		IN	:= FALSE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
@@ -118,7 +118,7 @@ BEGIN
 	// Test: Interrupt IN before time elapsed
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
@@ -133,18 +133,18 @@ BEGIN
 	L		DB1.DBD 18	// ATIME
 	__ASSERT>=	__ACCU 1,	__ACCU 2
 
-	__SLEEP		40
+	__SLEEP		100
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 	L		MD 2
-	__ASSERT>	__ACCU 1,	30
-	__ASSERT<	__ACCU 1,	50
+	__ASSERT>	__ACCU 1,	50
+	__ASSERT<	__ACCU 1,	150
 	L		DB1.DBB 12	// STATE
 	__ASSERT==	__ACCU 1,	1
 	L		DB1.DBD 14	// STIME
@@ -152,18 +152,18 @@ BEGIN
 	L		DB1.DBD 18	// ATIME
 	__ASSERT>=	__ACCU 1,	__ACCU 2
 
-	__SLEEP		40
+	__SLEEP		100
 	CALL	SFB 3, DB 1 (
 		IN	:= FALSE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 	L		MD 2
-	__ASSERT>	__ACCU 1,	70
-	__ASSERT<	__ACCU 1,	90
+	__ASSERT>	__ACCU 1,	150
+	__ASSERT<	__ACCU 1,	250
 	L		DB1.DBB 12	// STATE
 	__ASSERT==	__ACCU 1,	1
 	L		DB1.DBD 14	// STIME
@@ -171,10 +171,10 @@ BEGIN
 	L		DB1.DBD 18	// ATIME
 	__ASSERT>=	__ACCU 1,	__ACCU 2
 
-	__SLEEP		21
+	__SLEEP		500
 	CALL	SFB 3, DB 1 (
 		IN	:= FALSE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
@@ -193,7 +193,7 @@ BEGIN
 	// Test: Change PT while running
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
@@ -208,18 +208,18 @@ BEGIN
 	L		DB1.DBD 18	// ATIME
 	__ASSERT>=	__ACCU 1,	__ACCU 2
 
-	__SLEEP		40
+	__SLEEP		100
 	CALL	SFB 3, DB 1 (
 		IN	:= TRUE,
-		PT	:= T#100MS,
+		PT	:= T#500MS,
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 	L		MD 2
-	__ASSERT>	__ACCU 1,	30
-	__ASSERT<	__ACCU 1,	50
+	__ASSERT>	__ACCU 1,	50
+	__ASSERT<	__ACCU 1,	150
 	L		DB1.DBB 12	// STATE
 	__ASSERT==	__ACCU 1,	1
 	L		DB1.DBD 14	// STIME
