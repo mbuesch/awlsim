@@ -100,6 +100,9 @@ def pyCythonPatch(toFile, fromFile):
 			line = re.sub(r'\bint64_t\b', "signed long long", line)
 			line = re.sub(r'\buint64_t\b', "unsigned long long", line)
 
+			# Remove compat stuff
+			line = line.replace("absolute_import,", "")
+
 			# Patch the import statements
 			line = re.sub(r'^from awlsim\.', "from awlsim_cython.", line)
 			line = re.sub(r'^import awlsim\.', "import awlsim_cython.", line)
