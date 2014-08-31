@@ -70,7 +70,7 @@ BEGIN
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 	L		MD 2
-	__ASSERT>	__ACCU 1,	400
+	__ASSERT>=	__ACCU 1,	400
 	__ASSERT<	__ACCU 1,	500
 	L		DB1.DBB 12	// STATE
 	__ASSERT==	__ACCU 1,	1
