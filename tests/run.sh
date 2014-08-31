@@ -210,7 +210,13 @@ warn_skipped()
 # $@=testfiles
 do_tests()
 {
-	for interpreter in "$opt_interpreter" python2 python3 pypy pypy3 jython ipy cython2 cython3; do
+	if [ $opt_quick -eq 0 ]; then
+		local all_interp="python2 python3 pypy pypy3 jython ipy cython2 cython3"
+	else
+		local all_interp="python2 python3"
+	fi
+
+	for interpreter in "$opt_interpreter" $all_interp; do
 		[ -z "$interpreter" ] && continue
 
 		if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
@@ -265,11 +271,8 @@ do_tests()
 
 		[ -n "$opt_interpreter" ] && break
 	done
-	if [ $global_retval -eq 0 ]; then
-		echo "All tests succeeded"
-	else
-		echo "Some tests FAILED"
-	fi
+	[ $global_retval -eq 0 ] && echo -n "All tests succeeded" || echo -n "Some tests FAILED"
+	[ $opt_quick -eq 0 ] && echo " (full run)" || echo " (quick run)"
 }
 
 show_help()
@@ -281,6 +284,7 @@ show_help()
 	echo "Options:"
 	echo " -i|--interpreter INTER        Use INTER as interpreter for the tests"
 	echo " -s|--softfail                 Do not abort on single test failures"
+	echo " -q|--quick                    Only run python2 and python3 tests"
 }
 
 trap cleanup_and_exit INT TERM
@@ -289,6 +293,7 @@ test_time_file="$(mktemp --tmpdir=/tmp awlsim-test-time.XXXXXX)"
 
 opt_interpreter=
 opt_softfail=0
+opt_quick=0
 
 while [ $# -ge 1 ]; do
 	[ "$(echo "$1" | cut -c1)" != "-" ] && break
@@ -306,6 +311,9 @@ while [ $# -ge 1 ]; do
 		;;
 	-s|--softfail)
 		opt_softfail=1
+		;;
+	-q|--quick)
+		opt_quick=1
 		;;
 	*)
 		echo "Unknown option: $1"
