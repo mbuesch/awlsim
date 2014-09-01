@@ -205,8 +205,14 @@ class AwlSim(object):
 		'name' is the name of the module to load (without 'awlsimhw_' prefix).
 		Returns the HardwareInterface class."""
 
+		import awlsim.cython_helper as cython_helper
+
 		# Construct the python module name
-		moduleName = "awlsimhw_%s" % name
+		if cython_helper.shouldUseCython():
+			moduleName = "awlsimhw_%s_cython" % name
+		else:
+			moduleName = "awlsimhw_%s" % name
+
 		# Try to import the module
 		try:
 			mod = importlib.import_module(moduleName)

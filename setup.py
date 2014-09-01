@@ -42,6 +42,7 @@ def __fileopIfChanged(fromFile, toFile, fileop):
 		fromFileHash = hashFile(fromFile)
 		if toFileHash == fromFileHash:
 			return False
+	makedirs(os.path.dirname(toFile))
 	fileop(fromFile, toFile)
 	return True
 
@@ -51,61 +52,59 @@ def copyIfChanged(fromFile, toFile):
 def moveIfChanged(fromFile, toFile):
 	return __fileopIfChanged(fromFile, toFile, os.rename)
 
-def makeDummyFile(path):
-	if os.path.isfile(path):
-		return
-	print("creating dummy file '%s'" % path)
-	makedirs(os.path.dirname(path))
-	fd = open(path, "w")
-	fd.write("\n")
-	fd.close()
-
-def pyCythonPatch(toFile, fromFile):
+def pyCythonPatch(fromFile, toFile, patchImportsOnly=False):
 	print("cython-patch: patching file '%s' to '%s'" %\
 	      (fromFile, toFile))
 	tmpFile = toFile + ".TMP"
+	makedirs(os.path.dirname(tmpFile))
 	infd = open(fromFile, "r")
 	outfd = open(tmpFile, "w")
 	for line in infd.readlines():
 		stripLine = line.strip()
 
-		if not stripLine.endswith("#<no-cython-patch"):
-			# Uncomment all lines containing #@cy
-			if "#@cy" in stripLine:
-				line = line.replace("#@cy", "")
-				if line.startswith("#"):
-					line = line[1:]
-				if not line.endswith("\n"):
-					line += "\n"
+		if stripLine.endswith("#<no-cython-patch"):
+			outfd.write(line)
+			continue
 
-			# Sprinkle magic cdef, as requested by #+cdef
-			if "#+cdef" in stripLine:
-				if stripLine.startswith("class"):
-					line = line.replace("class", "cdef class")
-				else:
-					line = line.replace("def", "cdef")
+		# Patch the import statements
+		line = re.sub(r'^(\s*from awlsim[0-9a-zA-Z_]*)\.', r'\1_cython.', line)
+		line = re.sub(r'^(\s*import awlsim[0-9a-zA-Z_]*)\.', r'\1_cython.', line)
+		if patchImportsOnly:
+			outfd.write(line)
+			continue
 
-			# Comment all lines containing #@nocy
-			if "#@nocy" in stripLine:
-				line = "#" + line
+		# Uncomment all lines containing #@cy
+		if "#@cy" in stripLine:
+			line = line.replace("#@cy", "")
+			if line.startswith("#"):
+				line = line[1:]
+			if not line.endswith("\n"):
+				line += "\n"
 
-			# Automagic types
-			line = re.sub(r'\b_Bool\b', "bint", line)
-			line = re.sub(r'\bint8_t\b', "signed char", line)
-			line = re.sub(r'\buint8_t\b', "unsigned char", line)
-			line = re.sub(r'\bint16_t\b', "signed short", line)
-			line = re.sub(r'\buint16_t\b', "unsigned short", line)
-			line = re.sub(r'\bint32_t\b', "signed int", line)
-			line = re.sub(r'\buint32_t\b', "unsigned int", line)
-			line = re.sub(r'\bint64_t\b', "signed long long", line)
-			line = re.sub(r'\buint64_t\b', "unsigned long long", line)
+		# Sprinkle magic cdef, as requested by #+cdef
+		if "#+cdef" in stripLine:
+			if stripLine.startswith("class"):
+				line = line.replace("class", "cdef class")
+			else:
+				line = line.replace("def", "cdef")
 
-			# Remove compat stuff
-			line = line.replace("absolute_import,", "")
+		# Comment all lines containing #@nocy
+		if "#@nocy" in stripLine:
+			line = "#" + line
 
-			# Patch the import statements
-			line = re.sub(r'^from awlsim\.', "from awlsim_cython.", line)
-			line = re.sub(r'^import awlsim\.', "import awlsim_cython.", line)
+		# Automagic types
+		line = re.sub(r'\b_Bool\b', "bint", line)
+		line = re.sub(r'\bint8_t\b', "signed char", line)
+		line = re.sub(r'\buint8_t\b', "unsigned char", line)
+		line = re.sub(r'\bint16_t\b', "signed short", line)
+		line = re.sub(r'\buint16_t\b', "unsigned short", line)
+		line = re.sub(r'\bint32_t\b', "signed int", line)
+		line = re.sub(r'\buint32_t\b', "unsigned int", line)
+		line = re.sub(r'\bint64_t\b', "signed long long", line)
+		line = re.sub(r'\buint64_t\b', "unsigned long long", line)
+
+		# Remove compat stuff
+		line = line.replace("absolute_import,", "")
 
 		outfd.write(line)
 	infd.close()
@@ -116,7 +115,8 @@ def pyCythonPatch(toFile, fromFile):
 		os.unlink(tmpFile)
 
 class CythonBuildUnit(object):
-	def __init__(self, baseName, fromPy, fromPxd, toDir, toPyx, toPxd):
+	def __init__(self, cyModName, baseName, fromPy, fromPxd, toDir, toPyx, toPxd):
+		self.cyModName = cyModName
 		self.baseName = baseName
 		self.fromPy = fromPy
 		self.fromPxd = fromPxd
@@ -126,16 +126,17 @@ class CythonBuildUnit(object):
 
 cythonBuildUnits = []
 
-def patchCythonModules():
+def patchCythonModules(buildDir):
 	for unit in cythonBuildUnits:
 		makedirs(unit.toDir)
 		if unit.baseName == "__init__":
-			# Make a dummy-__init__.py(x)
-			makeDummyFile(unit.toPyx)
-			makeDummyFile(os.path.join(unit.toDir, "__init__.py"))
+			# Copy and patch the package __init__.py
+			toPy = os.path.join(buildDir, *unit.cyModName.split(".")) + ".py"
+			pyCythonPatch(unit.fromPy, toPy,
+				      patchImportsOnly=True)
 		else:
 			# Generate the .pyx
-			pyCythonPatch(unit.toPyx, unit.fromPy)
+			pyCythonPatch(unit.fromPy, unit.toPyx)
 		# Copy the .pxd, if any
 		if os.path.isfile(unit.fromPxd):
 			print("copying pxd file from '%s' to '%s'..." %\
@@ -143,19 +144,20 @@ def patchCythonModules():
 			if not copyIfChanged(unit.fromPxd, unit.toPxd):
 				print("(already up to date)")
 
-def registerCythonModules():
+def registerCythonModule(baseDir, sourceModName):
 	global ext_modules
 	global cythonBuildUnits
 
-	modDir = os.path.join(os.curdir, "awlsim")
+	modDir = os.path.join(baseDir, sourceModName)
 	# Make path to the cython patch-build-dir
-	cythonBuildDir = os.path.join(os.curdir, "build", "awlsim_cython-patched.%s-%s-%d.%d" %\
-		(platform.system().lower(),
+	cythonBuildDir = os.path.join(baseDir, "build", "%s_cython-patched.%s-%s-%d.%d" %\
+		(sourceModName,
+		 platform.system().lower(),
 		 platform.machine().lower(),
 		 sys.version_info[0], sys.version_info[1])
 	)
 
-	if not os.path.exists(os.path.join(os.curdir, "setup.py")) or\
+	if not os.path.exists(os.path.join(baseDir, "setup.py")) or\
 	   not os.path.exists(modDir) or\
 	   not os.path.isdir(modDir):
 		raise Exception("Wrong directory. "
@@ -164,36 +166,47 @@ def registerCythonModules():
 	# Walk the "awlsim" module
 	for dirpath, dirnames, filenames in os.walk(modDir):
 		subpath = os.path.relpath(dirpath, modDir)
-		if subpath == os.curdir:
+		if subpath == baseDir:
 			subpath = ""
 
 		if subpath.startswith("gui"):
 			continue
 		for filename in filenames:
-			if filename.endswith(".py"):
-				baseName = filename[:-3] # Strip .py
+			if not filename.endswith(".py"):
+				continue
+			baseName = filename[:-3] # Strip .py
 
-				fromPy = os.path.join(dirpath, baseName + ".py")
-				fromPxd = os.path.join(dirpath, baseName + ".pxd")
-				toDir = os.path.join(cythonBuildDir, subpath)
-				toPyx = os.path.join(toDir, baseName + ".pyx")
-				toPxd = os.path.join(toDir, baseName + ".pxd")
+			fromPy = os.path.join(dirpath, baseName + ".py")
+			fromPxd = os.path.join(dirpath, baseName + ".pxd")
+			toDir = os.path.join(cythonBuildDir, subpath)
+			toPyx = os.path.join(toDir, baseName + ".pyx")
+			toPxd = os.path.join(toDir, baseName + ".pxd")
 
-				# Remember the filenames for the build
-				unit = CythonBuildUnit(baseName, fromPy, fromPxd, toDir, toPyx, toPxd)
-				cythonBuildUnits.append(unit)
+			# Construct the new cython module name
+			cyModName = [ "%s_cython" % sourceModName ]
+			if subpath:
+				cyModName.extend(subpath.split(os.sep))
+			cyModName.append(baseName)
+			cyModName = ".".join(cyModName)
 
-				# Construct the new cython module name
-				modname = [ "awlsim_cython" ]
-				if subpath:
-					modname.extend(subpath.split(os.sep))
-				modname.append(baseName)
-				modname = ".".join(modname)
+			# Remember the filenames for the build
+			unit = CythonBuildUnit(cyModName, baseName, fromPy, fromPxd,
+					       toDir, toPyx, toPxd)
+			cythonBuildUnits.append(unit)
 
+			if baseName != "__init__":
 				# Create a distutils Extension for the module
 				ext_modules.append(
-					Extension(modname, [toPyx])
+					Extension(cyModName, [toPyx])
 				)
+
+def registerCythonModules():
+	baseDir = os.curdir # Base directory, where setup.py lives.
+
+	for filename in os.listdir(baseDir):
+		if filename == "awlsim" or\
+		   filename.startswith("awlsimhw_"):
+			registerCythonModule(baseDir, filename)
 
 def tryBuildCythonModules():
 	try:
@@ -221,16 +234,14 @@ def tryBuildCythonModules():
 
 	class MyCythonBuildExt(Cython_build_ext):
 		def build_extension(self, ext):
-			if ext.name.endswith("__init__"):
-				toPy = os.path.join(self.build_lib, *ext.name.split('.')) + ".py"
-				makeDummyFile(toPy)
-			else:
-				Cython_build_ext.build_extension(self, ext)
+			assert(not ext.name.endswith("__init__"))
+			Cython_build_ext.build_extension(self, ext)
 
 		def build_extensions(self):
 			# First patch the files, the run the normal build
-			patchCythonModules()
+			patchCythonModules(self.build_lib)
 			Cython_build_ext.build_extensions(self)
+
 	cmdclass["build_ext"] = MyCythonBuildExt
 	registerCythonModules()
 
