@@ -120,13 +120,13 @@ class HardwareInterface(AbstractHardwareInterface):
 			self.slaveList = self.master.getSlaveList()
 			self.cachedInputs = [None] * len(self.slaveList)
 		except self.PHY.PhyError as e:
-			self.raiseException("PHY error: %s" % str(e))
+			self.raiseException("Profibus-PHY error: %s" % str(e))
 			self.__cleanup()
 		except self.DP.DpError as e:
 			self.raiseException("Profibus-DP error: %s" % str(e))
 			self.__cleanup()
 		except self.FDL.FdlError as e:
-			self.raiseException("Fieldbug Data Link error: %s" % str(e))
+			self.raiseException("Profibus-FDL error: %s" % str(e))
 			self.__cleanup()
 
 	def doShutdown(self):
