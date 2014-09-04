@@ -22,13 +22,15 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.dynattrs import *
+#from awlsim.core.dynattrs cimport * #@cy
+
+from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
 from awlsim.core.timers import *
 from awlsim.core.datatypehelpers import *
 
 
-class AwlOffset(DynAttrs):
+class AwlOffset(DynAttrs): #+cdef
 	"Memory area offset"
 
 	dynAttrs = {

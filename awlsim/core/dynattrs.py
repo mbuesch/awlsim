@@ -22,8 +22,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+#from awlsim.core.dynattrs cimport * #@cy
 
-class DynAttrs(object):
+
+class DynAttrs(object): #+cdef
 	"""Dynamic attributes base class.
 	The specified attributes are automatically initialized
 	to their initial values on the first read access."""
@@ -44,4 +46,4 @@ class DynAttrs(object):
 			setattr(self, name, value)
 			return value
 		# Fail for all other attributes
-		raise AttributeError
+		raise AttributeError(name)

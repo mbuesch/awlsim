@@ -26,6 +26,9 @@ import time
 import datetime
 import random
 
+#from awlsim.core.dynattrs cimport * #@cy
+#from awlsim.core.statusword cimport * #@cy
+
 from awlsim.core.cpuspecs import *
 from awlsim.core.parser import *
 from awlsim.core.symbolparser import *
@@ -38,7 +41,7 @@ from awlsim.core.insntrans import *
 from awlsim.core.optrans import *
 from awlsim.core.blocks import *
 from awlsim.core.datablocks import *
-from awlsim.core.statusword import *
+from awlsim.core.statusword import * #@nocy
 from awlsim.core.labels import *
 from awlsim.core.timers import *
 from awlsim.core.counters import *

@@ -22,14 +22,16 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.dynattrs import *
+#from awlsim.core.dynattrs cimport * #@cy
+#from awlsim.core.statusword cimport * #@cy
+
+from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
 from awlsim.core.datatypehelpers import *
 from awlsim.core.cpuspecs import *
 
 
-class S7StatusWord(DynAttrs): #@nocy
-#cdef class S7StatusWord(object): #@cy
+class S7StatusWord(DynAttrs): #+cdef
 	"""STEP 7 status word
 	The instance of this class holds the following nine
 	attributes. One for each STW bit:
@@ -76,16 +78,6 @@ class S7StatusWord(DynAttrs): #@nocy
 		"A1"	: 0,
 		"BIE"	: 0,
 	}
-
-#@cy	cdef public _Bool NER
-#@cy	cdef public _Bool VKE
-#@cy	cdef public _Bool STA
-#@cy	cdef public _Bool OR
-#@cy	cdef public _Bool OS
-#@cy	cdef public _Bool OV
-#@cy	cdef public _Bool A0
-#@cy	cdef public _Bool A1
-#@cy	cdef public _Bool BIE
 
 	@classmethod
 	def getBitnrByName(cls, name, mnemonics):
@@ -176,7 +168,8 @@ class S7StatusWord(DynAttrs): #@nocy
 		new.BIE = self.BIE
 		return new
 
-	def setForFloatingPoint(self, pyFloat):
+	def setForFloatingPoint(self, pyFloat): #@nocy
+#@cy	cpdef setForFloatingPoint(self, pyFloat):
 		dword = pyFloatToDWord(pyFloat)
 		dwordNoSign = dword & 0x7FFFFFFF
 		if isDenormalPyFloat(pyFloat) or\

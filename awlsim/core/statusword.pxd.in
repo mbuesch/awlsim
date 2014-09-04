@@ -1,0 +1,18 @@
+from awlsim.core.dynattrs cimport *
+
+
+cdef class S7StatusWord(DynAttrs):
+	cdef public _Bool NER
+	cdef public _Bool VKE
+	cdef public _Bool STA
+	cdef public _Bool OR
+	cdef public _Bool OS
+	cdef public _Bool OV
+	cdef public _Bool A0
+	cdef public _Bool A1
+	cdef public _Bool BIE
+
+	cpdef uint16_t getWord(self)
+	cpdef setWord(self, uint16_t word)
+	cpdef dup(self)
+	cpdef setForFloatingPoint(self, pyFloat)

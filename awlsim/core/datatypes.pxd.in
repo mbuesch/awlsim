@@ -1,0 +1,10 @@
+from awlsim.core.dynattrs cimport *
+
+cdef class AwlOffset(DynAttrs):
+	cdef public object byteOffset
+	cdef public object bitOffset
+
+	cdef public object dbNumber
+	cdef public object dbName
+	cdef public object varName
+	cdef public object indices
