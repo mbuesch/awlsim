@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_BTI(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_BTI(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		accu1 = self.cpu.accu1.get()
 		bcd = accu1 & 0xFFF
 		a, b, c = (bcd & 0xF), ((bcd >> 4) & 0xF), ((bcd >> 8) & 0xF)

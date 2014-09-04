@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_DTR(AwlInsn):
@@ -32,5 +32,7 @@ class AwlInsn_DTR(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		accu1 = self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setPyFloat(float(accu1))

@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_NEGR(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_NEGR(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		accu1 = -(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.statusWord.setForFloatingPoint(accu1)

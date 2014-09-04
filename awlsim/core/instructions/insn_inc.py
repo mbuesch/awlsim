@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_INC(AwlInsn):
@@ -33,5 +33,7 @@ class AwlInsn_INC(AwlInsn):
 		self.ops[0].assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() +\
 				       self.ops[0].value)

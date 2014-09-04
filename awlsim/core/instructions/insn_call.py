@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_AbstractCall(AwlInsn):
@@ -161,6 +161,8 @@ class AwlInsn_CC(AwlInsn_AbstractCall):
 		self.assertOpCount(1)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		if s.VKE:
 			self.cpu.run_CALL(self.ops[0], None, (), True)
@@ -172,6 +174,8 @@ class AwlInsn_UC(AwlInsn_AbstractCall):
 		self.assertOpCount(1)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		self.cpu.run_CALL(self.ops[0], None, (), True)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0

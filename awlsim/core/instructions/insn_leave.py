@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_LEAVE(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_LEAVE(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		if not self.cpu.is4accu:
 			raise AwlSimError("LEAVE not supported on 2-accu CPU")
 		self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())

@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_LOOP(AwlInsn):
@@ -34,6 +34,8 @@ class AwlInsn_LOOP(AwlInsn):
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF
 		self.cpu.accu1.setWord(accu1l)

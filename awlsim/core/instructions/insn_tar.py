@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_TAR(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_TAR(AwlInsn):
 		self.assertOpCount(0)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		oldAr1 = self.cpu.ar1.get()
 		self.cpu.ar1.set(self.cpu.ar2.get())
 		self.cpu.ar2.set(oldAr1)

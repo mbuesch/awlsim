@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_GENERIC_CALL(AwlInsn):
@@ -35,6 +35,8 @@ class AwlInsn_GENERIC_CALL(AwlInsn):
 		self.callback = callback
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		try:
 			self.callback()
 		except AwlSimError as e:

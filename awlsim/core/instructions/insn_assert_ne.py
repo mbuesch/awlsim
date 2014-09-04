@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_ASSERT_NE(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_ASSERT_NE(AwlInsn):
 		self.assertOpCount(2)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		val0 = self.cpu.fetch(self.ops[0])
 		val1 = self.cpu.fetch(self.ops[1])

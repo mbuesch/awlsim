@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_FEATURE(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_FEATURE(AwlInsn):
 		self.assertOpCount((1, 2))
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		target = self.cpu.fetch(self.ops[0])
 		value = None
 		if len(self.ops) >= 2:

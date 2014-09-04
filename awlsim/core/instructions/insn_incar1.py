@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_INCAR1(AwlInsn):
@@ -34,6 +34,8 @@ class AwlInsn_INCAR1(AwlInsn):
 			self.ops[0].assertType(AwlOperator.IMM_PTR)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		ar = self.cpu.ar1.get()
 		if self.ops:
 			ar = (ar & 0xFF000000) |\

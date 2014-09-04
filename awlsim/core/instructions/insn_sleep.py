@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 import time
 
@@ -34,6 +34,8 @@ class AwlInsn_SLEEP(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		sleepMsecs = self.cpu.fetch(self.ops[0])
 		sleepSecs = sleepMsecs / 1000.0
 

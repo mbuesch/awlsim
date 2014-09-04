@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_LC(AwlInsn):
@@ -32,6 +32,8 @@ class AwlInsn_LC(AwlInsn):
 		self.assertOpCount(1)
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		#FIXME check whether operator is valid for LC
 		self.cpu.accu2.copyFrom(self.cpu.accu1)
 		# fetch() does the BCD conversion for us

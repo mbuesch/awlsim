@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.core.compat import *
 
 from awlsim.core.instructions.main import *
-#from awlsim.core.instructions.main cimport *
+#from awlsim.core.instructions.main cimport * #@cy
 
 
 class AwlInsn_BEND(AwlInsn):
@@ -82,6 +82,8 @@ class AwlInsn_BEND(AwlInsn):
 	}
 
 	def run(self):
+#@cy		cdef S7StatusWord s
+
 		try:
 			pse = self.cpu.callStackTop.parenStack.pop()
 		except IndexError as e:
