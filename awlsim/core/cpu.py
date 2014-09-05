@@ -26,6 +26,7 @@ import time
 import datetime
 import random
 
+#from awlsim.core.cpu cimport * #@cy
 #from awlsim.core.dynattrs cimport * #@cy
 #from awlsim.core.statusword cimport * #@cy
 #from awlsim.core.instructions.all_insns cimport * #@cy
@@ -82,7 +83,7 @@ class McrStackElem(object):
 
 	__nonzero__ = __bool__
 
-class S7CPU(object):
+class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
 	def __init__(self):

@@ -1,0 +1,70 @@
+from awlsim.core.statusword cimport *
+
+
+cdef class S7CPU(object):
+	cdef public object cbCycleExit
+	cdef public object cbCycleExitData
+	cdef public object cbBlockExit
+	cdef public object cbBlockExitData
+	cdef public object cbPostInsn
+	cdef public object cbPostInsnData
+	cdef public object cbPeripheralRead
+	cdef public object cbPeripheralReadData
+	cdef public object cbPeripheralWrite
+	cdef public object cbPeripheralWriteData
+	cdef public object cbScreenUpdate
+	cdef public object cbScreenUpdateData
+
+	cdef public double now
+	cdef public object specs
+	cdef public double cycleTimeLimit
+	cdef public object __runtimeLimit
+	cdef public object symbolTable
+	cdef public bint is4accu
+	cdef public bint __obTempPresetsEnabled
+	cdef public bint __extendedInsnsEnabled
+	cdef public bint mcrActive
+
+	cdef public dict dbs
+	cdef public dict obs
+	cdef public dict obTempPresetHandlers
+	cdef public dict fcs
+	cdef public dict fbs
+	cdef public dict sfcs
+	cdef public dict sfbs
+
+	cdef public object accu1
+	cdef public object accu2
+	cdef public object accu3
+	cdef public object accu4
+	cdef public list timers
+	cdef public list counters
+	cdef public object flags
+	cdef public object inputs
+	cdef public object outputs
+	cdef public object ar1
+	cdef public object ar2
+	cdef public object dbRegister
+	cdef public object diRegister
+	cdef public list callStack
+	cdef public object callStackTop
+	cdef public list mcrStack
+	cdef public S7StatusWord statusWord
+	cdef public object __clockMemByteOffset
+	cdef public double __nextClockMemTime
+	cdef public uint32_t __clockMemCount
+	cdef public uint32_t __clockMemCountLCM
+	cdef public int32_t relativeJump
+
+	cdef public uint32_t __insnCount
+	cdef public uint32_t __cycleCount
+	cdef public double insnPerSecond
+	cdef public double avgInsnPerCycle
+	cdef public double cycleStartTime
+	cdef public double minCycleTime
+	cdef public double maxCycleTime
+	cdef public double avgCycleTime
+	cdef public double startupTime
+	cdef public double __speedMeasureStartTime
+	cdef public uint32_t __speedMeasureStartInsnCount
+	cdef public uint32_t __speedMeasureStartCycleCount
