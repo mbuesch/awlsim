@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,12 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.instructions.main import *
+from awlsim.core.instructions.main import * #@nocy
+from awlsim.core.operators import *
 #from awlsim.core.instructions.main cimport * #@cy
 
 
-class AwlInsn_AbstractCall(AwlInsn):
+class AwlInsn_AbstractCall(AwlInsn): #+cdef
 	def staticSanityChecks(self):
 		if len(self.ops) == 1:
 			# "CALL FC/SFC" or "UC/CC FC/SFC/FB/SFB"
@@ -46,7 +47,7 @@ class AwlInsn_AbstractCall(AwlInsn):
 						blockOper.value.byteOffset,
 						rawInsn = self.rawInsn)
 			elif blockOper.type == AwlOperator.BLKREF_FB:
-				if self.type == AwlInsn.TYPE_CALL:
+				if self.insnType == AwlInsn.TYPE_CALL:
 					raise AwlSimError("Missing DB in function "
 						"block call",
 						rawInsn = self.rawInsn)
@@ -56,7 +57,7 @@ class AwlInsn_AbstractCall(AwlInsn):
 					raise AwlSimError("Called FB not found",
 						rawInsn = self.rawInsn)
 			elif blockOper.type == AwlOperator.BLKREF_SFB:
-				if self.type == AwlInsn.TYPE_CALL:
+				if self.insnType == AwlInsn.TYPE_CALL:
 					raise AwlSimError("Missing DB in system function "
 						"block call",
 						rawInsn = self.rawInsn)
@@ -73,7 +74,7 @@ class AwlInsn_AbstractCall(AwlInsn):
 				raise AwlSimError("Invalid CALL operand",
 					rawInsn = self.rawInsn)
 
-			if self.type == AwlInsn.TYPE_CALL and\
+			if self.insnType == AwlInsn.TYPE_CALL and\
 			   codeBlock and\
 			   codeBlock.interface.interfaceFieldCount != len(self.params):
 				raise AwlSimError("Call interface mismatch. "
@@ -135,27 +136,37 @@ class AwlInsn_AbstractCall(AwlInsn):
 		else:
 			assert(0)
 
-class AwlInsn_CALL(AwlInsn_AbstractCall):
+class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 	def __init__(self, cpu, rawInsn):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn)
 		self.assertOpCount((1,2))
 
-		if len(self.ops) == 1:
-			self.run = self.__run_CALL_FC
-		else:
-			self.run = self.__run_CALL_FB
+		if len(self.ops) == 1:			#@nocy
+			self.run = self.__run_CALL_FC	#@nocy
+		else:					#@nocy
+			self.run = self.__run_CALL_FB	#@nocy
 
-	def __run_CALL_FC(self):
+	def __run_CALL_FC(self): #+cdef
+#@cy		cdef S7StatusWord s
+
 		self.cpu.run_CALL(self.ops[0], None, self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
-	def __run_CALL_FB(self):
+	def __run_CALL_FB(self): #+cdef
+#@cy		cdef S7StatusWord s
+
 		self.cpu.run_CALL(self.ops[0], self.ops[1], self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
-class AwlInsn_CC(AwlInsn_AbstractCall):
+#@cy	def run(self):
+#@cy		if len(self.ops) == 1:
+#@cy			self.__run_CALL_FC()
+#@cy		else:
+#@cy			self.__run_CALL_FB()
+
+class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 	def __init__(self, cpu, rawInsn):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CC, rawInsn)
 		self.assertOpCount(1)
@@ -168,7 +179,7 @@ class AwlInsn_CC(AwlInsn_AbstractCall):
 			self.cpu.run_CALL(self.ops[0], None, (), True)
 		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
 
-class AwlInsn_UC(AwlInsn_AbstractCall):
+class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
 	def __init__(self, cpu, rawInsn):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_UC, rawInsn)
 		self.assertOpCount(1)

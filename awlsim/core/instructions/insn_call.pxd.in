@@ -1,0 +1,14 @@
+from awlsim.core.instructions.main cimport *
+
+cdef class AwlInsn_AbstractCall(AwlInsn):
+	pass
+
+cdef class AwlInsn_CALL(AwlInsn_AbstractCall):
+	cdef __run_CALL_FC(self)
+	cdef __run_CALL_FB(self)
+
+cdef class AwlInsn_CC(AwlInsn_AbstractCall):
+	pass
+
+cdef class AwlInsn_UC(AwlInsn_AbstractCall):
+	pass

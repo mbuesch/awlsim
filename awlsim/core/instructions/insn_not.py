@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,12 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.instructions.main import *
+from awlsim.core.instructions.main import * #@nocy
+from awlsim.core.operators import *
 #from awlsim.core.instructions.main cimport * #@cy
 
 
-class AwlInsn_NOT(AwlInsn):
+class AwlInsn_NOT(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_NOT, rawInsn)
 		self.assertOpCount(0)

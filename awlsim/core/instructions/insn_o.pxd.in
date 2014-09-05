@@ -1,0 +1,5 @@
+from awlsim.core.instructions.main cimport *
+
+cdef class AwlInsn_O(AwlInsn):
+	cdef __run_withOps(self)
+	cdef __run_noOps(self)

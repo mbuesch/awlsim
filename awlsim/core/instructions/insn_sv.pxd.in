@@ -1,0 +1,4 @@
+from awlsim.core.instructions.main cimport *
+
+cdef class AwlInsn_SV(AwlInsn):
+	pass

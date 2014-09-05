@@ -22,13 +22,14 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.instructions.main import *
+from awlsim.core.instructions.main import * #@nocy
+from awlsim.core.operators import *
 #from awlsim.core.instructions.main cimport * #@cy
 
 import time
 
 
-class AwlInsn_SLEEP(AwlInsn):
+class AwlInsn_SLEEP(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SLEEP, rawInsn)
 		self.assertOpCount(1)

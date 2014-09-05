@@ -28,12 +28,13 @@ import random
 
 #from awlsim.core.dynattrs cimport * #@cy
 #from awlsim.core.statusword cimport * #@cy
+#from awlsim.core.instructions.all_insns cimport * #@cy
 
 from awlsim.core.cpuspecs import *
 from awlsim.core.parser import *
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
-from awlsim.core.instructions.all_insns import *
+from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.systemblocks.system_sfb import *
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.operators import *
@@ -176,8 +177,8 @@ class S7CPU(object):
 		for ip, rawInsn in enumerate(rawInsns):
 			insns.append(self.__translateInsn(rawInsn, ip))
 		# If the last instruction is not BE or BEA, add an implicit BE
-		if not insns or insns[-1].type not in (AwlInsn.TYPE_BE,
-						       AwlInsn.TYPE_BEA):
+		if not insns or insns[-1].insnType not in (AwlInsn.TYPE_BE,
+							   AwlInsn.TYPE_BEA):
 			insns.append(AwlInsn_BE(cpu = self, rawInsn = None))
 		return insns
 
@@ -1222,7 +1223,7 @@ class S7CPU(object):
 		return self.inputs.fetch(operator.value, operator.width)
 
 	def fetchT(self, operator, enforceWidth):
-		insnType = operator.insn.type
+		insnType = operator.insn.insnType
 		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
 			width = 32
 		else:
@@ -1238,7 +1239,7 @@ class S7CPU(object):
 		return timer.get()
 
 	def fetchZ(self, operator, enforceWidth):
-		insnType = operator.insn.type
+		insnType = operator.insn.insnType
 		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
 			width = 32
 		else:

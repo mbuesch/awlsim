@@ -22,7 +22,9 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.instructions.insn_generic_call import *
+#from awlsim.core.instructions.insn_generic_call cimport * #@cy
+
+from awlsim.core.instructions.insn_generic_call import * #@nocy
 from awlsim.core.blocks import *
 
 

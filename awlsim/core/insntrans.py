@@ -21,8 +21,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+#from awlsim.core.instructions.all_insns cimport * #@cy
+
 from awlsim.core.util import *
-from awlsim.core.instructions.all_insns import *
+from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.parser import *
 from awlsim.core.cpuspecs import *
 

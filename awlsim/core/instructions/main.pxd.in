@@ -1,1 +1,9 @@
 from awlsim.core.statusword cimport *
+
+cdef class AwlInsn(object):
+	cdef public object cpu
+	cdef public object insnType
+	cdef public object rawInsn
+	cdef public object ip
+	cdef public object ops
+	cdef public object params

@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-import math
-
 from awlsim.core.util import *
 from awlsim.core.operators import *
 from awlsim.core.optrans import *
@@ -31,7 +29,7 @@ from awlsim.core.parser import *
 from awlsim.core.datatypehelpers import *
 
 
-class AwlInsn(object):
+class AwlInsn(object): #+cdef
 	EnumGen.start
 	TYPE_INVALID		= EnumGen.item
 	TYPE_U			= EnumGen.item	# U
@@ -421,17 +419,17 @@ class AwlInsn(object):
 
 	# Create a name2type dict for english mnemonics using the translation dict.
 	name2type_english = {}
-	for name, type in name2type_german.items():
+	for _name, _insnType in name2type_german.items():
 		try:
-			name = german2english[name]
+			_name = german2english[_name]
 		except KeyError:
 			pass
-		name2type_english[name] = type
+		name2type_english[_name] = _insnType
 	type2name_english = pivotDict(name2type_english)
 
-	def __init__(self, cpu, type, rawInsn):
+	def __init__(self, cpu, insnType, rawInsn):
 		self.cpu = cpu
-		self.type = type
+		self.insnType = insnType
 		self.rawInsn = rawInsn
 		self.ip = None		# Instruction pointer (IP)
 		self.ops = []		# Operators
@@ -485,9 +483,9 @@ class AwlInsn(object):
 		   self.cpu.getSpecs().getMnemonics() == S7CPUSpecs.MNEMONICS_DE:
 			type2name = AwlInsn.type2name_german
 		try:
-			name = type2name[self.type]
+			name = type2name[self.insnType]
 		except KeyError:
-			name = "<unknown type %d>" % self.type
+			name = "<unknown type %d>" % self.insnType
 		ret.append(name)
 		if self.ops:
 			ret.append(" ")

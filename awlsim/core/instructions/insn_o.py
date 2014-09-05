@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,21 +22,24 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
-from awlsim.core.instructions.main import *
+from awlsim.core.instructions.main import * #@nocy
+from awlsim.core.operators import *
 #from awlsim.core.instructions.main cimport * #@cy
 
 
-class AwlInsn_O(AwlInsn):
+class AwlInsn_O(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_O, rawInsn)
 		self.assertOpCount((0, 1))
 
-		if self.ops:
-			self.run = self.__run_withOps
-		else:
-			self.run = self.__run_noOps
+		if self.ops:				#@nocy
+			self.run = self.__run_withOps	#@nocy
+		else:					#@nocy
+			self.run = self.__run_noOps	#@nocy
 
-	def __run_withOps(self):
+	def __run_withOps(self): #+cdef
+#@cy		cdef S7StatusWord s
+
 		s, STA = self.cpu.statusWord,\
 			self.cpu.fetch(self.ops[0], (1,))
 		if s.NER:
@@ -44,7 +47,15 @@ class AwlInsn_O(AwlInsn):
 		else:
 			s.OR, s.STA, s.VKE, s.NER = 0, STA, STA, 1
 
-	def __run_noOps(self):
+	def __run_noOps(self): #+cdef
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		# UND vor ODER
 		s.OR, s.STA, s.NER = s.VKE, 1, 0
+
+#@cy	def run(self):
+#@cy		if self.ops:
+#@cy			self.__run_withOps()
+#@cy		else:
+#@cy			self.__run_noOps()

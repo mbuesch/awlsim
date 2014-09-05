@@ -1,0 +1,4 @@
+from awlsim.core.instructions.main cimport *
+
+cdef class AwlInsn_GENERIC_CALL(AwlInsn):
+	cdef public object callback

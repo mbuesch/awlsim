@@ -24,6 +24,8 @@ from awlsim.core.compat import *
 import math
 import re
 
+#from awlsim.core.statusword cimport * #@cy
+
 from awlsim.core.util import *
 from awlsim.core.operators import *
 from awlsim.core.parameters import *
