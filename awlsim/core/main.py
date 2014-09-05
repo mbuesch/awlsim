@@ -34,7 +34,7 @@ import importlib
 class AwlSim(object):
 	def __init__(self, profileLevel=0):
 		self.__registeredHardware = []
-		self.cpu = S7CPU(self)
+		self.cpu = S7CPU()
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
 		self.cpu.setPeripheralWriteCallback(self.__peripheralWriteCallback)
 

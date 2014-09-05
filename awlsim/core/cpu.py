@@ -85,8 +85,7 @@ class McrStackElem(object):
 class S7CPU(object):
 	"STEP 7 CPU"
 
-	def __init__(self, sim):
-		self.sim = sim
+	def __init__(self):
 		self.specs = S7CPUSpecs(self)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
