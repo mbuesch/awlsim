@@ -431,7 +431,7 @@ class AwlInsn(object): #+cdef
 		self.cpu = cpu
 		self.insnType = insnType
 		self.rawInsn = rawInsn
-		self.ip = None		# Instruction pointer (IP)
+		self.ip = 0		# Instruction pointer (IP)
 		self.ops = []		# Operators
 		self.params = []	# Parameter assignments (for CALL)
 
