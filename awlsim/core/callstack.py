@@ -75,10 +75,6 @@ class CallStackElem(object):
 				# Copy the inbound data into the instance DB
 				# and add the outbound parameters to the list.
 				for param in parameters:
-					#TODO param interface and instanceDB assignments should
-					#     be done at translation time.
-					param.interface, param.instanceDB =\
-						blockInterface, instanceDB
 					if param.isOutbound:
 						# This is an outbound parameter.
 						self.__outboundParams.append(param)
@@ -100,9 +96,6 @@ class CallStackElem(object):
 				#                 the FC interface r-value.
 				self.interfRefs = {}
 				for param in parameters:
-					#TODO param interface assignment should
-					#     be done at translation time.
-					param.interface = blockInterface
 					try:
 						trans = self.__paramTrans[param.rvalueOp.type]
 					except KeyError as e:

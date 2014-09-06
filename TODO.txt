@@ -8,6 +8,3 @@ S7 compatibility:
 - POINTER and DB-pointer immediates
 - ANY pointer
 - Multiinstance
-
-nice to have:
-- Throw an early error, if constant is assigned to FB/FC OUT/INOUT parameter.

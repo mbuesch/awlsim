@@ -35,6 +35,7 @@ from awlsim.core.util import *
 class AwlOperator(DynAttrs):
 	EnumGen.start	# Operator types
 
+	__IMM_START	= EnumGen.item
 	IMM		= EnumGen.item	# Immediate value (constant)
 	IMM_REAL	= EnumGen.item	# Real
 	IMM_S5T		= EnumGen.item	# S5T immediate
@@ -43,6 +44,7 @@ class AwlOperator(DynAttrs):
 	IMM_TOD		= EnumGen.item	# TOD# immediate
 	IMM_DT		= EnumGen.item	# DT# immediate
 	IMM_PTR		= EnumGen.item	# Pointer immediate
+	__IMM_END	= EnumGen.item
 
 	MEM_E		= EnumGen.item	# Input
 	MEM_A		= EnumGen.item	# Output
@@ -200,6 +202,10 @@ class AwlOperator(DynAttrs):
 
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
+
+	def isImmediate(self):
+		return self.type > self.__IMM_START and\
+		       self.type < self.__IMM_END
 
 	def _raiseTypeError(self, actualType, expectedTypes):
 		expectedTypes = [ self.type2str[t] for t in expectedTypes ]

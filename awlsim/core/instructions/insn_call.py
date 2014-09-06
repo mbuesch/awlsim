@@ -135,6 +135,16 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					rawInsn = self.rawInsn)
 		else:
 			assert(0)
+		# Check parameter assignments
+		for param in self.params:
+			if param.isOutbound:
+				if param.rvalueOp.isImmediate():
+					raise AwlSimError("Immediate value assignment '%s' "
+						"to OUTPUT or IN_OUT parameter '%s' is "
+						"not allowed." %\
+						(str(param.rvalueOp),
+						 param.lvalueName),
+						rawInsn = self.rawInsn)
 
 class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 	def __init__(self, cpu, rawInsn):

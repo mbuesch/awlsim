@@ -160,6 +160,66 @@ class S7CPU(object): #+cdef
 					"Force mnemonics to EN or DE to avoid this error.")
 		specs.setDetectedMnemonics(detected)
 
+	# Returns all user defined code blocks (OBs, FBs, FCs)
+	def __allUserCodeBlocks(self):
+		for ob in self.obs.values():
+			yield ob
+		for fb in self.fbs.values():
+			yield fb
+		for fc in self.fcs.values():
+			yield fc
+
+	# Returns all system code blocks (SFBs, SFCs)
+	def __allSystemCodeBlocks(self):
+		for sfb in self.sfbs.values():
+			yield sfb
+		for sfc in self.sfcs.values():
+			yield sfc
+
+	# Finalize call instructions
+	def __finalizeCallInsn(self, insn):
+		if insn.insnType != AwlInsn.TYPE_CALL:
+			return
+
+		# Get the code and DB blocks
+		try:
+			if len(insn.ops) == 1:
+				dataBlock = None
+			elif len(insn.ops) == 2:
+				dataBlockOp = insn.ops[1]
+				if dataBlockOp.type != AwlOperator.BLKREF_DB:
+					raise ValueError
+				dataBlock = self.dbs[dataBlockOp.value.byteOffset]
+			else:
+				assert(0)
+			codeBlockOp = insn.ops[0]
+			if codeBlockOp.type == AwlOperator.BLKREF_FC:
+				codeBlock = self.fcs[codeBlockOp.value.byteOffset]
+			elif codeBlockOp.type == AwlOperator.BLKREF_FB:
+				codeBlock = self.fbs[codeBlockOp.value.byteOffset]
+			elif codeBlockOp.type == AwlOperator.BLKREF_SFC:
+				codeBlock = self.sfcs[codeBlockOp.value.byteOffset]
+			elif codeBlockOp.type == AwlOperator.BLKREF_SFB:
+				codeBlock = self.sfbs[codeBlockOp.value.byteOffset]
+			else:
+				raise ValueError
+		except (KeyError, ValueError) as e:
+			# This error is handled later in call-insn sanity checks
+			return
+
+		# Add interface references to the parameter assignments.
+		for param in insn.params:
+			param.interface = codeBlock.interface
+			param.instanceDB = dataBlock
+
+	def __finalizeCodeBlock(self, block):
+		for insn in block.insns:
+			self.__finalizeCallInsn(insn)
+
+	def __finalizeCodeBlocks(self):
+		for block in self.__allUserCodeBlocks():
+			self.__finalizeCodeBlock(block)
+
 	def __translateInsn(self, rawInsn, ip):
 		ex = None
 		try:
@@ -192,6 +252,8 @@ class S7CPU(object): #+cdef
 	def __translateCodeBlock(self, rawBlock, blockClass):
 		insns = self.__translateInsns(rawBlock.insns)
 		block = blockClass(insns, rawBlock.index)
+
+		# Construct the block interface
 		for rawVar in rawBlock.vars_in:
 			block.interface.addField_IN(self.__translateInterfaceField(rawVar))
 		for rawVar in rawBlock.vars_out:
@@ -460,18 +522,11 @@ class S7CPU(object): #+cdef
 
 	# Resolve all symbols (global and local) on all blocks, as far as possible.
 	def __resolveSymbols(self):
-		for ob in self.obs.values():
-			self.__resolveSymbols_block(ob)
-		for fb in self.fbs.values():
-			self.__resolveSymbols_block(fb)
-		for fc in self.fcs.values():
-			self.__resolveSymbols_block(fc)
-		for sfc in self.sfcs.values():
-			self.__resolveSymbols_block(sfc)
-			sfc.resolveHardwiredSymbols()
-		for sfb in self.sfbs.values():
-			self.__resolveSymbols_block(sfb)
-			sfb.resolveHardwiredSymbols()
+		for block in self.__allUserCodeBlocks():
+			self.__resolveSymbols_block(block)
+		for block in self.__allSystemCodeBlocks():
+			self.__resolveSymbols_block(block)
+			block.resolveHardwiredSymbols()
 
 	# Run static error checks for code block
 	def __staticSanityChecks_block(self, block):
@@ -485,12 +540,8 @@ class S7CPU(object): #+cdef
 		except KeyError:
 			raise AwlSimError("No OB1 defined")
 
-		for ob in self.obs.values():
-			self.__staticSanityChecks_block(ob)
-		for fb in self.fbs.values():
-			self.__staticSanityChecks_block(fb)
-		for fc in self.fcs.values():
-			self.__staticSanityChecks_block(fc)
+		for block in self.__allUserCodeBlocks():
+			self.__staticSanityChecks_block(block)
 
 	def load(self, parseTree):
 		# Mnemonics autodetection
@@ -708,6 +759,8 @@ class S7CPU(object): #+cdef
 	def startup(self):
 		# Resolve symbolic instructions and operators
 		self.__resolveSymbols()
+		# Do some finalizations
+		self.__finalizeCodeBlocks()
 		# Run some static sanity checks on the code
 		self.__staticSanityChecks()
 
