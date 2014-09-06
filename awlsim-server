@@ -3,7 +3,7 @@
 #
 # AWL simulator - Server interface
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,6 +87,11 @@ def main():
 			printInfo("Started awlsim server process (PID: %d)" %\
 				  serverProcess.pid)
 		else:
+			import awlsim.cython_helper
+			if awlsim.cython_helper.shouldUseCython():
+				printInfo("*** Using accelerated CYTHON core "
+					  "(AWLSIMCYTHON environment variable is set)")
+
 			exitCode = AwlSimServer.start(listenHost = opt_listen[0],
 						      listenPort = opt_listen[1],
 						      forkInterpreter = None,
