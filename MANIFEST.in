@@ -11,5 +11,7 @@ graft tests
 graft fake
 graft doc
 
+global-include *.pxd.in
+
 prune build
 prune ./build
