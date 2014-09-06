@@ -68,3 +68,6 @@ cdef class S7CPU(object):
 	cdef public double __speedMeasureStartTime
 	cdef public uint32_t __speedMeasureStartInsnCount
 	cdef public uint32_t __speedMeasureStartCycleCount
+
+	cpdef uint32_t fetch(self, object operator, tuple enforceWidth=*) except *
+	cpdef store(self, object operator, int64_t value, tuple enforceWidth=*)
