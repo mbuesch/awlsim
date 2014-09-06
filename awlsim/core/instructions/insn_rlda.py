@@ -35,13 +35,10 @@ class AwlInsn_RLDA(AwlInsn): #+cdef
 	def run(self):
 #@cy		cdef S7StatusWord s
 
-#FIXME cython: left shift count >= width of type
 		s = self.cpu.statusWord
-		accu1, count = self.cpu.accu1.getDWord(), 1
-		s.A0, s.OV = 0, 0
-		accu1 &= 0xFFFFFFFF
-		accu1 |= (s.A1 & 1) << 32
-		accu1 = ((accu1 << count) | (accu1 >> (33 - count))) & 0x1FFFFFFFF
-		s.A1 = (accu1 >> 32) & 1
-		accu1 &= 0xFFFFFFFF
+		oldA1 = s.A1 & 1
+		accu1 = self.cpu.accu1.getDWord()
+		s.A0, s.A1, s.OV = 0, ((accu1 >> 31) & 1), 0
+		accu1 = (accu1 & 0x7FFFFFFF) << 1
+		accu1 |= oldA1
 		self.cpu.accu1.set(accu1)
