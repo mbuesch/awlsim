@@ -271,8 +271,22 @@ do_tests()
 
 		[ -n "$opt_interpreter" ] && break
 	done
-	[ $global_retval -eq 0 ] && echo -n "All tests succeeded" || echo -n "Some tests FAILED"
-	[ $opt_quick -eq 0 ] && echo " (full run)" || echo " (quick run)"
+
+	# Print summary
+	if [ $global_retval -eq 0 ]; then
+		echo -n "All tests succeeded"
+	else
+		echo -n "Some tests FAILED"
+	fi
+	if [ -n "$opt_interpreter" ]; then
+		echo " (with interpreter '$opt_interpreter')"
+	else
+		if [ $opt_quick -eq 0 ]; then
+			echo " (full run)"
+		else
+			echo " (quick run)"
+		fi
+	fi
 }
 
 show_help()
