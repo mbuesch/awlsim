@@ -208,10 +208,12 @@ class AwlSim(object):
 		import awlsim.cython_helper as cython_helper
 
 		# Construct the python module name
+		moduleName = "awlsimhw_%s" % name
 		if cython_helper.shouldUseCython():
-			moduleName = "awlsimhw_%s_cython" % name
-		else:
-			moduleName = "awlsimhw_%s" % name
+			cyModuleName = "awlsimhw_%s_cython" % name
+			print("Awlsim-cython: Loading '%s' instead of '%s'" %\
+			      (cyModuleName, moduleName))
+			moduleName = cyModuleName
 
 		# Try to import the module
 		try:
