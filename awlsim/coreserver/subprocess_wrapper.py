@@ -31,7 +31,6 @@ else:
 
 class PopenWrapper(object):
 	def __init__(self, argv, env, shell):
-		self.__noWait = False
 		if isIronPython:
 			self.__pid = os.spawnve(os.P_NOWAIT, argv[0], argv, env)
 		else:
@@ -44,19 +43,9 @@ class PopenWrapper(object):
 			except ValueError:
 				pass
 		else:
-			try:
-				self.__proc.terminate()
-			except NameError:
-				# XXX: Workaround: Jython currently does not implement terminate
-				if not isJython:
-					raise
-				printInfo("AwlSimClient: Jython Popen.terminate workaround: "
-					  "Not terminating server.")
-				self.__noWait = True
+			self.__proc.terminate()
 
 	def wait(self):
-		if self.__noWait:
-			return
 		if isIronPython:
 			pass#TODO
 		else:
