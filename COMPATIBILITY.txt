@@ -13,7 +13,7 @@ bug that should be reported.
 
 - awlsim does not compile AWL/STL to MC7 code and it cannot execute MC7 code.
   On startup awlsim translates the AWL/STL code to an awlsim specific in-memory
-  representation of the code. There is no byte-code representation for this
+  representation of the code. There is no byte-code representation of this
   code.
 
 - Some key concepts, such as CALL or memory indirect adressing are implemented

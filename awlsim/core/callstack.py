@@ -90,7 +90,7 @@ class CallStackElem(object):
 			else:
 				# This is a call to an FC.
 				# Prepare the interface (IN/OUT/INOUT) references.
-				# self.interfRefs is a dict of AwlIndirectOps for the FC interface.
+				# self.interfRefs is a dict of AwlOperators for the FC interface.
 				#                 The key of self.interfRefs is the interface field index.
 				#                 This dict is used by the CPU for lookup and resolve of
 				#                 the FC interface r-value.
