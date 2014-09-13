@@ -241,7 +241,7 @@ class AwlDataType(object):
 			# Each element is a ref to the same AwlDataType instance.
 			children = tuple([ elementType, ] * nrArrayElements)
 			return cls(type = cls.TYPE_ARRAY,
-				   width = nrArrayElements,
+				   width = nrArrayElements * elementType.width,
 				   isSigned = (type in cls.signedTypes),
 				   index = index,
 				   children = children,
@@ -256,7 +256,7 @@ class AwlDataType(object):
 		     index=None, children=None,
 		     arrayDimensions=None):
 		self.type = type		# The TYPE_... for this datatype
-		self.width = width		# The width, in bits. If type==TYPE_ARRAY, this is the number of elements.
+		self.width = width		# The width, in bits.
 		self.isSigned = isSigned	# True, if this type is signed
 		self.index = index		# The Index number, if any. May be None
 		self.children = children	# The children AwlDataTypes, if ARRAY.
@@ -292,6 +292,11 @@ class AwlDataType(object):
 		for size in sizes[:0:-1]:
 			signif.append(size * signif[-1])
 		return tuple(signif[::-1])
+
+	# Get the number of array elements
+	def arrayGetNrElements(self):
+		assert(self.type == self.TYPE_ARRAY)
+		return len(self.children)
 
 	# Parse an immediate, constrained by our datatype.
 	def parseMatchingImmediate(self, tokens):

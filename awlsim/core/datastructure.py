@@ -2,7 +2,7 @@
 #
 # AWL simulator - data structs
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,12 +37,8 @@ class AwlStructField(object):
 		self.offset = offset
 		self.dataType = dataType
 
-		if self.dataType.type == AwlDataType.TYPE_ARRAY:
-			self.bitSize = 0
-		else:
-			self.bitSize = self.dataType.width
+		self.bitSize = self.dataType.width
 		self.byteSize = intDivRoundUp(self.bitSize, 8)
-		assert(self.bitSize in (0, 1, 8, 16, 32, 64))
 
 	def __repr__(self):
 		return "AwlStructField(%s, %s, %s)" %\
@@ -67,6 +63,11 @@ class AwlStruct(object):
 		if not self.fields:
 			return 0
 		lastField = self.fields[-1]
+		if lastField.dataType.type == AwlDataType.TYPE_ARRAY:
+			# An array header field (whole array) is the last field.
+			# The array elements follow. Don't add the array size
+			# to the size.
+			return lastField.offset.byteOffset
 		return lastField.offset.byteOffset + lastField.byteSize
 
 	def __registerField(self, field):
