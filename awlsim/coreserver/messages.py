@@ -524,7 +524,7 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 							 actualLength))
 			pl.append(memArea.data)
 			# Pad to a 32-bit boundary
-			pl.append(b'\x00' * (round_up(actualLength, 4) - actualLength))
+			pl.append(b'\x00' * (roundUp(actualLength, 4) - actualLength))
 		pl = b''.join(pl)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
@@ -540,7 +540,7 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 					cls.plAreaStruct.unpack_from(payload, offset)
 				offset += cls.plAreaStruct.size
 				data = payload[offset : offset + actualLength]
-				offset += round_up(actualLength, 4)
+				offset += roundUp(actualLength, 4)
 				if len(data) != actualLength:
 					raise IndexError
 				memAreas.append(MemoryArea(memType, mFlags, index,
