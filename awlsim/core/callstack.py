@@ -116,16 +116,16 @@ class CallStackElem(object):
 		# Allocate space in the caller-L-stack.
 		lalloc = self.cpu.callStackTop.lalloc
 		loffset = lalloc.alloc(rvalueOp.width)
-		if param.isInbound:
-			# Write the value to the allocated space.
-			WordPacker.toBytes(lalloc.localdata, rvalueOp.width,
-					   loffset.byteOffset,
-					   self.cpu.fetch(rvalueOp))
 		# Make an operator for the allocated space.
-		oper = AwlOperator(AwlOperator.MEM_VL,
+		oper = AwlOperator(AwlOperator.MEM_L,
 				   rvalueOp.width,
 				   loffset,
 				   rvalueOp.insn)
+		if param.isInbound:
+			# Write the value to the allocated space.
+			self.cpu.store(oper, self.cpu.fetch(rvalueOp))
+		# Change the operator to VL
+		oper.type = oper.MEM_VL
 		# If outbound, save param and operator for return from CALL.
 		if param.isOutbound:
 			param.scratchSpaceOp = oper

@@ -278,7 +278,7 @@ class S7CPU(object): #+cdef
 	# Initialize a DB (global or instance) data field from a raw data-init.
 	def __initDBField(self, db, dataType, rawDataInit):
 		if dataType.type == AwlDataType.TYPE_ARRAY:
-			index = dataType.arrayIndicesCollapse(*rawDataInit.idents[-1].indices)
+			index = dataType.arrayIndicesCollapse(rawDataInit.idents[-1].indices)
 		else:
 			index = None
 		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
@@ -390,7 +390,10 @@ class S7CPU(object): #+cdef
 	# Translate local symbols (#abc or P##abc)
 	# If pointer is false, try to resolve #abc.
 	# If pointer is true, try to resolve P##abc.
-	def resolveNamedLocal(self, block, insn, oper, pointer=False):
+	# If allowWholeArrayAccess is true, unsubscripted accesses
+	# to array variables are supported.
+	def resolveNamedLocal(self, block, insn, oper,
+			      pointer=False, allowWholeArrayAccess=False):
 		if pointer:
 			if oper.type != AwlOperator.NAMED_LOCAL_PTR:
 				return oper
@@ -404,7 +407,8 @@ class S7CPU(object): #+cdef
 		# Sanity checks
 		if field.dataType.type == AwlDataType.TYPE_ARRAY:
 			if not oper.value.indices and\
-			   oper.type != AwlOperator.NAMED_LOCAL_PTR:
+			   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
+			   not allowWholeArrayAccess:
 				raise AwlSimError("Cannot address array #%s "
 					"without subscript list." %\
 					oper.value.varName)
@@ -413,6 +417,24 @@ class S7CPU(object): #+cdef
 				raise AwlSimError("Trying to subscript array, "
 					"but #%s is not an array." %\
 					oper.value.varName)
+
+		if oper.value.indices:
+			assert(field.dataType.type == AwlDataType.TYPE_ARRAY)
+			# This is an array access.
+			# Resolve the array index to a byte/bit-offset.
+			arrayIndex = field.dataType.arrayIndicesCollapse(oper.value.indices)
+			elemWidth = field.dataType.children[0].width
+			bitOffset = arrayIndex * elemWidth
+			byteOffset = bitOffset // 8
+			bitOffset %= 8
+			oper.value.subOffset = AwlOffset(byteOffset, bitOffset)
+			# Store the element-access-width in the operator.
+			oper.width = elemWidth
+		else:
+			# Non-array accesses don't have a sub-offset.
+			oper.value.subOffset = AwlOffset(0)
+			# Store the access-width in the operator.
+			oper.width = field.dataType.width
 
 		if block.interface.hasInstanceDB or\
 		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
@@ -426,14 +448,16 @@ class S7CPU(object): #+cdef
 		else:
 			# This is an FC. Accesses to local symbols
 			# are resolved at runtime.
-			# Just set the value to the interface index.
-			#TODO array
+			# Just set interface index in the operator.
 			index = block.interface.getFieldIndex(oper.value.varName)
 			oper.interfaceIndex = index
 		return oper
 
 	# Translate named fully qualified accesses (DBx.VARx)
-	def __resolveNamedFullyQualified(self, block, insn, oper):
+	# If allowWholeArrayAccess is true, unsubscripted accesses
+	# to array variables are supported.
+	def __resolveNamedFullyQualified(self, block, insn, oper,
+					 allowWholeArrayAccess=False):
 		if oper.type != AwlOperator.NAMED_DBVAR:
 			return oper
 
@@ -463,19 +487,21 @@ class S7CPU(object): #+cdef
 		# and construct the AwlOffset.
 		field = db.struct.getField(oper.value.varName)
 		if oper.value.indices is None:
-			# Non-array access.
+			# Access without array indices.
 			if field.dataType.type == AwlDataType.TYPE_ARRAY:
-				#TODO this happens for parameter passing
-				raise AwlSimError("Variable '%s' in fully qualified "
-					"DB access is an ARRAY." %\
-					oper.value.varName)
+				# This is a whole-array access.
+				#  e.g.  DB1.ARRAYVAR
+				if not allowWholeArrayAccess:
+					raise AwlSimError("Variable '%s' in fully qualified "
+						"DB access is an ARRAY." %\
+						oper.value.varName)
 		else:
-			# This is an array access.
+			# This is an array field access.
 			if field.dataType.type != AwlDataType.TYPE_ARRAY:
 				raise AwlSimError("Indexed variable '%s' in fully qualified "
 					"DB access is not an ARRAY." %\
 					oper.value.varName)
-			index = field.dataType.arrayIndicesCollapse(*oper.value.indices)
+			index = field.dataType.arrayIndicesCollapse(oper.value.indices)
 			# Get the actual data field
 			field = db.struct.getField(oper.value.varName, index)
 		# Extract the offset data
@@ -495,7 +521,8 @@ class S7CPU(object): #+cdef
 				for i, oper in enumerate(insn.ops):
 					oper = self.__resolveClassicSym(block, insn, oper)
 					oper = self.resolveNamedLocal(block, insn, oper, False)
-					oper = self.__resolveNamedFullyQualified(block, insn, oper)
+					oper = self.__resolveNamedFullyQualified(block,
+										 insn, oper, False)
 					if oper.type == AwlOperator.INDIRECT:
 						oper.offsetOper = self.__resolveClassicSym(block,
 									insn, oper.offsetOper)
@@ -506,14 +533,15 @@ class S7CPU(object): #+cdef
 				for param in insn.params:
 					oper = param.rvalueOp
 					oper = self.__resolveClassicSym(block, insn, oper)
-					oper = self.resolveNamedLocal(block, insn, oper, False)
-					oper = self.__resolveNamedFullyQualified(block, insn, oper)
+					oper = self.resolveNamedLocal(block, insn, oper, False, True)
+					oper = self.__resolveNamedFullyQualified(block,
+										 insn, oper, True)
 					if oper.type == AwlOperator.INDIRECT:
 						oper.offsetOper = self.__resolveClassicSym(block,
 									insn, oper.offsetOper)
 						oper.offsetOper = self.resolveNamedLocal(block,
 									insn, oper.offsetOper, False)
-					oper = self.resolveNamedLocal(block, insn, oper, False)
+					oper = self.resolveNamedLocal(block, insn, oper, False, True)
 					param.rvalueOp = oper
 			except AwlSimError as e:
 				if not e.getInsn():
@@ -1097,7 +1125,7 @@ class S7CPU(object): #+cdef
 		self.inputs[byteOffset : byteOffset + len(data)] = data
 
 	def fetch(self, operator, enforceWidth=()): #@nocy
-#@cy	cpdef uint32_t fetch(self, object operator, tuple enforceWidth=()):
+#@cy	cpdef object fetch(self, object operator, tuple enforceWidth=()):
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
@@ -1310,10 +1338,16 @@ class S7CPU(object): #+cdef
 
 	def fetchNAMED_LOCAL(self, operator, enforceWidth):
 		# load from an FC interface field.
-		return self.fetch(self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False),
-				  enforceWidth)
+		# First get the translated rvalue-operand that was used in the call.
+		translatedOp = self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False)
+		# Add possible sub-offsets (array, struct) to the offset.
+		finalOp = translatedOp.dup()
+		finalOp.value += operator.value.subOffset
+		finalOp.width = operator.width
+		return self.fetch(finalOp, enforceWidth)
 
 	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
+		assert(operator.value.subOffset.byteOffset == 0)
 		return self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False).makePointer()
 
 	def fetchNAMED_DBVAR(self, operator, enforceWidth):
@@ -1394,7 +1428,7 @@ class S7CPU(object): #+cdef
 	}
 
 	def store(self, operator, value, enforceWidth=()): #@nocy
-#@cy	cpdef store(self, object operator, int64_t value, tuple enforceWidth=()):
+#@cy	cpdef store(self, object operator, object value, tuple enforceWidth=()):
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:
@@ -1505,8 +1539,13 @@ class S7CPU(object): #+cdef
 
 	def storeNAMED_LOCAL(self, operator, value, enforceWidth):
 		# store to an FC interface field.
-		self.store(self.callStackTop.interfRefs[operator.interfaceIndex].resolve(True),
-			   value, enforceWidth)
+		# First get the translated rvalue-operand that was used in the call.
+		translatedOp = self.callStackTop.interfRefs[operator.interfaceIndex].resolve(True)
+		# Add possible sub-offsets (array, struct) to the offset.
+		finalOp = translatedOp.dup()
+		finalOp.value += operator.value.subOffset
+		finalOp.width = operator.width
+		self.store(finalOp, value, enforceWidth)
 
 	def storeNAMED_DBVAR(self, operator, value, enforceWidth):
 		# All legit accesses will have been translated to absolute addressing already

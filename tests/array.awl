@@ -236,11 +236,69 @@ BEGIN
 END_DATA_BLOCK
 
 
+FUNCTION FC 1 : VOID
+VAR_INPUT
+	VAR00	: ARRAY [1 .. 2] OF INT;
+	VAR01	: ARRAY [1 .. 2, 0 .. 1] OF INT;
+	SELECT	: INT;
+END_VAR
+VAR_OUTPUT
+	VAROUT	: ARRAY [1 .. 2] OF DINT;
+END_VAR
+BEGIN
+	// Only run tests for SELECT=1
+	L		#SELECT
+	L		1
+	<>I
+	BEB
+
+
+	// Check passed parameters
+	L		#VAR00[1]
+	__ASSERT==	__ACCU 1,	91
+	L		#VAR00[2]
+	__ASSERT==	__ACCU 1,	92
+	L		#VAR01[1, 0]
+	__ASSERT==	__ACCU 1,	9100
+	L		#VAR01[1, 1]
+	__ASSERT==	__ACCU 1,	9101
+	L		#VAR01[2, 0]
+	__ASSERT==	__ACCU 1,	9102
+	L		#VAR01[2, 1]
+	__ASSERT==	__ACCU 1,	9103
+
+	L		P##VAR00 // Ptr to array name is ptr to first element
+	PUSH
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	POP
+	LAR1
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	91
+
+
+	// Forward FC-parameter to FB
+	CALL FB 2, DB 10 (
+		VAR0	:= #VAR00,
+	)
+
+
+	// Write the output
+	L		L#90001
+	T		#VAROUT[1]
+	L		L#90002
+	T		#VAROUT[2]
+END_FUNCTION
+
+
 FUNCTION_BLOCK FB 1
 VAR_INPUT
 	VAR0	: ARRAY [1 .. 2] OF INT;
 	VAR1	: ARRAY [1 .. 2, 0 .. 1] OF INT;
 	SELECT	: INT;
+END_VAR
+VAR_OUTPUT
+	VAROUT	: ARRAY [1 .. 2] OF DINT;
 END_VAR
 BEGIN
 	L		#SELECT
@@ -282,7 +340,7 @@ M000:	L		#VAR0[1]
 	L		W [AR1, P#0.0]
 	__ASSERT==	__ACCU 1,	1
 
-	BEA
+	SPA		M500
 
 
 	// Check passed parameters
@@ -317,8 +375,16 @@ M001:	L		#VAR0[1]
 	L		W [AR1, P#0.0]
 	__ASSERT==	__ACCU 1,	91
 
-	BEA
+	SPA		M500
 
+
+	// Call FC 1 and forward array parameters
+M500:	CALL FC 1 (
+		VAR00	:= #VAR0,
+		VAR01	:= #VAR1,
+		SELECT	:= #SELECT,
+		VAROUT	:= #VAROUT,
+	)
 END_FUNCTION_BLOCK
 
 
@@ -335,11 +401,34 @@ BEGIN
 	SELECT		:= 0;
 END_DATA_BLOCK
 
+
+FUNCTION_BLOCK FB 2
+VAR_INPUT
+	VAR0	: ARRAY [1 .. 2] OF INT;
+END_VAR
+BEGIN
+	L		#VAR0[1]
+	__ASSERT==	__ACCU 1,	91
+	L		#VAR0[2]
+	__ASSERT==	__ACCU 1,	92
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 10
+TITLE = FB 2 instance DB
+FB 2
+BEGIN
+	VAR0[1]		:= 0;
+	VAR0[2]		:= 0;
+END_DATA_BLOCK
+
+
 DATA_BLOCK DB 2
-TITLE = FB 1 parameter passing DB
+TITLE = Parameter passing DB
 STRUCT
 	VAR0	: ARRAY [1 .. 2] OF INT;
 	VAR1	: ARRAY [1 .. 2, 0 .. 1] OF INT;
+	VAR2	: ARRAY [1 .. 2] OF DINT;
 END_STRUCT
 BEGIN
 	VAR0[1]		:= 91;
@@ -348,6 +437,8 @@ BEGIN
 	VAR1[1, 1]	:= 9101;
 	VAR1[2, 0]	:= 9102;
 	VAR1[2, 1]	:= 9103;
+	VAR2[1]		:= L#0;
+	VAR2[2]		:= L#0;
 END_DATA_BLOCK
 
 
@@ -395,13 +486,34 @@ BEGIN
 	)
 
 	// Call FB 1 with array parameter passing
-//TODO	CALL FB 1, DB 1 (
-//		VAR0	:= DB2.VAR0,
-//		VAR1	:= DB2.VAR1,
-//		SELECT	:= 1,
-//	)
+	L		0
+	T		DB2.VAR2[1]
+	T		DB2.VAR2[2]
+	CALL FB 1, DB 1 (
+		VAR0	:= DB2.VAR0,
+		VAR1	:= DB2.VAR1,
+		SELECT	:= 1,
+		VAROUT	:= DB2.VAR2,
+	)
+	L		DB2.VAR2[1]
+	__ASSERT==	__ACCU 1,	L#90001
+	L		DB2.VAR2[2]
+	__ASSERT==	__ACCU 1,	L#90002
 
-	//TODO FC-tests
+	// Call FC 1 with array parameter passing
+	L		0
+	T		DB2.VAR2[1]
+	T		DB2.VAR2[2]
+	CALL FC 1 (
+		VAR00	:= DB2.VAR0,
+		VAR01	:= DB2.VAR1,
+		SELECT	:= 1,
+		VAROUT	:= DB2.VAR2,
+	)
+	L		DB2.VAR2[1]
+	__ASSERT==	__ACCU 1,	L#90001
+	L		DB2.VAR2[2]
+	__ASSERT==	__ACCU 1,	L#90002
 
 
 	CALL SFC 46 // STOP CPU

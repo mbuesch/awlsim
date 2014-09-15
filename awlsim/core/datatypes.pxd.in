@@ -8,3 +8,4 @@ cdef class AwlOffset(DynAttrs):
 	cdef public object dbName
 	cdef public object varName
 	cdef public object indices
+	cdef public object subOffset

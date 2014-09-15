@@ -45,6 +45,11 @@ class AwlOffset(DynAttrs): #+cdef
 
 		# List of Variable indices for fully qualified array access, or None.
 		"indices"	: None,
+
+		# Additional sub-offset that is added to this offset.
+		# Defaults to 0.0
+		# This is used for arrays and structs.
+		"subOffset"	: lambda self, name: AwlOffset(0, 0),
 	}
 
 	def __init__(self, byteOffset, bitOffset=0):
@@ -65,6 +70,18 @@ class AwlOffset(DynAttrs): #+cdef
 	def toPointerValue(self):
 		return ((self.byteOffset << 3) & 0x0007FFF8) |\
 		       (self.bitOffset & 0x7)
+
+	def __add__(self, other):
+		bitOffset = (self.byteOffset + other.byteOffset) * 8 +\
+			    self.bitOffset + other.bitOffset
+		return AwlOffset(bitOffset // 8, bitOffset % 8)
+
+	def __iadd__(self, other):
+		bitOffset = (self.byteOffset + other.byteOffset) * 8 +\
+			    self.bitOffset + other.bitOffset
+		self.byteOffset = bitOffset // 8
+		self.bitOffset = bitOffset % 8
+		return self
 
 	def __repr__(self):
 		prefix = ""
@@ -263,9 +280,11 @@ class AwlDataType(object):
 		self.arrayDimensions = arrayDimensions # The ARRAY's dimensions
 
 	# Convert array indices into a one dimensional index for this array.
-	# 'indices' are the indices as written in the AWL operator
+	# 'indices' is a list of index integers as written in the AWL operator
 	# from left to right.
-	def arrayIndicesCollapse(self, *indices):
+	def arrayIndicesCollapse(self, indices):
+		if not indices:
+			return None
 		if len(indices) < 1 or len(indices) > 6:
 			raise AwlSimError("Invalid number of array indices")
 		assert(self.type == self.TYPE_ARRAY)
@@ -274,7 +293,11 @@ class AwlDataType(object):
 		assert(len(indices) == len(self.arrayDimensions))
 		resIndex = 0
 		for i, idx in enumerate(indices):
-			startIdx = self.arrayDimensions[i][0]
+			startIdx, endIdx = self.arrayDimensions[i]
+			if idx < startIdx or idx > endIdx:
+				raise AwlSimError("Array index '%d' is out of bounds "
+					"for array range '%d .. %d'." %\
+					(idx, startIdx, endIdx))
 			resIndex += (idx - startIdx) * signif[i]
 		return resIndex
 
@@ -854,7 +877,7 @@ class GenericDWord(GenericInteger): #+cdef
 
 class ByteArray(bytearray):
 	def fetch(self, offset, width): #@nocy
-#@cy	def fetch(self, offset, uint8_t width):
+#@cy	def fetch(self, object offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
 
 		byteOffset = offset.byteOffset
@@ -871,12 +894,17 @@ class ByteArray(bytearray):
 				       (self[byteOffset + 1] << 16) |\
 				       (self[byteOffset + 2] << 8) |\
 				       self[byteOffset + 3]
+			else:
+				assert(not offset.bitOffset)
+				nrBytes = intDivRoundUp(width, 8)
+				if byteOffset + nrBytes > len(self):
+					raise IndexError
+				return memoryview(self)[byteOffset : byteOffset + nrBytes]
 		except IndexError as e:
 			raise AwlSimError("fetch: Operator offset out of range")
-		assert(0)
 
 	def store(self, offset, width, value): #@nocy
-#@cy	def store(self, offset, uint8_t width, int64_t value):
+#@cy	def store(self, object offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
 
 		byteOffset = offset.byteOffset
@@ -897,7 +925,12 @@ class ByteArray(bytearray):
 				self[byteOffset + 2] = (value >> 8) & 0xFF
 				self[byteOffset + 3] = value & 0xFF
 			else:
-				assert(0)
+				assert(not offset.bitOffset)
+				nrBytes = intDivRoundUp(width, 8)
+				assert(nrBytes == len(value))
+				if byteOffset + nrBytes > len(self):
+					raise IndexError
+				self[byteOffset : byteOffset + len(value)] = value
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset out of range")
 

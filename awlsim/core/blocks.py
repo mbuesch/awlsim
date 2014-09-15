@@ -209,10 +209,15 @@ class BlockInterface(object):
 		if interfaceField.dataType.type == AwlDataType.TYPE_ARRAY:
 			# Get the linear array index.
 			if indices:
-				arrayIndex = interfaceField.dataType.arrayIndicesCollapse(*indices)
+				# We get an operator to the indexed array element.
+				arrayIndex = interfaceField.dataType.arrayIndicesCollapse(indices)
 			else:
-				assert(wantPointer)
-				arrayIndex = 0
+				if wantPointer:
+					# We get a pointer to the first element.
+					arrayIndex = 0
+				else:
+					# We get an operator to the whole array.
+					arrayIndex = None
 		else:
 			arrayIndex = None
 
