@@ -348,7 +348,12 @@ class AwlOperator(DynAttrs):
 		elif self.type == self.SYMBOLIC:
 			return '"%s"' % self.value.varName
 		elif self.type == self.NAMED_LOCAL:
-			return "#%s" % self.value.varName
+			s = "#%s" % self.value.varName
+			if self.value.indices:
+				s += "["
+				s += ", ".join(str(i) for i in self.value.indices)
+				s += "]"
+			return s
 		elif self.type == self.NAMED_LOCAL_PTR:
 			return "P##%s" % self.value.varName
 		elif self.type == self.NAMED_DBVAR:
