@@ -543,6 +543,7 @@ class S7CPU(object): #+cdef
 									insn, oper.offsetOper, False)
 					oper = self.resolveNamedLocal(block, insn, oper, False, True)
 					param.rvalueOp = oper
+					#TODO check compatibility of oper to param's type.
 			except AwlSimError as e:
 				if not e.getInsn():
 					e.setInsn(insn)
