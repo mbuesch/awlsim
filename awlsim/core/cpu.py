@@ -176,45 +176,65 @@ class S7CPU(object): #+cdef
 		for sfc in self.sfcs.values():
 			yield sfc
 
-	# Finalize call instructions
-	def __finalizeCallInsn(self, insn):
-		if insn.insnType != AwlInsn.TYPE_CALL:
-			return
+	# Returns all user defined code blocks (OBs, FBs, FCs, SFBs, SFCs)
+	def __allCodeBlocks(self):
+		for block in self.__allUserCodeBlocks():
+			yield block
+		for block in self.__allSystemCodeBlocks():
+			yield block
 
-		# Get the code and DB blocks
-		try:
-			if len(insn.ops) == 1:
-				dataBlock = None
-			elif len(insn.ops) == 2:
-				dataBlockOp = insn.ops[1]
-				if dataBlockOp.type != AwlOperator.BLKREF_DB:
+	def __allCallInsns(self, block):
+		for insn in block.insns:
+			if insn.insnType != AwlInsn.TYPE_CALL:
+				continue
+
+			# Get the code and DB blocks
+			try:
+				if len(insn.ops) == 1:
+					dataBlock = None
+				elif len(insn.ops) == 2:
+					dataBlockOp = insn.ops[1]
+					if dataBlockOp.type != AwlOperator.BLKREF_DB:
+						raise ValueError
+					dataBlock = self.dbs[dataBlockOp.value.byteOffset]
+				else:
+					assert(0)
+				codeBlockOp = insn.ops[0]
+				if codeBlockOp.type == AwlOperator.BLKREF_FC:
+					codeBlock = self.fcs[codeBlockOp.value.byteOffset]
+				elif codeBlockOp.type == AwlOperator.BLKREF_FB:
+					codeBlock = self.fbs[codeBlockOp.value.byteOffset]
+				elif codeBlockOp.type == AwlOperator.BLKREF_SFC:
+					codeBlock = self.sfcs[codeBlockOp.value.byteOffset]
+				elif codeBlockOp.type == AwlOperator.BLKREF_SFB:
+					codeBlock = self.sfbs[codeBlockOp.value.byteOffset]
+				else:
 					raise ValueError
-				dataBlock = self.dbs[dataBlockOp.value.byteOffset]
-			else:
-				assert(0)
-			codeBlockOp = insn.ops[0]
-			if codeBlockOp.type == AwlOperator.BLKREF_FC:
-				codeBlock = self.fcs[codeBlockOp.value.byteOffset]
-			elif codeBlockOp.type == AwlOperator.BLKREF_FB:
-				codeBlock = self.fbs[codeBlockOp.value.byteOffset]
-			elif codeBlockOp.type == AwlOperator.BLKREF_SFC:
-				codeBlock = self.sfcs[codeBlockOp.value.byteOffset]
-			elif codeBlockOp.type == AwlOperator.BLKREF_SFB:
-				codeBlock = self.sfbs[codeBlockOp.value.byteOffset]
-			else:
-				raise ValueError
-		except (KeyError, ValueError) as e:
-			# This error is handled later in call-insn sanity checks
-			return
+			except (KeyError, ValueError) as e:
+				# This error is handled later in call-insn sanity checks
+				continue
 
-		# Add interface references to the parameter assignments.
-		for param in insn.params:
-			param.interface = codeBlock.interface
-			param.instanceDB = dataBlock
+			yield insn, codeBlock, dataBlock
+
+	def __checkCallParamTypeCompat(self, block):
+		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
+			try:
+				for param in insn.params:
+					# Get the interface field for this variable
+					field = calledCodeBlock.interface.getFieldByName(param.lvalueName)
+					# Check type compatibility
+					param.rvalueOp.checkDataTypeCompat(field.dataType)
+			except AwlSimError as e:
+				e.setInsn(insn)
+				raise e
 
 	def __finalizeCodeBlock(self, block):
-		for insn in block.insns:
-			self.__finalizeCallInsn(insn)
+		# Finalize call instructions
+		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
+			# Add interface references to the parameter assignments.
+			for param in insn.params:
+				param.interface = calledCodeBlock.interface
+				param.instanceDB = calledDataBlock
 
 	def __finalizeCodeBlocks(self):
 		for block in self.__allUserCodeBlocks():
@@ -516,6 +536,7 @@ class S7CPU(object): #+cdef
 				   insn = oper.insn)
 
 	def __resolveSymbols_block(self, block):
+		block.resolveSymbols()
 		for insn in block.insns:
 			try:
 				for i, oper in enumerate(insn.ops):
@@ -543,7 +564,6 @@ class S7CPU(object): #+cdef
 									insn, oper.offsetOper, False)
 					oper = self.resolveNamedLocal(block, insn, oper, False, True)
 					param.rvalueOp = oper
-					#TODO check compatibility of oper to param's type.
 			except AwlSimError as e:
 				if not e.getInsn():
 					e.setInsn(insn)
@@ -551,11 +571,15 @@ class S7CPU(object): #+cdef
 
 	# Resolve all symbols (global and local) on all blocks, as far as possible.
 	def __resolveSymbols(self):
-		for block in self.__allUserCodeBlocks():
+		for block in self.__allCodeBlocks():
+			# Check type compatibility between formal and
+			# actual parameter of calls.
+			self.__checkCallParamTypeCompat(block)
+			# Resolve all symbols
 			self.__resolveSymbols_block(block)
-		for block in self.__allSystemCodeBlocks():
-			self.__resolveSymbols_block(block)
-			block.resolveHardwiredSymbols()
+			# Check type compatibility between formal and
+			# actual parameter of calls again, with resolved symbols.
+			self.__checkCallParamTypeCompat(block)
 
 	# Run static error checks for code block
 	def __staticSanityChecks_block(self, block):

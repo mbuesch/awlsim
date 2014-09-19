@@ -86,7 +86,8 @@ class SystemBlock(Block):
 
 	# Resolve hard wired symbolic accesses
 	# (i.e. accesses not done in AWL instructions)
-	def resolveHardwiredSymbols(self):
+	def resolveSymbols(self):
+		super(SystemBlock, self).resolveSymbols()
 		self.__interfaceOpers = {}
 		for field in self.interface.fields_IN_OUT_INOUT_STAT:
 			# Create a scratch-operator for the access.

@@ -308,6 +308,9 @@ class Block(object):
 			self.labels = AwlLabel.resolveLabels(insns)
 		self.interface = interface
 
+	def resolveSymbols(self):
+		pass
+
 	def __repr__(self):
 		return "Block %d" % self.index
 

@@ -230,6 +230,30 @@ class AwlOperator(DynAttrs):
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 
+	def checkDataTypeCompat(self, dataType):
+		assert(isinstance(dataType, AwlDataType))
+
+		if self.type in (AwlOperator.NAMED_LOCAL,
+				 AwlOperator.NAMED_LOCAL_PTR,
+				 AwlOperator.NAMED_DBVAR,
+				 AwlOperator.SYMBOLIC):
+			return
+
+		operWidth = self.width
+
+		if dataType.type == AwlDataType.TYPE_CHAR and\
+		   self.type == AwlOperator.IMM:
+			# Special handling for CHAR immediates.
+			# Adjust the width, if this is just one character.
+			if self.value <= 0xFF:
+				operWidth = 8
+
+		if operWidth != dataType.width:
+			raise AwlSimError("Data type '%s' of width %d bits "
+				"is not compatible with operator '%s' "
+				"of width %d bits." %\
+				(str(dataType), dataType.width, str(self), operWidth))
+
 	# Resolve this indirect operator to a direct operator.
 	def resolve(self, store=True):
 		# This already is a direct operator.
@@ -247,6 +271,26 @@ class AwlOperator(DynAttrs):
 			raise AwlSimError("Could not transform operator '%s' "
 				"into a pointer." % str(self))
 		return area | self.value.toPointerValue()
+
+	def __makeAnyPtrString(self):
+		area = AwlIndirectOp.optype2area[self.type]
+		if self.width % 32 == 0:
+			dataType = AwlDataType.makeByName("DWORD")
+			count = self.width // 32
+		elif self.width % 16 == 0:
+			dataType = AwlDataType.makeByName("WORD")
+			count = self.width // 16
+		elif self.width % 8 == 0:
+			dataType = AwlDataType.makeByName("BYTE")
+			count = self.width // 8
+		else:
+			dataType = AwlDataType.makeByName("BOOL")
+			count = self.width
+		return str(AwlAnyPointer(area = area,
+					 offset = self.value,
+					 dataType = dataType,
+					 count = count,
+					 dbNumber = self.value.dbNumber))
 
 	def __repr__(self):
 		if self.type == self.IMM:
@@ -281,6 +325,7 @@ class AwlOperator(DynAttrs):
 				return "%sW %d" % (pfx, self.value.byteOffset)
 			elif self.width == 32:
 				return "%sD %d" % (pfx, self.value.byteOffset)
+			return self.__makeAnyPtrString()
 		elif self.type == self.MEM_DB:
 			if self.value.dbNumber is None:
 				dbPrefix = ""
@@ -296,6 +341,7 @@ class AwlOperator(DynAttrs):
 				return "%sDBW %d" % (dbPrefix, self.value.byteOffset)
 			elif self.width == 32:
 				return "%sDBD %d" % (dbPrefix, self.value.byteOffset)
+			return self.__makeAnyPtrString()
 		elif self.type == self.MEM_DI:
 			if self.width == 1:
 				return "DIX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
@@ -305,6 +351,7 @@ class AwlOperator(DynAttrs):
 				return "DIW %d" % self.value.byteOffset
 			elif self.width == 32:
 				return "DID %d" % self.value.byteOffset
+			return self.__makeAnyPtrString()
 		elif self.type == self.MEM_T:
 			return "T %d" % self.value.byteOffset
 		elif self.type == self.MEM_Z:
@@ -316,6 +363,7 @@ class AwlOperator(DynAttrs):
 				return "PAW %d" % self.value.byteOffset
 			elif self.width == 32:
 				return "PAD %d" % self.value.byteOffset
+			return self.__makeAnyPtrString()
 		elif self.type == self.MEM_PE:
 			if self.width == 8:
 				return "PEB %d" % self.value.byteOffset
@@ -323,6 +371,7 @@ class AwlOperator(DynAttrs):
 				return "PEW %d" % self.value.byteOffset
 			elif self.width == 32:
 				return "PED %d" % self.value.byteOffset
+			return self.__makeAnyPtrString()
 		elif self.type == self.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name_german[self.value.bitOffset]
 		elif self.type == self.LBL_REF:
@@ -428,6 +477,18 @@ class AwlIndirectOp(AwlOperator):
 	optype2area = pivotDict(area2optype_fetch)
 	optype2area[AwlOperator.MEM_PA] = AREA_P
 	optype2area[AwlOperator.UNSPEC] = AREA_NONE
+
+	# Convert an area code to string
+	area2str = {
+		AREA_P			: "P",
+		AREA_E			: "E",
+		AREA_A			: "A",
+		AREA_M			: "M",
+		AREA_DB			: "DBX",
+		AREA_DI			: "DIX",
+		AREA_L			: "L",
+		AREA_VL			: "V",
+	}
 
 	def __init__(self, area, width, addressRegister, offsetOper, insn=None):
 		# area -> The area code for this indirect operation.
@@ -554,3 +615,24 @@ class AwlIndirectOp(AwlOperator):
 
 	def __repr__(self):
 		return "__INDIRECT" #TODO
+
+class AwlAnyPointer(object):
+	def __init__(self, area, offset, dataType, count, dbNumber=None):
+		self.area = area
+		self.offset = offset
+		self.dataType = dataType
+		self.count = count
+		self.dbNumber = dbNumber
+
+	def __repr__(self):
+		if self.dbNumber:
+			db = "DB%d." % self.dbNumber
+		else:
+			db = ""
+		area = AwlIndirectOp.area2str[self.area]
+		return "P#%s%s %d.%d %s %d" %\
+			(db, area,
+			 self.offset.byteOffset,
+			 self.offset.bitOffset,
+			 str(self.dataType),
+			 self.count)
