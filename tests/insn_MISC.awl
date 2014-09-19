@@ -153,9 +153,10 @@ BEGIN
 
 	CALL FB 1, DB 1 (
 		IN_CHAR		:= 'x',
-		OUT_CHAR	:= LD 0,
+		OUT_CHAR	:= MB 0,
 	)
-	__ASSERT==		LD 0,	DW#16#00000044
+	L		MB 0
+	__ASSERT==	__ACCU 1,	DW#16#00000044
 
 
 	CALL SFC 46 // STOP CPU

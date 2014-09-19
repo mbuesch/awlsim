@@ -171,8 +171,8 @@ BEGIN
 	CALL FB 1, DB 1 (
 		IN_VAL_0	:= 6666,
 		IN_VAL_1	:= 6767,
-		ZERO_PTR_VAL	:= 0,
-		ONE_PTR_VAL	:= 8,
+		ZERO_PTR_VAL	:= DW#16#0,
+		ONE_PTR_VAL	:= DW#16#8,
 	)
 
 	CALL FC 1 (
