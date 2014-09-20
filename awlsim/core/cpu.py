@@ -39,8 +39,7 @@ from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.systemblocks.system_sfb import *
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.operators import *
-from awlsim.core.insntrans import *
-from awlsim.core.optrans import *
+from awlsim.core.translator import *
 from awlsim.core.blocks import *
 from awlsim.core.datablocks import *
 from awlsim.core.statusword import * #@nocy
@@ -240,343 +239,15 @@ class S7CPU(object): #+cdef
 		for block in self.__allUserCodeBlocks():
 			self.__finalizeCodeBlock(block)
 
-	def __translateInsn(self, rawInsn, ip):
-		ex = None
-		try:
-			insn = AwlInsnTranslator.fromRawInsn(self, rawInsn)
-			insn.setIP(ip)
-		except AwlSimError as e:
-			if e.getRawInsn() is None:
-				e.setRawInsn(rawInsn)
-			raise e
-		return insn
-
-	def __translateInsns(self, rawInsns):
-		insns = []
-		# Translate raw instructions to simulator instructions
-		for ip, rawInsn in enumerate(rawInsns):
-			insns.append(self.__translateInsn(rawInsn, ip))
-		# If the last instruction is not BE or BEA, add an implicit BE
-		if not insns or insns[-1].insnType not in (AwlInsn.TYPE_BE,
-							   AwlInsn.TYPE_BEA):
-			insns.append(AwlInsn_BE(cpu = self, rawInsn = None))
-		return insns
-
-	def __translateInterfaceField(self, rawVar):
-		dtype = AwlDataType.makeByName(rawVar.typeTokens, rawVar.dimensions)
-		assert(len(rawVar.idents) == 1) #TODO no structs, yet
-		field = BlockInterfaceField(name = rawVar.idents[0].name,
-					    dataType = dtype)
-		return field
-
-	def __translateCodeBlock(self, rawBlock, blockClass):
-		insns = self.__translateInsns(rawBlock.insns)
-		block = blockClass(insns, rawBlock.index)
-
-		# Construct the block interface
-		for rawVar in rawBlock.vars_in:
-			block.interface.addField_IN(self.__translateInterfaceField(rawVar))
-		for rawVar in rawBlock.vars_out:
-			block.interface.addField_OUT(self.__translateInterfaceField(rawVar))
-		if rawBlock.retTypeTokens:
-			# ARRAY is not supported for RET_VAL. So make non-array dtype.
-			dtype = AwlDataType.makeByName(rawBlock.retTypeTokens)
-			if dtype.type != AwlDataType.TYPE_VOID:
-				# Ok, we have a RET_VAL.
-				field = BlockInterfaceField(name = "RET_VAL",
-							    dataType = dtype)
-				block.interface.addField_OUT(field)
-		for rawVar in rawBlock.vars_inout:
-			block.interface.addField_INOUT(self.__translateInterfaceField(rawVar))
-		for rawVar in rawBlock.vars_static:
-			block.interface.addField_STAT(self.__translateInterfaceField(rawVar))
-		for rawVar in rawBlock.vars_temp:
-			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
-		block.interface.buildDataStructure()
-		return block
-
-	# Initialize a DB (global or instance) data field from a raw data-init.
-	def __initDBField(self, db, dataType, rawDataInit):
-		if dataType.type == AwlDataType.TYPE_ARRAY:
-			index = dataType.arrayIndicesCollapse(rawDataInit.idents[-1].indices)
-		else:
-			index = None
-		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
-		db.structInstance.setFieldDataByName(rawDataInit.idents[-1].name,
-						     index, value)
-
-	def __translateGlobalDB(self, rawDB):
-		db = DB(rawDB.index, None)
-		# Create the data structure fields
-		for field in rawDB.fields:
-			assert(len(field.idents) == 1) #TODO no structs, yet
-			if not rawDB.getFieldInit(field):
-				raise AwlSimError(
-					"DB %d declares field '%s', "
-					"but does not initialize." %\
-					(rawDB.index, field.idents[0].name))
-			dtype = AwlDataType.makeByName(field.typeTokens,
-						       field.dimensions)
-			db.struct.addFieldNaturallyAligned(field.idents[0].name,
-							   dtype)
-		# Allocate the data structure fields
-		db.allocate()
-		# Initialize the data structure fields
-		for field, init in rawDB.allFieldInits():
-			if not field:
-				raise AwlSimError(
-					"DB %d assigns field '%s', "
-					"but does not declare it." %\
-					(rawDB.index, init.getIdentString()))
-			assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
-			dtype = AwlDataType.makeByName(field.typeTokens,
-						       field.dimensions)
-			self.__initDBField(db, dtype, init)
-		return db
-
-	def __translateInstanceDB(self, rawDB):
-		if rawDB.fb.fbSymbol is None:
-			fbStr = "SFB" if rawDB.fb.isSFB else "FB"
-			fbNumber = rawDB.fb.fbNumber
-			isSFB = rawDB.fb.isSFB
-		else:
-			fbStr = '"%s"' % rawDB.fb.fbSymbol
-			fbNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_FB_X,
-								 AwlDataType.TYPE_SFB_X),
-								rawDB.fb.fbSymbol)
-			isSFB = sym.type.type == AwlDataType.TYPE_SFB_X
-
-		try:
-			if isSFB:
-				fb = self.sfbs[fbNumber]
-			else:
-				fb = self.fbs[fbNumber]
-		except KeyError:
-			raise AwlSimError("Instance DB %d references %s %d, "
-				"but %s %d does not exist." %\
-				(rawDB.index,
-				 fbStr, fbNumber,
-				 fbStr, fbNumber))
-		db = DB(rawDB.index, fb)
-		interface = fb.interface
-		# Sanity checks
-		if rawDB.fields:
-			raise AwlSimError("DB %d is an "
-				"instance DB, but it also "
-				"declares a data structure." %\
-				rawDB.index)
-		# Allocate the data structure fields
-		db.allocate()
-		# Initialize the data structure fields
-		for init in rawDB.fieldInits:
-			assert(len(init.idents) == 1) #TODO no structs, yet
-			dtype = interface.getFieldByName(init.idents[-1].name).dataType
-			self.__initDBField(db, dtype, init)
-		return db
-
-	def __translateDB(self, rawDB):
-		if rawDB.index < 0:
-			raise AwlSimError("DB number %d is invalid" % rawDB.index)
-		if rawDB.isInstanceDB():
-			return self.__translateInstanceDB(rawDB)
-		return self.__translateGlobalDB(rawDB)
-
-	# Translate classic symbols ("abc")
-	def __resolveClassicSym(self, block, insn, oper):
-		if oper.type == AwlOperator.SYMBOLIC:
-			symbol = self.symbolTable.findOneByName(oper.value.varName)
-			if not symbol:
-				raise AwlSimError("Symbol \"%s\" not found in "
-					"symbol table." % oper.value.varName,
-					insn = insn)
-			newOper = symbol.operator.dup()
-			newOper.setInsn(oper.insn)
-			return newOper
-		return oper
-
-	# Translate symbolic OB/FB/FC/DB block name
-	def __resolveBlockName(self, blockTypeIds, blockName):
-		if isString(blockName):
-			symbol = self.symbolTable.findOneByName(blockName)
-			if not symbol:
-				raise AwlSimError("Symbolic block name \"%s\" "
-					"not found in symbol table." % blockName)
-			if symbol.type.type not in blockTypeIds:
-				raise AwlSimError("Symbolic block name \"%s\" "
-					"has an invalid type." % blockName)
-			return symbol.operator.value.byteOffset, symbol
-		return blockName, None
-
-	# Translate local symbols (#abc or P##abc)
-	# If pointer is false, try to resolve #abc.
-	# If pointer is true, try to resolve P##abc.
-	# If allowWholeArrayAccess is true, unsubscripted accesses
-	# to array variables are supported.
-	def resolveNamedLocal(self, block, insn, oper,
-			      pointer=False, allowWholeArrayAccess=False):
-		if pointer:
-			if oper.type != AwlOperator.NAMED_LOCAL_PTR:
-				return oper
-		else:
-			if oper.type != AwlOperator.NAMED_LOCAL:
-				return oper
-
-		# Get the interface field for this variable
-		field = block.interface.getFieldByName(oper.value.varName)
-
-		# Sanity checks
-		if field.dataType.type == AwlDataType.TYPE_ARRAY:
-			if not oper.value.indices and\
-			   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
-			   not allowWholeArrayAccess:
-				raise AwlSimError("Cannot address array #%s "
-					"without subscript list." %\
-					oper.value.varName)
-		else:
-			if oper.value.indices:
-				raise AwlSimError("Trying to subscript array, "
-					"but #%s is not an array." %\
-					oper.value.varName)
-
-		if oper.value.indices:
-			assert(field.dataType.type == AwlDataType.TYPE_ARRAY)
-			# This is an array access.
-			# Resolve the array index to a byte/bit-offset.
-			arrayIndex = field.dataType.arrayIndicesCollapse(oper.value.indices)
-			elemWidth = field.dataType.children[0].width
-			bitOffset = arrayIndex * elemWidth
-			byteOffset = bitOffset // 8
-			bitOffset %= 8
-			oper.value.subOffset = AwlOffset(byteOffset, bitOffset)
-			# Store the element-access-width in the operator.
-			oper.width = elemWidth
-		else:
-			# Non-array accesses don't have a sub-offset.
-			oper.value.subOffset = AwlOffset(0)
-			# Store the access-width in the operator.
-			oper.width = field.dataType.width
-
-		if block.interface.hasInstanceDB or\
-		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
-			# This is an FB or a TEMP access. Translate the operator
-			# to a DI/TEMP access.
-			newOper = block.interface.getOperatorForField(oper.value.varName,
-								      oper.value.indices,
-								      pointer)
-			newOper.setInsn(oper.insn)
-			return newOper
-		else:
-			# This is an FC. Accesses to local symbols
-			# are resolved at runtime.
-			# Just set interface index in the operator.
-			index = block.interface.getFieldIndex(oper.value.varName)
-			oper.interfaceIndex = index
-		return oper
-
-	# Translate named fully qualified accesses (DBx.VARx)
-	# If allowWholeArrayAccess is true, unsubscripted accesses
-	# to array variables are supported.
-	def __resolveNamedFullyQualified(self, block, insn, oper,
-					 allowWholeArrayAccess=False):
-		if oper.type != AwlOperator.NAMED_DBVAR:
-			return oper
-
-		# Resolve the symbolic DB name, if needed
-		assert(oper.value.dbNumber is not None or\
-		       oper.value.dbName is not None)
-		if oper.value.dbNumber is None:
-			symbol = self.symbolTable.findOneByName(oper.value.dbName)
-			if not symbol:
-				raise AwlSimError("Symbol \"%s\" specified as DB in "
-					"fully qualified operator not found." %\
-					oper.value.dbName)
-			if symbol.type.type != AwlDataType.TYPE_DB_X:
-				raise AwlSimError("Symbol \"%s\" specified as DB in "
-					"fully qualified operator is not a DB-symbol." %\
-					oper.value.dbName)
-			oper.value.dbNumber = symbol.operator.value.byteOffset
-
-		# Get the DB
-		try:
-			db = self.dbs[oper.value.dbNumber]
-		except KeyError as e:
-			raise AwlSimError("DB %d specified in fully qualified "
-				"operator does not exist." % oper.value.dbNumber)
-
-		# Get the data structure field descriptor
-		# and construct the AwlOffset.
-		field = db.struct.getField(oper.value.varName)
-		if oper.value.indices is None:
-			# Access without array indices.
-			if field.dataType.type == AwlDataType.TYPE_ARRAY:
-				# This is a whole-array access.
-				#  e.g.  DB1.ARRAYVAR
-				if not allowWholeArrayAccess:
-					raise AwlSimError("Variable '%s' in fully qualified "
-						"DB access is an ARRAY." %\
-						oper.value.varName)
-		else:
-			# This is an array field access.
-			if field.dataType.type != AwlDataType.TYPE_ARRAY:
-				raise AwlSimError("Indexed variable '%s' in fully qualified "
-					"DB access is not an ARRAY." %\
-					oper.value.varName)
-			index = field.dataType.arrayIndicesCollapse(oper.value.indices)
-			# Get the actual data field
-			field = db.struct.getField(oper.value.varName, index)
-		# Extract the offset data
-		offset = field.offset.dup()
-		width = field.bitSize
-		offset.dbNumber = oper.value.dbNumber
-
-		# Construct an absolute operator
-		return AwlOperator(type = AwlOperator.MEM_DB,
-				   width = width,
-				   value = offset,
-				   insn = oper.insn)
-
-	def __resolveSymbols_block(self, block):
-		block.resolveSymbols()
-		for insn in block.insns:
-			try:
-				for i, oper in enumerate(insn.ops):
-					oper = self.__resolveClassicSym(block, insn, oper)
-					oper = self.resolveNamedLocal(block, insn, oper, False)
-					oper = self.__resolveNamedFullyQualified(block,
-										 insn, oper, False)
-					if oper.type == AwlOperator.INDIRECT:
-						oper.offsetOper = self.__resolveClassicSym(block,
-									insn, oper.offsetOper)
-						oper.offsetOper = self.resolveNamedLocal(block,
-									insn, oper.offsetOper, False)
-					oper = self.resolveNamedLocal(block, insn, oper, True)
-					insn.ops[i] = oper
-				for param in insn.params:
-					oper = param.rvalueOp
-					oper = self.__resolveClassicSym(block, insn, oper)
-					oper = self.resolveNamedLocal(block, insn, oper, False, True)
-					oper = self.__resolveNamedFullyQualified(block,
-										 insn, oper, True)
-					if oper.type == AwlOperator.INDIRECT:
-						oper.offsetOper = self.__resolveClassicSym(block,
-									insn, oper.offsetOper)
-						oper.offsetOper = self.resolveNamedLocal(block,
-									insn, oper.offsetOper, False)
-					oper = self.resolveNamedLocal(block, insn, oper, False, True)
-					param.rvalueOp = oper
-			except AwlSimError as e:
-				if not e.getInsn():
-					e.setInsn(insn)
-				raise e
-
 	# Resolve all symbols (global and local) on all blocks, as far as possible.
 	def __resolveSymbols(self):
+		resolver = AwlSymResolver(self)
 		for block in self.__allCodeBlocks():
 			# Check type compatibility between formal and
 			# actual parameter of calls.
 			self.__checkCallParamTypeCompat(block)
 			# Resolve all symbols
-			self.__resolveSymbols_block(block)
+			resolver.resolveSymbols_block(block)
 			# Check type compatibility between formal and
 			# actual parameter of calls again, with resolved symbols.
 			self.__checkCallParamTypeCompat(block)
@@ -597,17 +268,20 @@ class S7CPU(object): #+cdef
 			self.__staticSanityChecks_block(block)
 
 	def load(self, parseTree):
+		translator = AwlTranslator(self)
+		resolver = AwlSymResolver(self)
+
 		# Mnemonics autodetection
 		self.__detectMnemonics(parseTree)
 		# Translate OBs
 		for obNumber, rawOB in parseTree.obs.items():
-			obNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_OB_X,),
-								obNumber)
+			obNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_OB_X,),
+								  obNumber)
 			if obNumber in self.obs:
 				raise AwlSimError("Multiple definitions of "\
 					"OB %d" % obNumber)
 			rawOB.index = obNumber
-			ob = self.__translateCodeBlock(rawOB, OB)
+			ob = translator.translateCodeBlock(rawOB, OB)
 			self.obs[obNumber] = ob
 			# Create the TEMP-preset handler table
 			try:
@@ -617,23 +291,23 @@ class S7CPU(object): #+cdef
 			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
 		# Translate FBs
 		for fbNumber, rawFB in parseTree.fbs.items():
-			fbNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_FB_X,),
-								fbNumber)
+			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,),
+								  fbNumber)
 			if fbNumber in self.fbs:
 				raise AwlSimError("Multiple definitions of "\
 					"FB %d" % fbNumber)
 			rawFB.index = fbNumber
-			fb = self.__translateCodeBlock(rawFB, FB)
+			fb = translator.translateCodeBlock(rawFB, FB)
 			self.fbs[fbNumber] = fb
 		# Translate FCs
 		for fcNumber, rawFC in parseTree.fcs.items():
-			fcNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_FC_X,),
-								fcNumber)
+			fcNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FC_X,),
+								  fcNumber)
 			if fcNumber in self.fcs:
 				raise AwlSimError("Multiple definitions of "\
 					"FC %d" % fcNumber)
 			rawFC.index = fcNumber
-			fc = self.__translateCodeBlock(rawFC, FC)
+			fc = translator.translateCodeBlock(rawFC, FC)
 			self.fcs[fcNumber] = fc
 
 		if not self.sfbs:
@@ -655,15 +329,15 @@ class S7CPU(object): #+cdef
 
 		# Translate DBs
 		for dbNumber, rawDB in parseTree.dbs.items():
-			dbNumber, sym = self.__resolveBlockName((AwlDataType.TYPE_DB_X,
-								 AwlDataType.TYPE_FB_X,
-								 AwlDataType.TYPE_SFB_X),
-								dbNumber)
+			dbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_DB_X,
+								   AwlDataType.TYPE_FB_X,
+								   AwlDataType.TYPE_SFB_X),
+								  dbNumber)
 			if dbNumber in self.dbs:
 				raise AwlSimError("Multiple definitions of "\
 					"DB %d" % dbNumber)
 			rawDB.index = dbNumber
-			db = self.__translateDB(rawDB)
+			db = translator.translateDB(rawDB)
 			self.dbs[dbNumber] = db
 
 	def loadSymbolTable(self, symbolTable):

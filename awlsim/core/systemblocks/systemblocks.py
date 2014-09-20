@@ -26,6 +26,7 @@ from awlsim.core.compat import *
 
 from awlsim.core.instructions.insn_generic_call import * #@nocy
 from awlsim.core.blocks import *
+from awlsim.core.translator import *
 
 
 class SystemBlock(Block):
@@ -88,6 +89,7 @@ class SystemBlock(Block):
 	# (i.e. accesses not done in AWL instructions)
 	def resolveSymbols(self):
 		super(SystemBlock, self).resolveSymbols()
+		resolver = AwlSymResolver(self.cpu)
 		self.__interfaceOpers = {}
 		for field in self.interface.fields_IN_OUT_INOUT_STAT:
 			# Create a scratch-operator for the access.
@@ -96,7 +98,7 @@ class SystemBlock(Block):
 			oper = AwlOperator(AwlOperator.NAMED_LOCAL, 0,
 					   offset)
 			# Resolve the scratch-operator.
-			oper = self.cpu.resolveNamedLocal(block=self, insn=None,
+			oper = resolver.resolveNamedLocal(block=self, insn=None,
 							  oper=oper, pointer=False)
 			# Store the scratch operator for later use.
 			self.__interfaceOpers[field.name] = oper
