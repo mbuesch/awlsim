@@ -172,7 +172,7 @@ class AwlTranslator(object):
 		return db
 
 	def translateDB(self, rawDB):
-		if rawDB.index < 0:
+		if rawDB.index < 0 or rawDB.index > 0xFFFF:
 			raise AwlSimError("DB number %d is invalid" % rawDB.index)
 		if rawDB.isInstanceDB():
 			return self.__translateInstanceDB(rawDB)
