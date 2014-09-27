@@ -497,6 +497,8 @@ class AwlDataType(object):
 	def __parseGenericTime(cls, token):
 		# Parse T# or S5T# time formats.
 		# The prefix is already stripped.
+		if not token:
+			raise AwlSimError("Invalid time")
 		token = token.upper()
 		p = token
 		seconds = 0.0
