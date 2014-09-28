@@ -42,6 +42,8 @@ class MemoryArea(object):
 	FLG_ERR_READ	= 0x01
 	FLG_ERR_WRITE	= 0x02
 
+	_dwordStruct = struct.Struct(str(">I"))
+
 	def __init__(self, memType, flags, index, start, length, data=b''):
 		self.memType = memType
 		self.flags = flags
@@ -119,34 +121,18 @@ class MemoryArea(object):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Invalid timer index %d" % self.index)
 			)
-		if self.start == 1:
-			self.data, self.length = b'\x01' if timerget() else b'\x00', 1
-		elif self.start == 16:
-			v = timer.getTimevalBin()
-			self.data, self.length = bytes(((v >> 8) & 0xFF, v & 0xFF)), 2
-		else:
-			self.__raiseReadErr(
-				AwlSimError("MemoryArea: Invalid start=%d in timer read. "
-				"Must be 1 or 16." % self.start)
-			)
+		v = (timer.get() << 31) | timer.getTimevalS5TwithBase()
+		self.data, self.length = self._dwordStruct.pack(v), 4
 
 	def __read_Z(self, cpu):
 		try:
-			counter = cpu.timers[self.index]
+			counter = cpu.counters[self.index]
 		except IndexError as e:
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Invalid counter index %d" % self.index)
 			)
-		if self.start == 1:
-			self.data, self.length = b'\x01' if counter.get() else b'\x00', 1
-		elif self.start == 16:
-			v = counter.getValueBin()
-			self.data, self.length = bytes(((v >> 8) & 0xFF, v & 0xFF)), 2
-		else:
-			self.__raiseReadErr(
-				AwlSimError("MemoryArea: Invalid start=%d in counter read. "
-				"Must be 1 or 16." % self.start)
-			)
+		v = (counter.get() << 31) | counter.getValueBCD()
+		self.data, self.length = self._dwordStruct.pack(v), 4
 
 	def __read_STW(self, cpu):
 		stw = cpu.statusWord.getWord()
@@ -208,11 +194,47 @@ class MemoryArea(object):
 			)
 		dataBytes[self.start : end] = self.data
 
+	def __write_T(self, cpu):
+		try:
+			timer = cpu.timers[self.index]
+		except IndexError as e:
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Invalid timer index %d" % self.index)
+			)
+		try:
+			(dword, ) = self._dwordStruct.unpack(self.data)
+			if dword > 0xFFFF:
+				raise ValueError
+			timer.setTimevalS5T(dword)
+		except (struct.error, ValueError, AwlSimError) as e:
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Timer value error")
+			)
+
+	def __write_Z(self, cpu):
+		try:
+			counter = cpu.counters[self.index]
+		except IndexError as e:
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Invalid counter index %d" % self.index)
+			)
+		try:
+			(dword, ) = self._dwordStruct.unpack(self.data)
+			if dword > 0xFFFF:
+				raise ValueError
+			counter.setValueBCD(dword)
+		except (struct.error, ValueError, AwlSimError) as e:
+			self.__raiseWriteErr(
+				AwlSimError("MemoryArea: Counter value error")
+			)
+
 	__writeHandlers = {
 		TYPE_E		: __write_E,
 		TYPE_A		: __write_A,
 		TYPE_M		: __write_M,
 		TYPE_DB		: __write_DB,
+		TYPE_T		: __write_T,
+		TYPE_Z		: __write_Z,
 	}
 
 	def readFromCpu(self, cpu):
