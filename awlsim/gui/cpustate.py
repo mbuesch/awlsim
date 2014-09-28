@@ -200,7 +200,7 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 					       addr, width, db, parent)
 
 		self.base = base
-		self.__currentValue = 0
+		self.__currentValue = -1
 
 		self.line = ValueLineEdit(self.__validateInput, self)
 		self.layout().addWidget(self.line)
@@ -290,46 +290,43 @@ class RealDisplayWidget(AbstractDisplayWidget):
 		AbstractDisplayWidget.__init__(self, client, addrSpace,
 					       addr, width, db, parent)
 
-		self.displayedValue = -1
+		self.__currentValue = -1
 
-		self.line = QLineEdit(self)
-		self.line.setAlignment(Qt.AlignRight)
+		self.line = ValueLineEdit(self.__validateInput, self)
 		self.layout().addWidget(self.line)
 
-		self.line.returnPressed.connect(self.__returnPressed)
-		self.line.textChanged.connect(self.__textChanged)
+		self.line.valueChanged.connect(self.changed)
 
 		self.update()
 
-	def __returnPressed(self):
-		self.changed.emit()
-
-	def __convertValue(self):
+	def __convertValue(self, textValue):
 		try:
-			value = pyFloatToDWord(float(self.line.text()))
+			value = pyFloatToDWord(float(textValue))
 		except ValueError as e:
 			return None
 		return value
 
-	def __textChanged(self):
-		self._showValueValidity(self.__convertValue() is not None)
+	def __validateInput(self, inputString, pos):
+		if self.__convertValue(inputString) is None:
+			return QValidator.Intermediate
+		return QValidator.Acceptable
 
 	def get(self):
-		value = self.__convertValue()
+		value = self.__convertValue(self.line.text())
 		if value is None:
-			return self.displayedValue
+			return 0
 		return value
 
 	def setByte(self, offset, value):
 		mask = ~(0xFF << (self.width - 8 - (offset * 8))) & 0xFFFFFFFF
 		value = (value << (self.width - 8 - (offset * 8))) & 0xFFFFFFFF
-		value = (self.displayedValue & mask) | value
-		if self.displayedValue != value:
-			self.displayedValue = value
+		value = (self.__currentValue & mask) | value
+		if self.__currentValue != value:
+			self.__currentValue = value
 			self.__displayValue()
 
 	def __displayValue(self):
-		value = self.displayedValue
+		value = self.__currentValue
 		if self.width == 32:
 			string = str(dwordToPyFloat(value))
 		else:
