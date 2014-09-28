@@ -180,13 +180,13 @@ class _WordPacker:
 		return buf[byteOffset]
 
 	def __fromBytes_16(self, buf, byteOffset):
-		return _WordPacker._wordStruct.unpack(
-			buf[byteOffset : byteOffset+ 2]
+		return _WordPacker._wordStruct.unpack_from(
+			buf, byteOffset
 		)[0]
 
 	def __fromBytes_32(self, buf, byteOffset):
-		return _WordPacker._dwordStruct.unpack(
-			buf[byteOffset : byteOffset + 4]
+		return _WordPacker._dwordStruct.unpack_from(
+			buf, byteOffset
 		)[0]
 
 	__fromBytesHandlers = {
