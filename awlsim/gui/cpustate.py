@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.core.compat import *
 
+from awlsim.gui.valuelineedit import *
 from awlsim.gui.util import *
 
 
@@ -85,10 +86,12 @@ class State_CPU(StateWindow):
 		self.update()
 
 class AbstractDisplayWidget(QWidget):
-	ADDRSPACE_E		= AwlOperator.MEM_E
-	ADDRSPACE_A		= AwlOperator.MEM_A
-	ADDRSPACE_M		= AwlOperator.MEM_M
-	ADDRSPACE_DB		= AwlOperator.MEM_DB
+	EnumGen.start
+	ADDRSPACE_E		= EnumGen.item
+	ADDRSPACE_A		= EnumGen.item
+	ADDRSPACE_M		= EnumGen.item
+	ADDRSPACE_DB		= EnumGen.item
+	EnumGen.end
 
 	addrspace2name = {
 		ADDRSPACE_E	: ("I", "Inputs"),
@@ -248,28 +251,14 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 	def __displayValue(self):
 		value = self.displayedValue
 		if self.base == 2:
-			string = []
-			for bitnr in range(self.width - 1, -1, -1):
-				string.append('1' if ((value >> bitnr) & 1) else '0')
-				if bitnr and bitnr % 4 == 0:
-					string.append('_')
-			string = ''.join(string)
+			string = intToDualString(value)
 		elif self.base == 10:
 			if self.width == 8:
-				value &= 0xFF
-				if value & 0x80:
-					value = -((~value + 1) & 0xFF)
-				string = "%d" % value
+				string = "%d" % byteToSignedPyInt(value)
 			elif self.width == 16:
-				value &= 0xFFFF
-				if value & 0x8000:
-					value = -((~value + 1) & 0xFFFF)
-				string = "%d" % value
+				string = "%d" % wordToSignedPyInt(value)
 			elif self.width == 32:
-				value &= 0xFFFFFFFF
-				if value & 0x80000000:
-					value = -((~value + 1) & 0xFFFFFFFF)
-				string = "%d" % value
+				string = "%d" % dwordToSignedPyInt(value)
 			else:
 				assert(0)
 		elif self.base == 16:
@@ -692,6 +681,237 @@ class State_LCD(StateWindow):
 		self.lcd.setDigitCount(len(value))
 		self.lcd.display(value)
 		self.__changeBlocked -= 1
+
+class _State_TimerCounter(StateWindow):
+	def __init__(self, client, memAreaType, parent=None):
+		StateWindow.__init__(self, client, parent)
+		self.memAreaType = memAreaType
+
+		self.indexSpin = QSpinBox(self)
+		self.indexSpin.setMinimum(0)
+		self.indexSpin.setMaximum(0xFFFF)
+		self.layout().addWidget(self.indexSpin, 0, 0)
+
+		self.formatCombo = QComboBox(self)
+		self.layout().addWidget(self.formatCombo, 0, 1)
+
+		hbox = QHBoxLayout()
+		self.valueEdit = ValueLineEdit(self.__validateInput, self)
+		hbox.addWidget(self.valueEdit)
+		self.statusLabel = QLabel(self)
+		hbox.addWidget(self.statusLabel)
+		self.resetButton = QPushButton("R", self)
+		hbox.addWidget(self.resetButton)
+		self.layout().addLayout(hbox, 1, 0, 1, 2)
+
+		self.displayedStatus = 0
+
+		self.indexSpin.valueChanged.connect(self.rebuild)
+		self.formatCombo.currentIndexChanged.connect(self.rebuild)
+		self.valueEdit.valueChanged.connect(self.__newValueEntered)
+		self.resetButton.released.connect(self.reset)
+
+		self.__changeBlocked = 0
+		self.setMinimumWidth(310)
+		self.rebuild()
+
+	def reset(self):
+		self.__sendValue(0)
+
+	def __updateStatus(self):
+		self.statusLabel.setText("Q=%d" % self.displayedStatus)
+
+	def rebuild(self):
+		self.valueEdit.clear()
+		self.displayedStatus = 0
+		self.__updateStatus()
+		self.update()
+		self.configChanged.emit(self)
+
+	def __makeMemoryArea(self):
+		index = self.indexSpin.value()
+		return MemoryArea(memType = self.memAreaType,
+				  flags = 0,
+				  index = index,
+				  start = 0,
+				  length = 32)
+
+	def getMemoryAreas(self):
+		return ( self.__makeMemoryArea(), )
+
+	def setMemory(self, memArea):
+		if memArea.memType != self.memAreaType or\
+		   memArea.index != self.indexSpin.value():
+			return False
+
+		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
+			self.valueEdit.setEnabled(False)
+			return False
+		self.valueEdit.setEnabled(True)
+
+		try:
+			value = WordPacker.fromBytes(memArea.data, 32)
+			status = (value >> 31) & 1
+			value &= 0xFFFF
+		except AwlSimError as e:
+			return False
+		text = self.valueToText(value)
+		if text == self.valueEdit.text() and\
+		   status == self.displayedStatus:
+			return True
+
+		self.displayedStatus = status
+		self.__updateStatus()
+
+		self.__changeBlocked += 1
+		self.valueEdit.setText(text)
+		self.__changeBlocked -= 1
+
+		self.update()
+		return True
+
+	def textToValue(self, text):
+		raise NotImplementedError
+
+	def valueToText(self, value):
+		raise NotImplementedError
+
+	def __validateInput(self, inputString, pos):
+		if self.textToValue(inputString) is None:
+			return QValidator.Intermediate
+		return QValidator.Acceptable
+
+	def __newValueEntered(self, newText):
+		if self.__changeBlocked:
+			return
+
+		value = self.textToValue(newText)
+		if value is not None:
+			self.__sendValue(value)
+
+	def __sendValue(self, value):
+		memArea = self.__makeMemoryArea()
+		memArea.data = bytearray(4)
+		WordPacker.toBytes(memArea.data, 32, 0, value)
+		self.client.writeMemory((memArea,))
+
+class State_Timer(_State_TimerCounter):
+	def __init__(self, client, parent=None):
+		_State_TimerCounter.__init__(self, client,
+					     MemoryArea.TYPE_T,
+					     parent)
+		self.setWindowTitle("Timer")
+
+		self.indexSpin.setPrefix("T ")
+
+		self.formatCombo.addItem("Dual", "bin")
+		self.formatCombo.addItem("Hexadecimal", "hex")
+		self.formatCombo.addItem("S5Time", "s5t")
+
+		self.update()
+
+	def textToValue(self, text):
+		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
+		if fmt == "s5t":
+			try:
+				val = AwlDataType.tryParseImmediate_S5T(text)
+				if val is None:
+					return None
+			except AwlSimError as e:
+				return None
+		elif fmt == "bin":
+			try:
+				val = AwlDataType.tryParseImmediate_Bin(text)
+				if val is None:
+					return None
+				if val > 0xFFFF:
+					return None
+			except AwlSimError as e:
+				return None
+		elif fmt == "hex":
+			try:
+				val = AwlDataType.tryParseImmediate_HexWord(text)
+				if val is None:
+					return None
+			except AwlSimError as e:
+				return None
+		else:
+			assert(0)
+		if (val & 0xF000) > 0x3000 or\
+		   (val & 0x0F00) > 0x0900 or\
+		   (val & 0x00F0) > 0x0090 or\
+		   (val & 0x000F) > 0x0009:
+			return None
+		return val
+
+	def valueToText(self, value):
+		value &= 0xFFFF
+		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
+		if fmt == "s5t":
+			try:
+				seconds = Timer.s5t_to_seconds(value)
+				return "S5T#" + AwlDataType.formatTime(seconds, True)
+			except AwlSimError as e:
+				return ""
+		elif fmt == "bin":
+			text = "2#" + intToDualString(value, 16)
+		elif fmt == "hex":
+			text = "W#16#%04X" % value
+		else:
+			assert(0)
+		return text
+
+class State_Counter(_State_TimerCounter):
+	def __init__(self, client, parent=None):
+		_State_TimerCounter.__init__(self, client,
+					     MemoryArea.TYPE_Z,
+					     parent)
+		self.setWindowTitle("Counter")
+
+		self.indexSpin.setPrefix("C ")
+
+		self.formatCombo.addItem("BCD (counter)", "bcd")
+		self.formatCombo.addItem("Dual", "bin")
+
+		self.update()
+
+	def textToValue(self, text):
+		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
+		if fmt == "bin":
+			try:
+				val = AwlDataType.tryParseImmediate_Bin(text)
+				if val is None:
+					return None
+				if val > 0xFFFF:
+					return None
+			except AwlSimError as e:
+				return None
+		elif fmt == "bcd":
+			try:
+				val = AwlDataType.tryParseImmediate_BCD_word(text)
+				if val is None:
+					return None
+			except AwlSimError as e:
+				return None
+		else:
+			assert(0)
+		if val > 0x999 or\
+		   (val & 0x0F00) > 0x0900 or\
+		   (val & 0x00F0) > 0x0090 or\
+		   (val & 0x000F) > 0x0009:
+			return None
+		return val
+
+	def valueToText(self, value):
+		value &= 0xFFFF
+		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
+		if fmt == "bin":
+			text = "2#" + intToDualString(value, 16)
+		elif fmt == "bcd":
+			text = "C#%X" % value
+		else:
+			assert(0)
+		return text
 
 class StateWorkspace(QWorkspace):
 	def __init__(self, parent=None):

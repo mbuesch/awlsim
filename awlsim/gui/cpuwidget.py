@@ -78,6 +78,10 @@ class CpuWidget(QWidget):
 		group.layout().addWidget(self.newAButton, 1, 1)
 		self.newMButton = QPushButton("M", group)
 		group.layout().addWidget(self.newMButton, 1, 2)
+		self.newTButton = QPushButton("T", group)
+		group.layout().addWidget(self.newTButton, 2, 0)
+		self.newZButton = QPushButton("Z (C)", group)
+		group.layout().addWidget(self.newZButton, 2, 1)
 		self.layout().addWidget(group, 0, 1)
 
 		self.stateWs = StateWorkspace(self)
@@ -94,6 +98,8 @@ class CpuWidget(QWidget):
 		self.newEButton.released.connect(self.__newWin_E)
 		self.newAButton.released.connect(self.__newWin_A)
 		self.newMButton.released.connect(self.__newWin_M)
+		self.newTButton.released.connect(self.__newWin_T)
+		self.newZButton.released.connect(self.__newWin_Z)
 		self.newLCDButton.released.connect(self.__newWin_LCD)
 
 		self.__newWin_CPU()
@@ -128,6 +134,14 @@ class CpuWidget(QWidget):
 		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_M,
 					   self))
+
+	def __newWin_T(self):
+		self.__addWindow(State_Timer(self.mainWidget.getSimClient(),
+					     self))
+
+	def __newWin_Z(self):
+		self.__addWindow(State_Counter(self.mainWidget.getSimClient(),
+					       self))
 
 	def __newWin_LCD(self):
 		self.__addWindow(State_LCD(self.mainWidget.getSimClient(), self))

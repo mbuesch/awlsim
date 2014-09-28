@@ -49,6 +49,15 @@ import os
 import traceback
 
 
+# Convert an integer to a dual-string
+def intToDualString(value, bitWidth):
+	string = []
+	for bitnr in range(bitWidth - 1, -1, -1):
+		string.append('1' if ((value >> bitnr) & 1) else '0')
+		if bitnr and bitnr % 4 == 0:
+			string.append('_')
+	return ''.join(string)
+
 def handleFatalException(parentWidget=None):
 	text = str(traceback.format_exc())
 	print("Fatal exception:\n", text)
