@@ -533,7 +533,7 @@ class AwlDataType(object):
 		return seconds
 
 	@classmethod
-	def formatTime(cls, seconds):
+	def formatTime(cls, seconds, leadingZeros=False):
 		# Format a seconds value into time format.
 		d = int(seconds // 86400)
 		seconds -= d * 86400
@@ -545,8 +545,14 @@ class AwlDataType(object):
 		seconds -= s
 		ms = int(seconds * 1000.0)
 		ret = []
-		for v, b in ((d, "d"), (h, "h"), (m, "m"), (s, "s"), (ms, "ms")):
-			if v:
+		for v, b, d in ((d, "d", 1), (h, "h", 2), (m, "m", 2),
+				(s, "s", 2), (ms, "ms", 3)):
+			if not v:
+				continue
+			if leadingZeros:
+				fmt = "%0" + str(d) + "d%s"
+				ret.append(fmt % (v, b))
+			else:
 				ret.append("%d%s" % (v, b))
 		if not ret:
 			return "0ms"
