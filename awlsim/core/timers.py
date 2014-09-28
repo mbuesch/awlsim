@@ -2,7 +2,7 @@
 #
 # AWL simulator - timers
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -90,23 +90,23 @@ class Timer(object):
 	)
 
 	# Convert floating point seconds to S5T encoded value
-	@staticmethod
-	def seconds_to_s5t(seconds):
+	@classmethod
+	def seconds_to_s5t(cls, seconds):
 		if seconds < 0.0:
 			raise AwlSimError("Cannot convert %f seconds "
 					  "to S5T" % seconds)
 		if seconds <= 9.99:
-			timebase = Timer.TB_10MS
+			timebase = cls.TB_10MS
 		elif seconds <= 99.9:
-			timebase = Timer.TB_100MS
+			timebase = cls.TB_100MS
 		elif seconds <= 999.0:
-			timebase = Timer.TB_1S
+			timebase = cls.TB_1S
 		elif seconds <= 9990.0:
-			timebase = Timer.TB_10S
+			timebase = cls.TB_10S
 		else:
 			raise AwlSimError("Cannot convert %f seconds "
 					  "to S5T" % seconds)
-		return Timer.__seconds_to_s5t_table[timebase](seconds)
+		return cls.__seconds_to_s5t_table[timebase](seconds)
 
 	__s5t_base2sec = (
 		0.01,	# TB_10MS
@@ -116,14 +116,14 @@ class Timer(object):
 	)
 
 	# Convert S5T encoded value to floating point seconds
-	@staticmethod
-	def s5t_to_seconds(s5t):
+	@classmethod
+	def s5t_to_seconds(cls, s5t):
 		a, b, c = (s5t & 0xF), ((s5t >> 4) & 0xF),\
 			  ((s5t >> 8) & 0xF)
-		if (s5t & ~Timer.TB_MASK_S) > 0x999 or a > 9 or b > 9 or c > 9:
+		if (s5t & ~cls.TB_MASK_S) > 0x999 or a > 9 or b > 9 or c > 9:
 			raise AwlSimError("Invalid S5T value: %04X" % s5t)
-		return Timer.__s5t_base2sec[
-			(s5t >> Timer.TB_SHIFT) & Timer.TB_MASK] * (\
+		return cls.__s5t_base2sec[
+			(s5t >> cls.TB_SHIFT) & cls.TB_MASK] * (\
 			a + (b * 10) + (c * 100))
 
 	# Get the timer status (Q)
@@ -136,17 +136,30 @@ class Timer(object):
 		self.running, self.status, self.remaining =\
 			False, 0, 0.0
 
-	# Return the timer value in binary
+	# Set the timeval of a running counter.
+	def setTimevalS5T(self, s5t):
+		if self.running:
+			self.__start(s5t)
+
+	# Return the timer value in binary.
+	# The interpretation of the result depends on the active timebase.
 	def getTimevalBin(self):
 		return int(round(
 			self.__getRemainingSeconds() / \
-			Timer.__s5t_base2sec[self.timebase]
+			self.__s5t_base2sec[self.timebase]
 		))
 
-	# Return the timer value in S5T BCD format
+	# Return the timer value in S5T BCD format.
+	# The interpretation of the result depends on the active timebase.
 	def getTimevalS5T(self):
 		return self.__seconds_to_s5t_table[self.timebase](
 				self.__getRemainingSeconds())
+
+	# Return the timer value in S5T BCD format with timebase.
+	def getTimevalS5TwithBase(self):
+		return self.__seconds_to_s5t_table[self.timebase](
+				self.__getRemainingSeconds()) |\
+			(self.timebase << self.TB_SHIFT)
 
 	# Get the remaining time, in seconds
 	def __getRemainingSeconds(self):
@@ -208,7 +221,7 @@ class Timer(object):
 
 	def __start(self, s5t):
 		self.timebase = (s5t >> self.TB_SHIFT) & self.TB_MASK
-		self.deadline = self.cpu.now + Timer.s5t_to_seconds(s5t)
+		self.deadline = self.cpu.now + self.s5t_to_seconds(s5t)
 		self.__updateRemaining()
 		self.running = True
 
