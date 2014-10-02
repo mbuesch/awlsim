@@ -1,0 +1,38 @@
+Icon licenses
+=============
+
+
+GNU General Public License 2 (GPLv2)
+    https://www.gnu.org/licenses/gpl-2.0.html
+
+GNU Lesser General Public License 2.1 (LGPL-2.1)
+    https://www.gnu.org/licenses/lgpl-2.1.html
+
+Public Domain (PD)
+    https://en.wikipedia.org/wiki/Public_domain
+
+Creative Commons Attribution-Share Alike 3.0 Unported (CC-BY-SA 3.0)
+    https://creativecommons.org/licenses/by-sa/3.0/
+
+
+File Name                     | Source                        | License
+------------------------------+-------------------------------+---------------------
+appointment-soon.svg          | gnome                         | GPLv2
+counter.png                   | edit-4.svg                    | LGPL-2.1
+document-new-3.svg            | gnome                         | GPLv2
+document-open-5.svg           | tango                         | PD
+document-save-all.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
+edit-4.svg                    | nuvola                        | LGPL-2.1
+go-next-7.svg                 | oxygen                        | CC-BY-SA 3.0 or LGPL
+inputs.png                    | network-server.svg and        | CC-BY-SA 3.0 or LGPL
+                              | go-next-7.svg                 |
+lcd.png                       | awlsim                        | PD
+media-playback-start-4.svg    | gnome                         | GPLv2
+media-playback-stop-4.svg     | gnome                         | GPLv2
+memory_bits.png               | view-calendar-workweek-2.svg  | CC-BY-SA 3.0 or LGPL
+network-server.svg            | oxygen                        | CC-BY-SA 3.0 or LGPL
+outputs.png                   | network-server.svg and        | CC-BY-SA 3.0 or LGPL
+                              | go-next-7.svg                 |
+pictograms-protections.svg    | open_clip_art_library         | PD
+server-database.svg           | oxygen                        | CC-BY-SA 3.0 or LGPL
+view-calendar-workweek-2.svg  | oxygen                        | CC-BY-SA 3.0 or LGPL

@@ -27,6 +27,7 @@ from awlsim.gui.editwidget import *
 from awlsim.gui.projectwidget import *
 from awlsim.gui.cpuconfig import *
 from awlsim.gui.coreconfig import *
+from awlsim.gui.icons import *
 
 from awlsim.coreserver.client import *
 
@@ -188,14 +189,15 @@ class MainWindow(QMainWindow):
 
 		self.setWindowTitle("Awlsim - AWL/STL Soft-PLC v%d.%d" %\
 				    (VERSION_MAJOR, VERSION_MINOR))
+		self.setWindowIcon(getIcon("cpu"))
 		self.setCentralWidget(MainWidget(self))
 
 		self.setMenuBar(QMenuBar(self))
 
 		menu = QMenu("&File", self)
-		menu.addAction("&Open...", self.load)
-		self.saveAct = menu.addAction("&Save", self.save)
-		menu.addAction("&Save as...", self.saveAs)
+		menu.addAction(getIcon("open"), "&Open...", self.load)
+		self.saveAct = menu.addAction(getIcon("save"), "&Save", self.save)
+		menu.addAction(getIcon("save"), "&Save as...", self.saveAs)
 		menu.addSeparator()
 		menu.addAction("&Exit...", self.close)
 		self.menuBar().addMenu(menu)
@@ -217,12 +219,12 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("Help", self)
-		menu.addAction("&About...", self.about)
+		menu.addAction(getIcon("cpu"), "&About...", self.about)
 		self.menuBar().addMenu(menu)
 
 		self.tb = QToolBar(self)
-		self.tb.addAction("Open", self.load)
-		self.tbSaveAct = self.tb.addAction("Save", self.save)
+		self.tb.addAction(getIcon("open"), "Open", self.load)
+		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save", self.save)
 		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)

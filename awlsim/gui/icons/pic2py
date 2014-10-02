@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import sys
+import base64
+from PySide.QtCore import *
+from PySide.QtGui import *
+from PySide.QtSvg import *
+
+qapp = QApplication(sys.argv)
+
+inFile = sys.argv[1]
+outFile = sys.argv[2]
+
+if inFile.lower().endswith(".svg"):
+	render = QSvgRenderer(inFile)
+	img = QImage(48, 48, QImage.Format_ARGB32)
+	img.fill(QColor(0, 0, 0, 0))
+	painter = QPainter()
+	painter.begin(img)
+	render.render(painter)
+	painter.end()
+else:
+	img = QImage(inFile)
+
+ba = QByteArray()
+buf = QBuffer(ba)
+buf.open(QIODevice.WriteOnly)
+img.save(buf, "PNG")
+imgB64 = base64.b64encode(ba.data())
+fd = open(outFile, "wb")
+baseName = outFile.split("/")[-1]
+baseName = baseName[ : baseName.rfind(".")]
+varName = baseName.replace("-", "_")
+varDef = "icon_%s = b'" % varName
+fd.write(b"# AUTOMATICALLY GENERATED FILE\n")
+fd.write(b"# DO NOT EDIT\n")
+fd.write(b"\n")
+fd.write(("# Generated from %s\n" % inFile.split("/")[-1]).encode())
+fd.write(b"\n")
+fd.write(varDef.encode())
+while imgB64:
+	fd.write(imgB64[:48])
+	imgB64 = imgB64[48:]
+	if imgB64:
+		fd.write(b"'\\\n" + b" " * (len(varDef) - 2) + b"b'")
+fd.write(b"'\n")
+
+qapp.exit(0)

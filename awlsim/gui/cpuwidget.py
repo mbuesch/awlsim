@@ -25,7 +25,43 @@ from awlsim.core.compat import *
 from awlsim.gui.util import *
 from awlsim.gui.cpustate import *
 from awlsim.gui.awlsimclient import *
+from awlsim.gui.icons import *
 
+
+class ToolButton(QPushButton):
+	ICONSIZE	= (32, 32)
+	BTNFACT		= 1.3
+
+	def __init__(self, iconName, description, parent=None):
+		QPushButton.__init__(self, parent)
+
+		iconSize = QSize(self.ICONSIZE[0], self.ICONSIZE[1])
+		btnSize = QSize(int(round(iconSize.width() * self.BTNFACT)),
+				int(round(iconSize.height() * self.BTNFACT)))
+
+		self.setMinimumSize(btnSize)
+		self.setMaximumSize(btnSize)
+		self.setIcon(getIcon(iconName))
+		self.setIconSize(iconSize)
+
+		self.setToolTip(description)
+
+class RunButton(ToolButton):
+	def __init__(self, parent=None):
+		ToolButton.__init__(self, "run", "", parent)
+
+		self.setCheckable(True)
+		self.setChecked(False)
+		self.__handleToggle(False)
+		self.toggled.connect(self.__handleToggle)
+
+	def __handleToggle(self, checked):
+		if checked:
+			self.setIcon(getIcon("stop"))
+			self.setToolTip("Click to stop CPU")
+		else:
+			self.setIcon(getIcon("run"))
+			self.setToolTip("Click to start CPU")
 
 class CpuWidget(QWidget):
 	# Signal: The CPU run-state changed
@@ -54,45 +90,46 @@ class CpuWidget(QWidget):
 		client.haveInsnDump.connect(self.haveInsnDump)
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
 
-		group = QGroupBox("CPU status", self)
-		group.setLayout(QGridLayout(group))
-		self.runButton = QRadioButton("RUN", group)
-		group.layout().addWidget(self.runButton, 0, 0)
-		self.stopButton = QRadioButton("STOP", group)
-		group.layout().addWidget(self.stopButton, 1, 0)
-		self.onlineViewCheckBox = QCheckBox("Online diag.", group)
-		group.layout().addWidget(self.onlineViewCheckBox, 2, 0)
-		self.layout().addWidget(group, 0, 0)
+		toolsLayout = QHBoxLayout()
 
-		group = QGroupBox("Add window", self)
+		group = QGroupBox("CPU", self)
 		group.setLayout(QGridLayout(group))
-		self.newEButton = QPushButton("E (I)", group)
+		self.runButton = RunButton(group)
+		group.layout().addWidget(self.runButton, 0, 0)
+		self.onlineDiagButton = ToolButton("glasses", "Online diagnosis", group)
+		self.onlineDiagButton.setCheckable(True)
+		group.layout().addWidget(self.onlineDiagButton, 0, 1)
+		toolsLayout.addWidget(group)
+
+		group = QGroupBox("Inspection", self)
+		group.setLayout(QGridLayout(group))
+		self.newEButton = ToolButton("inputs", "Input memory (I / E)", group)
 		group.layout().addWidget(self.newEButton, 0, 0)
-		self.newAButton = QPushButton("A (Q)", group)
+		self.newAButton = ToolButton("outputs", "Output memory (Q / A)", group)
 		group.layout().addWidget(self.newAButton, 0, 1)
-		self.newMButton = QPushButton("M", group)
+		self.newMButton = ToolButton("flags", "Flag memory (M)", group)
 		group.layout().addWidget(self.newMButton, 0, 2)
-		self.newDBButton = QPushButton("DB", group)
-		group.layout().addWidget(self.newDBButton, 1, 0)
-		self.newTButton = QPushButton("T", group)
-		group.layout().addWidget(self.newTButton, 1, 1)
-		self.newZButton = QPushButton("Z (C)", group)
-		group.layout().addWidget(self.newZButton, 1, 2)
-		self.newCpuStateButton = QPushButton("CPU", group)
-		group.layout().addWidget(self.newCpuStateButton, 2, 0)
-		self.newLCDButton = QPushButton("LCD", group)
-		group.layout().addWidget(self.newLCDButton, 2, 1)
-		self.layout().addWidget(group, 0, 1)
+		self.newDBButton = ToolButton("datablock", "Data block (DB)", group)
+		group.layout().addWidget(self.newDBButton, 0, 3)
+		self.newTButton = ToolButton("timer", "Timer (T)", group)
+		group.layout().addWidget(self.newTButton, 0, 4)
+		self.newZButton = ToolButton("counter", "Counter (C / Z)", group)
+		group.layout().addWidget(self.newZButton, 0, 5)
+		self.newCpuStateButton = ToolButton("cpu", "CPU status", group)
+		group.layout().addWidget(self.newCpuStateButton, 0, 6)
+		self.newLCDButton = ToolButton("lcd", "LCD", group)
+		group.layout().addWidget(self.newLCDButton, 0, 7)
+		toolsLayout.addWidget(group)
+
+		toolsLayout.addStretch()
+		self.layout().addLayout(toolsLayout, 0, 0)
 
 		self.stateWs = StateWorkspace(self)
 		self.stateWs.setScrollBarsEnabled(True)
-		self.layout().addWidget(self.stateWs, 1, 0, 1, 2)
-
-		self.stopButton.setChecked(Qt.Checked)
+		self.layout().addWidget(self.stateWs, 1, 0)
 
 		self.runButton.toggled.connect(self.__runStateToggled)
-		self.stopButton.toggled.connect(self.__runStateToggled)
-		self.onlineViewCheckBox.stateChanged.connect(self.__updateOnlineViewState)
+		self.onlineDiagButton.toggled.connect(self.__updateOnlineViewState)
 		self.newCpuStateButton.released.connect(self.__newWin_CPU)
 		self.newDBButton.released.connect(self.__newWin_DB)
 		self.newEButton.released.connect(self.__newWin_E)
@@ -299,8 +336,7 @@ class CpuWidget(QWidget):
 	def stop(self):
 		if self.state == self.STATE_STOP:
 			return
-		self.stopButton.setChecked(True)
-		self.runButton.setEnabled(True)
+		self.runButton.setChecked(False)
 		self.__setState(self.STATE_STOP)
 
 	def run(self):
@@ -321,16 +357,16 @@ class CpuWidget(QWidget):
 		if self.runButton.isChecked():
 			if self.state == self.STATE_STOP:
 				self.__run()
-		if self.stopButton.isChecked():
+		else:
 			if self.state != self.STATE_STOP:
 				self.stop()
 
 	def __updateOnlineViewState(self):
-		onlineDiagEn = self.onlineViewCheckBox.checkState() == Qt.Checked
+		onlineDiagEn = self.onlineDiagButton.isChecked()
 		self.onlineDiagChanged.emit(onlineDiagEn)
 
 	def updateVisibleLineRange(self, source, fromLine, toLine):
-		onlineDiagEn = self.onlineViewCheckBox.checkState() == Qt.Checked
+		onlineDiagEn = self.onlineDiagButton.isChecked()
 		try:
 			client = self.mainWidget.getSimClient()
 			if onlineDiagEn and source:
