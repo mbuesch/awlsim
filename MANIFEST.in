@@ -7,9 +7,11 @@ include COMPATIBILITY.txt
 include awlsim-wininst-postinstall.py
 include py2exe-build.bat
 include awlsimhw_linuxcnc/awlsim.hal
+include awlsim/gui/icons/pic2py
 graft tests
 graft fake
 graft doc
+graft awlsim/gui/icons/icon-images
 
 global-include *.pxd.in
 
