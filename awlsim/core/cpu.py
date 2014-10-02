@@ -259,11 +259,6 @@ class S7CPU(object): #+cdef
 
 	# Run static error checks
 	def __staticSanityChecks(self):
-		try:
-			self.obs[1]
-		except KeyError:
-			raise AwlSimError("No OB1 defined")
-
 		for block in self.__allUserCodeBlocks():
 			self.__staticSanityChecks_block(block)
 
@@ -277,7 +272,8 @@ class S7CPU(object): #+cdef
 		for obNumber, rawOB in parseTree.obs.items():
 			obNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_OB_X,),
 								  obNumber)
-			if obNumber in self.obs:
+			if obNumber in self.obs and\
+			   self.obs[obNumber].insns:
 				raise AwlSimError("Multiple definitions of "\
 					"OB %d" % obNumber)
 			rawOB.index = obNumber
@@ -369,6 +365,7 @@ class S7CPU(object): #+cdef
 		}
 		self.obs = {
 			# OBs
+			1 : OB([], 1), # Empty OB1
 		}
 		self.obTempPresetHandlers = {
 			# OB TEMP-preset handlers
