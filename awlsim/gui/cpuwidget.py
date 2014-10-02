@@ -81,6 +81,7 @@ class CpuWidget(QWidget):
 	def __init__(self, mainWidget, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
+		self.layout().setContentsMargins(QMargins(7, 0, 0, 0))
 
 		self.mainWidget = mainWidget
 		self.state = self.STATE_STOP
