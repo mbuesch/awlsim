@@ -21,13 +21,17 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
-from awlsim.core.util import *
+
+import distutils.spawn
 
 if isIronPython:
 	import os
 	import signal
 else:
 	import subprocess
+
+def findExecutable(executable):
+	return distutils.spawn.find_executable(executable)
 
 class PopenWrapper(object):
 	def __init__(self, argv, env, shell):

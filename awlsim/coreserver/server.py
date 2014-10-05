@@ -22,16 +22,15 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common import *
 from awlsim.core.main import *
 from awlsim.core.parser import *
 from awlsim.core.cpuspecs import *
 
 from awlsim.coreserver.messages import *
-from awlsim.common import *
 
 import sys
 import os
-import distutils.spawn
 import select
 import signal
 import socket
@@ -123,10 +122,6 @@ class AwlSimServer(object):
 		return result
 
 	@classmethod
-	def findExecutable(cls, executable):
-		return distutils.spawn.find_executable(executable)
-
-	@classmethod
 	def start(cls, listenHost, listenPort,
 		  forkInterpreter=None,
 		  forkServerProcess=None,
@@ -146,7 +141,7 @@ class AwlSimServer(object):
 
 		if forkServerProcess:
 			# Fork a new server process.
-			proc = cls.findExecutable(forkServerProcess)
+			proc = findExecutable(forkServerProcess)
 			printInfo("Forking server process '%s'" % proc)
 			if not proc:
 				raise AwlSimError("Failed to run executable '%s'" %\
@@ -157,7 +152,7 @@ class AwlSimServer(object):
 			return serverProcess
 		elif forkInterpreter:
 			# Fork a new interpreter process and run server.py as module.
-			interp = cls.findExecutable(forkInterpreter)
+			interp = findExecutable(forkInterpreter)
 			printInfo("Forking awlsim core server with interpreter '%s'" % interp)
 			if not interp:
 				raise AwlSimError("Failed to find interpreter "

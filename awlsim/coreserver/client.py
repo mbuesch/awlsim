@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common import *
 from awlsim.coreserver.server import *
 from awlsim.coreserver.messages import *
 
@@ -59,7 +60,7 @@ class AwlSimClient(object):
 
 		if serverExecutable:
 			for serverExe in toList(serverExecutable):
-				if not AwlSimServer.findExecutable(serverExe):
+				if not findExecutable(serverExe):
 					continue
 				self.serverProcess = AwlSimServer.start(listenHost = listenHost,
 									listenPort = listenPort,
@@ -73,7 +74,7 @@ class AwlSimClient(object):
 			if interpreter is None:
 				interpreter = sys.executable
 			for interp in toList(interpreter):
-				if not AwlSimServer.findExecutable(interp):
+				if not findExecutable(interp):
 					continue
 				self.serverProcess = AwlSimServer.start(listenHost = listenHost,
 									listenPort = listenPort,
