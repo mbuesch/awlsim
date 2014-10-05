@@ -40,8 +40,6 @@ from awlsim.gui.icons.save import *
 from awlsim.gui.icons.new import *
 
 import base64
-from PySide.QtCore import *
-from PySide.QtGui import *
 
 
 __icons = {
