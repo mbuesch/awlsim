@@ -22,6 +22,9 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+import sys
+import os
+
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.projectwidget import *
@@ -82,20 +85,6 @@ class MainWidget(QWidget):
 	def __somethingChanged(self):
 		self.cpuWidget.stop()
 		self.dirty = True
-		self.dirtyChanged.emit(self.dirty)
-
-	def new(self):
-		if self.dirty:
-			res = QMessageBox.question(self,
-				"Create new project - unsaved changes",
-				"Unsaved changes in the current project will be lost.\n"
-				"Do you want to continue?",
-				QMessageBox.Yes | QMessageBox.No)
-			if res != QMessageBox.Yes:
-				return
-		self.projectWidget.reset()
-		self.filename = None
-		self.dirty = False
 		self.dirtyChanged.emit(self.dirty)
 
 	def loadFile(self, filename):
@@ -329,7 +318,22 @@ class MainWindow(QMainWindow):
 			(VERSION_MAJOR, VERSION_MINOR))
 
 	def new(self):
-		self.centralWidget().new()
+		if isWinStandalone:
+			executableName = "awlsim-gui.exe"
+		else:
+			executableName = sys.executable
+		executable = findExecutable(executableName)
+		if not executable:
+			QMessageBox.critical(self,
+				"Failed to find '%s'" % executableName,
+				"Could not spawn a new instance.\n"
+				"Failed to find '%s'" % executableName)
+			return
+		if isWinStandalone:
+			argv = [ executable, ]
+		else:
+			argv = [ executable, "-m", "awlsim.gui.mainwindow", ]
+		PopenWrapper(argv, env = os.environ)
 
 	def load(self):
 		self.centralWidget().load()
@@ -345,3 +349,7 @@ class MainWindow(QMainWindow):
 
 	def coreConfig(self):
 		self.centralWidget().coreConfig()
+
+# If invoked as script, run a new instance.
+if __name__ == "__main__":
+	sys.exit(MainWindow.start().runEventLoop())
