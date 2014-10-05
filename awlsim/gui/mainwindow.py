@@ -87,9 +87,51 @@ class MainWidget(QWidget):
 		self.dirty = True
 		self.dirtyChanged.emit(self.dirty)
 
+	def newFile(self, filename=None):
+		if isWinStandalone:
+			executableName = "awlsim-gui.exe"
+		else:
+			executableName = sys.executable
+		executable = findExecutable(executableName)
+		if not executable:
+			QMessageBox.critical(self,
+				"Failed to find '%s'" % executableName,
+				"Could not spawn a new instance.\n"
+				"Failed to find '%s'" % executableName)
+			return
+		if isWinStandalone:
+			argv = [ executable, ]
+		else:
+			argv = [ executable, "-m", "awlsim.gui.mainwindow", ]
+		if filename:
+			argv.append(filename)
+		PopenWrapper(argv, env = os.environ)
+
 	def loadFile(self, filename):
 		if self.dirty:
-			pass#TODO
+			res = QMessageBox.question(self,
+				"Unsaved project",
+				"The current project is modified and contains unsaved changes.\n "
+				"Do you want to:\n"
+				"- Save the project, close it and open the new project\n"
+				"- Open the new project in a new instance or\n"
+				"- Discard the changes and open the new project\n"
+				"- Cancel the operation",
+				QMessageBox.Save | QMessageBox.Discard |\
+				QMessageBox.Open | QMessageBox.Cancel,
+				QMessageBox.Open)
+			if res == QMessageBox.Save:
+				if not self.save():
+					return
+			elif res == QMessageBox.Discard:
+				pass
+			elif res == QMessageBox.Open:
+				self.newFile(filename)
+				return
+			elif res == QMessageBox.Cancel:
+				return
+			else:
+				assert(0)
 		try:
 			res = self.projectWidget.loadProjectFile(filename)
 			if not res:
@@ -320,22 +362,7 @@ class MainWindow(QMainWindow):
 			(VERSION_MAJOR, VERSION_MINOR))
 
 	def new(self):
-		if isWinStandalone:
-			executableName = "awlsim-gui.exe"
-		else:
-			executableName = sys.executable
-		executable = findExecutable(executableName)
-		if not executable:
-			QMessageBox.critical(self,
-				"Failed to find '%s'" % executableName,
-				"Could not spawn a new instance.\n"
-				"Failed to find '%s'" % executableName)
-			return
-		if isWinStandalone:
-			argv = [ executable, ]
-		else:
-			argv = [ executable, "-m", "awlsim.gui.mainwindow", ]
-		PopenWrapper(argv, env = os.environ)
+		self.centralWidget().newFile()
 
 	def load(self):
 		self.centralWidget().load()
@@ -354,4 +381,5 @@ class MainWindow(QMainWindow):
 
 # If invoked as script, run a new instance.
 if __name__ == "__main__":
-	sys.exit(MainWindow.start().runEventLoop())
+	fn = sys.argv[1] if (len(sys.argv) >= 2) else None
+	sys.exit(MainWindow.start(initialAwlSource = fn).runEventLoop())
