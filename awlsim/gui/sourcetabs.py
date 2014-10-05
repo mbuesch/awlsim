@@ -20,7 +20,7 @@
 #
 
 from __future__ import division, absolute_import, print_function, unicode_literals
-from awlsim.core.compat import *
+from awlsim.common.compat import *
 
 from awlsim.gui.editwidget import *
 from awlsim.gui.symtabwidget import *

@@ -20,7 +20,7 @@
 #
 
 from __future__ import division, absolute_import, print_function, unicode_literals
-from awlsim.core.compat import *
+from awlsim.common.compat import *
 
 import sys
 import re
@@ -28,10 +28,13 @@ import re
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
 from awlsim.core.project import *
+from awlsim.core.objectident import *
 
 
-class RawAwlInsn(object):
+class RawAwlInsn(ObjIdent):
 	def __init__(self, block):
+		ObjIdent.__init__(self)
+
 		self.block = block
 		self.sourceId = None
 		self.lineNr = 0
@@ -90,6 +93,16 @@ class RawAwlInsn(object):
 
 	def hasOperators(self):
 		return bool(self.getOperators())
+
+	def getIdentData(self):
+		#FIXME encodings
+		yield self.name
+		if self.hasLabel():
+			yield self.label
+		#TODO lineNr
+		for oper in self.ops:
+			yield oper
+		pass#TODO
 
 class RawAwlBlock(object):
 	def __init__(self, tree, index):

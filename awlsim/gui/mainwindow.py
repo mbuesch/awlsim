@@ -20,7 +20,7 @@
 #
 
 from __future__ import division, absolute_import, print_function, unicode_literals
-from awlsim.core.compat import *
+from awlsim.common.compat import *
 
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
@@ -192,15 +192,12 @@ class MainWindow(QMainWindow):
 		  initialAwlSource = None):
 		if not qApplication:
 			qApplication = QApplication(sys.argv)
-		mainwnd = cls(qApplication,
-			      initialAwlSource)
+		mainwnd = cls(initialAwlSource)
 		mainwnd.show()
 		return mainwnd
 
-	def __init__(self, qApplication, awlSource=None):
-		QMainWindow.__init__(self)
-		self.qApplication = qApplication
-
+	def __init__(self, awlSource=None, parent=None):
+		QMainWindow.__init__(self, parent)
 		self.setWindowTitle("Awlsim - AWL/STL Soft-PLC v%d.%d" %\
 				    (VERSION_MAJOR, VERSION_MINOR))
 		self.setWindowIcon(getIcon("cpu"))
@@ -273,7 +270,7 @@ class MainWindow(QMainWindow):
 		self.centralWidget().insertFBcall()
 
 	def runEventLoop(self):
-		return self.qApplication.exec_()
+		return QApplication.exec_()
 
 	def getSimClient(self):
 		return self.centralWidget().getSimClient()
