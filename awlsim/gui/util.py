@@ -22,10 +22,11 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-import sys
-from awlsim.core import *
+from awlsim.common import *
 from awlsim.coreserver import *
 import awlsim.cython_helper
+
+import sys
 
 if isPyPy or isJython:
 	# PySide does not work on PyPy or Jython, yet.

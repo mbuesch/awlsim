@@ -22,8 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.exceptions import *
-from awlsim.core.enumeration import *
+from awlsim.common import *
 
 import sys
 import os
