@@ -147,8 +147,7 @@ class AwlSimServer(object):
 				raise AwlSimError("Failed to run executable '%s'" %\
 						  forkServerProcess)
 			serverProcess = PopenWrapper([proc],
-						     env = env,
-						     shell = False)
+						     env = env)
 			return serverProcess
 		elif forkInterpreter:
 			# Fork a new interpreter process and run server.py as module.
@@ -158,8 +157,7 @@ class AwlSimServer(object):
 				raise AwlSimError("Failed to find interpreter "
 						  "executable '%s'" % forkInterpreter)
 			serverProcess = PopenWrapper([interp, "-m", "awlsim.coreserver.server"],
-						     env = env,
-						     shell = False)
+						     env = env)
 			return serverProcess
 		else:
 			# Do not fork. Just run the server in this process.
