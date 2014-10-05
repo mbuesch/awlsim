@@ -88,6 +88,8 @@ class MainWidget(QWidget):
 		self.dirtyChanged.emit(self.dirty)
 
 	def loadFile(self, filename):
+		if self.dirty:
+			pass#TODO
 		try:
 			res = self.projectWidget.loadProjectFile(filename)
 			if not res:
