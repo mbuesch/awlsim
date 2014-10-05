@@ -41,8 +41,8 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hx",
-			[ "help", "extended-insns", ])
+			"h",
+			[ "help", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
