@@ -31,7 +31,7 @@ import random
 #from awlsim.core.statusword cimport * #@cy
 #from awlsim.core.instructions.all_insns cimport * #@cy
 
-from awlsim.core.cpuspecs import *
+from awlsim.common.cpuspecs import *
 from awlsim.core.parser import *
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *

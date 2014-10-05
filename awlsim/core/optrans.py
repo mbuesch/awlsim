@@ -26,13 +26,13 @@ import re
 
 #from awlsim.core.statusword cimport * #@cy
 
+from awlsim.common.cpuspecs import *
 from awlsim.core.util import *
 from awlsim.core.operators import *
 from awlsim.core.parameters import *
 from awlsim.core.datatypes import *
 from awlsim.core.parser import *
 from awlsim.core.timers import *
-from awlsim.core.cpuspecs import *
 
 
 class OpDescriptor(object):

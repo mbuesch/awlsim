@@ -23,10 +23,10 @@ from awlsim.common.compat import *
 
 #from awlsim.core.instructions.all_insns cimport * #@cy
 
+from awlsim.common.cpuspecs import *
 from awlsim.core.util import *
 from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.parser import *
-from awlsim.core.cpuspecs import *
 
 
 class AwlInsnTranslator(object):

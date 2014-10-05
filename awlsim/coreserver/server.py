@@ -22,10 +22,9 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.common import *
+from awlsim.common.cpuspecs import *
 from awlsim.core.main import *
 from awlsim.core.parser import *
-from awlsim.core.cpuspecs import *
 
 from awlsim.coreserver.messages import *
 
