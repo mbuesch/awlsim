@@ -37,6 +37,7 @@ from awlsim.gui.icons.lcd import *
 from awlsim.gui.icons.glasses import *
 from awlsim.gui.icons.open import *
 from awlsim.gui.icons.save import *
+from awlsim.gui.icons.new import *
 
 import base64
 from PySide.QtCore import *
@@ -57,6 +58,7 @@ __icons = {
 	"glasses"	: icon_glasses,
 	"open"		: icon_open,
 	"save"		: icon_save,
+	"new"		: icon_new,
 }
 
 def getIcon(iconName):

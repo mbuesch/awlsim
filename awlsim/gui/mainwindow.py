@@ -84,6 +84,20 @@ class MainWidget(QWidget):
 		self.dirty = True
 		self.dirtyChanged.emit(self.dirty)
 
+	def new(self):
+		if self.dirty:
+			res = QMessageBox.question(self,
+				"Create new project - unsaved changes",
+				"Unsaved changes in the current project will be lost.\n"
+				"Do you want to continue?",
+				QMessageBox.Yes | QMessageBox.No)
+			if res != QMessageBox.Yes:
+				return
+		self.projectWidget.reset()
+		self.filename = None
+		self.dirty = False
+		self.dirtyChanged.emit(self.dirty)
+
 	def loadFile(self, filename):
 		try:
 			res = self.projectWidget.loadProjectFile(filename)
@@ -195,9 +209,10 @@ class MainWindow(QMainWindow):
 		self.setMenuBar(QMenuBar(self))
 
 		menu = QMenu("&File", self)
-		menu.addAction(getIcon("open"), "&Open...", self.load)
-		self.saveAct = menu.addAction(getIcon("save"), "&Save", self.save)
-		menu.addAction(getIcon("save"), "&Save as...", self.saveAs)
+		menu.addAction(getIcon("new"), "&New project", self.new)
+		menu.addAction(getIcon("open"), "&Open project...", self.load)
+		self.saveAct = menu.addAction(getIcon("save"), "&Save project", self.save)
+		menu.addAction(getIcon("save"), "&Save project as...", self.saveAs)
 		menu.addSeparator()
 		menu.addAction("&Exit...", self.close)
 		self.menuBar().addMenu(menu)
@@ -223,8 +238,9 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		self.tb = QToolBar(self)
-		self.tb.addAction(getIcon("open"), "Open", self.load)
-		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save", self.save)
+		self.tb.addAction(getIcon("new"), "New project", self.new)
+		self.tb.addAction(getIcon("open"), "Open project", self.load)
+		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project", self.save)
 		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)
@@ -314,6 +330,9 @@ class MainWindow(QMainWindow):
 			"GNU GPL version 2 or (at your option) "
 			"any later version." %\
 			(VERSION_MAJOR, VERSION_MINOR))
+
+	def new(self):
+		self.centralWidget().new()
 
 	def load(self):
 		self.centralWidget().load()

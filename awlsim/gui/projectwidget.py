@@ -88,10 +88,6 @@ class ProjectWidget(QTabWidget):
 	def __init__(self, parent=None):
 		QTabWidget.__init__(self, parent)
 
-		self.__project = Project(None) # Empty project
-		self.__isAdHocProject = False
-		self.__warnedFileBacked = False
-
 		self.awlTabs = AwlSourceTabWidget(self)
 		self.symTabs = SymSourceTabWidget(self)
 
@@ -99,6 +95,8 @@ class ProjectWidget(QTabWidget):
 		self.addTab(self.symTabs, "Symbol tables")
 		self.setTabToolTip(0, "Enter your AWL/STL program here")
 		self.setTabToolTip(1, "Enter your symbol table here")
+
+		self.reset()
 
 		self.awlTabs.sourceChanged.connect(self.codeChanged)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
@@ -126,6 +124,13 @@ class ProjectWidget(QTabWidget):
 	def getSymTabSources(self):
 		"Returns a list of SymTabSource()s"
 		return self.symTabs.getSources()
+
+	def reset(self):
+		self.__project = Project(None) # Empty project
+		self.__isAdHocProject = False
+		self.__warnedFileBacked = False
+		self.awlTabs.reset()
+		self.symTabs.reset()
 
 	def __loadProject(self, project):
 		self.__project = project

@@ -110,6 +110,9 @@ class SourceTabWidget(QTabWidget):
 		self.currentChanged.connect(self.__currentChanged)
 		self.tabBar().tabMoved.connect(self.__tabMoved)
 
+	def reset(self):
+		self.clear()
+
 	def __currentChanged(self, index):
 		self.updateActionMenu()
 
@@ -164,9 +167,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 	def __init__(self, parent=None):
 		SourceTabWidget.__init__(self, "source", parent)
 
-		self.onlineDiagEnabled = False
-
-		self.addEditWidget()
+		self.reset()
 
 		self.actionButton.add.connect(self.addEditWidget)
 		self.actionButton.delete.connect(self.deleteCurrent)
@@ -174,6 +175,11 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.actionButton.export.connect(self.exportCurrent)
 		self.currentChanged.connect(self.__currentChanged)
 		self.actionButton.import_.connect(self.importSource)
+
+	def reset(self):
+		SourceTabWidget.reset(self)
+		self.onlineDiagEnabled = False
+		self.addEditWidget()
 
 	def __emitVisibleLinesSignal(self):
 		editWidget = self.currentWidget()
@@ -306,13 +312,17 @@ class SymSourceTabWidget(SourceTabWidget):
 	def __init__(self, parent=None):
 		SourceTabWidget.__init__(self, "symbol table", parent)
 
-		self.addSymTable()
+		self.reset()
 
 		self.actionButton.add.connect(self.addSymTable)
 		self.actionButton.delete.connect(self.deleteCurrent)
 		self.actionButton.rename.connect(self.renameCurrent)
 		self.actionButton.export.connect(self.exportCurrent)
 		self.actionButton.import_.connect(self.importSource)
+
+	def reset(self):
+		SourceTabWidget.reset(self)
+		self.addSymTable()
 
 	def setSources(self, symTabSources):
 		self.clear()
