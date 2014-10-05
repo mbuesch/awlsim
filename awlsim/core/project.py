@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
-from awlsim.core.util import *
+from awlsim.common.util import *
 
 import base64, binascii
 import datetime

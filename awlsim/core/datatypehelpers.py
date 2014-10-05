@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.core.util import *
 
+import struct
+
 
 def swapEndianWord(word):
 	return ((word & 0x00FF) << 8) |\
