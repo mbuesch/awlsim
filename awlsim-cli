@@ -29,7 +29,7 @@ import traceback
 import signal
 
 from awlsim.core import *
-from awlsim.coreserver import *
+from awlsim.coreclient import *
 
 
 class TextInterfaceAwlSimClient(AwlSimClient):

@@ -27,6 +27,7 @@ from awlsim.common.subprocess import *
 
 from awlsim.coreserver.server import *
 from awlsim.coreserver.messages import *
+from awlsim.coreserver.memarea import *
 
 import sys
 import socket

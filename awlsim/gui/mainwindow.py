@@ -32,8 +32,6 @@ from awlsim.gui.cpuconfig import *
 from awlsim.gui.coreconfig import *
 from awlsim.gui.icons import *
 
-from awlsim.coreserver.client import *
-
 
 class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)

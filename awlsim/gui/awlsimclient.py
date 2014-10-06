@@ -21,7 +21,7 @@
 
 from awlsim.gui.util import *
 
-from awlsim.coreserver.client import *
+from awlsim.coreclient.client import *
 
 
 class GuiAwlSimClient(AwlSimClient, QObject):
