@@ -68,6 +68,14 @@ class MainWidget(QWidget):
 	def isDirty(self):
 		return self.dirty
 
+	def setDirty(self, dirty, force=False):
+		if dirty != self.dirty or force:
+			self.dirty = dirty
+			self.dirtyChanged.emit(self.dirty)
+
+	def getFilename(self):
+		return self.filename
+
 	def __runStateChanged(self, newState):
 		self.runStateChanged.emit(newState)
 
@@ -82,8 +90,7 @@ class MainWidget(QWidget):
 
 	def __somethingChanged(self):
 		self.cpuWidget.stop()
-		self.dirty = True
-		self.dirtyChanged.emit(self.dirty)
+		self.setDirty(True)
 
 	def newFile(self, filename=None):
 		if isWinStandalone:
@@ -139,8 +146,8 @@ class MainWidget(QWidget):
 				"Failed to load project file", str(e))
 			return False
 		self.filename = filename
-		self.dirty = not bool(self.getProject().getProjectFile())
-		self.dirtyChanged.emit(self.dirty)
+		self.setDirty(dirty = not bool(self.getProject().getProjectFile()),
+			      force = True)
 		return True
 
 	def load(self):
@@ -165,9 +172,8 @@ class MainWidget(QWidget):
 			QMessageBox.critical(self,
 				"Failed to write project file", str(e))
 			return False
-		self.dirty = False
-		self.dirtyChanged.emit(self.dirty)
 		self.filename = filename
+		self.setDirty(dirty = False, force = True)
 		return True
 
 	def save(self, newFile=False):
@@ -229,8 +235,6 @@ class MainWindow(QMainWindow):
 
 	def __init__(self, awlSource=None, parent=None):
 		QMainWindow.__init__(self, parent)
-		self.setWindowTitle("Awlsim - AWL/STL Soft-PLC v%d.%d" %\
-				    (VERSION_MAJOR, VERSION_MINOR))
 		self.setWindowIcon(getIcon("cpu"))
 		self.setCentralWidget(MainWidget(self))
 
@@ -319,6 +323,17 @@ class MainWindow(QMainWindow):
 	def __dirtyChanged(self, isDirty):
 		self.saveAct.setEnabled(isDirty)
 		self.tbSaveAct.setEnabled(isDirty)
+
+		filename = self.centralWidget().getFilename()
+		if filename:
+			postfix = " -- " + os.path.basename(filename)
+			if isDirty:
+				postfix += "*"
+		else:
+			postfix = ""
+		self.setWindowTitle("AWL/STL Soft-PLC v%d.%d%s" %\
+				    (VERSION_MAJOR, VERSION_MINOR,
+				     postfix))
 
 	def closeEvent(self, ev):
 		cpuWidget = self.centralWidget().getCpuWidget()
