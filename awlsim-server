@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 import sys
 import getopt
 
+from awlsim.common import *
 from awlsim.core import *
 from awlsim.coreserver import *
 

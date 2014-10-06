@@ -11,7 +11,7 @@ import shutil
 import hashlib
 from distutils.core import setup
 from distutils.extension import Extension
-from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR
+from awlsim.common.version import VERSION_MAJOR, VERSION_MINOR
 try:
 	import py2exe
 except ImportError as e:

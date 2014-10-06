@@ -2,7 +2,7 @@
 
 SET PATH=%PATH%;C:\WINDOWS;C:\WINDOWS\SYSTEM32;C:\PYTHON34;%ProgramFiles%\7-Zip
 
-py -c "from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR; print('%%d.%%d' %% (VERSION_MAJOR, VERSION_MINOR))" > version.txt
+py -c "from awlsim.common.version import VERSION_MAJOR, VERSION_MINOR; print('%%d.%%d' %% (VERSION_MAJOR, VERSION_MINOR))" > version.txt
 set /p version= < version.txt
 
 set distdir=awlsim-win-standalone-%version%

@@ -28,6 +28,7 @@ import getopt
 import traceback
 import signal
 
+from awlsim.common import *
 from awlsim.core import *
 from awlsim.coreclient import *
 

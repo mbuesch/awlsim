@@ -26,7 +26,7 @@ from awlsim.common.compat import *
 import sys
 import getopt
 
-from awlsim.core.version import *
+from awlsim.common import *
 from awlsim.core.symbolparser import *
 
 

@@ -10,4 +10,5 @@ from awlsim.common.project import *
 from awlsim.common.subprocess import *
 from awlsim.common.templates import *
 from awlsim.common.util import *
+from awlsim.common.version import *
 from awlsim.common.wordpacker import *

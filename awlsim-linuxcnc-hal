@@ -27,10 +27,11 @@ import sys
 import os
 import getopt
 
+from awlsim.common.version import *
+
 from awlsim.core.main import *
 from awlsim.core.parser import *
 from awlsim.core.util import *
-from awlsim.core.version import VERSION_MAJOR, VERSION_MINOR
 
 try:
 	import hal as LinuxCNC_HAL
