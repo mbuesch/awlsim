@@ -25,9 +25,10 @@ from awlsim.common.compat import *
 import sys
 import re
 
+from awlsim.common.project import *
+
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
-from awlsim.core.project import *
 from awlsim.core.objectident import *
 
 
