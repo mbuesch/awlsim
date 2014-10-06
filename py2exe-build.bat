@@ -23,7 +23,6 @@ py setup.py py2exe ^
 	--dist-dir=%bindir% ^
 	--optimize=2 ^
 	--bundle-files=3 ^
-	--compressed ^
 	--ignores=win32api,win32con,readline,awlsim_cython ^
 	--packages=awlsimhw_debug,awlsimhw_dummy ^
 	--quiet
