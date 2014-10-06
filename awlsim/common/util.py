@@ -118,7 +118,10 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 		if not osIsPosix:
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.
-			os.unlink(filename)
+			try:
+				os.unlink(filename)
+			except OSError as e:
+				pass
 		os.rename(tmpFile, filename)
 	except (IOError, OSError, UnicodeError) as e:
 		raise AwlParserError("Failed to write file:\n" + str(e))
