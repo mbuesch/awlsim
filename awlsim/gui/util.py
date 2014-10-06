@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
 from awlsim.common.subprocess import *
+from awlsim.common.wordpacker import *
 
 from awlsim.coreserver import *
 import awlsim.cython_helper
