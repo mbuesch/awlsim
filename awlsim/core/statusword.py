@@ -26,9 +26,10 @@ from awlsim.common.compat import *
 #from awlsim.core.statusword cimport * #@cy
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.datatypehelpers import *
+
 from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
-from awlsim.core.datatypehelpers import *
 
 
 class S7StatusWord(DynAttrs): #+cdef

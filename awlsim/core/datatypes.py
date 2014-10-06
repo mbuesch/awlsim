@@ -24,10 +24,11 @@ from awlsim.common.compat import *
 
 #from awlsim.core.dynattrs cimport * #@cy
 
+from awlsim.common.datatypehelpers import *
+
 from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
 from awlsim.core.timers import *
-from awlsim.core.datatypehelpers import *
 
 
 class AwlOffset(DynAttrs): #+cdef

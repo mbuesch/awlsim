@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
 from awlsim.common.project import *
+from awlsim.common.datatypehelpers import *
+
 from awlsim.coreserver.memarea import *
 
 import struct
