@@ -2,7 +2,7 @@
 #
 # AWL simulator - labels
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,16 +46,22 @@ class AwlLabel(object):
 			rawInsn = insn.getRawInsn()
 			if not rawInsn or not rawInsn.hasLabel():
 				continue
-			labels.append(AwlLabel(insn, rawInsn.getLabel()))
+			for label in labels:
+				if label.getLabelName() == rawInsn.getLabel():
+					raise AwlSimError("Duplicate label '%s' found. "
+						"Label names have to be unique in a code block." %\
+						rawInsn.getLabel(),
+						insn = insn)
+			labels.append(cls(insn, rawInsn.getLabel()))
 		# Resolve label references
 		for insn in insns:
 			for op in insn.ops:
 				if op.type != AwlOperator.LBL_REF:
 					continue
-				labelIndex = AwlLabel.findInList(labels, op.value)
+				labelIndex = cls.findInList(labels, op.value)
 				if labelIndex is None:
-					raise AwlSimError("line %d: Referenced label not found" %\
-						insn.getLineNr())
+					raise AwlSimError("Referenced label not found",
+							  insn = insn)
 				op.setLabelIndex(labelIndex)
 		return labels
 
