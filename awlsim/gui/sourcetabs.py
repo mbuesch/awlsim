@@ -27,7 +27,7 @@ from awlsim.gui.symtabwidget import *
 from awlsim.gui.util import *
 
 
-class SourceTabCorner(QWidget):
+class SourceTabContextMenu(QMenu):
 	# Signal: Add new source
 	add = Signal()
 	# Signal: Delete current source
@@ -42,26 +42,20 @@ class SourceTabCorner(QWidget):
 	export = Signal()
 
 	def __init__(self, itemName, parent=None):
-		QWidget.__init__(self, parent)
-		self.setLayout(QGridLayout())
-		self.layout().setContentsMargins(QMargins(3, 0, 0, 0))
+		QMenu.__init__(self, parent)
 
 		self.itemName = itemName
 
-		self.menu = QMenu(self)
-		self.menu.addAction("&Add %s" % itemName, self.__add)
-		self.menu.addAction("&Delete %s..." % itemName, self.__delete)
-		self.menu.addAction("&Rename %s..." % itemName, self.__rename)
-		self.menu.addSeparator()
-		self.menu.addAction("&Import %s..." % itemName, self.__import)
-		self.menu.addAction("&Export %s..." % itemName, self.__export)
-		self.__integrateAction = self.menu.addAction("&Integrate %s into project..." % itemName,
-							     self.__integrate)
-		self.showIntegrateButton(False)
+		self.addAction("&Add %s" % itemName, self.__add)
+		self.addAction("&Delete %s..." % itemName, self.__delete)
+		self.addAction("&Rename %s..." % itemName, self.__rename)
+		self.addSeparator()
+		self.addAction("&Import %s..." % itemName, self.__import)
+		self.addAction("&Export %s..." % itemName, self.__export)
+		self.__integrateAction = self.addAction("&Integrate %s into project..." % itemName,
+							self.__integrate)
 
-		self.menuButton = QPushButton("&" + itemName[0].upper() + itemName[1:], self)
-		self.menuButton.setMenu(self.menu)
-		self.layout().addWidget(self.menuButton, 0, 0)
+		self.showIntegrateButton(False)
 
 	def __add(self):
 		self.add.emit()
@@ -71,6 +65,12 @@ class SourceTabCorner(QWidget):
 
 	def __rename(self):
 		self.rename.emit()
+
+	def __import(self):
+		self.import_.emit()
+
+	def __export(self):
+		self.export.emit()
 
 	def __integrate(self):
 		res = QMessageBox.question(self,
@@ -86,11 +86,15 @@ class SourceTabCorner(QWidget):
 	def showIntegrateButton(self, show=True):
 		self.__integrateAction.setVisible(show)
 
-	def __import(self):
-		self.import_.emit()
+class SourceTabCorner(QWidget):
+	def __init__(self, itemName, contextMenu, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout())
+		self.layout().setContentsMargins(QMargins(3, 0, 0, 0))
 
-	def __export(self):
-		self.export.emit()
+		self.menuButton = QPushButton("&" + itemName[0].upper() + itemName[1:], self)
+		self.menuButton.setMenu(contextMenu)
+		self.layout().addWidget(self.menuButton, 0, 0)
 
 class SourceTabWidget(QTabWidget):
 	"Abstract source tab-widget"
@@ -102,11 +106,13 @@ class SourceTabWidget(QTabWidget):
 		QTabWidget.__init__(self, parent)
 		self.itemName = itemName
 
+		self.contextMenu = SourceTabContextMenu(itemName, self)
+
 		self.setMovable(True)
-		self.actionButton = SourceTabCorner(itemName, self)
+		self.actionButton = SourceTabCorner(itemName, self.contextMenu, self)
 		self.setCornerWidget(self.actionButton, Qt.TopRightCorner)
 
-		self.actionButton.integrate.connect(self.integrateSource)
+		self.contextMenu.integrate.connect(self.integrateSource)
 		self.currentChanged.connect(self.__currentChanged)
 		self.tabBar().tabMoved.connect(self.__tabMoved)
 
@@ -124,7 +130,7 @@ class SourceTabWidget(QTabWidget):
 		showIntegrate = False
 		if curWidget:
 			showIntegrate = curWidget.getSourceRef().isFileBacked()
-		self.actionButton.showIntegrateButton(showIntegrate)
+		self.contextMenu.showIntegrateButton(showIntegrate)
 
 	def updateTabTexts(self):
 		for i in range(self.count()):
@@ -153,9 +159,16 @@ class SourceTabWidget(QTabWidget):
 	def integrateSource(self):
 		curWidget = self.currentWidget()
 		if curWidget:
-			curWidget.getSourceRef().forceNonFileBacked(self.actionButton.itemName)
+			curWidget.getSourceRef().forceNonFileBacked(self.contextMenu.itemName)
 			self.updateActionMenu()
 			self.updateTabTexts()
+
+	def contextMenuEvent(self, ev):
+		QTabWidget.contextMenuEvent(self, ev)
+		tabBar = self.tabBar()
+		if tabBar.geometry().contains(tabBar.mapFrom(self, ev.pos())):
+			# Tab context menu was requested.
+			self.contextMenu.exec_(self.mapToGlobal(ev.pos()))
 
 class AwlSourceTabWidget(SourceTabWidget):
 	"AWL source tab-widget"
@@ -169,12 +182,12 @@ class AwlSourceTabWidget(SourceTabWidget):
 
 		self.reset()
 
-		self.actionButton.add.connect(self.addEditWidget)
-		self.actionButton.delete.connect(self.deleteCurrent)
-		self.actionButton.rename.connect(self.renameCurrent)
-		self.actionButton.export.connect(self.exportCurrent)
+		self.contextMenu.add.connect(self.addEditWidget)
+		self.contextMenu.delete.connect(self.deleteCurrent)
+		self.contextMenu.rename.connect(self.renameCurrent)
+		self.contextMenu.export.connect(self.exportCurrent)
+		self.contextMenu.import_.connect(self.importSource)
 		self.currentChanged.connect(self.__currentChanged)
-		self.actionButton.import_.connect(self.importSource)
 
 	def reset(self):
 		SourceTabWidget.reset(self)
@@ -314,11 +327,11 @@ class SymSourceTabWidget(SourceTabWidget):
 
 		self.reset()
 
-		self.actionButton.add.connect(self.addSymTable)
-		self.actionButton.delete.connect(self.deleteCurrent)
-		self.actionButton.rename.connect(self.renameCurrent)
-		self.actionButton.export.connect(self.exportCurrent)
-		self.actionButton.import_.connect(self.importSource)
+		self.contextMenu.add.connect(self.addSymTable)
+		self.contextMenu.delete.connect(self.deleteCurrent)
+		self.contextMenu.rename.connect(self.renameCurrent)
+		self.contextMenu.export.connect(self.exportCurrent)
+		self.contextMenu.import_.connect(self.importSource)
 
 	def reset(self):
 		SourceTabWidget.reset(self)
