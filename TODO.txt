@@ -7,3 +7,7 @@ S7 compatibility:
 - POINTER and DB-pointer immediates
 - ANY pointer
 - Multiinstance
+
+GUI:
+- Make font size configurable (and save it in project file)
+- Save window status (open MDI windows, positions, etc) in project file
