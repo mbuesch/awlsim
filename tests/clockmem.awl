@@ -35,8 +35,8 @@ M001:	CALL	"UPDATE_TIME"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#75ms
-	__ASSERT<=	__ACCU 1,	T#125ms
+	__ASSERT>=	__ACCU 1,	T#50ms
+	__ASSERT<=	__ACCU 1,	T#150ms
 	L		"TIME"
 	T		"STAMP_0.1s"
 	L		"COUNT_0.1s"
@@ -54,8 +54,8 @@ M010:	U	"CLOCK_0.2s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#175ms
-	__ASSERT<=	__ACCU 1,	T#225ms
+	__ASSERT>=	__ACCU 1,	T#150ms
+	__ASSERT<=	__ACCU 1,	T#250ms
 	L		"TIME"
 	T		"STAMP_0.2s"
 	L		"COUNT_0.2s"
@@ -72,8 +72,8 @@ M020:	U	"CLOCK_0.4s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#375ms
-	__ASSERT<=	__ACCU 1,	T#425ms
+	__ASSERT>=	__ACCU 1,	T#350ms
+	__ASSERT<=	__ACCU 1,	T#450ms
 	L		"TIME"
 	T		"STAMP_0.4s"
 	L		"COUNT_0.4s"
@@ -90,8 +90,8 @@ M030:	U	"CLOCK_0.5s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#475ms
-	__ASSERT<=	__ACCU 1,	T#525ms
+	__ASSERT>=	__ACCU 1,	T#450ms
+	__ASSERT<=	__ACCU 1,	T#550ms
 	L		"TIME"
 	T		"STAMP_0.5s"
 	L		"COUNT_0.5s"
@@ -108,8 +108,8 @@ M040:	U	"CLOCK_0.8s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#775ms
-	__ASSERT<=	__ACCU 1,	T#825ms
+	__ASSERT>=	__ACCU 1,	T#750ms
+	__ASSERT<=	__ACCU 1,	T#850ms
 	L		"TIME"
 	T		"STAMP_0.8s"
 	L		"COUNT_0.8s"
@@ -126,8 +126,8 @@ M050:	U	"CLOCK_1.0s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#975ms
-	__ASSERT<=	__ACCU 1,	T#1s25ms
+	__ASSERT>=	__ACCU 1,	T#950ms
+	__ASSERT<=	__ACCU 1,	T#1s50ms
 	L		"TIME"
 	T		"STAMP_1.0s"
 	L		"COUNT_1.0s"
@@ -144,8 +144,8 @@ M060:	U	"CLOCK_1.6s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#1s575ms
-	__ASSERT<=	__ACCU 1,	T#1s625ms
+	__ASSERT>=	__ACCU 1,	T#1s550ms
+	__ASSERT<=	__ACCU 1,	T#1s650ms
 	L		"TIME"
 	T		"STAMP_1.6s"
 	L		"COUNT_1.6s"
@@ -162,8 +162,8 @@ M070:	U	"CLOCK_2.0s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#1s975ms
-	__ASSERT<=	__ACCU 1,	T#2s25ms
+	__ASSERT>=	__ACCU 1,	T#1s950ms
+	__ASSERT<=	__ACCU 1,	T#2s50ms
 	L		"TIME"
 	T		"STAMP_2.0s"
 	L		"COUNT_2.0s"
