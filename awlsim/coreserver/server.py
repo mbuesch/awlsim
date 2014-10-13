@@ -267,7 +267,7 @@ class AwlSimServer(object):
 				continue
 			if not msg:
 				msg = AwlSimMessage_INSNSTATE(
-					sourceId & 0xFFFFFFFF,
+					sourceId,
 					lineNr & 0xFFFFFFFF,
 					self.__insnSerial,
 					0,

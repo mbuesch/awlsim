@@ -151,8 +151,7 @@ def readInputFile(inputFile):
 		project = Project.fromFile(inputFile)
 	else:
 		# make a fake project
-		awlSrc = AwlSource.fromFile(identNr = AwlSource.newIdentNr(),
-					    name = inputFile,
+		awlSrc = AwlSource.fromFile(name = inputFile,
 					    filepath = inputFile)
 		project = Project(projectFile = None,
 				  awlSources = [ awlSrc, ])

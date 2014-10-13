@@ -28,6 +28,7 @@ from awlsim.common.util import *
 import base64, binascii
 import datetime
 import os
+import hashlib
 
 if isPy2Compat:
 	from ConfigParser import SafeConfigParser as _ConfigParser
@@ -38,21 +39,25 @@ else:
 
 
 class GenericSource(object):
-	SRCTYPE = "<generic>"
+	SRCTYPE		= "<generic>"
+	IDENT_HASH	= "sha256"
 
-	__nextIdentNr = 0
-
-	def __init__(self, identNr, name="", filepath="", sourceBytes=b""):
-		self.identNr = identNr
+	def __init__(self, name="", filepath="", sourceBytes=b""):
 		self.name = name
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
 
-	@staticmethod
-	def newIdentNr():
-		identNr = GenericSource.__nextIdentNr
-		GenericSource.__nextIdentNr = (GenericSource.__nextIdentNr + 1) & 0x7FFFFFFF
-		return identNr
+	def getIdentHash(self):
+		h = hashlib.new(self.IDENT_HASH, self.SRCTYPE.encode("utf-8"))
+		if self.name is not None:
+			h.update(self.name.encode("utf-8"))
+		if self.filepath is not None:
+			h.update(self.filepath.encode("utf-8"))
+		h.update(self.sourceBytes)
+		return h.digest()
+
+	def getIdentHashStr(self):
+		return binascii.b2a_hex(self.getIdentHash())
 
 	def dup(self):
 		raise NotImplementedError
@@ -76,41 +81,41 @@ class GenericSource(object):
 		return base64.b64encode(self.sourceBytes).decode("ascii")
 
 	@classmethod
-	def fromFile(cls, identNr, name, filepath):
+	def fromFile(cls, name, filepath):
 		try:
 			data = awlFileRead(filepath, encoding="binary")
 		except AwlSimError as e:
 			raise AwlSimError("Project: Could not read %s "
 				"source file '%s':\n%s" %\
 				(cls.SRCTYPE, filepath, str(e)))
-		return cls(identNr, name, filepath, data)
+		return cls(name, filepath, data)
 
 	@classmethod
-	def fromBase64(cls, identNr, name, b64):
+	def fromBase64(cls, name, b64):
 		try:
 			data = base64.b64decode(b64.encode("ascii"))
 		except (TypeError, binascii.Error, UnicodeError) as e:
 			raise AwlSimError("Project: %s source '%s' "
 				"has invalid base64 encoding." %\
 				(cls.SRCTYPE, name))
-		return cls(identNr, name, None, data)
+		return cls(name, None, data)
 
 	def __repr__(self):
-		return "%s%s %d %s" % ("" if self.isFileBacked() else "project ",
-				    self.SRCTYPE, self.identNr, self.name)
+		return "%s%s %s %s" % ("" if self.isFileBacked() else "project ",
+				    self.SRCTYPE, self.name, self.getIdentHashStr())
 
 class AwlSource(GenericSource):
 	SRCTYPE = "AWL/STL"
 
 	def dup(self):
-		return AwlSource(self.identNr, self.name, self.filepath,
+		return AwlSource(self.name, self.filepath,
 				 self.sourceBytes[:])
 
 class SymTabSource(GenericSource):
 	SRCTYPE = "symbol table"
 
 	def dup(self):
-		return SymTabSource(self.identNr, self.name, self.filepath,
+		return SymTabSource(self.name, self.filepath,
 				    self.sourceBytes[:])
 
 class Project(object):
@@ -204,8 +209,7 @@ class Project(object):
 				if not p.has_option("CPU", option):
 					break
 				path = p.get("CPU", option)
-				sourceId = AwlSource.newIdentNr()
-				src = AwlSource.fromFile(sourceId, path, cls.__generic2path(path, projectDir))
+				src = AwlSource.fromFile(path, cls.__generic2path(path, projectDir))
 				awlSources.append(src)
 			for i in range(0xFFFF):
 				srcOption = "awl_%d" % i
@@ -222,8 +226,7 @@ class Project(object):
 						pass
 				if name is None:
 					name = "AWL/STL #%d" % i
-				sourceId = AwlSource.newIdentNr()
-				src = AwlSource.fromBase64(sourceId, name, awlBase64)
+				src = AwlSource.fromBase64(name, awlBase64)
 				awlSources.append(src)
 			if p.has_option("CPU", "mnemonics"):
 				mnemonics = p.getint("CPU", "mnemonics")
@@ -245,8 +248,7 @@ class Project(object):
 				if not p.has_option("SYMBOLS", option):
 					break
 				path = p.get("SYMBOLS", option)
-				sourceId = SymTabSource.newIdentNr()
-				src = SymTabSource.fromFile(sourceId, path, cls.__generic2path(path, projectDir))
+				src = SymTabSource.fromFile(path, cls.__generic2path(path, projectDir))
 				symTabSources.append(src)
 			for i in range(0xFFFF):
 				srcOption = "sym_tab_%d" % i
@@ -263,8 +265,7 @@ class Project(object):
 						pass
 				if name is None:
 					name = "Symbol table #%d" % i
-				sourceId = SymTabSource.newIdentNr()
-				src = SymTabSource.fromBase64(sourceId, name, symTabBase64)
+				src = SymTabSource.fromBase64(name, symTabBase64)
 				symTabSources.append(src)
 
 		except _ConfigParserError as e:

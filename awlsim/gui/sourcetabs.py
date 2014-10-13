@@ -129,12 +129,12 @@ class SourceTabWidget(QTabWidget):
 		curWidget = self.currentWidget()
 		showIntegrate = False
 		if curWidget:
-			showIntegrate = curWidget.getSourceRef().isFileBacked()
+			showIntegrate = curWidget.getSource().isFileBacked()
 		self.contextMenu.showIntegrateButton(showIntegrate)
 
 	def updateTabTexts(self):
 		for i in range(self.count()):
-			self.setTabText(i, self.widget(i).getSourceRef().name)
+			self.setTabText(i, self.widget(i).getSource().name)
 		self.sourceChanged.emit()
 
 	def allTabWidgets(self):
@@ -151,7 +151,7 @@ class SourceTabWidget(QTabWidget):
 
 	def getSources(self):
 		"Returns a list of sources"
-		return [ w.getFullSource() for w in self.allTabWidgets() ]
+		return [ w.getSource() for w in self.allTabWidgets() ]
 
 	def setSources(self, sources):
 		raise NotImplementedError
@@ -159,7 +159,7 @@ class SourceTabWidget(QTabWidget):
 	def integrateSource(self):
 		curWidget = self.currentWidget()
 		if curWidget:
-			curWidget.getSourceRef().forceNonFileBacked(self.contextMenu.itemName)
+			curWidget.getSource().forceNonFileBacked(self.contextMenu.itemName)
 			self.updateActionMenu()
 			self.updateTabTexts()
 
@@ -198,7 +198,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = self.currentWidget()
 		if editWidget:
 			fromLine, toLine = editWidget.getVisibleLineRange()
-			source = editWidget.getSourceRef()
+			source = editWidget.getSource()
 			self.visibleLinesChanged.emit(source, fromLine, toLine)
 		else:
 			self.visibleLinesChanged.emit(None, -1, -1)
@@ -245,7 +245,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = EditWidget(self)
 		editWidget.codeChanged.connect(self.sourceChanged)
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
-		index = self.addTab(editWidget, editWidget.getSourceRef().name)
+		index = self.addTab(editWidget, editWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()
 		self.sourceChanged.emit()
@@ -274,7 +274,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 					text)
 			if ok and newText != text:
 				editWidget = self.widget(index)
-				source = editWidget.getSourceRef()
+				source = editWidget.getSource()
 				source.name = newText
 				self.updateTabTexts()
 
@@ -282,7 +282,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = self.currentWidget()
 		if not editWidget:
 			return
-		source = editWidget.getFullSource()
+		source = editWidget.getSource()
 		if not source:
 			return
 		fn, fil = QFileDialog.getSaveFileName(self,
@@ -306,8 +306,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 			"All files (*)")
 		if not fn:
 			return
-		source = AwlSource.fromFile(AwlSource.newIdentNr(),
-					    "Imported source",
+		source = AwlSource.fromFile("Imported source",
 					    fn)
 		index, editWidget = self.addEditWidget()
 		editWidget.setSource(source)
@@ -353,7 +352,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		symTabView = SymTabView(self)
 		symTabView.setSymTab(SymbolTable())
 		symTabView.model().sourceChanged.connect(self.sourceChanged)
-		index = self.addTab(symTabView, symTabView.model().getSourceRef().name)
+		index = self.addTab(symTabView, symTabView.model().getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()
 		self.sourceChanged.emit()
@@ -382,7 +381,7 @@ class SymSourceTabWidget(SourceTabWidget):
 					text)
 			if ok and newText != text:
 				symTabView = self.widget(index)
-				source = symTabView.getSourceRef()
+				source = symTabView.getSource()
 				source.name = newText
 				self.updateTabTexts()
 
@@ -390,7 +389,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		symTabView = self.currentWidget()
 		if not symTabView:
 			return
-		source = symTabView.getFullSource()
+		source = symTabView.getSource()
 		if not source:
 			return
 		fn, fil = QFileDialog.getSaveFileName(self,
@@ -414,8 +413,7 @@ class SymSourceTabWidget(SourceTabWidget):
 			"All files (*)")
 		if not fn:
 			return
-		source = SymTabSource.fromFile(SymTabSource.newIdentNr(),
-					       "Imported symbol table",
+		source = SymTabSource.fromFile("Imported symbol table",
 					       fn)
 		index, symTabView = self.addSymTable()
 		symTabView.setSource(source)

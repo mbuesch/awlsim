@@ -29,13 +29,10 @@ from awlsim.common.project import *
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
-from awlsim.core.objectident import *
 
 
-class RawAwlInsn(ObjIdent):
+class RawAwlInsn(object):
 	def __init__(self, block):
-		ObjIdent.__init__(self)
-
 		self.block = block
 		self.sourceId = None
 		self.lineNr = 0
@@ -94,16 +91,6 @@ class RawAwlInsn(ObjIdent):
 
 	def hasOperators(self):
 		return bool(self.getOperators())
-
-	def getIdentData(self):
-		#FIXME encodings
-		yield self.name
-		if self.hasLabel():
-			yield self.label
-		#TODO lineNr
-		for oper in self.ops:
-			yield oper
-		pass#TODO
 
 class RawAwlBlock(object):
 	def __init__(self, tree, index):
@@ -1014,7 +1001,7 @@ class AwlParser(object):
 		"""Parse an AWL source.
 		awlSource is an AwlSource instance."""
 		self.parseData(awlSource.sourceBytes,
-			       sourceId = awlSource.identNr,
+			       sourceId = awlSource.getIdentHash(),
 			       sourceName = awlSource.name)
 
 	@classmethod

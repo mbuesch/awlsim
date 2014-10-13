@@ -32,8 +32,12 @@ class SymTabModel(QAbstractTableModel):
 	def __init__(self, symTab):
 		QAbstractTableModel.__init__(self)
 		self.symTab = symTab
-		self.__source = SymTabSource(SymTabSource.newIdentNr(),
-					     "Unnamed symbol table")
+		self.__source = SymTabSource("Unnamed symbol table")
+		self.__needSourceUpdate = True
+
+	def emitSourceChanged(self):
+		self.__needSourceUpdate = True
+		self.sourceChanged.emit()
 
 	def getSymTab(self):
 		return self.symTab
@@ -43,14 +47,14 @@ class SymTabModel(QAbstractTableModel):
 			self.beginResetModel()
 			del self.symTab.symbols[row]
 			self.endResetModel()
-			self.sourceChanged.emit()
+			self.emitSourceChanged()
 
 	def moveSymbol(self, fromRow, toRow):
 		self.beginResetModel()
 		sym = self.symTab.symbols.pop(fromRow)
 		self.symTab.symbols.insert(toRow, sym)
 		self.endResetModel()
-		self.sourceChanged.emit()
+		self.emitSourceChanged()
 
 	def rowCount(self, parent=QModelIndex()):
 		return len(self.symTab.symbols) + 1
@@ -124,7 +128,7 @@ class SymTabModel(QAbstractTableModel):
 				MessageBox.handleAwlSimError(None,
 					"Invalid symbol information", e)
 				return False
-			self.sourceChanged.emit()
+			self.emitSourceChanged()
 			return True
 		return False
 
@@ -133,19 +137,19 @@ class SymTabModel(QAbstractTableModel):
 			return Qt.ItemIsEnabled
 		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
-	def getSourceRef(self):
+	def getSource(self):
+		if self.__needSourceUpdate:
+			self.__updateSource()
 		return self.__source
 
-	def getFullSource(self):
-		source = self.__source.dup()
+	def __updateSource(self):
 		try:
-			source.sourceBytes = self.symTab.toASC()
+			self.__source.sourceBytes = self.symTab.toASC()
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(None,
 				"Symbol table contains invalid characters", e)
-			return None
-			source.sourceBytes = self.symTab.toBytes("ignore")
-		return source
+			return
+		self.__needSourceUpdate = False
 
 	def setSource(self, newSource):
 		self.beginResetModel()
@@ -159,6 +163,7 @@ class SymTabModel(QAbstractTableModel):
 				"Could not parse symbol table information", e)
 		finally:
 			self.endResetModel()
+			self.__needSourceUpdate = True
 
 class SymTabView(QTableView):
 	def __init__(self, parent=None):
@@ -208,11 +213,8 @@ class SymTabView(QTableView):
 	def setSymTab(self, symTab):
 		self.setModel(SymTabModel(symTab))
 
-	def getSourceRef(self):
-		return self.model().getSourceRef()
-
-	def getFullSource(self):
-		return self.model().getFullSource()
+	def getSource(self):
+		return self.model().getSource()
 
 	def setSource(self, newSource):
 		return self.model().setSource(newSource)

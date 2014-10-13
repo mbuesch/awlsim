@@ -124,8 +124,9 @@ class EditWidget(QPlainTextEdit):
 		self.lineNumWidget = LineNumSubWidget(self)
 		self.cpuStatsWidget = CpuStatsSubWidget(self)
 
-		self.__source = AwlSource(identNr = AwlSource.newIdentNr(),
-					  name = "Unnamed source")
+		self.__source = AwlSource(name = "Unnamed source")
+		self.__needSourceUpdate = True
+
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
@@ -163,9 +164,9 @@ class EditWidget(QPlainTextEdit):
 			self.resetCpuStats()
 		finally:
 			self.__textChangeBlocked -= 1
+			self.__needSourceUpdate = True
 
-	def getFullSource(self):
-		source = self.__source.dup()
+	def __updateSource(self):
 		sourceText = self.toPlainText()
 		# Convert to DOS-style line endings
 		sourceText = "\r\n".join(sourceText.splitlines()) + "\r\n"
@@ -173,18 +174,20 @@ class EditWidget(QPlainTextEdit):
 		try:
 			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,
 							errors="strict")
-			source.sourceBytes = sourceBytes
+			self.__source.sourceBytes = sourceBytes
 		except UnicodeError:
 			MessageBox.error(self, "The AWL/STL code contains "
 				"non-%s-characters. These were ignored and stripped "
 				"from the code." % AwlParser.TEXT_ENCODING)
 			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,
 							errors="ignore")
-			source.sourceBytes = sourceBytes
-			self.setSource(source)
-		return source
+			self.__source.sourceBytes = sourceBytes
+			self.setSource(self.__source)
+		self.__needSourceUpdate = False
 
-	def getSourceRef(self):
+	def getSource(self):
+		if self.__needSourceUpdate:
+			self.__updateSource()
 		return self.__source
 
 	def runStateChanged(self, newState):
@@ -255,7 +258,7 @@ class EditWidget(QPlainTextEdit):
 		# insnDumpMsg => AwlSimMessage_INSNDUMP instance
 		if not self.__cpuStatsEnabled:
 			return
-		if insnDumpMsg.sourceId != self.__source.identNr:
+		if insnDumpMsg.sourceId != self.__source.getIdentHash():
 			# Discard old messages that were still in the queue.
 			return
 		# Save the instruction dump
@@ -453,5 +456,6 @@ class EditWidget(QPlainTextEdit):
 		self.__updateFonts()
 		if self.__textChangeBlocked:
 			return
+		self.__needSourceUpdate = True
 		self.codeChanged.emit()
 		self.resetCpuStats()

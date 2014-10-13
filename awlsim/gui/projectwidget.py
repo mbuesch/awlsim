@@ -142,8 +142,7 @@ class ProjectWidget(QTabWidget):
 
 	def __loadPlainAwlSource(self, filename):
 		project = Project(None) # Create an ad-hoc project
-		srcs = [ AwlSource.fromFile(identNr = AwlSource.newIdentNr(),
-					    name = filename,
+		srcs = [ AwlSource.fromFile(name = filename,
 					    filepath = filename), ]
 		project.setAwlSources(srcs)
 		self.__loadProject(project)
