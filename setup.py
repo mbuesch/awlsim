@@ -61,7 +61,7 @@ def makeDummyFile(path):
 	fd.write("\n")
 	fd.close()
 
-def pyCythonPatch(fromFile, toFile, patchImportsOnly=False):
+def pyCythonPatch(fromFile, toFile, basicOnly=False):
 	print("cython-patch: patching file '%s' to '%s'" %\
 	      (fromFile, toFile))
 	tmpFile = toFile + ".TMP"
@@ -75,26 +75,26 @@ def pyCythonPatch(fromFile, toFile, patchImportsOnly=False):
 			outfd.write(line)
 			continue
 
-		if not patchImportsOnly:
-			# Uncomment all lines containing #@cy
-			if "#@cy" in stripLine:
-				line = line.replace("#@cy", "")
-				if line.startswith("#"):
-					line = line[1:]
-				if not line.endswith("\n"):
-					line += "\n"
+		# Uncomment all lines containing #@cy
+		if "#@cy" in stripLine:
+			line = line.replace("#@cy", "")
+			if line.startswith("#"):
+				line = line[1:]
+			if not line.endswith("\n"):
+				line += "\n"
 
-			# Sprinkle magic cdef, as requested by #+cdef
-			if "#+cdef" in stripLine:
-				if stripLine.startswith("class"):
-					line = line.replace("class", "cdef class")
-				else:
-					line = line.replace("def", "cdef")
+		# Sprinkle magic cdef, as requested by #+cdef
+		if "#+cdef" in stripLine:
+			if stripLine.startswith("class"):
+				line = line.replace("class", "cdef class")
+			else:
+				line = line.replace("def", "cdef")
 
-			# Comment all lines containing #@nocy
-			if "#@nocy" in stripLine:
-				line = "#" + line
+		# Comment all lines containing #@nocy
+		if "#@nocy" in stripLine:
+			line = "#" + line
 
+		if not basicOnly:
 			# Automagic types
 			line = re.sub(r'\b_Bool\b', "unsigned char", line)
 			line = re.sub(r'\bint8_t\b', "signed char", line)
@@ -143,7 +143,7 @@ def patchCythonModules(buildDir):
 			# Copy and patch the package __init__.py
 			toPy = os.path.join(buildDir, *unit.cyModName.split(".")) + ".py"
 			pyCythonPatch(unit.fromPy, toPy,
-				      patchImportsOnly=True)
+				      basicOnly=True)
 		else:
 			# Generate the .pyx
 			pyCythonPatch(unit.fromPy, unit.toPyx)
