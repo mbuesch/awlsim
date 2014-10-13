@@ -1001,7 +1001,7 @@ class AwlParser(object):
 		"""Parse an AWL source.
 		awlSource is an AwlSource instance."""
 		self.parseData(awlSource.sourceBytes,
-			       sourceId = awlSource.getIdentHash(),
+			       sourceId = awlSource.identHash,
 			       sourceName = awlSource.name)
 
 	@classmethod

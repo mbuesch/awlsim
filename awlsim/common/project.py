@@ -46,18 +46,50 @@ class GenericSource(object):
 		self.name = name
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
+		self.__identHash = None
 
-	def getIdentHash(self):
-		h = hashlib.new(self.IDENT_HASH, self.SRCTYPE.encode("utf-8"))
-		if self.name is not None:
-			h.update(self.name.encode("utf-8"))
-		if self.filepath is not None:
-			h.update(self.filepath.encode("utf-8"))
-		h.update(self.sourceBytes)
-		return h.digest()
+	@property
+	def name(self):
+		return self.__name
 
-	def getIdentHashStr(self):
-		return binascii.b2a_hex(self.getIdentHash())
+	@name.setter
+	def name(self, newName):
+		self.__name = newName
+		self.__identHash = None
+
+	@property
+	def filepath(self):
+		return self.__filepath
+
+	@filepath.setter
+	def filepath(self, newFilepath):
+		self.__filepath = newFilepath
+		self.__identHash = None
+
+	@property
+	def sourceBytes(self):
+		return self.__sourceBytes
+
+	@sourceBytes.setter
+	def sourceBytes(self, newSourceBytes):
+		self.__sourceBytes = newSourceBytes
+		self.__identHash = None
+
+	@property
+	def identHash(self):
+		if not self.__identHash:
+			h = hashlib.new(self.IDENT_HASH, self.SRCTYPE.encode("utf-8"))
+			if self.name is not None:
+				h.update(self.name.encode("utf-8"))
+			if self.filepath is not None:
+				h.update(self.filepath.encode("utf-8"))
+			h.update(self.sourceBytes)
+			self.__identHash = h.digest()
+		return self.__identHash
+
+	@property
+	def identHashStr(self):
+		return binascii.b2a_hex(self.identHash).decode("ascii")
 
 	def dup(self):
 		raise NotImplementedError
@@ -102,7 +134,7 @@ class GenericSource(object):
 
 	def __repr__(self):
 		return "%s%s %s %s" % ("" if self.isFileBacked() else "project ",
-				    self.SRCTYPE, self.name, self.getIdentHashStr())
+				    self.SRCTYPE, self.name, self.identHashStr)
 
 class AwlSource(GenericSource):
 	SRCTYPE = "AWL/STL"

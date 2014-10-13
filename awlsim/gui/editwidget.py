@@ -258,7 +258,7 @@ class EditWidget(QPlainTextEdit):
 		# insnDumpMsg => AwlSimMessage_INSNDUMP instance
 		if not self.__cpuStatsEnabled:
 			return
-		if insnDumpMsg.sourceId != self.__source.getIdentHash():
+		if insnDumpMsg.sourceId != self.__source.identHash:
 			# Discard old messages that were still in the queue.
 			return
 		# Save the instruction dump

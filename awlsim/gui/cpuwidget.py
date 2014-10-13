@@ -372,7 +372,7 @@ class CpuWidget(QWidget):
 			client = self.mainWidget.getSimClient()
 			if onlineDiagEn and source:
 				client.setInsnStateDump(enable=True,
-							sourceId=source.getIdentHash(),
+							sourceId=source.identHash,
 							fromLine=fromLine, toLine=toLine,
 							sync=False)
 			else:
