@@ -11,6 +11,8 @@ END_DATA_BLOCK
 
 FUNCTION_BLOCK FB 1
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	L		W#16#4321
 	T		MW 0
 END_FUNCTION_BLOCK
@@ -18,6 +20,8 @@ END_FUNCTION_BLOCK
 
 FUNCTION FC 1 : VOID
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	L		W#16#1234
 	T		MW 0
 	CALL		FC 2
@@ -26,6 +30,8 @@ END_FUNCTION
 
 FUNCTION FC 2 : VOID
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	L		W#16#6789
 	T		MW 0
 	L		10
@@ -35,6 +41,8 @@ END_FUNCTION
 
 FUNCTION FC 3 : VOID
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	L		1
 	T		LB 0
 	CALL		FC 2
@@ -53,6 +61,9 @@ VAR_IN_OUT
 	INOUT1		: INT
 END_VAR
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
+	// Check interface
 	L		#INPVAR
 	__ASSERT==	__ACCU 1,	9976
 	U		#INPVAR3
@@ -82,6 +93,9 @@ VAR_IN_OUT
 	INOUT1		: INT
 END_VAR
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
+	// Check interface
 	L		#INOUT0
 	__ASSERT==	__ACCU 1,	84
 	L		#INOUT1
@@ -108,6 +122,8 @@ END_FUNCTION
 
 FUNCTION FC 6 : VOID
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	// Only check OV and OS bits
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	0
@@ -121,6 +137,8 @@ END_FUNCTION
 
 FUNCTION FC 7 : VOID
 BEGIN
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	// Trigger an overflow
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
@@ -150,6 +168,9 @@ VAR_OUTPUT
 	RETURNVALUE	: INT
 END_VAR
 BEGIN
+	// This FB is CALLed. Check multi instance base register addresse.
+	__ASSERT==	__AR 2,		P#DBX 0.0
+
 	// Check parameter values
 	U		#INVAR1
 	__ASSERT==	__STW VKE,	1
@@ -188,6 +209,10 @@ BEGIN
 		INVAR_DB	:= DB1.DBW 0,
 		RET_VAL		:= #RETURNVALUE,
 	)
+
+	// AR2 should still be the multi-instance base register, even if it
+	// was clobbered in a called FC/FB.
+	__ASSERT==	__AR 2,		P#DBX 0.0
 END_FUNCTION_BLOCK
 
 
@@ -213,6 +238,9 @@ VAR_INPUT
 	INVAR_DB	: INT
 END_VAR
 BEGIN
+	// This FC is called from an FB. Thus it has the multi-instance base in AR2.
+	__ASSERT==	__AR 2,		P#DBX 0.0
+
 	// Check parameter values
 	U		#INPUTVAR1
 	__ASSERT==	__STW VKE,	1
@@ -291,6 +319,9 @@ BEGIN
 	CALL FC 11 (
 		IN1	:= #INVAR_DB,
 	)
+
+	// Clobber the multi-instance base
+	LAR2		P#84.0
 END_FUNCTION
 
 
@@ -299,6 +330,9 @@ VAR_INPUT
 	IN1		: INT
 END_VAR
 BEGIN
+	// This FC is called from an FB via FC. Thus it has the multi-instance base in AR2.
+	__ASSERT==	__AR 2,		P#DBX 0.0
+
 	L		#IN1
 	__ASSERT==	__ACCU 1,	8290
 END_FUNCTION
@@ -306,6 +340,9 @@ END_FUNCTION
 
 ORGANIZATION_BLOCK OB 1
 BEGIN
+	LAR2		P#42.0	// Magic AR2 value
+
+
 	CALL		FC 1
 	__ASSERT==	MW 0,	W#16#6789
 	L		0
@@ -326,12 +363,16 @@ BEGIN
 	CC		FC 1
 	__ASSERT==	MW 0,	0
 
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 	// Test localdata stack
 	L		255
 	T		LB 0
 	__ASSERT==	LB 0,	255
 	CALL		FC 3
 	__ASSERT==	LB 0,	255
+
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
 
 
 	// Test nested FC calls
@@ -351,6 +392,8 @@ BEGIN
 	L		DB1.DBW 2
 	__ASSERT==	__ACCU 1,	9168
 
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 
 	// Test OV/OS bits over call boundaries
 	__STWRST
@@ -367,6 +410,8 @@ BEGIN
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	0
 
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 
 	// Test raw FB call
 	L		0
@@ -381,6 +426,8 @@ BEGIN
 	CC		FB 1
 	L		MW 0
 	__ASSERT==	__ACCU 1,	W#16#4321
+
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
 
 
 	// Test indirect calls
@@ -411,6 +458,8 @@ BEGIN
 	L		MW 0
 	__ASSERT==	__ACCU 1,	W#16#4321
 
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
+
 
 	// Test parameter forwarding (FB->FC)
 	L		900
@@ -431,6 +480,8 @@ BEGIN
 	)
 	L		MW 0
 	__ASSERT==	__ACCU 1,	99
+
+	__ASSERT==	__AR 2,		P#42.0 // Check AR2 magic
 
 
 	CALL SFC 46 // STOP CPU
