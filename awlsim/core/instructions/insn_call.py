@@ -30,7 +30,9 @@ from awlsim.core.operators import *
 class AwlInsn_AbstractCall(AwlInsn): #+cdef
 	def staticSanityChecks(self):
 		if len(self.ops) == 1:
-			# "CALL FC/SFC" or "UC/CC FC/SFC/FB/SFB"
+			# "CALL FC/SFC" or
+			# "CALL #MULTIINSTANCE" or
+			# "UC/CC FC/SFC/FB/SFB"
 			blockOper = self.ops[0]
 
 			if blockOper.type == AwlOperator.BLKREF_FC:
@@ -70,12 +72,19 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			elif blockOper.type == AwlOperator.INDIRECT:
 				# Indirect call. (like UC FC[MW 0])
 				codeBlock = None
+			elif blockOper.type in (AwlOperator.MULTI_FB, AwlOperator.MULTI_SFB):
+				# Multi instance call (like CALL #FOO)
+				if blockOper.type == AwlOperator.MULTI_FB:
+					codeBlock = self.cpu.fbs[blockOper.value.fbNumber]
+				else:
+					codeBlock = self.cpu.sfbs[blockOper.value.fbNumber]
 			else:
 				raise AwlSimError("Invalid CALL operand",
 					rawInsn = self.rawInsn)
 
 			if self.insnType == AwlInsn.TYPE_CALL and\
 			   codeBlock and\
+			   codeBlock.isFC and\
 			   codeBlock.interface.interfaceFieldCount != len(self.params):
 				raise AwlSimError("Call interface mismatch. "
 					"Passed %d parameters, but expected %d.\n"

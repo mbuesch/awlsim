@@ -88,7 +88,6 @@ class AwlTranslator(object):
 			block.interface.addField_STAT(self.__translateInterfaceField(rawVar))
 		for rawVar in rawBlock.vars_temp:
 			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
-		block.interface.buildDataStructure()
 		return block
 
 	# Initialize a DB (global or instance) data field from a raw data-init.
@@ -131,11 +130,19 @@ class AwlTranslator(object):
 		return db
 
 	def __translateInstanceDB(self, rawDB):
+		if rawDB.fields:
+			raise AwlSimError("DB %d is an "
+				"instance DB, but it also "
+				"declares a data structure." %\
+				rawDB.index)
+
 		if rawDB.fb.fbSymbol is None:
+			# The FB name is absolute.
 			fbStr = "SFB" if rawDB.fb.isSFB else "FB"
 			fbNumber = rawDB.fb.fbNumber
 			isSFB = rawDB.fb.isSFB
 		else:
+			# The FB name is symbolic. Resolve it.
 			resolver = AwlSymResolver(self.cpu)
 			fbStr = '"%s"' % rawDB.fb.fbSymbol
 			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,
@@ -143,6 +150,7 @@ class AwlTranslator(object):
 								  rawDB.fb.fbSymbol)
 			isSFB = sym.type.type == AwlDataType.TYPE_SFB_X
 
+		# Get the FB/SFB code block
 		try:
 			if isSFB:
 				fb = self.cpu.sfbs[fbNumber]
@@ -154,14 +162,10 @@ class AwlTranslator(object):
 				(rawDB.index,
 				 fbStr, fbNumber,
 				 fbStr, fbNumber))
+
+		# Create an instance data block
 		db = DB(rawDB.index, fb)
 		interface = fb.interface
-		# Sanity checks
-		if rawDB.fields:
-			raise AwlSimError("DB %d is an "
-				"instance DB, but it also "
-				"declares a data structure." %\
-				rawDB.index)
 		# Allocate the data structure fields
 		db.allocate()
 		# Initialize the data structure fields

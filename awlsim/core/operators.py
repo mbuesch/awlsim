@@ -83,6 +83,8 @@ class AwlOperator(DynAttrs):
 	BLKREF_DI	= EnumGen.item	# DI reference
 	BLKREF_OB	= EnumGen.item	# OB reference (only symbol table)
 	BLKREF_VAT	= EnumGen.item	# VAT reference (only symbol table)
+	MULTI_FB	= EnumGen.item	# FB multiinstance reference
+	MULTI_SFB	= EnumGen.item	# SFB multiinstance reference
 
 	LBL_REF		= EnumGen.item	# Label reference
 	SYMBOLIC	= EnumGen.item	# Classic symbolic reference ("xyz")
@@ -272,8 +274,9 @@ class AwlOperator(DynAttrs):
 				"into a pointer." % str(self))
 		return area | self.value.toPointerValue()
 
-	def __makeAnyPtrString(self):
-		area = AwlIndirectOp.optype2area[self.type]
+	def __makeAnyPtrString(self, area=None):
+		if not area:
+			area = AwlIndirectOp.optype2area[self.type]
 		if self.width % 32 == 0:
 			dataType = AwlDataType.makeByName("DWORD")
 			count = self.width // 32
@@ -394,6 +397,10 @@ class AwlOperator(DynAttrs):
 			return "OB %d" % self.value.byteOffset
 		elif self.type == self.BLKREF_VAT:
 			return "VAT %d" % self.value.byteOffset
+		elif self.type == self.MULTI_FB:
+			return "#FB<" + self.__makeAnyPtrString(AwlIndirectOp.AREA_DI) + ">"
+		elif self.type == self.MULTI_SFB:
+			return "#SFB<" + self.__makeAnyPtrString(AwlIndirectOp.AREA_DI) + ">"
 		elif self.type == self.SYMBOLIC:
 			return '"%s"' % self.value.varName
 		elif self.type == self.NAMED_LOCAL:

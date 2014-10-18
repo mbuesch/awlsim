@@ -59,6 +59,7 @@ class CallStackElem(object):
 		self.instanceDB = instanceDB
 		self.prevDbRegister = cpu.dbRegister
 		self.prevDiRegister = cpu.diRegister
+		self.prevAR2value = cpu.ar2.get()
 		self.lalloc = self.lallocCache.get(cpu)
 		self.lalloc.allocation = block.interface.tempAllocation
 		self.localdata = self.lalloc.localdata
@@ -66,8 +67,7 @@ class CallStackElem(object):
 		# Handle parameters
 		self.__outboundParams = []
 		if parameters and not isRawCall:
-			blockInterface = block.interface
-			if blockInterface.hasInstanceDB:
+			if block.isFB:
 				structInstance, callByRef_Types =\
 					instanceDB.structInstance, \
 					BlockInterface.callByRef_Types
@@ -208,7 +208,7 @@ class CallStackElem(object):
 	def handleBlockExit(self):
 		if self.isRawCall:
 			return
-		if self.block.interface.hasInstanceDB:
+		if self.block.isFB:
 			# We are returning from an FB.
 			# Transfer data out of DBI.
 			if self.__outboundParams:
@@ -236,6 +236,8 @@ class CallStackElem(object):
 					)
 			# Assign the DB/DI registers.
 			self.cpu.dbRegister, self.cpu.diRegister = self.prevDbRegister, self.prevDiRegister
+		# Restore the AR2 register.
+		self.cpu.ar2.set(self.prevAR2value)
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.

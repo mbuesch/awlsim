@@ -69,6 +69,13 @@ class BlockInterface(object):
 		AwlDataType.TYPE_BLOCK_FC,
 	)
 
+	# Structs (self.struct and self.tempStruct) build status.
+	EnumGen.start
+	STRUCT_NOT_BUILT	= EnumGen.item # Structs not built, yet.
+	STRUCT_BUILDING		= EnumGen.item # Currently building structs.
+	STRUCT_BUILT		= EnumGen.item # Structs are completely built.
+	EnumGen.end
+
 	# Specifies whether this interface has a DI assigned.
 	# Set to true for FBs and SFBs
 	hasInstanceDB = False
@@ -77,9 +84,12 @@ class BlockInterface(object):
 	# This is only non-zero for OBs
 	startupTempAllocation = 0
 
+	class StructRecursion(Exception): pass
+
 	def __init__(self):
 		self.struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)
 		self.tempStruct = None # Local-stack structure (TEMP)
+		self.__structState = self.STRUCT_NOT_BUILT
 
 		self.fieldNameMap = {}
 		self.fields_IN = []
@@ -151,8 +161,57 @@ class BlockInterface(object):
 			struct.addFieldNaturallyAligned(field.name,
 							field.dataType)
 
-	def buildDataStructure(self):
+	def __resolveMultiInstanceField(self, cpu, field):
+		if field.dataType.type != AwlDataType.TYPE_FB_X and\
+		   field.dataType.type != AwlDataType.TYPE_SFB_X:
+			# Not a multi-instance field.
+			return
+		if field.dataType.width >= 0:
+			# Already resolved.
+			return
+
+		# This is a multi-instance element.
+		# Get the FB that is embedded as multi-instance.
+		try:
+			if field.dataType.type == AwlDataType.TYPE_SFB_X:
+				multiFB = cpu.sfbs[field.dataType.index]
+			else:
+				multiFB = cpu.fbs[field.dataType.index]
+		except KeyError:
+			raise AwlSimError("The function block '%s' of the "
+				"embedded multi-instance '%s' "
+				"does not exist." %\
+				(str(field.dataType), str(field.name)))
+
+		# This embedded (S)FB might contain multi-instances, too.
+		# Resolve them first. Do this by building its data structure.
+		# Catch recursions.
+		try:
+			multiFB.interface.buildDataStructure(cpu)
+		except self.StructRecursion:
+			raise AwlSimError("Recursion detected while trying to "
+				"resolve the multiinstance variables in %s." %\
+				(str(multiFB)))
+
+		# Assign the type width, in bits.
+		field.dataType.width = multiFB.interface.struct.getSize() * 8
+
+	def buildDataStructure(self, cpu):
+		if self.__structState == self.STRUCT_BUILT:
+			# We already built this block's interface structure.
+			return
+		if self.__structState == self.STRUCT_BUILDING:
+			# Whoops, we recursed! This is bad.
+			raise self.StructRecursion()
+		self.__structState = self.STRUCT_BUILDING
+
+		# Build instance-DB structure, if any.
 		if self.hasInstanceDB:
+			# Resolve the sizes of all multi-instance
+			# fields in our STAT area.
+			for field in self.fields_STAT:
+				self.__resolveMultiInstanceField(cpu, field)
+
 			# Build instance-DB structure for the FB
 			self.struct = AwlStruct()
 			for i, field in enumerate(self.fields_IN):
@@ -176,6 +235,8 @@ class BlockInterface(object):
 		# just force allocate them, so the lstack-allocator will not be confused.
 		if self.tempAllocation < self.startupTempAllocation:
 			self.tempAllocation = self.startupTempAllocation
+
+		self.__structState = self.STRUCT_BUILT
 
 	def getFieldByName(self, name):
 		try:
@@ -242,6 +303,7 @@ class BlockInterface(object):
 						    ptrValue))
 
 		# Translate to instance-DB access
+
 		if structField.dataType.type in BlockInterface.callByRef_Types:
 			# "call by reference"
 			offsetOper = AwlOperator(type=AwlOperator.MEM_DI,
@@ -269,6 +331,20 @@ class BlockInterface(object):
 				width=width,
 				addressRegister=AwlIndirectOp.AR_NONE,
 				offsetOper=offsetOper)
+
+		if structField.dataType.type in (AwlDataType.TYPE_FB_X,
+						 AwlDataType.TYPE_SFB_X):
+			# Multi-instance operator (CALL)
+			if structField.dataType.type == AwlDataType.TYPE_FB_X:
+				operType = AwlOperator.MULTI_FB
+			else:
+				operType = AwlOperator.MULTI_SFB
+			offset = structField.offset.dup()
+			offset.fbNumber = structField.dataType.index
+			return AwlOperator(type = operType,
+					   width = structField.bitSize,
+					   value = offset)
+
 		# "call by value"
 		return AwlOperator(type=AwlOperator.MEM_DI,
 				   width=structField.bitSize,
@@ -300,6 +376,13 @@ class BlockInterface(object):
 		return '\n'.join(ret)
 
 class Block(object):
+	# Simple and fast tests for checking block identity.
+	# These are partially overridden in the subclasses.
+	isOB		= False
+	isFC		= False
+	isFB		= False
+	isSystemBlock	= False
+
 	def __init__(self, insns, index, interface):
 		self.insns = insns
 		self.labels = None
@@ -330,6 +413,8 @@ class OBInterface(BlockInterface):
 		raise AwlSimError("Static VAR not possible in an OB")
 
 class OB(Block):
+	isOB = True
+
 	def __init__(self, insns, index):
 		Block.__init__(self, insns, index, OBInterface())
 
@@ -340,6 +425,8 @@ class FBInterface(BlockInterface):
 	hasInstanceDB = True
 
 class FB(Block):
+	isFB = True
+
 	def __init__(self, insns, index):
 		Block.__init__(self, insns, index, FBInterface())
 
@@ -351,6 +438,8 @@ class FCInterface(BlockInterface):
 		raise AwlSimError("Static VAR not possible in an FC")
 
 class FC(Block):
+	isFC = True
+
 	def __init__(self, insns, index):
 		Block.__init__(self, insns, index, FCInterface())
 

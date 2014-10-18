@@ -45,6 +45,8 @@ class SystemBlock(Block):
 	# Set to True by the subclass, if the implementation is incomplete.
 	broken = False
 
+	isSystemBlock = True
+
 	def __init__(self, cpu, interface):
 		insns = [
 			AwlInsn_GENERIC_CALL(cpu, self.run),
@@ -107,6 +109,8 @@ class SFBInterface(FBInterface):
 	pass
 
 class SFB(SystemBlock):
+	isFB = True
+
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFBInterface())
 
@@ -117,6 +121,8 @@ class SFCInterface(FCInterface):
 	pass
 
 class SFC(SystemBlock):
+	isFC = True
+
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFCInterface())
 

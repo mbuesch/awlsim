@@ -207,6 +207,10 @@ class S7CPU(object): #+cdef
 					codeBlock = self.sfcs[codeBlockOp.value.byteOffset]
 				elif codeBlockOp.type == AwlOperator.BLKREF_SFB:
 					codeBlock = self.sfbs[codeBlockOp.value.byteOffset]
+				elif codeBlockOp.type == AwlOperator.MULTI_FB:
+					codeBlock = self.fbs[codeBlockOp.value.fbNumber]
+				elif codeBlockOp.type == AwlOperator.MULTI_SFB:
+					codeBlock = self.sfbs[codeBlockOp.value.fbNumber]
 				else:
 					raise ValueError
 			except (KeyError, ValueError) as e:
@@ -312,7 +316,6 @@ class S7CPU(object): #+cdef
 				if sfbNumber < 0 and not self.__extendedInsnsEnabled:
 					continue
 				sfb = SFB_table[sfbNumber](self)
-				sfb.interface.buildDataStructure()
 				self.sfbs[sfbNumber] = sfb
 		if not self.sfcs:
 			# Create the SFC tables
@@ -320,8 +323,11 @@ class S7CPU(object): #+cdef
 				if sfcNumber < 0 and not self.__extendedInsnsEnabled:
 					continue
 				sfc = SFC_table[sfcNumber](self)
-				sfc.interface.buildDataStructure()
 				self.sfcs[sfcNumber] = sfc
+
+		# Build the data structures of code blocks.
+		for block in self.__allCodeBlocks():
+			block.interface.buildDataStructure(self)
 
 		# Translate DBs
 		for dbNumber, rawDB in parseTree.dbs.items():
@@ -668,6 +674,8 @@ class S7CPU(object): #+cdef
 		db = self.dbs[dbOper.value.byteOffset]
 		cse = CallStackElem(self, fb, db, parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
+		# Set AR2 to multi-instance base DBX 0.0
+		self.ar2.set(AwlIndirectOp.AREA_DB)
 		return cse
 
 	def __call_RAW_FB(self, blockOper, dbOper, parameters):
@@ -687,6 +695,8 @@ class S7CPU(object): #+cdef
 		db = self.dbs[dbOper.value.byteOffset]
 		cse = CallStackElem(self, sfb, db, parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
+		# Set AR2 to multi-instance base DBX 0.0
+		self.ar2.set(AwlIndirectOp.AREA_DB)
 		return cse
 
 	def __call_RAW_SFB(self, blockOper, dbOper, parameters):
@@ -702,11 +712,21 @@ class S7CPU(object): #+cdef
 			raise AwlSimError("Code block %d not found in indirect call" %\
 					  blockOper.value.byteOffset)
 
+	def __call_MULTI_FB(self, blockOper, dbOper, parameters):
+		pass#TODO
+		raise AwlSimError("Multi-instance calls not supported, yet")
+
+	def __call_MULTI_SFB(self, blockOper, dbOper, parameters):
+		pass#TODO
+		raise AwlSimError("Multi-instance calls not supported, yet")
+
 	__callHelpers = {
 		AwlOperator.BLKREF_FC	: __call_FC,
 		AwlOperator.BLKREF_FB	: __call_FB,
 		AwlOperator.BLKREF_SFC	: __call_SFC,
 		AwlOperator.BLKREF_SFB	: __call_SFB,
+		AwlOperator.MULTI_FB	: __call_MULTI_FB,
+		AwlOperator.MULTI_SFB	: __call_MULTI_SFB,
 	}
 
 	__rawCallHelpers = {
@@ -969,18 +989,18 @@ class S7CPU(object): #+cdef
 			self.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
 						 AwlOffset(operator.value.dbNumber),
 						 operator.insn))
-		if not self.dbRegister:
-			raise AwlSimError("Fetch from global DB, "
-				"but no DB is opened")
 		return self.dbRegister.fetch(operator)
 
 	def fetchDI(self, operator, enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		if not self.diRegister:
-			raise AwlSimError("Fetch from instance DI, "
-				"but no DI is opened")
+		if self.callStackTop.block.isFB:
+			if self.ar2.get() != 0x84000000:
+				#TODO
+				raise AwlSimError("Multi-instance base address "
+					"register (AR2) is not DBX 0.0. "
+					"Multi-instance accesses are not supported, yet.")
 		return self.diRegister.fetch(operator)
 
 	def fetchPE(self, operator, enforceWidth):

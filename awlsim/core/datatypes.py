@@ -44,6 +44,9 @@ class AwlOffset(DynAttrs): #+cdef
 		# A DB-variable name for fully qualified access, or None.
 		"varName"	: None,
 
+		# A (S)FB-number for multi-instance calls, or None.
+		"fbNumber"	: None,
+
 		# List of Variable indices for fully qualified array access, or None.
 		"indices"	: None,
 
