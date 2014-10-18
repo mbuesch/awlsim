@@ -11,3 +11,4 @@ S7 compatibility:
 GUI:
 - Make font size configurable (and save it in project file)
 - Save window status (open MDI windows, positions, etc) in project file
+- Auto-indent in editor
