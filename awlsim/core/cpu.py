@@ -1315,8 +1315,11 @@ class S7CPU(object): #+cdef
 		isEnglish = (mnemonics == S7CPUSpecs.MNEMONICS_EN)
 		self.updateTimestamp()
 		ret = []
-		ret.append("=== S7-CPU dump ===  (t: %.01fs)" %\
-			   (self.now - self.startupTime))
+		ret.append("=== S7-CPU dump ===  (t: %.01fs  py: %d / %s / %s)" %\
+			   (self.now - self.startupTime,
+			    3 if isPy3Compat else 2,
+			    pythonInterpreter,
+			    "Win" if osIsWindows else ("Posix" if osIsPosix else "unknown")))
 		ret.append("    STW:  " + self.statusWord.getString(mnemonics))
 		if self.is4accu:
 			accus = [ accu.toHex()

@@ -57,6 +57,18 @@ def py23(py2, py3):
 		return py2
 	raise Exception("Failed to detect Python version")
 
+# Python interpreter name, as string.
+if isPyPy:
+	pythonInterpreter = "PyPy"
+elif isJython:
+	pythonInterpreter = "Jython"
+elif isIronPython:
+	pythonInterpreter = "IronPython"
+elif isWinStandalone:
+	pythonInterpreter = "Python (standalone)"
+else:
+	pythonInterpreter = "Python"
+
 # input() compatibility.
 # Force Python3 behavior
 if isPy2Compat:
