@@ -26,8 +26,14 @@ import os
 
 
 # Convenient operating system identifiers
-osIsWindows = os.name == "nt" or os.name == "ce"
-osIsPosix = os.name == "posix" or os.name == "java"
+if os.name == "java":
+	import java.lang.System
+	__osName = java.lang.System.getProperty("os.name").lower()
+	osIsWindows = __osName.startswith("windows")
+	osIsPosix = not osIsWindows
+else:
+	osIsWindows = os.name == "nt" or os.name == "ce"
+	osIsPosix = os.name == "posix"
 
 # isPyPy is True, if the interpreter is PyPy.
 isPyPy = "PyPy" in sys.version
