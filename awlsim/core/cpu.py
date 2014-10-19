@@ -1366,8 +1366,13 @@ class S7CPU(object): #+cdef
 		ret.append("   Stmt:  IP:%s   %s" %\
 			   (str(self.getCurrentIP()),
 			    str(curInsn) if curInsn else ""))
-		ret.append("  Speed:  %d stmt/s  %.01f stmt/cycle" %\
+		if self.insnPerSecond:
+			usPerInsn = "%.03f" % ((1.0 / self.insnPerSecond) * 1000000)
+		else:
+			usPerInsn = "-/-"
+		ret.append("  Speed:  %d stmt/s (= %s us/stmt)  %.01f stmt/cycle" %\
 			   (int(round(self.insnPerSecond)),
+			    usPerInsn,
 			    self.avgInsnPerCycle))
 		ret.append(" CycleT:  avg:%.06fs  min:%.06fs  max:%.06fs" %\
 			   (self.avgCycleTime, self.minCycleTime,
