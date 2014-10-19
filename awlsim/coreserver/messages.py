@@ -46,7 +46,7 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5712
+	HDR_MAGIC		= 0x5713
 	HDR_LENGTH		= hdrStruct.size
 
 	EnumGen.start
@@ -352,15 +352,15 @@ class AwlSimMessage_CPUDUMP(AwlSimMessage):
 
 	def toBytes(self):
 		try:
-			dumpBytes = self.dumpText.encode()
-			return AwlSimMessage.toBytes(self, len(dumpBytes)) + dumpBytes
+			pl = self.packString(self.dumpText)
+			return AwlSimMessage.toBytes(self, len(pl)) + pl
 		except UnicodeError:
 			raise TransferError("CPUDUMP: Unicode error")
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			dumpText = payload.decode()
+			dumpText, count = cls.unpackString(payload)
 		except UnicodeError:
 			raise TransferError("CPUDUMP: Unicode error")
 		return cls(dumpText)
