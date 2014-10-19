@@ -794,6 +794,10 @@ class GenericInteger(object): #+cdef
 #@cy	cpdef copyFrom(self, GenericInteger other):
 		self.value = other.value & self.mask
 
+	def reset(self): #@nocy
+#@cy	cpdef reset(self):
+		self.value = 0
+
 	def set(self, value): #@nocy
 #@cy	cpdef set(self, int64_t value):
 		self.value = value & self.mask

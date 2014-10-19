@@ -137,6 +137,12 @@ class S7StatusWord(DynAttrs): #+cdef
 			raise AwlSimError("Status word bit fetch '%d' "
 				"out of range" % bitNumber)
 
+	def reset(self): #@nocy
+#@cy	cpdef reset(self):
+		self.NER = self.VKE = self.STA =\
+		self.OR = self.OS = self.OV =\
+		self.A0 = self.A1 = self.BIE = 0
+
 	def getWord(self): #@nocy
 #@cy	cpdef uint16_t getWord(self):
 		return self.NER | (self.VKE << 1) | (self.STA << 2) |\

@@ -12,6 +12,7 @@ cdef class S7StatusWord(DynAttrs):
 	cdef public _Bool A1
 	cdef public _Bool BIE
 
+	cpdef reset(self)
 	cpdef uint16_t getWord(self)
 	cpdef setWord(self, uint16_t word)
 	cpdef dup(self)

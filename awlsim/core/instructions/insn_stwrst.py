@@ -35,4 +35,4 @@ class AwlInsn_STWRST(AwlInsn): #+cdef
 	def run(self):
 #@cy		cdef S7StatusWord s
 
-		self.cpu.statusWord.setWord(0)
+		self.cpu.statusWord.reset()

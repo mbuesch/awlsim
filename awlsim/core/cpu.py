@@ -456,6 +456,13 @@ class S7CPU(object): #+cdef
 
 		# Initialize CPU state
 		self.dbRegister = self.diRegister = self.dbs[0]
+		self.accu1.reset()
+		self.accu2.reset()
+		self.accu3.reset()
+		self.accu4.reset()
+		self.ar1.reset()
+		self.ar2.reset()
+		self.statusWord.reset()
 		self.callStack = [ CallStackElem(self, block, None, (), True) ]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
