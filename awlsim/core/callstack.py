@@ -205,16 +205,21 @@ class CallStackElem(object):
 	}
 
 	# Handle the exit from this code block.
+	# This stack element (self) will already have been
+	# removed from the CPU's call stack.
 	def handleBlockExit(self):
 		if self.isRawCall:
 			return
+
+		# Restore the AR2 register.
+		self.cpu.ar2.set(self.prevAR2value)
+
 		if self.block.isFB:
 			# We are returning from an FB.
 			# Transfer data out of DBI.
 			if self.__outboundParams:
 				cpu = self.cpu
-				instanceDB = cpu.diRegister
-				structInstance = instanceDB.structInstance
+				structInstance = cpu.diRegister.structInstance
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
@@ -236,8 +241,6 @@ class CallStackElem(object):
 					)
 			# Assign the DB/DI registers.
 			self.cpu.dbRegister, self.cpu.diRegister = self.prevDbRegister, self.prevDiRegister
-		# Restore the AR2 register.
-		self.cpu.ar2.set(self.prevAR2value)
 
 	def destroy(self):
 		# Only put it back into the cache, if the size didn't change.

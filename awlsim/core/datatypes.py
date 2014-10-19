@@ -53,10 +53,10 @@ class AwlOffset(DynAttrs): #+cdef
 		# Additional sub-offset that is added to this offset.
 		# Defaults to 0.0
 		# This is used for arrays and structs.
-		"subOffset"	: lambda self, name: AwlOffset(0, 0),
+		"subOffset"	: lambda self, name: AwlOffset(),
 	}
 
-	def __init__(self, byteOffset, bitOffset=0):
+	def __init__(self, byteOffset=0, bitOffset=0):
 		self.byteOffset, self.bitOffset =\
 			byteOffset, bitOffset
 
@@ -913,7 +913,8 @@ class ByteArray(bytearray):
 					raise IndexError
 				return memoryview(self)[byteOffset : byteOffset + nrBytes]
 		except IndexError as e:
-			raise AwlSimError("fetch: Operator offset out of range")
+			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
+					  str(offset))
 
 	def store(self, offset, width, value): #@nocy
 #@cy	def store(self, object offset, uint32_t width, object value):
@@ -944,7 +945,8 @@ class ByteArray(bytearray):
 					raise IndexError
 				self[byteOffset : byteOffset + len(value)] = value
 		except IndexError as e:
-			raise AwlSimError("store: Operator offset out of range")
+			raise AwlSimError("store: Operator offset '%s' out of range" %\
+					  str(offset))
 
 class Accu(GenericDWord): #+cdef
 	"Accumulator register"

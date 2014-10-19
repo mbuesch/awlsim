@@ -259,7 +259,7 @@ class AwlSymResolver(object):
 			oper.width = elemWidth
 		else:
 			# Non-array accesses don't have a sub-offset.
-			oper.value.subOffset = AwlOffset(0)
+			oper.value.subOffset = AwlOffset()
 			# Store the access-width in the operator.
 			oper.width = field.dataType.width
 

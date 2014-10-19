@@ -455,8 +455,8 @@ class S7CPU(object): #+cdef
 		self.cycleStartTime = self.now
 
 		# Initialize CPU state
-		self.callStack = [ CallStackElem(self, block) ]
 		self.dbRegister = self.diRegister = self.dbs[0]
+		self.callStack = [ CallStackElem(self, block, None, (), True) ]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
@@ -480,7 +480,7 @@ class S7CPU(object): #+cdef
 			prevCse = self.callStack.pop()
 			if self.callStack:
 				cse = self.callStackTop = self.callStack[-1]
-				prevCse.handleBlockExit()
+			prevCse.handleBlockExit()
 			prevCse.destroy()
 		if self.cbCycleExit:
 			self.cbCycleExit(self.cbCycleExitData)
@@ -996,11 +996,10 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, enforceWidth)
 
 		if self.callStackTop.block.isFB:
-			if self.ar2.get() != 0x84000000:
-				#TODO
-				raise AwlSimError("Multi-instance base address "
-					"register (AR2) is not DBX 0.0. "
-					"Multi-instance accesses are not supported, yet.")
+			# Fetch the data using the multi-instance base offset from AR2.
+			return self.diRegister.fetch(operator,
+						     AwlOffset.fromPointerValue(self.ar2.get()))
+		# Fetch without base offset.
 		return self.diRegister.fetch(operator)
 
 	def fetchPE(self, operator, enforceWidth):
@@ -1198,9 +1197,6 @@ class S7CPU(object): #+cdef
 
 		if operator.value.dbNumber is None:
 			db = self.dbRegister
-			if not db:
-				raise AwlSimError("Store to global DB, "
-					"but no DB is opened")
 		else:
 			try:
 				db = self.dbs[operator.value.dbNumber]
@@ -1213,10 +1209,13 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		if not self.diRegister:
-			raise AwlSimError("Store to instance DI, "
-				"but no DI is opened")
-		self.diRegister.store(operator, value)
+		if self.callStackTop.block.isFB:
+			# Store the data using the multi-instance base offset from AR2.
+			self.diRegister.store(operator, value,
+					      AwlOffset.fromPointerValue(self.ar2.get()))
+		else:
+			# Store without base offset.
+			self.diRegister.store(operator, value)
 
 	def storePA(self, operator, value, enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
