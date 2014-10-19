@@ -44,6 +44,10 @@ isJython = sys.platform.lower().startswith("java")
 # isIronPython is True, if the interpreter is IronPython
 isIronPython = "IronPython" in sys.version
 
+# isCython is True, if the interpreter is Cython
+isCython = False #@nocy
+#isCython = True #@cy
+
 # isWinStandalone is True, if this is a Windows standalone package (py2exe)
 isWinStandalone = osIsWindows and\
 		  (sys.executable.endswith("awlsim-gui.exe") or\
@@ -64,7 +68,9 @@ def py23(py2, py3):
 	raise Exception("Failed to detect Python version")
 
 # Python interpreter name, as string.
-if isPyPy:
+if isCython:
+	pythonInterpreter = "Cython"
+elif isPyPy:
 	pythonInterpreter = "PyPy"
 elif isJython:
 	pythonInterpreter = "Jython"
