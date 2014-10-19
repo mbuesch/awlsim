@@ -752,9 +752,8 @@ class S7CPU(object): #+cdef
 		except KeyError:
 			raise AwlSimError("Invalid CALL operand")
 		newCse = callHelper(self, blockOper, dbOper, parameters)
-		if newCse:
-			self.callStack.append(newCse)
-			self.callStackTop = newCse
+		self.callStack.append(newCse)
+		self.callStackTop = newCse
 
 	def run_BE(self):
 		s = self.statusWord
