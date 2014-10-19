@@ -208,30 +208,26 @@ class CallStackElem(object):
 	# This stack element (self) will already have been
 	# removed from the CPU's call stack.
 	def handleBlockExit(self):
-		if self.isRawCall:
-			return
+		cpu = self.cpu
+		if not self.isRawCall:
+			# Restore the AR2 register.
+			cpu.ar2.set(self.prevAR2value)
 
-		# Restore the AR2 register.
-		self.cpu.ar2.set(self.prevAR2value)
-
-		if self.block.isFB:
-			# We are returning from an FB.
-			# Transfer data out of DBI.
-			if self.__outboundParams:
-				cpu = self.cpu
+			# Handle outbound parameters.
+			if self.block.isFB:
+				# We are returning from an FB.
+				# Transfer data out of DBI.
 				structInstance = cpu.diRegister.structInstance
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
 						structInstance.getFieldData(param.lValueStructField)
 					)
-			# Assign the DB/DI registers.
-			self.cpu.dbRegister, self.cpu.diRegister = self.instanceDB, self.prevDiRegister
-		else:
-			# We are returning from an FC.
-			# Transfer data out of temporary sections.
-			if self.__outboundParams:
-				cpu = self.cpu
+				# Assign the DB/DI registers.
+				cpu.dbRegister, cpu.diRegister = self.instanceDB, self.prevDiRegister
+			else:
+				# We are returning from an FC.
+				# Transfer data out of temporary sections.
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
@@ -239,12 +235,12 @@ class CallStackElem(object):
 								      param.scratchSpaceOp.width,
 								      param.scratchSpaceOp.value))
 					)
-			# Assign the DB/DI registers.
-			self.cpu.dbRegister, self.cpu.diRegister = self.prevDbRegister, self.prevDiRegister
+				# Assign the DB/DI registers.
+				cpu.dbRegister, cpu.diRegister = self.prevDbRegister, self.prevDiRegister
 
-	def destroy(self):
-		# Only put it back into the cache, if the size didn't change.
-		if len(self.localdata) == self.cpu.specs.nrLocalbytes:
+		# Destroy this call stack element (self).
+		# Put the L-stack back into the cache, if the size did not change.
+		if len(self.localdata) == cpu.specs.nrLocalbytes:
 			self.lallocCache.put(self.lalloc)
 
 	def __repr__(self):

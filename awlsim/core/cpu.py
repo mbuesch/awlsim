@@ -481,7 +481,6 @@ class S7CPU(object): #+cdef
 			if self.callStack:
 				cse = self.callStackTop = self.callStack[-1]
 			prevCse.handleBlockExit()
-			prevCse.destroy()
 		if self.cbCycleExit:
 			self.cbCycleExit(self.cbCycleExitData)
 
