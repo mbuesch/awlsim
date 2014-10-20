@@ -195,6 +195,13 @@ class BlockInterface(object):
 
 		# Assign the type width, in bits.
 		field.dataType.width = multiFB.interface.struct.getSize() * 8
+		if field.dataType.width == 0:
+			# This is not supported by S7.
+			# Awlsim _could_ support it, though.
+			raise AwlSimError("Multiinstances with zero size "
+				"are not supported. Please declare at least "
+				"one static, input, output or in_out variable "
+				"in %s" % str(multiFB))
 
 	def buildDataStructure(self, cpu):
 		if self.__structState == self.STRUCT_BUILT:
