@@ -51,7 +51,10 @@ isCython = False #@nocy
 # isWinStandalone is True, if this is a Windows standalone package (py2exe)
 isWinStandalone = osIsWindows and\
 		  (sys.executable.endswith("awlsim-gui.exe") or\
-		   sys.executable.endswith("awlsim-cli.exe"))
+		   sys.executable.endswith("awlsim-cli.exe") or\
+		   sys.executable.endswith("awlsim-server.exe") or\
+		   sys.executable.endswith("awlsim-server-module.exe") or\
+		   sys.executable.endswith("awlsim-symtab.exe"))
 
 # isPy3Compat is True, if the interpreter is Python 3 compatible.
 isPy3Compat = sys.version_info[0] == 3
