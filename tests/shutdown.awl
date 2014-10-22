@@ -7,6 +7,3 @@
 	)
 	// Here be dragons
 	__ASSERT==	1, 2
-
-
-	CALL SFC 46 // STOP CPU
