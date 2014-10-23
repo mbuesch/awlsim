@@ -361,6 +361,22 @@ class AwlParser(object):
 		return self.__inAnyHeader() or\
 		       self.state == self.STATE_GLOBAL
 
+	def __inVariableSection(self):
+		if self.flatLayout:
+			return False
+		return self.state in (self.STATE_IN_DB_HDR_STRUCT,
+				      self.STATE_IN_DB,
+				      self.STATE_IN_FB_HDR_VAR,
+				      self.STATE_IN_FB_HDR_VARIN,
+				      self.STATE_IN_FB_HDR_VAROUT,
+				      self.STATE_IN_FB_HDR_VARINOUT,
+				      self.STATE_IN_FB_HDR_VARTEMP,
+				      self.STATE_IN_FC_HDR_VARIN,
+				      self.STATE_IN_FC_HDR_VAROUT,
+				      self.STATE_IN_FC_HDR_VARINOUT,
+				      self.STATE_IN_FC_HDR_VARTEMP,
+				      self.STATE_IN_OB_HDR_VARTEMP)
+
 	def __tokenize(self, data, sourceId, sourceName):
 		self.reset()
 		self.tree.sourceId = sourceId
@@ -449,7 +465,20 @@ class AwlParser(object):
 					t.addToken(c)
 					continue
 			if not t.inParens:
-				if c in ('\n', ';'):
+				# Check whether we have tokenized a whole statement.
+				# In variable sections, this is if we hit a semicolon or
+				# END_STRUCT, END_VAR or END_DATA_BLOCK.
+				# In code, this is if we hit a semicolon or newline (for convenience).
+				wholeStatementOk = False
+				if self.__inVariableSection():
+					if c.isspace() and\
+					   t.curToken.upper() in ("END_STRUCT", "END_VAR", "END_DATA_BLOCK"):
+						wholeStatementOk = True
+					if c == ';':
+						wholeStatementOk = True
+				elif c in (';', '\n'):
+					wholeStatementOk = True
+				if wholeStatementOk:
 					self.__parseTokens(t)
 					continue
 			if c.isspace():
@@ -670,7 +699,9 @@ class AwlParser(object):
 			fbSymbol = name[1:-1]
 			self.tree.curBlock.fb = RawAwlDB.FBRef(fbSymbol = fbSymbol)
 		else:
-			raise AwlParserError("In DB header: Unknown token: %s" % name)
+			raise AwlParserError("In DB header: Unknown token: %s\n"\
+					     "Maybe missing semicolon in preceding lines?"\
+					     % name)
 
 	def __parseArrayInitializer(self, name, initsList, tokens):
 		"""Parse an ARRAY initializer. That is either of:
@@ -762,7 +793,8 @@ class AwlParser(object):
 				name = t.tokens[0]
 				type = t.tokens[colonIdx+1:]
 			else:
-				raise AwlParserError("In variable section: Unknown tokens")
+				raise AwlParserError("In variable section: Unknown tokens.\n"\
+						     "Maybe missing semicolon in preceding lines?")
 		field = RawAwlDataField(idents = RawAwlDataIdent(name),
 					typeTokens = type,
 					dimensions = dimensions,
@@ -825,7 +857,8 @@ class AwlParser(object):
 			db.addFieldInit(RawAwlDataInit(RawAwlDataIdent(name),
 						       valueTokens))
 		else:
-			raise AwlParserError("In DB: Unknown tokens")
+			raise AwlParserError("In DB: Unknown tokens.\n"\
+					     "Maybe missing semicolon in preceding lines?")
 
 	def __parseTokens_fb_hdr(self, t):
 		name = t.tokens[0].upper()
@@ -848,7 +881,9 @@ class AwlParser(object):
 			if "}" not in t.tokens:
 				self.__setState(self.STATE_IN_FB_HDR_ATTR)
 		else:
-			raise AwlParserError("In FB: Unknown token: %s" % name)
+			raise AwlParserError("In FB: Unknown token: %s\n"\
+					     "Maybe missing semicolon in preceding lines?"\
+					     % name)
 
 	def __parseTokens_fb_hdr_var(self, t):
 		if not self.__parse_var_generic(t,
@@ -915,7 +950,9 @@ class AwlParser(object):
 			if "}" not in t.tokens:
 				self.__setState(self.STATE_IN_FC_HDR_ATTR)
 		else:
-			raise AwlParserError("In FC header: Unknown token: %s" % name)
+			raise AwlParserError("In FC header: Unknown token: %s\n"\
+					     "Maybe missing semicolon in preceding lines?"\
+					     % name)
 
 	def __parseTokens_fc_hdr_varin(self, t):
 		if not self.__parse_var_generic(t,
@@ -973,7 +1010,9 @@ class AwlParser(object):
 			if "}" not in t.tokens:
 				self.__setState(self.STATE_IN_OB_HDR_ATTR)
 		else:
-			raise AwlParserError("In OB header: Unknown token: %s" % name)
+			raise AwlParserError("In OB header: Unknown token: %s\n"\
+					     "Maybe missing semicolon in preceding lines?"\
+					     % name)
 
 	def __parseTokens_ob_hdr_vartemp(self, t):
 		if not self.__parse_var_generic(t,
