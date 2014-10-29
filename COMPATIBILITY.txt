@@ -14,8 +14,8 @@ bug that should be reported.
 - Semicolons: AWL/STL requires semicolons (;) after each declaration,
   initialization and statement. As an awlsim convenience service, terminating
   semicolons can be omitted in AWL/STL statements.
-  Data declarations and initializations (in DBs) however must end with a
-  semicolon.
+  Data declarations and initializations (in DBs and FB/FC interfaces), however,
+  must end with a semicolon.
 
 - awlsim does not compile AWL/STL to MC7 code and it cannot execute MC7 code.
   On startup awlsim translates the AWL/STL code to an awlsim specific in-memory
