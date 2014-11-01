@@ -141,11 +141,9 @@ class AwlStructInstance(object):
 	"Data structure instance"
 
 	def __init__(self, struct):
+		# Store a reference to the data structure
 		self.struct = struct
-		self.__allocate()
-
-	def __allocate(self):
-		# Allocate the structure
+		# Allocate self.dataBytes
 		self.dataBytes = ByteArray(self.struct.getSize())
 
 	def getFieldData(self, field):

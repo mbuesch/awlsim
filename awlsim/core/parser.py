@@ -150,6 +150,28 @@ class RawAwlDataIdent(object):
 		self.name = name	# Name string of the variable
 		self.indices = indices	# Possible array indices (or None)
 
+	# Duplicate this ident
+	def dup(self):
+		return RawAwlDataIdent(self.name,
+				       self.indices[:] if self.indices else None)
+
+	# Increment the array indices of this ident by one.
+	# 'dimensions' is the array dimensions.
+	def advanceToNextArrayElement(self, dimensions):
+		assert(self.indices)
+		assert(len(self.indices) == len(dimensions))
+		self.indices[-1] += 1
+		for i in range(len(self.indices) - 1, -1, -1):
+			if self.indices[i] > dimensions[i][1]:
+				if i <= 0:
+					self.indices = [dim[0] for dim in dimensions]
+					break
+				self.indices[i] = dimensions[i][0]
+				self.indices[i - 1] += 1
+			else:
+				break
+
+	# == operator
 	def __eq__(self, other):
 		if self.name != other.name:
 			return False
@@ -158,6 +180,7 @@ class RawAwlDataIdent(object):
 				return False
 		return True
 
+	# != operator
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
@@ -182,16 +205,16 @@ class RawAwlDataInit(object):
 		return self.getIdentString() + " := " + str(self.valueTokens)
 
 class RawAwlDataField(object):
-	def __init__(self, idents, typeTokens, dimensions=None, inits=None):
+	def __init__(self, idents, typeTokens, dimensions=None, defaultInits=None):
 		"""idents -> The identifications for the data field.
 		typeTokens -> List of tokens for the data type.
 		dimensions -> List of array dimensions, where each dimension is a
 		              tuple of (start, end). Or None, if this is not an array.
-		inits -> List of RawAwlDataInit()s"""
+		defaultInits -> List of RawAwlDataInit()s for use as 'startvalues'"""
 		self.idents = toList(idents)
 		self.typeTokens = typeTokens
 		self.dimensions = dimensions
-		self.inits = inits if inits else []	# List of RawAwlDataInit()s
+		self.defaultInits = defaultInits if defaultInits else [] # List of RawAwlDataInit()s
 
 	def getIdentString(self):
 		return ".".join(str(ident) for ident in self.idents)
@@ -211,8 +234,8 @@ class RawAwlDB(RawAwlBlock):
 		self.fb = None
 
 		# Data fields and initializations.
-		# fieldInits are the inits from the DB init section.
-		# The inits from the DB declaration section are in fields[x].inits.
+		# fieldInits are the inits from the DB init section (_not_ declaration).
+		# The startup inits from the DB declaration section are in fields[x].inits.
 		self.fields = []
 		self.fieldInits = []	# List of RawAwlDataInit()s
 
@@ -225,29 +248,16 @@ class RawAwlDB(RawAwlBlock):
 	def addFieldInit(self, fieldInit):
 		self.fieldInits.append(fieldInit)
 
-	def getFieldInit(self, field):
-		"""Returns the RawAwlDataInit() for the specified RawAwlDataField()"""
-		for otherField, init in self.allFieldInits():
-			if field.idents == init.idents:
-				return init
-		return None
+	def allDefaultFieldInits(self):
+		"""Returns a list (generator) of all default startup RawAwlDataInits()"""
+		for field in self.fields:
+			for init in field.defaultInits:
+				yield field, init
 
 	def allFieldInits(self):
-		"""Returns a list (generator) of all RawAwlDataInits()"""
-		# First all explicit field initializations
+		"""Returns a list (generator) of all 'actual-value' RawAwlDataInits()"""
 		for init in self.fieldInits:
 			yield self.getField(init.idents), init
-		# Then all field initializations from the declaration,
-		# that we did not initialize, yet.
-		for field in self.fields:
-			for init in field.inits:
-				for otherInit in self.fieldInits:
-					if init.idents == otherInit.idents:
-						# We already had an init for this field.
-						break
-				else:
-					# We did not have this init, yet.
-					yield field, init
 
 	def isInstanceDB(self):
 		return bool(self.fb)
@@ -703,15 +713,66 @@ class AwlParser(object):
 					     "Maybe missing semicolon in preceding lines?"\
 					     % name)
 
-	def __parseArrayInitializer(self, name, initsList, tokens):
+	def __parseArrayInitializer(self, name, dimensions, initsList, tokens):
 		"""Parse an ARRAY initializer. That is either of:
 		1, 2, 3, 4
 		4 (1, 2, 3, 4)
 		or similar.
 		name -> The name string of the variable.
+		dimensions -> The array dimensions.
 		initsList -> The result list. Each element is a RawAwlDataInit().
 		tokens -> The tokens to parse."""
-		pass#TODO
+
+		ident = RawAwlDataIdent(name,
+					[dim[0] for dim in dimensions])
+		repeatCount = None
+		repeatValues = []
+		valueTokens = []
+
+		def addInit(valTokens):
+			init = RawAwlDataInit(ident.dup(), valTokens)
+			initsList.append(init)
+			ident.advanceToNextArrayElement(dimensions)
+
+		while tokens:
+			if tokens[0] == ',':
+				if repeatCount is None:
+					addInit(valueTokens)
+				else:
+					repeatValues.append(valueTokens)
+				valueTokens = []
+			elif tokens[0] == '(':
+				if repeatCount is not None:
+					raise AwlParserError("Nested data initialization "
+						"repetitions are not allowed.")
+				# Starting a repetition. The current valueTokens
+				# is the repeat count.
+				try:
+					if len(valueTokens) != 1:
+						raise ValueError
+					repeatCount = int(valueTokens[0])
+				except ValueError:
+					raise AwlParserError("Invalid repeat count.")
+				if repeatCount <= 0 or repeatCount > 0x7FFF:
+					raise AwlParserError("Repeat count is out of range. "
+						"Count must be between 1 and 32767.")
+				valueTokens = []
+			elif tokens[0] == ')':
+				repeatValues.append(valueTokens)
+				valueTokens = []
+				if repeatCount is None:
+					raise AwlParserError("Too many closing parenthesis.")
+				# Add the repeated values to the init list.
+				for i in range(repeatCount):
+					for valToks in repeatValues:
+						addInit(valToks)
+				repeatCount = None
+				repeatValues = []
+			else:
+				valueTokens.append(tokens[0])
+			tokens = tokens[1:]
+		if valueTokens:
+			addInit(valueTokens)
 
 	def __parse_var_generic(self, t, varList,
 				endToken,
@@ -778,6 +839,7 @@ class AwlParser(object):
 				# Parse the ARRAY initializer (:= ...)
 				initTokens = t.tokens[assignIdx+1:]
 				self.__parseArrayInitializer(name,
+							     dimensions,
 							     initsList,
 							     initTokens)
 		else:
@@ -798,7 +860,7 @@ class AwlParser(object):
 		field = RawAwlDataField(idents = RawAwlDataIdent(name),
 					typeTokens = type,
 					dimensions = dimensions,
-					inits = initsList)
+					defaultInits = initsList)
 		varList.append(field)
 
 		return True

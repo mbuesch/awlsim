@@ -92,41 +92,40 @@ class AwlTranslator(object):
 
 	# Initialize a DB (global or instance) data field from a raw data-init.
 	def __initDBField(self, db, dataType, rawDataInit):
+		#TODO no structs, yet
+		fieldName = rawDataInit.idents[-1].name
 		if dataType.type == AwlDataType.TYPE_ARRAY:
 			index = dataType.arrayIndicesCollapse(rawDataInit.idents[-1].indices)
 		else:
 			index = None
 		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
-		db.structInstance.setFieldDataByName(rawDataInit.idents[-1].name,
-						     index, value)
+		db.structInstance.setFieldDataByName(fieldName, index, value)
 
 	def __translateGlobalDB(self, rawDB):
 		db = DB(rawDB.index, None)
 		# Create the data structure fields
 		for field in rawDB.fields:
 			assert(len(field.idents) == 1) #TODO no structs, yet
-			if not rawDB.getFieldInit(field):
-				raise AwlSimError(
-					"DB %d declares field '%s', "
-					"but does not initialize." %\
-					(rawDB.index, field.idents[0].name))
 			dtype = AwlDataType.makeByName(field.typeTokens,
 						       field.dimensions)
 			db.struct.addFieldNaturallyAligned(field.idents[0].name,
 							   dtype)
 		# Allocate the data structure fields
 		db.allocate()
-		# Initialize the data structure fields
-		for field, init in rawDB.allFieldInits():
-			if not field:
-				raise AwlSimError(
-					"DB %d assigns field '%s', "
-					"but does not declare it." %\
-					(rawDB.index, init.getIdentString()))
-			assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
-			dtype = AwlDataType.makeByName(field.typeTokens,
-						       field.dimensions)
-			self.__initDBField(db, dtype, init)
+		# First assign the default startup values.
+		# Then assign data structure initializations.
+		for fieldInits in (rawDB.allDefaultFieldInits(),
+				   rawDB.allFieldInits()):
+			for field, init in fieldInits:
+				if not field:
+					raise AwlSimError(
+						"DB %d assigns field '%s', "
+						"but does not declare it." %\
+						(rawDB.index, init.getIdentString()))
+				assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
+				dtype = AwlDataType.makeByName(field.typeTokens,
+							       field.dimensions)
+				self.__initDBField(db, dtype, init)
 		return db
 
 	def __translateInstanceDB(self, rawDB):
@@ -176,7 +175,7 @@ class AwlTranslator(object):
 		return db
 
 	def translateDB(self, rawDB):
-		if rawDB.index < 0 or rawDB.index > 0xFFFF:
+		if rawDB.index < 1 or rawDB.index > 0xFFFF:
 			raise AwlSimError("DB number %d is invalid" % rawDB.index)
 		if rawDB.isInstanceDB():
 			return self.__translateInstanceDB(rawDB)
