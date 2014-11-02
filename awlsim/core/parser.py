@@ -663,7 +663,7 @@ class AwlParser(object):
 			raise AwlParserError("Missing token")
 		except ValueError as e:
 			raise AwlParserError("Invalid value")
-		raise AwlParserError("Unknown statement")
+		raise AwlParserError("Unknown statement: %s" % " ".join(t.tokens))
 
 	def __parseInstruction(self, t):
 		insn = RawAwlInsn(self.tree.curBlock)
@@ -1118,7 +1118,9 @@ class AwlParser(object):
 				  re.DOTALL | re.MULTILINE)
 		haveOB = re.match(r'.*^\s*ORGANIZATION_BLOCK\s+.*', sourceText,
 				  re.DOTALL | re.MULTILINE)
-		return not haveDB and not haveFB and not haveFC and not haveOB
+		haveUDT = re.match(r'.*^\s*TYPE\s+.*', sourceText,
+				   re.DOTALL | re.MULTILINE)
+		return not haveDB and not haveFB and not haveFC and not haveOB and not haveUDT
 
 	def parseData(self, dataBytes, sourceId=None, sourceName=None):
 		try:
