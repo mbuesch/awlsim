@@ -80,6 +80,11 @@ class AwlStruct(object):
 		return "%s[%d]" % (baseName, linearIndex)
 
 	def addField(self, name, dataType):
+		if dataType.width < 0:
+			raise AwlSimError("With of data structure field '%s : %s' "
+				"is undefined. This probably means that its data "
+				"type is unsupported." %\
+				(name, str(dataType)))
 		if dataType.type == dataType.TYPE_ARRAY:
 			# Add an ARRAY.
 			# First add a zero-length field with the array's name.

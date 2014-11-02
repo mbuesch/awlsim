@@ -120,6 +120,11 @@ class BlockInterface(object):
 		if field.name in self.fieldNameMap:
 			raise AwlSimError("Data structure field name '%s' is ambiguous." %\
 				field.name)
+		if field.dataType.width < 0:
+			raise AwlSimError("With of block interface field '%s' "
+				"is undefined. This probably means that its data "
+				"type is unsupported." % str(field))
+
 		if field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			self.tempFieldCount += 1
 		elif field.fieldType == BlockInterfaceField.FTYPE_STAT:
