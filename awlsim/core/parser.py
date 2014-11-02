@@ -233,10 +233,10 @@ class RawAwlDB(RawAwlBlock):
 		RawAwlBlock.__init__(self, tree, index)
 		self.fb = None
 
-		# Data fields and initializations.
+		# Data fields (RawAwlDataField) and initializations (RawAwlDataInit)
 		# fieldInits are the inits from the DB init section (_not_ declaration).
 		# The startup inits from the DB declaration section are in fields[x].inits.
-		self.fields = []
+		self.fields = []	# List of RawAwlDataField()s
 		self.fieldInits = []	# List of RawAwlDataInit()s
 
 	def getField(self, idents):
@@ -262,6 +262,13 @@ class RawAwlDB(RawAwlBlock):
 	def isInstanceDB(self):
 		return bool(self.fb)
 
+class RawAwlUDT(RawAwlBlock):
+	def __init__(self, tree, index):
+		RawAwlBlock.__init__(self, tree, index)
+
+		# The data fields of this UDT
+		self.fields = []	# List of RawAwlDataField()s
+
 class RawAwlOB(RawAwlCodeBlock):
 	def __init__(self, tree, index):
 		RawAwlCodeBlock.__init__(self, tree, index)
@@ -277,10 +284,11 @@ class RawAwlFC(RawAwlCodeBlock):
 
 class AwlParseTree(object):
 	def __init__(self):
-		self.dbs = {}
-		self.fbs = {}
-		self.fcs = {}
-		self.obs = {}
+		self.dbs = {}	# DBs (dict of 'OB-name : RawAwlDB()')
+		self.fbs = {}	# FBs (dict of 'FB-name : RawAwlFB()')
+		self.fcs = {}	# FCs (dict of 'FC-name : RawAwlFC()')
+		self.obs = {}	# OBs (dict of 'OB-name : RawAwlOB()')
+		self.udts = {}	# UDTs (dict of 'UDT-name : RawAwlUDT()')
 
 		self.curBlock = None
 
@@ -312,6 +320,8 @@ class AwlParser(object):
 	STATE_IN_OB_HDR_VARTEMP		= EnumGen.item
 	STATE_IN_OB_HDR_ATTR		= EnumGen.item
 	STATE_IN_OB			= EnumGen.item
+	STATE_IN_UDT_HDR		= EnumGen.item
+	STATE_IN_UDT_HDR_STRUCT		= EnumGen.item
 	EnumGen.end
 
 	TEXT_ENCODING = "latin_1"
@@ -385,7 +395,8 @@ class AwlParser(object):
 				      self.STATE_IN_FC_HDR_VAROUT,
 				      self.STATE_IN_FC_HDR_VARINOUT,
 				      self.STATE_IN_FC_HDR_VARTEMP,
-				      self.STATE_IN_OB_HDR_VARTEMP)
+				      self.STATE_IN_OB_HDR_VARTEMP,
+				      self.STATE_IN_UDT_HDR_STRUCT)
 
 	def __tokenize(self, data, sourceId, sourceName):
 		self.reset()
@@ -555,6 +566,10 @@ class AwlParser(object):
 			self.__parseTokens_ob_hdr_attr(tokenizerState)
 		elif self.state == self.STATE_IN_OB:
 			self.__parseTokens_ob(tokenizerState)
+		elif self.state == self.STATE_IN_UDT_HDR:
+			self.__parseTokens_udt_hdr(tokenizerState)
+		elif self.state == self.STATE_IN_UDT_HDR_STRUCT:
+			self.__parseTokens_udt_hdr_struct(tokenizerState)
 		else:
 			assert(0)
 
@@ -658,6 +673,26 @@ class AwlParser(object):
 					raise AwlParserError("Multiple definitions "
 						"of OB %s" % str(obNumber))
 				self.tree.obs[obNumber] = self.tree.curBlock
+				return
+			if t.tokens[0].upper() == "TYPE":
+				self.__setState(self.STATE_IN_UDT_HDR)
+				if t.tokens[1].startswith('"') and\
+				   t.tokens[1].endswith('"'):
+					# UDT name is symbolic
+					udtNumber = t.tokens[1][1:-1]
+				else:
+					# UDT name is absolute
+					if t.tokens[1].upper() != "UDT":
+						raise AwlParserError("Invalid UDT name")
+					try:
+						udtNumber = int(t.tokens[2], 10)
+					except ValueError:
+						raise AwlParserError("Invalid UDT number")
+				self.tree.curBlock = RawAwlUDT(self.tree, udtNumber)
+				if udtNumber in self.tree.udts:
+					raise AwlParserError("Multiple definitions "
+						"of UDT %s" % str(udtNumber))
+				self.tree.udts[udtNumber] = self.tree.curBlock
 				return
 		except IndexError as e:
 			raise AwlParserError("Missing token")
@@ -1097,6 +1132,25 @@ class AwlParser(object):
 			return # ignore
 		insn = self.__parseInstruction(t)
 		self.tree.curBlock.insns.append(insn)
+
+	def __parseTokens_udt_hdr(self, t):
+		name = t.tokens[0].upper()
+		if name == "END_TYPE":
+			self.__setState(self.STATE_GLOBAL)
+		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
+			self.tree.curBlock.addDescriptor(t.tokens)
+		elif name == "STRUCT":
+			self.__setState(self.STATE_IN_UDT_HDR_STRUCT)
+		else:
+			raise AwlParserError("In UDT: Unknown token: %s\n"\
+					     "Maybe missing semicolon in preceding lines?"\
+					     % name)
+
+	def __parseTokens_udt_hdr_struct(self, t):
+		if not self.__parse_var_generic(t,
+				varList = self.tree.curBlock.fields,
+				endToken = "END_STRUCT"):
+			self.__setState(self.STATE_IN_UDT_HDR)
 
 	def parseSource(self, awlSource):
 		"""Parse an AWL source.
