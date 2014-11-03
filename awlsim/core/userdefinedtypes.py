@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - User defined data types (UDT)
+#
+# Copyright 2014 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.common.compat import *
+
+from awlsim.core.util import *
+from awlsim.core.blocks import *
+from awlsim.core.datastructure import *
+
+
+class UDTField(object):
+	"""User defined data type (UDT) data field."""
+
+	def __init__(self, name, dataType):
+		# name -> The name string of the field, as defined
+		#         in the block interface definition.
+		# dataType -> AwlDataType instance.
+		self.name = name
+		self.dataType = dataType
+
+	def __repr__(self):
+		return "%s : %s" %\
+			(self.name, str(self.dataType))
+
+class UDT(Block):
+	"""User defined data type (UDT) block."""
+
+	# self.struct build status.
+	EnumGen.start
+	STRUCT_NOT_BUILT	= EnumGen.item # Structs not built, yet.
+	STRUCT_BUILDING		= EnumGen.item # Currently building structs.
+	STRUCT_BUILT		= EnumGen.item # Structs are completely built.
+	EnumGen.end
+
+	class StructRecursion(Exception): pass
+
+	# Convert a RawAwlUDT() to UDT()
+	@classmethod
+	def makeFromRaw(cls, rawUDT):
+		udt = cls(rawUDT.index)
+		for rawField in rawUDT.fields:
+			dtype = AwlDataType.makeByName(rawField.typeTokens,
+						       rawField.dimensions)
+			assert(len(rawField.idents) == 1) #TODO no structs, yet
+			field = UDTField(name = rawField.idents[0].name,
+					 dataType = dtype)
+			udt.addField(field)
+		return udt
+
+	def __init__(self, index):
+		Block.__init__(self, index)
+		# The list of UDTField()s
+		self.fields = []
+		self.fieldNameMap = {}
+		# The built data structure.
+		self.struct = AwlStruct()
+		self.__structState = self.STRUCT_NOT_BUILT
+
+	def addField(self, field):
+		if field.name in self.fieldNameMap:
+			raise AwlSimError("Data structure field name '%s' is ambiguous." %\
+				field.name)
+		self.fields.append(field)
+		self.fieldNameMap[field.name] = field
+
+	def __buildField(self, cpu, field):
+		if field.dataType.width < 0:
+			# The size of the field is unknown, yet.
+			# Try to resolve it.
+			if field.dataType.type == AwlDataType.TYPE_UDT_X:
+				# This UDT embeds another UDT.
+				# Get the embedded UDT.
+				try:
+					udt = cpu.udts[field.dataType.index]
+				except KeyError:
+					raise AwlSimError("The '%s' embeds "
+						"a 'UDT %d', which does not "
+						"exist." %\
+						(str(self),
+						 field.dataType.index))
+				# Build the data structure of the embedded UDT.
+				try:
+					udt.buildDataStructure(cpu)
+				except self.StructRecursion:
+					raise AwlSimError("Recursion detected while "
+						"trying to resolve embedded 'UDT %d' "
+						"in '%s'." %\
+						(field.dataType.index,
+						 str(self)))
+				# Assign the type width.
+				field.dataType.width = udt.struct.getSize() * 8
+				if field.dataType.width == 0:
+					# This is not supported by S7.
+					# Awlsim _could_ support it, though.
+					raise AwlSimError("UDTs with zero size "
+						"are not supported. Please declare at least "
+						"one variable in '%s'" % str(udt))
+			else:
+				raise AwlSimError("Unable to resolve the size "
+					"of '%s' data field '%s'" %\
+					(str(self), str(field)))
+		# Insert the field into the data structure.
+		self.struct.addFieldNaturallyAligned(field.name, field.dataType)
+
+	# Build self.struct out of self.fields
+	def buildDataStructure(self, cpu):
+		if self.__structState == self.STRUCT_BUILT:
+			# We already built this block's interface structure.
+			return
+		if self.__structState == self.STRUCT_BUILDING:
+			# Whoops, we recursed! This is bad.
+			raise self.StructRecursion()
+		self.__structState = self.STRUCT_BUILDING
+		for field in self.fields:
+			self.__buildField(cpu, field)
+		self.__structState = self.STRUCT_BUILT
+
+	def __repr__(self):
+		return "UDT %d" % self.index

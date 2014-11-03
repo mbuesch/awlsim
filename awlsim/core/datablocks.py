@@ -2,7 +2,7 @@
 #
 # AWL simulator - datablocks
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,16 +26,17 @@ from awlsim.core.util import *
 from awlsim.core.operators import *
 from awlsim.core.datatypes import *
 from awlsim.core.datastructure import *
+from awlsim.core.blocks import *
 
 
-class DB(object):
+class DB(Block):
 	PERM_READ	= 1 << 0
 	PERM_WRITE	= 1 << 1
 
 	def __init__(self, index, codeBlock=None,
 		     permissions=(PERM_READ|PERM_WRITE)):
+		Block.__init__(self, index)
 		self.setPermissions(permissions)
-		self.index = index
 		self.codeBlock = codeBlock	# The FB, if this is an instance-DB.
 		if self.codeBlock:
 			# The data structure is declared by the interface.

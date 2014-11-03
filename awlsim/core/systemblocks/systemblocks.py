@@ -29,7 +29,7 @@ from awlsim.core.blocks import *
 from awlsim.core.translator import *
 
 
-class SystemBlock(Block):
+class SystemBlock(CodeBlock):
 	# The block identification. To be overridden by the subclass.
 	# The tuple is: (number, name, short_description)
 	name = (-1, "<unknown>", None)
@@ -51,7 +51,7 @@ class SystemBlock(Block):
 		insns = [
 			AwlInsn_GENERIC_CALL(cpu, self.run),
 		]
-		Block.__init__(self, insns, self.name[0], interface)
+		CodeBlock.__init__(self, insns, self.name[0], interface)
 		self.cpu = cpu
 
 		# Register the interface.

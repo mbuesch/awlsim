@@ -2,7 +2,7 @@
 #
 # AWL simulator - blocks
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,6 +60,8 @@ class BlockInterfaceField(object):
 			(ftype, self.name, str(self.dataType))
 
 class BlockInterface(object):
+	"""Code block interface (IN/OUT/IN_OUT/STAT/TEMP parameters) base class."""
+
 	# Data-types that must be passed "by-reference" to FCs/FBs.
 	callByRef_Types = (
 		AwlDataType.TYPE_TIMER,
@@ -120,10 +122,6 @@ class BlockInterface(object):
 		if field.name in self.fieldNameMap:
 			raise AwlSimError("Data structure field name '%s' is ambiguous." %\
 				field.name)
-		if field.dataType.width < 0:
-			raise AwlSimError("With of block interface field '%s' "
-				"is undefined. This probably means that its data "
-				"type is unsupported." % str(field))
 
 		if field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			self.tempFieldCount += 1
@@ -388,6 +386,17 @@ class BlockInterface(object):
 		return '\n'.join(ret)
 
 class Block(object):
+	"""Base class for blocks (OBs, FCs, FBs, DBs, etc...)"""
+
+	def __init__(self, index):
+		self.index = index
+
+	def __repr__(self):
+		return "Block %d" % self.index
+
+class CodeBlock(Block):
+	"""Base class for code blocks (OBs, (S)FCs, (S)FBs)"""
+
 	# Simple and fast tests for checking block identity.
 	# These are partially overridden in the subclasses.
 	isOB		= False
@@ -396,9 +405,9 @@ class Block(object):
 	isSystemBlock	= False
 
 	def __init__(self, insns, index, interface):
+		Block.__init__(self, index)
 		self.insns = insns
 		self.labels = None
-		self.index = index
 		if insns:
 			self.labels = AwlLabel.resolveLabels(insns)
 		self.interface = interface
@@ -407,7 +416,7 @@ class Block(object):
 		pass
 
 	def __repr__(self):
-		return "Block %d" % self.index
+		return "CodeBlock %d" % self.index
 
 class OBInterface(BlockInterface):
 	startupTempAllocation = 20
@@ -424,11 +433,11 @@ class OBInterface(BlockInterface):
 	def addField_STAT(self, field):
 		raise AwlSimError("Static VAR not possible in an OB")
 
-class OB(Block):
+class OB(CodeBlock):
 	isOB = True
 
 	def __init__(self, insns, index):
-		Block.__init__(self, insns, index, OBInterface())
+		CodeBlock.__init__(self, insns, index, OBInterface())
 
 	def __repr__(self):
 		return "OB %d" % self.index
@@ -436,11 +445,11 @@ class OB(Block):
 class FBInterface(BlockInterface):
 	hasInstanceDB = True
 
-class FB(Block):
+class FB(CodeBlock):
 	isFB = True
 
 	def __init__(self, insns, index):
-		Block.__init__(self, insns, index, FBInterface())
+		CodeBlock.__init__(self, insns, index, FBInterface())
 
 	def __repr__(self):
 		return "FB %d" % self.index
@@ -449,11 +458,11 @@ class FCInterface(BlockInterface):
 	def addField_STAT(self, field):
 		raise AwlSimError("Static VAR not possible in an FC")
 
-class FC(Block):
+class FC(CodeBlock):
 	isFC = True
 
 	def __init__(self, insns, index):
-		Block.__init__(self, insns, index, FCInterface())
+		CodeBlock.__init__(self, insns, index, FCInterface())
 
 	def __repr__(self):
 		return "FC %d" % self.index

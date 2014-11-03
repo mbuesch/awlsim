@@ -42,6 +42,7 @@ from awlsim.core.operators import *
 from awlsim.core.translator import *
 from awlsim.core.blocks import *
 from awlsim.core.datablocks import *
+from awlsim.core.userdefinedtypes import *
 from awlsim.core.statusword import * #@nocy
 from awlsim.core.labels import *
 from awlsim.core.timers import *
@@ -272,6 +273,21 @@ class S7CPU(object): #+cdef
 
 		# Mnemonics autodetection
 		self.__detectMnemonics(parseTree)
+
+		# Translate UDTs
+		for udtNumber, rawUDT in parseTree.udts.items():
+			udtNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_UDT_X,),
+								   udtNumber)
+			if udtNumber in self.udts:
+				raise AwlSimError("Multiple definitions of "\
+					"UDT %d" % udtNumber)
+			rawUDT.index = udtNumber
+			self.udts[udtNumber] = UDT.makeFromRaw(rawUDT)
+
+		# Build all UDTs (Resolve sizes of all fields)
+		for udt in self.udts.values():
+			udt.buildDataStructure(self)
+
 		# Translate OBs
 		for obNumber, rawOB in parseTree.obs.items():
 			obNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_OB_X,),
@@ -289,6 +305,7 @@ class S7CPU(object): #+cdef
 			except KeyError:
 				presetHandlerClass = OBTempPresets_dummy
 			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
+
 		# Translate FBs
 		for fbNumber, rawFB in parseTree.fbs.items():
 			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,),
@@ -299,6 +316,7 @@ class S7CPU(object): #+cdef
 			rawFB.index = fbNumber
 			fb = translator.translateCodeBlock(rawFB, FB)
 			self.fbs[fbNumber] = fb
+
 		# Translate FCs
 		for fcNumber, rawFC in parseTree.fcs.items():
 			fcNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FC_X,),
@@ -317,6 +335,7 @@ class S7CPU(object): #+cdef
 					continue
 				sfb = SFB_table[sfbNumber](self)
 				self.sfbs[sfbNumber] = sfb
+
 		if not self.sfcs:
 			# Create the SFC tables
 			for sfcNumber in SFC_table.keys():
@@ -365,6 +384,9 @@ class S7CPU(object): #+cdef
 		CallStackElem.resetCache()
 
 	def reset(self):
+		self.udts = {
+			# UDTs
+		}
 		self.dbs = {
 			# DBs
 			0 : DB(0, permissions = 0), # read/write-protected system-DB

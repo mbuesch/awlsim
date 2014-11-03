@@ -80,6 +80,8 @@ class AwlStruct(object):
 		return "%s[%d]" % (baseName, linearIndex)
 
 	def addField(self, name, dataType):
+		if dataType.type == dataType.TYPE_UDT_X:
+			pass#TODO
 		if dataType.width < 0:
 			raise AwlSimError("With of data structure field '%s : %s' "
 				"is undefined. This probably means that its data "
