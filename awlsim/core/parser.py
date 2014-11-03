@@ -146,9 +146,51 @@ class RawAwlCodeBlock(RawAwlBlock):
 		return False
 
 class RawAwlDataIdent(object):
+	UPPERCASE	= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	LOWERCASE	= 'abcdefghijklmnopqrstuvwxyz'
+	NUMBERS		= '0123456789'
+
+	VALID_CHARS	= UPPERCASE + LOWERCASE + NUMBERS + '_'
+
+	@classmethod
+	def validateName(cls, name):
+		"""Check variable name against AWL naming rules.
+		Raises an exception in case of invalid name."""
+		# Check string length
+		if len(name) < 1:
+			raise AwlParserError("The variable name is too short")
+		if len(name) > 24:
+			raise AwlParserError("The variable name '%s' is "
+				"too long (max 24 characters)." %\
+				name)
+		# Only alphanumeric characters and underscores.
+		for c in name:
+			if c not in cls.VALID_CHARS:
+				raise AwlParserError("The variable name '%s' "
+					"contains invalid characters. "
+					"Only alphanumeric characters (a-z, A-Z, 0-9) "
+					"and underscores (_) are allowed." %\
+					name)
+		# First character must not be a number.
+		if name[0] in cls.NUMBERS:
+			raise AwlParserError("The first character of the "
+				"variable name '%s' must not be a number." %\
+				name)
+		# Last character must not be an underscore.
+		if name[-1] == '_':
+			raise AwlParserError("The last character of the "
+				"variable name '%s' must not be an underscore." %\
+				name)
+		# Consecutive underscores are not allowed.
+		if '__' in name:
+			raise AwlParserError("Consecutive underscores in "
+				"the variable name '%s' are not allowed." %\
+				name)
+		return name
+
 	def __init__(self, name, indices=None):
-		self.name = name	# Name string of the variable
-		self.indices = indices	# Possible array indices (or None)
+		self.name = self.validateName(name)	# Name string of the variable
+		self.indices = indices			# Possible array indices (or None)
 
 	# Duplicate this ident
 	def dup(self):
