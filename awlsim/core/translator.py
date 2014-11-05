@@ -108,7 +108,8 @@ class AwlTranslator(object):
 			assert(len(field.idents) == 1) #TODO no structs, yet
 			dtype = AwlDataType.makeByName(field.typeTokens,
 						       field.dimensions)
-			db.struct.addFieldNaturallyAligned(field.idents[0].name,
+			db.struct.addFieldNaturallyAligned(self.cpu,
+							   field.idents[0].name,
 							   dtype)
 		# Allocate the data structure fields
 		db.allocate()

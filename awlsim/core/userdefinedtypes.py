@@ -119,7 +119,7 @@ class UDT(Block):
 					"of '%s' data field '%s'" %\
 					(str(self), str(field)))
 		# Insert the field into the data structure.
-		self.struct.addFieldNaturallyAligned(field.name, field.dataType)
+		self.struct.addFieldNaturallyAligned(cpu, field.name, field.dataType)
 
 	# Build self.struct out of self.fields
 	def buildDataStructure(self, cpu):

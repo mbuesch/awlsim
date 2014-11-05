@@ -75,35 +75,69 @@ class AwlStruct(object):
 		if field.name:
 			self.name2field[field.name] = field
 
+	# Compose a data structure field name.
+	# nameComponents is a list of name components, or a name string.
+	# linearArrayIndex is the linear array index to the last component, or None.
+	# Returns the composed field name string.
 	@classmethod
-	def makeArrayChildName(cls, baseName, linearIndex):
-		return "%s[%d]" % (baseName, linearIndex)
+	def composeFieldName(cls, nameComponents, linearArrayIndex=None):
+		nameComponents = toList(nameComponents)
+		if not all(nameComponents):
+			return None
+		name = ".".join(nameComponents)
+		if linearArrayIndex is not None:
+			name += "[%d]" % linearArrayIndex
+		return name
 
-	def addField(self, name, dataType):
+	# Add zero-length field.
+	def __addDummyField(self, name=None):
+		offset = AwlOffset(self.__getUnalignedSize())
+		field = AwlStructField(name, offset,
+				       AwlDataType.makeByName("VOID"))
+		self.__registerField(field)
+
+	def addField(self, cpu, name, dataType):
 		if dataType.type == dataType.TYPE_UDT_X:
-			pass#TODO
+			# Add an UDT.
+			# First add a field with the UDT's name.
+			# It has the data type 'UDT_X' and is informational only.
+			offset = AwlOffset(self.__getUnalignedSize())
+			field = AwlStructField(name, offset, dataType)
+			self.__registerField(field)
+			# Recurse into the UDT and add all of its fields.
+			try:
+				udt = cpu.udts[dataType.index]
+			except KeyError:
+				assert(0) # Should never happen
+			for udtField in udt.struct.fields:
+				self.addField(cpu,
+					      self.composeFieldName((name, udtField.name)),
+					      udtField.dataType)
+			# Add a zero-length UDT-end guard field,
+			# to enforce alignment of following fields.
+			self.__addDummyField()
+			return
+
 		if dataType.width < 0:
 			raise AwlSimError("With of data structure field '%s : %s' "
 				"is undefined. This probably means that its data "
 				"type is unsupported." %\
 				(name, str(dataType)))
+
 		if dataType.type == dataType.TYPE_ARRAY:
 			# Add an ARRAY.
-			# First add a zero-length field with the array's name.
+			# First add a field with the array's name.
 			# It has the data type 'ARRAY' and is informational only.
 			offset = AwlOffset(self.__getUnalignedSize())
 			field = AwlStructField(name, offset, dataType)
 			self.__registerField(field)
 			# Add fields for each array entry.
 			for i, childType in enumerate(dataType.children):
-				childName = self.makeArrayChildName(name, i)
-				self.addField(childName, childType)
+				childName = self.composeFieldName(name, i)
+				self.addField(cpu, childName, childType)
 			# Add a zero-length array-end guard field,
 			# to enforce alignment of following fields.
-			offset = AwlOffset(self.__getUnalignedSize())
-			field = AwlStructField(None, offset,
-					       AwlDataType.makeByName("VOID"))
-			self.__registerField(field)
+			self.__addDummyField()
 		else:
 			# Add a single data type.
 			if dataType.width == 1 and self.fields and\
@@ -117,25 +151,25 @@ class AwlStruct(object):
 			field = AwlStructField(name, offset, dataType)
 			self.__registerField(field)
 
-	def addFieldAligned(self, name, dataType, byteAlignment):
+	def addFieldAligned(self, cpu, name, dataType, byteAlignment):
 		padding = byteAlignment - self.__getUnalignedSize() % byteAlignment
 		if padding == byteAlignment:
 			padding = 0
 		while padding:
-			self.addField(None, AwlDataType.makeByName("BYTE"))
+			self.addField(cpu, None, AwlDataType.makeByName("BYTE"))
 			padding -= 1
-		self.addField(name, dataType)
+		self.addField(cpu, name, dataType)
 
-	def addFieldNaturallyAligned(self, name, dataType):
+	def addFieldNaturallyAligned(self, cpu, name, dataType):
 		alignment = 1
 		if dataType.type == dataType.TYPE_ARRAY or\
 		   dataType.width > 8:
 			alignment = 2
-		self.addFieldAligned(name, dataType, alignment)
+		self.addFieldAligned(cpu, name, dataType, alignment)
 
 	def getField(self, name, arrayIndex=None):
 		if arrayIndex is not None:
-			name = self.makeArrayChildName(name, arrayIndex)
+			name = self.composeFieldName(name, arrayIndex)
 		try:
 			return self.name2field[name]
 		except KeyError:

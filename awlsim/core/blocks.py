@@ -156,12 +156,12 @@ class BlockInterface(object):
 		self.__addField(field)
 		self.fields_TEMP.append(field)
 
-	def __buildField(self, struct, field, isFirst):
+	def __buildField(self, cpu, struct, field, isFirst):
 		if isFirst:
-			struct.addFieldAligned(field.name,
+			struct.addFieldAligned(cpu, field.name,
 					       field.dataType, 2)
 		else:
-			struct.addFieldNaturallyAligned(field.name,
+			struct.addFieldNaturallyAligned(cpu, field.name,
 							field.dataType)
 
 	def __resolveMultiInstanceField(self, cpu, field):
@@ -225,13 +225,13 @@ class BlockInterface(object):
 			# Build instance-DB structure for the FB
 			self.struct = AwlStruct()
 			for i, field in enumerate(self.fields_IN):
-				self.__buildField(self.struct, field, i==0)
+				self.__buildField(cpu, self.struct, field, i==0)
 			for i, field in enumerate(self.fields_OUT):
-				self.__buildField(self.struct, field, i==0)
+				self.__buildField(cpu, self.struct, field, i==0)
 			for i, field in enumerate(self.fields_INOUT):
-				self.__buildField(self.struct, field, i==0)
+				self.__buildField(cpu, self.struct, field, i==0)
 			for i, field in enumerate(self.fields_STAT):
-				self.__buildField(self.struct, field, i==0)
+				self.__buildField(cpu, self.struct, field, i==0)
 		else:
 			# An FC does not have an instance-DB
 			assert(not self.fields_STAT) # No static data.
@@ -239,7 +239,7 @@ class BlockInterface(object):
 		# Build local-stack structure
 		self.tempStruct = AwlStruct()
 		for i, field in enumerate(self.fields_TEMP):
-			self.__buildField(self.tempStruct, field, i==0)
+			self.__buildField(cpu, self.tempStruct, field, i==0)
 		self.tempAllocation = self.tempStruct.getSize()
 		# If the OB-interface did not specify all automatic TEMP-fields,
 		# just force allocate them, so the lstack-allocator will not be confused.
