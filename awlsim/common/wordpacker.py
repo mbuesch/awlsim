@@ -82,6 +82,8 @@ class _WordPacker:
 	}
 
 	def fromBytes(self, byteBuffer, bitWidth, byteOffset=0):
+		if bitWidth > 32:
+			return byteBuffer
 		try:
 			handler = self.__fromBytesHandlers[bitWidth]
 			return handler(self, byteBuffer, byteOffset)
@@ -89,6 +91,8 @@ class _WordPacker:
 			raise AwlSimError("Failed to unpack %d bits from buffer" % bitWidth)
 
 	def toBytes(self, byteBuffer, bitWidth, byteOffset=0, value=0):
+		if bitWidth > 32:
+			return value
 		try:
 			handler = self.__toBytesHandlers[bitWidth]
 			handler(self, byteBuffer, byteOffset, value)
