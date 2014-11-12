@@ -59,6 +59,7 @@ class AwlTranslator(object):
 		return insns
 
 	def __translateInterfaceField(self, rawVar):
+		#TODO use rawFieldTranslate
 		dtype = AwlDataType.makeByName(rawVar.typeTokens, rawVar.dimensions)
 		assert(len(rawVar.idents) == 1) #TODO no structs, yet
 		field = BlockInterfaceField(name = rawVar.idents[0].name,
@@ -90,6 +91,40 @@ class AwlTranslator(object):
 			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
 		return block
 
+	@classmethod
+	def rawFieldTranslate(cls, rawField):
+		name = rawField.getIdentString()
+		dataType = AwlDataType.makeByName(rawField.typeTokens,
+						  rawField.dimensions)
+		if rawField.defaultInits:
+			# Translate the initialization values and
+			# put them into a ByteArray.
+			initBytes = ByteArray(intDivRoundUp(dataType.width, 8))
+			if dataType.type == AwlDataType.TYPE_ARRAY:
+				for rawDataInit in rawField.defaultInits:
+					value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
+					linArrayIndex = dataType.arrayIndicesCollapse(
+						rawDataInit.idents[-1].indices)
+					offset = AwlOffset.fromBitOffset(linArrayIndex *
+									 dataType.children[0].width)
+					try:
+						initBytes.store(offset, dataType.children[0].width,
+								value)
+					except AwlSimError as e:
+						raise AwlSimError("Data field '%s' initialization "
+							"is out of range." % str(rawField))
+			else:
+				assert(len(rawField.defaultInits) == 1)
+				value = dataType.parseMatchingImmediate(rawField.defaultInits[0].valueTokens)
+				try:
+					initBytes.store(AwlOffset(), dataType.width, value)
+				except AwlSimError as e:
+					raise AwlSimError("Data field '%s' initialization "
+						"is out of range." % str(rawField))
+		else:
+			initBytes = None
+		return name, dataType, initBytes
+
 	# Initialize a DB (global or instance) data field from a raw data-init.
 	def __initDBField(self, db, dataType, rawDataInit):
 		#TODO no structs, yet
@@ -105,28 +140,22 @@ class AwlTranslator(object):
 		db = DB(rawDB.index, None)
 		# Create the data structure fields
 		for field in rawDB.fields:
-			assert(len(field.idents) == 1) #TODO no structs, yet
-			dtype = AwlDataType.makeByName(field.typeTokens,
-						       field.dimensions)
-			db.struct.addFieldNaturallyAligned(self.cpu,
-							   field.idents[0].name,
-							   dtype)
+			name, dataType, initBytes = self.rawFieldTranslate(field)
+			db.struct.addFieldNaturallyAligned(self.cpu, name,
+							   dataType, initBytes)
 		# Allocate the data structure fields
 		db.allocate()
-		# First assign the default startup values.
-		# Then assign data structure initializations.
-		for fieldInits in (rawDB.allDefaultFieldInits(),
-				   rawDB.allFieldInits()):
-			for field, init in fieldInits:
-				if not field:
-					raise AwlSimError(
-						"DB %d assigns field '%s', "
-						"but does not declare it." %\
-						(rawDB.index, init.getIdentString()))
-				assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
-				dtype = AwlDataType.makeByName(field.typeTokens,
-							       field.dimensions)
-				self.__initDBField(db, dtype, init)
+		# Assign data structure initializations.
+		for field, init in rawDB.allFieldInits():
+			if not field:
+				raise AwlSimError(
+					"DB %d assigns field '%s', "
+					"but does not declare it." %\
+					(rawDB.index, init.getIdentString()))
+			assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
+			dtype = AwlDataType.makeByName(field.typeTokens,
+						       field.dimensions)
+			self.__initDBField(db, dtype, init)
 		return db
 
 	def __translateInstanceDB(self, rawDB):

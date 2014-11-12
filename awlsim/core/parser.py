@@ -290,12 +290,6 @@ class RawAwlDB(RawAwlBlock):
 	def addFieldInit(self, fieldInit):
 		self.fieldInits.append(fieldInit)
 
-	def allDefaultFieldInits(self):
-		"""Returns a list (generator) of all default startup RawAwlDataInits()"""
-		for field in self.fields:
-			for init in field.defaultInits:
-				yield field, init
-
 	def allFieldInits(self):
 		"""Returns a list (generator) of all 'actual-value' RawAwlDataInits()"""
 		for init in self.fieldInits:

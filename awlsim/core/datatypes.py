@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import *
+from awlsim.common.wordpacker import *
 
 from awlsim.core.util import *
 from awlsim.core.timers import *
@@ -814,6 +815,13 @@ class GenericDWord(GenericInteger): #+cdef
 		GenericInteger.__init__(self, value, 32)
 
 class ByteArray(bytearray):
+	"""Generic memory representation."""
+
+	# "Natural" memory fetch operation.
+	# This method returns the natural data (byte, word, dword) for
+	# a given memory region of this byte array.
+	# offset => An AwlOffset() that specifies the region to fetch from.
+	# width => An integer specifying the width (in bits) to fetch.
 	def fetch(self, offset, width): #@nocy
 #@cy	def fetch(self, object offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
@@ -842,6 +850,23 @@ class ByteArray(bytearray):
 			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
 					  str(offset))
 
+	# Fetch bytes from this memory region.
+	# Returns a view of the memory region bytes (not a copy!).
+	# offset => An AwlOffset() that specifies the region to fetch from.
+	# width => An integer specifying the width (in bits) to fetch.
+	def fetchBytes(self, offset, width):
+		#TODO optimize me!
+		bytesBuf = ByteArray(intDivRoundUp(width, 8))
+		WordPacker.toBytes(bytesBuf, width, 0, self.fetch(offset, width))
+		return bytesBuf
+
+	# "Natural" memory store operation.
+	# This method stores natural data (byte, word, dword) to
+	# a given memory region of this byte array.
+	# offset => An AwlOffset() that specifies the region to store to.
+	# width => An integer specifying the width (in bits) to store.
+	# value => The value to store. May be an integer (byte, word, dword) or
+	#          a byte array for large types (>32 bit).
 	def store(self, offset, width, value): #@nocy
 #@cy	def store(self, object offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
@@ -873,6 +898,24 @@ class ByteArray(bytearray):
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset '%s' out of range" %\
 					  str(offset))
+
+	# Store bytes to this memory region.
+	# offset => An AwlOffset() that specifies the region to store to.
+	# width => An integer specifying the width (in bits) to store.
+	# valueBytes => The bytes to store.
+	def storeBytes(self, offset, width, valueBytes):
+		#TODO optimize me!
+		self.store(offset, width, WordPacker.fromBytes(valueBytes, width))
+
+	def __repr__(self):
+		ret = [ 'ByteArray(b"', ]
+		for b in self:
+			ret.append("\\x%02X" % b)
+		ret.append('")')
+		return "".join(ret)
+
+	def __str__(self):
+		return self.__repr__()
 
 class Accu(GenericDWord): #+cdef
 	"Accumulator register"

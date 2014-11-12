@@ -32,17 +32,29 @@ class AwlStructField(object):
 	# name => Field name string
 	# offset => Field offset as AwlOffset
 	# dataType => AwlDataType
-	def __init__(self, name, offset, dataType):
+	# initBytes => bytes or bytearray of initialization data
+	# dummy => If true, this is a dummy field that does not
+	#          account to the combined struct size.
+	def __init__(self, name, offset, dataType, initBytes=None, dummy=False):
 		self.name = name
 		self.offset = offset
 		self.dataType = dataType
+		self.initBytes = initBytes
+		self.dummy = dummy
 
 		self.bitSize = self.dataType.width
 		self.byteSize = intDivRoundUp(self.bitSize, 8)
 
+		if self.initBytes is not None:
+			assert(len(self.initBytes) == self.byteSize)
+
 	def __repr__(self):
-		return "AwlStructField(%s, %s, %s)" %\
-			(str(self.name), str(self.offset), str(self.dataType))
+		return "AwlStructField(\"%s\"%s, %s, %s, %s)" %\
+			(str(self.name),
+			 " (dummy)" if self.dummy else "",
+			 str(self.offset),
+			 str(self.dataType),
+			 str(self.initBytes))
 
 class AwlStruct(object):
 	"Data structure"
@@ -62,13 +74,11 @@ class AwlStruct(object):
 	def __getUnalignedSize(self):
 		if not self.fields:
 			return 0
+		# Get the offset of the last field and
+		# add its size, if it is not a dummy field.
 		lastField = self.fields[-1]
-		if lastField.dataType.type == AwlDataType.TYPE_ARRAY:
-			# An array header field (whole array) is the last field.
-			# The array elements follow. Don't add the array size
-			# to the size.
-			return lastField.offset.byteOffset
-		return lastField.offset.byteOffset + lastField.byteSize
+		return lastField.offset.byteOffset +\
+			(0 if lastField.dummy else lastField.byteSize)
 
 	def __registerField(self, field):
 		self.fields.append(field)
@@ -93,29 +103,46 @@ class AwlStruct(object):
 	def __addDummyField(self, name=None):
 		offset = AwlOffset(self.__getUnalignedSize())
 		field = AwlStructField(name, offset,
-				       AwlDataType.makeByName("VOID"))
+				       AwlDataType.makeByName("VOID"),
+				       dummy=True)
 		self.__registerField(field)
 
-	def addField(self, cpu, name, dataType):
+	# Merge another struct 'otherStruct' into this struct 'self'.
+	# 'otherStructName' is the name string of the other struct.
+	# 'otherStructDataType' is the AwlDataType of the other struct.
+	def merge(self, otherStruct, otherStructName=None, otherStructDataType=None):
+		if not otherStructDataType:
+			otherStructDataType = AwlDataType.makeByName("VOID")
+		# First add a field with the sub-structure's name.
+		# This field is used for retrieval of a pointer to the sub-struct,
+		# for alignment and for informational purposes only.
+		baseOffset = AwlOffset(self.__getUnalignedSize())
+		field = AwlStructField(otherStructName,
+				       baseOffset, otherStructDataType,
+				       dummy=True)
+		self.__registerField(field)
+		# Add all fields from the other struct.
+		baseOffset = AwlOffset(self.__getUnalignedSize())
+		for otherField in otherStruct.fields:
+			newName = self.composeFieldName((otherStructName, otherField.name))
+			field = AwlStructField(newName,
+					       baseOffset + otherField.offset,
+					       otherField.dataType,
+					       otherField.initBytes)
+			self.__registerField(field)
+		# Add a zero-length sub-struct-end guard field,
+		# to enforce alignment of following fields.
+		self.__addDummyField()
+
+	def addField(self, cpu, name, dataType, initBytes=None):
 		if dataType.type == dataType.TYPE_UDT_X:
 			# Add an UDT.
-			# First add a field with the UDT's name.
-			# It has the data type 'UDT_X' and is informational only.
-			offset = AwlOffset(self.__getUnalignedSize())
-			field = AwlStructField(name, offset, dataType)
-			self.__registerField(field)
-			# Recurse into the UDT and add all of its fields.
 			try:
 				udt = cpu.udts[dataType.index]
 			except KeyError:
 				assert(0) # Should never happen
-			for udtField in udt.struct.fields:
-				self.addField(cpu,
-					      self.composeFieldName((name, udtField.name)),
-					      udtField.dataType)
-			# Add a zero-length UDT-end guard field,
-			# to enforce alignment of following fields.
-			self.__addDummyField()
+			assert(not initBytes)
+			self.merge(udt.struct, name, dataType)
 			return
 
 		if dataType.width < 0:
@@ -129,12 +156,24 @@ class AwlStruct(object):
 			# First add a field with the array's name.
 			# It has the data type 'ARRAY' and is informational only.
 			offset = AwlOffset(self.__getUnalignedSize())
-			field = AwlStructField(name, offset, dataType)
+			field = AwlStructField(name, offset, dataType, dummy=True)
 			self.__registerField(field)
 			# Add fields for each array entry.
+			initOffset = AwlOffset()
 			for i, childType in enumerate(dataType.children):
 				childName = self.composeFieldName(name, i)
-				self.addField(cpu, childName, childType)
+				try:
+					if not initBytes:
+						raise ValueError
+					fieldInitData = ByteArray(intDivRoundUp(childType.width, 8))
+					fieldInitData.storeBytes(AwlOffset(), childType.width,
+								 initBytes.fetchBytes(initOffset,
+										      childType.width))
+				except (AwlSimError, ValueError) as e:
+					fieldInitData = None
+				self.addField(cpu, childName, childType,
+					      fieldInitData)
+				initOffset += AwlOffset.fromBitOffset(childType.width)
 			# Add a zero-length array-end guard field,
 			# to enforce alignment of following fields.
 			self.__addDummyField()
@@ -148,24 +187,24 @@ class AwlStruct(object):
 						   self.fields[-1].offset.bitOffset + 1)
 			else:
 				offset = AwlOffset(self.__getUnalignedSize())
-			field = AwlStructField(name, offset, dataType)
+			field = AwlStructField(name, offset, dataType, initBytes)
 			self.__registerField(field)
 
-	def addFieldAligned(self, cpu, name, dataType, byteAlignment):
+	def addFieldAligned(self, cpu, name, dataType, byteAlignment, initBytes=None):
 		padding = byteAlignment - self.__getUnalignedSize() % byteAlignment
 		if padding == byteAlignment:
 			padding = 0
 		while padding:
-			self.addField(cpu, None, AwlDataType.makeByName("BYTE"))
+			self.addField(cpu, None, AwlDataType.makeByName("BYTE"), None)
 			padding -= 1
-		self.addField(cpu, name, dataType)
+		self.addField(cpu, name, dataType, initBytes)
 
-	def addFieldNaturallyAligned(self, cpu, name, dataType):
+	def addFieldNaturallyAligned(self, cpu, name, dataType, initBytes=None):
 		alignment = 1
 		if dataType.type == dataType.TYPE_ARRAY or\
 		   dataType.width > 8:
 			alignment = 2
-		self.addFieldAligned(cpu, name, dataType, alignment)
+		self.addFieldAligned(cpu, name, dataType, alignment, initBytes)
 
 	def getField(self, name, arrayIndex=None):
 		if arrayIndex is not None:
@@ -186,6 +225,17 @@ class AwlStructInstance(object):
 		self.struct = struct
 		# Allocate self.dataBytes
 		self.dataBytes = ByteArray(self.struct.getSize())
+		# Initialize the data structure
+		for field in self.struct.fields:
+			if not field.initBytes:
+				continue
+			try:
+				self.dataBytes.storeBytes(field.offset, field.bitSize,
+							  field.initBytes)
+			except AwlSimError as e:
+				raise AwlSimError("Data structure field '%s' "
+					"initialization is out of range." %\
+					str(field))
 
 	def getFieldData(self, field):
 		return self.dataBytes.fetch(field.offset, field.bitSize)

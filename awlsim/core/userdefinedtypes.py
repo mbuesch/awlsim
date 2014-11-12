@@ -25,21 +25,27 @@ from awlsim.common.compat import *
 from awlsim.core.util import *
 from awlsim.core.blocks import *
 from awlsim.core.datastructure import *
+from awlsim.core.translator import *
 
 
 class UDTField(object):
 	"""User defined data type (UDT) data field."""
 
-	def __init__(self, name, dataType):
+	def __init__(self, name, dataType, initBytes=None):
 		# name -> The name string of the field, as defined
 		#         in the block interface definition.
 		# dataType -> AwlDataType instance.
+		# initBytes -> bytes or bytearray of initialization data, or None.
 		self.name = name
 		self.dataType = dataType
+		self.initBytes = initBytes
 
 	def __repr__(self):
-		return "%s : %s" %\
-			(self.name, str(self.dataType))
+		if self.initBytes:
+			return "%s : %s := %s" %\
+				(self.name, str(self.dataType),
+				 str(self.initBytes))
+		return "%s : %s" % (self.name, str(self.dataType))
 
 class UDT(Block):
 	"""User defined data type (UDT) block."""
@@ -58,11 +64,9 @@ class UDT(Block):
 	def makeFromRaw(cls, rawUDT):
 		udt = cls(rawUDT.index)
 		for rawField in rawUDT.fields:
-			dtype = AwlDataType.makeByName(rawField.typeTokens,
-						       rawField.dimensions)
-			assert(len(rawField.idents) == 1) #TODO no structs, yet
-			field = UDTField(name = rawField.idents[0].name,
-					 dataType = dtype)
+			name, dataType, initBytes =\
+				AwlTranslator.rawFieldTranslate(rawField)
+			field = UDTField(name, dataType, initBytes)
 			udt.addField(field)
 		return udt
 
@@ -88,7 +92,7 @@ class UDT(Block):
 			# Try to resolve it.
 			if field.dataType.type == AwlDataType.TYPE_UDT_X:
 				# This UDT embeds another UDT.
-				# Get the embedded UDT.
+				# Get the embedded UDT and build it.
 				try:
 					udt = cpu.udts[field.dataType.index]
 				except KeyError:
@@ -106,20 +110,15 @@ class UDT(Block):
 						"in '%s'." %\
 						(field.dataType.index,
 						 str(self)))
-				# Assign the type width.
-				field.dataType.width = udt.struct.getSize() * 8
-				if field.dataType.width == 0:
-					# This is not supported by S7.
-					# Awlsim _could_ support it, though.
-					raise AwlSimError("UDTs with zero size "
-						"are not supported. Please declare at least "
-						"one variable in '%s'" % str(udt))
 			else:
 				raise AwlSimError("Unable to resolve the size "
 					"of '%s' data field '%s'" %\
 					(str(self), str(field)))
 		# Insert the field into the data structure.
-		self.struct.addFieldNaturallyAligned(cpu, field.name, field.dataType)
+		# If the field is an embedded UDT, addField will handle it.
+		self.struct.addFieldNaturallyAligned(cpu, field.name,
+						     field.dataType,
+						     field.initBytes)
 
 	# Build self.struct out of self.fields
 	def buildDataStructure(self, cpu):
@@ -132,6 +131,13 @@ class UDT(Block):
 		self.__structState = self.STRUCT_BUILDING
 		for field in self.fields:
 			self.__buildField(cpu, field)
+		# Sanity check
+		if self.struct.getSize() == 0:
+			# This is not supported by S7.
+			# Awlsim _could_ support it, though.
+			raise AwlSimError("UDTs with zero size "
+				"are not supported. Please declare at least "
+				"one variable in '%s'" % str(self))
 		self.__structState = self.STRUCT_BUILT
 
 	def __repr__(self):
