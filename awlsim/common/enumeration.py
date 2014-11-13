@@ -52,9 +52,19 @@ class MagicEnumerationGenerator(object):
 		return number
 
 	@property
+	def bitmask(self):
+		mask = self.bitmaskNoInc
+		self.__num += 1
+		return mask
+
+	@property
 	def itemNoInc(self):
 		assert(self.__num is not None)
 		return self.__num
+
+	@property
+	def bitmaskNoInc(self):
+		return 1 << self.itemNoInc
 
 	def itemAt(self, number):
 		assert(self.__num is not None)
