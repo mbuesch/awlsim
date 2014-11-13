@@ -583,7 +583,7 @@ DATA_BLOCK DB 3
 STRUCT
 	pointer_0 : DWORD;
 	pointer_1 : DWORD;
-END_STRUCT
+END_STRUCT;
 BEGIN
 	pointer_0 := DW#16#0;
 	pointer_1 := DW#16#0;

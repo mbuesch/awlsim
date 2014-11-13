@@ -294,7 +294,7 @@ END_DATA_BLOCK
 		
 		// ... Insert data structure definitions here ...
 		
-	END_STRUCT
+	END_STRUCT;
 BEGIN
 	
 	// ... Insert data initializations here ...

@@ -2,7 +2,7 @@ DATA_BLOCK DB 1
 STRUCT
 	Value		: INT;
 	VAR0		: INT;
-END_STRUCT
+END_STRUCT;
 BEGIN
 	Value		:= 8290;
 	VAR0		:= 0;
