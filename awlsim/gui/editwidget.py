@@ -36,6 +36,7 @@ def _setFontParams(font):
 class EditSubWidget(QWidget):
 	needRepaint = Signal(QPaintEvent)
 	wasScrolled = Signal(QWheelEvent)
+	contextMenuReq = Signal(QPoint)
 
 	def __init__(self, editWidget):
 		QWidget.__init__(self, editWidget)
@@ -54,6 +55,10 @@ class EditSubWidget(QWidget):
 		_setFontParams(font)
 		p.setFont(font)
 		return p
+
+	def contextMenuEvent(self, ev):
+		QWidget.contextMenuEvent(self, ev)
+		self.contextMenuReq.emit(ev.globalPos())
 
 class HeaderSubWidget(EditSubWidget):
 	def __init__(self, editWidget):
@@ -91,11 +96,11 @@ class CpuStatsSubWidget(EditSubWidget):
 		if showFlg & CpuStatsEntry.SHOW_OV:
 			ret.append("OV")
 		if showFlg & CpuStatsEntry.SHOW_A0:
-			ret.append("A0")
+			ret.append("CC0")
 		if showFlg & CpuStatsEntry.SHOW_A1:
-			ret.append("A1")
+			ret.append("CC1")
 		if showFlg & CpuStatsEntry.SHOW_BIE:
-			ret.append("BIE")
+			ret.append("BR")
 		if showFlg & CpuStatsEntry.SHOW_STW:
 			ret.append("STW        ")
 		if showFlg & CpuStatsEntry.SHOW_ACCU1:
@@ -162,11 +167,11 @@ class CpuStatsEntry(object):
 		if showFlg & self.SHOW_OV:
 			ret.append("%d " % ((insnDumpMsg.stw >> 5) & 1))
 		if showFlg & self.SHOW_A0:
-			ret.append("%d " % ((insnDumpMsg.stw >> 6) & 1))
+			ret.append("%d  " % ((insnDumpMsg.stw >> 6) & 1))
 		if showFlg & self.SHOW_A1:
-			ret.append("%d " % ((insnDumpMsg.stw >> 7) & 1))
+			ret.append("%d  " % ((insnDumpMsg.stw >> 7) & 1))
 		if showFlg & self.SHOW_BIE:
-			ret.append("%d  " % ((insnDumpMsg.stw >> 8) & 1))
+			ret.append("%d " % ((insnDumpMsg.stw >> 8) & 1))
 		if showFlg & self.SHOW_STW:
 			stw = []
 			for i in range(S7StatusWord.NR_BITS - 1, -1, -1):
@@ -202,6 +207,139 @@ class CpuStatsEntry(object):
 				ret.append("--   ")
 		return "  ".join(ret)
 
+class CheckAction(QAction):
+	def __init__(self, name, toggleCallback=None, parent=None):
+		QAction.__init__(self, name, parent)
+		self.setCheckable(True)
+		if toggleCallback:
+			self.toggled.connect(toggleCallback)
+
+class CpuStatsContextMenu(QMenu):
+	closed = Signal()
+
+	def __init__(self, parent=None):
+		QMenu.__init__(self, parent)
+
+		itemsMenu = QMenu("Online items", self)
+		self.__action_NER = CheckAction("Status bit: /FC (/ER)",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_NER)
+		self.__action_VKE = CheckAction("Status bit: RLO (VKE)",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_VKE)
+		self.__action_STA = CheckAction("Status bit: STA",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_STA)
+		self.__action_OR = CheckAction("Status bit: OR",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_OR)
+		self.__action_OS = CheckAction("Status bit: OS",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_OS)
+		self.__action_OV = CheckAction("Status bit: OV",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_OV)
+		self.__action_A0 = CheckAction("Status bit: CC0 (A0)",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_A0)
+		self.__action_A1 = CheckAction("Status bit: CC1 (A1)",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_A1)
+		self.__action_BIE = CheckAction("Status bit: BR (BIE)",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_BIE)
+		self.__action_STW = CheckAction("Full status word",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_STW)
+		self.__action_accu1 = CheckAction("Accu 1",
+						  self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_accu1)
+		self.__action_accu2 = CheckAction("Accu 2",
+						  self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_accu2)
+		self.__action_accu3 = CheckAction("Accu 3",
+						  self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_accu3)
+		self.__action_accu4 = CheckAction("Accu 4",
+						  self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_accu4)
+		self.__action_ar1 = CheckAction("AR 1",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_ar1)
+		self.__action_ar2 = CheckAction("AR 2",
+						self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_ar2)
+		self.__action_db = CheckAction("DB register",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_db)
+		self.__action_di = CheckAction("DI register",
+					       self.__actionToggled, self)
+		itemsMenu.addAction(self.__action_di)
+		self.addMenu(itemsMenu)
+
+	def setShowFlags(self, showFlg):
+		self.__action_NER.setChecked(bool(showFlg & CpuStatsEntry.SHOW_NER))
+		self.__action_VKE.setChecked(bool(showFlg & CpuStatsEntry.SHOW_VKE))
+		self.__action_STA.setChecked(bool(showFlg & CpuStatsEntry.SHOW_STA))
+		self.__action_OR.setChecked(bool(showFlg & CpuStatsEntry.SHOW_OR))
+		self.__action_OS.setChecked(bool(showFlg & CpuStatsEntry.SHOW_OS))
+		self.__action_OV.setChecked(bool(showFlg & CpuStatsEntry.SHOW_OV))
+		self.__action_A0.setChecked(bool(showFlg & CpuStatsEntry.SHOW_A0))
+		self.__action_A1.setChecked(bool(showFlg & CpuStatsEntry.SHOW_A1))
+		self.__action_BIE.setChecked(bool(showFlg & CpuStatsEntry.SHOW_BIE))
+		self.__action_STW.setChecked(bool(showFlg & CpuStatsEntry.SHOW_STW))
+		self.__action_accu1.setChecked(bool(showFlg & CpuStatsEntry.SHOW_ACCU1))
+		self.__action_accu2.setChecked(bool(showFlg & CpuStatsEntry.SHOW_ACCU2))
+		self.__action_accu3.setChecked(bool(showFlg & CpuStatsEntry.SHOW_ACCU3))
+		self.__action_accu4.setChecked(bool(showFlg & CpuStatsEntry.SHOW_ACCU4))
+		self.__action_ar1.setChecked(bool(showFlg & CpuStatsEntry.SHOW_AR1))
+		self.__action_ar2.setChecked(bool(showFlg & CpuStatsEntry.SHOW_AR2))
+		self.__action_db.setChecked(bool(showFlg & CpuStatsEntry.SHOW_DBREG))
+		self.__action_di.setChecked(bool(showFlg & CpuStatsEntry.SHOW_DIREG))
+
+	def getShowFlags(self):
+		showFlg = 0
+		if self.__action_NER.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_NER
+		if self.__action_VKE.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_VKE
+		if self.__action_STA.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_STA
+		if self.__action_OR.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_OR
+		if self.__action_OS.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_OS
+		if self.__action_OV.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_OV
+		if self.__action_A0.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_A0
+		if self.__action_A1.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_A1
+		if self.__action_BIE.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_BIE
+		if self.__action_STW.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_STW
+		if self.__action_accu1.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_ACCU1
+		if self.__action_accu2.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_ACCU2
+		if self.__action_accu3.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_ACCU3
+		if self.__action_accu4.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_ACCU4
+		if self.__action_ar1.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_AR1
+		if self.__action_ar2.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_AR2
+		if self.__action_db.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_DBREG
+		if self.__action_di.isChecked():
+			showFlg |= CpuStatsEntry.SHOW_DIREG
+		return showFlg
+
+	def __actionToggled(self, newState):
+		self.closed.emit()
+
 class EditWidget(QPlainTextEdit):
 	codeChanged = Signal()
 	visibleRangeChanged = Signal()
@@ -233,12 +371,14 @@ class EditWidget(QPlainTextEdit):
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
-		self.__cpuStatsMask = CpuStatsEntry.SHOW_VKE |\
-				      CpuStatsEntry.SHOW_STA |\
-				      CpuStatsEntry.SHOW_ACCU1 |\
-				      CpuStatsEntry.SHOW_ACCU2 |\
-				      CpuStatsEntry.SHOW_STW
+
+		self.__cpuStatsMenu = CpuStatsContextMenu(self)
+		self.__cpuStatsMask = 0
 		self.enableCpuStats(enabled=False, force=True)
+		self.setCpuStatsMask(CpuStatsEntry.SHOW_VKE |\
+				     CpuStatsEntry.SHOW_STA |\
+				     CpuStatsEntry.SHOW_ACCU1 |\
+				     CpuStatsEntry.SHOW_ACCU2)
 		self.resetCpuStats(True)
 
 		self.__textChangeBlocked = 0
@@ -250,8 +390,11 @@ class EditWidget(QPlainTextEdit):
 		self.lineNumWidget.needRepaint.connect(self.__repaintLineNumWidget)
 		self.cpuStatsWidget.needRepaint.connect(self.__repaintCpuStatsWidget)
 		self.headerWidget.wasScrolled.connect(self.__forwardWheelEvent)
+		self.headerWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 		self.lineNumWidget.wasScrolled.connect(self.__forwardWheelEvent)
 		self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
+		self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
+		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
 	def setSource(self, source):
 		self.__textChangeBlocked += 1
@@ -350,6 +493,20 @@ class EditWidget(QPlainTextEdit):
 			self.__cpuStatsEnabled = enabled
 			self.__updateMargins()
 			self.__updateGeo()
+
+	def setCpuStatsMask(self, newMask):
+		self.__cpuStatsMask = newMask
+		if self.__cpuStatsEnabled:
+			self.__updateMargins()
+			self.__updateGeo()
+
+	def __cpuStatsContextMenuPopup(self, globalPos):
+		if self.__cpuStatsEnabled:
+			self.__cpuStatsMenu.setShowFlags(self.__cpuStatsMask)
+			self.__cpuStatsMenu.popup(globalPos)
+
+	def __cpuStatsContextMenuClosed(self):
+		self.setCpuStatsMask(self.__cpuStatsMenu.getShowFlags())
 
 	def resetCpuStats(self, force=False):
 		if not force and not self.__lineCpuStats:
