@@ -76,30 +76,131 @@ class CpuStatsSubWidget(EditSubWidget):
 	def sizeHint(self):
 		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
 
-	def getBanner(self):
-		return "RLO STA ACCU 1    ACCU 2    STW         "
+	def getBanner(self, showFlg):
+		ret = []
+		if showFlg & CpuStatsEntry.SHOW_NER:
+			ret.append("/FC")
+		if showFlg & CpuStatsEntry.SHOW_VKE:
+			ret.append("RLO")
+		if showFlg & CpuStatsEntry.SHOW_STA:
+			ret.append("STA")
+		if showFlg & CpuStatsEntry.SHOW_OR:
+			ret.append("OR")
+		if showFlg & CpuStatsEntry.SHOW_OS:
+			ret.append("OS")
+		if showFlg & CpuStatsEntry.SHOW_OV:
+			ret.append("OV")
+		if showFlg & CpuStatsEntry.SHOW_A0:
+			ret.append("A0")
+		if showFlg & CpuStatsEntry.SHOW_A1:
+			ret.append("A1")
+		if showFlg & CpuStatsEntry.SHOW_BIE:
+			ret.append("BIE")
+		if showFlg & CpuStatsEntry.SHOW_STW:
+			ret.append("STW        ")
+		if showFlg & CpuStatsEntry.SHOW_ACCU1:
+			ret.append("ACCU 1  ")
+		if showFlg & CpuStatsEntry.SHOW_ACCU2:
+			ret.append("ACCU 2  ")
+		if showFlg & CpuStatsEntry.SHOW_ACCU3:
+			ret.append("ACCU 3  ")
+		if showFlg & CpuStatsEntry.SHOW_ACCU4:
+			ret.append("ACCU 4  ")
+		if showFlg & CpuStatsEntry.SHOW_AR1:
+			ret.append("AR 1    ")
+		if showFlg & CpuStatsEntry.SHOW_AR2:
+			ret.append("AR 2    ")
+		if showFlg & CpuStatsEntry.SHOW_DBREG:
+			ret.append("DB   ")
+		if showFlg & CpuStatsEntry.SHOW_DIREG:
+			ret.append("DI   ")
+		return "  ".join(ret)
 
 class CpuStatsEntry(object):
-	def __init__(self, stamp, statusWord, accu1, accu2):
+	EnumGen.start
+	SHOW_NER	= EnumGen.bitmask
+	SHOW_VKE	= EnumGen.bitmask
+	SHOW_STA	= EnumGen.bitmask
+	SHOW_OR		= EnumGen.bitmask
+	SHOW_OS		= EnumGen.bitmask
+	SHOW_OV		= EnumGen.bitmask
+	SHOW_A0		= EnumGen.bitmask
+	SHOW_A1		= EnumGen.bitmask
+	SHOW_BIE	= EnumGen.bitmask
+	SHOW_STW	= EnumGen.bitmask
+	SHOW_ACCU1	= EnumGen.bitmask
+	SHOW_ACCU2	= EnumGen.bitmask
+	SHOW_ACCU3	= EnumGen.bitmask
+	SHOW_ACCU4	= EnumGen.bitmask
+	SHOW_AR1	= EnumGen.bitmask
+	SHOW_AR2	= EnumGen.bitmask
+	SHOW_DBREG	= EnumGen.bitmask
+	SHOW_DIREG	= EnumGen.bitmask
+	EnumGen.end
+
+	def __init__(self, stamp, insnDumpMsg):
 		self.stamp = stamp
+		self.insnDumpMsg = insnDumpMsg
 		self.obsolete = False
 		self.pruned = False
-		self.statusWord = statusWord
-		self.accu1 = accu1
-		self.accu2 = accu2
 
-	def __repr__(self):
+	def getText(self, showFlg):
 		if self.pruned:
 			return "[ ... ]"
-		stw = []
-		for i in range(S7StatusWord.NR_BITS - 1, -1, -1):
-			stw.append('1' if (self.statusWord & (1 << i)) else '0')
-			if i % 4 == 0 and i:
-				stw.append('_')
-		vke = (self.statusWord >> 1) & 1
-		sta = (self.statusWord >> 2) & 1
-		return " %d   %d  %08X  %08X  %s" %\
-			(vke, sta, self.accu1, self.accu2, "".join(stw))
+		insnDumpMsg = self.insnDumpMsg
+		ret = []
+		if showFlg & self.SHOW_NER:
+			ret.append("%d  " % ((insnDumpMsg.stw >> 0) & 1))
+		if showFlg & self.SHOW_VKE:
+			ret.append("%d  " % ((insnDumpMsg.stw >> 1) & 1))
+		if showFlg & self.SHOW_STA:
+			ret.append("%d  " % ((insnDumpMsg.stw >> 2) & 1))
+		if showFlg & self.SHOW_OR:
+			ret.append("%d " % ((insnDumpMsg.stw >> 3) & 1))
+		if showFlg & self.SHOW_OS:
+			ret.append("%d " % ((insnDumpMsg.stw >> 4) & 1))
+		if showFlg & self.SHOW_OV:
+			ret.append("%d " % ((insnDumpMsg.stw >> 5) & 1))
+		if showFlg & self.SHOW_A0:
+			ret.append("%d " % ((insnDumpMsg.stw >> 6) & 1))
+		if showFlg & self.SHOW_A1:
+			ret.append("%d " % ((insnDumpMsg.stw >> 7) & 1))
+		if showFlg & self.SHOW_BIE:
+			ret.append("%d  " % ((insnDumpMsg.stw >> 8) & 1))
+		if showFlg & self.SHOW_STW:
+			stw = []
+			for i in range(S7StatusWord.NR_BITS - 1, -1, -1):
+				stw.append('1' if ((insnDumpMsg.stw >> i) & 1) else '0')
+				if i % 4 == 0 and i:
+					stw.append('_')
+			ret.append("".join(stw))
+		if showFlg & self.SHOW_ACCU1:
+			ret.append("%08X" % insnDumpMsg.accu1)
+		if showFlg & self.SHOW_ACCU2:
+			ret.append("%08X" % insnDumpMsg.accu2)
+		if showFlg & self.SHOW_ACCU3:
+			ret.append("%08X" % insnDumpMsg.accu3)
+		if showFlg & self.SHOW_ACCU4:
+			ret.append("%08X" % insnDumpMsg.accu4)
+		if showFlg & self.SHOW_AR1:
+			ret.append("%08X" % insnDumpMsg.ar1)
+		if showFlg & self.SHOW_AR2:
+			ret.append("%08X" % insnDumpMsg.ar2)
+		if showFlg & self.SHOW_DBREG:
+			if insnDumpMsg.db:
+				dbreg = str(insnDumpMsg.db)
+				dbreg += " " * (5 - len(dbreg))
+				ret.append(dbreg)
+			else:
+				ret.append("--   ")
+		if showFlg & self.SHOW_DIREG:
+			if insnDumpMsg.db:
+				direg = str(insnDumpMsg.db)
+				direg += " " * (5 - len(direg))
+				ret.append(direg)
+			else:
+				ret.append("--   ")
+		return "  ".join(ret)
 
 class EditWidget(QPlainTextEdit):
 	codeChanged = Signal()
@@ -132,6 +233,11 @@ class EditWidget(QPlainTextEdit):
 		self.__runStateCopy = CpuWidget.STATE_STOP
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
+		self.__cpuStatsMask = CpuStatsEntry.SHOW_VKE |\
+				      CpuStatsEntry.SHOW_STA |\
+				      CpuStatsEntry.SHOW_ACCU1 |\
+				      CpuStatsEntry.SHOW_ACCU2 |\
+				      CpuStatsEntry.SHOW_STW
 		self.enableCpuStats(enabled=False, force=True)
 		self.resetCpuStats(True)
 
@@ -266,9 +372,7 @@ class EditWidget(QPlainTextEdit):
 		# Save the instruction dump
 		self.__lineCpuStats[insnDumpMsg.lineNr] =\
 			CpuStatsEntry(self.__cpuStatsStamp,
-				      insnDumpMsg.stw,
-				      insnDumpMsg.accu1,
-				      insnDumpMsg.accu2)
+				      insnDumpMsg)
 		# Update the stats widget
 		self.__cpuStatsCount += 1
 		if self.__cpuStatsCount >= self.__cpuStatsUpdate:
@@ -311,7 +415,7 @@ class EditWidget(QPlainTextEdit):
 		if not self.__cpuStatsEnabled:
 			return 0
 		metr = self.cpuStatsWidget.fontMetrics()
-		return 5 + 5 + metr.width(self.cpuStatsWidget.getBanner().replace(" ", "_"))
+		return 5 + 5 + metr.width(self.cpuStatsWidget.getBanner(self.__cpuStatsMask).replace(" ", "_"))
 
 	def headerHeight(self):
 		return 5 + 5 + self.__charHeight
@@ -416,7 +520,7 @@ class EditWidget(QPlainTextEdit):
 				   self.headerWidget.width() - pt.x() - 5,
 				   self.headerWidget.height(),
 				   Qt.AlignLeft,
-				   self.cpuStatsWidget.getBanner())
+				   self.cpuStatsWidget.getBanner(self.__cpuStatsMask))
 
 	def __repaintLineNumWidget(self, ev):
 		p = self.lineNumWidget.getPainter()
@@ -452,7 +556,7 @@ class EditWidget(QPlainTextEdit):
 					   self.cpuStatsWidget.width(),
 					   self.__charHeight,
 					   Qt.AlignLeft,
-					   str(statsEnt))
+					   statsEnt.getText(self.__cpuStatsMask))
 
 	def __textChanged(self):
 		self.__updateFonts()
