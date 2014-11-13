@@ -77,7 +77,7 @@ class CpuStatsSubWidget(EditSubWidget):
 		return QSize(self.editWidget.cpuStatsWidgetWidth(), 0)
 
 	def getBanner(self):
-		return "STW          ACCU 1    ACCU 2  "
+		return "RLO STA ACCU 1    ACCU 2    STW         "
 
 class CpuStatsEntry(object):
 	def __init__(self, stamp, statusWord, accu1, accu2):
@@ -96,8 +96,10 @@ class CpuStatsEntry(object):
 			stw.append('1' if (self.statusWord & (1 << i)) else '0')
 			if i % 4 == 0 and i:
 				stw.append('_')
-		return "%s  %08X  %08X" %\
-			("".join(stw), self.accu1, self.accu2)
+		vke = (self.statusWord >> 1) & 1
+		sta = (self.statusWord >> 2) & 1
+		return " %d   %d  %08X  %08X  %s" %\
+			(vke, sta, self.accu1, self.accu2, "".join(stw))
 
 class EditWidget(QPlainTextEdit):
 	codeChanged = Signal()
