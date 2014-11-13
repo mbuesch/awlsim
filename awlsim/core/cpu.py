@@ -497,7 +497,7 @@ class S7CPU(object): #+cdef
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
 				if self.cbPostInsn:
-					self.cbPostInsn(self.cbPostInsnData)
+					self.cbPostInsn(cse, self.cbPostInsnData)
 				cse.ip += self.relativeJump
 				cse, self.__insnCount = self.callStackTop,\
 							(self.__insnCount + 1) & 0x3FFFFFFF

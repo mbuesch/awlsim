@@ -253,12 +253,13 @@ class AwlSimServer(object):
 					client.nextDump = now + client.dumpInterval / 1000.0
 					client.transceiver.send(msg)
 
-	def __cpuPostInsnCallback(self, userData):
-		cpu = self.sim.cpu
-		insn = cpu.getCurrentInsn()
-		if not insn:
+	def __cpuPostInsnCallback(self, callStackElement, userData):
+		try:
+			insn = callStackElement.insns[callStackElement.ip]
+		except IndexError:
 			return
-		sourceId, lineNr, msg = insn.getSourceId(), insn.getLineNr(), None
+		cpu, sourceId, lineNr, msg =\
+			self.sim.cpu, insn.getSourceId(), insn.getLineNr(), None
 		for client in self.clients:
 			try:
 				if lineNr not in client.insnStateDump_enabledLines[sourceId]:
