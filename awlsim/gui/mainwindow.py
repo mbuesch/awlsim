@@ -216,6 +216,9 @@ class MainWidget(QWidget):
 	def insertGlobalDB(self):
 		self.projectWidget.insertGlobalDB()
 
+	def insertUDT(self):
+		self.projectWidget.insertUDT()
+
 	def insertFCcall(self):
 		self.projectWidget.insertFCcall()
 
@@ -255,6 +258,7 @@ class MainWindow(QMainWindow):
 		menu.addAction("Insert F&B...", self.insertFB)
 		menu.addAction("Insert &instance-DB...", self.insertInstanceDB)
 		menu.addAction("Insert &DB...", self.insertGlobalDB)
+		menu.addAction("Insert &UDT...", self.insertUDT)
 		menu.addSeparator()
 		menu.addAction("Insert FC C&ALL...", self.insertFCcall)
 		menu.addAction("Insert FB CA&LL...", self.insertFBcall)
@@ -297,6 +301,9 @@ class MainWindow(QMainWindow):
 
 	def insertGlobalDB(self):
 		self.centralWidget().insertGlobalDB()
+
+	def insertUDT(self):
+		self.centralWidget().insertUDT()
 
 	def insertFCcall(self):
 		self.centralWidget().insertFCcall()

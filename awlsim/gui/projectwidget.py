@@ -252,6 +252,12 @@ class ProjectWidget(QTabWidget):
 			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
 								  dlg.getVerbose()))
 
+	def insertUDT(self):
+		dlg = TemplateDialog("UDT", parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getUDT(dlg.getBlockNumber(),
+							     dlg.getVerbose()))
+
 	def insertFCcall(self):
 		dlg = TemplateDialog("FC", "FC call", parent=self)
 		if dlg.exec_() == QDialog.Accepted:

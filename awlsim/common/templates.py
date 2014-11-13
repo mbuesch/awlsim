@@ -302,6 +302,17 @@ BEGIN
 END_DATA_BLOCK
 """
 
+	# UDT template
+	__templateUDT = """TYPE UDT @@NR@@
+	VERSION : 0.1
+	STRUCT
+
+		// ... Insert data structure definitions here ...
+
+	END_STRUCT;
+END_TYPE
+"""
+
 	# FC-call template
 	__templateFCcall = """	CALL FC @@NR@@ (
 		// ... Insert parameter assignments here ...
@@ -381,6 +392,14 @@ END_DATA_BLOCK
 	@classmethod
 	def getGlobalDB(cls, number, verbose):
 		awl = cls.__templateGDB[:]
+		awl = awl.replace("@@NR@@", "%d" % number)
+		if not verbose:
+			awl = cls.__removeVerboseness(awl)
+		return awl
+
+	@classmethod
+	def getUDT(cls, number, verbose):
+		awl = cls.__templateUDT[:]
 		awl = awl.replace("@@NR@@", "%d" % number)
 		if not verbose:
 			awl = cls.__removeVerboseness(awl)
