@@ -546,6 +546,8 @@ class EditWidget(QPlainTextEdit):
 			self.__cpuStatsStamp += 1
 
 	def __pruneInvisibleCpuStats(self):
+		if self.__runStateCopy == CpuWidget.STATE_STOP:
+			return
 		firstLine, lastLine = self.getVisibleLineRange()
 		for line, stats in self.__lineCpuStats.items():
 			if line < firstLine or line > lastLine:
