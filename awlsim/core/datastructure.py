@@ -237,11 +237,18 @@ class AwlStructInstance(object):
 					"initialization is out of range." %\
 					str(field))
 
-	def getFieldData(self, field):
-		return self.dataBytes.fetch(field.offset, field.bitSize)
+	def getFieldData(self, field, baseOffset=None):
+		if baseOffset is None:
+			return self.dataBytes.fetch(field.offset, field.bitSize)
+		return self.dataBytes.fetch(baseOffset + field.offset, field.bitSize)
 
-	def setFieldData(self, field, value):
-		self.dataBytes.store(field.offset, field.bitSize, value)
+	def setFieldData(self, field, value, baseOffset=None):
+		if baseOffset is None:
+			self.dataBytes.store(field.offset,
+					     field.bitSize, value)
+		else:
+			self.dataBytes.store(baseOffset + field.offset,
+					     field.bitSize, value)
 
 	def getFieldDataByName(self, name, arrayIndex=None):
 		return self.getFieldData(self.struct.getField(name, arrayIndex))

@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU call stack
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2014 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,12 +41,16 @@ class CallStackElem(object):
 	def resetCache(cls):
 		cls.lallocCache.reset()
 
-	def __init__(self, cpu, block, instanceDB=None, parameters=(),
+	def __init__(self, cpu, block,
+		     instanceDB=None, instanceBaseOffset=None,
+		     parameters=(),
 		     isRawCall=False):
 		# Init the call stack element.
 		# cpu -> The CPU this runs on.
 		# block -> The code block that is being called.
 		# instanceDB -> The instance-DB, if FB-call. Otherwise None.
+		# instanceBaseOffset -> AwlOffset for use as AR2 instance base (multi-instance).
+		#                       If None, AR2 is not modified.
 		# parameters -> An iterable of AwlParamAssign instances
 		#               representing the parameter assignments in CALL insn.
 		# isRawCall -> True, if the calling instruction was UC or CC.
@@ -59,10 +63,16 @@ class CallStackElem(object):
 		self.instanceDB = instanceDB
 		self.prevDbRegister = cpu.dbRegister
 		self.prevDiRegister = cpu.diRegister
-		self.prevAR2value = cpu.ar2.get()
 		self.lalloc = self.lallocCache.get(cpu)
 		self.lalloc.allocation = block.interface.tempAllocation
 		self.localdata = self.lalloc.localdata
+
+		# Set AR2 to the specified multi-instance base
+		# and save the old AR2 value.
+		self.prevAR2value = cpu.ar2.get()
+		if instanceBaseOffset is not None:
+			cpu.ar2.set(AwlIndirectOp.AREA_DB |\
+				    instanceBaseOffset.toPointerValue())
 
 		# Handle parameters
 		self.__outboundParams = []
@@ -86,7 +96,8 @@ class CallStackElem(object):
 							data = param.rvalueOp.resolve().value.byteOffset
 						else:
 							data = cpu.fetch(param.rvalueOp)
-						structInstance.setFieldData(structField, data)
+						structInstance.setFieldData(structField, data,
+									    instanceBaseOffset)
 			else:
 				# This is a call to an FC.
 				# Prepare the interface (IN/OUT/INOUT) references.
@@ -210,23 +221,31 @@ class CallStackElem(object):
 	def handleBlockExit(self):
 		cpu = self.cpu
 		if not self.isRawCall:
-			# Restore the AR2 register.
-			cpu.ar2.set(self.prevAR2value)
-
 			# Handle outbound parameters.
 			if self.block.isFB:
 				# We are returning from an FB.
+
+				# Get the multi-instance base offset.
+				instanceBaseOffset = AwlOffset.fromPointerValue(cpu.ar2.get())
+				# Restore the AR2 register.
+				cpu.ar2.set(self.prevAR2value)
+
 				# Transfer data out of DBI.
 				structInstance = cpu.diRegister.structInstance
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
-						structInstance.getFieldData(param.lValueStructField)
+						structInstance.getFieldData(param.lValueStructField,
+									    instanceBaseOffset)
 					)
 				# Assign the DB/DI registers.
 				cpu.dbRegister, cpu.diRegister = self.instanceDB, self.prevDiRegister
 			else:
 				# We are returning from an FC.
+
+				# Restore the AR2 register.
+				cpu.ar2.set(self.prevAR2value)
+
 				# Transfer data out of temporary sections.
 				for param in self.__outboundParams:
 					cpu.store(

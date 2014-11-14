@@ -57,10 +57,15 @@ class AwlParamAssign(DynAttrs):
 	}
 
 	def __init__(self, lvalueName, rvalueOp):
+		# A parameter assignment consists of an lvalue and an rvalue:
+		#  LVALUE := RVALUE
+		# 'lvalueName' is the name string of the lvalue.
+		# 'rvalueOp' is the AwlOperator that represents the rvalue.
 		self.lvalueName = lvalueName
 		self.rvalueOp = rvalueOp
+		# 'interface' is the BlockInterface of the called block.
+		# This element is assigned later in the translation phase.
 		self.interface = None
-		self.instanceDB = None
 
 	def __isInbound(self):
 		field = self.interface.getFieldByName(self.lvalueName)
@@ -74,7 +79,7 @@ class AwlParamAssign(DynAttrs):
 
 	def __lValueStructField(self):
 		# Find the l-value struct field
-		return self.instanceDB.structInstance.struct.getField(self.lvalueName)
+		return self.interface.struct.getField(self.lvalueName)
 
 	def __interfaceFieldIndex(self):
 		# Find the index number for the l-value

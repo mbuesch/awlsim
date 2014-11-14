@@ -1,0 +1,137 @@
+DATA_BLOCK DB 1
+	FB 1
+BEGIN
+END_DATA_BLOCK
+
+
+// FB 2, embedded as multi-instance
+FUNCTION_BLOCK FB 2
+	VAR
+		TEST_STAT1	: DWORD;
+	END_VAR
+	VAR_INPUT
+		TEST_IN1	: DINT;
+	END_VAR
+	VAR_OUTPUT
+		TEST_OUT1	: WORD;
+	END_VAR
+BEGIN
+	__ASSERT==	__AR 2,		P#DBX 2.0 // Check multi-instance base
+
+
+	// Check DB/DI registers
+	L		DBNO
+	__ASSERT==	__ACCU 1,	1
+	L		DINO
+	__ASSERT==	__ACCU 1,	1
+
+
+	// Get input, add 1, store in static.
+	L		#TEST_IN1
+	L		1
+	+D
+	T		#TEST_STAT1
+	// Get static, add 1, store in output.
+	L		#TEST_STAT1
+	L		1
+	+D
+	T		#TEST_OUT1
+END_FUNCTION_BLOCK
+
+
+// FB 1, called with instance-DB. Embeds multi-instances.
+FUNCTION_BLOCK FB 1
+	VAR
+		GUARD0		: WORD;		// Guard field
+		MULTI_FB2	: FB 2;		// Embedded FB 2 multi-instance
+		GUARD1		: WORD;		// Guard field
+		MULTI_SFB0	: SFB 0;	// Embedded SFB 0 multi-instance
+		GUARD2		: WORD;		// Guard field
+	END_VAR
+	VAR_TEMP
+		TEMP1		: WORD;
+		COUNT		: INT;
+	END_VAR
+BEGIN
+	__ASSERT==	__AR 2,		P#DBX 0.0 // Check multi-instance base
+
+
+	// Check DB/DI registers
+	L		DBNO
+	__ASSERT==	__ACCU 1,	0
+	L		DINO
+	__ASSERT==	__ACCU 1,	1
+
+
+	// Write the guard fields to detect errors in the
+	// multi instance base offset (AR2).
+	L		W#16#4220	// Magic value
+	T		#GUARD0
+	L		W#16#4221	// Magic value
+	T		#GUARD1
+	L		W#16#4222	// Magic value
+	T		#GUARD2
+
+
+	// Call the multi-instance FB 2
+	CALL #MULTI_FB2 (
+		TEST_IN1	:= L#77,
+		TEST_OUT1	:= #TEMP1,
+	)
+	L		#TEMP1
+	__ASSERT==	__ACCU 1,	79	// result = input + 2
+
+
+	// Call the multi-instance SFB 0
+	CALL #MULTI_SFB0 (
+		CU		:= FALSE,
+		CV		:= #COUNT,
+	)
+	CALL #MULTI_SFB0 (
+		CU		:= TRUE,
+		CV		:= #COUNT,
+	)
+	CALL #MULTI_SFB0 (
+		CU		:= FALSE,
+		CV		:= #COUNT,
+	)
+	L		#COUNT
+	__ASSERT==	__ACCU 1,	1
+
+
+	// Check all instance-DB values.
+	// Use fully qualified accesses to avoid implicit usage of AR2 base.
+	L		DINO		// DI = DB1
+	__ASSERT==	__ACCU 1,	1
+	L		DB1.DBW 0	// DB1.GUARD0
+	__ASSERT==	__ACCU 1,	W#16#4220
+	L		DB1.DBD 2	// DB1.MULTI_FB2.TEST_IN1
+	__ASSERT==	__ACCU 1,	77
+	L		DB1.DBW 6	// DB1.MULTI_FB2.TEST_OUT1
+	__ASSERT==	__ACCU 1,	79
+	L		DB1.DBD 8	// DB1.MULTI_FB2.TEST_STAT1
+	__ASSERT==	__ACCU 1,	78
+	L		DB1.DBW 12	// DB1.GUARD1
+	__ASSERT==	__ACCU 1,	W#16#4221
+	L		DB1.DBW 14	// DB1.MULTI_SFB0.CU/R
+	__ASSERT==	__ACCU 1,	W#16#0000
+	L		DB1.DBW 16	// DB1.MULTI_SFB0.PV
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBW 18	// DB1.MULTI_SFB0.Q
+	__ASSERT==	__ACCU 1,	W#16#0100
+	L		DB1.DBW 20	// DB1.MULTI_SFB0.CV
+	__ASSERT==	__ACCU 1,	1
+	L		DB1.DBW 22	// DB1.MULTI_SFB0.CUO
+	__ASSERT==	__ACCU 1,	W#16#0000
+	L		DB1.DBW 24	// DB1.GUARD2
+	__ASSERT==	__ACCU 1,	W#16#4222
+END_FUNCTION_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL FB 1, DB 1
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK

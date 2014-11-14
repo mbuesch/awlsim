@@ -1,12 +1,11 @@
 === Incomplete awlsim TODO list ===
 
 S7 compatibility:
-- Add support for STRUCTs (This requires the removal of awlsim's newline-implies-semicolon semantics in headers)
-- Add support for user defined data types (UDT)
+- Add support for STRUCTs
+- Add support for symbolic access to user defined data type (UDT) elements
 - Implement parsing of attributes
 - Implement POINTER and DB-pointer immediates
 - Implement ANY pointer
-- Add support for multiinstance calls
 
 GUI:
 - Make font size configurable (and save it in project file)

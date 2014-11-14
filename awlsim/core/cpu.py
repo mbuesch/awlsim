@@ -238,7 +238,6 @@ class S7CPU(object): #+cdef
 			# Add interface references to the parameter assignments.
 			for param in insn.params:
 				param.interface = calledCodeBlock.interface
-				param.instanceDB = calledDataBlock
 
 	def __finalizeCodeBlocks(self):
 		for block in self.__allUserCodeBlocks():
@@ -485,7 +484,7 @@ class S7CPU(object): #+cdef
 		self.ar1.reset()
 		self.ar2.reset()
 		self.statusWord.reset()
-		self.callStack = [ CallStackElem(self, block, None, (), True) ]
+		self.callStack = [ CallStackElem(self, block, None, None, (), True) ]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
@@ -691,45 +690,41 @@ class S7CPU(object): #+cdef
 
 	def __call_FC(self, blockOper, dbOper, parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
-		return CallStackElem(self, fc, None, parameters)
+		return CallStackElem(self, fc, None, None, parameters)
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
-		return CallStackElem(self, fc, None, (), True)
+		return CallStackElem(self, fc, None, None, (), True)
 
 	def __call_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
-		cse = CallStackElem(self, fb, db, parameters)
+		cse = CallStackElem(self, fb, db, AwlOffset(), parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
-		# Set AR2 to multi-instance base DBX 0.0
-		self.ar2.set(AwlIndirectOp.AREA_DB)
 		return cse
 
 	def __call_RAW_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
-		return CallStackElem(self, fb, self.diRegister, (), True)
+		return CallStackElem(self, fb, self.diRegister, None, (), True)
 
 	def __call_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfc, None, parameters)
+		return CallStackElem(self, sfc, None, None, parameters)
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfc, None, (), True)
+		return CallStackElem(self, sfc, None, None, (), True)
 
 	def __call_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
-		cse = CallStackElem(self, sfb, db, parameters)
+		cse = CallStackElem(self, sfb, db, AwlOffset(), parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
-		# Set AR2 to multi-instance base DBX 0.0
-		self.ar2.set(AwlIndirectOp.AREA_DB)
 		return cse
 
 	def __call_RAW_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfb, self.diRegister, (), True)
+		return CallStackElem(self, sfb, self.diRegister, None, (), True)
 
 	def __call_INDIRECT(self, blockOper, dbOper, parameters):
 		blockOper = blockOper.resolve()
@@ -741,12 +736,16 @@ class S7CPU(object): #+cdef
 					  blockOper.value.byteOffset)
 
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters):
-		pass#TODO
-		raise AwlSimError("Multi-instance calls not supported, yet")
+		fb = self.fbs[blockOper.value.fbNumber]
+		cse = CallStackElem(self, fb, self.diRegister, blockOper.value, parameters)
+		self.dbRegister = self.diRegister
+		return cse
 
 	def __call_MULTI_SFB(self, blockOper, dbOper, parameters):
-		pass#TODO
-		raise AwlSimError("Multi-instance calls not supported, yet")
+		sfb = self.sfbs[blockOper.value.fbNumber]
+		cse = CallStackElem(self, sfb, self.diRegister, blockOper.value, parameters)
+		self.dbRegister = self.diRegister
+		return cse
 
 	__callHelpers = {
 		AwlOperator.BLKREF_FC	: __call_FC,
