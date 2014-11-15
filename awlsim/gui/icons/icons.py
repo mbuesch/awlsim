@@ -38,6 +38,7 @@ from awlsim.gui.icons.glasses import *
 from awlsim.gui.icons.open import *
 from awlsim.gui.icons.save import *
 from awlsim.gui.icons.new import *
+from awlsim.gui.icons.stdlib import *
 
 import base64
 
@@ -57,6 +58,7 @@ __icons = {
 	"open"		: icon_open,
 	"save"		: icon_save,
 	"new"		: icon_new,
+	"stdlib"	: icon_stdlib,
 }
 
 def getIcon(iconName):

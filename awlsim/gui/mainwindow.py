@@ -225,6 +225,9 @@ class MainWidget(QWidget):
 	def insertFBcall(self):
 		self.projectWidget.insertFBcall()
 
+	def openLibrary(self):
+		self.projectWidget.openLibrary()
+
 class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
@@ -252,16 +255,18 @@ class MainWindow(QMainWindow):
 		menu.addAction("&Exit...", self.close)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&Templates", self)
-		menu.addAction("Insert &OB...", self.insertOB)
-		menu.addAction("Insert F&C...", self.insertFC)
-		menu.addAction("Insert F&B...", self.insertFB)
-		menu.addAction("Insert &instance-DB...", self.insertInstanceDB)
-		menu.addAction("Insert &DB...", self.insertGlobalDB)
-		menu.addAction("Insert &UDT...", self.insertUDT)
+		menu = QMenu("&Library", self)
+		menu.addAction("Insert &OB template...", self.insertOB)
+		menu.addAction("Insert F&C template...", self.insertFC)
+		menu.addAction("Insert F&B template...", self.insertFB)
+		menu.addAction("Insert &instance-DB template...", self.insertInstanceDB)
+		menu.addAction("Insert &DB template...", self.insertGlobalDB)
+		menu.addAction("Insert &UDT template...", self.insertUDT)
 		menu.addSeparator()
-		menu.addAction("Insert FC C&ALL...", self.insertFCcall)
-		menu.addAction("Insert FB CA&LL...", self.insertFBcall)
+		menu.addAction("Insert FC C&ALL template...", self.insertFCcall)
+		menu.addAction("Insert FB CA&LL template...", self.insertFBcall)
+		menu.addSeparator()
+		menu.addAction(getIcon("stdlib"), "&Standard library...", self.openLibrary)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&PLC", self)
@@ -269,7 +274,7 @@ class MainWindow(QMainWindow):
 		menu.addAction("&CPU config...", self.cpuConfig)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("Help", self)
+		menu = QMenu("&Help", self)
 		menu.addAction(getIcon("cpu"), "&About...", self.about)
 		self.menuBar().addMenu(menu)
 
@@ -277,6 +282,8 @@ class MainWindow(QMainWindow):
 		self.tb.addAction(getIcon("new"), "New project", self.new)
 		self.tb.addAction(getIcon("open"), "Open project", self.load)
 		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project", self.save)
+		self.tb.addSeparator()
+		self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
 		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)
@@ -398,6 +405,9 @@ class MainWindow(QMainWindow):
 
 	def coreConfig(self):
 		self.centralWidget().coreConfig()
+
+	def openLibrary(self):
+		self.centralWidget().openLibrary()
 
 # If invoked as script, run a new instance.
 if __name__ == "__main__":

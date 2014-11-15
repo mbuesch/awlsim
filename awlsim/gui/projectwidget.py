@@ -26,6 +26,7 @@ from awlsim.common.templates import *
 
 from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
+from awlsim.gui.library import *
 
 
 class TemplateDialog(QDialog):
@@ -270,3 +271,9 @@ class ProjectWidget(QTabWidget):
 			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
 								dlg.getExtraNumber(),
 								dlg.getVerbose()))
+
+	def openLibrary(self):
+		dlg = LibraryDialog(self.__project.getExtInsnsEn(), self)
+		if dlg.exec_() == QDialog.Accepted:
+			if dlg.pasteText:
+				self.__pasteAwlText(dlg.pasteText)

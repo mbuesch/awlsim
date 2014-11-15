@@ -26,13 +26,6 @@ from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 
 
-def _setFontParams(font):
-	font.setFamily("courier")
-	font.setPointSize(10)
-	font.setKerning(False)
-	font.setFixedPitch(True)
-	font.setStyleHint(QFont.TypeWriter, QFont.PreferBitmap)
-
 class EditSubWidget(QWidget):
 	needRepaint = Signal(QPaintEvent)
 	wasScrolled = Signal(QWheelEvent)
@@ -52,7 +45,7 @@ class EditSubWidget(QWidget):
 	def getPainter(self):
 		p = QPainter(self)
 		font = p.font()
-		_setFontParams(font)
+		setFixedFontParams(font)
 		p.setFont(font)
 		return p
 
@@ -479,11 +472,11 @@ class EditWidget(QPlainTextEdit):
 	def __updateFonts(self):
 		fmt = self.currentCharFormat()
 		font = fmt.font()
-		_setFontParams(font)
+		setFixedFontParams(font)
 		fmt.setFont(font)
 		self.setCurrentCharFormat(fmt)
 		font = self.font()
-		_setFontParams(font)
+		setFixedFontParams(font)
 		self.setFont(font)
 		self.__charHeight = self.fontMetrics().height()
 		self.setTabStopWidth(self.fontMetrics().width("X") * 8)

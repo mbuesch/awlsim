@@ -59,6 +59,14 @@ def intToDualString(value, bitWidth):
 			string.append('_')
 	return ''.join(string)
 
+# Set the specified QFont to fixed-font
+def setFixedFontParams(font, pointSize=10):
+	font.setFamily("courier")
+	font.setPointSize(pointSize)
+	font.setKerning(False)
+	font.setFixedPitch(True)
+	font.setStyleHint(QFont.TypeWriter, QFont.PreferBitmap)
+
 def handleFatalException(parentWidget=None):
 	text = str(traceback.format_exc())
 	print("Fatal exception:\n", text)
