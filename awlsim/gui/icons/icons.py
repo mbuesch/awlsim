@@ -68,10 +68,19 @@ __icons = {
 }
 
 def getIcon(iconName):
-	iconB64 = __icons[iconName]
-	iconData = base64.b64decode(iconB64)
+	global __icons
+
+	icon = __icons[iconName]
+	if isinstance(icon, QIcon):
+		# The icon is alredy cached. Return it.
+		return icon
+	# Convert the icon.
+	iconData = base64.b64decode(icon)
 	img = QImage()
 	img.loadFromData(iconData)
 	pixmap = QPixmap()
 	pixmap.convertFromImage(img)
-	return QIcon(pixmap)
+	icon = QIcon(pixmap)
+	# Add the icon to the cache.
+	__icons[iconName] = icon
+	return icon
