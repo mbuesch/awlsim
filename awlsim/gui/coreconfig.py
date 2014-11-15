@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.gui.util import *
+from awlsim.gui.icons import *
 
 import sys
 
@@ -33,38 +34,42 @@ class CoreConfigDialog(QDialog):
 	def __init__(self, parent, simClient):
 		QDialog.__init__(self, parent)
 		self.simClient = simClient
-		self.setWindowTitle("Awlsim core configuration")
+		self.setWindowTitle("Core server connection configuration")
 
 		self.__updateBlocked = 0
 		self.setLayout(QGridLayout(self))
 
+		label = QLabel(self)
+		label.setPixmap(getIcon("network").pixmap(QSize(48, 48)))
+		self.layout().addWidget(label, 0, 0)
+
 		self.spawnServerCheckBox = QCheckBox("Spawn a new core server on RUN (recommended)",
 						     self)
-		self.layout().addWidget(self.spawnServerCheckBox, 0, 0, 1, 2)
+		self.layout().addWidget(self.spawnServerCheckBox, 1, 0, 1, 2)
 
 		self.interpreterListLabel = QLabel("Python interpreter for core "
 			"(semicolon separated list;\n"
 			"First in list is tried first):", self)
-		self.layout().addWidget(self.interpreterListLabel, 1, 0)
+		self.layout().addWidget(self.interpreterListLabel, 2, 0)
 		self.interpreterList = QLineEdit(self)
 		self.interpreterList.setText("; ".join(DEFAULT_INTERPRETERS))
-		self.layout().addWidget(self.interpreterList, 1, 1)
+		self.layout().addWidget(self.interpreterList, 2, 1)
 
 		self.hostLabel = QLabel("Connect to awlsim core server host:", self)
-		self.layout().addWidget(self.hostLabel, 2, 0)
+		self.layout().addWidget(self.hostLabel, 3, 0)
 		self.host = QLineEdit(self)
 		self.host.setText(AwlSimServer.DEFAULT_HOST)
-		self.layout().addWidget(self.host, 2, 1)
+		self.layout().addWidget(self.host, 3, 1)
 
 		self.portLabel = QLabel("Connect to awlsim core server port:", self)
-		self.layout().addWidget(self.portLabel, 3, 0)
+		self.layout().addWidget(self.portLabel, 4, 0)
 		self.port = QSpinBox(self)
 		self.port.setRange(0, 0xFFFF)
 		self.port.setValue(AwlSimServer.DEFAULT_PORT)
-		self.layout().addWidget(self.port, 3, 1)
+		self.layout().addWidget(self.port, 4, 1)
 
 		self.portRangeLabel = QLabel("Spawn core server on one of these local ports:", self)
-		self.layout().addWidget(self.portRangeLabel, 4, 0)
+		self.layout().addWidget(self.portRangeLabel, 5, 0)
 		hbox = QHBoxLayout()
 		self.portRangeStart = QSpinBox(self)
 		self.portRangeStart.setPrefix("from ")
@@ -76,10 +81,10 @@ class CoreConfigDialog(QDialog):
 		self.portRangeEnd.setRange(0, 0xFFFF)
 		self.portRangeEnd.setValue(AwlSimServer.DEFAULT_PORT + 4095)
 		hbox.addWidget(self.portRangeEnd)
-		self.layout().addLayout(hbox, 4, 1)
+		self.layout().addLayout(hbox, 5, 1)
 
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 5, 1)
+		self.layout().addWidget(self.closeButton, 6, 1)
 
 		self.spawnServerCheckBox.stateChanged.connect(self.__spawnStateChanged)
 		self.closeButton.released.connect(self.accept)
