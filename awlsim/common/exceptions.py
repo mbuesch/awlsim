@@ -109,8 +109,14 @@ class AwlSimError(Exception):
 		else:
 			sourceName = ""
 		ret = [ "%s:\n\n" % title ]
-		ret.append("ERROR at %sline %s:\n" %\
-			   (sourceName, self.getLineNrStr()))
+		fileStr = ""
+		if sourceName:
+			fileStr = " in %s" % sourceName
+		lineStr = ""
+		if self.getLineNr() is not None:
+			lineStr = " at line %d" % self.getLineNr()
+		if fileStr or lineStr:
+			ret.append("Error%s%s:\n" % (fileStr, lineStr))
 		insnStr = self.getFailingInsnStr()
 		if insnStr:
 			ret.append("  %s\n" % insnStr)
