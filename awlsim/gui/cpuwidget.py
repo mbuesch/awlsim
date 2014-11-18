@@ -76,6 +76,7 @@ class CpuWidget(QWidget):
 	STATE_INIT	= EnumGen.item
 	STATE_LOAD	= EnumGen.item
 	STATE_RUN	= EnumGen.item
+	STATE_EXCEPTION	= EnumGen.item
 	EnumGen.end
 
 	def __init__(self, mainWidget, parent=None):
@@ -224,8 +225,6 @@ class CpuWidget(QWidget):
 
 		self.__setState(self.STATE_INIT)
 		self.runButton.setChecked(True)
-		self.runButton.setEnabled(False) # Redraws the radio button
-		self.runButton.setEnabled(True)
 
 		project = self.mainWidget.getProject()
 		awlSources = self.mainWidget.projectWidget.getAwlSources()
@@ -282,11 +281,13 @@ class CpuWidget(QWidget):
 				client.loadCode(awlSource)
 			client.setRunState(True)
 		except AwlParserError as e:
+			self.__setState(self.STATE_EXCEPTION)
 			MessageBox.handleAwlParserError(self, e)
 			self.stop()
 			client.shutdown()
 			return
 		except AwlSimError as e:
+			self.__setState(self.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)
 			self.stop()
@@ -308,6 +309,7 @@ class CpuWidget(QWidget):
 				# Process GUI events
 				QApplication.processEvents(QEventLoop.AllEvents)
 		except AwlSimError as e:
+			self.__setState(self.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Error while executing code", e)
 			self.stop()

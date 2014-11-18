@@ -643,9 +643,10 @@ class EditWidget(QPlainTextEdit):
 		self.__updateGeo()
 
 	__runStateToText = {
-		CpuWidget.STATE_STOP	: "-- CPU STOPPED --",
-		CpuWidget.STATE_INIT	: "Initializing simulator...",
-		CpuWidget.STATE_LOAD	: "Loading code...",
+		CpuWidget.STATE_STOP		: "-- CPU STOPPED --",
+		CpuWidget.STATE_INIT		: "Initializing simulator...",
+		CpuWidget.STATE_LOAD		: "Loading code...",
+		CpuWidget.STATE_EXCEPTION	: "ERROR. CPU halted.",
 	}
 
 	def __repaintHeaderWidget(self, ev):
