@@ -5,8 +5,8 @@ import awlsim.cython_helper as __cython
 if __cython.shouldUseCython(__name__):					#@nocy
 #if True:								#@cy
 	try:
-		from awlsim_cython.coreserver.all_modules import *	#<no-cython-patch
+		from awlsim_cython.library.all_modules import *		#<no-cython-patch
 	except ImportError as e:
 		__cython.cythonImportError(__name__, str(e))
 if not __cython.shouldUseCython(__name__):				#@nocy
-	from awlsim.coreserver.all_modules import *			#@nocy
+	from awlsim.library.all_modules import *			#@nocy

@@ -23,13 +23,12 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.project import *
+from awlsim.common.dynamic_import import *
 
 from awlsim.core.util import *
 from awlsim.core.parser import *
 from awlsim.core.cpu import *
 from awlsim.core.hardware import *
-
-import importlib
 
 
 class AwlSim(object):
@@ -206,19 +205,12 @@ class AwlSim(object):
 		'name' is the name of the module to load (without 'awlsimhw_' prefix).
 		Returns the HardwareInterface class."""
 
-		import awlsim.cython_helper as cython_helper
-
 		# Construct the python module name
 		moduleName = "awlsimhw_%s" % name
-		if cython_helper.shouldUseCython():
-			cyModuleName = "awlsimhw_%s_cython" % name
-			printInfo("Awlsim-cython: Loading '%s' instead of '%s'" %\
-				  (cyModuleName, moduleName))
-			moduleName = cyModuleName
 
 		# Try to import the module
 		try:
-			mod = importlib.import_module(moduleName)
+			mod = importModule(moduleName)
 		except ImportError as e:
 			raise AwlSimError("Failed to import hardware interface "
 				"module '%s' (import name '%s'): %s" %\

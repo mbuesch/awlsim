@@ -403,6 +403,7 @@ class CodeBlock(Block):
 	isFC		= False
 	isFB		= False
 	isSystemBlock	= False
+	isLibraryBlock	= False
 
 	def __init__(self, insns, index, interface):
 		Block.__init__(self, index)
@@ -417,6 +418,48 @@ class CodeBlock(Block):
 
 	def __repr__(self):
 		return "CodeBlock %d" % self.index
+
+class StaticCodeBlock(CodeBlock):
+	"""Base class for static code blocks. (system and library blocks)."""
+
+	# Static interface definition.
+	# To be overridden by the subclass.
+	interfaceFields = {
+		BlockInterfaceField.FTYPE_IN	: (),
+		BlockInterfaceField.FTYPE_OUT	: (),
+		BlockInterfaceField.FTYPE_INOUT	: (),
+		BlockInterfaceField.FTYPE_STAT	: (),
+	}
+
+	# Set to True by the subclass, if the implementation is incomplete.
+	broken = False
+
+	def __init__(self, insns, index, interface):
+		CodeBlock.__init__(self, insns, index, interface)
+
+		# Register the interface.
+		for ftype in (BlockInterfaceField.FTYPE_IN,
+			      BlockInterfaceField.FTYPE_OUT,
+			      BlockInterfaceField.FTYPE_INOUT,
+			      BlockInterfaceField.FTYPE_STAT):
+			try:
+				fields = self.interfaceFields[ftype]
+			except KeyError:
+				continue
+			for field in fields:
+				if ftype == BlockInterfaceField.FTYPE_IN:
+					self.interface.addField_IN(field)
+				elif ftype == BlockInterfaceField.FTYPE_OUT:
+					self.interface.addField_OUT(field)
+				elif ftype == BlockInterfaceField.FTYPE_INOUT:
+					self.interface.addField_INOUT(field)
+				elif ftype == BlockInterfaceField.FTYPE_STAT:
+					self.interface.addField_STAT(field)
+				else:
+					assert(0)
+
+	def __repr__(self):
+		return "StaticCodeBlock %d" % self.index
 
 class OBInterface(BlockInterface):
 	startupTempAllocation = 20

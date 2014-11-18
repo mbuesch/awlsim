@@ -32,6 +32,9 @@ import random
 #from awlsim.core.instructions.all_insns cimport * #@cy
 
 from awlsim.common.cpuspecs import *
+
+from awlsim.library import *
+
 from awlsim.core.parser import *
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
@@ -359,6 +362,10 @@ class S7CPU(object): #+cdef
 			rawDB.index = dbNumber
 			db = translator.translateDB(rawDB)
 			self.dbs[dbNumber] = db
+
+	def loadLibraryBlock(self, libraryName, fcBlock,
+			     blockIndex, effectiveBlockIndex):
+		pass#TODO
 
 	def loadSymbolTable(self, symbolTable):
 		self.symbolTable.merge(symbolTable)

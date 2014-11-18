@@ -27,6 +27,7 @@ from awlsim.gui.icons import *
 
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.systemblocks.system_sfb import *
+from awlsim.library import *
 
 
 class GenericActionWidget(QWidget):
@@ -61,6 +62,29 @@ class GenericActionWidget(QWidget):
 		ret.append("")
 		self.paste.emit("\n".join(ret))
 
+	def _blockToInterfaceText(self, blockIdent, blockSym,
+				  verboseText,
+				  interfaceFields):
+		desc = [ "%s \"%s\"" % (blockIdent, blockSym) ]
+		if verboseText:
+			desc.append(verboseText)
+		desc.append("")
+		for ftype, fname in ((BlockInterfaceField.FTYPE_IN, "VAR_INPUT"),
+				     (BlockInterfaceField.FTYPE_OUT, "VAR_OUTPUT"),
+				     (BlockInterfaceField.FTYPE_INOUT, "VAR_IN_OUT")):
+			try:
+				fields = interfaceFields[ftype]
+			except KeyError:
+				continue
+			if not fields:
+				continue
+			desc.append("  " + fname)
+			for field in fields:
+				field.fieldType = ftype
+				desc.append("    %s : %s;" % (field.name,
+							      str(field.dataType)))
+		return "\n".join(desc)
+
 	def defaultPaste(self):
 		pass
 
@@ -77,35 +101,26 @@ class SysActionWidget(GenericActionWidget):
 		self.desc.setFont(font)
 		self.layout().addWidget(self.desc, 0, 0)
 
+		self.layout().setRowStretch(1, 1)
+
 		self.pasteCallButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallButton, 1, 0)
+		self.layout().addWidget(self.pasteCallButton, 2, 0)
 
 		self.pasteCallSymButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallSymButton, 2, 0)
+		self.layout().addWidget(self.pasteCallSymButton, 3, 0)
 
 		self.pasteCallButton.released.connect(self.__pasteCall)
 		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
 
-	def update(self, prefix, systemBlockCls):
+	def updateData(self, prefix, systemBlockCls):
 		self.systemBlockCls = systemBlockCls
 		self.blockPrefix = prefix
 
 		blockNumber, blockName, blockDesc = systemBlockCls.name
-		desc = [ "%s %d \"%s\"" % (prefix, blockNumber, blockName) ]
-		for ftype, fname in ((BlockInterfaceField.FTYPE_IN, "VAR_INPUT"),
-				     (BlockInterfaceField.FTYPE_OUT, "VAR_OUTPUT"),
-				     (BlockInterfaceField.FTYPE_INOUT, "VAR_IN_OUT")):
-			try:
-				fields = systemBlockCls.interfaceFields[ftype]
-			except KeyError:
-				continue
-			if not fields:
-				continue
-			desc.append("  " + fname)
-			for field in fields:
-				field.fieldType = ftype
-				desc.append("    %s : %s;" % (field.name, str(field.dataType)))
-		self.desc.setText("\n".join(desc))
+		desc = self._blockToInterfaceText("%s %d" % (prefix, blockNumber),
+						  blockName, blockDesc,
+						  systemBlockCls.interfaceFields)
+		self.desc.setText(desc)
 		self.pasteCallButton.setText("Paste  CALL %s %d" %\
 					     (prefix, blockNumber))
 		self.pasteCallSymButton.setText("Paste  CALL \"%s\"" % blockName)
@@ -128,9 +143,50 @@ class SysActionWidget(GenericActionWidget):
 	def defaultPaste(self):
 		self.__pasteCall()
 
+class LibActionWidget(GenericActionWidget):
+	def __init__(self, parent=None):
+		GenericActionWidget.__init__(self, parent)
+
+		self.libEntryCls = None
+
+		self.desc = QLabel(self)
+		font = self.desc.font()
+		setFixedFontParams(font)
+		self.desc.setFont(font)
+		self.layout().addWidget(self.desc, 0, 0)
+
+		self.layout().setRowStretch(1, 1)
+
+		self.pasteCodeButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCodeButton, 2, 0)
+
+		self.pasteCodeButton.released.connect(self.__pasteCode)
+
+	def updateData(self, libEntryCls):
+		self.libEntryCls = libEntryCls
+
+		prefix = "FC" if libEntryCls.isFC else "FB"
+		blockName = "%s %d" % (prefix, libEntryCls.staticIndex)
+
+		desc = self._blockToInterfaceText(blockName,
+						  libEntryCls.symbolName,
+						  libEntryCls.description,
+						  libEntryCls.interfaceFields)
+		self.desc.setText(desc)
+
+		self.pasteCodeButton.setText("Paste %s body" % blockName)
+
+	def __pasteCode(self):
+		self.paste.emit(self.libEntryCls().getCode())
+		self.finish.emit()
+
+	def defaultPaste(self):
+		pass#TODO
+
 class LibraryDialog(QDialog):
 	ITEM_SFC	= QListWidgetItem.UserType + 0
 	ITEM_SFB	= QListWidgetItem.UserType + 1
+	ITEM_LIB_BASE	= QListWidgetItem.UserType + 100
 
 	BLOCK_OFFSET	= QListWidgetItem.UserType + 0xFFFF
 
@@ -143,17 +199,28 @@ class LibraryDialog(QDialog):
 		self.withExtensions = withExtensions
 		self.pasteText = None
 		self.currentActionWidget = None
+		self.__nr2lib = {}
+		self.__nr2entry = {}
 
 		self.libList = QListWidget(self)
 		QListWidgetItem("System functions (SFC)", self.libList, self.ITEM_SFC)
 		QListWidgetItem("System function blocks (SFB)", self.libList, self.ITEM_SFB)
-		self.layout().addWidget(self.libList, 0, 0, 2, 1)
+		for i, libName in enumerate(("IEC",)):
+			try:
+				lib = AwlLib.getByName(libName)
+			except AwlSimError as e:
+				MessageBox.handleAwlSimError(self, "Library error", e)
+				continue
+			self.__nr2lib[self.ITEM_LIB_BASE + i] = lib
+			QListWidgetItem(lib.description, self.libList,
+					self.ITEM_LIB_BASE + i)
+		self.layout().addWidget(self.libList, 0, 0, 3, 1)
 
 		self.libElemList = QListWidget(self)
 		font = self.libElemList.font()
 		setFixedFontParams(font)
 		self.libElemList.setFont(font)
-		self.layout().addWidget(self.libElemList, 0, 1, 2, 1)
+		self.layout().addWidget(self.libElemList, 0, 1, 3, 1)
 
 		self.iconLabel = QLabel(self)
 		self.iconLabel.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
@@ -164,11 +231,17 @@ class LibraryDialog(QDialog):
 		self.sysAction.hide()
 		self.layout().addWidget(self.sysAction, 1, 2)
 
+		self.libAction = LibActionWidget(self)
+		self.libAction.hide()
+		self.layout().addWidget(self.libAction, 2, 2)
+
 		self.libList.currentItemChanged.connect(self.__libItemChanged)
 		self.libElemList.currentItemChanged.connect(self.__libElemItemChanged)
 		self.libElemList.itemDoubleClicked.connect(self.__libElemDoubleClicked)
 		self.sysAction.paste.connect(self.__actionPaste)
 		self.sysAction.finish.connect(self.accept)
+		self.libAction.paste.connect(self.__actionPaste)
+		self.libAction.finish.connect(self.accept)
 
 		self.libList.setCurrentRow(0)
 
@@ -176,23 +249,27 @@ class LibraryDialog(QDialog):
 		self.libElemList.setMinimumWidth(380)
 		self.iconLabel.setMinimumWidth(220)
 		self.sysAction.setMinimumWidth(self.iconLabel.minimumWidth())
+		self.libAction.setMinimumWidth(self.iconLabel.minimumWidth())
+		self.resize(self.size().width(), 360)
+
+	def __addLibElemList(self, entries):
+		# Figure out the padding.
+		maxA = maxB = ""
+		for number, textA, textB, textC in entries:
+			if len(textA) > len(maxA):
+				maxA = textA
+			if len(textB) > len(maxB):
+				maxB = textB
+		# Pad the entries and add them to the widget.
+		for number, textA, textB, textC in entries:
+			textA += " " * (len(maxA) - len(textA))
+			textB += " " * (len(maxB) - len(textB))
+			QListWidgetItem("%s  %s%s" % (textA, textB, textC),
+					self.libElemList,
+					number)
 
 	def __addSystemBlockTable(self, prefix, table):
-		biggestNum = ""
-		biggestName = ""
-		for blockCls in table.values():
-			if blockCls.broken:
-				continue
-			number, name, desc = blockCls.name
-			if number < 0 and not self.withExtensions:
-				continue
-
-			number = "%d" % number
-			if len(number) > len(biggestNum):
-				biggestNum = number
-			if len(name) > len(biggestName):
-				biggestName = name
-
+		entries = []
 		for blockCls in sorted(table.values(), key=lambda c: c.name[0]):
 			if blockCls.broken:
 				continue
@@ -201,32 +278,53 @@ class LibraryDialog(QDialog):
 				continue
 
 			absName = "%s %d" % (prefix, number)
-			absName += " " * (len(prefix) + 1 + len(biggestNum) - len(absName))
 			symName = '"%s"' % name
-			symName += " " * (len(biggestName) - len(name))
 			if desc:
 				desc = "  (%s)" % desc
 			else:
 				desc = ""
-			QListWidgetItem("%s  %s%s" % (absName, symName, desc),
-					self.libElemList,
-					number + self.BLOCK_OFFSET)
+			entries.append((number + self.BLOCK_OFFSET,
+					absName, symName, desc))
+		self.__addLibElemList(entries)
 
-	def __libItemChanged(self, item, prevItem):
+	def __addLibraryTable(self, lib):
+		entries = []
+		for i, libCls in enumerate(lib.entries()):
+			if libCls.broken:
+				continue
+			absName = "%s %d" % ("FC" if libCls.isFC else "FB",\
+					     libCls.staticIndex)
+			symName = libCls.symbolName
+			if libCls.description:
+				desc = "  (%s)" % libCls.description
+			else:
+				desc = ""
+			entries.append((i + self.BLOCK_OFFSET,
+					absName, symName, desc))
+			self.__nr2entry[i + self.BLOCK_OFFSET] = libCls
+		self.__addLibElemList(entries)
+
+	def __hideAllActionWidgets(self):
 		self.currentActionWidget = None
 		self.sysAction.hide()
+		self.libAction.hide()
+
+	def __libItemChanged(self, item, prevItem):
+		self.__hideAllActionWidgets()
 		self.libElemList.clear()
 		if item.type() == self.ITEM_SFC:
 			self.__addSystemBlockTable("SFC", SFC_table)
 		elif item.type() == self.ITEM_SFB:
 			self.__addSystemBlockTable("SFB", SFB_table)
+		elif item.type() >= self.ITEM_LIB_BASE:
+			lib = self.__nr2lib[item.type()]
+			self.__addLibraryTable(lib)
 		else:
 			assert(0)
 
 	def __libElemItemChanged(self, item, prevItem):
 		if not item:
-			self.currentActionWidget = None
-			self.sysAction.hide()
+			self.__hideAllActionWidgets()
 			return
 		libType = self.libList.currentItem().type()
 		if libType in (self.ITEM_SFC, self.ITEM_SFB):
@@ -234,9 +332,14 @@ class LibraryDialog(QDialog):
 			self.sysAction.show()
 			self.currentActionWidget = self.sysAction
 			if libType == self.ITEM_SFC:
-				self.sysAction.update("SFC", SFC_table[blockNum])
+				self.sysAction.updateData("SFC", SFC_table[blockNum])
 			else:
-				self.sysAction.update("SFB", SFB_table[blockNum])
+				self.sysAction.updateData("SFB", SFB_table[blockNum])
+		elif libType >= self.ITEM_LIB_BASE:
+			entryCls = self.__nr2entry[item.type()]
+			self.libAction.show()
+			self.currentActionWidget = self.libAction
+			self.libAction.updateData(entryCls)
 		else:
 			assert(0)
 

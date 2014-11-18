@@ -29,21 +29,10 @@ from awlsim.core.blocks import *
 from awlsim.core.translator import *
 
 
-class SystemBlock(CodeBlock):
+class SystemBlock(StaticCodeBlock):
 	# The block identification. To be overridden by the subclass.
 	# The tuple is: (number, name, short_description)
 	name = (-1, "<unknown>", None)
-
-	# Interface fields. To be overridden by the subclass.
-	interfaceFields = {
-		BlockInterfaceField.FTYPE_IN	: (),
-		BlockInterfaceField.FTYPE_OUT	: (),
-		BlockInterfaceField.FTYPE_INOUT	: (),
-		BlockInterfaceField.FTYPE_STAT	: (),
-	}
-
-	# Set to True by the subclass, if the implementation is incomplete.
-	broken = False
 
 	isSystemBlock = True
 
@@ -51,29 +40,8 @@ class SystemBlock(CodeBlock):
 		insns = [
 			AwlInsn_GENERIC_CALL(cpu, self.run),
 		]
-		CodeBlock.__init__(self, insns, self.name[0], interface)
+		StaticCodeBlock.__init__(self, insns, self.name[0], interface)
 		self.cpu = cpu
-
-		# Register the interface.
-		for ftype in (BlockInterfaceField.FTYPE_IN,
-			      BlockInterfaceField.FTYPE_OUT,
-			      BlockInterfaceField.FTYPE_INOUT,
-			      BlockInterfaceField.FTYPE_STAT):
-			try:
-				fields = self.interfaceFields[ftype]
-			except KeyError:
-				continue
-			for field in fields:
-				if ftype == BlockInterfaceField.FTYPE_IN:
-					self.interface.addField_IN(field)
-				elif ftype == BlockInterfaceField.FTYPE_OUT:
-					self.interface.addField_OUT(field)
-				elif ftype == BlockInterfaceField.FTYPE_INOUT:
-					self.interface.addField_INOUT(field)
-				elif ftype == BlockInterfaceField.FTYPE_STAT:
-					self.interface.addField_STAT(field)
-				else:
-					assert(0)
 
 	def run(self):
 		# Reimplement this method
