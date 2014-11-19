@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
+from awlsim.gui.sourcecodeedit import *
 
 
 class EditSubWidget(QWidget):
@@ -333,15 +334,14 @@ class CpuStatsContextMenu(QMenu):
 	def __actionToggled(self, newState):
 		self.closed.emit()
 
-class EditWidget(QPlainTextEdit):
+class EditWidget(SourceCodeEdit):
 	codeChanged = Signal()
 	visibleRangeChanged = Signal()
 
 	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
 
-	def __init__(self, mainWidget):
-		QPlainTextEdit.__init__(self, mainWidget)
-		self.mainWidget = mainWidget
+	def __init__(self, parent=None):
+		SourceCodeEdit.__init__(self, parent)
 
 		self.__aniTimer = QTimer(self)
 		self.__aniTimer.setSingleShot(False)
@@ -351,7 +351,7 @@ class EditWidget(QPlainTextEdit):
 
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.setLineWrapMode(QPlainTextEdit.NoWrap)
+		self.setLineWrapMode(SourceCodeEdit.NoWrap)
 		self.setTabStopWidth(self.tabStopWidth() // 2)
 
 		self.headerWidget = HeaderSubWidget(self)
@@ -579,7 +579,7 @@ class EditWidget(QPlainTextEdit):
 					0)
 
 	def sizeHint(self):
-		sh = QPlainTextEdit.sizeHint(self)
+		sh = SourceCodeEdit.sizeHint(self)
 		sh.setWidth(650 +\
 			    self.lineNumWidgetWidth() +\
 			    self.cpuStatsWidgetWidth())
@@ -639,7 +639,7 @@ class EditWidget(QPlainTextEdit):
 			self.__updateMargins()
 
 	def resizeEvent(self, ev):
-		QPlainTextEdit.resizeEvent(self, ev)
+		SourceCodeEdit.resizeEvent(self, ev)
 		self.__updateGeo()
 
 	__runStateToText = {
