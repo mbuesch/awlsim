@@ -1,6 +1,6 @@
 ORGANIZATION_BLOCK OB 1
 BEGIN
-	// Test SFC -1: __NOP
+	// Test SFC -1 "__SFC_NOP"
 	CALL		SFC -1
 
 

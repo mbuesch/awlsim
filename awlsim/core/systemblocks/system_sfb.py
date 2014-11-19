@@ -32,7 +32,7 @@ from awlsim.core.systemblocks.system_sfb_5 import *
 
 
 SFB_table = {
-	-1	: SFBm1,	# __NOP
+	-1	: SFBm1,	# __SFB_NOP
 	0	: SFB0,		# CTU
 	1	: SFB1,		# CTD
 	2	: SFB2,		# CTUD

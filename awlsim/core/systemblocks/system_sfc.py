@@ -32,7 +32,7 @@ from awlsim.core.systemblocks.system_sfc_64 import *
 SFC_table = {
 	-3	: SFCm3,	# __SHUTDOWN
 	-2	: SFCm2,	# __REBOOT
-	-1	: SFCm1,	# __NOP
+	-1	: SFCm1,	# __SFC_NOP
 
 	46	: SFC46,	# STP
 	64	: SFC64,	# TIME_TCK

@@ -27,7 +27,7 @@ from awlsim.core.util import *
 
 
 class SFBm1(SFB):
-	name = (-1, "__NOP", None)
+	name = (-1, "__SFB_NOP", None)
 
 	def run(self):
 		pass # No operation
