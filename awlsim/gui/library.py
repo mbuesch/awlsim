@@ -103,11 +103,14 @@ class SysActionWidget(GenericActionWidget):
 
 		self.layout().setRowStretch(1, 1)
 
+		label = QLabel("Paste at cursor position:", self)
+		self.layout().addWidget(label, 2, 0)
+
 		self.pasteCallButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallButton, 2, 0)
+		self.layout().addWidget(self.pasteCallButton, 3, 0)
 
 		self.pasteCallSymButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallSymButton, 3, 0)
+		self.layout().addWidget(self.pasteCallSymButton, 4, 0)
 
 		self.pasteCallButton.released.connect(self.__pasteCall)
 		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
@@ -116,17 +119,17 @@ class SysActionWidget(GenericActionWidget):
 		self.systemBlockCls = systemBlockCls
 		self.blockPrefix = prefix
 
-		blockNumber, blockName, blockDesc = systemBlockCls.name
+		blockNumber, symbolName, blockDesc = systemBlockCls.name
 		desc = self._blockToInterfaceText("%s %d" % (prefix, blockNumber),
-						  blockName, blockDesc,
+						  symbolName, blockDesc,
 						  systemBlockCls.interfaceFields)
 		self.desc.setText(desc)
-		self.pasteCallButton.setText("Paste  CALL %s %d" %\
+		self.pasteCallButton.setText("CALL %s %d" %\
 					     (prefix, blockNumber))
-		self.pasteCallSymButton.setText("Paste  CALL \"%s\"" % blockName)
+		self.pasteCallSymButton.setText("CALL \"%s\"" % symbolName)
 
 	def __pasteCall(self):
-		blockNumber, blockName, blockDesc = self.systemBlockCls.name
+		blockNumber, symbolName, blockDesc = self.systemBlockCls.name
 		self._pasteCallGeneric("%s %d" % (self.blockPrefix, blockNumber),
 				       self.systemBlockCls.isFB,
 				       self.systemBlockCls.interfaceFields)
@@ -134,14 +137,14 @@ class SysActionWidget(GenericActionWidget):
 
 	def __pasteCallSym(self):
 		#TODO add the symbol to the symbol table
-		blockNumber, blockName, blockDesc = self.systemBlockCls.name
-		self._pasteCallGeneric('"%s"' % blockName,
+		blockNumber, symbolName, blockDesc = self.systemBlockCls.name
+		self._pasteCallGeneric('"%s"' % symbolName,
 				       self.systemBlockCls.isFB,
 				       self.systemBlockCls.interfaceFields)
 		self.finish.emit()
 
 	def defaultPaste(self):
-		self.__pasteCall()
+		self.__pasteCallSym()
 
 class LibActionWidget(GenericActionWidget):
 	def __init__(self, parent=None):
@@ -157,31 +160,70 @@ class LibActionWidget(GenericActionWidget):
 
 		self.layout().setRowStretch(1, 1)
 
+		label = QLabel("Paste at cursor position:", self)
+		self.layout().addWidget(label, 2, 0)
+
 		self.pasteCodeButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCodeButton, 2, 0)
+		self.layout().addWidget(self.pasteCodeButton, 3, 0)
+
+		self.pasteCodeSymButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCodeSymButton, 4, 0)
+
+		self.pasteCallButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCallButton, 5, 0)
+
+		self.pasteCallSymButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCallSymButton, 6, 0)
 
 		self.pasteCodeButton.released.connect(self.__pasteCode)
+		self.pasteCodeSymButton.released.connect(self.__pasteCodeSym)
+		self.pasteCallButton.released.connect(self.__pasteCall)
+		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
 
 	def updateData(self, libEntryCls):
 		self.libEntryCls = libEntryCls
 
 		prefix = "FC" if libEntryCls.isFC else "FB"
-		blockName = "%s %d" % (prefix, libEntryCls.staticIndex)
+		typeStr = "FUNCTION" if libEntryCls.isFC else "FUNCTION_BLOCK"
+		self.blockName = "%s %d" % (prefix, libEntryCls.staticIndex)
 
-		desc = self._blockToInterfaceText(blockName,
+		desc = self._blockToInterfaceText(self.blockName,
 						  libEntryCls.symbolName,
 						  libEntryCls.description,
 						  libEntryCls.interfaceFields)
 		self.desc.setText(desc)
 
-		self.pasteCodeButton.setText("Paste %s body" % blockName)
+		self.pasteCodeButton.setText("%s %s" %\
+					     (typeStr, self.blockName))
+		self.pasteCodeSymButton.setText("%s \"%s\"" %\
+						(typeStr, libEntryCls.symbolName))
+		self.pasteCallButton.setText("CALL %s" % self.blockName)
+		self.pasteCallSymButton.setText("CALL \"%s\"" %\
+						libEntryCls.symbolName)
 
 	def __pasteCode(self):
-		self.paste.emit(self.libEntryCls().getCode())
+		self.paste.emit(self.libEntryCls().getCode(False))
+		self.finish.emit()
+
+	def __pasteCodeSym(self):
+		self.paste.emit(self.libEntryCls().getCode(True))
+		self.finish.emit()
+
+	def __pasteCall(self):
+		self._pasteCallGeneric(self.blockName,
+				       self.libEntryCls.isFB,
+				       self.libEntryCls.interfaceFields)
+		self.finish.emit()
+
+	def __pasteCallSym(self):
+		#TODO add the symbol to the symbol table
+		self._pasteCallGeneric('"%s"' % self.libEntryCls.symbolName,
+				       self.libEntryCls.isFB,
+				       self.libEntryCls.interfaceFields)
 		self.finish.emit()
 
 	def defaultPaste(self):
-		pass#TODO
+		self.__pasteCallSym()
 
 class LibraryDialog(QDialog):
 	ITEM_SFC	= QListWidgetItem.UserType + 0
