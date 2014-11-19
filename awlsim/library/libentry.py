@@ -152,9 +152,15 @@ class AwlLibFC(AwlLibEntry):
 		AwlLibEntry.__init__(self, index, AwlLibFCInterface())
 
 	# Get the AWL code
-	def getCode(self):
+	def getCode(self, symbolic=False):
 		interfCode, retValType = self._generateInterfaceCode(True)
-		code = [ "FUNCTION FC %d : %s\n" % (self.index, retValType), ]
+		code = []
+		if symbolic:
+			code.append("FUNCTION \"%s\" : %s\n" %\
+				    (self.symbolName, retValType))
+		else:
+			code.append("FUNCTION FC %d : %s\n" %\
+				    (self.index, retValType))
 		code.append(interfCode)
 		code.append("BEGIN\n")
 		code.append(self.awlCode.strip("\n"))
@@ -173,9 +179,13 @@ class AwlLibFB(AwlLibEntry):
 		AwlLibEntry.__init__(self, index, AwlLibFBInterface())
 
 	# Get the AWL code
-	def getCode(self):
+	def getCode(self, symbolic=False):
 		interfCode, retValType = self._generateInterfaceCode(False)
-		code = [ "FUNCTION_BLOCK FB %d\n" % self.index, ]
+		code = []
+		if symbolic:
+			code.append("FUNCTION_BLOCK \"%s\"\n" % self.symbolName)
+		else:
+			code.append("FUNCTION_BLOCK FB %d\n" % self.index)
 		code.append(interfCode)
 		code.append("BEGIN\n")
 		code.append(self.awlCode.strip("\n"))
