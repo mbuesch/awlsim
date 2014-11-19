@@ -60,12 +60,10 @@ have_prog()
 	which "$program" >/dev/null 2>&1
 }
 
-# $1=interpreter $2=awl_file ($3ff additional options to awlsim-cli)
-run_awl_test()
+# $1=interpreter
+setup_test_environment()
 {
 	local interpreter="$1"
-	local awl="$2"
-	shift; shift
 
 	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
 		for i in "$rootdir"/build/lib.linux-*-2.*; do
@@ -85,6 +83,24 @@ run_awl_test()
 		export PYTHONPATH=
 		export AWLSIMCYTHON=
 	fi
+	RET="$interpreter"
+}
+
+cleanup_test_environment()
+{
+	export PYTHONPATH=
+	export AWLSIMCYTHON=
+}
+
+# $1=interpreter $2=awl_file ($3ff additional options to awlsim-cli)
+run_awl_test()
+{
+	local interpreter="$1"
+	local awl="$2"
+	shift; shift
+
+	setup_test_environment "$interpreter"
+	local interpreter="$RET"
 
 	local ok=1
 	command time -o "$test_time_file" -f '%E' \
@@ -97,9 +113,7 @@ run_awl_test()
 			local ok=0
 	}
 	[ $ok -ne 0 ] && echo "[OK: $(cat "$test_time_file")]"
-
-	export PYTHONPATH=
-	export AWLSIMCYTHON=
+	cleanup_test_environment
 }
 
 # $1=interpreter $2=sh_file
@@ -108,11 +122,6 @@ run_sh_test()
 	local interpreter="$1"
 	local sh_file="$2"
 	shift; shift
-
-	[ "$interpreter" = "cython" -o "$interpreter" = "cython2" -o "$interpreter" = "cython3" ] && {
-		echo "[SKIPPED] on $interpreter"
-		return
-	}
 
 	[ -x "$sh_file" ] && die "SH-file '$sh_file' must NOT be executable"
 
@@ -123,7 +132,12 @@ run_sh_test()
 	. "$sh_file"
 
 	# Run the test
-	( sh_test "$interpreter" )
+	(
+	 setup_test_environment "$interpreter"
+	 local interpreter="$RET"
+	 sh_test "$interpreter"
+	 cleanup_test_environment
+	)
 	local result=$?
 
 	[ $result -eq 0 ] || die "Test failed with error code $result"
