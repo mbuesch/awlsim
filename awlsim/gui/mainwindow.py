@@ -345,7 +345,7 @@ class MainWindow(QMainWindow):
 				postfix += "*"
 		else:
 			postfix = ""
-		self.setWindowTitle("AWL/STL Soft-PLC v%d.%d%s" %\
+		self.setWindowTitle("AWL/STL soft-PLC v%d.%d%s" %\
 				    (VERSION_MAJOR, VERSION_MINOR,
 				     postfix))
 
@@ -380,12 +380,27 @@ class MainWindow(QMainWindow):
 		QMainWindow.closeEvent(self, ev)
 
 	def about(self):
-		QMessageBox.about(self, "About AWL/STL Soft-PLC",
-			"awlsim version %d.%d\n\n"
+		QMessageBox.about(self, "About AWL/STL soft-PLC",
+			"Awlsim soft-PLC version %d.%d\n"
+			"\n"
 			"Copyright 2012-2014 Michael Büsch <m@bues.ch>\n"
-			"Licensed under the terms of the "
-			"GNU GPL version 2 or (at your option) "
-			"any later version." %\
+			"\n"
+			"Project home:  http://bues.ch/h/awlsim\n"
+			"\n"
+			"\n"
+			"This program is free software; you can redistribute it and/or modify "
+			"it under the terms of the GNU General Public License as published by "
+			"the Free Software Foundation; either version 2 of the License, or "
+			"(at your option) any later version.\n"
+			"\n"
+			"This program is distributed in the hope that it will be useful, "
+			"but WITHOUT ANY WARRANTY; without even the implied warranty of "
+			"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+			"GNU General Public License for more details.\n"
+			"\n"
+			"You should have received a copy of the GNU General Public License along "
+			"with this program; if not, write to the Free Software Foundation, Inc., "
+			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." %\
 			(VERSION_MAJOR, VERSION_MINOR))
 
 	def new(self):
