@@ -350,8 +350,8 @@ class SymTabParser(object):
 	def _parse(self, data, probeOnly=False):
 		raise NotImplementedError
 
-	def _parseSym(self, symName, symAddr, symType, symComment,
-		      lineNr):
+	def parseSym(self, symName, symAddr, symType, symComment,
+		     lineNr):
 		symName = symName.strip()
 		symAddr = symAddr.strip().upper()
 		symType = symType.strip().upper()
@@ -403,11 +403,11 @@ class SymTabParser_ASC(SymTabParser):
 			symType = line[40:50]
 			symComment = line[50:]
 			if not probeOnly:
-				table.add(self._parseSym(symName = symName,
-							 symAddr = symAddr,
-							 symType = symType,
-							 symComment = symComment,
-							 lineNr = lineNr))
+				table.add(self.parseSym(symName = symName,
+							symAddr = symAddr,
+							symType = symType,
+							symComment = symComment,
+							lineNr = lineNr))
 		return table
 
 SymTabParser.implementations.append(SymTabParser_ASC)
@@ -425,11 +425,11 @@ class SymTabParser_CSV(SymTabParser):
 					"line %d. Expected 4, but got %d records." %\
 					(lineNr, len(row)))
 			if not probeOnly:
-				table.add(self._parseSym(symName = row[0],
-							 symAddr = row[1],
-							 symType = row[2],
-							 symComment = row[3],
-							 lineNr = lineNr))
+				table.add(self.parseSym(symName = row[0],
+							symAddr = row[1],
+							symType = row[2],
+							symComment = row[3],
+							lineNr = lineNr))
 		return table
 
 SymTabParser.implementations.append(SymTabParser_CSV)
