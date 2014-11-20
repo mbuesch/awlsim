@@ -39,6 +39,10 @@ class SymTabModel(QAbstractTableModel):
 		self.__needSourceUpdate = True
 		self.sourceChanged.emit()
 
+	def revert(self):
+		QAbstractTableModel.revert(self)
+		self.__needSourceUpdate = True
+
 	def getSymTab(self):
 		return self.symTab
 
@@ -212,6 +216,9 @@ class SymTabView(QTableView):
 
 	def setSymTab(self, symTab):
 		self.setModel(SymTabModel(symTab))
+
+	def getSymTab(self):
+		return self.model().getSymTab()
 
 	def getSource(self):
 		return self.model().getSource()
