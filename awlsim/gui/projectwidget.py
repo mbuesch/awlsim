@@ -219,13 +219,63 @@ class ProjectWidget(QTabWidget):
 	def __pasteAwlText(self, text):
 		if self.currentWidget() == self.awlTabs:
 			self.awlTabs.pasteText(text)
+			return True
+		QMessageBox.information(self,
+			"Please select AWL/STL source",
+			"Can not paste template.\n\n"
+			"Please move the text cursor to the place "
+			"in the AWL/STL code where you want to paste "
+			"the template to.")
+		return False
+
+	def __addSymbolToTabWidget(self, tabWidget, symbol):
+		tabWidget.model().beginResetModel()
+		tabWidget.getSymTab().add(symbol)
+		tabWidget.model().revert()
+		tabWidget.model().endResetModel()
+
+	def __pasteSymbol(self, symbolName, address, dataType, comment):
+		# Check if we already have this symbol.
+		for tabWidget in self.symTabs.allTabWidgets():
+			symTable = tabWidget.getSymTab()
+			symbols = tuple(symTable.findByName(symbolName))
+			if symbols:
+				# We already have it.
+				return True
+		# We don't have this symbol, yet. Parse it.
+		try:
+			p = SymTabParser(self.__project.getCpuSpecs().getConfiguredMnemonics())
+			symbol = p.parseSym(symbolName, address,
+					    dataType, comment, 0)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Library symbol error", e)
+			return False
+		assert(self.symTabs.count() >= 1)
+		if self.symTabs.count() == 1:
+			# We only have one table. Add the symbol.
+			self.__addSymbolToTabWidget(self.symTabs.widget(0),
+						    symbol)
 		else:
-			QMessageBox.information(self,
-				"Please select AWL/STL source",
-				"Can not paste template.\n\n"
-				"Please move the text cursor to the place "
-				"in the AWL/STL code where you want to paste "
-				"the template to.")
+			# Ask which table to add the symbol to.
+			tabWidgets = tuple(self.symTabs.allTabWidgets())
+			entries = []
+			for i, tabWidget in enumerate(tabWidgets):
+				entries.append("%d: %s" %\
+					(i + 1, tabWidget.getSource().name))
+			entry, ok = QInputDialog.getItem(self,
+				"Select symbol table",
+				"Please select the symbol table "\
+				"where to add the symbol to:"
+				"\n%s  \"%s\"" %\
+				(address, symbolName),
+				entries, 0, False)
+			if not ok or not entry:
+				return False
+			selIndex = int(entry.split(":")[0]) - 1
+			tabWidget = tabWidgets[selIndex]
+			self.__addSymbolToTabWidget(tabWidget, symbol)
+		return True
 
 	def insertOB(self):
 		dlg = TemplateDialog("OB", parent=self)
@@ -278,7 +328,15 @@ class ProjectWidget(QTabWidget):
 								dlg.getVerbose()))
 
 	def openLibrary(self):
-		dlg = LibraryDialog(self.__project.getExtInsnsEn(), self)
+		dlg = LibraryDialog(self.__project, self)
 		if dlg.exec_() == QDialog.Accepted:
 			if dlg.pasteText:
-				self.__pasteAwlText(dlg.pasteText)
+				# Paste the code.
+				if not self.__pasteAwlText(dlg.pasteText):
+					return
+			if dlg.pasteSymbol:
+				# Add a symbol to a symbol table.
+				symbolName, address, dataType, comment = dlg.pasteSymbol
+				if not self.__pasteSymbol(symbolName, address,
+							  dataType, comment):
+					return

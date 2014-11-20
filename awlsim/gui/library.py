@@ -33,6 +33,9 @@ from awlsim.library import *
 class GenericActionWidget(QWidget):
 	# Signal: Code paste request.
 	paste = Signal(str)
+	# Signal: Add a symbol to the symbol table
+	# Arguments: symbolName, address, dataType, comment
+	addSymbol = Signal(str, str, str, str)
 	# Signal: Finish the library selection
 	finish = Signal()
 
@@ -136,11 +139,14 @@ class SysActionWidget(GenericActionWidget):
 		self.finish.emit()
 
 	def __pasteCallSym(self):
-		#TODO add the symbol to the symbol table
 		blockNumber, symbolName, blockDesc = self.systemBlockCls.name
 		self._pasteCallGeneric('"%s"' % symbolName,
 				       self.systemBlockCls.isFB,
 				       self.systemBlockCls.interfaceFields)
+		self.addSymbol.emit(symbolName,
+				    "%s %s" % (self.blockPrefix, blockNumber),
+				    "%s %s" % (self.blockPrefix, blockNumber),
+				    blockDesc)
 		self.finish.emit()
 
 	def defaultPaste(self):
@@ -207,6 +213,10 @@ class LibActionWidget(GenericActionWidget):
 
 	def __pasteCodeSym(self):
 		self.paste.emit(self.libEntryCls().getCode(True))
+		self.addSymbol.emit(self.libEntryCls.symbolName,
+				    self.blockName,
+				    self.blockName,
+				    self.libEntryCls.description)
 		self.finish.emit()
 
 	def __pasteCall(self):
@@ -216,10 +226,13 @@ class LibActionWidget(GenericActionWidget):
 		self.finish.emit()
 
 	def __pasteCallSym(self):
-		#TODO add the symbol to the symbol table
 		self._pasteCallGeneric('"%s"' % self.libEntryCls.symbolName,
 				       self.libEntryCls.isFB,
 				       self.libEntryCls.interfaceFields)
+		self.addSymbol.emit(self.libEntryCls.symbolName,
+				    self.blockName,
+				    self.blockName,
+				    self.libEntryCls.description)
 		self.finish.emit()
 
 	def defaultPaste(self):
@@ -232,14 +245,17 @@ class LibraryDialog(QDialog):
 
 	BLOCK_OFFSET	= QListWidgetItem.UserType + 0xFFFF
 
-	def __init__(self, withExtensions, parent=None):
+	def __init__(self, project, parent=None):
 		QDialog.__init__(self, parent)
 		self.setLayout(QGridLayout())
 		self.setWindowTitle("AWL/STL - Standard library")
 		self.setWindowIcon(getIcon("stdlib"))
 
-		self.withExtensions = withExtensions
+		self.project = project
+
 		self.pasteText = None
+		self.pasteSymbol = None
+
 		self.currentActionWidget = None
 		self.__nr2lib = {}
 		self.__nr2entry = {}
@@ -281,8 +297,10 @@ class LibraryDialog(QDialog):
 		self.libElemList.currentItemChanged.connect(self.__libElemItemChanged)
 		self.libElemList.itemDoubleClicked.connect(self.__libElemDoubleClicked)
 		self.sysAction.paste.connect(self.__actionPaste)
+		self.sysAction.addSymbol.connect(self.__actionAddSym)
 		self.sysAction.finish.connect(self.accept)
 		self.libAction.paste.connect(self.__actionPaste)
+		self.libAction.addSymbol.connect(self.__actionAddSym)
 		self.libAction.finish.connect(self.accept)
 
 		self.libList.setCurrentRow(0)
@@ -316,7 +334,7 @@ class LibraryDialog(QDialog):
 			if blockCls.broken:
 				continue
 			number, name, desc = blockCls.name
-			if number < 0 and not self.withExtensions:
+			if number < 0 and not self.project.getExtInsnsEn():
 				continue
 
 			absName = "%s %d" % (prefix, number)
@@ -390,4 +408,9 @@ class LibraryDialog(QDialog):
 			self.currentActionWidget.defaultPaste()
 
 	def __actionPaste(self, text):
+		assert(self.pasteText is None)
 		self.pasteText = text
+
+	def __actionAddSym(self, symbolName, address, dataType, comment):
+		assert(self.pasteSymbol is None)
+		self.pasteSymbol = (symbolName, address, dataType, comment)
