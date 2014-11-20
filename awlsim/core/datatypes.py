@@ -933,14 +933,22 @@ class Adressregister(GenericDWord): #+cdef
 		value = self.getDWord()
 		area = (value >> 24) & 0xFF
 		if area:
-			if area == 0x81:
+			if area == 0x80:
+				prefix = "P"
+			elif area == 0x81:
 				prefix = "E"
 			elif area == 0x82:
 				prefix = "A"
 			elif area == 0x83:
 				prefix = "M"
+			elif area == 0x84:
+				prefix = "DBX"
+			elif area == 0x85:
+				prefix = "DIX"
 			elif area == 0x86:
 				prefix = "L"
+			elif area == 0x87:
+				prefix = "V"
 			else:
 				prefix = "(%02X)" % area
 			prefix += " "
