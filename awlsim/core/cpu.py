@@ -363,8 +363,7 @@ class S7CPU(object): #+cdef
 			db = translator.translateDB(rawDB)
 			self.dbs[dbNumber] = db
 
-	def loadLibraryBlock(self, libraryName, fcBlock,
-			     blockIndex, effectiveBlockIndex):
+	def loadLibraryBlock(self, libSelection):
 		pass#TODO
 
 	def loadSymbolTable(self, symbolTable):
