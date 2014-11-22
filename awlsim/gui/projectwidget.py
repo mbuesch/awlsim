@@ -27,6 +27,7 @@ from awlsim.common.templates import *
 from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
 from awlsim.gui.library import *
+from awlsim.gui.libtablewidget import *
 from awlsim.gui.icons import *
 
 
@@ -92,23 +93,29 @@ class ProjectWidget(QTabWidget):
 	# Signal: The visible AWL line range changed
 	#         Parameters are: source, visibleFromLine, visibleToLine
 	visibleLinesChanged = Signal(AwlSource, int, int)
+	# Signal: The library selection changed
+	libTableChanged = Signal()
 
 	def __init__(self, parent=None):
 		QTabWidget.__init__(self, parent)
 
 		self.awlTabs = AwlSourceTabWidget(self)
 		self.symTabs = SymSourceTabWidget(self)
+		self.libTable = LibTableView(None, self)
 
 		self.addTab(self.awlTabs, "Sources")
 		self.addTab(self.symTabs, "Symbol tables")
+		self.addTab(self.libTable, "Library selections")
 		self.setTabToolTip(0, "Enter your AWL/STL program here")
 		self.setTabToolTip(1, "Enter your symbol table here")
+		self.setTabToolTip(2, "Select standard libraries to include")
 
 		self.reset()
 
 		self.awlTabs.sourceChanged.connect(self.codeChanged)
-		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.awlTabs.visibleLinesChanged.connect(self.visibleLinesChanged)
+		self.symTabs.sourceChanged.connect(self.symTabChanged)
+		self.libTable.model().contentChanged.connect(self.libTableChanged)
 
 	def handleOnlineDiagChange(self, enabled):
 		self.awlTabs.handleOnlineDiagChange(enabled)
@@ -277,6 +284,10 @@ class ProjectWidget(QTabWidget):
 			self.__addSymbolToTabWidget(tabWidget, symbol)
 		return True
 
+	def __pasteLibSel(self, libSelection):
+		self.libTable.addEntry(libSelection)
+		return True
+
 	def insertOB(self):
 		dlg = TemplateDialog("OB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
@@ -339,4 +350,8 @@ class ProjectWidget(QTabWidget):
 				symbolName, address, dataType, comment = dlg.pasteSymbol
 				if not self.__pasteSymbol(symbolName, address,
 							  dataType, comment):
+					return
+			if dlg.pasteLibSel:
+				# Add a library selection to the library table.
+				if not self.__pasteLibSel(dlg.pasteLibSel):
 					return

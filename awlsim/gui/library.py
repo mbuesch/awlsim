@@ -36,6 +36,8 @@ class GenericActionWidget(QWidget):
 	# Signal: Add a symbol to the symbol table
 	# Arguments: symbolName, address, dataType, comment
 	addSymbol = Signal(str, str, str, str)
+	# Signal: Add library selection
+	addLibrary = Signal(AwlLibEntrySelection)
 	# Signal: Finish the library selection
 	finish = Signal()
 
@@ -109,14 +111,14 @@ class SysActionWidget(GenericActionWidget):
 		label = QLabel("Paste at cursor position:", self)
 		self.layout().addWidget(label, 2, 0)
 
-		self.pasteCallButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallButton, 3, 0)
-
 		self.pasteCallSymButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallSymButton, 4, 0)
+		self.layout().addWidget(self.pasteCallSymButton, 3, 0)
 
-		self.pasteCallButton.released.connect(self.__pasteCall)
+		self.pasteCallButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCallButton, 4, 0)
+
 		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
+		self.pasteCallButton.released.connect(self.__pasteCall)
 
 	def updateData(self, prefix, systemBlockCls):
 		self.systemBlockCls = systemBlockCls
@@ -169,22 +171,22 @@ class LibActionWidget(GenericActionWidget):
 		label = QLabel("Paste at cursor position:", self)
 		self.layout().addWidget(label, 2, 0)
 
-		self.pasteCodeButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCodeButton, 3, 0)
-
-		self.pasteCodeSymButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCodeSymButton, 4, 0)
+		self.pasteCallSymButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCallSymButton, 3, 0)
 
 		self.pasteCallButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallButton, 5, 0)
+		self.layout().addWidget(self.pasteCallButton, 4, 0)
 
-		self.pasteCallSymButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallSymButton, 6, 0)
+		self.pasteCodeSymButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCodeSymButton, 5, 0)
 
-		self.pasteCodeButton.released.connect(self.__pasteCode)
-		self.pasteCodeSymButton.released.connect(self.__pasteCodeSym)
-		self.pasteCallButton.released.connect(self.__pasteCall)
+		self.pasteCodeButton = QPushButton(self)
+		self.layout().addWidget(self.pasteCodeButton, 6, 0)
+
 		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
+		self.pasteCallButton.released.connect(self.__pasteCall)
+		self.pasteCodeSymButton.released.connect(self.__pasteCodeSym)
+		self.pasteCodeButton.released.connect(self.__pasteCode)
 
 	def updateData(self, libEntryCls):
 		self.libEntryCls = libEntryCls
@@ -223,6 +225,7 @@ class LibActionWidget(GenericActionWidget):
 		self._pasteCallGeneric(self.blockName,
 				       self.libEntryCls.isFB,
 				       self.libEntryCls.interfaceFields)
+		self.addLibrary.emit(self.libEntryCls().makeSelection())
 		self.finish.emit()
 
 	def __pasteCallSym(self):
@@ -233,6 +236,7 @@ class LibActionWidget(GenericActionWidget):
 				    self.blockName,
 				    self.blockName,
 				    self.libEntryCls.description)
+		self.addLibrary.emit(self.libEntryCls().makeSelection())
 		self.finish.emit()
 
 	def defaultPaste(self):
@@ -255,6 +259,7 @@ class LibraryDialog(QDialog):
 
 		self.pasteText = None
 		self.pasteSymbol = None
+		self.pasteLibSel = None
 
 		self.currentActionWidget = None
 		self.__nr2lib = {}
@@ -296,12 +301,11 @@ class LibraryDialog(QDialog):
 		self.libList.currentItemChanged.connect(self.__libItemChanged)
 		self.libElemList.currentItemChanged.connect(self.__libElemItemChanged)
 		self.libElemList.itemDoubleClicked.connect(self.__libElemDoubleClicked)
-		self.sysAction.paste.connect(self.__actionPaste)
-		self.sysAction.addSymbol.connect(self.__actionAddSym)
-		self.sysAction.finish.connect(self.accept)
-		self.libAction.paste.connect(self.__actionPaste)
-		self.libAction.addSymbol.connect(self.__actionAddSym)
-		self.libAction.finish.connect(self.accept)
+		for actionWidget in (self.sysAction, self.libAction):
+			actionWidget.paste.connect(self.__actionPaste)
+			actionWidget.addSymbol.connect(self.__actionAddSym)
+			actionWidget.addLibrary.connect(self.__actionAddLib)
+			actionWidget.finish.connect(self.accept)
 
 		self.libList.setCurrentRow(0)
 
@@ -414,3 +418,7 @@ class LibraryDialog(QDialog):
 	def __actionAddSym(self, symbolName, address, dataType, comment):
 		assert(self.pasteSymbol is None)
 		self.pasteSymbol = (symbolName, address, dataType, comment)
+
+	def __actionAddLib(self, libSelection):
+		assert(self.pasteLibSel is None)
+		self.pasteLibSel = libSelection
