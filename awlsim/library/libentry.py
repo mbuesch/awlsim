@@ -27,6 +27,8 @@ from awlsim.common.dynamic_import import *
 
 from awlsim.core.blocks import *
 
+from awlsim.library.libselection import *
+
 
 class AwlLib(object):
 	"""AWL library."""
@@ -37,6 +39,7 @@ class AwlLib(object):
 	def register(cls, libName, description):
 		"""Register an AWL library."""
 
+		libName = libName.lower()
 		if libName in cls.__awlLibs:
 			raise AwlSimError("Trying to register library '%s', "
 				"but it does already exist.")
@@ -46,24 +49,37 @@ class AwlLib(object):
 	def registerEntry(cls, entryClass):
 		"""Register an entry-class for an already registered library."""
 
-		if entryClass.libraryName not in cls.__awlLibs:
+		libName = entryClass.libraryName.lower()
+		if libName not in cls.__awlLibs:
 			raise AwlSimError("Trying to register element '%s' "
 				"for unknown library '%s'." %\
 				(str(entryClass), entryClass.libraryName))
-		cls.__awlLibs[entryClass.libraryName].entryClasses.add(entryClass)
+		cls.__awlLibs[libName].entryClasses.add(entryClass)
 
 	@classmethod
 	def getByName(cls, libName):
 		"""Get a library, by name."""
 
-		importModule("awlsim.library.%s" % libName.lower())
+		libName = libName.lower()
+		for c in libName:
+			if not c.isalnum() and c != "_":
+				raise AwlSimError("Library name '%s' "
+					"is invalid." % libName)
 
 		try:
+			importModule("awlsim.library.%s" % libName)
 			return cls.__awlLibs[libName]
-		except KeyError:
+		except (ImportError, KeyError) as e:
 			raise AwlSimError("Library '%s' was not found "
 				"in the standard library catalog." %\
 				libName)
+
+	@classmethod
+	def getEntryBySelection(cls, selection):
+		"""Get a library entry class by AwlLibEntrySelection().
+		selection -> An AwlLibEntrySelection instance."""
+
+		return cls.getByName(selection.getLibName()).getEntry(selection)
 
 	def __init__(self, name, description):
 		self.name = name
@@ -80,6 +96,23 @@ class AwlLib(object):
 
 		for cls in sorted(self.entryClasses, key=sortKey):
 			yield cls
+
+	def getEntry(self, selection):
+		"""Get a library entry class by AwlLibEntrySelection().
+		selection -> An AwlLibEntrySelection instance."""
+
+		for cls in self.entryClasses:
+			if selection.getEntryType() == selection.TYPE_FC:
+				if not cls.isFC:
+					continue
+			else:
+				if not cls.isFB:
+					continue
+			if cls.staticIndex != selection.getEntryIndex():
+				continue
+			return cls
+		raise AwlSimError("The selected library entry '%s' was "
+			"not found." % str(selection))
 
 class AwlLibEntry(StaticCodeBlock):
 	"""AWL library entry base class."""
@@ -136,9 +169,17 @@ class AwlLibEntry(StaticCodeBlock):
 		code.append("")
 		return "\n".join(code), retValType
 
-	# Get the AWL code
 	def getCode(self):
+		"""Get the AWL code."""
+
 		raise NotImplementedError
+
+	def makeSelection(self):
+		"""Get an AwlLibEntrySelection for this entry."""
+
+		return AwlLibEntrySelection(libName = self.libraryName,
+					    entryIndex = self.staticIndex,
+					    effectiveEntryIndex = self.index)
 
 	def __repr__(self):
 		return "AwlLibEntry %d" % self.index
@@ -151,8 +192,9 @@ class AwlLibFC(AwlLibEntry):
 	def __init__(self, index=None):
 		AwlLibEntry.__init__(self, index, AwlLibFCInterface())
 
-	# Get the AWL code
 	def getCode(self, symbolic=False):
+		"""Get the AWL code."""
+
 		interfCode, retValType = self._generateInterfaceCode(True)
 		code = []
 		if symbolic:
@@ -167,6 +209,13 @@ class AwlLibFC(AwlLibEntry):
 		code.append("\nEND_FUNCTION\n")
 		return "".join(code)
 
+	def makeSelection(self):
+		"""Get an AwlLibEntrySelection for this entry."""
+
+		sel = AwlLibEntry.makeSelection(self)
+		sel.setEntryType(sel.TYPE_FC)
+		return sel
+
 class AwlLibFCInterface(FCInterface):
 	pass
 
@@ -178,8 +227,9 @@ class AwlLibFB(AwlLibEntry):
 	def __init__(self, index=None):
 		AwlLibEntry.__init__(self, index, AwlLibFBInterface())
 
-	# Get the AWL code
 	def getCode(self, symbolic=False):
+		"""Get the AWL code."""
+
 		interfCode, retValType = self._generateInterfaceCode(False)
 		code = []
 		if symbolic:
@@ -191,6 +241,13 @@ class AwlLibFB(AwlLibEntry):
 		code.append(self.awlCode.strip("\n"))
 		code.append("\nEND_FUNCTION_BLOCK\n")
 		return "".join(code)
+
+	def makeSelection(self):
+		"""Get an AwlLibEntrySelection for this entry."""
+
+		sel = AwlLibEntry.makeSelection(self)
+		sel.setEntryType(sel.TYPE_FB)
+		return sel
 
 class AwlLibFBInterface(FBInterface):
 	pass
