@@ -56,7 +56,7 @@ class AwlLibEntrySelection(object):
 
 	def getEntryTypeStr(self):
 		return {
-			self.TYPE_UNKNOWN	: None,
+			self.TYPE_UNKNOWN	: "UNKNOWN",
 			self.TYPE_FC		: "FC",
 			self.TYPE_FB		: "FB",
 		}[self.getEntryType()]
