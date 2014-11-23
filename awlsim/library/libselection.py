@@ -49,6 +49,12 @@ class AwlLibEntrySelection(object):
 		return self.__libName
 
 	def setEntryType(self, entryType):
+		if entryType not in (self.TYPE_UNKNOWN,
+				     self.TYPE_FC,
+				     self.TYPE_FB):
+			raise AwlSimError("Library selection: "
+				"Invalid entry type %d." %\
+				entryType)
 		self.__entryType = entryType
 
 	def getEntryType(self):
@@ -62,12 +68,20 @@ class AwlLibEntrySelection(object):
 		}[self.getEntryType()]
 
 	def setEntryIndex(self, entryIndex):
+		if entryIndex < -1 or entryIndex > 0xFFFF:
+			raise AwlSimError("Library selection: "
+				"Invalid entry index %d." %\
+				entryIndex)
 		self.__entryIndex = entryIndex
 
 	def getEntryIndex(self):
 		return self.__entryIndex
 
 	def setEffectiveEntryIndex(self, effectiveEntryIndex):
+		if effectiveEntryIndex < -1 or effectiveEntryIndex > 0xFFFF:
+			raise AwlSimError("Library selection: "
+				"Invalid effective entry index %d." %\
+				effectiveEntryIndex)
 		self.__effectiveEntryIndex = effectiveEntryIndex
 
 	def getEffectiveEntryIndex(self):
