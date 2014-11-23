@@ -69,6 +69,7 @@ class AwlSimMessage(object):
 	MSG_ID_MEMORY		= EnumGen.item
 	MSG_ID_INSNSTATE	= EnumGen.item
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
+	MSG_ID_LOAD_LIB		= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -297,6 +298,43 @@ class AwlSimMessage_LOAD_HW(AwlSimMessage):
 		except (ValueError) as e:
 			raise TransferError("LOAD_HW: Invalid data format")
 		return cls(name = name, paramDict = paramDict)
+
+class AwlSimMessage_LOAD_LIB(AwlSimMessage):
+	plStruct = struct.Struct(str(">Hii"))
+
+	def __init__(self, libSelection):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_LIB)
+		self.libSelection = libSelection
+
+	def toBytes(self):
+		payload = b""
+		try:
+			payload += self.packString(self.libSelection.getLibName())
+			payload += self.plStruct.pack(self.libSelection.getEntryType(),
+						      self.libSelection.getEntryIndex(),
+						      self.libSelection.getEffectiveEntryIndex())
+			return AwlSimMessage.toBytes(self, len(payload)) + payload
+		except (ValueError) as e:
+			raise TransferError("LOAD_LIB: Invalid data format")
+
+	@classmethod
+	def fromBytes(cls, payload):
+		libSelection = AwlLibEntrySelection()
+		offset = 0
+		try:
+			libName, count = cls.unpackString(payload, offset)
+			offset += count
+			eType, eIndex, effIndex =\
+				cls.plStruct.unpack_from(payload, offset)
+			offset += cls.plStruct.size
+			libSelection = AwlLibEntrySelection(
+				libName = libName,
+				entryType = eType,
+				entryIndex = eIndex,
+				effectiveEntryIndex = effIndex)
+		except (ValueError, AwlSimError) as e:
+			raise TransferError("LOAD_LIB: Invalid data format")
+		return cls(libSelection = libSelection)
 
 class AwlSimMessage_SET_OPT(AwlSimMessage):
 	def __init__(self, name, value):
@@ -654,6 +692,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
+		AwlSimMessage.MSG_ID_LOAD_LIB		: AwlSimMessage_LOAD_LIB,
 	}
 
 	def __init__(self, sock, peerInfoString):

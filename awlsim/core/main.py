@@ -144,6 +144,18 @@ class AwlSim(object):
 		if self.__profileLevel >= 2:
 			self.__profileStop()
 
+	def loadLibraryBlock(self, libSelection):
+		if self.__profileLevel >= 2:
+			self.__profileStart()
+
+		try:
+			self.cpu.loadLibraryBlock(libSelection)
+		except AwlSimError as e:
+			self.__handleSimException(e)
+
+		if self.__profileLevel >= 2:
+			self.__profileStop()
+
 	def startup(self):
 		if self.__profileLevel >= 2:
 			self.__profileStart()

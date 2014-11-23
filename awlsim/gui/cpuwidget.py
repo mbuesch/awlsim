@@ -229,6 +229,7 @@ class CpuWidget(QWidget):
 		project = self.mainWidget.getProject()
 		awlSources = self.mainWidget.projectWidget.getAwlSources()
 		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
+		libSelections = self.mainWidget.projectWidget.getLibSelections()
 		if not all(awlSources) or not all(symTabSources):
 			self.stop()
 			return
@@ -279,6 +280,8 @@ class CpuWidget(QWidget):
 				client.loadSymbolTable(symTabSource)
 			for awlSource in awlSources:
 				client.loadCode(awlSource)
+			for libSel in libSelections:
+				client.loadLibraryBlock(libSel)
 			client.setRunState(True)
 		except AwlParserError as e:
 			self.__setState(self.STATE_EXCEPTION)

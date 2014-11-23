@@ -169,12 +169,12 @@ def run(inputFile):
 
 		writeStdout("Parsing code...\n")
 		parseTrees = []
-		for awlSrc in project.awlSources:
+		for awlSrc in project.getAwlSources():
 			p = AwlParser()
 			p.parseSource(awlSrc)
 			parseTrees.append(p.getParseTree())
 		symTables = []
-		for symTabSrc in project.symTabSources:
+		for symTabSrc in project.getSymTabSources():
 			mnemonics = project.cpuSpecs.getConfiguredMnemonics()
 			if opt_mnemonics is not None:
 				mnemonics = opt_mnemonics
@@ -207,6 +207,8 @@ def run(inputFile):
 			s.loadSymbolTable(symTable)
 		for parseTree in parseTrees:
 			s.load(parseTree)
+		for libSel in project.getLibSelections():
+			s.loadLibraryBlock(libSel)
 		s.startup()
 		writeStdout("[Initialization finished - CPU is executing user code]\n")
 		try:
@@ -299,10 +301,12 @@ def runWithServerBackend(inputFile):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		for symTabSrc in project.symTabSources:
+		for symTabSrc in project.getSymTabSources():
 			client.loadSymbolTable(symTabSrc)
-		for awlSrc in project.awlSources:
+		for awlSrc in project.getAwlSources():
 			client.loadCode(awlSrc)
+		for libSel in project.getLibSelections():
+			client.loadLibraryBlock(libSel)
 		client.setRunState(True)
 
 		# Run the client-side event loop

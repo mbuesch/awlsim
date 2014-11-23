@@ -361,6 +361,12 @@ class AwlSimServer(object):
 					       parameters = msg.paramDict)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_LOAD_LIB(self, client, msg):
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.__setRunState(self.STATE_INIT)
+		self.sim.loadLibraryBlock(msg.libSelection)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_SET_OPT(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 
@@ -449,6 +455,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
+		AwlSimMessage.MSG_ID_LOAD_LIB		: __rx_LOAD_LIB,
 	}
 
 	def __handleClientComm(self, client):

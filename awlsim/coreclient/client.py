@@ -316,6 +316,12 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load symbol table")
 
+	def loadLibraryBlock(self, libSelection):
+		msg = AwlSimMessage_LOAD_LIB(libSelection)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to load library block")
+
 	def loadHardwareModule(self, name, parameters={}):
 		if not self.transceiver:
 			return False
