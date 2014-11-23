@@ -25,6 +25,8 @@ from awlsim.common.compat import *
 from awlsim.common.cpuspecs import *
 from awlsim.common.util import *
 
+from awlsim.library import *
+
 import base64, binascii
 import datetime
 import os
@@ -151,11 +153,17 @@ class SymTabSource(GenericSource):
 				    self.sourceBytes[:])
 
 class Project(object):
-	def __init__(self, projectFile, awlSources=[], symTabSources=[],
-		     cpuSpecs=None, obTempPresetsEn=False, extInsnsEn=False):
+	def __init__(self, projectFile,
+		     awlSources=[],
+		     symTabSources=[],
+		     libSelections=[],
+		     cpuSpecs=None,
+		     obTempPresetsEn=False,
+		     extInsnsEn=False):
 		self.setProjectFile(projectFile)
 		self.setAwlSources(awlSources)
 		self.setSymTabSources(symTabSources)
+		self.setLibSelections(libSelections)
 		if not cpuSpecs:
 			cpuSpecs = S7CPUSpecs()
 		self.setCpuSpecs(cpuSpecs)
@@ -179,6 +187,12 @@ class Project(object):
 
 	def getSymTabSources(self):
 		return self.symTabSources
+
+	def setLibSelections(self, libSelections):
+		self.libSelections = libSelections
+
+	def getLibSelections(self):
+		return self.libSelections
 
 	def setCpuSpecs(self, cpuSpecs):
 		self.cpuSpecs = cpuSpecs
@@ -222,6 +236,7 @@ class Project(object):
 		projectDir = os.path.dirname(projectFile)
 		awlSources = []
 		symTabSources = []
+		libSelections = []
 		cpuSpecs = S7CPUSpecs()
 		obTempPresetsEn = False
 		extInsnsEn = False
@@ -300,12 +315,51 @@ class Project(object):
 				src = SymTabSource.fromBase64(name, symTabBase64)
 				symTabSources.append(src)
 
+			# LIBS section
+			for i in range(0xFFFF):
+				nameOption = "lib_name_%d" % i
+				blockOption = "lib_block_%d" % i
+				effOption = "lib_block_effective_%d" % i
+				if not p.has_option("LIBS", nameOption):
+					break
+				try:
+					libName = base64.b64decode(p.get("LIBS", nameOption))
+					libName = libName.decode("utf-8", "ignore")
+				except (TypeError, binascii.Error) as e:
+					continue
+				block = p.get("LIBS", blockOption).upper().strip()
+				effBlock = p.getint("LIBS", effOption)
+				try:
+					if block.startswith("FC"):
+						entryType = AwlLibEntrySelection.TYPE_FC
+						entryIndex = int(block[2:].strip())
+					elif block.startswith("FB"):
+						entryType = AwlLibEntrySelection.TYPE_FB
+						entryIndex = int(block[2:].strip())
+					elif block.startswith("UNKNOWN"):
+						entryType = AwlLibEntrySelection.TYPE_UNKNOWN
+						entryIndex = int(block[7:].strip())
+					else:
+						raise ValueError
+					if entryIndex < -1 or entryIndex > 0xFFFF:
+						raise ValueError
+				except ValueError:
+					raise AwlSimError("Project file: Invalid "
+						"library block: %s" % block)
+				libSelections.append(
+					AwlLibEntrySelection(libName = libName,
+							     entryType = entryType,
+							     entryIndex = entryIndex,
+							     effectiveEntryIndex = effBlock)
+				)
+
 		except _ConfigParserError as e:
 			raise AwlSimError("Project parser error: " + str(e))
 
 		return cls(projectFile = projectFile,
 			   awlSources = awlSources,
 			   symTabSources = symTabSources,
+			   libSelections = libSelections,
 			   cpuSpecs = cpuSpecs,
 			   obTempPresetsEn = obTempPresetsEn,
 			   extInsnsEn = extInsnsEn)
@@ -376,6 +430,19 @@ class Project(object):
 			name = symSrc.name.encode("utf-8", "ignore")
 			name = base64.b64encode(name).decode("ascii")
 			lines.append("sym_tab_name_%d=%s" % (i, name))
+		lines.append("")
+
+		lines.append("[LIBS]")
+		for i, libSel in enumerate(self.libSelections):
+			libName = libSel.getLibName().encode("utf-8", "ignore")
+			libName = base64.b64encode(libName).decode("ascii")
+			lines.append("lib_name_%d=%s" % (i, libName))
+			lines.append("lib_block_%d=%s %d" % (
+				i, libSel.getEntryTypeStr(),
+				libSel.getEntryIndex()))
+			lines.append("lib_block_effective_%d=%d" % (
+				i, libSel.getEffectiveEntryIndex()))
+		lines.append("")
 
 		return "\r\n".join(lines)
 
