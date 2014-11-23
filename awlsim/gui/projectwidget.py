@@ -140,6 +140,10 @@ class ProjectWidget(QTabWidget):
 		"Returns a list of SymTabSource()s"
 		return self.symTabs.getSources()
 
+	def getLibSelections(self):
+		"Returns a list of AwlLibEntrySelection()s"
+		return self.libTable.model().getLibSelections()
+
 	def reset(self):
 		self.__project = Project(None) # Empty project
 		self.__isAdHocProject = False
@@ -151,6 +155,7 @@ class ProjectWidget(QTabWidget):
 		self.__project = project
 		self.awlTabs.setSources(self.__project.getAwlSources())
 		self.symTabs.setSources(self.__project.getSymTabSources())
+		self.libTable.model().setLibSelections(self.__project.getLibSelections())
 		self.__warnedFileBacked = False
 
 	def __loadPlainAwlSource(self, filename):
@@ -198,6 +203,7 @@ class ProjectWidget(QTabWidget):
 				return -1
 		awlSrcs = self.getAwlSources()
 		symTabSrcs = self.getSymTabSources()
+		libSelections = self.getLibSelections()
 		if not all(awlSrcs) or not all(symTabSrcs):
 			# Failed to generate some sources
 			return 0
@@ -214,6 +220,7 @@ class ProjectWidget(QTabWidget):
 			self.__warnedFileBacked = True
 		self.__project.setAwlSources(awlSrcs)
 		self.__project.setSymTabSources(symTabSrcs)
+		self.__project.setLibSelections(libSelections)
 		self.__project.setProjectFile(filename)
 		self.__project.toFile()
 		if self.__isAdHocProject:

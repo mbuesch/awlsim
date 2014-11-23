@@ -36,6 +36,15 @@ class LibTableModel(QAbstractTableModel):
 
 		self.libSelections = []
 
+	def getLibSelections(self):
+		return self.libSelections
+
+	def setLibSelections(self, libSelections):
+		self.beginResetModel()
+		self.libSelections = libSelections
+		self.endResetModel()
+		self.contentChanged.emit()
+
 	def deleteEntry(self, row):
 		if row >= 0 and row < len(self.libSelections):
 			self.beginResetModel()
@@ -81,13 +90,13 @@ class LibTableModel(QAbstractTableModel):
 			elif column == 1:
 				eTypeStr = sel.getEntryTypeStr()
 				eIndex = sel.getEntryIndex()
-				if eTypeStr is None or eIndex < 1 or eIndex > 0xFFFF:
+				if eTypeStr == "UNKNOWN" or eIndex < 1 or eIndex > 0xFFFF:
 					return ""
 				return "%s %d" % (eTypeStr, eIndex)
 			elif column == 2:
 				eTypeStr = sel.getEntryTypeStr()
 				eIndex = sel.getEffectiveEntryIndex()
-				if eTypeStr is None or eIndex < 1 or eIndex > 0xFFFF:
+				if eTypeStr == "UNKNOWN" or eIndex < 1 or eIndex > 0xFFFF:
 					return ""
 				return "%s %d" % (eTypeStr, eIndex)
 			elif column == 3:
