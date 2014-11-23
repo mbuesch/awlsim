@@ -278,10 +278,10 @@ class CpuWidget(QWidget):
 			client.loadHardwareModule("dummy")
 			for symTabSource in symTabSources:
 				client.loadSymbolTable(symTabSource)
-			for awlSource in awlSources:
-				client.loadCode(awlSource)
 			for libSel in libSelections:
 				client.loadLibraryBlock(libSel)
+			for awlSource in awlSources:
+				client.loadCode(awlSource)
 			client.setRunState(True)
 		except AwlParserError as e:
 			self.__setState(self.STATE_EXCEPTION)
