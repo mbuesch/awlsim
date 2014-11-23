@@ -61,11 +61,19 @@ class AwlLib(object):
 		"""Get a library, by name."""
 
 		libName = libName.lower()
-		for c in libName:
-			if not c.isalnum() and c != "_":
-				raise AwlSimError("Library name '%s' "
-					"is invalid." % libName)
 
+		# Name sanity check
+		try:
+			if not libName.strip():
+				raise ValueError
+			for c in libName:
+				if not c.isalnum() and c != "_":
+					raise ValueError
+		except ValueError:
+			raise AwlSimError("Library name '%s' "
+				"is invalid." % libName)
+
+		# Get the module and return the class
 		try:
 			importModule("awlsim.library.%s" % libName)
 			return cls.__awlLibs[libName]
@@ -216,6 +224,9 @@ class AwlLibFC(AwlLibEntry):
 		sel.setEntryType(sel.TYPE_FC)
 		return sel
 
+	def __repr__(self):
+		return "FC %d" % self.index
+
 class AwlLibFCInterface(FCInterface):
 	pass
 
@@ -248,6 +259,9 @@ class AwlLibFB(AwlLibEntry):
 		sel = AwlLibEntry.makeSelection(self)
 		sel.setEntryType(sel.TYPE_FB)
 		return sel
+
+	def __repr__(self):
+		return "FB %d" % self.index
 
 class AwlLibFBInterface(FBInterface):
 	pass
