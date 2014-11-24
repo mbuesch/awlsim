@@ -27,6 +27,7 @@ import sys
 import os
 import getopt
 
+from awlsim.common.project import *
 from awlsim.common.version import *
 
 from awlsim.core.main import *
