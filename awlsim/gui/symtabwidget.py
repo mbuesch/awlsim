@@ -211,6 +211,8 @@ class SymTabView(QTableView):
 			pass#TODO context menu
 
 	def keyPressEvent(self, ev):
+		QTableView.keyPressEvent(self, ev)
+
 		if ev.key() == Qt.Key_Delete:
 			self.deleteSym()
 

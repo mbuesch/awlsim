@@ -33,7 +33,7 @@ import random
 
 from awlsim.common.cpuspecs import *
 
-from awlsim.library import *
+from awlsim.library.libentry import *
 
 from awlsim.core.parser import *
 from awlsim.core.symbolparser import *
@@ -282,7 +282,7 @@ class S7CPU(object): #+cdef
 								   udtNumber)
 			if udtNumber in self.udts:
 				raise AwlSimError("Multiple definitions of "\
-					"UDT %d" % udtNumber)
+					"UDT %d." % udtNumber)
 			rawUDT.index = udtNumber
 			self.udts[udtNumber] = UDT.makeFromRaw(rawUDT)
 
@@ -297,7 +297,7 @@ class S7CPU(object): #+cdef
 			if obNumber in self.obs and\
 			   self.obs[obNumber].insns:
 				raise AwlSimError("Multiple definitions of "\
-					"OB %d" % obNumber)
+					"OB %d." % obNumber)
 			rawOB.index = obNumber
 			ob = translator.translateCodeBlock(rawOB, OB)
 			self.obs[obNumber] = ob
@@ -313,8 +313,14 @@ class S7CPU(object): #+cdef
 			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,),
 								  fbNumber)
 			if fbNumber in self.fbs:
+				extra = ""
+				if self.fbs[fbNumber].isLibraryBlock:
+					extra = "\nFB %d is already defined by an "\
+						"imported library block (%s)." % (
+						fbNumber,
+						self.fbs[fbNumber].libraryName)
 				raise AwlSimError("Multiple definitions of "\
-					"FB %d" % fbNumber)
+					"FB %d.%s" % (fbNumber, extra))
 			rawFB.index = fbNumber
 			fb = translator.translateCodeBlock(rawFB, FB)
 			self.fbs[fbNumber] = fb
@@ -324,8 +330,14 @@ class S7CPU(object): #+cdef
 			fcNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FC_X,),
 								  fcNumber)
 			if fcNumber in self.fcs:
+				extra = ""
+				if self.fcs[fcNumber].isLibraryBlock:
+					extra = "\nFC %d is already defined by an "\
+						"imported library block (%s)." % (
+						fcNumber,
+						self.fcs[fcNumber].libraryName)
 				raise AwlSimError("Multiple definitions of "\
-					"FC %d" % fcNumber)
+					"FC %d.%s" % (fcNumber, extra))
 			rawFC.index = fcNumber
 			fc = translator.translateCodeBlock(rawFC, FC)
 			self.fcs[fcNumber] = fc
@@ -358,13 +370,41 @@ class S7CPU(object): #+cdef
 								  dbNumber)
 			if dbNumber in self.dbs:
 				raise AwlSimError("Multiple definitions of "\
-					"DB %d" % dbNumber)
+					"DB %d." % dbNumber)
 			rawDB.index = dbNumber
 			db = translator.translateDB(rawDB)
 			self.dbs[dbNumber] = db
 
 	def loadLibraryBlock(self, libSelection):
-		pass#TODO
+		# Get the block class from the library.
+		libEntryCls = AwlLib.getEntryBySelection(libSelection)
+		assert(not libEntryCls.isSystemBlock)
+
+		# Get the effective block index.
+		effIndex = libSelection.getEffectiveEntryIndex()
+		if effIndex < 0:
+			effIndex = libSelection.getEntryIndex()
+
+		# Create and translate the block
+		translator = AwlTranslator(self)
+		if libEntryCls.isFC:
+			block = libEntryCls(index = effIndex)
+			if block.index in self.fcs:
+				raise AwlSimError("Error while loading library "
+					"block FC %d: Block FC %d is already "
+					"loaded." % (block.index, block.index))
+			block = translator.translateLibraryCodeBlock(block)
+			self.fcs[block.index] = block
+		elif libEntryCls.isFB:
+			block = libEntryCls(index = effIndex)
+			if block.index in self.fbs:
+				raise AwlSimError("Error while loading library "
+					"block FB %d: Block FB %d is already "
+					"loaded." % (block.index, block.index))
+			block = translator.translateLibraryCodeBlock(block)
+			self.fbs[block.index] = block
+		else:
+			assert(0)
 
 	def loadSymbolTable(self, symbolTable):
 		self.symbolTable.merge(symbolTable)

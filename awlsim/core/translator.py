@@ -27,6 +27,7 @@ from awlsim.common.compat import *
 from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.optrans import *
 from awlsim.core.insntrans import *
+from awlsim.core.parser import *
 from awlsim.core.util import *
 
 
@@ -65,6 +66,31 @@ class AwlTranslator(object):
 		field = BlockInterfaceField(name = rawVar.idents[0].name,
 					    dataType = dtype)
 		return field
+
+	def translateLibraryCodeBlock(self, block):
+		# Switch mnemonics to DE for translation of library code.
+		oldMnemonics = self.cpu.getSpecs().getConfiguredMnemonics()
+		self.cpu.getSpecs().setConfiguredMnemonics(S7CPUSpecs.MNEMONICS_DE)
+
+		# Parse the library code
+		p = AwlParser()
+		p.parseData(block.getCode().encode(AwlParser.TEXT_ENCODING))
+		tree = p.getParseTree()
+		if block.isFC:
+			assert(len(tree.fcs) == 1)
+			rawBlock = tuple(tree.fcs.values())[0]
+		elif block.isFB:
+			assert(len(tree.fbs) == 1)
+			rawBlock = tuple(tree.fbs.values())[0]
+		else:
+			assert(0)
+		# Translate the library block instructions.
+		block.insns = self.__translateInsns(rawBlock.insns)
+
+		# Switch back to old mnemonics.
+		self.cpu.getSpecs().setConfiguredMnemonics(oldMnemonics)
+
+		return block
 
 	def translateCodeBlock(self, rawBlock, blockClass):
 		insns = self.__translateInsns(rawBlock.insns)

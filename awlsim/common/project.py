@@ -25,7 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.cpuspecs import *
 from awlsim.common.util import *
 
-from awlsim.library import *
+from awlsim.library.libselection import *
 
 import base64, binascii
 import datetime

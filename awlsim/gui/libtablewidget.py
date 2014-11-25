@@ -24,7 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.gui.util import *
 
-from awlsim.library import *
+from awlsim.library.libentry import *
+from awlsim.library.libselection import *
 
 
 class LibTableModel(QAbstractTableModel):
@@ -266,5 +267,7 @@ class LibTableView(QTableView):
 			pass#TODO context menu
 
 	def keyPressEvent(self, ev):
+		QTableView.keyPressEvent(self, ev)
+
 		if ev.key() == Qt.Key_Delete:
 			self.deleteEntry()

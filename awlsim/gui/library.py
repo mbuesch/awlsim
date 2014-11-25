@@ -27,7 +27,9 @@ from awlsim.gui.icons import *
 
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.systemblocks.system_sfb import *
-from awlsim.library import *
+
+from awlsim.library.libentry import *
+from awlsim.library.libselection import *
 
 
 class GenericActionWidget(QWidget):
