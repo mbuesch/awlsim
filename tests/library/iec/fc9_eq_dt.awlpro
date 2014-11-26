@@ -1,0 +1,20 @@
+[AWLSIM_PROJECT]
+file_version=0
+date=2014-11-26 23:10:26.629302
+
+[CPU]
+awl_file_0=fc9_eq_dt.awl
+mnemonics=0
+nr_accus=2
+clock_memory_byte=-1
+ob_startinfo_enable=0
+ext_insns_enable=1
+
+[SYMBOLS]
+sym_tab_0=MTI2LEVRX0RUICAgICAgICAgICAgICAgICAgIEZDIDkgICAgICAgIEZDIDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0K
+sym_tab_name_0=c3ltYm9sIHRhYmxl
+
+[LIBS]
+lib_name_0=SUVD
+lib_block_0=FC 9
+lib_block_effective_0=9
