@@ -313,10 +313,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.updateTabTexts()
 		self.setCurrentIndex(index)
 
-	def pasteText(self, text):
+	def pasteText(self, text, seamlessIndent=False):
 		editWidget = self.currentWidget()
 		if editWidget:
-			editWidget.insertPlainText(text)
+			editWidget.pasteText(text, seamlessIndent)
 
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	

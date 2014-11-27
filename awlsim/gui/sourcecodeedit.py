@@ -34,30 +34,31 @@ class SourceCodeEdit(QPlainTextEdit):
 	def enableAutoIndent(self, enable=True):
 		self.__autoIndentEn = enable
 
-	def __autoIndentHandleNewline(self):
-		if not self.__autoIndentEn:
-			return
-		# Move cursor to last line and get its text.
-		cursor = self.textCursor()
-		if not cursor.movePosition(QTextCursor.Up,
-					   QTextCursor.MoveAnchor, 1):
-			return
+	def __getLineIndent(self, cursor):
 		cursor.select(QTextCursor.LineUnderCursor)
-		prevLine = cursor.selectedText()
-		if not prevLine:
-			return
+		line = cursor.selectedText()
+		if not line:
+			return ""
 		# Get the indent-string (that is the whitespace line prefix)
-		for i, c in enumerate(prevLine):
+		for i, c in enumerate(line):
 			if not c.isspace():
 				break
 		else:
 			i += 1
-		indentStr = prevLine[:i]
+		return line[:i]
+
+	def __autoIndentHandleNewline(self):
+		if not self.__autoIndentEn:
+			return
+		# Move cursor to previous line and get its indent string.
+		cursor = self.textCursor()
+		if not cursor.movePosition(QTextCursor.Up,
+					   QTextCursor.MoveAnchor, 1):
+			return
+		indentStr = self.__getLineIndent(cursor)
 		# Insert the indent string into the current line
 		cursor = self.textCursor()
 		cursor.insertText(indentStr)
-		cursor.movePosition(QTextCursor.EndOfLine,
-				    QTextCursor.MoveAnchor, 1)
 		self.setTextCursor(cursor)
 
 	def keyPressEvent(self, ev):
@@ -65,3 +66,16 @@ class SourceCodeEdit(QPlainTextEdit):
 
 		if ev.key() in (Qt.Key_Return, Qt.Key_Enter):
 			self.__autoIndentHandleNewline()
+
+	def pasteText(self, text, seamlessIndent=False):
+		if seamlessIndent:
+			# Add the current indent to all pasted lines.
+			indentStr = self.__getLineIndent(self.textCursor())
+			lines = []
+			for i, line in enumerate(text.splitlines()):
+				if i == 0:
+					lines.append(line)
+				else:
+					lines.append(indentStr + line)
+			text = "\n".join(lines)
+		self.insertPlainText(text)
