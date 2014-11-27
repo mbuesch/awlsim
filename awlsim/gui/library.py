@@ -57,15 +57,16 @@ class GenericActionWidget(QWidget):
 				fields.extend(interfaceFields[ftype])
 			except KeyError:
 				pass
-		ret = [ "\tCALL %s%s%s" %\
+		ret = [ "CALL %s%s%s" %\
 			(targetName,
 			 ", DB ..." if needDB else "",
 			 " (" if fields else "")
 		]
 		for field in fields:
-			ret.append("\t\t%s := ...\t, // %s" % (field.name, str(field.dataType)))
+			ret.append("\t%s := ...\t, // %s" %\
+				   (field.name, str(field.dataType)))
 		if fields:
-			ret.append("\t)")
+			ret.append(")")
 		ret.append("")
 		self.paste.emit("\n".join(ret))
 
