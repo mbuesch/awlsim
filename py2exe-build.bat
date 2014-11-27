@@ -24,7 +24,7 @@ py setup.py py2exe ^
 	--optimize=2 ^
 	--bundle-files=3 ^
 	--ignores=win32api,win32con,readline,awlsim_cython ^
-	--packages=awlsimhw_debug,awlsimhw_dummy ^
+	--packages=awlsimhw_debug,awlsimhw_dummy,awlsim.library.iec ^
 	--quiet
 if ERRORLEVEL 1 goto error_exe
 
