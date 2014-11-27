@@ -3,4 +3,4 @@ from awlsim.common.compat import *
 
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 33
+VERSION_MINOR = 34
