@@ -211,11 +211,29 @@ class LibActionWidget(GenericActionWidget):
 		self.pasteCallSymButton.setText("CALL \"%s\"" %\
 						libEntryCls.symbolName)
 
+	def __pasteCodeWarning(self):
+		res = QMessageBox.warning(self,
+			"Paste library code body?",
+			"Warning: It is not recommended to paste library "
+			"code into the project sources. You should instead "
+			"just import the library (via library selection table) "
+			"and CALL the imported function.\n"
+			"See the 'CALL \"%s\"' or 'CALL %s' buttons.\n\n"
+			"Do you want to paste the code nevertheless?" % (
+			self.libEntryCls.symbolName, self.blockName),
+			QMessageBox.Yes | QMessageBox.No,
+			QMessageBox.No)
+		return res == QMessageBox.Yes
+
 	def __pasteCode(self):
+		if not self.__pasteCodeWarning():
+			return
 		self.paste.emit(self.libEntryCls().getCode(False))
 		self.finish.emit()
 
 	def __pasteCodeSym(self):
+		if not self.__pasteCodeWarning():
+			return
 		self.paste.emit(self.libEntryCls().getCode(True))
 		self.addSymbol.emit(self.libEntryCls.symbolName,
 				    self.blockName,
