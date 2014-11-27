@@ -44,6 +44,8 @@ class Lib__IEC__FC9_EQ_DT(AwlLibFC):
 		),
 	}
 
+	awlCodeCopyright = "Copyright (c) 2014 Michael Buesch <m@bues.ch>"
+	awlCodeLicense = "BSD-2-clause"
 	awlCode = """
 	LAR1	P##DT1
 	LAR2	P##DT2

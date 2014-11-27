@@ -138,6 +138,14 @@ class AwlLibEntry(StaticCodeBlock):
 	# No interface definitions here.
 	awlCode = ""
 
+	# The license information for the AWL code in 'awlCode'.
+	# That license may be different from the license of this
+	# file's Python code.
+	# These fields _must_ be overridden by the subclass.
+	awlCodeCopyright = None
+	awlCodeLicense = None
+
+	# Mark this block as a library block.
 	isLibraryBlock = True
 
 	def __init__(self, index, interface):
@@ -182,6 +190,63 @@ class AwlLibEntry(StaticCodeBlock):
 
 		raise NotImplementedError
 
+	# Table for license-short-name to license-text translation.
+	__licenseTranslation = {
+		"BSD-2-clause"		: \
+			"All rights reserved.\n"\
+			"\n"\
+			"Redistribution and use in source and binary forms, with or without\n"\
+			"modification, are permitted provided that the following conditions are met:\n"\
+			"\n"\
+			"1. Redistributions of source code must retain the above copyright notice, this\n"\
+			"   list of conditions and the following disclaimer.\n"\
+			"2. Redistributions in binary form must reproduce the above copyright notice,\n"\
+			"   this list of conditions and the following disclaimer in the documentation\n"\
+			"   and/or other materials provided with the distribution.\n"\
+			"\n"\
+			"THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\n"\
+			"ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\n"\
+			"WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\n"\
+			"DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR\n"\
+			"ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n"\
+			"(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\n"\
+			"LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND\n"\
+			"ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n"\
+			"(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n"\
+			"SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n"
+	}
+
+	def getCodeLicense(self):
+		"""Get the AWL code license information."""
+
+		if not self.awlCodeCopyright:
+			raise AwlSimError("Library entry %s/%s does not define "
+				"copyright information." % (
+				self.libraryName, self.symbolName))
+		if not self.awlCodeLicense:
+			raise AwlSimError("Library entry %s/%s does not define "
+				"license information." % (
+				self.libraryName, self.symbolName))
+
+		try:
+			license = self.__licenseTranslation[self.awlCodeLicense]
+		except KeyError:
+			license = self.awlCodeLicense
+
+		code = [ "", ]
+		code.append(self.awlCodeCopyright)
+		code.extend(license.splitlines())
+		code.append("")
+		code = [ ("  // " + l).rstrip() for l in code ]
+
+		return "\n".join(code)
+
+	def getCodeTitle(self):
+		"""Get the AWL code title."""
+
+		return "TITLE = %s / \"%s\" / %s" %\
+			(self.libraryName, self.symbolName, self.description)
+
 	def makeSelection(self):
 		"""Get an AwlLibEntrySelection for this entry."""
 
@@ -211,6 +276,8 @@ class AwlLibFC(AwlLibEntry):
 		else:
 			code.append("FUNCTION FC %d : %s\n" %\
 				    (self.index, retValType))
+		code.append(self.getCodeTitle() + "\n")
+		code.append(self.getCodeLicense() + "\n")
 		code.append(interfCode)
 		code.append("BEGIN\n")
 		code.append(self.awlCode.strip("\n"))
@@ -247,6 +314,8 @@ class AwlLibFB(AwlLibEntry):
 			code.append("FUNCTION_BLOCK \"%s\"\n" % self.symbolName)
 		else:
 			code.append("FUNCTION_BLOCK FB %d\n" % self.index)
+		code.append(self.getCodeTitle() + "\n")
+		code.append(self.getCodeLicense() + "\n")
 		code.append(interfCode)
 		code.append("BEGIN\n")
 		code.append(self.awlCode.strip("\n"))
