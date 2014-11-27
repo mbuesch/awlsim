@@ -314,18 +314,18 @@ END_TYPE
 """
 
 	# FC-call template
-	__templateFCcall = """	CALL FC @@NR@@ (
-		// ... Insert parameter assignments here ...
-		// VARIABLE	:= MW 0,
-		// RET_VAL	:= MW 2,
-	)
+	__templateFCcall = """CALL FC @@NR@@ (
+	// ... Insert parameter assignments here ...
+	// VARIABLE	:= MW 0,
+	// RET_VAL	:= MW 2,
+)
 """
 
 	# FB-call template
-	__templateFBcall = """	CALL FB @@FBNR@@, DB @@DBNR@@ (
-		// ... Insert parameter assignments here ...
-		// VARIABLE	:= MW 0,
-	)
+	__templateFBcall = """CALL FB @@FBNR@@, DB @@DBNR@@ (
+	// ... Insert parameter assignments here ...
+	// VARIABLE	:= MW 0,
+)
 """
 
 	@classmethod
