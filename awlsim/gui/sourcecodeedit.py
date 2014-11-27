@@ -60,6 +60,20 @@ class SourceCodeEdit(QPlainTextEdit):
 		cursor = self.textCursor()
 		cursor.insertText(indentStr)
 		self.setTextCursor(cursor)
+		# Remove any old indent (righthand of the cursor)
+		cursor = self.textCursor()
+		if not cursor.movePosition(QTextCursor.EndOfLine,
+					   QTextCursor.KeepAnchor, 1):
+			return
+		selText = cursor.selectedText()
+		stripCount = len(selText) - len(selText.lstrip())
+		if stripCount > 0:
+			cursor = self.textCursor()
+			if not cursor.movePosition(QTextCursor.Right,
+						   QTextCursor.KeepAnchor,
+						   stripCount):
+				return
+			cursor.deleteChar()
 
 	def keyPressEvent(self, ev):
 		QPlainTextEdit.keyPressEvent(self, ev)
