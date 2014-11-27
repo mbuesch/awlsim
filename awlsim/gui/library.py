@@ -378,7 +378,7 @@ class LibraryDialog(QDialog):
 				continue
 			absName = "%s %d" % ("FC" if libCls.isFC else "FB",\
 					     libCls.staticIndex)
-			symName = libCls.symbolName
+			symName = '"%s"' % libCls.symbolName
 			if libCls.description:
 				desc = "  (%s)" % libCls.description
 			else:
