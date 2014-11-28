@@ -339,10 +339,14 @@ class EditWidget(SourceCodeEdit):
 
 	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
 
-	__validator = AwlValidator()
+	__validator = None
 
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
+
+		if not EditWidget.__validator:
+			# Run one global instance of the validator.
+			EditWidget.__validator = AwlValidator()
 
 		self.__validatorResults = []
 		self.__validatorTimer = QTimer(self)
