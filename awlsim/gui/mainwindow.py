@@ -263,7 +263,7 @@ class MainWindow(QMainWindow):
 		self.saveAct = menu.addAction(getIcon("save"), "&Save project", self.save)
 		menu.addAction(getIcon("save"), "&Save project as...", self.saveAs)
 		menu.addSeparator()
-		menu.addAction("&Exit...", self.close)
+		menu.addAction(getIcon("exit"), "&Exit...", self.close)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Library", self)

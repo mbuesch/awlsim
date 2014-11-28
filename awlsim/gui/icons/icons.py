@@ -42,6 +42,7 @@ from awlsim.gui.icons.stdlib import *
 from awlsim.gui.icons.prefs import *
 from awlsim.gui.icons.network import *
 from awlsim.gui.icons.textsource import *
+from awlsim.gui.icons.exit import *
 
 import base64
 
@@ -65,6 +66,7 @@ __icons = {
 	"prefs"		: icon_prefs,
 	"network"	: icon_network,
 	"textsource"	: icon_textsource,
+	"exit"		: icon_exit,
 }
 
 def getIcon(iconName):
