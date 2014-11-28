@@ -440,23 +440,25 @@ class AwlParser(object):
 		self.tree.sourceName = sourceName
 		self.lineNr = 1
 
+		def cont():
+			if c == '\n':
+				self.lineNr += 1
+
 		t = self.TokenizerState(self)
 		for i, c in enumerate(data):
 			cNext = data[i + 1] if i + 1 < len(data) else None
-			if c == '\n':
-				self.lineNr += 1
 			if t.inComment:
 				# Consume all comment chars up to \n
 				if c == '\n':
 					t.inComment = False
-				continue
+				cont(); continue
 			if t.inAssignment:
 				if c == '\n':
 					t.inAssignment = False
 					self.__parseTokens(t)
 				else:
 					t.addCharacter(c)
-				continue
+				cont(); continue
 			if c == '"':
 				# Double quote begin or end
 				t.inDoubleQuote = not t.inDoubleQuote
@@ -465,7 +467,7 @@ class AwlParser(object):
 				t.inSingleQuote = not t.inSingleQuote
 			if t.inSingleQuote or t.inDoubleQuote:
 				t.addCharacter(c)
-				continue
+				cont(); continue
 			if c == '/' and i + 1 < len(data) and\
 			   data[i + 1] == '/':
 				# A //comment ends the statement, but only if
@@ -473,13 +475,13 @@ class AwlParser(object):
 				if not t.inParens:
 					self.__parseTokens(t)
 				t.inComment = True
-				continue
+				cont(); continue
 			if c == '=' and len(t.tokens) == 1 and not t.curToken:
 				# NAME = VALUE assignment
 				t.inAssignment = True
 				t.addCharacter(c)
 				t.finishCurToken()
-				continue
+				cont(); continue
 			if t.tokens:
 				# This is not the first token of the statement.
 				if (c == '(' and t.tokens[0].endswith(':') and len(t.tokens) >= 2) or\
@@ -488,13 +490,13 @@ class AwlParser(object):
 					t.inParens = True
 					t.addCharacter(c)
 					t.finishCurToken()
-					continue
+					cont(); continue
 				if t.inParens and c == ')':
 					# Parenthesis end
 					t.inParens = False
 					t.finishCurToken()
 					t.addToken(c)
-					continue
+					cont(); continue
 				if (self.__inAnyHeaderOrGlobal() and\
 				    c in ('=', ':', '..', '{', '}')) or\
 				   c in (',', '[', ']') or\
@@ -512,7 +514,7 @@ class AwlParser(object):
 						# Any other non-space token separator.
 						t.finishCurToken()
 						t.addToken(c)
-					continue
+					cont(); continue
 			else:
 				# This is the first token of the statement.
 				if c == '[':
@@ -520,7 +522,7 @@ class AwlParser(object):
 					# Handle it as separator.
 					t.finishCurToken()
 					t.addToken(c)
-					continue
+					cont(); continue
 			if not t.inParens:
 				# Check whether we have tokenized a whole statement.
 				# In variable sections, this is if we hit a semicolon or
@@ -537,11 +539,12 @@ class AwlParser(object):
 					wholeStatementOk = True
 				if wholeStatementOk:
 					self.__parseTokens(t)
-					continue
+					cont(); continue
 			if c.isspace():
 				t.finishCurToken()
 			else:
 				t.addCharacter(c)
+			cont(); continue
 		if t.inSingleQuote or t.inDoubleQuote:
 			raise AwlParserError("Unterminated quote")
 		if t.inParens:
