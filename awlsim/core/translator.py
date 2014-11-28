@@ -74,7 +74,7 @@ class AwlTranslator(object):
 
 		# Parse the library code
 		p = AwlParser()
-		p.parseData(block.getCode().encode(AwlParser.TEXT_ENCODING))
+		p.parseText(block.getCode())
 		tree = p.getParseTree()
 		if block.isFC:
 			assert(len(tree.fcs) == 1)

@@ -1215,19 +1215,25 @@ class AwlParser(object):
 				   re.DOTALL | re.MULTILINE)
 		return not haveDB and not haveFB and not haveFC and not haveOB and not haveUDT
 
-	def parseData(self, dataBytes, sourceId=None, sourceName=None):
+	def parseText(self, sourceText, sourceId=None, sourceName=None):
+		self.flatLayout = self.sourceIsFlat(sourceText)
 		try:
-			data = dataBytes.decode(self.TEXT_ENCODING)
-		except UnicodeError as e:
-			raise AwlParserError("Could not decode AWL/STL charset.")
-		self.flatLayout = self.sourceIsFlat(data)
-		try:
-			self.__tokenize(data, sourceId, sourceName)
+			self.__tokenize(sourceText, sourceId, sourceName)
 		except AwlParserError as e:
 			e.setLineNr(self.lineNr)
 			e.setSourceId(sourceId)
 			e.setSourceName(sourceName)
 			raise e
+
+	def parseData(self, sourceBytes, sourceId=None, sourceName=None):
+		try:
+			return self.parseText(sourceBytes.decode(self.TEXT_ENCODING),
+					      sourceId, sourceName)
+		except UnicodeError as e:
+			raise AwlParserError("Could not decode the AWL/STL "
+				"source code. It contains invalid characters. "
+				"The text encoding should be '%s'." %\
+				self.TEXT_ENCODING)
 
 	def getParseTree(self):
 		return self.tree
