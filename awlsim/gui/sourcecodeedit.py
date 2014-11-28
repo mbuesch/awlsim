@@ -29,10 +29,23 @@ class SourceCodeEdit(QPlainTextEdit):
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
 
+		self.__prevLineNr = self.textCursor().blockNumber()
+		self.__prevColumnNr = self.textCursor().columnNumber()
+		self.__columnChange = False
+
 		self.enableAutoIndent()
+		self.enableValidation()
+
+		self.cursorPositionChanged.connect(self.__handleCursorChange)
+
+		self.__validate()
 
 	def enableAutoIndent(self, enable=True):
 		self.__autoIndentEn = enable
+
+	def enableValidation(self, enable=True):
+		self.__validateEn = enable
+		self.__prevErrLines = []
 
 	def __getLineIndent(self, cursor):
 		cursor.select(QTextCursor.LineUnderCursor)
@@ -80,6 +93,8 @@ class SourceCodeEdit(QPlainTextEdit):
 
 		if ev.key() in (Qt.Key_Return, Qt.Key_Enter):
 			self.__autoIndentHandleNewline()
+		elif ev.key() == Qt.Key_Delete:
+			self.__validate()
 
 	def pasteText(self, text, seamlessIndent=False):
 		if seamlessIndent:
@@ -93,3 +108,70 @@ class SourceCodeEdit(QPlainTextEdit):
 					lines.append(indentStr + line)
 			text = "\n".join(lines)
 		self.insertPlainText(text)
+
+	def __handleCursorChange(self):
+		cursor = self.textCursor()
+		columnNr = cursor.columnNumber()
+		lineNr = cursor.blockNumber()
+
+		if columnNr != self.__prevColumnNr:
+			self.__columnChange = True
+
+		if lineNr in self.__prevErrLines or\
+		   (lineNr != self.__prevLineNr and\
+		    self.__columnChange):
+			self.__validate()
+			self.__columnChange = False
+
+		self.__prevColumnNr = columnNr
+		self.__prevLineNr = lineNr
+
+	def setPlainText(self, text):
+		QPlainTextEdit.setPlainText(self, text)
+		self.__validate()
+
+	@staticmethod
+	def __makeExtraSel(cursor, format):
+		sel = QTextEdit.ExtraSelection()
+		sel.cursor = cursor
+		sel.format = format
+		return sel
+
+	@staticmethod
+	def __makeTextCursorLineSel(cursor, lineNr):
+		cursor.movePosition(QTextCursor.Start,
+				    QTextCursor.MoveAnchor, 1)
+		cursor.movePosition(QTextCursor.Down,
+				    QTextCursor.MoveAnchor, lineNr)
+		cursor.select(QTextCursor.LineUnderCursor)
+		return cursor
+
+	__errLineBrush = QBrush(QColor("#FFC0C0"))
+
+	def __validate(self):
+		if not self.__validateEn:
+			return
+
+		# Validate the current document
+		cursor = self.textCursor()
+		errLines = self.validateText(self.toPlainText(),
+					     cursor.blockNumber())
+
+		# Paint the erratic lines
+		fmt = self.currentCharFormat()
+		fmt.setBackground(self.__errLineBrush)
+		extraSel = [
+			self.__makeExtraSel(self.__makeTextCursorLineSel(cursor, line),
+					    fmt)
+			for line in errLines
+		]
+		self.setExtraSelections(extraSel)
+
+		self.__prevErrLines = errLines
+
+	# Validation callback.
+	# Override this in the subclass.
+	# The default implementation returns no errors.
+	# Should return a list of erratic line numbers.
+	def validateText(self, text, currentLineNr):
+		return []

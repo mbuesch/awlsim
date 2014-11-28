@@ -26,6 +26,8 @@ from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 from awlsim.gui.sourcecodeedit import *
 
+from awlsim.core.parser import *
+
 
 class EditSubWidget(QWidget):
 	needRepaint = Signal(QPaintEvent)
@@ -718,3 +720,21 @@ class EditWidget(SourceCodeEdit):
 		self.__needSourceUpdate = True
 		self.codeChanged.emit()
 		self.resetCpuStats()
+
+	# Validation callback. Overridden subclass method.
+	def validateText(self, text, currentLineNr):
+		# Try to parse and translate the text.
+		# On error return the erratic line numbers.
+		try:
+			p = AwlParser()
+			p.parseText(text)
+			s = AwlSim()
+			s.getCPU().enableExtendedInsns(True)
+			s.load(p.getParseTree())
+		except AwlSimError as e:
+			lineNr = e.getLineNr()
+			if lineNr is not None:
+				return [ lineNr - 1, ]
+		except UnicodeError as e:
+			pass
+		return []
