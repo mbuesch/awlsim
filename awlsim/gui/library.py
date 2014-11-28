@@ -104,9 +104,7 @@ class SysActionWidget(GenericActionWidget):
 		self.blockPrefix = None
 
 		self.desc = QLabel(self)
-		font = self.desc.font()
-		setFixedFontParams(font)
-		self.desc.setFont(font)
+		self.desc.setFont(getDefaultFixedFont())
 		self.layout().addWidget(self.desc, 0, 0)
 
 		self.layout().setRowStretch(1, 1)
@@ -164,9 +162,7 @@ class LibActionWidget(GenericActionWidget):
 		self.libEntryCls = None
 
 		self.desc = QLabel(self)
-		font = self.desc.font()
-		setFixedFontParams(font)
-		self.desc.setFont(font)
+		self.desc.setFont(getDefaultFixedFont())
 		self.layout().addWidget(self.desc, 0, 0)
 
 		self.layout().setRowStretch(1, 1)
@@ -301,9 +297,7 @@ class LibraryDialog(QDialog):
 		self.layout().addWidget(self.libList, 0, 0, 3, 1)
 
 		self.libElemList = QListWidget(self)
-		font = self.libElemList.font()
-		setFixedFontParams(font)
-		self.libElemList.setFont(font)
+		self.libElemList.setFont(getDefaultFixedFont())
 		self.layout().addWidget(self.libElemList, 0, 1, 3, 1)
 
 		self.iconLabel = QLabel(self)

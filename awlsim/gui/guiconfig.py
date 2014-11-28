@@ -43,10 +43,25 @@ class GuiConfigDialog(QDialog):
 		self.editValidate = QCheckBox("Source editor code validation", self)
 		self.layout().addWidget(self.editValidate, 2, 0, 1, 2)
 
+		self.editFontLabel = QLabel("Set editor font:", self)
+		self.editFontLabel.setFrameShape(QFrame.Panel)
+		self.editFontLabel.setFrameShadow(QFrame.Sunken)
+		self.layout().addWidget(self.editFontLabel, 3, 0)
+		self.editFontButton = QPushButton("Select font...", self)
+		self.layout().addWidget(self.editFontButton, 3, 1)
+		self.__editFont = getDefaultFixedFont()
+
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 3, 1)
+		self.layout().addWidget(self.closeButton, 4, 1)
 
 		self.closeButton.released.connect(self.accept)
+		self.editFontButton.released.connect(self.__openEditFontDialog)
+
+	def __openEditFontDialog(self):
+		font, ok = QFontDialog.getFont(self.__editFont, self, "Editor font")
+		if ok:
+			self.__editFont = font
+			self.editFontLabel.setFont(self.__editFont)
 
 	def loadFromProject(self, project):
 		guiSettings = project.getGuiSettings()
@@ -61,6 +76,11 @@ class GuiConfigDialog(QDialog):
 			Qt.Unchecked
 		)
 
+		fontStr = guiSettings.getEditorFont()
+		if fontStr:
+			self.__editFont.fromString(fontStr)
+		self.editFontLabel.setFont(self.__editFont)
+
 	def saveToProject(self, project):
 		autoIndentEn = self.editAutoIndent.checkState() == Qt.Checked
 		validationEn = self.editValidate.checkState() == Qt.Checked
@@ -68,3 +88,4 @@ class GuiConfigDialog(QDialog):
 		guiSettings = project.getGuiSettings()
 		guiSettings.setEditorAutoIndentEn(autoIndentEn)
 		guiSettings.setEditorValidationEn(validationEn)
+		guiSettings.setEditorFont(self.__editFont.toString())

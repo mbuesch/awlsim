@@ -155,9 +155,11 @@ class SymTabSource(GenericSource):
 class GuiSettings(object):
 	def __init__(self,
 		     editorAutoIndentEn=True,
-		     editorValidationEn=True):
+		     editorValidationEn=True,
+		     editorFont=""):
 		self.setEditorAutoIndentEn(editorAutoIndentEn)
 		self.setEditorValidationEn(editorValidationEn)
+		self.setEditorFont(editorFont)
 
 	def setEditorAutoIndentEn(self, editorAutoIndentEn):
 		self.editorAutoIndentEn = editorAutoIndentEn
@@ -170,6 +172,12 @@ class GuiSettings(object):
 
 	def getEditorValidationEn(self):
 		return self.editorValidationEn
+
+	def setEditorFont(self, editorFont):
+		self.editorFont = editorFont
+
+	def getEditorFont(self):
+		return self.editorFont
 
 class Project(object):
 	def __init__(self, projectFile,
@@ -390,6 +398,8 @@ class Project(object):
 			if p.has_option("GUI", "editor_validation"):
 				guiSettings.setEditorValidationEn(
 					p.getboolean("GUI", "editor_validation"))
+			if p.has_option("GUI", "editor_font"):
+				guiSettings.setEditorFont(p.get("GUI", "editor_font").strip())
 
 		except _ConfigParserError as e:
 			raise AwlSimError("Project parser error: " + str(e))
@@ -488,6 +498,7 @@ class Project(object):
 			     int(bool(self.getGuiSettings().getEditorAutoIndentEn())))
 		lines.append("editor_validation=%d" %\
 			     int(bool(self.getGuiSettings().getEditorValidationEn())))
+		lines.append("editor_font=%s" % self.getGuiSettings().getEditorFont())
 		lines.append("")
 
 		return "\r\n".join(lines)

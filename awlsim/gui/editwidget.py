@@ -47,9 +47,7 @@ class EditSubWidget(QWidget):
 
 	def getPainter(self):
 		p = QPainter(self)
-		font = p.font()
-		setFixedFontParams(font)
-		p.setFont(font)
+		p.setFont(self.font())
 		return p
 
 	def contextMenuEvent(self, ev):
@@ -349,8 +347,6 @@ class EditWidget(SourceCodeEdit):
 		self.__aniTimer.setSingleShot(False)
 		self.__aniTimer.timeout.connect(self.__animation)
 
-		self.__updateFonts()
-
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setLineWrapMode(SourceCodeEdit.NoWrap)
@@ -359,6 +355,8 @@ class EditWidget(SourceCodeEdit):
 		self.headerWidget = HeaderSubWidget(self)
 		self.lineNumWidget = LineNumSubWidget(self)
 		self.cpuStatsWidget = CpuStatsSubWidget(self)
+
+		self.__updateFont(getDefaultFixedFont())
 
 		self.__source = AwlSource(name = "Unnamed source")
 		self.__needSourceUpdate = True
@@ -439,6 +437,11 @@ class EditWidget(SourceCodeEdit):
 	def setSettings(self, guiSettings):
 		self.enableAutoIndent(guiSettings.getEditorAutoIndentEn())
 		self.enableValidation(guiSettings.getEditorValidationEn())
+		font = getDefaultFixedFont()
+		fontString = guiSettings.getEditorFont()
+		if fontString:
+			font.fromString(fontString)
+		self.__updateFont(font)
 
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
@@ -475,15 +478,30 @@ class EditWidget(SourceCodeEdit):
 				lastVisibleLine = lineNr
 		return firstVisibleLine, lastVisibleLine
 
-	def __updateFonts(self):
+	def __updateFont(self, font):
+		# Set the font for new text
 		fmt = self.currentCharFormat()
-		font = fmt.font()
-		setFixedFontParams(font)
 		fmt.setFont(font)
 		self.setCurrentCharFormat(fmt)
-		font = self.font()
-		setFixedFontParams(font)
+
+		# Reformat the existing text
+		cursor = self.textCursor()
+		cursor.select(QTextCursor.Document)
+		fmt = cursor.charFormat()
+		fmt.setFont(font)
+		cursor.setCharFormat(fmt)
+
+		# Set the font for other window elements
 		self.setFont(font)
+		self.update()
+		self.headerWidget.setFont(font)
+		self.headerWidget.update()
+		self.lineNumWidget.setFont(font)
+		self.lineNumWidget.update()
+		self.cpuStatsWidget.setFont(font)
+		self.cpuStatsWidget.update()
+
+		# Cache metrics
 		self.__charHeight = self.fontMetrics().height()
 		self.setTabStopWidth(self.fontMetrics().width("X") * 8)
 
@@ -718,7 +736,6 @@ class EditWidget(SourceCodeEdit):
 					   statsEnt.getText(self.__cpuStatsMask))
 
 	def __textChanged(self):
-		self.__updateFonts()
 		if self.__textChangeBlocked:
 			return
 		self.__needSourceUpdate = True

@@ -106,6 +106,8 @@ class SourceTabWidget(QTabWidget):
 		QTabWidget.__init__(self, parent)
 		self.itemName = itemName
 
+		self.guiSettings = GuiSettings()
+
 		self.contextMenu = SourceTabContextMenu(itemName, self)
 
 		self.setMovable(True)
@@ -157,7 +159,7 @@ class SourceTabWidget(QTabWidget):
 		raise NotImplementedError
 
 	def setSettings(self, guiSettings):
-		pass
+		self.guiSettings = guiSettings
 
 	def integrateSource(self):
 		curWidget = self.currentWidget()
@@ -245,11 +247,14 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.setCurrentIndex(0)
 
 	def setSettings(self, guiSettings):
+		SourceTabWidget.setSettings(self, guiSettings)
+
 		for editWidget in self.allTabWidgets():
 			editWidget.setSettings(guiSettings)
 
 	def addEditWidget(self):
 		editWidget = EditWidget(self)
+		editWidget.setSettings(self.guiSettings)
 		editWidget.codeChanged.connect(self.sourceChanged)
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
 		index = self.addTab(editWidget, editWidget.getSource().name)
