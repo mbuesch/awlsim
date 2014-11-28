@@ -25,8 +25,7 @@ from awlsim.common.compat import *
 from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 from awlsim.gui.sourcecodeedit import *
-
-from awlsim.core.parser import *
+from awlsim.gui.codevalidator import *
 
 
 class EditSubWidget(QWidget):
@@ -340,8 +339,14 @@ class EditWidget(SourceCodeEdit):
 
 	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
 
+	__validator = AwlValidator()
+
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
+
+		self.__validatorResults = []
+		self.__validatorTimer = QTimer(self)
+		self.__validatorTimer.timeout.connect(self.__checkValidator)
 
 		self.__aniTimer = QTimer(self)
 		self.__aniTimer.setSingleShot(False)
@@ -744,18 +749,16 @@ class EditWidget(SourceCodeEdit):
 
 	# Validation callback. Overridden subclass method.
 	def validateText(self, text, currentLineNr):
-		# Try to parse and translate the text.
-		# On error return the erratic line numbers.
-		try:
-			p = AwlParser()
-			p.parseText(text)
-			s = AwlSim()
-			s.getCPU().enableExtendedInsns(True)
-			s.load(p.getParseTree())
-		except AwlSimError as e:
-			lineNr = e.getLineNr()
-			if lineNr is not None:
-				return [ lineNr - 1, ]
-		except UnicodeError as e:
-			pass
-		return []
+		result = self.__validator.enqueue(text)
+		self.__validatorResults.append(result)
+		if not self.__validatorTimer.isActive():
+			self.__validatorTimer.start(50)
+
+	def __checkValidator(self):
+		if not self.__validatorResults[0].ready():
+			return
+		result = self.__validatorResults.pop(0)
+		if not self.__validatorResults:
+			self.__validatorTimer.stop()
+
+		self.setErraticLines(result.getErrLines())

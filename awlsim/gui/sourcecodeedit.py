@@ -34,19 +34,17 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.__columnChange = False
 
 		self.enableAutoIndent()
-		self.enableValidation()
+		self.__validateEn = True
+		self.__prevErrLines = ()
 
 		self.cursorPositionChanged.connect(self.__handleCursorChange)
-
-		self.__validate()
 
 	def enableAutoIndent(self, enable=True):
 		self.__autoIndentEn = enable
 
 	def enableValidation(self, enable=True):
 		self.__validateEn = enable
-		self.__prevErrLines = []
-		self.setExtraSelections([])
+		self.setErraticLines(())
 		self.__validate()
 
 	def __getLineIndent(self, cursor):
@@ -156,10 +154,19 @@ class SourceCodeEdit(QPlainTextEdit):
 
 		# Validate the current document
 		cursor = self.textCursor()
-		errLines = self.validateText(self.toPlainText(),
-					     cursor.blockNumber())
+		self.validateText(self.toPlainText(),
+				  cursor.blockNumber())
 
-		# Paint the erratic lines
+	# Validation callback.
+	# Override this in the subclass.
+	# The default implementation does nothing.
+	# In case of validation failure, call setErraticLines.
+	def validateText(self, text, currentLineNr):
+		pass
+
+	# Mark erratic lines
+	def setErraticLines(self, errLines):
+		cursor = self.textCursor()
 		fmt = self.currentCharFormat()
 		fmt.setBackground(self.__errLineBrush)
 		extraSel = [
@@ -170,10 +177,3 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.setExtraSelections(extraSel)
 
 		self.__prevErrLines = errLines
-
-	# Validation callback.
-	# Override this in the subclass.
-	# The default implementation returns no errors.
-	# Should return a list of erratic line numbers.
-	def validateText(self, text, currentLineNr):
-		return []
