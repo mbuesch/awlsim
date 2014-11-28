@@ -156,6 +156,9 @@ class SourceTabWidget(QTabWidget):
 	def setSources(self, sources):
 		raise NotImplementedError
 
+	def setSettings(self, guiSettings):
+		pass
+
 	def integrateSource(self):
 		curWidget = self.currentWidget()
 		if curWidget:
@@ -240,6 +243,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 			editWidget.setSource(awlSource)
 		self.updateActionMenu()
 		self.setCurrentIndex(0)
+
+	def setSettings(self, guiSettings):
+		for editWidget in self.allTabWidgets():
+			editWidget.setSettings(guiSettings)
 
 	def addEditWidget(self):
 		editWidget = EditWidget(self)

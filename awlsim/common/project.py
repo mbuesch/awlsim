@@ -152,6 +152,25 @@ class SymTabSource(GenericSource):
 		return SymTabSource(self.name, self.filepath,
 				    self.sourceBytes[:])
 
+class GuiSettings(object):
+	def __init__(self,
+		     editorAutoIndentEn=True,
+		     editorValidationEn=True):
+		self.setEditorAutoIndentEn(editorAutoIndentEn)
+		self.setEditorValidationEn(editorValidationEn)
+
+	def setEditorAutoIndentEn(self, editorAutoIndentEn):
+		self.editorAutoIndentEn = editorAutoIndentEn
+
+	def getEditorAutoIndentEn(self):
+		return self.editorAutoIndentEn
+
+	def setEditorValidationEn(self, editorValidationEn):
+		self.editorValidationEn = editorValidationEn
+
+	def getEditorValidationEn(self):
+		return self.editorValidationEn
+
 class Project(object):
 	def __init__(self, projectFile,
 		     awlSources=[],
@@ -159,7 +178,8 @@ class Project(object):
 		     libSelections=[],
 		     cpuSpecs=None,
 		     obTempPresetsEn=False,
-		     extInsnsEn=False):
+		     extInsnsEn=False,
+		     guiSettings=None):
 		self.setProjectFile(projectFile)
 		self.setAwlSources(awlSources)
 		self.setSymTabSources(symTabSources)
@@ -169,6 +189,9 @@ class Project(object):
 		self.setCpuSpecs(cpuSpecs)
 		self.setObTempPresetsEn(obTempPresetsEn)
 		self.setExtInsnsEn(extInsnsEn)
+		if not guiSettings:
+			guiSettings = GuiSettings()
+		self.setGuiSettings(guiSettings)
 
 	def setProjectFile(self, filename):
 		self.projectFile = filename
@@ -212,6 +235,12 @@ class Project(object):
 	def getExtInsnsEn(self):
 		return self.extInsnsEn
 
+	def setGuiSettings(self, guiSettings):
+		self.guiSettings = guiSettings
+
+	def getGuiSettings(self):
+		return self.guiSettings
+
 	@classmethod
 	def dataIsProject(cls, data):
 		magic = b"[AWLSIM_PROJECT]"
@@ -240,6 +269,7 @@ class Project(object):
 		cpuSpecs = S7CPUSpecs()
 		obTempPresetsEn = False
 		extInsnsEn = False
+		guiSettings = GuiSettings()
 		try:
 			p = _ConfigParser()
 			p.readfp(StringIO(text), projectFile)
@@ -353,6 +383,14 @@ class Project(object):
 							     effectiveEntryIndex = effBlock)
 				)
 
+			# GUI section
+			if p.has_option("GUI", "editor_autoindent"):
+				guiSettings.setEditorAutoIndentEn(
+					p.getboolean("GUI", "editor_autoindent"))
+			if p.has_option("GUI", "editor_validation"):
+				guiSettings.setEditorValidationEn(
+					p.getboolean("GUI", "editor_validation"))
+
 		except _ConfigParserError as e:
 			raise AwlSimError("Project parser error: " + str(e))
 
@@ -362,7 +400,8 @@ class Project(object):
 			   libSelections = libSelections,
 			   cpuSpecs = cpuSpecs,
 			   obTempPresetsEn = obTempPresetsEn,
-			   extInsnsEn = extInsnsEn)
+			   extInsnsEn = extInsnsEn,
+			   guiSettings = guiSettings)
 
 	@classmethod
 	def fromFile(cls, filename):
@@ -442,6 +481,13 @@ class Project(object):
 				libSel.getEntryIndex()))
 			lines.append("lib_block_effective_%d=%d" % (
 				i, libSel.getEffectiveEntryIndex()))
+		lines.append("")
+
+		lines.append("[GUI]")
+		lines.append("editor_autoindent=%d" %\
+			     int(bool(self.getGuiSettings().getEditorAutoIndentEn())))
+		lines.append("editor_validation=%d" %\
+			     int(bool(self.getGuiSettings().getEditorValidationEn())))
 		lines.append("")
 
 		return "\r\n".join(lines)

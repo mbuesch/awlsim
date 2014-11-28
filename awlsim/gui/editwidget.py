@@ -436,6 +436,10 @@ class EditWidget(SourceCodeEdit):
 			self.__updateSource()
 		return self.__source
 
+	def setSettings(self, guiSettings):
+		self.enableAutoIndent(guiSettings.getEditorAutoIndentEn())
+		self.enableValidation(guiSettings.getEditorValidationEn())
+
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
 		if newState == CpuWidget.STATE_INIT:

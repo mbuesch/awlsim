@@ -28,6 +28,7 @@ import os
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.projectwidget import *
+from awlsim.gui.guiconfig import *
 from awlsim.gui.cpuconfig import *
 from awlsim.gui.coreconfig import *
 from awlsim.gui.icons import *
@@ -191,9 +192,18 @@ class MainWidget(QWidget):
 		else:
 			return self.saveFile(self.filename)
 
+	def guiConfig(self):
+		project = self.getProject()
+		dlg = GuiConfigDialog(self)
+		dlg.loadFromProject(project)
+		if dlg.exec_() == dlg.Accepted:
+			dlg.saveToProject(project)
+			self.projectWidget.setSettings(project.getGuiSettings())
+			self.__somethingChanged()
+
 	def cpuConfig(self):
 		project = self.getProject()
-		dlg = CpuConfigDialog(self, self.simClient)
+		dlg = CpuConfigDialog(self)
 		dlg.loadFromProject(project)
 		if dlg.exec_() == dlg.Accepted:
 			dlg.saveToProject(project)
@@ -270,9 +280,10 @@ class MainWindow(QMainWindow):
 		menu.addAction(getIcon("stdlib"), "&Standard library...", self.openLibrary)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&PLC", self)
+		menu = QMenu("&Settings", self)
 		menu.addAction(getIcon("network"), "&Server connection...", self.coreConfig)
 		menu.addAction(getIcon("prefs"), "&CPU config...", self.cpuConfig)
+		menu.addAction(getIcon("prefs"), "&User interface...", self.guiConfig)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Help", self)
@@ -415,6 +426,9 @@ class MainWindow(QMainWindow):
 
 	def saveAs(self):
 		self.centralWidget().save(True)
+
+	def guiConfig(self):
+		self.centralWidget().guiConfig()
 
 	def cpuConfig(self):
 		self.centralWidget().cpuConfig()

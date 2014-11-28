@@ -46,9 +46,8 @@ class ClockMemSpinBox(QSpinBox):
 		return QSpinBox.valueFromText(self, text)
 
 class CpuConfigDialog(QDialog):
-	def __init__(self, parent, simClient):
+	def __init__(self, parent):
 		QDialog.__init__(self, parent)
-		self.simClient = simClient
 		self.setWindowTitle("CPU configuration")
 
 		self.setLayout(QGridLayout(self))

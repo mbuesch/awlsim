@@ -46,6 +46,8 @@ class SourceCodeEdit(QPlainTextEdit):
 	def enableValidation(self, enable=True):
 		self.__validateEn = enable
 		self.__prevErrLines = []
+		self.setExtraSelections([])
+		self.__validate()
 
 	def __getLineIndent(self, cursor):
 		cursor.select(QTextCursor.LineUnderCursor)

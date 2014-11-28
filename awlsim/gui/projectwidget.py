@@ -151,8 +151,13 @@ class ProjectWidget(QTabWidget):
 		self.awlTabs.reset()
 		self.symTabs.reset()
 
+	def setSettings(self, guiSettings):
+		self.awlTabs.setSettings(guiSettings)
+		self.symTabs.setSettings(guiSettings)
+
 	def __loadProject(self, project):
 		self.__project = project
+		self.setSettings(project.getGuiSettings())
 		self.awlTabs.setSources(self.__project.getAwlSources())
 		self.symTabs.setSources(self.__project.getSymTabSources())
 		self.libTable.model().setLibSelections(self.__project.getLibSelections())
