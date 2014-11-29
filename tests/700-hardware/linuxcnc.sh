@@ -12,6 +12,6 @@ sh_test()
 	JYTHONPATH="$modpath:$JYTHONPATH" \
 	IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \
 		"$interpreter" ./awlsim-linuxcnc-hal \
-		--check-cnc 0 --onecycle "$rootdir/tests/empty.awl" ||\
+		--check-cnc 0 --onecycle "$rootdir/tests/000-base/empty.awl" ||\
 			test_failed "LinuxCNC test failed"
 }

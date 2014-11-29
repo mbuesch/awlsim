@@ -183,7 +183,7 @@ run_test_directory()
 
 		local extra=
 		[ "$(basename "$entry")" = "EXAMPLE.awlpro" -o\
-		  "$(basename $(dirname "$entry"))" = "projects" ] &&\
+		  "$(basename $(dirname "$entry"))" = "999-projects" ] &&\
 			local extra="--max-runtime 1.0"
 
 		run_test "$interpreter" "$entry" $extra
@@ -195,7 +195,7 @@ run_test_directory()
 		[ -e "${entry}pro" ] && continue
 
 		local extra=
-		[ "$(basename $(dirname "$entry"))" = "projects" ] &&\
+		[ "$(basename $(dirname "$entry"))" = "999-projects" ] &&\
 			local extra="--max-runtime 1.0"
 
 		run_test "$interpreter" "$entry" $extra
