@@ -56,8 +56,15 @@ class AwlValidatorResult(object):
 		return self.__mpAsync.get(None)
 
 class AwlValidator(object):
+	@staticmethod
+	def __cpu_count():
+		try:
+			return multiprocessing.cpu_count()
+		except NotImplementedError:
+			return 1
+
 	def __init__(self, maxNrWorkers=3):
-		nrWorkers = min(maxNrWorkers, multiprocessing.cpu_count())
+		nrWorkers = min(maxNrWorkers, self.__cpu_count())
 		self.__pool = multiprocessing.Pool(processes = nrWorkers,
 						   maxtasksperchild = 4)
 
