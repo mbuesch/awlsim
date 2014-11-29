@@ -344,12 +344,9 @@ class EditWidget(SourceCodeEdit):
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
 
-		if not EditWidget.__validator:
-			# Run one global instance of the validator.
-			EditWidget.__validator = AwlValidator()
-
 		self.__validatorResults = []
 		self.__validatorTimer = QTimer(self)
+		self.__validatorTimer.setSingleShot(True)
 		self.__validatorTimer.timeout.connect(self.__checkValidator)
 
 		self.__aniTimer = QTimer(self)
@@ -397,6 +394,12 @@ class EditWidget(SourceCodeEdit):
 		self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
 		self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
+
+	def shutdown(self):
+		while self.__validatorResults:
+			self.__checkValidator()
+			QApplication.processEvents()
+		self.__validatorTimer.stop()
 
 	def setSource(self, source):
 		self.__textChangeBlocked += 1
@@ -753,16 +756,21 @@ class EditWidget(SourceCodeEdit):
 
 	# Validation callback. Overridden subclass method.
 	def validateText(self, text, currentLineNr):
-		result = self.__validator.enqueue(text)
+		if not EditWidget.__validator:
+			# Run one global instance of the validator.
+			EditWidget.__validator = AwlValidator()
+		result = EditWidget.__validator.enqueue(text)
 		self.__validatorResults.append(result)
 		if not self.__validatorTimer.isActive():
 			self.__validatorTimer.start(50)
 
 	def __checkValidator(self):
-		if not self.__validatorResults[0].ready():
+		if not self.__validatorResults or\
+		   not self.__validatorResults[0].ready():
 			return
 		result = self.__validatorResults.pop(0)
-		if not self.__validatorResults:
-			self.__validatorTimer.stop()
 
 		self.setErraticLines(result.getErrLines())
+
+		if self.__validatorResults:
+			self.__validatorTimer.start(25)

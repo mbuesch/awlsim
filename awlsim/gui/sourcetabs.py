@@ -143,11 +143,6 @@ class SourceTabWidget(QTabWidget):
 		for i in range(self.count()):
 			yield self.widget(i)
 
-	def clear(self):
-		for widget in self.allTabWidgets():
-			widget.deleteLater()
-		QTabWidget.clear(self)
-
 	def updateRunState(self, newRunState):
 		pass
 
@@ -198,6 +193,11 @@ class AwlSourceTabWidget(SourceTabWidget):
 		SourceTabWidget.reset(self)
 		self.onlineDiagEnabled = False
 		self.addEditWidget()
+
+	def clear(self):
+		for editWidget in self.allTabWidgets():
+			editWidget.shutdown()
+		SourceTabWidget.clear(self)
 
 	def __emitVisibleLinesSignal(self):
 		editWidget = self.currentWidget()
@@ -272,6 +272,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 				"Delete source '%s'?" % text,
 				QMessageBox.Yes, QMessageBox.No)
 			if res == QMessageBox.Yes:
+				self.widget(index).shutdown()
 				self.removeTab(index)
 				self.sourceChanged.emit()
 
