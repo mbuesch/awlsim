@@ -398,7 +398,7 @@ class EditWidget(SourceCodeEdit):
 	def shutdown(self):
 		while self.__validatorResults:
 			self.__checkValidator()
-			QApplication.processEvents()
+			QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 		self.__validatorTimer.stop()
 
 	def setSource(self, source):
