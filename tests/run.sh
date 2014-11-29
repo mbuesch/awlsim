@@ -125,7 +125,7 @@ run_sh_test()
 
 	[ -x "$sh_file" ] && die "SH-file '$sh_file' must NOT be executable"
 
-	[ "$(echo "$sh_file" | cut -c1)" = '/' ] || local sh_file="./$sh_file"
+	[ "$(echo "$sh_file" | cut -c1)" = '/' ] || local sh_file="$(pwd)/$sh_file"
 
 	# Source the test file
 	. "$basedir/sh-test.defaults"
@@ -135,7 +135,9 @@ run_sh_test()
 	(
 	 setup_test_environment "$interpreter"
 	 local interpreter="$RET"
-	 sh_test "$interpreter"
+	 local test_dir="$(dirname "$sh_file")"
+	 local test_name="$(basename "$sh_file" .sh)"
+	 sh_test "$interpreter" "$test_dir" "$test_name"
 	 cleanup_test_environment
 	)
 	local result=$?

@@ -1,0 +1,37 @@
+array_db;                 DB 60;       DB 60;     "This is a DB; ""DB 60"""
+array_uebung;             FC 60;       FC 60;
+BLKMOV;                   SFC 20;      SFC 20;    Copy Variables
+CREAT_DB;                 SFC 22;      SFC 22;    Create Data Block
+CTD;                      SFB 1;       SFB 1;     Count Down
+CTU;                      SFB 0;       SFB 0;     Count Up
+date_and_time_db;         DB 20;       DB 20;
+date_and_time_uebung;     FC 8;        FC 8;
+db_dynamisch;             FC 20;       FC 20;
+db_zugriff;               FC 7;        FC 7;
+dbtest_fb;                FB 40;       FB 40;
+dbtest_fc;                FC 10;       FC 10;
+DEL_DB;                   SFC 23;      SFC 23;    Delete Data Block
+DELETE;                   FC 104;      FC 104;    Delete String
+DT_DAY;                   FC 107;      FC 107;    DT to DAY
+flankenerkennung;         FB 20;       FB 20;
+impulszaehler;            FB 30;       FB 30;
+impulszaehler_aufruf;     FB 31;       FB 31;
+laufbandsteuerung;        FC 3;        FC 3;
+laufbandsteuerung_aufruf; FC 4;        FC 4;
+multiinst_aufruf;         FB 100;      FB 100;
+pufferspeicher;           FC 5;        FC 5;
+pufferspeicher_aufruf;    FC 6;        FC 6;
+READ_CLK;                 SFC 1;       SFC 1;     Read System Clock
+SB_DT_DT;                 FC 34;       FC 34;     Subtract DT - DT
+stoeranzeige_fb;          FB 1;        FB 1;
+stoeranzeige_fc;          FC 1;        FC 1;
+string_db;                DB 50;       DB 50;
+string_uebung;            FC 50;       FC 50;
+taktgenerator;            FB 15;       FB 15;
+taktgenerator_aufruf;     FB 16;       FB 16;
+tauchbad;                 FB 10;       FB 10;
+tauchbad_aufruf;          FB 11;       FB 11;
+TEST_DB;                  SFC 24;      SFC 24;    Test Data Block
+TON;                      SFB 4;       SFB 4;     Generate an On Delay
+TP;                       SFB 3;       SFB 3;     Generate a Pulse
+zaehler_fc;               FC 2;        FC 2;
