@@ -16,6 +16,13 @@ try:
 	import py2exe
 except ImportError as e:
 	py2exe = None
+try:
+	if py2exe and "py2exe" in sys.argv:
+		raise ImportError
+	from cx_Freeze import setup, Executable
+	cx_Freeze = True
+except ImportError as e:
+	cx_Freeze = False
 
 
 def makedirs(path, mode=0o755):
@@ -278,12 +285,23 @@ try:
 except ValueError:
 	pass
 
+freezeExecutables = [ "awlsim-cli",
+		      "awlsim-gui",
+		      "awlsim-server",
+		      "awlsim-symtab",
+		      "awlsim/coreserver/server.py", ]
 if py2exe:
-	extraKeywords["console"] = [ "awlsim-cli",
-				     "awlsim-gui",
-				     "awlsim-server",
-				     "awlsim-symtab",
-				     "awlsim/coreserver/server.py", ]
+	extraKeywords["console"] = freezeExecutables
+if cx_Freeze:
+	extraKeywords["executables"] = [ Executable(e)
+					 for e in freezeExecutables ]
+	extraKeywords["options"] = {
+			"build_exe"     : {
+				"packages"      : [ "awlsimhw_debug",
+						    "awlsimhw_dummy",
+						    "awlsim.library.iec", ],
+			}
+		}
 
 setup(	name		= "awlsim",
 	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
