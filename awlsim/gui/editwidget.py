@@ -395,14 +395,16 @@ class EditWidget(SourceCodeEdit):
 		self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
-	def __del__(self):
-		self.__validatorTimer.stop()
-
 	def shutdown(self):
 		while self.__validatorResults:
 			self.__checkValidator(rearm=False)
 			QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 		self.__validatorTimer.stop()
+		self.__validatorTimer = None
+
+		# Make sure all QTimer objects are collected.
+		# This avoids crashes within Qt.
+		garbageCollector.collect()
 
 	def setSource(self, source):
 		self.__textChangeBlocked += 1
