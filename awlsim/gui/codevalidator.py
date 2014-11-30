@@ -85,7 +85,8 @@ class AwlValidator(object):
 		except NotImplementedError:
 			return 1
 
-	def __init__(self, synchronous=False, maxNrWorkers=3):
+	def __init__(self, synchronous=False,
+		     minNrWorkers=2, maxNrWorkers=4):
 		if synchronous:
 			if _VALIDATOR_DEBUG:
 				print("Using synchronous AWL code validation")
@@ -93,8 +94,9 @@ class AwlValidator(object):
 		else:
 			if _VALIDATOR_DEBUG:
 				print("Using asynchronous AWL code validation")
-			nrWorkers = min(maxNrWorkers, self.__cpu_count())
-			maxTasks = None if osIsWindows else 4
+			nrWorkers = max(minNrWorkers,
+					min(maxNrWorkers, self.__cpu_count()))
+			maxTasks = None if osIsWindows else 8
 			self.__pool = multiprocessing.Pool(processes = nrWorkers,
 							   maxtasksperchild = maxTasks)
 
