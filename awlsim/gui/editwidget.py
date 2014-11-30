@@ -339,8 +339,6 @@ class EditWidget(SourceCodeEdit):
 
 	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
 
-	__validator = None
-
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
 
@@ -761,10 +759,7 @@ class EditWidget(SourceCodeEdit):
 
 	# Validation callback. Overridden subclass method.
 	def validateText(self, text, currentLineNr):
-		if not EditWidget.__validator:
-			# Run one global instance of the validator.
-			EditWidget.__validator = AwlValidator()
-		result = EditWidget.__validator.enqueue(text)
+		result = AwlValidator.get().enqueue(text)
 		self.__validatorResults.append(result)
 		if not self.__validatorTimer.isActive():
 			self.__validatorTimer.start(50)

@@ -55,16 +55,29 @@ def _awlValidatorWorker(text):
 	return errLines
 
 class AwlValidatorResult(object):
-	def __init__(self, mpAsync):
+	def __init__(self, mpAsync, result=None):
 		self.__mpAsync = mpAsync
+		self.__result = result
 
 	def ready(self):
+		if self.__result is not None:
+			return True
 		return self.__mpAsync.ready()
 
 	def getErrLines(self):
+		if self.__result is not None:
+			return self.__result
 		return self.__mpAsync.get(None)
 
 class AwlValidator(object):
+	__instance = None
+
+	@classmethod
+	def get(cls):
+		if not cls.__instance:
+			cls.__instance = cls(synchronous = False)
+		return cls.__instance
+
 	@staticmethod
 	def __cpu_count():
 		try:
@@ -72,13 +85,24 @@ class AwlValidator(object):
 		except NotImplementedError:
 			return 1
 
-	def __init__(self, maxNrWorkers=3):
-		nrWorkers = min(maxNrWorkers, self.__cpu_count())
-		maxTasks = None if osIsWindows else 4
-		self.__pool = multiprocessing.Pool(processes = nrWorkers,
-						   maxtasksperchild = maxTasks)
+	def __init__(self, synchronous=False, maxNrWorkers=3):
+		if synchronous:
+			if _VALIDATOR_DEBUG:
+				print("Using synchronous AWL code validation")
+			self.__pool = None
+		else:
+			if _VALIDATOR_DEBUG:
+				print("Using asynchronous AWL code validation")
+			nrWorkers = min(maxNrWorkers, self.__cpu_count())
+			maxTasks = None if osIsWindows else 4
+			self.__pool = multiprocessing.Pool(processes = nrWorkers,
+							   maxtasksperchild = maxTasks)
 
 	def enqueue(self, sourceText):
-		mpAsync = self.__pool.apply_async(_awlValidatorWorker,
-						  (sourceText,))
-		return AwlValidatorResult(mpAsync)
+		if self.__pool:
+			mpAsync = self.__pool.apply_async(_awlValidatorWorker,
+							  (sourceText,))
+			return AwlValidatorResult(mpAsync)
+		else:
+			return AwlValidatorResult(None,
+				result = _awlValidatorWorker(sourceText))
