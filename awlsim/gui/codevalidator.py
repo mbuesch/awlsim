@@ -26,10 +26,15 @@ import multiprocessing
 
 from awlsim.core import *
 
+_VALIDATOR_DEBUG = 1
+
 
 def _awlValidatorWorker(text):
+	if _VALIDATOR_DEBUG:
+		print("Validation worker: started")
 	# Try to parse and translate the text.
 	# On error return the erratic line numbers.
+	errLines = ()
 	try:
 		p = AwlParser()
 		p.parseText(text)
@@ -40,10 +45,14 @@ def _awlValidatorWorker(text):
 		lineNr = e.getLineNr()
 		if lineNr is not None:
 			lineNr -= 1
-			return ( lineNr, )
+			errLines = ( lineNr, )
 	except UnicodeError as e:
 		pass
-	return ()
+	except Exception as e:
+		print("Validation worker exception: %s" % str(e))
+	if _VALIDATOR_DEBUG:
+		print("Validation worker: done %s" % str(errLines))
+	return errLines
 
 class AwlValidatorResult(object):
 	def __init__(self, mpAsync):
@@ -65,8 +74,9 @@ class AwlValidator(object):
 
 	def __init__(self, maxNrWorkers=3):
 		nrWorkers = min(maxNrWorkers, self.__cpu_count())
+		maxTasks = None if osIsWindows else 4
 		self.__pool = multiprocessing.Pool(processes = nrWorkers,
-						   maxtasksperchild = 4)
+						   maxtasksperchild = maxTasks)
 
 	def enqueue(self, sourceText):
 		mpAsync = self.__pool.apply_async(_awlValidatorWorker,
