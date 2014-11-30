@@ -26,7 +26,7 @@ import multiprocessing
 
 from awlsim.core import *
 
-_VALIDATOR_DEBUG = 1
+_VALIDATOR_DEBUG = 0
 
 
 def _awlValidatorWorker(text):
