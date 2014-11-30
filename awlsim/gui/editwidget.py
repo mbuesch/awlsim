@@ -395,9 +395,12 @@ class EditWidget(SourceCodeEdit):
 		self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
+	def __del__(self):
+		self.__validatorTimer.stop()
+
 	def shutdown(self):
 		while self.__validatorResults:
-			self.__checkValidator()
+			self.__checkValidator(rearm=False)
 			QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
 		self.__validatorTimer.stop()
 
@@ -764,7 +767,7 @@ class EditWidget(SourceCodeEdit):
 		if not self.__validatorTimer.isActive():
 			self.__validatorTimer.start(50)
 
-	def __checkValidator(self):
+	def __checkValidator(self, rearm=True):
 		if not self.__validatorResults or\
 		   not self.__validatorResults[0].ready():
 			return
@@ -772,5 +775,5 @@ class EditWidget(SourceCodeEdit):
 
 		self.setErraticLines(result.getErrLines())
 
-		if self.__validatorResults:
+		if self.__validatorResults and rearm:
 			self.__validatorTimer.start(25)
