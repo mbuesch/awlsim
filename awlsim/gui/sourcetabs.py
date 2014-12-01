@@ -103,6 +103,10 @@ class SourceTabWidget(QTabWidget):
 	sourceChanged = Signal()
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
+	# Signal: UndoAvailable state changed
+	undoAvailableChanged = Signal(bool)
+	# Signal: RedoAvailable state changed
+	redoAvailableChanged = Signal(bool)
 
 	def __init__(self, itemName, parent=None):
 		QTabWidget.__init__(self, parent)
@@ -172,8 +176,14 @@ class SourceTabWidget(QTabWidget):
 			# Tab context menu was requested.
 			self.contextMenu.exec_(self.mapToGlobal(ev.pos()))
 
+	def undoIsAvailable(self):
+		return False
+
 	def undo(self):
 		pass
+
+	def redoIsAvailable(self):
+		return False
 
 	def redo(self):
 		pass
@@ -266,6 +276,8 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget.codeChanged.connect(self.sourceChanged)
 		editWidget.focusChanged.connect(self.focusChanged)
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
+		editWidget.undoAvailable.connect(self.undoAvailableChanged)
+		editWidget.redoAvailable.connect(self.redoAvailableChanged)
 		index = self.addTab(editWidget, editWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()
@@ -340,6 +352,12 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if editWidget:
 			editWidget.pasteText(text, seamlessIndent)
 
+	def undoIsAvailable(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			return editWidget.undoIsAvailable()
+		return False
+
 	def undo(self):
 		editWidget = self.currentWidget()
 		if editWidget:
@@ -349,6 +367,12 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = self.currentWidget()
 		if editWidget:
 			editWidget.redo()
+
+	def redoIsAvailable(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			return editWidget.redoIsAvailable()
+		return False
 
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	

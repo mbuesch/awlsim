@@ -29,6 +29,9 @@ class SourceCodeEdit(QPlainTextEdit):
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
 
+		self.__undoIsAvailable = False
+		self.__redoIsAvailable = False
+
 		self.__prevLineNr = self.textCursor().blockNumber()
 		self.__prevColumnNr = self.textCursor().columnNumber()
 		self.__columnChange = False
@@ -38,6 +41,20 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.__prevErrLines = ()
 
 		self.cursorPositionChanged.connect(self.__handleCursorChange)
+		self.undoAvailable.connect(self.__handleUndoAvailableChange)
+		self.redoAvailable.connect(self.__handleRedoAvailableChange)
+
+	def __handleUndoAvailableChange(self, available):
+		self.__undoIsAvailable = available
+
+	def undoIsAvailable(self):
+		return self.__undoIsAvailable
+
+	def __handleRedoAvailableChange(self, available):
+		self.__redoIsAvailable = available
+
+	def redoIsAvailable(self):
+		return self.__redoIsAvailable
 
 	def enableAutoIndent(self, enable=True):
 		self.__autoIndentEn = enable

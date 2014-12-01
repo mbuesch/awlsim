@@ -132,6 +132,8 @@ class ProjectWidget(QTabWidget):
 		self.awlTabs.sourceChanged.connect(self.codeChanged)
 		self.awlTabs.visibleLinesChanged.connect(self.visibleLinesChanged)
 		self.awlTabs.focusChanged.connect(self.textFocusChanged)
+		self.awlTabs.undoAvailableChanged.connect(self.undoAvailableChanged)
+		self.awlTabs.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.libTable.model().contentChanged.connect(self.libTableChanged)
 
@@ -145,12 +147,12 @@ class ProjectWidget(QTabWidget):
 			return
 		if widget is self.awlTabs:
 			self.selResourceChanged.emit(self.RES_SOURCES)
-			self.undoAvailableChanged.emit(True)#TODO
-			self.redoAvailableChanged.emit(True)#TODO
+			self.undoAvailableChanged.emit(self.awlTabs.undoIsAvailable())
+			self.redoAvailableChanged.emit(self.awlTabs.redoIsAvailable())
 		elif widget is self.symTabs:
 			self.selResourceChanged.emit(self.RES_SYMTABS)
-			self.undoAvailableChanged.emit(False)
-			self.redoAvailableChanged.emit(False)
+			self.undoAvailableChanged.emit(self.symTabs.undoIsAvailable())
+			self.redoAvailableChanged.emit(self.symTabs.redoIsAvailable())
 		elif widget is self.libTable:
 			self.selResourceChanged.emit(self.RES_LIBSELS)
 			self.undoAvailableChanged.emit(False)
