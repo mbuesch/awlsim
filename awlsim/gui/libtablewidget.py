@@ -219,6 +219,9 @@ class LibTableModel(QAbstractTableModel):
 		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
 class LibTableView(QTableView):
+	# Signal: Keyboard focus in/out event.
+	focusChanged = Signal(bool)
+
 	def __init__(self, model=None, parent=None):
 		QTableView.__init__(self, parent)
 
@@ -244,12 +247,21 @@ class LibTableView(QTableView):
 		self.model().moveEntry(oldVisualIndex, newVisualIndex)
 		self.__rebuild()
 
-	def resizeEvent(self, event):
+	def resizeEvent(self, ev):
+		QTableView.resizeEvent(self, ev)
 		hdr = self.horizontalHeader()
 		if hdr.sectionSize(0) < 100:
 			hdr.resizeSection(0, 100)
 		if hdr.sectionSize(3) < 350:
 			hdr.resizeSection(3, 350)
+
+	def focusInEvent(self, ev):
+		QTableView.focusInEvent(self, ev)
+		self.focusChanged.emit(True)
+
+	def focusOutEvent(self, ev):
+		QTableView.focusOutEvent(self, ev)
+		self.focusChanged.emit(False)
 
 	def deleteEntry(self, index=None):
 		if not index:

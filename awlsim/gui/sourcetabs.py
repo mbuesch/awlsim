@@ -101,6 +101,8 @@ class SourceTabWidget(QTabWidget):
 
 	# Signal: Emitted, if the source code changed.
 	sourceChanged = Signal()
+	# Signal: Keyboard focus in/out event.
+	focusChanged = Signal(bool)
 
 	def __init__(self, itemName, parent=None):
 		QTabWidget.__init__(self, parent)
@@ -169,6 +171,12 @@ class SourceTabWidget(QTabWidget):
 		if tabBar.geometry().contains(tabBar.mapFrom(self, ev.pos())):
 			# Tab context menu was requested.
 			self.contextMenu.exec_(self.mapToGlobal(ev.pos()))
+
+	def undo(self):
+		pass
+
+	def redo(self):
+		pass
 
 class AwlSourceTabWidget(SourceTabWidget):
 	"AWL source tab-widget"
@@ -256,6 +264,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = EditWidget(self)
 		editWidget.setSettings(self.guiSettings)
 		editWidget.codeChanged.connect(self.sourceChanged)
+		editWidget.focusChanged.connect(self.focusChanged)
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
 		index = self.addTab(editWidget, editWidget.getSource().name)
 		self.setCurrentIndex(index)
@@ -331,6 +340,16 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if editWidget:
 			editWidget.pasteText(text, seamlessIndent)
 
+	def undo(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			editWidget.undo()
+
+	def redo(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			editWidget.redo()
+
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	
 
@@ -365,6 +384,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		symTabView = SymTabView(self)
 		symTabView.setSymTab(SymbolTable())
 		symTabView.model().sourceChanged.connect(self.sourceChanged)
+		symTabView.focusChanged.connect(self.focusChanged)
 		index = self.addTab(symTabView, symTabView.model().getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()

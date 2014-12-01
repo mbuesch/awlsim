@@ -95,6 +95,22 @@ class ProjectWidget(QTabWidget):
 	visibleLinesChanged = Signal(AwlSource, int, int)
 	# Signal: The library selection changed
 	libTableChanged = Signal()
+	# Signal: Source text focus changed
+	textFocusChanged = Signal(bool)
+	# Signal: The selected project resource changed
+	#         Parameter is one of RES_...
+	selResourceChanged = Signal(int)
+	# Signal: UndoAvailable state changed
+	undoAvailableChanged = Signal(bool)
+	# Signal: RedoAvailable state changed
+	redoAvailableChanged = Signal(bool)
+
+	# Project resource identifier
+	EnumGen.start
+	RES_SOURCES	= EnumGen.item # Sources
+	RES_SYMTABS	= EnumGen.item # Symbol tables
+	RES_LIBSELS	= EnumGen.item # Library selections
+	EnumGen.end
 
 	def __init__(self, parent=None):
 		QTabWidget.__init__(self, parent)
@@ -112,10 +128,35 @@ class ProjectWidget(QTabWidget):
 
 		self.reset()
 
+		self.currentChanged.connect(self.__handleTabChange)
 		self.awlTabs.sourceChanged.connect(self.codeChanged)
 		self.awlTabs.visibleLinesChanged.connect(self.visibleLinesChanged)
+		self.awlTabs.focusChanged.connect(self.textFocusChanged)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.libTable.model().contentChanged.connect(self.libTableChanged)
+
+		# Send an initial tab-change notification signal.
+		QTimer.singleShot(0,
+			lambda: self.__handleTabChange(self.currentIndex()))
+
+	def __handleTabChange(self, newTabIndex):
+		widget = self.widget(newTabIndex)
+		if not widget:
+			return
+		if widget is self.awlTabs:
+			self.selResourceChanged.emit(self.RES_SOURCES)
+			self.undoAvailableChanged.emit(True)#TODO
+			self.redoAvailableChanged.emit(True)#TODO
+		elif widget is self.symTabs:
+			self.selResourceChanged.emit(self.RES_SYMTABS)
+			self.undoAvailableChanged.emit(False)
+			self.redoAvailableChanged.emit(False)
+		elif widget is self.libTable:
+			self.selResourceChanged.emit(self.RES_LIBSELS)
+			self.undoAvailableChanged.emit(False)
+			self.redoAvailableChanged.emit(False)
+		else:
+			assert(0)
 
 	def handleOnlineDiagChange(self, enabled):
 		self.awlTabs.handleOnlineDiagChange(enabled)
@@ -376,3 +417,13 @@ class ProjectWidget(QTabWidget):
 				# Add a library selection to the library table.
 				if not self.__pasteLibSel(dlg.pasteLibSel):
 					return
+
+	def undo(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.undo()
+
+	def redo(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.redo()

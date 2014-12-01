@@ -50,6 +50,9 @@ import os
 import traceback
 
 
+AWLSIM_HOME_URL = "http://bues.ch/h/awlsim"
+
+
 # Convert an integer to a dual-string
 def intToDualString(value, bitWidth):
 	string = []

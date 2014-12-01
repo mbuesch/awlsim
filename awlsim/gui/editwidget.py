@@ -334,8 +334,12 @@ class CpuStatsContextMenu(QMenu):
 		self.closed.emit()
 
 class EditWidget(SourceCodeEdit):
+	# Signal: Emitted, if the source code changed.
 	codeChanged = Signal()
+	# Signal: Emitted, if the visible source lines changed (e.g. scrolled)
 	visibleRangeChanged = Signal()
+	# Signal: Keyboard focus in/out event.
+	focusChanged = Signal(bool)
 
 	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
 
@@ -680,6 +684,14 @@ class EditWidget(SourceCodeEdit):
 	def resizeEvent(self, ev):
 		SourceCodeEdit.resizeEvent(self, ev)
 		self.__updateGeo()
+
+	def focusInEvent(self, ev):
+		SourceCodeEdit.focusInEvent(self, ev)
+		self.focusChanged.emit(True)
+
+	def focusOutEvent(self, ev):
+		SourceCodeEdit.focusOutEvent(self, ev)
+		self.focusChanged.emit(False)
 
 	__runStateToText = {
 		CpuWidget.STATE_STOP		: "-- CPU STOPPED --",

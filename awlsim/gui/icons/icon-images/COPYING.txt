@@ -24,10 +24,13 @@ document-new-3.svg            | gnome                         | GPLv2
 document-open-5.svg           | tango                         | PD
 document-save-all.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
 edit-4.svg                    | nuvola                        | LGPL-2.1
+edit-redo-4.svg               | tango                         | PD
+edit-undo-4.svg               | tango                         | PD
 emblem-package-2.svg          | gnome                         | GPLv2
 go-next-7.svg                 | oxygen                        | CC-BY-SA 3.0 or LGPL
 inputs.png                    | network-server.svg and        | CC-BY-SA 3.0 or LGPL
                               | go-next-7.svg                 |
+internet-web-browser-4.svg    | tango                         | PD
 lcd.png                       | awlsim                        | PD
 stdlib-package.png            | emblem-package-2.svg          | GPLv2
 media-playback-start-4.svg    | gnome                         | GPLv2

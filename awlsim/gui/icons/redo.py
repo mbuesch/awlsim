@@ -1,0 +1,73 @@
+# AUTOMATICALLY GENERATED FILE
+# DO NOT EDIT
+
+# Generated from edit-redo-4.svg
+
+icon_redo = b'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAA'\
+            b'BHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAA'\
+            b'CRNJREFUaIHtWHtQVOcV/313nyy78lBAfIFWCWjVqFFpjNG2'\
+            b'RtPWV5M0McbO1LQTJ2ma1uYh2Em2NglraPqyk3bSx9gYm9aO'\
+            b'ZoijTc2ERFpBLVF8IKtGgyiwwAK7C/vee7/TP/bhstyFKyD9'\
+            b'oz0zZ7673/3uOb/fOec797sL/F/+u8JutwOzGeqADmW6AEp2'\
+            b'7AAfafvCSBtMIs8HU1BhNkM/0oZHiwCM6aYVwRRUbzUjcyTt'\
+            b'jg4BAj26dm9KXt6s2Xo9zv7oZUwdKdOjRQAGXQ7uW/oTzdw5'\
+            b'KyZwNU4//wruGgnTo0KAgQEMuHj9LcyZuVG4Z8mmdLUKR7db'\
+            b'sGa4tkcnA4wBYGBMhUZbBSaOn4/7V25NJcb2lVrw3eGYHp0M'\
+            b'MAEsQoAxFVo6j0KfYsID68pSBBUrL7XgF2bz0LCMYgkxMAgx'\
+            b'tTtOwxewYeNDvzeodcITogHvfu9X0N2q7dEpISFaQkIf7fFc'\
+            b'RWtXFTZvqDAY0tJWmnyoLrEg41ZMj+ibuKQMYwHcLzCsJsbm'\
+            b'gWgSmDpFpzUKT22uxJnLr4OIg0MCcRFEEjiJAATMzP82jlSV'\
+            b'hG40XbZxhmWvleLaqBEosWCBSmAvQxKWzyi4F/l5xSlZGXdA'\
+            b'r0+DXpcJgakgSj5cbPoTOHEQieAUIcBFUITQ9EmP4MyFP/P6'\
+            b'+qoeAlbsLMWp20rguXKM13K2W6s3Li2+a0Nq0fSHwHkAouSF'\
+            b'198Ob6AdnIcgcT9CogecQiAugpMUiz7RzUyIkh9Tclahrf08'\
+            b'ao7/zcOAR8pKcfi2ENi+E19hTPWXu4u/ZZpbtEkAOLpc5+D2'\
+            b'tYJIAkEC52GgfSJOIohLsTLiJCIQdMDluYKQ6AYAFEx+DFzS'\
+            b'orLyDR+BnrWU4rcjSqC0HE/qNabyr616yTghuxh2xyn4g12x'\
+            b'yN6MbqRcuJgQ7SgREb5gJ7pcZ0HU96A6OWclxprm4+DfX/KS'\
+            b'RL8pK8ELYKBELKpbBb/dgsdTU9J/vuGB3xnVai3sjlOQeBCM'\
+            b'MSBin4gAEAgEgEdGiszzyB0O4iF0OE+BSOznp8dzFaLkxuIF'\
+            b'T2oarJV3L/kXcqo/6l9Ot9RGS1/FEo3O8MsH1+4yStwLp/vT'\
+            b'/ouoX5CSSq+3CZwHk94vmLIJdWffFhlDGxPwU7k1aqXOzGYY'\
+            b'QwLbv+6rO00S+eDqvQKBqUCQEI02UVy0I2OUVDQrMSFCr+9G'\
+            b'Un/L57+JDz5+MWSzXWsKqbD09RfQJrdOcQYCerw4e9aqzKyM'\
+            b'Ijh6rQiXAo+r92j983A9R0DfBB4pLxBABK/fJht9tcqA+xa9'\
+            b'g/fef8bfams8r/HRwmTgAYUZ2GpGJmPCUwvu3Ky1O+siL6Mw'\
+            b'ewIHKNoLolmQwvMRkmAMAtNCFD1hYiD0epv6+THoclA8y4K3'\
+            b'9z3o9QekE34NVltK4BsImyICOh0enzG9WJOqz0Fr51EwFt77'\
+            b'HAQWl0QCQa/NxJjUz0GvHQsV00OlSgFjDBL3oKHxDyAQAsEu'\
+            b'BELOPj7SjNMxe9rT2LP/Ua8U4Ie0fjxmKUH/3T0UAoKafWfe'\
+            b'5zfoOpy1IJJicAEhUutAurEAGaYiBAJe1F886O/ovCq4nE1B'\
+            b'r6+zNxDy5P5gy4lYaTl6L/axn5U+H/m5X8c7B57wkkS7NX48'\
+            b'o/QPgEEJbDUjkzjyssfOxZXmfeFNS2ECRByMMUzKXoFedxsO'\
+            b'HSn13rDVfkIi/ZoYPt65HV1mM9RMpwkSwAgEp/tyn+hPGLcM'\
+            b'WWmLsf+9Z71EZLFsw6ty/X7IBPRazDUaMgIqlV4fEt1gLBz1'\
+            b'8LGYIT93Lc5Z94s1J/e0gOgbO7ejNtEGY+Hd4nJf6dN683PX'\
+            b'IEUzEQcP/9hHoB9aSvAmtimFrpAAJ0zNysrTBIOuyBGBIgHi'\
+            b'GD92Kc417BdP1O45q/PT8h074Ja3ISEQ7I50r7AUTN6IUAh4'\
+            b'/8jPfAz4pqUUB24NukICTEC6yZitCYSc4MRj4I2GfAB61NTu'\
+            b'sRPoy2VJwIcJiJDiWuasqVvgcLagpmafBwLWlW1D5VDAAwre'\
+            b'A0QIQdCRP2APn2W4BE4c2RkL8c+aNzwCaPNrJXApdXjnjOfQ'\
+            b'arNSzfF9LgKWWYYBXhEBxtDZ1X0lZEqdGn5pQYJGbYQoimhq'\
+            b'Pt5Vtg0fKHW2aOYOXPz0Q15X9w87cSxSct4fTAYtIZHDamu7'\
+            b'JGk1YwAwEBehUafC43EAnN5V2jH8gS7U1u0ONTZeaJUY7ikv'\
+            b'RfNwwQMKMrCoAOeJuKPHfcNr0OW6Jc79GmEM9fTYQpKI+ogN'\
+            b'VUTViXr0KNRgYAePfN9/rfHCpY5WLC4vgS3uGQHhY/2QjvaD'\
+            b'Enj4YUiMsLfDfsGVos/tVgmqVpVK38kY84kS3HKg41TT1gYN'\
+            b'ADi6e06fPIHlf9wF1yDPxJMaNgEGQPB5ae+xT3ZdmJa7Rs8E'\
+            b'bbMo+dvS0vJEAgxxTvuBB6D2+aCWRByoeIvWVlYgIAM2/lpO'\
+            b'ByST7IOGxT0sHK+Cc9G9obTMjAnj8nK/lNLb09g+Jq0w/Xz9'\
+            b'X1uqP0K1jMNoWQkuF9i5WhxubY2d/xKVKVRFBFgSJ6rMcfSZ'\
+            b'J1iTWTzv6alOz/VrmcZphhb7eVW3ra2qpQVSHPjEUQgGZe0q'\
+            b'BS13HWsc8QSiN+MdxBxeqkdwymSx2c2toYVzthQ4Xdeumow5'\
+            b'ug5Hlb3u32iNA92PgAzwgUjIgZabo0QC8cblRnauDu4gu9Gi'\
+            b'Te3pnpG/MjvdODnU1F4dDPgdbc1NCMZnbAAC0X0nBzp+TDbX'\
+            b'R1RxCwYCHxs/s8J36EBD48Tx7Or43Fk8b8oXWFPrh6KjPdDr'\
+            b'ckXO2H1JRIkki+xAQoONiQQUb6jKyjMelzPQkpt9hy8nc5nv'\
+            b'jPWkP+Tzwu8HJYBLfNElA6MIcDICUUmWTtn0NjQ0iMeOHXMV'\
+            b'Fhaqv3jvapPV2uix2+0Sbn4E8wSlhHsD/R5IYyQS09iv7hVe'\
+            b's8LCQs369etN169fFysqKrxerxcykghACRm56+goW4eJ3WGw'\
+            b'333q2mg0CkVFRWqr1Sq53W658kgEH51PloFkZJCMQHQ+UeWA'\
+            b'J65NtJlsL8hlQYn2+05W0gkSgcsRhMw4kCQSUEJGVpQ4S1w/'\
+            b'GPChtkc5IooADVcSzyrD6e//e/IfDQnATDY24rYAAAAASUVO'\
+            b'RK5CYII='

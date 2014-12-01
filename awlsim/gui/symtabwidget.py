@@ -170,6 +170,9 @@ class SymTabModel(QAbstractTableModel):
 			self.__needSourceUpdate = True
 
 class SymTabView(QTableView):
+	# Signal: Keyboard focus in/out event.
+	focusChanged = Signal(bool)
+
 	def __init__(self, parent=None):
 		QTableView.__init__(self, parent)
 
@@ -191,7 +194,8 @@ class SymTabView(QTableView):
 		self.model().moveSymbol(oldVisualIndex, newVisualIndex)
 		self.__rebuild()
 
-	def resizeEvent(self, event):
+	def resizeEvent(self, ev):
+		QTableView.resizeEvent(self, ev)
 		hdr = self.horizontalHeader()
 		if hdr.sectionSize(0) < 150:
 			hdr.resizeSection(0, 150)
@@ -215,6 +219,14 @@ class SymTabView(QTableView):
 
 		if ev.key() == Qt.Key_Delete:
 			self.deleteSym()
+
+	def focusInEvent(self, ev):
+		QTableView.focusInEvent(self, ev)
+		self.focusChanged.emit(True)
+
+	def focusOutEvent(self, ev):
+		QTableView.focusOutEvent(self, ev)
+		self.focusChanged.emit(False)
 
 	def setSymTab(self, symTab):
 		self.setModel(SymTabModel(symTab))

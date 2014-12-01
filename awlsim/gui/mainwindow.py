@@ -35,8 +35,18 @@ from awlsim.gui.icons import *
 
 
 class MainWidget(QWidget):
+	# Signal: Dirty-status changed
 	dirtyChanged = Signal(bool)
+	# Signal: CPU run state changed
 	runStateChanged = Signal(int)
+	# Signal: Source text focus changed
+	textFocusChanged = Signal(bool)
+	# Signal: Selected project resource changed
+	selResourceChanged = Signal(int)
+	# Signal: UndoAvailable state changed
+	undoAvailableChanged = Signal(bool)
+	# Signal: RedoAvailable state changed
+	redoAvailableChanged = Signal(bool)
 
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
@@ -62,6 +72,10 @@ class MainWidget(QWidget):
 		self.projectWidget.symTabChanged.connect(self.__somethingChanged)
 		self.projectWidget.libTableChanged.connect(self.__somethingChanged)
 		self.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
+		self.projectWidget.textFocusChanged.connect(self.textFocusChanged)
+		self.projectWidget.selResourceChanged.connect(self.selResourceChanged)
+		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
+		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
 		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
@@ -239,6 +253,12 @@ class MainWidget(QWidget):
 	def openLibrary(self):
 		self.projectWidget.openLibrary()
 
+	def undo(self):
+		self.projectWidget.undo()
+
+	def redo(self):
+		self.projectWidget.redo()
+
 class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
@@ -266,6 +286,11 @@ class MainWindow(QMainWindow):
 		menu.addAction(getIcon("exit"), "&Exit...", self.close)
 		self.menuBar().addMenu(menu)
 
+		menu = QMenu("&Edit", self)
+		self.undoAct = menu.addAction(getIcon("undo"), "&Undo", self.undo)
+		self.redoAct = menu.addAction(getIcon("redo"), "&Redo", self.redo)
+		self.menuBar().addMenu(menu)
+
 		menu = QMenu("&Library", self)
 		menu.addAction(getIcon("textsource"), "Insert &OB template...", self.insertOB)
 		menu.addAction(getIcon("textsource"), "Insert F&C template...", self.insertFC)
@@ -277,7 +302,7 @@ class MainWindow(QMainWindow):
 		menu.addAction(getIcon("textsource"), "Insert FC C&ALL template...", self.insertFCcall)
 		menu.addAction(getIcon("textsource"), "Insert FB CA&LL template...", self.insertFBcall)
 		menu.addSeparator()
-		menu.addAction(getIcon("stdlib"), "&Standard library...", self.openLibrary)
+		self.libAct = menu.addAction(getIcon("stdlib"), "&Standard library...", self.openLibrary)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Settings", self)
@@ -287,6 +312,8 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Help", self)
+		menu.addAction(getIcon("browser"), "Project &homepage...", self.projectHome)
+		menu.addSeparator()
 		menu.addAction(getIcon("cpu"), "&About...", self.about)
 		self.menuBar().addMenu(menu)
 
@@ -295,13 +322,24 @@ class MainWindow(QMainWindow):
 		self.tb.addAction(getIcon("open"), "Open project", self.load)
 		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project", self.save)
 		self.tb.addSeparator()
-		self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
+		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit", self.undo)
+		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo", self.redo)
+		self.tb.addSeparator()
+		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
 		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)
+		self.__selResourceChanged(None)
+		self.__textFocusChanged(False)
+		self.__undoAvailableChanged(False)
+		self.__redoAvailableChanged(False)
 
 		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
 		self.centralWidget().runStateChanged.connect(self.__runStateChanged)
+		self.centralWidget().textFocusChanged.connect(self.__textFocusChanged)
+		self.centralWidget().selResourceChanged.connect(self.__selResourceChanged)
+		self.centralWidget().undoAvailableChanged.connect(self.__undoAvailableChanged)
+		self.centralWidget().redoAvailableChanged.connect(self.__redoAvailableChanged)
 
 		if awlSource:
 			self.centralWidget().loadFile(awlSource)
@@ -361,6 +399,52 @@ class MainWindow(QMainWindow):
 				    (VERSION_MAJOR, VERSION_MINOR,
 				     postfix))
 
+	def __updateLibActions(self):
+		# Enable/disable the library toolbar button.
+		# The menu library button is always available on purpose.
+		if self.tbLibAct.isEnabled():
+			if self.__selProjectResource != ProjectWidget.RES_SOURCES:
+				self.tbLibAct.setEnabled(False)
+				self.tbLibAct.setToolTip("Standard library.\n"
+					"Please click in the AWL/STL source "
+					"code at the place where to paste the "
+					"library call.")
+		else:
+			if self.__selProjectResource == ProjectWidget.RES_SOURCES and\
+			   self.__sourceTextHasFocus:
+				self.tbLibAct.setEnabled(True)
+				self.tbLibAct.setToolTip("Standard library")
+
+	def __textFocusChanged(self, textHasFocus):
+		self.__sourceTextHasFocus = textHasFocus
+		self.__updateLibActions()
+
+	def __selResourceChanged(self, resourceNumber):
+		self.__selProjectResource = resourceNumber
+		self.__updateLibActions()
+
+	def __updateUndoActions(self):
+		self.undoAct.setEnabled(
+			self.__undoAvailable and
+			self.__selProjectResource == ProjectWidget.RES_SOURCES
+		)
+		self.tbUndoAct.setEnabled(self.undoAct.isEnabled())
+
+	def __undoAvailableChanged(self, undoAvailable):
+		self.__undoAvailable = undoAvailable
+		self.__updateUndoActions()
+
+	def __updateRedoActions(self):
+		self.redoAct.setEnabled(
+			self.__redoAvailable and
+			self.__selProjectResource == ProjectWidget.RES_SOURCES
+		)
+		self.tbRedoAct.setEnabled(self.redoAct.isEnabled())
+
+	def __redoAvailableChanged(self, redoAvailable):
+		self.__redoAvailable = redoAvailable
+		self.__updateRedoActions()
+
 	def closeEvent(self, ev):
 		cpuWidget = self.centralWidget().getCpuWidget()
 		if cpuWidget.getState() != CpuWidget.STATE_STOP:
@@ -391,13 +475,16 @@ class MainWindow(QMainWindow):
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
 
+	def projectHome(self):
+		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.StrictMode))
+
 	def about(self):
 		QMessageBox.about(self, "About AWL/STL soft-PLC",
 			"Awlsim soft-PLC version %d.%d\n"
 			"\n"
 			"Copyright 2012-2014 Michael Büsch <m@bues.ch>\n"
 			"\n"
-			"Project home:  http://bues.ch/h/awlsim\n"
+			"Project home:  %s\n"
 			"\n"
 			"\n"
 			"This program is free software; you can redistribute it and/or modify "
@@ -413,7 +500,8 @@ class MainWindow(QMainWindow):
 			"You should have received a copy of the GNU General Public License along "
 			"with this program; if not, write to the Free Software Foundation, Inc., "
 			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." %\
-			(VERSION_MAJOR, VERSION_MINOR))
+			(VERSION_MAJOR, VERSION_MINOR,
+			 AWLSIM_HOME_URL))
 
 	def new(self):
 		self.centralWidget().newFile()
@@ -438,6 +526,12 @@ class MainWindow(QMainWindow):
 
 	def openLibrary(self):
 		self.centralWidget().openLibrary()
+
+	def undo(self):
+		self.centralWidget().undo()
+
+	def redo(self):
+		self.centralWidget().redo()
 
 # If invoked as script, run a new instance.
 if __name__ == "__main__":
