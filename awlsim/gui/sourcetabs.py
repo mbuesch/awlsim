@@ -235,6 +235,12 @@ class AwlSourceTabWidget(SourceTabWidget):
 				editWidget = self.widget(index)
 				editWidget.enableCpuStats(True)
 		self.__emitVisibleLinesSignal()
+		# Update undo/redo states
+		editWidget = self.currentWidget()
+		self.undoAvailableChanged.emit(editWidget.undoIsAvailable()
+					       if editWidget else False)
+		self.redoAvailableChanged.emit(editWidget.redoIsAvailable()
+					       if editWidget else False)
 
 	def updateRunState(self, newRunState):
 		for editWidget in self.allTabWidgets():
