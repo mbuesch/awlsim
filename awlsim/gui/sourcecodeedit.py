@@ -38,6 +38,7 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.__columnChange = False
 
 		self.enableAutoIndent()
+		self.enablePasteIndent()
 		self.__validateEn = True
 		self.__prevErrLines = ()
 
@@ -66,6 +67,9 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def enableAutoIndent(self, enable=True):
 		self.__autoIndentEn = enable
+
+	def enablePasteIndent(self, enable=True):
+		self.__pasteIndentEn = enable
 
 	def enableValidation(self, enable=True):
 		self.__validateEn = enable
@@ -138,7 +142,7 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.insertPlainText(text)
 
 	def insertFromMimeData(self, mimeData):
-		if mimeData.hasText() and self.__autoIndentEn:
+		if mimeData.hasText() and self.__pasteIndentEn:
 			# Replace the mimeData by a re-indented mimeData.
 			newText = self.__makeSeamlessIndent(mimeData.text())
 			mimeData = QMimeData()

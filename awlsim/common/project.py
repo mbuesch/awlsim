@@ -155,9 +155,11 @@ class SymTabSource(GenericSource):
 class GuiSettings(object):
 	def __init__(self,
 		     editorAutoIndentEn=True,
+		     editorPasteIndentEn=True,
 		     editorValidationEn=True,
 		     editorFont=""):
 		self.setEditorAutoIndentEn(editorAutoIndentEn)
+		self.setEditorPasteIndentEn(editorPasteIndentEn)
 		self.setEditorValidationEn(editorValidationEn)
 		self.setEditorFont(editorFont)
 
@@ -166,6 +168,12 @@ class GuiSettings(object):
 
 	def getEditorAutoIndentEn(self):
 		return self.editorAutoIndentEn
+
+	def setEditorPasteIndentEn(self, editorPasteIndentEn):
+		self.editorPasteIndentEn = editorPasteIndentEn
+
+	def getEditorPasteIndentEn(self):
+		return self.editorPasteIndentEn
 
 	def setEditorValidationEn(self, editorValidationEn):
 		self.editorValidationEn = editorValidationEn
@@ -395,6 +403,9 @@ class Project(object):
 			if p.has_option("GUI", "editor_autoindent"):
 				guiSettings.setEditorAutoIndentEn(
 					p.getboolean("GUI", "editor_autoindent"))
+			if p.has_option("GUI", "editor_paste_autoindent"):
+				guiSettings.setEditorPasteIndentEn(
+					p.getboolean("GUI", "editor_paste_autoindent"))
 			if p.has_option("GUI", "editor_validation"):
 				guiSettings.setEditorValidationEn(
 					p.getboolean("GUI", "editor_validation"))
@@ -496,6 +507,8 @@ class Project(object):
 		lines.append("[GUI]")
 		lines.append("editor_autoindent=%d" %\
 			     int(bool(self.getGuiSettings().getEditorAutoIndentEn())))
+		lines.append("editor_paste_autoindent=%d" %\
+			     int(bool(self.getGuiSettings().getEditorPasteIndentEn())))
 		lines.append("editor_validation=%d" %\
 			     int(bool(self.getGuiSettings().getEditorValidationEn())))
 		lines.append("editor_font=%s" % self.getGuiSettings().getEditorFont())

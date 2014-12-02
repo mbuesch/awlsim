@@ -40,19 +40,23 @@ class GuiConfigDialog(QDialog):
 		self.editAutoIndent = QCheckBox("Source editor auto indentation", self)
 		self.layout().addWidget(self.editAutoIndent, 1, 0, 1, 2)
 
+		self.pasteIndent = QCheckBox("Source editor clipboard "
+			"paste auto indentation", self)
+		self.layout().addWidget(self.pasteIndent, 2, 0, 1, 2)
+
 		self.editValidate = QCheckBox("Source editor code validation", self)
-		self.layout().addWidget(self.editValidate, 2, 0, 1, 2)
+		self.layout().addWidget(self.editValidate, 3, 0, 1, 2)
 
 		self.editFontLabel = QLabel("Set editor font:", self)
 		self.editFontLabel.setFrameShape(QFrame.Panel)
 		self.editFontLabel.setFrameShadow(QFrame.Sunken)
-		self.layout().addWidget(self.editFontLabel, 3, 0)
+		self.layout().addWidget(self.editFontLabel, 4, 0)
 		self.editFontButton = QPushButton("Select font...", self)
-		self.layout().addWidget(self.editFontButton, 3, 1)
+		self.layout().addWidget(self.editFontButton, 4, 1)
 		self.__editFont = getDefaultFixedFont()
 
 		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 4, 1)
+		self.layout().addWidget(self.closeButton, 5, 1)
 
 		self.closeButton.released.connect(self.accept)
 		self.editFontButton.released.connect(self.__openEditFontDialog)
@@ -71,6 +75,11 @@ class GuiConfigDialog(QDialog):
 			Qt.Unchecked
 		)
 
+		self.pasteIndent.setCheckState(
+			Qt.Checked if guiSettings.getEditorPasteIndentEn() else\
+			Qt.Unchecked
+		)
+
 		self.editValidate.setCheckState(
 			Qt.Checked if guiSettings.getEditorValidationEn() else\
 			Qt.Unchecked
@@ -83,9 +92,11 @@ class GuiConfigDialog(QDialog):
 
 	def saveToProject(self, project):
 		autoIndentEn = self.editAutoIndent.checkState() == Qt.Checked
+		pasteIndentEn = self.pasteIndent.checkState() == Qt.Checked
 		validationEn = self.editValidate.checkState() == Qt.Checked
 
 		guiSettings = project.getGuiSettings()
 		guiSettings.setEditorAutoIndentEn(autoIndentEn)
+		guiSettings.setEditorPasteIndentEn(pasteIndentEn)
 		guiSettings.setEditorValidationEn(validationEn)
 		guiSettings.setEditorFont(self.__editFont.toString())

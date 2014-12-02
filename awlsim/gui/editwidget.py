@@ -455,6 +455,7 @@ class EditWidget(SourceCodeEdit):
 
 	def setSettings(self, guiSettings):
 		self.enableAutoIndent(guiSettings.getEditorAutoIndentEn())
+		self.enablePasteIndent(guiSettings.getEditorPasteIndentEn())
 		self.enableValidation(guiSettings.getEditorValidationEn())
 		font = getDefaultFixedFont()
 		fontString = guiSettings.getEditorFont()
