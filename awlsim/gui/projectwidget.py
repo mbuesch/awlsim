@@ -137,12 +137,33 @@ class ProjectWidget(QTabWidget):
 		self.awlTabs.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.awlTabs.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.awlTabs.copyAvailableChanged.connect(self.copyAvailableChanged)
+		self.awlTabs.resizeFont.connect(self.__doSourceCodeFontResize)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.libTable.model().contentChanged.connect(self.libTableChanged)
 
 		# Send an initial tab-change notification signal.
 		QTimer.singleShot(0,
 			lambda: self.__handleTabChange(self.currentIndex()))
+
+	# Resize project editor font.
+	def __doSourceCodeFontResize(self, bigger):
+		font = getDefaultFixedFont()
+		fontStr = self.__project.getGuiSettings().getEditorFont()
+		if fontStr:
+			font.fromString(fontStr)
+		if bigger:
+			font.setPointSize(font.pointSize() + 1)
+			if font.pointSize() > 72:
+				return
+		else:
+			font.setPointSize(font.pointSize() - 1)
+			if font.pointSize() < 6:
+				return
+		self.__project.getGuiSettings().setEditorFont(font.toString())
+		self.setSettings(self.__project.getGuiSettings())
+
+		self.codeChanged.emit()
+		self.symTabChanged.emit()
 
 	def __handleTabChange(self, newTabIndex):
 		widget = self.widget(newTabIndex)

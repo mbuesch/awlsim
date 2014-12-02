@@ -109,6 +109,9 @@ class SourceTabWidget(QTabWidget):
 	redoAvailableChanged = Signal(bool)
 	# Signal: CopyAvailable state changed
 	copyAvailableChanged = Signal(bool)
+	# Signal: Change the font size.
+	#         If the parameter is True, increase font size.
+	resizeFont = Signal(bool)
 
 	def __init__(self, itemName, parent=None):
 		QTabWidget.__init__(self, parent)
@@ -301,6 +304,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget.undoAvailable.connect(self.undoAvailableChanged)
 		editWidget.redoAvailable.connect(self.redoAvailableChanged)
 		editWidget.copyAvailable.connect(self.copyAvailableChanged)
+		editWidget.resizeFont.connect(self.resizeFont)
 		index = self.addTab(editWidget, editWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()

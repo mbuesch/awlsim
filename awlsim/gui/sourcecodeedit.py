@@ -26,8 +26,14 @@ from awlsim.gui.util import *
 
 
 class SourceCodeEdit(QPlainTextEdit):
+	# Signal: Change the font size.
+	#         If the parameter is True, increase font size.
+	resizeFont = Signal(bool)
+
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
+
+		self.__wheelSteps = 0.0
 
 		self.__undoIsAvailable = False
 		self.__redoIsAvailable = False
@@ -124,6 +130,26 @@ class SourceCodeEdit(QPlainTextEdit):
 			self.__autoIndentHandleNewline()
 		elif ev.key() == Qt.Key_Delete:
 			self.__validate()
+
+	def wheelEvent(self, ev):
+		if ev.modifiers() & Qt.ControlModifier:
+			# Ctrl + Scroll-wheel: Font resizing
+			numDegrees = ev.delta() / 8
+			numSteps = numDegrees / 15
+			self.__wheelSteps += numSteps
+			if self.__wheelSteps >= 1.0:
+				while self.__wheelSteps >= 1.0:
+					self.resizeFont.emit(False)
+					self.__wheelSteps -= 1.0
+			elif self.__wheelSteps <= -1.0:
+				while self.__wheelSteps <= -1.0:
+					self.resizeFont.emit(True)
+					self.__wheelSteps += 1.0
+			return
+		else:
+			self.__wheelSteps = 0.0
+
+		QPlainTextEdit.wheelEvent(self, ev)
 
 	# Add the current indent to all lines (except the first) in 'text'.
 	def __makeSeamlessIndent(self, text):
