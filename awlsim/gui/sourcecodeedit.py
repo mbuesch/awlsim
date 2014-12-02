@@ -121,21 +121,28 @@ class SourceCodeEdit(QPlainTextEdit):
 		elif ev.key() == Qt.Key_Delete:
 			self.__validate()
 
-	def pasteText(self, text, seamlessIndent=False):
-		if seamlessIndent:
-			# Add the current indent to all pasted lines.
-			indentStr = self.__getLineIndent(self.textCursor())
-			lines = []
-			for i, line in enumerate(text.splitlines()):
-				if i == 0:
-					lines.append(line)
-				else:
-					lines.append(indentStr + line)
-			text = "\n".join(lines)
+	# Add the current indent to all lines (except the first) in 'text'.
+	def __makeSeamlessIndent(self, text):
+		indentStr = self.__getLineIndent(self.textCursor())
+		lines = []
+		for i, line in enumerate(text.splitlines()):
+			if i == 0:
+				lines.append(line)
+			else:
+				lines.append(indentStr + line)
+		return "\n".join(lines)
+
+	def pasteText(self, text):
+		if self.__autoIndentEn:
+			text = self.__makeSeamlessIndent(text)
 		self.insertPlainText(text)
 
 	def insertFromMimeData(self, mimeData):
-		pass#TODO seamless indent
+		if mimeData.hasText() and self.__autoIndentEn:
+			# Replace the mimeData by a re-indented mimeData.
+			newText = self.__makeSeamlessIndent(mimeData.text())
+			mimeData = QMimeData()
+			mimeData.setText(newText)
 		QPlainTextEdit.insertFromMimeData(self, mimeData)
 
 	def __handleCursorChange(self):

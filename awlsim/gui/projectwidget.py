@@ -284,9 +284,9 @@ class ProjectWidget(QTabWidget):
 			self.__isAdHocProject = False
 		return 1
 
-	def __pasteAwlText(self, text, seamlessIndent=False):
+	def __pasteAwlText(self, text):
 		if self.currentWidget() == self.awlTabs:
-			self.awlTabs.pasteText(text, seamlessIndent)
+			self.awlTabs.pasteText(text)
 			return True
 		QMessageBox.information(self,
 			"Please select AWL/STL source",
@@ -353,67 +353,58 @@ class ProjectWidget(QTabWidget):
 		dlg = TemplateDialog("OB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getOB(dlg.getBlockNumber(),
-							    dlg.getVerbose()),
-					    seamlessIndent = True)
+							    dlg.getVerbose()))
 
 	def insertFC(self):
 		dlg = TemplateDialog("FC", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFC(dlg.getBlockNumber(),
-							    dlg.getVerbose()),
-					    seamlessIndent = True)
+							    dlg.getVerbose()))
 
 	def insertFB(self):
 		dlg = TemplateDialog("FB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFB(dlg.getBlockNumber(),
-							    dlg.getVerbose()),
-					    seamlessIndent = True)
+							    dlg.getVerbose()))
 
 	def insertInstanceDB(self):
 		dlg = TemplateDialog("DB", "Instance-DB", extra="FB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getInstanceDB(dlg.getBlockNumber(),
 								    dlg.getExtraNumber(),
-								    dlg.getVerbose()),
-					    seamlessIndent = True)
+								    dlg.getVerbose()))
 
 	def insertGlobalDB(self):
 		dlg = TemplateDialog("DB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
-								  dlg.getVerbose()),
-					    seamlessIndent = True)
+								  dlg.getVerbose()))
 
 	def insertUDT(self):
 		dlg = TemplateDialog("UDT", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getUDT(dlg.getBlockNumber(),
-							     dlg.getVerbose()),
-					    seamlessIndent = True)
+							     dlg.getVerbose()))
 
 	def insertFCcall(self):
 		dlg = TemplateDialog("FC", "FC call", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFCcall(dlg.getBlockNumber(),
-								dlg.getVerbose()),
-					    seamlessIndent = True)
+								dlg.getVerbose()))
 
 	def insertFBcall(self):
 		dlg = TemplateDialog("FB", "FB call", extra="DB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
 								dlg.getExtraNumber(),
-								dlg.getVerbose()),
-					    seamlessIndent = True)
+								dlg.getVerbose()))
 
 	def openLibrary(self):
 		dlg = LibraryDialog(self.__project, self)
 		if dlg.exec_() == QDialog.Accepted:
 			if dlg.pasteText:
 				# Paste the code.
-				if not self.__pasteAwlText(dlg.pasteText,
-							   seamlessIndent = True):
+				if not self.__pasteAwlText(dlg.pasteText):
 					return
 			if dlg.pasteSymbol:
 				# Add a symbol to a symbol table.
