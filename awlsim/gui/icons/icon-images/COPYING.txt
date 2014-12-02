@@ -24,6 +24,9 @@ document-new-3.svg            | gnome                         | GPLv2
 document-open-5.svg           | tango                         | PD
 document-save-all.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
 edit-4.svg                    | nuvola                        | LGPL-2.1
+edit-copy-4.svg               | tango                         | PD
+edit-cut-4.svg                | tango                         | PD
+edit-paste-4.svg              | tango                         | PD
 edit-redo-4.svg               | tango                         | PD
 edit-undo-4.svg               | tango                         | PD
 emblem-package-2.svg          | gnome                         | GPLv2

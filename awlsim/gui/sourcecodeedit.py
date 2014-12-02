@@ -31,6 +31,7 @@ class SourceCodeEdit(QPlainTextEdit):
 
 		self.__undoIsAvailable = False
 		self.__redoIsAvailable = False
+		self.__copyIsAvailable = False
 
 		self.__prevLineNr = self.textCursor().blockNumber()
 		self.__prevColumnNr = self.textCursor().columnNumber()
@@ -43,6 +44,7 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.cursorPositionChanged.connect(self.__handleCursorChange)
 		self.undoAvailable.connect(self.__handleUndoAvailableChange)
 		self.redoAvailable.connect(self.__handleRedoAvailableChange)
+		self.copyAvailable.connect(self.__handleCopyAvailableChange)
 
 	def __handleUndoAvailableChange(self, available):
 		self.__undoIsAvailable = available
@@ -55,6 +57,12 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def redoIsAvailable(self):
 		return self.__redoIsAvailable
+
+	def __handleCopyAvailableChange(self, available):
+		self.__copyIsAvailable = available
+
+	def copyIsAvailable(self):
+		return self.__copyIsAvailable
 
 	def enableAutoIndent(self, enable=True):
 		self.__autoIndentEn = enable
@@ -125,6 +133,10 @@ class SourceCodeEdit(QPlainTextEdit):
 					lines.append(indentStr + line)
 			text = "\n".join(lines)
 		self.insertPlainText(text)
+
+	def insertFromMimeData(self, mimeData):
+		pass#TODO seamless indent
+		QPlainTextEdit.insertFromMimeData(self, mimeData)
 
 	def __handleCursorChange(self):
 		cursor = self.textCursor()

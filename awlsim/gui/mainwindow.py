@@ -47,6 +47,8 @@ class MainWidget(QWidget):
 	undoAvailableChanged = Signal(bool)
 	# Signal: RedoAvailable state changed
 	redoAvailableChanged = Signal(bool)
+	# Signal: CopyAvailable state changed
+	copyAvailableChanged = Signal(bool)
 
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
@@ -76,6 +78,7 @@ class MainWidget(QWidget):
 		self.projectWidget.selResourceChanged.connect(self.selResourceChanged)
 		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
+		self.projectWidget.copyAvailableChanged.connect(self.copyAvailableChanged)
 		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
 		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
 		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
@@ -259,6 +262,15 @@ class MainWidget(QWidget):
 	def redo(self):
 		self.projectWidget.redo()
 
+	def cut(self):
+		self.projectWidget.clipboardCut()
+
+	def copy(self):
+		self.projectWidget.clipboardCopy()
+
+	def paste(self):
+		self.projectWidget.clipboardPaste()
+
 class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
@@ -289,6 +301,10 @@ class MainWindow(QMainWindow):
 		menu = QMenu("&Edit", self)
 		self.undoAct = menu.addAction(getIcon("undo"), "&Undo", self.undo)
 		self.redoAct = menu.addAction(getIcon("redo"), "&Redo", self.redo)
+		menu.addSeparator()
+		self.cutAct = menu.addAction(getIcon("cut"), "&Cut", self.cut)
+		self.copyAct = menu.addAction(getIcon("copy"), "&Copy", self.copy)
+		self.pasteAct = menu.addAction(getIcon("paste"), "&Paste", self.paste)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Library", self)
@@ -325,6 +341,10 @@ class MainWindow(QMainWindow):
 		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit", self.undo)
 		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo", self.redo)
 		self.tb.addSeparator()
+		self.tbCutAct = self.tb.addAction(getIcon("cut"), "Cut", self.cut)
+		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy", self.copy)
+		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste", self.paste)
+		self.tb.addSeparator()
 		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
 		self.addToolBar(self.tb)
 
@@ -333,6 +353,7 @@ class MainWindow(QMainWindow):
 		self.__textFocusChanged(False)
 		self.__undoAvailableChanged(False)
 		self.__redoAvailableChanged(False)
+		self.__copyAvailableChanged(False)
 
 		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
 		self.centralWidget().runStateChanged.connect(self.__runStateChanged)
@@ -340,6 +361,7 @@ class MainWindow(QMainWindow):
 		self.centralWidget().selResourceChanged.connect(self.__selResourceChanged)
 		self.centralWidget().undoAvailableChanged.connect(self.__undoAvailableChanged)
 		self.centralWidget().redoAvailableChanged.connect(self.__redoAvailableChanged)
+		self.centralWidget().copyAvailableChanged.connect(self.__copyAvailableChanged)
 
 		if awlSource:
 			self.centralWidget().loadFile(awlSource)
@@ -445,6 +467,19 @@ class MainWindow(QMainWindow):
 		self.__redoAvailable = redoAvailable
 		self.__updateRedoActions()
 
+	def __updateClipboardActions(self):
+		self.cutAct.setEnabled(
+			self.__copyAvailable and
+			self.__selProjectResource == ProjectWidget.RES_SOURCES
+		)
+		self.tbCutAct.setEnabled(self.cutAct.isEnabled())
+		self.copyAct.setEnabled(self.cutAct.isEnabled())
+		self.tbCopyAct.setEnabled(self.copyAct.isEnabled())
+
+	def __copyAvailableChanged(self, copyAvailable):
+		self.__copyAvailable = copyAvailable
+		self.__updateClipboardActions()
+
 	def closeEvent(self, ev):
 		cpuWidget = self.centralWidget().getCpuWidget()
 		if cpuWidget.getState() != CpuWidget.STATE_STOP:
@@ -532,6 +567,15 @@ class MainWindow(QMainWindow):
 
 	def redo(self):
 		self.centralWidget().redo()
+
+	def cut(self):
+		self.centralWidget().cut()
+
+	def copy(self):
+		self.centralWidget().copy()
+
+	def paste(self):
+		self.centralWidget().paste()
 
 # If invoked as script, run a new instance.
 if __name__ == "__main__":

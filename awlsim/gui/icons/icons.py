@@ -46,6 +46,9 @@ from awlsim.gui.icons.exit import *
 from awlsim.gui.icons.undo import *
 from awlsim.gui.icons.redo import *
 from awlsim.gui.icons.browser import *
+from awlsim.gui.icons.cut import *
+from awlsim.gui.icons.copy import *
+from awlsim.gui.icons.paste import *
 
 import base64
 
@@ -73,12 +76,18 @@ __icons = {
 	"undo"		: icon_undo,
 	"redo"		: icon_redo,
 	"browser"	: icon_browser,
+	"cut"		: icon_cut,
+	"copy"		: icon_copy,
+	"paste"		: icon_paste,
 }
 
 def getIcon(iconName):
 	global __icons
 
-	icon = __icons[iconName]
+	try:
+		icon = __icons[iconName]
+	except KeyError:
+		return QIcon()
 	if isinstance(icon, QIcon):
 		# The icon is alredy cached. Return it.
 		return icon

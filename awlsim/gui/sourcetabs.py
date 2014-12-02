@@ -107,6 +107,8 @@ class SourceTabWidget(QTabWidget):
 	undoAvailableChanged = Signal(bool)
 	# Signal: RedoAvailable state changed
 	redoAvailableChanged = Signal(bool)
+	# Signal: CopyAvailable state changed
+	copyAvailableChanged = Signal(bool)
 
 	def __init__(self, itemName, parent=None):
 		QTabWidget.__init__(self, parent)
@@ -188,6 +190,18 @@ class SourceTabWidget(QTabWidget):
 	def redo(self):
 		pass
 
+	def copyIsAvailable(self):
+		return False
+
+	def clipboardCut(self):
+		pass
+
+	def clipboardCopy(self):
+		pass
+
+	def clipboardPaste(self):
+		pass
+
 class AwlSourceTabWidget(SourceTabWidget):
 	"AWL source tab-widget"
 
@@ -235,11 +249,13 @@ class AwlSourceTabWidget(SourceTabWidget):
 				editWidget = self.widget(index)
 				editWidget.enableCpuStats(True)
 		self.__emitVisibleLinesSignal()
-		# Update undo/redo states
+		# Update undo/redo/copy states
 		editWidget = self.currentWidget()
 		self.undoAvailableChanged.emit(editWidget.undoIsAvailable()
 					       if editWidget else False)
 		self.redoAvailableChanged.emit(editWidget.redoIsAvailable()
+					       if editWidget else False)
+		self.copyAvailableChanged.emit(editWidget.copyIsAvailable()
 					       if editWidget else False)
 
 	def updateRunState(self, newRunState):
@@ -284,6 +300,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
 		editWidget.undoAvailable.connect(self.undoAvailableChanged)
 		editWidget.redoAvailable.connect(self.redoAvailableChanged)
+		editWidget.copyAvailable.connect(self.copyAvailableChanged)
 		index = self.addTab(editWidget, editWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()
@@ -379,6 +396,27 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if editWidget:
 			return editWidget.redoIsAvailable()
 		return False
+
+	def copyIsAvailable(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			return editWidget.copyIsAvailable()
+		return False
+
+	def clipboardCut(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			editWidget.cut()
+
+	def clipboardCopy(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			editWidget.copy()
+
+	def clipboardPaste(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			editWidget.paste()
 
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	

@@ -104,6 +104,8 @@ class ProjectWidget(QTabWidget):
 	undoAvailableChanged = Signal(bool)
 	# Signal: RedoAvailable state changed
 	redoAvailableChanged = Signal(bool)
+	# Signal: CopyAvailable state changed
+	copyAvailableChanged = Signal(bool)
 
 	# Project resource identifier
 	EnumGen.start
@@ -134,6 +136,7 @@ class ProjectWidget(QTabWidget):
 		self.awlTabs.focusChanged.connect(self.textFocusChanged)
 		self.awlTabs.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.awlTabs.redoAvailableChanged.connect(self.redoAvailableChanged)
+		self.awlTabs.copyAvailableChanged.connect(self.copyAvailableChanged)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.libTable.model().contentChanged.connect(self.libTableChanged)
 
@@ -149,14 +152,17 @@ class ProjectWidget(QTabWidget):
 			self.selResourceChanged.emit(self.RES_SOURCES)
 			self.undoAvailableChanged.emit(self.awlTabs.undoIsAvailable())
 			self.redoAvailableChanged.emit(self.awlTabs.redoIsAvailable())
+			self.copyAvailableChanged.emit(self.awlTabs.copyIsAvailable())
 		elif widget is self.symTabs:
 			self.selResourceChanged.emit(self.RES_SYMTABS)
 			self.undoAvailableChanged.emit(self.symTabs.undoIsAvailable())
 			self.redoAvailableChanged.emit(self.symTabs.redoIsAvailable())
+			self.copyAvailableChanged.emit(self.symTabs.copyIsAvailable())
 		elif widget is self.libTable:
 			self.selResourceChanged.emit(self.RES_LIBSELS)
 			self.undoAvailableChanged.emit(False)
 			self.redoAvailableChanged.emit(False)
+			self.copyAvailableChanged.emit(False)
 		else:
 			assert(0)
 
@@ -429,3 +435,18 @@ class ProjectWidget(QTabWidget):
 		widget = self.currentWidget()
 		if widget:
 			widget.redo()
+
+	def clipboardCut(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.clipboardCut()
+
+	def clipboardCopy(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.clipboardCopy()
+
+	def clipboardPaste(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.clipboardPaste()
