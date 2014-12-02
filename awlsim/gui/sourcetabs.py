@@ -370,10 +370,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.updateTabTexts()
 		self.setCurrentIndex(index)
 
-	def pasteText(self, text, seamlessIndent=False):
+	def pasteText(self, text):
 		editWidget = self.currentWidget()
 		if editWidget:
-			editWidget.pasteText(text, seamlessIndent)
+			editWidget.pasteText(text)
 
 	def undoIsAvailable(self):
 		editWidget = self.currentWidget()
