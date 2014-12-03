@@ -65,6 +65,7 @@ def intToDualString(value, bitWidth):
 # Get the default fixed font
 def getDefaultFixedFont():
 	font = QFont()
+	font.setStyleHint(QFont.Courier)
 	font.setFamily("Courier")
 	font.setPointSize(11)
 	font.setWeight(QFont.Normal)
