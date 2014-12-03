@@ -70,7 +70,7 @@ class GuiConfigDialog(QDialog):
 		self.editFontButton.released.connect(self.__openEditFontDialog)
 
 	def __updateEditFontLabel(self):
-		self.editFontLabel.setText("Font: %s / %d pt" %\
+		self.editFontLabel.setText("Font: %s, %d pt" %\
 					   (self.__editFont.family(),
 					    self.__editFont.pointSize()))
 		self.editFontLabel.setFont(self.__editFont)
@@ -102,6 +102,7 @@ class GuiConfigDialog(QDialog):
 		fontStr = guiSettings.getEditorFont()
 		if fontStr:
 			self.__editFont.fromString(fontStr)
+			self.__editFont.setStyleHint(QFont.Courier)
 		self.__updateEditFontLabel()
 
 	def saveToProject(self, project):

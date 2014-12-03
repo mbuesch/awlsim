@@ -461,6 +461,7 @@ class EditWidget(SourceCodeEdit):
 		fontString = guiSettings.getEditorFont()
 		if fontString:
 			font.fromString(fontString)
+			font.setStyleHint(QFont.Courier)
 		self.__updateFont(font)
 
 	def runStateChanged(self, newState):

@@ -151,6 +151,7 @@ class ProjectWidget(QTabWidget):
 		fontStr = self.__project.getGuiSettings().getEditorFont()
 		if fontStr:
 			font.fromString(fontStr)
+			font.setStyleHint(QFont.Courier)
 		if bigger:
 			font.setPointSize(font.pointSize() + 1)
 			if font.pointSize() > 72:
