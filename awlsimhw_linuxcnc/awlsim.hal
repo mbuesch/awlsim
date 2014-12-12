@@ -19,8 +19,8 @@
 #			  etc...
 #  --input-size		: Size of the input area mapping, in bytes.
 #  --output-size	: Size of the output area mapping, in bytes.
-#  Last argument	: The S7 AWL/STL program to run.
-loadusr -Wn awlsim awlsim-linuxcnc-hal --gui off --input-base 0 --input-size 32 --output-base 0 --output-size 32 /tmp/PROGRAM.awl
+#  Last argument	: The Awlsim AWL/STL project or program to run.
+loadusr -Wn awlsim awlsim-linuxcnc-hal --gui off --input-base 0 --input-size 32 --output-base 0 --output-size 32 /tmp/PROGRAM.awlpro
 
 # --- Enable the used input pins ---
 # All input pins are deactivated by default.
