@@ -38,6 +38,8 @@ import time
 class AwlSimClient(object):
 	def __init__(self):
 		self.serverProcess = None
+		self.serverProcessHost = None
+		self.serverProcessPort = None
 		self.__transceiver = None
 
 	def spawnServer(self,
@@ -88,11 +90,35 @@ class AwlSimClient(object):
 					"any of the supplied Python interpreters: %s\n"
 					"No interpreter found." %\
 					str(toList(interpreter)))
+		self.serverProcessHost = listenHost
+		self.serverProcessPort = listenPort
 		if isJython:
 			#XXX Workaround: Jython's socket module does not like connecting
 			# to a starting server. Wait a few seconds for the server
 			# to start listening on the socket.
 			time.sleep(10)
+
+	def killSpawnedServer(self):
+		"""Shutdown the server process started with spawnServer()."""
+
+		if not self.serverProcess:
+			return
+
+		if self.__transceiver:
+			try:
+				msg = AwlSimMessage_SHUTDOWN()
+				status = self.__sendAndWaitFor_REPLY(msg)
+				if status != AwlSimMessage_REPLY.STAT_OK:
+					printError("AwlSimClient: Failed to shut "
+						"down server via message")
+			except (AwlSimError, MaintenanceRequest) as e:
+				pass
+
+		self.serverProcess.terminate()
+		self.serverProcess.wait()
+		self.serverProcess = None
+		self.serverProcessHost = None
+		self.serverProcessPort = None
 
 	def connectToServer(self,
 			    host=AwlSimServer.DEFAULT_HOST,
@@ -151,26 +177,20 @@ class AwlSimClient(object):
 		except TransferError as e:
 			raise AwlSimError("AwlSimClient: PING to server failed")
 
+	def shutdownTransceiver(self):
+		"""Shutdown transceiver and close the socket."""
+
+		if not self.__transceiver:
+			return
+
+		self.__transceiver.shutdown()
+		self.__transceiver = None
+
 	def shutdown(self):
 		"""Shutdown all sockets and spawned processes."""
 
-		if self.serverProcess:
-			if self.__transceiver:
-				try:
-					msg = AwlSimMessage_SHUTDOWN()
-					status = self.__sendAndWaitFor_REPLY(msg)
-					if status != AwlSimMessage_REPLY.STAT_OK:
-						printError("AwlSimClient: Failed to shut "
-							"down server via message")
-				except (AwlSimError, MaintenanceRequest) as e:
-					pass
-
-			self.serverProcess.terminate()
-			self.serverProcess.wait()
-			self.serverProcess = None
-		if self.__transceiver:
-			self.__transceiver.shutdown()
-			self.__transceiver = None
+		self.killSpawnedServer()
+		self.shutdownTransceiver()
 
 	def __rx_NOP(self, msg):
 		pass # Nothing
