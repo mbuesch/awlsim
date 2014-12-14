@@ -130,3 +130,10 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 			os.unlink(tmpFile)
 		except (IOError, OSError):
 			pass
+
+# Call a callable and suppress any exceptions.
+def CALL_NOEX(_callable, *args, **kwargs):
+	try:
+		return _callable(*args, **kwargs)
+	except Exception:
+		return None
