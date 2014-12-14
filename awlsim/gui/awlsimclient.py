@@ -37,9 +37,18 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Parameter: A list of MemoryArea instances.
 	haveMemoryUpdate = Signal(list)
 
+	# The client mode
+	EnumGen.start
+	MODE_OFFLINE	= EnumGen.item # Not connected
+	MODE_ONLINE	= EnumGen.item # Connected to an existing core
+	MODE_FORK	= EnumGen.item # Online to a newly forked core
+	EnumGen.end
+
 	def __init__(self):
 		QObject.__init__(self)
 		AwlSimClient.__init__(self)
+
+		self.__setMode(self.MODE_OFFLINE, None, None)
 
 	# Override sleep handler
 	def sleep(self, seconds):
@@ -61,3 +70,87 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Override memory update handler
 	def handle_INSNSTATE(self, msg):
 		self.haveInsnDump.emit(msg)
+
+	def getMode(self):
+		return self.__mode
+
+	def __setMode(self, mode, host, port):
+		self.__mode = mode
+		self.__host = host
+		self.__port = port
+
+	def shutdown(self):
+		# Shutdown the client.
+		# If we are in FORK mode, this will also terminate
+		# the forked core.
+		# If we are in ONLINE mode, this will only
+		# close the connection.
+		AwlSimClient.shutdown(self)
+		self.__setMode(self.MODE_OFFLINE, None, None)
+
+	def setMode_OFFLINE(self):
+		if self.__mode == self.MODE_OFFLINE:
+			return
+		if self.serverProcess:
+			# Put the spawned core into STOP state.
+			try:
+				if not self.setRunState(False):
+					raise RuntimeError
+			except (AwlSimError, RuntimeError) as e:
+				CALL_NOEX(self.killSpawnedServer)
+		self.shutdownTransceiver()
+		self.__setMode(self.MODE_OFFLINE, None, None)
+
+	def setMode_ONLINE(self, host, port):
+		if self.__mode == self.MODE_ONLINE:
+			if self.__host == host and\
+			   self.__port == port:
+				# We are already up and running.
+				return
+		self.shutdown()
+		try:
+			self.connectToServer(host = host, port = port)
+		except AwlSimError as e:
+			CALL_NOEX(self.shutdown)
+			raise e
+		self.__setMode(self.MODE_ONLINE, host, port)
+
+	def setMode_FORK(self, portRange,
+			 serverExecutable=None,
+			 interpreterList=None):
+		host = "localhost"
+		if self.__mode == self.MODE_FORK:
+			if self.__port in portRange:
+				assert(self.__host == host)
+				# We are already up and running.
+				return
+		try:
+			if self.serverProcess:
+				if self.serverProcessPort not in portRange:
+					self.killSpawnedServer()
+			if not self.serverProcess:
+				for port in portRange:
+					if not AwlSimServer.portIsUnused(host, port):
+						continue
+					# XXX: There is a race-window here. Another process might
+					#      allocate the port that we just checked
+					#      before our server is able to allocate it.
+					if serverExecutable:
+						self.spawnServer(serverExecutable = serverExecutable,
+								 listenHost = host,
+								 listenPort = port)
+					else:
+						self.spawnServer(interpreter = interpreterList,
+								 listenHost = host,
+								 listenPort = port)
+					break
+				else:
+					raise AwlSimError("Did not find a free port to run the "
+						"awlsim core server on.\nTried port %d to %d on '%s'." %\
+						(portRange[0], portRange[-1], host))
+			self.shutdownTransceiver()
+			self.connectToServer(host = host, port = port)
+		except AwlSimError as e:
+			CALL_NOEX(self.shutdown)
+			raise e
+		self.__setMode(self.MODE_FORK, host, port)

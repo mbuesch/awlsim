@@ -238,32 +238,20 @@ class CpuWidget(QWidget):
 			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
 				firstPort, lastPort = self.mainWidget.coreConfigDialog.getSpawnPortRange()
 				interp = self.mainWidget.coreConfigDialog.getInterpreterList()
-				host = AwlSimServer.DEFAULT_HOST
-				for port in range(firstPort, lastPort + 1):
-					if not AwlSimServer.portIsUnused(host, port):
-						continue
-					# XXX: There is a race-window here. Another process might
-					#      allocate the port that we just checked
-					#      before our server is able to allocate it.
-					if isWinStandalone:
-						# Run the py2exe standalone server process
-						client.spawnServer(serverExecutable = "awlsim-server-module.exe",
-								   listenHost = host,
-								   listenPort = port)
-					else:
-						client.spawnServer(interpreter = interp,
-								   listenHost = host,
-								   listenPort = port)
-					break
+				if isWinStandalone:
+					# Run the frozen standalone server process
+					client.setMode_FORK(
+						portRange = range(firstPort, lastPort + 1),
+						serverExecutable = "awlsim-server-module.exe")
 				else:
-					raise AwlSimError("Did not find a free port to run the "
-						"awlsim core server on.\nTried port %d to %d on '%s'." %\
-						(firstPort, lastPort, host))
+					client.setMode_FORK(
+						portRange = range(firstPort, lastPort + 1),
+						interpreterList = interp)
 			else:
 				host = self.mainWidget.coreConfigDialog.getConnectHost()
 				port = self.mainWidget.coreConfigDialog.getConnectPort()
-			client.connectToServer(host = host,
-					       port = port)
+				client.setMode_ONLINE(host = host, port = port)
+
 			client.setRunState(False)
 			client.reset()
 
