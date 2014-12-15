@@ -128,7 +128,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			if self.serverProcess:
 				if self.serverProcessPort not in portRange:
 					self.killSpawnedServer()
-			if not self.serverProcess:
+			if self.serverProcess:
+				port = self.serverProcessPort
+			else:
 				for port in portRange:
 					if not AwlSimServer.portIsUnused(host, port):
 						continue
