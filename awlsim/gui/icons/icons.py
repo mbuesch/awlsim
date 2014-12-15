@@ -49,6 +49,7 @@ from awlsim.gui.icons.browser import *
 from awlsim.gui.icons.cut import *
 from awlsim.gui.icons.copy import *
 from awlsim.gui.icons.paste import *
+from awlsim.gui.icons.download import *
 
 import base64
 
@@ -79,6 +80,7 @@ __icons = {
 	"cut"		: icon_cut,
 	"copy"		: icon_copy,
 	"paste"		: icon_paste,
+	"download"	: icon_download,
 }
 
 def getIcon(iconName):
