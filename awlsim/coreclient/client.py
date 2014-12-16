@@ -288,10 +288,13 @@ class AwlSimClient(object):
 		now = monotonic_time()
 		end = now + waitTimeout
 		while now < end:
-			if self.processMessages(0.1):
-				rxMsg = self.lastRxMsg
-				if checkRxMsg(rxMsg):
-					return rxMsg
+			try:
+				if self.processMessages(0.1):
+					rxMsg = self.lastRxMsg
+					if checkRxMsg(rxMsg):
+						return rxMsg
+			except MaintenanceRequest as e:
+				pass # Ignore
 			now = monotonic_time()
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
 

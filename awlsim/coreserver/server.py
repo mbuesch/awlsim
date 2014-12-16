@@ -51,9 +51,10 @@ class AwlSimServer(object):
 	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
 
 	EnumGen.start
-	STATE_INIT	= EnumGen.item
-	STATE_RUN	= EnumGen.item
-	STATE_EXIT	= EnumGen.item
+	STATE_INIT		= EnumGen.item
+	STATE_RUN		= EnumGen.item
+	STATE_MAINTENANCE	= EnumGen.item
+	STATE_EXIT		= EnumGen.item
 	EnumGen.end
 
 	# Command mask bits
@@ -237,7 +238,9 @@ class AwlSimServer(object):
 		# Make a shortcut variable for RUN
 		self.__running = bool(runstate == self.STATE_RUN)
 
-		self.__insnSerial = 0
+		if runstate == self.STATE_RUN or\
+		   runstate == self.STATE_INIT:
+			self.__insnSerial = 0
 
 	def __rebuildSelectReadList(self):
 		rlist = [ self.socket ]
@@ -538,8 +541,10 @@ class AwlSimServer(object):
 			try:
 				sim = self.sim
 
-				if self.state == self.STATE_INIT:
-					while self.state == self.STATE_INIT:
+				if self.state in (self.STATE_INIT,
+						  self.STATE_MAINTENANCE):
+					while self.state in (self.STATE_INIT,
+							     self.STATE_MAINTENANCE):
 						self.__handleCommunication()
 						time.sleep(0.01)
 					continue
@@ -561,6 +566,11 @@ class AwlSimServer(object):
 							   "exception to client.")
 				self.__setRunState(self.STATE_INIT)
 			except MaintenanceRequest as e:
+				# Put the CPU into maintenance mode.
+				# This will halt the CPU until a client
+				# sets it into RUN or STOP again.
+				self.__setRunState(self.STATE_MAINTENANCE)
+				# Send the maintenance message.
 				try:
 					if self.clients:
 						# Forward it to the first client
