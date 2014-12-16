@@ -106,6 +106,17 @@ def loadHardwareModule(awlSim, hal,
 	awlSim.registerHardwareClass(hwClass = hwClass,
 				     parameters = parameters)
 
+def readInputFile(inputFile):
+	if Project.fileIsProject(inputFile):
+		project = Project.fromFile(inputFile)
+	else:
+		# make a fake project
+		awlSrc = AwlSource.fromFile(name = inputFile,
+					    filepath = inputFile)
+		project = Project(projectFile = None,
+				  awlSources = [ awlSrc, ])
+	return project
+
 def usage():
 	printInfo("awlsim-linuxcnc-hal version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
 	printInfo("")
@@ -198,11 +209,20 @@ def main():
 			#TODO: We should (always) run a coreserver, so that a gui can connect.
 			return 1
 
-		source = AwlSource(name = awlFile,
-				   filepath = awlFile,
-				   sourceBytes = awlFileRead(awlFile, encoding="binary"))
-		p = AwlParser()
-		p.parseSource(source)
+		project = readInputFile(awlFile)
+		parseTrees = []
+		for awlSrc in project.getAwlSources():
+			p = AwlParser()
+			p.parseSource(awlSrc)
+			parseTrees.append(p.getParseTree())
+		symTables = []
+		for symTabSrc in project.getSymTabSources():
+			mnemonics = project.cpuSpecs.getConfiguredMnemonics()
+			tab = SymTabParser.parseSource(symTabSrc,
+						       autodetectFormat = True,
+						       mnemonics = mnemonics)
+			symTables.append(tab)
+
 		s = AwlSim()
 
 		loadHardwareModule(awlSim = s, hal = hal,
@@ -212,7 +232,10 @@ def main():
 				   outputSize = opt_outputSize)
 
 		# Load the program
-		s.load(p.getParseTree())
+		for symTable in symTables:
+			s.loadSymbolTable(symTable)
+		for parseTree in parseTrees:
+			s.load(parseTree)
 		s.startup()
 
 		# Run cyclic execution
