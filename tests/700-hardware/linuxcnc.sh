@@ -8,10 +8,12 @@ sh_test()
 
 	modpath="$rootdir/fake/linuxcnc_fake_hal"
 
-	PYTHONPATH="$modpath:$PYTHONPATH" \
-	JYTHONPATH="$modpath:$JYTHONPATH" \
-	IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \
-		"$interpreter" ./awlsim-linuxcnc-hal \
-		--check-cnc 0 --onecycle "$rootdir/tests/000-base/empty.awl" ||\
-			test_failed "LinuxCNC test failed"
+	for testfile in "000-base/empty.awl" "000-base/EXAMPLE.awlpro"; do
+		PYTHONPATH="$modpath:$PYTHONPATH" \
+		JYTHONPATH="$modpath:$JYTHONPATH" \
+		IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \
+			"$interpreter" ./awlsim-linuxcnc-hal \
+			--check-cnc 0 --onecycle "$rootdir/tests/$testfile" ||\
+				test_failed "LinuxCNC test '$testfile' failed"
+	done
 }
