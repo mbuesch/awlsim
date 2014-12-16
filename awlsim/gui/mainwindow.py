@@ -79,10 +79,11 @@ class MainWidget(QWidget):
 		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.projectWidget.copyAvailableChanged.connect(self.copyAvailableChanged)
-		self.cpuWidget.runStateChanged.connect(self.__runStateChanged)
+		self.cpuWidget.runStateChanged.connect(self.runStateChanged)
 		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
 		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
 		self.runStateChanged.connect(self.projectWidget.updateRunState)
+		self.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
 
 	def isDirty(self):
 		return self.dirty
@@ -92,11 +93,11 @@ class MainWidget(QWidget):
 			self.dirty = dirty
 			self.dirtyChanged.emit(self.dirty)
 
+	def __somethingChanged(self):
+		self.setDirty(True)
+
 	def getFilename(self):
 		return self.filename
-
-	def __runStateChanged(self, newState):
-		self.runStateChanged.emit(newState)
 
 	def getSimClient(self):
 		return self.simClient
@@ -106,10 +107,6 @@ class MainWidget(QWidget):
 
 	def getProject(self):
 		return self.projectWidget.getProject()
-
-	def __somethingChanged(self):
-		self.cpuWidget.stop()
-		self.setDirty(True)
 
 	def newFile(self, filename=None):
 		if isWinStandalone:
@@ -156,6 +153,7 @@ class MainWidget(QWidget):
 				return
 			else:
 				assert(0)
+		self.cpuWidget.goOffline()
 		try:
 			res = self.projectWidget.loadProjectFile(filename)
 			if not res:
@@ -356,7 +354,6 @@ class MainWindow(QMainWindow):
 		self.__copyAvailableChanged(False)
 
 		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
-		self.centralWidget().runStateChanged.connect(self.__runStateChanged)
 		self.centralWidget().textFocusChanged.connect(self.__textFocusChanged)
 		self.centralWidget().selResourceChanged.connect(self.__selResourceChanged)
 		self.centralWidget().undoAvailableChanged.connect(self.__undoAvailableChanged)
@@ -395,16 +392,6 @@ class MainWindow(QMainWindow):
 
 	def getSimClient(self):
 		return self.centralWidget().getSimClient()
-
-	def cpuRun(self):
-		self.centralWidget().getCpuWidget().run()
-
-	def cpuStop(self):
-		self.centralWidget().getCpuWidget().stop()
-
-	def __runStateChanged(self, newState):
-		self.menuBar().setEnabled(newState == CpuWidget.STATE_STOP)
-		self.tb.setEnabled(newState == CpuWidget.STATE_STOP)
 
 	def __dirtyChanged(self, isDirty):
 		self.saveAct.setEnabled(isDirty)
@@ -481,18 +468,6 @@ class MainWindow(QMainWindow):
 		self.__updateClipboardActions()
 
 	def closeEvent(self, ev):
-		cpuWidget = self.centralWidget().getCpuWidget()
-		if cpuWidget.getState() != CpuWidget.STATE_STOP:
-			res = QMessageBox.question(self,
-				"CPU is in RUN state",
-				"CPU is in RUN state.\n"
-				"STOP CPU and quit application?",
-				QMessageBox.Yes | QMessageBox.No,
-				QMessageBox.Yes)
-			if res != QMessageBox.Yes:
-				ev.ignore()
-				return
-		self.centralWidget().getCpuWidget().stop()
 		if self.centralWidget().isDirty():
 			res = QMessageBox.question(self,
 				"Unsaved AWL/STL code",
@@ -507,6 +482,7 @@ class MainWindow(QMainWindow):
 			elif res == QMessageBox.Cancel:
 				ev.ignore()
 				return
+		self.centralWidget().getSimClient().shutdown()
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
 

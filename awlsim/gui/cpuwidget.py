@@ -30,7 +30,7 @@ from awlsim.gui.icons import *
 
 class ToolButton(QPushButton):
 	ICONSIZE	= (32, 32)
-	BTNFACT		= 1.3
+	BTNFACT		= 1.2
 
 	def __init__(self, iconName, description, parent=None):
 		QPushButton.__init__(self, parent)
@@ -46,9 +46,21 @@ class ToolButton(QPushButton):
 
 		self.setToolTip(description)
 
-class RunButton(ToolButton):
-	def __init__(self, parent=None):
-		ToolButton.__init__(self, "run", "", parent)
+class CheckableToolButton(ToolButton):
+	def __init__(self,
+		     checkedIconName, uncheckedIconName="",
+		     checkedToolTip="", uncheckedToolTip="",
+		     parent=None):
+		ToolButton.__init__(self, uncheckedIconName, "", parent)
+
+		self.__checkedIconName = checkedIconName
+		self.__uncheckedIconName = uncheckedIconName
+		if not self.__uncheckedIconName:
+			self.__uncheckedIconName = self.__checkedIconName
+		self.__checkedToolTip = checkedToolTip
+		self.__uncheckedToolTip = uncheckedToolTip
+		if not self.__uncheckedToolTip:
+			self.__uncheckedToolTip = self.__checkedToolTip
 
 		self.setCheckable(True)
 		self.setChecked(False)
@@ -56,12 +68,10 @@ class RunButton(ToolButton):
 		self.toggled.connect(self.__handleToggle)
 
 	def __handleToggle(self, checked):
-		if checked:
-			self.setIcon(getIcon("stop"))
-			self.setToolTip("Click to stop CPU")
-		else:
-			self.setIcon(getIcon("run"))
-			self.setToolTip("Click to start CPU")
+		self.setToolTip(self.__checkedToolTip if checked else\
+				self.__uncheckedToolTip)
+		self.setIcon(getIcon(self.__checkedIconName if checked else\
+				     self.__uncheckedIconName))
 
 class CpuWidget(QWidget):
 	# Signal: The CPU run-state changed
@@ -72,8 +82,8 @@ class CpuWidget(QWidget):
 	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
 
 	EnumGen.start
-	STATE_STOP	= EnumGen.item
-	STATE_INIT	= EnumGen.item
+	STATE_OFFLINE	= EnumGen.item
+	STATE_ONLINE	= EnumGen.item
 	STATE_LOAD	= EnumGen.item
 	STATE_RUN	= EnumGen.item
 	STATE_EXCEPTION	= EnumGen.item
@@ -85,7 +95,11 @@ class CpuWidget(QWidget):
 		self.layout().setContentsMargins(QMargins(7, 0, 0, 0))
 
 		self.mainWidget = mainWidget
-		self.state = self.STATE_STOP
+		self.state = self.STATE_OFFLINE
+
+		self.__coreMsgTimer = QTimer(self)
+		self.__coreMsgTimer.setSingleShot(False)
+		self.__coreMsgTimer.timeout.connect(self.__processCoreMessages)
 
 		client = self.mainWidget.getSimClient()
 		client.haveCpuDump.connect(self.__handleCpuDump)
@@ -96,11 +110,25 @@ class CpuWidget(QWidget):
 
 		group = QGroupBox("CPU", self)
 		group.setLayout(QGridLayout(group))
-		self.runButton = RunButton(group)
-		group.layout().addWidget(self.runButton, 0, 0)
-		self.onlineDiagButton = ToolButton("glasses", "Online diagnosis", group)
-		self.onlineDiagButton.setCheckable(True)
-		group.layout().addWidget(self.onlineDiagButton, 0, 1)
+		self.onlineButton = CheckableToolButton("network", None,
+					"Click to go offline",
+					"Click to go online (Connect to a CPU)",
+					group)
+		group.layout().addWidget(self.onlineButton, 0, 0)
+		self.downloadButton = ToolButton("download",
+					"Download AWL/STL code to CPU",
+					group)
+		group.layout().addWidget(self.downloadButton, 0, 1)
+		self.runButton = CheckableToolButton("stop", "run",
+					"Click to stop CPU",
+					"Click to start CPU",
+					group)
+		group.layout().addWidget(self.runButton, 0, 2)
+		self.onlineDiagButton = CheckableToolButton("glasses", None,
+					"Online diagnosis",
+					None,
+					group)
+		group.layout().addWidget(self.onlineDiagButton, 0, 3)
 		toolsLayout.addWidget(group)
 
 		group = QGroupBox("Inspection", self)
@@ -130,6 +158,8 @@ class CpuWidget(QWidget):
 		self.stateWs.setScrollBarsEnabled(True)
 		self.layout().addWidget(self.stateWs, 1, 0)
 
+		self.onlineButton.toggled.connect(self.__onlineToggled)
+		self.downloadButton.pressed.connect(self.__download)
 		self.runButton.toggled.connect(self.__runStateToggled)
 		self.onlineDiagButton.toggled.connect(self.__updateOnlineViewState)
 		self.newCpuStateButton.released.connect(self.__newWin_CPU)
@@ -220,85 +250,33 @@ class CpuWidget(QWidget):
 		for win in self.stateWs.windowList():
 			win.setMemories(memAreas)
 
-	def __run(self):
+	def __run(self, downloadFirst=True):
 		client = self.mainWidget.getSimClient()
 
-		self.__setState(self.STATE_INIT)
 		self.runButton.setChecked(True)
 
-		project = self.mainWidget.getProject()
-		awlSources = self.mainWidget.projectWidget.getAwlSources()
-		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
-		libSelections = self.mainWidget.projectWidget.getLibSelections()
-		if not all(awlSources) or not all(symTabSources):
-			self.stop()
-			return
+		if downloadFirst:
+			if not self.__download():
+				self.stop()
+				return
 
 		try:
-			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
-				firstPort, lastPort = self.mainWidget.coreConfigDialog.getSpawnPortRange()
-				interp = self.mainWidget.coreConfigDialog.getInterpreterList()
-				if isWinStandalone:
-					# Run the frozen standalone server process
-					client.setMode_FORK(
-						portRange = range(firstPort, lastPort + 1),
-						serverExecutable = "awlsim-server-module.exe")
-				else:
-					client.setMode_FORK(
-						portRange = range(firstPort, lastPort + 1),
-						interpreterList = interp)
-			else:
-				host = self.mainWidget.coreConfigDialog.getConnectHost()
-				port = self.mainWidget.coreConfigDialog.getConnectPort()
-				client.setMode_ONLINE(host = host, port = port)
-
-			client.setRunState(False)
-			client.reset()
-
-			client.setCpuSpecs(project.getCpuSpecs())
-			client.enableOBTempPresets(project.getObTempPresetsEn())
-			client.enableExtendedInsns(project.getExtInsnsEn())
-
-			self.__uploadMemReadAreas()
-			self.__updateOnlineViewState()
-
-			self.__setState(self.STATE_LOAD)
-			client.loadHardwareModule("dummy")
-			for symTabSource in symTabSources:
-				client.loadSymbolTable(symTabSource)
-			for libSel in libSelections:
-				client.loadLibraryBlock(libSel)
-			for awlSource in awlSources:
-				client.loadCode(awlSource)
 			client.setRunState(True)
-		except AwlParserError as e:
-			self.__setState(self.STATE_EXCEPTION)
-			MessageBox.handleAwlParserError(self, e)
-			self.stop()
-			client.shutdown()
-			return
+			self.__setState(self.STATE_RUN)
+			self.__coreMsgTimer.start(0)
 		except AwlSimError as e:
 			self.__setState(self.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Error while loading code", e)
+				"Could not start CPU", e)
 			self.stop()
-			client.shutdown()
-			return
-		except Exception:
-			try:
-				client.setRunState(False)
-			except: pass
-			client.shutdown()
-			handleFatalException(self)
-		self.__setState(self.STATE_RUN)
+
+	# Periodic timer for core message handling.
+	def __processCoreMessages(self):
+		client = self.mainWidget.getSimClient()
 		try:
-			# The main loop
-			while self.state == self.STATE_RUN:
-				# Receive messages, until we hit a timeout
-				while client.processMessages(0.1):
-					pass
-				# Process GUI events
-				QApplication.processEvents(QEventLoop.AllEvents)
+			# Receive messages, until we hit a timeout
+			while client.processMessages(0.1):
+				pass
 		except AwlSimError as e:
 			self.__setState(self.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
@@ -317,25 +295,26 @@ class CpuWidget(QWidget):
 				print("Unknown maintenance request %d" % e.requestType)
 				self.stop()
 		except Exception:
-			try:
-				client.setRunState(False)
-			except: pass
+			CALL_NOEX(client.setRunState, False)
 			client.shutdown()
 			handleFatalException(self)
-		try:
-			client.setRunState(False)
-		except: pass
-		client.shutdown()
+
+	def __stop(self):
+		self.runButton.setChecked(False)
+		self.__coreMsgTimer.stop()
+		if self.isOnline():
+			client = self.mainWidget.getSimClient()
+			try:
+				client.setRunState(False)
+			except AwlSimError as e:
+				MessageBox.handleAwlSimError(self,
+					"Could not stop CPU", e)
+		self.__setState(self.STATE_ONLINE)
 
 	def stop(self):
-		if self.state == self.STATE_STOP:
-			return
 		self.runButton.setChecked(False)
-		self.__setState(self.STATE_STOP)
 
 	def run(self):
-		if self.state != self.STATE_STOP:
-			return
 		self.runButton.setChecked(True)
 
 	def getState(self):
@@ -347,13 +326,124 @@ class CpuWidget(QWidget):
 			self.runStateChanged.emit(self.state)
 			QApplication.processEvents(QEventLoop.AllEvents, 1000)
 
+	def __goOnline(self):
+		client = self.mainWidget.getSimClient()
+		try:
+			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
+				firstPort, lastPort = self.mainWidget.coreConfigDialog.getSpawnPortRange()
+				interp = self.mainWidget.coreConfigDialog.getInterpreterList()
+				if isWinStandalone:
+					# Run the frozen standalone server process
+					client.setMode_FORK(
+						portRange = range(firstPort, lastPort + 1),
+						serverExecutable = "awlsim-server-module.exe")
+				else:
+					client.setMode_FORK(
+						portRange = range(firstPort, lastPort + 1),
+						interpreterList = interp)
+			else:
+				host = self.mainWidget.coreConfigDialog.getConnectHost()
+				port = self.mainWidget.coreConfigDialog.getConnectPort()
+				client.setMode_ONLINE(host = host, port = port)
+				#TODO: If client is RUNning, switch GUI to run state.
+		except AwlSimError as e:
+			CALL_NOEX(client.setMode_OFFLINE)
+			MessageBox.handleAwlSimError(self,
+				"Error while trying to connect to CPU", e)
+		self.__setState(self.STATE_ONLINE)
+
+	def __goOffline(self):
+		client = self.mainWidget.getSimClient()
+		try:
+			client.setMode_OFFLINE()
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Error while trying to disconnect from CPU", e)
+		# Release the stop-button.
+		# This will _not_ stop the CPU, as we're offline already.
+		self.runButton.setChecked(False)
+		self.__setState(self.STATE_OFFLINE)
+
+	def __onlineToggled(self):
+		if self.isOnline():
+			self.__goOnline()
+		else:
+			self.__goOffline()
+
+	def isOnline(self):
+		return self.onlineButton.isChecked()
+
+	def goOnline(self):
+		self.onlineButton.setChecked(True)
+
+	def goOffline(self):
+		self.onlineButton.setChecked(False)
+
+	def __download(self):
+		# Make sure we are online.
+		self.goOnline()
+
+		client = self.mainWidget.getSimClient()
+		project = self.mainWidget.getProject()
+		awlSources = self.mainWidget.projectWidget.getAwlSources()
+		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
+		libSelections = self.mainWidget.projectWidget.getLibSelections()
+		if not all(awlSources) or not all(symTabSources):
+			return False
+
+		try:
+			self.__setState(self.STATE_LOAD)
+
+			client.setRunState(False)
+			client.reset()
+
+			client.setCpuSpecs(project.getCpuSpecs())
+			client.enableOBTempPresets(project.getObTempPresetsEn())
+			client.enableExtendedInsns(project.getExtInsnsEn())
+
+			self.__uploadMemReadAreas()
+			self.__updateOnlineViewState()
+
+			client.loadHardwareModule("dummy")
+			for symTabSource in symTabSources:
+				client.loadSymbolTable(symTabSource)
+			for libSel in libSelections:
+				client.loadLibraryBlock(libSel)
+			for awlSource in awlSources:
+				client.loadCode(awlSource)
+
+			self.__setState(self.STATE_ONLINE)
+		except AwlParserError as e:
+			self.__setState(self.STATE_ONLINE)
+			self.runButton.setChecked(False)
+			MessageBox.handleAwlParserError(self, e)
+			return False
+		except AwlSimError as e:
+			self.__setState(self.STATE_ONLINE)
+			self.runButton.setChecked(False)
+			MessageBox.handleAwlSimError(self,
+				"Error while loading code", e)
+			return False
+		except Exception:
+			client.shutdown()
+			handleFatalException(self)
+
+		# If we were RUNning before download, put
+		# the CPU into RUN state again.
+		if self.runButton.isChecked():
+			self.__run(downloadFirst = False)
+
+		return True
+
 	def __runStateToggled(self):
 		if self.runButton.isChecked():
-			if self.state == self.STATE_STOP:
-				self.__run()
+			self.__run()
 		else:
-			if self.state != self.STATE_STOP:
-				self.stop()
+			self.__stop()
+
+	def handleDirtyChange(self, dirty):
+		if dirty:
+			self.onlineDiagButton.setChecked(False)
 
 	def __updateOnlineViewState(self):
 		onlineDiagEn = self.onlineDiagButton.isChecked()

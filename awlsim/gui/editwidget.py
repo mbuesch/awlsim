@@ -369,7 +369,7 @@ class EditWidget(SourceCodeEdit):
 		self.__source = AwlSource(name = "Unnamed source")
 		self.__needSourceUpdate = True
 
-		self.__runStateCopy = CpuWidget.STATE_STOP
+		self.__runStateCopy = CpuWidget.STATE_OFFLINE
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
 
@@ -466,7 +466,7 @@ class EditWidget(SourceCodeEdit):
 
 	def runStateChanged(self, newState):
 		self.__runStateCopy = newState
-		if newState == CpuWidget.STATE_INIT:
+		if newState == CpuWidget.STATE_LOAD:
 			self.resetCpuStats()
 		if newState == CpuWidget.STATE_RUN:
 			self.__aniTimer.start(200)
@@ -584,7 +584,7 @@ class EditWidget(SourceCodeEdit):
 			self.__cpuStatsStamp += 1
 
 	def __pruneInvisibleCpuStats(self):
-		if self.__runStateCopy == CpuWidget.STATE_STOP:
+		if self.__runStateCopy == CpuWidget.STATE_OFFLINE:
 			return
 		firstLine, lastLine = self.getVisibleLineRange()
 		for line, stats in self.__lineCpuStats.items():
@@ -696,9 +696,9 @@ class EditWidget(SourceCodeEdit):
 		self.focusChanged.emit(False)
 
 	__runStateToText = {
-		CpuWidget.STATE_STOP		: "-- CPU STOPPED --",
-		CpuWidget.STATE_INIT		: "Initializing simulator...",
-		CpuWidget.STATE_LOAD		: "Loading code...",
+		CpuWidget.STATE_OFFLINE		: "-- OFFLINE --",
+		CpuWidget.STATE_ONLINE		: "-- Online (CPU stopped) --",
+		CpuWidget.STATE_LOAD		: "-- DOWNLOADING program. Please wait. --",
 		CpuWidget.STATE_EXCEPTION	: "ERROR. CPU halted.",
 	}
 
@@ -706,6 +706,7 @@ class EditWidget(SourceCodeEdit):
 		p = self.headerWidget.getPainter()
 		p.fillRect(ev.rect(), Qt.lightGray)
 
+		#TODO show connection details here.
 		if self.__runStateCopy == CpuWidget.STATE_RUN:
 			runText = self.__aniChars[self.__hdrAniStat]
 		else:
