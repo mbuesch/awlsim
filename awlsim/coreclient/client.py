@@ -303,10 +303,13 @@ class AwlSimClient(object):
 		return self.__sendAndWait(msg, checkRxMsg, timeout).status
 
 	def reset(self):
+		if not self.__transceiver:
+			return False
 		msg = AwlSimMessage_RESET()
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to reset CPU")
+		return True
 
 	def setRunState(self, run=True):
 		if not self.__transceiver:
@@ -331,16 +334,22 @@ class AwlSimClient(object):
 		return True
 
 	def loadSymbolTable(self, symTabSource):
+		if not self.__transceiver:
+			return False
 		msg = AwlSimMessage_LOAD_SYMTAB(symTabSource)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load symbol table")
+		return True
 
 	def loadLibraryBlock(self, libSelection):
+		if not self.__transceiver:
+			return False
 		msg = AwlSimMessage_LOAD_LIB(libSelection)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load library block")
+		return True
 
 	def loadHardwareModule(self, name, parameters={}):
 		if not self.__transceiver:
