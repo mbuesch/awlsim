@@ -194,17 +194,16 @@ def main():
 			      opt_outputBase, opt_outputSize)
 
 		if opt_gui:
-			from awlsim.gui import MainWindow
+			print("awlsim-linuxcnc-hal: GUI mode is not fully implemented, yet.")
+			#TODO: We should (always) run a coreserver, so that a gui can connect.
+			return 1
 
-			mainwnd = MainWindow.start(initialAwlSource = awlSource)
-			s = mainwnd.getSim()
-		else:
-			source = AwlSource(name = awlFile,
-					   filepath = awlFile,
-					   sourceBytes = awlFileRead(awlFile, encoding="binary"))
-			p = AwlParser()
-			p.parseSource(source)
-			s = AwlSim()
+		source = AwlSource(name = awlFile,
+				   filepath = awlFile,
+				   sourceBytes = awlFileRead(awlFile, encoding="binary"))
+		p = AwlParser()
+		p.parseSource(source)
+		s = AwlSim()
 
 		loadHardwareModule(awlSim = s, hal = hal,
 				   inputBase = opt_inputBase,
@@ -212,21 +211,15 @@ def main():
 				   inputSize = opt_inputSize,
 				   outputSize = opt_outputSize)
 
-		if opt_gui:
-			mainwnd.cpuRun()
-			#TODO checkLinuxCNC() is not called.
-			#TODO --onecycle is not honored
-			mainwnd.runEventLoop()
-		else:
-			# Load the program
-			s.load(p.getParseTree())
-			s.startup()
+		# Load the program
+		s.load(p.getParseTree())
+		s.startup()
 
-			# Run cyclic execution
-			while checkLinuxCNC():
-				s.runCycle()
-				if opt_onecycle:
-					break
+		# Run cyclic execution
+		while checkLinuxCNC():
+			s.runCycle()
+			if opt_onecycle:
+				break
 	except KeyboardInterrupt as e:
 		printInfo("Awlsim LinuxCNC HAL module shutdown")
 	except (AwlParserError, AwlSimError) as e:
