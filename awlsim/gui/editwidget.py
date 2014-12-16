@@ -706,12 +706,30 @@ class EditWidget(SourceCodeEdit):
 		p = self.headerWidget.getPainter()
 		p.fillRect(ev.rect(), Qt.lightGray)
 
+		if self.__cpuStatsEnabled:
+			# Map the CPU-stats start point to header widget
+			# coordinates.
+			cpuStatsPt = self.cpuStatsWidget.mapToGlobal(QPoint(0, 0))
+			cpuStatsPt = self.headerWidget.mapFromGlobal(cpuStatsPt)
+
+			textMaxPixels = cpuStatsPt.x()
+		else:
+			textMaxPixels = self.headerWidget.width()
+
 		#TODO show connection details here.
 		if self.__runStateCopy == CpuWidget.STATE_RUN:
 			runText = self.__aniChars[self.__hdrAniStat]
 		else:
 			runText = self.__runStateToText[self.__runStateCopy]
+
+		# Limit the text length to the available space.
 		metr = self.headerWidget.fontMetrics()
+		maxNrChars = textMaxPixels // metr.width('_')
+		if len(runText) > maxNrChars:
+			runText = runText[ : max(0, maxNrChars - 3)]
+			runText += "..."
+			runText = runText[ : maxNrChars]
+
 		p.drawText(5, 5,
 			   metr.width(runText.replace(" ", "_")),
 			   self.headerWidget.height(),
@@ -719,12 +737,8 @@ class EditWidget(SourceCodeEdit):
 			   runText)
 
 		if self.__cpuStatsEnabled:
-			# Map the starting point
-			pt = self.cpuStatsWidget.mapToGlobal(QPoint(0, 0))
-			pt = self.headerWidget.mapFromGlobal(pt)
-
-			p.drawText(pt.x() + 5, 5,
-				   self.headerWidget.width() - pt.x() - 5,
+			p.drawText(cpuStatsPt.x() + 5, 5,
+				   self.headerWidget.width() - cpuStatsPt.x() - 5,
 				   self.headerWidget.height(),
 				   Qt.AlignLeft,
 				   self.cpuStatsWidget.getBanner(self.__cpuStatsMask))
