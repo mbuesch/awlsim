@@ -154,7 +154,7 @@ class SourceTabWidget(QTabWidget):
 		for i in range(self.count()):
 			yield self.widget(i)
 
-	def updateRunState(self, newRunState):
+	def updateRunState(self, runState):
 		pass
 
 	def getSources(self):
@@ -261,9 +261,9 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.copyAvailableChanged.emit(editWidget.copyIsAvailable()
 					       if editWidget else False)
 
-	def updateRunState(self, newRunState):
+	def updateRunState(self, runState):
 		for editWidget in self.allTabWidgets():
-			editWidget.runStateChanged(newRunState)
+			editWidget.runStateChanged(runState)
 
 	def handleOnlineDiagChange(self, enabled):
 		self.onlineDiagEnabled = enabled

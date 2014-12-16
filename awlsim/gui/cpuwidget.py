@@ -28,6 +28,30 @@ from awlsim.gui.awlsimclient import *
 from awlsim.gui.icons import *
 
 
+class RunState(QObject):
+	# Signal: Emitted, if the state changed.
+	# The parameter is 'self'.
+	stateChanged = Signal(QObject)
+
+	EnumGen.start
+	STATE_OFFLINE	= EnumGen.item
+	STATE_ONLINE	= EnumGen.item
+	STATE_LOAD	= EnumGen.item
+	STATE_RUN	= EnumGen.item
+	STATE_EXCEPTION	= EnumGen.item
+	EnumGen.end
+
+	def __init__(self):
+		QObject.__init__(self)
+		self.state = self.STATE_OFFLINE
+
+	def setState(self, newState):
+		if self.state != newState:
+			self.state = newState
+			self.stateChanged.emit(self)
+			QApplication.processEvents(QEventLoop.ExcludeUserInputEvents,
+						   1000)
+
 class ToolButton(QPushButton):
 	ICONSIZE	= (32, 32)
 	BTNFACT		= 1.2
@@ -75,19 +99,11 @@ class CheckableToolButton(ToolButton):
 
 class CpuWidget(QWidget):
 	# Signal: The CPU run-state changed
-	runStateChanged = Signal(int)
+	runStateChanged = Signal(RunState)
 	# Signal: The online-diag state changed
 	onlineDiagChanged = Signal(bool)
 	# Signal: Have a new instruction dump
 	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
-
-	EnumGen.start
-	STATE_OFFLINE	= EnumGen.item
-	STATE_ONLINE	= EnumGen.item
-	STATE_LOAD	= EnumGen.item
-	STATE_RUN	= EnumGen.item
-	STATE_EXCEPTION	= EnumGen.item
-	EnumGen.end
 
 	def __init__(self, mainWidget, parent=None):
 		QWidget.__init__(self, parent)
@@ -95,7 +111,7 @@ class CpuWidget(QWidget):
 		self.layout().setContentsMargins(QMargins(7, 0, 0, 0))
 
 		self.mainWidget = mainWidget
-		self.state = self.STATE_OFFLINE
+		self.state = RunState()
 
 		self.__coreMsgTimer = QTimer(self)
 		self.__coreMsgTimer.setSingleShot(False)
@@ -158,6 +174,7 @@ class CpuWidget(QWidget):
 		self.stateWs.setScrollBarsEnabled(True)
 		self.layout().addWidget(self.stateWs, 1, 0)
 
+		self.state.stateChanged.connect(self.runStateChanged)
 		self.onlineButton.toggled.connect(self.__onlineToggled)
 		self.downloadButton.pressed.connect(self.__download)
 		self.runButton.toggled.connect(self.__runStateToggled)
@@ -262,10 +279,10 @@ class CpuWidget(QWidget):
 
 		try:
 			client.setRunState(True)
-			self.__setState(self.STATE_RUN)
+			self.state.setState(RunState.STATE_RUN)
 			self.__coreMsgTimer.start(0)
 		except AwlSimError as e:
-			self.__setState(self.STATE_EXCEPTION)
+			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Could not start CPU", e)
 			self.stop()
@@ -278,7 +295,7 @@ class CpuWidget(QWidget):
 			while client.processMessages(0.1):
 				pass
 		except AwlSimError as e:
-			self.__setState(self.STATE_EXCEPTION)
+			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Error while executing code", e)
 			self.stop()
@@ -309,22 +326,13 @@ class CpuWidget(QWidget):
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(self,
 					"Could not stop CPU", e)
-		self.__setState(self.STATE_ONLINE)
+		self.state.setState(RunState.STATE_ONLINE)
 
 	def stop(self):
 		self.runButton.setChecked(False)
 
 	def run(self):
 		self.runButton.setChecked(True)
-
-	def getState(self):
-		return self.state
-
-	def __setState(self, newState):
-		if newState != self.state:
-			self.state = newState
-			self.runStateChanged.emit(self.state)
-			QApplication.processEvents(QEventLoop.AllEvents, 1000)
 
 	def __goOnline(self):
 		client = self.mainWidget.getSimClient()
@@ -350,7 +358,7 @@ class CpuWidget(QWidget):
 			CALL_NOEX(client.setMode_OFFLINE)
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
-		self.__setState(self.STATE_ONLINE)
+		self.state.setState(RunState.STATE_ONLINE)
 
 	def __goOffline(self):
 		client = self.mainWidget.getSimClient()
@@ -362,7 +370,7 @@ class CpuWidget(QWidget):
 		# Release the stop-button.
 		# This will _not_ stop the CPU, as we're offline already.
 		self.runButton.setChecked(False)
-		self.__setState(self.STATE_OFFLINE)
+		self.state.setState(RunState.STATE_OFFLINE)
 
 	def __onlineToggled(self):
 		if self.isOnline():
@@ -392,7 +400,7 @@ class CpuWidget(QWidget):
 			return False
 
 		try:
-			self.__setState(self.STATE_LOAD)
+			self.state.setState(RunState.STATE_LOAD)
 
 			client.setRunState(False)
 			client.reset()
@@ -412,14 +420,14 @@ class CpuWidget(QWidget):
 			for awlSource in awlSources:
 				client.loadCode(awlSource)
 
-			self.__setState(self.STATE_ONLINE)
+			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
-			self.__setState(self.STATE_ONLINE)
+			self.state.setState(RunState.STATE_ONLINE)
 			self.runButton.setChecked(False)
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
-			self.__setState(self.STATE_ONLINE)
+			self.state.setState(RunState.STATE_ONLINE)
 			self.runButton.setChecked(False)
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)

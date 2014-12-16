@@ -38,7 +38,7 @@ class MainWidget(QWidget):
 	# Signal: Dirty-status changed
 	dirtyChanged = Signal(bool)
 	# Signal: CPU run state changed
-	runStateChanged = Signal(int)
+	runStateChanged = Signal(RunState)
 	# Signal: Source text focus changed
 	textFocusChanged = Signal(bool)
 	# Signal: Selected project resource changed

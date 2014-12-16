@@ -194,9 +194,9 @@ class ProjectWidget(QTabWidget):
 	def handleInsnDump(self, insnDumpMsg):
 		self.awlTabs.handleInsnDump(insnDumpMsg)
 
-	def updateRunState(self, newRunState):
-		self.awlTabs.updateRunState(newRunState)
-		self.symTabs.updateRunState(newRunState)
+	def updateRunState(self, runState):
+		self.awlTabs.updateRunState(runState)
+		self.symTabs.updateRunState(runState)
 
 	def getProject(self):
 		"""Returns the project description object (class Project).

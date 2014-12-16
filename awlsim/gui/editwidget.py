@@ -369,7 +369,7 @@ class EditWidget(SourceCodeEdit):
 		self.__source = AwlSource(name = "Unnamed source")
 		self.__needSourceUpdate = True
 
-		self.__runStateCopy = CpuWidget.STATE_OFFLINE
+		self.__runState = RunState()
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
 
@@ -465,10 +465,10 @@ class EditWidget(SourceCodeEdit):
 		self.__updateFont(font)
 
 	def runStateChanged(self, newState):
-		self.__runStateCopy = newState
-		if newState == CpuWidget.STATE_LOAD:
+		self.__runState = newState
+		if newState.state == RunState.STATE_LOAD:
 			self.resetCpuStats()
-		if newState == CpuWidget.STATE_RUN:
+		if newState.state == RunState.STATE_RUN:
 			self.__aniTimer.start(200)
 		else:
 			self.__aniTimer.stop()
@@ -584,7 +584,7 @@ class EditWidget(SourceCodeEdit):
 			self.__cpuStatsStamp += 1
 
 	def __pruneInvisibleCpuStats(self):
-		if self.__runStateCopy == CpuWidget.STATE_OFFLINE:
+		if self.__runState.state == RunState.STATE_OFFLINE:
 			return
 		firstLine, lastLine = self.getVisibleLineRange()
 		for line, stats in self.__lineCpuStats.items():
@@ -696,10 +696,10 @@ class EditWidget(SourceCodeEdit):
 		self.focusChanged.emit(False)
 
 	__runStateToText = {
-		CpuWidget.STATE_OFFLINE		: "-- OFFLINE --",
-		CpuWidget.STATE_ONLINE		: "-- Online (CPU stopped) --",
-		CpuWidget.STATE_LOAD		: "-- DOWNLOADING program. Please wait. --",
-		CpuWidget.STATE_EXCEPTION	: "ERROR. CPU halted.",
+		RunState.STATE_OFFLINE		: "-- OFFLINE --",
+		RunState.STATE_ONLINE		: "-- Online (CPU stopped) --",
+		RunState.STATE_LOAD		: "-- DOWNLOADING program. Please wait. --",
+		RunState.STATE_EXCEPTION	: "ERROR. CPU halted.",
 	}
 
 	def __repaintHeaderWidget(self, ev):
@@ -717,10 +717,10 @@ class EditWidget(SourceCodeEdit):
 			textMaxPixels = self.headerWidget.width()
 
 		#TODO show connection details here.
-		if self.__runStateCopy == CpuWidget.STATE_RUN:
+		if self.__runState.state == RunState.STATE_RUN:
 			runText = self.__aniChars[self.__hdrAniStat]
 		else:
-			runText = self.__runStateToText[self.__runStateCopy]
+			runText = self.__runStateToText[self.__runState.state]
 
 		# Limit the text length to the available space.
 		metr = self.headerWidget.fontMetrics()
