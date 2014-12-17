@@ -127,6 +127,7 @@ class AwlSimClient(object):
 		host -> The hostname or IP address to connect to.
 		port -> The port to connect to."""
 
+		readableSockaddr = host
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
 			if family == AF_UNIX:
