@@ -32,7 +32,7 @@ from awlsim.coreserver import *
 
 
 def usage():
-	printInfo("awlsim-server version %s" % VERSION_STRING))
+	printInfo("awlsim-server version %s" % VERSION_STRING)
 	printInfo("")
 	printInfo("%s [OPTIONS]" % sys.argv[0])
 	printInfo("")
