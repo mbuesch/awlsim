@@ -187,6 +187,60 @@ class GuiSettings(object):
 	def getEditorFont(self):
 		return self.editorFont
 
+class CoreLinkSettings(object):
+	def __init__(self,
+		     spawnLocalEn=True,
+		     spawnLocalPortRange=range(4151, 4151 + 4095 + 1),
+		     spawnLocalInterpreters="pypy3, pypy; $CURRENT; "\
+					    "python3; python2; python; py",
+		     connectHost="localhost",
+		     connectPort=4151):
+		self.setSpawnLocalEn(spawnLocalEn)
+		self.setSpawnLocalPortRange(spawnLocalPortRange)
+		self.setSpawnLocalInterpreters(spawnLocalInterpreters),
+		self.setConnectHost(connectHost)
+		self.setConnectPort(connectPort)
+
+	def setSpawnLocalEn(self, spawnLocalEn):
+		self.spawnLocalEn = spawnLocalEn
+
+	def getSpawnLocalEn(self):
+		return self.spawnLocalEn
+
+	def setSpawnLocalPortRange(self, spawnLocalPortRange):
+		self.spawnLocalPortRange = spawnLocalPortRange
+
+	def getSpawnLocalPortRange(self):
+		return self.spawnLocalPortRange
+
+	def setSpawnLocalInterpreters(self, spawnLocalInterpreters):
+		self.spawnLocalInterpreters = spawnLocalInterpreters
+
+	def getSpawnLocalInterpreters(self):
+		return self.spawnLocalInterpreters
+
+	def getSpawnLocalInterpreterList(self, replace=True):
+		ret = []
+		for interp in self.getSpawnLocalInterpreters().split(';'):
+			interp = interp.strip()
+			if replace:
+				if interp == "$CURRENT":
+					interp = sys.executable
+			ret.append(interp)
+		return ret
+
+	def setConnectHost(self, connectHost):
+		self.connectHost = connectHost
+
+	def getConnectHost(self):
+		return self.connectHost
+
+	def setConnectPort(self, connectPort):
+		self.connectPort = connectPort
+
+	def getConnectPort(self):
+		return self.connectPort
+
 class Project(object):
 	def __init__(self, projectFile,
 		     awlSources=[],
@@ -195,7 +249,8 @@ class Project(object):
 		     cpuSpecs=None,
 		     obTempPresetsEn=False,
 		     extInsnsEn=False,
-		     guiSettings=None):
+		     guiSettings=None,
+		     coreLinkSettings=None):
 		self.setProjectFile(projectFile)
 		self.setAwlSources(awlSources)
 		self.setSymTabSources(symTabSources)
@@ -208,6 +263,9 @@ class Project(object):
 		if not guiSettings:
 			guiSettings = GuiSettings()
 		self.setGuiSettings(guiSettings)
+		if not coreLinkSettings:
+			coreLinkSettings = CoreLinkSettings()
+		self.setCoreLinkSettings(coreLinkSettings)
 
 	def setProjectFile(self, filename):
 		self.projectFile = filename
@@ -257,6 +315,12 @@ class Project(object):
 	def getGuiSettings(self):
 		return self.guiSettings
 
+	def setCoreLinkSettings(self, coreLinkSettings):
+		self.coreLinkSettings = coreLinkSettings
+
+	def getCoreLinkSettings(self):
+		return self.coreLinkSettings
+
 	@classmethod
 	def dataIsProject(cls, data):
 		magic = b"[AWLSIM_PROJECT]"
@@ -286,6 +350,7 @@ class Project(object):
 		obTempPresetsEn = False
 		extInsnsEn = False
 		guiSettings = GuiSettings()
+		linkSettings = CoreLinkSettings()
 		try:
 			p = _ConfigParser()
 			p.readfp(StringIO(text), projectFile)
@@ -399,6 +464,44 @@ class Project(object):
 							     effectiveEntryIndex = effBlock)
 				)
 
+			# CORE_LINK section
+			if p.has_option("CORE_LINK", "spawn_local"):
+				linkSettings.setSpawnLocalEn(
+					p.getboolean("CORE_LINK", "spawn_local"))
+			if p.has_option("CORE_LINK", "spawn_local_port_range"):
+				pRange = p.get("CORE_LINK", "spawn_local_port_range")
+				try:
+					pRange = pRange.split(":")
+					begin = int(pRange[0])
+					end = int(pRange[1])
+					if end < begin:
+						raise ValueError
+					pRange = range(begin, end + 1)
+				except (IndexError, ValueError) as e:
+					raise AwlSimError("Project file: Invalid port range")
+				linkSettings.setSpawnLocalPortRange(pRange)
+			if p.has_option("CORE_LINK", "spawn_local_interpreters"):
+				interp = p.get("CORE_LINK", "spawn_local_interpreters")
+				try:
+					interp = base64.b64decode(interp)
+					interp = interp.decode("utf-8")
+				except (TypeError, binascii.Error, UnicodeError) as e:
+					raise AwlSimError("Project file: "
+						"Invalid interpreter list")
+				linkSettings.setSpawnLocalInterpreters(interp)
+			if p.has_option("CORE_LINK", "connect_host"):
+				host = p.get("CORE_LINK", "connect_host")
+				try:
+					host = base64.b64decode(host)
+					host = host.decode("utf-8")
+				except (TypeError, binascii.Error, UnicodeError) as e:
+					raise AwlSimError("Project file: "
+						"Invalid host name")
+				linkSettings.setConnectHost(host)
+			if p.has_option("CORE_LINK", "connect_port"):
+				port = p.getint("CORE_LINK", "connect_port")
+				linkSettings.setConnectPort(port)
+
 			# GUI section
 			if p.has_option("GUI", "editor_autoindent"):
 				guiSettings.setEditorAutoIndentEn(
@@ -422,7 +525,8 @@ class Project(object):
 			   cpuSpecs = cpuSpecs,
 			   obTempPresetsEn = obTempPresetsEn,
 			   extInsnsEn = extInsnsEn,
-			   guiSettings = guiSettings)
+			   guiSettings = guiSettings,
+			   coreLinkSettings = linkSettings)
 
 	@classmethod
 	def fromFile(cls, filename):
@@ -504,14 +608,33 @@ class Project(object):
 				i, libSel.getEffectiveEntryIndex()))
 		lines.append("")
 
+		lines.append("[CORE_LINK]")
+		linkSettings = self.getCoreLinkSettings()
+		lines.append("spawn_local=%d" %\
+			     int(bool(linkSettings.getSpawnLocalEn())))
+		lines.append("spawn_local_port_range=%d:%d" %(\
+			     linkSettings.getSpawnLocalPortRange()[0],
+			     linkSettings.getSpawnLocalPortRange()[-1]))
+		interp = linkSettings.getSpawnLocalInterpreters()
+		interp = interp.encode("utf-8", "ignore")
+		interp = base64.b64encode(interp).decode("ascii")
+		lines.append("spawn_local_interpreters=%s" % interp)
+		host = linkSettings.getConnectHost()
+		host = host.encode("utf-8", "ignore")
+		host = base64.b64encode(host).decode("ascii")
+		lines.append("connect_host=%s" % host)
+		lines.append("connect_port=%d" % int(linkSettings.getConnectPort()))
+		lines.append("")
+
 		lines.append("[GUI]")
+		guiSettings = self.getGuiSettings()
 		lines.append("editor_autoindent=%d" %\
-			     int(bool(self.getGuiSettings().getEditorAutoIndentEn())))
+			     int(bool(guiSettings.getEditorAutoIndentEn())))
 		lines.append("editor_paste_autoindent=%d" %\
-			     int(bool(self.getGuiSettings().getEditorPasteIndentEn())))
+			     int(bool(guiSettings.getEditorPasteIndentEn())))
 		lines.append("editor_validation=%d" %\
-			     int(bool(self.getGuiSettings().getEditorValidationEn())))
-		lines.append("editor_font=%s" % self.getGuiSettings().getEditorFont())
+			     int(bool(guiSettings.getEditorValidationEn())))
+		lines.append("editor_font=%s" % guiSettings.getEditorFont())
 		lines.append("")
 
 		return "\r\n".join(lines)

@@ -26,6 +26,7 @@ from awlsim.gui.util import *
 from awlsim.gui.cpustate import *
 from awlsim.gui.awlsimclient import *
 from awlsim.gui.icons import *
+from awlsim.gui.linkconfig import *
 
 
 class RunState(QObject):
@@ -335,29 +336,39 @@ class CpuWidget(QWidget):
 		self.runButton.setChecked(True)
 
 	def __goOnline(self):
+		project = self.mainWidget.getProject()
+
+		if LinkConfigDialog.askWhenConnecting():
+			#TODO dirty, if changed
+			dlg = LinkConfigDialog(project, self)
+			if dlg.exec_() != LinkConfigDialog.Accepted:
+				self.onlineButton.setChecked(False)
+				return
+
+		linkConfig = project.getCoreLinkSettings()
 		client = self.mainWidget.getSimClient()
 		try:
-			if self.mainWidget.coreConfigDialog.shouldSpawnServer():
-				firstPort, lastPort = self.mainWidget.coreConfigDialog.getSpawnPortRange()
-				interp = self.mainWidget.coreConfigDialog.getInterpreterList()
+			if linkConfig.getSpawnLocalEn():
+				portRange = linkConfig.getSpawnLocalPortRange()
+				interp = linkConfig.getSpawnLocalInterpreterList()
 				if isWinStandalone:
 					# Run the frozen standalone server process
-					client.setMode_FORK(
-						portRange = range(firstPort, lastPort + 1),
+					client.setMode_FORK(portRange = portRange,
 						serverExecutable = "awlsim-server-module.exe")
 				else:
-					client.setMode_FORK(
-						portRange = range(firstPort, lastPort + 1),
+					client.setMode_FORK(portRange = portRange,
 						interpreterList = interp)
 			else:
-				host = self.mainWidget.coreConfigDialog.getConnectHost()
-				port = self.mainWidget.coreConfigDialog.getConnectPort()
+				host = linkConfig.getConnectHost()
+				port = linkConfig.getConnectPort()
 				client.setMode_ONLINE(host = host, port = port)
 				#TODO: If client is RUNning, switch GUI to run state.
 		except AwlSimError as e:
 			CALL_NOEX(client.setMode_OFFLINE)
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
+			self.onlineButton.setChecked(False)
+			return
 		self.state.setState(RunState.STATE_ONLINE)
 
 	def __goOffline(self):
@@ -390,6 +401,8 @@ class CpuWidget(QWidget):
 	def __download(self):
 		# Make sure we are online.
 		self.goOnline()
+		if not self.isOnline():
+			return False
 
 		client = self.mainWidget.getSimClient()
 		project = self.mainWidget.getProject()

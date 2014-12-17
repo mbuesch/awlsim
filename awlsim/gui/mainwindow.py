@@ -30,7 +30,7 @@ from awlsim.gui.editwidget import *
 from awlsim.gui.projectwidget import *
 from awlsim.gui.guiconfig import *
 from awlsim.gui.cpuconfig import *
-from awlsim.gui.coreconfig import *
+from awlsim.gui.linkconfig import *
 from awlsim.gui.icons import *
 
 
@@ -55,8 +55,6 @@ class MainWidget(QWidget):
 		self.setLayout(QGridLayout(self))
 
 		self.simClient = GuiAwlSimClient()
-
-		self.coreConfigDialog = CoreConfigDialog(self, self.simClient)
 
 		self.splitter = QSplitter(Qt.Horizontal)
 		self.layout().addWidget(self.splitter, 0, 0)
@@ -216,6 +214,11 @@ class MainWidget(QWidget):
 			self.projectWidget.setSettings(project.getGuiSettings())
 			self.__somethingChanged()
 
+	def linkConfig(self):
+		project = self.getProject()
+		dlg = LinkConfigDialog(project, self)
+		dlg.exec_()
+
 	def cpuConfig(self):
 		project = self.getProject()
 		dlg = CpuConfigDialog(self)
@@ -223,9 +226,6 @@ class MainWidget(QWidget):
 		if dlg.exec_() == dlg.Accepted:
 			dlg.saveToProject(project)
 			self.__somethingChanged()
-
-	def coreConfig(self):
-		self.coreConfigDialog.exec_()
 
 	def insertOB(self):
 		self.projectWidget.insertOB()
@@ -276,6 +276,12 @@ class MainWindow(QMainWindow):
 		  initialAwlSource = None):
 		if not qApplication:
 			qApplication = QApplication(sys.argv)
+		# Set basic qapp-details.
+		# This is important for QSettings.
+		qApplication.setOrganizationName("awlsim")
+		qApplication.setApplicationName("Awlsim GUI")
+		qApplication.setApplicationVersion(VERSION_STRING)
+
 		mainwnd = cls(initialAwlSource)
 		mainwnd.show()
 		return mainwnd
@@ -320,7 +326,7 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Settings", self)
-		menu.addAction(getIcon("network"), "&Server connection...", self.coreConfig)
+		menu.addAction(getIcon("network"), "&Server connection...", self.linkConfig)
 		menu.addAction(getIcon("prefs"), "&CPU config...", self.cpuConfig)
 		menu.addAction(getIcon("prefs"), "&User interface...", self.guiConfig)
 		self.menuBar().addMenu(menu)
@@ -404,9 +410,8 @@ class MainWindow(QMainWindow):
 				postfix += "*"
 		else:
 			postfix = ""
-		self.setWindowTitle("AWL/STL soft-PLC v%d.%d%s" %\
-				    (VERSION_MAJOR, VERSION_MINOR,
-				     postfix))
+		self.setWindowTitle("AWL/STL soft-PLC v%s%s" %\
+				    (VERSION_STRING, postfix))
 
 	def __updateLibActions(self):
 		# Enable/disable the library toolbar button.
@@ -491,7 +496,7 @@ class MainWindow(QMainWindow):
 
 	def about(self):
 		QMessageBox.about(self, "About AWL/STL soft-PLC",
-			"Awlsim soft-PLC version %d.%d\n"
+			"Awlsim soft-PLC version %s\n"
 			"\n"
 			"Copyright 2012-2014 Michael Büsch <m@bues.ch>\n"
 			"\n"
@@ -511,8 +516,7 @@ class MainWindow(QMainWindow):
 			"You should have received a copy of the GNU General Public License along "
 			"with this program; if not, write to the Free Software Foundation, Inc., "
 			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." %\
-			(VERSION_MAJOR, VERSION_MINOR,
-			 AWLSIM_HOME_URL))
+			(VERSION_STRING, AWLSIM_HOME_URL))
 
 	def new(self):
 		self.centralWidget().newFile()
@@ -529,11 +533,11 @@ class MainWindow(QMainWindow):
 	def guiConfig(self):
 		self.centralWidget().guiConfig()
 
+	def linkConfig(self):
+		self.centralWidget().linkConfig()
+
 	def cpuConfig(self):
 		self.centralWidget().cpuConfig()
-
-	def coreConfig(self):
-		self.centralWidget().coreConfig()
 
 	def openLibrary(self):
 		self.centralWidget().openLibrary()
