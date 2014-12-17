@@ -122,11 +122,13 @@ class AwlSimClient(object):
 
 	def connectToServer(self,
 			    host=AwlSimServer.DEFAULT_HOST,
-			    port=AwlSimServer.DEFAULT_PORT):
+			    port=AwlSimServer.DEFAULT_PORT,
+			    timeout=3.0):
 		"""Connect to a AwlSim-core server.
 		host -> The hostname or IP address to connect to.
 		port -> The port to connect to."""
 
+		startTime = monotonic_time()
 		readableSockaddr = host
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
@@ -136,17 +138,15 @@ class AwlSimClient(object):
 				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
 			printInfo("AwlSimClient: Connecting to server '%s'..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
-			count = 0
 			while 1:
+				if monotonic_time() - startTime > timeout:
+					raise AwlSimError("Timeout connecting "
+						"to AwlSimServer %s" % readableSockaddr)
 				try:
 					sock.connect(sockaddr)
 				except (OSError, socket.error) as e:
 					if e.errno == errno.ECONNREFUSED or\
 					   e.errno == errno.ENOENT:
-						count += 1
-						if count >= 100:
-							raise AwlSimError("Timeout connecting "
-								"to AwlSimServer %s" % readableSockaddr)
 						self.sleep(0.1)
 						continue
 					if isJython and\
@@ -166,7 +166,7 @@ class AwlSimClient(object):
 		# Ping the server
 		try:
 			self.__transceiver.send(AwlSimMessage_PING())
-			msg = self.__transceiver.receive(timeout = 5.0)
+			msg = self.__transceiver.receive(timeout = 2.0)
 			if not msg:
 				raise AwlSimError("AwlSimClient: Server did not "
 					"respond to PING request.")
