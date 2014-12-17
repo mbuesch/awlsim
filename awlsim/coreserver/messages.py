@@ -70,6 +70,7 @@ class AwlSimMessage(object):
 	MSG_ID_INSNSTATE	= EnumGen.item
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
 	MSG_ID_LOAD_LIB		= EnumGen.item
+	MSG_ID_GET_RUNSTATE	= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -201,6 +202,10 @@ class AwlSimMessage_RUNSTATE(AwlSimMessage):
 		except struct.error as e:
 			raise TransferError("RUNSTATE: Invalid data format")
 		return cls(runState)
+
+class AwlSimMessage_GET_RUNSTATE(AwlSimMessage):
+	def __init__(self):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_RUNSTATE)
 
 class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	def __init__(self, exception):
@@ -680,9 +685,11 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_RESET		: AwlSimMessage_RESET,
 		AwlSimMessage.MSG_ID_SHUTDOWN		: AwlSimMessage_SHUTDOWN,
 		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
+		AwlSimMessage.MSG_ID_GET_RUNSTATE	: AwlSimMessage_GET_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: AwlSimMessage_LOAD_SYMTAB,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
+		AwlSimMessage.MSG_ID_LOAD_LIB		: AwlSimMessage_LOAD_LIB,
 		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
 		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
 		AwlSimMessage.MSG_ID_MAINTREQ		: AwlSimMessage_MAINTREQ,
@@ -692,7 +699,6 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
-		AwlSimMessage.MSG_ID_LOAD_LIB		: AwlSimMessage_LOAD_LIB,
 	}
 
 	def __init__(self, sock, peerInfoString):

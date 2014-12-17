@@ -243,6 +243,7 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: __rx_INSNSTATE,
+		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
 	}
 
 	# Main message processing
@@ -327,6 +328,16 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set run state")
 		return True
+
+	def getRunState(self):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_GET_RUNSTATE()
+		rxMsg = self.__sendAndWait(msg,
+			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_RUNSTATE)
+		if rxMsg.runState == AwlSimMessage_RUNSTATE.STATE_RUN:
+			return True
+		return False
 
 	def loadCode(self, codeSource):
 		if not self.__transceiver:

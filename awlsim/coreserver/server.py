@@ -339,6 +339,14 @@ class AwlSimServer(object):
 			status = AwlSimMessage_REPLY.STAT_FAIL
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_GET_RUNSTATE(self, client, msg):
+		reply = AwlSimMessage_RUNSTATE(
+			AwlSimMessage_RUNSTATE.STATE_RUN\
+			if self.state == self.STATE_RUN else\
+			AwlSimMessage_RUNSTATE.STATE_STOP
+		)
+		client.transceiver.send(reply)
+
 	def __rx_LOAD_CODE(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		parser = AwlParser()
@@ -449,16 +457,17 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_RESET		: __rx_RESET,
 		AwlSimMessage.MSG_ID_SHUTDOWN		: __rx_SHUTDOWN,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
+		AwlSimMessage.MSG_ID_GET_RUNSTATE	: __rx_GET_RUNSTATE,
 		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
 		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: __rx_LOAD_SYMTAB,
 		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
+		AwlSimMessage.MSG_ID_LOAD_LIB		: __rx_LOAD_LIB,
 		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
-		AwlSimMessage.MSG_ID_LOAD_LIB		: __rx_LOAD_LIB,
 	}
 
 	def __handleClientComm(self, client):
