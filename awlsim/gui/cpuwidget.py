@@ -126,6 +126,7 @@ class CpuWidget(QWidget):
 
 		self.mainWidget = mainWidget
 		self.state = RunState()
+		self.__runStateChangeBlocked = 0
 
 		self.__coreMsgTimer = QTimer(self)
 		self.__coreMsgTimer.setSingleShot(False)
@@ -284,15 +285,29 @@ class CpuWidget(QWidget):
 	def __run(self, downloadFirst=True):
 		client = self.mainWidget.getSimClient()
 
-		self.runButton.setChecked(True)
+		# Make sure the button is pressed.
+		try:
+			self.__runStateChangeBlocked += 1
+			self.runButton.setChecked(True)
+		finally:
+			self.__runStateChangeBlocked -= 1
 
+		# If requested, first go online and download the program.
 		if downloadFirst:
 			if not self.__download():
 				self.stop()
 				return
 
+		# Put the CPU and the GUI into RUN state.
 		try:
+			# Put CPU into RUN mode, if it's not already there.
 			client.setRunState(True)
+
+			# Upload the GUI requests.
+			self.__uploadMemReadAreas()
+			self.__updateOnlineViewState()
+
+			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
 			self.__coreMsgTimer.start(0)
 		except AwlSimError as e:
@@ -376,17 +391,22 @@ class CpuWidget(QWidget):
 				host = linkConfig.getConnectHost()
 				port = linkConfig.getConnectPort()
 				client.setMode_ONLINE(host = host, port = port)
-				#TODO: If client is RUNning, switch GUI to run state.
+
+			self.state.setCoreDetails(spawned = linkConfig.getSpawnLocalEn(),
+						  host = host,
+						  port = port)
+			self.state.setState(RunState.STATE_ONLINE)
+
+			if client.getRunState():
+				# The core is already running.
+				# Set the GUI to run state, too.
+				self.__run(downloadFirst = False)
 		except AwlSimError as e:
 			CALL_NOEX(client.setMode_OFFLINE)
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
 			self.onlineButton.setChecked(False)
 			return
-		self.state.setCoreDetails(spawned = linkConfig.getSpawnLocalEn(),
-					  host = host,
-					  port = port)
-		self.state.setState(RunState.STATE_ONLINE)
 
 	def __goOffline(self):
 		client = self.mainWidget.getSimClient()
@@ -439,9 +459,6 @@ class CpuWidget(QWidget):
 			client.enableOBTempPresets(project.getObTempPresetsEn())
 			client.enableExtendedInsns(project.getExtInsnsEn())
 
-			self.__uploadMemReadAreas()
-			self.__updateOnlineViewState()
-
 			client.loadHardwareModule("dummy")
 			for symTabSource in symTabSources:
 				client.loadSymbolTable(symTabSource)
@@ -474,6 +491,8 @@ class CpuWidget(QWidget):
 		return True
 
 	def __runStateToggled(self):
+		if self.__runStateChangeBlocked:
+			return
 		if self.runButton.isChecked():
 			self.__run()
 		else:
