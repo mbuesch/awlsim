@@ -696,9 +696,9 @@ class EditWidget(SourceCodeEdit):
 		self.focusChanged.emit(False)
 
 	__runStateToText = {
-		RunState.STATE_OFFLINE		: "-- OFFLINE --",
-		RunState.STATE_ONLINE		: "-- Online (CPU stopped) --",
-		RunState.STATE_LOAD		: "-- DOWNLOADING program. Please wait. --",
+		RunState.STATE_OFFLINE		: "OFFLINE",
+		RunState.STATE_ONLINE		: "Online (CPU stopped)",
+		RunState.STATE_LOAD		: "DOWNLOADING program. Please wait.",
 		RunState.STATE_EXCEPTION	: "ERROR. CPU halted.",
 	}
 
@@ -716,11 +716,16 @@ class EditWidget(SourceCodeEdit):
 		else:
 			textMaxPixels = self.headerWidget.width()
 
-		#TODO show connection details here.
-		if self.__runState.state == RunState.STATE_RUN:
-			runText = self.__aniChars[self.__hdrAniStat]
+		if self.__runState.spawned:
+			runText = "[SIM]: "
 		else:
-			runText = self.__runStateToText[self.__runState.state]
+			runText = "[%s:%d]: " %(\
+				self.__runState.host,
+				self.__runState.port)
+		if self.__runState.state == RunState.STATE_RUN:
+			runText += self.__aniChars[self.__hdrAniStat]
+		else:
+			runText += self.__runStateToText[self.__runState.state]
 
 		# Limit the text length to the available space.
 		metr = self.headerWidget.fontMetrics()

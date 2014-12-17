@@ -45,13 +45,24 @@ class RunState(QObject):
 	def __init__(self):
 		QObject.__init__(self)
 		self.state = self.STATE_OFFLINE
+		self.setCoreDetails()
+
+	def __emitStateChanged(self):
+		self.stateChanged.emit(self)
+		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents,
+					   1000)
 
 	def setState(self, newState):
 		if self.state != newState:
 			self.state = newState
-			self.stateChanged.emit(self)
-			QApplication.processEvents(QEventLoop.ExcludeUserInputEvents,
-						   1000)
+			self.__emitStateChanged()
+
+	def setCoreDetails(self, spawned=True,
+			   host=None, port=None):
+		self.spawned = spawned
+		self.host = host
+		self.port = port
+		self.__emitStateChanged()
 
 class ToolButton(QPushButton):
 	ICONSIZE	= (32, 32)
@@ -360,6 +371,7 @@ class CpuWidget(QWidget):
 				else:
 					client.setMode_FORK(portRange = portRange,
 						interpreterList = interp)
+				host = port = None
 			else:
 				host = linkConfig.getConnectHost()
 				port = linkConfig.getConnectPort()
@@ -371,6 +383,9 @@ class CpuWidget(QWidget):
 				"Error while trying to connect to CPU", e)
 			self.onlineButton.setChecked(False)
 			return
+		self.state.setCoreDetails(spawned = linkConfig.getSpawnLocalEn(),
+					  host = host,
+					  port = port)
 		self.state.setState(RunState.STATE_ONLINE)
 
 	def __goOffline(self):
