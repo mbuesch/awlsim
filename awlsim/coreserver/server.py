@@ -308,6 +308,11 @@ class AwlSimServer(object):
 		else:
 			self.sim.cpu.setCycleExitCallback(None)
 
+	def __updateCpuCallbacks(self):
+		self.__updateCpuBlockExitCallback()
+		self.__updateCpuPostInsnCallback()
+		self.__updateCpuCycleExitCallback()
+
 	def __rx_PING(self, client, msg):
 		client.transceiver.send(AwlSimMessage_PONG())
 
@@ -400,7 +405,7 @@ class AwlSimServer(object):
 				client.nextDump = self.sim.cpu.now
 			else:
 				client.nextDump = None
-			self.__updateCpuBlockExitCallback()
+			self.__updateCpuCallbacks()
 		elif msg.name == "cycle_time_limit":
 			self.sim.cpu.setCycleTimeLimit(msg.getFloatValue())
 		elif msg.name == "runtime_limit":
@@ -453,8 +458,7 @@ class AwlSimServer(object):
 		if not (msg.flags & msg.FLG_CLEAR_ONLY):
 			rnge = range(msg.fromLine, msg.toLine + 1)
 			client.insnStateDump_enabledLines[msg.sourceId] = rnge
-		self.__updateCpuPostInsnCallback()
-		self.__updateCpuCycleExitCallback()
+		self.__updateCpuCallbacks()
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
@@ -653,6 +657,7 @@ class AwlSimServer(object):
 	def __clientRemove(self, client):
 		self.clients.remove(client)
 		self.__rebuildSelectReadList()
+		self.__updateCpuCallbacks()
 
 	def close(self):
 		"""Closes all client sockets and the main socket."""
