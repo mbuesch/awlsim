@@ -333,8 +333,15 @@ class AwlSimServer(object):
 		if msg.runState == msg.STATE_STOP:
 			self.__setRunState(self.STATE_INIT)
 		elif msg.runState == msg.STATE_RUN:
-			self.sim.startup()
-			self.__setRunState(self.STATE_RUN)
+			if self.state == self.STATE_RUN:
+				pass
+			elif self.state == self.STATE_INIT:
+				self.sim.startup()
+				self.__setRunState(self.STATE_RUN)
+			elif self.state == self.STATE_MAINTENANCE:
+				self.__setRunState(self.STATE_RUN)
+			else:
+				status = AwlSimMessage_REPLY.STAT_FAIL
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
