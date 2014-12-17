@@ -80,6 +80,7 @@ class MainWidget(QWidget):
 		self.cpuWidget.runStateChanged.connect(self.runStateChanged)
 		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
 		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
+		self.cpuWidget.configChanged.connect(self.__somethingChanged)
 		self.runStateChanged.connect(self.projectWidget.updateRunState)
 		self.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
 
@@ -217,6 +218,7 @@ class MainWidget(QWidget):
 	def linkConfig(self):
 		project = self.getProject()
 		dlg = LinkConfigDialog(project, self)
+		dlg.contentChanged.connect(self.__somethingChanged)
 		dlg.exec_()
 
 	def cpuConfig(self):

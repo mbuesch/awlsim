@@ -102,6 +102,9 @@ class _ConnectConfigWidget(QGroupBox):
 		self.layout().addWidget(self.port, 1, 1)
 
 class LinkConfigDialog(QDialog):
+	# Signal: Emitted, if any content changed.
+	contentChanged = Signal()
+
 	def __init__(self, project, parent=None):
 		QDialog.__init__(self, parent)
 		self.setWindowTitle("Awlsim core connection setup")
@@ -213,13 +216,30 @@ class LinkConfigDialog(QDialog):
 
 	def __handleAccepted(self):
 		linkSettings = self.__project.getCoreLinkSettings()
+		changed = False
 
-		linkSettings.setSpawnLocalEn(bool(self.spawnRadio.isChecked()))
-		linkSettings.setSpawnLocalInterpreters(
-			self.spawnConfig.interpreterList.text())
-		linkSettings.setSpawnLocalPortRange(range(
-			self.spawnConfig.portRangeStart.value(),
-			self.spawnConfig.portRangeEnd.value() + 1))
+		spawnLocalEn = bool(self.spawnRadio.isChecked())
+		if spawnLocalEn != linkSettings.getSpawnLocalEn():
+			linkSettings.setSpawnLocalEn(spawnLocalEn)
+			changed = True
+		interp = self.spawnConfig.interpreterList.text()
+		if interp != linkSettings.getSpawnLocalInterpreters():
+			linkSettings.setSpawnLocalInterpreters(interp)
+			changed = True
+		pRange = range(self.spawnConfig.portRangeStart.value(),
+			       self.spawnConfig.portRangeEnd.value() + 1)
+		if pRange != linkSettings.getSpawnLocalPortRange():
+			linkSettings.setSpawnLocalPortRange(pRange)
+			changed = True
 
-		linkSettings.setConnectHost(self.connConfig.host.text())
-		linkSettings.setConnectPort(self.connConfig.port.value())
+		host = self.connConfig.host.text()
+		if host != linkSettings.getConnectHost():
+			linkSettings.setConnectHost(host)
+			changed = True
+		port = self.connConfig.port.value()
+		if port != linkSettings.getConnectPort():
+			linkSettings.setConnectPort(port)
+			changed = True
+
+		if changed:
+			self.contentChanged.emit()

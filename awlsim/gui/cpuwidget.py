@@ -103,6 +103,8 @@ class CpuWidget(QWidget):
 	runStateChanged = Signal(RunState)
 	# Signal: The online-diag state changed
 	onlineDiagChanged = Signal(bool)
+	# Signal: Some configuration value changed
+	configChanged = Signal()
 	# Signal: Have a new instruction dump
 	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
 
@@ -339,8 +341,8 @@ class CpuWidget(QWidget):
 		project = self.mainWidget.getProject()
 
 		if LinkConfigDialog.askWhenConnecting():
-			#TODO dirty, if changed
 			dlg = LinkConfigDialog(project, self)
+			dlg.contentChanged.connect(self.configChanged)
 			if dlg.exec_() != LinkConfigDialog.Accepted:
 				self.onlineButton.setChecked(False)
 				return
