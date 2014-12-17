@@ -31,8 +31,8 @@ from awlsim.core.symbolparser import *
 
 
 def usage():
-	printInfo("awlsim-symtab symbol table parser, version %d.%d" %\
-		  (VERSION_MAJOR, VERSION_MINOR))
+	printInfo("awlsim-symtab symbol table parser, version %s" %\
+		  VERSION_STRING)
 	printInfo("")
 	printInfo("%s [OPTIONS] <inputfile> [outputfile]" % sys.argv[0])
 	printInfo("")

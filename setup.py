@@ -11,7 +11,7 @@ import shutil
 import hashlib
 from distutils.core import setup
 from distutils.extension import Extension
-from awlsim.common.version import VERSION_MAJOR, VERSION_MINOR
+from awlsim.common.version import VERSION_STRING
 try:
 	import py2exe
 except ImportError as e:
@@ -304,7 +304,7 @@ if cx_Freeze:
 		}
 
 setup(	name		= "awlsim",
-	version		= "%d.%d" % (VERSION_MAJOR, VERSION_MINOR),
+	version		= VERSION_STRING,
 	description	= "S7 AWL/STL Soft-PLC",
 	license		= "GNU General Public License v2 or later",
 	author		= "Michael Buesch",

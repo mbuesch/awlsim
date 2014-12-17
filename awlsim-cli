@@ -38,7 +38,7 @@ class TextInterfaceAwlSimClient(AwlSimClient):
 		emitCpuDump(dumpText)
 
 def usage():
-	printInfo("awlsim version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
+	printInfo("awlsim version %s" % VERSION_STRING)
 	printInfo("")
 	printInfo("%s [OPTIONS] <AWL-source or awlsim-project file>" % sys.argv[0])
 	printInfo("")

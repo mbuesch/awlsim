@@ -118,7 +118,7 @@ def readInputFile(inputFile):
 	return project
 
 def usage():
-	printInfo("awlsim-linuxcnc-hal version %d.%d" % (VERSION_MAJOR, VERSION_MINOR))
+	printInfo("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
 	printInfo("")
 	printInfo("%s [OPTIONS] AWL-source" % sys.argv[0])
 	printInfo("")
