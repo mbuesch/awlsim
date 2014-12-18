@@ -191,7 +191,7 @@ class CoreLinkSettings(object):
 	def __init__(self,
 		     spawnLocalEn=True,
 		     spawnLocalPortRange=range(4151, 4151 + 4095 + 1),
-		     spawnLocalInterpreters="pypy3, pypy; $CURRENT; "\
+		     spawnLocalInterpreters="pypy3; pypy; $CURRENT; "\
 					    "python3; python2; python; py",
 		     connectHost="localhost",
 		     connectPort=4151):
