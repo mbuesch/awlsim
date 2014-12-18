@@ -109,6 +109,12 @@ try:
 except NameError:
 	class BlockingIOError(BaseException): pass
 
+# ConnectionError dummy
+try:
+	ConnectionError
+except NameError:
+	ConnectionError = OSError
+
 # Import StringIO
 if isIronPython and isPy2Compat:
 	# XXX: Workaround for IronPython's buggy io.StringIO
