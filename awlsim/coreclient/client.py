@@ -144,7 +144,7 @@ class AwlSimClient(object):
 						"to AwlSimServer %s" % readableSockaddr)
 				try:
 					sock.connect(sockaddr)
-				except (OSError, socket.error) as e:
+				except SocketErrors as e:
 					if e.errno == errno.ECONNREFUSED or\
 					   e.errno == errno.ENOENT:
 						self.sleep(0.1)
@@ -156,7 +156,7 @@ class AwlSimClient(object):
 						continue
 					raise
 				break
-		except socket.error as e:
+		except SocketErrors as e:
 			raise AwlSimError("Failed to connect to AwlSimServer %s: %s" %\
 				(readableSockaddr, str(e)))
 		printInfo("AwlSimClient: Connected.")
@@ -200,7 +200,7 @@ class AwlSimClient(object):
 		raise msg.exception
 
 	def __rx_PING(self, msg):
-		self.__transceiver.send(AwlSimMessage_PONG())
+		self.__send(AwlSimMessage_PONG())
 
 	def handle_PONG(self):
 		printInfo("AwlSimClient: Received PONG")
@@ -256,17 +256,14 @@ class AwlSimClient(object):
 			return False
 		try:
 			msg = self.__transceiver.receive(timeout)
-		except (socket.error, BlockingIOError) as e:
-			if isinstance(e, socket.timeout) or\
-			   isinstance(e, BlockingIOError) or\
-			   e.errno == errno.EAGAIN or\
-			   e.errno == errno.EWOULDBLOCK:
+		except TransferError as e:
+			if e.reason == e.REASON_BLOCKING:
 				return False
 			raise AwlSimError("AwlSimClient: "
 				"I/O error in connection to server '%s':\n"
 				"%s (errno = %s)" %\
 				(self.__transceiver.peerInfoString, str(e), str(e.errno)))
-		except (AwlSimMessageTransceiver.RemoteEndDied, TransferError) as e:
+		except TransferError as e:
 			raise AwlSimError("AwlSimClient: "
 				"Connection to server '%s' died. "
 				"Failed to receive message." %\
@@ -285,8 +282,18 @@ class AwlSimClient(object):
 	def sleep(self, seconds):
 		time.sleep(seconds)
 
+	def __send(self, txMsg):
+		try:
+			self.__transceiver.send(txMsg)
+		except TransferError as e:
+			raise AwlSimError("AwlSimClient: "
+				"Send error in connection to server '%s':\n"
+				"%s (errno = %s)" %\
+				(self.__transceiver.peerInfoString,
+				 str(e), str(e.errno)))
+
 	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeout=3.0):
-		self.__transceiver.send(txMsg)
+		self.__send(txMsg)
 		now = monotonic_time()
 		end = now + waitTimeout
 		while now < end:
@@ -385,7 +392,7 @@ class AwlSimClient(object):
 			if status != AwlSimMessage_REPLY.STAT_OK:
 				raise AwlSimError("AwlSimClient: Failed to set option '%s'" % name)
 		else:
-			self.__transceiver.send(msg)
+			self.__send(msg)
 		return True
 
 	def setLoglevel(self, level=Logging.LOG_INFO):
@@ -430,7 +437,7 @@ class AwlSimClient(object):
 			if status != AwlSimMessage_REPLY.STAT_OK:
 				raise AwlSimError("AwlSimClient: Failed to set insn state dump")
 		else:
-			self.__transceiver.send(msg)
+			self.__send(msg)
 
 	def getCpuSpecs(self):
 		if not self.__transceiver:
@@ -467,7 +474,7 @@ class AwlSimClient(object):
 				raise AwlSimError("AwlSimClient: Failed to set "
 					"memory read reqs")
 		else:
-			self.__transceiver.send(msg)
+			self.__send(msg)
 		return True
 
 	# Write memory areas in the server.
@@ -484,5 +491,5 @@ class AwlSimClient(object):
 				raise AwlSimError("AwlSimClient: Failed to write "
 					"to memory")
 		else:
-			self.__transceiver.send(msg)
+			self.__send(msg)
 		return True

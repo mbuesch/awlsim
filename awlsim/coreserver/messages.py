@@ -33,8 +33,40 @@ import socket
 import errno
 
 
+SocketErrors = (socket.error, BlockingIOError, ConnectionError)
+
 class TransferError(Exception):
-	pass
+	EnumGen.start
+	REASON_UNKNOWN		= EnumGen.item
+	REASON_BLOCKING		= EnumGen.item
+	REASON_REMOTEDIED	= EnumGen.item
+	EnumGen.end
+
+	def __init__(self, text, parentException=None, reason=None):
+		if not text and parentException:
+			text = str(parentException)
+		if hasattr(parentException, "errno"):
+			_errno = parentException.errno
+		else:
+			_errno = errno.ECONNREFUSED
+		if reason is None:
+			if parentException:
+				# Try to find out whether this was an exception due
+				# to blocking IO (on a nonblocking socket).
+				# This varies between Python versions, argh.
+				if isinstance(parentException, socket.timeout) or\
+				   isinstance(parentException, BlockingIOError) or\
+				   _errno == errno.EAGAIN or\
+				   _errno == errno.EWOULDBLOCK:
+					reason = self.REASON_BLOCKING
+				else:
+					reason = self.REASON_UNKNOWN
+			else:
+				reason = self.REASON_UNKNOWN
+		Exception.__init__(self, text)
+		self.parent = parentException
+		self.reason = reason
+		self.errno = _errno
 
 class AwlSimMessage(object):
 	# Header format:
@@ -675,8 +707,6 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 		return cls(flags, sourceId, fromLine, toLine)
 
 class AwlSimMessageTransceiver(object):
-	class RemoteEndDied(Exception): pass
-
 	id2class = {
 		AwlSimMessage.MSG_ID_REPLY		: AwlSimMessage_REPLY,
 		AwlSimMessage.MSG_ID_EXCEPTION		: AwlSimMessage_EXCEPTION,
@@ -725,19 +755,13 @@ class AwlSimMessageTransceiver(object):
 				self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
 			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
-		except socket.error as e:
+		except SocketErrors as e:
 			raise AwlSimError("Failed to initialize socket: %s" % str(e))
 
 	def shutdown(self):
 		if self.sock:
-			try:
-				self.sock.shutdown(socket.SHUT_RDWR)
-			except socket.error as e:
-				pass
-			try:
-				self.sock.close()
-			except socket.error as e:
-				pass
+			CALL_NOEX(self.sock.shutdown, socket.SHUT_RDWR)
+			CALL_NOEX(self.sock.close)
 			self.sock = None
 
 	def send(self, msg, timeout=None):
@@ -752,12 +776,10 @@ class AwlSimMessageTransceiver(object):
 		while offset < len(data):
 			try:
 				offset += self.sock.send(data[offset : ])
-			except (socket.error, BlockingIOError) as e:
-				if e.errno != errno.EAGAIN and\
-				   e.errno != errno.EWOULDBLOCK and\
-				   not isinstance(e, BlockingIOError) and\
-				   not isinstance(e, socket.timeout):
-					raise TransferError(str(e))
+			except SocketErrors as e:
+				transferError = TransferError(None, parentException = e)
+				if transferError.reason != TransferError.REASON_BLOCKING:
+					raise transferError
 
 	def receive(self, timeout=0.0):
 		if timeout != self.__timeout:
@@ -768,15 +790,17 @@ class AwlSimMessageTransceiver(object):
 		if len(self.buf) < hdrLen:
 			try:
 				data = self.sock.recv(hdrLen - len(self.buf))
-			except (socket.error, BlockingIOError) as e:
+			except SocketErrors as e:
 				if e.errno == errno.EAGAIN or\
 				   e.errno == errno.EWOULDBLOCK or\
 				   isinstance(e, BlockingIOError):
 					return None
-				raise
+				raise TransferError(None,
+					parentException = e)
 			if not data:
 				# The remote end closed the connection
-				raise self.RemoteEndDied()
+				raise TransferError(None,
+					reason = TransferError.REASON_REMOTEDIED)
 			self.buf += data
 			if len(self.buf) < hdrLen:
 				return None
@@ -796,7 +820,8 @@ class AwlSimMessageTransceiver(object):
 			data = self.sock.recv(hdrLen + self.payloadLen - len(self.buf))
 			if not data:
 				# The remote end closed the connection
-				raise self.RemoteEndDied()
+				raise TransferError(None,
+					reason = TransferError.REASON_REMOTEDIED)
 			self.buf += data
 			if len(self.buf) < hdrLen + self.payloadLen:
 				return None

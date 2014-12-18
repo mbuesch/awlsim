@@ -68,6 +68,9 @@ class AwlSimServer(object):
 			self.socket = sock
 			self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
 
+			# Broken-flag. Set, if connection breaks.
+			self.broken = False
+
 			# CPU-dump
 			self.dumpInterval = 0
 			self.nextDump = 0
@@ -110,17 +113,11 @@ class AwlSimServer(object):
 				return False
 			sock = socket.socket(family, socktype)
 			sock.bind(sockaddr)
-		except socket.error as e:
+		except SocketErrors as e:
 			result = False
 		if sock:
-			try:
-				sock.shutdown(socket.SHUT_RDWR)
-			except socket.error as e:
-				pass
-			try:
-				sock.close()
-			except socket.error as e:
-				pass
+			CALL_NOEX(sock.shutdown, socket.SHUT_RDWR)
+			CALL_NOEX(sock.close)
 		return result
 
 	@classmethod
@@ -251,10 +248,16 @@ class AwlSimServer(object):
 		now = self.sim.cpu.now
 		if any(c.dumpInterval and now >= c.nextDump for c in self.clients):
 			msg = AwlSimMessage_CPUDUMP(str(self.sim.cpu))
+			broken = False
 			for client in self.clients:
 				if client.dumpInterval and now >= client.nextDump:
 					client.nextDump = now + client.dumpInterval / 1000.0
-					client.transceiver.send(msg)
+					try:
+						client.transceiver.send(msg)
+					except TransferError as e:
+						client.broken = broken = True
+			if broken:
+				self.__removeBrokenClients()
 
 	def __cpuPostInsnCallback(self, callStackElement, userData):
 		try:
@@ -263,6 +266,7 @@ class AwlSimServer(object):
 			return
 		cpu, sourceId, lineNr, msg =\
 			self.sim.cpu, insn.getSourceId(), insn.getLineNr(), None
+		broken = False
 		for client in self.clients:
 			try:
 				if lineNr not in client.insnStateDump_enabledLines[sourceId]:
@@ -284,7 +288,12 @@ class AwlSimServer(object):
 					cpu.ar2.get(),
 					cpu.dbRegister.index & 0xFFFF,
 					cpu.diRegister.index & 0xFFFF)
-			client.transceiver.send(msg)
+			try:
+				client.transceiver.send(msg)
+			except TransferError as e:
+				client.broken = broken = True
+		if broken:
+			self.__removeBrokenClients()
 		self.__insnSerial += 1
 
 	def __cpuCycleExitCallback(self, userData):
@@ -484,14 +493,15 @@ class AwlSimServer(object):
 	def __handleClientComm(self, client):
 		try:
 			msg = client.transceiver.receive(0.0)
-		except AwlSimMessageTransceiver.RemoteEndDied as e:
-			printInfo("AwlSimServer: Client '%s' died" % client.transceiver.peerInfoString)
+		except TransferError as e:
+			if e.reason == e.REASON_REMOTEDIED:
+				printInfo("AwlSimServer: Client '%s' died" %\
+					  client.transceiver.peerInfoString)
+			else:
+				printInfo("AwlSimServer: Client '%s' data "
+					"transfer error:\n%s" %\
+					(client.transceiver.peerInfoString, str(e)))
 			self.__clientRemove(client)
-			return
-		except (TransferError, socket.error) as e:
-			printInfo("AwlSimServer: Client '%s' data "
-				"transfer error:\n%s" %\
-				(client.transceiver.peerInfoString, str(e)))
 			return
 		if not msg:
 			return
@@ -520,6 +530,7 @@ class AwlSimServer(object):
 				self.__handleClientComm(client)
 
 	def __handleMemReadReqs(self):
+		broken = False
 		for client in self.clients:
 			if not client.memReadRequestMsg:
 				continue
@@ -541,10 +552,15 @@ class AwlSimServer(object):
 							# This is a serious fault.
 							# Re-raise the exception.
 							raise
-				client.transceiver.send(client.memReadRequestMsg)
+				try:
+					client.transceiver.send(client.memReadRequestMsg)
+				except TransferError as e:
+					client.broken = broken = True
 				client.repetitionCount = client.repetitionFactor
 				if not client.repetitionFactor:
 					self.memReadRequestMsg = None
+		if broken:
+			self.__removeBrokenClients()
 
 	def run(self, host, port, commandMask):
 		"""Run the server on 'host':'port'."""
@@ -584,6 +600,8 @@ class AwlSimServer(object):
 					except TransferError as e:
 						printError("AwlSimServer: Failed to forward "
 							   "exception to client.")
+						client.broken = True
+				self.__removeBrokenClients()
 				self.__setRunState(self.STATE_INIT)
 			except MaintenanceRequest as e:
 				# Put the CPU into maintenance mode.
@@ -599,8 +617,9 @@ class AwlSimServer(object):
 				except TransferError as e:
 					pass
 			except TransferError as e:
-				printError("AwlSimServer: Transfer error: " + str(e))
-				self.__setRunState(self.STATE_INIT)
+				# This should be caught earlier.
+				printError("AwlSimServer: Uncaught transfer "
+					   "error: " + str(e))
 
 	def __listen(self, host, port):
 		"""Listen on 'host':'port'."""
@@ -619,7 +638,7 @@ class AwlSimServer(object):
 			sock.setblocking(False)
 			sock.bind(sockaddr)
 			sock.listen(5)
-		except socket.error as e:
+		except SocketErrors as e:
 			raise AwlSimError("AwlSimServer: Failed to create server "
 				"socket: " + str(e))
 		self.socket = sock
@@ -637,10 +656,9 @@ class AwlSimServer(object):
 				peerInfoString = self.unixSockPath
 			else:
 				peerInfoString = "%s:%d" % addrInfo[:2]
-		except (socket.error, BlockingIOError) as e:
-			if isinstance(e, BlockingIOError) or\
-			   e.errno == errno.EWOULDBLOCK or\
-			   e.errno == errno.EAGAIN:
+		except SocketErrors as e:
+			transferError = TransferError(None, parentException = e)
+			if transferError.reason == transferError.REASON_BLOCKING:
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
 		printInfo("AwlSimServer: Client '%s' connected" % peerInfoString)
@@ -659,6 +677,10 @@ class AwlSimServer(object):
 		self.__rebuildSelectReadList()
 		self.__updateCpuCallbacks()
 
+	def __removeBrokenClients(self):
+		for client in [ c for c in self.clients if c.broken ]:
+			self.__clientRemove(client)
+
 	def close(self):
 		"""Closes all client sockets and the main socket."""
 
@@ -676,14 +698,8 @@ class AwlSimServer(object):
 		self.clients = []
 
 		if self.socket:
-			try:
-				self.socket.shutdown(socket.SHUT_RDWR)
-			except socket.error as e:
-				pass
-			try:
-				self.socket.close()
-			except socket.error as e:
-				pass
+			CALL_NOEX(self.socket.shutdown, socket.SHUT_RDWR)
+			CALL_NOEX(self.socket.close)
 			self.socket = None
 		if self.unixSockPath:
 			try:
