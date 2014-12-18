@@ -131,9 +131,19 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 		except (IOError, OSError):
 			pass
 
-# Call a callable and suppress any exceptions.
+# Call a callable and suppress all exceptions,
+# except for really fatal coding exceptions.
 def CALL_NOEX(_callable, *args, **kwargs):
 	try:
 		return _callable(*args, **kwargs)
-	except Exception:
-		return None
+	except (SyntaxError, NameError, AttributeError) as e:
+		raise
+	except ValueError as e:
+		import re
+		if re.match(r'.*takes exactly \d+ argument \(\d+ given\).*', str(e)) or\
+		   re.match(r'.*missing \d+ required positional argument.*', str(e)) or\
+		   re.match(r'.*takes \d+ positional argument but \d+ were given.*', str(e)):
+			raise
+	except Exception as e:
+		pass
+	return None
