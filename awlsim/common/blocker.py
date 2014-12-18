@@ -33,8 +33,8 @@ class Blocker(object):
 
 	def __enter__(self):
 		"""Enter the blocking context."""
-		self.__count += 1
 		assert(self.__count >= 0)
+		self.__count += 1
 
 	def __exit__(self, exc_type, exc_value, traceback):
 		"""Exit the blocking context."""
