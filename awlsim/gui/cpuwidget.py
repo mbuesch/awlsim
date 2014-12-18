@@ -269,9 +269,11 @@ class CpuWidget(QWidget):
 						     sync = True)
 			client.setPeriodicDumpInterval(300 if wantDump else 0)
 		except AwlSimError as e:
+			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Communication error with the simulator core",
-				e)
+				"Error in awlsim core", e)
+			return False
+		return True
 
 	def __handleCpuDump(self, dumpText):
 		for win in self.stateWs.windowList():
@@ -294,7 +296,7 @@ class CpuWidget(QWidget):
 
 		# If requested, first go online and download the program.
 		if downloadFirst:
-			if not self.__download():
+			if not self.__download(noRun=True):
 				self.stop()
 				return
 
@@ -304,7 +306,9 @@ class CpuWidget(QWidget):
 			client.setRunState(True)
 
 			# Upload the GUI requests.
-			self.__uploadMemReadAreas()
+			if not self.__uploadMemReadAreas():
+				self.stop()
+				return
 			self.__updateOnlineViewState()
 
 			# Put the GUI into RUN mode.
@@ -326,7 +330,7 @@ class CpuWidget(QWidget):
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Error while executing code", e)
+				"Core server error", e)
 			self.stop()
 		except MaintenanceRequest as e:
 			if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
@@ -346,7 +350,13 @@ class CpuWidget(QWidget):
 			handleFatalException(self)
 
 	def __stop(self):
-		self.runButton.setChecked(False)
+		# Make sure the button is released.
+		try:
+			self.__runStateChangeBlocked += 1
+			self.runButton.setChecked(False)
+		finally:
+			self.__runStateChangeBlocked -= 1
+
 		self.__coreMsgTimer.stop()
 		if self.isOnline():
 			client = self.mainWidget.getSimClient()
@@ -435,7 +445,7 @@ class CpuWidget(QWidget):
 	def goOffline(self):
 		self.onlineButton.setChecked(False)
 
-	def __download(self):
+	def __download(self, noRun=False):
 		# Make sure we are online.
 		self.goOnline()
 		if not self.isOnline():
@@ -485,7 +495,7 @@ class CpuWidget(QWidget):
 
 		# If we were RUNning before download, put
 		# the CPU into RUN state again.
-		if self.runButton.isChecked():
+		if self.runButton.isChecked() and not noRun:
 			self.__run(downloadFirst = False)
 
 		return True
