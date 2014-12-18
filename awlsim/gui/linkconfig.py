@@ -109,7 +109,6 @@ class LinkConfigDialog(QDialog):
 		QDialog.__init__(self, parent)
 		self.setWindowTitle("Awlsim core connection setup")
 
-		self.__updateBlocked = 0
 		self.setLayout(QGridLayout(self))
 
 		hbox = QHBoxLayout()

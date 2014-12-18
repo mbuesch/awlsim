@@ -383,7 +383,7 @@ class State_Mem(StateWindow):
 		self.widthCombo.currentIndexChanged.connect(self.rebuild)
 		self.fmtCombo.currentIndexChanged.connect(self.rebuild)
 
-		self.__changeBlocked = 0
+		self.__changeBlocked = Blocker()
 		self.rebuild()
 
 	def rebuild(self):
@@ -499,16 +499,15 @@ class State_Mem(StateWindow):
 			self.contentWidget.setEnabled(False)
 			return False
 
-		self.__changeBlocked += 1
-		addr = memArea.start
-		for value in memArea.data:
-			if addr > thisEnd:
-				break
-			if addr >= thisStart:
-				self.contentWidget.setByte(addr - thisStart,
-							   value)
-			addr += 1
-		self.__changeBlocked -= 1
+		with self.__changeBlocked:
+			addr = memArea.start
+			for value in memArea.data:
+				if addr > thisEnd:
+					break
+				if addr >= thisStart:
+					self.contentWidget.setByte(addr - thisStart,
+								   value)
+				addr += 1
 		self.update()
 		return True
 
@@ -552,7 +551,7 @@ class State_LCD(StateWindow):
 		self.endianCombo.currentIndexChanged.connect(self.rebuild)
 		self.fmtCombo.currentIndexChanged.connect(self.rebuild)
 
-		self.__changeBlocked = 0
+		self.__changeBlocked = Blocker()
 		self.rebuild()
 
 	def getDataWidth(self):
@@ -594,16 +593,15 @@ class State_LCD(StateWindow):
 			#TODO
 			return False
 
-		self.__changeBlocked += 1
-		addr = memArea.start
-		for value in memArea.data:
-			if addr > thisEnd:
-				break
-			if addr >= thisStart:
-				self.__setByte(addr - thisStart,
-					       value)
-			addr += 1
-		self.__changeBlocked -= 1
+		with self.__changeBlocked:
+			addr = memArea.start
+			for value in memArea.data:
+				if addr > thisEnd:
+					break
+				if addr >= thisStart:
+					self.__setByte(addr - thisStart,
+						       value)
+				addr += 1
 		self.update()
 		return True
 
@@ -670,10 +668,9 @@ class State_LCD(StateWindow):
 				assert(0)
 		else:
 			assert(0)
-		self.__changeBlocked += 1
-		self.lcd.setDigitCount(len(value))
-		self.lcd.display(value)
-		self.__changeBlocked -= 1
+		with self.__changeBlocked:
+			self.lcd.setDigitCount(len(value))
+			self.lcd.display(value)
 
 class _State_TimerCounter(StateWindow):
 	def __init__(self, client, memAreaType, parent=None):
@@ -704,7 +701,7 @@ class _State_TimerCounter(StateWindow):
 		self.valueEdit.valueChanged.connect(self.__newValueEntered)
 		self.resetButton.released.connect(self.reset)
 
-		self.__changeBlocked = 0
+		self.__changeBlocked = Blocker()
 		self.setMinimumWidth(310)
 		self.rebuild()
 
@@ -756,9 +753,8 @@ class _State_TimerCounter(StateWindow):
 		self.displayedStatus = status
 		self.__updateStatus()
 
-		self.__changeBlocked += 1
-		self.valueEdit.setText(text)
-		self.__changeBlocked -= 1
+		with self.__changeBlocked:
+			self.valueEdit.setText(text)
 
 		self.update()
 		return True

@@ -382,7 +382,7 @@ class EditWidget(SourceCodeEdit):
 				     CpuStatsEntry.SHOW_ACCU2)
 		self.resetCpuStats(True)
 
-		self.__textChangeBlocked = 0
+		self.__textChangeBlocked = Blocker()
 		self.textChanged.connect(self.__textChanged)
 
 		self.blockCountChanged.connect(self.__updateMargins)
@@ -409,8 +409,7 @@ class EditWidget(SourceCodeEdit):
 		garbageCollector.collect()
 
 	def setSource(self, source):
-		self.__textChangeBlocked += 1
-		try:
+		with self.__textChangeBlocked:
 			self.__source = source.dup()
 			self.__source.sourceBytes = b""
 			sourceBytes = source.sourceBytes
@@ -425,9 +424,7 @@ class EditWidget(SourceCodeEdit):
 								errors="ignore")
 			self.setPlainText(sourceText)
 			self.resetCpuStats()
-		finally:
-			self.__textChangeBlocked -= 1
-			self.__needSourceUpdate = True
+		self.__needSourceUpdate = True
 
 	def __updateSource(self):
 		sourceText = self.toPlainText()

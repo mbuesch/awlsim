@@ -126,7 +126,7 @@ class CpuWidget(QWidget):
 
 		self.mainWidget = mainWidget
 		self.state = RunState()
-		self.__runStateChangeBlocked = 0
+		self.__runStateChangeBlocked = Blocker()
 
 		self.__coreMsgTimer = QTimer(self)
 		self.__coreMsgTimer.setSingleShot(False)
@@ -288,11 +288,8 @@ class CpuWidget(QWidget):
 		client = self.mainWidget.getSimClient()
 
 		# Make sure the button is pressed.
-		try:
-			self.__runStateChangeBlocked += 1
+		with self.__runStateChangeBlocked:
 			self.runButton.setChecked(True)
-		finally:
-			self.__runStateChangeBlocked -= 1
 
 		# If requested, first go online and download the program.
 		if downloadFirst:
@@ -351,11 +348,8 @@ class CpuWidget(QWidget):
 
 	def __stop(self):
 		# Make sure the button is released.
-		try:
-			self.__runStateChangeBlocked += 1
+		with self.__runStateChangeBlocked:
 			self.runButton.setChecked(False)
-		finally:
-			self.__runStateChangeBlocked -= 1
 
 		self.__coreMsgTimer.stop()
 		if self.isOnline():
