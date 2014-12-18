@@ -48,7 +48,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		QObject.__init__(self)
 		AwlSimClient.__init__(self)
 
-		self.__setMode(self.MODE_OFFLINE, None, None)
+		self.__setMode(self.MODE_OFFLINE)
 
 	# Override sleep handler
 	def sleep(self, seconds):
@@ -74,7 +74,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	def getMode(self):
 		return self.__mode
 
-	def __setMode(self, mode, host, port):
+	def __setMode(self, mode, host = None, port = None):
 		self.__mode = mode
 		self.__host = host
 		self.__port = port
@@ -86,7 +86,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		# If we are in ONLINE mode, this will only
 		# close the connection.
 		AwlSimClient.shutdown(self)
-		self.__setMode(self.MODE_OFFLINE, None, None)
+		self.__setMode(self.MODE_OFFLINE)
 
 	def setMode_OFFLINE(self):
 		if self.__mode == self.MODE_OFFLINE:
@@ -99,7 +99,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			except (AwlSimError, RuntimeError) as e:
 				CALL_NOEX(self.killSpawnedServer)
 		self.shutdownTransceiver()
-		self.__setMode(self.MODE_OFFLINE, None, None)
+		self.__setMode(self.MODE_OFFLINE)
 
 	def setMode_ONLINE(self, host, port):
 		if self.__mode == self.MODE_ONLINE:
@@ -107,26 +107,32 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			   self.__port == port:
 				# We are already up and running.
 				return
+		self.__serverExecutable = None
+		self.__interpreterList = None
 		self.shutdown()
 		try:
 			self.connectToServer(host = host, port = port)
 		except AwlSimError as e:
 			CALL_NOEX(self.shutdown)
 			raise e
-		self.__setMode(self.MODE_ONLINE, host, port)
+		self.__setMode(self.MODE_ONLINE, host = host, port = port)
 
 	def setMode_FORK(self, portRange,
 			 serverExecutable=None,
 			 interpreterList=None):
 		host = "localhost"
 		if self.__mode == self.MODE_FORK:
-			if self.__port in portRange:
+			if self.__port in portRange and\
+			   self.__serverExecutable == serverExecutable and\
+			   self.__interpreterList == interpreterList:
 				assert(self.__host == host)
 				# We are already up and running.
 				return
 		try:
 			if self.serverProcess:
-				if self.serverProcessPort not in portRange:
+				if self.serverProcessPort not in portRange or\
+				   self.__serverExecutable != serverExecutable or\
+				   self.__interpreterList != interpreterList:
 					self.killSpawnedServer()
 			if self.serverProcess:
 				port = self.serverProcessPort
@@ -155,4 +161,6 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		except AwlSimError as e:
 			CALL_NOEX(self.shutdown)
 			raise e
-		self.__setMode(self.MODE_FORK, host, port)
+		self.__setMode(self.MODE_FORK, host = host, port = port)
+		self.__serverExecutable = serverExecutable
+		self.__interpreterList = interpreterList
