@@ -52,6 +52,12 @@ class MemoryArea(object):
 		self.index = index
 		self.start = start
 		self.length = length
+		if isinstance(data, bytes):
+			# Python 2 compatibility: Convert data to bytearray to avoid
+			# incompatibility with self.data indexing:
+			# Py2: bytes[x] -> str/bytes
+			# Py3: bytes[x] -> int
+			data = bytearray(data)
 		self.data = data
 
 	def __raiseReadErr(self, exception):
@@ -68,7 +74,7 @@ class MemoryArea(object):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = bytes(cpu.inputs[self.start : end])
+		self.data = cpu.inputs[self.start : end]
 
 	def __read_A(self, cpu):
 		end = self.start + self.length
@@ -76,7 +82,7 @@ class MemoryArea(object):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = bytes(cpu.outputs[self.start : end])
+		self.data = cpu.outputs[self.start : end]
 
 	def __read_M(self, cpu):
 		end = self.start + self.length
@@ -84,7 +90,7 @@ class MemoryArea(object):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = bytes(cpu.flags[self.start : end])
+		self.data = cpu.flags[self.start : end]
 
 	def __read_L(self, cpu):
 		localdata = cpu.callStackTop.localdata
@@ -93,7 +99,7 @@ class MemoryArea(object):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = bytes(localdata[self.start : end])
+		self.data = localdata[self.start : end]
 
 	def __read_DB(self, cpu):
 		try:
@@ -114,7 +120,7 @@ class MemoryArea(object):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = bytes(dataBytes[self.start : end])
+		self.data = dataBytes[self.start : end]
 
 	def __read_T(self, cpu):
 		try:
@@ -138,7 +144,7 @@ class MemoryArea(object):
 
 	def __read_STW(self, cpu):
 		stw = cpu.statusWord.getWord()
-		self.data, self.length = bytes(((stw >> 8) & 0xFF, stw & 0xFF)), 2
+		self.data, self.length = bytearray(((stw >> 8) & 0xFF, stw & 0xFF)), 2
 
 	__readHandlers = {
 		TYPE_E		: __read_E,
