@@ -591,7 +591,7 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 							 memArea.start,
 							 memArea.length,
 							 actualLength))
-			pl.append(memArea.data)
+			pl.append(bytes(memArea.data))
 			# Pad to a 32-bit boundary
 			pl.append(b'\x00' * (roundUp(actualLength, 4) - actualLength))
 		pl = b''.join(pl)
