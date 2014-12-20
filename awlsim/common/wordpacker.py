@@ -82,6 +82,9 @@ class _WordPacker:
 	}
 
 	def fromBytes(self, byteBuffer, bitWidth, byteOffset=0):
+		# byteBuffer should not be 'bytes' for Py2 compoatibility reasons.
+		# 'bytes' indexing returns different results on Py3 (int vs. str).
+		assert(not isinstance(byteBuffer, bytes))
 		if bitWidth > 32:
 			return byteBuffer
 		try:
