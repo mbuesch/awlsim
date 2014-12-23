@@ -9,3 +9,6 @@ S7 compatibility:
 
 GUI:
 - Save window status (open MDI windows, positions, etc)
+
+LinuxCNC-HAL:
+- Port to coreserver
