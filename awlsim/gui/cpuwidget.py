@@ -215,8 +215,13 @@ class CpuWidget(QWidget):
 		self.__newWin_CPU()
 		self.update()
 
+	def __stateMdiWindowClosed(self, mdiWin):
+		QTimer.singleShot(0, self.__uploadMemReadAreas)
+
 	def __addWindow(self, win):
-		self.stateMdi.addSubWindow(win, Qt.Window)
+		mdiWin = StateMdiSubWindow(win)
+		mdiWin.closed.connect(self.__stateMdiWindowClosed)
+		self.stateMdi.addSubWindow(mdiWin, Qt.Window)
 		win.configChanged.connect(self.__stateWinConfigChanged)
 		win.show()
 		self.update()

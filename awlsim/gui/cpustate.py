@@ -903,5 +903,16 @@ class State_Counter(_State_TimerCounter):
 		return text
 
 class StateMdiArea(QMdiArea):
-	def __init__(self, parent=None):
-		QMdiArea.__init__(self, parent)
+	pass
+
+class StateMdiSubWindow(QMdiSubWindow):
+	closed = Signal(QMdiSubWindow)
+
+	def __init__(self, parent):
+		QMdiSubWindow.__init__(self)
+		self.setWidget(parent)
+		self.setAttribute(Qt.WA_DeleteOnClose)
+
+	def closeEvent(self, ev):
+		self.closed.emit(self)
+		QMdiSubWindow.closeEvent(self, ev)
