@@ -315,7 +315,7 @@ class CpuWidget(QWidget):
 				"application shutdown.\n"
 				"Do you want to close Awlsim GUI?",
 				QMessageBox.Yes | QMessageBox.No,
-				QMessageBox.Yes)
+				QMessageBox.No)
 			if res == QMessageBox.Yes:
 				print("Shutting down, as requested by server...")
 				client.shutdown()
