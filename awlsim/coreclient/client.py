@@ -299,7 +299,9 @@ class AwlSimClient(object):
 				(self.__transceiver.peerInfoString,
 				 str(e), str(e.errno)))
 
-	def __sendAndWait(self, txMsg, checkRxMsg, waitTimeout=3.0):
+	def __sendAndWait(self, txMsg, checkRxMsg,
+			  waitTimeout=3.0,
+			  ignoreMaintenanceRequests=False):
 		self.__send(txMsg)
 		now = monotonic_time()
 		end = now + waitTimeout
@@ -310,22 +312,26 @@ class AwlSimClient(object):
 					if checkRxMsg(rxMsg):
 						return rxMsg
 			except MaintenanceRequest as e:
-				pass # Ignore
+				if not ignoreMaintenanceRequests:
+					raise e
 			now = monotonic_time()
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
 
-	def __sendAndWaitFor_REPLY(self, msg, timeout=3.0):
+	def __sendAndWaitFor_REPLY(self, msg, timeout=3.0,
+				   ignoreMaintenanceRequests=False):
 		def checkRxMsg(rxMsg):
 			return rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and\
 			       rxMsg.inReplyToId == msg.msgId and\
 			       rxMsg.inReplyToSeq == msg.seq
-		return self.__sendAndWait(msg, checkRxMsg, timeout).status
+		return self.__sendAndWait(msg, checkRxMsg, timeout,
+					  ignoreMaintenanceRequests).status
 
 	def reset(self):
 		if not self.__transceiver:
 			return False
 		msg = AwlSimMessage_RESET()
-		status = self.__sendAndWaitFor_REPLY(msg)
+		status = self.__sendAndWaitFor_REPLY(msg,
+			ignoreMaintenanceRequests = True)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to reset CPU")
 		return True
@@ -338,7 +344,8 @@ class AwlSimClient(object):
 		else:
 			runState = AwlSimMessage_RUNSTATE.STATE_STOP
 		msg = AwlSimMessage_RUNSTATE(runState)
-		status = self.__sendAndWaitFor_REPLY(msg)
+		status = self.__sendAndWaitFor_REPLY(msg,
+			ignoreMaintenanceRequests = True)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set run state")
 		return True
