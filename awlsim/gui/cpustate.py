@@ -38,7 +38,7 @@ class StateWindow(QWidget):
 		pixmap = QPixmap(16, 16)
 		pixmap.fill(QColor(0, 0, 192))
 		self.setWindowIcon(QIcon(pixmap))
-		self.client = client
+		self.__client = client
 
 	def update(self):
 		parent = self.parent()
@@ -70,6 +70,18 @@ class StateWindow(QWidget):
 		self.closed.emit(self)
 		ev.accept()
 		self.deleteLater()
+
+	# Send a request to the CPU to write memory.
+	def _writeCpuMemory(self, memAreas):
+		try:
+			self.__client.writeMemory(memAreas, sync = False)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to write to memory", e)
+		except MaintenanceRequest as e:
+			# writeMemory is asynchronous.
+			# So this should not happen.
+			assert(0)
 
 class State_CPU(StateWindow):
 	def __init__(self, client, parent=None):
@@ -114,11 +126,11 @@ class AbstractDisplayWidget(QWidget):
 
 	changed = Signal()
 
-	def __init__(self, client, addrSpace, addr, width, db, parent=None):
+	def __init__(self, stateWindow, addrSpace, addr, width, db, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
 
-		self.client = client
+		self.stateWindow = stateWindow
 		self.addrSpace = addrSpace
 		self.addr = addr
 		self.width = width
@@ -144,10 +156,10 @@ class AbstractDisplayWidget(QWidget):
 			self.setPalette(pal)
 
 class BitDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, client, addrSpace, addr, width, db,
+	def __init__(self, stateWindow, addrSpace, addr, width, db,
 		     parent=None,
 		     displayPushButtons=True):
-		AbstractDisplayWidget.__init__(self, client, addrSpace,
+		AbstractDisplayWidget.__init__(self, stateWindow, addrSpace,
 					       addr, width, db, parent)
 
 		self.cbs = {}
@@ -200,8 +212,8 @@ class BitDisplayWidget(AbstractDisplayWidget):
 			value >>= 1
 
 class NumberDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, client, base, addrSpace, addr, width, db, parent=None):
-		AbstractDisplayWidget.__init__(self, client, addrSpace,
+	def __init__(self, stateWindow, base, addrSpace, addr, width, db, parent=None):
+		AbstractDisplayWidget.__init__(self, stateWindow, addrSpace,
 					       addr, width, db, parent)
 
 		self.base = base
@@ -276,23 +288,23 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 		self.line.setText(string)
 
 class HexDisplayWidget(NumberDisplayWidget):
-	def __init__(self, client, addrSpace, addr, width, db, parent=None):
-		NumberDisplayWidget.__init__(self, client, 16, addrSpace,
+	def __init__(self, stateWindow, addrSpace, addr, width, db, parent=None):
+		NumberDisplayWidget.__init__(self, stateWindow, 16, addrSpace,
 					     addr, width, db, parent)
 
 class DecDisplayWidget(NumberDisplayWidget):
-	def __init__(self, client, addrSpace, addr, width, db, parent=None):
-		NumberDisplayWidget.__init__(self, client, 10, addrSpace,
+	def __init__(self, stateWindow, addrSpace, addr, width, db, parent=None):
+		NumberDisplayWidget.__init__(self, stateWindow, 10, addrSpace,
 					     addr, width, db, parent)
 
 class BinDisplayWidget(NumberDisplayWidget):
-	def __init__(self, client, addrSpace, addr, width, db, parent=None):
-		NumberDisplayWidget.__init__(self, client, 2, addrSpace,
+	def __init__(self, stateWindow, addrSpace, addr, width, db, parent=None):
+		NumberDisplayWidget.__init__(self, stateWindow, 2, addrSpace,
 					     addr, width, db, parent)
 
 class RealDisplayWidget(AbstractDisplayWidget):
-	def __init__(self, client, addrSpace, addr, width, db, parent=None):
-		AbstractDisplayWidget.__init__(self, client, addrSpace,
+	def __init__(self, stateWindow, addrSpace, addr, width, db, parent=None):
+		AbstractDisplayWidget.__init__(self, stateWindow, addrSpace,
 					       addr, width, db, parent)
 
 		self.__currentValue = -1
@@ -427,28 +439,28 @@ class State_Mem(StateWindow):
 		self.setWindowTitle(longName)
 
 		if fmt == "cb":
-			self.contentWidget = BitDisplayWidget(self.client,
+			self.contentWidget = BitDisplayWidget(self,
 							      self.addrSpace,
 							      addr, width, db, self,
 							      displayPushButtons=True)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "hex":
-			self.contentWidget = HexDisplayWidget(self.client,
+			self.contentWidget = HexDisplayWidget(self,
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "dec":
-			self.contentWidget = DecDisplayWidget(self.client,
+			self.contentWidget = DecDisplayWidget(self,
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "bin":
-			self.contentWidget = BinDisplayWidget(self.client,
+			self.contentWidget = BinDisplayWidget(self,
 							      self.addrSpace,
 							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "real":
-			self.contentWidget = RealDisplayWidget(self.client,
+			self.contentWidget = RealDisplayWidget(self,
 							       self.addrSpace,
 							       addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
@@ -474,7 +486,7 @@ class State_Mem(StateWindow):
 		memArea.data = bytearray(width // 8)
 		WordPacker.toBytes(memArea.data, width, 0, value)
 
-		self.client.writeMemory((memArea,))
+		self._writeCpuMemory((memArea,))
 
 	def __makeMemoryArea(self):
 		dbIndex = 0
@@ -787,7 +799,7 @@ class _State_TimerCounter(StateWindow):
 		memArea = self.__makeMemoryArea()
 		memArea.data = bytearray(4)
 		WordPacker.toBytes(memArea.data, 32, 0, value)
-		self.client.writeMemory((memArea,))
+		self._writeCpuMemory((memArea,))
 
 class State_Timer(_State_TimerCounter):
 	def __init__(self, client, parent=None):
