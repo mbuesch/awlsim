@@ -359,12 +359,14 @@ class AwlSimServer(object):
 		self.__updateCpuCycleExitCallback()
 
 	def __rx_PING(self, client, msg):
+		printDebug("Received message: PING")
 		client.transceiver.send(AwlSimMessage_PONG())
 
 	def __rx_PONG(self, client, msg):
-		printInfo("Received PONG")
+		printInfo("Received message: PONG")
 
 	def __rx_RESET(self, client, msg):
+		printDebug("Received message: RESET")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.__setRunState(self.STATE_INIT)
 		self.sim.reset()
@@ -372,6 +374,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_SHUTDOWN(self, client, msg):
+		printDebug("Received message: SHUTDOWN")
 		status = AwlSimMessage_REPLY.STAT_FAIL
 		if self.commandMask & AwlSimServer.CMDMSK_SHUTDOWN:
 			printInfo("Exiting due to shutdown command")
@@ -380,6 +383,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_RUNSTATE(self, client, msg):
+		printDebug("Received message: RUNSTATE")
 		status = AwlSimMessage_REPLY.STAT_OK
 		if msg.runState == msg.STATE_STOP:
 			self.__setRunState(self.STATE_INIT)
@@ -398,6 +402,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_GET_RUNSTATE(self, client, msg):
+		printDebug("Received message: GET_RUNSTATE")
 		reply = AwlSimMessage_RUNSTATE(
 			AwlSimMessage_RUNSTATE.STATE_RUN\
 			if self.state == self.STATE_RUN else\
@@ -406,6 +411,7 @@ class AwlSimServer(object):
 		client.transceiver.send(reply)
 
 	def __rx_LOAD_CODE(self, client, msg):
+		printDebug("Received message: LOAD_CODE")
 		status = AwlSimMessage_REPLY.STAT_OK
 		parser = AwlParser()
 		parser.parseSource(msg.source)
@@ -415,6 +421,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_SYMTAB(self, client, msg):
+		printDebug("Received message: LOAD_SYMTAB")
 		status = AwlSimMessage_REPLY.STAT_OK
 		symbolTable = SymTabParser.parseSource(msg.source,
 					autodetectFormat = True,
@@ -425,6 +432,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_HW(self, client, msg):
+		printDebug("Received message: LOAD_HW")
 		status = AwlSimMessage_REPLY.STAT_OK
 		printInfo("Loading hardware module '%s'..." % msg.name)
 		hwClass = self.sim.loadHardwareModule(msg.name)
@@ -434,6 +442,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_LIB(self, client, msg):
+		printDebug("Received message: LOAD_LIB")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.__setRunState(self.STATE_INIT)
 		self.sim.loadLibraryBlock(msg.libSelection)
@@ -441,6 +450,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_SET_OPT(self, client, msg):
+		printDebug("Received message: SET_OPT %s" % msg.name)
 		status = AwlSimMessage_REPLY.STAT_OK
 
 		if msg.name == "loglevel":
@@ -466,15 +476,18 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_GET_CPUSPECS(self, client, msg):
+		printDebug("Received message: GET_CPUSPECS")
 		reply = AwlSimMessage_CPUSPECS(self.sim.cpu.getSpecs())
 		client.transceiver.send(reply)
 
 	def __rx_CPUSPECS(self, client, msg):
+		printDebug("Received message: CPUSPECS")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.sim.cpu.getSpecs().assignFrom(msg.cpuspecs)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_REQ_MEMORY(self, client, msg):
+		printDebug("Received message: REQ_MEMORY")
 		client.memReadRequestMsg = AwlSimMessage_MEMORY(0, msg.memAreas)
 		client.repetitionFactor = msg.repetitionFactor
 		client.repetitionCount = client.repetitionFactor
@@ -484,6 +497,7 @@ class AwlSimServer(object):
 			)
 
 	def __rx_MEMORY(self, client, msg):
+		printDebug("Received message: MEMORY")
 		cpu = self.sim.cpu
 		status = AwlSimMessage_REPLY.STAT_OK
 		for memArea in msg.memAreas:
@@ -502,6 +516,7 @@ class AwlSimServer(object):
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_INSNSTATE_CONFIG(self, client, msg):
+		printDebug("Received message: INSNSTATE_CONFIG")
 		status = AwlSimMessage_REPLY.STAT_OK
 		if msg.flags & (msg.FLG_CLEAR | msg.FLG_CLEAR_ONLY):
 			client.insnStateDump_enabledLines = {}
@@ -513,6 +528,7 @@ class AwlSimServer(object):
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_GET_IDENTS(self, client, msg):
+		printDebug("Received message: GET_IDENTS")
 		awlSrcs = symSrcs = hwMods = libSels = ()
 		if msg.getFlags & msg.GET_AWLSRCS:
 			awlSrcs = self.loadedAwlSources
