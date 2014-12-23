@@ -34,57 +34,70 @@ class Logging(object):
 	EnumGen.start
 	LOG_NONE	= EnumGen.item
 	LOG_ERROR	= EnumGen.item
+	LOG_WARNING	= EnumGen.item
 	LOG_INFO	= EnumGen.item
+	LOG_VERBOSE	= EnumGen.item
 	LOG_DEBUG	= EnumGen.item
 	EnumGen.end
 
-	_loglevel = LOG_INFO
+	loglevel = LOG_INFO
 
 	@classmethod
 	def setLoglevel(cls, loglevel):
 		if loglevel not in (cls.LOG_NONE,
 				    cls.LOG_ERROR,
+				    cls.LOG_WARNING,
 				    cls.LOG_INFO,
+				    cls.LOG_VERBOSE,
 				    cls.LOG_DEBUG):
 			raise AwlSimError("Invalid log level '%d'" % loglevel)
-		cls._loglevel = loglevel
+		cls.loglevel = loglevel
 
 	@classmethod
-	def getLoglevel(cls):
-		return cls._loglevel
+	def __print(cls, stream, text):
+		stream.write(text)
+		stream.write("\n")
+		stream.flush()
 
 	@classmethod
 	def printDebug(cls, text):
-		if cls._loglevel >= cls.LOG_DEBUG:
-			sys.stdout.write(text)
-			sys.stdout.write("\n")
-			sys.stdout.flush()
+		if cls.loglevel >= cls.LOG_DEBUG:
+			cls.__print(sys.stdout, text)
+
+	@classmethod
+	def printVerbose(cls, text):
+		if cls.loglevel >= cls.LOG_VERBOSE:
+			cls.__print(sys.stdout, text)
 
 	@classmethod
 	def printInfo(cls, text):
-		if cls._loglevel >= cls.LOG_INFO:
-			sys.stdout.write(text)
-			sys.stdout.write("\n")
-			sys.stdout.flush()
+		if cls.loglevel >= cls.LOG_INFO:
+			cls.__print(sys.stdout, text)
+
+	@classmethod
+	def printWarning(cls, text):
+		if cls.loglevel >= cls.LOG_WARNING:
+			cls.__print(sys.stderr, text)
 
 	@classmethod
 	def printError(cls, text):
-		if cls._loglevel >= cls.LOG_ERROR:
-			sys.stderr.write(text)
-			sys.stderr.write("\n")
-			sys.stderr.flush()
+		if cls.loglevel >= cls.LOG_ERROR:
+			cls.__print(sys.stderr, text)
 
 def printDebug(text):
 	Logging.printDebug(text)
 
+def printVerbose(text):
+	Logging.printVerbose(text)
+
 def printInfo(text):
 	Logging.printInfo(text)
 
+def printWarning(text):
+	Logging.printWarning(text)
+
 def printError(text):
 	Logging.printError(text)
-
-# Warning message helper
-printWarning = printError
 
 def awlFileRead(filename, encoding="latin_1"):
 	try:

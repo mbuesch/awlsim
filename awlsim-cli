@@ -38,42 +38,48 @@ class TextInterfaceAwlSimClient(AwlSimClient):
 		emitCpuDump(dumpText)
 
 def usage():
-	printInfo("awlsim version %s" % VERSION_STRING)
-	printInfo("")
-	printInfo("%s [OPTIONS] <AWL-source or awlsim-project file>" % sys.argv[0])
-	printInfo("")
-	printInfo("Options:")
-	printInfo(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
-	printInfo(" -M|--max-runtime SEC  CPU will be stopped after SEC seconds (default: off)")
-	printInfo(" -2|--twoaccu          Force 2-accu mode")
-	printInfo(" -4|--fouraccu         Force 4-accu mode")
-	printInfo(" -D|--no-cpu-dump      Do not show CPU status while running")
-	printInfo(" -q|--quiet            Do not show any status messages")
-	printInfo(" -x|--extended-insns   Enable extended instructions")
-	printInfo(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
-	printInfo(" -T|--clock-mem ADDR   Force clock memory address (Default: off)")
-	printInfo(" -m|--mnemonics auto   Force mnemonics type: en, de, auto")
-	printInfo(" -P|--profile 0        Set profiling level (Default: 0)")
-	printInfo("")
-	printInfo("Server backend related options:")
-	printInfo(" -c|--connect IP:PORT  Connect to server backend")
-	printInfo(" -b|--spawn-backend    Spawn a new backend server and connect to it")
+	print("awlsim version %s" % VERSION_STRING)
+	print("")
+	print("%s [OPTIONS] <AWL-source or awlsim-project file>" % sys.argv[0])
+	print("")
+	print("Options:")
+	print(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
+	print(" -M|--max-runtime SEC  CPU will be stopped after SEC seconds (default: off)")
+	print(" -2|--twoaccu          Force 2-accu mode")
+	print(" -4|--fouraccu         Force 4-accu mode")
+	print(" -D|--no-cpu-dump      Do not show CPU status while running")
+	print(" -x|--extended-insns   Enable extended instructions")
+	print(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
+	print(" -T|--clock-mem ADDR   Force clock memory address (Default: off)")
+	print(" -m|--mnemonics auto   Force mnemonics type: en, de, auto")
+	print(" -P|--profile 0        Set profiling level (Default: 0)")
+	print(" -L|--loglevel LVL     Set the log level:")
+	print("                       0: Log nothing")
+	print("                       1: Log errors")
+	print("                       2: Log errors and warnings")
+	print("                       3: Log errors, warnings and info messages (default)")
+	print("                       4: Verbose logging")
+	print("                       5: Extremely verbose logging")
+	print("")
+	print("Server backend related options:")
+	print(" -c|--connect IP:PORT  Connect to server backend")
+	print(" -b|--spawn-backend    Spawn a new backend server and connect to it")
 	if not isWinStandalone:
-		printInfo(" -i|--interpreter EXE  Set the backend interpreter executable")
-	printInfo("")
-	printInfo("Loading hardware modules:")
-	printInfo(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
-	printInfo("Print module information:")
-	printInfo(" -I|--hardware-info NAME")
-	printInfo("")
-	printInfo(" Where NAME is the name of the hardware module.")
-	printInfo(" PARAM=VAL are optional hardware specific parameters.")
-	printInfo("")
-	printInfo("Other options:")
-	printInfo(" --list-sfc            Print a list of all supported SFCs")
-	printInfo(" --list-sfc-verbose    Verbose SFC list")
-	printInfo(" --list-sfb            Print a list of all supported SFBs")
-	printInfo(" --list-sfb-verbose    Verbose SFB list")
+		print(" -i|--interpreter EXE  Set the backend interpreter executable")
+	print("")
+	print("Loading hardware modules:")
+	print(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
+	print("Print module information:")
+	print(" -I|--hardware-info NAME")
+	print("")
+	print(" Where NAME is the name of the hardware module.")
+	print(" PARAM=VAL are optional hardware specific parameters.")
+	print("")
+	print("Other options:")
+	print(" --list-sfc            Print a list of all supported SFCs")
+	print(" --list-sfc-verbose    Verbose SFC list")
+	print(" --list-sfb            Print a list of all supported SFBs")
+	print(" --list-sfb-verbose    Verbose SFB list")
 
 def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
 	for block in sorted(blockTable.values(),
@@ -87,7 +93,7 @@ def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
 			desc = "  (%s)" % desc
 		else:
 			desc = ""
-		printInfo("  %s %d  \"%s\"%s" % (prefix, number, name, desc))
+		print("  %s %d  \"%s\"%s" % (prefix, number, name, desc))
 		if withInterface:
 			for ftype in (BlockInterfaceField.FTYPE_IN,
 				      BlockInterfaceField.FTYPE_OUT,
@@ -98,10 +104,10 @@ def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
 					continue
 				for field in fields:
 					field.fieldType = ftype
-					printInfo("        %s" % str(field))
+					print("        %s" % str(field))
 
 def writeStdout(message):
-	if not opt_quiet:
+	if Logging.loglevel >= Logging.LOG_INFO:
 		sys.stdout.write(message)
 		sys.stdout.flush()
 
@@ -133,9 +139,6 @@ def cpuDumpCallback(cpu):
 	if cpu.now >= nextScreenUpdate:
 		nextScreenUpdate = cpu.now + 0.1
 		emitCpuDump(str(cpu))
-
-def makeLoglevel():
-	return Logging.LOG_ERROR if opt_quiet else Logging.LOG_INFO
 
 def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
 	cpuSpecs.assignFrom(projectCpuSpecs)
@@ -198,7 +201,7 @@ def run(inputFile):
 		assignCpuSpecs(cpu.getSpecs(), project.cpuSpecs)
 		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
 		cpu.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
-		if not opt_noCpuDump and not opt_quiet:
+		if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		cpu.setCycleTimeLimit(opt_cycletime)
 		cpu.setRunTimeLimit(opt_maxRuntime)
@@ -217,7 +220,7 @@ def run(inputFile):
 			while 1:
 				s.runCycle()
 		finally:
-			if not opt_noCpuDump and not opt_quiet:
+			if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
 				clearConsole()
 				writeStdout(lastDump + '\n')
 	except (AwlParserError, AwlSimError) as e:
@@ -278,7 +281,7 @@ def runWithServerBackend(inputFile):
 			client.connectToServer()
 
 		writeStdout("Initializing core...\n")
-		client.setLoglevel(makeLoglevel())
+		client.setLoglevel(opt_loglevel)
 		client.setRunState(False)
 		client.reset()
 
@@ -317,7 +320,7 @@ def runWithServerBackend(inputFile):
 			while True:
 				client.processMessages(None)
 		finally:
-			if not opt_noCpuDump and not opt_quiet:
+			if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
 				clearConsole()
 				writeStdout(lastDump + '\n')
 	except AwlSimError as e:
@@ -347,7 +350,6 @@ def __signalHandler(sig, frame):
 def main():
 	global opt_cycletime
 	global opt_maxRuntime
-	global opt_quiet
 	global opt_noCpuDump
 	global opt_nrAccus
 	global opt_extInsns
@@ -357,13 +359,13 @@ def main():
 	global opt_hwmods
 	global opt_hwinfos
 	global opt_profile
+	global opt_loglevel
 	global opt_connect
 	global opt_spawnBackend
 	global opt_interpreter
 
 	opt_cycletime = 5.0
 	opt_maxRuntime = -1.0
-	opt_quiet = False
 	opt_noCpuDump = False
 	opt_nrAccus = None
 	opt_extInsns = False
@@ -373,17 +375,19 @@ def main():
 	opt_hwmods = []
 	opt_hwinfos = []
 	opt_profile = 0
+	opt_loglevel = Logging.LOG_INFO
 	opt_connect = None
 	opt_spawnBackend = False
 	opt_interpreter = None
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hC:M:24qDxt:T:m:H:I:P:c:bi:",
+			"hC:M:24qDxt:T:m:H:I:P:L:c:bi:",
 			[ "help", "cycle-time=", "max-runtime=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "clock-mem=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
+			  "loglevel=",
 			  "connect=", "spawn-backend", "interpreter=",
 			  "list-sfc", "list-sfc-verbose",
 			  "list-sfb", "list-sfb-verbose", ])
@@ -411,8 +415,6 @@ def main():
 			opt_nrAccus = 2
 		if o in ("-4", "--fouraccu"):
 			opt_nrAccus = 4
-		if o in ("-q", "--quiet"):
-			opt_quiet = True
 		if o in ("-D", "--no-cpu-dump"):
 			opt_noCpuDump = True
 		if o in ("-x", "--extended-insns"):
@@ -460,6 +462,12 @@ def main():
 				opt_profile = int(v)
 			except ValueError:
 				printError("-P|--profile: Invalid profile level")
+		if o in ("-L", "--loglevel"):
+			try:
+				opt_loglevel = int(v)
+			except ValueError:
+				printError("-L|--loglevel: Invalid log level")
+				sys.exit(1)
 		if o in ("-c", "--connect"):
 			try:
 				idx = v.rfind(":")
@@ -477,12 +485,12 @@ def main():
 				sys.exit(1)
 			opt_interpreter = v
 		if o in ("--list-sfc", "--list-sfc-verbose"):
-			printInfo("The supported system functions (SFCs) are:")
+			print("The supported system functions (SFCs) are:")
 			printSysblockInfo(SFC_table, "SFC", opt_extInsns,
 					  o.endswith("verbose"))
 			return 0
 		if o in ("--list-sfb", "--list-sfb-verbose"):
-			printInfo("The supported system function blocks (SFBs) are:")
+			print("The supported system function blocks (SFBs) are:")
 			printSysblockInfo(SFB_table, "SFB", opt_extInsns,
 					  o.endswith("verbose"))
 			return 0
@@ -492,7 +500,7 @@ def main():
 	if args:
 		inputFile = args[0]
 
-	Logging.setLoglevel(makeLoglevel())
+	Logging.setLoglevel(opt_loglevel)
 
 	opt_mnemonics = {
 		None	: None,
@@ -506,7 +514,7 @@ def main():
 			# Just print the hardware-infos and exit.
 			for name in opt_hwinfos:
 				cls = AwlSim.loadHardwareModule(name)
-				printInfo(cls.getModuleInfo())
+				print(cls.getModuleInfo())
 			return 0
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())

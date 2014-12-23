@@ -33,12 +33,12 @@ import getopt
 
 
 def usage():
-	printInfo("awlsim-gui version %s" % VERSION_STRING)
-	printInfo("")
-	printInfo("%s [OPTIONS] [AWL-source]" % sys.argv[0])
-	printInfo("")
-	printInfo("Options:")
-	printInfo(" -h|--help             Print this help text")
+	print("awlsim-gui version %s" % VERSION_STRING)
+	print("")
+	print("%s [OPTIONS] [AWL-source]" % sys.argv[0])
+	print("")
+	print("Options:")
+	print(" -h|--help             Print this help text")
 
 def main():
 	opt_awlSource = None

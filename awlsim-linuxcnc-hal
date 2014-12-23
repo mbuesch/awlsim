@@ -118,19 +118,19 @@ def readInputFile(inputFile):
 	return project
 
 def usage():
-	printInfo("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
-	printInfo("")
-	printInfo("%s [OPTIONS] AWL-source" % sys.argv[0])
-	printInfo("")
-	printInfo("Options:")
-	printInfo(" -i|--input-size 32      The input area size, in bytes.")
-	printInfo(" -I|--input-base 0       The AWL input address base.")
-	printInfo(" -o|--output-size 32     The output area size, in bytes.")
-	printInfo(" -O|--output-base 0      The AWL output address base.")
-	printInfo(" -g|--gui 1/0            Enable/disable the GUI (default off).")
-	printInfo("")
-	printInfo(" -1|--onecycle           Only run one cycle")
-	printInfo(" -C|--check-cnc 1/0      Enable/disable LinuxCNC runtime check (default on).")
+	print("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
+	print("")
+	print("%s [OPTIONS] AWL-source" % sys.argv[0])
+	print("")
+	print("Options:")
+	print(" -i|--input-size 32      The input area size, in bytes.")
+	print(" -I|--input-base 0       The AWL input address base.")
+	print(" -o|--output-size 32     The output area size, in bytes.")
+	print(" -O|--output-base 0      The AWL output address base.")
+	print(" -g|--gui 1/0            Enable/disable the GUI (default off).")
+	print("")
+	print(" -1|--onecycle           Only run one cycle")
+	print(" -C|--check-cnc 1/0      Enable/disable LinuxCNC runtime check (default on).")
 
 def main():
 	global opt_checkcnc

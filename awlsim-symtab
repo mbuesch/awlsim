@@ -31,24 +31,24 @@ from awlsim.core.symbolparser import *
 
 
 def usage():
-	printInfo("awlsim-symtab symbol table parser, version %s" %\
+	print("awlsim-symtab symbol table parser, version %s" %\
 		  VERSION_STRING)
-	printInfo("")
-	printInfo("%s [OPTIONS] <inputfile> [outputfile]" % sys.argv[0])
-	printInfo("")
-	printInfo("If inputfile is -, stdin is used.")
-	printInfo("If outputfile is - or omitted, stdout is used.")
-	printInfo("")
-	printInfo("Options:")
-	printInfo(" -I|--input-format FMT     Input file format.")
-	printInfo("                           FMT may be one of: auto, csv, asc")
-	printInfo("                           Default: auto")
-	printInfo(" -O|--output-format FMT    Input file format.")
-	printInfo("                           FMT may be one of: csv, readable-csv, asc")
-	printInfo("                           Default: readable-csv")
-	printInfo("")
-	printInfo("Example usage for converting .ASC to readable .CSV:")
-	printInfo(" awlsim-symtab -I asc -O readable-csv symbols.asc symbols.csv")
+	print("")
+	print("%s [OPTIONS] <inputfile> [outputfile]" % sys.argv[0])
+	print("")
+	print("If inputfile is -, stdin is used.")
+	print("If outputfile is - or omitted, stdout is used.")
+	print("")
+	print("Options:")
+	print(" -I|--input-format FMT     Input file format.")
+	print("                           FMT may be one of: auto, csv, asc")
+	print("                           Default: auto")
+	print(" -O|--output-format FMT    Input file format.")
+	print("                           FMT may be one of: csv, readable-csv, asc")
+	print("                           Default: readable-csv")
+	print("")
+	print("Example usage for converting .ASC to readable .CSV:")
+	print(" awlsim-symtab -I asc -O readable-csv symbols.asc symbols.csv")
 
 def main():
 	opt_inputParser = None

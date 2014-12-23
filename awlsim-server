@@ -32,15 +32,22 @@ from awlsim.coreserver import *
 
 
 def usage():
-	printInfo("awlsim-server version %s" % VERSION_STRING)
-	printInfo("")
-	printInfo("%s [OPTIONS]" % sys.argv[0])
-	printInfo("")
-	printInfo("Options:")
-	printInfo(" -l|--listen HOST:PORT   Listen on the specified HOST:PORT")
-	printInfo("                         Defaults to %s:%d" %\
+	print("awlsim-server version %s" % VERSION_STRING)
+	print("")
+	print("%s [OPTIONS]" % sys.argv[0])
+	print("")
+	print("Options:")
+	print(" -l|--listen HOST:PORT   Listen on the specified HOST:PORT")
+	print("                         Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
-	printInfo(" -B|--background         Fork a background process")
+	print(" -B|--background         Fork a background process")
+	print(" -L|--loglevel LVL       Set the log level:")
+	print("                         0: Log nothing")
+	print("                         1: Log errors")
+	print("                         2: Log errors and warnings")
+	print("                         3: Log errors, warnings and info messages (default)")
+	print("                         4: Verbose logging")
+	print("                         5: Extremely verbose logging")
 
 def main():
 	global opt_listen
@@ -48,11 +55,12 @@ def main():
 
 	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
 	opt_background = False
+	opt_loglevel = Logging.LOG_INFO
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hl:B",
-			[ "help", "listen=", "background", ])
+			"hl:BL:",
+			[ "help", "listen=", "background", "loglevel=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -72,12 +80,19 @@ def main():
 				sys.exit(1)
 		if o in ("-B", "--background"):
 			opt_background = True
+		if o in ("-L", "--loglevel"):
+			try:
+				opt_loglevel = int(v)
+			except ValueError:
+				printError("-L|--loglevel: Invalid log level")
+				sys.exit(1)
 	if args:
 		usage()
 		return 1
 
 	exitCode = 0
 	try:
+		Logging.setLoglevel(opt_loglevel)
 		if opt_background:
 			interpreter = sys.executable
 			assert(interpreter)

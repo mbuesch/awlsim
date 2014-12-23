@@ -135,7 +135,7 @@ class AwlSimServer(object):
 		env[AwlSimServer.ENV_MAGIC]		= AwlSimServer.ENV_MAGIC
 		env["AWLSIM_CORESERVER_HOST"]		= str(listenHost)
 		env["AWLSIM_CORESERVER_PORT"]		= str(int(listenPort))
-		env["AWLSIM_CORESERVER_LOGLEVEL"]	= str(Logging.getLoglevel())
+		env["AWLSIM_CORESERVER_LOGLEVEL"]	= str(Logging.loglevel)
 		env["AWLSIM_CORESERVER_CMDMSK"]		= str(int(commandMask))
 
 		if forkServerProcess:

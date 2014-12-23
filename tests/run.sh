@@ -104,7 +104,7 @@ run_awl_test()
 
 	local ok=1
 	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$rootdir/awlsim-cli" --quiet --extended-insns \
+	"$interpreter" "$rootdir/awlsim-cli" --loglevel 2  --extended-insns \
 		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 		--cycle-time 60 \
 		"$@" \
