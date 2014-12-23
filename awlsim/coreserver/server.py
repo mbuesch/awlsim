@@ -186,11 +186,25 @@ class AwlSimServer(object):
 	def __init__(self):
 		self.state = -1
 		self.__setRunState(self.STATE_INIT)
+
 		self.commandMask = 0
-		self.sim = None
 		self.socket = None
 		self.unixSockPath = None
 		self.clients = []
+
+		self.sim = None
+		self.__resetSources()
+
+	def __resetSources(self):
+		# List of loaded AwlSource()s
+		self.loadedAwlSources = []
+		# List of loaded SymTabSource()s
+		self.loadedSymTabSources = []
+		# List of tuples of loaded hardware modules:
+		#   (hwModName, parameterDict)
+		self.loadedHwModules = []
+		# List of loaded AwlLibEntrySelection()s
+		self.loadedLibSelections = []
 
 	def runFromEnvironment(self, env=None):
 		"""Run the server.
@@ -332,6 +346,7 @@ class AwlSimServer(object):
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.__setRunState(self.STATE_INIT)
 		self.sim.reset()
+		self.__resetSources()
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_SHUTDOWN(self, client, msg):
@@ -374,6 +389,7 @@ class AwlSimServer(object):
 		parser.parseSource(msg.source)
 		self.__setRunState(self.STATE_INIT)
 		self.sim.load(parser.getParseTree())
+		self.loadedAwlSources.append(msg.source)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_SYMTAB(self, client, msg):
@@ -383,6 +399,7 @@ class AwlSimServer(object):
 					mnemonics = self.sim.cpu.getSpecs().getMnemonics())
 		self.__setRunState(self.STATE_INIT)
 		self.sim.loadSymbolTable(symbolTable)
+		self.loadedSymTabSources.append(msg.source)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_HW(self, client, msg):
@@ -391,12 +408,14 @@ class AwlSimServer(object):
 		hwClass = self.sim.loadHardwareModule(msg.name)
 		self.sim.registerHardwareClass(hwClass = hwClass,
 					       parameters = msg.paramDict)
+		self.loadedHwModules.append( (msg.name, msg.paramDict) )
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LOAD_LIB(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.__setRunState(self.STATE_INIT)
 		self.sim.loadLibraryBlock(msg.libSelection)
+		self.loadedLibSelections.append(msg.libSelection)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_SET_OPT(self, client, msg):
@@ -471,6 +490,20 @@ class AwlSimServer(object):
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_GET_IDENTS(self, client, msg):
+		awlSrcs = symSrcs = hwMods = libSels = ()
+		if msg.getFlags & msg.GET_AWLSRCS:
+			awlSrcs = self.loadedAwlSources
+		if msg.getFlags & msg.GET_SYMTABSRCS:
+			symSrcs = self.loadedSymTabSources
+		if msg.getFlags & msg.GET_HWMODS:
+			hwMods = self.loadedHwModules
+		if msg.getFlags & msg.GET_LIBSELS:
+			libSels = self.loadedLibSelections
+		reply = AwlSimMessage_IDENTS(awlSrcs, symSrcs,
+					     hwMods, libSels)
+		client.transceiver.send(reply)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
@@ -488,20 +521,25 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
+		AwlSimMessage.MSG_ID_GET_IDENTS		: __rx_GET_IDENTS,
 	}
+
+	def __clientCommTransferError(self, exception, client):
+		if exception.reason == exception.REASON_REMOTEDIED:
+			printInfo("AwlSimServer: Client '%s' died" %\
+				  client.transceiver.peerInfoString)
+		else:
+			printInfo("AwlSimServer: Client '%s' data "
+				"transfer error:\n%s" %\
+				(client.transceiver.peerInfoString,
+				 str(exception)))
+		self.__clientRemove(client)
 
 	def __handleClientComm(self, client):
 		try:
 			msg = client.transceiver.receive(0.0)
 		except TransferError as e:
-			if e.reason == e.REASON_REMOTEDIED:
-				printInfo("AwlSimServer: Client '%s' died" %\
-					  client.transceiver.peerInfoString)
-			else:
-				printInfo("AwlSimServer: Client '%s' data "
-					"transfer error:\n%s" %\
-					(client.transceiver.peerInfoString, str(e)))
-			self.__clientRemove(client)
+			self.__clientCommTransferError(e, client)
 			return
 		if not msg:
 			return
@@ -511,7 +549,11 @@ class AwlSimServer(object):
 			printInfo("AwlSimServer: Received unsupported "
 				"message 0x%02X" % msg.msgId)
 			return
-		handler(self, client, msg)
+		try:
+			handler(self, client, msg)
+		except TransferError as e:
+			self.__clientCommTransferError(e, client)
+			return
 
 	def __handleCommunication(self):
 		while 1:

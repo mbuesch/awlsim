@@ -233,6 +233,12 @@ class AwlSimClient(object):
 	def __rx_INSNSTATE(self, msg):
 		self.handle_INSNSTATE(msg)
 
+	def handle_IDENTS(self, msg):
+		pass # Don't do anything by default
+
+	def __rx_IDENTS(self, msg):
+		self.handle_IDENTS(msg)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_REPLY		: __rx_NOP,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
@@ -244,6 +250,7 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: __rx_INSNSTATE,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
+		AwlSimMessage.MSG_ID_IDENTS		: __rx_IDENTS,
 	}
 
 	# Main message processing
@@ -381,6 +388,22 @@ class AwlSimClient(object):
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
+		return True
+
+	# Request the (source) ident hashes from the CPU.
+	# This method is asynchronous.
+	# The idents are returned via handle_IDENTS()
+	def requestIdents(self, reqAwlSources = False,
+			  reqSymTabSources = False,
+			  reqHwModules = False,
+			  reqLibSelections = False):
+		if not self.__transceiver:
+			return False
+		self.__send(AwlSimMessage_GET_IDENTS(
+			(AwlSimMessage_GET_IDENTS.GET_AWLSRCS if reqAwlSources else 0) |\
+			(AwlSimMessage_GET_IDENTS.GET_SYMTABSRCS if reqSymTabSources else 0) |\
+			(AwlSimMessage_GET_IDENTS.GET_HWMODS if reqHwModules else 0) |\
+			(AwlSimMessage_GET_IDENTS.GET_LIBSELS if reqLibSelections else 0)))
 		return True
 
 	def __setOption(self, name, value, sync=True):

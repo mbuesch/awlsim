@@ -103,6 +103,8 @@ class AwlSimMessage(object):
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
 	MSG_ID_LOAD_LIB		= EnumGen.item
 	MSG_ID_GET_RUNSTATE	= EnumGen.item
+	MSG_ID_GET_IDENTS	= EnumGen.item
+	MSG_ID_IDENTS		= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -343,33 +345,44 @@ class AwlSimMessage_LOAD_LIB(AwlSimMessage):
 		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_LIB)
 		self.libSelection = libSelection
 
+	# Pack a library selection.
+	# May raise ValueError or struct.error
+	@classmethod
+	def packLibSelection(cls, libSel):
+		payload = [ cls.packString(libSel.getLibName()), ]
+		payload.append(cls.plStruct.pack(libSel.getEntryType(),
+						 libSel.getEntryIndex(),
+						 libSel.getEffectiveEntryIndex()))
+		return b''.join(payload)
+
+	# Unpack a library selection.
+	# May raise ValueError, struct.error or AwlSimError
+	@classmethod
+	def unpackLibSelection(cls, payload, offset = 0):
+		libName, count = cls.unpackString(payload, offset)
+		offset += count
+		eType, eIndex, effIndex =\
+			cls.plStruct.unpack_from(payload, offset)
+		offset += cls.plStruct.size
+		return (AwlLibEntrySelection(
+				libName = libName,
+				entryType = eType,
+				entryIndex = eIndex,
+				effectiveEntryIndex = effIndex),
+			offset)
+
 	def toBytes(self):
-		payload = b""
 		try:
-			payload += self.packString(self.libSelection.getLibName())
-			payload += self.plStruct.pack(self.libSelection.getEntryType(),
-						      self.libSelection.getEntryIndex(),
-						      self.libSelection.getEffectiveEntryIndex())
+			payload = self.packLibSelection(self.libSelection)
 			return AwlSimMessage.toBytes(self, len(payload)) + payload
-		except (ValueError) as e:
+		except (ValueError, struct.error) as e:
 			raise TransferError("LOAD_LIB: Invalid data format")
 
 	@classmethod
 	def fromBytes(cls, payload):
-		libSelection = AwlLibEntrySelection()
-		offset = 0
 		try:
-			libName, count = cls.unpackString(payload, offset)
-			offset += count
-			eType, eIndex, effIndex =\
-				cls.plStruct.unpack_from(payload, offset)
-			offset += cls.plStruct.size
-			libSelection = AwlLibEntrySelection(
-				libName = libName,
-				entryType = eType,
-				entryIndex = eIndex,
-				effectiveEntryIndex = effIndex)
-		except (ValueError, AwlSimError) as e:
+			libSelection, offset = cls.unpackLibSelection(payload)
+		except (ValueError, struct.error, AwlSimError) as e:
 			raise TransferError("LOAD_LIB: Invalid data format")
 		return cls(libSelection = libSelection)
 
@@ -706,6 +719,143 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 			raise TransferError("INSNSTATE_CONFIG: Invalid data format")
 		return cls(flags, sourceId, fromLine, toLine)
 
+class AwlSimMessage_GET_IDENTS(AwlSimMessage):
+	# Get-flags. Specify what information to get.
+	EnumGen.start
+	GET_AWLSRCS		= EnumGen.bitmask # Get AwlSource()s (w/o data)
+	GET_SYMTABSRCS		= EnumGen.bitmask # Get SymTabSource()s (w/o data)
+	GET_HWMODS		= EnumGen.bitmask # Get HW modules
+	GET_LIBSELS		= EnumGen.bitmask # Get AwlLibEntrySelection()s
+	EnumGen.end
+
+	# Payload header struct:
+	#	Get-flags (32 bit)
+	#	Reserved (32 bit)
+	plHdrStruct = struct.Struct(str(">II"))
+
+	def __init__(self, getFlags):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_IDENTS)
+		self.getFlags = getFlags
+
+	def toBytes(self):
+		payload = self.plHdrStruct.pack(self.getFlags, 0)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			getFlags, _unused = cls.plHdrStruct.unpack_from(payload, 0)
+		except (ValueError, struct.error) as e:
+			raise TransferError("GET_IDENTS: Invalid data format")
+		return cls(getFlags)
+
+class AwlSimMessage_IDENTS(AwlSimMessage):
+	# Payload header struct:
+	#	Number of AWL sources (32 bit)
+	#	Number of symbol tables (32 bit)
+	#	Number of hardware modules (32 bit)
+	#	Number of library selections (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	plHdrStruct = struct.Struct(str(">IIIIII"))
+
+	# Payload module header struct:
+	#	Number of parameters (32 bit)
+	#	Reserved (32 bit)
+	plModStruct = struct.Struct(str(">II"))
+
+	# awlSources: List of AwlSource()s
+	# symTabSources: List of SymTabSource()s
+	# hwMods: List of tuples: (modName, parametersDict)
+	# libSelections: List of AwlLibEntrySelection()s
+	def __init__(self, awlSources, symTabSources, hwMods, libSelections):
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_IDENTS)
+		self.awlSources = awlSources
+		self.symTabSources = symTabSources
+		self.hwMods = hwMods
+		self.libSelections = libSelections
+
+	def toBytes(self):
+		payload = [ self.plHdrStruct.pack(len(self.awlSources),
+						  len(self.symTabSources),
+						  len(self.hwMods),
+						  len(self.libSelections),
+						  0, 0), ]
+		for src in self.awlSources:
+			payload.append(self.packString(src.name))
+			payload.append(self.packString(src.filepath))
+			payload.append(self.packBytes(src.identHash))
+		for src in self.symTabSources:
+			payload.append(self.packString(src.name))
+			payload.append(self.packString(src.filepath))
+			payload.append(self.packBytes(src.identHash))
+		for modName, parametersDict in self.hwMods:
+			payload.append(self.plModStruct.pack(len(parametersDict), 0))
+			payload.append(self.packString(modName))
+			for pName, pVal in parametersDict.items():
+				payload.append(self.packString(pName))
+				payload.append(self.packString(pVal))
+		for libSel in self.libSelections:
+			payload.append(AwlSimMessage_LOAD_LIB.packLibSelection(libSel))
+		payload = b''.join(payload)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			awlSources = []
+			symTabSources = []
+			hwMods = []
+			libSelections = []
+			offset = 0
+			nrAwl, nrSym, nrHw, nrLib, _a, _b  = cls.plHdrStruct.unpack_from(
+								payload, offset)
+			offset += cls.plHdrStruct.size
+			for i in range(nrAwl):
+				name, count = cls.unpackString(payload, offset)
+				offset += count
+				path, count = cls.unpackString(payload, offset)
+				offset += count
+				identHash, count = cls.unpackBytes(payload, offset)
+				offset += count
+				src = AwlSource(name, path, None)
+				src.identHash = identHash # Force hash
+				awlSources.append(src)
+			for i in range(nrSym):
+				name, count = cls.unpackString(payload, offset)
+				offset += count
+				path, count = cls.unpackString(payload, offset)
+				offset += count
+				identHash, count = cls.unpackBytes(payload, offset)
+				offset += count
+				src = SymTabSource(name, path, None)
+				src.identHash = identHash # Force hash
+				symTabSources.append(src)
+			for i in range(nrHw):
+				nrParam, _unused = cls.plModStruct.unpack_from(
+								payload, offset)
+				offset += cls.plModStruct.size
+				modName, count = cls.unpackString(payload, offset)
+				offset += count
+				params = {}
+				for i in range(nrParam):
+					pName, count = cls.unpackString(payload, offset)
+					offset += count
+					pVal, count = cls.unpackString(payload, offset)
+					offset += count
+					params[pName] = pVal
+				hwMods.append( (modName, params) )
+			for i in range(nrLib):
+				libSel, offset = AwlSimMessage_LOAD_LIB.unpackLibSelection(
+						payload, offset)
+				libSelections.append(libSel)
+		except (ValueError, struct.error, AwlSimError) as e:
+			raise TransferError("IDENTS: Invalid data format")
+		return cls(awlSources = awlSources,
+			   symTabSources = symTabSources,
+			   hwMods = hwMods,
+			   libSelections = libSelections)
+
 class AwlSimMessageTransceiver(object):
 	id2class = {
 		AwlSimMessage.MSG_ID_REPLY		: AwlSimMessage_REPLY,
@@ -729,6 +879,8 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
+		AwlSimMessage.MSG_ID_GET_IDENTS		: AwlSimMessage_GET_IDENTS,
+		AwlSimMessage.MSG_ID_IDENTS		: AwlSimMessage_IDENTS,
 	}
 
 	def __init__(self, sock, peerInfoString):
