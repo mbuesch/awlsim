@@ -472,6 +472,8 @@ class EditWidget(SourceCodeEdit):
 			self.resetCpuStats()
 			self.__setSourceMatchesCpuSource(True)
 		if newState.state == RunState.STATE_RUN:
+			self.__setSourceMatchesCpuSource(
+				self.__sourceMatchesCpuSource, force = True)
 			self.__aniTimer.start(200)
 		else:
 			self.__aniTimer.stop()
@@ -600,8 +602,8 @@ class EditWidget(SourceCodeEdit):
 				    len(self.__aniChars)
 		self.headerWidget.update()
 
-	def __setSourceMatchesCpuSource(self, sourceIsOnCpu):
-		if sourceIsOnCpu != self.__sourceMatchesCpuSource:
+	def __setSourceMatchesCpuSource(self, sourceIsOnCpu, force=False):
+		if sourceIsOnCpu != self.__sourceMatchesCpuSource or force:
 			self.__sourceMatchesCpuSource = sourceIsOnCpu
 			self.headerWidget.update()
 			self.cpuCodeMatchChanged.emit(self, sourceIsOnCpu)
