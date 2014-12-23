@@ -80,6 +80,7 @@ class GenericSource(object):
 	@property
 	def identHash(self):
 		if not self.__identHash:
+			# Calculate the ident hash
 			h = hashlib.new(self.IDENT_HASH, self.SRCTYPE.encode("utf-8"))
 			if self.name is not None:
 				h.update(self.name.encode("utf-8"))
@@ -88,6 +89,11 @@ class GenericSource(object):
 			h.update(self.sourceBytes)
 			self.__identHash = h.digest()
 		return self.__identHash
+
+	@identHash.setter
+	def identHash(self, identHash):
+		# Force the ident hash.
+		self.__identHash = identHash
 
 	@property
 	def identHashStr(self):
