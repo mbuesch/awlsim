@@ -37,6 +37,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Parameter: A list of MemoryArea instances.
 	haveMemoryUpdate = Signal(list)
 
+	# Ident hashes signal.
+	# Parameter: AwlSimMessage_IDENTS instance.
+	haveIdentsMsg = Signal(AwlSimMessage_IDENTS)
+
 	# The client mode
 	EnumGen.start
 	MODE_OFFLINE	= EnumGen.item # Not connected
@@ -67,9 +71,13 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	def handle_MEMORY(self, memAreas):
 		self.haveMemoryUpdate.emit(memAreas)
 
-	# Override memory update handler
+	# Override instruction state handler
 	def handle_INSNSTATE(self, msg):
 		self.haveInsnDump.emit(msg)
+
+	# Override ident hashes handler
+	def handle_IDENTS(self, msg):
+		self.haveIdentsMsg.emit(msg)
 
 	def getMode(self):
 		return self.__mode

@@ -205,6 +205,9 @@ class SourceTabWidget(QTabWidget):
 	def clipboardPaste(self):
 		pass
 
+	def handleIdentsMsg(self, identsMsg):
+		pass
+
 class AwlSourceTabWidget(SourceTabWidget):
 	"AWL source tab-widget"
 
@@ -242,6 +245,19 @@ class AwlSourceTabWidget(SourceTabWidget):
 			self.visibleLinesChanged.emit(source, fromLine, toLine)
 		else:
 			self.visibleLinesChanged.emit(None, -1, -1)
+
+	# Handle a change in editor-code <-> cpu-code match.
+	def __handleCodeMatchChange(self, editWidget, matchesCpu):
+		index = self.indexOf(editWidget)
+		if matchesCpu:
+			self.setTabIcon(index, QIcon())
+			self.setTabToolTip(index, "")
+		else:
+			self.setTabIcon(index, getIcon("warning"))
+			self.setTabToolTip(index, "Warning:\n"
+				"The code in the editor "
+				"widget does not match the code on the CPU.\n"
+				"Please re-download the code to the CPU.")
 
 	def __currentChanged(self, index):
 		if self.onlineDiagEnabled:
@@ -301,6 +317,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget.codeChanged.connect(self.sourceChanged)
 		editWidget.focusChanged.connect(self.focusChanged)
 		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
+		editWidget.cpuCodeMatchChanged.connect(self.__handleCodeMatchChange)
 		editWidget.undoAvailable.connect(self.undoAvailableChanged)
 		editWidget.redoAvailable.connect(self.redoAvailableChanged)
 		editWidget.copyAvailable.connect(self.copyAvailableChanged)
@@ -422,6 +439,11 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if editWidget:
 			editWidget.paste()
 
+	def handleIdentsMsg(self, identsMsg):
+		SourceTabWidget.handleIdentsMsg(self, identsMsg)
+		for editWidget in self.allTabWidgets():
+			editWidget.handleIdentsMsg(identsMsg)
+
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	
 
@@ -524,3 +546,6 @@ class SymSourceTabWidget(SourceTabWidget):
 		symTabView.setSource(source)
 		self.updateTabTexts()
 		self.setCurrentIndex(index)
+
+	def handleIdentsMsg(self, identsMsg):
+		pass#TODO

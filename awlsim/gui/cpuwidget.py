@@ -118,6 +118,8 @@ class CpuWidget(QWidget):
 	configChanged = Signal()
 	# Signal: Have a new instruction dump
 	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
+	# Signal: Have a new ident hashes message
+	haveIdentsMsg = Signal(AwlSimMessage_IDENTS)
 
 	def __init__(self, mainWidget, parent=None):
 		QWidget.__init__(self, parent)
@@ -132,10 +134,15 @@ class CpuWidget(QWidget):
 		self.__coreMsgTimer.setSingleShot(False)
 		self.__coreMsgTimer.timeout.connect(self.__processCoreMessages)
 
+		self.__corePeriodicTimer = QTimer(self)
+		self.__corePeriodicTimer.setSingleShot(False)
+		self.__corePeriodicTimer.timeout.connect(self.__periodicCoreWork)
+
 		client = self.mainWidget.getSimClient()
 		client.haveCpuDump.connect(self.__handleCpuDump)
 		client.haveInsnDump.connect(self.haveInsnDump)
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
+		client.haveIdentsMsg.connect(self.__handleIdentsMsg)
 
 		toolsLayout = QHBoxLayout()
 
@@ -310,7 +317,10 @@ class CpuWidget(QWidget):
 
 			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
+			self.__identsPending = False
+			self.__periodicCoreWork()
 			self.__coreMsgTimer.start(0)
+			self.__corePeriodicTimer.start(1000)
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
@@ -346,12 +356,27 @@ class CpuWidget(QWidget):
 			client.shutdown()
 			handleFatalException(self)
 
+	# Periodic timer for core status work.
+	def __periodicCoreWork(self):
+		client = self.mainWidget.getSimClient()
+
+		if not self.__identsPending:
+			self.__identsPending = True
+			client.requestIdents(reqAwlSources = True,
+					     reqSymTabSources = True)
+
+	def __handleIdentsMsg(self, identsMsg):
+		if self.__identsPending:
+			self.__identsPending = False
+			self.haveIdentsMsg.emit(identsMsg)
+
 	def __stop(self):
 		# Make sure the button is released.
 		with self.__runStateChangeBlocked:
 			self.runButton.setChecked(False)
 
 		self.__coreMsgTimer.stop()
+		self.__corePeriodicTimer.stop()
 		if self.isOnline():
 			client = self.mainWidget.getSimClient()
 			try:

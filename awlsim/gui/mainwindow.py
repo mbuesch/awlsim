@@ -80,6 +80,7 @@ class MainWidget(QWidget):
 		self.cpuWidget.runStateChanged.connect(self.runStateChanged)
 		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
 		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
+		self.cpuWidget.haveIdentsMsg.connect(self.projectWidget.handleIdentsMsg)
 		self.cpuWidget.configChanged.connect(self.__somethingChanged)
 		self.runStateChanged.connect(self.projectWidget.updateRunState)
 		self.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)

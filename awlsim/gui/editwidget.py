@@ -338,6 +338,10 @@ class EditWidget(SourceCodeEdit):
 	codeChanged = Signal()
 	# Signal: Emitted, if the visible source lines changed (e.g. scrolled)
 	visibleRangeChanged = Signal()
+	# Signal: editor<->Cpu source code match changed.
+	# Parameter 0: This EditWidget
+	# Parameter 1: Bool: True -> Editor code does match CPU code.
+	cpuCodeMatchChanged = Signal(SourceCodeEdit, bool)
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
 
@@ -368,6 +372,7 @@ class EditWidget(SourceCodeEdit):
 
 		self.__source = AwlSource(name = "Unnamed source")
 		self.__needSourceUpdate = True
+		self.__sourceMatchesCpuSource = False
 
 		self.__runState = RunState()
 		self.__nextHdrUpdate = 0
@@ -465,6 +470,7 @@ class EditWidget(SourceCodeEdit):
 		self.__runState = newState
 		if newState.state == RunState.STATE_LOAD:
 			self.resetCpuStats()
+			self.__setSourceMatchesCpuSource(True)
 		if newState.state == RunState.STATE_RUN:
 			self.__aniTimer.start(200)
 		else:
@@ -594,6 +600,22 @@ class EditWidget(SourceCodeEdit):
 				    len(self.__aniChars)
 		self.headerWidget.update()
 
+	def __setSourceMatchesCpuSource(self, sourceIsOnCpu):
+		if sourceIsOnCpu != self.__sourceMatchesCpuSource:
+			self.__sourceMatchesCpuSource = sourceIsOnCpu
+			self.headerWidget.update()
+			self.cpuCodeMatchChanged.emit(self, sourceIsOnCpu)
+
+	def handleIdentsMsg(self, identsMsg):
+		if self.__runState.state == RunState.STATE_RUN:
+			cpuHashes = [ s.identHash for s in identsMsg.awlSources ]
+			self.__setSourceMatchesCpuSource(
+				self.getSource().identHash in cpuHashes)
+		else:
+			# The CPU is not in RUN state.
+			# We don't make a big deal out of code mismatch.
+			self.__setSourceMatchesCpuSource(True)
+
 	def __forwardWheelEvent(self, ev):
 		self.wheelEvent(ev)
 
@@ -721,6 +743,8 @@ class EditWidget(SourceCodeEdit):
 				self.__runState.port)
 		if self.__runState.state == RunState.STATE_RUN:
 			runText += self.__aniChars[self.__hdrAniStat]
+			if not self.__sourceMatchesCpuSource:
+				runText += " [NOT DOWNLOADED to CPU]"
 		else:
 			runText += self.__runStateToText[self.__runState.state]
 
@@ -787,6 +811,11 @@ class EditWidget(SourceCodeEdit):
 		self.__needSourceUpdate = True
 		self.codeChanged.emit()
 		self.resetCpuStats()
+		if self.__runState.state != RunState.STATE_RUN:
+			# The CPU is not in RUN state.
+			# We don't make a big deal out of code mismatch, even
+			# if the code most likely _does_ mismatch after this edit.
+			self.__setSourceMatchesCpuSource(True)
 
 	# Validation callback. Overridden subclass method.
 	def validateText(self, text, currentLineNr):

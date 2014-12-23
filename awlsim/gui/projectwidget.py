@@ -194,6 +194,10 @@ class ProjectWidget(QTabWidget):
 	def handleInsnDump(self, insnDumpMsg):
 		self.awlTabs.handleInsnDump(insnDumpMsg)
 
+	def handleIdentsMsg(self, identsMsg):
+		self.awlTabs.handleIdentsMsg(identsMsg)
+		self.symTabs.handleIdentsMsg(identsMsg)
+
 	def updateRunState(self, runState):
 		self.awlTabs.updateRunState(runState)
 		self.symTabs.updateRunState(runState)
