@@ -50,6 +50,7 @@ from awlsim.gui.icons.cut import *
 from awlsim.gui.icons.copy import *
 from awlsim.gui.icons.paste import *
 from awlsim.gui.icons.download import *
+from awlsim.gui.icons.warning import *
 
 import base64
 
@@ -81,6 +82,7 @@ __icons = {
 	"copy"		: icon_copy,
 	"paste"		: icon_paste,
 	"download"	: icon_download,
+	"warning"	: icon_warning,
 }
 
 def getIcon(iconName):
@@ -91,7 +93,7 @@ def getIcon(iconName):
 	except KeyError:
 		return QIcon()
 	if isinstance(icon, QIcon):
-		# The icon is alredy cached. Return it.
+		# The icon is already cached. Return it.
 		return icon
 	# Convert the icon.
 	iconData = base64.b64decode(icon)

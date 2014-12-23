@@ -20,6 +20,7 @@ File Name                     | Source                        | License
 application-exit-4.svg        | oxygen                        | CC-BY-SA 3.0 or LGPL
 appointment-soon.svg          | gnome                         | GPLv2
 counter.png                   | edit-4.svg                    | LGPL-2.1
+dialog-warning-4.svg          | oxygen                        | CC-BY-SA 3.0 or LGPL
 document-new-3.svg            | gnome                         | GPLv2
 document-open-5.svg           | tango                         | PD
 document-save-all.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
