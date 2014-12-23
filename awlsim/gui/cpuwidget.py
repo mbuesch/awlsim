@@ -302,6 +302,7 @@ class CpuWidget(QWidget):
 		if goOnlineFirst:
 			self.goOnline()
 			if not self.isOnline():
+				self.stop()
 				return
 		assert(self.isOnline())
 
