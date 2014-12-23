@@ -57,7 +57,8 @@ class TransferError(Exception):
 				if isinstance(parentException, socket.timeout) or\
 				   isinstance(parentException, BlockingIOError) or\
 				   _errno == errno.EAGAIN or\
-				   _errno == errno.EWOULDBLOCK:
+				   _errno == errno.EWOULDBLOCK or\
+				   _errno == errno.EINTR:
 					reason = self.REASON_BLOCKING
 				else:
 					reason = self.REASON_UNKNOWN
@@ -943,12 +944,10 @@ class AwlSimMessageTransceiver(object):
 			try:
 				data = self.sock.recv(hdrLen - len(self.buf))
 			except SocketErrors as e:
-				if e.errno == errno.EAGAIN or\
-				   e.errno == errno.EWOULDBLOCK or\
-				   isinstance(e, BlockingIOError):
+				transferError = TransferError(None, parentException = e)
+				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None
-				raise TransferError(None,
-					parentException = e)
+				raise transferError
 			if not data:
 				# The remote end closed the connection
 				raise TransferError(None,
