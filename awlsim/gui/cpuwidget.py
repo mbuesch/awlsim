@@ -289,6 +289,9 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlSimError(self,
 				"Error in awlsim core", e)
 			return False
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
+			return False
 		return True
 
 	def __handleCpuDump(self, dumpText):
@@ -301,6 +304,32 @@ class CpuWidget(QWidget):
 		for mdiWin in self.stateMdi.subWindowList():
 			win = mdiWin.widget()
 			win.setMemories(memAreas)
+
+	def __handleMaintenance(self, maintRequest):
+		client = self.mainWidget.getSimClient()
+
+		if maintRequest.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+			res = QMessageBox.question(self,
+				"Shut down application?",
+				"The core server requested an "
+				"application shutdown.\n"
+				"Do you want to close Awlsim GUI?",
+				QMessageBox.Yes | QMessageBox.No,
+				QMessageBox.Yes)
+			if res == QMessageBox.Yes:
+				print("Shutting down, as requested by server...")
+				client.shutdown()
+				QApplication.exit(0)
+			else:
+				self.stop()
+				self.goOffline()
+		elif maintRequest.requestType == MaintenanceRequest.TYPE_STOP or\
+		     maintRequest.requestType == MaintenanceRequest.TYPE_RTTIMEOUT:
+			self.stop()
+		else:
+			print("Unknown maintenance request %d" %\
+			      maintRequest.requestType)
+			self.stop()
 
 	def __run(self, goOnlineFirst=True, downloadFirstIfSimulator=True):
 		client = self.mainWidget.getSimClient()
@@ -347,6 +376,8 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlSimError(self,
 				"Could not start CPU", e)
 			self.stop()
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
 
 	# Periodic timer for core message handling.
 	def __processCoreMessages(self):
@@ -361,17 +392,7 @@ class CpuWidget(QWidget):
 				"Core server error", e)
 			self.stop()
 		except MaintenanceRequest as e:
-			if e.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
-				print("Shutting down, as requested...")
-				client.shutdown()
-				QApplication.exit(0)
-				return
-			elif e.requestType == MaintenanceRequest.TYPE_STOP or\
-			     e.requestType == MaintenanceRequest.TYPE_RTTIMEOUT:
-				self.stop()
-			else:
-				print("Unknown maintenance request %d" % e.requestType)
-				self.stop()
+			self.__handleMaintenance(e)
 		except Exception:
 			CALL_NOEX(client.setRunState, False)
 			client.shutdown()
@@ -458,6 +479,8 @@ class CpuWidget(QWidget):
 				"Error while trying to connect to CPU", e)
 			self.onlineButton.setChecked(False)
 			return
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
 
 	def __goOffline(self):
 		client = self.mainWidget.getSimClient()
@@ -530,6 +553,9 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)
 			return False
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
+			return False
 		except Exception:
 			client.shutdown()
 			handleFatalException(self)
@@ -572,4 +598,7 @@ class CpuWidget(QWidget):
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to setup instruction dumping", e)
+			return
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
 			return
