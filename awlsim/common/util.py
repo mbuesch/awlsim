@@ -41,6 +41,7 @@ class Logging(object):
 	EnumGen.end
 
 	loglevel = LOG_INFO
+	prefix = ""
 
 	@classmethod
 	def setLoglevel(cls, loglevel):
@@ -54,7 +55,13 @@ class Logging(object):
 		cls.loglevel = loglevel
 
 	@classmethod
+	def setPrefix(cls, prefix):
+		cls.prefix = prefix
+
+	@classmethod
 	def __print(cls, stream, text):
+		if cls.prefix:
+			stream.write(cls.prefix)
 		stream.write(text)
 		stream.write("\n")
 		stream.flush()
