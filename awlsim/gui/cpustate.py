@@ -41,10 +41,15 @@ class StateWindow(QWidget):
 		self.client = client
 
 	def update(self):
-		size, hint = self.size(), self.minimumSizeHint()
+		parent = self.parent()
+		if isinstance(parent, StateMdiSubWindow):
+			widget = parent
+		else:
+			widget = self
+		size, hint = widget.size(), widget.minimumSizeHint()
 		if size.width() < hint.width() or\
 		   size.height() < hint.height():
-			self.resize(hint)
+			widget.resize(hint)
 
 	# Get a list of MemoryArea instances for the memory
 	# areas covered by this window.
@@ -908,9 +913,10 @@ class StateMdiArea(QMdiArea):
 class StateMdiSubWindow(QMdiSubWindow):
 	closed = Signal(QMdiSubWindow)
 
-	def __init__(self, parent):
+	def __init__(self, childWidget):
 		QMdiSubWindow.__init__(self)
-		self.setWidget(parent)
+		self.setWidget(childWidget)
+		childWidget.setParent(self)
 		self.setAttribute(Qt.WA_DeleteOnClose)
 
 	def closeEvent(self, ev):
