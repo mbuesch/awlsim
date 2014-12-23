@@ -204,7 +204,8 @@ class S7StatusWord(DynAttrs): #+cdef
 			self.A1, self.A0, self.OV = 1, 0, 0
 
 	def getString(self, mnemonics):
-		assert(mnemonics != S7CPUSpecs.MNEMONICS_AUTO)
+		if mnemonics == S7CPUSpecs.MNEMONICS_AUTO:
+			mnemonics = S7CPUSpecs.MNEMONICS_EN
 		ret = []
 		for i in range(self.NR_BITS - 1, -1, -1):
 			name = self.nr2name_german[i]
