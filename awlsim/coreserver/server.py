@@ -366,7 +366,7 @@ class AwlSimServer(object):
 		printInfo("Received message: PONG")
 
 	def __rx_RESET(self, client, msg):
-		printDebug("Received message: RESET")
+		printVerbose("Resetting CPU.")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.__setRunState(self.STATE_INIT)
 		self.sim.reset()
@@ -383,17 +383,21 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_RUNSTATE(self, client, msg):
-		printDebug("Received message: RUNSTATE")
+		printDebug("Received message: RUNSTATE %d" % msg.runState)
 		status = AwlSimMessage_REPLY.STAT_OK
 		if msg.runState == msg.STATE_STOP:
+			printVerbose("Putting CPU into STOP state.")
 			self.__setRunState(self.STATE_INIT)
 		elif msg.runState == msg.STATE_RUN:
 			if self.state == self.STATE_RUN:
 				pass
 			elif self.state == self.STATE_INIT:
+				printVerbose("CPU startup (OB 10x).")
 				self.sim.startup()
+				printVerbose("Putting CPU into RUN state.")
 				self.__setRunState(self.STATE_RUN)
 			elif self.state == self.STATE_MAINTENANCE:
+				printVerbose("Putting CPU into RUN state.")
 				self.__setRunState(self.STATE_RUN)
 			else:
 				status = AwlSimMessage_REPLY.STAT_FAIL
