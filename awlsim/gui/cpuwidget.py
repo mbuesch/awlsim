@@ -291,15 +291,24 @@ class CpuWidget(QWidget):
 		for win in self.stateWs.windowList():
 			win.setMemories(memAreas)
 
-	def __run(self, downloadFirst=True):
+	def __run(self, goOnlineFirst=True, downloadFirstIfSimulator=True):
 		client = self.mainWidget.getSimClient()
 
 		# Make sure the button is pressed.
 		with self.__runStateChangeBlocked:
 			self.runButton.setChecked(True)
 
-		# If requested, first go online and download the program.
-		if downloadFirst:
+		# If requested, go online first.
+		if goOnlineFirst:
+			self.goOnline()
+			if not self.isOnline():
+				return
+		assert(self.isOnline())
+
+		# If requested and if in sim (FORK) mode,
+		# download the program first.
+		if downloadFirstIfSimulator and\
+		   client.getMode() == client.MODE_FORK:
 			if not self.__download(noRun=True):
 				self.stop()
 				return
@@ -429,7 +438,8 @@ class CpuWidget(QWidget):
 			if client.getRunState():
 				# The core is already running.
 				# Set the GUI to run state, too.
-				self.__run(downloadFirst = False)
+				self.__run(goOnlineFirst = False,
+					   downloadFirstIfSimulator = False)
 		except AwlSimError as e:
 			CALL_NOEX(client.setMode_OFFLINE)
 			MessageBox.handleAwlSimError(self,
@@ -515,7 +525,8 @@ class CpuWidget(QWidget):
 		# If we were RUNning before download, put
 		# the CPU into RUN state again.
 		if self.runButton.isChecked() and not noRun:
-			self.__run(downloadFirst = False)
+			self.__run(goOnlineFirst = False,
+				   downloadFirstIfSimulator = False)
 
 		return True
 
