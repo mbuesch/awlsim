@@ -192,9 +192,11 @@ class CpuWidget(QWidget):
 		toolsLayout.addStretch()
 		self.layout().addLayout(toolsLayout, 0, 0)
 
-		self.stateWs = StateWorkspace(self)
-		self.stateWs.setScrollBarsEnabled(True)
-		self.layout().addWidget(self.stateWs, 1, 0)
+		self.stateMdi = StateMdiArea(self)
+		self.stateMdi.setViewMode(QMdiArea.SubWindowView)
+		self.stateMdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.stateMdi.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.layout().addWidget(self.stateMdi, 1, 0)
 
 		self.state.stateChanged.connect(self.runStateChanged)
 		self.onlineButton.toggled.connect(self.__onlineToggled)
@@ -214,7 +216,7 @@ class CpuWidget(QWidget):
 		self.update()
 
 	def __addWindow(self, win):
-		self.stateWs.addWindow(win, Qt.Window)
+		self.stateMdi.addSubWindow(win, Qt.Window)
 		win.configChanged.connect(self.__stateWinConfigChanged)
 		win.show()
 		self.update()
@@ -258,7 +260,8 @@ class CpuWidget(QWidget):
 		self.__uploadMemReadAreas()
 
 	def update(self):
-		for win in self.stateWs.windowList():
+		for mdiWin in self.stateMdi.subWindowList():
+			win = mdiWin.widget()
 			win.update()
 
 	# Upload the used memory area descriptors to the core.
@@ -266,7 +269,8 @@ class CpuWidget(QWidget):
 		client = self.mainWidget.getSimClient()
 		wantDump = False
 		memAreas = []
-		for win in self.stateWs.windowList():
+		for mdiWin in self.stateMdi.subWindowList():
+			win = mdiWin.widget()
 			memAreas.extend(win.getMemoryAreas())
 			if isinstance(win, State_CPU):
 				wantDump = True
@@ -283,12 +287,14 @@ class CpuWidget(QWidget):
 		return True
 
 	def __handleCpuDump(self, dumpText):
-		for win in self.stateWs.windowList():
+		for mdiWin in self.stateMdi.subWindowList():
+			win = mdiWin.widget()
 			if isinstance(win, State_CPU):
 				win.setDumpText(dumpText)
 
 	def __handleMemoryUpdate(self, memAreas):
-		for win in self.stateWs.windowList():
+		for mdiWin in self.stateMdi.subWindowList():
+			win = mdiWin.widget()
 			win.setMemories(memAreas)
 
 	def __run(self, goOnlineFirst=True, downloadFirstIfSimulator=True):

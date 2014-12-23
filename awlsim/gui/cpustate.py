@@ -902,6 +902,6 @@ class State_Counter(_State_TimerCounter):
 			assert(0)
 		return text
 
-class StateWorkspace(QWorkspace):
+class StateMdiArea(QMdiArea):
 	def __init__(self, parent=None):
-		QWorkspace.__init__(self, parent)
+		QMdiArea.__init__(self, parent)
