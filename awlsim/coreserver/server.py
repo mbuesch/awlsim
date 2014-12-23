@@ -362,7 +362,7 @@ class AwlSimServer(object):
 		client.transceiver.send(AwlSimMessage_PONG())
 
 	def __rx_PONG(self, client, msg):
-		printInfo("AwlSimServer: Received PONG")
+		printInfo("Received PONG")
 
 	def __rx_RESET(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_OK
@@ -374,7 +374,7 @@ class AwlSimServer(object):
 	def __rx_SHUTDOWN(self, client, msg):
 		status = AwlSimMessage_REPLY.STAT_FAIL
 		if self.commandMask & AwlSimServer.CMDMSK_SHUTDOWN:
-			printInfo("AwlSimServer: Exiting due to shutdown command")
+			printInfo("Exiting due to shutdown command")
 			self.__setRunState(self.STATE_EXIT)
 			status = AwlSimMessage_REPLY.STAT_OK
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
@@ -548,10 +548,10 @@ class AwlSimServer(object):
 
 	def __clientCommTransferError(self, exception, client):
 		if exception.reason == exception.REASON_REMOTEDIED:
-			printInfo("AwlSimServer: Client '%s' died" %\
+			printInfo("Client '%s' died" %\
 				  client.transceiver.peerInfoString)
 		else:
-			printInfo("AwlSimServer: Client '%s' data "
+			printInfo("Client '%s' data "
 				"transfer error:\n%s" %\
 				(client.transceiver.peerInfoString,
 				 str(exception)))
@@ -568,7 +568,7 @@ class AwlSimServer(object):
 		try:
 			handler = self.__msgRxHandlers[msg.msgId]
 		except KeyError:
-			printInfo("AwlSimServer: Received unsupported "
+			printInfo("Received unsupported "
 				"message 0x%02X" % msg.msgId)
 			return
 		try:
@@ -629,6 +629,7 @@ class AwlSimServer(object):
 	def run(self, host, port, commandMask):
 		"""Run the server on 'host':'port'."""
 
+		Logging.setPrefix("AwlSimServer: ")
 		self.commandMask = commandMask
 
 		self.__listen(host, port)
@@ -664,7 +665,7 @@ class AwlSimServer(object):
 					try:
 						client.transceiver.send(msg)
 					except TransferError as e:
-						printError("AwlSimServer: Failed to forward "
+						printError("Failed to forward "
 							   "exception to client.")
 						client.broken = True
 				self.__removeBrokenClients()
@@ -684,8 +685,7 @@ class AwlSimServer(object):
 					pass
 			except TransferError as e:
 				# This should be caught earlier.
-				printError("AwlSimServer: Uncaught transfer "
-					   "error: " + str(e))
+				printError("Uncaught transfer error: " + str(e))
 
 	def __listen(self, host, port):
 		"""Listen on 'host':'port'."""
@@ -698,7 +698,7 @@ class AwlSimServer(object):
 				readableSockaddr = sockaddr
 			else:
 				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
-			printInfo("AwlSimServer: Listening on %s..." % readableSockaddr)
+			printInfo("Listening on %s..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			sock.setblocking(False)
@@ -727,7 +727,7 @@ class AwlSimServer(object):
 			if transferError.reason == transferError.REASON_BLOCKING:
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
-		printInfo("AwlSimServer: Client '%s' connected" % peerInfoString)
+		printInfo("Client '%s' connected" % peerInfoString)
 
 		client = self.Client(clientSock, peerInfoString)
 		self.__clientAdd(client)
@@ -751,7 +751,7 @@ class AwlSimServer(object):
 		"""Closes all client sockets and the main socket."""
 
 		if self.socket:
-			printInfo("AwlSimServer: Shutting down.")
+			printInfo("Shutting down.")
 
 		if self.sim:
 			self.sim.shutdown()
@@ -775,7 +775,7 @@ class AwlSimServer(object):
 			self.unixSockPath = None
 
 	def signalHandler(self, sig, frame):
-		printInfo("AwlSimServer: Received signal %d" % sig)
+		printInfo("Received signal %d" % sig)
 		if sig in (signal.SIGTERM, signal.SIGINT):
 			self.__setRunState(self.STATE_EXIT)
 
