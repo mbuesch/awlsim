@@ -187,6 +187,7 @@ class AwlSimServer(object):
 		self.state = -1
 		self.__setRunState(self.STATE_INIT)
 
+		self.__nextStats = 0
 		self.commandMask = 0
 		self.socket = None
 		self.unixSockPath = None
@@ -310,8 +311,28 @@ class AwlSimServer(object):
 			self.__removeBrokenClients()
 		self.__insnSerial += 1
 
+	def __printCpuStats(self):
+		cpu = self.sim.cpu
+		if cpu.insnPerSecond:
+			usPerInsn = "%.03f" % ((1.0 / cpu.insnPerSecond) * 1000000)
+		else:
+			usPerInsn = "-/-"
+		printVerbose("[CPU] "
+			"%d stmt/s (= %s us/stmt); %.01f stmt/cycle" %\
+			(int(round(cpu.insnPerSecond)),
+			 usPerInsn,
+			 cpu.avgInsnPerCycle))
+
 	def __cpuCycleExitCallback(self, userData):
+		# Reset instruction dump serial number
 		self.__insnSerial = 0
+
+		# Print CPU stats, if requested.
+		if Logging.loglevel >= Logging.LOG_VERBOSE:
+			now = self.sim.cpu.now
+			if now >= self.__nextStats:
+				self.__nextStats = now + 1.0
+				self.__printCpuStats()
 
 	def __updateCpuBlockExitCallback(self):
 		if any(c.dumpInterval for c in self.clients):
@@ -326,7 +347,8 @@ class AwlSimServer(object):
 			self.sim.cpu.setPostInsnCallback(None)
 
 	def __updateCpuCycleExitCallback(self):
-		if any(c.insnStateDump_enabledLines for c in self.clients):
+		if any(c.insnStateDump_enabledLines for c in self.clients) or\
+		   Logging.loglevel >= Logging.LOG_VERBOSE:
 			self.sim.cpu.setCycleExitCallback(self.__cpuCycleExitCallback, None)
 		else:
 			self.sim.cpu.setCycleExitCallback(None)
@@ -614,6 +636,8 @@ class AwlSimServer(object):
 
 		self.sim = AwlSim()
 		nextComm = 0.0
+		self.__nextStats = self.sim.cpu.now
+		self.__updateCpuCallbacks()
 
 		while self.state != self.STATE_EXIT:
 			try:
