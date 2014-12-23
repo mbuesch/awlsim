@@ -35,6 +35,8 @@ from awlsim.gui.icons import *
 
 
 class MainWidget(QWidget):
+	# Signal: Project loaded
+	projectLoaded = Signal(Project)
 	# Signal: Dirty-status changed
 	dirtyChanged = Signal(bool)
 	# Signal: CPU run state changed
@@ -165,6 +167,7 @@ class MainWidget(QWidget):
 		self.filename = filename
 		self.setDirty(dirty = not bool(self.getProject().getProjectFile()),
 			      force = True)
+		self.projectLoaded.emit(self.getProject())
 		return True
 
 	def load(self):
@@ -356,12 +359,13 @@ class MainWindow(QMainWindow):
 		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)
-		self.__selResourceChanged(None)
+		self.__selResourceChanged(ProjectWidget.RES_SOURCES)
 		self.__textFocusChanged(False)
 		self.__undoAvailableChanged(False)
 		self.__redoAvailableChanged(False)
 		self.__copyAvailableChanged(False)
 
+		self.centralWidget().projectLoaded.connect(self.__handleProjectLoaded)
 		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
 		self.centralWidget().textFocusChanged.connect(self.__textFocusChanged)
 		self.centralWidget().selResourceChanged.connect(self.__selResourceChanged)
@@ -415,6 +419,9 @@ class MainWindow(QMainWindow):
 			postfix = ""
 		self.setWindowTitle("AWL/STL soft-PLC v%s%s" %\
 				    (VERSION_STRING, postfix))
+
+	def __handleProjectLoaded(self, project):
+		self.__updateLibActions()
 
 	def __updateLibActions(self):
 		# Enable/disable the library toolbar button.
