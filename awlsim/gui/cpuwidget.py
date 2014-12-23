@@ -154,7 +154,7 @@ class CpuWidget(QWidget):
 					group)
 		group.layout().addWidget(self.onlineButton, 0, 0)
 		self.downloadButton = ToolButton("download",
-					"Download AWL/STL code to CPU",
+					"Download all AWL/STL code to CPU",
 					group)
 		group.layout().addWidget(self.downloadButton, 0, 1)
 		self.runButton = CheckableToolButton("stop", "run",
