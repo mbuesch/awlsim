@@ -28,6 +28,8 @@ from awlsim.common.enumeration import *
 class AwlLibEntrySelection(object):
 	"""AWL library entry selection."""
 
+	# Library entry type.
+	# This enumeration is awlsim-coreserver API!
 	EnumGen.start
 	TYPE_UNKNOWN	= EnumGen.item
 	TYPE_FC		= EnumGen.item
