@@ -101,6 +101,18 @@ class _ConnectConfigWidget(QGroupBox):
 		self.port.setToolTip(toolTip)
 		self.layout().addWidget(self.port, 1, 1)
 
+		toolTip = "Connection timeout."
+		label = QLabel("Timeout:", self)
+		label.setToolTip(toolTip)
+		self.layout().addWidget(label, 2, 0)
+		self.timeout = QDoubleSpinBox(self)
+		self.timeout.setRange(0.5, 60.0)
+		self.timeout.setSingleStep(0.5)
+		self.timeout.setDecimals(1)
+		self.timeout.setSuffix(" s")
+		self.timeout.setToolTip(toolTip)
+		self.layout().addWidget(self.timeout, 2, 1)
+
 class LinkConfigDialog(QDialog):
 	# Signal: Emitted, if any content changed.
 	contentChanged = Signal()
@@ -212,6 +224,8 @@ class LinkConfigDialog(QDialog):
 
 		self.connConfig.host.setText(linkSettings.getConnectHost())
 		self.connConfig.port.setValue(linkSettings.getConnectPort())
+		self.connConfig.timeout.setValue(
+			linkSettings.getConnectTimeoutMs() / 1000.0)
 
 	def __handleAccepted(self):
 		linkSettings = self.__project.getCoreLinkSettings()
@@ -238,6 +252,10 @@ class LinkConfigDialog(QDialog):
 		port = self.connConfig.port.value()
 		if port != linkSettings.getConnectPort():
 			linkSettings.setConnectPort(port)
+			changed = True
+		timeout = int(round(self.connConfig.timeout.value() * 1000))
+		if timeout != linkSettings.getConnectTimeoutMs():
+			linkSettings.setConnectTimeoutMs(timeout)
 			changed = True
 
 		if changed:

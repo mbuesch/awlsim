@@ -109,7 +109,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.shutdownTransceiver()
 		self.__setMode(self.MODE_OFFLINE)
 
-	def setMode_ONLINE(self, host, port):
+	def setMode_ONLINE(self, host, port, timeout=3.0):
 		if self.__mode == self.MODE_ONLINE:
 			if self.__host == host and\
 			   self.__port == port:
@@ -119,7 +119,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.__interpreterList = None
 		self.shutdown()
 		try:
-			self.connectToServer(host = host, port = port)
+			self.connectToServer(host = host,
+					     port = port,
+					     timeout = timeout)
 		except AwlSimError as e:
 			CALL_NOEX(self.shutdown)
 			raise e

@@ -200,12 +200,14 @@ class CoreLinkSettings(object):
 		     spawnLocalInterpreters="pypy3; pypy; $CURRENT; "\
 					    "python3; python2; python; py",
 		     connectHost="localhost",
-		     connectPort=4151):
+		     connectPort=4151,
+		     connectTimeoutMs=3000):
 		self.setSpawnLocalEn(spawnLocalEn)
 		self.setSpawnLocalPortRange(spawnLocalPortRange)
 		self.setSpawnLocalInterpreters(spawnLocalInterpreters),
 		self.setConnectHost(connectHost)
 		self.setConnectPort(connectPort)
+		self.setConnectTimeoutMs(connectTimeoutMs)
 
 	def setSpawnLocalEn(self, spawnLocalEn):
 		self.spawnLocalEn = spawnLocalEn
@@ -246,6 +248,12 @@ class CoreLinkSettings(object):
 
 	def getConnectPort(self):
 		return self.connectPort
+
+	def setConnectTimeoutMs(self, connectTimeoutMs):
+		self.connectTimeoutMs = connectTimeoutMs
+
+	def getConnectTimeoutMs(self):
+		return self.connectTimeoutMs
 
 class Project(object):
 	def __init__(self, projectFile,
@@ -507,6 +515,9 @@ class Project(object):
 			if p.has_option("CORE_LINK", "connect_port"):
 				port = p.getint("CORE_LINK", "connect_port")
 				linkSettings.setConnectPort(port)
+			if p.has_option("CORE_LINK", "connect_timeout_ms"):
+				timeout = p.getint("CORE_LINK", "connect_timeout_ms")
+				linkSettings.setConnectTimeoutMs(timeout)
 
 			# GUI section
 			if p.has_option("GUI", "editor_autoindent"):
@@ -629,7 +640,10 @@ class Project(object):
 		host = host.encode("utf-8", "ignore")
 		host = base64.b64encode(host).decode("ascii")
 		lines.append("connect_host=%s" % host)
-		lines.append("connect_port=%d" % int(linkSettings.getConnectPort()))
+		lines.append("connect_port=%d" %\
+			     int(linkSettings.getConnectPort()))
+		lines.append("connect_timeout_ms=%d" %\
+			     int(linkSettings.getConnectTimeoutMs()))
 		lines.append("")
 
 		lines.append("[GUI]")

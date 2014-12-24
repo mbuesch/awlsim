@@ -461,7 +461,10 @@ class CpuWidget(QWidget):
 			else:
 				host = linkConfig.getConnectHost()
 				port = linkConfig.getConnectPort()
-				client.setMode_ONLINE(host = host, port = port)
+				timeout = linkConfig.getConnectTimeoutMs() / 1000.0
+				client.setMode_ONLINE(host = host,
+						      port = port,
+						      timeout = timeout)
 
 			self.state.setCoreDetails(spawned = linkConfig.getSpawnLocalEn(),
 						  host = host,
