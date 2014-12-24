@@ -256,7 +256,11 @@ class CoreLinkSettings(object):
 		return self.connectTimeoutMs
 
 class Project(object):
+	DATETIME_FMT	= "%Y-%m-%d %H:%M:%S.%f"
+
 	def __init__(self, projectFile,
+		     createDate=None,
+		     modifyDate=None,
 		     awlSources=[],
 		     symTabSources=[],
 		     libSelections=[],
@@ -266,6 +270,8 @@ class Project(object):
 		     guiSettings=None,
 		     coreLinkSettings=None):
 		self.setProjectFile(projectFile)
+		self.setCreateDate(createDate)
+		self.setModifyDate(modifyDate)
 		self.setAwlSources(awlSources)
 		self.setSymTabSources(symTabSources)
 		self.setLibSelections(libSelections)
@@ -286,6 +292,24 @@ class Project(object):
 
 	def getProjectFile(self):
 		return self.projectFile
+
+	def setCreateDate(self, createDate):
+		if createDate is None:
+			createDate = datetime.datetime.utcnow()
+		self.createDate = createDate
+
+	def getCreateDate(self):
+		return self.createDate
+
+	def setModifyDate(self, modifyDate):
+		if modifyDate is None:
+			modifyDate = self.getCreateDate()
+		if modifyDate is None:
+			modifyDate = datetime.datetime.utcnow()
+		self.modifyDate = modifyDate
+
+	def getModifyDate(self):
+		return self.modifyDate
 
 	def setAwlSources(self, awlSources):
 		self.awlSources = awlSources
@@ -357,6 +381,8 @@ class Project(object):
 			raise AwlSimError("Project file: The data is "\
 				"not an awlsim project.")
 		projectDir = os.path.dirname(projectFile)
+		createDate = None
+		modifyDate = None
 		awlSources = []
 		symTabSources = []
 		libSelections = []
@@ -368,12 +394,28 @@ class Project(object):
 		try:
 			p = _ConfigParser()
 			p.readfp(StringIO(text), projectFile)
+
+			# AWLSIM_PROJECT section
 			version = p.getint("AWLSIM_PROJECT", "file_version")
 			expectedVersion = 0
 			if version != expectedVersion:
 				raise AwlSimError("Project file: Unsupported version. "\
 					"File version is %d, but expected %d." %\
 					(version, expectedVersion))
+			if p.has_option("AWLSIM_PROJECT", "date"):
+				# Compatibility only. "date" is deprecated.
+				dStr = p.get("AWLSIM_PROJECT", "date")
+				createDate = datetime.datetime.strptime(dStr,
+							cls.DATETIME_FMT)
+				modifyDate = createDate
+			if p.has_option("AWLSIM_PROJECT", "create_date"):
+				dStr = p.get("AWLSIM_PROJECT", "create_date")
+				createDate = datetime.datetime.strptime(dStr,
+							cls.DATETIME_FMT)
+			if p.has_option("AWLSIM_PROJECT", "modify_date"):
+				dStr = p.get("AWLSIM_PROJECT", "modify_date")
+				modifyDate = datetime.datetime.strptime(dStr,
+							cls.DATETIME_FMT)
 
 			# CPU section
 			for i in range(0xFFFF):
@@ -536,6 +578,8 @@ class Project(object):
 			raise AwlSimError("Project parser error: " + str(e))
 
 		return cls(projectFile = projectFile,
+			   createDate = createDate,
+			   modifyDate = modifyDate,
 			   awlSources = awlSources,
 			   symTabSources = symTabSources,
 			   libSelections = libSelections,
@@ -576,10 +620,15 @@ class Project(object):
 			projectFile = self.projectFile
 		projectDir = os.path.dirname(projectFile)
 
+		self.setModifyDate(datetime.datetime.utcnow())
+
 		lines = []
 		lines.append("[AWLSIM_PROJECT]")
 		lines.append("file_version=0")
-		lines.append("date=%s" % str(datetime.datetime.utcnow()))
+		lines.append("create_date=%s" %\
+			     self.getCreateDate().strftime(self.DATETIME_FMT))
+		lines.append("modify_date=%s" %\
+			     self.getModifyDate().strftime(self.DATETIME_FMT))
 		lines.append("")
 
 		lines.append("[CPU]")
