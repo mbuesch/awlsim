@@ -60,11 +60,14 @@ class Logging(object):
 
 	@classmethod
 	def __print(cls, stream, text):
-		if cls.prefix:
-			stream.write(cls.prefix)
-		stream.write(text)
-		stream.write("\n")
-		stream.flush()
+		try:
+			if cls.prefix:
+				stream.write(cls.prefix)
+			stream.write(text)
+			stream.write("\n")
+			stream.flush()
+		except RuntimeError:
+			pass #Ignore
 
 	@classmethod
 	def printDebug(cls, text):
