@@ -72,6 +72,10 @@ class AwlTranslator(object):
 		oldMnemonics = self.cpu.getSpecs().getConfiguredMnemonics()
 		self.cpu.getSpecs().setConfiguredMnemonics(S7CPUSpecs.MNEMONICS_DE)
 
+		# Enable extended instructions for library code.
+		oldExtEn = self.cpu.extendedInsnsEnabled()
+		self.cpu.enableExtendedInsns(True)
+
 		# Parse the library code
 		p = AwlParser()
 		p.parseText(block.getCode())
@@ -86,6 +90,9 @@ class AwlTranslator(object):
 			assert(0)
 		# Translate the library block instructions.
 		block.insns = self.__translateInsns(rawBlock.insns)
+
+		# Switch back to old extended-instructions state.
+		self.cpu.enableExtendedInsns(oldExtEn)
 
 		# Switch back to old mnemonics.
 		self.cpu.getSpecs().setConfiguredMnemonics(oldMnemonics)
