@@ -625,7 +625,6 @@ class EditWidget(SourceCodeEdit):
 		digi, bcnt = 1, self.blockCount()
 		while bcnt > 9:
 			digi, bcnt = digi + 1, bcnt // 10
-		digi += 1 # colon
 		metr = self.lineNumWidget.fontMetrics()
 		return 5 + 5 + metr.width("_" * digi)
 
@@ -785,7 +784,7 @@ class EditWidget(SourceCodeEdit):
 				   self.lineNumWidget.width(),
 				   self.__charHeight,
 				   Qt.AlignRight,
-				   "%d:" % lineNr)
+				   str(lineNr))
 
 	def __repaintCpuStatsWidget(self, ev):
 		p = self.cpuStatsWidget.getPainter()
