@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.gui.valuelineedit import *
+from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
 
@@ -87,6 +88,7 @@ class State_CPU(StateWindow):
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("CPU Details")
+		self.setWindowIcon(getIcon("cpu"))
 
 		self.label = QLabel(self)
 		font = self.label.font()
@@ -353,6 +355,14 @@ class RealDisplayWidget(AbstractDisplayWidget):
 class State_Mem(StateWindow):
 	def __init__(self, client, addrSpace, parent=None):
 		StateWindow.__init__(self, client, parent)
+		if addrSpace == AbstractDisplayWidget.ADDRSPACE_E:
+			self.setWindowIcon(getIcon("inputs"))
+		elif addrSpace == AbstractDisplayWidget.ADDRSPACE_A:
+			self.setWindowIcon(getIcon("outputs"))
+		elif addrSpace == AbstractDisplayWidget.ADDRSPACE_M:
+			self.setWindowIcon(getIcon("flags"))
+		elif addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
+			self.setWindowIcon(getIcon("datablock"))
 
 		self.addrSpace = addrSpace
 
@@ -532,6 +542,7 @@ class State_LCD(StateWindow):
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("LCD")
+		self.setWindowIcon(getIcon("lcd"))
 
 		self.displayedValue = 0
 
@@ -807,6 +818,7 @@ class State_Timer(_State_TimerCounter):
 					     MemoryArea.TYPE_T,
 					     parent)
 		self.setWindowTitle("Timer")
+		self.setWindowIcon(getIcon("timer"))
 
 		self.indexSpin.setPrefix("T ")
 
@@ -873,6 +885,7 @@ class State_Counter(_State_TimerCounter):
 					     MemoryArea.TYPE_Z,
 					     parent)
 		self.setWindowTitle("Counter")
+		self.setWindowIcon(getIcon("counter"))
 
 		self.indexSpin.setPrefix("C ")
 
