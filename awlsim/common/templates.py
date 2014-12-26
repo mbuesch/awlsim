@@ -35,7 +35,6 @@ class Templates(object):
 BEGIN
 NETWORK
 	TITLE = Insert network title here
-	
 	// ... Insert AWL/STL code here ...
 	
 END_ORGANIZATION_BLOCK
@@ -237,7 +236,6 @@ END_ORGANIZATION_BLOCK
 BEGIN
 NETWORK
 	TITLE = Insert network title here
-	
 	// ... Insert AWL/STL code here ...
 	
 END_FUNCTION
@@ -266,7 +264,6 @@ END_FUNCTION
 BEGIN
 NETWORK
 	TITLE = Insert network title here
-	
 	// ... Insert AWL/STL code here ...
 	
 END_FUNCTION_BLOCK
@@ -279,7 +276,6 @@ END_FUNCTION_BLOCK
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
 BEGIN
-	
 	// ... Insert data initializations here ...
 	
 END_DATA_BLOCK
@@ -291,12 +287,10 @@ END_DATA_BLOCK
 	AUTHOR		: Insert author name here
 	VERSION		: 0.1
 	STRUCT
-		
 		// ... Insert data structure definitions here ...
 		
 	END_STRUCT;
 BEGIN
-	
 	// ... Insert data initializations here ...
 	
 END_DATA_BLOCK
@@ -306,7 +300,6 @@ END_DATA_BLOCK
 	__templateUDT = """TYPE UDT @@NR@@
 	VERSION : 0.1
 	STRUCT
-		
 		// ... Insert data structure definitions here ...
 		
 	END_STRUCT;
