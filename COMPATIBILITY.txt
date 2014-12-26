@@ -23,12 +23,14 @@ bug that should be reported.
   code.
 
 - Some key concepts, such as CALL or memory indirect adressing are implemented
-  natively on awlsim. That means CALL is not a macro in awlsim. This improves
-  runtime performance. From a user's perspective there should not be any
-  functional difference visible. Any such difference is a bug.
+  natively on awlsim. This means to improve runtime performance in awlsim
+  CALL is not a macro. From a user's perspective there should not be any
+  functional difference visible in CALL. Any such difference is a bug.
+  However, due to these constraints, it is not possible to call FBs or FCs
+  with an interface (IN/OUT/INOUT variables) via UC or CC instructions.
 
 - Undefined behavior is not emulated.
   For example: If reading uninitialized L-stack space on STEP 7 always yields
   a certain reproducible result, that does not mean that this AWL/STL code does
   the same thing on awlsim.
-  Reading uninitialized memory is undefined.
+  Reading uninitialized TEMP-memory is undefined.
