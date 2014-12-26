@@ -214,7 +214,7 @@ class LibActionWidget(GenericActionWidget):
 			"Warning: It is not recommended to paste library "
 			"code into the project sources. You should instead "
 			"just import the library (via library selection table) "
-			"and CALL the imported function.\n"
+			"and CALL the imported function.\n\n"
 			"See the 'CALL \"%s\"' or 'CALL %s' buttons.\n\n"
 			"Do you want to paste the code nevertheless?" % (
 			self.libEntryCls.symbolName, self.blockName),
