@@ -33,6 +33,7 @@ edit-paste-4.svg              | tango                         | PD
 edit-redo-4.svg               | tango                         | PD
 edit-undo-4.svg               | tango                         | PD
 emblem-package-2.svg          | gnome                         | GPLv2
+feed-subscribe.svg            | oxygen                        | CC-BY-SA 3.0 or LGPL
 go-down-7.svg                 | oxygen                        | CC-BY-SA 3.0 or LGPL
 go-next-7.svg                 | oxygen                        | CC-BY-SA 3.0 or LGPL
 inputs.png                    | network-server.svg and        | CC-BY-SA 3.0 or LGPL

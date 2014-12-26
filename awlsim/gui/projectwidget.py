@@ -125,8 +125,11 @@ class ProjectWidget(QTabWidget):
 		self.addTab(self.symTabs, "Symbol tables")
 		self.addTab(self.libTable, "Library selections")
 		self.setTabToolTip(0, "Enter your AWL/STL program here")
+		self.setTabIcon(0, getIcon("textsource"))
 		self.setTabToolTip(1, "Enter your symbol table here")
+		self.setTabIcon(1, getIcon("tag"))
 		self.setTabToolTip(2, "Select standard libraries to include")
+		self.setTabIcon(2, getIcon("stdlib"))
 
 		self.reset()
 
