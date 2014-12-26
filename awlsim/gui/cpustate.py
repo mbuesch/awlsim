@@ -87,7 +87,7 @@ class StateWindow(QWidget):
 class State_CPU(StateWindow):
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
-		self.setWindowTitle("CPU Details")
+		self.setWindowTitle("CPU details")
 		self.setWindowIcon(getIcon("cpu"))
 
 		self.label = QLabel(self)
