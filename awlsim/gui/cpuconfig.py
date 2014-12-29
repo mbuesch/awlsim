@@ -27,21 +27,30 @@ from awlsim.gui.util import *
 
 
 class ClockMemSpinBox(QSpinBox):
+	OFF_TEXT = "none"
+
 	def __init__(self, parent=None):
 		QSpinBox.__init__(self, parent)
+
+		self.valueChanged.connect(self.__handleValueChange)
 
 		self.setMinimum(-1)
 		self.setMaximum(0xFFFF)
 		self.setValue(-1)
-		self.setPrefix("MB ")
+
+	def __handleValueChange(self, newValue):
+		if newValue < 0:
+			self.setPrefix("   ")
+		else:
+			self.setPrefix("MB ")
 
 	def textFromValue(self, value):
 		if value < 0:
-			return "<disabled>"
+			return self.OFF_TEXT
 		return QSpinBox.textFromValue(self, value)
 
 	def valueFromText(self, text):
-		if text == "<disabled>":
+		if text == self.OFF_TEXT:
 			return -1
 		return QSpinBox.valueFromText(self, text)
 
@@ -51,35 +60,45 @@ class CpuConfigWidget(QWidget):
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
 
+		group = QGroupBox("Hardware", self)
+		group.setLayout(QGridLayout())
+
 		label = QLabel("Number of accumulator registers", self)
-		self.layout().addWidget(label, 0, 0)
+		group.layout().addWidget(label, 0, 0)
 		self.accuCombo = QComboBox(self)
 		self.accuCombo.addItem("2 accus", 2)
 		self.accuCombo.addItem("4 accus", 4)
-		self.layout().addWidget(self.accuCombo, 0, 1)
+		group.layout().addWidget(self.accuCombo, 0, 1)
 
 		label = QLabel("Clock memory byte", self)
-		self.layout().addWidget(label, 1, 0)
+		group.layout().addWidget(label, 1, 0)
 		self.clockMemSpin = ClockMemSpinBox(self)
-		self.layout().addWidget(self.clockMemSpin, 1, 1)
+		group.layout().addWidget(self.clockMemSpin, 1, 1)
+
+		self.obTempCheckBox = QCheckBox("Enable writing of OB &TEMP "
+			"entry-variables", self)
+		group.layout().addWidget(self.obTempCheckBox, 2, 0, 1, 2)
+
+		self.layout().addWidget(group, 0, 0)
+
+		group = QGroupBox("AWL language", self)
+		group.setLayout(QGridLayout())
 
 		label = QLabel("Mnemonics language", self)
-		self.layout().addWidget(label, 2, 0)
+		group.layout().addWidget(label, 0, 0)
 		self.mnemonicsCombo = QComboBox(self)
 		self.mnemonicsCombo.addItem("Automatic", S7CPUSpecs.MNEMONICS_AUTO)
 		self.mnemonicsCombo.addItem("English", S7CPUSpecs.MNEMONICS_EN)
 		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
-		self.layout().addWidget(self.mnemonicsCombo, 2, 1)
+		group.layout().addWidget(self.mnemonicsCombo, 0, 1)
 
-		self.obTempCheckBox = QCheckBox("Enable writing of OB TEMP "
-			"entry-variables", self)
-		self.layout().addWidget(self.obTempCheckBox, 3, 0, 1, 2)
-
-		self.extInsnsCheckBox = QCheckBox("Enable extended "
+		self.extInsnsCheckBox = QCheckBox("Enable e&xtended "
 			"non-standard instructions", self)
-		self.layout().addWidget(self.extInsnsCheckBox, 4, 0, 1, 2)
+		group.layout().addWidget(self.extInsnsCheckBox, 1, 0, 1, 2)
 
-		self.layout().setRowStretch(5, 1)
+		self.layout().addWidget(group, 1, 0)
+
+		self.layout().setRowStretch(2, 1)
 
 	def loadFromProject(self, project):
 		specs = project.getCpuSpecs()
