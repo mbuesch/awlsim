@@ -442,6 +442,8 @@ class S7CPU(object): #+cdef
 		}
 		self.obTempPresetHandlers = {
 			# OB TEMP-preset handlers
+			1 : OBTempPresets_table[1](self), # Default OB1 handler
+			# This table is extended as OBs are loaded.
 		}
 		self.fcs = {
 			# User FCs
