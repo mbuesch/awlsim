@@ -39,37 +39,46 @@ class TemplateDialog(QDialog):
 		if not verboseBlockName:
 			verboseBlockName = blockName
 
-		self.setWindowTitle("Insert %s template" % verboseBlockName)
+		self.setWindowTitle("Awlsim - Insert %s template" %\
+				    verboseBlockName)
 
+		hbox = QHBoxLayout()
 		label = QLabel(self)
 		label.setPixmap(getIcon("textsource").pixmap(QSize(48, 48)))
-		self.layout().addWidget(label, 0, 0)
-
-		label = QLabel("Insert %s template." % verboseBlockName, self)
-		self.layout().addWidget(label, 1, 0, 1, 2)
+		hbox.addWidget(label)
+		label = QLabel("Insert %s template" % verboseBlockName, self)
+		font = label.font()
+		font.setPointSize(max(12, font.pointSize()))
+		label.setFont(font)
+		label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+		hbox.addWidget(label)
+		hbox.addStretch()
+		self.layout().addLayout(hbox, 0, 0, 1, 2)
 
 		label = QLabel("%s number:" % verboseBlockName, self)
-		self.layout().addWidget(label, 2, 0)
+		self.layout().addWidget(label, 1, 0)
 		self.blockNr = QSpinBox(self)
 		self.blockNr.setMinimum(1)
 		self.blockNr.setMaximum(0xFFFF)
 		self.blockNr.setValue(1)
 		self.blockNr.setPrefix(blockName + " ")
-		self.layout().addWidget(self.blockNr, 2, 1)
+		self.layout().addWidget(self.blockNr, 1, 1)
 
 		if extra:
 			label = QLabel("%s number:" % extra, self)
-			self.layout().addWidget(label, 3, 0)
+			self.layout().addWidget(label, 2, 0)
 			self.extraNr = QSpinBox(self)
 			self.extraNr.setMinimum(1)
 			self.extraNr.setMaximum(0xFFFF)
 			self.extraNr.setValue(1)
 			self.extraNr.setPrefix(extra + " ")
-			self.layout().addWidget(self.extraNr, 3, 1)
+			self.layout().addWidget(self.extraNr, 2, 1)
 
-		self.verbose = QCheckBox("Generate verbose code", self)
+		self.verbose = QCheckBox("Generate &verbose code", self)
 		self.verbose.setCheckState(Qt.Checked)
-		self.layout().addWidget(self.verbose, 4, 0, 1, 2)
+		self.layout().addWidget(self.verbose, 3, 0, 1, 2)
+
+		self.layout().setRowStretch(4, 1)
 
 		self.okButton = QPushButton("&Paste code", self)
 		self.layout().addWidget(self.okButton, 5, 0, 1, 2)
