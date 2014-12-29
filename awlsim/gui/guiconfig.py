@@ -22,20 +22,15 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
-from awlsim.gui.icons import *
 
 
-class GuiConfigDialog(QDialog):
-	def __init__(self, parent):
-		QDialog.__init__(self, parent)
-		self.setWindowTitle("User interface configuration")
-
-		self.setLayout(QGridLayout(self))
-
-		label = QLabel(self)
-		label.setPixmap(getIcon("prefs").pixmap(QSize(48, 48)))
-		self.layout().addWidget(label, 0, 0)
+class GuiConfigWidget(QWidget):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout())
+		self.layout().setContentsMargins(QMargins())
 
 		self.editGroup = QGroupBox("Source code editor")
 		self.editGroup.setLayout(QVBoxLayout())
@@ -61,12 +56,10 @@ class GuiConfigDialog(QDialog):
 		self.__updateEditFontLabel()
 		self.editGroup.layout().addLayout(hbox)
 
-		self.layout().addWidget(self.editGroup, 1, 0)
+		self.layout().addWidget(self.editGroup, 0, 0)
 
-		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 2, 0)
+		self.layout().setRowStretch(1, 1)
 
-		self.closeButton.released.connect(self.accept)
 		self.editFontButton.released.connect(self.__openEditFontDialog)
 
 	def __updateEditFontLabel(self):
@@ -105,7 +98,7 @@ class GuiConfigDialog(QDialog):
 			self.__editFont.setStyleHint(QFont.Courier)
 		self.__updateEditFontLabel()
 
-	def saveToProject(self, project):
+	def storeToProject(self, project):
 		autoIndentEn = self.editAutoIndent.checkState() == Qt.Checked
 		pasteIndentEn = self.pasteIndent.checkState() == Qt.Checked
 		validationEn = self.editValidate.checkState() == Qt.Checked
@@ -115,3 +108,21 @@ class GuiConfigDialog(QDialog):
 		guiSettings.setEditorPasteIndentEn(pasteIndentEn)
 		guiSettings.setEditorValidationEn(validationEn)
 		guiSettings.setEditorFont(self.__editFont.toString())
+
+		return True
+
+class GuiConfigDialog(AbstractConfigDialog):
+	def __init__(self, project, parent=None):
+		AbstractConfigDialog.__init__(self,
+			project = project,
+			iconName = "prefs",
+			title = "User interface setup",
+			centralWidget = GuiConfigWidget(),
+			parent = parent)
+
+	def loadFromProject(self):
+		self.centralWidget.loadFromProject(self.project)
+
+	def storeToProject(self):
+		if self.centralWidget.storeToProject(self.project):
+			self.settingsChanged.emit()

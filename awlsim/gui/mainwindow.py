@@ -211,27 +211,20 @@ class MainWidget(QWidget):
 			return self.saveFile(self.filename)
 
 	def guiConfig(self):
-		project = self.getProject()
-		dlg = GuiConfigDialog(self)
-		dlg.loadFromProject(project)
+		dlg = GuiConfigDialog(self.getProject(), self)
+		dlg.settingsChanged.connect(self.__somethingChanged)
 		if dlg.exec_() == dlg.Accepted:
-			dlg.saveToProject(project)
-			self.projectWidget.setSettings(project.getGuiSettings())
-			self.__somethingChanged()
+			self.projectWidget.setSettings(self.getProject().getGuiSettings())
 
 	def linkConfig(self):
-		project = self.getProject()
-		dlg = LinkConfigDialog(project, self)
-		dlg.contentChanged.connect(self.__somethingChanged)
+		dlg = LinkConfigDialog(self.getProject(), self)
+		dlg.settingsChanged.connect(self.__somethingChanged)
 		dlg.exec_()
 
 	def cpuConfig(self):
-		project = self.getProject()
-		dlg = CpuConfigDialog(self)
-		dlg.loadFromProject(project)
-		if dlg.exec_() == dlg.Accepted:
-			dlg.saveToProject(project)
-			self.__somethingChanged()
+		dlg = CpuConfigDialog(self.getProject(), self)
+		dlg.settingsChanged.connect(self.__somethingChanged)
+		dlg.exec_()
 
 	def insertOB(self):
 		self.projectWidget.insertOB()
@@ -333,12 +326,12 @@ class MainWindow(QMainWindow):
 
 		menu = QMenu("&Settings", self)
 		menu.addAction(getIcon("network"), "&Server connection...", self.linkConfig)
-		menu.addAction(getIcon("prefs"), "&CPU config...", self.cpuConfig)
+		menu.addAction(getIcon("cpu"), "&CPU config...", self.cpuConfig)
 		menu.addAction(getIcon("prefs"), "&User interface...", self.guiConfig)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Help", self)
-		menu.addAction(getIcon("browser"), "Project &homepage...", self.projectHome)
+		menu.addAction(getIcon("browser"), "Awlsim &homepage...", self.awlsimHomepage)
 		menu.addSeparator()
 		menu.addAction(getIcon("cpu"), "&About...", self.about)
 		self.menuBar().addMenu(menu)
@@ -501,7 +494,7 @@ class MainWindow(QMainWindow):
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
 
-	def projectHome(self):
+	def awlsimHomepage(self):
 		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.StrictMode))
 
 	def about(self):

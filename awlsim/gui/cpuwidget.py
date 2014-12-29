@@ -437,9 +437,9 @@ class CpuWidget(QWidget):
 	def __goOnline(self):
 		project = self.mainWidget.getProject()
 
-		if LinkConfigDialog.askWhenConnecting():
+		if LinkConfigWidget.askWhenConnecting():
 			dlg = LinkConfigDialog(project, self)
-			dlg.contentChanged.connect(self.configChanged)
+			dlg.settingsChanged.connect(self.configChanged)
 			if dlg.exec_() != LinkConfigDialog.Accepted:
 				self.onlineButton.setChecked(False)
 				return

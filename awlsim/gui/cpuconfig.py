@@ -22,8 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
-from awlsim.gui.icons import *
 
 
 class ClockMemSpinBox(QSpinBox):
@@ -45,49 +45,41 @@ class ClockMemSpinBox(QSpinBox):
 			return -1
 		return QSpinBox.valueFromText(self, text)
 
-class CpuConfigDialog(QDialog):
-	def __init__(self, parent):
-		QDialog.__init__(self, parent)
-		self.setWindowTitle("CPU configuration")
-
-		self.setLayout(QGridLayout(self))
-
-		label = QLabel(self)
-		label.setPixmap(getIcon("prefs").pixmap(QSize(48, 48)))
-		self.layout().addWidget(label, 0, 0)
+class CpuConfigWidget(QWidget):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout())
+		self.layout().setContentsMargins(QMargins())
 
 		label = QLabel("Number of accumulator registers", self)
-		self.layout().addWidget(label, 1, 0)
+		self.layout().addWidget(label, 0, 0)
 		self.accuCombo = QComboBox(self)
 		self.accuCombo.addItem("2 accus", 2)
 		self.accuCombo.addItem("4 accus", 4)
-		self.layout().addWidget(self.accuCombo, 1, 1)
+		self.layout().addWidget(self.accuCombo, 0, 1)
 
 		label = QLabel("Clock memory byte", self)
-		self.layout().addWidget(label, 2, 0)
+		self.layout().addWidget(label, 1, 0)
 		self.clockMemSpin = ClockMemSpinBox(self)
-		self.layout().addWidget(self.clockMemSpin, 2, 1)
+		self.layout().addWidget(self.clockMemSpin, 1, 1)
 
-		label = QLabel("Mnemonics", self)
-		self.layout().addWidget(label, 3, 0)
+		label = QLabel("Mnemonics language", self)
+		self.layout().addWidget(label, 2, 0)
 		self.mnemonicsCombo = QComboBox(self)
 		self.mnemonicsCombo.addItem("Automatic", S7CPUSpecs.MNEMONICS_AUTO)
 		self.mnemonicsCombo.addItem("English", S7CPUSpecs.MNEMONICS_EN)
 		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
-		self.layout().addWidget(self.mnemonicsCombo, 3, 1)
+		self.layout().addWidget(self.mnemonicsCombo, 2, 1)
 
 		self.obTempCheckBox = QCheckBox("Enable writing of OB TEMP "
 			"entry-variables", self)
-		self.layout().addWidget(self.obTempCheckBox, 4, 0, 1, 2)
+		self.layout().addWidget(self.obTempCheckBox, 3, 0, 1, 2)
 
 		self.extInsnsCheckBox = QCheckBox("Enable extended "
 			"non-standard instructions", self)
-		self.layout().addWidget(self.extInsnsCheckBox, 5, 0, 1, 2)
+		self.layout().addWidget(self.extInsnsCheckBox, 4, 0, 1, 2)
 
-		self.closeButton = QPushButton("Close", self)
-		self.layout().addWidget(self.closeButton, 6, 1)
-
-		self.closeButton.released.connect(self.accept)
+		self.layout().setRowStretch(5, 1)
 
 	def loadFromProject(self, project):
 		specs = project.getCpuSpecs()
@@ -112,7 +104,9 @@ class CpuConfigDialog(QDialog):
 			Qt.Unchecked
 		)
 
-	def saveToProject(self, project):
+	def storeToProject(self, project):
+		specs = project.getCpuSpecs()
+
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
 		clockMemByte = self.clockMemSpin.value()
@@ -125,3 +119,21 @@ class CpuConfigDialog(QDialog):
 		specs.setClockMemByte(clockMemByte)
 		project.setObTempPresetsEn(obTempEnabled)
 		project.setExtInsnsEn(extInsnsEnabled)
+
+		return True
+
+class CpuConfigDialog(AbstractConfigDialog):
+	def __init__(self, project, parent=None):
+		AbstractConfigDialog.__init__(self,
+			project = project,
+			iconName = "cpu",
+			title = "CPU setup",
+			centralWidget = CpuConfigWidget(),
+			parent = parent)
+
+	def loadFromProject(self):
+		self.centralWidget.loadFromProject(self.project)
+
+	def storeToProject(self):
+		if self.centralWidget.storeToProject(self.project):
+			self.settingsChanged.emit()

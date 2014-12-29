@@ -22,8 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
-from awlsim.gui.icons import *
 
 import sys
 
@@ -44,6 +44,9 @@ class _SpawnConfigWidget(QGroupBox):
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 0, 0)
 		self.interpreterList = QLineEdit(self)
+		font = getDefaultFixedFont()
+		font.setPointSize(self.interpreterList.font().pointSize())
+		self.interpreterList.setFont(font)
 		self.interpreterList.setToolTip(toolTip)
 		self.layout().addWidget(self.interpreterList, 0, 1)
 
@@ -113,84 +116,46 @@ class _ConnectConfigWidget(QGroupBox):
 		self.timeout.setToolTip(toolTip)
 		self.layout().addWidget(self.timeout, 2, 1)
 
-class LinkConfigDialog(QDialog):
-	# Signal: Emitted, if any content changed.
-	contentChanged = Signal()
-
-	def __init__(self, project, parent=None):
-		QDialog.__init__(self, parent)
-		self.setWindowTitle("Awlsim core connection setup")
-
-		self.setLayout(QGridLayout(self))
-
-		hbox = QHBoxLayout()
-		label = QLabel(self)
-		label.setPixmap(getIcon("network").pixmap(QSize(48, 48)))
-		hbox.addWidget(label)
-		label = QLabel("Server connection", self)
-		font = label.font()
-		font.setPointSize(max(12, font.pointSize()))
-		label.setFont(font)
-		label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-		hbox.addWidget(label)
-		self.layout().addLayout(hbox, 0, 0)
+class LinkConfigWidget(QWidget):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout())
+		self.layout().setContentsMargins(QMargins())
 
 		group = QGroupBox("Operation mode", self)
 		group.setLayout(QVBoxLayout())
-		self.spawnRadio = QRadioButton("Start a simulator core", group)
+		self.spawnRadio = QRadioButton("Start a &simulator core", group)
 		self.spawnRadio.setToolTip("This will start a simulator core "
 					   "on-the-fly in the background.\n\n"
 					   "---> If you don't know what to do, select this. <---")
 		self.spawnRadio.setChecked(True)
 		group.layout().addWidget(self.spawnRadio)
-		self.connRadio = QRadioButton("Connect to an external core", group)
+		self.connRadio = QRadioButton("Connect to an &external core", group)
 		self.connRadio.setToolTip("Connect to an already running core server.\n"
 					  "This server may be running locally or "
 					  "somewhere else on the (trusted) network.")
 		group.layout().addWidget(self.connRadio)
-		self.layout().addWidget(group, 1, 0, 1, 2)
+		self.layout().addWidget(group, 0, 0, 1, 2)
 
 		self.spawnConfig = _SpawnConfigWidget(self)
-		self.layout().addWidget(self.spawnConfig, 2, 0, 1, 2)
+		self.layout().addWidget(self.spawnConfig, 1, 0, 1, 2)
 
 		self.connConfig = _ConnectConfigWidget(self)
 		self.connConfig.hide()
-		self.layout().addWidget(self.connConfig, 3, 0, 1, 2)
+		self.layout().addWidget(self.connConfig, 2, 0, 1, 2)
 
-		self.askCheckBox = QCheckBox("Always ask", self)
+		self.layout().setRowStretch(3, 1)
+
+		self.askCheckBox = QCheckBox("Always as&k", self)
 		self.askCheckBox.setCheckState(Qt.Checked if
 			self.askWhenConnecting() else Qt.Unchecked)
 		self.askCheckBox.setToolTip("Always open this dialog when "
 					    "trying to connect to a CPU.")
 		self.layout().addWidget(self.askCheckBox, 4, 0, 1, 2)
 
-		self.acceptButton = QPushButton("Accept", self)
-		self.layout().addWidget(self.acceptButton, 5, 0)
-
-		self.cancelButton = QPushButton("Cancel", self)
-		self.layout().addWidget(self.cancelButton, 5, 1)
-
 		self.spawnRadio.toggled.connect(self.__spawnToggled)
 		self.connRadio.toggled.connect(self.__connToggled)
-
-		self.__loadFromProject(project)
-
-		self.acceptButton.released.connect(self.accept)
-		self.cancelButton.released.connect(self.reject)
-		self.accepted.connect(self.__handleAccepted)
 		self.askCheckBox.stateChanged.connect(self.__askChanged)
-
-	def __spawnToggled(self, state):
-		if state:
-			self.spawnConfig.show()
-		else:
-			self.spawnConfig.hide()
-
-	def __connToggled(self, state):
-		if state:
-			self.connConfig.show()
-		else:
-			self.connConfig.hide()
 
 	@classmethod
 	def askWhenConnecting(cls):
@@ -205,8 +170,19 @@ class LinkConfigDialog(QDialog):
 		settings.setValue("connect_ask_details",
 				  1 if newState == Qt.Checked else 0)
 
-	def __loadFromProject(self, project):
-		self.__project = project
+	def __spawnToggled(self, state):
+		if state:
+			self.spawnConfig.show()
+		else:
+			self.spawnConfig.hide()
+
+	def __connToggled(self, state):
+		if state:
+			self.connConfig.show()
+		else:
+			self.connConfig.hide()
+
+	def loadFromProject(self, project):
 		linkSettings = project.getCoreLinkSettings()
 
 		if linkSettings.getSpawnLocalEn():
@@ -227,8 +203,8 @@ class LinkConfigDialog(QDialog):
 		self.connConfig.timeout.setValue(
 			linkSettings.getConnectTimeoutMs() / 1000.0)
 
-	def __handleAccepted(self):
-		linkSettings = self.__project.getCoreLinkSettings()
+	def storeToProject(self, project):
+		linkSettings = project.getCoreLinkSettings()
 		changed = False
 
 		spawnLocalEn = bool(self.spawnRadio.isChecked())
@@ -258,5 +234,20 @@ class LinkConfigDialog(QDialog):
 			linkSettings.setConnectTimeoutMs(timeout)
 			changed = True
 
-		if changed:
-			self.contentChanged.emit()
+		return changed
+
+class LinkConfigDialog(AbstractConfigDialog):
+	def __init__(self, project, parent=None):
+		AbstractConfigDialog.__init__(self,
+			project = project,
+			iconName = "network",
+			title = "Server connection setup",
+			centralWidget = LinkConfigWidget(),
+			parent = parent)
+
+	def loadFromProject(self):
+		self.centralWidget.loadFromProject(self.project)
+
+	def storeToProject(self):
+		if self.centralWidget.storeToProject(self.project):
+			self.settingsChanged.emit()
