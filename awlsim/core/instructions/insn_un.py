@@ -40,4 +40,4 @@ class AwlInsn_UN(AwlInsn): #+cdef
 		if s.NER:
 			s.STA, s.VKE = STA, ((s.VKE & (STA ^ 1)) | s.OR)
 		else:
-			s.STA, s.VKE, s.NER = STA, (STA ^ 1), 1
+			s.STA, s.VKE, s.NER = STA, ((STA ^ 1) | s.OR), 1

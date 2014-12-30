@@ -36,7 +36,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 		s = self.cpu.statusWord
 		if pse.NER:
 			s.VKE &= pse.VKE
-			s.VKE |= pse.OR
+		s.VKE |= pse.OR
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_UNB(self, pse):
@@ -44,7 +44,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 		s.VKE = s.VKE ^ 1
 		if pse.NER:
 			s.VKE &= pse.VKE
-			s.VKE |= pse.OR
+		s.VKE |= pse.OR
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_OB(self, pse):
