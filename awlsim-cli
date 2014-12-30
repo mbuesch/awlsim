@@ -40,7 +40,7 @@ class TextInterfaceAwlSimClient(AwlSimClient):
 def usage():
 	print("awlsim version %s" % VERSION_STRING)
 	print("")
-	print("%s [OPTIONS] <AWL-source or awlsim-project file>" % sys.argv[0])
+	print("Usage: awlsim-cli [OPTIONS] <AWL-source or awlsim-project file>")
 	print("")
 	print("Options:")
 	print(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
@@ -244,7 +244,6 @@ def run(inputFile):
 					    opt_profile)
 				writeStdout(ps)
 				writeStdout("\n")
-			s.shutdown()
 	return 0
 
 def runWithServerBackend(inputFile):

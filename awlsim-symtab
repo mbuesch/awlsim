@@ -34,7 +34,7 @@ def usage():
 	print("awlsim-symtab symbol table parser, version %s" %\
 		  VERSION_STRING)
 	print("")
-	print("%s [OPTIONS] <inputfile> [outputfile]" % sys.argv[0])
+	print("Usage: awlsim-symtab [OPTIONS] <inputfile> [outputfile]")
 	print("")
 	print("If inputfile is -, stdin is used.")
 	print("If outputfile is - or omitted, stdout is used.")

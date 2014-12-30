@@ -34,7 +34,7 @@ from awlsim.coreserver import *
 def usage():
 	print("awlsim-server version %s" % VERSION_STRING)
 	print("")
-	print("%s [OPTIONS]" % sys.argv[0])
+	print("Usage: awlsim-server [OPTIONS]")
 	print("")
 	print("Options:")
 	print(" -l|--listen HOST:PORT   Listen on the specified HOST:PORT")

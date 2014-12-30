@@ -35,7 +35,7 @@ import getopt
 def usage():
 	print("awlsim-gui version %s" % VERSION_STRING)
 	print("")
-	print("%s [OPTIONS] [AWL-source]" % sys.argv[0])
+	print("Usage: awlsim-gui [OPTIONS] [PROJECT.awlsim]")
 	print("")
 	print("Options:")
 	print(" -h|--help             Print this help text")
