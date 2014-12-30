@@ -238,6 +238,7 @@ def run(inputFile):
 				    "(%d: %s)...\n" % (e.requestType, str(e)))
 	finally:
 		if s:
+			s.unregisterAllHardware()
 			ps = s.getProfileStats()
 			if ps:
 				writeStdout("\n\nProfile stats (level %d) follow:\n" %\
