@@ -1,7 +1,25 @@
+	// Load test pattern
 	L		DW#16#55555555
 	T		MD 0
+	__ASSERT==	M 0.0,		1
+	__ASSERT==	M 0.1,		0
+	__ASSERT==	M 0.2,		1
+	__ASSERT==	M 0.3,		0
+	__ASSERT==	M 0.4,		1
+	__ASSERT==	M 0.5,		0
+	__ASSERT==	M 0.6,		1
+	__ASSERT==	M 0.7,		0
+	__ASSERT==	M 1.0,		1
+	__ASSERT==	M 1.1,		0
+	__ASSERT==	M 1.2,		1
+	__ASSERT==	M 1.3,		0
+	__ASSERT==	M 1.4,		1
+	__ASSERT==	M 1.5,		0
+	__ASSERT==	M 1.6,		1
+	__ASSERT==	M 1.7,		0
 
 
+	// Check basic VKE behavior
 	__STWRST
 	__ASSERT==	__STW VKE,	0
 	SET
@@ -22,11 +40,11 @@
 	__ASSERT==	__STW BIE,	0
 
 
+	// Check basic U and =
 	__STWRST
 	U		M 0.0
 	=		M 16.0
 	__ASSERT==	M 16.0,		1
-
 
 	__STWRST
 	U		M 0.1
@@ -34,6 +52,7 @@
 	__ASSERT==	M 16.0,		0
 
 
+	// Check S and R
 	__STWRST
 	CLR
 	=		M 16.0
@@ -44,7 +63,6 @@
 	R		M 16.0
 	__ASSERT==	M 16.0,		0
 
-
 	__STWRST
 	CLR
 	=		M 16.0
@@ -54,7 +72,6 @@
 	__ASSERT==	M 16.0,		0
 	R		M 16.0
 	__ASSERT==	M 16.0,		0
-
 
 	__STWRST
 	CLR
@@ -68,24 +85,24 @@
 	__ASSERT==	M 16.0,		1
 
 
+	// Check U
 	__STWRST
 	U		M 0.0
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	U		M 0.0
 	U		M 0.1
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U		M 0.1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 
 
+	// Check U-O-U
 	__STWRST
 	U		M 0.1
 	U		M 0.1
@@ -94,7 +111,6 @@
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U		M 0.0
 	U		M 0.0
@@ -102,7 +118,6 @@
 	U		M 0.1
 	U		M 0.1
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	U		M 0.1
@@ -112,7 +127,6 @@
 	U		M 0.1
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	UN		M 0.0
 	UN		M 0.0
@@ -121,7 +135,6 @@
 	UN		M 0.1
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	UN		M 0.1
 	UN		M 0.1
@@ -129,7 +142,6 @@
 	UN		M 0.0
 	UN		M 0.0
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	UN		M 0.0
@@ -139,7 +151,6 @@
 	UN		M 0.0
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	UN		M 0.0
 	U		M 0.1
@@ -148,7 +159,6 @@
 	UN		M 0.1
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U		M 0.0
 	UN		M 0.1
@@ -156,7 +166,6 @@
 	UN		M 0.0
 	U		M 0.1
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	U		M 0.1
@@ -166,7 +175,6 @@
 	UN		M 0.0
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U		M 0.1
 	U		M 0.1
@@ -175,78 +183,213 @@
 	UN		M 0.1
 	__ASSERT==	__STW VKE,	1
 
+	__STWRST
+	U		M 0.0
+	O
+	U		M 0.1
+	__ASSERT==	__STW VKE,	1
 
+	__STWRST
+	U		M 0.1
+	O
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	U		M 0.1
+	O
+	U		M 0.1
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	UN		M 0.0
+	O
+	UN		M 0.1
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN		M 0.1
+	O
+	UN		M 0.0
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN		M 0.0
+	O
+	UN		M 0.0
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	U(
+	U		M 0.0
+	)
+	O
+	U(
+	U		M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	U(
+	U		M 0.1
+	)
+	O
+	U(
+	U		M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	U(
+	U		M 0.1
+	)
+	O
+	U(
+	U		M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	UN(
+	UN		M 0.0
+	)
+	O
+	UN(
+	UN		M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN(
+	UN		M 0.1
+	)
+	O
+	UN(
+	UN		M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN(
+	UN		M 0.1
+	)
+	O
+	UN(
+	UN		M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	U(
+	U		M 0.0
+	U		M 0.0
+	)
+	O
+	U(
+	U		M 0.1
+	U		M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	U(
+	U		M 0.1
+	U		M 0.1
+	)
+	O
+	U(
+	U		M 0.0
+	U		M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN(
+	UN		M 0.0
+	UN		M 0.0
+	)
+	O
+	UN(
+	UN		M 0.1
+	UN		M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN(
+	UN		M 0.1
+	UN		M 0.1
+	)
+	O
+	UN(
+	UN		M 0.0
+	UN		M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+
+	// Check ER-U-O combination
 	__STWRST
 	U		M 0.1
 	O		M 0.0
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U		M 0.0
 	O		M 0.1
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U		M 0.1
 	O		M 0.1
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	U		M 0.1
 	ON		M 0.0
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U		M 0.0
 	ON		M 0.1
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U		M 0.1
 	ON		M 0.1
 	__ASSERT==	__STW VKE,	1
 
 
+	// Check ER-U-X combination
 	__STWRST
 	U		M 0.1
 	X		M 0.0
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	U		M 0.0
 	X		M 0.1
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U		M 0.1
 	X		M 0.1
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U		M 0.0
 	X		M 0.0
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	U		M 0.1
 	XN		M 0.0
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U		M 0.0
 	XN		M 0.1
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	U		M 0.1
@@ -254,6 +397,7 @@
 	__ASSERT==	__STW VKE,	1
 
 
+	// Check U-branch
 	__STWRST
 	U(
 		U	M 0.0
@@ -265,7 +409,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U(
 		U	M 0.0
@@ -276,7 +419,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	U(
@@ -289,7 +431,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U(
 		U	M 0.0
@@ -301,7 +442,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U(
 		U	M 0.0
@@ -312,7 +452,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	UN(
@@ -325,7 +464,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	U(
 		U	M 0.0
@@ -337,7 +475,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	UN(
 		U	M 0.0
@@ -349,7 +486,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	U(
 		U	M 0.1
@@ -361,7 +497,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	UN(
 		U	M 0.1
@@ -373,7 +508,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	UN(
 		U	M 0.0
@@ -384,7 +518,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	UN(
@@ -398,6 +531,7 @@
 	__ASSERT==	__STW VKE,	1
 
 
+	// Check O-branch
 	__STWRST
 	O(
 		U	M 0.0
@@ -408,7 +542,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	O(
@@ -421,7 +554,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	O(
 		U	M 0.1
@@ -432,7 +564,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	O(
@@ -445,7 +576,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	O(
 		U	M 0.0
@@ -456,7 +586,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	ON(
@@ -469,7 +598,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	O(
 		U	M 0.0
@@ -480,7 +608,6 @@
 		U	M 0.1
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	ON(
@@ -493,7 +620,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	O(
 		U	M 0.1
@@ -505,7 +631,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	ON(
 		U	M 0.1
@@ -516,7 +641,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	ON(
@@ -529,7 +653,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	ON(
 		U	M 0.1
@@ -542,6 +665,7 @@
 	__ASSERT==	__STW VKE,	1
 
 
+	// Check X-branch
 	__STWRST
 	X(
 		U	M 0.0
@@ -553,7 +677,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	X(
 		U	M 0.0
@@ -564,7 +687,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	X(
@@ -577,7 +699,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	X(
 		U	M 0.0
@@ -589,7 +710,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	X(
 		U	M 0.0
@@ -600,7 +720,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	1
-
 
 	__STWRST
 	XN(
@@ -613,7 +732,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	X(
 		U	M 0.0
@@ -624,7 +742,6 @@
 		U	M 0.1
 	)
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	XN(
@@ -637,7 +754,6 @@
 	)
 	__ASSERT==	__STW VKE,	0
 
-
 	__STWRST
 	X(
 		U	M 0.1
@@ -648,7 +764,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	XN(
@@ -661,7 +776,6 @@
 	)
 	__ASSERT==	__STW VKE,	1
 
-
 	__STWRST
 	XN(
 		U	M 0.0
@@ -672,7 +786,6 @@
 		U	M 0.0
 	)
 	__ASSERT==	__STW VKE,	0
-
 
 	__STWRST
 	XN(
