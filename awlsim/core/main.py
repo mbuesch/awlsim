@@ -110,9 +110,6 @@ class AwlSim(object):
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
-	def shutdown(self):
-		self.unregisterAllHardware()
-
 	def reset(self):
 		try:
 			self.cpu.reset()

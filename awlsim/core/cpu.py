@@ -557,8 +557,6 @@ class S7CPU(object): #+cdef
 			if self.callStack:
 				cse = self.callStackTop = self.callStack[-1]
 			prevCse.handleBlockExit()
-		if self.cbCycleExit:
-			self.cbCycleExit(self.cbCycleExitData)
 
 	# Run startup code
 	def startup(self):
@@ -631,6 +629,10 @@ class S7CPU(object): #+cdef
 			self.__speedMeasureStartTime = self.now
 			self.__speedMeasureStartInsnCount = self.__insnCount
 			self.__speedMeasureStartCycleCount = self.__cycleCount
+
+		# Call the cycle exit callback, if any.
+		if self.cbCycleExit:
+			self.cbCycleExit(self.cbCycleExitData)
 
 	__getTime = getattr(time, "perf_counter", time.time)
 
