@@ -27,34 +27,29 @@ import sys
 import os
 import getopt
 
-from awlsim.common.project import *
-from awlsim.common.version import *
-
-from awlsim.core.main import *
-from awlsim.core.parser import *
-from awlsim.core.util import *
-
-try:
-	import hal as LinuxCNC_HAL
-except ImportError as e:
-	printError("Failed to import LinuxCNC HAL module: %s" % str(e))
-	sys.exit(1)
+from awlsim.common import *
+from awlsim.coreserver import *
 
 
-# Check presence of LinuxCNC. Returns True, if LinuxCNC is detected.
-# Raises KeyboardInterrupt, is LinuxCNC is not detected.
-def checkLinuxCNC():
+class LinuxCNC_NotRunning(Exception):
+	pass
+
+# Check presence of LinuxCNC.
+# Returns normally, if LinuxCNC is detected.
+# Raises LinuxCNC_NotRunning, if LinuxCNC is not detected.
+def checkLinuxCNC(_unused = None):
 	for lockname in ("/tmp/linuxcnc.lock", "/tmp/emc.lock"):
 		try:
 			os.stat(lockname)
 			return True
 		except OSError:
 			pass
-	if not opt_checkcnc:
+	if not opt_watchdog:
 		# The check is disabled. Return success.
 		return True
-	printError("LinuxCNC: doesn't seem to be running")
-	raise KeyboardInterrupt
+	printError("LinuxCNC doesn't seem to be running. "\
+		   "(Use '--watchdog off' to disable this check.)")
+	raise LinuxCNC_NotRunning()
 
 # Create the LinuxCNC HAL pins
 def createHalPins(hal,
@@ -91,7 +86,7 @@ def createHalPins(hal,
 		hal.newpin("output.s32.%d" % i, HAL_S32, HAL_OUT)
 		hal.newpin("output.float.%d" % i, HAL_FLOAT, HAL_OUT)
 
-def loadHardwareModule(awlSim, hal,
+def loadHardwareModule(server, hal,
 		       inputBase, outputBase,
 		       inputSize, outputSize):
 	# Load the hardware interface layer
@@ -102,9 +97,7 @@ def loadHardwareModule(awlSim, hal,
 		"inputSize"		: str(inputSize),
 		"outputSize"		: str(outputSize),
 	}
-	hwClass = awlSim.loadHardwareModule("linuxcnc")
-	awlSim.registerHardwareClass(hwClass = hwClass,
-				     parameters = parameters)
+	server.loadHardwareModule("linuxcnc", parameters)
 
 def readInputFile(inputFile):
 	if Project.fileIsProject(inputFile):
@@ -120,35 +113,56 @@ def readInputFile(inputFile):
 def usage():
 	print("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
 	print("")
-	print("%s [OPTIONS] AWL-source" % sys.argv[0])
+	print("Usage: awlsim-linuxcnc-hal [OPTIONS] PROJECT.awlpro")
 	print("")
 	print("Options:")
-	print(" -i|--input-size 32      The input area size, in bytes.")
-	print(" -I|--input-base 0       The AWL input address base.")
-	print(" -o|--output-size 32     The output area size, in bytes.")
-	print(" -O|--output-base 0      The AWL output address base.")
-	print(" -g|--gui 1/0            Enable/disable the GUI (default off).")
+	print(" -i|--input-size SIZE    The input area size, in bytes.")
+	print("                         Default: 32")
+	print(" -I|--input-base BASE    The AWL/STL input address base.")
+	print("                         Default: 0")
+	print(" -o|--output-size SIZE   The output area size, in bytes.")
+	print("                         Default: 32")
+	print(" -O|--output-base BASE   The AWL/STL output address base.")
+	print("                         Default: 0")
 	print("")
-	print(" -1|--onecycle           Only run one cycle")
-	print(" -C|--check-cnc 1/0      Enable/disable LinuxCNC runtime check (default on).")
+	print(" -l|--listen HOST:PORT   Set the address and port where the")
+	print("                         awlsim core server should listen on.")
+	print("                         Defaults to %s:%d" %\
+		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
+	print("")
+	print(" -W|--watchdog 1/0       Enable/disable LinuxCNC runtime check (default on).")
+	print(" -L|--loglevel LVL       Set the log level:")
+	print("                         0: Log nothing")
+	print("                         1: Log errors")
+	print("                         2: Log errors and warnings")
+	print("                         3: Log errors, warnings and info messages (default)")
+	print("                         4: Verbose logging")
+	print("                         5: Extremely verbose logging")
+	print(" -N|--nice NICE          Renice the process. -20 <= NICE <= 19.")
+	print("                         Default: Do not renice.")
+	print("")
+	print("For an example LinuxCNC HAL configuration see:")
+	print("  awlsimhw_linuxcnc/awlsim.hal")
 
 def main():
-	global opt_checkcnc
+	global opt_watchdog
 
 	opt_inputSize = 32
 	opt_inputBase = 0
 	opt_outputSize = 32
 	opt_outputBase = 0
-	opt_gui = False
-	opt_onecycle = False
-	opt_checkcnc = True
+	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
+	opt_watchdog = True
+	opt_loglevel = Logging.LOG_INFO
+	opt_nice = None
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hi:I:o:O:g:C:1",
+			"hi:I:o:O:l:W:L:N:",
 			[ "help", "input-size=", "input-base=",
-			  "output-size=", "output-base=", "gui=",
-			  "check-cnc=", "onecycle", ])
+			  "output-size=", "output-base=",
+			  "listen=",
+			  "watchdog=", "loglevel=", "nice=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -181,81 +195,113 @@ def main():
 			except ValueError:
 				printError("-O|--output-base: Invalid argument")
 				return 1
-		if o in ("-g", "--gui"):
-			opt_gui = str2bool(v)
-		if o in ("-1", "--onecycle"):
-			opt_onecycle = True
-		if o in ("-C", "--check-cnc"):
-			opt_checkcnc = str2bool(v)
+		if o in ("-l", "--listen"):
+			try:
+				idx = v.rfind(":")
+				if idx <= 0:
+					raise ValueError
+				opt_listen = (v[:idx], int(v[idx+1:]))
+			except ValueError:
+				printError("-l|--listen: Invalid host/port")
+				return 1
+		if o in ("-W", "--watchdog"):
+			opt_watchdog = str2bool(v)
+		if o in ("-L", "--loglevel"):
+			try:
+				opt_loglevel = int(v)
+			except ValueError:
+				printError("-L|--loglevel: Invalid log level")
+				return 1
+		if o in ("-N", "--nice"):
+			try:
+				opt_nice = int(v)
+				if opt_nice < -20 or opt_nice > 19:
+					raise ValueError
+			except ValueError:
+				printError("-N|--nice: Invalid niceness level")
+				return 1
 	if len(args) != 1:
 		usage()
 		return 1
-	awlFile = args[0]
+	projectFile = args[0]
 
-#	try:
-#		os.nice(-5)
-#	except OSError as e:
-#		printWarning("WARNING: Failed to renice LinuxCNC "
-#			"awlsim HAL module: %s" % str(e))
-
+	result = 0
 	try:
+		Logging.setPrefix("awlsim-linuxcnc: ")
+		Logging.setLoglevel(opt_loglevel)
+
+		# Adjust process priority
+		if opt_nice is not None:
+			try:
+				os.nice(opt_nice)
+			except OSError as e:
+				printError("Failed to renice process to "
+					   "%d: %s" % (opt_nice, str(e)))
+				return 1
+
+		# Try to import the LinuxCNC HAL module
+		global LinuxCNC_HAL
+		try:
+			import hal as LinuxCNC_HAL
+		except ImportError as e:
+			printError("Failed to import LinuxCNC HAL "
+				   "module: %s" % str(e))
+			return 1
+
+		# Create the LinuxCNC HAL component.
 		hal = LinuxCNC_HAL.component("awlsim")
 		createHalPins(hal,
 			      opt_inputBase, opt_inputSize,
 			      opt_outputBase, opt_outputSize)
 
-		if opt_gui:
-			print("awlsim-linuxcnc-hal: GUI mode is not fully implemented, yet.")
-			#TODO: We should (always) run a coreserver, so that a gui can connect.
-			return 1
+		# Read the project.
+		project = readInputFile(projectFile)
 
-		project = readInputFile(awlFile)
-		parseTrees = []
-		for awlSrc in project.getAwlSources():
-			p = AwlParser()
-			p.parseSource(awlSrc)
-			parseTrees.append(p.getParseTree())
-		symTables = []
-		for symTabSrc in project.getSymTabSources():
-			mnemonics = project.cpuSpecs.getConfiguredMnemonics()
-			tab = SymTabParser.parseSource(symTabSrc,
-						       autodetectFormat = True,
-						       mnemonics = mnemonics)
-			symTables.append(tab)
-
-		s = AwlSim()
-
-		loadHardwareModule(awlSim = s, hal = hal,
+		# Configure the core and the core server.
+		server = AwlSimServer()
+		loadHardwareModule(server = server,
+				   hal = hal,
 				   inputBase = opt_inputBase,
 				   outputBase = opt_outputBase,
 				   inputSize = opt_inputSize,
 				   outputSize = opt_outputSize)
 
 		# Load the program
-		for symTable in symTables:
-			s.loadSymbolTable(symTable)
-		for parseTree in parseTrees:
-			s.load(parseTree)
-		s.startup()
+		for symSrc in project.getSymTabSources():
+			server.loadSymTabSource(symSrc)
+		for libSel in project.getLibSelections():
+			server.loadLibraryBlock(libSel)
+		for awlSrc in project.getAwlSources():
+			server.loadAwlSource(awlSrc)
 
-		# Run cyclic execution
-		while checkLinuxCNC():
-			s.runCycle()
-			if opt_onecycle:
-				break
+		# Set the Linux-CNC watchdog as cycle exit hook.
+		server.setCycleExitHook(checkLinuxCNC)
+
+		# Run the server
+		printInfo("Starting interpreter core...")
+		server.startup(host = opt_listen[0],
+			       port = opt_listen[1],
+			       handleMaintenanceServerside = True)
+		server.setRunState(server.STATE_RUN)
+		server.run()
+	except LinuxCNC_NotRunning as e:
+		result = 1
 	except KeyboardInterrupt as e:
-		printInfo("Awlsim LinuxCNC HAL module shutdown")
+		result = 1
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())
-		return 1
+		result = 1
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
 				     MaintenanceRequest.TYPE_STOP):
-			return 0
+			result = 0
 		else:
 			printError("Received invalid maintenance request %d" %\
 				   e.requestType)
-	return 0
+			result = 1
+	printInfo("LinuxCNC HAL module shutdown.")
+
+	return result
 
 if __name__ == "__main__":
 	sys.exit(main())
