@@ -88,15 +88,25 @@ class AwlSimServer(object):
 
 	@classmethod
 	def getaddrinfo(cls, host, port):
-		family, socktype = socket.AF_INET, socket.SOCK_STREAM
 		if osIsPosix and host == "localhost" and False: #XXX disabled, for now
 			# We are on posix OS. Instead of AF_INET on localhost,
 			# we use Unix domain sockets.
 			family, socktype = AF_UNIX, socket.SOCK_STREAM
 			sockaddr = "/tmp/awlsim-server-%d.socket" % port
 		else:
-			family, socktype, proto, canonname, sockaddr =\
-				socket.getaddrinfo(host, port, family, socktype)[0]
+			# First try IPv4
+			family, socktype = socket.AF_INET, socket.SOCK_STREAM
+			try:
+				family, socktype, proto, canonname, sockaddr =\
+					socket.getaddrinfo(host, port, family, socktype)[0]
+			except socket.gaierror as e:
+				if e.errno == socket.EAI_ADDRFAMILY:
+					# Also try IPv6
+					family, socktype = socket.AF_INET6, socket.SOCK_STREAM
+					family, socktype, proto, canonname, sockaddr =\
+						socket.getaddrinfo(host, port, family, socktype)[0]
+				else:
+					raise e
 		return (family, socktype, sockaddr)
 
 	@classmethod
