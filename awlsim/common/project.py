@@ -594,6 +594,21 @@ class Project(object):
 		return cls.fromText(awlFileRead(filename, encoding="utf8"), filename)
 
 	@classmethod
+	def fromProjectOrRawAwlFile(cls, filename):
+		"""Read a project (.awlpro) or raw AWL file (.awl)
+		and return a Project()."""
+
+		if Project.fileIsProject(filename):
+			project = Project.fromFile(filename)
+		else:
+			# Make a fake project
+			awlSrc = AwlSource.fromFile(name = filename,
+						    filepath = filename)
+			project = Project(projectFile = None,
+					  awlSources = [ awlSrc, ])
+		return project
+
+	@classmethod
 	def __path2generic(cls, path, relativeToDir):
 		"""Generate an OS-independent string from a path."""
 		if "\r" in path or "\n" in path:
