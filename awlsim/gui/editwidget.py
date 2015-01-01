@@ -730,7 +730,11 @@ class EditWidget(SourceCodeEdit):
 
 	def __repaintHeaderWidget(self, ev):
 		p = self.headerWidget.getPainter()
-		p.fillRect(ev.rect(), Qt.lightGray)
+		if not self.__sourceMatchesCpuSource and\
+		   self.__runState.state == RunState.STATE_RUN:
+			p.fillRect(ev.rect(), QColor("#FFC0C0"))
+		else:
+			p.fillRect(ev.rect(), Qt.lightGray)
 
 		if self.__cpuStatsEnabled:
 			# Map the CPU-stats start point to header widget
