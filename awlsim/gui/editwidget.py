@@ -345,7 +345,13 @@ class EditWidget(SourceCodeEdit):
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
 
-	__aniChars = ( ' ', '.', 'o', '0', 'O', '0', 'o', '.' )
+	# Generate the RUN animation
+	__runAni = ("   x   ",
+		    "  -x-  ", " --x-- ", "---x---",
+		    "--=x=--", "-==x==-", "===x===",
+		    "==*x*==", "=**x**=", "***x***")
+	__runAni = tuple(c.replace("x", " CPU running ") for c in __runAni)
+	__runAni = __runAni + __runAni[1:-1][::-1]
 
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
@@ -355,9 +361,9 @@ class EditWidget(SourceCodeEdit):
 		self.__validatorTimer.setSingleShot(True)
 		self.__validatorTimer.timeout.connect(self.__checkValidator)
 
-		self.__aniTimer = QTimer(self)
-		self.__aniTimer.setSingleShot(False)
-		self.__aniTimer.timeout.connect(self.__animation)
+		self.__runAniTimer = QTimer(self)
+		self.__runAniTimer.setSingleShot(False)
+		self.__runAniTimer.timeout.connect(self.__runAnimation)
 
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
@@ -474,9 +480,9 @@ class EditWidget(SourceCodeEdit):
 		if newState.state == RunState.STATE_RUN:
 			self.__setSourceMatchesCpuSource(
 				self.__sourceMatchesCpuSource, force = True)
-			self.__aniTimer.start(200)
+			self.__runAniTimer.start(200)
 		else:
-			self.__aniTimer.stop()
+			self.__runAniTimer.stop()
 		if self.__cpuStatsEnabled:
 			self.cpuStatsWidget.update()
 		self.headerWidget.update()
@@ -597,9 +603,9 @@ class EditWidget(SourceCodeEdit):
 				stats.pruned = True
 				stats.obsolete = True
 
-	def __animation(self):
+	def __runAnimation(self):
 		self.__hdrAniStat = (self.__hdrAniStat + 1) %\
-				    len(self.__aniChars)
+				    len(self.__runAni)
 		self.headerWidget.update()
 
 	def __setSourceMatchesCpuSource(self, sourceIsOnCpu, force=False):
@@ -737,21 +743,22 @@ class EditWidget(SourceCodeEdit):
 			textMaxPixels = self.headerWidget.width()
 
 		if self.__runState.spawned:
-			runText = "[SIM]: "
+			runText = [ "[SIM]: ", ]
 		else:
-			runText = "[%s:%d]: " %(\
+			runText = [ "[%s:%d]: " %(\
 				self.__runState.host,
-				self.__runState.port)
+				self.__runState.port), ]
 		if self.__runState.state == RunState.STATE_RUN:
-			runText += self.__aniChars[self.__hdrAniStat]
+			runText.append(self.__runAni[self.__hdrAniStat])
 			if not self.__sourceMatchesCpuSource:
-				runText += " [NOT DOWNLOADED to CPU]"
+				runText.append(" [NOT DOWNLOADED to CPU]")
 		else:
-			runText += self.__runStateToText[self.__runState.state]
+			runText.append(self.__runStateToText[self.__runState.state])
 
 		# Limit the text length to the available space.
 		metr = self.headerWidget.fontMetrics()
 		maxNrChars = textMaxPixels // metr.width('_')
+		runText = "".join(runText)
 		if len(runText) > maxNrChars:
 			runText = runText[ : max(0, maxNrChars - 3)]
 			runText += "..."
