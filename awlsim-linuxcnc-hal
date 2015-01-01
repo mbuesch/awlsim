@@ -37,7 +37,8 @@ class LinuxCNC_NotRunning(Exception):
 # Check presence of LinuxCNC.
 # Returns normally, if LinuxCNC is detected.
 # Raises LinuxCNC_NotRunning, if LinuxCNC is not detected.
-def checkLinuxCNC(_unused = None):
+def watchdogHook(_unused = None):
+	# Check whether LinuxCNC is running.
 	for lockname in ("/tmp/linuxcnc.lock", "/tmp/emc.lock"):
 		try:
 			os.stat(lockname)
@@ -99,17 +100,6 @@ def loadHardwareModule(server, hal,
 	}
 	server.loadHardwareModule("linuxcnc", parameters)
 
-def readInputFile(inputFile):
-	if Project.fileIsProject(inputFile):
-		project = Project.fromFile(inputFile)
-	else:
-		# make a fake project
-		awlSrc = AwlSource.fromFile(name = inputFile,
-					    filepath = inputFile)
-		project = Project(projectFile = None,
-				  awlSources = [ awlSrc, ])
-	return project
-
 def usage():
 	print("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
 	print("")
@@ -130,7 +120,6 @@ def usage():
 	print("                         Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
 	print("")
-	print(" -W|--watchdog 1/0       Enable/disable LinuxCNC runtime check (default on).")
 	print(" -L|--loglevel LVL       Set the log level:")
 	print("                         0: Log nothing")
 	print("                         1: Log errors")
@@ -139,30 +128,51 @@ def usage():
 	print("                         4: Verbose logging")
 	print("                         5: Extremely verbose logging")
 	print(" -N|--nice NICE          Renice the process. -20 <= NICE <= 19.")
-	print("                         Default: Do not renice.")
+	print("                         Default: Do not renice")
+	print("")
+	print("Debugging options:")
+	print(" -W|--watchdog 1/0       Enable/disable LinuxCNC runtime watchdog.")
+	print("                         Default: on")
+	print(" -M|--max-runtime SEC    Module will be stopped after SEC seconds.")
+	print("                         Default: No timeout")
+	print(" -x|--extended-insns     Force-enable extended instructions")
 	print("")
 	print("For an example LinuxCNC HAL configuration see:")
 	print("  awlsimhw_linuxcnc/awlsim.hal")
 
 def main():
+	global LinuxCNC_HAL
+
+	global opt_inputSize
+	global opt_inputBase
+	global opt_outputSize
+	global opt_outputBase
+	global opt_listen
+	global opt_loglevel
+	global opt_nice
 	global opt_watchdog
+	global opt_maxRuntime
+	global opt_extInsns
 
 	opt_inputSize = 32
 	opt_inputBase = 0
 	opt_outputSize = 32
 	opt_outputBase = 0
 	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
-	opt_watchdog = True
 	opt_loglevel = Logging.LOG_INFO
 	opt_nice = None
+	opt_watchdog = True
+	opt_maxRuntime = -1.0
+	opt_extInsns = None
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hi:I:o:O:l:W:L:N:",
+			"hi:I:o:O:l:L:N:W:M:x",
 			[ "help", "input-size=", "input-base=",
 			  "output-size=", "output-base=",
 			  "listen=",
-			  "watchdog=", "loglevel=", "nice=", ])
+			  "loglevel=", "nice=",
+			  "watchdog=", "max-runtime=", "extended-insns", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -204,8 +214,6 @@ def main():
 			except ValueError:
 				printError("-l|--listen: Invalid host/port")
 				return 1
-		if o in ("-W", "--watchdog"):
-			opt_watchdog = str2bool(v)
 		if o in ("-L", "--loglevel"):
 			try:
 				opt_loglevel = int(v)
@@ -220,6 +228,16 @@ def main():
 			except ValueError:
 				printError("-N|--nice: Invalid niceness level")
 				return 1
+		if o in ("-W", "--watchdog"):
+			opt_watchdog = str2bool(v)
+		if o in ("-M", "--max-runtime"):
+			try:
+				opt_maxRuntime = float(v)
+			except ValueError:
+				printError("-M|--max-runtime: Invalid time format")
+				return 1
+		if o in ("-x", "--extended-insns"):
+			opt_extInsns = True
 	if len(args) != 1:
 		usage()
 		return 1
@@ -240,7 +258,6 @@ def main():
 				return 1
 
 		# Try to import the LinuxCNC HAL module
-		global LinuxCNC_HAL
 		try:
 			import hal as LinuxCNC_HAL
 		except ImportError as e:
@@ -255,7 +272,7 @@ def main():
 			      opt_outputBase, opt_outputSize)
 
 		# Read the project.
-		project = readInputFile(projectFile)
+		project = Project.fromProjectOrRawAwlFile(projectFile)
 
 		# Configure the core and the core server.
 		server = AwlSimServer()
@@ -265,6 +282,12 @@ def main():
 				   outputBase = opt_outputBase,
 				   inputSize = opt_inputSize,
 				   outputSize = opt_outputSize)
+		server.cpuEnableObTempPresets(project.getObTempPresetsEn())
+		server.cpuEnableExtendedInsns(project.getExtInsnsEn() or\
+					      opt_extInsns)
+		#TODO set cycle time limit
+		server.cpuSetRunTimeLimit(opt_maxRuntime)
+		server.cpuSetSpecs(project.getCpuSpecs())
 
 		# Load the program
 		for symSrc in project.getSymTabSources():
@@ -275,12 +298,13 @@ def main():
 			server.loadAwlSource(awlSrc)
 
 		# Set the Linux-CNC watchdog as cycle exit hook.
-		server.setCycleExitHook(checkLinuxCNC)
+		server.setCycleExitHook(watchdogHook)
 
 		# Run the server
 		printInfo("Starting interpreter core...")
 		server.startup(host = opt_listen[0],
 			       port = opt_listen[1],
+			       handleExceptionServerside = True,
 			       handleMaintenanceServerside = True)
 		server.setRunState(server.STATE_RUN)
 		server.run()
@@ -293,7 +317,8 @@ def main():
 		result = 1
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
-				     MaintenanceRequest.TYPE_STOP):
+				     MaintenanceRequest.TYPE_STOP,
+				     MaintenanceRequest.TYPE_RTTIMEOUT):
 			result = 0
 		else:
 			printError("Received invalid maintenance request %d" %\
