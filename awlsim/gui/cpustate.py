@@ -87,7 +87,7 @@ class StateWindow(QWidget):
 class State_CPU(StateWindow):
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
-		self.setWindowTitle("CPU details")
+		self.setWindowTitle("CPU overview")
 		self.setWindowIcon(getIcon("cpu"))
 
 		self.label = QLabel(self)
@@ -98,7 +98,8 @@ class State_CPU(StateWindow):
 		self.label.setFont(font)
 		self.layout().addWidget(self.label, 0, 0)
 
-		self.label.setText("No CPU status available, yet.")
+		self.label.setText("No CPU status available.\n"
+				   "Please put the CPU into RUN mode.")
 
 	def setDumpText(self, text):
 		self.label.setText(text)

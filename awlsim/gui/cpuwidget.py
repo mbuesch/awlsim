@@ -183,7 +183,7 @@ class CpuWidget(QWidget):
 		group.layout().addWidget(self.newTButton, 0, 4)
 		self.newZButton = ToolButton("counter", "Counter (C / Z)", group)
 		group.layout().addWidget(self.newZButton, 0, 5)
-		self.newCpuStateButton = ToolButton("cpu", "CPU status", group)
+		self.newCpuStateButton = ToolButton("cpu", "CPU overview", group)
 		group.layout().addWidget(self.newCpuStateButton, 0, 6)
 		self.newLCDButton = ToolButton("lcd", "LCD", group)
 		group.layout().addWidget(self.newLCDButton, 0, 7)

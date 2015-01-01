@@ -1386,7 +1386,7 @@ class S7CPU(object): #+cdef
 		isEnglish = (mnemonics == S7CPUSpecs.MNEMONICS_EN)
 		self.updateTimestamp()
 		ret = []
-		ret.append("=== S7-CPU dump ===  (t: %.01fs  py: %d / %s / %s)" %\
+		ret.append("[S7-CPU]  t: %.01fs  py: %d / %s / %s" %\
 			   (self.now - self.startupTime,
 			    3 if isPy3Compat else 2,
 			    pythonInterpreter,
@@ -1421,7 +1421,7 @@ class S7CPU(object): #+cdef
 		if self.callStack:
 			elems = [ str(cse) for cse in self.callStack ]
 			elems = " => ".join(elems)
-			ret.append("  Calls:  depth:%d   %s" %\
+			ret.append("  Calls:  %d:  %s" %\
 				   (len(self.callStack), elems))
 			localdata = self.callStack[-1].localdata
 			ret.append(self.__dumpMem("      L:  ",
@@ -1448,7 +1448,7 @@ class S7CPU(object): #+cdef
 			   (int(round(self.insnPerSecond)),
 			    usPerInsn,
 			    self.avgInsnPerCycle))
-		ret.append(" CycleT:  avg:%.06fs  min:%.06fs  max:%.06fs" %\
+		ret.append(" CycleT:  avg: %.06f s  min: %.06f s  max: %.06f s" %\
 			   (self.avgCycleTime, self.minCycleTime,
 			    self.maxCycleTime))
 		return '\n'.join(ret)
