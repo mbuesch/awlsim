@@ -40,20 +40,51 @@ loadusr -Wn awlsim awlsim-linuxcnc-hal --listen localhost:4151 --input-base 0 --
 # All input pins are deactivated by default.
 # So all input pins connected below, should be activated here by writing
 # a '1' to the '.active' pin.
-# Deactivated input pins will not be forwarded to the PLC program by awlsim.
+# Deactivated input pins will not be forwarded from LinuxCNC to the awlsim PLC program.
 setp	awlsim.input.bit.0.0.active		1
-setp	awlsim.input.u32.4.active		1
-setp	awlsim.input.s32.8.active		1
-setp	awlsim.input.float.12.active		1
+setp	awlsim.input.u8.1.active		1
+setp	awlsim.input.u16.2.active		1
+setp	awlsim.input.s16.4.active		1
+setp	awlsim.input.u31.6.active		1
+setp	awlsim.input.s32.10.active		1
+setp	awlsim.input.float.14.active		1
 
 # --- Connect input pins ---
+# These are examples only. 'foobar.valx' is the signal source.
 net	awlsim-in-bit-0-0	foobar.val0		=> awlsim.input.bit.0.0
-net	awlsim-in-u32-4		foobar.val1		=> awlsim.input.u32.4
-net	awlsim-in-s32-8		foobar.val2		=> awlsim.input.u32.8
-net	awlsim-in-float-12	foobar.val3		=> awlsim.input.float.12
+net	awlsim-in-u8-1		foobar.val1		=> awlsim.input.u8.1
+net	awlsim-in-u16-2		foobar.val2		=> awlsim.input.u16.2
+net	awlsim-in-s16-4		foobar.val3		=> awlsim.input.s16.4
+net	awlsim-in-u31-6		foobar.val4		=> awlsim.input.u31.6
+net	awlsim-in-s32-10	foobar.val5		=> awlsim.input.u31.10
+net	awlsim-in-float-14	foobar.val6		=> awlsim.input.float.14
 
-# --- Connect output pins --
-net	awlsim-out-bit-0-0	awlsim.output.bit.0.0	<= bizbaz.val0
-net	awlsim-out-u32-4	awlsim.output.u32.4	<= bizbaz.val1
-net	awlsim-out-s32-8	awlsim.output.s32.8	<= bizbaz.val2
-net	awlsim-out-float-12	awlsim.output.float.12	<= bizbaz.val3
+
+# --- Enable the used output pins ---
+# All output pins are deactivated by default.
+# So all output pins connected below, should be activated here by writing
+# a '1' to the '.active' pin.
+# Deactivated output pins will not be forwarded from the awlsim PLC program to LinuxCNC.
+setp	awlsim.output.bit.0.0.active		1
+setp	awlsim.output.u8.1.active		1
+setp	awlsim.output.u16.2.active		1
+setp	awlsim.output.s16.4.active		1
+setp	awlsim.output.u31.6.active		1
+setp	awlsim.output.s32.10.active		1
+setp	awlsim.output.float.14.active		1
+
+# --- Connect output pins ---
+# These are examples only. 'bizbaz.valx' is the signal destination.
+net	awlsim-in-bit-0-0	awlsim.output.bit.0.0	=> bizbaz.val0
+net	awlsim-in-u8-1		awlsim.output.u8.1	=> bizbaz.val1
+net	awlsim-in-u16-2		awlsim.output.u16.2	=> bizbaz.val2
+net	awlsim-in-s16-4		awlsim.output.s16.4	=> bizbaz.val3
+net	awlsim-in-u31-6		awlsim.output.u31.6	=> bizbaz.val4
+net	awlsim-in-s32-10	awlsim.output.u31.10	=> bizbaz.val5
+net	awlsim-in-float-14	awlsim.output.float.14	=> bizbaz.val6
+
+
+
+# Always keep this at the end of this file.
+# This will activate data transfer between awlsim and LinuxCNC.
+setp	awlsim.config.ready	1

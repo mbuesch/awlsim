@@ -65,13 +65,24 @@ def createHalPins(hal,
 
 	# Create the input pins
 	for i in range(inputBase, inputBase + inputSize):
+		offset = i - inputBase
 		for bit in range(8):
 			hal.newpin("input.bit.%d.%d" % (i, bit), HAL_BIT, HAL_IN)
 			hal.newparam("input.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
-		if inputBase + inputSize - i < 4:
+		hal.newpin("input.u8.%d" % i, HAL_U32, HAL_IN)
+		hal.newparam("input.u8.%d.active" % i, HAL_BIT, HAL_RW)
+		if i % 2:
 			continue
-		hal.newpin("input.u32.%d" % i, HAL_U32, HAL_IN)
-		hal.newparam("input.u32.%d.active" % i, HAL_BIT, HAL_RW)
+		if inputSize - offset < 2:
+			continue
+		hal.newpin("input.u16.%d" % i, HAL_U32, HAL_IN)
+		hal.newparam("input.u16.%d.active" % i, HAL_BIT, HAL_RW)
+		hal.newpin("input.s16.%d" % i, HAL_S32, HAL_IN)
+		hal.newparam("input.s16.%d.active" % i, HAL_BIT, HAL_RW)
+		if inputSize - offset < 4:
+			continue
+		hal.newpin("input.u31.%d" % i, HAL_U32, HAL_IN)
+		hal.newparam("input.u31.%d.active" % i, HAL_BIT, HAL_RW)
 		hal.newpin("input.s32.%d" % i, HAL_S32, HAL_IN)
 		hal.newparam("input.s32.%d.active" % i, HAL_BIT, HAL_RW)
 		hal.newpin("input.float.%d" % i, HAL_FLOAT, HAL_IN)
@@ -79,13 +90,30 @@ def createHalPins(hal,
 
 	# Create the output pins
 	for i in range(outputBase, outputBase + outputSize):
+		offset = i - outputBase
 		for bit in range(8):
 			hal.newpin("output.bit.%d.%d" % (i, bit), HAL_BIT, HAL_OUT)
-		if outputBase + outputSize - i < 4:
+			hal.newparam("output.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
+		hal.newpin("output.u8.%d" % i, HAL_U32, HAL_OUT)
+		hal.newparam("output.u8.%d.active" % i, HAL_BIT, HAL_RW)
+		if i % 2:
 			continue
-		hal.newpin("output.u32.%d" % i, HAL_U32, HAL_OUT)
+		if outputSize - offset < 2:
+			continue
+		hal.newpin("output.u16.%d" % i, HAL_U32, HAL_OUT)
+		hal.newparam("output.u16.%d.active" % i, HAL_BIT, HAL_RW)
+		hal.newpin("output.s16.%d" % i, HAL_S32, HAL_OUT)
+		hal.newparam("output.s16.%d.active" % i, HAL_BIT, HAL_RW)
+		if outputSize - offset < 4:
+			continue
+		hal.newpin("output.u31.%d" % i, HAL_U32, HAL_OUT)
+		hal.newparam("output.u31.%d.active" % i, HAL_BIT, HAL_RW)
 		hal.newpin("output.s32.%d" % i, HAL_S32, HAL_OUT)
+		hal.newparam("output.s32.%d.active" % i, HAL_BIT, HAL_RW)
 		hal.newpin("output.float.%d" % i, HAL_FLOAT, HAL_OUT)
+		hal.newparam("output.float.%d.active" % i, HAL_BIT, HAL_RW)
+
+	hal.newparam("config.ready", HAL_BIT, HAL_RW)
 
 def loadHardwareModule(server, hal,
 		       inputBase, outputBase,
