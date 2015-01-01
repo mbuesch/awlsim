@@ -149,17 +149,6 @@ def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
 	if opt_clockMem is not None:
 		cpuSpecs.setClockMemByte(opt_clockMem)
 
-def readInputFile(inputFile):
-	if Project.fileIsProject(inputFile):
-		project = Project.fromFile(inputFile)
-	else:
-		# make a fake project
-		awlSrc = AwlSource.fromFile(name = inputFile,
-					    filepath = inputFile)
-		project = Project(projectFile = None,
-				  awlSources = [ awlSrc, ])
-	return project
-
 def run(inputFile):
 	s = None
 	try:
@@ -168,7 +157,7 @@ def run(inputFile):
 			writeStdout("*** Using accelerated CYTHON core "
 				    "(AWLSIMCYTHON environment variable is set)\n")
 
-		project = readInputFile(inputFile)
+		project = Project.fromProjectOrRawAwlFile(inputFile)
 
 		writeStdout("Parsing code...\n")
 		parseTrees = []
@@ -178,7 +167,7 @@ def run(inputFile):
 			parseTrees.append(p.getParseTree())
 		symTables = []
 		for symTabSrc in project.getSymTabSources():
-			mnemonics = project.cpuSpecs.getConfiguredMnemonics()
+			mnemonics = project.getCpuSpecs().getConfiguredMnemonics()
 			if opt_mnemonics is not None:
 				mnemonics = opt_mnemonics
 			tab = SymTabParser.parseSource(symTabSrc,
@@ -198,7 +187,7 @@ def run(inputFile):
 						parameters = parameters)
 
 		cpu = s.getCPU()
-		assignCpuSpecs(cpu.getSpecs(), project.cpuSpecs)
+		assignCpuSpecs(cpu.getSpecs(), project.getCpuSpecs())
 		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
 		cpu.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
 		if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
@@ -257,7 +246,7 @@ def runWithServerBackend(inputFile):
 				   "AWLSIMCYTHON environment variable.")
 			return 1
 
-		project = readInputFile(inputFile)
+		project = Project.fromProjectOrRawAwlFile(inputFile)
 
 		# Connect to the server
 		client = TextInterfaceAwlSimClient()
@@ -299,7 +288,7 @@ def runWithServerBackend(inputFile):
 		client.setCycleTimeLimit(opt_cycletime)
 		client.setRunTimeLimit(opt_maxRuntime)
 		specs = client.getCpuSpecs()
-		assignCpuSpecs(specs, project.cpuSpecs)
+		assignCpuSpecs(specs, project.getCpuSpecs())
 		client.setCpuSpecs(specs)
 
 		# Fire up the core
