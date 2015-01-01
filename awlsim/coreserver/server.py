@@ -186,17 +186,18 @@ class AwlSimServer(object):
 
 	def __init__(self):
 		self.__startupDone = False
-		self.state = -1
+		self.__state = -1
 		self.setRunState(self._STATE_INIT)
 
 		self.__nextStats = 0
 		self.__commandMask = 0
+		self.__handleExceptionServerside = False
 		self.__handleMaintenanceServerside = False
-		self.socket = None
-		self.unixSockPath = None
-		self.clients = []
+		self.__socket = None
+		self.__unixSockPath = None
+		self.__clients = []
 
-		self.sim = AwlSim()
+		self.__sim = AwlSim()
 		self.setCycleExitHook(None)
 		self.__resetSources()
 
@@ -215,7 +216,7 @@ class AwlSimServer(object):
 		Logging.setPrefix("AwlSimServer: ")
 		Logging.setLoglevel(loglevel)
 
-		if self.socket:
+		if self.__socket:
 			raise AwlSimError("AwlSimServer: Already running")
 
 		if env.get(self.ENV_MAGIC) != self.ENV_MAGIC:
@@ -240,10 +241,10 @@ class AwlSimServer(object):
 		self.run()
 
 	def setRunState(self, runstate):
-		if self.state == runstate:
+		if self.__state == runstate:
 			# Already in that state.
 			return
-		if self.state == self.STATE_EXIT:
+		if self.__state == self.STATE_EXIT:
 			# We are exiting. Cannot set another state.
 			return
 
@@ -258,7 +259,7 @@ class AwlSimServer(object):
 		elif runstate == self.STATE_RUN:
 			# We just entered RUN state.
 			printVerbose("CPU startup (OB 10x).")
-			self.sim.startup()
+			self.__sim.startup()
 			printVerbose("Putting CPU into RUN state.")
 		elif runstate == self.STATE_STOP:
 			# We just entered STOP state.
@@ -267,21 +268,21 @@ class AwlSimServer(object):
 			# We just entered MAINTENANCE state.
 			printVerbose("Putting CPU into MAINTENANCE state.")
 
-		self.state = runstate
+		self.__state = runstate
 		# Make a shortcut variable for RUN
 		self.__running = bool(runstate == self.STATE_RUN)
 
 	def __rebuildSelectReadList(self):
-		rlist = [ self.socket ]
-		rlist.extend(client.transceiver.sock for client in self.clients)
+		rlist = [ self.__socket ]
+		rlist.extend(client.transceiver.sock for client in self.__clients)
 		self.__selectRlist = rlist
 
 	def __cpuBlockExitCallback(self, userData):
-		now = self.sim.cpu.now
-		if any(c.dumpInterval and now >= c.nextDump for c in self.clients):
-			msg = AwlSimMessage_CPUDUMP(str(self.sim.cpu))
+		now = self.__sim.cpu.now
+		if any(c.dumpInterval and now >= c.nextDump for c in self.__clients):
+			msg = AwlSimMessage_CPUDUMP(str(self.__sim.cpu))
 			broken = False
-			for client in self.clients:
+			for client in self.__clients:
 				if client.dumpInterval and now >= client.nextDump:
 					client.nextDump = now + client.dumpInterval / 1000.0
 					try:
@@ -297,9 +298,9 @@ class AwlSimServer(object):
 		except IndexError:
 			return
 		cpu, sourceId, lineNr, msg =\
-			self.sim.cpu, insn.getSourceId(), insn.getLineNr(), None
+			self.__sim.cpu, insn.getSourceId(), insn.getLineNr(), None
 		broken = False
-		for client in self.clients:
+		for client in self.__clients:
 			try:
 				if lineNr not in client.insnStateDump_enabledLines[sourceId]:
 					continue
@@ -329,7 +330,7 @@ class AwlSimServer(object):
 		self.__insnSerial += 1
 
 	def __printCpuStats(self):
-		cpu = self.sim.cpu
+		cpu = self.__sim.cpu
 		if cpu.insnPerSecond:
 			usPerInsn = "%.03f" % ((1.0 / cpu.insnPerSecond) * 1000000)
 		else:
@@ -346,7 +347,7 @@ class AwlSimServer(object):
 
 		# Print CPU stats, if requested.
 		if Logging.loglevel >= Logging.LOG_VERBOSE:
-			now = self.sim.cpu.now
+			now = self.__sim.cpu.now
 			if now >= self.__nextStats:
 				self.__nextStats = now + 1.0
 				self.__printCpuStats()
@@ -356,24 +357,24 @@ class AwlSimServer(object):
 			self.__cycleExitHook(self.__cycleExitHookData)
 
 	def __updateCpuBlockExitCallback(self):
-		if any(c.dumpInterval for c in self.clients):
-			self.sim.cpu.setBlockExitCallback(self.__cpuBlockExitCallback, None)
+		if any(c.dumpInterval for c in self.__clients):
+			self.__sim.cpu.setBlockExitCallback(self.__cpuBlockExitCallback, None)
 		else:
-			self.sim.cpu.setBlockExitCallback(None)
+			self.__sim.cpu.setBlockExitCallback(None)
 
 	def __updateCpuPostInsnCallback(self):
-		if any(c.insnStateDump_enabledLines for c in self.clients):
-			self.sim.cpu.setPostInsnCallback(self.__cpuPostInsnCallback, None)
+		if any(c.insnStateDump_enabledLines for c in self.__clients):
+			self.__sim.cpu.setPostInsnCallback(self.__cpuPostInsnCallback, None)
 		else:
-			self.sim.cpu.setPostInsnCallback(None)
+			self.__sim.cpu.setPostInsnCallback(None)
 
 	def __updateCpuCycleExitCallback(self):
-		if any(c.insnStateDump_enabledLines for c in self.clients) or\
+		if any(c.insnStateDump_enabledLines for c in self.__clients) or\
 		   Logging.loglevel >= Logging.LOG_VERBOSE or\
 		   self.__cycleExitHook:
-			self.sim.cpu.setCycleExitCallback(self.__cpuCycleExitCallback, None)
+			self.__sim.cpu.setCycleExitCallback(self.__cpuCycleExitCallback, None)
 		else:
-			self.sim.cpu.setCycleExitCallback(None)
+			self.__sim.cpu.setCycleExitCallback(None)
 
 	def __updateCpuCallbacks(self):
 		self.__updateCpuBlockExitCallback()
@@ -395,28 +396,43 @@ class AwlSimServer(object):
 		parser = AwlParser()
 		parser.parseSource(awlSource)
 		self.setRunState(self.STATE_STOP)
-		self.sim.load(parser.getParseTree())
+		self.__sim.load(parser.getParseTree())
 		self.loadedAwlSources.append(awlSource)
 
 	def loadSymTabSource(self, symTabSource):
 		symbolTable = SymTabParser.parseSource(symTabSource,
 					autodetectFormat = True,
-					mnemonics = self.sim.cpu.getSpecs().getMnemonics())
+					mnemonics = self.__sim.cpu.getSpecs().getMnemonics())
 		self.setRunState(self.STATE_STOP)
-		self.sim.loadSymbolTable(symbolTable)
+		self.__sim.loadSymbolTable(symbolTable)
 		self.loadedSymTabSources.append(symTabSource)
 
 	def loadHardwareModule(self, moduleName, paramDict):
 		printInfo("Loading hardware module '%s'..." % moduleName)
-		hwClass = self.sim.loadHardwareModule(moduleName)
-		self.sim.registerHardwareClass(hwClass = hwClass,
+		hwClass = self.__sim.loadHardwareModule(moduleName)
+		self.__sim.registerHardwareClass(hwClass = hwClass,
 					       parameters = paramDict)
 		self.loadedHwModules.append( (moduleName, paramDict) )
 
 	def loadLibraryBlock(self, libSelection):
 		self.setRunState(self.STATE_STOP)
-		self.sim.loadLibraryBlock(libSelection)
+		self.__sim.loadLibraryBlock(libSelection)
 		self.loadedLibSelections.append(libSelection)
+
+	def cpuEnableObTempPresets(self, en):
+		self.__sim.cpu.enableObTempPresets(en)
+
+	def cpuEnableExtendedInsns(self, en):
+		self.__sim.cpu.enableExtendedInsns(en)
+
+	def cpuSetCycleTimeLimit(self, limitSeconds):
+		self.__sim.cpu.setCycleTimeLimit(limitSeconds)
+
+	def cpuSetRunTimeLimit(self, limitSeconds):
+		self.__sim.cpu.setRunTimeLimit(limitSeconds)
+
+	def cpuSetSpecs(self, cpuSpecs):
+		self.__sim.cpu.getSpecs().assignFrom(cpuSpecs)
 
 	def setCycleExitHook(self, hook, hookData = None):
 		self.__cycleExitHook = hook
@@ -434,7 +450,7 @@ class AwlSimServer(object):
 		printVerbose("Resetting CPU.")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.setRunState(self.STATE_STOP)
-		self.sim.reset()
+		self.__sim.reset()
 		self.__resetSources()
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
@@ -453,10 +469,10 @@ class AwlSimServer(object):
 		if msg.runState == msg.STATE_STOP:
 			self.setRunState(self.STATE_STOP)
 		elif msg.runState == msg.STATE_RUN:
-			if self.state == self.STATE_RUN:
+			if self.__state == self.STATE_RUN:
 				pass
-			elif self.state == self.STATE_STOP or\
-			     self.state == self.STATE_MAINTENANCE:
+			elif self.__state == self.STATE_STOP or\
+			     self.__state == self.STATE_MAINTENANCE:
 				self.setRunState(self.STATE_RUN)
 			else:
 				status = AwlSimMessage_REPLY.STAT_FAIL
@@ -468,7 +484,7 @@ class AwlSimServer(object):
 		printDebug("Received message: GET_RUNSTATE")
 		reply = AwlSimMessage_RUNSTATE(
 			AwlSimMessage_RUNSTATE.STATE_RUN\
-			if self.state == self.STATE_RUN else\
+			if self.__state == self.STATE_RUN else\
 			AwlSimMessage_RUNSTATE.STATE_STOP
 		)
 		client.transceiver.send(reply)
@@ -504,20 +520,20 @@ class AwlSimServer(object):
 		if msg.name == "loglevel":
 			Logging.setLoglevel(msg.getIntValue())
 		elif msg.name == "ob_temp_presets":
-			self.sim.cpu.enableObTempPresets(msg.getBoolValue())
+			self.cpuEnableObTempPresets(msg.getBoolValue())
 		elif msg.name == "extended_insns":
-			self.sim.cpu.enableExtendedInsns(msg.getBoolValue())
+			self.cpuEnableExtendedInsns(msg.getBoolValue())
 		elif msg.name == "periodic_dump_int":
 			client.dumpInterval = msg.getIntValue()
 			if client.dumpInterval:
-				client.nextDump = self.sim.cpu.now
+				client.nextDump = self.__sim.cpu.now
 			else:
 				client.nextDump = None
 			self.__updateCpuCallbacks()
 		elif msg.name == "cycle_time_limit":
-			self.sim.cpu.setCycleTimeLimit(msg.getFloatValue())
+			self.cpuSetCycleTimeLimit(msg.getFloatValue())
 		elif msg.name == "runtime_limit":
-			self.sim.cpu.setRunTimeLimit(msg.getFloatValue())
+			self.cpuSetRunTimeLimit(msg.getFloatValue())
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 
@@ -525,13 +541,13 @@ class AwlSimServer(object):
 
 	def __rx_GET_CPUSPECS(self, client, msg):
 		printDebug("Received message: GET_CPUSPECS")
-		reply = AwlSimMessage_CPUSPECS(self.sim.cpu.getSpecs())
+		reply = AwlSimMessage_CPUSPECS(self.__sim.cpu.getSpecs())
 		client.transceiver.send(reply)
 
 	def __rx_CPUSPECS(self, client, msg):
 		printDebug("Received message: CPUSPECS")
 		status = AwlSimMessage_REPLY.STAT_OK
-		self.sim.cpu.getSpecs().assignFrom(msg.cpuspecs)
+		self.cpuSetSpecs(msg.cpuspecs)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_REQ_MEMORY(self, client, msg):
@@ -546,7 +562,7 @@ class AwlSimServer(object):
 
 	def __rx_MEMORY(self, client, msg):
 		printDebug("Received message: MEMORY")
-		cpu = self.sim.cpu
+		cpu = self.__sim.cpu
 		status = AwlSimMessage_REPLY.STAT_OK
 		for memArea in msg.memAreas:
 			try:
@@ -650,21 +666,21 @@ class AwlSimServer(object):
 					"'select' failed")
 			if not rlist:
 				break
-			if self.socket in rlist:
-				rlist.remove(self.socket)
+			if self.__socket in rlist:
+				rlist.remove(self.__socket)
 				self.__accept()
 			for sock in rlist:
-				client = [ c for c in self.clients if c.socket is sock ][0]
+				client = [ c for c in self.__clients if c.socket is sock ][0]
 				self.__handleClientComm(client)
 
 	def __handleMemReadReqs(self):
 		broken = False
-		for client in self.clients:
+		for client in self.__clients:
 			if not client.memReadRequestMsg:
 				continue
 			client.repetitionCount -= 1
 			if client.repetitionCount <= 0:
-				cpu, memAreas = self.sim.cpu, client.memReadRequestMsg.memAreas
+				cpu, memAreas = self.__sim.cpu, client.memReadRequestMsg.memAreas
 				for memArea in memAreas:
 					memArea.flags = 0
 					try:
@@ -691,20 +707,25 @@ class AwlSimServer(object):
 			self.__removeBrokenClients()
 
 	def startup(self, host, port, commandMask = 0,
+		    handleExceptionServerside = False,
 		    handleMaintenanceServerside = False):
 		"""Start the server on 'host':'port'.
 		commanMask -> Mask of allowed commands (CMDMSK_...).
+		handleExceptionServerside -> Flag whether to raise AwlSimError()
+		                             exceptions on the server only.
 		handleMaintenanceServerside -> Flag whether to raise maintenance
 		                               request exceptions on the server only.
 		This must be called once before run()."""
 
+		assert(not self.__startupDone)
 		self.__commandMask = commandMask
+		self.__handleExceptionServerside = handleExceptionServerside
 		self.__handleMaintenanceServerside = handleMaintenanceServerside
 
 		self.__listen(host, port)
 		self.__rebuildSelectReadList()
 
-		self.__nextStats = self.sim.cpu.now
+		self.__nextStats = self.__sim.cpu.now
 		self.__updateCpuCallbacks()
 
 		self.__startupDone = True
@@ -716,24 +737,24 @@ class AwlSimServer(object):
 		# Check whether startup() was called and
 		# the CPU is in a runnable state.
 		assert(self.__startupDone)
-		assert(self.state in (self.STATE_STOP,
-				      self.STATE_RUN,
-				      self.STATE_MAINTENANCE))
+		assert(self.__state in (self.STATE_STOP,
+					self.STATE_RUN,
+					self.STATE_MAINTENANCE))
 
 		# Main event loop.
-		while self.state != self.STATE_EXIT:
+		while self.__state != self.STATE_EXIT:
 			try:
-				sim = self.sim
+				sim = self.__sim
 
-				if self.state in (self.STATE_STOP,
-						  self.STATE_MAINTENANCE):
-					while self.state in (self.STATE_STOP,
-							     self.STATE_MAINTENANCE):
+				if self.__state in (self.STATE_STOP,
+						    self.STATE_MAINTENANCE):
+					while self.__state in (self.STATE_STOP,
+							       self.STATE_MAINTENANCE):
 						self.__handleCommunication()
 						time.sleep(0.01)
 					continue
 
-				if self.state == self.STATE_RUN:
+				if self.__state == self.STATE_RUN:
 					while self.__running:
 						sim.runCycle()
 						self.__handleMemReadReqs()
@@ -741,16 +762,21 @@ class AwlSimServer(object):
 					continue
 
 			except (AwlSimError, AwlParserError) as e:
-				msg = AwlSimMessage_EXCEPTION(e)
-				for client in self.clients:
-					try:
-						client.transceiver.send(msg)
-					except TransferError as e:
-						printError("Failed to forward "
-							   "exception to client.")
-						client.broken = True
-				self.__removeBrokenClients()
 				self.setRunState(self.STATE_STOP)
+				if self.__handleExceptionServerside:
+					# Let the server handle the exception
+					raise e
+				else:
+					# Send the exception to all clients.
+					msg = AwlSimMessage_EXCEPTION(e)
+					for client in self.__clients:
+						try:
+							client.transceiver.send(msg)
+						except TransferError as e:
+							printError("Failed to forward "
+								   "exception to client.")
+							client.broken = True
+					self.__removeBrokenClients()
 			except MaintenanceRequest as e:
 				# Put the CPU into maintenance mode.
 				# This will halt the CPU until a client
@@ -762,10 +788,10 @@ class AwlSimServer(object):
 				else:
 					# Send the maintenance message.
 					try:
-						if self.clients:
+						if self.__clients:
 							# Forward it to the first client
 							msg = AwlSimMessage_MAINTREQ(e)
-							self.clients[0].transceiver.send(msg)
+							self.__clients[0].transceiver.send(msg)
 					except TransferError as e:
 						pass
 			except TransferError as e:
@@ -779,7 +805,7 @@ class AwlSimServer(object):
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
 			if family == AF_UNIX:
-				self.unixSockPath = sockaddr
+				self.__unixSockPath = sockaddr
 				readableSockaddr = sockaddr
 			else:
 				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
@@ -792,19 +818,19 @@ class AwlSimServer(object):
 		except SocketErrors as e:
 			raise AwlSimError("AwlSimServer: Failed to create server "
 				"socket: " + str(e))
-		self.socket = sock
+		self.__socket = sock
 
 	def __accept(self):
 		"""Accept a client connection.
 		Returns the Client instance or None."""
 
-		if not self.socket:
+		if not self.__socket:
 			raise AwlSimError("AwlSimServer: No server socket")
 
 		try:
-			clientSock, addrInfo = self.socket.accept()
-			if self.unixSockPath:
-				peerInfoString = self.unixSockPath
+			clientSock, addrInfo = self.__socket.accept()
+			if self.__unixSockPath:
+				peerInfoString = self.__unixSockPath
 			else:
 				peerInfoString = "%s:%d" % addrInfo[:2]
 		except SocketErrors as e:
@@ -820,16 +846,16 @@ class AwlSimServer(object):
 		return client
 
 	def __clientAdd(self, client):
-		self.clients.append(client)
+		self.__clients.append(client)
 		self.__rebuildSelectReadList()
 
 	def __clientRemove(self, client):
-		self.clients.remove(client)
+		self.__clients.remove(client)
 		self.__rebuildSelectReadList()
 		self.__updateCpuCallbacks()
 
 	def __removeBrokenClients(self):
-		for client in [ c for c in self.clients if c.broken ]:
+		for client in [ c for c in self.__clients if c.broken ]:
 			self.__clientRemove(client)
 
 	def close(self):
@@ -837,27 +863,27 @@ class AwlSimServer(object):
 
 		self.__startupDone = False
 
-		for client in self.clients:
+		for client in self.__clients:
 			client.transceiver.shutdown()
 			client.transceiver = None
 			client.socket = None
-		self.clients = []
+		self.__clients = []
 
-		if self.socket:
-			CALL_NOEX(self.socket.shutdown, socket.SHUT_RDWR)
-			CALL_NOEX(self.socket.close)
-			self.socket = None
-		if self.unixSockPath:
+		if self.__socket:
+			CALL_NOEX(self.__socket.shutdown, socket.SHUT_RDWR)
+			CALL_NOEX(self.__socket.close)
+			self.__socket = None
+		if self.__unixSockPath:
 			try:
-				os.unlink(self.unixSockPath)
+				os.unlink(self.__unixSockPath)
 			except OSError as e:
 				pass
-			self.unixSockPath = None
+			self.__unixSockPath = None
 
 	def shutdown(self):
 		printInfo("Shutting down.")
 		self.close()
-		self.sim.unregisterAllHardware()
+		self.__sim.unregisterAllHardware()
 
 	def signalHandler(self, sig, frame):
 		printInfo("Received signal %d" % sig)
