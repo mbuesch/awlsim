@@ -3,6 +3,8 @@
 sh_test()
 {
 	local interpreter="$1"
+	local test_dir="$2"
+	local test_name="$3"
 
 	cd "$rootdir" || die "Failed to change to rootdir '$rootdir'"
 
@@ -14,6 +16,7 @@ sh_test()
 			"000-base/EXAMPLE.awlpro"; do
 		echo "    Running linuxcnc test with: $testfile"
 
+		FAKEHAL_HALFILE="${test_dir}/linuxcnc.hal" \
 		PYTHONPATH="$modpath:$PYTHONPATH" \
 		JYTHONPATH="$modpath:$JYTHONPATH" \
 		IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \

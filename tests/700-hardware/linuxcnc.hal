@@ -1,0 +1,19 @@
+setp	awlsim.input.bit.0.0.active		1
+setp	awlsim.input.u8.1.active		1
+setp	awlsim.input.u16.2.active		1
+setp	awlsim.input.s16.4.active		1
+setp	awlsim.input.u31.6.active		1
+setp	awlsim.input.s32.10.active		1
+setp	awlsim.input.float.14.active		1
+
+setp	awlsim.output.bit.0.0.active		1
+setp	awlsim.output.u8.1.active		1
+setp	awlsim.output.u16.2.active		1
+setp	awlsim.output.s16.4.active		1
+setp	awlsim.output.u31.6.active		1
+setp	awlsim.output.s32.10.active		1
+setp	awlsim.output.float.14.active		1
+
+
+
+setp	awlsim.config.ready			1
