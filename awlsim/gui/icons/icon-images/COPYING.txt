@@ -17,6 +17,7 @@ Creative Commons Attribution-Share Alike 3.0 Unported (CC-BY-SA 3.0)
 
 File Name                     | Source                        | License
 ------------------------------+-------------------------------+---------------------
+audio-card-3.svg              | oxygen                        | CC-BY-SA 3.0 or LGPL
 application-exit-4.svg        | oxygen                        | CC-BY-SA 3.0 or LGPL
 appointment-soon.svg          | gnome                         | GPLv2
 counter.png                   | edit-4.svg                    | LGPL-2.1

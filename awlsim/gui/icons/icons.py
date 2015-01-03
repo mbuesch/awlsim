@@ -52,6 +52,7 @@ from awlsim.gui.icons.paste import *
 from awlsim.gui.icons.download import *
 from awlsim.gui.icons.warning import *
 from awlsim.gui.icons.tag import *
+from awlsim.gui.icons.hwmod import *
 
 import base64
 
@@ -85,6 +86,7 @@ __icons = {
 	"download"	: icon_download,
 	"warning"	: icon_warning,
 	"tag"		: icon_tag,
+	"hwmod"		: icon_hwmod,
 }
 
 def getIcon(iconName):

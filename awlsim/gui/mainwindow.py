@@ -31,6 +31,7 @@ from awlsim.gui.projectwidget import *
 from awlsim.gui.guiconfig import *
 from awlsim.gui.cpuconfig import *
 from awlsim.gui.linkconfig import *
+from awlsim.gui.hwmodconfig import *
 from awlsim.gui.icons import *
 
 
@@ -226,6 +227,11 @@ class MainWidget(QWidget):
 		dlg.settingsChanged.connect(self.__somethingChanged)
 		dlg.exec_()
 
+	def hwmodConfig(self):
+		dlg = HwmodConfigDialog(self.getProject(), self)
+		dlg.settingsChanged.connect(self.__somethingChanged)
+		dlg.exec_()
+
 	def insertOB(self):
 		self.projectWidget.insertOB()
 
@@ -327,6 +333,7 @@ class MainWindow(QMainWindow):
 		menu = QMenu("&Settings", self)
 		menu.addAction(getIcon("network"), "&Server connection...", self.linkConfig)
 		menu.addAction(getIcon("cpu"), "&CPU config...", self.cpuConfig)
+		menu.addAction(getIcon("hwmod"), "&Hardware modules...", self.hwmodConfig)
 		menu.addAction(getIcon("prefs"), "&User interface...", self.guiConfig)
 		self.menuBar().addMenu(menu)
 
@@ -535,6 +542,9 @@ class MainWindow(QMainWindow):
 
 	def guiConfig(self):
 		self.centralWidget().guiConfig()
+
+	def hwmodConfig(self):
+		self.centralWidget().hwmodConfig()
 
 	def linkConfig(self):
 		self.centralWidget().linkConfig()
