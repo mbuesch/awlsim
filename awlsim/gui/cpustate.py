@@ -40,17 +40,27 @@ class StateWindow(QWidget):
 		pixmap.fill(QColor(0, 0, 192))
 		self.setWindowIcon(QIcon(pixmap))
 		self.__client = client
+		self.__forceMinimumSize = False
 
-	def update(self):
+	def __updateSize(self):
 		parent = self.parent()
 		if isinstance(parent, StateMdiSubWindow):
 			widget = parent
 		else:
 			widget = self
-		size, hint = widget.size(), widget.minimumSizeHint()
-		if size.width() < hint.width() or\
-		   size.height() < hint.height():
-			widget.resize(hint)
+		if self.__forceMinimumSize:
+			widget.resize(widget.minimumSizeHint())
+		else:
+			size, hint = widget.size(), widget.minimumSizeHint()
+			if size.width() < hint.width() or\
+			   size.height() < hint.height():
+				widget.resize(hint)
+		self.__forceMinimumSize = False
+
+	def _updateSize(self, forceMinimum = False):
+		if forceMinimum:
+			self.__forceMinimumSize = True
+		QTimer.singleShot(0, self.__updateSize)
 
 	# Get a list of MemoryArea instances for the memory
 	# areas covered by this window.
@@ -103,7 +113,7 @@ class State_CPU(StateWindow):
 
 	def setDumpText(self, text):
 		self.label.setText(text)
-		self.update()
+		self._updateSize()
 
 class AbstractDisplayWidget(QWidget):
 	EnumGen.start
@@ -184,8 +194,6 @@ class BitDisplayWidget(AbstractDisplayWidget):
 			if i and i % 8 == 0:
 				y += 2
 
-		self.update()
-
 	def __buttonUpdate(self):
 		for bitNr, pb in self.pbs.items():
 			pressed = bool(pb.isDown())
@@ -226,8 +234,6 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 		self.layout().addWidget(self.line)
 
 		self.line.valueChanged.connect(self.changed)
-
-		self.update()
 
 	def __convertValue(self, textValue):
 		try:
@@ -316,8 +322,6 @@ class RealDisplayWidget(AbstractDisplayWidget):
 		self.layout().addWidget(self.line)
 
 		self.line.valueChanged.connect(self.changed)
-
-		self.update()
 
 	def __convertValue(self, textValue):
 		try:
@@ -479,13 +483,9 @@ class State_Mem(StateWindow):
 			assert(0)
 		self.contentWidget.changed.connect(self.__changed)
 		self.contentWidget.setEnabled(True)
-		self.update()
-		QTimer.singleShot(0, self.__finalizeRebuild)
+		self._updateSize(forceMinimum = True)
 
 		self.configChanged.emit(self)
-
-	def __finalizeRebuild(self):
-		self.resize(self.sizeHint())
 
 	def __changed(self):
 		if self.__changeBlocked or not self.contentWidget:
@@ -536,7 +536,7 @@ class State_Mem(StateWindow):
 					self.contentWidget.setByte(addr - thisStart,
 								   value)
 				addr += 1
-		self.update()
+		self._updateSize()
 		return True
 
 class State_LCD(StateWindow):
@@ -596,7 +596,7 @@ class State_LCD(StateWindow):
 		return self.endianCombo.itemData(index)
 
 	def rebuild(self):
-		self.update()
+		self._updateSize(forceMinimum = True)
 		self.configChanged.emit(self)
 
 	def __makeMemoryArea(self):
@@ -631,7 +631,7 @@ class State_LCD(StateWindow):
 					self.__setByte(addr - thisStart,
 						       value)
 				addr += 1
-		self.update()
+		self._updateSize()
 		return True
 
 	def __setByte(self, offset, value):
@@ -744,7 +744,7 @@ class _State_TimerCounter(StateWindow):
 		self.valueEdit.clear()
 		self.displayedStatus = 0
 		self.__updateStatus()
-		self.update()
+		self._updateSize(forceMinimum = True)
 		self.configChanged.emit(self)
 
 	def __makeMemoryArea(self):
@@ -785,7 +785,7 @@ class _State_TimerCounter(StateWindow):
 		with self.__changeBlocked:
 			self.valueEdit.setText(text)
 
-		self.update()
+		self._updateSize()
 		return True
 
 	def textToValue(self, text):
@@ -827,7 +827,7 @@ class State_Timer(_State_TimerCounter):
 		self.formatCombo.addItem("Hexadecimal", "hex")
 		self.formatCombo.addItem("S5Time", "s5t")
 
-		self.update()
+		self._updateSize(forceMinimum = True)
 
 	def textToValue(self, text):
 		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
@@ -893,7 +893,7 @@ class State_Counter(_State_TimerCounter):
 		self.formatCombo.addItem("BCD (counter)", "bcd")
 		self.formatCombo.addItem("Dual", "bin")
 
-		self.update()
+		self._updateSize(forceMinimum = True)
 
 	def textToValue(self, text):
 		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
