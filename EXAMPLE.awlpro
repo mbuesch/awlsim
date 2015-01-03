@@ -1,7 +1,7 @@
 [AWLSIM_PROJECT]
 file_version=0
 create_date=2012-08-13 00:00:00.000000
-modify_date=2014-12-24 12:40:39.111606
+modify_date=2015-01-03 18:49:12.539038
 
 [CPU]
 awl_0=T1JHQU5JWkFUSU9OX0JMT0NLIE9CIDENCkJFR0lODQoNCglDQUxMCUZDIDENCglDQUxMCUZDIDINCglDQUxMCUZCIDEsIERCIDIgKA0KCQlJTlBVVF9WQVIgOj0gMQ0KCSkNCg0KCUFVRglEQiAxDQoJTAlEQkQgMg0KCVQJTUQgMTYNCg0KRU5EX09SR0FOSVpBVElPTl9CTE9DSw0K
@@ -29,7 +29,7 @@ sym_tab_name_0=c3ltYm9sIHRhYmxl
 [CORE_LINK]
 spawn_local=1
 spawn_local_port_range=4151:8246
-spawn_local_interpreters=cHlweTM7IHB5cHk7ICRDVVJSRU5UOyBweXRob24zOyBweXRob24yOyBweXRob247IHB5
+spawn_local_interpreters=JERFRkFVTFQ=
 connect_host=bG9jYWxob3N0
 connect_port=4151
 connect_timeout_ms=3000

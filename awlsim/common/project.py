@@ -194,11 +194,12 @@ class GuiSettings(object):
 		return self.editorFont
 
 class CoreLinkSettings(object):
+	DEFAULT_INTERPRETERS = "pypy3; pypy; $CURRENT; python3; python2; python; py"
+
 	def __init__(self,
 		     spawnLocalEn=True,
 		     spawnLocalPortRange=range(4151, 4151 + 4095 + 1),
-		     spawnLocalInterpreters="pypy3; pypy; $CURRENT; "\
-					    "python3; python2; python; py",
+		     spawnLocalInterpreters="$DEFAULT",
 		     connectHost="localhost",
 		     connectPort=4151,
 		     connectTimeoutMs=3000):
@@ -227,15 +228,21 @@ class CoreLinkSettings(object):
 	def getSpawnLocalInterpreters(self):
 		return self.spawnLocalInterpreters
 
-	def getSpawnLocalInterpreterList(self, replace=True):
+	def __expandInterpStr(self, interpStr):
 		ret = []
-		for interp in self.getSpawnLocalInterpreters().split(';'):
-			interp = interp.strip()
-			if replace:
-				if interp == "$CURRENT":
-					interp = sys.executable
-			ret.append(interp)
-		return ret
+		for inter in interpStr.split(';'):
+			if inter.strip() == "$DEFAULT":
+				inter = self.__expandInterpStr(self.DEFAULT_INTERPRETERS)
+			elif inter.strip() == "$CURRENT":
+				inter = sys.executable
+			ret.append(inter)
+		return ";".join(ret)
+
+	def getSpawnLocalInterpreterList(self, replace=True):
+		interpStr = self.getSpawnLocalInterpreters()
+		if replace:
+			interpStr = self.__expandInterpStr(interpStr)
+		return [ i.strip() for i in interpStr.split(';') ]
 
 	def setConnectHost(self, connectHost):
 		self.connectHost = connectHost

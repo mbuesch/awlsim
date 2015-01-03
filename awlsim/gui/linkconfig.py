@@ -35,11 +35,14 @@ class _SpawnConfigWidget(QGroupBox):
 
 		toolTip = "A semicolon (;) separated list of Python "\
 			  "interpreters used to run the simulator core.\n"\
+			  "The list is tried first to last element, until "\
+			  "one working interpreter is found.\n\n"\
 			  "The special value $CURRENT is the "\
 			  "interpreter that is used to run the frontend.\n"\
-			  "The list is tried first to last, until one "\
-			  "working interpreter is found.\n\n"\
-			  "---> If you are unsure, do not change the defaults. <---"
+			  "The special value $DEFAULT will expand to this list:\n"\
+			  "    %s\n\n"\
+			  "---> If you are unsure, leave this as $DEFAULT <---" %\
+			  CoreLinkSettings.DEFAULT_INTERPRETERS
 		label = QLabel("Python interpreter list:", self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 0, 0)
