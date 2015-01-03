@@ -39,18 +39,22 @@ class AbstractConfigDialog(QDialog):
 		self.project = project
 		self.centralWidget = centralWidget
 
-		hbox = QHBoxLayout()
+		# Add dialog header label.
+		grid = QGridLayout()
 		label = QLabel(self)
 		label.setPixmap(getIcon(iconName).pixmap(QSize(48, 48)))
-		hbox.addWidget(label)
+		grid.addWidget(label, 0, 0)
 		label = QLabel(title, self)
 		font = label.font()
-		font.setPointSize(max(12, font.pointSize()))
+		font.setPointSize(max(13, font.pointSize()))
 		label.setFont(font)
 		label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-		hbox.addWidget(label)
-		hbox.addStretch()
-		self.layout().addLayout(hbox, 0, 0, 1, 4)
+		grid.addWidget(label, 0, 1)
+		# Try to center the text, regardless of the icon.
+		grid.setColumnStretch(0, 1)
+		grid.setColumnStretch(1, 2)
+		grid.setColumnStretch(2, 1)
+		self.layout().addLayout(grid, 0, 0, 1, 4)
 
 		self.layout().addWidget(centralWidget, 1, 0, 1, 4)
 
