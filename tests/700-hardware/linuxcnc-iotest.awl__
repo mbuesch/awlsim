@@ -1,0 +1,166 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Decide which cycle we are in.
+	L		MW 0
+	SPL	 	def
+	SPA		cyc0
+	SPA		cyc1
+	SPA		fini
+def:	SPA		err
+err:	__ASSERT==	0,		1
+
+
+	// Begin: FIRST CYCLE
+cyc0:	NOP		0
+
+	// Check initial states of all wired inputs.
+	__STWRST
+	U		E 0.0
+	__ASSERT==	__STW VKE,	0
+	__STWRST
+	L		EB 1
+	__ASSERT==	__ACCU 1,	0
+	L		EW 2
+	__ASSERT==	__ACCU 1,	0
+	L		EW 4
+	__ASSERT==	__ACCU 1,	0
+	L		ED 6
+	__ASSERT==	__ACCU 1,	0
+	L		ED 10
+	__ASSERT==	__ACCU 1,	0
+	L		ED 14
+	__ASSERT==	__ACCU 1,	0
+
+	// Check initial states of all wired outputs.
+	__STWRST
+	U		A 0.0
+	__ASSERT==	__STW VKE,	0
+	__STWRST
+	L		AB 1
+	__ASSERT==	__ACCU 1,	0
+	L		AW 2
+	__ASSERT==	__ACCU 1,	0
+	L		AW 4
+	__ASSERT==	__ACCU 1,	0
+	L		AD 6
+	__ASSERT==	__ACCU 1,	0
+	L		AD 10
+	__ASSERT==	__ACCU 1,	0
+	L		AD 14
+	__ASSERT==	__ACCU 1,	0
+
+	// Feed all wired outputs with magic values.
+	// These will be mirrored by the fake-HAL to the inputs.
+	__STWRST
+	SET
+	=		A 0.0
+	__STWRST
+	L		B#16#42
+	T		AB 1
+	L		4242
+	T		AW 2
+	L		-4242
+	T		AW 4
+	L		L#42424242
+	T		AD 6
+	L		L#-42424242
+	T		AD 10
+	L		42.42
+	T		AD 14
+
+	// Check whether outputs have changed.
+	__STWRST
+	U		A 0.0
+	__ASSERT==	__STW VKE,	1
+	__STWRST
+	L		AB 1
+	__ASSERT==	__ACCU 1,	B#16#42
+	L		AW 2
+	__ASSERT==	__ACCU 1,	4242
+	L		AW 4
+	__ASSERT==	__ACCU 1,	-4242
+	L		AD 6
+	__ASSERT==	__ACCU 1,	L#42424242
+	L		AD 10
+	__ASSERT==	__ACCU 1,	L#-42424242
+	L		AD 14
+	__ASSERT==	__ACCU 1,	42.42
+
+	// Check that inputs have not changed, yet.
+	__STWRST
+	U		E 0.0
+	__ASSERT==	__STW VKE,	0
+	__STWRST
+	L		EB 1
+	__ASSERT==	__ACCU 1,	0
+	L		EW 2
+	__ASSERT==	__ACCU 1,	0
+	L		EW 4
+	__ASSERT==	__ACCU 1,	0
+	L		ED 6
+	__ASSERT==	__ACCU 1,	0
+	L		ED 10
+	__ASSERT==	__ACCU 1,	0
+	L		ED 14
+	__ASSERT==	__ACCU 1,	0
+
+	// End: First cycle done
+	SPA		done
+
+
+
+	// Begin: SECOND CYCLE
+cyc1:	NOP		0
+
+	// Check if the magic output values are still present.
+	__STWRST
+	U		A 0.0
+	__ASSERT==	__STW VKE,	1
+	__STWRST
+	L		AB 1
+	__ASSERT==	__ACCU 1,	B#16#42
+	L		AW 2
+	__ASSERT==	__ACCU 1,	4242
+	L		AW 4
+	__ASSERT==	__ACCU 1,	-4242
+	L		AD 6
+	__ASSERT==	__ACCU 1,	L#42424242
+	L		AD 10
+	__ASSERT==	__ACCU 1,	L#-42424242
+	L		AD 14
+	__ASSERT==	__ACCU 1,	42.42
+
+	// Check if the magic output values were mirrored by fake-HAL.
+	__STWRST
+	U		E 0.0
+	__ASSERT==	__STW VKE,	1
+	__STWRST
+	L		EB 1
+	__ASSERT==	__ACCU 1,	B#16#42
+	L		EW 2
+	__ASSERT==	__ACCU 1,	4242
+	L		EW 4
+	__ASSERT==	__ACCU 1,	-4242
+	L		ED 6
+	__ASSERT==	__ACCU 1,	L#42424242
+	L		ED 10
+	__ASSERT==	__ACCU 1,	L#-42424242
+	L		ED 14
+	__ASSERT==	__ACCU 1,	42.42
+
+	// End: Second cycle done
+	SPA		done
+
+
+
+	// Shutdown
+	__ASSERT==	1,		2
+fini:	CALL		SFC 46 // STOP CPU
+	__ASSERT==	1,		2
+
+
+	// Increment cycle counter
+done:	L		MW 0
+	+		1
+	T		MW 0
+END_ORGANIZATION_BLOCK

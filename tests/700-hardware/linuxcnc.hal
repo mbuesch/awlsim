@@ -14,6 +14,13 @@ setp	awlsim.output.u31.6.active		1
 setp	awlsim.output.s32.10.active		1
 setp	awlsim.output.float.14.active		1
 
+net	sig-0	awlsim.output.bit.0.0		<=	awlsim.input.bit.0.0
+net	sig-1	awlsim.output.u8.1		<=	awlsim.input.u8.1
+net	sig-2	awlsim.output.u16.2		<=	awlsim.input.u16.2
+net	sig-3	awlsim.output.s16.4		<=	awlsim.input.s16.4
+net	sig-4	awlsim.output.u31.6		<=	awlsim.input.u31.6
+net	sig-5	awlsim.output.s32.10		<=	awlsim.input.s32.10
+net	sig-6	awlsim.output.float.14		<=	awlsim.input.float.14
 
 
 setp	awlsim.config.ready			1
