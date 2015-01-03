@@ -43,7 +43,10 @@ class StateWindow(QWidget):
 		self.__forceMinimumSize = False
 
 	def __updateSize(self):
-		parent = self.parent()
+		try:
+			parent = self.parent()
+		except RuntimeError:
+			return
 		if isinstance(parent, StateMdiSubWindow):
 			widget = parent
 		else:
@@ -149,6 +152,10 @@ class AbstractDisplayWidget(QWidget):
 		self.width = width
 		self.db = db
 
+	def clear(self):
+		for i in range(self.width // 8):
+			self.setByte(i, 0)
+
 	def get(self):
 		pass
 
@@ -234,6 +241,10 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 		self.layout().addWidget(self.line)
 
 		self.line.valueChanged.connect(self.changed)
+
+	def clear(self):
+		AbstractDisplayWidget.clear(self)
+		self.line.setText("invalid address")
 
 	def __convertValue(self, textValue):
 		try:
@@ -322,6 +333,10 @@ class RealDisplayWidget(AbstractDisplayWidget):
 		self.layout().addWidget(self.line)
 
 		self.line.valueChanged.connect(self.changed)
+
+	def clear(self):
+		AbstractDisplayWidget.clear(self)
+		self.line.setText("invalid address")
 
 	def __convertValue(self, textValue):
 		try:
@@ -525,7 +540,9 @@ class State_Mem(StateWindow):
 
 		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
 			self.contentWidget.setEnabled(False)
+			self.contentWidget.clear()
 			return False
+		self.contentWidget.setEnabled(True)
 
 		with self.__changeBlocked:
 			addr = memArea.start
@@ -765,6 +782,7 @@ class _State_TimerCounter(StateWindow):
 
 		if memArea.flags & (memArea.FLG_ERR_READ | memArea.FLG_ERR_WRITE):
 			self.valueEdit.setEnabled(False)
+			self.valueEdit.clear()
 			return False
 		self.valueEdit.setEnabled(True)
 
