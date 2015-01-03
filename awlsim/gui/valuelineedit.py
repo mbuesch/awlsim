@@ -54,15 +54,23 @@ class ValueLineEdit(QLineEdit):
 
 	def __setColors(self, validInput):
 		pal = self.palette()
-		if self.__editing:
-			pal.setColor(QPalette.Base, QColor("#FFFFC0"))
+		if self.isEnabledTo(None):
+			if self.__editing:
+				pal.setColor(QPalette.Base, QColor("#FFFFC0"))
+			else:
+				pal.setColor(QPalette.Base, Qt.white)
 		else:
-			pal.setColor(QPalette.Base, Qt.white)
+			pal.setColor(QPalette.Base, pal.color(QPalette.Window))
 		if validInput:
 			pal.setColor(QPalette.Text, Qt.black)
 		else:
 			pal.setColor(QPalette.Text, Qt.red)
 		self.setPalette(pal)
+
+	def changeEvent(self, ev):
+		QLineEdit.changeEvent(self, ev)
+		if not self.isEnabledTo(None):
+			self.__setColors(True)
 
 	def __validator(self, inputString, pos):
 		res = self.__validatorCallback(inputString, pos)
