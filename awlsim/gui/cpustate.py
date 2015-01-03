@@ -145,6 +145,7 @@ class AbstractDisplayWidget(QWidget):
 	def __init__(self, stateWindow, addrSpace, addr, width, db, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
+		self.layout().setContentsMargins(QMargins(0, 10, 0, 0))
 
 		self.stateWindow = stateWindow
 		self.addrSpace = addrSpace
@@ -177,8 +178,7 @@ class AbstractDisplayWidget(QWidget):
 
 class BitDisplayWidget(AbstractDisplayWidget):
 	def __init__(self, stateWindow, addrSpace, addr, width, db,
-		     parent=None,
-		     displayPushButtons=True):
+		     parent=None):
 		AbstractDisplayWidget.__init__(self, stateWindow, addrSpace,
 					       addr, width, db, parent)
 
@@ -187,19 +187,28 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		self.prevButtonStates = {}
 		y = 0
 		for i in range(self.width - 1, -1, -1):
+			frame = QFrame(self)
+			frame.setFrameShadow(QFrame.Plain)
+			frame.setFrameShape(QFrame.Box)
+			frame.setLayout(QHBoxLayout())
+			frame.layout().setContentsMargins(QMargins(3, 0, 0, 0))
+
+			pb = QPushButton(self)
+			pb.setMaximumSize(QSize(13, 13))
+			frame.layout().addWidget(pb)
+			self.pbs[i] = pb
+			self.prevButtonStates[i] = False
+			pb.pressed.connect(self.__buttonUpdate)
+			pb.released.connect(self.__buttonUpdate)
+
 			cb = QCheckBox(str(i), self)
-			self.layout().addWidget(cb, y + 0, (self.width - i - 1) % 8)
+			frame.layout().addWidget(cb)
 			self.cbs[i] = cb
 			cb.stateChanged.connect(self.changed)
-			if displayPushButtons:
-				pb = QPushButton("", self)
-				self.layout().addWidget(pb, y + 1, (self.width - i - 1) % 8)
-				self.pbs[i] = pb
-				self.prevButtonStates[i] = False
-				pb.pressed.connect(self.__buttonUpdate)
-				pb.released.connect(self.__buttonUpdate)
+
+			self.layout().addWidget(frame, y, (self.width - i - 1) % 8)
 			if i and i % 8 == 0:
-				y += 2
+				y += 1
 
 	def __buttonUpdate(self):
 		for bitNr, pb in self.pbs.items():
@@ -471,8 +480,7 @@ class State_Mem(StateWindow):
 		if fmt == "cb":
 			self.contentWidget = BitDisplayWidget(self,
 							      self.addrSpace,
-							      addr, width, db, self,
-							      displayPushButtons=True)
+							      addr, width, db, self)
 			self.contentLayout.addWidget(self.contentWidget)
 		elif fmt == "hex":
 			self.contentWidget = HexDisplayWidget(self,
