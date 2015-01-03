@@ -42,6 +42,7 @@ class _Pin(object):
 		self.halName = halName
 		self.halType = halType
 		self.halDir = halDir
+		self.signals = []
 		if self.halType == HAL_FLOAT:
 			self.setHalData(0.0)
 		else:
@@ -59,6 +60,14 @@ class _Pin(object):
 		else:
 			assert(0)
 		self.halData = v
+		if self.halDir in (HAL_OUT, HAL_IO):
+			for signal in self.signals:
+				signal.setHalData(v)
+
+	def _connectSignal(self, signal):
+		if self.halDir == HAL_IN:
+			assert(not self.signals)
+		self.signals.append(signal)
 
 class _Param(_Pin):
 	def __init__(self, halName, halType, halDir):
@@ -72,31 +81,60 @@ class _Param(_Pin):
 		else:
 			self.setHalData(0)
 
+class _Signal(object):
+	def __init__(self, halName):
+		self.halName = halName
+		self.halType = None
+		self.connectedPins = []
+
+	def connectPin(self, pin):
+		assert(pin.halDir in (HAL_IN, HAL_OUT, HAL_IO))
+		assert(pin not in self.connectedPins)
+		if self.halType is None:
+			assert(not self.connectedPins)
+			self.halType = pin.halType
+		assert(self.halType == pin.halType)
+		self.connectedPins.append(pin)
+		pin._connectSignal(self)
+
+	def setHalData(self, v):
+		for pin in self.connectedPins:
+			if pin.halDir in (HAL_IN, HAL_IO):
+				pin.setHalData(v)
+
 class component(object):
 	def __init__(self, name):
 		self.__pins = {}
 		self.__params = {}
+		self.__signals = {}
 		self.__ready = False
 
 	def newpin(self, p, t, d):
 		assert(p not in self.__pins)
 		assert(p not in self.__params)
 		assert(not self.__ready)
+		assert(not self.__signals)
 		self.__pins[p] = _Pin(p, t, d)
 
 	def newparam(self, p, t, d):
 		assert(p not in self.__pins)
 		assert(p not in self.__params)
 		assert(not self.__ready)
+		assert(not self.__signals)
 		self.__params[p] = _Param(p, t, d)
 
+	def __sanitizePinName(self, pinName):
+		assert(pinName.startswith("awlsim."))
+		pinName = pinName[7:]
+		assert(pinName)
+		return pinName
+
 	def __importHalFile(self, filename):
-		try:
-			lines = open(filename, "r").readlines()
-		except IOError:
-			assert(0)
+		assert(not self.__signals)
+		lines = open(filename, "r").readlines()
 		import re
-		setp_re = re.compile(r'^setp\s+([\w\.]+)\s+([\w\.]+)$')
+		setp_re = re.compile(r'^setp\s+([\w\.\-]+)\s+([\w\.\-]+)$')
+		net_re = re.compile(r'^net\s+([\w\.\-]+)\s+<?=?>?\s*([\w\.\-]+)(?:\s+<?=?>?\s*([\w\.\-]+))?$')
 		for line in lines:
 			line = line.strip()
 			if not line:
@@ -106,20 +144,30 @@ class component(object):
 			m = setp_re.match(line)
 			if m: # setp statement
 				halName, value = m.group(1), m.group(2)
-				assert(halName.startswith("awlsim."))
-				halName = halName[7:]
-				assert(halName)
-				try:
-					value = int(value)
-				except ValueError:
-					assert(0)
+				halName = self.__sanitizePinName(halName)
+				value = int(value)
 				try:
 					self.__params[halName].setHalData(value)
 				except KeyError:
 					self.__pins[halName].setHalData(value)
 				continue
-			#TODO add support for net
-
+			m = net_re.match(line)
+			if m: # net statement
+				if len(m.groups()) == 2:
+					sigName, pin0Name, pin1Name =\
+						m.group(1), m.group(2), None
+				else:
+					sigName, pin0Name, pin1Name =\
+						m.group(1), m.group(2), m.group(3)
+				if sigName in self.__signals:
+					sig = self.__signals[sigName]
+				else:
+					sig = _Signal(sigName)
+					self.__signals[sigName] = sig
+				if pin0Name:
+					sig.connectPin(self.__pins[self.__sanitizePinName(pin0Name)])
+				if pin1Name:
+					sig.connectPin(self.__pins[self.__sanitizePinName(pin1Name)])
 			# Ignore other statements
 
 	def ready(self):
@@ -132,10 +180,16 @@ class component(object):
 	def __getitem__(self, k):
 		assert(self.__ready)
 		try:
-			return self.__pins[k].halData
+			pin = self.__pins[k]
+			assert(pin.halDir in (HAL_IN, HAL_IO))
+			return pin.halData
 		except KeyError:
-			return self.__params[k].halData
+			param = self.__params[k]
+			assert(param.halDir in (HAL_RW, HAL_RO))
+			return param.halData
 
 	def __setitem__(self, k, v):
 		assert(self.__ready)
-		self.__pins[k].setHalData(v)
+		pin = self.__pins[k]
+		assert(pin.halDir in (HAL_OUT, HAL_IO))
+		pin.setHalData(v)
