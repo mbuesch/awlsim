@@ -137,22 +137,33 @@ class LinkConfigWidget(QWidget):
 		group.layout().addWidget(self.connRadio)
 		self.layout().addWidget(group, 0, 0, 1, 2)
 
+		self.advanced = QCheckBox("Show advanced &options", self)
+		self.advanced.setToolTip("Show expert simulator core options.\n\n"
+					 "You should not normally need to change any of these.\n"
+					 "Changing them might break the execution "
+					 "of the simulator core.")
+		self.advanced.setCheckState(Qt.Unchecked)
+		self.layout().addWidget(self.advanced, 1, 0, 1, 2)
+
 		self.spawnConfig = _SpawnConfigWidget(self)
-		self.layout().addWidget(self.spawnConfig, 1, 0, 1, 2)
+		self.layout().addWidget(self.spawnConfig, 2, 0, 1, 2)
 
 		self.connConfig = _ConnectConfigWidget(self)
 		self.connConfig.hide()
-		self.layout().addWidget(self.connConfig, 2, 0, 1, 2)
+		self.layout().addWidget(self.connConfig, 3, 0, 1, 2)
 
-		self.layout().setRowStretch(3, 1)
+		self.layout().setRowStretch(4, 1)
 
 		self.askCheckBox = QCheckBox("Always as&k", self)
 		self.askCheckBox.setCheckState(Qt.Checked if
 			self.askWhenConnecting() else Qt.Unchecked)
 		self.askCheckBox.setToolTip("Always open this dialog when "
 					    "trying to connect to a CPU.")
-		self.layout().addWidget(self.askCheckBox, 4, 0, 1, 2)
+		self.layout().addWidget(self.askCheckBox, 5, 0, 1, 2)
 
+		self.__advancedChanged(self.advanced.checkState())
+
+		self.advanced.stateChanged.connect(self.__advancedChanged)
 		self.spawnRadio.toggled.connect(self.__spawnToggled)
 		self.connRadio.toggled.connect(self.__connToggled)
 		self.askCheckBox.stateChanged.connect(self.__askChanged)
@@ -165,6 +176,12 @@ class LinkConfigWidget(QWidget):
 		except TypeError:
 			return True
 
+	def __advancedChanged(self, newState):
+		if newState == Qt.Checked:
+			self.spawnConfig.show()
+		else:
+			self.spawnConfig.hide()
+
 	def __askChanged(self, newState):
 		settings = QSettings()
 		settings.setValue("connect_ask_details",
@@ -172,6 +189,10 @@ class LinkConfigWidget(QWidget):
 
 	def __spawnToggled(self, state):
 		if state:
+			self.advanced.show()
+		else:
+			self.advanced.hide()
+		if state and self.advanced.checkState() == Qt.Checked:
 			self.spawnConfig.show()
 		else:
 			self.spawnConfig.hide()
