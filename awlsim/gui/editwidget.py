@@ -346,12 +346,15 @@ class EditWidget(SourceCodeEdit):
 	focusChanged = Signal(bool)
 
 	# Generate the RUN animation
-	__runAni = ("   x   ",
-		    "  -x-  ", " --x-- ", "---x---",
-		    "--=x=--", "-==x==-", "===x===",
-		    "==*x*==", "=**x**=", "***x***")
-	__runAni = tuple(c.replace("x", " CPU running ") for c in __runAni)
-	__runAni = __runAni + __runAni[1:-1][::-1]
+	__runAniTemplate = ("   x   ",
+			    "  -x-  ", " --x-- ", "---x---",
+			    "--=x=--", "-==x==-", "===x===",
+			    "==*x*==", "=**x**=", "***x***")
+	__runAniTemplate = __runAniTemplate + __runAniTemplate[1:-1][::-1]
+	__runAni = tuple(c.replace("x", " CPU running ")
+			 for c in __runAniTemplate)
+	__runAniNoDown = tuple(c.replace("x", " source NOT DOWNLOADED to CPU ")
+			       for c in __runAniTemplate)
 
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
@@ -753,9 +756,10 @@ class EditWidget(SourceCodeEdit):
 				self.__runState.host,
 				self.__runState.port), ]
 		if self.__runState.state == RunState.STATE_RUN:
-			runText.append(self.__runAni[self.__hdrAniStat])
-			if not self.__sourceMatchesCpuSource:
-				runText.append(" [NOT DOWNLOADED to CPU]")
+			if self.__sourceMatchesCpuSource:
+				runText.append(self.__runAni[self.__hdrAniStat])
+			else:
+				runText.append(self.__runAniNoDown[self.__hdrAniStat])
 		else:
 			runText.append(self.__runStateToText[self.__runState.state])
 
