@@ -195,10 +195,12 @@ class GuiSettings(object):
 
 class CoreLinkSettings(object):
 	DEFAULT_INTERPRETERS = "pypy3; pypy; $CURRENT; python3; python2; python; py"
+	SPAWN_PORT_BASE = 4151 + 32
 
 	def __init__(self,
 		     spawnLocalEn=True,
-		     spawnLocalPortRange=range(4151, 4151 + 4095 + 1),
+		     spawnLocalPortRange=range(SPAWN_PORT_BASE,
+					       SPAWN_PORT_BASE + 4095 + 1),
 		     spawnLocalInterpreters="$DEFAULT",
 		     connectHost="localhost",
 		     connectPort=4151,
