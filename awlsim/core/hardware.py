@@ -131,6 +131,10 @@ class AbstractHardwareInterface(object):
 	paramDescs = []
 	# The standard parameters.
 	__standardParamDescs = [
+		HwParamDesc_bool("removeOnReset",
+				 defaultValue = True,
+				 description = "If set to 'True' the module will "
+					       "be removed on CPU reset."),
 		HwParamDesc_int("inputAddressBase",
 				defaultValue = 0, minValue = 0,
 				description = "Start address in input address range"),

@@ -113,7 +113,7 @@ class AwlSim(object):
 	def reset(self):
 		try:
 			self.cpu.reset()
-			self.unregisterAllHardware()
+			self.unregisterAllHardware(inCpuReset = True)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
@@ -188,10 +188,17 @@ class AwlSim(object):
 		if self.__profileLevel >= 1:
 			self.__profileStop()
 
-	def unregisterAllHardware(self):
+	def unregisterAllHardware(self, inCpuReset = False):
+		newHwList = []
 		for hw in self.__registeredHardware:
+			if not hw.getParam("removeOnReset") and inCpuReset:
+				# This module has "removeOnReset" set to False
+				# and we are in a CPU reset.
+				# Do shutdown the module, but keep it in the
+				# list of registered modules.
+				newHwList.append(hw)
 			hw.shutdown()
-		self.__registeredHardware = []
+		self.__registeredHardware = newHwList
 
 	def registerHardware(self, hwClassInst):
 		"""Register a new hardware interface."""
