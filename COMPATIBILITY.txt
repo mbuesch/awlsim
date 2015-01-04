@@ -17,8 +17,8 @@ bug that should be reported.
   Data declarations and initializations (in DBs and FB/FC interfaces), however,
   must end with a semicolon.
 
-- Changing a symbol name in Awlsim does change the AWL/STL semantics of the
-  code that uses this symbol.
+- Changing a symbol's address or data type in Awlsim does change the AWL/STL
+  semantics of the code that uses this symbol.
   This is due to source text being the first class program object in Awlsim.
   (In STEP 7 first class program objects are the compiled blocks.)
   Awlsim compiles and reinterpretes the symbol information of the plain source
