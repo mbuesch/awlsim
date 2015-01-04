@@ -5,6 +5,7 @@ loadrt	stepgen				step_type=0,0,0
 loadrt	charge_pump
 loadrt	watchdog			num_inputs=1
 loadrt	and2				count=1
+loadrt	edge				count=1
 loadusr -W hal_manualtoolchange
 
 # Base thread
@@ -19,6 +20,7 @@ addf	charge-pump			servo-thread
 addf	watchdog.process		servo-thread
 addf	watchdog.set-timeouts		servo-thread
 addf	and2.0				servo-thread
+addf	edge.0				servo-thread
 
 # Spindle control
 net	spindle-cw			<= motion.spindle-forward
@@ -33,7 +35,11 @@ setp	charge-pump.enable		1
 net	heartbeat			<= charge-pump.out-4
 
 # In-heartbeat watchdog
-setp	watchdog.enable-in		1
+setp	edge.0.both			0
+setp	edge.0.in-edge			1 # falling
+setp	edge.0.out-width-ns		500000000
+net	emc-enable			=> edge.0.in
+net	watchdog-en			edge.0.out-invert		=> watchdog.enable-in
 setp	watchdog.timeout-0		0.5
 net	awlsim-heartbeat		=> watchdog.input-0
 net	watchdog-ok			<= watchdog.ok-out
