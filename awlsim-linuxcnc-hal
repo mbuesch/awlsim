@@ -121,6 +121,7 @@ def loadHardwareModule(server, hal,
 	# Load the hardware interface layer
 	parameters = {
 		"hal"			: hal,
+		"removeOnReset"		: "0",
 		"inputAddressBase"	: str(inputBase),
 		"outputAddressBase"	: str(outputBase),
 		"inputSize"		: str(inputSize),
