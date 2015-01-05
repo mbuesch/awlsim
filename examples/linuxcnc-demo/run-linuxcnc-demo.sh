@@ -36,6 +36,13 @@ rootdir="$basedir/../.."
 
 [ -x "$rootdir/awlsim-linuxcnc-hal" ] || die "awlsim-linuxcnc-hal not found"
 
+cleanup()
+{
+	rm -f "/tmp/linuxcnc-demo.ngc"
+}
+
+cleanup
+trap cleanup EXIT
 cp "$basedir/linuxcnc-demo.ngc" /tmp/ || die "Failed to copy linuxcnc-demo.ngc"
 
 # Start LinuxCNC
