@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 
 import sys
 import os
+import time
 import getopt
 
 from awlsim.common import *
@@ -336,7 +337,29 @@ def main():
 			       handleExceptionServerside = True,
 			       handleMaintenanceServerside = True)
 		server.setRunState(server.STATE_RUN)
-		server.run()
+		lastExceptionTime = None
+		while True:
+			try:
+				server.run()
+			except (AwlParserError, AwlSimError) as e:
+				now = time.time()
+				if lastExceptionTime is not None and\
+				   now - lastExceptionTime < 1.0:
+					# The last fault is less than one second
+					# in the past. Raise a fatal exception.
+					printError("Fatal fault detected")
+					raise e
+				else:
+					lastExceptionTime = now
+					# Non-fatal fault.
+					# Ensure the CPU is stopped and enter
+					# the run loop again.
+					printError(e.getReport())
+					printError("CPU stopped due to fault")
+					server.setRunState(server.STATE_STOP)
+					continue
+			# Run loop exited normally. Bail out.
+			break
 	except LinuxCNC_NotRunning as e:
 		result = 1
 	except KeyboardInterrupt as e:
