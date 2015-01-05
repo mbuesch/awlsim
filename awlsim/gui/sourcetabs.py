@@ -230,7 +230,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 	def reset(self):
 		SourceTabWidget.reset(self)
 		self.onlineDiagEnabled = False
-		self.addEditWidget()
+		index, editWidget = self.addEditWidget()
+		source = editWidget.getSource()
+		source.name = "Main source"
+		self.updateTabTexts()
 
 	def clear(self):
 		for editWidget in self.allTabWidgets():
@@ -460,7 +463,10 @@ class SymSourceTabWidget(SourceTabWidget):
 
 	def reset(self):
 		SourceTabWidget.reset(self)
-		self.addSymTable()
+		index, symTabView = self.addSymTable()
+		source = symTabView.getSource()
+		source.name = "Main table"
+		self.updateTabTexts()
 
 	def setSources(self, symTabSources):
 		self.clear()
