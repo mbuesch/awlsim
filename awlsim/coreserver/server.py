@@ -250,6 +250,9 @@ class AwlSimServer(object):
 			     commandMask = commandMask)
 		self.run()
 
+	def getRunState(self):
+		return self.__state
+
 	def setRunState(self, runstate):
 		if self.__state == runstate:
 			# Already in that state.
