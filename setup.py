@@ -285,16 +285,24 @@ try:
 except ValueError:
 	pass
 
-freezeExecutables = [ "awlsim-cli",
-		      "awlsim-gui",
-		      "awlsim-server",
-		      "awlsim-symtab",
-		      "awlsim/coreserver/server.py", ]
+freezeExecutables = [ ("awlsim-cli", None),
+		      ("awlsim-gui", None),
+		      ("awlsim-server", None),
+		      ("awlsim-symtab", None),
+		      ("awlsim/coreserver/server.py", "awlsim-server-module"), ]
 if py2exe:
-	extraKeywords["console"] = freezeExecutables
+	extraKeywords["console"] = [ s for s, e in freezeExecutables ]
 if cx_Freeze:
-	extraKeywords["executables"] = [ Executable(e)
-					 for e in freezeExecutables ]
+	executables = []
+	for script, exe in freezeExecutables:
+		if exe:
+			if os.name.lower() in ("nt", "ce"):
+				exe += ".exe"
+			executables.append(Executable(script = script,
+						      targetName = exe))
+		else:
+			executables.append(Executable(script = script))
+	extraKeywords["executables"] = executables
 	extraKeywords["options"] = {
 			"build_exe"     : {
 				"packages"      : [ "awlsimhw_debug",
