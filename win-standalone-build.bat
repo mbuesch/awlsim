@@ -91,7 +91,6 @@ if ERRORLEVEL 1 goto error_wrapper
 
 
 echo === Creating the distribution archive
-del %zipfile% 2>NUL
 7z a -tzip %zipfile% %distdir%
 if ERRORLEVEL 1 goto error_zip
 
