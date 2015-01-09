@@ -135,6 +135,17 @@ BEGIN
 	__ASSERT==	__ACCU 1,	DW#16#12345678
 
 
+	// Test indirect DB-open access
+	AUF		DB 1
+	AUF		DI 1
+	L		2
+	T		LW 0
+	AUF		DB [LW 0]
+	__ASSERT==	DBNO,		2
+	AUF		DI [LW 0]
+	__ASSERT==	DINO,		2
+
+
 	// Indirect counter access
 	L		10
 	T		LW 0

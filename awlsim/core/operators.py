@@ -456,8 +456,9 @@ class AwlIndirectOp(AwlOperator):
 	EXT_AREA_T		= 0x01FF000000	# Timer
 	EXT_AREA_Z		= 0x02FF000000	# Counter
 	EXT_AREA_BLKREF_DB	= 0x03FF000000	# DB block reference
-	EXT_AREA_BLKREF_FB	= 0x04FF000000	# FB block reference
-	EXT_AREA_BLKREF_FC	= 0x05FF000000	# FC block reference
+	EXT_AREA_BLKREF_DI	= 0x04FF000000	# DI block reference
+	EXT_AREA_BLKREF_FB	= 0x05FF000000	# FB block reference
+	EXT_AREA_BLKREF_FC	= 0x06FF000000	# FC block reference
 
 	# Map for converting area code to operator type for fetch operations
 	area2optype_fetch = {
@@ -472,6 +473,7 @@ class AwlIndirectOp(AwlOperator):
 		EXT_AREA_T		: AwlOperator.MEM_T,
 		EXT_AREA_Z		: AwlOperator.MEM_Z,
 		EXT_AREA_BLKREF_DB	: AwlOperator.BLKREF_DB,
+		EXT_AREA_BLKREF_DI	: AwlOperator.BLKREF_DI,
 		EXT_AREA_BLKREF_FB	: AwlOperator.BLKREF_FB,
 		EXT_AREA_BLKREF_FC	: AwlOperator.BLKREF_FC,
 	}

@@ -289,6 +289,7 @@ class AwlOpTranslator(object):
 				if area in (AwlIndirectOp.EXT_AREA_T,
 					    AwlIndirectOp.EXT_AREA_Z,
 					    AwlIndirectOp.EXT_AREA_BLKREF_DB,
+					    AwlIndirectOp.EXT_AREA_BLKREF_DI,
 					    AwlIndirectOp.EXT_AREA_BLKREF_FC,
 					    AwlIndirectOp.EXT_AREA_BLKREF_FB):
 					expectedOffsetOpWidth = 16
