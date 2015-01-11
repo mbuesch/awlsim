@@ -1,0 +1,141 @@
+ORGANIZATION_BLOCK OB 1
+	VAR_TEMP
+		TMPDUMMY	: INT;
+		DTTEMP		: DATE_AND_TIME;
+	END_VAR
+BEGIN
+
+	// Check forwarding of compound data type to FC
+	// (This will create implicit DB pointers)
+	AUF		DB 42
+	LAR1		P##DTTEMP
+	L		DW#16#12345678
+	T		D [AR1, P#0.0]
+	L		DW#16#87654321
+	T		DBD 4
+	L		DW#16#AABBCCDD
+	T		D [AR1, P#4.0]
+	L		DW#16#DDCCBBAA
+	T		DBD 8
+	CALL		FC 1 (
+		DTTEMP	:= #DTTEMP,
+		DTDB	:= DB42.DTVAR,
+	)
+
+	// Check forwarding of compound data type from FB to FC
+	CALL		FB 10, DB 10 (
+		DUMMYIN	:= 42,
+		DTVAR	:= DB42.DTVAR,
+	)
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
+
+
+FUNCTION FC 1 : VOID
+	VAR_INPUT
+		DTTEMP		: DATE_AND_TIME;
+		DTDB		: DATE_AND_TIME;
+	END_VAR
+	VAR_TEMP
+		DBNR		: INT;
+	END_VAR
+BEGIN
+	// Load #DTTEMP into AR1
+	L		P##DTTEMP
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	// Check the DB-pointer pointed to by #DTTEMP
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	0 // DB-nr
+	T		#DBNR
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	DW#16#87000010
+	LAR2
+	AUF		DB [#DBNR]
+	// Check the actual values
+	L		D [AR2, P#0.0]
+	__ASSERT==	__ACCU 1,	DW#16#12345678
+	L		D [AR2, P#4.0]
+	__ASSERT==	__ACCU 1,	DW#16#AABBCCDD
+
+
+	// Load #DTDB into AR1
+	L		P##DTDB
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	// Check the DB-pointer pointed to by #DTDB
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	42 // DB-nr
+	T		#DBNR
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	DW#16#84000020
+	LAR2
+	AUF		DB [#DBNR]
+	// Check the actual values
+	L		D [AR2, P#0.0]
+	__ASSERT==	__ACCU 1,	DW#16#87654321
+	L		D [AR2, P#4.0]
+	__ASSERT==	__ACCU 1,	DW#16#DDCCBBAA
+END_FUNCTION
+
+
+FUNCTION_BLOCK FB 10
+	VAR_INPUT
+		DUMMYIN		: INT;
+		DTVAR		: DATE_AND_TIME;
+	END_VAR
+BEGIN
+	CALL FC 11 (
+		DTIN	:= #DTVAR,
+	)
+END_FUNCTION_BLOCK
+
+
+FUNCTION FC 11 : VOID
+	VAR_INPUT
+		DTIN		: DATE_AND_TIME;
+	END_VAR
+	VAR_TEMP
+		DBNR		: INT;
+	END_VAR
+BEGIN
+	// Load #DTDB into AR1
+	L		P##DTIN
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	// Check the DB-pointer pointed to by #DTIN
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10 // DB-nr
+	T		#DBNR
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	DW#16#84000010
+	LAR2
+	AUF		DB [#DBNR]
+	// Check the actual values
+	L		D [AR2, P#0.0]
+	__ASSERT==	__ACCU 1,	DW#16#87654321
+	L		D [AR2, P#4.0]
+	__ASSERT==	__ACCU 1,	DW#16#DDCCBBAA
+END_FUNCTION
+
+
+DATA_BLOCK DB 10
+	FB 10
+BEGIN
+END_DATA_BLOCK
+
+
+DATA_BLOCK DB 42
+	STRUCT
+		DUMMY1		: INT;
+		DUMMY2		: INT;
+		DTVAR		: DATE_AND_TIME;
+		DUMMY3		: INT;
+	END_STRUCT;
+BEGIN
+END_DATA_BLOCK
