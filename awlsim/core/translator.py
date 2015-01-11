@@ -325,6 +325,10 @@ class AwlSymResolver(object):
 			# Store the access-width in the operator.
 			oper.width = field.dataType.width
 
+		# If this is a compound data type access, mark
+		# the operand as such.
+		oper.compound = field.dataType.compound
+
 		if block.interface.hasInstanceDB or\
 		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			# This is an FB or a TEMP access. Translate the operator
@@ -333,6 +337,9 @@ class AwlSymResolver(object):
 								      oper.value.indices,
 								      pointer)
 			newOper.setInsn(oper.insn)
+			# If this is a compound data type access, mark
+			# the operand as such.
+			newOper.compound = field.dataType.compound
 			return newOper
 		else:
 			# This is an FC. Accesses to local symbols
@@ -399,10 +406,14 @@ class AwlSymResolver(object):
 		offset.dbNumber = oper.value.dbNumber
 
 		# Construct an absolute operator
-		return AwlOperator(type = AwlOperator.MEM_DB,
+		oper = AwlOperator(type = AwlOperator.MEM_DB,
 				   width = width,
 				   value = offset,
 				   insn = oper.insn)
+		# If this is a compound data type access, mark
+		# the operand as such.
+		oper.compound = field.dataType.compound
+		return oper
 
 	# Resolve all symbols in the given code block
 	def resolveSymbols_block(self, block):

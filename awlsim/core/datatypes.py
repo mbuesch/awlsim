@@ -135,6 +135,13 @@ class AwlDataType(object):
 		TYPE_REAL,
 	)
 
+	# Table of compound types
+	compoundTypes = (
+		TYPE_DT,
+		TYPE_ARRAY,
+		TYPE_UDT_X,
+	)
+
 	# Convert a list of array dimensions into a number of elements.
 	@classmethod
 	def arrayDimensionsToNrElements(cls, dimensions):
@@ -205,6 +212,11 @@ class AwlDataType(object):
 		self.index = index		# The Index number, if any. May be None
 		self.children = children	# The children AwlDataTypes, if ARRAY.
 		self.arrayDimensions = arrayDimensions # The ARRAY's dimensions
+
+	# Returns True, if this is a compound data type.
+	@property
+	def compound(self):
+		return self.type in self.compoundTypes
 
 	# Convert array indices into a one dimensional index for this array.
 	# 'indices' is a list of index integers as written in the AWL operator

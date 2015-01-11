@@ -171,6 +171,11 @@ class AwlOperator(DynAttrs):
 		# Interface index number.
 		# May be set by the symbol resolver.
 		"interfaceIndex"	: None,
+
+		# Compound data type flag.
+		# Set to true for accesses > 32 bit or
+		# arrays/structs or array/struct elements.
+		"compound"		: False,
 	}
 
 	def __init__(self, type, width, value, insn=None):

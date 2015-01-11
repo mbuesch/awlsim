@@ -143,9 +143,45 @@ class CallStackElem(object):
 			self.__outboundParams.append(param)
 		return oper
 
+	# Create a DB-pointer to the r-value in the caller's L-stack (VL).
+	def __trans_dbpointerInVL(self, param, rvalueOp):
+		# Allocate space for the DB-ptr in the caller-L-stack
+		lalloc = self.cpu.callStackTop.lalloc
+		loffset = lalloc.alloc(48) # 48 bits
+		# Create and store the the DB-ptr to the allocated space.
+		storeOper = AwlOperator(AwlOperator.MEM_L,
+					16,
+					loffset)
+		if rvalueOp.type == AwlOperator.MEM_DI:
+			dbNumber = self.cpu.diRegister.index
+		else:
+			dbNumber = rvalueOp.value.dbNumber
+		self.cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
+		storeOper.value = loffset + AwlOffset(2)
+		storeOper.width = 32
+		area = AwlIndirectOp.optype2area[rvalueOp.type]
+		if area == AwlIndirectOp.AREA_L:
+			area = AwlIndirectOp.AREA_VL
+		elif area == AwlIndirectOp.AREA_VL:
+			raise AwlSimError("Cannot forward VL-parameter "
+					  "to called FC")
+		elif area == AwlIndirectOp.AREA_DI:
+			area = AwlIndirectOp.AREA_DB
+		self.cpu.store(storeOper,
+			       area | rvalueOp.value.toPointerValue())
+		# Return the operator for the DB pointer.
+		return AwlOperator(AwlOperator.MEM_VL,
+				   48,
+				   loffset,
+				   rvalueOp.insn)
+
 	# Translate L-stack access r-value.
 	def __trans_MEM_L(self, param, rvalueOp):
 		# r-value is an L-stack memory access.
+		if rvalueOp.compound:
+			# rvalue is a compound data type.
+			# Create a DB-pointer to it in VL.
+			return self.__trans_dbpointerInVL(param, rvalueOp)
 		# Translate it to a VL-stack memory access.
 		return AwlOperator(rvalueOp.MEM_VL,
 				   rvalueOp.width,
@@ -154,9 +190,14 @@ class CallStackElem(object):
 
 	# Translate DB access r-value.
 	def __trans_MEM_DB(self, param, rvalueOp, copyToVL=False):
-		# A parameter is forwarded from an FB to an FC.
+		# A (fully qualified) DB variable is passed to an FC.
 		if rvalueOp.value.dbNumber is not None:
 			# This is a fully qualified DB access.
+			if rvalueOp.compound:
+				# rvalue is a compound data type.
+				# Create a DB-pointer to it in VL.
+				return self.__trans_dbpointerInVL(param, rvalueOp)
+			# Basic data type.
 			self.cpu.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
 						     AwlOffset(rvalueOp.value.dbNumber),
 						     rvalueOp.insn))
@@ -170,6 +211,17 @@ class CallStackElem(object):
 				   rvalueOp.width,
 				   offset,
 				   rvalueOp.insn)
+
+	# Translate DI access r-value.
+	def __trans_MEM_DI(self, param, rvalueOp):
+		# A parameter is forwarded from an FB to an FC
+		if rvalueOp.compound:
+			# rvalue is a compound data type.
+			# Create a DB-pointer to it in VL.
+			return self.__trans_dbpointerInVL(param, rvalueOp)
+		# Basic data type.
+		# Copy the value to VL.
+		return self.__trans_copyToVL(param, rvalueOp)
 
 	# Translate named local variable r-value.
 	def __trans_NAMED_LOCAL(self, param, rvalueOp):
@@ -202,7 +254,7 @@ class CallStackElem(object):
 		AwlOperator.MEM_L		: __trans_MEM_L,
 		AwlOperator.MEM_VL		: __trans_copyToVL,
 		AwlOperator.MEM_DB		: __trans_MEM_DB,
-		AwlOperator.MEM_DI		: __trans_copyToVL,
+		AwlOperator.MEM_DI		: __trans_MEM_DI,
 		AwlOperator.MEM_T		: __trans_direct,
 		AwlOperator.MEM_Z		: __trans_direct,
 		AwlOperator.MEM_PA		: __trans_direct,

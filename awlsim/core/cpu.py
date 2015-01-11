@@ -903,6 +903,45 @@ class S7CPU(object): #+cdef
 		if len(cse.parenStack) > 7:
 			raise AwlSimError("Parenthesis stack overflow")
 
+	def __translateFCNamedLocalOper(self, operator, store):
+		# Translate an 'operator' to a named local FC parameter.
+		# The returned operator is an operator to the actual data.
+		interfOp = self.callStackTop.interfRefs[operator.interfaceIndex].resolve(store)
+		if operator.compound:
+			# This is a named local variable with compound data type.
+			# The operator (interfOp) points to a DB-pointer in VL.
+			# First fetch the DB pointer values from VL.
+			dbPtrOp = interfOp.dup()
+			dbPtrOp.width = 16
+			dbNr = self.fetch(dbPtrOp)
+			dbPtrOp.value += AwlOffset(2)
+			dbPtrOp.width = 32
+			pointer = self.fetch(dbPtrOp)
+			# Open the DB pointed to by the DB-ptr.
+			# (This is ok, if dbNr is 0, too)
+			self.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
+						 AwlOffset(dbNr),
+						 operator.insn))
+			# Make an operator from the DB-ptr.
+			try:
+				opType = AwlIndirectOp.area2optype_fetch[
+						pointer & AwlIndirectOp.AREA_MASK]
+			except KeyError:
+				raise AwlSimError("Corrupt DB pointer in compound "
+					"data type FC variable detected "
+					"(invalid area).", insn = operator.insn)
+			finalOp = AwlOperator(opType, operator.width,
+					      AwlOffset.fromPointerValue(pointer),
+					      operator.insn)
+		else:
+			# Not a compound data type.
+			# The translated operand already points to the variable.
+			finalOp = interfOp.dup()
+			finalOp.width = operator.width
+		# Add possible sub-offsets (array, struct) to the offset.
+		finalOp.value += operator.value.subOffset
+		return finalOp
+
 	# Fetch a range in the 'output' memory area.
 	# 'byteOffset' is the byte offset into the output area.
 	# 'byteCount' is the number if bytes to fetch.
@@ -1129,13 +1168,8 @@ class S7CPU(object): #+cdef
 
 	def fetchNAMED_LOCAL(self, operator, enforceWidth):
 		# load from an FC interface field.
-		# First get the translated rvalue-operand that was used in the call.
-		translatedOp = self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False)
-		# Add possible sub-offsets (array, struct) to the offset.
-		finalOp = translatedOp.dup()
-		finalOp.value += operator.value.subOffset
-		finalOp.width = operator.width
-		return self.fetch(finalOp, enforceWidth)
+		return self.fetch(self.__translateFCNamedLocalOper(operator, False),
+				  enforceWidth)
 
 	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
 		assert(operator.value.subOffset.byteOffset == 0)
@@ -1330,13 +1364,8 @@ class S7CPU(object): #+cdef
 
 	def storeNAMED_LOCAL(self, operator, value, enforceWidth):
 		# store to an FC interface field.
-		# First get the translated rvalue-operand that was used in the call.
-		translatedOp = self.callStackTop.interfRefs[operator.interfaceIndex].resolve(True)
-		# Add possible sub-offsets (array, struct) to the offset.
-		finalOp = translatedOp.dup()
-		finalOp.value += operator.value.subOffset
-		finalOp.width = operator.width
-		self.store(finalOp, value, enforceWidth)
+		self.store(self.__translateFCNamedLocalOper(operator, True),
+			   value, enforceWidth)
 
 	def storeNAMED_DBVAR(self, operator, value, enforceWidth):
 		# All legit accesses will have been translated to absolute addressing already

@@ -265,9 +265,13 @@ class BlockInterface(object):
 					   width = 32,
 					   value = (AwlIndirectOp.AREA_L |\
 						    ptrValue))
-		return AwlOperator(type=AwlOperator.MEM_L,
+		oper = AwlOperator(type=AwlOperator.MEM_L,
 				   width=structField.bitSize,
 				   value=structField.offset.dup())
+		# If this is a compound data type access, mark
+		# the operand as such.
+		oper.compound = structField.dataType.compound
+		return oper
 
 	# Get an AwlOperator that addresses the specified interface field identified
 	# by "name" and "indices".
@@ -356,9 +360,13 @@ class BlockInterface(object):
 					   value = offset)
 
 		# "call by value"
-		return AwlOperator(type=AwlOperator.MEM_DI,
+		oper = AwlOperator(type=AwlOperator.MEM_DI,
 				   width=structField.bitSize,
 				   value=structField.offset.dup())
+		# If this is a compound data type access, mark
+		# the operand as such.
+		oper.compound = structField.dataType.compound
+		return oper
 
 	# Get a stable index number for an IN, OUT or INOUT field.
 	# (This method is slow)
