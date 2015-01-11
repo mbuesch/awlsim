@@ -42,13 +42,36 @@ class Lib__IEC__FC9_EQ_DT(AwlLibFC):
 			BlockInterfaceField(name = "RET_VAL",
 					    dataType = AwlDataType.makeByName("BOOL")),
 		),
+		BlockInterfaceField.FTYPE_TEMP	: (
+			BlockInterfaceField(name = "DBNR",
+					    dataType = AwlDataType.makeByName("INT")),
+		),
 	}
 
 	awlCodeCopyright = "Copyright (c) 2014 Michael Buesch <m@bues.ch>"
 	awlCodeLicense = "BSD-2-clause"
 	awlCode = """
+	// Load a pointer to #DT1 into AR1 and open the DB
 	LAR1	P##DT1
+	L	W [AR1, P#0.0]
+	T	#DBNR
+	AUF	DB [#DBNR]
+	L	D [AR1, P#2.0]
+	LAR1
+
+	// Load a pointer to #DT2 into AR2 and open the DB as DI
 	LAR2	P##DT2
+	L	W [AR2, P#0.0]
+	T	#DBNR
+	AUF	DI [#DBNR]
+	L	D [AR2, P#2.0]
+	// If #DT2 points to DB (area 84) change it to DI (area 85).
+	// This also works, if #DT2 points to VL (area 87).
+	// Other areas are not possible.
+	OD	DW#16#85000000
+	LAR2
+
+	// Compare #DT1 with #DT2
 	L	D [AR1, P#0.0]
 	L	D [AR2, P#0.0]
 	==D
@@ -58,6 +81,7 @@ class Lib__IEC__FC9_EQ_DT(AwlLibFC):
 	==D
 	)
 	=	#RET_VAL
+
 	SET
 	SAVE
 	BE
