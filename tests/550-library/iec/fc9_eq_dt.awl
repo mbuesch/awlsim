@@ -12,6 +12,9 @@ END_DATA_BLOCK
 
 
 FUNCTION FC 1 : VOID
+VAR_TEMP
+	DBNR	: INT;
+END_VAR
 BEGIN
 	AUF		DB 1
 	LAR1		P#DBX 0.0
@@ -36,6 +39,12 @@ BEGIN
 	RLDA
 	T		D [AR1,P#12.0]
 
+	// Clobber DB and DI registers
+	L		0
+	T		#DBNR
+	AUF		DB [#DBNR]
+	AUF		DI [#DBNR]
+
 	// Compare DB1.DT1 to DB1.DT2
 	// Should be equal
 	CALL "EQ_DT" (
@@ -45,6 +54,12 @@ BEGIN
 	)
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
+
+	// Clobber DB and DI registers
+	L		0
+	T		#DBNR
+	AUF		DB [#DBNR]
+	AUF		DI [#DBNR]
 
 	// Compare DB1.DT1 to DB1.DT3
 	// Should be not equal
@@ -58,6 +73,7 @@ BEGIN
 
 	// Decrement the test counter.
 	// Stop test, if it reaches zero.
+	AUF		DB 1
 	U		DBX 0.0
 	ZR		Z 0
 	U		Z 0
