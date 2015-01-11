@@ -449,7 +449,8 @@ class StaticCodeBlock(CodeBlock):
 		for ftype in (BlockInterfaceField.FTYPE_IN,
 			      BlockInterfaceField.FTYPE_OUT,
 			      BlockInterfaceField.FTYPE_INOUT,
-			      BlockInterfaceField.FTYPE_STAT):
+			      BlockInterfaceField.FTYPE_STAT,
+			      BlockInterfaceField.FTYPE_TEMP):
 			try:
 				fields = self.interfaceFields[ftype]
 			except KeyError:
@@ -463,6 +464,8 @@ class StaticCodeBlock(CodeBlock):
 					self.interface.addField_INOUT(field)
 				elif ftype == BlockInterfaceField.FTYPE_STAT:
 					self.interface.addField_STAT(field)
+				elif ftype == BlockInterfaceField.FTYPE_TEMP:
+					self.interface.addField_TEMP(field)
 				else:
 					assert(0)
 
