@@ -497,7 +497,7 @@ class AwlParser(object):
 					t.finishCurToken()
 					t.addToken(c)
 					cont(); continue
-				if (self.__inAnyHeaderOrGlobal() and\
+				if ((self.__inAnyHeaderOrGlobal() or self.__inVariableSection()) and\
 				    c in ('=', ':', '..', '{', '}')) or\
 				   c in (',', '[', ']') or\
 				   (c == '=' and len(t.tokens) == 1 and not t.curToken):

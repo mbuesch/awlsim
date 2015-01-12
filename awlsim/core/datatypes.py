@@ -29,6 +29,8 @@ from awlsim.core.util import *
 from awlsim.core.timers import *
 from awlsim.core.offset import *
 
+import datetime
+
 
 class AwlDataType(object):
 	# Data type IDs
@@ -277,6 +279,10 @@ class AwlDataType(object):
 			if typeId == self.TYPE_WORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)
+			elif typeId == self.TYPE_DT:
+				value = self.tryParseImmediate_DT(tokens)
+			elif typeId == self.TYPE_TOD:
+				value = self.tryParseImmediate_TOD(tokens)
 		elif len(tokens) == 2:
 			if typeId == self.TYPE_TIMER:
 				if tokens[0].upper() == "T":
@@ -330,14 +336,11 @@ class AwlDataType(object):
 			elif typeId == self.TYPE_TIME:
 				value = self.tryParseImmediate_TIME(
 						tokens[0])
-			elif typeId == self.TYPE_DATE:
-				pass#TODO
-			elif typeId == self.TYPE_DT:
-				pass#TODO
-			elif typeId == self.TYPE_TOD:
-				pass#TODO
 			elif typeId == self.TYPE_CHAR:
 				value = self.tryParseImmediate_CHAR(
+						tokens[0])
+			elif typeId == self.TYPE_DATE:
+				value = self.tryParseImmediate_DATE(
 						tokens[0])
 		if value is None:
 			raise AwlSimError("Immediate value '%s' does "
@@ -540,27 +543,79 @@ class AwlDataType(object):
 		return msec
 
 	@classmethod
-	def tryParseImmediate_TOD(cls, token):
-		token = token.upper()
+	def tryParseImmediate_TOD(cls, tokens):
+		token = tokens[0].upper()
 		if not token.startswith("TOD#") and\
 		   not token.startswith("TIME_OF_DAY#"):
 			return None
 		raise AwlSimError("TIME_OF_DAY# not implemented, yet")#TODO
 
 	@classmethod
-	def tryParseImmediate_Date(cls, token):
+	def tryParseImmediate_DATE(cls, token):
 		token = token.upper()
 		if not token.startswith("D#"):
 			return None
 		raise AwlSimError("D# not implemented, yet")#TODO
 
+	dateAndTimeWeekdayMap = {
+		0	: 2,	# monday
+		1	: 3,	# tuesday
+		2	: 4,	# wednesday
+		3	: 5,	# thursday
+		4	: 6,	# friday
+		5	: 7,	# saturday
+		6	: 1,	# sunday
+	}
+
 	@classmethod
-	def tryParseImmediate_DT(cls, token):
-		token = token.upper()
+	def tryParseImmediate_DT(cls, tokens):
+		token = tokens[0].upper()
 		if not token.startswith("DT#") and\
 		   not token.startswith("DATE_AND_TIME#"):
 			return None
-		raise AwlSimError("DATE_AND_TIME# not implemented, yet")#TODO
+		token = "".join(tokens)
+		token = token[token.find("#") + 1 : ] # Remove prefix
+		try:
+			idx = token.rfind("-")
+			date = token[ : idx]
+			time = token[idx + 1 : ]
+			date = date.split("-")
+			time = time.split(":")
+			if len(date) != 3 or len(time) != 3:
+				raise ValueError
+			year, month, day = int(date[0]), int(date[1]), int(date[2])
+			weekday = datetime.date(year, month, day).weekday()
+			weekday = cls.dateAndTimeWeekdayMap[weekday]
+			if year >= 100:
+				year -= 1900
+				if year > 99:
+					year -= 100
+			if year < 0 or year > 99 or\
+			   month < 1 or month > 12 or\
+			   day < 1 or day > 31:
+				raise ValueError
+			year = (year % 10) | (((year // 10) % 10) << 4)
+			month = (month % 10) | (((month // 10) % 10) << 4)
+			day = (day % 10) | (((day // 10) % 10) << 4)
+			hour, minute, fsecond = int(time[0]), int(time[1]), float(time[2])
+			second = int(fsecond)
+			msec = int(fsecond * 1000) - (second * 1000)
+			if hour < 0 or hour > 23 or\
+			   minute < 0 or minute > 59 or\
+			   second < 0 or fsecond > 59 or\
+			   msec < 0 or msec > 999:
+				raise ValueError
+			hour = (hour % 10) | (((hour // 10) % 10) << 4)
+			minute = (minute % 10) | (((minute // 10) % 10) << 4)
+			second = (second % 10) | (((second // 10) % 10) << 4)
+			msec = (msec % 10) | (((msec // 10) % 10) << 4) |\
+			       (((msec // 100) % 10) << 8)
+			data = ByteArray( (year, month, day, hour, minute, second,
+					   (msec >> 4) & 0xFF,
+					   ((msec & 0xF) << 4) | weekday) )
+		except ValueError:
+			raise AwlSimError("Invalid DATE_AND_TIME immediate")
+		return data
 
 	@classmethod
 	def __parsePtrOffset(cls, string):

@@ -678,16 +678,6 @@ class S7CPU(object): #+cdef
 				raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
 					"CPU runtime timeout")
 
-	__dateAndTimeWeekdayMap = {
-		0	: 2,	# monday
-		1	: 3,	# tuesday
-		2	: 4,	# wednesday
-		3	: 5,	# thursday
-		4	: 6,	# friday
-		5	: 7,	# saturday
-		6	: 1,	# sunday
-	}
-
 	# Make a DATE_AND_TIME for the current wall-time and
 	# store it in byteArray, which is a list of GenericByte objects.
 	# If byteArray is smaller than 8 bytes, an IndexError is raised.
@@ -704,7 +694,7 @@ class S7CPU(object): #+cdef
 		byteArray[offset + 5] = (second % 10) | (((second // 10) % 10) << 4)
 		byteArray[offset + 6] = ((msec // 10) % 10) | (((msec // 100) % 10) << 4)
 		byteArray[offset + 7] = ((msec % 10) << 4) |\
-					self.__dateAndTimeWeekdayMap[dt.weekday()]
+					AwlDataType.dateAndTimeWeekdayMap[dt.weekday()]
 
 	def __runTimeCheck(self):
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:

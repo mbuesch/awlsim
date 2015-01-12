@@ -477,15 +477,10 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator(AwlOperator.IMM_TOD, 32,
 					    immediate), 1)
-		# Date immediate
-		immediate = AwlDataType.tryParseImmediate_Date(rawOps[0])
+		# DATE immediate
+		immediate = AwlDataType.tryParseImmediate_DATE(rawOps[0])
 		if immediate is not None:
 			return OpDescriptor(AwlOperator(AwlOperator.IMM_DATE, 16,
-					    immediate), 1)
-		# DATE_AND_TIME immediate
-		immediate = AwlDataType.tryParseImmediate_DT(rawOps[0])
-		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperator.IMM_DT, 64,
 					    immediate), 1)
 		# Pointer immediate
 		immediate, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)

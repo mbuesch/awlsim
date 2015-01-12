@@ -6,6 +6,7 @@ S7 compatibility:
 - Implement parsing of attributes
 - Implement POINTER and DB-pointer immediates
 - Implement ANY pointer
+- Implement DATE/TOD immediates
 
 GUI:
 - Save window status (open MDI windows, positions, etc)

@@ -1,0 +1,55 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Test DB1.DT1 initial values
+	AUF DB 1
+	LAR1		P#DBX 0.0
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#91
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#02
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	B#16#03
+	L		B [AR1, P#3.0]
+	__ASSERT==	__ACCU 1,	B#16#04
+	L		B [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	B#16#05
+	L		B [AR1, P#5.0]
+	__ASSERT==	__ACCU 1,	B#16#06
+	L		B [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	B#16#78
+	L		B [AR1, P#7.0]
+	__ASSERT==	__ACCU 1,	B#16#91
+
+	// Test DB1.DT2 initial values
+	AUF DB 1
+	LAR1		P#DBX 8.0
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#11
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	B#16#12
+	L		B [AR1, P#3.0]
+	__ASSERT==	__ACCU 1,	B#16#13
+	L		B [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	B#16#14
+	L		B [AR1, P#5.0]
+	__ASSERT==	__ACCU 1,	B#16#15
+	L		B [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	B#16#16
+	L		B [AR1, P#7.0]
+	__ASSERT==	__ACCU 1,	B#16#06
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
+
+
+DATA_BLOCK DB 1
+STRUCT
+	DT1	: DATE_AND_TIME := DT#1990-1-1-0:0:0.0;
+	DT2	: DATE_AND_TIME := DT#2010-11-12-13:14:15.16;
+END_STRUCT;
+BEGIN
+	DT1	:= DATE_AND_TIME#1991-2-3-4:5:6.789;
+END_DATA_BLOCK
