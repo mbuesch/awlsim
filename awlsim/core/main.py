@@ -23,7 +23,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.project import *
-from awlsim.common.dynamic_import import *
 
 from awlsim.core.util import *
 from awlsim.core.parser import *
@@ -221,24 +220,7 @@ class AwlSim(object):
 		'name' is the name of the module to load (without 'awlsimhw_' prefix).
 		Returns the HardwareInterface class."""
 
-		# Construct the python module name
-		moduleName = "awlsimhw_%s" % name
-
-		# Try to import the module
-		try:
-			mod = importModule(moduleName)
-		except ImportError as e:
-			raise AwlSimError("Failed to import hardware interface "
-				"module '%s' (import name '%s'): %s" %\
-				(name, moduleName, str(e)))
-		# Fetch and instantiate the interface object
-		hwClassName = "HardwareInterface"
-		hwClass = getattr(mod, hwClassName, None)
-		if not hwClass:
-			raise AwlSimError("Hardware module '%s' (import name '%s') "
-				"does not have a '%s' class." %\
-				(name, moduleName, hwClassName))
-		return hwClass
+		return HwModLoader.loadModule(name).getInterface()
 
 	def __peripheralReadCallback(self, userData, width, offset):
 		# The CPU issued a direct peripheral read access.

@@ -2,7 +2,7 @@
 #
 # AWL simulator - Abstract hardware interface
 #
-# Copyright 2013 Michael Buesch <m@bues.ch>
+# Copyright 2013-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
+
+from awlsim.common.dynamic_import import *
 
 from awlsim.core.util import AwlSimError
 
@@ -294,3 +296,65 @@ class AbstractHardwareInterface(object):
 			return self.__parameters[name]
 		except KeyError:
 			return getattr(desc, "defaultValue", None)
+
+class HwModLoader(object):
+	"""Awlsim hardware module loader."""
+
+	# Tuple of built-in awlsim hardware modules.
+	builtinHwModules = (
+		"debug",
+		"dummy",
+		"linuxcnc",
+		"pyprofibus",
+	)
+
+	def __init__(self, name, importName, mod):
+		self.name = name
+		self.importName = importName
+		self.mod = mod
+
+	@classmethod
+	def loadModule(cls, name):
+		"""Load a hardware module."""
+
+		# Module name sanity check
+		try:
+			if not name.strip():
+				raise ValueError
+			for c in name:
+				if not c.isalnum() and c != "_":
+					raise ValueError
+		except ValueError:
+			raise AwlSimError("Hardware module name '%s' "
+				"is invalid." % name)
+
+		# Create import name (add prefix)
+		importName = name
+		prefix = "awlsimhw_"
+		if importName.lower().startswith(prefix) and\
+		   not importName.startswith(prefix):
+			raise AwlSimError("Hardware module name: '%s' "
+				"prefix of '%s' must be all-lower-case." %\
+				(prefix, name))
+		if not importName.startswith(prefix):
+			importName = prefix + importName
+
+		# Try to import the module
+		try:
+			mod = importModule(importName)
+		except ImportError as e:
+			raise AwlSimError("Failed to import hardware interface "
+				"module '%s' (import name '%s'): %s" %\
+				(name, importName, str(e)))
+		return cls(name, importName, mod)
+
+	def getInterface(self):
+		"""Get the HardwareInterface class."""
+
+		hwClassName = "HardwareInterface"
+		hwClass = getattr(self.mod, hwClassName, None)
+		if not hwClass:
+			raise AwlSimError("Hardware module '%s' (import name '%s') "
+				"does not have a '%s' class." %\
+				(self.name, self.importName, hwClassName))
+		return hwClass
