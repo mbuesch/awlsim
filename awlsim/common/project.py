@@ -2,7 +2,7 @@
 #
 # AWL simulator - project
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -158,6 +158,37 @@ class SymTabSource(GenericSource):
 		return SymTabSource(self.name, self.filepath,
 				    self.sourceBytes[:])
 
+class HwmodDescriptor(object):
+	"""Hardware module descriptor."""
+
+	def __init__(self, moduleName, parameters = None):
+		self.setModuleName(moduleName)
+		self.setParameters(parameters)
+
+	def dup(self):
+		return HwmodDescriptor(self.getModuleName(),
+				       dict(self.getParameters()))
+
+	def setModuleName(self, moduleName):
+		self.moduleName = moduleName
+
+	def getModuleName(self):
+		return self.moduleName
+
+	def setParameters(self, parameters):
+		if not parameters:
+			parameters = {}
+		self.parameters = parameters
+
+	def addParameter(self, name, value):
+		self.setParameterValue(name, value)
+
+	def setParameterValue(self, name, value):
+		self.parameters[name] = value
+
+	def getParameters(self):
+		return self.parameters
+
 class GuiSettings(object):
 	def __init__(self,
 		     editorAutoIndentEn=True,
@@ -264,6 +295,22 @@ class CoreLinkSettings(object):
 	def getConnectTimeoutMs(self):
 		return self.connectTimeoutMs
 
+class HwmodSettings(object):
+	def __init__(self,
+		     loadedModules=None):
+		self.setLoadedModules(loadedModules)
+
+	def setLoadedModules(self, loadedModules):
+		if not loadedModules:
+			loadedModules = []
+		self.loadedModules = loadedModules
+
+	def addLoadedModule(self, modDesc):
+		self.loadedModules.append(modDesc)
+
+	def getLoadedModules(self):
+		return self.loadedModules
+
 class Project(object):
 	DATETIME_FMT	= "%Y-%m-%d %H:%M:%S.%f"
 
@@ -277,7 +324,8 @@ class Project(object):
 		     obTempPresetsEn=False,
 		     extInsnsEn=False,
 		     guiSettings=None,
-		     coreLinkSettings=None):
+		     coreLinkSettings=None,
+		     hwmodSettings=None):
 		self.setProjectFile(projectFile)
 		self.setCreateDate(createDate)
 		self.setModifyDate(modifyDate)
@@ -295,6 +343,9 @@ class Project(object):
 		if not coreLinkSettings:
 			coreLinkSettings = CoreLinkSettings()
 		self.setCoreLinkSettings(coreLinkSettings)
+		if not hwmodSettings:
+			hwmodSettings = HwmodSettings()
+		self.setHwmodSettings(hwmodSettings)
 
 	def setProjectFile(self, filename):
 		self.projectFile = filename
@@ -368,6 +419,12 @@ class Project(object):
 	def getCoreLinkSettings(self):
 		return self.coreLinkSettings
 
+	def setHwmodSettings(self, hwmodSettings):
+		self.hwmodSettings = hwmodSettings
+
+	def getHwmodSettings(self):
+		return self.hwmodSettings
+
 	@classmethod
 	def dataIsProject(cls, data):
 		magic = b"[AWLSIM_PROJECT]"
@@ -400,6 +457,7 @@ class Project(object):
 		extInsnsEn = False
 		guiSettings = GuiSettings()
 		linkSettings = CoreLinkSettings()
+		hwmodSettings = HwmodSettings()
 		try:
 			p = _ConfigParser()
 			p.readfp(StringIO(text), projectFile)
@@ -443,9 +501,8 @@ class Project(object):
 				name = None
 				if p.has_option("CPU", nameOption):
 					try:
-						name = base64.b64decode(p.get("CPU", nameOption))
-						name = name.decode("utf-8", "ignore")
-					except (TypeError, binascii.Error) as e:
+						name = base64ToStr(p.get("CPU", nameOption))
+					except ValueError as e:
 						pass
 				if name is None:
 					name = "AWL/STL #%d" % i
@@ -482,9 +539,8 @@ class Project(object):
 				name = None
 				if p.has_option("SYMBOLS", nameOption):
 					try:
-						name = base64.b64decode(p.get("SYMBOLS", nameOption))
-						name = name.decode("utf-8", "ignore")
-					except (TypeError, binascii.Error) as e:
+						name = base64ToStr(p.get("SYMBOLS", nameOption))
+					except ValueError as e:
 						pass
 				if name is None:
 					name = "Symbol table #%d" % i
@@ -499,9 +555,8 @@ class Project(object):
 				if not p.has_option("LIBS", nameOption):
 					break
 				try:
-					libName = base64.b64decode(p.get("LIBS", nameOption))
-					libName = libName.decode("utf-8", "ignore")
-				except (TypeError, binascii.Error) as e:
+					libName = base64ToStr(p.get("LIBS", nameOption))
+				except ValueError as e:
 					continue
 				block = p.get("LIBS", blockOption).upper().strip()
 				effBlock = p.getint("LIBS", effOption)
@@ -548,18 +603,16 @@ class Project(object):
 			if p.has_option("CORE_LINK", "spawn_local_interpreters"):
 				interp = p.get("CORE_LINK", "spawn_local_interpreters")
 				try:
-					interp = base64.b64decode(interp)
-					interp = interp.decode("utf-8")
-				except (TypeError, binascii.Error, UnicodeError) as e:
+					interp = base64ToStr(interp)
+				except ValueError as e:
 					raise AwlSimError("Project file: "
 						"Invalid interpreter list")
 				linkSettings.setSpawnLocalInterpreters(interp)
 			if p.has_option("CORE_LINK", "connect_host"):
 				host = p.get("CORE_LINK", "connect_host")
 				try:
-					host = base64.b64decode(host)
-					host = host.decode("utf-8")
-				except (TypeError, binascii.Error, UnicodeError) as e:
+					host = base64ToStr(host)
+				except ValueError as e:
 					raise AwlSimError("Project file: "
 						"Invalid host name")
 				linkSettings.setConnectHost(host)
@@ -569,6 +622,33 @@ class Project(object):
 			if p.has_option("CORE_LINK", "connect_timeout_ms"):
 				timeout = p.getint("CORE_LINK", "connect_timeout_ms")
 				linkSettings.setConnectTimeoutMs(timeout)
+
+			# HWMODS section
+			for i in range(0xFFFF):
+				nameOption = "loaded_mod_%d" % i
+				if not p.has_option("HWMODS", nameOption):
+					break
+				modName = base64ToStr(p.get("HWMODS", nameOption))
+				modDesc = HwmodDescriptor(modName)
+				for j in range(0x3FF):
+					paramOption = "loaded_mod_%d_p%d" % (i, j)
+					if not p.has_option("HWMODS", paramOption):
+						break
+					param = p.get("HWMODS", paramOption)
+					try:
+						param = param.split(":")
+						if len(param) != 2:
+							raise ValueError
+						paramName = base64ToStr(param[0])
+						if param[1].strip():
+							paramValue = base64ToStr(param[1])
+						else:
+							paramValue = None
+					except ValueError:
+						raise AwlSimError("Project file: "
+							"Invalid hw mod parameter")
+					modDesc.addParameter(paramName, paramValue)
+				hwmodSettings.addLoadedModule(modDesc)
 
 			# GUI section
 			if p.has_option("GUI", "editor_autoindent"):
@@ -596,7 +676,8 @@ class Project(object):
 			   obTempPresetsEn = obTempPresetsEn,
 			   extInsnsEn = extInsnsEn,
 			   guiSettings = guiSettings,
-			   coreLinkSettings = linkSettings)
+			   coreLinkSettings = linkSettings,
+			   hwmodSettings = hwmodSettings)
 
 	@classmethod
 	def fromFile(cls, filename):
@@ -663,8 +744,7 @@ class Project(object):
 			lines.append("awl_file_%d=%s" % (i, path))
 		for i, awlSrc in enumerate(embeddedSources):
 			lines.append("awl_%d=%s" % (i, awlSrc.toBase64()))
-			name = awlSrc.name.encode("utf-8", "ignore")
-			name = base64.b64encode(name).decode("ascii")
+			name = strToBase64(awlSrc.name, ignoreErrors=True)
 			lines.append("awl_name_%d=%s" % (i, name))
 		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
@@ -681,15 +761,13 @@ class Project(object):
 			lines.append("sym_tab_file_%d=%s" % (i, path))
 		for i, symSrc in enumerate(embeddedSources):
 			lines.append("sym_tab_%d=%s" % (i, symSrc.toBase64()))
-			name = symSrc.name.encode("utf-8", "ignore")
-			name = base64.b64encode(name).decode("ascii")
+			name = strToBase64(symSrc.name, ignoreErrors=True)
 			lines.append("sym_tab_name_%d=%s" % (i, name))
 		lines.append("")
 
 		lines.append("[LIBS]")
 		for i, libSel in enumerate(self.libSelections):
-			libName = libSel.getLibName().encode("utf-8", "ignore")
-			libName = base64.b64encode(libName).decode("ascii")
+			libName = strToBase64(libSel.getLibName(), ignoreErrors=True)
 			lines.append("lib_name_%d=%s" % (i, libName))
 			lines.append("lib_block_%d=%s %d" % (
 				i, libSel.getEntryTypeStr(),
@@ -706,17 +784,39 @@ class Project(object):
 			     linkSettings.getSpawnLocalPortRange()[0],
 			     linkSettings.getSpawnLocalPortRange()[-1]))
 		interp = linkSettings.getSpawnLocalInterpreters()
-		interp = interp.encode("utf-8", "ignore")
-		interp = base64.b64encode(interp).decode("ascii")
+		interp = strToBase64(interp, ignoreErrors=True)
 		lines.append("spawn_local_interpreters=%s" % interp)
 		host = linkSettings.getConnectHost()
-		host = host.encode("utf-8", "ignore")
-		host = base64.b64encode(host).decode("ascii")
+		host = strToBase64(host, ignoreErrors=True)
 		lines.append("connect_host=%s" % host)
 		lines.append("connect_port=%d" %\
 			     int(linkSettings.getConnectPort()))
 		lines.append("connect_timeout_ms=%d" %\
 			     int(linkSettings.getConnectTimeoutMs()))
+		lines.append("")
+
+		lines.append("[HWMODS]")
+		hwSettings = self.getHwmodSettings()
+		loadedMods = sorted(hwSettings.getLoadedModules(),
+				    key = lambda modDesc: modDesc.getModuleName())
+		for modNr, modDesc in enumerate(loadedMods):
+			modName = strToBase64(modDesc.getModuleName(),
+					      ignoreErrors=True)
+			lines.append("loaded_mod_%d=%s" % (modNr, modName))
+			modParams = sorted(list(modDesc.getParameters().items()),
+					   key = lambda p: p[0])
+			for paramNr, param in enumerate(modParams):
+				paramName, paramValue = param
+				paramName = strToBase64(paramName,
+							ignoreErrors=True)
+				if paramValue is None:
+					paramValue = ""
+				else:
+					paramValue = strToBase64(paramValue,
+								 ignoreErrors=True)
+				lines.append("loaded_mod_%d_p%d=%s:%s" %\
+					(modNr, paramNr,
+					 paramName, paramValue))
 		lines.append("")
 
 		lines.append("[GUI]")
