@@ -34,6 +34,8 @@ class HwParamDesc(object):
 		pass
 
 	typeStr = "<NoType>"
+	userEditable = True
+	defaultValue = None
 
 	def __init__(self, name, description="", mandatory=False):
 		self.name = name
@@ -47,6 +49,7 @@ class HwParamDesc_pyobject(HwParamDesc):
 	"""Generic object parameter descriptor."""
 
 	typeStr = "PyObject"
+	userEditable = False
 
 	def __init__(self, name, pyTypeDesc, description="", mandatory=False):
 		HwParamDesc.__init__(self, name, description, mandatory)
@@ -109,6 +112,7 @@ class HwParamDesc_bool(HwParamDesc):
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
+		value = value.strip()
 		if value.lower() in ("true", "yes", "on"):
 			return True
 		if value.lower() in ("false", "no", "off"):
@@ -151,6 +155,14 @@ class AbstractHardwareInterface(object):
 		descs = cls.__standardParamDescs[:]
 		descs.extend(cls.paramDescs)
 		return descs
+
+	@classmethod
+	def getParamDesc(cls, paramName):
+		"""Get one parameter descriptor."""
+		for desc in cls.getParamDescs():
+			if desc.name == paramName:
+				return desc
+		return None
 
 	@classmethod
 	def getModuleInfo(cls):
