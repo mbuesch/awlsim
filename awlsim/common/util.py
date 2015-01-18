@@ -28,6 +28,8 @@ from awlsim.common.exceptions import *
 import sys
 import os
 import random
+import base64
+import binascii
 
 
 class Logging(object):
@@ -170,3 +172,29 @@ def CALL_NOEX(_callable, *args, **kwargs):
 	except Exception as e:
 		pass
 	return None
+
+def strToBase64(string, ignoreErrors=False):
+	"""Convert a string to a base64 encoded ascii string.
+	Throws ValueError on errors, if ignoreErrors is False."""
+
+	try:
+		b = string.encode("utf-8", "ignore" if ignoreErrors else "strict")
+		return base64.b64encode(b).decode("ascii")
+	except (UnicodeError, binascii.Error, TypeError) as e:
+		if ignoreErrors:
+			return ""
+		raise ValueError
+
+def base64ToStr(b64String, ignoreErrors=False):
+	"""Convert a base64 encoded ascii string to utf-8 string.
+	Throws ValueError on errors, if ignoreErrors is False."""
+
+	try:
+		b = b64String.encode("ascii",
+			"ignore" if ignoreErrors else "strict")
+		return base64.b64decode(b).decode("utf-8",
+			"ignore" if ignoreErrors else "strict")
+	except (UnicodeError, binascii.Error, TypeError) as e:
+		if ignoreErrors:
+			return ""
+		raise ValueError
