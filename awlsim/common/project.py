@@ -186,6 +186,9 @@ class HwmodDescriptor(object):
 	def setParameterValue(self, name, value):
 		self.parameters[name] = value
 
+	def removeParameter(self, name):
+		self.parameters.pop(name, None)
+
 	def getParameters(self):
 		return self.parameters
 
