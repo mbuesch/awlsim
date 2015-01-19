@@ -3,7 +3,7 @@
 #
 # AWL simulator - LinuxCNC HAL module
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -64,6 +64,11 @@ def createHalPins(hal,
 		LinuxCNC_HAL.HAL_IN, LinuxCNC_HAL.HAL_OUT, \
 		LinuxCNC_HAL.HAL_RO, LinuxCNC_HAL.HAL_RW
 
+	printInfo("Mapped AWL/STL input area:  P#E %d.0 BYTE %d" %\
+		  (inputBase, inputSize))
+	printInfo("Mapped AWL/STL output area:  P#A %d.0 BYTE %d" %\
+		  (outputBase, outputSize))
+
 	# Create the input pins
 	for i in range(inputBase, inputBase + inputSize):
 		offset = i - inputBase
@@ -116,20 +121,6 @@ def createHalPins(hal,
 
 	hal.newparam("config.ready", HAL_BIT, HAL_RW)
 
-def loadHardwareModule(server, hal,
-		       inputBase, outputBase,
-		       inputSize, outputSize):
-	# Load the hardware interface layer
-	parameters = {
-		"hal"			: hal,
-		"removeOnReset"		: "0",
-		"inputAddressBase"	: str(inputBase),
-		"outputAddressBase"	: str(outputBase),
-		"inputSize"		: str(inputSize),
-		"outputSize"		: str(outputSize),
-	}
-	server.loadHardwareModule("linuxcnc", parameters)
-
 def usage():
 	print("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
 	print("")
@@ -137,13 +128,13 @@ def usage():
 	print("")
 	print("Options:")
 	print(" -i|--input-size SIZE    The input area size, in bytes.")
-	print("                         Default: 32")
+	print("                         Overrides input-size from project file.")
 	print(" -I|--input-base BASE    The AWL/STL input address base.")
-	print("                         Default: 0")
+	print("                         Overrides input-base from project file.")
 	print(" -o|--output-size SIZE   The output area size, in bytes.")
-	print("                         Default: 32")
+	print("                         Overrides output-size from project file.")
 	print(" -O|--output-base BASE   The AWL/STL output address base.")
-	print("                         Default: 0")
+	print("                         Overrides output-base from project file.")
 	print("")
 	print(" -l|--listen HOST:PORT   Set the address and port where the")
 	print("                         awlsim core server should listen on.")
@@ -184,10 +175,10 @@ def main():
 	global opt_maxRuntime
 	global opt_extInsns
 
-	opt_inputSize = 32
-	opt_inputBase = 0
-	opt_outputSize = 32
-	opt_outputBase = 0
+	opt_inputSize = None
+	opt_inputBase = None
+	opt_outputSize = None
+	opt_outputBase = None
 	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
 	opt_loglevel = Logging.LOG_INFO
 	opt_nice = None
@@ -297,21 +288,72 @@ def main():
 
 		# Create the LinuxCNC HAL component.
 		hal = LinuxCNC_HAL.component("awlsim")
-		createHalPins(hal,
-			      opt_inputBase, opt_inputSize,
-			      opt_outputBase, opt_outputSize)
 
 		# Read the project.
 		project = Project.fromProjectOrRawAwlFile(projectFile)
+		hwmodSettings = project.getHwmodSettings()
+		# Get the 'linuxcnc' hardware module descriptor.
+		linuxcncHwmodDesc = None
+		for modDesc in hwmodSettings.getLoadedModules():
+			if modDesc.getModuleName() == "linuxcnc":
+				if linuxcncHwmodDesc:
+					printError("ERROR: More than one 'linuxcnc' hardware "
+						   "module found in the project file. Only "
+						   "one 'linuxcnc' module is supported.")
+				linuxcncHwmodDesc = modDesc
+		if not linuxcncHwmodDesc:
+			printWarning("Warning: Hardware module 'linuxcnc' not "
+				     "included in project file. "
+				     "Loading module nevertheless.")
+			modDesc = HwmodDescriptor(moduleName = "linuxcnc",
+						  parameters = {
+				"hal"			: None,
+				"removeOnReset"		: "0",
+				"inputAddressBase"	: "0",
+				"outputAddressBase"	: "0",
+				"inputSize"		: "32",
+				"outputSize"		: "32",
+			})
+			hwmodSettings.addLoadedModule(modDesc)
+			linuxcncHwmodDesc = modDesc
+		# Override hardware module parameters, if required.
+		linuxcncHwmodDesc.setParameterValue("hal", hal)
+		linuxcncHwmodDesc.setParameterValue("removeOnReset", "0")
+		if opt_inputBase is not None:
+			linuxcncHwmodDesc.setParameterValue("inputAddressBase",
+							    str(opt_inputBase))
+		if opt_inputSize is not None:
+			linuxcncHwmodDesc.setParameterValue("inputSize",
+							    str(opt_inputSize))
+		if opt_outputBase is not None:
+			linuxcncHwmodDesc.setParameterValue("outputAddressBase",
+							    str(opt_outputBase))
+		if opt_outputSize is not None:
+			linuxcncHwmodDesc.setParameterValue("outputSize",
+							    str(opt_outputSize))
+
+		# Create the HAL pins, as requested.
+		try:
+			modDesc = linuxcncHwmodDesc
+			inputBase = int(modDesc.getParameter("inputAddressBase"))
+			inputSize = int(modDesc.getParameter("inputSize"))
+			outputBase = int(modDesc.getParameter("outputAddressBase"))
+			outputSize = int(modDesc.getParameter("outputSize"))
+		except ValueError:
+			printError("ERROR: 'linuxcnc' module hardware parameter "
+				   "value error.")
+			return 1
+		createHalPins(hal = hal,
+			      inputBase = inputBase,
+			      inputSize = inputSize,
+			      outputBase = outputBase,
+			      outputSize = outputSize)
 
 		# Configure the core and the core server.
 		server = AwlSimServer()
-		loadHardwareModule(server = server,
-				   hal = hal,
-				   inputBase = opt_inputBase,
-				   outputBase = opt_outputBase,
-				   inputSize = opt_inputSize,
-				   outputSize = opt_outputSize)
+		for modDesc in hwmodSettings.getLoadedModules():
+			server.loadHardwareModule(modDesc.getModuleName(),
+						  modDesc.getParameters())
 		server.cpuEnableObTempPresets(project.getObTempPresetsEn())
 		server.cpuEnableExtendedInsns(project.getExtInsnsEn() or\
 					      opt_extInsns)

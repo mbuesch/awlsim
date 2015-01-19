@@ -7,24 +7,28 @@
 # --- Load the awlsim HAL userspace module ---
 #
 # Parameters:
+#  --listen HOST:PORT	: The HOST and PORT the core server should listen on.
+#			  Defaults to localhost:4151
+#			  You can connect with awlsim-gui to this port
+#			  to watch, debug or change the AWL program.
+#
 #  --input-base BASE	: S7 input base-address byte-offset to use for the HAL module.
 #			  If 0 is used, address-mapping will start at I 0.0
 #			  If 1 is used, address-mapping will start at I 1.0
 #			  etc...
+#			  This overrides the value from the project file.
 #
 #  --output-base BASE	: S7 output base-address byte-offset to use for the HAL module.
 #			  If 0 is used, address-mapping will start at Q 0.0
 #			  If 1 is used, address-mapping will start at Q 1.0
 #			  etc...
+#			  This overrides the value from the project file.
 #
 #  --input-size SIZE	: Size of the input area mapping, in bytes.
+#			  This overrides the value from the project file.
 #
 #  --output-size SIZE	: Size of the output area mapping, in bytes.
-#
-#  --listen HOST:PORT	: The HOST and PORT the core server should listen on.
-#			  Defaults to localhost:4151
-#			  You can connect with awlsim-gui to this port
-#			  to watch, debug or change the AWL program.
+#			  This overrides the value from the project file.
 #
 #  --loglevel LVL	: Change the log level.
 #
@@ -33,7 +37,7 @@
 #
 #  Last argument	: The Awlsim AWL/STL project to load and run.
 #
-loadusr -Wn awlsim awlsim-linuxcnc-hal --listen localhost:4151 --input-base 0 --input-size 16 --output-base 0 --output-size 8 linuxcnc-demo.awlpro
+loadusr -Wn awlsim awlsim-linuxcnc-hal --listen localhost:4151 linuxcnc-demo.awlpro
 
 
 # --- Enable the used input pins ---
