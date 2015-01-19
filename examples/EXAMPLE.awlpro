@@ -1,7 +1,7 @@
 [AWLSIM_PROJECT]
 file_version=0
 create_date=2012-08-13 00:00:00.000000
-modify_date=2015-01-07 21:20:47.365396
+modify_date=2015-01-19 18:24:26.248599
 
 [CPU]
 awl_0=T1JHQU5JWkFUSU9OX0JMT0NLIE9CIDENCkJFR0lODQoJDQoJQ0FMTAlGQyAxDQoJQ0FMTAlGQyAyDQoJQ0FMTAlGQiAxLCBEQiAyICgNCgkJSU5QVVRfVkFSIDo9IDENCgkpDQoJDQoJQVVGCURCIDENCglMCURCRCAyDQoJVAlNRCAxNg0KCQ0KRU5EX09SR0FOSVpBVElPTl9CTE9DSw0K
@@ -33,6 +33,12 @@ spawn_local_interpreters=JERFRkFVTFQ=
 connect_host=bG9jYWxob3N0
 connect_port=4151
 connect_timeout_ms=3000
+
+[HWMODS]
+loaded_mod_0=ZHVtbXk=
+loaded_mod_0_p0=aW5wdXRBZGRyZXNzQmFzZQ==:MA==
+loaded_mod_0_p1=b3V0cHV0QWRkcmVzc0Jhc2U=:MA==
+loaded_mod_0_p2=cmVtb3ZlT25SZXNldA==:VHJ1ZQ==
 
 [GUI]
 editor_autoindent=1
