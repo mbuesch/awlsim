@@ -302,9 +302,13 @@ def main():
 						   "one 'linuxcnc' module is supported.")
 				linuxcncHwmodDesc = modDesc
 		if not linuxcncHwmodDesc:
-			printWarning("Warning: Hardware module 'linuxcnc' not "
-				     "included in project file. "
-				     "Loading module nevertheless.")
+			if opt_inputBase is None and\
+			   opt_outputBase is None and\
+			   opt_inputSize is None and\
+			   opt_outputSize is None:
+				printWarning("Warning: Hardware module 'linuxcnc' not "
+					     "included in project file. "
+					     "Loading module nevertheless.")
 			modDesc = HwmodDescriptor(moduleName = "linuxcnc",
 						  parameters = {
 				"hal"			: None,
