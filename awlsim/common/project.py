@@ -192,6 +192,9 @@ class HwmodDescriptor(object):
 	def getParameters(self):
 		return self.parameters
 
+	def getParameter(self, name):
+		return self.parameters.get(name)
+
 class GuiSettings(object):
 	def __init__(self,
 		     editorAutoIndentEn=True,
