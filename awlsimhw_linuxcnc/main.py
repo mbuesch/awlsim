@@ -159,9 +159,11 @@ class HardwareInterface(AbstractHardwareInterface):
 				     mandatory = True),
 		HwParamDesc_int("inputSize",
 				description = "Input area size",
+				defaultValue = 32,
 				mandatory = True),
 		HwParamDesc_int("outputSize",
 				description = "Output area size",
+				defaultValue = 32,
 				mandatory = True),
 	]
 
