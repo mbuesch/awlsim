@@ -536,7 +536,9 @@ class CpuWidget(QWidget):
 			client.enableOBTempPresets(project.getObTempPresetsEn())
 			client.enableExtendedInsns(project.getExtInsnsEn())
 
-			client.loadHardwareModule("dummy")
+			for modDesc in project.getHwmodSettings().getLoadedModules():
+				client.loadHardwareModule(modDesc.getModuleName(),
+							  modDesc.getParameters())
 			for symTabSource in symTabSources:
 				client.loadSymbolTable(symTabSource)
 			for libSel in libSelections:
