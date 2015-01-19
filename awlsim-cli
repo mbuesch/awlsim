@@ -180,11 +180,16 @@ def run(inputFile):
 		s.reset()
 
 		# Load hardware modules
-		for name, parameters in opt_hwmods:
+		def loadMod(name, parameters):
 			writeStdout("Loading hardware module '%s'...\n" % name)
 			hwClass = s.loadHardwareModule(name)
 			s.registerHardwareClass(hwClass = hwClass,
 						parameters = parameters)
+		for modDesc in project.getHwmodSettings().getLoadedModules():
+			loadMod(modDesc.getModuleName(),
+				modDesc.getParameters())
+		for name, parameters in opt_hwmods:
+			loadMod(name, parameters)
 
 		cpu = s.getCPU()
 		assignCpuSpecs(cpu.getSpecs(), project.getCpuSpecs())
@@ -275,6 +280,9 @@ def runWithServerBackend(inputFile):
 		client.reset()
 
 		# Load hardware modules
+		for modDesc in project.getHwmodSettings().getLoadedModules():
+			client.loadHardwareModule(modDesc.getModuleName(),
+						  modDesc.getParameters())
 		for name, parameters in opt_hwmods:
 			client.loadHardwareModule(name, parameters)
 
