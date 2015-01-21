@@ -548,14 +548,29 @@ class AwlDataType(object):
 		if not token.startswith("TOD#") and\
 		   not token.startswith("TIME_OF_DAY#"):
 			return None
+		token = token[token.find("#") + 1 : ] # Remove prefix
 		raise AwlSimError("TIME_OF_DAY# not implemented, yet")#TODO
 
 	@classmethod
 	def tryParseImmediate_DATE(cls, token):
 		token = token.upper()
-		if not token.startswith("D#"):
+		if not token.startswith("D#") and\
+		   not token.startswith("DATE#"):
 			return None
-		raise AwlSimError("D# not implemented, yet")#TODO
+		token = token[token.find("#") + 1 : ] # Remove prefix
+		try:
+			date = token.split("-")
+			if len(date) != 3:
+				raise ValueError
+			year, month, day = int(date[0]), int(date[1]), int(date[2])
+			delta = datetime.date(year, month, day) -\
+				datetime.date(1990, 1, 1)
+			days = delta.days
+			if days < 0 or days > 65378:
+				raise ValueError
+			return days
+		except ValueError:
+			raise AwlSimError("Invalid DATE immediate")
 
 	dateAndTimeWeekdayMap = {
 		0	: 2,	# monday
