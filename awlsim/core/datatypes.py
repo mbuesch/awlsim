@@ -544,12 +544,30 @@ class AwlDataType(object):
 
 	@classmethod
 	def tryParseImmediate_TOD(cls, tokens):
-		token = tokens[0].upper()
+		token = "".join(tokens)
 		if not token.startswith("TOD#") and\
 		   not token.startswith("TIME_OF_DAY#"):
 			return None
 		token = token[token.find("#") + 1 : ] # Remove prefix
-		raise AwlSimError("TIME_OF_DAY# not implemented, yet")#TODO
+		try:
+			time = token.split(":")
+			if len(time) != 3:
+				raise ValueError
+			hours, minutes, fseconds = int(time[0]), int(time[1]), float(time[2])
+			seconds = int(fseconds)
+			msecs = int(fseconds * 1000) - (seconds * 1000)
+			if hours < 0 or hours > 23 or\
+			   minutes < 0 or minutes > 59 or\
+			   seconds < 0 or seconds > 59 or\
+			   msecs < 0 or msecs > 999:
+				raise ValueError
+			val = hours * 60 * 60 * 1000 +\
+			      minutes * 60 * 1000 +\
+			      seconds * 1000 +\
+			      msecs
+			return val
+		except ValueError:
+			raise AwlSimError("Invalid TIME_OF_DAY immediate")
 
 	@classmethod
 	def tryParseImmediate_DATE(cls, token):
@@ -584,11 +602,10 @@ class AwlDataType(object):
 
 	@classmethod
 	def tryParseImmediate_DT(cls, tokens):
-		token = tokens[0].upper()
+		token = "".join(tokens)
 		if not token.startswith("DT#") and\
 		   not token.startswith("DATE_AND_TIME#"):
 			return None
-		token = "".join(tokens)
 		token = token[token.find("#") + 1 : ] # Remove prefix
 		try:
 			idx = token.rfind("-")
