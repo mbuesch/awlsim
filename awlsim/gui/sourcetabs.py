@@ -46,12 +46,12 @@ class SourceTabContextMenu(QMenu):
 
 		self.itemName = itemName
 
-		self.addAction("&Add %s" % itemName, self.__add)
-		self.addAction("&Delete %s..." % itemName, self.__delete)
-		self.addAction("&Rename %s..." % itemName, self.__rename)
+		self.addAction(getIcon("doc_new"), "&Add %s" % itemName, self.__add)
+		self.addAction(getIcon("doc_close"), "&Delete %s..." % itemName, self.__delete)
+		self.addAction(getIcon("doc_edit"), "&Rename %s..." % itemName, self.__rename)
 		self.addSeparator()
-		self.addAction("&Import %s..." % itemName, self.__import)
-		self.addAction("&Export %s..." % itemName, self.__export)
+		self.addAction(getIcon("doc_import"), "&Import %s..." % itemName, self.__import)
+		self.addAction(getIcon("doc_export"), "&Export %s..." % itemName, self.__export)
 		self.__integrateAction = self.addAction("&Integrate %s into project..." % itemName,
 							self.__integrate)
 
@@ -92,7 +92,8 @@ class SourceTabCorner(QWidget):
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins(3, 0, 0, 0))
 
-		self.menuButton = QPushButton("&" + itemName[0].upper() + itemName[1:], self)
+		self.menuButton = QPushButton("+/-", self)
+		self.menuButton.setIcon(getIcon("tab_new"))
 		self.menuButton.setMenu(contextMenu)
 		self.layout().addWidget(self.menuButton, 0, 0)
 
@@ -177,9 +178,13 @@ class SourceTabWidget(QTabWidget):
 	def contextMenuEvent(self, ev):
 		QTabWidget.contextMenuEvent(self, ev)
 		tabBar = self.tabBar()
-		if tabBar.geometry().contains(tabBar.mapFrom(self, ev.pos())):
+		pos = tabBar.mapFrom(self, ev.pos())
+		if tabBar.geometry().contains(pos):
 			# Tab context menu was requested.
-			self.contextMenu.exec_(self.mapToGlobal(ev.pos()))
+			index = tabBar.tabAt(pos)
+			if index >= 0:
+				tabBar.setCurrentIndex(index)
+				self.contextMenu.exec_(self.mapToGlobal(ev.pos()))
 
 	def undoIsAvailable(self):
 		return False

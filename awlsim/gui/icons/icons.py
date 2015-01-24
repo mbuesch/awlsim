@@ -55,6 +55,12 @@ from awlsim.gui.icons.tag import *
 from awlsim.gui.icons.hwmod import *
 from awlsim.gui.icons.next import *
 from awlsim.gui.icons.previous import *
+from awlsim.gui.icons.doc_close import *
+from awlsim.gui.icons.doc_edit import *
+from awlsim.gui.icons.doc_export import *
+from awlsim.gui.icons.doc_import import *
+from awlsim.gui.icons.doc_new import *
+from awlsim.gui.icons.tab_new import *
 
 import base64
 
@@ -91,6 +97,12 @@ __icons = {
 	"hwmod"		: icon_hwmod,
 	"next"		: icon_next,
 	"previous"	: icon_previous,
+	"doc_close"	: icon_doc_close,
+	"doc_edit"	: icon_doc_edit,
+	"doc_export"	: icon_doc_export,
+	"doc_import"	: icon_doc_import,
+	"doc_new"	: icon_doc_new,
+	"tab_new"	: icon_tab_new,
 }
 
 def getIcon(iconName):

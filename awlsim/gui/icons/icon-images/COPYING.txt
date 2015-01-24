@@ -22,7 +22,12 @@ application-exit-4.svg        | oxygen                        | CC-BY-SA 3.0 or 
 appointment-soon.svg          | gnome                         | GPLv2
 counter.png                   | edit-4.svg                    | LGPL-2.1
 dialog-warning-4.svg          | oxygen                        | CC-BY-SA 3.0 or LGPL
+document-close-4.svg          | oxygen                        | CC-BY-SA 3.0 or LGPL
+document-edit.svg             | oxygen                        | CC-BY-SA 3.0 or LGPL
+document-export-4.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
+document-import-2.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
 document-new-3.svg            | gnome                         | GPLv2
+document-new-6.svg            | oxygen                        | CC-BY-SA 3.0 or LGPL
 document-open-5.svg           | tango                         | PD
 document-save-all.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
 download.png                  | network-server.svg and        | CC-BY-SA 3.0 or LGPL
@@ -53,5 +58,6 @@ outputs.png                   | network-server.svg and        | CC-BY-SA 3.0 or 
 pictograms-protections.svg    | open_clip_art_library         | PD
 preferences-system-3.svg      | tango                         | PD
 server-database.svg           | oxygen                        | CC-BY-SA 3.0 or LGPL
+tab-new-background.svg        | oxygen                        | CC-BY-SA 3.0 or LGPL
 text-x-source.svg             | tango-harm                    | CC-BY 3.0
 view-calendar-workweek-2.svg  | oxygen                        | CC-BY-SA 3.0 or LGPL
