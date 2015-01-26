@@ -49,11 +49,11 @@ def __autodetectGuiFramework():
 #		return "pyqt5"
 #	except ImportError:
 #		pass
-#	try:
-#		import PyQt4 as __unused
-#		return "pyqt4"
-#	except ImportError:
-#		pass
+	try:
+		import PyQt4 as __unused
+		return "pyqt4"
+	except ImportError:
+		pass
 	__frameworkError("Neither PySide nor PyQt found.\n"
 			 "PLEASE INSTALL PySide (%s)\n"
 			 "            or PyQt4 (%s)\n"

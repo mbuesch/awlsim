@@ -218,7 +218,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 
 	# Signal: The visible AWL line range changed
 	#         Parameters are: source, visibleFromLine, visibleToLine
-	visibleLinesChanged = Signal(AwlSource, int, int)
+	visibleLinesChanged = Signal(object, int, int)
 
 	def __init__(self, parent=None):
 		SourceTabWidget.__init__(self, "source", parent)

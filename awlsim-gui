@@ -48,7 +48,9 @@ def usage():
 	print("                       pyqt4: Use PyQt 4")
 	print("                       pyqt5: Use PyQt 5")
 
-def main():
+if __name__ == "__main__":
+	qapp = QApplication(sys.argv)
+
 	opt_awlSource = None
 
 	try:
@@ -58,20 +60,17 @@ def main():
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
-		return 1
+		sys.exit(1)
 	for (o, v) in opts:
 		if o in ("-h", "--help"):
 			usage()
-			return 0
+			sys.exit(0)
 	if args:
 		if len(args) == 1:
 			opt_awlSource = args[0]
 		else:
 			usage()
-			return 1
+			sys.exit(1)
 
 	mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
-	return mainwnd.runEventLoop()
-
-if __name__ == "__main__":
-	sys.exit(main())
+	sys.exit(qapp.exec_())

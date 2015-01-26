@@ -277,15 +277,12 @@ class MainWidget(QWidget):
 class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
-		  qApplication = None,
 		  initialAwlSource = None):
-		if not qApplication:
-			qApplication = QApplication(sys.argv)
 		# Set basic qapp-details.
 		# This is important for QSettings.
-		qApplication.setOrganizationName("awlsim")
-		qApplication.setApplicationName("Awlsim GUI")
-		qApplication.setApplicationVersion(VERSION_STRING)
+		QApplication.setOrganizationName("awlsim")
+		QApplication.setApplicationName("Awlsim GUI")
+		QApplication.setApplicationVersion(VERSION_STRING)
 
 		mainwnd = cls(initialAwlSource)
 		mainwnd.show()
@@ -399,9 +396,6 @@ class MainWindow(QMainWindow):
 
 	def insertFBcall(self):
 		self.centralWidget().insertFBcall()
-
-	def runEventLoop(self):
-		return QApplication.exec_()
 
 	def getSimClient(self):
 		return self.centralWidget().getSimClient()
