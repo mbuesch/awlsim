@@ -111,6 +111,8 @@ class AwlValidator(object):
 			self.__pool = multiprocessing.Pool(processes = nrWorkers)
 
 	def shutdown(self):
+		if not self.__pool:
+			return
 		self.__pool.close()
 		self.__pool.terminate()
 		self.__pool.join()
