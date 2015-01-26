@@ -27,6 +27,9 @@ from awlsim.gui.util import *
 
 
 class HwmodParamModel(QAbstractTableModel):
+	# Signal: Emitted, if a new error appeared or an old error disappeared.
+	newErrorText = Signal(str)
+
 	def __init__(self):
 		QAbstractTableModel.__init__(self)
 
@@ -134,6 +137,17 @@ class HwmodParamModel(QAbstractTableModel):
 				return "new"
 			return "%d" % (section + 1)
 
+	def __verifyParams(self):
+		if self.modInterface and self.modDesc:
+			try:
+				# Create a module instance.
+				# This will raise errors on invalid parameters.
+				self.modInterface(None, self.modDesc.getParameters())
+			except AwlSimError as e:
+				self.newErrorText.emit(str(e))
+				return
+		self.newErrorText.emit("")
+
 	def setData(self, index, value, role=Qt.EditRole):
 		if not index:
 			return False
@@ -153,6 +167,8 @@ class HwmodParamModel(QAbstractTableModel):
 					self.beginResetModel() # inefficient
 					self.modDesc.addParameter(value, "")
 					self.endResetModel()
+					self.__verifyParams()
+					return True
 			else:
 				paramName = params[row][0]
 				if column == 0:
@@ -166,10 +182,12 @@ class HwmodParamModel(QAbstractTableModel):
 					self.modDesc.removeParameter(paramName)
 					self.modDesc.addParameter(value, savedValue)
 					self.endResetModel()
+					self.__verifyParams()
 					return True
 				elif column == 1:
 					# Set parameter value
 					self.modDesc.setParameterValue(paramName, value)
+					self.__verifyParams()
 					return True
 		return False
 
@@ -259,9 +277,14 @@ class HwmodConfigWidget(QWidget):
 
 		self.paramViewLabel = QLabel("Module parameters:", self)
 		group.layout().addWidget(self.paramViewLabel, 0, 3)
+		vbox = QVBoxLayout()
 		self.paramView = HwmodParamView(None, self)
 		self.paramView.setMinimumWidth(300)
-		group.layout().addWidget(self.paramView, 1, 3, 2, 1)
+		vbox.addWidget(self.paramView)
+		self.paramErrorText = QLabel(self)
+		self.paramErrorText.setWordWrap(True)
+		vbox.addWidget(self.paramErrorText)
+		group.layout().addLayout(vbox, 1, 3, 2, 1)
 
 		self.layout().addWidget(group, 0, 0)
 
@@ -276,6 +299,7 @@ class HwmodConfigWidget(QWidget):
 		self.loadedList.currentItemChanged.connect(self.__handleLoadedSelectChange)
 		self.addButton.released.connect(self.__handleAdd)
 		self.delButton.released.connect(self.__handleDel)
+		self.paramView.model().newErrorText.connect(self.__handleNewErrorText)
 
 	def __updateAddButton(self):
 		self.addButton.setEnabled(self.manualModName.text().strip() != "" or
@@ -306,6 +330,7 @@ class HwmodConfigWidget(QWidget):
 		self.paramViewLabel.setEnabled(bool(cur))
 		self.paramView.setEnabled(bool(cur))
 		self.delButton.setEnabled(bool(cur))
+		self.paramErrorText.clear()
 
 	def __handleAdd(self):
 		manualModName = self.manualModName.text().strip()
@@ -330,6 +355,14 @@ class HwmodConfigWidget(QWidget):
 		modDesc = item.data(Qt.UserRole)
 		self.__loadedModDescs.remove(modDesc)
 		self.__handleLoadedSelectChange(self.loadedList.currentItem(), None)
+
+	def __handleNewErrorText(self, text):
+		if text.strip().startswith("["):
+			text = text[text.find("]") + 1 : ]
+		text = text.strip()
+		if text:
+			text = "Warning: " + text
+		self.paramErrorText.setText(text)
 
 	def setAvailableModules(self, mods):
 		self.availList.clear()
