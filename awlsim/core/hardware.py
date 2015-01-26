@@ -56,6 +56,8 @@ class HwParamDesc_pyobject(HwParamDesc):
 		self.pyTypeDesc = pyTypeDesc
 
 	def parse(self, value):
+		if value is None:
+			return None
 		if str(type(value)) != self.pyTypeDesc:
 			raise self.ParseError("Parameter '%s' is of unknown type. "
 				"Expected '%s', but got '%s'." %\
@@ -258,7 +260,7 @@ class AbstractHardwareInterface(object):
 
 	def raiseException(self, errorText):
 		"""Throw an exception."""
-		raise AwlSimError("[%s hardware module] %s" %\
+		raise AwlSimError("['%s' hardware module] %s" %\
 				  (self.name, errorText))
 
 	def paramErrorHandler(self, name, errorText):
@@ -279,7 +281,7 @@ class AbstractHardwareInterface(object):
 			except KeyError:
 				self.paramErrorHandler(name,
 					"Invalid parameter. The parameter '%s' is "
-					"unknown in the '%s' hardware module." %\
+					"unknown to the '%s' hardware module." %\
 					(name, self.name))
 			try:
 				self.__parameters[name] = desc.parse(value)
