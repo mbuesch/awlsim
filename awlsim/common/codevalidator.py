@@ -2,7 +2,7 @@
 #
 # AWL simulator - Asynchronous code validator
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,12 +24,14 @@ from awlsim.common.compat import *
 
 import multiprocessing
 
+from awlsim.common.util import *
+from awlsim.common.debug import *
 from awlsim.core import *
 
 _VALIDATOR_DEBUG = 0
 
 
-def _awlValidatorWorker(text):
+def __awlValidatorWorker(text):
 	if _VALIDATOR_DEBUG:
 		print("Validation worker: started")
 	# Try to parse and translate the text.
@@ -54,6 +56,11 @@ def _awlValidatorWorker(text):
 		print("Validation worker: done %s" % str(errLines))
 	return errLines
 
+def _awlValidatorWorker(text):
+	errLines = __awlValidatorWorker(text)
+	garbageCollector.collect()
+	return errLines
+
 class AwlValidatorResult(object):
 	def __init__(self, mpAsync, result=None):
 		self.__mpAsync = mpAsync
@@ -73,9 +80,14 @@ class AwlValidator(object):
 	__instance = None
 
 	@classmethod
+	def startup(cls, synchronous = False):
+		assert(cls.__instance is None)
+		garbageCollector.collect()
+		cls.__instance = cls(synchronous)
+
+	@classmethod
 	def get(cls):
-		if not cls.__instance:
-			cls.__instance = cls(synchronous = False)
+		assert(cls.__instance)
 		return cls.__instance
 
 	@staticmethod
@@ -96,11 +108,18 @@ class AwlValidator(object):
 				print("Using asynchronous AWL code validation")
 			nrWorkers = max(minNrWorkers,
 					min(maxNrWorkers, self.__cpu_count()))
-			maxTasks = None if osIsWindows else 8
-			self.__pool = multiprocessing.Pool(processes = nrWorkers,
-							   maxtasksperchild = maxTasks)
+			self.__pool = multiprocessing.Pool(processes = nrWorkers)
+
+	def shutdown(self):
+		self.__pool.close()
+		self.__pool.terminate()
+		self.__pool.join()
+		del self.__pool
+		self.__pool = None
+		garbageCollector.collect()
 
 	def enqueue(self, sourceText):
+		sourceText = str(sourceText)
 		if self.__pool:
 			mpAsync = self.__pool.apply_async(_awlValidatorWorker,
 							  (sourceText,))

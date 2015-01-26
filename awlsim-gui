@@ -3,7 +3,7 @@
 #
 # AWL simulator - GUI
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 if __name__ == "__main__":
 	import multiprocessing
 	multiprocessing.freeze_support()
+	from awlsim.common.codevalidator import *
+	AwlValidator.startup()
 from awlsim.common.compat import *
 
 from awlsim.common import *
@@ -73,4 +75,6 @@ if __name__ == "__main__":
 			sys.exit(1)
 
 	mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
-	sys.exit(qapp.exec_())
+	res = qapp.exec_()
+	AwlValidator.get().shutdown()
+	sys.exit(res)
