@@ -39,6 +39,14 @@ def usage():
 	print("")
 	print("Options:")
 	print(" -h|--help             Print this help text")
+	print("")
+	print("Environment variables:")
+	print(" AWLSIMGUI             Select the GUI framework (default 'auto')")
+	print("                       Can be either of:")
+	print("                       auto: Autodetect")
+	print("                       pyside: Use PySide 4")
+	print("                       pyqt4: Use PyQt 4")
+	print("                       pyqt5: Use PyQt 5")
 
 def main():
 	opt_awlSource = None

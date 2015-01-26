@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI utility functions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from awlsim.coreclient import *
 import awlsim.cython_helper
 
 import sys
+import traceback
 
 if isPyPy or isJython:
 	# PySide does not work on PyPy or Jython, yet.
@@ -38,16 +39,7 @@ if awlsim.cython_helper.shouldUseCython():
 	print("*** Using accelerated CYTHON core "
 	      "(AWLSIMCYTHON environment variable is set)")
 
-try:
-	from PySide.QtCore import *
-	from PySide.QtGui import *
-except ImportError as e:
-	printError("PLEASE INSTALL PySide (http://www.pyside.org/)")
-	input("Press enter to continue.")
-	sys.exit(1)
-
-import os
-import traceback
+from awlsim.gui.qt_bindings import *
 
 
 AWLSIM_HOME_URL = "http://bues.ch/h/awlsim"
