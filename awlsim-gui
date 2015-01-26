@@ -29,7 +29,6 @@ if __name__ == "__main__":
 from awlsim.common.compat import *
 
 from awlsim.common import *
-from awlsim.gui import *
 
 import getopt
 
@@ -51,6 +50,8 @@ def usage():
 	print("                       pyqt5: Use PyQt 5")
 
 if __name__ == "__main__":
+	from awlsim.gui import *
+
 	qapp = QApplication(sys.argv)
 
 	opt_awlSource = None
