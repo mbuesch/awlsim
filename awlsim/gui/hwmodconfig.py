@@ -49,6 +49,17 @@ class HwmodParamModel(QAbstractTableModel):
 			return self.modInterface.getParamDesc(paramName)
 		return None
 
+	def __verifyParams(self):
+		if self.modInterface and self.modDesc:
+			try:
+				# Create a module instance.
+				# This will raise errors on invalid parameters.
+				self.modInterface(None, self.modDesc.getParameters())
+			except AwlSimError as e:
+				self.newErrorText.emit(str(e))
+				return
+		self.newErrorText.emit("")
+
 	def setHwmod(self, modDesc):
 		self.beginResetModel()
 
@@ -72,6 +83,7 @@ class HwmodParamModel(QAbstractTableModel):
 			pName, pValue = params[row]
 			self.modDesc.removeParameter(pName)
 			self.endResetModel()
+			self.__verifyParams()
 
 	def rowCount(self, parent=QModelIndex()):
 		return len(self.__params) + 1
@@ -136,17 +148,6 @@ class HwmodParamModel(QAbstractTableModel):
 			if section >= len(params):
 				return "new"
 			return "%d" % (section + 1)
-
-	def __verifyParams(self):
-		if self.modInterface and self.modDesc:
-			try:
-				# Create a module instance.
-				# This will raise errors on invalid parameters.
-				self.modInterface(None, self.modDesc.getParameters())
-			except AwlSimError as e:
-				self.newErrorText.emit(str(e))
-				return
-		self.newErrorText.emit("")
 
 	def setData(self, index, value, role=Qt.EditRole):
 		if not index:
