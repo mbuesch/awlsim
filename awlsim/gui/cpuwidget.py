@@ -50,7 +50,7 @@ class RunState(QObject):
 	def __emitStateChanged(self):
 		self.stateChanged.emit(self)
 		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents,
-					   1000)
+					   50)
 
 	def setState(self, newState):
 		if self.state != newState:
