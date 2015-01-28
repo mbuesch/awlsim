@@ -134,7 +134,10 @@ class SourceCodeEdit(QPlainTextEdit):
 	def wheelEvent(self, ev):
 		if ev.modifiers() & Qt.ControlModifier:
 			# Ctrl + Scroll-wheel: Font resizing
-			numDegrees = ev.delta() / 8
+			if isQt4:
+				numDegrees = ev.delta() / 8
+			else:
+				numDegrees = ev.angleDelta().y() / 8
 			numSteps = numDegrees / 15
 			self.__wheelSteps += numSteps
 			if self.__wheelSteps >= 1.0:
