@@ -60,7 +60,7 @@ class LibTableModel(QAbstractTableModel):
 			   sel.getEntryIndex() == libSelection.getEntryIndex():
 				return
 		self.libSelections.append(libSelection)
-		self.rowsInserted.emit(None,
+		self.rowsInserted.emit(QModelIndex(),
 			len(self.libSelections),
 			len(self.libSelections))
 		self.contentChanged.emit()
@@ -173,7 +173,7 @@ class LibTableModel(QAbstractTableModel):
 			if row >= len(self.libSelections):
 				sel = AwlLibEntrySelection()
 				self.libSelections.append(sel)
-				self.rowsInserted.emit(None,
+				self.rowsInserted.emit(QModelIndex(),
 					len(self.libSelections),
 					len(self.libSelections))
 			else:
@@ -229,7 +229,10 @@ class LibTableView(QTableView):
 			model = LibTableModel()
 		self.setModel(model)
 
-		self.verticalHeader().setMovable(True)
+		if isQt4:
+			self.verticalHeader().setMovable(True)
+		else:
+			self.verticalHeader().setSectionsMovable(True)
 		self.verticalHeader().sectionMoved.connect(self.__rowMoved)
 
 		self.pressed.connect(self.__handleMousePress)

@@ -114,7 +114,7 @@ class SymTabModel(QAbstractTableModel):
 			if row >= len(self.symTab.symbols):
 				sym = Symbol()
 				self.symTab.add(sym)
-				self.rowsInserted.emit(None,
+				self.rowsInserted.emit(QModelIndex(),
 					len(self.symTab.symbols),
 					len(self.symTab.symbols))
 			else:
@@ -176,7 +176,10 @@ class SymTabView(QTableView):
 	def __init__(self, parent=None):
 		QTableView.__init__(self, parent)
 
-		self.verticalHeader().setMovable(True)
+		if isQt4:
+			self.verticalHeader().setMovable(True)
+		else:
+			self.verticalHeader().setSectionsMovable(True)
 		self.verticalHeader().sectionMoved.connect(self.__rowMoved)
 
 		self.pressed.connect(self.__handleMousePress)

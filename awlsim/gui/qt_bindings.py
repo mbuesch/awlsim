@@ -44,11 +44,11 @@ def __autodetectGuiFramework():
 		return "pyside4"
 	except ImportError:
 		pass
-#FIXME	try:
-#		import PyQt5 as __unused
-#		return "pyqt5"
-#	except ImportError:
-#		pass
+	try:
+		import PyQt5 as __unused
+		return "pyqt5"
+	except ImportError:
+		pass
 	try:
 		import PyQt4 as __unused
 		return "pyqt4"
@@ -62,12 +62,19 @@ def __autodetectGuiFramework():
 			  urls["pyqt4"],
 			  urls["pyqt5"]))
 
+# The Qt bindings can be set via AWLSIMGUI environment variable.
 __guiFramework = os.getenv("AWLSIMGUI", "auto").lower()
 
+# Run Qt autodetection
 if __guiFramework == "auto":
 	__guiFramework = __autodetectGuiFramework()
+if __guiFramework == "pyside":
+	__guiFramework = "pyside4"
+if __guiFramework == "pyqt":
+	__guiFramework = "pyqt5"
 
-if __guiFramework in ("pyside", "pyside4"):
+# Load the Qt modules
+if __guiFramework == "pyside4":
 	printInfo("Awlsim-GUI: Using PySide4 GUI framework")
 	try:
 		from PySide.QtCore import *
@@ -83,7 +90,7 @@ elif __guiFramework == "pyqt4":
 		__frameworkError("Failed to import PyQt4 modules:\n" + str(e))
 	# Compatibility
 	Signal = pyqtSignal
-elif __guiFramework in ("pyqt", "pyqt5"):
+elif __guiFramework == "pyqt5":
 	printInfo("Awlsim-GUI: Using PyQt5 GUI framework")
 	try:
 		from PyQt5.QtCore import *
@@ -97,3 +104,8 @@ else:
 	__frameworkError("Unknown GUI framework '%s' requested. "
 			 "Please fix AWLSIMGUI environment variable." %\
 			 __guiFramework)
+
+# Helpers for distinction between Qt4 and Qt5 API.
+isQt4 = (__guiFramework == "pyside4" or\
+	 __guiFramework == "pyqt4")
+isQt5 = (__guiFramework == "pyqt5")
