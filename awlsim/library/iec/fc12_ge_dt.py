@@ -55,8 +55,6 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 					    dataType = AwlDataType.makeByName("BYTE")),
 			BlockInterfaceField(name = "BYTE1",
 					    dataType = AwlDataType.makeByName("BYTE")),
-			BlockInterfaceField(name = "BYTE2",
-					    dataType = AwlDataType.makeByName("BYTE")),
 			BlockInterfaceField(name = "AR1_SAVE",
 					    dataType = AwlDataType.makeByName("DWORD")),
 			BlockInterfaceField(name = "BCD1",
@@ -130,7 +128,6 @@ LOP2:	T	#loop2
 LOP1:	T	#loop1
 	L	1
 	-I
-	T	#BYTE2
 	L	#BYTE1
 	==I
 	// equal -> exit loop
