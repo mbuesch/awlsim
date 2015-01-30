@@ -68,14 +68,12 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 		),
 	}
 
-	awlCodeCopyright = "Copyright (c) 2015 Christian Vitte <vitte.chris@gmail.com>"
+	awlCodeCopyright = "Copyright (c) 2015 Christian Vitte <vitte.chris@gmail.com>\n"\
+			   "Copyright (c) 2015 Michael Buesch <m@bues.ch>"
 	awlCodeLicense = "BSD-2-clause"
 	awlCode = """	
 	// AR1-Register save
 	TAR1	#AR1_SAVE
-	// init #RET_VAL
-	CLR
-	=	#RET_VAL
 	// Load a pointer to #DT1 into AR1 and open the DB
 	L	P##DT1
 	LAR1
@@ -140,8 +138,8 @@ LOP1:	T	#loop1
 	L	#loop1
 	LOOP	LOP1
 
-	// Loop exit without jump -> fail
-	SPA	fail
+	// Loop exit without jump -> FAIL
+	SPA	FAIL
 
 JMP3:	L	#loop2
 	LOOP	LOP2
@@ -217,30 +215,31 @@ CTR1:	L	#YEAR1
 
 	L	#BCD1
 	L	#BCD2
-	<D
+	<D		//FIXME can signedness be an issue here? Probably check for invalid M value
 	// BCD1 < BCD2 -> NOK
 	SPB	NOK
 
 //------------------------------------------------------
-	//  RET_VAL := 1
+	// Everything is Ok.
 OK:	SET
-	=	#RET_VAL
-	// BIE := 1
-	SET
-	SAVE
-	SPA	ENDE
+	=	#RET_VAL	// RET_VAL := 1
+	SAVE			// BIE := 1
+	SPA	END
 
-	// if no BCD number then BIE := 0
-fail:	CLR
-	SAVE
-	SPA	ENDE
+	// BCD failure.
+FAIL:	CLR
+	=	#RET_VAL	// RET_VAL := 0
+	SAVE			// BIE := 0
+	SPA	END
 
-	// if BCD number then BIE := 1
+	// BCD is Ok, but result is negative.
 NOK:	SET
-	SAVE
+	SAVE			// BIE := 1
+	CLR
+	=	#RET_VAL	// RET_VAL := 0
 
 	// Load AR1 register
-ENDE:	L	#AR1_SAVE
+END:	L	#AR1_SAVE
 	LAR1
 	BE
 """
