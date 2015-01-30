@@ -634,7 +634,7 @@ class AwlDataType(object):
 			msec = int(fsecond * 1000) - (second * 1000)
 			if hour < 0 or hour > 23 or\
 			   minute < 0 or minute > 59 or\
-			   second < 0 or fsecond > 59 or\
+			   second < 0 or second > 59 or\
 			   msec < 0 or msec > 999:
 				raise ValueError
 			hour = (hour % 10) | (((hour // 10) % 10) << 4)
