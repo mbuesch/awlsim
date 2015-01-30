@@ -64,19 +64,19 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	// Load a pointer to #DT1 into AR1 and open the DB
 	L	P##DT1
 	LAR1
-	L	W [AR1,P#0.0]
+	L	W [AR1, P#0.0]
 	T	#DBNR
 	AUF	DB [#DBNR]
-	L	D [AR1,P#2.0]
+	L	D [AR1, P#2.0]
 	LAR1
 
 	// Load a pointer to #DT2 into AR2 and open the DB as DI
 	L	P##DT2
 	LAR2
-	L	W [AR2,P#0.0]
+	L	W [AR2, P#0.0]
 	T	#DBNR
 	AUF	DI [#DBNR]
-	L	D [AR2,P#2.0]
+	L	D [AR2, P#2.0]
 	// If #DT2 points to DB (area 84) change it to DI (area 85).
 	// This also works, if #DT2 points to VL (area 87).
 	// Other areas are not possible.
@@ -85,9 +85,9 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 
 //------------------------------------------------------
 	// Extract years from DT1 and DT2
-	L	B [AR1,P#0.0]
+	L	B [AR1, P#0.0]
 	T	#YEAR1
-	L	B [AR2,P#0.0]
+	L	B [AR2, P#0.0]
 	T	#YEAR2
 
 	// Check whether the year values from DT1 and DT2
@@ -156,6 +156,9 @@ YRCK:	L	#YEAR1
 	<I
 	// year1 < year2 -> NOK
 	SPB	NOK
+	// year1 > year2 -> OK
+	>I
+	SPB	OK
 
 //------------------------------------------------------
 	// Check if M:D:H DT1 >= M:D:H DT2 - Bytes 2 to 4
@@ -168,6 +171,9 @@ YRCK:	L	#YEAR1
 	// BCD-from-DT1 < BCD-from-DT2 -> NOK
 	// This check also works without BCD->INT conversion.
 	SPB	NOK
+	>D
+	// BCD-from-DT1 > BCD-from-DT2 -> OK
+	SPB	OK
 
 //------------------------------------------------------
 	// Checking if M:S:MS DT1 >= M:S:MS DT2 - Bytes 5 to 8
