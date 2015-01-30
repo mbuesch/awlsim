@@ -51,12 +51,6 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 					    dataType = AwlDataType.makeByName("WORD")),
 			BlockInterfaceField(name = "AR1_SAVE",
 					    dataType = AwlDataType.makeByName("DWORD")),
-			BlockInterfaceField(name = "BCD1",
-					    dataType = AwlDataType.makeByName("DWORD")),
-			BlockInterfaceField(name = "BCD2",
-					    dataType = AwlDataType.makeByName("DWORD")),
-			BlockInterfaceField(name = "BCD_1_2",
-					    dataType = AwlDataType.makeByName("WORD")),
 		),
 	}
 
@@ -166,33 +160,23 @@ YRCK:	L	#YEAR1
 //------------------------------------------------------
 	// Check if M:D:H DT1 >= M:D:H DT2 - Bytes 2 to 4
 	// Extract first data from DT1 and DT2 without year
-	L	D [AR1,P#0.0]
-	L	DW#16#FFFFFF
-	UD
-	T	#BCD1
-	L	D [AR2,P#0.0]
-	L	DW#16#FFFFFF
-	UD
-	T	#BCD2
-
-	L	#BCD1
-	L	#BCD2
+	L	D [AR1, P#0.0]
+	UD	DW#16#00FFFFFF
+	L	D [AR2, P#0.0]
+	UD	DW#16#00FFFFFF
 	<D
-	// BCD1 < BCD2 -> NOK
+	// BCD-from-DT1 < BCD-from-DT2 -> NOK
+	// This check also works without BCD->INT conversion.
 	SPB	NOK
 
 //------------------------------------------------------
 	// Checking if M:S:MS DT1 >= M:S:MS DT2 - Bytes 5 to 8
 	// Extract second data from DT1 and DT2
-	L	D [AR1,P#4.0]
-	T	#BCD1
-	L	D [AR2,P#4.0]
-	T	#BCD2
-
-	L	#BCD1
-	L	#BCD2
+	L	D [AR1, P#4.0]
+	L	D [AR2, P#4.0]
 	<D		//FIXME can signedness be an issue here? Probably check for invalid M value
-	// BCD1 < BCD2 -> NOK
+	// BCD-from-DT1 < BCD-from-DT2 -> NOK
+	// This check also works without BCD->INT conversion.
 	SPB	NOK
 
 //------------------------------------------------------
