@@ -165,151 +165,175 @@ BEGIN
 		DT2 := DB1.TEST1_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST2_A,
 		DT2 := DB1.TEST2_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST3_A,
 		DT2 := DB1.TEST3_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST4_A,
 		DT2 := DB1.TEST4_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST5_A,
 		DT2 := DB1.TEST5_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST6_A,
 		DT2 := DB1.TEST6_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST7_A,
 		DT2 := DB1.TEST7_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST8_A,
 		DT2 := DB1.TEST8_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST9_A,
 		DT2 := DB1.TEST9_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST10_A,
 		DT2 := DB1.TEST10_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST11_A,
 		DT2 := DB1.TEST11_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST12_A,
 		DT2 := DB1.TEST12_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST13_A,
 		DT2 := DB1.TEST13_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST14_A,
 		DT2 := DB1.TEST14_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST15_A,
 		DT2 := DB1.TEST15_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST16_A,
 		DT2 := DB1.TEST16_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST17_A,
 		DT2 := DB1.TEST17_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
-	
 	CALL "GE_DT" (
 		DT1 := DB1.TEST18_A,
 		DT2 := DB1.TEST18_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST19_A,
 		DT2 := DB1.TEST19_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST20_A,
 		DT2 := DB1.TEST20_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST21_A,
 		DT2 := DB1.TEST21_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST22_A,
 		DT2 := DB1.TEST22_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST23_A,
 		DT2 := DB1.TEST23_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST24_A,
 		DT2 := DB1.TEST24_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
 	CALL "GE_DT" (
 		DT1 := DB1.TEST25_A,
 		DT2 := DB1.TEST25_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST26_A,
@@ -322,32 +346,39 @@ BEGIN
 		DT2 := DB1.TEST27_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST28_A,
 		DT2 := DB1.TEST28_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST29_A,
 		DT2 := DB1.TEST29_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST30_A,
 		DT2 := DB1.TEST30_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST31_A,
 		DT2 := DB1.TEST31_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
 	
+	
+	//TODO test invalid year (BIE := 0)
 	
 	CALL		SFC 46 // Stop CPU
 END_ORGANIZATION_BLOCK
