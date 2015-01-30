@@ -49,12 +49,6 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 					    dataType = AwlDataType.makeByName("WORD")),
 			BlockInterfaceField(name = "YEAR2",
 					    dataType = AwlDataType.makeByName("WORD")),
-			BlockInterfaceField(name = "loop1",
-					    dataType = AwlDataType.makeByName("BYTE")),
-			BlockInterfaceField(name = "loop2",
-					    dataType = AwlDataType.makeByName("BYTE")),
-			BlockInterfaceField(name = "BYTE1",
-					    dataType = AwlDataType.makeByName("BYTE")),
 			BlockInterfaceField(name = "AR1_SAVE",
 					    dataType = AwlDataType.makeByName("DWORD")),
 			BlockInterfaceField(name = "BCD1",
@@ -72,6 +66,7 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	awlCode = """	
 	// AR1-Register save
 	TAR1	#AR1_SAVE
+
 	// Load a pointer to #DT1 into AR1 and open the DB
 	L	P##DT1
 	LAR1
@@ -94,98 +89,82 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	OD	DW#16#85000000
 	LAR2
 
+//------------------------------------------------------
 	// Extract years from DT1 and DT2
 	L	B [AR1,P#0.0]
 	T	#YEAR1
 	L	B [AR2,P#0.0]
 	T	#YEAR2
 
-	// Put YEAR1 and YEAR2 into BCD_1_2 TEMP
-	L	B [AR1,P#0.0]
-	T	#BYTE1
-	L	B [AR2,P#0.0]
-	SLW	8
-	OW
-	T	#BCD_1_2
-
-//-------------------------------------------------------
-	// check YEAR1 and YEAR2 are in BCD number
-	// Loop for check 4 digits in BCD_1_2
-	L	4
-LOP2:	T	#loop2
-	L	1
-	-I
-	L	4
-	*I
-	L	#BCD_1_2
-	SRW
-	L	W#16#F
-	UW
-	T	#BYTE1
-
-	// Loop for check selected digit is BCD format
-	L	10
-LOP1:	T	#loop1
-	L	1
-	-I
-	L	#BYTE1
-	==I
-	// equal -> exit loop
-	SPB	JMP3
-	L	#loop1
-	LOOP	LOP1
-
-	// Loop exit without jump -> FAIL
-	SPA	FAIL
-
-JMP3:	L	#loop2
-	LOOP	LOP2
+	// Check whether the year values from DT1 and DT2
+	// are valid BCD numbers.
+	L	#YEAR1
+	UW	W#16#000F
+	L	W#16#0009
+	>I
+	SPB	FAIL
+	L	#YEAR1
+	UW	W#16#00F0
+	L	W#16#0090
+	>I
+	SPB	FAIL
+	L	#YEAR2
+	UW	W#16#000F
+	L	W#16#0009
+	>I
+	SPB	FAIL
+	L	#YEAR2
+	UW	W#16#00F0
+	L	W#16#0090
+	>I
+	SPB	FAIL
 
 //------------------------------------------------------
-	// Checking if specified year is 1990-1999 or 2000-2089
+	// Check whether specified year is 1990-1999 or 2000-2089
 	L	#YEAR1
 	L	B#16#89
 	>I
 	SPBN	_200
 
-	// 1900 years Correction (applicable for year 1990-1999)
+	// 1900 years correction (applicable for year 1990-1999)
 	L	#YEAR1
 	OW	W#16#1900
 	T	#YEAR1
-	SPA	JMP1
+	SPA	Y2CK
 
-	// 2000 years Correction (applicable for year 2000-2089)
+	// 2000 years correction (applicable for year 2000-2089)
 _200:	L	#YEAR1
 	OW	W#16#2000
 	T	#YEAR1
 
-	// if the year is > = 89 (ie 1990-1999)
-JMP1:	L	#YEAR2
+	// Check whether specified year is 1990-1999 or 2000-2089
+Y2CK:	L	#YEAR2
 	L	B#16#89
 	>I
 	SPBN	_201
 
-	// 1900 years Correction (applicable for year 1990-1999)
+	// 1900 years correction (applicable for year 1990-1999)
 	L	#YEAR2
 	OW	W#16#1900
 	T	#YEAR2
-	SPA	CTR1
+	SPA	YRCK
 
-	// 2000 years Correction (applicable for year 2000-2089)
+	// 2000 years correction (applicable for year 2000-2089)
 _201:	L	#YEAR2
 	OW	W#16#2000
 	T	#YEAR2
 
 //------------------------------------------------------
-	// Checking if YEAR1 >= YEAR2
-CTR1:	L	#YEAR1
+	// Check if YEAR1 >= YEAR2.
+	// This check also works without BCD->INT conversion.
+YRCK:	L	#YEAR1
 	L	#YEAR2
 	<I
 	// year1 < year2 -> NOK
 	SPB	NOK
 
 //------------------------------------------------------
-	// Checking if M:D:H DT1 >= M:D:H DT2 - Bytes 2 to 4
+	// Check if M:D:H DT1 >= M:D:H DT2 - Bytes 2 to 4
 	// Extract first data from DT1 and DT2 without year
 	L	D [AR1,P#0.0]
 	L	DW#16#FFFFFF
