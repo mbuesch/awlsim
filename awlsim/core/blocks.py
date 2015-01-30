@@ -417,9 +417,14 @@ class CodeBlock(Block):
 		Block.__init__(self, index)
 		self.insns = insns
 		self.labels = None
-		if insns:
-			self.labels = AwlLabel.resolveLabels(insns)
 		self.interface = interface
+		self.resolveLabels()
+
+	def resolveLabels(self):
+		if self.insns:
+			self.labels = AwlLabel.resolveLabels(self.insns)
+		else:
+			self.labels = None
 
 	def resolveSymbols(self):
 		pass

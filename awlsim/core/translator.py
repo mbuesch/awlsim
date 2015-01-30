@@ -90,6 +90,7 @@ class AwlTranslator(object):
 			assert(0)
 		# Translate the library block instructions.
 		block.insns = self.__translateInsns(rawBlock.insns)
+		block.resolveLabels()
 
 		# Switch back to old extended-instructions state.
 		self.cpu.enableExtendedInsns(oldExtEn)
