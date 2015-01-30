@@ -679,7 +679,7 @@ class S7CPU(object): #+cdef
 					"CPU runtime timeout")
 
 	# Make a DATE_AND_TIME for the current wall-time and
-	# store it in byteArray, which is a list of GenericByte objects.
+	# store it in byteArray, which is a ByteArray or bytearray or compatible.
 	# If byteArray is smaller than 8 bytes, an IndexError is raised.
 	def makeCurrentDateAndTime(self, byteArray, offset):
 		dt = datetime.datetime.now()
