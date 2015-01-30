@@ -1,0 +1,37 @@
+[AWLSIM_PROJECT]
+file_version=0
+create_date=2014-11-26 23:10:26.629302
+modify_date=2015-01-30 09:29:25.950867
+
+[CPU]
+awl_file_0=fc12_ge_dt.awl
+mnemonics=0
+nr_accus=2
+clock_memory_byte=-1
+ob_startinfo_enable=0
+ext_insns_enable=1
+
+[SYMBOLS]
+sym_tab_0=MTI2LEdFX0RUICAgICAgICAgICAgICAgICAgIEZDIDEyICAgICAgIEZDIDEyICAgICBHcmVhdGVyIG9yIEVxdWFsIERBVEVfQU5EX1RJTUUgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0K
+sym_tab_name_0=c3ltYm9sIHRhYmxl
+
+[LIBS]
+lib_name_0=SUVD
+lib_block_0=FC 12
+lib_block_effective_0=12
+
+[CORE_LINK]
+spawn_local=1
+spawn_local_port_range=4183:8278
+spawn_local_interpreters=JERFRkFVTFQ=
+connect_host=bG9jYWxob3N0
+connect_port=4151
+connect_timeout_ms=3000
+
+[HWMODS]
+
+[GUI]
+editor_autoindent=1
+editor_paste_autoindent=1
+editor_validation=1
+editor_font=
