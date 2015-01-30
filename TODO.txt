@@ -8,4 +8,5 @@ S7 compatibility:
 - Implement ANY pointer
 
 GUI:
+- Add editor 'find'
 - Save window status (open MDI windows, positions, etc)
