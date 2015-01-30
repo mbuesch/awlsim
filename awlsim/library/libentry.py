@@ -234,7 +234,7 @@ class AwlLibEntry(StaticCodeBlock):
 			license = self.awlCodeLicense
 
 		code = [ "", ]
-		code.append(self.awlCodeCopyright)
+		code.extend(self.awlCodeCopyright.splitlines())
 		code.extend(license.splitlines())
 		code.append("")
 		code = [ ("  // " + l).rstrip() for l in code ]
