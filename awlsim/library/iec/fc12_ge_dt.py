@@ -143,9 +143,7 @@ LOP1:	T	#loop1
 	// Loop exit without jump -> fail
 	SPB	fail
 
-JMP3:	NOP	0
-
-	L	#loop2
+JMP3:	L	#loop2
 	LOOP	LOP2
 
 //------------------------------------------------------
@@ -161,15 +159,13 @@ JMP3:	NOP	0
 	T	#YEAR1
 	SPB	JMP1
 
-_200:	NOP	0
 	// 2000 years Correction (applicable for year 2000-2089)
-	L	#YEAR1
+_200:	L	#YEAR1
 	OW	W#16#2000
 	T	#YEAR1
 
-JMP1:	NOP	0
 	// if the year is > = 89 (ie 1990-1999)
-	L	#YEAR2
+JMP1:	L	#YEAR2
 	L	B#16#89
 	>I
 	SPBN	_201
@@ -180,9 +176,8 @@ JMP1:	NOP	0
 	T	#YEAR2
 	SPB	CTR1
 
-_201:	NOP	0
 	// 2000 years Correction (applicable for year 2000-2089)
-	L	#YEAR2
+_201:	L	#YEAR2
 	OW	W#16#2000
 	T	#YEAR2
 
@@ -198,11 +193,9 @@ CTR1:	L	#YEAR1
 	SPB	NOK
 
 //------------------------------------------------------
-CTR2:	NOP	0
 	// Checking if M:D:H DT1 >= M:D:H DT2 - Bytes 2 to 4
-
 	// Extract first data from DT1 and DT2 without year
-	L	D [AR1,P#0.0]
+CTR2:	L	D [AR1,P#0.0]
 	L	DW#16#FFFFFF
 	UD
 	T	#BCD1
@@ -221,11 +214,9 @@ CTR2:	NOP	0
 	SPB	NOK
 
 //------------------------------------------------------
-CTR3:	NOP	0
 	// Checking if M:S:MS DT1 >= M:S:MS DT2 - Bytes 5 to 8
-
 	// Extract second data from DT1 and DT2
-	L	D [AR1,P#4.0]
+CTR3:	L	D [AR1,P#4.0]
 	T	#BCD1
 	L	D [AR2,P#4.0]
 	T	#BCD2
