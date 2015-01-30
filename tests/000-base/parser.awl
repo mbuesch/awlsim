@@ -1,0 +1,13 @@
+ORGANIZATION_BLOCK OB 1
+	VAR_TEMP
+		TESTVAR		: BOOL;
+	END_VAR
+BEGIN
+	// Parser regression test:
+	// Comment on assignment statement with local variable and label.
+	SET
+lbl:	=	#TESTVAR	// This comment is ok
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK

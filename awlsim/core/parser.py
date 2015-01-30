@@ -392,6 +392,11 @@ class AwlParser(object):
 			self.tokens = []
 			self.tokensLineNr = -1
 
+		def haveLabelToken(self):
+			if not self.tokens:
+				return False
+			return self.tokens[0].endswith(':')
+
 	def __init__(self):
 		self.reset()
 
@@ -476,7 +481,8 @@ class AwlParser(object):
 					self.__parseTokens(t)
 				t.inComment = True
 				cont(); continue
-			if c == '=' and len(t.tokens) == 1 and not t.curToken:
+			if c == '=' and len(t.tokens) == 1 and\
+			   not t.haveLabelToken() and not t.curToken:
 				# NAME = VALUE assignment
 				t.inAssignment = True
 				t.addCharacter(c)
@@ -484,8 +490,8 @@ class AwlParser(object):
 				cont(); continue
 			if t.tokens:
 				# This is not the first token of the statement.
-				if (c == '(' and t.tokens[0].endswith(':') and len(t.tokens) >= 2) or\
-				   (c == '(' and not t.tokens[0].endswith(':')):
+				if (c == '(' and t.haveLabelToken() and len(t.tokens) >= 2) or\
+				   (c == '(' and not t.haveLabelToken()):
 					# Parenthesis begin
 					t.inParens = True
 					t.addCharacter(c)
