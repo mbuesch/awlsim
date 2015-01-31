@@ -145,6 +145,13 @@ class AwlLibEntry(StaticCodeBlock):
 	awlCodeCopyright = None
 	awlCodeLicense = None
 
+	# Set this to True in the subclass, if this is a STANDARD block.
+	awlCodeIsStandard = False
+
+	# The AWL code version number.
+	# Override this in the subclass.
+	awlCodeVersion = "0.1"
+
 	# Mark this block as a library block.
 	isLibraryBlock = True
 
@@ -244,8 +251,47 @@ class AwlLibEntry(StaticCodeBlock):
 	def getCodeTitle(self):
 		"""Get the AWL code title."""
 
-		return "TITLE = %s / \"%s\" / %s" %\
-			(self.libraryName, self.symbolName, self.description)
+		return "TITLE = %s" % self.description
+
+	def getCodeAuthor(self):
+		"""Get the AWL code author header."""
+
+		names = []
+		for n in self.awlCodeCopyright.splitlines():
+			idx = n.find("<")
+			if idx >= 0: # Strip E-Mail
+				n = n[:idx]
+			names.append(n.strip())
+		return "AUTHOR : %s" % " / ".join(names)
+
+	def getCodeFamily(self):
+		"""Get the AWL code family header."""
+
+		return "FAMILY : %s" % self.libraryName
+
+	def getCodeName(self):
+		"""Get the AWL code name header."""
+
+		return "NAME : %s" % self.symbolName
+
+	def getCodeVersion(self):
+		"""Get the AWL code version header."""
+
+		return "VERSION : %s" % self.awlCodeVersion
+
+	def getCodeHeaders(self):
+		"""Get AWL code headers."""
+
+		hdrs = [ self.getCodeTitle(),
+			 self.getCodeAuthor(),
+			 self.getCodeFamily(),
+			 self.getCodeName(), ]
+		if self.awlCodeIsStandard:
+			hdrs.append("STANDARD")
+		hdrs.append(self.getCodeVersion())
+		hdrs.append(self.getCodeLicense())
+
+		return "\n".join(hdrs)
 
 	def makeSelection(self):
 		"""Get an AwlLibEntrySelection for this entry."""
@@ -276,8 +322,7 @@ class AwlLibFC(AwlLibEntry):
 		else:
 			code.append("FUNCTION FC %d : %s\n" %\
 				    (self.index, retValType))
-		code.append(self.getCodeTitle() + "\n")
-		code.append(self.getCodeLicense() + "\n")
+		code.append(self.getCodeHeaders() + "\n")
 		code.append(interfCode)
 		code.append("BEGIN\n")
 		code.append(self.awlCode.strip("\n"))
@@ -314,8 +359,7 @@ class AwlLibFB(AwlLibEntry):
 			code.append("FUNCTION_BLOCK \"%s\"\n" % self.symbolName)
 		else:
 			code.append("FUNCTION_BLOCK FB %d\n" % self.index)
-		code.append(self.getCodeTitle() + "\n")
-		code.append(self.getCodeLicense() + "\n")
+		code.append(self.getCodeHeaders() + "\n")
 		code.append(interfCode)
 		code.append("BEGIN\n")
 		code.append(self.awlCode.strip("\n"))

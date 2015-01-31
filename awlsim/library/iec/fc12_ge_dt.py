@@ -57,6 +57,9 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	awlCodeCopyright = "Copyright (c) 2015 Christian Vitte <vitte.chris@gmail.com>\n"\
 			   "Copyright (c) 2015 Michael Buesch <m@bues.ch>"
 	awlCodeLicense = "BSD-2-clause"
+	awlCodeIsStandard = True
+	awlCodeVersion = "0.1"
+
 	awlCode = """	
 	// AR1-Register save
 	TAR1	#AR1_SAVE

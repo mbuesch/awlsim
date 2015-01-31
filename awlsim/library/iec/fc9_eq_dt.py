@@ -50,6 +50,9 @@ class Lib__IEC__FC9_EQ_DT(AwlLibFC):
 
 	awlCodeCopyright = "Copyright (c) 2014 Michael Buesch <m@bues.ch>"
 	awlCodeLicense = "BSD-2-clause"
+	awlCodeIsStandard = True
+	awlCodeVersion = "0.1"
+
 	awlCode = """
 	// Load a pointer to #DT1 into AR1 and open the DB
 	LAR1	P##DT1
