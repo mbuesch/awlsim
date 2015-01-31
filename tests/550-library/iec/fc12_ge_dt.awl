@@ -180,6 +180,8 @@ VAR_TEMP
 	TMP_DT2		: DATE_AND_TIME;
 END_VAR
 BEGIN
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST1_A,
 		DT2 := DB1.TEST1_B,
@@ -187,6 +189,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST2_A,
 		DT2 := DB1.TEST2_B,
@@ -194,6 +199,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST3_A,
 		DT2 := DB1.TEST3_B,
@@ -201,6 +209,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST4_A,
 		DT2 := DB1.TEST4_B,
@@ -208,6 +219,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST5_A,
 		DT2 := DB1.TEST5_B,
@@ -215,6 +229,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST6_A,
 		DT2 := DB1.TEST6_B,
@@ -222,6 +239,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST7_A,
 		DT2 := DB1.TEST7_B,
@@ -229,6 +249,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST8_A,
 		DT2 := DB1.TEST8_B,
@@ -236,6 +259,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST9_A,
 		DT2 := DB1.TEST9_B,
@@ -243,6 +269,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST10_A,
 		DT2 := DB1.TEST10_B,
@@ -250,6 +279,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST11_A,
 		DT2 := DB1.TEST11_B,
@@ -257,6 +289,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST12_A,
 		DT2 := DB1.TEST12_B,
@@ -264,6 +299,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST13_A,
 		DT2 := DB1.TEST13_B,
@@ -271,6 +309,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST14_A,
 		DT2 := DB1.TEST14_B,
@@ -278,6 +319,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST15_A,
 		DT2 := DB1.TEST15_B,
@@ -285,6 +329,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST16_A,
 		DT2 := DB1.TEST16_B,
@@ -292,6 +339,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST17_A,
 		DT2 := DB1.TEST17_B,
@@ -299,6 +349,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST18_A,
 		DT2 := DB1.TEST18_B,
@@ -306,6 +359,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST19_A,
 		DT2 := DB1.TEST19_B,
@@ -313,6 +369,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST20_A,
 		DT2 := DB1.TEST20_B,
@@ -320,6 +379,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST21_A,
 		DT2 := DB1.TEST21_B,
@@ -327,6 +389,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST22_A,
 		DT2 := DB1.TEST22_B,
@@ -334,6 +399,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST23_A,
 		DT2 := DB1.TEST23_B,
@@ -341,6 +409,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST24_A,
 		DT2 := DB1.TEST24_B,
@@ -348,6 +419,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST25_A,
 		DT2 := DB1.TEST25_B,
@@ -355,12 +429,19 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST26_A,
 		DT2 := DB1.TEST26_B,
 		RET_VAL := M 0.0,
 	)
+	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST27_A,
 		DT2 := DB1.TEST27_B,
@@ -368,6 +449,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST28_A,
 		DT2 := DB1.TEST28_B,
@@ -375,6 +459,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST29_A,
 		DT2 := DB1.TEST29_B,
@@ -382,6 +469,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST30_A,
 		DT2 := DB1.TEST30_B,
@@ -389,6 +479,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST31_A,
 		DT2 := DB1.TEST31_B,
@@ -396,6 +489,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST32_A,
 		DT2 := DB1.TEST32_B,
@@ -403,6 +499,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST33_A,
 		DT2 := DB1.TEST33_B,
@@ -410,6 +509,9 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1 := DB1.TEST34_A,
 		DT2 := DB1.TEST34_B,
@@ -429,6 +531,8 @@ BEGIN
 	L		0
 	T		D [AR2, P#0.0]
 	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1	:= #TMP_DT1,
 		DT2	:= #TMP_DT2,
@@ -445,6 +549,8 @@ BEGIN
 	T		D [AR2, P#0.0]
 	L		DW#16#FFFFFFFF
 	T		D [AR2, P#4.0]
+	SET
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1	:= #TMP_DT1,
 		DT2	:= #TMP_DT2,
@@ -452,7 +558,6 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	1
 	__ASSERT==	M 0.0,		0
-	
 	
 	// Check invalid year BCD value
 	LAR1		P##TMP_DT1
@@ -464,6 +569,8 @@ BEGIN
 	L		0
 	T		D [AR2, P#0.0]
 	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1	:= #TMP_DT1,
 		DT2	:= #TMP_DT2,
@@ -480,6 +587,8 @@ BEGIN
 	T		D [AR2, P#0.0]
 	L		0
 	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
 	CALL "GE_DT" (
 		DT1	:= #TMP_DT1,
 		DT2	:= #TMP_DT2,
@@ -487,7 +596,42 @@ BEGIN
 	)
 	__ASSERT==	__STW BIE,	0
 	__ASSERT==	M 0.0,		0
-	
+	LAR1		P##TMP_DT1
+	L		DW#16#FF000000
+	T		D [AR1, P#0.0]
+	L		0
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		0
+	T		D [AR1, P#0.0]
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		DW#16#FF000000
+	T		D [AR2, P#0.0]
+	L		0
+	T		D [AR2, P#4.0]
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	M 0.0,		1
 	
 	
 	CALL		SFC 46 // Stop CPU

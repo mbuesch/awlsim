@@ -183,20 +183,20 @@ YRCK:	L	#YEAR1
 
 //------------------------------------------------------
 	// Everything is Ok.
-OK:	SET
-	=	#RET_VAL	// RET_VAL := 1
+	// VKE is 1.
+OK:	=	#RET_VAL	// RET_VAL := 1
 	SAVE			// BIE := 1
 	SPA	END
 
-	// BCD failure.
+	// BCD failure. Set BIE := 0.
+	// Do not touch RET_VAL.
 FAIL:	CLR
-	=	#RET_VAL	// RET_VAL := 0
 	SAVE			// BIE := 0
 	SPA	END
 
 	// BCD is Ok, but result is negative.
-NOK:	SET
-	SAVE			// BIE := 1
+	// VKE is 1.
+NOK:	SAVE			// BIE := 1
 	CLR
 	=	#RET_VAL	// RET_VAL := 0
 
