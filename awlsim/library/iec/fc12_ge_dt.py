@@ -3,6 +3,7 @@
 # AWL simulator - IEC library - FC 12 "GE_DT"
 #
 # Copyright 2015 Christian Vitte <vitte.chris@gmail.com>
+# Copyright 2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
