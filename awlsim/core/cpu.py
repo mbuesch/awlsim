@@ -777,13 +777,15 @@ class S7CPU(object): #+cdef
 
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.fbNumber]
-		cse = CallStackElem(self, fb, self.diRegister, blockOper.value, parameters)
+		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
+		cse = CallStackElem(self, fb, self.diRegister, base, parameters)
 		self.dbRegister = self.diRegister
 		return cse
 
 	def __call_MULTI_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.fbNumber]
-		cse = CallStackElem(self, sfb, self.diRegister, blockOper.value, parameters)
+		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
+		cse = CallStackElem(self, sfb, self.diRegister, base, parameters)
 		self.dbRegister = self.diRegister
 		return cse
 
