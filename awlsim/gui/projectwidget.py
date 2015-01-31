@@ -249,6 +249,7 @@ class ProjectWidget(QTabWidget):
 		self.symTabs.setSources(self.__project.getSymTabSources())
 		self.libTable.model().setLibSelections(self.__project.getLibSelections())
 		self.__warnedFileBacked = False
+		self.__isAdHocProject = False
 
 	def __loadPlainAwlSource(self, filename):
 		project = Project(None) # Create an ad-hoc project
