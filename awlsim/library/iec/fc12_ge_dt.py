@@ -157,12 +157,12 @@ YRCK:	L	#YEAR1
 	SPB	OK
 
 //------------------------------------------------------
-	// Check if M:D:H DT1 >= M:D:H DT2 - Bytes 2 to 4
-	// Extract first data from DT1 and DT2 without year
+	// Check if M:D:H DT1 >= M:D:H DT2 - Bytes 1 to 3
+	// Extract M:D:H from DT1 and DT2 (without year)
 	L	D [AR1, P#0.0]
-	UD	DW#16#00FFFFFF
+	UD	DW#16#00FFFFFF	// Remove sign (and year)
 	L	D [AR2, P#0.0]
-	UD	DW#16#00FFFFFF
+	UD	DW#16#00FFFFFF	// Remove sign (and year)
 	<D
 	// BCD-from-DT1 < BCD-from-DT2 -> NOK
 	// This check also works without BCD->INT conversion.
@@ -172,11 +172,26 @@ YRCK:	L	#YEAR1
 	SPB	OK
 
 //------------------------------------------------------
-	// Checking if M:S:MS DT1 >= M:S:MS DT2 - Bytes 5 to 8
-	// Extract second data from DT1 and DT2
-	L	D [AR1, P#4.0]
-	L	D [AR2, P#4.0]
-	<D		//FIXME can signedness be an issue here? Probably check for invalid M value
+	// Check if M:S:MS1 DT1 >= M:S:MS1 DT2 - Bytes 4 to 6
+	// Extract M:S:MS1 from DT1 and DT2
+	L	D [AR1, P#3.0]
+	UD	DW#16#00FFFFFF	// Remove sign (and hour)
+	L	D [AR2, P#3.0]
+	UD	DW#16#00FFFFFF	// Remove sign (and hour)
+	<D
+	// BCD-from-DT1 < BCD-from-DT2 -> NOK
+	// This check also works without BCD->INT conversion.
+	SPB	NOK
+	>D
+	// BCD-from-DT1 > BCD-from-DT2 -> OK
+	SPB	OK
+
+//------------------------------------------------------
+	// Check if MS2:WD DT1 >= MS2:WD DT2 - Byte 7
+	// Extract MS2:WD from DT1 and DT2
+	L	B [AR1, P#7.0]
+	L	B [AR2, P#7.0]
+	<I
 	// BCD-from-DT1 < BCD-from-DT2 -> NOK
 	// This check also works without BCD->INT conversion.
 	SPB	NOK

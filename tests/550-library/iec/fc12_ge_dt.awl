@@ -634,5 +634,136 @@ BEGIN
 	__ASSERT==	M 0.0,		1
 	
 	
+	// Check each byte invididually with invalid BCD value and upper bit set.
+	// This checks for a signedness bug in comparison.
+	LAR1		P##TMP_DT1
+	L		DW#16#00FF0000
+	T		D [AR1, P#0.0]
+	L		DW#16#00000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#0000FF00
+	T		D [AR1, P#0.0]
+	L		DW#16#00000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#000000FF
+	T		D [AR1, P#0.0]
+	L		DW#16#00000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#FF000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#00FF0000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#0000FF00
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#000000FF
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	
+	
 	CALL		SFC 46 // Stop CPU
 END_ORGANIZATION_BLOCK
