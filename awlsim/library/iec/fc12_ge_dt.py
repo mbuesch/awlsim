@@ -43,8 +43,6 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 					    dataType = AwlDataType.makeByName("BOOL")),
 		),
 		BlockInterfaceField.FTYPE_TEMP	: (
-			BlockInterfaceField(name = "DBNR",
-					    dataType = AwlDataType.makeByName("INT")),
 			BlockInterfaceField(name = "YEAR1",
 					    dataType = AwlDataType.makeByName("WORD")),
 			BlockInterfaceField(name = "YEAR2",
@@ -68,8 +66,8 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	L	P##DT1
 	LAR1
 	L	W [AR1, P#0.0]
-	T	#DBNR
-	AUF	DB [#DBNR]
+	T	#YEAR1 // DB number (abuse #YEAR1 temp field)
+	AUF	DB [#YEAR1]
 	L	D [AR1, P#2.0]
 	LAR1
 
@@ -77,8 +75,8 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	L	P##DT2
 	LAR2
 	L	W [AR2, P#0.0]
-	T	#DBNR
-	AUF	DI [#DBNR]
+	T	#YEAR1 // DB number (abuse #YEAR1 temp field)
+	AUF	DI [#YEAR1]
 	L	D [AR2, P#2.0]
 	// If #DT2 points to DB (area 84) change it to DI (area 85).
 	// This also works, if #DT2 points to VL (area 87).
