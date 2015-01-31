@@ -59,12 +59,10 @@ class AwlTranslator(object):
 			insns.append(AwlInsn_BE(cpu = self.cpu, rawInsn = None))
 		return insns
 
-	def __translateInterfaceField(self, rawVar):
-		#TODO use rawFieldTranslate
-		dtype = AwlDataType.makeByName(rawVar.typeTokens, rawVar.dimensions)
-		assert(len(rawVar.idents) == 1) #TODO no structs, yet
-		field = BlockInterfaceField(name = rawVar.idents[0].name,
-					    dataType = dtype)
+	def __translateInterfaceField(self, rawField):
+		name, dataType, initBytes = self.rawFieldTranslate(rawField)
+		field = BlockInterfaceField(name = name,
+					    dataType = dataType)
 		return field
 
 	def translateLibraryCodeBlock(self, block):
