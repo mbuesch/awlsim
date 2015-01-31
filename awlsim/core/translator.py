@@ -218,8 +218,9 @@ class AwlTranslator(object):
 
 		if rawDB.fb.fbSymbol is None:
 			# The FB name is absolute.
-			fbStr = "SFB" if rawDB.fb.isSFB else "FB"
 			fbNumber = rawDB.fb.fbNumber
+			fbStr = "SFB" if rawDB.fb.isSFB else "FB"
+			fbStr += " %d" % fbNumber
 			isSFB = rawDB.fb.isSFB
 		else:
 			# The FB name is symbolic. Resolve it.
@@ -237,11 +238,9 @@ class AwlTranslator(object):
 			else:
 				fb = self.cpu.fbs[fbNumber]
 		except KeyError:
-			raise AwlSimError("Instance DB %d references %s %d, "
-				"but %s %d does not exist." %\
-				(rawDB.index,
-				 fbStr, fbNumber,
-				 fbStr, fbNumber))
+			raise AwlSimError("Instance DB %d references %s, "
+				"but %s does not exist." %\
+				(rawDB.index, fbStr, fbStr))
 
 		# Create an instance data block
 		db = DB(rawDB.index, fb)
