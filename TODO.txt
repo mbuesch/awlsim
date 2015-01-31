@@ -2,10 +2,11 @@
 
 S7 compatibility:
 - Add support for STRUCTs
+- Add support for STRINGs
 - Add support for symbolic access to user defined data type (UDT) elements
 - Implement parsing of attributes
 - Implement POINTER and DB-pointer immediates
-- Implement ANY pointer
+- Implement ANY pointer immediate
 
 GUI:
 - Add editor 'find'
