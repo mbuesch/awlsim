@@ -115,37 +115,33 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 
 //------------------------------------------------------
 	// Check whether specified year is 1990-1999 or 2000-2089
-	L	#YEAR1
 	L	B#16#89
-	>I
-	SPBN	_200
+	L	#YEAR1
+	>=I
+	SPB	_2K1
 
 	// 1900 years correction (applicable for year 1990-1999)
-	L	#YEAR1
 	OW	W#16#1900
 	T	#YEAR1
-	SPA	Y2CK
+	SPA	Y2
 
 	// 2000 years correction (applicable for year 2000-2089)
-_200:	L	#YEAR1
-	OW	W#16#2000
+_2K1:	OW	W#16#2000
 	T	#YEAR1
 
 	// Check whether specified year is 1990-1999 or 2000-2089
-Y2CK:	L	#YEAR2
-	L	B#16#89
-	>I
-	SPBN	_201
+Y2:	L	B#16#89
+	L	#YEAR2
+	>=I
+	SPB	_2K2
 
 	// 1900 years correction (applicable for year 1990-1999)
-	L	#YEAR2
 	OW	W#16#1900
 	T	#YEAR2
 	SPA	YRCK
 
 	// 2000 years correction (applicable for year 2000-2089)
-_201:	L	#YEAR2
-	OW	W#16#2000
+_2K2:	OW	W#16#2000
 	T	#YEAR2
 
 //------------------------------------------------------
