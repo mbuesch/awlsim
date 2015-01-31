@@ -123,11 +123,30 @@ class AwlTranslator(object):
 			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
 		return block
 
-	@classmethod
-	def rawFieldTranslate(cls, rawField):
+	def rawFieldTranslate(self, rawField):
+		# Get the field name
 		name = rawField.getIdentString()
-		dataType = AwlDataType.makeByName(rawField.typeTokens,
-						  rawField.dimensions)
+		# Get the field data type
+		if len(rawField.typeTokens) == 1 and\
+		   rawField.typeTokens[0].startswith('"') and\
+		   rawField.typeTokens[0].endswith('"') and\
+		   self.cpu:
+			# The data type is symbolic.
+			# (symbolic multi instance field)
+			# Resolve it.
+			assert(not rawField.dimensions)
+			symStr = rawField.typeTokens[0][1:-1] # Strip quotes
+			resolver = AwlSymResolver(self.cpu)
+			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,
+								   AwlDataType.TYPE_SFB_X),
+								  symStr)
+			# Get the data type from the symbol.
+			dataType = sym.type
+		else:
+			# Parse the data type.
+			dataType = AwlDataType.makeByName(rawField.typeTokens,
+							  rawField.dimensions)
+		# Get the field inits
 		if rawField.defaultInits:
 			# Translate the initialization values and
 			# put them into a ByteArray.
