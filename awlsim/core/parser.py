@@ -773,6 +773,12 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_DB)
 		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
 			self.tree.curBlock.addDescriptor(t.tokens)
+		elif name == "STANDARD":
+			# This is a standard block. Do nothing for now.
+			pass
+		elif name == "KNOW_HOW_PROTECT":
+			# Nice try.
+			pass
 		elif name == "STRUCT":
 			self.__setState(self.STATE_IN_DB_HDR_STRUCT)
 		elif name in ("FB", "SFB"):
@@ -1008,6 +1014,12 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_FB)
 		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
 			self.tree.curBlock.addDescriptor(t.tokens)
+		elif name == "STANDARD":
+			# This is a standard block. Do nothing for now.
+			pass
+		elif name == "KNOW_HOW_PROTECT":
+			# Nice try.
+			pass
 		elif name == "VAR":
 			self.__setState(self.STATE_IN_FB_HDR_VAR)
 		elif name == "VAR_INPUT":
@@ -1079,6 +1091,12 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_FC)
 		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
 			self.tree.curBlock.addDescriptor(t.tokens)
+		elif name == "STANDARD":
+			# This is a standard block. Do nothing for now.
+			pass
+		elif name == "KNOW_HOW_PROTECT":
+			# Nice try.
+			pass
 		elif name == "VAR_INPUT":
 			self.__setState(self.STATE_IN_FC_HDR_VARIN)
 		elif name == "VAR_OUTPUT":
@@ -1147,6 +1165,12 @@ class AwlParser(object):
 			self.__setState(self.STATE_IN_OB_HDR_VARTEMP)
 		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
 			self.tree.curBlock.addDescriptor(t.tokens)
+		elif name == "STANDARD":
+			# This is a standard block. Do nothing for now.
+			pass
+		elif name == "KNOW_HOW_PROTECT":
+			# Nice try.
+			pass
 		elif name == "{":
 			#TODO: parse attributes
 			if "}" not in t.tokens:
@@ -1184,6 +1208,12 @@ class AwlParser(object):
 			self.__setState(self.STATE_GLOBAL)
 		elif name in ("TITLE", "AUTHOR", "FAMILY", "NAME", "VERSION"):
 			self.tree.curBlock.addDescriptor(t.tokens)
+		elif name == "STANDARD":
+			# This is a standard block. Do nothing for now.
+			pass
+		elif name == "KNOW_HOW_PROTECT":
+			# Nice try.
+			pass
 		elif name == "STRUCT":
 			self.__setState(self.STATE_IN_UDT_HDR_STRUCT)
 		else:
