@@ -935,6 +935,10 @@ class S7CPU(object): #+cdef
 			finalOp.width = operator.width
 		# Add possible sub-offsets (array, struct) to the offset.
 		finalOp.value += operator.value.subOffset
+		# Reparent the operator to the originating instruction.
+		# This is especially important for T and Z fetches due
+		# to their semantic dependency on the instruction being used.
+		finalOp.insn = operator.insn
 		return finalOp
 
 	# Fetch a range in the 'output' memory area.

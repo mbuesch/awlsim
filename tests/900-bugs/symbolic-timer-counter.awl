@@ -1,0 +1,23 @@
+FUNCTION FC 1 : VOID
+VAR_INPUT
+	TIM	: TIMER;
+	CNT	: COUNTER;
+END_VAR
+BEGIN
+	// This would throw exception on older awlsim due to FC parameter
+	// operators not being reparented from CALL to L.
+	L		#TIM
+	L		#CNT
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL	FC 1 (
+		TIM	:= T 1,
+		CNT	:= Z 1,
+	)
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
