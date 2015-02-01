@@ -394,10 +394,24 @@ class AwlSourceTabWidget(SourceTabWidget):
 			return
 		source = AwlSource.fromFile("Imported source",
 					    fn)
+		res = QMessageBox.question(self,
+			"Integrate source into project?",
+			"Do you want to integrate the source\n"
+			"%s\n"
+			"into the project file (.awlpro)?\n"
+			"If you do not integrate the source, it "
+			"will stay in the external file.\n\n"
+			"It is highly recommended to say 'Yes'." %\
+			fn,
+			QMessageBox.Yes | QMessageBox.No,
+			QMessageBox.Yes)
+		if res == QMessageBox.Yes:
+			source.forceNonFileBacked(source.name)
 		index, editWidget = self.addEditWidget()
 		editWidget.setSource(source)
-		self.updateTabTexts()
 		self.setCurrentIndex(index)
+		self.updateTabTexts()
+		self.updateActionMenu()
 
 	def pasteText(self, text):
 		editWidget = self.currentWidget()
@@ -553,10 +567,24 @@ class SymSourceTabWidget(SourceTabWidget):
 			return
 		source = SymTabSource.fromFile("Imported symbol table",
 					       fn)
+		res = QMessageBox.question(self,
+			"Integrate symbol table into project?",
+			"Do you want to integrate the symbol table\n"
+			"%s\n"
+			"into the project file (.awlpro)?\n"
+			"If you do not integrate the symbol table, it "
+			"will stay in the external file.\n\n"
+			"It is highly recommended to say 'Yes'." %\
+			fn,
+			QMessageBox.Yes | QMessageBox.No,
+			QMessageBox.Yes)
+		if res == QMessageBox.Yes:
+			source.forceNonFileBacked(source.name)
 		index, symTabView = self.addSymTable()
 		symTabView.setSource(source)
-		self.updateTabTexts()
 		self.setCurrentIndex(index)
+		self.updateTabTexts()
+		self.updateActionMenu()
 
 	def handleIdentsMsg(self, identsMsg):
 		pass#TODO
