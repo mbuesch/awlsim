@@ -103,7 +103,7 @@ class BlockInterface(object):
 		self.interfaceFieldCount = 0	# The number of interface fields
 		self.staticFieldCount = 0	# The number of static fields
 		self.tempFieldCount = 0		# The number of temp fields
-		self.tempAllocation = 0		# The number of allocated TEMP bytes
+		self.tempAllocation = 0		# The number of allocated TEMP bytes (interface only!)
 
 	@property
 	def fields_IN_OUT_INOUT(self):
@@ -418,6 +418,7 @@ class CodeBlock(Block):
 		self.insns = insns
 		self.labels = None
 		self.interface = interface
+		self.tempAllocation = 0		# The number of allocated TEMP bytes
 		self.resolveLabels()
 
 	def resolveLabels(self):
@@ -428,6 +429,29 @@ class CodeBlock(Block):
 
 	def resolveSymbols(self):
 		pass
+
+	# Account for interface TEMP allocations and
+	# direct TEMP (L, LB, LW, LD) accesses.
+	def accountTempAllocations(self):
+		directAlloc = 0
+
+		def accountDirect(currentAlloc, oper):
+			if oper.type != AwlOperator.MEM_L:
+				return currentAlloc
+			offset = oper.value + AwlOffset(0, oper.width)
+			return max(offset.roundUp(2).byteOffset,
+				   currentAlloc)
+
+		for insn in self.insns:
+			for oper in insn.ops:
+				directAlloc = accountDirect(directAlloc,
+							    oper)
+			for param in insn.params:
+				directAlloc = accountDirect(directAlloc,
+							    param.rvalueOp)
+
+		self.tempAllocation = max(self.interface.tempAllocation,
+					  directAlloc)
 
 	def __repr__(self):
 		return "CodeBlock %d" % self.index

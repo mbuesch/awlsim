@@ -43,8 +43,6 @@ class LStackAllocator(object):
 		#      For now we just alloc unaligned full bytes.
 		nrBytes = intDivRoundUp(nrBits, 8)
 
-		#FIXME honor direct L-stack accesses in the code
-		#      and adjust the offset accordingly.
 		offset = self.allocation
 		self.allocation += nrBytes
 		if self.allocation >= len(self.localdata):

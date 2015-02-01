@@ -241,6 +241,9 @@ class S7CPU(object): #+cdef
 			# Add interface references to the parameter assignments.
 			for param in insn.params:
 				param.interface = calledCodeBlock.interface
+		# Check and account for direct L stack allocations and
+		# interface L stack allocations.
+		block.accountTempAllocations()
 
 	def __finalizeCodeBlocks(self):
 		for block in self.__allUserCodeBlocks():

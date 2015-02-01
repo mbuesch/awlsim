@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.datatypehelpers import *
+
 #from awlsim.core.dynattrs cimport * #@cy
 
 from awlsim.core.dynattrs import * #@nocy
@@ -90,6 +92,15 @@ class AwlOffset(DynAttrs): #+cdef
 		self.byteOffset = bitOffset // 8
 		self.bitOffset = bitOffset % 8
 		return self
+
+	# Round the offset to a multiple of 'byteBase' bytes.
+	# Returns an AwlOffset.
+	def roundUp(self, byteBase):
+		byteOffset = self.byteOffset
+		if self.bitOffset:
+			byteOffset += 1
+		byteOffset = roundUp(byteOffset, byteBase)
+		return AwlOffset(byteOffset)
 
 	def __repr__(self):
 		prefix = ""

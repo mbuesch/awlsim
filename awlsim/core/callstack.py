@@ -64,7 +64,7 @@ class CallStackElem(object):
 		self.prevDbRegister = cpu.dbRegister
 		self.prevDiRegister = cpu.diRegister
 		self.lalloc = self.lallocCache.get(cpu)
-		self.lalloc.allocation = block.interface.tempAllocation
+		self.lalloc.allocation = block.tempAllocation
 		self.localdata = self.lalloc.localdata
 
 		# Handle parameters
