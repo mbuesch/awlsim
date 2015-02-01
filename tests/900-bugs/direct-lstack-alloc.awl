@@ -1,0 +1,63 @@
+FUNCTION FC 20 : VOID
+VAR_INPUT
+	VAR1	: BYTE;
+	VAR2	: BYTE;
+END_VAR
+BEGIN
+	// Check whether VAR1 (VLB 0) was clobbered.
+	L		#VAR1
+	__ASSERT==	__ACCU 1,	1
+END_FUNCTION
+
+
+FUNCTION FC 10 : VOID
+BEGIN
+	L		1
+	T		LB 0	// This directly allocates LB 0
+	CALL	FC 20 (
+		VAR1	:= LB 0,
+
+		// This 'B#16#0' immediate implicitly allocates
+		// space on the L stack.
+		// It should not overwrite the direct LB 0 allocation.
+		VAR2	:= B#16#0,
+	)
+END_FUNCTION
+
+
+FUNCTION FC 2 : VOID
+VAR_INPUT
+	BVAR1	: BOOL;
+	BVAR2	: BOOL;
+END_VAR
+BEGIN
+	// Check whether BVAR1 (VLB 0) was clobbered.
+	__STWRST
+	U		#BVAR1
+	__ASSERT==	__STW VKE,	1
+	__STWRST
+END_FUNCTION
+
+
+FUNCTION FC 1 : VOID
+BEGIN
+	L		1
+	T		LB 0	// This directly allocates LB 0
+	CALL	FC 2 (
+		BVAR1	:= L 0.0,
+
+		// This 'FALSE' immediate implicitly allocates
+		// space on the L stack.
+		// It should not overwrite the direct LB 0 allocation.
+		BVAR2	:= FALSE,
+	)
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL	FC 1
+	CALL	FC 10
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
