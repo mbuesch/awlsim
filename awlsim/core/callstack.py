@@ -67,13 +67,6 @@ class CallStackElem(object):
 		self.lalloc.allocation = block.interface.tempAllocation
 		self.localdata = self.lalloc.localdata
 
-		# Set AR2 to the specified multi-instance base
-		# and save the old AR2 value.
-		self.prevAR2value = cpu.ar2.get()
-		if instanceBaseOffset is not None:
-			cpu.ar2.set(AwlIndirectOp.AREA_DB |\
-				    instanceBaseOffset.toPointerValue())
-
 		# Handle parameters
 		self.__outboundParams = []
 		if parameters and not isRawCall:
@@ -115,6 +108,13 @@ class CallStackElem(object):
 							"actual-parameter is not allowed in this call." %\
 							str(param))
 					self.interfRefs[param.interfaceFieldIndex] = trans(self, param, param.rvalueOp)
+
+		# Set AR2 to the specified multi-instance base
+		# and save the old AR2 value.
+		self.prevAR2value = cpu.ar2.get()
+		if instanceBaseOffset is not None:
+			cpu.ar2.set(AwlIndirectOp.AREA_DB |\
+				    instanceBaseOffset.toPointerValue())
 
 	# Don't perform translation.
 	# For various MEM and BLKREF accesses.
