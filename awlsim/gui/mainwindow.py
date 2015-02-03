@@ -126,7 +126,7 @@ class MainWidget(QWidget):
 		if isWinStandalone:
 			argv = [ executable, ]
 		else:
-			argv = [ executable, "-m", "awlsim.gui.mainwindow", ]
+			argv = [ executable, "-m", "awlsim.gui.startup", ]
 		if filename:
 			argv.append(filename)
 		PopenWrapper(argv, env = os.environ)
@@ -563,8 +563,3 @@ class MainWindow(QMainWindow):
 
 	def paste(self):
 		self.centralWidget().paste()
-
-# If invoked as script, run a new instance.
-if __name__ == "__main__":
-	fn = sys.argv[1] if (len(sys.argv) >= 2) else None
-	sys.exit(MainWindow.start(initialAwlSource = fn).runEventLoop())
