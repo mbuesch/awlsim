@@ -331,7 +331,7 @@ class HwmodConfigWidget(QWidget):
 		self.paramViewLabel.setEnabled(bool(cur))
 		self.paramView.setEnabled(bool(cur))
 		self.delButton.setEnabled(bool(cur))
-		self.paramErrorText.clear()
+		self.__handleNewErrorText("")
 
 	def __handleAdd(self):
 		manualModName = self.manualModName.text().strip()
@@ -364,6 +364,10 @@ class HwmodConfigWidget(QWidget):
 		if text:
 			text = "Warning: " + text
 		self.paramErrorText.setText(text)
+		if text:
+			self.paramErrorText.show()
+		else:
+			self.paramErrorText.hide()
 
 	def setAvailableModules(self, mods):
 		self.availList.clear()
