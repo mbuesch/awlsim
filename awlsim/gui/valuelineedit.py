@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI text value line edit widget
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +31,12 @@ class ValidatorCallback(QValidator):
 		self.callback = callback
 
 	def validate(self, inputString, pos):
-		return self.callback(inputString, pos)
+		state = self.callback(inputString, pos)
+		if isPySide:
+			return state
+		elif isPyQt:
+			return (state, inputString, pos)
+		assert(0)
 
 class ValueLineEdit(QLineEdit):
 	valueChanged = Signal(str)
