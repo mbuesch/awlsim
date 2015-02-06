@@ -33,13 +33,10 @@ def __frameworkError(msg):
 	input("Press enter to exit.")
 	sys.exit(1)
 
-def __testQStringAPI(silent=False):
+def __testQStringAPI(scope, silent=False):
 	# Test for QString v2 API
-	try:
-		QString
-	except NameError:
-		pass # Everything is ok
-	else:
+	if "QString" in scope:
+		# QString exists. This is v1 API.
 		if silent:
 			return False
 		__frameworkError("Deprecated QString API detected.\n"
@@ -54,24 +51,26 @@ def __autodetectGuiFramework():
 		"pyqt5" : "http://www.riverbankcomputing.com/software/pyqt/download5",
 	}
 	try:
-		import PySide as __unused
+		import PyQt5.QtCore as __pyQtCore
+		if __testQStringAPI(dir(__pyQtCore), True):
+			return "pyqt5"
+	except ImportError:
+		pass
+	try:
+		import PySide.QtCore as __pySideCore
 		return "pyside4"
 	except ImportError:
 		pass
 	try:
-		import PyQt5 as __unused
-		return "pyqt5"
-	except ImportError:
-		pass
-	try:
-		import PyQt4 as __unused
-		return "pyqt4"
+		import PyQt4.QtCore as __pyQtCore
+		if __testQStringAPI(dir(__pyQtCore), True):
+			return "pyqt4"
 	except ImportError:
 		pass
 	__frameworkError("Neither PySide nor PyQt found.\n"
 			 "PLEASE INSTALL PySide (%s)\n"
-			 "            or PyQt4 (%s)\n"
-			 "            or PyQt5 (%s)" %\
+			 "            or PyQt4 with v2 APIs (%s)\n"
+			 "            or PyQt5 with v2 APIs (%s)" %\
 			 (urls["pyside"],
 			  urls["pyqt4"],
 			  urls["pyqt5"]))
@@ -102,7 +101,7 @@ elif __guiFramework == "pyqt4":
 		from PyQt4.QtGui import *
 	except ImportError as e:
 		__frameworkError("Failed to import PyQt4 modules:\n" + str(e))
-	__testQStringAPI()
+	__testQStringAPI(globals())
 	# Compatibility
 	Signal = pyqtSignal
 elif __guiFramework == "pyqt5":
@@ -113,7 +112,7 @@ elif __guiFramework == "pyqt5":
 		from PyQt5.QtWidgets import *
 	except ImportError as e:
 		__frameworkError("Failed to import PyQt5 modules:\n" + str(e))
-	__testQStringAPI()
+	__testQStringAPI(globals())
 	# Compatibility
 	Signal = pyqtSignal
 else:
