@@ -83,6 +83,10 @@ class AwlValidator(object):
 	def startup(cls, synchronous = False):
 		assert(cls.__instance is None)
 		garbageCollector.collect()
+		if isPy2Compat and not synchronous:
+			#FIXME: Asynchronous validator is currently broken on Py2.
+			printInfo("Python 2: Enforcing synchronous validator.")
+			synchronous = True
 		cls.__instance = cls(synchronous)
 
 	@classmethod
