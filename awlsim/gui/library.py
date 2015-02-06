@@ -368,7 +368,8 @@ class LibraryDialog(QDialog):
 
 	def __addLibraryTable(self, lib):
 		entries = []
-		for i, libCls in enumerate(lib.entries()):
+		for i, libCls in enumerate(sorted(lib.entries(),
+						  key=lambda c: c.staticIndex)):
 			if libCls.broken:
 				continue
 			absName = "%s %d" % ("FC" if libCls.isFC else "FB",\
