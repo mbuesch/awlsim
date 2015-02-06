@@ -29,9 +29,23 @@ import os
 
 
 def __frameworkError(msg):
-	printError("Awlsim-GUI: " + msg)
+	printError("Awlsim-GUI ERROR: " + msg)
 	input("Press enter to exit.")
 	sys.exit(1)
+
+def __testQStringAPI(silent=False):
+	# Test for QString v2 API
+	try:
+		QString
+	except NameError:
+		pass # Everything is ok
+	else:
+		if silent:
+			return False
+		__frameworkError("Deprecated QString API detected.\n"
+				 "Awlsim does not support PyQt QString v1 API.\n"
+				 "---> Please use PySide or a newer PyQt with v2 APIs. <---")
+	return True
 
 def __autodetectGuiFramework():
 	urls = {
@@ -88,6 +102,7 @@ elif __guiFramework == "pyqt4":
 		from PyQt4.QtGui import *
 	except ImportError as e:
 		__frameworkError("Failed to import PyQt4 modules:\n" + str(e))
+	__testQStringAPI()
 	# Compatibility
 	Signal = pyqtSignal
 elif __guiFramework == "pyqt5":
@@ -98,6 +113,7 @@ elif __guiFramework == "pyqt5":
 		from PyQt5.QtWidgets import *
 	except ImportError as e:
 		__frameworkError("Failed to import PyQt5 modules:\n" + str(e))
+	__testQStringAPI()
 	# Compatibility
 	Signal = pyqtSignal
 else:
