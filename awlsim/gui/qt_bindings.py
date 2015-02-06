@@ -109,3 +109,7 @@ else:
 isQt4 = (__guiFramework == "pyside4" or\
 	 __guiFramework == "pyqt4")
 isQt5 = (__guiFramework == "pyqt5")
+
+# Helpers for distinction between PySide and PyQt API.
+isPySide = __guiFramework.startswith("pyside")
+isPyQt = __guiFramework.startswith("pyqt")
