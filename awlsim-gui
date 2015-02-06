@@ -20,4 +20,5 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-import awlsim.gui.startup
+if __name__ == "__main__":
+	import awlsim.gui.startup
