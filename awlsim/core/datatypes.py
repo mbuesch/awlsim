@@ -2,7 +2,7 @@
 #
 # AWL data types
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -962,52 +962,45 @@ class ByteArray(bytearray):
 		WordPacker.toBytes(bytesBuf, width, 0, self.fetch(offset, width))
 		return bytesBuf
 
-	# "Natural" memory store operation.
-	# This method stores natural data (byte, word, dword) to
+	# Memory store operation.
+	# This method stores data (bit, byte, word, dword, etc...) to
 	# a given memory region of this byte array.
 	# offset => An AwlOffset() that specifies the region to store to.
 	# width => An integer specifying the width (in bits) to store.
-	# value => The value to store. May be an integer (byte, word, dword) or
-	#          a byte array for large types (>32 bit).
+	# value => The value to store.
+	#          May be an int, ByteArray, bytearray, bytes or compatible.
 	def store(self, offset, width, value): #@nocy
 #@cy	def store(self, object offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
 
-		byteOffset = offset.byteOffset
 		try:
-			if width == 1:
-				if value:
-					self[byteOffset] |= 1 << offset.bitOffset
+			byteOffset = offset.byteOffset
+			if isInteger(value):
+				if width == 1:
+					if value:
+						self[byteOffset] |= 1 << offset.bitOffset
+					else:
+						self[byteOffset] &= ~(1 << offset.bitOffset)
 				else:
-					self[byteOffset] &= ~(1 << offset.bitOffset)
-			elif width == 8:
-				self[byteOffset] = value & 0xFF
-			elif width == 16:
-				self[byteOffset] = (value >> 8) & 0xFF
-				self[byteOffset + 1] = value & 0xFF
-			elif width == 32:
-				self[byteOffset] = (value >> 24) & 0xFF
-				self[byteOffset + 1] = (value >> 16) & 0xFF
-				self[byteOffset + 2] = (value >> 8) & 0xFF
-				self[byteOffset + 3] = value & 0xFF
+					while width:
+						width -= 8
+						self[byteOffset] = (value >> width) & 0xFF
+						byteOffset += 1
 			else:
-				assert(not offset.bitOffset)
-				nrBytes = intDivRoundUp(width, 8)
-				assert(nrBytes == len(value))
-				if byteOffset + nrBytes > len(self):
-					raise IndexError
-				self[byteOffset : byteOffset + len(value)] = value
+				if width == 1:
+					if value[0] & 1:
+						self[byteOffset] |= 1 << offset.bitOffset
+					else:
+						self[byteOffset] &= ~(1 << offset.bitOffset)
+				else:
+					nrBytes = intDivRoundUp(width, 8)
+					assert(nrBytes == len(value))
+					if byteOffset + nrBytes > len(self):
+						raise IndexError
+					self[byteOffset : byteOffset + nrBytes] = value
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset '%s' out of range" %\
 					  str(offset))
-
-	# Store bytes to this memory region.
-	# offset => An AwlOffset() that specifies the region to store to.
-	# width => An integer specifying the width (in bits) to store.
-	# valueBytes => The bytes to store.
-	def storeBytes(self, offset, width, valueBytes):
-		#TODO optimize me!
-		self.store(offset, width, WordPacker.fromBytes(valueBytes, width))
 
 	def __repr__(self):
 		ret = [ 'ByteArray(b"', ]

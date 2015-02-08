@@ -182,9 +182,9 @@ class AwlStruct(object):
 					if not initBytes:
 						raise ValueError
 					fieldInitData = ByteArray(intDivRoundUp(childType.width, 8))
-					fieldInitData.storeBytes(AwlOffset(), childType.width,
-								 initBytes.fetchBytes(initOffset,
-										      childType.width))
+					fieldInitData.store(AwlOffset(), childType.width,
+							    initBytes.fetchBytes(initOffset,
+										 childType.width))
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
 				self.addField(cpu, childName, childType,
@@ -247,8 +247,8 @@ class AwlStructInstance(object):
 			if not field.initBytes:
 				continue
 			try:
-				self.dataBytes.storeBytes(field.offset, field.bitSize,
-							  field.initBytes)
+				self.dataBytes.store(field.offset, field.bitSize,
+						     field.initBytes)
 			except AwlSimError as e:
 				raise AwlSimError("Data structure field '%s' "
 					"initialization is out of range." %\
