@@ -52,6 +52,7 @@ class AwlDataType(object):
 	TYPE_ARRAY	= EnumGen.item
 	TYPE_TIMER	= EnumGen.item
 	TYPE_COUNTER	= EnumGen.item
+	TYPE_POINTER	= EnumGen.item
 	TYPE_BLOCK_DB	= EnumGen.item # DB number type
 	TYPE_BLOCK_FB	= EnumGen.item # FB number type
 	TYPE_BLOCK_FC	= EnumGen.item # FC number type
@@ -83,6 +84,7 @@ class AwlDataType(object):
 		"ARRAY"		: TYPE_ARRAY,
 		"TIMER"		: TYPE_TIMER,
 		"COUNTER"	: TYPE_COUNTER,
+		"POINTER"	: TYPE_POINTER,
 		"BLOCK_DB"	: TYPE_BLOCK_DB,
 		"BLOCK_FB"	: TYPE_BLOCK_FB,
 		"BLOCK_FC"	: TYPE_BLOCK_FC,
@@ -117,6 +119,7 @@ class AwlDataType(object):
 		TYPE_ARRAY	: -1,
 		TYPE_TIMER	: 16,
 		TYPE_COUNTER	: 16,
+		TYPE_POINTER	: 48,
 		TYPE_BLOCK_DB	: 16,
 		TYPE_BLOCK_FB	: 16,
 		TYPE_BLOCK_FC	: 16,

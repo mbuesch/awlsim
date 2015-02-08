@@ -158,11 +158,26 @@ class BlockInterface(object):
 
 	def __buildField(self, cpu, struct, field, isFirst):
 		if isFirst:
-			struct.addFieldAligned(cpu, field.name,
-					       field.dataType, 2)
+			# Align to word boundary.
+			structField = struct.addFieldAligned(cpu,
+							field.name,
+							field.dataType, 2)
 		else:
-			struct.addFieldNaturallyAligned(cpu, field.name,
+			# Align naturally.
+			structField = struct.addFieldNaturallyAligned(cpu,
+							field.name,
 							field.dataType)
+		if self.hasInstanceDB and\
+		   field.fieldType == field.FTYPE_INOUT and\
+		   field.dataType.compound:
+			# This is an FB IN_OUT compound data type parameter.
+			# These are special. They are passed via DB-pointer.
+			# The DB-pointer is stored in the instance DB.
+			# Set the struct field override for this struct field
+			# to DB-pointer type.
+			structField.override = AwlStructField(
+					structField.name, structField.offset,
+					"POINTER")
 
 	def __resolveMultiInstanceField(self, cpu, field):
 		if field.dataType.type != AwlDataType.TYPE_FB_X and\

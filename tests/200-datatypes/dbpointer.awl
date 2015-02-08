@@ -19,18 +19,115 @@ BEGIN
 	T		DBD 8
 	CALL		FC 1 (
 		DTTEMP	:= #DTTEMP,
-		DTDB	:= DB42.DTVAR,
+		DTDB	:= DB42.DTVAR1,
 	)
 
 	// Check forwarding of compound data type from FB to FC
 	CALL		FB 10, DB 10 (
 		DUMMYIN	:= 42,
-		DTVAR	:= DB42.DTVAR,
+		DTVAR	:= DB42.DTVAR1,
 	)
+
+
+	// Check FB compound data type IN_OUT parameter semantics.
+	L		42
+	T		MW 0
+	L		43
+	T		MW 2
+	L		44
+	T		MW 4
+	AUF		DB 42
+	L		DW#16#11223344 // DB42.DTVAR4
+	T		DBD 30
+	L		DW#16#55667788 // DB42.DTVAR4
+	T		DBD 34
+	CALL		FB 20, DB 20 (
+		DTIN		:= DB42.DTVAR2,
+		INTIN		:= MW 0,
+		DTOUT		:= DB42.DTVAR3,
+		INTOUT		:= MW 2,
+		DTINOUT		:= DB42.DTVAR4,
+		INTINOUT	:= MW 4,
+	)
+	// Check modified DTINOUT (DB42.DTVAR4)
+	AUF		DB 42
+	L		DBD 30
+	__ASSERT==	__ACCU 1,	DW#16#12131415
+	L		DBD 34
+	__ASSERT==	__ACCU 1,	DW#16#16171819
 
 
 	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
+
+
+FUNCTION_BLOCK FB 20
+	VAR_INPUT
+		DTIN		: DATE_AND_TIME;
+		INTIN		: INT;
+	END_VAR
+	VAR_OUTPUT
+		DTOUT		: DATE_AND_TIME;
+		INTOUT		: INT;
+	END_VAR
+	VAR_IN_OUT
+		DTINOUT		: DATE_AND_TIME;
+		INTINOUT	: INT;
+	END_VAR
+	VAR
+		DTSTAT		: DATE_AND_TIME;
+		INTSTAT		: INT;
+	END_VAR
+	VAR_TEMP
+		DBNR		: INT;
+	END_VAR
+BEGIN
+	// Check all variable addresses
+	L		P##DTIN
+	__ASSERT==	__ACCU 1,	P#DIX 0.0
+	L		P##INTIN
+	__ASSERT==	__ACCU 1,	P#DIX 8.0
+	L		P##DTOUT
+	__ASSERT==	__ACCU 1,	P#DIX 10.0
+	L		P##INTOUT
+	__ASSERT==	__ACCU 1,	P#DIX 18.0
+	L		P##DTINOUT	// 6 byte DB-ptr
+	__ASSERT==	__ACCU 1,	P#DIX 20.0
+	L		P##INTINOUT
+	__ASSERT==	__ACCU 1,	P#DIX 26.0
+	L		P##DTSTAT
+	__ASSERT==	__ACCU 1,	P#DIX 28.0
+	L		P##INTSTAT
+	__ASSERT==	__ACCU 1,	P#DIX 36.0
+
+	// Check DTINOUT data (via DB ptr)
+	L		P##DTINOUT
+	LAR1
+	L		W [AR1, P#0.0]	// Get DB-nr from DB-ptr
+	T		#DBNR
+	__ASSERT==	__ACCU 1,	42
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]	// Get address from DB-ptr
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DBX 30.0
+
+	L		D [AR1, P#0.0]	// Get DTINOUT data
+	__ASSERT==	__ACCU 1,	DW#16#11223344
+	L		D [AR1, P#4.0]	// Get DTINOUT data
+	__ASSERT==	__ACCU 1,	DW#16#55667788
+
+	// Modify DTINOUT data (via DB ptr)
+	L		DW#16#12131415
+	T		D [AR1, P#0.0]	// Write DTINOUT data
+	L		DW#16#16171819
+	T		D [AR1, P#4.0]	// Write DTINOUT data
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 20
+	FB 20
+BEGIN
+END_DATA_BLOCK
 
 
 FUNCTION FC 1 : VOID
@@ -132,10 +229,13 @@ END_DATA_BLOCK
 
 DATA_BLOCK DB 42
 	STRUCT
-		DUMMY1		: INT;
-		DUMMY2		: INT;
-		DTVAR		: DATE_AND_TIME;
-		DUMMY3		: INT;
+		DUMMY1		: INT;			// DBX 0.0
+		DUMMY2		: INT;			// DBX 2.0
+		DTVAR1		: DATE_AND_TIME;	// DBX 4.0
+		DUMMY3		: INT;			// DBX 12.0
+		DTVAR2		: DATE_AND_TIME;	// DBX 14.0
+		DTVAR3		: DATE_AND_TIME;	// DBX 22.0
+		DTVAR4		: DATE_AND_TIME;	// DBX 30.0
 	END_STRUCT;
 BEGIN
 END_DATA_BLOCK
