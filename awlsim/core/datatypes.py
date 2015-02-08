@@ -919,17 +919,19 @@ class GenericDWord(GenericInteger): #+cdef
 class ByteArray(bytearray):
 	"""Generic memory representation."""
 
-	# "Natural" memory fetch operation.
-	# This method returns the natural data (byte, word, dword) for
+	# Memory fetch operation.
+	# This method returns the data (bit, byte, word, dword, etc...) for
 	# a given memory region of this byte array.
 	# offset => An AwlOffset() that specifies the region to fetch from.
 	# width => An integer specifying the width (in bits) to fetch.
+	# Returns an int for small widths (<= 32 bits) and a memoryview
+	# for larger widths.
 	def fetch(self, offset, width): #@nocy
 #@cy	def fetch(self, object offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
 
-		byteOffset = offset.byteOffset
 		try:
+			byteOffset = offset.byteOffset
 			if width == 1:
 				return (self[byteOffset] >> offset.bitOffset) & 1
 			elif width == 8:
@@ -951,16 +953,6 @@ class ByteArray(bytearray):
 		except IndexError as e:
 			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
 					  str(offset))
-
-	# Fetch bytes from this memory region.
-	# Returns a view of the memory region bytes (not a copy!).
-	# offset => An AwlOffset() that specifies the region to fetch from.
-	# width => An integer specifying the width (in bits) to fetch.
-	def fetchBytes(self, offset, width):
-		#TODO optimize me!
-		bytesBuf = ByteArray(intDivRoundUp(width, 8))
-		WordPacker.toBytes(bytesBuf, width, 0, self.fetch(offset, width))
-		return bytesBuf
 
 	# Memory store operation.
 	# This method stores data (bit, byte, word, dword, etc...) to

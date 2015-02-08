@@ -183,8 +183,8 @@ class AwlStruct(object):
 						raise ValueError
 					fieldInitData = ByteArray(intDivRoundUp(childType.width, 8))
 					fieldInitData.store(AwlOffset(), childType.width,
-							    initBytes.fetchBytes(initOffset,
-										 childType.width))
+							    initBytes.fetch(initOffset,
+									    childType.width))
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
 				self.addField(cpu, childName, childType,
