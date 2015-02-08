@@ -947,9 +947,10 @@ class ByteArray(bytearray):
 			else:
 				assert(not offset.bitOffset)
 				nrBytes = intDivRoundUp(width, 8)
-				if byteOffset + nrBytes > len(self):
+				end = byteOffset + nrBytes
+				if end > len(self):
 					raise IndexError
-				return memoryview(self)[byteOffset : byteOffset + nrBytes]
+				return memoryview(self)[byteOffset : end]
 		except IndexError as e:
 			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
 					  str(offset))
@@ -987,9 +988,10 @@ class ByteArray(bytearray):
 				else:
 					nrBytes = intDivRoundUp(width, 8)
 					assert(nrBytes == len(value))
-					if byteOffset + nrBytes > len(self):
+					end = byteOffset + nrBytes
+					if end > len(self):
 						raise IndexError
-					self[byteOffset : byteOffset + nrBytes] = value
+					self[byteOffset : end] = value
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset '%s' out of range" %\
 					  str(offset))
