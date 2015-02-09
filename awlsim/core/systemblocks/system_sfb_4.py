@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,8 +52,53 @@ class SFB4(SFB):
 		),
 	}
 
-	broken = True #TODO
+	# STATE bits
+	STATE_RUNNING		= 1 << 0
+	STATE_FINISHED		= 1 << 1
 
 	def run(self):
-		pass#TODO
-		raise AwlSimError("SFB 4 \"TON\" not implemented, yet.")
+		PT = dwordToSignedPyInt(self.fetchInterfaceFieldByName("PT"))
+		if PT <= 0:
+			# Invalid PT. Abort and reset state.
+			# A PT of zero is used to reset the timer.
+			if PT == 0:
+				# S7 resets IN here, for whatever weird reason.
+				self.storeInterfaceFieldByName("IN", 0)
+			self.storeInterfaceFieldByName("Q", 0)
+			self.storeInterfaceFieldByName("ET", 0)
+			self.storeInterfaceFieldByName("STATE", 0)
+			return
+
+		# Get the current time, as S7-time value (31-bit milliseconds)
+		ATIME = int(self.cpu.now * 1000.0) & 0x7FFFFFFF
+
+		STATE = self.fetchInterfaceFieldByName("STATE")
+		IN = self.fetchInterfaceFieldByName("IN")
+		if IN:
+			if not (STATE & (self.STATE_RUNNING | self.STATE_FINISHED)):
+				# IN is true and we are not running, yet.
+				# Start the timer.
+				self.storeInterfaceFieldByName("STIME", ATIME)
+				STATE |= self.STATE_RUNNING
+				self.storeInterfaceFieldByName("STATE", STATE)
+		else:
+			# IN is false. Shut down everything.
+			STATE &= ~(self.STATE_FINISHED | self.STATE_RUNNING)
+			self.storeInterfaceFieldByName("STATE", STATE)
+			self.storeInterfaceFieldByName("ET", 0)
+			self.storeInterfaceFieldByName("Q", 0)
+		if STATE & self.STATE_RUNNING:
+			# The timer is running.
+			STIME = self.fetchInterfaceFieldByName("STIME")
+			self.storeInterfaceFieldByName("ATIME", ATIME)
+			ET = (ATIME - STIME) & 0x7FFFFFFF
+			if ET >= PT:
+				# Time elapsed.
+				ET = PT
+				self.storeInterfaceFieldByName("Q", 1)
+				STATE &= ~self.STATE_RUNNING
+				STATE |= self.STATE_FINISHED
+				self.storeInterfaceFieldByName("STATE", STATE)
+			else:
+				self.storeInterfaceFieldByName("Q", 0)
+			self.storeInterfaceFieldByName("ET", ET)
