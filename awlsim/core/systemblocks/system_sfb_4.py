@@ -57,6 +57,9 @@ class SFB4(SFB):
 	STATE_FINISHED		= 1 << 1
 
 	def run(self):
+		s = self.cpu.statusWord
+		s.BIE = 1
+
 		PT = dwordToSignedPyInt(self.fetchInterfaceFieldByName("PT"))
 		if PT <= 0:
 			# Invalid PT. Abort and reset state.

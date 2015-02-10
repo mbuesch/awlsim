@@ -15,6 +15,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -32,6 +33,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -49,6 +51,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -67,6 +70,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -86,6 +90,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	1
 	L		MD 2
@@ -103,6 +108,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -122,6 +128,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -140,6 +147,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -159,6 +167,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -177,6 +186,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -196,6 +206,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2
@@ -215,6 +226,7 @@ BEGIN
 		Q	:= M 0.0,
 		ET	:= MD 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	U		M 0.0
 	__ASSERT==	__STW VKE,	0
 	L		MD 2

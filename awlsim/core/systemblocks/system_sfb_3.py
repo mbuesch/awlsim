@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,6 +57,9 @@ class SFB3(SFB):
 	STATE_FINISHED		= 1 << 1
 
 	def run(self):
+		s = self.cpu.statusWord
+		s.BIE = 1
+
 		PT = dwordToSignedPyInt(self.fetchInterfaceFieldByName("PT"))
 		if PT <= 0:
 			# Invalid PT. Abort and reset state.

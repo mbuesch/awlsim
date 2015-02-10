@@ -4,10 +4,12 @@ BEGIN
 	CALL		SFC 64 (
 		RET_VAL		:= MD 0
 	)
+	__ASSERT==	__STW BIE,	1
 	__SLEEP		100
 	CALL		SFC 64 (
 		RET_VAL		:= MD 4
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MD 4
 	L		MD 0
 	-D

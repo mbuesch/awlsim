@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,5 +55,8 @@ class SFB5(SFB):
 	broken = True # TODO
 
 	def run(self):
+		s = self.cpu.statusWord
+		s.BIE = 1
+
 		pass#TODO
 		raise AwlSimError("SFB 5 \"TOF\" not implemented, yet.")

@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,10 @@ class SFC64(SFC):
 	}
 
 	def run(self):
+		s = self.cpu.statusWord
+
 		# Return a 31-bit millisecond representation of "now".
 		self.cpu.updateTimestamp()
 		self.storeInterfaceFieldByName("RET_VAL",
 			int(self.cpu.now * 1000) & 0x7FFFFFFF)
+		s.BIE = 1

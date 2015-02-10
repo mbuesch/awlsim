@@ -16,6 +16,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
@@ -30,6 +31,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-2
 	U		M 0.0
@@ -44,6 +46,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
@@ -58,6 +61,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
@@ -74,6 +78,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
@@ -88,6 +93,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	2
 	U		M 0.0
@@ -102,6 +108,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	1
 	U		M 0.0
@@ -116,6 +123,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	1
 	U		M 0.0
@@ -130,6 +138,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
@@ -144,6 +153,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	0
 	U		M 0.0
@@ -158,6 +168,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-1
 	U		M 0.0
@@ -172,6 +183,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-1
 	U		M 0.0
@@ -186,6 +198,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-2
 	U		M 0.0
@@ -200,6 +213,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-2
 	U		M 0.0
@@ -219,6 +233,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-32767
 	U		M 0.0
@@ -233,6 +248,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-32768
 	U		M 0.0
@@ -247,6 +263,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-32768
 	U		M 0.0
@@ -261,6 +278,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-32768
 	U		M 0.0
@@ -275,6 +293,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-32768
 	U		M 0.0
@@ -289,6 +308,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	-32768
 	U		M 0.0
@@ -303,6 +323,7 @@ BEGIN
 		Q	:= M 0.0,
 		CV	:= MW 2,
 	)
+	__ASSERT==	__STW BIE,	1
 	L		MW 2
 	__ASSERT==	__ACCU 1,	10
 	U		M 0.0

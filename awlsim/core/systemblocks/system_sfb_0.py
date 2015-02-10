@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,6 +51,8 @@ class SFB0(SFB):
 	}
 
 	def run(self):
+		s = self.cpu.statusWord
+
 		# CU pos-edge detection
 		CU = self.fetchInterfaceFieldByName("CU")
 		CU_pos_edge = CU & ~self.fetchInterfaceFieldByName("CUO") & 1
@@ -67,3 +69,5 @@ class SFB0(SFB):
 		# Update Q-status
 		PV = wordToSignedPyInt(self.fetchInterfaceFieldByName("PV"))
 		self.storeInterfaceFieldByName("Q", 1 if CV >= PV else 0)
+
+		s.BIE = 1
