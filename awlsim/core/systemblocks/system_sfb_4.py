@@ -73,7 +73,7 @@ class SFB4(SFB):
 			return
 
 		# Get the current time, as S7-time value (31-bit milliseconds)
-		ATIME = int(self.cpu.now * 1000.0) & 0x7FFFFFFF
+		ATIME = self.cpu.now_TIME
 
 		STATE = self.fetchInterfaceFieldByName("STATE")
 		IN = self.fetchInterfaceFieldByName("IN")

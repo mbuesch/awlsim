@@ -41,6 +41,5 @@ class SFC64(SFC):
 
 		# Return a 31-bit millisecond representation of "now".
 		self.cpu.updateTimestamp()
-		self.storeInterfaceFieldByName("RET_VAL",
-			int(self.cpu.now * 1000) & 0x7FFFFFFF)
+		self.storeInterfaceFieldByName("RET_VAL", self.cpu.now_TIME)
 		s.BIE = 1
