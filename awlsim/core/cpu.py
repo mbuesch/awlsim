@@ -491,7 +491,7 @@ class S7CPU(object): #+cdef
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
 
-		self.updateTimestamp()
+		self.__initializeTimestamp()
 
 	def setCycleExitCallback(self, cb, data=None):
 		self.cbCycleExit = cb
@@ -570,7 +570,7 @@ class S7CPU(object): #+cdef
 		# Run some static sanity checks on the code
 		self.__staticSanityChecks()
 
-		self.updateTimestamp()
+		self.__initializeTimestamp()
 		self.__speedMeasureStartTime = self.now
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
@@ -639,11 +639,32 @@ class S7CPU(object): #+cdef
 
 	__getTime = getattr(time, "perf_counter", time.time)
 
+	# Returns 'self.now' as 31 bit millisecond representation.
+	# That is data type 'TIME'.
+	# The returned value will always be positive and wrap
+	# from 0x7FFFFFFF to 0.
+	@property
+	def now_TIME(self):
+		return int(self.now * 1000.0) & 0x7FFFFFFF
+
+	# Initialize time stamp.
+	def __initializeTimestamp(self):
+		# Initialize the time stamp so that it will
+		# overflow 31 bit millisecond count within
+		# 100 milliseconds after startup.
+		# An 31 bit overflow happens after 0x7FFFFFFF ms,
+		# which is 2147483647 ms, which is 2147483.647 s.
+		# Create an offset to 'self.now' that is added every
+		# time 'self.now' is updated.
+		now = self.__getTime()
+		self.__nowOffset = -(now) + (2147483.647 - 0.1)
+		self.updateTimestamp()
+
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
 	def updateTimestamp(self):
 		# Update the system time
-		self.now = self.__getTime()
+		self.now = self.__getTime() + self.__nowOffset
 		# Update the clock memory byte
 		if self.__clockMemByteOffset:
 			try:
