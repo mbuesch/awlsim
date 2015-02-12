@@ -16,6 +16,7 @@ cdef class S7CPU(object):
 	cdef public object cbScreenUpdateData
 
 	cdef public double now
+	cdef public double __nowOffset
 	cdef public object specs
 	cdef public double cycleTimeLimit
 	cdef public object __runtimeLimit
