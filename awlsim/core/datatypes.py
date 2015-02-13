@@ -438,13 +438,19 @@ class AwlDataType(object):
 		return immediate
 
 	@classmethod
-	def __parseGenericTime(cls, token):
+	def __parseGenericTime(cls, token, allowNegative):
 		# Parse T# or S5T# time formats.
 		# The prefix is already stripped.
 		if not token:
 			raise AwlSimError("Invalid time")
 		token = token.upper()
 		p = token
+		isNegative = False
+		if p.startswith("-"):
+			if not allowNegative:
+				raise AwlSimError("Negative time now allowed")
+			isNegative = True
+			p = p[1:]
 		seconds = 0.0
 		while p:
 			if p.endswith("MS"):
@@ -474,6 +480,8 @@ class AwlDataType(object):
 				raise AwlSimError("Invalid time")
 			num = int(num, 10)
 			seconds += num * mult
+		if isNegative:
+			seconds *= -1.0
 		return seconds
 
 	@classmethod
@@ -529,7 +537,8 @@ class AwlDataType(object):
 		token = token.upper()
 		if not token.startswith("S5T#"):
 			return None
-		seconds = cls.__parseGenericTime(token[4:])
+		seconds = cls.__parseGenericTime(token[4:],
+						 allowNegative=False)
 		s5t = Timer.seconds_to_s5t(seconds)
 		return s5t
 
@@ -538,7 +547,8 @@ class AwlDataType(object):
 		token = token.upper()
 		if not token.startswith("T#"):
 			return None
-		seconds = cls.__parseGenericTime(token[2:])
+		seconds = cls.__parseGenericTime(token[2:],
+						 allowNegative=True)
 		msec = int(seconds * 1000)
 		if msec > 0x7FFFFFFF:
 			raise AwlSimError("T# time too big")
