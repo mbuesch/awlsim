@@ -52,11 +52,61 @@ class SFB5(SFB):
 		),
 	}
 
-	broken = True # TODO
+	# STATE bits
+	STATE_PREV_IN		= 1 << 0
+	STATE_DELAYING		= 1 << 1
 
 	def run(self):
 		s = self.cpu.statusWord
 		s.BIE = 1
 
-		pass#TODO
-		raise AwlSimError("SFB 5 \"TOF\" not implemented, yet.")
+		PT = dwordToSignedPyInt(self.fetchInterfaceFieldByName("PT"))
+		if PT <= 0:
+			# Invalid PT. Abort and reset state.
+			# A PT of zero is used to reset the timer.
+			if PT == 0:
+				# S7 resets IN here, for whatever weird reason.
+				self.storeInterfaceFieldByName("IN", 0)
+			else:
+				# Negative PT. This is an error.
+				s.BIE = 0
+			self.storeInterfaceFieldByName("Q", 0)
+			self.storeInterfaceFieldByName("ET", 0)
+			self.storeInterfaceFieldByName("STATE", 0)
+			return
+
+		# Get the current time, as S7-time value (31-bit milliseconds)
+		ATIME = self.cpu.now_TIME
+
+		STATE = self.fetchInterfaceFieldByName("STATE")
+		IN = self.fetchInterfaceFieldByName("IN")
+		if IN:
+			# IN is 1.
+			# This sets Q=1 and interrupts any running state.
+			STATE &= ~self.STATE_DELAYING
+			STATE |= self.STATE_PREV_IN
+			self.storeInterfaceFieldByName("STATE", STATE)
+			self.storeInterfaceFieldByName("ET", 0)
+			self.storeInterfaceFieldByName("Q", 1)
+		else:
+			if STATE & self.STATE_PREV_IN:
+				# Negative edge on IN.
+				# This starts the delay. Q will stay 1.
+				self.storeInterfaceFieldByName("STIME", ATIME)
+				STATE |= self.STATE_DELAYING
+			STATE &= ~self.STATE_PREV_IN
+			self.storeInterfaceFieldByName("STATE", STATE)
+		if STATE & self.STATE_DELAYING:
+			# The delay is running.
+			STIME = self.fetchInterfaceFieldByName("STIME")
+			self.storeInterfaceFieldByName("ATIME", ATIME)
+			ET = (ATIME - STIME) & 0x7FFFFFFF
+			if ET >= PT:
+				# Time elapsed. Reset Q.
+				ET = PT
+				self.storeInterfaceFieldByName("Q", 0)
+				STATE &= ~self.STATE_DELAYING
+				self.storeInterfaceFieldByName("STATE", STATE)
+			else:
+				self.storeInterfaceFieldByName("Q", 1)
+			self.storeInterfaceFieldByName("ET", ET)

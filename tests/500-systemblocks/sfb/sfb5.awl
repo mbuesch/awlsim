@@ -8,13 +8,234 @@ BEGIN
 	AUF		DB 0
 
 
-	//TODO
-//	CALL	SFB 5, DB 1 (
-//		IN	:= FALSE,
-//		PT	:= T#0s,
-//		Q	:= M 0.0,
-//		ET	:= MD 2,
-//	)
+	// Check TOF
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#0S,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	__ASSERT==	__ACCU 1,	0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT==	__ACCU 1,	0
+
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	__ASSERT==	__ACCU 1,	0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT==	__ACCU 1,	0
+
+	CALL	SFB 5, DB 1 (
+		IN	:= TRUE,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	L		MD 2
+	__ASSERT>=	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	1
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT==	__ACCU 1,	0
+
+	__SLEEP		250
+	CALL	SFB 5, DB 1 (
+		IN	:= TRUE,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	1
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT==	__ACCU 1,	0
+
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	2
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT==	__ACCU 1,	0
+
+	__SLEEP		50
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+	L		MD 2
+	__ASSERT>=	__ACCU 1,	50
+	__ASSERT<=	__ACCU 1,	100
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	2
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	50
+	__ASSERT<=	__ACCU 1,	100
+
+	__SLEEP		200
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#200MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	200
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	200
+
+
+	// Test: At PT=0 the timer is not started
+	CALL	SFB 5, DB 1 (
+		IN	:= TRUE,
+		PT	:= T#0MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	200
+	U		DB1.DBX 0.0	// IN
+	__ASSERT==	__STW VKE,	0	// IN will be forced low.
+
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#0MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	1
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	200
+	U		DB1.DBX 0.0	// IN
+	__ASSERT==	__STW VKE,	0
+
+
+	// Test: Negative PT causes an error condition (BIE=0)
+	CALL	SFB 5, DB 1 (
+		IN	:= TRUE,
+		PT	:= T#-500MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	200
+	U		DB1.DBX 0.0	// IN
+	__ASSERT==	__STW VKE,	1	// IN is not forced low.
+
+	CALL	SFB 5, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#-500MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	200
+	U		DB1.DBX 0.0	// IN
+	__ASSERT==	__STW VKE,	0
 
 
 	CALL SFC 46 // STOP CPU
