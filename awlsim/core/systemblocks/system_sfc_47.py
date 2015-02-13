@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,20 +22,30 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.systemblocks.system_sfc_m3 import *
-from awlsim.core.systemblocks.system_sfc_m2 import *
-from awlsim.core.systemblocks.system_sfc_m1 import *
-from awlsim.core.systemblocks.system_sfc_46 import *
-from awlsim.core.systemblocks.system_sfc_47 import *
-from awlsim.core.systemblocks.system_sfc_64 import *
+from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.util import *
+
+import time
 
 
-SFC_table = {
-	-3	: SFCm3,	# __SHUTDOWN
-	-2	: SFCm2,	# __REBOOT
-	-1	: SFCm1,	# __SFC_NOP
+class SFC47(SFC):
+	name = (47, "WAIT", "delay time")
 
-	46	: SFC46,	# STP
-	47	: SFC47,	# WAIT
-	64	: SFC64,	# TIME_TCK
-}
+	interfaceFields = {
+		BlockInterfaceField.FTYPE_IN	: (
+			BlockInterfaceField(name = "WT",
+					    dataType = AwlDataType.makeByName("INT")),
+		)
+	}
+
+	def run(self):
+		s = self.cpu.statusWord
+
+		# Delay for the specified amount of microseconds.
+		# WT is an int, so the maximum delay is 32767 us.
+		WT = wordToSignedPyInt(self.fetchInterfaceFieldByName("WT"))
+		if WT > 0:
+			time.sleep(WT / 1000000.0)
+		self.cpu.updateTimestamp()
+
+		s.BIE = 1

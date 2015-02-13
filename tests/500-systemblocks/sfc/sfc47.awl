@@ -1,0 +1,98 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Test SFC 47: WAIT
+
+
+	// Zero delay should not wait.
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 0
+	)
+	CALL		SFC 47 (
+		WT		:= 0
+	)
+	__ASSERT==	__STW BIE,	1
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 4
+	)
+	L		MD 4
+	L		MD 0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT<=	__ACCU 1,	10
+
+
+	// Check short delay.
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 0
+	)
+	CALL		SFC 47 (
+		WT		:= 1
+	)
+	__ASSERT==	__STW BIE,	1
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 4
+	)
+	L		MD 4
+	L		MD 0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT<=	__ACCU 1,	10
+
+
+	// Check maximum delay.
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 0
+	)
+	CALL		SFC 47 (
+		WT		:= 32767
+	)
+	__ASSERT==	__STW BIE,	1
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 4
+	)
+	L		MD 4
+	L		MD 0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>=	__ACCU 1,	32
+	__ASSERT<=	__ACCU 1,	50
+
+
+	// Negative delay should not wait.
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 0
+	)
+	CALL		SFC 47 (
+		WT		:= -1
+	)
+	__ASSERT==	__STW BIE,	1
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 4
+	)
+	L		MD 4
+	L		MD 0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT<=	__ACCU 1,	10
+
+
+	// Negative delay should not wait.
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 0
+	)
+	CALL		SFC 47 (
+		WT		:= -32768
+	)
+	__ASSERT==	__STW BIE,	1
+	CALL		SFC 64 ( // Get timestamp
+		RET_VAL		:= MD 4
+	)
+	L		MD 4
+	L		MD 0
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT<=	__ACCU 1,	10
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
