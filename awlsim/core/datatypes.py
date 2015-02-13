@@ -545,9 +545,11 @@ class AwlDataType(object):
 	@classmethod
 	def tryParseImmediate_TIME(cls, token):
 		token = token.upper()
-		if not token.startswith("T#"):
+		if not token.startswith("T#") and\
+		   not token.startswith("TIME#"):
 			return None
-		seconds = cls.__parseGenericTime(token[2:],
+		token = token[token.find("#") + 1 : ] # Remove prefix
+		seconds = cls.__parseGenericTime(token,
 						 allowNegative=True)
 		msec = int(seconds * 1000)
 		if msec > 0x7FFFFFFF:
