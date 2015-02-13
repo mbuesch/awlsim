@@ -67,6 +67,9 @@ class SFB4(SFB):
 			if PT == 0:
 				# S7 resets IN here, for whatever weird reason.
 				self.storeInterfaceFieldByName("IN", 0)
+			else:
+				# Negative PT. This is an error.
+				s.BIE = 0
 			self.storeInterfaceFieldByName("Q", 0)
 			self.storeInterfaceFieldByName("ET", 0)
 			self.storeInterfaceFieldByName("STATE", 0)

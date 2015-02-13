@@ -344,6 +344,52 @@ BEGIN
 	__ASSERT==	__STW VKE,	0
 
 
+	// Test: Negative PT causes an error condition (BIE=0)
+	CALL	SFB 3, DB 1 (
+		IN	:= TRUE,
+		PT	:= T#-500MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>	__ACCU 1,	50
+	__ASSERT<	__ACCU 1,	150
+	U		DB1.DBX 0.0	// IN
+	__ASSERT==	__STW VKE,	1	// IN is not forced low.
+
+	CALL	SFB 3, DB 1 (
+		IN	:= FALSE,
+		PT	:= T#-500MS,
+		Q	:= M 0.0,
+		ET	:= MD 2,
+	)
+	__ASSERT==	__STW BIE,	0
+	U		M 0.0
+	__ASSERT==	__STW VKE,	0
+	L		MD 2
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBB 12	// STATE
+	__ASSERT==	__ACCU 1,	0
+	L		DB1.DBD 18	// ATIME
+	L		DB1.DBD 14	// STIME
+	-D
+	UD		DW#16#7FFFFFFF
+	__ASSERT>	__ACCU 1,	50
+	__ASSERT<	__ACCU 1,	150
+	U		DB1.DBX 0.0	// IN
+	__ASSERT==	__STW VKE,	0
+
+
 	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
 
