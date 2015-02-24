@@ -2,7 +2,7 @@
 #
 # AWL simulator - AWL translator and symbol resolver
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ from awlsim.core.optrans import *
 from awlsim.core.insntrans import *
 from awlsim.core.parser import *
 from awlsim.core.util import *
+from awlsim.core.datastructure import *
 
 
 class AwlTranslator(object):
@@ -123,6 +124,47 @@ class AwlTranslator(object):
 			block.interface.addField_TEMP(self.__translateInterfaceField(rawVar))
 		return block
 
+	# Create an AwlStruct from a list of RawAwlDataFields.
+	def __createStructFromRawFields(self, rawFields):
+		struct = AwlStruct()
+		for rawField in rawFields:
+			name, dataType, initBytes = self.rawFieldTranslate(rawField)
+			name = rawField.getIdentString(fullChain = False)
+			struct.addFieldNaturallyAligned(self.cpu, name,
+							dataType, initBytes)
+		return struct
+
+	# Translate a RawAwlDataField to an AwlDataType.
+	def __rawFieldToDataType(self, rawField):
+		dtype = AwlDataType.makeByName(nameTokens = rawField.typeTokens,
+					       arrayDimensions = rawField.dimensions)
+		if dtype.type == AwlDataType.TYPE_STRUCT:
+			# Make the AwlStruct that represents the STRUCT contents.
+			if not rawField.children:
+				raise AwlSimError("Data structure does not have "
+					"any containing variables. (STRUCT is empty)")
+			struct = self.__createStructFromRawFields(rawField.children)
+			dtype.setStruct(struct)
+		elif dtype.type == AwlDataType.TYPE_ARRAY and\
+		     dtype.arrayElementType.type == AwlDataType.TYPE_STRUCT:
+			# Make the AwlStruct that represents the
+			# ARRAY-element (of type STRUCT) contents.
+			if not rawField.children:
+				raise AwlSimError("Data structure does not have "
+					"any containing variables. (STRUCT is empty)")
+			struct = self.__createStructFromRawFields(rawField.children)
+			dtype.arrayElementType.setStruct(struct)
+		else:
+			if rawField.children:
+				raise AwlSimError("Data type '%s' has children '%s', "
+					"but is not a STRUCT." %\
+					(str(dtype), str(rawField.children)))
+		return dtype
+
+	# Translate a RawAwlDataField to a (name, dataType, initBytes) tuple where:
+	# name: The data field name string.
+	# dataType: The AwlDataType for this field.
+	# initBytes: The initialization bytes for this field, or None.
 	def rawFieldTranslate(self, rawField):
 		# Get the field name
 		name = rawField.getIdentString()
@@ -144,8 +186,7 @@ class AwlTranslator(object):
 			dataType = sym.type
 		else:
 			# Parse the data type.
-			dataType = AwlDataType.makeByName(rawField.typeTokens,
-							  rawField.dimensions)
+			dataType = self.__rawFieldToDataType(rawField)
 		# Get the field inits
 		if rawField.defaultInits:
 			# Translate the initialization values and
@@ -155,11 +196,11 @@ class AwlTranslator(object):
 				for rawDataInit in rawField.defaultInits:
 					value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
 					linArrayIndex = dataType.arrayIndicesCollapse(
-						rawDataInit.idents[-1].indices)
+						rawDataInit.identChain[-1].indices)
 					offset = AwlOffset.fromBitOffset(linArrayIndex *
-									 dataType.children[0].width)
+									 dataType.arrayElementType.width)
 					try:
-						initBytes.store(offset, dataType.children[0].width,
+						initBytes.store(offset, dataType.arrayElementType.width,
 								value)
 					except AwlSimError as e:
 						raise AwlSimError("Data field '%s' initialization "
@@ -178,22 +219,21 @@ class AwlTranslator(object):
 
 	# Initialize a DB (global or instance) data field from a raw data-init.
 	def __initDBField(self, db, dataType, rawDataInit):
-		#TODO no structs, yet
-		fieldName = rawDataInit.idents[-1].name
-		if dataType.type == AwlDataType.TYPE_ARRAY:
-			index = dataType.arrayIndicesCollapse(rawDataInit.idents[-1].indices)
-		else:
-			index = None
+		fieldName = rawDataInit.getIdentString()
 		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
-		db.structInstance.setFieldDataByName(fieldName, index, value)
+		db.structInstance.setFieldDataByName(fieldName, value)
+
+	# Recursively create a DB data field.
+	def __createDBField(self, db, rawDataField):
+		name, dataType, initBytes = self.rawFieldTranslate(rawDataField)
+		db.struct.addFieldNaturallyAligned(self.cpu, name,
+						   dataType, initBytes)
 
 	def __translateGlobalDB(self, rawDB):
 		db = DB(rawDB.index, None)
 		# Create the data structure fields
-		for field in rawDB.fields:
-			name, dataType, initBytes = self.rawFieldTranslate(field)
-			db.struct.addFieldNaturallyAligned(self.cpu, name,
-							   dataType, initBytes)
+		for rawField in rawDB.fields:
+			self.__createDBField(db, rawField)
 		# Allocate the data structure fields
 		db.allocate()
 		# Assign data structure initializations.
@@ -203,9 +243,11 @@ class AwlTranslator(object):
 					"DB %d assigns field '%s', "
 					"but does not declare it." %\
 					(rawDB.index, init.getIdentString()))
-			assert(len(field.idents) == 1 and len(init.idents) == 1) #TODO no structs, yet
-			dtype = AwlDataType.makeByName(field.typeTokens,
-						       field.dimensions)
+			assert(field.getIdentChain() == init.identChain)
+			dtype = self.__rawFieldToDataType(field)
+			if dtype == AwlDataType.TYPE_STRUCT:
+				raise AwlSimError(
+					"Invalid assignment to STRUCT.")
 			self.__initDBField(db, dtype, init)
 		return db
 
@@ -249,8 +291,8 @@ class AwlTranslator(object):
 		db.allocate()
 		# Initialize the data structure fields
 		for init in rawDB.fieldInits:
-			assert(len(init.idents) == 1) #TODO no structs, yet
-			dtype = interface.getFieldByName(init.idents[-1].name).dataType
+			assert(len(init.identChain) == 1) #TODO no structs, yet XXX
+			dtype = interface.getFieldByName(init.identChain[-1].name).dataType
 			self.__initDBField(db, dtype, init)
 		return db
 
@@ -329,7 +371,7 @@ class AwlSymResolver(object):
 			# This is an array access.
 			# Resolve the array index to a byte/bit-offset.
 			arrayIndex = field.dataType.arrayIndicesCollapse(oper.value.indices)
-			elemWidth = field.dataType.children[0].width
+			elemWidth = field.dataType.arrayElementType.width
 			bitOffset = arrayIndex * elemWidth
 			byteOffset = bitOffset // 8
 			bitOffset %= 8
@@ -350,8 +392,9 @@ class AwlSymResolver(object):
 		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			# This is an FB or a TEMP access. Translate the operator
 			# to a DI/TEMP access.
-			newOper = block.interface.getOperatorForField(oper.value.varName,
-								      oper.value.indices,
+			#FIXME the ident chain should be taken from oper.
+			identChain = AwlDataIdentChain([AwlDataIdent(oper.value.varName, oper.value.indices)])
+			newOper = block.interface.getOperatorForField(identChain,
 								      pointer)
 			newOper.setInsn(oper.insn)
 			# If this is a compound data type access, mark
@@ -414,9 +457,10 @@ class AwlSymResolver(object):
 				raise AwlSimError("Indexed variable '%s' in fully qualified "
 					"DB access is not an ARRAY." %\
 					oper.value.varName)
-			index = field.dataType.arrayIndicesCollapse(oper.value.indices)
+			#FIXME the ident chain should be taken from oper.
+			identChain = AwlDataIdentChain([AwlDataIdent(oper.value.varName, oper.value.indices)])
 			# Get the actual data field
-			field = db.struct.getField(oper.value.varName, index)
+			field = db.struct.getField(str(identChain))
 		# Extract the offset data
 		offset = field.offset.dup()
 		width = field.bitSize

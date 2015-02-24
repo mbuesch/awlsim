@@ -271,9 +271,8 @@ class BlockInterface(object):
 				name)
 
 	# Get an AwlOperator for TEMP access.
-	def __getOperatorForField_TEMP(self, interfaceField, arrayIndex, wantPointer):
-		structField = self.tempStruct.getField(interfaceField.name,
-						       arrayIndex)
+	def __getOperatorForField_TEMP(self, interfaceField, wantPointer):
+		structField = self.tempStruct.getField(interfaceField.name)
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			return AwlOperator(type = AwlOperator.IMM_PTR,
@@ -289,37 +288,20 @@ class BlockInterface(object):
 		return oper
 
 	# Get an AwlOperator that addresses the specified interface field identified
-	# by "name" and "indices".
-	# "name" is the field name and "indices" are the array indices, if any.
+	# by "identChain", which is an AwlDataIdentChain instance.
 	# If wantPointer is true, an IMM_PTR AwlOperator to the interfaceField
 	# is returned.
-	def getOperatorForField(self, name, indices, wantPointer):
-		interfaceField = self.getFieldByName(name)
-
-		if interfaceField.dataType.type == AwlDataType.TYPE_ARRAY:
-			# Get the linear array index.
-			if indices:
-				# We get an operator to the indexed array element.
-				arrayIndex = interfaceField.dataType.arrayIndicesCollapse(indices)
-			else:
-				if wantPointer:
-					# We get a pointer to the first element.
-					arrayIndex = 0
-				else:
-					# We get an operator to the whole array.
-					arrayIndex = None
-		else:
-			arrayIndex = None
+	def getOperatorForField(self, identChain, wantPointer):
+		interfaceField = self.getFieldByName(
+			str(identChain.dup(withIndices=False)))
 
 		if interfaceField.fieldType == interfaceField.FTYPE_TEMP:
 			# get TEMP interface field operator
 			return self.__getOperatorForField_TEMP(interfaceField,
-							       arrayIndex,
 							       wantPointer)
 		# otherwise get IN/OUT/INOUT/STAT interface field operator
 
-		structField = self.struct.getField(interfaceField.name,
-						   arrayIndex)
+		structField = self.struct.getField(str(identChain))
 
 		# FC-parameters cannot be resolved statically.
 		assert(self.hasInstanceDB)

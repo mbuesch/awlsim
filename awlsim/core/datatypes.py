@@ -49,6 +49,7 @@ class AwlDataType(object):
 	TYPE_TOD	= EnumGen.item
 	TYPE_CHAR	= EnumGen.item
 	TYPE_ARRAY	= EnumGen.item
+	TYPE_STRUCT	= EnumGen.item
 	TYPE_TIMER	= EnumGen.item
 	TYPE_COUNTER	= EnumGen.item
 	TYPE_POINTER	= EnumGen.item
@@ -81,6 +82,7 @@ class AwlDataType(object):
 		"TIME_OF_DAY"	: TYPE_TOD,
 		"CHAR"		: TYPE_CHAR,
 		"ARRAY"		: TYPE_ARRAY,
+		"STRUCT"	: TYPE_STRUCT,
 		"TIMER"		: TYPE_TIMER,
 		"COUNTER"	: TYPE_COUNTER,
 		"POINTER"	: TYPE_POINTER,
@@ -100,7 +102,7 @@ class AwlDataType(object):
 
 	# Width table for types
 	# -1 => Type width must be calculated
-	type2width = {
+	__typeWidths = {
 		TYPE_VOID	: 0,
 		TYPE_BOOL	: 1,
 		TYPE_BYTE	: 8,
@@ -116,6 +118,7 @@ class AwlDataType(object):
 		TYPE_TOD	: 32,
 		TYPE_CHAR	: 8,
 		TYPE_ARRAY	: -1,
+		TYPE_STRUCT	: -1,
 		TYPE_TIMER	: 16,
 		TYPE_COUNTER	: 16,
 		TYPE_POINTER	: 48,
@@ -143,7 +146,13 @@ class AwlDataType(object):
 	compoundTypes = (
 		TYPE_DT,
 		TYPE_ARRAY,
+		TYPE_STRUCT,
 		TYPE_UDT_X,
+
+		# No TYPE_POINTER here.
+		# Technically POINTER is compound, too, but we use this
+		# table to decide whether we need to create POINTERs.
+		# Adding TYPE_POINTER here would create an infinite loop.
 	)
 
 	# Convert a list of array dimensions into a number of elements.
@@ -166,8 +175,15 @@ class AwlDataType(object):
 
 	@classmethod
 	def makeByName(cls, nameTokens, arrayDimensions=None):
+		"""Make an AwlDataType instance by type name.
+		nameTokens -> a list of tokens for the type name.
+		arrayDimensions -> List of possible array dimensions, or None.
+		                   Each list element is a tuple of (start, end)
+				   with the start and end array index for that dimension."""
+
 		type = cls._name2typeid(nameTokens)
 		index = None
+
 		if type == cls.TYPE_ARRAY:
 			raise AwlSimError("Nested ARRAYs are not allowed")
 		elif type in (cls.TYPE_DB_X,
@@ -185,42 +201,96 @@ class AwlDataType(object):
 				raise AwlSimError("Invalid '%s' block data type "\
 					"index" % nameTokens[0])
 			index = blockNumber
+
 		if arrayDimensions:
 			# An ARRAY is to be constructed.
-			nrArrayElements = cls.arrayDimensionsToNrElements(arrayDimensions)
 			elementType = cls(type = type,
-					  width = cls.type2width[type],
 					  isSigned = (type in cls.signedTypes),
 					  index = index)
-			# Make a tuple of children types.
-			# Each element is a ref to the same AwlDataType instance.
-			children = tuple([ elementType, ] * nrArrayElements)
 			return cls(type = cls.TYPE_ARRAY,
-				   width = nrArrayElements * elementType.width,
 				   isSigned = (type in cls.signedTypes),
 				   index = index,
-				   children = children,
-				   arrayDimensions = arrayDimensions)
+				   arrayDimensions = arrayDimensions,
+				   arrayElementType = elementType)
 		else:
 			return cls(type = type,
-				   width = cls.type2width[type],
 				   isSigned = (type in cls.signedTypes),
 				   index = index)
 
-	def __init__(self, type, width, isSigned,
-		     index=None, children=None,
-		     arrayDimensions=None):
+	def __init__(self, type, isSigned,
+		     index=None,
+		     arrayDimensions=None,
+		     arrayElementType=None,
+		     struct=None):
 		self.type = type		# The TYPE_... for this datatype
-		self.width = width		# The width, in bits.
 		self.isSigned = isSigned	# True, if this type is signed
 		self.index = index		# The Index number, if any. May be None
-		self.children = children	# The children AwlDataTypes, if ARRAY.
 		self.arrayDimensions = arrayDimensions # The ARRAY's dimensions
+		self.arrayElementType = arrayElementType # AwlDataType for the array elements.
+		self.setStruct(struct)		# AwlStruct instance. Only for STRUCT type.
+		self.__widthOverride = None
+
+	# Set the AwlStruct that defines the structure of this STRUCT type.
+	def setStruct(self, struct):
+		assert(not struct or self.type == self.TYPE_STRUCT)
+		self.struct = struct
+
+	# Returns the width of this data type, in bits.
+	@property
+	def width(self):
+		if self.__widthOverride is not None:
+			return self.__widthOverride
+		if self.type == self.TYPE_ARRAY:
+			nrElements = self.arrayDimensionsToNrElements(self.arrayDimensions)
+			if self.arrayElementType.type == self.TYPE_STRUCT:
+				if self.arrayElementType.struct:
+					oneElemWidth = self.arrayElementType.struct.getSize() * 8
+					width = nrElements * oneElemWidth
+				else:
+					width = -1
+			else:
+				oneElemWidth = self.arrayElementType.width
+				width = nrElements * oneElemWidth
+		elif self.type == self.TYPE_STRUCT:
+			if self.struct:
+				width = self.struct.getSize() * 8
+			else:
+				width = -1
+		else:
+			width = self.__typeWidths[self.type]
+		return width
+
+	# Override the width calculation.
+	@width.setter
+	def width(self, widthOverride):
+		self.__widthOverride = widthOverride
 
 	# Returns True, if this is a compound data type.
+	# Does not return True for TYPE_POINTER.
 	@property
 	def compound(self):
 		return self.type in self.compoundTypes
+
+	# Possible values for 'naturalAlignment'.
+	EnumGen.start
+	ALIGN_BIT	= EnumGen.item
+	ALIGN_BYTE	= EnumGen.item
+	ALIGN_WORD	= EnumGen.item
+	EnumGen.end
+
+	# Get the natural alignment of this type.
+	@property
+	def naturalAlignment(self):
+		if self.width == 1:
+			return self.ALIGN_BIT
+		if self.width == 8:
+			return self.ALIGN_BYTE
+		if self.type == self.TYPE_ARRAY or\
+		   self.type == self.TYPE_STRUCT or\
+		   self.type == self.TYPE_UDT_X or\
+		   self.width > 8:
+			return self.ALIGN_WORD
+		assert(0)
 
 	# Convert array indices into a one dimensional index for this array.
 	# 'indices' is a list of index integers as written in the AWL operator
@@ -262,13 +332,13 @@ class AwlDataType(object):
 	# Get the number of array elements
 	def arrayGetNrElements(self):
 		assert(self.type == self.TYPE_ARRAY)
-		return len(self.children)
+		return self.arrayDimensionsToNrElements(self.arrayDimensions)
 
 	# Parse an immediate, constrained by our datatype.
 	def parseMatchingImmediate(self, tokens):
 		typeId = self.type
 		if typeId == self.TYPE_ARRAY:
-			typeId = self.children[0].type
+			typeId = self.arrayElementType.type
 
 		value = None
 		if tokens is None:
@@ -315,7 +385,7 @@ class AwlDataType(object):
 					value = self.tryParseImmediate_HexWord(
 							tokens[0])
 				if value is None:
-					value = self.tryParseImmediate_BCD(
+					value = self.tryParseImmediate_BCD_word(
 							tokens[0])
 			elif typeId == self.TYPE_DWORD:
 				value = self.tryParseImmediate_Bin(

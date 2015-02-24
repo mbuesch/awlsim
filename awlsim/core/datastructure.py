@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
+from awlsim.core.identifier import *
 
 
 class AwlStructField(object):
@@ -100,22 +101,8 @@ class AwlStruct(object):
 		if field.name:
 			self.name2field[field.name] = field
 
-	# Compose a data structure field name.
-	# nameComponents is a list of name components, or a name string.
-	# linearArrayIndex is the linear array index to the last component, or None.
-	# Returns the composed field name string.
-	@classmethod
-	def composeFieldName(cls, nameComponents, linearArrayIndex=None):
-		nameComponents = toList(nameComponents)
-		if not all(nameComponents):
-			return None
-		name = ".".join(nameComponents)
-		if linearArrayIndex is not None:
-			name += "[%d]" % linearArrayIndex
-		return name
-
 	# Add zero-length field.
-	def __addDummyField(self, name=None):
+	def addDummyField(self, name=None):
 		offset = AwlOffset(self.__getUnalignedSize())
 		field = AwlStructField(name, offset, "VOID")
 		self.__registerField(field)
@@ -138,15 +125,19 @@ class AwlStruct(object):
 		# Add all fields from the other struct.
 		baseOffset = AwlOffset(self.__getUnalignedSize())
 		for otherField in otherStruct.fields:
-			newName = self.composeFieldName((otherStructName, otherField.name))
-			field = AwlStructField(newName,
-					       baseOffset + otherField.offset,
-					       otherField.dataType,
-					       otherField.initBytes)
+			if otherStructName and otherField.name:
+				newName = otherStructName + "." + otherField.name
+			else:
+				newName = None
+			field = AwlStructField(name = newName,
+					       offset = baseOffset + otherField.offset,
+					       dataType = otherField.dataType,
+					       initBytes = otherField.initBytes,
+					       override = otherField.override)
 			self.__registerField(field)
 		# Add a zero-length sub-struct-end guard field,
 		# to enforce alignment of following fields.
-		self.__addDummyField()
+		self.addDummyField()
 		return baseField
 
 	def addField(self, cpu, name, dataType, initBytes=None):
@@ -160,10 +151,20 @@ class AwlStruct(object):
 			return self.merge(udt.struct, name, dataType)
 
 		if dataType.width < 0:
-			raise AwlSimError("With of data structure field '%s : %s' "
+			raise AwlSimError("Width of data structure field '%s : %s' "
 				"is undefined. This probably means that its data "
 				"type is unsupported." %\
 				(name, str(dataType)))
+
+		if dataType.type == dataType.TYPE_STRUCT:
+			# Add a STRUCT.
+			# The struct is represented by the data types struct.
+			# Merge the data type struct into this struct.
+			assert(dataType.struct)
+			baseField = self.merge(dataType.struct, name, dataType)
+			baseField.override = AwlStructField(baseField.name,
+							    baseField.offset,
+							    "VOID")
 
 		if dataType.type == dataType.TYPE_ARRAY:
 			# Add an ARRAY.
@@ -174,10 +175,13 @@ class AwlStruct(object):
 					override = AwlStructField(name, offset,
 								  "VOID"))
 			self.__registerField(baseField)
-			# Add fields for each array entry.
+			# Add fields for each ARRAY entry.
 			initOffset = AwlOffset()
-			for i, childType in enumerate(dataType.children):
-				childName = self.composeFieldName(name, i)
+			childIdent = AwlDataIdent(name,
+					[ d[0] for d in dataType.arrayDimensions ],
+					doValidateName = False)
+			childType = dataType.arrayElementType
+			for i in range(dataType.arrayGetNrElements()):
 				try:
 					if not initBytes:
 						raise ValueError
@@ -187,13 +191,16 @@ class AwlStruct(object):
 									    childType.width))
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
-				self.addField(cpu, childName, childType,
+				self.addField(cpu, str(childIdent), childType,
 					      fieldInitData)
 				initOffset += AwlOffset.fromBitOffset(childType.width)
+				childIdent.advanceToNextArrayElement(dataType.arrayDimensions)
 			# Add a zero-length array-end guard field,
 			# to enforce alignment of following fields.
-			self.__addDummyField()
-		else:
+			self.addDummyField()
+
+		if dataType.type not in (dataType.TYPE_ARRAY,
+					 dataType.TYPE_STRUCT):
 			# Add a single data type.
 			if dataType.width == 1 and self.fields and\
 			   self.fields[-1].bitSize == 1 and\
@@ -217,15 +224,13 @@ class AwlStruct(object):
 		return self.addField(cpu, name, dataType, initBytes)
 
 	def addFieldNaturallyAligned(self, cpu, name, dataType, initBytes=None):
-		alignment = 1
-		if dataType.type == dataType.TYPE_ARRAY or\
-		   dataType.width > 8:
+		if dataType.naturalAlignment == dataType.ALIGN_WORD:
 			alignment = 2
+		else:
+			alignment = 1
 		return self.addFieldAligned(cpu, name, dataType, alignment, initBytes)
 
-	def getField(self, name, arrayIndex=None):
-		if arrayIndex is not None:
-			name = self.composeFieldName(name, arrayIndex)
+	def getField(self, name):
 		try:
 			return self.name2field[name]
 		except KeyError:
@@ -267,8 +272,8 @@ class AwlStructInstance(object):
 			self.dataBytes.store(baseOffset + field.offset,
 					     field.bitSize, value)
 
-	def getFieldDataByName(self, name, arrayIndex=None):
-		return self.getFieldData(self.struct.getField(name, arrayIndex))
+	def getFieldDataByName(self, name):
+		return self.getFieldData(self.struct.getField(name))
 
-	def setFieldDataByName(self, name, arrayIndex, value):
-		self.setFieldData(self.struct.getField(name, arrayIndex), value)
+	def setFieldDataByName(self, name, value):
+		self.setFieldData(self.struct.getField(name), value)
