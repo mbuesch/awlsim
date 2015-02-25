@@ -324,9 +324,10 @@ test_time_file="$(mktemp --tmpdir=/tmp awlsim-test-time.XXXXXX)"
 opt_interpreter=
 opt_softfail=0
 opt_quick=0
+opt_renice=
 
 while [ $# -ge 1 ]; do
-	[ "$(echo "$1" | cut -c1)" != "-" ] && break
+	[ "$(printf '%s' "$1" | cut -c1)" != "-" ] && break
 
 	case "$1" in
 	-h|--help)
@@ -345,6 +346,10 @@ while [ $# -ge 1 ]; do
 	-q|--quick)
 		opt_quick=1
 		;;
+	-n|--renice)
+		shift
+		opt_renice="$1"
+		;;
 	*)
 		echo "Unknown option: $1"
 		exit 1
@@ -353,6 +358,9 @@ while [ $# -ge 1 ]; do
 	shift
 done
 
+if [ -n "$opt_renice" ]; then
+	renice "$opt_renice" "$$" || die "Failed to renice"
+fi
 global_retval=0
 do_tests "$@"
 
