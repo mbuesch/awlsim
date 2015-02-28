@@ -2,7 +2,7 @@
 #
 # AWL data offset
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,14 +40,14 @@ class AwlOffset(DynAttrs): #+cdef
 		# A symbolic DB-name for fully qualified access, or None.
 		"dbName"	: None,
 
-		# A DB-variable name for fully qualified access, or None.
-		"varName"	: None,
+		# An AwlDataIdentChain, or None.
+		# Used for fully qualified (DBx.VAR) or named local (#VAR)
+		# global symbolic ("VAR") accesses.
+		# For global symbols the chain only has one element.
+		"identChain"	: None,
 
 		# A (S)FB-number for multi-instance calls, or None.
 		"fbNumber"	: None,
-
-		# List of Variable indices for fully qualified array access, or None.
-		"indices"	: None,
 
 		# Additional sub-offset that is added to this offset.
 		# Defaults to 0.0
@@ -108,13 +108,10 @@ class AwlOffset(DynAttrs): #+cdef
 			prefix = "DB%d" % self.dbNumber
 		if self.dbName is not None:
 			prefix = '"%s"' % self.dbName
-		if self.varName is not None:
-			indices = ""
-			if self.indices is not None:
-				indices = "[%s]" % ",".join(str(i) for i in self.indices)
+		if self.identChain is not None:
 			if prefix:
-				return prefix + "." + self.varName + indices
-			return "#%s%s" % (self.varName, indices)
+				return prefix + "." + self.identChain.getString()
+			return "#" + self.identChain.getString()
 		else:
 			if prefix:
 				prefix = prefix + ".DBX "

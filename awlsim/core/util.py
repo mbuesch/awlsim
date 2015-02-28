@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,6 +53,29 @@ def listToHumanStr(lst, lastSep="or"):
 	# Replace last comma with 'lastSep'
 	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
 	return string
+
+# Expand the elements of a list.
+# 'expander' is the expansion callback. 'expander' takes
+# one list element as argument. It returns a list.
+def listExpand(lst, expander):
+	ret = []
+	for item in lst:
+		ret.extend(expander(item))
+	return ret
+
+# Fully partition a string by separator 'sep'.
+# Returns a list of strings:
+# [ "first-element", sep, "second-element", sep, ... ]
+# If 'keepEmpty' is True, empty elements are kept.
+def strPartitionFull(string, sep, keepEmpty=True):
+	first, ret = True, []
+	for elem in string.split(sep):
+		if not first:
+			ret.append(sep)
+		if elem or keepEmpty:
+			ret.append(elem)
+		first = False
+	return ret
 
 def str2bool(string, default=False):
 	s = string.lower()

@@ -312,10 +312,12 @@ class AwlSymResolver(object):
 	# Resolve classic symbols ("abc")
 	def __resolveClassicSym(self, block, insn, oper):
 		if oper.type == AwlOperator.SYMBOLIC:
-			symbol = self.cpu.symbolTable.findOneByName(oper.value.varName)
+			symbol = self.cpu.symbolTable.findOneByName(
+				oper.value.identChain.getString())
 			if not symbol:
 				raise AwlSimError("Symbol \"%s\" not found in "
-					"symbol table." % oper.value.varName,
+					"symbol table." %\
+					oper.value.identChain.getString(),
 					insn = insn)
 			newOper = symbol.operator.dup()
 			newOper.setInsn(oper.insn)
@@ -342,6 +344,8 @@ class AwlSymResolver(object):
 	# to array variables are supported.
 	def resolveNamedLocal(self, block, insn, oper,
 			      pointer=False, allowWholeArrayAccess=False):
+		# Check whether we need to do something.
+		# Otherwise just return the source operator.
 		if pointer:
 			if oper.type != AwlOperator.NAMED_LOCAL_PTR:
 				return oper
@@ -349,40 +353,60 @@ class AwlSymResolver(object):
 			if oper.type != AwlOperator.NAMED_LOCAL:
 				return oper
 
-		# Get the interface field for this variable
-		field = block.interface.getFieldByName(oper.value.varName)
+		# Walk the ident chain to accumulate the sub-offsets
+		# for the ARRAY accesses.
+		subOffset = AwlOffset()
+		for i in range(len(oper.value.identChain)):
+			isLastElement = (i == len(oper.value.identChain) - 1)
 
-		# Sanity checks
-		if field.dataType.type == AwlDataType.TYPE_ARRAY:
-			if not oper.value.indices and\
-			   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
-			   not allowWholeArrayAccess:
-				raise AwlSimError("Cannot address array #%s "
-					"without subscript list." %\
-					oper.value.varName)
-		else:
-			if oper.value.indices:
-				raise AwlSimError("Trying to subscript array, "
-					"but #%s is not an array." %\
-					oper.value.varName)
+			# Get the sub-chain and the interface field.
+			chain = AwlDataIdentChain(oper.value.identChain[:i+1])
+			field = block.interface.getFieldByName(
+				chain.dup(withIndices = False).getString())
 
-		if oper.value.indices:
-			assert(field.dataType.type == AwlDataType.TYPE_ARRAY)
-			# This is an array access.
-			# Resolve the array index to a byte/bit-offset.
-			arrayIndex = field.dataType.arrayIndicesCollapse(oper.value.indices)
-			elemWidth = field.dataType.arrayElementType.width
-			bitOffset = arrayIndex * elemWidth
-			byteOffset = bitOffset // 8
-			bitOffset %= 8
-			oper.value.subOffset = AwlOffset(byteOffset, bitOffset)
+			# Sanity checks
+			if field.dataType.type == AwlDataType.TYPE_ARRAY:
+				if isLastElement and\
+				   not chain[-1].indices and\
+				   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
+				   not allowWholeArrayAccess:
+					raise AwlSimError("Cannot address array #%s "
+						"without subscript list." %\
+						chain.getString())
+			else:
+				if chain[-1].indices:
+					raise AwlSimError("Trying to subscript array, "
+						"but #%s is not an array." %\
+						chain.getString())
+
+			if chain[-1].indices:
+				# Calculate the array offset.
+				assert(field.dataType.type == AwlDataType.TYPE_ARRAY)
+				arrayIndex = field.dataType.arrayIndicesCollapse(chain[-1].indices)
+				elemWidth = field.dataType.arrayElementType.width
+				bitOffset = arrayIndex * elemWidth
+				byteOffset = bitOffset // 8
+				bitOffset %= 8
+				# Add it to the accumulated offset.
+				subOffset += AwlOffset(byteOffset, bitOffset)
+
+		# 'field' now is the last field in the identChain.
+		# (So it's the field that we eventually address).
+
+		isWholeArrayAccess = (field.dataType.type == AwlDataType.TYPE_ARRAY and\
+				      not oper.value.identChain[-1].indices)
+		if field.dataType.type == AwlDataType.TYPE_ARRAY and\
+		   not isWholeArrayAccess:
+			# This is an array element access.
 			# Store the element-access-width in the operator.
-			oper.width = elemWidth
+			oper.width = field.dataType.arrayElementType.width
 		else:
-			# Non-array accesses don't have a sub-offset.
-			oper.value.subOffset = AwlOffset()
-			# Store the access-width in the operator.
+			# Non-array access or whole-array access.
+			# Store the field access width in the operator.
 			oper.width = field.dataType.width
+
+		# Store the sub-offset (might be zero).
+		oper.value.subOffset = subOffset
 
 		# If this is a compound data type access, mark
 		# the operand as such.
@@ -392,9 +416,7 @@ class AwlSymResolver(object):
 		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
 			# This is an FB or a TEMP access. Translate the operator
 			# to a DI/TEMP access.
-			#FIXME the ident chain should be taken from oper.
-			identChain = AwlDataIdentChain([AwlDataIdent(oper.value.varName, oper.value.indices)])
-			newOper = block.interface.getOperatorForField(identChain,
+			newOper = block.interface.getOperatorForField(oper.value.identChain,
 								      pointer)
 			newOper.setInsn(oper.insn)
 			# If this is a compound data type access, mark
@@ -405,7 +427,10 @@ class AwlSymResolver(object):
 			# This is an FC. Accesses to local symbols
 			# are resolved at runtime.
 			# Just set interface index in the operator.
-			index = block.interface.getFieldIndex(oper.value.varName)
+			# Pointer access (oper.type == NAMED_LOCAL_PTR) is resolved
+			# later at runtime.
+			identChain = oper.value.identChain.dup(withIndices = False)
+			index = block.interface.getFieldIndex(identChain.getString())
 			oper.interfaceIndex = index
 		return oper
 
@@ -439,10 +464,12 @@ class AwlSymResolver(object):
 			raise AwlSimError("DB %d specified in fully qualified "
 				"operator does not exist." % oper.value.dbNumber)
 
-		# Get the data structure field descriptor
-		# and construct the AwlOffset.
-		field = db.struct.getField(oper.value.varName)
-		if oper.value.indices is None:
+		# Get the data structure base field descriptor.
+		# For arrays, this is the base name of the array.
+		tmpIdentChain = oper.value.identChain.dup()
+		tmpIdentChain[-1] = tmpIdentChain[-1].dup(withIndices = False)
+		field = db.struct.getField(tmpIdentChain.getString())
+		if oper.value.identChain[-1].indices is None:
 			# Access without array indices.
 			if field.dataType.type == AwlDataType.TYPE_ARRAY:
 				# This is a whole-array access.
@@ -450,17 +477,17 @@ class AwlSymResolver(object):
 				if not allowWholeArrayAccess:
 					raise AwlSimError("Variable '%s' in fully qualified "
 						"DB access is an ARRAY." %\
-						oper.value.varName)
+						oper.value.identChain.getString())
 		else:
 			# This is an array field access.
+			# (The original last ident chain field has indices.)
 			if field.dataType.type != AwlDataType.TYPE_ARRAY:
 				raise AwlSimError("Indexed variable '%s' in fully qualified "
 					"DB access is not an ARRAY." %\
-					oper.value.varName)
-			#FIXME the ident chain should be taken from oper.
-			identChain = AwlDataIdentChain([AwlDataIdent(oper.value.varName, oper.value.indices)])
-			# Get the actual data field
-			field = db.struct.getField(str(identChain))
+					oper.value.identChain.getString())
+			# Get the actual data field.
+			# (Don't remove indices from the last chain element.)
+			field = db.struct.getField(oper.value.identChain.getString())
 		# Extract the offset data
 		offset = field.offset.dup()
 		width = field.bitSize

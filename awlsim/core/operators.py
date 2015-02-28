@@ -407,16 +407,11 @@ class AwlOperator(DynAttrs):
 		elif self.type == self.MULTI_SFB:
 			return "#SFB<" + self.__makeAnyPtrString(AwlIndirectOp.AREA_DI) + ">"
 		elif self.type == self.SYMBOLIC:
-			return '"%s"' % self.value.varName
+			return '"%s"' % self.value.identChain.getString()
 		elif self.type == self.NAMED_LOCAL:
-			s = "#%s" % self.value.varName
-			if self.value.indices:
-				s += "["
-				s += ", ".join(str(i) for i in self.value.indices)
-				s += "]"
-			return s
+			return "#" + self.value.identChain.getString()
 		elif self.type == self.NAMED_LOCAL_PTR:
-			return "P##%s" % self.value.varName
+			return "P##" + self.value.identChain.getString()
 		elif self.type == self.NAMED_DBVAR:
 			return str(self.value) # value is AwlOffset
 		elif self.type == self.INDIRECT:
@@ -427,6 +422,8 @@ class AwlOperator(DynAttrs):
 			return "__AR %d" % self.value.byteOffset
 		elif self.type == self.VIRT_DBR:
 			return "__DBR %d" % self.value.byteOffset
+		elif self.type == self.UNSPEC:
+			return "__UNSPEC"
 		try:
 			return self.type2str[self.type]
 		except KeyError:

@@ -968,65 +968,15 @@ class AwlParser(object):
 
 		# Extract identifier tokens and value tokens.
 		# Split identifier tokens by '.'
-		identTokens = []
-		for tok in t.tokens[:assignIdx]:
-			first = True
-			for elem in tok.split('.'):
-				if not first:
-					identTokens.append('.')
-				if elem:
-					identTokens.append(elem)
-				first = False
+		identTokens = listExpand(t.tokens[:assignIdx],
+			lambda e: strPartitionFull(e, '.', keepEmpty=False))
 		valueTokens = t.tokens[assignIdx+1:]
 
 		# Create the identifier chain.
-		identChain = []
-		while identTokens:
-			dotIdx = listIndex(identTokens, '.')
-			if dotIdx < 0:
-				dotIdx = len(identTokens)
-			tokens = identTokens[:dotIdx]
-			identTokens = identTokens[dotIdx+1:]
-
-			# Parse possible array indices.
-			openIdx = listIndex(tokens, '[')
-			closeIdx = listIndex(tokens, ']')
-			indices = []
-			if openIdx >= 0:
-				if closeIdx < openIdx + 2:
-					raise AwlParserError("Invalid array brackets.")
-				indexTokens = tokens[openIdx+1:closeIdx]
-				while indexTokens:
-					try:
-						indices.append(int(indexTokens[0]))
-					except ValueError as e:
-						raise AwlParserError(
-							"Invalid array index value")
-					indexTokens = indexTokens[1:]
-					if indexTokens:
-						if indexTokens[0] != ',':
-							raise AwlParserError("Missing "
-								"comma in array index.")
-						indexTokens = indexTokens[1:]
-				# Strip indices.
-				tokens = tokens[:openIdx]
-			else:
-				if closeIdx >= 0:
-					raise AwlParserError("Found closing "
-						"brackets, but no opening "
-						"brackets.")
-
-			if len(indices) > 6:
-				raise AwlParserError(
-					"More than 6 array indices specified")
-			if len(tokens) != 1:
-				raise AwlParserError(
-					"Invalid variable name in assignment")
-			identChain.append(AwlDataIdent(tokens[0], indices))
-
+		identChain = AwlDataIdentChain.parseTokens(identTokens)
 		if not identChain:
 			raise AwlParserError("Invalid variable assignment")
-		dataInit = RawAwlDataInit(identChain, valueTokens)
+		dataInit = RawAwlDataInit(identChain.idents, valueTokens)
 		db = self.tree.curBlock
 		db.addFieldInit(dataInit)
 

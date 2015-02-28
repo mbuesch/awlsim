@@ -269,11 +269,22 @@ class AwlOpTranslator(object):
 				fieldCount = 4	# ARx + comma + P# + ]
 			else:
 				# Indirect access:  "L MW [MD 42]"
-				# Translate the offset operator
-				offsetOpDesc = self.translateOp(None, rawOps)
-				if rawOps[offsetOpDesc.fieldCount] != ']':
+				# Find the end of the brackets.
+				i, lvl = 0, 1
+				for i, tok in enumerate(rawOps):
+					if tok == ']':
+						lvl -= 1
+					elif tok == '[':
+						lvl += 1
+					if lvl == 0:
+						end = i
+						break
+				else:
 					raise AwlSimError("Missing closing brackets in "
 						"indirect addressing operator")
+				# Translate the offset operator
+				offsetOpDesc = self.translateOp(None, rawOps[:end])
+				assert(offsetOpDesc.fieldCount == end)
 				offsetOp = offsetOpDesc.operator
 				if offsetOp.type == AwlOperator.INDIRECT:
 					raise AwlSimError("Only direct operators supported "
@@ -376,24 +387,48 @@ class AwlOpTranslator(object):
 				"Biggest possible bit offset is 7." %\
 				opDesc.operator.value.bitOffset)
 
-	# Translate array indices.
-	# The first token is the opening brace '['.
-	# Returns tuple: (list_of_indices, consumed_tokens_count)
-	def __translateArrayIndices(self, tokens):
-		indices = []
-		count = 1
-		try:
-			while tokens[count] != ']':
-				indices.append(int(tokens[count]))
-				count += 1
-				if count < len(tokens) and tokens[count] == ',':
-					count += 1
-			count += 1 # closing braces
-		except (ValueError, IndexError) as e:
-			raise AwlSimError("Invalid array index")
-		if len(indices) < 1 or len(indices) > 6:
-			raise AwlSimError("Invalid number of array indices")
-		return (indices, count)
+	def __transVarIdents(self, tokens):
+		# Find the end of this operator.
+		# Operators are delimited by ',' or '('
+		inBrackets, endIdx = False, 0
+		while endIdx < len(tokens) and\
+		      ((tokens[endIdx] != ',' and tokens[endIdx] != '(') or\
+		       inBrackets):
+			if tokens[endIdx] == '[':
+				inBrackets = True
+			elif tokens[endIdx] == ']':
+				inBrackets = False
+			endIdx += 1
+
+		# Split all ops by '.'
+		tokens = listExpand(tokens[:endIdx],
+			lambda e: strPartitionFull(e, '.', keepEmpty=False))
+
+		# Parse DBx.VARIABLE or "DBname".VARIABLE adressing
+		offset = None
+		if len(tokens) >= 3 and\
+		   tokens[1] == '.':
+			if tokens[0].startswith("DB") and\
+			   tokens[0][2:].isdecimal():
+				# DBx.VARIABLE
+				offset = AwlOffset(None, None)
+				offset.dbNumber = int(tokens[0][2:])
+			elif tokens[0].startswith('"') and\
+			     tokens[0].endswith('"'):
+				# "DBname".VARIABLE
+				offset = AwlOffset(None, None)
+				offset.dbName = tokens[0][1:-1]
+			if offset:
+				# Parse the variable idents.
+				offset.identChain = AwlDataIdentChain.parseTokens(tokens[2:])
+		if not offset and\
+		   len(tokens) >= 1 and\
+		   tokens[0].startswith('#'):
+			tokens[0] = tokens[0][1:] # Strip the '#' from the first token
+			offset = AwlOffset(None, None)
+			offset.identChain = AwlDataIdentChain.parseTokens(tokens)
+		count = endIdx if offset else 0
+		return offset, count
 
 	def __doTrans(self, rawInsn, rawOps):
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
@@ -425,25 +460,29 @@ class AwlOpTranslator(object):
 			return opDesc
 		# Local variable
 		if token0.startswith('#'):
-			offset = AwlOffset(None, None)
-			offset.varName = rawOps[0][1:]
-			count = 1
-			if len(rawOps) >= 4 and rawOps[1] == '[':
-				# This is an array variable
-				offset.indices, cnt = self.__translateArrayIndices(rawOps[1:])
-				count += cnt
+			offset, count = self.__transVarIdents(rawOps)
+			if not offset:
+				raise AwlSimError("Failed to parse variable name: %s" %\
+					"".join(rawOps))
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL, 0,
 							offset), count)
 		# Pointer to local variable
 		if token0.startswith("P##"):
 			offset = AwlOffset(None, None)
-			offset.varName = rawOps[0][3:]
+			# Doesn't support struct or array indexing.
+			# Parse it as one identification.
+			offset.identChain = AwlDataIdentChain(
+				[ AwlDataIdent(rawOps[0][3:]), ]
+			)
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_LOCAL_PTR, 0,
 							offset), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
 			offset = AwlOffset(None, None)
-			offset.varName = rawOps[0][1:-1]
+			offset.identChain = AwlDataIdentChain(
+				[ AwlDataIdent(rawOps[0][1:-1],
+					       doValidateName = False), ]
+			)
 			return OpDescriptor(AwlOperator(AwlOperator.SYMBOLIC, 0,
 							offset), 1)
 		# Immediate boolean
@@ -543,23 +582,13 @@ class AwlOpTranslator(object):
 			offset.dbNumber = dbNumber
 			return OpDescriptor(AwlOperator(AwlOperator.MEM_DB, width,
 					    offset), 2)
-		# DBx.VARIABLE adressing
-		match = re.match(r'^((?:DB\d+)|(?:"[^"]+"))\.(.+)$', rawOps[0])
-		if match:
-			offset = AwlOffset(None, None)
-			db = match.group(1)
-			if db.startswith("DB"):
-				offset.dbNumber = int(db[2:])
-			else:
-				offset.dbName = db[1:-1]
-			offset.varName = match.group(2)
-			count = 1
-			if len(rawOps) >= 4 and rawOps[1] == '[':
-				# DBx.ARRAY[x, y, z] adressing
-				offset.indices, cnt = self.__translateArrayIndices(rawOps[1:])
-				count += cnt
+
+		# Try to parse DBx.VARIABLE or "DBname".VARIABLE adressing
+		offset, count = self.__transVarIdents(rawOps)
+		if offset:
 			return OpDescriptor(AwlOperator(AwlOperator.NAMED_DBVAR, 0,
 					    offset), count)
+
 		# Try convenience operators.
 		# A convenience operator is one that lacks otherwise required white space.
 		# We thus actively support lazy programmers, yay.

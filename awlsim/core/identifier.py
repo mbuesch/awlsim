@@ -49,7 +49,6 @@ class AwlDataIdent(object):
 		# Only alphanumeric characters and underscores.
 		for c in name:
 			if c not in cls.VALID_CHARS:
-				assert(0)
 				raise AwlParserError("The variable name '%s' "
 					"contains invalid characters. "
 					"Only alphanumeric characters (a-z, A-Z, 0-9) "
@@ -118,16 +117,90 @@ class AwlDataIdent(object):
 		return not self.__eq__(other)
 
 	# Get the sanitized identifier string.
-	def __repr__(self):
+	def getString(self):
 		if self.indices:
 			return "%s[%s]" % (self.name,
 					   ",".join(str(i) for i in self.indices))
 		return self.name
 
+	def __repr__(self):
+		return self.getString()
+
+	def __str__(self):
+		return self.__repr__()
+
 class AwlDataIdentChain(object):
 	"""Data field identifier chain.
 	Fully identifies a data field in an identifier
 	chain that is nested STRUCTs, UDTs or such."""
+
+	# Create an AwlDataIdentChain from a string.
+	@classmethod
+	def parseString(cls, string):
+		tokens = []
+		curTok = []
+		for c in string:
+			if c in ('.', ',', '[', ']'):
+				if curTok:
+					curTok = ''.join(curTok).strip()
+					if curTok:
+						tokens.append(curTok)
+					curTok = []
+				tokens.append(c)
+			curTok.append(c)
+		if curTok:
+			curTok = ''.join(curTok).strip()
+			if curTok:
+				tokens.append(curTok)
+		return cls.parseTokens(tokens)
+
+	# Create an AwlDataIdentChain from a list of token strings.
+	@classmethod
+	def parseTokens(cls, tokenList):
+		identChain = cls()
+		while tokenList:
+			dotIdx = listIndex(tokenList, '.')
+			if dotIdx < 0:
+				dotIdx = len(tokenList)
+			tokens = tokenList[:dotIdx]
+			tokenList = tokenList[dotIdx+1:]
+
+			# Parse possible array indices.
+			openIdx = listIndex(tokens, '[')
+			closeIdx = listIndex(tokens, ']')
+			indices = []
+			if openIdx >= 0:
+				if closeIdx < openIdx + 2:
+					raise AwlParserError("Invalid array brackets.")
+				indexTokens = tokens[openIdx+1:closeIdx]
+				while indexTokens:
+					try:
+						indices.append(int(indexTokens[0]))
+					except ValueError as e:
+						raise AwlParserError(
+							"Invalid array index value")
+					indexTokens = indexTokens[1:]
+					if indexTokens:
+						if indexTokens[0] != ',':
+							raise AwlParserError("Missing "
+								"comma in array index.")
+						indexTokens = indexTokens[1:]
+				# Strip indices.
+				tokens = tokens[:openIdx]
+			else:
+				if closeIdx >= 0:
+					raise AwlParserError("Found closing "
+						"brackets, but no opening "
+						"brackets.")
+
+			if len(indices) > 6:
+				raise AwlParserError(
+					"More than 6 array indices specified")
+			if len(tokens) != 1:
+				raise AwlParserError(
+					"Invalid variable name in assignment")
+			identChain.idents.append(AwlDataIdent(tokens[0], indices))
+		return identChain
 
 	def __init__(self, idents=None):
 		"""idents -> A list of AwlDataIdent instances."""
@@ -150,6 +223,30 @@ class AwlDataIdentChain(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
+	def __len__(self):
+		return len(self.idents)
+
+	def __getitem__(self, key):
+		return self.idents[key]
+
+	def __setitem__(self, key, value):
+		self.idents[key] = value
+
+	def __delitem__(self, key):
+		del self.idents[key]
+
+	def __iter__(self):
+		return self.idents.__iter__()
+
+	def __reversed__(self):
+		return self.idents.__reversed__()
+
 	# Get the sanitized identifier chain string.
+	def getString(self):
+		return ".".join(ident.getString() for ident in self.idents)
+
 	def __repr__(self):
-		return ".".join(str(ident) for ident in self.idents)
+		return self.getString()
+
+	def __str__(self):
+		return self.__repr__()

@@ -2,7 +2,7 @@
 #
 # AWL simulator - System-blocks
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from awlsim.common.compat import *
 from awlsim.core.instructions.insn_generic_call import * #@nocy
 from awlsim.core.blocks import *
 from awlsim.core.translator import *
+from awlsim.core.identifier import *
 
 
 class SystemBlock(StaticCodeBlock):
@@ -64,7 +65,7 @@ class SystemBlock(StaticCodeBlock):
 		for field in self.interface.fields_IN_OUT_INOUT_STAT:
 			# Create a scratch-operator for the access.
 			offset = AwlOffset(None, None)
-			offset.varName = field.name
+			offset.identChain = AwlDataIdentChain.parseString(field.name)
 			oper = AwlOperator(AwlOperator.NAMED_LOCAL, 0,
 					   offset)
 			# Resolve the scratch-operator.

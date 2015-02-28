@@ -2,7 +2,7 @@
 #
 # AWL simulator - blocks
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -263,6 +263,8 @@ class BlockInterface(object):
 
 		self.__structState = self.STRUCT_BUILT
 
+	#FIXME We should use AwlDataIdentChain instead of name in all field APIs.
+
 	def getFieldByName(self, name):
 		try:
 			return self.fieldNameMap[name]
@@ -293,7 +295,7 @@ class BlockInterface(object):
 	# is returned.
 	def getOperatorForField(self, identChain, wantPointer):
 		interfaceField = self.getFieldByName(
-			str(identChain.dup(withIndices=False)))
+			identChain.dup(withIndices=False).getString())
 
 		if interfaceField.fieldType == interfaceField.FTYPE_TEMP:
 			# get TEMP interface field operator
@@ -301,7 +303,7 @@ class BlockInterface(object):
 							       wantPointer)
 		# otherwise get IN/OUT/INOUT/STAT interface field operator
 
-		structField = self.struct.getField(str(identChain))
+		structField = self.struct.getField(identChain.getString())
 
 		# FC-parameters cannot be resolved statically.
 		assert(self.hasInstanceDB)
