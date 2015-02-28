@@ -291,9 +291,8 @@ class AwlTranslator(object):
 		db.allocate()
 		# Initialize the data structure fields
 		for init in rawDB.fieldInits:
-			assert(len(init.identChain) == 1) #TODO no structs, yet XXX
-			dtype = interface.getFieldByName(init.identChain[-1].name).dataType
-			self.__initDBField(db, dtype, init)
+			structField = db.struct.getField(init.getIdentString())
+			self.__initDBField(db, structField.dataType, init)
 		return db
 
 	def translateDB(self, rawDB):
