@@ -7,12 +7,12 @@ set /p version= < version.txt
 del version.txt
 
 set distdir=awlsim-win-standalone-%version%
-set zipfile=awlsim-win-standalone-%version%.zip
+set sfxfile=awlsim-win-%version%.package.exe
 set bindir=%distdir%\awlsim-bin
 
 rd /S /Q build 2>NUL
 rd /S /Q %distdir% 2>NUL
-del %zipfile% 2>NUL
+del %sfxfile% 2>NUL
 
 echo Building standalone Windows executable for awlsim v%version%...
 echo.
@@ -119,8 +119,8 @@ if ERRORLEVEL 1 goto error_wrapper
 
 
 echo === Creating the distribution archive
-7z a -tzip -mx=9 %zipfile% %distdir%
-if ERRORLEVEL 1 goto error_zip
+7z a -mx=9 -sfx7z.sfx %sfxfile% %distdir%
+if ERRORLEVEL 1 goto error_7z
 
 
 echo ---
@@ -147,8 +147,8 @@ goto error
 echo FAILED to create wrapper
 goto error
 
-:error_zip
-echo FAILED to create zip archive
+:error_7z
+echo FAILED to create archive
 goto error
 
 :error
