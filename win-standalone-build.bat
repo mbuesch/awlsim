@@ -15,7 +15,33 @@ rd /S /Q %distdir% 2>NUL
 del %zipfile% 2>NUL
 
 echo Building standalone Windows executable for awlsim v%version%...
-echo Please select:
+echo.
+
+echo Please select GUI framework:
+echo   1)  Build with PyQt5 (default)
+echo   2)  Build with PySide4
+set /p framework=Selection: 
+if "%framework%" == "" goto framework_pyqt5
+if "%framework%" == "1" goto framework_pyqt5
+if "%framework%" == "2" goto framework_pyside4
+echo "Error: Invalid selection"
+pause
+exit
+
+:framework_pyqt5
+echo Using PyQt5
+set excludes=PySide
+goto select_freezer
+
+:framework_pyside4
+echo Using PySide4
+set excludes=PyQt5
+goto select_freezer
+
+
+:select_freezer
+echo.
+echo Please select freezer:
 echo   1)  Build 'cx_Freeze' based distribution (default)
 echo   2)  Build 'py2exe' based distribution
 set /p buildtype=Selection: 
@@ -38,6 +64,7 @@ if ERRORLEVEL 1 goto error_prep
 py setup.py build_exe ^
 	--build-exe=%bindir% ^
 	--optimize=2 ^
+	--excludes=%excludes% ^
 	--silent
 if ERRORLEVEL 1 goto error_exe
 goto copy_files
@@ -56,6 +83,7 @@ py setup.py py2exe ^
 	--optimize=2 ^
 	--bundle-files=3 ^
 	--ignores=win32api,win32con,readline,awlsim_cython ^
+	--excludes=%excludes% ^
 	--packages=awlsimhw_debug,awlsimhw_dummy,awlsim.library.iec ^
 	--quiet
 if ERRORLEVEL 1 goto error_exe
@@ -91,7 +119,7 @@ if ERRORLEVEL 1 goto error_wrapper
 
 
 echo === Creating the distribution archive
-7z a -tzip %zipfile% %distdir%
+7z a -tzip -mx=9 %zipfile% %distdir%
 if ERRORLEVEL 1 goto error_zip
 
 
