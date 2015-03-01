@@ -222,16 +222,20 @@ class SourceCodeEdit(QPlainTextEdit):
 			return
 
 		# Validate the current document
-		cursor = self.textCursor()
-		self.validateText(self.toPlainText(),
-				  cursor.blockNumber())
+		text = self.toPlainText()
+		if text.strip():
+			# Run the validator.
+			self.validateText(text, self.textCursor().blockNumber())
+		else:
+			# No text. Mark everything as ok.
+			self.setErraticLines(())
 
 	# Validation callback.
 	# Override this in the subclass.
-	# The default implementation does nothing.
+	# The default implementation marks everything as Ok.
 	# In case of validation failure, call setErraticLines.
 	def validateText(self, text, currentLineNr):
-		pass
+		self.setErraticLines(())
 
 	# Mark erratic lines
 	def setErraticLines(self, errLines):
