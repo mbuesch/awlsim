@@ -51,9 +51,16 @@ __check_test_dir_encoding()
 	done
 }
 
+hook_post_checkout()
+{
+	default_hook_post_checkout "$@"
+
+	info "Checking test file encodings"
+	__check_test_dir_encoding "$1"/tests
+}
+
 hook_regression_tests()
 {
-	__check_test_dir_encoding "$1"/tests
 	# Run selftests
 	sh "$1/tests/run.sh"
 }
