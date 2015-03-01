@@ -45,7 +45,8 @@ class BlockInterfaceField(object):
 		# dataType -> One of AwlDataType instance.
 		self.name = name
 		self.dataType = dataType
-		self.fieldType = self.FTYPE_UNKNOWN
+		self.fieldType = self.FTYPE_UNKNOWN	# set later
+		self.fieldIndex = None			# set later
 
 	def __repr__(self):
 		ftype = {
@@ -156,6 +157,11 @@ class BlockInterface(object):
 		self.__addField(field)
 		self.fields_TEMP.append(field)
 
+	# Set fieldIndex of each field.
+	def __enumerateFields(self):
+		for i, field in enumerate(self.fields_IN_OUT_INOUT):
+			field.fieldIndex = i
+
 	def __buildField(self, cpu, struct, field, isFirst):
 		if isFirst:
 			# Align to word boundary.
@@ -230,6 +236,8 @@ class BlockInterface(object):
 			raise self.StructRecursion()
 		self.__structState = self.STRUCT_BUILDING
 
+		self.__enumerateFields()
+
 		# Build instance-DB structure, if any.
 		if self.hasInstanceDB:
 			# Resolve the sizes of all multi-instance
@@ -263,18 +271,50 @@ class BlockInterface(object):
 
 		self.__structState = self.STRUCT_BUILT
 
-	#FIXME We should use AwlDataIdentChain instead of name in all field APIs.
-
+	# Get an interface field by name string.
 	def getFieldByName(self, name):
 		try:
 			return self.fieldNameMap[name]
 		except KeyError:
-			raise AwlSimError("Data structure field '%s' does not exist." %\
+			raise AwlSimError("Interface field '%s' does not exist." %\
 				name)
 
+	# Get the interface field (BlockInterfaceField) by AwlDataIdentChain.
+	# Only the first element of the chain is honored.
+	# (Other elements belong to sub-STRUCTs.)
+	def getFieldByIdentChain(self, identChain):
+		fieldName = identChain[0].name
+		field = self.getFieldByName(fieldName)
+		return field
+
+	# Get the interface field type (FTYPE_xxx) for a
+	# given identifier chain (AwlDataIdentChain).
+	def getFieldType(self, identChain):
+		return self.getFieldByIdentChain(identChain).fieldType
+
+	# Get the data type (AwlDataType) of an interface field
+	# identified by a given ident chain (AwlDataIdentChain).
+	# If 'deep' is True, get the data type of the last element
+	# in the chain. If 'deep' is False, get the type of the first
+	# element (the interface element) only.
+	def getFieldDataType(self, identChain, deep=True):
+		# The interface field is determined by the first ident
+		# chain element.
+		fieldName = identChain[0].name
+		field = self.getFieldByName(fieldName)
+		if len(identChain) == 1 or not deep:
+			return field.dataType
+		identChain = AwlDataIdentChain(identChain[1:])
+		# Walk the rest of the identifier chain to get to
+		# the data type of the final element.
+		structFieldName = identChain.dup(withIndices=False).getString()
+		structField = field.dataType.itemStruct.getField(structFieldName)
+		return structField.dataType
+
 	# Get an AwlOperator for TEMP access.
-	def __getOperatorForField_TEMP(self, interfaceField, wantPointer):
-		structField = self.tempStruct.getField(interfaceField.name)
+	def __getOperatorForField_TEMP(self, identChain, wantPointer):
+		structField = self.tempStruct.getField(
+			identChain.dup(withIndices=False).getString())
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			return AwlOperator(type = AwlOperator.IMM_PTR,
@@ -294,12 +334,11 @@ class BlockInterface(object):
 	# If wantPointer is true, an IMM_PTR AwlOperator to the interfaceField
 	# is returned.
 	def getOperatorForField(self, identChain, wantPointer):
-		interfaceField = self.getFieldByName(
-			identChain.dup(withIndices=False).getString())
+		interfaceFieldType = self.getFieldType(identChain)
 
-		if interfaceField.fieldType == interfaceField.FTYPE_TEMP:
+		if interfaceFieldType == BlockInterfaceField.FTYPE_TEMP:
 			# get TEMP interface field operator
-			return self.__getOperatorForField_TEMP(interfaceField,
+			return self.__getOperatorForField_TEMP(identChain,
 							       wantPointer)
 		# otherwise get IN/OUT/INOUT/STAT interface field operator
 
@@ -366,15 +405,6 @@ class BlockInterface(object):
 		# the operand as such.
 		oper.compound = structField.dataType.compound
 		return oper
-
-	# Get a stable index number for an IN, OUT or INOUT field.
-	# (This method is slow)
-	def getFieldIndex(self, name):
-		for i, field in enumerate(self.fields_IN_OUT_INOUT):
-			if field.name == name:
-				return i
-		raise AwlSimError("Interface field '%s' is not part of IN, OUT "
-			"or IN_OUT declaration." % name)
 
 	def __repr__(self):
 		ret = []
@@ -465,6 +495,7 @@ class StaticCodeBlock(CodeBlock):
 		BlockInterfaceField.FTYPE_OUT	: (),
 		BlockInterfaceField.FTYPE_INOUT	: (),
 		BlockInterfaceField.FTYPE_STAT	: (),
+		BlockInterfaceField.FTYPE_TEMP	: (),
 	}
 
 	# Set to True by the subclass, if the implementation is incomplete.

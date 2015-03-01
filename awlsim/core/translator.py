@@ -354,17 +354,18 @@ class AwlSymResolver(object):
 
 		# Walk the ident chain to accumulate the sub-offsets
 		# for the ARRAY accesses.
+		parentStruct = None
 		subOffset = AwlOffset()
 		for i in range(len(oper.value.identChain)):
+			isFirstElement = (i == 0)
 			isLastElement = (i == len(oper.value.identChain) - 1)
 
 			# Get the sub-chain and the interface field.
 			chain = AwlDataIdentChain(oper.value.identChain[:i+1])
-			field = block.interface.getFieldByName(
-				chain.dup(withIndices = False).getString())
+			dataType = block.interface.getFieldDataType(chain)
 
 			# Sanity checks
-			if field.dataType.type == AwlDataType.TYPE_ARRAY:
+			if dataType.type == AwlDataType.TYPE_ARRAY:
 				if isLastElement and\
 				   not chain[-1].indices and\
 				   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
@@ -378,49 +379,61 @@ class AwlSymResolver(object):
 						"but #%s is not an array." %\
 						chain.getString())
 
+			# Add the struct field offset of this field to the subOffset.
+			# Need to look it up in the parent struct.
+			if not isFirstElement:
+				assert(parentStruct)
+				structFieldName = chain[-1].dup(withIndices=False).getString()
+				structField = parentStruct.getField(structFieldName)
+				subOffset += structField.offset
+
+			# Add array offset to subOffset,
+			# if this is an ARRAY element access.
 			if chain[-1].indices:
 				# Calculate the array offset.
-				assert(field.dataType.type == AwlDataType.TYPE_ARRAY)
-				arrayIndex = field.dataType.arrayIndicesCollapse(chain[-1].indices)
-				elemWidth = field.dataType.arrayElementType.width
+				assert(dataType.type == AwlDataType.TYPE_ARRAY)
+				arrayIndex = dataType.arrayIndicesCollapse(chain[-1].indices)
+				elemWidth = dataType.arrayElementType.width
 				bitOffset = arrayIndex * elemWidth
 				byteOffset = bitOffset // 8
 				bitOffset %= 8
 				# Add it to the accumulated offset.
 				subOffset += AwlOffset(byteOffset, bitOffset)
 
-		# 'field' now is the last field in the identChain.
-		# (So it's the field that we eventually address).
+			parentStruct = dataType.itemStruct
 
-		isWholeArrayAccess = (field.dataType.type == AwlDataType.TYPE_ARRAY and\
+		# 'dataType' now is the type of last field in the identChain.
+		# (The field that we eventually address).
+
+		isWholeArrayAccess = (dataType.type == AwlDataType.TYPE_ARRAY and\
 				      not oper.value.identChain[-1].indices)
-		if field.dataType.type == AwlDataType.TYPE_ARRAY and\
+		if dataType.type == AwlDataType.TYPE_ARRAY and\
 		   not isWholeArrayAccess:
 			# This is an array element access.
 			# Store the element-access-width in the operator.
-			oper.width = field.dataType.arrayElementType.width
+			oper.width = dataType.arrayElementType.width
 		else:
 			# Non-array access or whole-array access.
 			# Store the field access width in the operator.
-			oper.width = field.dataType.width
+			oper.width = dataType.width
 
 		# Store the sub-offset (might be zero).
 		oper.value.subOffset = subOffset
 
-		# If this is a compound data type access, mark
+		# If interface field is of compound data type access, mark
 		# the operand as such.
-		oper.compound = field.dataType.compound
+		basicType = block.interface.getFieldDataType(chain, deep=False)
+		oper.compound = basicType.compound
 
+		fieldType = block.interface.getFieldType(oper.value.identChain)
 		if block.interface.hasInstanceDB or\
-		   field.fieldType == BlockInterfaceField.FTYPE_TEMP:
+		   fieldType == BlockInterfaceField.FTYPE_TEMP:
 			# This is an FB or a TEMP access. Translate the operator
 			# to a DI/TEMP access.
 			newOper = block.interface.getOperatorForField(oper.value.identChain,
 								      pointer)
 			newOper.setInsn(oper.insn)
-			# If this is a compound data type access, mark
-			# the operand as such.
-			newOper.compound = field.dataType.compound
+			newOper.compound = oper.compound
 			return newOper
 		else:
 			# This is an FC. Accesses to local symbols
@@ -429,7 +442,7 @@ class AwlSymResolver(object):
 			# Pointer access (oper.type == NAMED_LOCAL_PTR) is resolved
 			# later at runtime.
 			identChain = oper.value.identChain.dup(withIndices = False)
-			index = block.interface.getFieldIndex(identChain.getString())
+			index = block.interface.getFieldByIdentChain(identChain).fieldIndex
 			oper.interfaceIndex = index
 		return oper
 

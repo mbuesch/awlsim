@@ -2,7 +2,7 @@
 #
 # AWL simulator - call parameters
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ class AwlParamAssign(DynAttrs):
 
 	def __interfaceFieldIndex(self):
 		# Find the index number for the l-value
-		return self.interface.getFieldIndex(self.lvalueName)
+		return self.interface.getFieldByName(self.lvalueName).fieldIndex
 
 	def __repr__(self):
 		return "%s := %s" % (self.lvalueName, str(self.rvalueOp))

@@ -235,6 +235,16 @@ class AwlDataType(object):
 		assert(not struct or self.type == self.TYPE_STRUCT)
 		self.struct = struct
 
+	# Get the type element structure.
+	# This is the element's struct for ARRAYs and the struct
+	# of this type for STRUCTs.
+	# None for others.
+	@property
+	def itemStruct(self):
+		if self.type == self.TYPE_ARRAY:
+			return self.arrayElementType.struct
+		return self.struct
+
 	# Returns the width of this data type, in bits.
 	@property
 	def width(self):

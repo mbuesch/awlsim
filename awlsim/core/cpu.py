@@ -954,7 +954,7 @@ class S7CPU(object): #+cdef
 			# The translated operand already points to the variable.
 			finalOp = interfOp.dup()
 			finalOp.width = operator.width
-		# Add possible sub-offsets (ARRAY) to the offset.
+		# Add possible sub-offsets (ARRAY, STRUCT) to the offset.
 		finalOp.value += operator.value.subOffset
 		# Reparent the operator to the originating instruction.
 		# This is especially important for T and Z fetches due
