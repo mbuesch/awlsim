@@ -148,6 +148,12 @@ class AwlStruct(object):
 			except KeyError:
 				assert(0) # Should never happen
 			assert(not initBytes)
+			# Assign the struct to the UDT data type, if
+			# not already done so.
+			assert(dataType.struct is None or
+			       dataType.struct is udt.struct)
+			dataType.setStruct(udt.struct)
+			# Merge the UDT struct with this struct.
 			return self.merge(udt.struct, name, dataType)
 
 		if dataType.width < 0:

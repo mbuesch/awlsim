@@ -308,6 +308,10 @@ class BlockInterface(object):
 		# Walk the rest of the identifier chain to get to
 		# the data type of the final element.
 		structFieldName = identChain.dup(withIndices=False).getString()
+		if field.dataType.itemStruct is None:
+			raise AwlSimError("Data type '%s' does not have sub fields. "
+				"Resolve of sub field '%s' failed." %\
+				(str(field.dataType), structFieldName))
 		structField = field.dataType.itemStruct.getField(structFieldName)
 		return structField.dataType
 

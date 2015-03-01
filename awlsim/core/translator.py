@@ -379,6 +379,18 @@ class AwlSymResolver(object):
 						"but #%s is not an array." %\
 						chain.getString())
 
+			# Assign the struct to the UDT data type, if
+			# not already done so.
+			if dataType.type == AwlDataType.TYPE_UDT_X:
+				try:
+					udt = self.cpu.udts[dataType.index]
+				except KeyError as e:
+					raise AwlSimError("UDT %d not found on CPU" %\
+						dataType.index)
+				assert(dataType.struct is None or
+				       dataType.struct is udt.struct)
+				dataType.setStruct(udt.struct)
+
 			# Add the struct field offset of this field to the subOffset.
 			# Need to look it up in the parent struct.
 			if not isFirstElement:

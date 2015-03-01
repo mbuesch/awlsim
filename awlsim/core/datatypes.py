@@ -232,12 +232,14 @@ class AwlDataType(object):
 
 	# Set the AwlStruct that defines the structure of this STRUCT type.
 	def setStruct(self, struct):
-		assert(not struct or self.type == self.TYPE_STRUCT)
+		assert(struct is None or
+		       self.type == self.TYPE_STRUCT or
+		       self.type == self.TYPE_UDT_X)
 		self.struct = struct
 
 	# Get the type element structure.
 	# This is the element's struct for ARRAYs and the struct
-	# of this type for STRUCTs.
+	# of this type for STRUCTs/UDTs.
 	# None for others.
 	@property
 	def itemStruct(self):
