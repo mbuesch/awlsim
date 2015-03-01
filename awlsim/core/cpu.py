@@ -230,7 +230,7 @@ class S7CPU(object): #+cdef
 					# Get the interface field for this variable
 					field = calledCodeBlock.interface.getFieldByName(param.lvalueName)
 					# Check type compatibility
-					param.rvalueOp.checkDataTypeCompat(field.dataType)
+					param.rvalueOp.checkDataTypeCompat(self, field.dataType)
 			except AwlSimError as e:
 				e.setInsn(insn)
 				raise e

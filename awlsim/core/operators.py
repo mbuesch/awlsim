@@ -237,7 +237,7 @@ class AwlOperator(DynAttrs):
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 
-	def checkDataTypeCompat(self, dataType):
+	def checkDataTypeCompat(self, cpu, dataType):
 		assert(isinstance(dataType, AwlDataType))
 
 		if self.type in (AwlOperator.NAMED_LOCAL,
@@ -245,6 +245,12 @@ class AwlOperator(DynAttrs):
 				 AwlOperator.NAMED_DBVAR,
 				 AwlOperator.SYMBOLIC):
 			return
+
+		def mismatch(dataType, oper, operWidth):
+			raise AwlSimError("Data type '%s' of width %d bits "
+				"is not compatible with operator '%s' "
+				"of width %d bits." %\
+				(str(dataType), dataType.width, str(oper), operWidth))
 
 		operWidth = self.width
 
@@ -255,11 +261,16 @@ class AwlOperator(DynAttrs):
 			if self.value <= 0xFF:
 				operWidth = 8
 
-		if operWidth != dataType.width:
-			raise AwlSimError("Data type '%s' of width %d bits "
-				"is not compatible with operator '%s' "
-				"of width %d bits." %\
-				(str(dataType), dataType.width, str(self), operWidth))
+		if dataType.type == AwlDataType.TYPE_UDT_X:
+			try:
+				udt = cpu.udts[dataType.index]
+				if udt.struct.getSize() * 8 != operWidth:
+					raise ValueError
+			except (KeyError, ValueError) as e:
+				mismatch(dataType, self, operWidth)
+		else:
+			if operWidth != dataType.width:
+				mismatch(dataType, self, operWidth)
 
 	# Resolve this indirect operator to a direct operator.
 	def resolve(self, store=True):

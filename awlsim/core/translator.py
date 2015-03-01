@@ -428,6 +428,7 @@ class AwlSymResolver(object):
 			# Non-array access or whole-array access.
 			# Store the field access width in the operator.
 			oper.width = dataType.width
+		assert(oper.width > 0)
 
 		# Store the sub-offset (might be zero).
 		oper.value.subOffset = subOffset
@@ -444,6 +445,7 @@ class AwlSymResolver(object):
 			# to a DI/TEMP access.
 			newOper = block.interface.getOperatorForField(oper.value.identChain,
 								      pointer)
+			assert(newOper.width > 0)
 			newOper.setInsn(oper.insn)
 			newOper.compound = oper.compound
 			return newOper

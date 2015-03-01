@@ -263,7 +263,8 @@ class AwlDataType(object):
 			else:
 				oneElemWidth = self.arrayElementType.width
 				width = nrElements * oneElemWidth
-		elif self.type == self.TYPE_STRUCT:
+		elif self.type == self.TYPE_STRUCT or\
+		     self.type == self.TYPE_UDT_X:
 			if self.struct:
 				width = self.struct.getSize() * 8
 			else:
