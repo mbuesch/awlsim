@@ -36,7 +36,7 @@ class AwlInsn_TAR1(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		if self.ops:
-			self.cpu.store(self.ops[0], self.cpu.ar1.get(), (32,))
+			self.cpu.store(self.ops[0], self.cpu.ar1.get(), {32,})
 		else:
 			self.cpu.accu2.copyFrom(self.cpu.accu1)
 			self.cpu.accu1.copyFrom(self.cpu.ar1)

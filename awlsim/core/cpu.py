@@ -980,8 +980,8 @@ class S7CPU(object): #+cdef
 	def storeInputRange(self, byteOffset, data):
 		self.inputs[byteOffset : byteOffset + len(data)] = data
 
-	def fetch(self, operator, enforceWidth=()): #@nocy
-#@cy	cpdef object fetch(self, object operator, tuple enforceWidth=()):
+	def fetch(self, operator, enforceWidth=set()): #@nocy
+#@cy	cpdef object fetch(self, object operator, set enforceWidth=set()):
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
@@ -1285,8 +1285,8 @@ class S7CPU(object): #+cdef
 		AwlOperator.VIRT_DBR		: fetchVirtDBR,
 	}
 
-	def store(self, operator, value, enforceWidth=()): #@nocy
-#@cy	cpdef store(self, object operator, object value, tuple enforceWidth=()):
+	def store(self, operator, value, enforceWidth=set()): #@nocy
+#@cy	cpdef store(self, object operator, object value, set enforceWidth=set()):
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:

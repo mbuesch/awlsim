@@ -36,6 +36,6 @@ class AwlInsn_LAR2(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		if self.ops:
-			self.cpu.ar2.set(self.cpu.fetch(self.ops[0], (32,)))
+			self.cpu.ar2.set(self.cpu.fetch(self.ops[0], {32,}))
 		else:
 			self.cpu.ar2.set(self.cpu.accu1.get())

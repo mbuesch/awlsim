@@ -32,7 +32,7 @@ class AwlInsn_INCAR1(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR1, rawInsn)
 		self.assertOpCount((0, 1))
 		if self.ops:
-			self.ops[0].assertType(AwlOperator.IMM_PTR, widths=(32,))
+			self.ops[0].assertType(AwlOperator.IMM_PTR, widths={32,})
 
 	def run(self):
 #@cy		cdef S7StatusWord s

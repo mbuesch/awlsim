@@ -38,4 +38,4 @@ class AwlInsn_LC(AwlInsn): #+cdef
 		#FIXME check whether operator is valid for LC
 		self.cpu.accu2.copyFrom(self.cpu.accu1)
 		# fetch() does the BCD conversion for us
-		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], (8, 16, 32)))
+		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], {8, 16, 32}))

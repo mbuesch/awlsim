@@ -215,7 +215,7 @@ class AwlOperator(DynAttrs):
 		       self.type < self.__IMM_END
 
 	def _raiseTypeError(self, actualType, expectedTypes):
-		expectedTypes = [ self.type2str[t] for t in expectedTypes ]
+		expectedTypes = [ self.type2str[t] for t in sorted(expectedTypes) ]
 		raise AwlSimError("Invalid operator type. Got %s, but expected %s." %\
 			(self.type2str[actualType],
 			 listToHumanStr(expectedTypes)),
@@ -225,7 +225,7 @@ class AwlOperator(DynAttrs):
 		if self.type == AwlOperator.NAMED_LOCAL or\
 		   self.type == AwlOperator.NAMED_LOCAL_PTR:
 			return #FIXME we should check type for these, too.
-		types = toList(types)
+		types = toSet(types)
 		if not self.type in types:
 			self._raiseTypeError(self.type, types)
 		if lowerLimit is not None:
@@ -237,7 +237,7 @@ class AwlOperator(DynAttrs):
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 		if widths is not None:
-			widths = toList(widths)
+			widths = toSet(widths)
 			if not self.width in widths:
 				raise AwlSimError("Invalid operator width. "
 					"Got %d, but expected %s." %\
@@ -558,7 +558,7 @@ class AwlIndirectOp(AwlOperator):
 		self.offsetOper.setInsn(newInsn)
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
-		types = toList(types)
+		types = toSet(types)
 		if not self.area2optype_fetch[self.area] in types and\
 		   not self.area2optype_store[self.area] in types:
 			self._raiseTypeError(self.area2optype_fetch[self.area], types)
@@ -584,11 +584,11 @@ class AwlIndirectOp(AwlOperator):
 					"address register.")
 			if self.area > AwlIndirectOp.AREA_MASK:
 				# Is extended area
-				possibleWidths = (8, 16, 32)
+				possibleWidths = {8, 16, 32}
 				bitwiseDirectOffset = False
 			else:
 				# Is standard area
-				possibleWidths = (32,)
+				possibleWidths = {32,}
 			if offsetOper.type not in self.__possibleOffsetOperTypes:
 				raise AwlSimError("Offset operator in indirect "
 					"access is not a valid memory offset.")

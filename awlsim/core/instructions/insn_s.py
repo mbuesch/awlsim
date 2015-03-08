@@ -42,5 +42,5 @@ class AwlInsn_S(AwlInsn): #+cdef
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and (not self.cpu.mcrActive or self.cpu.mcrIsOn()):
-				self.cpu.store(oper, 1, (1,))
+				self.cpu.store(oper, 1, {1,})
 			s.OR, s.STA, s.NER = 0, s.VKE, 0

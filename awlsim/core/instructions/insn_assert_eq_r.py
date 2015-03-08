@@ -36,8 +36,8 @@ class AwlInsn_ASSERT_EQ_R(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		val0 = self.cpu.fetch(self.ops[0], (32,))
-		val1 = self.cpu.fetch(self.ops[1], (32,))
+		val0 = self.cpu.fetch(self.ops[0], {32,})
+		val1 = self.cpu.fetch(self.ops[1], {32,})
 		if not floatEqual(val0, val1):
 			raise AwlSimError("Assertion failed")
 		s.NER = 0

@@ -71,5 +71,5 @@ cdef class S7CPU(object):
 	cdef public uint32_t __speedMeasureStartInsnCount
 	cdef public uint32_t __speedMeasureStartCycleCount
 
-	cpdef object fetch(self, object operator, tuple enforceWidth=*)
-	cpdef store(self, object operator, object value, tuple enforceWidth=*)
+	cpdef object fetch(self, object operator, set enforceWidth=*)
+	cpdef store(self, object operator, object value, set enforceWidth=*)

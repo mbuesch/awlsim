@@ -36,4 +36,4 @@ class AwlInsn_L(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.accu2.copyFrom(self.cpu.accu1)
-		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], (8, 16, 32)))
+		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], {8, 16, 32}))

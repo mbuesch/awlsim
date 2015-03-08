@@ -40,4 +40,4 @@ class AwlInsn_ASSIGN(AwlInsn): #+cdef
 			s.OR, s.STA, s.NER = 0, 0, 0
 		else:
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
-		self.cpu.store(self.ops[0], s.STA, (1,))
+		self.cpu.store(self.ops[0], s.STA, {1,})

@@ -36,7 +36,7 @@ class AwlInsn_ON(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s, STA = self.cpu.statusWord,\
-			self.cpu.fetch(self.ops[0], (1,))
+			self.cpu.fetch(self.ops[0], {1,})
 		if s.NER:
 			s.OR, s.STA, s.VKE = 0, STA, (s.VKE | (STA ^ 1))
 		else:
