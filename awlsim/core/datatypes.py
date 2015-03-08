@@ -35,6 +35,7 @@ class AwlDataType(object):
 	# Data type IDs
 	EnumGen.start
 	TYPE_VOID	= EnumGen.item
+	TYPE_NIL	= EnumGen.item
 	TYPE_BOOL	= EnumGen.item
 	TYPE_BYTE	= EnumGen.item
 	TYPE_WORD	= EnumGen.item
@@ -50,10 +51,13 @@ class AwlDataType(object):
 	TYPE_CHAR	= EnumGen.item
 	TYPE_ARRAY	= EnumGen.item
 	TYPE_STRUCT	= EnumGen.item
+	TYPE_STRING	= EnumGen.item
 	TYPE_TIMER	= EnumGen.item
 	TYPE_COUNTER	= EnumGen.item
 	TYPE_POINTER	= EnumGen.item
+	TYPE_ANY	= EnumGen.item
 	TYPE_BLOCK_DB	= EnumGen.item # DB number type
+	TYPE_BLOCK_SDB	= EnumGen.item # SDB number type
 	TYPE_BLOCK_FB	= EnumGen.item # FB number type
 	TYPE_BLOCK_FC	= EnumGen.item # FC number type
 	TYPE_DB_X	= EnumGen.item # DBx type
@@ -68,6 +72,7 @@ class AwlDataType(object):
 
 	__name2id = {
 		"VOID"		: TYPE_VOID,
+		"NIL"		: TYPE_NIL,
 		"BOOL"		: TYPE_BOOL,
 		"BYTE"		: TYPE_BYTE,
 		"WORD"		: TYPE_WORD,
@@ -83,10 +88,13 @@ class AwlDataType(object):
 		"CHAR"		: TYPE_CHAR,
 		"ARRAY"		: TYPE_ARRAY,
 		"STRUCT"	: TYPE_STRUCT,
+		"STRING"	: TYPE_STRING,
 		"TIMER"		: TYPE_TIMER,
 		"COUNTER"	: TYPE_COUNTER,
 		"POINTER"	: TYPE_POINTER,
+		"ANY"		: TYPE_ANY,
 		"BLOCK_DB"	: TYPE_BLOCK_DB,
+		"BLOCK_SDB"	: TYPE_BLOCK_SDB,
 		"BLOCK_FB"	: TYPE_BLOCK_FB,
 		"BLOCK_FC"	: TYPE_BLOCK_FC,
 		"DB"		: TYPE_DB_X,
@@ -104,6 +112,7 @@ class AwlDataType(object):
 	# -1 => Type width must be calculated
 	__typeWidths = {
 		TYPE_VOID	: 0,
+		TYPE_NIL	: 0,
 		TYPE_BOOL	: 1,
 		TYPE_BYTE	: 8,
 		TYPE_WORD	: 16,
@@ -119,10 +128,13 @@ class AwlDataType(object):
 		TYPE_CHAR	: 8,
 		TYPE_ARRAY	: -1,
 		TYPE_STRUCT	: -1,
+		TYPE_STRING	: -1,
 		TYPE_TIMER	: 16,
 		TYPE_COUNTER	: 16,
 		TYPE_POINTER	: 48,
+		TYPE_ANY	: 80,
 		TYPE_BLOCK_DB	: 16,
+		TYPE_BLOCK_SDB	: 16,
 		TYPE_BLOCK_FB	: 16,
 		TYPE_BLOCK_FC	: 16,
 		TYPE_DB_X	: -1,
@@ -136,24 +148,62 @@ class AwlDataType(object):
 	}
 
 	# Table of trivial types with sign
-	signedTypes = (
+	signedTypes = {
 		TYPE_INT,
 		TYPE_DINT,
 		TYPE_REAL,
-	)
+	}
 
 	# Table of compound types
-	compoundTypes = (
+	compoundTypes = {
 		TYPE_DT,
 		TYPE_ARRAY,
 		TYPE_STRUCT,
+		TYPE_STRING,
 		TYPE_UDT_X,
 
 		# No TYPE_POINTER here.
 		# Technically POINTER is compound, too, but we use this
 		# table to decide whether we need to create POINTERs.
 		# Adding TYPE_POINTER here would create an infinite loop.
-	)
+	}
+
+	# Table of types allowed inside of STRUCT.
+	__allowedInStructTypes = {
+		TYPE_BOOL,
+		TYPE_BYTE,
+		TYPE_WORD,
+		TYPE_DWORD,
+		TYPE_INT,
+		TYPE_DINT,
+		TYPE_REAL,
+		TYPE_S5T,
+		TYPE_TIME,
+		TYPE_DATE,
+		TYPE_DT,
+		TYPE_TOD,
+		TYPE_CHAR,
+		TYPE_ARRAY,
+		TYPE_STRUCT,
+		TYPE_STRING,
+		TYPE_UDT_X,
+	}
+
+	# Table of types allowed as ARRAY element.
+	__allowedInArrayTypes = __allowedInStructTypes
+
+	# Table of types allowed as block interface element.
+	__allowedInInterfaceTypes = __allowedInStructTypes | {
+		TYPE_TIMER,
+		TYPE_COUNTER,
+		TYPE_POINTER,
+		TYPE_ANY,
+		TYPE_BLOCK_DB,
+		TYPE_BLOCK_FB,
+		TYPE_BLOCK_FC,
+		TYPE_FB_X,
+		TYPE_SFB_X,
+	}
 
 	# Convert a list of array dimensions into a number of elements.
 	@classmethod
@@ -283,6 +333,21 @@ class AwlDataType(object):
 	@property
 	def compound(self):
 		return self.type in self.compoundTypes
+
+	# Returns True, if this type is allowed in STRUCTs.
+	@property
+	def allowedInStruct(self):
+		return self.type in self.__allowedInStructTypes
+
+	# Returns True, if this type is allowed as ARRAY element.
+	@property
+	def allowedInArray(self):
+		return self.type in self.__allowedInArrayTypes
+
+	# Returns True, if this type is allowed in block interfaces.
+	@property
+	def allowedInInterface(self):
+		return self.type in self.__allowedInInterfaceTypes
 
 	# Possible values for 'naturalAlignment'.
 	EnumGen.start
@@ -755,51 +820,69 @@ class AwlDataType(object):
 			byteOffset = int(values[0], 10)
 			bitOffset = int(values[1], 10)
 			if bitOffset < 0 or bitOffset > 7 or\
-			   byteOffset < 0 or byteOffset > 0x1FFFFF:
+			   byteOffset < 0 or byteOffset > 0xFFFF:
 				raise ValueError
 			return (byteOffset << 3) | bitOffset
 		except ValueError:
 			raise AwlSimError("Invalid pointer offset")
 
+	#TODO: Add ANY-Pointer parsing
 	@classmethod
 	def tryParseImmediate_Pointer(cls, tokens):
 		prefix = tokens[0].upper()
 		if not prefix.startswith("P#"):
 			return None, None
 		prefix = prefix[2:] # Strip P#
+		dotIdx = prefix.find(".")
+		if dotIdx > 0 and prefix[:dotIdx].startswith("DB") and\
+		   prefix[2:dotIdx].isdecimal():
+			# This is a DB pointer.
+			dbNr = int(prefix[2:dotIdx])
+			prefix = prefix[dotIdx+1:]
+			pointer = DBPointer(0, dbNr)
+		else:
+			pointer = Pointer(0)
 		try:
 			if prefix == "P":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x80000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			elif prefix in ("E", "I"):
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x81000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			elif prefix in ("A", "Q"):
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x82000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			elif prefix == "M":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x83000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			elif prefix == "DBX":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x84000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			elif prefix == "DIX":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x85000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			elif prefix == "L":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x86000000
-				return ptr, 2
+				pointer.setDWord(ptr)
+				return pointer, 2
 			else:
 				# Area-internal pointer
 				ptr = cls.__parsePtrOffset(prefix)
-				return ptr, 1
+				pointer.setDWord(ptr)
+				return pointer, 1
 		except IndexError:
 			raise AwlSimError("Invalid pointer immediate")
 
@@ -1100,43 +1183,237 @@ class ByteArray(bytearray):
 	def __str__(self):
 		return self.__repr__()
 
+class Pointer(GenericDWord): #+cdef
+	"""Pointer value.
+	The basic data type (GenericDWord) holds the pointer value
+	and the area code."""
+
+	AREA_SHIFT	= 24
+	AREA_MASK	= 0xFF
+	AREA_MASK_S	= AREA_MASK << AREA_SHIFT
+
+	AREA_P		= 0x80	# Peripheral area
+	AREA_E		= 0x81	# Input
+	AREA_A		= 0x82	# Output
+	AREA_M		= 0x83	# Flags
+	AREA_DB		= 0x84	# Global datablock
+	AREA_DI		= 0x85	# Instance datablock
+	AREA_L		= 0x86	# Localstack
+	AREA_VL		= 0x87	# Parent localstack
+
+	# Convert an area code to string
+	area2str = {
+		AREA_P			: "P",
+		AREA_E			: "E",
+		AREA_A			: "A",
+		AREA_M			: "M",
+		AREA_DB			: "DBX",
+		AREA_DI			: "DIX",
+		AREA_L			: "L",
+		AREA_VL			: "V",
+	}
+
+	# Width, in bits.
+	width = 32
+
+	def __init__(self, ptrValue = 0):
+		GenericDWord.__init__(self, ptrValue)
+
+	# Get the 32 bit pointer.
+	toPointerValue = GenericDWord.get #@nocy
+#@cy	cpdef uint32_t toPointerValue(self):
+#@cy		return self.get()
+
+	# Get the pointer as DB-pointer (48 bit).
+	def toDBPointerValue(self): #@nocy
+#@cy	cpdef uint64_t toDBPointerValue(self):
+		return DBPointer(self.toPointerValue()).toDBPointerValue()
+
+	# Get the pointer as ANY-pointer (80 bit).
+	def toANYPointerValue(self): #@nocy
+#@cy	cpdef object toANYPointerValue(self):
+		return ANYPointer(self.toPointerValue()).toANYPointerValue()
+
+	# Get the area code, as byte.
+	@property
+	def area(self):
+		return (self.toPointerValue() >> 24) & 0xFF
+
+	# Get the byte offset, as word.
+	@property
+	def byteOffset(self):
+		return (self.toPointerValue() >> 3) & 0xFFFF
+
+	# Get the bit offset, as byte.
+	@property
+	def bitOffset(self):
+		return self.toPointerValue() & 7
+
+	# Get a P#... string for this pointer.
+	def toPointerString(self):
+		area = self.area
+		if area:
+			if area == self.AREA_P:
+				prefix = "P "
+			elif area == self.AREA_E:
+				prefix = "E "
+			elif area == self.AREA_A:
+				prefix = "A "
+			elif area == self.AREA_M:
+				prefix = "M "
+			elif area == self.AREA_DB:
+				prefix = "DBX "
+			elif area == self.AREA_DI:
+				prefix = "DIX "
+			elif area == self.AREA_L:
+				prefix = "L "
+			elif area == self.AREA_VL:
+				prefix = "V "
+			else:
+				prefix = "(%02X) " % area
+		else:
+			prefix = ""
+		return "P#%s%d.%d" % (prefix, self.byteOffset, self.bitOffset)
+
+	def __repr__(self):
+		return self.toPointerString()
+
+class DBPointer(Pointer): #+cdef
+	"""DB-Pointer value.
+	The basic data type (Pointer) holds the pointer value
+	and the area code. The DB number is stored separately in 'dbNr'."""
+
+#@cy	cdef public uint16_t dbNr
+
+	# Width, in bits.
+	width = 48
+
+	def __init__(self, ptrValue = 0, dbNr = 0):
+		Pointer.__init__(self, ptrValue)
+		self.dbNr = dbNr
+
+	# Get the pointer as DB-pointer (48 bit).
+	def toDBPointerValue(self): #@nocy
+		return (self.dbNr << 32) | self.toPointerValue() #@nocy
+#@cy	cpdef uint64_t toDBPointerValue(self):
+#@cy		cdef uint64_t dbNr
+#@cy		dbNr = self.dbNr
+#@cy		return (dbNr << 32) | self.toPointerValue()
+
+	# Get the pointer as ANY-pointer (80 bit).
+	def toANYPointerValue(self): #@nocy
+#@cy	cpdef object toANYPointerValue(self):
+		return ANYPointer(self.toPointerValue(), self.dbNr).toANYPointerValue()
+
+	# Get a P#... string for this pointer.
+	def toPointerString(self):
+		if self.dbNr:
+			assert(self.dbNr > 0 and self.dbNr <= 0xFFFF)
+			if self.area == self.AREA_DB:
+				prefix = "DB%d.DBX " % self.dbNr
+			else:
+				prefix = "DB%d.(%02X) " % (self.dbNr, self.area)
+		else:
+			return Pointer.toPointerString(self)
+		return "P#%s%d.%d" % (prefix, self.byteOffset, self.bitOffset)
+
+class AnyPointer(DBPointer): #+cdef
+	"""ANY-Pointer value.
+	The basic data type (DBPointer) holds the pointer value,
+	the area code and the DB number.
+	The data type is stored in 'dataType' as AwlDataType object.
+	The count is stored in 'count'."""
+
+#@cy	cdef public object dataType
+#@cy	cdef public uint16_t count
+
+	# AwlDataType to ANY-Pointer type code.
+	__typeId2typeCode = {
+		AwlDataType.TYPE_NIL		: 0x00,
+		AwlDataType.TYPE_BOOL		: 0x01,
+		AwlDataType.TYPE_BYTE		: 0x02,
+		AwlDataType.TYPE_CHAR		: 0x03,
+		AwlDataType.TYPE_WORD		: 0x04,
+		AwlDataType.TYPE_INT		: 0x05,
+		AwlDataType.TYPE_DWORD		: 0x06,
+		AwlDataType.TYPE_DINT		: 0x07,
+		AwlDataType.TYPE_REAL		: 0x08,
+		AwlDataType.TYPE_DATE		: 0x09,
+		AwlDataType.TYPE_TOD		: 0x0A,
+		AwlDataType.TYPE_TIME		: 0x0B,
+		AwlDataType.TYPE_S5T		: 0x0C,
+		AwlDataType.TYPE_DT		: 0x0E,
+		AwlDataType.TYPE_STRING		: 0x13,
+		AwlDataType.TYPE_BLOCK_FB	: 0x17,
+		AwlDataType.TYPE_BLOCK_FC	: 0x18,
+		AwlDataType.TYPE_BLOCK_DB	: 0x19,
+		AwlDataType.TYPE_BLOCK_SDB	: 0x1A,
+		AwlDataType.TYPE_COUNTER	: 0x1C,
+		AwlDataType.TYPE_TIMER		: 0x1D,
+	}
+	# ANY-Pointer type code to AwlDataType.
+	__typeCode2typeId = pivotDict(__typeId2typeCode)
+
+	# Width, in bits.
+	width = 80
+
+	def __init__(self, ptrValue = 0, dbNr = 0, dataType = None, count = 1):
+		DBPointer.__init__(self, ptrValue, dbNr)
+		if not dataType:
+			dataType = AwlDataType.makeByName("NIL")
+		self.dataType = dataType
+		self.count = count
+
+	# Get the pointer as ANY-pointer (80 bit).
+	def toANYPointerValue(self): #@nocy
+#@cy	cpdef object toANYPointerValue(self):
+		# Byte layout: 0x10, typeCode,
+		#              countHi, countLo,
+		#              dbHi, dbLo,
+		#              area, ptrHi, ptrMid, ptrLo
+		try:
+			count = self.count
+			dbNr = self.dbNr
+			ptr = self.toPointerValue()
+			return ByteArray((0x10,
+					  self.__typeId2typeCode[self.dataType.type],
+					  (count >> 8) & 0xFF,
+					  count & 0xFF,
+					  (dbNr >> 8) & 0xFF,
+					  dbNr & 0xFF,
+					  (ptr >> 24) & 0xFF,
+					  (ptr >> 16) & 0xFF,
+					  (ptr >> 8) & 0xFF,
+					  ptr & 0xFF))
+		except KeyError as e:
+			raise AwlSimError("Can not convert data type '%s' to "
+				"ANY pointer." %\
+				str(self.dataType))
+
+	# Get a P#... string for this pointer.
+	def toPointerString(self):
+		dbStr = ""
+		if self.dbNr:
+			dbStr = "DB%d." % self.dbNr
+		try:
+			areaStr = self.area2str[self.area]
+		except KeyError as e:
+			areaStr = "(%02X)" % self.area
+		return "P#%s%s %d.%d %s %d" %\
+			(dbStr, areaStr,
+			 self.byteOffset,
+			 self.bitOffset,
+			 str(self.dataType),
+			 self.count)
+
 class Accu(GenericDWord): #+cdef
 	"Accumulator register"
 
 	def __init__(self):
 		GenericDWord.__init__(self)
 
-class Adressregister(GenericDWord): #+cdef
+class Adressregister(Pointer): #+cdef
 	"Address register"
 
 	def __init__(self):
-		GenericDWord.__init__(self)
-
-	def toPointerString(self):
-		value = self.getDWord()
-		area = (value >> 24) & 0xFF
-		if area:
-			if area == 0x80:
-				prefix = "P"
-			elif area == 0x81:
-				prefix = "E"
-			elif area == 0x82:
-				prefix = "A"
-			elif area == 0x83:
-				prefix = "M"
-			elif area == 0x84:
-				prefix = "DBX"
-			elif area == 0x85:
-				prefix = "DIX"
-			elif area == 0x86:
-				prefix = "L"
-			elif area == 0x87:
-				prefix = "V"
-			else:
-				prefix = "(%02X)" % area
-			prefix += " "
-		else:
-			prefix = ""
-		byteOffset = (value & 0x00FFFFFF) >> 3
-		bitOffset = value & 7
-		return "P#%s%d.%d" % (prefix, byteOffset, bitOffset)
+		Pointer.__init__(self)

@@ -32,7 +32,7 @@ class AwlInsn_INCAR2(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR2, rawInsn)
 		self.assertOpCount((0, 1))
 		if self.ops:
-			self.ops[0].assertType(AwlOperator.IMM_PTR)
+			self.ops[0].assertType(AwlOperator.IMM_PTR, widths=(32,))
 
 	def run(self):
 #@cy		cdef S7StatusWord s
@@ -40,7 +40,7 @@ class AwlInsn_INCAR2(AwlInsn): #+cdef
 		ar = self.cpu.ar2.get()
 		if self.ops:
 			ar = (ar & 0xFF000000) |\
-			     (((ar & 0x00FFFFFF) + self.ops[0].value) & 0x00FFFFFF)
+			     (((ar & 0x00FFFFFF) + self.ops[0].value.toPointerValue()) & 0x00FFFFFF)
 		else:
 			ar = (ar & 0xFF000000) |\
 			     (((ar & 0x00FFFFFF) + self.cpu.accu1.getSignedWord()) & 0x00FFFFFF)

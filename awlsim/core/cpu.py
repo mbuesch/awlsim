@@ -236,11 +236,16 @@ class S7CPU(object): #+cdef
 				raise e
 
 	def __finalizeCodeBlock(self, block):
+		translator = AwlTranslator(self)
+
 		# Finalize call instructions
 		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
-			# Add interface references to the parameter assignments.
 			for param in insn.params:
+				# Add interface references to the parameter assignment.
 				param.interface = calledCodeBlock.interface
+				# Final translation of parameter assignment operand.
+				translator.translateParamAssignOper(param)
+
 		# Check and account for direct L stack allocations and
 		# interface L stack allocations.
 		block.accountTempAllocations()
@@ -996,6 +1001,14 @@ class S7CPU(object): #+cdef
 
 		return operator.value
 
+	def fetchIMM_PTR(self, operator, enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
+		if operator.width == 48:
+			return operator.value.toDBPointerValue()
+		return operator.value.toPointerValue()
+
 	def fetchDBLG(self, operator, enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
@@ -1239,7 +1252,7 @@ class S7CPU(object): #+cdef
 		AwlOperator.IMM_TIME		: fetchIMM,
 		AwlOperator.IMM_DATE		: fetchIMM,
 		AwlOperator.IMM_TOD		: fetchIMM,
-		AwlOperator.IMM_PTR		: fetchIMM,
+		AwlOperator.IMM_PTR		: fetchIMM_PTR,
 		AwlOperator.MEM_E		: fetchE,
 		AwlOperator.MEM_A		: fetchA,
 		AwlOperator.MEM_M		: fetchM,

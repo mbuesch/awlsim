@@ -43,6 +43,10 @@ class AwlParamAssign(DynAttrs):
 		# OUT or IN_OUT parameter assignment.
 		"isOutbound"	: lambda self, name: self.__isOutbound(),
 
+		# lValueDataType attribute is the AwlDataType of the
+		# parameter's l-value.
+		"lValueDataType"	: lambda self, name: self.__lValueDataType(),
+
 		# lValueStructField attribute is the AwlStructField corresponding
 		# to this parameter's l-value.
 		"lValueStructField"	: lambda self, name: self.__lValueStructField(),
@@ -80,6 +84,10 @@ class AwlParamAssign(DynAttrs):
 	def __lValueStructField(self):
 		# Find the l-value struct field
 		return self.interface.struct.getField(self.lvalueName)
+
+	def __lValueDataType(self):
+		# Get the l-value data type
+		return self.interface.getFieldByName(self.lvalueName).dataType
 
 	def __interfaceFieldIndex(self):
 		# Find the index number for the l-value

@@ -187,6 +187,9 @@ class AwlStruct(object):
 					[ d[0] for d in dataType.arrayDimensions ],
 					doValidateName = False)
 			childType = dataType.arrayElementType
+			if not childType.allowedInArray:
+				raise AwlSimError("Data type '%s' not allowed in ARRAY" %\
+					str(childType))
 			for i in range(dataType.arrayGetNrElements()):
 				try:
 					if not initBytes:

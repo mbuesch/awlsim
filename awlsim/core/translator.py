@@ -62,6 +62,9 @@ class AwlTranslator(object):
 
 	def __translateInterfaceField(self, rawField):
 		name, dataType, initBytes = self.rawFieldTranslate(rawField)
+		if not dataType.allowedInInterface:
+			raise AwlSimError("Data type '%s' not allowed in block interface" %\
+				str(dataType))
 		field = BlockInterfaceField(name = name,
 					    dataType = dataType)
 		return field
@@ -129,6 +132,9 @@ class AwlTranslator(object):
 		struct = AwlStruct()
 		for rawField in rawFields:
 			name, dataType, initBytes = self.rawFieldTranslate(rawField)
+			if not dataType.allowedInStruct:
+				raise AwlSimError("Data type '%s' not allowed in STRUCT" %\
+					str(dataType))
 			name = rawField.getIdentString(fullChain = False)
 			struct.addFieldNaturallyAligned(self.cpu, name,
 							dataType, initBytes)
@@ -223,9 +229,12 @@ class AwlTranslator(object):
 		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
 		db.structInstance.setFieldDataByName(fieldName, value)
 
-	# Recursively create a DB data field.
+	# Create a DB data field.
 	def __createDBField(self, db, rawDataField):
 		name, dataType, initBytes = self.rawFieldTranslate(rawDataField)
+		if not dataType.allowedInStruct:
+			raise AwlSimError("Data type '%s' not allowed in DB" %\
+				str(dataType))
 		db.struct.addFieldNaturallyAligned(self.cpu, name,
 						   dataType, initBytes)
 
@@ -301,6 +310,44 @@ class AwlTranslator(object):
 		if rawDB.isInstanceDB():
 			return self.__translateInstanceDB(rawDB)
 		return self.__translateGlobalDB(rawDB)
+
+	# Translate implicit pointer immediates.
+	# Implicit pointer immediates are assignments of non-pointer
+	# operands to POINTER or ANY l-values.
+	def __translateParamPointer(self, param):
+		if param.lValueDataType.type == AwlDataType.TYPE_POINTER:
+			# POINTER parameter.
+			if param.rvalueOp.type == AwlOperator.IMM_PTR:
+				# Make sure this is a DB-pointer immediate (48 bit).
+				if param.rvalueOp.width == 32:
+					ptr = DBPointer(param.rvalueOp.value.toPointerValue(),
+							dbNr = 0)
+				elif param.rvalueOp.width == 48:
+					ptr = None # Nothing to do
+				else:
+					raise AwlSimError("Invalid pointer immediate "
+						"assignment to POINTER parameter.")
+			else:
+				# Translate the r-value to POINTER.
+				dbNr = param.rvalueOp.value.dbNumber
+				if dbNr is None:
+					dbNr = 0
+				ptr = DBPointer(param.rvalueOp.makePointer(),
+						dbNr = dbNr)
+			if ptr:
+				param.rvalueOp = AwlOperator(
+					type = AwlOperator.IMM_PTR,
+					width = 48,
+					value = ptr,
+					insn = param.rvalueOp.insn)
+		elif param.lValueDataType.type == AwlDataType.TYPE_ANY:
+			# ANY-pointer parameter.
+			pass#TODO
+
+	# Final translation of AwlParamAssign r-value operands.
+	# Overrides the rvalueOp in place, if required.
+	def translateParamAssignOper(self, param):
+		self.__translateParamPointer(param)
 
 class AwlSymResolver(object):
 	"Global and local symbol resolver."

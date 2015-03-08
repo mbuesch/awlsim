@@ -1,7 +1,7 @@
 #
 # AWL simulator - Operator translator
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -249,6 +249,12 @@ class AwlOpTranslator(object):
 				if fields != 1:
 					raise AwlSimError("Invalid offset pointer in "
 						"register indirect addressing operator")
+				if offsetPtr.width != 32:
+					raise AwlSimError("Only plain pointers allowed as "
+						"indirect addressing offset pointer.")
+				if offsetPtr.area:
+					raise AwlSimError("Area internal pointer not "
+						"allowed as indirect addressing offset pointer.")
 				if rawOps[3] != ']':
 					raise AwlSimError("Missing closing brackets in "
 						"register indirect addressing operator")
@@ -522,10 +528,10 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator(AwlOperator.IMM_DATE, 16,
 					    immediate), 1)
 		# Pointer immediate
-		immediate, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
-		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperator.IMM_PTR, 32,
-					    immediate), fields)
+		pointer, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
+		if pointer is not None:
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_PTR, pointer.width,
+					    pointer), fields)
 		# Binary immediate
 		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
 		if immediate is not None:
