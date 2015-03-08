@@ -49,6 +49,7 @@ def listIndex(_list, value, start=0, stop=-1, translate=None):
 def listToHumanStr(lst, lastSep="or"):
 	if not lst:
 		return ""
+	lst = toList(lst)
 	string = ", ".join(str(i) for i in lst)
 	# Replace last comma with 'lastSep'
 	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
@@ -89,13 +90,29 @@ def str2bool(string, default=False):
 		return default
 
 # Returns value, if value is a list.
+# Returns a list with the elements of value, if value is a tuple.
+# Returns a list with the elements of value, if value is a set.
 # Otherwise returns a list with value as element.
 def toList(value):
 	if isinstance(value, list):
 		return value
 	if isinstance(value, tuple):
 		return list(value)
+	if isinstance(value, set):
+		return sorted(value)
 	return [ value, ]
+
+# Returns value, if value is a set.
+# Returns a set with the elements of value, if value is a tuple.
+# Returns a set with the elements of value, if value is a list.
+# Otherwise returns a set with value as single element.
+def toSet(value):
+	if isinstance(value, set):
+		return value
+	if isinstance(value, list) or\
+	   isinstance(value, tuple):
+		return set(value)
+	return { value, }
 
 def pivotDict(inDict):
 	outDict = {}
