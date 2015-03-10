@@ -12,14 +12,6 @@ STRUCT
 	VAR7	: ARRAY  [1 .. 14 ] OF BOOL := 7 (TRUE, FALSE);
 	VAR8	: ARRAY  [1 .. 3 ] OF BOOL := TRUE, FALSE, TRUE;
 	VAR9	: ARRAY  [1 .. 1 ] OF INT := 42;
-//	VAR10	: STRUCT
-//		VAR10_1		: INT  := 101;
-//		VAR10_2		: ARRAY  [1 .. 2 ] OF INT  := 1, 2;
-//		VAR10_3		: ARRAY  [1 .. 2 ] OF STRUCT
-//			VAR10_3_1	: INT  := 1031;
-//			VAR10_3_2	: ARRAY  [1 .. 2 ] OF INT  := 1, 2;
-//		END_STRUCT;
-//	END_STRUCT;
 END_STRUCT;
 BEGIN
 	VAR0[1]				:= 0;
@@ -222,15 +214,6 @@ BEGIN
 	VAR8[2]				:= FALSE;
 	VAR8[3]				:= TRUE;
 	VAR9[1]				:= 42;
-//	VAR10.VAR10_1			:= 101;
-//	VAR10.VAR10_2[1]		:= 1;
-//	VAR10.VAR10_2[2]		:= 2;
-//	VAR10.VAR10_3[1].VAR10_3_1	:= 1031;
-//	VAR10.VAR10_3[1].VAR10_3_2[1]	:= 1;
-//	VAR10.VAR10_3[1].VAR10_3_2[2]	:= 2;
-//	VAR10.VAR10_3[2].VAR10_3_1	:= 1031;
-//	VAR10.VAR10_3[2].VAR10_3_2[1]	:= 1;
-//	VAR10.VAR10_3[2].VAR10_3_2[2]	:= 2;
 END_DATA_BLOCK
 
 
