@@ -1005,9 +1005,7 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		if operator.width == 48:
-			return operator.value.toDBPointerValue()
-		return operator.value.toPointerValue()
+		return operator.value.toNativePointerValue()
 
 	def fetchDBLG(self, operator, enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
@@ -1206,7 +1204,7 @@ class S7CPU(object): #+cdef
 
 	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
 		assert(operator.value.subOffset.byteOffset == 0)
-		return self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False).makePointer()
+		return self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False).makePointerValue()
 
 	def fetchNAMED_DBVAR(self, operator, enforceWidth):
 		# All legit accesses will have been translated to absolute addressing already

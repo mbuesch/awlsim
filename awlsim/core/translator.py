@@ -319,30 +319,46 @@ class AwlTranslator(object):
 			# POINTER parameter.
 			if param.rvalueOp.type == AwlOperator.IMM_PTR:
 				# Make sure this is a DB-pointer immediate (48 bit).
-				if param.rvalueOp.width == 32:
-					ptr = DBPointer(param.rvalueOp.value.toPointerValue(),
-							dbNr = 0)
-				elif param.rvalueOp.width == 48:
-					ptr = None # Nothing to do
-				else:
+				if param.rvalueOp.width not in {32, 48}:
 					raise AwlSimError("Invalid pointer immediate "
 						"assignment to POINTER parameter.")
+				param.rvalueOp.value = param.rvalueOp.value.toDBPointer()
+				param.rvalueOp.width = param.rvalueOp.value.width
 			else:
 				# Translate the r-value to POINTER.
-				dbNr = param.rvalueOp.value.dbNumber
-				if dbNr is None:
-					dbNr = 0
-				ptr = DBPointer(param.rvalueOp.makePointer(),
-						dbNr = dbNr)
-			if ptr:
+				try:
+					ptr = param.rvalueOp.makeDBPointer()
+				except (AwlSimBug, AwlSimError) as e:
+					raise AwlSimError("Unable to transform "
+						"operator '%s' to POINTER." %\
+						str(param.rvalueOp))
 				param.rvalueOp = AwlOperator(
 					type = AwlOperator.IMM_PTR,
-					width = 48,
+					width = ptr.width,
 					value = ptr,
 					insn = param.rvalueOp.insn)
 		elif param.lValueDataType.type == AwlDataType.TYPE_ANY:
 			# ANY-pointer parameter.
-			pass#TODO
+			if param.rvalueOp.type == AwlOperator.IMM_PTR:
+				# Make sure this is an ANY-pointer immediate (80 bit).
+				if param.rvalueOp.width not in {32, 48, 80}:
+					raise AwlSimError("Invalid pointer immediate "
+						"assignment to ANY parameter.")
+				param.rvalueOp.value = param.rvalueOp.value.toANYPointer()
+				param.rvalueOp.width = param.rvalueOp.value.width
+			else:
+				# Translate the r-value to ANY.
+				try:
+					ptr = param.rvalueOp.makeANYPointer()
+				except (AwlSimBug, AwlSimError) as e:
+					raise AwlSimError("Unable to transform "
+						"operator '%s' to ANY pointer." %\
+						str(param.rvalueOp))
+				param.rvalueOp = AwlOperator(
+					type = AwlOperator.IMM_PTR,
+					width = ptr.width,
+					value = ptr,
+					insn = param.rvalueOp.insn)
 
 	# Final translation of AwlParamAssign r-value operands.
 	# Overrides the rvalueOp in place, if required.

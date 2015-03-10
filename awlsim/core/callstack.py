@@ -148,7 +148,7 @@ class CallStackElem(object):
 		if dbNumber is not None:
 			dbPtrData[0] = (dbNumber >> 8) & 0xFF
 			dbPtrData[1] = dbNumber & 0xFF
-		ptr = rvalueOp.makePointer()
+		ptr = rvalueOp.makePointerValue()
 		dbPtrData[2] = (ptr >> 24) & 0xFF
 		dbPtrData[3] = (ptr >> 16) & 0xFF
 		dbPtrData[4] = (ptr >> 8) & 0xFF

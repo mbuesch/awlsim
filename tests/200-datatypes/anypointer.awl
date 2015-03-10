@@ -1,0 +1,233 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Check ANY pointer parameters
+	CALL		FC 1 (
+		FCANY1		:= P#M 10.0 BYTE 7,
+		FCANY2		:= P#M 11.1 BOOL 13,
+		FCANY3		:= M 12.2,
+		FCANY4		:= P#DB50.DBX 10.0 DWORD 8,
+		FCANY5		:= DB50.DBD 10,
+		FCANY6		:= P#DBX 20.2 WORD 7,
+	)
+	CALL		FB 1, DB 1 (
+		FBANY1		:= P#M 10.0 BYTE 7,
+		FBANY2		:= P#M 11.1 BOOL 13,
+		FBANY3		:= M 12.2,
+		FBANY4		:= P#DB50.DBX 10.0 DWORD 8,
+		FBANY5		:= DB50.DBD 10,
+		FBANY6		:= P#DBX 20.2 WORD 7,
+	)
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
+
+
+FUNCTION FC 1 : VOID
+	VAR_INPUT
+		FCANY1		: ANY;
+		FCANY2		: ANY;
+		FCANY3		: ANY;
+		FCANY4		: ANY;
+		FCANY5		: ANY;
+		FCANY6		: ANY;
+	END_VAR
+BEGIN
+	L		P##FCANY1
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#02	// BYTE
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	7	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#M 10.0
+
+	L		P##FCANY2
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#01	// BOOL
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	13	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#M 11.1
+
+	L		P##FCANY3
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#01	// BOOL
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#M 12.2
+
+	L		P##FCANY4
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#06	// DWORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	8	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	50	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 10.0
+
+	L		P##FCANY5
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#06	// DWORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	50	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 10.0
+
+	L		P##FCANY6
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#04	// WORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	7	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 20.2
+END_FUNCTION
+
+
+FUNCTION_BLOCK FB 1
+	VAR_INPUT
+		FBANY1		: ANY;
+		FBANY2		: ANY;
+		FBANY3		: ANY;
+		FBANY4		: ANY;
+		FBANY5		: ANY;
+		FBANY6		: ANY;
+	END_VAR
+BEGIN
+	L		P##FBANY1
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#02	// BYTE
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	7	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#M 10.0
+
+	L		P##FBANY2
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#01	// BOOL
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	13	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#M 11.1
+
+	L		P##FBANY3
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#01	// BOOL
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#M 12.2
+
+	L		P##FBANY4
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#06	// DWORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	8	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	50	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 10.0
+
+	L		P##FBANY5
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#06	// DWORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	50	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 10.0
+
+	L		P##FBANY6
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#04	// WORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	7	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	0	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 20.2
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 1
+	FB 1
+BEGIN
+END_DATA_BLOCK

@@ -826,65 +826,102 @@ class AwlDataType(object):
 		except ValueError:
 			raise AwlSimError("Invalid pointer offset")
 
-	#TODO: Add ANY-Pointer parsing
 	@classmethod
 	def tryParseImmediate_Pointer(cls, tokens):
 		prefix = tokens[0].upper()
 		if not prefix.startswith("P#"):
 			return None, None
+
 		prefix = prefix[2:] # Strip P#
+
 		dotIdx = prefix.find(".")
 		if dotIdx > 0 and prefix[:dotIdx].startswith("DB") and\
 		   prefix[2:dotIdx].isdecimal():
-			# This is a DB pointer.
+			# Parse DB number prefix
 			dbNr = int(prefix[2:dotIdx])
 			prefix = prefix[dotIdx+1:]
 			pointer = DBPointer(0, dbNr)
 		else:
+			# There is no DB number.
 			pointer = Pointer(0)
+
 		try:
 			if prefix == "P":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x80000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			elif prefix in ("E", "I"):
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x81000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			elif prefix in ("A", "Q"):
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x82000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			elif prefix == "M":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x83000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			elif prefix == "DBX":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x84000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			elif prefix == "DIX":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x85000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			elif prefix == "L":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
 					0x86000000
 				pointer.setDWord(ptr)
-				return pointer, 2
+				nrTokens = 2
 			else:
 				# Area-internal pointer
 				ptr = cls.__parsePtrOffset(prefix)
 				pointer.setDWord(ptr)
-				return pointer, 1
+				nrTokens = 1
 		except IndexError:
 			raise AwlSimError("Invalid pointer immediate")
+
+		# Check if this is an ANY pointer immediate.
+		if len(tokens) >= nrTokens + 2:
+			typeToken = tokens[nrTokens]
+			countToken = tokens[nrTokens + 1]
+
+			# Is this a possible ANY pointer?
+			# Try to look up the data type name.
+			try:
+				cls._name2typeid(typeToken)
+				isAnyPtr = True
+			except AwlSimError as e:
+				isAnyPtr = False
+
+			if isAnyPtr:
+				# Parse the data type and repetition count.
+				dataType = AwlDataType.makeByName(typeToken)
+				try:
+					count = int(countToken, 10)
+					if count < 1 or count > 65535 or\
+					   count * (dataType.width // 8) > 65535:
+						raise ValueError
+				except ValueError as e:
+					raise AwlSimError("ANY pointer: "
+						"Invalid repetition count.")
+
+				# Convert pointer to ANY
+				pointer = pointer.toANYPointer()
+				pointer.dataType = dataType
+				pointer.count = count
+
+				nrTokens += 2
+
+		return pointer, nrTokens
 
 	@classmethod
 	def tryParseImmediate_Bin(cls, token):
@@ -1219,20 +1256,35 @@ class Pointer(GenericDWord): #+cdef
 	def __init__(self, ptrValue = 0):
 		GenericDWord.__init__(self, ptrValue)
 
-	# Get the 32 bit pointer.
+	# Get the 32 bit pointer value.
 	toPointerValue = GenericDWord.get #@nocy
 #@cy	cpdef uint32_t toPointerValue(self):
 #@cy		return self.get()
 
 	# Get the pointer as DB-pointer (48 bit).
+	def toDBPointer(self): #@nocy
+#@cy	cpdef toDBPointer(self):
+		return DBPointer(self.toPointerValue())
+
+	# Get the DB-pointer value (48 bit).
 	def toDBPointerValue(self): #@nocy
 #@cy	cpdef uint64_t toDBPointerValue(self):
-		return DBPointer(self.toPointerValue()).toDBPointerValue()
+		return self.toDBPointer().toDBPointerValue()
 
 	# Get the pointer as ANY-pointer (80 bit).
+	def toANYPointer(self): #@nocy
+#@cy	cpdef ANYPointer toANYPointer(self):
+		return ANYPointer(self.toPointerValue())
+
+	# Get the ANY-pointer value (80 bit).
 	def toANYPointerValue(self): #@nocy
 #@cy	cpdef object toANYPointerValue(self):
-		return ANYPointer(self.toPointerValue()).toANYPointerValue()
+		return self.toANYPointer().toANYPointerValue()
+
+	# Get the native pointer value for this type.
+	toNativePointerValue = toPointerValue #@nocy
+#@cy	cpdef object toNativePointerValue(self):
+#@cy		return self.toPointerValue()
 
 	# Get the area code, as byte.
 	@property
@@ -1290,9 +1342,14 @@ class DBPointer(Pointer): #+cdef
 
 	def __init__(self, ptrValue = 0, dbNr = 0):
 		Pointer.__init__(self, ptrValue)
-		self.dbNr = dbNr
+		self.dbNr = dbNr or 0
 
 	# Get the pointer as DB-pointer (48 bit).
+	def toDBPointer(self): #@nocy
+#@cy	cpdef toDBPointer(self):
+		return DBPointer(self.toPointerValue(), self.dbNr)
+
+	# Get the DB-pointer value (48 bit).
 	def toDBPointerValue(self): #@nocy
 		return (self.dbNr << 32) | self.toPointerValue() #@nocy
 #@cy	cpdef uint64_t toDBPointerValue(self):
@@ -1301,9 +1358,14 @@ class DBPointer(Pointer): #+cdef
 #@cy		return (dbNr << 32) | self.toPointerValue()
 
 	# Get the pointer as ANY-pointer (80 bit).
-	def toANYPointerValue(self): #@nocy
-#@cy	cpdef object toANYPointerValue(self):
-		return ANYPointer(self.toPointerValue(), self.dbNr).toANYPointerValue()
+	def toANYPointer(self): #@nocy
+#@cy	cpdef ANYPointer toANYPointer(self):
+		return ANYPointer(self.toPointerValue(), self.dbNr)
+
+	# Get the native pointer value for this type.
+	toNativePointerValue = toDBPointerValue #@nocy
+#@cy	cpdef object toNativePointerValue(self):
+#@cy		return self.toDBPointerValue()
 
 	# Get a P#... string for this pointer.
 	def toPointerString(self):
@@ -1317,7 +1379,7 @@ class DBPointer(Pointer): #+cdef
 			return Pointer.toPointerString(self)
 		return "P#%s%d.%d" % (prefix, self.byteOffset, self.bitOffset)
 
-class AnyPointer(DBPointer): #+cdef
+class ANYPointer(DBPointer): #+cdef
 	"""ANY-Pointer value.
 	The basic data type (DBPointer) holds the pointer value,
 	the area code and the DB number.
@@ -1365,6 +1427,12 @@ class AnyPointer(DBPointer): #+cdef
 		self.count = count
 
 	# Get the pointer as ANY-pointer (80 bit).
+	def toANYPointer(self): #@nocy
+#@cy	cpdef ANYPointer toANYPointer(self):
+		return ANYPointer(self.toPointerValue(), self.dbNr,
+				  self.dataType, self.count)
+
+	# Get the ANY-pointer value (80 bit).
 	def toANYPointerValue(self): #@nocy
 #@cy	cpdef object toANYPointerValue(self):
 		# Byte layout: 0x10, typeCode,
@@ -1389,6 +1457,11 @@ class AnyPointer(DBPointer): #+cdef
 			raise AwlSimError("Can not convert data type '%s' to "
 				"ANY pointer." %\
 				str(self.dataType))
+
+	# Get the native pointer value for this type.
+	toNativePointerValue = toANYPointerValue #@nocy
+#@cy	cpdef object toNativePointerValue(self):
+#@cy		return self.toANYPointerValue()
 
 	# Get a P#... string for this pointer.
 	def toPointerString(self):

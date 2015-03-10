@@ -33,6 +33,12 @@ from awlsim.core.util import *
 
 
 class AwlOperator(DynAttrs):
+	"""An AWL operator.
+	An operator is an 'argument' to an instruction.
+	For example MW 10 in:
+	L  MW 10
+	"""
+
 	EnumGen.start	# Operator types
 
 	__IMM_START	= EnumGen.item
@@ -276,13 +282,18 @@ class AwlOperator(DynAttrs):
 					raise ValueError
 			except (KeyError, ValueError) as e:
 				mismatch(dataType, self, operWidth)
-		elif dataType.type == AwlDataType.TYPE_POINTER:
+		elif dataType.type in {AwlDataType.TYPE_POINTER,
+				       AwlDataType.TYPE_ANY}:
 			if self.type == AwlOperator.IMM_PTR:
-				pass
+				if dataType.type == AwlDataType.TYPE_POINTER and\
+				   self.width > 48:
+					raise AwlSimError("Invalid immediate pointer "
+						"assignment to POINTER type.")
 			else:
 				if self.isImmediate():
 					raise AwlSimError("Invalid immediate "
-						"assignment to POINTER type.")
+						"assignment to '%s' type." %\
+						str(dataType))
 				# Try to make pointer from operator.
 				# This will raise AwlSimError on failure.
 				self.makePointer()
@@ -299,8 +310,12 @@ class AwlOperator(DynAttrs):
 			return self.insn.cpu.callStackTop.interfRefs[self.interfaceIndex].resolve(store)
 		return self
 
-	# Make an area-spanning pointer (32 bit) to this memory area.
+	# Make an area-spanning Pointer (32 bit) to this memory area.
 	def makePointer(self):
+		return Pointer(self.makePointerValue())
+
+	# Make an area-spanning pointer value (32 bit) to this memory area.
+	def makePointerValue(self):
 		try:
 			area = AwlIndirectOp.optype2area[self.type]
 		except KeyError as e:
@@ -308,9 +323,14 @@ class AwlOperator(DynAttrs):
 				"into a pointer." % str(self))
 		return area | self.value.toPointerValue()
 
+	# Make a DBPointer (48 bit) to this memory area.
+	def makeDBPointer(self):
+		return DBPointer(self.makePointerValue(),
+				 self.value.dbNumber)
+
 	# Make an ANY-pointer to this memory area.
-	# Returns an AnyPointer().
-	def makeAnyPointer(self, areaShifted=None):
+	# Returns an ANYPointer().
+	def makeANYPointer(self, areaShifted=None):
 		if self.width % 32 == 0:
 			dataType = AwlDataType.makeByName("DWORD")
 			count = self.width // 32
@@ -323,11 +343,11 @@ class AwlOperator(DynAttrs):
 		else:
 			dataType = AwlDataType.makeByName("BOOL")
 			count = self.width
-		ptrValue = self.makePointer()
+		ptrValue = self.makePointerValue()
 		if areaShifted:
 			ptrValue &= ~Pointer.AREA_MASK_S
 			ptrValue |= areaShifted
-		return AnyPointer(ptrValue = ptrValue,
+		return ANYPointer(ptrValue = ptrValue,
 				  dbNr = self.value.dbNumber,
 				  dataType = dataType,
 				  count = count)
@@ -367,7 +387,7 @@ class AwlOperator(DynAttrs):
 				return "%sW %d" % (pfx, self.value.byteOffset)
 			elif self.width == 32:
 				return "%sD %d" % (pfx, self.value.byteOffset)
-			return self.makeAnyPointer().toPointerString()
+			return self.makeANYPointer().toPointerString()
 		elif self.type == self.MEM_DB:
 			if self.value.dbNumber is None:
 				dbPrefix = ""
@@ -383,7 +403,7 @@ class AwlOperator(DynAttrs):
 				return "%sDBW %d" % (dbPrefix, self.value.byteOffset)
 			elif self.width == 32:
 				return "%sDBD %d" % (dbPrefix, self.value.byteOffset)
-			return self.makeAnyPointer().toPointerString()
+			return self.makeANYPointer().toPointerString()
 		elif self.type == self.MEM_DI:
 			if self.width == 1:
 				return "DIX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
@@ -393,7 +413,7 @@ class AwlOperator(DynAttrs):
 				return "DIW %d" % self.value.byteOffset
 			elif self.width == 32:
 				return "DID %d" % self.value.byteOffset
-			return self.makeAnyPointer().toPointerString()
+			return self.makeANYPointer().toPointerString()
 		elif self.type == self.MEM_T:
 			return "T %d" % self.value.byteOffset
 		elif self.type == self.MEM_Z:
@@ -405,7 +425,7 @@ class AwlOperator(DynAttrs):
 				return "PAW %d" % self.value.byteOffset
 			elif self.width == 32:
 				return "PAD %d" % self.value.byteOffset
-			return self.makeAnyPointer().toPointerString()
+			return self.makeANYPointer().toPointerString()
 		elif self.type == self.MEM_PE:
 			if self.width == 8:
 				return "PEB %d" % self.value.byteOffset
@@ -413,7 +433,7 @@ class AwlOperator(DynAttrs):
 				return "PEW %d" % self.value.byteOffset
 			elif self.width == 32:
 				return "PED %d" % self.value.byteOffset
-			return self.makeAnyPointer().toPointerString()
+			return self.makeANYPointer().toPointerString()
 		elif self.type == self.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name_german[self.value.bitOffset]
 		elif self.type == self.LBL_REF:
@@ -437,9 +457,9 @@ class AwlOperator(DynAttrs):
 		elif self.type == self.BLKREF_VAT:
 			return "VAT %d" % self.value.byteOffset
 		elif self.type == self.MULTI_FB:
-			return "#FB<" + self.makeAnyPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
+			return "#FB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
 		elif self.type == self.MULTI_SFB:
-			return "#SFB<" + self.makeAnyPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
+			return "#SFB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
 		elif self.type == self.SYMBOLIC:
 			return '"%s"' % self.value.identChain.getString()
 		elif self.type == self.NAMED_LOCAL:
@@ -639,11 +659,23 @@ class AwlIndirectOp(AwlOperator):
 				(self.width, str(directOffset)))
 		return AwlOperator(optype, self.width, directOffset, self.insn)
 
-	def makePointer(self):
+	def __pointerError(self):
 		# This is a programming error.
 		# The caller should resolve() the operator first.
 		raise AwlSimBug("Can not transform indirect operator "
 			"into a pointer. Resolve it first.")
+
+	def makePointer(self):
+		self.__pointerError()
+
+	def makePointerValue(self):
+		self.__pointerError()
+
+	def makeDBPointer(self):
+		self.__pointerError()
+
+	def makeANYPointer(self, areaShifted=None):
+		self.__pointerError()
 
 	def __repr__(self):
 		return "__INDIRECT" #TODO

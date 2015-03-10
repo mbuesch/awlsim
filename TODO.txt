@@ -3,7 +3,6 @@
 S7 compatibility:
 - Add support for STRINGs
 - Implement parsing of attributes
-- Implement ANY pointer immediate
 
 GUI:
 - Add editor 'find'
