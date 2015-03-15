@@ -1,7 +1,6 @@
 === Incomplete awlsim TODO list ===
 
 S7 compatibility:
-- Add support for STRINGs
 - Implement parsing of attributes
 
 GUI:
