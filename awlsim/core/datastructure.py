@@ -82,13 +82,13 @@ class AwlStruct(object):
 
 	# Return aligned size, in bytes.
 	def getSize(self):
-		size = self.__getUnalignedSize()
+		size = self.getUnalignedSize()
 		if size % 2:
 			size += 1
 		return size
 
 	# Return unaligned size, in bytes.
-	def __getUnalignedSize(self):
+	def getUnalignedSize(self):
 		if not self.fields:
 			return 0
 		# Get the offset of the last field and
@@ -103,7 +103,7 @@ class AwlStruct(object):
 
 	# Add zero-length field.
 	def addDummyField(self, name=None):
-		offset = AwlOffset(self.__getUnalignedSize())
+		offset = AwlOffset(self.getUnalignedSize())
 		field = AwlStructField(name, offset, "VOID")
 		self.__registerField(field)
 
@@ -116,17 +116,21 @@ class AwlStruct(object):
 		# First add a field with the sub-structure's name.
 		# This field is used for retrieval of a pointer to the sub-struct,
 		# for alignment and for informational purposes only.
-		baseOffset = AwlOffset(self.__getUnalignedSize())
+		baseOffset = AwlOffset(self.getUnalignedSize())
 		baseField = AwlStructField(otherStructName,
 				baseOffset, otherStructDataType,
 				override = AwlStructField(otherStructName,
 							  baseOffset, "VOID"))
 		self.__registerField(baseField)
 		# Add all fields from the other struct.
-		baseOffset = AwlOffset(self.__getUnalignedSize())
+		baseOffset = AwlOffset(self.getUnalignedSize())
 		for otherField in otherStruct.fields:
 			if otherStructName and otherField.name:
-				newName = otherStructName + "." + otherField.name
+				if otherField.name.startswith('[') and\
+				   otherField.name.endswith(']'):
+					newName = otherStructName + otherField.name
+				else:
+					newName = otherStructName + "." + otherField.name
 			else:
 				newName = None
 			field = AwlStructField(name = newName,
@@ -162,8 +166,9 @@ class AwlStruct(object):
 				"type is unsupported." %\
 				(name, str(dataType)))
 
-		if dataType.type == dataType.TYPE_STRUCT:
-			# Add a STRUCT.
+		if dataType.type == dataType.TYPE_STRUCT or\
+		   dataType.type == dataType.TYPE_STRING:
+			# Add a STRUCT (or STRING, which is represented as struct).
 			# The struct is represented by the data types struct.
 			# Merge the data type struct into this struct.
 			assert(dataType.struct)
@@ -171,12 +176,13 @@ class AwlStruct(object):
 			baseField.override = AwlStructField(baseField.name,
 							    baseField.offset,
 							    "VOID")
+			baseField.initBytes = initBytes
 
 		if dataType.type == dataType.TYPE_ARRAY:
 			# Add an ARRAY.
 			# First add a field with the array's name.
 			# It has the data type 'ARRAY' and is informational only.
-			offset = AwlOffset(self.__getUnalignedSize())
+			offset = AwlOffset(self.getUnalignedSize())
 			baseField = AwlStructField(name, offset, dataType,
 					override = AwlStructField(name, offset,
 								  "VOID"))
@@ -204,12 +210,17 @@ class AwlStruct(object):
 					      fieldInitData)
 				initOffset += AwlOffset.fromBitOffset(childType.width)
 				childIdent.advanceToNextArrayElement(dataType.arrayDimensions)
+				if childType.width > 8 and\
+				   intDivRoundUp(childType.width, 8) % 2 != 0:
+					# Align each element to 2-byte-boundary, if word or bigger.
+					self.addField(cpu, None, AwlDataType.makeByName("BYTE"))
 			# Add a zero-length array-end guard field,
 			# to enforce alignment of following fields.
 			self.addDummyField()
 
-		if dataType.type not in (dataType.TYPE_ARRAY,
-					 dataType.TYPE_STRUCT):
+		if dataType.type not in {dataType.TYPE_ARRAY,
+					 dataType.TYPE_STRUCT,
+					 dataType.TYPE_STRING}:
 			# Add a single data type.
 			if dataType.width == 1 and self.fields and\
 			   self.fields[-1].bitSize == 1 and\
@@ -218,13 +229,13 @@ class AwlStruct(object):
 				offset = AwlOffset(self.fields[-1].offset.byteOffset,
 						   self.fields[-1].offset.bitOffset + 1)
 			else:
-				offset = AwlOffset(self.__getUnalignedSize())
+				offset = AwlOffset(self.getUnalignedSize())
 			baseField = AwlStructField(name, offset, dataType, initBytes)
 			self.__registerField(baseField)
 		return baseField
 
 	def addFieldAligned(self, cpu, name, dataType, byteAlignment, initBytes=None):
-		padding = byteAlignment - self.__getUnalignedSize() % byteAlignment
+		padding = byteAlignment - self.getUnalignedSize() % byteAlignment
 		if padding == byteAlignment:
 			padding = 0
 		while padding:

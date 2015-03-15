@@ -231,6 +231,31 @@ class AwlDataType(object):
 		                   Each list element is a tuple of (start, end)
 				   with the start and end array index for that dimension."""
 
+		if nameTokens[0].upper() == "STRING":
+			# Construct a data structure for the STRING layout.
+			strLen = -1
+			if len(nameTokens) == 1:
+				# Extension: No dimensions means [254]
+				strLen = 254
+			elif len(nameTokens) == 4 and\
+			     nameTokens[1] == '[' and nameTokens[3] == ']' and\
+			     nameTokens[2].isdecimal():
+				strLen = int(nameTokens[2], 10)
+			if strLen < 0 or strLen > 254:
+				raise AwlSimError("Invalid STRING length definition "
+					"in '%s'" % "".join(nameTokens))
+			byteType = cls.makeByName("BYTE")
+			import awlsim.core.datastructure as datastructure
+			struct = datastructure.AwlStruct()
+			struct.addField(cpu = None, name = None, dataType = byteType,
+					initBytes = ByteArray((strLen,)))
+			struct.addField(cpu = None, name = None, dataType = byteType)
+			for i in range(strLen):
+				struct.addField(cpu = None, name = "[%s]" % (i + 1),
+						dataType = byteType)
+		else:
+			struct = None
+
 		type = cls._name2typeid(nameTokens)
 		index = None
 
@@ -256,7 +281,8 @@ class AwlDataType(object):
 			# An ARRAY is to be constructed.
 			elementType = cls(type = type,
 					  isSigned = (type in cls.signedTypes),
-					  index = index)
+					  index = index,
+					  struct = struct)
 			return cls(type = cls.TYPE_ARRAY,
 				   isSigned = (type in cls.signedTypes),
 				   index = index,
@@ -265,7 +291,8 @@ class AwlDataType(object):
 		else:
 			return cls(type = type,
 				   isSigned = (type in cls.signedTypes),
-				   index = index)
+				   index = index,
+				   struct = struct)
 
 	def __init__(self, type, isSigned,
 		     index=None,
@@ -284,7 +311,8 @@ class AwlDataType(object):
 	def setStruct(self, struct):
 		assert(struct is None or
 		       self.type == self.TYPE_STRUCT or
-		       self.type == self.TYPE_UDT_X)
+		       self.type == self.TYPE_UDT_X or
+		       self.type == self.TYPE_STRING)
 		self.struct = struct
 
 	# Get the type element structure.
@@ -303,7 +331,7 @@ class AwlDataType(object):
 		if self.__widthOverride is not None:
 			return self.__widthOverride
 		if self.type == self.TYPE_ARRAY:
-			nrElements = self.arrayDimensionsToNrElements(self.arrayDimensions)
+			nrElements = self.arrayGetNrElements()
 			if self.arrayElementType.type == self.TYPE_STRUCT:
 				if self.arrayElementType.struct:
 					oneElemWidth = self.arrayElementType.struct.getSize() * 8
@@ -319,6 +347,8 @@ class AwlDataType(object):
 				width = self.struct.getSize() * 8
 			else:
 				width = -1
+		elif self.type == self.TYPE_STRING:
+			width = self.struct.getUnalignedSize() * 8
 		else:
 			width = self.__typeWidths[self.type]
 		return width
@@ -415,8 +445,10 @@ class AwlDataType(object):
 	# Parse an immediate, constrained by our datatype.
 	def parseMatchingImmediate(self, tokens):
 		typeId = self.type
+		typeWidth = self.width
 		if typeId == self.TYPE_ARRAY:
 			typeId = self.arrayElementType.type
+			typeWidth = self.arrayElementType.width
 
 		value = None
 		if tokens is None:
@@ -489,6 +521,21 @@ class AwlDataType(object):
 			elif typeId == self.TYPE_CHAR:
 				value = self.tryParseImmediate_CHAR(
 						tokens[0])
+			elif typeId == self.TYPE_STRING:
+				value = self.tryParseImmediate_STRING(
+						tokens[0])
+				typeStrLen = intDivRoundUp(typeWidth, 8) - 2
+				immStrLen = len(value) - 2
+				assert(typeStrLen >= 0 and immStrLen >= 0)
+				if immStrLen > typeStrLen:
+					raise AwlSimError("String immediate is "
+						"too long. Length is %d characters, "
+						"but maximum is %d characters." %\
+						immStrLen, typeStrLen)
+				# Expand the string to type length.
+				if immStrLen < typeStrLen:
+					value[0] = typeStrLen
+					value.extend(b'\x00' * (typeStrLen - immStrLen))
 			elif typeId == self.TYPE_DATE:
 				value = self.tryParseImmediate_DATE(
 						tokens[0])
@@ -501,6 +548,8 @@ class AwlDataType(object):
 	def __repr__(self):
 		if self.type == self.TYPE_ARRAY:
 			return "ARRAY" #TODO
+		elif self.type == self.TYPE_STRING:
+			return "STRING[%d]" % (self.width // 8 - 2)
 		elif self.type in (self.TYPE_DB_X,
 				   self.TYPE_OB_X,
 				   self.TYPE_FC_X,
@@ -659,26 +708,40 @@ class AwlDataType(object):
 		return "".join(ret)
 
 	@classmethod
-	def __tryParseImmediate_STRING(cls, token, maxLen):
+	def __tryParseImmediate_STRING(cls, token, maxLen=254):
 		if not token.startswith("'") or\
 		   not token.endswith("'"):
 			return None
 		token = token[1:-1]
 		if len(token) > maxLen:
 			raise AwlSimError("String too long (>%d characters)" % maxLen)
-		value = 0
-		for c in token:
-			value <<= 8
-			value |= ord(c)
-		return value
+		try:
+			import awlsim.core.parser as parser
+			data = token.encode(parser.AwlParser.TEXT_ENCODING)
+			data = bytearray(data)
+			if len(data) != len(token):
+				raise ValueError
+		except (UnicodeError, ValueError) as e:
+			raise AwlSimError("Invalid characters in string '%s'." %\
+				token)
+		return data
 
 	@classmethod
 	def tryParseImmediate_STRING(cls, token):
-		return cls.__tryParseImmediate_STRING(token, 4)
+		data = cls.__tryParseImmediate_STRING(token)
+		if data is None:
+			return None
+		# Add max-length and actual-length bytes.
+		data = bytearray((len(data), len(data))) + data
+		return data
 
 	@classmethod
 	def tryParseImmediate_CHAR(cls, token):
-		return cls.__tryParseImmediate_STRING(token, 1)
+		data = cls.__tryParseImmediate_STRING(token, 1)
+		if data is None:
+			return None
+		# Return it as integer.
+		return data[0]
 
 	@classmethod
 	def tryParseImmediate_S5T(cls, token):

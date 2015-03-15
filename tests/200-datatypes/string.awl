@@ -1,0 +1,468 @@
+DATA_BLOCK DB 100
+STRUCT
+	VAR0		: STRING [254] := '';
+	VAR1		: STRING [10] := 'test2';
+	VAR2		: STRING [1] := 'i';
+	FULLSTR0	: STRING;		// Awlsim extension: No dimension = 254
+	FULLSTR1	: STRING := 'abc';	// Awlsim extension: No dimension = 254
+	ARRSTR0		: ARRAY [1 .. 2] OF STRING[3] := '01', '02';
+	ARRSTR1		: ARRAY [1 .. 2] OF STRING [3];
+END_STRUCT;
+BEGIN
+	VAR0		:= 'test1';
+	VAR1		:= 'tt';
+	ARRSTR1[1]	:= '11';
+	ARRSTR1[2]	:= '12';
+END_DATA_BLOCK
+
+
+FUNCTION FC 1 : VOID
+VAR_INPUT
+	FCS0	: STRING [254];
+	FCS1	: STRING [1];	// Awlsim extension: size != 254
+	FCS2	: STRING [10];	// Awlsim extension: size != 254
+	FCSTR0	: STRING;	// Awlsim extension: No dimension = 254
+	FCSTR1	: STRING;	// Awlsim extension: No dimension = 254
+END_VAR
+VAR_TEMP
+	DBNR	: INT;
+END_VAR
+BEGIN
+	// Check access via DB-pointer.
+	// Check #FCS0
+	L		P##FCS0
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		W [AR1, P#0.0]
+	T		#DBNR
+	__ASSERT==	__ACCU 1,	100
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DBX 0.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#FE05
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'test'
+	L		B [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	'1'
+	L		B [AR1, P#7.0]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FCS1
+	L		P##FCS1
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		W [AR1, P#0.0]
+	T		#DBNR
+	__ASSERT==	__ACCU 1,	100
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DBX 268.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#0101
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'i'
+	L		B [AR1, P#3.0]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FCS2
+	L		P##FCS2
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	0
+	L		D [AR1, P#2.0]
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#0A06
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'aabb'
+	L		W [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	'cc'
+
+	// Check #FCSTR0
+	L		P##FCSTR0
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		W [AR1, P#0.0]
+	T		#DBNR
+	__ASSERT==	__ACCU 1,	100
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DBX 272.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#FE00
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FCSTR1
+	L		P##FCSTR1
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		W [AR1, P#0.0]
+	T		#DBNR
+	__ASSERT==	__ACCU 1,	100
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DBX 528.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#FE03
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'a'
+	L		B [AR1, P#3.0]
+	__ASSERT==	__ACCU 1,	'b'
+	L		B [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	'c'
+	L		B [AR1, P#5.0]
+	__ASSERT==	__ACCU 1,	0
+
+
+	// Check direct access.
+	// Check #FCS0
+	L		#FCS0[1]
+	__ASSERT==	__ACCU 1,	't'
+	L		#FCS0[2]
+	__ASSERT==	__ACCU 1,	'e'
+	L		#FCS0[3]
+	__ASSERT==	__ACCU 1,	's'
+	L		#FCS0[4]
+	__ASSERT==	__ACCU 1,	't'
+	L		#FCS0[5]
+	__ASSERT==	__ACCU 1,	'1'
+	L		#FCS0[6]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FCS1
+	L		#FCS1[1]
+	__ASSERT==	__ACCU 1,	'i'
+
+	// Check #FCS2
+	L		#FCS2[1]
+	__ASSERT==	__ACCU 1,	'a'
+	L		#FCS2[2]
+	__ASSERT==	__ACCU 1,	'a'
+	L		#FCS2[3]
+	__ASSERT==	__ACCU 1,	'b'
+	L		#FCS2[4]
+	__ASSERT==	__ACCU 1,	'b'
+	L		#FCS2[5]
+	__ASSERT==	__ACCU 1,	'c'
+	L		#FCS2[6]
+	__ASSERT==	__ACCU 1,	'c'
+	L		#FCS2[7]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FCSTR0
+	L		#FCSTR0[1]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FCSTR1
+	L		#FCSTR1[1]
+	__ASSERT==	__ACCU 1,	'a'
+	L		#FCSTR1[2]
+	__ASSERT==	__ACCU 1,	'b'
+	L		#FCSTR1[3]
+	__ASSERT==	__ACCU 1,	'c'
+	L		#FCSTR1[4]
+	__ASSERT==	__ACCU 1,	0
+END_FUNCTION
+
+
+FUNCTION_BLOCK FB 1
+VAR_INPUT
+	FBS0	: STRING [254] := 'xy';
+	FBS1	: STRING [1] := 'z';
+	FBS2	: STRING [10];
+	FBSTR0	: STRING;	// Awlsim extension: No dimension = 254
+	FBSTR1	: STRING;	// Awlsim extension: No dimension = 254
+END_VAR
+VAR_TEMP
+	DBNR	: INT;
+END_VAR
+BEGIN
+	// Check access via pointer.
+	// Check #FBS0
+	L		P##FBS0
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DIX 0.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#FE05
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'test'
+	L		B [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	'1'
+	L		B [AR1, P#7.0]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FBS1
+	L		P##FBS1
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DIX 256.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#0101
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'i'
+	L		B [AR1, P#3.0]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FBS2
+	L		P##FBS2
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DIX 260.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#0A06
+	L		D [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'aabb'
+	L		W [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	'cc'
+
+	// Check #FBSTR0
+	L		P##FBSTR0
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DIX 272.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#FE00
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FBSTR1
+	L		P##FBSTR1
+	LAR1
+	__ASSERT==	__ACCU 1,	P#DIX 528.0
+	L		W [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	W#16#FE03
+	L		B [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	'a'
+	L		B [AR1, P#3.0]
+	__ASSERT==	__ACCU 1,	'b'
+	L		B [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	'c'
+	L		B [AR1, P#5.0]
+	__ASSERT==	__ACCU 1,	0
+
+
+	// Check direct access.
+	// Check #FBS0
+	L		#FBS0[1]
+	__ASSERT==	__ACCU 1,	't'
+	L		#FBS0[2]
+	__ASSERT==	__ACCU 1,	'e'
+	L		#FBS0[3]
+	__ASSERT==	__ACCU 1,	's'
+	L		#FBS0[4]
+	__ASSERT==	__ACCU 1,	't'
+	L		#FBS0[5]
+	__ASSERT==	__ACCU 1,	'1'
+	L		#FBS0[6]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FBS1
+	L		#FBS1[1]
+	__ASSERT==	__ACCU 1,	'i'
+
+	// Check #FBS2
+	L		#FBS2[1]
+	__ASSERT==	__ACCU 1,	'a'
+	L		#FBS2[2]
+	__ASSERT==	__ACCU 1,	'a'
+	L		#FBS2[3]
+	__ASSERT==	__ACCU 1,	'b'
+	L		#FBS2[4]
+	__ASSERT==	__ACCU 1,	'b'
+	L		#FBS2[5]
+	__ASSERT==	__ACCU 1,	'c'
+	L		#FBS2[6]
+	__ASSERT==	__ACCU 1,	'c'
+	L		#FBS2[7]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FBSTR0
+	L		#FBSTR0[1]
+	__ASSERT==	__ACCU 1,	0
+
+	// Check #FBSTR1
+	L		#FBSTR1[1]
+	__ASSERT==	__ACCU 1,	'a'
+	L		#FBSTR1[2]
+	__ASSERT==	__ACCU 1,	'b'
+	L		#FBSTR1[3]
+	__ASSERT==	__ACCU 1,	'c'
+	L		#FBSTR1[4]
+	__ASSERT==	__ACCU 1,	0
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 1
+	FB 1
+BEGIN
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Check short string immediates in L-instruction.
+	L	'abcd'
+	__ASSERT==	__ACCU 1,	DW#16#61626364
+	L	'abc'
+	__ASSERT==	__ACCU 1,	DW#16#00616263
+	L	'ab'
+	__ASSERT==	__ACCU 1,	DW#16#00006162
+	L	'a'
+	__ASSERT==	__ACCU 1,	DW#16#00000061
+	L	''
+	__ASSERT==	__ACCU 1,	DW#16#00000000
+
+
+	// Check DB 100 initial values
+	AUF		DB 100
+	// Check DB100.VAR0
+	L		DBW 0
+	__ASSERT==	__ACCU 1,	W#16#FE05
+	L		DBD 2
+	__ASSERT==	__ACCU 1,	'test'
+	L		DBD 6
+	__ASSERT==	__ACCU 1,	DW#16#31000000
+	L		DBW 10
+	__ASSERT==	__ACCU 1,	0
+	LAR1		P#DBX 12.0
+VAR0:	L		D [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	0
+	+AR1		P#4.0
+	TAR1
+	L		P#DBX 256.0
+	<>D
+	SPB		VAR0
+	// Check DB100.VAR1
+	L		DBW 256
+	__ASSERT==	__ACCU 1,	W#16#0A02
+	L		DBD 258
+	__ASSERT==	__ACCU 1,	DW#16#74740000
+	L		DBD 262
+	__ASSERT==	__ACCU 1,	0
+	L		DBW 266
+	__ASSERT==	__ACCU 1,	0
+	// Check DB100.VAR2
+	L		DBW 268
+	__ASSERT==	__ACCU 1,	W#16#0101
+	L		DBB 270
+	__ASSERT==	__ACCU 1,	'i'
+	L		DBB 271
+	__ASSERT==	__ACCU 1,	0
+	// Check DB100.FULLSTR0
+	L		DBW 272
+	__ASSERT==	__ACCU 1,	W#16#FE00
+	L		DBW 274
+	__ASSERT==	__ACCU 1,	0
+	LAR1		P#DBX 276.0
+STR0:	L		D [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	0
+	+AR1		P#4.0
+	TAR1
+	L		P#DBX 528.0
+	<>D
+	SPB		STR0
+	// Check DB100.FULLSTR1
+	L		DBW 528
+	__ASSERT==	__ACCU 1,	W#16#FE03
+	L		DBD 530
+	__ASSERT==	__ACCU 1,	DW#16#61626300
+	L		DBW 534
+	__ASSERT==	__ACCU 1,	0
+	LAR1		P#DBX 536.0
+STR1:	L		D [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	0
+	+AR1		P#4.0
+	TAR1
+	L		P#DBX 784.0
+	<>D
+	SPB		STR1
+	// Check DB100.ARRSTR0[1]
+	L		DBW 784
+	__ASSERT==	__ACCU 1,	W#16#0302
+	L		DBD 786
+	__ASSERT==	__ACCU 1,	DW#16#30310000
+	// Check DB100.ARRSTR0[2]
+	L		DBW 790
+	__ASSERT==	__ACCU 1,	W#16#0302
+	L		DBD 792
+	__ASSERT==	__ACCU 1,	DW#16#30320000
+	// Check DB100.ARRSTR1[1]
+	L		DBW 796
+	__ASSERT==	__ACCU 1,	W#16#0302
+	L		DBD 798
+	__ASSERT==	__ACCU 1,	DW#16#31310000
+	// Check DB100.ARRSTR1[2]
+	L		DBW 802
+	__ASSERT==	__ACCU 1,	W#16#0302
+	L		DBD 804
+	__ASSERT==	__ACCU 1,	DW#16#31320000
+
+
+	// Check fully qualified symbolic access to DB 100
+	// Check DB100.VAR0
+	L		DB100.VAR0[1]
+	__ASSERT==	__ACCU 1,	't'
+	L		DB100.VAR0[2]
+	__ASSERT==	__ACCU 1,	'e'
+	L		DB100.VAR0[3]
+	__ASSERT==	__ACCU 1,	's'
+	L		DB100.VAR0[4]
+	__ASSERT==	__ACCU 1,	't'
+	L		DB100.VAR0[5]
+	__ASSERT==	__ACCU 1,	'1'
+	L		DB100.VAR0[6]
+	__ASSERT==	__ACCU 1,	0
+	// Check DB100.VAR1
+	L		DB100.VAR1[1]
+	__ASSERT==	__ACCU 1,	't'
+	L		DB100.VAR1[2]
+	__ASSERT==	__ACCU 1,	't'
+	L		DB100.VAR1[3]
+	__ASSERT==	__ACCU 1,	0
+	// Check DB100.VAR2
+	L		DB100.VAR2[1]
+	__ASSERT==	__ACCU 1,	'i'
+	// Check DB100.FULLSTR0
+	L		DB100.FULLSTR0[1]
+	__ASSERT==	__ACCU 1,	0
+	// Check DB100.FULLSTR1
+	L		DB100.FULLSTR1[1]
+	__ASSERT==	__ACCU 1,	'a'
+	L		DB100.FULLSTR1[2]
+	__ASSERT==	__ACCU 1,	'b'
+	L		DB100.FULLSTR1[3]
+	__ASSERT==	__ACCU 1,	'c'
+	L		DB100.FULLSTR1[4]
+	__ASSERT==	__ACCU 1,	0
+
+
+	// Check string parameter passing
+	CALL	FC 1 (
+		FCS0	:= DB100.VAR0,
+		FCS1	:= DB100.VAR2,
+		FCS2	:= 'aabbcc',	// Extension: param string immediate
+		FCSTR0	:= DB100.FULLSTR0,
+		FCSTR1	:= DB100.FULLSTR1,
+	)
+	CALL	FB 1, DB 1 (
+		FBS0	:= DB100.VAR0,
+		FBS1	:= DB100.VAR2,
+		FBS2	:= 'aabbcc',	// Extension: param string immediate
+		FBSTR0	:= DB100.FULLSTR0,
+		FBSTR1	:= DB100.FULLSTR1,
+	)
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK

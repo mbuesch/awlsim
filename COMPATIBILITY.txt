@@ -1,21 +1,16 @@
-awlsim - STEP 7 compatibility
-=============================
+===============================================================================
+Awlsim - STEP 7 compatibility
+===============================================================================
 
-The execution of AWL/STL programs by awlsim is supposed to be fully
+The execution of AWL/STL programs by Awlsim is supposed to be fully
 compatible with the execution of compiled AWL/STL programs on the real
 Siemens S7 CPU.
 However, there currently are some known differences. These are listed below.
-Any undocumented difference between awlsim and STEP 7 is considered to be a
+Any undocumented difference between Awlsim and STEP 7 is considered to be a
 bug that should be reported.
 
-- awlsim does not implement all features of STEP 7, yet.
+- Awlsim does not implement all features of STEP 7, yet.
   See TODO.txt for a list of missing features.
-
-- Semicolons: AWL/STL requires semicolons (;) after each declaration,
-  initialization and statement. As an awlsim convenience service, terminating
-  semicolons can be omitted in AWL/STL statements.
-  Data declarations and initializations (in DBs and FB/FC interfaces), however,
-  must end with a semicolon.
 
 - Changing a symbol's address or data type in Awlsim does change the AWL/STL
   semantics of the code that uses this symbol.
@@ -25,13 +20,13 @@ bug that should be reported.
   text on each download to the CPU.
   The same thing happens in STEP 7, if a source text is imported.
 
-- awlsim does not compile AWL/STL to MC7 code and it cannot execute MC7 code.
-  On startup awlsim translates the AWL/STL code to an awlsim specific in-memory
+- Awlsim does not compile AWL/STL to MC7 code and it cannot execute MC7 code.
+  On startup Awlsim translates the AWL/STL code to an Awlsim specific in-memory
   representation of the code. There is no byte-code representation of this
   code.
 
 - Some key concepts, such as CALL or memory indirect addressing are implemented
-  natively in awlsim. This means to improve runtime performance in awlsim
+  natively in Awlsim. This means to improve runtime performance in Awlsim
   CALL is not a macro. From a user's perspective there should not be any
   functional difference visible in CALL. Any such difference is a bug.
   However, due to these constraints, it is not possible to call FBs or FCs
@@ -40,5 +35,34 @@ bug that should be reported.
 - Undefined behavior is not emulated.
   For example: If reading uninitialized L-stack space in STEP 7 always yields
   a certain reproducible result, that does not mean that this AWL/STL code does
-  the same thing in awlsim.
+  the same thing in Awlsim.
   Reading uninitialized TEMP-memory is undefined.
+
+
+===============================================================================
+Awlsim extensions
+(Features that Awlsim supports, but STEP 7 does not support)
+===============================================================================
+
+- Semicolons: AWL/STL requires semicolons (;) after each declaration,
+  initialization and statement. As an Awlsim convenience service, terminating
+  semicolons can be omitted in AWL/STL statements.
+  Data declarations and initializations (in DBs and FB/FC interfaces), however,
+  must end with a semicolon.
+
+- Awlsim supports DATE_AND_TIME immediate constants (for example
+  DT#2012-01-02-13:37:00.000) to FC and FB DATE_AND_TIME IN-variables. In FC
+  calls the DATE_AND_TIME constant is copied to VL memory snd passed via
+  DB-pointer (that is itself stored in VL).
+
+- Awlsim supports passing STRING immediate constants (for example 'Test') to
+  FC and FB STRING IN-variables. In FC calls the STRING constant is copied to
+  VL memory and passed via DB-pointer (that is itself stored in VL).
+  The maximum length of the STRING immediate is casted up to the parameter's
+  maximum length and added characters are filled with zero-bytes. The actual
+  length of the string does not change.
+
+- Awlsim supports STRING parameters in FCs with sizes unequal to 254
+  characters. Only actual-parameters with exactly the specified max-size as
+  specified in the FC interface are allowed in the CALL assignment.
+  (One exception being STRING immediates. See above.)

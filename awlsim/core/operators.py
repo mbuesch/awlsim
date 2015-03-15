@@ -50,6 +50,7 @@ class AwlOperator(DynAttrs):
 	IMM_TOD		= EnumGen.item	# TOD# immediate
 	IMM_DT		= EnumGen.item	# DT# immediate
 	IMM_PTR		= EnumGen.item	# Pointer immediate (P#x.y, P#area x.y, P#DBn.DBX x.y)
+	IMM_STR		= EnumGen.item	# STRING immediate ('abc')
 	__IMM_END	= EnumGen.item
 
 	MEM_E		= EnumGen.item	# Input
@@ -266,22 +267,13 @@ class AwlOperator(DynAttrs):
 				"of width %d bits." %\
 				(str(dataType), dataType.width, str(oper), operWidth))
 
-		operWidth = self.width
-
-		if dataType.type == AwlDataType.TYPE_CHAR and\
-		   self.type == AwlOperator.IMM:
-			# Special handling for CHAR immediates.
-			# Adjust the width, if this is just one character.
-			if self.value <= 0xFF:
-				operWidth = 8
-
 		if dataType.type == AwlDataType.TYPE_UDT_X:
 			try:
 				udt = cpu.udts[dataType.index]
-				if udt.struct.getSize() * 8 != operWidth:
+				if udt.struct.getSize() * 8 != self.width:
 					raise ValueError
 			except (KeyError, ValueError) as e:
-				mismatch(dataType, self, operWidth)
+				mismatch(dataType, self, self.width)
 		elif dataType.type in {AwlDataType.TYPE_POINTER,
 				       AwlDataType.TYPE_ANY}:
 			if self.type == AwlOperator.IMM_PTR:
@@ -297,9 +289,33 @@ class AwlOperator(DynAttrs):
 				# Try to make pointer from operator.
 				# This will raise AwlSimError on failure.
 				self.makePointer()
+		elif dataType.type == AwlDataType.TYPE_CHAR:
+			if self.type == AwlOperator.IMM_STR:
+				if self.width != (2 + 1) * 8:
+					raise AwlSimError("String to CHAR parameter "
+						"must be only one single character "
+						"long.")
+			else:
+				if self.isImmediate():
+					raise AwlSimError("Invalid immediate '%s'"
+						"for CHAR data type." %\
+						str(self))
+				if self.width != dataType.width:
+					mismatch(dataType, self, self.width)
+		elif dataType.type == AwlDataType.TYPE_STRING:
+			if self.type == AwlOperator.IMM_STR:
+				if self.width > dataType.width:
+					mismatch(dataType, self, self.width)
+			else:
+				if self.isImmediate():
+					raise AwlSimError("Invalid immediate '%s'"
+						"for STRING data type." %\
+						str(self))
+				if self.width != dataType.width:
+					mismatch(dataType, self, self.width)
 		else:
-			if operWidth != dataType.width:
-				mismatch(dataType, self, operWidth)
+			if self.width != dataType.width:
+				mismatch(dataType, self, self.width)
 
 	# Resolve this indirect operator to a direct operator.
 	def resolve(self, store=True):
@@ -375,6 +391,10 @@ class AwlOperator(DynAttrs):
 			return "TOD#" #TODO
 		elif self.type == self.IMM_PTR:
 			return self.value.toPointerString()
+		elif self.type == self.IMM_STR:
+			strLen = self.value[1]
+			import awlsim.core.parser as parser
+			return "'" + self.value[2:2+strLen].decode(parser.AwlParser.TEXT_ENCODING) + "'"
 		elif self.type in (self.MEM_A, self.MEM_E,
 				   self.MEM_M, self.MEM_L, self.MEM_VL):
 			pfx = self.type2str[self.type]

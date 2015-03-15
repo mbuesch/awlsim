@@ -916,6 +916,7 @@ class AwlParser(object):
 			else:
 				raise AwlParserError("In variable section: Unknown tokens.\n"\
 						     "Maybe missing semicolon in preceding lines?")
+
 			if initTokens:
 				identChain = (self.tree.curDataField.getIdentChain() if\
 					      self.tree.curDataField else []) +\

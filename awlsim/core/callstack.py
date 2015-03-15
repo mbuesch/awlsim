@@ -168,8 +168,7 @@ class CallStackElem(object):
 	# Returns the translated rvalueOp.
 	def __FC_trans_copyToVL(self, param, rvalueOp):
 		# Allocate space in the caller-L-stack.
-		lalloc = self.cpu.callStackTop.lalloc
-		loffset = lalloc.alloc(rvalueOp.width)
+		loffset = self.cpu.callStackTop.lalloc.alloc(rvalueOp.width)
 		# Make an operator for the allocated space.
 		oper = AwlOperator(AwlOperator.MEM_L,
 				   rvalueOp.width,
@@ -191,8 +190,7 @@ class CallStackElem(object):
 	# Returns the translated rvalueOp.
 	def __FC_trans_dbpointerInVL(self, param, rvalueOp):
 		# Allocate space for the DB-ptr in the caller-L-stack
-		lalloc = self.cpu.callStackTop.lalloc
-		loffset = lalloc.alloc(48) # 48 bits
+		loffset = self.cpu.callStackTop.lalloc.alloc(48) # 48 bits
 		# Create and store the the DB-ptr to the allocated space.
 		storeOper = AwlOperator(AwlOperator.MEM_L,
 					16,
@@ -219,6 +217,15 @@ class CallStackElem(object):
 				   48,
 				   loffset,
 				   rvalueOp.insn)
+
+	# FC parameter translation:
+	# Copy the r-value to the caller's L-stack (VL) and also create
+	# a DB-pointer to the copied value in VL.
+	# Returns the translated rvalueOp.
+	def __FC_trans_copyToVLWithDBPtr(self, param, rvalueOp):
+		oper = self.__FC_trans_copyToVL(param, rvalueOp)
+		oper.type = oper.MEM_L
+		return self.__FC_trans_dbpointerInVL(param, oper)
 
 	# FC parameter translation:
 	# Translate L-stack access r-value.
@@ -298,8 +305,9 @@ class CallStackElem(object):
 		AwlOperator.IMM_TIME		: __FC_trans_copyToVL,
 		AwlOperator.IMM_DATE		: __FC_trans_copyToVL,
 		AwlOperator.IMM_TOD		: __FC_trans_copyToVL,
-		AwlOperator.IMM_DT		: __FC_trans_copyToVL,
+		AwlOperator.IMM_DT		: __FC_trans_copyToVLWithDBPtr,
 		AwlOperator.IMM_PTR		: __FC_trans_copyToVL,
+		AwlOperator.IMM_STR		: __FC_trans_copyToVLWithDBPtr,
 
 		AwlOperator.MEM_E		: __FC_trans_direct,
 		AwlOperator.MEM_A		: __FC_trans_direct,

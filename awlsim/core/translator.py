@@ -360,10 +360,40 @@ class AwlTranslator(object):
 					value = ptr,
 					insn = param.rvalueOp.insn)
 
+	# Translate STRING immediates.
+	# Converts STRING to CHAR, if required, or expands string lengths.
+	def __translateParamString(self, param):
+		if param.lValueDataType.type == AwlDataType.TYPE_CHAR:
+			# CHAR parameter.
+			if param.rvalueOp.type == AwlOperator.IMM_STR:
+				# Translate single-character string immediates
+				# to 8 bit integer immediates.
+				if param.rvalueOp.width == (2 + 1) * 8:
+					param.rvalueOp = AwlOperator(
+						type = AwlOperator.IMM,
+						width = 8,
+						value = param.rvalueOp.value[2],
+						insn = param.rvalueOp.insn)
+		elif param.lValueDataType.type == AwlDataType.TYPE_STRING:
+			# STRING parameter.
+			if param.rvalueOp.type == AwlOperator.IMM_STR:
+				if param.rvalueOp.width < param.lValueDataType.width:
+					# Expand the string immediate length.
+					# This is an awlsim extension.
+					curLen = param.rvalueOp.width // 8
+					newLen = param.lValueDataType.width // 8
+					assert(curLen >= 2 and newLen >= 2)
+					data = param.rvalueOp.value[:]
+					data[0] = newLen - 2
+					data.extend(b'\x00' * (newLen - curLen))
+					param.rvalueOp.value = data
+					param.rvalueOp.width = newLen * 8
+
 	# Final translation of AwlParamAssign r-value operands.
 	# Overrides the rvalueOp in place, if required.
 	def translateParamAssignOper(self, param):
 		self.__translateParamPointer(param)
+		self.__translateParamString(param)
 
 class AwlSymResolver(object):
 	"Global and local symbol resolver."
@@ -428,7 +458,8 @@ class AwlSymResolver(object):
 			dataType = block.interface.getFieldDataType(chain)
 
 			# Sanity checks
-			if dataType.type == AwlDataType.TYPE_ARRAY:
+			if dataType.type in {AwlDataType.TYPE_ARRAY,
+					     AwlDataType.TYPE_STRING}:
 				if isLastElement and\
 				   not chain[-1].indices and\
 				   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
@@ -463,15 +494,30 @@ class AwlSymResolver(object):
 				subOffset += structField.offset
 
 			# Add array offset to subOffset,
-			# if this is an ARRAY element access.
+			# if this is an ARRAY or STRING element access.
 			if chain[-1].indices:
-				# Calculate the array offset.
-				assert(dataType.type == AwlDataType.TYPE_ARRAY)
-				arrayIndex = dataType.arrayIndicesCollapse(chain[-1].indices)
-				elemWidth = dataType.arrayElementType.width
-				bitOffset = arrayIndex * elemWidth
-				byteOffset = bitOffset // 8
-				bitOffset %= 8
+				if dataType.type == AwlDataType.TYPE_ARRAY:
+					# Calculate the array offset.
+					arrayIndex = dataType.arrayIndicesCollapse(chain[-1].indices)
+					elemWidth = dataType.arrayElementType.width
+					bitOffset = arrayIndex * elemWidth
+					byteOffset = bitOffset // 8
+					bitOffset %= 8
+				elif dataType.type == AwlDataType.TYPE_STRING:
+					# Calculate the string offset.
+					if len(chain[-1].indices) != 1:
+						raise AwlSimError("Only one index is "
+							"allowed in STRING indexing.")
+					index = chain[-1].indices[0]
+					maxIdx = dataType.width // 8 - 2
+					if index < 1 or index > maxIdx:
+						raise AwlSimError("STRING index %d is "
+							"out of range 1-%d." %\
+							(index, maxIdx))
+					byteOffset = 2 + index - 1
+					bitOffset = 0
+				else:
+					assert(0)
 				# Add it to the accumulated offset.
 				subOffset += AwlOffset(byteOffset, bitOffset)
 
@@ -480,13 +526,18 @@ class AwlSymResolver(object):
 		# 'dataType' now is the type of last field in the identChain.
 		# (The field that we eventually address).
 
-		isWholeArrayAccess = (dataType.type == AwlDataType.TYPE_ARRAY and\
+		isWholeArrayAccess = ((dataType.type == AwlDataType.TYPE_ARRAY or\
+				       dataType.type == AwlDataType.TYPE_STRING) and\
 				      not oper.value.identChain[-1].indices)
 		if dataType.type == AwlDataType.TYPE_ARRAY and\
 		   not isWholeArrayAccess:
 			# This is an array element access.
 			# Store the element-access-width in the operator.
 			oper.width = dataType.arrayElementType.width
+		elif dataType.type == AwlDataType.TYPE_STRING and\
+		     not isWholeArrayAccess:
+			# This is a string single character access.
+			oper.width = 8
 		else:
 			# Non-array access or whole-array access.
 			# Store the field access width in the operator.
@@ -570,9 +621,10 @@ class AwlSymResolver(object):
 		else:
 			# This is an array field access.
 			# (The original last ident chain field has indices.)
-			if field.dataType.type != AwlDataType.TYPE_ARRAY:
+			if field.dataType.type not in {AwlDataType.TYPE_ARRAY,
+						       AwlDataType.TYPE_STRING}:
 				raise AwlSimError("Indexed variable '%s' in fully qualified "
-					"DB access is not an ARRAY." %\
+					"DB access is not an ARRAY or STRING." %\
 					oper.value.identChain.getString())
 			# Get the actual data field.
 			# (Don't remove indices from the last chain element.)

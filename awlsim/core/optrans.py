@@ -527,6 +527,12 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			return OpDescriptor(AwlOperator(AwlOperator.IMM_DATE, 16,
 					    immediate), 1)
+		# DATE_AND_TIME immediate
+		immediate = AwlDataType.tryParseImmediate_DT(rawOps)
+		if immediate is not None:
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_DT,
+					    len(immediate) * 8,
+					    immediate), 5)
 		# Pointer immediate
 		pointer, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
 		if pointer is not None:
@@ -572,7 +578,8 @@ class AwlOpTranslator(object):
 		# String immediate
 		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperator.IMM, 32,
+			return OpDescriptor(AwlOperator(AwlOperator.IMM_STR,
+					    len(immediate) * 8,
 					    immediate), 1)
 		# DBx.DBX/B/W/D addressing
 		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])

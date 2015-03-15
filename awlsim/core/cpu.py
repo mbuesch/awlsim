@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -240,11 +240,15 @@ class S7CPU(object): #+cdef
 
 		# Finalize call instructions
 		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
-			for param in insn.params:
-				# Add interface references to the parameter assignment.
-				param.interface = calledCodeBlock.interface
-				# Final translation of parameter assignment operand.
-				translator.translateParamAssignOper(param)
+			try:
+				for param in insn.params:
+					# Add interface references to the parameter assignment.
+					param.interface = calledCodeBlock.interface
+					# Final translation of parameter assignment operand.
+					translator.translateParamAssignOper(param)
+			except AwlSimError as e:
+				e.setInsn(insn)
+				raise e
 
 		# Check and account for direct L stack allocations and
 		# interface L stack allocations.
@@ -986,7 +990,7 @@ class S7CPU(object): #+cdef
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid fetch request: %s" %\
-				AwlOperator.type2str[operator.type])
+				str(operator))
 		return fetchMethod(self, operator, enforceWidth)
 
 	def __fetchWidthError(self, operator, enforceWidth):
@@ -1006,6 +1010,23 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return operator.value.toNativePointerValue()
+
+	def fetchIMM_STR(self, operator, enforceWidth):
+		if operator.width <= 48 and operator.insn:
+			insnType = operator.insn.insnType
+			if insnType == AwlInsn.TYPE_L or\
+			   insnType >= AwlInsn.TYPE_EXTENDED:
+				# This is a special 0-4 character fetch (L) that
+				# is transparently translated into an integer.
+				value, data = 0, operator.value
+				for i in range(2, operator.width // 8):
+					value = (value << 8) | data[i]
+				return value
+
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
+		return operator.value
 
 	def fetchDBLG(self, operator, enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
@@ -1249,8 +1270,10 @@ class S7CPU(object): #+cdef
 		AwlOperator.IMM_S5T		: fetchIMM,
 		AwlOperator.IMM_TIME		: fetchIMM,
 		AwlOperator.IMM_DATE		: fetchIMM,
+		AwlOperator.IMM_DT		: fetchIMM,
 		AwlOperator.IMM_TOD		: fetchIMM,
 		AwlOperator.IMM_PTR		: fetchIMM_PTR,
+		AwlOperator.IMM_STR		: fetchIMM_STR,
 		AwlOperator.MEM_E		: fetchE,
 		AwlOperator.MEM_A		: fetchA,
 		AwlOperator.MEM_M		: fetchM,
@@ -1288,7 +1311,8 @@ class S7CPU(object): #+cdef
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:
-			raise AwlSimError("Invalid store request")
+			raise AwlSimError("Invalid store request: %s" %\
+				str(operator))
 		storeMethod(self, operator, value, enforceWidth)
 
 	def __storeWidthError(self, operator, enforceWidth):
