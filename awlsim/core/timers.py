@@ -56,6 +56,8 @@ def _seconds_to_s5t_tb10s(seconds):
 	return s5t | ((decasecs // 100) % 10) << 8
 
 class Timer(object):
+	"""Classic AWL timer."""
+
 	# Timebases
 	TB_10MS		= 0x0
 	TB_100MS	= 0x1
@@ -71,6 +73,18 @@ class Timer(object):
 	TB_100MS_S	= TB_100MS << TB_SHIFT
 	TB_1S_S		= TB_1S << TB_SHIFT
 	TB_10S_S	= TB_10S << TB_SHIFT
+
+	__slots__ = (
+		"cpu",
+		"index",
+		"prevVKE",
+		"timebase",
+		"deadlineCallback",
+		"deadline",
+		"remaining",
+		"status",
+		"running",
+	)
 
 	def __init__(self, cpu, index):
 		self.cpu = cpu

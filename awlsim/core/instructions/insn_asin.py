@@ -30,6 +30,9 @@ import math
 
 
 class AwlInsn_ASIN(AwlInsn): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASIN, rawInsn)
 		self.assertOpCount(0)

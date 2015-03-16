@@ -26,6 +26,18 @@ from awlsim.core.util import *
 
 
 class Counter(object):
+	"""Classic AWL counter."""
+
+	__slots__ = (
+		"cpu",
+		"index",
+		"prevVKE_FR",
+		"prevVKE_S",
+		"prevVKE_ZV",
+		"prevVKE_ZR",
+		"counter",
+	)
+
 	def __init__(self, cpu, index):
 		self.cpu = cpu
 		self.index = index

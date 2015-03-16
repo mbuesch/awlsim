@@ -28,6 +28,9 @@ from awlsim.core.operators import *
 
 
 class AwlInsn_AbstractCall(AwlInsn): #+cdef
+
+	__slots__ = ()
+
 	def staticSanityChecks(self):
 		if len(self.ops) == 1:
 			# "CALL FC/SFC" or
@@ -156,6 +159,11 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 						rawInsn = self.rawInsn)
 
 class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
+
+	__slots__ = (
+		"run",
+	)
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn)
 		self.assertOpCount((1,2))
@@ -186,6 +194,9 @@ class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 #@cy			self.__run_CALL_FB()
 
 class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CC, rawInsn)
 		self.assertOpCount(1)
@@ -199,6 +210,9 @@ class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
 
 class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_UC, rawInsn)
 		self.assertOpCount(1)

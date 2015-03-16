@@ -28,6 +28,13 @@ from awlsim.core.util import *
 
 
 class AwlLabel(object):
+	"""AWL label."""
+
+	__slots__ = (
+		"insn",
+		"label",
+	)
+
 	def __init__(self, insn, label):
 		self.insn = insn
 		self.label = label

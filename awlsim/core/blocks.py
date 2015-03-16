@@ -39,6 +39,13 @@ class BlockInterfaceField(object):
 	FTYPE_TEMP	= EnumGen.item
 	EnumGen.end
 
+	__slots__ = (
+		"name",
+		"dataType",
+		"fieldType",
+		"fieldIndex",
+	)
+
 	def __init__(self, name, dataType):
 		# name -> The name string of the field, as defined
 		#         in the block interface definition.

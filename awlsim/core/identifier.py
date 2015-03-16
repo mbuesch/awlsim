@@ -35,6 +35,11 @@ class AwlDataIdent(object):
 
 	VALID_CHARS	= UPPERCASE + LOWERCASE + NUMBERS + '_'
 
+	__slots__ = (
+		"name",
+		"indices",
+	)
+
 	@classmethod
 	def validateName(cls, name):
 		"""Check variable name against AWL naming rules.
@@ -133,6 +138,10 @@ class AwlDataIdentChain(object):
 	"""Data field identifier chain.
 	Fully identifies a data field in an identifier
 	chain that is nested STRUCTs, UDTs or such."""
+
+	__slots__ = (
+		"idents",
+	)
 
 	# Create an AwlDataIdentChain from a string.
 	@classmethod

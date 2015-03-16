@@ -31,6 +31,11 @@ class AwlInsn_GENERIC_CALL(AwlInsn): #+cdef
 	"""Generic callback pseudo-instruction.
 	This instruction calls the supplied callback."""
 
+
+	__slots__ = (
+		"callback",
+	)
+
 	def __init__(self, cpu, callback):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GENERIC_CALL, None)
 		self.callback = callback

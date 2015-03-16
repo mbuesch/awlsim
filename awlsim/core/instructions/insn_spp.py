@@ -28,6 +28,9 @@ from awlsim.core.operators import *
 
 
 class AwlInsn_SPP(AwlInsn): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPP, rawInsn)
 		self.assertOpCount(1)

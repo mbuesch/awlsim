@@ -33,6 +33,17 @@ from awlsim.core.identifier import *
 
 
 class RawAwlInsn(object):
+	"""Raw representation of an AWL instruction."""
+
+	__slots__ = (
+		"block",
+		"sourceId",
+		"lineNr",
+		"label",
+		"name",
+		"ops",
+	)
+
 	def __init__(self, block):
 		self.block = block
 		self.sourceId = None
@@ -94,6 +105,14 @@ class RawAwlInsn(object):
 		return bool(self.getOperators())
 
 class RawAwlBlock(object):
+	"""Raw representation of an AWL block."""
+
+	__slots__ = (
+		"tree",
+		"index",
+		"descriptors",
+	)
+
 	def __init__(self, tree, index):
 		self.tree = tree
 		self.index = index
@@ -128,6 +147,18 @@ class RawAwlBlock(object):
 		return False
 
 class RawAwlCodeBlock(RawAwlBlock):
+	"""Raw representation of an AWL code block (OB, FC, FB)."""
+
+	__slots__ = (
+		"insns",
+		"vars_in",
+		"vars_out",
+		"vars_inout",
+		"vars_static",
+		"vars_temp",
+		"retTypeTokens",
+	)
+
 	def __init__(self, tree, index):
 		RawAwlBlock.__init__(self, tree, index)
 		self.insns = []		# List of RawAwlInsn()s
@@ -147,6 +178,13 @@ class RawAwlCodeBlock(RawAwlBlock):
 		return False
 
 class RawAwlDataInit(object):
+	"""Raw representation of a data initialization."""
+
+	__slots__ = (
+		"identChain",
+		"valueTokens",
+	)
+
 	def __init__(self, identChain, valueTokens):
 		"""identChain -> The identifications for the data field.
 		valueTokens -> List of tokens for the value.
@@ -162,6 +200,17 @@ class RawAwlDataInit(object):
 		return self.getIdentString() + " := " + str(self.valueTokens)
 
 class RawAwlDataField(object):
+	"""Raw representation of a data field."""
+
+	__slots__ = (
+		"ident",
+		"typeTokens",
+		"dimensions",
+		"defaultInits",
+		"parent",
+		"children",
+	)
+
 	def __init__(self, ident, typeTokens, dimensions=None, defaultInits=None,
 		     parent=None, children=None):
 		"""ident -> The AwlDataIdent for this data field.
@@ -202,7 +251,21 @@ class RawAwlDataField(object):
 		return self.getIdentString()
 
 class RawAwlDB(RawAwlBlock):
+	"""Raw representation of an AWL data block (DB)."""
+
+	__slots__ = (
+		"fb",
+		"fields",
+		"fieldInits",
+	)
+
 	class FBRef(object):
+		__slots__ = (
+			"fbNumber",
+			"isSFB",
+			"fbSymbol",
+		)
+
 		def __init__(self, fbNumber=None, isSFB=None, fbSymbol=None):
 			self.fbNumber = fbNumber
 			self.isSFB = isSFB
@@ -239,6 +302,12 @@ class RawAwlDB(RawAwlBlock):
 		return bool(self.fb)
 
 class RawAwlUDT(RawAwlBlock):
+	"""Raw representation of an AWL UDT."""
+
+	__slots__ = (
+		"fields",
+	)
+
 	def __init__(self, tree, index):
 		RawAwlBlock.__init__(self, tree, index)
 
@@ -246,14 +315,26 @@ class RawAwlUDT(RawAwlBlock):
 		self.fields = []	# List of RawAwlDataField()s
 
 class RawAwlOB(RawAwlCodeBlock):
+	"""Raw representation of an AWL Organization Block (OB)."""
+
+	__slots__ = ()
+
 	def __init__(self, tree, index):
 		RawAwlCodeBlock.__init__(self, tree, index)
 
 class RawAwlFB(RawAwlCodeBlock):
+	"""Raw representation of an AWL Function Block (FB)."""
+
+	__slots__ = ()
+
 	def __init__(self, tree, index):
 		RawAwlCodeBlock.__init__(self, tree, index)
 
 class RawAwlFC(RawAwlCodeBlock):
+	"""Raw representation of an AWL Function (FC)."""
+
+	__slots__ = ()
+
 	def __init__(self, tree, index, retTypeTokens):
 		RawAwlCodeBlock.__init__(self, tree, index)
 		self.retTypeTokens = retTypeTokens

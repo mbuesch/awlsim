@@ -28,6 +28,9 @@ from awlsim.core.operators import *
 
 
 class AwlInsn_EQ_R(AwlInsn): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_EQ_R, rawInsn)
 		self.assertOpCount(0)

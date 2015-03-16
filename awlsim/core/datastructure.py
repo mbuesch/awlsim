@@ -30,6 +30,17 @@ from awlsim.core.identifier import *
 class AwlStructField(object):
 	"Data structure field"
 
+	__slots__ = (
+		"name",
+		"offset",
+		"dataType",
+		"initBytes",
+		"override",
+		"bitSize",
+		"byteSize",
+		"compound",
+	)
+
 	# name => Field name string
 	# offset => Field offset as AwlOffset
 	# dataType => AwlDataType (or data type declaration string)

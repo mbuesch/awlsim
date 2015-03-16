@@ -294,6 +294,16 @@ class AwlDataType(object):
 				   index = index,
 				   struct = struct)
 
+	__slots__ = (
+		"type",
+		"isSigned",
+		"index",
+		"arrayDimensions",
+		"arrayElementType",
+		"struct",
+		"__widthOverride",
+	)
+
 	def __init__(self, type, isSigned,
 		     index=None,
 		     arrayDimensions=None,
@@ -1080,6 +1090,10 @@ class AwlDataType(object):
 
 class GenericInteger(object): #+cdef
 
+	__slots__ = (
+		"value",
+		"mask",
+	)
 #@cy	cdef public uint32_t value
 #@cy	cdef public uint32_t mask
 
@@ -1186,10 +1200,14 @@ class GenericInteger(object): #+cdef
 			assert(0)
 
 class GenericWord(GenericInteger): #+cdef
+	__slots__ = ()
+
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 16)
 
 class GenericDWord(GenericInteger): #+cdef
+	__slots__ = ()
+
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 32)
 
@@ -1316,6 +1334,8 @@ class Pointer(GenericDWord): #+cdef
 	# Width, in bits.
 	width = 32
 
+	__slots__ = ()
+
 	def __init__(self, ptrValue = 0):
 		GenericDWord.__init__(self, ptrValue)
 
@@ -1398,6 +1418,9 @@ class DBPointer(Pointer): #+cdef
 	The basic data type (Pointer) holds the pointer value
 	and the area code. The DB number is stored separately in 'dbNr'."""
 
+	__slots__ = (
+		"dbNr",
+	)
 #@cy	cdef public uint16_t dbNr
 
 	# Width, in bits.
@@ -1449,6 +1472,10 @@ class ANYPointer(DBPointer): #+cdef
 	The data type is stored in 'dataType' as AwlDataType object.
 	The count is stored in 'count'."""
 
+	__slots__ = (
+		"dataType",
+		"count",
+	)
 #@cy	cdef public object dataType
 #@cy	cdef public uint16_t count
 
@@ -1545,11 +1572,15 @@ class ANYPointer(DBPointer): #+cdef
 class Accu(GenericDWord): #+cdef
 	"Accumulator register"
 
+	__slots__ = ()
+
 	def __init__(self):
 		GenericDWord.__init__(self)
 
 class Adressregister(Pointer): #+cdef
 	"Address register"
+
+	__slots__ = ()
 
 	def __init__(self):
 		Pointer.__init__(self)

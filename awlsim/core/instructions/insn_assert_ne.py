@@ -28,6 +28,9 @@ from awlsim.core.operators import *
 
 
 class AwlInsn_ASSERT_NE(AwlInsn): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_NE, rawInsn)
 		self.assertOpCount(2)

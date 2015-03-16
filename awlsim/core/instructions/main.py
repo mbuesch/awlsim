@@ -428,6 +428,15 @@ class AwlInsn(object): #+cdef
 		name2type_english[_name] = _insnType
 	type2name_english = pivotDict(name2type_english)
 
+	__slots__ = (
+		"cpu",
+		"insnType",
+		"rawInsn",
+		"ip",
+		"ops",
+		"params",
+	)
+
 	def __init__(self, cpu, insnType, rawInsn):
 		self.cpu = cpu
 		self.insnType = insnType

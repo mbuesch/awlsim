@@ -30,6 +30,9 @@ import time
 
 
 class AwlInsn_SLEEP(AwlInsn): #+cdef
+
+	__slots__ = ()
+
 	def __init__(self, cpu, rawInsn):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SLEEP, rawInsn)
 		self.assertOpCount(1)
