@@ -1,0 +1,210 @@
+FUNCTION FC 1 : VOID
+TITLE = Check FC 21 with L as data source
+VAR_TEMP
+	STR	: STRING;
+END_VAR
+BEGIN
+	// Check zero length (L-stack)
+	L		P##STR
+	LAR1
+	L		254
+	T		B [AR1, P#0.0]
+	L		0
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= #STR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	0
+
+
+	// Check 1 length (L-stack)
+	L		P##STR
+	LAR1
+	L		254
+	T		B [AR1, P#0.0]
+	L		1
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= #STR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	1
+
+
+	// Check full length (L-stack)
+	L		P##STR
+	LAR1
+	L		254
+	T		B [AR1, P#0.0]
+	L		254
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= #STR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	254
+
+
+	// Check length bigger than maxlen (L-stack)
+	L		P##STR
+	LAR1
+	L		10
+	T		B [AR1, P#0.0]
+	L		100
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= #STR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	100
+END_FUNCTION
+
+
+FUNCTION FC 2 : VOID
+TITLE = Check FC 21 with DB as data source
+BEGIN
+	// Check zero length (DB)
+	AUF		DB 2
+	LAR1		P#DBX 0.0
+	L		254
+	T		B [AR1, P#0.0]
+	L		0
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= DB2.DBSTR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	0
+
+
+	// Check 1 length (DB)
+	AUF		DB 2
+	LAR1		P#DBX 0.0
+	L		254
+	T		B [AR1, P#0.0]
+	L		1
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= DB2.DBSTR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	1
+
+
+	// Check full length (DB)
+	AUF		DB 2
+	LAR1		P#DBX 0.0
+	L		254
+	T		B [AR1, P#0.0]
+	L		254
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= DB2.DBSTR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	254
+
+
+	// Check length bigger than maxlen (DB)
+	AUF		DB 2
+	LAR1		P#DBX 0.0
+	L		10
+	T		B [AR1, P#0.0]
+	L		100
+	T		B [AR1, P#1.0]
+	LAR1		P#42.0
+	LAR2		P#42.1
+	AUF		DB 1
+	CALL "LEN" (
+		S	:= DB2.DBSTR,
+		RET_VAL	:= MW 0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	__AR 1,		P#42.0
+	__ASSERT==	__AR 2,		P#42.1
+	__ASSERT==	DBNO,		1
+	L		MW 0
+	__ASSERT==	__ACCU 1,	100
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL	FC 1
+	CALL	FC 2
+
+	CALL	SFC 46 // Stop CPU
+END_ORGANIZATION_BLOCK
+
+
+DATA_BLOCK DB 1
+STRUCT
+	TMP	: INT;
+END_STRUCT;
+BEGIN	
+END_DATA_BLOCK
+
+
+DATA_BLOCK DB 2
+STRUCT
+	DBSTR	: STRING;
+END_STRUCT;
+BEGIN	
+END_DATA_BLOCK
