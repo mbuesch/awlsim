@@ -231,7 +231,11 @@ class AwlDataType(object):
 		                   Each list element is a tuple of (start, end)
 				   with the start and end array index for that dimension."""
 
-		if nameTokens[0].upper() == "STRING":
+		nameTokens = toList(nameTokens)
+		type = cls._name2typeid(nameTokens)
+		index = None
+
+		if type == cls.TYPE_STRING:
 			# Construct a data structure for the STRING layout.
 			strLen = -1
 			if len(nameTokens) == 1:
@@ -255,9 +259,6 @@ class AwlDataType(object):
 						dataType = byteType)
 		else:
 			struct = None
-
-		type = cls._name2typeid(nameTokens)
-		index = None
 
 		if type == cls.TYPE_ARRAY:
 			raise AwlSimError("Nested ARRAYs are not allowed")
