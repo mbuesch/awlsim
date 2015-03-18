@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import *
+from awlsim.common.immutable import *
 
 from awlsim.core.util import *
 from awlsim.core.timers import *
@@ -31,7 +32,7 @@ from awlsim.core.offset import *
 import datetime
 
 
-class AwlDataType(object):
+class AwlDataType(OptionalImmutable):
 	# Data type IDs
 	EnumGen.start
 	TYPE_VOID	= EnumGen.item
@@ -148,14 +149,14 @@ class AwlDataType(object):
 	}
 
 	# Table of trivial types with sign
-	signedTypes = {
+	__signedTypes = {
 		TYPE_INT,
 		TYPE_DINT,
 		TYPE_REAL,
 	}
 
 	# Table of compound types
-	compoundTypes = {
+	__compoundTypes = {
 		TYPE_DT,
 		TYPE_ARRAY,
 		TYPE_STRUCT,
@@ -223,6 +224,34 @@ class AwlDataType(object):
 			raise AwlSimError("Invalid data type name: " +\
 					  nameTokens[0] if len(nameTokens) else "None")
 
+	# Dict of simple types that were already contructed
+	# and can be re-used.
+	# All types herein are forced immutable.
+	__staticTypes = {
+		TYPE_VOID	: None,
+		TYPE_BOOL	: None,
+		TYPE_BYTE	: None,
+		TYPE_WORD	: None,
+		TYPE_DWORD	: None,
+		TYPE_INT	: None,
+		TYPE_DINT	: None,
+		TYPE_REAL	: None,
+		TYPE_S5T	: None,
+		TYPE_TIME	: None,
+		TYPE_DATE	: None,
+		TYPE_DT		: None,
+		TYPE_TOD	: None,
+		TYPE_CHAR	: None,
+		TYPE_TIMER	: None,
+		TYPE_COUNTER	: None,
+		TYPE_POINTER	: None,
+		TYPE_ANY	: None,
+		TYPE_BLOCK_DB	: None,
+		TYPE_BLOCK_SDB	: None,
+		TYPE_BLOCK_FB	: None,
+		TYPE_BLOCK_FC	: None,
+	}
+
 	@classmethod
 	def makeByName(cls, nameTokens, arrayDimensions=None):
 		"""Make an AwlDataType instance by type name.
@@ -233,7 +262,13 @@ class AwlDataType(object):
 
 		nameTokens = toList(nameTokens)
 		type = cls._name2typeid(nameTokens)
-		index = None
+
+		# Check if we already had such a type and use that.
+		if not arrayDimensions:
+			dataType = cls.__staticTypes.get(type)
+			if dataType:
+				assert(dataType.isImmutable())
+				return dataType
 
 		if type == cls.TYPE_STRING:
 			# Construct a data structure for the STRING layout.
@@ -260,6 +295,7 @@ class AwlDataType(object):
 		else:
 			struct = None
 
+		index = None
 		if type == cls.TYPE_ARRAY:
 			raise AwlSimError("Nested ARRAYs are not allowed")
 		elif type in (cls.TYPE_DB_X,
@@ -280,24 +316,32 @@ class AwlDataType(object):
 
 		if arrayDimensions:
 			# An ARRAY is to be constructed.
-			elementType = cls(type = type,
-					  isSigned = (type in cls.signedTypes),
-					  index = index,
-					  struct = struct)
-			return cls(type = cls.TYPE_ARRAY,
-				   isSigned = (type in cls.signedTypes),
-				   index = index,
-				   arrayDimensions = arrayDimensions,
-				   arrayElementType = elementType)
+			elementType = cls.makeByName(nameTokens)
+			dataType = cls(type = cls.TYPE_ARRAY,
+				       index = index,
+				       arrayDimensions = arrayDimensions,
+				       arrayElementType = elementType)
 		else:
-			return cls(type = type,
-				   isSigned = (type in cls.signedTypes),
-				   index = index,
-				   struct = struct)
+			dataType = cls(type = type,
+				       index = index,
+				       struct = struct)
+
+			# Store the data type instance for later re-use, if it is
+			# in the simple-types dict.
+			# Force it immutable, so it cannot change anymore.
+			if type in cls.__staticTypes:
+				dataType.setImmutable()
+				assert(dataType.index is None)
+				assert(dataType.arrayDimensions is None)
+				assert(dataType.arrayElementType is None)
+				assert(dataType.struct is None)
+				assert(cls.__staticTypes[type] is None)
+				cls.__staticTypes[type] = dataType
+
+		return dataType
 
 	__slots__ = (
 		"type",
-		"isSigned",
 		"index",
 		"arrayDimensions",
 		"arrayElementType",
@@ -305,13 +349,13 @@ class AwlDataType(object):
 		"__widthOverride",
 	)
 
-	def __init__(self, type, isSigned,
+	def __init__(self, type,
 		     index=None,
 		     arrayDimensions=None,
 		     arrayElementType=None,
 		     struct=None):
+		super(AwlDataType, self).__init__()
 		self.type = type		# The TYPE_... for this datatype
-		self.isSigned = isSigned	# True, if this type is signed
 		self.index = index		# The Index number, if any. May be None
 		self.arrayDimensions = arrayDimensions # The ARRAY's dimensions
 		self.arrayElementType = arrayElementType # AwlDataType for the array elements.
@@ -373,7 +417,12 @@ class AwlDataType(object):
 	# Does not return True for TYPE_POINTER.
 	@property
 	def compound(self):
-		return self.type in self.compoundTypes
+		return self.type in self.__compoundTypes
+
+	# Returns True, if this is a signed type.
+	@property
+	def isSigned(self):
+		return self.type in self.__signedTypes
 
 	# Returns True, if this type is allowed in STRUCTs.
 	@property
