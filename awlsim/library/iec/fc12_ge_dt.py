@@ -59,7 +59,7 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	awlCodeIsStandard = True
 	awlCodeVersion = "0.1"
 
-	awlCode = """	
+	awlCode = """
 	// AR1-Register save
 	TAR1	#AR1_SAVE
 

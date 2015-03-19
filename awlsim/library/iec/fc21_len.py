@@ -53,7 +53,7 @@ class Lib__IEC__FC21_LEN(AwlLibFC):
 	awlCodeIsStandard = True
 	awlCodeVersion = "0.1"
 
-	awlCode = """	
+	awlCode = """
 	TAR1	#AR1_SAVE	// Save AR1 register
 
 	L	P##S		// Load pointer to DB-pointer
