@@ -311,8 +311,11 @@ class AwlOperator(DynAttrs):
 					raise AwlSimError("Invalid immediate '%s'"
 						"for STRING data type." %\
 						str(self))
-				if self.width != dataType.width:
-					mismatch(dataType, self, self.width)
+				assert(self.width <= (254 + 2) * 8)
+				assert(dataType.width <= (254 + 2) * 8)
+				if dataType.width != (254 + 2) * 8:
+					if self.width != dataType.width:
+						mismatch(dataType, self, self.width)
 		else:
 			if self.width != dataType.width:
 				mismatch(dataType, self, self.width)
