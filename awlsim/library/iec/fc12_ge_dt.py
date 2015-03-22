@@ -60,8 +60,7 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 	awlCodeVersion = "0.1"
 
 	awlCode = """
-	// AR1-Register save
-	TAR1	#AR1_SAVE
+	TAR1	#AR1_SAVE	// Save AR1 register
 
 	// Load a pointer to #DT1 into AR1 and open the DB
 	L	P##DT1
@@ -217,9 +216,7 @@ NOK:	SAVE			// BIE := 1
 	CLR
 	=	#RET_VAL	// RET_VAL := 0
 
-	// Load AR1 register
-END:	L	#AR1_SAVE
-	LAR1
+END:	LAR1	#AR1_SAVE	// Restore AR1 register
 	BE
 """
 

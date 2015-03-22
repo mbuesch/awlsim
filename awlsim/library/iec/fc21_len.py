@@ -66,8 +66,7 @@ class Lib__IEC__FC21_LEN(AwlLibFC):
 	L	B [AR1, P#1.0]	// Load actual #S string length (byte 1)
 	T	#RET_VAL	// Output actual string length
 
-	L	#AR1_SAVE	// Restore AR1 register
-	LAR1
+	LAR1	#AR1_SAVE	// Restore AR1 register
 	SET			// VKE := 1
 	SAVE			// BIE := 1
 	BE
