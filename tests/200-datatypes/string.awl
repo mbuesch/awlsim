@@ -7,6 +7,7 @@ STRUCT
 	FULLSTR1	: STRING := 'abc';	// Awlsim extension: No dimension = 254
 	ARRSTR0		: ARRAY [1 .. 2] OF STRING[3] := '01', '02';
 	ARRSTR1		: ARRAY [1 .. 2] OF STRING [3];
+	VAR3		: STRING [10];
 END_STRUCT;
 BEGIN
 	VAR0		:= 'test1';
@@ -309,6 +310,35 @@ BEGIN
 END_DATA_BLOCK
 
 
+FUNCTION FC 2 : STRING
+VAR_INPUT
+	FCINSTR	: STRING;
+END_VAR
+BEGIN
+	// Copy #FCINSTR to #RET_VAL
+	L		#FCINSTR[1]
+	T		#RET_VAL[1]
+	L		#FCINSTR[2]
+	T		#RET_VAL[2]
+	L		#FCINSTR[3]
+	T		#RET_VAL[3]
+	L		#FCINSTR[4]
+	T		#RET_VAL[4]
+	L		#FCINSTR[5]
+	T		#RET_VAL[5]
+	L		#FCINSTR[6]
+	T		#RET_VAL[6]
+	L		#FCINSTR[7]
+	T		#RET_VAL[7]
+	L		#FCINSTR[8]
+	T		#RET_VAL[8]
+	L		#FCINSTR[9]
+	T		#RET_VAL[9]
+	L		#FCINSTR[10]
+	T		#RET_VAL[10]
+END_FUNCTION
+
+
 ORGANIZATION_BLOCK OB 1
 BEGIN
 	// Check short string immediates in L-instruction.
@@ -407,6 +437,15 @@ STR1:	L		D [AR1, P#0.0]
 	__ASSERT==	__ACCU 1,	W#16#0302
 	L		DBD 804
 	__ASSERT==	__ACCU 1,	DW#16#31320000
+	// Check DB100.VAR3
+	L		DBW 808
+	__ASSERT==	__ACCU 1,	W#16#0A00
+	L		DBD 810
+	__ASSERT==	__ACCU 1,	0
+	L		DBD 814
+	__ASSERT==	__ACCU 1,	0
+	L		DBW 818
+	__ASSERT==	__ACCU 1,	0
 
 
 	// Check fully qualified symbolic access to DB 100
@@ -445,6 +484,9 @@ STR1:	L		D [AR1, P#0.0]
 	__ASSERT==	__ACCU 1,	'c'
 	L		DB100.FULLSTR1[4]
 	__ASSERT==	__ACCU 1,	0
+	// Check DB100.VAR3
+	L		DB100.VAR3[1]
+	__ASSERT==	__ACCU 1,	0
 
 
 	// Check string parameter passing
@@ -462,6 +504,25 @@ STR1:	L		D [AR1, P#0.0]
 		FBSTR0	:= DB100.FULLSTR0,
 		FBSTR1	:= DB100.FULLSTR1,
 	)
+
+
+	// Check STRING as RET_VAL
+	L		DB100.VAR3[1]
+	__ASSERT==	__ACCU 1,	0
+	L		DB100.VAR3[2]
+	__ASSERT==	__ACCU 1,	0
+	L		DB100.VAR3[3]
+	__ASSERT==	__ACCU 1,	0
+	CALL	FC 2 (
+		FCINSTR	:= DB100.VAR1,
+		RET_VAL	:= DB100.VAR3,
+	)
+	L		DB100.VAR3[1]
+	__ASSERT==	__ACCU 1,	't'
+	L		DB100.VAR3[2]
+	__ASSERT==	__ACCU 1,	't'
+	L		DB100.VAR3[3]
+	__ASSERT==	__ACCU 1,	0
 
 
 	CALL SFC 46 // STOP CPU
