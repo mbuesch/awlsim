@@ -1468,7 +1468,7 @@ class Pointer(GenericDWord): #+cdef
 
 	# Get a P#... string for this pointer.
 	def toPointerString(self):
-		area = self.area
+		area = self.getArea()
 		if area:
 			if area == self.AREA_P:
 				prefix = "P "
@@ -1490,7 +1490,8 @@ class Pointer(GenericDWord): #+cdef
 				prefix = "(%02X) " % area
 		else:
 			prefix = ""
-		return "P#%s%d.%d" % (prefix, self.byteOffset, self.bitOffset)
+		return "P#%s%d.%d" % (prefix, self.getByteOffset(),
+				      self.getBitOffset())
 
 	def __repr__(self):
 		return self.toPointerString()
@@ -1539,13 +1540,14 @@ class DBPointer(Pointer): #+cdef
 	def toPointerString(self):
 		if self.dbNr:
 			assert(self.dbNr > 0 and self.dbNr <= 0xFFFF)
-			if self.area == self.AREA_DB:
+			if self.getArea() == self.AREA_DB:
 				prefix = "DB%d.DBX " % self.dbNr
 			else:
-				prefix = "DB%d.(%02X) " % (self.dbNr, self.area)
+				prefix = "DB%d.(%02X) " % (self.dbNr, self.getArea())
 		else:
 			return Pointer.toPointerString(self)
-		return "P#%s%d.%d" % (prefix, self.byteOffset, self.bitOffset)
+		return "P#%s%d.%d" % (prefix, self.getByteOffset(),
+				      self.getBitOffset())
 
 class SymbolicDBPointer(DBPointer): #+cdef
 	"""Symbolic DB-Pointer value.
@@ -1583,12 +1585,12 @@ class SymbolicDBPointer(DBPointer): #+cdef
 				return "P#%s%s" % (prefix,
 					self.identChain.getString())
 			else:
-				if self.area == self.AREA_DB:
+				if self.getArea() == self.AREA_DB:
 					prefix += "DBX "
 				else:
-					prefix += "(%02X) " % self.area
+					prefix += "(%02X) " % self.getArea()
 				return "P#%s%d.%d" % (prefix,
-					self.byteOffset, self.bitOffset)
+					self.getByteOffset(), self.getBitOffset())
 		else:
 			assert(not self.identChain)
 			return Pointer.toPointerString(self)
@@ -1737,13 +1739,13 @@ class ANYPointer(DBPointer): #+cdef
 		if self.dbNr:
 			dbStr = "DB%d." % self.dbNr
 		try:
-			areaStr = self.area2str[self.area]
+			areaStr = self.area2str[self.getArea()]
 		except KeyError as e:
-			areaStr = "(%02X)" % self.area
+			areaStr = "(%02X)" % self.getArea()
 		return "P#%s%s %d.%d %s %d" %\
 			(dbStr, areaStr,
-			 self.byteOffset,
-			 self.bitOffset,
+			 self.getByteOffset(),
+			 self.getBitOffset(),
 			 str(self.dataType),
 			 self.count)
 
