@@ -337,9 +337,9 @@ class AwlTranslator(object):
 					width = ptr.width,
 					value = ptr,
 					insn = param.rvalueOp.insn)
-			if param.rvalueOp.value.area == Pointer.AREA_L:
+			if param.rvalueOp.value.getArea() == Pointer.AREA_L:
 				# L-stack access must be translated to VL.
-				param.rvalueOp.value.area = Pointer.AREA_VL
+				param.rvalueOp.value.setArea(Pointer.AREA_VL)
 		elif param.lValueDataType.type == AwlDataType.TYPE_ANY:
 			# ANY-pointer parameter.
 			if param.rvalueOp.type == AwlOperator.IMM_PTR:
@@ -362,9 +362,9 @@ class AwlTranslator(object):
 					width = ptr.width,
 					value = ptr,
 					insn = param.rvalueOp.insn)
-			if param.rvalueOp.value.area == Pointer.AREA_L:
+			if param.rvalueOp.value.getArea() == Pointer.AREA_L:
 				# L-stack access must be translated to VL.
-				param.rvalueOp.value.area = Pointer.AREA_VL
+				param.rvalueOp.value.setArea(Pointer.AREA_VL)
 
 	# Translate STRING immediates.
 	# Converts STRING to CHAR, if required, or expands string lengths.

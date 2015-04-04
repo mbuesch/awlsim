@@ -252,7 +252,7 @@ class AwlOpTranslator(object):
 				if offsetPtr.width != 32:
 					raise AwlSimError("Only plain pointers allowed as "
 						"indirect addressing offset pointer.")
-				if offsetPtr.area:
+				if offsetPtr.getArea():
 					raise AwlSimError("Area internal pointer not "
 						"allowed as indirect addressing offset pointer.")
 				if rawOps[3] != ']':

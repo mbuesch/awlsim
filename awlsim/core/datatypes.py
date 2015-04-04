@@ -1447,23 +1447,23 @@ class Pointer(GenericDWord): #+cdef
 #@cy		return self.toPointerValue()
 
 	# Get the area code, as byte.
-	@property
-	def area(self):
+	def getArea(self): #@nocy
+#@cy	cpdef uint8_t getArea(self):
 		return (self.toPointerValue() >> 24) & 0xFF
 
 	# Set the area code, as byte.
-	@area.setter
-	def area(self, newArea):
+	def setArea(self, newArea): #@nocy
+#@cy	cpdef setArea(self, uint8_t newArea):
 		self.set((self.get() & 0x00FFFFFF) | (newArea << 24))
 
 	# Get the byte offset, as word.
-	@property
-	def byteOffset(self):
+	def getByteOffset(self): #@nocy
+#@cy	cpdef uint16_t getByteOffset(self):
 		return (self.toPointerValue() >> 3) & 0xFFFF
 
 	# Get the bit offset, as byte.
-	@property
-	def bitOffset(self):
+	def getBitOffset(self): #@nocy
+#@cy	cpdef uint8_t getBitOffset(self):
 		return self.toPointerValue() & 7
 
 	# Get a P#... string for this pointer.
