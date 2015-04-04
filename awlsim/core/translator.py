@@ -337,6 +337,9 @@ class AwlTranslator(object):
 					width = ptr.width,
 					value = ptr,
 					insn = param.rvalueOp.insn)
+			if param.rvalueOp.value.area == Pointer.AREA_L:
+				# L-stack access must be translated to VL.
+				param.rvalueOp.value.area = Pointer.AREA_VL
 		elif param.lValueDataType.type == AwlDataType.TYPE_ANY:
 			# ANY-pointer parameter.
 			if param.rvalueOp.type == AwlOperator.IMM_PTR:
@@ -359,6 +362,9 @@ class AwlTranslator(object):
 					width = ptr.width,
 					value = ptr,
 					insn = param.rvalueOp.insn)
+			if param.rvalueOp.value.area == Pointer.AREA_L:
+				# L-stack access must be translated to VL.
+				param.rvalueOp.value.area = Pointer.AREA_VL
 
 	# Translate STRING immediates.
 	# Converts STRING to CHAR, if required, or expands string lengths.
@@ -532,16 +538,17 @@ class AwlSymResolver(object):
 		if dataType.type == AwlDataType.TYPE_ARRAY and\
 		   not isWholeArrayAccess:
 			# This is an array element access.
-			# Store the element-access-width in the operator.
-			oper.width = dataType.arrayElementType.width
+			accessDataType = dataType.arrayElementType
 		elif dataType.type == AwlDataType.TYPE_STRING and\
 		     not isWholeArrayAccess:
 			# This is a string single character access.
-			oper.width = 8
+			accessDataType = AwlDataType.makeByName("CHAR")
 		else:
 			# Non-array access or whole-array access.
-			# Store the field access width in the operator.
-			oper.width = dataType.width
+			accessDataType = dataType
+		# Store the access type and width in the operator.
+		oper.dataType = accessDataType
+		oper.width = accessDataType.width
 		assert(oper.width > 0)
 
 		# Store the sub-offset (might be zero).
@@ -562,6 +569,7 @@ class AwlSymResolver(object):
 			assert(newOper.width > 0)
 			newOper.setInsn(oper.insn)
 			newOper.compound = oper.compound
+			newOper.dataType = oper.dataType
 			return newOper
 		else:
 			# This is an FC. Accesses to local symbols
@@ -573,6 +581,61 @@ class AwlSymResolver(object):
 			index = block.interface.getFieldByIdentChain(identChain).fieldIndex
 			oper.interfaceIndex = index
 		return oper
+
+	# Resolve a symbolic DB name. Returns DB index number.
+	def __resolveDBName(self, dbName):
+		symbol = self.cpu.symbolTable.findOneByName(dbName)
+		if not symbol:
+			raise AwlSimError("Symbol \"%s\" specified as DB in "
+				"fully qualified operator not found." %\
+				dbName)
+		if symbol.type.type != AwlDataType.TYPE_DB_X:
+			raise AwlSimError("Symbol \"%s\" specified as DB in "
+				"fully qualified operator is not a DB-symbol." %\
+				dbName)
+		return symbol.operator.value.byteOffset
+
+	# Get offset and width of a DB field.
+	def __dbVarToOffset(self, dbNumber, identChain, allowWholeArrayAccess=True):
+		# Get the DB
+		try:
+			db = self.cpu.dbs[dbNumber]
+		except KeyError as e:
+			raise AwlSimError("DB %d specified in fully qualified "
+				"operator does not exist." % dbNumber)
+
+		# Get the data structure base field descriptor.
+		# For arrays, this is the base name of the array.
+		tmpIdentChain = identChain.dup()
+		tmpIdentChain[-1] = tmpIdentChain[-1].dup(withIndices = False)
+		field = db.struct.getField(tmpIdentChain.getString())
+		if identChain[-1].indices is None:
+			# Access without array indices.
+			if field.dataType.type == AwlDataType.TYPE_ARRAY:
+				# This is a whole-array access.
+				#  e.g.  DB1.ARRAYVAR
+				if not allowWholeArrayAccess:
+					raise AwlSimError("Variable '%s' in fully qualified "
+						"DB access is an ARRAY." %\
+						identChain.getString())
+		else:
+			# This is an array field access.
+			# (The original last ident chain field has indices.)
+			if field.dataType.type not in {AwlDataType.TYPE_ARRAY,
+						       AwlDataType.TYPE_STRING}:
+				raise AwlSimError("Indexed variable '%s' in fully qualified "
+					"DB access is not an ARRAY or STRING." %\
+					oper.value.identChain.getString())
+			# Get the actual data field.
+			# (Don't remove indices from the last chain element.)
+			field = db.struct.getField(identChain.getString())
+
+		# Extract the offset data
+		offset = field.offset.dup()
+		width = field.bitSize
+		dataType = field.dataType
+
+		return offset, width, dataType
 
 	# Resolve named fully qualified accesses (DBx.VARx)
 	# If allowWholeArrayAccess is true, unsubscripted accesses
@@ -586,52 +649,12 @@ class AwlSymResolver(object):
 		assert(oper.value.dbNumber is not None or\
 		       oper.value.dbName is not None)
 		if oper.value.dbNumber is None:
-			symbol = self.cpu.symbolTable.findOneByName(oper.value.dbName)
-			if not symbol:
-				raise AwlSimError("Symbol \"%s\" specified as DB in "
-					"fully qualified operator not found." %\
-					oper.value.dbName)
-			if symbol.type.type != AwlDataType.TYPE_DB_X:
-				raise AwlSimError("Symbol \"%s\" specified as DB in "
-					"fully qualified operator is not a DB-symbol." %\
-					oper.value.dbName)
-			oper.value.dbNumber = symbol.operator.value.byteOffset
+			oper.value.dbNumber = self.__resolveDBName(oper.value.dbName)
 
-		# Get the DB
-		try:
-			db = self.cpu.dbs[oper.value.dbNumber]
-		except KeyError as e:
-			raise AwlSimError("DB %d specified in fully qualified "
-				"operator does not exist." % oper.value.dbNumber)
-
-		# Get the data structure base field descriptor.
-		# For arrays, this is the base name of the array.
-		tmpIdentChain = oper.value.identChain.dup()
-		tmpIdentChain[-1] = tmpIdentChain[-1].dup(withIndices = False)
-		field = db.struct.getField(tmpIdentChain.getString())
-		if oper.value.identChain[-1].indices is None:
-			# Access without array indices.
-			if field.dataType.type == AwlDataType.TYPE_ARRAY:
-				# This is a whole-array access.
-				#  e.g.  DB1.ARRAYVAR
-				if not allowWholeArrayAccess:
-					raise AwlSimError("Variable '%s' in fully qualified "
-						"DB access is an ARRAY." %\
-						oper.value.identChain.getString())
-		else:
-			# This is an array field access.
-			# (The original last ident chain field has indices.)
-			if field.dataType.type not in {AwlDataType.TYPE_ARRAY,
-						       AwlDataType.TYPE_STRING}:
-				raise AwlSimError("Indexed variable '%s' in fully qualified "
-					"DB access is not an ARRAY or STRING." %\
-					oper.value.identChain.getString())
-			# Get the actual data field.
-			# (Don't remove indices from the last chain element.)
-			field = db.struct.getField(oper.value.identChain.getString())
-		# Extract the offset data
-		offset = field.offset.dup()
-		width = field.bitSize
+		# Get the offset data and the width of the field.
+		offset, width, fieldDataType = self.__dbVarToOffset(oper.value.dbNumber,
+								    oper.value.identChain,
+								    allowWholeArrayAccess)
 		offset.dbNumber = oper.value.dbNumber
 
 		# Construct an absolute operator
@@ -641,7 +664,54 @@ class AwlSymResolver(object):
 				   insn = oper.insn)
 		# If this is a compound data type access, mark
 		# the operand as such.
-		oper.compound = field.dataType.compound
+		oper.compound = fieldDataType.compound
+
+		# Assign access data type.
+		oper.dataType = fieldDataType
+
+		return oper
+
+	# Resolve named fully qualified pointers (P#DBx.VARx)
+	# This is an awlsim extension.
+	def __resolveNamedFQPointer(self, block, insn, oper, param=None):
+		if oper.type != AwlOperator.IMM_PTR:
+			return oper
+		if oper.value.width > 0:
+			return oper
+		assert(isinstance(oper.value, SymbolicDBPointer))
+
+		# Resolve the symbolic DB name, if needed
+		assert(oper.value.dbNr or\
+		       oper.value.dbSymbol is not None)
+		if oper.value.dbSymbol is not None:
+			oper.value.dbNr = self.__resolveDBName(oper.value.dbSymbol)
+
+		# Get the offset data and the width of the field.
+		offset, width, fieldDataType = self.__dbVarToOffset(oper.value.dbNr,
+								    oper.value.identChain)
+
+		# Write the pointer value.
+		oper.value.setDWord(offset.toPointerValue() |\
+				    (Pointer.AREA_DB << Pointer.AREA_SHIFT))
+
+		# Create a resolved Pointer.
+		if param and\
+		   param.lValueDataType.type == AwlDataType.TYPE_POINTER:
+			# Create a resolved DB-Pointer (48 bit).
+			oper.value = oper.value.toDBPointer()
+		elif param and\
+		     param.lValueDataType.type == AwlDataType.TYPE_ANY:
+			# Create a resolved ANY-Pointer (80 bit).
+			oper.value = ANYPointer.makeByAutoType(
+				dataType = fieldDataType,
+				ptrValue = oper.value.toPointerValue(),
+				dbNr = oper.value.toDBPointer().dbNr)
+		else:
+			# Create a resolved pointer (32 bit).
+			oper.value = oper.value.toPointer()
+		oper.dataType = fieldDataType
+		oper.width = oper.value.width
+
 		return oper
 
 	# Resolve all symbols in the given code block
@@ -654,6 +724,7 @@ class AwlSymResolver(object):
 					oper = self.resolveNamedLocal(block, insn, oper, False)
 					oper = self.__resolveNamedFullyQualified(block,
 										 insn, oper, False)
+					oper = self.__resolveNamedFQPointer(block, insn, oper)
 					if oper.type == AwlOperator.INDIRECT:
 						oper.offsetOper = self.__resolveClassicSym(block,
 									insn, oper.offsetOper)
@@ -667,6 +738,7 @@ class AwlSymResolver(object):
 					oper = self.resolveNamedLocal(block, insn, oper, False, True)
 					oper = self.__resolveNamedFullyQualified(block,
 										 insn, oper, True)
+					oper = self.__resolveNamedFQPointer(block, insn, oper, param)
 					if oper.type == AwlOperator.INDIRECT:
 						oper.offsetOper = self.__resolveClassicSym(block,
 									insn, oper.offsetOper)

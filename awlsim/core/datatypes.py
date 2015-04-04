@@ -28,6 +28,7 @@ from awlsim.common.immutable import *
 from awlsim.core.util import *
 from awlsim.core.timers import *
 from awlsim.core.offset import *
+from awlsim.core.identifier import *
 
 import datetime
 
@@ -951,23 +952,33 @@ class AwlDataType(OptionalImmutable):
 
 	@classmethod
 	def tryParseImmediate_Pointer(cls, tokens):
-		prefix = tokens[0].upper()
-		if not prefix.startswith("P#"):
+		prefix = tokens[0]
+		if not prefix.upper().startswith("P#"):
 			return None, None
 
 		prefix = prefix[2:] # Strip P#
 
+		pointer = None
 		dotIdx = prefix.find(".")
-		if dotIdx > 0 and prefix[:dotIdx].startswith("DB") and\
+		if dotIdx >= 3 and prefix[:dotIdx].upper().startswith("DB") and\
 		   prefix[2:dotIdx].isdecimal():
 			# Parse DB number prefix
 			dbNr = int(prefix[2:dotIdx])
 			prefix = prefix[dotIdx+1:]
 			pointer = DBPointer(0, dbNr)
-		else:
+		elif dotIdx >= 3 and prefix.startswith('"'):
+			endIdx = prefix[1:].find('".') + 1
+			if endIdx >= 2:
+				# Parse symbolic DB name prefix
+				dbSymbol = prefix[1:endIdx]
+				prefix = prefix[endIdx+2:]
+				pointer = SymbolicDBPointer(dbSymbol = dbSymbol)
+
+		if pointer is None:
 			# There is no DB number.
 			pointer = Pointer(0)
 
+		prefix = prefix.upper()
 		try:
 			if prefix == "P":
 				ptr = cls.__parsePtrOffset(tokens[1]) |\
@@ -1005,6 +1016,17 @@ class AwlDataType(OptionalImmutable):
 				pointer.setDWord(ptr)
 				nrTokens = 2
 			else:
+				if isinstance(pointer, DBPointer) and\
+				   prefix and not prefix[0].isdecimal():
+					# This is a named DB variable pointer.
+					# (awlsim extension).
+					if not isinstance(pointer, SymbolicDBPointer):
+						pointer = SymbolicDBPointer(pointer.toPointerValue(),
+									    pointer.dbNr)
+					tokens = [ prefix ] + tokens[1:]
+					tokens, nrTokens = AwlDataIdentChain.expandTokens(tokens)
+					pointer.identChain = AwlDataIdentChain.parseTokens(tokens)
+					return pointer, nrTokens
 				# Area-internal pointer
 				ptr = cls.__parsePtrOffset(prefix)
 				pointer.setDWord(ptr)
@@ -1389,6 +1411,11 @@ class Pointer(GenericDWord): #+cdef
 	def __init__(self, ptrValue = 0):
 		GenericDWord.__init__(self, ptrValue)
 
+	# Get the pointer (32 bit).
+	def toPointer(self): #@nocy
+#@cy	cpdef toPointer(self):
+		return Pointer(self.toPointerValue())
+
 	# Get the 32 bit pointer value.
 	toPointerValue = GenericDWord.get #@nocy
 #@cy	cpdef uint32_t toPointerValue(self):
@@ -1423,6 +1450,11 @@ class Pointer(GenericDWord): #+cdef
 	@property
 	def area(self):
 		return (self.toPointerValue() >> 24) & 0xFF
+
+	# Set the area code, as byte.
+	@area.setter
+	def area(self, newArea):
+		self.set((self.get() & 0x00FFFFFF) | (newArea << 24))
 
 	# Get the byte offset, as word.
 	@property
@@ -1515,6 +1547,52 @@ class DBPointer(Pointer): #+cdef
 			return Pointer.toPointerString(self)
 		return "P#%s%d.%d" % (prefix, self.byteOffset, self.bitOffset)
 
+class SymbolicDBPointer(DBPointer): #+cdef
+	"""Symbolic DB-Pointer value.
+	This is a non-standard awlsim extension.
+	Example:
+		P#DB100.ARRAYVAR[1].ELEMENT
+	Example with symbolic DB:
+		P#"MyData".ARRAYVAR[1].ELEMENT
+	"""
+
+	__slots__ = (
+		"identChain",
+		"dbSymbol",
+	)
+#@cy	cdef public object identChain
+#@cy	cdef public object dbSymbol
+
+	# Width, in bits.
+	width = -1	# Unknown width
+
+	def __init__(self, ptrValue = 0, dbNr = 0,
+		     identChain = None, dbSymbol = None):
+		DBPointer.__init__(self, ptrValue, dbNr)
+		self.identChain = identChain
+		self.dbSymbol = dbSymbol
+
+	# Get a P#... string for this pointer.
+	def toPointerString(self):
+		if self.dbSymbol or self.dbNr:
+			if self.dbSymbol:
+				prefix = '"%s".' % self.dbSymbol
+			else:
+				prefix = "DB%d." % self.dbNr
+			if self.identChain:
+				return "P#%s%s" % (prefix,
+					self.identChain.getString())
+			else:
+				if self.area == self.AREA_DB:
+					prefix += "DBX "
+				else:
+					prefix += "(%02X) " % self.area
+				return "P#%s%d.%d" % (prefix,
+					self.byteOffset, self.bitOffset)
+		else:
+			assert(not self.identChain)
+			return Pointer.toPointerString(self)
+
 class ANYPointer(DBPointer): #+cdef
 	"""ANY-Pointer value.
 	The basic data type (DBPointer) holds the pointer value,
@@ -1559,10 +1637,60 @@ class ANYPointer(DBPointer): #+cdef
 	# Width, in bits.
 	width = 80
 
+	# Make an ANYPointer instance based on the data area width (in bits).
+	# Automatically selects an appropriate data type and count.
+	@classmethod
+	def makeByTypeWidth(cls, bitWidth, ptrValue = 0, dbNr = 0):
+		if bitWidth % 32 == 0:
+			dataType = AwlDataType.makeByName("DWORD")
+			count = bitWidth // 32
+		elif bitWidth % 16 == 0:
+			dataType = AwlDataType.makeByName("WORD")
+			count = bitWidth // 16
+		elif bitWidth % 8 == 0:
+			dataType = AwlDataType.makeByName("BYTE")
+			count = bitWidth // 8
+		else:
+			dataType = AwlDataType.makeByName("BOOL")
+			count = bitWidth
+		return cls(ptrValue = ptrValue,
+			   dbNr = dbNr,
+			   dataType = dataType,
+			   count = count)
+
+	# Create an ANY pointer to a typed data field.
+	# Select the right ANY data type automatically.
+	@classmethod
+	def makeByAutoType(cls, dataType, ptrValue = 0, dbNr = 0):
+		if dataType.type == AwlDataType.TYPE_ARRAY and\
+		   cls.dataTypeIsSupported(dataType.arrayElementType):
+			return cls(ptrValue = ptrValue,
+				   dbNr = dbNr,
+				   dataType = dataType.arrayElementType,
+				   count = dataType.arrayGetNrElements())
+		elif cls.dataTypeIsSupported(dataType):
+			return cls(ptrValue = ptrValue,
+				   dbNr = dbNr,
+				   dataType = dataType,
+				   count = 1)
+		else:
+			return cls.makeByTypeWidth(bitWidth = dataType.width,
+						   ptrValue = ptrValue,
+						   dbNr = dbNr)
+
+	# Check whether ANY supports the data type.
+	@classmethod
+	def dataTypeIsSupported(cls, dataType):
+		return dataType and\
+		       dataType.type in cls.__typeId2typeCode
+
 	def __init__(self, ptrValue = 0, dbNr = 0, dataType = None, count = 1):
 		DBPointer.__init__(self, ptrValue, dbNr)
 		if not dataType:
 			dataType = AwlDataType.makeByName("NIL")
+		if not self.dataTypeIsSupported(dataType):
+			raise AwlSimError("Data type '%s' is not allowed "
+				"in ANY pointers." % str(dataType))
 		self.dataType = dataType
 		self.count = count
 

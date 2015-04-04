@@ -211,6 +211,28 @@ class AwlDataIdentChain(object):
 			identChain.idents.append(AwlDataIdent(tokens[0], indices))
 		return identChain
 
+	# Expand an identifier token list.
+	# Returns a tuple (tokenList, countOfConsumedTokens).
+	@classmethod
+	def expandTokens(cls, tokens):
+		# Find the end of this identifier.
+		# Identifiers are delimited by ',' or '('
+		inBrackets, endIdx = False, 0
+		while endIdx < len(tokens) and\
+		      ((tokens[endIdx] != ',' and tokens[endIdx] != '(') or\
+		       inBrackets):
+			if tokens[endIdx] == '[':
+				inBrackets = True
+			elif tokens[endIdx] == ']':
+				inBrackets = False
+			endIdx += 1
+
+		# Split all ops by '.'
+		tokens = listExpand(tokens[:endIdx],
+			lambda e: strPartitionFull(e, '.', keepEmpty=False))
+
+		return tokens, endIdx
+
 	def __init__(self, idents=None):
 		"""idents -> A list of AwlDataIdent instances."""
 

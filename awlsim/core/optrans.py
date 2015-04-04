@@ -394,21 +394,7 @@ class AwlOpTranslator(object):
 				opDesc.operator.value.bitOffset)
 
 	def __transVarIdents(self, tokens):
-		# Find the end of this operator.
-		# Operators are delimited by ',' or '('
-		inBrackets, endIdx = False, 0
-		while endIdx < len(tokens) and\
-		      ((tokens[endIdx] != ',' and tokens[endIdx] != '(') or\
-		       inBrackets):
-			if tokens[endIdx] == '[':
-				inBrackets = True
-			elif tokens[endIdx] == ']':
-				inBrackets = False
-			endIdx += 1
-
-		# Split all ops by '.'
-		tokens = listExpand(tokens[:endIdx],
-			lambda e: strPartitionFull(e, '.', keepEmpty=False))
+		tokens, count = AwlDataIdentChain.expandTokens(tokens)
 
 		# Parse DBx.VARIABLE or "DBname".VARIABLE adressing
 		offset = None
@@ -433,7 +419,8 @@ class AwlOpTranslator(object):
 			tokens[0] = tokens[0][1:] # Strip the '#' from the first token
 			offset = AwlOffset(None, None)
 			offset.identChain = AwlDataIdentChain.parseTokens(tokens)
-		count = endIdx if offset else 0
+		if not offset:
+			count = 0
 		return offset, count
 
 	def __doTrans(self, rawInsn, rawOps):

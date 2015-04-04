@@ -8,6 +8,10 @@ BEGIN
 		FCANY4		:= P#DB50.DBX 10.0 DWORD 8,
 		FCANY5		:= DB50.DBD 10,
 		FCANY6		:= P#DBX 20.2 WORD 7,
+		FCANY7		:= DB100.DBVAR2[2].V2,
+		FCANY8		:= P#DB100.DBVAR2[2].V2, // awlsim extension
+		FCANY9		:= P#DB100.DBVAR3, // awlsim extension
+		FCANY10		:= P#DB100.DBVAR4, // awlsim extension
 	)
 	CALL		FB 1, DB 1 (
 		FBANY1		:= P#M 10.0 BYTE 7,
@@ -16,11 +20,31 @@ BEGIN
 		FBANY4		:= P#DB50.DBX 10.0 DWORD 8,
 		FBANY5		:= DB50.DBD 10,
 		FBANY6		:= P#DBX 20.2 WORD 7,
+		FBANY7		:= DB100.DBVAR2[2].V2,
+		FBANY8		:= P#DB100.DBVAR2[2].V2, // awlsim extension
+		FBANY9		:= P#DB100.DBVAR3, // awlsim extension
+		FBANY10		:= P#DB100.DBVAR4, // awlsim extension
 	)
 
 
 	CALL SFC 46 // STOP CPU
 END_ORGANIZATION_BLOCK
+
+
+DATA_BLOCK DB 100
+	STRUCT
+		DBVAR1		: INT;
+		DBVAR2		: ARRAY[1 .. 6] of STRUCT
+			V1	: INT;
+			V2	: INT;
+		END_STRUCT;
+		DBVAR3		: ARRAY[1 .. 4] of STRUCT
+			A1	: INT;
+		END_STRUCT
+		DBVAR4		: ARRAY[1 .. 8] of BYTE;
+	END_STRUCT;
+BEGIN
+END_DATA_BLOCK
 
 
 FUNCTION FC 1 : VOID
@@ -31,6 +55,10 @@ FUNCTION FC 1 : VOID
 		FCANY4		: ANY;
 		FCANY5		: ANY;
 		FCANY6		: ANY;
+		FCANY7		: ANY;
+		FCANY8		: ANY;
+		FCANY9		: ANY;
+		FCANY10		: ANY;
 	END_VAR
 BEGIN
 	L		P##FCANY1
@@ -122,6 +150,66 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0	// DB
 	L		D [AR1, P#6.0]
 	__ASSERT==	__ACCU 1,	P#DBX 20.2
+
+	L		P##FCANY7
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#05	// INT
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 8.0
+
+	L		P##FCANY8
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#05	// INT
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 8.0
+
+	L		P##FCANY9
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#06	// DWORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	2	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 26.0
+
+	L		P##FCANY10
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#87000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#02	// BYTE
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	8	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 34.0
 END_FUNCTION
 
 
@@ -133,6 +221,10 @@ FUNCTION_BLOCK FB 1
 		FBANY4		: ANY;
 		FBANY5		: ANY;
 		FBANY6		: ANY;
+		FBANY7		: ANY;
+		FBANY8		: ANY;
+		FBANY9		: ANY;
+		FBANY10		: ANY;
 	END_VAR
 BEGIN
 	L		P##FBANY1
@@ -224,6 +316,66 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0	// DB
 	L		D [AR1, P#6.0]
 	__ASSERT==	__ACCU 1,	P#DBX 20.2
+
+	L		P##FBANY7
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#05	// INT
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 8.0
+
+	L		P##FBANY8
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#05	// INT
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	1	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 8.0
+
+	L		P##FBANY9
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#06	// DWORD
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	2	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 26.0
+
+	L		P##FBANY10
+	LAR1
+	UD		DW#16#FF000000
+	__ASSERT==	__ACCU 1,	DW#16#85000000
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	B#16#10	// S7
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	B#16#02	// BYTE
+	L		W [AR1, P#2.0]
+	__ASSERT==	__ACCU 1,	8	// count
+	L		W [AR1, P#4.0]
+	__ASSERT==	__ACCU 1,	100	// DB
+	L		D [AR1, P#6.0]
+	__ASSERT==	__ACCU 1,	P#DBX 34.0
 END_FUNCTION_BLOCK
 
 

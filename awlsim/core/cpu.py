@@ -187,39 +187,76 @@ class S7CPU(object): #+cdef
 			yield block
 
 	def __allCallInsns(self, block):
+		resolver = AwlSymResolver(self)
+
 		for insn in block.insns:
 			if insn.insnType != AwlInsn.TYPE_CALL:
 				continue
 
-			# Get the code and DB blocks
+			# Get the DB block, if any.
+			if len(insn.ops) == 1:
+				dataBlock = None
+			elif len(insn.ops) == 2:
+				dataBlockOp = insn.ops[1]
+				if dataBlockOp.type == AwlOperator.SYMBOLIC:
+					blockIndex, symbol = resolver.resolveBlockName(
+							{AwlDataType.TYPE_FB_X,
+							 AwlDataType.TYPE_SFB_X},
+							dataBlockOp.value.identChain.getString())
+					dataBlockOp = symbol.operator.dup()
+				dataBlockIndex = dataBlockOp.value.byteOffset
+				try:
+					if dataBlockOp.type == AwlOperator.BLKREF_DB:
+						dataBlock = self.dbs[dataBlockIndex]
+					else:
+						raise AwlSimError("Data block operand "
+							"in CALL is not a DB.",
+							insn=insn)
+				except KeyError as e:
+					raise AwlSimError("Data block '%s' referenced "
+						"in CALL does not exist." %\
+						str(dataBlockOp),
+						insn=insn)
+
+			# Get the code block, if any.
+			codeBlockOp = insn.ops[0]
+			if codeBlockOp.type == AwlOperator.SYMBOLIC:
+				blockIndex, symbol = resolver.resolveBlockName(
+						{AwlDataType.TYPE_FC_X,
+						 AwlDataType.TYPE_FB_X,
+						 AwlDataType.TYPE_SFC_X,
+						 AwlDataType.TYPE_SFB_X},
+						codeBlockOp.value.identChain.getString())
+				codeBlockOp = symbol.operator.dup()
+			elif codeBlockOp.type == AwlOperator.NAMED_LOCAL:
+				codeBlockOp = resolver.resolveNamedLocal(block, insn, codeBlockOp)
+
+			if codeBlockOp.type in {AwlOperator.MULTI_FB,
+						AwlOperator.MULTI_SFB}:
+				codeBlockIndex = codeBlockOp.value.fbNumber
+			else:
+				codeBlockIndex = codeBlockOp.value.byteOffset
 			try:
-				if len(insn.ops) == 1:
-					dataBlock = None
-				elif len(insn.ops) == 2:
-					dataBlockOp = insn.ops[1]
-					if dataBlockOp.type != AwlOperator.BLKREF_DB:
-						raise ValueError
-					dataBlock = self.dbs[dataBlockOp.value.byteOffset]
-				else:
-					assert(0)
-				codeBlockOp = insn.ops[0]
 				if codeBlockOp.type == AwlOperator.BLKREF_FC:
-					codeBlock = self.fcs[codeBlockOp.value.byteOffset]
-				elif codeBlockOp.type == AwlOperator.BLKREF_FB:
-					codeBlock = self.fbs[codeBlockOp.value.byteOffset]
+					codeBlock = self.fcs[codeBlockIndex]
+				elif codeBlockOp.type in {AwlOperator.BLKREF_FB,
+							  AwlOperator.MULTI_FB}:
+					codeBlock = self.fbs[codeBlockIndex]
 				elif codeBlockOp.type == AwlOperator.BLKREF_SFC:
-					codeBlock = self.sfcs[codeBlockOp.value.byteOffset]
-				elif codeBlockOp.type == AwlOperator.BLKREF_SFB:
-					codeBlock = self.sfbs[codeBlockOp.value.byteOffset]
-				elif codeBlockOp.type == AwlOperator.MULTI_FB:
-					codeBlock = self.fbs[codeBlockOp.value.fbNumber]
-				elif codeBlockOp.type == AwlOperator.MULTI_SFB:
-					codeBlock = self.sfbs[codeBlockOp.value.fbNumber]
+					codeBlock = self.sfcs[codeBlockIndex]
+				elif codeBlockOp.type in {AwlOperator.BLKREF_SFB,
+							  AwlOperator.MULTI_SFB}:
+					codeBlock = self.sfbs[codeBlockIndex]
 				else:
-					raise ValueError
-			except (KeyError, ValueError) as e:
-				# This error is handled later in call-insn sanity checks
-				continue
+					raise AwlSimError("Code block operand "
+						"in CALL is not a valid code block "
+						"(FB, FC, SFB or SFC).",
+						insn=insn)
+			except KeyError as e:
+				raise AwlSimError("Code block '%s' referenced in "
+					"CALL does not exist." %\
+					str(codeBlockOp),
+					insn=insn)
 
 			yield insn, codeBlock, dataBlock
 
@@ -242,8 +279,6 @@ class S7CPU(object): #+cdef
 		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
 			try:
 				for param in insn.params:
-					# Add interface references to the parameter assignment.
-					param.interface = calledCodeBlock.interface
 					# Final translation of parameter assignment operand.
 					translator.translateParamAssignOper(param)
 			except AwlSimError as e:
@@ -258,10 +293,23 @@ class S7CPU(object): #+cdef
 		for block in self.__allUserCodeBlocks():
 			self.__finalizeCodeBlock(block)
 
+	# Assign call parameter interface reference.
+	def __assignParamInterface(self, block):
+		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
+			try:
+				for param in insn.params:
+					# Add interface references to the parameter assignment.
+					param.interface = calledCodeBlock.interface
+			except AwlSimError as e:
+				e.setInsn(insn)
+				raise e
+
 	# Resolve all symbols (global and local) on all blocks, as far as possible.
 	def __resolveSymbols(self):
 		resolver = AwlSymResolver(self)
 		for block in self.__allCodeBlocks():
+			# Add interface references to the parameter assignment.
+			self.__assignParamInterface(block)
 			# Check type compatibility between formal and
 			# actual parameter of calls.
 			self.__checkCallParamTypeCompat(block)
@@ -290,7 +338,7 @@ class S7CPU(object): #+cdef
 
 		# Translate UDTs
 		for udtNumber, rawUDT in parseTree.udts.items():
-			udtNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_UDT_X,),
+			udtNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_UDT_X},
 								   udtNumber)
 			if udtNumber in self.udts:
 				raise AwlSimError("Multiple definitions of "\
@@ -304,7 +352,7 @@ class S7CPU(object): #+cdef
 
 		# Translate OBs
 		for obNumber, rawOB in parseTree.obs.items():
-			obNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_OB_X,),
+			obNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_OB_X},
 								  obNumber)
 			if obNumber in self.obs and\
 			   self.obs[obNumber].insns:
@@ -322,7 +370,7 @@ class S7CPU(object): #+cdef
 
 		# Translate FBs
 		for fbNumber, rawFB in parseTree.fbs.items():
-			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,),
+			fbNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_FB_X},
 								  fbNumber)
 			if fbNumber in self.fbs:
 				extra = ""
@@ -339,7 +387,7 @@ class S7CPU(object): #+cdef
 
 		# Translate FCs
 		for fcNumber, rawFC in parseTree.fcs.items():
-			fcNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FC_X,),
+			fcNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_FC_X},
 								  fcNumber)
 			if fcNumber in self.fcs:
 				extra = ""
@@ -376,9 +424,9 @@ class S7CPU(object): #+cdef
 
 		# Translate DBs
 		for dbNumber, rawDB in parseTree.dbs.items():
-			dbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_DB_X,
+			dbNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_DB_X,
 								   AwlDataType.TYPE_FB_X,
-								   AwlDataType.TYPE_SFB_X),
+								   AwlDataType.TYPE_SFB_X},
 								  dbNumber)
 			if dbNumber in self.dbs:
 				raise AwlSimError("Multiple definitions of "\

@@ -66,3 +66,23 @@ Awlsim extensions
   characters. Only actual-parameters with exactly the specified max-size as
   specified in the FC interface are allowed in the CALL assignment.
   (One exception being STRING immediates. See above.)
+
+- Awlsim supports pointer immediates to named DB variables.
+  Whether a 32 bit pointer (area spanning), a 48 bit DB pointer or a 80 bit
+  ANY pointer is generated, depends on the context.
+  For example:
+
+    // Load a pointer to VARIABLE with DBX area code into accu 1.
+    // Note that the DB number information is lost (32 bit pointer).
+    L  P#DB1.VARIABLE
+
+    // Pass pointer immediates as actual values in calls.
+    // Values are passed as DB pointer or ANY pointer, according to the
+    // parameter type.
+    CALL  FC 1 (
+        POINTER_VAR := P#DB1.VARIABLE,
+        ANY_VAR     := P#DB1.VARIABLE,
+    )
+
+  However, for the pointer parameter passing in CALL you could just write it
+  in an S7 compatible way without the P# prefix.

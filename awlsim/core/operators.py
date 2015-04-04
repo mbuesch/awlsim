@@ -183,6 +183,10 @@ class AwlOperator(DynAttrs):
 		# Set to true for accesses > 32 bit or
 		# arrays/structs or array/struct elements.
 		"compound"		: False,
+
+		# The access data type (AwlDataType), if known.
+		# Only set for resolved symbolic accesses.
+		"dataType"		: None,
 	}
 
 	def __init__(self, type, width, value, insn=None):
@@ -350,26 +354,17 @@ class AwlOperator(DynAttrs):
 	# Make an ANY-pointer to this memory area.
 	# Returns an ANYPointer().
 	def makeANYPointer(self, areaShifted=None):
-		if self.width % 32 == 0:
-			dataType = AwlDataType.makeByName("DWORD")
-			count = self.width // 32
-		elif self.width % 16 == 0:
-			dataType = AwlDataType.makeByName("WORD")
-			count = self.width // 16
-		elif self.width % 8 == 0:
-			dataType = AwlDataType.makeByName("BYTE")
-			count = self.width // 8
-		else:
-			dataType = AwlDataType.makeByName("BOOL")
-			count = self.width
 		ptrValue = self.makePointerValue()
 		if areaShifted:
 			ptrValue &= ~Pointer.AREA_MASK_S
 			ptrValue |= areaShifted
-		return ANYPointer(ptrValue = ptrValue,
-				  dbNr = self.value.dbNumber,
-				  dataType = dataType,
-				  count = count)
+		if ANYPointer.dataTypeIsSupported(self.dataType):
+			return ANYPointer.makeByAutoType(dataType = self.dataType,
+							 ptrValue = ptrValue,
+							 dbNr = self.value.dbNumber)
+		return ANYPointer.makeByTypeWidth(bitWidth = self.width,
+						  ptrValue = ptrValue,
+						  dbNr = self.value.dbNumber)
 
 	def __repr__(self):
 		if self.type == self.IMM:
@@ -563,6 +558,9 @@ class AwlIndirectOp(AwlOperator):
 	# Map for converting operator type to area code
 	optype2area = pivotDict(area2optype_fetch)
 	optype2area[AwlOperator.MEM_PA] = AREA_P
+	optype2area[AwlOperator.MULTI_FB] = AREA_DI
+	optype2area[AwlOperator.MULTI_SFB] = AREA_DI
+	optype2area[AwlOperator.NAMED_DBVAR] = AREA_DB
 	optype2area[AwlOperator.UNSPEC] = AREA_NONE
 
 	def __init__(self, area, width, addressRegister, offsetOper, insn=None):
