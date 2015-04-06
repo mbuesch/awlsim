@@ -358,9 +358,18 @@ while [ $# -ge 1 ]; do
 	shift
 done
 
+do_renice()
+{
+	renice "$1" "$$"
+}
+
 if [ -n "$opt_renice" ]; then
-	renice "$opt_renice" "$$" || die "Failed to renice"
+	do_renice "$opt_renice" || die "Failed to renice"
+else
+	# Try to renice. Ignore failure.
+	do_renice 10
 fi
+
 global_retval=0
 do_tests "$@"
 
