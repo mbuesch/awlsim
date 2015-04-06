@@ -89,8 +89,7 @@ class GenericActionWidget(QWidget):
 			desc.append("  " + fname)
 			for field in fields:
 				field.fieldType = ftype
-				desc.append("    %s : %s;" % (field.name,
-							      str(field.dataType)))
+				desc.append("    %s" % field.varDeclString())
 		return "\n".join(desc)
 
 	def defaultPaste(self):
@@ -105,18 +104,18 @@ class SysActionWidget(GenericActionWidget):
 
 		self.desc = QLabel(self)
 		self.desc.setFont(getDefaultFixedFont())
-		self.layout().addWidget(self.desc, 0, 0)
+		self.layout().addWidget(self.desc, 0, 0, 1, 2)
 
 		self.layout().setRowStretch(1, 1)
 
 		label = QLabel("Paste at cursor position:", self)
-		self.layout().addWidget(label, 2, 0)
+		self.layout().addWidget(label, 2, 0, 1, 2)
 
 		self.pasteCallSymButton = QPushButton(self)
 		self.layout().addWidget(self.pasteCallSymButton, 3, 0)
 
 		self.pasteCallButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallButton, 4, 0)
+		self.layout().addWidget(self.pasteCallButton, 3, 1)
 
 		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
 		self.pasteCallButton.released.connect(self.__pasteCall)
@@ -163,24 +162,24 @@ class LibActionWidget(GenericActionWidget):
 
 		self.desc = QLabel(self)
 		self.desc.setFont(getDefaultFixedFont())
-		self.layout().addWidget(self.desc, 0, 0)
+		self.layout().addWidget(self.desc, 0, 0, 1, 2)
 
 		self.layout().setRowStretch(1, 1)
 
 		label = QLabel("Paste at cursor position:", self)
-		self.layout().addWidget(label, 2, 0)
+		self.layout().addWidget(label, 2, 0, 1, 2)
 
 		self.pasteCallSymButton = QPushButton(self)
 		self.layout().addWidget(self.pasteCallSymButton, 3, 0)
 
 		self.pasteCallButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCallButton, 4, 0)
+		self.layout().addWidget(self.pasteCallButton, 3, 1)
 
 		self.pasteCodeSymButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCodeSymButton, 5, 0)
+		self.layout().addWidget(self.pasteCodeSymButton, 4, 0)
 
 		self.pasteCodeButton = QPushButton(self)
-		self.layout().addWidget(self.pasteCodeButton, 6, 0)
+		self.layout().addWidget(self.pasteCodeButton, 4, 1)
 
 		self.pasteCallSymButton.released.connect(self.__pasteCallSym)
 		self.pasteCallButton.released.connect(self.__pasteCall)
@@ -324,9 +323,9 @@ class LibraryDialog(QDialog):
 
 		self.libList.setCurrentRow(0)
 
-		self.libList.setMinimumWidth(200)
-		self.libElemList.setMinimumWidth(380)
-		self.iconLabel.setMinimumWidth(220)
+		self.libList.setMinimumWidth(190)
+		self.libElemList.setMinimumWidth(350)
+		self.iconLabel.setMinimumWidth(400)
 		self.sysAction.setMinimumWidth(self.iconLabel.minimumWidth())
 		self.libAction.setMinimumWidth(self.iconLabel.minimumWidth())
 		self.resize(self.size().width(), 360)
