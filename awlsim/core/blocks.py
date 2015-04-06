@@ -58,6 +58,10 @@ class BlockInterfaceField(object):
 		self.fieldIndex = None			# set later
 
 	def varDeclString(self):
+		return "%s : %s;" %\
+			(self.name, str(self.dataType))
+
+	def __repr__(self):
 		ftype = {
 			self.FTYPE_UNKNOWN	: "UNKNOWN",
 			self.FTYPE_IN		: "IN",
@@ -66,10 +70,6 @@ class BlockInterfaceField(object):
 			self.FTYPE_STAT		: "STAT",
 			self.FTYPE_TEMP		: "TEMP",
 		}[self.fieldType]
-		return "%s : %s;" %\
-			(self.name, str(self.dataType))
-
-	def __repr__(self):
 		return "(%s)  %s" %\
 			(ftype, BlockInterfaceField.varDeclString(self))
 
