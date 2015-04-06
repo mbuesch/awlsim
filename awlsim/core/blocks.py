@@ -30,6 +30,8 @@ from awlsim.core.util import *
 
 
 class BlockInterfaceField(object):
+	"""Block interface field descriptor."""
+
 	EnumGen.start = -1
 	FTYPE_UNKNOWN	= EnumGen.item
 	FTYPE_IN	= EnumGen.item
@@ -55,7 +57,7 @@ class BlockInterfaceField(object):
 		self.fieldType = self.FTYPE_UNKNOWN	# set later
 		self.fieldIndex = None			# set later
 
-	def __repr__(self):
+	def varDeclString(self):
 		ftype = {
 			self.FTYPE_UNKNOWN	: "UNKNOWN",
 			self.FTYPE_IN		: "IN",
@@ -64,8 +66,31 @@ class BlockInterfaceField(object):
 			self.FTYPE_STAT		: "STAT",
 			self.FTYPE_TEMP		: "TEMP",
 		}[self.fieldType]
-		return "(%s)  %s : %s" %\
-			(ftype, self.name, str(self.dataType))
+		return "%s : %s;" %\
+			(self.name, str(self.dataType))
+
+	def __repr__(self):
+		return "(%s)  %s" %\
+			(ftype, BlockInterfaceField.varDeclString(self))
+
+class VerboseBlockIntfField(BlockInterfaceField):
+	"""Block interface field descriptor,
+	with verbose description string."""
+
+	__slots__ = (
+		"desc",
+	)
+
+	def __init__(self, name, dataType, desc=""):
+		BlockInterfaceField.__init__(self, name, dataType)
+		self.desc = desc
+
+	def varDeclString(self):
+		ret = [ BlockInterfaceField.varDeclString(self), ]
+		if self.desc:
+			ret.append(" // ")
+			ret.append(self.desc)
+		return "".join(ret)
 
 class BlockInterface(object):
 	"""Code block interface (IN/OUT/IN_OUT/STAT/TEMP parameters) base class."""
