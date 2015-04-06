@@ -1,0 +1,839 @@
+FUNCTION FC 1 : VOID
+BEGIN
+	// Check negative #L.
+	CALL	"_STR_PRESET" (
+		STARTVAL := 0,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 1,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= -1,
+		P	:= 1,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	0
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	0	// act-len
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check negative #P.
+	CALL	"_STR_PRESET" (
+		STARTVAL := 2,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 3,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 1,
+		P	:= -1,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	0
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	0	// act-len
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check zero #L.
+	// (This copies the whole string)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 0,
+		P	:= 1,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 10,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check zero #P.
+	// (This copies the whole string)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 1,
+		P	:= 0,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 10,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check #P bigger than act-len of #IN.
+	// (This copies the whole string)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 1,
+		P	:= 11,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 10,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Delete characters from the start of #IN.
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 5,
+		P	:= 1,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	5	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 47,
+		OFFSET	 := 0,
+		COUNT	 := 5,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 147,
+		OFFSET	 := 5,
+		COUNT	 := 5,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Delete characters in the middle of #IN.
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 5,
+		P	:= 3,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	5	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 2,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 49,
+		OFFSET	 := 2,
+		COUNT	 := 3,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 147,
+		OFFSET	 := 5,
+		COUNT	 := 5,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check #L bigger than actual length of #IN.
+	// (This deletes up to the end of the string)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 11,
+		P	:= 1,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	0	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 142,
+		OFFSET	 := 0,
+		COUNT	 := 10,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check a too big act-len #IN (bigger than #RET_VAL max-len).
+	// Delete at start of string.
+	// (Output get truncated to #RET_VAL max-len)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 254,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR2,
+		L	:= 3,
+		P	:= 1,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 45,
+		OFFSET	 := 0,
+		COUNT	 := 10,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check a too big act-len #IN (bigger than #RET_VAL max-len).
+	// Delete in center of string.
+	// (Output get truncated to #RET_VAL max-len)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 254,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR2,
+		L	:= 3,
+		P	:= 3,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 2,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 47,
+		OFFSET	 := 2,
+		COUNT	 := 8,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check a too big act-len #IN (bigger than #RET_VAL max-len).
+	// Delete up to the end of the copy range.
+	// (Output get truncated to #RET_VAL max-len)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 254,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR2,
+		L	:= 3,
+		P	:= 8,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 7,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 52,
+		OFFSET	 := 7,
+		COUNT	 := 3,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check a too big act-len #IN (bigger than #RET_VAL max-len).
+	// With bigger del range (beyond #RET_VAL size).
+	// (Output get truncated to #RET_VAL max-len)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 254,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR2,
+		L	:= 6,
+		P	:= 8,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 7,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 55,
+		OFFSET	 := 7,
+		COUNT	 := 3,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check a too big act-len #IN (bigger than #RET_VAL max-len).
+	// L/P=0 -> copy full string.
+	// (Output get truncated to #RET_VAL max-len)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 11,
+		STR	 := DB1.STR4,
+	)
+	CALL	"_STR_PRESET" (
+		STARTVAL := 142,
+		COUNT	 := 10,
+		STR	 := DB1.STR1,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR4,
+		L	:= 0,
+		P	:= 0,
+		RET_VAL	:= DB1.STR1,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR1
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	10	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR1,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 10,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check: #IN and #RET_VAL are the same string.
+	CALL	"_STR_PRESET" (
+		STARTVAL := 42,
+		COUNT	 := 10,
+		STR	 := DB1.STR0,
+	)
+	CALL	"DELETE" (
+		IN	:= DB1.STR0,
+		L	:= 5,
+		P	:= 3,
+		RET_VAL	:= DB1.STR0,
+	)
+	__ASSERT==	__STW BIE,	1
+	LAR1		P#DB1.STR0
+	AUF		DB 1
+	L		B [AR1, P#0.0]
+	__ASSERT==	__ACCU 1,	10	// max-len
+	L		B [AR1, P#1.0]
+	__ASSERT==	__ACCU 1,	5	// act-len
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR0,
+		STARTVAL := 42,
+		OFFSET	 := 0,
+		COUNT	 := 2,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR0,
+		STARTVAL := 49,
+		OFFSET	 := 2,
+		COUNT	 := 3,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR0,
+		STARTVAL := 47,
+		OFFSET	 := 5,
+		COUNT	 := 5,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+END_FUNCTION
+
+
+FUNCTION "_STR_PRESET" : VOID
+VAR_INPUT
+	STARTVAL	: INT;		// The start character value (0-255)
+	COUNT		: INT;		// The number of characters to write
+END_VAR
+VAR_OUTPUT
+	STR		: STRING;	// The string to write to
+END_VAR
+VAR_TEMP
+	DBNR		: INT;
+	I		: INT;
+	VAL		: CHAR;
+END_VAR
+BEGIN
+	L		P##STR
+	LAR1
+	L		W [AR1, P#0.0]
+	T		#DBNR
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]
+	LAR1
+
+	L		#COUNT
+	T		B [AR1, P#1.0]	// Write #STR act-len
+	+AR1		P#2.0		// Skip max-len/act-len bytes
+
+	L		#STARTVAL
+	T		#VAL		// Init the sequence number
+
+	// Generate the sequence and put it into #STR
+	L		0
+	T		#I
+LOP:	L		#I
+	L		#COUNT
+	>=I
+	SPB		END
+	L		#VAL
+	T		B [AR1, P#0.0]
+	+		1
+	T		#VAL
+	+AR1		P#1.0
+	L		#I
+	+		1
+	T		#I
+	SPA		LOP
+END:	NOP		0
+END_FUNCTION
+
+
+FUNCTION "_STR_CHECK" : BOOL
+VAR_INPUT
+	STR		: STRING;	// The string to check
+	STARTVAL	: INT;		// The start character value (0-255)
+	OFFSET		: INT;		// The character offset
+	COUNT		: INT;		// The number of characters to check.
+END_VAR
+VAR_TEMP
+	DBNR		: INT;
+	I		: INT;
+	VAL		: CHAR;
+END_VAR
+BEGIN
+	L		P##STR
+	LAR1
+	L		W [AR1, P#0.0]
+	T		#DBNR
+	AUF		DB [#DBNR]
+	L		D [AR1, P#2.0]
+	LAR1
+
+	+AR1		P#2.0		// Skip max-len/act-len bytes
+	L		#OFFSET		// Skip offset
+	SLD		3
+	+AR1
+
+	L		#STARTVAL
+	T		#VAL		// Init the sequence number
+
+	// Generate the sequence and check it against #STR
+	L		0
+	T		#I
+LOP:	L		#I
+	L		#COUNT
+	>=I
+	SPB		END
+	L		B [AR1, P#0.0]
+	L		#VAL
+	<>I
+	SPB		ERR
+	+		1
+	T		#VAL
+	+AR1		P#1.0
+	L		#I
+	+		1
+	T		#I
+	SPA		LOP
+
+	// Everything is OK
+END:	SET
+	=		#RET_VAL
+	BEA
+
+	// Sequence mismatch
+ERR:	CLR
+	=		#RET_VAL
+END_FUNCTION
+
+
+FUNCTION "_CHK_MAGIC" : BOOL
+BEGIN
+	U(
+	L		W#16#1111
+	L		DB1.MAGIC0
+	==I
+	)
+	U(
+	L		W#16#2222
+	L		DB1.MAGIC1
+	==I
+	)
+	U(
+	L		W#16#3333
+	L		DB1.MAGIC2
+	==I
+	)
+	U(
+	L		W#16#4444
+	L		DB1.MAGIC3
+	==I
+	)
+	U(
+	L		W#16#5555
+	L		DB1.MAGIC4
+	==I
+	)
+	U(
+	L		W#16#6666
+	L		DB1.MAGIC5
+	==I
+	)
+	=		#RET_VAL
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Set DB magic values
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		0
+	L		W#16#1111
+	T		DB1.MAGIC0
+	L		W#16#2222
+	T		DB1.MAGIC1
+	L		W#16#3333
+	T		DB1.MAGIC2
+	L		W#16#4444
+	T		DB1.MAGIC3
+	L		W#16#5555
+	T		DB1.MAGIC4
+	L		W#16#6666
+	T		DB1.MAGIC5
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Check whether the helpers work correctly.
+	CALL	"_STR_PRESET" (
+		STARTVAL := 0,
+		COUNT	 := 250,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR2,
+		STARTVAL := 0,
+		OFFSET	 := 0,
+		COUNT	 := 254,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		0
+	CALL	"_STR_PRESET" (
+		STARTVAL := 1,
+		COUNT	 := 254,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR2,
+		STARTVAL := 0,
+		OFFSET	 := 0,
+		COUNT	 := 254,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		0
+	CALL	"_STR_PRESET" (
+		STARTVAL := 0,
+		COUNT	 := 254,
+		STR	 := DB1.STR2,
+	)
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR2,
+		STARTVAL := 0,
+		OFFSET	 := 0,
+		COUNT	 := 254,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_STR_CHECK" (
+		STR	 := DB1.STR2,
+		STARTVAL := 11,
+		OFFSET	 := 11,
+		COUNT	 := 243,
+		RET_VAL	 := M 0.0,
+	)
+	__ASSERT==	M 0.0,		1
+	CALL	"_CHK_MAGIC" (
+		RET_VAL	 := M 0.0
+	)
+	__ASSERT==	M 0.0,		1
+
+
+	// Run the actual tests
+	CALL	FC 1
+
+
+	CALL	SFC 46 // Stop CPU
+END_ORGANIZATION_BLOCK
+
+
+DATA_BLOCK DB 1
+STRUCT
+	MAGIC0	: WORD;
+	STR0	: STRING[10];
+	MAGIC1	: WORD;
+	STR1	: STRING[10];
+	MAGIC2	: WORD;
+	STR2	: STRING[254];
+	MAGIC3	: WORD;
+	STR3	: STRING[254];
+	MAGIC4	: WORD;
+	STR4	: STRING[11];
+	MAGIC5	: WORD;
+END_STRUCT;
+BEGIN
+END_DATA_BLOCK
