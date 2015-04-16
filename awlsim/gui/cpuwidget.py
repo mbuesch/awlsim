@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU widget
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -109,6 +109,137 @@ class CheckableToolButton(ToolButton):
 		self.setIcon(getIcon(self.__checkedIconName if checked else\
 				     self.__uncheckedIconName))
 
+class OnlineSelectAction(QAction):
+	def __init__(self, parent):
+		QAction.__init__(self, getIcon("network"), "", parent)
+
+		self.setCheckable(True)
+		self.__handleToggle(self.isChecked())
+
+		self.toggled.connect(self.__handleToggle)
+
+	def __handleToggle(self, checked):
+		if checked:
+			self.setText("Go offline")
+		else:
+			self.setText("Go online (Connect to a CPU)")
+
+class RunSelectAction(QAction):
+	def __init__(self, parent):
+		QAction.__init__(self, getIcon("run"), "", parent)
+
+		self.setCheckable(True)
+		self.__handleToggle(self.isChecked())
+
+		self.toggled.connect(self.__handleToggle)
+
+	def __handleToggle(self, checked):
+		if checked:
+			self.setText("Stop CPU (STOP mode)")
+			self.setIcon(getIcon("stop"))
+		else:
+			self.setText("Start CPU (RUN mode)")
+			self.setIcon(getIcon("run"))
+
+class DiagSelectAction(QAction):
+	def __init__(self, parent):
+		QAction.__init__(self, getIcon("glasses"), "", parent)
+
+		self.setCheckable(True)
+		self.__handleToggle(self.isChecked())
+
+		self.toggled.connect(self.__handleToggle)
+
+	def __handleToggle(self, checked):
+		if checked:
+			self.setText("Disable online diagnosis")
+		else:
+			self.setText("Enable online diagnosis")
+
+class CpuInspectToolBar(QToolBar):
+	def __init__(self, parent=None):
+		QToolBar.__init__(self, parent)
+
+		self.inputsAction = QAction(getIcon("inputs"),
+					    "Add inspection: Input memory (I / E)",
+					    self)
+		self.addAction(self.inputsAction)
+		self.outputsAction = QAction(getIcon("outputs"),
+					     "Add inspection: Output memory (Q / A)",
+					     self)
+		self.addAction(self.outputsAction)
+		self.flagsAction = QAction(getIcon("flags"),
+					   "Add inspection: Flag memory (M)",
+					   self)
+		self.addAction(self.flagsAction)
+		self.dbAction = QAction(getIcon("datablock"),
+					"Add inspection: Data block (DB)",
+					self)
+		self.addAction(self.dbAction)
+		self.timerAction = QAction(getIcon("timer"),
+					   "Add inspection: Timer (T)",
+					   self)
+		self.addAction(self.timerAction)
+		self.counterAction = QAction(getIcon("counter"),
+					     "Add inspection: Counter (C / Z)",
+					     self)
+		self.addAction(self.counterAction)
+		self.cpuAction = QAction(getIcon("cpu"),
+					 "Add inspection: CPU overview",
+					 self)
+		self.addAction(self.cpuAction)
+		self.lcdAction = QAction(getIcon("lcd"),
+					 "Add inspection: LCD",
+					 self)
+		self.addAction(self.lcdAction)
+
+	def connectToCpuWidget(self, cpuWidget):
+		self.inputsAction.triggered.connect(cpuWidget.newWin_E)
+		self.outputsAction.triggered.connect(cpuWidget.newWin_A)
+		self.flagsAction.triggered.connect(cpuWidget.newWin_M)
+		self.dbAction.triggered.connect(cpuWidget.newWin_DB)
+		self.timerAction.triggered.connect(cpuWidget.newWin_T)
+		self.counterAction.triggered.connect(cpuWidget.newWin_Z)
+		self.cpuAction.triggered.connect(cpuWidget.newWin_CPU)
+		self.lcdAction.triggered.connect(cpuWidget.newWin_LCD)
+
+class CpuControlToolBar(QToolBar):
+	def __init__(self, parent=None):
+		QToolBar.__init__(self, parent)
+
+		self.onlineAction = OnlineSelectAction(self)
+		self.addAction(self.onlineAction)
+		self.downloadAction = QAction(getIcon("download"),
+					      "Download all AWL/STL code to CPU",
+					      self)
+		self.addAction(self.downloadAction)
+		self.runAction = RunSelectAction(self)
+		self.addAction(self.runAction)
+		self.diagAction = DiagSelectAction(self)
+		self.addAction(self.diagAction)
+
+	def connectToCpuWidget(self, cpuWidget):
+		self.onlineAction.toggled.connect(cpuWidget._onlineToggled)
+		self.downloadAction.triggered.connect(cpuWidget.download)
+		self.runAction.toggled.connect(cpuWidget._runStateToggled)
+		self.diagAction.toggled.connect(cpuWidget._onlineDiagToggled)
+
+		cpuWidget.reqRunButtonState.connect(self.__setRun)
+		cpuWidget.reqOnlineButtonState.connect(self.__setOnline)
+		cpuWidget.reqOnlineDiagButtonState.connect(self.__setOnlineDiag)
+
+	def __setRun(self, en):
+		if en != self.runAction.isChecked():
+			self.runAction.trigger()
+
+	def __setOnline(self, en):
+		if en != self.onlineAction.isChecked():
+			self.onlineAction.trigger()
+
+	def __setOnlineDiag(self, en):
+		if en != self.diagAction.isChecked():
+			self.diagAction.trigger()
+
 class CpuWidget(QWidget):
 	# Signal: The CPU run-state changed
 	runStateChanged = Signal(RunState)
@@ -121,6 +252,13 @@ class CpuWidget(QWidget):
 	# Signal: Have a new ident hashes message
 	haveIdentsMsg = Signal(AwlSimMessage_IDENTS)
 
+	# Signal: Request a new run button state.
+	reqRunButtonState = Signal(bool)
+	# Signal: Request a new online button state.
+	reqOnlineButtonState = Signal(bool)
+	# Signal: request a new online diagnosis button state.
+	reqOnlineDiagButtonState = Signal(bool)
+
 	def __init__(self, mainWidget, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
@@ -129,6 +267,10 @@ class CpuWidget(QWidget):
 		self.mainWidget = mainWidget
 		self.state = RunState()
 		self.__runStateChangeBlocked = Blocker()
+
+		self.__onlineBtnPressed = False
+		self.__runBtnPressed = False
+		self.__onlineDiagBtnPressed = False
 
 		self.__coreMsgTimer = QTimer(self)
 		self.__coreMsgTimer.setSingleShot(False)
@@ -144,75 +286,15 @@ class CpuWidget(QWidget):
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
 		client.haveIdentsMsg.connect(self.__handleIdentsMsg)
 
-		toolsLayout = QHBoxLayout()
-
-		group = QGroupBox("CPU", self)
-		group.setLayout(QGridLayout(group))
-		self.onlineButton = CheckableToolButton("network", None,
-					"Click to go offline",
-					"Click to go online (Connect to a CPU)",
-					group)
-		group.layout().addWidget(self.onlineButton, 0, 0)
-		self.downloadButton = ToolButton("download",
-					"Download all AWL/STL code to CPU",
-					group)
-		group.layout().addWidget(self.downloadButton, 0, 1)
-		self.runButton = CheckableToolButton("stop", "run",
-					"Click to stop CPU",
-					"Click to start CPU",
-					group)
-		group.layout().addWidget(self.runButton, 0, 2)
-		self.onlineDiagButton = CheckableToolButton("glasses", None,
-					"Online diagnosis",
-					None,
-					group)
-		group.layout().addWidget(self.onlineDiagButton, 0, 3)
-		toolsLayout.addWidget(group)
-
-		group = QGroupBox("Inspection", self)
-		group.setLayout(QGridLayout(group))
-		self.newEButton = ToolButton("inputs", "Input memory (I / E)", group)
-		group.layout().addWidget(self.newEButton, 0, 0)
-		self.newAButton = ToolButton("outputs", "Output memory (Q / A)", group)
-		group.layout().addWidget(self.newAButton, 0, 1)
-		self.newMButton = ToolButton("flags", "Flag memory (M)", group)
-		group.layout().addWidget(self.newMButton, 0, 2)
-		self.newDBButton = ToolButton("datablock", "Data block (DB)", group)
-		group.layout().addWidget(self.newDBButton, 0, 3)
-		self.newTButton = ToolButton("timer", "Timer (T)", group)
-		group.layout().addWidget(self.newTButton, 0, 4)
-		self.newZButton = ToolButton("counter", "Counter (C / Z)", group)
-		group.layout().addWidget(self.newZButton, 0, 5)
-		self.newCpuStateButton = ToolButton("cpu", "CPU overview", group)
-		group.layout().addWidget(self.newCpuStateButton, 0, 6)
-		self.newLCDButton = ToolButton("lcd", "LCD", group)
-		group.layout().addWidget(self.newLCDButton, 0, 7)
-		toolsLayout.addWidget(group)
-
-		toolsLayout.addStretch()
-		self.layout().addLayout(toolsLayout, 0, 0)
-
 		self.stateMdi = StateMdiArea(self)
 		self.stateMdi.setViewMode(QMdiArea.SubWindowView)
 		self.stateMdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.stateMdi.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.layout().addWidget(self.stateMdi, 1, 0)
+		self.layout().addWidget(self.stateMdi, 0, 0)
 
 		self.state.stateChanged.connect(self.runStateChanged)
-		self.onlineButton.toggled.connect(self.__onlineToggled)
-		self.downloadButton.pressed.connect(self.__download)
-		self.runButton.toggled.connect(self.__runStateToggled)
-		self.onlineDiagButton.toggled.connect(self.__updateOnlineViewState)
-		self.newCpuStateButton.released.connect(self.__newWin_CPU)
-		self.newDBButton.released.connect(self.__newWin_DB)
-		self.newEButton.released.connect(self.__newWin_E)
-		self.newAButton.released.connect(self.__newWin_A)
-		self.newMButton.released.connect(self.__newWin_M)
-		self.newTButton.released.connect(self.__newWin_T)
-		self.newZButton.released.connect(self.__newWin_Z)
-		self.newLCDButton.released.connect(self.__newWin_LCD)
 
-		self.__newWin_CPU()
+		self.newWin_CPU()
 		self.update()
 
 	def __stateMdiWindowClosed(self, mdiWin):
@@ -227,38 +309,38 @@ class CpuWidget(QWidget):
 		self.update()
 		self.__uploadMemReadAreas()
 
-	def __newWin_CPU(self):
+	def newWin_CPU(self):
 		self.__addWindow(State_CPU(self.mainWidget.getSimClient(), self))
 
-	def __newWin_DB(self):
+	def newWin_DB(self):
 		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_DB,
 					   self))
 
-	def __newWin_E(self):
+	def newWin_E(self):
 		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_E,
 					   self))
 
-	def __newWin_A(self):
+	def newWin_A(self):
 		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_A,
 					   self))
 
-	def __newWin_M(self):
+	def newWin_M(self):
 		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_M,
 					   self))
 
-	def __newWin_T(self):
+	def newWin_T(self):
 		self.__addWindow(State_Timer(self.mainWidget.getSimClient(),
 					     self))
 
-	def __newWin_Z(self):
+	def newWin_Z(self):
 		self.__addWindow(State_Counter(self.mainWidget.getSimClient(),
 					       self))
 
-	def __newWin_LCD(self):
+	def newWin_LCD(self):
 		self.__addWindow(State_LCD(self.mainWidget.getSimClient(), self))
 
 	def __stateWinConfigChanged(self, stateWin):
@@ -336,7 +418,7 @@ class CpuWidget(QWidget):
 
 		# Make sure the button is pressed.
 		with self.__runStateChangeBlocked:
-			self.runButton.setChecked(True)
+			self.run()
 
 		# If requested, go online first.
 		if goOnlineFirst:
@@ -350,7 +432,7 @@ class CpuWidget(QWidget):
 		# download the program first.
 		if downloadFirstIfSimulator and\
 		   client.getMode() == client.MODE_FORK:
-			if not self.__download(noRun=True):
+			if not self.download(noRun=True):
 				self.stop()
 				return
 
@@ -363,7 +445,7 @@ class CpuWidget(QWidget):
 			if not self.__uploadMemReadAreas():
 				self.stop()
 				return
-			self.__updateOnlineViewState()
+			self.updateOnlineViewState()
 
 			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
@@ -415,7 +497,7 @@ class CpuWidget(QWidget):
 	def __stop(self):
 		# Make sure the button is released.
 		with self.__runStateChangeBlocked:
-			self.runButton.setChecked(False)
+			self.stop()
 
 		self.__coreMsgTimer.stop()
 		self.__corePeriodicTimer.stop()
@@ -429,10 +511,10 @@ class CpuWidget(QWidget):
 		self.state.setState(RunState.STATE_ONLINE)
 
 	def stop(self):
-		self.runButton.setChecked(False)
+		self.reqRunButtonState.emit(False)
 
 	def run(self):
-		self.runButton.setChecked(True)
+		self.reqRunButtonState.emit(True)
 
 	def __goOnline(self):
 		project = self.mainWidget.getProject()
@@ -441,7 +523,7 @@ class CpuWidget(QWidget):
 			dlg = LinkConfigDialog(project, self)
 			dlg.settingsChanged.connect(self.configChanged)
 			if dlg.exec_() != LinkConfigDialog.Accepted:
-				self.onlineButton.setChecked(False)
+				self.goOffline()
 				return
 
 		linkConfig = project.getCoreLinkSettings()
@@ -480,7 +562,7 @@ class CpuWidget(QWidget):
 			CALL_NOEX(client.setMode_OFFLINE)
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
-			self.onlineButton.setChecked(False)
+			self.goOffline()
 			return
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
@@ -494,25 +576,26 @@ class CpuWidget(QWidget):
 				"Error while trying to disconnect from CPU", e)
 		# Release the stop-button.
 		# This will _not_ stop the CPU, as we're offline already.
-		self.runButton.setChecked(False)
+		self.stop()
 		self.state.setState(RunState.STATE_OFFLINE)
 
-	def __onlineToggled(self):
-		if self.isOnline():
+	def _onlineToggled(self, onlineBtnPressed):
+		self.__onlineBtnPressed = onlineBtnPressed
+		if self.__onlineBtnPressed:
 			self.__goOnline()
 		else:
 			self.__goOffline()
 
 	def isOnline(self):
-		return self.onlineButton.isChecked()
+		return self.__onlineBtnPressed
 
 	def goOnline(self):
-		self.onlineButton.setChecked(True)
+		self.reqOnlineButtonState.emit(True)
 
 	def goOffline(self):
-		self.onlineButton.setChecked(False)
+		self.reqOnlineButtonState.emit(False)
 
-	def __download(self, noRun=False):
+	def download(self, noRun=False):
 		# Make sure we are online.
 		self.goOnline()
 		if not self.isOnline():
@@ -549,12 +632,12 @@ class CpuWidget(QWidget):
 			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
 			self.state.setState(RunState.STATE_ONLINE)
-			self.runButton.setChecked(False)
+			self.stop()
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_ONLINE)
-			self.runButton.setChecked(False)
+			self.stop()
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)
 			return False
@@ -567,33 +650,35 @@ class CpuWidget(QWidget):
 
 		# If we were RUNning before download, put
 		# the CPU into RUN state again.
-		if self.runButton.isChecked() and not noRun:
+		if self.__runBtnPressed and not noRun:
 			self.__run(goOnlineFirst = False,
 				   downloadFirstIfSimulator = False)
 
 		return True
 
-	def __runStateToggled(self):
-		if self.__runStateChangeBlocked:
-			return
-		if self.runButton.isChecked():
-			self.__run()
-		else:
-			self.__stop()
+	def _runStateToggled(self, runBtnPressed):
+		self.__runBtnPressed = runBtnPressed
+		if not self.__runStateChangeBlocked:
+			if self.__runBtnPressed:
+				self.__run()
+			else:
+				self.__stop()
 
 	def handleDirtyChange(self, dirty):
 		if dirty:
-			self.onlineDiagButton.setChecked(False)
+			self.reqOnlineDiagButtonState.emit(False)
 
-	def __updateOnlineViewState(self):
-		onlineDiagEn = self.onlineDiagButton.isChecked()
-		self.onlineDiagChanged.emit(onlineDiagEn)
+	def _onlineDiagToggled(self, onlineDiagBtnPressed):
+		self.__onlineDiagBtnPressed = onlineDiagBtnPressed
+		self.updateOnlineViewState()
+
+	def updateOnlineViewState(self):
+		self.onlineDiagChanged.emit(self.__onlineDiagBtnPressed)
 
 	def updateVisibleLineRange(self, source, fromLine, toLine):
-		onlineDiagEn = self.onlineDiagButton.isChecked()
 		try:
 			client = self.mainWidget.getSimClient()
-			if onlineDiagEn and source:
+			if self.__onlineDiagBtnPressed and source:
 				client.setInsnStateDump(enable=True,
 							sourceId=source.identHash,
 							fromLine=fromLine, toLine=toLine,

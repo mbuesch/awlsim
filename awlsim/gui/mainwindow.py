@@ -28,6 +28,7 @@ import os
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.projectwidget import *
+from awlsim.gui.cpuwidget import *
 from awlsim.gui.guiconfig import *
 from awlsim.gui.cpuconfig import *
 from awlsim.gui.linkconfig import *
@@ -293,6 +294,27 @@ class MainWindow(QMainWindow):
 		self.setWindowIcon(getIcon("cpu"))
 		self.setCentralWidget(MainWidget(self))
 
+		self.tb = QToolBar(self)
+		self.tb.addAction(getIcon("new"), "New project", self.new)
+		self.tb.addAction(getIcon("open"), "Open project", self.load)
+		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project", self.save)
+		self.tb.addSeparator()
+		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit", self.undo)
+		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo", self.redo)
+		self.tb.addSeparator()
+		self.tbCutAct = self.tb.addAction(getIcon("cut"), "Cut", self.cut)
+		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy", self.copy)
+		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste", self.paste)
+		self.tb.addSeparator()
+		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
+		self.addToolBar(Qt.TopToolBarArea, self.tb)
+
+		self.ctrlTb = CpuControlToolBar(self)
+		self.addToolBar(Qt.TopToolBarArea, self.ctrlTb)
+
+		self.inspectTb = CpuInspectToolBar(self)
+		self.addToolBar(Qt.RightToolBarArea, self.inspectTb)
+
 		self.setMenuBar(QMenuBar(self))
 
 		menu = QMenu("&File", self)
@@ -334,26 +356,27 @@ class MainWindow(QMainWindow):
 		menu.addAction(getIcon("prefs"), "&User interface...", self.guiConfig)
 		self.menuBar().addMenu(menu)
 
+		menu = QMenu("&CPU", self)
+		menu.addAction(self.ctrlTb.onlineAction)
+		menu.addAction(self.ctrlTb.downloadAction)
+		menu.addAction(self.ctrlTb.runAction)
+		menu.addAction(self.ctrlTb.diagAction)
+		menu.addSeparator()
+		menu.addAction(self.inspectTb.inputsAction)
+		menu.addAction(self.inspectTb.outputsAction)
+		menu.addAction(self.inspectTb.flagsAction)
+		menu.addAction(self.inspectTb.dbAction)
+		menu.addAction(self.inspectTb.timerAction)
+		menu.addAction(self.inspectTb.counterAction)
+		menu.addAction(self.inspectTb.cpuAction)
+		menu.addAction(self.inspectTb.lcdAction)
+		self.menuBar().addMenu(menu)
+
 		menu = QMenu("&Help", self)
 		menu.addAction(getIcon("browser"), "Awlsim &homepage...", self.awlsimHomepage)
 		menu.addSeparator()
 		menu.addAction(getIcon("cpu"), "&About...", self.about)
 		self.menuBar().addMenu(menu)
-
-		self.tb = QToolBar(self)
-		self.tb.addAction(getIcon("new"), "New project", self.new)
-		self.tb.addAction(getIcon("open"), "Open project", self.load)
-		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project", self.save)
-		self.tb.addSeparator()
-		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit", self.undo)
-		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo", self.redo)
-		self.tb.addSeparator()
-		self.tbCutAct = self.tb.addAction(getIcon("cut"), "Cut", self.cut)
-		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy", self.copy)
-		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste", self.paste)
-		self.tb.addSeparator()
-		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
-		self.addToolBar(self.tb)
 
 		self.__dirtyChanged(False)
 		self.__selResourceChanged(ProjectWidget.RES_SOURCES)
@@ -369,6 +392,8 @@ class MainWindow(QMainWindow):
 		self.centralWidget().undoAvailableChanged.connect(self.__undoAvailableChanged)
 		self.centralWidget().redoAvailableChanged.connect(self.__redoAvailableChanged)
 		self.centralWidget().copyAvailableChanged.connect(self.__copyAvailableChanged)
+		self.ctrlTb.connectToCpuWidget(self.centralWidget().cpuWidget)
+		self.inspectTb.connectToCpuWidget(self.centralWidget().cpuWidget)
 
 		if awlSource:
 			self.centralWidget().loadFile(awlSource)
