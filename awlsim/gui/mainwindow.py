@@ -217,21 +217,25 @@ class MainWidget(QWidget):
 		dlg.settingsChanged.connect(self.__somethingChanged)
 		if dlg.exec_() == dlg.Accepted:
 			self.projectWidget.setSettings(self.getProject().getGuiSettings())
+		dlg.deleteLater()
 
 	def linkConfig(self):
 		dlg = LinkConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.__somethingChanged)
 		dlg.exec_()
+		dlg.deleteLater()
 
 	def cpuConfig(self):
 		dlg = CpuConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.__somethingChanged)
 		dlg.exec_()
+		dlg.deleteLater()
 
 	def hwmodConfig(self):
 		dlg = HwmodConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.__somethingChanged)
 		dlg.exec_()
+		dlg.deleteLater()
 
 	def insertOB(self):
 		self.projectWidget.insertOB()

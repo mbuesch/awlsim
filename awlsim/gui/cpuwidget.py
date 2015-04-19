@@ -523,8 +523,10 @@ class CpuWidget(QWidget):
 			dlg = LinkConfigDialog(project, self)
 			dlg.settingsChanged.connect(self.configChanged)
 			if dlg.exec_() != LinkConfigDialog.Accepted:
+				dlg.deleteLater()
 				self.goOffline()
 				return
+			dlg.deleteLater()
 
 		linkConfig = project.getCoreLinkSettings()
 		client = self.mainWidget.getSimClient()

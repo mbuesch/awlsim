@@ -393,18 +393,21 @@ class ProjectWidget(QTabWidget):
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getOB(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertFC(self):
 		dlg = TemplateDialog("FC", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFC(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertFB(self):
 		dlg = TemplateDialog("FB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFB(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertInstanceDB(self):
 		dlg = TemplateDialog("DB", "Instance-DB", extra="FB", parent=self)
@@ -412,24 +415,28 @@ class ProjectWidget(QTabWidget):
 			self.__pasteAwlText(Templates.getInstanceDB(dlg.getBlockNumber(),
 								    dlg.getExtraNumber(),
 								    dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertGlobalDB(self):
 		dlg = TemplateDialog("DB", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
 								  dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertUDT(self):
 		dlg = TemplateDialog("UDT", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getUDT(dlg.getBlockNumber(),
 							     dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertFCcall(self):
 		dlg = TemplateDialog("FC", "FC call", parent=self)
 		if dlg.exec_() == QDialog.Accepted:
 			self.__pasteAwlText(Templates.getFCcall(dlg.getBlockNumber(),
 								dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def insertFBcall(self):
 		dlg = TemplateDialog("FB", "FB call", extra="DB", parent=self)
@@ -437,6 +444,7 @@ class ProjectWidget(QTabWidget):
 			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
 								dlg.getExtraNumber(),
 								dlg.getVerbose()))
+		dlg.deleteLater()
 
 	def openLibrary(self):
 		dlg = LibraryDialog(self.__project, self)
@@ -444,17 +452,21 @@ class ProjectWidget(QTabWidget):
 			if dlg.pasteText:
 				# Paste the code.
 				if not self.__pasteAwlText(dlg.pasteText):
+					dlg.deleteLater()
 					return
 			if dlg.pasteSymbol:
 				# Add a symbol to a symbol table.
 				symbolName, address, dataType, comment = dlg.pasteSymbol
 				if not self.__pasteSymbol(symbolName, address,
 							  dataType, comment):
+					dlg.deleteLater()
 					return
 			if dlg.pasteLibSel:
 				# Add a library selection to the library table.
 				if not self.__pasteLibSel(dlg.pasteLibSel):
+					dlg.deleteLater()
 					return
+		dlg.deleteLater()
 
 	def undo(self):
 		widget = self.currentWidget()

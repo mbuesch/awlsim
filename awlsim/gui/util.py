@@ -124,7 +124,9 @@ class MessageBox(QDialog):
 			  text = text,
 			  verboseText = verboseText,
 			  icon = QMessageBox.Critical)
-		return dlg.exec_()
+		res = dlg.exec_()
+		dlg.deleteLater()
+		return res
 
 	@classmethod
 	def warning(cls, parent, text, verboseText=None):
@@ -133,7 +135,9 @@ class MessageBox(QDialog):
 			  text = text,
 			  verboseText = verboseText,
 			  icon = QMessageBox.Warning)
-		return dlg.exec_()
+		res = dlg.exec_()
+		dlg.deleteLater()
+		return res
 
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception):
