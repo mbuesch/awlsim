@@ -30,7 +30,10 @@ class FindReplaceDialog(QDialog):
 
 	def __init__(self, textEdit, withReplace=True, parent=None):
 		QDialog.__init__(self, parent)
-		self.setWindowTitle("Find and replace text")
+		if withReplace:
+			self.setWindowTitle("Find and replace text")
+		else:
+			self.setWindowTitle("Find text")
 		self.setLayout(QGridLayout())
 
 		label = QLabel("Find:", self)
