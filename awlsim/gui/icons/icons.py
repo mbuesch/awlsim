@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI icons
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,6 +61,8 @@ from awlsim.gui.icons.doc_export import *
 from awlsim.gui.icons.doc_import import *
 from awlsim.gui.icons.doc_new import *
 from awlsim.gui.icons.tab_new import *
+from awlsim.gui.icons.find import *
+from awlsim.gui.icons.findreplace import *
 
 import base64
 
@@ -103,6 +105,8 @@ __icons = {
 	"doc_import"	: icon_doc_import,
 	"doc_new"	: icon_doc_new,
 	"tab_new"	: icon_tab_new,
+	"find"		: icon_find,
+	"findreplace"	: icon_findreplace,
 }
 
 def getIcon(iconName):

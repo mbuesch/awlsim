@@ -275,6 +275,12 @@ class MainWidget(QWidget):
 	def paste(self):
 		self.projectWidget.clipboardPaste()
 
+	def findText(self):
+		self.projectWidget.findText()
+
+	def findReplaceText(self):
+		self.projectWidget.findReplaceText()
+
 class MainWindow(QMainWindow):
 	@classmethod
 	def start(cls,
@@ -306,6 +312,10 @@ class MainWindow(QMainWindow):
 		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy", self.copy)
 		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste", self.paste)
 		self.tb.addSeparator()
+		self.tbFindAct = self.tb.addAction(getIcon("find"), "Find...", self.findText)
+		self.tbFindReplaceAct = self.tb.addAction(getIcon("findreplace"),
+							  "Find and replace...", self.findReplaceText)
+		self.tb.addSeparator()
 		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
 		self.addToolBar(Qt.TopToolBarArea, self.tb)
 
@@ -333,6 +343,10 @@ class MainWindow(QMainWindow):
 		self.cutAct = menu.addAction(getIcon("cut"), "&Cut", self.cut)
 		self.copyAct = menu.addAction(getIcon("copy"), "&Copy", self.copy)
 		self.pasteAct = menu.addAction(getIcon("paste"), "&Paste", self.paste)
+		menu.addSeparator()
+		self.findAct = menu.addAction(getIcon("find"), "&Find...", self.findText)
+		self.findReplaceAct = menu.addAction(getIcon("findreplace"),
+						     "Find and r&eplace...", self.findReplaceText)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Library", self)
@@ -378,6 +392,7 @@ class MainWindow(QMainWindow):
 		menu.addAction(getIcon("cpu"), "&About...", self.about)
 		self.menuBar().addMenu(menu)
 
+		self.__sourceTextHasFocus = False
 		self.__dirtyChanged(False)
 		self.__selResourceChanged(ProjectWidget.RES_SOURCES)
 		self.__textFocusChanged(False)
@@ -441,6 +456,19 @@ class MainWindow(QMainWindow):
 
 	def __handleProjectLoaded(self, project):
 		self.__updateLibActions()
+		self.__updateFindActions()
+
+	def __updateFindActions(self):
+		if self.__selProjectResource == ProjectWidget.RES_SOURCES:
+			self.tbFindAct.setEnabled(True)
+			self.tbFindReplaceAct.setEnabled(True)
+			self.findAct.setEnabled(True)
+			self.findReplaceAct.setEnabled(True)
+		else:
+			self.tbFindAct.setEnabled(False)
+			self.tbFindReplaceAct.setEnabled(False)
+			self.findAct.setEnabled(False)
+			self.findReplaceAct.setEnabled(False)
 
 	def __updateLibActions(self):
 		# Enable/disable the library toolbar button.
@@ -461,10 +489,12 @@ class MainWindow(QMainWindow):
 	def __textFocusChanged(self, textHasFocus):
 		self.__sourceTextHasFocus = textHasFocus
 		self.__updateLibActions()
+		self.__updateFindActions()
 
 	def __selResourceChanged(self, resourceNumber):
 		self.__selProjectResource = resourceNumber
 		self.__updateLibActions()
+		self.__updateFindActions()
 
 	def __updateUndoActions(self):
 		self.undoAct.setEnabled(
@@ -588,3 +618,9 @@ class MainWindow(QMainWindow):
 
 	def paste(self):
 		self.centralWidget().paste()
+
+	def findText(self):
+		self.centralWidget().findText()
+
+	def findReplaceText(self):
+		self.centralWidget().findReplaceText()

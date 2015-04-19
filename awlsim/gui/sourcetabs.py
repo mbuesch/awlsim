@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.gui.editwidget import *
 from awlsim.gui.symtabwidget import *
+from awlsim.gui.finddialog import *
 from awlsim.gui.util import *
 
 
@@ -208,6 +209,12 @@ class SourceTabWidget(QTabWidget):
 		pass
 
 	def clipboardPaste(self):
+		pass
+
+	def findText(self):
+		pass
+
+	def findReplaceText(self):
 		pass
 
 	def handleIdentsMsg(self, identsMsg):
@@ -460,6 +467,20 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget = self.currentWidget()
 		if editWidget:
 			editWidget.paste()
+
+	def findText(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			dlg = FindReplaceDialog(editWidget, False, editWidget)
+			dlg.exec_()
+			dlg.deleteLater()
+
+	def findReplaceText(self):
+		editWidget = self.currentWidget()
+		if editWidget:
+			dlg = FindReplaceDialog(editWidget, True, editWidget)
+			dlg.exec_()
+			dlg.deleteLater()
 
 	def handleIdentsMsg(self, identsMsg):
 		SourceTabWidget.handleIdentsMsg(self, identsMsg)

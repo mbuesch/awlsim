@@ -4,5 +4,4 @@ S7 compatibility:
 - Implement parsing of attributes
 
 GUI:
-- Add editor 'find'
 - Save window status (open MDI windows, positions, etc)

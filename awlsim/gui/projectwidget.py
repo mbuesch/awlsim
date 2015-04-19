@@ -480,3 +480,13 @@ class ProjectWidget(QTabWidget):
 		widget = self.currentWidget()
 		if widget:
 			widget.clipboardPaste()
+
+	def findText(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.findText()
+
+	def findReplaceText(self):
+		widget = self.currentWidget()
+		if widget:
+			widget.findReplaceText()
