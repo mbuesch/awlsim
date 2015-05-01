@@ -86,11 +86,346 @@ class McrStackElem(object):
 
 	__nonzero__ = __bool__
 
+class S7Prog(object):
+	"S7 CPU program management"
+
+	def __init__(self, cpu):
+		self.cpu = cpu
+		self.reset()
+
+	def reset(self):
+		self.pendingRawDBs = []
+		self.pendingRawFBs = []
+		self.pendingRawFCs = []
+		self.pendingRawOBs = []
+		self.pendingRawUDTs = []
+		self.pendingLibSelections = []
+		self.symbolTable = SymbolTable()
+
+	def addRawDB(self, rawDB):
+		assert(isinstance(rawDB, RawAwlDB))
+		self.pendingRawDBs.append(rawDB)
+
+	def addRawFB(self, rawFB):
+		assert(isinstance(rawFB, RawAwlFB))
+		self.pendingRawFBs.append(rawFB)
+
+	def addRawFC(self, rawFC):
+		assert(isinstance(rawFC, RawAwlFC))
+		self.pendingRawFCs.append(rawFC)
+
+	def addRawOB(self, rawOB):
+		assert(isinstance(rawOB, RawAwlOB))
+		self.pendingRawOBs.append(rawOB)
+
+	def addRawUDT(self, rawUDT):
+		assert(isinstance(rawUDT, RawAwlUDT))
+		self.pendingRawUDTs.append(rawUDT)
+
+	def addLibrarySelection(self, libSelection):
+		assert(isinstance(libSelection, AwlLibEntrySelection))
+		self.pendingLibSelections.append(libSelection)
+
+	def loadSymbolTable(self, symbolTable):
+		self.symbolTable.merge(symbolTable)
+
+	def __detectMnemonics(self):
+		specs = self.cpu.getSpecs()
+		if specs.getConfiguredMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+			return
+
+		def testedRawCodeBlocks():
+			for rawOB in self.pendingRawOBs:
+				yield rawOB
+			for rawFB in self.pendingRawFBs:
+				yield rawFB
+			for rawFC in self.pendingRawFCs:
+				yield rawFC
+
+		errorCounts = {
+			S7CPUSpecs.MNEMONICS_EN		: 0,
+			S7CPUSpecs.MNEMONICS_DE		: 0,
+		}
+		detected = None
+		for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
+				  S7CPUSpecs.MNEMONICS_DE):
+			for rawBlock in testedRawCodeBlocks():
+				for rawInsn in rawBlock.insns:
+					ret = AwlInsnTranslator.name2type(rawInsn.getName(),
+									  mnemonics)
+					if ret is None:
+						errorCounts[mnemonics] += 1
+					try:
+						optrans = AwlOpTranslator(None, mnemonics)
+						optrans.translateFromRawInsn(rawInsn)
+					except AwlSimError:
+						errorCounts[mnemonics] += 1
+			if errorCounts[mnemonics] == 0:
+				# No error. Use these mnemonics.
+				detected = mnemonics
+		if detected is None:
+			# Select the mnemonics with the lower error count.
+			if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
+				detected = S7CPUSpecs.MNEMONICS_EN
+			else:
+				detected = S7CPUSpecs.MNEMONICS_DE
+		if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+			# Autodetected mnemonics were already set before
+			if specs.getMnemonics() != detected:
+				raise AwlSimError("Cannot mix multiple AWL files with "\
+					"distinct mnemonics. This error may be caused by "\
+					"incorrect autodetection. "\
+					"Force mnemonics to EN or DE to avoid this error.")
+		specs.setDetectedMnemonics(detected)
+
+	def __loadLibraries(self):
+		for libSelection in self.pendingLibSelections:
+			# Get the block class from the library.
+			libEntryCls = AwlLib.getEntryBySelection(libSelection)
+			assert(not libEntryCls.isSystemBlock)
+
+			# Get the effective block index.
+			effIndex = libSelection.getEffectiveEntryIndex()
+			if effIndex < 0:
+				effIndex = libSelection.getEntryIndex()
+
+			# Create and translate the block
+			translator = AwlTranslator(self.cpu)
+			if libEntryCls.isFC:
+				block = libEntryCls(index = effIndex)
+				if block.index in self.cpu.fcs and\
+				   not self.cpu.fcs[block.index].isLibraryBlock:
+					raise AwlSimError("Error while loading library "
+						"block FC %d: Block FC %d is already "
+						"loaded as user defined block." %\
+						(block.index, block.index))
+				block = translator.translateLibraryCodeBlock(block)
+				self.cpu.fcs[block.index] = block
+			elif libEntryCls.isFB:
+				block = libEntryCls(index = effIndex)
+				if block.index in self.cpu.fbs and\
+				   not self.cpu.fbs[block.index].isLibraryBlock:
+					raise AwlSimError("Error while loading library "
+						"block FB %d: Block FB %d is already "
+						"loaded as user defined block." %\
+						(block.index, block.index))
+				block = translator.translateLibraryCodeBlock(block)
+				self.cpu.fbs[block.index] = block
+			else:
+				assert(0)
+		self.pendingLibSelections = []
+
+	def __checkCallParamTypeCompat(self, block):
+		for insn, calledCodeBlock, calledDataBlock in self.cpu.allCallInsns(block):
+			try:
+				for param in insn.params:
+					# Get the interface field for this variable
+					field = calledCodeBlock.interface.getFieldByName(param.lvalueName)
+					# Check type compatibility
+					param.rvalueOp.checkDataTypeCompat(self.cpu, field.dataType)
+			except AwlSimError as e:
+				e.setInsn(insn)
+				raise e
+
+	# Assign call parameter interface reference.
+	def __assignParamInterface(self, block):
+		for insn, calledCodeBlock, calledDataBlock in self.cpu.allCallInsns(block):
+			try:
+				for param in insn.params:
+					# Add interface references to the parameter assignment.
+					param.interface = calledCodeBlock.interface
+			except AwlSimError as e:
+				e.setInsn(insn)
+				raise e
+
+	# Resolve all symbols (global and local) on all blocks, as far as possible.
+	def __resolveSymbols(self):
+		resolver = AwlSymResolver(self.cpu)
+		for block in self.cpu.allCodeBlocks():
+			# Add interface references to the parameter assignment.
+			self.__assignParamInterface(block)
+			# Check type compatibility between formal and
+			# actual parameter of calls.
+			self.__checkCallParamTypeCompat(block)
+			# Resolve all symbols
+			resolver.resolveSymbols_block(block)
+			# Check type compatibility between formal and
+			# actual parameter of calls again, with resolved symbols.
+			self.__checkCallParamTypeCompat(block)
+
+	def __finalizeCodeBlock(self, block):
+		translator = AwlTranslator(self.cpu)
+
+		# Finalize call instructions
+		for insn, calledCodeBlock, calledDataBlock in self.cpu.allCallInsns(block):
+			try:
+				for param in insn.params:
+					# Final translation of parameter assignment operand.
+					translator.translateParamAssignOper(param)
+			except AwlSimError as e:
+				e.setInsn(insn)
+				raise e
+
+		# Check and account for direct L stack allocations and
+		# interface L stack allocations.
+		block.accountTempAllocations()
+
+	def __finalizeCodeBlocks(self):
+		for block in self.cpu.allUserCodeBlocks():
+			self.__finalizeCodeBlock(block)
+
+	# Run static error checks for code block
+	def __staticSanityChecks_block(self, block):
+		for insn in block.insns:
+			insn.staticSanityChecks()
+
+	# Run static error checks
+	def __staticSanityChecks(self):
+		for block in self.cpu.allUserCodeBlocks():
+			self.__staticSanityChecks_block(block)
+
+	def build(self):
+		translator = AwlTranslator(self.cpu)
+		resolver = AwlSymResolver(self.cpu)
+
+		self.__loadLibraries()
+
+		# Mnemonics autodetection
+		self.__detectMnemonics()
+
+		#TODO: Annotate the blocks with the source idents, so translated blocks
+		#      can be removed, if sources are removed from the system.
+
+		# Translate UDTs
+		udts = {}
+		for rawUDT in self.pendingRawUDTs:
+			udtNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_UDT_X},
+								   rawUDT.index)
+			if udtNumber in udts:
+				raise AwlSimError("Multiple definitions of "\
+					"UDT %d." % udtNumber)
+			rawUDT.index = udtNumber
+			udts[udtNumber] = UDT.makeFromRaw(rawUDT)
+		self.cpu.udts.update(udts)
+		self.pendingRawUDTs = []
+
+		# Build all UDTs (Resolve sizes of all fields)
+		for udt in udts.values():
+			udt.buildDataStructure(self.cpu)
+
+		# Translate OBs
+		obs = {}
+		for rawOB in self.pendingRawOBs:
+			obNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_OB_X},
+								  rawOB.index)
+			if obNumber in obs:
+				raise AwlSimError("Multiple definitions of "\
+					"OB %d." % obNumber)
+			rawOB.index = obNumber
+			ob = translator.translateCodeBlock(rawOB, OB)
+			obs[obNumber] = ob
+			# Create the TEMP-preset handler table
+			try:
+				presetHandlerClass = OBTempPresets_table[obNumber]
+			except KeyError:
+				presetHandlerClass = OBTempPresets_dummy
+			self.cpu.obTempPresetHandlers[obNumber] = presetHandlerClass(self.cpu)
+		self.cpu.obs.update(obs)
+		self.pendingRawOBs = []
+
+		# Translate FBs
+		fbs = {}
+		for rawFB in self.pendingRawFBs:
+			fbNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_FB_X},
+								  rawFB.index)
+			if fbNumber in fbs:
+				raise AwlSimError("Multiple definitions of "\
+					"FB %d." % fbNumber)
+			if fbNumber in self.cpu.fbs and\
+			   self.cpu.fbs[fbNumber].isLibraryBlock:
+				raise AwlSimError("Multiple definitions of FB %d.\n"
+					"FB %d is already defined by an "
+					"imported library block (%s)." % (
+					fbNumber, fbNumber,
+					self.cpu.fbs[fbNumber].libraryName))
+			rawFB.index = fbNumber
+			fb = translator.translateCodeBlock(rawFB, FB)
+			fbs[fbNumber] = fb
+		self.cpu.fbs.update(fbs)
+		self.pendingRawFBs = []
+
+		# Translate FCs
+		fcs = {}
+		for rawFC in self.pendingRawFCs:
+			fcNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_FC_X},
+								  rawFC.index)
+			if fcNumber in fcs:
+				raise AwlSimError("Multiple definitions of "\
+					"FC %d." % fcNumber)
+			if fcNumber in self.cpu.fcs and\
+			   self.cpu.fcs[fcNumber].isLibraryBlock:
+				raise AwlSimError("Multiple definitions of FC %d.\n"
+					"FC %d is already defined by an "
+					"imported library block (%s)." % (
+					fcNumber, fcNumber,
+					self.cpu.fcs[fcNumber].libraryName))
+			rawFC.index = fcNumber
+			fc = translator.translateCodeBlock(rawFC, FC)
+			fcs[fcNumber] = fc
+		self.cpu.fcs.update(fcs)
+		self.pendingRawFCs = []
+
+		if not self.cpu.sfbs:
+			# Create the SFB tables
+			for sfbNumber in SFB_table.keys():
+				if sfbNumber < 0 and not self.cpu.extendedInsnsEnabled():
+					continue
+				sfb = SFB_table[sfbNumber](self.cpu)
+				self.cpu.sfbs[sfbNumber] = sfb
+
+		if not self.cpu.sfcs:
+			# Create the SFC tables
+			for sfcNumber in SFC_table.keys():
+				if sfcNumber < 0 and not self.cpu.extendedInsnsEnabled():
+					continue
+				sfc = SFC_table[sfcNumber](self.cpu)
+				self.cpu.sfcs[sfcNumber] = sfc
+
+		# Build the data structures of code blocks.
+		for block in self.cpu.allCodeBlocks():
+			block.interface.buildDataStructure(self.cpu)
+
+		# Translate DBs
+		dbs = {}
+		for rawDB in self.pendingRawDBs:
+			dbNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_DB_X,
+								   AwlDataType.TYPE_FB_X,
+								   AwlDataType.TYPE_SFB_X},
+								  rawDB.index)
+			if dbNumber in dbs:
+				raise AwlSimError("Multiple definitions of "\
+					"DB %d." % dbNumber)
+			rawDB.index = dbNumber
+			db = translator.translateDB(rawDB)
+			dbs[dbNumber] = db
+		self.cpu.dbs.update(dbs)
+		self.pendingRawDBs = []
+
+		# Resolve symbolic instructions and operators
+		self.__resolveSymbols()
+
+		# Do some finalizations
+		self.__finalizeCodeBlocks()
+
+		# Run some static sanity checks on the code
+		self.__staticSanityChecks()
+
 class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
 	def __init__(self):
 		self.specs = S7CPUSpecs(self)
+		self.prog = S7Prog(self)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
@@ -120,51 +455,8 @@ class S7CPU(object): #+cdef
 	def setRunTimeLimit(self, timeoutSeconds=0.0):
 		self.__runtimeLimit = timeoutSeconds if timeoutSeconds > 0.0 else None
 
-	def __detectMnemonics(self, parseTree):
-		specs = self.getSpecs()
-		if specs.getConfiguredMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
-			return
-		codeBlocks = list(parseTree.obs.values())
-		codeBlocks.extend(parseTree.fbs.values())
-		codeBlocks.extend(parseTree.fcs.values())
-		errorCounts = {
-			S7CPUSpecs.MNEMONICS_EN		: 0,
-			S7CPUSpecs.MNEMONICS_DE		: 0,
-		}
-		detected = None
-		for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
-				  S7CPUSpecs.MNEMONICS_DE):
-			for block in codeBlocks:
-				for rawInsn in block.insns:
-					ret = AwlInsnTranslator.name2type(rawInsn.getName(),
-									  mnemonics)
-					if ret is None:
-						errorCounts[mnemonics] += 1
-					try:
-						optrans = AwlOpTranslator(None, mnemonics)
-						optrans.translateFromRawInsn(rawInsn)
-					except AwlSimError:
-						errorCounts[mnemonics] += 1
-			if errorCounts[mnemonics] == 0:
-				# No error. Use these mnemonics.
-				detected = mnemonics
-		if detected is None:
-			# Select the mnemonics with the lower error count.
-			if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
-				detected = S7CPUSpecs.MNEMONICS_EN
-			else:
-				detected = S7CPUSpecs.MNEMONICS_DE
-		if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
-			# Autodetected mnemonics were already set before
-			if specs.getMnemonics() != detected:
-				raise AwlSimError("Cannot mix multiple AWL files with "\
-					"distinct mnemonics. This error may be caused by "\
-					"incorrect autodetection. "\
-					"Force mnemonics to EN or DE to avoid this error.")
-		specs.setDetectedMnemonics(detected)
-
 	# Returns all user defined code blocks (OBs, FBs, FCs)
-	def __allUserCodeBlocks(self):
+	def allUserCodeBlocks(self):
 		for ob in self.obs.values():
 			yield ob
 		for fb in self.fbs.values():
@@ -173,20 +465,20 @@ class S7CPU(object): #+cdef
 			yield fc
 
 	# Returns all system code blocks (SFBs, SFCs)
-	def __allSystemCodeBlocks(self):
+	def allSystemCodeBlocks(self):
 		for sfb in self.sfbs.values():
 			yield sfb
 		for sfc in self.sfcs.values():
 			yield sfc
 
 	# Returns all user defined code blocks (OBs, FBs, FCs, SFBs, SFCs)
-	def __allCodeBlocks(self):
-		for block in self.__allUserCodeBlocks():
+	def allCodeBlocks(self):
+		for block in self.allUserCodeBlocks():
 			yield block
-		for block in self.__allSystemCodeBlocks():
+		for block in self.allSystemCodeBlocks():
 			yield block
 
-	def __allCallInsns(self, block):
+	def allCallInsns(self, block):
 		resolver = AwlSymResolver(self)
 
 		for insn in block.insns:
@@ -260,214 +552,33 @@ class S7CPU(object): #+cdef
 
 			yield insn, codeBlock, dataBlock
 
-	def __checkCallParamTypeCompat(self, block):
-		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
-			try:
-				for param in insn.params:
-					# Get the interface field for this variable
-					field = calledCodeBlock.interface.getFieldByName(param.lvalueName)
-					# Check type compatibility
-					param.rvalueOp.checkDataTypeCompat(self, field.dataType)
-			except AwlSimError as e:
-				e.setInsn(insn)
-				raise e
+	def load(self, parseTree, rebuild = False):
+		for rawDB in parseTree.dbs.values():
+			self.prog.addRawDB(rawDB)
+		for rawFB in parseTree.fbs.values():
+			self.prog.addRawFB(rawFB)
+		for rawFC in parseTree.fcs.values():
+			self.prog.addRawFC(rawFC)
+		for rawOB in parseTree.obs.values():
+			self.prog.addRawOB(rawOB)
+		for rawUDT in parseTree.udts.values():
+			self.prog.addRawUDT(rawUDT)
+		if rebuild:
+			self.prog.build()
 
-	def __finalizeCodeBlock(self, block):
-		translator = AwlTranslator(self)
+	def loadLibraryBlock(self, libSelection, rebuild = False):
+		self.prog.addLibrarySelection(libSelection)
+		if rebuild:
+			self.prog.build()
 
-		# Finalize call instructions
-		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
-			try:
-				for param in insn.params:
-					# Final translation of parameter assignment operand.
-					translator.translateParamAssignOper(param)
-			except AwlSimError as e:
-				e.setInsn(insn)
-				raise e
+	@property
+	def symbolTable(self):
+		return self.prog.symbolTable
 
-		# Check and account for direct L stack allocations and
-		# interface L stack allocations.
-		block.accountTempAllocations()
-
-	def __finalizeCodeBlocks(self):
-		for block in self.__allUserCodeBlocks():
-			self.__finalizeCodeBlock(block)
-
-	# Assign call parameter interface reference.
-	def __assignParamInterface(self, block):
-		for insn, calledCodeBlock, calledDataBlock in self.__allCallInsns(block):
-			try:
-				for param in insn.params:
-					# Add interface references to the parameter assignment.
-					param.interface = calledCodeBlock.interface
-			except AwlSimError as e:
-				e.setInsn(insn)
-				raise e
-
-	# Resolve all symbols (global and local) on all blocks, as far as possible.
-	def __resolveSymbols(self):
-		resolver = AwlSymResolver(self)
-		for block in self.__allCodeBlocks():
-			# Add interface references to the parameter assignment.
-			self.__assignParamInterface(block)
-			# Check type compatibility between formal and
-			# actual parameter of calls.
-			self.__checkCallParamTypeCompat(block)
-			# Resolve all symbols
-			resolver.resolveSymbols_block(block)
-			# Check type compatibility between formal and
-			# actual parameter of calls again, with resolved symbols.
-			self.__checkCallParamTypeCompat(block)
-
-	# Run static error checks for code block
-	def __staticSanityChecks_block(self, block):
-		for insn in block.insns:
-			insn.staticSanityChecks()
-
-	# Run static error checks
-	def __staticSanityChecks(self):
-		for block in self.__allUserCodeBlocks():
-			self.__staticSanityChecks_block(block)
-
-	def load(self, parseTree):
-		translator = AwlTranslator(self)
-		resolver = AwlSymResolver(self)
-
-		# Mnemonics autodetection
-		self.__detectMnemonics(parseTree)
-
-		# Translate UDTs
-		for udtNumber, rawUDT in parseTree.udts.items():
-			udtNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_UDT_X},
-								   udtNumber)
-			if udtNumber in self.udts:
-				raise AwlSimError("Multiple definitions of "\
-					"UDT %d." % udtNumber)
-			rawUDT.index = udtNumber
-			self.udts[udtNumber] = UDT.makeFromRaw(rawUDT)
-
-		# Build all UDTs (Resolve sizes of all fields)
-		for udt in self.udts.values():
-			udt.buildDataStructure(self)
-
-		# Translate OBs
-		for obNumber, rawOB in parseTree.obs.items():
-			obNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_OB_X},
-								  obNumber)
-			if obNumber in self.obs and\
-			   self.obs[obNumber].insns:
-				raise AwlSimError("Multiple definitions of "\
-					"OB %d." % obNumber)
-			rawOB.index = obNumber
-			ob = translator.translateCodeBlock(rawOB, OB)
-			self.obs[obNumber] = ob
-			# Create the TEMP-preset handler table
-			try:
-				presetHandlerClass = OBTempPresets_table[obNumber]
-			except KeyError:
-				presetHandlerClass = OBTempPresets_dummy
-			self.obTempPresetHandlers[obNumber] = presetHandlerClass(self)
-
-		# Translate FBs
-		for fbNumber, rawFB in parseTree.fbs.items():
-			fbNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_FB_X},
-								  fbNumber)
-			if fbNumber in self.fbs:
-				extra = ""
-				if self.fbs[fbNumber].isLibraryBlock:
-					extra = "\nFB %d is already defined by an "\
-						"imported library block (%s)." % (
-						fbNumber,
-						self.fbs[fbNumber].libraryName)
-				raise AwlSimError("Multiple definitions of "\
-					"FB %d.%s" % (fbNumber, extra))
-			rawFB.index = fbNumber
-			fb = translator.translateCodeBlock(rawFB, FB)
-			self.fbs[fbNumber] = fb
-
-		# Translate FCs
-		for fcNumber, rawFC in parseTree.fcs.items():
-			fcNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_FC_X},
-								  fcNumber)
-			if fcNumber in self.fcs:
-				extra = ""
-				if self.fcs[fcNumber].isLibraryBlock:
-					extra = "\nFC %d is already defined by an "\
-						"imported library block (%s)." % (
-						fcNumber,
-						self.fcs[fcNumber].libraryName)
-				raise AwlSimError("Multiple definitions of "\
-					"FC %d.%s" % (fcNumber, extra))
-			rawFC.index = fcNumber
-			fc = translator.translateCodeBlock(rawFC, FC)
-			self.fcs[fcNumber] = fc
-
-		if not self.sfbs:
-			# Create the SFB tables
-			for sfbNumber in SFB_table.keys():
-				if sfbNumber < 0 and not self.__extendedInsnsEnabled:
-					continue
-				sfb = SFB_table[sfbNumber](self)
-				self.sfbs[sfbNumber] = sfb
-
-		if not self.sfcs:
-			# Create the SFC tables
-			for sfcNumber in SFC_table.keys():
-				if sfcNumber < 0 and not self.__extendedInsnsEnabled:
-					continue
-				sfc = SFC_table[sfcNumber](self)
-				self.sfcs[sfcNumber] = sfc
-
-		# Build the data structures of code blocks.
-		for block in self.__allCodeBlocks():
-			block.interface.buildDataStructure(self)
-
-		# Translate DBs
-		for dbNumber, rawDB in parseTree.dbs.items():
-			dbNumber, sym = resolver.resolveBlockName({AwlDataType.TYPE_DB_X,
-								   AwlDataType.TYPE_FB_X,
-								   AwlDataType.TYPE_SFB_X},
-								  dbNumber)
-			if dbNumber in self.dbs:
-				raise AwlSimError("Multiple definitions of "\
-					"DB %d." % dbNumber)
-			rawDB.index = dbNumber
-			db = translator.translateDB(rawDB)
-			self.dbs[dbNumber] = db
-
-	def loadLibraryBlock(self, libSelection):
-		# Get the block class from the library.
-		libEntryCls = AwlLib.getEntryBySelection(libSelection)
-		assert(not libEntryCls.isSystemBlock)
-
-		# Get the effective block index.
-		effIndex = libSelection.getEffectiveEntryIndex()
-		if effIndex < 0:
-			effIndex = libSelection.getEntryIndex()
-
-		# Create and translate the block
-		translator = AwlTranslator(self)
-		if libEntryCls.isFC:
-			block = libEntryCls(index = effIndex)
-			if block.index in self.fcs:
-				raise AwlSimError("Error while loading library "
-					"block FC %d: Block FC %d is already "
-					"loaded." % (block.index, block.index))
-			block = translator.translateLibraryCodeBlock(block)
-			self.fcs[block.index] = block
-		elif libEntryCls.isFB:
-			block = libEntryCls(index = effIndex)
-			if block.index in self.fbs:
-				raise AwlSimError("Error while loading library "
-					"block FB %d: Block FB %d is already "
-					"loaded." % (block.index, block.index))
-			block = translator.translateLibraryCodeBlock(block)
-			self.fbs[block.index] = block
-		else:
-			assert(0)
-
-	def loadSymbolTable(self, symbolTable):
-		self.symbolTable.merge(symbolTable)
+	def loadSymbolTable(self, symbolTable, rebuild = False):
+		self.prog.loadSymbolTable(symbolTable)
+		if rebuild:
+			self.prog.build()
 
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
@@ -489,6 +600,7 @@ class S7CPU(object): #+cdef
 		CallStackElem.resetCache()
 
 	def reset(self):
+		self.prog.reset()
 		self.udts = {
 			# UDTs
 		}
@@ -517,7 +629,6 @@ class S7CPU(object): #+cdef
 		self.sfbs = {
 			# System SFBs
 		}
-		self.symbolTable = SymbolTable()
 		self.is4accu = False
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()
@@ -620,12 +731,8 @@ class S7CPU(object): #+cdef
 
 	# Run startup code
 	def startup(self):
-		# Resolve symbolic instructions and operators
-		self.__resolveSymbols()
-		# Do some finalizations
-		self.__finalizeCodeBlocks()
-		# Run some static sanity checks on the code
-		self.__staticSanityChecks()
+		# Build (translate) the blocks, if not already done so.
+		self.prog.build()
 
 		self.__initializeTimestamp()
 		self.__speedMeasureStartTime = self.now

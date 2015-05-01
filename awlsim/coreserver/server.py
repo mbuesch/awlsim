@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -197,6 +197,7 @@ class AwlSimServer(object):
 	def __init__(self):
 		self.__startupDone = False
 		self.__state = -1
+		self.__needOB10x = True
 		self.setRunState(self._STATE_INIT)
 
 		self.__nextStats = 0
@@ -269,10 +270,13 @@ class AwlSimServer(object):
 		if runstate == self._STATE_INIT:
 			# We just entered initialization state.
 			printVerbose("Putting CPU into INIT state.")
+			self.__needOB10x = True
 		elif runstate == self.STATE_RUN:
 			# We just entered RUN state.
-			printVerbose("CPU startup (OB 10x).")
-			self.__sim.startup()
+			if self.__needOB10x:
+				printVerbose("CPU startup (OB 10x).")
+				self.__sim.startup()
+				self.__needOB10x = False
 			printVerbose("Putting CPU into RUN state.")
 		elif runstate == self.STATE_STOP:
 			# We just entered STOP state.
@@ -280,6 +284,7 @@ class AwlSimServer(object):
 		elif runstate == self.STATE_MAINTENANCE:
 			# We just entered MAINTENANCE state.
 			printVerbose("Putting CPU into MAINTENANCE state.")
+			self.__needOB10x = True
 
 		self.__state = runstate
 		# Make a shortcut variable for RUN
@@ -404,12 +409,18 @@ class AwlSimServer(object):
 		self.loadedHwModules = []
 		# List of loaded AwlLibEntrySelection()s
 		self.loadedLibSelections = []
+		# Schedule a CPU restart/rebuild.
+		self.__needOB10x = True
 
 	def loadAwlSource(self, awlSource):
 		parser = AwlParser()
 		parser.parseSource(awlSource)
-		self.setRunState(self.STATE_STOP)
-		self.__sim.load(parser.getParseTree())
+		needRebuild = False
+		if self.__state == self.STATE_RUN or\
+		   (self.__state == self.STATE_STOP and\
+		    not self.__needOB10x):
+			needRebuild = True
+		self.__sim.load(parser.getParseTree(), needRebuild)
 		self.loadedAwlSources.append(awlSource)
 
 	def loadSymTabSource(self, symTabSource):
@@ -501,6 +512,8 @@ class AwlSimServer(object):
 			AwlSimMessage_RUNSTATE.STATE_STOP
 		)
 		client.transceiver.send(reply)
+
+#TODO add a call that can remove sources from the CPU.
 
 	def __rx_LOAD_CODE(self, client, msg):
 		printDebug("Received message: LOAD_CODE")

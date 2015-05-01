@@ -116,36 +116,36 @@ class AwlSim(object):
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
-	def load(self, parseTree):
+	def load(self, parseTree, rebuild = False):
 		if self.__profileLevel >= 2:
 			self.__profileStart()
 
 		try:
-			self.cpu.load(parseTree)
+			self.cpu.load(parseTree, rebuild)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
 		if self.__profileLevel >= 2:
 			self.__profileStop()
 
-	def loadSymbolTable(self, symTab):
+	def loadSymbolTable(self, symTab, rebuild = False):
 		if self.__profileLevel >= 2:
 			self.__profileStart()
 
 		try:
-			self.cpu.loadSymbolTable(symTab)
+			self.cpu.loadSymbolTable(symTab, rebuild)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
 		if self.__profileLevel >= 2:
 			self.__profileStop()
 
-	def loadLibraryBlock(self, libSelection):
+	def loadLibraryBlock(self, libSelection, rebuild = False):
 		if self.__profileLevel >= 2:
 			self.__profileStart()
 
 		try:
-			self.cpu.loadLibraryBlock(libSelection)
+			self.cpu.loadLibraryBlock(libSelection, rebuild)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
