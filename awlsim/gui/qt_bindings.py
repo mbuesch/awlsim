@@ -29,7 +29,7 @@ import os
 
 
 def __frameworkError(msg):
-	printError("Awlsim-GUI ERROR: " + msg)
+	printError("awlsim-gui ERROR: " + msg)
 	input("Press enter to exit.")
 	sys.exit(1)
 
@@ -88,14 +88,14 @@ if __guiFramework == "pyqt":
 
 # Load the Qt modules
 if __guiFramework == "pyside4":
-	printInfo("Awlsim-GUI: Using PySide4 GUI framework")
+	printInfo("awlsim-gui: Using PySide4 GUI framework")
 	try:
 		from PySide.QtCore import *
 		from PySide.QtGui import *
 	except ImportError as e:
 		__frameworkError("Failed to import PySide modules:\n" + str(e))
 elif __guiFramework == "pyqt4":
-	printInfo("Awlsim-GUI: Using PyQt4 GUI framework")
+	printInfo("awlsim-gui: Using PyQt4 GUI framework")
 	try:
 		from PyQt4.QtCore import *
 		from PyQt4.QtGui import *
@@ -105,7 +105,7 @@ elif __guiFramework == "pyqt4":
 	# Compatibility
 	Signal = pyqtSignal
 elif __guiFramework == "pyqt5":
-	printInfo("Awlsim-GUI: Using PyQt5 GUI framework")
+	printInfo("awlsim-gui: Using PyQt5 GUI framework")
 	try:
 		from PyQt5.QtCore import *
 		from PyQt5.QtGui import *
