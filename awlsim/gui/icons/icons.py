@@ -50,6 +50,7 @@ from awlsim.gui.icons.cut import *
 from awlsim.gui.icons.copy import *
 from awlsim.gui.icons.paste import *
 from awlsim.gui.icons.download import *
+from awlsim.gui.icons.download_one import *
 from awlsim.gui.icons.warning import *
 from awlsim.gui.icons.tag import *
 from awlsim.gui.icons.hwmod import *
@@ -94,6 +95,7 @@ __icons = {
 	"copy"		: icon_copy,
 	"paste"		: icon_paste,
 	"download"	: icon_download,
+	"download_one"	: icon_download_one,
 	"warning"	: icon_warning,
 	"tag"		: icon_tag,
 	"hwmod"		: icon_hwmod,

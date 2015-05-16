@@ -32,6 +32,9 @@ document-open-5.svg           | tango                         | PD
 document-save-all.svg         | oxygen                        | CC-BY-SA 3.0 or LGPL
 download.png                  | network-server.svg and        | CC-BY-SA 3.0 or LGPL
                               | go-down-7.svg                 |
+download-one.png              | network-server.svg and        | CC-BY-SA 3.0 or LGPL
+                              | go-down-7.svg and             |
+                              | x-kde-nsplugin-generated.svg  |
 edit-4.svg                    | nuvola                        | LGPL-2.1
 edit-copy-4.svg               | tango                         | PD
 edit-cut-4.svg                | tango                         | PD
@@ -63,3 +66,4 @@ server-database.svg           | oxygen                        | CC-BY-SA 3.0 or 
 tab-new-background.svg        | oxygen                        | CC-BY-SA 3.0 or LGPL
 text-x-source.svg             | tango-harm                    | CC-BY 3.0
 view-calendar-workweek-2.svg  | oxygen                        | CC-BY-SA 3.0 or LGPL
+x-kde-nsplugin-generated.svg  | oxygen                        | CC-BY-SA 3.0 or LGPL
