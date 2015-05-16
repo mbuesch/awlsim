@@ -48,6 +48,13 @@ def usage():
 	print("")
 	print("Options:")
 	print(" -h|--help             Print this help text")
+	print(" -L|--loglevel LVL     Set the log level:")
+	print("                       0: Log nothing")
+	print("                       1: Log errors")
+	print("                       2: Log errors and warnings")
+	print("                       3: Log errors, warnings and info messages (default)")
+	print("                       4: Verbose logging")
+	print("                       5: Extremely verbose logging")
 	print("")
 	print("Environment variables:")
 	print(" AWLSIMGUI             Select the GUI framework (default 'auto')")
@@ -60,11 +67,12 @@ def usage():
 qapp = QApplication(sys.argv)
 
 opt_awlSource = None
+opt_loglevel = Logging.LOG_INFO
 
 try:
 	(opts, args) = getopt.getopt(sys.argv[1:],
-		"h",
-		[ "help", ])
+		"hL:",
+		[ "help", "loglevel=", ])
 except getopt.GetoptError as e:
 	printError(str(e))
 	usage()
@@ -73,12 +81,21 @@ for (o, v) in opts:
 	if o in ("-h", "--help"):
 		usage()
 		sys.exit(0)
+	if o in ("-L", "--loglevel"):
+		try:
+			opt_loglevel = int(v)
+		except ValueError:
+			printError("-L|--loglevel: Invalid log level")
+			sys.exit(1)
 if args:
 	if len(args) == 1:
 		opt_awlSource = args[0]
 	else:
 		usage()
 		sys.exit(1)
+
+Logging.setPrefix("awlsim-gui: ")
+Logging.setLoglevel(opt_loglevel)
 
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
 res = qapp.exec_()
