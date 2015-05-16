@@ -210,9 +210,13 @@ class CpuControlToolBar(QToolBar):
 		self.onlineAction = OnlineSelectAction(self)
 		self.addAction(self.onlineAction)
 		self.downloadAction = QAction(getIcon("download"),
-					      "Download all AWL/STL code to CPU",
+					      "Download all sources to CPU",
 					      self)
 		self.addAction(self.downloadAction)
+		self.downloadSingleAction = QAction(getIcon("download_one"),
+						    "Download single source to CPU",
+						    self)
+#TODO		self.addAction(self.downloadSingleAction)
 		self.runAction = RunSelectAction(self)
 		self.addAction(self.runAction)
 		self.diagAction = DiagSelectAction(self)
@@ -221,6 +225,7 @@ class CpuControlToolBar(QToolBar):
 	def connectToCpuWidget(self, cpuWidget):
 		self.onlineAction.toggled.connect(cpuWidget._onlineToggled)
 		self.downloadAction.triggered.connect(cpuWidget.download)
+		self.downloadSingleAction.triggered.connect(cpuWidget.downloadSingle)
 		self.runAction.toggled.connect(cpuWidget._runStateToggled)
 		self.diagAction.toggled.connect(cpuWidget._onlineDiagToggled)
 
@@ -597,6 +602,7 @@ class CpuWidget(QWidget):
 	def goOffline(self):
 		self.reqOnlineButtonState.emit(False)
 
+	# Reset/clear the CPU and upload all sources.
 	def download(self, noRun=False):
 		# Make sure we are online.
 		self.goOnline()
@@ -656,6 +662,66 @@ class CpuWidget(QWidget):
 			self.__run(goOnlineFirst = False,
 				   downloadFirstIfSimulator = False)
 
+		return True
+
+	# Download the current source.
+	def downloadSingle(self):
+		# Make sure we are online.
+		self.goOnline()
+		if not self.isOnline():
+			return False
+
+		client = self.mainWidget.getSimClient()
+		project = self.mainWidget.getProject()
+		projectWidget = self.mainWidget.projectWidget
+		selectedResource = projectWidget.getSelectedResource()
+
+		try:
+			self.state.setState(RunState.STATE_LOAD)
+
+			if selectedResource == projectWidget.RES_SOURCES:
+				awlSource = projectWidget.getCurrentAwlSource()
+				if awlSource:
+					printVerbose("Single AWL download: %s/%s" %\
+						(awlSource.name,
+						 awlSource.identHashStr))
+					client.loadCode(awlSource)
+			elif selectedResource == projectWidget.RES_SYMTABS:
+				symTabSource = projectWidget.getCurrentSymTabSource()
+				if symTabSource:
+					printVerbose("Single sym download: %s/%s" %\
+						(symTabSource.name,
+						 symTabSource.identHashStr))
+					client.loadSymbolTable(symTabSource)
+			elif selectedResource == projectWidget.RES_LIBSELS:
+				libSelections = projectWidget.getLibSelections()
+				printVerbose("Single libSelections download.")
+				for libSel in libSelections:
+					client.loadLibraryBlock(libSel)
+			else:
+				assert(0)
+
+			if self.__runBtnPressed:
+				self.state.setState(RunState.STATE_RUN)
+			else:
+				self.state.setState(RunState.STATE_ONLINE)
+		except AwlParserError as e:
+			self.state.setState(RunState.STATE_ONLINE)
+			self.stop()
+			MessageBox.handleAwlParserError(self, e)
+			return False
+		except AwlSimError as e:
+			self.state.setState(RunState.STATE_ONLINE)
+			self.stop()
+			MessageBox.handleAwlSimError(self,
+				"Error while loading code (single source)", e)
+			return False
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
+			return False
+		except Exception:
+			client.shutdown()
+			handleFatalException(self)
 		return True
 
 	def _runStateToggled(self, runBtnPressed):

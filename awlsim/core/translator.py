@@ -410,7 +410,7 @@ class AwlSymResolver(object):
 	# Resolve classic symbols ("abc")
 	def __resolveClassicSym(self, block, insn, oper):
 		if oper.type == AwlOperator.SYMBOLIC:
-			symbol = self.cpu.symbolTable.findOneByName(
+			symbol = self.cpu.symbolTable.findByName(
 				oper.value.identChain.getString())
 			if not symbol:
 				raise AwlSimError("Symbol \"%s\" not found in "
@@ -425,7 +425,7 @@ class AwlSymResolver(object):
 	# Resolve symbolic OB/FB/FC/DB block name
 	def resolveBlockName(self, blockTypeIds, blockName):
 		if isString(blockName):
-			symbol = self.cpu.symbolTable.findOneByName(blockName)
+			symbol = self.cpu.symbolTable.findByName(blockName)
 			if not symbol:
 				raise AwlSimError("Symbolic block name \"%s\" "
 					"not found in symbol table." % blockName)
@@ -584,7 +584,7 @@ class AwlSymResolver(object):
 
 	# Resolve a symbolic DB name. Returns DB index number.
 	def __resolveDBName(self, dbName):
-		symbol = self.cpu.symbolTable.findOneByName(dbName)
+		symbol = self.cpu.symbolTable.findByName(dbName)
 		if not symbol:
 			raise AwlSimError("Symbol \"%s\" specified as DB in "
 				"fully qualified operator not found." %\

@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI symbol table edit widget
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,21 +47,21 @@ class SymTabModel(QAbstractTableModel):
 		return self.symTab
 
 	def deleteSymbol(self, row):
-		if row >= 0 and row < len(self.symTab.symbols):
+		if row >= 0 and row < len(self.symTab):
 			self.beginResetModel()
-			del self.symTab.symbols[row]
+			del self.symTab[row]
 			self.endResetModel()
 			self.emitSourceChanged()
 
 	def moveSymbol(self, fromRow, toRow):
 		self.beginResetModel()
-		sym = self.symTab.symbols.pop(fromRow)
-		self.symTab.symbols.insert(toRow, sym)
+		sym = self.symTab.pop(fromRow)
+		self.symTab.insert(toRow, sym)
 		self.endResetModel()
 		self.emitSourceChanged()
 
 	def rowCount(self, parent=QModelIndex()):
-		return len(self.symTab.symbols) + 1
+		return len(self.symTab) + 1
 
 	def columnCount(self, parent=QModelIndex()):
 		return 4
@@ -71,9 +71,9 @@ class SymTabModel(QAbstractTableModel):
 			return None
 		row, column = index.row(), index.column()
 		if role in (Qt.DisplayRole, Qt.EditRole):
-			if row >= len(self.symTab.symbols):
+			if row >= len(self.symTab):
 				return None
-			sym = self.symTab.symbols[row]
+			sym = self.symTab[row]
 			if column == 0:
 				return sym.getName()
 			elif column == 1:
@@ -83,8 +83,8 @@ class SymTabModel(QAbstractTableModel):
 			else:
 				return sym.getComment()
 		elif role == Qt.BackgroundRole:
-			if row >= len(self.symTab.symbols) or\
-			   self.symTab.symbols[row].isValid():
+			if row >= len(self.symTab) or\
+			   self.symTab[row].isValid():
 				return QBrush(QColor("white"))
 			return QBrush(QColor("red"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
@@ -102,7 +102,7 @@ class SymTabModel(QAbstractTableModel):
 		if orientation == Qt.Horizontal:
 			return ("Symbol", "Address", "Data type", "Comment")[section]
 		else:
-			if section >= len(self.symTab.symbols):
+			if section >= len(self.symTab):
 				return "new"
 			return "%d" % (section + 1)
 
@@ -111,14 +111,22 @@ class SymTabModel(QAbstractTableModel):
 			return False
 		if role == Qt.EditRole:
 			row, column = index.row(), index.column()
-			if row >= len(self.symTab.symbols):
-				sym = Symbol()
-				self.symTab.add(sym)
+			if row >= len(self.symTab):
+				nameBase = name = "__new_symbol_%d" % len(self.symTab)
+				i = 0
+				while name in self.symTab:
+					name = nameBase + "_" + str(i)
+					i += 1
+				sym = Symbol(name = name)
+				try:
+					self.symTab.add(sym)
+				except AwlSimError as e:
+					return False
 				self.rowsInserted.emit(QModelIndex(),
-					len(self.symTab.symbols),
-					len(self.symTab.symbols))
+					len(self.symTab),
+					len(self.symTab))
 			else:
-				sym = self.symTab.symbols[row]
+				sym = self.symTab[row]
 			try:
 				if column == 0:
 					sym.setName(value.strip())

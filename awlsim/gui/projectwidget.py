@@ -178,22 +178,29 @@ class ProjectWidget(QTabWidget):
 		self.codeChanged.emit()
 		self.symTabChanged.emit()
 
+	def __setSelectedResource(self, res):
+		self.__selectedResource = res
+		self.selResourceChanged.emit(res)
+
+	def getSelectedResource(self):
+		return self.__selectedResource
+
 	def __handleTabChange(self, newTabIndex):
 		widget = self.widget(newTabIndex)
 		if not widget:
 			return
 		if widget is self.awlTabs:
-			self.selResourceChanged.emit(self.RES_SOURCES)
+			self.__setSelectedResource(self.RES_SOURCES)
 			self.undoAvailableChanged.emit(self.awlTabs.undoIsAvailable())
 			self.redoAvailableChanged.emit(self.awlTabs.redoIsAvailable())
 			self.copyAvailableChanged.emit(self.awlTabs.copyIsAvailable())
 		elif widget is self.symTabs:
-			self.selResourceChanged.emit(self.RES_SYMTABS)
+			self.__setSelectedResource(self.RES_SYMTABS)
 			self.undoAvailableChanged.emit(self.symTabs.undoIsAvailable())
 			self.redoAvailableChanged.emit(self.symTabs.redoIsAvailable())
 			self.copyAvailableChanged.emit(self.symTabs.copyIsAvailable())
 		elif widget is self.libTable:
-			self.selResourceChanged.emit(self.RES_LIBSELS)
+			self.__setSelectedResource(self.RES_LIBSELS)
 			self.undoAvailableChanged.emit(False)
 			self.redoAvailableChanged.emit(False)
 			self.copyAvailableChanged.emit(False)
@@ -223,9 +230,17 @@ class ProjectWidget(QTabWidget):
 		"Returns a list of AwlSource()s"
 		return self.awlTabs.getSources()
 
+	def getCurrentAwlSource(self):
+		"Returns the currently selected AwlSource()."
+		return self.awlTabs.getCurrentSource()
+
 	def getSymTabSources(self):
 		"Returns a list of SymTabSource()s"
 		return self.symTabs.getSources()
+
+	def getCurrentSymTabSource(self):
+		"Returns the currently selected SymTabSource()."
+		return self.symTabs.getCurrentSource()
 
 	def getLibSelections(self):
 		"Returns a list of AwlLibEntrySelection()s"
@@ -235,8 +250,10 @@ class ProjectWidget(QTabWidget):
 		self.__project = Project(None) # Empty project
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
+		self.__selectedResource = self.RES_SOURCES
 		self.awlTabs.reset()
 		self.symTabs.reset()
+		self.setCurrentIndex(0)
 
 	def setSettings(self, guiSettings):
 		self.awlTabs.setSettings(guiSettings)
@@ -345,8 +362,7 @@ class ProjectWidget(QTabWidget):
 		# Check if we already have this symbol.
 		for tabWidget in self.symTabs.allTabWidgets():
 			symTable = tabWidget.getSymTab()
-			symbols = tuple(symTable.findByName(symbolName))
-			if symbols:
+			if symbolName in symTable:
 				# We already have it.
 				return True
 		# We don't have this symbol, yet. Parse it.

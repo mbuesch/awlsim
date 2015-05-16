@@ -2,7 +2,7 @@
 #
 # AWL simulator - symbol table parser
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,33 +42,22 @@ csv.register_dialect("awlsim_symtab", AwlsimSymTabCSVDialect)
 class Symbol(object):
 	"""One symbol."""
 
-	def __init__(self, name=None, operator=None, type=None, comment="",
+	def __init__(self, name="", operator=None, type=None, comment="",
 		     mnemonics=S7CPUSpecs.MNEMONICS_AUTO,
 		     lineNr=None, symTab=None):
+		self.setSymTab(symTab)
 		self.setName(name)		# The symbol name string
 		self.setOperator(operator)	# The symbol address (AwlOperator)
 		self.setType(type)		# The symbol type (AwlDataType)
 		self.setComment(comment)	# The comment string
 		self.setMnemonics(mnemonics)
 		self.setLineNr(lineNr)
-		self.setSymTab(symTab)
 
 	def isValid(self):
-		return self.name and self.operator and self.type and self.isUnique()
-
-	def isUnique(self):
-		if not self.symTab:
-			return True
-		for sym in self.symTab.findByName(self.name):
-			if sym is not self:
-				return False
-		return True
+		return self.name and self.operator and self.type
 
 	def validate(self):
 		name = self.name if self.name else "<no name>"
-		if not self.isUnique():
-			raise AwlSimError("Symbol '%s' is not unique in the symbol table. "
-				"Cannot generate symbol information." % name)
 		if not self.isValid():
 			raise AwlSimError("Symbol '%s' is incomplete. "
 				"Cannot generate symbol information." % name)
@@ -166,7 +155,7 @@ class Symbol(object):
 	def nameIsEqual(self, otherName):
 		if self.name is None or otherName is None:
 			return False
-		return self.name.upper() == otherName.upper()
+		return self.name.lower() == otherName.lower()
 
 	def __csvRecord(self, value):
 		value = str(value).encode(SymTabParser_CSV.ENCODING)
@@ -246,45 +235,103 @@ class SymbolTable(object):
 		self.clear()
 
 	def clear(self):
-		self.symbols = []
-
-	def add(self, symbol):
-		if any(self.findByName(symbol.name)):
-			raise AwlSimError("Multiple definitions of "
-				"symbol '%s'" % symbol.name)
-		self.symbols.append(symbol)
-		symbol.setSymTab(self)
-
-	def findByName(self, name):
-		for symbol in self.symbols:
-			if symbol.nameIsEqual(name):
-				yield symbol
-
-	def findOneByName(self, name):
-		foundSyms = tuple(self.findByName(name))
-		if not foundSyms:
-			return None
-		if len(foundSyms) != 1:
-			raise AwlSimError("Multiple definitions of "
-				"symbol '%s'" % symbol.name)
-		return foundSyms[0]
-
-	def merge(self, other):
-		"""Merge 'other' into 'self'"""
-		for symbol in other.symbols:
-			self.add(symbol)
-
+		self.__symbolsList = []
+ 
 	def toCSV(self):
-		return b"".join(s.toCSV() for s in self.symbols)
+		return b"".join(s.toCSV()\
+				for s in self.__symbolsList)
 
 	def toReadableCSV(self):
-		return b"".join(s.toReadableCSV() for s in self.symbols)
+		return b"".join(s.toReadableCSV()\
+				for s in self.__symbolsList)
 
 	def toASC(self):
-		return b"".join(s.toASC() for s in self.symbols)
+		return b"".join(s.toASC()\
+				for s in self.__symbolsList)
 
 	def __repr__(self):
 		return self.toReadableCSV().decode(SymTabParser_CSV.ENCODING)
+
+	def __len__(self):
+		return len(self.__symbolsList)
+
+	def __iter__(self):
+		for symbol in self.__symbolsList:
+			yield symbol
+
+	def __reversed__(self):
+		for symbol in reversed(self.__symbolsList):
+			yield symbol
+
+	def __getitem__(self, index):
+		return self.__symbolsList[index]
+
+	def __setitem__(self, index, symbol):
+		self.pop(index)
+		self.insert(index, symbol)
+
+	def __delitem__(self, index):
+		self.pop(index)
+
+	def __contains__(self, value):
+		if value is None:
+			return False
+		elif isString(value):
+			index, symbol = self.__findByName(value)
+			return symbol is not None
+		elif isinstance(value, Symbol):
+			name = value.getName()
+			if name is None:
+				return False
+			index, symbol = self.__findByName(name)
+			return symbol is not None
+		raise TypeError
+
+	def pop(self, index):
+		"""Get symbol by index and remove it from the table."""
+		symbol = self.__symbolsList.pop(index)
+		symbol.setSymTab(None)
+		return symbol
+
+	def insert(self, index, symbol):
+		"""Insert a symbol before index."""
+		if symbol in self:
+			raise AwlSimError("Multiple definitions of "
+				"symbol '%s'" % symbol.getName())
+		self.__symbolsList.insert(index, symbol)
+		symbol.setSymTab(self)
+
+	def add(self, symbol, overrideExisting = False):
+		if symbol in self:
+			if overrideExisting:
+				i = self.findIndexByName(symbol.getName())
+				assert(i is not None)
+				self[i] = symbol
+			else:
+				raise AwlSimError("Multiple definitions of "
+					"symbol '%s'" % symbol.getName())
+		self.__symbolsList.append(symbol)
+		symbol.setSymTab(self)
+
+	def __findByName(self, name):
+		name = name.lower()
+		for i, symbol in enumerate(self.__symbolsList):
+			if name == symbol.getName().lower():
+				return i, symbol
+		return None, None
+
+	def findByName(self, name):
+		index, symbol = self.__findByName(name)
+		return symbol
+
+	def findIndexByName(self, name):
+		index, symbol = self.__findByName(name)
+		return index
+
+	def merge(self, other, overrideExisting = False):
+		"""Merge 'other' into 'self'"""
+		for symbol in other.__symbolsList:
+			self.add(symbol, overrideExisting)
 
 class SymTabParser(object):
 	"""Abstract symbol table parser."""

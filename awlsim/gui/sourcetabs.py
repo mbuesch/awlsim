@@ -166,6 +166,13 @@ class SourceTabWidget(QTabWidget):
 	def setSources(self, sources):
 		raise NotImplementedError
 
+	def getCurrentSource(self):
+		"Returns the currently selected source, or None."
+		curWidget = self.currentWidget()
+		if curWidget:
+			return curWidget.getSource()
+		return None
+
 	def setSettings(self, guiSettings):
 		self.guiSettings = guiSettings
 
