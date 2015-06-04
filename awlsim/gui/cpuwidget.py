@@ -216,7 +216,7 @@ class CpuControlToolBar(QToolBar):
 		self.downloadSingleAction = QAction(getIcon("download_one"),
 						    "Download single source to CPU",
 						    self)
-#TODO		self.addAction(self.downloadSingleAction)
+		self.addAction(self.downloadSingleAction)
 		self.runAction = RunSelectAction(self)
 		self.addAction(self.runAction)
 		self.diagAction = DiagSelectAction(self)

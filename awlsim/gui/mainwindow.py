@@ -377,7 +377,7 @@ class MainWindow(QMainWindow):
 		menu = QMenu("&CPU", self)
 		menu.addAction(self.ctrlTb.onlineAction)
 		menu.addAction(self.ctrlTb.downloadAction)
-#TODO		menu.addAction(self.ctrlTb.downloadSingleAction)
+		menu.addAction(self.ctrlTb.downloadSingleAction)
 		menu.addAction(self.ctrlTb.runAction)
 		menu.addAction(self.ctrlTb.diagAction)
 		menu.addSeparator()
