@@ -3,5 +3,10 @@
 S7 compatibility:
 - Implement parsing of attributes
 
+core:
+- Blocks that are no longer linked to (created by) sources should be removed.
+- Single download of symtab causes a redefinition error.
+
 GUI:
+- Show loaded compiled blocks and sources in some kind of way.
 - Save window status (open MDI windows, positions, etc)
