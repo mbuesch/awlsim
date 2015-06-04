@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.subprocess import *
 from awlsim.common.cpuspecs import *
+from awlsim.common.sources import *
 
 from awlsim.core.main import *
 from awlsim.core.parser import *
@@ -210,6 +211,17 @@ class AwlSimServer(object):
 
 		self.__sim = AwlSim()
 		self.setCycleExitHook(None)
+
+		# List of loaded AwlSource()s
+		self.awlSourceContainer = SourceContainer()
+		# List of loaded SymTabSource()s
+		self.loadedSymTabSources = []
+		# List of tuples of loaded hardware modules:
+		#   (hwModName, parameterDict)
+		self.loadedHwModules = []
+		# List of loaded AwlLibEntrySelection()s
+		self.loadedLibSelections = []
+
 		self.__resetSources()
 
 	def runFromEnvironment(self, env=None):
@@ -400,14 +412,9 @@ class AwlSimServer(object):
 		self.__updateCpuCycleExitCallback()
 
 	def __resetSources(self):
-		# List of loaded AwlSource()s
-		self.loadedAwlSources = []
-		# List of loaded SymTabSource()s
+		self.awlSourceContainer.clear()
 		self.loadedSymTabSources = []
-		# List of tuples of loaded hardware modules:
-		#   (hwModName, parameterDict)
 		self.loadedHwModules = []
-		# List of loaded AwlLibEntrySelection()s
 		self.loadedLibSelections = []
 		# Schedule a CPU restart/rebuild.
 		self.__needOB10x = True
@@ -415,13 +422,18 @@ class AwlSimServer(object):
 	def loadAwlSource(self, awlSource):
 		parser = AwlParser()
 		parser.parseSource(awlSource)
+
+		srcManager = SourceManager(awlSource,
+					   self.awlSourceContainer)
+
 		needRebuild = False
 		if self.__state == self.STATE_RUN or\
 		   (self.__state == self.STATE_STOP and\
 		    not self.__needOB10x):
 			needRebuild = True
-		self.__sim.load(parser.getParseTree(), needRebuild)
-		self.loadedAwlSources.append(awlSource)
+		self.__sim.load(parser.getParseTree(), needRebuild, srcManager)
+
+		self.awlSourceContainer.addManager(srcManager)
 
 	def loadSymTabSource(self, symTabSource):
 		symbolTable = SymTabParser.parseSource(symTabSource,
@@ -621,7 +633,7 @@ class AwlSimServer(object):
 		printDebug("Received message: GET_IDENTS")
 		awlSrcs = symSrcs = hwMods = libSels = ()
 		if msg.getFlags & msg.GET_AWLSRCS:
-			awlSrcs = self.loadedAwlSources
+			awlSrcs = self.awlSourceContainer.getSources()
 		if msg.getFlags & msg.GET_SYMTABSRCS:
 			symSrcs = self.loadedSymTabSources
 		if msg.getFlags & msg.GET_HWMODS:

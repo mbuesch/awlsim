@@ -63,6 +63,7 @@ class UDT(Block):
 	@classmethod
 	def makeFromRaw(cls, rawUDT):
 		udt = cls(rawUDT.index)
+		udt.setSourceRef(rawUDT.sourceRef, inheritRef = True)
 		translator = AwlTranslator(cpu = None)
 		for rawField in rawUDT.fields:
 			name, dataType, initBytes =\

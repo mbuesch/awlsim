@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.refmanager import *
+
 from awlsim.core.labels import *
 from awlsim.core.datastructure import *
 from awlsim.core.datatypes import *
@@ -463,6 +465,23 @@ class Block(object):
 
 	def __init__(self, index):
 		self.index = index
+		self.sourceRef = None
+
+	def __del__(self):
+		if self.sourceRef:
+			assert(not self.sourceRef.alive)
+
+	def setSourceRef(self, sourceManagerOrRef, inheritRef = False):
+		self.sourceRef = ObjRef.make(
+			name = lambda ref: str(ref.obj),
+			managerOrRef = sourceManagerOrRef,
+			obj = self,
+			inheritRef = inheritRef)
+
+	def destroySourceRef(self):
+		if self.sourceRef:
+			self.sourceRef.destroy()
+			self.sourceRef = None
 
 	def __repr__(self):
 		return "Block %d" % self.index

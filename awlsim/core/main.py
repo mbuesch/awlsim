@@ -116,12 +116,12 @@ class AwlSim(object):
 		except AwlSimError as e:
 			self.__handleSimException(e)
 
-	def load(self, parseTree, rebuild = False):
+	def load(self, parseTree, rebuild = False, sourceManager = None):
 		if self.__profileLevel >= 2:
 			self.__profileStart()
 
 		try:
-			self.cpu.load(parseTree, rebuild)
+			self.cpu.load(parseTree, rebuild, sourceManager)
 		except AwlSimError as e:
 			self.__handleSimException(e)
 

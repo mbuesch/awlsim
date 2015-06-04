@@ -105,6 +105,7 @@ class AwlTranslator(object):
 	def translateCodeBlock(self, rawBlock, blockClass):
 		insns = self.__translateInsns(rawBlock.insns)
 		block = blockClass(insns, rawBlock.index)
+		block.setSourceRef(rawBlock.sourceRef, inheritRef = True)
 
 		# Construct the block interface
 		for rawVar in rawBlock.vars_in:
@@ -240,6 +241,7 @@ class AwlTranslator(object):
 
 	def __translateGlobalDB(self, rawDB):
 		db = DB(rawDB.index, None)
+		db.setSourceRef(rawDB.sourceRef, inheritRef = True)
 		# Create the data structure fields
 		for rawField in rawDB.fields:
 			self.__createDBField(db, rawField)
@@ -295,6 +297,7 @@ class AwlTranslator(object):
 
 		# Create an instance data block
 		db = DB(rawDB.index, fb)
+		db.setSourceRef(rawDB.sourceRef, inheritRef = True)
 		interface = fb.interface
 		# Allocate the data structure fields
 		db.allocate()

@@ -1,0 +1,133 @@
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - object reference manager
+#
+# Copyright 2015 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.common.compat import *
+
+
+class ObjRef(object):
+	"""An object reference."""
+
+	@classmethod
+	def make(cls, name, managerOrRef, obj = None, inheritRef = False):
+		"""Make a new ObjRef instance.
+		name -> A name string (or callable returning a string).
+		managerOrRef -> An ObjRefManager instance or ObjRef instance.
+		obj -> The object that is managed.
+		inheritRef -> If False, a new ref is created.
+			      If True and managerOrRef is an ObjRef, the ref is inherited.
+		"""
+		if managerOrRef is None:
+			return None
+		elif isinstance(managerOrRef, ObjRefManager):
+			manager = managerOrRef
+			return cls(name, manager, obj)
+		elif isinstance(managerOrRef, ObjRef):
+			oldRef = managerOrRef
+			newRef = cls(name, oldRef.__manager, obj)
+			if inheritRef and oldRef.alive:
+				oldRef.destroy()
+			return newRef
+		else:
+			assert(0)
+
+	def __init__(self, name, manager, obj = None):
+		"""Contruct object reference.
+		name: Informational name string or callable returing a string.
+		manager: An ObjRefManager instance.
+		obj: The object that is managed (optional).
+		"""
+		self.__name = name
+		self.__obj = obj
+		self.__manager = manager
+		self.__manager._addRef(self)
+
+	def destroy(self):
+		"""Destroy (unref) this reference.
+		This removes the reference from the manager.
+		"""
+		assert(self.alive)
+		self.__manager.refDestroyed(self)
+		self.__name = None
+		self.__obj = None
+		self.__manager = None
+
+	@property
+	def name(self):
+		"""The reference name string.
+		"""
+		if callable(self.__name):
+			return self.__name(self)
+		return self.__name
+
+	@property
+	def obj(self):
+		"""The referenced object.
+		"""
+		return self.__obj
+
+	@property
+	def alive(self):
+		"""True, if this reference is alive.
+		False, if this reference was destroyed.
+		"""
+		return self.__manager is not None
+
+	def __repr__(self):
+		return str(self.name)
+
+class ObjRefManager(object):
+	"""Object reference manager."""
+
+	def __init__(self, name):
+		"""Contruct reference manager.
+		name: Informational name string or callable returing a string.
+		"""
+		self.__name = name
+		self.__refs = set()
+
+	@property
+	def name(self):
+		"""The manager name string.
+		"""
+		if callable(self.__name):
+			return self.__name(self)
+		return self.__name
+
+	def _addRef(self, objRef):
+		self.__refs.add(objRef)
+
+	def refDestroyed(self, objRef):
+		"""Callback: Called if one reference was destroyed.
+		Override this method, if you want to be notified.
+		"""
+		self.__refs.remove(objRef)
+		if not self.__refs:
+			self.allRefsDestroyed()
+
+	def allRefsDestroyed(self):
+		"""Callback: Called if all references were destroyed.
+		Override this method, if you want to be notified.
+		"""
+		pass
+
+	def __repr__(self):
+		return str(self.name)

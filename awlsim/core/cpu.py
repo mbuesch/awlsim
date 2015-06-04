@@ -91,9 +91,7 @@ class S7Prog(object):
 
 	def __init__(self, cpu):
 		self.cpu = cpu
-		self.reset()
 
-	def reset(self):
 		self.pendingRawDBs = []
 		self.pendingRawFBs = []
 		self.pendingRawFCs = []
@@ -101,6 +99,23 @@ class S7Prog(object):
 		self.pendingRawUDTs = []
 		self.pendingLibSelections = []
 		self.symbolTable = SymbolTable()
+
+		self.reset()
+
+	def reset(self):
+		for rawBlock in allElementsIn(self.pendingRawDBs,
+					      self.pendingRawFBs,
+					      self.pendingRawFCs,
+					      self.pendingRawOBs,
+					      self.pendingRawUDTs):
+			rawBlock.destroySourceRef()
+		self.pendingRawDBs = []
+		self.pendingRawFBs = []
+		self.pendingRawFCs = []
+		self.pendingRawOBs = []
+		self.pendingRawUDTs = []
+		self.pendingLibSelections = []
+		self.symbolTable.clear()
 
 	def addRawDB(self, rawDB):
 		assert(isinstance(rawDB, RawAwlDB))
@@ -293,9 +308,6 @@ class S7Prog(object):
 		# Mnemonics autodetection
 		self.__detectMnemonics()
 
-		#TODO: Annotate the blocks with the source idents, so translated blocks
-		#      can be removed, if sources are removed from the system.
-
 		# Translate UDTs
 		udts = {}
 		for rawUDT in self.pendingRawUDTs:
@@ -305,8 +317,11 @@ class S7Prog(object):
 				raise AwlSimError("Multiple definitions of "\
 					"UDT %d." % udtNumber)
 			rawUDT.index = udtNumber
-			udts[udtNumber] = UDT.makeFromRaw(rawUDT)
-		self.cpu.udts.update(udts)
+			udt = UDT.makeFromRaw(rawUDT)
+			if udtNumber in self.cpu.udts:
+				self.cpu.udts[udtNumber].destroySourceRef()
+			udts[udtNumber] = udt
+			self.cpu.udts[udtNumber] = udt
 		self.pendingRawUDTs = []
 
 		# Build all UDTs (Resolve sizes of all fields)
@@ -323,14 +338,16 @@ class S7Prog(object):
 					"OB %d." % obNumber)
 			rawOB.index = obNumber
 			ob = translator.translateCodeBlock(rawOB, OB)
+			if obNumber in self.cpu.obs:
+				self.cpu.obs[obNumber].destroySourceRef()
 			obs[obNumber] = ob
+			self.cpu.obs[obNumber] = ob
 			# Create the TEMP-preset handler table
 			try:
 				presetHandlerClass = OBTempPresets_table[obNumber]
 			except KeyError:
 				presetHandlerClass = OBTempPresets_dummy
 			self.cpu.obTempPresetHandlers[obNumber] = presetHandlerClass(self.cpu)
-		self.cpu.obs.update(obs)
 		self.pendingRawOBs = []
 
 		# Translate FBs
@@ -350,8 +367,10 @@ class S7Prog(object):
 					self.cpu.fbs[fbNumber].libraryName))
 			rawFB.index = fbNumber
 			fb = translator.translateCodeBlock(rawFB, FB)
+			if fbNumber in self.cpu.fbs:
+				self.cpu.fbs[fbNumber].destroySourceRef()
 			fbs[fbNumber] = fb
-		self.cpu.fbs.update(fbs)
+			self.cpu.fbs[fbNumber] = fb
 		self.pendingRawFBs = []
 
 		# Translate FCs
@@ -371,8 +390,10 @@ class S7Prog(object):
 					self.cpu.fcs[fcNumber].libraryName))
 			rawFC.index = fcNumber
 			fc = translator.translateCodeBlock(rawFC, FC)
+			if fcNumber in self.cpu.fcs:
+				self.cpu.fcs[fcNumber].destroySourceRef()
 			fcs[fcNumber] = fc
-		self.cpu.fcs.update(fcs)
+			self.cpu.fcs[fcNumber] = fc
 		self.pendingRawFCs = []
 
 		if not self.cpu.sfbs:
@@ -407,8 +428,10 @@ class S7Prog(object):
 					"DB %d." % dbNumber)
 			rawDB.index = dbNumber
 			db = translator.translateDB(rawDB)
+			if dbNumber in self.cpu.dbs:
+				self.cpu.dbs[dbNumber].destroySourceRef()
 			dbs[dbNumber] = db
-		self.cpu.dbs.update(dbs)
+			self.cpu.dbs[dbNumber] = db
 		self.pendingRawDBs = []
 
 		# Resolve symbolic instructions and operators
@@ -433,6 +456,11 @@ class S7CPU(object): #+cdef
 		self.setPeripheralReadCallback(None)
 		self.setPeripheralWriteCallback(None)
 		self.setScreenUpdateCallback(None)
+		self.udts = {}
+		self.dbs = {}
+		self.obs = {}
+		self.fcs = {}
+		self.fbs = {}
 		self.reset()
 		self.enableExtendedInsns(False)
 		self.enableObTempPresets(False)
@@ -552,16 +580,21 @@ class S7CPU(object): #+cdef
 
 			yield insn, codeBlock, dataBlock
 
-	def load(self, parseTree, rebuild = False):
+	def load(self, parseTree, rebuild = False, sourceManager = None):
 		for rawDB in parseTree.dbs.values():
+			rawDB.setSourceRef(sourceManager)
 			self.prog.addRawDB(rawDB)
 		for rawFB in parseTree.fbs.values():
+			rawFB.setSourceRef(sourceManager)
 			self.prog.addRawFB(rawFB)
 		for rawFC in parseTree.fcs.values():
+			rawFC.setSourceRef(sourceManager)
 			self.prog.addRawFC(rawFC)
 		for rawOB in parseTree.obs.values():
+			rawOB.setSourceRef(sourceManager)
 			self.prog.addRawOB(rawOB)
 		for rawUDT in parseTree.udts.values():
+			rawUDT.setSourceRef(sourceManager)
 			self.prog.addRawUDT(rawUDT)
 		if rebuild:
 			self.prog.build()
@@ -601,15 +634,15 @@ class S7CPU(object): #+cdef
 
 	def reset(self):
 		self.prog.reset()
-		self.udts = {
-			# UDTs
-		}
-		self.dbs = {
-			# DBs
+		for block in allElementsIn(self.udts.values(), self.dbs.values(),
+					   self.obs.values(), self.fcs.values(),
+					   self.fbs.values()):
+			block.destroySourceRef()
+		self.udts = {} # UDTs
+		self.dbs = { # DBs
 			0 : DB(0, permissions = 0), # read/write-protected system-DB
 		}
-		self.obs = {
-			# OBs
+		self.obs = { # OBs
 			1 : OB([], 1), # Empty OB1
 		}
 		self.obTempPresetHandlers = {
@@ -617,18 +650,11 @@ class S7CPU(object): #+cdef
 			1 : OBTempPresets_table[1](self), # Default OB1 handler
 			# This table is extended as OBs are loaded.
 		}
-		self.fcs = {
-			# User FCs
-		}
-		self.fbs = {
-			# User FBs
-		}
-		self.sfcs = {
-			# System SFCs
-		}
-		self.sfbs = {
-			# System SFBs
-		}
+		self.fcs = {} # User FCs
+		self.fbs = {} # User FBs
+		self.sfcs = {} # System SFCs
+		self.sfbs = {} # System SFBs
+
 		self.is4accu = False
 		self.reallocate(force=True)
 		self.ar1 = Adressregister()

@@ -26,6 +26,7 @@ import sys
 import re
 
 from awlsim.common.project import *
+from awlsim.common.refmanager import *
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
@@ -111,12 +112,12 @@ class RawAwlBlock(object):
 		"tree",
 		"index",
 		"descriptors",
+		"sourceRef",
 	)
 
 	def __init__(self, tree, index):
 		self.tree = tree
 		self.index = index
-
 		self.descriptors = {
 			"TITLE"		: None,
 			"AUTHOR"	: None,
@@ -124,6 +125,19 @@ class RawAwlBlock(object):
 			"NAME"		: None,
 			"VERSION"	: None,
 		}
+		self.sourceRef = None
+
+	def setSourceRef(self, sourceManagerOrRef, inheritRef = False):
+		self.sourceRef = ObjRef.make(
+			name = lambda ref: str(ref.obj),
+			managerOrRef = sourceManagerOrRef,
+			obj = self,
+			inheritRef = inheritRef)
+
+	def destroySourceRef(self):
+		if self.sourceRef:
+			self.sourceRef.destroy()
+			self.sourceRef = None
 
 	def addDescriptor(self, tokens):
 		assert(len(tokens) >= 1 and tokens[0].upper())
