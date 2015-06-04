@@ -20,7 +20,6 @@ cdef class S7CPU(object):
 	cdef public object specs
 	cdef public double cycleTimeLimit
 	cdef public object __runtimeLimit
-	cdef public object symbolTable
 	cdef public bint is4accu
 	cdef public bint __obTempPresetsEnabled
 	cdef public bint __extendedInsnsEnabled
