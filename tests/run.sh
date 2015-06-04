@@ -265,6 +265,11 @@ do_tests()
 		local interp_major="$(echo "$interp_ver" | cut -d' ' -f 1)"
 		local interp_minor="$(echo "$interp_ver" | cut -d' ' -f 2)"
 
+		[ -z "$interp_ver" ] && {
+			echo "=== WARNING: Failed to get '$interpreter' version. Test skipped."
+			echo
+			[ -n "$opt_interpreter" ] && break || continue
+		}
 		[ "$interp_major" -eq 2 -a "$interp_minor" -lt 7 ] && {
 			echo "=== WARNING: '$interpreter' interpreter version '$interp_ver_dot' too old. Test skipped."
 			echo
