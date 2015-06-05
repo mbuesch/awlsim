@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ class MagicEnumerationGenerator(object):
 
 	def itemAt(self, number):
 		assert(self.__num is not None)
+		assert(number >= self.__num)
 		self.__num = number + 1
 		return number
 
