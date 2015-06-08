@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server messages
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,33 +79,44 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5713
+	HDR_MAGIC		= 0x5714
 	HDR_LENGTH		= hdrStruct.size
 
+	# Message IDs:
 	EnumGen.start
-	MSG_ID_REPLY		= EnumGen.item # Generic status reply
+	# Basic functionality
+	MSG_ID_REPLY		= EnumGen.itemAt(0x0000) # Generic status reply
 	MSG_ID_EXCEPTION	= EnumGen.item
+	MSG_ID_MAINTREQ		= EnumGen.item
 	MSG_ID_PING		= EnumGen.item
 	MSG_ID_PONG		= EnumGen.item
 	MSG_ID_RESET		= EnumGen.item
 	MSG_ID_SHUTDOWN		= EnumGen.item
-	MSG_ID_RUNSTATE		= EnumGen.item
-	MSG_ID_LOAD_SYMTAB	= EnumGen.item
-	MSG_ID_LOAD_CODE	= EnumGen.item
-	MSG_ID_LOAD_HW		= EnumGen.item
-	MSG_ID_SET_OPT		= EnumGen.item
-	MSG_ID_CPUDUMP		= EnumGen.item
-	MSG_ID_MAINTREQ		= EnumGen.item
+	# Program sources and blocks
+	MSG_ID_GET_AWLSRC	= EnumGen.itemAt(0x0100) #TODO not implemented, yet
+	MSG_ID_AWLSRC		= EnumGen.item
+	MSG_ID_GET_SYMTABSRC	= EnumGen.item #TODO not implemented, yet
+	MSG_ID_SYMTABSRC	= EnumGen.item
+	MSG_ID_HWMOD		= EnumGen.item
+	MSG_ID_LIBSEL		= EnumGen.item
+	MSG_ID_GET_IDENTS	= EnumGen.itemAt(0x0190)
+	MSG_ID_IDENTS		= EnumGen.item
+#TODO: add messages to get compiled block info
+#TODO: add messages to delete compiled blocks
+	# Configuration
+	MSG_ID_GET_OPT		= EnumGen.itemAt(0x0200) #TODO not implemented, yet
+	MSG_ID_OPT		= EnumGen.item
 	MSG_ID_GET_CPUSPECS	= EnumGen.item
 	MSG_ID_CPUSPECS		= EnumGen.item
+	# State
+	MSG_ID_GET_RUNSTATE	= EnumGen.itemAt(0x0300)
+	MSG_ID_RUNSTATE		= EnumGen.item
+	MSG_ID_GET_CPUDUMP	= EnumGen.item #TODO not implemented, yet
+	MSG_ID_CPUDUMP		= EnumGen.item
 	MSG_ID_REQ_MEMORY	= EnumGen.item
 	MSG_ID_MEMORY		= EnumGen.item
-	MSG_ID_INSNSTATE	= EnumGen.item
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
-	MSG_ID_LOAD_LIB		= EnumGen.item
-	MSG_ID_GET_RUNSTATE	= EnumGen.item
-	MSG_ID_GET_IDENTS	= EnumGen.item
-	MSG_ID_IDENTS		= EnumGen.item
+	MSG_ID_INSNSTATE	= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -293,21 +304,21 @@ class _AwlSimMessage_source(AwlSimMessage):
 			raise TransferError("SOURCE: Data format error")
 		return cls(cls.sourceClass(name, filepath, sourceBytes))
 
-class AwlSimMessage_LOAD_SYMTAB(_AwlSimMessage_source):
+class AwlSimMessage_SYMTABSRC(_AwlSimMessage_source):
 	sourceClass = SymTabSource
 
 	def __init__(self, source):
-		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_LOAD_SYMTAB, source)
+		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_SYMTABSRC, source)
 
-class AwlSimMessage_LOAD_CODE(_AwlSimMessage_source):
+class AwlSimMessage_AWLSRC(_AwlSimMessage_source):
 	sourceClass = AwlSource
 
 	def __init__(self, source):
-		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_LOAD_CODE, source)
+		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_AWLSRC, source)
 
-class AwlSimMessage_LOAD_HW(AwlSimMessage):
+class AwlSimMessage_HWMOD(AwlSimMessage):
 	def __init__(self, name, paramDict):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_HW)
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_HWMOD)
 		self.name = name
 		self.paramDict = paramDict
 
@@ -339,11 +350,11 @@ class AwlSimMessage_LOAD_HW(AwlSimMessage):
 			raise TransferError("LOAD_HW: Invalid data format")
 		return cls(name = name, paramDict = paramDict)
 
-class AwlSimMessage_LOAD_LIB(AwlSimMessage):
+class AwlSimMessage_LIBSEL(AwlSimMessage):
 	plStruct = struct.Struct(str(">Hii"))
 
 	def __init__(self, libSelection):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LOAD_LIB)
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LIBSEL)
 		self.libSelection = libSelection
 
 	# Pack a library selection.
@@ -387,9 +398,9 @@ class AwlSimMessage_LOAD_LIB(AwlSimMessage):
 			raise TransferError("LOAD_LIB: Invalid data format")
 		return cls(libSelection = libSelection)
 
-class AwlSimMessage_SET_OPT(AwlSimMessage):
+class AwlSimMessage_OPT(AwlSimMessage):
 	def __init__(self, name, value):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_SET_OPT)
+		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_OPT)
 		self.name = name
 		self.value = value
 
@@ -400,26 +411,26 @@ class AwlSimMessage_SET_OPT(AwlSimMessage):
 		try:
 			return int(self.value)
 		except ValueError as e:
-			raise AwlSimError("SET_OPT: Value is not an integer")
+			raise AwlSimError("OPT: Value is not an integer")
 
 	def getBoolValue(self):
 		try:
 			return bool(self.getIntValue())
 		except ValueError as e:
-			raise AwlSimError("SET_OPT: Value is not a boolean")
+			raise AwlSimError("OPT: Value is not a boolean")
 
 	def getFloatValue(self):
 		try:
 			return float(self.value)
 		except ValueError as e:
-			raise AwlSimError("SET_OPT: Value is not a float")
+			raise AwlSimError("OPT: Value is not a float")
 
 	def toBytes(self):
 		try:
 			payload = self.packString(self.name)
 			payload += self.packString(self.value)
 		except ValueError as e:
-			raise TransferError("SET_OPT: Invalid data format")
+			raise TransferError("OPT: Invalid data format")
 		return AwlSimMessage.toBytes(self, len(payload)) + payload
 
 	@classmethod
@@ -431,7 +442,7 @@ class AwlSimMessage_SET_OPT(AwlSimMessage):
 			value, count = cls.unpackString(payload, offset)
 			offset += count
 		except ValueError as e:
-			raise TransferError("SET_OPT: Invalid data format")
+			raise TransferError("OPT: Invalid data format")
 		return cls(name = name, value = value)
 
 class AwlSimMessage_CPUDUMP(AwlSimMessage):
@@ -797,7 +808,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 				payload.append(self.packString(pName))
 				payload.append(self.packString(pVal))
 		for libSel in self.libSelections:
-			payload.append(AwlSimMessage_LOAD_LIB.packLibSelection(libSel))
+			payload.append(AwlSimMessage_LIBSEL.packLibSelection(libSel))
 		payload = b''.join(payload)
 		return AwlSimMessage.toBytes(self, len(payload)) + payload
 
@@ -847,7 +858,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 					params[pName] = pVal
 				hwMods.append( (modName, params) )
 			for i in range(nrLib):
-				libSel, offset = AwlSimMessage_LOAD_LIB.unpackLibSelection(
+				libSel, offset = AwlSimMessage_LIBSEL.unpackLibSelection(
 						payload, offset)
 				libSelections.append(libSel)
 		except (ValueError, struct.error, AwlSimError) as e:
@@ -861,27 +872,31 @@ class AwlSimMessageTransceiver(object):
 	id2class = {
 		AwlSimMessage.MSG_ID_REPLY		: AwlSimMessage_REPLY,
 		AwlSimMessage.MSG_ID_EXCEPTION		: AwlSimMessage_EXCEPTION,
+		AwlSimMessage.MSG_ID_MAINTREQ		: AwlSimMessage_MAINTREQ,
 		AwlSimMessage.MSG_ID_PING		: AwlSimMessage_PING,
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
 		AwlSimMessage.MSG_ID_RESET		: AwlSimMessage_RESET,
 		AwlSimMessage.MSG_ID_SHUTDOWN		: AwlSimMessage_SHUTDOWN,
-		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
-		AwlSimMessage.MSG_ID_GET_RUNSTATE	: AwlSimMessage_GET_RUNSTATE,
-		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: AwlSimMessage_LOAD_SYMTAB,
-		AwlSimMessage.MSG_ID_LOAD_CODE		: AwlSimMessage_LOAD_CODE,
-		AwlSimMessage.MSG_ID_LOAD_HW		: AwlSimMessage_LOAD_HW,
-		AwlSimMessage.MSG_ID_LOAD_LIB		: AwlSimMessage_LOAD_LIB,
-		AwlSimMessage.MSG_ID_SET_OPT		: AwlSimMessage_SET_OPT,
-		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
-		AwlSimMessage.MSG_ID_MAINTREQ		: AwlSimMessage_MAINTREQ,
-		AwlSimMessage.MSG_ID_GET_CPUSPECS	: AwlSimMessage_GET_CPUSPECS,
-		AwlSimMessage.MSG_ID_CPUSPECS		: AwlSimMessage_CPUSPECS,
-		AwlSimMessage.MSG_ID_REQ_MEMORY		: AwlSimMessage_REQ_MEMORY,
-		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
-		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
-		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
+#TODO		AwlSimMessage.MSG_ID_GET_AWLSRC		: AwlSimMessage_GET_AWLSRC,
+		AwlSimMessage.MSG_ID_AWLSRC		: AwlSimMessage_AWLSRC,
+#TODO		AwlSimMessage.MSG_ID_GET_SYMTABSRC	: AwlSimMessage_GET_SYMTABSRC,
+		AwlSimMessage.MSG_ID_SYMTABSRC		: AwlSimMessage_SYMTABSRC,
+		AwlSimMessage.MSG_ID_HWMOD		: AwlSimMessage_HWMOD,
+		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: AwlSimMessage_GET_IDENTS,
 		AwlSimMessage.MSG_ID_IDENTS		: AwlSimMessage_IDENTS,
+#TODO		AwlSimMessage.MSG_ID_GET_OPT		: AwlSimMessage_GET_OPT,
+		AwlSimMessage.MSG_ID_OPT		: AwlSimMessage_OPT,
+		AwlSimMessage.MSG_ID_GET_CPUSPECS	: AwlSimMessage_GET_CPUSPECS,
+		AwlSimMessage.MSG_ID_CPUSPECS		: AwlSimMessage_CPUSPECS,
+		AwlSimMessage.MSG_ID_GET_RUNSTATE	: AwlSimMessage_GET_RUNSTATE,
+		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
+#TODO		AwlSimMessage.MSG_ID_GET_CPUDUMP	: AwlSimMessage_GET_CPUDUMP,
+		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
+		AwlSimMessage.MSG_ID_REQ_MEMORY		: AwlSimMessage_REQ_MEMORY,
+		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
+		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
+		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 	}
 
 	def __init__(self, sock, peerInfoString):

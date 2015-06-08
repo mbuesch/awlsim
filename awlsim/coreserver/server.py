@@ -527,32 +527,32 @@ class AwlSimServer(object):
 
 #TODO add a call that can remove sources from the CPU.
 
-	def __rx_LOAD_CODE(self, client, msg):
-		printDebug("Received message: LOAD_CODE")
+	def __rx_AWLSRC(self, client, msg):
+		printDebug("Received message: AWLSRC")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadAwlSource(msg.source)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
-	def __rx_LOAD_SYMTAB(self, client, msg):
-		printDebug("Received message: LOAD_SYMTAB")
+	def __rx_SYMTABSRC(self, client, msg):
+		printDebug("Received message: SYMTABSRC")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadSymTabSource(msg.source)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
-	def __rx_LOAD_HW(self, client, msg):
-		printDebug("Received message: LOAD_HW")
+	def __rx_HWMOD(self, client, msg):
+		printDebug("Received message: HWMOD")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadHardwareModule(msg.name, msg.paramDict)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
-	def __rx_LOAD_LIB(self, client, msg):
-		printDebug("Received message: LOAD_LIB")
+	def __rx_LIBSEL(self, client, msg):
+		printDebug("Received message: LIBSEL")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadLibraryBlock(msg.libSelection)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
-	def __rx_SET_OPT(self, client, msg):
-		printDebug("Received message: SET_OPT %s" % msg.name)
+	def __rx_OPT(self, client, msg):
+		printDebug("Received message: OPT %s" % msg.name)
 		status = AwlSimMessage_REPLY.STAT_OK
 
 		if msg.name == "loglevel":
@@ -651,11 +651,11 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SHUTDOWN		: __rx_SHUTDOWN,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
 		AwlSimMessage.MSG_ID_GET_RUNSTATE	: __rx_GET_RUNSTATE,
-		AwlSimMessage.MSG_ID_LOAD_CODE		: __rx_LOAD_CODE,
-		AwlSimMessage.MSG_ID_LOAD_SYMTAB	: __rx_LOAD_SYMTAB,
-		AwlSimMessage.MSG_ID_LOAD_HW		: __rx_LOAD_HW,
-		AwlSimMessage.MSG_ID_LOAD_LIB		: __rx_LOAD_LIB,
-		AwlSimMessage.MSG_ID_SET_OPT		: __rx_SET_OPT,
+		AwlSimMessage.MSG_ID_AWLSRC		: __rx_AWLSRC,
+		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
+		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
+		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
+		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,

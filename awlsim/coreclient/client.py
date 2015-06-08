@@ -363,35 +363,35 @@ class AwlSimClient(object):
 	def loadCode(self, codeSource):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_LOAD_CODE(codeSource)
+		msg = AwlSimMessage_AWLSRC(codeSource)
 		status = self.__sendAndWaitFor_REPLY(msg, 10.0)
 		if status != AwlSimMessage_REPLY.STAT_OK:
-			raise AwlSimError("AwlSimClient: Failed to load code")
+			raise AwlSimError("AwlSimClient: Failed to AWL source")
 		return True
 
 	def loadSymbolTable(self, symTabSource):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_LOAD_SYMTAB(symTabSource)
+		msg = AwlSimMessage_SYMTABSRC(symTabSource)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
-			raise AwlSimError("AwlSimClient: Failed to load symbol table")
+			raise AwlSimError("AwlSimClient: Failed to load symbol table source")
 		return True
 
 	def loadLibraryBlock(self, libSelection):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_LOAD_LIB(libSelection)
+		msg = AwlSimMessage_LIBSEL(libSelection)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
-			raise AwlSimError("AwlSimClient: Failed to load library block")
+			raise AwlSimError("AwlSimClient: Failed to load library block selection")
 		return True
 
 	def loadHardwareModule(self, name, parameters={}):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_LOAD_HW(name = name,
-					    paramDict = parameters)
+		msg = AwlSimMessage_HWMOD(name = name,
+					  paramDict = parameters)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
@@ -416,7 +416,7 @@ class AwlSimClient(object):
 	def __setOption(self, name, value, sync=True):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_SET_OPT(name, str(value))
+		msg = AwlSimMessage_OPT(name, str(value))
 		if sync:
 			status = self.__sendAndWaitFor_REPLY(msg)
 			if status != AwlSimMessage_REPLY.STAT_OK:
