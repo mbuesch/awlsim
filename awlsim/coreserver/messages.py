@@ -161,9 +161,9 @@ class AwlSimMessage(object):
 		except struct.error as e:
 			raise ValueError
 
-	def __init__(self, msgId, seq=0):
-		self.msgId = msgId
-		self.seq = seq
+	# Default values for instance attributes:
+	msgId = None	# MSG_ID_...
+	seq = 0		# Sequence number.
 
 	def toBytes(self, payloadLength=0):
 		return self.hdrStruct.pack(self.HDR_MAGIC,
@@ -177,6 +177,8 @@ class AwlSimMessage(object):
 		return cls()
 
 class AwlSimMessage_REPLY(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_REPLY
+
 	EnumGen.start
 	STAT_OK		= EnumGen.item
 	STAT_FAIL	= EnumGen.item
@@ -189,7 +191,6 @@ class AwlSimMessage_REPLY(AwlSimMessage):
 		return cls(inReplyToMsg.msgId, inReplyToMsg.seq, status)
 
 	def __init__(self, inReplyToId, inReplyToSeq, status):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_REPLY)
 		self.inReplyToId = inReplyToId
 		self.inReplyToSeq = inReplyToSeq
 		self.status = status
@@ -210,22 +211,20 @@ class AwlSimMessage_REPLY(AwlSimMessage):
 		return cls(inReplyToId, inReplyToSeq, status)
 
 class AwlSimMessage_PING(AwlSimMessage):
-	def __init__(self):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PING)
+	msgId = AwlSimMessage.MSG_ID_PING
 
 class AwlSimMessage_PONG(AwlSimMessage):
-	def __init__(self):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_PONG)
+	msgId = AwlSimMessage.MSG_ID_PONG
 
 class AwlSimMessage_RESET(AwlSimMessage):
-	def __init__(self):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RESET)
+	msgId = AwlSimMessage.MSG_ID_RESET
 
 class AwlSimMessage_SHUTDOWN(AwlSimMessage):
-	def __init__(self):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_SHUTDOWN)
+	msgId = AwlSimMessage.MSG_ID_SHUTDOWN
 
 class AwlSimMessage_RUNSTATE(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_RUNSTATE
+
 	EnumGen.start
 	STATE_STOP	= EnumGen.item
 	STATE_RUN	= EnumGen.item
@@ -234,7 +233,6 @@ class AwlSimMessage_RUNSTATE(AwlSimMessage):
 	plStruct = struct.Struct(str(">H"))
 
 	def __init__(self, runState):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_RUNSTATE)
 		self.runState = runState
 
 	def toBytes(self):
@@ -250,12 +248,12 @@ class AwlSimMessage_RUNSTATE(AwlSimMessage):
 		return cls(runState)
 
 class AwlSimMessage_GET_RUNSTATE(AwlSimMessage):
-	def __init__(self):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_RUNSTATE)
+	msgId = AwlSimMessage.MSG_ID_GET_RUNSTATE
 
 class AwlSimMessage_EXCEPTION(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_EXCEPTION
+
 	def __init__(self, exception):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_EXCEPTION)
 		self.exception = exception
 
 	def toBytes(self):
@@ -278,8 +276,7 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 class _AwlSimMessage_source(AwlSimMessage):
 	sourceClass = None
 
-	def __init__(self, msgId, source):
-		AwlSimMessage.__init__(self, msgId)
+	def __init__(self, source):
 		self.source = source
 
 	def toBytes(self):
@@ -305,20 +302,17 @@ class _AwlSimMessage_source(AwlSimMessage):
 		return cls(cls.sourceClass(name, filepath, sourceBytes))
 
 class AwlSimMessage_SYMTABSRC(_AwlSimMessage_source):
+	msgId = AwlSimMessage.MSG_ID_SYMTABSRC
 	sourceClass = SymTabSource
 
-	def __init__(self, source):
-		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_SYMTABSRC, source)
-
 class AwlSimMessage_AWLSRC(_AwlSimMessage_source):
+	msgId = AwlSimMessage.MSG_ID_AWLSRC
 	sourceClass = AwlSource
 
-	def __init__(self, source):
-		_AwlSimMessage_source.__init__(self, AwlSimMessage.MSG_ID_AWLSRC, source)
-
 class AwlSimMessage_HWMOD(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_HWMOD
+
 	def __init__(self, name, paramDict):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_HWMOD)
 		self.name = name
 		self.paramDict = paramDict
 
@@ -351,10 +345,11 @@ class AwlSimMessage_HWMOD(AwlSimMessage):
 		return cls(name = name, paramDict = paramDict)
 
 class AwlSimMessage_LIBSEL(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_LIBSEL
+
 	plStruct = struct.Struct(str(">Hii"))
 
 	def __init__(self, libSelection):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_LIBSEL)
 		self.libSelection = libSelection
 
 	# Pack a library selection.
@@ -399,8 +394,9 @@ class AwlSimMessage_LIBSEL(AwlSimMessage):
 		return cls(libSelection = libSelection)
 
 class AwlSimMessage_OPT(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_OPT
+
 	def __init__(self, name, value):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_OPT)
 		self.name = name
 		self.value = value
 
@@ -446,8 +442,9 @@ class AwlSimMessage_OPT(AwlSimMessage):
 		return cls(name = name, value = value)
 
 class AwlSimMessage_CPUDUMP(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_CPUDUMP
+
 	def __init__(self, dumpText):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUDUMP)
 		self.dumpText = dumpText
 
 	def toBytes(self):
@@ -466,10 +463,11 @@ class AwlSimMessage_CPUDUMP(AwlSimMessage):
 		return cls(dumpText)
 
 class AwlSimMessage_MAINTREQ(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_MAINTREQ
+
 	plStruct = struct.Struct(str(">H"))
 
 	def __init__(self, maintRequest):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MAINTREQ)
 		self.maintRequest = maintRequest
 
 	def toBytes(self):
@@ -487,14 +485,14 @@ class AwlSimMessage_MAINTREQ(AwlSimMessage):
 		return cls(MaintenanceRequest(requestType, msg))
 
 class AwlSimMessage_GET_CPUSPECS(AwlSimMessage):
-	def __init__(self):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_CPUSPECS)
+	msgId = AwlSimMessage.MSG_ID_GET_CPUSPECS
 
 class AwlSimMessage_CPUSPECS(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_CPUSPECS
+
 	plStruct = struct.Struct(str(">32I"))
 
 	def __init__(self, cpuspecs):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_CPUSPECS)
 		self.cpuspecs = cpuspecs
 
 	def toBytes(self):
@@ -533,6 +531,8 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 		return cls(cpuspecs)
 
 class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_REQ_MEMORY
+
 	# Payload header struct:
 	#	flags (32 bit)
 	#	repetition factor (32 bit)
@@ -550,7 +550,6 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
 
 	def __init__(self, flags, repetitionFactor, memAreas):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_REQ_MEMORY)
 		self.flags = flags
 		self.repetitionFactor = repetitionFactor
 		self.memAreas = memAreas
@@ -584,6 +583,8 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 		return cls(flags, repetitionFactor, memAreas)
 
 class AwlSimMessage_MEMORY(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_MEMORY
+
 	# Payload header struct:
 	#	flags (32 bit)
 	plHdrStruct = struct.Struct(str(">I"))
@@ -602,7 +603,6 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
 
 	def __init__(self, flags, memAreas):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_MEMORY)
 		self.flags = flags
 		self.memAreas = memAreas
 
@@ -644,6 +644,8 @@ class AwlSimMessage_MEMORY(AwlSimMessage):
 		return cls(flags, memAreas)
 
 class AwlSimMessage_INSNSTATE(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_INSNSTATE
+
 	# Payload data struct:
 	#	AWL line number (32 bit)
 	#	Serial number. Reset to 0 on cycle exit. (32 bit)
@@ -661,7 +663,6 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	plDataStruct = struct.Struct(str(">IIHHIIIIIIHH"))
 
 	def __init__(self, sourceId, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE)
 		self.sourceId = sourceId
 		self.lineNr = lineNr
 		self.serial = serial
@@ -696,6 +697,8 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 		return cls(sourceId, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di)
 
 class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_INSNSTATE_CONFIG
+
 	# Payload data struct:
 	#	Flags (32 bit)
 	#	From AWL line (32 bit)
@@ -709,7 +712,6 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 	FLG_CLEAR		= 1 << 2 # Clear, then apply settings.
 
 	def __init__(self, flags, sourceId, fromLine, toLine):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_INSNSTATE_CONFIG)
 		self.flags = flags
 		self.sourceId = sourceId
 		self.fromLine = fromLine
@@ -732,6 +734,8 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 		return cls(flags, sourceId, fromLine, toLine)
 
 class AwlSimMessage_GET_IDENTS(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_GET_IDENTS
+
 	# Get-flags. Specify what information to get.
 	EnumGen.start
 	GET_AWLSRCS		= EnumGen.bitmask # Get AwlSource()s (w/o data)
@@ -746,7 +750,6 @@ class AwlSimMessage_GET_IDENTS(AwlSimMessage):
 	plHdrStruct = struct.Struct(str(">II"))
 
 	def __init__(self, getFlags):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_GET_IDENTS)
 		self.getFlags = getFlags
 
 	def toBytes(self):
@@ -762,6 +765,8 @@ class AwlSimMessage_GET_IDENTS(AwlSimMessage):
 		return cls(getFlags)
 
 class AwlSimMessage_IDENTS(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_IDENTS
+
 	# Payload header struct:
 	#	Number of AWL sources (32 bit)
 	#	Number of symbol tables (32 bit)
@@ -781,7 +786,6 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 	# hwMods: List of tuples: (modName, parametersDict)
 	# libSelections: List of AwlLibEntrySelection()s
 	def __init__(self, awlSources, symTabSources, hwMods, libSelections):
-		AwlSimMessage.__init__(self, AwlSimMessage.MSG_ID_IDENTS)
 		self.awlSources = awlSources
 		self.symTabSources = symTabSources
 		self.hwMods = hwMods
