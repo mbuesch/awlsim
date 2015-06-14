@@ -150,15 +150,17 @@ class SymTabSource(GenericSource):
 class SourceManager(ObjRefManager):
 	"""Manages one source."""
 
-	def __init__(self, source, container):
+	def __init__(self, source, container = None):
 		"""source -> An AwlSource or SymTabSource instance.
-		container -> A SourceContainer instance.
+		container -> A SourceContainer instance or None.
 		"""
 		super(SourceManager, self).__init__(
 			name = lambda slf: "%s/%s" % (slf.source.name,
 						      slf.source.identHashStr))
 		self.source = source
 		self.container = container
+		if container:
+			container.addManager(self)
 
 	def allRefsDestroyed(self):
 		"""Called, if all source references are destroyed.
@@ -178,6 +180,7 @@ class SourceContainer(object):
 		"""Add a SourceManager instance to this container.
 		"""
 		self.__sourceManagers.append(sourceManager)
+		sourceManager.container = self
 
 	def removeManager(self, sourceManager):
 		"""Remove a SourceManager instance from this container.
@@ -206,3 +209,19 @@ class SourceContainer(object):
 		"""Return a list of sources in this container.
 		"""
 		return [ m.source for m in self.getSourceManagers() ]
+
+	def getSourceManagerByIdent(self, identHash):
+		"""Get the source manager by source ident hash.
+		Returns None, if no such source was found.
+		"""
+		for sourceManager in self.__sourceManagers:
+			if sourceManager.source.identHash == identHash:
+				return sourceManager
+		return None
+
+	def getSourceByIdent(self, identHash):
+		"""Get the source by source ident hash.
+		Returns None, if no such source was found.
+		"""
+		sourceManager = self.getSourceManagerByIdent(identHash)
+		return sourceManager.source if sourceManager else None
