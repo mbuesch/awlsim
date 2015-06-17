@@ -302,11 +302,11 @@ def runWithServerBackend(inputFile):
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
 		for symTabSrc in project.getSymTabSources():
-			client.loadSymbolTable(symTabSrc)
+			client.loadSymTabSource(symTabSrc)
 		for libSel in project.getLibSelections():
 			client.loadLibraryBlock(libSel)
 		for awlSrc in project.getAwlSources():
-			client.loadCode(awlSrc)
+			client.loadAwlSource(awlSrc)
 		client.setRunState(True)
 
 		# Run the client-side event loop

@@ -64,51 +64,6 @@ class RunState(QObject):
 		self.port = port
 		self.__emitStateChanged()
 
-class ToolButton(QPushButton):
-	ICONSIZE	= (32, 32)
-	BTNFACT		= 1.2
-
-	def __init__(self, iconName, description, parent=None):
-		QPushButton.__init__(self, parent)
-
-		iconSize = QSize(self.ICONSIZE[0], self.ICONSIZE[1])
-		btnSize = QSize(int(round(iconSize.width() * self.BTNFACT)),
-				int(round(iconSize.height() * self.BTNFACT)))
-
-		self.setMinimumSize(btnSize)
-		self.setMaximumSize(btnSize)
-		self.setIcon(getIcon(iconName))
-		self.setIconSize(iconSize)
-
-		self.setToolTip(description)
-
-class CheckableToolButton(ToolButton):
-	def __init__(self,
-		     checkedIconName, uncheckedIconName="",
-		     checkedToolTip="", uncheckedToolTip="",
-		     parent=None):
-		ToolButton.__init__(self, uncheckedIconName, "", parent)
-
-		self.__checkedIconName = checkedIconName
-		self.__uncheckedIconName = uncheckedIconName
-		if not self.__uncheckedIconName:
-			self.__uncheckedIconName = self.__checkedIconName
-		self.__checkedToolTip = checkedToolTip
-		self.__uncheckedToolTip = uncheckedToolTip
-		if not self.__uncheckedToolTip:
-			self.__uncheckedToolTip = self.__checkedToolTip
-
-		self.setCheckable(True)
-		self.setChecked(False)
-		self.__handleToggle(False)
-		self.toggled.connect(self.__handleToggle)
-
-	def __handleToggle(self, checked):
-		self.setToolTip(self.__checkedToolTip if checked else\
-				self.__uncheckedToolTip)
-		self.setIcon(getIcon(self.__checkedIconName if checked else\
-				     self.__uncheckedIconName))
-
 class OnlineSelectAction(QAction):
 	def __init__(self, parent):
 		QAction.__init__(self, getIcon("network"), "", parent)
@@ -631,11 +586,11 @@ class CpuWidget(QWidget):
 				client.loadHardwareModule(modDesc.getModuleName(),
 							  modDesc.getParameters())
 			for symTabSource in symTabSources:
-				client.loadSymbolTable(symTabSource)
+				client.loadSymTabSource(symTabSource)
 			for libSel in libSelections:
 				client.loadLibraryBlock(libSel)
 			for awlSource in awlSources:
-				client.loadCode(awlSource)
+				client.loadAwlSource(awlSource)
 
 			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
@@ -685,14 +640,14 @@ class CpuWidget(QWidget):
 					printVerbose("Single AWL download: %s/%s" %\
 						(awlSource.name,
 						 awlSource.identHashStr))
-					client.loadCode(awlSource)
+					client.loadAwlSource(awlSource)
 			elif selectedResource == projectWidget.RES_SYMTABS:
 				symTabSource = projectWidget.getCurrentSymTabSource()
 				if symTabSource:
 					printVerbose("Single sym download: %s/%s" %\
 						(symTabSource.name,
 						 symTabSource.identHashStr))
-					client.loadSymbolTable(symTabSource)
+					client.loadSymTabSource(symTabSource)
 			elif selectedResource == projectWidget.RES_LIBSELS:
 				libSelections = projectWidget.getLibSelections()
 				printVerbose("Single libSelections download.")

@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server client
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -208,6 +208,18 @@ class AwlSimClient(object):
 	def __rx_PONG(self, msg):
 		self.handle_PONG()
 
+	def handle_AWLSRC(self, awlSource):
+		pass # Don't do anything by default
+
+	def __rx_AWLSRC(self, msg):
+		self.handle_AWLSRC(msg.source)
+
+	def handle_SYMTABSRC(self, symTabSource):
+		pass # Don't do anything by default
+
+	def __rx_SYMTABSRC(self, msg):
+		self.handle_SYMTABSRC(msg.source)
+
 	def handle_CPUDUMP(self, dumpText):
 		pass # Don't do anything by default
 
@@ -242,15 +254,17 @@ class AwlSimClient(object):
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_REPLY		: __rx_NOP,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
+		AwlSimMessage.MSG_ID_MAINTREQ		: __rx_MAINTREQ,
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
-		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
-		AwlSimMessage.MSG_ID_MAINTREQ		: __rx_MAINTREQ,
+		AwlSimMessage.MSG_ID_AWLSRC		: __rx_AWLSRC,
+		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
+		AwlSimMessage.MSG_ID_IDENTS		: __rx_IDENTS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
+		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
+		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: __rx_INSNSTATE,
-		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
-		AwlSimMessage.MSG_ID_IDENTS		: __rx_IDENTS,
 	}
 
 	# Main message processing
@@ -360,16 +374,40 @@ class AwlSimClient(object):
 			return True
 		return False
 
-	def loadCode(self, codeSource):
+	def getAwlSource(self, identHash, sync=True):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_AWLSRC(codeSource)
+		msg = AwlSimMessage_GET_AWLSRC(identHash)
+		if sync:
+			rxMsg = self.__sendAndWait(msg,
+				lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_AWLSRC)
+			return rxMsg.source
+		else:
+			self.__send(msg)
+		return True
+
+	def loadAwlSource(self, awlSource):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_AWLSRC(awlSource)
 		status = self.__sendAndWaitFor_REPLY(msg, 10.0)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to AWL source")
 		return True
 
-	def loadSymbolTable(self, symTabSource):
+	def getSymTabSource(self, identHash, sync=True):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_GET_SYMTABSRC(identHash)
+		if sync:
+			rxMsg = self.__sendAndWait(msg,
+				lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_SYMTABSRC)
+			return rxMsg.source
+		else:
+			self.__send(msg)
+		return True
+
+	def loadSymTabSource(self, symTabSource):
 		if not self.__transceiver:
 			return False
 		msg = AwlSimMessage_SYMTABSRC(symTabSource)

@@ -212,10 +212,10 @@ class AwlSimServer(object):
 		self.__sim = AwlSim()
 		self.setCycleExitHook(None)
 
-		# List of loaded AwlSource()s
+		# Container of loaded and managed AwlSource()s
 		self.awlSourceContainer = SourceContainer()
-		# List of loaded SymTabSource()s
-		self.loadedSymTabSources = []
+		# Container of loaded and managed SymTabSource()s
+		self.symTabSourceContainer = SourceContainer()
 		# List of tuples of loaded hardware modules:
 		#   (hwModName, parameterDict)
 		self.loadedHwModules = []
@@ -413,7 +413,7 @@ class AwlSimServer(object):
 
 	def __resetSources(self):
 		self.awlSourceContainer.clear()
-		self.loadedSymTabSources = []
+		self.symTabSourceContainer.clear()
 		self.loadedHwModules = []
 		self.loadedLibSelections = []
 		# Schedule a CPU restart/rebuild.
@@ -423,8 +423,7 @@ class AwlSimServer(object):
 		parser = AwlParser()
 		parser.parseSource(awlSource)
 
-		srcManager = SourceManager(awlSource,
-					   self.awlSourceContainer)
+		srcManager = SourceManager(awlSource)
 
 		needRebuild = False
 		if self.__state == self.STATE_RUN or\
@@ -439,9 +438,13 @@ class AwlSimServer(object):
 		symbolTable = SymTabParser.parseSource(symTabSource,
 					autodetectFormat = True,
 					mnemonics = self.__sim.cpu.getSpecs().getMnemonics())
+
+		srcManager = SourceManager(symTabSource)
+
 		self.setRunState(self.STATE_STOP)
 		self.__sim.loadSymbolTable(symbolTable)
-		self.loadedSymTabSources.append(symTabSource)
+
+		self.symTabSourceContainer.addManager(srcManager)
 
 	def loadHardwareModule(self, moduleName, paramDict):
 		printInfo("Loading hardware module '%s'..." % moduleName)
@@ -527,11 +530,23 @@ class AwlSimServer(object):
 
 #TODO add a call that can remove sources from the CPU.
 
+	def __rx_GET_AWLSRC(self, client, msg):
+		printDebug("Received message: GET_AWLSRC")
+		awlSource = self.awlSourceContainer.getSourceByIdent(msg.identHash)
+		reply = AwlSimMessage_AWLSRC(awlSource)
+		client.transceiver.send(reply)
+
 	def __rx_AWLSRC(self, client, msg):
 		printDebug("Received message: AWLSRC")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadAwlSource(msg.source)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_GET_SYMTABSRC(self, client, msg):
+		printDebug("Received message: GET_SYMTABSRC")
+		symTabSource = self.symTabSourceContainer.getSourceByIdent(msg.identHash)
+		reply = AwlSimMessage_SYMTABSRC(symTabSource)
+		client.transceiver.send(reply)
 
 	def __rx_SYMTABSRC(self, client, msg):
 		printDebug("Received message: SYMTABSRC")
@@ -635,7 +650,7 @@ class AwlSimServer(object):
 		if msg.getFlags & msg.GET_AWLSRCS:
 			awlSrcs = self.awlSourceContainer.getSources()
 		if msg.getFlags & msg.GET_SYMTABSRCS:
-			symSrcs = self.loadedSymTabSources
+			symSrcs = self.symTabSourceContainer.getSources()
 		if msg.getFlags & msg.GET_HWMODS:
 			hwMods = self.loadedHwModules
 		if msg.getFlags & msg.GET_LIBSELS:
@@ -651,7 +666,9 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SHUTDOWN		: __rx_SHUTDOWN,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
 		AwlSimMessage.MSG_ID_GET_RUNSTATE	: __rx_GET_RUNSTATE,
+		AwlSimMessage.MSG_ID_GET_AWLSRC		: __rx_GET_AWLSRC,
 		AwlSimMessage.MSG_ID_AWLSRC		: __rx_AWLSRC,
+		AwlSimMessage.MSG_ID_GET_SYMTABSRC	: __rx_GET_SYMTABSRC,
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,

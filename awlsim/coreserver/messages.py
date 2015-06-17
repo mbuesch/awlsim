@@ -93,16 +93,16 @@ class AwlSimMessage(object):
 	MSG_ID_RESET		= EnumGen.item
 	MSG_ID_SHUTDOWN		= EnumGen.item
 	# Program sources and blocks
-	MSG_ID_GET_AWLSRC	= EnumGen.itemAt(0x0100) #TODO not implemented, yet
+	MSG_ID_GET_AWLSRC	= EnumGen.itemAt(0x0100)
 	MSG_ID_AWLSRC		= EnumGen.item
-	MSG_ID_GET_SYMTABSRC	= EnumGen.item #TODO not implemented, yet
+	MSG_ID_GET_SYMTABSRC	= EnumGen.item
 	MSG_ID_SYMTABSRC	= EnumGen.item
 	MSG_ID_HWMOD		= EnumGen.item
 	MSG_ID_LIBSEL		= EnumGen.item
 	MSG_ID_GET_IDENTS	= EnumGen.itemAt(0x0190)
 	MSG_ID_IDENTS		= EnumGen.item
 #TODO: add messages to get compiled block info
-#TODO: add messages to delete compiled blocks
+#TODO: add messages to delete compiled blocks and sources
 	# Configuration
 	MSG_ID_GET_OPT		= EnumGen.itemAt(0x0200) #TODO not implemented, yet
 	MSG_ID_OPT		= EnumGen.item
@@ -273,10 +273,30 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 			raise TransferError("EXCEPTION: Encoding error")
 		return cls(AwlSimErrorText(text, verboseText))
 
+class _AwlSimMessage_GET_source(AwlSimMessage):
+	msgId = None
+
+	def __init__(self, identHash):
+		self.identHash = identHash
+
+	def toBytes(self):
+		payload = self.packBytes(self.identHash)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			identHash = cls.unpackBytes(payload, 0)
+		except (ValueError, struct.error, AwlSimError) as e:
+			raise TransferError("GET_source: Invalid data format")
+		return cls(identHash = identHash)
+
 class _AwlSimMessage_source(AwlSimMessage):
 	sourceClass = None
 
 	def __init__(self, source):
+		if not source:
+			source = self.sourceClass()
 		self.source = source
 
 	def toBytes(self):
@@ -301,9 +321,15 @@ class _AwlSimMessage_source(AwlSimMessage):
 			raise TransferError("SOURCE: Data format error")
 		return cls(cls.sourceClass(name, filepath, sourceBytes))
 
+class AwlSimMessage_GET_SYMTABSRC(_AwlSimMessage_GET_source):
+	msgId = AwlSimMessage.MSG_ID_GET_SYMTABSRC
+
 class AwlSimMessage_SYMTABSRC(_AwlSimMessage_source):
 	msgId = AwlSimMessage.MSG_ID_SYMTABSRC
 	sourceClass = SymTabSource
+
+class AwlSimMessage_GET_AWLSRC(_AwlSimMessage_GET_source):
+	msgId = AwlSimMessage.MSG_ID_GET_AWLSRC
 
 class AwlSimMessage_AWLSRC(_AwlSimMessage_source):
 	msgId = AwlSimMessage.MSG_ID_AWLSRC
@@ -881,9 +907,9 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_PONG		: AwlSimMessage_PONG,
 		AwlSimMessage.MSG_ID_RESET		: AwlSimMessage_RESET,
 		AwlSimMessage.MSG_ID_SHUTDOWN		: AwlSimMessage_SHUTDOWN,
-#TODO		AwlSimMessage.MSG_ID_GET_AWLSRC		: AwlSimMessage_GET_AWLSRC,
+		AwlSimMessage.MSG_ID_GET_AWLSRC		: AwlSimMessage_GET_AWLSRC,
 		AwlSimMessage.MSG_ID_AWLSRC		: AwlSimMessage_AWLSRC,
-#TODO		AwlSimMessage.MSG_ID_GET_SYMTABSRC	: AwlSimMessage_GET_SYMTABSRC,
+		AwlSimMessage.MSG_ID_GET_SYMTABSRC	: AwlSimMessage_GET_SYMTABSRC,
 		AwlSimMessage.MSG_ID_SYMTABSRC		: AwlSimMessage_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: AwlSimMessage_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
