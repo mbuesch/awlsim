@@ -52,7 +52,7 @@ Awlsim extensions
 
 - Awlsim supports DATE_AND_TIME immediate constants (for example
   DT#2012-01-02-13:37:00.000) to FC and FB DATE_AND_TIME IN-variables. In FC
-  calls the DATE_AND_TIME constant is copied to VL memory snd passed via
+  calls the DATE_AND_TIME constant is copied to VL memory and passed via
   DB-pointer (that is itself stored in VL).
 
 - Awlsim supports passing STRING immediate constants (for example 'Test') to
