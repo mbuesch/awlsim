@@ -64,6 +64,7 @@ from awlsim.gui.icons.doc_new import *
 from awlsim.gui.icons.tab_new import *
 from awlsim.gui.icons.find import *
 from awlsim.gui.icons.findreplace import *
+from awlsim.gui.icons.plugin import *
 
 import base64
 
@@ -109,6 +110,7 @@ __icons = {
 	"tab_new"	: icon_tab_new,
 	"find"		: icon_find,
 	"findreplace"	: icon_findreplace,
+	"plugin"	: icon_plugin,
 }
 
 def getIcon(iconName):
