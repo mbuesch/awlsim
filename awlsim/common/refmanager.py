@@ -118,6 +118,12 @@ class ObjRefManager(object):
 			return self.__name(self)
 		return self.__name
 
+	@property
+	def hasReferences(self):
+		"""Returns true, if this manager holds references.
+		"""
+		return bool(self.__refs)
+
 	def _addRef(self, objRef):
 		self.__refs.add(objRef)
 
