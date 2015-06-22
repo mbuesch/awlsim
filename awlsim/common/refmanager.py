@@ -97,11 +97,17 @@ class ObjRef(object):
 class ObjRefManager(object):
 	"""Object reference manager."""
 
-	def __init__(self, name):
+	def __init__(self, name,
+		     oneDestroyedCallback = None,
+		     allDestroyedCallback = None):
 		"""Contruct reference manager.
 		name: Informational name string or callable returing a string.
+		oneDestroyedCallback: Optional callback. Called, if one ref was destroyed.
+		allDestroyedCallback: Optional callback. Called, if all refs were destroyed.
 		"""
 		self.__name = name
+		self.__oneDestroyedCallback = oneDestroyedCallback
+		self.__allDestroyedCallback = allDestroyedCallback
 		self.__refs = set()
 
 	@property
@@ -117,17 +123,22 @@ class ObjRefManager(object):
 
 	def refDestroyed(self, objRef):
 		"""Callback: Called if one reference was destroyed.
-		Override this method, if you want to be notified.
+		Override this method or set oneDestroyedCallback,
+		if you want to be notified.
 		"""
 		self.__refs.remove(objRef)
+		if self.__oneDestroyedCallback:
+			self.__oneDestroyedCallback(objRef)
 		if not self.__refs:
 			self.allRefsDestroyed()
 
 	def allRefsDestroyed(self):
 		"""Callback: Called if all references were destroyed.
-		Override this method, if you want to be notified.
+		Override this method or set allDestroyedCallback,
+		if you want to be notified.
 		"""
-		pass
+		if self.__allDestroyedCallback:
+			self.__allDestroyedCallback()
 
 	def __repr__(self):
 		return str(self.name)
