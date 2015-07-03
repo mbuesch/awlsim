@@ -98,10 +98,13 @@ class AwlLibEntrySelection(object):
 		       self.__effectiveEntryIndex <= 0xFFFF
 
 	def __repr__(self):
-		return "%s - %s %d (=> %s %d)" % (
+		asStr = ""
+		if self.getEntryIndex() != self.getEffectiveEntryIndex():
+			asStr = " (as %s %d)" % (self.getEntryTypeStr(),
+						 self.getEffectiveEntryIndex())
+		return "%s: %s %d%s" % (
 			self.getLibName(),
 			self.getEntryTypeStr(),
 			self.getEntryIndex(),
-			self.getEntryTypeStr(),
-			self.getEffectiveEntryIndex(),
+			asStr,
 		)
