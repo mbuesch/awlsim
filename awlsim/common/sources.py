@@ -129,6 +129,12 @@ class GenericSource(object):
 				(cls.SRCTYPE, name))
 		return cls(name, None, data)
 
+	def __eq__(self, other):
+		return self.identHash == other.identHash
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 	def __repr__(self):
 		return "%s%s %s %s" % ("" if self.isFileBacked() else "project ",
 				    self.SRCTYPE, self.name, self.identHashStr)
