@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI simulator client access
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #
 
 from awlsim.gui.util import *
+from awlsim.gui.blocktreewidget import *
 
 from awlsim.coreclient.client import *
 
@@ -54,6 +55,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 
 		self.__setMode(self.MODE_OFFLINE)
 
+		self.__blockTreeModelManager = None
+		self.__blockTreeModel = None
+
 	# Override sleep handler
 	def sleep(self, seconds):
 		end = monotonic_time() + seconds
@@ -78,6 +82,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Override ident hashes handler
 	def handle_IDENTS(self, msg):
 		self.haveIdentsMsg.emit(msg)
+
+		if self.__blockTreeModel:
+			self.__blockTreeModel.handle_IDENTS(msg)
 
 	def getMode(self):
 		return self.__mode
@@ -174,3 +181,28 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.__setMode(self.MODE_FORK, host = host, port = port)
 		self.__serverExecutable = serverExecutable
 		self.__interpreterList = interpreterList
+
+	def getBlockTreeModelRef(self):
+		"""Get an ObjRef to the BlockTreeModel object."""
+
+		if not self.__blockTreeModelManager:
+			# Create a new block tree model
+			self.__blockTreeModelManager = ObjRefManager("BlockTreeModel",
+				allDestroyedCallback = self.__allBlockTreeModelRefsDestroyed)
+			self.__blockTreeModel = BlockTreeModel(self)
+
+		return ObjRef.make("BlockTreeModel", self.__blockTreeModelManager,
+				   self.__blockTreeModel)
+
+	def blockTreeModelActive(self):
+		"""Returns True, if there is at least one active ref to
+		the BlockTreeModel."""
+
+		if self.__blockTreeModelManager:
+			return self.__blockTreeModelManager.hasReferences
+		return False
+
+	def __allBlockTreeModelRefsDestroyed(self):
+		# The last block tree model reference died. Destroy it.
+		self.__blockTreeModelManager = None
+		self.__blockTreeModel = None

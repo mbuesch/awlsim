@@ -115,6 +115,10 @@ class CpuInspectToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
 
+		self.blocksAction = QAction(getIcon("plugin"),
+					    "Add inspection: Online blocks",
+					    self)
+		self.addAction(self.blocksAction)
 		self.inputsAction = QAction(getIcon("inputs"),
 					    "Add inspection: Input memory (I / E)",
 					    self)
@@ -149,6 +153,7 @@ class CpuInspectToolBar(QToolBar):
 		self.addAction(self.lcdAction)
 
 	def connectToCpuWidget(self, cpuWidget):
+		self.blocksAction.triggered.connect(cpuWidget.newWin_Blocks)
 		self.inputsAction.triggered.connect(cpuWidget.newWin_E)
 		self.outputsAction.triggered.connect(cpuWidget.newWin_A)
 		self.flagsAction.triggered.connect(cpuWidget.newWin_M)
@@ -254,6 +259,7 @@ class CpuWidget(QWidget):
 
 		self.state.stateChanged.connect(self.runStateChanged)
 
+		self.newWin_Blocks()
 		self.newWin_CPU()
 		self.update()
 
@@ -302,6 +308,10 @@ class CpuWidget(QWidget):
 
 	def newWin_LCD(self):
 		self.__addWindow(State_LCD(self.mainWidget.getSimClient(), self))
+
+	def newWin_Blocks(self):
+		self.__addWindow(State_Blocks(self.mainWidget.getSimClient(),
+					      self))
 
 	def __stateWinConfigChanged(self, stateWin):
 		self.__uploadMemReadAreas()
@@ -446,8 +456,12 @@ class CpuWidget(QWidget):
 
 		if not self.__identsPending:
 			self.__identsPending = True
+
+			hasBlockTree = client.blockTreeModelActive()
 			client.requestIdents(reqAwlSources = True,
-					     reqSymTabSources = True)
+					     reqSymTabSources = True,
+					     reqHwModules = hasBlockTree,
+					     reqLibSelections = hasBlockTree)
 
 	def __handleIdentsMsg(self, identsMsg):
 		if self.__identsPending:

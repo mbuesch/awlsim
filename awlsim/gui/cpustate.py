@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU state widgets
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.gui.valuelineedit import *
+from awlsim.gui.blocktreewidget import *
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
@@ -958,6 +959,25 @@ class State_Counter(_State_TimerCounter):
 		else:
 			assert(0)
 		return text
+
+class State_Blocks(StateWindow):
+	def __init__(self, client, parent=None):
+		StateWindow.__init__(self, client, parent)
+		self.setWindowTitle("CPU online content (downloaded blocks)")
+		self.setWindowIcon(getIcon("plugin"))
+
+		self.__modelRef = client.getBlockTreeModelRef()
+
+		self.blockTree = BlockTreeView(self.__modelRef.obj, self)
+		self.layout().addWidget(self.blockTree, 0, 0)
+
+		self.setMinimumSize(400, 220)
+		self._updateSize()
+
+	def closeEvent(self, ev):
+		self.__modelRef.destroy()
+		self.__modelRef = None
+		StateWindow.closeEvent(self, ev)
 
 class StateMdiArea(QMdiArea):
 	pass

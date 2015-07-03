@@ -381,6 +381,7 @@ class MainWindow(QMainWindow):
 		menu.addAction(self.ctrlTb.runAction)
 		menu.addAction(self.ctrlTb.diagAction)
 		menu.addSeparator()
+		menu.addAction(self.inspectTb.blocksAction)
 		menu.addAction(self.inspectTb.inputsAction)
 		menu.addAction(self.inspectTb.outputsAction)
 		menu.addAction(self.inspectTb.flagsAction)
