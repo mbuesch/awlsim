@@ -889,7 +889,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 					pVal, count = cls.unpackString(payload, offset)
 					offset += count
 					params[pName] = pVal
-				hwMods.append( (modName, params) )
+				hwMods.append(HwmodDescriptor(modName, params))
 			for i in range(nrLib):
 				libSel, offset = AwlSimMessage_LIBSEL.unpackLibSelection(
 						payload, offset)
