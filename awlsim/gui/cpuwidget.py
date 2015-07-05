@@ -597,8 +597,7 @@ class CpuWidget(QWidget):
 			client.enableExtendedInsns(project.getExtInsnsEn())
 
 			for modDesc in project.getHwmodSettings().getLoadedModules():
-				client.loadHardwareModule(modDesc.getModuleName(),
-							  modDesc.getParameters())
+				client.loadHardwareModule(modDesc)
 			for symTabSource in symTabSources:
 				client.loadSymTabSource(symTabSource)
 			for libSel in libSelections:

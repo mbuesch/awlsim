@@ -425,11 +425,10 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load library block selection")
 		return True
 
-	def loadHardwareModule(self, name, parameters={}):
+	def loadHardwareModule(self, hwmodDesc):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_HWMOD(name = name,
-					  paramDict = parameters)
+		msg = AwlSimMessage_HWMOD(hwmodDesc)
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")

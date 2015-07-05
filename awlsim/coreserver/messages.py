@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
 from awlsim.common.project import *
+from awlsim.common.hwmod import *
 from awlsim.common.datatypehelpers import *
 
 from awlsim.coreserver.memarea import *
@@ -101,7 +102,8 @@ class AwlSimMessage(object):
 	MSG_ID_LIBSEL		= EnumGen.item
 	MSG_ID_GET_IDENTS	= EnumGen.itemAt(0x0190)
 	MSG_ID_IDENTS		= EnumGen.item
-#TODO: add messages to get compiled block info
+	MSG_ID_GET_BLOCKINFO	= EnumGen.item
+	MSG_ID_BLOCKINFO	= EnumGen.item
 #TODO: add messages to delete compiled blocks and sources
 	# Configuration
 	MSG_ID_GET_OPT		= EnumGen.itemAt(0x0200) #TODO not implemented, yet
@@ -338,15 +340,15 @@ class AwlSimMessage_AWLSRC(_AwlSimMessage_source):
 class AwlSimMessage_HWMOD(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_HWMOD
 
-	def __init__(self, name, paramDict):
-		self.name = name
-		self.paramDict = paramDict
+	# hwmodDesc -> HwmodDescriptor instance
+	def __init__(self, hwmodDesc):
+		self.hwmodDesc = hwmodDesc
 
 	def toBytes(self):
 		payload = b""
 		try:
-			payload += self.packString(self.name)
-			for pname, pval in self.paramDict.items():
+			payload += self.packString(self.hwmodDesc.getModuleName())
+			for pname, pval in self.hwmodDesc.getParameters().items():
 				payload += self.packString(pname)
 				payload += self.packString(pval)
 			return AwlSimMessage.toBytes(self, len(payload)) + payload
@@ -368,7 +370,7 @@ class AwlSimMessage_HWMOD(AwlSimMessage):
 				paramDict[pname] = pval
 		except (ValueError) as e:
 			raise TransferError("LOAD_HW: Invalid data format")
-		return cls(name = name, paramDict = paramDict)
+		return cls(HwmodDescriptor(name, paramDict))
 
 class AwlSimMessage_LIBSEL(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_LIBSEL
@@ -809,7 +811,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 
 	# awlSources: List of AwlSource()s
 	# symTabSources: List of SymTabSource()s
-	# hwMods: List of tuples: (modName, parametersDict)
+	# hwMods: List of HwmodDescriptor()s
 	# libSelections: List of AwlLibEntrySelection()s
 	def __init__(self, awlSources, symTabSources, hwMods, libSelections):
 		self.awlSources = awlSources
@@ -831,10 +833,11 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 			payload.append(self.packString(src.name))
 			payload.append(self.packString(src.filepath))
 			payload.append(self.packBytes(src.identHash))
-		for modName, parametersDict in self.hwMods:
-			payload.append(self.plModStruct.pack(len(parametersDict), 0))
-			payload.append(self.packString(modName))
-			for pName, pVal in parametersDict.items():
+		for hwmodDesc in self.hwMods:
+			params = hwmodDesc.getParameters()
+			payload.append(self.plModStruct.pack(len(params), 0))
+			payload.append(self.packString(hwmodDesc.getModuleName()))
+			for pName, pVal in params.items():
 				payload.append(self.packString(pName))
 				payload.append(self.packString(pVal))
 		for libSel in self.libSelections:
@@ -897,6 +900,37 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 			   symTabSources = symTabSources,
 			   hwMods = hwMods,
 			   libSelections = libSelections)
+
+class AwlSimMessage_GET_BLOCKINFO(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_GET_BLOCKINFO
+
+	# Get-flags. Specify what information to get.
+	EnumGen.start
+	GET_OB_INFO		= EnumGen.bitmask # Get OB info
+	GET_FC_INFO		= EnumGen.bitmask # Get FC info
+	GET_FB_INFO		= EnumGen.bitmask # Get FB info
+	GET_DB_INFO		= EnumGen.bitmask # Get DB info
+	EnumGen.end
+
+	# Payload header struct:
+	#	Get-flags (32 bit)
+	#	Reserved (32 bit)
+	plHdrStruct = struct.Struct(str(">II"))
+
+	def __init__(self, getFlags):
+		self.getFlags = getFlags
+
+	def toBytes(self):
+		payload = self.plHdrStruct.pack(self.getFlags, 0)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			getFlags, _unused = cls.plHdrStruct.unpack_from(payload, 0)
+		except (ValueError, struct.error) as e:
+			raise TransferError("GET_BLOCKINFO: Invalid data format")
+		return cls(getFlags)
 
 class AwlSimMessageTransceiver(object):
 	id2class = {

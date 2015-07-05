@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
 from awlsim.common.sources import *
+from awlsim.common.hwmod import *
 from awlsim.common.util import *
 
 from awlsim.library.libselection import *
@@ -39,43 +40,6 @@ else:
 	from configparser import ConfigParser as _ConfigParser
 	from configparser import Error as _ConfigParserError
 
-
-class HwmodDescriptor(object):
-	"""Hardware module descriptor."""
-
-	def __init__(self, moduleName, parameters = None):
-		self.setModuleName(moduleName)
-		self.setParameters(parameters)
-
-	def dup(self):
-		return HwmodDescriptor(self.getModuleName(),
-				       dict(self.getParameters()))
-
-	def setModuleName(self, moduleName):
-		self.moduleName = moduleName
-
-	def getModuleName(self):
-		return self.moduleName
-
-	def setParameters(self, parameters):
-		if not parameters:
-			parameters = {}
-		self.parameters = parameters
-
-	def addParameter(self, name, value):
-		self.setParameterValue(name, value)
-
-	def setParameterValue(self, name, value):
-		self.parameters[name] = value
-
-	def removeParameter(self, name):
-		self.parameters.pop(name, None)
-
-	def getParameters(self):
-		return self.parameters
-
-	def getParameter(self, name):
-		return self.parameters.get(name)
 
 class GuiSettings(object):
 	def __init__(self,

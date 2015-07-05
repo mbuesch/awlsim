@@ -216,8 +216,7 @@ class AwlSimServer(object):
 		self.awlSourceContainer = SourceContainer()
 		# Container of loaded and managed SymTabSource()s
 		self.symTabSourceContainer = SourceContainer()
-		# List of tuples of loaded hardware modules:
-		#   (hwModName, parameterDict)
+		# List of tuples of loaded hardware modules (HwmodDescriptor instances)
 		self.loadedHwModules = []
 		# List of loaded AwlLibEntrySelection()s
 		self.loadedLibSelections = []
@@ -446,12 +445,13 @@ class AwlSimServer(object):
 
 		self.symTabSourceContainer.addManager(srcManager)
 
-	def loadHardwareModule(self, moduleName, paramDict):
-		printInfo("Loading hardware module '%s'..." % moduleName)
-		hwClass = self.__sim.loadHardwareModule(moduleName)
+	def loadHardwareModule(self, hwmodDesc):
+		printInfo("Loading hardware module '%s'..." %\
+			  hwmodDesc.getModuleName())
+		hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
 		self.__sim.registerHardwareClass(hwClass = hwClass,
-					       parameters = paramDict)
-		self.loadedHwModules.append( (moduleName, paramDict) )
+						 parameters = hwmodDesc.getParameters())
+		self.loadedHwModules.append(hwmodDesc)
 
 	def loadLibraryBlock(self, libSelection):
 		self.setRunState(self.STATE_STOP)
@@ -557,7 +557,7 @@ class AwlSimServer(object):
 	def __rx_HWMOD(self, client, msg):
 		printDebug("Received message: HWMOD")
 		status = AwlSimMessage_REPLY.STAT_OK
-		self.loadHardwareModule(msg.name, msg.paramDict)
+		self.loadHardwareModule(msg.hwmodDesc)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_LIBSEL(self, client, msg):

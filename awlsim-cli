@@ -281,10 +281,9 @@ def runWithServerBackend(inputFile):
 
 		# Load hardware modules
 		for modDesc in project.getHwmodSettings().getLoadedModules():
-			client.loadHardwareModule(modDesc.getModuleName(),
-						  modDesc.getParameters())
+			client.loadHardwareModule(modDesc)
 		for name, parameters in opt_hwmods:
-			client.loadHardwareModule(name, parameters)
+			client.loadHardwareModule(HwmodDescriptor(name, parameters))
 
 		# Configure the core
 		if opt_noCpuDump:
