@@ -24,9 +24,14 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 
+import hashlib
+import binascii
+
 
 class HwmodDescriptor(object):
 	"""Hardware module descriptor."""
+
+	IDENT_HASH	= "sha256"
 
 	def __init__(self, moduleName, parameters = None):
 		"""Hardware module descriptor initialization.
@@ -48,6 +53,7 @@ class HwmodDescriptor(object):
 		"""Set the module name string.
 		"""
 		self.moduleName = moduleName
+		self.__identHash = None
 
 	def getModuleName(self):
 		"""Get the module name string.
@@ -60,6 +66,7 @@ class HwmodDescriptor(object):
 		if not parameters:
 			parameters = {}
 		self.parameters = parameters
+		self.__identHash = None
 
 	def addParameter(self, name, value):
 		"""Add a parameter to the parameter dict.
@@ -70,11 +77,13 @@ class HwmodDescriptor(object):
 		"""Set the value of a parameter.
 		"""
 		self.parameters[name] = value
+		self.__identHash = None
 
 	def removeParameter(self, name):
 		"""Remove a parameter from the parameter dict.
 		"""
 		self.parameters.pop(name, None)
+		self.__identHash = None
 
 	def getParameters(self):
 		"""Get the parameters dict (reference).
@@ -86,4 +95,27 @@ class HwmodDescriptor(object):
 		"""
 		return self.parameters.get(name)
 
-#TODO hash
+	def getIdentHash(self):
+		"""Get the unique identification hash for this
+		hardware module descriptor.
+		"""
+		if not self.__identHash:
+			# Calculate the ident hash
+			h = hashlib.new(self.IDENT_HASH,
+					"HwmodDescriptor".encode("utf-8"))
+			h.update(self.moduleName.encode("utf-8"))
+			for pName, pValue in sorted(self.parameters.items(),
+						    key = lambda item: item[0]):
+				h.update(pName.encode("utf-8"))
+				h.update(pValue.encode("utf-8"))
+			self.__identHash = h.digest()
+		return self.__identHash
+
+	def getIdentHashStr(self):
+		return binascii.b2a_hex(self.getIdentHash()).decode("ascii")
+
+	def __eq__(self, other):
+		return self.getIdentHash() == other.getIdentHash()
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
