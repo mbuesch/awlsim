@@ -159,7 +159,7 @@ def usage():
 	print(" -x|--extended-insns     Force-enable extended instructions")
 	print("")
 	print("For an example LinuxCNC HAL configuration see:")
-	print("  awlsimhw_linuxcnc/awlsim.hal")
+	print("  examples/linuxcnc-demo/linuxcnc-demo.hal")
 
 def main():
 	global LinuxCNC_HAL
