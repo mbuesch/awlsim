@@ -3,6 +3,8 @@
 srcdir="$(dirname "$0")"
 [ "$(echo "$srcdir" | cut -c1)" = '/' ] || srcdir="$PWD/$srcdir"
 
+srcdir="$srcdir/.."
+
 die() { echo "$*"; exit 1; }
 
 # Import the makerelease.lib
@@ -54,6 +56,8 @@ __check_test_dir_encoding()
 hook_post_checkout()
 {
 	default_hook_post_checkout "$@"
+
+	rm -r "$1"/maintenance
 
 	info "Checking test file encodings"
 	__check_test_dir_encoding "$1"/tests
