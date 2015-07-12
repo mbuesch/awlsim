@@ -63,6 +63,10 @@ class CallStackElem(object):
 		self.instanceDB = instanceDB
 		self.prevDbRegister = cpu.dbRegister
 		self.prevDiRegister = cpu.diRegister
+
+		# Prepare the localdata stack.
+		# (This also clears all previous allocations on the cached
+		# region, if any.)
 		self.lalloc = self.lallocCache.get(cpu)
 		self.lalloc.allocation = block.tempAllocation
 		self.localdata = self.lalloc.localdata
@@ -174,13 +178,18 @@ class CallStackElem(object):
 				   rvalueOp.width,
 				   loffset,
 				   rvalueOp.insn)
-		if param.isInbound:
-			# Write the value to the allocated space.
-			self.cpu.store(oper, self.cpu.fetch(rvalueOp))
+		# Write the value to the allocated space.
+		# This would only be necessary for inbound parameters,
+		# but S7 supports read access to certain outbound
+		# FC parameters as well. So copy the value unconditionally.
+		self.cpu.store(oper, self.cpu.fetch(rvalueOp))
 		# Change the operator to VL
 		oper.type = oper.MEM_VL
 		# If outbound, save param and operator for return from CALL.
-		if param.isOutbound:
+		# Do not do this for immediates (which would be pointer
+		# immediates, for example), because there is nothing to copy
+		# back in that case.
+		if param.isOutbound and not rvalueOp.isImmediate():
 			param.scratchSpaceOp = oper
 			self.__outboundParams.append(param)
 		return oper

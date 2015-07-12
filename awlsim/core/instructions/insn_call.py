@@ -150,7 +150,13 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 		# Check parameter assignments
 		for param in self.params:
 			if param.isOutbound:
-				if param.rvalueOp.isImmediate():
+				if ((blockOper.type == AwlOperator.BLKREF_FB or\
+				     blockOper.type == AwlOperator.BLKREF_SFB) and\
+				    param.rvalueOp.isImmediate()) or\
+				   ((blockOper.type == AwlOperator.BLKREF_FC or\
+				     blockOper.type == AwlOperator.BLKREF_SFC) and\
+				    param.rvalueOp.isImmediate() and\
+				    param.rvalueOp.type != AwlOperator.IMM_PTR):
 					raise AwlSimError("Immediate value assignment '%s' "
 						"to OUTPUT or IN_OUT parameter '%s' is "
 						"not allowed." %\
