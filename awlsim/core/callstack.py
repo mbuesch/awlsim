@@ -68,7 +68,8 @@ class CallStackElem(object):
 		# (This also clears all previous allocations on the cached
 		# region, if any.)
 		self.lalloc = self.lallocCache.get(cpu)
-		self.lalloc.allocation = block.tempAllocation
+		self.lalloc.reset(cpu.specs.nrLocalbytes, #FIXME we should not allow full nrLocalbytes range here.
+				  block.tempAllocation)
 		self.localdata = self.lalloc.localdata
 
 		# Handle parameters

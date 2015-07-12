@@ -29,23 +29,48 @@ from awlsim.core.datatypes import *
 class LStackAllocator(object):
 	"Memory allocator for the L-stack"
 
-	def __init__(self, size):
-		# size -> size of the L-stack, in bytes.
-		self.localdata = ByteArray(size)
+	def __init__(self, maxSize):
+		# maxSize -> max size of the L-stack, in bytes.
+		self.localdata = ByteArray(maxSize)
+		self.reset(maxSize)
 
-		# 'allocation' is the current number of allocated bytes
-		self.allocation = 0
+	# Reset all allocations on the L-stack.
+	# Sets the maximum possible allocation to maxAllocBytes.
+	# maxAllocBytes must be smaller or equal to self.localdata size.
+	def reset(self, maxAllocBytes, curAllocBytes=0):
+		self.__maxAllocBytes = maxAllocBytes
+		self.__curAllocBytes = curAllocBytes
+		self.__curAllocBits = 0
 
 	# Allocate a number of bits on the L-stack.
 	# Returns an AwlOffset as the offset the bits are allocated on.
 	def alloc(self, nrBits):
-		#FIXME handle alignment.
-		#      For now we just alloc unaligned full bytes.
-		nrBytes = intDivRoundUp(nrBits, 8)
+		curAllocBytes, curAllocBits =\
+			self.__curAllocBytes, self.__curAllocBits
 
-		offset = self.allocation
-		self.allocation += nrBytes
-		if self.allocation >= len(self.localdata):
-			raise AwlSimError("Cannot allocate data on L-stack: "
-				"overflow")
-		return AwlOffset(offset)
+		if nrBits == 1:
+			# Bit-aligned allocation
+			offset = AwlOffset(curAllocBytes,
+					   curAllocBits)
+			curAllocBits += 1
+			if curAllocBits >= 8:
+				curAllocBytes += 1
+				curAllocBits = 0
+		else:
+			# Byte-aligned allocation
+			if curAllocBits > 0:
+				curAllocBytes += 1
+				curAllocBits = 0
+			nrBytes = intDivRoundUp(nrBits, 8)
+			offset = AwlOffset(curAllocBytes, 0)
+			curAllocBytes += nrBytes
+
+		if curAllocBytes >= self.__maxAllocBytes:
+			raise AwlSimError(
+				"Cannot allocate another %d bits on L-stack. "
+				"The L-stack is exhausted." %\
+				nrBits)
+
+		self.__curAllocBytes, self.__curAllocBits =\
+			curAllocBytes, curAllocBits
+		return offset
