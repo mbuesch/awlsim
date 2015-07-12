@@ -46,7 +46,7 @@ class S7CPUSpecs(object):
 		self.setNrFlags(8192)
 		self.setNrInputs(8192)
 		self.setNrOutputs(8192)
-		self.setNrLocalbytes(1024)
+		self.setNrLocalbytes(2048)
 		self.setClockMemByte(-1)
 		self.cpu = cpu
 
