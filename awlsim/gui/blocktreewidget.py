@@ -54,8 +54,8 @@ class BlockTreeModel(QAbstractItemModel):
 
 	row2id_toplevel = {
 		0	: INDEXID_SRCS,
-		1	: INDEXID_BLOCKS,
-		2	: INDEXID_HWMODS,
+#TODO		1	: INDEXID_BLOCKS,
+		1	: INDEXID_HWMODS,
 	}
 	id2row_toplevel = pivotDict(row2id_toplevel)
 
@@ -167,7 +167,8 @@ class BlockTreeModel(QAbstractItemModel):
 			elif parentId == self.INDEXID_SRCS_LIBSEL:
 				return len(self.__libSelections)
 			elif parentId == self.INDEXID_BLOCKS:
-				return len(self.row2id_blocks)
+#TODO				return len(self.row2id_blocks)
+				pass#TODO
 			elif parentId == self.INDEXID_BLOCKS_OBS:
 				pass#TODO
 			elif parentId == self.INDEXID_BLOCKS_FCS:
@@ -406,7 +407,7 @@ class BlockTreeView(QTreeView):
 		self.setModel(model)
 		if model:
 			self.expand(model.idToIndex(model.INDEXID_SRCS))
-			self.expand(model.idToIndex(model.INDEXID_BLOCKS))
+#TODO			self.expand(model.idToIndex(model.INDEXID_BLOCKS))
 		self.setColumnWidth(0, 200)
 		self.setColumnWidth(1, 150)
 		self.setColumnWidth(2, 530)
