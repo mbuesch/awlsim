@@ -101,5 +101,6 @@ class _WordPacker:
 			handler(self, byteBuffer, byteOffset, value)
 		except (IndexError, KeyError, struct.error) as e:
 			raise AwlSimError("Failed to pack %d bits into buffer" % bitWidth)
+		return byteBuffer
 
 WordPacker = _WordPacker()
