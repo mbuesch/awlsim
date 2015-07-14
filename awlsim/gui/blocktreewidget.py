@@ -333,7 +333,10 @@ class BlockTreeModel(QAbstractItemModel):
 						return None
 					return self.__symTabSources[index].identHashStr
 				elif idxIdBase == self.INDEXID_SRCS_LIBSEL_BASE:
-					pass#TODO
+					index = idxId - idxIdBase
+					if index >= len(self.__libSelections):
+						return None
+					return self.__libSelections[index].getIdentHashStr()
 				elif idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
 					pass#TODO
 				elif idxIdBase == self.INDEXID_BLOCKS_FCS_BASE:
