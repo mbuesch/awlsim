@@ -2,7 +2,7 @@
 #
 # AWL simulator - Library entry selection
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,10 +23,16 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.enumeration import *
+from awlsim.common.wordpacker import *
+
+import hashlib
+import binascii
 
 
 class AwlLibEntrySelection(object):
 	"""AWL library entry selection."""
+
+	IDENT_HASH	= "sha256"
 
 	# Library entry type.
 	# This enumeration is awlsim-coreserver API!
@@ -39,6 +45,7 @@ class AwlLibEntrySelection(object):
 	def __init__(self, libName="",
 		     entryType=TYPE_UNKNOWN,
 		     entryIndex=-1, effectiveEntryIndex=-1):
+		self.__identHash = None
 		self.setLibName(libName)
 		self.setEntryType(entryType)
 		self.setEntryIndex(entryIndex)
@@ -46,6 +53,7 @@ class AwlLibEntrySelection(object):
 
 	def setLibName(self, libName):
 		self.__libName = libName.strip()
+		self.__identHash = None
 
 	def getLibName(self):
 		return self.__libName
@@ -58,6 +66,7 @@ class AwlLibEntrySelection(object):
 				"Invalid entry type %d." %\
 				entryType)
 		self.__entryType = entryType
+		self.__identHash = None
 
 	def getEntryType(self):
 		return self.__entryType
@@ -75,6 +84,7 @@ class AwlLibEntrySelection(object):
 				"Invalid entry index %d." %\
 				entryIndex)
 		self.__entryIndex = entryIndex
+		self.__identHash = None
 
 	def getEntryIndex(self):
 		return self.__entryIndex
@@ -85,6 +95,7 @@ class AwlLibEntrySelection(object):
 				"Invalid effective entry index %d." %\
 				effectiveEntryIndex)
 		self.__effectiveEntryIndex = effectiveEntryIndex
+		self.__identHash = None
 
 	def getEffectiveEntryIndex(self):
 		return self.__effectiveEntryIndex
@@ -96,6 +107,30 @@ class AwlLibEntrySelection(object):
 		       self.__entryIndex <= 0xFFFF and\
 		       self.__effectiveEntryIndex >= 0 and\
 		       self.__effectiveEntryIndex <= 0xFFFF
+
+	def getIdentHash(self):
+		"""Get the unique identification hash for this
+		library selection descriptor.
+		"""
+		if not self.__identHash:
+			# Calculate the ident hash
+			h = hashlib.new(self.IDENT_HASH, b"AwlLibEntrySelection")
+			h.update(self.__libName.encode("utf-8", "ignore"))
+			h.update(WordPacker.toBytes(bytearray(4), 32, 0,
+						    self.__entryIndex))
+			h.update(WordPacker.toBytes(bytearray(4), 32, 0,
+						    self.__effectiveEntryIndex))
+			self.__identHash = h.digest()
+		return self.__identHash
+
+	def getIdentHashStr(self):
+		return binascii.b2a_hex(self.getIdentHash()).decode("ascii")
+
+	def __eq__(self, other):
+		return self.getIdentHash() == other.getIdentHash()
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 	def __repr__(self):
 		asStr = ""
