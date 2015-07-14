@@ -101,13 +101,12 @@ class HwmodDescriptor(object):
 		"""
 		if not self.__identHash:
 			# Calculate the ident hash
-			h = hashlib.new(self.IDENT_HASH,
-					"HwmodDescriptor".encode("utf-8"))
-			h.update(self.moduleName.encode("utf-8"))
+			h = hashlib.new(self.IDENT_HASH, b"HwmodDescriptor")
+			h.update(self.moduleName.encode("utf-8", "ignore"))
 			for pName, pValue in sorted(self.parameters.items(),
 						    key = lambda item: item[0]):
-				h.update(pName.encode("utf-8"))
-				h.update(pValue.encode("utf-8"))
+				h.update(pName.encode("utf-8", "ignore"))
+				h.update(pValue.encode("utf-8", "ignore"))
 			self.__identHash = h.digest()
 		return self.__identHash
 
