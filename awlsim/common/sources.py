@@ -70,11 +70,12 @@ class GenericSource(object):
 	def identHash(self):
 		if not self.__identHash:
 			# Calculate the ident hash
-			h = hashlib.new(self.IDENT_HASH, self.SRCTYPE.encode("utf-8"))
+			h = hashlib.new(self.IDENT_HASH,
+					self.SRCTYPE.encode("utf-8", "strict"))
 			if self.name is not None:
-				h.update(self.name.encode("utf-8"))
+				h.update(self.name.encode("utf-8", "ignore"))
 			if self.filepath is not None:
-				h.update(self.filepath.encode("utf-8"))
+				h.update(self.filepath.encode("utf-8", "ignore"))
 			h.update(self.sourceBytes)
 			self.__identHash = h.digest()
 		return self.__identHash
