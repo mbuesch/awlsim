@@ -8,5 +8,6 @@ core:
 - Single download of symtab causes a redefinition error.
 
 GUI:
-- Show loaded compiled blocks and sources in some kind of way.
+- Show loaded compiled blocks in block tree.
 - Save window status (open MDI windows, positions, etc)
+- Qt5: Title bar buttons in MDI windows do not work
