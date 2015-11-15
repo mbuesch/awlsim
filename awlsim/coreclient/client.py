@@ -251,6 +251,12 @@ class AwlSimClient(object):
 	def __rx_IDENTS(self, msg):
 		self.handle_IDENTS(msg)
 
+	def handle_BLOCKINFO(self, msg):
+		pass # Don't do anything by default
+
+	def __rx_BLOCKINFO(self, msg):
+		self.handle_BLOCKINFO(msg)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_REPLY		: __rx_NOP,
 		AwlSimMessage.MSG_ID_EXCEPTION		: __rx_EXCEPTION,
@@ -260,6 +266,7 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_AWLSRC		: __rx_AWLSRC,
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_IDENTS		: __rx_IDENTS,
+		AwlSimMessage.MSG_ID_BLOCKINFO		: __rx_BLOCKINFO,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
@@ -448,6 +455,22 @@ class AwlSimClient(object):
 			(AwlSimMessage_GET_IDENTS.GET_SYMTABSRCS if reqSymTabSources else 0) |\
 			(AwlSimMessage_GET_IDENTS.GET_HWMODS if reqHwModules else 0) |\
 			(AwlSimMessage_GET_IDENTS.GET_LIBSELS if reqLibSelections else 0)))
+		return True
+
+	# Request the compiled block info from the CPU.
+	# This method is asynchronous.
+	# The idents are returned via handle_BLOCKINFO()
+	def requestBlockInfo(self, reqOBInfo = False,
+			     reqFCInfo = False,
+			     reqFBInfo = False,
+			     reqDBInfo = False):
+		if not self.__transceiver:
+			return False
+		self.__send(AwlSimMessage_GET_BLOCKINFO(
+			(AwlSimMessage_GET_BLOCKINFO.GET_OB_INFO if reqOBInfo else 0) |\
+			(AwlSimMessage_GET_BLOCKINFO.GET_FC_INFO if reqFCInfo else 0) |\
+			(AwlSimMessage_GET_BLOCKINFO.GET_FB_INFO if reqFBInfo else 0) |\
+			(AwlSimMessage_GET_BLOCKINFO.GET_DB_INFO if reqDBInfo else 0)))
 		return True
 
 	def __setOption(self, name, value, sync=True):
