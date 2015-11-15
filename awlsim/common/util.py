@@ -205,3 +205,8 @@ def base64ToStr(b64String, ignoreErrors=False):
 		if ignoreErrors:
 			return ""
 		raise ValueError
+
+def bytesToHexStr(_bytes):
+	"""Convert bytes to a hex-string.
+	"""
+	return binascii.b2a_hex(_bytes).decode("ascii")

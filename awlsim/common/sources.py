@@ -87,7 +87,7 @@ class GenericSource(object):
 
 	@property
 	def identHashStr(self):
-		return binascii.b2a_hex(self.identHash).decode("ascii")
+		return bytesToHexStr(self.identHash)
 
 	def dup(self):
 		raise NotImplementedError

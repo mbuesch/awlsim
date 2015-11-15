@@ -24,9 +24,9 @@ from awlsim.common.compat import *
 
 from awlsim.common.enumeration import *
 from awlsim.common.wordpacker import *
+from awlsim.common.util import *
 
 import hashlib
-import binascii
 
 
 class AwlLibEntrySelection(object):
@@ -124,7 +124,7 @@ class AwlLibEntrySelection(object):
 		return self.__identHash
 
 	def getIdentHashStr(self):
-		return binascii.b2a_hex(self.getIdentHash()).decode("ascii")
+		return bytesToHexStr(self.getIdentHash())
 
 	def __eq__(self, other):
 		return self.getIdentHash() == other.getIdentHash()
