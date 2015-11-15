@@ -462,6 +462,11 @@ class CpuWidget(QWidget):
 					     reqSymTabSources = True,
 					     reqHwModules = hasBlockTree,
 					     reqLibSelections = hasBlockTree)
+			if hasBlockTree:
+				client.requestBlockInfo(reqOBInfo = True,
+							reqFCInfo = True,
+							reqFBInfo = True,
+							reqDBInfo = True)
 
 	def __handleIdentsMsg(self, identsMsg):
 		if self.__identsPending:

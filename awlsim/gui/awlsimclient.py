@@ -42,6 +42,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Parameter: AwlSimMessage_IDENTS instance.
 	haveIdentsMsg = Signal(AwlSimMessage_IDENTS)
 
+	# Block info signal.
+	# Parameter: AwlSimMessage_BLOCKINFO instance.
+	haveBlockInfoMsg = Signal(AwlSimMessage_BLOCKINFO)
+
 	# The client mode
 	EnumGen.start
 	MODE_OFFLINE	= EnumGen.item # Not connected
@@ -83,8 +87,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	def handle_IDENTS(self, msg):
 		self.haveIdentsMsg.emit(msg)
 
-		if self.__blockTreeModel:
-			self.__blockTreeModel.handle_IDENTS(msg)
+	# Override block info handler
+	def handle_BLOCKINFO(self, msg):
+		self.haveBlockInfoMsg.emit(msg)
 
 	def getMode(self):
 		return self.__mode
@@ -190,6 +195,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			self.__blockTreeModelManager = ObjRefManager("BlockTreeModel",
 				allDestroyedCallback = self.__allBlockTreeModelRefsDestroyed)
 			self.__blockTreeModel = BlockTreeModel(self)
+			# Connect block tree message handlers
+			self.haveIdentsMsg.connect(self.__blockTreeModel.handle_IDENTS)
+			self.haveBlockInfoMsg.connect(self.__blockTreeModel.handle_BLOCKINFO)
 
 		return ObjRef.make("BlockTreeModel", self.__blockTreeModelManager,
 				   self.__blockTreeModel)
