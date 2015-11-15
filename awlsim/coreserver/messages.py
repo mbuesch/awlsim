@@ -26,6 +26,7 @@ from awlsim.common.cpuspecs import *
 from awlsim.common.project import *
 from awlsim.common.hwmod import *
 from awlsim.common.datatypehelpers import *
+from awlsim.common.blockinfo import *
 
 from awlsim.coreserver.memarea import *
 
@@ -932,6 +933,57 @@ class AwlSimMessage_GET_BLOCKINFO(AwlSimMessage):
 			raise TransferError("GET_BLOCKINFO: Invalid data format")
 		return cls(getFlags)
 
+class AwlSimMessage_BLOCKINFO(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_BLOCKINFO
+
+	# Payload header struct:
+	#	Number of block infos (32 bit)
+	#	Reserved (32 bit)
+	plHdrStruct = struct.Struct(str(">II"))
+
+	# Block info payload struct:
+	#	BlockInfo.TYPE_... (32 bit)
+	#	Block index (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	ident hash bytes (length prefix, variable length)
+	plBlockInfoStruct = struct.Struct(str(">IIII"))
+
+	def __init__(self, blockInfos):
+		self.blockInfos = blockInfos
+
+	def toBytes(self):
+		payload = [ self.plHdrStruct.pack(len(self.blockInfos), 0) ]
+		for blockInfo in self.blockInfos:
+			payload.append(self.plBlockInfoStruct.pack(
+					blockInfo.blockIndex,
+					blockInfo.blockType,
+					0, 0))
+			payload.append(self.packBytes(blockInfo.identHash))
+		payload = b"".join(payload)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			blockInfos = []
+			nrBlockInfos, _unused = cls.plHdrStruct.unpack_from(payload, 0)
+			offset = cls.plHdrStruct.size
+			for i in range(nrBlockInfos):
+				blockIndex, blockType, _unused0, _unused1 = \
+					cls.plBlockInfoStruct.unpack_from(payload, offset)
+				offset += cls.plBlockInfoStruct.size
+				identHash, count = cls.unpackBytes(payload, offset)
+				offset += count
+				blockInfos.append(BlockInfo(
+					blockType = blockType,
+					blockIndex = blockIndex,
+					identHash = identHash)
+				)
+		except (ValueError, struct.error) as e:
+			raise TransferError("BLOCKINFO: Invalid data format")
+		return cls(blockInfos = blockInfos)
+
 class AwlSimMessageTransceiver(object):
 	id2class = {
 		AwlSimMessage.MSG_ID_REPLY		: AwlSimMessage_REPLY,
@@ -949,6 +1001,8 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: AwlSimMessage_GET_IDENTS,
 		AwlSimMessage.MSG_ID_IDENTS		: AwlSimMessage_IDENTS,
+		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: AwlSimMessage_GET_BLOCKINFO,
+		AwlSimMessage.MSG_ID_BLOCKINFO		: AwlSimMessage_BLOCKINFO,
 #TODO		AwlSimMessage.MSG_ID_GET_OPT		: AwlSimMessage_GET_OPT,
 		AwlSimMessage.MSG_ID_OPT		: AwlSimMessage_OPT,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: AwlSimMessage_GET_CPUSPECS,

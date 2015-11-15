@@ -32,6 +32,7 @@ import random
 #from awlsim.core.instructions.all_insns cimport * #@cy
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.blockinfo import *
 
 from awlsim.library.libentry import *
 
@@ -443,6 +444,40 @@ class S7Prog(object):
 		# Run some static sanity checks on the code
 		self.__staticSanityChecks()
 
+	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
+			  getFBInfo = False, getDBInfo = False):
+		"""Returns a list of BlockInfo()."""
+		blkInfos = []
+		for ob in sorted(self.cpu.obs.values(),
+				 key = lambda blk: blk.index):
+			blkInfos.append(BlockInfo(
+				blockType = BlockInfo.TYPE_OB,
+				blockIndex = ob.index,
+				identHash = b"")#TODO
+			)
+		for fc in sorted(self.cpu.fcs.values(),
+				 key = lambda blk: blk.index):
+			blkInfos.append(BlockInfo(
+				blockType = BlockInfo.TYPE_FC,
+				blockIndex = fc.index,
+				identHash = b"")#TODO
+			)
+		for fb in sorted(self.cpu.fbs.values(),
+				 key = lambda blk: blk.index):
+			blkInfos.append(BlockInfo(
+				blockType = BlockInfo.TYPE_FB,
+				blockIndex = fb.index,
+				identHash = b"")#TODO
+			)
+		for db in sorted(self.cpu.dbs.values(),
+				 key = lambda blk: blk.index):
+			blkInfos.append(BlockInfo(
+				blockType = BlockInfo.TYPE_DB,
+				blockIndex = db.index,
+				identHash = b"")#TODO
+			)
+		return blkInfos
+
 class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
@@ -612,6 +647,14 @@ class S7CPU(object): #+cdef
 		self.prog.loadSymbolTable(symbolTable)
 		if rebuild:
 			self.prog.build()
+
+	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
+			  getFBInfo = False, getDBInfo = False):
+		"""Returns a list of BlockInfo()."""
+		return self.prog.getBlockInfos(getOBInfo = getOBInfo,
+					       getFCInfo = getFCInfo,
+					       getFBInfo = getFBInfo,
+					       getDBInfo = getDBInfo)
 
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:

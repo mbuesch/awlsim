@@ -592,6 +592,17 @@ class AwlSimServer(object):
 
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_GET_BLOCKINFO(self, client, msg):
+		printDebug("Received message: GET_BLOCKINFO")
+
+		blockInfos = self.__sim.cpu.getBlockInfos(
+			getOBInfo = bool(msg.getFlags & msg.GET_OB_INFO),
+			getFCInfo = bool(msg.getFlags & msg.GET_FC_INFO),
+			getFBInfo = bool(msg.getFlags & msg.GET_FB_INFO),
+			getDBInfo = bool(msg.getFlags & msg.GET_DB_INFO))
+		reply = AwlSimMessage_BLOCKINFO(blockInfos)
+		client.transceiver.send(reply)
+
 	def __rx_GET_CPUSPECS(self, client, msg):
 		printDebug("Received message: GET_CPUSPECS")
 		reply = AwlSimMessage_CPUSPECS(self.__sim.cpu.getSpecs())
@@ -673,6 +684,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
 		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
+		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: __rx_GET_BLOCKINFO,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
