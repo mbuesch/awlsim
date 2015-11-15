@@ -95,11 +95,13 @@ class BlockTreeModel(QAbstractItemModel):
 
 	def __updateData(self, localList, newList, parentIndex):
 		for i, newItem in enumerate(newList):
+			# Add new items.
 			if i >= len(localList):
 				self.beginInsertRows(parentIndex, i, i)
 				localList.append(newItem)
 				self.endInsertRows()
 				continue
+			# Change modified items.
 			if newItem != localList[i]:
 				self.beginRemoveRows(parentIndex, i, i)
 				localList.pop(i)
@@ -108,6 +110,13 @@ class BlockTreeModel(QAbstractItemModel):
 				localList.insert(i, newItem)
 				self.endInsertRows()
 				continue
+		while len(localList) > len(newList) and\
+		      len(localList) >= 1:
+			# Remove removed items.
+			i = len(localList) - 1
+			self.beginRemoveRows(parentIndex, i, i)
+			localList.pop(i)
+			self.endRemoveRows()
 
 	def handle_IDENTS(self, msg):
 		self.__updateData(self.__awlSources, msg.awlSources,
