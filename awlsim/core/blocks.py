@@ -30,6 +30,8 @@ from awlsim.core.datatypes import *
 from awlsim.core.operators import *
 from awlsim.core.util import *
 
+import hashlib
+
 
 class BlockInterfaceField(object):
 	"""Block interface field descriptor."""
@@ -463,9 +465,13 @@ class BlockInterface(object):
 class Block(object):
 	"""Base class for blocks (OBs, FCs, FBs, DBs, etc...)"""
 
+	BLOCKTYPESTR	= "Block"
+	IDENT_HASH	= "sha256"
+
 	def __init__(self, index):
 		self.index = index
 		self.sourceRef = None
+		self.__identHash = None
 
 	def __del__(self):
 		if self.sourceRef:
@@ -477,17 +483,44 @@ class Block(object):
 			managerOrRef = sourceManagerOrRef,
 			obj = self,
 			inheritRef = inheritRef)
+		self.__identHash = None
 
 	def destroySourceRef(self):
 		if self.sourceRef:
 			self.sourceRef.destroy()
 			self.sourceRef = None
+		self.__identHash = None
+
+	def getSource(self):
+		"""Get this block's source (AwlSource() object), if any.
+		"""
+		sourceRef = self.sourceRef
+		if sourceRef:
+			manager = sourceRef.manager
+			if manager:
+				return manager.source
+		return None
+
+	@property
+	def identHash(self):
+		if not self.__identHash:
+			# Calculate the ident hash
+			h = hashlib.new(self.IDENT_HASH,
+					self.BLOCKTYPESTR.encode("utf-8", "strict"))
+			h.update(WordPacker.toBytes(bytearray(2), 16, 0, self.index))
+			source = self.getSource()
+			if source:
+				h.update(source.identHash)
+			self.__identHash = h.digest()
+		return self.__identHash
 
 	def __repr__(self):
-		return "Block %d" % self.index
+		return "%s %d" % (self.BLOCKTYPESTR, self.index)
 
 class CodeBlock(Block):
 	"""Base class for code blocks (OBs, (S)FCs, (S)FBs)"""
+
+	BLOCKTYPESTR	= "CodeBlock"
 
 	# Simple and fast tests for checking block identity.
 	# These are partially overridden in the subclasses.
@@ -537,11 +570,10 @@ class CodeBlock(Block):
 		self.tempAllocation = max(self.interface.tempAllocation,
 					  directAlloc)
 
-	def __repr__(self):
-		return "CodeBlock %d" % self.index
-
 class StaticCodeBlock(CodeBlock):
 	"""Base class for static code blocks. (system and library blocks)."""
+
+	BLOCKTYPESTR	= "StaticCodeBlock"
 
 	# Static interface definition.
 	# To be overridden by the subclass.
@@ -583,9 +615,6 @@ class StaticCodeBlock(CodeBlock):
 				else:
 					assert(0)
 
-	def __repr__(self):
-		return "StaticCodeBlock %d" % self.index
-
 class OBInterface(BlockInterface):
 	startupTempAllocation = 20
 
@@ -602,35 +631,32 @@ class OBInterface(BlockInterface):
 		raise AwlSimError("Static VAR not possible in an OB")
 
 class OB(CodeBlock):
+
+	BLOCKTYPESTR	= "OB"
 	isOB = True
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, OBInterface())
 
-	def __repr__(self):
-		return "OB %d" % self.index
-
 class FBInterface(BlockInterface):
 	hasInstanceDB = True
 
 class FB(CodeBlock):
+
+	BLOCKTYPESTR	= "FB"
 	isFB = True
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, FBInterface())
-
-	def __repr__(self):
-		return "FB %d" % self.index
 
 class FCInterface(BlockInterface):
 	def addField_STAT(self, field):
 		raise AwlSimError("Static VAR not possible in an FC")
 
 class FC(CodeBlock):
+
+	BLOCKTYPESTR	= "FC"
 	isFC = True
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, FCInterface())
-
-	def __repr__(self):
-		return "FC %d" % self.index

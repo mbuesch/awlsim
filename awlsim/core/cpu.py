@@ -447,35 +447,28 @@ class S7Prog(object):
 	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
 			  getFBInfo = False, getDBInfo = False):
 		"""Returns a list of BlockInfo()."""
+
 		blkInfos = []
+		def addBlkInfo(blockType, block):
+			blkInfos.append(BlockInfo(
+				blockType = blockType,
+				blockIndex = block.index,
+				identHash = block.identHash)
+			)
+
 		for ob in sorted(self.cpu.obs.values(),
 				 key = lambda blk: blk.index):
-			blkInfos.append(BlockInfo(
-				blockType = BlockInfo.TYPE_OB,
-				blockIndex = ob.index,
-				identHash = b"")#TODO
-			)
+			addBlkInfo(BlockInfo.TYPE_OB, ob)
 		for fc in sorted(self.cpu.fcs.values(),
 				 key = lambda blk: blk.index):
-			blkInfos.append(BlockInfo(
-				blockType = BlockInfo.TYPE_FC,
-				blockIndex = fc.index,
-				identHash = b"")#TODO
-			)
+			addBlkInfo(BlockInfo.TYPE_FC, fc)
 		for fb in sorted(self.cpu.fbs.values(),
 				 key = lambda blk: blk.index):
-			blkInfos.append(BlockInfo(
-				blockType = BlockInfo.TYPE_FB,
-				blockIndex = fb.index,
-				identHash = b"")#TODO
-			)
+			addBlkInfo(BlockInfo.TYPE_FB, fb)
 		for db in sorted(self.cpu.dbs.values(),
 				 key = lambda blk: blk.index):
-			blkInfos.append(BlockInfo(
-				blockType = BlockInfo.TYPE_DB,
-				blockIndex = db.index,
-				identHash = b"")#TODO
-			)
+			addBlkInfo(BlockInfo.TYPE_DB, db)
+
 		return blkInfos
 
 class S7CPU(object): #+cdef

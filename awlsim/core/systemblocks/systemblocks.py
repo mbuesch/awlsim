@@ -35,7 +35,8 @@ class SystemBlock(StaticCodeBlock):
 	# The tuple is: (number, name, short_description)
 	name = (-1, "<unknown>", None)
 
-	isSystemBlock = True
+	BLOCKTYPESTR	= "SystemBlock"
+	isSystemBlock	= True
 
 	def __init__(self, cpu, interface):
 		insns = [
@@ -78,22 +79,24 @@ class SFBInterface(FBInterface):
 	pass
 
 class SFB(SystemBlock):
+	"""SFB base class.
+	"""
+
+	BLOCKTYPESTR	= "SFB"
 	isFB = True
 
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFBInterface())
 
-	def __repr__(self):
-		return "SFB %d" % self.index
-
 class SFCInterface(FCInterface):
 	pass
 
 class SFC(SystemBlock):
+	"""SFC base class.
+	"""
+
+	BLOCKTYPESTR	= "SFC"
 	isFC = True
 
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFCInterface())
-
-	def __repr__(self):
-		return "SFC %d" % self.index
