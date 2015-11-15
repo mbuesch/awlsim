@@ -31,7 +31,7 @@ class ObjRef(object):
 		"""Make a new ObjRef instance.
 		name -> A name string (or callable returning a string).
 		managerOrRef -> An ObjRefManager instance or ObjRef instance.
-		obj -> The object that is managed.
+		obj -> The object that is associated with this ref.
 		inheritRef -> If False, a new ref is created.
 			      If True and managerOrRef is an ObjRef, the ref is inherited.
 		"""
@@ -53,7 +53,7 @@ class ObjRef(object):
 		"""Contruct object reference.
 		name: Informational name string or callable returing a string.
 		manager: An ObjRefManager instance.
-		obj: The object that is managed (optional).
+		obj: The object that is associated with this ref (optional).
 		"""
 		self.__name = name
 		self.__obj = obj
@@ -80,9 +80,15 @@ class ObjRef(object):
 
 	@property
 	def obj(self):
-		"""The referenced object.
+		"""The object that is associated with this ref.
 		"""
 		return self.__obj
+
+	@property
+	def manager(self):
+		"""Get the manager that this ref belongs to.
+		"""
+		return self.__manager
 
 	@property
 	def alive(self):
