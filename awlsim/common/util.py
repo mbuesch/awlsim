@@ -30,6 +30,7 @@ import os
 import random
 import base64
 import binascii
+import functools
 
 
 class Logging(object):
