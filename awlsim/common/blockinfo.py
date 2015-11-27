@@ -36,7 +36,7 @@ class BlockInfo(object):
 	TYPE_DB		= EnumGen.item
 	EnumGen.end
 
-	def __init__(self, blockType, blockIndex, identHash):
+	def __init__(self, blockType, blockIndex, identHash = None):
 		self.blockType = blockType
 		self.blockIndex = blockIndex
 		self.identHash = identHash
