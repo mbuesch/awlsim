@@ -487,6 +487,11 @@ class S7Prog(object):
 			elif blockInfo.blockType == BlockInfo.TYPE_FB:
 				self.cpu.fbs.pop(blockInfo.blockIndex)
 			elif blockInfo.blockType == BlockInfo.TYPE_DB:
+				db = self.cpu.dbs[blockInfo.blockIndex]
+				if (db.permissions & DB.PERM_WRITE) == 0:
+					raise AwlSimError("Remove block: Cannot delete "
+						"write protected %s." % \
+						blockInfo.blockName)
 				self.cpu.dbs.pop(blockInfo.blockIndex)
 			else:
 				raise AwlSimError("Remove block: Unknown bock type %d." % \
