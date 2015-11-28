@@ -47,14 +47,17 @@ class BlockInfo(object):
 
 	@property
 	def blockName(self):
-		type2name = {
-			self.TYPE_OB	: "OB",
-			self.TYPE_FC	: "FC",
-			self.TYPE_FB	: "FB",
-			self.TYPE_DB	: "DB",
-		}
-		return "%s %d" % (type2name[self.blockType],
-				  self.blockIndex)
+		try:
+			type2name = {
+				self.TYPE_OB	: "OB",
+				self.TYPE_FC	: "FC",
+				self.TYPE_FB	: "FB",
+				self.TYPE_DB	: "DB",
+			}
+			blkName = type2name[self.blockType]
+		except KeyError as e:
+			blkName = "TYPE_%d" % self.blockType
+		return "%s %d" % (blkName, self.blockIndex)
 
 	def __eq__(self, other):
 		return self.blockType == other.blockType and\
