@@ -26,6 +26,9 @@ from awlsim.coreclient.client import *
 
 
 class GuiAwlSimClient(AwlSimClient, QObject):
+	# CPU exception signal.
+	haveException = Signal(AwlSimError)
+
 	# CPU-dump signal.
 	# Parameter: The dump text.
 	haveCpuDump = Signal(str)
@@ -70,6 +73,13 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		while monotonic_time() < end:
 			QApplication.processEvents(eventFlags, 10)
 			QThread.msleep(10)
+
+	# Override exception handler
+	def handle_EXCEPTION(self, exception):
+		# Emit the exception signal.
+		self.haveException.emit(exception)
+		# Call the default exception handler.
+		AwlSimClient.handle_EXCEPTION(self, exception)
 
 	# Override cpudump handler
 	def handle_CPUDUMP(self, dumpText):
