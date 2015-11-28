@@ -101,11 +101,12 @@ class AwlSimMessage(object):
 	MSG_ID_SYMTABSRC	= EnumGen.item
 	MSG_ID_HWMOD		= EnumGen.item
 	MSG_ID_LIBSEL		= EnumGen.item
+	MSG_ID_REMOVESRC	= EnumGen.itemAt(0x0180) #TODO not implemented, yet
+	MSG_ID_REMOVEBLK	= EnumGen.item
 	MSG_ID_GET_IDENTS	= EnumGen.itemAt(0x0190)
 	MSG_ID_IDENTS		= EnumGen.item
 	MSG_ID_GET_BLOCKINFO	= EnumGen.item
 	MSG_ID_BLOCKINFO	= EnumGen.item
-#TODO: add messages to delete compiled blocks and sources
 	# Configuration
 	MSG_ID_GET_OPT		= EnumGen.itemAt(0x0200) #TODO not implemented, yet
 	MSG_ID_OPT		= EnumGen.item
@@ -762,6 +763,38 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 			raise TransferError("INSNSTATE_CONFIG: Invalid data format")
 		return cls(flags, sourceId, fromLine, toLine)
 
+class AwlSimMessage_REMOVEBLK(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_REMOVEBLK
+
+	# Block info payload struct:
+	#	BlockInfo.TYPE_... (32 bit)
+	#	Block index (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	plStruct = struct.Struct(str(">IIII"))
+
+	def __init__(self, blockInfo):
+		self.blockInfo = blockInfo
+
+	def toBytes(self):
+		payload = self.plStruct.pack(
+				self.blockInfo.blockIndex,
+				self.blockInfo.blockType,
+				0, 0)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			blockIndex, blockType, _unused0, _unused1 = \
+				cls.plStruct.unpack_from(payload, 0)
+			blockInfo = BlockInfo(
+				blockType = blockType,
+				blockIndex = blockIndex)
+		except (ValueError, struct.error) as e:
+			raise TransferError("REMOVEBLK: Invalid data format")
+		return cls(blockInfo)
+
 class AwlSimMessage_GET_IDENTS(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_GET_IDENTS
 
@@ -999,6 +1032,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: AwlSimMessage_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: AwlSimMessage_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
+		AwlSimMessage.MSG_ID_REMOVEBLK		: AwlSimMessage_REMOVEBLK,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: AwlSimMessage_GET_IDENTS,
 		AwlSimMessage.MSG_ID_IDENTS		: AwlSimMessage_IDENTS,
 		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: AwlSimMessage_GET_BLOCKINFO,

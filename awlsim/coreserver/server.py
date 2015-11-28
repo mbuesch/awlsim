@@ -528,8 +528,6 @@ class AwlSimServer(object):
 		)
 		client.transceiver.send(reply)
 
-#TODO add a call that can remove sources from the CPU.
-
 	def __rx_GET_AWLSRC(self, client, msg):
 		printDebug("Received message: GET_AWLSRC")
 		awlSource = self.awlSourceContainer.getSourceByIdent(msg.identHash)
@@ -564,6 +562,14 @@ class AwlSimServer(object):
 		printDebug("Received message: LIBSEL")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadLibraryBlock(msg.libSelection)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+#TODO add a call that can remove sources from the CPU.
+
+	def __rx_REMOVEBLK(self, client, msg):
+		printDebug("Received message: REMOVEBLK")
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.__sim.removeBlock(msg.blockInfo)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_OPT(self, client, msg):
@@ -683,6 +689,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
+		AwlSimMessage.MSG_ID_REMOVEBLK		: __rx_REMOVEBLK,
 		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
 		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: __rx_GET_BLOCKINFO,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,

@@ -196,8 +196,11 @@ class AwlSimClient(object):
 	def __rx_NOP(self, msg):
 		pass # Nothing
 
+	def handle_EXCEPTION(self, exception):
+		raise exception
+
 	def __rx_EXCEPTION(self, msg):
-		raise msg.exception
+		self.handle_EXCEPTION(msg.exception)
 
 	def __rx_PING(self, msg):
 		self.__send(AwlSimMessage_PONG())
@@ -439,6 +442,15 @@ class AwlSimClient(object):
 		status = self.__sendAndWaitFor_REPLY(msg)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
+		return True
+
+	def removeBlock(self, blockInfo):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_REMOVEBLK(blockInfo)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to remove block")
 		return True
 
 	# Request the (source) ident hashes from the CPU.
