@@ -30,7 +30,40 @@ from awlsim.core.cpu import *
 from awlsim.core.hardware import *
 
 
+def AwlSim_decorator_profiled(profileLevel):
+	"""Profiled call decorator.
+	"""
+	def profiled_decorator(func):
+		@functools.wraps(func)
+		def profiled_wrapper(self, *args, **kwargs):
+			if self._profileLevel >= profileLevel:
+				self._profileStart()
+			try:
+				func(self, *args, **kwargs)
+			finally:
+				if self._profileLevel >= profileLevel:
+					self._profileStop()
+		return profiled_wrapper
+	return profiled_decorator
+
+def AwlSim_decorator_throwsAwlSimError(func):
+	"""Handler decorator for AwlSimError exceptions.
+	"""
+	@functools.wraps(func)
+	def awlSimErrorExtension_wrapper(self, *args, **kwargs):
+		try:
+			func(self, *args, **kwargs)
+		except AwlSimError as e:
+			self._handleSimException(e)
+	return awlSimErrorExtension_wrapper
+
 class AwlSim(object):
+	"""Main awlsim core object.
+	"""
+
+	profiled		= AwlSim_decorator_profiled
+	throwsAwlSimError	= AwlSim_decorator_throwsAwlSimError
+
 	def __init__(self, profileLevel=0):
 		self.__registeredHardware = []
 		self.cpu = S7CPU()
@@ -43,8 +76,8 @@ class AwlSim(object):
 		return self.cpu
 
 	def __setProfiler(self, profileLevel):
-		self.__profileLevel = profileLevel
-		if self.__profileLevel <= 0:
+		self._profileLevel = profileLevel
+		if self._profileLevel <= 0:
 			return
 
 		try:
@@ -65,14 +98,14 @@ class AwlSim(object):
 
 		self.__profiler = self.__profileModule.Profile()
 
-	def __profileStart(self):
+	def _profileStart(self):
 		self.__profiler.enable()
 
-	def __profileStop(self):
+	def _profileStop(self):
 		self.__profiler.disable()
 
 	def getProfileStats(self):
-		if self.__profileLevel <= 0:
+		if self._profileLevel <= 0:
 			return None
 
 		sio = StringIO()
@@ -83,95 +116,69 @@ class AwlSim(object):
 
 		return sio.getvalue()
 
-	def __handleSimException(self, e):
+	def _handleSimException(self, e):
 		if not e.getCpu():
 			# The CPU reference is not set, yet.
 			# Set it to the current CPU.
 			e.setCpu(self.cpu)
 		raise e
 
+	@throwsAwlSimError
 	def __handleMaintenanceRequest(self, e):
+		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
+				     MaintenanceRequest.TYPE_STOP,
+				     MaintenanceRequest.TYPE_RTTIMEOUT):
+			# This is handled in the toplevel loop, so
+			# re-raise the exception.
+			raise
 		try:
-			if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
-					     MaintenanceRequest.TYPE_STOP,
-					     MaintenanceRequest.TYPE_RTTIMEOUT):
-				# This is handled in the toplevel loop, so
-				# re-raise the exception.
-				raise
-			try:
-				if e.requestType == MaintenanceRequest.TYPE_SOFTREBOOT:
-					# Run the CPU startup sequence again
-					self.cpu.startup()
-				else:
-					assert(0)
-			except MaintenanceRequest as e:
-				raise AwlSimError("Recursive maintenance request")
-		except AwlSimError as e:
-			self.__handleSimException(e)
-
-	def reset(self):
-		try:
-			self.cpu.reset()
-			self.unregisterAllHardware(inCpuReset = True)
-		except AwlSimError as e:
-			self.__handleSimException(e)
-
-	def load(self, parseTree, rebuild = False, sourceManager = None):
-		if self.__profileLevel >= 2:
-			self.__profileStart()
-
-		try:
-			self.cpu.load(parseTree, rebuild, sourceManager)
-		except AwlSimError as e:
-			self.__handleSimException(e)
-
-		if self.__profileLevel >= 2:
-			self.__profileStop()
-
-	def loadSymbolTable(self, symTab, rebuild = False):
-		if self.__profileLevel >= 2:
-			self.__profileStart()
-
-		try:
-			self.cpu.loadSymbolTable(symTab, rebuild)
-		except AwlSimError as e:
-			self.__handleSimException(e)
-
-		if self.__profileLevel >= 2:
-			self.__profileStop()
-
-	def loadLibraryBlock(self, libSelection, rebuild = False):
-		if self.__profileLevel >= 2:
-			self.__profileStart()
-
-		try:
-			self.cpu.loadLibraryBlock(libSelection, rebuild)
-		except AwlSimError as e:
-			self.__handleSimException(e)
-
-		if self.__profileLevel >= 2:
-			self.__profileStop()
-
-	def startup(self):
-		if self.__profileLevel >= 2:
-			self.__profileStart()
-
-		try:
-			for hw in self.__registeredHardware:
-				hw.startup()
-			try:
+			if e.requestType == MaintenanceRequest.TYPE_SOFTREBOOT:
+				# Run the CPU startup sequence again
 				self.cpu.startup()
-			except MaintenanceRequest as e:
-				self.__handleMaintenanceRequest(e)
-		except AwlSimError as e:
-			self.__handleSimException(e)
+			else:
+				assert(0)
+		except MaintenanceRequest as e:
+			raise AwlSimError("Recursive maintenance request")
 
-		if self.__profileLevel >= 2:
-			self.__profileStop()
+	@profiled(2)
+	@throwsAwlSimError
+	def reset(self):
+		self.cpu.reset()
+		self.unregisterAllHardware(inCpuReset = True)
+
+	@profiled(2)
+	@throwsAwlSimError
+	def load(self, parseTree, rebuild = False, sourceManager = None):
+		self.cpu.load(parseTree, rebuild, sourceManager)
+
+	@profiled(2)
+	@throwsAwlSimError
+	def loadSymbolTable(self, symTab, rebuild = False):
+		self.cpu.loadSymbolTable(symTab, rebuild)
+
+	@profiled(2)
+	@throwsAwlSimError
+	def loadLibraryBlock(self, libSelection, rebuild = False):
+		self.cpu.loadLibraryBlock(libSelection, rebuild)
+
+	@profiled(2)
+	@throwsAwlSimError
+	def removeBlock(self, blockInfo):
+		self.cpu.removeBlock(blockInfo)
+
+	@profiled(2)
+	@throwsAwlSimError
+	def startup(self):
+		for hw in self.__registeredHardware:
+			hw.startup()
+		try:
+			self.cpu.startup()
+		except MaintenanceRequest as e:
+			self.__handleMaintenanceRequest(e)
 
 	def runCycle(self):
-		if self.__profileLevel >= 1:
-			self.__profileStart()
+		if self._profileLevel >= 1:
+			self._profileStart()
 
 		try:
 			for hw in self.__registeredHardware:
@@ -180,12 +187,12 @@ class AwlSim(object):
 			for hw in self.__registeredHardware:
 				hw.writeOutputs()
 		except AwlSimError as e:
-			self.__handleSimException(e)
+			self._handleSimException(e)
 		except MaintenanceRequest as e:
 			self.__handleMaintenanceRequest(e)
 
-		if self.__profileLevel >= 1:
-			self.__profileStop()
+		if self._profileLevel >= 1:
+			self._profileStop()
 
 	def unregisterAllHardware(self, inCpuReset = False):
 		newHwList = []

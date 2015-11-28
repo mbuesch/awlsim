@@ -297,6 +297,10 @@ class S7Prog(object):
 
 	# Run static error checks
 	def __staticSanityChecks(self):
+		# The main cycle expects OB 1 to be present.
+		if 1 not in self.cpu.obs:
+			raise AwlSimError("OB 1 is not present in the CPU.")
+		# Run the user code checks.
 		for block in self.cpu.allUserCodeBlocks():
 			self.__staticSanityChecks_block(block)
 
@@ -470,6 +474,28 @@ class S7Prog(object):
 			addBlkInfo(BlockInfo.TYPE_DB, db)
 
 		return blkInfos
+
+	def removeBlock(self, blockInfo):
+		"""Remove a block from the CPU.
+		"""
+		try:
+			if blockInfo.blockType == BlockInfo.TYPE_OB:
+				self.cpu.obs.pop(blockInfo.blockIndex)
+				self.cpu.obTempPresetHandlers.pop(blockInfo.blockIndex)
+			elif blockInfo.blockType == BlockInfo.TYPE_FC:
+				self.cpu.fcs.pop(blockInfo.blockIndex)
+			elif blockInfo.blockType == BlockInfo.TYPE_FB:
+				self.cpu.fbs.pop(blockInfo.blockIndex)
+			elif blockInfo.blockType == BlockInfo.TYPE_DB:
+				self.cpu.dbs.pop(blockInfo.blockIndex)
+			else:
+				raise AwlSimError("Remove block: Unknown bock type %d." % \
+					blockInfo.blockType)
+		except KeyError as e:
+			raise AwlSimError("Remove block: Block %s not found." % \
+				blockInfo.blockName)
+		# Re-run sanity checks to detect missing blocks.
+		self.__staticSanityChecks()
 
 class S7CPU(object): #+cdef
 	"STEP 7 CPU"
@@ -648,6 +674,10 @@ class S7CPU(object): #+cdef
 					       getFCInfo = getFCInfo,
 					       getFBInfo = getFBInfo,
 					       getDBInfo = getDBInfo)
+
+	def removeBlock(self, blockInfo):
+		"""Remove a block from the CPU."""
+		self.prog.removeBlock(blockInfo)
 
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
