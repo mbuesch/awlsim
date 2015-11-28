@@ -93,6 +93,18 @@ class BlockTreeModel(QAbstractItemModel):
 		self.__dbInfos = []		# List of BlockInfo()s for DBs
 		self.__hwMods = []		# List of HwmodDescriptor()s
 
+	def getOBBlockInfo(self, indexNr):
+		return self.__obInfos[indexNr]
+
+	def getFCBlockInfo(self, indexNr):
+		return self.__fcInfos[indexNr]
+
+	def getFBBlockInfo(self, indexNr):
+		return self.__fbInfos[indexNr]
+
+	def getDBBlockInfo(self, indexNr):
+		return self.__dbInfos[indexNr]
+
 	def __updateData(self, localList, newList, parentIndex):
 		for i, newItem in enumerate(newList):
 			# Add new items.
@@ -477,3 +489,56 @@ class BlockTreeView(QTreeView):
 		self.setColumnWidth(0, 200)
 		self.setColumnWidth(1, 150)
 		self.setColumnWidth(2, 530)
+
+		self.__currentIdxId = None
+		self.__blockMenu = QMenu(self)
+		self.__blockMenu.addAction("&Remove block from CPU...",
+					   self.__removeBlock)
+
+		self.pressed.connect(self.__mouseBtnPressed)
+
+	def __mouseBtnPressed(self, index):
+		buttons = QApplication.mouseButtons()
+		model = self.model()
+		if not model:
+			return
+
+		if buttons & Qt.RightButton:
+			idxId = model.indexToId(index)
+			idxIdBase = idxId & model.INDEXID_BASE_MASK
+			self.__currentIdxId = idxId
+
+			if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
+			   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
+			   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
+			   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
+				self.__blockMenu.exec_(QCursor.pos())
+
+		self.__currentIdxId = None
+
+#TODO Add a del-key handler
+	def __removeBlock(self):
+		model = self.model()
+		if not model or self.__currentIdxId is None:
+			return
+		client = model.client
+
+		idxId = self.__currentIdxId
+		idxIdBase = idxId & model.INDEXID_BASE_MASK
+		indexNr = idxId - idxIdBase
+
+		if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE:
+			blockInfo = model.getOBBlockInfo(indexNr)
+		elif idxIdBase == model.INDEXID_BLOCKS_FCS_BASE:
+			blockInfo = model.getFCBlockInfo(indexNr)
+		elif idxIdBase == model.INDEXID_BLOCKS_FBS_BASE:
+			blockInfo = model.getFBBlockInfo(indexNr)
+		elif idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
+			blockInfo = model.getDBBlockInfo(indexNr)
+		else:
+			return
+		try:
+			client.removeBlock(blockInfo)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"An error occurred while removing a block", e)
