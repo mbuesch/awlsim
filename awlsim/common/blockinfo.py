@@ -65,7 +65,7 @@ class BlockInfo(object):
 		return not self.__eq__(other)
 
 	def __repr__(self):
-		return "BlockInfo(%d, %d, %s)" % (
+		return "BlockInfo(%d, %d, '%s')" % (
 			self.blockType,
 			self.blockIndex,
 			self.identHashStr

@@ -210,4 +210,6 @@ def base64ToStr(b64String, ignoreErrors=False):
 def bytesToHexStr(_bytes):
 	"""Convert bytes to a hex-string.
 	"""
+	if _bytes is None:
+		return None
 	return binascii.b2a_hex(_bytes).decode("ascii")
