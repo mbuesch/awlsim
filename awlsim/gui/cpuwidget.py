@@ -246,6 +246,7 @@ class CpuWidget(QWidget):
 		self.__corePeriodicTimer.timeout.connect(self.__periodicCoreWork)
 
 		client = self.mainWidget.getSimClient()
+		client.haveException.connect(self.__handleCpuException)
 		client.haveCpuDump.connect(self.__handleCpuDump)
 		client.haveInsnDump.connect(self.haveInsnDump)
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
@@ -346,6 +347,14 @@ class CpuWidget(QWidget):
 			return False
 		return True
 
+	def __handleCpuException(self, exception):
+		# The CPU is in an exception state.
+		# Set our state to exception/stopped.
+		# This will stop the CPU, if it wasn't already stopped.
+		# Subsequent exception handlers might do additional steps.
+		self.state.setState(RunState.STATE_EXCEPTION)
+		self.stop()
+
 	def __handleCpuDump(self, dumpText):
 		for mdiWin in self.stateMdi.subWindowList():
 			win = mdiWin.widget()
@@ -419,10 +428,6 @@ class CpuWidget(QWidget):
 
 			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
-			self.__identsPending = False
-			self.__periodicCoreWork()
-			self.__coreMsgTimer.start(0)
-			self.__corePeriodicTimer.start(1000)
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
@@ -450,36 +455,44 @@ class CpuWidget(QWidget):
 			client.shutdown()
 			handleFatalException(self)
 
+	def __startCoreMessageHandler(self):
+		# Start the main message fetcher.
+		self.__coreMsgTimer.start(0)
+
+		# Start the periodic core work handler.
+		self.__periodicCoreWork()
+		self.__corePeriodicTimer.start(1000)
+
+	def __stopCoreMessageHandler(self):
+		# Stop the periodic core work handler.
+		self.__corePeriodicTimer.stop()
+
+		# Stop the main message fetcher.
+		self.__coreMsgTimer.stop()
+
 	# Periodic timer for core status work.
 	def __periodicCoreWork(self):
 		client = self.mainWidget.getSimClient()
 
-		if not self.__identsPending:
-			self.__identsPending = True
-
-			hasBlockTree = client.blockTreeModelActive()
-			client.requestIdents(reqAwlSources = True,
-					     reqSymTabSources = True,
-					     reqHwModules = hasBlockTree,
-					     reqLibSelections = hasBlockTree)
-			if hasBlockTree:
-				client.requestBlockInfo(reqOBInfo = True,
-							reqFCInfo = True,
-							reqFBInfo = True,
-							reqDBInfo = True)
+		hasBlockTree = client.blockTreeModelActive()
+		client.requestIdents(reqAwlSources = True,
+				     reqSymTabSources = True,
+				     reqHwModules = hasBlockTree,
+				     reqLibSelections = hasBlockTree)
+		if hasBlockTree:
+			client.requestBlockInfo(reqOBInfo = True,
+						reqFCInfo = True,
+						reqFBInfo = True,
+						reqDBInfo = True)
 
 	def __handleIdentsMsg(self, identsMsg):
-		if self.__identsPending:
-			self.__identsPending = False
-			self.haveIdentsMsg.emit(identsMsg)
+		self.haveIdentsMsg.emit(identsMsg)
 
 	def __stop(self):
 		# Make sure the button is released.
 		with self.__runStateChangeBlocked:
 			self.stop()
 
-		self.__coreMsgTimer.stop()
-		self.__corePeriodicTimer.stop()
 		if self.isOnline():
 			client = self.mainWidget.getSimClient()
 			try:
@@ -539,7 +552,12 @@ class CpuWidget(QWidget):
 				# Set the GUI to run state, too.
 				self.__run(goOnlineFirst = False,
 					   downloadFirstIfSimulator = False)
+
+			# Start the message handler.
+			self.__startCoreMessageHandler()
+
 		except AwlSimError as e:
+			CALL_NOEX(self.__stopCoreMessageHandler)
 			CALL_NOEX(client.setMode_OFFLINE)
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
@@ -549,6 +567,7 @@ class CpuWidget(QWidget):
 			self.__handleMaintenance(e)
 
 	def __goOffline(self):
+		self.__stopCoreMessageHandler()
 		client = self.mainWidget.getSimClient()
 		try:
 			client.setMode_OFFLINE()
