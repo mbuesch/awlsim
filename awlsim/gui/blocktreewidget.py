@@ -503,27 +503,52 @@ class BlockTreeView(QTreeView):
 		if not model:
 			return
 
-		if buttons & Qt.RightButton:
+		try:
 			idxId = model.indexToId(index)
 			idxIdBase = idxId & model.INDEXID_BASE_MASK
 			self.__currentIdxId = idxId
 
+			if buttons & Qt.RightButton:
+				if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
+				   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
+				   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
+				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
+					self.__blockMenu.exec_(QCursor.pos())
+		finally:
+			self.__currentIdxId = None
+
+	def keyPressEvent(self, ev):
+		QTreeView.keyPressEvent(self, ev)
+
+		model = self.model()
+		if not model:
+			return
+		idxId = model.indexToId(self.currentIndex())
+		idxIdBase = idxId & model.INDEXID_BASE_MASK
+
+		if ev.key() == Qt.Key_Delete:
 			if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
-				self.__blockMenu.exec_(QCursor.pos())
+				res = QMessageBox.question(self,
+					"Remove selected element",
+					"Remove the selected element from the CPU?",
+					QMessageBox.Yes | QMessageBox.No,
+					QMessageBox.Yes)
+				if res == QMessageBox.Yes:
+					self.__removeBlock()
 
-		self.__currentIdxId = None
-
-#TODO Add a del-key handler
 	def __removeBlock(self):
 		model = self.model()
-		if not model or self.__currentIdxId is None:
+		if not model:
 			return
 		client = model.client
 
-		idxId = self.__currentIdxId
+		if self.__currentIdxId is None:
+			idxId = model.indexToId(self.currentIndex())
+		else:
+			idxId = self.__currentIdxId
 		idxIdBase = idxId & model.INDEXID_BASE_MASK
 		indexNr = idxId - idxIdBase
 
