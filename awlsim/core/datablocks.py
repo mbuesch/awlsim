@@ -92,7 +92,7 @@ class DB(Block):
 	def getBlockInfo(self):
 		"""Get a BlockInfo instance for this block.
 		"""
-		return BlockInfo(blockType = BlockInfo.TYPE_FC,
+		return BlockInfo(blockType = BlockInfo.TYPE_DB,
 				 blockIndex = self.index,
 				 identHash = self.identHash)
 
