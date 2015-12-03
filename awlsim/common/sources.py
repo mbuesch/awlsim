@@ -177,6 +177,12 @@ class SourceManager(ObjRefManager):
 			self.container.removeManager(self)
 		self.source = self.container = None
 
+	def getBlocks(self):
+		"""Get the compiled blocks that were created from the
+		source managed here.
+		"""
+		return { ref.obj for ref in self.refs }
+
 class SourceContainer(object):
 	"""Container for source managers."""
 
