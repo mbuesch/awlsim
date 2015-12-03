@@ -564,7 +564,29 @@ class AwlSimServer(object):
 		self.loadLibraryBlock(msg.libSelection)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
-#TODO add a call that can remove sources from the CPU.
+	def __rx_REMOVESRC(self, client, msg):
+		printDebug("Received message: REMOVESRC")
+		status = AwlSimMessage_REPLY.STAT_OK
+		for cont in (self.awlSourceContainer,
+			     self.symTabSourceContainer):
+			srcMgr = cont.getSourceManagerByIdent(msg.identHash)
+			if srcMgr:
+				# Remove all blocks that were created from this source.
+				for block in srcMgr.getBlocks():
+					self.__sim.removeBlock(block.getBlockInfo())
+				# All references to the source were removed, so the
+				# source should be gone. Check that.
+				srcMgr = cont.getSourceManagerByIdent(msg.identHash)
+				if srcMgr:
+					# Uh fail. The source is still there
+					printDebug("Warning: REMOVESRC: "
+						   "Source did not vanish.")
+					status = AwlSimMessage_REPLY.STAT_FAIL
+				# We are done.
+				break
+		else:
+			status = AwlSimMessage_REPLY.STAT_FAIL
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_REMOVEBLK(self, client, msg):
 		printDebug("Received message: REMOVEBLK")
@@ -689,6 +711,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
+		AwlSimMessage.MSG_ID_REMOVESRC		: __rx_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: __rx_REMOVEBLK,
 		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
 		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: __rx_GET_BLOCKINFO,

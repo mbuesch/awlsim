@@ -444,6 +444,15 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 		return True
 
+	def removeSource(self, identHash):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_REMOVESRC(identHash)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to remove source")
+		return True
+
 	def removeBlock(self, blockInfo):
 		if not self.__transceiver:
 			return False
