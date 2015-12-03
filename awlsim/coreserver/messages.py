@@ -101,7 +101,7 @@ class AwlSimMessage(object):
 	MSG_ID_SYMTABSRC	= EnumGen.item
 	MSG_ID_HWMOD		= EnumGen.item
 	MSG_ID_LIBSEL		= EnumGen.item
-	MSG_ID_REMOVESRC	= EnumGen.itemAt(0x0180) #TODO not implemented, yet
+	MSG_ID_REMOVESRC	= EnumGen.itemAt(0x0180)
 	MSG_ID_REMOVEBLK	= EnumGen.item
 	MSG_ID_GET_IDENTS	= EnumGen.itemAt(0x0190)
 	MSG_ID_IDENTS		= EnumGen.item
@@ -763,6 +763,24 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 			raise TransferError("INSNSTATE_CONFIG: Invalid data format")
 		return cls(flags, sourceId, fromLine, toLine)
 
+class AwlSimMessage_REMOVESRC(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_REMOVESRC
+
+	def __init__(self, identHash):
+		self.identHash = identHash
+
+	def toBytes(self):
+		payload = self.packBytes(self.identHash)
+		return AwlSimMessage.toBytes(self, len(payload)) + payload
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			identHash, count = cls.unpackBytes(payload, 0)
+		except (ValueError, struct.error) as e:
+			raise TransferError("REMOVESRC: Invalid data format")
+		return cls(identHash)
+
 class AwlSimMessage_REMOVEBLK(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_REMOVEBLK
 
@@ -1032,6 +1050,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: AwlSimMessage_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: AwlSimMessage_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
+		AwlSimMessage.MSG_ID_REMOVESRC		: AwlSimMessage_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: AwlSimMessage_REMOVEBLK,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: AwlSimMessage_GET_IDENTS,
 		AwlSimMessage.MSG_ID_IDENTS		: AwlSimMessage_IDENTS,
