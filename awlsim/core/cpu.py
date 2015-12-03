@@ -480,22 +480,23 @@ class S7Prog(object):
 		"""
 		try:
 			if blockInfo.blockType == BlockInfo.TYPE_OB:
-				self.cpu.obs.pop(blockInfo.blockIndex)
+				block = self.cpu.obs.pop(blockInfo.blockIndex)
 				self.cpu.obTempPresetHandlers.pop(blockInfo.blockIndex)
 			elif blockInfo.blockType == BlockInfo.TYPE_FC:
-				self.cpu.fcs.pop(blockInfo.blockIndex)
+				block = self.cpu.fcs.pop(blockInfo.blockIndex)
 			elif blockInfo.blockType == BlockInfo.TYPE_FB:
-				self.cpu.fbs.pop(blockInfo.blockIndex)
+				block = self.cpu.fbs.pop(blockInfo.blockIndex)
 			elif blockInfo.blockType == BlockInfo.TYPE_DB:
-				db = self.cpu.dbs[blockInfo.blockIndex]
-				if (db.permissions & DB.PERM_WRITE) == 0:
+				block = self.cpu.dbs[blockInfo.blockIndex]
+				if (block.permissions & DB.PERM_WRITE) == 0:
 					raise AwlSimError("Remove block: Cannot delete "
 						"write protected %s." % \
 						blockInfo.blockName)
-				self.cpu.dbs.pop(blockInfo.blockIndex)
+				block = self.cpu.dbs.pop(blockInfo.blockIndex)
 			else:
 				raise AwlSimError("Remove block: Unknown bock type %d." % \
 					blockInfo.blockType)
+			block.destroySourceRef()
 		except KeyError as e:
 			raise AwlSimError("Remove block: Block %s not found." % \
 				blockInfo.blockName)
