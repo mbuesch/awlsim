@@ -101,7 +101,9 @@ class ObjRef(object):
 		return str(self.name)
 
 class ObjRefManager(object):
-	"""Object reference manager."""
+	"""Object reference manager.
+	The manager belongs to the object that actually is referenced.
+	"""
 
 	def __init__(self, name,
 		     oneDestroyedCallback = None,
@@ -129,6 +131,12 @@ class ObjRefManager(object):
 		"""Returns true, if this manager holds references.
 		"""
 		return bool(self.__refs)
+
+	@property
+	def refs(self):
+		"""Get a set of all references to this object.
+		"""
+		return set(self.__refs)
 
 	def _addRef(self, objRef):
 		self.__refs.add(objRef)
