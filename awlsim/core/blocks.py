@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.refmanager import *
+from awlsim.common.blockinfo import *
 
 from awlsim.core.labels import *
 from awlsim.core.datastructure import *
@@ -514,6 +515,12 @@ class Block(object):
 			self.__identHash = h.digest()
 		return self.__identHash
 
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		# By default there is no BlockInfo. Override this method.
+		return None
+
 	def __repr__(self):
 		return "%s %d" % (self.BLOCKTYPESTR, self.index)
 
@@ -638,6 +645,13 @@ class OB(CodeBlock):
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, OBInterface())
 
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType = BlockInfo.TYPE_OB,
+				 blockIndex = self.index,
+				 identHash = self.identHash)
+
 class FBInterface(BlockInterface):
 	hasInstanceDB = True
 
@@ -648,6 +662,13 @@ class FB(CodeBlock):
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, FBInterface())
+
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType = BlockInfo.TYPE_FB,
+				 blockIndex = self.index,
+				 identHash = self.identHash)
 
 class FCInterface(BlockInterface):
 	def addField_STAT(self, field):
@@ -660,3 +681,10 @@ class FC(CodeBlock):
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, FCInterface())
+
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType = BlockInfo.TYPE_FC,
+				 blockIndex = self.index,
+				 identHash = self.identHash)

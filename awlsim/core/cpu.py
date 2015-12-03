@@ -453,26 +453,18 @@ class S7Prog(object):
 		"""Returns a list of BlockInfo()."""
 
 		blkInfos = []
-		def addBlkInfo(blockType, block):
-			blkInfos.append(BlockInfo(
-				blockType = blockType,
-				blockIndex = block.index,
-				identHash = block.identHash)
-			)
-
-		for ob in sorted(self.cpu.obs.values(),
-				 key = lambda blk: blk.index):
-			addBlkInfo(BlockInfo.TYPE_OB, ob)
-		for fc in sorted(self.cpu.fcs.values(),
-				 key = lambda blk: blk.index):
-			addBlkInfo(BlockInfo.TYPE_FC, fc)
-		for fb in sorted(self.cpu.fbs.values(),
-				 key = lambda blk: blk.index):
-			addBlkInfo(BlockInfo.TYPE_FB, fb)
-		for db in sorted(self.cpu.dbs.values(),
-				 key = lambda blk: blk.index):
-			addBlkInfo(BlockInfo.TYPE_DB, db)
-
+		for block in itertools.chain(
+				sorted(self.cpu.obs.values(),
+				       key = lambda blk: blk.index),
+				sorted(self.cpu.fcs.values(),
+				       key = lambda blk: blk.index),
+				sorted(self.cpu.fbs.values(),
+				       key = lambda blk: blk.index),
+				sorted(self.cpu.dbs.values(),
+				       key = lambda blk: blk.index)):
+			blkInfo = block.getBlockInfo()
+			assert(blkInfo)
+			blkInfos.append(blkInfo)
 		return blkInfos
 
 	def removeBlock(self, blockInfo):

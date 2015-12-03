@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.blockinfo import *
+
 from awlsim.core.util import *
 from awlsim.core.operators import *
 from awlsim.core.datatypes import *
@@ -86,6 +88,13 @@ class DB(Block):
 		raise AwlSimError("Store to write protected DB %d" % self.index)
 
 	store = __store
+
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType = BlockInfo.TYPE_FC,
+				 blockIndex = self.index,
+				 identHash = self.identHash)
 
 	def __repr__(self):
 		if self.index == 0:

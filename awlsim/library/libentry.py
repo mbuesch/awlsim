@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
 from awlsim.common.dynamic_import import *
+from awlsim.common.blockinfo import *
 
 from awlsim.core.blocks import *
 
@@ -336,6 +337,13 @@ class AwlLibFC(AwlLibEntry):
 		sel.setEntryType(sel.TYPE_FC)
 		return sel
 
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType = BlockInfo.TYPE_FC,
+				 blockIndex = self.index,
+				 identHash = self.identHash)
+
 	def __repr__(self):
 		return "FC %d" % self.index
 
@@ -372,6 +380,13 @@ class AwlLibFB(AwlLibEntry):
 		sel = AwlLibEntry.makeSelection(self)
 		sel.setEntryType(sel.TYPE_FB)
 		return sel
+
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType = BlockInfo.TYPE_FB,
+				 blockIndex = self.index,
+				 identHash = self.identHash)
 
 	def __repr__(self):
 		return "FB %d" % self.index
