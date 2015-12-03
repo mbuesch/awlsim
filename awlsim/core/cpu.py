@@ -454,13 +454,13 @@ class S7Prog(object):
 
 		blkInfos = []
 		for block in itertools.chain(
-				sorted(self.cpu.obs.values(),
+				sorted(self.cpu.obs.values() if getOBInfo else [],
 				       key = lambda blk: blk.index),
-				sorted(self.cpu.fcs.values(),
+				sorted(self.cpu.fcs.values() if getFCInfo else [],
 				       key = lambda blk: blk.index),
-				sorted(self.cpu.fbs.values(),
+				sorted(self.cpu.fbs.values() if getFBInfo else [],
 				       key = lambda blk: blk.index),
-				sorted(self.cpu.dbs.values(),
+				sorted(self.cpu.dbs.values() if getDBInfo else [],
 				       key = lambda blk: blk.index)):
 			blkInfo = block.getBlockInfo()
 			assert(blkInfo)
