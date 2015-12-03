@@ -2,7 +2,7 @@
 #
 # AWL simulator - common utility functions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import random
 import base64
 import binascii
 import functools
+import itertools
 
 
 class Logging(object):
@@ -173,13 +174,6 @@ def CALL_NOEX(_callable, *args, **kwargs):
 	except Exception as e:
 		pass
 	return None
-
-# Return a generator over all elements of all iterables
-# passed to allElementsIn().
-def allElementsIn(*iterables):
-	for iterable in iterables:
-		for element in iterable:
-			yield element
 
 def strToBase64(string, ignoreErrors=False):
 	"""Convert a string to a base64 encoded ascii string.

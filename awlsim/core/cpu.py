@@ -104,11 +104,11 @@ class S7Prog(object):
 		self.reset()
 
 	def reset(self):
-		for rawBlock in allElementsIn(self.pendingRawDBs,
-					      self.pendingRawFBs,
-					      self.pendingRawFCs,
-					      self.pendingRawOBs,
-					      self.pendingRawUDTs):
+		for rawBlock in itertools.chain(self.pendingRawDBs,
+						self.pendingRawFBs,
+						self.pendingRawFCs,
+						self.pendingRawOBs,
+						self.pendingRawUDTs):
 			rawBlock.destroySourceRef()
 		self.pendingRawDBs = []
 		self.pendingRawFBs = []
@@ -706,9 +706,9 @@ class S7CPU(object): #+cdef
 
 	def reset(self):
 		self.prog.reset()
-		for block in allElementsIn(self.udts.values(), self.dbs.values(),
-					   self.obs.values(), self.fcs.values(),
-					   self.fbs.values()):
+		for block in itertools.chain(self.udts.values(), self.dbs.values(),
+					     self.obs.values(), self.fcs.values(),
+					     self.fbs.values()):
 			block.destroySourceRef()
 		self.udts = {} # UDTs
 		self.dbs = { # DBs
