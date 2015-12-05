@@ -392,7 +392,7 @@ class CpuWidget(QWidget):
 			      maintRequest.requestType)
 			self.stop()
 
-	def __run(self, goOnlineFirst=True, downloadFirstIfSimulator=True):
+	def __run(self, goOnlineFirst=True):
 		client = self.mainWidget.getSimClient()
 
 		# Make sure the button is pressed.
@@ -406,14 +406,6 @@ class CpuWidget(QWidget):
 				self.stop()
 				return
 		assert(self.isOnline())
-
-		# If requested and if in sim (FORK) mode,
-		# download the program first.
-		if downloadFirstIfSimulator and\
-		   client.getMode() == client.MODE_FORK:
-			if not self.download(noRun=True):
-				self.stop()
-				return
 
 		# Put the CPU and the GUI into RUN state.
 		try:
@@ -559,8 +551,7 @@ class CpuWidget(QWidget):
 			if client.getRunState():
 				# The core is already running.
 				# Set the GUI to run state, too.
-				self.__run(goOnlineFirst = False,
-					   downloadFirstIfSimulator = False)
+				self.__run(goOnlineFirst = False)
 
 			# Start the message handler (slow mode).
 			self.__startCoreMessageHandler(fast = False)
@@ -605,7 +596,7 @@ class CpuWidget(QWidget):
 		self.reqOnlineButtonState.emit(False)
 
 	# Reset/clear the CPU and upload all sources.
-	def download(self, noRun=False):
+	def download(self):
 		# Make sure we are online.
 		self.goOnline()
 		if not self.isOnline():
@@ -659,9 +650,8 @@ class CpuWidget(QWidget):
 
 		# If we were RUNning before download, put
 		# the CPU into RUN state again.
-		if self.__runBtnPressed and not noRun:
-			self.__run(goOnlineFirst = False,
-				   downloadFirstIfSimulator = False)
+		if self.__runBtnPressed:
+			self.__run(goOnlineFirst = False)
 
 		return True
 
