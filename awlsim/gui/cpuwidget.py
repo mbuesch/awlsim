@@ -426,6 +426,9 @@ class CpuWidget(QWidget):
 				return
 			self.updateOnlineViewState()
 
+			# Start the message handler (fast mode).
+			self.__startCoreMessageHandler(fast = True)
+
 			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
 		except AwlSimError as e:
@@ -455,9 +458,11 @@ class CpuWidget(QWidget):
 			client.shutdown()
 			handleFatalException(self)
 
-	def __startCoreMessageHandler(self):
+	def __startCoreMessageHandler(self, fast):
+		self.__stopCoreMessageHandler()
+
 		# Start the main message fetcher.
-		self.__coreMsgTimer.start(0)
+		self.__coreMsgTimer.start(0 if fast else 300)
 
 		# Start the periodic core work handler.
 		self.__periodicCoreWork()
@@ -500,6 +505,10 @@ class CpuWidget(QWidget):
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(self,
 					"Could not stop CPU", e)
+
+		# Start the message handler (slow mode).
+		self.__startCoreMessageHandler(fast = False)
+
 		self.state.setState(RunState.STATE_ONLINE)
 
 	def stop(self):
@@ -553,8 +562,8 @@ class CpuWidget(QWidget):
 				self.__run(goOnlineFirst = False,
 					   downloadFirstIfSimulator = False)
 
-			# Start the message handler.
-			self.__startCoreMessageHandler()
+			# Start the message handler (slow mode).
+			self.__startCoreMessageHandler(fast = False)
 
 		except AwlSimError as e:
 			CALL_NOEX(self.__stopCoreMessageHandler)
