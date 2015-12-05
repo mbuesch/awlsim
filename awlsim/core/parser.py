@@ -1317,7 +1317,9 @@ class AwlParser(object):
 				  re.DOTALL | re.MULTILINE)
 		haveUDT = re.match(r'.*^\s*TYPE\s+.*', sourceText,
 				   re.DOTALL | re.MULTILINE)
-		return not haveDB and not haveFB and not haveFC and not haveOB and not haveUDT
+		return not bool(haveDB) and not bool(haveFB) and\
+		       not bool(haveFC) and not bool(haveOB) and\
+		       not bool(haveUDT)
 
 	def parseText(self, sourceText, sourceId=None, sourceName=None):
 		self.flatLayout = self.sourceIsFlat(sourceText)
