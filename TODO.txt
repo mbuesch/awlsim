@@ -8,6 +8,5 @@ core:
 - Single download of symtab causes a redefinition error.
 
 GUI:
-- The user should be able to delete compiled blocks from the cpu.
 - Save window status (open MDI windows, positions, etc)
 - Qt5: Title bar buttons in MDI windows do not work

@@ -567,23 +567,23 @@ class AwlSimServer(object):
 	def __rx_REMOVESRC(self, client, msg):
 		printDebug("Received message: REMOVESRC")
 		status = AwlSimMessage_REPLY.STAT_OK
-		for cont in (self.awlSourceContainer,
-			     self.symTabSourceContainer):
-			srcMgr = cont.getSourceManagerByIdent(msg.identHash)
+		srcMgr = self.awlSourceContainer.getSourceManagerByIdent(msg.identHash)
+		tabMgr = self.symTabSourceContainer.getSourceManagerByIdent(msg.identHash)
+		if srcMgr:
+			# Remove all blocks that were created from this source.
+			for block in srcMgr.getBlocks():
+				self.__sim.removeBlock(block.getBlockInfo())
+			# All references to the source were removed, so the
+			# source should be gone. Check that.
+			srcMgr = self.awlSourceContainer.getSourceManagerByIdent(msg.identHash)
 			if srcMgr:
-				# Remove all blocks that were created from this source.
-				for block in srcMgr.getBlocks():
-					self.__sim.removeBlock(block.getBlockInfo())
-				# All references to the source were removed, so the
-				# source should be gone. Check that.
-				srcMgr = cont.getSourceManagerByIdent(msg.identHash)
-				if srcMgr:
-					# Uh fail. The source is still there
-					printDebug("Warning: REMOVESRC: "
-						   "Source did not vanish.")
-					status = AwlSimMessage_REPLY.STAT_FAIL
-				# We are done.
-				break
+				# Uh fail. The source is still there
+				printDebug("Warning: REMOVESRC: "
+					   "Source did not vanish.")
+				status = AwlSimMessage_REPLY.STAT_FAIL
+		elif tabMgr:
+			pass#TODO
+			status = AwlSimMessage_REPLY.STAT_FAIL
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))

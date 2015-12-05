@@ -93,6 +93,12 @@ class BlockTreeModel(QAbstractItemModel):
 		self.__dbInfos = []		# List of BlockInfo()s for DBs
 		self.__hwMods = []		# List of HwmodDescriptor()s
 
+	def getAwlSource(self, indexNr):
+		return self.__awlSources[indexNr]
+
+	def getSymTabSource(self, indexNr):
+		return self.__symTabSources[indexNr]
+
 	def getOBBlockInfo(self, indexNr):
 		return self.__obInfos[indexNr]
 
@@ -491,9 +497,14 @@ class BlockTreeView(QTreeView):
 		self.setColumnWidth(2, 530)
 
 		self.__currentIdxId = None
+
 		self.__blockMenu = QMenu(self)
 		self.__blockMenu.addAction("&Remove block from CPU...",
 					   self.__removeBlock)
+
+		self.__srcMenu = QMenu(self)
+		self.__srcMenu.addAction("&Remove source from CPU...",
+					 self.__removeSource)
 
 		self.pressed.connect(self.__mouseBtnPressed)
 
@@ -514,6 +525,9 @@ class BlockTreeView(QTreeView):
 				   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
 					self.__blockMenu.exec_(QCursor.pos())
+				elif idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
+				     idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
+					self.__srcMenu.exec_(QCursor.pos())
 		finally:
 			self.__currentIdxId = None
 
@@ -531,19 +545,59 @@ class BlockTreeView(QTreeView):
 			   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
-				res = QMessageBox.question(self,
-					"Remove selected element",
-					"Remove the selected element from the CPU?",
-					QMessageBox.Yes | QMessageBox.No,
-					QMessageBox.Yes)
-				if res == QMessageBox.Yes:
-					self.__removeBlock()
+				self.__removeBlock()
+			if idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
+			   idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
+				self.__removeSource()
+
+	def __removeSource(self):
+		model = self.model()
+		if not model:
+			return
+		client = model.client
+
+		res = QMessageBox.question(self,
+			"Remove selected source?",
+			"Remove the selected source from the CPU?\n"
+			"This will also remove all associated compiled "
+			"blocks from the CPU.",
+			QMessageBox.Yes | QMessageBox.No,
+			QMessageBox.Yes)
+		if res != QMessageBox.Yes:
+			return
+
+		if self.__currentIdxId is None:
+			idxId = model.indexToId(self.currentIndex())
+		else:
+			idxId = self.__currentIdxId
+		idxIdBase = idxId & model.INDEXID_BASE_MASK
+		indexNr = idxId - idxIdBase
+
+		if idxIdBase == model.INDEXID_SRCS_AWL_BASE:
+			identHash = model.getAwlSource(indexNr).identHash
+		elif idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
+			identHash = model.getSymTabSource(indexNr).identHash
+		else:
+			return
+		try:
+			client.removeSource(identHash)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"An error occurred while removing a source", e)
 
 	def __removeBlock(self):
 		model = self.model()
 		if not model:
 			return
 		client = model.client
+
+		res = QMessageBox.question(self,
+			"Remove selected block?",
+			"Remove the selected block from the CPU?",
+			QMessageBox.Yes | QMessageBox.No,
+			QMessageBox.Yes)
+		if res != QMessageBox.Yes:
+			return
 
 		if self.__currentIdxId is None:
 			idxId = model.indexToId(self.currentIndex())
