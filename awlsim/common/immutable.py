@@ -23,41 +23,60 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 
-class OptionalImmutable(object):
-	"""Optional instance write protection.
-	By default, instances are not write protected (not immutable).
-	If setImmutable() is called, assignment to instance attributes
-	and deletion of attributes is restricted.
-	This cannot be reverted.
-	Subclass this class to use this mechanism."""
+__useDummy = False
+if isMicroPython:
+	__useDummy = True
 
-	__slots__ = (
-		"_immutable",
-	)
 
-	def __new__(cls, *args, **kwargs):
-		self = super(OptionalImmutable, cls).__new__(cls)
-		super(OptionalImmutable, self).__setattr__("_immutable", False)
-		return self
+if __useDummy:
+	class OptionalImmutable(object):
+		"""Optional instance write protection.
+		Dummy implementation.
+		"""
 
-	def isImmutable(self):
-		"""Returns True, if self is immutable."""
-		return self._immutable
+		_immutable = False
 
-	def setImmutable(self):
-		"""Make self immutable. This is not reversible."""
-		self._immutable = True
+		def isImmutable(self):
+			return self._immutable
 
-	def __setattr__(self, name, value):
-		if self._immutable:
-			raise AttributeError("Assignment to '%s' "
-				"of immutable %s." %\
-				(name, str(type(self))))
-		super(OptionalImmutable, self).__setattr__(name, value)
+		def setImmutable(self):
+			self._immutable = True
+else:
+	class OptionalImmutable(object):
+		"""Optional instance write protection.
+		By default, instances are not write protected (not immutable).
+		If setImmutable() is called, assignment to instance attributes
+		and deletion of attributes is restricted.
+		This cannot be reverted.
+		Subclass this class to use this mechanism."""
 
-	def __delattr__(self, name):
-		if self._immutable:
-			raise AttributeError("Deletion of '%s' "
-				"from immutable %s." %\
-				(name, str(type(self))))
-		super(OptionalImmutable, self).__delattr__(name)
+		__slots__ = (
+			"_immutable",
+		)
+
+		def __new__(cls, *args, **kwargs):
+			self = super(OptionalImmutable, cls).__new__(cls)
+			super(OptionalImmutable, self).__setattr__("_immutable", False)
+			return self
+
+		def isImmutable(self):
+			"""Returns True, if self is immutable."""
+			return self._immutable
+
+		def setImmutable(self):
+			"""Make self immutable. This is not reversible."""
+			self._immutable = True
+
+		def __setattr__(self, name, value):
+			if self._immutable:
+				raise AttributeError("Assignment to '%s' "
+					"of immutable %s." %\
+					(name, str(type(self))))
+			super(OptionalImmutable, self).__setattr__(name, value)
+
+		def __delattr__(self, name):
+			if self._immutable:
+				raise AttributeError("Deletion of '%s' "
+					"from immutable %s." %\
+					(name, str(type(self))))
+			super(OptionalImmutable, self).__delattr__(name)
