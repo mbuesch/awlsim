@@ -860,6 +860,9 @@ class AwlSimServer(object):
 
 			except (AwlSimError, AwlParserError) as e:
 				self.setRunState(self.STATE_STOP)
+				# Schedule a CPU restart/rebuild.
+				self.__needOB10x = True
+
 				if self.__handleExceptionServerside:
 					# Let the server handle the exception
 					raise e
