@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import sys
 import os
+import os.path
 
 
 # Convenient operating system identifiers
@@ -47,6 +48,10 @@ isIronPython = "IronPython" in sys.version
 # isCython is True, if the interpreter is Cython
 isCython = False #@nocy
 #isCython = True #@cy
+
+# isMicroPython is True, if the interpreter is MicroPython
+isMicroPython = hasattr(sys, "implementation") and\
+		sys.implementation.name.lower() == "micropython"
 
 # isWinStandalone is True, if this is a Windows standalone package (py2exe)
 isWinStandalone = osIsWindows and\
