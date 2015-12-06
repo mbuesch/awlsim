@@ -30,6 +30,7 @@ class AwlSimError(Exception):
 		     rawInsn=None, insn=None, lineNr=None,
 		     sourceId=None, sourceName=None):
 		super(AwlSimError, self).__init__(self, message)
+		self.message = message
 		self.cpu = cpu
 		self.rawInsn = rawInsn
 		self.insn = insn
@@ -120,7 +121,7 @@ class AwlSimError(Exception):
 		insnStr = self.getFailingInsnStr()
 		if insnStr:
 			ret.append("  %s\n" % insnStr)
-		ret.append("\n  %s\n" % str(self))
+		ret.append("\n  %s\n" % self.message)
 		if verbose:
 			cpu = self.getCpu()
 			if cpu:
