@@ -37,6 +37,7 @@ class AwlsimSymTabCSVDialect(csv.Dialect):
 	skipinitialspace = True
 	lineterminator = str('\r\n')
 	quoting = csv.QUOTE_MINIMAL
+	escapechar = None
 csv.register_dialect("awlsim_symtab", AwlsimSymTabCSVDialect)
 
 class Symbol(object):
