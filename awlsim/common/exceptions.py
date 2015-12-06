@@ -2,7 +2,7 @@
 #
 # AWL simulator - Exceptions
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2015 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ class AwlSimError(Exception):
 	def __init__(self, message, cpu=None,
 		     rawInsn=None, insn=None, lineNr=None,
 		     sourceId=None, sourceName=None):
-		Exception.__init__(self, message)
+		super(AwlSimError, self).__init__(self, message)
 		self.cpu = cpu
 		self.rawInsn = rawInsn
 		self.insn = insn
@@ -179,5 +179,5 @@ class MaintenanceRequest(Exception):
 	EnumGen.end
 
 	def __init__(self, requestType, message=""):
-		Exception.__init__(self, message)
+		super(MaintenanceRequest, self).__init__(self, message)
 		self.requestType = requestType
