@@ -160,7 +160,7 @@ class AwlSimErrorText(AwlSimError):
 	def getReport(self, verbose=True):
 		if verbose:
 			return self.verboseErrorText
-		return str(self)
+		return self.message
 
 class MaintenanceRequest(Exception):
 	EnumGen.start
@@ -182,3 +182,7 @@ class MaintenanceRequest(Exception):
 	def __init__(self, requestType, message=""):
 		super(MaintenanceRequest, self).__init__(self, message)
 		self.requestType = requestType
+		self.message = message
+
+	def __repr__(self):
+		return self.message
