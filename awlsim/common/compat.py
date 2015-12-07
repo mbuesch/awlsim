@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import sys
 import os
 import os.path
+import time
 
 
 # Convenient operating system identifiers
@@ -104,9 +105,10 @@ if isPy2Compat:
 if isPy3Compat:
 	from functools import reduce
 
-# Compat wrapper for monotonic time
-import time
+# Monotonic time. Returns a float second count.
 monotonic_time = getattr(time, "monotonic", time.clock)
+# Performance counter time (if available).
+perf_monotonic_time = getattr(time, "perf_counter", monotonic_time)
 
 # BlockingIOError dummy
 try:
