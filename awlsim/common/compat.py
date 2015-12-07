@@ -87,6 +87,8 @@ elif isJython:
 	pythonInterpreter = "Jython"
 elif isIronPython:
 	pythonInterpreter = "IronPython"
+elif isMicroPython:
+	pythonInterpreter = "MicroPython"
 elif isWinStandalone:
 	pythonInterpreter = "Python (standalone)"
 else:
