@@ -336,7 +336,7 @@ class HwModLoader(object):
 			if not name.strip():
 				raise ValueError
 			for c in name:
-				if not c.isalnum() and c != "_":
+				if not isalnum(c) and c != "_":
 					raise ValueError
 		except ValueError:
 			raise AwlSimError("Hardware module name '%s' "

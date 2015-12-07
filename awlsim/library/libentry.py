@@ -68,7 +68,7 @@ class AwlLib(object):
 			if not libName.strip():
 				raise ValueError
 			for c in libName:
-				if not c.isalnum() and c != "_":
+				if not isalnum(c) and c != "_":
 					raise ValueError
 		except ValueError:
 			raise AwlSimError("Library name '%s' "
