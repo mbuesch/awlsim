@@ -129,3 +129,10 @@ if isIronPython and isPy2Compat:
 else:
 	from io import StringIO
 from io import BytesIO
+
+# str.isalnum() compatibility
+# This defines a global function: isalnum(string) ==> bool
+if hasattr(str, "isalnum"):
+	isalnum = lambda s: s.isalnum()
+else:
+	isalnum = lambda s: all(c.isalpha() or c.isdigit() for c in s)
