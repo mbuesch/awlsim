@@ -108,7 +108,7 @@ if isPy3Compat:
 # Monotonic time. Returns a float second count.
 monotonic_time = getattr(time, "monotonic", time.clock)
 # Performance counter time (if available).
-perf_monotonic_time = getattr(time, "perf_counter", monotonic_time)
+perf_monotonic_time = getattr(time, "perf_counter", time.time)
 
 # BlockingIOError dummy
 try:
