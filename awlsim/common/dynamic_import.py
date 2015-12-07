@@ -29,8 +29,16 @@ def importModule(moduleName):
 	May raise importError."""
 
 	import awlsim.cython_helper as cython_helper
-	import importlib
+	try:
+		import importlib
+	except ImportError as e:
+		importlib = None
 
 	if cython_helper.shouldUseCython(moduleName):
 		moduleName = cython_helper.cythonModuleName(moduleName)
-	return importlib.import_module(moduleName)
+	if importlib:
+		mod = importlib.import_module(moduleName)
+	else:
+		mod = __import__(moduleName)
+
+	return mod
