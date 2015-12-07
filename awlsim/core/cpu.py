@@ -744,7 +744,7 @@ class S7CPU(object): #+cdef
 		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
-		self.startupTime = self.__getTime()
+		self.startupTime = perf_monotonic_time()
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
@@ -891,8 +891,6 @@ class S7CPU(object): #+cdef
 		if self.cbCycleExit:
 			self.cbCycleExit(self.cbCycleExitData)
 
-	__getTime = getattr(time, "perf_counter", time.time)
-
 	# Returns 'self.now' as 31 bit millisecond representation.
 	# That is data type 'TIME'.
 	# The returned value will always be positive and wrap
@@ -910,15 +908,15 @@ class S7CPU(object): #+cdef
 		# which is 2147483647 ms, which is 2147483.647 s.
 		# Create an offset to 'self.now' that is added every
 		# time 'self.now' is updated.
-		now = self.__getTime()
+		now = perf_monotonic_time()
 		self.__nowOffset = -(now) + (2147483.647 - 0.1)
 		self.updateTimestamp()
 
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
-	def updateTimestamp(self):
+	def updateTimestamp(self, _getTime=perf_monotonic_time):
 		# Update the system time
-		self.now = self.__getTime() + self.__nowOffset
+		self.now = _getTime() + self.__nowOffset
 		# Update the clock memory byte
 		if self.__clockMemByteOffset:
 			try:
