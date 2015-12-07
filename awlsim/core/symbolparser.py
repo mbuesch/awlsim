@@ -438,6 +438,12 @@ class SymTabParser_ASC(SymTabParser):
 			lineNr = i + 1
 			if not line.strip():
 				continue
+			if isMicroPython and\
+			   len(line) == 131 and\
+			   line[len(line) - 1] == '\r':
+				# Workaround for MicroPython splitlines() issue.
+				# https://github.com/micropython/micropython/issues/1689
+				line = line[ : len(line) - 1]
 			if len(line) != 130:
 				raise AwlSimError("ASC symbol table parser: "\
 					"Invalid line length (!= 130 chars) in "\
