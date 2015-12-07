@@ -25,7 +25,6 @@ from awlsim.common.compat import *
 from awlsim.common.util import *
 
 import sys
-import fractions
 
 
 # Returns the index of a list element, or -1 if not found.
@@ -124,7 +123,7 @@ def pivotDict(inDict):
 
 # Get "Greatest Common Divisor"
 def math_gcd(*args):
-	return reduce(fractions.gcd, args)
+	return reduce(compat_gcd, args)
 
 # Get "Least Common Multiple"
 def math_lcm(*args):
