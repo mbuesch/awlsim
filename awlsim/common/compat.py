@@ -25,6 +25,8 @@ import sys
 import os
 import os.path
 import time
+import fractions
+import math
 
 
 # Convenient operating system identifiers
@@ -136,3 +138,15 @@ if hasattr(str, "isalnum"):
 	isalnum = lambda s: s.isalnum()
 else:
 	isalnum = lambda s: all(c.isalpha() or c.isdigit() for c in s)
+
+# gcd() compatibility
+# This defines a global function: compat_gcd(a, b) ==> int
+if hasattr(math, "gcd"):
+	compat_gcd = math.gcd
+elif hasattr(fractions, "gcd"):
+	compat_gcd = fractions.gcd
+else:
+	def compat_gcd(a, b):
+		while b:
+			(a, b) = (b, a % b)
+		return a
