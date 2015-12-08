@@ -35,7 +35,9 @@ import socket
 import errno
 
 
-SocketErrors = (socket.error, BlockingIOError, ConnectionError)
+SocketErrors = (socket.error if hasattr(socket, "error") else OSError,
+		BlockingIOError,
+		ConnectionError)
 
 class TransferError(Exception):
 	EnumGen.start
