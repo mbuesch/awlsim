@@ -130,7 +130,7 @@ class AwlSim(object):
 				     MaintenanceRequest.TYPE_RTTIMEOUT):
 			# This is handled in the toplevel loop, so
 			# re-raise the exception.
-			raise
+			raise e
 		try:
 			if e.requestType == MaintenanceRequest.TYPE_SOFTREBOOT:
 				# Run the CPU startup sequence again
