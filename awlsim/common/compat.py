@@ -128,7 +128,7 @@ except NameError:
 
 # Import StringIO
 if isIronPython and isPy2Compat:
-	# XXX: Workaround for IronPython's buggy io.StringIO
+	# Workaround for IronPython's buggy io.StringIO
 	from StringIO import StringIO
 else:
 	from io import StringIO
@@ -140,6 +140,13 @@ if hasattr(str, "isalnum"):
 	isalnum = lambda s: s.isalnum()
 else:
 	isalnum = lambda s: all(c.isalpha() or c.isdigit() for c in s)
+
+# str.isdecimal() compatibility
+# This defines a global function: isdecimal(string) ==> bool
+if hasattr(str, "isdecimal"):
+	isdecimal = lambda s: s.isdecimal()
+else:
+	isdecimal = lambda s: all(c in "0123456789" for c in s)
 
 # gcd() compatibility
 # This defines a global function: compat_gcd(a, b) ==> int
