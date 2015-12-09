@@ -401,7 +401,7 @@ class AwlOpTranslator(object):
 		if len(tokens) >= 3 and\
 		   tokens[1] == '.':
 			if tokens[0].startswith("DB") and\
-			   tokens[0][2:].isdecimal():
+			   isdecimal(tokens[0][2:]):
 				# DBx.VARIABLE
 				offset = AwlOffset(None, None)
 				offset.dbNumber = int(tokens[0][2:])

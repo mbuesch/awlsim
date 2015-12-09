@@ -279,7 +279,7 @@ class AwlDataType(OptionalImmutable):
 				strLen = 254
 			elif len(nameTokens) == 4 and\
 			     nameTokens[1] == '[' and nameTokens[3] == ']' and\
-			     nameTokens[2].isdecimal():
+			     isdecimal(nameTokens[2]):
 				strLen = int(nameTokens[2], 10)
 			if strLen < 0 or strLen > 254:
 				raise AwlSimError("Invalid STRING length definition "
@@ -961,7 +961,7 @@ class AwlDataType(OptionalImmutable):
 		pointer = None
 		dotIdx = prefix.find(".")
 		if dotIdx >= 3 and prefix[:dotIdx].upper().startswith("DB") and\
-		   prefix[2:dotIdx].isdecimal():
+		   isdecimal(prefix[2:dotIdx]):
 			# Parse DB number prefix
 			dbNr = int(prefix[2:dotIdx])
 			prefix = prefix[dotIdx+1:]
@@ -1017,7 +1017,7 @@ class AwlDataType(OptionalImmutable):
 				nrTokens = 2
 			else:
 				if isinstance(pointer, DBPointer) and\
-				   prefix and not prefix[0].isdecimal():
+				   prefix and not isdecimal(prefix[0]):
 					# This is a named DB variable pointer.
 					# (awlsim extension).
 					if not isinstance(pointer, SymbolicDBPointer):
