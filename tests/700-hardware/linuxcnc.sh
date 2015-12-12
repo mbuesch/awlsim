@@ -13,6 +13,7 @@ __run_awlsim_linuxcnc_hal()
 	PYTHONPATH="$modpath:$PYTHONPATH" \
 	JYTHONPATH="$modpath:$JYTHONPATH" \
 	IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \
+	MICROPYPATH="$modpath:$MICROPYPATH" \
 		"$interpreter" ./awlsim-linuxcnc-hal \
 		--input-base 0 --input-size 32 \
 		--output-base 0 --output-size 32 \
