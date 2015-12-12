@@ -494,7 +494,7 @@ class AwlDataType(OptionalImmutable):
 		assert(self.type == self.TYPE_ARRAY)
 		sizes = self.arrayDimSizes()
 		signif = [ 1, ]
-		for size in sizes[:0:-1]:
+		for size in list(sizes)[::-1][:-1]:
 			signif.append(size * signif[-1])
 		return tuple(signif[::-1])
 
