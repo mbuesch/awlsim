@@ -1358,7 +1358,9 @@ class ByteArray(bytearray):
 					end = byteOffset + nrBytes
 					if end > len(self):
 						raise IndexError
-					self[byteOffset : end] = value
+					# The use of memoryview() here just is
+					# a MicroPython workaround.
+					self[byteOffset : end] = memoryview(value)
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset '%s' out of range" %\
 					  str(offset))
