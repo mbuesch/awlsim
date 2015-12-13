@@ -154,7 +154,7 @@ class HardwareInterface(AbstractHardwareInterface):
 	name = "LinuxCNC"
 
 	paramDescs = [
-		HwParamDesc_pyobject("hal", pyTypeDesc = "<class 'hal.component'>",
+		HwParamDesc_pyobject("hal",
 				     description = "LinuxCNC HAL instance object",
 				     mandatory = True),
 		HwParamDesc_int("inputSize",

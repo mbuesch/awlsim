@@ -51,17 +51,10 @@ class HwParamDesc_pyobject(HwParamDesc):
 	typeStr = "PyObject"
 	userEditable = False
 
-	def __init__(self, name, pyTypeDesc, description="", mandatory=False):
+	def __init__(self, name, description="", mandatory=False):
 		HwParamDesc.__init__(self, name, description, mandatory)
-		self.pyTypeDesc = pyTypeDesc
 
 	def parse(self, value):
-		if value is None:
-			return None
-		if str(type(value)) != self.pyTypeDesc:
-			raise self.ParseError("Parameter '%s' is of unknown type. "
-				"Expected '%s', but got '%s'." %\
-				(self.name, self.pyTypeDesc, str(type(value))))
 		return value
 
 class HwParamDesc_str(HwParamDesc):
