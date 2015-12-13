@@ -467,7 +467,7 @@ class Block(object):
 	"""Base class for blocks (OBs, FCs, FBs, DBs, etc...)"""
 
 	BLOCKTYPESTR	= "Block"
-	IDENT_HASH	= "sha256"
+	IDENT_HASH	= hashlib.sha256
 
 	def __init__(self, index):
 		self.index = index
@@ -506,8 +506,8 @@ class Block(object):
 	def identHash(self):
 		if not self.__identHash:
 			# Calculate the ident hash
-			h = hashlib.new(self.IDENT_HASH,
-					self.BLOCKTYPESTR.encode("utf-8", "strict"))
+			h = self.IDENT_HASH(self.BLOCKTYPESTR.encode(
+					"utf-8", "strict"))
 			h.update(WordPacker.toBytes(bytearray(2), 16, 0, self.index))
 			source = self.getSource()
 			if source:

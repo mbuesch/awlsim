@@ -31,7 +31,7 @@ import hashlib
 
 class GenericSource(object):
 	SRCTYPE		= "<generic>"
-	IDENT_HASH	= "sha256"
+	IDENT_HASH	= hashlib.sha256
 
 	def __init__(self, name="", filepath="", sourceBytes=b""):
 		self.name = name
@@ -70,8 +70,8 @@ class GenericSource(object):
 	def identHash(self):
 		if not self.__identHash:
 			# Calculate the ident hash
-			h = hashlib.new(self.IDENT_HASH,
-					self.SRCTYPE.encode("utf-8", "strict"))
+			h = self.IDENT_HASH(self.SRCTYPE.encode(
+					"utf-8", "strict"))
 			if self.name is not None:
 				h.update(self.name.encode("utf-8", "ignore"))
 			if self.filepath is not None:

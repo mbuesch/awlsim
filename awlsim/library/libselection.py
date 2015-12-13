@@ -32,7 +32,7 @@ import hashlib
 class AwlLibEntrySelection(object):
 	"""AWL library entry selection."""
 
-	IDENT_HASH	= "sha256"
+	IDENT_HASH	= hashlib.sha256
 
 	# Library entry type.
 	# This enumeration is awlsim-coreserver API!
@@ -114,7 +114,7 @@ class AwlLibEntrySelection(object):
 		"""
 		if not self.__identHash:
 			# Calculate the ident hash
-			h = hashlib.new(self.IDENT_HASH, b"AwlLibEntrySelection")
+			h = self.IDENT_HASH(b"AwlLibEntrySelection")
 			h.update(self.__libName.encode("utf-8", "ignore"))
 			h.update(WordPacker.toBytes(bytearray(4), 32, 0,
 						    self.__entryIndex))

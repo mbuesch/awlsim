@@ -31,7 +31,7 @@ import binascii
 class HwmodDescriptor(object):
 	"""Hardware module descriptor."""
 
-	IDENT_HASH	= "sha256"
+	IDENT_HASH	= hashlib.sha256
 
 	def __init__(self, moduleName, parameters = None):
 		"""Hardware module descriptor initialization.
@@ -101,7 +101,7 @@ class HwmodDescriptor(object):
 		"""
 		if not self.__identHash:
 			# Calculate the ident hash
-			h = hashlib.new(self.IDENT_HASH, b"HwmodDescriptor")
+			h = self.IDENT_HASH(b"HwmodDescriptor")
 			h.update(self.moduleName.encode("utf-8", "ignore"))
 			for pName, pValue in sorted(self.parameters.items(),
 						    key = lambda item: item[0]):
