@@ -1,6 +1,10 @@
 @echo off
 
-SET PATH=%PATH%;C:\WINDOWS;C:\WINDOWS\SYSTEM32;C:\PYTHON34;%ProgramFiles%\7-Zip
+setlocal ENABLEDELAYEDEXPANSION
+
+set PATH=%PATH%;C:\WINDOWS;C:\WINDOWS\SYSTEM32
+for /D %%f in ( C:\PYTHON* ) do set PATH=!PATH!;%%f
+set PATH=%PATH%;%ProgramFiles%\7-Zip
 
 py -c "from awlsim.common.version import VERSION_STRING; print(VERSION_STRING)" > version.txt
 set /p version= < version.txt
