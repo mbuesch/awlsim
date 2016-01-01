@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -136,7 +136,9 @@ class AwlSimServer(object):
 	def start(cls, listenHost, listenPort,
 		  forkInterpreter=None,
 		  forkServerProcess=None,
-		  commandMask=CMDMSK_SHUTDOWN):
+		  commandMask=CMDMSK_SHUTDOWN,
+		  projectFile=None,
+		  projectWriteBack=False):
 		"""Start a new server.
 		If 'forkInterpreter' or 'forkServerProcess' are not None, spawn a subprocess.
 		If 'forkInterpreter' and 'forkServerProcess' are None, run the server in this process."""
@@ -149,6 +151,8 @@ class AwlSimServer(object):
 		env["AWLSIM_CORESERVER_PORT"]		= str(int(listenPort))
 		env["AWLSIM_CORESERVER_LOGLEVEL"]	= str(Logging.loglevel)
 		env["AWLSIM_CORESERVER_CMDMSK"]		= str(int(commandMask))
+		env["AWLSIM_CORESERVER_PROJECT"]	= str(projectFile or "")
+		env["AWLSIM_CORESERVER_PROJECTRW"]	= str(int(bool(projectWriteBack)))
 
 		if forkServerProcess:
 			# Fork a new server process.
@@ -188,6 +192,10 @@ class AwlSimServer(object):
 		except AwlSimError as e:
 			print(e.getReport())
 			retval = 1
+		except MaintenanceRequest as e:
+			print("AwlSimServer: Unhandled MaintenanceRequest:\n%s" %\
+			      str(e))
+			retval = 1
 		except KeyboardInterrupt:
 			print("AwlSimServer: Interrupted.")
 		finally:
@@ -199,6 +207,8 @@ class AwlSimServer(object):
 		self.__startupDone = False
 		self.__state = -1
 		self.__needOB10x = True
+		self.__projectFile = None
+		self.__projectWriteBack = False
 		self.setRunState(self._STATE_INIT)
 
 		self.__nextStats = 0
@@ -257,9 +267,17 @@ class AwlSimServer(object):
 		except (TypeError, ValueError) as e:
 			raise AwlSimError("AwlSimServer: No command mask specified")
 
+		projectFile = env.get("AWLSIM_CORESERVER_PROJECT")
+		try:
+			projectWriteBack = bool(int(env.get("AWLSIM_CORESERVER_PROJECTRW")))
+		except (TypeError, ValueError) as e:
+			projectWriteBack = True
+
 		self.startup(host = host,
 			     port = port,
-			     commandMask = commandMask)
+			     commandMask = commandMask,
+			     project = projectFile,
+			     projectWriteBack = projectWriteBack)
 		self.run()
 
 	def getRunState(self):
@@ -410,6 +428,37 @@ class AwlSimServer(object):
 		self.__updateCpuPostInsnCallback()
 		self.__updateCpuCycleExitCallback()
 
+	def __generateProject(self):
+		cpu = self.__sim.getCPU()
+		awlSources = self.awlSourceContainer.getSources()
+		symTabSources = self.symTabSourceContainer.getSources()
+		libSelections = self.loadedLibSelections[:]
+		cpuSpecs = cpu.getSpecs() # (Note: not a deep-copy)
+		hwmodSettings = HwmodSettings(
+			loadedModules = self.loadedHwModules[:]
+		)
+		project = Project(
+			projectFile = None,
+			awlSources = awlSources,
+			symTabSources = symTabSources,
+			libSelections = libSelections,
+			cpuSpecs = cpuSpecs,
+			obTempPresetsEn = cpu.obTempPresetsEnabled(),
+			extInsnsEn = cpu.extendedInsnsEnabled(),
+			guiSettings = None,
+			coreLinkSettings = None,
+			hwmodSettings = hwmodSettings,
+		)
+		return project
+
+	def __updateProjectFile(self):
+		if not self.__projectWriteBack or\
+		   not self.__projectFile:
+			return
+		printDebug("Updating project file '%s'" % self.__projectFile)
+		project = self.__generateProject()
+		project.toFile(self.__projectFile)
+
 	def __resetSources(self):
 		self.awlSourceContainer.clear()
 		self.symTabSourceContainer.clear()
@@ -417,6 +466,42 @@ class AwlSimServer(object):
 		self.loadedLibSelections = []
 		# Schedule a CPU restart/rebuild.
 		self.__needOB10x = True
+
+		self.__updateProjectFile()
+
+	def __resetAll(self):
+		self.setRunState(self.STATE_STOP)
+		self.__sim.reset()
+		self.__resetSources()
+
+	def removeSource(self, identHash):
+		ret = True
+		srcMgr = self.awlSourceContainer.getSourceManagerByIdent(identHash)
+		tabMgr = self.symTabSourceContainer.getSourceManagerByIdent(identHash)
+		try:
+			if srcMgr:
+				# Remove all blocks that were created from this source.
+				for block in srcMgr.getBlocks():
+					if not isinstance(block, CodeBlock):
+						# This is not a compiled block.
+						continue
+					blockInfo = block.getBlockInfo()
+					if not blockInfo:
+						continue
+					self.__sim.removeBlock(blockInfo,
+							       sanityChecks = False)
+				# Remove the source, if it's not gone already.
+				self.awlSourceContainer.removeByIdent(identHash)
+				# Run static sanity checks now to ensure
+				# the CPU is still runnable.
+				self.__sim.staticSanityChecks()
+			elif tabMgr:
+				pass#TODO
+				ret = False
+		finally:
+			if ret:
+				self.__updateProjectFile()
+		return ret
 
 	def loadAwlSource(self, awlSource):
 		parser = AwlParser()
@@ -432,6 +517,7 @@ class AwlSimServer(object):
 		self.__sim.load(parser.getParseTree(), needRebuild, srcManager)
 
 		self.awlSourceContainer.addManager(srcManager)
+		self.__updateProjectFile()
 
 	def loadSymTabSource(self, symTabSource):
 		symbolTable = SymTabParser.parseSource(symTabSource,
@@ -444,6 +530,7 @@ class AwlSimServer(object):
 		self.__sim.loadSymbolTable(symbolTable)
 
 		self.symTabSourceContainer.addManager(srcManager)
+		self.__updateProjectFile()
 
 	def loadHardwareModule(self, hwmodDesc):
 		printInfo("Loading hardware module '%s'..." %\
@@ -451,27 +538,36 @@ class AwlSimServer(object):
 		hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
 		self.__sim.registerHardwareClass(hwClass = hwClass,
 						 parameters = hwmodDesc.getParameters())
+
 		self.loadedHwModules.append(hwmodDesc)
+		self.__updateProjectFile()
 
 	def loadLibraryBlock(self, libSelection):
 		self.setRunState(self.STATE_STOP)
 		self.__sim.loadLibraryBlock(libSelection)
+
 		self.loadedLibSelections.append(libSelection)
+		self.__updateProjectFile()
 
 	def cpuEnableObTempPresets(self, en):
 		self.__sim.cpu.enableObTempPresets(en)
+		self.__updateProjectFile()
 
 	def cpuEnableExtendedInsns(self, en):
 		self.__sim.cpu.enableExtendedInsns(en)
+		self.__updateProjectFile()
 
 	def cpuSetCycleTimeLimit(self, limitSeconds):
 		self.__sim.cpu.setCycleTimeLimit(limitSeconds)
+		self.__updateProjectFile()
 
 	def cpuSetRunTimeLimit(self, limitSeconds):
 		self.__sim.cpu.setRunTimeLimit(limitSeconds)
+		self.__updateProjectFile()
 
 	def cpuSetSpecs(self, cpuSpecs):
 		self.__sim.cpu.getSpecs().assignFrom(cpuSpecs)
+		self.__updateProjectFile()
 
 	def setCycleExitHook(self, hook, hookData = None):
 		self.__cycleExitHook = hook
@@ -488,9 +584,7 @@ class AwlSimServer(object):
 	def __rx_RESET(self, client, msg):
 		printVerbose("Resetting CPU.")
 		status = AwlSimMessage_REPLY.STAT_OK
-		self.setRunState(self.STATE_STOP)
-		self.__sim.reset()
-		self.__resetSources()
+		self.__resetAll()
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_SHUTDOWN(self, client, msg):
@@ -567,24 +661,7 @@ class AwlSimServer(object):
 	def __rx_REMOVESRC(self, client, msg):
 		printDebug("Received message: REMOVESRC")
 		status = AwlSimMessage_REPLY.STAT_OK
-		srcMgr = self.awlSourceContainer.getSourceManagerByIdent(msg.identHash)
-		tabMgr = self.symTabSourceContainer.getSourceManagerByIdent(msg.identHash)
-		if srcMgr:
-			# Remove all blocks that were created from this source.
-			for block in srcMgr.getBlocks():
-				self.__sim.removeBlock(block.getBlockInfo())
-			# All references to the source were removed, so the
-			# source should be gone. Check that.
-			srcMgr = self.awlSourceContainer.getSourceManagerByIdent(msg.identHash)
-			if srcMgr:
-				# Uh fail. The source is still there
-				printDebug("Warning: REMOVESRC: "
-					   "Source did not vanish.")
-				status = AwlSimMessage_REPLY.STAT_FAIL
-		elif tabMgr:
-			pass#TODO
-			status = AwlSimMessage_REPLY.STAT_FAIL
-		else:
+		if not self.removeSource(msg.identHash):
 			status = AwlSimMessage_REPLY.STAT_FAIL
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
@@ -803,21 +880,60 @@ class AwlSimServer(object):
 		if broken:
 			self.__removeBrokenClients()
 
-	def startup(self, host, port, commandMask = 0,
+	def __loadProject(self, project, writeBack):
+		self.__projectFile = None
+		self.__projectWriteBack = False
+		if not project:
+			return
+
+		if isString(project):
+			project = Project.fromProjectOrRawAwlFile(project)
+		printDebug("Loading project '%s'" % str(project))
+
+		self.__resetAll()
+
+		for modDesc in project.getHwmodSettings().getLoadedModules():
+			self.loadHardwareModule(modDesc)
+		self.cpuEnableObTempPresets(project.getObTempPresetsEn())
+		self.cpuEnableExtendedInsns(project.getExtInsnsEn())
+		self.cpuSetSpecs(project.getCpuSpecs())
+		#TODO set cycle time limit
+		#TODO set run time limit
+
+		for symSrc in project.getSymTabSources():
+			self.loadSymTabSource(symSrc)
+		for libSel in project.getLibSelections():
+			self.loadLibraryBlock(libSel)
+		for awlSrc in project.getAwlSources():
+			self.loadAwlSource(awlSrc)
+
+		self.__projectFile = project.getProjectFile()
+		self.__projectWriteBack = writeBack
+
+	def startup(self, host, port,
+		    commandMask = 0,
 		    handleExceptionServerside = False,
-		    handleMaintenanceServerside = False):
+		    handleMaintenanceServerside = False,
+		    project = None,
+		    projectWriteBack = False):
 		"""Start the server on 'host':'port'.
 		commanMask -> Mask of allowed commands (CMDMSK_...).
 		handleExceptionServerside -> Flag whether to raise AwlSimError()
 		                             exceptions on the server only.
 		handleMaintenanceServerside -> Flag whether to raise maintenance
 		                               request exceptions on the server only.
+		project -> If this is a .awlpro path string or Project(), it uses the data
+		           from the specified project as an initial program.
+		projectWriteBack -> If True, all data changes (e.g. source download)
+		                    be written to the projectFile (if available).
 		This must be called once before run()."""
 
 		assert(not self.__startupDone)
 		self.__commandMask = commandMask
 		self.__handleExceptionServerside = handleExceptionServerside
 		self.__handleMaintenanceServerside = handleMaintenanceServerside
+
+		self.__loadProject(project, projectWriteBack)
 
 		self.__listen(host, port)
 		self.__rebuildSelectReadList()

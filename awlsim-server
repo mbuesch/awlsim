@@ -3,7 +3,7 @@
 #
 # AWL simulator - Server interface
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,13 +34,17 @@ from awlsim.coreserver import *
 def usage():
 	print("awlsim-server version %s" % VERSION_STRING)
 	print("")
-	print("Usage: awlsim-server [OPTIONS]")
+	print("Usage: awlsim-server [OPTIONS] <project.awlpro>")
+	print("")
+	print("<project.awlpro> is an optional project file that will be loaded.")
+	print("If -w is also given, all project changes are written back to that file.")
 	print("")
 	print("Options:")
 	print(" -l|--listen HOST:PORT   Listen on the specified HOST:PORT")
 	print("                         Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
 	print(" -B|--background         Fork a background process")
+	print(" -w|--rw-project         Enable project file writing")
 	print(" -L|--loglevel LVL       Set the log level:")
 	print("                         0: Log nothing")
 	print("                         1: Log errors")
@@ -53,14 +57,17 @@ def main():
 	global opt_listen
 	global opt_background
 
+	opt_project = None
+	opt_rwProject = False
 	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
 	opt_background = False
 	opt_loglevel = Logging.LOG_INFO
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hl:BL:",
-			[ "help", "listen=", "background", "loglevel=", ])
+			"hl:BwL:",
+			[ "help", "listen=", "background", "rw-project",
+			  "loglevel=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -80,15 +87,19 @@ def main():
 				sys.exit(1)
 		if o in ("-B", "--background"):
 			opt_background = True
+		if o in ("-w", "--rw-project"):
+			opt_rwProject = True
 		if o in ("-L", "--loglevel"):
 			try:
 				opt_loglevel = int(v)
 			except ValueError:
 				printError("-L|--loglevel: Invalid log level")
 				sys.exit(1)
-	if args:
+	if len(args) not in (0, 1):
 		usage()
 		return 1
+	if args:
+		opt_project = args[0]
 
 	exitCode = 0
 	try:
@@ -99,7 +110,9 @@ def main():
 			serverProcess = AwlSimServer.start(listenHost = opt_listen[0],
 							   listenPort = opt_listen[1],
 							   forkInterpreter = interpreter,
-							   commandMask = 0)
+							   commandMask = 0,
+							   projectFile = opt_project,
+							   projectWriteBack = opt_rwProject)
 			printInfo("Started awlsim server process (PID: %d)" %\
 				  serverProcess.pid)
 		else:
@@ -111,7 +124,9 @@ def main():
 			exitCode = AwlSimServer.start(listenHost = opt_listen[0],
 						      listenPort = opt_listen[1],
 						      forkInterpreter = None,
-						      commandMask = 0)
+						      commandMask = 0,
+						      projectFile = opt_project,
+						      projectWriteBack = opt_rwProject)
 	except AwlSimError as e:
 		printError(e.getReport())
 		return 1
