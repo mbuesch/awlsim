@@ -2,7 +2,7 @@
 #
 # AWL simulator
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -163,8 +163,13 @@ class AwlSim(object):
 
 	@profiled(2)
 	@throwsAwlSimError
-	def removeBlock(self, blockInfo):
-		self.cpu.removeBlock(blockInfo)
+	def removeBlock(self, blockInfo, sanityChecks = True):
+		self.cpu.removeBlock(blockInfo, sanityChecks)
+
+	@profiled(2)
+	@throwsAwlSimError
+	def staticSanityChecks(self):
+		self.cpu.staticSanityChecks()
 
 	@profiled(2)
 	@throwsAwlSimError

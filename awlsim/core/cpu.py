@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -296,7 +296,7 @@ class S7Prog(object):
 			insn.staticSanityChecks()
 
 	# Run static error checks
-	def __staticSanityChecks(self):
+	def staticSanityChecks(self):
 		# The main cycle expects OB 1 to be present.
 		if 1 not in self.cpu.obs:
 			raise AwlSimError("OB 1 is not present in the CPU.")
@@ -446,7 +446,7 @@ class S7Prog(object):
 		self.__finalizeCodeBlocks()
 
 		# Run some static sanity checks on the code
-		self.__staticSanityChecks()
+		self.staticSanityChecks()
 
 	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
 			  getFBInfo = False, getDBInfo = False):
@@ -467,7 +467,7 @@ class S7Prog(object):
 			blkInfos.append(blkInfo)
 		return blkInfos
 
-	def removeBlock(self, blockInfo):
+	def removeBlock(self, blockInfo, sanityChecks = True):
 		"""Remove a block from the CPU.
 		"""
 		try:
@@ -492,8 +492,9 @@ class S7Prog(object):
 		except KeyError as e:
 			raise AwlSimError("Remove block: Block %s not found." % \
 				blockInfo.blockName)
-		# Re-run sanity checks to detect missing blocks.
-		self.__staticSanityChecks()
+		if sanityChecks:
+			# Re-run sanity checks to detect missing blocks.
+			self.staticSanityChecks()
 
 class S7CPU(object): #+cdef
 	"STEP 7 CPU"
@@ -673,9 +674,13 @@ class S7CPU(object): #+cdef
 					       getFBInfo = getFBInfo,
 					       getDBInfo = getDBInfo)
 
-	def removeBlock(self, blockInfo):
+	def staticSanityChecks(self):
+		"""Run static error checks."""
+		self.prog.staticSanityChecks()
+
+	def removeBlock(self, blockInfo, sanityChecks = True):
 		"""Remove a block from the CPU."""
-		self.prog.removeBlock(blockInfo)
+		self.prog.removeBlock(blockInfo, sanityChecks)
 
 	def reallocate(self, force=False):
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
