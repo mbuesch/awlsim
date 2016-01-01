@@ -443,6 +443,7 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlSimError(self,
 				"Core server error", e)
 			self.stop()
+			self.__stopCoreMessageHandler()
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 		except Exception:
@@ -470,17 +471,29 @@ class CpuWidget(QWidget):
 	# Periodic timer for core status work.
 	def __periodicCoreWork(self):
 		client = self.mainWidget.getSimClient()
-
 		hasBlockTree = client.blockTreeModelActive()
-		client.requestIdents(reqAwlSources = True,
-				     reqSymTabSources = True,
-				     reqHwModules = hasBlockTree,
-				     reqLibSelections = hasBlockTree)
-		if hasBlockTree:
-			client.requestBlockInfo(reqOBInfo = True,
-						reqFCInfo = True,
-						reqFBInfo = True,
-						reqDBInfo = True)
+		try:
+			client.requestIdents(reqAwlSources = True,
+					     reqSymTabSources = True,
+					     reqHwModules = hasBlockTree,
+					     reqLibSelections = hasBlockTree)
+			if hasBlockTree:
+				client.requestBlockInfo(reqOBInfo = True,
+							reqFCInfo = True,
+							reqFBInfo = True,
+							reqDBInfo = True)
+		except AwlSimError as e:
+			self.state.setState(RunState.STATE_EXCEPTION)
+			MessageBox.handleAwlSimError(self,
+				"Core server error", e)
+			self.stop()
+			self.__stopCoreMessageHandler()
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
+		except Exception:
+			CALL_NOEX(client.setRunState, False)
+			client.shutdown()
+			handleFatalException(self)
 
 	def __handleIdentsMsg(self, identsMsg):
 		self.haveIdentsMsg.emit(identsMsg)
