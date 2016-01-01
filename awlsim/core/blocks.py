@@ -474,10 +474,6 @@ class Block(object):
 		self.sourceRef = None
 		self.__identHash = None
 
-	def __del__(self):
-		if self.sourceRef:
-			assert(not self.sourceRef.alive)
-
 	def setSourceRef(self, sourceManagerOrRef, inheritRef = False):
 		self.sourceRef = ObjRef.make(
 			name = lambda ref: str(ref.obj),
