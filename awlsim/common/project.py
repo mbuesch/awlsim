@@ -169,9 +169,9 @@ class Project(object):
 	def __init__(self, projectFile,
 		     createDate=None,
 		     modifyDate=None,
-		     awlSources=[],
-		     symTabSources=[],
-		     libSelections=[],
+		     awlSources=None,
+		     symTabSources=None,
+		     libSelections=None,
 		     cpuSpecs=None,
 		     obTempPresetsEn=False,
 		     extInsnsEn=False,
@@ -184,20 +184,26 @@ class Project(object):
 		self.setAwlSources(awlSources)
 		self.setSymTabSources(symTabSources)
 		self.setLibSelections(libSelections)
-		if not cpuSpecs:
-			cpuSpecs = S7CPUSpecs()
 		self.setCpuSpecs(cpuSpecs)
 		self.setObTempPresetsEn(obTempPresetsEn)
 		self.setExtInsnsEn(extInsnsEn)
-		if not guiSettings:
-			guiSettings = GuiSettings()
 		self.setGuiSettings(guiSettings)
-		if not coreLinkSettings:
-			coreLinkSettings = CoreLinkSettings()
 		self.setCoreLinkSettings(coreLinkSettings)
-		if not hwmodSettings:
-			hwmodSettings = HwmodSettings()
 		self.setHwmodSettings(hwmodSettings)
+
+	def clear(self):
+		self.setProjectFile(None)
+		self.setCreateDate(None)
+		self.setModifyDate(None)
+		self.setAwlSources(None)
+		self.setSymTabSources(None)
+		self.setLibSelections(None)
+		self.setCpuSpecs(None)
+		self.setObTempPresetsEn(False)
+		self.setExtInsnsEn(False)
+		self.setGuiSettings(None)
+		self.setCoreLinkSettings(None)
+		self.setHwmodSettings(None)
 
 	def setProjectFile(self, filename):
 		self.projectFile = filename
@@ -224,24 +230,32 @@ class Project(object):
 		return self.modifyDate
 
 	def setAwlSources(self, awlSources):
+		if not awlSources:
+			awlSources = []
 		self.awlSources = awlSources
 
 	def getAwlSources(self):
 		return self.awlSources
 
 	def setSymTabSources(self, symTabSources):
+		if not symTabSources:
+			symTabSources = []
 		self.symTabSources = symTabSources
 
 	def getSymTabSources(self):
 		return self.symTabSources
 
 	def setLibSelections(self, libSelections):
+		if not libSelections:
+			libSelections = []
 		self.libSelections = libSelections
 
 	def getLibSelections(self):
 		return self.libSelections
 
 	def setCpuSpecs(self, cpuSpecs):
+		if not cpuSpecs:
+			cpuSpecs = S7CPUSpecs()
 		self.cpuSpecs = cpuSpecs
 
 	def getCpuSpecs(self):
@@ -260,18 +274,24 @@ class Project(object):
 		return self.extInsnsEn
 
 	def setGuiSettings(self, guiSettings):
+		if not guiSettings:
+			guiSettings = GuiSettings()
 		self.guiSettings = guiSettings
 
 	def getGuiSettings(self):
 		return self.guiSettings
 
 	def setCoreLinkSettings(self, coreLinkSettings):
+		if not coreLinkSettings:
+			coreLinkSettings = CoreLinkSettings()
 		self.coreLinkSettings = coreLinkSettings
 
 	def getCoreLinkSettings(self):
 		return self.coreLinkSettings
 
 	def setHwmodSettings(self, hwmodSettings):
+		if not hwmodSettings:
+			hwmodSettings = HwmodSettings()
 		self.hwmodSettings = hwmodSettings
 
 	def getHwmodSettings(self):
@@ -696,3 +716,8 @@ class Project(object):
 			awlSrc.writeFileBacking()
 		for symSrc in self.symTabSources:
 			symSrc.writeFileBacking()
+
+	def __repr__(self):
+		if self.projectFile:
+			return 'Project("%s")' % self.projectFile
+		return "Project(None)"
