@@ -1113,11 +1113,12 @@ class AwlSimMessageTransceiver(object):
 		msg.seq = self.txSeqCount
 		self.txSeqCount = (self.txSeqCount + 1) & 0xFFFF
 
-		offset, data = 0, msg.toBytes()
-		while offset < len(data):
+		offset, data = 0, memoryview(msg.toBytes())
+		datalen, sock, _SocketErrors = len(data), self.sock, SocketErrors
+		while offset < datalen:
 			try:
-				offset += self.sock.send(data[offset : ])
-			except SocketErrors as e:
+				offset += sock.send(data[offset : ])
+			except _SocketErrors as e:
 				transferError = TransferError(None, parentException = e)
 				if transferError.reason != TransferError.REASON_BLOCKING:
 					raise transferError
