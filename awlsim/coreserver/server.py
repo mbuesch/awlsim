@@ -802,7 +802,7 @@ class AwlSimServer(object):
 
 	def __clientCommTransferError(self, exception, client):
 		if exception.reason == exception.REASON_REMOTEDIED:
-			printInfo("Client '%s' died" %\
+			printInfo("Client '%s' disconnected" %\
 				  client.transceiver.peerInfoString)
 		else:
 			printInfo("Client '%s' data "
