@@ -1080,7 +1080,8 @@ class AwlSimMessageTransceiver(object):
 		self.txSeqCount = 0
 
 		# Receive buffer
-		self.buf = b""
+		self.rxBuffers = []
+		self.rxByteCnt = 0
 		self.msgId = None
 		self.seq = None
 		self.payloadLen = None
@@ -1128,10 +1129,10 @@ class AwlSimMessageTransceiver(object):
 			self.sock.settimeout(timeout)
 			self.__timeout = timeout
 
-		hdrLen = AwlSimMessage.HDR_LENGTH
-		if len(self.buf) < hdrLen:
+		hdrLen, rxByteCnt = AwlSimMessage.HDR_LENGTH, self.rxByteCnt
+		if rxByteCnt < hdrLen:
 			try:
-				data = self.sock.recv(hdrLen - len(self.buf))
+				data = self.sock.recv(hdrLen - rxByteCnt)
 			except SocketErrors as e:
 				transferError = TransferError(None, parentException = e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
@@ -1141,12 +1142,14 @@ class AwlSimMessageTransceiver(object):
 				# The remote end closed the connection
 				raise TransferError(None,
 					reason = TransferError.REASON_REMOTEDIED)
-			self.buf += data
-			if len(self.buf) < hdrLen:
+			self.rxBuffers.append(data)
+			self.rxByteCnt = rxByteCnt = rxByteCnt + len(data)
+			if rxByteCnt < hdrLen:
 				return None
 			try:
 				magic, self.msgId, self.seq, _reserved, self.payloadLen =\
-					AwlSimMessage.hdrStruct.unpack(self.buf)
+					AwlSimMessage.hdrStruct.unpack(b"".join(self.rxBuffers))
+				self.rxBuffers = [] # Discard raw header bytes.
 			except struct.error as e:
 				raise AwlSimError("Received message with invalid "
 					"header format.")
@@ -1156,21 +1159,24 @@ class AwlSimMessageTransceiver(object):
 					(magic, AwlSimMessage.HDR_MAGIC))
 			if self.payloadLen:
 				return None
-		if len(self.buf) < hdrLen + self.payloadLen:
-			data = self.sock.recv(hdrLen + self.payloadLen - len(self.buf))
+		msgLen = hdrLen + self.payloadLen
+		if rxByteCnt < msgLen:
+			data = self.sock.recv(msgLen - rxByteCnt)
 			if not data:
 				# The remote end closed the connection
 				raise TransferError(None,
 					reason = TransferError.REASON_REMOTEDIED)
-			self.buf += data
-			if len(self.buf) < hdrLen + self.payloadLen:
+			self.rxBuffers.append(data)
+			self.rxByteCnt = rxByteCnt = rxByteCnt + len(data)
+			if rxByteCnt < msgLen:
 				return None
 		try:
 			cls = self.id2class[self.msgId]
 		except KeyError:
 			raise AwlSimError("Received unknown message: 0x%04X" %\
 				self.msgId)
-		msg = cls.fromBytes(self.buf[hdrLen : ])
+		msg = cls.fromBytes(b"".join(self.rxBuffers))
 		msg.seq = self.seq
-		self.buf, self.msgId, self.seq, self.payloadLen = b"", None, None, None
+		self.rxBuffers, self.rxByteCnt, self.msgId, self.seq, self.payloadLen =\
+			[], 0, None, None, None
 		return msg
