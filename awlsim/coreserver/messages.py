@@ -1095,8 +1095,9 @@ class AwlSimMessageTransceiver(object):
 			if self.sock.family in (socket.AF_INET, socket.AF_INET6) and\
 			   self.sock.type == socket.SOCK_STREAM:
 				self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 2048)
-			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
+			xferBufSize = 1024 * 1024
+			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, xferBufSize)
+			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, xferBufSize)
 		except SocketErrors as e:
 			raise AwlSimError("Failed to initialize socket: %s" % str(e))
 
