@@ -41,6 +41,7 @@ class AwlSimClient(object):
 		self.serverProcessHost = None
 		self.serverProcessPort = None
 		self.__transceiver = None
+		self.__defaultTimeout = 3.0
 
 	def spawnServer(self,
 			interpreter=None,
@@ -128,6 +129,7 @@ class AwlSimClient(object):
 		host -> The hostname or IP address to connect to.
 		port -> The port to connect to."""
 
+		self.__defaultTimeout = timeout
 		startTime = monotonic_time()
 		readableSockaddr = host
 		try:
@@ -166,7 +168,7 @@ class AwlSimClient(object):
 		# Ping the server
 		try:
 			self.__transceiver.send(AwlSimMessage_PING())
-			msg = self.__transceiver.receive(timeout = 2.0)
+			msg = self.__transceiver.receive(timeout = timeout)
 			if not msg:
 				raise AwlSimError("AwlSimClient: Server did not "
 					"respond to PING request.")
@@ -324,11 +326,12 @@ class AwlSimClient(object):
 				 str(e), str(e.errno)))
 
 	def __sendAndWait(self, txMsg, checkRxMsg,
-			  waitTimeout=3.0,
+			  waitTimeout=None,
 			  ignoreMaintenanceRequests=False):
 		self.__send(txMsg)
 		now = monotonic_time()
-		end = now + waitTimeout
+		end = now + (self.__defaultTimeout if waitTimeout is None\
+			     else waitTimeout)
 		while now < end:
 			try:
 				if self.processMessages(0.1):
@@ -341,7 +344,7 @@ class AwlSimClient(object):
 			now = monotonic_time()
 		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
 
-	def __sendAndWaitFor_REPLY(self, msg, timeout=3.0,
+	def __sendAndWaitFor_REPLY(self, msg, timeout=None,
 				   ignoreMaintenanceRequests=False):
 		def checkRxMsg(rxMsg):
 			return rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and\
