@@ -88,7 +88,7 @@ class RawAwlInsn(object):
 		return self.label
 
 	def hasLabel(self):
-		return bool(self.getLabel())
+		return bool(self.label)
 
 	def setName(self, newName):
 		self.name = newName
@@ -103,7 +103,7 @@ class RawAwlInsn(object):
 		return self.ops
 
 	def hasOperators(self):
-		return bool(self.getOperators())
+		return bool(self.ops)
 
 class RawAwlBlock(object):
 	"""Raw representation of an AWL block."""
@@ -419,9 +419,9 @@ class AwlParser(object):
 			self.tokens.append(t)
 
 		def finishCurToken(self):
-			self.curToken = self.curToken.strip()
-			if self.curToken:
-				self.addToken(self.curToken)
+			curToken = self.curToken.strip()
+			if curToken:
+				self.addToken(curToken)
 			self.curToken = ""
 
 		def finishStatement(self):
@@ -429,9 +429,8 @@ class AwlParser(object):
 			self.tokensLineNr = -1
 
 		def haveLabelToken(self):
-			if not self.tokens:
-				return False
-			return self.tokens[0].endswith(':')
+			return self.tokens and\
+			       self.tokens[0].endswith(':')
 
 	def __init__(self):
 		self.reset()
@@ -443,37 +442,42 @@ class AwlParser(object):
 	def __setState(self, newState):
 		self.state = newState
 
+	__nonHeaderStates = {
+		STATE_GLOBAL,
+		STATE_IN_DB,
+		STATE_IN_FB,
+		STATE_IN_FC,
+		STATE_IN_OB,
+	}
+
 	def __inAnyHeader(self):
-		if self.flatLayout:
-			return False
-		return self.state not in (self.STATE_GLOBAL,
-					  self.STATE_IN_DB,
-					  self.STATE_IN_FB,
-					  self.STATE_IN_FC,
-					  self.STATE_IN_OB)
+		return not self.flatLayout and\
+		       self.state not in self.__nonHeaderStates
 
 	def __inAnyHeaderOrGlobal(self):
-		if self.flatLayout:
-			return False
-		return self.__inAnyHeader() or\
-		       self.state == self.STATE_GLOBAL
+		return not self.flatLayout and\
+		       (self.__inAnyHeader() or\
+		        self.state == self.STATE_GLOBAL)
+
+	__varSectionStates = {
+		STATE_IN_DB_HDR_STRUCT,
+		STATE_IN_DB,
+		STATE_IN_FB_HDR_VAR,
+		STATE_IN_FB_HDR_VARIN,
+		STATE_IN_FB_HDR_VAROUT,
+		STATE_IN_FB_HDR_VARINOUT,
+		STATE_IN_FB_HDR_VARTEMP,
+		STATE_IN_FC_HDR_VARIN,
+		STATE_IN_FC_HDR_VAROUT,
+		STATE_IN_FC_HDR_VARINOUT,
+		STATE_IN_FC_HDR_VARTEMP,
+		STATE_IN_OB_HDR_VARTEMP,
+		STATE_IN_UDT_HDR_STRUCT,
+	}
 
 	def __inVariableSection(self):
-		if self.flatLayout:
-			return False
-		return self.state in (self.STATE_IN_DB_HDR_STRUCT,
-				      self.STATE_IN_DB,
-				      self.STATE_IN_FB_HDR_VAR,
-				      self.STATE_IN_FB_HDR_VARIN,
-				      self.STATE_IN_FB_HDR_VAROUT,
-				      self.STATE_IN_FB_HDR_VARINOUT,
-				      self.STATE_IN_FB_HDR_VARTEMP,
-				      self.STATE_IN_FC_HDR_VARIN,
-				      self.STATE_IN_FC_HDR_VAROUT,
-				      self.STATE_IN_FC_HDR_VARINOUT,
-				      self.STATE_IN_FC_HDR_VARTEMP,
-				      self.STATE_IN_OB_HDR_VARTEMP,
-				      self.STATE_IN_UDT_HDR_STRUCT)
+		return not self.flatLayout and\
+		       self.state in self.__varSectionStates
 
 	def __tokenize(self, data, sourceId, sourceName):
 		self.reset()
@@ -503,7 +507,7 @@ class AwlParser(object):
 			if c == '"':
 				# Double quote begin or end
 				t.inDoubleQuote = not t.inDoubleQuote
-			if c == "'":
+			elif c == "'":
 				# Single quote begin or end
 				t.inSingleQuote = not t.inSingleQuote
 			if t.inSingleQuote or t.inDoubleQuote:
@@ -541,8 +545,8 @@ class AwlParser(object):
 					t.addToken(c)
 					cont(); continue
 				if ((self.__inAnyHeaderOrGlobal() or self.__inVariableSection()) and\
-				    c in ('=', ':', '{', '}', '.')) or\
-				   c in (',', '[', ']') or\
+				    c in {'=', ':', '{', '}', '.'}) or\
+				   c in {',', '[', ']'} or\
 				   (c == '=' and len(t.tokens) == 1 and not t.curToken):
 					# Handle non-space token separators.
 					if (c == ':' and cNext == '=') or\
@@ -585,7 +589,7 @@ class AwlParser(object):
 						wholeStatementOk = True
 					if c == ';':
 						wholeStatementOk = True
-				elif c in (';', '\n'):
+				elif c in {';', '\n'}:
 					wholeStatementOk = True
 				if wholeStatementOk:
 					self.__parseTokens(t)
