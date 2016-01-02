@@ -226,6 +226,12 @@ class AwlOpTranslator(object):
 			pass
 		__constOperTab_english[name] = type
 
+	# Mnemonics identifier to constOperTab lookup.
+	__mnemonics2constOperTab = {
+		S7CPUSpecs.MNEMONICS_DE:	__constOperTab_german,
+		S7CPUSpecs.MNEMONICS_EN:	__constOperTab_english,
+	}
+
 	def __init__(self, insn, mnemonics=None):
 		self.insn = insn
 		if mnemonics is None and insn is not None:
@@ -429,18 +435,11 @@ class AwlOpTranslator(object):
 			return OpDescriptor(AwlOperator(AwlOperator.LBL_REF, 0,
 					    rawOps[0]), 1)
 		token0 = rawOps[0].upper()
+
 		# Constant operator (from table)
-		if self.mnemonics == S7CPUSpecs.MNEMONICS_DE:
-			operTable = self.__constOperTab_german
-		elif self.mnemonics == S7CPUSpecs.MNEMONICS_EN:
-			operTable = self.__constOperTab_english
-		else:
-			assert(0)
-		try:
-			# Try constant operator
+		operTable = self.__mnemonics2constOperTab[self.mnemonics]
+		if token0 in operTable:
 			return operTable[token0].dup()
-		except KeyError as e:
-			pass
 		# Bitwise indirect addressing
 		if token0 == '[':
 			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
