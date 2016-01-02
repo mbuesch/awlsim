@@ -28,6 +28,8 @@ __check_text_encoding()
 {
 	local file="$1"
 
+	[ x"$(du -b "$file" | cut -f1)" = x"0" ] && return
+
 	# Check CR/LF
 	file -L "$file" | grep -qe 'CRLF line terminators' || {
 		die "ERROR: '$file' is not in DOS format."
