@@ -200,29 +200,27 @@ class AwlInsnTranslator(object):
 		AwlInsn.TYPE_FEATURE		: AwlInsn_FEATURE,
 	}
 
+	mnemonics2nameTypeTable = {
+		S7CPUSpecs.MNEMONICS_EN:	AwlInsn.name2type_english,
+		S7CPUSpecs.MNEMONICS_DE:	AwlInsn.name2type_german,
+	}
+
 	@classmethod
 	def name2type(cls, insnName, mnemonics):
-		insnName = insnName.upper()
+		name2typeTable = cls.mnemonics2nameTypeTable[mnemonics]
 		try:
-			if mnemonics == S7CPUSpecs.MNEMONICS_EN:
-				insnType = AwlInsn.name2type_english[insnName]
-			elif mnemonics == S7CPUSpecs.MNEMONICS_DE:
-				insnType = AwlInsn.name2type_german[insnName]
-			else:
-				assert(0)
+			return name2typeTable[insnName.upper()]
 		except KeyError:
 			return None
-		return insnType
 
 	@classmethod
 	def fromRawInsn(cls, cpu, rawInsn):
 		mnemonics = cpu.getSpecs().getMnemonics()
 		try:
 			insnType = cls.name2type(rawInsn.getName(), mnemonics)
-			if insnType is None:
-				raise KeyError
-			if insnType >= AwlInsn.TYPE_EXTENDED and\
-			   not cpu.extendedInsnsEnabled():
+			if insnType is None or\
+			   (insnType >= AwlInsn.TYPE_EXTENDED and\
+			    not cpu.extendedInsnsEnabled()):
 				raise KeyError
 			insnClass = cls.type2class[insnType]
 		except KeyError:
