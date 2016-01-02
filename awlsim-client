@@ -42,7 +42,7 @@ def usage():
 	print(" -c|--connect HOST:PORT  Connect to the server at HOST:PORT")
 	print("                         Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
-	print(" -t|--timeout 5.0        Set the connection timeout (default 5 s)")
+	print(" -t|--timeout 10.0       Set the connection timeout (default 10 s)")
 	print(" -L|--loglevel LVL       Set the client log level:")
 	print("                         0: Log nothing")
 	print("                         1: Log errors")
@@ -56,7 +56,7 @@ def usage():
 
 def main():
 	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
-	opt_timeout = 5.0
+	opt_timeout = 10.0
 	opt_loglevel = Logging.LOG_WARNING
 	actions = []
 
