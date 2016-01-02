@@ -5,7 +5,7 @@ basedir="$(dirname "$0")"
 
 set -e
 
-if ! [ -x "$basedir/awlsim-cli" -a -x "$basedir/setup.py" ]; then
+if ! [ -x "$basedir/awlsim-test" -a -x "$basedir/setup.py" ]; then
 	echo "basedir sanity check failed"
 	exit 1
 fi

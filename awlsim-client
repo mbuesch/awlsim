@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - Client interface
+#
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.common.compat import *
+
+import sys
+import getopt
+
+from awlsim.common import *
+from awlsim.coreclient import *
+
+
+class TextInterfaceAwlSimClient(AwlSimClient):
+	pass
+
+def usage():
+	print("awlsim-client version %s" % VERSION_STRING)
+	print("")
+	print("Usage: awlsim-client [OPTIONS] <ACTIONS>")
+	print("")
+	print("Options:")
+	print(" -c|--connect HOST:PORT  Connect to the server at HOST:PORT")
+	print("                         Defaults to %s:%d" %\
+		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
+	print(" -t|--timeout 5.0        Set the connection timeout (default 5 s)")
+	print(" -L|--loglevel LVL       Set the client log level:")
+	print("                         0: Log nothing")
+	print("                         1: Log errors")
+	print("                         2: Log errors and warnings (default)")
+	print("                         3: Log errors, warnings and info messages")
+	print("                         4: Verbose logging")
+	print("                         5: Extremely verbose logging")
+	print("")
+	print("Actions to be performed on the server:")
+	print(" -r|--runstate RUN/STOP  Set the run state of the CPU.")
+
+def main():
+	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
+	opt_timeout = 5.0
+	opt_loglevel = Logging.LOG_WARNING
+	actions = []
+
+	try:
+		(opts, args) = getopt.getopt(sys.argv[1:],
+			"hc:t:L:r:",
+			[ "help", "connect=", "timeout=", "loglevel=",
+			  "runstate=", ])
+	except getopt.GetoptError as e:
+		printError(str(e))
+		usage()
+		return 1
+	for (o, v) in opts:
+		if o in ("-h", "--help"):
+			usage()
+			return 0
+		if o in ("-c", "--connect"):
+			try:
+				idx = v.rfind(":")
+				if idx <= 0:
+					raise ValueError
+				opt_listen = (v[:idx], int(v[idx+1:]))
+			except ValueError:
+				printError("-c|--connect: Invalid host/port")
+				sys.exit(1)
+		if o in ("-t", "--timeout"):
+			try:
+				opt_timeout = float(v)
+			except ValueError:
+				printError("-t|--timeout: Invalid timeout value")
+				sys.exit(1)
+		if o in ("-L", "--loglevel"):
+			try:
+				opt_loglevel = int(v)
+			except ValueError:
+				printError("-L|--loglevel: Invalid log level")
+				sys.exit(1)
+		if o in ("-r", "--runstate"):
+			if v.upper().strip() in ("RUN", "1", "START"):
+				actions.append(("runstate", True))
+			elif v.upper().strip() in ("STOP", "0"):
+				actions.append(("runstate", False))
+			else:
+				printError("-r|--runstate: Invalid run state")
+				sys.exit(1)
+	if args:
+		usage()
+		return 1
+	if not actions:
+		usage()
+		return 1
+
+	exitCode = 0
+	client = None
+	try:
+		Logging.setLoglevel(opt_loglevel)
+
+		client = TextInterfaceAwlSimClient()
+		client.connectToServer(host = opt_connect[0],
+				       port = opt_connect[1],
+				       timeout = opt_timeout)
+
+		for action, actionValue in actions:
+			if action == "runstate":
+				client.setRunState(actionValue)
+			else:
+				assert(0)
+	except AwlSimError as e:
+		printError(e.getReport())
+		return 1
+	finally:
+		if client:
+			client.shutdown()
+
+	return exitCode
+
+if __name__ == "__main__":
+	sys.exit(main())

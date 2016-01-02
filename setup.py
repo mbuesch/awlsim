@@ -285,10 +285,11 @@ try:
 except ValueError:
 	pass
 
-freezeExecutables = [ ("awlsim-cli", None),
-		      ("awlsim-gui", None),
+freezeExecutables = [ ("awlsim-gui", None),
+		      ("awlsim-client", None),
 		      ("awlsim-server", None),
 		      ("awlsim-symtab", None),
+		      ("awlsim-test", None),
 		      ("awlsim/coreserver/server.py", "awlsim-server-module"), ]
 if py2exe:
 	extraKeywords["console"] = [ s for s, e in freezeExecutables ]
@@ -333,10 +334,11 @@ setup(	name		= "awlsim",
 			    "awlsimhw_dummy",
 			    "awlsimhw_linuxcnc",
 			    "awlsimhw_pyprofibus", ],
-	scripts		= [ "awlsim-cli",
-			    "awlsim-gui",
+	scripts		= [ "awlsim-gui",
+			    "awlsim-client",
 			    "awlsim-server",
 			    "awlsim-symtab",
+			    "awlsim-test",
 			    "awlsim-linuxcnc-hal",
 			    "awlsim-win.bat", ] + extraScripts,
 	cmdclass	= cmdclass,

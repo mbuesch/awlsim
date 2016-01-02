@@ -1,4 +1,4 @@
-# awlsim-cli with coreserver tests
+# awlsim-test with coreserver tests
 
 sh_test()
 {

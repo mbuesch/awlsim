@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - Commandline interface
+# AWL simulator - Commandline testing interface
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,14 +33,14 @@ from awlsim.core import *
 from awlsim.coreclient import *
 
 
-class TextInterfaceAwlSimClient(AwlSimClient):
+class TestAwlSimClient(AwlSimClient):
 	def handle_CPUDUMP(self, dumpText):
 		emitCpuDump(dumpText)
 
 def usage():
 	print("awlsim version %s" % VERSION_STRING)
 	print("")
-	print("Usage: awlsim-cli [OPTIONS] <AWL-source or awlsim-project file>")
+	print("Usage: awlsim-test [OPTIONS] <AWL-source or awlsim-project file>")
 	print("")
 	print("Options:")
 	print(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
@@ -254,7 +254,7 @@ def runWithServerBackend(inputFile):
 		project = Project.fromProjectOrRawAwlFile(inputFile)
 
 		# Connect to the server
-		client = TextInterfaceAwlSimClient()
+		client = TestAwlSimClient()
 		if opt_spawnBackend:
 			host, port = AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT
 			if opt_connect:

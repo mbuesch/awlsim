@@ -92,7 +92,7 @@ cleanup_test_environment()
 	export AWLSIMCYTHON=
 }
 
-# $1=interpreter $2=awl_file ($3ff additional options to awlsim-cli)
+# $1=interpreter $2=awl_file ($3ff additional options to awlsim-test)
 run_awl_test()
 {
 	local interpreter="$1"
@@ -104,7 +104,7 @@ run_awl_test()
 
 	local ok=1
 	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$rootdir/awlsim-cli" --loglevel 2  --extended-insns \
+	"$interpreter" "$rootdir/awlsim-test" --loglevel 2  --extended-insns \
 		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 		--cycle-time 60 \
 		"$@" \
@@ -146,7 +146,7 @@ run_sh_test()
 	echo "[OK]"
 }
 
-# $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-cli or testfile)
+# $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-test or testfile)
 run_test()
 {
 	local interpreter="$1"
