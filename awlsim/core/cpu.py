@@ -150,6 +150,8 @@ class S7Prog(object):
 		if specs.getConfiguredMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
 			return
 
+		detected = None
+		errorCounts = {}
 		rawBlocks = list(itertools.chain(self.pendingRawOBs,
 						 self.pendingRawFBs,
 						 self.pendingRawFCs))
@@ -157,31 +159,29 @@ class S7Prog(object):
 			if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
 				# It was already set. We are Ok.
 				return
-			raise AwlSimError("Mnemonics auto detection failed: "
-				"There are not blocks (OB, FB, FC) to perform "
-				"auto detection on.")
-
-		errorCounts = {}
-		detected = None
-		for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
-				  S7CPUSpecs.MNEMONICS_DE):
-			errorCount = 0
-			for rawBlock in rawBlocks:
-				for rawInsn in rawBlock.insns:
-					ret = AwlInsnTranslator.name2type(rawInsn.getName(),
-									  mnemonics)
-					if ret is None:
-						errorCount += 1
-					try:
-						optrans = AwlOpTranslator(None, mnemonics)
-						optrans.translateFromRawInsn(rawInsn)
-					except AwlSimError:
-						errorCount += 1
-			if errorCount == 0:
-				# No error. Use these mnemonics.
-				detected = mnemonics
-				break
-			errorCounts[mnemonics] = errorCount
+			# There are no blocks and we didn't detect anything, yet.
+			# Just set it to EN.
+			detected = S7CPUSpecs.MNEMONICS_EN
+		if detected is None:
+			for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
+					  S7CPUSpecs.MNEMONICS_DE):
+				errorCount = 0
+				for rawBlock in rawBlocks:
+					for rawInsn in rawBlock.insns:
+						ret = AwlInsnTranslator.name2type(rawInsn.getName(),
+										  mnemonics)
+						if ret is None:
+							errorCount += 1
+						try:
+							optrans = AwlOpTranslator(None, mnemonics)
+							optrans.translateFromRawInsn(rawInsn)
+						except AwlSimError:
+							errorCount += 1
+				if errorCount == 0:
+					# No error. Use these mnemonics.
+					detected = mnemonics
+					break
+				errorCounts[mnemonics] = errorCount
 		if detected is None:
 			# Select the mnemonics with the lower error count.
 			if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
