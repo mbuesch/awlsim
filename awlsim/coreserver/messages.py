@@ -1098,7 +1098,7 @@ class AwlSimMessageTransceiver(object):
 					     socket.SO_OOBINLINE,
 					     1)
 			self.sock.setsockopt(socket.SOL_SOCKET,
-					     socket.SO_PRIORITY,
+					     getattr(socket, "SO_PRIORITY", 12),
 					     6)
 			self.sock.setsockopt(socket.SOL_SOCKET,
 					     socket.SO_SNDBUF,
