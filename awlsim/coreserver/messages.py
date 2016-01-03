@@ -1074,6 +1074,8 @@ class AwlSimMessageTransceiver(object):
 
 	def __init__(self, sock, peerInfoString):
 		self.sock = sock
+		self.__isTCP = sock.family in (socket.AF_INET, socket.AF_INET6) and\
+			       sock.type == socket.SOCK_STREAM
 		self.peerInfoString = peerInfoString
 
 		# Transmit status
@@ -1092,12 +1094,22 @@ class AwlSimMessageTransceiver(object):
 			self.__timeout = None
 			self.sock.settimeout(self.__timeout)
 
-			if self.sock.family in (socket.AF_INET, socket.AF_INET6) and\
-			   self.sock.type == socket.SOCK_STREAM:
-				self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-			xferBufSize = 1024 * 1024
-			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, xferBufSize)
-			self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, xferBufSize)
+			self.sock.setsockopt(socket.SOL_SOCKET,
+					     socket.SO_OOBINLINE,
+					     1)
+			self.sock.setsockopt(socket.SOL_SOCKET,
+					     socket.SO_PRIORITY,
+					     6)
+			self.sock.setsockopt(socket.SOL_SOCKET,
+					     socket.SO_SNDBUF,
+					     1024 * 100)
+			self.sock.setsockopt(socket.SOL_SOCKET,
+					     socket.SO_RCVBUF,
+					     1024 * 100)
+			if self.__isTCP:
+				self.sock.setsockopt(socket.IPPROTO_TCP,
+						     socket.TCP_NODELAY,
+						     1)
 		except SocketErrors as e:
 			raise AwlSimError("Failed to initialize socket: %s" % str(e))
 
@@ -1106,6 +1118,12 @@ class AwlSimMessageTransceiver(object):
 			CALL_NOEX(self.sock.shutdown, socket.SHUT_RDWR)
 			CALL_NOEX(self.sock.close)
 			self.sock = None
+
+	def txCork(self, cork = True):
+		if self.__isTCP:
+			self.sock.setsockopt(socket.IPPROTO_TCP,
+					     socket.TCP_CORK,
+					     1 if cork else 0)
 
 	def send(self, msg, timeout=None):
 		if timeout != self.__timeout:

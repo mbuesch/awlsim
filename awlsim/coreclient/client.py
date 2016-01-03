@@ -403,7 +403,11 @@ class AwlSimClient(object):
 		if not self.__transceiver:
 			return False
 		msg = AwlSimMessage_AWLSRC(awlSource)
-		status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+		self.__transceiver.txCork(True)
+		try:
+			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+		finally:
+			self.__transceiver.txCork(False)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to AWL source")
 		return True
@@ -424,7 +428,11 @@ class AwlSimClient(object):
 		if not self.__transceiver:
 			return False
 		msg = AwlSimMessage_SYMTABSRC(symTabSource)
-		status = self.__sendAndWaitFor_REPLY(msg)
+		self.__transceiver.txCork(True)
+		try:
+			status = self.__sendAndWaitFor_REPLY(msg)
+		finally:
+			self.__transceiver.txCork(False)
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load symbol table source")
 		return True
