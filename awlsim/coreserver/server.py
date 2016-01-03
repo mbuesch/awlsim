@@ -218,6 +218,7 @@ class AwlSimServer(object):
 		self.__socket = None
 		self.__unixSockPath = None
 		self.__clients = []
+		self.__sock2client = {}
 
 		self.__sim = AwlSim()
 		self.setCycleExitHook(None)
@@ -831,21 +832,27 @@ class AwlSimServer(object):
 			self.__clientCommTransferError(e, client)
 			return
 
-	def __handleCommunication(self):
+	def __handleCommunication(self, __select = select.select):
+		# No timeout for the first attempt
+		timeout = 0.0
 		while 1:
+			# Check if there is anything to receive
 			try:
-				rlist, wlist, xlist = select.select(self.__selectRlist, [], [], 0)
+				rlist, wlist, xlist = __select(self.__selectRlist,
+							       [], [], timeout)
 			except Exception as e:
 				raise AwlSimError("AwlSimServer: Communication error. "
 					"'select' failed")
 			if not rlist:
-				break
+				return
 			if self.__socket in rlist:
 				rlist.remove(self.__socket)
 				self.__accept()
 			for sock in rlist:
-				client = [ c for c in self.__clients if c.socket is sock ][0]
-				self.__handleClientComm(client)
+				self.__handleClientComm(self.__sock2client[sock])
+			# Specify a small wait timeout for following attempts to make sure
+			# we got all data.
+			timeout = 0.01
 
 	def __handleMemReadReqs(self):
 		broken = False
@@ -1063,10 +1070,12 @@ class AwlSimServer(object):
 
 	def __clientAdd(self, client):
 		self.__clients.append(client)
+		self.__sock2client[client.socket] = client
 		self.__rebuildSelectReadList()
 
 	def __clientRemove(self, client):
 		self.__clients.remove(client)
+		self.__sock2client.pop(client.socket)
 		self.__rebuildSelectReadList()
 		self.__updateCpuCallbacks()
 
