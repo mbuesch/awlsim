@@ -1105,7 +1105,7 @@ class AwlSimMessageTransceiver(object):
 					     1024 * 100)
 			self.sock.setsockopt(socket.SOL_SOCKET,
 					     socket.SO_RCVBUF,
-					     1024 * 100)
+					     1024 * 2)
 			if self.__isTCP:
 				self.sock.setsockopt(socket.IPPROTO_TCP,
 						     socket.TCP_NODELAY,
