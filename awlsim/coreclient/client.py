@@ -581,14 +581,15 @@ class AwlSimClient(object):
 	# Set the memory areas we are interested in receiving
 	# dumps for, in the server.
 	# memAreas is a list of MemoryArea instances.
-	# The repetitionFactor tells whether to
-	#  - only run the request once (repetitionFactor=0)
-	#  - repeat on every n'th cycle (repetitionFactor=n)
+	# The repetitionPeriod tells whether to
+	#  - only run the request once (repetitionneriod < 0.0)
+	#  - repeat every n'th second (repetitionFactor = n)
 	# If sync is true, wait for a reply from the server.
-	def setMemoryReadRequests(self, memAreas, repetitionFactor=0, sync=False):
+	def setMemoryReadRequests(self, memAreas, repetitionPeriod = -1.0,
+				  sync = False):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_REQ_MEMORY(0, repetitionFactor, memAreas)
+		msg = AwlSimMessage_REQ_MEMORY(0, repetitionPeriod, memAreas)
 		if sync:
 			msg.flags |= msg.FLG_SYNC
 			status = self.__sendAndWaitFor_REPLY(msg)

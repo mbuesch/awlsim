@@ -334,7 +334,7 @@ class CpuWidget(QWidget):
 				wantDump = True
 		try:
 			client.setMemoryReadRequests(memAreas,
-						     repetitionFactor = 10,
+						     repetitionPeriod = 0.1,
 						     sync = True)
 			client.setPeriodicDumpInterval(300 if wantDump else 0)
 		except AwlSimError as e:

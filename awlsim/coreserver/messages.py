@@ -567,8 +567,8 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 
 	# Payload header struct:
 	#	flags (32 bit)
-	#	repetition factor (32 bit)
-	plHdrStruct = struct.Struct(str(">II"))
+	#	repetition period in nanoseconds (32 bit)
+	plHdrStruct = struct.Struct(str(">Ii"))
 
 	# Payload memory area struct:
 	#	memType (8 bit)
@@ -581,14 +581,14 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 	# Flags
 	FLG_SYNC	= 1 << 0 # Synchronous. Returns a REPLY when finished.
 
-	def __init__(self, flags, repetitionFactor, memAreas):
+	def __init__(self, flags, repetitionPeriod, memAreas):
 		self.flags = flags
-		self.repetitionFactor = repetitionFactor
+		self.repetitionPeriod = repetitionPeriod
 		self.memAreas = memAreas
 
 	def toBytes(self):
-		pl = self.plHdrStruct.pack(self.flags,
-					   self.repetitionFactor)
+		repPeriodNs = int(round(self.repetitionPeriod * 1000000000.0))
+		pl = self.plHdrStruct.pack(self.flags, repPeriodNs)
 		for memArea in self.memAreas:
 			pl += self.plAreaStruct.pack(memArea.memType,
 						     memArea.flags,
@@ -601,9 +601,10 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 	def fromBytes(cls, payload):
 		try:
 			offset = 0
-			flags, repetitionFactor =\
+			flags, repPeriodNs =\
 				cls.plHdrStruct.unpack_from(payload, offset)
 			offset += cls.plHdrStruct.size
+			repetitionPeriod = float(repPeriodNs) / 1000000000.0
 			memAreas = []
 			while offset < len(payload):
 				memType, mFlags, index, start, length =\
@@ -612,7 +613,7 @@ class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 				memAreas.append(MemoryArea(memType, mFlags, index, start, length))
 		except struct.error as e:
 			raise TransferError("REQ_MEMORY: Invalid data format")
-		return cls(flags, repetitionFactor, memAreas)
+		return cls(flags, repetitionPeriod, memAreas)
 
 class AwlSimMessage_MEMORY(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_MEMORY
@@ -1102,7 +1103,7 @@ class AwlSimMessageTransceiver(object):
 					     6)
 			self.sock.setsockopt(socket.SOL_SOCKET,
 					     socket.SO_SNDBUF,
-					     1024 * 100)
+					     1024 * 2)
 			self.sock.setsockopt(socket.SOL_SOCKET,
 					     socket.SO_RCVBUF,
 					     1024 * 2)
@@ -1180,7 +1181,13 @@ class AwlSimMessageTransceiver(object):
 				return None
 		msgLen = hdrLen + self.payloadLen
 		if rxByteCnt < msgLen:
-			data = self.sock.recv(msgLen - rxByteCnt)
+			try:
+				data = self.sock.recv(msgLen - rxByteCnt)
+			except SocketErrors as e:
+				transferError = TransferError(None, parentException = e)
+				if transferError.reason == TransferError.REASON_BLOCKING:
+					return None
+				raise transferError
 			if not data:
 				# The remote end closed the connection
 				raise TransferError(None,

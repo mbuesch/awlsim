@@ -84,8 +84,8 @@ class AwlSimServer(object):
 
 			# Memory read requests
 			self.memReadRequestMsg = None
-			self.repetitionFactor = 0
-			self.repetitionCount = 0
+			self.repetitionPeriod = 0.0
+			self.nextRepTime = monotonic_time()
 
 	@classmethod
 	def getaddrinfo(cls, host, port):
@@ -215,6 +215,8 @@ class AwlSimServer(object):
 		self.__commandMask = 0
 		self.__handleExceptionServerside = False
 		self.__handleMaintenanceServerside = False
+		self.__haveAnyMemReadReq = False
+
 		self.__socket = None
 		self.__unixSockPath = None
 		self.__clients = []
@@ -723,8 +725,9 @@ class AwlSimServer(object):
 	def __rx_REQ_MEMORY(self, client, msg):
 		printDebug("Received message: REQ_MEMORY")
 		client.memReadRequestMsg = AwlSimMessage_MEMORY(0, msg.memAreas)
-		client.repetitionFactor = msg.repetitionFactor
-		client.repetitionCount = client.repetitionFactor
+		client.repetitionPeriod = msg.repetitionPeriod
+		client.nextRepTime = monotonic_time()
+		self.__updateMemReadReqFlag()
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(
 				msg, AwlSimMessage_REPLY.STAT_OK)
@@ -854,36 +857,46 @@ class AwlSimServer(object):
 			# we got all data.
 			timeout = 0.01
 
+	def __updateMemReadReqFlag(self):
+		self.__haveAnyMemReadReq = bool(any(bool(c.memReadRequestMsg)
+						    for c in self.__clients))
+
 	def __handleMemReadReqs(self):
 		broken = False
 		for client in self.__clients:
 			if not client.memReadRequestMsg:
 				continue
-			client.repetitionCount -= 1
-			if client.repetitionCount <= 0:
-				cpu, memAreas = self.__sim.cpu, client.memReadRequestMsg.memAreas
-				for memArea in memAreas:
-					memArea.flags = 0
-					try:
-						memArea.readFromCpu(cpu)
-					except AwlSimError as e:
-						if memArea.flags & (MemoryArea.FLG_ERR_READ |\
-								    MemoryArea.FLG_ERR_WRITE):
-							# We do not forward this as an exception.
-							# The client is supposed to check the error bits.
-							# Just continue as usual.
-							pass
-						else:
-							# This is a serious fault.
-							# Re-raise the exception.
-							raise
+
+			if client.repetitionPeriod < 0.0:
+				memReadRequestMsg = client.memReadRequestMsg
+				self.memReadRequestMsg = None
+			else:
+				now = monotonic_time()
+				if now < client.nextRepTime:
+					continue
+				client.nextRepTime = now + client.repetitionPeriod
+				memReadRequestMsg = client.memReadRequestMsg
+
+			cpu, memAreas = self.__sim.cpu, memReadRequestMsg.memAreas
+			for memArea in memAreas:
+				memArea.flags = 0
 				try:
-					client.transceiver.send(client.memReadRequestMsg)
-				except TransferError as e:
-					client.broken = broken = True
-				client.repetitionCount = client.repetitionFactor
-				if not client.repetitionFactor:
-					self.memReadRequestMsg = None
+					memArea.readFromCpu(cpu)
+				except AwlSimError as e:
+					if memArea.flags & (MemoryArea.FLG_ERR_READ |\
+							    MemoryArea.FLG_ERR_WRITE):
+						# We do not forward this as an exception.
+						# The client is supposed to check the error bits.
+						# Just continue as usual.
+						pass
+					else:
+						# This is a serious fault.
+						# Re-raise the exception.
+						raise e
+			try:
+				client.transceiver.send(memReadRequestMsg)
+			except TransferError as e:
+				client.broken = broken = True
 		if broken:
 			self.__removeBrokenClients()
 
@@ -977,7 +990,8 @@ class AwlSimServer(object):
 				if self.__state == self.STATE_RUN:
 					while self.__running:
 						sim.runCycle()
-						self.__handleMemReadReqs()
+						if self.__haveAnyMemReadReq:
+							self.__handleMemReadReqs()
 						self.__handleCommunication()
 					continue
 
@@ -1078,10 +1092,12 @@ class AwlSimServer(object):
 		self.__sock2client.pop(client.socket)
 		self.__rebuildSelectReadList()
 		self.__updateCpuCallbacks()
+		self.__updateMemReadReqFlag()
 
 	def __removeBrokenClients(self):
 		for client in [ c for c in self.__clients if c.broken ]:
 			self.__clientRemove(client)
+		self.__updateMemReadReqFlag()
 
 	def close(self):
 		"""Closes all client sockets and the main socket."""
