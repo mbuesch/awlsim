@@ -1075,9 +1075,10 @@ class AwlSimMessageTransceiver(object):
 
 	def __init__(self, sock, peerInfoString):
 		self.sock = sock
+		self.peerInfoString = peerInfoString
 		self.__isTCP = sock.family in (socket.AF_INET, socket.AF_INET6) and\
 			       sock.type == socket.SOCK_STREAM
-		self.peerInfoString = peerInfoString
+		self.__haveCork = hasattr(socket, "TCP_CORK")
 
 		# Transmit status
 		self.txSeqCount = 0
@@ -1098,9 +1099,12 @@ class AwlSimMessageTransceiver(object):
 			self.sock.setsockopt(socket.SOL_SOCKET,
 					     socket.SO_OOBINLINE,
 					     1)
-			self.sock.setsockopt(socket.SOL_SOCKET,
-					     getattr(socket, "SO_PRIORITY", 12),
-					     6)
+			SO_PRIORITY = getattr(socket, "SO_PRIORITY",
+					      12 if (osIsPosix and isPy2Compat) else None)
+			if SO_PRIORITY is not None:
+				self.sock.setsockopt(socket.SOL_SOCKET,
+						     SO_PRIORITY,
+						     6)
 			self.sock.setsockopt(socket.SOL_SOCKET,
 					     socket.SO_SNDBUF,
 					     1024 * 2)
@@ -1121,7 +1125,7 @@ class AwlSimMessageTransceiver(object):
 			self.sock = None
 
 	def txCork(self, cork = True):
-		if self.__isTCP:
+		if self.__isTCP and self.__haveCork:
 			self.sock.setsockopt(socket.IPPROTO_TCP,
 					     socket.TCP_CORK,
 					     1 if cork else 0)
