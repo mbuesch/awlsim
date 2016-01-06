@@ -436,7 +436,7 @@ class CpuWidget(QWidget):
 		client = self.mainWidget.getSimClient()
 		try:
 			# Receive messages, until we hit a timeout
-			while client.processMessages(0.1):
+			while client.processMessages(0.02):
 				pass
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
