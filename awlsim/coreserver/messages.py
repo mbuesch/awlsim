@@ -1073,6 +1073,9 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 	}
 
+	DEFAULT_TX_BUF_SIZE	= 1024 * 100
+	DEFAULT_RX_BUF_SIZE	= 1024 * 100
+
 	def __init__(self, sock, peerInfoString):
 		self.sock = sock
 		self.peerInfoString = peerInfoString
@@ -1105,18 +1108,24 @@ class AwlSimMessageTransceiver(object):
 				self.sock.setsockopt(socket.SOL_SOCKET,
 						     SO_PRIORITY,
 						     6)
-			self.sock.setsockopt(socket.SOL_SOCKET,
-					     socket.SO_SNDBUF,
-					     1024 * 2)
-			self.sock.setsockopt(socket.SOL_SOCKET,
-					     socket.SO_RCVBUF,
-					     1024 * 2)
+			self.setTxBufSize(self.DEFAULT_TX_BUF_SIZE)
+			self.setRxBufSize(self.DEFAULT_RX_BUF_SIZE)
 			if self.__isTCP:
 				self.sock.setsockopt(socket.IPPROTO_TCP,
 						     socket.TCP_NODELAY,
 						     1)
 		except SocketErrors as e:
 			raise AwlSimError("Failed to initialize socket: %s" % str(e))
+
+	def setTxBufSize(self, size):
+		self.sock.setsockopt(socket.SOL_SOCKET,
+				     socket.SO_SNDBUF,
+				     size)
+
+	def setRxBufSize(self, size):
+		self.sock.setsockopt(socket.SOL_SOCKET,
+				     socket.SO_RCVBUF,
+				     size)
 
 	def shutdown(self):
 		if self.sock:
@@ -1125,6 +1134,7 @@ class AwlSimMessageTransceiver(object):
 			self.sock = None
 
 	def txCork(self, cork = True):
+		return #XXX disabled
 		if self.__isTCP and self.__haveCork:
 			self.sock.setsockopt(socket.IPPROTO_TCP,
 					     socket.TCP_CORK,
