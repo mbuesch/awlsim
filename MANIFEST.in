@@ -1,7 +1,6 @@
 include COPYING.txt
 include TODO.txt
 include COMPATIBILITY.txt
-include awlsim-wininst-postinstall.py
 include win-standalone-build.bat
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsim/gui/icons/pic2py
