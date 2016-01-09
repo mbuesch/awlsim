@@ -3,6 +3,6 @@ from awlsim.common.compat import *
 
 
 VERSION_MAJOR = 0
-VERSION_MINOR = 42
+VERSION_MINOR = 43
 
 VERSION_STRING = "%d.%d" % (VERSION_MAJOR, VERSION_MINOR)
