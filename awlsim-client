@@ -39,20 +39,20 @@ def usage():
 	print("Usage: awlsim-client [OPTIONS] <ACTIONS>")
 	print("")
 	print("Options:")
-	print(" -c|--connect HOST:PORT  Connect to the server at HOST:PORT")
-	print("                         Defaults to %s:%d" %\
+	print(" -c|--connect HOST[:PORT] Connect to the server at HOST:PORT")
+	print("                          Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
-	print(" -t|--timeout 10.0       Set the connection timeout (default 10 s)")
-	print(" -L|--loglevel LVL       Set the client log level:")
-	print("                         0: Log nothing")
-	print("                         1: Log errors")
-	print("                         2: Log errors and warnings (default)")
-	print("                         3: Log errors, warnings and info messages")
-	print("                         4: Verbose logging")
-	print("                         5: Extremely verbose logging")
+	print(" -t|--timeout 10.0        Set the connection timeout (default 10 s)")
+	print(" -L|--loglevel LVL        Set the client log level:")
+	print("                          0: Log nothing")
+	print("                          1: Log errors")
+	print("                          2: Log errors and warnings (default)")
+	print("                          3: Log errors, warnings and info messages")
+	print("                          4: Verbose logging")
+	print("                          5: Extremely verbose logging")
 	print("")
 	print("Actions to be performed on the server:")
-	print(" -r|--runstate RUN/STOP  Set the run state of the CPU.")
+	print(" -r|--runstate RUN/STOP   Set the run state of the CPU.")
 
 def main():
 	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
@@ -75,12 +75,12 @@ def main():
 			return 0
 		if o in ("-c", "--connect"):
 			try:
-				idx = v.rfind(":")
-				if idx <= 0:
-					raise ValueError
-				opt_listen = (v[:idx], int(v[idx+1:]))
-			except ValueError:
-				printError("-c|--connect: Invalid host/port")
+				host, port = parseNetAddress(v)
+				if port is None:
+					port = AwlSimServer.DEFAULT_PORT
+				opt_connect = (host, port)
+			except AwlSimError as e:
+				printError("-c|--connect: %s" % e.message)
 				sys.exit(1)
 		if o in ("-t", "--timeout"):
 			try:
