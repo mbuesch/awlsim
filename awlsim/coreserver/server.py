@@ -867,6 +867,13 @@ class AwlSimServer(object):
 				self.__selectException(e)
 			self.__handleSocketComm(rlist)
 
+	def __handleCommunicationBlocking(self):
+		try:
+			select.select(self.__selectRlist, [], [], None)
+		except Exception as e:
+			self.__selectException(e)
+		self.__handleCommunication()
+
 	def __updateMemReadReqFlag(self):
 		self.__haveAnyMemReadReq = bool(any(bool(c.memReadRequestMsg)
 						    for c in self.__clients))
@@ -993,8 +1000,7 @@ class AwlSimServer(object):
 						    self.STATE_MAINTENANCE):
 					while self.__state in (self.STATE_STOP,
 							       self.STATE_MAINTENANCE):
-						self.__handleCommunication()
-						time.sleep(0.01)
+						self.__handleCommunicationBlocking()
 					continue
 
 				if self.__state == self.STATE_RUN:
