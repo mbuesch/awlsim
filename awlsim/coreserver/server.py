@@ -835,27 +835,37 @@ class AwlSimServer(object):
 			self.__clientCommTransferError(e, client)
 			return
 
-	def __handleCommunication(self, __select = select.select):
-		# No timeout for the first attempt
-		timeout = 0.0
-		while 1:
-			# Check if there is anything to receive
-			try:
-				rlist, wlist, xlist = __select(self.__selectRlist,
-							       [], [], timeout)
-			except Exception as e:
-				raise AwlSimError("AwlSimServer: Communication error. "
-					"'select' failed")
+	def __handleSocketComm(self, sockList):
+		if self.__socket in sockList:
+			sockList.remove(self.__socket)
+			self.__accept()
+		for sock in sockList:
+			self.__handleClientComm(self.__sock2client[sock])
+
+	def __selectException(self, exception):
+		raise AwlSimError("AwlSimServer: Communication error. "
+				  "'select' failed")
+
+	def __handleCommunication(self, __select = select.select, __Exception = Exception):
+		try:
+			rlist, wlist, xlist = __select(self.__selectRlist,
+						       [], [], 0.0)
 			if not rlist:
 				return
-			if self.__socket in rlist:
-				rlist.remove(self.__socket)
-				self.__accept()
-			for sock in rlist:
-				self.__handleClientComm(self.__sock2client[sock])
-			# Specify a small wait timeout for following attempts to make sure
-			# we got all data.
-			timeout = 0.01
+		except __Exception as e:
+			self.__selectException(e)
+		self.__handleSocketComm(rlist)
+
+		# Check again to receive more data (with a small timeout).
+		while True:
+			try:
+				rlist, wlist, xlist = __select(self.__selectRlist,
+							       [], [], 0.01)
+				if not rlist:
+					return
+			except __Exception as e:
+				self.__selectException(e)
+			self.__handleSocketComm(rlist)
 
 	def __updateMemReadReqFlag(self):
 		self.__haveAnyMemReadReq = bool(any(bool(c.memReadRequestMsg)
