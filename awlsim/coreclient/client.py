@@ -137,7 +137,7 @@ class AwlSimClient(object):
 			if family == AF_UNIX:
 				readableSockaddr = sockaddr
 			else:
-				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
+				readableSockaddr = "[%s]:%d" % (sockaddr[0], sockaddr[1])
 			printInfo("AwlSimClient: Connecting to server '%s'..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			while 1:

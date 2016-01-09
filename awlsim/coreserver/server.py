@@ -1045,7 +1045,7 @@ class AwlSimServer(object):
 				self.__unixSockPath = sockaddr
 				readableSockaddr = sockaddr
 			else:
-				readableSockaddr = "%s:%d" % (sockaddr[0], sockaddr[1])
+				readableSockaddr = "[%s]:%d" % (sockaddr[0], sockaddr[1])
 			printInfo("Listening on %s..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -1069,7 +1069,7 @@ class AwlSimServer(object):
 			if self.__unixSockPath:
 				peerInfoString = self.__unixSockPath
 			else:
-				peerInfoString = "%s:%d" % addrInfo[:2]
+				peerInfoString = "[%s]:%d" % addrInfo[:2]
 		except SocketErrors as e:
 			transferError = TransferError(None, parentException = e)
 			if transferError.reason == transferError.REASON_BLOCKING:
