@@ -292,7 +292,7 @@ class _AwlSimMessage_GET_source(AwlSimMessage):
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			identHash = cls.unpackBytes(payload, 0)
+			identHash, count = cls.unpackBytes(payload, 0)
 		except (ValueError, struct.error, AwlSimError) as e:
 			raise TransferError("GET_source: Invalid data format")
 		return cls(identHash = identHash)
