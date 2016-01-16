@@ -2,7 +2,7 @@
 #
 # AWL simulator - status word
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,6 +79,23 @@ class S7StatusWord(DynAttrs): #+cdef
 		"A1"	: 0,
 		"BIE"	: 0,
 	}
+
+	def __eq__(self, other): #@nocy
+#@cy	cdef __eq(self, object other):
+		return (self is other) or (\
+			isinstance(other, S7StatusWord) and\
+			self.getWord() == other.getWord()\
+		)
+
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy
+
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
 
 	@classmethod
 	def getBitnrByName(cls, name, mnemonics):

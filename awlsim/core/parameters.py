@@ -2,7 +2,7 @@
 #
 # AWL simulator - call parameters
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,6 +70,17 @@ class AwlParamAssign(DynAttrs):
 		# 'interface' is the BlockInterface of the called block.
 		# This element is assigned later in the translation phase.
 		self.interface = None
+
+	def __eq__(self, other):
+		return (self is other) or (\
+			isinstance(other, AwlParamAssign) and\
+			self.lvalueName == other.lvalueName and\
+			self.rvalueOp == other.rvalueOp and\
+			super(AwlParamAssign, self).__eq__(other)\
+		)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 	def __isInbound(self):
 		field = self.interface.getFieldByName(self.lvalueName)

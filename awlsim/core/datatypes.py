@@ -363,6 +363,20 @@ class AwlDataType(OptionalImmutable):
 		self.setStruct(struct)		# AwlStruct instance. Only for STRUCT type.
 		self.__widthOverride = None
 
+	def __eq__(self, other):
+		return (self is other) or (\
+			isinstance(other, AwlDataType) and\
+			self.type == other.type and\
+			self.index == other.index and\
+			self.arrayDimensions == other.arrayDimensions and\
+			self.arrayElementType == other.arrayElementType and\
+			self.struct == other.struct and\
+			self.__widthOverride == other.__widthOverride\
+		)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 	# Set the AwlStruct that defines the structure of this STRUCT type.
 	def setStruct(self, struct):
 		assert(struct is None or

@@ -2,7 +2,7 @@
 #
 # AWL simulator - Dynamic attributes base class
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,3 +47,27 @@ class DynAttrs(object): #+cdef
 			return value
 		# Fail for all other attributes
 		raise AttributeError(name)
+
+	def __eq__(self, other): #@nocy
+#@cy	cdef __eq(self, object other):
+		if self is other:
+			return True
+		if not isinstance(other, DynAttrs):
+			return False
+		for attrName in self.dynAttrs:
+			if not hasattr(self, attrName) and\
+			   not hasattr(other, attrName):
+				continue
+			if getattr(self, attrName) != getattr(other, attrName):
+				return False
+		return True
+
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
+
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy

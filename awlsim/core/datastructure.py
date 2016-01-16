@@ -65,6 +65,19 @@ class AwlStructField(object):
 		if self.initBytes is not None:
 			assert(len(self.initBytes) == self.byteSize)
 
+	def __eq__(self, other):
+		return (self is other) or (\
+			isinstance(other, AwlStructField) and\
+			self.name == other.name and\
+			self.offset == other.offset and\
+			self.dataType == other.dataType and\
+			self.initBytes == other.initBytes and\
+			self.override == other.override\
+		)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
+
 	# Return the final AwlStructField override in the chain.
 	@property
 	def finalOverride(self):
@@ -90,6 +103,15 @@ class AwlStruct(object):
 	def __init__(self):
 		self.fields = []
 		self.name2field = {}
+
+	def __eq__(self, other):
+		return (self is other) or (\
+			isinstance(other, AwlStruct) and\
+			self.fields == other.fields\
+		)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 	# Return aligned size, in bytes.
 	def getSize(self):

@@ -1,2 +1,2 @@
 cdef class DynAttrs(object):
-	pass
+	cdef __eq(self, object other)

@@ -9,3 +9,5 @@ cdef class AwlOffset(DynAttrs):
 	cdef public object identChain
 	cdef public object fbNumber
 	cdef public object subOffset
+
+	cdef __eq(self, object other)

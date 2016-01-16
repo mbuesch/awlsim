@@ -2,7 +2,7 @@
 #
 # AWL data offset
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -58,6 +58,25 @@ class AwlOffset(DynAttrs): #+cdef
 	def __init__(self, byteOffset=0, bitOffset=0):
 		self.byteOffset, self.bitOffset =\
 			byteOffset, bitOffset
+
+	def __eq__(self, other): #@nocy
+#@cy	cdef __eq(self, object other):
+		return (self is other) or (\
+			isinstance(other, AwlOffset) and\
+			self.byteOffset == other.byteOffset and\
+			self.bitOffset == other.bitOffset and\
+			super(AwlOffset, self).__eq__(other)\
+		)
+
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
+
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy
 
 	def dup(self):
 		offset = AwlOffset(self.byteOffset,

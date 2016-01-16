@@ -2,7 +2,7 @@
 #
 # AWL simulator - operators
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -196,6 +196,18 @@ class AwlOperator(DynAttrs):
 		# insn -> The instruction this operator is used in. May be None.
 		self.type, self.width, self.value, self.insn =\
 			type, width, value, insn
+
+	def __eq__(self, other):
+		return (self is other) or (\
+			isinstance(other, AwlOperator) and\
+			self.type == other.type and\
+			self.width == other.width and\
+			self.value == other.value and\
+			super(AwlOperator, self).__eq__(other)\
+		)
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 	# Make a deep copy, except for "insn".
 	def dup(self):
