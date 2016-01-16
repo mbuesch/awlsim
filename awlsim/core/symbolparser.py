@@ -329,6 +329,14 @@ class SymbolTable(object):
 		index, symbol = self.__findByName(name)
 		return index
 
+	def getByDataType(self, dataType):
+		"""Get all symbols with the given AwlDataType.
+		Returns a generator.
+		"""
+		assert(isinstance(dataType, AwlDataType))
+		return (symbol for symbol in self.__symbolsList\
+			if symbol.getType() == dataType)
+
 	def merge(self, other, overrideExisting = False):
 		"""Merge 'other' into 'self'"""
 		for symbol in other.__symbolsList:
