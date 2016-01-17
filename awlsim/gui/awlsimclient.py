@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI simulator client access
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,49 @@ from awlsim.gui.blocktreewidget import *
 
 from awlsim.coreclient.client import *
 
+
+class OnlineData(QObject):
+	"""Container for data retrieved from the server.
+	"""
+
+	# Symbol table signal.
+	# Contains only SymTabSources that can be parsed without errors.
+	# Parameter: a list of tuples such as:
+	#		[ (SymTabSource, SymbolTable), ... ]
+	symTabsUpdate = Signal(list)
+
+	def __init__(self, client):
+		QObject.__init__(self)
+		self.__client = client
+
+		self.reset()
+
+	def reset(self):
+		self.__symTabCache = {}
+
+	def __getSymTabByIdent(self, identHash):
+		try:
+			symTabSrc = self.__client.getSymTabSource(identHash)
+			if symTabSrc:
+				return SymTabParser.parseSource(symTabSrc)
+		except AwlSimError as e:
+			return None
+		return None
+
+	def handle_IDENTS(self, msg):
+		# Parse the symbol table sources
+		symTabCache = {}
+		symTabList = []
+		for symTabSrc in msg.symTabSources:
+			identHash = symTabSrc.identHash
+			symTab = self.__symTabCache.get(identHash, None)
+			if symTab is None:
+				symTab = self.__getSymTabByIdent(identHash)
+			symTabCache[identHash] = symTab
+			if symTab is not None:
+				symTabList.append((symTabSrc, symTab))
+		self.__symTabCache = symTabCache
+		self.symTabsUpdate.emit(symTabList)
 
 class GuiAwlSimClient(AwlSimClient, QObject):
 	# CPU exception signal.
@@ -60,6 +103,8 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		QObject.__init__(self)
 		AwlSimClient.__init__(self)
 
+		self.onlineData = OnlineData(self)
+
 		self.__setMode(self.MODE_OFFLINE)
 
 		self.__blockTreeModelManager = None
@@ -95,6 +140,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 
 	# Override ident hashes handler
 	def handle_IDENTS(self, msg):
+		self.onlineData.handle_IDENTS(msg)
 		self.haveIdentsMsg.emit(msg)
 
 	# Override block info handler
@@ -108,6 +154,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.__mode = mode
 		self.__host = host
 		self.__port = port
+		self.onlineData.reset()
 
 	def shutdown(self):
 		# Shutdown the client.
@@ -208,6 +255,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			# Connect block tree message handlers
 			self.haveIdentsMsg.connect(self.__blockTreeModel.handle_IDENTS)
 			self.haveBlockInfoMsg.connect(self.__blockTreeModel.handle_BLOCKINFO)
+			self.onlineData.symTabsUpdate.connect(self.__blockTreeModel.handle_symTabInfo)
 
 		return ObjRef.make("BlockTreeModel", self.__blockTreeModelManager,
 				   self.__blockTreeModel)

@@ -2,7 +2,7 @@
 #
 # AWL simulator - Block tree widget
 #
-# Copyright 2015 Michael Buesch <m@bues.ch>
+# Copyright 2015-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,6 +86,7 @@ class BlockTreeModel(QAbstractItemModel):
 
 		self.__awlSources = []		# List of AwlSource()s
 		self.__symTabSources = []	# List of SymTabSource()s
+		self.__symTabInfoList = []	# List of (SymTabSource(), SymbolTable())
 		self.__libSelections = []	# List of AwlLibEntrySelection()s
 		self.__obInfos = []		# List of BlockInfo()s for OBs
 		self.__fcInfos = []		# List of BlockInfo()s for FCs
@@ -110,6 +111,16 @@ class BlockTreeModel(QAbstractItemModel):
 
 	def getDBBlockInfo(self, indexNr):
 		return self.__dbInfos[indexNr]
+
+	def __getSymbolsByType(self, dataType):
+		return itertools.chain.from_iterable(
+			symTab.getByDataType(dataType)
+			for symTabSrc, symTab in self.__symTabInfoList
+		)
+
+	def __getSymbolsByTypeName(self, typeNameString):
+		dataType = AwlDataType.makeByName(typeNameString.split())
+		return self.__getSymbolsByType(dataType)
 
 	def __updateData(self, localList, newList, parentIndex):
 		for i, newItem in enumerate(newList):
@@ -166,6 +177,10 @@ class BlockTreeModel(QAbstractItemModel):
 				  if bi.blockType == bi.TYPE_DB ]
 		self.__updateData(self.__dbInfos, newBlockInfos,
 				  self.idToIndex(self.INDEXID_BLOCKS_DBS))
+
+	def handle_symTabInfo(self, symTabInfoList):
+		self.__symTabInfoList = symTabInfoList
+		#TODO we probably need to trigger row update here.
 
 	def idToIndex(self, idxId, column = 0):
 		for table in (self.id2row_toplevel,
@@ -300,142 +315,168 @@ class BlockTreeModel(QAbstractItemModel):
 			return self.idToIndex(self.INDEXID_HWMODS)
 		return QModelIndex()
 
+	def __data_columnName(self, index, idxId, idxIdBase):
+		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__awlSources):
+				return None
+			return self.__awlSources[index].name
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__symTabSources):
+				return None
+			return self.__symTabSources[index].name
+		elif idxIdBase == self.INDEXID_SRCS_LIBSEL_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__libSelections):
+				return None
+			return str(self.__libSelections[index])
+		elif idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__obInfos):
+				return None
+			return self.__obInfos[index].blockName
+		elif idxIdBase == self.INDEXID_BLOCKS_FCS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__fcInfos):
+				return None
+			return self.__fcInfos[index].blockName
+		elif idxIdBase == self.INDEXID_BLOCKS_FBS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__fbInfos):
+				return None
+			return self.__fbInfos[index].blockName
+		elif idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__dbInfos):
+				return None
+			return self.__dbInfos[index].blockName
+		elif idxIdBase == self.INDEXID_HWMODS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__hwMods):
+				return None
+			return self.__hwMods[index].getModuleName()
+
+		names = {
+		  self.INDEXID_SRCS		: "Sources",
+		  self.INDEXID_SRCS_AWL		: "AWL/STL",
+		  self.INDEXID_SRCS_SYMTAB	: "Symbols",
+		  self.INDEXID_SRCS_LIBSEL	: "Libraries",
+		  self.INDEXID_BLOCKS		: "Blocks",
+		  self.INDEXID_BLOCKS_OBS	: "OBs",
+		  self.INDEXID_BLOCKS_FCS	: "FCs",
+		  self.INDEXID_BLOCKS_FBS	: "FBs",
+		  self.INDEXID_BLOCKS_DBS	: "DBs",
+		  self.INDEXID_HWMODS		: "Hardware",
+		}
+		return names.get(idxId)
+
+	def __tryGetBlockSymName(self, blockName):
+		syms = list(self.__getSymbolsByTypeName(blockName))
+		if syms:
+			return '"%s"' % syms[-1].getName()
+		return None
+
+	def __data_columnDesc(self, index, idxId, idxIdBase):
+		if idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
+			obInfoIndex = idxId - idxIdBase
+			descs = {
+				1	: "Main cycle: \"CYCL_EXC\"",
+				100	: "Warm start: \"COMPLETE RESTART\"",
+				101	: "Restart: \"RESTART\"",
+				102	: "Cold restart: \"COLD RESTART\"",
+			}
+			obInfo = self.__obInfos[obInfoIndex]
+			desc = self.__tryGetBlockSymName("OB %d" % obInfo.blockIndex)
+			return desc or descs.get(obInfo.blockIndex)
+		elif idxIdBase == self.INDEXID_BLOCKS_FCS_BASE:
+			fcInfoIndex = idxId - idxIdBase
+			fcInfo = self.__fcInfos[fcInfoIndex]
+			return self.__tryGetBlockSymName("FC %d" % fcInfo.blockIndex)
+		elif idxIdBase == self.INDEXID_BLOCKS_FBS_BASE:
+			fbInfoIndex = idxId - idxIdBase
+			fbInfo = self.__fbInfos[fbInfoIndex]
+			return self.__tryGetBlockSymName("FB %d" % fbInfo.blockIndex)
+		elif idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
+			dbInfoIndex = idxId - idxIdBase
+			descs = {
+				0 : "System data block",
+			}
+			dbInfo = self.__dbInfos[dbInfoIndex]
+			desc = self.__tryGetBlockSymName("DB %d" % dbInfo.blockIndex)
+			return desc or descs.get(dbInfo.blockIndex)
+		descs = {
+		  self.INDEXID_SRCS		: "Source files",
+		  self.INDEXID_SRCS_AWL		: "AWL/STL sources",
+		  self.INDEXID_SRCS_SYMTAB	: "Symbol table sources",
+		  self.INDEXID_SRCS_LIBSEL	: "Library selections",
+		  self.INDEXID_BLOCKS		: "Compiled blocks",
+		  self.INDEXID_BLOCKS_OBS	: "Organization Blocks",
+		  self.INDEXID_BLOCKS_FCS	: "Functions",
+		  self.INDEXID_BLOCKS_FBS	: "Function Blocks",
+		  self.INDEXID_BLOCKS_DBS	: "Data Blocks",
+		  self.INDEXID_HWMODS		: "Hardware modules",
+		}
+		return descs.get(idxId)
+
+	def __data_columnIdent(self, index, idxId, idxIdBase):
+		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__awlSources):
+				return None
+			return self.__awlSources[index].identHashStr
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__symTabSources):
+				return None
+			return self.__symTabSources[index].identHashStr
+		elif idxIdBase == self.INDEXID_SRCS_LIBSEL_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__libSelections):
+				return None
+			return self.__libSelections[index].getIdentHashStr()
+		elif idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__obInfos):
+				return None
+			return self.__obInfos[index].identHashStr
+		elif idxIdBase == self.INDEXID_BLOCKS_FCS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__fcInfos):
+				return None
+			return self.__fcInfos[index].identHashStr
+		elif idxIdBase == self.INDEXID_BLOCKS_FBS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__fbInfos):
+				return None
+			return self.__fbInfos[index].identHashStr
+		elif idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__dbInfos):
+				return None
+			return self.__dbInfos[index].identHashStr
+		elif idxIdBase == self.INDEXID_HWMODS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__hwMods):
+				return None
+			return self.__hwMods[index].getIdentHashStr()
+		return None
+
 	def data(self, index, role=Qt.DisplayRole):
+		column = index.column()
+		idxId = self.indexToId(index)
+		idxIdBase = idxId & self.INDEXID_BASE_MASK
+
 		if role in (Qt.DisplayRole, Qt.EditRole):
-			idxId = self.indexToId(index)
-			idxIdBase = idxId & self.INDEXID_BASE_MASK
-
-			if index.column() == self.COLUMN_NAME:
-				# Name column
-
-				if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__awlSources):
-						return None
-					return self.__awlSources[index].name
-				elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__symTabSources):
-						return None
-					return self.__symTabSources[index].name
-				elif idxIdBase == self.INDEXID_SRCS_LIBSEL_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__libSelections):
-						return None
-					return str(self.__libSelections[index])
-				elif idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__obInfos):
-						return None
-					return self.__obInfos[index].blockName
-				elif idxIdBase == self.INDEXID_BLOCKS_FCS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__fcInfos):
-						return None
-					return self.__fcInfos[index].blockName
-				elif idxIdBase == self.INDEXID_BLOCKS_FBS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__fbInfos):
-						return None
-					return self.__fbInfos[index].blockName
-				elif idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__dbInfos):
-						return None
-					return self.__dbInfos[index].blockName
-				elif idxIdBase == self.INDEXID_HWMODS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__hwMods):
-						return None
-					return self.__hwMods[index].getModuleName()
-
-				names = {
-				  self.INDEXID_SRCS		: "Sources",
-				  self.INDEXID_SRCS_AWL		: "AWL/STL",
-				  self.INDEXID_SRCS_SYMTAB	: "Symbol tables",
-				  self.INDEXID_SRCS_LIBSEL	: "Libraries",
-				  self.INDEXID_BLOCKS		: "Blocks",
-				  self.INDEXID_BLOCKS_OBS	: "OBs",
-				  self.INDEXID_BLOCKS_FCS	: "FCs",
-				  self.INDEXID_BLOCKS_FBS	: "FBs",
-				  self.INDEXID_BLOCKS_DBS	: "DBs",
-				  self.INDEXID_HWMODS		: "Hardware",
-				}
-				try:
-					name = names[idxId]
-				except KeyError as e:
-					return None
-				return name
-
-			if index.column() == self.COLUMN_DESC:
-				# Description column
-
-				descs = {
-				  self.INDEXID_SRCS		: "Source files",
-				  self.INDEXID_SRCS_AWL		: "AWL/STL sources",
-				  self.INDEXID_SRCS_SYMTAB	: "Symbol table sources",
-				  self.INDEXID_SRCS_LIBSEL	: "Library selections",
-				  self.INDEXID_BLOCKS		: "Compiled blocks",
-				  self.INDEXID_BLOCKS_OBS	: "Organization Blocks",
-				  self.INDEXID_BLOCKS_FCS	: "Functions",
-				  self.INDEXID_BLOCKS_FBS	: "Function Blocks",
-				  self.INDEXID_BLOCKS_DBS	: "Data Blocks",
-				  self.INDEXID_HWMODS		: "Hardware modules",
-				}
-				try:
-					desc = descs[idxId]
-				except KeyError as e:
-					return None
-				return desc
-
-			if index.column() == self.COLUMN_IDENT:
-				# Ident column
-
-				if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__awlSources):
-						return None
-					return self.__awlSources[index].identHashStr
-				elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__symTabSources):
-						return None
-					return self.__symTabSources[index].identHashStr
-				elif idxIdBase == self.INDEXID_SRCS_LIBSEL_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__libSelections):
-						return None
-					return self.__libSelections[index].getIdentHashStr()
-				elif idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__obInfos):
-						return None
-					return self.__obInfos[index].identHashStr
-				elif idxIdBase == self.INDEXID_BLOCKS_FCS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__fcInfos):
-						return None
-					return self.__fcInfos[index].identHashStr
-				elif idxIdBase == self.INDEXID_BLOCKS_FBS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__fbInfos):
-						return None
-					return self.__fbInfos[index].identHashStr
-				elif idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__dbInfos):
-						return None
-					return self.__dbInfos[index].identHashStr
-				elif idxIdBase == self.INDEXID_HWMODS_BASE:
-					index = idxId - idxIdBase
-					if index >= len(self.__hwMods):
-						return None
-					return self.__hwMods[index].getIdentHashStr()
+			if column == self.COLUMN_NAME:
+				return self.__data_columnName(index, idxId, idxIdBase)
+			if column == self.COLUMN_DESC:
+				return self.__data_columnDesc(index, idxId, idxIdBase)
+			if column == self.COLUMN_IDENT:
+				return self.__data_columnIdent(index, idxId, idxIdBase)
 
 		elif role == Qt.DecorationRole:
-			idxId = self.indexToId(index)
-			idxIdBase = idxId & self.INDEXID_BASE_MASK
-			if index.column() == 0:
+			if column == self.COLUMN_NAME:
 				if idxId == self.INDEXID_SRCS:
 					return getIcon("textsource")
 				elif idxId == self.INDEXID_SRCS_AWL or\
@@ -480,7 +521,7 @@ class BlockTreeModel(QAbstractItemModel):
 		if role == Qt.DisplayRole:
 			return (
 				"Block name",
-				"Description",
+				"Symbol / description",
 				"Unique identification hash",
 			)[section]
 		return None
@@ -492,8 +533,8 @@ class BlockTreeView(QTreeView):
 		if model:
 			self.expand(model.idToIndex(model.INDEXID_SRCS))
 			self.expand(model.idToIndex(model.INDEXID_BLOCKS))
-		self.setColumnWidth(0, 200)
-		self.setColumnWidth(1, 150)
+		self.setColumnWidth(0, 170)
+		self.setColumnWidth(1, 220)
 		self.setColumnWidth(2, 530)
 
 		self.__currentIdxId = None

@@ -971,7 +971,7 @@ class State_Blocks(StateWindow):
 		self.blockTree = BlockTreeView(self.__modelRef.obj, self)
 		self.layout().addWidget(self.blockTree, 0, 0)
 
-		self.setMinimumSize(400, 220)
+		self.setMinimumSize(450, 320)
 		self._updateSize()
 
 	def closeEvent(self, ev):
