@@ -85,6 +85,8 @@ pilc_bootstrap_first_stage()
 	assert_program mkfs.vfat
 	assert_program mkfs.ext4
 	assert_program 7z
+	[ -x "$opt_qemu" ] ||\
+		die "The qemu binary '$opt_qemu' is not executable."
 
 	# debootstrap first stage.
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
