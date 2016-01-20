@@ -223,48 +223,81 @@ def registerCythonModules():
 		   filename.startswith("awlsimhw_"):
 			registerCythonModule(baseDir, filename)
 
-def tryBuildCythonModules():
-	try:
-		if int(os.getenv("NOCYTHON", "0")):
-			print("Skipping build of CYTHON modules due to "
-			      "NOCYTHON environment variable setting.")
-			return
-	except ValueError:
-		pass
+cmdclass = {}
+ext_modules = []
+extraKeywords = {}
+
+# Try to build the Cython modules. This might fail.
+buildCython = True
+try:
+	if int(os.getenv("NOCYTHON", "0")):
+		print("Skipping build of CYTHON modules due to "
+		      "NOCYTHON environment variable setting.")
+		buildCython = False
+except ValueError:
+	pass
+if buildCython:
 	if os.name != "posix":
 		print("WARNING: Not building CYTHON modules on '%s' platform." %\
 		      os.name)
-		return
+		buildCython = False
+if buildCython:
 	if "bdist_wininst" in sys.argv:
 		print("WARNING: Omitting CYTHON modules while building "
 		      "Windows installer.")
-		return
+		buildCython = False
+if buildCython:
 	try:
 		from Cython.Distutils import build_ext as Cython_build_ext
 	except ImportError as e:
 		print("WARNING: Could not build the CYTHON modules: "
 		      "%s" % str(e))
 		print("--> Is Cython installed?")
-		return
+		buildCython = False
+if buildCython:
+	try:
+		cythonParallelBuild = bool(int(os.getenv("CYTHONPARALLEL", "0")))
+	except ValueError:
+		cythonParallelBuild = False
+	if sys.version_info[0] < 3:
+		print("WARNING: Cython parallel build not supported "
+		      "on Python 2.x")
+		cythonParallelBuild = False
 
+	def cyBuildWrapper(arg):
+		# This function does the same thing as the for-loop-body
+		# inside of Cython's build_ext.build_extensions() method.
+		# It is called via multiprocessing to build extensions
+		# in parallel.
+		# Note that this might break, if Cython's build_extensions()
+		# is changed and stuff is added to its for loop. Meh.
+		self, ext = arg
+		ext.sources = self.cython_sources(ext.sources, ext)
+		self.build_extension(ext)
+
+	# Override Cython's build_ext class.
 	class MyCythonBuildExt(Cython_build_ext):
 		def build_extension(self, ext):
 			assert(not ext.name.endswith("__init__"))
 			Cython_build_ext.build_extension(self, ext)
 
 		def build_extensions(self):
-			# First patch the files, the run the normal build
+			# First patch the files, the run the build
 			patchCythonModules(self.build_lib)
-			Cython_build_ext.build_extensions(self)
+
+			if cythonParallelBuild:
+				# Run the parallel build, yay.
+				self.check_extensions_list(self.extensions)
+				from multiprocessing.pool import Pool
+				Pool().map(cyBuildWrapper,
+					   ((self, ext) for ext in self.extensions))
+			else:
+				# Run the normal non-parallel build.
+				Cython_build_ext.build_extensions(self)
 
 	cmdclass["build_ext"] = MyCythonBuildExt
 	registerCythonModules()
 
-cmdclass = {}
-ext_modules = []
-extraKeywords = {}
-# Try to build the Cython modules. This might fail.
-tryBuildCythonModules()
 
 # Workaround for mbcs codec bug in distutils
 # http://bugs.python.org/issue10945
