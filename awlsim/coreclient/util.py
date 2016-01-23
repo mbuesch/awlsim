@@ -57,7 +57,4 @@ def parseNetAddress(addrStr):
 			raise AwlSimError("Invalid port number.")
 	else:
 		port = None
-	host = host.strip()
-	if not host:
-		raise AwlSimError("Missing host name or IPv4/6 address.")
 	return host, port
