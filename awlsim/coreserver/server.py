@@ -258,7 +258,7 @@ class AwlSimServer(object):
 			raise AwlSimError("AwlSimServer: Missing magic value")
 
 		host = env.get("AWLSIM_CORESERVER_HOST")
-		if not host:
+		if host is None:
 			raise AwlSimError("AwlSimServer: No listen host specified")
 		try:
 			port = int(env.get("AWLSIM_CORESERVER_PORT"))
@@ -1054,14 +1054,22 @@ class AwlSimServer(object):
 	def __listen(self, host, port):
 		"""Listen on 'host':'port'."""
 
+		#TODO add a preferred family
 		self.close()
 		try:
-			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
-			if family == AF_UNIX:
-				self.__unixSockPath = sockaddr
-				readableSockaddr = sockaddr
+			if host:
+				family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+				if family == AF_UNIX:
+					self.__unixSockPath = sockaddr
+					readableSockaddr = sockaddr
+				else:
+					readableSockaddr = "[%s]:%d" % (sockaddr[0], sockaddr[1])
 			else:
-				readableSockaddr = "[%s]:%d" % (sockaddr[0], sockaddr[1])
+				family = socket.AF_INET
+				socktype = socket.SOCK_STREAM
+				sockaddr = ("", # INADDR_ANY
+					    port)
+				readableSockaddr = "[all interfaces]:%d" % port
 			printInfo("Listening on %s..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
