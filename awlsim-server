@@ -44,6 +44,8 @@ def usage():
 	print(" -l|--listen HOST[:PORT] Listen on the specified HOST:PORT")
 	print("                         Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
+	print("                         The special values 'all', 'any' or an empty host")
+	print("                         can be used to listen on any interface.")
 	print(" -B|--background         Fork a background process")
 	print(" -w|--rw-project         Enable project file writing")
 	print(" -L|--loglevel LVL       Set the log level:")
@@ -80,6 +82,9 @@ def main():
 		if o in ("-l", "--listen"):
 			try:
 				host, port = parseNetAddress(v)
+				if not host.strip() or\
+				   host in {"any", "all"}:
+					host = ""
 				if port is None:
 					port = AwlSimServer.DEFAULT_PORT
 				opt_listen = (host, port)
