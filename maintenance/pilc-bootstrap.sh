@@ -37,6 +37,12 @@ info()
 	echo "--- $*"
 }
 
+# print the first of its arguments.
+first()
+{
+	echo "$1"
+}
+
 # $1=program_name
 have_program()
 {
@@ -60,7 +66,7 @@ term_signal()
 cleanup()
 {
 	info "Cleaning up..."
-	for mp in "$mp_shm" "$mp_proc" "$mp_bootimgfile" "$mp_rootimgfile"; do
+	for mp in "$mp_shm" "$mp_proc" "$mp_sys" "$mp_bootimgfile" "$mp_rootimgfile"; do
 		[ -n "$mp" -a -d "$mp" ] &&\
 			umount "$mp" >/dev/null 2>&1
 	done
@@ -68,6 +74,68 @@ cleanup()
 		[ -n "$mp" -a -d "$mp" ] &&\
 			rmdir "$mp" >/dev/null 2>&1
 	done
+}
+
+boot_config_file()
+{
+	cat <<EOF
+# For more options and information see
+# http://www.raspberrypi.org/documentation/configuration/config-txt.md
+# Some settings may impact device functionality. See link above for details
+
+# uncomment if you get no picture on HDMI for a default "safe" mode
+#hdmi_safe=1
+
+# uncomment this if your display has a black border of unused pixels visible
+# and your display can output without overscan
+#disable_overscan=1
+
+# uncomment the following to adjust overscan. Use positive numbers if console
+# goes off screen, and negative if there is too much border
+#overscan_left=16
+#overscan_right=16
+#overscan_top=16
+#overscan_bottom=16
+
+# uncomment to force a console size. By default it will be display's size minus
+# overscan.
+#framebuffer_width=1280
+#framebuffer_height=720
+
+# uncomment if hdmi display is not detected and composite is being output
+#hdmi_force_hotplug=1
+
+# uncomment to force a specific HDMI mode (this will force VGA)
+#hdmi_group=1
+#hdmi_mode=1
+
+# uncomment to force a HDMI mode rather than DVI. This can make audio work in
+# DMT (computer monitor) modes
+#hdmi_drive=2
+
+# uncomment to increase signal to HDMI, if you have interference, blanking, or
+# no display
+#config_hdmi_boost=4
+
+# uncomment for composite PAL
+#sdtv_mode=2
+
+#uncomment to overclock the arm. 700 MHz is the default.
+#arm_freq=800
+
+# Uncomment some or all of these to enable the optional hardware interfaces
+#dtparam=i2c_arm=on
+#dtparam=i2s=on
+#dtparam=spi=on
+
+# Uncomment this to enable the lirc-rpi module
+#dtoverlay=lirc-rpi
+
+# Additional overlays and parameters are documented /boot/overlays/README
+
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=on
+EOF
 }
 
 pilc_bootstrap_first_stage()
@@ -132,17 +200,11 @@ pilc_bootstrap_first_stage()
 			die "Failed to remove .git directory."
 	) || die
 
-	info "Mounting virtual filesystems..."
-	mp_shm="$opt_target_dir/dev/shm"
-	mkdir -p "$mp_shm" ||\
-		die "Failed to create /dev/shm mountpoint."
-	mount -t tmpfs tmpfs "$mp_shm" ||\
-		die "Mounting /dev/shm failed."
+	# Second stage will mount a few filesystems.
+	# Keep track to umount them in cleanup.
 	mp_proc="$opt_target_dir/proc"
-	mkdir -p "$mp_proc" ||\
-		die "Failed to create /proc mountpoint."
-	mount -o bind /proc "$mp_proc" ||\
-		die "Mounting /proc failed."
+	mp_sys="$opt_target_dir/sys"
+	mp_shm="$opt_target_dir/dev/shm"
 }
 
 pilc_bootstrap_second_stage()
@@ -152,15 +214,84 @@ pilc_bootstrap_second_stage()
 	[ -x /pilc-bootstrap.sh ] ||\
 		die "Second stage does not contain the bootstrap script."
 
+	# Set up environment.
+	export LC_ALL=C
+	export LANGUAGE=C
+	export LANG=C
+
 	# debootstrap second stage.
 	if [ $opt_skip_debootstrap2 -eq 0 ]; then
 		info "Running debootstrap second stage..."
 		/debootstrap/debootstrap --verbose --second-stage
 	fi
 
+	info "Mounting /proc..."
+	mkdir -p /proc ||\
+		die "Failed to create /proc mountpoint."
+	mount -t proc proc /proc ||\
+		die "Mounting /proc failed."
+
+	info "Mounting /sys..."
+	mkdir -p /sys ||\
+		die "Failed to create /sys mountpoint."
+	mount -t sysfs sysfs /sys ||\
+		die "Mounting /sys failed."
+
+	info "Mounting /dev/shm..."
+	mkdir -p /dev/shm ||\
+		die "Failed to create /dev/shm mountpoint."
+	mount -t tmpfs tmpfs /dev/shm ||\
+		die "Mounting /dev/shm failed."
+
 	info "Writing apt configuration (mirror = $opt_mirror)..."
-	echo "deb $opt_mirror $opt_suite main firmware" > /etc/apt/sources.list
-	echo 'Acquire { Languages "none"; };' > /etc/apt/apt.conf.d/99no-translations
+	echo "deb $opt_mirror $opt_suite main firmware" > /etc/apt/sources.list ||\
+		die "Failed to set sources.list"
+	echo 'Acquire { Languages "none"; };' > /etc/apt/apt.conf.d/99no-translations ||\
+		die "Failed to set apt.conf.d"
+
+	info "Creating /etc/fstab"
+	mkdir -p /config ||\
+		die "Failed to create /config"
+	cat > /etc/fstab <<EOF
+proc		/proc			proc		auto,defaults		0 0
+debugfs		/sys/kernel/debug	debugfs		auto,defaults		0 0
+configfs	/config			configfs	auto,defaults		0 0
+tmpfs		/tmp			tmpfs		auto,mode=1777		0 0
+/dev/mmcblk0p2	/			ext4		auto,noatime,errors=remount-ro	0 1
+/dev/mmcblk0p1	/boot			vfat		auto,noatime		0 0
+EOF
+
+	info "Writing misc /etc stuff..."
+	echo "PiLC" > /etc/hostname ||\
+		die "Failed to set hostname"
+	printf 'PiLC GNU/Linux (based on Raspbian) \\n \\l\n\n' > /etc/issue ||\
+		die "Failed to create /etc/issue"
+	printf 'PiLC GNU/Linux (based on Raspbian)\n' > /etc/issue.net ||\
+		die "Failed to create /etc/issue.net"
+	sed -i -e 's|PRETTY_NAME=.*|PRETTY_NAME="PiLC"|' \
+		/etc/os-release ||\
+		die "Failed to set os-release PRETTY_NAME."
+	sed -i -e 's|NAME=.*|NAME="PiLC"|' \
+		/etc/os-release ||\
+		die "Failed to set os-release NAME."
+	sed -i -e 's|ID=.*|ID=pilc|' \
+		/etc/os-release ||\
+		die "Failed to set os-release ID."
+	sed -i -e 's|ID_LIKE=.*|ID_LIKE=raspbian|' \
+		/etc/os-release ||\
+		die "Failed to set os-release ID_LIKE."
+	sed -i -e 's|HOME_URL=.*|HOME_URL="http://bues.ch/h/pilc"|' \
+		/etc/os-release ||\
+		die "Failed to set os-release HOME_URL."
+	sed -i -e 's|SUPPORT_URL=.*|SUPPORT_URL="http://bues.ch/h/pilc"|' \
+		/etc/os-release ||\
+		die "Failed to set os-release SUPPORT_URL."
+	sed -i -e 's|BUG_REPORT_URL=.*|BUG_REPORT_URL="http://bues.ch/h/pilc"|' \
+		/etc/os-release ||\
+		die "Failed to set os-release BUG_REPORT_URL."
+	sed -i -e 's|#FSCKFIX=no|FSCKFIX=yes|' \
+		/etc/default/rcS ||\
+		die "Failed to set FSCKFIX=yes"
 
 	info "Updating packages..."
 	echo -e 'debconf debconf/priority select high\n' \
@@ -180,12 +311,22 @@ pilc_bootstrap_second_stage()
 		cython \
 		cython3 \
 		debconf-utils \
+		fake-hwclock \
+		htop \
 		linux-image-rpi-rpfv \
+		linux-image-rpi2-rpfv \
 		locales \
+		openssh-server \
+		openssh-blacklist \
+		openssh-blacklist-extra \
+		pypy \
 		python \
 		python3 \
 		raspberrypi-bootloader-nokernel \
-		systemd ||\
+		screen \
+		sudo \
+		systemd \
+		tmux ||\
 		die "apt-get install failed"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
@@ -193,6 +334,44 @@ pilc_bootstrap_second_stage()
 		'debconf debconf/frontend select Dialog' |\
 		debconf-set-selections ||\
 		die "Failed to configure debconf"
+
+	info "Removing ssh keys..."
+	if [ -e "$(first /etc/ssh/ssh_host_*_key*)" ]; then
+		rm /etc/ssh/ssh_host_*_key* ||\
+			die "Failed to remove ssh keys."
+	fi
+	echo 1 > /etc/ssh/sshd_not_to_be_run ||\
+		die "Failed to create /etc/ssh/sshd_not_to_be_run"
+	echo 1 > /etc/ssh/ssh_create_keys ||\
+		die "Failed to create /etc/ssh/ssh_create_keys"
+
+	info "Creating /etc/rc.local..."
+	cat > /etc/rc.local <<EOF
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+
+set -e
+
+if [ -e /etc/ssh/ssh_create_keys ]; then
+	/bin/rm -f /etc/ssh/ssh_host_*_key*
+	LC_ALL=C LANGUAGE=C LANG=C /usr/sbin/dpkg-reconfigure openssh-server
+	/bin/rm /etc/ssh/sshd_not_to_be_run
+	/bin/rm /etc/ssh/ssh_create_keys
+	/etc/init.d/ssh start
+fi
+
+exit 0
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/rc.local"
 
 	info "Creating users/groups..."
 	userdel -f pi
@@ -205,12 +384,17 @@ pilc_bootstrap_second_stage()
 		-s /bin/bash\
 		pi ||\
 		die "Failed to create user pi."
+	printf 'raspberry\nraspberry\n' | passwd pi ||\
+		die "Failed to set 'pi' password."
+	echo 'pi ALL=(ALL:ALL) ALL' > "/etc/sudoers.d/00-pi" ||\
+		die "Failed to create /etc/sudoers.d/00-pi"
 
 	info "Building awlsim..."
 	(
+		local awlsim_prefix=/opt/awlsim
 		cd /tmp/awlsim ||\
 			die "Failed to cd"
-		rm -rf /opt/awlsim
+		rm -rf "$awlsim_prefix"
 		if [ $opt_cython -eq 0 ]; then
 			export NOCYTHON=1
 		else
@@ -219,18 +403,27 @@ pilc_bootstrap_second_stage()
 		fi
 #		python2 ./setup.py build ||\
 #			die "Failed to build awlsim (py2)."
-#		python2 ./setup.py install --prefix=/opt/awlsim ||\
+#		python2 ./setup.py install --prefix="$awlsim_prefix" ||\
 #			die "Failed to install awlsim (py2)."
 		python3 ./setup.py build ||\
 			die "Failed to build awlsim (py3)."
-		python3 ./setup.py install --prefix=/opt/awlsim ||\
+		python3 ./setup.py install --prefix="$awlsim_prefix" ||\
 			die "Failed to install awlsim (py3)."
 		cp examples/EXAMPLE.awlpro /home/pi/ ||\
 			die "Failed to copy EXAMPLE.awlpro."
+		rm "$awlsim_prefix/bin/"*.bat ||\
+			die "Failed to remove all .bat files."
+		for i in "$awlsim_prefix"/bin/*; do
+			echo "$i" | grep -qEe 'linuxcnc|gui' && continue
+			ln -s "$i" "/home/pi/$(basename "$i")" ||\
+				die "Failed to create awlsim link '$i'"
+		done
 	) || die
+	rm -r /tmp/awlsim ||\
+		die "Failed to remove awlsim checkout."
 
 	info "Extending pi user environment..."
-	cat << EOF >> /home/pi/.bashrc
+	cat >> /home/pi/.bashrc <<EOF
 
 # PiLC
 for __i in /opt/awlsim/lib/python*/site-packages/; do
@@ -238,6 +431,14 @@ for __i in /opt/awlsim/lib/python*/site-packages/; do
 done
 export PATH="\$PATH:/opt/awlsim/bin"
 EOF
+	[ $? -eq 0 ] || die "Failed to extend /home/pi/.bashrc"
+
+	info "Umounting /dev/shm..."
+	umount /dev/shm || die "Failed to umount /dev/shm"
+	info "Umounting /sys..."
+	umount /sys || die "Failed to umount /sys"
+	info "Umounting /proc..."
+	umount /proc || die "Failed to umount /proc"
 }
 
 pilc_bootstrap_third_stage()
@@ -247,6 +448,34 @@ pilc_bootstrap_third_stage()
 	info "Removing PiLC bootstrap script..."
 	rm "$opt_target_dir/pilc-bootstrap.sh" ||\
 		die "Failed to remove bootstrap script."
+
+	info "Configuring boot..."
+	cat > "$opt_target_dir/boot/cmdline.txt" <<EOF
+dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet
+EOF
+	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
+	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
+		die "Failed to create /boot/config.txt"
+	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi)"
+	if [ -e "$img" ]; then
+		mv "$img" "$opt_target_dir/boot/kernel.img" ||\
+			die "Failed to create kernel.img"
+	fi
+	local img="$(first "$opt_target_dir/boot/"initrd.img-*-rpi)"
+	if [ -e "$img" ]; then
+		mv "$img" "$opt_target_dir/boot/initrd.img" ||\
+			die "Failed to create initrd.img"
+	fi
+	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi2)"
+	if [ -e "$img" ]; then
+		mv "$img" "$opt_target_dir/boot/kernel7.img" ||\
+			die "Failed to create kernel7.img"
+	fi
+	local img="$(first "$opt_target_dir/boot/"initrd.img-*-rpi2)"
+	if [ -e "$img" ]; then
+		mv "$img" "$opt_target_dir/boot/initrd7.img" ||\
+			die "Failed to create initrd7.img"
+	fi
 
 	# Prepare image paths.
 	local target_dir="$(readlink -m "${opt_target_dir}")"
@@ -260,7 +489,8 @@ pilc_bootstrap_third_stage()
 	rmdir "$mp_bootimgfile" "$mp_rootimgfile" 2>/dev/null
 
 	info "Creating boot image..."
-	mkfs.vfat -F 32 -i 7771B0BB -n boot -C "$bootimgfile" 61440 ||\
+	mkfs.vfat -F 32 -i 7771B0BB -n boot -C "$bootimgfile" \
+		$(expr \( 64 \* 1024 \) - \( 4 \* 1024 \) ) ||\
 		die "Failed to create boot partition file system."
 	mkdir "$mp_bootimgfile" ||\
 		die "Failed to make boot partition mount point."
@@ -275,7 +505,7 @@ pilc_bootstrap_third_stage()
 		die "Failed to remove boot partition mount point."
 
 	info "Creating root image..."
-	mkfs.ext4 "$rootimgfile" 1327M ||\
+	mkfs.ext4 "$rootimgfile" $(expr \( 1391 - 64 \) \* 1024 ) ||\
 		die "Failed to create root filesystem."
 	mkdir "$mp_rootimgfile" ||\
 		die "Failed to make root partition mount point."
@@ -284,6 +514,7 @@ pilc_bootstrap_third_stage()
 	rsync -aHAX --progress --inplace \
 		--exclude='boot/*' \
 		--exclude='proc/*' \
+		--exclude='sys/*' \
 		--exclude='dev/shm/*' \
 		--exclude="$(basename "$opt_qemu")" \
 		"$target_dir/" "$mp_rootimgfile/" ||\
@@ -294,25 +525,26 @@ pilc_bootstrap_third_stage()
 		die "Failed to remove root partition mount point."
 
 	info "Creating image '$imgfile'..."
-	dd if=/dev/zero of="$imgfile" bs=512 count=2848768 conv=sparse ||\
+	dd if=/dev/zero of="$imgfile" bs=1M count=1391 conv=sparse ||\
 		die "Failed to create image file."
-	parted -s "$imgfile" "mklabel msdos" ||\
-		die "Failed to create partition table."
-	parted -s "$imgfile" "mkpart primary fat32 8192s 131071s" ||\
-		die "Failed to create boot partition."
-	parted -s "$imgfile" "mkpart primary ext4 131072s 2848767s" ||\
-		die "Failed to create root partition."
+	parted "$imgfile" <<EOF
+            unit b
+            mklabel msdos
+            mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr 64 \* 1024 \* 1024 - 1)
+            mkpart primary ext4 $(expr 64 \* 1024 \* 1024) 100%
+EOF
+	[ $? -eq 0 ] || die "Failed to create partitions."
 
 	info "Integrating boot image..."
 	dd if="$bootimgfile" of="$imgfile"\
-		seek=8192 bs=512 conv=notrunc,sparse ||\
+		seek=4 bs=1M conv=notrunc,sparse ||\
 		die "Failed to integrate boot partition."
 	rm "$bootimgfile" ||\
 		die "Failed to delete boot partition image."
 
 	info "Integrating root image..."
 	dd if="$rootimgfile" of="$imgfile"\
-		seek=131072 bs=512 conv=notrunc,sparse ||\
+		seek=64 bs=1M conv=notrunc,sparse ||\
 		die "Failed to integrate root partition."
 	rm "$rootimgfile" ||\
 		die "Failed to delete root partition image."
@@ -353,6 +585,7 @@ basedir="$(readlink -e "$basedir")"
 # Mountpoints. Will be umounted on cleanup.
 mp_shm=
 mp_proc=
+mp_sys=
 mp_bootimgfile=
 mp_rootimgfile=
 
