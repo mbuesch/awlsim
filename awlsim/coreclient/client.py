@@ -336,7 +336,8 @@ class AwlSimClient(object):
 			try:
 				if self.processMessages(0.1):
 					rxMsg = self.lastRxMsg
-					if checkRxMsg(rxMsg):
+					if rxMsg is not None and\
+					   checkRxMsg(rxMsg):
 						return rxMsg
 			except MaintenanceRequest as e:
 				if not ignoreMaintenanceRequests:
