@@ -433,6 +433,19 @@ export PATH="\$PATH:/opt/awlsim/bin"
 EOF
 	[ $? -eq 0 ] || die "Failed to extend /home/pi/.bashrc"
 
+	info "Configuring network..."
+	cat > /etc/network/interfaces.d/lo <<EOF
+auto lo
+iface lo inet loopback
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/lo"
+	cat > /etc/network/interfaces.d/eth0 <<EOF
+allow-hotplug eth0
+iface eth0 inet dhcp
+iface eth0 inet6 auto
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth0"
+
 	info "Umounting /dev/shm..."
 	umount /dev/shm || die "Failed to umount /dev/shm"
 	info "Umounting /sys..."
@@ -496,7 +509,7 @@ EOF
 		die "Failed to make boot partition mount point."
 	mount -o loop "$bootimgfile" "$mp_bootimgfile" ||\
 		die "Failed to mount boot partition."
-	rsync -aHAX --progress --inplace\
+	rsync -aHAX --inplace \
 		"$target_dir/boot/" "$mp_bootimgfile/" ||\
 		die "Failed to copy boot files."
 	umount "$mp_bootimgfile" ||\
@@ -511,7 +524,7 @@ EOF
 		die "Failed to make root partition mount point."
 	mount -o loop "$rootimgfile" "$mp_rootimgfile" ||\
 		die "Failed to mount root partition."
-	rsync -aHAX --progress --inplace \
+	rsync -aHAX --inplace \
 		--exclude='boot/*' \
 		--exclude='proc/*' \
 		--exclude='sys/*' \
