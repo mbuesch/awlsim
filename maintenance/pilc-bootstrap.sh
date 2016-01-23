@@ -312,6 +312,7 @@ EOF
 		cython3 \
 		debconf-utils \
 		fake-hwclock \
+		git \
 		htop \
 		linux-image-rpi-rpfv \
 		linux-image-rpi2-rpfv \
