@@ -949,6 +949,13 @@ class AwlSimServer(object):
 			return
 
 		if isString(project):
+			if fileExists(project) == False and writeBack:
+				# The project file does not exist.
+				# Create an empty one.
+				printInfo("Creating empty project at '%s'" %\
+					  project)
+				empty = Project(project)
+				empty.toFile()
 			project = Project.fromProjectOrRawAwlFile(project)
 		printDebug("Loading project '%s'" % str(project))
 
