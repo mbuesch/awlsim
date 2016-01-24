@@ -1,0 +1,17 @@
+[Unit]
+Description=Awlsim soft-PLC core server
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+User=@USER@
+Group=@GROUP@
+
+ExecStart=@PREFIX@/bin/awlsim-server -l any -w /home/@USER@/.core.awlpro
+TimeoutSec=300
+
+Environment=PYTHONPATH=@PYTHON_SITE@
+
+[Install]
+WantedBy=multi-user.target
