@@ -47,7 +47,6 @@ def parseNetAddress(addrStr):
 	portStr = portStr.strip()
 	if portStr:
 		try:
-			print(portStr)
 			if not portStr.startswith(":"):
 				raise ValueError
 			port = int(portStr[1:])
