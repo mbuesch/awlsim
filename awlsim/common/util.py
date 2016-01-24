@@ -2,7 +2,7 @@
 #
 # AWL simulator - common utility functions
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from awlsim.common.exceptions import *
 
 import sys
 import os
+import errno
 import random
 import base64
 import binascii
@@ -112,6 +113,19 @@ def printWarning(text):
 
 def printError(text):
 	Logging.printError(text)
+
+def fileExists(filename):
+	"""Returns True, if the file exists.
+	Returns False, if the file does not exist.
+	Returns None, if another error occurred.
+	"""
+	try:
+		os.stat(filename)
+	except OSError as e:
+		if e.errno == errno.ENOENT:
+			return False
+		return None
+	return True
 
 def awlFileRead(filename, encoding="latin_1"):
 	try:
