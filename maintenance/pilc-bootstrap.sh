@@ -43,6 +43,13 @@ first()
 	echo "$1"
 }
 
+# print the last of its arguments.
+last()
+{
+	while [ $# -gt 1 ]; do shift; done
+	echo "$1"
+}
+
 # $1=program_name
 have_program()
 {
@@ -412,15 +419,28 @@ EOF
 			die "Failed to build awlsim (py3)."
 		python3 ./setup.py install --prefix="$awlsim_prefix" ||\
 			die "Failed to install awlsim (py3)."
+
 		cp examples/EXAMPLE.awlpro /home/pi/ ||\
 			die "Failed to copy EXAMPLE.awlpro."
 		rm "$awlsim_prefix/bin/"*.bat ||\
 			die "Failed to remove all .bat files."
+
 		for i in "$awlsim_prefix"/bin/*; do
 			echo "$i" | grep -qEe 'linuxcnc|gui' && continue
 			ln -s "$i" "/home/pi/$(basename "$i")" ||\
 				die "Failed to create awlsim link '$i'"
 		done
+
+		local site="$(last "$awlsim_prefix"/lib/python*/site-packages)"
+		cat awlsim-server.service.in |\
+		sed -e 's|@USER@|pi|g' \
+		    -e 's|@GROUP@|pi|g' \
+		    -e "s|@PREFIX@|$awlsim_prefix|g" \
+		    -e "s|@PYTHON_SITE@|$site|g" >\
+		    /etc/systemd/system/awlsim-server.service ||\
+		    die "Failed to create awlsim-server.service"
+		systemctl enable awlsim-server.service ||\
+			die "Failed to enable awlsim-server-service"
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
