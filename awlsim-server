@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 
 import sys
 import getopt
+from socket import AF_INET, AF_INET6
 
 from awlsim.common import *
 from awlsim.core import *
@@ -46,6 +47,8 @@ def usage():
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
 	print("                         The special values 'all', 'any' or an empty host")
 	print("                         can be used to listen on any interface.")
+	print(" -4|--force-ipv4         Force the use of IPv4.")
+	print(" -6|--force-ipv6         Force the use of IPv6.")
 	print(" -B|--background         Fork a background process")
 	print(" -w|--rw-project         Enable project file writing")
 	print(" -L|--loglevel LVL       Set the log level:")
@@ -63,13 +66,15 @@ def main():
 	opt_project = None
 	opt_rwProject = False
 	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
+	opt_family = None
 	opt_background = False
 	opt_loglevel = Logging.LOG_INFO
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hl:BwL:",
-			[ "help", "listen=", "background", "rw-project",
+			"hl:46BwL:",
+			[ "help", "listen=", "force-ipv4", "force-ipv6",
+			  "background", "rw-project",
 			  "loglevel=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -91,6 +96,10 @@ def main():
 			except AwlSimError as e:
 				printError("-l|--listen: %s" % e.message)
 				sys.exit(1)
+		if o in ("-4", "--force-ipv4"):
+			opt_family = AF_INET
+		if o in ("-6", "--force-ipv6"):
+			opt_family = AF_INET6
 		if o in ("-B", "--background"):
 			opt_background = True
 		if o in ("-w", "--rw-project"):
@@ -115,6 +124,7 @@ def main():
 			assert(interpreter)
 			serverProcess = AwlSimServer.start(listenHost = opt_listen[0],
 							   listenPort = opt_listen[1],
+							   listenFamily = opt_family,
 							   forkInterpreter = interpreter,
 							   commandMask = 0,
 							   projectFile = opt_project,
@@ -129,6 +139,7 @@ def main():
 
 			exitCode = AwlSimServer.start(listenHost = opt_listen[0],
 						      listenPort = opt_listen[1],
+						      listenFamily = opt_family,
 						      forkInterpreter = None,
 						      commandMask = 0,
 						      projectFile = opt_project,

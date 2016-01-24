@@ -88,26 +88,38 @@ class AwlSimServer(object):
 			self.nextRepTime = monotonic_time()
 
 	@classmethod
-	def getaddrinfo(cls, host, port):
-		if osIsPosix and host == "localhost" and False: #XXX disabled, for now
+	def getaddrinfo(cls, host, port, family = None):
+		socktype = socket.SOCK_STREAM
+		if osIsPosix and\
+		   family is None and\
+		   host in {"localhost", "127.0.0.1", "::1"} and\
+		   False: #XXX disabled, for now
 			# We are on posix OS. Instead of AF_INET on localhost,
 			# we use Unix domain sockets.
-			family, socktype = AF_UNIX, socket.SOCK_STREAM
+			family = AF_UNIX
 			sockaddr = "/tmp/awlsim-server-%d.socket" % port
 		else:
-			# First try IPv4
-			family, socktype = socket.AF_INET, socket.SOCK_STREAM
-			try:
-				family, socktype, proto, canonname, sockaddr =\
-					socket.getaddrinfo(host, port, family, socktype)[0]
-			except socket.gaierror as e:
-				if e.errno == socket.EAI_ADDRFAMILY:
-					# Also try IPv6
-					family, socktype = socket.AF_INET6, socket.SOCK_STREAM
+			if family in {None, socket.AF_UNSPEC}:
+				# First try IPv4
+				try:
 					family, socktype, proto, canonname, sockaddr =\
-						socket.getaddrinfo(host, port, family, socktype)[0]
-				else:
-					raise e
+						socket.getaddrinfo(host, port,
+								   socket.AF_INET,
+								   socktype)[0]
+				except socket.gaierror as e:
+					if e.errno == socket.EAI_ADDRFAMILY:
+						# Also try IPv6
+						family, socktype, proto, canonname, sockaddr =\
+							socket.getaddrinfo(host, port,
+									   socket.AF_INET6,
+									   socktype)[0]
+					else:
+						raise e
+			else:
+				family, socktype, proto, canonname, sockaddr =\
+					socket.getaddrinfo(host, port,
+							   family,
+							   socktype)[0]
 		return (family, socktype, sockaddr)
 
 	@classmethod
@@ -134,6 +146,7 @@ class AwlSimServer(object):
 
 	@classmethod
 	def start(cls, listenHost, listenPort,
+		  listenFamily=None,
 		  forkInterpreter=None,
 		  forkServerProcess=None,
 		  commandMask=CMDMSK_SHUTDOWN,
@@ -143,12 +156,18 @@ class AwlSimServer(object):
 		If 'forkInterpreter' or 'forkServerProcess' are not None, spawn a subprocess.
 		If 'forkInterpreter' and 'forkServerProcess' are None, run the server in this process."""
 
+		if listenFamily is None:
+			listenFamily = ""
+		else:
+			listenFamily = int(listenFamily)
+
 		# Prepare the environment for the server process.
 		# Inherit from the starter and add awlsim specific variables.
 		env = dict(os.environ)
 		env[AwlSimServer.ENV_MAGIC]		= AwlSimServer.ENV_MAGIC
 		env["AWLSIM_CORESERVER_HOST"]		= str(listenHost)
 		env["AWLSIM_CORESERVER_PORT"]		= str(int(listenPort))
+		env["AWLSIM_CORESERVER_FAM"]		= str(listenFamily)
 		env["AWLSIM_CORESERVER_LOGLEVEL"]	= str(Logging.loglevel)
 		env["AWLSIM_CORESERVER_CMDMSK"]		= str(int(commandMask))
 		env["AWLSIM_CORESERVER_PROJECT"]	= str(projectFile or "")
@@ -264,6 +283,14 @@ class AwlSimServer(object):
 			port = int(env.get("AWLSIM_CORESERVER_PORT"))
 		except (TypeError, ValueError) as e:
 			raise AwlSimError("AwlSimServer: No listen port specified")
+		try:
+			fam = env.get("AWLSIM_CORESERVER_FAM")
+			if fam.strip():
+				fam = int(fam)
+			else:
+				fam = None
+		except (TypeError, ValueError) as e:
+			raise AwlSimError("AwlSimServer: Invalid family specified")
 
 		try:
 			commandMask = int(env.get("AWLSIM_CORESERVER_CMDMSK"))
@@ -278,6 +305,7 @@ class AwlSimServer(object):
 
 		self.startup(host = host,
 			     port = port,
+			     family = fam,
 			     commandMask = commandMask,
 			     project = projectFile,
 			     projectWriteBack = projectWriteBack)
@@ -947,13 +975,14 @@ class AwlSimServer(object):
 		self.__projectFile = project.getProjectFile()
 		self.__projectWriteBack = writeBack
 
-	def startup(self, host, port,
+	def startup(self, host, port, family,
 		    commandMask = 0,
 		    handleExceptionServerside = False,
 		    handleMaintenanceServerside = False,
 		    project = None,
 		    projectWriteBack = False):
 		"""Start the server on 'host':'port'.
+		family -> Address family. Either None or one of socket.AF_...
 		commanMask -> Mask of allowed commands (CMDMSK_...).
 		handleExceptionServerside -> Flag whether to raise AwlSimError()
 		                             exceptions on the server only.
@@ -972,7 +1001,7 @@ class AwlSimServer(object):
 
 		self.__loadProject(project, projectWriteBack)
 
-		self.__listen(host, port)
+		self.__listen(host, port, family)
 		self.__rebuildSelectReadList()
 
 		self.__nextStats = self.__sim.cpu.now
@@ -1051,25 +1080,38 @@ class AwlSimServer(object):
 				# This should be caught earlier.
 				printError("Uncaught transfer error: " + str(e))
 
-	def __listen(self, host, port):
+	def __listen(self, host, port, family):
 		"""Listen on 'host':'port'."""
 
-		#TODO add a preferred family
+		if family is None or\
+		   family not in {socket.AF_INET,
+				  socket.AF_INET6,
+				  AF_UNIX}:
+			family = None # autodetect
+
 		self.close()
 		try:
 			if host:
-				family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+				family, socktype, sockaddr = AwlSimServer.getaddrinfo(
+						host, port, family)
 				if family == AF_UNIX:
 					self.__unixSockPath = sockaddr
 					readableSockaddr = sockaddr
 				else:
 					readableSockaddr = "[%s]:%d" % (sockaddr[0], sockaddr[1])
 			else:
-				family = socket.AF_INET
+				if family is None:
+					family = socket.AF_INET
+				if family == AF_UNIX:
+					raise AwlSimError("AwlSimServer: "
+						"AF_UNIX can't be used with 'ANY' host.")
+				assert(family in {socket.AF_INET, socket.AF_INET6})
 				socktype = socket.SOCK_STREAM
 				sockaddr = ("", # INADDR_ANY
 					    port)
-				readableSockaddr = "[all interfaces]:%d" % port
+				readableSockaddr = "[all-interfaces-ipv%d]:%d" %\
+						(4 if family == socket.AF_INET else 6,
+						 port)
 			printInfo("Listening on %s..." % readableSockaddr)
 			sock = socket.socket(family, socktype)
 			sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
