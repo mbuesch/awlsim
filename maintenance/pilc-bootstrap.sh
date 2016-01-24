@@ -317,6 +317,7 @@ EOF
 		linux-image-rpi-rpfv \
 		linux-image-rpi2-rpfv \
 		locales \
+		nano \
 		openssh-server \
 		openssh-blacklist \
 		openssh-blacklist-extra \
@@ -327,7 +328,8 @@ EOF
 		screen \
 		sudo \
 		systemd \
-		tmux ||\
+		tmux \
+		vim ||\
 		die "apt-get install failed"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
