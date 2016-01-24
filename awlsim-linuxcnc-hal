@@ -30,6 +30,7 @@ import getopt
 
 from awlsim.common import *
 from awlsim.coreserver import *
+from awlsim.coreclient import *
 
 
 class LinuxCNC_NotRunning(Exception):
@@ -41,11 +42,8 @@ class LinuxCNC_NotRunning(Exception):
 def watchdogHook(_unused = None):
 	# Check whether LinuxCNC is running.
 	for lockname in ("/tmp/linuxcnc.lock", "/tmp/emc.lock"):
-		try:
-			os.stat(lockname)
+		if fileExists(lockname):
 			return True
-		except OSError:
-			pass
 	if not opt_watchdog:
 		# The check is disabled. Return success.
 		return True
@@ -228,11 +226,14 @@ def main():
 				return 1
 		if o in ("-l", "--listen"):
 			try:
-				idx = v.rfind(":")
-				if idx <= 0:
-					raise ValueError
-				opt_listen = (v[:idx], int(v[idx+1:]))
-			except ValueError:
+				host, port = parseNetAddress(v)
+				if not host.strip() or\
+				   host in {"any", "all"}:
+					host = ""
+				if port is None:
+					port = AwlSimServer.DEFAULT_PORT
+				opt_listen = (host, port)
+			except AwlSimError as e:
 				printError("-l|--listen: Invalid host/port")
 				return 1
 		if o in ("-L", "--loglevel"):
