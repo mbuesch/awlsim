@@ -129,11 +129,8 @@ class AwlSimServer(object):
 		try:
 			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
 			if family == AF_UNIX:
-				try:
-					os.stat(sockaddr)
-				except OSError as e:
-					if e.errno == errno.ENOENT:
-						return True
+				if fileExists(sockaddr) == False:
+					return True
 				return False
 			sock = socket.socket(family, socktype)
 			sock.bind(sockaddr)
@@ -975,7 +972,7 @@ class AwlSimServer(object):
 		self.__projectFile = project.getProjectFile()
 		self.__projectWriteBack = writeBack
 
-	def startup(self, host, port, family,
+	def startup(self, host, port, family = None,
 		    commandMask = 0,
 		    handleExceptionServerside = False,
 		    handleMaintenanceServerside = False,
