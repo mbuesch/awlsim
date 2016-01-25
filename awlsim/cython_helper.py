@@ -43,7 +43,7 @@ def cythonImportError(modname, message):
 				 "%s\n" % (modname, message))
 		sys.stderr.write("--> Falling back to standard Python modules...\n")
 		sys.stderr.flush()
-		__useCython = False
+		__useCython = __USE_CYTHON_NO
 	elif __useCython in (__USE_CYTHON_FORCE, __USE_CYTHON_VERBOSE):
 		sys.stderr.write("ERROR: Failed to import awlsim CYTHON module '%s': "
 				 "%s\n" % (modname, message))
