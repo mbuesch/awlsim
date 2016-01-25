@@ -5,11 +5,13 @@ After=network.target
 
 [Service]
 Type=simple
+TimeoutSec=300
 User=@USER@
 Group=@GROUP@
+Nice=-15
 
 ExecStart=@PREFIX@/bin/awlsim-server -l any -w /home/@USER@/.core.awlpro
-TimeoutSec=300
+ExecStartPost=@PREFIX@/bin/awlsim-client -c localhost -r RUN
 
 Environment=PYTHONPATH=@PYTHON_SITE@
 
