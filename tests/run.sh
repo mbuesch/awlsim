@@ -17,6 +17,12 @@ die()
 test_failed()
 {
 	echo "=== TEST FAILED ==="
+
+	(
+		flock -x 9 || die "Failed to take lock"
+		echo "$*" >> "$test_fail_file"
+	) 9< "$test_fail_file"
+
 	if [ $opt_softfail -eq 0 ]; then
 		die "$@"
 	else
@@ -28,16 +34,38 @@ test_failed()
 
 cleanup()
 {
-	[ -f "$test_time_file" ] && {
-		rm -f "$test_time_file"
-		test_time_file=
-	}
+	wait
+
+	rm -f "/tmp/$test_time_file_template"* >/dev/null 2>&1
+	if [ -n "$test_fail_file" ]; then
+		rm -f "$test_fail_file" >/dev/null 2>&1
+	fi
 }
 
 cleanup_and_exit()
 {
 	cleanup
 	exit 1
+}
+
+# Returns true (0), if there are more than 1 jobs.
+is_parallel_run()
+{
+	[ $opt_jobs -gt 1 ]
+}
+
+# Get the number of currently running background test jobs.
+nr_of_running_jobs()
+{
+	jobs -p | wc -l
+}
+
+# Returns true (0), if at least one background job failed.
+check_job_failure()
+{
+	is_parallel_run &&\
+	[ -e "$test_fail_file" ] &&\
+	[ "0" != "$(du -s "$test_fail_file" | cut -f1)" ]
 }
 
 # $1=interpreter
@@ -102,6 +130,8 @@ run_awl_test()
 	setup_test_environment "$interpreter"
 	local interpreter="$RET"
 
+	local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
+
 	local ok=1
 	command time -o "$test_time_file" -f '%E' \
 	"$interpreter" "$rootdir/awlsim-test" --loglevel 2  --extended-insns \
@@ -112,7 +142,12 @@ run_awl_test()
 			test_failed "Test '$(basename "$awl")' FAILED"
 			local ok=0
 	}
-	[ $ok -ne 0 ] && echo "[OK: $(cat "$test_time_file")]"
+	if is_parallel_run; then
+		[ $ok -ne 0 ] && echo "[$(basename "$awl"): OK $(cat "$test_time_file")]"
+	else
+		[ $ok -ne 0 ] && echo "[OK: $(cat "$test_time_file")]"
+	fi
+	rm "$test_time_file"
 	cleanup_test_environment
 }
 
@@ -143,11 +178,15 @@ run_sh_test()
 	local result=$?
 
 	[ $result -eq 0 ] || die "Test failed with error code $result"
-	echo "[OK]"
+	if is_parallel_run; then
+		echo "[$(basename "$sh_file"): OK]"
+	else
+		echo "[OK]"
+	fi
 }
 
 # $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-test or testfile)
-run_test()
+__run_test()
 {
 	local interpreter="$1"
 	local testfile="$2"
@@ -156,7 +195,12 @@ run_test()
 	# Don't run ourself
 	[ "$(basename "$testfile")" = "run.sh" ] && return
 
-	echo -n "Running test '$(basename "$testfile")' with '$(basename "$interpreter")' ... "
+	if is_parallel_run; then
+		local nl=
+	else
+		local nl="-n"
+	fi
+	echo $nl "Running test '$(basename "$testfile")' with '$(basename "$interpreter")' ... "
 
 	# Check the file type and run the tester
 	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" -o\
@@ -166,6 +210,21 @@ run_test()
 		run_sh_test "$interpreter" "$testfile" "$@"
 	else
 		die "Test file type of '$testfile' not recognized"
+	fi
+}
+
+run_test()
+{
+	if is_parallel_run; then
+		# Run tests in parallel.
+		while [ $(nr_of_running_jobs) -ge $opt_jobs ]; do
+			# Too many jobs. Waiting...
+			sleep 0.1
+		done
+		__run_test "$@" &
+	else
+		# Run tests one-by-one.
+		__run_test "$@"
 	fi
 }
 
@@ -187,6 +246,7 @@ run_test_directory()
 			local extra="--max-runtime 1.0"
 
 		run_test "$interpreter" "$entry" $extra
+		check_job_failure && return
 	done
 	# run .awl tests
 	for entry in "$directory"/*; do
@@ -199,12 +259,14 @@ run_test_directory()
 			local extra="--max-runtime 1.0"
 
 		run_test "$interpreter" "$entry" $extra
+		check_job_failure && return
 	done
 	# run .sh tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c3)" = ".sh" ] || continue
 		run_test "$interpreter" "$entry"
+		check_job_failure && return
 	done
 	# Recurse into subdirectories
 	for entry in "$directory"/*; do
@@ -288,12 +350,28 @@ do_tests()
 				else
 					run_test "$interpreter" "$opt"
 				fi
+				check_job_failure && break
 			done
 		fi
 		echo
 
+		check_job_failure && break
 		[ -n "$opt_interpreter" ] && break
 	done
+
+	if is_parallel_run; then
+		# This is a parallel run. Wait for all jobs.
+		echo "Waiting for background jobs..."
+		wait
+		# Print the fail information.
+		if check_job_failure; then
+			echo
+			echo "===== FAILURES in parallel run: ====="
+			cat "$test_fail_file"
+			echo "====================================="
+			global_retval=1
+		fi
+	fi
 
 	# Print summary
 	if [ $global_retval -eq 0 ]; then
@@ -321,17 +399,22 @@ show_help()
 	echo "Options:"
 	echo " -i|--interpreter INTER        Use INTER as interpreter for the tests"
 	echo " -s|--softfail                 Do not abort on single test failures"
+	echo " -j|--jobs NR                  Set the number of jobs to run in parallel."
+	echo "                               0 means number-of-CPUs"
+	echo "                               Default: 1"
 	echo " -q|--quick                    Only run python2 and python3 tests"
 }
 
 trap cleanup_and_exit INT TERM
 trap cleanup EXIT
-test_time_file="$(mktemp --tmpdir=/tmp awlsim-test-time.XXXXXX)"
+test_time_file_template="awlsim-test-time.$$"
+test_fail_file="$(mktemp --tmpdir=/tmp awlsim-test-fail.XXXXXX)"
 
 opt_interpreter=
 opt_softfail=0
 opt_quick=0
 opt_renice=
+opt_jobs=1
 
 while [ $# -ge 1 ]; do
 	[ "$(printf '%s' "$1" | cut -c1)" != "-" ] && break
@@ -349,6 +432,15 @@ while [ $# -ge 1 ]; do
 		;;
 	-s|--softfail)
 		opt_softfail=1
+		;;
+	-j|--jobs)
+		shift
+		opt_jobs="$1"
+		[ -z "$opt_jobs" -o -n "$(printf '%s' "$opt_jobs" | tr -d '[0-9]')" ] &&\
+			die "--jobs: '$opt_jobs' is not a positive integer number."
+		[ $opt_jobs -eq 0 ] && opt_jobs="$(getconf _NPROCESSORS_ONLN)"
+		[ -z "$opt_jobs" ] &&\
+			die "Could not detect number of CPUs."
 		;;
 	-q|--quick)
 		opt_quick=1
