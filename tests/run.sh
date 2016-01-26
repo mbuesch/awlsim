@@ -37,15 +37,31 @@ cleanup()
 	wait
 
 	rm -f "/tmp/$test_time_file_template"* >/dev/null 2>&1
-	if [ -n "$test_fail_file" ]; then
+	[ -n "$test_fail_file" ] &&\
 		rm -f "$test_fail_file" >/dev/null 2>&1
-	fi
+	[ -n "$port_alloc_file" ] &&\
+		rm -f "$port_alloc_file"* >/dev/null 2>&1
 }
 
 cleanup_and_exit()
 {
 	cleanup
 	exit 1
+}
+
+# Allocate a new port number.
+get_port()
+{
+	(
+		flock -x 8 || die "Failed to take port lock"
+
+		local port="$(cat "$port_alloc_file")"
+		local next="$(expr "$port" + 1)"
+		echo "$next" > "$port_alloc_file" ||\
+			die "Failed to update port allocation file"
+
+		echo -n "$port"
+	) 8> "${port_alloc_file}.lock"
 }
 
 # Returns true (0), if there are more than 1 jobs.
@@ -409,6 +425,9 @@ trap cleanup_and_exit INT TERM
 trap cleanup EXIT
 test_time_file_template="awlsim-test-time.$$"
 test_fail_file="$(mktemp --tmpdir=/tmp awlsim-test-fail.XXXXXX)"
+port_alloc_file="$(mktemp --tmpdir=/tmp awlsim-test-port.XXXXXX)"
+touch "${port_alloc_file}.lock"
+echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 
 opt_interpreter=
 opt_softfail=0

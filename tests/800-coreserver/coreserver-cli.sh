@@ -9,7 +9,8 @@ sh_test()
 	cd "$rootdir" || die "Failed to change to rootdir '$rootdir'"
 	for testfile in 000-base/shutdown.awl; do
 		run_test "$interpreter" "$basedir/$testfile" \
-			--spawn-backend --interpreter "$interpreter"
+			--spawn-backend --interpreter "$interpreter" \
+			--connect localhost:$(get_port)
 	done
 	echo -n "--- Finished coreserver tests "
 }
