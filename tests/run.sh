@@ -7,9 +7,22 @@ basedir="$(dirname "$0")"
 # rootdir is the root of the package
 rootdir="$basedir/.."
 
+
+failfile_write()
+{
+	(
+		flock -x 9 || die "Failed to take lock"
+		echo "$*" >> "$test_fail_file"
+	) 9< "$test_fail_file"
+}
+
 die()
 {
 	echo "$*"
+
+	# We might be in a sub-job. So write to fail-file.
+	failfile_write "$*"
+
 	exit 1
 }
 
@@ -18,14 +31,10 @@ test_failed()
 {
 	echo "=== TEST FAILED ==="
 
-	(
-		flock -x 9 || die "Failed to take lock"
-		echo "$*" >> "$test_fail_file"
-	) 9< "$test_fail_file"
-
 	if [ $opt_softfail -eq 0 ]; then
 		die "$@"
 	else
+		failfile_write "$*"
 		echo "$*"
 		echo "^^^ TEST FAILED ^^^"
 		[ $global_retval -eq 0 ] && global_retval=1
@@ -41,6 +50,8 @@ cleanup()
 		rm -f "$test_fail_file" >/dev/null 2>&1
 	[ -n "$port_alloc_file" ] &&\
 		rm -f "$port_alloc_file"* >/dev/null 2>&1
+	[ -n "$jobs_tmp_file" ] &&\
+		rm -f "$jobs_tmp_file"* >/dev/null 2>&1
 }
 
 cleanup_and_exit()
@@ -70,10 +81,30 @@ is_parallel_run()
 	[ $opt_jobs -gt 1 ]
 }
 
-# Get the number of currently running background test jobs.
-nr_of_running_jobs()
+# Wait until there is at least one free job slot.
+wait_for_free_job_slot()
 {
-	jobs -p | wc -l
+	while true; do
+		jobs -l > "$jobs_tmp_file" # can't use pipe on dash
+		[ "$(cat "$jobs_tmp_file" | wc -l)" -lt $opt_jobs ] && break
+		# Too many jobs. Waiting...
+		sleep 0.1
+	done
+}
+
+# $1 is the PID of the job to wait for.
+wait_for_job_pid()
+{
+	local jobpid="$1"
+
+	while true; do
+		jobs -l > "$jobs_tmp_file" # can't use pipe on dash
+		cat "$jobs_tmp_file" | tr -d '+-' |\
+			sed -e 's/[[:blank:]]\+/\t/g' | cut -f2 |\
+			grep -qe '^'"$jobpid"'$' || break
+		# Job is still running...
+		sleep 0.1
+	done
 }
 
 # Returns true (0), if at least one background job failed.
@@ -233,10 +264,7 @@ run_test()
 {
 	if is_parallel_run; then
 		# Run tests in parallel.
-		while [ $(nr_of_running_jobs) -ge $opt_jobs ]; do
-			# Too many jobs. Waiting...
-			sleep 0.1
-		done
+		wait_for_free_job_slot
 		__run_test "$@" &
 	else
 		# Run tests one-by-one.
@@ -301,6 +329,32 @@ warn_skipped()
 	echo
 }
 
+build_cython2()
+{
+	have_prog cython && have_prog python2 || {
+		echo "=== WARNING: Cannot build cython2 modules"
+		return 1
+	}
+	cd "$rootdir" || die "cd to $rootdir failed"
+	echo "=== Building awlsim with python2"
+	CYTHONPARALLEL=1 \
+	python2 ./setup.py build || die "'python2 ./setup.py build' failed"
+	return 0
+}
+
+build_cython3()
+{
+	have_prog cython3 && have_prog python3 || {
+		echo "=== WARNING: Cannot build cython3 modules"
+		return 1
+	}
+	cd "$rootdir" || die "cd to $rootdir failed"
+	echo "=== Building awlsim with python3"
+	CYTHONPARALLEL=1 \
+	python3 ./setup.py build || die "'python3 ./setup.py build' failed"
+	return 0
+}
+
 # $@=testfiles
 do_tests()
 {
@@ -310,29 +364,46 @@ do_tests()
 		local all_interp="python2 python3"
 	fi
 
+	local cython2_build_pid=
+	local cython3_build_pid=
+	if is_parallel_run; then
+		# Trigger the build jobs, if required.
+		local inter="$opt_interpreter $all_interp"
+		if printf '%s' "$inter" | grep -Eqwe 'cython|cython2'; then
+			wait_for_free_job_slot
+			build_cython2 &
+			local cython2_build_pid=$!
+		fi
+		if printf '%s' "$inter" | grep -qwe 'cython3'; then
+			wait_for_free_job_slot
+			build_cython3 &
+			local cython3_build_pid=$!
+		fi
+	fi
+
 	for interpreter in "$opt_interpreter" $all_interp; do
 		[ -z "$interpreter" ] && continue
 
 		if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
-			[ "$interpreter" = "cython2" ] && ! have_prog "cython2" &&\
-				interpreter="cython" # Fallback
-			have_prog "$interpreter" && have_prog python2 || {
+			have_prog cython && have_prog python2 || {
 				warn_skipped "$interpreter"
 				[ -n "$opt_interpreter" ] && break || continue
 			}
-			cd "$rootdir" || die "cd to $rootdir failed"
-			echo "=== Building awlsim with python2"
-			CYTHONPARALLEL=1 \
-			python2 ./setup.py build || die "'python2 ./setup.py build' failed"
+			if is_parallel_run; then
+				wait_for_job_pid $cython2_build_pid
+			else
+				build_cython2 || die "Cython2 build failed."
+			fi
 		elif [ "$interpreter" = "cython3" ]; then
-			have_prog "$interpreter" && have_prog python3 || {
+			have_prog cython3 && have_prog python3 || {
 				warn_skipped "$interpreter"
 				[ -n "$opt_interpreter" ] && break || continue
 			}
-			cd "$rootdir" || die "cd to $rootdir failed"
-			echo "=== Building awlsim with python3"
-			CYTHONPARALLEL=1 \
-			python3 ./setup.py build || die "'python3 ./setup.py build' failed"
+			if is_parallel_run; then
+				wait_for_job_pid $cython3_build_pid
+			else
+				build_cython3 || die "Cython3 build failed."
+			fi
 		else
 			have_prog "$interpreter" || {
 				warn_skipped "$interpreter"
@@ -426,6 +497,7 @@ trap cleanup EXIT
 test_time_file_template="awlsim-test-time.$$"
 test_fail_file="$(mktemp --tmpdir=/tmp awlsim-test-fail.XXXXXX)"
 port_alloc_file="$(mktemp --tmpdir=/tmp awlsim-test-port.XXXXXX)"
+jobs_tmp_file="$(mktemp --tmpdir=/tmp awlsim-test-jobs.XXXXXX)"
 touch "${port_alloc_file}.lock"
 echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 
@@ -457,7 +529,10 @@ while [ $# -ge 1 ]; do
 		opt_jobs="$1"
 		[ -z "$opt_jobs" -o -n "$(printf '%s' "$opt_jobs" | tr -d '[0-9]')" ] &&\
 			die "--jobs: '$opt_jobs' is not a positive integer number."
-		[ $opt_jobs -eq 0 ] && opt_jobs="$(getconf _NPROCESSORS_ONLN)"
+		if [ $opt_jobs -eq 0 ]; then
+			opt_jobs="$(getconf _NPROCESSORS_ONLN)"
+			opt_jobs="$(expr $opt_jobs + 2)"
+		fi
 		[ -z "$opt_jobs" ] &&\
 			die "Could not detect number of CPUs."
 		;;
