@@ -413,10 +413,13 @@ EOF
 		fi
 #		python2 ./setup.py build ||\
 #			die "Failed to build awlsim (py2)."
-#		python2 ./setup.py install --prefix="$awlsim_prefix" ||\
-#			die "Failed to install awlsim (py2)."
 		python3 ./setup.py build ||\
 			die "Failed to build awlsim (py3)."
+
+		#TODO run the test suite
+
+#		python2 ./setup.py install --prefix="$awlsim_prefix" ||\
+#			die "Failed to install awlsim (py2)."
 		python3 ./setup.py install --prefix="$awlsim_prefix" ||\
 			die "Failed to install awlsim (py3)."
 
