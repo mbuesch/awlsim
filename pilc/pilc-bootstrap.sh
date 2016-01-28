@@ -167,7 +167,7 @@ pilc_bootstrap_first_stage()
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
 		debootstrap --arch="$opt_arch" --foreign --verbose \
-			--keyring="$basedir/maintenance/raspbian.public.key.gpg" \
+			--keyring="$basedir/pilc/raspbian.public.key.gpg" \
 			"$opt_suite" "$opt_target_dir" "$opt_mirror" \
 			|| die "debootstrap failed"
 		mkdir -p "$opt_target_dir/usr/share/keyrings" ||\
@@ -190,7 +190,7 @@ pilc_bootstrap_first_stage()
 	fi
 
 	info "Copying PiLC bootstrap script..."
-	cp "$basedir/maintenance/pilc-bootstrap.sh" "$opt_target_dir/" ||\
+	cp "$basedir/pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
 		die "Failed to copy bootstrap script."
 
 	info "Checking out awlsim..."
