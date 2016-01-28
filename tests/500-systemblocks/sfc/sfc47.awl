@@ -36,7 +36,7 @@ BEGIN
 	L		MD 0
 	-D
 	UD		DW#16#7FFFFFFF
-	__ASSERT<=	__ACCU 1,	10
+	__ASSERT<=	__ACCU 1,	20
 
 
 	// Check maximum delay.
