@@ -25,8 +25,54 @@ ORGANIZATION_BLOCK OB 1
 BEGIN
 M001:	CALL	"UPDATE_TIME"
 
+// Warmup time (pypy needs this)
+	CALL	"TIMEDIFF" (
+		TIME0	:= "TIME",
+		TIME1	:= "BOOT_TIME",
+		RET_VAL	:= "DIFF",
+	)
+	L	"DIFF"
+	L	T#2s
+	>=D
+	S	"RUNNING"
+
+	U	"RUNNING"
+	FP	"RUNNING_EDGE"
+	SPBN	M005
+	CALL	"__CLKRST"
+	CALL	"UPDATE_TIME"
+	L	"TIME"
+	T	"START_TIME"
+	T	"STAMP_0.1s"
+	T	"STAMP_0.2s"
+	T	"STAMP_0.4s"
+	T	"STAMP_0.5s"
+	T	"STAMP_0.8s"
+	T	"STAMP_1.0s"
+	T	"STAMP_1.6s"
+	T	"STAMP_2.0s"
+	L	0
+	T	"COUNT_0.1s"
+	T	"COUNT_0.2s"
+	T	"COUNT_0.4s"
+	T	"COUNT_0.5s"
+	T	"COUNT_0.8s"
+	T	"COUNT_1.0s"
+	T	"COUNT_1.6s"
+	T	"COUNT_2.0s"
+	CLR
+	=	"CLOCK_0.1s_EDGE"
+	=	"CLOCK_0.2s_EDGE"
+	=	"CLOCK_0.4s_EDGE"
+	=	"CLOCK_0.5s_EDGE"
+	=	"CLOCK_0.8s_EDGE"
+	=	"CLOCK_1.0s_EDGE"
+	=	"CLOCK_1.6s_EDGE"
+	=	"CLOCK_2.0s_EDGE"
+
+
 // Check 0.1s trigger time
-	U	"CLOCK_0.1s"
+M005:	U	"CLOCK_0.1s"
 	FN	"CLOCK_0.1s_EDGE"
 	SPBN	M010
 	CALL	"TIMEDIFF" (
@@ -35,9 +81,11 @@ M001:	CALL	"UPDATE_TIME"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#50ms
-	__ASSERT<=	__ACCU 1,	T#150ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M006
+	__ASSERT>=	__ACCU 1,	T#10ms
+	__ASSERT<=	__ACCU 1,	T#250ms
+M006:	L		"TIME"
 	T		"STAMP_0.1s"
 	L		"COUNT_0.1s"
 	+		1
@@ -54,9 +102,11 @@ M010:	U	"CLOCK_0.2s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#150ms
-	__ASSERT<=	__ACCU 1,	T#250ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M011
+	__ASSERT>=	__ACCU 1,	T#100ms
+	__ASSERT<=	__ACCU 1,	T#350ms
+M011:	L		"TIME"
 	T		"STAMP_0.2s"
 	L		"COUNT_0.2s"
 	+		1
@@ -72,9 +122,11 @@ M020:	U	"CLOCK_0.4s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#350ms
-	__ASSERT<=	__ACCU 1,	T#450ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M021
+	__ASSERT>=	__ACCU 1,	T#300ms
+	__ASSERT<=	__ACCU 1,	T#550ms
+M021:	L		"TIME"
 	T		"STAMP_0.4s"
 	L		"COUNT_0.4s"
 	+		1
@@ -90,9 +142,11 @@ M030:	U	"CLOCK_0.5s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#450ms
-	__ASSERT<=	__ACCU 1,	T#550ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M031
+	__ASSERT>=	__ACCU 1,	T#400ms
+	__ASSERT<=	__ACCU 1,	T#650ms
+M031:	L		"TIME"
 	T		"STAMP_0.5s"
 	L		"COUNT_0.5s"
 	+		1
@@ -108,9 +162,11 @@ M040:	U	"CLOCK_0.8s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#750ms
-	__ASSERT<=	__ACCU 1,	T#850ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M041
+	__ASSERT>=	__ACCU 1,	T#700ms
+	__ASSERT<=	__ACCU 1,	T#950ms
+M041:	L		"TIME"
 	T		"STAMP_0.8s"
 	L		"COUNT_0.8s"
 	+		1
@@ -126,9 +182,11 @@ M050:	U	"CLOCK_1.0s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#950ms
-	__ASSERT<=	__ACCU 1,	T#1s50ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M051
+	__ASSERT>=	__ACCU 1,	T#900ms
+	__ASSERT<=	__ACCU 1,	T#1s150ms
+M051:	L		"TIME"
 	T		"STAMP_1.0s"
 	L		"COUNT_1.0s"
 	+		1
@@ -144,9 +202,11 @@ M060:	U	"CLOCK_1.6s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#1s550ms
-	__ASSERT<=	__ACCU 1,	T#1s650ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M061
+	__ASSERT>=	__ACCU 1,	T#1s500ms
+	__ASSERT<=	__ACCU 1,	T#1s750ms
+M061:	L		"TIME"
 	T		"STAMP_1.6s"
 	L		"COUNT_1.6s"
 	+		1
@@ -162,9 +222,11 @@ M070:	U	"CLOCK_2.0s"
 		RET_VAL	:= "DIFF",
 	)
 	L		"DIFF"
-	__ASSERT>=	__ACCU 1,	T#1s950ms
-	__ASSERT<=	__ACCU 1,	T#2s50ms
-	L		"TIME"
+	UN		"RUNNING"
+	SPB		M071
+	__ASSERT>=	__ACCU 1,	T#1s900ms
+	__ASSERT<=	__ACCU 1,	T#2s150ms
+M071:	L		"TIME"
 	T		"STAMP_2.0s"
 	L		"COUNT_2.0s"
 	+		1
@@ -176,6 +238,8 @@ M080:	CALL	"TIMEDIFF" (
 		TIME1	:= "START_TIME",
 		RET_VAL	:= "DIFF",
 	)
+	UN		"RUNNING"
+	BEB
 	L		"DIFF"
 	L		T#4s50ms
 	<D
@@ -183,7 +247,8 @@ M080:	CALL	"TIMEDIFF" (
 
 	// Completed. Check trigger counts.
 	L		"COUNT_0.1s"
-	__ASSERT==	__ACCU 1,	40
+	__ASSERT>=	__ACCU 1,	39
+	__ASSERT<=	__ACCU 1,	41
 	L		"COUNT_0.2s"
 	__ASSERT==	__ACCU 1,	20
 	L		"COUNT_0.4s"
@@ -208,13 +273,8 @@ ORGANIZATION_BLOCK OB 100
 BEGIN
 	CALL	"UPDATE_TIME"
 	L	"TIME"
-	T	"STAMP_0.1s"
-	T	"STAMP_0.2s"
-	T	"STAMP_0.4s"
-	T	"STAMP_0.5s"
-	T	"STAMP_0.8s"
-	T	"STAMP_1.0s"
-	T	"STAMP_1.6s"
-	T	"STAMP_2.0s"
-	T	"START_TIME"
+	T	"BOOT_TIME"
+	CLR
+	=	"RUNNING"
+	=	"RUNNING_EDGE"
 END_ORGANIZATION_BLOCK
