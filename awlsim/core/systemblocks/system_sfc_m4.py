@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,22 +22,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.systemblocks.system_sfc_m4 import *
-from awlsim.core.systemblocks.system_sfc_m3 import *
-from awlsim.core.systemblocks.system_sfc_m2 import *
-from awlsim.core.systemblocks.system_sfc_m1 import *
-from awlsim.core.systemblocks.system_sfc_46 import *
-from awlsim.core.systemblocks.system_sfc_47 import *
-from awlsim.core.systemblocks.system_sfc_64 import *
+from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.util import *
 
 
-SFC_table = {
-	-4	: SFCm4,	# __CLKRST
-	-3	: SFCm3,	# __SHUTDOWN
-	-2	: SFCm2,	# __REBOOT
-	-1	: SFCm1,	# __SFC_NOP
+class SFCm4(SFC):
+	name = (-4, "__CLKRST", None)
 
-	46	: SFC46,	# STP
-	47	: SFC47,	# WAIT
-	64	: SFC64,	# TIME_TCK
-}
+	def run(self):
+		s = self.cpu.statusWord
+
+		self.cpu._initializeTimestamp()
+		self.cpu._initClockMemState()
+
+		s.BIE = 1

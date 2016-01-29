@@ -757,7 +757,7 @@ class S7CPU(object): #+cdef
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
 
-		self.__initializeTimestamp()
+		self._initializeTimestamp()
 
 	def setCycleExitCallback(self, cb, data=None):
 		self.cbCycleExit = cb
@@ -827,24 +827,31 @@ class S7CPU(object): #+cdef
 				cse = self.callStackTop = self.callStack[-1]
 			prevCse.handleBlockExit()
 
+	def _initClockMemState(self):
+		"""Reset/initialize the clock memory byte state.
+		"""
+		self.__clockMemByteOffset = None
+		self.updateTimestamp()
+		if self.specs.clockMemByte >= 0:
+			self.__clockMemByteOffset = AwlOffset(self.specs.clockMemByte)
+		self.__nextClockMemTime = self.now + 0.05
+		self.__clockMemCount = 0
+		self.__clockMemCountLCM = math_lcm(2, 4, 5, 8, 10, 16, 20)
+		if self.__clockMemByteOffset:
+			self.flags.store(self.__clockMemByteOffset, 8, 0)
+
 	# Run startup code
 	def startup(self):
 		# Build (translate) the blocks, if not already done so.
 		self.prog.build()
 
-		self.__initializeTimestamp()
+		self._initializeTimestamp()
 		self.__speedMeasureStartTime = self.now
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
 		self.startupTime = self.now
 
-		if self.specs.clockMemByte >= 0:
-			self.__clockMemByteOffset = AwlOffset(self.specs.clockMemByte)
-		else:
-			self.__clockMemByteOffset = None
-		self.__nextClockMemTime = self.now + 0.05
-		self.__clockMemCount = 0
-		self.__clockMemCountLCM = math_lcm(2, 4, 5, 8, 10, 16, 20)
+		self._initClockMemState()
 
 		# Run startup OB
 		if 102 in self.obs and self.is4accu:
@@ -908,7 +915,7 @@ class S7CPU(object): #+cdef
 		return int(self.now * 1000.0) & 0x7FFFFFFF
 
 	# Initialize time stamp.
-	def __initializeTimestamp(self):
+	def _initializeTimestamp(self):
 		# Initialize the time stamp so that it will
 		# overflow 31 bit millisecond count within
 		# 100 milliseconds after startup.
