@@ -9,6 +9,7 @@ graft fake
 graft doc
 graft examples
 graft awlsim/gui/icons/icon-images
+graft pilc
 
 global-include *.pxd.in
 
