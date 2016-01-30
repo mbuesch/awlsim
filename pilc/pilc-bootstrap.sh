@@ -229,7 +229,8 @@ pilc_bootstrap_second_stage()
 	# debootstrap second stage.
 	if [ $opt_skip_debootstrap2 -eq 0 ]; then
 		info "Running debootstrap second stage..."
-		/debootstrap/debootstrap --verbose --second-stage
+		/debootstrap/debootstrap --verbose --second-stage ||\
+			die "Debootstrap second stage failed."
 	fi
 
 	info "Mounting /proc..."
@@ -338,6 +339,8 @@ EOF
 		tmux \
 		vim ||\
 		die "apt-get install failed"
+	apt-get install --reinstall libc6-dev ||\
+		die "Failed to reinstall"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
 	echo -e 'debconf debconf/priority select high\n' \
