@@ -1,4 +1,4 @@
-update=Sat 30 Jan 2016 05:31:30 PM CET
+update=Sat 30 Jan 2016 10:36:43 PM CET
 version=1
 last_client=kicad
 [pcbnew]
@@ -59,3 +59,4 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=max485
+LibName31=rv3029c2

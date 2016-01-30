@@ -1,0 +1,228 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:max485
+LIBS:rv3029c2
+LIBS:pilc-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 3 4
+Title "PiLC HAT - PROFIBUS DP"
+Date ""
+Rev "0.1"
+Comp "Michael Buesch <m@bues.ch>"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MAX485 U?
+U 1 1 56AD7A26
+P 6450 4050
+F 0 "U?" H 6450 4400 60  0000 C CNN
+F 1 "MAX 485 ECPA" H 6450 3700 60  0000 C CNN
+F 2 "" H 6450 4050 60  0000 C CNN
+F 3 "" H 6450 4050 60  0000 C CNN
+	1    6450 4050
+	1    0    0    -1  
+$EndComp
+$Comp
+L DB9 J?
+U 1 1 56AD7A2D
+P 8900 4000
+F 0 "J?" H 8900 4550 70  0000 C CNN
+F 1 "DB9" H 8900 3450 70  0000 C CNN
+F 2 "" H 8900 4000 60  0000 C CNN
+F 3 "" H 8900 4000 60  0000 C CNN
+	1    8900 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR?
+U 1 1 56AD7A34
+P 7150 3900
+F 0 "#PWR?" H 7150 3750 50  0001 C CNN
+F 1 "+5V" H 7150 4040 50  0000 C CNN
+F 2 "" H 7150 3900 60  0000 C CNN
+F 3 "" H 7150 3900 60  0000 C CNN
+	1    7150 3900
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 56AD7A3A
+P 7150 4200
+F 0 "#PWR?" H 7150 3950 50  0001 C CNN
+F 1 "GND" H 7150 4050 50  0000 C CNN
+F 2 "" H 7150 4200 60  0000 C CNN
+F 3 "" H 7150 4200 60  0000 C CNN
+	1    7150 4200
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 56AD7A40
+P 8350 3600
+F 0 "#PWR?" H 8350 3350 50  0001 C CNN
+F 1 "GND" H 8350 3450 50  0000 C CNN
+F 2 "" H 8350 3600 60  0000 C CNN
+F 3 "" H 8350 3600 60  0000 C CNN
+	1    8350 3600
+	0    1    1    0   
+$EndComp
+NoConn ~ 8450 3700
+NoConn ~ 8450 3800
+NoConn ~ 8450 4100
+NoConn ~ 8450 4200
+NoConn ~ 8450 4300
+NoConn ~ 8450 4400
+Text Notes 9250 4400 1    79   ~ 0
+PROFIBUS DP
+$Comp
+L C_Small C?
+U 1 1 56AD7A4D
+P 7000 3650
+F 0 "C?" H 7010 3720 50  0000 L CNN
+F 1 "100n" H 7010 3570 50  0000 L CNN
+F 2 "" H 7000 3650 60  0000 C CNN
+F 3 "" H 7000 3650 60  0000 C CNN
+	1    7000 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 56AD7A54
+P 7000 3450
+F 0 "#PWR?" H 7000 3200 50  0001 C CNN
+F 1 "GND" H 7000 3300 50  0000 C CNN
+F 2 "" H 7000 3450 60  0000 C CNN
+F 3 "" H 7000 3450 60  0000 C CNN
+	1    7000 3450
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R?
+U 1 1 56AD7A5A
+P 5550 3900
+F 0 "R?" V 5630 3900 50  0000 C CNN
+F 1 "1k" V 5550 3900 50  0000 C CNN
+F 2 "" V 5480 3900 30  0000 C CNN
+F 3 "" H 5550 3900 30  0000 C CNN
+	1    5550 3900
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 56AD7A61
+P 5300 3300
+F 0 "#PWR?" H 5300 3050 50  0001 C CNN
+F 1 "GND" H 5300 3150 50  0000 C CNN
+F 2 "" H 5300 3300 60  0000 C CNN
+F 3 "" H 5300 3300 60  0000 C CNN
+	1    5300 3300
+	-1   0    0    1   
+$EndComp
+$Comp
+L ZENER D?
+U 1 1 56AD7A67
+P 5300 3600
+F 0 "D?" H 5300 3700 50  0000 C CNN
+F 1 "3.3V" H 5300 3500 50  0000 C CNN
+F 2 "" H 5300 3600 60  0000 C CNN
+F 3 "" H 5300 3600 60  0000 C CNN
+	1    5300 3600
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R R?
+U 1 1 56AD7A6E
+P 5050 3900
+F 0 "R?" V 5130 3900 50  0000 C CNN
+F 1 "1k" V 5050 3900 50  0000 C CNN
+F 2 "" V 4980 3900 30  0000 C CNN
+F 3 "" H 5050 3900 30  0000 C CNN
+	1    5050 3900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6950 4100 8250 4100
+Wire Wire Line
+	8250 4100 8250 3900
+Wire Wire Line
+	8250 3900 8450 3900
+Wire Wire Line
+	6950 4000 8450 4000
+Wire Wire Line
+	6950 3900 7150 3900
+Wire Wire Line
+	6950 4200 7150 4200
+Wire Wire Line
+	8350 3600 8450 3600
+Connection ~ 7000 3900
+Wire Wire Line
+	7000 3750 7000 3900
+Wire Wire Line
+	7000 3450 7000 3550
+Wire Wire Line
+	5950 4000 5900 4000
+Wire Wire Line
+	2100 4200 5950 4200
+Wire Wire Line
+	5300 3300 5300 3400
+Wire Wire Line
+	5700 3900 5950 3900
+Wire Wire Line
+	5300 3800 5300 3900
+Connection ~ 5300 3900
+Wire Wire Line
+	5200 3900 5400 3900
+Wire Wire Line
+	2100 3900 4900 3900
+Wire Wire Line
+	2100 4100 5950 4100
+Wire Wire Line
+	5900 4000 5900 4100
+Connection ~ 5900 4100
+Text HLabel 2100 4200 0    60   Input ~ 0
+TxD
+Text HLabel 2100 3900 0    60   Input ~ 0
+RxD
+Text HLabel 2100 4100 0    60   Input ~ 0
+TxEn
+Text Label 2850 3900 0    60   ~ 0
+Rx_data
+Text Label 2850 4100 0    60   ~ 0
+Tx_enable
+Text Label 2850 4200 0    60   ~ 0
+Tx_data
+$EndSCHEMATC
