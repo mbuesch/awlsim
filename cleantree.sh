@@ -11,11 +11,20 @@ if ! [ -x "$basedir/awlsim-test" -a -x "$basedir/setup.py" ]; then
 fi
 
 cd "$basedir"
+
 find . \( \
 	\( -name '__pycache__' \) -o \
 	\( -name '*.pyo' \) -o \
 	\( -name '*.pyc' \) -o \
 	\( -name '*$py.class' \) \
        \) -delete
-rm -rf build dist
+
+rm -rf build dist release-archives .pybuild
 rm -f MANIFEST
+
+rm -f debian/files debian/*.log debian/*.substvars \
+      debian/debhelper-build-stamp
+rm -rf debian/destdir-* \
+       debian/python-awlsim \
+       debian/python3-awlsim \
+       debian/awlsim-client
