@@ -17,7 +17,7 @@ export CYTHONPARALLEL=1
 export NOCYTHON=1
 
 %:
-	dh $@ --with python2,python3 --buildsystem=pybuild
+	dh $@ --with python2,python3,pypy --buildsystem=pybuild
 
 override_dh_auto_install:
 	dh_auto_install
