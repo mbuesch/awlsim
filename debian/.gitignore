@@ -1,3 +1,11 @@
+destdir-*/
+python-awlsim/
+python3-awlsim/
+pypy-awlsim/
+awlsim-client/
+
+files
+debhelper-build-stamp
 *.log
 *.debhelper
 *.substvars

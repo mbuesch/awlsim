@@ -3,6 +3,7 @@ __pycache__/
 *.pyo
 *$py.class
 
+.pybuild/
 build/
 dist/
 awlsim_cython
