@@ -31,4 +31,5 @@ rm -rf debian/destdir-* \
        debian/python-awlsim \
        debian/python3-awlsim \
        debian/pypy-awlsim \
-       debian/awlsim-client
+       debian/awlsim-client \
+       debian/awlsim-server

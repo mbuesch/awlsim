@@ -49,8 +49,17 @@ Package: awlsim-client
 Architecture: any
 Depends: python3-awlsim,
          ${misc:Depends},
-         ${python:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
 Description: S7 AWL/STL Soft-PLC client
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: awlsim-server
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC core server
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.

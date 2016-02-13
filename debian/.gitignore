@@ -3,6 +3,7 @@ python-awlsim/
 python3-awlsim/
 pypy-awlsim/
 awlsim-client/
+awlsim-server/
 
 files
 debhelper-build-stamp
