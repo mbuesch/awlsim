@@ -22,9 +22,13 @@ find . \( \
 rm -rf build dist release-archives .pybuild
 rm -f MANIFEST
 
-rm -f debian/files debian/*.log debian/*.substvars \
+rm -f debian/files \
+      debian/*.debhelper \
+      debian/*.log \
+      debian/*.substvars \
       debian/debhelper-build-stamp
 rm -rf debian/destdir-* \
        debian/python-awlsim \
        debian/python3-awlsim \
+       debian/pypy-awlsim \
        debian/awlsim-client
