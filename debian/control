@@ -51,6 +51,7 @@ Depends: python3-awlsim,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
+Suggests: python-awlsim
 Description: S7 AWL/STL Soft-PLC client
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
@@ -61,5 +62,54 @@ Depends: python3-awlsim,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
+Suggests: python-awlsim
 Description: S7 AWL/STL Soft-PLC core server
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: awlsim-symtab
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Suggests: python-awlsim
+Description: S7 AWL/STL Soft-PLC symbol table parser
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: awlsim-test
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Suggests: python-awlsim
+Description: S7 AWL/STL Soft-PLC testing interface
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: awlsim-linuxcnc-hal
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Suggests: python-awlsim
+Description: S7 AWL/STL Soft-PLC LinuxCNC HAL module
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: awlsim-gui
+Architecture: any
+Depends: python3-awlsim,
+         python3-pyside,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Suggests: python-awlsim,
+          python-pyside,
+          python-pyqt5,
+          python3-pyqt5
+Description: S7 AWL/STL Soft-PLC graphical user interface
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.

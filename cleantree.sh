@@ -32,4 +32,8 @@ rm -rf debian/destdir-* \
        debian/python3-awlsim \
        debian/pypy-awlsim \
        debian/awlsim-client \
-       debian/awlsim-server
+       debian/awlsim-server \
+       debian/awlsim-symtab \
+       debian/awlsim-test \
+       debian/awlsim-linuxcnc-hal \
+       debian/awlsim-gui

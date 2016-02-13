@@ -4,6 +4,10 @@ python3-awlsim/
 pypy-awlsim/
 awlsim-client/
 awlsim-server/
+awlsim-gui/
+awlsim-symtab/
+awlsim-test/
+awlsim-linuxcnc-hal/
 
 files
 debhelper-build-stamp
