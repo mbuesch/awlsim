@@ -1,0 +1,37 @@
+Source: awlsim
+Maintainer: Michael Buesch <m@bues.ch>
+Section: python
+Priority: optional
+Build-Depends: dh-python,
+               python-all-dev (>= 2.6.6-3),
+               python3-all-dev (>= 3.4.2-2),
+               debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: http://bues.ch/h/awlsim
+
+
+Package: python-awlsim
+Architecture: any
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC core libraries (for Python 2)
+
+
+Package: python3-awlsim
+Architecture: any
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC core libraries (for Python 3)
+
+
+Package: awlsim-client
+Architecture: any
+Depends: python-awlsim,
+         python3-awlsim,
+         ${misc:Depends},
+         ${python:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC client
