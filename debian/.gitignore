@@ -1,6 +1,10 @@
 destdir-*/
 python-awlsim/
+cython-awlsim/
+python-awlsim-gui/
 python3-awlsim/
+cython3-awlsim/
+python3-awlsim-gui/
 pypy-awlsim/
 awlsim-client/
 awlsim-server/

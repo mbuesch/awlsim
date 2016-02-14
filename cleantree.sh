@@ -29,7 +29,11 @@ rm -f debian/files \
       debian/debhelper-build-stamp
 rm -rf debian/destdir-* \
        debian/python-awlsim \
+       debian/python-awlsim-gui \
+       debian/cython-awlsim \
        debian/python3-awlsim \
+       debian/python3-awlsim-gui \
+       debian/cython3-awlsim \
        debian/pypy-awlsim \
        debian/awlsim-client \
        debian/awlsim-server \

@@ -1,1 +1,5 @@
-debian/destdir-py3-awlsim/usr/lib usr
+debian/destdir-py3-awlsim/usr/lib/python3*/dist-packages/awlsim/common usr/lib/python3/dist-packages/awlsim
+debian/destdir-py3-awlsim/usr/lib/python3*/dist-packages/awlsim/core usr/lib/python3/dist-packages/awlsim
+debian/destdir-py3-awlsim/usr/lib/python3*/dist-packages/awlsim/coreclient usr/lib/python3/dist-packages/awlsim
+debian/destdir-py3-awlsim/usr/lib/python3*/dist-packages/awlsim/coreserver usr/lib/python3/dist-packages/awlsim
+debian/destdir-py3-awlsim/usr/lib/python3*/dist-packages/awlsim/library usr/lib/python3/dist-packages/awlsim

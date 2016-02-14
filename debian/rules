@@ -1,20 +1,26 @@
 #!/usr/bin/make -f
 
+export LC_ALL=C.UTF-8
+#export DH_VERBOSE=1
+
 export PYBUILD_NAME=awlsim
 export PYBUILD_SYSTEM=distutils
-export PYBUILD_DEBUG=1
-export DH_VERBOSE=1
+#export PYBUILD_DEBUG=1
 
 export PYBUILD_DESTDIR_python2=debian/destdir-py2-awlsim/
 export PYBUILD_DESTDIR_python2-dbg=debian/destdir-py2-awlsim-dbg/
 export PYBUILD_DESTDIR_python3=debian/destdir-py3-awlsim/
 export PYBUILD_DESTDIR_python3-dbg=debian/destdir-py3-awlsim-dbg/
 export PYBUILD_DESTDIR_pypy=debian/destdir-pypy-awlsim/
+export PYBUILD_DESTDIR_pypy-dbg=debian/destdir-pypy-awlsim-dbg/
 
-export PYTHONDONTWRITEBYTECODE=yes
-export LC_ALL=C.UTF-8
+export PYTHONDONTWRITEBYTECODE=1
+export PYTHONPATH=
+export PYTHONSTARTUP=
+export PYTHONINSPECT=
+
 export CYTHONPARALLEL=1
-export NOCYTHON=1
+export NOCYTHON=0
 
 %:
 	dh $@ --with python2,python3,pypy --buildsystem=pybuild
