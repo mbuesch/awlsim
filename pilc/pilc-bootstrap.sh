@@ -194,8 +194,10 @@ pilc_bootstrap_first_stage()
 		die "Failed to copy bootstrap script."
 
 	info "Checking out awlsim..."
-	local checkout_dir="$opt_target_dir/tmp/awlsim"
-	rm -rf "$checkout_dir"
+	local awlsim_dir="$opt_target_dir/tmp/awlsim"
+	local checkout_dir="$awlsim_dir/src"
+	rm -rf "$awlsim_dir"
+	mkdir -p "$awlsim_dir" || die "mkdir failed"
 	git clone --no-checkout "$basedir/.git" "$checkout_dir" ||\
 		die "Failed to clone"
 	(
@@ -319,6 +321,7 @@ EOF
 		cython \
 		cython3 \
 		debconf-utils \
+		devscripts \
 		fake-hwclock \
 		git \
 		htop \
@@ -331,7 +334,11 @@ EOF
 		openssh-blacklist-extra \
 		pypy \
 		python \
+		python-all-dev \
+		python-setuptools \
 		python3 \
+		python3-all-dev \
+		python3-setuptools \
 		raspberrypi-bootloader-nokernel \
 		screen \
 		sudo \
@@ -404,40 +411,58 @@ EOF
 
 	info "Building awlsim..."
 	(
-		local awlsim_prefix=/opt/awlsim
-		cd /tmp/awlsim ||\
+		cd /tmp/awlsim/src ||\
 			die "Failed to cd"
-		rm -rf "$awlsim_prefix"
 		if [ $opt_cython -eq 0 ]; then
-			export NOCYTHON=1
-		else
-			export NOCYTHON=0
-			export CYTHONPARALLEL=1
+			# Disable cython
+			sed -i -e '/Package: cython/,/^$/ d' \
+				debian/control ||\
+				die "Failed to patch control file"
+			sed -i -e 's/export NOCYTHON=0/export NOCYTHON=1/' \
+				debian/rules ||\
+				die "Failed to patch rules file"
 		fi
-#		python2 ./setup.py build ||\
-#			die "Failed to build awlsim (py2)."
-		python3 ./setup.py build ||\
-			die "Failed to build awlsim (py3)."
+		debuild -uc -us -b -d || die "debuild failed"
+		info "Built awlsim files:"
+		ls .. || die "Failed to list results"
 
-		#TODO run the test suite
-
-#		python2 ./setup.py install --prefix="$awlsim_prefix" ||\
-#			die "Failed to install awlsim (py2)."
-		python3 ./setup.py install --prefix="$awlsim_prefix" ||\
-			die "Failed to install awlsim (py3)."
-
+		info "Installing awlsim..."
+		dpkg -i ../python-awlsim_*.deb ||\
+			die "Failed to install python-awlsim"
+		dpkg -i ../python3-awlsim_*.deb ||\
+			die "Failed to install python3-awlsim"
+		dpkg -i ../pypy-awlsim_*.deb ||\
+			die "Failed to install pypy-awlsim"
+		if [ $opt_cython -ne 0 ]; then
+			dpkg -i ../cython-awlsim_*.deb ||\
+				die "Failed to install cython-awlsim"
+			dpkg -i ../cython3-awlsim_*.deb ||\
+				die "Failed to install cython3-awlsim"
+		fi
+		dpkg -i ../awlsim-server_*.deb ||\
+			die "Failed to install awlsim-server"
+		dpkg -i ../awlsim-client_*.deb ||\
+			die "Failed to install awlsim-client"
+		dpkg -i ../awlsim-symtab_*.deb ||\
+			die "Failed to install awlsim-symtab"
+		dpkg -i ../awlsim-test_*.deb ||\
+			die "Failed to install awlsim-test"
+		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
+			die "Failed to install awlsim-linuxcnc-hal"
+		mkdir -p /home/pi/awlsim-gui ||\
+			die "mkdir /home/pi/awlsim-gui failed"
+		cp ../python*-awlsim-gui_*.deb ../awlsim-gui_*.deb \
+			/home/pi/awlsim-gui/ ||\
+			die "Failed to copy awlsim-gui"
 		cp examples/EXAMPLE.awlpro /home/pi/ ||\
 			die "Failed to copy EXAMPLE.awlpro."
-		rm "$awlsim_prefix/bin/"*.bat ||\
-			die "Failed to remove all .bat files."
 
-		for i in "$awlsim_prefix"/bin/*; do
-			echo "$i" | grep -qEe 'linuxcnc|gui' && continue
-			ln -s "$i" "/home/pi/$(basename "$i")" ||\
-				die "Failed to create awlsim link '$i'"
-		done
+		#TODO run the testsuite
 
-		local site="$(last "$awlsim_prefix"/lib/python*/site-packages)"
+		#TODO install unit via package
+		info "Installing awlsim service unit..."
+		local awlsim_prefix=/usr
+		local site="$awlsim_prefix/lib/python3/dist-packages"
 		cat awlsim-server.service.in |\
 		sed -e 's|@USER@|pi|g' \
 		    -e 's|@GROUP@|pi|g' \
