@@ -1,3 +1,4 @@
+debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/__init__.py usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/common usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/core usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/coreclient usr/lib/python2.7/dist-packages/awlsim_cython
