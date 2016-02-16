@@ -29,12 +29,25 @@ rm -f debian/files \
       debian/debhelper-build-stamp
 rm -rf debian/destdir-* \
        debian/python-awlsim \
+       debian/python-awlsimhw-dummy \
+       debian/python-awlsimhw-linuxcnc \
+       debian/python-awlsimhw-profibus \
        debian/python-awlsim-gui \
        debian/cython-awlsim \
+       debian/cython-awlsimhw-dummy \
+       debian/cython-awlsimhw-profibus \
        debian/python3-awlsim \
        debian/python3-awlsim-gui \
+       debian/python3-awlsimhw-dummy \
+       debian/python3-awlsimhw-linuxcnc \
+       debian/python3-awlsimhw-profibus \
        debian/cython3-awlsim \
+       debian/cython3-awlsimhw-dummy \
+       debian/cython3-awlsimhw-linuxcnc \
+       debian/cython3-awlsimhw-profibus \
        debian/pypy-awlsim \
+       debian/pypy-awlsimhw-dummy \
+       debian/pypy-awlsimhw-profibus \
        debian/awlsim-client \
        debian/awlsim-server \
        debian/awlsim-symtab \

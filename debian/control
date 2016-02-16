@@ -37,6 +37,7 @@ Depends: ${misc:Depends},
 Description: S7 AWL/STL Soft-PLC core libraries (Cython 2)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
+#TODO CYTHON HWMOD
 
 Package: python-awlsim-gui
 Architecture: any
@@ -48,6 +49,36 @@ Depends: python-awlsim,
 Suggests: python-pyqt5,
           cython-awlsim
 Description: S7 AWL/STL Soft-PLC gui libraries (Python 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: python-awlsimhw-dummy
+Architecture: any
+Depends: python-awlsim,
+         ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC dummy hardware module (Python 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: python-awlsimhw-linuxcnc
+Architecture: any
+Depends: python-awlsim,
+         ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC LinuxCNC hardware module (Python 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: python-awlsimhw-profibus
+Architecture: any
+Depends: python-awlsim,
+         ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC PROFIBUS-DP hardware module (Python 2)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
 
@@ -68,6 +99,7 @@ Depends: ${misc:Depends},
 Description: S7 AWL/STL Soft-PLC core libraries (Cython 3)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
+#TODO CYTHON HWMOD
 
 Package: python3-awlsim-gui
 Architecture: any
@@ -82,12 +114,62 @@ Description: S7 AWL/STL Soft-PLC gui libraries (Python 3)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
 
+Package: python3-awlsimhw-dummy
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC dummy hardware module (Python 3)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: python3-awlsimhw-linuxcnc
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC LinuxCNC hardware module (Python 3)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: python3-awlsimhw-profibus
+Architecture: any
+Depends: python3-awlsim,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC PROFIBUS-DP hardware module (Python 3)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
 Package: pypy-awlsim
 Architecture: any
 Depends: ${misc:Depends},
          ${pypy:Depends},
          ${shlibs:Depends}
 Description: S7 AWL/STL Soft-PLC core libraries (PyPy 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: pypy-awlsimhw-dummy
+Architecture: any
+Depends: pypy-awlsim,
+         ${misc:Depends},
+         ${pypy:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC dummy hardware module (PyPy 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: pypy-awlsimhw-profibus
+Architecture: any
+Depends: pypy-awlsim,
+         ${misc:Depends},
+         ${pypy:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC PROFIBUS-DP hardware module (PyPy 2)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
 
@@ -145,11 +227,13 @@ Description: S7 AWL/STL Soft-PLC testing interface
 
 Package: awlsim-linuxcnc-hal
 Architecture: any
-Depends: python3-awlsim,
+Depends: python-awlsim,
+         python-awlsimhw-linuxcnc,
          ${misc:Depends},
-         ${python3:Depends},
+         ${python:Depends},
          ${shlibs:Depends}
-Suggests: python-awlsim,
+Suggests: python3-awlsim,
+          python3-awlsimhw-linuxcnc,
           cython-awlsim,
           cython3-awlsim
 Description: S7 AWL/STL Soft-PLC LinuxCNC HAL module
