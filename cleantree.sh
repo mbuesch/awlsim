@@ -35,6 +35,7 @@ rm -rf debian/destdir-* \
        debian/python-awlsim-gui \
        debian/cython-awlsim \
        debian/cython-awlsimhw-dummy \
+       debian/cython-awlsimhw-linuxcnc \
        debian/cython-awlsimhw-profibus \
        debian/python3-awlsim \
        debian/python3-awlsim-gui \

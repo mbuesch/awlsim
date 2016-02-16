@@ -37,7 +37,33 @@ Depends: ${misc:Depends},
 Description: S7 AWL/STL Soft-PLC core libraries (Cython 2)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
-#TODO CYTHON HWMOD
+
+Package: cython-awlsimhw-dummy
+Architecture: any
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC dummy hardware module (Cython 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: cython-awlsimhw-linuxcnc
+Architecture: any
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC LinuxCNC hardware module (Cython 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: cython-awlsimhw-profibus
+Architecture: any
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC PROFIBUS-DP hardware module (Cython 2)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
 
 Package: python-awlsim-gui
 Architecture: any
@@ -99,7 +125,33 @@ Depends: ${misc:Depends},
 Description: S7 AWL/STL Soft-PLC core libraries (Cython 3)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
-#TODO CYTHON HWMOD
+
+Package: cython3-awlsimhw-dummy
+Architecture: any
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC dummy hardware module (Cython 3)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: cython3-awlsimhw-linuxcnc
+Architecture: any
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC LinuxCNC hardware module (Cython 3)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: cython3-awlsimhw-profibus
+Architecture: any
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: S7 AWL/STL Soft-PLC PROFIBUS-DP hardware module (Cython 3)
+ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
 
 Package: python3-awlsim-gui
 Architecture: any
