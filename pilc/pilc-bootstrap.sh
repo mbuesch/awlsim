@@ -427,6 +427,7 @@ EOF
 		ls .. || die "Failed to list results"
 
 		info "Installing awlsim..."
+		# Core
 		dpkg -i ../python-awlsim_*.deb ||\
 			die "Failed to install python-awlsim"
 		dpkg -i ../python3-awlsim_*.deb ||\
@@ -439,6 +440,44 @@ EOF
 			dpkg -i ../cython3-awlsim_*.deb ||\
 				die "Failed to install cython3-awlsim"
 		fi
+		# hardware: dummy
+		dpkg -i ../python-awlsimhw-dummy_*.deb ||\
+			die "Failed to install python-awlsimhw-dummy"
+		dpkg -i ../python3-awlsimhw-dummy_*.deb ||\
+			die "Failed to install python3-awlsimhw-dummy"
+		dpkg -i ../pypy-awlsimhw-dummy_*.deb ||\
+			die "Failed to install pypy-awlsimhw-dummy"
+		if [ $opt_cython -ne 0 ]; then
+			dpkg -i ../cython-awlsimhw-dummy_*.deb ||\
+				die "Failed to install cython-awlsimhw-dummy"
+			dpkg -i ../cython3-awlsimhw-dummy_*.deb ||\
+				die "Failed to install cython3-awlsimhw-dummy"
+		fi
+		# hardware: linuxcnc
+		dpkg -i ../python-awlsimhw-linuxcnc_*.deb ||\
+			die "Failed to install python-awlsimhw-linuxcnc"
+		dpkg -i ../python3-awlsimhw-linuxcnc_*.deb ||\
+			die "Failed to install python3-awlsimhw-linuxcnc"
+		if [ $opt_cython -ne 0 ]; then
+			dpkg -i ../cython-awlsimhw-linuxcnc_*.deb ||\
+				die "Failed to install cython-awlsimhw-linuxcnc"
+			dpkg -i ../cython3-awlsimhw-linuxcnc_*.deb ||\
+				die "Failed to install cython3-awlsimhw-linuxcnc"
+		fi
+		# hardware: profibus
+		dpkg -i ../python-awlsimhw-profibus_*.deb ||\
+			die "Failed to install python-awlsimhw-profibus"
+		dpkg -i ../python3-awlsimhw-profibus_*.deb ||\
+			die "Failed to install python3-awlsimhw-profibus"
+		dpkg -i ../pypy-awlsimhw-profibus_*.deb ||\
+			die "Failed to install pypy-awlsimhw-profibus"
+		if [ $opt_cython -ne 0 ]; then
+			dpkg -i ../cython-awlsimhw-profibus_*.deb ||\
+				die "Failed to install cython-awlsimhw-profibus"
+			dpkg -i ../cython3-awlsimhw-profibus_*.deb ||\
+				die "Failed to install cython3-awlsimhw-profibus"
+		fi
+		# Executables
 		dpkg -i ../awlsim-server_*.deb ||\
 			die "Failed to install awlsim-server"
 		dpkg -i ../awlsim-client_*.deb ||\
@@ -449,6 +488,7 @@ EOF
 			die "Failed to install awlsim-test"
 		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
 			die "Failed to install awlsim-linuxcnc-hal"
+		# GUI
 		mkdir -p /home/pi/awlsim-gui ||\
 			die "mkdir /home/pi/awlsim-gui failed"
 		cp ../python*-awlsim-gui_*.deb ../awlsim-gui_*.deb \
