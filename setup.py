@@ -256,13 +256,24 @@ if buildCython:
 		buildCython = False
 if buildCython:
 	try:
-		cythonParallelBuild = bool(int(os.getenv("CYTHONPARALLEL", "0")))
+		cythonParallelBuild = int(os.getenv("CYTHONPARALLEL", "0"))
 	except ValueError:
-		cythonParallelBuild = False
+		cythonParallelBuild = 0
+	cythonParallelBuild = bool(cythonParallelBuild == 1 or\
+				   cythonParallelBuild == sys.version_info[0])
+
 	if sys.version_info[0] < 3:
-		print("WARNING: Cython parallel build not supported "
-		      "on Python 2.x")
-		cythonParallelBuild = False
+		# Cython2 build libraries need method pickling
+		# for parallel build.
+		def unpickle_method(fname, obj, cls):
+			# Ignore MRO. We don't seem to inherit methods.
+			return cls.__dict__[fname].__get__(obj, cls)
+		def pickle_method(m):
+			return unpickle_method, (m.im_func.__name__,
+						 m.im_self,
+						 m.im_class)
+		import copy_reg, types
+		copy_reg.pickle(types.MethodType, pickle_method, unpickle_method)
 
 	def cyBuildWrapper(arg):
 		# This function does the same thing as the for-loop-body
