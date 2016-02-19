@@ -338,6 +338,7 @@ build_cython2()
 	cd "$rootdir" || die "cd to $rootdir failed"
 	echo "=== Building awlsim with python2"
 	CYTHONPARALLEL=1 \
+	nice -n 5 \
 	python2 ./setup.py build || die "'python2 ./setup.py build' failed"
 	return 0
 }
@@ -351,6 +352,7 @@ build_cython3()
 	cd "$rootdir" || die "cd to $rootdir failed"
 	echo "=== Building awlsim with python3"
 	CYTHONPARALLEL=1 \
+	nice -n 5 \
 	python3 ./setup.py build || die "'python3 ./setup.py build' failed"
 	return 0
 }
