@@ -60,6 +60,21 @@ cleanup_and_exit()
 	exit 1
 }
 
+# Get a configuration option.
+# $1=configured_file
+# $2=option_name
+get_conf()
+{
+	local configured_file="$1"
+	local option_name="$2"
+
+	local conf="${configured_file}.conf"
+	if [ -r "$conf" ]; then
+		local val="$(grep -Ee "^${option_name}=" "$conf" | cut -d'=' -f2)"
+		printf '%s' "$val"
+	fi
+}
+
 # Allocate a new port number.
 get_port()
 {
@@ -179,16 +194,26 @@ run_awl_test()
 
 	local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
 
-	local ok=1
-	command time -o "$test_time_file" -f '%E' \
-	"$interpreter" "$rootdir/awlsim-test" --loglevel 2  --extended-insns \
-		--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
-		--cycle-time 60 \
-		"$@" \
-		"$awl" || {
-			test_failed "Test '$(basename "$awl")' FAILED"
-			local ok=0
-	}
+	local tries="$(get_conf "$awl" tries)"
+	[ -n "$tries" ] || local tries=1
+	[ $tries -lt 1 ] && local tries=1
+
+	local ok=0
+	while [ $tries -gt 0 -a $ok -eq 0 ]; do
+		local ok=1
+		local tries="$(expr "$tries" - 1)"
+		command time -o "$test_time_file" -f '%E' \
+		"$interpreter" "$rootdir/awlsim-test" --loglevel 2  --extended-insns \
+			--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
+			--cycle-time 60 \
+			"$@" \
+			"$awl" || {
+				local ok=0
+				[ $tries -gt 0 ] &&\
+					echo "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
+		}
+	done
+	[ $ok -eq 0 ] && test_failed "Test '$(basename "$awl")' FAILED"
 	if is_parallel_run; then
 		[ $ok -ne 0 ] && echo "[$(basename "$awl"): OK $(cat "$test_time_file")]"
 	else
@@ -463,6 +488,7 @@ do_tests()
 	fi
 
 	# Print summary
+	echo
 	if [ $global_retval -eq 0 ]; then
 		echo -n "All tests succeeded"
 	else
