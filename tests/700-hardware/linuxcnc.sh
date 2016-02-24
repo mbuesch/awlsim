@@ -7,7 +7,7 @@ __run_awlsim_linuxcnc_hal()
 	local awl_file="$3"
 	shift 3
 
-	local modpath="$rootdir/fake/linuxcnc_fake_hal"
+	local modpath="$rootdir/libs/linuxcnc_fake_hal"
 
 	FAKEHAL_HALFILE="${test_dir}/linuxcnc.hal" \
 	PYTHONPATH="$modpath:$PYTHONPATH" \
