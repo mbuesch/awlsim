@@ -1,0 +1,4 @@
+This directory contains licenses of software that is _not_ part of the awlsim
+repository. But such software might be shipped with some binary distributions
+of awlsim. e.g. the frozen Windows build. So the distribution build scripts
+will pick the license files from here.
