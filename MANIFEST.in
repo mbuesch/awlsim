@@ -5,7 +5,7 @@ include win-standalone-build.bat
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsim/gui/icons/pic2py
 graft tests
-graft fake
+graft libs
 graft doc
 graft examples
 graft awlsim/gui/icons/icon-images
