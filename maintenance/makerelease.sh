@@ -65,10 +65,32 @@ hook_post_checkout()
 	__check_test_dir_encoding "$1"/tests
 }
 
+hook_testbuild()
+{
+	export CYTHONPARALLEL=1
+	default_hook_testbuild "$@"
+}
+
 hook_regression_tests()
 {
+	default_hook_regression_tests "$@"
+
 	# Run selftests
-	sh "$1/tests/run.sh"
+	sh "$1/tests/run.sh" -j 0
+}
+
+hook_pre_archives()
+{
+	local archive_dir="$1"
+	local checkout_dir="$2"
+
+	default_hook_pre_archives "$@"
+
+	echo "Building PiLC firmware..."
+#	local raspihat_fw_dir="$checkout_dir/pilc/raspi-hat/firmware"
+#	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= make
+#	mkdir "$raspihat_fw_dir/bin"
+#	cp "$raspihat_fw_dir/"*.hex "$checkout_dir/bin/"
 }
 
 project=awlsim
