@@ -381,6 +381,8 @@ EOF
 
 set -e
 
+echo "rv3029c2 0x56" >/sys/class/i2c-adapter/i2c-1/new_device
+
 if [ -e /etc/ssh/ssh_create_keys ]; then
 	/bin/rm -f /etc/ssh/ssh_host_*_key*
 	LC_ALL=C LANGUAGE=C LANG=C /usr/sbin/dpkg-reconfigure openssh-server
@@ -392,6 +394,15 @@ fi
 exit 0
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/rc.local"
+
+	info "Creating /etc/modules-load.d/i2c.conf..."
+	cat > /etc/modules-load.d/i2c.conf <<EOF
+i2c-dev
+i2c-bcm2708
+at24
+rtc-rv3029c2
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/modules-load.d/i2c.conf"
 
 	info "Creating users/groups..."
 	userdel -f pi
