@@ -381,7 +381,7 @@ EOF
 
 set -e
 
-echo "rv3029c2 0x56" >/sys/class/i2c-adapter/i2c-1/new_device
+echo "rv3029c2 0x56" >/sys/class/i2c-adapter/i2c-1/new_device || true
 
 if [ -e /etc/ssh/ssh_create_keys ]; then
 	/bin/rm -f /etc/ssh/ssh_host_*_key*
