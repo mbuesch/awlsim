@@ -131,7 +131,8 @@ boot_config_file()
 #arm_freq=800
 
 # Uncomment some or all of these to enable the optional hardware interfaces
-#dtparam=i2c_arm=on
+dtparam=i2c_arm=on
+dtparam=i2c_vc=on
 #dtparam=i2s=on
 #dtparam=spi=on
 
