@@ -9,8 +9,7 @@ def find_executable(executable, path=None):
 			path = os.getenv("PATH", "")
 		for p in path.split(":"):
 			fullpath = os.path.join(p, executable)
-			#FIXME We don't have os.stat on micropython
-			if os.access(fullpath, os.X_OK):# and\
-#			   not os.path.isdir(fullpath):
+			if os.access(fullpath, os.X_OK) and\
+			   not os.path.isdir(fullpath):
 				return fullpath
 	return None
