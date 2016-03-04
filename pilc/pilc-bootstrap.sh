@@ -136,6 +136,9 @@ dtparam=i2c_vc=on
 #dtparam=i2s=on
 #dtparam=spi=on
 
+# RV3029 RTC
+dtoverlay=rv3029-rtc
+
 # Uncomment this to enable the lirc-rpi module
 #dtoverlay=lirc-rpi
 
@@ -189,6 +192,15 @@ pilc_bootstrap_first_stage()
 		cp "$opt_qemu" "$qemu_bin" ||\
 			die "Failed to copy qemu binary."
 	fi
+
+	info "Copying rv3029 kernel module..."
+	local rv3029_dir="$opt_target_dir/tmp/rv3029"
+	mkdir -p "$rv3029_dir" ||\
+		die "Failed to make rv3029 directory."
+	cp "$basedir/pilc/kernel/rtc-rv3029c2.c" "$rv3029_dir/" ||\
+		die "Failed to copy rv3029 source code."
+	cp "$basedir/pilc/kernel/Makefile.kbuild" "$rv3029_dir/Makefile" ||\
+		die "Failed to copy rv3029 Makefile."
 
 	info "Copying PiLC bootstrap script..."
 	cp "$basedir/pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
@@ -326,7 +338,9 @@ EOF
 		fake-hwclock \
 		git \
 		htop \
+		linux-headers-rpi-rpfv \
 		linux-image-rpi-rpfv \
+		linux-headers-rpi2-rpfv \
 		linux-image-rpi2-rpfv \
 		locales \
 		nano \
@@ -382,8 +396,6 @@ EOF
 
 set -e
 
-echo "rv3029c2 0x56" >/sys/class/i2c-adapter/i2c-1/new_device || true
-
 if [ -e /etc/ssh/ssh_create_keys ]; then
 	/bin/rm -f /etc/ssh/ssh_host_*_key*
 	LC_ALL=C LANGUAGE=C LANG=C /usr/sbin/dpkg-reconfigure openssh-server
@@ -420,6 +432,25 @@ EOF
 		die "Failed to set 'pi' password."
 	echo 'pi ALL=(ALL:ALL) ALL' > "/etc/sudoers.d/00-pi" ||\
 		die "Failed to create /etc/sudoers.d/00-pi"
+
+	info "Building updated rv3029 kernel module..."
+	(
+		cd /tmp/rv3029 ||\
+			die "Failed to cd to rv3029 build dir"
+		for moddir in /lib/modules/*; do
+			[ -d "$moddir" ] || die "Invalid moddir '$moddir'"
+			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 clean ||\
+				die "rv3029: Failed to clean"
+			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 ||\
+				die "rv3029: Failed to build"
+			cp rtc-rv3029c2.ko "$moddir/kernel/drivers/rtc/" ||\
+				die "rv3029: Failed to install kernel module"
+			depmod "$(basename "$moddir")" ||\
+				die "Failed to run depmod"
+		done
+	) || die
+	rm -r /tmp/rv3029 ||\
+		die "Failed to remove rv3029 build dir."
 
 	info "Building awlsim..."
 	(
@@ -575,6 +606,9 @@ EOF
 	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
 	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
 		die "Failed to create /boot/config.txt"
+	cp "$basedir/pilc/kernel/rv3029.dtb" \
+	   "$opt_target_dir/boot/overlays/rv3029-rtc-overlay.dtb" ||\
+	   die "Failed to copy rv3029 dt overlay"
 	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi)"
 	if [ -e "$img" ]; then
 		mv "$img" "$opt_target_dir/boot/kernel.img" ||\
