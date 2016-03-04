@@ -152,8 +152,8 @@ rv3029_i2c_update_bits(struct i2c_client *client, u8 reg, u8 mask, u8 set)
 	ret = rv3029_i2c_read_regs(client, reg, &buf, 1);
 	if (ret < 0)
 		return ret;
-	buf &= mask;
-	buf |= set;
+	buf &= ~mask;
+	buf |= set & mask;
 	ret = rv3029_i2c_write_regs(client, reg, &buf, 1);
 	if (ret < 0)
 		return ret;
@@ -211,7 +211,8 @@ static int rv3029_eeprom_exit(struct i2c_client *client)
 {
 	/* Re-enable eeprom refresh */
 	return rv3029_i2c_update_bits(client, RV3029_ONOFF_CTRL,
-				      0xFF, RV3029_ONOFF_CTRL_EERE);
+				      RV3029_ONOFF_CTRL_EERE,
+				      RV3029_ONOFF_CTRL_EERE);
 }
 
 static int rv3029_eeprom_enter(struct i2c_client *client)
@@ -245,7 +246,7 @@ static int rv3029_eeprom_enter(struct i2c_client *client)
 
 	/* Disable eeprom refresh. */
 	ret = rv3029_i2c_update_bits(client, RV3029_ONOFF_CTRL,
-				     (u8)~RV3029_ONOFF_CTRL_EERE, 0);
+				     RV3029_ONOFF_CTRL_EERE, 0);
 	if (ret < 0)
 		return ret;
 
@@ -403,7 +404,7 @@ static int rv3029_rtc_i2c_alarm_set_irq(struct i2c_client *client,
 
 	/* enable/disable AIE irq */
 	ret = rv3029_i2c_update_bits(client, RV3029_IRQ_CTRL,
-				     (u8)~RV3029_IRQ_CTRL_AIE,
+				     RV3029_IRQ_CTRL_AIE,
 				     (enable ? RV3029_IRQ_CTRL_AIE : 0));
 	if (ret < 0) {
 		dev_err(&client->dev, "can't update INT reg\n");
@@ -449,7 +450,7 @@ static int rv3029_rtc_i2c_set_alarm(struct i2c_client *client,
 	if (alarm->enabled) {
 		/* clear AF flag */
 		ret = rv3029_i2c_update_bits(client, RV3029_IRQ_FLAGS,
-					     (u8)~RV3029_IRQ_FLAGS_AF, 0);
+					     RV3029_IRQ_FLAGS_AF, 0);
 		if (ret < 0) {
 			dev_err(&client->dev, "can't clear alarm flag\n");
 			return ret;
