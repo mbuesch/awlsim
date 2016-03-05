@@ -583,6 +583,11 @@ iface eth0 inet6 auto
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth0"
 
+	info "Stopping processes..."
+	for i in dbus ssh atd; do
+		/etc/init.d/$i stop
+	done
+
 	info "Umounting /dev/shm..."
 	umount /dev/shm || die "Failed to umount /dev/shm"
 	info "Umounting /sys..."
