@@ -333,9 +333,9 @@ EOF
 		console-setup \
 		cython \
 		cython3 \
+		dbus \
 		debconf-utils \
 		devscripts \
-		fake-hwclock \
 		git \
 		htop \
 		linux-headers-rpi-rpfv \
