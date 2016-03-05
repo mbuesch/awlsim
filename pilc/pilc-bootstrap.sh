@@ -303,13 +303,13 @@ EOF
 	sed -i -e 's|ID_LIKE=.*|ID_LIKE=raspbian|' \
 		/etc/os-release ||\
 		die "Failed to set os-release ID_LIKE."
-	sed -i -e 's|HOME_URL=.*|HOME_URL="http://bues.ch/h/pilc"|' \
+	sed -i -e 's|HOME_URL=.*|HOME_URL="https://bues.ch/h/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release HOME_URL."
-	sed -i -e 's|SUPPORT_URL=.*|SUPPORT_URL="http://bues.ch/h/pilc"|' \
+	sed -i -e 's|SUPPORT_URL=.*|SUPPORT_URL="https://bues.ch/h/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release SUPPORT_URL."
-	sed -i -e 's|BUG_REPORT_URL=.*|BUG_REPORT_URL="http://bues.ch/h/pilc"|' \
+	sed -i -e 's|BUG_REPORT_URL=.*|BUG_REPORT_URL="https://bues.ch/h/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release BUG_REPORT_URL."
 	sed -i -e 's|#FSCKFIX=no|FSCKFIX=yes|' \
@@ -317,10 +317,13 @@ EOF
 		die "Failed to set FSCKFIX=yes"
 
 	info "Updating packages..."
-	echo -e 'debconf debconf/priority select high\n' \
-		'debconf debconf/frontend select Noninteractive' |\
-		debconf-set-selections ||\
-		die "Failed to configure debconf"
+cat <<EOF | debconf-set-selections
+debconf	debconf/priority	select	high
+debconf	debconf/frontend	select	Noninteractive
+locales	locales/locales_to_be_generated	multiselect	en_US.UTF-8 UTF-8
+locales	locales/default_environment_locale	select	None
+EOF
+	[ $? -eq 0 ] || die "Failed to configure debconf settings"
 	apt-get -y update ||\
 		die "apt-get update failed"
 	apt-get -y dist-upgrade ||\
@@ -338,6 +341,7 @@ EOF
 		devscripts \
 		git \
 		htop \
+		i2c-tools \
 		linux-headers-rpi-rpfv \
 		linux-image-rpi-rpfv \
 		linux-headers-rpi2-rpfv \
@@ -363,12 +367,15 @@ EOF
 		die "apt-get install failed"
 	apt-get install --reinstall libc6-dev ||\
 		die "Failed to reinstall"
+cat <<EOF | debconf-set-selections
+debconf	debconf/frontend	select	Dialog
+locales	locales/default_environment_locale	select	en_US.UTF-8
+EOF
+	[ $? -eq 0 ] || die "Failed to configure debconf settings"
+	dpkg-reconfigure -u locales ||\
+		die "Failed to reconfigure locales"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
-	echo -e 'debconf debconf/priority select high\n' \
-		'debconf debconf/frontend select Dialog' |\
-		debconf-set-selections ||\
-		die "Failed to configure debconf"
 
 	info "Removing ssh keys..."
 	if [ -e "$(first /etc/ssh/ssh_host_*_key*)" ]; then
