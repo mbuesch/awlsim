@@ -590,10 +590,26 @@ $EndSheet
 Wire Wire Line
 	7450 5500 9250 5500
 $Sheet
-S 1400 2600 1250 1750
+S 1400 2600 1250 1800
 U 56AE5291
-F0 "relays" 60
-F1 "relays.sch" 60
+F0 "dio" 60
+F1 "dio.sch" 60
+F2 "Q0.0" I R 2650 2700 60 
+F3 "Q0.1" I R 2650 2800 60 
+F4 "Q0.2" I R 2650 2900 60 
+F5 "Q0.3" I R 2650 3000 60 
+F6 "Q0.4" I R 2650 3100 60 
+F7 "Q0.5" I R 2650 3200 60 
+F8 "Q0.6" I R 2650 3300 60 
+F9 "Q0.7" I R 2650 3400 60 
+F10 "I0.0" I R 2650 3600 60 
+F11 "I0.1" I R 2650 3700 60 
+F12 "I0.2" I R 2650 3800 60 
+F13 "I0.3" I R 2650 3900 60 
+F14 "I0.4" I R 2650 4000 60 
+F15 "I0.5" I R 2650 4100 60 
+F16 "I0.6" I R 2650 4200 60 
+F17 "I0.7" I R 2650 4300 60 
 $EndSheet
 Wire Wire Line
 	4550 5950 4950 5950
@@ -853,4 +869,100 @@ Text Label 6350 5300 1    39   ~ 0
 ID_SC
 Text Label 6450 5300 1    39   ~ 0
 ID_SD
+Entry Wire Line
+	3050 2700 3150 2600
+Entry Wire Line
+	3050 2800 3150 2700
+Entry Wire Line
+	3050 2900 3150 2800
+Entry Wire Line
+	3050 3000 3150 2900
+Entry Wire Line
+	3050 3100 3150 3000
+Entry Wire Line
+	3050 3200 3150 3100
+Entry Wire Line
+	3050 3300 3150 3200
+Entry Wire Line
+	3050 3400 3150 3300
+Entry Wire Line
+	3050 3600 3150 3500
+Entry Wire Line
+	3050 3700 3150 3600
+Entry Wire Line
+	3050 3800 3150 3700
+Entry Wire Line
+	3050 3900 3150 3800
+Entry Wire Line
+	3050 4000 3150 3900
+Entry Wire Line
+	3050 4100 3150 4000
+Entry Wire Line
+	3050 4200 3150 4100
+Entry Wire Line
+	3050 4300 3150 4200
+Wire Wire Line
+	2650 2700 3050 2700
+Wire Wire Line
+	2650 2800 3050 2800
+Wire Wire Line
+	2650 2900 3050 2900
+Wire Wire Line
+	2650 3000 3050 3000
+Wire Wire Line
+	2650 3100 3050 3100
+Wire Wire Line
+	2650 3200 3050 3200
+Wire Wire Line
+	2650 3300 3050 3300
+Wire Wire Line
+	2650 3400 3050 3400
+Wire Wire Line
+	2650 3600 3050 3600
+Wire Wire Line
+	2650 3700 3050 3700
+Wire Wire Line
+	2650 3800 3050 3800
+Wire Wire Line
+	2650 3900 3050 3900
+Wire Wire Line
+	2650 4000 3050 4000
+Wire Wire Line
+	2650 4100 3050 4100
+Wire Wire Line
+	2650 4200 3050 4200
+Wire Wire Line
+	2650 4300 3050 4300
+Text Label 2800 2700 0    39   ~ 0
+BCM4
+Text Label 2800 2800 0    39   ~ 0
+BCM17
+Text Label 2800 2900 0    39   ~ 0
+BCM27
+Text Label 2800 3000 0    39   ~ 0
+BCM22
+Text Label 2800 3100 0    39   ~ 0
+BCM10
+Text Label 2800 3200 0    39   ~ 0
+BCM9
+Text Label 2800 3300 0    39   ~ 0
+BCM11
+Text Label 2800 3400 0    39   ~ 0
+BCM5
+Text Label 2800 3600 0    39   ~ 0
+BCM6
+Text Label 2800 3700 0    39   ~ 0
+BCM13
+Text Label 2800 3800 0    39   ~ 0
+BCM19
+Text Label 2800 3900 0    39   ~ 0
+BCM26
+Text Label 2800 4000 0    39   ~ 0
+BCM21
+Text Label 2800 4100 0    39   ~ 0
+BCM20
+Text Label 2800 4200 0    39   ~ 0
+BCM16
+Text Label 2800 4300 0    39   ~ 0
+BCM12
 $EndSCHEMATC
