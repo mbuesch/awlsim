@@ -1,6 +1,7 @@
 KBUILD_DIR := /lib/modules/$(shell uname -r)/build
 
 obj-m += $(MODNAME).o
+CFLAGS_$(MODNAME).o := $(CFLAGS)
 
 all:
 	$(MAKE) -C $(KBUILD_DIR) M=$(PWD) modules
