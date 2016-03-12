@@ -96,8 +96,8 @@
 /* Return the number of elements in a C array. */
 #define ARRAY_SIZE(x)		(sizeof(x) / sizeof((x)[0]))
 
-/* Memory barrier. */
-#define mb()			__asm__ __volatile__("" : : : "memory")
+/* Full memory barrier. */
+#define memory_barrier()	__asm__ __volatile__("" : : : "memory")
 
 /* Do-not-inline function attribute. */
 #define noinline		__attribute__((__noinline__))
@@ -135,13 +135,13 @@ typedef __uint24	uint24_t;
 static inline void irq_disable(void)
 {
 	cli();
-	mb();
+	memory_barrier();
 }
 
 /* Enable interrupts globally. */
 static inline void irq_enable(void)
 {
-	mb();
+	memory_barrier();
 	sei();
 }
 
@@ -150,14 +150,14 @@ static inline uint8_t irq_disable_save(void)
 {
 	uint8_t sreg = SREG;
 	cli();
-	mb();
+	memory_barrier();
 	return sreg;
 }
 
 /* Restore interrupt flags. */
 static inline void irq_restore(uint8_t sreg_flags)
 {
-	mb();
+	memory_barrier();
 	SREG = sreg_flags;
 }
 
