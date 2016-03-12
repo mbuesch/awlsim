@@ -446,9 +446,12 @@ EOF
 			die "Failed to cd to rv3029 build dir"
 		for moddir in /lib/modules/*; do
 			[ -d "$moddir" ] || die "Invalid moddir '$moddir'"
-			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 clean ||\
+			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
+			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON \
+			     clean ||\
 				die "rv3029: Failed to clean"
-			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 ||\
+			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
+			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON ||\
 				die "rv3029: Failed to build"
 			cp rtc-rv3029c2.ko "$moddir/kernel/drivers/rtc/" ||\
 				die "rv3029: Failed to install kernel module"
