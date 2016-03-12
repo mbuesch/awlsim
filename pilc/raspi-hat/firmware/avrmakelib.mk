@@ -1,8 +1,8 @@
-#################################################
-# AVR make library                              #
-# Copyright (c) 2015 Michael Buesch <m@bues.ch> #
-# Version 1.1                                   #
-#################################################
+######################################################
+# AVR make library                                   #
+# Copyright (c) 2015-2016 Michael Buesch <m@bues.ch> #
+# Version 1.2                                        #
+######################################################
 
 ifeq ($(NAME),)
 $(error NAME not defined)
@@ -39,6 +39,7 @@ TEST			= test$(BINEXT)
 AVRDUDE			= avrdude$(BINEXT)
 MYSMARTUSB		= mysmartusb.py
 DOXYGEN			= doxygen$(BINEXT)
+PYTHON3			= python3$(BINEXT)
 
 V			:= @		# Verbose build:  make V=1
 O			:= s		# Optimize flag
@@ -47,13 +48,14 @@ QUIET_CC		= $(Q:@=@$(ECHO) '     CC       '$@;)$(CC)
 QUIET_DEPEND		= $(Q:@=@$(ECHO) '     DEPEND   '$@;)$(CC)
 QUIET_OBJCOPY		= $(Q:@=@$(ECHO) '     OBJCOPY  '$@;)$(OBJCOPY)
 QUIET_SIZE		= $(Q:@=@$(ECHO) '     SIZE     '$@;)$(SIZE)
+QUIET_PYTHON3		= $(Q:@=@$(ECHO) '     PY3-GEN  '$@;)$(PYTHON3)
 
 FUNC_STACK_LIMIT	?= 128
 
 WARN_CFLAGS		:= -Wall -Wextra -Wno-unused-parameter -Wswitch-enum \
 			   -Wsuggest-attribute=noreturn \
 			   -Wundef -Wpointer-arith -Winline \
-			   -Wstack-usage=$(FUNC_STACK_LIMIT) \
+			   $(if $(FUNC_STACK_LIMIT),-Wstack-usage=$(FUNC_STACK_LIMIT)) \
 			   -Wcast-qual -Wlogical-op -Wshadow \
 			   -Wconversion
 
@@ -111,7 +113,7 @@ OBJS = $(sort $(patsubst %.c,obj/%.o,$(1)))
 $(call DEPS,$(SRCS)): dep/%.d: %.c 
 	@$(MKDIR) -p $(dir $@)
 	@$(MKDIR) -p obj
-	$(QUIET_DEPEND) -o $@.tmp -MM -MT "$@ $(patsubst dep/%.d,obj/%.o,$@)" $(CFLAGS) $<
+	$(QUIET_DEPEND) -o $@.tmp -MM -MG -MT "$@ $(patsubst dep/%.d,obj/%.o,$@)" $(CFLAGS) $<
 	@$(MV) -f $@.tmp $@
 
 ifeq ($(NODEPS),)
@@ -126,7 +128,7 @@ $(call OBJS,$(SRCS)): obj/%.o: %.c
 all: $(HEX)
 
 %.s: %.c
-	$(QUIET_CC) $(CFLAGS) -S $*.c
+	$(QUIET_CC) $(CFLAGS) -fno-lto -S $*.c
 
 $(BIN): $(call OBJS,$(SRCS))
 	$(QUIET_CC) $(CFLAGS) -o $(BIN) -fwhole-program $(call OBJS,$(SRCS)) $(LDFLAGS)

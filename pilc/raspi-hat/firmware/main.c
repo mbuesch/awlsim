@@ -20,9 +20,25 @@
 
 #include "main.h"
 #include "util.h"
+#include "i2c_slave.h"
+#include "eepemu_24cxx.h"
+#include "pb_txen.h"
+#include "conf.h"
+
+#include <avr/wdt.h>
 
 
 int main(void) _mainfunc;
 int main(void)
 {
+	irq_disable();
+	wdt_enable(WDTO_250MS);
+
+	i2cs_init();
+	ee24cxx_init();
+	pb_txen_init();
+	conf_init();
+
+	wdt_enable(WDTO_60MS);
+	pb_txen_work();
 }
