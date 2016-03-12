@@ -96,8 +96,8 @@
 /* Return the number of elements in a C array. */
 #define ARRAY_SIZE(x)		(sizeof(x) / sizeof((x)[0]))
 
-/* Memory barrier. */
-#define mb()			__asm__ __volatile__("" : : : "memory")
+/* Full memory barrier. */
+#define memory_barrier()	__asm__ __volatile__("" : : : "memory")
 
 /* Do-not-inline function attribute. */
 #define noinline		__attribute__((__noinline__))
@@ -110,6 +110,12 @@
 
 /* Data structure packing attribute. */
 #define _packed			__attribute__((__packed__))
+
+/* Naked functions. */
+#define _naked			__attribute__((__naked__))
+
+/* Suppress 'unused' warnings. */
+#define _used			__attribute__((__used__))
 
 /* Build-time assertion.
  * 'cond' must be a compile-time constant.
@@ -126,6 +132,10 @@
 # define unreachable()		while (1)
 #endif
 
+/* Convert something to a string. */
+#define _tostr(x)		#x
+#define tostr(x)		_tostr(x)
+
 /* Non-standard integer types. */
 typedef __int24		int24_t;
 typedef __uint24	uint24_t;
@@ -135,13 +145,13 @@ typedef __uint24	uint24_t;
 static inline void irq_disable(void)
 {
 	cli();
-	mb();
+	memory_barrier();
 }
 
 /* Enable interrupts globally. */
 static inline void irq_enable(void)
 {
-	mb();
+	memory_barrier();
 	sei();
 }
 
@@ -150,14 +160,14 @@ static inline uint8_t irq_disable_save(void)
 {
 	uint8_t sreg = SREG;
 	cli();
-	mb();
+	memory_barrier();
 	return sreg;
 }
 
 /* Restore interrupt flags. */
 static inline void irq_restore(uint8_t sreg_flags)
 {
-	mb();
+	memory_barrier();
 	SREG = sreg_flags;
 }
 
