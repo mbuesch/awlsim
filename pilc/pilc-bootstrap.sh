@@ -26,6 +26,9 @@ basedir="$(dirname "$0")"
 basedir="$basedir/.."
 
 
+MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
+
+
 die()
 {
 	echo "=== $*" >&2
@@ -172,10 +175,13 @@ pilc_bootstrap_first_stage()
 		info "Running debootstrap first stage..."
 		debootstrap --arch="$opt_arch" --foreign --verbose \
 			--keyring="$basedir/pilc/raspbian.public.key.gpg" \
-			"$opt_suite" "$opt_target_dir" "$opt_mirror" \
+			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
 			|| die "debootstrap failed"
 		mkdir -p "$opt_target_dir/usr/share/keyrings" ||\
 			die "Failed to create keyrings dir."
+		cp "$basedir/pilc/raspbian.archive.public.key.gpg" \
+		   "$opt_target_dir/usr/share/keyrings/" ||\
+			die "Failed to copy raspbian.archive.public.key.gpg."
 		cp /usr/share/keyrings/debian-archive-keyring.gpg \
 		   "$opt_target_dir/usr/share/keyrings/debian-archive-keyring.gpg" ||\
 			die "Failed to copy debian-archive-keyring.gpg."
@@ -266,9 +272,12 @@ pilc_bootstrap_second_stage()
 	mount -t tmpfs tmpfs /dev/shm ||\
 		die "Mounting /dev/shm failed."
 
-	info "Writing apt configuration (mirror = $opt_mirror)..."
-	echo "deb $opt_mirror $opt_suite main firmware" > /etc/apt/sources.list ||\
-		die "Failed to set sources.list"
+	info "Writing apt configuration..."
+cat > /etc/apt/sources.list <<EOF
+deb $MAIN_MIRROR $opt_suite main firmware rpi
+deb http://archive.raspberrypi.org/debian/ $opt_suite main ui
+EOF
+	[ $? -eq 0 ] || die "Failed to set sources.list"
 	echo 'Acquire { Languages "none"; };' > /etc/apt/apt.conf.d/99no-translations ||\
 		die "Failed to set apt.conf.d"
 
@@ -324,6 +333,8 @@ locales	locales/locales_to_be_generated	multiselect	en_US.UTF-8 UTF-8
 locales	locales/default_environment_locale	select	None
 EOF
 	[ $? -eq 0 ] || die "Failed to configure debconf settings"
+	apt-key add /usr/share/keyrings/raspbian.archive.public.key.gpg ||\
+		die "apt-key add failed"
 	apt-get -y update ||\
 		die "apt-get update failed"
 	apt-get -y dist-upgrade ||\
@@ -354,9 +365,11 @@ EOF
 		pypy \
 		python \
 		python-all-dev \
+		python-rpi.gpio \
 		python-setuptools \
 		python3 \
 		python3-all-dev \
+		python3-rpi.gpio \
 		python3-setuptools \
 		raspberrypi-bootloader-nokernel \
 		screen \
@@ -733,8 +746,6 @@ usage()
 	echo "                         Default: $default_branch"
 	echo " --no-cython|-C          Do not build Cython modules."
 	echo "                         Default: Build cython modules"
-	echo " --mirror|-m URL         Select the mirror."
-	echo "                         Default: $default_mirror"
 	echo " --suite|-s SUITE        Select the suite."
 	echo "                         Default: $default_suite"
 	echo " --arch|-a ARCH          Select the default arch."
@@ -765,7 +776,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	trap cleanup EXIT
 
 	default_branch="master"
-	default_mirror="http://mirrordirector.raspbian.org/raspbian/"
 	default_suite="jessie"
 	default_arch="armhf"
 	default_qemu="/usr/bin/qemu-arm-static"
@@ -773,7 +783,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_target_dir=
 	opt_branch="$default_branch"
 	opt_cython=1
-	opt_mirror="$default_mirror"
 	opt_suite="$default_suite"
 	opt_arch="$default_arch"
 	opt_qemu="$default_qemu"
@@ -793,11 +802,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			;;
 		--no-cython|-C)
 			opt_cython=0
-			;;
-		--mirror|-m)
-			shift
-			opt_mirror="$1"
-			[ -n "$opt_mirror" ] || die "No mirror given"
 			;;
 		--suite|-s)
 			shift
@@ -840,7 +844,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_target_dir
 	export opt_branch
 	export opt_cython
-	export opt_mirror
 	export opt_suite
 	export opt_arch
 	export opt_qemu
