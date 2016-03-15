@@ -2,7 +2,7 @@
 #
 # AWL simulator - Abstract hardware interface
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,17 @@ class HwParamDesc(object):
 		self.mandatory = mandatory
 
 	def parse(self, value):
+		"""Parse a value string.
+		This must be overridden.
+		"""
 		raise NotImplementedError
+
+	def match(self, matchName):
+		"""Match a name string.
+		The default implementation just compares the string to self.name.
+		The parameter must not be 'mandatory', if this method is overridden.
+		"""
+		return self.name == matchName
 
 class HwParamDesc_pyobject(HwParamDesc):
 	"""Generic object parameter descriptor."""
@@ -155,7 +165,7 @@ class AbstractHardwareInterface(object):
 	def getParamDesc(cls, paramName):
 		"""Get one parameter descriptor."""
 		for desc in cls.getParamDescs():
-			if desc.name == paramName:
+			if desc.match(paramName):
 				return desc
 		return None
 
@@ -261,48 +271,62 @@ class AbstractHardwareInterface(object):
 		self.raiseException("Parameter '%s': %s" % (name, errorText))
 
 	def __parseParameters(self, parameters):
-		# Create a dict for mapping parameter names to descriptors.
-		self.__paramNameToDesc = {}
-		for paramDesc in self.getParamDescs():
-			self.__paramNameToDesc[paramDesc.name] = paramDesc
-
 		# Parse the parameters.
-		self.__parameters = {}
+		self.__paramsByName = {}
+		self.__paramsByDescType = {}
 		for name, value in parameters.items():
-			try:
-				desc = self.__paramNameToDesc[name]
-			except KeyError:
+			for desc in self.getParamDescs():
+				if desc.match(name):
+					break
+			else:
 				self.paramErrorHandler(name,
 					"Invalid parameter. The parameter '%s' is "
 					"unknown to the '%s' hardware module." %\
 					(name, self.name))
 			try:
-				self.__parameters[name] = desc.parse(value)
+				parsedValue = desc.parse(value)
 			except HwParamDesc.ParseError as e:
 				self.paramErrorHandler(name, str(e))
+			self.__paramsByName[name] = parsedValue
+			self.__paramsByDescType.setdefault(type(desc), []).append(
+					(name, parsedValue))
 
 		# Check mandatory parameters
-		for name, desc in self.__paramNameToDesc.items():
+		for desc in self.getParamDescs():
 			if not desc.mandatory:
 				continue
-			if name not in self.__parameters.keys():
-				self.paramErrorHandler(name,
+			if desc.name not in self.__paramsByName.keys():
+				self.paramErrorHandler(desc.name,
 					"Mandatory parameter not specified")
 
-	def getParam(self, name):
-		"""This is the main method to get a parameter value.
-		'name' is the name string of the parameter."""
+	def getParamValueByName(self, name):
+		"""This is the main method to get a parameter value by name
+		from the hardware module.
+		'name' is the name string of the parameter.
+		"""
 
+		descs = [ d for d in self.getParamDescs() if d.match(name) ]
+		# Programming error, if getParam() was called with a name
+		# that was not declared in paramDescs.
+		assert(descs)
+
+		# Get the value.
 		try:
-			desc = self.__paramNameToDesc[name]
+			return self.__paramsByName[name]
 		except KeyError:
-			# Programming error: getParam() was called with a name
-			# that was not declared in paramDescs.
-			assert(0)
+			return getattr(descs[0], "defaultValue", None)
+
+	getParam = getParamValueByName # Old deprecated getParam() API
+
+	def getParamsByDescType(self, descType):
+		"""This is the main method to get parameter name/value pairs
+		for a given param desc type.
+		This returns a list of (name, value) tuples.
+		"""
 		try:
-			return self.__parameters[name]
+			return self.__paramsByDescType[descType]
 		except KeyError:
-			return getattr(desc, "defaultValue", None)
+			return []
 
 class HwModLoader(object):
 	"""Awlsim hardware module loader."""

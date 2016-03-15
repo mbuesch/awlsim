@@ -183,11 +183,11 @@ class HardwareInterface(AbstractHardwareInterface):
 					":\n%s" % str(e))
 
 			# Get the LinuxCNC-HAL-component object
-			self.hal = self.getParam("hal")
+			self.hal = self.getParamValueByName("hal")
 
 			# Get parameters
-			self.inputSize = self.getParam("inputSize")
-			self.outputSize = self.getParam("outputSize")
+			self.inputSize = self.getParamValueByName("inputSize")
+			self.outputSize = self.getParamValueByName("outputSize")
 
 			self.__configDone = False
 

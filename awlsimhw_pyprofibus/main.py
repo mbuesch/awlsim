@@ -98,17 +98,17 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.phy = None
 		self.master = None
 		try:
-			self.phy = self.pyprofibus.CpPhy(device = self.getParam("spiDev"),
-							 chipselect = self.getParam("spiChip"),
-							 debug = True if (self.getParam("debug") >= 2) else False)
-			self.phy.profibusSetPhyConfig(baudrate = self.getParam("baud"))
-			if self.getParam("masterClass") == 1:
+			self.phy = self.pyprofibus.CpPhy(device = self.getParamValueByName("spiDev"),
+							 chipselect = self.getParamValueByName("spiChip"),
+							 debug = True if (self.getParamValueByName("debug") >= 2) else False)
+			self.phy.profibusSetPhyConfig(baudrate = self.getParamValueByName("baud"))
+			if self.getParamValueByName("masterClass") == 1:
 				DPM_cls = self.pyprofibus.DPM1
 			else:
 				DPM_cls = self.pyprofibus.DPM2
 			self.master = DPM_cls(phy = self.phy,
-					      masterAddr = self.getParam("masterAddr"),
-					      debug = True if (self.getParam("debug") >= 1) else False)
+					      masterAddr = self.getParamValueByName("masterAddr"),
+					      debug = True if (self.getParamValueByName("debug") >= 1) else False)
 			self.__setupSlaves()
 			self.master.initialize()
 			self.slaveList = self.master.getSlaveList()
