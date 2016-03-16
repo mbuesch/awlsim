@@ -177,7 +177,11 @@ class AwlSim(object):
 		for hw in self.__registeredHardware:
 			hw.startup()
 		try:
+			for hw in self.__registeredHardware:
+				hw.readInputs()
 			self.cpu.startup()
+			for hw in self.__registeredHardware:
+				hw.writeOutputs()
 		except MaintenanceRequest as e:
 			self.__handleMaintenanceRequest(e)
 
