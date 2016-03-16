@@ -196,8 +196,8 @@ class AbstractHardwareInterface(object):
 		self.__parseParameters(parameters)
 
 		# Get the base addresses for convenience.
-		self.inputAddressBase = self.getParam("inputAddressBase")
-		self.outputAddressBase = self.getParam("outputAddressBase")
+		self.inputAddressBase = self.getParamValueByName("inputAddressBase")
+		self.outputAddressBase = self.getParamValueByName("outputAddressBase")
 
 	def startup(self):
 		"""Initialize access to the hardware."""
@@ -306,7 +306,7 @@ class AbstractHardwareInterface(object):
 		"""
 
 		descs = [ d for d in self.getParamDescs() if d.match(name) ]
-		# Programming error, if getParam() was called with a name
+		# Programming error, if getParamValueByName() was called with a name
 		# that was not declared in paramDescs.
 		assert(descs)
 
@@ -337,6 +337,7 @@ class HwModLoader(object):
 		"dummy",
 		"linuxcnc",
 		"pyprofibus",
+		"rpigpio",
 	)
 
 	def __init__(self, name, importName, mod):
