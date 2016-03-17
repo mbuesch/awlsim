@@ -51,8 +51,11 @@ def setup(channel, direction, pull_up_down=PUD_OFF, initial=None):
 	assert(channel >= 0 and channel < __nrChannels)
 	__directions[channel].add(direction)
 	if direction == OUT:
+		assert(pull_up_down == PUD_OFF)
 		if initial is not None:
 			__state[channel] = initial
+	else:
+		assert(initial == None)
 
 def cleanup(channel = None):
 	pass

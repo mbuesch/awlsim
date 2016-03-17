@@ -150,10 +150,14 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface):
 						     RpiGPIO_BitMapping())
 			mapping.setBit(bitOffset, bcmNumber)
 			try:
-				RPi_GPIO.setup(bcmNumber,
-					       gpioDir,
-					       pull_up_down = RPi_GPIO.PUD_DOWN,
-					       initial = RPi_GPIO.LOW)
+				if gpioDir == RPi_GPIO.IN:
+					RPi_GPIO.setup(bcmNumber,
+						       gpioDir,
+						       pull_up_down = RPi_GPIO.PUD_DOWN)
+				else:
+					RPi_GPIO.setup(bcmNumber,
+						       gpioDir,
+						       initial = RPi_GPIO.LOW)
 			except RuntimeError as e:
 				self.raiseException("Failed to init Raspberry Pi "
 					"BCM%d: %s" % (bcmNumber, str(e)))
