@@ -543,6 +543,19 @@ EOF
 			dpkg -i ../cython3-awlsimhw-profibus_*.deb ||\
 				die "Failed to install cython3-awlsimhw-profibus"
 		fi
+		# hardware: RPi GPIO
+		dpkg -i ../python-awlsimhw-rpigpio_*.deb ||\
+			die "Failed to install python-awlsimhw-rpigpio"
+		dpkg -i ../python3-awlsimhw-rpigpio_*.deb ||\
+			die "Failed to install python3-awlsimhw-rpigpio"
+		dpkg -i ../pypy-awlsimhw-rpigpio_*.deb ||\
+			die "Failed to install pypy-awlsimhw-rpigpio"
+		if [ $opt_cython -ne 0 ]; then
+			dpkg -i ../cython-awlsimhw-rpigpio_*.deb ||\
+				die "Failed to install cython-awlsimhw-rpigpio"
+			dpkg -i ../cython3-awlsimhw-rpigpio_*.deb ||\
+				die "Failed to install cython3-awlsimhw-rpigpio"
+		fi
 		# Executables
 		dpkg -i ../awlsim-server_*.deb ||\
 			die "Failed to install awlsim-server"
