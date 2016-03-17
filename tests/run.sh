@@ -308,6 +308,7 @@ run_test_directory()
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c7)" = ".awlpro" ] || continue
+		[ -e "$(dirname "$entry")/$(basename "$entry" .awlpro).sh" ] && continue
 
 		local extra=
 		[ "$(basename "$entry")" = "EXAMPLE.awlpro" -o\
@@ -321,7 +322,8 @@ run_test_directory()
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
-		[ -e "${entry}pro" ] && continue
+		[ -e "$(dirname "$entry")/$(basename "$entry" .awl).awlpro" ] && continue
+		[ -e "$(dirname "$entry")/$(basename "$entry" .awl).sh" ] && continue
 
 		local extra=
 		[ "$(basename $(dirname "$entry"))" = "999-projects" ] &&\
