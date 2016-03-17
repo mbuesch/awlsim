@@ -173,13 +173,25 @@ setup_test_environment()
 		export PYTHONPATH=
 		export AWLSIMCYTHON=
 	fi
+
+	export PYTHONPATH="$PYTHONPATH:$EXTRA_PYTHONPATH"
+	export JYTHONPATH="$JYTHONPATH:$EXTRA_PYTHONPATH"
+	export IRONPYTHONPATH="$IRONPYTHONPATH:$EXTRA_PYTHONPATH"
+	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH"
+
 	RET="$interpreter"
 }
 
 cleanup_test_environment()
 {
-	export PYTHONPATH=
 	export AWLSIMCYTHON=
+
+	export PYTHONPATH=
+	export JYTHONPATH=
+	export IRONPYTHONPATH=
+	export MICROPYPATH=
+
+	export EXTRA_PYTHONPATH=
 }
 
 # $1=interpreter $2=awl_file ($3ff additional options to awlsim-test)
@@ -387,6 +399,8 @@ build_cython3()
 # $@=testfiles
 do_tests()
 {
+	export EXTRA_PYTHONPATH=
+
 	if [ $opt_quick -eq 0 ]; then
 		local all_interp="python2 python3 pypy pypy3 jython ipy cython2 cython3"
 	else

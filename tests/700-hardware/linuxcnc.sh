@@ -7,13 +7,11 @@ __run_awlsim_linuxcnc_hal()
 	local awl_file="$3"
 	shift 3
 
-	local modpath="$rootdir/libs/linuxcnc_fake_hal"
+	export EXTRA_PYTHONPATH="$rootdir/libs/linuxcnc_fake_hal"
+	setup_test_environment "$interpreter"
+	local interpreter="$RET"
 
 	FAKEHAL_HALFILE="${test_dir}/linuxcnc.hal" \
-	PYTHONPATH="$modpath:$PYTHONPATH" \
-	JYTHONPATH="$modpath:$JYTHONPATH" \
-	IRONPYTHONPATH="$modpath:$IRONPYTHONPATH" \
-	MICROPYPATH="$modpath:$MICROPYPATH" \
 		"$interpreter" ./awlsim-linuxcnc-hal \
 		--input-base 0 --input-size 32 \
 		--output-base 0 --output-size 32 \
@@ -22,6 +20,8 @@ __run_awlsim_linuxcnc_hal()
 		"$@" \
 		"$awl_file" >/dev/null ||\
 			test_failed "LinuxCNC test '$(basename "$awl_file")' failed"
+
+	cleanup_test_environment
 }
 
 sh_test()
