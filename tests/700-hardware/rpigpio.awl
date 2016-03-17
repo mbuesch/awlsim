@@ -1,0 +1,42 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// This test only works with the fake RPi.GPIO module
+	// that directly wires outputs to inputs.
+
+	L		MW 0
+	L		0
+	==I
+	SPB		zero
+
+	L		EW 0
+	__ASSERT==	__ACCU 1,	W#16#0302
+	SPA		out
+
+zero:	L		EW 0
+	__ASSERT==	__ACCU 1,	W#16#0000
+	SPA		out
+
+
+out:	L		MW 0
+	XOW		W#16#FFFF
+	T		MW 0
+	T		AW 0
+
+
+	L		MW 16
+	+		1
+	T		MW 16
+	L		32
+	<I
+	BEB
+	CALL		SFC 46
+END_ORGANIZATION_BLOCK
+
+
+ORGANIZATION_BLOCK OB 100
+BEGIN
+	L		0
+	T		MW 0
+	T		MW 16
+	T		AW 0
+END_ORGANIZATION_BLOCK
