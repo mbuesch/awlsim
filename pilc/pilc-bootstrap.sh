@@ -573,8 +573,10 @@ EOF
 		cp ../python*-awlsim-gui_*.deb ../awlsim-gui_*.deb \
 			/home/pi/awlsim-gui/ ||\
 			die "Failed to copy awlsim-gui"
-		cp examples/EXAMPLE.awlpro /home/pi/ ||\
+		cp examples/EXAMPLE.awlpro /home/pi/generic-example.awlpro ||\
 			die "Failed to copy EXAMPLE.awlpro."
+		cp examples/raspberrypi.awlpro /home/pi/raspberrypi-example.awlpro ||\
+			die "Failed to copy raspberrypi.awlpro."
 
 		#TODO run the testsuite
 
