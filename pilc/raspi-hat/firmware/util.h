@@ -111,6 +111,12 @@
 /* Data structure packing attribute. */
 #define _packed			__attribute__((__packed__))
 
+/* Naked functions. */
+#define _naked			__attribute__((__naked__))
+
+/* Suppress 'unused' warnings. */
+#define _used			__attribute__((__used__))
+
 /* Build-time assertion.
  * 'cond' must be a compile-time constant.
  * Build will fail, if 'cond' is false.
@@ -125,6 +131,10 @@
 #else
 # define unreachable()		while (1)
 #endif
+
+/* Convert something to a string. */
+#define _tostr(x)		#x
+#define tostr(x)		_tostr(x)
 
 /* Non-standard integer types. */
 typedef __int24		int24_t;

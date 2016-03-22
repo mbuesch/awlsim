@@ -69,17 +69,13 @@ bool ee24cxx_get_we(void)
 	return ee->write_en;
 }
 
-static void ee24cxx_handle_start_cond(bool read)
+static uint8_t ee24cxx_transmit(bool start)
 {
 	struct ee24cxx_context *ee = &ee24cxx;
+	uint8_t ret = 0;
 
-	ee->state = EE24CXX_IDLE;
-}
-
-static int16_t ee24cxx_get_next_send_byte(void)
-{
-	struct ee24cxx_context *ee = &ee24cxx;
-	int16_t ret = -1;
+	if (start)
+		ee->state = EE24CXX_IDLE;
 
 	switch (ee->state) {
 	case EE24CXX_IDLE:
@@ -100,9 +96,12 @@ static int16_t ee24cxx_get_next_send_byte(void)
 	return ret;
 }
 
-static void ee24cxx_byte_received(uint8_t data)
+static void ee24cxx_receive(bool start, uint8_t data)
 {
 	struct ee24cxx_context *ee = &ee24cxx;
+
+	if (start)
+		ee->state = EE24CXX_IDLE;
 
 	switch (ee->state) {
 	case EE24CXX_IDLE:
@@ -132,11 +131,9 @@ static void ee24cxx_byte_received(uint8_t data)
 	}
 }
 
-static const struct i2c_slave __flash ee24cxx_i2c_slave = {
-	.addr		= EEPEMU_24CXX_ADDR,
-	.start_cond	= ee24cxx_handle_start_cond,
-	.next_send_byte	= ee24cxx_get_next_send_byte,
-	.receive_byte	= ee24cxx_byte_received,
+static const struct i2c_slave_ops __flash ee24cxx_i2c_slave_ops = {
+	.transmit	= ee24cxx_transmit,
+	.receive	= ee24cxx_receive,
 };
 
 void ee24cxx_init(void)
@@ -144,5 +141,5 @@ void ee24cxx_init(void)
 	memset(&ee24cxx, 0, sizeof(ee24cxx));
 	ee24cxx.state = EE24CXX_IDLE;
 
-	i2cs_add_slave(&ee24cxx_i2c_slave);
+	i2cs_add_slave(EEPEMU_24CXX_ADDR, &ee24cxx_i2c_slave_ops);
 }

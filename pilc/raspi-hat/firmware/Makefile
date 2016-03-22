@@ -3,6 +3,7 @@ NAME			:= pilc-raspi-hat
 
 # Project source files
 SRCS			:= conf.c \
+			   dbg_slave.c \
 			   eepemu_24cxx.c \
 			   main.c \
 			   i2c_slave.c \
@@ -29,11 +30,12 @@ PROGRAMMER		:= avrisp2
 
 # Additional compiler flags
 I2CS_EXPECTED_KHZ	:= 100
-CFLAGS			:= -DI2CS_MAX_NR_SLAVES=2 \
-			   -DI2CS_CLKSTRETCH_WORKAROUND \
+CFLAGS			:= -DI2CS_MAX_NR_SLAVES=3 \
 			   -DI2CS_EXPECTED_KHZ=$(I2CS_EXPECTED_KHZ) \
 			   -DEEPEMU_24CXX_ADDR=0x50 \
-			   -DCONF_ADDR=0x2F
+			   -DCONF_ADDR=0x2F \
+			   -DDBGSLAVE_ADDR=0x77
+#			   -DI2CS_CLKSTRETCH_WORKAROUND
 LDFLAGS			:=
 
 # Additional "clean" and "distclean" target files
