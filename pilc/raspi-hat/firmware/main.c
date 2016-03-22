@@ -24,6 +24,7 @@
 #include "eepemu_24cxx.h"
 #include "pb_txen.h"
 #include "conf.h"
+#include "dbg_slave.h"
 
 #include <avr/wdt.h>
 
@@ -38,6 +39,7 @@ int main(void)
 	ee24cxx_init();
 	pb_txen_init();
 	conf_init();
+	dbgslave_init();
 
 	wdt_enable(WDTO_60MS);
 	pb_txen_work();

@@ -58,15 +58,6 @@ static uint8_t get_osccal(void)
 	return OSCCAL;
 }
 
-static void conf_handle_start_cond(bool read)
-{
-	struct conf_context *pc = &conf;
-
-	if (!read)
-		pc->item = CONF_NONE;
-	pc->count = 0;
-}
-
 static uint8_t handle_bool_read(bool (*getter)(void))
 {
 	struct conf_context *pc = &conf;
@@ -109,26 +100,29 @@ static uint8_t handle_u16_read(uint16_t (*getter)(void))
 	return ret;
 }
 
-static int16_t conf_get_next_send_byte(void)
+static uint8_t conf_transmit(bool start)
 {
 	struct conf_context *pc = &conf;
-	int16_t ret = -1;
+	uint8_t ret = 0;
+
+	if (start)
+		pc->count = 0;
 
 	switch (pc->item) {
 	case CONF_NONE:
 		/* error */
 		break;
 	case CONF_XTALCAL:
-		ret = (int16_t)handle_u8_read(get_osccal);
+		ret = handle_u8_read(get_osccal);
 		break;
 	case CONF_EEMUWE:
-		ret = (int16_t)handle_bool_read(ee24cxx_get_we);
+		ret = handle_bool_read(ee24cxx_get_we);
 		break;
 	case CONF_PBTXENDBG:
-		ret = (int16_t)handle_bool_read(pb_txen_get_debug);
+		ret = handle_bool_read(pb_txen_get_debug);
 		break;
 	case CONF_PBTXENTO:
-		ret = (int16_t)handle_u16_read(pb_txen_get_timeout);
+		ret = handle_u16_read(pb_txen_get_timeout);
 		break;
 	}
 
@@ -189,9 +183,14 @@ static void handle_safe_u16_write(uint8_t data, void (*handler)(uint16_t value))
 	}
 }
 
-static void conf_byte_received(uint8_t data)
+static void conf_receive(bool start, uint8_t data)
 {
 	struct conf_context *pc = &conf;
+
+	if (start) {
+		pc->item = CONF_NONE;
+		pc->count = 0;
+	}
 
 	switch (pc->item) {
 	case CONF_NONE:
@@ -213,11 +212,9 @@ static void conf_byte_received(uint8_t data)
 	}
 }
 
-static const struct i2c_slave __flash conf_i2c_slave = {
-	.addr		= CONF_ADDR,
-	.start_cond	= conf_handle_start_cond,
-	.next_send_byte	= conf_get_next_send_byte,
-	.receive_byte	= conf_byte_received,
+static const struct i2c_slave_ops __flash conf_i2c_slave_ops = {
+	.transmit	= conf_transmit,
+	.receive	= conf_receive,
 };
 
 void conf_init(void)
@@ -225,5 +222,5 @@ void conf_init(void)
 	memset(&conf, 0, sizeof(conf));
 	conf.item = CONF_NONE;
 
-	i2cs_add_slave(&conf_i2c_slave);
+	i2cs_add_slave(CONF_ADDR, &conf_i2c_slave_ops);
 }

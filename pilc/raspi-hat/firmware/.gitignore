@@ -3,5 +3,3 @@ obj/
 
 *.bin
 *.hex
-
-clkstretch_table.c

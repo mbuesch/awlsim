@@ -4,14 +4,12 @@
 #include "util.h"
 
 
-struct i2c_slave {
-	uint8_t addr;
-	void (*start_cond)(bool send);
-	int16_t (*next_send_byte)(void);
-	void (*receive_byte)(uint8_t byte);
+struct i2c_slave_ops {
+	uint8_t (*transmit)(bool start);
+	void (*receive)(bool start, uint8_t byte);
 };
 
-void i2cs_add_slave(const struct i2c_slave __flash *slave);
+void i2cs_add_slave(uint8_t addr, const struct i2c_slave_ops __flash *ops);
 void i2cs_init(void);
 
 #endif /* I2C_SLAVE_H_ */
