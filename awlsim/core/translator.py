@@ -352,6 +352,14 @@ class AwlTranslator(object):
 						"assignment to ANY parameter.")
 				param.rvalueOp.value = param.rvalueOp.value.toANYPointer()
 				param.rvalueOp.width = param.rvalueOp.value.width
+			elif param.rvalueOp.type == AwlOperator.MEM_L and\
+			     param.rvalueOp.dataType is not None and\
+			     param.rvalueOp.dataType.type == AwlDataType.TYPE_ANY:
+				# r-value is an ANY pointer in L (as TEMP variable).
+				# Forward it as-is to the FC.
+				# The operator will be translated from MEM_L to MEM_VL
+				# at call time.
+				assert(param.rvalueOp.width == 80)
 			else:
 				# Translate the r-value to ANY.
 				try:
@@ -365,7 +373,8 @@ class AwlTranslator(object):
 					width = ptr.width,
 					value = ptr,
 					insn = param.rvalueOp.insn)
-			if param.rvalueOp.value.getArea() == Pointer.AREA_L:
+			if param.rvalueOp.type == AwlOperator.IMM_PTR and\
+			   param.rvalueOp.value.getArea() == Pointer.AREA_L:
 				# L-stack access must be translated to VL.
 				param.rvalueOp.value.setArea(Pointer.AREA_VL)
 
