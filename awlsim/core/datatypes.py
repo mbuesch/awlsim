@@ -1331,7 +1331,7 @@ class ByteArray(bytearray):
 				end = byteOffset + nrBytes
 				if end > len(self):
 					raise IndexError
-				return memoryview(self)[byteOffset : end]
+				return self[byteOffset : end]
 		except IndexError as e:
 			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
 					  str(offset))
