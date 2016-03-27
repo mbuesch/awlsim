@@ -1625,8 +1625,11 @@ class ANYPointer(DBPointer): #+cdef
 #@cy	cdef public object dataType
 #@cy	cdef public uint16_t count
 
+	# ANY pointer magic value.
+	MAGIC = 0x10
+
 	# AwlDataType to ANY-Pointer type code.
-	__typeId2typeCode = {
+	typeId2typeCode = {
 		AwlDataType.TYPE_NIL		: 0x00,
 		AwlDataType.TYPE_BOOL		: 0x01,
 		AwlDataType.TYPE_BYTE		: 0x02,
@@ -1650,7 +1653,7 @@ class ANYPointer(DBPointer): #+cdef
 		AwlDataType.TYPE_TIMER		: 0x1D,
 	}
 	# ANY-Pointer type code to AwlDataType.
-	__typeCode2typeId = pivotDict(__typeId2typeCode)
+	typeCode2typeId = pivotDict(typeId2typeCode)
 
 	# Width, in bits.
 	width = 80
@@ -1700,7 +1703,7 @@ class ANYPointer(DBPointer): #+cdef
 	@classmethod
 	def dataTypeIsSupported(cls, dataType):
 		return dataType and\
-		       dataType.type in cls.__typeId2typeCode
+		       dataType.type in cls.typeId2typeCode
 
 	def __init__(self, ptrValue = 0, dbNr = 0, dataType = None, count = 1):
 		DBPointer.__init__(self, ptrValue, dbNr)
@@ -1729,8 +1732,8 @@ class ANYPointer(DBPointer): #+cdef
 			count = self.count
 			dbNr = self.dbNr
 			ptr = self.toPointerValue()
-			return ByteArray((0x10,
-					  self.__typeId2typeCode[self.dataType.type],
+			return ByteArray((self.MAGIC,
+					  self.typeId2typeCode[self.dataType.type],
 					  (count >> 8) & 0xFF,
 					  count & 0xFF,
 					  (dbNr >> 8) & 0xFF,
