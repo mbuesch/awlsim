@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 #from awlsim.core.instructions.insn_generic_call cimport * #@cy
 
 from awlsim.core.instructions.insn_generic_call import * #@nocy
+from awlsim.core.systemblocks.error_codes import *
 from awlsim.core.blocks import *
 from awlsim.core.translator import *
 from awlsim.core.identifier import *

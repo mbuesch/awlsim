@@ -1,0 +1,660 @@
+ORGANIZATION_BLOCK OB 1
+	VAR_TEMP
+		BVAL_TMP	: ANY;
+		BLK_TMP		: ANY;
+		RET_TMP		: INT;
+		LOCALDW0	: DWORD;
+	END_VAR
+BEGIN
+	// Test SFC 21: FILL
+
+
+
+	// Invalid BVAL ANY magic.
+	LAR1		P##BVAL_TMP
+	L		B#16#01		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 50.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 100.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8124
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Invalid BLK ANY magic.
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 50.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#01		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 100.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8325
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Invalid BVAL ANY repetition count for BOOL
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#01		// Data type (BOOL)
+	T		B [AR1, P#1.0]
+	L		15		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 50.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 100.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8122
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Invalid BLK ANY repetition count for BOOL
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 50.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#01		// Data type (BOOL)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 100.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8323
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// System-DB BVAL DB number
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 100.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#813A
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// System-DB BLK DB number
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 0.0		// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#833A
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Invalid BVAL DB number
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		999		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 0.0		// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#813A
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Invalid BLK DB number
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 0.0		// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		1		// Repetition
+	T		W [AR1, P#2.0]
+	L		999		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#833A
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Out of range BVAL pointer
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		4		// Repetition
+	T		W [AR1, P#2.0]
+	L		1		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 4.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		8		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 10.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8124
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Out of range BLK pointer
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		4		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 10.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		8		// Repetition
+	T		W [AR1, P#2.0]
+	L		1		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8325
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Unaligned BVAL pointer
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#01		// Data type (BOOL)
+	T		B [AR1, P#1.0]
+	L		8		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 0.1		// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#01		// Data type (BOOL)
+	T		B [AR1, P#1.0]
+	L		8		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 10.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8128
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Unaligned BLK pointer
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#01		// Data type (BOOL)
+	T		B [AR1, P#1.0]
+	L		8		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 0.0		// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#01		// Data type (BOOL)
+	T		B [AR1, P#1.0]
+	L		8		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 10.7	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#8329
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+
+
+	// Copy data from DBx to DBy
+	L		W#16#ABCD
+	T		DB1.VAR0
+	L		W#16#1234
+	T		DB1.VAR1
+	L		W#16#9988
+	T		DB1.VAR2
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#04		// Data type (WORD)
+	T		B [AR1, P#1.0]
+	L		3		// Repetition
+	T		W [AR1, P#2.0]
+	L		1		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#04		// Data type (WORD)
+	T		B [AR1, P#1.0]
+	L		6		// Repetition
+	T		W [AR1, P#2.0]
+	L		3		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#0000
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+	L		DB3.VAR0
+	__ASSERT==	__ACCU 1,	W#16#ABCD
+	L		DB3.VAR1
+	__ASSERT==	__ACCU 1,	W#16#1234
+	L		DB3.VAR2
+	__ASSERT==	__ACCU 1,	W#16#9988
+	L		DB3.VAR3
+	__ASSERT==	__ACCU 1,	W#16#ABCD
+	L		DB3.VAR4
+	__ASSERT==	__ACCU 1,	W#16#1234
+	L		DB3.VAR5
+	__ASSERT==	__ACCU 1,	W#16#9988
+
+
+	// Copy data from DBx to L
+	L		W#16#ABCD
+	T		DB1.VAR0
+	L		W#16#1234
+	T		DB1.VAR1
+	L		W#16#9988
+	T		DB1.VAR2
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#04		// Data type (WORD)
+	T		B [AR1, P#1.0]
+	L		3		// Repetition
+	T		W [AR1, P#2.0]
+	L		1		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 0.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #LOCALDW0,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#0000
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+	L		#LOCALDW0
+	__ASSERT==	__ACCU 1,	DW#16#ABCD1234
+
+
+	// Copy data from L to DBx
+	L		DW#16#98761122
+	T		#LOCALDW0
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#04		// Data type (WORD)
+	T		B [AR1, P#1.0]
+	L		3		// Repetition
+	T		W [AR1, P#2.0]
+	L		3		// DB
+	T		W [AR1, P#4.0]
+	L		P#DBX 6.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #LOCALDW0,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#0000
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+	L		#LOCALDW0
+	__ASSERT==	__ACCU 1,	DW#16#98761122
+	L		DB3.VAR3
+	__ASSERT==	__ACCU 1,	W#16#9876
+	L		DB3.VAR4
+	__ASSERT==	__ACCU 1,	W#16#1122
+	L		DB3.VAR5
+	__ASSERT==	__ACCU 1,	W#16#9876
+
+
+	// Copy data bytes from M to M
+	L		W#16#ABCD
+	T		MW 0
+	L		0
+	T		MD 10
+	LAR1		P##BVAL_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		2		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 0.0		// Pointer
+	T		D [AR1, P#6.0]
+	LAR1		P##BLK_TMP
+	L		B#16#10		// Magic
+	T		B [AR1, P#0.0]
+	L		B#16#02		// Data type (BYTE)
+	T		B [AR1, P#1.0]
+	L		4		// Repetition
+	T		W [AR1, P#2.0]
+	L		0		// DB
+	T		W [AR1, P#4.0]
+	L		P#M 10.0	// Pointer
+	T		D [AR1, P#6.0]
+	AUF		DB 2
+	AUF		DI 2
+	CALL		SFC 21 (
+		BVAL	:= #BVAL_TMP,
+		RET_VAL	:= #RET_TMP,
+		BLK	:= #BLK_TMP,
+	)
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#0000
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	DBNO,		2
+	__ASSERT==	DINO,		2
+	L		MW 0
+	__ASSERT==	__ACCU 1,	W#16#ABCD
+	L		MD 10
+	__ASSERT==	__ACCU 1,	DW#16#ABCDABCD
+
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
+
+
+DATA_BLOCK DB 1
+STRUCT
+	VAR0	: WORD;
+	VAR1	: WORD;
+	VAR2	: WORD;
+END_STRUCT
+BEGIN
+END_DATA_BLOCK
+
+
+DATA_BLOCK DB 2
+STRUCT
+	VAR0	: WORD;
+END_STRUCT
+BEGIN
+END_DATA_BLOCK
+
+
+DATA_BLOCK DB 3
+STRUCT
+	VAR0	: WORD;
+	VAR1	: WORD;
+	VAR2	: WORD;
+	VAR3	: WORD;
+	VAR4	: WORD;
+	VAR5	: WORD;
+END_STRUCT
+BEGIN
+END_DATA_BLOCK
