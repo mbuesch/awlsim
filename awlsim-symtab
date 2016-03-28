@@ -34,9 +34,9 @@ def usage():
 	print("awlsim-symtab symbol table parser, version %s" %\
 		  VERSION_STRING)
 	print("")
-	print("Usage: awlsim-symtab [OPTIONS] <inputfile> [outputfile]")
+	print("Usage: awlsim-symtab [OPTIONS] [inputfile] [outputfile]")
 	print("")
-	print("If inputfile is -, stdin is used.")
+	print("If inputfile is - or omitted, stdin is used.")
 	print("If outputfile is - or omitted, stdout is used.")
 	print("")
 	print("Options:")
@@ -88,7 +88,7 @@ def main():
 	elif len(args) == 2:
 		opt_infile = args[0]
 		opt_outfile = args[1]
-	else:
+	elif len(args) > 2:
 		usage()
 		return 1
 
