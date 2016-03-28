@@ -112,7 +112,7 @@ class AwlDataType(OptionalImmutable):
 
 	# Width table for types
 	# -1 => Type width must be calculated
-	__typeWidths = {
+	typeWidths = {
 		TYPE_VOID	: 0,
 		TYPE_NIL	: 0,
 		TYPE_BOOL	: 1,
@@ -420,7 +420,7 @@ class AwlDataType(OptionalImmutable):
 		elif self.type == self.TYPE_STRING:
 			width = self.struct.getUnalignedSize() * 8
 		else:
-			width = self.__typeWidths[self.type]
+			width = self.typeWidths[self.type]
 		return width
 
 	# Override the width calculation.
