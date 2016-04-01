@@ -416,6 +416,7 @@ EOF
 
 set -e
 
+# Re-generate ssh keys, if requested.
 if [ -e /etc/ssh/ssh_create_keys ]; then
 	/bin/rm -f /etc/ssh/ssh_host_*_key*
 	LC_ALL=C LANGUAGE=C LANG=C /usr/sbin/dpkg-reconfigure openssh-server
@@ -423,6 +424,12 @@ if [ -e /etc/ssh/ssh_create_keys ]; then
 	/bin/rm /etc/ssh/ssh_create_keys
 	/etc/init.d/ssh start
 fi
+
+# Workaround firmware issue leaving i2c0 in an non-ALT0 state.
+for i in 28 29; do
+	/bin/echo $i > /sys/class/gpio/export
+	/bin/echo in > /sys/class/gpio/gpio${i}/direction
+done
 
 exit 0
 EOF
