@@ -431,6 +431,11 @@ for i in 28 29; do
 	/bin/echo in > /sys/class/gpio/gpio${i}/direction
 done
 
+# Add HAT eeprom device.
+if ! [ -d "/sys/class/i2c-adapter/i2c-0/0-0050" ]; then
+	/bin/echo "24c32 0x50" > /sys/class/i2c-adapter/i2c-0/new_device
+fi
+
 exit 0
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/rc.local"
