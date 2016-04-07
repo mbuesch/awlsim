@@ -183,7 +183,7 @@ static void handle_safe_u16_write(uint8_t data, void (*handler)(uint16_t value))
 	}
 }
 
-static void conf_receive(bool start, uint8_t data)
+static bool conf_receive(bool start, uint8_t data)
 {
 	struct conf_context *pc = &conf;
 
@@ -210,6 +210,8 @@ static void conf_receive(bool start, uint8_t data)
 		handle_safe_u16_write(data, pb_txen_set_timeout);
 		break;
 	}
+
+	return true;
 }
 
 static const struct i2c_slave_ops __flash conf_i2c_slave_ops = {

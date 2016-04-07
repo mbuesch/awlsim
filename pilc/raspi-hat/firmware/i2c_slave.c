@@ -182,13 +182,16 @@ static uint8_t _used slaveop_transmit(void)
 	return data;
 }
 
-static void _used slaveop_receive(uint8_t data)
+static uint8_t _used slaveop_receive(uint8_t data)
 {
 	const struct i2c_slave_ops __flash *ops;
+	bool continue_rx;
 
 	ops = i2cs_ops[i2cs_active_slave];
-	ops->receive(i2cs_had_start, data);
+	continue_rx = ops->receive(i2cs_had_start, data);
 	i2cs_had_start = false;
+
+	return continue_rx ? 1u : 0u;
 }
 
 /* Save all caller-saved regs, except r0 and SREG. */
@@ -454,13 +457,37 @@ static void _naked _used handle_state_rcvproc(void)
 "	; Call the slave op to receive the byte.	\n"
 "	lds r24, i2cs_rx_byte				\n"
 "	rcall slaveop_receive				\n"
+"	mov __tmp_reg__, r24				\n"
 "							\n"
 	RESTORE_CALLER_REGS()
 "							\n"
+"	; If 'continue-rx' is set, prepare next RX	\n"
+"	sbrc __tmp_reg__, 0				\n"
 "	rjmp handle_state_prep_rcv			\n"
+"							\n"
+"	; We expect a new address transmission.		\n"
+"							\n"
+"	; Stop pulling SDA.				\n"
+"	cbi %[_SDA_DDR], %[_SDA_BIT]			\n"
+"							\n"
+	CLKSTRETCH_TIMER_WAIT()
+"							\n"
+"	; Set USI to read addr				\n"
+"	ldi r31, %[_cr_addrread]			\n"
+"	out %[_USICR], r31				\n"
+"	ldi r31, %[_sr_addrread]			\n"
+"	out %[_USISR], r31				\n"
+"							\n"
+"	; Set the next state				\n"
+"	ldi r31, %[_STATE_ADDR]				\n"
+"	sts i2cs_state, r31				\n"
+"							\n"
+"	rjmp isr_ovf_ret				\n"
 	: /* outputs */
 	: /* inputs */
-		IN_CONSTR_BASE
+		IN_CONSTR_BASE,
+		[_cr_addrread]	"M" (USICR_BASE | (1 << USIOIE) | (0 << USIWM0)),
+		[_sr_addrread]	"M" (USISR_BASE | (0 << USISIF) | (1 << USICNT0))
 	: /* clobbers */
 		"memory"
 	);

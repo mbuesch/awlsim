@@ -27,11 +27,6 @@
 #include <avr/eeprom.h>
 
 
-/* Default to: emulated eeprom size = avr eeprom size. */
-#ifndef EE24CXX_ADDR_MASK
-# define EE24CXX_ADDR_MASK	((uint16_t)E2END)
-#endif
-
 /* Default to: emulated page size = 32 bytes. */
 #ifndef EE24CXX_PAGE_MASK
 # define EE24CXX_PAGE_MASK	((uint16_t)(32 - 1))
@@ -52,7 +47,9 @@ struct ee24cxx_context {
 
 
 static struct ee24cxx_context ee24cxx;
-static uint8_t EEMEM ee24cxx_eeprom_mem[EE24CXX_ADDR_MASK + 1];
+
+extern uint8_t EEMEM eeprom_contents[E2END + 1];
+#define EE24CXX_ADDR_MASK	((uint16_t)E2END)
 
 
 void ee24cxx_set_we(bool write_enable)
@@ -82,7 +79,7 @@ static uint8_t ee24cxx_transmit(bool start)
 	case EE24CXX_ADDRCOMPLETE:
 		/* data read. */
 		eeprom_busy_wait();
-		ret = eeprom_read_byte(&ee24cxx_eeprom_mem[ee->word_addr]);
+		ret = eeprom_read_byte(&eeprom_contents[ee->word_addr]);
 		ee->word_addr = (ee->word_addr + 1) & EE24CXX_ADDR_MASK;
 		break;
 	case EE24CXX_WRADDRLO:
@@ -93,9 +90,10 @@ static uint8_t ee24cxx_transmit(bool start)
 	return ret;
 }
 
-static void ee24cxx_receive(bool start, uint8_t data)
+static bool ee24cxx_receive(bool start, uint8_t data)
 {
 	struct ee24cxx_context *ee = &ee24cxx;
+	bool ret = false;
 
 	if (start)
 		ee->state = EE24CXX_IDLE;
@@ -107,6 +105,7 @@ static void ee24cxx_receive(bool start, uint8_t data)
 				((uint16_t)data << 8);
 		ee->word_addr &= EE24CXX_ADDR_MASK;
 		ee->state = EE24CXX_WRADDRLO;
+		ret = true;
 		break;
 	case EE24CXX_WRADDRLO:
 		/* address low byte write. */
@@ -114,18 +113,23 @@ static void ee24cxx_receive(bool start, uint8_t data)
 				((uint16_t)data);
 		ee->word_addr &= EE24CXX_ADDR_MASK;
 		ee->state = EE24CXX_ADDRCOMPLETE;
+		if (ee->write_en)
+			ret = true;
 		break;
 	case EE24CXX_ADDRCOMPLETE:
 		/* data write. */
 		if (ee->write_en) {
 			eeprom_busy_wait();
-			eeprom_write_byte(&ee24cxx_eeprom_mem[ee->word_addr],
+			eeprom_write_byte(&eeprom_contents[ee->word_addr],
 					  data);
 		}
 		ee->word_addr = (ee->word_addr & ~EE24CXX_PAGE_MASK) |
 				((ee->word_addr + 1) & EE24CXX_PAGE_MASK);
+		ret = true;
 		break;
 	}
+
+	return ret;
 }
 
 static const struct i2c_slave_ops __flash ee24cxx_i2c_slave_ops = {

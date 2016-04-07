@@ -6,7 +6,7 @@
 
 struct i2c_slave_ops {
 	uint8_t (*transmit)(bool start);
-	void (*receive)(bool start, uint8_t byte);
+	bool (*receive)(bool start, uint8_t byte);
 };
 
 void i2cs_add_slave(uint8_t addr, const struct i2c_slave_ops __flash *ops);

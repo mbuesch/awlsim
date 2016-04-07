@@ -46,13 +46,15 @@ static uint8_t dbgslave_transmit(bool start)
 	return (uint8_t)(dbgslave_data | (start ? 0x02 : 0x00));
 }
 
-static void dbgslave_receive(bool start, uint8_t data)
+static bool dbgslave_receive(bool start, uint8_t data)
 {
 	dbgslave_delay(dbgslave_rx_delay);
 	if (++dbgslave_rx_delay >= DBGSLAVE_MAX_DELAY)
 		dbgslave_rx_delay = 0;
 
 	dbgslave_data = (uint8_t)((data & ~0x03) | (start ? 0x01 : 0x00));
+
+	return true;
 }
 
 static const struct i2c_slave_ops __flash dbgslave_i2c_slave_ops = {
