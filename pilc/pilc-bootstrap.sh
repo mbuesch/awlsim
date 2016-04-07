@@ -353,10 +353,7 @@ EOF
 		git \
 		htop \
 		i2c-tools \
-		linux-headers-rpi-rpfv \
-		linux-image-rpi-rpfv \
-		linux-headers-rpi2-rpfv \
-		linux-image-rpi2-rpfv \
+		irqbalance \
 		locales \
 		nano \
 		openssh-server \
@@ -371,7 +368,7 @@ EOF
 		python3-all-dev \
 		python3-rpi.gpio \
 		python3-setuptools \
-		raspberrypi-bootloader-nokernel \
+		raspberrypi-bootloader \
 		screen \
 		sudo \
 		systemd \
@@ -465,25 +462,25 @@ EOF
 	echo 'pi ALL=(ALL:ALL) ALL' > "/etc/sudoers.d/00-pi" ||\
 		die "Failed to create /etc/sudoers.d/00-pi"
 
-	info "Building updated rv3029 kernel module..."
-	(
-		cd /tmp/rv3029 ||\
-			die "Failed to cd to rv3029 build dir"
-		for moddir in /lib/modules/*; do
-			[ -d "$moddir" ] || die "Invalid moddir '$moddir'"
-			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
-			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON \
-			     clean ||\
-				die "rv3029: Failed to clean"
-			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
-			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON ||\
-				die "rv3029: Failed to build"
-			cp rtc-rv3029c2.ko "$moddir/kernel/drivers/rtc/" ||\
-				die "rv3029: Failed to install kernel module"
-			depmod "$(basename "$moddir")" ||\
-				die "Failed to run depmod"
-		done
-	) || die
+#	info "Building updated rv3029 kernel module..."
+#	(
+#		cd /tmp/rv3029 ||\
+#			die "Failed to cd to rv3029 build dir"
+#		for moddir in /lib/modules/*; do
+#			[ -d "$moddir" ] || die "Invalid moddir '$moddir'"
+#			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
+#			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON \
+#			     clean ||\
+#				die "rv3029: Failed to clean"
+#			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
+#			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON ||\
+#				die "rv3029: Failed to build"
+#			cp rtc-rv3029c2.ko "$moddir/kernel/drivers/rtc/" ||\
+#				die "rv3029: Failed to install kernel module"
+#			depmod "$(basename "$moddir")" ||\
+#				die "Failed to run depmod"
+#		done
+#	) || die
 	rm -r /tmp/rv3029 ||\
 		die "Failed to remove rv3029 build dir."
 
