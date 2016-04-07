@@ -5,6 +5,7 @@ NAME			:= pilc-raspi-hat
 SRCS			:= conf.c \
 			   dbg_slave.c \
 			   eepemu_24cxx.c \
+			   eeprom_contents.c \
 			   main.c \
 			   i2c_slave.c \
 			   pb_txen.c \
@@ -39,8 +40,15 @@ CFLAGS			:= -DI2CS_MAX_NR_SLAVES=3 \
 LDFLAGS			:=
 
 # Additional "clean" and "distclean" target files
-CLEAN_FILES		:=
+CLEAN_FILES		:= eeprom_contents.c
 DISTCLEAN_FILES		:=
+
+
+eeprom_contents.c: ../eeprom/pilc_eeprom_settings.eep
+	@echo '#include "util.h"' > $@
+	@echo 'uint8_t _used EEMEM eeprom_contents[E2END + 1] = {' >> $@
+	hexdump -v -e '/1 "0x%02X, "' $< >> $@
+	@echo '};' >> $@
 
 
 include avrmakelib.mk

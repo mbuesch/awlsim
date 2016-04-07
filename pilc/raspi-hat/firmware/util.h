@@ -12,6 +12,7 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/cpufunc.h>
+#include <avr/eeprom.h>
 
 
 /* Return the smaller value of 'a' and 'b'. */
