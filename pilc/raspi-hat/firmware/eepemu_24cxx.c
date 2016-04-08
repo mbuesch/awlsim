@@ -48,14 +48,52 @@ struct ee24cxx_context {
 
 static struct ee24cxx_context ee24cxx;
 
-extern uint8_t EEMEM eeprom_contents[E2END + 1];
-#define EE24CXX_ADDR_MASK	((uint16_t)E2END)
+#ifdef EEPEMU_24CXX_CONTENT_IN_FLASH
+# define EEPEMU_DEF_ATTR	const __flash
+# define EEPEMU_DECL_ATTR	const __flash
+# define EEPEMU_IMG_SIZE
+#else
+# define EEPEMU_DEF_ATTR	EEMEM
+# define EEPEMU_DECL_ATTR
+# define EEPEMU_IMG_SIZE	(E2END + 1)
+#endif
 
+#include "eepemu_24cxx_content.c"
+
+
+#define EE24CXX_ADDR_MASK	(EEPEMU_24CXX_SIZE - 1)
+
+
+static void ee24cxx_busy_wait(void)
+{
+#ifndef EEPEMU_24CXX_CONTENT_IN_FLASH
+	eeprom_busy_wait();
+#endif
+}
+
+static uint8_t ee24cxx_read_byte(uint8_t EEPEMU_DECL_ATTR *mem)
+{
+#ifdef EEPEMU_24CXX_CONTENT_IN_FLASH
+	return *mem;
+#else
+	return eeprom_read_byte(mem);
+#endif
+}
+
+static void ee24cxx_write_byte(uint8_t EEPEMU_DECL_ATTR *mem, uint8_t data)
+{
+#ifndef EEPEMU_24CXX_CONTENT_IN_FLASH
+	eeprom_write_byte(mem, data);
+#endif
+}
 
 void ee24cxx_set_we(bool write_enable)
 {
 	struct ee24cxx_context *ee = &ee24cxx;
 
+#ifdef EEPEMU_24CXX_CONTENT_IN_FLASH
+	write_enable = false;
+#endif
 	ee->write_en = write_enable;
 }
 
@@ -78,8 +116,11 @@ static uint8_t ee24cxx_transmit(bool start)
 		break;
 	case EE24CXX_ADDRCOMPLETE:
 		/* data read. */
-		eeprom_busy_wait();
-		ret = eeprom_read_byte(&eeprom_contents[ee->word_addr]);
+		ee24cxx_busy_wait();
+		if (ee->word_addr < sizeof(eepemu_24cxx_content))
+			ret = ee24cxx_read_byte(&eepemu_24cxx_content[ee->word_addr]);
+		else
+			ret = 0xFF;
 		ee->word_addr = (ee->word_addr + 1) & EE24CXX_ADDR_MASK;
 		break;
 	case EE24CXX_WRADDRLO:
@@ -119,9 +160,9 @@ static bool ee24cxx_receive(bool start, uint8_t data)
 	case EE24CXX_ADDRCOMPLETE:
 		/* data write. */
 		if (ee->write_en) {
-			eeprom_busy_wait();
-			eeprom_write_byte(&eeprom_contents[ee->word_addr],
-					  data);
+			ee24cxx_busy_wait();
+			ee24cxx_write_byte(&eepemu_24cxx_content[ee->word_addr],
+					   data);
 		}
 		ee->word_addr = (ee->word_addr & ~EE24CXX_PAGE_MASK) |
 				((ee->word_addr + 1) & EE24CXX_PAGE_MASK);
@@ -139,6 +180,10 @@ static const struct i2c_slave_ops __flash ee24cxx_i2c_slave_ops = {
 
 void ee24cxx_init(void)
 {
+#ifndef EEPEMU_24CXX_CONTENT_IN_FLASH
+	build_assert(sizeof(eepemu_24cxx_content) < E2END);
+#endif
+
 	memset(&ee24cxx, 0, sizeof(ee24cxx));
 	ee24cxx.state = EE24CXX_IDLE;
 

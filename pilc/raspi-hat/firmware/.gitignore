@@ -4,4 +4,4 @@ obj/
 *.bin
 *.hex
 
-eeprom_contents.c
+eepemu_24cxx_content.c

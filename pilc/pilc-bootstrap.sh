@@ -139,9 +139,6 @@ dtparam=i2c_vc=on
 #dtparam=i2s=on
 #dtparam=spi=on
 
-# RV3029 RTC
-dtoverlay=rv3029-rtc
-
 # Uncomment this to enable the lirc-rpi module
 #dtoverlay=lirc-rpi
 
@@ -658,9 +655,6 @@ EOF
 	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
 	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
 		die "Failed to create /boot/config.txt"
-	cp "$basedir/pilc/kernel/rv3029.dtb" \
-	   "$opt_target_dir/boot/overlays/rv3029-rtc-overlay.dtb" ||\
-	   die "Failed to copy rv3029 dt overlay"
 	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi)"
 	if [ -e "$img" ]; then
 		mv "$img" "$opt_target_dir/boot/kernel.img" ||\
