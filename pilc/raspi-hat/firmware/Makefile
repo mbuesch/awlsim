@@ -44,6 +44,9 @@ CLEAN_FILES		:= eeprom_contents.c
 DISTCLEAN_FILES		:=
 
 
+../eeprom/pilc_eeprom_settings.eep: ../eeprom/pilc_eeprom_settings.txt
+	CFLAGS= CPPFLAGS= $(MAKE) -C ../eeprom all
+
 eeprom_contents.c: ../eeprom/pilc_eeprom_settings.eep
 	@echo '#include "util.h"' > $@
 	@echo 'uint8_t _used EEMEM eeprom_contents[E2END + 1] = {' >> $@
