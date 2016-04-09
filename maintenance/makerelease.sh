@@ -52,10 +52,11 @@ hook_pre_archives()
 	default_hook_pre_archives "$@"
 
 	echo "Building PiLC firmware..."
-#	local raspihat_fw_dir="$checkout_dir/pilc/raspi-hat/firmware"
-#	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= make
-#	mkdir "$raspihat_fw_dir/bin"
-#	cp "$raspihat_fw_dir/"*.hex "$checkout_dir/bin/"
+	local raspihat_fw_dir="$checkout_dir/pilc/raspi-hat/firmware"
+	for target in all clean; do
+		CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
+		make -C "$raspihat_fw_dir" $target
+	done
 }
 
 project=awlsim
