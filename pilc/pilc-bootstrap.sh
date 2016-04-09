@@ -164,6 +164,7 @@ pilc_bootstrap_first_stage()
 	assert_program mkfs.vfat
 	assert_program mkfs.ext4
 	assert_program 7z
+	assert_program install
 	[ -x "$opt_qemu" ] ||\
 		die "The qemu binary '$opt_qemu' is not executable."
 
@@ -377,10 +378,12 @@ EOF
 		python-all-dev \
 		python-rpi.gpio \
 		python-setuptools \
+		python-smbus \
 		python3 \
 		python3-all-dev \
 		python3-rpi.gpio \
 		python3-setuptools \
+		python3-smbus \
 		screen \
 		sudo \
 		systemd \
@@ -488,6 +491,17 @@ EOF
 		die "Failed to set 'pi' password."
 	echo 'pi ALL=(ALL:ALL) ALL' > "/etc/sudoers.d/00-pi" ||\
 		die "Failed to create /etc/sudoers.d/00-pi"
+
+	info "Initializing home directory..."
+	mkdir -p /home/pi/.vim || die "Failed to mkdir /home/pi/.vim"
+	cat > /home/pi/.vim/vimrc <<EOF
+set nocompatible
+set autoindent
+syntax enable
+set backspace=indent,start
+set number
+EOF
+	[ $? -eq 0 ] || die "Failed to create /home/pi/.vim/vimrc"
 
 	info "Building awlsim..."
 	(
@@ -635,6 +649,9 @@ iface eth0 inet6 auto
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth0"
 
+	info "Updating home directory permissions..."
+	chown -R pi:pi /home/pi || die "Failed to change /home/pi permissions."
+
 	info "Stopping processes..."
 	for i in dbus ssh atd; do
 		/etc/init.d/$i stop
@@ -651,6 +668,11 @@ EOF
 pilc_bootstrap_third_stage()
 {
 	info "Running third stage..."
+
+	info "Installing tools..."
+	install -m 0755 -g 0 -o 0 \
+		"$basedir/pilc/raspi-hat/pilc-hat-conf" \
+		"$opt_target_dir/usr/local/bin/"
 
 	info "Removing PiLC bootstrap script..."
 	rm "$opt_target_dir/pilc-bootstrap.sh" ||\

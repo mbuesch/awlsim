@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# PiLC HAT configuration tool
+#
+# Copyright 2016 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+import sys
+import smbus
+import getopt
+
+
+I2C_BUS = 0
+I2C_DEV = 0x2F
+
+
+class PilcConf(object):
+	CONF_NONE	= 0
+	CONF_XTALCAL	= 1
+	CONF_EEMUWE	= 2
+	CONF_PBTXENDBG	= 3
+	CONF_PBTXENTO	= 4
+
+	sizes = {
+		CONF_NONE	: 0,
+		CONF_XTALCAL	: 8,
+		CONF_EEMUWE	: 1,
+		CONF_PBTXENDBG	: 1,
+		CONF_PBTXENTO	: 16,
+	}
+
+	TRIES = 5
+
+	class Error(Exception):
+		pass
+
+	def __init__(self, bus, dev):
+		try:
+			self.__i2c = smbus.SMBus()
+			self.__i2c.open(bus)
+			self.__dev = dev
+		except OSError as e:
+			raise self.Error("Failed to init I2C communication:\n" + str(e))
+
+	def close(self):
+		try:
+			return self.__i2c.close()
+		except OSError as e:
+			raise self.Error("Failed to close I2C communication:\n" + str(e))
+
+	def get(self, confItem):
+		itemSize = self.sizes[confItem]
+		handlers = {
+			0	: lambda confItem: None,
+			1	: self.__readBool,
+			8	: self.__readU8,
+			16	: self.__readU16,
+		}
+		for i in range(self.TRIES):
+			try:
+				return handlers[itemSize](confItem)
+			except OSError:
+				continue
+		raise self.Error("Failed to read config item %d" % confItem)
+
+	def set(self, confItem, value):
+		itemSize = self.sizes[confItem]
+		handlers = {
+			0	: lambda confItem, data: None,
+			1	: self.__writeBool,
+			8	: self.__writeU8,
+			16	: self.__writeU16,
+		}
+		for i in range(self.TRIES):
+			try:
+				handlers[itemSize](confItem, value)
+				checkValue = self.get(confItem)
+				if value == checkValue:
+					return
+			except OSError:
+				continue
+		raise self.Error("Failed to write config item %d" % confItem)
+
+	def __writeBool(self, confItem, data):
+		data = 1 if data else 0
+		self.__writeU8(confItem, data)
+
+	def __writeU8(self, confItem, data):
+		payload = [ (data & 0xFF), (~data & 0xFF), ]
+		self.__i2c.write_i2c_block_data(self.__dev, confItem, payload)
+
+	def __writeU16(self, confItem, data):
+		payload = [ (data & 0xFF), ((data >> 8) & 0xFF),
+			    (~data & 0xFF), ((~data >> 8) & 0xFF), ]
+		self.__i2c.write_i2c_block_data(self.__dev, confItem, payload)
+
+	def __readBool(self, confItem):
+		return True if self.__readU8(confItem) else False
+
+	def __readU8(self, confItem):
+		payload = self.__i2c.read_i2c_block_data(self.__dev, confItem, 1)
+		return payload[0]
+
+	def __readU16(self, confItem):
+		payload = self.__i2c.read_i2c_block_data(self.__dev, confItem, 2)
+		return payload[0] | (payload[1] << 8)
+
+def str2bool(string):
+	if string.strip().lower() in {"yes", "true", "on"}:
+		return True
+	if string.strip().lower() in {"no", "false", "off"}:
+		return False
+	try:
+		return bool(int(string))
+	except ValueError:
+		return False
+
+def usage():
+	print("PiLC HAT configuration tool")
+	print("")
+	print("pilc-hat-conf [OPTIONS] <ACTIONS>")
+	print("")
+	print("Actions:")
+	print(" -D|--set-pbtxen-dbg BOOL      Enable/disable PB-txen debugging")
+	print(" -d|--get-pbtxen-dbg           Get PB-txen debugging value")
+	print(" -T|--set-pbtxen-to TIMEOUT    Set PB-txen timeout value")
+	print(" -t|--get-pbtxen-to            Get PB-txen timeout value")
+	print(" -W|--set-eemu-we BOOL         Set EEPROM emulation write-enable")
+	print(" -w|--get-eemu-we              Get EEPROM emulation write-enable")
+	print(" -X|--set-xtal-cal VALUE       Set crystal calibration value")
+	print(" -x|--get-xtal-cal             Get crystal calibration value")
+	print("")
+	print("Options:")
+	print(" -h|--help            Show this help")
+
+def main():
+	actions = []
+
+	try:
+		(opts, args) = getopt.getopt(sys.argv[1:],
+			"hD:dT:tW:wX:x",
+			[ "help",
+			  "set-pbtxen-dbg=",
+			  "get-pbtxen-dbg",
+			  "set-pbtxen-to=",
+			  "get-pbtxen-to",
+			  "set-eemu-we=",
+			  "get-eemu-we",
+			  "set-xtal-cal=",
+			  "get-xtal-cal", ])
+	except getopt.GetoptError as e:
+		sys.stderr.write(str(e) + "\n")
+		usage()
+		return 1
+	for (o, v) in opts:
+		if o in ("-h", "--help"):
+			usage()
+			return 0
+		if o in ("-D", "--set-pbtxen-dbg"):
+			actions.append( ("set-pbtxen-dbg", str2bool(v)) )
+		if o in ("-d", "--get-pbtxen-dbg"):
+			actions.append( ("get-pbtxen-dbg", None) )
+		if o in ("-T", "--set-pbtxen-to"):
+			try:
+				v = int(v)
+				if v < 0 or v > 0xFFFF:
+					raise ValueError
+			except ValueError:
+				sys.stderr.write("ERROR: Invalid PB timeout value\n")
+				return 1
+			actions.append( ("set-pbtxen-to", v) )
+		if o in ("-t", "--get-pbtxen-to"):
+			actions.append( ("get-pbtxen-to", None) )
+		if o in ("-W", "--set-eemu-we"):
+			actions.append( ("set-eemu-we", str2bool(v)) )
+		if o in ("-w", "--get-eemu-we"):
+			actions.append( ("get-eemu-we", None) )
+		if o in ("-X", "--set-xtal-cal"):
+			try:
+				v = int(v)
+				if v < 0 or v > 0xFF:
+					raise ValueError
+			except ValueError:
+				sys.stderr.write("ERROR: Invalid xtalcal value\n")
+				return 1
+			actions.append( ("set-xtal-cal", v) )
+		if o in ("-x", "--get-xtal-cal"):
+			actions.append( ("get-xtal-cal", None) )
+	if args or not actions:
+		usage()
+		return 1
+
+	try:
+		conf = PilcConf(I2C_BUS, I2C_DEV)
+		for action, value in actions:
+			if action == "set-pbtxen-dbg":
+				conf.set(conf.CONF_PBTXENDBG, value)
+			elif action == "get-pbtxen-dbg":
+				print(conf.get(conf.CONF_PBTXENDBG))
+			elif action == "set-pbtxen-to":
+				conf.set(conf.CONF_PBTXENTO, value)
+			elif action == "get-pbtxen-to":
+				print(conf.get(conf.CONF_PBTXENTO))
+			elif action == "set-eemu-we":
+				conf.set(conf.CONF_EEMUWE, value)
+			elif action == "get-eemu-we":
+				print(conf.get(conf.CONF_EEMUWE))
+			elif action == "set-xtal-cal":
+				conf.set(conf.CONF_XTALCAL, value)
+			elif action == "get-xtal-cal":
+				print(conf.get(conf.CONF_XTALCAL))
+			else:
+				assert(0)
+		conf.close()
+	except PilcConf.Error as e:
+		sys.stderr.write(str(e) + "\n")
+		return 1
+	return 0
+
+if __name__ == "__main__":
+	sys.exit(main())
