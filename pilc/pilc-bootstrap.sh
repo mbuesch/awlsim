@@ -196,15 +196,6 @@ pilc_bootstrap_first_stage()
 			die "Failed to copy qemu binary."
 	fi
 
-	info "Copying rv3029 kernel module..."
-	local rv3029_dir="$opt_target_dir/tmp/rv3029"
-	mkdir -p "$rv3029_dir" ||\
-		die "Failed to make rv3029 directory."
-	cp "$basedir/pilc/kernel/rtc-rv3029c2.c" "$rv3029_dir/" ||\
-		die "Failed to copy rv3029 source code."
-	cp "$basedir/pilc/kernel/Makefile.kbuild" "$rv3029_dir/Makefile" ||\
-		die "Failed to copy rv3029 Makefile."
-
 	info "Copying PiLC bootstrap script..."
 	cp "$basedir/pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
 		die "Failed to copy bootstrap script."
@@ -338,8 +329,21 @@ EOF
 		die "apt-get dist-upgrade failed"
 
 	info "Installing packages..."
+	if [ "$opt_kernel" = "raspi" ]; then
+		local bootloader=raspberrypi-bootloader
+		apt-get -y purge raspberrypi-bootloader-nokernel ||\
+			die "Failed to remove bootloader"
+	elif [ "$opt_kernel" = "pilc" ]; then
+		local bootloader=raspberrypi-bootloader-nokernel
+		apt-get -y purge raspberrypi-bootloader ||\
+			die "Failed to remove bootloader"
+	else
+		die "Invalid opt_kernel"
+	fi
 	apt-get -y install \
+		"$bootloader" \
 		aptitude \
+		bc \
 		build-essential \
 		console-setup \
 		cython \
@@ -365,7 +369,6 @@ EOF
 		python3-all-dev \
 		python3-rpi.gpio \
 		python3-setuptools \
-		raspberrypi-bootloader \
 		screen \
 		sudo \
 		systemd \
@@ -383,6 +386,13 @@ EOF
 		die "Failed to reconfigure locales"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
+
+	# Build and install kernel
+	if [ "$opt_kernel" = "pilc" ]; then
+		info "Building PiLC kernel..."
+		#TODO
+		die "TODO: PiLC kernel"
+	fi
 
 	info "Removing ssh keys..."
 	if [ -e "$(first /etc/ssh/ssh_host_*_key*)" ]; then
@@ -458,28 +468,6 @@ EOF
 		die "Failed to set 'pi' password."
 	echo 'pi ALL=(ALL:ALL) ALL' > "/etc/sudoers.d/00-pi" ||\
 		die "Failed to create /etc/sudoers.d/00-pi"
-
-#	info "Building updated rv3029 kernel module..."
-#	(
-#		cd /tmp/rv3029 ||\
-#			die "Failed to cd to rv3029 build dir"
-#		for moddir in /lib/modules/*; do
-#			[ -d "$moddir" ] || die "Invalid moddir '$moddir'"
-#			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
-#			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON \
-#			     clean ||\
-#				die "rv3029: Failed to clean"
-#			make KBUILD_DIR="$moddir/build" MODNAME=rtc-rv3029c2 \
-#			     CFLAGS=-DCONFIG_RTC_DRV_RV3029_HWMON ||\
-#				die "rv3029: Failed to build"
-#			cp rtc-rv3029c2.ko "$moddir/kernel/drivers/rtc/" ||\
-#				die "rv3029: Failed to install kernel module"
-#			depmod "$(basename "$moddir")" ||\
-#				die "Failed to run depmod"
-#		done
-#	) || die
-	rm -r /tmp/rv3029 ||\
-		die "Failed to remove rv3029 build dir."
 
 	info "Building awlsim..."
 	(
@@ -760,14 +748,23 @@ usage()
 	echo "pilc-bootstrap.sh [OPTIONS] TARGET_DIR"
 	echo
 	echo "Options:"
+	echo
 	echo " --branch|-b BRANCH      Select the awlsim branch."
 	echo "                         Default: $default_branch"
+	echo
 	echo " --no-cython|-C          Do not build Cython modules."
 	echo "                         Default: Build cython modules"
+	echo
 	echo " --suite|-s SUITE        Select the suite."
 	echo "                         Default: $default_suite"
+	echo
 	echo " --arch|-a ARCH          Select the default arch."
 	echo "                         Default: $default_arch"
+	echo
+	echo " --kernel|-k KERNEL      Kernel selection. Any of:"
+	echo "                         raspi  -> raspberrypi-bootloader package (default)"
+	echo "                         pilc   -> PiLC kernel"
+	echo
 	echo " --qemu-bin|-q PATH      Select qemu-user-static binary."
 	echo "                         Default: $default_qemu"
 	echo
@@ -796,6 +793,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_branch="master"
 	default_suite="jessie"
 	default_arch="armhf"
+	default_kernel="raspi"
 	default_qemu="/usr/bin/qemu-arm-static"
 
 	opt_target_dir=
@@ -803,6 +801,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_cython=1
 	opt_suite="$default_suite"
 	opt_arch="$default_arch"
+	opt_kernel="$default_kernel"
 	opt_qemu="$default_qemu"
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
@@ -830,6 +829,12 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			shift
 			opt_arch="$1"
 			[ -n "$opt_arch" ] || die "No arch given"
+			;;
+		--kernel|-k)
+			shift
+			opt_kernel="$1"
+			[ "$opt_kernel" = "raspi" -o \
+			  "$opt_kernel" = "pilc" ] || die "Invalid kernel"
 			;;
 		--qemu-bin|-q)
 			shift
@@ -864,6 +869,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_cython
 	export opt_suite
 	export opt_arch
+	export opt_kernel
 	export opt_qemu
 	export opt_skip_debootstrap1
 	export opt_skip_debootstrap2
