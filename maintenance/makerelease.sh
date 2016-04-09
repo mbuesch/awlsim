@@ -23,46 +23,11 @@ hook_get_version()
 	version="$maj.$min"
 }
 
-# $1=file
-__check_text_encoding()
-{
-	local file="$1"
-
-	[ x"$(du -b "$file" | cut -f1)" = x"0" ] && return
-
-	# Check CR/LF
-	file -L "$file" | grep -qe 'CRLF line terminators' || {
-		die "ERROR: '$file' is not in DOS format."
-	}
-	# Check file encoding
-	file -L "$file" | grep -qEe '(ISO-8859 text)|(ASCII text)' || {
-		die "ERROR: '$file' invalid file encoding."
-	}
-}
-
-# $1=directory
-__check_test_dir_encoding()
-{
-	local directory="$1"
-
-	for entry in "$directory"/*; do
-		[ -d "$entry" ] && {
-			__check_test_dir_encoding "$entry"
-			continue
-		}
-		[ "$(echo -n "$entry" | tail -c4)" = ".awl" ] || continue
-		__check_text_encoding "$entry"
-	done
-}
-
 hook_post_checkout()
 {
 	default_hook_post_checkout "$@"
 
 	rm -r "$1"/maintenance
-
-	info "Checking test file encodings"
-	__check_test_dir_encoding "$1"/tests
 }
 
 hook_testbuild()

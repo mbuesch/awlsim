@@ -150,6 +150,24 @@ have_prog()
 	which "$program" >/dev/null 2>&1
 }
 
+# Check DOS file encoding.
+# $1=file
+check_dos_text_encoding()
+{
+	local file="$1"
+
+	if [ x"$(du -b "$file" | cut -f1)" != x"0" ]; then
+		# Check CR/LF
+		file -L "$file" | grep -qe 'CRLF line terminators' || {
+			die "ERROR: '$file' is not in DOS format."
+		}
+		# Check file encoding
+		file -L "$file" | grep -qEe '(ISO-8859 text)|(ASCII text)' || {
+			die "ERROR: '$file' invalid file encoding."
+		}
+	fi
+}
+
 # $1=interpreter
 setup_test_environment()
 {
@@ -289,6 +307,7 @@ __run_test()
 	# Check the file type and run the tester
 	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" -o\
 	     "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
+		check_dos_text_encoding "$testfile"
 		run_awl_test "$interpreter" "$testfile" "$@"
 	elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
 		run_sh_test "$interpreter" "$testfile" "$@"
