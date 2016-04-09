@@ -1,3 +1,6 @@
 [submodule "pilc/raspi-hat/raspi-hat-tools"]
 	path = pilc/raspi-hat/raspi-hat-tools
 	url = https://github.com/raspberrypi/hats.git
+[submodule "pilc/kernel"]
+	path = pilc/kernel
+	url = https://git.bues.ch/git/linux.git

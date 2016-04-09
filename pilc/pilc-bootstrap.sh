@@ -216,6 +216,17 @@ pilc_bootstrap_first_stage()
 			die "Failed to remove .git directory."
 	) || die
 
+
+	# Copy kernel tree
+	if [ "$opt_kernel" = "pilc" ]; then
+		info "Copying PiLC kernel tree..."
+		rsync -rlt --inplace --exclude='.git*' \
+			"$basedir/pilc/kernel/" "$opt_target_dir/tmp/kernel/" ||\
+			die "Failed to copy PiLC kernel."
+		cp "$basedir/pilc/kernel.config" "$opt_target_dir/tmp/kernel/.config" ||\
+			die "Failed to copy PiLC kernel config."
+	fi
+
 	# Second stage will mount a few filesystems.
 	# Keep track to umount them in cleanup.
 	mp_proc="$opt_target_dir/proc"
@@ -355,6 +366,7 @@ EOF
 		htop \
 		i2c-tools \
 		irqbalance \
+		libncurses5-dev \
 		locales \
 		nano \
 		openssh-server \
@@ -390,7 +402,15 @@ EOF
 	# Build and install kernel
 	if [ "$opt_kernel" = "pilc" ]; then
 		info "Building PiLC kernel..."
-		#TODO
+		(
+			cd "/tmp/kernel" ||\
+				die "Failed to cd to /tmp/kernel"
+			make oldconfig ||\
+				die "Kernel oldconfig failed"
+			make -j "$_NPROCESSORS_ONLN" ||\
+				die "Kernel build failed"
+			#TODO
+		) || die
 		die "TODO: PiLC kernel"
 	fi
 
@@ -703,6 +723,7 @@ EOF
 		--exclude='proc/*' \
 		--exclude='sys/*' \
 		--exclude='dev/shm/*' \
+		--exclude='tmp/*' \
 		--exclude="$(basename "$opt_qemu")" \
 		"$target_dir/" "$mp_rootimgfile/" ||\
 		die "Failed to copy root files."
@@ -789,6 +810,9 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	# First stage
 
 	trap cleanup EXIT
+
+	export _NPROCESSORS_ONLN="$(getconf _NPROCESSORS_ONLN)"
+	[ -n "$_NPROCESSORS_ONLN" ] || die "Failed to get # of online CPUs"
 
 	default_branch="master"
 	default_suite="jessie"
