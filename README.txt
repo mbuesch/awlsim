@@ -20,4 +20,4 @@ Awlsim is free of charge, too.
 
 
 The official website of awlsim is:
-http://bues.ch/h/awlsim
+https://bues.ch/h/awlsim
