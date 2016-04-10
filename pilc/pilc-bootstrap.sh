@@ -377,11 +377,13 @@ EOF
 		python \
 		python-all-dev \
 		python-rpi.gpio \
+		python-serial \
 		python-setuptools \
 		python-smbus \
 		python3 \
 		python3-all-dev \
 		python3-rpi.gpio \
+		python3-serial \
 		python3-setuptools \
 		python3-smbus \
 		screen \
@@ -502,6 +504,13 @@ set backspace=indent,start
 set number
 EOF
 	[ $? -eq 0 ] || die "Failed to create /home/pi/.vim/vimrc"
+	cat > /home/pi/.tmux.conf <<EOF
+# Default new panes and windows to be opened in the current panes path
+bind-key c new-window -c "#{pane_current_path}"
+bind-key % split-window -h -c "#{pane_current_path}"
+bind-key "\"" split-window -c "#{pane_current_path}"
+EOF
+	[ $? -eq 0 ] || die "Failed to create /home/pi/.tmux.conf"
 
 	info "Building awlsim..."
 	(
