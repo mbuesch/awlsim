@@ -151,8 +151,8 @@ void pb_txen_set_timeout(uint16_t microseconds)
 
 	build_assert(ARRAY_SIZE(clkdivs) == ARRAY_SIZE(ps_tab));
 
-	mul = 1000000UL;
-	div = F_CPU;
+	mul = F_CPU;
+	div = 1000000UL;
 	while ((mul % 10 == 0) && (div % 10 == 0)) {
 		mul /= 10;
 		div /= 10;
