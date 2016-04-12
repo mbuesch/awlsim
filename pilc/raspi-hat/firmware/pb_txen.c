@@ -41,11 +41,13 @@
 #define PB_TXENBIT	PB4
 #define PB_TXENPOL	1
 
+/* Run time compensation subtracted from timeout value. */
+#define PBTXEN_RTCOMP_US	6
+
 
 struct pb_txen_state {
 	bool txen;		/* Current TxEn state. */
 	bool debug;		/* Debug mode enabled? */
-	uint8_t ps;		/* The active prescaler. */
 	uint16_t timeout_us;	/* TxEn timeout in microseconds. */
 };
 
@@ -79,23 +81,16 @@ static inline void pb_txen_set(bool enable)
 	}
 }
 
-static inline void pb_txen_timer_config(uint8_t ps)
-{
-	TCCR1 = (0 << CTC1) | (0 << PWM1A) |
-		(0 << COM1A1) | (0 << COM1A0) |
-		ps;
-}
-
 static inline void pb_txen_timer_start(void)
 {
 	TCNT1 = 0;
-	pb_txen_timer_config(pb_txen.ps);
+	TIFR = (1 << OCF1A);
+	TIMSK |= (1 << OCIE1A);
 }
 
 static inline void pb_txen_timer_stop(void)
 {
-	/* Disable prescaler */
-	pb_txen_timer_config(0);
+	TIMSK &= (uint8_t)~(1 << OCIE1A);
 }
 
 ISR(TIMER1_COMPA_vect)
@@ -151,6 +146,12 @@ void pb_txen_set_timeout(uint16_t microseconds)
 
 	build_assert(ARRAY_SIZE(clkdivs) == ARRAY_SIZE(ps_tab));
 
+	pb_txen.timeout_us = microseconds;
+	if (microseconds > PBTXEN_RTCOMP_US)
+		microseconds -= PBTXEN_RTCOMP_US;
+	else
+		microseconds = 0;
+
 	mul = F_CPU;
 	div = 1000000UL;
 	while ((mul % 10 == 0) && (div % 10 == 0)) {
@@ -169,9 +170,10 @@ void pb_txen_set_timeout(uint16_t microseconds)
 	pb_txen_set(false);
 	pb_txen_timer_stop();
 	pb_txen.txen = false;
-	pb_txen.ps = ps;
-	pb_txen.timeout_us = microseconds;
 	OCR1A = (uint8_t)ocr;
+	TCCR1 = (0 << CTC1) | (0 << PWM1A) |
+		(0 << COM1A1) | (0 << COM1A0) |
+		ps;
 
 	memory_barrier();
 }
