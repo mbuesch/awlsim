@@ -208,7 +208,7 @@ void pb_txen_init(void)
 	_delay_ms(20);
 
 	pb_txen_timer_init();
-	pb_txen_set_timeout(1000);
+	pb_txen_set_timeout(1146);
 }
 
 void pb_txen_work(void)
