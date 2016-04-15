@@ -4,3 +4,6 @@
 [submodule "pilc/kernel"]
 	path = pilc/kernel
 	url = https://git.bues.ch/git/linux.git
+[submodule "pilc/pyprofibus"]
+	path = pilc/pyprofibus
+	url = https://git.bues.ch/git/pyprofibus.git
