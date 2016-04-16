@@ -1,3 +1,4 @@
 *.bak
 *.bck
 *-cache.*
+_saved_*.*
