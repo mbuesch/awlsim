@@ -2,7 +2,7 @@
 #
 # AWL simulator - PyProfibus hardware interface
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,12 @@ class HardwareInterface(AbstractHardwareInterface):
 
 	# Hardware-specific parameters
 	paramDescs = [
+		HwParamDesc_str("phyType",
+				defaultValue = "serial",
+				description = "CP PHY type"),
+		HwParamDesc_str("dev",
+				defaultValue = "/dev/ttyS0",
+				description = "Serial device node."),
 		HwParamDesc_int("debug",
 				minValue = 0,
 				description = "Debug level."),
@@ -46,12 +52,6 @@ class HardwareInterface(AbstractHardwareInterface):
 				defaultValue = 1,
 				minValue = 0, maxValue = 126,
 				description = "The DP-Address of the master."),
-		HwParamDesc_int("spiDev",
-				minValue = 0,
-				description = "The SPI device number."),
-		HwParamDesc_int("spiChip",
-				minValue = 0,
-				description = "The SPI device chip-select number."),
 	]
 
 	def __init__(self, sim, parameters={}):
@@ -89,6 +89,7 @@ class HardwareInterface(AbstractHardwareInterface):
 		# and keep references to it.
 		try:
 			import pyprofibus
+			import pyprofibus.phy_serial
 			self.pyprofibus = pyprofibus
 		except (ImportError, RuntimeError) as e:
 			self.raiseException("Failed to import PROFIBUS protocol stack "
@@ -98,21 +99,34 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.phy = None
 		self.master = None
 		try:
-			self.phy = self.pyprofibus.CpPhy(device = self.getParamValueByName("spiDev"),
-							 chipselect = self.getParamValueByName("spiChip"),
-							 debug = True if (self.getParamValueByName("debug") >= 2) else False)
-			self.phy.profibusSetPhyConfig(baudrate = self.getParamValueByName("baud"))
+			debug = self.getParamValueByName("debug")
+			dev = self.getParamValueByName("dev")
+			phyType = self.getParamValueByName("phyType")
+
+			if phyType.lower() == "serial":
+				baud = self.getParamValueByName("baud")
+				self.phy = self.pyprofibus.phy_serial.CpPhySerial(
+						debug = (debug >= 2),
+						port = dev)
+				self.phy.setConfig(baudrate = baud)
+			else:
+				self.raiseException("Invalid phyType parameter value")
+
 			if self.getParamValueByName("masterClass") == 1:
 				DPM_cls = self.pyprofibus.DPM1
 			else:
 				DPM_cls = self.pyprofibus.DPM2
+			masterAddr = self.getParamValueByName("masterAddr")
 			self.master = DPM_cls(phy = self.phy,
-					      masterAddr = self.getParamValueByName("masterAddr"),
-					      debug = True if (self.getParamValueByName("debug") >= 1) else False)
+					      masterAddr = masterAddr,
+					      debug = (debug >= 1))
+
 			self.__setupSlaves()
 			self.master.initialize()
+
 			self.slaveList = self.master.getSlaveList()
 			self.cachedInputs = [None] * len(self.slaveList)
+
 		except self.pyprofibus.PhyError as e:
 			self.raiseException("Profibus-PHY error: %s" % str(e))
 			self.__cleanup()
