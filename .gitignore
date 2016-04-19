@@ -3,10 +3,12 @@ __pycache__/
 *.pyo
 *$py.class
 
+*.swp
+
 .pybuild/
 build/
 dist/
-awlsim_cython
 MANIFEST
 
-*.swp
+awlsim_cython
+pyprofibus
