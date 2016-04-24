@@ -218,14 +218,10 @@ void pb_txen_work(void)
 		wdt_reset();
 
 		memory_barrier();
-		if (pb_tx_get() || pb_txen.debug) {
-			/* We are transmitting. Set TxEn. */
-			pb_txen_set(true);
-
-			memory_barrier();
-			if (!pb_txen.txen) {
-				/* We just started transmitting.
-				 * Start the TxEn timer. */
+		if (!pb_txen.txen) {
+			if (pb_tx_get() || pb_txen.debug) {
+				/* We are transmitting. Set TxEn. */
+				pb_txen_set(true);
 				pb_txen_timer_start();
 				pb_txen.txen = true;
 			}
