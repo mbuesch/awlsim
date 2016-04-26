@@ -144,6 +144,8 @@ class HardwareInterface(AbstractHardwareInterface):
 		address = self.inputAddressBase
 		for slave in self.slaveList:
 			# Get the cached slave-data
+			if not self.cachedInputs:
+				break
 			inData = self.cachedInputs.pop(0)
 			if not inData:
 				continue
