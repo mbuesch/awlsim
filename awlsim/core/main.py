@@ -66,6 +66,7 @@ class AwlSim(object):
 
 	def __init__(self, profileLevel=0):
 		self.__registeredHardware = []
+		self._fatalHwErrors = True
 		self.cpu = S7CPU()
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
 		self.cpu.setPeripheralWriteCallback(self.__peripheralWriteCallback)
@@ -116,12 +117,21 @@ class AwlSim(object):
 
 		return sio.getvalue()
 
-	def _handleSimException(self, e):
+	def _handleSimException(self, e, fatal = True):
+		"""Handle an exception and add some information
+		to it. Note that this might get called twice or more often
+		for the same exception object.
+		"""
 		if not e.getCpu():
 			# The CPU reference is not set, yet.
 			# Set it to the current CPU.
 			e.setCpu(self.cpu)
-		raise e
+		if fatal:
+			# Re-raise the exception for upper layers to catch.
+			raise e
+		else:
+			# Non-fatal. Just log an error.
+			printError(str(e))
 
 	@throwsAwlSimError
 	def __handleMaintenanceRequest(self, e):
@@ -174,14 +184,11 @@ class AwlSim(object):
 	@profiled(2)
 	@throwsAwlSimError
 	def startup(self):
-		for hw in self.__registeredHardware:
-			hw.startup()
+		self.__hwStartup()
 		try:
-			for hw in self.__registeredHardware:
-				hw.readInputs()
+			self.__readHwInputs()
 			self.cpu.startup()
-			for hw in self.__registeredHardware:
-				hw.writeOutputs()
+			self.__writeHwOutputs()
 		except MaintenanceRequest as e:
 			self.__handleMaintenanceRequest(e)
 
@@ -190,11 +197,11 @@ class AwlSim(object):
 			self._profileStart()
 
 		try:
-			for hw in self.__registeredHardware:
-				hw.readInputs()
+			if self.__registeredHardware:
+				self.__readHwInputs()
 			self.cpu.runCycle()
-			for hw in self.__registeredHardware:
-				hw.writeOutputs()
+			if self.__registeredHardware:
+				self.__writeHwOutputs()
 		except AwlSimError as e:
 			self._handleSimException(e)
 		except MaintenanceRequest as e:
@@ -238,6 +245,41 @@ class AwlSim(object):
 
 		return HwModLoader.loadModule(name).getInterface()
 
+	def __hwStartup(self):
+		"""Startup all attached hardware modules.
+		"""
+
+		# Hw errors are fatal if debugging.
+		# Otherwise just log the errors, but don't abort the program.
+		self._fatalHwErrors = bool(Logging.loglevel >= Logging.LOG_DEBUG)
+
+		for hw in self.__registeredHardware:
+			try:
+				hw.startup()
+			except AwlSimError as e:
+				# Always fatal in startup.
+				self._handleSimException(e, fatal = True)
+
+	def __readHwInputs(self):
+		# Read all hardware module inputs.
+
+		for hw in self.__registeredHardware:
+			try:
+				hw.readInputs()
+			except AwlSimError as e:
+				self._handleSimException(e,
+					fatal = self._fatalHwErrors)
+
+	def __writeHwOutputs(self):
+		# Write all hardware module outputs.
+
+		for hw in self.__registeredHardware:
+			try:
+				hw.writeOutputs()
+			except AwlSimError as e:
+				self._handleSimException(e,
+					fatal = self._fatalHwErrors)
+
 	def __peripheralReadCallback(self, userData, width, offset):
 		# The CPU issued a direct peripheral read access.
 		# Poke all registered hardware modules, but only return the value
@@ -245,9 +287,13 @@ class AwlSim(object):
 
 		retValue = None
 		for hw in self.__registeredHardware:
-			value = hw.directReadInput(width, offset)
-			if value is not None:
-				retValue = value
+			try:
+				value = hw.directReadInput(width, offset)
+				if value is not None:
+					retValue = value
+			except AwlSimError as e:
+				self._handleSimException(e,
+					fatal = self._fatalHwErrors)
 		return retValue
 
 	def __peripheralWriteCallback(self, userData, width, offset, value):
@@ -256,10 +302,14 @@ class AwlSim(object):
 		# Returns true, if any hardware accepted the value.
 
 		retOk = False
-		for hw in self.__registeredHardware:
-			ok = hw.directWriteOutput(width, offset, value)
-			if not retOk:
-				retOk = ok
+		try:
+			for hw in self.__registeredHardware:
+				ok = hw.directWriteOutput(width, offset, value)
+				if not retOk:
+					retOk = ok
+		except AwlSimError as e:
+			self._handleSimException(e,
+				fatal = self._fatalHwErrors)
 		return retOk
 
 	def __repr__(self):
