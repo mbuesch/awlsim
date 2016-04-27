@@ -28,3 +28,6 @@ export NOCYTHON=0
 override_dh_auto_install:
 	dh_auto_install
 	rm -rf debian/destdir-*/usr/bin/*.bat
+
+override_dh_auto_test:
+	true
