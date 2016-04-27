@@ -213,8 +213,12 @@ pilc_bootstrap_first_stage()
 			die "Failed to cd"
 		git checkout -b __build "$opt_branch" ||\
 			die "Failed to check out branch."
-		rm -r ".git" ||\
+		git submodule update --init pilc/pyprofibus ||\
+			die "Failed to pull pyprofibus submodule"
+		rm -r .git pilc/pyprofibus/.git ||\
 			die "Failed to remove .git directory."
+		mv pilc/pyprofibus .. ||\
+			die "Failed to move pyprofibus submodule."
 	) || die
 
 
@@ -604,7 +608,7 @@ EOF
 			die "Failed to install awlsim-test"
 		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
 			die "Failed to install awlsim-linuxcnc-hal"
-		# GUI
+		# GUI and misc
 		mkdir -p /home/pi/awlsim-gui ||\
 			die "mkdir /home/pi/awlsim-gui failed"
 		cp ../python*-awlsim-gui_*.deb ../awlsim-gui_*.deb \
@@ -630,6 +634,22 @@ EOF
 		    die "Failed to create awlsim-server.service"
 		systemctl enable awlsim-server.service ||\
 			die "Failed to enable awlsim-server-service"
+	) || die
+	info "Building pyprofibus..."
+	(
+		cd /tmp/awlsim/pyprofibus ||\
+			die "Failed to cd"
+		debuild -uc -us -b -d || die "debuild failed"
+		info "Built pyprofibus files:"
+		ls .. || die "Failed to list results"
+
+		info "Installing pyprofibus..."
+		dpkg -i ../python-pyprofibus_*.deb ||\
+			die "Failed to install python-pyprofibus"
+		dpkg -i ../python3-pyprofibus_*.deb ||\
+			die "Failed to install python3-pyprofibus"
+		dpkg -i ../pypy-pyprofibus_*.deb ||\
+			die "Failed to install pypy-pyprofibus"
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
