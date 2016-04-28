@@ -738,7 +738,7 @@ EOF
 	# Prepare image paths.
 	local target_dir="$(readlink -m "${opt_target_dir}")"
 	[ -n "$target_dir" ] || die "Failed to resolve target dir."
-	local imgfile="${target_dir}.img"
+	local imgfile="${target_dir}${opt_imgsuffix}.img"
 	local bootimgfile="${imgfile}.boot"
 	mp_bootimgfile="${bootimgfile}.mp"
 	local rootimgfile="${imgfile}.root"
@@ -840,6 +840,9 @@ usage()
 	echo " --qemu-bin|-q PATH      Select qemu-user-static binary."
 	echo "                         Default: $default_qemu"
 	echo
+	echo " --img-suffix|-s SUFFIX  Image file suffix."
+	echo "                         Default: $default_imgsuffix"
+	echo
 	echo " --skip-debootstrap1|-1  Skip debootstrap first stage."
 	echo " --skip-debootstrap2|-2  Skip debootstrap second stage."
 }
@@ -870,6 +873,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_arch="armhf"
 	default_kernel="raspi"
 	default_qemu="/usr/bin/qemu-arm-static"
+	default_imgsuffix="-$(date '+%Y%m%d')"
 
 	opt_target_dir=
 	opt_branch="$default_branch"
@@ -880,6 +884,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_qemu="$default_qemu"
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
+	opt_imgsuffix="$default_imgsuffix"
 
 	while [ $# -ge 1 ]; do
 		case "$1" in
@@ -922,6 +927,10 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 		--skip-debootstrap2|-2)
 			opt_skip_debootstrap2=1
 			;;
+		--img-suffix|-s)
+			shift
+			opt_imgsuffix="$1"
+			;;
 		*)
 			opt_target_dir="$*"
 			break
@@ -948,6 +957,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_qemu
 	export opt_skip_debootstrap1
 	export opt_skip_debootstrap2
+	export opt_imgsuffix
 	export __PILC_BOOTSTRAP_SECOND_STAGE__=1
 	chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
 		die "Chroot failed."
