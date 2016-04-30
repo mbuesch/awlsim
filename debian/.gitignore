@@ -1,7 +1,9 @@
 destdir-*/
 python-awlsim*/
+python-libpilc/
 cython-awlsim*/
 python3-awlsim*/
+python3-libpilc/
 cython3-awlsim*/
 pypy-awlsim*/
 awlsim-client/
@@ -10,6 +12,7 @@ awlsim-gui/
 awlsim-symtab/
 awlsim-test/
 awlsim-linuxcnc-hal/
+pilc-hat-conf/
 
 files
 debhelper-build-stamp

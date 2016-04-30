@@ -127,6 +127,15 @@ Description: S7 AWL/STL Soft-PLC Raspberry Pi hardware module (Python 2)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
 
+Package: python-libpilc
+Architecture: any
+Depends: ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Description: PiLC library (Python 2)
+ Support routines for the PiLC.
+
+
 Package: python3-awlsim
 Architecture: any
 Depends: ${misc:Depends},
@@ -232,6 +241,15 @@ Depends: python3-awlsim,
          ${shlibs:Depends}
 Description: S7 AWL/STL Soft-PLC Raspberry Pi hardware module (Python 3)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: python3-libpilc
+Architecture: any
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: PiLC library (Python 3)
+ Support routines for the PiLC.
 
 
 Package: pypy-awlsim
@@ -349,3 +367,14 @@ Depends: python3-awlsim-gui,
 Suggests: python-awlsim-gui
 Description: S7 AWL/STL Soft-PLC graphical user interface
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+
+
+Package: pilc-hat-conf
+Architecture: any
+Depends: python3-libpilc,
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Suggests: python-libpilc
+Description: Raspberry Pi PiLC HAT configuration tool
+ Configuration tool for the PiLC HAT.
