@@ -20,115 +20,18 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+
+from libpilc.raspi_hat_conf import PilcConf
+from libpilc.util import str2bool
+
 import sys
-import smbus
 import getopt
 
 
 I2C_BUS = 0
 I2C_DEV = 0x2F
 
-
-class PilcConf(object):
-	CONF_NONE	= 0
-	CONF_XTALCAL	= 1
-	CONF_EEMUWE	= 2
-	CONF_PBTXENDBG	= 3
-	CONF_PBTXENTO	= 4
-
-	sizes = {
-		CONF_NONE	: 0,
-		CONF_XTALCAL	: 8,
-		CONF_EEMUWE	: 1,
-		CONF_PBTXENDBG	: 1,
-		CONF_PBTXENTO	: 16,
-	}
-
-	TRIES = 5
-
-	class Error(Exception):
-		pass
-
-	def __init__(self, bus, dev):
-		try:
-			self.__i2c = smbus.SMBus()
-			self.__i2c.open(bus)
-			self.__dev = dev
-		except OSError as e:
-			raise self.Error("Failed to init I2C communication:\n" + str(e))
-
-	def close(self):
-		try:
-			return self.__i2c.close()
-		except OSError as e:
-			raise self.Error("Failed to close I2C communication:\n" + str(e))
-
-	def get(self, confItem):
-		itemSize = self.sizes[confItem]
-		handlers = {
-			0	: lambda confItem: None,
-			1	: self.__readBool,
-			8	: self.__readU8,
-			16	: self.__readU16,
-		}
-		for i in range(self.TRIES):
-			try:
-				return handlers[itemSize](confItem)
-			except OSError:
-				continue
-		raise self.Error("Failed to read config item %d" % confItem)
-
-	def set(self, confItem, value):
-		itemSize = self.sizes[confItem]
-		handlers = {
-			0	: lambda confItem, data: None,
-			1	: self.__writeBool,
-			8	: self.__writeU8,
-			16	: self.__writeU16,
-		}
-		for i in range(self.TRIES):
-			try:
-				handlers[itemSize](confItem, value)
-				checkValue = self.get(confItem)
-				if value == checkValue:
-					return
-			except OSError:
-				continue
-		raise self.Error("Failed to write config item %d" % confItem)
-
-	def __writeBool(self, confItem, data):
-		data = 1 if data else 0
-		self.__writeU8(confItem, data)
-
-	def __writeU8(self, confItem, data):
-		payload = [ (data & 0xFF), (~data & 0xFF), ]
-		self.__i2c.write_i2c_block_data(self.__dev, confItem, payload)
-
-	def __writeU16(self, confItem, data):
-		payload = [ (data & 0xFF), ((data >> 8) & 0xFF),
-			    (~data & 0xFF), ((~data >> 8) & 0xFF), ]
-		self.__i2c.write_i2c_block_data(self.__dev, confItem, payload)
-
-	def __readBool(self, confItem):
-		return True if self.__readU8(confItem) else False
-
-	def __readU8(self, confItem):
-		payload = self.__i2c.read_i2c_block_data(self.__dev, confItem, 1)
-		return payload[0]
-
-	def __readU16(self, confItem):
-		payload = self.__i2c.read_i2c_block_data(self.__dev, confItem, 2)
-		return payload[0] | (payload[1] << 8)
-
-def str2bool(string):
-	if string.strip().lower() in {"yes", "true", "on"}:
-		return True
-	if string.strip().lower() in {"no", "false", "off"}:
-		return False
-	try:
-		return bool(int(string))
-	except ValueError:
-		return False
 
 def usage():
 	print("PiLC HAT configuration tool")
@@ -146,14 +49,18 @@ def usage():
 	print(" -x|--get-xtal-cal             Get crystal calibration value")
 	print("")
 	print("Options:")
-	print(" -h|--help            Show this help")
+	print(" -h|--help                     Show this help")
+	print(" -b|--bus BUSADDR              Use bus address. Default: 0x%02X" % I2C_BUS)
+	print(" -e|--dev DEVADDR              Use device address. Default: 0x%02X" % I2C_DEV)
 
 def main():
+	opt_bus = I2C_BUS
+	opt_dev = I2C_DEV
 	actions = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hD:dT:tW:wX:x",
+			"hD:dT:tW:wX:xb:e:",
 			[ "help",
 			  "set-pbtxen-dbg=",
 			  "get-pbtxen-dbg",
@@ -162,7 +69,9 @@ def main():
 			  "set-eemu-we=",
 			  "get-eemu-we",
 			  "set-xtal-cal=",
-			  "get-xtal-cal", ])
+			  "get-xtal-cal",
+			  "bus=",
+			  "dev=", ])
 	except getopt.GetoptError as e:
 		sys.stderr.write(str(e) + "\n")
 		usage()
@@ -192,7 +101,7 @@ def main():
 			actions.append( ("get-eemu-we", None) )
 		if o in ("-X", "--set-xtal-cal"):
 			try:
-				v = int(v)
+				v = int(v, 0)
 				if v < 0 or v > 0xFF:
 					raise ValueError
 			except ValueError:
@@ -201,12 +110,26 @@ def main():
 			actions.append( ("set-xtal-cal", v) )
 		if o in ("-x", "--get-xtal-cal"):
 			actions.append( ("get-xtal-cal", None) )
+		if o in ("-b", "--bus"):
+			try:
+				opt_bus = int(v, 0)
+				if opt_bus < 0 or opt_bus > 0xFF:
+					raise ValueError
+			except ValueError:
+				sys.stderr.write("ERROR: Invalid bus address\n")
+		if o in ("-e", "--dev"):
+			try:
+				opt_dev = int(v, 0)
+				if opt_dev < 0 or opt_dev > 0x7F:
+					raise ValueError
+			except ValueError:
+				sys.stderr.write("ERROR: Invalid device address\n")
 	if args or not actions:
 		usage()
 		return 1
 
 	try:
-		conf = PilcConf(I2C_BUS, I2C_DEV)
+		conf = PilcConf(opt_bus, opt_dev)
 		for action, value in actions:
 			if action == "set-pbtxen-dbg":
 				conf.set(conf.CONF_PBTXENDBG, value)
@@ -223,7 +146,7 @@ def main():
 			elif action == "set-xtal-cal":
 				conf.set(conf.CONF_XTALCAL, value)
 			elif action == "get-xtal-cal":
-				print(conf.get(conf.CONF_XTALCAL))
+				print("0x%02X" % conf.get(conf.CONF_XTALCAL))
 			else:
 				assert(0)
 		conf.close()
