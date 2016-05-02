@@ -57,7 +57,8 @@ class PilcConf(object):
 		"""
 		try:
 			with open("/proc/device-tree/hat/product", "rb") as fd:
-				if fd.read().decode("UTF-8").strip() != "PiLC":
+				prod = fd.read().decode("UTF-8").rstrip('\0').strip()
+				if prod != "PiLC":
 					return False
 		except (IOError, UnicodeError) as e:
 			return False
