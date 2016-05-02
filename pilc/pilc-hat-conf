@@ -25,12 +25,9 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from libpilc.raspi_hat_conf import PilcConf
 from libpilc.util import str2bool
 
+import re
 import sys
 import getopt
-
-
-I2C_BUS = 0
-I2C_DEV = 0x2F
 
 
 def usage():
@@ -43,6 +40,7 @@ def usage():
 	print(" -d|--get-pbtxen-dbg           Get PB-txen debugging value")
 	print(" -T|--set-pbtxen-to TIMEOUT    Set PB-txen timeout value")
 	print(" -t|--get-pbtxen-to            Get PB-txen timeout value")
+	print(" -B|--set-baudrate BAUD        Set PB-txen timeout for baudrate")
 	print(" -W|--set-eemu-we BOOL         Set EEPROM emulation write-enable")
 	print(" -w|--get-eemu-we              Get EEPROM emulation write-enable")
 	print(" -X|--set-xtal-cal VALUE       Set crystal calibration value")
@@ -50,22 +48,25 @@ def usage():
 	print("")
 	print("Options:")
 	print(" -h|--help                     Show this help")
-	print(" -b|--bus BUSADDR              Use bus address. Default: 0x%02X" % I2C_BUS)
-	print(" -e|--dev DEVADDR              Use device address. Default: 0x%02X" % I2C_DEV)
+	print(" -b|--bus BUSADDR              Use bus address. Default: 0x%02X" %\
+	      PilcConf.DEFAULT_BUS)
+	print(" -e|--dev DEVADDR              Use device address. Default: 0x%02X" %\
+	      PilcConf.DEFAULT_DEV)
 
 def main():
-	opt_bus = I2C_BUS
-	opt_dev = I2C_DEV
+	opt_bus = PilcConf.DEFAULT_BUS
+	opt_dev = PilcConf.DEFAULT_DEV
 	actions = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hD:dT:tW:wX:xb:e:",
+			"hD:dT:tB:W:wX:xb:e:",
 			[ "help",
 			  "set-pbtxen-dbg=",
 			  "get-pbtxen-dbg",
 			  "set-pbtxen-to=",
 			  "get-pbtxen-to",
+			  "set-baudrate=",
 			  "set-eemu-we=",
 			  "get-eemu-we",
 			  "set-xtal-cal=",
@@ -95,6 +96,23 @@ def main():
 			actions.append( ("set-pbtxen-to", v) )
 		if o in ("-t", "--get-pbtxen-to"):
 			actions.append( ("get-pbtxen-to", None) )
+		if o in ("-B", "--set-baudrate"):
+			try:
+				v = v.lower().strip()
+				fact = 1
+				m = re.match(r'^([\d\.]+)\s*((k)|(kbaud)|(kbit))$', v)
+				if m:
+					v = m.group(1)
+					fact = 1000
+				m = re.match(r'^([\d\.]+)\s*((m)|(mbaud)|(mbit))$', v)
+				if m:
+					v = m.group(1)
+					fact = 1000000
+				v = float(v) * fact
+				actions.append( ("set-baudrate", v) )
+			except ValueError:
+				sys.stderr.write("ERROR: Invalid PB baudrate value\n")
+				return 1
 		if o in ("-W", "--set-eemu-we"):
 			actions.append( ("set-eemu-we", str2bool(v)) )
 		if o in ("-w", "--get-eemu-we"):
@@ -139,6 +157,8 @@ def main():
 				conf.set(conf.CONF_PBTXENTO, value)
 			elif action == "get-pbtxen-to":
 				print(conf.get(conf.CONF_PBTXENTO))
+			elif action == "set-baudrate":
+				conf.setBaudrate(value / 1000.0)
 			elif action == "set-eemu-we":
 				conf.set(conf.CONF_EEMUWE, value)
 			elif action == "get-eemu-we":

@@ -21,10 +21,17 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import math
 import smbus
 
 
 class PilcConf(object):
+	"""Hardware configuration of the PiLC hat.
+	"""
+
+	DEFAULT_BUS	= 0x00
+	DEFAULT_DEV	= 0x2F
+
 	CONF_NONE	= 0
 	CONF_XTALCAL	= 1
 	CONF_EEMUWE	= 2
@@ -44,7 +51,19 @@ class PilcConf(object):
 	class Error(Exception):
 		pass
 
-	def __init__(self, bus, dev):
+	@classmethod
+	def havePilcHat(cls):
+		"""Returns True, if a PiLC HAT is attached to the device.
+		"""
+		try:
+			with open("/proc/device-tree/hat/product", "rb") as fd:
+				if fd.read().decode("UTF-8").strip() != "PiLC":
+					return False
+		except (IOError, UnicodeError) as e:
+			return False
+		return True
+
+	def __init__(self, bus = DEFAULT_BUS, dev = DEFAULT_DEV):
 		try:
 			self.__i2c = smbus.SMBus()
 			self.__i2c.open(bus)
@@ -57,6 +76,17 @@ class PilcConf(object):
 			return self.__i2c.close()
 		except (OSError, IOError) as e:
 			raise self.Error("Failed to close I2C communication:\n" + str(e))
+
+	def __baudToFrameUs(self, kBaud):
+		"""Get the frame length in microseconds.
+		"""
+		symsPerFrame = 1 + 8 + 1 + 1
+		symUs = (1.0 / (kBaud * 1000)) * 1000000
+		frameUs = symUs * symsPerFrame
+		return int(math.ceil(frameUs))
+
+	def setBaudrate(self, kBaud):
+		self.set(self.CONF_PBTXENTO, self.__baudToFrameUs(kBaud))
 
 	def get(self, confItem):
 		itemSize = self.sizes[confItem]
