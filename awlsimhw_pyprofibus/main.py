@@ -167,8 +167,7 @@ class HardwareInterface(AbstractHardwareInterface):
 				outData = self.sim.cpu.fetchOutputRange(address,
 						slave.outputAddressRangeSize)
 				# Send it to the slave and request the input data.
-				inData = self.master.dataExchange(slave.slaveAddr,
-								  outData)
+				inData = self.master.runSlave(slave, outData)
 				# Cache the input data for the readInputs() call.
 				self.cachedInputs.append(inData)
 				# Adjust the address base for the next slave.
