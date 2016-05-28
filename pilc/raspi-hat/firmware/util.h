@@ -130,7 +130,16 @@
 #if defined(__GNUC__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 5
 # define unreachable()		__builtin_unreachable()
 #else
-# define unreachable()		while (1)
+# define unreachable()		do {} while (1)
+#endif
+
+/* Mark branches as likely/unlikely. */
+#ifdef __GNUC__
+# define likely(cond)		__builtin_expect(!!(cond), 1)
+# define unlikely(cond)		__builtin_expect(!!(cond), 0)
+#else
+# define likely(cond)		(!!(cond))
+# define unlikely(cond)		(!!(cond))
 #endif
 
 /* Convert something to a string. */
