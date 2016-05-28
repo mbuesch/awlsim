@@ -36,7 +36,7 @@ def usage():
 	print("pilc-hat-conf [OPTIONS] <ACTIONS>")
 	print("")
 	print("Actions:")
-	print(" -D|--set-pbtxen-dbg BOOL      Enable/disable PB-txen debugging")
+	print(" -D|--set-pbtxen-dbg MODE      Enable/disable PB-txen debugging")
 	print(" -d|--get-pbtxen-dbg           Get PB-txen debugging value")
 	print(" -T|--set-pbtxen-to TIMEOUT    Set PB-txen timeout value")
 	print(" -t|--get-pbtxen-to            Get PB-txen timeout value")
@@ -82,7 +82,7 @@ def main():
 			usage()
 			return 0
 		if o in ("-D", "--set-pbtxen-dbg"):
-			actions.append( ("set-pbtxen-dbg", str2bool(v)) )
+			actions.append( ("set-pbtxen-dbg", v.upper().strip()) )
 		if o in ("-d", "--get-pbtxen-dbg"):
 			actions.append( ("get-pbtxen-dbg", None) )
 		if o in ("-T", "--set-pbtxen-to"):
@@ -150,9 +150,26 @@ def main():
 		conf = PilcConf(opt_bus, opt_dev)
 		for action, value in actions:
 			if action == "set-pbtxen-dbg":
-				conf.set(conf.CONF_PBTXENDBG, value)
+				if value in {"0", "OFF"}:
+					mode = PilcConf.PBTXEN_DBG_OFF
+				elif value in {"1", "RETRIG"}:
+					mode = PilcConf.PBTXEN_DBG_RETRIG
+				elif value in {"2", "NOTRIG"}:
+					mode = PilcConf.PBTXEN_DBG_NOTRIG
+				else:
+					sys.stderr.write("ERROR: Invalid debug mode\n")
+					return 1
+				conf.set(conf.CONF_PBTXENDBG, mode)
 			elif action == "get-pbtxen-dbg":
-				print(conf.get(conf.CONF_PBTXENDBG))
+				mode = conf.get(conf.CONF_PBTXENDBG)
+				if mode == PilcConf.PBTXEN_DBG_OFF:
+					print("OFF")
+				elif mode == PilcConf.PBTXEN_DBG_RETRIG:
+					print("RETRIG")
+				elif mode == PilcConf.PBTXEN_DBG_NOTRIG:
+					print("NOTRIG")
+				else:
+					print("Unknown (%d)" % mode)
 			elif action == "set-pbtxen-to":
 				conf.set(conf.CONF_PBTXENTO, value)
 			elif action == "get-pbtxen-to":

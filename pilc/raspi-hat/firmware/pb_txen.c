@@ -46,9 +46,9 @@
 
 
 struct pb_txen_state {
-	bool txen;		/* Current TxEn state. */
-	bool debug;		/* Debug mode enabled? */
-	uint16_t timeout_us;	/* TxEn timeout in microseconds. */
+	bool txen;			/* Current TxEn state. */
+	enum pb_txen_debugmode debug;	/* Debug mode. */
+	uint16_t timeout_us;		/* TxEn timeout in microseconds. */
 };
 
 static struct pb_txen_state pb_txen;
@@ -183,12 +183,12 @@ uint16_t pb_txen_get_timeout(void)
 	return pb_txen.timeout_us;
 }
 
-void pb_txen_set_debug(bool debug)
+void pb_txen_set_debug(enum pb_txen_debugmode mode)
 {
-	pb_txen.debug = debug;
+	pb_txen.debug = mode;
 }
 
-bool pb_txen_get_debug(void)
+enum pb_txen_debugmode pb_txen_get_debug(void)
 {
 	return pb_txen.debug;
 }
@@ -211,20 +211,45 @@ void pb_txen_init(void)
 	pb_txen_set_timeout(573);
 }
 
+static inline void pb_txen_trigger(void)
+{
+	pb_txen_set(true);
+	pb_txen_timer_start();
+	pb_txen.txen = true;
+}
+
+static void pb_txen_run_debug_mode(void)
+{
+	while (1) {
+		wdt_reset();
+		memory_barrier();
+
+		switch (pb_txen.debug) {
+		case PBTXEN_DBG_OFF:
+			return;
+		case PBTXEN_DBG_RETRIG:
+			if (!pb_txen.txen)
+				pb_txen_trigger();
+			break;
+		case PBTXEN_DBG_NOTRIG:
+			break;
+		}
+	}
+}
+
 void pb_txen_work(void)
 {
 	irq_enable();
 	while (1) {
 		wdt_reset();
 
+		if (unlikely(pb_txen.debug != PBTXEN_DBG_OFF))
+			pb_txen_run_debug_mode();
+
 		memory_barrier();
-		if (!pb_txen.txen) {
-			if (pb_tx_get() || pb_txen.debug) {
-				/* We are transmitting. Set TxEn. */
-				pb_txen_set(true);
-				pb_txen_timer_start();
-				pb_txen.txen = true;
-			}
+		if (!pb_txen.txen && pb_tx_get()) {
+			/* We are transmitting. Set TxEn. */
+			pb_txen_trigger();
 		}
 	}
 }

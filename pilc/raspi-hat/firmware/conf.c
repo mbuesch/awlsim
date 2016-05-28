@@ -48,6 +48,21 @@ struct conf_context {
 static struct conf_context conf;
 
 
+static void set_debug(uint8_t mode)
+{
+	enum pb_txen_debugmode m = (enum pb_txen_debugmode)mode;
+
+	if (m == PBTXEN_DBG_OFF ||
+	    m == PBTXEN_DBG_RETRIG ||
+	    m == PBTXEN_DBG_NOTRIG)
+		pb_txen_set_debug(m);
+}
+
+static uint8_t get_debug(void)
+{
+	return (uint8_t)pb_txen_get_debug();
+}
+
 static void set_osccal(uint8_t osccal)
 {
 	OSCCAL = osccal;
@@ -119,7 +134,7 @@ static uint8_t conf_transmit(bool start)
 		ret = handle_bool_read(ee24cxx_get_we);
 		break;
 	case CONF_PBTXENDBG:
-		ret = handle_bool_read(pb_txen_get_debug);
+		ret = handle_u8_read(get_debug);
 		break;
 	case CONF_PBTXENTO:
 		ret = handle_u16_read(pb_txen_get_timeout);
@@ -204,7 +219,7 @@ static bool conf_receive(bool start, uint8_t data)
 		handle_safe_bool_write(data, ee24cxx_set_we);
 		break;
 	case CONF_PBTXENDBG:
-		handle_safe_bool_write(data, pb_txen_set_debug);
+		handle_safe_u8_write(data, set_debug);
 		break;
 	case CONF_PBTXENTO:
 		handle_safe_u16_write(data, pb_txen_set_timeout);
