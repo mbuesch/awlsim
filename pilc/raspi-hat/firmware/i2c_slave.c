@@ -361,6 +361,9 @@ static void _naked _used handle_state_prep_snd(void)
 "	out %[_USICR], r31				\n"
 "	ldi r31, %[_sr_send]				\n"
 "	out %[_USISR], r31				\n"
+"	; Write counter again to make sure it's		\n"
+"	; written after the pos. SCL edge.		\n"
+"	out %[_USISR], r31				\n"
 "							\n"
 "	; Set the next state				\n"
 "	ldi r31, %[_STATE_SND]				\n"
@@ -371,7 +374,7 @@ static void _naked _used handle_state_prep_snd(void)
 	: /* inputs */
 		IN_CONSTR_BASE,
 		[_cr_send]	"M" (USICR_BASE | (1 << USIOIE) | (0 << USIWM0)),
-		[_sr_send]	"M" (USISR_BASE | (0 << USISIF) | (1 << USICNT0))
+		[_sr_send]	"M" (USISR_BASE | (0 << USISIF) | (2 << USICNT0))
 	: /* clobbers */
 		"memory"
 	);
@@ -391,6 +394,9 @@ static void _naked _used handle_state_prep_rcv(void)
 "	out %[_USICR], r31				\n"
 "	ldi r31, %[_sr_rddata]				\n"
 "	out %[_USISR], r31				\n"
+"	; Write counter again to make sure it's		\n"
+"	; written after the pos. SCL edge.		\n"
+"	out %[_USISR], r31				\n"
 "							\n"
 "	; Set the next state				\n"
 "	ldi r31, %[_STATE_RCV]				\n"
@@ -401,7 +407,7 @@ static void _naked _used handle_state_prep_rcv(void)
 	: /* inputs */
 		IN_CONSTR_BASE,
 		[_cr_rddata]	"M" (USICR_BASE | (1 << USIOIE) | (0 << USIWM0)),
-		[_sr_rddata]	"M" (USISR_BASE | (0 << USISIF) | (1 << USICNT0))
+		[_sr_rddata]	"M" (USISR_BASE | (0 << USISIF) | (2 << USICNT0))
 	: /* clobbers */
 		"memory"
 	);
@@ -477,6 +483,9 @@ static void _naked _used handle_state_rcvproc(void)
 "	out %[_USICR], r31				\n"
 "	ldi r31, %[_sr_addrread]			\n"
 "	out %[_USISR], r31				\n"
+"	; Write counter again to make sure it's		\n"
+"	; written after the pos. SCL edge.		\n"
+"	out %[_USISR], r31				\n"
 "							\n"
 "	; Set the next state				\n"
 "	ldi r31, %[_STATE_ADDR]				\n"
@@ -487,7 +496,7 @@ static void _naked _used handle_state_rcvproc(void)
 	: /* inputs */
 		IN_CONSTR_BASE,
 		[_cr_addrread]	"M" (USICR_BASE | (1 << USIOIE) | (0 << USIWM0)),
-		[_sr_addrread]	"M" (USISR_BASE | (0 << USISIF) | (1 << USICNT0))
+		[_sr_addrread]	"M" (USISR_BASE | (0 << USISIF) | (2 << USICNT0))
 	: /* clobbers */
 		"memory"
 	);
