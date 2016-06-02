@@ -220,7 +220,8 @@ def registerCythonModules():
 
 	for filename in os.listdir(baseDir):
 		if filename == "awlsim" or\
-		   filename.startswith("awlsimhw_"):
+		   (filename.startswith("awlsimhw_") and\
+		    os.path.isdir(os.path.join(baseDir, filename))):
 			registerCythonModule(baseDir, filename)
 
 cmdclass = {}
