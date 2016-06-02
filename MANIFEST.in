@@ -1,3 +1,4 @@
+include awlsimhw_pyprofibus.conf
 include COPYING.txt
 include TODO.txt
 include COMPATIBILITY.txt
