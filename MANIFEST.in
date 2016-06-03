@@ -5,6 +5,7 @@ include COMPATIBILITY.txt
 include win-standalone-build.bat
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsim/gui/icons/pic2py
+graft debian
 graft tests
 graft libs
 graft doc
