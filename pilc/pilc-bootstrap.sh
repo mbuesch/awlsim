@@ -359,6 +359,8 @@ EOF
 	apt-get -y install \
 		"$bootloader" \
 		aptitude \
+		autoconf \
+		automake \
 		bc \
 		build-essential \
 		console-setup \
@@ -368,6 +370,7 @@ EOF
 		debconf-utils \
 		devscripts \
 		git \
+		gnu-fdisk \
 		htop \
 		i2c-tools \
 		irqbalance \
@@ -377,6 +380,8 @@ EOF
 		openssh-server \
 		openssh-blacklist \
 		openssh-blacklist-extra \
+		parted \
+		pkg-config \
 		pypy \
 		python \
 		python-all-dev \
@@ -765,7 +770,7 @@ EOF
 		die "Failed to remove boot partition mount point."
 
 	info "Creating root image..."
-	mkfs.ext4 "$rootimgfile" $(expr \( 1391 - 64 \) \* 1024 ) ||\
+	mkfs.ext4 "$rootimgfile" $(expr \( 1800 - 64 \) \* 1024 ) ||\
 		die "Failed to create root filesystem."
 	mkdir "$mp_rootimgfile" ||\
 		die "Failed to make root partition mount point."
@@ -786,7 +791,7 @@ EOF
 		die "Failed to remove root partition mount point."
 
 	info "Creating image '$imgfile'..."
-	dd if=/dev/zero of="$imgfile" bs=1M count=1391 conv=sparse ||\
+	dd if=/dev/zero of="$imgfile" bs=1M count=1800 conv=sparse ||\
 		die "Failed to create image file."
 	parted "$imgfile" <<EOF
             unit b
