@@ -397,6 +397,8 @@ EOF
 		pypy \
 		python \
 		python-all-dev \
+		python-cairo \
+		python-gtk2 \
 		python-rpi.gpio \
 		python-serial \
 		python-setuptools \
@@ -404,6 +406,7 @@ EOF
 		python-tk \
 		python3 \
 		python3-all-dev \
+		python3-cairo \
 		python3-rpi.gpio \
 		python3-serial \
 		python3-setuptools \
@@ -511,7 +514,7 @@ EOF
 	groupadd -g 1000 pi ||\
 		die "Failed to create group pi."
 	useradd -u 1000 -d /home/pi -m -g pi\
-		-G pi,lp,dialout,cdrom,floppy,audio,dip,src,video,plugdev,netdev\
+		-G pi,lp,dialout,cdrom,floppy,audio,dip,src,video,plugdev,netdev,i2c\
 		-s /bin/bash\
 		pi ||\
 		die "Failed to create user pi."
