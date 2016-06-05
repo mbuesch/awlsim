@@ -363,6 +363,7 @@ EOF
 		automake \
 		bc \
 		build-essential \
+		bwidget \
 		console-setup \
 		cython \
 		cython3 \
@@ -374,7 +375,18 @@ EOF
 		htop \
 		i2c-tools \
 		irqbalance \
+		libboost-python-dev \
+		libgl1-mesa-dev \
+		libglu1-mesa-dev \
+		libglib2.0-dev \
+		libgtk2.0-dev \
 		libncurses5-dev \
+		libmodbus-dev \
+		libreadline-gplv2-dev \
+		libtk-img \
+		libudev-dev \
+		libusb-1.0-0-dev \
+		libxmu-dev \
 		locales \
 		nano \
 		openssh-server \
@@ -389,15 +401,20 @@ EOF
 		python-serial \
 		python-setuptools \
 		python-smbus \
+		python-tk \
 		python3 \
 		python3-all-dev \
 		python3-rpi.gpio \
 		python3-serial \
 		python3-setuptools \
 		python3-smbus \
+		python3-tk \
 		screen \
 		sudo \
 		systemd \
+		tcl-dev \
+		tclx \
+		tk-dev \
 		tmux \
 		vim ||\
 		die "apt-get install failed"
@@ -770,7 +787,7 @@ EOF
 		die "Failed to remove boot partition mount point."
 
 	info "Creating root image..."
-	mkfs.ext4 "$rootimgfile" $(expr \( 1800 - 64 \) \* 1024 ) ||\
+	mkfs.ext4 "$rootimgfile" $(expr \( 4000 - 64 \) \* 1024 ) ||\
 		die "Failed to create root filesystem."
 	mkdir "$mp_rootimgfile" ||\
 		die "Failed to make root partition mount point."
@@ -791,7 +808,7 @@ EOF
 		die "Failed to remove root partition mount point."
 
 	info "Creating image '$imgfile'..."
-	dd if=/dev/zero of="$imgfile" bs=1M count=1800 conv=sparse ||\
+	dd if=/dev/zero of="$imgfile" bs=1M count=4000 conv=sparse ||\
 		die "Failed to create image file."
 	parted "$imgfile" <<EOF
             unit b
