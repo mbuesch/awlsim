@@ -835,11 +835,14 @@ EOF
 	rm "$rootimgfile" ||\
 		die "Failed to delete root partition image."
 
-	info "Compressing image..."
+	# Create zipped image.
 	local imgfile_zip="${imgfile}.7z"
 	rm -f "$imgfile_zip"
-	7z -mx=9 a "$imgfile_zip" "$imgfile" ||\
-		die "Failed to compress partition image."
+	if [ "$opt_zimg" -ne 0 ]; then
+		info "Compressing image..."
+		7z -mx=9 a "$imgfile_zip" "$imgfile" ||\
+			die "Failed to compress partition image."
+	fi
 }
 
 usage()
@@ -869,6 +872,9 @@ usage()
 	echo
 	echo " --img-suffix|-s SUFFIX  Image file suffix."
 	echo "                         Default: $default_imgsuffix"
+	echo
+	echo " --no-zimg|-Z            Do not create a 7zipped image."
+	echo "                         Default: Create 7zipped image."
 	echo
 	echo " --skip-debootstrap1|-1  Skip debootstrap first stage."
 	echo " --skip-debootstrap2|-2  Skip debootstrap second stage."
@@ -901,6 +907,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_kernel="raspi"
 	default_qemu="/usr/bin/qemu-arm-static"
 	default_imgsuffix="-$(date '+%Y%m%d')"
+	default_zimg=1
 
 	opt_target_dir=
 	opt_branch="$default_branch"
@@ -912,6 +919,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
 	opt_imgsuffix="$default_imgsuffix"
+	opt_zimg="$default_zimg"
 
 	while [ $# -ge 1 ]; do
 		case "$1" in
@@ -958,6 +966,9 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			shift
 			opt_imgsuffix="$1"
 			;;
+		--no-zimg|-Z)
+			opt_zimg=0
+			;;
 		*)
 			opt_target_dir="$*"
 			break
@@ -985,6 +996,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_skip_debootstrap1
 	export opt_skip_debootstrap2
 	export opt_imgsuffix
+	export opt_zimg
 	export __PILC_BOOTSTRAP_SECOND_STAGE__=1
 	chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
 		die "Chroot failed."
