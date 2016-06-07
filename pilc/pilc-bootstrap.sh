@@ -682,6 +682,12 @@ EOF
 			die "Failed to install python3-pyprofibus"
 		dpkg -i ../pypy-pyprofibus_*.deb ||\
 			die "Failed to install pypy-pyprofibus"
+		dpkg -i ../profisniff_*.deb ||\
+			die "Failed to install profisniff"
+		dpkg -i ../gsdparser_*.deb ||\
+			die "Failed to install gsdparser"
+		dpkg -i ../pyprofibus-linuxcnc-hal_*.deb ||\
+			die "Failed to install pyprofibus-linuxcnc-hal"
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
