@@ -25,15 +25,6 @@ from awlsim.common.compat import *
 from awlsim.core.hardware import *
 from awlsim.core.util import *
 
-import re
-
-if isPy2Compat:
-	from ConfigParser import SafeConfigParser as _ConfigParser
-	from ConfigParser import Error as _ConfigParserError
-else:
-	from configparser import ConfigParser as _ConfigParser
-	from configparser import Error as _ConfigParserError
-
 
 class HardwareInterface(AbstractHardwareInterface):
 	name = "PyProfibus"
@@ -45,101 +36,21 @@ class HardwareInterface(AbstractHardwareInterface):
 				description = "Awlsim pyprofibus module config file."),
 	]
 
-	class _SlaveConf(object):
-		addr = None
-		gsd = None
-		sync_mode = None
-		freeze_mode = None
-		group_mask = None
-		watchdog_ms = None
-		input_size = None
-		output_size = None
-
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
 						   sim = sim,
 						   parameters = parameters)
 
-	__reSlave = re.compile(r'^SLAVE_(\d+)$')
-	__reMod = re.compile(r'^module_(\d+)$')
-
-	def __parseConfig(self, filename):
-		try:
-			text = awlFileRead(filename, encoding="UTF-8")
-			p = _ConfigParser()
-			p.readfp(StringIO(text), filename)
-
-			self.__debug = p.getint("PROFIBUS", "debug",
-						fallback = 0)
-
-			self.__phyType = p.get("PHY", "type",
-					       fallback = "serial")
-			self.__phyDev = p.get("PHY", "dev",
-					      fallback = "/dev/ttyS0")
-			self.__phyBaud = p.getint("PHY", "baud",
-						  fallback = 19200)
-
-			self.__dpMasterClass = p.getint("DP", "master_class",
-							fallback = 1)
-			if self.__dpMasterClass not in {1, 2}:
-				raise ValueError("Invalid master_class")
-			self.__dpMasterAddr = p.getint("DP", "master_addr",
-						       fallback = 0x02)
-			if self.__dpMasterAddr < 0 or self.__dpMasterAddr > 127:
-				raise ValueError("Invalid master_addr")
-
-			self.__slaveConfs = []
-			for section in p.sections():
-				m = self.__reSlave.match(section)
-				if not m:
-					continue
-				s = self._SlaveConf()
-				s.addr = p.getint(section, "addr")
-				s.gsd = self.pyprofibus.gsd.interp.GsdInterp.fromFile(
-					p.get(section, "gsd"))
-				s.sync_mode = p.getboolean(section, "sync_mode",
-							   fallback = False)
-				s.freeze_mode = p.getboolean(section, "freeze_mode",
-							     fallback = False)
-				s.group_mask = p.getboolean(section, "group_mask",
-							    fallback = 1)
-				if s.group_mask < 0 or s.group_mask > 0xFF:
-					raise ValueError("Invalid group_mask")
-				s.watchdog_ms = p.getint(section, "watchdog_ms",
-							 fallback = 5000)
-				if s.watchdog_ms < 0 or s.watchdog_ms > 255 * 255:
-					raise ValueError("Invalid watchdog_ms")
-				s.input_size = p.getint(section, "input_size")
-				if s.input_size < 0 or s.input_size > 246:
-					raise ValueError("Invalid input_size")
-				s.output_size = p.getint(section, "output_size")
-				if s.output_size < 0 or s.output_size > 246:
-					raise ValueError("Invalid output_size")
-
-				mods = [ o for o in p.options(section)
-					 if self.__reMod.match(o) ]
-				mods.sort(key = lambda o: self.__reMod.match(o).group(1))
-				for option in mods:
-					s.gsd.setConfiguredModule(p.get(section, option))
-
-				self.__slaveConfs.append(s)
-
-		except (_ConfigParserError, AwlParserError, ValueError) as e:
-			self.raiseException("Profibus config file parse "
-				"error:\n%s" % str(e))
-		except self.pyprofibus.gsd.parser.GsdError as e:
-			self.raiseException("Failed to parse GSD file:\n%s" % str(e))
-
 	def __setupSlaves(self):
 		setPrmReq = self.pyprofibus.dp.DpTelegram_SetPrm_Req
 		dp1PrmMask = bytearray((setPrmReq.DPV1PRM0_FAILSAFE,
-					0x00,
+					setPrmReq.DPV1PRM1_REDCFG,
 					0x00))
 		dp1PrmSet  = bytearray((setPrmReq.DPV1PRM0_FAILSAFE,
-					0x00,
+					setPrmReq.DPV1PRM1_REDCFG,
 					0x00))
 
-		for slaveConf in self.__slaveConfs:
+		for slaveConf in self.__conf.slaveConfs:
 			desc = self.pyprofibus.DpSlaveDesc(
 				identNumber = slaveConf.gsd.getIdentNumber(),
 				slaveAddr = slaveConf.addr)
@@ -150,10 +61,10 @@ class HardwareInterface(AbstractHardwareInterface):
 						dp1PrmSet = dp1PrmSet))
 			else:
 				desc.setUserPrmData(slaveConf.gsd.getUserPrmData())
-			desc.setSyncMode(bool(slaveConf.sync_mode))
-			desc.setFreezeMode(bool(slaveConf.freeze_mode))
-			desc.setGroupMask(int(slaveConf.group_mask))
-			desc.setWatchdog(int(slaveConf.watchdog_ms))
+			desc.setSyncMode(bool(slaveConf.syncMode))
+			desc.setFreezeMode(bool(slaveConf.freezeMode))
+			desc.setGroupMask(int(slaveConf.groupMask))
+			desc.setWatchdog(int(slaveConf.watchdogMs))
 			desc._awlsimSlaveConf = slaveConf
 			self.master.addSlave(desc)
 
@@ -169,6 +80,7 @@ class HardwareInterface(AbstractHardwareInterface):
 		# and keep references to it.
 		try:
 			import pyprofibus
+			import pyprofibus.conf
 			import pyprofibus.phy_serial
 			import pyprofibus.gsd
 			import pyprofibus.gsd.interp
@@ -181,23 +93,24 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.phy = None
 		self.master = None
 		try:
-			self.__parseConfig(self.getParamValueByName("config"))
+			self.__conf = self.pyprofibus.conf.PbConf.fromFile(
+					self.getParamValueByName("config"))
 
-			if self.__phyType.lower() == "serial":
+			if self.__conf.phyType.lower() == "serial":
 				self.phy = self.pyprofibus.phy_serial.CpPhySerial(
-						debug = (self.__debug >= 2),
-						port = self.__phyDev)
-				self.phy.setConfig(baudrate = self.__phyBaud)
+						debug = (self.__conf.debug >= 2),
+						port = self.__conf.phyDev)
+				self.phy.setConfig(baudrate = self.__conf.phyBaud)
 			else:
 				self.raiseException("Invalid phyType parameter value")
 
-			if self.__dpMasterClass == 1:
+			if self.__conf.dpMasterClass == 1:
 				DPM_cls = self.pyprofibus.DPM1
 			else:
 				DPM_cls = self.pyprofibus.DPM2
 			self.master = DPM_cls(phy = self.phy,
-					      masterAddr = self.__dpMasterAddr,
-					      debug = (self.__debug >= 1))
+					      masterAddr = self.__conf.dpMasterAddr,
+					      debug = (self.__conf.debug >= 1))
 
 			self.__setupSlaves()
 			self.master.initialize()
@@ -214,6 +127,9 @@ class HardwareInterface(AbstractHardwareInterface):
 		except self.pyprofibus.FdlError as e:
 			self.raiseException("Profibus-FDL error: %s" % str(e))
 			self.__cleanup()
+		except self.pyprofibus.conf.PbConfError as e:
+			self.raiseException("Profibus configuration error: %s" % str(e))
+			self.__cleanup()
 
 	def doShutdown(self):
 		self.__cleanup()
@@ -224,7 +140,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			# Get the cached slave-data
 			if not self.cachedInputs:
 				break
-			inputSize = slave._awlsimSlaveConf.input_size
+			inputSize = slave._awlsimSlaveConf.inputSize
 			inData = self.cachedInputs.pop(0)
 			if not inData:
 				continue
@@ -242,7 +158,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			address = self.outputAddressBase
 			for slave in self.slaveList:
 				# Get the output data from the CPU
-				outputSize = slave._awlsimSlaveConf.output_size
+				outputSize = slave._awlsimSlaveConf.outputSize
 				outData = self.sim.cpu.fetchOutputRange(address,
 						outputSize)
 				# Send it to the slave and request the input data.
