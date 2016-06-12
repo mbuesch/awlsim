@@ -472,8 +472,6 @@ EOF
 # bits.
 #
 
-set -e
-
 # Re-generate ssh keys, if requested.
 if [ -e /etc/ssh/ssh_create_keys ]; then
 	/bin/rm -f /etc/ssh/ssh_host_*_key*
@@ -485,13 +483,18 @@ fi
 
 # Workaround firmware issue leaving i2c0 in an non-ALT0 state.
 for i in 28 29; do
-	/bin/echo $i > /sys/class/gpio/export
-	/bin/echo in > /sys/class/gpio/gpio${i}/direction
+	/bin/echo \$i > /sys/class/gpio/export
+	/bin/echo in > /sys/class/gpio/gpio\${i}/direction
 done
 
 # Add HAT eeprom device.
 if ! [ -d "/sys/class/i2c-adapter/i2c-0/0-0050" ]; then
 	/bin/echo "24c32 0x50" > /sys/class/i2c-adapter/i2c-0/new_device
+fi
+
+# Add /dev/ttyS0 link for convenience.
+if ! [ -e /dev/ttyS0 ]; then
+	/bin/ln -s /dev/ttyAMA0 /dev/ttyS0
 fi
 
 exit 0
