@@ -80,10 +80,7 @@ class HardwareInterface(AbstractHardwareInterface):
 		# and keep references to it.
 		try:
 			import pyprofibus
-			import pyprofibus.conf
-			import pyprofibus.phy_serial
-			import pyprofibus.gsd
-			import pyprofibus.gsd.interp
+			import pyprofibus.phy_serial, pyprofibus.phy_dummy
 			self.pyprofibus = pyprofibus
 		except (ImportError, RuntimeError) as e:
 			self.raiseException("Failed to import PROFIBUS protocol stack "
@@ -93,16 +90,20 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.phy = None
 		self.master = None
 		try:
-			self.__conf = self.pyprofibus.conf.PbConf.fromFile(
+			self.__conf = self.pyprofibus.PbConf.fromFile(
 					self.getParamValueByName("config"))
 
-			if self.__conf.phyType.lower() == "serial":
+			phyType = self.__conf.phyType.lower().strip()
+			if phyType == "serial":
 				self.phy = self.pyprofibus.phy_serial.CpPhySerial(
 						debug = (self.__conf.debug >= 2),
 						port = self.__conf.phyDev)
-				self.phy.setConfig(baudrate = self.__conf.phyBaud)
+			elif phyType == "dummy_slave":
+				self.phy = self.pyprofibus.phy_dummy.CpPhyDummySlave(
+						debug = (self.__conf.debug >= 2))
 			else:
 				self.raiseException("Invalid phyType parameter value")
+			self.phy.setConfig(baudrate = self.__conf.phyBaud)
 
 			if self.__conf.dpMasterClass == 1:
 				DPM_cls = self.pyprofibus.DPM1
