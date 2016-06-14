@@ -168,10 +168,11 @@ check_dos_text_encoding()
 	fi
 }
 
-# $1=interpreter
+# $1=interpreter [$2=tested_file]
 setup_test_environment()
 {
 	local interpreter="$1"
+	local tested_file="$2"
 
 	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
 		for i in "$rootdir"/build/lib.linux-*-2.*; do
@@ -192,10 +193,17 @@ setup_test_environment()
 		export AWLSIMCYTHON=
 	fi
 
-	export PYTHONPATH="$PYTHONPATH:$EXTRA_PYTHONPATH"
-	export JYTHONPATH="$JYTHONPATH:$EXTRA_PYTHONPATH"
-	export IRONPYTHONPATH="$IRONPYTHONPATH:$EXTRA_PYTHONPATH"
-	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH"
+	local conf_pythonpath=
+	if [ -n "$tested_file" ]; then
+		local conf_pythonpath="$(get_conf "$awl" PYTHONPATH)"
+		[ -n "$conf_pythonpath" ] &&\
+			local conf_pythonpath="$(readlink -m "$rootdir/$conf_pythonpath")"
+	fi
+
+	export PYTHONPATH="$PYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
+	export JYTHONPATH="$JYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
+	export IRONPYTHONPATH="$IRONPYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
+	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 
 	RET="$interpreter"
 }
@@ -219,7 +227,7 @@ run_awl_test()
 	local awl="$2"
 	shift; shift
 
-	setup_test_environment "$interpreter"
+	setup_test_environment "$interpreter" "$awl"
 	local interpreter="$RET"
 
 	local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
@@ -270,7 +278,7 @@ run_sh_test()
 
 	# Run the test
 	(
-	 setup_test_environment "$interpreter"
+	 setup_test_environment "$interpreter" "$sh_file"
 	 local interpreter="$RET"
 	 local test_dir="$(dirname "$sh_file")"
 	 local test_name="$(basename "$sh_file" .sh)"
@@ -304,6 +312,9 @@ __run_test()
 	fi
 	echo $nl "Running test '$(basename "$testfile")' with '$(basename "$interpreter")' ... "
 
+	local prev_dir="$(pwd)"
+	cd "$rootdir" || die "cd to $rootdir failed"
+
 	# Check the file type and run the tester
 	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" -o\
 	     "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
@@ -314,6 +325,8 @@ __run_test()
 	else
 		die "Test file type of '$testfile' not recognized"
 	fi
+
+	cd "$prev_dir" || die "cd to $prev_dir failed"
 }
 
 run_test()
@@ -494,6 +507,7 @@ do_tests()
 			run_test_directory "$interpreter" "$basedir"
 		else
 			for opt in "$@"; do
+				local opt="$(readlink -m "$opt")"
 				if [ -d "$opt" ]; then
 					run_test_directory "$interpreter" "$opt"
 				else
