@@ -63,16 +63,22 @@ cleanup_and_exit()
 # Get a configuration option.
 # $1=configured_file
 # $2=option_name
+# ($3=default_value)
 get_conf()
 {
 	local configured_file="$1"
 	local option_name="$2"
+	local default_value="$3"
 
 	local conf="${configured_file}.conf"
+	local val="$default_value"
 	if [ -r "$conf" ]; then
-		local val="$(grep -Ee "^${option_name}=" "$conf" | cut -d'=' -f2)"
-		printf '%s' "$val"
+		local regex="^${option_name}="
+		if grep -qEe "$regex" "$conf"; then
+			local val="$(grep -Ee "$regex" "$conf" | cut -d'=' -f2)"
+		fi
 	fi
+	printf '%s' "$val"
 }
 
 # Allocate a new port number.
@@ -232,8 +238,7 @@ run_awl_test()
 
 	local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
 
-	local tries="$(get_conf "$awl" tries)"
-	[ -n "$tries" ] || local tries=1
+	local tries="$(get_conf "$awl" tries 1)"
 	[ $tries -lt 1 ] && local tries=1
 
 	local ok=0
