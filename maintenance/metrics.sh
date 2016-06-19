@@ -15,5 +15,6 @@ submodpaths="$(git submodule status | awk '{print $2;}' | tr "[:space:]" ",")"
 
 cloc --exclude-dir="build,dist,release-archives,icons,${submodpaths}" \
 	--read-lang-def="${basedir}/cloc-lang-awl.txt" \
+	--exclude-lang='ASP.Net,IDL,D' \
 	--quiet --progress-rate=0 \
 	"$@"
