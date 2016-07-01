@@ -38,17 +38,20 @@ def cythonImportError(modname, message):
 	global __useCython
 	import sys
 
+	def perr(msg):
+		if sys.stderr:
+			sys.stderr.write(msg)
+			sys.stderr.flush()
+
 	if __useCython == __USE_CYTHON_TRY:
-		sys.stderr.write("WARNING: Failed to import awlsim CYTHON module '%s': "
-				 "%s\n" % (modname, message))
-		sys.stderr.write("--> Falling back to standard Python modules...\n")
-		sys.stderr.flush()
+		perr("WARNING: Failed to import awlsim CYTHON module '%s': %s\n"
+		     "--> Falling back to standard Python modules...\n" %\
+		     (modname, message))
 		__useCython = __USE_CYTHON_NO
 	elif __useCython in (__USE_CYTHON_FORCE, __USE_CYTHON_VERBOSE):
-		sys.stderr.write("ERROR: Failed to import awlsim CYTHON module '%s': "
-				 "%s\n" % (modname, message))
-		sys.stderr.write("Aborting.\n")
-		sys.stderr.flush()
+		perr("ERROR: Failed to import awlsim CYTHON module '%s': %s\n"
+		     "Aborting.\n" %\
+		     (modname, message))
 		sys.exit(1)
 	else:
 		assert(0)
