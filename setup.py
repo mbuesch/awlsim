@@ -31,7 +31,7 @@ def makedirs(path, mode=0o755):
 	except OSError as e:
 		if e.errno == errno.EEXIST:
 			return
-		raise
+		raise e
 
 def hashFile(path):
 	if sys.version_info[0] < 3:
