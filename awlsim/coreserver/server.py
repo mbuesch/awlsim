@@ -282,7 +282,7 @@ class AwlSimServer(object):
 			raise AwlSimError("AwlSimServer: No listen port specified")
 		try:
 			fam = env.get("AWLSIM_CORESERVER_FAM")
-			if fam.strip():
+			if fam and fam.strip():
 				fam = int(fam)
 			else:
 				fam = None
