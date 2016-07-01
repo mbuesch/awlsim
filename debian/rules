@@ -25,9 +25,5 @@ export NOCYTHON=0
 %:
 	dh $@ --with python2,python3,pypy --buildsystem=pybuild
 
-override_dh_auto_install:
-	dh_auto_install
-	rm -rf debian/destdir-*/usr/bin/*.bat
-
 override_dh_auto_test:
 	true

@@ -115,10 +115,8 @@ if ERRORLEVEL 1 goto error_copy
 
 
 echo === Generating startup wrapper
-set wrapper=%distdir%\awlsim.bat
-echo @echo off> %wrapper%
-if ERRORLEVEL 1 goto error_wrapper
-echo start /Dawlsim-bin awlsim-gui.exe %%1>> %wrapper%
+set wrapper=%distdir%\awlsim.cmd
+echo @start /Dawlsim-bin awlsim-gui.exe %%1> %wrapper%
 if ERRORLEVEL 1 goto error_wrapper
 
 

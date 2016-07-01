@@ -319,24 +319,44 @@ try:
 except LookupError:
 	codecs.register(lambda name: codecs.lookup("ascii") if name == "mbcs" else None)
 
-freezeExecutables = [ ("awlsim-gui", None),
-		      ("awlsim-client", None),
-		      ("awlsim-server", None),
-		      ("awlsim-symtab", None),
-		      ("awlsim-test", None),
-		      ("awlsim/coreserver/server.py", "awlsim-server-module"), ]
+
+# Create list of scripts. Depends on OS.
+scripts = [ "awlsim-gui",
+	    "awlsim-client",
+	    "awlsim-server",
+	    "awlsim-symtab",
+	    "awlsim-test", ]
+if os.name.lower() in ("nt", "ce"):
+	scripts.append("awlsim-win.cmd")
+else:
+	scripts.append("awlsim-linuxcnc-hal")
+	scripts.append("pilc/pilc-hat-conf")
+
+
+# Create freeze executable list.
+guiBase = None
+if os.name.lower() in ("nt", "ce"):
+	guiBase = "Win32GUI"
+freezeExecutables = [ ("awlsim-gui", None, guiBase),
+		      ("awlsim-client", None, None),
+		      ("awlsim-server", None, None),
+		      ("awlsim-symtab", None, None),
+		      ("awlsim-test", None, None),
+		      ("awlsim/coreserver/server.py", "awlsim-server-module", None), ]
 if py2exe:
-	extraKeywords["console"] = [ s for s, e in freezeExecutables ]
+	extraKeywords["console"] = [ s for s, e, b in freezeExecutables ]
 if cx_Freeze:
 	executables = []
-	for script, exe in freezeExecutables:
+	for script, exe, base in freezeExecutables:
 		if exe:
 			if os.name.lower() in ("nt", "ce"):
 				exe += ".exe"
 			executables.append(Executable(script = script,
-						      targetName = exe))
+						      targetName = exe,
+						      base = base))
 		else:
-			executables.append(Executable(script = script))
+			executables.append(Executable(script = script,
+						      base = base))
 	extraKeywords["executables"] = executables
 	extraKeywords["options"] = {
 			"build_exe"     : {
@@ -345,6 +365,7 @@ if cx_Freeze:
 						    "awlsim.library.iec", ],
 			}
 		}
+
 
 setup(	name		= "awlsim",
 	version		= VERSION_STRING,
@@ -371,14 +392,7 @@ setup(	name		= "awlsim",
 			    "awlsimhw_rpigpio",
 			    "libpilc", ],
 	package_dir	= { "libpilc" : "pilc/libpilc", },
-	scripts		= [ "awlsim-gui",
-			    "awlsim-client",
-			    "awlsim-server",
-			    "awlsim-symtab",
-			    "awlsim-test",
-			    "awlsim-linuxcnc-hal",
-			    "awlsim-win.bat",
-			    "pilc/pilc-hat-conf", ],
+	scripts		= scripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
 	keywords	= [ "AWL", "STL", "SPS", "PLC", "Step 7",

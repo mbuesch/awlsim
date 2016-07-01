@@ -2,7 +2,7 @@ include awlsimhw_pyprofibus.conf
 include COPYING.txt
 include TODO.txt
 include COMPATIBILITY.txt
-include win-standalone-build.bat
+include win-standalone-build.cmd
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsim/gui/icons/pic2py
 graft debian
