@@ -42,7 +42,7 @@ if awlsim.cython_helper.shouldUseCython():
 from awlsim.gui.qt_bindings import *
 
 
-AWLSIM_HOME_URL = "http://bues.ch/h/awlsim"
+AWLSIM_HOME_URL = "https://bues.ch/h/awlsim"
 
 
 # Convert an integer to a dual-string

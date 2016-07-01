@@ -16,8 +16,8 @@ Standards-Version: 3.9.6
 X-Python-Version: >= 2.7
 X-Python3-Version: >= 3.4
 Vcs-Git: git://git.bues.ch/awlsim.git
-Vcs-Browser: http://bues.ch/gitweb?p=awlsim.git
-Homepage: http://bues.ch/h/awlsim
+Vcs-Browser: https://bues.ch/cgit/awlsim.git/
+Homepage: https://bues.ch/h/awlsim
 
 
 Package: python-awlsim
