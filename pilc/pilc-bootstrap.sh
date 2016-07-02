@@ -316,13 +316,13 @@ EOF
 	sed -i -e 's|ID_LIKE=.*|ID_LIKE=raspbian|' \
 		/etc/os-release ||\
 		die "Failed to set os-release ID_LIKE."
-	sed -i -e 's|HOME_URL=.*|HOME_URL="https://bues.ch/h/pilc"|' \
+	sed -i -e 's|HOME_URL=.*|HOME_URL="https://bues.ch/a/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release HOME_URL."
-	sed -i -e 's|SUPPORT_URL=.*|SUPPORT_URL="https://bues.ch/h/pilc"|' \
+	sed -i -e 's|SUPPORT_URL=.*|SUPPORT_URL="https://bues.ch/a/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release SUPPORT_URL."
-	sed -i -e 's|BUG_REPORT_URL=.*|BUG_REPORT_URL="https://bues.ch/h/pilc"|' \
+	sed -i -e 's|BUG_REPORT_URL=.*|BUG_REPORT_URL="https://bues.ch/a/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release BUG_REPORT_URL."
 	sed -i -e 's|#FSCKFIX=no|FSCKFIX=yes|' \
