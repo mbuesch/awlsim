@@ -59,6 +59,8 @@ hook_pre_archives()
 	done
 }
 
+export AWLSIM_FULL_BUILD=1
+
 project=awlsim
 default_archives=py-sdist-bz2
 makerelease "$@"

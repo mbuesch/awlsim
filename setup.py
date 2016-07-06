@@ -25,6 +25,10 @@ except ImportError as e:
 	cx_Freeze = False
 
 
+isWindows = os.name.lower() in {"nt", "ce"}
+fullBuild = bool(int(os.getenv("AWLSIM_FULL_BUILD", "0")))
+
+
 def makedirs(path, mode=0o755):
 	try:
 		os.makedirs(path, mode)
@@ -326,16 +330,16 @@ scripts = [ "awlsim-gui",
 	    "awlsim-server",
 	    "awlsim-symtab",
 	    "awlsim-test", ]
-if os.name.lower() in ("nt", "ce"):
+if isWindows or fullBuild:
 	scripts.append("awlsim-win.cmd")
-else:
+if not isWindows or fullBuild:
 	scripts.append("awlsim-linuxcnc-hal")
 	scripts.append("pilc/pilc-hat-conf")
 
 
 # Create freeze executable list.
 guiBase = None
-if os.name.lower() in ("nt", "ce"):
+if isWindows:
 	guiBase = "Win32GUI"
 freezeExecutables = [ ("awlsim-gui", None, guiBase),
 		      ("awlsim-client", None, None),
@@ -349,7 +353,7 @@ if cx_Freeze:
 	executables = []
 	for script, exe, base in freezeExecutables:
 		if exe:
-			if os.name.lower() in ("nt", "ce"):
+			if isWindows:
 				exe += ".exe"
 			executables.append(Executable(script = script,
 						      targetName = exe,
