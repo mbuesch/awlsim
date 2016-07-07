@@ -37,7 +37,7 @@ if isPyPy or isJython:
 
 if awlsim.cython_helper.shouldUseCython():
 	print("*** Using accelerated CYTHON core "
-	      "(AWLSIMCYTHON environment variable is set)")
+	      "(AWLSIM_CYTHON environment variable is set)")
 
 from awlsim.gui.qt_bindings import *
 

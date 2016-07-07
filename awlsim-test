@@ -155,7 +155,7 @@ def run(inputFile):
 		import awlsim.cython_helper
 		if awlsim.cython_helper.shouldUseCython():
 			writeStdout("*** Using accelerated CYTHON core "
-				    "(AWLSIMCYTHON environment variable is set)\n")
+				    "(AWLSIM_CYTHON environment variable is set)\n")
 
 		project = Project.fromProjectOrRawAwlFile(inputFile)
 
@@ -248,7 +248,7 @@ def runWithServerBackend(inputFile):
 		if awlsim.cython_helper.shouldUseCython():
 			printError("The accelerated CYTHON core currently is incompatible "
 				   "with the backend server. Please remove the "
-				   "AWLSIMCYTHON environment variable.")
+				   "AWLSIM_CYTHON environment variable.")
 			return 1
 
 		project = Project.fromProjectOrRawAwlFile(inputFile)

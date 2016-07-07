@@ -553,7 +553,7 @@ EOF
 			sed -i -e '/Package: cython/,/^$/ d' \
 				debian/control ||\
 				die "Failed to patch control file"
-			sed -i -e 's/export NOCYTHON=0/export NOCYTHON=1/' \
+			sed -i -e 's/export AWLSIM_CYTHON=1/export AWLSIM_CYTHON=0/' \
 				debian/rules ||\
 				die "Failed to patch rules file"
 		fi

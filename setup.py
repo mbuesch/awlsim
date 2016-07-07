@@ -26,7 +26,22 @@ except ImportError as e:
 
 
 isWindows = os.name.lower() in {"nt", "ce"}
-fullBuild = bool(int(os.getenv("AWLSIM_FULL_BUILD", "0")))
+
+
+def getEnvInt(name, default = 0):
+	try:
+		return int(os.getenv(name, "%d" % default))
+	except ValueError:
+		return default
+
+def getEnvBool(name, default = False):
+	return bool(getEnvInt(name, 1 if default else 0))
+
+
+fullBuild = getEnvBool("AWLSIM_FULL_BUILD")
+buildCython = getEnvBool("AWLSIM_CYTHON", True)
+cythonParallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
+			   getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])
 
 
 def makedirs(path, mode=0o755):
@@ -233,14 +248,9 @@ ext_modules = []
 extraKeywords = {}
 
 # Try to build the Cython modules. This might fail.
-buildCython = True
-try:
-	if int(os.getenv("NOCYTHON", "0")):
-		print("Skipping build of CYTHON modules due to "
-		      "NOCYTHON environment variable setting.")
-		buildCython = False
-except ValueError:
-	pass
+if not buildCython:
+	print("Skipping build of CYTHON modules due to "
+	      "AWLSIM_CYTHON=0 environment variable setting.")
 if buildCython:
 	if os.name != "posix":
 		print("WARNING: Not building CYTHON modules on '%s' platform." %\
@@ -260,13 +270,6 @@ if buildCython:
 		print("--> Is Cython installed?")
 		buildCython = False
 if buildCython:
-	try:
-		cythonParallelBuild = int(os.getenv("CYTHONPARALLEL", "0"))
-	except ValueError:
-		cythonParallelBuild = 0
-	cythonParallelBuild = bool(cythonParallelBuild == 1 or\
-				   cythonParallelBuild == sys.version_info[0])
-
 	if sys.version_info[0] < 3:
 		# Cython2 build libraries need method pickling
 		# for parallel build.

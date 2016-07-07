@@ -32,7 +32,7 @@ hook_post_checkout()
 
 hook_testbuild()
 {
-	export CYTHONPARALLEL=1
+	export AWLSIM_CYTHON_PARALLEL=1
 	default_hook_testbuild "$@"
 }
 

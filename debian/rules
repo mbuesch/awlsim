@@ -19,8 +19,8 @@ export PYTHONPATH=
 export PYTHONSTARTUP=
 export PYTHONINSPECT=
 
-export CYTHONPARALLEL=1
-export NOCYTHON=0
+export AWLSIM_CYTHON=1
+export AWLSIM_CYTHON_PARALLEL=1
 
 %:
 	dh $@ --with python2,python3,pypy --buildsystem=pybuild

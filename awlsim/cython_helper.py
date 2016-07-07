@@ -17,7 +17,7 @@ def __checkCython():
 
 	if __useCython is None:
 		try:
-			__useCython = int(os.getenv("AWLSIMCYTHON",
+			__useCython = int(os.getenv("AWLSIM_CYTHON",
 						    str(__USE_CYTHON_NO)))
 			if __useCython not in (__USE_CYTHON_NO,
 					       __USE_CYTHON_TRY,

@@ -57,7 +57,7 @@ def usage():
 	print("                       5: Extremely verbose logging")
 	print("")
 	print("Environment variables:")
-	print(" AWLSIMGUI             Select the GUI framework (default 'auto')")
+	print(" AWLSIM_GUI            Select the GUI framework (default 'auto')")
 	print("                       Can be either of:")
 	print("                       auto: Autodetect")
 	print("                       pyside: Use PySide 4")

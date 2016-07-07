@@ -185,18 +185,18 @@ setup_test_environment()
 			export PYTHONPATH="$i"
 			break
 		done
-		export AWLSIMCYTHON=2
+		export AWLSIM_CYTHON=2
 		local interpreter=python2
 	elif [ "$interpreter" = "cython3" ]; then
 		for i in "$rootdir"/build/lib.linux-*-3.*; do
 			export PYTHONPATH="$i"
 			break
 		done
-		export AWLSIMCYTHON=2
+		export AWLSIM_CYTHON=2
 		local interpreter=python3
 	else
 		export PYTHONPATH=
-		export AWLSIMCYTHON=
+		export AWLSIM_CYTHON=
 	fi
 
 	local conf_pythonpath=
@@ -216,7 +216,7 @@ setup_test_environment()
 
 cleanup_test_environment()
 {
-	export AWLSIMCYTHON=
+	export AWLSIM_CYTHON=
 
 	export PYTHONPATH=
 	export JYTHONPATH=
@@ -413,7 +413,7 @@ build_cython2()
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
 	echo "=== Building awlsim with python2"
-	CYTHONPARALLEL=1 \
+	AWLSIM_CYTHON_PARALLEL=1 \
 	nice -n 5 \
 	python2 ./setup.py build || die "'python2 ./setup.py build' failed"
 	return 0
@@ -427,7 +427,7 @@ build_cython3()
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
 	echo "=== Building awlsim with python3"
-	CYTHONPARALLEL=1 \
+	AWLSIM_CYTHON_PARALLEL=1 \
 	nice -n 5 \
 	python3 ./setup.py build || die "'python3 ./setup.py build' failed"
 	return 0

@@ -75,8 +75,8 @@ def __autodetectGuiFramework():
 			  urls["pyqt4"],
 			  urls["pyqt5"]))
 
-# The Qt bindings can be set via AWLSIMGUI environment variable.
-__guiFramework = os.getenv("AWLSIMGUI", "auto").lower()
+# The Qt bindings can be set via AWLSIM_GUI environment variable.
+__guiFramework = os.getenv("AWLSIM_GUI", "auto").lower()
 
 # Run Qt autodetection
 if __guiFramework == "auto":
@@ -117,7 +117,7 @@ elif __guiFramework == "pyqt5":
 	Signal = pyqtSignal
 else:
 	__frameworkError("Unknown GUI framework '%s' requested. "
-			 "Please fix AWLSIMGUI environment variable." %\
+			 "Please fix AWLSIM_GUI environment variable." %\
 			 __guiFramework)
 
 # Helpers for distinction between Qt4 and Qt5 API.
