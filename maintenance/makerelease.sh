@@ -25,15 +25,12 @@ hook_get_version()
 
 hook_post_checkout()
 {
+	info "Pulling in git submodules"
+	git submodule update --init submodules/pyprofibus
+
+	info "Removing version control files"
 	default_hook_post_checkout "$@"
-
 	rm -r "$1"/maintenance
-}
-
-hook_testbuild()
-{
-	export AWLSIM_CYTHON_PARALLEL=1
-	default_hook_testbuild "$@"
 }
 
 hook_regression_tests()
@@ -51,7 +48,7 @@ hook_pre_archives()
 
 	default_hook_pre_archives "$@"
 
-	echo "Building PiLC firmware..."
+	info "Building PiLC firmware"
 	local raspihat_fw_dir="$checkout_dir/pilc/raspi-hat/firmware"
 	for target in all clean; do
 		CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
@@ -60,6 +57,8 @@ hook_pre_archives()
 }
 
 export AWLSIM_FULL_BUILD=1
+export AWLSIM_CYTHON=1
+export AWLSIM_CYTHON_PARALLEL=1
 
 project=awlsim
 default_archives=py-sdist-bz2
