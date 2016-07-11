@@ -12,9 +12,9 @@ graft tests
 include awlsim/gui/icons/pic2py
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsimhw_pyprofibus.conf
-include COPYING.txt
-include COMPATIBILITY.txt
-include TODO.txt
+include COPYING.md
+include COMPATIBILITY.md
+include TODO.md
 include win-standalone-build.cmd
 
 prune ./build
