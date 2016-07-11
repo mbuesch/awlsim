@@ -1,19 +1,21 @@
-include awlsimhw_pyprofibus.conf
-include COPYING.txt
-include TODO.txt
-include COMPATIBILITY.txt
-include win-standalone-build.cmd
-include awlsimhw_linuxcnc/awlsim.hal
-include awlsim/gui/icons/pic2py
-graft debian
-graft tests
-graft libs
-graft doc
-graft examples
-graft awlsim/gui/icons/icon-images
-graft pilc
-
 global-include *.pxd.in
 
-prune build
+graft awlsim/gui/icons/icon-images
+graft debian
+graft doc
+graft examples
+graft libs
+graft pilc
+graft submodules
+graft tests
+
+include awlsim/gui/icons/pic2py
+include awlsimhw_linuxcnc/awlsim.hal
+include awlsimhw_pyprofibus.conf
+include COPYING.txt
+include COMPATIBILITY.txt
+include TODO.txt
+include win-standalone-build.cmd
+
 prune ./build
+prune build
