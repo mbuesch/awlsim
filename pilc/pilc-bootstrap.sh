@@ -213,11 +213,11 @@ pilc_bootstrap_first_stage()
 			die "Failed to cd"
 		git checkout -b __build "$opt_branch" ||\
 			die "Failed to check out branch."
-		git submodule update --init pilc/pyprofibus ||\
+		git submodule update --init submodules/pyprofibus ||\
 			die "Failed to pull pyprofibus submodule"
-		rm -r .git pilc/pyprofibus/.git ||\
+		rm -r .git submodules/pyprofibus/.git ||\
 			die "Failed to remove .git directory."
-		mv pilc/pyprofibus .. ||\
+		mv submodules/pyprofibus .. ||\
 			die "Failed to move pyprofibus submodule."
 	) || die
 
