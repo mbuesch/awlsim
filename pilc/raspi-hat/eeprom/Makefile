@@ -1,10 +1,13 @@
+EEPROMUTILS_DIR	:= ../../../submodules/raspi-hat-tools/eepromutils
+EEPMAKE		:= $(EEPROMUTILS_DIR)/eepmake
+
 %.dtb: %.dts
 	false
 
 %.eep: %.txt %.dtb
-	$(MAKE) -C ../raspi-hat-tools/eepromutils all
-	../raspi-hat-tools/eepromutils/eepmake $< $@ $*.dtb
-	$(MAKE) -C ../raspi-hat-tools/eepromutils clean
+	$(MAKE) -C $(EEPROMUTILS_DIR) all
+	$(EEPMAKE) $< $@ $*.dtb
+	$(MAKE) -C $(EEPROMUTILS_DIR) clean
 
 all: pilc_eeprom_settings.eep
 
