@@ -9,6 +9,7 @@ S7 compatibility
 core
 ----
 
+* Add convenience operator support to pointer format.
 * Blocks that are no longer linked to (created by) sources should be removed.
 * Single download of symtab causes a redefinition error.
 
