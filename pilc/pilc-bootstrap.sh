@@ -775,82 +775,84 @@ EOF
 	local target_dir="$(readlink -m "${opt_target_dir}")"
 	[ -n "$target_dir" ] || die "Failed to resolve target dir."
 	local imgfile="${target_dir}${opt_imgsuffix}.img"
+	local imgfile_zip="${imgfile}.7z"
 	local bootimgfile="${imgfile}.boot"
 	mp_bootimgfile="${bootimgfile}.mp"
 	local rootimgfile="${imgfile}.root"
 	mp_rootimgfile="${rootimgfile}.mp"
-	rm -f "$rootimgfile" "$bootimgfile"
+	rm -f "$imgfile" "$imgfile_zip" "$rootimgfile" "$bootimgfile"
 	rmdir "$mp_bootimgfile" "$mp_rootimgfile" 2>/dev/null
 
-	info "Creating boot image..."
-	mkfs.vfat -F 32 -i 7771B0BB -n boot -C "$bootimgfile" \
-		$(expr \( 64 \* 1024 \) - \( 4 \* 1024 \) ) ||\
-		die "Failed to create boot partition file system."
-	mkdir "$mp_bootimgfile" ||\
-		die "Failed to make boot partition mount point."
-	mount -o loop "$bootimgfile" "$mp_bootimgfile" ||\
-		die "Failed to mount boot partition."
-	rsync -aHAX --inplace \
-		"$target_dir/boot/" "$mp_bootimgfile/" ||\
-		die "Failed to copy boot files."
-	umount "$mp_bootimgfile" ||\
-		die "Failed to umount boot partition."
-	rmdir "$mp_bootimgfile" ||\
-		die "Failed to remove boot partition mount point."
+	# Create images.
+	if [ "$opt_img" -ne 0 ]; then
+		info "Creating boot image..."
+		mkfs.vfat -F 32 -i 7771B0BB -n boot -C "$bootimgfile" \
+			$(expr \( 64 \* 1024 \) - \( 4 \* 1024 \) ) ||\
+			die "Failed to create boot partition file system."
+		mkdir "$mp_bootimgfile" ||\
+			die "Failed to make boot partition mount point."
+		mount -o loop "$bootimgfile" "$mp_bootimgfile" ||\
+			die "Failed to mount boot partition."
+		rsync -aHAX --inplace \
+			"$target_dir/boot/" "$mp_bootimgfile/" ||\
+			die "Failed to copy boot files."
+		umount "$mp_bootimgfile" ||\
+			die "Failed to umount boot partition."
+		rmdir "$mp_bootimgfile" ||\
+			die "Failed to remove boot partition mount point."
 
-	info "Creating root image..."
-	mkfs.ext4 "$rootimgfile" $(expr \( 4000 - 64 \) \* 1024 ) ||\
-		die "Failed to create root filesystem."
-	mkdir "$mp_rootimgfile" ||\
-		die "Failed to make root partition mount point."
-	mount -o loop "$rootimgfile" "$mp_rootimgfile" ||\
-		die "Failed to mount root partition."
-	rsync -aHAX --inplace \
-		--exclude='boot/*' \
-		--exclude='proc/*' \
-		--exclude='sys/*' \
-		--exclude='dev/shm/*' \
-		--exclude='tmp/*' \
-		--exclude="$(basename "$opt_qemu")" \
-		"$target_dir/" "$mp_rootimgfile/" ||\
-		die "Failed to copy root files."
-	umount "$mp_rootimgfile" ||\
-		die "Failed to umount root partition."
-	rmdir "$mp_rootimgfile" ||\
-		die "Failed to remove root partition mount point."
+		info "Creating root image..."
+		mkfs.ext4 "$rootimgfile" $(expr \( 4000 - 64 \) \* 1024 ) ||\
+			die "Failed to create root filesystem."
+		mkdir "$mp_rootimgfile" ||\
+			die "Failed to make root partition mount point."
+		mount -o loop "$rootimgfile" "$mp_rootimgfile" ||\
+			die "Failed to mount root partition."
+		rsync -aHAX --inplace \
+			--exclude='boot/*' \
+			--exclude='proc/*' \
+			--exclude='sys/*' \
+			--exclude='dev/shm/*' \
+			--exclude='tmp/*' \
+			--exclude="$(basename "$opt_qemu")" \
+			"$target_dir/" "$mp_rootimgfile/" ||\
+			die "Failed to copy root files."
+		umount "$mp_rootimgfile" ||\
+			die "Failed to umount root partition."
+		rmdir "$mp_rootimgfile" ||\
+			die "Failed to remove root partition mount point."
 
-	info "Creating image '$imgfile'..."
-	dd if=/dev/zero of="$imgfile" bs=1M count=4000 conv=sparse ||\
-		die "Failed to create image file."
-	parted "$imgfile" <<EOF
-            unit b
-            mklabel msdos
-            mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr 64 \* 1024 \* 1024 - 1)
-            mkpart primary ext4 $(expr 64 \* 1024 \* 1024) 100%
+		info "Creating image '$imgfile'..."
+		dd if=/dev/zero of="$imgfile" bs=1M count=4000 conv=sparse ||\
+			die "Failed to create image file."
+		parted "$imgfile" <<EOF
+		    unit b
+		    mklabel msdos
+		    mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr 64 \* 1024 \* 1024 - 1)
+		    mkpart primary ext4 $(expr 64 \* 1024 \* 1024) 100%
 EOF
-	[ $? -eq 0 ] || die "Failed to create partitions."
+		[ $? -eq 0 ] || die "Failed to create partitions."
 
-	info "Integrating boot image..."
-	dd if="$bootimgfile" of="$imgfile"\
-		seek=4 bs=1M conv=notrunc,sparse ||\
-		die "Failed to integrate boot partition."
-	rm "$bootimgfile" ||\
-		die "Failed to delete boot partition image."
+		info "Integrating boot image..."
+		dd if="$bootimgfile" of="$imgfile"\
+			seek=4 bs=1M conv=notrunc,sparse ||\
+			die "Failed to integrate boot partition."
+		rm "$bootimgfile" ||\
+			die "Failed to delete boot partition image."
 
-	info "Integrating root image..."
-	dd if="$rootimgfile" of="$imgfile"\
-		seek=64 bs=1M conv=notrunc,sparse ||\
-		die "Failed to integrate root partition."
-	rm "$rootimgfile" ||\
-		die "Failed to delete root partition image."
+		info "Integrating root image..."
+		dd if="$rootimgfile" of="$imgfile"\
+			seek=64 bs=1M conv=notrunc,sparse ||\
+			die "Failed to integrate root partition."
+		rm "$rootimgfile" ||\
+			die "Failed to delete root partition image."
 
-	# Create zipped image.
-	local imgfile_zip="${imgfile}.7z"
-	rm -f "$imgfile_zip"
-	if [ "$opt_zimg" -ne 0 ]; then
-		info "Compressing image..."
-		7z -mx=9 a "$imgfile_zip" "$imgfile" ||\
-			die "Failed to compress partition image."
+		# Create zipped image.
+		if [ "$opt_zimg" -ne 0 ]; then
+			info "Compressing image..."
+			7z -mx=9 a "$imgfile_zip" "$imgfile" ||\
+				die "Failed to compress partition image."
+		fi
 	fi
 }
 
@@ -881,6 +883,9 @@ usage()
 	echo
 	echo " --img-suffix|-s SUFFIX  Image file suffix."
 	echo "                         Default: $default_imgsuffix"
+	echo
+	echo " --no-img|-I             Do not create an image."
+	echo "                         Default: Create image."
 	echo
 	echo " --no-zimg|-Z            Do not create a 7zipped image."
 	echo "                         Default: Create 7zipped image."
@@ -916,6 +921,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_kernel="raspi"
 	default_qemu="/usr/bin/qemu-arm-static"
 	default_imgsuffix="-$(date '+%Y%m%d')"
+	default_img=1
 	default_zimg=1
 
 	opt_target_dir=
@@ -928,6 +934,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
 	opt_imgsuffix="$default_imgsuffix"
+	opt_img="$default_img"
 	opt_zimg="$default_zimg"
 
 	while [ $# -ge 1 ]; do
@@ -978,6 +985,9 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 		--no-zimg|-Z)
 			opt_zimg=0
 			;;
+		--no-img|-I)
+			opt_img=0
+			;;
 		*)
 			opt_target_dir="$*"
 			break
@@ -1006,6 +1016,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_skip_debootstrap2
 	export opt_imgsuffix
 	export opt_zimg
+	export opt_img
 	export __PILC_BOOTSTRAP_SECOND_STAGE__=1
 	chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
 		die "Chroot failed."
