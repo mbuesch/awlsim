@@ -199,7 +199,7 @@ class AwlSimServer(object):
 		"""Execute the server process.
 		Returns the exit() return value."""
 
-		server, retval = None, 0
+		server, retval = None, ExitCodes.EXIT_OK
 		try:
 			server = AwlSimServer()
 			for sig in (signal.SIGTERM, ):
@@ -207,11 +207,11 @@ class AwlSimServer(object):
 			server.runFromEnvironment(env)
 		except AwlSimError as e:
 			print(e.getReport())
-			retval = 1
+			retval = ExitCodes.EXIT_ERR_SIM
 		except MaintenanceRequest as e:
 			print("AwlSimServer: Unhandled MaintenanceRequest:\n%s" %\
 			      str(e))
-			retval = 1
+			retval = ExitCodes.EXIT_ERR_SIM
 		except KeyboardInterrupt:
 			print("AwlSimServer: Interrupted.")
 		finally:

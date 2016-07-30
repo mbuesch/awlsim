@@ -265,7 +265,7 @@ def main():
 		return 1
 	projectFile = args[0]
 
-	result = 0
+	result = ExitCodes.EXIT_OK
 	try:
 		Logging.setPrefix("awlsim-linuxcnc: ")
 		Logging.setLoglevel(opt_loglevel)
@@ -407,21 +407,21 @@ def main():
 			# Run loop exited normally. Bail out.
 			break
 	except LinuxCNC_NotRunning as e:
-		result = 1
+		result = ExitCodes.EXIT_ERR_OTHER
 	except KeyboardInterrupt as e:
-		result = 1
+		result = ExitCodes.EXIT_ERR_OTHER
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())
-		result = 1
+		result = ExitCodes.EXIT_ERR_SIM
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
 				     MaintenanceRequest.TYPE_STOP,
 				     MaintenanceRequest.TYPE_RTTIMEOUT):
-			result = 0
+			result = ExitCodes.EXIT_OK
 		else:
 			printError("Received invalid maintenance request %d" %\
 				   e.requestType)
-			result = 1
+			result = ExitCodes.EXIT_ERR_SIM
 	printInfo("LinuxCNC HAL module shutdown.")
 
 	return result

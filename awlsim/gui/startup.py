@@ -76,23 +76,23 @@ try:
 except getopt.GetoptError as e:
 	printError(str(e))
 	usage()
-	sys.exit(1)
+	sys.exit(ExitCodes.EXIT_ERR_CMDLINE)
 for (o, v) in opts:
 	if o in ("-h", "--help"):
 		usage()
-		sys.exit(0)
+		sys.exit(ExitCodes.EXIT_OK)
 	if o in ("-L", "--loglevel"):
 		try:
 			opt_loglevel = int(v)
 		except ValueError:
 			printError("-L|--loglevel: Invalid log level")
-			sys.exit(1)
+			sys.exit(ExitCodes.EXIT_ERR_CMDLINE)
 if args:
 	if len(args) == 1:
 		opt_awlSource = args[0]
 	else:
 		usage()
-		sys.exit(1)
+		sys.exit(ExitCodes.EXIT_ERR_CMDLINE)
 
 Logging.setPrefix("awlsim-gui: ")
 Logging.setLoglevel(opt_loglevel)

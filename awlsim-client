@@ -68,11 +68,11 @@ def main():
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
-		return 1
+		return ExitCodes.EXIT_ERR_CMDLINE
 	for (o, v) in opts:
 		if o in ("-h", "--help"):
 			usage()
-			return 0
+			return ExitCodes.EXIT_OK
 		if o in ("-c", "--connect"):
 			try:
 				host, port = parseNetAddress(v)
@@ -104,12 +104,11 @@ def main():
 				sys.exit(1)
 	if args:
 		usage()
-		return 1
+		return ExitCodes.EXIT_ERR_CMDLINE
 	if not actions:
 		usage()
-		return 1
+		return ExitCodes.EXIT_ERR_CMDLINE
 
-	exitCode = 0
 	client = None
 	try:
 		Logging.setLoglevel(opt_loglevel)
@@ -126,12 +125,12 @@ def main():
 				assert(0)
 	except AwlSimError as e:
 		printError(e.getReport())
-		return 1
+		return ExitCodes.EXIT_ERR_SIM
 	finally:
 		if client:
 			client.shutdown()
 
-	return exitCode
+	return ExitCodes.EXIT_OK
 
 if __name__ == "__main__":
 	sys.exit(main())

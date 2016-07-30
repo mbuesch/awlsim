@@ -219,7 +219,7 @@ def run(inputFile):
 				writeStdout(lastDump + '\n')
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())
-		return 1
+		return ExitCodes.EXIT_ERR_SIM
 	except KeyboardInterrupt as e:
 		pass
 	except MaintenanceRequest as e:
@@ -239,7 +239,7 @@ def run(inputFile):
 					    opt_profile)
 				writeStdout(ps)
 				writeStdout("\n")
-	return 0
+	return ExitCodes.EXIT_OK
 
 def runWithServerBackend(inputFile):
 	client = None
@@ -249,7 +249,7 @@ def runWithServerBackend(inputFile):
 			printError("The accelerated CYTHON core currently is incompatible "
 				   "with the backend server. Please remove the "
 				   "AWLSIM_CYTHON environment variable.")
-			return 1
+			return ExitCodes.EXIT_ERR_INTERP
 
 		project = Project.fromProjectOrRawAwlFile(inputFile)
 
@@ -321,7 +321,7 @@ def runWithServerBackend(inputFile):
 				writeStdout(lastDump + '\n')
 	except AwlSimError as e:
 		printError(e.getReport())
-		return 1
+		return ExitCodes.EXIT_ERR_SIM
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
 				     MaintenanceRequest.TYPE_STOP,
@@ -335,7 +335,7 @@ def runWithServerBackend(inputFile):
 	finally:
 		if client:
 			client.shutdown()
-	return 0
+	return ExitCodes.EXIT_OK
 
 def __signalHandler(sig, frame):
 	printInfo("Received signal %d" % sig)
@@ -390,11 +390,11 @@ def main():
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
-		return 1
+		return ExitCodes.EXIT_ERR_CMDLINE
 	for (o, v) in opts:
 		if o in ("-h", "--help"):
 			usage()
-			return 0
+			return ExitCodes.EXIT_OK
 		if o in ("-C", "--cycle-time"):
 			try:
 				opt_cycletime = float(v)
@@ -484,15 +484,15 @@ def main():
 			print("The supported system functions (SFCs) are:")
 			printSysblockInfo(SFC_table, "SFC", opt_extInsns,
 					  o.endswith("verbose"))
-			return 0
+			return ExitCodes.EXIT_OK
 		if o in ("--list-sfb", "--list-sfb-verbose"):
 			print("The supported system function blocks (SFBs) are:")
 			printSysblockInfo(SFB_table, "SFB", opt_extInsns,
 					  o.endswith("verbose"))
-			return 0
+			return ExitCodes.EXIT_OK
 	if len(args) != 1 and not opt_hwinfos:
 		usage()
-		return 1
+		return ExitCodes.EXIT_ERR_CMDLINE
 	if args:
 		inputFile = args[0]
 
@@ -511,17 +511,17 @@ def main():
 			for name in opt_hwinfos:
 				cls = AwlSim.loadHardwareModule(name)
 				print(cls.getModuleInfo())
-			return 0
+			return ExitCodes.EXIT_OK
 	except (AwlParserError, AwlSimError) as e:
 		printError(e.getReport())
-		return 1
+		return ExitCodes.EXIT_ERR_SIM
 
 	signal.signal(signal.SIGTERM, __signalHandler)
 
 	if opt_interpreter and not opt_spawnBackend:
 		printError("Selected an --interpreter, but no "
 			   "--spawn-backend was requested.")
-		return 1
+		return ExitCodes.EXIT_ERR_CMDLINE
 
 	if opt_spawnBackend or opt_connect:
 		return runWithServerBackend(inputFile)
