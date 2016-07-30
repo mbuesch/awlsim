@@ -436,6 +436,6 @@ setup(	name		= "awlsim",
 		"Topic :: Software Development :: Testing",
 		"Topic :: System :: Emulators",
 	],
-	long_description = open("README.txt").read(),
+	long_description = open("README.md").read(),
 	**extraKeywords
 )
