@@ -242,21 +242,34 @@ run_awl_test()
 	[ $tries -lt 1 ] && local tries=1
 
 	local ok=0
+	local exit_code=-1
+	local expected_exit_code=-2
 	while [ $tries -gt 0 -a $ok -eq 0 ]; do
 		local ok=1
 		local tries="$(expr "$tries" - 1)"
-		command time -o "$test_time_file" -f '%E' \
-		"$interpreter" "$rootdir/awlsim-test" --loglevel 2  --extended-insns \
+		local expected_exit_code="$(get_conf "$awl" exit_code 0)"
+		[ $expected_exit_code -eq 0 ] && local loglevel=2 || local loglevel=0
+
+		command time -o "$test_time_file" -f '%E' --quiet \
+		"$interpreter" "$rootdir/awlsim-test" \
+			--loglevel $loglevel \
+			--extended-insns \
 			--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 			--cycle-time 60 \
 			"$@" \
-			"$awl" || {
-				local ok=0
-				[ $tries -gt 0 ] &&\
-					echo "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
+			"$awl"
+		local exit_code=$?
+		[ $exit_code -eq $expected_exit_code ] || {
+			local ok=0
+			[ $tries -gt 0 ] &&\
+				echo "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
 		}
 	done
-	[ $ok -eq 0 ] && test_failed "Test '$(basename "$awl")' FAILED"
+	if [ $ok -eq 0 ]; then
+		test_failed "\nTest '$(basename "$awl")'   FAILED" \
+			"\nActual exit code   = $exit_code" \
+			"\nExpected exit code = $expected_exit_code"
+	fi
 	if is_parallel_run; then
 		[ $ok -ne 0 ] && echo "[$(basename "$awl"): OK $(cat "$test_time_file")]"
 	else
