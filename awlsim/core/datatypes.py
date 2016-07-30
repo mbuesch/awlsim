@@ -962,7 +962,7 @@ class AwlDataType(OptionalImmutable):
 				raise ValueError
 			return (byteOffset << 3) | bitOffset
 		except ValueError:
-			raise AwlSimError("Invalid pointer offset")
+			raise AwlSimError("Invalid pointer offset: " + string)
 
 	@classmethod
 	def tryParseImmediate_Pointer(cls, tokens):
@@ -994,41 +994,49 @@ class AwlDataType(OptionalImmutable):
 
 		prefix = prefix.upper()
 		try:
-			if prefix == "P":
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			def matchPrefix(prefix, template):
+				try:
+					return prefix == template or\
+					       (prefix.startswith(template) and\
+						isdecimal(prefix[len(template)]))
+				except IndexError as e:
+					return False
+
+			try:
+				valueToken = tokens[1]
+				nrTokens = 2
+			except IndexError as e:
+				valueToken = ""
+				nrTokens = 1
+
+			if matchPrefix(prefix, "P"):
+				ptr = cls.__parsePtrOffset(prefix[1:] + valueToken) |\
 					0x80000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
-			elif prefix in ("E", "I"):
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			elif matchPrefix(prefix, "E") or matchPrefix(prefix, "I"):
+				ptr = cls.__parsePtrOffset(prefix[1:] + valueToken) |\
 					0x81000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
-			elif prefix in ("A", "Q"):
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			elif matchPrefix(prefix, "A") or matchPrefix(prefix, "Q"):
+				ptr = cls.__parsePtrOffset(prefix[1:] + valueToken) |\
 					0x82000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
-			elif prefix == "M":
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			elif matchPrefix(prefix, "M"):
+				ptr = cls.__parsePtrOffset(prefix[1:] + valueToken) |\
 					0x83000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
-			elif prefix == "DBX":
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			elif matchPrefix(prefix, "DBX"):
+				ptr = cls.__parsePtrOffset(prefix[3:] + valueToken) |\
 					0x84000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
-			elif prefix == "DIX":
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			elif matchPrefix(prefix, "DIX"):
+				ptr = cls.__parsePtrOffset(prefix[3:] + valueToken) |\
 					0x85000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
-			elif prefix == "L":
-				ptr = cls.__parsePtrOffset(tokens[1]) |\
+			elif matchPrefix(prefix, "L"):
+				ptr = cls.__parsePtrOffset(prefix[1:] + valueToken) |\
 					0x86000000
 				pointer.setDWord(ptr)
-				nrTokens = 2
 			else:
 				if isinstance(pointer, DBPointer) and\
 				   prefix and not isdecimal(prefix[0]):
