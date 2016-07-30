@@ -1,0 +1,9 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
+	// This is invalid and should raise an AwlSimError.
+	L	W [P#M 0.0, P#0.0]
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK

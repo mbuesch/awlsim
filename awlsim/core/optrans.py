@@ -296,7 +296,9 @@ class AwlOpTranslator(object):
 						"indirect addressing operator")
 				# Translate the offset operator
 				offsetOpDesc = self.translateOp(None, rawOps[:end])
-				assert(offsetOpDesc.fieldCount == end)
+				if offsetOpDesc.fieldCount != end:
+					raise AwlSimError("Invalid indirect addressing "
+						"operator format. AR1/AR2 missing?")
 				offsetOp = offsetOpDesc.operator
 				if offsetOp.type == AwlOperator.INDIRECT:
 					raise AwlSimError("Only direct operators supported "
