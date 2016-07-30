@@ -186,3 +186,21 @@ class MaintenanceRequest(Exception):
 
 	def __repr__(self):
 		return self.message
+
+class ExitCodes(object):
+	"""Awlsim program exit codes."""
+
+	EnumGen.start
+	# Success.
+	EXIT_OK			= EnumGen.itemAt(0)
+	# Command line option error.
+	EXIT_ERR_CMDLINE	= EnumGen.itemAt(10)
+	# Python interpreter error.
+	EXIT_ERR_INTERP		= EnumGen.itemAt(20)
+	# AwlSimError.
+	EXIT_ERR_SIM		= EnumGen.itemAt(30)
+	# I/O error.
+	EXIT_ERR_IO		= EnumGen.itemAt(40)
+	# Other error.
+	EXIT_ERR_OTHER		= EnumGen.itemAt(100)
+	EnumGen.end
