@@ -29,7 +29,7 @@ Extensions are features that Awlsim supports, but STEP 7 does not support.
 
 * Awlsim supports pointer immediates to named `DB` variables. Whether a 32 bit pointer (area spanning), a 48 bit `DB` pointer or a 80 bit `ANY` pointer is generated, depends on the context. For example:
 
-```
+<pre>
 // Load a pointer to VARIABLE with DBX area code into accu 1.
 // Note that the DB number information is lost (32 bit pointer).
 L  P#DB1.VARIABLE
@@ -41,6 +41,6 @@ CALL  FC 1 (
     POINTER_VAR := P#DB1.VARIABLE,
     ANY_VAR     := P#DB1.VARIABLE,
 )
-```
+<pre>
 
 However, for the pointer parameter passing in `CALL` you could just write it in an S7 compatible way without the `P#` prefix.
