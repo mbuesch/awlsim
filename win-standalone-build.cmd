@@ -98,11 +98,11 @@ goto copy_files
 echo === Copying additional files
 copy examples\EXAMPLE.awlpro %distdir%\
 if ERRORLEVEL 1 goto error_copy
-copy README.txt %distdir%\
+copy README.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
-copy COMPATIBILITY.txt %distdir%\
+copy COMPATIBILITY.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
-copy TODO.txt %distdir%\
+copy TODO.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
 xcopy doc\foreign-licenses %distdir%\licenses\ /E
 if ERRORLEVEL 1 goto error_copy
