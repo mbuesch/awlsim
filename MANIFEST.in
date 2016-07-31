@@ -14,6 +14,7 @@ include awlsimhw_linuxcnc/awlsim.hal
 include awlsimhw_pyprofibus.conf
 include COPYING.md
 include COMPATIBILITY.md
+include README.md
 include TODO.md
 include win-standalone-build.cmd
 
