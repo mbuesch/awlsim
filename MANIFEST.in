@@ -12,7 +12,7 @@ graft tests
 include awlsim/gui/icons/pic2py
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsimhw_pyprofibus.conf
-include COPYING.md
+include COPYING.txt
 include COMPATIBILITY.md
 include README.md
 include TODO.md
