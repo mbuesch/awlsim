@@ -661,7 +661,7 @@ EOF
 		local awlsim_prefix=/usr
 		local site="$awlsim_prefix/lib/python3/dist-packages"
 		cat awlsim-server.service.in |\
-		sed -e 's|@USER@|pi|g' \
+		sed -e 's|@USER@|root|g' \
 		    -e 's|@GROUP@|pi|g' \
 		    -e "s|@PREFIX@|$awlsim_prefix|g" \
 		    -e "s|@PYTHON_SITE@|$site|g" >\
