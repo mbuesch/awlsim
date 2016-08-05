@@ -130,7 +130,15 @@ class MainWidget(QWidget):
 			argv = [ executable, "-m", "awlsim.gui.startup", ]
 		if filename:
 			argv.append(filename)
-		PopenWrapper(argv, env = os.environ)
+		try:
+			PopenWrapper(argv, env = os.environ)
+		except OSError as e:
+			QMessageBox.critical(self,
+				"Failed to execute '%s'" % executableName,
+				"Could not spawn a new instance.\n%s"
+				"Failed to execute '%s'" % (
+				str(e), executableName))
+			return
 
 	def loadFile(self, filename):
 		if self.dirty:
