@@ -662,8 +662,9 @@ EOF
 		local site="$awlsim_prefix/lib/python3/dist-packages"
 		cat awlsim-server.service.in |\
 		sed -e 's|@USER@|root|g' \
-		    -e 's|@GROUP@|pi|g' \
+		    -e 's|@GROUP@|root|g' \
 		    -e "s|@PREFIX@|$awlsim_prefix|g" \
+		    -e 's|@PROJECT@|/etc/awlsim-server.awlpro|g' \
 		    -e "s|@PYTHON_SITE@|$site|g" >\
 		    /etc/systemd/system/awlsim-server.service ||\
 		    die "Failed to create awlsim-server.service"
