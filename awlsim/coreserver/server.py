@@ -46,10 +46,13 @@ else:
 
 
 class AwlSimServer(object):
-	DEFAULT_HOST	= "localhost"
-	DEFAULT_PORT	= 4151
+	"""Awlsim coreserver server API.
+	"""
 
-	ENV_MAGIC	= "AWLSIM_CORESERVER_MAGIC"
+	DEFAULT_HOST		= "localhost"
+	DEFAULT_PORT		= 4151
+
+	ENV_MAGIC		= "AWLSIM_CORESERVER_MAGIC"
 
 	EnumGen.start
 	_STATE_INIT		= EnumGen.item # CPU not runnable, yet.
@@ -134,6 +137,7 @@ class AwlSimServer(object):
 				return False
 			sock = socket.socket(family, socktype)
 			sock.bind(sockaddr)
+			sock.close()
 		except SocketErrors as e:
 			result = False
 		if sock:
@@ -175,10 +179,14 @@ class AwlSimServer(object):
 			proc = findExecutable(forkServerProcess)
 			printInfo("Forking server process '%s'" % proc)
 			if not proc:
-				raise AwlSimError("Failed to run executable '%s'" %\
+				raise AwlSimError("Failed to find executable '%s'" %\
 						  forkServerProcess)
-			serverProcess = PopenWrapper([proc],
-						     env = env)
+			try:
+				serverProcess = PopenWrapper([proc],
+							     env = env)
+			except OSError as e:
+				raise AwlSimError("Failed to run executable '%s': %s" %(
+						  forkServerProcess, str(e)))
 			return serverProcess
 		elif forkInterpreter:
 			# Fork a new interpreter process and run server.py as module.
@@ -187,8 +195,13 @@ class AwlSimServer(object):
 			if not interp:
 				raise AwlSimError("Failed to find interpreter "
 						  "executable '%s'" % forkInterpreter)
-			serverProcess = PopenWrapper([interp, "-m", "awlsim.coreserver.server"],
-						     env = env)
+			try:
+				serverProcess = PopenWrapper(
+					[interp, "-m", "awlsim.coreserver.server"],
+					env = env)
+			except OSError as e:
+				raise AwlSimError("Failed to run interpreter '%s': %s" %(
+						  forkInterpreter, str(e)))
 			return serverProcess
 		else:
 			# Do not fork. Just run the server in this process.
