@@ -421,10 +421,8 @@ class AwlInsn(object): #+cdef
 	# Create a name2type dict for english mnemonics using the translation dict.
 	name2type_english = {}
 	for _name, _insnType in name2type_german.items():
-		try:
+		with contextlib.suppress(KeyError):
 			_name = german2english[_name]
-		except KeyError:
-			pass
 		name2type_english[_name] = _insnType
 	type2name_english = pivotDict(name2type_english)
 

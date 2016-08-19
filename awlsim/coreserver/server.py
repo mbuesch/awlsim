@@ -141,8 +141,10 @@ class AwlSimServer(object):
 		except SocketErrors as e:
 			result = False
 		if sock:
-			CALL_NOEX(sock.shutdown, socket.SHUT_RDWR)
-			CALL_NOEX(sock.close)
+			with suppressAllExc:
+				sock.shutdown(socket.SHUT_RDWR)
+			with suppressAllExc:
+				sock.close()
 		return result
 
 	@classmethod
@@ -1086,13 +1088,11 @@ class AwlSimServer(object):
 					raise e
 				else:
 					# Send the maintenance message.
-					try:
+					with contextlib.suppress(TransferError):
 						if self.__clients:
 							# Forward it to the first client
 							msg = AwlSimMessage_MAINTREQ(e)
 							self.__clients[0].transceiver.send(msg)
-					except TransferError as e:
-						pass
 			except TransferError as e:
 				# This should be caught earlier.
 				printError("Uncaught transfer error: " + str(e))
@@ -1194,14 +1194,14 @@ class AwlSimServer(object):
 		self.__clients = []
 
 		if self.__socket:
-			CALL_NOEX(self.__socket.shutdown, socket.SHUT_RDWR)
-			CALL_NOEX(self.__socket.close)
+			with suppressAllExc:
+				self.__socket.shutdown(socket.SHUT_RDWR)
+			with suppressAllExc:
+				self.__socket.close()
 			self.__socket = None
 		if self.__unixSockPath:
-			try:
+			with contextlib.suppress(OSError):
 				os.unlink(self.__unixSockPath)
-			except OSError as e:
-				pass
 			self.__unixSockPath = None
 
 	def shutdown(self):

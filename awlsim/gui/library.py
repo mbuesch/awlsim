@@ -53,10 +53,8 @@ class GenericActionWidget(QWidget):
 		for ftype in (BlockInterfaceField.FTYPE_IN,
 			      BlockInterfaceField.FTYPE_OUT,
 			      BlockInterfaceField.FTYPE_INOUT):
-			try:
+			with contextlib.suppress(KeyError):
 				fields.extend(interfaceFields[ftype])
-			except KeyError:
-				pass
 		ret = [ "CALL %s%s%s" %\
 			(targetName,
 			 ", DB ..." if needDB else "",

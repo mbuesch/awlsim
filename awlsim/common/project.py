@@ -372,10 +372,8 @@ class Project(object):
 				awlBase64 = p.get("CPU", srcOption)
 				name = None
 				if p.has_option("CPU", nameOption):
-					try:
+					with contextlib.suppress(ValueError):
 						name = base64ToStr(p.get("CPU", nameOption))
-					except ValueError as e:
-						pass
 				if name is None:
 					name = "AWL/STL #%d" % i
 				src = AwlSource.fromBase64(name, awlBase64)
@@ -410,10 +408,8 @@ class Project(object):
 				symTabBase64 = p.get("SYMBOLS", srcOption)
 				name = None
 				if p.has_option("SYMBOLS", nameOption):
-					try:
+					with contextlib.suppress(ValueError):
 						name = base64ToStr(p.get("SYMBOLS", nameOption))
-					except ValueError as e:
-						pass
 				if name is None:
 					name = "Symbol table #%d" % i
 				src = SymTabSource.fromBase64(name, symTabBase64)

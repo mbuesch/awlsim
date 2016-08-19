@@ -447,7 +447,8 @@ class CpuWidget(QWidget):
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 		except Exception:
-			CALL_NOEX(client.setRunState, False)
+			with suppressAllExc:
+				client.setRunState(False)
 			client.shutdown()
 			handleFatalException(self)
 
@@ -491,7 +492,8 @@ class CpuWidget(QWidget):
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 		except Exception:
-			CALL_NOEX(client.setRunState, False)
+			with suppressAllExc:
+				client.setRunState(False)
 			client.shutdown()
 			handleFatalException(self)
 
@@ -570,8 +572,10 @@ class CpuWidget(QWidget):
 			self.__startCoreMessageHandler(fast = False)
 
 		except AwlSimError as e:
-			CALL_NOEX(self.__stopCoreMessageHandler)
-			CALL_NOEX(client.setMode_OFFLINE)
+			with suppressAllExc:
+				self.__stopCoreMessageHandler()
+			with suppressAllExc:
+				client.setMode_OFFLINE()
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
 			self.goOffline()

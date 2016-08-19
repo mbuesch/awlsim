@@ -1129,8 +1129,10 @@ class AwlSimMessageTransceiver(object):
 
 	def shutdown(self):
 		if self.sock:
-			CALL_NOEX(self.sock.shutdown, socket.SHUT_RDWR)
-			CALL_NOEX(self.sock.close)
+			with suppressAllExc:
+				self.sock.shutdown(socket.SHUT_RDWR)
+			with suppressAllExc:
+				self.sock.close()
 			self.sock = None
 
 	def txCork(self, cork = True):

@@ -174,7 +174,8 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 				if not self.setRunState(False):
 					raise RuntimeError
 			except (AwlSimError, RuntimeError) as e:
-				CALL_NOEX(self.killSpawnedServer)
+				with suppressAllExc:
+					self.killSpawnedServer()
 		self.shutdownTransceiver()
 		self.__setMode(self.MODE_OFFLINE)
 
@@ -192,7 +193,8 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 					     port = port,
 					     timeout = timeout)
 		except AwlSimError as e:
-			CALL_NOEX(self.shutdown)
+			with suppressAllExc:
+				self.shutdown()
 			raise e
 		self.__setMode(self.MODE_ONLINE, host = host, port = port)
 
@@ -238,7 +240,8 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			self.shutdownTransceiver()
 			self.connectToServer(host = host, port = port)
 		except AwlSimError as e:
-			CALL_NOEX(self.shutdown)
+			with suppressAllExc:
+				self.shutdown()
 			raise e
 		self.__setMode(self.MODE_FORK, host = host, port = port)
 		self.__serverExecutable = serverExecutable

@@ -89,15 +89,13 @@ class Symbol(object):
 			if self.mnemonics != S7CPUSpecs.MNEMONICS_AUTO and\
 			   self.mnemonics != m:
 				continue
-			try:
+			with contextlib.suppress(AwlSimError):
 				opTrans = AwlOpTranslator(insn = None,
 							  mnemonics = m)
 				opDesc = opTrans.translateOp(rawInsn = None,
 							     rawOps = newOperatorString.split())
 				self.setOperator(opDesc.operator)
 				return
-			except AwlSimError as e:
-				pass
 		raise AwlSimError("Symbol table parser: Can't parse symbol "
 			"address '%s' in line %s" %\
 			(newOperatorString, self.getLineNrString()))

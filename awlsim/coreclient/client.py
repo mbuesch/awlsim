@@ -106,14 +106,12 @@ class AwlSimClient(object):
 			return
 
 		if self.__transceiver:
-			try:
+			with contextlib.suppress((AwlSimError, MaintenanceRequest)):
 				msg = AwlSimMessage_SHUTDOWN()
 				status = self.__sendAndWaitFor_REPLY(msg)
 				if status != AwlSimMessage_REPLY.STAT_OK:
 					printError("AwlSimClient: Failed to shut "
 						"down server via message")
-			except (AwlSimError, MaintenanceRequest) as e:
-				pass
 
 		self.serverProcess.terminate()
 		self.serverProcess.wait()

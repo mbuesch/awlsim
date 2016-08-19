@@ -50,23 +50,17 @@ def __autodetectGuiFramework():
 		"pyqt4" : "http://www.riverbankcomputing.com/software/pyqt/download",
 		"pyqt5" : "http://www.riverbankcomputing.com/software/pyqt/download5",
 	}
-	try:
+	with contextlib.suppress(ImportError):
 		import PyQt5.QtCore as __pyQtCore
 		if __testQStringAPI(dir(__pyQtCore), True):
 			return "pyqt5"
-	except ImportError:
-		pass
-	try:
+	with contextlib.suppress(ImportError):
 		import PySide.QtCore as __pySideCore
 		return "pyside4"
-	except ImportError:
-		pass
-	try:
+	with contextlib.suppress(ImportError):
 		import PyQt4.QtCore as __pyQtCore
 		if __testQStringAPI(dir(__pyQtCore), True):
 			return "pyqt4"
-	except ImportError:
-		pass
 	__frameworkError("Neither PySide nor PyQt found.\n"
 			 "PLEASE INSTALL PySide (%s)\n"
 			 "            or PyQt4 with v2 APIs (%s)\n"

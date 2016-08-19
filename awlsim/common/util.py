@@ -65,15 +65,13 @@ class Logging(object):
 
 	@classmethod
 	def __print(cls, stream, text):
-		try:
+		with contextlib.suppress(RuntimeError):
 			if stream:
 				if cls.prefix:
 					stream.write(cls.prefix)
 				stream.write(text)
 				stream.write("\n")
 				stream.flush()
-		except RuntimeError:
-			pass #Ignore
 
 	@classmethod
 	def printDebug(cls, text):
@@ -160,35 +158,14 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 		if not osIsPosix:
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.
-			try:
+			with contextlib.suppress(OSError):
 				os.unlink(filename)
-			except OSError as e:
-				pass
 		os.rename(tmpFile, filename)
 	except (IOError, OSError, UnicodeError) as e:
 		raise AwlParserError("Failed to write file:\n" + str(e))
 	finally:
-		try:
+		with contextlib.suppress((IOError, OSError)):
 			os.unlink(tmpFile)
-		except (IOError, OSError):
-			pass
-
-# Call a callable and suppress all exceptions,
-# except for really fatal coding exceptions.
-def CALL_NOEX(_callable, *args, **kwargs):
-	try:
-		return _callable(*args, **kwargs)
-	except (SyntaxError, NameError, AttributeError) as e:
-		raise
-	except ValueError as e:
-		import re
-		if re.match(r'.*takes exactly \d+ argument \(\d+ given\).*', str(e)) or\
-		   re.match(r'.*missing \d+ required positional argument.*', str(e)) or\
-		   re.match(r'.*takes \d+ positional argument but \d+ were given.*', str(e)):
-			raise
-	except Exception as e:
-		pass
-	return None
 
 def strToBase64(string, ignoreErrors=False):
 	"""Convert a string to a base64 encoded ascii string.
