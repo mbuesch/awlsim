@@ -106,7 +106,7 @@ class AwlSimClient(object):
 			return
 
 		if self.__transceiver:
-			with contextlib.suppress((AwlSimError, MaintenanceRequest)):
+			with contextlib.suppress(AwlSimError, MaintenanceRequest):
 				msg = AwlSimMessage_SHUTDOWN()
 				status = self.__sendAndWaitFor_REPLY(msg)
 				if status != AwlSimMessage_REPLY.STAT_OK:

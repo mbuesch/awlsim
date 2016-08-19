@@ -164,7 +164,7 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 	except (IOError, OSError, UnicodeError) as e:
 		raise AwlParserError("Failed to write file:\n" + str(e))
 	finally:
-		with contextlib.suppress((IOError, OSError)):
+		with contextlib.suppress(IOError, OSError):
 			os.unlink(tmpFile)
 
 def strToBase64(string, ignoreErrors=False):
