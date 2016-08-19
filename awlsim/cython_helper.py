@@ -53,5 +53,3 @@ def cythonImportError(modname, message):
 		     "Aborting.\n" %\
 		     (modname, message))
 		sys.exit(1)
-	else:
-		assert(0)
