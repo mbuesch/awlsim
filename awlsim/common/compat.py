@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import os.path
 import time
 import fractions
 import math
+import contextlib
 
 
 # Convenient operating system identifiers
@@ -160,3 +161,14 @@ else:
 		while b:
 			(a, b) = (b, a % b)
 		return a
+
+# contextlib.suppress compatibility
+if not hasattr(contextlib, "suppress"):
+	class _suppress(object):
+		def __init__(self, *excs):
+			self._excs = excs
+		def __enter__(self):
+			pass
+		def __exit__(self, exctype, excinst, exctb):
+			return exctype is not None and issubclass(exctype, self._excs)
+	contextlib.suppress = _suppress
