@@ -11,9 +11,8 @@ basedir="$(dirname "$0")"
 set -e
 
 cd "$basedir/.."
-submodpaths="$(git submodule status | awk '{print $2;}' | tr "[:space:]" ",")"
 
-cloc --exclude-dir="build,dist,.pybuild,release-archives,icons,__pycache__,${submodpaths},awlsim_cython,pyprofibus,libpilc" \
+cloc --exclude-dir="build,dist,.pybuild,release-archives,icons,__pycache__,submodules,awlsim_cython,pyprofibus,libpilc" \
 	--read-lang-def="${basedir}/cloc-lang-awl.txt" \
 	--exclude-lang='ASP.Net,IDL,D' \
 	--quiet --progress-rate=0 \
