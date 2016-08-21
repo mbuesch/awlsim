@@ -79,6 +79,8 @@ def netPortIsUnused(host, port):
 		return False
 	finally:
 		if sock:
-			CALL_NOEX(sock.shutdown, socket.SHUT_RDWR)
-			CALL_NOEX(sock.close)
+			with suppressAllExc:
+				sock.shutdown(socket.SHUT_RDWR)
+			with suppressAllExc:
+				sock.close()
 	return True
