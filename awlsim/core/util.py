@@ -77,17 +77,6 @@ def strPartitionFull(string, sep, keepEmpty=True):
 		first = False
 	return ret
 
-def str2bool(string, default=False):
-	s = string.lower()
-	if s in ("true", "yes", "on", "enable", "enabled"):
-		return True
-	if s in ("false", "no", "off", "disable", "disabled"):
-		return False
-	try:
-		return bool(int(s, 10))
-	except ValueError:
-		return default
-
 # Returns value, if value is a list.
 # Returns a list with the elements of value, if value is a tuple.
 # Returns a list with the elements of value, if value is a set.

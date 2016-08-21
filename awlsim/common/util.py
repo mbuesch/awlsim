@@ -167,6 +167,19 @@ def awlFileWrite(filename, data, encoding="latin_1"):
 		with contextlib.suppress(IOError, OSError):
 			os.unlink(tmpFile)
 
+def str2bool(string, default=False):
+	"""Convert a human readable string to a boolean.
+	"""
+	s = string.lower().strip()
+	if s in {"true", "yes", "on", "enable", "enabled"}:
+		return True
+	if s in {"false", "no", "off", "disable", "disabled"}:
+		return False
+	try:
+		return bool(int(s, 10))
+	except ValueError:
+		return default
+
 def strToBase64(string, ignoreErrors=False):
 	"""Convert a string to a base64 encoded ascii string.
 	Throws ValueError on errors, if ignoreErrors is False."""
