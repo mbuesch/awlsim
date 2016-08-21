@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.subprocess import *
 from awlsim.common.cpuspecs import *
 from awlsim.common.sources import *
+from awlsim.common.net import *
 
 from awlsim.core.main import *
 from awlsim.core.parser import *
@@ -38,11 +39,6 @@ import signal
 import socket
 import errno
 import time
-
-if hasattr(socket, "AF_UNIX"):
-	AF_UNIX = socket.AF_UNIX
-else:
-	AF_UNIX = None
 
 
 class AwlSimServer(object):
@@ -1109,7 +1105,7 @@ class AwlSimServer(object):
 		self.close()
 		try:
 			if host:
-				family, socktype, sockaddr = AwlSimServer.getaddrinfo(
+				family, socktype, sockaddr = netGetAddrInfo(
 						host, port, family)
 				if family == AF_UNIX:
 					self.__unixSockPath = sockaddr

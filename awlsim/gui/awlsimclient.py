@@ -219,7 +219,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 				port = self.serverProcessPort
 			else:
 				for port in portRange:
-					if not AwlSimServer.portIsUnused(host, port):
+					if not netPortIsUnused(host, port):
 						continue
 					# XXX: There is a race-window here. Another process might
 					#      allocate the port that we just checked

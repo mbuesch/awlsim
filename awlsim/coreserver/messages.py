@@ -27,6 +27,7 @@ from awlsim.common.project import *
 from awlsim.common.hwmod import *
 from awlsim.common.datatypehelpers import *
 from awlsim.common.blockinfo import *
+from awlsim.common.net import *
 
 from awlsim.coreserver.memarea import *
 
@@ -34,10 +35,6 @@ import struct
 import socket
 import errno
 
-
-SocketErrors = (socket.error if hasattr(socket, "error") else OSError,
-		BlockingIOError,
-		ConnectionError)
 
 class TransferError(Exception):
 	EnumGen.start

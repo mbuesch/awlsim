@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server client
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 from awlsim.common.subprocess import *
+from awlsim.common.net import *
 
 from awlsim.coreserver.server import *
 from awlsim.coreserver.messages import *
@@ -36,6 +37,9 @@ import time
 
 
 class AwlSimClient(object):
+	"""Awlsim coreserver client API.
+	"""
+
 	def __init__(self):
 		self.serverProcess = None
 		self.serverProcessHost = None
@@ -131,7 +135,7 @@ class AwlSimClient(object):
 		startTime = monotonic_time()
 		readableSockaddr = host
 		try:
-			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
+			family, socktype, sockaddr = netGetAddrInfo(host, port)
 			if family == AF_UNIX:
 				readableSockaddr = sockaddr
 			else:
