@@ -10,7 +10,7 @@ sh_test()
 	for testfile in 000-base/shutdown.awl; do
 		run_test "$interpreter" "$basedir/$testfile" \
 			--spawn-backend --interpreter "$interpreter" \
-			--connect localhost:$(get_port)
+			--connect-to localhost:$(get_port)
 	done
 	echo -n "--- Finished coreserver tests "
 }

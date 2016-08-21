@@ -37,13 +37,19 @@ class TestAwlSimClient(AwlSimClient):
 	def handle_CPUDUMP(self, dumpText):
 		emitCpuDump(dumpText)
 
+class ConsoleSSHTunnel(SSHTunnel):
+	def sshMessage(self, message, isDebug):
+		if opt_loglevel > Logging.LOG_INFO:
+			isDebug = False
+		super(ConsoleSSHTunnel, self).sshMessage(message, isDebug)
+
 def usage():
 	print("awlsim version %s" % VERSION_STRING)
 	print("")
 	print("Usage: awlsim-test [OPTIONS] <AWL-source or awlsim-project file>")
 	print("")
 	print("Options:")
-	print(" -C|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
+	print(" -Y|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
 	print(" -M|--max-runtime SEC  CPU will be stopped after SEC seconds (default: off)")
 	print(" -2|--twoaccu          Force 2-accu mode")
 	print(" -4|--fouraccu         Force 4-accu mode")
@@ -62,7 +68,8 @@ def usage():
 	print("                       5: Extremely verbose logging")
 	print("")
 	print("Server backend related options:")
-	print(" -c|--connect IP:PORT  Connect to server backend")
+	print(" -c|--connect          Connect to server backend")
+	print(" -C|--connect-to IP:PORT  Connect to server backend")
 	print(" -b|--spawn-backend    Spawn a new backend server and connect to it")
 	if not isWinStandalone:
 		print(" -i|--interpreter EXE  Set the backend interpreter executable")
@@ -243,6 +250,7 @@ def run(inputFile):
 
 def runWithServerBackend(inputFile):
 	client = None
+	tunnel = None
 	try:
 		import awlsim.cython_helper
 		if awlsim.cython_helper.shouldUseCython():
@@ -252,13 +260,36 @@ def runWithServerBackend(inputFile):
 			return ExitCodes.EXIT_ERR_INTERP
 
 		project = Project.fromProjectOrRawAwlFile(inputFile)
+		linkSettings = project.getCoreLinkSettings()
+
+		if opt_spawnBackend:
+			host = AwlSimServer.DEFAULT_HOST
+			port = AwlSimServer.DEFAULT_PORT
+		else:
+			host = linkSettings.getConnectHost()
+			port = linkSettings.getConnectPort()
+		if opt_connectTo:
+			host, port = opt_connectTo
+
+		# Establish SSH tunnel, if requested.
+		if linkSettings.getTunnel() == linkSettings.TUNNEL_SSH:
+			writeStdout("Establishing SSH tunnel...\n")
+			localPort = linkSettings.getTunnelLocalPort()
+			if localPort == linkSettings.TUNNEL_LOCPORT_AUTO:
+				localPort = None
+			tunnel = ConsoleSSHTunnel(
+				remoteHost = host,
+				remotePort = port,
+				localPort = localPort,
+				sshUser = linkSettings.getSSHUser(),
+				sshPort = linkSettings.getSSHPort(),
+				sshExecutable = linkSettings.getSSHExecutable(),
+			)
+			host, port = tunnel.connect()
 
 		# Connect to the server
 		client = TestAwlSimClient()
 		if opt_spawnBackend:
-			host, port = AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT
-			if opt_connect:
-				host, port = opt_connect
 			if isWinStandalone:
 				client.spawnServer(serverExecutable = "awlsim-server-module.exe",
 						   listenHost = host,
@@ -268,11 +299,7 @@ def runWithServerBackend(inputFile):
 						   listenHost = host,
 						   listenPort = port)
 		writeStdout("Connecting to core server...\n")
-		if opt_connect:
-			client.connectToServer(host = opt_connect[0],
-					       port = opt_connect[1])
-		else:
-			client.connectToServer()
+		client.connectToServer(host = host, port = port)
 
 		writeStdout("Initializing core...\n")
 		client.setLoglevel(opt_loglevel)
@@ -333,6 +360,8 @@ def runWithServerBackend(inputFile):
 	except KeyboardInterrupt as e:
 		pass
 	finally:
+		if tunnel:
+			tunnel.shutdown()
 		if client:
 			client.shutdown()
 	return ExitCodes.EXIT_OK
@@ -357,6 +386,7 @@ def main():
 	global opt_profile
 	global opt_loglevel
 	global opt_connect
+	global opt_connectTo
 	global opt_spawnBackend
 	global opt_interpreter
 
@@ -373,18 +403,19 @@ def main():
 	opt_profile = 0
 	opt_loglevel = Logging.LOG_INFO
 	opt_connect = None
+	opt_connectTo = False
 	opt_spawnBackend = False
 	opt_interpreter = None
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hC:M:24qDxt:T:m:H:I:P:L:c:bi:",
+			"hY:M:24qDxt:T:m:H:I:P:L:cC:bi:",
 			[ "help", "cycle-time=", "max-runtime=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "clock-mem=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "loglevel=",
-			  "connect=", "spawn-backend", "interpreter=",
+			  "connect", "connect-to=", "spawn-backend", "interpreter=",
 			  "list-sfc", "list-sfc-verbose",
 			  "list-sfb", "list-sfb-verbose", ])
 	except getopt.GetoptError as e:
@@ -395,11 +426,11 @@ def main():
 		if o in ("-h", "--help"):
 			usage()
 			return ExitCodes.EXIT_OK
-		if o in ("-C", "--cycle-time"):
+		if o in ("-Y", "--cycle-time"):
 			try:
 				opt_cycletime = float(v)
 			except ValueError:
-				printError("-C|--cycle-time: Invalid time format")
+				printError("-Y|--cycle-time: Invalid time format")
 				sys.exit(1)
 		if o in ("-M", "--max-runtime"):
 			try:
@@ -465,11 +496,13 @@ def main():
 				printError("-L|--loglevel: Invalid log level")
 				sys.exit(1)
 		if o in ("-c", "--connect"):
+			opt_connect = True
+		if o in ("-C", "--connect-to"):
 			try:
 				idx = v.rfind(":")
 				if idx <= 0:
 					raise ValueError
-				opt_connect = (v[:idx], int(v[idx+1:]))
+				opt_connectTo = (v[:idx], int(v[idx+1:]))
 			except ValueError:
 				printError("-c|--connect: Invalid host/port")
 				sys.exit(1)
@@ -523,7 +556,7 @@ def main():
 			   "--spawn-backend was requested.")
 		return ExitCodes.EXIT_ERR_CMDLINE
 
-	if opt_spawnBackend or opt_connect:
+	if opt_spawnBackend or opt_connect or opt_connectTo:
 		return runWithServerBackend(inputFile)
 	return run(inputFile)
 

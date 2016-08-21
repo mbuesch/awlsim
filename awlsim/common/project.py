@@ -2,7 +2,7 @@
 #
 # AWL simulator - project
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -77,8 +77,13 @@ class GuiSettings(object):
 		return self.editorFont
 
 class CoreLinkSettings(object):
-	DEFAULT_INTERPRETERS = "pypy3; pypy; $CURRENT; python3; python2; python; py"
-	SPAWN_PORT_BASE = 4151 + 32
+	DEFAULT_INTERPRETERS	= "pypy3; pypy; $CURRENT; python3; python2; python; py"
+	SPAWN_PORT_BASE		= 4151 + 32
+
+	TUNNEL_NONE		= 0
+	TUNNEL_SSH		= 1
+
+	TUNNEL_LOCPORT_AUTO	= -1
 
 	def __init__(self,
 		     spawnLocalEn=True,
@@ -87,13 +92,23 @@ class CoreLinkSettings(object):
 		     spawnLocalInterpreters="$DEFAULT",
 		     connectHost="localhost",
 		     connectPort=4151,
-		     connectTimeoutMs=3000):
+		     connectTimeoutMs=3000,
+		     tunnel=TUNNEL_NONE,
+		     tunnelLocalPort=TUNNEL_LOCPORT_AUTO,
+		     sshUser="pi",
+		     sshPort=22,
+		     sshExecutable="ssh"):
 		self.setSpawnLocalEn(spawnLocalEn)
 		self.setSpawnLocalPortRange(spawnLocalPortRange)
 		self.setSpawnLocalInterpreters(spawnLocalInterpreters),
 		self.setConnectHost(connectHost)
 		self.setConnectPort(connectPort)
 		self.setConnectTimeoutMs(connectTimeoutMs)
+		self.setTunnel(tunnel)
+		self.setTunnelLocalPort(tunnelLocalPort)
+		self.setSSHUser(sshUser)
+		self.setSSHPort(sshPort)
+		self.setSSHExecutable(sshExecutable)
 
 	def setSpawnLocalEn(self, spawnLocalEn):
 		self.spawnLocalEn = spawnLocalEn
@@ -146,6 +161,36 @@ class CoreLinkSettings(object):
 
 	def getConnectTimeoutMs(self):
 		return self.connectTimeoutMs
+
+	def setTunnel(self, tunnel):
+		self.tunnel = tunnel
+
+	def getTunnel(self):
+		return self.tunnel
+
+	def setTunnelLocalPort(self, tunnelLocalPort):
+		self.tunnelLocalPort = tunnelLocalPort
+
+	def getTunnelLocalPort(self):
+		return self.tunnelLocalPort
+
+	def setSSHUser(self, sshUser):
+		self.sshUser = sshUser
+
+	def getSSHUser(self):
+		return self.sshUser
+
+	def setSSHPort(self, sshPort):
+		self.sshPort = sshPort
+
+	def getSSHPort(self):
+		return self.sshPort
+
+	def setSSHExecutable(self, sshExecutable):
+		self.sshExecutable = sshExecutable
+
+	def getSSHExecutable(self):
+		return self.sshExecutable
 
 class HwmodSettings(object):
 	def __init__(self,
@@ -490,6 +535,31 @@ class Project(object):
 			if p.has_option("CORE_LINK", "connect_timeout_ms"):
 				timeout = p.getint("CORE_LINK", "connect_timeout_ms")
 				linkSettings.setConnectTimeoutMs(timeout)
+			if p.has_option("CORE_LINK", "tunnel"):
+				tunnel = p.getint("CORE_LINK", "tunnel")
+				linkSettings.setTunnel(tunnel)
+			if p.has_option("CORE_LINK", "tunnel_local_port"):
+				tunnelLocalPort = p.getint("CORE_LINK", "tunnel_local_port")
+				linkSettings.setTunnelLocalPort(tunnelLocalPort)
+			if p.has_option("CORE_LINK", "ssh_user"):
+				sshUser = p.get("CORE_LINK", "ssh_user")
+				try:
+					sshUser = base64ToStr(sshUser)
+				except ValueError as e:
+					raise AwlSimError("Project file: "
+						"Invalid ssh_user")
+				linkSettings.setSSHUser(sshUser)
+			if p.has_option("CORE_LINK", "ssh_port"):
+				sshPort = p.getint("CORE_LINK", "ssh_port")
+				linkSettings.setSSHPort(sshPort)
+			if p.has_option("CORE_LINK", "ssh_executable"):
+				sshExecutable = p.get("CORE_LINK", "ssh_executable")
+				try:
+					sshExecutable = base64ToStr(sshExecutable)
+				except ValueError as e:
+					raise AwlSimError("Project file: "
+						"Invalid ssh_executable")
+				linkSettings.setSSHExecutable(sshExecutable)
 
 			# HWMODS section
 			for i in range(0xFFFF):
@@ -661,6 +731,16 @@ class Project(object):
 			     int(linkSettings.getConnectPort()))
 		lines.append("connect_timeout_ms=%d" %\
 			     int(linkSettings.getConnectTimeoutMs()))
+		lines.append("tunnel=%d" % linkSettings.getTunnel())
+		lines.append("tunnel_local_port=%d" %\
+			     linkSettings.getTunnelLocalPort())
+		sshUser = linkSettings.getSSHUser()
+		sshUser = strToBase64(sshUser, ignoreErrors=True)
+		lines.append("ssh_user=%s" % sshUser)
+		lines.append("ssh_port=%d" % linkSettings.getSSHPort())
+		sshExecutable = linkSettings.getSSHExecutable()
+		sshExecutable = strToBase64(sshExecutable, ignoreErrors=True)
+		lines.append("ssh_executable=%s" % sshExecutable)
 		lines.append("")
 
 		lines.append("[HWMODS]")

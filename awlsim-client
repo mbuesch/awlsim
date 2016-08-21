@@ -39,20 +39,22 @@ def usage():
 	print("Usage: awlsim-client [OPTIONS] <ACTIONS>")
 	print("")
 	print("Options:")
-	print(" -c|--connect HOST[:PORT] Connect to the server at HOST:PORT")
-	print("                          Defaults to %s:%d" %\
+	print(" -C|--connect-to HOST[:PORT]  Connect to the server at HOST:PORT")
+	print("                              Defaults to %s:%d" %\
 		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
-	print(" -t|--timeout 10.0        Set the connection timeout (default 10 s)")
-	print(" -L|--loglevel LVL        Set the client log level:")
-	print("                          0: Log nothing")
-	print("                          1: Log errors")
-	print("                          2: Log errors and warnings (default)")
-	print("                          3: Log errors, warnings and info messages")
-	print("                          4: Verbose logging")
-	print("                          5: Extremely verbose logging")
+	print(" -c|--connect                 Connect to default %s:%d" %\
+		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
+	print(" -t|--timeout 10.0            Set the connection timeout (default 10 s)")
+	print(" -L|--loglevel LVL            Set the client log level:")
+	print("                              0: Log nothing")
+	print("                              1: Log errors")
+	print("                              2: Log errors and warnings (default)")
+	print("                              3: Log errors, warnings and info messages")
+	print("                              4: Verbose logging")
+	print("                              5: Extremely verbose logging")
 	print("")
 	print("Actions to be performed on the server:")
-	print(" -r|--runstate RUN/STOP   Set the run state of the CPU.")
+	print(" -r|--runstate RUN/STOP       Set the run state of the CPU.")
 
 def main():
 	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
@@ -62,8 +64,8 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hc:t:L:r:",
-			[ "help", "connect=", "timeout=", "loglevel=",
+			"hcC:t:L:r:",
+			[ "help", "connect", "connect-to=", "timeout=", "loglevel=",
 			  "runstate=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -74,6 +76,9 @@ def main():
 			usage()
 			return ExitCodes.EXIT_OK
 		if o in ("-c", "--connect"):
+			opt_connect = (AwlSimServer.DEFAULT_HOST,
+				       AwlSimServer.DEFAULT_PORT)
+		if o in ("-C", "--connect-to"):
 			try:
 				host, port = parseNetAddress(v)
 				if port is None:
