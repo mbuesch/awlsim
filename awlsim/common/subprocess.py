@@ -2,7 +2,7 @@
 #
 # subprocess wrapper
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +34,19 @@ def findExecutable(executable):
 	return distutils.spawn.find_executable(executable)
 
 class PopenWrapper(object):
-	def __init__(self, argv, env):
+	def __init__(self, argv, env, stdio = False):
 		if isIronPython:
-			self.__pid = os.spawnve(os.P_NOWAIT, argv[0], argv, env)
+			self.__pid = os.spawnve(os.P_NOWAIT,
+						argv[0], argv, dict(env))
 		else:
-			self.__proc = subprocess.Popen(argv, env = env, shell = False)
+			self.__proc = subprocess.Popen(
+				argv,
+				env = dict(env),
+				shell = False,
+				stdin = subprocess.PIPE if stdio else None,
+				stdout = subprocess.PIPE if stdio else None,
+				stderr = subprocess.PIPE if stdio else None
+			)
 
 	def terminate(self):
 		if isIronPython:
@@ -54,3 +62,31 @@ class PopenWrapper(object):
 			pass#TODO
 		else:
 			self.__proc.wait()
+
+	def poll(self):
+		if isIronPython:
+			raise NotImplementedError()
+		return self.__proc.poll()
+
+	def communicate(self, input = None):
+		if isIronPython:
+			raise NotImplementedError()
+		return self.__proc.communicate(input)
+
+	@property
+	def stdin(self):
+		if isIronPython:
+			raise NotImplementedError()
+		return self.__proc.stdin
+
+	@property
+	def stdout(self):
+		if isIronPython:
+			raise NotImplementedError()
+		return self.__proc.stdout
+
+	@property
+	def stderr(self):
+		if isIronPython:
+			raise NotImplementedError()
+		return self.__proc.stderr
