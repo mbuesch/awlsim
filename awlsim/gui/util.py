@@ -141,6 +141,9 @@ class MessageBox(QDialog):
 
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception):
+		if exception.getSeenByUser():
+			return cls.Accepted
+		exception.setSeenByUser()
 		def maketext(verbose):
 			text = "An exception occurred:"
 			if description:
