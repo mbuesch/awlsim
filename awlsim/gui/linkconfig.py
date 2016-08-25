@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI Awlsim link configuration widget
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
+from awlsim.gui.awlsimclient import *
 
 import sys
 
@@ -83,6 +84,67 @@ class _SpawnConfigWidget(QGroupBox):
 		if newEnd < self.portRangeStart.value():
 			self.portRangeStart.setValue(newEnd)
 
+class _SSHConfigWidget(QGroupBox):
+	def __init__(self, parent=None):
+		QGroupBox.__init__(self, parent)
+		self.setLayout(QGridLayout())
+
+		toolTip = "The SSH login user name of the remote server."
+		label = QLabel("SSH login user:", self)
+		label.setToolTip(toolTip)
+		self.layout().addWidget(label, 0, 0)
+		self.user = QLineEdit(self)
+		self.user.setToolTip(toolTip)
+		self.user.setText(SSHTunnel.SSH_DEFAULT_USER)
+		self.layout().addWidget(self.user, 0, 1)
+
+		toolTip = "Port number of the remote SSH server.\n"\
+			  "Leave this as %d unless you know what "\
+			  "you are doing." % SSHTunnel.SSH_PORT
+		label = QLabel("SSH port:", self)
+		label.setToolTip(toolTip)
+		self.layout().addWidget(label, 1, 0)
+		self.sshPort = QSpinBox(self)
+		self.sshPort.setMinimum(0)
+		self.sshPort.setMaximum(65535)
+		self.sshPort.setValue(SSHTunnel.SSH_PORT)
+		self.sshPort.setToolTip(toolTip)
+		self.layout().addWidget(self.sshPort, 1, 1)
+
+		toolTip = "The local SSH client executable.\n"\
+			  "This can be the full path to the "\
+			  "SSH client program."
+		label = QLabel("SSH client executable:", self)
+		label.setToolTip(toolTip)
+		self.layout().addWidget(label, 2, 0)
+		self.sshExecutable = QLineEdit(self)
+		self.sshExecutable.setToolTip(toolTip)
+		self.sshExecutable.setText(SSHTunnel.SSH_DEFAULT_EXECUTABLE)
+		self.layout().addWidget(self.sshExecutable, 2, 1)
+
+		toolTip = "Port number of the local tunnel end.\n"\
+			  "It is recommended to use automatic port selection."
+		label = QLabel("Local port:", self)
+		label.setToolTip(toolTip)
+		self.layout().addWidget(label, 3, 0)
+		hbox = QHBoxLayout()
+		self.localPort = QSpinBox(self)
+		self.localPort.setMinimum(1024)
+		self.localPort.setMaximum(65535)
+		self.localPort.setValue(SSHTunnel.SSH_LOCAL_PORT_START)
+		self.localPort.setToolTip(toolTip)
+		hbox.addWidget(self.localPort)
+		self.localPortAuto = QCheckBox("auto", self)
+		self.localPortAuto.setToolTip(toolTip)
+		hbox.addWidget(self.localPortAuto)
+		self.layout().addLayout(hbox, 3, 1)
+
+		self.localPortAuto.stateChanged.connect(self.__localPortAutoChanged)
+		self.localPortAuto.setCheckState(Qt.Checked)
+
+	def __localPortAutoChanged(self, newState):
+		self.localPort.setEnabled(newState != Qt.Checked)
+
 class _ConnectConfigWidget(QGroupBox):
 	def __init__(self, parent=None):
 		QGroupBox.__init__(self, parent)
@@ -118,6 +180,25 @@ class _ConnectConfigWidget(QGroupBox):
 		self.timeout.setSuffix(" s")
 		self.timeout.setToolTip(toolTip)
 		self.layout().addWidget(self.timeout, 2, 1)
+
+		toolTip = "Establish an SSH tunnel to the core server "\
+			  "and connect via this tunnel.\n"\
+			  "SSH is a secure and encrypted way to connect "\
+			  "to a server."
+		self.sshTunnel = QCheckBox("via SSH t&unnel", self)
+		self.sshTunnel.setToolTip(toolTip)
+		self.layout().addWidget(self.sshTunnel, 3, 0, 1, 2)
+		self.sshConfig = _SSHConfigWidget(self)
+		self.sshConfig.hide()
+		self.layout().addWidget(self.sshConfig, 4, 0, 1, 2)
+
+		self.sshTunnel.stateChanged.connect(self.__sshChanged)
+
+	def __sshChanged(self, newState):
+		if newState == Qt.Checked:
+			self.sshConfig.show()
+		else:
+			self.sshConfig.hide()
 
 class LinkConfigWidget(QWidget):
 	def __init__(self, parent=None):
@@ -226,6 +307,24 @@ class LinkConfigWidget(QWidget):
 		self.connConfig.port.setValue(linkSettings.getConnectPort())
 		self.connConfig.timeout.setValue(
 			linkSettings.getConnectTimeoutMs() / 1000.0)
+		self.connConfig.sshTunnel.setCheckState(
+			Qt.Checked if
+			(linkSettings.getTunnel() == linkSettings.TUNNEL_SSH)
+			else Qt.Unchecked)
+
+		sshConfig = self.connConfig.sshConfig
+		sshConfig.user.setText(linkSettings.getSSHUser())
+		sshConfig.sshPort.setValue(linkSettings.getSSHPort())
+		sshConfig.sshExecutable.setText(linkSettings.getSSHExecutable())
+		localPort = linkSettings.getTunnelLocalPort()
+		sshConfig.localPortAuto.setCheckState(
+			Qt.Checked if
+			(localPort == linkSettings.TUNNEL_LOCPORT_AUTO)
+			else Qt.Unchecked)
+		sshConfig.localPort.setValue(
+			localPort if
+			(localPort != linkSettings.TUNNEL_LOCPORT_AUTO)
+			else SSHTunnel.SSH_LOCAL_PORT_START)
 
 	def storeToProject(self, project):
 		linkSettings = project.getCoreLinkSettings()
@@ -257,6 +356,35 @@ class LinkConfigWidget(QWidget):
 		if timeout != linkSettings.getConnectTimeoutMs():
 			linkSettings.setConnectTimeoutMs(timeout)
 			changed = True
+		tunnel = linkSettings.TUNNEL_SSH\
+			 if (self.connConfig.sshTunnel.checkState() == Qt.Checked)\
+			 else linkSettings.TUNNEL_NONE
+		if tunnel != linkSettings.getTunnel():
+			linkSettings.setTunnel(tunnel)
+			changed = True
+
+		sshConfig = self.connConfig.sshConfig
+		sshUser = sshConfig.user.text()
+		if sshUser != linkSettings.getSSHUser():
+			linkSettings.setSSHUser(sshUser)
+			changed = True
+		sshPort = sshConfig.sshPort.value()
+		if sshPort != linkSettings.getSSHPort():
+			linkSettings.setSSHPort(sshPort)
+			changed = True
+		sshExecutable = sshConfig.sshExecutable.text()
+		if sshExecutable != linkSettings.getSSHExecutable():
+			linkSettings.setSSHExecutable(sshExecutable)
+			changed = True
+		if sshConfig.localPortAuto.checkState() == Qt.Checked:
+			if linkSettings.getTunnelLocalPort() != linkSettings.TUNNEL_LOCPORT_AUTO:
+				linkSettings.setTunnelLocalPort(linkSettings.TUNNEL_LOCPORT_AUTO)
+				changed = True
+		else:
+			localPort = sshConfig.localPort.value()
+			if linkSettings.getTunnelLocalPort() != localPort:
+				linkSettings.setTunnelLocalPort(localPort)
+				changed = True
 
 		return changed
 
@@ -268,6 +396,7 @@ class LinkConfigDialog(AbstractConfigDialog):
 			title = "Server connection setup",
 			centralWidget = LinkConfigWidget(),
 			parent = parent)
+		self.resize(400, 400)
 
 	def loadFromProject(self):
 		self.centralWidget.loadFromProject(self.project)

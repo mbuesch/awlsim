@@ -58,10 +58,12 @@ class RunState(QObject):
 			self.__emitStateChanged()
 
 	def setCoreDetails(self, spawned=True,
-			   host=None, port=None):
+			   host=None, port=None,
+			   haveTunnel=False):
 		self.spawned = spawned
 		self.host = host
 		self.port = port
+		self.haveTunnel = haveTunnel
 		self.__emitStateChanged()
 
 class OnlineSelectAction(QAction):
@@ -551,16 +553,13 @@ class CpuWidget(QWidget):
 						interpreterList = interp)
 				host = port = None
 			else:
-				host = linkConfig.getConnectHost()
-				port = linkConfig.getConnectPort()
-				timeout = linkConfig.getConnectTimeoutMs() / 1000.0
-				client.setMode_ONLINE(host = host,
-						      port = port,
-						      timeout = timeout)
+				client.setMode_ONLINE(self, linkConfig)
 
-			self.state.setCoreDetails(spawned = linkConfig.getSpawnLocalEn(),
-						  host = host,
-						  port = port)
+			self.state.setCoreDetails(
+				spawned = linkConfig.getSpawnLocalEn(),
+				host = linkConfig.getConnectHost(),
+				port = linkConfig.getConnectPort(),
+				haveTunnel = (linkConfig.getTunnel() == linkConfig.TUNNEL_SSH))
 			self.state.setState(RunState.STATE_ONLINE)
 
 			if client.getRunState():

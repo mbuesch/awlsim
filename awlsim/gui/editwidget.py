@@ -753,9 +753,11 @@ class EditWidget(SourceCodeEdit):
 		if self.__runState.spawned:
 			runText = [ "[SIM]: ", ]
 		else:
-			runText = [ "[%s:%d]: " %(\
+			runText = [ "[%s:%d%s]: " %(\
 				self.__runState.host,
-				self.__runState.port), ]
+				self.__runState.port,
+				" via SSH" if\
+				self.__runState.haveTunnel else ""), ]
 		if self.__runState.state == RunState.STATE_RUN:
 			if self.__sourceMatchesCpuSource:
 				runText.append(self.__runAni[self.__hdrAniStat])

@@ -23,7 +23,87 @@ from awlsim.gui.util import *
 from awlsim.gui.blocktreewidget import *
 
 from awlsim.coreclient.client import *
+from awlsim.coreclient.sshtunnel import *
 
+
+def sleepWithEventLoop(seconds, excludeInput=True):
+	end = monotonic_time() + seconds
+	eventFlags = QEventLoop.AllEvents |\
+		(QEventLoop.ExcludeUserInputEvents if excludeInput else 0)
+	while monotonic_time() < end:
+		QApplication.processEvents(eventFlags, 10)
+		QThread.msleep(10)
+
+class GuiSSHTunnel(SSHTunnel, QDialog):
+	"""SSH tunnel helper with GUI.
+	"""
+
+	def __init__(self, parent, *args, **kwargs):
+		QDialog.__init__(self, parent)
+		SSHTunnel.__init__(self, *args, **kwargs)
+
+		self.setLayout(QGridLayout())
+		self.setWindowTitle("Establishing SSH tunnel...")
+
+		self.log = QPlainTextEdit(self)
+		self.log.setFont(getDefaultFixedFont())
+		self.log.setReadOnly(True)
+		self.layout().addWidget(self.log, 0, 0)
+
+		self.resize(750, 180)
+
+	def sleep(self, seconds):
+		sleepWithEventLoop(seconds, excludeInput=True)
+
+	def connect(self):
+		self.hide()
+		self.setWindowModality(Qt.ApplicationModal)
+		self.show()
+		try:
+			result = SSHTunnel.connect(self, timeout=None)
+		except AwlSimError as e:
+			QMessageBox.critical(self,
+				"Failed to establish SSH tunnel",
+				"Failed to establish SSH tunnel:\n\n%s" % str(e))
+			e.setSeenByUser()
+			raise e
+		finally:
+			self.hide()
+		return result
+
+	def sshMessage(self, message, isDebug):
+		"""Print a SSH log message.
+		"""
+		if not isDebug:
+			self.log.setPlainText(self.log.toPlainText() + "\n" + message)
+			sb = self.log.verticalScrollBar()
+			sb.setSliderPosition(sb.maximum())
+
+	def getPassphrase(self, prompt):
+		"""Get a password from the user.
+		"""
+		pw, ok = QInputDialog.getText(self,
+			"Please enter SSH password",
+			"Please enter SSH password for '%s@%s':" %(
+				self.sshUser, self.remoteHost),
+			QLineEdit.Password)
+		if not ok:
+			return None
+		try:
+			return pw.encode("UTF-8", "ignore")
+		except UnicodeError:
+			return None
+
+	def hostAuth(self, prompt):
+		"""Get the user answer to the host authentication question.
+		This function returns a boolean.
+		"""
+		res = QMessageBox.question(self,
+			"Confirm host authenticity?",
+			prompt,
+			QMessageBox.Yes | QMessageBox.No,
+			QMessageBox.No)
+		return res == QMessageBox.Yes
 
 class OnlineData(QObject):
 	"""Container for data retrieved from the server.
@@ -112,12 +192,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 
 	# Override sleep handler
 	def sleep(self, seconds):
-		end = monotonic_time() + seconds
-		eventFlags = QEventLoop.AllEvents |\
-			     QEventLoop.ExcludeUserInputEvents
-		while monotonic_time() < end:
-			QApplication.processEvents(eventFlags, 10)
-			QThread.msleep(10)
+		sleepWithEventLoop(seconds, excludeInput=True)
 
 	# Override exception handler
 	def handle_EXCEPTION(self, exception):
@@ -150,10 +225,11 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	def getMode(self):
 		return self.__mode
 
-	def __setMode(self, mode, host = None, port = None):
+	def __setMode(self, mode, host = None, port = None, tunnel = None):
 		self.__mode = mode
 		self.__host = host
 		self.__port = port
+		self.__tunnel = tunnel
 		self.onlineData.reset()
 
 	def shutdown(self):
@@ -161,7 +237,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		# If we are in FORK mode, this will also terminate
 		# the forked core.
 		# If we are in ONLINE mode, this will only
-		# close the connection.
+		# close the connection and possibly the tunnel.
+		if self.__tunnel:
+			self.__tunnel.shutdown()
+			self.__tunnel = None
 		AwlSimClient.shutdown(self)
 		self.__setMode(self.MODE_OFFLINE)
 
@@ -179,16 +258,50 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.shutdownTransceiver()
 		self.__setMode(self.MODE_OFFLINE)
 
-	def setMode_ONLINE(self, host, port, timeout=3.0):
+	def setMode_ONLINE(self, parentWidget, linkSettings):
+		host = linkSettings.getConnectHost()
+		port = linkSettings.getConnectPort()
+		timeout = linkSettings.getConnectTimeoutMs() / 1000.0
+		wantTunnel = (linkSettings.getTunnel() == linkSettings.TUNNEL_SSH)
+		sshUser = linkSettings.getSSHUser()
+		sshPort = linkSettings.getSSHPort()
+		sshExecutable = linkSettings.getSSHExecutable()
+
 		if self.__mode == self.MODE_ONLINE:
-			if self.__host == host and\
-			   self.__port == port:
-				# We are already up and running.
-				return
+			if wantTunnel and self.__tunnel:
+				if host == self.__tunnel.remoteHost and\
+				   port == self.__tunnel.remotePort and\
+				   sshUser == self.__tunnel.sshUser and\
+				   sshPort == self.__tunnel.sshPort and\
+				   sshExecutable == self.__tunnel.sshExecutable:
+					# We are already up and running.
+					return
+			elif not wantTunnel and not self.__tunnel:
+				if self.__host == host and\
+				   self.__port == port:
+					# We are already up and running.
+					return
+
 		self.__serverExecutable = None
 		self.__interpreterList = None
 		self.shutdown()
+
+		tunnel = None
 		try:
+			if wantTunnel:
+				localPort = linkSettings.getTunnelLocalPort()
+				if localPort == linkSettings.TUNNEL_LOCPORT_AUTO:
+					localPort = None
+				tunnel = GuiSSHTunnel(parentWidget,
+					remoteHost = host,
+					remotePort = port,
+					localPort = localPort,
+					sshUser = sshUser,
+					sshPort = sshPort,
+					sshExecutable = sshExecutable
+				)
+				host, port = tunnel.connect()
+				self.__tunnel = tunnel
 			self.connectToServer(host = host,
 					     port = port,
 					     timeout = timeout)
@@ -196,7 +309,8 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			with suppressAllExc:
 				self.shutdown()
 			raise e
-		self.__setMode(self.MODE_ONLINE, host = host, port = port)
+		self.__setMode(self.MODE_ONLINE, host = host,
+			       port = port, tunnel = tunnel)
 
 	def setMode_FORK(self, portRange,
 			 serverExecutable=None,
