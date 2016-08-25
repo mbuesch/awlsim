@@ -1,7 +1,7 @@
 [AWLSIM_PROJECT]
 file_version=0
 create_date=2012-08-13 00:00:00.000000
-modify_date=2015-07-14 18:19:34.640278
+modify_date=2016-08-25 20:03:07.201922
 
 [CPU]
 awl_0=T1JHQU5JWkFUSU9OX0JMT0NLIE9CIDENCkJFR0lODQoJDQoJQ0FMTAlGQyAxDQoJQ0FMTAlGQyAyDQoJQ0FMTAlGQiAxLCBEQiAyICgNCgkJSU5QVVRfVkFSIDo9IDENCgkpDQoJDQoJQVVGCURCIDENCglMCURCRCAyDQoJVAlNRCAxNg0KCQ0KRU5EX09SR0FOSVpBVElPTl9CTE9DSw0K
@@ -33,9 +33,14 @@ lib_block_effective_0=21
 spawn_local=1
 spawn_local_port_range=4183:8278
 spawn_local_interpreters=JERFRkFVTFQ=
-connect_host=bG9jYWxob3N0
+connect_host=MTkyLjE2OC4xNzkuMzE=
 connect_port=4151
 connect_timeout_ms=3000
+tunnel=1
+tunnel_local_port=-1
+ssh_user=cGk=
+ssh_port=22
+ssh_executable=c3No
 
 [HWMODS]
 loaded_mod_0=ZHVtbXk=
