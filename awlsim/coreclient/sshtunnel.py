@@ -140,9 +140,9 @@ class SSHTunnel(object):
 
 	def __handshake(self, ptyMasterFd, timeout):
 		timeoutEnd = monotonic_time() + (timeout or 0)
-		sentPw, authReq, finished = False, False, False
+		sentPw, authReq, finished = False, [], False
 		while not finished:
-			time.sleep(0.1)
+			self.sleep(0.1)
 			if timeout and monotonic_time() >= timeoutEnd:
 				raise AwlSimError("Timeout establishing SSH tunnel.")
 			fromSsh = self.__read(ptyMasterFd)
@@ -158,6 +158,8 @@ class SSHTunnel(object):
 				self.sshMessage(line, isDebug)
 				if isDebug:
 					continue
+				if authReq:
+					authReq.append(line)
 				if self.PROMPT_PW.lower() in lineLow:
 					if sentPw:
 						# Second try.
@@ -175,21 +177,26 @@ class SSHTunnel(object):
 					timeoutEnd = monotonic_time() + (timeout or 0)
 					continue
 				if self.PROMPT_AUTH.lower() in lineLow:
-					authReq = True
+					authReq.append(line)
 					continue
 				if self.PROMPT_YESNO.lower() in lineLow and authReq:
-					ok = self.hostAuth(line)
+					ok = self.hostAuth("\n".join(authReq))
 					if not ok:
 						raise AwlSimError("SSH tunnel host "
 							"authentication failed.")
 					self.__write(ptyMasterFd, b"yes\n")
-					authReq = False
+					authReq = []
 					timeoutEnd = monotonic_time() + (timeout or 0)
 					continue
 				if self.AUTH_FINISH.lower() in lineLow:
 					# Successfully authenticated.
 					finished = True
 					continue
+
+	def sleep(self, seconds):
+		"""Sleep for a number of seconds.
+		"""
+		time.sleep(seconds)
 
 	def sshMessage(self, message, isDebug):
 		"""Print a SSH log message.
@@ -203,7 +210,7 @@ class SSHTunnel(object):
 		try:
 			return input(prompt).encode("UTF-8", "ignore")
 		except UnicodeError:
-			return ""
+			return b""
 
 	def hostAuth(self, prompt):
 		"""Get the user answer to the host authentication question.
