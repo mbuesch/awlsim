@@ -37,6 +37,7 @@ class AwlSimError(Exception):
 		self.lineNr = lineNr
 		self.sourceId = sourceId
 		self.sourceName = sourceName
+		self.seenByUser = False
 
 	def setCpu(self, cpu):
 		self.cpu = cpu
@@ -131,8 +132,16 @@ class AwlSimError(Exception):
 	def getReport(self, verbose=True):
 		return self.doGetReport("Awlsim error", verbose)
 
+	def getSeenByUser(self):
+		return self.seenByUser
+
+	def setSeenByUser(self, seen=True):
+		self.seenByUser = seen
+
 	def __repr__(self):
 		return self.getReport()
+
+	__str__ = __repr__
 
 class AwlParserError(AwlSimError):
 	def __init__(self, message, lineNr=None):
