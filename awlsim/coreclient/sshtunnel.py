@@ -25,8 +25,10 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 from awlsim.common.net import *
 from awlsim.common.util import *
+from awlsim.common.subprocess import *
 
-import pty
+if not osIsWindows:
+	import pty
 import os
 import select
 import signal
@@ -50,6 +52,10 @@ class SSHTunnel(object):
 		     sshPort=SSH_PORT):
 		"""Create an SSH tunnel.
 		"""
+		if osIsWindows:
+			# win magic: translate "ssh" to "plink".
+			if sshExecutable == "ssh":
+				sshExecutable = "plink.exe"
 		self.remoteHost = remoteHost
 		self.remotePort = remotePort
 		self.sshUser = sshUser
@@ -57,6 +63,7 @@ class SSHTunnel(object):
 		self.sshExecutable = sshExecutable
 		self.sshPort = sshPort
 		self.__sshPid = None
+		self.__sshProc = None
 
 	def connect(self, timeout=10.0):
 		"""Establish the SSH tunnel.
@@ -75,24 +82,50 @@ class SSHTunnel(object):
 		try:
 			# Prepare SSH environment and arguments.
 			env = envClearLang(os.environ)
-			argv = [ self.sshExecutable,
-				"-p", "%d" % self.sshPort,
-				"-l", self.sshUser,
-				"-L", "localhost:%d:localhost:%d" % (
-					localPort, self.remotePort),
-				"-N",
-				"-v",
-				self.remoteHost, ]
+			if osIsWindows and "plink" in self.sshExecutable.lower():
+				# Run plink.exe (PuTTY)
+				pw = self.getPassphrase("%s's Password:" % self.remoteHost)
+				argv = [ self.sshExecutable,
+					"-ssh",
+					"-P", "%d" % self.sshPort,
+					"-l", self.sshUser,
+					"-L", "localhost:%d:localhost:%d" % (
+						localPort, self.remotePort),
+					"-N",
+					"-x",
+					"-v",
+					"-pw", pw.decode("UTF-8"),
+					self.remoteHost, ]
+			else:
+				# Run OpenSSH
+				argv = [ self.sshExecutable,
+					"-p", "%d" % self.sshPort,
+					"-l", self.sshUser,
+					"-L", "localhost:%d:localhost:%d" % (
+						localPort, self.remotePort),
+					"-N",
+					"-x",
+					"-v",
+					self.remoteHost, ]
 
-			# Create a PTY and fork.
-			childPid, ptyMasterFd = pty.fork()
-			if childPid == pty.CHILD:
-				# Run SSH
-				execargs = argv + [env]
-				os.execlpe(argv[0], *execargs)
-				assert(0) # unreachable
-			self.__sshPid = childPid
-			self.__handshake(ptyMasterFd, timeout)
+			printDebug("Running: %s" % " ".join(argv))
+			if osIsWindows:
+				proc = PopenWrapper(argv, env=env, stdio=True)
+				self.__sshProc = proc
+				time.sleep(1.0)
+				proc.stdin.write(b"n\n") # Do not cache host auth.
+				proc.stdin.flush()
+				time.sleep(3.0)
+			else:
+				# Create a PTY and fork.
+				childPid, ptyMasterFd = pty.fork()
+				if childPid == pty.CHILD:
+					# Run SSH
+					execargs = argv + [env]
+					os.execlpe(argv[0], *execargs)
+					assert(0) # unreachable
+				self.__sshPid = childPid
+				self.__handshake(ptyMasterFd, timeout)
 		except (OSError, ValueError, IOError) as e:
 			with suppressAllExc:
 				self.shutdown()
@@ -106,13 +139,18 @@ class SSHTunnel(object):
 		return "localhost", actualLocalPort
 
 	def shutdown(self):
-		if self.__sshPid is None:
-			return
-		try:
-			with suppressAllExc:
-				os.kill(self.__sshPid, signal.SIGTERM)
-		finally:
-			self.__sshPid = None
+		if self.__sshProc:
+			try:
+				with suppressAllExc:
+					self.__sshProc.terminate()
+			finally:
+				self.__sshProc = None
+		if self.__sshPid is not None:
+			try:
+				with suppressAllExc:
+					os.kill(self.__sshPid, signal.SIGTERM)
+			finally:
+				self.__sshPid = None
 
 	@staticmethod
 	def __read(fd):
