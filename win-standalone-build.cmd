@@ -3,7 +3,7 @@
 setlocal ENABLEDELAYEDEXPANSION
 
 set PATH=%PATH%;C:\WINDOWS;C:\WINDOWS\SYSTEM32
-for /D %%f in ( C:\PYTHON* ) do set PATH=!PATH!;%%f
+for /D %%f in ( "C:\PYTHON*" ) do set PATH=!PATH!;%%f
 set PATH=%PATH%;%ProgramFiles%\7-Zip
 
 py -c "from awlsim.common.version import VERSION_STRING; print(VERSION_STRING)" > version.txt
@@ -12,11 +12,11 @@ del version.txt
 
 set distdir=awlsim-win-standalone-%version%
 set sfxfile=awlsim-win-%version%.package.exe
-set bindir=%distdir%\awlsim-bin
+set bindirname=awlsim-bin
+set bindir=%distdir%\%bindirname%
+set licensedirname=licenses
+set licensedir=%distdir%\%licensedirname%
 
-rd /S /Q build 2>NUL
-rd /S /Q %distdir% 2>NUL
-del %sfxfile% 2>NUL
 
 echo Building standalone Windows executable for awlsim v%version%...
 echo.
@@ -29,8 +29,7 @@ if "%framework%" == "" goto framework_pyqt5
 if "%framework%" == "1" goto framework_pyqt5
 if "%framework%" == "2" goto framework_pyside4
 echo "Error: Invalid selection"
-pause
-exit
+goto error
 
 :framework_pyqt5
 echo Using PyQt5
@@ -53,18 +52,13 @@ if "%buildtype%" == "" goto build_cxfreeze
 if "%buildtype%" == "1" goto build_cxfreeze
 if "%buildtype%" == "2" goto build_py2exe
 echo "Error: Invalid selection"
-pause
-exit
+goto error
 
 
 :build_cxfreeze
 set buildtype=1
 echo === Creating the cx_Freeze distribution
-timeout /T 2 /NOBREAK >NUL
-mkdir %distdir%
-if ERRORLEVEL 1 goto error_prep
-mkdir %bindir%
-if ERRORLEVEL 1 goto error_prep
+call :prepare_env
 py setup.py build_exe ^
 	--build-exe=%bindir% ^
 	--optimize=2 ^
@@ -77,11 +71,7 @@ goto copy_files
 :build_py2exe
 set buildtype=2
 echo === Creating the py2exe distribution
-timeout /T 2 /NOBREAK >NUL
-mkdir %distdir%
-if ERRORLEVEL 1 goto error_prep
-mkdir %bindir%
-if ERRORLEVEL 1 goto error_prep
+call :prepare_env
 py setup.py py2exe ^
 	--dist-dir=%bindir% ^
 	--optimize=2 ^
@@ -96,6 +86,8 @@ goto copy_files
 
 :copy_files
 echo === Copying additional files
+mkdir %licensedir%
+if ERRORLEVEL 1 goto error_copy
 copy examples\EXAMPLE.awlpro %distdir%\
 if ERRORLEVEL 1 goto error_copy
 copy README.* %distdir%\
@@ -104,10 +96,18 @@ copy COMPATIBILITY.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
 copy TODO.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
-xcopy doc\foreign-licenses %distdir%\licenses\ /E
+copy doc\foreign-licenses\*.txt %licensedir%\
 if ERRORLEVEL 1 goto error_copy
-copy COPYING.txt %distdir%\licenses\AWLSIM-LICENSE.txt
+copy COPYING.txt %licensedir%\AWLSIM-LICENSE.txt
 if ERRORLEVEL 1 goto error_copy
+for /D %%f in ( "progs\putty\*" ) do (
+	copy %%f\putty\PUTTY.EXE %bindir%\
+	if ERRORLEVEL 1 goto error_copy
+	copy %%f\putty\PLINK.EXE %bindir%\
+	if ERRORLEVEL 1 goto error_copy
+	copy %%f\LICENCE %licensedir%\PUTTY-LICENSE.txt
+	if ERRORLEVEL 1 goto error_copy
+)
 if %buildtype% == 1 goto no_servermod_rename
 move %bindir%\server.exe %bindir%\awlsim-server-module.exe
 if ERRORLEVEL 1 goto error_copy
@@ -116,7 +116,8 @@ if ERRORLEVEL 1 goto error_copy
 
 echo === Generating startup wrapper
 set wrapper=%distdir%\awlsim.cmd
-echo @start /Dawlsim-bin awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9> %wrapper%
+echo @set PATH=%bindirname%;%%PATH%%> %wrapper%
+echo @start awlsim-bin\awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9>> %wrapper%
 if ERRORLEVEL 1 goto error_wrapper
 
 
@@ -128,10 +129,20 @@ if ERRORLEVEL 1 goto error_7z
 echo ---
 echo finished
 pause
-exit
+exit /B 0
 
 
-
+:prepare_env
+echo === Preparing distribution environment
+rd /S /Q build 2>NUL
+rd /S /Q %distdir% 2>NUL
+del %sfxfile% 2>NUL
+timeout /T 2 /NOBREAK >NUL
+mkdir %distdir%
+if ERRORLEVEL 1 goto error_prep
+mkdir %bindir%
+if ERRORLEVEL 1 goto error_prep
+exit /B 0
 
 :error_prep
 echo FAILED to prepare environment
@@ -155,4 +166,4 @@ goto error
 
 :error
 pause
-exit
+exit 1
