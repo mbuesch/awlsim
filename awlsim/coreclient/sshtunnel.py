@@ -78,6 +78,11 @@ class SSHTunnel(object):
 						"unused local port for the "
 						"SSH tunnel.")
 		actualLocalPort = localPort
+
+		self.sshMessage("Establishing SSH tunnel to '%s@%s'...\n" %(
+				self.sshUser, self.remoteHost),
+				isDebug=False)
+
 		self.__sshPid = None
 		try:
 			# Prepare SSH environment and arguments.
@@ -87,6 +92,7 @@ class SSHTunnel(object):
 				pw = self.getPassphrase("%s's Password:" % self.remoteHost)
 				argv = [ self.sshExecutable,
 					"-ssh",
+					"-pw", None,
 					"-P", "%d" % self.sshPort,
 					"-l", self.sshUser,
 					"-L", "localhost:%d:localhost:%d" % (
@@ -94,8 +100,13 @@ class SSHTunnel(object):
 					"-N",
 					"-x",
 					"-v",
-					"-pw", pw.decode("UTF-8"),
 					self.remoteHost, ]
+				pwArgIdx = 2
+				if pw is None:
+					del argv[pwArgIdx : pwArgIdx + 2]
+					pwArgIdx = None
+				else:
+					argv[pwArgIdx + 1] = pw.decode("UTF-8")
 			else:
 				# Run OpenSSH
 				argv = [ self.sshExecutable,
@@ -107,15 +118,29 @@ class SSHTunnel(object):
 					"-x",
 					"-v",
 					self.remoteHost, ]
+				pwArgIdx = None
 
-			printDebug("Running: %s" % " ".join(argv))
+			printArgv = argv[:]
+			if pwArgIdx is not None:
+				printArgv[pwArgIdx + 1] = "*" * len(printArgv[pwArgIdx + 1])
+			self.sshMessage("Running command:\n  %s\n" % " ".join(printArgv),
+					isDebug=False)
+
 			if osIsWindows:
+				# Start SSH tunnel as subprocess.
 				proc = PopenWrapper(argv, env=env, stdio=True)
 				self.__sshProc = proc
-				time.sleep(1.0)
+				self.sshMessage("Starting %s..." % argv[0],
+						isDebug=False)
+				self.sleep(1.0)
 				proc.stdin.write(b"n\n") # Do not cache host auth.
 				proc.stdin.flush()
-				time.sleep(3.0)
+				for i in range(3):
+					self.sshMessage(".", isDebug=False)
+					self.sleep(1.0)
+					if self.__sshProc.returncode is not None:
+						raise AwlSimError("%s exited with "
+							"error." % argv[0])
 			else:
 				# Create a PTY and fork.
 				childPid, ptyMasterFd = pty.fork()
