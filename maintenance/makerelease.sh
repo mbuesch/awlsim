@@ -37,6 +37,14 @@ hook_post_checkout()
 		gpg --verify "$f" "$(dirname "$f")/$(basename "$f" .gpg)" ||\
 			die "Signature check failed."
 	done
+
+	info "Unpacking PuTTY"
+	for f in "$1"/progs/putty/*/*.zip; do
+		7z x -o"$(dirname "$f")/$(basename "$f" .zip)" "$f" ||\
+			die "Unzip failed"
+		rm "$f" "$f".gpg ||\
+			die "Failed to remove archives"
+	done
 }
 
 hook_regression_tests()
