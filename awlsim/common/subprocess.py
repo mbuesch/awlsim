@@ -90,3 +90,9 @@ class PopenWrapper(object):
 		if isIronPython:
 			raise NotImplementedError()
 		return self.__proc.stderr
+
+	@property
+	def returncode(self):
+		if isIronPython:
+			raise NotImplementedError()
+		return self.__proc.returncode
