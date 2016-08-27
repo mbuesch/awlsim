@@ -6,6 +6,7 @@ graft doc
 graft examples
 graft libs
 graft pilc
+graft progs
 graft submodules
 graft tests
 
