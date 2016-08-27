@@ -31,6 +31,12 @@ hook_post_checkout()
 	info "Removing version control files"
 	default_hook_post_checkout "$@"
 	rm -r "$1"/maintenance
+
+	info "Checking signatures"
+	for f in "$1"/progs/putty/*/*.gpg; do
+		gpg --verify "$f" "$(dirname "$f")/$(basename "$f" .gpg)" ||\
+			die "Signature check failed."
+	done
 }
 
 hook_regression_tests()
