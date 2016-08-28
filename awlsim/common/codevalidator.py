@@ -42,7 +42,7 @@ def __awlValidatorWorker(text):
 		p.parseText(text)
 		s = AwlSim()
 		s.getCPU().enableExtendedInsns(True)
-		s.load(p.getParseTree())
+		s.load(p.getParseTree(), rebuild=True)
 	except AwlSimError as e:
 		lineNr = e.getLineNr()
 		if lineNr is not None:
