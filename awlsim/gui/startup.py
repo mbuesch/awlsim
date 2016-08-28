@@ -27,12 +27,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import multiprocessing
 multiprocessing.freeze_support()
 
-# Initialize code validator.
-# This must be done before expensive modules are imported
-# for memory efficiency reasons. (The validator forks).
-from awlsim.common.codevalidator import *
-AwlValidator.startup()
-
 # Import awlsim modules (compat first)
 from awlsim.common.compat import *
 from awlsim.common import *
@@ -99,5 +93,4 @@ Logging.setLoglevel(opt_loglevel)
 
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
 res = qapp.exec_()
-AwlValidator.get().shutdown()
 sys.exit(res)
