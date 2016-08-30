@@ -307,8 +307,7 @@ def runWithServerBackend(inputFile):
 		client.reset()
 
 		# Load hardware modules
-		for modDesc in project.getHwmodSettings().getLoadedModules():
-			client.loadHardwareModule(modDesc)
+		client.loadHardwareModules(project.getHwmodSettings().getLoadedModules())
 		for name, parameters in opt_hwmods:
 			client.loadHardwareModule(HwmodDescriptor(name, parameters))
 
@@ -327,12 +326,9 @@ def runWithServerBackend(inputFile):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		for symTabSrc in project.getSymTabSources():
-			client.loadSymTabSource(symTabSrc)
-		for libSel in project.getLibSelections():
-			client.loadLibraryBlock(libSel)
-		for awlSrc in project.getAwlSources():
-			client.loadAwlSource(awlSrc)
+		client.loadSymTabSources(project.getSymTabSources())
+		client.loadLibraryBlocks(project.getLibSelections())
+		client.loadAwlSources(project.getAwlSources())
 		client.setRunState(True)
 
 		# Run the client-side event loop

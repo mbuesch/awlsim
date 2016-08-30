@@ -636,14 +636,10 @@ class CpuWidget(QWidget):
 			client.enableOBTempPresets(project.getObTempPresetsEn())
 			client.enableExtendedInsns(project.getExtInsnsEn())
 
-			for modDesc in project.getHwmodSettings().getLoadedModules():
-				client.loadHardwareModule(modDesc)
-			for symTabSource in symTabSources:
-				client.loadSymTabSource(symTabSource)
-			for libSel in libSelections:
-				client.loadLibraryBlock(libSel)
-			for awlSource in awlSources:
-				client.loadAwlSource(awlSource)
+			client.loadHardwareModules(project.getHwmodSettings().getLoadedModules())
+			client.loadSymTabSources(symTabSources)
+			client.loadLibraryBlocks(libSelections)
+			client.loadAwlSources(awlSources)
 
 			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
@@ -703,8 +699,7 @@ class CpuWidget(QWidget):
 			elif selectedResource == projectWidget.RES_LIBSELS:
 				libSelections = projectWidget.getLibSelections()
 				printVerbose("Single libSelections download.")
-				for libSel in libSelections:
-					client.loadLibraryBlock(libSel)
+				client.loadLibraryBlocks(libSelections)
 			else:
 				assert(0)
 
