@@ -837,7 +837,9 @@ class EditWidget(SourceCodeEdit):
 			self.__setSourceMatchesCpuSource(True)
 
 	# Validation callback. Overridden subclass method.
-#	def validateText(self, text, currentLineNr):
+	def validateDocument(self):
+		pass#TODO
+
 #		result = AwlValidator.get().enqueue(text)
 #		self.__validatorResults.append(result)
 #		if not self.__validatorTimer.isActive():
