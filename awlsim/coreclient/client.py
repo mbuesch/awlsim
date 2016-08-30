@@ -415,6 +415,10 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to AWL source")
 		return True
 
+	def loadAwlSources(self, awlSources):
+		return all(self.loadAwlSource(awlSource)
+			   for awlSource in awlSources)
+
 	def getSymTabSource(self, identHash, sync=True):
 		if not self.__transceiver:
 			return False
@@ -440,6 +444,10 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load symbol table source")
 		return True
 
+	def loadSymTabSources(self, symTabSources):
+		return all(self.loadSymTabSource(symTabSource)
+			   for symTabSource in symTabSources)
+
 	def loadLibraryBlock(self, libSelection):
 		if not self.__transceiver:
 			return False
@@ -449,6 +457,10 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to load library block selection")
 		return True
 
+	def loadLibraryBlocks(self, libSelections):
+		return all(self.loadLibraryBlock(libSel)
+			   for libSel in libSelections)
+
 	def loadHardwareModule(self, hwmodDesc):
 		if not self.__transceiver:
 			return False
@@ -457,6 +469,10 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to load hardware module")
 		return True
+
+	def loadHardwareModules(self, hwmodDescs):
+		return all(self.loadHardwareModule(hwmodDesc)
+			   for hwmodDesc in hwmodDescs)
 
 	def removeSource(self, identHash):
 		if not self.__transceiver:
