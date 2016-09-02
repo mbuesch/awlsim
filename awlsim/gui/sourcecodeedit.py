@@ -30,6 +30,12 @@ class SourceCodeEdit(QPlainTextEdit):
 	#         If the parameter is True, increase font size.
 	resizeFont = Signal(bool)
 
+	# Signal: Validation request.
+	#	  A code validation should take place.
+	#	  In case of validation failure, call setErraticLines().
+	#	  The parameter is self.
+	validateDocument = Signal(QObject)
+
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
 
@@ -225,17 +231,10 @@ class SourceCodeEdit(QPlainTextEdit):
 		text = self.toPlainText()
 		if text.strip():
 			# Run the validator.
-			self.validateDocument()
+			self.validateDocument.emit(self)
 		else:
 			# No text. Mark everything as ok.
 			self.setErraticLines(None)
-
-	# Validation callback.
-	# Override this in the subclass.
-	# The default implementation marks everything as Ok.
-	# In case of validation failure, call setErraticLines.
-	def validateDocument(self):
-		self.setErraticLines(None)
 
 	# Mark erratic lines
 	def setErraticLines(self, errLines):

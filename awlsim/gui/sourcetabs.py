@@ -114,6 +114,11 @@ class SourceTabWidget(QTabWidget):
 	# Signal: Change the font size.
 	#         If the parameter is True, increase font size.
 	resizeFont = Signal(bool)
+	# Signal: Validation request.
+	#	  A code validation should take place.
+	#	  The parameter is the source editor.
+	validateDocument = Signal(SourceCodeEdit)
+
 
 	def __init__(self, itemName, parent=None):
 		QTabWidget.__init__(self, parent)
@@ -298,6 +303,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 					       if editWidget else False)
 		self.copyAvailableChanged.emit(editWidget.copyIsAvailable()
 					       if editWidget else False)
+		self.validateDocument.emit(editWidget)
 
 	def updateRunState(self, runState):
 		for editWidget in self.allTabWidgets():
@@ -344,6 +350,8 @@ class AwlSourceTabWidget(SourceTabWidget):
 		editWidget.redoAvailable.connect(self.redoAvailableChanged)
 		editWidget.copyAvailable.connect(self.copyAvailableChanged)
 		editWidget.resizeFont.connect(self.resizeFont)
+		editWidget.validateDocument.connect(
+			lambda editWidget: self.validateDocument.emit(editWidget))
 		index = self.addTab(editWidget, editWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()

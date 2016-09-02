@@ -360,11 +360,6 @@ class EditWidget(SourceCodeEdit):
 	def __init__(self, parent=None):
 		SourceCodeEdit.__init__(self, parent)
 
-#		self.__validatorResults = []
-#		self.__validatorTimer = QTimer(self)
-#		self.__validatorTimer.setSingleShot(True)
-#		self.__validatorTimer.timeout.connect(self.__checkValidator)
-
 		self.__runAniTimer = QTimer(self)
 		self.__runAniTimer.setSingleShot(False)
 		self.__runAniTimer.timeout.connect(self.__runAnimation)
@@ -413,15 +408,7 @@ class EditWidget(SourceCodeEdit):
 		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
 	def shutdown(self):
-#		while self.__validatorResults:
-#			self.__checkValidator(rearm=False)
-#			QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
-#		self.__validatorTimer.stop()
-#		self.__validatorTimer = None
-
-		# Make sure all QTimer objects are collected.
-		# This avoids crashes within Qt.
-		garbageCollector.collect()
+		pass
 
 	def setSource(self, source):
 		with self.__textChangeBlocked:
@@ -835,23 +822,3 @@ class EditWidget(SourceCodeEdit):
 			# We don't make a big deal out of code mismatch, even
 			# if the code most likely _does_ mismatch after this edit.
 			self.__setSourceMatchesCpuSource(True)
-
-	# Validation callback. Overridden subclass method.
-	def validateDocument(self):
-		pass#TODO
-
-#		result = AwlValidator.get().enqueue(text)
-#		self.__validatorResults.append(result)
-#		if not self.__validatorTimer.isActive():
-#			self.__validatorTimer.start(50)
-
-#	def __checkValidator(self, rearm=True):
-#		if not self.__validatorResults or\
-#		   not self.__validatorResults[0].ready():
-#			return
-#		result = self.__validatorResults.pop(0)
-#
-#		self.setErraticLines(result.getErrLines())
-#
-#		if self.__validatorResults and rearm:
-#			self.__validatorTimer.start(25)

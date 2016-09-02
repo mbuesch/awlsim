@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI project widget
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -150,12 +150,21 @@ class ProjectWidget(QTabWidget):
 		self.awlTabs.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.awlTabs.copyAvailableChanged.connect(self.copyAvailableChanged)
 		self.awlTabs.resizeFont.connect(self.__doSourceCodeFontResize)
+		self.awlTabs.validateDocument.connect(self.__doDocumentValidation)
 		self.symTabs.sourceChanged.connect(self.symTabChanged)
 		self.libTable.model().contentChanged.connect(self.libTableChanged)
 
 		# Send an initial tab-change notification signal.
 		QTimer.singleShot(0,
 			lambda: self.__handleTabChange(self.currentIndex()))
+
+	# Run a background source validation.
+	def __doDocumentValidation(self, editWidget):
+		if not editWidget:
+			return
+		#TODO collect all sources needed for validation
+		#TODO send it down the validation core
+		#TODO report results
 
 	# Resize project editor font.
 	def __doSourceCodeFontResize(self, bigger):
@@ -194,6 +203,7 @@ class ProjectWidget(QTabWidget):
 			self.undoAvailableChanged.emit(self.awlTabs.undoIsAvailable())
 			self.redoAvailableChanged.emit(self.awlTabs.redoIsAvailable())
 			self.copyAvailableChanged.emit(self.awlTabs.copyIsAvailable())
+			self.__doDocumentValidation(widget.currentWidget())
 		elif widget is self.symTabs:
 			self.__setSelectedResource(self.RES_SYMTABS)
 			self.undoAvailableChanged.emit(self.symTabs.undoIsAvailable())
