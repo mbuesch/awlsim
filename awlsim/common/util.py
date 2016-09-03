@@ -226,3 +226,13 @@ def envClearLang(env, lang = "C"):
 		  "LC_IDENTIFICATION",}:
 		env.pop(i, None)
 	return env
+
+def isiterable(obj):
+	"""Check if an object is iterable.
+	"""
+	try:
+		iter(obj)
+		return True
+	except TypeError:
+		pass
+	return False
