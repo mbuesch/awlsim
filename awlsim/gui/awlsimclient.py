@@ -332,25 +332,15 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			if self.serverProcess:
 				port = self.serverProcessPort
 			else:
-				for port in portRange:
-					if not netPortIsUnused(host, port):
-						continue
-					# XXX: There is a race-window here. Another process might
-					#      allocate the port that we just checked
-					#      before our server is able to allocate it.
-					if serverExecutable:
-						self.spawnServer(serverExecutable = serverExecutable,
-								 listenHost = host,
-								 listenPort = port)
-					else:
-						self.spawnServer(interpreter = interpreterList,
-								 listenHost = host,
-								 listenPort = port)
-					break
+				if serverExecutable:
+					self.spawnServer(serverExecutable = serverExecutable,
+							 listenHost = host,
+							 listenPort = portRange)
 				else:
-					raise AwlSimError("Did not find a free port to run the "
-						"awlsim core server on.\nTried port %d to %d on '%s'." %\
-						(portRange[0], portRange[-1], host))
+					self.spawnServer(interpreter = interpreterList,
+							 listenHost = host,
+							 listenPort = portRange)
+				port = self.serverProcessPort
 			self.shutdownTransceiver()
 			self.connectToServer(host = host, port = port)
 		except AwlSimError as e:
