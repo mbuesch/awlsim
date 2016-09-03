@@ -77,19 +77,6 @@ def strPartitionFull(string, sep, keepEmpty=True):
 		first = False
 	return ret
 
-# Returns value, if value is a list.
-# Returns a list with the elements of value, if value is a tuple.
-# Returns a list with the elements of value, if value is a set.
-# Otherwise returns a list with value as element.
-def toList(value):
-	if isinstance(value, list):
-		return value
-	if isinstance(value, tuple):
-		return list(value)
-	if isinstance(value, set):
-		return sorted(value)
-	return [ value, ]
-
 # Returns value, if value is a set.
 # Returns a set with the elements of value, if value is a tuple.
 # Returns a set with the elements of value, if value is a list.

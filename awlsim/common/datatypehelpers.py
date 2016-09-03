@@ -148,23 +148,3 @@ def roundUp(n, s):
 # Divide integer 'n' by 'd' and round up to the next integer
 def intDivRoundUp(n, d):
 	return (n + d - 1) // d
-
-def __isInteger_python2(value):
-	return isinstance(value, int) or\
-	       isinstance(value, long)
-
-def __isInteger_python3(value):
-	return isinstance(value, int)
-
-isInteger = py23(__isInteger_python2,
-		 __isInteger_python3)
-
-def __isString_python2(value):
-	return isinstance(value, unicode) or\
-	       isinstance(value, str)
-
-def __isString_python3(value):
-	return isinstance(value, str)
-
-isString = py23(__isString_python2,
-		__isString_python3)

@@ -227,6 +227,26 @@ def envClearLang(env, lang = "C"):
 		env.pop(i, None)
 	return env
 
+def __isInteger_python2(value):
+	return isinstance(value, int) or\
+	       isinstance(value, long)
+
+def __isInteger_python3(value):
+	return isinstance(value, int)
+
+isInteger = py23(__isInteger_python2,
+		 __isInteger_python3)
+
+def __isString_python2(value):
+	return isinstance(value, unicode) or\
+	       isinstance(value, str)
+
+def __isString_python3(value):
+	return isinstance(value, str)
+
+isString = py23(__isString_python2,
+		__isString_python3)
+
 def isiterable(obj):
 	"""Check if an object is iterable.
 	"""
@@ -236,3 +256,18 @@ def isiterable(obj):
 	except TypeError:
 		pass
 	return False
+
+def toList(value):
+	"""Returns value, if value is a list.
+	Returns a list with the elements of value, if value is a set.
+	Returns a list with the elements of value, if value is an iterable, but not a string.
+	Otherwise returns a list with value as element.
+	"""
+	if isinstance(value, list):
+		return value
+	if isinstance(value, set):
+		return sorted(value)
+	if not isString(value):
+		if isiterable(value):
+			return list(value)
+	return [ value, ]
