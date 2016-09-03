@@ -118,6 +118,8 @@ class ProjectWidget(QTabWidget):
 
 	# Project resource identifier
 	EnumGen.start
+	RES_FUP		= EnumGen.item # FBD/FUP diagrams
+	RES_KOP		= EnumGen.item # LAD/KOP diagrams
 	RES_SOURCES	= EnumGen.item # Sources
 	RES_SYMTABS	= EnumGen.item # Symbol tables
 	RES_LIBSELS	= EnumGen.item # Library selections
@@ -126,19 +128,32 @@ class ProjectWidget(QTabWidget):
 	def __init__(self, parent=None):
 		QTabWidget.__init__(self, parent)
 
+		self.fupTabs = None #TODO
+		self.kopTabs = None #TODO
 		self.awlTabs = AwlSourceTabWidget(self)
 		self.symTabs = SymSourceTabWidget(self)
 		self.libTable = LibTableView(None, self)
 
+		i = 0
+#TODO		self.addTab(self.fupTabs, "Func. block diagrams")
+#		self.setTabToolTip(i, "Create Function Block Diagrams (FBD/FUP) here")
+#		self.setTabIcon(i, getIcon("block"))
+#		i += 1
+#TODO		self.addTab(self.kopTabs, "Ladder logic")
+#		self.setTabToolTip(i, "Create Ladder logic (LAD/KOP) here")
+#		self.setTabIcon(i, getIcon("ladder"))
+		i += 1
 		self.addTab(self.awlTabs, "Sources")
+		self.setTabToolTip(i, "Enter your AWL/STL program here")
+		self.setTabIcon(i, getIcon("textsource"))
+		i += 1
 		self.addTab(self.symTabs, "Symbol tables")
+		self.setTabToolTip(i, "Enter your symbol table here")
+		self.setTabIcon(i, getIcon("tag"))
+		i += 1
 		self.addTab(self.libTable, "Library selections")
-		self.setTabToolTip(0, "Enter your AWL/STL program here")
-		self.setTabIcon(0, getIcon("textsource"))
-		self.setTabToolTip(1, "Enter your symbol table here")
-		self.setTabIcon(1, getIcon("tag"))
-		self.setTabToolTip(2, "Select standard libraries to include")
-		self.setTabIcon(2, getIcon("stdlib"))
+		self.setTabToolTip(i, "Select standard libraries to include")
+		self.setTabIcon(i, getIcon("stdlib"))
 
 		self.reset()
 
@@ -198,7 +213,17 @@ class ProjectWidget(QTabWidget):
 		widget = self.widget(newTabIndex)
 		if not widget:
 			return
-		if widget is self.awlTabs:
+		if widget is self.fupTabs:
+			self.__setSelectedResource(self.RES_FUP)
+			self.undoAvailableChanged.emit(False)
+			self.redoAvailableChanged.emit(False)
+			self.copyAvailableChanged.emit(False)
+		elif widget is self.kopTabs:
+			self.__setSelectedResource(self.RES_KOP)
+			self.undoAvailableChanged.emit(False)
+			self.redoAvailableChanged.emit(False)
+			self.copyAvailableChanged.emit(False)
+		elif widget is self.awlTabs:
 			self.__setSelectedResource(self.RES_SOURCES)
 			self.undoAvailableChanged.emit(self.awlTabs.undoIsAvailable())
 			self.redoAvailableChanged.emit(self.awlTabs.redoIsAvailable())
@@ -261,9 +286,11 @@ class ProjectWidget(QTabWidget):
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
 		self.__selectedResource = self.RES_SOURCES
+#TODO		self.fupTabs.reset()
+#TODO		self.kopTabs.reset()
 		self.awlTabs.reset()
 		self.symTabs.reset()
-		self.setCurrentIndex(0)
+		self.setCurrentIndex(self.indexOf(self.awlTabs))
 
 	def setSettings(self, guiSettings):
 		self.awlTabs.setSettings(guiSettings)
