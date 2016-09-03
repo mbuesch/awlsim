@@ -63,40 +63,65 @@ class AwlSimClient(object):
 				    May be a list of strings.
 		listenHost -> The hostname or IP address to listen on.
 		listenPort -> The port to listen on.
+			      This may be an iterable to try multiple ports.
 		Returns the spawned process' PID."""
 
 		if self.serverProcess:
 			raise AwlSimError("Server already running")
 
-		if serverExecutable:
-			for serverExe in toList(serverExecutable):
-				if not findExecutable(serverExe):
-					continue
-				self.serverProcess = AwlSimServer.start(listenHost = listenHost,
-									listenPort = listenPort,
-									forkServerProcess = serverExe)
-				break
+		actualListenPort = None
+		for port in toList(listenPort):
+			if not netPortIsUnused(listenHost, port):
+				continue
+			if serverExecutable:
+				for serverExe in toList(serverExecutable):
+					if not findExecutable(serverExe):
+						continue
+					try:
+						self.serverProcess = AwlSimServer.start(
+							listenHost = listenHost,
+							listenPort = port,
+							forkServerProcess = serverExe)
+					except AwlSimError as e:
+						if not isiterable(listenPort):
+							raise e
+					else:
+						actualListenPort = port
+					break
+				else:
+					raise AwlSimError("Unable to fork any of the supplied "
+						"server executables: %s" %\
+						str(toList(serverExecutable)))
 			else:
-				raise AwlSimError("Unable to fork any of the supplied "
-					"server executables: %s" %\
-					str(toList(serverExecutable)))
+				if interpreter is None:
+					interpreter = sys.executable
+				for interp in toList(interpreter):
+					if not findExecutable(interp):
+						continue
+					try:
+						self.serverProcess = AwlSimServer.start(
+							listenHost = listenHost,
+							listenPort = port,
+							forkInterpreter = interp)
+					except AwlSimError as e:
+						if not isiterable(listenPort):
+							raise e
+					else:
+						actualListenPort = port
+					break
+				else:
+					raise AwlSimError("Unable to fork an awlsim core server with "
+						"any of the supplied Python interpreters: %s\n"
+						"No interpreter found." %\
+						str(toList(interpreter)))
+			if actualListenPort:
+				break
 		else:
-			if interpreter is None:
-				interpreter = sys.executable
-			for interp in toList(interpreter):
-				if not findExecutable(interp):
-					continue
-				self.serverProcess = AwlSimServer.start(listenHost = listenHost,
-									listenPort = listenPort,
-									forkInterpreter = interp)
-				break
-			else:
-				raise AwlSimError("Unable to fork an awlsim core server with "
-					"any of the supplied Python interpreters: %s\n"
-					"No interpreter found." %\
-					str(toList(interpreter)))
+			raise AwlSimError("Unable to find a port to spawn the "
+				"awlsim core server on.\nTried port %d to %d on '%s'." %(
+				toList(listenPort)[0], toList(listenPort)[-1], listenHost))
 		self.serverProcessHost = listenHost
-		self.serverProcessPort = listenPort
+		self.serverProcessPort = actualListenPort
 		if isJython:
 			#XXX Workaround: Jython's socket module does not like connecting
 			# to a starting server. Wait a few seconds for the server
