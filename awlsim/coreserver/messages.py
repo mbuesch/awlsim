@@ -100,6 +100,7 @@ class AwlSimMessage(object):
 	MSG_ID_SYMTABSRC	= EnumGen.item
 	MSG_ID_HWMOD		= EnumGen.item
 	MSG_ID_LIBSEL		= EnumGen.item
+	MSG_ID_BUILD		= EnumGen.itemAt(0x0170)
 	MSG_ID_REMOVESRC	= EnumGen.itemAt(0x0180)
 	MSG_ID_REMOVEBLK	= EnumGen.item
 	MSG_ID_GET_IDENTS	= EnumGen.itemAt(0x0190)
@@ -421,6 +422,26 @@ class AwlSimMessage_LIBSEL(AwlSimMessage):
 		except (ValueError, struct.error, AwlSimError) as e:
 			raise TransferError("LOAD_LIB: Invalid data format")
 		return cls(libSelection = libSelection)
+
+class AwlSimMessage_BUILD(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_BUILD
+
+	plStruct = struct.Struct(str(">16x"))
+
+	def toBytes(self):
+		try:
+			pl = self.plStruct.pack()
+			return AwlSimMessage.toBytes(self, len(pl)) + pl
+		except (ValueError, struct.error) as e:
+			raise TransferError("BUILD: Invalid data format")
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			pass
+		except (ValueError, struct.error) as e:
+			raise TransferError("BUILD: Invalid data format")
+		return cls()
 
 class AwlSimMessage_OPT(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_OPT
@@ -1050,6 +1071,7 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: AwlSimMessage_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: AwlSimMessage_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
+		AwlSimMessage.MSG_ID_BUILD		: AwlSimMessage_BUILD,
 		AwlSimMessage.MSG_ID_REMOVESRC		: AwlSimMessage_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: AwlSimMessage_REMOVEBLK,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: AwlSimMessage_GET_IDENTS,

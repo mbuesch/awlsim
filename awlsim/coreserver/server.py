@@ -697,6 +697,12 @@ class AwlSimServer(object):
 		self.loadLibraryBlock(msg.libSelection)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_BUILD(self, client, msg):
+		printDebug("Received message: BUILD")
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.__sim.build()
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_REMOVESRC(self, client, msg):
 		printDebug("Received message: REMOVESRC")
 		status = AwlSimMessage_REPLY.STAT_OK
@@ -828,6 +834,7 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
+		AwlSimMessage.MSG_ID_BUILD		: __rx_BUILD,
 		AwlSimMessage.MSG_ID_REMOVESRC		: __rx_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: __rx_REMOVEBLK,
 		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
