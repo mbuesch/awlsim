@@ -308,6 +308,9 @@ class S7Prog(object):
 			self.__staticSanityChecks_block(block)
 
 	def build(self):
+		"""Translate the loaded sources into their executable forms.
+		"""
+
 		translator = AwlTranslator(self.cpu)
 		resolver = AwlSymResolver(self.cpu)
 
@@ -636,6 +639,11 @@ class S7CPU(object): #+cdef
 
 			yield insn, codeBlock, dataBlock
 
+	def build(self):
+		"""Translate the loaded sources into their executable forms.
+		"""
+		self.prog.build()
+
 	def load(self, parseTree, rebuild = False, sourceManager = None):
 		for rawDB in parseTree.dbs.values():
 			rawDB.setSourceRef(sourceManager)
@@ -653,12 +661,12 @@ class S7CPU(object): #+cdef
 			rawUDT.setSourceRef(sourceManager)
 			self.prog.addRawUDT(rawUDT)
 		if rebuild:
-			self.prog.build()
+			self.build()
 
 	def loadLibraryBlock(self, libSelection, rebuild = False):
 		self.prog.addLibrarySelection(libSelection)
 		if rebuild:
-			self.prog.build()
+			self.build()
 
 	@property
 	def symbolTable(self):
@@ -667,7 +675,7 @@ class S7CPU(object): #+cdef
 	def loadSymbolTable(self, symbolTable, rebuild = False):
 		self.prog.loadSymbolTable(symbolTable)
 		if rebuild:
-			self.prog.build()
+			self.build()
 
 	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
 			  getFBInfo = False, getDBInfo = False):
@@ -843,7 +851,7 @@ class S7CPU(object): #+cdef
 	# Run startup code
 	def startup(self):
 		# Build (translate) the blocks, if not already done so.
-		self.prog.build()
+		self.build()
 
 		self._initializeTimestamp()
 		self.__speedMeasureStartTime = self.now

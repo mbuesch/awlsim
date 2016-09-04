@@ -158,6 +158,11 @@ class AwlSim(object):
 
 	@profiled(2)
 	@throwsAwlSimError
+	def build(self):
+		self.cpu.build()
+
+	@profiled(2)
+	@throwsAwlSimError
 	def load(self, parseTree, rebuild = False, sourceManager = None):
 		self.cpu.load(parseTree, rebuild, sourceManager)
 
