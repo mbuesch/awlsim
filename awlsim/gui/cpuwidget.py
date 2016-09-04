@@ -632,11 +632,9 @@ class CpuWidget(QWidget):
 			client.setRunState(False)
 			client.reset()
 
-			client.setCpuSpecs(project.getCpuSpecs())
-			client.enableOBTempPresets(project.getObTempPresetsEn())
-			client.enableExtendedInsns(project.getExtInsnsEn())
-
-			client.loadHardwareModules(project.getHwmodSettings().getLoadedModules())
+			client.loadProject(project, loadSymTabs=False,
+					   loadLibSelections=False,
+					   loadSources=False)
 			client.loadSymTabSources(symTabSources)
 			client.loadLibraryBlocks(libSelections)
 			client.loadAwlSources(awlSources)
