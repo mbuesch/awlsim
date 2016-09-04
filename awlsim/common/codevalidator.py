@@ -26,6 +26,8 @@ from awlsim.common.util import *
 
 from awlsim.coreclient.client import *
 
+import threading
+
 
 class AwlValidator(object):
 	"""Source code validation.
@@ -33,7 +35,8 @@ class AwlValidator(object):
 
 	__globalInstance = None
 
-	PORT_RANGE = range(30000, 32000)
+	_PORT_RANGE	= range(30000, 32000)
+	_EXIT_THREAD	= -1
 
 	@classmethod
 	def startup(cls):
@@ -64,8 +67,9 @@ class AwlValidator(object):
 		if isWinStandalone:
 			extraArgs["serverExecutable"] = "awlsim-server-module.exe"
 		try:
+			self.__client.setLoglevel(Logging.LOG_ERROR)
 			self.__client.spawnServer(listenHost = "localhost",
-						  listenPort = self.PORT_RANGE,
+						  listenPort = self._PORT_RANGE,
 						  **extraArgs)
 			self.__client.connectToServer(host = "localhost",
 						      port = self.__client.serverProcessPort)
@@ -73,26 +77,86 @@ class AwlValidator(object):
 		except AwlSimError as e:
 			self.doShutdown()
 			raise e
+		self.__lock = threading.Lock()
+		self.__condition = threading.Condition(self.__lock)
+		self.__job = None
+		self.__exception = None
+		self.__running = False
+		self.__thread = threading.Thread(target=self.__thread)
+		self.__thread.daemon = False
+		self.__thread.start()
 
 	def doShutdown(self):
 		printDebug("AwlValidator: Shutdown")
 		if self.__client:
 			self.__client.shutdown()
 			self.__client = None
+		if self.__thread:
+			with self.__lock:
+				self.__job = self._EXIT_THREAD
+				self.__condition.notify_all()
+			self.__thread.join()
+			self.__thread = None
+			self.__exception = None
+			self.__running = False
 
-	def validate(self, project, symTabSources, libSelections, awlSources):
-		"""Run a validation.
-		This will raise an AwlSimError on validation failure.
+	def __runJob(self, job):
+		(project,
+		 symTabSources, libSelections, awlSources) = job
+
+		client = self.__client
+		exception = None
+		try:
+			client.setRunState(False)
+			client.reset()
+			client.loadProject(project, loadSymTabs=False,
+					   loadLibSelections=False,
+					   loadSources=False)
+			client.loadSymTabSources(symTabSources)
+			client.loadLibraryBlocks(libSelections)
+			client.loadAwlSources(awlSources)
+			client.build()
+			client.reset()
+		except AwlSimError as e:
+			exception = e
+		with self.__lock:
+			if self.__job is None:
+				self.__running = False
+			self.__exception = exception
+
+	def __thread(self):
+		"""This is the validation thread.
 		"""
-		if not project or not symTabSources or\
-		   not libSelections or not awlSources:
+		while True:
+			with self.__lock:
+				if self.__job is None:
+					self.__condition.wait()
+				job, self.__job = self.__job, None
+			if job is self._EXIT_THREAD:
+				break
+			if job:
+				self.__runJob(job)
+
+	def validate(self, project,
+		     symTabSources, libSelections, awlSources):
+		"""Schedule a validation.
+		Get the result with getState().
+		"""
+		if not project or not awlSources:
 			return
-		self.__client.setRunState(False)
-		self.__client.reset()
-		self.__client.loadProject(project, loadSymTabs=False,
-					  loadLibSelections=False,
-					  loadSources=False)
-		self.__client.loadSymTabSources(symTabSources)
-		self.__client.loadLibraryBlocks(libSelections)
-		self.__client.loadAwlSources(awlSources)
-		self.__client.build()
+		with self.__lock:
+			if self.__job is self._EXIT_THREAD:
+				return
+			self.__job = (project,
+				      symTabSources, libSelections, awlSources)
+			self.__running = True
+			self.__condition.notify_all()
+
+	def getState(self):
+		"""Get the validation result.
+		Returns a tuple (running, exception).
+		"""
+		with self.__lock:
+			running = self.__running
+			exception = self.__exception
+		return running, exception

@@ -177,9 +177,25 @@ class ProjectWidget(QTabWidget):
 	def __doDocumentValidation(self, editWidget):
 		if not editWidget:
 			return
-		#TODO collect all sources needed for validation
-		#TODO send it down the validation core
-		#TODO report results
+		validator = AwlValidator.get()
+		validator.validate(project = self.__project,
+				   symTabSources = self.getSymTabSources(),
+				   libSelections = self.getLibSelections(),
+				   awlSources = self.getAwlSources())
+		QTimer.singleShot(100, self.__checkValidationResult)
+
+	# Poll the validation result
+	def __checkValidationResult(self):
+		validator = AwlValidator.get()
+		running, exception = validator.getState()
+		if exception:
+			self.__handleValidationFailure(exception)
+		if running:
+			QTimer.singleShot(100, self.__checkValidationResult)
+
+	# Handle a validator exception
+	def __handleValidationFailure(self, exception):
+		pass#TODO
 
 	# Resize project editor font.
 	def __doSourceCodeFontResize(self, bigger):
