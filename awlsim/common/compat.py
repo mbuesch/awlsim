@@ -111,6 +111,13 @@ if isPy2Compat:
 if isPy3Compat:
 	from functools import reduce
 
+# queue compatibility
+# Force Python3 behavior
+if isPy2Compat:
+	import Queue as queue
+else:
+	import queue
+
 # Monotonic time. Returns a float second count.
 monotonic_time = getattr(time, "monotonic", time.clock)
 # Performance counter time (if available).
