@@ -22,11 +22,6 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 
-# Initialize multiprocessing freeze support.
-# This must be at the very beginning.
-import multiprocessing
-multiprocessing.freeze_support()
-
 # Import awlsim modules (compat first)
 from awlsim.common.compat import *
 from awlsim.common import *
@@ -93,4 +88,5 @@ Logging.setLoglevel(opt_loglevel)
 
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
 res = qapp.exec_()
+AwlValidator.shutdown()
 sys.exit(res)
