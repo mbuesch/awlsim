@@ -326,9 +326,10 @@ def runWithServerBackend(inputFile):
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
-		client.loadSymTabSources(project.getSymTabSources())
-		client.loadLibraryBlocks(project.getLibSelections())
-		client.loadAwlSources(project.getAwlSources())
+		client.loadProject(project, loadCpuSpecs=False,
+				   loadTempPresets=False,
+				   loadExtInsns=False,
+				   loadHwMods=False)
 		client.setRunState(True)
 
 		# Run the client-side event loop
