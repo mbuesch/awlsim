@@ -499,6 +499,15 @@ class AwlSimClient(object):
 		return all(self.loadHardwareModule(hwmodDesc)
 			   for hwmodDesc in hwmodDescs)
 
+	def build(self):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_BUILD()
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to build sources")
+		return True
+
 	def removeSource(self, identHash):
 		if not self.__transceiver:
 			return False
@@ -621,6 +630,28 @@ class AwlSimClient(object):
 		if status != AwlSimMessage_REPLY.STAT_OK:
 			raise AwlSimError("AwlSimClient: Failed to set cpuspecs")
 		return True
+
+	def loadProject(self, project,
+			loadCpuSpecs=True, loadTempPresets=True,
+			loadExtInsns=True, loadHwMods=True,
+			loadSymTabs=True, loadLibSelections=True,
+			loadSources=True):
+		"""Load selected settings and sources from project.
+		"""
+		if loadCpuSpecs:
+			self.setCpuSpecs(project.getCpuSpecs())
+		if loadTempPresets:
+			self.enableOBTempPresets(project.getObTempPresetsEn())
+		if loadExtInsns:
+			self.enableExtendedInsns(project.getExtInsnsEn())
+		if loadHwMods:
+			self.loadHardwareModules(project.getHwmodSettings().getLoadedModules())
+		if loadSymTabs:
+			self.loadSymTabSources(project.getSymTabSources())
+		if loadLibSelections:
+			self.loadLibraryBlocks(project.getLibSelections())
+		if loadSources:
+			self.loadAwlSources(project.getAwlSources())
 
 	# Set the memory areas we are interested in receiving
 	# dumps for, in the server.
