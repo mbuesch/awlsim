@@ -64,11 +64,11 @@ class ObjRef(object):
 		"""Destroy (unref) this reference.
 		This removes the reference from the manager.
 		"""
-		assert(self.alive)
-		self.__manager.refDestroyed(self)
-		self.__name = None
-		self.__obj = None
-		self.__manager = None
+		if self.alive:
+			self.__manager.refDestroyed(self)
+			self.__name = None
+			self.__obj = None
+			self.__manager = None
 
 	@property
 	def name(self):
