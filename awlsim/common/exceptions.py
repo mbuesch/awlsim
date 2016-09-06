@@ -55,19 +55,52 @@ class AwlSimError(Exception):
 		self.rawInsn = rawInsn
 
 	def getRawInsn(self):
-		return self.rawInsn
+		if self.rawInsn:
+			return self.rawInsn
+		insn = self.getInsn()
+		if insn:
+			rawInsn = insn.getRawInsn()
+			if rawInsn:
+				return rawInsn
+		return None
 
 	def setInsn(self, insn):
 		self.insn = insn
 
 	def getInsn(self):
-		return self.insn
+		if self.insn:
+			return self.insn
+		cpu = self.getCpu()
+		if cpu:
+			curInsn = cpu.getCurrentInsn()
+			if curInsn:
+				return curInsn
+		return None
 
 	def setSourceId(self, sourceId):
 		self.sourceId = sourceId
 
 	def getSourceId(self):
-		return self.sourceId
+		if self.sourceId is not None:
+			return self.sourceId
+		rawInsn = self.getRawInsn()
+		if rawInsn:
+			sourceId = rawInsn.getSourceId()
+			if sourceId:
+				return sourceId
+		insn = self.getInsn()
+		if insn:
+			sourceId = insn.getSourceId()
+			if sourceId:
+				return sourceId
+		cpu = self.getCpu()
+		if cpu:
+			curInsn = cpu.getCurrentInsn()
+			if curInsn:
+				sourceId = curInsn.getSourceId()
+				if sourceId:
+					return sourceId
+		return None
 
 	def setSourceName(self, sourceName):
 		self.sourceName = sourceName
@@ -83,14 +116,23 @@ class AwlSimError(Exception):
 	def getLineNr(self):
 		if self.lineNr is not None:
 			return self.lineNr
-		if self.rawInsn:
-			return self.rawInsn.getLineNr()
-		if self.insn:
-			return self.insn.getLineNr()
-		if self.cpu:
-			curInsn = self.cpu.getCurrentInsn()
+		rawInsn = self.getRawInsn()
+		if rawInsn:
+			lineNr = rawInsn.getLineNr()
+			if lineNr is not None:
+				return lineNr
+		insn = self.getInsn()
+		if insn:
+			lineNr = insn.getLineNr()
+			if lineNr is not None:
+				return lineNr
+		cpu = self.getCpu()
+		if cpu:
+			curInsn = cpu.getCurrentInsn()
 			if curInsn:
-				return curInsn.getLineNr()
+				lineNr = curInsn.getLineNr()
+				if lineNr is not None:
+					return lineNr
 		return None
 
 	def getLineNrStr(self, errorStr="<unknown>"):
@@ -105,12 +147,15 @@ class AwlSimError(Exception):
 	def getFailingInsnStr(self, errorStr=""):
 		if self.failingInsnStr is not None:
 			return self.failingInsnStr
-		if self.rawInsn:
-			return str(self.rawInsn)
-		if self.insn:
-			return str(self.insn)
-		if self.cpu:
-			curInsn = self.cpu.getCurrentInsn()
+		rawInsn = self.getRawInsn()
+		if rawInsn:
+			return str(rawInsn)
+		insn = self.getInsn()
+		if insn:
+			return str(insn)
+		cpu = self.getCpu()
+		if cpu:
+			curInsn = cpu.getCurrentInsn()
 			if curInsn:
 				return str(curInsn)
 		return errorStr
