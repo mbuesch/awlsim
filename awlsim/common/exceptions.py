@@ -2,7 +2,7 @@
 #
 # AWL simulator - Exceptions
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,11 @@ from awlsim.common.enumeration import *
 
 
 class AwlSimError(Exception):
+	"""Main AwlSim exception.
+	"""
+
+	EXC_TYPE = "AwlSimError"
+
 	def __init__(self, message, cpu=None,
 		     rawInsn=None, insn=None, lineNr=None,
 		     sourceId=None, sourceName=None):
@@ -33,6 +38,7 @@ class AwlSimError(Exception):
 		self.message = message
 		self.cpu = cpu
 		self.rawInsn = rawInsn
+		self.failingInsnStr = None
 		self.insn = insn
 		self.lineNr = lineNr
 		self.sourceId = sourceId
@@ -93,7 +99,12 @@ class AwlSimError(Exception):
 			return "%d" % lineNr
 		return errorStr
 
+	def setFailingInsnStr(self, string):
+		self.failingInsnStr = string
+
 	def getFailingInsnStr(self, errorStr=""):
+		if self.failingInsnStr is not None:
+			return self.failingInsnStr
 		if self.rawInsn:
 			return str(self.rawInsn)
 		if self.insn:
@@ -144,6 +155,11 @@ class AwlSimError(Exception):
 	__str__ = __repr__
 
 class AwlParserError(AwlSimError):
+	"""Parser specific exception.
+	"""
+
+	EXC_TYPE = "AwlParserError"
+
 	def __init__(self, message, lineNr=None):
 		AwlSimError.__init__(self,
 				     message = message,
@@ -153,18 +169,29 @@ class AwlParserError(AwlSimError):
 		return self.doGetReport("AWL parser error", verbose)
 
 class AwlSimBug(AwlSimError):
+	"""AwlSim bug exception.
+	This will be raised in situations that represent an actual code bug.
+	"""
+
+	EXC_TYPE = "AwlSimBug"
+
 	def __init__(self, message, *args, **kwargs):
 		message = "AWLSIM BUG: %s\n"\
 			"This bug should be reported to the awlsim developers." %\
 			str(message)
 		AwlSimError.__init__(self, message, *args, **kwargs)
 
-class AwlSimErrorText(AwlSimError):
-	def __init__(self, errorText, verboseErrorText):
+class FrozenAwlSimError(AwlSimError):
+	"""A frozen AwlSim exception.
+	The report will be frozen and not be generated from scratch.
+	"""
+
+	EXC_TYPE = "FrozenAwlSimError"
+
+	def __init__(self, excType, errorText, verboseErrorText=None):
 		AwlSimError.__init__(self, message = errorText)
-		if not verboseErrorText:
-			verboseErrorText = errorText
-		self.verboseErrorText = verboseErrorText
+		self.EXC_TYPE = excType
+		self.verboseErrorText = verboseErrorText or errorText
 
 	def getReport(self, verbose=True):
 		if verbose:

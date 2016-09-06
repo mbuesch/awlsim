@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server messages
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5714
+	HDR_MAGIC		= 0x5715
 	HDR_LENGTH		= hdrStruct.size
 
 	# Message IDs:
@@ -257,13 +257,32 @@ class AwlSimMessage_GET_RUNSTATE(AwlSimMessage):
 class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_EXCEPTION
 
+	# Payload struct:
+	#	flags (32 bit)
+	#	lineNr (32 bit)
+	#	exception type (string)
+	#	sourceName (string)
+	#	sourceId (bytes)
+	#	failing insn string (string)
+	#	message (string)
+	#	verboseMsg (string)
+	plStruct = struct.Struct(str(">II"))
+
 	def __init__(self, exception):
 		self.exception = exception
 
 	def toBytes(self):
 		try:
-			pl = self.packString(self.exception.getReport(verbose = False)) +\
-			     self.packString(self.exception.getReport(verbose = True))
+			e = self.exception
+			lineNr = e.getLineNr()
+			lineNr = 0xFFFFFFFF if lineNr is None else lineNr
+			pl = self.plStruct.pack(0, lineNr) +\
+			     self.packString(e.EXC_TYPE) +\
+			     self.packString(e.getSourceName() or "") +\
+			     self.packBytes(e.getSourceId() or "") +\
+			     self.packString(e.getFailingInsnStr()) +\
+			     self.packString(e.getReport(verbose = False)) +\
+			     self.packString(e.getReport(verbose = True))
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
 		except ValueError:
 			raise TransferError("EXCEPTION: Encoding error")
@@ -271,11 +290,30 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			text, count = cls.unpackString(payload)
-			verboseText, count = cls.unpackString(payload, count)
+			offset = 0
+			flags, lineNr = cls.plStruct.unpack_from(payload, offset)
+			offset += cls.plStruct.size
+			excType, count = cls.unpackString(payload, offset)
+			offset += count
+			sourceName, count = cls.unpackString(payload, offset)
+			offset += count
+			sourceId, count = cls.unpackBytes(payload, offset)
+			offset += count
+			failingInsnStr, count = cls.unpackString(payload, offset)
+			offset += count
+			text, count = cls.unpackString(payload, offset)
+			offset += count
+			verboseText, count = cls.unpackString(payload, offset)
 		except ValueError:
 			raise TransferError("EXCEPTION: Encoding error")
-		return cls(AwlSimErrorText(text, verboseText))
+		e = FrozenAwlSimError(excType = excType,
+				      errorText = text,
+				      verboseErrorText = verboseText)
+		e.setLineNr(lineNr if lineNr < 0xFFFFFFFF else None)
+		e.setSourceName(sourceName)
+		e.setSourceId(sourceId)
+		e.setFailingInsnStr(failingInsnStr)
+		return cls(e)
 
 class _AwlSimMessage_GET_source(AwlSimMessage):
 	msgId = None
