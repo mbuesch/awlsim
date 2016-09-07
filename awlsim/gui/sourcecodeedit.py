@@ -87,6 +87,8 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def enableValidation(self, enable=True):
 		self.__validateEn = enable
+		if not enable:
+			QToolTip.hideText()
 		self.setErraticLine(None)
 		self.__validate()
 
@@ -246,7 +248,7 @@ class SourceCodeEdit(QPlainTextEdit):
 	def __tryShowValidateErrToolTip(self, lineNr, globalPos):
 		errLineNr = self.__errLineNr
 		errLineMsg = self.__errLineMsg
-		if errLineNr is not None and errLineMsg:
+		if self.__validateEn and errLineNr is not None and errLineMsg:
 			errLineNr += 1
 			if lineNr in {errLineNr - 1, errLineNr, errLineNr + 1}:
 				QToolTip.showText(globalPos, errLineMsg,
