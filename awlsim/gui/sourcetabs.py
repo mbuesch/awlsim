@@ -164,6 +164,9 @@ class SourceTabWidget(QTabWidget):
 	def updateRunState(self, runState):
 		pass
 
+	def handleValidationResult(self, exception):
+		pass
+
 	def getSources(self):
 		"Returns a list of sources"
 		return [ w.getSource() for w in self.allTabWidgets() ]
@@ -308,6 +311,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 	def updateRunState(self, runState):
 		for editWidget in self.allTabWidgets():
 			editWidget.runStateChanged(runState)
+
+	def handleValidationResult(self, exception):
+		for editWidget in self.allTabWidgets():
+			editWidget.handleValidationResult(exception)
 
 	def handleOnlineDiagChange(self, enabled):
 		self.onlineDiagEnabled = enabled

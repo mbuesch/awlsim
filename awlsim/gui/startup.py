@@ -25,6 +25,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 # Import awlsim modules (compat first)
 from awlsim.common.compat import *
 from awlsim.common import *
+from awlsim.common.codevalidator import *
 from awlsim.gui.mainwindow import *
 
 import getopt
@@ -87,6 +88,7 @@ Logging.setPrefix("awlsim-gui: ")
 Logging.setLoglevel(opt_loglevel)
 
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
+QToolTip.setFont(getDefaultFixedFont())
 res = qapp.exec_()
 AwlValidator.shutdown()
 sys.exit(res)

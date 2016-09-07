@@ -286,3 +286,6 @@ class LibTableView(QTableView):
 
 		if ev.key() == Qt.Key_Delete:
 			self.deleteEntry()
+
+	def handleValidationResult(self, exception):
+		pass

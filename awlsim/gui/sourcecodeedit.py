@@ -32,7 +32,7 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	# Signal: Validation request.
 	#	  A code validation should take place.
-	#	  In case of validation failure, call setErraticLines().
+	#	  In case of validation failure, call setErraticLine().
 	#	  The parameter is self.
 	validateDocument = Signal(QObject)
 
@@ -52,9 +52,11 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.enableAutoIndent()
 		self.enablePasteIndent()
 		self.__validateEn = True
-		self.__prevErrLines = ()
+		self.__errLineNr = None
+		self.__errLineMsg = None
 
 		self.cursorPositionChanged.connect(self.__handleCursorChange)
+		self.textChanged.connect(self.__handleTextChange)
 		self.undoAvailable.connect(self.__handleUndoAvailableChange)
 		self.redoAvailable.connect(self.__handleRedoAvailableChange)
 		self.copyAvailable.connect(self.__handleCopyAvailableChange)
@@ -85,7 +87,7 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def enableValidation(self, enable=True):
 		self.__validateEn = enable
-		self.setErraticLines(())
+		self.setErraticLine(None)
 		self.__validate()
 
 	def __getLineIndent(self, cursor):
@@ -192,7 +194,7 @@ class SourceCodeEdit(QPlainTextEdit):
 		if columnNr != self.__prevColumnNr:
 			self.__columnChange = True
 
-		if lineNr in self.__prevErrLines or\
+		if lineNr == self.__errLineNr or\
 		   (lineNr != self.__prevLineNr and\
 		    self.__columnChange):
 			self.__validate()
@@ -200,6 +202,11 @@ class SourceCodeEdit(QPlainTextEdit):
 
 		self.__prevColumnNr = columnNr
 		self.__prevLineNr = lineNr
+
+	def __handleTextChange(self):
+		QToolTip.hideText()
+		if self.__errLineNr is not None:
+			self.__validate()
 
 	def setPlainText(self, text):
 		QPlainTextEdit.setPlainText(self, text)
@@ -234,19 +241,48 @@ class SourceCodeEdit(QPlainTextEdit):
 			self.validateDocument.emit(self)
 		else:
 			# No text. Mark everything as ok.
-			self.setErraticLines(None)
+			self.setErraticLine(None)
 
-	# Mark erratic lines
-	def setErraticLines(self, errLines):
-		errLines = errLines or ()
-		cursor = self.textCursor()
-		fmt = self.currentCharFormat()
-		fmt.setBackground(self.__errLineBrush)
-		extraSel = [
-			self.__makeExtraSel(self.__makeTextCursorLineSel(cursor, line),
-					    fmt)
-			for line in errLines
-		]
-		self.setExtraSelections(extraSel)
+	def __tryShowValidateErrToolTip(self, lineNr, globalPos):
+		errLineNr = self.__errLineNr
+		errLineMsg = self.__errLineMsg
+		if errLineNr is not None and errLineMsg:
+			errLineNr += 1
+			if lineNr in {errLineNr - 1, errLineNr, errLineNr + 1}:
+				QToolTip.showText(globalPos, errLineMsg,
+						  self, QRect())
+				return True
+		return False
 
-		self.__prevErrLines = errLines
+	# Mark an erratic line
+	def setErraticLine(self, lineNr, errMsg=None):
+		if lineNr is None:
+			self.setExtraSelections(())
+		else:
+			cursor = self.textCursor()
+			fmt = self.currentCharFormat()
+			fmt.setBackground(self.__errLineBrush)
+			extraSel = self.__makeExtraSel(
+				self.__makeTextCursorLineSel(cursor, lineNr),
+				fmt)
+			self.setExtraSelections((extraSel,))
+
+		self.__errLineNr = lineNr
+		self.__errLineMsg = errMsg
+
+		if errMsg:
+			mouseCursorPos = QCursor.pos()
+			cursor = self.cursorForPosition(self.mapFromGlobal(mouseCursorPos))
+			self.__tryShowValidateErrToolTip(cursor.blockNumber(),
+							 mouseCursorPos)
+
+	def __toolTipEvent(self, ev):
+		cursor = self.cursorForPosition(ev.pos())
+		if not self.__tryShowValidateErrToolTip(cursor.blockNumber(),
+							ev.globalPos()):
+			QToolTip.hideText()
+
+	def event(self, ev):
+		if ev.type() == QEvent.ToolTip:
+			self.__toolTipEvent(ev)
+		return super(SourceCodeEdit, self).event(ev)

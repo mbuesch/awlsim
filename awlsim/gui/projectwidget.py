@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.templates import *
+from awlsim.common.codevalidator import *
 
 from awlsim.gui.util import *
 from awlsim.gui.sourcetabs import *
@@ -188,14 +189,15 @@ class ProjectWidget(QTabWidget):
 	def __checkValidationResult(self):
 		validator = AwlValidator.get()
 		running, exception = validator.getState()
-		if exception:
-			self.__handleValidationFailure(exception)
+		self.__handleValidationResult(exception)
 		if running:
 			QTimer.singleShot(100, self.__checkValidationResult)
 
 	# Handle a validator exception
-	def __handleValidationFailure(self, exception):
-		pass#TODO
+	def __handleValidationResult(self, exception):
+		self.awlTabs.handleValidationResult(exception)
+		self.symTabs.handleValidationResult(exception)
+		self.libTable.handleValidationResult(exception)
 
 	# Resize project editor font.
 	def __doSourceCodeFontResize(self, bigger):

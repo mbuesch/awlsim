@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI edit widget
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
-
-from awlsim.common.codevalidator import *
 
 from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
@@ -407,6 +405,9 @@ class EditWidget(SourceCodeEdit):
 		self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
+	def getSourceId(self):
+		return self.__source.identHash
+
 	def shutdown(self):
 		pass
 
@@ -563,7 +564,7 @@ class EditWidget(SourceCodeEdit):
 		# insnDumpMsg => AwlSimMessage_INSNDUMP instance
 		if not self.__cpuStatsEnabled:
 			return
-		if insnDumpMsg.sourceId != self.__source.identHash:
+		if insnDumpMsg.sourceId != self.getSourceId():
 			# Discard old messages that were still in the queue.
 			return
 		# Save the instruction dump
@@ -822,3 +823,11 @@ class EditWidget(SourceCodeEdit):
 			# We don't make a big deal out of code mismatch, even
 			# if the code most likely _does_ mismatch after this edit.
 			self.__setSourceMatchesCpuSource(True)
+
+	def handleValidationResult(self, exception):
+		if exception and exception.getSourceId() == self.getSourceId():
+			lineNr = exception.getLineNr()
+			if lineNr:
+				self.setErraticLine(lineNr - 1, str(exception))
+				return
+		self.setErraticLine(None)
