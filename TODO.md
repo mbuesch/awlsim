@@ -16,7 +16,6 @@ GUI
 ---
 
 * Save window status (open MDI windows, positions, etc)
-* Qt5: Title bar buttons in MDI windows do not work
 * Show UDTs in block tree
 * Add a FBD (FUP) (de-)compiler
 * Add a LAD (KOP) (de-)compiler
