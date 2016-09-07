@@ -69,6 +69,9 @@ class MainWidget(QWidget):
 		self.cpuWidget = CpuWidget(self, self)
 		self.splitter.addWidget(self.cpuWidget)
 
+		self.splitter.setStretchFactor(0, 9)
+		self.splitter.setStretchFactor(1, 4)
+
 		self.filename = None
 		self.dirty = False
 
