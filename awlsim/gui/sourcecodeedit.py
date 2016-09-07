@@ -211,6 +211,8 @@ class SourceCodeEdit(QPlainTextEdit):
 			self.__validate()
 
 	def setPlainText(self, text):
+		self.__errLineNr = None
+		self.__errLineMsg = None
 		QPlainTextEdit.setPlainText(self, text)
 		self.__validate()
 

@@ -129,6 +129,8 @@ class ProjectWidget(QTabWidget):
 	def __init__(self, parent=None):
 		QTabWidget.__init__(self, parent)
 
+		self.__suppressValidation = False
+
 		self.fupTabs = None #TODO
 		self.kopTabs = None #TODO
 		self.awlTabs = AwlSourceTabWidget(self)
@@ -176,7 +178,7 @@ class ProjectWidget(QTabWidget):
 
 	# Run a background source validation.
 	def __doDocumentValidation(self, editWidget):
-		if not editWidget:
+		if not editWidget or self.__suppressValidation:
 			return
 		validator = AwlValidator.get()
 		validator.validate(project = self.__project,
@@ -195,6 +197,8 @@ class ProjectWidget(QTabWidget):
 
 	# Handle a validator exception
 	def __handleValidationResult(self, exception):
+		if self.__suppressValidation:
+			return
 		self.awlTabs.handleValidationResult(exception)
 		self.symTabs.handleValidationResult(exception)
 		self.libTable.handleValidationResult(exception)
@@ -315,13 +319,17 @@ class ProjectWidget(QTabWidget):
 		self.symTabs.setSettings(guiSettings)
 
 	def __loadProject(self, project):
-		self.__project = project
-		self.setSettings(project.getGuiSettings())
-		self.awlTabs.setSources(self.__project.getAwlSources())
-		self.symTabs.setSources(self.__project.getSymTabSources())
-		self.libTable.model().setLibSelections(self.__project.getLibSelections())
-		self.__warnedFileBacked = False
-		self.__isAdHocProject = False
+		self.__suppressValidation = True
+		try:
+			self.__project = project
+			self.setSettings(project.getGuiSettings())
+			self.awlTabs.setSources(self.__project.getAwlSources())
+			self.symTabs.setSources(self.__project.getSymTabSources())
+			self.libTable.model().setLibSelections(self.__project.getLibSelections())
+			self.__warnedFileBacked = False
+			self.__isAdHocProject = False
+		finally:
+			self.__suppressValidation = False
 
 	def __loadPlainAwlSource(self, filename):
 		project = Project(None) # Create an ad-hoc project
