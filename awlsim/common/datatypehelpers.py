@@ -2,7 +2,7 @@
 #
 # AWL data types helper functions
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,52 +27,60 @@ from awlsim.common.util import *
 import struct
 
 
-def swapEndianWord(word):
-	return ((word & 0x00FF) << 8) |\
-	       ((word & 0xFF00) >> 8)
+__floatStruct = struct.Struct(str('>f'))
+__wordStruct = struct.Struct(str('>H'))
+__leWordStruct = struct.Struct(str('<H'))
+__dwordStruct = struct.Struct(str('>I'))
+__leDWordStruct = struct.Struct(str('<I'))
 
-def swapEndianDWord(dword):
-	return ((dword & 0x000000FF) << 24) |\
-	       ((dword & 0x0000FF00) << 8) |\
-	       ((dword & 0x00FF0000) >> 8) |\
-	       ((dword & 0xFF000000) >> 24)
 
+# Swap the endianness of an S7 word.
+def swapEndianWord(word,
+		   __be=__wordStruct,
+		   __le=__leWordStruct):
+	return __le.unpack(__be.pack(word))[0]
+
+assert(swapEndianWord(0x1234) == 0x3412)
+assert(swapEndianWord(swapEndianWord(0x1234)) == 0x1234)
+
+# Swap the endianness of an S7 dword.
+def swapEndianDWord(dword,
+		   __be=__dwordStruct,
+		   __le=__leDWordStruct):
+	return __le.unpack(__be.pack(dword))[0]
+
+assert(swapEndianDWord(0x12345678) == 0x78563412)
+assert(swapEndianDWord(swapEndianDWord(0x12345678)) == 0x12345678)
+
+# Convert a S7 byte to a signed Python int.
+# This applies the two's complement, if the dword is negative
+# so that the resulting Python int will have the correct sign.
 def byteToSignedPyInt(byte):
 	if byte & 0x80:
 		return -((~byte + 1) & 0xFF)
 	return byte & 0xFF
 
+# Convert a S7 word to a signed Python int.
+# This applies the two's complement, if the dword is negative
+# so that the resulting Python int will have the correct sign.
 def wordToSignedPyInt(word):
 	if word & 0x8000:
 		return -((~word + 1) & 0xFFFF)
 	return word & 0xFFFF
 
+# Convert a S7 dword to a signed Python int.
+# This applies the two's complement, if the dword is negative
+# so that the resulting Python int will have the correct sign.
 def dwordToSignedPyInt(dword):
 	if dword & 0x80000000:
 		return -((~dword + 1) & 0xFFFFFFFF)
 	return dword & 0xFFFFFFFF
 
-__floatStruct = struct.Struct(str('>f'))
-
-def __rawPyFloatToDWord_python2(pyfl):
-	buf = __floatStruct.pack(pyfl)
-	return (ord(buf[0]) << 24) |\
-	       (ord(buf[1]) << 16) |\
-	       (ord(buf[2]) << 8) |\
-	       ord(buf[3])
-
-def __rawPyFloatToDWord_python3(pyfl):
-	buf =__floatStruct.pack(pyfl)
-	return (buf[0] << 24) |\
-	       (buf[1] << 16) |\
-	       (buf[2] << 8) |\
-	       buf[3]
-
-rawPyFloatToDWord = py23(__rawPyFloatToDWord_python2,
-			 __rawPyFloatToDWord_python3)
-
-def pyFloatToDWord(pyfl):
-	dword = rawPyFloatToDWord(pyfl)
+# Convert a Python float to an S7 dword.
+def pyFloatToDWord(pyfl,
+		   __f=__floatStruct,
+		   __d=__dwordStruct):
+	dword = __d.unpack(__f.pack(pyfl))[0]
 	if isDenormalPyFloat(pyfl):
 		# Denormal floats are equal to zero on the S7 CPU.
 		# OV and OS flags are set in the StatusWord handler.
@@ -82,43 +90,39 @@ def pyFloatToDWord(pyfl):
 		dword = 0xFFFFFFFF
 	return dword
 
-def __dwordToPyFloat_python2(dword):
-	return __floatStruct.unpack(
-		chr((dword >> 24) & 0xFF) +\
-		chr((dword >> 16) & 0xFF) +\
-		chr((dword >> 8) & 0xFF) +\
-		chr(dword & 0xFF)
-	)[0]
-
-def __dwordToPyFloat_python3(dword):
-	return __floatStruct.unpack(
-		bytes( ((dword >> 24) & 0xFF,
-			(dword >> 16) & 0xFF,
-			(dword >> 8) & 0xFF,
-			dword & 0xFF)
-		)
-	)[0]
-
-dwordToPyFloat = py23(__dwordToPyFloat_python2,
-		      __dwordToPyFloat_python3)
+# Convert an S7 dword to a Python float.
+def dwordToPyFloat(dword,
+		   __f=__floatStruct,
+		   __d=__dwordStruct):
+	return __f.unpack(__d.pack(dword))[0]
 
 # The smallest normalized positive 32-bit float.
-minNormPosFloat32 = dwordToPyFloat(0x00000001)
+minNormPosFloat32DWord = 0x00000001
+minNormPosFloat32 = dwordToPyFloat(minNormPosFloat32DWord)
+
 # The smallest normalized negative 32-bit float.
-minNormNegFloat32 = dwordToPyFloat(0xFF7FFFFF)
+minNormNegFloat32DWord = 0xFF7FFFFF
+minNormNegFloat32 = dwordToPyFloat(minNormNegFloat32DWord)
+
 # The biggest normalized negative 32-bit float.
-maxNormNegFloat32 = dwordToPyFloat(0x80000001)
+maxNormNegFloat32DWord = 0x80000001
+maxNormNegFloat32 = dwordToPyFloat(maxNormNegFloat32DWord)
+
 # The biggest normalized positive 32-bit float.
-maxNormPosFloat32 = dwordToPyFloat(0x7F7FFFFF)
+maxNormPosFloat32DWord = 0x7F7FFFFF
+maxNormPosFloat32 = dwordToPyFloat(maxNormPosFloat32DWord)
 
 # Positive infinity
 posInfDWord = 0x7F800000
 posInfFloat = dwordToPyFloat(posInfDWord)
+
 # Negative infinity
 negInfDWord = 0xFF800000
 negInfFloat = dwordToPyFloat(negInfDWord)
+
 # Positive NaN
 pNaNDWord = 0x7FFFFFFF
+
 # Negative NaN
 nNaNDWord = 0xFFFFFFFF
 nNaNFloat = dwordToPyFloat(nNaNDWord)
@@ -127,19 +131,33 @@ nNaNFloat = dwordToPyFloat(nNaNDWord)
 def isNaN(dword):
 	return (dword & 0x7FFFFFFF) > 0x7F800000
 
-def isDenormalPyFloat(pyfl):
-	return (pyfl > 0.0 and pyfl < minNormPosFloat32) or\
-	       (pyfl < 0.0 and pyfl > maxNormNegFloat32)
+# Check if a Python float is in the denormalized range.
+def isDenormalPyFloat(pyfl,
+		      __min=minNormPosFloat32,
+		      __max=maxNormNegFloat32):
+	return (pyfl > 0.0 and pyfl < __min) or\
+	       (pyfl < 0.0 and pyfl > __max)
 
+# Check if two Python floats are equal.
 def pyFloatEqual(pyfl0, pyfl1):
 	return abs(pyfl0 - pyfl1) < 0.000001
 
+# Check if two Python floats or S7 dword are equal.
 def floatEqual(fl0, fl1):
 	if not isinstance(fl0, float):
 		fl0 = dwordToPyFloat(fl0)
 	if not isinstance(fl1, float):
 		fl1 = dwordToPyFloat(fl1)
 	return pyFloatEqual(fl0, fl1)
+
+# Constant value sanity checks.
+assert(pyFloatToDWord(minNormPosFloat32) == minNormPosFloat32DWord)
+assert(pyFloatToDWord(minNormNegFloat32) == minNormNegFloat32DWord)
+assert(pyFloatToDWord(maxNormNegFloat32) == maxNormNegFloat32DWord)
+assert(pyFloatToDWord(maxNormPosFloat32) == maxNormPosFloat32DWord)
+assert(pyFloatToDWord(posInfFloat) == posInfDWord)
+assert(pyFloatToDWord(negInfFloat) == negInfDWord)
+assert(pyFloatToDWord(nNaNFloat) == nNaNDWord)
 
 # Round up integer 'n' to a multiple of integer 's'
 def roundUp(n, s):
