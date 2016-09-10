@@ -301,16 +301,25 @@ if buildCython:
 			Cython_build_ext.build_extension(self, ext)
 
 		def build_extensions(self):
+			global cythonParallelBuild
+
 			# First patch the files, the run the build
 			patchCythonModules(self.build_lib)
 
 			if cythonParallelBuild:
 				# Run the parallel build, yay.
-				self.check_extensions_list(self.extensions)
-				from multiprocessing.pool import Pool
-				Pool().map(cyBuildWrapper,
-					   ((self, ext) for ext in self.extensions))
-			else:
+				try:
+					self.check_extensions_list(self.extensions)
+					from multiprocessing.pool import Pool
+					Pool().map(cyBuildWrapper,
+						   ((self, ext) for ext in self.extensions))
+				except OSError as e:
+					# This might happen in a restricted
+					# environment like chroot.
+					print("WARNING: Parallel build "
+					      "disabled due to: %s" % str(e))
+					cythonParallelBuild = False
+			if not cythonParallelBuild:
 				# Run the normal non-parallel build.
 				Cython_build_ext.build_extensions(self)
 
