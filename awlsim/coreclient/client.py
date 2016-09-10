@@ -51,7 +51,8 @@ class AwlSimClient(object):
 			interpreter=None,
 			serverExecutable=None,
 			listenHost=AwlSimServer.DEFAULT_HOST,
-			listenPort=AwlSimServer.DEFAULT_PORT):
+			listenPort=AwlSimServer.DEFAULT_PORT,
+			frozenExecutableMagic=True):
 		"""Spawn a new AwlSim-core server process.
 		interpreter -> The python interpreter to use. Must be either:
 			       - None: Use sys.executable as interpreter.
@@ -68,6 +69,17 @@ class AwlSimClient(object):
 
 		if self.serverProcess:
 			raise AwlSimError("Server already running")
+
+		if frozenExecutableMagic and isWinStandalone:
+			# We are running the frozen executable
+			# and the magic is turned on.
+			# Enforce the server executable name.
+			oldExecutable = serverExecutable
+			serverExecutable = standaloneServerExe
+			if oldExecutable:
+				printWarning("spawnServer: Overriding server "
+					     "executable '%s' -> '%s'" %(
+					     oldExecutable, serverExecutable))
 
 		actualListenPort = None
 		for port in toList(listenPort):

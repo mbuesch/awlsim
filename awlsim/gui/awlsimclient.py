@@ -282,7 +282,6 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 					# We are already up and running.
 					return
 
-		self.__serverExecutable = None
 		self.__interpreterList = None
 		self.shutdown()
 
@@ -313,12 +312,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			       port = port, tunnel = tunnel)
 
 	def setMode_FORK(self, portRange,
-			 serverExecutable=None,
 			 interpreterList=None):
 		host = "localhost"
 		if self.__mode == self.MODE_FORK:
 			if self.__port in portRange and\
-			   self.__serverExecutable == serverExecutable and\
 			   self.__interpreterList == interpreterList:
 				assert(self.__host == host)
 				# We are already up and running.
@@ -326,29 +323,22 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		try:
 			if self.serverProcess:
 				if self.serverProcessPort not in portRange or\
-				   self.__serverExecutable != serverExecutable or\
 				   self.__interpreterList != interpreterList:
 					self.killSpawnedServer()
-			if self.serverProcess:
-				port = self.serverProcessPort
-			else:
-				if serverExecutable:
-					self.spawnServer(serverExecutable = serverExecutable,
-							 listenHost = host,
-							 listenPort = portRange)
-				else:
-					self.spawnServer(interpreter = interpreterList,
-							 listenHost = host,
-							 listenPort = portRange)
-				port = self.serverProcessPort
+			if not self.serverProcess:
+				self.spawnServer(interpreter = interpreterList,
+						 listenHost = host,
+						 listenPort = portRange)
 			self.shutdownTransceiver()
-			self.connectToServer(host = host, port = port)
+			self.connectToServer(host=host,
+					     port=self.serverProcessPort)
 		except AwlSimError as e:
 			with suppressAllExc:
 				self.shutdown()
 			raise e
-		self.__setMode(self.MODE_FORK, host = host, port = port)
-		self.__serverExecutable = serverExecutable
+		self.__setMode(self.MODE_FORK,
+			       host=host,
+			       port=self.serverProcessPort)
 		self.__interpreterList = interpreterList
 
 	def getBlockTreeModelRef(self):

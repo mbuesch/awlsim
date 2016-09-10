@@ -290,14 +290,9 @@ def runWithServerBackend(inputFile):
 		# Connect to the server
 		client = TestAwlSimClient()
 		if opt_spawnBackend:
-			if isWinStandalone:
-				client.spawnServer(serverExecutable = "awlsim-server-module.exe",
-						   listenHost = host,
-						   listenPort = port)
-			else:
-				client.spawnServer(interpreter = opt_interpreter,
-						   listenHost = host,
-						   listenPort = port)
+			client.spawnServer(interpreter = opt_interpreter,
+					   listenHost = host,
+					   listenPort = port)
 		writeStdout("Connecting to core server...\n")
 		client.connectToServer(host = host, port = port)
 

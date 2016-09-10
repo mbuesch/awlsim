@@ -40,6 +40,9 @@ else:
 	osIsWindows = os.name == "nt" or os.name == "ce"
 	osIsPosix = os.name == "posix"
 
+# Executable name of the standalone server.
+standaloneServerExe = "awlsim-server-module.exe"
+
 # isPyPy is True, if the interpreter is PyPy.
 isPyPy = "PyPy" in sys.version
 
@@ -57,12 +60,12 @@ isCython = False #@nocy
 isMicroPython = hasattr(sys, "implementation") and\
 		sys.implementation.name.lower() == "micropython"
 
-# isWinStandalone is True, if this is a Windows standalone package (py2exe)
+# isWinStandalone is True, if this is a Windows standalone package (py2exe/cx_Freeze)
 isWinStandalone = osIsWindows and\
 		  (sys.executable.endswith("awlsim-gui.exe") or\
 		   sys.executable.endswith("awlsim-client.exe") or\
 		   sys.executable.endswith("awlsim-server.exe") or\
-		   sys.executable.endswith("awlsim-server-module.exe") or\
+		   sys.executable.endswith(standaloneServerExe) or\
 		   sys.executable.endswith("awlsim-symtab.exe") or\
 		   sys.executable.endswith("awlsim-test.exe"))
 

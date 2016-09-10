@@ -544,13 +544,8 @@ class CpuWidget(QWidget):
 			if linkConfig.getSpawnLocalEn():
 				portRange = linkConfig.getSpawnLocalPortRange()
 				interp = linkConfig.getSpawnLocalInterpreterList()
-				if isWinStandalone:
-					# Run the frozen standalone server process
-					client.setMode_FORK(portRange = portRange,
-						serverExecutable = "awlsim-server-module.exe")
-				else:
-					client.setMode_FORK(portRange = portRange,
-						interpreterList = interp)
+				client.setMode_FORK(portRange = portRange,
+						    interpreterList = interp)
 				host = port = None
 			else:
 				client.setMode_ONLINE(self, linkConfig)

@@ -63,14 +63,10 @@ class AwlValidator(object):
 
 	def __init__(self):
 		self.__client = AwlSimClient()
-		extraArgs = {}
-		if isWinStandalone:
-			extraArgs["serverExecutable"] = "awlsim-server-module.exe"
 		try:
 			self.__client.setLoglevel(Logging.LOG_ERROR)
 			self.__client.spawnServer(listenHost = "localhost",
-						  listenPort = self._PORT_RANGE,
-						  **extraArgs)
+						  listenPort = self._PORT_RANGE)
 			self.__client.connectToServer(host = "localhost",
 						      port = self.__client.serverProcessPort)
 			self.__client.setLoglevel(Logging.LOG_NONE)
