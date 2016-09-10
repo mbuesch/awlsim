@@ -211,6 +211,8 @@ setup_test_environment()
 	export IRONPYTHONPATH="$IRONPYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 
+	export PYTHONOPTIMIZE=
+
 	RET="$interpreter"
 }
 
