@@ -18,6 +18,7 @@ include COMPATIBILITY.md
 include COMPATIBILITY.html
 include README.md
 include README.html
+include setup_cython.py
 include TODO.md
 include TODO.html
 include win-standalone-build.cmd
