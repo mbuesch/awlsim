@@ -65,7 +65,9 @@ class HwmodDescriptor(object):
 		"""
 		if not parameters:
 			parameters = {}
-		self.parameters = parameters
+		self.parameters = {}
+		for name, value in parameters.items():
+			self.addParameter(name, value)
 		self.__identHash = None
 
 	def addParameter(self, name, value):
@@ -76,7 +78,7 @@ class HwmodDescriptor(object):
 	def setParameterValue(self, name, value):
 		"""Set the value of a parameter.
 		"""
-		self.parameters[name] = value
+		self.parameters[name] = value or ""
 		self.__identHash = None
 
 	def removeParameter(self, name):
