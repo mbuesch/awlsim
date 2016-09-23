@@ -138,25 +138,31 @@ class ProjectWidget(QTabWidget):
 		self.libTable = LibTableView(None, self)
 
 		i = 0
-#TODO		self.addTab(self.fupTabs, "Func. block diagrams")
-#		self.setTabToolTip(i, "Create Function Block Diagrams (FBD/FUP) here")
-#		self.setTabIcon(i, getIcon("block"))
-#		i += 1
-#TODO		self.addTab(self.kopTabs, "Ladder logic")
-#		self.setTabToolTip(i, "Create Ladder logic (LAD/KOP) here")
-#		self.setTabIcon(i, getIcon("ladder"))
-		i += 1
-		self.addTab(self.awlTabs, "Sources")
-		self.setTabToolTip(i, "Enter your AWL/STL program here")
-		self.setTabIcon(i, getIcon("textsource"))
-		i += 1
-		self.addTab(self.symTabs, "Symbol tables")
-		self.setTabToolTip(i, "Enter your symbol table here")
-		self.setTabIcon(i, getIcon("tag"))
-		i += 1
-		self.addTab(self.libTable, "Library selections")
-		self.setTabToolTip(i, "Select standard libraries to include")
-		self.setTabIcon(i, getIcon("stdlib"))
+		if self.fupTabs:
+			self.addTab(self.fupTabs, "FUP / FBD")
+			self.setTabToolTip(i, "Create Function Block Diagrams here")
+			self.setTabIcon(i, getIcon("fup"))
+			i += 1
+		if self.kopTabs:
+			self.addTab(self.kopTabs, "KOP / LAD")
+			self.setTabToolTip(i, "Create Ladder logic here")
+			self.setTabIcon(i, getIcon("kop"))
+			i += 1
+		if self.awlTabs:
+			self.addTab(self.awlTabs, "AWL / STL")
+			self.setTabToolTip(i, "Enter your AWL/STL program here")
+			self.setTabIcon(i, getIcon("textsource"))
+			i += 1
+		if self.symTabs:
+			self.addTab(self.symTabs, "Symbol tables")
+			self.setTabToolTip(i, "Enter your symbol table here")
+			self.setTabIcon(i, getIcon("tag"))
+			i += 1
+		if self.libTable:
+			self.addTab(self.libTable, "Library selections")
+			self.setTabToolTip(i, "Select standard libraries to include")
+			self.setTabIcon(i, getIcon("stdlib"))
+			i += 1
 
 		self.reset()
 
@@ -308,10 +314,14 @@ class ProjectWidget(QTabWidget):
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
 		self.__selectedResource = self.RES_SOURCES
-#TODO		self.fupTabs.reset()
-#TODO		self.kopTabs.reset()
-		self.awlTabs.reset()
-		self.symTabs.reset()
+		if self.fupTabs:
+			self.fupTabs.reset()
+		if self.kopTabs:
+			self.kopTabs.reset()
+		if self.awlTabs:
+			self.awlTabs.reset()
+		if self.symTabs:
+			self.symTabs.reset()
 		self.setCurrentIndex(self.indexOf(self.awlTabs))
 
 	def setSettings(self, guiSettings):
