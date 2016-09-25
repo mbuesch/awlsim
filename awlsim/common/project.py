@@ -198,9 +198,7 @@ class HwmodSettings(object):
 		self.setLoadedModules(loadedModules)
 
 	def setLoadedModules(self, loadedModules):
-		if not loadedModules:
-			loadedModules = []
-		self.loadedModules = loadedModules
+		self.loadedModules = loadedModules or []
 
 	def addLoadedModule(self, modDesc):
 		self.loadedModules.append(modDesc)
@@ -215,6 +213,8 @@ class Project(object):
 		     createDate=None,
 		     modifyDate=None,
 		     awlSources=None,
+		     fupSources=None,
+		     kopSources=None,
 		     symTabSources=None,
 		     libSelections=None,
 		     cpuSpecs=None,
@@ -227,6 +227,8 @@ class Project(object):
 		self.setCreateDate(createDate)
 		self.setModifyDate(modifyDate)
 		self.setAwlSources(awlSources)
+		self.setFupSources(fupSources)
+		self.setKopSources(kopSources)
 		self.setSymTabSources(symTabSources)
 		self.setLibSelections(libSelections)
 		self.setCpuSpecs(cpuSpecs)
@@ -241,6 +243,8 @@ class Project(object):
 		self.setCreateDate(None)
 		self.setModifyDate(None)
 		self.setAwlSources(None)
+		self.setFupSources(None)
+		self.setKopSources(None)
 		self.setSymTabSources(None)
 		self.setLibSelections(None)
 		self.setCpuSpecs(None)
@@ -275,33 +279,37 @@ class Project(object):
 		return self.modifyDate
 
 	def setAwlSources(self, awlSources):
-		if not awlSources:
-			awlSources = []
-		self.awlSources = awlSources
+		self.awlSources = awlSources or []
 
 	def getAwlSources(self):
 		return self.awlSources
 
+	def setFupSources(self, fupSources):
+		self.fupSources = fupSources or []
+
+	def getFupSources(self):
+		return self.fupSources
+
+	def setKopSources(self, kopSources):
+		self.kopSources = kopSources or []
+
+	def getKopSources(self):
+		return self.kopSources
+
 	def setSymTabSources(self, symTabSources):
-		if not symTabSources:
-			symTabSources = []
-		self.symTabSources = symTabSources
+		self.symTabSources = symTabSources or []
 
 	def getSymTabSources(self):
 		return self.symTabSources
 
 	def setLibSelections(self, libSelections):
-		if not libSelections:
-			libSelections = []
-		self.libSelections = libSelections
+		self.libSelections = libSelections or []
 
 	def getLibSelections(self):
 		return self.libSelections
 
 	def setCpuSpecs(self, cpuSpecs):
-		if not cpuSpecs:
-			cpuSpecs = S7CPUSpecs()
-		self.cpuSpecs = cpuSpecs
+		self.cpuSpecs = cpuSpecs or S7CPUSpecs()
 
 	def getCpuSpecs(self):
 		return self.cpuSpecs
@@ -319,25 +327,19 @@ class Project(object):
 		return self.extInsnsEn
 
 	def setGuiSettings(self, guiSettings):
-		if not guiSettings:
-			guiSettings = GuiSettings()
-		self.guiSettings = guiSettings
+		self.guiSettings = guiSettings or GuiSettings()
 
 	def getGuiSettings(self):
 		return self.guiSettings
 
 	def setCoreLinkSettings(self, coreLinkSettings):
-		if not coreLinkSettings:
-			coreLinkSettings = CoreLinkSettings()
-		self.coreLinkSettings = coreLinkSettings
+		self.coreLinkSettings = coreLinkSettings or CoreLinkSettings()
 
 	def getCoreLinkSettings(self):
 		return self.coreLinkSettings
 
 	def setHwmodSettings(self, hwmodSettings):
-		if not hwmodSettings:
-			hwmodSettings = HwmodSettings()
-		self.hwmodSettings = hwmodSettings
+		self.hwmodSettings = hwmodSettings or HwmodSettings()
 
 	def getHwmodSettings(self):
 		return self.hwmodSettings
@@ -367,6 +369,8 @@ class Project(object):
 		createDate = None
 		modifyDate = None
 		awlSources = []
+		fupSources = []
+		kopSources = []
 		symTabSources = []
 		libSelections = []
 		cpuSpecs = S7CPUSpecs()
@@ -401,28 +405,33 @@ class Project(object):
 				modifyDate = datetime.datetime.strptime(dStr,
 							cls.DATETIME_FMT)
 
+			def getSrcs(srcList, section, prefix, SrcClass):
+				for i in range(0xFFFF):
+					option = "%s_file_%d" % (prefix, i)
+					if not p.has_option(section, option):
+						break
+					path = p.get(section, option)
+					src = SrcClass.fromFile(path,
+						cls.__generic2path(path, projectDir))
+					srcList.append(src)
+				for i in range(0xFFFF):
+					srcOption = "%s_%d" % (prefix, i)
+					nameOption = "%s_name_%d" % (prefix, i)
+					if not p.has_option(section, srcOption):
+						break
+					awlBase64 = p.get(section, srcOption)
+					name = None
+					if p.has_option(section, nameOption):
+						with contextlib.suppress(ValueError):
+							name = base64ToStr(
+								p.get(section, nameOption))
+					if name is None:
+						name = "%s #%d" % (SrcClass.SRCTYPE, i)
+					src = SrcClass.fromBase64(name, awlBase64)
+					srcList.append(src)
+
 			# CPU section
-			for i in range(0xFFFF):
-				option = "awl_file_%d" % i
-				if not p.has_option("CPU", option):
-					break
-				path = p.get("CPU", option)
-				src = AwlSource.fromFile(path, cls.__generic2path(path, projectDir))
-				awlSources.append(src)
-			for i in range(0xFFFF):
-				srcOption = "awl_%d" % i
-				nameOption = "awl_name_%d" % i
-				if not p.has_option("CPU", srcOption):
-					break
-				awlBase64 = p.get("CPU", srcOption)
-				name = None
-				if p.has_option("CPU", nameOption):
-					with contextlib.suppress(ValueError):
-						name = base64ToStr(p.get("CPU", nameOption))
-				if name is None:
-					name = "AWL/STL #%d" % i
-				src = AwlSource.fromBase64(name, awlBase64)
-				awlSources.append(src)
+			getSrcs(awlSources, "CPU", "awl", AwlSource)
 			if p.has_option("CPU", "mnemonics"):
 				mnemonics = p.getint("CPU", "mnemonics")
 				cpuSpecs.setConfiguredMnemonics(mnemonics)
@@ -437,28 +446,14 @@ class Project(object):
 			if p.has_option("CPU", "ext_insns_enable"):
 				extInsnsEn = p.getboolean("CPU", "ext_insns_enable")
 
+			# FUP section
+			getSrcs(fupSources, "FUP", "fup", FupSource)
+
+			# KOP section
+			getSrcs(kopSources, "KOP", "kop", KopSource)
+
 			# SYMBOLS section
-			for i in range(0xFFFF):
-				option = "sym_tab_file_%d" % i
-				if not p.has_option("SYMBOLS", option):
-					break
-				path = p.get("SYMBOLS", option)
-				src = SymTabSource.fromFile(path, cls.__generic2path(path, projectDir))
-				symTabSources.append(src)
-			for i in range(0xFFFF):
-				srcOption = "sym_tab_%d" % i
-				nameOption = "sym_tab_name_%d" % i
-				if not p.has_option("SYMBOLS", srcOption):
-					break
-				symTabBase64 = p.get("SYMBOLS", srcOption)
-				name = None
-				if p.has_option("SYMBOLS", nameOption):
-					with contextlib.suppress(ValueError):
-						name = base64ToStr(p.get("SYMBOLS", nameOption))
-				if name is None:
-					name = "Symbol table #%d" % i
-				src = SymTabSource.fromBase64(name, symTabBase64)
-				symTabSources.append(src)
+			getSrcs(symTabSources, "SYMBOLS", "sym_tab", SymTabSource)
 
 			# LIBS section
 			for i in range(0xFFFF):
@@ -608,6 +603,8 @@ class Project(object):
 			   createDate = createDate,
 			   modifyDate = modifyDate,
 			   awlSources = awlSources,
+			   fupSources = fupSources,
+			   kopSources = kopSources,
 			   symTabSources = symTabSources,
 			   libSelections = libSelections,
 			   cpuSpecs = cpuSpecs,
@@ -674,16 +671,19 @@ class Project(object):
 			     self.getModifyDate().strftime(self.DATETIME_FMT))
 		lines.append("")
 
+		def makeSrcs(prefix, srcList):
+			fileBackedSources = (src for src in srcList if src.isFileBacked())
+			embeddedSources = (src for src in srcList if not src.isFileBacked())
+			for i, src in enumerate(fileBackedSources):
+				path = self.__path2generic(src.filepath, projectDir)
+				lines.append("%s_file_%d=%s" % (prefix, i, path))
+			for i, src in enumerate(embeddedSources):
+				lines.append("%s_%d=%s" % (prefix, i, src.toBase64()))
+				name = strToBase64(src.name, ignoreErrors=True)
+				lines.append("%s_name_%d=%s" % (prefix, i, name))
+
 		lines.append("[CPU]")
-		fileBackedSources = (src for src in self.awlSources if src.isFileBacked())
-		embeddedSources = (src for src in self.awlSources if not src.isFileBacked())
-		for i, awlSrc in enumerate(fileBackedSources):
-			path = self.__path2generic(awlSrc.filepath, projectDir)
-			lines.append("awl_file_%d=%s" % (i, path))
-		for i, awlSrc in enumerate(embeddedSources):
-			lines.append("awl_%d=%s" % (i, awlSrc.toBase64()))
-			name = strToBase64(awlSrc.name, ignoreErrors=True)
-			lines.append("awl_name_%d=%s" % (i, name))
+		makeSrcs("awl", self.awlSources)
 		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
 		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
 		lines.append("clock_memory_byte=%d" % self.cpuSpecs.clockMemByte)
@@ -691,16 +691,16 @@ class Project(object):
 		lines.append("ext_insns_enable=%d" % int(bool(self.extInsnsEn)))
 		lines.append("")
 
+		lines.append("[FUP]")
+		makeSrcs("fup", self.fupSources)
+		lines.append("")
+
+		lines.append("[KOP]")
+		makeSrcs("kop", self.kopSources)
+		lines.append("")
+
 		lines.append("[SYMBOLS]")
-		fileBackedSources = (src for src in self.symTabSources if src.isFileBacked())
-		embeddedSources = (src for src in self.symTabSources if not src.isFileBacked())
-		for i, symSrc in enumerate(fileBackedSources):
-			path = self.__path2generic(symSrc.filepath, projectDir)
-			lines.append("sym_tab_file_%d=%s" % (i, path))
-		for i, symSrc in enumerate(embeddedSources):
-			lines.append("sym_tab_%d=%s" % (i, symSrc.toBase64()))
-			name = strToBase64(symSrc.name, ignoreErrors=True)
-			lines.append("sym_tab_name_%d=%s" % (i, name))
+		makeSrcs("sym_tab", self.symTabSources)
 		lines.append("")
 
 		lines.append("[LIBS]")

@@ -131,7 +131,7 @@ class ProjectWidget(QTabWidget):
 
 		self.__suppressValidation = False
 
-		self.fupTabs = None #TODO
+		self.fupTabs = FupTabWidget(self)
 		self.kopTabs = None #TODO
 		self.awlTabs = AwlSourceTabWidget(self)
 		self.symTabs = SymSourceTabWidget(self)

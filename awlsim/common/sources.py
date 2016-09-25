@@ -2,7 +2,7 @@
 #
 # AWL simulator - source management
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -145,6 +145,20 @@ class AwlSource(GenericSource):
 
 	def dup(self):
 		return AwlSource(self.name, self.filepath,
+				 self.sourceBytes[:])
+
+class FupSource(GenericSource):
+	SRCTYPE = "FUP/FBD"
+
+	def dup(self):
+		return FupSource(self.name, self.filepath,
+				 self.sourceBytes[:])
+
+class KopSource(GenericSource):
+	SRCTYPE = "KOP/LAD"
+
+	def dup(self):
+		return KopSource(self.name, self.filepath,
 				 self.sourceBytes[:])
 
 class SymTabSource(GenericSource):

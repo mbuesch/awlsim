@@ -26,6 +26,7 @@ from awlsim.gui.editwidget import *
 from awlsim.gui.symtabwidget import *
 from awlsim.gui.finddialog import *
 from awlsim.gui.util import *
+from awlsim.gui.fup.fupwidget import *
 
 
 class SourceTabContextMenu(QMenu):
@@ -628,6 +629,83 @@ class SymSourceTabWidget(SourceTabWidget):
 		self.setCurrentIndex(index)
 		self.updateTabTexts()
 		self.updateActionMenu()
+
+	def handleIdentsMsg(self, identsMsg):
+		pass#TODO
+
+class FupTabWidget(SourceTabWidget):
+	"FUP/FBD tab widget"
+
+	def __init__(self, parent=None):
+		SourceTabWidget.__init__(self, "FUP/FBD diagram", parent)
+
+		self.reset()
+
+#TODO		self.contextMenu.add.connect(self.addSymTable)
+#TODO		self.contextMenu.delete.connect(self.deleteCurrent)
+#TODO		self.contextMenu.rename.connect(self.renameCurrent)
+#TODO		self.contextMenu.export.connect(self.exportCurrent)
+#TODO		self.contextMenu.import_.connect(self.importSource)
+
+	def reset(self):
+		SourceTabWidget.reset(self)
+		index, fupWidget = self.addDiagram()
+		self.updateTabTexts()
+
+	def setSources(self, symTabSources):
+		self.clear()
+#TODO		if not symTabSources:
+#TODO			self.addSymTable()
+#TODO			return
+#TODO		for symTabSource in symTabSources:
+#TODO			index, symTabView = self.addSymTable()
+#TODO			self.setTabText(index, symTabSource.name)
+#TODO			symTabView.model().setSource(symTabSource)
+#TODO		self.updateActionMenu()
+		self.setCurrentIndex(0)
+
+	def addDiagram(self):
+		fupWidget = FupWidget(self)
+#XXX		symTabView.model().sourceChanged.connect(self.sourceChanged)
+#XXX		symTabView.focusChanged.connect(self.focusChanged)
+		index = self.addTab(fupWidget, "XXX")
+		self.setCurrentIndex(index)
+		self.updateActionMenu()
+		self.sourceChanged.emit()
+		return index, fupWidget
+
+	def deleteCurrent(self):
+		index = self.currentIndex()
+		if index >= 0 and self.count() > 1:
+			text = self.tabText(index)
+			res = QMessageBox.question(self,
+				"Delete %s" % text,
+				"Delete FUP/FBD diagram '%s'?" % text,
+				QMessageBox.Yes, QMessageBox.No)
+			if res == QMessageBox.Yes:
+				self.removeTab(index)
+				self.sourceChanged.emit()
+
+	def renameCurrent(self):
+		index = self.currentIndex()
+		if index >= 0:
+			text = self.tabText(index)
+			newText, ok = QInputDialog.getText(self,
+					"Rename %s" % text,
+					"New name for current FUP/FBD diagram:",
+					QLineEdit.Normal,
+					text)
+			if ok and newText != text:
+				fupWidget = self.widget(index)
+#TODO				source = symTabView.getSource()
+#TODO				source.name = newText
+				self.updateTabTexts()
+
+	def exportCurrent(self):
+		pass#TODO
+
+	def importSource(self):
+		pass#TODO
 
 	def handleIdentsMsg(self, identsMsg):
 		pass#TODO
