@@ -26,9 +26,10 @@ from awlsim.common.util import *
 from awlsim.common.subprocess import *
 from awlsim.common.net import *
 
+from awlsim.coreclient.sshtunnel import *
+from awlsim.coreclient.util import *
+
 from awlsim.coreserver.server import *
-from awlsim.coreserver.messages import *
-from awlsim.coreserver.memarea import *
 
 import sys
 import socket

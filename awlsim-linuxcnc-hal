@@ -29,8 +29,8 @@ import time
 import getopt
 
 from awlsim.common import *
-from awlsim.coreserver import *
-from awlsim.coreclient import *
+from awlsim.coreserver.server import *
+from awlsim.coreclient.client import *
 
 
 class LinuxCNC_NotRunning(Exception):

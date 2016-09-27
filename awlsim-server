@@ -29,8 +29,8 @@ from socket import AF_INET, AF_INET6
 
 from awlsim.common import *
 from awlsim.core import *
-from awlsim.coreclient import *
-from awlsim.coreserver import *
+from awlsim.coreclient.client import *
+from awlsim.coreserver.server import *
 
 
 def usage():

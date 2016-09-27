@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common import *
-from awlsim.coreclient import *
+from awlsim.coreclient.client import *
 import awlsim.cython_helper
 
 import sys

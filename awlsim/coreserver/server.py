@@ -31,6 +31,7 @@ from awlsim.core.main import *
 from awlsim.core.parser import *
 
 from awlsim.coreserver.messages import *
+from awlsim.coreserver.memarea import *
 
 import sys
 import os

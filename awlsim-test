@@ -30,7 +30,7 @@ import signal
 
 from awlsim.common import *
 from awlsim.core import *
-from awlsim.coreclient import *
+from awlsim.coreclient.client import *
 
 
 class TestAwlSimClient(AwlSimClient):
