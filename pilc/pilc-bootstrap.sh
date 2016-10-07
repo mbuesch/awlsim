@@ -211,7 +211,7 @@ pilc_bootstrap_first_stage()
 	(
 		cd "$checkout_dir" ||\
 			die "Failed to cd"
-		git checkout -b __build "$opt_branch" ||\
+		git checkout -b __build origin/"$opt_branch" ||\
 			die "Failed to check out branch."
 		git submodule update --init submodules/pyprofibus ||\
 			die "Failed to pull pyprofibus submodule"
