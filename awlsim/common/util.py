@@ -257,6 +257,18 @@ def isiterable(obj):
 		pass
 	return False
 
+def getany(iterable, exception=KeyError):
+	"""Get an arbitrary item from an iterable.
+	If the iterable is empty, exception is raised.
+	If exception is None, None is returned instead.
+	"""
+	try:
+		return next(iter(iterable))
+	except StopIteration:
+		if exception:
+			raise exception
+		return None
+
 def toList(value):
 	"""Returns value, if value is a list.
 	Returns a list with the elements of value, if value is a set.
