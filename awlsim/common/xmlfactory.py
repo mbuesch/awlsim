@@ -44,6 +44,11 @@ class _XmlFactoryBuilder(object):
 		pass#TODO
 
 class XmlFactory(object):
+	"""XML parser and factory."""
+
+	XML_VERSION	= "1.0"
+	XML_ENCODING	= "UTF-8"
+
 	class Tag(object):
 		def __init__(self, name, attrs = None,
 			     tags = None, data = None):
@@ -71,24 +76,36 @@ class XmlFactory(object):
 			ret = []
 			for tag in tags:
 				ind = "\t" * indent
-				attrText = " ".join(
+				attrText = (" " + " ".join(
 					"%s=\"%s\"" % (aName, aVal)
-					for aName, aVal in tag.attrs.iteritems()
-				)
-				if tag.data:
+					for aName, aVal in sorted(tag.attrs.items(),
+								  key=lambda a: a[0])
+				)).rstrip()
+				if tag.data or tag.tags:
 					ret.append(
-						"%s<%s%s />" % (
-						ind, tag.name, attrText)
+						"%s<%s%s>%s" % (
+						ind,
+						tag.name,
+						attrText,
+						tag.data or "")
+					)
+					ret.extend(tags2text(tag.tags, indent + 1))
+					ret.append("%s</%s>" % (
+						ind,
+						tag.name)
 					)
 				else:
 					ret.append(
-						"%s<%s%s>%s</%s>" % (
-						ind, tag.name,
-						attrText, tag.data, tag.name)
+						"%s<%s%s />" % (
+						ind,
+						tag.name,
+						attrText)
 					)
-				ret.extend(tags2text(tag.tags, indent + 1))
 			return ret
-		return "\n".join(tags2text(cls.toXmlTags(dataObj)))
+		lines = [ '<?xml version="%s" encoding="%s"?>' % (
+			  cls.XML_VERSION, cls.XML_ENCODING) ]
+		lines.extend(tags2text(cls.toXmlTags(dataObj)))
+		return "\n".join(lines).encode(cls.XML_ENCODING)
 
 	def fromXml(self, xmlText):
 		builder = _XmlFactoryBuilder(self)

@@ -291,11 +291,39 @@ class ProjectWidget(QTabWidget):
 
 	def getAwlSources(self):
 		"Returns a list of AwlSource()s"
+		if not self.awlTabs:
+			return []
 		return self.awlTabs.getSources()
 
 	def getCurrentAwlSource(self):
 		"Returns the currently selected AwlSource()."
+		if not self.awlTabs:
+			return []
 		return self.awlTabs.getCurrentSource()
+
+	def getFupSources(self):
+		"Returns a list of FupSource()s"
+		if not self.fupTabs:
+			return []
+		return self.fupTabs.getSources()
+
+	def getCurrentFupSource(self):
+		"Returns the currently selected FupSource()."
+		if not self.fupTabs:
+			return []
+		return self.fupTabs.getCurrentSource()
+
+	def getKopSources(self):
+		"Returns a list of KopSource()s"
+		if not self.kopTabs:
+			return []
+		return self.kopTabs.getSources()
+
+	def getCurrentKopSource(self):
+		"Returns the currently selected KopSource()."
+		if not self.kopTabs:
+			return []
+		return self.kopTabs.getCurrentSource()
 
 	def getSymTabSources(self):
 		"Returns a list of SymTabSource()s"
@@ -333,8 +361,14 @@ class ProjectWidget(QTabWidget):
 		try:
 			self.__project = project
 			self.setSettings(project.getGuiSettings())
-			self.awlTabs.setSources(self.__project.getAwlSources())
-			self.symTabs.setSources(self.__project.getSymTabSources())
+			if self.awlTabs:
+				self.awlTabs.setSources(self.__project.getAwlSources())
+			if self.fupTabs:
+				self.fupTabs.setSources(self.__project.getFupSources())
+			if self.kopTabs:
+				self.kopTabs.setSources(self.__project.getKopSources())
+			if self.symTabs:
+				self.symTabs.setSources(self.__project.getSymTabSources())
 			self.libTable.model().setLibSelections(self.__project.getLibSelections())
 			self.__warnedFileBacked = False
 			self.__isAdHocProject = False
@@ -385,6 +419,8 @@ class ProjectWidget(QTabWidget):
 				# Signal this to our caller.
 				return -1
 		awlSrcs = self.getAwlSources()
+		fupSrcs = self.getFupSources()
+		kopSrcs = self.getKopSources()
 		symTabSrcs = self.getSymTabSources()
 		libSelections = self.getLibSelections()
 		if not all(awlSrcs) or not all(symTabSrcs):
@@ -402,6 +438,8 @@ class ProjectWidget(QTabWidget):
 				"in the source menu.")
 			self.__warnedFileBacked = True
 		self.__project.setAwlSources(awlSrcs)
+		self.__project.setFupSources(fupSrcs)
+		self.__project.setKopSources(kopSrcs)
 		self.__project.setSymTabSources(symTabSrcs)
 		self.__project.setLibSelections(libSelections)
 		self.__project.setProjectFile(filename)

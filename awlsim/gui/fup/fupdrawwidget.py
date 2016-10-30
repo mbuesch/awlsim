@@ -29,6 +29,10 @@ from awlsim.gui.util import *
 
 
 class FupBaseClass(object):
+	"""Abstract FUP/FBD base class"""
+
+	factory = None
+
 	def __eq__(self, other):
 		return self is other
 
@@ -38,15 +42,44 @@ class FupBaseClass(object):
 	def __hash__(self):
 		return id(self)
 
+class FupWire_factory(XmlFactory):
+	def beginXmlTag(self, tag):
+		pass#TODO
+
+	def endXmlTag(self, tag):
+		pass#TODO
+
+	def xmlData(self, data):
+		pass#TODO
+
+	@classmethod
+	def toXmlTags(cls, dataObj):
+		wire = dataObj
+		return [
+			cls.Tag(name="wire",
+				attrs={
+					"id" : str(wire.idNum),
+				}),
+		]
+
 class FupWire(FupBaseClass):
 	"""FUP/FBD wire connecting two FupConn connections."""
 
+	factory = FupWire_factory
+
 	BRANCH_DIA = 4
 
-	def __init__(self):
+	def __init__(self, grid, idNum=None):
 		FupBaseClass.__init__(self)
-		self.connections = set()
-		self.outConn = None
+		self.grid = grid
+		self.connections = set()	# The connections this wire is connected to
+		self.outConn = None		# The out-connection this is connected to
+
+		if idNum is None:
+			idNum = grid._addWire(self)
+		else:
+			grid._addWire(self)
+		self.idNum = idNum		# The ID number of this wire
 
 		self.__wirePen = QPen(QColor("#000000"))
 		self.__wirePen.setWidth(2)
@@ -104,8 +137,34 @@ class FupWire(FupBaseClass):
 			painter.drawEllipse(xAbs0 - r, yAbs0 - r, d, d)
 			painter.drawEllipse(xAbs1 - r, yAbs1 - r, d, d)
 
+class FupConn_factory(XmlFactory):
+	def beginXmlTag(self, tag):
+		pass#TODO
+
+	def endXmlTag(self, tag):
+		pass#TODO
+
+	def xmlData(self, data):
+		pass#TODO
+
+	@classmethod
+	def toXmlTags(cls, dataObj):
+		conn = dataObj
+		return [
+			cls.Tag(name="connection",
+				attrs={
+					"dir_in" : str(int(conn.IN)),
+					"dir_out" : str(int(conn.OUT)),
+					"pos" : str(conn.pos),
+					"wire" : -1 if conn.wire is None
+						 else str(conn.wire.idNum),
+				}),
+		]
+
 class FupConn(FupBaseClass):
 	"""FUP/FBD element connection base class"""
+
+	factory = FupConn_factory
 
 	IN = False
 	OUT = False
@@ -160,7 +219,8 @@ class FupConn(FupBaseClass):
 			raise ValueError
 		wire = self.wire or other.wire
 		if not wire:
-			wire = FupWire()
+			# Create a new wire
+			wire = FupWire(self.elem.grid)
 		wire.connect(self)
 		wire.connect(other)
 
@@ -282,10 +342,45 @@ class FupElem(FupBaseClass):
 	def __repr__(self):
 		return "FupElem(%d, %d)" % (self.x, self.y)
 
+class FupElem_BOOLEAN_factory(XmlFactory):
+	def beginXmlTag(self, tag):
+		pass#TODO
+
+	def endXmlTag(self, tag):
+		pass#TODO
+
+	def xmlData(self, data):
+		pass#TODO
+
+	@classmethod
+	def toXmlTags(cls, dataObj):
+		elem = dataObj
+		connTags = []
+		for inp in elem.inputs:
+			connTags.extend(inp.factory.toXmlTags(inp))
+		for out in elem.outputs:
+			connTags.extend(out.factory.toXmlTags(out))
+		return [
+			cls.Tag(name="element",
+				attrs={
+					"type" : "boolean",
+					"subtype" : elem.OP_SYM_NAME,
+					"x" : str(elem.x),
+					"y" : str(elem.y),
+				},
+				tags=[
+					cls.Tag(name="connections",
+						tags=connTags),
+				])
+		]
+
 class FupElem_BOOLEAN(FupElem):
 	"""Boolean FUP/FBD element base class"""
 
-	OP_SYM = ""
+	OP_SYM		= ""
+	OP_SYM_NAME	= ""
+
+	factory = FupElem_BOOLEAN_factory
 
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
@@ -411,8 +506,8 @@ class FupElem_BOOLEAN(FupElem):
 class FupElem_AND(FupElem_BOOLEAN):
 	"""AND FUP/FBD element"""
 
-	OP_SYM = "&"
-
+	OP_SYM		= "&"
+	OP_SYM_NAME	= "and"
 
 class FupElem_OPERAND(FupElem):
 	"""Generic operand element"""
@@ -423,7 +518,7 @@ class FupElem_ASSIGN(FupElem_OPERAND):
 class FupElem_LOAD(FupElem_OPERAND):
 	"""Load/read operand element"""
 
-class FupGridFactory(XmlFactory):
+class FupGrid_factory(XmlFactory):
 	def beginXmlTag(self, tag):
 		pass#TODO
 
@@ -435,21 +530,57 @@ class FupGridFactory(XmlFactory):
 
 	@classmethod
 	def toXmlTags(cls, dataObj):
-		xml = []
-		pass#TODO
+		grid = dataObj
+		wireTags = []
+		for wire in sorted(grid.wires, key=lambda w: w.idNum):
+			wireTags.extend(wire.factory.toXmlTags(wire))
+		elemTags = []
+		for elem in grid.elems:
+			elemTags.extend(elem.factory.toXmlTags(elem))
+		return [
+			cls.Tag(name="grid",
+				tags=[
+					cls.Tag(name="wires",
+						tags=wireTags),
+					cls.Tag(name="elements",
+						tags=elemTags),
+				],
+				attrs={
+					"width" : grid.width,
+					"height" : grid.height,
+				}),
+		]
 
 class FupGrid(object):
 	"""FUP/FBD element grid"""
+
+	factory = FupGrid_factory
 
 	def __init__(self, drawWidget, width, height):
 		self.__drawWidget = drawWidget
 		self.width = width
 		self.height = height
 
-		self.elems = []
+		self.elems = []		# The FupElem_xxx()s in this grid
+		self.wires = set()	# The FupConnIn/Out()s in this grid
+		self.nextWireIdNum = 0
+
 		self.selectedElems = set()
 		self.draggedElem = None
 		self.draggedConn = None
+
+	def _addWire(self, wire):
+		self.wires.add(wire)
+		idNum = self.nextWireIdNum
+		self.nextWireIdNum = idNum + 1
+		return idNum
+
+	def renumberWires(self):
+		"""Re-assign the wire idNums."""
+		i = -1
+		for i, wire in enumerate(self.wires):
+			wire.idNum = i
+		self.nextWireIdNum = i + 1
 
 	@property
 	def cellPixWidth(self):
@@ -623,6 +754,10 @@ class FupDrawWidget(QWidget):
 
 		self.resize(self.__grid.width * self.__cellWidth,
 			    self.__grid.height * self.__cellHeight)
+
+	@property
+	def grid(self):
+		return self.__grid
 
 	@property
 	def cellPixHeight(self):

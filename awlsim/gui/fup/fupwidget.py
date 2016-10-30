@@ -26,6 +26,30 @@ from awlsim.gui.fup.fupdrawwidget import *
 from awlsim.gui.util import *
 
 
+class FupFactory(XmlFactory):
+	FUP_VERSION = 0
+
+	def beginXmlTag(self, tag):
+		pass#TODO
+
+	def endXmlTag(self, tag):
+		pass#TODO
+
+	def xmlData(self, data):
+		pass#TODO
+
+	@classmethod
+	def toXmlTags(cls, dataObj):
+		fupWidget = dataObj
+		grid = fupWidget.draw.grid
+		gridTags = grid.factory.toXmlTags(grid)
+		tags = [
+			cls.Tag(name="FUP",
+				attrs={"version" : cls.FUP_VERSION},
+				tags=gridTags),
+		]
+		return tags
+
 class FupWidget(QWidget):
 	"""Main FUP/FBD widget."""
 
@@ -33,11 +57,28 @@ class FupWidget(QWidget):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
+		self.__source = FupSource(name = "FUP")
+		self.__needSourceUpdate = True
+
 		self.draw = FupDrawWidget(self)
 		self.drawScroll = QScrollArea(self)
 		self.drawScroll.setWidget(self.draw)
 		self.layout().addWidget(self.drawScroll, 0, 0)
 
+	def __updateSource(self):
+		# Generate XML
+		xmlBytes = FupFactory.toXml(self)
+		self.__source.sourceBytes = xmlBytes
+#XXX		self.__needSourceUpdate = False
+
 	def getSource(self):
-		#TODO
-		return FupSource(name = "FUP")
+		if self.__needSourceUpdate:
+			self.__updateSource()
+		return self.__source
+
+	def setSource(self, source):
+		self.__source = source.dup()
+		self.__source.sourceBytes = b""
+		pass#TODO
+		print("SET")
+		self.__needSourceUpdate = True

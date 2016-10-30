@@ -641,27 +641,27 @@ class FupTabWidget(SourceTabWidget):
 
 		self.reset()
 
-#TODO		self.contextMenu.add.connect(self.addSymTable)
-#TODO		self.contextMenu.delete.connect(self.deleteCurrent)
-#TODO		self.contextMenu.rename.connect(self.renameCurrent)
-#TODO		self.contextMenu.export.connect(self.exportCurrent)
-#TODO		self.contextMenu.import_.connect(self.importSource)
+		self.contextMenu.add.connect(self.addDiagram)
+		self.contextMenu.delete.connect(self.deleteCurrent)
+		self.contextMenu.rename.connect(self.renameCurrent)
+		self.contextMenu.export.connect(self.exportCurrent)
+		self.contextMenu.import_.connect(self.importSource)
 
 	def reset(self):
 		SourceTabWidget.reset(self)
 		index, fupWidget = self.addDiagram()
 		self.updateTabTexts()
 
-	def setSources(self, symTabSources):
+	def setSources(self, fupSources):
 		self.clear()
-#TODO		if not symTabSources:
-#TODO			self.addSymTable()
-#TODO			return
-#TODO		for symTabSource in symTabSources:
-#TODO			index, symTabView = self.addSymTable()
-#TODO			self.setTabText(index, symTabSource.name)
-#TODO			symTabView.model().setSource(symTabSource)
-#TODO		self.updateActionMenu()
+		if not fupSources:
+			self.addDiagram()
+			return
+		for fupSource in fupSources:
+			index, fupWidget = self.addDiagram()
+			self.setTabText(index, fupSource.name)
+			fupWidget.setSource(fupSource)
+		self.updateActionMenu()
 		self.setCurrentIndex(0)
 
 	def addDiagram(self):
@@ -697,8 +697,8 @@ class FupTabWidget(SourceTabWidget):
 					text)
 			if ok and newText != text:
 				fupWidget = self.widget(index)
-#TODO				source = symTabView.getSource()
-#TODO				source.name = newText
+				source = fupWidget.getSource()
+				source.name = newText
 				self.updateTabTexts()
 
 	def exportCurrent(self):
