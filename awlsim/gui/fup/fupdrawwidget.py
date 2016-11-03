@@ -43,22 +43,39 @@ class FupBaseClass(object):
 		return id(self)
 
 class FupWire_factory(XmlFactory):
-	def beginXmlTag(self, tag):
-		pass#TODO
+	def parser_open(self):
+		self.inWire = False
+		XmlFactory.parser_open(self)
 
-	def endXmlTag(self, tag):
-		pass#TODO
+	def parser_beginTag(self, tag):
+		if not self.inWire:
+			if tag.name == "wire":
+				self.inWire = True
+				idNum = tag.getAttrInt("id")
+				if idNum in (w.idNum for w in self.grid.wires):
+					raise self.Error("<wire id=%d> does "
+						"already exist." % idNum)
+				# Create wire and add it to the grid.
+				FupWire(grid=self.grid, idNum=idNum)
+				return
+		XmlFactory.parser_beginTag(self, tag)
 
-	def xmlData(self, data):
-		pass#TODO
+	def parser_endTag(self, tag):
+		if self.inWire:
+			if tag.name == "wire":
+				self.inWire = False
+				return
+		else:
+			if tag.name == "wires":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
 
-	@classmethod
-	def toXmlTags(cls, dataObj):
-		wire = dataObj
+	def composer_getTags(self):
 		return [
-			cls.Tag(name="wire",
+			self.Tag(name="wire",
 				attrs={
-					"id" : str(wire.idNum),
+					"id" : str(self.wire.idNum),
 				}),
 		]
 
@@ -76,10 +93,9 @@ class FupWire(FupBaseClass):
 		self.outConn = None		# The out-connection this is connected to
 
 		if idNum is None:
-			idNum = grid._addWire(self)
-		else:
-			grid._addWire(self)
+			idNum = grid._getNextWireIdNum()
 		self.idNum = idNum		# The ID number of this wire
+		grid._addWire(self)
 
 		self.__wirePen = QPen(QColor("#000000"))
 		self.__wirePen.setWidth(2)
@@ -138,26 +154,61 @@ class FupWire(FupBaseClass):
 			painter.drawEllipse(xAbs1 - r, yAbs1 - r, d, d)
 
 class FupConn_factory(XmlFactory):
-	def beginXmlTag(self, tag):
-		pass#TODO
+	def parser_open(self):
+		self.inConn = False
+		XmlFactory.parser_open(self)
 
-	def endXmlTag(self, tag):
-		pass#TODO
+	def parser_beginTag(self, tag):
+		if not self.inConn:
+			if tag.name == "connection":
+				pos = tag.getAttrInt("pos")
+				dirIn = tag.getAttrInt("dir_in")
+				dirOut = tag.getAttrInt("dir_out")
+				wireId = tag.getAttrInt("wire")
+				if pos < 0 or pos > 0xFFFF:
+					raise self.Error("Invalid <connection> pos.")
+				wire = self.elem.grid._getWireById(wireId)
+				try:
+					if dirIn and not dirOut:
+						self.elem.inputs.extend(
+							[None] * (pos + 1 - len(self.elem.inputs)))
+						conn = FupConnIn(elem=self.elem, pos=pos, wire=wire)
+						if wire:
+							wire.connect(conn)
+						self.elem.inputs[pos] = conn
+						return
+					elif dirOut and not dirIn:
+						self.elem.outputs.extend(
+							[None] * (pos + 1 - len(self.elem.outputs)))
+						conn = FupConnOut(elem=self.elem, pos=pos, wire=wire)
+						if wire:
+							wire.connect(conn)
+						self.elem.outputs[pos] = conn
+						return
+				except ValueError:
+					raise self.Error("Invalid <connection>")
+		XmlFactory.parser_beginTag(self, tag)
 
-	def xmlData(self, data):
-		pass#TODO
+	def parser_endTag(self, tag):
+		if self.inConn:
+			if tag.name == "connection":
+				self.inConn = False
+				return
+		else:
+			if tag.name == "connections":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
 
-	@classmethod
-	def toXmlTags(cls, dataObj):
-		conn = dataObj
+	def composer_getTags(self):
 		return [
-			cls.Tag(name="connection",
+			self.Tag(name="connection",
 				attrs={
-					"dir_in" : str(int(conn.IN)),
-					"dir_out" : str(int(conn.OUT)),
-					"pos" : str(conn.pos),
-					"wire" : -1 if conn.wire is None
-						 else str(conn.wire.idNum),
+					"dir_in" : str(int(self.conn.IN)),
+					"dir_out" : str(int(self.conn.OUT)),
+					"pos" : str(self.conn.pos),
+					"wire" : -1 if self.conn.wire is None
+						 else str(self.conn.wire.idNum),
 				}),
 		]
 
@@ -171,11 +222,11 @@ class FupConn(FupBaseClass):
 
 	CONN_OFFS = 4
 
-	def __init__(self, elem, pos=0):
+	def __init__(self, elem, pos=0, wire=None):
 		FupBaseClass.__init__(self)
 		self.elem = elem	# The FupElem this connection belongs to
 		self.pos = pos		# The y position (top is 0)
-		self.wire = None	# The FupWire this connection is connected to (if any).
+		self.wire = wire	# The FupWire this connection is connected to (if any).
 
 	@property
 	def relPixCoords(self):
@@ -241,8 +292,60 @@ class FupConnOut(FupConn):
 	"""FUP/FBD element output connection"""
 	OUT = True
 
+class FupElem_factory(XmlFactory):
+	def parser_open(self):
+		self.inElem = False
+		self.elem = None
+		XmlFactory.parser_open(self)
+
+	def parser_beginTag(self, tag):
+		if self.inElem:
+			if tag.name == "connections":
+				self.parser_switchTo(FupConn.factory(elem=self.elem))
+				return
+		else:
+			if tag.name == "element":
+				self.inElem = True
+				elemType = tag.getAttr("type")
+				x = tag.getAttrInt("x")
+				y = tag.getAttrInt("y")
+				if elemType == "boolean":
+					subType = tag.getAttr("subtype")
+					if subType == FupElem_AND.OP_SYM_NAME:
+						self.elem = FupElem_AND(
+							x=x, y=y, nrInputs=0)
+						self.elem.grid = self.grid
+						return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if self.inElem:
+			if tag.name == "element":
+				if self.elem:
+					# Insert the element into the grid.
+					if not self.elem.inputs:
+						raise self.Error("<element> does "
+							"not have any inputs.")
+					if not all(self.elem.inputs) or\
+					   not all(self.elem.outputs):
+						raise self.Error("<element> connections "
+							"are incomplete.")
+					if not self.grid.placeElem(self.elem):
+						raise self.Error("<element> caused "
+							"a grid collision.")
+				self.inElem = False
+				self.elem = None
+				return
+		else:
+			if tag.name == "elements":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
+
 class FupElem(FupBaseClass):
 	"""FUP/FBD element base class"""
+
+	factory = FupElem_factory
 
 	# Element areas
 	EnumGen.start
@@ -342,35 +445,24 @@ class FupElem(FupBaseClass):
 	def __repr__(self):
 		return "FupElem(%d, %d)" % (self.x, self.y)
 
-class FupElem_BOOLEAN_factory(XmlFactory):
-	def beginXmlTag(self, tag):
-		pass#TODO
-
-	def endXmlTag(self, tag):
-		pass#TODO
-
-	def xmlData(self, data):
-		pass#TODO
-
-	@classmethod
-	def toXmlTags(cls, dataObj):
-		elem = dataObj
+class FupElem_BOOLEAN_factory(FupElem_factory):
+	def composer_getTags(self):
 		connTags = []
-		for inp in elem.inputs:
-			connTags.extend(inp.factory.toXmlTags(inp))
-		for out in elem.outputs:
-			connTags.extend(out.factory.toXmlTags(out))
+		for inp in self.elem.inputs:
+			connTags.extend(inp.factory(conn=inp).composer_getTags())
+		for out in self.elem.outputs:
+			connTags.extend(out.factory(conn=out).composer_getTags())
 		return [
-			cls.Tag(name="element",
+			self.Tag(name="element",
 				attrs={
 					"type" : "boolean",
-					"subtype" : elem.OP_SYM_NAME,
-					"x" : str(elem.x),
-					"y" : str(elem.y),
+					"subtype" : self.elem.OP_SYM_NAME,
+					"x" : str(self.elem.x),
+					"y" : str(self.elem.y),
 				},
 				tags=[
-					cls.Tag(name="connections",
-						tags=connTags),
+					self.Tag(name="connections",
+						 tags=connTags),
 				])
 		]
 
@@ -378,7 +470,7 @@ class FupElem_BOOLEAN(FupElem):
 	"""Boolean FUP/FBD element base class"""
 
 	OP_SYM		= ""
-	OP_SYM_NAME	= ""
+	OP_SYM_NAME	= ""	# XML ABI name
 
 	factory = FupElem_BOOLEAN_factory
 
@@ -507,7 +599,7 @@ class FupElem_AND(FupElem_BOOLEAN):
 	"""AND FUP/FBD element"""
 
 	OP_SYM		= "&"
-	OP_SYM_NAME	= "and"
+	OP_SYM_NAME	= "and"	# XML ABI name
 
 class FupElem_OPERAND(FupElem):
 	"""Generic operand element"""
@@ -519,35 +611,43 @@ class FupElem_LOAD(FupElem_OPERAND):
 	"""Load/read operand element"""
 
 class FupGrid_factory(XmlFactory):
-	def beginXmlTag(self, tag):
-		pass#TODO
+	def parser_open(self):
+		self.grid.clear()
+		XmlFactory.parser_open(self)
 
-	def endXmlTag(self, tag):
-		pass#TODO
+	def parser_beginTag(self, tag):
+		if tag.name == "wires":
+			self.parser_switchTo(FupWire.factory(grid=self.grid))
+			return
+		if tag.name == "elements":
+			self.parser_switchTo(FupElem.factory(grid=self.grid))
+			return
+		XmlFactory.parser_beginTag(self, tag)
 
-	def xmlData(self, data):
-		pass#TODO
+	def parser_endTag(self, tag):
+		if tag.name == "grid":
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
 
-	@classmethod
-	def toXmlTags(cls, dataObj):
-		grid = dataObj
+	def composer_getTags(self):
 		wireTags = []
-		for wire in sorted(grid.wires, key=lambda w: w.idNum):
-			wireTags.extend(wire.factory.toXmlTags(wire))
+		for wire in sorted(self.grid.wires, key=lambda w: w.idNum):
+			wireTags.extend(wire.factory(wire=wire).composer_getTags())
 		elemTags = []
-		for elem in grid.elems:
-			elemTags.extend(elem.factory.toXmlTags(elem))
+		for elem in self.grid.elems:
+			elemTags.extend(elem.factory(elem=elem).composer_getTags())
 		return [
-			cls.Tag(name="grid",
+			self.Tag(name="grid",
 				tags=[
-					cls.Tag(name="wires",
-						tags=wireTags),
-					cls.Tag(name="elements",
-						tags=elemTags),
+					self.Tag(name="wires",
+						 tags=wireTags),
+					self.Tag(name="elements",
+						 tags=elemTags),
 				],
 				attrs={
-					"width" : grid.width,
-					"height" : grid.height,
+					"width" : self.grid.width,
+					"height" : self.grid.height,
 				}),
 		]
 
@@ -563,24 +663,39 @@ class FupGrid(object):
 
 		self.elems = []		# The FupElem_xxx()s in this grid
 		self.wires = set()	# The FupConnIn/Out()s in this grid
-		self.nextWireIdNum = 0
 
 		self.selectedElems = set()
 		self.draggedElem = None
 		self.draggedConn = None
 
+	def clear(self):
+		for wire in self.wires:
+			wire.disconnectAll()
+		self.wires.clear()
+		self.elems = []
+		self.selectedElems.clear()
+		self.draggedElem = None
+		self.draggedConn = None
+
+	def _getNextWireIdNum(self):
+		if self.wires:
+			return max(w.idNum for w in self.wires) + 1
+		return 0
+
 	def _addWire(self, wire):
 		self.wires.add(wire)
-		idNum = self.nextWireIdNum
-		self.nextWireIdNum = idNum + 1
-		return idNum
+
+	def _getWireById(self, wireIdNum):
+		if wireIdNum >= 0:
+			for wire in self.wires:
+				if wire.idNum == wireIdNum:
+					return wire
+		return None
 
 	def renumberWires(self):
 		"""Re-assign the wire idNums."""
-		i = -1
 		for i, wire in enumerate(self.wires):
 			wire.idNum = i
-		self.nextWireIdNum = i + 1
 
 	@property
 	def cellPixWidth(self):
@@ -836,10 +951,12 @@ class FupDrawWidget(QWidget):
 		p.translate(-prevX, -prevY)
 
 		# Draw the connection wires
-		for elem in grid.elems:
-			for conn in elem.outputs:
-				if conn.wire:
-					conn.wire.draw(p)
+#XXX		for elem in grid.elems:
+#			for conn in elem.outputs:
+#				if conn.wire:
+#					conn.wire.draw(p)
+		for wire in grid.wires:
+			wire.draw(p)
 
 		# Draw the dragged connection
 		draggedConn = grid.draggedConn

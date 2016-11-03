@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - XML factory
+# XML factory - parser and composer
 #
 # Copyright 2016 Michael Buesch <m@bues.ch>
 #
@@ -22,32 +22,76 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from xml.etree.ElementTree import XMLParser
+import xml.etree.ElementTree
 
 
 class _XmlFactoryBuilder(object):
 	def __init__(self, xmlFactory):
-		self.xmlFactory = xmlFactory
+		self.__factoryList = []
+		self.__tags = []
+		self.pushFactory(xmlFactory)
 
 	def start(self, tagName, attrs):
-		self.xmlFactory.beginXmlTag(
-			self.xmlFactory.Tag(name=tagName,
-					    attrs=attrs))
+		try:
+			xmlFactory = self.__factoryList[-1]
+		except IndexError:
+			raise XmlFactory.Error("Starting tag, but "
+				"no factory object is available.")
+		tag = xmlFactory.Tag(name=tagName,
+				     attrs=attrs)
+		self.__tags.append(tag)
+		xmlFactory.parser_beginTag(tag)
 
 	def end(self, tagName):
-		pass#TODO
+		try:
+			xmlFactory = self.__factoryList[-1]
+		except IndexError:
+			raise XmlFactory.Error("Closing tag, but "
+				"no factory object is available.")
+		tag = None
+		while tag is None or tag.name != tagName:
+			try:
+				tag = self.__tags.pop()
+			except IndexError:
+				raise XmlFactory.Error("Closing tag <%s>, "
+					"which is not open." % tagName)
+		xmlFactory.parser_endTag(tag)
 
 	def data(self, data):
-		pass#TODO
+		try:
+			xmlFactory = self.__factoryList[-1]
+		except IndexError:
+			raise XmlFactory.Error("Receiving tag data, but "
+				"no factory object is available.")
+		xmlFactory.parser_data(data)
 
 	def close(self):
-		pass#TODO
+		while self.__factoryList:
+			self.popFactory(self.__factoryList[-1])
+		self.__tags = []
+		return None
+
+	def pushFactory(self, xmlFactory):
+		self.__factoryList.append(xmlFactory)
+		xmlFactory.builder = self
+		xmlFactory.parser_open()
+
+	def popFactory(self, xmlFactory):
+		try:
+			oldFactory = self.__factoryList.pop()
+			oldFactory.parser_close()
+			assert(oldFactory is xmlFactory)
+		except IndexError:
+			pass
 
 class XmlFactory(object):
 	"""XML parser and factory."""
 
 	XML_VERSION	= "1.0"
 	XML_ENCODING	= "UTF-8"
+
+	class Error(Exception):
+		pass
 
 	class Tag(object):
 		def __init__(self, name, attrs = None,
@@ -57,21 +101,54 @@ class XmlFactory(object):
 			self.tags = tags or []
 			self.data = data or ""
 
-	def beginXmlTag(self, tag):
+		def hasAttr(self, name):
+			return name in self.attrs
+
+		def getAttr(self, name):
+			try:
+				return self.attrs[name]
+			except KeyError:
+				raise XmlFactory.Error("Tag <%s> attribute "
+					"'%s' does not exist." % (
+					self.name, name))
+
+		def getAttrInt(self, name):
+			try:
+				return int(self.getAttr(name))
+			except ValueError:
+				raise XmlFactory.Error("Tag <%s> attribute "
+					"'%s' is not an integer." % (
+					self.name, name))
+
+	def __init__(self, **kwargs):
+		self.__kwargs = kwargs
+		self.builder = None
+
+	def __getattr__(self, name):
+		with contextlib.suppress(KeyError):
+			return self.__kwargs[name]
+		raise AttributeError
+
+	def parser_open(self):
+		pass
+
+	def parser_close(self):
+		pass
+
+	def parser_beginTag(self, tag):
+		print("XmlFactory parser: Unhandled tag: <%s>" % tag.name)
+
+	def parser_endTag(self, tag):
+		pass
+
+	def parser_data(self, data):
+		pass
+
+	def composer_getTags(self):
 		raise NotImplementedError
 
-	def endXmlTag(self, tag):
-		raise NotImplementedError
-
-	def xmlData(self, data):
-		raise NotImplementedError
-
-	@classmethod
-	def toXmlTags(cls, dataObj):
-		raise NotImplementedError
-
-	@classmethod
-	def toXml(cls, dataObj):
+	def compose(self):
+		self.builder = None
 		def tags2text(tags, indent=0):
 			ret = []
 			for tag in tags:
@@ -102,13 +179,20 @@ class XmlFactory(object):
 						attrText)
 					)
 			return ret
-		lines = [ '<?xml version="%s" encoding="%s"?>' % (
-			  cls.XML_VERSION, cls.XML_ENCODING) ]
-		lines.extend(tags2text(cls.toXmlTags(dataObj)))
-		return "\n".join(lines).encode(cls.XML_ENCODING)
+		lines = [ '<?xml version="%s" encoding="%s" standalone="yes"?>' % (
+			  self.XML_VERSION, self.XML_ENCODING) ]
+		lines.extend(tags2text(self.composer_getTags()))
+		return "\n".join(lines).encode(self.XML_ENCODING)
 
-	def fromXml(self, xmlText):
+	def parser_switchTo(self, otherFactory):
+		self.builder.pushFactory(otherFactory)
+
+	def parser_finish(self):
+		self.builder.popFactory(self)
+
+	def parse(self, xmlText):
 		builder = _XmlFactoryBuilder(self)
-		parser = XMLParser(target=builder)
+		parser = xml.etree.ElementTree.XMLParser(target=builder)
+		self.parser_open()
 		parser.feed(xmlText)
 		parser.close()
