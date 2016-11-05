@@ -88,6 +88,11 @@ class FupWidget(QWidget):
 		self.drawScroll.setWidget(self.draw)
 		self.layout().addWidget(self.drawScroll, 0, 0)
 
+		self.diagramChanged.connect(self.__handleDiagramChange)
+
+	def __handleDiagramChange(self):
+		self.__needSourceUpdate = True
+
 	def __updateSource(self):
 		# Generate XML
 		try:
@@ -99,7 +104,7 @@ class FupWidget(QWidget):
 			print("Composed FUP XML:")
 			print(xmlBytes.decode(FupFactory.XML_ENCODING))
 		self.__source.sourceBytes = xmlBytes
-#XXX		self.__needSourceUpdate = False
+		self.__needSourceUpdate = False
 
 	def getSource(self):
 		if self.__needSourceUpdate:
