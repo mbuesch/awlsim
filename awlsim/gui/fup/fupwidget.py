@@ -72,6 +72,8 @@ class FupFactory(XmlFactory):
 class FupWidget(QWidget):
 	"""Main FUP/FBD widget."""
 
+	diagramChanged = Signal()
+
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
@@ -80,6 +82,8 @@ class FupWidget(QWidget):
 		self.__needSourceUpdate = True
 
 		self.draw = FupDrawWidget(self)
+		self.draw.diagramChanged.connect(self.diagramChanged)
+
 		self.drawScroll = QScrollArea(self)
 		self.drawScroll.setWidget(self.draw)
 		self.layout().addWidget(self.drawScroll, 0, 0)

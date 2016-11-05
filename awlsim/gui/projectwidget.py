@@ -98,6 +98,10 @@ class TemplateDialog(QDialog):
 class ProjectWidget(QTabWidget):
 	# Signal: Some source changed
 	codeChanged = Signal()
+	# Signal: Some FUP diagram changed
+	fupChanged = Signal()
+	# Signal: Some KOP diagram changed
+	kopChanged = Signal()
 	# Signal: Some symbol table changed
 	symTabChanged = Signal()
 	# Signal: The visible AWL line range changed
@@ -167,16 +171,23 @@ class ProjectWidget(QTabWidget):
 		self.reset()
 
 		self.currentChanged.connect(self.__handleTabChange)
-		self.awlTabs.sourceChanged.connect(self.codeChanged)
-		self.awlTabs.visibleLinesChanged.connect(self.visibleLinesChanged)
-		self.awlTabs.focusChanged.connect(self.textFocusChanged)
-		self.awlTabs.undoAvailableChanged.connect(self.undoAvailableChanged)
-		self.awlTabs.redoAvailableChanged.connect(self.redoAvailableChanged)
-		self.awlTabs.copyAvailableChanged.connect(self.copyAvailableChanged)
-		self.awlTabs.resizeFont.connect(self.__doSourceCodeFontResize)
-		self.awlTabs.validateDocument.connect(self.__doDocumentValidation)
-		self.symTabs.sourceChanged.connect(self.symTabChanged)
-		self.libTable.model().contentChanged.connect(self.libTableChanged)
+		if self.fupTabs:
+			self.fupTabs.sourceChanged.connect(self.fupChanged)
+		if self.kopTabs:
+			self.kopTabs.sourceChanged.connect(self.kopChanged)
+		if self.awlTabs:
+			self.awlTabs.sourceChanged.connect(self.codeChanged)
+			self.awlTabs.visibleLinesChanged.connect(self.visibleLinesChanged)
+			self.awlTabs.focusChanged.connect(self.textFocusChanged)
+			self.awlTabs.undoAvailableChanged.connect(self.undoAvailableChanged)
+			self.awlTabs.redoAvailableChanged.connect(self.redoAvailableChanged)
+			self.awlTabs.copyAvailableChanged.connect(self.copyAvailableChanged)
+			self.awlTabs.resizeFont.connect(self.__doSourceCodeFontResize)
+			self.awlTabs.validateDocument.connect(self.__doDocumentValidation)
+		if self.symTabs:
+			self.symTabs.sourceChanged.connect(self.symTabChanged)
+		if self.libTable:
+			self.libTable.model().contentChanged.connect(self.libTableChanged)
 
 		# Send an initial tab-change notification signal.
 		QTimer.singleShot(0,

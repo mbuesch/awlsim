@@ -846,6 +846,9 @@ class FupContextMenu(QMenu):
 class FupDrawWidget(QWidget):
 	"""FUP/FBD draw widget."""
 
+	# Signal: Something in the FUP diagram changed
+	diagramChanged = Signal()
+
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
 
@@ -870,6 +873,10 @@ class FupDrawWidget(QWidget):
 		self.resize(self.__grid.width * self.__cellWidth,
 			    self.__grid.height * self.__cellHeight)
 
+	def __contentChanged(self):
+		self.repaint()
+		self.diagramChanged.emit()
+
 	@property
 	def grid(self):
 		return self.__grid
@@ -884,15 +891,15 @@ class FupDrawWidget(QWidget):
 
 	def addElem(self, elem):
 		if self.__grid.placeElem(elem):
-			self.repaint()
+			self.__contentChanged()
 
 	def removeElem(self, gridX, gridY):
 		if self.__grid.removeElemAt(gridX, gridY):
-			self.repaint()
+			self.__contentChanged()
 
 	def moveElem(self, elem, toGridX, toGridY):
 		if self.__grid.moveElemTo(elem, toGridX, toGridY):
-			self.repaint()
+			self.__contentChanged()
 
 	def paintEvent(self, event=None):
 		grid = self.__grid

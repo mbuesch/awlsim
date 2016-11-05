@@ -666,7 +666,7 @@ class FupTabWidget(SourceTabWidget):
 
 	def addDiagram(self):
 		fupWidget = FupWidget(self)
-#XXX		symTabView.model().sourceChanged.connect(self.sourceChanged)
+		fupWidget.diagramChanged.connect(self.sourceChanged)
 #XXX		symTabView.focusChanged.connect(self.focusChanged)
 		index = self.addTab(fupWidget, "XXX")
 		self.setCurrentIndex(index)

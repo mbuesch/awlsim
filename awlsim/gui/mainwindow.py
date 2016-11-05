@@ -76,6 +76,8 @@ class MainWidget(QWidget):
 		self.dirty = False
 
 		self.projectWidget.codeChanged.connect(self.__somethingChanged)
+		self.projectWidget.fupChanged.connect(self.__somethingChanged)
+		self.projectWidget.kopChanged.connect(self.__somethingChanged)
 		self.projectWidget.symTabChanged.connect(self.__somethingChanged)
 		self.projectWidget.libTableChanged.connect(self.__somethingChanged)
 		self.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
