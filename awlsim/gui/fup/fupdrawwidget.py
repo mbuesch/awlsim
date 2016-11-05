@@ -93,9 +93,9 @@ class FupWire(FupBaseClass):
 		self.outConn = None		# The out-connection this is connected to
 
 		if idNum is None:
-			idNum = grid._getNextWireIdNum()
+			idNum = grid.getUnusedWireIdNum()
 		self.idNum = idNum		# The ID number of this wire
-		grid._addWire(self)
+		grid.addWire(self)
 
 		self.__wirePen = QPen(QColor("#000000"))
 		self.__wirePen.setWidth(2)
@@ -125,6 +125,7 @@ class FupWire(FupBaseClass):
 			conn.wire = None
 		self.connections.clear()
 		self.outConn = None
+		self.grid.removeWire(self)
 
 	def disconnect(self, conn):
 		"""Disconnect a connection from this wire.
@@ -137,6 +138,8 @@ class FupWire(FupBaseClass):
 		if len(self.connections) == 1:
 			# Only one connection left. Remove that, too.
 			self.disconnectAll()
+		if not self.connections and not self.outConn:
+			self.grid.removeWire(self)
 
 	def draw(self, painter):
 		if self.outConn is None:
@@ -167,7 +170,7 @@ class FupConn_factory(XmlFactory):
 				wireId = tag.getAttrInt("wire")
 				if pos < 0 or pos > 0xFFFF:
 					raise self.Error("Invalid <connection> pos.")
-				wire = self.elem.grid._getWireById(wireId)
+				wire = self.elem.grid.getWireById(wireId)
 				try:
 					if dirIn and not dirOut:
 						self.elem.inputs.extend(
@@ -626,6 +629,7 @@ class FupGrid_factory(XmlFactory):
 
 	def parser_endTag(self, tag):
 		if tag.name == "grid":
+			self.grid.removeOrphanWires()
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)
@@ -677,23 +681,48 @@ class FupGrid(object):
 		self.draggedElem = None
 		self.draggedConn = None
 
-	def _getNextWireIdNum(self):
+	def getUnusedWireIdNum(self):
+		"""Get an unused wire idNum.
+		"""
 		if self.wires:
 			return max(w.idNum for w in self.wires) + 1
 		return 0
 
-	def _addWire(self, wire):
+	def addWire(self, wire):
+		"""Add a wire to the grid.
+		Does nothing, if the wire does exist already.
+		"""
 		self.wires.add(wire)
 
-	def _getWireById(self, wireIdNum):
+	def removeWire(self, wire):
+		"""Remove a wire to the grid.
+		Does nothing, if the wire does not exist.
+		"""
+		with contextlib.suppress(KeyError):
+			self.wires.remove(wire)
+
+	def getWireById(self, wireIdNum):
+		"""Get a wire by its idNum.
+		"""
 		if wireIdNum >= 0:
 			for wire in self.wires:
 				if wire.idNum == wireIdNum:
 					return wire
 		return None
 
+	def removeOrphanWires(self):
+		"""Remove all unconnected wires.
+		"""
+		newWiresSet = set()
+		while self.wires:
+			wire = self.wires.pop()
+			if wire.connections:
+				newWiresSet.add(wire)
+		self.wires = newWiresSet
+
 	def renumberWires(self):
-		"""Re-assign the wire idNums."""
+		"""Re-assign all wire idNums.
+		"""
 		for i, wire in enumerate(self.wires):
 			wire.idNum = i
 
@@ -901,6 +930,18 @@ class FupDrawWidget(QWidget):
 		if self.__grid.moveElemTo(elem, toGridX, toGridY):
 			self.__contentChanged()
 
+	def establishWire(self, fromConn, toConn):
+		if fromConn and toConn:
+			if fromConn.canConnectTo(toConn):
+				with contextlib.suppress(ValueError):
+					fromConn.connectTo(toConn)
+					self.__contentChanged()
+
+	def disconnectConn(self, conn):
+		if conn:
+			conn.disconnect()
+			self.__contentChanged()
+
 	def paintEvent(self, event=None):
 		grid = self.__grid
 		if not grid:
@@ -958,10 +999,6 @@ class FupDrawWidget(QWidget):
 		p.translate(-prevX, -prevY)
 
 		# Draw the connection wires
-#XXX		for elem in grid.elems:
-#			for conn in elem.outputs:
-#				if conn.wire:
-#					conn.wire.draw(p)
 		for wire in grid.wires:
 			wire.draw(p)
 
@@ -1003,10 +1040,13 @@ class FupDrawWidget(QWidget):
 
 	def mousePressEvent(self, event):
 		x, y = event.x(), event.y()
+
+		# Get the element (if any)
 		elem, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		self.__contextMenu.gridX = gridX
 		self.__contextMenu.gridY = gridY
 
+		# Get the connection (if any)
 		conn = None
 		if elem:
 			area, areaIdx = elem.getAreaViaPixCoord(elemRelX, elemRelY)
@@ -1015,6 +1055,7 @@ class FupDrawWidget(QWidget):
 			elif area == FupElem.AREA_OUTPUT:
 				conn = elem.getOutput(areaIdx)
 
+		# Handle left button press
 		if event.button() == Qt.LeftButton:
 			if elem:
 				self.__grid.draggedElem = None
@@ -1026,14 +1067,16 @@ class FupDrawWidget(QWidget):
 				if conn and (not conn.wire or conn.OUT):
 					self.__grid.draggedConn = conn
 					self.repaint()
-		elif event.button() == Qt.MidButton:
-			if elem:
-				if conn:
-					conn.disconnect()
-					self.repaint()
-		elif event.button() == Qt.RightButton:
+
+		# Handle middle button press
+		if event.button() == Qt.MidButton:
+			self.disconnectConn(conn)
+
+		# Handle right button press
+		if event.button() == Qt.RightButton:
 			self.__grid.selectElem(elem)
 			self.repaint()
+			# Open the context menu
 			self.__contextMenu.enableInsert(elem is None)
 			self.__contextMenu.enableDelete(elem is not None)
 			self.__contextMenu.enableAddInput(False)
@@ -1054,9 +1097,7 @@ class FupDrawWidget(QWidget):
 			# Try to establish the dragged connection.
 			if elem:
 				targetConn = elem.getConnViaPixCoord(elemRelX, elemRelY)
-				if targetConn and draggedConn.canConnectTo(targetConn):
-					with contextlib.suppress(ValueError):
-						draggedConn.connectTo(targetConn)
+				self.establishWire(draggedConn, targetConn)
 			self.__grid.draggedConn = None
 			self.repaint()
 
