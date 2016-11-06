@@ -60,6 +60,18 @@ class FupElem_factory(XmlFactory):
 							x=x, y=y, nrInputs=0)
 						self.elem.grid = self.grid
 						return
+				elif elemType == "operand":
+					from awlsim.gui.fup.fup_elemoperand import\
+						FupElem_LOAD, FupElem_ASSIGN
+					subType = tag.getAttr("subtype")
+					elemClass = {
+						FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
+						FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
+					}.get(subType)
+					if elemClass:
+						self.elem = elemClass(x=x, y=y)
+						self.elem.grid = self.grid
+						return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
@@ -67,9 +79,6 @@ class FupElem_factory(XmlFactory):
 			if tag.name == "element":
 				if self.elem:
 					# Insert the element into the grid.
-					if not self.elem.inputs:
-						raise self.Error("<element> does "
-							"not have any inputs.")
 					if not all(self.elem.inputs) or\
 					   not all(self.elem.outputs):
 						raise self.Error("<element> connections "
@@ -89,6 +98,10 @@ class FupElem_factory(XmlFactory):
 class FupElem(FupBaseClass):
 	"""FUP/FBD element base class"""
 
+	# Element symbol
+	OP_SYM		= ""
+	OP_SYM_NAME	= ""	# XML ABI name
+
 	factory = FupElem_factory
 
 	# Element areas
@@ -107,6 +120,17 @@ class FupElem(FupBaseClass):
 
 		self.inputs = []	# The input FupConn-ections
 		self.outputs = []	# The output FupConn-ections
+
+		lineWidth = 2
+		self._outlinePen = QPen(QColor("#000000"))
+		self._outlinePen.setWidth(lineWidth)
+		self._outlineSelPen = QPen(QColor("#0000FF"))
+		self._outlineSelPen.setWidth(lineWidth)
+		self._connPen = QPen(QColor("#000000"))
+		self._connPen.setWidth(lineWidth)
+		self._connOpenPen = QPen(QColor("#DF6060"))
+		self._connOpenPen.setWidth(lineWidth)
+		self._bgBrush = QBrush(QColor("#FFFFFF"))
 
 	def breakConnections(self, breakInputs=True, breakOutputs=True):
 		"""Disconnect all connections.
@@ -180,6 +204,18 @@ class FupElem(FupBaseClass):
 	@property
 	def width(self):
 		return 1
+
+	@property
+	def _xpadding(self):
+		if self.grid:
+			return self.grid.cellPixWidth // 6
+		return 0
+
+	@property
+	def _ypadding(self):
+		if self.grid:
+			return self.grid.cellPixHeight // 8
+		return 0
 
 	@property
 	def selected(self):

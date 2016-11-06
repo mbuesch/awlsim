@@ -56,10 +56,10 @@ class FupContextMenu(QMenu):
 						     self.__addASSIGN)
 		self.addSeparator()
 		self.__actDel = self.addAction(getIcon("doc_close"),
-					       "Remove element", self.__del)
+					       "&Remove element", self.__del)
 		self.addSeparator()
 		self.__actAddInp = self.addAction(getIcon("new"),
-						  "Add input signal",
+						  "Add input &connection",
 						  self.__addInput)
 
 	def __addAND(self):
@@ -72,10 +72,10 @@ class FupContextMenu(QMenu):
 		self.add.emit(FupElem_XOR(self.gridX, self.gridY))
 
 	def __addLOAD(self):
-		pass#TODO
+		self.add.emit(FupElem_LOAD(self.gridX, self.gridY))
 
 	def __addASSIGN(self):
-		pass#TODO
+		self.add.emit(FupElem_ASSIGN(self.gridX, self.gridY))
 
 	def __del(self):
 		self.remove.emit(self.gridX, self.gridY)
@@ -85,6 +85,10 @@ class FupContextMenu(QMenu):
 
 	def enableInsert(self, en=True):
 		self.__actInsAND.setEnabled(en)
+		self.__actInsOR.setEnabled(en)
+		self.__actInsXOR.setEnabled(en)
+		self.__actInsLOAD.setEnabled(en)
+		self.__actInsASSIGN.setEnabled(en)
 
 	def enableDelete(self, en=True):
 		self.__actDel.setEnabled(en)
@@ -251,7 +255,7 @@ class FupDrawWidget(QWidget):
 			xAbs, yAbs = draggedConn.pixCoords
 			gridX, gridY = self.posToGridCoords(xAbs, yAbs)
 			mousePos = self.mapFromGlobal(QCursor.pos())
-			elem, _, _, elemRelX, elemRelY = self.posToElem(
+			elem, _, _, _, _, elemRelX, elemRelY = self.posToElem(
 					mousePos.x(), mousePos.y())
 			# Check if we hit a possible target connection
 			p.setPen(self.__dragConnPenOpen)
@@ -284,33 +288,35 @@ class FupDrawWidget(QWidget):
 	def posToElem(self, pixX, pixY):
 		"""Convert pixel coordinates to element and element coordinates.
 		Returns:
-		(FupElem, gridX, gridY, elemRelativePixX, elemRelativePixY)
+		(FupElem, FupConn, FupElem.AREA_xxx, gridX, gridY, elemRelativePixX, elemRelativePixY)
 		"""
+		# Get the grid coordinates.
 		gridX, gridY = self.posToGridCoords(pixX, pixY)
+		# Get the element (if any).
 		elem = self.__grid.getElemAt(gridX, gridY)
+		# Get the coordinates relative to the element.
 		elemRelX = pixX % self.__cellWidth
 		elemRelY = pixY % self.__cellHeight
 		if elem:
 			elemRelX += (gridX - elem.x) * self.__cellWidth
 			elemRelY += (gridY - elem.y) * self.__cellHeight
-		return elem, gridX, gridY, elemRelX, elemRelY
-
-	def mousePressEvent(self, event):
-		x, y = event.x(), event.y()
-
-		# Get the element (if any)
-		elem, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
-		self.__contextMenu.gridX = gridX
-		self.__contextMenu.gridY = gridY
-
-		# Get the connection (if any)
-		conn = None
+		# Get the connection and area (if any).
+		conn, area = None, None
 		if elem:
 			area, areaIdx = elem.getAreaViaPixCoord(elemRelX, elemRelY)
 			if area == FupElem.AREA_INPUT:
 				conn = elem.getInput(areaIdx)
 			elif area == FupElem.AREA_OUTPUT:
 				conn = elem.getOutput(areaIdx)
+		return elem, conn, area, gridX, gridY, elemRelX, elemRelY
+
+	def mousePressEvent(self, event):
+		x, y = event.x(), event.y()
+
+		# Get the element (if any)
+		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+		self.__contextMenu.gridX = gridX
+		self.__contextMenu.gridY = gridY
 
 		# Handle left button press
 		if event.button() == Qt.LeftButton:
@@ -354,7 +360,7 @@ class FupDrawWidget(QWidget):
 
 	def mouseReleaseEvent(self, event):
 		x, y = event.x(), event.y()
-		elem, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 
 		# Handle end of multi-selection
 		if self.__selectStartPix:
@@ -419,3 +425,30 @@ class FupDrawWidget(QWidget):
 			self.repaint()
 
 		QWidget.mouseMoveEvent(self, event)
+
+	def mouseDoubleClickEvent(self, event):
+		x, y = event.x(), event.y()
+		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+
+		# Handle left button double click
+		if event.button() == Qt.LeftButton:
+			if elem and conn and not conn.isConnected:
+				# Double click on an unconnected IN or OUT connection
+				# adds a LOAD or ASSIGN operator element.
+				connGridX, connGridY = self.posToGridCoords(*conn.pixCoords)
+				newElem, newConn = None, None
+				if conn.IN and not conn.OUT:
+					newElem = FupElem_LOAD(connGridX - 1, connGridY)
+					if newElem.outputs:
+						newConn = newElem.outputs[0]
+				elif conn.OUT and not conn.IN:
+					newElem = FupElem_ASSIGN(connGridX + 1, connGridY)
+					if newElem.inputs:
+						newConn = newElem.inputs[0]
+				if newElem and newConn:
+					self.addElem(newElem)
+					with contextlib.suppress(ValueError):
+						newConn.connectTo(conn)
+					self.repaint()
+
+		QWidget.mouseDoubleClickEvent(self, event)

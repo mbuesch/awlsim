@@ -34,8 +34,9 @@ class FupConn_factory(XmlFactory):
 		XmlFactory.parser_open(self)
 
 	def parser_beginTag(self, tag):
-		if not self.inConn:
+		if not self.inConn and self.elem:
 			if tag.name == "connection":
+				self.inConn = True
 				pos = tag.getAttrInt("pos")
 				dirIn = tag.getAttrInt("dir_in")
 				dirOut = tag.getAttrInt("dir_out")
@@ -125,6 +126,12 @@ class FupConn(FupBaseClass):
 			xRel, yRel = self.relPixCoords
 			return xAbs + xRel, yAbs + yRel
 		raise IndexError
+
+	@property
+	def isConnected(self):
+		"""Returns True, if this connection is connected to a wire.
+		"""
+		return self.wire is not None
 
 	def canConnectTo(self, other):
 		"""Check if this connection can connect to another connection.

@@ -52,9 +52,6 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 class FupElem_BOOLEAN(FupElem):
 	"""Boolean FUP/FBD element base class"""
 
-	OP_SYM		= ""
-	OP_SYM_NAME	= ""	# XML ABI name
-
 	factory = FupElem_BOOLEAN_factory
 
 	def __init__(self, x, y, nrInputs=2):
@@ -64,25 +61,13 @@ class FupElem_BOOLEAN(FupElem):
 				for i in range(nrInputs) ]
 		self.outputs = [ FupConnOut(self) ]
 
-		lineWidth = 2
-		self.__outlinePen = QPen(QColor("#000000"))
-		self.__outlinePen.setWidth(lineWidth)
-		self.__outlineSelPen = QPen(QColor("#0000FF"))
-		self.__outlineSelPen.setWidth(lineWidth)
-		self.__connPen = QPen(QColor("#000000"))
-		self.__connPen.setWidth(lineWidth)
-		self.__connOpenPen = QPen(QColor("#DF6060"))
-		self.__connOpenPen.setWidth(lineWidth)
-		self.__bgBrush = QBrush(QColor("#FFFFFF"))
-
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		if self.grid:
 			cellWidth = self.grid.cellPixWidth
 			cellHeight = self.grid.cellPixHeight
 			totalWidth = cellWidth
 			totalHeight = cellHeight * self.height
-			xpad = self.__xpadding
-			ypad = self.__ypadding
+			xpad, ypad = self._xpadding, self._ypadding
 			if pixelY > ypad and pixelY < totalHeight - ypad:
 				if pixelX < xpad:
 					# inputs
@@ -118,48 +103,34 @@ class FupElem_BOOLEAN(FupElem):
 	def height(self):
 		return len(self.inputs)
 
-	@property
-	def __xpadding(self):
-		if self.grid:
-			return self.grid.cellPixWidth // 6
-		return 0
-
-	@property
-	def __ypadding(self):
-		if self.grid:
-			return self.grid.cellPixHeight // 8
-		return 0
-
 	def draw(self, painter):
 		if not self.grid:
 			return
 		cellWidth = self.grid.cellPixWidth
 		cellHeight = self.grid.cellPixHeight
-
-		xpad = self.__xpadding
-		ypad = self.__ypadding
-
+		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
 
 		# Draw inputs
 		for i, conn in enumerate(self.inputs):
 			y = (i * cellHeight) + (cellHeight // 2)
-			painter.setPen(self.__connPen if conn.wire
-				       else self.__connOpenPen)
+			painter.setPen(self._connPen if conn.wire
+				       else self._connOpenPen)
 			painter.drawLine(0, y, xpad, y)
 
 		# Draw output
 		y = elemHeight - (cellHeight // 2)
-		painter.setPen(self.__connPen if self.outputs[0].wire
-			       else self.__connOpenPen)
+		painter.setPen(self._connPen
+			       if len(self.outputs) and self.outputs[0].wire
+			       else self._connOpenPen)
 		painter.drawLine(cellWidth - xpad, y,
 				 cellWidth, y)
 
 		# Draw body
-		painter.setPen(self.__outlineSelPen if self.selected
-			       else self.__outlinePen)
-		painter.setBrush(self.__bgBrush)
+		painter.setPen(self._outlineSelPen if self.selected
+			       else self._outlinePen)
+		painter.setBrush(self._bgBrush)
 		polygon = QPolygon((QPoint(xpad, ypad),
 				    QPoint(elemWidth - xpad, ypad),
 				    QPoint(elemWidth - xpad, elemHeight - ypad),
