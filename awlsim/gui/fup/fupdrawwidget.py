@@ -423,6 +423,15 @@ class FupElem(FupBaseClass):
 		"""
 		raise IndexError
 
+	def isInGridRect(self, gridX0, gridY0, gridX1, gridY1):
+		"""Returns true, if this element is placed under
+		the specified grid rectangle.
+		"""
+		x0, y0 = min(gridX0, gridX1), min(gridY0, gridY1)
+		x1, y1 = max(gridX0, gridX1), max(gridY0, gridY1)
+		return self.x >= x0 and self.y >= y0 and\
+		       self.x + self.width - 1 <= x1 and self.y + self.height - 1 <= y1
+
 	@property
 	def height(self):
 		return 1
@@ -669,8 +678,6 @@ class FupGrid(object):
 		self.wires = set()	# The FupConnIn/Out()s in this grid
 
 		self.selectedElems = set()
-		self.draggedElem = None
-		self.draggedConn = None
 
 	def clear(self):
 		for wire in self.wires:
@@ -678,8 +685,6 @@ class FupGrid(object):
 		self.wires.clear()
 		self.elems = []
 		self.selectedElems.clear()
-		self.draggedElem = None
-		self.draggedConn = None
 
 	def getUnusedWireIdNum(self):
 		"""Get an unused wire idNum.
@@ -738,14 +743,14 @@ class FupGrid(object):
 			return self.__drawWidget.cellPixHeight
 		return 0
 
-	def __haveCollision(self, x, y, height, excludeElem=None):
+	def __haveCollision(self, x, y, height, excludeElems=set()):
 		if x < 0 or x >= self.width or\
 		   y < 0 or y >= self.height:
 			# Position is not on grid.
 			return True
 		for yy in range(y, y + height):
 			elem = self.getElemAt(x, yy)
-			if elem is excludeElem:
+			if elem in excludeElems:
 				continue # Element is ignored.
 			if elem:
 				return True # Collision with other element.
@@ -758,8 +763,6 @@ class FupGrid(object):
 		# Add the element.
 		self.elems.append(elem)
 		elem.grid = self
-		self.deselectAll()
-		self.selectElem(elem)
 		return True
 
 	def removeElem(self, elem):
@@ -776,15 +779,31 @@ class FupGrid(object):
 			return True
 		return False
 
-	def moveElemTo(self, elem, toX, toY):
-		deltaX, deltaY = elem.x - toX, elem.y - toY
-
+	def moveElemTo(self, elem, toX, toY,
+		       relativeCoords=False,
+		       checkOnly=False,
+		       excludeCheckElems=set()):
+		"""Move elem to position (toX, toY).
+		If relativeCoords=True, the (toX, toY) coodinates are relative
+		to the current position.
+		If checkOnly=True, the actual move is not performed.
+		All elements included in excludeCheckElems are excluded from
+		the collision check.
+		"""
+		if relativeCoords:
+			toX, toY = elem.x + toX, elem.y + toY
+		if toX == elem.x and toY == elem.y:
+			return True # No move needed
+		# Check collision
+		excludeElems = excludeCheckElems.copy()
+		excludeElems.add(elem) # Can't collide with ourselves.
 		if self.__haveCollision(toX, toY, elem.height,
-					excludeElem=elem):
-			return False
+					excludeElems=excludeElems):
+			return False # Collision. Cannot move.
 		# Move the element.
-		elem.x = toX
-		elem.y = toY
+		if not checkOnly:
+			elem.x = toX
+			elem.y = toY
 		return True
 
 	def getElemAt(self, x, y):
@@ -799,6 +818,12 @@ class FupGrid(object):
 	def haveElemAt(self, x, y):
 		return self.getElemAt(x, y) is not None
 
+	def getElemsInRect(self, x0, y0, x1, y1):
+		"""Get all elements placed within the given grid rectangle.
+		"""
+		return (elem for elem in self.elems
+			if elem.isInGridRect(x0, y0, x1, y1))
+
 	def selectElem(self, elem):
 		if elem:
 			self.selectedElems.add(elem)
@@ -809,6 +834,14 @@ class FupGrid(object):
 			self.selectElem(elem)
 		else:
 			self.deselectAll()
+
+	def selectElemsInRect(self, x0, y0, x1, y1, clear=False):
+		"""Select all elements within the given grid rectangle.
+		"""
+		if clear:
+			self.deselectAll()
+		for elem in self.getElemsInRect(x0, y0, x1, y1):
+			self.selectElem(elem)
 
 	def deselectElem(self, elem):
 		pass#TODO
@@ -871,7 +904,7 @@ class FupContextMenu(QMenu):
 
 	def enableAddInput(self, en=True):
 		self.__actAddInp.setEnabled(en)
-		
+
 class FupDrawWidget(QWidget):
 	"""FUP/FBD draw widget."""
 
@@ -893,6 +926,18 @@ class FupDrawWidget(QWidget):
 		self.__dragConnPenOpen.setWidth(4)
 		self.__dragConnPenClosed = QPen(QColor("#000000"))
 		self.__dragConnPenClosed.setWidth(4)
+		self.__selRectPen = QPen(QColor("#0000FF"))
+		self.__selRectPen.setWidth(3)
+
+		# Start and end pixel coordinates of a selection rectangle.
+		self.__selectStartPix = None
+		self.__selectEndPix = None
+
+		# Start grid coordinates of an element drag.
+		self.__dragStart = None
+
+		# The dragged connection.
+		self.__draggedConn = None
 
 		self.__cellHeight = 20
 		self.__cellWidth = 60
@@ -920,15 +965,26 @@ class FupDrawWidget(QWidget):
 
 	def addElem(self, elem):
 		if self.__grid.placeElem(elem):
+			self.__grid.deselectAll()
+			self.__grid.selectElem(elem)
 			self.__contentChanged()
 
 	def removeElem(self, gridX, gridY):
 		if self.__grid.removeElemAt(gridX, gridY):
 			self.__contentChanged()
 
-	def moveElem(self, elem, toGridX, toGridY):
-		if self.__grid.moveElemTo(elem, toGridX, toGridY):
-			self.__contentChanged()
+	def moveElem(self, elem, toGridX, toGridY,
+		     relativeCoords=False,
+		     checkOnly=False,
+		     excludeCheckElems=set()):
+		if self.__grid.moveElemTo(elem, toGridX, toGridY,
+					  relativeCoords=relativeCoords,
+					  checkOnly=checkOnly,
+					  excludeCheckElems=excludeCheckElems):
+			if not checkOnly:
+				self.__contentChanged()
+			return True
+		return False
 
 	def establishWire(self, fromConn, toConn):
 		if fromConn and toConn:
@@ -1003,7 +1059,7 @@ class FupDrawWidget(QWidget):
 			wire.draw(p)
 
 		# Draw the dragged connection
-		draggedConn = grid.draggedConn
+		draggedConn = self.__draggedConn
 		if draggedConn and draggedConn.elem:
 			xAbs, yAbs = draggedConn.pixCoords
 			gridX, gridY = self.posToGridCoords(xAbs, yAbs)
@@ -1017,6 +1073,20 @@ class FupDrawWidget(QWidget):
 				if targetConn and draggedConn.canConnectTo(targetConn):
 					p.setPen(self.__dragConnPenClosed)
 			p.drawLine(xAbs, yAbs, mousePos.x(), mousePos.y())
+
+		# Draw selection rectangle
+		if self.__selectStartPix and self.__selectEndPix:
+			xAbs0 = min(self.__selectStartPix[0], self.__selectEndPix[0])
+			yAbs0 = min(self.__selectStartPix[1], self.__selectEndPix[1])
+			xAbs1 = max(self.__selectStartPix[0], self.__selectEndPix[0])
+			yAbs1 = max(self.__selectStartPix[1], self.__selectEndPix[1])
+			selWidth, selHeight = xAbs1 - xAbs0, yAbs1 - yAbs0
+			r = 2
+			p.setBrush(Qt.NoBrush)
+			p.setPen(self.__selRectPen)
+			p.drawRoundedRect(xAbs0, yAbs0,
+					  selWidth, selHeight,
+					  r, r)
 
 	def posToGridCoords(self, pixX, pixY):
 		"""Convert pixel coordinates to grid coordinates.
@@ -1058,15 +1128,24 @@ class FupDrawWidget(QWidget):
 		# Handle left button press
 		if event.button() == Qt.LeftButton:
 			if elem:
-				self.__grid.draggedElem = None
 				if area == FupElem.AREA_BODY:
-					self.__grid.deselectAll()
-					self.__grid.selectElem(elem)
-					self.__grid.draggedElem = elem
-					self.repaint()
+					# Start dragging of the selected element(s).
+					self.__dragStart = (gridX, gridY)
+					if not elem.selected:
+						# Select this element.
+						self.__grid.deselectAll()
+						self.__grid.selectElem(elem)
+						self.repaint()
 				if conn and (not conn.wire or conn.OUT):
-					self.__grid.draggedConn = conn
+					# Start dragging of the selected connection.
+					self.__draggedConn = conn
 					self.repaint()
+			else:
+				# Start a multi-selection
+				self.__grid.deselectAll()
+				self.__selectStartPix = (x, y)
+				self.__selectEndPix = None
+				self.repaint()
 
 		# Handle middle button press
 		if event.button() == Qt.MidButton:
@@ -1090,15 +1169,23 @@ class FupDrawWidget(QWidget):
 		x, y = event.x(), event.y()
 		elem, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 
-		self.__grid.draggedElem = None
+		# Handle end of multi-selection
+		if self.__selectStartPix:
+			self.__selectStartPix = None
+			self.__selectEndPix = None
+			self.repaint()
 
-		draggedConn = self.__grid.draggedConn
+		# Handle end of element dragging
+		self.__dragStart = None
+
+		# Handle end of connection dragging
+		draggedConn = self.__draggedConn
 		if draggedConn:
 			# Try to establish the dragged connection.
 			if elem:
 				targetConn = elem.getConnViaPixCoord(elemRelX, elemRelY)
 				self.establishWire(draggedConn, targetConn)
-			self.__grid.draggedConn = None
+			self.__draggedConn = None
 			self.repaint()
 
 		QWidget.mouseReleaseEvent(self, event)
@@ -1107,11 +1194,41 @@ class FupDrawWidget(QWidget):
 		x, y = event.x(), event.y()
 		gridX, gridY = self.posToGridCoords(x, y)
 
-		#TODO multiple selection
-		if self.__grid.draggedElem:
-			self.moveElem(self.__grid.draggedElem, gridX, gridY)
+		# Handle multi-selection
+		if self.__selectStartPix:
+			self.__selectEndPix = (x, y)
+			# Mark all elements within the rectangle as selected.
+			startGridX, startGridY = self.posToGridCoords(*self.__selectStartPix)
+			self.__grid.selectElemsInRect(startGridX, startGridY,
+						      gridX, gridY, clear=True)
+			self.repaint()
 
-		if self.__grid.draggedConn:
+		# Handle element dragging
+		if self.__dragStart:
+			deltaX, deltaY = gridX - self.__dragStart[0],\
+					 gridY - self.__dragStart[1]
+			if deltaX or deltaY:
+				selectedElems = self.__grid.selectedElems
+				# First check if we can move all elements
+				allOk = True
+				for elem in selectedElems:
+					if not self.moveElem(elem, deltaX, deltaY,
+							     relativeCoords=True,
+							     checkOnly=True,
+							     excludeCheckElems=selectedElems):
+						allOk = False
+						break
+				# If everything is Ok, move all elements.
+				if allOk:
+					for elem in selectedElems:
+						self.moveElem(elem, deltaX, deltaY,
+							      relativeCoords=True,
+							      checkOnly=False,
+							      excludeCheckElems=selectedElems)
+					self.__dragStart = (gridX, gridY)
+
+		# Handle connection dragging
+		if self.__draggedConn:
 			self.repaint()
 
 		QWidget.mouseMoveEvent(self, event)
