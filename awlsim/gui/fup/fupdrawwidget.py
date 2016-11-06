@@ -33,7 +33,7 @@ class FupContextMenu(QMenu):
 	"""FUP/FBD draw widget context menu."""
 
 	add = Signal(FupElem)
-	remove = Signal(int, int)
+	remove = Signal()
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
@@ -78,7 +78,7 @@ class FupContextMenu(QMenu):
 		self.add.emit(FupElem_ASSIGN(self.gridX, self.gridY))
 
 	def __del(self):
-		self.remove.emit(self.gridX, self.gridY)
+		self.remove.emit()
 
 	def __addInput(self):
 		pass
@@ -105,9 +105,11 @@ class FupDrawWidget(QWidget):
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
 
+		self.__repaintBlocked = Blocker()
+
 		self.__contextMenu = FupContextMenu(self)
 		self.__contextMenu.add.connect(self.addElem)
-		self.__contextMenu.remove.connect(self.removeElem)
+		self.__contextMenu.remove.connect(self.removeSelElems)
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
@@ -137,6 +139,11 @@ class FupDrawWidget(QWidget):
 
 		self.resize(self.__grid.width * self.__cellWidth,
 			    self.__grid.height * self.__cellHeight)
+		self.setFocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus)
+
+	def repaint(self):
+		if not self.__repaintBlocked:
+			QWidget.repaint(self)
 
 	def __contentChanged(self):
 		self.repaint()
@@ -160,9 +167,15 @@ class FupDrawWidget(QWidget):
 			self.__grid.selectElem(elem)
 			self.__contentChanged()
 
-	def removeElem(self, gridX, gridY):
-		if self.__grid.removeElemAt(gridX, gridY):
-			self.__contentChanged()
+	def removeElem(self, elem):
+		self.__grid.removeElem(elem)
+		self.__contentChanged()
+
+	def removeSelElems(self):
+		with self.__repaintBlocked:
+			for elem in self.__grid.selectedElems.copy():
+				self.removeElem(elem)
+		self.__contentChanged()
 
 	def moveElem(self, elem, toGridX, toGridY,
 		     relativeCoords=False,
@@ -349,6 +362,9 @@ class FupDrawWidget(QWidget):
 
 		# Handle right button press
 		if event.button() == Qt.RightButton:
+			if elem and not elem.selected:
+				if not (modifiers & Qt.ControlModifier):
+					self.__grid.deselectAll()
 			self.__grid.selectElem(elem)
 			self.repaint()
 			# Open the context menu
@@ -406,24 +422,26 @@ class FupDrawWidget(QWidget):
 			deltaX, deltaY = gridX - self.__dragStart[0],\
 					 gridY - self.__dragStart[1]
 			if deltaX or deltaY:
-				selectedElems = self.__grid.selectedElems
-				# First check if we can move all elements
-				allOk = True
-				for elem in selectedElems:
-					if not self.moveElem(elem, deltaX, deltaY,
-							     relativeCoords=True,
-							     checkOnly=True,
-							     excludeCheckElems=selectedElems):
-						allOk = False
-						break
-				# If everything is Ok, move all elements.
-				if allOk:
+				with self.__repaintBlocked:
+					selectedElems = self.__grid.selectedElems
+					# First check if we can move all elements
+					allOk = True
 					for elem in selectedElems:
-						self.moveElem(elem, deltaX, deltaY,
-							      relativeCoords=True,
-							      checkOnly=False,
-							      excludeCheckElems=selectedElems)
-					self.__dragStart = (gridX, gridY)
+						if not self.moveElem(elem, deltaX, deltaY,
+								     relativeCoords=True,
+								     checkOnly=True,
+								     excludeCheckElems=selectedElems):
+							allOk = False
+							break
+					# If everything is Ok, move all elements.
+					if allOk:
+						for elem in selectedElems:
+							self.moveElem(elem, deltaX, deltaY,
+								      relativeCoords=True,
+								      checkOnly=False,
+								      excludeCheckElems=selectedElems)
+						self.__dragStart = (gridX, gridY)
+				self.repaint()
 
 		# Handle connection dragging
 		if self.__draggedConn:
@@ -457,3 +475,20 @@ class FupDrawWidget(QWidget):
 					self.repaint()
 
 		QWidget.mouseDoubleClickEvent(self, event)
+
+	def keyPressEvent(self, event):
+		if event.matches(QKeySequence.Delete):
+			self.removeSelElems()
+		elif event.matches(QKeySequence.Cancel) or\
+		     event.matches(QKeySequence.Deselect):
+			self.__grid.deselectAll()
+			self.repaint()
+		elif event.matches(QKeySequence.SelectAll):
+			for elem in self.__grid.elems:
+				self.__grid.selectElem(elem)
+			self.repaint()
+
+		QWidget.keyPressEvent(self, event)
+
+	def keyReleaseEvent(self, event):
+		QWidget.keyReleaseEvent(self, event)

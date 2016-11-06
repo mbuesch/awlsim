@@ -181,13 +181,6 @@ class FupGrid(object):
 		with contextlib.suppress(ValueError):
 			self.selectedElems.remove(elem)
 
-	def removeElemAt(self, x, y):
-		elem = self.getElemAt(x, y)
-		if elem:
-			self.removeElem(elem)
-			return True
-		return False
-
 	def moveElemTo(self, elem, toX, toY,
 		       relativeCoords=False,
 		       checkOnly=False,
