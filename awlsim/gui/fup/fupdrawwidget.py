@@ -312,6 +312,7 @@ class FupDrawWidget(QWidget):
 
 	def mousePressEvent(self, event):
 		x, y = event.x(), event.y()
+		modifiers = QGuiApplication.keyboardModifiers()
 
 		# Get the element (if any)
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
@@ -326,7 +327,8 @@ class FupDrawWidget(QWidget):
 					self.__dragStart = (gridX, gridY)
 					if not elem.selected:
 						# Select this element.
-						self.__grid.deselectAll()
+						if not (modifiers & Qt.ControlModifier):
+							self.__grid.deselectAll()
 						self.__grid.selectElem(elem)
 						self.repaint()
 				if conn and (not conn.wire or conn.OUT):
@@ -335,7 +337,8 @@ class FupDrawWidget(QWidget):
 					self.repaint()
 			else:
 				# Start a multi-selection
-				self.__grid.deselectAll()
+				if not (modifiers & Qt.ControlModifier):
+					self.__grid.deselectAll()
 				self.__selectStartPix = (x, y)
 				self.__selectEndPix = None
 				self.repaint()
@@ -385,6 +388,7 @@ class FupDrawWidget(QWidget):
 
 	def mouseMoveEvent(self, event):
 		x, y = event.x(), event.y()
+		modifiers = QGuiApplication.keyboardModifiers()
 		gridX, gridY = self.posToGridCoords(x, y)
 
 		# Handle multi-selection
@@ -392,8 +396,9 @@ class FupDrawWidget(QWidget):
 			self.__selectEndPix = (x, y)
 			# Mark all elements within the rectangle as selected.
 			startGridX, startGridY = self.posToGridCoords(*self.__selectStartPix)
+			clear = not (modifiers & Qt.ControlModifier)
 			self.__grid.selectElemsInRect(startGridX, startGridY,
-						      gridX, gridY, clear=True)
+						      gridX, gridY, clear=clear)
 			self.repaint()
 
 		# Handle element dragging
