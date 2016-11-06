@@ -47,10 +47,16 @@ class FupElem_factory(XmlFactory):
 				x = tag.getAttrInt("x")
 				y = tag.getAttrInt("y")
 				if elemType == "boolean":
-					from awlsim.gui.fup.fup_elembool import FupElem_AND
+					from awlsim.gui.fup.fup_elembool import\
+						FupElem_AND, FupElem_OR, FupElem_XOR
 					subType = tag.getAttr("subtype")
-					if subType == FupElem_AND.OP_SYM_NAME:
-						self.elem = FupElem_AND(
+					elemClass = {
+						FupElem_AND.OP_SYM_NAME	: FupElem_AND,
+						FupElem_OR.OP_SYM_NAME	: FupElem_OR,
+						FupElem_XOR.OP_SYM_NAME	: FupElem_XOR,
+					}.get(subType)
+					if elemClass:
+						self.elem = elemClass(
 							x=x, y=y, nrInputs=0)
 						self.elem.grid = self.grid
 						return

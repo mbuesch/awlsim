@@ -168,7 +168,7 @@ class FupElem_BOOLEAN(FupElem):
 
 		# Draw symbol text
 		font = painter.font()
-		font.setPointSize(16)
+		font.setPointSize(10)
 		painter.setFont(font)
 		painter.drawText(0, 5,
 				 elemWidth, elemHeight - 5,
@@ -183,3 +183,15 @@ class FupElem_AND(FupElem_BOOLEAN):
 
 	OP_SYM		= "&"
 	OP_SYM_NAME	= "and"	# XML ABI name
+
+class FupElem_OR(FupElem_BOOLEAN):
+	"""OR FUP/FBD element"""
+
+	OP_SYM		= ">=1"
+	OP_SYM_NAME	= "or"	# XML ABI name
+
+class FupElem_XOR(FupElem_BOOLEAN):
+	"""XOR FUP/FBD element"""
+
+	OP_SYM		= "X"
+	OP_SYM_NAME	= "xor"	# XML ABI name

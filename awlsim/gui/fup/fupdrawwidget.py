@@ -43,6 +43,10 @@ class FupContextMenu(QMenu):
 
 		self.__actInsAND = self.addAction(getIcon("doc_new"),
 						  "Insert &AND", self.__addAND)
+		self.__actInsOR = self.addAction(getIcon("doc_new"),
+						 "Insert &OR", self.__addOR)
+		self.__actInsXOR = self.addAction(getIcon("doc_new"),
+						  "Insert &XOR", self.__addXOR)
 		self.addSeparator()
 		self.__actInsLOAD = self.addAction(getIcon("doc_new"),
 						   "Insert &LOAD operand",
@@ -60,6 +64,12 @@ class FupContextMenu(QMenu):
 
 	def __addAND(self):
 		self.add.emit(FupElem_AND(self.gridX, self.gridY))
+
+	def __addOR(self):
+		self.add.emit(FupElem_OR(self.gridX, self.gridY))
+
+	def __addXOR(self):
+		self.add.emit(FupElem_XOR(self.gridX, self.gridY))
 
 	def __addLOAD(self):
 		pass#TODO
