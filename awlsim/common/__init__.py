@@ -1,12 +1,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.common.compat import *
 
-import awlsim.cython_helper as __cython
-
-if __cython.shouldUseCython(__name__):				#@nocy
-#if True:							#@cy
-	try:
-		from awlsim_cython.common.all_modules import *	#<no-cython-patch
-	except ImportError as e:
-		__cython.cythonImportError(__name__, str(e))
-if not __cython.shouldUseCython(__name__):			#@nocy
-	from awlsim.common.all_modules import *			#@nocy
+from awlsim.common.blocker import *
+from awlsim.common.cpuspecs import *
+from awlsim.common.datatypehelpers import *
+from awlsim.common.debug import *
+from awlsim.common.enumeration import *
+from awlsim.common.exceptions import *
+from awlsim.common.immutable import *
+from awlsim.common.net import *
+from awlsim.common.project import *
+from awlsim.common.subprocess import *
+from awlsim.common.templates import *
+from awlsim.common.util import *
+from awlsim.common.version import *
+from awlsim.common.wordpacker import *

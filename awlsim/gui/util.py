@@ -20,11 +20,10 @@
 #
 
 from __future__ import division, absolute_import, print_function, unicode_literals
-from awlsim.common.compat import *
 
-from awlsim.common import *
-from awlsim.coreclient.client import *
-import awlsim.cython_helper
+from awlsim_loader.common import *
+from awlsim_loader.coreclient import *
+import awlsim_loader.cython_helper as cython_helper
 
 import sys
 import traceback
@@ -35,7 +34,7 @@ if isPyPy or isJython:
 	printError("Please use CPython 2.7 or CPython 3.x")
 	sys.exit(1)
 
-if awlsim.cython_helper.shouldUseCython():
+if cython_helper.shouldUseCython():
 	print("*** Using accelerated CYTHON core "
 	      "(AWLSIM_CYTHON environment variable is set)")
 

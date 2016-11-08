@@ -1,12 +1,9 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
+from awlsim.common.compat import *
 
-import awlsim.cython_helper as __cython
+from awlsim.library.iec.iec import *
 
-if __cython.shouldUseCython(__name__):					#@nocy
-#if True:								#@cy
-	try:
-		from awlsim_cython.library.iec.all_modules import *	#<no-cython-patch
-	except ImportError as e:
-		__cython.cythonImportError(__name__, str(e))
-if not __cython.shouldUseCython(__name__):				#@nocy
-	from awlsim.library.iec.all_modules import *			#@nocy
+from awlsim.library.iec.fc4_delete import *
+from awlsim.library.iec.fc9_eq_dt import *
+from awlsim.library.iec.fc12_ge_dt import *
+from awlsim.library.iec.fc21_len import *

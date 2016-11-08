@@ -28,7 +28,7 @@ def importModule(moduleName):
 	Returns the module object.
 	May raise importError."""
 
-	import awlsim.cython_helper as cython_helper
+	import awlsim_loader.cython_helper as cython_helper
 	try:
 		import importlib
 	except ImportError as e:

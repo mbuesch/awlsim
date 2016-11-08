@@ -21,16 +21,15 @@
 #
 
 from __future__ import division, absolute_import, print_function, unicode_literals
-from awlsim.common.compat import *
 
 import sys
 import os
 import time
 import getopt
 
-from awlsim.common import *
-from awlsim.coreserver.server import *
-from awlsim.coreclient.client import *
+from awlsim_loader.common import *
+from awlsim_loader.coreserver import *
+from awlsim_loader.coreclient import *
 
 
 class LinuxCNC_NotRunning(Exception):

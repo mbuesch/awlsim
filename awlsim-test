@@ -28,9 +28,10 @@ import getopt
 import traceback
 import signal
 
-from awlsim.common import *
-from awlsim.core import *
-from awlsim.coreclient.client import *
+from awlsim_loader.common import *
+from awlsim_loader.core import *
+from awlsim_loader.coreclient import *
+import awlsim_loader.cython_helper as cython_helper
 
 
 class TestAwlSimClient(AwlSimClient):
@@ -159,8 +160,7 @@ def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
 def run(inputFile):
 	s = None
 	try:
-		import awlsim.cython_helper
-		if awlsim.cython_helper.shouldUseCython():
+		if cython_helper.shouldUseCython():
 			writeStdout("*** Using accelerated CYTHON core "
 				    "(AWLSIM_CYTHON environment variable is set)\n")
 
@@ -252,8 +252,7 @@ def runWithServerBackend(inputFile):
 	client = None
 	tunnel = None
 	try:
-		import awlsim.cython_helper
-		if awlsim.cython_helper.shouldUseCython():
+		if cython_helper.shouldUseCython():
 			printError("The accelerated CYTHON core currently is incompatible "
 				   "with the backend server. Please remove the "
 				   "AWLSIM_CYTHON environment variable.")
