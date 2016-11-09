@@ -428,6 +428,7 @@ build_cython2()
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
 	echo "=== Building awlsim with python2"
+	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
 	AWLSIM_CYTHON_PARALLEL=1 \
 	nice -n 5 \
 	python2 ./setup.py build || die "'python2 ./setup.py build' failed"
@@ -442,6 +443,7 @@ build_cython3()
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
 	echo "=== Building awlsim with python3"
+	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
 	AWLSIM_CYTHON_PARALLEL=1 \
 	nice -n 5 \
 	python3 ./setup.py build || die "'python3 ./setup.py build' failed"
