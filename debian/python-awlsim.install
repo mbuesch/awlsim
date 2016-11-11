@@ -4,3 +4,4 @@ debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim/core usr/lib/py
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim/coreclient usr/lib/python2.7/dist-packages/awlsim
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim/coreserver usr/lib/python2.7/dist-packages/awlsim
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim/library usr/lib/python2.7/dist-packages/awlsim
+debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_loader usr/lib/python2.7/dist-packages
