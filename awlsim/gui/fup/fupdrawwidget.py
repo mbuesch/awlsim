@@ -249,13 +249,15 @@ class FupDrawWidget(QWidget):
 				   "* Left-drag to connect inputs and outputs\n"
 				   "* Middle-click to delete connections and wires")
 
-		# Draw the elements
+		# Draw the elements. First unselected, then selected.
 		prevX, prevY = 0, 0
-		for elem in grid.elems:
-			xAbs, yAbs = elem.pixCoords
-			p.translate(xAbs - prevX, yAbs - prevY)
-			prevX, prevY = xAbs, yAbs
-			elem.draw(p)
+		for selected in (False, True):
+			for elem in grid.elems:
+				if elem.selected == selected:
+					xAbs, yAbs = elem.pixCoords
+					p.translate(xAbs - prevX, yAbs - prevY)
+					prevX, prevY = xAbs, yAbs
+					elem.draw(p)
 		p.translate(-prevX, -prevY)
 
 		# Draw the connection wires

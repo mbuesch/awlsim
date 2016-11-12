@@ -122,6 +122,8 @@ class FupElem(FupBaseClass):
 		self.outputs = []	# The output FupConn-ections
 
 		lineWidth = 2
+		self._noPen = QPen(Qt.NoPen)
+		self._noPen.setWidth(0)
 		self._outlinePen = QPen(QColor("#000000"))
 		self._outlinePen.setWidth(lineWidth)
 		self._outlineSelPen = QPen(QColor("#0000FF"))
@@ -131,6 +133,9 @@ class FupElem(FupBaseClass):
 		self._connOpenPen = QPen(QColor("#DF6060"))
 		self._connOpenPen.setWidth(lineWidth)
 		self._bgBrush = QBrush(QColor("#FFFFFF"))
+		self._bgSelBrush = QBrush(QColor("#BBBBBB"))
+		self._textPen = QPen(QColor("#000000"))
+		self._textPen.setWidth(0)
 
 	def breakConnections(self, breakInputs=True, breakOutputs=True):
 		"""Disconnect all connections.

@@ -57,6 +57,11 @@ class FupElem_OPERAND(FupElem):
 	def __init__(self, x, y):
 		FupElem.__init__(self, x, y)
 
+		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
+		self._continuePen.setColor(QColor("#000000"))
+
+		self.contentText = ""
+
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		if self.grid:
 			cellWidth = self.grid.cellPixWidth
@@ -109,14 +114,45 @@ class FupElem_OPERAND(FupElem):
 		elemWidth = cellWidth
 
 		# Draw body
-		painter.setPen(self._outlineSelPen if self.selected
-			       else self._outlinePen)
-		painter.setBrush(self._bgBrush)
-		polygon = QPolygon((QPoint(xpad, ypad),
-				    QPoint(elemWidth - xpad, ypad),
-				    QPoint(elemWidth - xpad, elemHeight - ypad),
-				    QPoint(xpad, elemHeight - ypad)))
-		painter.drawPolygon(polygon, Qt.OddEvenFill)
+		painter.setPen(self._noPen)
+		painter.setBrush(self._bgSelBrush if self.selected\
+				 else self._bgBrush)
+		bodyRect = QRect(xpad, ypad,
+				 elemWidth - 2 * xpad,
+				 elemHeight - 2 * ypad)
+		painter.drawRect(bodyRect)
+
+		# Draw the text
+		text = self.contentText
+		if text:
+			font = getDefaultFixedFont()
+			font.setPointSize(7)
+			painter.setFont(font)
+			painter.setPen(self._textPen)
+			if self.selected:
+				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop
+				textMaxRect = bodyRect.translated(0, 0)
+				textMaxRect.setHeight(self.grid.height * cellHeight)
+				textRect = painter.boundingRect(textMaxRect, textFlags, text)
+				actTextRect = textRect
+			else:
+				textFlags = Qt.TextWrapAnywhere | Qt.AlignHCenter | Qt.AlignTop
+				textRect = bodyRect
+				actTextRect = painter.boundingRect(bodyRect, textFlags, text)
+			if self.selected:
+				painter.setBrush(self._bgSelBrush if self.selected\
+						 else self._bgBrush)
+				painter.setPen(self._noPen)
+				painter.drawRect(actTextRect)
+			painter.setPen(self._textPen)
+			painter.drawText(textRect, textFlags, text)
+			if not self.selected and not bodyRect.contains(actTextRect):
+				# Draw continuation
+				painter.setPen(self._continuePen)
+				painter.drawLine(xpad, cellHeight - 1,
+						 cellWidth - xpad - 1, cellHeight - 1)
+				painter.drawLine(cellWidth - xpad - 1, ypad,
+						 cellWidth - xpad - 1, cellHeight - 1 - ypad)
 
 class FupElem_ASSIGN(FupElem_OPERAND):
 	"""Assignment operand element"""
