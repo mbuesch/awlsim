@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 import xml.etree.ElementTree
+import xml.sax.saxutils as saxutils
 
 
 class _XmlFactoryBuilder(object):
@@ -154,7 +155,7 @@ class XmlFactory(object):
 			for tag in tags:
 				ind = "\t" * indent
 				attrText = (" " + " ".join(
-					"%s=\"%s\"" % (aName, aVal)
+					"%s=%s" % (aName, saxutils.quoteattr(aVal))
 					for aName, aVal in sorted(tag.attrs.items(),
 								  key=lambda a: a[0])
 				)).rstrip()
@@ -164,7 +165,7 @@ class XmlFactory(object):
 						ind,
 						tag.name,
 						attrText,
-						tag.data or "")
+						saxutils.escape(tag.data or ""))
 					)
 					ret.extend(tags2text(tag.tags, indent + 1))
 					ret.append("%s</%s>" % (
