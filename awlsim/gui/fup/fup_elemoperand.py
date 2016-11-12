@@ -62,6 +62,7 @@ class FupElem_OPERAND(FupElem):
 		self._continuePen.setColor(QColor("#000000"))
 
 		self.contentText = contentText
+		self.partialContent = False
 
 	@property
 	def _xpadding(self):
@@ -120,9 +121,11 @@ class FupElem_OPERAND(FupElem):
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
 
+		selected, expanded = self.selected, self.expanded
+
 		# Draw body
 		painter.setPen(self._noPen)
-		painter.setBrush(self._bgSelBrush if self.selected\
+		painter.setBrush(self._bgSelBrush if selected\
 				 else self._bgBrush)
 		bodyRect = QRect(xpad, ypad,
 				 elemWidth - 2 * xpad,
@@ -136,7 +139,7 @@ class FupElem_OPERAND(FupElem):
 			font.setPointSize(8)
 			painter.setFont(font)
 			painter.setPen(self._textPen)
-			if self.selected:
+			if selected or expanded:
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop
 				textMaxRect = bodyRect.translated(0, 0)
 				textMaxRect.setHeight(self.grid.height * cellHeight)
@@ -146,20 +149,24 @@ class FupElem_OPERAND(FupElem):
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignHCenter | Qt.AlignTop
 				textRect = bodyRect
 				actTextRect = painter.boundingRect(bodyRect, textFlags, text)
-			if self.selected:
-				painter.setBrush(self._bgSelBrush if self.selected\
+			if selected or expanded:
+				painter.setBrush(self._bgSelBrush if selected\
 						 else self._bgBrush)
 				painter.setPen(self._noPen)
 				painter.drawRect(actTextRect)
 			painter.setPen(self._textPen)
 			painter.drawText(textRect, textFlags, text)
-			if not self.selected and not bodyRect.contains(actTextRect):
-				# Draw continuation
-				painter.setPen(self._continuePen)
-				painter.drawLine(xpad, cellHeight - 1,
-						 cellWidth - xpad - 1, cellHeight - 1)
-				painter.drawLine(cellWidth - xpad - 1, ypad,
-						 cellWidth - xpad - 1, cellHeight - 1 - ypad)
+			if not bodyRect.contains(actTextRect):
+				if not selected and not expanded:
+					# Draw continuation
+					painter.setPen(self._continuePen)
+					painter.drawLine(xpad, cellHeight - 1,
+							 cellWidth - xpad - 1, cellHeight - 1)
+					painter.drawLine(cellWidth - xpad - 1, ypad,
+							 cellWidth - xpad - 1, cellHeight - 1 - ypad)
+				self.partialContent = True
+			else:
+				self.partialContent = False
 
 	def handleDoubleClick(self, parentWidget, button):
 		if button == Qt.LeftButton:
@@ -173,6 +180,14 @@ class FupElem_OPERAND(FupElem):
 				return True
 			return False
 		return FupElem.handleDoubleClick(self, button)
+
+	def expand(self, expand=True):
+		if not self.partialContent and expand:
+			return False
+		if expand != self.expanded:
+			self.expanded = expand
+			return True
+		return False
 
 class FupElem_ASSIGN(FupElem_OPERAND):
 	"""Assignment operand element"""

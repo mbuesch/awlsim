@@ -123,6 +123,8 @@ class FupElem(FupBaseClass):
 		self.inputs = []	# The input FupConn-ections
 		self.outputs = []	# The output FupConn-ections
 
+		self.expanded = False	# Content view expansion active
+
 		lineWidth = 2
 		self._noPen = QPen(Qt.NoPen)
 		self._noPen.setWidth(0)
@@ -206,39 +208,64 @@ class FupElem(FupBaseClass):
 
 	@property
 	def height(self):
+		"""The element height, in grid coordinates.
+		"""
 		return 1
 
 	@property
 	def width(self):
+		"""The element width, in grid coordinates.
+		"""
 		return 1
 
 	@property
 	def _xpadding(self):
+		"""The horizontal pixel padding for the element body.
+		"""
 		if self.grid:
 			return self.grid.cellPixWidth // 6
 		return 0
 
 	@property
 	def _ypadding(self):
+		"""The vertical pixel padding for the element body.
+		"""
 		if self.grid:
 			return self.grid.cellPixHeight // 8
 		return 0
 
 	@property
 	def selected(self):
+		"""Returns True, if this element is selected.
+		"""
 		return self in self.grid.selectedElems
 
 	def remove(self):
+		"""Remove this element from the grid.
+		"""
 		if self.grid:
 			self.grid.removeElem(self)
 
 	def draw(self, painter):
+		"""Draw this element.
+		"""
 		pass
 
 	def prepareContextMenu(self, menu):
+		"""Add element specific context menu entries.
+		"""
 		pass
 
+	def expand(self, expand=True):
+		"""Expand this element to fully show it, if expand=True.
+		Returns True, if the expansion state changed.
+		"""
+		return False
+
 	def handleDoubleClick(self, parentWidget, button):
+		"""Handle a mouse double click event onto this element.
+		Returns True, if a repaint is required.
+		"""
 		return False
 
 	def __repr__(self):

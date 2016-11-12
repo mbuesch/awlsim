@@ -105,6 +105,7 @@ class FupDrawWidget(QWidget):
 	def __init__(self, parent=None):
 		QWidget.__init__(self, parent)
 
+		self.__suppressMousePress = 0
 		self.__repaintBlocked = Blocker()
 
 		self.__contextMenu = FupContextMenu(self)
@@ -140,6 +141,7 @@ class FupDrawWidget(QWidget):
 		self.resize(self.__grid.width * self.__cellWidth,
 			    self.__grid.height * self.__cellHeight)
 		self.setFocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus)
+		self.setMouseTracking(True)
 
 	def repaint(self):
 		if not self.__repaintBlocked:
@@ -249,11 +251,12 @@ class FupDrawWidget(QWidget):
 				   "* Left-drag to connect inputs and outputs\n"
 				   "* Middle-click to delete connections and wires")
 
-		# Draw the elements. First unselected, then selected.
+		# Draw the elements. First background elements (selected/expanded).
 		prevX, prevY = 0, 0
-		for selected in (False, True):
+		for wantForeground in (False, True):
 			for elem in grid.elems:
-				if elem.selected == selected:
+				isForeground = elem.selected or elem.expanded
+				if wantForeground == isForeground:
 					xAbs, yAbs = elem.pixCoords
 					p.translate(xAbs - prevX, yAbs - prevY)
 					prevX, prevY = xAbs, yAbs
@@ -326,6 +329,9 @@ class FupDrawWidget(QWidget):
 		return elem, conn, area, gridX, gridY, elemRelX, elemRelY
 
 	def mousePressEvent(self, event):
+		if self.__suppressMousePress:
+			self.__suppressMousePress -= 1
+			return
 		x, y = event.x(), event.y()
 		modifiers = QGuiApplication.keyboardModifiers()
 
@@ -407,7 +413,19 @@ class FupDrawWidget(QWidget):
 	def mouseMoveEvent(self, event):
 		x, y = event.x(), event.y()
 		modifiers = QGuiApplication.keyboardModifiers()
-		gridX, gridY = self.posToGridCoords(x, y)
+		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+
+		# Temporarily expand elements on mouse-over
+		if event.buttons() == Qt.NoButton:
+			chg = 0
+			if elem and area == FupElem.AREA_BODY:
+				if elem not in self.__grid.expandedElems:
+					chg += int(self.__grid.unexpandAllElems())
+					chg += int(self.__grid.expandElem(elem, True))
+			else:
+				chg += int(self.__grid.unexpandAllElems())
+			if chg:
+				self.repaint()
 
 		# Handle multi-selection
 		if self.__selectStartPix:
@@ -455,6 +473,10 @@ class FupDrawWidget(QWidget):
 		x, y = event.x(), event.y()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 
+		# Force end of dragging.
+		self.__dragStart = None
+		self.__draggedConn = None
+
 		# Handle left button double click
 		if event.button() == Qt.LeftButton:
 			if elem:
@@ -480,6 +502,9 @@ class FupDrawWidget(QWidget):
 					# Try if the element can handle the double click.
 					if elem.handleDoubleClick(self, event.button()):
 						self.__contentChanged()
+
+		# Suppress the next press event
+		self.__suppressMousePress += 1
 
 		QWidget.mouseDoubleClickEvent(self, event)
 
