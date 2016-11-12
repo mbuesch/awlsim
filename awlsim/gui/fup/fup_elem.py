@@ -64,12 +64,14 @@ class FupElem_factory(XmlFactory):
 					from awlsim.gui.fup.fup_elemoperand import\
 						FupElem_LOAD, FupElem_ASSIGN
 					subType = tag.getAttr("subtype")
+					content = tag.getAttr("content")
 					elemClass = {
 						FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
 						FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
 					}.get(subType)
 					if elemClass:
-						self.elem = elemClass(x=x, y=y)
+						self.elem = elemClass(x=x, y=y,
+							contentText=content)
 						self.elem.grid = self.grid
 						return
 		XmlFactory.parser_beginTag(self, tag)
@@ -235,6 +237,9 @@ class FupElem(FupBaseClass):
 
 	def prepareContextMenu(self, menu):
 		pass
+
+	def handleDoubleClick(self, parentWidget, button):
+		return False
 
 	def __repr__(self):
 		return "FupElem(%d, %d)" % (self.x, self.y)

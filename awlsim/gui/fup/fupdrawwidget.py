@@ -457,24 +457,29 @@ class FupDrawWidget(QWidget):
 
 		# Handle left button double click
 		if event.button() == Qt.LeftButton:
-			if elem and conn and not conn.isConnected:
-				# Double click on an unconnected IN or OUT connection
-				# adds a LOAD or ASSIGN operator element.
-				connGridX, connGridY = self.posToGridCoords(*conn.pixCoords)
-				newElem, newConn = None, None
-				if conn.IN and not conn.OUT:
-					newElem = FupElem_LOAD(connGridX - 1, connGridY)
-					if newElem.outputs:
-						newConn = newElem.outputs[0]
-				elif conn.OUT and not conn.IN:
-					newElem = FupElem_ASSIGN(connGridX + 1, connGridY)
-					if newElem.inputs:
-						newConn = newElem.inputs[0]
-				if newElem and newConn:
-					self.addElem(newElem)
-					with contextlib.suppress(ValueError):
-						newConn.connectTo(conn)
-					self.repaint()
+			if elem:
+				if conn and not conn.isConnected:
+					# Double click on an unconnected IN or OUT connection
+					# adds a LOAD or ASSIGN operator element.
+					connGridX, connGridY = self.posToGridCoords(*conn.pixCoords)
+					newElem, newConn = None, None
+					if conn.IN and not conn.OUT:
+						newElem = FupElem_LOAD(connGridX - 1, connGridY)
+						if newElem.outputs:
+							newConn = newElem.outputs[0]
+					elif conn.OUT and not conn.IN:
+						newElem = FupElem_ASSIGN(connGridX + 1, connGridY)
+						if newElem.inputs:
+							newConn = newElem.inputs[0]
+					if newElem and newConn:
+						self.addElem(newElem)
+						with contextlib.suppress(ValueError):
+							newConn.connectTo(conn)
+						self.repaint()
+				else:
+					# Try if the element can handle the double click.
+					if elem.handleDoubleClick(self, event.button()):
+						self.__contentChanged()
 
 		QWidget.mouseDoubleClickEvent(self, event)
 

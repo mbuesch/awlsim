@@ -42,6 +42,7 @@ class FupElem_OPERAND_factory(FupElem_factory):
 					"subtype" : self.elem.OP_SYM_NAME,
 					"x" : str(self.elem.x),
 					"y" : str(self.elem.y),
+					"content" : self.elem.contentText,
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -54,13 +55,19 @@ class FupElem_OPERAND(FupElem):
 
 	factory = FupElem_OPERAND_factory
 
-	def __init__(self, x, y):
+	def __init__(self, x, y, contentText=""):
 		FupElem.__init__(self, x, y)
 
 		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
 		self._continuePen.setColor(QColor("#000000"))
 
-		self.contentText = ""
+		self.contentText = contentText
+
+	@property
+	def _xpadding(self):
+		if self.grid:
+			return self.grid.cellPixWidth // 12
+		return 0
 
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		if self.grid:
@@ -126,7 +133,7 @@ class FupElem_OPERAND(FupElem):
 		text = self.contentText
 		if text:
 			font = getDefaultFixedFont()
-			font.setPointSize(7)
+			font.setPointSize(8)
 			painter.setFont(font)
 			painter.setPen(self._textPen)
 			if self.selected:
@@ -154,14 +161,27 @@ class FupElem_OPERAND(FupElem):
 				painter.drawLine(cellWidth - xpad - 1, ypad,
 						 cellWidth - xpad - 1, cellHeight - 1 - ypad)
 
+	def handleDoubleClick(self, parentWidget, button):
+		if button == Qt.LeftButton:
+			text, ok = QInputDialog.getText(parentWidget,
+				"Change operand",
+				"Change operand",
+				QLineEdit.Normal,
+				self.contentText)
+			if ok:
+				self.contentText = text
+				return True
+			return False
+		return FupElem.handleDoubleClick(self, button)
+
 class FupElem_ASSIGN(FupElem_OPERAND):
 	"""Assignment operand element"""
 
 	OP_SYM		= "assign"
 	OP_SYM_NAME	= "assign"	# XML ABI name
 
-	def __init__(self, x, y):
-		FupElem_OPERAND.__init__(self, x, y)
+	def __init__(self, x, y, contentText=""):
+		FupElem_OPERAND.__init__(self, x, y, contentText)
 
 		self.inputs = [ FupConnIn(self) ]
 
@@ -190,8 +210,8 @@ class FupElem_LOAD(FupElem_OPERAND):
 	OP_SYM		= "load"
 	OP_SYM_NAME	= "load"	# XML ABI name
 
-	def __init__(self, x, y):
-		FupElem_OPERAND.__init__(self, x, y)
+	def __init__(self, x, y, contentText=""):
+		FupElem_OPERAND.__init__(self, x, y, contentText)
 
 		self.outputs = [ FupConnOut(self) ]
 

@@ -64,7 +64,7 @@ class FupFactory(XmlFactory):
 		gridTags = grid.factory(grid=grid).composer_getTags()
 		tags = [
 			self.Tag(name="FUP",
-				attrs={"version" : self.FUP_VERSION},
+				attrs={"version" : str(self.FUP_VERSION)},
 				tags=gridTags),
 		]
 		return tags

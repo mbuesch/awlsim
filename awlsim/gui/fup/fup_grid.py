@@ -68,8 +68,8 @@ class FupGrid_factory(XmlFactory):
 						 tags=elemTags),
 				],
 				attrs={
-					"width" : self.grid.width,
-					"height" : self.grid.height,
+					"width" : str(self.grid.width),
+					"height" : str(self.grid.height),
 				}),
 		]
 
