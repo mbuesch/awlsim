@@ -33,6 +33,7 @@ class FupContextMenu(QMenu):
 	"""FUP/FBD draw widget context menu."""
 
 	add = Signal(FupElem)
+	edit = Signal()
 	remove = Signal()
 
 	def __init__(self, parent=None):
@@ -55,6 +56,9 @@ class FupContextMenu(QMenu):
 						     "Insert A&SSIGN operand",
 						     self.__addASSIGN)
 		self.addSeparator()
+		self.__actEdit = self.addAction(getIcon("doc_edit"),
+						"&Edit element...",
+						self.__edit)
 		self.__actDel = self.addAction(getIcon("doc_close"),
 					       "&Remove element", self.__del)
 		self.addSeparator()
@@ -77,6 +81,9 @@ class FupContextMenu(QMenu):
 	def __addASSIGN(self):
 		self.add.emit(FupElem_ASSIGN(self.gridX, self.gridY))
 
+	def __edit(self):
+		self.edit.emit()
+
 	def __del(self):
 		self.remove.emit()
 
@@ -89,6 +96,9 @@ class FupContextMenu(QMenu):
 		self.__actInsXOR.setEnabled(en)
 		self.__actInsLOAD.setEnabled(en)
 		self.__actInsASSIGN.setEnabled(en)
+
+	def enableEdit(self, en=True):
+		self.__actEdit.setEnabled(en)
 
 	def enableDelete(self, en=True):
 		self.__actDel.setEnabled(en)
@@ -111,6 +121,7 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu = FupContextMenu(self)
 		self.__contextMenu.add.connect(self.addElem)
 		self.__contextMenu.remove.connect(self.removeSelElems)
+		self.__contextMenu.edit.connect(self.editSelElems)
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
@@ -202,6 +213,14 @@ class FupDrawWidget(QWidget):
 	def disconnectConn(self, conn):
 		if conn:
 			conn.disconnect()
+			self.__contentChanged()
+
+	def editSelElems(self):
+		chg = 0
+		if self.__grid:
+			for elem in self.__grid.selectedElems:
+				chg += int(elem.edit(self))
+		if chg:
 			self.__contentChanged()
 
 	def paintEvent(self, event=None):
@@ -378,6 +397,7 @@ class FupDrawWidget(QWidget):
 			# Open the context menu
 			self.__contextMenu.enableInsert(elem is None)
 			self.__contextMenu.enableDelete(elem is not None)
+			self.__contextMenu.enableEdit(False)
 			self.__contextMenu.enableAddInput(False)
 			if elem:
 				elem.prepareContextMenu(self.__contextMenu)
@@ -499,8 +519,8 @@ class FupDrawWidget(QWidget):
 							newConn.connectTo(conn)
 						self.repaint()
 				else:
-					# Try if the element can handle the double click.
-					if elem.handleDoubleClick(self, event.button()):
+					# Edit the element's contents
+					if elem.edit(self):
 						self.__contentChanged()
 
 		# Suppress the next press event

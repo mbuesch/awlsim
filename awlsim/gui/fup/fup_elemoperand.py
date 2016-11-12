@@ -168,18 +168,16 @@ class FupElem_OPERAND(FupElem):
 			else:
 				self.partialContent = False
 
-	def handleDoubleClick(self, parentWidget, button):
-		if button == Qt.LeftButton:
-			text, ok = QInputDialog.getText(parentWidget,
-				"Change operand",
-				"Change operand",
-				QLineEdit.Normal,
-				self.contentText)
-			if ok:
-				self.contentText = text
-				return True
-			return False
-		return FupElem.handleDoubleClick(self, button)
+	def edit(self, parentWidget):
+		text, ok = QInputDialog.getText(parentWidget,
+			"Change operand",
+			"Change operand",
+			QLineEdit.Normal,
+			self.contentText)
+		if ok:
+			self.contentText = text
+			return True
+		return False
 
 	def expand(self, expand=True):
 		if not self.partialContent and expand:
@@ -188,6 +186,9 @@ class FupElem_OPERAND(FupElem):
 			self.expanded = expand
 			return True
 		return False
+
+	def prepareContextMenu(self, menu):
+		menu.enableEdit(True)
 
 class FupElem_ASSIGN(FupElem_OPERAND):
 	"""Assignment operand element"""

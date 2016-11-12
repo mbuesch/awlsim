@@ -262,8 +262,8 @@ class FupElem(FupBaseClass):
 		"""
 		return False
 
-	def handleDoubleClick(self, parentWidget, button):
-		"""Handle a mouse double click event onto this element.
+	def edit(self, parentWidget):
+		"""Edit the element's contents.
 		Returns True, if a repaint is required.
 		"""
 		return False
