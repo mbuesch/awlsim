@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - FUP compiler - Grid
+# AWL simulator - FUP compiler - Connection
 #
 # Copyright 2016 Michael Buesch <m@bues.ch>
 #
@@ -24,40 +24,44 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
-from awlsim.fupcompiler.fupcompiler_conn import *
-from awlsim.fupcompiler.fupcompiler_wire import *
-from awlsim.fupcompiler.fupcompiler_elem import *
 
-
-class FupCompiler_GridFactory(XmlFactory):
+class FupCompiler_ConnFactory(XmlFactory):
 	def parser_open(self):
+		self.inConn = False
 		XmlFactory.parser_open(self)
 
 	def parser_beginTag(self, tag):
-		if tag.name == "wires":
-			self.parser_switchTo(FupCompiler_Wire.factory(grid=self.grid))
-			return
-		if tag.name == "elements":
-			self.parser_switchTo(FupCompiler_Elem.factory(grid=self.grid))
-			return
+		if not self.inConn:
+			if tag.name == "connection":
+				self.inConn = True
+				pos = tag.getAttrInt("pos")
+				dirIn = tag.getAttrInt("dir_in")
+				dirOut = tag.getAttrInt("dir_out")
+				wireId = tag.getAttrInt("wire")
+				conn = FupCompiler_Conn(self.elem,
+					pos, dirIn, dirOut, wireId)
+				if not self.elem.addConn(conn):
+					raise self.Error("Invalid connection")
+				return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if tag.name == "grid":
-			self.parser_finish()
-			return
+		if self.inConn:
+			if tag.name == "connection":
+				self.inConn = False
+				return
+		else:
+			if tag.name == "connections":
+				self.parser_finish()
+				return
 		XmlFactory.parser_endTag(self, tag)
 
-class FupCompiler_Grid(object):
-	factory = FupCompiler_GridFactory
+class FupCompiler_Conn(object):
+	factory = FupCompiler_ConnFactory
 
-	def __init__(self, compiler):
-		self.compiler = compiler	# FupCompiler
-		self.wires = {}			# FupCompiler_Wire
-		self.elems = set()		# FupCompiler_Elem
-
-	def addWire(self, wire):
-		if wire.idNum in self.wires:
-			return False
-		self.wires[wire.idNum] = wire
-		return True
+	def __init__(self, elem, pos, dirIn, dirOut, wireId):
+		self.elem = elem		# FupCompiler_Elem
+		self.pos = pos			# Position index
+		self.dirIn = bool(dirIn)	# Input
+		self.dirOut = bool(dirOut)	# Output
+		self.wireId = wireId		# Wire ID number

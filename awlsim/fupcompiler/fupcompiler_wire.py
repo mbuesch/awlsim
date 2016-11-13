@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - FUP compiler - Grid
+# AWL simulator - FUP compiler - Wire
 #
 # Copyright 2016 Michael Buesch <m@bues.ch>
 #
@@ -24,40 +24,37 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
-from awlsim.fupcompiler.fupcompiler_conn import *
-from awlsim.fupcompiler.fupcompiler_wire import *
-from awlsim.fupcompiler.fupcompiler_elem import *
 
-
-class FupCompiler_GridFactory(XmlFactory):
+class FupCompiler_WireFactory(XmlFactory):
 	def parser_open(self):
+		self.inWire = False
 		XmlFactory.parser_open(self)
 
 	def parser_beginTag(self, tag):
-		if tag.name == "wires":
-			self.parser_switchTo(FupCompiler_Wire.factory(grid=self.grid))
-			return
-		if tag.name == "elements":
-			self.parser_switchTo(FupCompiler_Elem.factory(grid=self.grid))
-			return
+		if not self.inWire:
+			if tag.name == "wire":
+				self.inWire = True
+				idNum = tag.getAttrInt("id")
+				wire = FupCompiler_Wire(self.grid, idNum)
+				if not self.grid.addWire(wire):
+					raise self.Error("Invalid wire")
+				return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if tag.name == "grid":
-			self.parser_finish()
-			return
+		if self.inWire:
+			if tag.name == "wire":
+				self.inWire = False
+				return
+		else:
+			if tag.name == "wires":
+				self.parser_finish()
+				return
 		XmlFactory.parser_endTag(self, tag)
 
-class FupCompiler_Grid(object):
-	factory = FupCompiler_GridFactory
+class FupCompiler_Wire(object):
+	factory = FupCompiler_WireFactory
 
-	def __init__(self, compiler):
-		self.compiler = compiler	# FupCompiler
-		self.wires = {}			# FupCompiler_Wire
-		self.elems = set()		# FupCompiler_Elem
-
-	def addWire(self, wire):
-		if wire.idNum in self.wires:
-			return False
-		self.wires[wire.idNum] = wire
-		return True
+	def __init__(self, grid, idNum):
+		self.grid = grid		# FupCompiler_Grid
+		self.idNum = idNum		# Wire ID
