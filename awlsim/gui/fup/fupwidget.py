@@ -40,13 +40,16 @@ class FupFactory(XmlFactory):
 		grid = self.fupWidget.draw.grid
 		if self.inFup:
 			if tag.name == "grid":
+				width = tag.getAttrInt("width")
+				height = tag.getAttrInt("height")
+				grid.resize(width, height)
 				self.parser_switchTo(grid.factory(grid=grid))
 				return
 		else:
 			if tag.name == "FUP":
 				version = tag.getAttrInt("version")
 				if version != self.FUP_VERSION:
-					raise self.Error("Invalid FUP version. "
+					raise self.Error("Unsupported FUP version. "
 						"Got %d, but expected %d." % (
 						version, self.FUP_VERSION))
 				self.inFup = True
@@ -55,6 +58,7 @@ class FupFactory(XmlFactory):
 
 	def parser_endTag(self, tag):
 		if tag.name == "FUP":
+			self.inFup = False
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)

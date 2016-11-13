@@ -96,6 +96,15 @@ class FupGrid(object):
 		self.elems = []
 		self.selectedElems.clear()
 
+	def resize(self, width, height):
+		"""Resize the grid.
+		Returns True, if the resize was successfull.
+		"""
+		#TODO check if the size is possible
+		self.width = width
+		self.height = height
+		return True
+
 	def getUnusedWireIdNum(self):
 		"""Get an unused wire idNum.
 		"""
