@@ -31,6 +31,7 @@ import signal
 from awlsim_loader.common import *
 from awlsim_loader.core import *
 from awlsim_loader.coreclient import *
+from awlsim_loader.fupcompiler import *
 import awlsim_loader.cython_helper as cython_helper
 
 
@@ -170,10 +171,12 @@ def run(inputFile):
 		generatedAwlSrcs = []
 
 		# Parse FUP sources
-		#TODO
+		for fupSrc in project.getFupSources():
+			generatedAwlSrcs.append(FupCompiler().compile(fupSrc))
 
 		# Parse KOP sources
-		#TODO
+		for kopSrc in project.getKopSources():
+			pass#TODO
 
 		# Parse AWL sources
 		parseTrees = []
