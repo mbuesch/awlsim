@@ -87,16 +87,20 @@ class _XmlFactoryBuilder(object):
 		except IndexError:
 			pass
 
+class XmlFactoryError(Exception):
+	pass
+
 class XmlFactory(object):
 	"""XML parser and factory."""
 
 	XML_VERSION	= "1.0"
 	XML_ENCODING	= "UTF-8"
 
-	class Error(Exception):
-		pass
+	Error = XmlFactoryError
 
 	class Tag(object):
+		class NoDefault: pass
+
 		def __init__(self, name, attrs = None,
 			     tags = None, data = None):
 			self.name = name
@@ -107,21 +111,30 @@ class XmlFactory(object):
 		def hasAttr(self, name):
 			return name in self.attrs
 
-		def getAttr(self, name):
+		def getAttr(self, name, default=NoDefault):
 			try:
 				return self.attrs[name]
 			except KeyError:
-				raise XmlFactory.Error("Tag <%s> attribute "
-					"'%s' does not exist." % (
-					self.name, name))
+				if default is self.NoDefault:
+					raise XmlFactory.Error("Tag <%s> attribute "
+						"'%s' does not exist." % (
+						self.name, name))
+			return default
 
-		def getAttrInt(self, name):
+		def getAttrInt(self, name, default=NoDefault):
 			try:
-				return int(self.getAttr(name))
+				return int(self.attrs[name])
+			except KeyError:
+				if default is self.NoDefault:
+					raise XmlFactory.Error("Tag <%s> attribute "
+						"'%s' does not exist." % (
+						self.name, name))
 			except ValueError:
-				raise XmlFactory.Error("Tag <%s> attribute "
-					"'%s' is not an integer." % (
-					self.name, name))
+				if default is self.NoDefault:
+					raise XmlFactory.Error("Tag <%s> attribute "
+						"'%s' is not an integer." % (
+						self.name, name))
+			return default
 
 	def __init__(self, **kwargs):
 		self.__kwargs = kwargs
