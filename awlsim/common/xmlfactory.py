@@ -143,10 +143,14 @@ class XmlFactory(object):
 			     type(self).__name__, tag.name))
 
 	def parser_endTag(self, tag):
-		pass
+		printWarning("[XML-parser - %s] Unhandled tag: </%s>" % (
+			     type(self).__name__, tag.name))
 
 	def parser_data(self, data):
-		pass
+		data = data.strip()
+		if data:
+			printWarning("[XML-parser - %s] Unhandled data: %s" % (
+				     type(self).__name__, data))
 
 	def composer_getTags(self):
 		raise NotImplementedError
