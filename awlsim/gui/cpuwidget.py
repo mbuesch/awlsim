@@ -616,6 +616,8 @@ class CpuWidget(QWidget):
 		client = self.mainWidget.getSimClient()
 		project = self.mainWidget.getProject()
 		awlSources = self.mainWidget.projectWidget.getAwlSources()
+		fupSources = self.mainWidget.projectWidget.getFupSources()
+		kopSources = self.mainWidget.projectWidget.getKopSources()
 		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
 		libSelections = self.mainWidget.projectWidget.getLibSelections()
 		if not all(awlSources) or not all(symTabSources):
@@ -629,10 +631,14 @@ class CpuWidget(QWidget):
 
 			client.loadProject(project, loadSymTabs=False,
 					   loadLibSelections=False,
-					   loadSources=False)
+					   loadSources=False,
+					   loadFup=False,
+					   loadKop=False)
 			client.loadSymTabSources(symTabSources)
 			client.loadLibraryBlocks(libSelections)
 			client.loadAwlSources(awlSources)
+			client.loadFupSources(fupSources)
+			client.loadKopSources(kopSources)
 
 			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
@@ -682,6 +688,20 @@ class CpuWidget(QWidget):
 						(awlSource.name,
 						 awlSource.identHashStr))
 					client.loadAwlSource(awlSource)
+			elif selectedResource == projectWidget.RES_FUP:
+				fupSource = projectWidget.getCurrentFupSource()
+				if fupSource:
+					printVerbose("Single FUP download: %s/%s" %\
+						(fupSource.name,
+						 fupSource.identHashStr))
+					client.loadFupSource(fupSource)
+			elif selectedResource == projectWidget.RES_KOP:
+				kopSource = projectWidget.getCurrentKopSource()
+				if kopSource:
+					printVerbose("Single KOP download: %s/%s" %\
+						(kopSource.name,
+						 kopSource.identHashStr))
+					client.loadKopSource(kopSource)
 			elif selectedResource == projectWidget.RES_SYMTABS:
 				symTabSource = projectWidget.getCurrentSymTabSource()
 				if symTabSource:

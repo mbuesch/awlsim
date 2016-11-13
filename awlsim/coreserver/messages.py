@@ -80,7 +80,7 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5715
+	HDR_MAGIC		= 0x5716
 	HDR_LENGTH		= hdrStruct.size
 
 	# Message IDs:
@@ -100,6 +100,10 @@ class AwlSimMessage(object):
 	MSG_ID_SYMTABSRC	= EnumGen.item
 	MSG_ID_HWMOD		= EnumGen.item
 	MSG_ID_LIBSEL		= EnumGen.item
+	MSG_ID_GET_FUPSRC	= EnumGen.item		#TODO not implemented, yet
+	MSG_ID_FUPSRC		= EnumGen.item
+	MSG_ID_GET_KOPSRC	= EnumGen.item		#TODO not implemented, yet
+	MSG_ID_KOPSRC		= EnumGen.item
 	MSG_ID_BUILD		= EnumGen.itemAt(0x0170)
 	MSG_ID_REMOVESRC	= EnumGen.itemAt(0x0180)
 	MSG_ID_REMOVEBLK	= EnumGen.item
@@ -115,7 +119,7 @@ class AwlSimMessage(object):
 	# State
 	MSG_ID_GET_RUNSTATE	= EnumGen.itemAt(0x0300)
 	MSG_ID_RUNSTATE		= EnumGen.item
-	MSG_ID_GET_CPUDUMP	= EnumGen.item #TODO not implemented, yet
+	MSG_ID_GET_CPUDUMP	= EnumGen.item		#TODO not implemented, yet
 	MSG_ID_CPUDUMP		= EnumGen.item
 	MSG_ID_REQ_MEMORY	= EnumGen.item
 	MSG_ID_MEMORY		= EnumGen.item
@@ -376,6 +380,20 @@ class AwlSimMessage_GET_AWLSRC(_AwlSimMessage_GET_source):
 class AwlSimMessage_AWLSRC(_AwlSimMessage_source):
 	msgId = AwlSimMessage.MSG_ID_AWLSRC
 	sourceClass = AwlSource
+
+class AwlSimMessage_GET_FUPSRC(_AwlSimMessage_GET_source):
+	msgId = AwlSimMessage.MSG_ID_GET_FUPSRC
+
+class AwlSimMessage_FUPSRC(_AwlSimMessage_source):
+	msgId = AwlSimMessage.MSG_ID_FUPSRC
+	sourceClass = FupSource
+
+class AwlSimMessage_GET_KOPSRC(_AwlSimMessage_GET_source):
+	msgId = AwlSimMessage.MSG_ID_GET_KOPSRC
+
+class AwlSimMessage_KOPSRC(_AwlSimMessage_source):
+	msgId = AwlSimMessage.MSG_ID_KOPSRC
+	sourceClass = KopSource
 
 class AwlSimMessage_HWMOD(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_HWMOD
@@ -748,7 +766,7 @@ class AwlSimMessage_INSNSTATE(AwlSimMessage):
 	#	CPU AR 2 (32 bit)
 	#	CPU DB register (16 bit)
 	#	CPU DI register (16 bit)
-	#	AWL source ident hash bytes (variable length)
+	#	Source ident hash bytes (variable length)
 	plDataStruct = struct.Struct(str(">IIHHIIIIIIHH"))
 
 	def __init__(self, sourceId, lineNr, serial, flags, stw, accu1, accu2, accu3, accu4, ar1, ar2, db, di):
@@ -881,6 +899,8 @@ class AwlSimMessage_GET_IDENTS(AwlSimMessage):
 	GET_SYMTABSRCS		= EnumGen.bitmask # Get SymTabSource()s (w/o data)
 	GET_HWMODS		= EnumGen.bitmask # Get HW modules
 	GET_LIBSELS		= EnumGen.bitmask # Get AwlLibEntrySelection()s
+	GET_FUPSRCS		= EnumGen.bitmask # Get FupSource()s (w/o data)
+	GET_KOPSRCS		= EnumGen.bitmask # Get KopSource()s (w/o data)
 	EnumGen.end
 
 	# Payload header struct:
@@ -911,48 +931,64 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 	#	Number of symbol tables (32 bit)
 	#	Number of hardware modules (32 bit)
 	#	Number of library selections (32 bit)
+	#	Number of FUP sources (32 bit)
+	#	Number of KOP sources (32 bit)
 	#	Reserved (32 bit)
 	#	Reserved (32 bit)
-	plHdrStruct = struct.Struct(str(">IIIIII"))
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	plHdrStruct = struct.Struct(str(">6I40x"))
 
 	# Payload module header struct:
 	#	Number of parameters (32 bit)
 	#	Reserved (32 bit)
-	plModStruct = struct.Struct(str(">II"))
+	#	Reserved (32 bit)
+	#	Reserved (32 bit)
+	plModStruct = struct.Struct(str(">I12x"))
 
 	# awlSources: List of AwlSource()s
 	# symTabSources: List of SymTabSource()s
 	# hwMods: List of HwmodDescriptor()s
 	# libSelections: List of AwlLibEntrySelection()s
-	def __init__(self, awlSources, symTabSources, hwMods, libSelections):
+	def __init__(self, awlSources, symTabSources, hwMods, libSelections, fupSources, kopSources):
 		self.awlSources = awlSources
 		self.symTabSources = symTabSources
 		self.hwMods = hwMods
 		self.libSelections = libSelections
+		self.fupSources = fupSources
+		self.kopSources = kopSources
 
 	def toBytes(self):
 		payload = [ self.plHdrStruct.pack(len(self.awlSources),
 						  len(self.symTabSources),
 						  len(self.hwMods),
 						  len(self.libSelections),
-						  0, 0), ]
-		for src in self.awlSources:
-			payload.append(self.packString(src.name))
-			payload.append(self.packString(src.filepath))
-			payload.append(self.packBytes(src.identHash))
-		for src in self.symTabSources:
-			payload.append(self.packString(src.name))
-			payload.append(self.packString(src.filepath))
-			payload.append(self.packBytes(src.identHash))
+						  len(self.fupSources),
+						  len(self.kopSources)) ]
+		def addSrcs(srcs):
+			for src in srcs:
+				payload.append(self.packString(src.name))
+				payload.append(self.packString(src.filepath))
+				payload.append(self.packBytes(src.identHash))
+		addSrcs(self.awlSources)
+		addSrcs(self.symTabSources)
 		for hwmodDesc in self.hwMods:
 			params = hwmodDesc.getParameters()
-			payload.append(self.plModStruct.pack(len(params), 0))
+			payload.append(self.plModStruct.pack(len(params)))
 			payload.append(self.packString(hwmodDesc.getModuleName()))
 			for pName, pVal in dictItems(params):
 				payload.append(self.packString(pName))
 				payload.append(self.packString(pVal))
 		for libSel in self.libSelections:
 			payload.append(AwlSimMessage_LIBSEL.packLibSelection(libSel))
+		addSrcs(self.fupSources)
+		addSrcs(self.kopSources)
 		payload = b''.join(payload)
 		return AwlSimMessage.toBytes(self, len(payload)) + payload
 
@@ -963,33 +999,29 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 			symTabSources = []
 			hwMods = []
 			libSelections = []
+			fupSources = []
+			kopSources = []
 			offset = 0
-			nrAwl, nrSym, nrHw, nrLib, _a, _b  = cls.plHdrStruct.unpack_from(
+			nrAwl, nrSym, nrHw, nrLib, nrFup, nrKop = cls.plHdrStruct.unpack_from(
 								payload, offset)
 			offset += cls.plHdrStruct.size
-			for i in range(nrAwl):
-				name, count = cls.unpackString(payload, offset)
-				offset += count
-				path, count = cls.unpackString(payload, offset)
-				offset += count
-				identHash, count = cls.unpackBytes(payload, offset)
-				offset += count
-				src = AwlSource(name, path, None)
-				src.identHash = identHash # Force hash
-				awlSources.append(src)
-			for i in range(nrSym):
-				name, count = cls.unpackString(payload, offset)
-				offset += count
-				path, count = cls.unpackString(payload, offset)
-				offset += count
-				identHash, count = cls.unpackBytes(payload, offset)
-				offset += count
-				src = SymTabSource(name, path, None)
-				src.identHash = identHash # Force hash
-				symTabSources.append(src)
+			def unpackSrcs(srcClass, sourcesList, count, offset):
+				for i in range(count):
+					name, count = cls.unpackString(payload, offset)
+					offset += count
+					path, count = cls.unpackString(payload, offset)
+					offset += count
+					identHash, count = cls.unpackBytes(payload, offset)
+					offset += count
+					src = srcClass(name, path, None)
+					src.identHash = identHash # Force hash
+					sourcesList.append(src)
+				return offset
+			offset = unpackSrcs(AwlSource, awlSources, nrAwl, offset)
+			offset = unpackSrcs(SymTabSource, symTabSources, nrSym, offset)
 			for i in range(nrHw):
-				nrParam, _unused = cls.plModStruct.unpack_from(
-								payload, offset)
+				(nrParam, ) = cls.plModStruct.unpack_from(
+						payload, offset)
 				offset += cls.plModStruct.size
 				modName, count = cls.unpackString(payload, offset)
 				offset += count
@@ -1005,12 +1037,16 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 				libSel, offset = AwlSimMessage_LIBSEL.unpackLibSelection(
 						payload, offset)
 				libSelections.append(libSel)
+			offset = unpackSrcs(FupSource, fupSources, nrFup, offset)
+			offset = unpackSrcs(KopSource, kopSources, nrKop, offset)
 		except (ValueError, struct.error, AwlSimError) as e:
 			raise TransferError("IDENTS: Invalid data format")
 		return cls(awlSources = awlSources,
 			   symTabSources = symTabSources,
 			   hwMods = hwMods,
-			   libSelections = libSelections)
+			   libSelections = libSelections,
+			   fupSources = fupSources,
+			   kopSources = kopSources)
 
 class AwlSimMessage_GET_BLOCKINFO(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_GET_BLOCKINFO
@@ -1109,6 +1145,10 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: AwlSimMessage_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: AwlSimMessage_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: AwlSimMessage_LIBSEL,
+		AwlSimMessage.MSG_ID_GET_FUPSRC		: AwlSimMessage_GET_FUPSRC,
+		AwlSimMessage.MSG_ID_FUPSRC		: AwlSimMessage_FUPSRC,
+		AwlSimMessage.MSG_ID_GET_KOPSRC		: AwlSimMessage_GET_KOPSRC,
+		AwlSimMessage.MSG_ID_KOPSRC		: AwlSimMessage_KOPSRC,
 		AwlSimMessage.MSG_ID_BUILD		: AwlSimMessage_BUILD,
 		AwlSimMessage.MSG_ID_REMOVESRC		: AwlSimMessage_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: AwlSimMessage_REMOVEBLK,

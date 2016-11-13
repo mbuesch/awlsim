@@ -111,7 +111,9 @@ class AwlValidator(object):
 			client.reset()
 			client.loadProject(project, loadSymTabs=False,
 					   loadLibSelections=False,
-					   loadSources=False)
+					   loadSources=False,
+					   loadFup=False,
+					   loadKop=False)
 			client.loadSymTabSources(symTabSources)
 			client.loadLibraryBlocks(libSelections)
 			client.loadAwlSources(awlSources)

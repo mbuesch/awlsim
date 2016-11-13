@@ -167,11 +167,23 @@ def run(inputFile):
 		project = Project.fromProjectOrRawAwlFile(inputFile)
 
 		writeStdout("Parsing code...\n")
+		generatedAwlSrcs = []
+
+		# Parse FUP sources
+		#TODO
+
+		# Parse KOP sources
+		#TODO
+
+		# Parse AWL sources
 		parseTrees = []
-		for awlSrc in project.getAwlSources():
+		for awlSrc in itertools.chain(project.getAwlSources(),
+					      generatedAwlSrcs):
 			p = AwlParser()
 			p.parseSource(awlSrc)
 			parseTrees.append(p.getParseTree())
+
+		# Parse symbol tables
 		symTables = []
 		for symTabSrc in project.getSymTabSources():
 			mnemonics = project.getCpuSpecs().getConfiguredMnemonics()
@@ -198,6 +210,7 @@ def run(inputFile):
 		for name, parameters in opt_hwmods:
 			loadMod(name, parameters)
 
+		# Configure the CPU
 		cpu = s.getCPU()
 		assignCpuSpecs(cpu.getSpecs(), project.getCpuSpecs())
 		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
@@ -206,6 +219,8 @@ def run(inputFile):
 			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		cpu.setCycleTimeLimit(opt_cycletime)
 		cpu.setRunTimeLimit(opt_maxRuntime)
+
+		# Download the program
 		writeStdout("Initializing CPU...\n")
 		for symTable in symTables:
 			s.loadSymbolTable(symTable)
@@ -213,6 +228,8 @@ def run(inputFile):
 			s.loadLibraryBlock(libSel)
 		for parseTree in parseTrees:
 			s.load(parseTree)
+
+		# Run the program
 		s.startup()
 		writeStdout("[Initialization finished - CPU is executing user code]\n")
 		try:

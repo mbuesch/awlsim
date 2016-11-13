@@ -450,12 +450,46 @@ class AwlSimClient(object):
 		finally:
 			self.__transceiver.txCork(False)
 		if status != AwlSimMessage_REPLY.STAT_OK:
-			raise AwlSimError("AwlSimClient: Failed to AWL source")
+			raise AwlSimError("AwlSimClient: Failed to load AWL source")
+		return True
+
+	def loadFupSource(self, fupSource):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_FUPSRC(fupSource)
+		self.__transceiver.txCork(True)
+		try:
+			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+		finally:
+			self.__transceiver.txCork(False)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to load FUP source")
+		return True
+
+	def loadKopSource(self, kopSource):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_KOPSRC(fupSource)
+		self.__transceiver.txCork(True)
+		try:
+			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+		finally:
+			self.__transceiver.txCork(False)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to load FUP source")
 		return True
 
 	def loadAwlSources(self, awlSources):
 		return all(self.loadAwlSource(awlSource)
 			   for awlSource in awlSources)
+
+	def loadFupSources(self, fupSources):
+		return all(self.loadFupSource(fupSource)
+			   for fupSource in fupSources)
+
+	def loadKopSources(self, kopSources):
+		return all(self.loadKopSource(kopSource)
+			   for kopSource in kopSources)
 
 	def getSymTabSource(self, identHash, sync=True):
 		if not self.__transceiver:
@@ -654,7 +688,8 @@ class AwlSimClient(object):
 			loadCpuSpecs=True, loadTempPresets=True,
 			loadExtInsns=True, loadHwMods=True,
 			loadSymTabs=True, loadLibSelections=True,
-			loadSources=True):
+			loadSources=True,
+			loadFup=True, loadKop=True):
 		"""Load selected settings and sources from project.
 		"""
 		if loadCpuSpecs:
@@ -671,6 +706,10 @@ class AwlSimClient(object):
 			self.loadLibraryBlocks(project.getLibSelections())
 		if loadSources:
 			self.loadAwlSources(project.getAwlSources())
+		if loadFup:
+			self.loadFupSources(project.getFupSources())
+		if loadKop:
+			self.loadKopSources(project.getKopSources())
 
 	# Set the memory areas we are interested in receiving
 	# dumps for, in the server.

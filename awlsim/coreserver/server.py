@@ -559,6 +559,12 @@ class AwlSimServer(object):
 		self.awlSourceContainer.addManager(srcManager)
 		self.__updateProjectFile()
 
+	def loadFupSource(self, fupSource):
+		pass#TODO
+
+	def loadKopSource(self, kopSource):
+		pass#TODO
+
 	def loadSymTabSource(self, symTabSource):
 		symbolTable = SymTabParser.parseSource(symTabSource,
 					autodetectFormat = True,
@@ -698,6 +704,18 @@ class AwlSimServer(object):
 		self.loadLibraryBlock(msg.libSelection)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_FUPSRC(self, client, msg):
+		printDebug("Received message: FUPSRC")
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.loadFupSource(msg.source)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_KOPSRC(self, client, msg):
+		printDebug("Received message: KOPSRC")
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.loadKopSource(msg.source)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_BUILD(self, client, msg):
 		printDebug("Received message: BUILD")
 		status = AwlSimMessage_REPLY.STAT_OK
@@ -809,7 +827,7 @@ class AwlSimServer(object):
 
 	def __rx_GET_IDENTS(self, client, msg):
 		printDebug("Received message: GET_IDENTS")
-		awlSrcs = symSrcs = hwMods = libSels = ()
+		awlSrcs = symSrcs = hwMods = libSels = fupSrcs = kopSrcs = ()
 		if msg.getFlags & msg.GET_AWLSRCS:
 			awlSrcs = self.awlSourceContainer.getSources()
 		if msg.getFlags & msg.GET_SYMTABSRCS:
@@ -818,8 +836,13 @@ class AwlSimServer(object):
 			hwMods = self.loadedHwModules
 		if msg.getFlags & msg.GET_LIBSELS:
 			libSels = self.loadedLibSelections
+		if msg.getFlags & msg.GET_FUPSRCS:
+			pass#TODO
+		if msg.getFlags & msg.GET_KOPSRCS:
+			pass#TODO
 		reply = AwlSimMessage_IDENTS(awlSrcs, symSrcs,
-					     hwMods, libSels)
+					     hwMods, libSels,
+					     fupSrcs, kopSrcs)
 		client.transceiver.send(reply)
 
 	__msgRxHandlers = {
@@ -835,6 +858,8 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
+		AwlSimMessage.MSG_ID_FUPSRC		: __rx_FUPSRC,
+#		AwlSimMessage.MSG_ID_KOPSRC		: __rx_KOPSRC,
 		AwlSimMessage.MSG_ID_BUILD		: __rx_BUILD,
 		AwlSimMessage.MSG_ID_REMOVESRC		: __rx_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: __rx_REMOVEBLK,
@@ -994,6 +1019,10 @@ class AwlSimServer(object):
 			self.loadLibraryBlock(libSel)
 		for awlSrc in project.getAwlSources():
 			self.loadAwlSource(awlSrc)
+		for fupSrc in project.getFupSources():
+			self.loadFupSource(fupSrc)
+		for kopSrc in project.getKopSources():
+			self.loadKopSource(kopSrc)
 
 		self.__projectFile = project.getProjectFile()
 		self.__projectWriteBack = writeBack

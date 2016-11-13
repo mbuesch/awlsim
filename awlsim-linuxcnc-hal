@@ -371,6 +371,10 @@ def main():
 			server.loadLibraryBlock(libSel)
 		for awlSrc in project.getAwlSources():
 			server.loadAwlSource(awlSrc)
+		for fupSrc in project.getFupSources():
+			server.loadFupSource(fupSrc)
+		for kopSrc in project.getKopSources():
+			server.loadKopSource(kopSrc)
 
 		# Set the Linux-CNC watchdog as cycle exit hook.
 		server.setCycleExitHook(watchdogHook)
