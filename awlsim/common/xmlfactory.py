@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.util import *
+
 import xml.etree.ElementTree
 import xml.sax.saxutils as saxutils
 
@@ -137,7 +139,8 @@ class XmlFactory(object):
 		pass
 
 	def parser_beginTag(self, tag):
-		print("XmlFactory parser: Unhandled tag: <%s>" % tag.name)
+		printWarning("[XML-parser - %s] Unhandled tag: <%s>" % (
+			     type(self).__name__, tag.name))
 
 	def parser_endTag(self, tag):
 		pass
