@@ -31,8 +31,8 @@ class AwlInsn_POP(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_POP, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_POP, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
 	def run(self):

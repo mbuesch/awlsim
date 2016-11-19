@@ -31,8 +31,8 @@ class AwlInsn_SPBB(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBB, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPBB, rawInsn, **kwargs)
 		self.assertOpCount(1)
 		if self.ops[0].type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")

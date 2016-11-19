@@ -31,8 +31,8 @@ class AwlInsn_RRD(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RRD, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RRD, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM, 0, 255)

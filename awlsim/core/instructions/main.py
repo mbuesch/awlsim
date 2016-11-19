@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2016 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,9 @@ from awlsim.core.parser import *
 
 
 class AwlInsn(object): #+cdef
+	"""AWL instruction base class.
+	"""
+
 	EnumGen.start
 	TYPE_INVALID		= EnumGen.item
 	TYPE_U			= EnumGen.item	# U
@@ -414,9 +417,6 @@ class AwlInsn(object): #+cdef
 		"CU"	: "ZV",
 	}
 	german2english = pivotDict(english2german)
-	# Sanity check of english2german table
-	for __englishName, __germanName in english2german.items():
-		assert(__germanName in name2type_german)
 
 	# Create a name2type dict for english mnemonics using the translation dict.
 	name2type_english = {}
@@ -435,23 +435,29 @@ class AwlInsn(object): #+cdef
 		"params",
 	)
 
-	def __init__(self, cpu, insnType, rawInsn):
-		self.cpu = cpu
-		self.insnType = insnType
-		self.rawInsn = rawInsn
-		self.ip = 0		# Instruction pointer (IP)
-		self.ops = []		# Operators
-		self.params = []	# Parameter assignments (for CALL)
+	def __init__(self, cpu, insnType, rawInsn=None, ops=None):
+		"""Initialize base instruction.
+		"""
+		self.cpu = cpu			# S7CPU() or None
+		self.insnType = insnType	# TYPE_...
+		self.rawInsn = rawInsn		# RawAwlInsn() or None
+		self.ip = 0			# Instruction pointer (IP)
+		self.ops = ops or []		# AwlOperator()s
+		self.params = []		# Parameter assignments (for CALL)
 
-		if rawInsn:
+		if rawInsn and ops is None:
 			opTrans = AwlOpTranslator(self)
 			opTrans.translateFromRawInsn(rawInsn)
 
 	def staticSanityChecks(self):
-		"Run static sanity checks"
-		pass # Default none
+		"""Run static sanity checks.
+		"""
+		pass # Default: No sanity checks
 
 	def assertOpCount(self, counts):
+		"""Check whether we have the required operator count.
+		counts is a list/set/int of possible counts.
+		"""
 		counts = toList(counts)
 		if len(self.ops) not in counts:
 			raise AwlSimError("Invalid number of operators. "
@@ -481,7 +487,9 @@ class AwlInsn(object): #+cdef
 		return self.rawInsn.getLineNr()
 
 	def run(self):
-		"Simulate the instruction. Override this method."
+		"""Run the instruction.
+		The default implementation does nothing.
+		"""
 		pass
 
 	def __repr__(self):
@@ -503,3 +511,7 @@ class AwlInsn(object): #+cdef
 			ret.append(", ".join(str(param) for param in self.params))
 			ret.append(" )")
 		return "".join(ret)
+
+# Sanity check of english2german table
+assert(all(germanName in AwlInsn.name2type_german \
+	   for englishName, germanName in AwlInsn.english2german.items()))

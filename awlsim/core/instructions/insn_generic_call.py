@@ -36,8 +36,8 @@ class AwlInsn_GENERIC_CALL(AwlInsn): #+cdef
 		"callback",
 	)
 
-	def __init__(self, cpu, callback):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GENERIC_CALL, None)
+	def __init__(self, cpu, callback, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GENERIC_CALL, **kwargs)
 		self.callback = callback
 
 	def run(self):

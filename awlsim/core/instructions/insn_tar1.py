@@ -31,8 +31,8 @@ class AwlInsn_TAR1(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR1, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR1, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
 
 	def run(self):

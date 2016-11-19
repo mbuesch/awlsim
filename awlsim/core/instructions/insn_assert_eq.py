@@ -31,8 +31,8 @@ class AwlInsn_ASSERT_EQ(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_EQ, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ASSERT_EQ, rawInsn, **kwargs)
 		self.assertOpCount(2)
 
 	def run(self):

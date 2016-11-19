@@ -31,8 +31,8 @@ class AwlInsn_NotImplemented(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INVALID, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INVALID, rawInsn, **kwargs)
 		raise AwlSimError("AWL instruction '%s' not "
 			"implemented, yet" %\
 			rawInsn.getName())

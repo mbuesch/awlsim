@@ -170,8 +170,8 @@ class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 		"run",
 	)
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn, **kwargs)
 		self.assertOpCount((1,2))
 
 		if len(self.ops) == 1:			#@nocy
@@ -203,8 +203,8 @@ class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CC, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CC, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
 	def run(self):
@@ -219,8 +219,8 @@ class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_UC, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_UC, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
 	def run(self):

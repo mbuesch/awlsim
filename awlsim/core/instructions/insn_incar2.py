@@ -31,8 +31,8 @@ class AwlInsn_INCAR2(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR2, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR2, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
 		if self.ops:
 			self.ops[0].assertType(AwlOperator.IMM_PTR, widths={32,})

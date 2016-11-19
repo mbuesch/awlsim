@@ -33,8 +33,8 @@ class AwlInsn_O(AwlInsn): #+cdef
 		"run",
 	)
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_O, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_O, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
 
 		if self.ops:				#@nocy

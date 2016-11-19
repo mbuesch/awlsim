@@ -31,8 +31,8 @@ class AwlInsn_SV(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SV, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SV, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
 	def staticSanityChecks(self):

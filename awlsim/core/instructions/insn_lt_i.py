@@ -31,8 +31,8 @@ class AwlInsn_LT_I(AwlInsn): #+cdef
 
 	__slots__ = ()
 
-	def __init__(self, cpu, rawInsn):
-		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LT_I, rawInsn)
+	def __init__(self, cpu, rawInsn=None, **kwargs):
+		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LT_I, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
 	def run(self):
