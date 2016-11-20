@@ -90,10 +90,8 @@ class Symbol(object):
 			   self.mnemonics != m:
 				continue
 			with contextlib.suppress(AwlSimError):
-				opTrans = AwlOpTranslator(insn = None,
-							  mnemonics = m)
-				opDesc = opTrans.translateOp(rawInsn = None,
-							     rawOps = newOperatorString.split())
+				opTrans = AwlOpTranslator(mnemonics=m)
+				opDesc = opTrans.translateFromString(newOperatorString)
 				self.setOperator(opDesc.operator)
 				return
 		raise AwlSimError("Symbol table parser: Can't parse symbol "

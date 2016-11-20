@@ -173,7 +173,7 @@ class S7Prog(object):
 						if ret is None:
 							errorCount += 1
 						try:
-							optrans = AwlOpTranslator(None, mnemonics)
+							optrans = AwlOpTranslator(mnemonics=mnemonics)
 							optrans.translateFromRawInsn(rawInsn)
 						except AwlSimError:
 							errorCount += 1

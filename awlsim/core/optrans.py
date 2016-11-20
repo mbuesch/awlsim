@@ -232,7 +232,7 @@ class AwlOpTranslator(object):
 		S7CPUSpecs.MNEMONICS_EN:	__constOperTab_english,
 	}
 
-	def __init__(self, insn, mnemonics=None):
+	def __init__(self, insn=None, mnemonics=None):
 		self.insn = insn
 		if mnemonics is None and insn is not None:
 			mnemonics = insn.getCpu().getSpecs().getMnemonics()
@@ -616,6 +616,9 @@ class AwlOpTranslator(object):
 				str(rawOps[0]))
 
 	def translateOp(self, rawInsn, rawOps):
+		"""Translate operator tokens.
+		Returns an OpDescriptor().
+		"""
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
 		if isinstance(opDesc.operator.value, AwlOffset) and\
@@ -668,6 +671,8 @@ class AwlOpTranslator(object):
 					raise AwlSimError("Missing comma in parameter list")
 
 	def translateFromRawInsn(self, rawInsn):
+		"""Translate operators from rawInsn and add them to self.insn.
+		"""
 		rawOps = rawInsn.getOperators()
 		while rawOps:
 			opDesc = self.translateOp(rawInsn, rawOps)
@@ -697,3 +702,40 @@ class AwlOpTranslator(object):
 					raise AwlSimError("Missing comma in operator list")
 
 			rawOps = rawOps[opDesc.fieldCount : ]
+
+	def __tokenizeString(self, string):
+		"""Split a string into operator tokens.
+		"""
+		tokens, s, inSingleQuote, inDoubleQuote = [], [], False, False
+		for c in string:
+			if inSingleQuote or inDoubleQuote:
+				if (inSingleQuote and c == "'") or\
+				   (inDoubleQuote and c == '"'):
+					inSingleQuote, inDoubleQuote = False, False
+					s.append(c)
+					tokens.append("".join(s))
+					s = []
+				else:
+					s.append(c)
+			else:
+				if c in {'"', "'"}:
+					inSingleQuote, inDoubleQuote = (c == "'"), (c == '"')
+					if s:
+						tokens.append("".join(s))
+					s = [c]
+				elif c.isspace():
+					if s:
+						tokens.append("".join(s))
+						s = []
+				else:
+					s.append(c)
+		if s:
+			tokens.append("".join(s))
+		return tokens
+
+	def translateFromString(self, string):
+		"""Translate an operator string.
+		Returns an OpDescriptor().
+		"""
+		return self.translateOp(rawInsn=None,
+					rawOps=self.__tokenizeString(string))
