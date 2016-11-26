@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.fupcompiler.fupcompiler_base import *
+
 
 class FupCompiler_WireFactory(XmlFactory):
 	def parser_open(self):
@@ -52,9 +54,10 @@ class FupCompiler_WireFactory(XmlFactory):
 				return
 		XmlFactory.parser_endTag(self, tag)
 
-class FupCompiler_Wire(object):
+class FupCompiler_Wire(FupCompiler_BaseObj):
 	factory = FupCompiler_WireFactory
 
 	def __init__(self, grid, idNum):
+		FupCompiler_BaseObj.__init__(self)
 		self.grid = grid		# FupCompiler_Grid
 		self.idNum = idNum		# Wire ID

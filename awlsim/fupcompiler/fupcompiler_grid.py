@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.fupcompiler.fupcompiler_base import *
 from awlsim.fupcompiler.fupcompiler_conn import *
 from awlsim.fupcompiler.fupcompiler_wire import *
 from awlsim.fupcompiler.fupcompiler_elem import *
@@ -48,10 +49,11 @@ class FupCompiler_GridFactory(XmlFactory):
 			return
 		XmlFactory.parser_endTag(self, tag)
 
-class FupCompiler_Grid(object):
+class FupCompiler_Grid(FupCompiler_BaseObj):
 	factory = FupCompiler_GridFactory
 
 	def __init__(self, compiler):
+		FupCompiler_BaseObj.__init__(self)
 		self.compiler = compiler	# FupCompiler
 		self.wires = {}			# FupCompiler_Wire
 		self.elems = set()		# FupCompiler_Elem
@@ -61,3 +63,43 @@ class FupCompiler_Grid(object):
 			return False
 		self.wires[wire.idNum] = wire
 		return True
+
+	def getWire(self, wireId):
+		try:
+			if wireId >= 0:
+				return self.wires[wireId]
+		except KeyError:
+			pass
+		return None
+
+	def addElem(self, elem):
+		self.elems.add(elem)
+
+	def compile(self):
+		"""Compile this FUP grid to AWL.
+		Returns a list of instructions.
+		"""
+		if self.compileState == self.COMPILE_DONE:
+			return []
+		self.compileState = self.COMPILE_RUNNING
+		insns = []
+
+		# Sort all elements in ascending order by Y position.
+		# The Y position in the diagram is the basic evaluation order.
+		# Also sort by X position as a secondary key.
+		yShift = max(e.x for e in self.elems).bit_length()
+		sortedElems = sorted(self.elems,
+				     key=lambda e: (e.y << yShift) + e.x)
+
+		# Find all assignment operators and walk the logic chain upwards.
+		print("COMPILE ELEMS")
+		for elem in sortedElems:
+			if elem.elemType == elem.TYPE_OPERAND and\
+			   elem.subType == elem.SUBTYPE_ASSIGN:
+				insns.extend(elem.compile())
+
+		for elem in self.elems:
+			pass#TODO find dangling elements
+
+		self.compileState = self.COMPILE_DONE
+		return insns

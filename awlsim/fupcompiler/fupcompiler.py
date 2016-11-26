@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.sources import *
 from awlsim.common.xmlfactory import *
+from awlsim.common.cpuspecs import *
 
 from awlsim.fupcompiler.fupcompiler_grid import *
 from awlsim.fupcompiler.fupcompiler_elem import *
@@ -66,6 +67,7 @@ class FupCompiler(object):
 		self.reset()
 
 	def reset(self):
+		self.opTrans = None
 		self.awlSource = None
 		self.awlBytesList = []
 		self.grids = []
@@ -81,16 +83,31 @@ class FupCompiler(object):
 				"%s" % str(e))
 
 	def __compile(self):
-		pass#TODO
+		insns = []
+		for grid in self.grids:
+			insns.extend(grid.compile())
+		#TODO
+		print("FINAL", insns)
 
-	def compile(self, fupSource):
-		"""Compile a FupSource.
-		Returns an AwlSource.
-		"""
+	def __trycompile(self, fupSource, mnemonics):
 		self.reset()
+		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
 		self.__parse(fupSource)
 		self.__compile()
 		self.awlSource.sourceBytes = b''.join(self.awlBytesList)
 		return self.getAwlSource()
+
+	def compile(self, fupSource, mnemonics):
+		"""Compile a FupSource.
+		mnemonics is either MNEMONICS_EN, MNEMONICS_DE or MNEMONICS_AUTO.
+		Returns an AwlSource.
+		"""
+		if mnemonics == S7CPUSpecs.MNEMONICS_AUTO:
+			try:
+				return self.__trycompile(fupSource, S7CPUSpecs.MNEMONICS_EN)
+			except AwlSimError as e:
+				pass
+			return self.__trycompile(fupSource, S7CPUSpecs.MNEMONICS_DE)
+		return self.__trycompile(fupSource, mnemonics)

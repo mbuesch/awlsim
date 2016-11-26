@@ -25,7 +25,12 @@ from awlsim.common.compat import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.util import *
 
+from awlsim.fupcompiler.fupcompiler_base import *
 from awlsim.fupcompiler.fupcompiler_conn import *
+
+#from awlsim.core.instructions.all_insns cimport * #@cy
+from awlsim.core.instructions.all_insns import * #@nocy
+from awlsim.core.optrans import *
 
 
 class FupCompiler_ElemFactory(XmlFactory):
@@ -57,6 +62,8 @@ class FupCompiler_ElemFactory(XmlFactory):
 	def parser_endTag(self, tag):
 		if self.inElem:
 			if tag.name == "element":
+				if self.elem:
+					self.grid.addElem(self.elem)
 				self.inElem = False
 				self.elem = None
 				return
@@ -66,7 +73,7 @@ class FupCompiler_ElemFactory(XmlFactory):
 				return
 		XmlFactory.parser_endTag(self, tag)
 
-class FupCompiler_Elem(object):
+class FupCompiler_Elem(FupCompiler_BaseObj):
 	factory = FupCompiler_ElemFactory
 
 	EnumGen.start
@@ -79,7 +86,7 @@ class FupCompiler_Elem(object):
 	SUBTYPE_OR		= EnumGen.item
 	SUBTYPE_XOR		= EnumGen.item
 	SUBTYPE_LOAD		= EnumGen.item
-	SYBTYPE_ASSIGN		= EnumGen.item
+	SUBTYPE_ASSIGN		= EnumGen.item
 	EnumGen.end
 
 	str2type = {
@@ -92,7 +99,7 @@ class FupCompiler_Elem(object):
 		"or"		: SUBTYPE_OR,
 		"xor"		: SUBTYPE_XOR,
 		"load"		: SUBTYPE_LOAD,
-		"assign"	: SYBTYPE_ASSIGN,
+		"assign"	: SUBTYPE_ASSIGN,
 	}
 
 	@classmethod
@@ -109,6 +116,7 @@ class FupCompiler_Elem(object):
 		return cls(grid, x, y, elemType, subType, content)
 
 	def __init__(self, grid, x, y, elemType, subType, content):
+		FupCompiler_BaseObj.__init__(self)
 		self.grid = grid			# FupCompiler_Grid
 		self.x = x				# X coordinate
 		self.y = y				# Y coordinate
@@ -120,3 +128,25 @@ class FupCompiler_Elem(object):
 	def addConn(self, conn):
 		self.connections.add(conn)
 		return True
+
+	def __compile_ASSIGN(self):
+		insns = []
+		if len(self.connections) != 1:
+			raise AwlSimError("FUP ASSIGN: Invalid number of connections")
+		conn = getany(self.connections)
+		if not conn.dirIn or conn.dirOut or conn.pos != 0:
+			raise AwlSimError("FUP ASSIGN: Invalid connection properties")
+		wire = self.grid.getWire(conn.wireId)
+		if not wire:
+			raise AwlSimError("FUP ASSIGN: Wire does not exist")
+		pass#TODO
+		opDesc = self.grid.compiler.opTrans.translateFromString(self.content)
+		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
+		print("ASSIGN", insns)
+		return insns
+
+	def compile(self):
+		if self.elemType == self.TYPE_OPERAND:
+			if self.subType == self.SUBTYPE_ASSIGN:
+				return self.__compile_ASSIGN()
+		assert(0)

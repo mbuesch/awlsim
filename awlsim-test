@@ -170,9 +170,15 @@ def run(inputFile):
 		writeStdout("Parsing code...\n")
 		generatedAwlSrcs = []
 
+		# Get mnemonics type
+		mnemonics = project.getCpuSpecs().getConfiguredMnemonics()
+		if opt_mnemonics is not None:
+			mnemonics = opt_mnemonics
+
 		# Parse FUP sources
 		for fupSrc in project.getFupSources():
-			generatedAwlSrcs.append(FupCompiler().compile(fupSrc))
+			generatedAwlSrcs.append(FupCompiler().compile(
+				fupSource=fupSrc, mnemonics=mnemonics))
 
 		# Parse KOP sources
 		for kopSrc in project.getKopSources():
@@ -189,9 +195,6 @@ def run(inputFile):
 		# Parse symbol tables
 		symTables = []
 		for symTabSrc in project.getSymTabSources():
-			mnemonics = project.getCpuSpecs().getConfiguredMnemonics()
-			if opt_mnemonics is not None:
-				mnemonics = opt_mnemonics
 			tab = SymTabParser.parseSource(symTabSrc,
 						       autodetectFormat = True,
 						       mnemonics = mnemonics)
