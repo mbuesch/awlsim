@@ -68,3 +68,14 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		self.dirIn = bool(dirIn)	# Input
 		self.dirOut = bool(dirOut)	# Output
 		self.wireId = wireId		# Wire ID number
+
+		self.wire = None
+
+	def getConnected(self):
+		"""Get all other connections that are connected
+		via self.wire to this connection.
+		This excludes self.
+		"""
+		for conn in self.wire.connections:
+			if conn is not self:
+				yield conn
