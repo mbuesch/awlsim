@@ -84,6 +84,26 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		self.compileState = self.COMPILE_RUNNING
 		insns = []
 
+		# Resolve all wire-IDs
+		for wire in self.wires.values():
+			wire.connections = set()
+		for elem in self.elems:
+			for conn in elem.connections:
+				wire = self.getWire(conn.wireId)
+				if not wire:
+					raise AwlSimError("FUP: Wire with ID %d "
+						"does not exist" % (conn.wireId))
+				wire.connections.add(conn)
+				conn.wire = wire
+		for wire in self.wires.values():
+			if len(wire.connections) == 0:
+				raise AwlSimError("FUP: Found unconnected wire %s" % (
+					str(wire)))
+			if len(wire.connections) == 1:
+				raise AwlSimError("FUP: Found dangling wire "
+					"%s with only one connection" % (
+					str(wire)))
+
 		# Sort all elements in ascending order by Y position.
 		# The Y position in the diagram is the basic evaluation order.
 		# Also sort by X position as a secondary key.

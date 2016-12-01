@@ -61,3 +61,5 @@ class FupCompiler_Wire(FupCompiler_BaseObj):
 		FupCompiler_BaseObj.__init__(self)
 		self.grid = grid		# FupCompiler_Grid
 		self.idNum = idNum		# Wire ID
+
+		self.connections = set()
