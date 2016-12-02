@@ -129,24 +129,132 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.connections.add(conn)
 		return True
 
-	def __compile_ASSIGN(self):
+	def __compile_OPERAND_ASSIGN(self):
+		opTrans = self.grid.compiler.opTrans
 		insns = []
+
+		# Only one connection allowed per ASSIGN.
 		if len(self.connections) != 1:
-			raise AwlSimError("FUP ASSIGN: Invalid number of connections")
+			raise AwlSimError("FUP ASSIGN: Invalid number of "
+				"connections in '%s'." % (
+				str(self)))
+
+		# The connection must be input.
 		conn = getany(self.connections)
 		if not conn.dirIn or conn.dirOut or conn.pos != 0:
-			raise AwlSimError("FUP ASSIGN: Invalid connection properties")
-		wire = self.grid.getWire(conn.wireId)
-		if not wire:
-			raise AwlSimError("FUP ASSIGN: Wire does not exist")
-		pass#TODO
-		opDesc = self.grid.compiler.opTrans.translateFromString(self.content)
+			raise AwlSimError("FUP ASSIGN: Invalid connection "
+				"properties in '%s'." % (
+				str(self)))
+
+		# Compile the element connected to the input.
+		connOut = [ c for c in conn.getConnected() if c.dirOut ]
+		if len(connOut) != 1:
+			raise AwlSimError("FUP ASSIGN: Multiple outbound signals "
+				"connected to '%s'." % (
+				str(self)))
+		insns.extend(connOut[0].elem.compile())
+
+		# Create the ASSIGN instruction.
+		opDesc = opTrans.translateFromString(self.content)
 		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
-		print("ASSIGN", insns)
+
+		# Compile additional assign operators.
+		# This is an optimization to avoid additional compilations
+		# of the whole tree. We just assign the VKE once again.
+		connIn = ( c for c in conn.getConnected() if c.dirIn )
+		for otherConn in connIn:
+			otherElem = otherConn.elem
+			if otherElem.elemType == self.TYPE_OPERAND and\
+			   otherElem.subType == self.SUBTYPE_ASSIGN:
+				otherElem.compileState = self.COMPILE_RUNNING
+				opDesc = opTrans.translateFromString(otherElem.content)
+				insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
+				otherElem.compileState = self.COMPILE_DONE
+
 		return insns
 
+	__operandTable = {
+		SUBTYPE_ASSIGN		: __compile_OPERAND_ASSIGN,
+	}
+
+	def __compile_OPERAND(self):
+		try:
+			handler = self.__operandTable[self.subType]
+		except KeyError:
+			raise AwlSimError("FUP compiler: Unknown element "
+				"subtype OPERAND/%d" % self.subType)
+		return handler(self)
+
+	def __compile_BOOLEAN_generic(self, insnClass, insnBranchClass):
+		opTrans = self.grid.compiler.opTrans
+		insns = []
+		for conn in self.connections:
+			if not conn.dirIn:
+				continue
+			for otherConn in conn.getConnected():
+				if not otherConn.dirOut:
+					continue
+				otherElem = otherConn.elem
+				if otherElem.elemType == self.TYPE_OPERAND and\
+				   otherElem.subType == self.SUBTYPE_LOAD:
+					otherElem.compileState = self.COMPILE_RUNNING
+					opDesc = opTrans.translateFromString(otherElem.content)
+					insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
+					otherElem.compileState = self.COMPILE_DONE
+				elif otherElem.elemType == self.TYPE_BOOLEAN:
+					insns.append(insnBranchClass(cpu=None))
+					insns.extend(otherElem.compile())
+					insns.append(AwlInsn_BEND(cpu=None))
+				else:
+					raise AwlSimError("FUP compiler: Invalid "
+						"element '%s' connected to '%s'." % (
+						str(otherElem), str(self)))
+		return insns
+
+	def __compile_BOOLEAN_AND(self):
+		return self.__compile_BOOLEAN_generic(AwlInsn_U, AwlInsn_UB)
+
+	def __compile_BOOLEAN_OR(self):
+		return self.__compile_BOOLEAN_generic(AwlInsn_O, AwlInsn_OB)
+
+	def __compile_BOOLEAN_XOR(self):
+		return self.__compile_BOOLEAN_generic(AwlInsn_X, AwlInsn_XB)
+
+	__booleanTable = {
+		SUBTYPE_AND		: __compile_BOOLEAN_AND,
+		SUBTYPE_OR		: __compile_BOOLEAN_OR,
+		SUBTYPE_XOR		: __compile_BOOLEAN_XOR,
+	}
+
+	def __compile_BOOLEAN(self):
+		try:
+			handler = self.__booleanTable[self.subType]
+		except KeyError:
+			raise AwlSimError("FUP compiler: Unknown element "
+				"subtype BOOLEAN/%d" % self.subType)
+		return handler(self)
+
+	__typeTable = {
+		TYPE_OPERAND		: __compile_OPERAND,
+		TYPE_BOOLEAN		: __compile_BOOLEAN,
+	}
+
 	def compile(self):
-		if self.elemType == self.TYPE_OPERAND:
-			if self.subType == self.SUBTYPE_ASSIGN:
-				return self.__compile_ASSIGN()
-		assert(0)
+		if self.compileState == self.COMPILE_DONE:
+			return []
+		self.compileState = self.COMPILE_RUNNING
+
+		try:
+			handler = self.__typeTable[self.elemType]
+		except KeyError:
+			raise AwlSimError("FUP compiler: Unknown element "
+				"type %d" % self.elemType)
+		result = handler(self)
+
+		self.compileState = self.COMPILE_DONE
+		return result
+
+	def __repr__(self):
+		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
+			"subType=%d, content=%s)" % (
+			self.x, self.y, self.elemType, self.subType, self.content)

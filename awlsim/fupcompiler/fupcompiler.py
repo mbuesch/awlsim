@@ -63,13 +63,14 @@ class FupCompilerFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler(object):
+	AWL_ENCODING = "latin_1"
+
 	def __init__(self):
 		self.reset()
 
 	def reset(self):
 		self.opTrans = None
 		self.awlSource = None
-		self.awlBytesList = []
 		self.grids = []
 
 	def getAwlSource(self):
@@ -82,12 +83,17 @@ class FupCompiler(object):
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
 
+	def __insnsToBytes(self, insns):
+		bytesList = []
+		for insn in insns:
+			bytesList.append(str(insn).encode(self.AWL_ENCODING))
+		return b'\n'.join(bytesList)
+
 	def __compile(self):
 		insns = []
 		for grid in self.grids:
 			insns.extend(grid.compile())
-		#TODO
-		print("FINAL", insns)
+		self.awlSource.sourceBytes = self.__insnsToBytes(insns)
 
 	def __trycompile(self, fupSource, mnemonics):
 		self.reset()
@@ -96,7 +102,7 @@ class FupCompiler(object):
 					   filepath=fupSource.filepath)
 		self.__parse(fupSource)
 		self.__compile()
-		self.awlSource.sourceBytes = b''.join(self.awlBytesList)
+		print(self.awlSource.sourceBytes.decode(self.AWL_ENCODING))#XXX
 		return self.getAwlSource()
 
 	def compile(self, fupSource, mnemonics):

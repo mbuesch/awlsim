@@ -112,14 +112,17 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 				     key=lambda e: (e.y << yShift) + e.x)
 
 		# Find all assignment operators and walk the logic chain upwards.
-		print("COMPILE ELEMS")
 		for elem in sortedElems:
 			if elem.elemType == elem.TYPE_OPERAND and\
 			   elem.subType == elem.SUBTYPE_ASSIGN:
 				insns.extend(elem.compile())
 
 		for elem in self.elems:
-			pass#TODO find dangling elements
+			if elem.compileState != elem.COMPILE_DONE:
+				raise AwlSimError("FUP: Found dangling element "
+					"'%s'. Please make sure all connections of "
+					"this element are connected." % (
+					str(elem)))
 
 		self.compileState = self.COMPILE_DONE
 		return insns
