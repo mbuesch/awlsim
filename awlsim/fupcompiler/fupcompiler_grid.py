@@ -104,19 +104,13 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 					"%s with only one connection" % (
 					str(wire)))
 
-		# Sort all elements in ascending order by Y position.
-		# The Y position in the diagram is the basic evaluation order.
-		# Also sort by X position as a secondary key.
-		yShift = max(e.x for e in self.elems).bit_length()
-		sortedElems = sorted(self.elems,
-				     key=lambda e: (e.y << yShift) + e.x)
-
 		# Find all assignment operators and walk the logic chain upwards.
-		for elem in sortedElems:
+		for elem in FupCompiler_Elem.sorted(self.elems):
 			if elem.elemType == elem.TYPE_OPERAND and\
 			   elem.subType == elem.SUBTYPE_ASSIGN:
 				insns.extend(elem.compile())
 
+		# Check if all elements have been compiled.
 		for elem in self.elems:
 			if elem.compileState != elem.COMPILE_DONE:
 				raise AwlSimError("FUP: Found dangling element "

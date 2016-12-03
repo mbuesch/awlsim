@@ -69,6 +69,7 @@ class FupCompiler(object):
 		self.reset()
 
 	def reset(self):
+		self.mnemonics = None
 		self.opTrans = None
 		self.awlSource = None
 		self.grids = []
@@ -83,25 +84,52 @@ class FupCompiler(object):
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
 
-	def __insnsToBytes(self, insns):
-		bytesList = []
-		for insn in insns:
-			bytesList.append(str(insn).encode(self.AWL_ENCODING))
-		return b'\n'.join(bytesList)
+	def __genAwlCode(self, fupSource, insns):
+		"""Generate AWL code from a list of instructions.
+		Returns bytes encoded as self.AWL_ENCODING.
+		"""
+		awl = []
 
-	def __compile(self):
+		# Create header
+		awl.append("FUNCTION FC 42 : VOID")
+		awl.append("BEGIN")
+
+		# Create instructions body
+		class FakeCpu(object):
+			def getMnemonics(cpuSelf):
+				return self.mnemonics
+		fakeCpu = FakeCpu()
+		for insn in insns:
+			insn.cpu = fakeCpu
+			awl.append("\t" + str(insn))
+
+		# Create footer
+		awl.append("END_FUNCTION")
+
+		return '\r\n'.join(awl).encode(self.AWL_ENCODING)
+
+	def __compileGrids(self, fupSource):
+		"""Compile all self.grids
+		"""
+		# Compile the grids
 		insns = []
 		for grid in self.grids:
 			insns.extend(grid.compile())
-		self.awlSource.sourceBytes = self.__insnsToBytes(insns)
+
+		# Optimize the generated instructions
+		pass#TODO
+
+		# Store the AWL code in the AWL source object.
+		self.awlSource.sourceBytes = self.__genAwlCode(fupSource, insns)
 
 	def __trycompile(self, fupSource, mnemonics):
 		self.reset()
+		self.mnemonics = mnemonics
 		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
 		self.__parse(fupSource)
-		self.__compile()
+		self.__compileGrids(fupSource)
 		print(self.awlSource.sourceBytes.decode(self.AWL_ENCODING))#XXX
 		return self.getAwlSource()
 

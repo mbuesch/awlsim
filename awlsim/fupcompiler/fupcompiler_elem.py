@@ -103,6 +103,19 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	}
 
 	@classmethod
+	def sorted(cls, elemList):
+		"""Sort all elements from elemList in ascending order by Y position.
+		The Y position in the diagram is the basic evaluation order.
+		Also sort by X position as a secondary key.
+		The sorted list is returned.
+		"""
+		if not elemList:
+			return []
+		yShift = max(e.x for e in elemList).bit_length()
+		return sorted(elemList,
+			      key=lambda e: (e.y << yShift) + e.x)
+
+	@classmethod
 	def parse(cls, grid, x, y, elemType, subType, content):
 		try:
 			elemType = cls.str2type[elemType]
@@ -161,9 +174,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		# Compile additional assign operators.
 		# This is an optimization to avoid additional compilations
 		# of the whole tree. We just assign the VKE once again.
-		connIn = ( c for c in conn.getConnected() if c.dirIn )
-		for otherConn in connIn:
-			otherElem = otherConn.elem
+		otherElems = [ c.elem for c in conn.getConnected() if c.dirIn ]
+		for otherElem in self.sorted(otherElems):
 			if otherElem.elemType == self.TYPE_OPERAND and\
 			   otherElem.subType == self.SUBTYPE_ASSIGN:
 				otherElem.compileState = self.COMPILE_RUNNING
