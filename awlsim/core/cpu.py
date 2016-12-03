@@ -67,7 +67,7 @@ class ParenStackElem(object):
 		self.OR = statusWord.OR
 
 	def __repr__(self):
-		mnemonics = self.cpu.specs.getMnemonics()
+		mnemonics = self.cpu.getMnemonics()
 		type2name = {
 			S7CPUSpecs.MNEMONICS_EN : AwlInsn.type2name_english,
 			S7CPUSpecs.MNEMONICS_DE : AwlInsn.type2name_german,
@@ -523,6 +523,9 @@ class S7CPU(object): #+cdef
 		self.reset()
 		self.enableExtendedInsns(False)
 		self.enableObTempPresets(False)
+
+	def getMnemonics(self):
+		return self.specs.getMnemonics()
 
 	def enableObTempPresets(self, en=True):
 		self.__obTempPresetsEnabled = bool(en)
@@ -1732,7 +1735,7 @@ class S7CPU(object): #+cdef
 	def __repr__(self):
 		if not self.callStack:
 			return ""
-		mnemonics = self.specs.getMnemonics()
+		mnemonics = self.getMnemonics()
 		isEnglish = (mnemonics == S7CPUSpecs.MNEMONICS_EN)
 		self.updateTimestamp()
 		ret = []

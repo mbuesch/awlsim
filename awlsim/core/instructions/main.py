@@ -449,6 +449,14 @@ class AwlInsn(object): #+cdef
 			opTrans = AwlOpTranslator(self)
 			opTrans.translateFromRawInsn(rawInsn)
 
+	def getMnemonics(self):
+		"""Return the MNEMONICS_... setting for this instruction.
+		Returns None, if the mnemonics setting is unknown.
+		"""
+		if self.cpu:
+			return self.cpu.getMnemonics()
+		return None
+
 	def staticSanityChecks(self):
 		"""Run static sanity checks.
 		"""
@@ -495,8 +503,7 @@ class AwlInsn(object): #+cdef
 	def __repr__(self):
 		ret = []
 		type2name = AwlInsn.type2name_english
-		if self.cpu and\
-		   self.cpu.getSpecs().getMnemonics() == S7CPUSpecs.MNEMONICS_DE:
+		if self.getMnemonics() == S7CPUSpecs.MNEMONICS_DE:
 			type2name = AwlInsn.type2name_german
 		try:
 			name = type2name[self.insnType]
