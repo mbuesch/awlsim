@@ -130,6 +130,9 @@ boot_config_file()
 # uncomment for composite PAL
 #sdtv_mode=2
 
+# GPU memory
+gpu_mem=16
+
 #uncomment to overclock the arm. 700 MHz is the default.
 #arm_freq=800
 
