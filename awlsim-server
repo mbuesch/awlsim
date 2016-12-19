@@ -30,6 +30,7 @@ from awlsim_loader.common import *
 from awlsim_loader.core import *
 from awlsim_loader.coreclient import *
 from awlsim_loader.coreserver import *
+import awlsim_loader.cython_helper as cython_helper
 
 
 def usage():
@@ -131,8 +132,7 @@ def main():
 			printInfo("Started awlsim server process (PID: %d)" %\
 				  serverProcess.pid)
 		else:
-			import awlsim.cython_helper
-			if awlsim.cython_helper.shouldUseCython():
+			if cython_helper.shouldUseCython():
 				printInfo("*** Using accelerated CYTHON core "
 					  "(AWLSIM_CYTHON environment variable is set)")
 
