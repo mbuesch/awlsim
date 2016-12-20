@@ -654,8 +654,10 @@ EOF
 			die "Failed to copy awlsim-gui"
 		cp examples/EXAMPLE.awlpro /home/pi/generic-example.awlpro ||\
 			die "Failed to copy EXAMPLE.awlpro."
-		cp examples/raspberrypi.awlpro /home/pi/raspberrypi-example.awlpro ||\
-			die "Failed to copy raspberrypi.awlpro."
+		cp examples/raspberrypi-gpio.awlpro /home/pi/raspberrypi-gpio-example.awlpro ||\
+			die "Failed to copy raspberrypi-gpio.awlpro."
+		cp examples/raspberrypi-profibus.awlpro /home/pi/raspberrypi-profibus-example.awlpro ||\
+			die "Failed to copy raspberrypi-profibus.awlpro."
 
 		#TODO run the testsuite
 
