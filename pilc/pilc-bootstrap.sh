@@ -415,6 +415,7 @@ EOF
 		python3-setuptools \
 		python3-smbus \
 		python3-tk \
+		schedtool \
 		screen \
 		sudo \
 		systemd \
