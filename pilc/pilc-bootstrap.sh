@@ -719,12 +719,14 @@ auto lo
 iface lo inet loopback
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/lo"
-	cat > /etc/network/interfaces.d/eth0 <<EOF
-allow-hotplug eth0
-iface eth0 inet dhcp
-iface eth0 inet6 auto
+	for i in $(seq 0 9); do
+		cat > /etc/network/interfaces.d/eth$i <<EOF
+allow-hotplug eth$i
+iface eth$i inet dhcp
+iface eth$i inet6 auto
 EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth0"
+		[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth$i"
+	done
 
 	info "Updating home directory permissions..."
 	chown -R pi:pi /home/pi || die "Failed to change /home/pi permissions."
