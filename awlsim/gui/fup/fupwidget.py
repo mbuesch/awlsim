@@ -23,10 +23,11 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.gui.fup.fupdrawwidget import *
+from awlsim.gui.interfedit.interftabwidget import *
 from awlsim.gui.util import *
 
 
-FUP_DEBUG = 1
+FUP_DEBUG = 0
 
 
 class FupFactory(XmlFactory):
@@ -85,12 +86,19 @@ class FupWidget(QWidget):
 		self.__source = FupSource(name = "FUP")
 		self.__needSourceUpdate = True
 
+		self.splitter = QSplitter(Qt.Vertical)
+
+		self.interf = AwlInterfaceView(self)
+		self.splitter.addWidget(self.interf)
+
 		self.draw = FupDrawWidget(self)
 		self.draw.diagramChanged.connect(self.diagramChanged)
 
 		self.drawScroll = QScrollArea(self)
 		self.drawScroll.setWidget(self.draw)
-		self.layout().addWidget(self.drawScroll, 0, 0)
+		self.splitter.addWidget(self.drawScroll)
+
+		self.layout().addWidget(self.splitter, 0, 0)
 
 		self.diagramChanged.connect(self.__handleDiagramChange)
 
