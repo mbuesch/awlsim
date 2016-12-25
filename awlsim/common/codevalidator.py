@@ -64,12 +64,16 @@ class AwlValidator(object):
 	def __init__(self):
 		self.__client = AwlSimClient()
 		try:
-			self.__client.setLoglevel(Logging.LOG_ERROR)
+			self.__client.setLoglevel(Logging.LOG_ERROR,
+						  setClientSide=False,
+						  setServerSide=True)
 			self.__client.spawnServer(listenHost = "localhost",
 						  listenPort = self._PORT_RANGE)
 			self.__client.connectToServer(host = "localhost",
 						      port = self.__client.serverProcessPort)
-			self.__client.setLoglevel(Logging.LOG_NONE)
+			self.__client.setLoglevel(Logging.LOG_NONE,
+						  setClientSide=False,
+						  setServerSide=True)
 		except AwlSimError as e:
 			self.doShutdown()
 			raise e
