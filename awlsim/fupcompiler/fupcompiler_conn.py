@@ -28,9 +28,9 @@ from awlsim.fupcompiler.fupcompiler_base import *
 
 
 class FupCompiler_ConnFactory(XmlFactory):
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.inConn = False
-		XmlFactory.parser_open(self)
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if not self.inConn:

@@ -33,9 +33,9 @@ from awlsim.fupcompiler.fupcompiler_elem import *
 class FupCompilerFactory(XmlFactory):
 	FUP_VERSION = 0
 
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.inFup = False
-		XmlFactory.parser_open(self)
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if self.inFup:

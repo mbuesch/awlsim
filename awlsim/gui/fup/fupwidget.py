@@ -33,17 +33,18 @@ FUP_DEBUG = 0
 class FupFactory(XmlFactory):
 	FUP_VERSION = 0
 
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.inFup = False
-		XmlFactory.parser_open(self)
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
+		interfModel = self.fupWidget.interf.model()
 		grid = self.fupWidget.draw.grid
 		if self.inFup:
+			if tag.name == "interface":
+				self.parser_switchTo(interfModel.factory(model=interfModel))
+				return
 			if tag.name == "grid":
-				width = tag.getAttrInt("width")
-				height = tag.getAttrInt("height")
-				grid.resize(width, height)
 				self.parser_switchTo(grid.factory(grid=grid))
 				return
 		else:
@@ -65,12 +66,18 @@ class FupFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		childTags = []
+
+		interfModel = self.fupWidget.interf.model()
+		childTags.extend(interfModel.factory(model=interfModel).composer_getTags())
+
 		grid = self.fupWidget.draw.grid
-		gridTags = grid.factory(grid=grid).composer_getTags()
+		childTags.extend(grid.factory(grid=grid).composer_getTags())
+
 		tags = [
 			self.Tag(name="FUP",
 				attrs={"version" : str(self.FUP_VERSION)},
-				tags=gridTags),
+				tags=childTags),
 		]
 		return tags
 

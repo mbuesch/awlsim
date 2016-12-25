@@ -77,7 +77,7 @@ class _XmlFactoryBuilder(object):
 	def pushFactory(self, xmlFactory):
 		self.__factoryList.append(xmlFactory)
 		xmlFactory.builder = self
-		xmlFactory.parser_open()
+		xmlFactory.parser_open(self.__tags[-1] if self.__tags else None)
 
 	def popFactory(self, xmlFactory):
 		try:
@@ -147,7 +147,7 @@ class XmlFactory(object):
 			return self.__kwargs[name]
 		raise AttributeError
 
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		pass
 
 	def parser_close(self):
@@ -216,6 +216,6 @@ class XmlFactory(object):
 	def parse(self, xmlText):
 		builder = _XmlFactoryBuilder(self)
 		parser = xml.etree.ElementTree.XMLParser(target=builder)
-		self.parser_open()
+		self.parser_open(None)
 		parser.feed(xmlText)
 		parser.close()

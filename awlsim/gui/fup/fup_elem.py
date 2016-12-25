@@ -30,10 +30,10 @@ from awlsim.gui.fup.fup_conn import *
 
 
 class FupElem_factory(XmlFactory):
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.inElem = False
 		self.elem = None
-		XmlFactory.parser_open(self)
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if self.inElem:

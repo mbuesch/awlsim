@@ -34,10 +34,10 @@ from awlsim.core.optrans import *
 
 
 class FupCompiler_ElemFactory(XmlFactory):
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.inElem = False
 		self.elem = None
-		XmlFactory.parser_open(self)
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if self.inElem:

@@ -22,8 +22,128 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.xmlfactory import *
+
 from awlsim.gui.util import *
 
+
+class AwlInterfaceModel_factory(XmlFactory):
+	def parser_open(self, tag=None):
+		self.inSection = "interface"
+		self.model.beginResetModel()
+		self.model.clear()
+		if tag:
+			self.model.configure(
+				haveIn=tag.getAttr("allow_inputs", False),
+				haveOut=tag.getAttr("allow_outputs", False),
+				haveInOut=tag.getAttr("allow_inouts", False),
+				haveStat=tag.getAttr("allow_stats", False),
+				haveTemp=tag.getAttr("allow_temps", False),
+				haveInitValue=tag.getAttr("allow_initvalue", False))
+
+		XmlFactory.parser_open(self, tag)
+
+	def parser_close(self):
+		self.model.endResetModel()
+		XmlFactory.parser_close(self)
+
+	def parser_beginTag(self, tag):
+		interf = self.model.interf
+
+		def mkField(tag):
+			return AwlInterfFieldDef(
+				name=tag.getAttr("name"),
+				typeStr=tag.getAttr("type"),
+				initValueStr=tag.getAttr("init", ""),
+				comment=tag.getAttr("comment", ""))
+
+		if self.inSection == "interface":
+			if (tag.name == "inputs" and self.model.haveIn) or\
+			   (tag.name == "outputs" and self.model.haveOut) or\
+			   (tag.name == "inouts" and self.model.haveInOut) or\
+			   (tag.name == "stats" and self.model.haveStat) or\
+			   (tag.name == "temps" and self.model.haveTemp):
+				self.inSection = tag.name
+				return
+		elif self.inSection == "inputs":
+			if tag.name == "field":
+				interf.inFields.append(mkField(tag))
+				return
+		elif self.inSection == "outputs":
+			if tag.name == "field":
+				interf.outFields.append(mkField(tag))
+				return
+		elif self.inSection == "inouts":
+			if tag.name == "field":
+				interf.inOutFields.append(mkField(tag))
+				return
+		elif self.inSection == "stats":
+			if tag.name == "field":
+				interf.statFields.append(mkField(tag))
+				return
+		elif self.inSection == "temps":
+			if tag.name == "field":
+				interf.tempFields.append(mkField(tag))
+				return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if self.inSection == "interface":
+			if tag.name == self.inSection:
+				self.parser_finish()
+				return
+		else:
+			if tag.name == self.inSection:
+				self.inSection = "interface"
+				return
+			if tag.name == "field":
+				return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		model = self.model
+		interf = model.interf
+
+		def makeFields(fields):
+			tags = []
+			for field in fields:
+				tags.append(self.Tag(name="field",
+						     attrs={
+					"name" : str(field.name),
+					"type" : str(field.typeStr),
+					"init" : str(field.initValueStr),
+					"comment" : str(field.comment),
+				}))
+			return tags
+
+		inputTags = makeFields(interf.inFields)
+		outputTags = makeFields(interf.outFields)
+		inOutTags = makeFields(interf.inOutFields)
+		statTags = makeFields(interf.statFields)
+		tempTags = makeFields(interf.tempFields)
+		return [
+			self.Tag(name="interface",
+				 attrs={
+					"allow_inputs" : str(int(model.haveIn)),
+					"allow_outputs" : str(int(model.haveOut)),
+					"allow_inouts" : str(int(model.haveInOut)),
+					"allow_stats" : str(int(model.haveStat)),
+					"allow_temps" : str(int(model.haveTemp)),
+					"allow_initvalue" : str(int(model.haveInitValue)),
+				 },
+				 tags=[
+					self.Tag(name="inputs",
+						 tags=inputTags),
+					self.Tag(name="outputs",
+						 tags=outputTags),
+					self.Tag(name="inouts",
+						 tags=inOutTags),
+					self.Tag(name="stats",
+						 tags=statTags),
+					self.Tag(name="temps",
+						 tags=tempTags),
+				 ]),
+		]
 
 class AwlInterfFieldDef(object):
 	def __init__(self, name="", typeStr="", initValueStr="", comment=""):
@@ -37,25 +157,62 @@ class AwlInterfFieldDef(object):
 
 class AwlInterfDef(object):
 	def __init__(self):
+		self.clear()
+
+	def clear(self):
 		self.inFields = []
 		self.outFields = []
 		self.inOutFields = []
 		self.statFields = []
 		self.tempFields = []
 
+class AbstractTableModel(QAbstractTableModel):
+	def __init__(self, *args, **kwargs):
+		self.__resetCount = 0
+		QAbstractTableModel.__init__(self, *args, **kwargs)
+
+	def beginResetModel(self):
+		try:
+			if self.__resetCount <= 0:
+				QAbstractTableModel.beginResetModel(self)
+		finally:
+			self.__resetCount += 1
+
+	def endResetModel(self):
+		self.__resetCount -= 1
+		if self.__resetCount <= 0:
+			self.__resetCount = 0
+			QAbstractTableModel.endResetModel(self)
+
 class AwlInterfaceModel(QAbstractTableModel):
+	factory = AwlInterfaceModel_factory
+
 	def __init__(self,
 		     haveIn=True, haveOut=True, haveInOut=True,
 		     haveStat=True, haveTemp=True,
 		     haveInitValue=True):
-		QAbstractTableModel.__init__(self)
+		AbstractTableModel.__init__(self)
+		self.configure(haveIn, haveOut, haveInOut,
+			       haveStat, haveTemp, haveInitValue)
+		self.interf = AwlInterfDef()
+
+	def clear(self):
+		self.beginResetModel()
+		self.interf.clear()
+		self.endResetModel()
+
+	def configure(self,
+		      haveIn=True, haveOut=True, haveInOut=True,
+		      haveStat=True, haveTemp=True,
+		      haveInitValue=True):
+		self.beginResetModel()
 		self.haveIn = haveIn
 		self.haveOut = haveOut
 		self.haveInOut = haveInOut
 		self.haveStat = haveStat
 		self.haveTemp = haveTemp
 		self.haveInitValue = haveInitValue
-		self.interf = AwlInterfDef()
+		self.endResetModel()
 
 	@property
 	def __nrRows_IN(self):
@@ -256,9 +413,11 @@ class AwlInterfaceModel(QAbstractTableModel):
 		elif role == Qt.BackgroundRole:
 			field = self.__row2field(row)
 			if field:
-				if not field.isValid():
+				if field.isValid():
+					return QBrush(QColor("white"))
+				else:
 					return QBrush(QColor("red"))
-			return QBrush(QColor("white"))
+			return QBrush(QColor("lightgray"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			if self.__isColumn_name(column):
 				return "The interface field name."

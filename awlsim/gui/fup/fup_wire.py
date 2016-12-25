@@ -29,9 +29,9 @@ from awlsim.gui.fup.fup_base import *
 
 
 class FupWire_factory(XmlFactory):
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.inWire = False
-		XmlFactory.parser_open(self)
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if not self.inWire:

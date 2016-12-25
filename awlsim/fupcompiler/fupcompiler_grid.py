@@ -31,8 +31,8 @@ from awlsim.fupcompiler.fupcompiler_elem import *
 
 
 class FupCompiler_GridFactory(XmlFactory):
-	def parser_open(self):
-		XmlFactory.parser_open(self)
+	def parser_open(self, tag=None):
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if tag.name == "wires":

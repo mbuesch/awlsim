@@ -32,9 +32,15 @@ from awlsim.gui.fup.fup_elemoperand import *
 
 
 class FupGrid_factory(XmlFactory):
-	def parser_open(self):
+	def parser_open(self, tag=None):
 		self.grid.clear()
-		XmlFactory.parser_open(self)
+
+		if tag:
+			width = tag.getAttrInt("width")
+			height = tag.getAttrInt("height")
+			self.grid.resize(width, height)
+
+		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if tag.name == "wires":
