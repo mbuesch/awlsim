@@ -583,9 +583,15 @@ class AwlSimClient(object):
 			self.__send(msg)
 		return True
 
-	def setLoglevel(self, level=Logging.LOG_INFO):
-		Logging.setLoglevel(level)
-		return self.__setOption("loglevel", int(level))
+	def setLoglevel(self, level=Logging.LOG_INFO,
+			setClientSide=True,
+			setServerSide=True):
+		if setClientSide:
+			Logging.setLoglevel(level)
+		if setServerSide:
+			if not self.__setOption("loglevel", int(level)):
+				return False
+		return True
 
 	def enableOBTempPresets(self, enable=True):
 		return self.__setOption("ob_temp_presets", int(bool(enable)))
