@@ -58,13 +58,15 @@ class AwlInterfaceView(QTableView):
 	def resizeEvent(self, ev):
 		QTableView.resizeEvent(self, ev)
 
-		hdr = self.horizontalHeader()
-		idx = 0
-		if hdr.sectionSize(idx) < 150:
-			hdr.resizeSection(idx, 150)
-		idx = 3 if self.model().haveInitValue else 2
-		if hdr.sectionSize(idx) < 200:
-			hdr.resizeSection(idx, 200)
+		model = self.model()
+		if model:
+			hdr = self.horizontalHeader()
+			idx = 0
+			if hdr.sectionSize(idx) < 150:
+				hdr.resizeSection(idx, 150)
+			idx = 3 if model.haveInitValue else 2
+			if hdr.sectionSize(idx) < 200:
+				hdr.resizeSection(idx, 200)
 
 	def deleteRow(self, index=None):
 		if not index:
