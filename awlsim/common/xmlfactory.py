@@ -102,11 +102,13 @@ class XmlFactory(object):
 		class NoDefault: pass
 
 		def __init__(self, name, attrs = None,
-			     tags = None, data = None):
+			     tags = None, data = None,
+			     emitIfEmpty = False):
 			self.name = name
 			self.attrs = attrs or {}
 			self.tags = tags or []
 			self.data = data or ""
+			self.emitIfEmpty = emitIfEmpty
 
 		def hasAttr(self, name):
 			return name in self.attrs
@@ -192,7 +194,7 @@ class XmlFactory(object):
 						ind,
 						tag.name)
 					)
-				else:
+				elif tag.attrs or tag.emitIfEmpty:
 					ret.append(
 						"%s<%s%s />" % (
 						ind,
