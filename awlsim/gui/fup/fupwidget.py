@@ -96,6 +96,7 @@ class FupWidget(QWidget):
 		self.splitter = QSplitter(Qt.Vertical)
 
 		self.interf = AwlInterfaceView(self)
+		self.interf.model().contentChanged.connect(self.diagramChanged)
 		self.splitter.addWidget(self.interf)
 
 		self.draw = FupDrawWidget(self)

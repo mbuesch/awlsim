@@ -187,6 +187,9 @@ class AbstractTableModel(QAbstractTableModel):
 class AwlInterfaceModel(QAbstractTableModel):
 	factory = AwlInterfaceModel_factory
 
+	# Signal: Emitted, if some data in the model changed.
+	contentChanged = Signal()
+
 	def __init__(self,
 		     haveIn=True, haveOut=True, haveInOut=True,
 		     haveStat=True, haveTemp=True,
@@ -200,6 +203,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 		self.beginResetModel()
 		self.interf.clear()
 		self.endResetModel()
+		self.contentChanged.emit()
 
 	def configure(self,
 		      haveIn=True, haveOut=True, haveInOut=True,
@@ -213,6 +217,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 		self.haveTemp = haveTemp
 		self.haveInitValue = haveInitValue
 		self.endResetModel()
+		self.contentChanged.emit()
 
 	@property
 	def __nrRows_IN(self):
@@ -378,11 +383,13 @@ class AwlInterfaceModel(QAbstractTableModel):
 			self.beginResetModel()
 			del self.interf.tempFields[localRow]
 			self.endResetModel()
+		self.contentChanged.emit()
 
 	def moveEntry(self, fromRow, toRow):
 		self.beginResetModel()
 		pass#TODO
 		self.endResetModel()
+		self.contentChanged.emit()
 
 	def rowCount(self, parent=QModelIndex()):
 		return sum((self.__nrRows_IN,
@@ -528,6 +535,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 				field.comment = value
 			else:
 				assert(0)
+			self.contentChanged.emit()
 			return True
 		return False
 
