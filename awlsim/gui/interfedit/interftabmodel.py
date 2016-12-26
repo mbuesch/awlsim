@@ -153,7 +153,7 @@ class AwlInterfFieldDef(object):
 		self.comment = comment
 
 	def isValid(self):
-		return self.name and self.typeStr and self.initValueStr
+		return self.name and self.typeStr
 
 class AwlInterfDef(object):
 	def __init__(self):
@@ -165,6 +165,22 @@ class AwlInterfDef(object):
 		self.inOutFields = []
 		self.statFields = []
 		self.tempFields = []
+
+	def isEmpty(self):
+		return not self.inFields and\
+		       not self.outFields and\
+		       not self.inOutFields and\
+		       not self.statFields and\
+		       not self.tempFields
+
+	@property
+	def allFields(self):
+		for field in itertools.chain(self.inFields,
+					     self.outFields,
+					     self.inOutFields,
+					     self.statFields,
+					     self.tempFields):
+			yield field
 
 class AbstractTableModel(QAbstractTableModel):
 	def __init__(self, *args, **kwargs):
@@ -211,13 +227,29 @@ class AwlInterfaceModel(QAbstractTableModel):
 		      haveInitValue=True):
 		self.beginResetModel()
 		self.haveIn = haveIn
+		if not haveIn:
+			self.interf.inFields = []
 		self.haveOut = haveOut
+		if not haveOut:
+			self.interf.outFields = []
 		self.haveInOut = haveInOut
+		if not haveInOut:
+			self.interf.inOutFields = []
 		self.haveStat = haveStat
+		if not haveStat:
+			self.interf.statFields = []
 		self.haveTemp = haveTemp
+		if not haveTemp:
+			self.interf.tempFields = []
 		self.haveInitValue = haveInitValue
+		if not haveInitValue:
+			for field in self.interf.allFields:
+				field.initValueStr = ""
 		self.endResetModel()
 		self.contentChanged.emit()
+
+	def isEmpty(self):
+		return self.interf.isEmpty()
 
 	@property
 	def __nrRows_IN(self):
@@ -420,20 +452,32 @@ class AwlInterfaceModel(QAbstractTableModel):
 		elif role == Qt.BackgroundRole:
 			field = self.__row2field(row)
 			if field:
-				if field.isValid():
-					return QBrush(QColor("white"))
-				else:
+				if not field.isValid() and\
+				   not self.__isColumn_comment(column):
 					return QBrush(QColor("red"))
+				else:
+					return QBrush(QColor("white"))
 			return QBrush(QColor("lightgray"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
-			if self.__isColumn_name(column):
-				return "The interface field name."
-			elif self.__isColumn_type(column):
-				return "The interface field data type.\nFor example: BOOL  or  INT"
-			elif self.__isColumn_initValue(column):
-				return "The initial value in the associated DB."
-			elif self.__isColumn_comment(column):
-				return ""
+			if self.__isRow_newIN(row):
+				return "Create a new INPUT field here..."
+			elif self.__isRow_newOUT(row):
+				return "Create a new OUTPUT field here..."
+			elif self.__isRow_newINOUT(row):
+				return "Create a new IN_OUT field here..."
+			elif self.__isRow_newSTAT(row):
+				return "Create a new STAT field here..."
+			elif self.__isRow_newTEMP(row):
+				return "Create a new TEMP field here..."
+			else:
+				if self.__isColumn_name(column):
+					return "The interface field name."
+				elif self.__isColumn_type(column):
+					return "The interface field data type.\nFor example: BOOL  or  INT"
+				elif self.__isColumn_initValue(column):
+					return "The initial value in the associated DB."
+				elif self.__isColumn_comment(column):
+					return "Comment"
 			assert(0)
 		return None
 
@@ -443,7 +487,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 			return None
 		if orientation == Qt.Horizontal:
 			if self.__isColumn_name(column):
-				return "Name"
+				return "Interface field name"
 			elif self.__isColumn_type(column):
 				return "Data type"
 			elif self.__isColumn_initValue(column):

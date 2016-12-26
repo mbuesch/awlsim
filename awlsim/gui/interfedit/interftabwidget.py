@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.blocker import *
+
 from awlsim.gui.interfedit.interftabmodel import *
 
 
@@ -41,6 +43,10 @@ class AwlInterfaceView(QTableView):
 		self.pressed.connect(self.__handleMousePress)
 
 		self.setModel(AwlInterfaceModel())
+
+	def isEmpty(self):
+		model = self.model()
+		return not model or model.isEmpty()
 
 	def __rebuild(self):
 		model = self.model()

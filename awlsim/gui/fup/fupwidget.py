@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.gui.fup.fupdrawwidget import *
-from awlsim.gui.interfedit.interftabwidget import *
+from awlsim.gui.interfedit.interfwidget import *
 from awlsim.gui.util import *
 
 
@@ -38,7 +38,7 @@ class FupFactory(XmlFactory):
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
-		interfModel = self.fupWidget.interf.model()
+		interfModel = self.fupWidget.interf.interfView.model()
 		grid = self.fupWidget.draw.grid
 		if self.inFup:
 			if tag.name == "interface":
@@ -68,7 +68,7 @@ class FupFactory(XmlFactory):
 	def composer_getTags(self):
 		childTags = []
 
-		interfModel = self.fupWidget.interf.model()
+		interfModel = self.fupWidget.interf.interfView.model()
 		childTags.extend(interfModel.factory(model=interfModel).composer_getTags())
 
 		grid = self.fupWidget.draw.grid
@@ -95,8 +95,8 @@ class FupWidget(QWidget):
 
 		self.splitter = QSplitter(Qt.Vertical)
 
-		self.interf = AwlInterfaceView(self)
-		self.interf.model().contentChanged.connect(self.diagramChanged)
+		self.interf = AwlInterfWidget(self)
+		self.interf.contentChanged.connect(self.diagramChanged)
 		self.splitter.addWidget(self.interf)
 
 		self.draw = FupDrawWidget(self)
