@@ -103,12 +103,14 @@ class XmlFactory(object):
 
 		def __init__(self, name, attrs = None,
 			     tags = None, data = None,
-			     emitIfEmpty = False):
-			self.name = name
-			self.attrs = attrs or {}
-			self.tags = tags or []
-			self.data = data or ""
-			self.emitIfEmpty = emitIfEmpty
+			     emitEmptyAttrs = False,
+			     emitEmptyTag = False):
+			self.name = name			# Tag name
+			self.attrs = attrs or {}		# Tag attributes
+			self.tags = tags or []			# Child tags
+			self.data = data or ""			# Tag data
+			self.emitEmptyAttrs = emitEmptyAttrs	# Emit attributes with empty data?
+			self.emitEmptyTag = emitEmptyTag	# Emit tag, if it is completely empty?
 
 		def hasAttr(self, name):
 			return name in self.attrs
@@ -176,9 +178,17 @@ class XmlFactory(object):
 			ret = []
 			for tag in tags:
 				ind = "\t" * indent
+				if tag.emitEmptyAttrs:
+					attrs = tag.attrs
+				else:
+					# Remove empty attrs
+					attrs = { aName : aVal
+						  for aName, aVal in tag.attrs.items()
+						  if aVal
+					}
 				attrText = (" " + " ".join(
 					"%s=%s" % (aName, saxutils.quoteattr(aVal))
-					for aName, aVal in sorted(tag.attrs.items(),
+					for aName, aVal in sorted(attrs.items(),
 								  key=lambda a: a[0])
 				)).rstrip()
 				if tag.data or tag.tags:
@@ -194,7 +204,7 @@ class XmlFactory(object):
 						ind,
 						tag.name)
 					)
-				elif tag.attrs or tag.emitIfEmpty:
+				elif attrs or tag.emitEmptyTag:
 					ret.append(
 						"%s<%s%s />" % (
 						ind,
