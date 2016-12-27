@@ -39,6 +39,7 @@ class AwlInterfaceModel_factory(XmlFactory):
 				haveInOut=tag.getAttr("allow_inouts", False),
 				haveStat=tag.getAttr("allow_stats", False),
 				haveTemp=tag.getAttr("allow_temps", False),
+				haveRetVal=tag.getAttr("allow_retval", False),
 				haveInitValue=tag.getAttr("allow_initvalue", False))
 
 		XmlFactory.parser_open(self, tag)
@@ -52,8 +53,8 @@ class AwlInterfaceModel_factory(XmlFactory):
 
 		def mkField(tag):
 			return AwlInterfFieldDef(
-				name=tag.getAttr("name"),
-				typeStr=tag.getAttr("type"),
+				name=tag.getAttr("name", ""),
+				typeStr=tag.getAttr("type", ""),
 				initValueStr=tag.getAttr("init", ""),
 				comment=tag.getAttr("comment", ""))
 
@@ -62,7 +63,8 @@ class AwlInterfaceModel_factory(XmlFactory):
 			   (tag.name == "outputs" and self.model.haveOut) or\
 			   (tag.name == "inouts" and self.model.haveInOut) or\
 			   (tag.name == "stats" and self.model.haveStat) or\
-			   (tag.name == "temps" and self.model.haveTemp):
+			   (tag.name == "temps" and self.model.haveTemp) or\
+			   (tag.name == "retval" and self.model.haveRetVal):
 				self.inSection = tag.name
 				return
 		elif self.inSection == "inputs":
@@ -84,6 +86,10 @@ class AwlInterfaceModel_factory(XmlFactory):
 		elif self.inSection == "temps":
 			if tag.name == "field":
 				interf.tempFields.append(mkField(tag))
+				return
+		elif self.inSection == "retval":
+			if tag.name == "field":
+				interf.retValField = mkField(tag)
 				return
 		XmlFactory.parser_beginTag(self, tag)
 
@@ -107,6 +113,8 @@ class AwlInterfaceModel_factory(XmlFactory):
 		def makeFields(fields):
 			tags = []
 			for field in fields:
+				if not field:
+					continue
 				tags.append(self.Tag(name="field",
 						     attrs={
 					"name" : str(field.name),
@@ -121,6 +129,7 @@ class AwlInterfaceModel_factory(XmlFactory):
 		inOutTags = makeFields(interf.inOutFields)
 		statTags = makeFields(interf.statFields)
 		tempTags = makeFields(interf.tempFields)
+		retValTags = makeFields([interf.retValField])
 		return [
 			self.Tag(name="interface",
 				 attrs={
@@ -129,6 +138,7 @@ class AwlInterfaceModel_factory(XmlFactory):
 					"allow_inouts" : str(int(model.haveInOut)),
 					"allow_stats" : str(int(model.haveStat)),
 					"allow_temps" : str(int(model.haveTemp)),
+					"allow_retval" : str(int(model.haveRetVal)),
 					"allow_initvalue" : str(int(model.haveInitValue)),
 				 },
 				 tags=[
@@ -142,6 +152,8 @@ class AwlInterfaceModel_factory(XmlFactory):
 						 tags=statTags),
 					self.Tag(name="temps",
 						 tags=tempTags),
+					self.Tag(name="retval",
+						 tags=retValTags),
 				 ]),
 		]
 
