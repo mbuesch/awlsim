@@ -183,12 +183,12 @@ class XmlFactory(object):
 				else:
 					# Remove empty attrs
 					attrs = { aName : aVal
-						  for aName, aVal in tag.attrs.items()
+						  for aName, aVal in dictItems(tag.attrs)
 						  if aVal
 					}
 				attrText = (" " + " ".join(
 					"%s=%s" % (aName, saxutils.quoteattr(aVal))
-					for aName, aVal in sorted(attrs.items(),
+					for aName, aVal in sorted(dictItems(attrs),
 								  key=lambda a: a[0])
 				)).rstrip()
 				if tag.data or tag.tags:

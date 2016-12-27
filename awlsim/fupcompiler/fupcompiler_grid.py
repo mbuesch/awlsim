@@ -85,7 +85,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		insns = []
 
 		# Resolve all wire-IDs
-		for wire in self.wires.values():
+		for wire in dictValues(self.wires):
 			wire.connections = set()
 		for elem in self.elems:
 			for conn in elem.connections:
@@ -95,7 +95,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 						"does not exist" % (conn.wireId))
 				wire.connections.add(conn)
 				conn.wire = wire
-		for wire in self.wires.values():
+		for wire in dictValues(self.wires):
 			if len(wire.connections) == 0:
 				raise AwlSimError("FUP: Found unconnected wire %s" % (
 					str(wire)))
