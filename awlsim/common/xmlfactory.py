@@ -140,6 +140,10 @@ class XmlFactory(object):
 						self.name, name))
 			return default
 
+		def getAttrBool(self, name, default=NoDefault):
+			return bool(self.getAttrInt(name,
+				default if default is self.NoDefault else int(bool(default))))
+
 	def __init__(self, **kwargs):
 		self.__kwargs = kwargs
 		self.builder = None
