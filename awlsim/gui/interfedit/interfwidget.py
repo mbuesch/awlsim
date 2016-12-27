@@ -90,6 +90,7 @@ class AwlInterfWidget(QWidget):
 				haveInOut=True,
 				haveStat=False,
 				haveTemp=True,
+				haveRetVal=True,
 				haveInitValue=False
 			)
 		elif blockTypeStr.upper().strip() == "FB":
@@ -99,6 +100,7 @@ class AwlInterfWidget(QWidget):
 				haveInOut=True,
 				haveStat=True,
 				haveTemp=True,
+				haveRetVal=False,
 				haveInitValue=True
 			)
 		elif blockTypeStr.upper().strip() == "OB":
@@ -108,6 +110,7 @@ class AwlInterfWidget(QWidget):
 				haveInOut=False,
 				haveStat=False,
 				haveTemp=True,
+				haveRetVal=False,
 				haveInitValue=False
 			)
 		else:

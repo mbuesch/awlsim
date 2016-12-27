@@ -165,13 +165,15 @@ class AwlInterfDef(object):
 		self.inOutFields = []
 		self.statFields = []
 		self.tempFields = []
+		self.retValField = None
 
 	def isEmpty(self):
 		return not self.inFields and\
 		       not self.outFields and\
 		       not self.inOutFields and\
 		       not self.statFields and\
-		       not self.tempFields
+		       not self.tempFields and\
+		       not self.retValField
 
 	@property
 	def allFields(self):
@@ -179,8 +181,10 @@ class AwlInterfDef(object):
 					     self.outFields,
 					     self.inOutFields,
 					     self.statFields,
-					     self.tempFields):
-			yield field
+					     self.tempFields,
+					     [self.retValField]):
+			if field:
+				yield field
 
 class AbstractTableModel(QAbstractTableModel):
 	def __init__(self, *args, **kwargs):
@@ -208,12 +212,13 @@ class AwlInterfaceModel(QAbstractTableModel):
 
 	def __init__(self,
 		     haveIn=True, haveOut=True, haveInOut=True,
-		     haveStat=True, haveTemp=True,
+		     haveStat=True, haveTemp=True, haveRetVal=True,
 		     haveInitValue=True):
 		AbstractTableModel.__init__(self)
-		self.configure(haveIn, haveOut, haveInOut,
-			       haveStat, haveTemp, haveInitValue)
 		self.interf = AwlInterfDef()
+		self.configure(haveIn, haveOut, haveInOut,
+			       haveStat, haveTemp, haveRetVal,
+			       haveInitValue)
 
 	def clear(self):
 		self.beginResetModel()
@@ -223,7 +228,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 
 	def configure(self,
 		      haveIn=True, haveOut=True, haveInOut=True,
-		      haveStat=True, haveTemp=True,
+		      haveStat=True, haveTemp=True, haveRetVal=True,
 		      haveInitValue=True):
 		self.beginResetModel()
 		self.haveIn = haveIn
@@ -241,6 +246,11 @@ class AwlInterfaceModel(QAbstractTableModel):
 		self.haveTemp = haveTemp
 		if not haveTemp:
 			self.interf.tempFields = []
+		self.haveRetVal = haveRetVal
+		if haveRetVal:
+			self.interf.retValField = AwlInterfFieldDef("RET_VAL", "void")
+		else:
+			self.interf.retValField = None
 		self.haveInitValue = haveInitValue
 		if not haveInitValue:
 			for field in self.interf.allFields:
@@ -281,6 +291,12 @@ class AwlInterfaceModel(QAbstractTableModel):
 			return len(self.interf.tempFields) + 1
 		return 0
 
+	@property
+	def __nrRows_RETVAL(self):
+		if self.haveRetVal:
+			return 1
+		return 0
+
 	def __isRow_IN(self, row):
 		return self.haveIn and\
 		       row < self.__nrRows_IN - 1
@@ -296,13 +312,11 @@ class AwlInterfaceModel(QAbstractTableModel):
 			     self.__nrRows_OUT - 1
 
 	def __isRow_newOUT(self, row):
-		interf = self.interf
 		return self.haveOut and\
 		       row == self.__nrRows_IN +\
 			      self.__nrRows_OUT - 1
 
 	def __isRow_INOUT(self, row):
-		interf = self.interf
 		return self.haveInOut and\
 		       row >= self.__nrRows_IN +\
 			      self.__nrRows_OUT and\
@@ -311,14 +325,12 @@ class AwlInterfaceModel(QAbstractTableModel):
 			     self.__nrRows_INOUT - 1
 
 	def __isRow_newINOUT(self, row):
-		interf = self.interf
 		return self.haveInOut and\
 		       row == self.__nrRows_IN +\
 			      self.__nrRows_OUT +\
 			      self.__nrRows_INOUT - 1
 
 	def __isRow_STAT(self, row):
-		interf = self.interf
 		return self.haveStat and\
 		       row >= self.__nrRows_IN +\
 			      self.__nrRows_OUT +\
@@ -329,7 +341,6 @@ class AwlInterfaceModel(QAbstractTableModel):
 			     self.__nrRows_STAT - 1
 
 	def __isRow_newSTAT(self, row):
-		interf = self.interf
 		return self.haveStat and\
 		       row == self.__nrRows_IN +\
 			      self.__nrRows_OUT +\
@@ -337,7 +348,6 @@ class AwlInterfaceModel(QAbstractTableModel):
 			      self.__nrRows_STAT - 1
 
 	def __isRow_TEMP(self, row):
-		interf = self.interf
 		return self.haveTemp and\
 		       row >= self.__nrRows_IN +\
 			      self.__nrRows_OUT +\
@@ -350,13 +360,21 @@ class AwlInterfaceModel(QAbstractTableModel):
 			     self.__nrRows_TEMP - 1
 
 	def __isRow_newTEMP(self, row):
-		interf = self.interf
 		return self.haveTemp and\
 		       row == self.__nrRows_IN +\
 			      self.__nrRows_OUT +\
 			      self.__nrRows_INOUT +\
 			      self.__nrRows_STAT +\
 			      self.__nrRows_TEMP - 1
+
+	def __isRow_RETVAL(self, row):
+		return self.haveRetVal and\
+		       row == self.__nrRows_IN +\
+			      self.__nrRows_OUT +\
+			      self.__nrRows_INOUT +\
+			      self.__nrRows_STAT +\
+			      self.__nrRows_TEMP +\
+			      self.__nrRows_RETVAL - 1
 
 	def __row2field(self, row):
 		interf = self.interf
@@ -375,6 +393,8 @@ class AwlInterfaceModel(QAbstractTableModel):
 		localRow -= self.__nrRows_STAT
 		if self.__isRow_TEMP(row):
 			return interf.tempFields[localRow]
+		if self.__isRow_RETVAL(row):
+			return interf.retValField
 		return None
 
 	def __isColumn_name(self, column):
@@ -415,6 +435,9 @@ class AwlInterfaceModel(QAbstractTableModel):
 			self.beginResetModel()
 			del self.interf.tempFields[localRow]
 			self.endResetModel()
+		if self.__isRow_RETVAL(row):
+			# Can't delete RETVAL
+			return
 		self.contentChanged.emit()
 
 	def moveEntry(self, fromRow, toRow):
@@ -428,7 +451,8 @@ class AwlInterfaceModel(QAbstractTableModel):
 			    self.__nrRows_OUT,
 			    self.__nrRows_INOUT,
 			    self.__nrRows_STAT,
-			    self.__nrRows_TEMP))
+			    self.__nrRows_TEMP,
+			    self.__nrRows_RETVAL))
 
 	def columnCount(self, parent=QModelIndex()):
 		return 1 + 1 + (1 if self.haveInitValue else 0) + 1
@@ -452,6 +476,9 @@ class AwlInterfaceModel(QAbstractTableModel):
 		elif role == Qt.BackgroundRole:
 			field = self.__row2field(row)
 			if field:
+				if self.__isRow_RETVAL(row) and\
+				   self.__isColumn_name(column):
+					return QBrush(QColor("gray"))
 				if not field.isValid() and\
 				   not self.__isColumn_comment(column):
 					return QBrush(QColor("red"))
@@ -471,7 +498,10 @@ class AwlInterfaceModel(QAbstractTableModel):
 				return "Create a new TEMP field here..."
 			else:
 				if self.__isColumn_name(column):
-					return "The interface field name."
+					if self.__isRow_RETVAL(row):
+						return "Function (FC) return value."
+					else:
+						return "The interface field name."
 				elif self.__isColumn_type(column):
 					return "The interface field data type.\nFor example: BOOL  or  INT"
 				elif self.__isColumn_initValue(column):
@@ -482,10 +512,10 @@ class AwlInterfaceModel(QAbstractTableModel):
 		return None
 
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		column = section
 		if role != Qt.DisplayRole:
 			return None
 		if orientation == Qt.Horizontal:
+			column = section
 			if self.__isColumn_name(column):
 				return "Interface field name"
 			elif self.__isColumn_type(column):
@@ -496,32 +526,35 @@ class AwlInterfaceModel(QAbstractTableModel):
 				return "Comment"
 			assert(0)
 		else:
+			row = section
 			interf = self.interf
-			localRow = column
-			if self.__isRow_IN(column):
+			localRow = row
+			if self.__isRow_IN(row):
 				return "IN %d" % (localRow + 1)
-			if self.__isRow_newIN(column):
+			if self.__isRow_newIN(row):
 				return "IN..."
 			localRow -= self.__nrRows_IN
-			if self.__isRow_OUT(column):
+			if self.__isRow_OUT(row):
 				return "OUT %d" % (localRow + 1)
-			if self.__isRow_newOUT(column):
+			if self.__isRow_newOUT(row):
 				return "OUT..."
 			localRow -= self.__nrRows_OUT
-			if self.__isRow_INOUT(column):
+			if self.__isRow_INOUT(row):
 				return "IN_OUT %d" % (localRow + 1)
-			if self.__isRow_newINOUT(column):
+			if self.__isRow_newINOUT(row):
 				return "IN_OUT..."
 			localRow -= self.__nrRows_INOUT
-			if self.__isRow_STAT(column):
+			if self.__isRow_STAT(row):
 				return "STAT %d" % (localRow + 1)
-			if self.__isRow_newSTAT(column):
+			if self.__isRow_newSTAT(row):
 				return "STAT..."
 			localRow -= self.__nrRows_STAT
-			if self.__isRow_TEMP(column):
+			if self.__isRow_TEMP(row):
 				return "TEMP %d" % (localRow + 1)
-			if self.__isRow_newTEMP(column):
+			if self.__isRow_newTEMP(row):
 				return "TEMP..."
+			if self.__isRow_RETVAL(row):
+				return "RET_VAL"
 			assert(0)
 
 	def setData(self, index, value, role=Qt.EditRole):
@@ -586,4 +619,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 	def flags(self, index):
 		if not index:
 			return Qt.ItemIsEnabled
+		row, column = index.row(), index.column()
+		if self.__isRow_RETVAL(row) and self.__isColumn_name(column):
+			return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
