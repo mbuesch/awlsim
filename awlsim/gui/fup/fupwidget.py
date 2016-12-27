@@ -35,18 +35,30 @@ class FupFactory(XmlFactory):
 
 	def parser_open(self, tag=None):
 		self.inFup = False
+		self.inGrids = False
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
+		blockTypeEdit = self.fupWidget.interf.blockTypeEdit
 		interfModel = self.fupWidget.interf.interfView.model()
 		grid = self.fupWidget.draw.grid
 		if self.inFup:
-			if tag.name == "interface":
-				self.parser_switchTo(interfModel.factory(model=interfModel))
-				return
-			if tag.name == "grid":
-				self.parser_switchTo(grid.factory(grid=grid))
-				return
+			if self.inGrids:
+				if tag.name == "grid":
+					self.parser_switchTo(grid.factory(grid=grid))
+					return
+			else:
+				if tag.name == "blockdecl":
+					self.parser_switchTo(blockTypeEdit.factory(
+						blockTypeWidget=blockTypeEdit))
+					return
+				if tag.name == "interface":
+					self.parser_switchTo(interfModel.factory(
+						model=interfModel))
+					return
+				if tag.name == "grids":
+					self.inGrids = True
+					return
 		else:
 			if tag.name == "FUP":
 				version = tag.getAttrInt("version")
@@ -59,20 +71,32 @@ class FupFactory(XmlFactory):
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if tag.name == "FUP":
-			self.inFup = False
-			self.parser_finish()
-			return
+		if self.inFup:
+			if self.inGrids:
+				if tag.name == "grids":
+					self.inGrids = False
+					return
+			else:
+				if tag.name == "FUP":
+					self.inFup = False
+					self.parser_finish()
+					return
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
 		childTags = []
 
+		blockTypeEdit = self.fupWidget.interf.blockTypeEdit
+		childTags.extend(blockTypeEdit.factory(
+			blockTypeWidget=blockTypeEdit).composer_getTags())
+
 		interfModel = self.fupWidget.interf.interfView.model()
-		childTags.extend(interfModel.factory(model=interfModel).composer_getTags())
+		childTags.extend(interfModel.factory(
+			model=interfModel).composer_getTags())
 
 		grid = self.fupWidget.draw.grid
-		childTags.extend(grid.factory(grid=grid).composer_getTags())
+		childTags.append(self.Tag(name="grids",
+					  tags=grid.factory(grid=grid).composer_getTags()))
 
 		tags = [
 			self.Tag(name="FUP",
