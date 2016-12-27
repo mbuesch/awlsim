@@ -68,8 +68,8 @@ class AwlInterfWidget(QWidget):
 				QMessageBox.No)
 			if ret != QMessageBox.Yes:
 				# Revert the change
-				with self.__changeSignalBlocked:
-					self.blockTypeEdit.set(*self.__currentBlockType)
+				self.blockTypeEdit.set(*self.__currentBlockType,
+						       noChangeSignals=True)
 				return
 		self.__currentBlockType = self.blockTypeEdit.get()
 		with self.__changeSignalBlocked:

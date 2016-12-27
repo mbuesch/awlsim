@@ -34,13 +34,13 @@ class AwlInterfaceModel_factory(XmlFactory):
 		self.model.clear()
 		if tag:
 			self.model.configure(
-				haveIn=tag.getAttr("allow_inputs", False),
-				haveOut=tag.getAttr("allow_outputs", False),
-				haveInOut=tag.getAttr("allow_inouts", False),
-				haveStat=tag.getAttr("allow_stats", False),
-				haveTemp=tag.getAttr("allow_temps", False),
-				haveRetVal=tag.getAttr("allow_retval", False),
-				haveInitValue=tag.getAttr("allow_initvalue", False))
+				haveIn=tag.getAttrBool("allow_inputs", False),
+				haveOut=tag.getAttrBool("allow_outputs", False),
+				haveInOut=tag.getAttrBool("allow_inouts", False),
+				haveStat=tag.getAttrBool("allow_stats", False),
+				haveTemp=tag.getAttrBool("allow_temps", False),
+				haveRetVal=tag.getAttrBool("allow_retval", False),
+				haveInitValue=tag.getAttrBool("allow_initvalue", False))
 
 		XmlFactory.parser_open(self, tag)
 

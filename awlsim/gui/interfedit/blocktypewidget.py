@@ -22,12 +22,48 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.xmlfactory import *
+
 from awlsim.gui.util import *
 
+
+class BlockTypeWidget_factory(XmlFactory):
+	def parser_open(self, tag=None):
+		if tag:
+			self.blockTypeWidget.set(
+				blockTypeString=tag.getAttr("type", "FC").upper().strip(),
+				blockIndex=tag.getAttrInt("index", 0),
+				noChangeSignals=True
+			)
+		XmlFactory.parser_open(self, tag)
+
+	def parser_close(self):
+		XmlFactory.parser_close(self)
+
+	def parser_beginTag(self, tag):
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "blockdecl":
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		blockType, blockIndex = self.blockTypeWidget.get()
+		return [
+			self.Tag(name="blockdecl",
+				 attrs={
+					"type" : str(blockType).upper().strip(),
+					"index" : str(int(blockIndex)),
+				 })
+		]
 
 class BlockTypeWidget(QWidget):
 	"""AWL block type edit widget.
 	"""
+
+	factory = BlockTypeWidget_factory
 
 	# Signal: Emitted, if the block type changed
 	typeChanged = Signal()
@@ -38,6 +74,8 @@ class BlockTypeWidget(QWidget):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
+
+		self.__changeSignalsBlocked = Blocker()
 
 		self.typeCombo = QComboBox(self)
 		self.typeCombo.addItem("Block type: Function (FC)", "FC")
@@ -60,10 +98,12 @@ class BlockTypeWidget(QWidget):
 	def __handleTypeChange(self, comboIndex):
 		typeStr = self.typeCombo.itemData(comboIndex)
 		self.indexSpin.setPrefix(typeStr + " ")
-		self.typeChanged.emit()
+		if not self.__changeSignalsBlocked:
+			self.typeChanged.emit()
 
 	def __handleIndexChange(self, value):
-		self.indexChanged.emit()
+		if not self.__changeSignalsBlocked:
+			self.indexChanged.emit()
 
 	def get(self):
 		"""Get (blockTypeString, blockIndex)
@@ -72,13 +112,14 @@ class BlockTypeWidget(QWidget):
 		index = self.indexSpin.value()
 		return (typeStr, index)
 
-	def set(self, blockTypeString, blockIndex):
+	def set(self, blockTypeString, blockIndex, noChangeSignals=False):
 		"""Set the block type and block index.
 		"""
-		index = self.typeCombo.findData(blockTypeString,
-						Qt.UserRole, Qt.MatchFixedString)
-		if index >= 0:
-			self.typeCombo.setCurrentIndex(index)
-			self.indexSpin.setValue(blockIndex)
-			return True
-		return False
+		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
+			index = self.typeCombo.findData(blockTypeString,
+							Qt.UserRole, Qt.MatchFixedString)
+			if index >= 0:
+				self.typeCombo.setCurrentIndex(index)
+				self.indexSpin.setValue(blockIndex)
+				return True
+			return False
