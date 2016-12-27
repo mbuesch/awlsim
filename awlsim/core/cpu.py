@@ -336,7 +336,7 @@ class S7Prog(object):
 		self.pendingRawUDTs = []
 
 		# Build all UDTs (Resolve sizes of all fields)
-		for udt in udts.values():
+		for udt in dictValues(udts):
 			udt.buildDataStructure(self.cpu)
 
 		# Translate OBs
@@ -409,7 +409,7 @@ class S7Prog(object):
 
 		if not self.cpu.sfbs:
 			# Create the SFB tables
-			for sfbNumber in SFB_table.keys():
+			for sfbNumber in dictKeys(SFB_table):
 				if sfbNumber < 0 and not self.cpu.extendedInsnsEnabled():
 					continue
 				sfb = SFB_table[sfbNumber](self.cpu)
@@ -417,7 +417,7 @@ class S7Prog(object):
 
 		if not self.cpu.sfcs:
 			# Create the SFC tables
-			for sfcNumber in SFC_table.keys():
+			for sfcNumber in dictKeys(SFC_table):
 				if sfcNumber < 0 and not self.cpu.extendedInsnsEnabled():
 					continue
 				sfc = SFC_table[sfcNumber](self.cpu)
@@ -460,13 +460,13 @@ class S7Prog(object):
 
 		blkInfos = []
 		for block in itertools.chain(
-				sorted(self.cpu.obs.values() if getOBInfo else [],
+				sorted(dictValues(self.cpu.obs) if getOBInfo else [],
 				       key = lambda blk: blk.index),
-				sorted(self.cpu.fcs.values() if getFCInfo else [],
+				sorted(dictValues(self.cpu.fcs) if getFCInfo else [],
 				       key = lambda blk: blk.index),
-				sorted(self.cpu.fbs.values() if getFBInfo else [],
+				sorted(dictValues(self.cpu.fbs) if getFBInfo else [],
 				       key = lambda blk: blk.index),
-				sorted(self.cpu.dbs.values() if getDBInfo else [],
+				sorted(dictValues(self.cpu.dbs) if getDBInfo else [],
 				       key = lambda blk: blk.index)):
 			blkInfo = block.getBlockInfo()
 			assert(blkInfo)
@@ -547,25 +547,21 @@ class S7CPU(object): #+cdef
 
 	# Returns all user defined code blocks (OBs, FBs, FCs)
 	def allUserCodeBlocks(self):
-		for ob in self.obs.values():
-			yield ob
-		for fb in self.fbs.values():
-			yield fb
-		for fc in self.fcs.values():
-			yield fc
+		for block in itertools.chain(dictValues(self.obs),
+					     dictValues(self.fbs),
+					     dictValues(self.fcs)):
+			yield block
 
 	# Returns all system code blocks (SFBs, SFCs)
 	def allSystemCodeBlocks(self):
-		for sfb in self.sfbs.values():
-			yield sfb
-		for sfc in self.sfcs.values():
-			yield sfc
+		for block in itertools.chain(dictValues(self.sfbs),
+					     dictValues(self.sfcs)):
+			yield block
 
 	# Returns all user defined code blocks (OBs, FBs, FCs, SFBs, SFCs)
 	def allCodeBlocks(self):
-		for block in self.allUserCodeBlocks():
-			yield block
-		for block in self.allSystemCodeBlocks():
+		for block in itertools.chain(self.allUserCodeBlocks(),
+					     self.allSystemCodeBlocks()):
 			yield block
 
 	def allCallInsns(self, block):
@@ -648,19 +644,19 @@ class S7CPU(object): #+cdef
 		self.prog.build()
 
 	def load(self, parseTree, rebuild = False, sourceManager = None):
-		for rawDB in parseTree.dbs.values():
+		for rawDB in dictValues(parseTree.dbs):
 			rawDB.setSourceRef(sourceManager)
 			self.prog.addRawDB(rawDB)
-		for rawFB in parseTree.fbs.values():
+		for rawFB in dictValues(parseTree.fbs):
 			rawFB.setSourceRef(sourceManager)
 			self.prog.addRawFB(rawFB)
-		for rawFC in parseTree.fcs.values():
+		for rawFC in dictValues(parseTree.fcs):
 			rawFC.setSourceRef(sourceManager)
 			self.prog.addRawFC(rawFC)
-		for rawOB in parseTree.obs.values():
+		for rawOB in dictValues(parseTree.obs):
 			rawOB.setSourceRef(sourceManager)
 			self.prog.addRawOB(rawOB)
-		for rawUDT in parseTree.udts.values():
+		for rawUDT in dictValues(parseTree.udts):
 			rawUDT.setSourceRef(sourceManager)
 			self.prog.addRawUDT(rawUDT)
 		if rebuild:
@@ -717,9 +713,11 @@ class S7CPU(object): #+cdef
 
 	def reset(self):
 		self.prog.reset()
-		for block in itertools.chain(self.udts.values(), self.dbs.values(),
-					     self.obs.values(), self.fcs.values(),
-					     self.fbs.values()):
+		for block in itertools.chain(dictValues(self.udts),
+					     dictValues(self.dbs),
+					     dictValues(self.obs),
+					     dictValues(self.fcs),
+					     dictValues(self.fbs)):
 			block.destroySourceRef()
 		self.udts = {} # UDTs
 		self.dbs = { # DBs

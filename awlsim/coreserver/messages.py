@@ -388,7 +388,7 @@ class AwlSimMessage_HWMOD(AwlSimMessage):
 		payload = b""
 		try:
 			payload += self.packString(self.hwmodDesc.getModuleName())
-			for pname, pval in self.hwmodDesc.getParameters().items():
+			for pname, pval in dictItems(self.hwmodDesc.getParameters()):
 				payload += self.packString(pname)
 				payload += self.packString(pval)
 			return AwlSimMessage.toBytes(self, len(payload)) + payload
@@ -948,7 +948,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 			params = hwmodDesc.getParameters()
 			payload.append(self.plModStruct.pack(len(params), 0))
 			payload.append(self.packString(hwmodDesc.getModuleName()))
-			for pName, pVal in params.items():
+			for pName, pVal in dictItems(params):
 				payload.append(self.packString(pName))
 				payload.append(self.packString(pVal))
 		for libSel in self.libSelections:

@@ -219,7 +219,7 @@ class AwlOpTranslator(object):
 
 	# Create a constOperTab for english mnemonics
 	__constOperTab_english = {}
-	for name, type in __constOperTab_german.items():
+	for name, type in dictItems(__constOperTab_german):
 		try:
 			name = __german2english[name]
 		except KeyError:
@@ -596,7 +596,7 @@ class AwlOpTranslator(object):
 		# For example:
 		#	= M0.0
 		# (Note the missing white space between M and 0.0)
-		for name, opDesc in operTable.items():
+		for name, opDesc in dictItems(operTable):
 			if isinstance(opDesc.operator.value, AwlOffset) and\
 			   opDesc.operator.value.byteOffset >= 0 and\
 			   opDesc.operator.value.bitOffset >= 0:

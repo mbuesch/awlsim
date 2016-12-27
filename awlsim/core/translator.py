@@ -84,10 +84,10 @@ class AwlTranslator(object):
 		tree = p.getParseTree()
 		if block.isFC:
 			assert(len(tree.fcs) == 1)
-			rawBlock = tuple(tree.fcs.values())[0]
+			rawBlock = getfirst(dictValues(tree.fcs))
 		elif block.isFB:
 			assert(len(tree.fbs) == 1)
-			rawBlock = tuple(tree.fbs.values())[0]
+			rawBlock = getfirst(dictValues(tree.fbs))
 		else:
 			assert(0)
 		# Translate the library block instructions.

@@ -161,11 +161,11 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface):
 			except RuntimeError as e:
 				self.raiseException("Failed to init Raspberry Pi "
 					"BCM%d: %s" % (bcmNumber, str(e)))
-		for bitMapping in mapDict.values():
+		for bitMapping in dictValues(mapDict):
 			bitMapping.build()
 		mapList = list(sorted(
 			[ (byteOffset, bitMapping)
-			  for byteOffset, bitMapping in mapDict.items() ],
+			  for byteOffset, bitMapping in dictItems(mapDict) ],
 			key = lambda _tuple: _tuple[0]
 		))
 		return mapDict, mapList

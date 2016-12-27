@@ -182,3 +182,12 @@ if not hasattr(contextlib, "suppress"):
 		def __exit__(self, exctype, excinst, exctb):
 			return exctype is not None and issubclass(exctype, self._excs)
 	contextlib.suppress = _suppress
+
+# Dict items(), keys(), values() compatibility.
+# Use Python3 behavior.
+dictItems = py23(lambda d: d.viewitems(),
+		 lambda d: d.items())
+dictKeys = py23(lambda d: d.viewkeys(),
+		lambda d: d.keys())
+dictValues = py23(lambda d: d.viewvalues(),
+		  lambda d: d.values())

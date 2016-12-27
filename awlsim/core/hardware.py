@@ -274,7 +274,7 @@ class AbstractHardwareInterface(object):
 		# Parse the parameters.
 		self.__paramsByName = {}
 		self.__paramsByDescType = {}
-		for name, value in parameters.items():
+		for name, value in dictItems(parameters):
 			for desc in self.getParamDescs():
 				if desc.match(name):
 					break
@@ -295,7 +295,7 @@ class AbstractHardwareInterface(object):
 		for desc in self.getParamDescs():
 			if not desc.mandatory:
 				continue
-			if desc.name not in self.__paramsByName.keys():
+			if desc.name not in dictKeys(self.__paramsByName):
 				self.paramErrorHandler(desc.name,
 					"Mandatory parameter not specified")
 

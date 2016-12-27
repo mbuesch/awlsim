@@ -420,7 +420,7 @@ class AwlInsn(object): #+cdef
 
 	# Create a name2type dict for english mnemonics using the translation dict.
 	name2type_english = {}
-	for _name, _insnType in name2type_german.items():
+	for _name, _insnType in dictItems(name2type_german):
 		with contextlib.suppress(KeyError):
 			_name = german2english[_name]
 		name2type_english[_name] = _insnType
@@ -521,4 +521,4 @@ class AwlInsn(object): #+cdef
 
 # Sanity check of english2german table
 assert(all(germanName in AwlInsn.name2type_german \
-	   for englishName, germanName in AwlInsn.english2german.items()))
+	   for englishName, germanName in dictItems(AwlInsn.english2german)))

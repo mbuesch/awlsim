@@ -581,7 +581,7 @@ class EditWidget(SourceCodeEdit):
 		# First instruction in cycle?
 		if insnDumpMsg.serial == 0:
 			# Update the 'obsolete'-flag based on the timestamp
-			for ent in self.__lineCpuStats.values():
+			for ent in dictValues(self.__lineCpuStats):
 				ent.obsolete = (ent.stamp != self.__cpuStatsStamp)
 			# Advance the timestamp
 			self.__cpuStatsStamp += 1
@@ -590,7 +590,7 @@ class EditWidget(SourceCodeEdit):
 		if self.__runState.state == RunState.STATE_OFFLINE:
 			return
 		firstLine, lastLine = self.getVisibleLineRange()
-		for line, stats in self.__lineCpuStats.items():
+		for line, stats in dictItems(self.__lineCpuStats):
 			if line < firstLine or line > lastLine:
 				stats.pruned = True
 				stats.obsolete = True

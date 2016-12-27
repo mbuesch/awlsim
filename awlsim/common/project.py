@@ -751,7 +751,7 @@ class Project(object):
 			modName = strToBase64(modDesc.getModuleName(),
 					      ignoreErrors=True)
 			lines.append("loaded_mod_%d=%s" % (modNr, modName))
-			modParams = sorted(list(modDesc.getParameters().items()),
+			modParams = sorted(dictItems(modDesc.getParameters()),
 					   key = lambda p: p[0])
 			for paramNr, param in enumerate(modParams):
 				paramName, paramValue = param

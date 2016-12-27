@@ -41,7 +41,7 @@ class HwmodParamModel(QAbstractTableModel):
 		"""Return a list of tuples: (paramName, paramValue)"""
 		if not self.modDesc:
 			return []
-		return sorted(list(self.modDesc.getParameters().items()),
+		return sorted(dictItems(self.modDesc.getParameters()),
 			      key = lambda p: p[0])
 
 	def __getParamDesc(self, paramName):

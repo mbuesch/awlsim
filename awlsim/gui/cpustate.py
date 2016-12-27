@@ -212,7 +212,7 @@ class BitDisplayWidget(AbstractDisplayWidget):
 				y += 1
 
 	def __buttonUpdate(self):
-		for bitNr, pb in self.pbs.items():
+		for bitNr, pb in dictItems(self.pbs):
 			pressed = bool(pb.isDown())
 			if pressed == self.prevButtonStates[bitNr]:
 				continue
@@ -225,7 +225,7 @@ class BitDisplayWidget(AbstractDisplayWidget):
 
 	def get(self):
 		value = 0
-		for bitNr, cb in self.cbs.items():
+		for bitNr, cb in dictItems(self.cbs):
 			if cb.checkState() == Qt.Checked:
 				value |= (1 << bitNr)
 		return value

@@ -66,7 +66,7 @@ class HwmodDescriptor(object):
 		if not parameters:
 			parameters = {}
 		self.parameters = {}
-		for name, value in parameters.items():
+		for name, value in dictItems(parameters):
 			self.addParameter(name, value)
 		self.__identHash = None
 
@@ -105,7 +105,7 @@ class HwmodDescriptor(object):
 			# Calculate the ident hash
 			h = self.IDENT_HASH(b"HwmodDescriptor")
 			h.update(self.moduleName.encode("utf-8", "ignore"))
-			for pName, pValue in sorted(self.parameters.items(),
+			for pName, pValue in sorted(dictItems(self.parameters),
 						    key = lambda item: item[0]):
 				h.update(pName.encode("utf-8", "ignore"))
 				h.update(pValue.encode("utf-8", "ignore"))

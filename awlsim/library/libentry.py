@@ -164,7 +164,7 @@ class AwlLibEntry(StaticCodeBlock):
 	def _generateInterfaceCode(self, special_RET_VAL=False):
 		code = []
 		retValType = None
-		for ftype, fields in sorted(self.interfaceFields.items(),
+		for ftype, fields in sorted(dictItems(self.interfaceFields),
 					    key=lambda i: i[0]):
 			decl = {
 				BlockInterfaceField.FTYPE_IN	: "VAR_INPUT",

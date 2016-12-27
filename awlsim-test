@@ -90,7 +90,7 @@ def usage():
 	print(" --list-sfb-verbose    Verbose SFB list")
 
 def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
-	for block in sorted(blockTable.values(),
+	for block in sorted(dictValues(blockTable),
 			    key = lambda b: b.name[0]):
 		if block.broken:
 			continue

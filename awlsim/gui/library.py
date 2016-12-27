@@ -346,7 +346,7 @@ class LibraryDialog(QDialog):
 
 	def __addSystemBlockTable(self, prefix, table):
 		entries = []
-		for blockCls in sorted(table.values(), key=lambda c: c.name[0]):
+		for blockCls in sorted(dictValues(table), key=lambda c: c.name[0]):
 			if blockCls.broken:
 				continue
 			number, name, desc = blockCls.name

@@ -257,10 +257,13 @@ def isiterable(obj):
 		pass
 	return False
 
-def getany(iterable, exception=KeyError):
-	"""Get an arbitrary item from an iterable.
+def getfirst(iterable, exception=KeyError):
+	"""Get the first item from an iterable.
+	This also works for generators.
 	If the iterable is empty, exception is raised.
 	If exception is None, None is returned instead.
+	Warning: If iterable is not indexable (for example a set),
+		 an arbitrary item is returned instead.
 	"""
 	try:
 		return next(iter(iterable))
@@ -268,6 +271,11 @@ def getany(iterable, exception=KeyError):
 		if exception:
 			raise exception
 		return None
+
+# Get an arbitrary item from an iterable.
+# If the iterable is empty, exception is raised.
+# If exception is None, None is returned instead.
+getany = getfirst
 
 def toList(value):
 	"""Returns value, if value is a list.

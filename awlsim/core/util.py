@@ -91,7 +91,7 @@ def toSet(value):
 
 def pivotDict(inDict):
 	outDict = {}
-	for key, value in inDict.items():
+	for key, value in dictItems(inDict):
 		if value in outDict:
 			raise KeyError("Ambiguous key in pivot dict")
 		outDict[value] = key
