@@ -291,3 +291,14 @@ def toList(value):
 		if isiterable(value):
 			return list(value)
 	return [ value, ]
+
+class nopContextManager(object):
+	"""No-operation context manager.
+	"""
+
+	def __enter__(self):
+		return None
+
+	def __exit__(self, exctype, excinst, exctb):
+		return False
+nopContext = nopContextManager()
