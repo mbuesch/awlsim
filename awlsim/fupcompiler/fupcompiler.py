@@ -26,6 +26,8 @@ from awlsim.common.sources import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.cpuspecs import *
 
+from awlsim.fupcompiler.fupcompiler_blockdecl import *
+from awlsim.fupcompiler.fupcompiler_interf import *
 from awlsim.fupcompiler.fupcompiler_grid import *
 from awlsim.fupcompiler.fupcompiler_elem import *
 
@@ -35,15 +37,35 @@ class FupCompilerFactory(XmlFactory):
 
 	def parser_open(self, tag=None):
 		self.inFup = False
+		self.inGrids = False
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if self.inFup:
-			if tag.name == "grid":
-				grid = FupCompiler_Grid(self.compiler)
-				self.compiler.grids.append(grid)
-				self.parser_switchTo(grid.factory(grid=grid))
-				return
+			if self.inGrids:
+				if tag.name == "grid":
+					grid = FupCompiler_Grid(self.compiler)
+					self.compiler.grids.append(grid)
+					self.parser_switchTo(grid.factory(grid=grid))
+					return
+			else:
+				if tag.name == "blockdecl":
+					if self.compiler.decl:
+						raise self.Error("Multiple <blockdecl>s defined.")
+					decl = FupCompiler_BlockDecl(self.compiler)
+					self.compiler.decl = decl
+					self.parser_switchTo(decl.factory(decl=decl))
+					return
+				if tag.name == "interface":
+					if self.compiler.interf:
+						raise self.Error("Multiple <interface>s defined.")
+					interf = FupCompiler_Interf(self.compiler)
+					self.compiler.interf = interf
+					self.parser_switchTo(interf.factory(interf=interf))
+					return
+				if tag.name == "grids":
+					self.inGrids = True
+					return
 		else:
 			if tag.name == "FUP":
 				version = tag.getAttrInt("version")
@@ -56,10 +78,16 @@ class FupCompilerFactory(XmlFactory):
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if tag.name == "FUP":
-			self.inFup = False
-			self.parser_finish()
-			return
+		if self.inFup:
+			if self.inGrids:
+				if tag.name == "grids":
+					self.inGrids = False
+					return
+			else:
+				if tag.name == "FUP":
+					self.inFup = False
+					self.parser_finish()
+					return
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler(object):
@@ -72,7 +100,9 @@ class FupCompiler(object):
 		self.mnemonics = None
 		self.opTrans = None
 		self.awlSource = None
-		self.grids = []
+		self.decl = None	# FupCompiler_BlockDecl
+		self.interf = None	# FupCompiler_Interf
+		self.grids = []		# FupCompiler_Grid
 
 	def getAwlSource(self):
 		return self.awlSource
@@ -91,6 +121,7 @@ class FupCompiler(object):
 		awl = []
 
 		# Create header
+		#TODO decl/interf
 		awl.append("FUNCTION FC 42 : VOID")
 		awl.append("BEGIN")
 
