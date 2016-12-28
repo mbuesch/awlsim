@@ -469,7 +469,7 @@ class AwlSimClient(object):
 	def loadKopSource(self, kopSource):
 		if not self.__transceiver:
 			return False
-		msg = AwlSimMessage_KOPSRC(fupSource)
+		msg = AwlSimMessage_KOPSRC(kopSource)
 		self.__transceiver.txCork(True)
 		try:
 			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
