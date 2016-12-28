@@ -118,8 +118,8 @@ class AwlValidator(object):
 			client.loadSymTabSources(symTabSources)
 			client.loadLibraryBlocks(libSelections)
 			client.loadAwlSources(awlSources)
-			client.loadFupSources(awlSources)
-			client.loadKopSources(awlSources)
+			client.loadFupSources(fupSources)
+			client.loadKopSources(kopSources)
 			client.build()
 			client.reset()
 		except AwlSimError as e:
