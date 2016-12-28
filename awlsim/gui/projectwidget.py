@@ -201,7 +201,9 @@ class ProjectWidget(QTabWidget):
 		validator.validate(project = self.__project,
 				   symTabSources = self.getSymTabSources(),
 				   libSelections = self.getLibSelections(),
-				   awlSources = self.getAwlSources())
+				   awlSources = self.getAwlSources(),
+				   fupSources = self.getFupSources(),
+				   kopSources = self.getKopSources())
 		QTimer.singleShot(100, self.__checkValidationResult)
 
 	# Poll the validation result

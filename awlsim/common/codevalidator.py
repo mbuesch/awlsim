@@ -102,7 +102,8 @@ class AwlValidator(object):
 
 	def __runJob(self, job):
 		(project,
-		 symTabSources, libSelections, awlSources) = job
+		 symTabSources, libSelections, awlSources,
+		 fupSources, kopSources) = job
 
 		client = self.__client
 		exception = None
@@ -117,6 +118,8 @@ class AwlValidator(object):
 			client.loadSymTabSources(symTabSources)
 			client.loadLibraryBlocks(libSelections)
 			client.loadAwlSources(awlSources)
+			client.loadFupSources(awlSources)
+			client.loadKopSources(awlSources)
 			client.build()
 			client.reset()
 		except AwlSimError as e:
@@ -140,7 +143,8 @@ class AwlValidator(object):
 				self.__runJob(job)
 
 	def validate(self, project,
-		     symTabSources, libSelections, awlSources):
+		     symTabSources, libSelections, awlSources,
+		     fupSources, kopSources):
 		"""Schedule a validation.
 		Get the result with getState().
 		"""
@@ -150,7 +154,8 @@ class AwlValidator(object):
 			if self.__job is self._EXIT_THREAD:
 				return
 			self.__job = (project,
-				      symTabSources, libSelections, awlSources)
+				      symTabSources, libSelections, awlSources,
+				      fupSources, kopSources)
 			self.__running = True
 			self.__condition.notify_all()
 
