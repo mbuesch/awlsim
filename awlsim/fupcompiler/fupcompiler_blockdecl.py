@@ -29,14 +29,17 @@ from awlsim.fupcompiler.fupcompiler_base import *
 
 class FupCompiler_BlockDeclFactory(XmlFactory):
 	def parser_open(self, tag=None):
+		if tag:
+			blockType = tag.getAttr("type", "FC")
+			blockIndex = tag.getAttrInt("index", 0)
+			self.decl.set(blockType=blockType,
+				      blockIndex=blockIndex)
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
-		#TODO
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		#TODO
 		if tag.name == "blockdecl":
 			self.parser_finish()
 			return
@@ -48,3 +51,14 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 	def __init__(self, compiler):
 		FupCompiler_BaseObj.__init__(self)
 		self.compiler = compiler	# FupCompiler
+		self.set()
+
+	def set(self, blockType="FC", blockIndex=0):
+		self.blockType = blockType.upper().strip()
+		if self.blockType not in {"FC", "FB", "OB"}:
+			raise AwlSimError("FupCompiler_BlockDecl: Invalid block "
+				"type: %s" % self.blockType)
+		self.blockIndex = blockIndex
+		if self.blockIndex < 0 or self.blockIndex > 0xFFFF:
+			raise AwlSimError("FupCompiler_BlockDecl: Invalid block "
+				"index: %d" % self.blockIndex)

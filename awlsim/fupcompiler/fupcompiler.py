@@ -121,11 +121,26 @@ class FupCompiler(object):
 		awl = []
 
 		# Create header
-		#TODO decl/interf
-		awl.append("FUNCTION FC 42 : VOID")
-		awl.append("BEGIN")
+		if self.decl.blockType == "FC":
+			retVal = "VOID"#TODO
+			awl.append("FUNCTION FC %d : %s" %(
+				   self.decl.blockIndex, retVal))
+			footer = "END_FUNCTION"
+		elif self.decl.blockType == "FB":
+			awl.append("FUNCTION_BLOCK FB %d" %\
+				   self.decl.blockIndex)
+			footer = "END_FUNCTION_BLOCK"
+		elif self.decl.blockType == "OB":
+			awl.append("ORGANIZATION_BLOCK OBC %d" %\
+				   self.decl.blockIndex)
+			footer = "END_ORGANIZATION_BLOCK"
+		else:
+			raise AwlSimError("FupCompiler: Unknown block "
+				"type: %s" % self.decl.blockType)
+		#TODO interf
 
 		# Create instructions body
+		awl.append("BEGIN")
 		class FakeCpu(object):
 			def getMnemonics(cpuSelf):
 				return self.mnemonics
@@ -135,7 +150,7 @@ class FupCompiler(object):
 			awl.append("\t" + str(insn))
 
 		# Create footer
-		awl.append("END_FUNCTION")
+		awl.append(footer)
 
 		return '\r\n'.join(awl).encode(self.AWL_ENCODING)
 
