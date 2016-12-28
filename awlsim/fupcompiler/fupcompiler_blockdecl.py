@@ -62,3 +62,36 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		if self.blockIndex < 0 or self.blockIndex > 0xFFFF:
 			raise AwlSimError("FupCompiler_BlockDecl: Invalid block "
 				"index: %d" % self.blockIndex)
+
+	def compile(self, interf):
+		"""Compile this FUP block declaration to AWL.
+		interf => FupCompiler_Interf
+		Returns a tuple: (list of AWL header lines, list of AWL footer lines).
+		"""
+		self.compileState = self.COMPILE_RUNNING
+		awlHeader = []
+		awlFooter = []
+
+		if self.blockType == "FC":
+			if not interf.retValField:
+				raise AwlSimError("FupCompiler_BlockDecl: RET_VAL "
+					"is not defined for FC %d." %\
+					 self.blockIndex)
+			retVal = interf.retValField.typeStr
+			awlHeader.append("FUNCTION FC %d : %s" %(
+					 self.blockIndex, retVal))
+			awlFooter.append("END_FUNCTION")
+		elif self.blockType == "FB":
+			awlHeader.append("FUNCTION_BLOCK FB %d" %\
+					 self.blockIndex)
+			awlFooter.append("END_FUNCTION_BLOCK")
+		elif self.blockType == "OB":
+			awlHeader.append("ORGANIZATION_BLOCK OBC %d" %\
+					 self.blockIndex)
+			awlFooter.append("END_ORGANIZATION_BLOCK")
+		else:
+			raise AwlSimError("FupCompiler_BlockDecl: Unknown block "
+				"type: %s" % self.blockType)
+
+		self.compileState = self.COMPILE_DONE
+		return awlHeader, awlFooter

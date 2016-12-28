@@ -99,10 +99,14 @@ class FupCompiler(object):
 	def reset(self):
 		self.mnemonics = None
 		self.opTrans = None
-		self.awlSource = None
 		self.decl = None	# FupCompiler_BlockDecl
 		self.interf = None	# FupCompiler_Interf
 		self.grids = []		# FupCompiler_Grid
+
+		self.blockHeaderAwl = []	# Block declaration header AWL code strings
+		self.blockFooterAwl = []	# Block declaration footer AWL code strings
+		self.blockInterfAwl = []	# Block interface AWL code strings
+		self.awlSource = None		# Compiled AWL source
 
 	def getAwlSource(self):
 		return self.awlSource
@@ -121,23 +125,8 @@ class FupCompiler(object):
 		awl = []
 
 		# Create header
-		if self.decl.blockType == "FC":
-			retVal = "VOID"#TODO
-			awl.append("FUNCTION FC %d : %s" %(
-				   self.decl.blockIndex, retVal))
-			footer = "END_FUNCTION"
-		elif self.decl.blockType == "FB":
-			awl.append("FUNCTION_BLOCK FB %d" %\
-				   self.decl.blockIndex)
-			footer = "END_FUNCTION_BLOCK"
-		elif self.decl.blockType == "OB":
-			awl.append("ORGANIZATION_BLOCK OBC %d" %\
-				   self.decl.blockIndex)
-			footer = "END_ORGANIZATION_BLOCK"
-		else:
-			raise AwlSimError("FupCompiler: Unknown block "
-				"type: %s" % self.decl.blockType)
-		#TODO interf
+		awl.extend(self.blockHeaderAwl)
+		awl.extend(self.blockInterfAwl)
 
 		# Create instructions body
 		awl.append("BEGIN")
@@ -150,9 +139,19 @@ class FupCompiler(object):
 			awl.append("\t" + str(insn))
 
 		# Create footer
-		awl.append(footer)
+		awl.extend(self.blockFooterAwl)
 
 		return '\r\n'.join(awl).encode(self.AWL_ENCODING)
+
+	def __compileBlockDecl(self, fupSource):
+		"""Compile block declaration.
+		"""
+		self.blockHeaderAwl, self.blockFooterAwl = self.decl.compile(self.interf)
+
+	def __compileInterface(self, fupSource):
+		"""Compile block interface.
+		"""
+		self.blockInterfAwl = self.interf.compile()
 
 	def __compileGrids(self, fupSource):
 		"""Compile all self.grids
@@ -175,6 +174,8 @@ class FupCompiler(object):
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
 		self.__parse(fupSource)
+		self.__compileBlockDecl(fupSource)
+		self.__compileInterface(fupSource)
 		self.__compileGrids(fupSource)
 		print(self.awlSource.sourceBytes.decode(self.AWL_ENCODING))#XXX
 		return self.getAwlSource()
