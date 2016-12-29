@@ -228,8 +228,15 @@ class XmlFactory(object):
 		self.builder.popFactory(self)
 
 	def parse(self, xmlText):
-		builder = _XmlFactoryBuilder(self)
-		parser = xml.etree.ElementTree.XMLParser(target=builder)
-		self.parser_open(None)
-		parser.feed(xmlText)
-		parser.close()
+		if not xmlText.decode(self.XML_ENCODING).strip():
+			return False
+		try:
+			builder = _XmlFactoryBuilder(self)
+			parser = xml.etree.ElementTree.XMLParser(target=builder)
+			self.parser_open(None)
+			parser.feed(xmlText)
+			parser.close()
+		except xml.etree.ElementTree.ParseError as e:
+			raise XmlFactory.Error("Failed to parse "
+				"XML data: %s" % str(e))
+		return True
