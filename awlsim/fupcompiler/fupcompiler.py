@@ -113,7 +113,7 @@ class FupCompiler(object):
 
 	def __parse(self, fupSource):
 		try:
-			FupCompilerFactory(compiler=self).parse(fupSource.sourceBytes)
+			return FupCompilerFactory(compiler=self).parse(fupSource.sourceBytes)
 		except FupCompilerFactory.Error as e:
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
@@ -173,10 +173,10 @@ class FupCompiler(object):
 		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
-		self.__parse(fupSource)
-		self.__compileBlockDecl(fupSource)
-		self.__compileInterface(fupSource)
-		self.__compileGrids(fupSource)
+		if self.__parse(fupSource):
+			self.__compileBlockDecl(fupSource)
+			self.__compileInterface(fupSource)
+			self.__compileGrids(fupSource)
 		print(self.awlSource.sourceBytes.decode(self.AWL_ENCODING))#XXX
 		return self.getAwlSource()
 
