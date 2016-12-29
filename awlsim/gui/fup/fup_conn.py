@@ -83,7 +83,7 @@ class FupConn_factory(XmlFactory):
 					"dir_in" : str(int(self.conn.IN)),
 					"dir_out" : str(int(self.conn.OUT)),
 					"pos" : str(self.conn.pos),
-					"wire" : -1 if self.conn.wire is None
+					"wire" : str(-1) if self.conn.wire is None
 						 else str(self.conn.wire.idNum),
 				}),
 		]
