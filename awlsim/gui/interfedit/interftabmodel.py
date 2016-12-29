@@ -180,12 +180,16 @@ class AwlInterfDef(object):
 		self.retValField = None
 
 	def isEmpty(self):
+		retEmpty = not self.retValField or (
+			   self.retValField.typeStr.upper().strip() == "VOID" and\
+			   not self.retValField.initValueStr.strip() and\
+			   not self.retValField.comment.strip())
 		return not self.inFields and\
 		       not self.outFields and\
 		       not self.inOutFields and\
 		       not self.statFields and\
 		       not self.tempFields and\
-		       not self.retValField
+		       retEmpty
 
 	@property
 	def allFields(self):
