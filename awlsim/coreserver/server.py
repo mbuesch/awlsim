@@ -33,6 +33,8 @@ from awlsim.core.parser import *
 from awlsim.coreserver.messages import *
 from awlsim.coreserver.memarea import *
 
+from awlsim.fupcompiler import *
+
 import sys
 import os
 import select
@@ -359,6 +361,9 @@ class AwlSimServer(object):
 		# Make a shortcut variable for RUN
 		self.__running = bool(runstate == self.STATE_RUN)
 
+	def __getMnemonics(self):
+		return self.__sim.cpu.getSpecs().getMnemonics()
+
 	def __rebuildSelectReadList(self):
 		rlist = [ self.__socket ]
 		rlist.extend(client.transceiver.sock for client in self.__clients)
@@ -471,6 +476,8 @@ class AwlSimServer(object):
 	def __generateProject(self):
 		cpu = self.__sim.getCPU()
 		awlSources = self.awlSourceContainer.getSources()
+		fupSources = [] #TODO
+		kopSources = [] #TODO
 		symTabSources = self.symTabSourceContainer.getSources()
 		libSelections = self.loadedLibSelections[:]
 		cpuSpecs = cpu.getSpecs() # (Note: not a deep-copy)
@@ -480,6 +487,8 @@ class AwlSimServer(object):
 		project = Project(
 			projectFile = None,
 			awlSources = awlSources,
+			fupSources = fupSources,
+			kopSources = kopSources,
 			symTabSources = symTabSources,
 			libSelections = libSelections,
 			cpuSpecs = cpuSpecs,
@@ -560,15 +569,20 @@ class AwlSimServer(object):
 		self.__updateProjectFile()
 
 	def loadFupSource(self, fupSource):
-		pass#TODO
+		#TODO src manager
+		#TODO do not add to awlSourceContainer
+		compiler = FupCompiler()
+		awlSource = compiler.compile(fupSource=fupSource,
+					     mnemonics=self.__getMnemonics())
+		self.loadAwlSource(awlSource)
 
 	def loadKopSource(self, kopSource):
 		pass#TODO
 
 	def loadSymTabSource(self, symTabSource):
 		symbolTable = SymTabParser.parseSource(symTabSource,
-					autodetectFormat = True,
-					mnemonics = self.__sim.cpu.getSpecs().getMnemonics())
+					autodetectFormat=True,
+					mnemonics=self.__getMnemonics())
 
 		srcManager = SourceManager(symTabSource)
 
