@@ -182,19 +182,18 @@ class XmlFactory(object):
 			ret = []
 			for tag in tags:
 				ind = "\t" * indent
-				if tag.emitEmptyAttrs:
-					attrs = tag.attrs
-				else:
-					# Remove empty attrs
-					attrs = { aName : aVal
-						  for aName, aVal in dictItems(tag.attrs)
-						  if aVal
-					}
+				# Force convert attrs to str and remove empty attrs
+				attrs = { str(aName) : str(aVal)
+					  for aName, aVal in dictItems(tag.attrs)
+					  if tag.emitEmptyAttrs or str(aVal)
+				}
+				# Convert atts to XML
 				attrText = (" " + " ".join(
 					"%s=%s" % (aName, saxutils.quoteattr(aVal))
 					for aName, aVal in sorted(dictItems(attrs),
 								  key=lambda a: a[0])
 				)).rstrip()
+				# Convert tags to XML
 				if tag.data or tag.tags:
 					ret.append(
 						"%s<%s%s>%s" % (
