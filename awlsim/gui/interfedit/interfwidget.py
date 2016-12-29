@@ -47,7 +47,6 @@ class AwlInterfWidget(QWidget):
 		self.interfView = AwlInterfaceView(self)
 		self.layout().addWidget(self.interfView, 1, 0)
 
-		self.__currentBlockType = self.blockTypeEdit.get()
 		self.__reconfigInterfView()
 
 		self.blockTypeEdit.typeChanged.connect(self.__handleBlockTypeChange)
@@ -68,10 +67,9 @@ class AwlInterfWidget(QWidget):
 				QMessageBox.No)
 			if ret != QMessageBox.Yes:
 				# Revert the change
-				self.blockTypeEdit.set(*self.__currentBlockType,
-						       noChangeSignals=True)
+				with self.__changeSignalBlocked:
+					self.blockTypeEdit.revertTypeChange()
 				return
-		self.__currentBlockType = self.blockTypeEdit.get()
 		with self.__changeSignalBlocked:
 			self.__reconfigInterfView()
 		self.contentChanged.emit()

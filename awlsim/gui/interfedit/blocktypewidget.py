@@ -26,6 +26,7 @@ from awlsim.common.xmlfactory import *
 
 from awlsim.gui.util import *
 
+#TODO: DB-index if FB
 
 class BlockTypeWidget_factory(XmlFactory):
 	def parser_open(self, tag=None):
@@ -83,6 +84,8 @@ class BlockTypeWidget(QWidget):
 		self.typeCombo.addItem("Block type: Organization block (OB)", "OB")
 		self.layout().addWidget(self.typeCombo, 0, 0)
 
+		self.__prevTypeStr = "FC"
+
 		self.indexSpin = QSpinBox(self)
 		self.indexSpin.setMinimum(0)
 		self.indexSpin.setMaximum(0xFFFF)
@@ -100,6 +103,15 @@ class BlockTypeWidget(QWidget):
 		self.indexSpin.setPrefix(typeStr + " ")
 		if not self.__changeSignalsBlocked:
 			self.typeChanged.emit()
+		self.__prevTypeStr = typeStr
+
+	def revertTypeChange(self):
+		"""Revert type change. Can only be called from typeChanged signal.
+		"""
+		index = self.typeCombo.findData(self.__prevTypeStr,
+						Qt.UserRole, Qt.MatchFixedString)
+		if index >= 0:
+			self.typeCombo.setCurrentIndex(index)
 
 	def __handleIndexChange(self, value):
 		if not self.__changeSignalsBlocked:
