@@ -193,8 +193,13 @@ class XmlFactory(object):
 					for aName, aVal in sorted(dictItems(attrs),
 								  key=lambda a: a[0])
 				)).rstrip()
+				# Convert the child tags to XML
+				if tag.tags:
+					childTags = tags2text(tag.tags, indent + 1)
+				else:
+					childTags = []
 				# Convert tags to XML
-				if tag.data or tag.tags:
+				if tag.data or childTags:
 					ret.append(
 						"%s<%s%s>%s" % (
 						ind,
@@ -202,7 +207,7 @@ class XmlFactory(object):
 						attrText,
 						saxutils.escape(tag.data or ""))
 					)
-					ret.extend(tags2text(tag.tags, indent + 1))
+					ret.extend(childTags)
 					ret.append("%s</%s>" % (
 						ind,
 						tag.name)
