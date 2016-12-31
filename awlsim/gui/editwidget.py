@@ -724,7 +724,7 @@ class EditWidget(SourceCodeEdit):
 		p = self.headerWidget.getPainter()
 		if not self.__sourceMatchesCpuSource and\
 		   self.__runState.state == RunState.STATE_RUN:
-			p.fillRect(ev.rect(), QColor("#FFC0C0"))
+			p.fillRect(ev.rect(), getErrorColor())
 		else:
 			p.fillRect(ev.rect(), Qt.lightGray)
 

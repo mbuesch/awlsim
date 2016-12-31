@@ -62,6 +62,10 @@ def getDefaultFixedFont():
 	font.setWeight(QFont.Normal)
 	return font
 
+# Color used for errors
+def getErrorColor():
+	return QColor("#FFC0C0")
+
 def handleFatalException(parentWidget=None):
 	text = str(traceback.format_exc())
 	print("Fatal exception:\n", text)

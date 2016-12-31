@@ -232,7 +232,7 @@ class SourceCodeEdit(QPlainTextEdit):
 		cursor.select(QTextCursor.LineUnderCursor)
 		return cursor
 
-	__errLineBrush = QBrush(QColor("#FFC0C0"))
+	__errLineBrush = QBrush(getErrorColor())
 
 	def __validate(self):
 		if not self.__validateEn:
