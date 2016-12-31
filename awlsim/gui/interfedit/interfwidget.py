@@ -51,12 +51,13 @@ class AwlInterfWidget(QWidget):
 
 		self.blockTypeEdit.typeChanged.connect(self.__handleBlockTypeChange)
 		self.blockTypeEdit.indexChanged.connect(self.__handleBlockIndexChange)
+		self.blockTypeEdit.dbChanged.connect(self.__handleBlockDBChange)
 		self.interfView.model().contentChanged.connect(self.contentChanged)
 
 	def __handleBlockTypeChange(self):
 		if self.__changeSignalBlocked:
 			return
-		blockTypeStr, blockIndex = self.blockTypeEdit.get()
+		blockTypeStr, blockIndex, instanceDBs = self.blockTypeEdit.get()
 		if not self.interfView.isEmpty():
 			ret = QMessageBox.warning(self,
 				"Change block type?",
@@ -79,8 +80,13 @@ class AwlInterfWidget(QWidget):
 			return
 		self.contentChanged.emit()
 
+	def __handleBlockDBChange(self):
+		if self.__changeSignalBlocked:
+			return
+		self.contentChanged.emit()
+
 	def __reconfigInterfView(self):
-		blockTypeStr, blockIndex = self.blockTypeEdit.get()
+		blockTypeStr, blockIndex, instanceDBs = self.blockTypeEdit.get()
 		if blockTypeStr.upper().strip() == "FC":
 			self.interfView.model().configure(
 				haveIn=True,
