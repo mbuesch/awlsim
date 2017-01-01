@@ -80,3 +80,22 @@ class AwlName(object):
 		       all(c not in cls.newlines and c not in cls.special
 		           for c in symName) and\
 		       (not checkMaxLength or len(symName) <= 24 + 2)
+
+	@classmethod
+	def mayBeValidValue(cls, valueString):
+		"""Check if a string looks like a valid variable value.
+		This does NOT check whether this actually is valid data.
+		It does just check if there are no obvious
+		non-value-like characters in the string.
+		"""
+		return valueString.strip() and\
+		       all(c not in cls.newlines and c not in cls.special
+			   for c in valueString)
+
+	@classmethod
+	def isValidComment(cls, commentString):
+		"""Check if a string is a valid AWL comment string.
+		The string shall not start with the // comment characters.
+		"""
+		return all(c not in cls.newlines and c not in cls.special
+			   for c in commentString)

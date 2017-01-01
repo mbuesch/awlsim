@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.namevalidation import *
 from awlsim.common.xmlfactory import *
 
 from awlsim.fupcompiler.fupcompiler_base import *
@@ -110,15 +111,40 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		self.tempFields = []
 		self.retValField = None
 
+	@property
+	def allFields(self):
+		for field in itertools.chain(self.inFields,
+					     self.outFields,
+					     self.inOutFields,
+					     self.statFields,
+					     self.tempFields,
+					     [ self.retValField ]):
+			if field:
+				yield field
+
 	def __compileFields(self, declStr, fields):
 		if not fields:
 			return []
 		awlLines = [ "\t" + declStr, ]
 		for field in fields:
+			varName = field.name
+			typeStr = field.typeStr
+			comment = field.comment
+			if not AwlName.isValidVarName(varName):
+				raise AwlSimError("FupCompiler_Interf: Variable name "
+					"'%s' contains invalid characters." %\
+					varName)
+			if not AwlName.mayBeValidType(typeStr):
+				raise AwlSimError("FupCompiler_Interf: Variable type "
+					"'%s' contains invalid characters." %\
+					typeStr)
+			if not AwlName.isValidComment(comment):
+				raise AwlSimError("FupCompiler_Interf: Comment "
+					"'%s' contains invalid characters." %\
+					comment)
 			awlLines.append("\t\t%s : %s;%s" %(
-				field.name,
-				field.typeStr,
-				("  // " + field.comment) if field.comment else ""))
+				varName, typeStr,
+				("  // " + comment) if comment else ""))
 		awlLines.append("\tEND_VAR")
 		return awlLines
 

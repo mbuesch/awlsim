@@ -106,6 +106,7 @@ class FupCompiler(object):
 		self.blockHeaderAwl = []	# Block declaration header AWL code strings
 		self.blockFooterAwl = []	# Block declaration footer AWL code strings
 		self.blockInterfAwl = []	# Block interface AWL code strings
+		self.instanceDBsAwl = []	# Instance DBs AWL code strings
 		self.awlSource = None		# Compiled AWL source
 
 	def getAwlSource(self):
@@ -141,12 +142,16 @@ class FupCompiler(object):
 		# Create footer
 		awl.extend(self.blockFooterAwl)
 
+		# Create the instance DBs
+		awl.extend(self.instanceDBsAwl or [])
+
 		return '\r\n'.join(awl).encode(self.AWL_ENCODING)
 
 	def __compileBlockDecl(self, fupSource):
 		"""Compile block declaration.
 		"""
-		self.blockHeaderAwl, self.blockFooterAwl = self.decl.compile(self.interf)
+		self.blockHeaderAwl, self.blockFooterAwl, self.instanceDBsAwl =\
+			self.decl.compile(self.interf)
 
 	def __compileInterface(self, fupSource):
 		"""Compile block interface.
