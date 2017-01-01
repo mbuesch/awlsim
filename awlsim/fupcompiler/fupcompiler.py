@@ -165,6 +165,7 @@ class FupCompiler(object):
 		insns = []
 		for grid in self.grids:
 			insns.extend(grid.compile())
+		insns.append(AwlInsn_BE(cpu=None))
 
 		# Optimize the generated instructions
 		pass#TODO
