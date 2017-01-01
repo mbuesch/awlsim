@@ -27,6 +27,7 @@ import re
 
 from awlsim.common.project import *
 from awlsim.common.refmanager import *
+from awlsim.common.namevalidation import *
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
@@ -52,14 +53,6 @@ class RawAwlInsn(object):
 		self.label = None
 		self.name = None
 		self.ops = []
-
-	__labelRe = re.compile(r'^[_a-zA-Z][_0-9a-zA-Z]{0,3}$')
-
-	@classmethod
-	def isValidLabel(cls, labelString):
-		# Checks if string is a valid label or
-		# label reference (without colons).
-		return bool(cls.__labelRe.match(labelString))
 
 	def __repr__(self):
 		ret = []
@@ -185,7 +178,7 @@ class RawAwlCodeBlock(RawAwlBlock):
 		self.retTypeTokens = None
 
 	def hasLabel(self, string):
-		if RawAwlInsn.isValidLabel(string):
+		if AwlName.isValidLabel(string):
 			for insn in self.insns:
 				if insn.getLabel() == string:
 					return True
@@ -802,7 +795,7 @@ class AwlParser(object):
 			if len(t.tokens) <= 1:
 				raise AwlParserError("Invalid standalone label")
 			label = t.tokens[0][0:-1]
-			if not label or not RawAwlInsn.isValidLabel(label):
+			if not label or not AwlName.isValidLabel(label):
 				raise AwlParserError("Invalid label")
 			insn.setLabel(label)
 			t.tokens = t.tokens[1:]
