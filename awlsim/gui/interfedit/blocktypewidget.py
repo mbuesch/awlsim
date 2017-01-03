@@ -38,8 +38,8 @@ class BlockTypeWidget_factory(XmlFactory):
 			self.blockTypeWidget.setBlockTypeString(
 				blockTypeString=tag.getAttr("type", "FC").upper().strip(),
 				noChangeSignals=True)
-			self.blockTypeWidget.setBlockIndex(
-				blockIndex=tag.getAttrInt("index", 0),
+			self.blockTypeWidget.setBlockName(
+				blockName=tag.getAttr("name", "FC 1"),
 				noChangeSignals=True)
 		XmlFactory.parser_open(self, tag)
 
@@ -49,8 +49,7 @@ class BlockTypeWidget_factory(XmlFactory):
 	def parser_beginTag(self, tag):
 		if self.inInstanceDBs:
 			if tag.name == "db":
-				dbIndex = tag.getAttrInt("index")
-				self.blockTypeWidget.addInstanceDB(dbIndex)
+				self.blockTypeWidget.addInstanceDB(tag.getAttr("name", ""))
 				self.inDB = True
 				return
 		else:
@@ -76,64 +75,75 @@ class BlockTypeWidget_factory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
-		blockType, blockIndex, instanceDBs = self.blockTypeWidget.get()
+		blockType, blockName, instanceDBs = self.blockTypeWidget.get()
 		instanceDbTags = [ self.Tag(name="instance_dbs",
 					    tags=[ self.Tag(name="db",
-						   attrs={ "index" : str(int(index)) })
-						   for index in instanceDBs ])
+						   attrs={ "name" : str(dbName) })
+						   for dbName in instanceDBs ])
 		]
 		return [
 			self.Tag(name="blockdecl",
 				 attrs={
 					"type" : str(blockType).upper().strip(),
-					"index" : str(int(blockIndex)),
+					"name" : str(blockName),
 				 },
 				 tags=instanceDbTags),
 		]
 
-class DBListValidator(QValidator):
-	"""Validator for comma separated DB list strings.
+class BlockValidator(QValidator):
+	"""Validator for a block string.
 	"""
 
-	__reDB = re.compile(r'\s*((?:DB)|(?:DI))\s*(\d+)(.*)', re.IGNORECASE | re.DOTALL)
+	__reBase = r'\s*(BLOCKTYPE)\s*(\d+)(.*)'
 
-	def __init__(self, lineEdit):
+	def __init__(self, lineEdit=None, blockTypes=()):
 		QValidator.__init__(self)
 		self.lineEdit = lineEdit
 		if lineEdit:
 			self.defaultBgColor = lineEdit.palette().color(QPalette.Base)
+		self.blockTypes = blockTypes or ()
 
-	def __doFixup(self, input):
-		valid, retList = True, []
-		for dbStr in input.split(","):
-			match = self.__reDB.match(dbStr)
-			if match:
-				if match.group(3).strip():
-					valid = False # We have dangling data
-				else:
-					try:
-						dbNr = int(match.group(2))
-					except (ValueError, TypeError) as e:
-						valid = False # Invalid index
-					if dbNr < 0 or dbNr > 0xFFFF:
-						valid = False # Invalid index
-					dbStr = "%s %s" % (match.group(1).upper(),
-							   match.group(2))
+	def doFixup(self, input):
+		valid, blockStr = True, input
+		regex = self.__reBase.replace(r'BLOCKTYPE',
+					      r'|'.join(r'(?:' + t + r')'
+							for t in self.blockTypes))
+		regex = re.compile(regex, re.IGNORECASE | re.DOTALL)
+		match = regex.match(blockStr)
+		if match:
+			if match.group(3).strip():
+				valid = False # We have dangling data
 			else:
-				dbStr = dbStr.upper().strip()
-				if dbStr:
+				try:
+					blockNr = int(match.group(2))
+				except (ValueError, TypeError) as e:
+					valid = False # Invalid index
+				if blockNr < 0 or blockNr > 0xFFFF:
+					valid = False # Invalid index
+				blockStr = "%s %s" % (match.group(1).upper(),
+						      match.group(2))
+		else:
+			blockStr = blockStr.strip()
+			if blockStr:
+				if len(blockStr) >= 3 and\
+				   blockStr.startswith('"') and\
+				   blockStr.endswith('"') and\
+				   blockStr[1:-1].find('"') < 0:
+					pass # The name is symbolic
+				else:
+					if not blockStr.startswith('"'):
+						blockStr = blockStr.upper()
 					valid = False # We have some crap
-			retList.append(dbStr)
-		return valid, ", ".join(retList)
+		return valid, blockStr
 
 	def fixup(self, input):
-		valid, fixedInput = self.__doFixup(input)
+		valid, fixedInput = self.doFixup(input)
 		if self.lineEdit:
 			self.lineEdit.setText(fixedInput)
 		return fixedInput
 
 	def validate(self, input, pos):
-		valid, fixedInput = self.__doFixup(input)
+		valid, fixedInput = self.doFixup(input)
 
 		if self.lineEdit:
 			palette = self.lineEdit.palette()
@@ -146,7 +156,21 @@ class DBListValidator(QValidator):
 		state = self.Acceptable
 		if input != fixedInput:
 			state = self.Intermediate
-		return state, input.upper(), pos
+		return state, input, pos
+
+class BlockListValidator(BlockValidator):
+	"""Validator for comma separated block list strings.
+	"""
+
+	def doFixup(self, input):
+		valid, retList = True, []
+		for blockStr in input.split(","):
+			v, fix = BlockValidator.doFixup(self, blockStr)
+			if not v:
+				valid = False
+			if fix.strip():
+				retList.append(fix)
+		return valid, ", ".join(retList)
 
 class BlockTypeWidget(QWidget):
 	"""AWL block type edit widget.
@@ -156,8 +180,8 @@ class BlockTypeWidget(QWidget):
 
 	# Signal: Emitted, if the block type changed
 	typeChanged = Signal()
-	# Signal: Emitted, if the block index changed
-	indexChanged = Signal()
+	# Signal: Emitted, if the block name changed
+	nameChanged = Signal()
 	# Signal: Emitted, if the instance DBs changed
 	dbChanged = Signal()
 
@@ -176,10 +200,17 @@ class BlockTypeWidget(QWidget):
 
 		self.__prevTypeStr = "FC"
 
-		self.indexSpin = QSpinBox(self)
-		self.indexSpin.setMinimum(0)
-		self.indexSpin.setMaximum(0xFFFF)
-		self.layout().addWidget(self.indexSpin, 0, 1)
+		self.blockNameEdit = QLineEdit(self)
+		self.blockNameEdit.setToolTip(
+			"Enter the block name here.\n\n"
+			"This can be an absolute block name like\n"
+			"  FB 42   or   FC 42   or   OB 100\n"
+			"or a symbolic block name like\n"
+			"  \"My function block\"\n"
+			"(The symbolic name must be present in the symbol table.)")
+		self.blockNameEdit.setValidator(BlockValidator(self.blockNameEdit,
+							       ("FC",)))
+		self.layout().addWidget(self.blockNameEdit, 0, 1)
 
 		self.dbEditLabel = QLabel("DIs:", self)
 		self.layout().addWidget(self.dbEditLabel, 0, 2)
@@ -192,9 +223,13 @@ class BlockTypeWidget(QWidget):
 			"For example:\n"
 			"  DB 42\n"
 			"or\n"
-			"  DB 42, DB 43, DB 44")
+			"  DB 42, DB 43, DB 44\n"
+			"or a symbolic block name like\n"
+			"  \"First data block\", \"Second data block\"\n"
+			"(The symbolic name must be present in the symbol table.)")
 		self.dbEditLabel.setToolTip(self.dbEdit.toolTip())
-		self.dbEdit.setValidator(DBListValidator(self.dbEdit))
+		self.dbEdit.setValidator(BlockListValidator(self.dbEdit,
+							    ("DB", "DI")))
 		self.layout().addWidget(self.dbEdit, 0, 3)
 
 		self.layout().setColumnStretch(99, 1)
@@ -203,12 +238,11 @@ class BlockTypeWidget(QWidget):
 
 		self.__handleTypeChange(self.typeCombo.currentIndex())
 		self.typeCombo.currentIndexChanged.connect(self.__handleTypeChange)
-		self.indexSpin.valueChanged.connect(self.__handleIndexChange)
+		self.blockNameEdit.textChanged.connect(self.__handleNameChange)
 		self.dbEdit.textChanged.connect(self.__handleDBChange)
 
 	def __handleTypeChange(self, comboIndex):
 		typeStr = self.typeCombo.itemData(comboIndex)
-		self.indexSpin.setPrefix(typeStr + " ")
 		if typeStr == "FB":
 			self.dbEditLabel.show()
 			self.dbEdit.show()
@@ -227,38 +261,31 @@ class BlockTypeWidget(QWidget):
 		if index >= 0:
 			self.typeCombo.setCurrentIndex(index)
 
-	def __handleIndexChange(self, value):
+	def __handleNameChange(self, text):
 		if not self.__changeSignalsBlocked:
-			self.indexChanged.emit()
+			self.nameChanged.emit()
 
 	def __handleDBChange(self, text):
 		if not self.__changeSignalsBlocked:
 			self.dbChanged.emit()
 
 	def get(self):
-		"""Get (blockTypeString, blockIndex, instanceDBs)
+		"""Get (blockTypeString, blockName, instanceDBs)
 		"""
 		typeStr = self.typeCombo.itemData(self.typeCombo.currentIndex())
-		index = self.indexSpin.value()
+		nameStr = self.blockNameEdit.text()
 		instanceDBs = []
 		if typeStr == "FB":
 			for db in self.dbEdit.text().split(","):
-				try:
-					db = db.upper()
-					for c in ("D", "I", "B"):
-						db = db.replace(c, "")
-					db = int(db.strip())
-				except (ValueError, TypeError) as e:
-					continue
-				instanceDBs.append(db)
-		return (typeStr, index, instanceDBs)
+				instanceDBs.append(db.strip())
+		return (typeStr, nameStr, instanceDBs)
 
 	def clear(self, noChangeSignals=False):
 		"""Clear content.
 		"""
 		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
 			self.typeCombo.setCurrentIndex(0)
-			self.indexSpin.setValue(1)
+			self.blockNameEdit.setText("FC 1")
 			self.dbEdit.clear()
 
 	def setBlockTypeString(self, blockTypeString, noChangeSignals=False):
@@ -272,22 +299,23 @@ class BlockTypeWidget(QWidget):
 				return True
 			return False
 
-	def setBlockIndex(self, blockIndex, noChangeSignals=False):
-		"""Set the block index.
+	def setBlockName(self, blockName, noChangeSignals=False):
+		"""Set the block name.
 		"""
 		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
-			self.indexSpin.setValue(blockIndex)
+			self.blockNameEdit.setText(blockName)
 
-	def addInstanceDB(self, dbIndex, noChangeSignals=False):
+	def addInstanceDB(self, dbName, noChangeSignals=False):
 		"""Add an instance DB.
 		"""
+		if not dbName.strip():
+			return False
 		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
 			typeStr = self.typeCombo.itemData(self.typeCombo.currentIndex())
 			if typeStr == "FB":
-				newText = "DB %d" % dbIndex
 				if self.dbEdit.text().strip():
-					self.dbEdit.setText(self.dbEdit.text() + ", " + newText)
+					self.dbEdit.setText(self.dbEdit.text() + ", " + dbName)
 				else:
-					self.dbEdit.setText(newText)
+					self.dbEdit.setText(dbName)
 				return True
 			return False

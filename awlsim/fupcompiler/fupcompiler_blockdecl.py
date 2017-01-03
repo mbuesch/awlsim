@@ -34,13 +34,13 @@ class FupCompiler_BlockDeclFactory(XmlFactory):
 		self.inDB = False
 		if tag:
 			self.decl.setBlockType(tag.getAttr("type", "FC"))
-			self.decl.setBlockIndex(tag.getAttrInt("index", 0))
+			self.decl.setBlockName(tag.getAttr("name", "FC 1"))
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if self.inInstanceDBs:
 			if tag.name == "db":
-				self.decl.addInstanceDB(tag.getAttrInt("index"))
+				self.decl.addInstanceDB(tag.getAttr("name", ""))
 				self.inDB = True
 				return
 		else:
@@ -72,7 +72,7 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		FupCompiler_BaseObj.__init__(self)
 		self.compiler = compiler	# FupCompiler
 		self.setBlockType("FC")
-		self.setBlockIndex(1)
+		self.setBlockName("FC 1")
 		self.instanceDBs = []
 
 	def setBlockType(self, blockType):
@@ -81,17 +81,17 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 			raise AwlSimError("FupCompiler_BlockDecl: Invalid block "
 				"type: %s" % self.blockType)
 
-	def setBlockIndex(self, blockIndex):
-		self.blockIndex = blockIndex
-		if self.blockIndex < 0 or self.blockIndex > 0xFFFF:
-			raise AwlSimError("FupCompiler_BlockDecl: Invalid block "
-				"index: %d" % self.blockIndex)
+	def setBlockName(self, blockName):
+		blockName = blockName.strip()
+		if not blockName:
+			return
+		self.blockName = blockName
 
-	def addInstanceDB(self, dbIndex):
-		self.instanceDBs.append(dbIndex)
-		if dbIndex < 0 or dbIndex > 0xFFFF:
-			raise AwlSimError("FupCompiler_BlockDecl: Invalid instance "
-				"DB index: %d" % dbIndex)
+	def addInstanceDB(self, dbName):
+		dbName = dbName.strip()
+		if not dbName:
+			return
+		self.instanceDBs.append(dbName)
 
 	def compile(self, interf):
 		"""Compile this FUP block declaration to AWL.
@@ -108,32 +108,32 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		if self.blockType == "FC":
 			if not interf.retValField:
 				raise AwlSimError("FupCompiler_BlockDecl: RET_VAL "
-					"is not defined for FC %d." %\
-					 self.blockIndex)
+					"is not defined for %s." %\
+					 self.blockName)
 			retVal = interf.retValField.typeStr
 			if not AwlName.mayBeValidType(retVal):
 				raise AwlSimError("FupCompiler_BlockDecl: RET_VAL "
 					"data type contains invalid characters.")
-			blockHeader.append("FUNCTION FC %d : %s" %(
-					   self.blockIndex, retVal))
+			blockHeader.append("FUNCTION %s : %s" %(
+					   self.blockName, retVal))
 			blockFooter.append("END_FUNCTION")
 		elif self.blockType == "FB":
-			blockHeader.append("FUNCTION_BLOCK FB %d" %\
-					   self.blockIndex)
+			blockHeader.append("FUNCTION_BLOCK %s" %\
+					   self.blockName)
 			blockFooter.append("END_FUNCTION_BLOCK")
 		elif self.blockType == "OB":
-			blockHeader.append("ORGANIZATION_BLOCK OBC %d" %\
-					   self.blockIndex)
+			blockHeader.append("ORGANIZATION_BLOCK %s" %\
+					   self.blockName)
 			blockFooter.append("END_ORGANIZATION_BLOCK")
 		else:
 			raise AwlSimError("FupCompiler_BlockDecl: Unknown block "
 				"type: %s" % self.blockType)
 
-		for dbIndex in self.instanceDBs:
+		for dbName in self.instanceDBs:
 			instDBs.append("")
 			instDBs.append("")
-			instDBs.append("DATA_BLOCK DB %d" % dbIndex)
-			instDBs.append("\tFB %d" % self.blockIndex)
+			instDBs.append("DATA_BLOCK %s" % dbName)
+			instDBs.append("\t%s" % self.blockName)
 			instDBs.append("BEGIN")
 			for field in interf.allFields:
 				fieldName = field.name
