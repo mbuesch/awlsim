@@ -91,6 +91,10 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		dbName = dbName.strip()
 		if not dbName:
 			return
+		if len(dbName) > 3 and\
+		   dbName.upper().startswith("DI") and\
+		   dbName[2].isspace():
+			dbName = "DB" + dbName[2:]
 		self.instanceDBs.append(dbName)
 
 	def compile(self, interf):
