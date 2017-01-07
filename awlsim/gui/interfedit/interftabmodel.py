@@ -492,8 +492,8 @@ class AwlInterfaceModel(QAbstractTableModel):
 		elif role == Qt.BackgroundRole:
 			field = self.__row2field(row)
 			if field:
-				if self.__isRow_RETVAL(row) and\
-				   self.__isColumn_name(column):
+				if (self.__isRow_RETVAL(row) and self.__isColumn_name(column)) or\
+				   (self.__isRow_TEMP(row) and self.__isColumn_initValue(column)):
 					return QBrush(QColor("gray"))
 				if not field.isValid() and\
 				   not self.__isColumn_comment(column):
@@ -636,6 +636,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 		if not index:
 			return Qt.ItemIsEnabled
 		row, column = index.row(), index.column()
-		if self.__isRow_RETVAL(row) and self.__isColumn_name(column):
+		if (self.__isRow_RETVAL(row) and self.__isColumn_name(column)) or\
+		   (self.__isRow_TEMP(row) and self.__isColumn_initValue(column)):
 			return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
