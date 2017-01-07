@@ -183,7 +183,6 @@ class FupCompiler(object):
 			self.__compileBlockDecl(fupSource)
 			self.__compileInterface(fupSource)
 			self.__compileGrids(fupSource)
-		print(self.awlSource.sourceBytes.decode(self.AWL_ENCODING))#XXX
 		return self.getAwlSource()
 
 	def compile(self, fupSource, mnemonics):
