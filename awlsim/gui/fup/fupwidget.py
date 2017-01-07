@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP widget
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,10 @@ from awlsim.common.compat import *
 
 from awlsim.gui.fup.fupdrawwidget import *
 from awlsim.gui.interfedit.interfwidget import *
+from awlsim.gui.editwidget import *
 from awlsim.gui.util import *
+
+from awlsim.fupcompiler import *
 
 
 FUP_DEBUG = 0
@@ -41,7 +44,7 @@ class FupFactory(XmlFactory):
 	def parser_beginTag(self, tag):
 		blockTypeEdit = self.fupWidget.interf.blockTypeEdit
 		interfModel = self.fupWidget.interf.interfView.model()
-		grid = self.fupWidget.draw.grid
+		grid = self.fupWidget.edit.draw.grid
 		if self.inFup:
 			if self.inGrids:
 				if tag.name == "grid":
@@ -94,7 +97,7 @@ class FupFactory(XmlFactory):
 		childTags.extend(interfModel.factory(
 			model=interfModel).composer_getTags())
 
-		grid = self.fupWidget.draw.grid
+		grid = self.fupWidget.edit.draw.grid
 		childTags.append(self.Tag(name="grids",
 					  tags=grid.factory(grid=grid).composer_getTags()))
 
@@ -104,6 +107,49 @@ class FupFactory(XmlFactory):
 				tags=childTags),
 		]
 		return tags
+
+class FupElemContainerWidget(QListWidget):
+	pass#TODO
+
+class FupEditWidgetMenu(QMenu):
+	showAwl = Signal()
+	showStl = Signal()
+
+	def __init__(self, parent=None):
+		QMenu.__init__(self, parent)
+		self.addAction("Show AWL code (DE)...", self.showAwl)
+		self.addAction("Show STL code (EN)...", self.showStl)
+
+class FupEditWidget(QWidget):
+	def __init__(self, parent=None):
+		QWidget.__init__(self, parent)
+		self.setLayout(QGridLayout())
+		self.layout().setContentsMargins(QMargins())
+
+		self.__splitter = QSplitter(self)
+
+		self.__leftWidget = QWidget(self)
+		self.__leftWidget.setLayout(QVBoxLayout())
+		self.__leftWidget.layout().setContentsMargins(QMargins())
+
+		self.container = FupElemContainerWidget(self)
+		self.__leftWidget.layout().addWidget(self.container)
+
+		self.menu = FupEditWidgetMenu(self)
+
+		self.menuButton = QPushButton("FUP/FBD", self)
+		self.menuButton.setMenu(self.menu)
+		self.__leftWidget.layout().addWidget(self.menuButton)
+
+		self.__splitter.addWidget(self.__leftWidget)
+
+		self.draw = FupDrawWidget(self)
+
+		self.__drawScroll = QScrollArea(self)
+		self.__drawScroll.setWidget(self.draw)
+		self.__splitter.addWidget(self.__drawScroll)
+
+		self.layout().addWidget(self.__splitter, 0, 0)
 
 class FupWidget(QWidget):
 	"""Main FUP/FBD widget."""
@@ -120,18 +166,17 @@ class FupWidget(QWidget):
 		self.splitter = QSplitter(Qt.Vertical)
 
 		self.interf = AwlInterfWidget(self)
-		self.interf.contentChanged.connect(self.diagramChanged)
 		self.splitter.addWidget(self.interf)
 
-		self.draw = FupDrawWidget(self)
-		self.draw.diagramChanged.connect(self.diagramChanged)
-
-		self.drawScroll = QScrollArea(self)
-		self.drawScroll.setWidget(self.draw)
-		self.splitter.addWidget(self.drawScroll)
+		self.edit = FupEditWidget(self)
+		self.splitter.addWidget(self.edit)
 
 		self.layout().addWidget(self.splitter, 0, 0)
 
+		self.interf.contentChanged.connect(self.diagramChanged)
+		self.edit.draw.diagramChanged.connect(self.diagramChanged)
+		self.edit.menu.showAwl.connect(self.__compileAndShowAwl)
+		self.edit.menu.showStl.connect(self.__compileAndShowStl)
 		self.diagramChanged.connect(self.__handleDiagramChange)
 
 	def __handleDiagramChange(self):
@@ -167,5 +212,24 @@ class FupWidget(QWidget):
 		except FupFactory.Error as e:
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
-		pass#TODO
 		self.__needSourceUpdate = True
+
+	def __compileAndShow(self, mnemonics):
+		fupSource = self.getSource()
+		try:
+			compiler = FupCompiler()
+			awlSource = compiler.compile(fupSource=fupSource,
+						     mnemonics=mnemonics)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self, "FUP compiler error", e)
+			return
+		dlg = EditDialog(readOnly=True, withHeader=False, withCpuStats=False)
+		dlg.setWindowTitle("Compiled FUP/FBD diagram")
+		dlg.edit.setSource(awlSource)
+		dlg.exec_()
+
+	def __compileAndShowAwl(self):
+		self.__compileAndShow(S7CPUSpecs.MNEMONICS_DE)
+
+	def __compileAndShowStl(self):
+		self.__compileAndShow(S7CPUSpecs.MNEMONICS_EN)
