@@ -107,19 +107,21 @@ class FupCompiler(object):
 		self.blockFooterAwl = []	# Block declaration footer AWL code strings
 		self.blockInterfAwl = []	# Block interface AWL code strings
 		self.instanceDBsAwl = []	# Instance DBs AWL code strings
+		self.fupSource = None		# FUP source
 		self.awlSource = None		# Compiled AWL source
 
 	def getAwlSource(self):
 		return self.awlSource
 
-	def __parse(self, fupSource):
+	def __parse(self):
 		try:
-			return FupCompilerFactory(compiler=self).parse(fupSource.sourceBytes)
+			return FupCompilerFactory(compiler=self).parse(
+				self.fupSource.sourceBytes)
 		except FupCompilerFactory.Error as e:
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
 
-	def __genAwlCode(self, fupSource, insns):
+	def __genAwlCode(self, insns):
 		"""Generate AWL code from a list of instructions.
 		Returns bytes encoded as self.AWL_ENCODING.
 		"""
@@ -147,18 +149,18 @@ class FupCompiler(object):
 
 		return '\r\n'.join(awl).encode(self.AWL_ENCODING)
 
-	def __compileBlockDecl(self, fupSource):
+	def __compileBlockDecl(self):
 		"""Compile block declaration.
 		"""
 		self.blockHeaderAwl, self.blockFooterAwl, self.instanceDBsAwl =\
 			self.decl.compile(self.interf)
 
-	def __compileInterface(self, fupSource):
+	def __compileInterface(self):
 		"""Compile block interface.
 		"""
 		self.blockInterfAwl = self.interf.compile()
 
-	def __compileGrids(self, fupSource):
+	def __compileGrids(self):
 		"""Compile all self.grids
 		"""
 		# Compile the grids
@@ -171,18 +173,19 @@ class FupCompiler(object):
 		pass#TODO
 
 		# Store the AWL code in the AWL source object.
-		self.awlSource.sourceBytes = self.__genAwlCode(fupSource, insns)
+		self.awlSource.sourceBytes = self.__genAwlCode(insns)
 
 	def __trycompile(self, fupSource, mnemonics):
 		self.reset()
+		self.fupSource = fupSource
 		self.mnemonics = mnemonics
 		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
-		if self.__parse(fupSource):
-			self.__compileBlockDecl(fupSource)
-			self.__compileInterface(fupSource)
-			self.__compileGrids(fupSource)
+		if self.__parse():
+			self.__compileBlockDecl()
+			self.__compileInterface()
+			self.__compileGrids()
 		return self.getAwlSource()
 
 	def compile(self, fupSource, mnemonics):
