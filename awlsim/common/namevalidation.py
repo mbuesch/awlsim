@@ -99,3 +99,41 @@ class AwlName(object):
 		"""
 		return all(c not in cls.newlines and c not in cls.special
 			   for c in commentString)
+
+	@classmethod
+	def stripChars(cls, string,
+		       replaceWith="",
+		       notStripChars="",
+		       stripAlpha=True,
+		       stripNum=True,
+		       stripSpace=True,
+		       stripNewline=True,
+		       stripSpecial=True):
+		"""Strip characters from a string based in the character type.
+		"""
+		ret = []
+		for c in string:
+			valid = True
+			if c not in notStripChars:
+				if c in cls.alpha:
+					if stripAlpha:
+						valid = False
+				elif c in cls.num:
+					if stripNum:
+						valid = False
+				elif c.isspace():
+					if stripSpace:
+						valid = False
+				elif c in cls.newlines:
+					if stripNewline:
+						valid = False
+				elif c in cls.special:
+					if stripSpecial:
+						valid = False
+				else:
+					valid = False
+			if valid:
+				ret.append(c)
+			else:
+				ret.append(replaceWith)
+		return "".join(ret)
