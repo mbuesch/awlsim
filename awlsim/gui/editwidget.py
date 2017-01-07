@@ -333,6 +333,8 @@ class CpuStatsContextMenu(QMenu):
 		self.closed.emit()
 
 class EditWidget(SourceCodeEdit):
+	"""AWL/STL edit widget."""
+
 	# Signal: Emitted, if the source code changed.
 	codeChanged = Signal()
 	# Signal: Emitted, if the visible source lines changed (e.g. scrolled)
@@ -355,8 +357,12 @@ class EditWidget(SourceCodeEdit):
 	__runAniNoDown = tuple(c.replace("x", " source NOT DOWNLOADED to CPU ")
 			       for c in __runAniTemplate)
 
-	def __init__(self, parent=None):
+	def __init__(self, parent=None,
+		     readOnly=False,
+		     withHeader=True, withCpuStats=True):
 		SourceCodeEdit.__init__(self, parent)
+
+		self.setReadOnly(readOnly)
 
 		self.__runAniTimer = QTimer(self)
 		self.__runAniTimer.setSingleShot(False)
@@ -367,9 +373,15 @@ class EditWidget(SourceCodeEdit):
 		self.setLineWrapMode(SourceCodeEdit.NoWrap)
 		self.setTabStopWidth(self.tabStopWidth() // 2)
 
-		self.headerWidget = HeaderSubWidget(self)
+		if withHeader:
+			self.headerWidget = HeaderSubWidget(self)
+		else:
+			self.headerWidget = None
 		self.lineNumWidget = LineNumSubWidget(self)
-		self.cpuStatsWidget = CpuStatsSubWidget(self)
+		if withCpuStats:
+			self.cpuStatsWidget = CpuStatsSubWidget(self)
+		else:
+			self.cpuStatsWidget = None
 
 		self.__updateFont(getDefaultFixedFont())
 
@@ -381,13 +393,15 @@ class EditWidget(SourceCodeEdit):
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
 
-		self.__cpuStatsMenu = CpuStatsContextMenu(self)
-		self.__cpuStatsMask = 0
+		if withCpuStats:
+			self.__cpuStatsMenu = CpuStatsContextMenu(self)
+			self.__cpuStatsMask = 0
 		self.enableCpuStats(enabled=False, force=True)
-		self.setCpuStatsMask(CpuStatsEntry.SHOW_VKE |\
-				     CpuStatsEntry.SHOW_STA |\
-				     CpuStatsEntry.SHOW_ACCU1 |\
-				     CpuStatsEntry.SHOW_ACCU2)
+		if withCpuStats:
+			self.setCpuStatsMask(CpuStatsEntry.SHOW_VKE |\
+					     CpuStatsEntry.SHOW_STA |\
+					     CpuStatsEntry.SHOW_ACCU1 |\
+					     CpuStatsEntry.SHOW_ACCU2)
 		self.resetCpuStats(True)
 
 		self.__textChangeBlocked = Blocker()
@@ -395,15 +409,17 @@ class EditWidget(SourceCodeEdit):
 
 		self.blockCountChanged.connect(self.__updateMargins)
 		self.updateRequest.connect(self.__updateExtraWidgets)
-		self.headerWidget.needRepaint.connect(self.__repaintHeaderWidget)
 		self.lineNumWidget.needRepaint.connect(self.__repaintLineNumWidget)
-		self.cpuStatsWidget.needRepaint.connect(self.__repaintCpuStatsWidget)
-		self.headerWidget.wasScrolled.connect(self.__forwardWheelEvent)
-		self.headerWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 		self.lineNumWidget.wasScrolled.connect(self.__forwardWheelEvent)
-		self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
-		self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
-		self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
+		if self.headerWidget:
+			self.headerWidget.needRepaint.connect(self.__repaintHeaderWidget)
+			self.headerWidget.wasScrolled.connect(self.__forwardWheelEvent)
+			self.headerWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
+		if self.cpuStatsWidget:
+			self.cpuStatsWidget.needRepaint.connect(self.__repaintCpuStatsWidget)
+			self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
+			self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
+			self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
 	def getSourceId(self):
 		return self.__source.identHash
@@ -477,7 +493,8 @@ class EditWidget(SourceCodeEdit):
 			self.__runAniTimer.stop()
 		if self.__cpuStatsEnabled:
 			self.cpuStatsWidget.update()
-		self.headerWidget.update()
+		if self.headerWidget:
+			self.headerWidget.update()
 
 	def __eachVisibleLine(self):
 		block = self.firstVisibleBlock()
@@ -518,18 +535,22 @@ class EditWidget(SourceCodeEdit):
 		# Set the font for other window elements
 		self.setFont(font)
 		self.update()
-		self.headerWidget.setFont(font)
-		self.headerWidget.update()
+		if self.headerWidget:
+			self.headerWidget.setFont(font)
+			self.headerWidget.update()
 		self.lineNumWidget.setFont(font)
 		self.lineNumWidget.update()
-		self.cpuStatsWidget.setFont(font)
-		self.cpuStatsWidget.update()
+		if self.cpuStatsWidget:
+			self.cpuStatsWidget.setFont(font)
+			self.cpuStatsWidget.update()
 
 		# Cache metrics
 		self.__charHeight = self.fontMetrics().height()
 		self.setTabStopWidth(self.fontMetrics().width("X") * 8)
 
 	def enableCpuStats(self, enabled=True, force=False):
+		if not self.cpuStatsWidget:
+			enabled = False
 		if force or enabled != self.__cpuStatsEnabled:
 			self.__cpuStatsEnabled = enabled
 			self.__updateMargins()
@@ -557,8 +578,10 @@ class EditWidget(SourceCodeEdit):
 		self.__cpuStatsUpdate = 1
 		self.__cpuStatsStamp = 0
 		self.__updateMargins()
-		self.headerWidget.update()
-		self.cpuStatsWidget.update()
+		if self.headerWidget:
+			self.headerWidget.update()
+		if self.cpuStatsWidget:
+			self.cpuStatsWidget.update()
 
 	def updateCpuStats_afterInsn(self, insnDumpMsg):
 		# insnDumpMsg => AwlSimMessage_INSNDUMP instance
@@ -596,14 +619,16 @@ class EditWidget(SourceCodeEdit):
 				stats.obsolete = True
 
 	def __runAnimation(self):
-		self.__hdrAniStat = (self.__hdrAniStat + 1) %\
-				    len(self.__runAni)
-		self.headerWidget.update()
+		if self.headerWidget:
+			self.__hdrAniStat = (self.__hdrAniStat + 1) %\
+					    len(self.__runAni)
+			self.headerWidget.update()
 
 	def __setSourceMatchesCpuSource(self, sourceIsOnCpu, force=False):
 		if sourceIsOnCpu != self.__sourceMatchesCpuSource or force:
 			self.__sourceMatchesCpuSource = sourceIsOnCpu
-			self.headerWidget.update()
+			if self.headerWidget:
+				self.headerWidget.update()
 			self.cpuCodeMatchChanged.emit(self, sourceIsOnCpu)
 
 	def handleIdentsMsg(self, identsMsg):
@@ -633,7 +658,9 @@ class EditWidget(SourceCodeEdit):
 		return 5 + 5 + metr.width(self.cpuStatsWidget.getBanner(self.__cpuStatsMask).replace(" ", "_"))
 
 	def headerHeight(self):
-		return 5 + 5 + self.__charHeight
+		if self.headerWidget:
+			return 5 + 5 + self.__charHeight
+		return 0
 
 	def __updateMargins(self):
 		self.setViewportMargins(self.lineNumWidgetWidth(),
@@ -649,12 +676,13 @@ class EditWidget(SourceCodeEdit):
 		return sh
 
 	def __updateHeaderWidgetGeo(self):
-		cont = self.contentsRect()
-		rect = QRect(cont.left(),
-			     cont.top(),
-			     cont.width(),
-			     self.headerHeight())
-		self.headerWidget.setGeometry(rect)
+		if self.headerWidget:
+			cont = self.contentsRect()
+			rect = QRect(cont.left(),
+				     cont.top(),
+				     cont.width(),
+				     self.headerHeight())
+			self.headerWidget.setGeometry(rect)
 
 	def __updateLineNumWidgetGeo(self):
 		cont = self.contentsRect()
@@ -665,6 +693,8 @@ class EditWidget(SourceCodeEdit):
 		self.lineNumWidget.setGeometry(rect)
 
 	def __updateCpuStatsWidgetGeo(self):
+		if not self.cpuStatsWidget:
+			return
 		if self.__cpuStatsEnabled:
 			vp, cont = self.viewport(), self.contentsRect()
 			rect = QRect(vp.width() + self.lineNumWidgetWidth(),
@@ -683,21 +713,25 @@ class EditWidget(SourceCodeEdit):
 
 	def __updateExtraWidgets(self, rect, dy):
 		if dy:
-			self.headerWidget.scroll(0, dy)
+			if self.headerWidget:
+				self.headerWidget.scroll(0, dy)
 			self.lineNumWidget.scroll(0, dy)
-			self.cpuStatsWidget.scroll(0, dy)
+			if self.cpuStatsWidget:
+				self.cpuStatsWidget.scroll(0, dy)
 			self.__pruneInvisibleCpuStats()
 			self.visibleRangeChanged.emit()
 			return
-		self.headerWidget.update(0, rect.y(),
-			self.headerWidget.width(),
-			rect.height())
+		if self.headerWidget:
+			self.headerWidget.update(0, rect.y(),
+				self.headerWidget.width(),
+				rect.height())
 		self.lineNumWidget.update(0, rect.y(),
 			self.lineNumWidget.width(),
 			rect.height())
-		self.cpuStatsWidget.update(0, rect.y(),
-			self.cpuStatsWidget.width(),
-			rect.height())
+		if self.cpuStatsWidget:
+			self.cpuStatsWidget.update(0, rect.y(),
+				self.cpuStatsWidget.width(),
+				rect.height())
 		if rect.contains(self.viewport().rect()):
 			self.__updateMargins()
 
@@ -721,6 +755,8 @@ class EditWidget(SourceCodeEdit):
 	}
 
 	def __repaintHeaderWidget(self, ev):
+		if not self.headerWidget:
+			return
 		p = self.headerWidget.getPainter()
 		if not self.__sourceMatchesCpuSource and\
 		   self.__runState.state == RunState.STATE_RUN:
@@ -793,6 +829,8 @@ class EditWidget(SourceCodeEdit):
 				   str(lineNr))
 
 	def __repaintCpuStatsWidget(self, ev):
+		if not self.cpuStatsWidget:
+			return
 		p = self.cpuStatsWidget.getPainter()
 		rect = ev.rect()
 		p.fillRect(rect, Qt.lightGray)
@@ -831,3 +869,19 @@ class EditWidget(SourceCodeEdit):
 				self.setErraticLine(lineNr - 1, str(exception))
 				return
 		self.setErraticLine(None)
+
+class EditDialog(QDialog):
+	"""AWL/STL edit dialog."""
+
+	def __init__(self, parent=None,
+		     readOnly=False,
+		     withHeader=True, withCpuStats=True):
+		QDialog.__init__(self, parent)
+		self.setLayout(QGridLayout())
+
+		self.edit = EditWidget(self, readOnly=readOnly,
+				       withHeader=withHeader,
+				       withCpuStats=withCpuStats)
+		self.layout().addWidget(self.edit, 0, 0)
+
+		self.resize(700, 550)
