@@ -160,7 +160,7 @@ class FupWidget(QWidget):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
-		self.__source = FupSource(name = "FUP")
+		self.__source = FupSource(name = "Diagram 1")
 		self.__needSourceUpdate = True
 
 		self.splitter = QSplitter(Qt.Vertical)

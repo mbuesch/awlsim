@@ -667,7 +667,7 @@ class FupTabWidget(SourceTabWidget):
 	def addDiagram(self):
 		fupWidget = FupWidget(self)
 		fupWidget.diagramChanged.connect(self.sourceChanged)
-		index = self.addTab(fupWidget, "Diagram 1")
+		index = self.addTab(fupWidget, fupWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()
 		self.sourceChanged.emit()
