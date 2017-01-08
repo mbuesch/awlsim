@@ -112,7 +112,6 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		instDBs = []
 
 		mnemonics = self.compiler.mnemonics
-		date = datetime.datetime.utcnow().strftime(Project.DATETIME_FMT)
 		srcName = AwlName.stripChars(self.compiler.fupSource.name,
 					     replaceWith="_",
 					     stripAlpha=False,
@@ -130,7 +129,6 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 			lines.append("// ")
 			lines.append("// Source            : %s" % srcName)
 			lines.append("// Compiler version  : %s" % VERSION_STRING)
-			lines.append("// Date              : %s (UTC)" % date)
 			lines.append("// %s mnemonics     : %s" % (strAwl, strMnemonics))
 			lines.append("// ")
 
