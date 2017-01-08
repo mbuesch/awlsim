@@ -26,11 +26,21 @@ from awlsim.common.sources import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.cpuspecs import *
 
+#from awlsim.core.cpu cimport * #@cy
+from awlsim.core.cpu import * #@nocy
+
 from awlsim.fupcompiler.fupcompiler_blockdecl import *
 from awlsim.fupcompiler.fupcompiler_interf import *
 from awlsim.fupcompiler.fupcompiler_grid import *
 from awlsim.fupcompiler.fupcompiler_elem import *
 
+#from awlsim.core.instructions.all_insns cimport * #@cy
+from awlsim.core.instructions.all_insns import * #@nocy
+
+
+class FupFakeCpu(S7CPU):
+	def getMnemonics(self):
+		return self.fupCompiler.mnemonics
 
 class FupCompilerFactory(XmlFactory):
 	FUP_VERSION = 0
@@ -133,10 +143,8 @@ class FupCompiler(object):
 
 		# Create instructions body
 		awl.append("BEGIN")
-		class FakeCpu(object):
-			def getMnemonics(cpuSelf):
-				return self.mnemonics
-		fakeCpu = FakeCpu()
+		fakeCpu = FupFakeCpu()
+		fakeCpu.fupCompiler = self
 		for insn in insns:
 			insn.cpu = fakeCpu
 			awl.append("\t" + str(insn))
@@ -147,7 +155,7 @@ class FupCompiler(object):
 		# Create the instance DBs
 		awl.extend(self.instanceDBsAwl or [])
 
-		return '\r\n'.join(awl).encode(self.AWL_ENCODING)
+		return ('\r\n'.join(awl) + '\r\n').encode(self.AWL_ENCODING)
 
 	def __compileBlockDecl(self):
 		"""Compile block declaration.
