@@ -38,6 +38,7 @@ class AwlInterfaceView(QTableView):
 			self.verticalHeader().setMovable(True)
 		else:
 			self.verticalHeader().setSectionsMovable(True)
+		self.verticalHeader().setDefaultSectionSize(20)
 		self.verticalHeader().sectionMoved.connect(self.__rowMoved)
 
 		self.pressed.connect(self.__handleMousePress)
@@ -67,12 +68,16 @@ class AwlInterfaceView(QTableView):
 		model = self.model()
 		if model:
 			hdr = self.horizontalHeader()
-			idx = 0
-			if hdr.sectionSize(idx) < 150:
-				hdr.resizeSection(idx, 150)
-			idx = 3 if model.haveInitValue else 2
-			if hdr.sectionSize(idx) < 200:
-				hdr.resizeSection(idx, 200)
+			def setMinSize(idx, minSize):
+				if hdr.sectionSize(idx) < minSize:
+					hdr.resizeSection(idx, minSize)
+			setMinSize(0, 150)
+			setMinSize(1, 100)
+			if model.haveInitValue:
+				setMinSize(2, 160)
+				setMinSize(3, 250)
+			else:
+				setMinSize(2, 250)
 
 	def deleteRow(self, index=None):
 		if not index:

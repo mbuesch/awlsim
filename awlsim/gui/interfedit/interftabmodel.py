@@ -494,13 +494,13 @@ class AwlInterfaceModel(QAbstractTableModel):
 			if field:
 				if (self.__isRow_RETVAL(row) and self.__isColumn_name(column)) or\
 				   (self.__isRow_TEMP(row) and self.__isColumn_initValue(column)):
-					return QBrush(QColor("gray"))
+					return QBrush(QColor("#C0C0C0"))
 				if not field.isValid() and\
 				   not self.__isColumn_comment(column):
 					return QBrush(QColor("red"))
 				else:
 					return QBrush(QColor("white"))
-			return QBrush(QColor("lightgray"))
+			return QBrush(QColor("#E0E0E0"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			if self.__isRow_newIN(row):
 				return "Create a new INPUT field here..."
@@ -548,27 +548,27 @@ class AwlInterfaceModel(QAbstractTableModel):
 			if self.__isRow_IN(row):
 				return "IN %d" % (localRow + 1)
 			if self.__isRow_newIN(row):
-				return "IN..."
+				return "IN ..."
 			localRow -= self.__nrRows_IN
 			if self.__isRow_OUT(row):
 				return "OUT %d" % (localRow + 1)
 			if self.__isRow_newOUT(row):
-				return "OUT..."
+				return "OUT ..."
 			localRow -= self.__nrRows_OUT
 			if self.__isRow_INOUT(row):
 				return "IN_OUT %d" % (localRow + 1)
 			if self.__isRow_newINOUT(row):
-				return "IN_OUT..."
+				return "IN_OUT ..."
 			localRow -= self.__nrRows_INOUT
 			if self.__isRow_STAT(row):
 				return "STAT %d" % (localRow + 1)
 			if self.__isRow_newSTAT(row):
-				return "STAT..."
+				return "STAT ..."
 			localRow -= self.__nrRows_STAT
 			if self.__isRow_TEMP(row):
 				return "TEMP %d" % (localRow + 1)
 			if self.__isRow_newTEMP(row):
-				return "TEMP..."
+				return "TEMP ..."
 			if self.__isRow_RETVAL(row):
 				return "RET_VAL"
 			assert(0)
