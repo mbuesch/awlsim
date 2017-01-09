@@ -1,0 +1,4 @@
+from awlsim.core.cpu cimport *
+
+cdef class FupFakeCPU(S7CPU):
+	pass
