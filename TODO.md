@@ -5,6 +5,7 @@ S7 compatibility
 ----------------
 
 * Implement parsing of attributes
+* Implement the remaining FUP block types
 
 core
 ----

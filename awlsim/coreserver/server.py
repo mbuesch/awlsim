@@ -572,6 +572,7 @@ class AwlSimServer(object):
 		#TODO src manager
 		#TODO do not add to awlSourceContainer
 		compiler = FupCompiler()
+		#FIXME mnemonics auto detection might cause mismatching mnemonics w.r.t. the main blocks.
 		awlSource = compiler.compile(fupSource=fupSource,
 					     mnemonics=self.__getMnemonics())
 		self.loadAwlSource(awlSource)
