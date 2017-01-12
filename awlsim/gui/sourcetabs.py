@@ -99,6 +99,10 @@ class SourceTabCorner(QWidget):
 		self.menuButton.setMenu(contextMenu)
 		self.layout().addWidget(self.menuButton, 0, 0)
 
+class DummySourceWidget(QWidget):
+	def getSource(self):
+		return None
+
 class SourceTabWidget(QTabWidget):
 	"Abstract source tab-widget"
 
@@ -150,17 +154,30 @@ class SourceTabWidget(QTabWidget):
 		curWidget = self.currentWidget()
 		showIntegrate = False
 		if curWidget:
-			showIntegrate = curWidget.getSource().isFileBacked()
+			source = curWidget.getSource()
+			if source:
+				showIntegrate = source.isFileBacked()
 		self.contextMenu.showIntegrateButton(showIntegrate)
 
 	def updateTabTexts(self):
 		for i in range(self.count()):
-			self.setTabText(i, self.widget(i).getSource().name)
+			source = self.widget(i).getSource()
+			if source:
+				self.setTabText(i, source.name)
 		self.sourceChanged.emit()
 
 	def allTabWidgets(self):
 		for i in range(self.count()):
 			yield self.widget(i)
+
+	def removeDummyWidgets(self):
+		for i in range(self.count() - 1, -1, -1):
+			fupWidget = self.widget(i)
+			if isinstance(fupWidget, DummySourceWidget):
+				self.removeTab(i)
+
+	def addDummyWidget(self):
+		self.addTab(DummySourceWidget(), "")
 
 	def updateRunState(self, runState):
 		pass
@@ -170,7 +187,8 @@ class SourceTabWidget(QTabWidget):
 
 	def getSources(self):
 		"Returns a list of sources"
-		return [ w.getSource() for w in self.allTabWidgets() ]
+		return [ s for s in (w.getSource() for w in self.allTabWidgets())
+		         if s ]
 
 	def setSources(self, sources):
 		raise NotImplementedError
@@ -188,9 +206,11 @@ class SourceTabWidget(QTabWidget):
 	def integrateSource(self):
 		curWidget = self.currentWidget()
 		if curWidget:
-			curWidget.getSource().forceNonFileBacked(self.contextMenu.itemName)
-			self.updateActionMenu()
-			self.updateTabTexts()
+			source = curWidget.getSource()
+			if source:
+				source.forceNonFileBacked(self.contextMenu.itemName)
+				self.updateActionMenu()
+				self.updateTabTexts()
 
 	def contextMenuEvent(self, ev):
 		QTabWidget.contextMenuEvent(self, ev)
@@ -649,7 +669,7 @@ class FupTabWidget(SourceTabWidget):
 
 	def reset(self):
 		SourceTabWidget.reset(self)
-		index, fupWidget = self.addDiagram()
+		self.addDummyWidget()
 		self.updateTabTexts()
 
 	def setSources(self, fupSources):
@@ -667,6 +687,7 @@ class FupTabWidget(SourceTabWidget):
 	def addDiagram(self):
 		fupWidget = FupWidget(self)
 		fupWidget.diagramChanged.connect(self.sourceChanged)
+		self.removeDummyWidgets()
 		index = self.addTab(fupWidget, fupWidget.getSource().name)
 		self.setCurrentIndex(index)
 		self.updateActionMenu()
@@ -675,7 +696,7 @@ class FupTabWidget(SourceTabWidget):
 
 	def deleteCurrent(self):
 		index = self.currentIndex()
-		if index >= 0 and self.count() > 1:
+		if index >= 0:
 			text = self.tabText(index)
 			res = QMessageBox.question(self,
 				"Delete %s" % text,
@@ -684,21 +705,24 @@ class FupTabWidget(SourceTabWidget):
 			if res == QMessageBox.Yes:
 				self.removeTab(index)
 				self.sourceChanged.emit()
+			if self.count() <= 0:
+				self.addDummyWidget()
 
 	def renameCurrent(self):
 		index = self.currentIndex()
 		if index >= 0:
 			text = self.tabText(index)
-			newText, ok = QInputDialog.getText(self,
-					"Rename %s" % text,
-					"New name for current FUP/FBD diagram:",
-					QLineEdit.Normal,
-					text)
-			if ok and newText != text:
-				fupWidget = self.widget(index)
-				source = fupWidget.getSource()
-				source.name = newText
-				self.updateTabTexts()
+			fupWidget = self.widget(index)
+			source = fupWidget.getSource()
+			if source:
+				newText, ok = QInputDialog.getText(self,
+						"Rename %s" % text,
+						"New name for current FUP/FBD diagram:",
+						QLineEdit.Normal,
+						text)
+				if ok and newText != text:
+					source.name = newText
+					self.updateTabTexts()
 
 	def exportCurrent(self):
 		pass#TODO
