@@ -152,6 +152,14 @@ dtparam=audio=on
 EOF
 }
 
+policy_rcd_file()
+{
+	cat <<EOF
+#!/bin/sh
+exit 101
+EOF
+}
+
 pilc_bootstrap_first_stage()
 {
 	echo "Running first stage..."
@@ -189,6 +197,12 @@ pilc_bootstrap_first_stage()
 	fi
 	[ -d "$opt_target_dir" ] ||\
 		die "Target directory '$opt_target_dir' does not exist."
+
+	# Avoid the start of daemons during second stage.
+	policy_rcd_file > "$opt_target_dir/usr/sbin/policy-rc.d" ||\
+		die "Failed to create policy-rc.d"
+	chmod 755 "$opt_target_dir/usr/sbin/policy-rc.d" ||\
+		die "Failed to chmod policy-rc.d"
 
 	# Copy qemu.
 	local qemu_bin="$opt_target_dir/$opt_qemu"
@@ -731,8 +745,14 @@ EOF
 	info "Updating home directory permissions..."
 	chown -R pi:pi /home/pi || die "Failed to change /home/pi permissions."
 
+	# Remove rc.d policy file
+	if [ -e /usr/sbin/policy-rc.d ]; then
+		rm /usr/sbin/policy-rc.d ||\
+			die "Failed to remove policy-rc.d"
+	fi
+
 	info "Stopping processes..."
-	for i in dbus ssh atd; do
+	for i in dbus ssh atd irqbalance; do
 		/etc/init.d/$i stop
 	done
 
