@@ -16,6 +16,8 @@ include awlsimhw_pyprofibus.conf
 include COPYING.txt
 include COMPATIBILITY.md
 include COMPATIBILITY.html
+include QUICK-START.md
+include QUICK-START.html
 include README.md
 include README.html
 include setup_cython.py
