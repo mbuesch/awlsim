@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU configuration widget
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -64,19 +64,31 @@ class CpuConfigWidget(QWidget):
 		group.setLayout(QGridLayout())
 
 		label = QLabel("Number of accumulator registers", self)
+		label.setToolTip(
+			"Select the number of ACCU registers the CPU will have.\n"
+			"Note that this selection influences the semantics of some\n"
+			"arithmetic instructions such as +I,-I,*I,/I and others.")
 		group.layout().addWidget(label, 0, 0)
 		self.accuCombo = QComboBox(self)
 		self.accuCombo.addItem("2 accus", 2)
 		self.accuCombo.addItem("4 accus", 4)
+		self.accuCombo.setToolTip(label.toolTip())
 		group.layout().addWidget(self.accuCombo, 0, 1)
 
-		label = QLabel("Clock memory byte", self)
+		label = QLabel("Clock memory byte (Taktmerker)", self)
+		label.setToolTip(
+			"Select an M byte for use as clock memory byte (Taktmerker).")
 		group.layout().addWidget(label, 1, 0)
 		self.clockMemSpin = ClockMemSpinBox(self)
+		self.clockMemSpin.setToolTip(label.toolTip())
 		group.layout().addWidget(self.clockMemSpin, 1, 1)
 
 		self.obTempCheckBox = QCheckBox("Enable writing of OB &TEMP "
 			"entry-variables", self)
+		self.obTempCheckBox.setToolTip(
+			"If this box is not checked the entry variables in the\n"
+			"ORGANIZATION_BLOCK's TEMP region will not be filled\n"
+			"by the system on entry into the OB.")
 		group.layout().addWidget(self.obTempCheckBox, 2, 0, 1, 2)
 
 		self.layout().addWidget(group, 0, 0)
@@ -85,15 +97,25 @@ class CpuConfigWidget(QWidget):
 		group.setLayout(QGridLayout())
 
 		label = QLabel("Mnemonics language", self)
+		label.setToolTip(
+			"Select the AWL/STL mnemonics type.\n"
+			"This may be either German or International (English).\n"
+			"Automatic will try to guess the mnemonics from the AWL/STL\n"
+			"code. Note that this might fail, though.")
 		group.layout().addWidget(label, 0, 0)
 		self.mnemonicsCombo = QComboBox(self)
 		self.mnemonicsCombo.addItem("Automatic", S7CPUSpecs.MNEMONICS_AUTO)
 		self.mnemonicsCombo.addItem("English", S7CPUSpecs.MNEMONICS_EN)
 		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
+		self.mnemonicsCombo.setToolTip(label.toolTip())
 		group.layout().addWidget(self.mnemonicsCombo, 0, 1)
 
 		self.extInsnsCheckBox = QCheckBox("Enable e&xtended "
 			"non-standard instructions", self)
+		self.extInsnsCheckBox.setToolTip(
+			"Enable special Awlsim specific AWL/STL instructions that are not available\n"
+			"in the standard S7 language. Enabling this option is harmless even\n"
+			"if such instructions are not used.")
 		group.layout().addWidget(self.extInsnsCheckBox, 1, 0, 1, 2)
 
 		self.layout().addWidget(group, 1, 0)

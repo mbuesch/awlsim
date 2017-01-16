@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI configuration widget
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,21 +36,34 @@ class GuiConfigWidget(QWidget):
 		self.editGroup.setLayout(QVBoxLayout())
 
 		self.editAutoIndent = QCheckBox("&Auto indentation", self)
+		self.editAutoIndent.setToolTip(
+			"Automatically indent AWL/STL code as it is entered\n"
+			"into the editor area.")
 		self.editGroup.layout().addWidget(self.editAutoIndent)
 
 		self.pasteIndent = QCheckBox("Clipboard &paste "
 			"auto indentation", self)
+		self.pasteIndent.setToolTip(
+			"Automatically indent AWL/STL code as it is pasted\n"
+			"into the editor area.")
 		self.editGroup.layout().addWidget(self.pasteIndent)
 
-		self.editValidate = QCheckBox("Code &validation", self)
+		self.editValidate = QCheckBox("Live code &validation", self)
+		self.editValidate.setToolTip(
+			"Enable automatic compilation and verification of the\n"
+			"AWL/STL code as it is entered into the editor.\n"
+			"The verification completely runs in the background.")
 		self.editGroup.layout().addWidget(self.editValidate)
 
 		hbox = QHBoxLayout()
 		self.editFontLabel = QLabel(self)
 		self.editFontLabel.setFrameShape(QFrame.Panel)
 		self.editFontLabel.setFrameShadow(QFrame.Sunken)
+		self.editFontLabel.setToolTip(
+			"Select the AWL/STL editor font.")
 		hbox.addWidget(self.editFontLabel)
 		self.editFontButton = QPushButton("&Select...", self)
+		self.editFontButton.setToolTip(self.editFontLabel.toolTip())
 		hbox.addWidget(self.editFontButton)
 		self.__editFont = getDefaultFixedFont()
 		self.__updateEditFontLabel()
