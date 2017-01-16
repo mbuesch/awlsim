@@ -13,7 +13,13 @@ Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python. Depending
 
 AWL/STL programs on PLCs are used for automation of industrial processes. However Awlsim is very flexible, so it can be used for other purposes beyond industrial applications, too. Awlsim aims to be compatible with the industry standard S7 software on the AWL/STL level.
 
-Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason awlsim ships an extensive selftest suite. Missing features and differences between awlsim and Step 7 are documented in the COMPATIBILITY.md and TODO.md files.
+Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason awlsim ships an extensive selftest suite. Missing features and differences between awlsim and Step 7 are documented in the [COMPATIBILITY documentation](COMPATIBILITY.html) and [TODO documentation](TODO.html) files.
+
+
+Quick start tutorial
+--------------------
+
+See the [quick start tutorial](QUICK-START.html) for a simple example on how to use Awlsim in simulator mode. Simulator mode does not require any special hardware to run.
 
 
 License / Copyright
