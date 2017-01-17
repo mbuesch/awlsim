@@ -7,6 +7,8 @@
 basedir="$(dirname "$0")"
 [ "$(echo "$basedir" | cut -c1)" = '/' ] || basedir="$PWD/$basedir"
 
+srcdir="$basedir/.."
+
 
 die()
 {
@@ -35,6 +37,25 @@ gen()
 		die "Failed to generate"
 }
 
-for i in "$basedir"/../*.md; do
+for i in "$srcdir"/*.md; do
 	gen "$i"
 done
+
+cd "$srcdir" || die "Failed to cd"
+
+html2ps --encoding "UTF-8" \
+	--web b \
+	--dsc \
+	--frame \
+	--xref \
+	--number \
+	--underline \
+	--colour \
+	--hyphenate \
+	README.html > AWLSIM.ps ||\
+	die "Failed to generate"
+
+ps2pdf AWLSIM.ps AWLSIM.pdf ||\
+	die "Failed to generate"
+
+exit 0
