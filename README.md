@@ -22,6 +22,12 @@ Quick start tutorial
 See the [quick start tutorial](QUICK-START.html) for a simple example on how to use Awlsim in simulator mode. Simulator mode does not require any special hardware to run.
 
 
+Example project
+---------------
+
+If you don't know where to start, you can find an example project in the `examples` directory as `EXAMPLE.awlpro`. You can easily run this example in simulation mode without the need for special hardware.
+
+
 License / Copyright
 -------------------
 
