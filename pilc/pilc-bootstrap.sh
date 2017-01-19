@@ -228,7 +228,7 @@ pilc_bootstrap_first_stage()
 	(
 		cd "$checkout_dir" ||\
 			die "Failed to cd"
-		git checkout -b __build origin/"$opt_branch" ||\
+		git checkout "$opt_branch" ||\
 			die "Failed to check out branch."
 		git submodule update --init submodules/pyprofibus ||\
 			die "Failed to pull pyprofibus submodule"
@@ -891,7 +891,7 @@ usage()
 	echo
 	echo "Options:"
 	echo
-	echo " --branch|-b BRANCH      Select the awlsim branch."
+	echo " --branch|-b BRANCH      Select the awlsim branch or tag."
 	echo "                         Default: $default_branch"
 	echo
 	echo " --no-cython|-C          Do not build Cython modules."
