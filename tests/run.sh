@@ -249,8 +249,9 @@ run_awl_test()
 	while [ $tries -gt 0 -a $ok -eq 0 ]; do
 		local ok=1
 		local tries="$(expr "$tries" - 1)"
+		local loglevel="$(get_conf "$awl" loglevel 2)"
 		local expected_exit_code="$(get_conf "$awl" exit_code 0)"
-		[ $expected_exit_code -eq 0 ] && local loglevel=2 || local loglevel=0
+		[ $expected_exit_code -eq 0 ] || local loglevel=0
 
 		command time -o "$test_time_file" -f '%E' --quiet \
 		"$interpreter" "$rootdir/awlsim-test" \

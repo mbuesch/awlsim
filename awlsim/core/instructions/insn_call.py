@@ -207,6 +207,9 @@ class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CC, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
+	def staticSanityChecks(self):
+		self._warnDeprecated("Please use CALL instead.")
+
 	def run(self):
 #@cy		cdef S7StatusWord s
 
@@ -222,6 +225,9 @@ class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_UC, rawInsn, **kwargs)
 		self.assertOpCount(1)
+
+	def staticSanityChecks(self):
+		self._warnDeprecated("Please use CALL instead.")
 
 	def run(self):
 #@cy		cdef S7StatusWord s

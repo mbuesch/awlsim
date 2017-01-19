@@ -500,6 +500,16 @@ class AwlInsn(object): #+cdef
 		"""
 		pass
 
+	def _warnDeprecated(self, moreText=""):
+		lineNrStr = ""
+		lineNr = self.getLineNr()
+		if lineNr >= 0:
+			lineNrStr = " at line %d" % lineNr
+		if moreText:
+			moreText = "\n%s" % moreText
+		printWarning("Found DEPRECATED instruction%s:\n  %s%s" % (
+			     lineNrStr, str(self), moreText))
+
 	def __repr__(self):
 		ret = []
 		type2name = AwlInsn.type2name_english
