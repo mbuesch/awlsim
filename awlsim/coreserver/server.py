@@ -370,8 +370,11 @@ class AwlSimServer(object):
 		self.__selectRlist = rlist
 
 	def __sendCpuDump(self, constrained=True):
+		dumpText = str(self.__sim.cpu)
+		if not dumpText:
+			return
+		msg = AwlSimMessage_CPUDUMP(dumpText)
 		now = self.__sim.cpu.now
-		msg = AwlSimMessage_CPUDUMP(str(self.__sim.cpu))
 		broken = False
 		for client in self.__clients:
 			if client.dumpInterval and\
@@ -1099,12 +1102,12 @@ class AwlSimServer(object):
 			try:
 				sim = self.__sim
 
-				if self.__state in (self.STATE_STOP,
-						    self.STATE_MAINTENANCE):
-					self.__sendCpuDump(constrained=False)
-					self.__handleMemReadReqs(constrained=False)
-					while self.__state in (self.STATE_STOP,
-							       self.STATE_MAINTENANCE):
+				if self.__state in {self.STATE_STOP,
+						    self.STATE_MAINTENANCE}:
+					while self.__state in {self.STATE_STOP,
+							       self.STATE_MAINTENANCE}:
+						self.__sendCpuDump(constrained=False)
+						self.__handleMemReadReqs(constrained=False)
 						self.__handleCommunicationBlocking()
 					continue
 
