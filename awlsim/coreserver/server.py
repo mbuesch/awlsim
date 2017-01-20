@@ -369,20 +369,25 @@ class AwlSimServer(object):
 		rlist.extend(client.transceiver.sock for client in self.__clients)
 		self.__selectRlist = rlist
 
+	def __sendCpuDump(self, constrained=True):
+		now = self.__sim.cpu.now
+		msg = AwlSimMessage_CPUDUMP(str(self.__sim.cpu))
+		broken = False
+		for client in self.__clients:
+			if client.dumpInterval and\
+			   (now >= client.nextDump or not constrained):
+				client.nextDump = now + client.dumpInterval / 1000.0
+				try:
+					client.transceiver.send(msg)
+				except TransferError as e:
+					client.broken = broken = True
+		if broken:
+			self.__removeBrokenClients()
+
 	def __cpuBlockExitCallback(self, userData):
 		now = self.__sim.cpu.now
 		if any(c.dumpInterval and now >= c.nextDump for c in self.__clients):
-			msg = AwlSimMessage_CPUDUMP(str(self.__sim.cpu))
-			broken = False
-			for client in self.__clients:
-				if client.dumpInterval and now >= client.nextDump:
-					client.nextDump = now + client.dumpInterval / 1000.0
-					try:
-						client.transceiver.send(msg)
-					except TransferError as e:
-						client.broken = broken = True
-			if broken:
-				self.__removeBrokenClients()
+			self.__sendCpuDump()
 
 	def __cpuPostInsnCallback(self, callStackElement, userData):
 		try:
@@ -962,19 +967,21 @@ class AwlSimServer(object):
 		self.__haveAnyMemReadReq = bool(any(bool(c.memReadRequestMsg)
 						    for c in self.__clients))
 
-	def __handleMemReadReqs(self):
+	def __handleMemReadReqs(self, constrained=True):
 		broken = False
 		for client in self.__clients:
 			if not client.memReadRequestMsg:
 				continue
 
 			if client.repetitionPeriod < 0.0:
+				# One shot mem read request.
 				memReadRequestMsg = client.memReadRequestMsg
 				self.memReadRequestMsg = None
 			else:
+				# Repetitive mem read request.
 				now = monotonic_time()
-				if now < client.nextRepTime:
-					continue
+				if now < client.nextRepTime and constrained:
+					continue # Time constrained. Don't send, yet.
 				client.nextRepTime = now + client.repetitionPeriod
 				memReadRequestMsg = client.memReadRequestMsg
 
@@ -1094,6 +1101,8 @@ class AwlSimServer(object):
 
 				if self.__state in (self.STATE_STOP,
 						    self.STATE_MAINTENANCE):
+					self.__sendCpuDump(constrained=False)
+					self.__handleMemReadReqs(constrained=False)
 					while self.__state in (self.STATE_STOP,
 							       self.STATE_MAINTENANCE):
 						self.__handleCommunicationBlocking()
