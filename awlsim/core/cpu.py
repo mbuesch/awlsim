@@ -1730,7 +1730,7 @@ class S7CPU(object): #+cdef
 		assert(count == 0)
 		return '\n'.join(ret)
 
-	def __repr__(self):
+	def dump(self, withTime=True):
 		if not self.callStack:
 			return ""
 		mnemonics = self.getMnemonics()
@@ -1738,7 +1738,7 @@ class S7CPU(object): #+cdef
 		self.updateTimestamp()
 		ret = []
 		ret.append("[S7-CPU]  t: %.01fs  py: %d / %s / %s" %\
-			   (self.now - self.startupTime,
+			   ((self.now - self.startupTime) if withTime else 0.0,
 			    3 if isPy3Compat else 2,
 			    pythonInterpreter,
 			    "Win" if osIsWindows else ("Posix" if osIsPosix else "unknown")))
@@ -1803,3 +1803,6 @@ class S7CPU(object): #+cdef
 			   (self.avgCycleTime, self.minCycleTime,
 			    self.maxCycleTime))
 		return '\n'.join(ret)
+
+	def __repr__(self):
+		return self.dump()

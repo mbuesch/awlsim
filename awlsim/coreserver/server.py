@@ -370,7 +370,7 @@ class AwlSimServer(object):
 		self.__selectRlist = rlist
 
 	def __sendCpuDump(self, constrained=True):
-		dumpText = str(self.__sim.cpu)
+		dumpText = self.__sim.cpu.dump(withTime=self.__running)
 		if not dumpText:
 			return
 		msg = AwlSimMessage_CPUDUMP(dumpText)
