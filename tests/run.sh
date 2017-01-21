@@ -252,13 +252,14 @@ run_awl_test()
 		local loglevel="$(get_conf "$awl" loglevel 2)"
 		local expected_exit_code="$(get_conf "$awl" exit_code 0)"
 		[ $expected_exit_code -eq 0 ] || local loglevel=0
+		local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
 
 		command time -o "$test_time_file" -f '%E' --quiet \
 		"$interpreter" "$rootdir/awlsim-test" \
 			--loglevel $loglevel \
 			--extended-insns \
 			--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
-			--cycle-time 60 \
+			--cycle-limit "$cycle_limit" \
 			"$@" \
 			"$awl"
 		local exit_code=$?
