@@ -2,7 +2,7 @@
 #
 # PiLC bootstrap
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ basedir="$basedir/.."
 
 
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
+RPIGPIO_VERSION="0.6.3"
 
 
 die()
@@ -238,6 +239,12 @@ pilc_bootstrap_first_stage()
 			die "Failed to move pyprofibus submodule."
 	) || die
 
+	# Fetch RPi.GPIO
+	info "Downloading RPi.GPIO $RPIGPIO_VERSION..."
+	rm -f "$opt_target_dir/tmp/RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
+	wget -O "$opt_target_dir/tmp/RPi.GPIO-$RPIGPIO_VERSION.tar.gz" \
+		"https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/RPi.GPIO-$RPIGPIO_VERSION.tar.gz" ||\
+		die "Failed to fetch RPi.GPIO"
 
 	# Copy kernel tree
 	if [ "$opt_kernel" = "pilc" ]; then
@@ -412,9 +419,11 @@ EOF
 		parted \
 		pkg-config \
 		pypy \
+		pypy-dev \
 		python \
 		python-all-dev \
 		python-cairo \
+		python-dev \
 		python-gtk2 \
 		python-rpi.gpio \
 		python-serial \
@@ -424,6 +433,7 @@ EOF
 		python3 \
 		python3-all-dev \
 		python3-cairo \
+		python3-dev \
 		python3-rpi.gpio \
 		python3-serial \
 		python3-setuptools \
@@ -450,6 +460,20 @@ EOF
 		die "Failed to reconfigure locales"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
+
+	# Build RPi.GPIO
+	info "Building RPi.GPIO $RPIGPIO_VERSION for PyPy..."
+	(
+		cd /tmp || die "Failed to cd /tmp"
+		tar xf "RPi.GPIO-$RPIGPIO_VERSION.tar.gz" ||\
+			die "Failed to unpack RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
+		cd "RPi.GPIO-$RPIGPIO_VERSION" ||\
+			die "Failed to cd RPi.GPIO-$RPIGPIO_VERSION"
+		pypy ./setup.py install ||\
+			die "Failed to install RPi.GPIO-$RPIGPIO_VERSION"
+	) || die
+	rm -r /tmp/RPi.GPIO* ||\
+		die "Failed to remove RPi.GPIO."
 
 	# Build and install kernel
 	if [ "$opt_kernel" = "pilc" ]; then
