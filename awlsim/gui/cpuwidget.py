@@ -775,3 +775,6 @@ class CpuWidget(QWidget):
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 			return
+
+	def sizeHint(self):
+		return QSize(550, 400)

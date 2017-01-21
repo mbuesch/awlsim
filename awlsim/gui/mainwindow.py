@@ -36,6 +36,20 @@ from awlsim.gui.hwmodconfig import *
 from awlsim.gui.icons import *
 
 
+class CpuDockWidget(QDockWidget):
+	def __init__(self, mainWidget, parent=None):
+		QDockWidget.__init__(self, "Awlsim CPU view", parent)
+
+		self.setFeatures(QDockWidget.DockWidgetMovable |
+				 QDockWidget.DockWidgetFloatable)
+		self.setAllowedAreas(Qt.AllDockWidgetAreas)
+
+		self.setWidget(CpuWidget(mainWidget))
+
+	@property
+	def cpuWidget(self):
+		return self.widget()
+
 class MainWidget(QWidget):
 	# Signal: Project loaded
 	projectLoaded = Signal(Project)
@@ -54,45 +68,30 @@ class MainWidget(QWidget):
 	# Signal: CopyAvailable state changed
 	copyAvailableChanged = Signal(bool)
 
-	def __init__(self, parent=None):
+	def __init__(self, mainWindow, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
+		self.mainWindow = mainWindow
 
 		self.simClient = GuiAwlSimClient()
 
-		self.splitter = QSplitter(Qt.Horizontal)
-		self.layout().addWidget(self.splitter, 0, 0)
-
 		self.projectWidget = ProjectWidget(self)
-		self.splitter.addWidget(self.projectWidget)
-
-		self.cpuWidget = CpuWidget(self, self)
-		self.splitter.addWidget(self.cpuWidget)
-
-		self.splitter.setStretchFactor(0, 9)
-		self.splitter.setStretchFactor(1, 4)
+		self.layout().addWidget(self.projectWidget, 0, 0)
 
 		self.filename = None
 		self.dirty = False
 
-		self.projectWidget.codeChanged.connect(self.__somethingChanged)
-		self.projectWidget.fupChanged.connect(self.__somethingChanged)
-		self.projectWidget.kopChanged.connect(self.__somethingChanged)
-		self.projectWidget.symTabChanged.connect(self.__somethingChanged)
-		self.projectWidget.libTableChanged.connect(self.__somethingChanged)
-		self.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
+		self.projectWidget.codeChanged.connect(self.somethingChanged)
+		self.projectWidget.fupChanged.connect(self.somethingChanged)
+		self.projectWidget.kopChanged.connect(self.somethingChanged)
+		self.projectWidget.symTabChanged.connect(self.somethingChanged)
+		self.projectWidget.libTableChanged.connect(self.somethingChanged)
 		self.projectWidget.textFocusChanged.connect(self.textFocusChanged)
 		self.projectWidget.selResourceChanged.connect(self.selResourceChanged)
 		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.projectWidget.copyAvailableChanged.connect(self.copyAvailableChanged)
-		self.cpuWidget.runStateChanged.connect(self.runStateChanged)
-		self.cpuWidget.onlineDiagChanged.connect(self.projectWidget.handleOnlineDiagChange)
-		self.cpuWidget.haveInsnDump.connect(self.projectWidget.handleInsnDump)
-		self.cpuWidget.haveIdentsMsg.connect(self.projectWidget.handleIdentsMsg)
-		self.cpuWidget.configChanged.connect(self.__somethingChanged)
 		self.runStateChanged.connect(self.projectWidget.updateRunState)
-		self.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
 
 	def isDirty(self):
 		return self.dirty
@@ -102,7 +101,7 @@ class MainWidget(QWidget):
 			self.dirty = dirty
 			self.dirtyChanged.emit(self.dirty)
 
-	def __somethingChanged(self):
+	def somethingChanged(self):
 		self.setDirty(True)
 
 	def getFilename(self):
@@ -112,7 +111,7 @@ class MainWidget(QWidget):
 		return self.simClient
 
 	def getCpuWidget(self):
-		return self.cpuWidget
+		return self.mainWindow.cpuWidget
 
 	def getProject(self):
 		return self.projectWidget.getProject()
@@ -170,7 +169,7 @@ class MainWidget(QWidget):
 				return
 			else:
 				assert(0)
-		self.cpuWidget.goOffline()
+		self.getCpuWidget().goOffline()
 		try:
 			res = self.projectWidget.loadProjectFile(filename)
 			if not res:
@@ -235,26 +234,26 @@ class MainWidget(QWidget):
 
 	def guiConfig(self):
 		dlg = GuiConfigDialog(self.getProject(), self)
-		dlg.settingsChanged.connect(self.__somethingChanged)
+		dlg.settingsChanged.connect(self.somethingChanged)
 		if dlg.exec_() == dlg.Accepted:
 			self.projectWidget.setSettings(self.getProject().getGuiSettings())
 		dlg.deleteLater()
 
 	def linkConfig(self):
 		dlg = LinkConfigDialog(self.getProject(), self)
-		dlg.settingsChanged.connect(self.__somethingChanged)
+		dlg.settingsChanged.connect(self.somethingChanged)
 		dlg.exec_()
 		dlg.deleteLater()
 
 	def cpuConfig(self):
 		dlg = CpuConfigDialog(self.getProject(), self)
-		dlg.settingsChanged.connect(self.__somethingChanged)
+		dlg.settingsChanged.connect(self.somethingChanged)
 		dlg.exec_()
 		dlg.deleteLater()
 
 	def hwmodConfig(self):
 		dlg = HwmodConfigDialog(self.getProject(), self)
-		dlg.settingsChanged.connect(self.__somethingChanged)
+		dlg.settingsChanged.connect(self.somethingChanged)
 		dlg.exec_()
 		dlg.deleteLater()
 
@@ -323,7 +322,12 @@ class MainWindow(QMainWindow):
 	def __init__(self, awlSource=None, parent=None):
 		QMainWindow.__init__(self, parent)
 		self.setWindowIcon(getIcon("cpu"))
-		self.setCentralWidget(MainWidget(self))
+
+		self.mainWidget = MainWidget(self, self)
+		self.cpuDockWidget = CpuDockWidget(self.mainWidget, self)
+
+		self.setCentralWidget(self.mainWidget)
+		self.addDockWidget(Qt.RightDockWidgetArea, self.cpuDockWidget)
 
 		self.tb = QToolBar(self)
 		self.tb.addAction(getIcon("new"), "New project", self.new)
@@ -427,51 +431,62 @@ class MainWindow(QMainWindow):
 		self.__redoAvailableChanged(False)
 		self.__copyAvailableChanged(False)
 
-		self.centralWidget().projectLoaded.connect(self.__handleProjectLoaded)
-		self.centralWidget().dirtyChanged.connect(self.__dirtyChanged)
-		self.centralWidget().textFocusChanged.connect(self.__textFocusChanged)
-		self.centralWidget().selResourceChanged.connect(self.__selResourceChanged)
-		self.centralWidget().undoAvailableChanged.connect(self.__undoAvailableChanged)
-		self.centralWidget().redoAvailableChanged.connect(self.__redoAvailableChanged)
-		self.centralWidget().copyAvailableChanged.connect(self.__copyAvailableChanged)
-		self.ctrlTb.connectToCpuWidget(self.centralWidget().cpuWidget)
-		self.inspectTb.connectToCpuWidget(self.centralWidget().cpuWidget)
+		self.mainWidget.projectLoaded.connect(self.__handleProjectLoaded)
+		self.mainWidget.dirtyChanged.connect(self.__dirtyChanged)
+		self.mainWidget.textFocusChanged.connect(self.__textFocusChanged)
+		self.mainWidget.selResourceChanged.connect(self.__selResourceChanged)
+		self.mainWidget.undoAvailableChanged.connect(self.__undoAvailableChanged)
+		self.mainWidget.redoAvailableChanged.connect(self.__redoAvailableChanged)
+		self.mainWidget.copyAvailableChanged.connect(self.__copyAvailableChanged)
+		self.ctrlTb.connectToCpuWidget(self.cpuWidget)
+		self.inspectTb.connectToCpuWidget(self.cpuWidget)
+		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
+		self.mainWidget.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
+		self.cpuWidget.runStateChanged.connect(self.mainWidget.runStateChanged)
+		self.cpuWidget.onlineDiagChanged.connect(self.mainWidget.projectWidget.handleOnlineDiagChange)
+		self.cpuWidget.haveInsnDump.connect(self.mainWidget.projectWidget.handleInsnDump)
+		self.cpuWidget.haveIdentsMsg.connect(self.mainWidget.projectWidget.handleIdentsMsg)
+		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 
 		if awlSource:
-			self.centralWidget().loadFile(awlSource)
+			self.mainWidget.loadFile(awlSource)
+
+	@property
+	def cpuWidget(self):
+		return self.cpuDockWidget.cpuWidget
 
 	def insertOB(self):
-		self.centralWidget().insertOB()
+		self.mainWidget.insertOB()
 
 	def insertFC(self):
-		self.centralWidget().insertFC()
+		self.mainWidget.insertFC()
 
 	def insertFB(self):
-		self.centralWidget().insertFB()
+		self.mainWidget.insertFB()
 
 	def insertInstanceDB(self):
-		self.centralWidget().insertInstanceDB()
+		self.mainWidget.insertInstanceDB()
 
 	def insertGlobalDB(self):
-		self.centralWidget().insertGlobalDB()
+		self.mainWidget.insertGlobalDB()
 
 	def insertUDT(self):
-		self.centralWidget().insertUDT()
+		self.mainWidget.insertUDT()
 
 	def insertFCcall(self):
-		self.centralWidget().insertFCcall()
+		self.mainWidget.insertFCcall()
 
 	def insertFBcall(self):
-		self.centralWidget().insertFBcall()
+		self.mainWidget.insertFBcall()
 
 	def getSimClient(self):
-		return self.centralWidget().getSimClient()
+		return self.mainWidget.getSimClient()
 
 	def __dirtyChanged(self, isDirty):
 		self.saveAct.setEnabled(isDirty)
 		self.tbSaveAct.setEnabled(isDirty)
 
-		filename = self.centralWidget().getFilename()
+		filename = self.mainWidget.getFilename()
 		if filename:
 			postfix = " -- " + os.path.basename(filename)
 			if isDirty:
@@ -559,7 +574,7 @@ class MainWindow(QMainWindow):
 		self.__updateClipboardActions()
 
 	def closeEvent(self, ev):
-		if self.centralWidget().isDirty():
+		if self.mainWidget.isDirty():
 			res = QMessageBox.question(self,
 				"Unsaved AWL/STL code",
 				"The editor contains unsaved AWL/STL code.\n"
@@ -567,13 +582,13 @@ class MainWindow(QMainWindow):
 				QMessageBox.Discard | QMessageBox.Save | QMessageBox.Cancel,
 				QMessageBox.Cancel)
 			if res == QMessageBox.Save:
-				if not self.centralWidget().save():
+				if not self.mainWidget.save():
 					ev.ignore()
 					return
 			elif res == QMessageBox.Cancel:
 				ev.ignore()
 				return
-		self.centralWidget().getSimClient().shutdown()
+		self.mainWidget.getSimClient().shutdown()
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
 
@@ -605,49 +620,49 @@ class MainWindow(QMainWindow):
 			(VERSION_STRING, AWLSIM_HOME_URL))
 
 	def new(self):
-		self.centralWidget().newFile()
+		self.mainWidget.newFile()
 
 	def load(self):
-		self.centralWidget().load()
+		self.mainWidget.load()
 
 	def save(self):
-		self.centralWidget().save()
+		self.mainWidget.save()
 
 	def saveAs(self):
-		self.centralWidget().save(True)
+		self.mainWidget.save(True)
 
 	def guiConfig(self):
-		self.centralWidget().guiConfig()
+		self.mainWidget.guiConfig()
 
 	def hwmodConfig(self):
-		self.centralWidget().hwmodConfig()
+		self.mainWidget.hwmodConfig()
 
 	def linkConfig(self):
-		self.centralWidget().linkConfig()
+		self.mainWidget.linkConfig()
 
 	def cpuConfig(self):
-		self.centralWidget().cpuConfig()
+		self.mainWidget.cpuConfig()
 
 	def openLibrary(self):
-		self.centralWidget().openLibrary()
+		self.mainWidget.openLibrary()
 
 	def undo(self):
-		self.centralWidget().undo()
+		self.mainWidget.undo()
 
 	def redo(self):
-		self.centralWidget().redo()
+		self.mainWidget.redo()
 
 	def cut(self):
-		self.centralWidget().cut()
+		self.mainWidget.cut()
 
 	def copy(self):
-		self.centralWidget().copy()
+		self.mainWidget.copy()
 
 	def paste(self):
-		self.centralWidget().paste()
+		self.mainWidget.paste()
 
 	def findText(self):
-		self.centralWidget().findText()
+		self.mainWidget.findText()
 
 	def findReplaceText(self):
-		self.centralWidget().findReplaceText()
+		self.mainWidget.findReplaceText()
