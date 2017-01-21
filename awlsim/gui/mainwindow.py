@@ -38,7 +38,8 @@ from awlsim.gui.icons import *
 
 class CpuDockWidget(QDockWidget):
 	def __init__(self, mainWidget, parent=None):
-		QDockWidget.__init__(self, "Awlsim CPU view", parent)
+		QDockWidget.__init__(self, "", parent)
+		self.mainWidget = mainWidget
 
 		self.setFeatures(QDockWidget.DockWidgetMovable |
 				 QDockWidget.DockWidgetFloatable)
@@ -46,9 +47,19 @@ class CpuDockWidget(QDockWidget):
 
 		self.setWidget(CpuWidget(mainWidget))
 
+		self.topLevelChanged.connect(self.__handleTopLevelChange)
+		self.__handleTopLevelChange(self.isFloating())
+
 	@property
 	def cpuWidget(self):
 		return self.widget()
+
+	def __handleTopLevelChange(self, floating):
+		if floating:
+			self.setWindowTitle("%s - CPU view" %\
+				self.mainWidget.mainWindow.TITLE)
+		else:
+			self.setWindowTitle("")
 
 class MainWidget(QWidget):
 	# Signal: Project loaded
@@ -306,6 +317,8 @@ class MainWidget(QWidget):
 		self.projectWidget.findReplaceText()
 
 class MainWindow(QMainWindow):
+	TITLE = "AWL/STL soft-PLC v%s" % VERSION_STRING
+
 	@classmethod
 	def start(cls,
 		  initialAwlSource = None):
@@ -493,8 +506,7 @@ class MainWindow(QMainWindow):
 				postfix += "*"
 		else:
 			postfix = ""
-		self.setWindowTitle("AWL/STL soft-PLC v%s%s" %\
-				    (VERSION_STRING, postfix))
+		self.setWindowTitle("%s%s" % (self.TITLE, postfix))
 
 	def __handleProjectLoaded(self, project):
 		self.__updateLibActions()
