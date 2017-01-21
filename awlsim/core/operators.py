@@ -342,7 +342,7 @@ class AwlOperator(DynAttrs):
 		if self.type == self.NAMED_LOCAL:
 			# This is a named-local access (#abc).
 			# Resolve it to an interface-operator.
-			return self.insn.cpu.callStackTop.interfRefs[self.interfaceIndex].resolve(store)
+			return self.insn.cpu.callStackTop.getInterfIdxOper(self.interfaceIndex).resolve(store)
 		return self
 
 	# Make an area-spanning Pointer (32 bit) to this memory area.

@@ -1,0 +1,20 @@
+FUNCTION FC 1 : VOID
+	VAR_INPUT
+		IN0	: INT;
+	END_VAR
+BEGIN
+	L	#IN0
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
+	// Using UC together with a non-raw FC shall fail gracefully.
+	// Note that on S7 this might "succeed" and do some undefined stuff,
+	// but we don't support that.
+	UC	FC 1
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK

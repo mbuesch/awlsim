@@ -121,11 +121,11 @@ class CallStackElem(object):
 			else:
 				# This is a call to an FC.
 				# Prepare the interface (IN/OUT/INOUT) references.
-				# self.interfRefs is a dict of AwlOperators for the FC interface.
-				#                 The key of self.interfRefs is the interface field index.
-				#                 This dict is used by the CPU for lookup and resolve of
-				#                 the FC interface r-value.
-				self.interfRefs = {}
+				# self.__interfRefs is a dict of AwlOperators for the FC interface.
+				#                   The key of self.__interfRefs is the interface field index.
+				#                   This dict is used by the CPU for lookup and resolve of
+				#                   the FC interface r-value.
+				self.__interfRefs = {}
 				for param in parameters:
 					try:
 						trans = self.__FC_paramTrans[param.rvalueOp.type]
@@ -134,7 +134,7 @@ class CallStackElem(object):
 							"FC parameter '%s' for call. The specified "
 							"actual-parameter is not allowed in this call." %\
 							str(param))
-					self.interfRefs[param.interfaceFieldIndex] = trans(self, param, param.rvalueOp)
+					self.__interfRefs[param.interfaceFieldIndex] = trans(self, param, param.rvalueOp)
 
 		# Set AR2 to the specified multi-instance base
 		# and save the old AR2 value.
@@ -142,6 +142,18 @@ class CallStackElem(object):
 		if instanceBaseOffset is not None:
 			cpu.ar2.set(AwlIndirectOp.AREA_DB |\
 				    instanceBaseOffset.toPointerValue())
+
+	# Get an FC interface operand by interface field index.
+	def getInterfIdxOper(self, interfaceFieldIndex):
+		try:
+			return self.__interfRefs[interfaceFieldIndex]
+		except (AttributeError, KeyError) as e:
+			# Huh, no interface ref? We might have been called via raw call.
+			raise AwlSimError("The block interface field could not "
+				"be found. This probably means that this function block "
+				"has been called with a raw call instruction like UC or CC, "
+				"but the function block has an interface. This is not "
+				"allowed in Awlsim.")
 
 	# FB parameter translation:
 	# Translate FB DB-pointer variable.
@@ -296,7 +308,7 @@ class CallStackElem(object):
 	# Returns the translated rvalueOp.
 	def __FC_trans_NAMED_LOCAL(self, param, rvalueOp):
 		# r-value is a named-local (#abc)
-		oper = self.cpu.callStackTop.interfRefs[rvalueOp.interfaceIndex]
+		oper = self.cpu.callStackTop.getInterfIdxOper(rvalueOp.interfaceIndex)
 		if oper.type == oper.MEM_DB:
 			return self.__FC_trans_MEM_DB(param, oper, True)
 		try:

@@ -1198,7 +1198,7 @@ class S7CPU(object): #+cdef
 	def __translateFCNamedLocalOper(self, operator, store):
 		# Translate an 'operator' to a named local FC parameter.
 		# The returned operator is an operator to the actual data.
-		interfOp = self.callStackTop.interfRefs[operator.interfaceIndex].resolve(store)
+		interfOp = self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(store)
 		if operator.compound:
 			# This is a named local variable with compound data type.
 			# The operator (interfOp) points to a DB-pointer in VL.
@@ -1492,7 +1492,7 @@ class S7CPU(object): #+cdef
 
 	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
 		assert(operator.value.subOffset.byteOffset == 0)
-		return self.callStackTop.interfRefs[operator.interfaceIndex].resolve(False).makePointerValue()
+		return self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue()
 
 	def fetchNAMED_DBVAR(self, operator, enforceWidth):
 		# All legit accesses will have been translated to absolute addressing already
