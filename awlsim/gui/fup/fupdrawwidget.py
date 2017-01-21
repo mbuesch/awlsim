@@ -151,7 +151,7 @@ class FupDrawWidget(QWidget):
 
 		self.resize(self.__grid.width * self.__cellWidth,
 			    self.__grid.height * self.__cellHeight)
-		self.setFocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus)
+		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
 		self.setMouseTracking(True)
 
 	def repaint(self):
@@ -526,8 +526,8 @@ class FupDrawWidget(QWidget):
 	def keyPressEvent(self, event):
 		if event.matches(QKeySequence.Delete):
 			self.removeSelElems()
-		elif event.matches(QKeySequence.Cancel) or\
-		     event.matches(QKeySequence.Deselect):
+		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
+				event.matches(QKeySequence.Deselect)):
 			self.__grid.deselectAll()
 			self.repaint()
 		elif event.matches(QKeySequence.SelectAll):

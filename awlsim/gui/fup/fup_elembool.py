@@ -131,10 +131,10 @@ class FupElem_BOOLEAN(FupElem):
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
 		painter.setBrush(self._bgBrush)
-		polygon = QPolygon((QPoint(xpad, ypad),
+		polygon = QPolygon([QPoint(xpad, ypad),
 				    QPoint(elemWidth - xpad, ypad),
 				    QPoint(elemWidth - xpad, elemHeight - ypad),
-				    QPoint(xpad, elemHeight - ypad)))
+				    QPoint(xpad, elemHeight - ypad)])
 		painter.drawPolygon(polygon, Qt.OddEvenFill)
 
 		# Draw symbol text

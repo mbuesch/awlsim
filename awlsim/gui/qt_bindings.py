@@ -2,7 +2,7 @@
 #
 # AWL simulator - QT bindings wrapper
 #
-# Copyright 2015 Michael Buesch <m@bues.ch>
+# Copyright 2015-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,8 +96,6 @@ elif __guiFramework == "pyqt4":
 	except ImportError as e:
 		__frameworkError("Failed to import PyQt4 modules:\n" + str(e))
 	__testQStringAPI(globals())
-	# Compatibility
-	Signal = pyqtSignal
 elif __guiFramework == "pyqt5":
 	printInfo("awlsim-gui: Using PyQt5 GUI framework")
 	try:
@@ -107,8 +105,6 @@ elif __guiFramework == "pyqt5":
 	except ImportError as e:
 		__frameworkError("Failed to import PyQt5 modules:\n" + str(e))
 	__testQStringAPI(globals())
-	# Compatibility
-	Signal = pyqtSignal
 else:
 	__frameworkError("Unknown GUI framework '%s' requested. "
 			 "Please fix AWLSIM_GUI environment variable." %\
@@ -122,3 +118,11 @@ isQt5 = (__guiFramework == "pyqt5")
 # Helpers for distinction between PySide and PyQt API.
 isPySide = __guiFramework.startswith("pyside")
 isPyQt = __guiFramework.startswith("pyqt")
+
+if isQt4:
+	# Compatibility
+	QGuiApplication = QApplication
+
+if isPyQt:
+	# Compatibility
+	Signal = pyqtSignal
