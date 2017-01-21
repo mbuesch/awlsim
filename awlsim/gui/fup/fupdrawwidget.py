@@ -510,7 +510,8 @@ class FupDrawWidget(QWidget):
 						self.addElem(newElem)
 						with contextlib.suppress(ValueError):
 							newConn.connectTo(conn)
-						self.repaint()
+							newElem.edit(self)
+						self.__contentChanged()
 				else:
 					# Edit the element's contents
 					if elem.edit(self):
