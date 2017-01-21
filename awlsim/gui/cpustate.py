@@ -105,11 +105,9 @@ class State_CPU(StateWindow):
 		self.setWindowIcon(getIcon("cpu"))
 
 		self.label = QLabel(self)
-		font = self.label.font()
-		font.setFamily("Mono")
-		font.setFixedPitch(True)
-		font.setKerning(False)
-		self.label.setFont(font)
+		self.label.setFont(getDefaultFixedFont(10))
+		self.label.setTextInteractionFlags(Qt.TextSelectableByMouse |
+						   Qt.TextSelectableByKeyboard)
 		self.layout().addWidget(self.label, 0, 0)
 
 		self.label.setText("No CPU status available.\n"

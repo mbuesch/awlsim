@@ -138,9 +138,7 @@ class FupElem_BOOLEAN(FupElem):
 		painter.drawPolygon(polygon, Qt.OddEvenFill)
 
 		# Draw symbol text
-		font = painter.font()
-		font.setPointSize(10)
-		painter.setFont(font)
+		painter.setFont(getDefaultFixedFont(11))
 		painter.drawText(0, 5,
 				 elemWidth, elemHeight - 5,
 				 Qt.AlignCenter | Qt.AlignTop,

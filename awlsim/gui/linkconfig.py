@@ -48,9 +48,8 @@ class _SpawnConfigWidget(QGroupBox):
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 0, 0)
 		self.interpreterList = QLineEdit(self)
-		font = getDefaultFixedFont()
-		font.setPointSize(self.interpreterList.font().pointSize())
-		self.interpreterList.setFont(font)
+		self.interpreterList.setFont(getDefaultFixedFont(
+			self.interpreterList.font().pointSize()))
 		self.interpreterList.setToolTip(toolTip)
 		self.layout().addWidget(self.interpreterList, 0, 1)
 

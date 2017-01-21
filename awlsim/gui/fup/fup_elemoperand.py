@@ -135,9 +135,7 @@ class FupElem_OPERAND(FupElem):
 		# Draw the text
 		text = self.contentText
 		if text:
-			font = getDefaultFixedFont()
-			font.setPointSize(8)
-			painter.setFont(font)
+			painter.setFont(getDefaultFixedFont(8))
 			painter.setPen(self._textPen)
 			if selected or expanded:
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop
