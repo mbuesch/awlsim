@@ -675,7 +675,7 @@ class FupTabWidget(SourceTabWidget):
 	def setSources(self, fupSources):
 		self.clear()
 		if not fupSources:
-			self.addDiagram()
+			self.addDummyWidget()
 			return
 		for fupSource in fupSources:
 			index, fupWidget = self.addDiagram()
