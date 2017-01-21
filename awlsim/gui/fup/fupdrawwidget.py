@@ -259,9 +259,10 @@ class FupDrawWidget(QWidget):
 			p.drawText(x, y, width - x, height - y,
 				   Qt.AlignLeft | Qt.AlignTop,
 				   "Hints:\n"
-				   "* Right click here to insert FUP/FBD element\n"
+				   "* Right-click here to insert FUP/FBD elements\n"
 				   "* Left-drag to connect inputs and outputs\n"
-				   "* Middle-click to delete connections and wires")
+				   "* Middle-click to delete connections and wires\n"
+				   "* Double-click onto inputs or outputs to create operand boxes")
 
 		# Draw the elements. First background elements (selected/expanded).
 		prevX, prevY = 0, 0
