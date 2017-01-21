@@ -1731,10 +1731,12 @@ class S7CPU(object): #+cdef
 		return '\n'.join(ret)
 
 	def dump(self, withTime=True):
-		if not self.callStack:
+		callStack, callStackTop = self.callStack, self.callStackTop
+		if not callStack:
 			return ""
 		mnemonics = self.getMnemonics()
 		isEnglish = (mnemonics == S7CPUSpecs.MNEMONICS_EN)
+		specs = self.specs
 		self.updateTimestamp()
 		ret = []
 		ret.append("[S7-CPU]  t: %.01fs  py: %d / %s / %s" %\
@@ -1744,47 +1746,48 @@ class S7CPU(object): #+cdef
 			    "Win" if osIsWindows else ("Posix" if osIsPosix else "unknown")))
 		ret.append("    STW:  " + self.statusWord.getString(mnemonics))
 		if self.is4accu:
-			accus = [ accu.toHex()
+			accus = ( accu.toHex()
 				  for accu in (self.accu1, self.accu2,
-				  	       self.accu3, self.accu4) ]
+					       self.accu3, self.accu4) )
 		else:
-			accus = [ accu.toHex()
-				  for accu in (self.accu1, self.accu2) ]
+			accus = ( accu.toHex()
+				  for accu in (self.accu1, self.accu2) )
 		ret.append("   Accu:  " + "  ".join(accus))
-		ars = [ "%s (%s)" % (ar.toHex(), ar.toPointerString())
-			for ar in (self.ar1, self.ar2) ]
+		ars = ( "%s (%s)" % (ar.toHex(), ar.toPointerString())
+			for ar in (self.ar1, self.ar2) )
 		ret.append("     AR:  " + "  ".join(ars))
 		ret.append(self.__dumpMem("      M:  ",
 					  self.flags,
-					  min(64, self.specs.nrFlags)))
+					  min(64, specs.nrFlags)))
 		prefix = "      I:  " if isEnglish else "      E:  "
 		ret.append(self.__dumpMem(prefix,
 					  self.inputs,
-					  min(64, self.specs.nrInputs)))
+					  min(64, specs.nrInputs)))
 		prefix = "      Q:  " if isEnglish else "      A:  "
 		ret.append(self.__dumpMem(prefix,
 					  self.outputs,
-					  min(64, self.specs.nrOutputs)))
-		pstack = str(self.callStackTop.parenStack) if self.callStackTop.parenStack else "Empty"
+					  min(64, specs.nrOutputs)))
+		pstack = str(callStackTop.parenStack) if callStackTop.parenStack else "Empty"
 		ret.append(" PStack:  " + pstack)
 		ret.append("     DB:  %s" % str(self.dbRegister))
 		ret.append("     DI:  %s" % str(self.diRegister))
-		if self.callStack:
-			elems = [ str(cse) for cse in self.callStack ]
-			elems = " => ".join(elems)
-			ret.append("  Calls:  %d:  %s" %\
-				   (len(self.callStack), elems))
-			localdata = self.callStack[-1].localdata
+		if callStack:
+			elemsMax = 8
+			elems = " => ".join(str(cse) for cse in callStack[:elemsMax])
+			elemsEnd = " ..." if (len(callStack) > elemsMax) else ""
+			ret.append("  Calls:  %d:  %s%s" %\
+				   (len(callStack), elems, elemsEnd))
+			localdata = callStack[-1].localdata
 			ret.append(self.__dumpMem("      L:  ",
 						  localdata,
-						  min(16, self.specs.nrLocalbytes)))
+						  min(16, specs.nrLocalbytes)))
 			try:
-				localdata = self.callStack[-2].localdata
+				localdata = callStack[-2].localdata
 			except IndexError:
 				localdata = None
 			ret.append(self.__dumpMem("     VL:  ",
 						  localdata,
-						  min(16, self.specs.nrLocalbytes)))
+						  min(16, specs.nrLocalbytes)))
 		else:
 			ret.append("  Calls:  None")
 		curInsn = self.getCurrentInsn()
