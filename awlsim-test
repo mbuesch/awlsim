@@ -424,7 +424,7 @@ def main():
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
 			"hY:M:24qDxt:T:m:H:I:P:L:cC:bi:",
-			[ "help", "cycle-time=", "max-runtime=", "twoaccu", "fouraccu",
+			[ "help", "cycle-limit=", "max-runtime=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "extended-insns",
 			  "obtemp=", "clock-mem=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
@@ -440,11 +440,11 @@ def main():
 		if o in ("-h", "--help"):
 			usage()
 			return ExitCodes.EXIT_OK
-		if o in ("-Y", "--cycle-time"):
+		if o in ("-Y", "--cycle-limit"):
 			try:
 				opt_cycletime = float(v)
 			except ValueError:
-				printError("-Y|--cycle-time: Invalid time format")
+				printError("-Y|--cycle-limit: Invalid time format")
 				sys.exit(1)
 		if o in ("-M", "--max-runtime"):
 			try:
