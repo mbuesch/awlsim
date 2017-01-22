@@ -1,0 +1,121 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	
+	CALL FC 1 (
+		N	:= 0,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#1
+	
+	CALL FC 1 (
+		N	:= 1,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#1
+	
+	CALL FC 1 (
+		N	:= 2,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#2
+	
+	CALL FC 1 (
+		N	:= 3,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#6
+	
+	CALL FC 1 (
+		N	:= 4,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#24
+	
+	CALL FC 1 (
+		N	:= 5,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#120
+	
+	CALL FC 1 (
+		N	:= 6,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#720
+	
+	CALL FC 1 (
+		N	:= 7,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#5040
+	
+	CALL FC 1 (
+		N	:= 8,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#40320
+	
+	CALL FC 1 (
+		N	:= 9,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#362880
+	
+	CALL FC 1 (
+		N	:= 10,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#3628800
+	
+	CALL FC 1 (
+		N	:= 11,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#39916800
+	
+	CALL FC 1 (
+		N	:= 12,
+		RET_VAL	:= MD 0,
+	)
+	__ASSERT==	MD 0, L#479001600
+	
+	
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
+
+
+FUNCTION FC 1 : DINT
+	TITLE	= Calculate the factorial of #N
+	
+	VAR_INPUT
+		N	: INT;
+	END_VAR
+	VAR_TEMP
+		N_TMP	: INT;
+		R_TMP	: DINT;
+	END_VAR
+BEGIN
+	// If #N is 0 or 1, #RET_VAL is 1 and recursion ends.
+	L	#N
+	L	1
+	T	#RET_VAL
+	<=I
+	BEB
+	
+	// Subtract 1 from #N
+	-I
+	T	#N_TMP
+	
+	// Recurse: Calculate (#N - 1)!
+	CALL	FC 1 (
+		N	:= #N_TMP,
+		RET_VAL	:= #R_TMP,
+	)
+	
+	// Multiply: (#N - 1)! * #N
+	L	#R_TMP
+	L	#N
+	*D
+	T	#RET_VAL
+	BE
+END_FUNCTION
