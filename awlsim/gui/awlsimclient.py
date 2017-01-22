@@ -331,7 +331,8 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 						 listenPort = portRange)
 			self.shutdownTransceiver()
 			self.connectToServer(host=host,
-					     port=self.serverProcessPort)
+					     port=self.serverProcessPort,
+					     timeout=10.0)
 		except AwlSimError as e:
 			with suppressAllExc:
 				self.shutdown()
