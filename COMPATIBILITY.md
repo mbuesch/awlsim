@@ -41,6 +41,6 @@ CALL  FC 1 (
     POINTER_VAR := P#DB1.VARIABLE,
     ANY_VAR     := P#DB1.VARIABLE,
 )
-<pre>
+</pre>
 
 However, for the pointer parameter passing in `CALL` you could just write it in an S7 compatible way without the `P#` prefix.
