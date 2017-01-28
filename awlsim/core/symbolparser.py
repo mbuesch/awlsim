@@ -23,9 +23,11 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
+
 from awlsim.core.datatypes import *
-from awlsim.core.optrans import *
 from awlsim.core.util import *
+
+from awlsim.awlcompiler.optrans import *
 
 import csv
 

@@ -28,9 +28,10 @@ from awlsim.common.util import *
 from awlsim.fupcompiler.fupcompiler_base import *
 from awlsim.fupcompiler.fupcompiler_conn import *
 
+from awlsim.awlcompiler.optrans import *
+
 #from awlsim.core.instructions.all_insns cimport * #@cy
 from awlsim.core.instructions.all_insns import * #@nocy
-from awlsim.core.optrans import *
 
 
 class FupCompiler_ElemFactory(XmlFactory):

@@ -26,26 +26,24 @@ import time
 import datetime
 import random
 
-#from awlsim.core.cpu cimport * #@cy
-#from awlsim.core.dynattrs cimport * #@cy
-#from awlsim.core.statusword cimport * #@cy
-#from awlsim.core.instructions.all_insns cimport * #@cy
-
 from awlsim.common.cpuspecs import *
 from awlsim.common.blockinfo import *
 
 from awlsim.library.libentry import *
 
+#from awlsim.core.cpu cimport * #@cy
+#from awlsim.core.dynattrs cimport * #@cy
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
+#from awlsim.core.instructions.all_insns cimport * #@cy
 from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.systemblocks.system_sfb import *
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.operators import *
-from awlsim.core.translator import *
 from awlsim.core.blocks import *
 from awlsim.core.datablocks import *
 from awlsim.core.userdefinedtypes import *
+#from awlsim.core.statusword cimport * #@cy
 from awlsim.core.statusword import * #@nocy
 from awlsim.core.labels import *
 from awlsim.core.timers import *
@@ -53,6 +51,8 @@ from awlsim.core.counters import *
 from awlsim.core.callstack import *
 from awlsim.core.obtemp import *
 from awlsim.core.util import *
+
+from awlsim.awlcompiler.translator import *
 
 
 class ParenStackElem(object):

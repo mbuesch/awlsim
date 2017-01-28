@@ -24,9 +24,10 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import *
 
-from awlsim.core.util import *
 from awlsim.core.operators import *
-from awlsim.core.optrans import *
+from awlsim.core.util import *
+
+from awlsim.awlcompiler.optrans import *
 
 
 class AwlInsn(object): #+cdef

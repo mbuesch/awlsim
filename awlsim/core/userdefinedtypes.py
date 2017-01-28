@@ -25,7 +25,8 @@ from awlsim.common.compat import *
 from awlsim.core.util import *
 from awlsim.core.blocks import *
 from awlsim.core.datastructure import *
-from awlsim.core.translator import *
+
+from awlsim.awlcompiler.translator import *
 
 
 class UDTField(object):
