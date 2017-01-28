@@ -31,6 +31,8 @@ from awlsim.core.statusword import * #@nocy
 from awlsim.core.lstack import *
 from awlsim.core.util import *
 
+from awlsim.awlcompiler import AwlParser
+
 
 class AwlOperator(DynAttrs):
 	"""An AWL operator.
@@ -403,8 +405,7 @@ class AwlOperator(DynAttrs):
 			return self.value.toPointerString()
 		elif self.type == self.IMM_STR:
 			strLen = self.value[1]
-			import awlsim.core.parser as parser
-			return "'" + self.value[2:2+strLen].decode(parser.AwlParser.TEXT_ENCODING) + "'"
+			return "'" + self.value[2:2+strLen].decode(AwlParser.TEXT_ENCODING) + "'"
 		elif self.type in (self.MEM_A, self.MEM_E,
 				   self.MEM_M, self.MEM_L, self.MEM_VL):
 			pfx = self.type2str[self.type]

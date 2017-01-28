@@ -36,7 +36,6 @@ from awlsim.common.blockinfo import *
 
 from awlsim.library.libentry import *
 
-from awlsim.core.parser import *
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
 from awlsim.core.instructions.all_insns import * #@nocy

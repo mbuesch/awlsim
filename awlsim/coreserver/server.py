@@ -28,7 +28,8 @@ from awlsim.common.sources import *
 from awlsim.common.net import *
 
 from awlsim.core.main import *
-from awlsim.core.parser import *
+
+from awlsim.awlcompiler import *
 
 from awlsim.coreserver.messages import *
 from awlsim.coreserver.memarea import *

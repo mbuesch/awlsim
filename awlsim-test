@@ -31,6 +31,7 @@ import signal
 from awlsim_loader.common import *
 from awlsim_loader.core import *
 from awlsim_loader.coreclient import *
+from awlsim_loader.awlcompiler import *
 from awlsim_loader.fupcompiler import *
 import awlsim_loader.cython_helper as cython_helper
 

@@ -27,9 +27,10 @@ from awlsim.common.compat import *
 from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.optrans import *
 from awlsim.core.insntrans import *
-from awlsim.core.parser import *
 from awlsim.core.util import *
 from awlsim.core.datastructure import *
+
+from awlsim.awlcompiler import *
 
 
 class AwlTranslator(object):

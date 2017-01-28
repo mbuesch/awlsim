@@ -30,6 +30,8 @@ from awlsim.core.timers import *
 from awlsim.core.offset import *
 from awlsim.core.identifier import *
 
+from awlsim.awlcompiler import AwlParser
+
 import datetime
 
 
@@ -791,8 +793,7 @@ class AwlDataType(OptionalImmutable):
 		if len(token) > maxLen:
 			raise AwlSimError("String too long (>%d characters)" % maxLen)
 		try:
-			import awlsim.core.parser as parser
-			data = token.encode(parser.AwlParser.TEXT_ENCODING)
+			data = token.encode(AwlParser.TEXT_ENCODING)
 			data = bytearray(data)
 			if len(data) != len(token):
 				raise ValueError

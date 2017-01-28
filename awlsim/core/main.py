@@ -25,7 +25,6 @@ from awlsim.common.compat import *
 from awlsim.common.project import *
 
 from awlsim.core.util import *
-from awlsim.core.parser import *
 from awlsim.core.cpu import *
 from awlsim.core.hardware import *
 
