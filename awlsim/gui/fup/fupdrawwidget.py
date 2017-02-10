@@ -144,15 +144,23 @@ class FupDrawWidget(QWidget):
 		# The dragged connection.
 		self.__draggedConn = None
 
-		self.__cellHeight = 20
-		self.__cellWidth = 60
+		self.__cellWidth = 60		# Cell width, in pixels
+		self.__cellHeight = 20		# Cell height, in pixels
 
-		self.__grid = FupGrid(self, 12, 32)
+		self.__gridMinSize = (12, 18)	# Smallest possible grid size
+		self.__gridClearance = (3, 4)	# Left and bottom clearance
 
-		self.resize(self.__grid.width * self.__cellWidth,
-			    self.__grid.height * self.__cellHeight)
+		self.__grid = FupGrid(self, self.__gridMinSize[0],
+				      self.__gridMinSize[1])
+		self.__grid.resizeEvent = self.__handleGridResize
+		self.__handleGridResize(self.__grid.width, self.__grid.height)
+
 		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
 		self.setMouseTracking(True)
+
+	def __handleGridResize(self, gridWidth, gridHeight):
+		self.resize(gridWidth * self.__cellWidth,
+			    gridHeight * self.__cellHeight)
 
 	def repaint(self):
 		if not self.__repaintBlocked:
@@ -475,6 +483,14 @@ class FupDrawWidget(QWidget):
 								      checkOnly=False,
 								      excludeCheckElems=selectedElems)
 						self.__dragStart = (gridX, gridY)
+					# Dynamically expand or shrink the grid
+					maxWidth = max(e.x + e.width for e in self.__grid.elems)
+					maxHeight = max(e.y + e.height for e in self.__grid.elems)
+					gridWidth = max(maxWidth + self.__gridClearance[0],
+							self.__gridMinSize[0])
+					gridHeight = max(maxHeight + self.__gridClearance[1],
+							 self.__gridMinSize[1])
+					self.__grid.resize(gridWidth, gridHeight)
 				self.repaint()
 
 		# Handle connection dragging

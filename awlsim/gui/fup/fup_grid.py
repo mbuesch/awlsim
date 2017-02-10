@@ -84,6 +84,10 @@ class FupGrid(object):
 
 	factory = FupGrid_factory
 
+	# Resize event callback.
+	# If this is a callable, it it called with (width, height) on resize events.
+	resizeEvent = None
+
 	def __init__(self, drawWidget, width, height):
 		self.__drawWidget = drawWidget
 		self.width = width
@@ -109,6 +113,8 @@ class FupGrid(object):
 		#TODO check if the size is possible
 		self.width = width
 		self.height = height
+		if callable(self.resizeEvent):
+			self.resizeEvent(width, height)
 		return True
 
 	def getUnusedWireIdNum(self):
