@@ -110,12 +110,16 @@ class FupGrid(object):
 		"""Resize the grid.
 		Returns True, if the resize was successfull.
 		"""
-		#TODO check if the size is possible
-		self.width = width
-		self.height = height
-		if callable(self.resizeEvent):
-			self.resizeEvent(width, height)
-		return True
+		if width != self.width or height != self.height:
+			minWidth = max(e.x + e.width for e in self.elems)
+			minHeight = max(e.y + e.height for e in self.elems)
+			if width >= minWidth and height >= minHeight:
+				self.width = width
+				self.height = height
+				if callable(self.resizeEvent):
+					self.resizeEvent(width, height)
+				return True
+		return False
 
 	def getUnusedWireIdNum(self):
 		"""Get an unused wire idNum.

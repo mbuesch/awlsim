@@ -162,11 +162,23 @@ class FupDrawWidget(QWidget):
 		self.resize(gridWidth * self.__cellWidth,
 			    gridHeight * self.__cellHeight)
 
+	def __dynGridExpansion(self):
+		"""Expand the grid, if required.
+		"""
+		maxWidth = max(e.x + e.width for e in self.__grid.elems)
+		maxHeight = max(e.y + e.height for e in self.__grid.elems)
+		gridWidth = max(maxWidth + self.__gridClearance[0],
+				self.__gridMinSize[0])
+		gridHeight = max(maxHeight + self.__gridClearance[1],
+				 self.__gridMinSize[1])
+		self.__grid.resize(gridWidth, gridHeight)
+
 	def repaint(self):
 		if not self.__repaintBlocked:
 			QWidget.repaint(self)
 
 	def __contentChanged(self):
+		self.__dynGridExpansion()
 		self.repaint()
 		self.diagramChanged.emit()
 
@@ -488,13 +500,7 @@ class FupDrawWidget(QWidget):
 								      excludeCheckElems=moveElems)
 						self.__dragStart = (gridX, gridY)
 					# Dynamically expand or shrink the grid
-					maxWidth = max(e.x + e.width for e in self.__grid.elems)
-					maxHeight = max(e.y + e.height for e in self.__grid.elems)
-					gridWidth = max(maxWidth + self.__gridClearance[0],
-							self.__gridMinSize[0])
-					gridHeight = max(maxHeight + self.__gridClearance[1],
-							 self.__gridMinSize[1])
-					self.__grid.resize(gridWidth, gridHeight)
+					self.__dynGridExpansion()
 				self.repaint()
 
 		# Handle connection dragging
