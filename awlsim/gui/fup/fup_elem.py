@@ -141,6 +141,45 @@ class FupElem(FupBaseClass):
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
 
+	def isConnectedTo(self, otherElem):
+		"""Returns 1, if any output it connected to the other elements input.
+		Returns -1, if any input it connected to the other elements output.
+		Returns 0 otherwise.
+		"""
+		if any(conn.wire in (c.wire for c in otherElem.outputs) for conn in self.inputs):
+			return -1
+		if any(conn.wire in (c.wire for c in otherElem.inputs) for conn in self.outputs):
+			return 1
+		return 0
+
+	def getRelatedElems(self):
+		"""Get all elements that are "related" to the specified elements.
+		Related elements are closely bound elements.
+		"""
+		if not self.grid:
+			return []
+		return ( elem for elem in self.grid.elems
+			 if self.isRelatedElem(elem) )
+
+	def isRelatedElem(self, otherElem):
+		"""Returns True, if the other element is related to self.
+		May be overridden in a subclass.
+		The default implementation always returns True, if the other element
+		is a close operand.
+		"""
+		from awlsim.gui.fup.fup_elemoperand import FupElem_OPERAND
+		if isinstance(otherElem, FupElem_OPERAND):
+			if otherElem.y >= self.y and\
+			   otherElem.y < self.y + self.height:
+				isConnected = self.isConnectedTo(otherElem)
+				if isConnected > 0:
+					if otherElem.x == self.x + 1:
+						return True
+				elif isConnected < 0:
+					if otherElem.x == self.x - 1:
+						return True
+		return False
+
 	def breakConnections(self, breakInputs=True, breakOutputs=True):
 		"""Disconnect all connections.
 		"""

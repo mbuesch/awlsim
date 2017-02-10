@@ -466,22 +466,26 @@ class FupDrawWidget(QWidget):
 			if deltaX or deltaY:
 				with self.__repaintBlocked:
 					selectedElems = self.__grid.selectedElems
+					# Get all elements that have to be moved
+					moveElems = selectedElems.copy()
+					for elem in selectedElems:
+						moveElems.update(elem.getRelatedElems())
 					# First check if we can move all elements
 					allOk = True
-					for elem in selectedElems:
+					for elem in moveElems:
 						if not self.moveElem(elem, deltaX, deltaY,
 								     relativeCoords=True,
 								     checkOnly=True,
-								     excludeCheckElems=selectedElems):
+								     excludeCheckElems=moveElems):
 							allOk = False
 							break
 					# If everything is Ok, move all elements.
 					if allOk:
-						for elem in selectedElems:
+						for elem in moveElems:
 							self.moveElem(elem, deltaX, deltaY,
 								      relativeCoords=True,
 								      checkOnly=False,
-								      excludeCheckElems=selectedElems)
+								      excludeCheckElems=moveElems)
 						self.__dragStart = (gridX, gridY)
 					# Dynamically expand or shrink the grid
 					maxWidth = max(e.x + e.width for e in self.__grid.elems)
