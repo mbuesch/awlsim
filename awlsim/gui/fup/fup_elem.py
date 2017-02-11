@@ -64,7 +64,7 @@ class FupElem_factory(XmlFactory):
 					from awlsim.gui.fup.fup_elemoperand import\
 						FupElem_LOAD, FupElem_ASSIGN
 					subType = tag.getAttr("subtype")
-					content = tag.getAttr("content")
+					content = tag.getAttr("content", "")
 					elemClass = {
 						FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
 						FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
