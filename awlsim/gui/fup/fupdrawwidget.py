@@ -430,7 +430,13 @@ class FupDrawWidget(QWidget):
 			self.repaint()
 
 		# Handle end of element dragging
-		self.__dragStart = None
+		if self.__dragStart:
+			# Automatically connect close connections
+			connected = any( elem.establishAutoConns()
+					 for elem in self.__grid.selectedElems )
+			self.__dragStart = None
+			if connected:
+				self.__contentChanged()
 
 		# Handle end of connection dragging
 		draggedConn = self.__draggedConn

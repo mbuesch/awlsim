@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Boolean element classes
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
 from awlsim.gui.fup.fup_elem import *
+from awlsim.gui.fup.fup_elemoperand import *
 
 
 class FupElem_BOOLEAN_factory(FupElem_factory):
@@ -61,6 +62,35 @@ class FupElem_BOOLEAN(FupElem):
 				for i in range(nrInputs) ]
 		self.outputs = [ FupConnOut(self) ]
 
+	# Overridden method. For documentation see base class.
+	def matchCloseConns(self, otherElem):
+		# If otherElem is an operand within the y-range of this elem.
+		selfConn, otherConn = None, None
+		if isinstance(otherElem, FupElem_OPERAND) and\
+		   otherElem.y >= self.y and\
+		   otherElem.y <= self.y + self.height - 1:
+			if isinstance(otherElem, FupElem_LOAD) and\
+			   otherElem.x + otherElem.width - 1 == self.x - 1:
+				# otherElem is located to the left
+				# hand side of this elem (input)
+				inpIdx = otherElem.y - self.y
+				selfConn = self.inputs[inpIdx]
+				otherConn = otherElem.outputs[0]
+			elif isinstance(otherElem, FupElem_ASSIGN) and\
+			     otherElem.x == self.x + self.width:
+				# otherElem is located to the right
+				# hand side of this elem (output)
+				selfConn = self.outputs[0]
+				otherConn = otherElem.inputs[0]
+		# If we have two matching connections and they are not
+		# connected already, return these.
+		if selfConn and otherConn and\
+		   not selfConn.isConnected and\
+		   not otherConn.isConnected:
+			return [ (selfConn, otherConn) ]
+		return None
+
+	# Overridden method. For documentation see base class.
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		if self.grid:
 			cellWidth = self.grid.cellPixWidth
@@ -82,27 +112,25 @@ class FupElem_BOOLEAN(FupElem):
 					return self.AREA_BODY, 0
 		return self.AREA_NONE, 0
 
-	def getConnRelPixCoords(self, conn):
-		if self.grid:
-			cellHeight = self.grid.cellPixHeight
-			cellWidth = self.grid.cellPixWidth
-			if isinstance(conn, FupConnIn):
-				idx = self.inputs.index(conn)
-				x = FupConn.CONN_OFFS
-			elif isinstance(conn, FupConnOut):
-				idx = self.outputs.index(conn)
-				if idx >= 0:
-					idx = self.height - 1
-					x = cellWidth - FupConn.CONN_OFFS
-			if idx >= 0:
-				y = (idx * cellHeight) + (cellHeight // 2)
-				return x, y
-		return FupElem.getConnRelPixCoords(self, conn)
+	# Overridden method. For documentation see base class.
+	def getConnRelCoords(self, conn):
+		x, y = 0, -1
+		if conn.IN:
+			y = self.inputs.index(conn)
+		elif conn.OUT:
+			y = self.outputs.index(conn)
+			if y >= 0:
+				y = self.height - 1
+		if x >= 0 and y >= 0:
+			return x, y
+		return FupElem.getConnRelCoords(self, conn)
 
+	# Overridden method. For documentation see base class.
 	@property
 	def height(self):
 		return len(self.inputs)
 
+	# Overridden method. For documentation see base class.
 	def draw(self, painter):
 		if not self.grid:
 			return
@@ -144,6 +172,7 @@ class FupElem_BOOLEAN(FupElem):
 				 Qt.AlignCenter | Qt.AlignTop,
 				 self.OP_SYM)
 
+	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu):
 		menu.enableAddInput(True)
 

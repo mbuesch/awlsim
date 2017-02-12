@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Operand element classes
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,6 +70,7 @@ class FupElem_OPERAND(FupElem):
 			return self.grid.cellPixWidth // 12
 		return 0
 
+	# Overridden method. For documentation see base class.
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		if self.grid:
 			cellWidth = self.grid.cellPixWidth
@@ -93,25 +94,20 @@ class FupElem_OPERAND(FupElem):
 					return self.AREA_BODY, 0
 		return self.AREA_NONE, 0
 
-	def getConnRelPixCoords(self, conn):
-		if self.grid:
-			cellHeight = self.grid.cellPixHeight
-			cellWidth = self.grid.cellPixWidth
-			if isinstance(conn, FupConnIn):
-				idx = self.inputs.index(conn)
-				if idx >= 0:
-					idx = self.height - 1
-					x = FupConn.CONN_OFFS
-			elif isinstance(conn, FupConnOut):
-				idx = self.outputs.index(conn)
-				if idx >= 0:
-					idx = self.height - 1
-					x = cellWidth - FupConn.CONN_OFFS
-			if idx >= 0:
-				y = (idx * cellHeight) + (cellHeight // 2)
-				return x, y
-		return FupElem.getConnRelPixCoords(self, conn)
+	# Overridden method. For documentation see base class.
+	def getConnRelCoords(self, conn):
+		x, y = 0, -1
+		if conn.IN:
+			y = self.inputs.index(conn)
+		elif conn.OUT:
+			y = self.outputs.index(conn)
+		if y >= 0:
+			y = self.height - 1
+		if x >= 0 and y >= 0:
+			return x, y
+		return FupElem.getConnRelCoords(self, conn)
 
+	# Overridden method. For documentation see base class.
 	def draw(self, painter):
 		if not self.grid:
 			return
@@ -166,6 +162,7 @@ class FupElem_OPERAND(FupElem):
 			else:
 				self.partialContent = False
 
+	# Overridden method. For documentation see base class.
 	def edit(self, parentWidget):
 		text, ok = QInputDialog.getText(parentWidget,
 			"Change operand",
@@ -177,6 +174,7 @@ class FupElem_OPERAND(FupElem):
 			return True
 		return False
 
+	# Overridden method. For documentation see base class.
 	def expand(self, expand=True):
 		if not self.partialContent and expand:
 			return False
@@ -185,6 +183,7 @@ class FupElem_OPERAND(FupElem):
 			return True
 		return False
 
+	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu):
 		menu.enableEdit(True)
 
@@ -199,6 +198,7 @@ class FupElem_ASSIGN(FupElem_OPERAND):
 
 		self.inputs = [ FupConnIn(self) ]
 
+	# Overridden method. For documentation see base class.
 	def draw(self, painter):
 		if not self.grid:
 			return
@@ -229,6 +229,7 @@ class FupElem_LOAD(FupElem_OPERAND):
 
 		self.outputs = [ FupConnOut(self) ]
 
+	# Overridden method. For documentation see base class.
 	def draw(self, painter):
 		if not self.grid:
 			return

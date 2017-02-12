@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Element classes
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -141,14 +141,41 @@ class FupElem(FupBaseClass):
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
 
+	def matchCloseConns(self, otherElem):
+		"""Get a list of (selfConn, otherConn) pairs of connections
+		that are close and could possibly be connected easily.
+		Override this method in the subclass.
+		The default implementation returns no connection pairs.
+		"""
+		return None
+
+	def establishAutoConns(self):
+		"""Automatically establish connections to close elements.
+		"""
+		connected = False
+		for elem in self.grid.elems:
+			for match in self.matchCloseConns(elem) or ():
+				selfConn, otherConn = match
+				try:
+					selfConn.connectTo(otherConn)
+				except ValueError:
+					pass
+				else:
+					connected = True
+		return connected
+
 	def isConnectedTo(self, otherElem):
 		"""Returns 1, if any output it connected to the other elements input.
 		Returns -1, if any input it connected to the other elements output.
 		Returns 0 otherwise.
 		"""
-		if any(conn.wire in (c.wire for c in otherElem.outputs) for conn in self.inputs):
+		if any(conn.wire is not None and\
+		       conn.wire in (c.wire for c in otherElem.outputs)
+		       for conn in self.inputs):
 			return -1
-		if any(conn.wire in (c.wire for c in otherElem.inputs) for conn in self.outputs):
+		if any(conn.wire is not None and\
+		       conn.wire in (c.wire for c in otherElem.inputs)
+		       for conn in self.outputs):
 			return 1
 		return 0
 
@@ -229,11 +256,32 @@ class FupElem(FupBaseClass):
 			       self.y * grid.cellPixHeight
 		return 0
 
+	def getConnRelCoords(self, conn):
+		"""Get the (x, y) grid coordinates of a connection
+		relative to the element's root.
+		Raises IndexError, if there is no such connection.
+		"""
+		raise IndexError
+
 	def getConnRelPixCoords(self, conn):
 		"""Get the (x, y) pixel coordinates of a connection
 		relative to the element's root.
 		Raises IndexError, if there is no such connection.
 		"""
+		if self.grid:
+			# Get the grid coordinated. (This might raise IndexError)
+			x, y = self.getConnRelCoords(conn)
+			# Convert to pixels
+			cellPixHeight = self.grid.cellPixHeight
+			cellPixWidth = self.grid.cellPixWidth
+			if conn.IN:
+				xPix = (x * cellPixWidth) + FupConn.CONN_OFFS
+				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
+				return xPix, yPix
+			elif conn.OUT:
+				xPix = (x * cellPixWidth) + cellPixWidth - FupConn.CONN_OFFS
+				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
+				return xPix, yPix
 		raise IndexError
 
 	def isInGridRect(self, gridX0, gridY0, gridX1, gridY1):
