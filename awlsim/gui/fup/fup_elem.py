@@ -144,10 +144,38 @@ class FupElem(FupBaseClass):
 	def matchCloseConns(self, otherElem):
 		"""Get a list of (selfConn, otherConn) pairs of connections
 		that are close and could possibly be connected easily.
-		Override this method in the subclass.
-		The default implementation returns no connection pairs.
 		"""
-		return None
+		selfConns, otherConns = (), ()
+
+		if otherElem.y >= self.y and\
+		   otherElem.y <= self.y + self.height - 1:
+			# otherElem is an operand within the y-range of this elem.
+
+			if otherElem.x + otherElem.width - 1 == self.x - 1:
+				# otherElem is located to the left
+				# hand side (= input side) of this elem.
+				selfConns = self.inputs
+				otherConns = otherElem.outputs
+			elif otherElem.x == self.x + self.width:
+				# otherElem is located to the right
+				# hand side (= output side) of this elem
+				selfConns = self.outputs
+				otherConns = otherElem.inputs
+
+		connPairs = []
+		for selfConn in selfConns:
+			for otherConn in otherConns:
+				if selfConn.isConnected or\
+				   otherConn.isConnected:
+					# Already connected.
+					continue
+				selfX, selfY = selfConn.coords
+				otherX, otherY = otherConn.coords
+				if selfY == otherY:
+					# These connections are at the same Y position.
+					# Got a pair.
+					connPairs.append( (selfConn, otherConn) )
+		return connPairs
 
 	def establishAutoConns(self):
 		"""Automatically establish connections to close elements.

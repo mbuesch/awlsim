@@ -105,6 +105,17 @@ class FupConn(FupBaseClass):
 		self.wire = wire	# The FupWire this connection is connected to (if any).
 
 	@property
+	def relCoords(self):
+		"""Get the (x, y) grid coordinates of this connection
+		relative to the element's root.
+		Raises IndexError, if this does not belong to an element.
+		"""
+		elem = self.elem
+		if elem:
+			return elem.getConnRelCoords(self)
+		return IndexError
+
+	@property
 	def relPixCoords(self):
 		"""Get the (x, y) pixel coordinates of this connection
 		relative to the element's root.
@@ -113,6 +124,18 @@ class FupConn(FupBaseClass):
 		elem = self.elem
 		if elem:
 			return elem.getConnRelPixCoords(self)
+		raise IndexError
+
+	@property
+	def coords(self):
+		"""Get the absolute (x, y) grid coordinates of this connection.
+		Raises IndexError, if this does not belong to an element.
+		"""
+		elem = self.elem
+		if elem:
+			xAbs, yAbs = elem.x, elem.y
+			xRel, yRel = self.relCoords
+			return xAbs + xRel, yAbs + yRel
 		raise IndexError
 
 	@property

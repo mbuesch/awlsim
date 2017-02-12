@@ -63,34 +63,6 @@ class FupElem_BOOLEAN(FupElem):
 		self.outputs = [ FupConnOut(self) ]
 
 	# Overridden method. For documentation see base class.
-	def matchCloseConns(self, otherElem):
-		# If otherElem is an operand within the y-range of this elem.
-		selfConn, otherConn = None, None
-		if isinstance(otherElem, FupElem_OPERAND) and\
-		   otherElem.y >= self.y and\
-		   otherElem.y <= self.y + self.height - 1:
-			if isinstance(otherElem, FupElem_LOAD) and\
-			   otherElem.x + otherElem.width - 1 == self.x - 1:
-				# otherElem is located to the left
-				# hand side of this elem (input)
-				inpIdx = otherElem.y - self.y
-				selfConn = self.inputs[inpIdx]
-				otherConn = otherElem.outputs[0]
-			elif isinstance(otherElem, FupElem_ASSIGN) and\
-			     otherElem.x == self.x + self.width:
-				# otherElem is located to the right
-				# hand side of this elem (output)
-				selfConn = self.outputs[0]
-				otherConn = otherElem.inputs[0]
-		# If we have two matching connections and they are not
-		# connected already, return these.
-		if selfConn and otherConn and\
-		   not selfConn.isConnected and\
-		   not otherConn.isConnected:
-			return [ (selfConn, otherConn) ]
-		return None
-
-	# Overridden method. For documentation see base class.
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		if self.grid:
 			cellWidth = self.grid.cellPixWidth
