@@ -147,8 +147,10 @@ class FupElem(FupBaseClass):
 		"""
 		selfConns, otherConns = (), ()
 
-		if otherElem.y >= self.y and\
-		   otherElem.y <= self.y + self.height - 1:
+		# Check if self and otherElem overlap in Y direction.
+		if self is not otherElem and\
+		   otherElem.y <= self.y + self.height - 1 and\
+		   otherElem.y + otherElem.height - 1 >= self.y:
 			# otherElem is an operand within the y-range of this elem.
 
 			if otherElem.x + otherElem.width - 1 == self.x - 1:
