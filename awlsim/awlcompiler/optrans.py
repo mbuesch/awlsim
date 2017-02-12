@@ -434,6 +434,7 @@ class AwlOpTranslator(object):
 		return offset, count
 
 	def __doTrans(self, rawInsn, rawOps):
+		assert(len(rawOps) >= 1)
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
 			return OpDescriptor(AwlOperator(AwlOperator.LBL_REF, 0,
@@ -614,13 +615,15 @@ class AwlOpTranslator(object):
 					return opDesc
 			except IndexError:
 				pass
-		raise AwlSimError("Cannot parse operand: " +\
+		raise AwlSimError("Cannot parse operator: " +\
 				str(rawOps[0]))
 
 	def translateOp(self, rawInsn, rawOps):
 		"""Translate operator tokens.
 		Returns an OpDescriptor().
 		"""
+		if not rawOps:
+			raise AwlSimError("Cannot parse operator: Operator is empty")
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
 		if isinstance(opDesc.operator.value, AwlOffset) and\
