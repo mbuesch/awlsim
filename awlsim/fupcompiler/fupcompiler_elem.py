@@ -124,7 +124,6 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				subType = cls.str2subtype[subType]
 			else:
 				subType = None
-			content = content or None
 		except KeyError:
 			return None
 		return cls(grid, x, y, elemType, subType, content)
@@ -136,7 +135,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.y = y				# Y coordinate
 		self.elemType = elemType		# TYPE_...
 		self.subType = subType			# SUBTYPE_... or None
-		self.content = content			# content string or None
+		self.content = content or ""		# content string
 		self.connections = set()		# FupCompiler_Conn
 
 	def addConn(self, conn):
