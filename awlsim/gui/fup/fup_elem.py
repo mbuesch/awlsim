@@ -142,7 +142,7 @@ class FupElem(FupBaseClass):
 		self._textPen.setWidth(0)
 
 	def matchCloseConns(self, otherElem):
-		"""Get a list of (selfConn, otherConn) pairs of connections
+		"""Get a set of (selfConn, otherConn) pairs of connections
 		that are close and could possibly be connected easily.
 		"""
 		selfConns, otherConns = (), ()
@@ -164,7 +164,7 @@ class FupElem(FupBaseClass):
 				selfConns = self.outputs
 				otherConns = otherElem.inputs
 
-		connPairs = []
+		connPairs = set()
 		for selfConn in selfConns:
 			for otherConn in otherConns:
 				if selfConn.isConnected or\
@@ -176,7 +176,7 @@ class FupElem(FupBaseClass):
 				if selfY == otherY:
 					# These connections are at the same Y position.
 					# Got a pair.
-					connPairs.append( (selfConn, otherConn) )
+					connPairs.add( (selfConn, otherConn) )
 		return connPairs
 
 	def establishAutoConns(self):
@@ -215,8 +215,8 @@ class FupElem(FupBaseClass):
 		"""
 		if not self.grid:
 			return []
-		return ( elem for elem in self.grid.elems
-			 if self.isRelatedElem(elem) )
+		return { elem for elem in self.grid.elems
+			 if self.isRelatedElem(elem) }
 
 	def isRelatedElem(self, otherElem):
 		"""Returns True, if the other element is related to self.
