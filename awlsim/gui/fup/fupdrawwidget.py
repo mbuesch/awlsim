@@ -201,6 +201,8 @@ class FupDrawWidget(QWidget):
 			self.__grid.deselectAll()
 			self.__grid.selectElem(elem)
 			self.__contentChanged()
+			return True
+		return False
 
 	def removeElem(self, elem):
 		self.__grid.removeElem(elem)
@@ -559,11 +561,11 @@ class FupDrawWidget(QWidget):
 						if newElem.inputs:
 							newConn = newElem.inputs[0]
 					if newElem and newConn:
-						self.addElem(newElem)
-						with contextlib.suppress(ValueError):
-							newConn.connectTo(conn)
-							newElem.edit(self)
-						self.__contentChanged()
+						if self.addElem(newElem):
+							with contextlib.suppress(ValueError):
+								newConn.connectTo(conn)
+								newElem.edit(self)
+							self.__contentChanged()
 				else:
 					# Edit the element's contents
 					if elem.edit(self):

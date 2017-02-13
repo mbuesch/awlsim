@@ -193,6 +193,8 @@ class FupConn(FupBaseClass):
 		wire = self.wire or other.wire
 		if not wire:
 			# Create a new wire
+			if not self.elem or not self.elem.grid:
+				raise ValueError
 			wire = FupWire(self.elem.grid)
 		wire.connect(self)
 		wire.connect(other)
