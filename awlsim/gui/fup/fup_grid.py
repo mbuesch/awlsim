@@ -93,11 +93,14 @@ class FupGrid(object):
 		self.width = width
 		self.height = height
 
-		self.elems = []		# The FupElem_xxx()s in this grid
-		self.wires = set()	# The FupConnIn/Out()s in this grid
+		self.elems = []			# The FupElem_xxx()s in this grid
+		self.wires = set()		# The FupConnIn/Out()s in this grid
 
-		self.selectedElems = set()
-		self.expandedElems = set()
+		self.selectedElems = set()	# Set of selected elements in this grid
+		self.expandedElems = set()	# Set of expanded elements in this grid
+		self.clickedElem = None		# The recently clicked element in this grid
+		self.clickedConn = None		# The recently clicked connection in this grid
+		self.clickedArea = None		# The recently clicked area in this grid
 
 	def clear(self):
 		for wire in self.wires:
@@ -111,8 +114,11 @@ class FupGrid(object):
 		Returns True, if the resize was successfull.
 		"""
 		if width != self.width or height != self.height:
-			minWidth = max(e.x + e.width for e in self.elems)
-			minHeight = max(e.y + e.height for e in self.elems)
+			if self.elems:
+				minWidth = max(e.x + e.width for e in self.elems)
+				minHeight = max(e.y + e.height for e in self.elems)
+			else:
+				minWidth = minHeight = 0
 			if width >= minWidth and height >= minHeight:
 				self.width = width
 				self.height = height
