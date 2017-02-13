@@ -35,6 +35,7 @@ class FupContextMenu(QMenu):
 	add = Signal(FupElem)
 	edit = Signal()
 	remove = Signal()
+	addInput = Signal()
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
@@ -88,7 +89,7 @@ class FupContextMenu(QMenu):
 		self.remove.emit()
 
 	def __addInput(self):
-		pass
+		self.addInput.emit()
 
 	def enableInsert(self, en=True):
 		self.__actInsAND.setEnabled(en)
@@ -122,6 +123,7 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu.add.connect(self.addElem)
 		self.__contextMenu.remove.connect(self.removeSelElems)
 		self.__contextMenu.edit.connect(self.editSelElems)
+		self.__contextMenu.addInput.connect(self.addElemInput)
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
@@ -242,6 +244,12 @@ class FupDrawWidget(QWidget):
 				chg += int(elem.edit(self))
 		if chg:
 			self.__contentChanged()
+
+	def addElemInput(self):
+		elem = self.__grid.clickedElem
+		if elem:
+			if elem.addConn(FupConnIn()):
+				self.__contentChanged()
 
 	def paintEvent(self, event=None):
 		grid = self.__grid
@@ -373,6 +381,11 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu.gridX = gridX
 		self.__contextMenu.gridY = gridY
 
+		# Store the clicked element for later use
+		self.__grid.clickedElem = elem
+		self.__grid.clickedConn = conn
+		self.__grid.clickedArea = area
+
 		# Handle left button press
 		if event.button() == Qt.LeftButton:
 			if elem:
@@ -447,6 +460,12 @@ class FupDrawWidget(QWidget):
 				self.establishWire(draggedConn, targetConn)
 			self.__draggedConn = None
 			self.repaint()
+
+		# Drop "clicked element" reference
+		if not self.__contextMenu.isVisible():
+			self.__grid.clickedElem = None
+			self.__grid.clickedConn = None
+			self.__grid.clickedArea = FupElem.AREA_NONE
 
 		QWidget.mouseReleaseEvent(self, event)
 

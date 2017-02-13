@@ -48,7 +48,7 @@ class FupConn_factory(XmlFactory):
 					if dirIn and not dirOut:
 						self.elem.inputs.extend(
 							[None] * (pos + 1 - len(self.elem.inputs)))
-						conn = FupConnIn(elem=self.elem, pos=pos, wire=wire)
+						conn = FupConnIn(elem=self.elem, wire=wire)
 						if wire:
 							wire.connect(conn)
 						self.elem.inputs[pos] = conn
@@ -56,7 +56,7 @@ class FupConn_factory(XmlFactory):
 					elif dirOut and not dirIn:
 						self.elem.outputs.extend(
 							[None] * (pos + 1 - len(self.elem.outputs)))
-						conn = FupConnOut(elem=self.elem, pos=pos, wire=wire)
+						conn = FupConnOut(elem=self.elem, wire=wire)
 						if wire:
 							wire.connect(conn)
 						self.elem.outputs[pos] = conn
@@ -96,13 +96,30 @@ class FupConn(FupBaseClass):
 	IN = False
 	OUT = False
 
-	CONN_OFFS = 4
+	CONN_OFFS = 4	# Pixel offset in X direction
 
-	def __init__(self, elem, pos=0, wire=None):
+	def __init__(self, elem=None, wire=None):
 		FupBaseClass.__init__(self)
 		self.elem = elem	# The FupElem this connection belongs to
-		self.pos = pos		# The y position (top is 0)
 		self.wire = wire	# The FupWire this connection is connected to (if any).
+
+	@property
+	def pos(self):
+		"""Get the connection position in the owning element.
+		Top position is 0.
+		Note that this is _not_ the y grid position. So a top position
+		might _not_ correspond to relative y=0.
+		"""
+		elem = self.elem
+		if elem:
+			idx = -1
+			if self.IN:
+				idx = elem.inputs.index(self)
+			if idx < 0 and self.OUT:
+				idx = elem.outputs.index(self)
+			if idx >= 0:
+				return idx
+		return IndexError
 
 	@property
 	def relCoords(self):

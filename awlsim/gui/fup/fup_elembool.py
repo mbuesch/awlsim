@@ -58,9 +58,15 @@ class FupElem_BOOLEAN(FupElem):
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
 
-		self.inputs = [ FupConnIn(self, i)\
+		self.inputs = [ FupConnIn(self)\
 				for i in range(nrInputs) ]
 		self.outputs = [ FupConnOut(self) ]
+
+	# Overridden method. For documentation see base class.
+	def addConn(self, conn):
+		if conn.OUT:
+			return False
+		return FupElem.addConn(self, conn)
 
 	# Overridden method. For documentation see base class.
 	def getAreaViaPixCoord(self, pixelX, pixelY):

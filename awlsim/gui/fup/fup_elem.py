@@ -259,6 +259,26 @@ class FupElem(FupBaseClass):
 		except IndexError:
 			return None
 
+	def addConn(self, conn):
+		"""Add a connection to the end of the connection list.
+		"""
+		if conn:
+			if conn.IN:
+				conn.elem = self
+				self.inputs.append(conn)
+				return True
+			elif conn.OUT:
+				conn.elem = self
+				self.outputs.append(conn)
+				return True
+		return False
+
+	def removeConn(self, conn):
+		"""Remove a connection from the connection list.
+		"""
+		if conn:
+			pass#TODO
+
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		"""Get (AREA_xxx, area_index) via pixel coordinates
 		relative to the element.
