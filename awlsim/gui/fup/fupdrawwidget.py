@@ -294,9 +294,9 @@ class FupDrawWidget(QWidget):
 				   "* Middle-click to delete connections and wires\n"
 				   "* Double-click onto inputs or outputs to create operand boxes")
 
-		# Draw the elements. First background elements (selected/expanded).
-		prevX, prevY = 0, 0
-		for wantForeground in (False, True):
+		# Draw the elements
+		def drawElems(wantForeground):
+			prevX, prevY = 0, 0
 			for elem in grid.elems:
 				isForeground = elem.selected or elem.expanded
 				if wantForeground == isForeground:
@@ -304,11 +304,16 @@ class FupDrawWidget(QWidget):
 					p.translate(xAbs - prevX, yAbs - prevY)
 					prevX, prevY = xAbs, yAbs
 					elem.draw(p)
-		p.translate(-prevX, -prevY)
+			p.translate(-prevX, -prevY)
+		# Draw background elements
+		drawElems(False)
 
 		# Draw the connection wires
 		for wire in grid.wires:
 			wire.draw(p)
+
+		# Draw foreground elements (selected/expanded)
+		drawElems(True)
 
 		# Draw the dragged connection
 		draggedConn = self.__draggedConn
