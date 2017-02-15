@@ -208,6 +208,16 @@ class FupConn(FupBaseClass):
 			return True
 		return False
 
+	def removeFromElem(self):
+		"""Remove this connection from its element.
+		Note that the life time of this conn object may end here.
+		Returns True, if the connection was removed.
+		"""
+		if self.elem:
+			self.disconnect()
+			return self.elem.removeConn(self)
+		return False
+
 class FupConnIn(FupConn):
 	"""FUP/FBD element input connection"""
 	IN = True

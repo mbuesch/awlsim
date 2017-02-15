@@ -151,8 +151,10 @@ class FupElem_BOOLEAN(FupElem):
 				 self.OP_SYM)
 
 	# Overridden method. For documentation see base class.
-	def prepareContextMenu(self, menu):
+	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableAddInput(True)
+		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
+		menu.enableDisconnWire(conn is not None and conn.isConnected)
 
 class FupElem_AND(FupElem_BOOLEAN):
 	"""AND FUP/FBD element"""

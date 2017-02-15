@@ -184,7 +184,7 @@ class FupElem_OPERAND(FupElem):
 		return False
 
 	# Overridden method. For documentation see base class.
-	def prepareContextMenu(self, menu):
+	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableEdit(True)
 
 class FupElem_ASSIGN(FupElem_OPERAND):

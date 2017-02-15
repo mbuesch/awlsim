@@ -36,6 +36,9 @@ class FupContextMenu(QMenu):
 	edit = Signal()
 	remove = Signal()
 	addInput = Signal()
+	addOutput = Signal()
+	removeConn = Signal()
+	disconnWire = Signal()
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
@@ -66,6 +69,15 @@ class FupContextMenu(QMenu):
 		self.__actAddInp = self.addAction(getIcon("new"),
 						  "Add input &connection",
 						  self.__addInput)
+		self.__actAddOut = self.addAction(getIcon("new"),
+						  "Add &output connection",
+						  self.__addOutput)
+		self.__actDelConn = self.addAction(getIcon("doc_close"),
+						   "Remove &connection",
+						   self.__delConn)
+		self.__actDisconnWire = self.addAction(getIcon("doc_close"),
+						       "&Disconnect wire",
+						       self.__disconnWire)
 
 	def __addAND(self):
 		self.add.emit(FupElem_AND(self.gridX, self.gridY))
@@ -91,6 +103,15 @@ class FupContextMenu(QMenu):
 	def __addInput(self):
 		self.addInput.emit()
 
+	def __addOutput(self):
+		self.addOutput.emit()
+
+	def __delConn(self):
+		self.removeConn.emit()
+
+	def __disconnWire(self):
+		self.disconnWire.emit()
+
 	def enableInsert(self, en=True):
 		self.__actInsAND.setEnabled(en)
 		self.__actInsOR.setEnabled(en)
@@ -101,11 +122,20 @@ class FupContextMenu(QMenu):
 	def enableEdit(self, en=True):
 		self.__actEdit.setEnabled(en)
 
-	def enableDelete(self, en=True):
+	def enableRemove(self, en=True):
 		self.__actDel.setEnabled(en)
 
 	def enableAddInput(self, en=True):
 		self.__actAddInp.setEnabled(en)
+
+	def enableAddOutput(self, en=True):
+		self.__actAddOut.setEnabled(en)
+
+	def enableRemoveConn(self, en=True):
+		self.__actDelConn.setEnabled(en)
+
+	def enableDisconnWire(self, en=True):
+		self.__actDisconnWire.setEnabled(en)
 
 class FupDrawWidget(QWidget):
 	"""FUP/FBD draw widget."""
@@ -121,9 +151,12 @@ class FupDrawWidget(QWidget):
 
 		self.__contextMenu = FupContextMenu(self)
 		self.__contextMenu.add.connect(self.addElem)
-		self.__contextMenu.remove.connect(self.removeSelElems)
-		self.__contextMenu.edit.connect(self.editSelElems)
+		self.__contextMenu.remove.connect(self.removeElems)
+		self.__contextMenu.edit.connect(self.editElems)
 		self.__contextMenu.addInput.connect(self.addElemInput)
+		self.__contextMenu.addOutput.connect(self.addElemOutput)
+		self.__contextMenu.removeConn.connect(self.removeElemConn)
+		self.__contextMenu.disconnWire.connect(self.disconnectConn)
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
@@ -197,22 +230,27 @@ class FupDrawWidget(QWidget):
 		return self.__cellWidth
 
 	def addElem(self, elem):
-		if self.__grid.placeElem(elem):
-			self.__grid.deselectAll()
-			self.__grid.selectElem(elem)
-			self.__contentChanged()
-			return True
+		if self.__grid:
+			if self.__grid.placeElem(elem):
+				self.__grid.deselectAll()
+				self.__grid.selectElem(elem)
+				self.__contentChanged()
+				return True
 		return False
 
 	def removeElem(self, elem):
-		self.__grid.removeElem(elem)
-		self.__contentChanged()
+		if self.__grid:
+			self.__grid.removeElem(elem)
+			self.__contentChanged()
 
-	def removeSelElems(self):
-		with self.__repaintBlocked:
-			for elem in self.__grid.selectedElems.copy():
-				self.removeElem(elem)
-		self.__contentChanged()
+	def removeElems(self, elems=None):
+		if self.__grid:
+			if not elems:
+				elems = self.__grid.selectedElems
+			with self.__repaintBlocked:
+				for elem in elems.copy():
+					self.removeElem(elem)
+			self.__contentChanged()
 
 	def moveElem(self, elem, toGridX, toGridY,
 		     relativeCoords=False,
@@ -234,24 +272,47 @@ class FupDrawWidget(QWidget):
 					fromConn.connectTo(toConn)
 					self.__contentChanged()
 
-	def disconnectConn(self, conn):
-		if conn:
-			conn.disconnect()
-			self.__contentChanged()
-
-	def editSelElems(self):
-		chg = 0
+	def disconnectConn(self, conn=None):
 		if self.__grid:
-			for elem in self.__grid.selectedElems:
-				chg += int(elem.edit(self))
-		if chg:
-			self.__contentChanged()
-
-	def addElemInput(self):
-		elem = self.__grid.clickedElem
-		if elem:
-			if elem.addConn(FupConnIn()):
+			if not conn:
+				conn = self.__grid.clickedConn
+			if conn:
+				conn.disconnect()
 				self.__contentChanged()
+
+	def editElems(self, elems=None):
+		if self.__grid:
+			chg = 0
+			if not elems:
+				elems = self.__grid.selectedElems
+			for elem in elems:
+				chg += int(elem.edit(self))
+			if chg:
+				self.__contentChanged()
+
+	def addElemInput(self, elem=None):
+		if self.__grid:
+			if not elem:
+				elem = self.__grid.clickedElem
+			if elem:
+				if elem.addConn(FupConnIn()):
+					self.__contentChanged()
+
+	def addElemOutput(self, elem=None):
+		if self.__grid:
+			if not elem:
+				elem = self.__grid.clickedElem
+			if elem:
+				if elem.addConn(FupConnOut()):
+					self.__contentChanged()
+
+	def removeElemConn(self, conn=None):
+		if self.__grid:
+			if not conn:
+				conn = self.__grid.clickedConn
+			if conn:
+				if conn.removeFromElem():
+					self.__contentChanged()
 
 	def paintEvent(self, event=None):
 		grid = self.__grid
@@ -380,6 +441,7 @@ class FupDrawWidget(QWidget):
 		if self.__suppressMousePress:
 			self.__suppressMousePress -= 1
 			return
+
 		x, y = event.x(), event.y()
 		modifiers = QGuiApplication.keyboardModifiers()
 
@@ -430,11 +492,14 @@ class FupDrawWidget(QWidget):
 			self.repaint()
 			# Open the context menu
 			self.__contextMenu.enableInsert(elem is None)
-			self.__contextMenu.enableDelete(elem is not None)
+			self.__contextMenu.enableRemove(elem is not None)
 			self.__contextMenu.enableEdit(False)
 			self.__contextMenu.enableAddInput(False)
+			self.__contextMenu.enableAddOutput(False)
+			self.__contextMenu.enableRemoveConn(False)
+			self.__contextMenu.enableDisconnWire(False)
 			if elem:
-				elem.prepareContextMenu(self.__contextMenu)
+				elem.prepareContextMenu(self.__contextMenu, area, conn)
 			self.__contextMenu.exec_(self.mapToGlobal(event.pos()))
 
 		QWidget.mousePressEvent(self, event)
@@ -583,7 +648,7 @@ class FupDrawWidget(QWidget):
 
 	def keyPressEvent(self, event):
 		if event.matches(QKeySequence.Delete):
-			self.removeSelElems()
+			self.removeElems()
 		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
 				event.matches(QKeySequence.Deselect)):
 			self.__grid.deselectAll()

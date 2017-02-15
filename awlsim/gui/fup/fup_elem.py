@@ -277,7 +277,17 @@ class FupElem(FupBaseClass):
 		"""Remove a connection from the connection list.
 		"""
 		if conn:
-			pass#TODO
+			if conn.IN:
+				if len(self.inputs) > 1:
+					conn.elem = None
+					self.inputs.remove(conn)
+					return True
+			elif conn.OUT:
+				if len(self.outputs) > 1:
+					conn.elem = None
+					self.outputs.remove(conn)
+					return True
+		return False
 
 	def getAreaViaPixCoord(self, pixelX, pixelY):
 		"""Get (AREA_xxx, area_index) via pixel coordinates
@@ -388,7 +398,7 @@ class FupElem(FupBaseClass):
 		"""
 		pass
 
-	def prepareContextMenu(self, menu):
+	def prepareContextMenu(self, menu, area=None, conn=None):
 		"""Add element specific context menu entries.
 		"""
 		pass
