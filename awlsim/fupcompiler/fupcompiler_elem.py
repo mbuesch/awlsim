@@ -200,7 +200,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	def __compile_BOOLEAN_generic(self, insnClass, insnBranchClass):
 		opTrans = self.grid.compiler.opTrans
 		insns = []
-		for conn in self.connections:
+		for conn in sorted(self.connections, key=lambda c: c.pos):
 			if not conn.dirIn:
 				continue
 			for otherConn in conn.getConnected():
