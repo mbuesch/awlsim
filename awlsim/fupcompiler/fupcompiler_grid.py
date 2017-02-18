@@ -110,7 +110,8 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		# Find all assignment operators and walk the logic chain upwards.
 		for elem in FupCompiler_Elem.sorted(self.elems):
 			if elem.elemType == elem.TYPE_OPERAND and\
-			   elem.subType == elem.SUBTYPE_ASSIGN:
+			   elem.subType == elem.SUBTYPE_ASSIGN and\
+			   elem.compileState == elem.NOT_COMPILED:
 				insns.extend(elem.compile())
 
 		# Check if all elements have been compiled.

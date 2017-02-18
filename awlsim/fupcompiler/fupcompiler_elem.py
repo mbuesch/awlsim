@@ -138,9 +138,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.content = content or ""		# content string
 		self.connections = set()		# FupCompiler_Conn
 
+		# Constructor class used for LOAD operand.
+		self._insnClass = None
+
 		# If this field has already been compiled and the result is
 		# stored in a temp-field, this is the name of that field.
-		self.resultVkeVarName = None
+		self._resultVkeVarName = None
 
 		if elemType == self.TYPE_OPERAND and\
 		   subType == self.SUBTYPE_LOAD:
@@ -150,6 +153,23 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	def addConn(self, conn):
 		self.connections.add(conn)
 		return True
+
+	def __compile_OPERAND_LOAD(self):
+		opTrans = self.grid.compiler.opTrans
+		insns = []
+
+		insnClass = self._insnClass
+		if not insnClass:
+			# This shall never happen.
+			raise AwlSimError("FUP LOAD: Load without a "
+				"known instruction class.")
+
+		# Translate the LOAD operand and create the
+		# corresponding instruction.
+		opDesc = opTrans.translateFromString(self.content)
+		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
+
+		return insns
 
 	def __compile_OPERAND_ASSIGN(self):
 		opTrans = self.grid.compiler.opTrans
@@ -195,6 +215,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		return insns
 
 	__operandTable = {
+		SUBTYPE_LOAD		: __compile_OPERAND_LOAD,
 		SUBTYPE_ASSIGN		: __compile_OPERAND_ASSIGN,
 	}
 
@@ -209,16 +230,22 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	def __compile_BOOLEAN_generic(self, insnClass, insnBranchClass):
 		opTrans = self.grid.compiler.opTrans
 		insns = []
+		# Walk down each input connection of this element.
 		for conn in sorted(self.connections, key=lambda c: c.pos):
 			if not conn.dirIn:
 				continue
+			# For each element that is connected to this element's
+			# input connection via its output connection.
 			for otherElem in conn.getConnectedElems(viaOut=True):
 				if otherElem.elemType == self.TYPE_OPERAND and\
 				   otherElem.subType == self.SUBTYPE_LOAD:
-					otherElem.compileState = self.COMPILE_RUNNING
-					opDesc = opTrans.translateFromString(otherElem.content)
-					insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
-					otherElem.compileState = self.COMPILE_DONE
+					# The other element is a LOAD operand.
+					# Compile the boolean (load) instruction.
+					try:
+						otherElem._insnClass = insnClass
+						insns.extend(otherElem.compile())
+					finally:
+						otherElem._insnClass = None
 				elif otherElem.elemType == self.TYPE_BOOLEAN:
 					# The other element we get the signal from
 					# is a boolean element. Compile this to get its
@@ -237,12 +264,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 							opDesc = opTrans.translateFromString("#" + varName)
 							insns.append(AwlInsn_ASSIGN(cpu=None,
 										    ops=[opDesc.operator]))
-							otherElem.resultVkeVarName = varName
+							otherElem._resultVkeVarName = varName
 						insns.append(AwlInsn_BEND(cpu=None))
 					else:
 						# otherElem has already been compiled and the result has
 						# been stored in TEMP. Use the stored result.
-						varName = otherElem.resultVkeVarName
+						varName = otherElem._resultVkeVarName
 						if not varName:
 							raise AwlSimError("FUP compiler: Result of a "
 								"compiled element has not been stored "
@@ -284,10 +311,6 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	}
 
 	def compile(self):
-		if self.compileState == self.COMPILE_DONE:
-			# This may happen, if we already handled the element.
-			# See multi-ASSIGN handling.
-			return []
 		self.compileState = self.COMPILE_RUNNING
 
 		try:
