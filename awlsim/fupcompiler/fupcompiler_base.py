@@ -47,6 +47,10 @@ class FupCompiler_BaseObj(object):
 	COMPILE_DONE		= EnumGen.item
 	EnumGen.end
 
+	# Allow certain state transitions?
+	allowTrans_done2Running	= False # DONE -> RUNNING
+	allowTrans_2NotCompiled	= False # any -> NOT_COMPILED
+
 	def __init__(self):
 		self.__compileState = self.NOT_COMPILED
 
@@ -56,7 +60,8 @@ class FupCompiler_BaseObj(object):
 
 	@compileState.setter
 	def compileState(self, state):
-		if state == self.NOT_COMPILED:
+		if state == self.NOT_COMPILED and\
+		   not self.allowTrans_2NotCompiled:
 			raise FupCompilerError(
 				"Tried to set FBD/FUP object (%s) state to "
 				"NOT_COMPILED." % (
@@ -67,9 +72,11 @@ class FupCompiler_BaseObj(object):
 					"Tried to set FBD/FUP object (%s) state to "
 					"COMPILE_RUNNING while already being in that state.\n"
 					"This most likely happened due to some dependency "
-					"loop in the FBD/FUP diagram." % (
+					"loop in the FBD/FUP diagram.\n"
+					"Please check the diagram for signal loops." % (
 					type(self).__name__), self)
-			if self.__compileState == self.COMPILE_DONE:
+			if self.__compileState == self.COMPILE_DONE and\
+			   not self.allowTrans_done2Running:
 				raise FupCompilerError(
 					"Tried to set FBD/FUP object (%s) state to "
 					"COMPILE_RUNNING while being in state COMPILE_DONE." % (
