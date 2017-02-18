@@ -89,11 +89,12 @@ class FupCompiler_InterfFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler_InterfField(object):
-	def __init__(self, name="", typeStr="", initValueStr="", comment=""):
+	def __init__(self, name="", typeStr="", initValueStr="", comment="", enableNameCheck=True):
 		self.name = name
 		self.typeStr = typeStr
 		self.initValueStr = initValueStr
 		self.comment = comment
+		self.enableNameCheck = enableNameCheck
 
 class FupCompiler_Interf(FupCompiler_BaseObj):
 	factory = FupCompiler_InterfFactory
@@ -122,6 +123,21 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			if field:
 				yield field
 
+	def allocTEMP(self, dataTypeName="BOOL", name=None):
+		"""Allocate an additional TEMP field.
+		'dataTypeName' is the data type to create.
+		'name' is the optional name of the new field.
+		Returns the name string of the allocated field.
+		"""
+		field = FupCompiler_InterfField(
+			name=name or ("_FUP_COMPILER_temp_%d" % len(self.tempFields)),
+			typeStr=dataTypeName,
+			initValueStr="",
+			comment="Allocated by FUP compiler",
+			enableNameCheck=False)
+		self.tempFields.append(field)
+		return field.name
+
 	def __compileFields(self, declStr, fields):
 		if not fields:
 			return []
@@ -130,7 +146,8 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			varName = field.name
 			typeStr = field.typeStr
 			comment = field.comment
-			if not AwlName.isValidVarName(varName):
+			if not AwlName.isValidVarName(varName) and\
+			   field.enableNameCheck:
 				raise AwlSimError("FupCompiler_Interf: Variable name "
 					"'%s' contains invalid characters." %\
 					varName)
