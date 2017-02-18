@@ -21,5 +21,11 @@ GUI
 
 * Save window status (open MDI windows, positions, etc)
 * Show UDTs in block tree
-* Extend FBD (FUP) editor
 * Add LAD (KOP) editor
+
+FBD / FUP
+---------
+
+* Add feature: Exchange elements
+* Add feature: Duplicate diagrams
+* Add feature: Copy & paste elements
