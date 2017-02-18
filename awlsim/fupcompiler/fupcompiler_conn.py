@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Connection
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,3 +79,17 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		for conn in self.wire.connections:
 			if conn is not self:
 				yield conn
+
+	def getConnectedElems(self, viaOut=False, viaIn=False):
+		"""Get all elements that are connected to this connection.
+		If 'viaOut' is True, elements connected to the wire via OUT
+		connection are returned.
+		If 'viaIn' is True, elements connected to the wire via OUT
+		connection are returned.
+		If neither 'viaOut' nor 'viaIn' is True, no element is returned.
+		The element that belongs to 'self' is not returned.
+		"""
+		for conn in self.getConnected():
+			if (conn.dirOut and viaOut) or\
+			   (conn.dirIn and viaIn):
+				yield conn.elem
