@@ -180,8 +180,7 @@ class FupCompiler(object):
 		# Optimize the generated instructions
 		pass#TODO
 
-		# Store the AWL code in the AWL source object.
-		self.awlSource.sourceBytes = self.__genAwlCode(insns)
+		return insns
 
 	def __trycompile(self, fupSource, mnemonics):
 		self.reset()
@@ -192,8 +191,11 @@ class FupCompiler(object):
 					   filepath=fupSource.filepath)
 		if self.__parse():
 			self.__compileBlockDecl()
+			insns = self.__compileGrids()
 			self.__compileInterface()
-			self.__compileGrids()
+
+			# Store the AWL code in the AWL source object.
+			self.awlSource.sourceBytes = self.__genAwlCode(insns)
 		return self.getAwlSource()
 
 	def compile(self, fupSource, mnemonics):
