@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Element
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -138,6 +138,15 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.content = content or ""		# content string
 		self.connections = set()		# FupCompiler_Conn
 
+		# If this field has already been compiled and the result is
+		# stored in a temp-field, this is the name of that field.
+		self.resultVkeVarName = None
+
+		if elemType == self.TYPE_OPERAND and\
+		   subType == self.SUBTYPE_LOAD:
+			# Allow multiple compilations of LOAD operand.
+			self.allowTrans_done2Running = True
+
 	def addConn(self, conn):
 		self.connections.add(conn)
 		return True
@@ -203,10 +212,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		for conn in sorted(self.connections, key=lambda c: c.pos):
 			if not conn.dirIn:
 				continue
-			for otherConn in conn.getConnected():
-				if not otherConn.dirOut:
-					continue
-				otherElem = otherConn.elem
+			for otherElem in conn.getConnectedElems(viaOut=True):
 				if otherElem.elemType == self.TYPE_OPERAND and\
 				   otherElem.subType == self.SUBTYPE_LOAD:
 					otherElem.compileState = self.COMPILE_RUNNING
@@ -214,9 +220,35 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 					insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
 					otherElem.compileState = self.COMPILE_DONE
 				elif otherElem.elemType == self.TYPE_BOOLEAN:
-					insns.append(insnBranchClass(cpu=None))
-					insns.extend(otherElem.compile())
-					insns.append(AwlInsn_BEND(cpu=None))
+					# The other element we get the signal from
+					# is a boolean element. Compile this to get its
+					# resulting VKE.
+					if otherElem.compileState == self.NOT_COMPILED:
+						insns.append(insnBranchClass(cpu=None))
+						insns.extend(otherElem.compile())
+						# Check if we need to save the result
+						# for other element inputs.
+						if any(c.dirIn and c is not conn
+						       for c in otherElem.connections):
+							# There are other in-connections connected
+							# to the "otherElem". Allocate a TEMP variable
+							# and store the result.
+							varName = self.grid.compiler.interf.allocTEMP("BOOL")
+							opDesc = opTrans.translateFromString("#" + varName)
+							insns.append(AwlInsn_ASSIGN(cpu=None,
+										    ops=[opDesc.operator]))
+							otherElem.resultVkeVarName = varName
+						insns.append(AwlInsn_BEND(cpu=None))
+					else:
+						# otherElem has already been compiled and the result has
+						# been stored in TEMP. Use the stored result.
+						varName = otherElem.resultVkeVarName
+						if not varName:
+							raise AwlSimError("FUP compiler: Result of a "
+								"compiled element has not been stored "
+								"to a TEMP variable.")
+						opDesc = opTrans.translateFromString("#" + varName)
+						insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
 				else:
 					raise AwlSimError("FUP compiler: Invalid "
 						"element '%s' connected to '%s'." % (
@@ -253,6 +285,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def compile(self):
 		if self.compileState == self.COMPILE_DONE:
+			# This may happen, if we already handled the element.
+			# See multi-ASSIGN handling.
 			return []
 		self.compileState = self.COMPILE_RUNNING
 
