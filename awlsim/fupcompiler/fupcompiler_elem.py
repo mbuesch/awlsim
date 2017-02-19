@@ -104,16 +104,18 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	}
 
 	@classmethod
-	def sorted(cls, elemList):
-		"""Sort all elements from elemList in ascending order by Y position.
+	def sorted(cls, elems):
+		"""Sort all elements from 'elems' sequence in ascending order by Y position.
 		The Y position in the diagram is the basic evaluation order.
 		Also sort by X position as a secondary key.
 		The sorted list is returned.
 		"""
-		if not elemList:
+		elems = tuple(elems)
+		try:
+			yShift = max(e.x for e in elems).bit_length()
+		except ValueError:
 			return []
-		yShift = max(e.x for e in elemList).bit_length()
-		return sorted(elemList,
+		return sorted(elems,
 			      key=lambda e: (e.y << yShift) + e.x)
 
 	@classmethod
@@ -154,6 +156,22 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.connections.add(conn)
 		return True
 
+	@property
+	def inConnections(self):
+		"""Get all input connections.
+		"""
+		for conn in self.connections:
+			if conn.dirIn:
+				yield conn
+
+	@property
+	def outConnections(self):
+		"""Get all output connections.
+		"""
+		for conn in self.connections:
+			if conn.dirOut:
+				yield conn
+
 	def __compile_OPERAND_LOAD(self):
 		opTrans = self.grid.compiler.opTrans
 		insns = []
@@ -189,12 +207,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				str(self)))
 
 		# Compile the element connected to the input.
-		connOut = [ c for c in conn.getConnected() if c.dirOut ]
-		if len(connOut) != 1:
+		connsOut = tuple(conn.getConnected(getOutputs=True))
+		if len(connsOut) != 1:
 			raise AwlSimError("FUP ASSIGN: Multiple outbound signals "
 				"connected to '%s'." % (
 				str(self)))
-		insns.extend(connOut[0].elem.compile())
+		insns.extend(connsOut[0].elem.compile())
 
 		# Create the ASSIGN instruction.
 		opDesc = opTrans.translateFromString(self.content)
@@ -203,8 +221,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		# Compile additional assign operators.
 		# This is an optimization to avoid additional compilations
 		# of the whole tree. We just assign the VKE once again.
-		otherElems = [ c.elem for c in conn.getConnected() if c.dirIn ]
-		for otherElem in self.sorted(otherElems):
+		for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
 			if otherElem.elemType == self.TYPE_OPERAND and\
 			   otherElem.subType == self.SUBTYPE_ASSIGN:
 				otherElem.compileState = self.COMPILE_RUNNING
@@ -255,8 +272,10 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 						insns.extend(otherElem.compile())
 						# Check if we need to save the result
 						# for other element inputs.
-						if any(c.dirIn and c is not conn
-						       for c in otherElem.connections):
+						# This is the case, if we have more than one input connection
+						# to 'otherElem's output connection.
+						if any(len(tuple(c.getConnected(getInputs=True))) > 1
+						       for c in otherElem.outConnections):
 							# There are other in-connections connected
 							# to the "otherElem". Allocate a TEMP variable
 							# and store the result.

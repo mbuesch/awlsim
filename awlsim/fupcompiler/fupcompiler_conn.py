@@ -71,13 +71,17 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 
 		self.wire = None
 
-	def getConnected(self):
+	def getConnected(self, getOutputs=False, getInputs=False):
 		"""Get all other connections that are connected
 		via self.wire to this connection.
 		This excludes self.
+		If 'getOutputs' is True, connections with dirOut=True are returned.
+		If 'getInputs' is True, connections with dirIn=True are returned.
 		"""
 		for conn in self.wire.connections:
-			if conn is not self:
+			if conn is not self and\
+			   ((conn.dirOut and getOutputs) or\
+			    (conn.dirIn and getInputs)):
 				yield conn
 
 	def getConnectedElems(self, viaOut=False, viaIn=False):
@@ -89,7 +93,5 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		If neither 'viaOut' nor 'viaIn' is True, no element is returned.
 		The element that belongs to 'self' is not returned.
 		"""
-		for conn in self.getConnected():
-			if (conn.dirOut and viaOut) or\
-			   (conn.dirIn and viaIn):
-				yield conn.elem
+		for conn in self.getConnected(getOutputs=viaOut, getInputs=viaIn):
+			yield conn.elem
