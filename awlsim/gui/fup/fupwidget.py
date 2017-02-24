@@ -223,10 +223,10 @@ class FupWidget(QWidget):
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self, "FUP compiler error", e)
 			return
-		dlg = EditDialog(readOnly=True, withHeader=False, withCpuStats=False)
+		dlg = EditDialog(self, readOnly=True, withHeader=False, withCpuStats=False)
 		dlg.setWindowTitle("Compiled FUP/FBD diagram - %s" % self.__source.name)
 		dlg.edit.setSource(awlSource)
-		dlg.exec_()
+		dlg.show()
 
 	def __compileAndShowAwl(self):
 		self.__compileAndShow(S7CPUSpecs.MNEMONICS_DE)
