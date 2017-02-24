@@ -264,7 +264,7 @@ class AwlInterfaceModel(QAbstractTableModel):
 			self.interf.tempFields = []
 		self.haveRetVal = haveRetVal
 		if haveRetVal:
-			self.interf.retValField = AwlInterfFieldDef("RET_VAL", "void")
+			self.interf.retValField = AwlInterfFieldDef("RET_VAL", "VOID")
 		else:
 			self.interf.retValField = None
 		self.haveInitValue = haveInitValue
