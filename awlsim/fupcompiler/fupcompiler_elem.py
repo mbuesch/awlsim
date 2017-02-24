@@ -141,11 +141,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.connections = set()		# FupCompiler_Conn
 
 		# Constructor class used for LOAD operand.
-		self._insnClass = None
+		self.__insnClass = None
 
 		# If this field has already been compiled and the result is
 		# stored in a temp-field, this is the name of that field.
-		self._resultVkeVarName = None
+		self.__resultVkeVarName = None
 
 		if elemType == self.TYPE_OPERAND and\
 		   subType == self.SUBTYPE_LOAD:
@@ -172,11 +172,46 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			if conn.dirOut:
 				yield conn
 
+	def __mayStoreToTemp(self):
+		opTrans = self.grid.compiler.opTrans
+		insns = []
+
+		# Check if we need to save the result
+		# for other element inputs.
+		# This is the case, if we have more than one input connection
+		# to 'otherElem's output connection.
+		if any(len(tuple(c.getConnected(getInputs=True))) > 1
+		       for c in self.outConnections):
+			varName = self.grid.compiler.interf.allocTEMP("BOOL")
+			opDesc = opTrans.translateFromString("#" + varName)
+			insns.append(AwlInsn_ASSIGN(cpu=None,
+						    ops=[opDesc.operator]))
+			self.__resultVkeVarName = varName
+
+		return insns
+
+	def __loadFromTemp(self, insnClass):
+		opTrans = self.grid.compiler.opTrans
+		insns = []
+
+		# otherElem has already been compiled and the result has
+		# been stored in TEMP. Use the stored result.
+		assert(self.compileState != self.NOT_COMPILED)
+		varName = self.__resultVkeVarName
+		if not varName:
+			raise AwlSimError("FUP compiler: Result of a "
+				"compiled element has not been stored "
+				"to a TEMP variable.")
+		opDesc = opTrans.translateFromString("#" + varName)
+		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
+
+		return insns
+
 	def __compile_OPERAND_LOAD(self):
 		opTrans = self.grid.compiler.opTrans
 		insns = []
 
-		insnClass = self._insnClass
+		insnClass = self.__insnClass
 		if not insnClass:
 			# This shall never happen.
 			raise AwlSimError("FUP LOAD: Load without a "
@@ -212,15 +247,22 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			raise AwlSimError("FUP ASSIGN: Multiple outbound signals "
 				"connected to '%s'." % (
 				str(self)))
-		insns.extend(connsOut[0].elem.compile())
+		otherElem = connsOut[0].elem
+		if otherElem.compileState == self.NOT_COMPILED:
+			insns.extend(otherElem.compile())
+		else:
+			insns.extend(otherElem.__loadFromTemp(AwlInsn_U))
 
 		# Create the ASSIGN instruction.
 		opDesc = opTrans.translateFromString(self.content)
 		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
 
+		insns.extend(otherElem.__mayStoreToTemp())
+
 		# Compile additional assign operators.
 		# This is an optimization to avoid additional compilations
 		# of the whole tree. We just assign the VKE once again.
+		#FIXME this might lead to problems in evaluation order, if we have a branch with interleaved assigns and other elems.
 		for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
 			if otherElem.elemType == self.TYPE_OPERAND and\
 			   otherElem.subType == self.SUBTYPE_ASSIGN:
@@ -259,10 +301,10 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 					# The other element is a LOAD operand.
 					# Compile the boolean (load) instruction.
 					try:
-						otherElem._insnClass = insnClass
+						otherElem.__insnClass = insnClass
 						insns.extend(otherElem.compile())
 					finally:
-						otherElem._insnClass = None
+						otherElem.__insnClass = None
 				elif otherElem.elemType == self.TYPE_BOOLEAN:
 					# The other element we get the signal from
 					# is a boolean element. Compile this to get its
@@ -270,31 +312,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 					if otherElem.compileState == self.NOT_COMPILED:
 						insns.append(insnBranchClass(cpu=None))
 						insns.extend(otherElem.compile())
-						# Check if we need to save the result
-						# for other element inputs.
-						# This is the case, if we have more than one input connection
-						# to 'otherElem's output connection.
-						if any(len(tuple(c.getConnected(getInputs=True))) > 1
-						       for c in otherElem.outConnections):
-							# There are other in-connections connected
-							# to the "otherElem". Allocate a TEMP variable
-							# and store the result.
-							varName = self.grid.compiler.interf.allocTEMP("BOOL")
-							opDesc = opTrans.translateFromString("#" + varName)
-							insns.append(AwlInsn_ASSIGN(cpu=None,
-										    ops=[opDesc.operator]))
-							otherElem._resultVkeVarName = varName
+						# Store result to a TEMP variable, if required.
+						insns.extend(otherElem.__mayStoreToTemp())
 						insns.append(AwlInsn_BEND(cpu=None))
 					else:
-						# otherElem has already been compiled and the result has
-						# been stored in TEMP. Use the stored result.
-						varName = otherElem._resultVkeVarName
-						if not varName:
-							raise AwlSimError("FUP compiler: Result of a "
-								"compiled element has not been stored "
-								"to a TEMP variable.")
-						opDesc = opTrans.translateFromString("#" + varName)
-						insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
+						# Get the stored result from TEMP.
+						insns.extend(otherElem.__loadFromTemp(insnClass))
 				else:
 					raise AwlSimError("FUP compiler: Invalid "
 						"element '%s' connected to '%s'." % (
