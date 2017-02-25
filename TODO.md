@@ -26,7 +26,6 @@ GUI
 FBD / FUP
 ---------
 
-* Add feature: Autoconnect after placement of variable
 * Add feature: Automatically add # to interface variable names in operand
 * Add feature: Exchange elements
 * Add feature: Duplicate diagrams

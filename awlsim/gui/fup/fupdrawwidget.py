@@ -234,6 +234,7 @@ class FupDrawWidget(QWidget):
 			if self.__grid.placeElem(elem):
 				self.__grid.deselectAll()
 				self.__grid.selectElem(elem)
+				elem.establishAutoConns()
 				self.__contentChanged()
 				return True
 		return False
