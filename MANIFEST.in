@@ -28,3 +28,5 @@ include win-standalone-build.cmd
 
 prune ./build
 prune build
+
+global-exclude *.pyo *.pyc __pycache__ *$py.class

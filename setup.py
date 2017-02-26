@@ -19,6 +19,7 @@ try:
 except ImportError as e:
 	cx_Freeze = False
 
+sys.path.insert(0, "./maintenance")
 import setup_cython
 
 
