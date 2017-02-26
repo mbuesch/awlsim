@@ -2,7 +2,7 @@
 #
 # AWL simulator - Block interface table model
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.gui.interfedit.interfdef import *
 from awlsim.gui.util import *
 
 
@@ -157,69 +158,6 @@ class AwlInterfaceModel_factory(XmlFactory):
 				 ]),
 		]
 
-class AwlInterfFieldDef(object):
-	def __init__(self, name="", typeStr="", initValueStr="", comment=""):
-		self.name = name
-		self.typeStr = typeStr
-		self.initValueStr = initValueStr
-		self.comment = comment
-
-	def isValid(self):
-		return self.name and self.typeStr
-
-class AwlInterfDef(object):
-	def __init__(self):
-		self.clear()
-
-	def clear(self):
-		self.inFields = []
-		self.outFields = []
-		self.inOutFields = []
-		self.statFields = []
-		self.tempFields = []
-		self.retValField = None
-
-	def isEmpty(self):
-		retEmpty = not self.retValField or (
-			   self.retValField.typeStr.upper().strip() == "VOID" and\
-			   not self.retValField.initValueStr.strip() and\
-			   not self.retValField.comment.strip())
-		return not self.inFields and\
-		       not self.outFields and\
-		       not self.inOutFields and\
-		       not self.statFields and\
-		       not self.tempFields and\
-		       retEmpty
-
-	@property
-	def allFields(self):
-		for field in itertools.chain(self.inFields,
-					     self.outFields,
-					     self.inOutFields,
-					     self.statFields,
-					     self.tempFields,
-					     [self.retValField]):
-			if field:
-				yield field
-
-	def findByName(self, name, caseSensitive=False, strip=True):
-		"""Find a field by its name.
-		caseSensitive => Do a case sensitive match
-		strip => Strip the name and remove leading #
-		"""
-		if strip:
-			name = name.strip() # Strip leading and trailing white space
-			if name.startswith("#"):
-				name = name[1:] # Strip #-prefix
-		for field in self.allFields:
-			fieldName = field.name
-			if not caseSensitive:
-				fieldName = fieldName.upper()
-				name = name.upper()
-			if fieldName == name:
-				return field # Found it
-		return None
-
 class AbstractTableModel(QAbstractTableModel):
 	def __init__(self, *args, **kwargs):
 		self.__resetCount = 0
@@ -235,10 +173,12 @@ class AbstractTableModel(QAbstractTableModel):
 	def endResetModel(self):
 		self.__resetCount -= 1
 		if self.__resetCount <= 0:
-			self.__resetCount = 0
-			QAbstractTableModel.endResetModel(self)
+			try:
+				QAbstractTableModel.endResetModel(self)
+			finally:
+				self.__resetCount = 0
 
-class AwlInterfaceModel(QAbstractTableModel):
+class AwlInterfaceModel(AbstractTableModel):
 	factory = AwlInterfaceModel_factory
 
 	# Signal: Emitted, if some data in the model changed.
