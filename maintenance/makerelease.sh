@@ -30,6 +30,7 @@ hook_post_checkout()
 
 	info "Removing version control files"
 	default_hook_post_checkout "$@"
+	rm "$1"/maintenance/update-submodules
 
 	info "Checking signatures"
 	for f in "$1"/progs/putty/*/*.gpg; do
