@@ -5,6 +5,7 @@ graft debian
 graft doc
 graft examples
 graft libs
+graft maintenance
 graft pilc
 graft progs
 graft submodules

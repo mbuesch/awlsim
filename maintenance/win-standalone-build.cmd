@@ -4,9 +4,14 @@ setlocal ENABLEDELAYEDEXPANSION
 
 set PATH=%PATH%;C:\WINDOWS;C:\WINDOWS\SYSTEM32
 for /D %%f in ( "C:\PYTHON*" ) do set PATH=!PATH!;%%f
+for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set PATH=!PATH!;%%f;%%f\Scripts
 set PATH=%PATH%;%ProgramFiles%\7-Zip
 
+cd ..
+if ERRORLEVEL 1 goto error_basedir
+
 py -c "from awlsim.common.version import VERSION_STRING; print(VERSION_STRING)" > version.txt
+if ERRORLEVEL 1 goto error_version
 set /p version= < version.txt
 del version.txt
 
@@ -61,7 +66,6 @@ echo === Creating the cx_Freeze distribution
 call :prepare_env
 py setup.py build_exe ^
 	--build-exe=%bindir% ^
-	--optimize=2 ^
 	--excludes=%excludes% ^
 	--silent
 if ERRORLEVEL 1 goto error_exe
@@ -74,7 +78,6 @@ echo === Creating the py2exe distribution
 call :prepare_env
 py setup.py py2exe ^
 	--dist-dir=%bindir% ^
-	--optimize=2 ^
 	--bundle-files=3 ^
 	--ignores=win32api,win32con,readline,awlsim_cython ^
 	--excludes=%excludes% ^
@@ -147,6 +150,14 @@ if ERRORLEVEL 1 goto error_prep
 mkdir %bindir%
 if ERRORLEVEL 1 goto error_prep
 exit /B 0
+
+:error_basedir
+echo FAILED to CD to base directory
+goto error
+
+:error_version
+echo FAILED to detect awlsim version
+goto error
 
 :error_prep
 echo FAILED to prepare environment
