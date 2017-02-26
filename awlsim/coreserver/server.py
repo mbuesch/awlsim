@@ -603,14 +603,17 @@ class AwlSimServer(object):
 		self.__updateProjectFile()
 
 	def loadHardwareModule(self, hwmodDesc):
-		printInfo("Loading hardware module '%s'..." %\
-			  hwmodDesc.getModuleName())
+		hwmodName = hwmodDesc.getModuleName()
+		printInfo("Loading hardware module '%s'..." % hwmodName)
+
 		hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
 		self.__sim.registerHardwareClass(hwClass = hwClass,
 						 parameters = hwmodDesc.getParameters())
 
 		self.loadedHwModules.append(hwmodDesc)
 		self.__updateProjectFile()
+
+		printInfo("Hardware module '%s' loaded." % hwmodName)
 
 	def loadLibraryBlock(self, libSelection):
 		self.setRunState(self.STATE_STOP)
