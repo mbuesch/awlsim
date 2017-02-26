@@ -1,0 +1,11 @@
+AWL/STL source
+    filter remove_matches ^\s*//
+    extension awl
+    extension AWL
+    3rd_gen_scale 1.0
+
+Awlsim project
+    filter remove_matches ^$
+    extension awlpro
+    extension AWLPRO
+    3rd_gen_scale 1.0

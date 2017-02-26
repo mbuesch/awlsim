@@ -13,7 +13,7 @@ set -e
 cd "$basedir/.."
 
 cloc --exclude-dir="build,dist,.pybuild,release-archives,icons,__pycache__,submodules,awlsim_cython,pyprofibus,libpilc" \
-	--read-lang-def="${basedir}/cloc-lang-awl.txt" \
+	--read-lang-def="${basedir}/cloc-lang.txt" \
 	--exclude-lang='ASP.Net,IDL,D' \
 	--quiet --progress-rate=0 \
 	"$@"

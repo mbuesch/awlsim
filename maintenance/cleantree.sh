@@ -24,6 +24,8 @@ find . \( \
 rm -rf build dist release-archives .pybuild
 rm -f MANIFEST
 
+rm -f *.pdf *.html
+
 rm -f debian/files \
       debian/*.debhelper \
       debian/*.log \
