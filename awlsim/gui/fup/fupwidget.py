@@ -117,8 +117,10 @@ class FupEditWidgetMenu(QMenu):
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
-		self.addAction("Show AWL code (DE)...", self.showAwl)
-		self.addAction("Show STL code (EN)...", self.showStl)
+		self.addAction("Show AWL code (DE)...",
+			       lambda: self.showAwl.emit())
+		self.addAction("Show STL code (EN)...",
+			       lambda: self.showStl.emit())
 
 class FupEditWidget(QWidget):
 	def __init__(self, parent, interfWidget):
