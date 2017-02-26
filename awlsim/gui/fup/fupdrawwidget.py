@@ -143,8 +143,13 @@ class FupDrawWidget(QWidget):
 	# Signal: Something in the FUP diagram changed
 	diagramChanged = Signal()
 
-	def __init__(self, parent=None):
+	def __init__(self, parent, interfWidget):
+		"""parent => Parent QWidget().
+		interfWidget => AwlInterfWidget() instance
+		"""
 		QWidget.__init__(self, parent)
+
+		self.__interfWidget = interfWidget
 
 		self.__suppressMousePress = 0
 		self.__repaintBlocked = Blocker()
@@ -192,6 +197,12 @@ class FupDrawWidget(QWidget):
 
 		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
 		self.setMouseTracking(True)
+
+	@property
+	def interfDef(self):
+		"""Get the block interface definition (AwlInterfDef() instance).
+		"""
+		return self.__interfWidget.interfDef
 
 	def __handleGridResize(self, gridWidth, gridHeight):
 		self.resize(gridWidth * self.__cellWidth,

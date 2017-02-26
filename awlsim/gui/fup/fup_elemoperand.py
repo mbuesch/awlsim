@@ -170,6 +170,15 @@ class FupElem_OPERAND(FupElem):
 			QLineEdit.Normal,
 			self.contentText)
 		if ok:
+			# Try to find the field in the interface and use the
+			# actual interface field name. But only do this, if
+			# the name does not start with a space. This way the user
+			# can disable this automatic matching.
+			if not text.startswith(" "):
+				field = self.grid.interfDef.findByName(text)
+				if field:
+					# Found it. Use the actual name.
+					text = "#" + field.name
 			self.contentText = text
 			return True
 		return False

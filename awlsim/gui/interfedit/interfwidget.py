@@ -54,6 +54,12 @@ class AwlInterfWidget(QWidget):
 		self.blockTypeEdit.dbChanged.connect(self.__handleBlockDBChange)
 		self.interfView.model().contentChanged.connect(self.contentChanged)
 
+	@property
+	def interfDef(self):
+		"""Get the active AwlInterfDef().
+		"""
+		return self.interfView.model().interf
+
 	def __handleBlockTypeChange(self):
 		if self.__changeSignalBlocked:
 			return

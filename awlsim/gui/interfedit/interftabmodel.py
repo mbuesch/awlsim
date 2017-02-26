@@ -202,6 +202,24 @@ class AwlInterfDef(object):
 			if field:
 				yield field
 
+	def findByName(self, name, caseSensitive=False, strip=True):
+		"""Find a field by its name.
+		caseSensitive => Do a case sensitive match
+		strip => Strip the name and remove leading #
+		"""
+		if strip:
+			name = name.strip() # Strip leading and trailing white space
+			if name.startswith("#"):
+				name = name[1:] # Strip #-prefix
+		for field in self.allFields:
+			fieldName = field.name
+			if not caseSensitive:
+				fieldName = fieldName.upper()
+				name = name.upper()
+			if fieldName == name:
+				return field # Found it
+		return None
+
 class AbstractTableModel(QAbstractTableModel):
 	def __init__(self, *args, **kwargs):
 		self.__resetCount = 0

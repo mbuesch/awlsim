@@ -26,7 +26,6 @@ GUI
 FBD / FUP
 ---------
 
-* Add feature: Automatically add # to interface variable names in operand
 * Add feature: Exchange elements
 * Add feature: Duplicate diagrams
 * Add feature: Copy & paste elements

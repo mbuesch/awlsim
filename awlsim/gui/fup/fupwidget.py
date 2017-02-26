@@ -121,7 +121,7 @@ class FupEditWidgetMenu(QMenu):
 		self.addAction("Show STL code (EN)...", self.showStl)
 
 class FupEditWidget(QWidget):
-	def __init__(self, parent=None):
+	def __init__(self, parent, interfWidget):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
@@ -143,7 +143,7 @@ class FupEditWidget(QWidget):
 
 		self.__splitter.addWidget(self.__leftWidget)
 
-		self.draw = FupDrawWidget(self)
+		self.draw = FupDrawWidget(self, interfWidget)
 
 		self.__drawScroll = QScrollArea(self)
 		self.__drawScroll.setWidget(self.draw)
@@ -168,7 +168,7 @@ class FupWidget(QWidget):
 		self.interf = AwlInterfWidget(self)
 		self.splitter.addWidget(self.interf)
 
-		self.edit = FupEditWidget(self)
+		self.edit = FupEditWidget(self, self.interf)
 		self.splitter.addWidget(self.edit)
 
 		self.layout().addWidget(self.splitter, 0, 0)

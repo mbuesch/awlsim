@@ -127,6 +127,12 @@ class FupGrid(object):
 				return True
 		return False
 
+	@property
+	def interfDef(self):
+		"""Get the block interface definition (AwlInterfDef() instance).
+		"""
+		return self.__drawWidget.interfDef
+
 	def getUnusedWireIdNum(self):
 		"""Get an unused wire idNum.
 		"""
