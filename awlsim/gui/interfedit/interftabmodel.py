@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.core.datatypes import *
+
 from awlsim.gui.interfedit.interfdef import *
 from awlsim.gui.util import *
 
@@ -579,7 +581,18 @@ class AwlInterfaceModel(AbstractTableModel):
 			if self.__isColumn_name(column):
 				field.name = value.strip()
 			elif self.__isColumn_type(column):
-				field.typeStr = value.strip()
+				# Try to parse the type and use the actual type name
+				# But only do this, if the type does not start with
+				# a space. This way the user can disable
+				# this automatic matching.
+				if not value.startswith(" "):
+					try:
+						dataType = AwlDataType.makeByName(value.split())
+						if dataType:
+							value = str(dataType)
+					except AwlSimError as e:
+						pass
+				field.typeStr = value
 			elif self.__isColumn_initValue(column):
 				field.initValueStr = value
 			elif self.__isColumn_comment(column):
