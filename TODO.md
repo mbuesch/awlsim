@@ -27,6 +27,8 @@ FBD / FUP
 ---------
 
 * Fix evaluation order in case of multiple parallel assignments and other elements
+* Avoid overlaps when drawing wires
+* Add feature: Editor sidebar to drap & drop new elements
 * Add feature: Exchange elements
 * Add feature: Duplicate diagrams
 * Add feature: Copy & paste elements

@@ -129,15 +129,26 @@ class FupWire(FupBaseClass):
 
 	def draw(self, painter):
 		if self.outConn is None:
-			return
-		xAbs0, yAbs0 = self.outConn.pixCoords
+			return # Only inputs. Do not draw.
+
+		# Branch circles diameter
 		r, d = self.BRANCH_DIA // 2, self.BRANCH_DIA
 		painter.setBrush(self.__wireBranchBrush)
-		for conn in self.connections:
-			xAbs1, yAbs1 = conn.pixCoords
+
+		# Draw wire from output to all inputs
+		xAbs0, yAbs0 = self.outConn.pixCoords
+		for inConn in self.connections:
+			if inConn is self.outConn:
+				continue
+			assert(inConn.IN)
+
+			# Draw the wire from out to in
+			xAbs1, yAbs1 = inConn.pixCoords
 			painter.setPen(self.__wirePen)
 			painter.drawLine(xAbs0, yAbs0, xAbs0, yAbs1)
 			painter.drawLine(xAbs0, yAbs1, xAbs1, yAbs1)
+
+			# Draw the branch circles
 			painter.setPen(self.__wireBranchPen)
 			painter.drawEllipse(xAbs0 - r, yAbs0 - r, d, d)
 			painter.drawEllipse(xAbs1 - r, yAbs1 - r, d, d)
