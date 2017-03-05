@@ -120,18 +120,23 @@ class FupElem_BOOLEAN(FupElem):
 
 		# Draw inputs
 		for i, conn in enumerate(self.inputs):
+			x = conn.CONN_OFFS if conn.isConnected else 0
 			y = (i * cellHeight) + (cellHeight // 2)
-			painter.setPen(self._connPen if conn.wire
+			painter.setPen(self._connPen if conn.isConnected
 				       else self._connOpenPen)
-			painter.drawLine(0, y, xpad, y)
+			painter.drawLine(x, y, xpad, y)
 
 		# Draw output
-		y = elemHeight - (cellHeight // 2)
-		painter.setPen(self._connPen
-			       if len(self.outputs) and self.outputs[0].wire
-			       else self._connOpenPen)
-		painter.drawLine(cellWidth - xpad, y,
-				 cellWidth, y)
+		if self.outputs:
+			assert(len(self.outputs) == 1)
+			conn = self.outputs[0]
+			x = (cellWidth - conn.CONN_OFFS) if conn.isConnected\
+			    else cellWidth
+			y = elemHeight - (cellHeight // 2)
+			painter.setPen(self._connPen if conn.isConnected
+				       else self._connOpenPen)
+			painter.drawLine(cellWidth - xpad, y,
+					 cellWidth, y)
 
 		# Draw body
 		painter.setPen(self._outlineSelPen if self.selected

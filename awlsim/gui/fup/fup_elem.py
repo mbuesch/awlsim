@@ -335,11 +335,11 @@ class FupElem(FupBaseClass):
 			cellPixHeight = self.grid.cellPixHeight
 			cellPixWidth = self.grid.cellPixWidth
 			if conn.IN:
-				xPix = (x * cellPixWidth) + FupConn.CONN_OFFS
+				xPix = (x * cellPixWidth) + conn.CONN_OFFS
 				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
 				return xPix, yPix
 			elif conn.OUT:
-				xPix = (x * cellPixWidth) + cellPixWidth - FupConn.CONN_OFFS
+				xPix = (x * cellPixWidth) + cellPixWidth - conn.CONN_OFFS
 				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
 				return xPix, yPix
 		raise IndexError

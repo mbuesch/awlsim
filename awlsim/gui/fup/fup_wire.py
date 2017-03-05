@@ -137,6 +137,7 @@ class FupWire(FupBaseClass):
 
 		# Draw wire from output to all inputs
 		xAbs0, yAbs0 = self.outConn.pixCoords
+		cellPixWidth = self.grid.cellPixWidth
 		for inConn in self.connections:
 			if inConn is self.outConn:
 				continue
@@ -145,8 +146,10 @@ class FupWire(FupBaseClass):
 			# Draw the wire from out to in
 			xAbs1, yAbs1 = inConn.pixCoords
 			painter.setPen(self.__wirePen)
-			painter.drawLine(xAbs0, yAbs0, xAbs0, yAbs1)
-			painter.drawLine(xAbs0, yAbs1, xAbs1, yAbs1)
+			x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
+			painter.drawLine(x, yAbs0, x, yAbs0)
+			painter.drawLine(x, yAbs0, x, yAbs1)
+			painter.drawLine(x, yAbs1, xAbs1, yAbs1)
 
 			# Draw the branch circles
 			painter.setPen(self.__wireBranchPen)
