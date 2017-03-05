@@ -178,6 +178,17 @@ class FupGrid(object):
 		for i, wire in enumerate(self.wires):
 			wire.idNum = i
 
+	def drawWireLine(self, painter, x0, y0, x1, y1, force=False):
+		"""Draw a wire line on 'painter'.
+		x0, y0 => Start pixel coordinates.
+		x1, y1 => End pixel coordinates.
+		force => Draw, even if there are collisions.
+		Returns True, if there were no collisions.
+		"""
+		#TODO
+		painter.drawLine(x0, y0, x1, y1)
+		return True
+
 	@property
 	def cellPixWidth(self):
 		if self.__drawWidget:

@@ -130,6 +130,7 @@ class FupWire(FupBaseClass):
 	def draw(self, painter):
 		if self.outConn is None:
 			return # Only inputs. Do not draw.
+		grid = self.grid
 
 		# Branch circles diameter
 		r, d = self.BRANCH_DIA // 2, self.BRANCH_DIA
@@ -147,9 +148,9 @@ class FupWire(FupBaseClass):
 			xAbs1, yAbs1 = inConn.pixCoords
 			painter.setPen(self.__wirePen)
 			x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
-			painter.drawLine(x, yAbs0, x, yAbs0)
-			painter.drawLine(x, yAbs0, x, yAbs1)
-			painter.drawLine(x, yAbs1, xAbs1, yAbs1)
+			grid.drawWireLine(painter, xAbs0, yAbs0, x, yAbs0, force=True)
+			grid.drawWireLine(painter, x, yAbs0, x, yAbs1)
+			grid.drawWireLine(painter, x, yAbs1, xAbs1, yAbs1, force=True)
 
 			# Draw the branch circles
 			painter.setPen(self.__wireBranchPen)
