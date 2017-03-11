@@ -156,6 +156,18 @@ have_prog()
 	which "$program" >/dev/null 2>&1
 }
 
+# $1=executable_name
+find_executable()
+{
+	local executable_name="$1"
+
+	local executable_path="$(which "$executable_name")"
+	[ -n "$executable_path" ] ||\
+		die "$executable_name executable not found."\
+		    "Please install $executable_name."
+	RET="$executable_path"
+}
+
 # Check DOS file encoding.
 # $1=file
 check_dos_text_encoding()
@@ -185,20 +197,25 @@ setup_test_environment()
 			export PYTHONPATH="$i"
 			break
 		done
+		# Enforce cython module usage
 		export AWLSIM_CYTHON=2
+		# The actual interpreter is Python
 		local interpreter=python2
 	elif [ "$interpreter" = "cython3" ]; then
 		for i in "$rootdir"/build/lib.linux-*-3.*; do
 			export PYTHONPATH="$i"
 			break
 		done
+		# Enforce cython module usage
 		export AWLSIM_CYTHON=2
+		# The actual interpreter is Python
 		local interpreter=python3
 	else
 		export PYTHONPATH=
 		export AWLSIM_CYTHON=
 	fi
 
+	# Get extra PYTHONPATH from test case config file.
 	local conf_pythonpath=
 	if [ -n "$tested_file" ]; then
 		local conf_pythonpath="$(get_conf "$awl" PYTHONPATH)"
@@ -206,6 +223,7 @@ setup_test_environment()
 			local conf_pythonpath="$(readlink -m "$rootdir/$conf_pythonpath")"
 	fi
 
+	# Export PYTHONPATHs
 	export PYTHONPATH="$PYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 	export JYTHONPATH="$JYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 	export IRONPYTHONPATH="$IRONPYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
@@ -317,6 +335,58 @@ run_sh_test()
 	fi
 }
 
+# $1=interpreter $2=test_file
+run_nose_test()
+{
+	local interpreter="$1"
+	local test_case="$2"
+	shift; shift
+
+	[ -z "$test_case" ] &&\
+		die "Nose test case is missing"
+	[ -d "$test_case" ] &&\
+		die "Nose test case '$test_case' must not be a directory"
+	[ -x "$test_case" ] &&\
+		die "Nose test case '$test_case' must NOT be executable"
+
+	# Select nosetests or nosetests3
+	local interp_ver="$(get_interpreter_version "$interpreter")"
+	local interp_major="$(echo "$interp_ver" | cut -d' ' -f 1)"
+	if [ "$interp_major" = "2" ]; then
+		local nose="$nosetests"
+	else
+		local nose="$nosetests3"
+	fi
+
+	# Resolve relative path
+	[ "$(echo "$test_case" | cut -c1)" = '/' ] ||\
+		local test_case="$(pwd)/$test_case"
+
+	# Add nose libraries to pypy environment
+	if [ "$(basename "$interpreter")" = "pypy" ]; then
+		local p='import sys; print(":".join(p for p in sys.path if p.startswith("/usr/")))'
+		EXTRA_PYTHONPATH="$("$interpreter" -c "$p"):$(python2 -c "$p"):$EXTRA_PYTHONPATH"
+	fi
+	# Add awlsim_tstlib.py to PYTHONPATH
+	EXTRA_PYTHONPATH="$rootdir/tests:$EXTRA_PYTHONPATH"
+
+	# Setup python environment
+	setup_test_environment "$interpreter" "$test_case"
+	local interpreter="$RET"
+
+	# Run the nose test case
+	cd "$rootdir" || die "Failed to cd to rootdir."
+	"$interpreter" "$nose" --no-byte-compile "$test_case" ||\
+		die "Nose test case '$(basename "$test_case")' failed."
+
+	if is_parallel_run; then
+		echo "[$(basename "$test_case"): OK]"
+	else
+		echo "[nose OK]"
+	fi
+	cleanup_test_environment
+}
+
 # $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-test or testfile)
 __run_test()
 {
@@ -344,6 +414,8 @@ __run_test()
 		run_awl_test "$interpreter" "$testfile" "$@"
 	elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
 		run_sh_test "$interpreter" "$testfile" "$@"
+	elif [ "$(echo -n "$testfile" | tail -c3)" = ".py" ]; then
+		run_nose_test "$interpreter" "$testfile" "$@"
 	else
 		die "Test file type of '$testfile' not recognized"
 	fi
@@ -405,6 +477,13 @@ run_test_directory()
 		run_test "$interpreter" "$entry"
 		check_job_failure && return
 	done
+	# run nose tests
+	for entry in "$directory"/*; do
+		[ -d "$entry" ] && continue
+		[ "$(echo -n "$entry" | tail -c3)" = ".py" ] || continue
+		run_test "$interpreter" "$entry"
+		check_job_failure && return
+	done
 	# Recurse into subdirectories
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] || continue
@@ -462,6 +541,11 @@ do_tests()
 	else
 		local all_interp="python2 python3"
 	fi
+
+	find_executable nosetests
+	local nosetests="$RET"
+	find_executable nosetests3
+	local nosetests3="$RET"
 
 	local cython2_build_pid=
 	local cython3_build_pid=
