@@ -396,6 +396,8 @@ __run_test()
 
 	# Don't run ourself
 	[ "$(basename "$testfile")" = "run.sh" ] && return
+	# Don't run the test helper library
+	[ "$(basename "$testfile")" = "awlsim_tstlib.py" ] && return
 
 	if is_parallel_run; then
 		local nl=
