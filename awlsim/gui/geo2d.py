@@ -26,14 +26,15 @@ from awlsim.common.compat import *
 class Base2D(object):
 	EPSILON = 0.000001
 
-	def __hash__(self):
-		return id(self)
+	__slots__ = ()
 
 	def __eq__(self, other):
 		return self is other
 
 	def __ne__(self, other):
 		return not self.__eq__(other)
+
+	__hash__ = None
 
 class Point2D(Base2D):
 	"""2D point.
@@ -118,6 +119,10 @@ class LineSeg2D(Base2D):
 	"""
 
 	__slots__ = ( "pointA", "pointB", )
+
+	@classmethod
+	def fromCoords(cls, x0, y0, x1, y1):
+		return cls(Point2D(x0, y0), Point2D(x1, y1))
 
 	def __init__(self, pointA, pointB):
 		self.pointA = pointA

@@ -29,6 +29,17 @@ class Test_LineSeg2D(object):
 		assert_ne(v, Vect2D(42, 42))
 		assert_ne(v, Vect2D(-42, -42))
 
+	def test_lineseg(self):
+		s = LineSeg2D.fromCoords(1, 2, 3, 4)
+		assert_eq(s.pointA, Point2D(1, 2))
+		assert_eq(s.pointB, Point2D(3, 4))
+
+		assert_eq(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, 2, 3, 4))
+		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(-1, 2, 3, 4))
+		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, -2, 3, 4))
+		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, 2, -3, 4))
+		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, 2, 3, -4))
+
 	def test_intersection_base(self):
 		inter = Inter2D()
 		assert_eq(inter, Inter2D())
