@@ -36,6 +36,11 @@ class Base2D(object):
 
 	__hash__ = None
 
+	def __bool__(self):
+		return True
+
+	__nonzero__ = __bool__ # Python 2 compat
+
 class Point2D(Base2D):
 	"""2D point.
 	"""
@@ -49,6 +54,9 @@ class Point2D(Base2D):
 	def __eq__(self, other):
 		return other is not None and\
 		       self.x == other.x and self.y == other.y
+
+	def __bool__(self):
+		return bool(self.x or self.y)
 
 	def __repr__(self):
 		return "Point2D(x=%f, y=%f)" % (self.x, self.y)
@@ -66,6 +74,9 @@ class Vect2D(Base2D):
 	def __eq__(self, other):
 		return other is not None and\
 		       self.x == other.x and self.y == other.y
+
+	def __bool__(self):
+		return bool(self.x or self.y)
 
 	def __repr__(self):
 		return "Vect2D(x=%f, y=%f)" % (self.x, self.y)
@@ -91,6 +102,9 @@ class Inter2D(Base2D):
 		       self.point == other.point and\
 		       self.vect == other.vect and\
 		       self.__intersects == other.__intersects
+
+	def __bool__(self):
+		return self.intersects
 
 	@property
 	def intersects(self):
@@ -132,6 +146,11 @@ class LineSeg2D(Base2D):
 		return other is not None and\
 		       self.pointA == other.pointA and\
 		       self.pointB == other.pointB
+
+	def __bool__(self):
+		"""Returns True, if the segment is of non-zero length.
+		"""
+		return bool(self.vect)
 
 	@property
 	def isHorizontal(self):
