@@ -156,6 +156,14 @@ class Test_LineSeg2D(object):
 		assert_eq(inter.vect, Vect2D())
 		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 5), Point2D(4, 5)))
 
+		# AB vertical, CD horizontal, not intersecting
+		inter = LineSeg2D(Point2D(x=180, y=130), Point2D(x=180, y=110)).intersection(
+			LineSeg2D(Point2D(x=236, y=110), Point2D(x=240, y=110)))
+		assert_is(inter.intersects, False)
+		assert_eq(inter.point, Point2D(180, 110))
+		assert_eq(inter.vect, Vect2D())
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(180, 110), Point2D(180, 110)))
+
 		# AB horizontal, CD vertical, not intersecting
 		inter = LineSeg2D(Point2D(9, 5), Point2D(4, 5)).intersection(
 			LineSeg2D(Point2D(8, 6), Point2D(8, 11)))

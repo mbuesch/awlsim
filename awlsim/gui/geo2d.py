@@ -227,8 +227,8 @@ class LineSeg2D(Base2D):
 		x = self.pointA.x
 		y = (x - other.pointA.x) * other.slope + other.pointA.y
 		return Inter2D(point=Point2D(x, y),
-			       intersects=self.__inRect(
-					x, y, self.pointA, self.pointB))
+			       intersects=self.__inRect(x, y, self.pointA, self.pointB) and\
+					  self.__inRect(x, y, other.pointA, other.pointB))
 
 	def intersection(self, other):
 		"""Get the intersection of this line segment
@@ -266,8 +266,8 @@ class LineSeg2D(Base2D):
 					return self.__intersectionAligned(other)
 				return Inter2D()
 			return Inter2D(point=Point2D(x, y),
-				       intersects=self.__inRect(
-						x, y, self.pointA, self.pointB))
+				       intersects=self.__inRect(x, y, self.pointA, self.pointB) and\
+						  self.__inRect(x, y, other.pointA, other.pointB))
 		except ZeroDivisionError:
 			pass
 		return Inter2D()
