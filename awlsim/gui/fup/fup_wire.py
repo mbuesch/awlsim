@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Wire classes
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.gui.geo2d import *
 from awlsim.gui.util import *
 from awlsim.gui.fup.fup_base import *
 
@@ -85,6 +86,8 @@ class FupWire(FupBaseClass):
 
 		self.__wirePen = QPen(QColor("#000000"))
 		self.__wirePen.setWidth(2)
+		self.__wireCollidingPen = QPen(QColor("#000000"))
+		self.__wireCollidingPen.setWidth(2)
 		self.__wireBranchPen = QPen(QColor("#000000"))
 		self.__wireBranchPen.setWidth(1)
 		self.__wireBranchBrush = QBrush(QColor("#000000"))
@@ -145,12 +148,24 @@ class FupWire(FupBaseClass):
 			assert(inConn.IN)
 
 			# Draw the wire from out to in
+
 			xAbs1, yAbs1 = inConn.pixCoords
 			painter.setPen(self.__wirePen)
 			x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
-			grid.drawWireLine(painter, xAbs0, yAbs0, x, yAbs0, force=True)
-			grid.drawWireLine(painter, x, yAbs0, x, yAbs1)
-			grid.drawWireLine(painter, x, yAbs1, xAbs1, yAbs1, force=True)
+
+			seg0 = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
+			seg1 = LineSeg2D.fromCoords(x, yAbs0, x, yAbs1)
+			seg2 = LineSeg2D.fromCoords(x, yAbs1, xAbs1, yAbs1)
+			segDirect = LineSeg2D.fromCoords(x, yAbs0, xAbs1, yAbs1)
+
+			grid.drawWireLine(painter, self, seg0)
+			if not grid.checkWireLine(painter, {self}, seg1) and\
+			   not grid.checkWireLine(painter, {self}, seg2):
+				grid.drawWireLine(painter, self, seg1)
+				grid.drawWireLine(painter, self, seg2)
+			else:
+				painter.setPen(self.__wireCollidingPen)
+				grid.drawWireLine(painter, self, segDirect)
 
 			# Draw the branch circles
 			painter.setPen(self.__wireBranchPen)

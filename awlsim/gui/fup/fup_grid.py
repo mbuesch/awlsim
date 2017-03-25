@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Grid classes
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.gui.geo2d import *
 from awlsim.gui.fup.fup_base import *
 from awlsim.gui.fup.fup_wire import *
 from awlsim.gui.fup.fup_elem import *
@@ -80,7 +81,8 @@ class FupGrid_factory(XmlFactory):
 		]
 
 class FupGrid(object):
-	"""FUP/FBD element grid"""
+	"""FUP/FBD element grid.
+	"""
 
 	factory = FupGrid_factory
 
@@ -88,7 +90,31 @@ class FupGrid(object):
 	# If this is a callable, it it called with (width, height) on resize events.
 	resizeEvent = None
 
+	class Line(object):
+		"""Inter-element line descriptor.
+		This is used for describing drawn wires.
+		"""
+
+		# Inter2D() line intersection object, if any.
+		inter = None
+
+		def __init__(self, wire, lineSeg):
+			"""wire => FupWire() that belongs to this line.
+			lineSeg => LineSeg2D() line segment information.
+			"""
+			self.wire = wire
+			self.lineSeg = lineSeg
+
+		def dup(self):
+			"""Make a shallow copy of this Line.
+			"""
+			return self.__class__(self.wire, self.lineSeg)
+
 	def __init__(self, drawWidget, width, height):
+		"""drawWidget => FupDrawWidget() instance.
+		width => The grid width.
+		height => The grid height.
+		"""
 		self.__drawWidget = drawWidget
 		self.width = width
 		self.height = height
@@ -102,12 +128,21 @@ class FupGrid(object):
 		self.clickedConn = None		# The recently clicked connection in this grid
 		self.clickedArea = None		# The recently clicked area in this grid
 
+		self.clearLineCache()
+
 	def clear(self):
 		for wire in self.wires:
 			wire.disconnectAll()
 		self.wires.clear()
 		self.elems = []
 		self.selectedElems.clear()
+		self.clearLineCache()
+
+	def clearLineCache(self):
+		"""Clear the cache of drawn inter-element lines.
+		"""
+		# __lines is a list of Line() instances.
+		self.__lines = []
 
 	def resize(self, width, height):
 		"""Resize the grid.
@@ -152,6 +187,9 @@ class FupGrid(object):
 		"""
 		with contextlib.suppress(KeyError):
 			self.wires.remove(wire)
+		# Remove Line()s that belong to 'wire'.
+		self.__lines = [ line for line in self.__lines
+				 if line.wire is not wire ]
 
 	def getWireById(self, wireIdNum):
 		"""Get a wire by its idNum.
@@ -178,16 +216,37 @@ class FupGrid(object):
 		for i, wire in enumerate(self.wires):
 			wire.idNum = i
 
-	def drawWireLine(self, painter, x0, y0, x1, y1, force=False):
-		"""Draw a wire line on 'painter'.
-		x0, y0 => Start pixel coordinates.
-		x1, y1 => End pixel coordinates.
-		force => Draw, even if there are collisions.
-		Returns True, if there were no collisions.
+	def checkWireLine(self, painter, excludeWires, lineSeg):
+		"""Checks if a wire line would be drawable and does not collide
+		with another wire line.
+		excludeWires => Iterable if FupWire()s to exclude from the check.
+		lineSeg => The LineSeg2D() that should be drawn.
+		Returns a list of colliding self.Line() instances.
 		"""
-		#TODO
-		painter.drawLine(x0, y0, x1, y1)
-		return True
+		collisions = []
+		for line in self.__lines:
+			if line.wire in excludeWires:
+				continue
+			inter = lineSeg.intersection(line.lineSeg)
+			if not inter:
+				continue
+			# We have a collision.
+			# Make a shallow copy of Line and add the Inter2D.
+			line = line.dup()
+			line.inter = inter
+			collisions.append(line)
+		return collisions
+
+	def drawWireLine(self, painter, wire, lineSeg):
+		"""Draw a wire line on 'painter'.
+		wire => The FupWire() this line segment belongs to.
+		lineSeg => The LineSeg2D() that describes the line to draw.
+		"""
+		if not lineSeg:
+			return # Zero length line
+		painter.drawLine(lineSeg.pointA.x, lineSeg.pointA.y,
+				 lineSeg.pointB.x, lineSeg.pointB.y)
+		self.__lines.append(self.Line(wire, lineSeg))
 
 	@property
 	def cellPixWidth(self):
