@@ -86,7 +86,7 @@ class FupWire(FupBaseClass):
 
 		self.__wirePen = QPen(QColor("#000000"))
 		self.__wirePen.setWidth(2)
-		self.__wireCollidingPen = QPen(QColor("#000000"))
+		self.__wireCollidingPen = QPen(QColor("#C02020"))
 		self.__wireCollidingPen.setWidth(2)
 		self.__wireBranchPen = QPen(QColor("#000000"))
 		self.__wireBranchPen.setWidth(1)
@@ -130,16 +130,24 @@ class FupWire(FupBaseClass):
 		if not self.connections and not self.outConn:
 			self.grid.removeWire(self)
 
+	class DrawInfo(object):
+		__slots__ = ("segStart", "segments", "segDirect")
+		def __init__(self, segStart, segments, segDirect):
+			self.segStart = segStart
+			self.segments = segments
+			self.segDirect = segDirect
+
 	def draw(self, painter):
 		if self.outConn is None:
 			return # Only inputs. Do not draw.
 		grid = self.grid
 
 		# Branch circles diameter
-		r, d = self.BRANCH_DIA // 2, self.BRANCH_DIA
+		branchR, branchD = self.BRANCH_DIA // 2, self.BRANCH_DIA
 		painter.setBrush(self.__wireBranchBrush)
 
-		# Draw wire from output to all inputs
+		# Calculate the coordinates of all wire lines.
+		wireLines = [] # List of DrawInfo()s
 		xAbs0, yAbs0 = self.outConn.pixCoords
 		cellPixWidth = self.grid.cellPixWidth
 		for inConn in self.connections:
@@ -147,27 +155,47 @@ class FupWire(FupBaseClass):
 				continue
 			assert(inConn.IN)
 
-			# Draw the wire from out to in
+			# Construct line segments to draw the wire from out to in.
 
 			xAbs1, yAbs1 = inConn.pixCoords
-			painter.setPen(self.__wirePen)
 			x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
 
-			seg0 = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
-			seg1 = LineSeg2D.fromCoords(x, yAbs0, x, yAbs1)
-			seg2 = LineSeg2D.fromCoords(x, yAbs1, xAbs1, yAbs1)
+			segStart = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
+			seg0 = LineSeg2D.fromCoords(x, yAbs0, x, yAbs1)
+			seg1 = LineSeg2D.fromCoords(x, yAbs1, xAbs1, yAbs1)
 			segDirect = LineSeg2D.fromCoords(x, yAbs0, xAbs1, yAbs1)
 
-			grid.drawWireLine(painter, self, seg0)
-			if not grid.checkWireLine(painter, {self}, seg1) and\
-			   not grid.checkWireLine(painter, {self}, seg2):
-				grid.drawWireLine(painter, self, seg1)
-				grid.drawWireLine(painter, self, seg2)
-			else:
-				painter.setPen(self.__wireCollidingPen)
-				grid.drawWireLine(painter, self, segDirect)
+			wireLines.append(self.DrawInfo(segStart,
+						       (seg0, seg1),
+						       segDirect))
 
-			# Draw the branch circles
+		def drawBranch(x, y):
 			painter.setPen(self.__wireBranchPen)
-			painter.drawEllipse(xAbs0 - r, yAbs0 - r, d, d)
-			painter.drawEllipse(xAbs1 - r, yAbs1 - r, d, d)
+			painter.drawEllipse(x - branchR, y - branchR,
+					    branchD, branchD)
+
+		def drawSeg(seg, handleBranches=True, pen=self.__wirePen):
+			painter.setPen(pen)
+			grid.drawWireLine(painter, self, seg)
+			if not handleBranches:
+				return
+			for otherDrawInfo in wireLines:
+				if drawInfo is otherDrawInfo:
+					continue
+				for otherSeg in otherDrawInfo.segments:
+					inter = seg.intersection(otherSeg)
+					if not inter.intersects:
+						continue
+					drawBranch(inter.pointA.x, inter.pointA.y)
+					drawBranch(inter.pointB.x, inter.pointB.y)
+
+		# Draw wire from output to all inputs
+		for drawInfo in wireLines:
+			drawSeg(drawInfo.segStart, handleBranches=False)
+			if all(not grid.checkWireLine(painter, {self}, seg)
+			       for seg in drawInfo.segments):
+				for seg in drawInfo.segments:
+					drawSeg(seg)
+			else:
+				drawSeg(drawInfo.segDirect, handleBranches=False,
+					pen=self.__wireCollidingPen)
