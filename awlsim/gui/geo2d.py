@@ -119,9 +119,24 @@ class Inter2D(Base2D):
 		Returns None, if self.point is None.
 		"""
 		if self.point:
-			return LineSeg2D(self.point,
-					 Point2D(self.point.x + self.vect.x,
-						 self.point.y + self.vect.y))
+			return LineSeg2D(self.pointA, self.pointB)
+		return None
+
+	@property
+	def pointA(self):
+		"""Get the starting point of the intersection.
+		Returns None, if there is no starting point.
+		"""
+		return self.point
+
+	@property
+	def pointB(self):
+		"""Get the end point of the intersection.
+		Returns None, if there is no end point.
+		"""
+		if self.point:
+			return Point2D(self.point.x + self.vect.x,
+				       self.point.y + self.vect.y)
 		return None
 
 	def __repr__(self):
