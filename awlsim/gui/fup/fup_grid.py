@@ -221,9 +221,9 @@ class FupGrid(object):
 		with another wire line.
 		excludeWires => Iterable if FupWire()s to exclude from the check.
 		lineSeg => The LineSeg2D() that should be drawn.
-		Returns a list of colliding self.Line() instances.
+		Returns a set of colliding self.Line() instances.
 		"""
-		collisions = []
+		collisions = set()
 		for line in self.__lines:
 			if line.wire in excludeWires:
 				continue
@@ -234,7 +234,7 @@ class FupGrid(object):
 			# Make a shallow copy of Line and add the Inter2D.
 			line = line.dup()
 			line.inter = inter
-			collisions.append(line)
+			collisions.add(line)
 		return collisions
 
 	def drawWireLine(self, painter, wire, lineSeg):
