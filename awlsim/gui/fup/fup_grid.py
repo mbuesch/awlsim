@@ -244,8 +244,8 @@ class FupGrid(object):
 		"""
 		if not lineSeg:
 			return # Zero length line
-		painter.drawLine(lineSeg.pointA.x, lineSeg.pointA.y,
-				 lineSeg.pointB.x, lineSeg.pointB.y)
+		painter.drawLine(lineSeg.pointA.xInt, lineSeg.pointA.yInt,
+				 lineSeg.pointB.xInt, lineSeg.pointB.yInt)
 		self.__lines.append(self.Line(wire, lineSeg))
 
 	@property
