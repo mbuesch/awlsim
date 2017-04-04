@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim_loader.common import *
+
 
 class Base2D(object):
 	EPSILON = 0.000001
@@ -41,8 +43,8 @@ class Base2D(object):
 
 	__nonzero__ = __bool__ # Python 2 compat
 
-class Point2D(Base2D):
-	"""2D point.
+class BaseXY2D(Base2D):
+	"""2D X/Y base object
 	"""
 
 	__slots__ = ( "x", "y", )
@@ -51,32 +53,36 @@ class Point2D(Base2D):
 		self.x = x
 		self.y = y
 
+	@property
+	def xInt(self):
+		if isInteger(self.x):
+			return self.x
+		return int(round(self.x))
+
+	@property
+	def yInt(self):
+		if isInteger(self.y):
+			return self.y
+		return int(round(self.y))
+
 	def __eq__(self, other):
-		return other is not None and\
-		       self.x == other.x and self.y == other.y
+		return self is other or\
+		       (other is not None and\
+		        self.x == other.x and self.y == other.y)
 
 	def __bool__(self):
 		return bool(self.x or self.y)
+
+class Point2D(BaseXY2D):
+	"""2D point.
+	"""
 
 	def __repr__(self):
 		return "Point2D(x=%f, y=%f)" % (self.x, self.y)
 
-class Vect2D(Base2D):
+class Vect2D(BaseXY2D):
 	"""2D vector.
 	"""
-
-	__slots__ = ( "x", "y", )
-
-	def __init__(self, x=0, y=0):
-		self.x = x
-		self.y = y
-
-	def __eq__(self, other):
-		return other is not None and\
-		       self.x == other.x and self.y == other.y
-
-	def __bool__(self):
-		return bool(self.x or self.y)
 
 	def __repr__(self):
 		return "Vect2D(x=%f, y=%f)" % (self.x, self.y)
@@ -98,10 +104,11 @@ class Inter2D(Base2D):
 		self.__intersects = intersects
 
 	def __eq__(self, other):
-		return other is not None and\
-		       self.point == other.point and\
-		       self.vect == other.vect and\
-		       self.__intersects == other.__intersects
+		return self is other or\
+		       (other is not None and\
+		        self.point == other.point and\
+		        self.vect == other.vect and\
+		        self.__intersects == other.__intersects)
 
 	def __bool__(self):
 		return self.intersects
@@ -118,9 +125,9 @@ class Inter2D(Base2D):
 		"""Get the line segment of the intersection.
 		Returns None, if self.point is None.
 		"""
-		if self.point:
-			return LineSeg2D(self.pointA, self.pointB)
-		return None
+		if self.point is None:
+			return None
+		return LineSeg2D(self.pointA, self.pointB)
 
 	@property
 	def pointA(self):
@@ -134,10 +141,10 @@ class Inter2D(Base2D):
 		"""Get the end point of the intersection.
 		Returns None, if there is no end point.
 		"""
-		if self.point:
-			return Point2D(self.point.x + self.vect.x,
-				       self.point.y + self.vect.y)
-		return None
+		if self.point is None:
+			return None
+		return Point2D(self.point.x + self.vect.x,
+			       self.point.y + self.vect.y)
 
 	def __repr__(self):
 		return "Inter2D(point=%s, vect=%s, intersects=%s)" % (
@@ -158,9 +165,10 @@ class LineSeg2D(Base2D):
 		self.pointB = pointB
 
 	def __eq__(self, other):
-		return other is not None and\
-		       self.pointA == other.pointA and\
-		       self.pointB == other.pointB
+		return self is other or\
+		       (other is not None and\
+		        self.pointA == other.pointA and\
+		        self.pointB == other.pointB)
 
 	def __bool__(self):
 		"""Returns True, if the segment is of non-zero length.
@@ -218,20 +226,34 @@ class LineSeg2D(Base2D):
 		'self' and 'other' must be aligned in order for this to
 		return correct results.
 		"""
-		for interPoint in (other.pointA, other.pointB):
-			x, y = interPoint.x, interPoint.y
-			if self.__inRect(x, y, self.pointA, self.pointB):
-				if self.__inRect(self.pointA.x, self.pointA.y,
-						 other.pointA, other.pointB):
-					vect = Vect2D(self.pointA.x - x,
-						      self.pointA.y - y)
-				else:
-					vect = Vect2D(self.pointB.x - x,
-						      self.pointB.y - y)
-				return Inter2D(point=Point2D(x, y),
-					       vect=vect,
-					       intersects=True)
-		return Inter2D()
+
+		def find(selfPointA, selfPointB, otherPointA, otherPointB):
+			for interA in (selfPointA, selfPointB):
+				if not self.__inRect(interA.x, interA.y,
+						     otherPointA, otherPointB):
+					continue
+				for interB in (otherPointA, otherPointB,
+					       selfPointA, selfPointB):
+					if interA == interB:
+						continue
+					if not self.__inRect(interB.x, interB.y,
+							     selfPointA, selfPointB):
+						continue
+					return Inter2D(point=Point2D(interA.x, interA.y),
+						       vect=Vect2D(interB.x - interA.x,
+								   interB.y - interA.y),
+						       intersects=True)
+			return None
+
+		inter = find(self.pointA, self.pointB,
+			     other.pointA, other.pointB)
+		if inter is None:
+			# Swap self and other
+			inter = find(other.pointA, other.pointB,
+				     self.pointA, self.pointB)
+		if inter is None:
+			return Inter2D()
+		return inter
 
 	def __intersectionVertical(self, other):
 		"""Get the intersection of a vertical line segment 'self'
