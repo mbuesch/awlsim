@@ -237,12 +237,16 @@ class LineSeg2D(Base2D):
 					if interA == interB:
 						continue
 					if not self.__inRect(interB.x, interB.y,
-							     selfPointA, selfPointB):
+							     selfPointA, selfPointB) or\
+					   not self.__inRect(interB.x, interB.y,
+							     otherPointA, otherPointB):
 						continue
 					return Inter2D(point=Point2D(interA.x, interA.y),
 						       vect=Vect2D(interB.x - interA.x,
 								   interB.y - interA.y),
 						       intersects=True)
+				return Inter2D(point=Point2D(interA.x, interA.y),
+					       intersects=True)
 			return None
 
 		inter = find(self.pointA, self.pointB,

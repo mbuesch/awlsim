@@ -204,6 +204,70 @@ class Test_LineSeg2D(object):
 		assert_eq(inter.vect, Vect2D(0, -4))
 		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 7), Point2D(4, 3)))
 
+		# parallel, vertical, pointy intersection
+		inter = LineSeg2D(Point2D(4, 1), Point2D(4, 5)).intersection(
+			LineSeg2D(Point2D(4, 5), Point2D(4, 7)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 5))
+		assert_eq(inter.vect, Vect2D(0, 0))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 5), Point2D(4, 5)))
+
+		# parallel, vertical, pointy intersection
+		inter = LineSeg2D(Point2D(4, 5), Point2D(4, 1)).intersection(
+			LineSeg2D(Point2D(4, 5), Point2D(4, 7)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 5))
+		assert_eq(inter.vect, Vect2D(0, 0))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 5), Point2D(4, 5)))
+
+		# parallel, vertical, pointy intersection
+		inter = LineSeg2D(Point2D(4, 5), Point2D(4, 1)).intersection(
+			LineSeg2D(Point2D(4, 7), Point2D(4, 5)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 5))
+		assert_eq(inter.vect, Vect2D(0, 0))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 5), Point2D(4, 5)))
+
+		# parallel, vertical, pointy intersection
+		inter = LineSeg2D(Point2D(4, 1), Point2D(4, 5)).intersection(
+			LineSeg2D(Point2D(4, 7), Point2D(4, 5)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 5))
+		assert_eq(inter.vect, Vect2D(0, 0))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 5), Point2D(4, 5)))
+
+		# parallel, vertical, full intersection
+		inter = LineSeg2D(Point2D(4, 1), Point2D(4, 7)).intersection(
+			LineSeg2D(Point2D(4, 1), Point2D(4, 7)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 1))
+		assert_eq(inter.vect, Vect2D(0, 6))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 1), Point2D(4, 7)))
+
+		# parallel, vertical, full intersection
+		inter = LineSeg2D(Point2D(4, 7), Point2D(4, 1)).intersection(
+			LineSeg2D(Point2D(4, 7), Point2D(4, 1)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 7))
+		assert_eq(inter.vect, Vect2D(0, -6))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 7), Point2D(4, 1)))
+
+		# parallel, vertical, full intersection
+		inter = LineSeg2D(Point2D(4, 1), Point2D(4, 7)).intersection(
+			LineSeg2D(Point2D(4, 7), Point2D(4, 1)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 1))
+		assert_eq(inter.vect, Vect2D(0, 6))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 1), Point2D(4, 7)))
+
+		# parallel, vertical, full intersection
+		inter = LineSeg2D(Point2D(4, 7), Point2D(4, 1)).intersection(
+			LineSeg2D(Point2D(4, 1), Point2D(4, 7)))
+		assert_is(inter.intersects, True)
+		assert_eq(inter.point, Point2D(4, 7))
+		assert_eq(inter.vect, Vect2D(0, -6))
+		assert_eq(inter.lineSeg, LineSeg2D(Point2D(4, 7), Point2D(4, 1)))
+
 		# AB vertical, CD horizontal, intersecting
 		inter = LineSeg2D(Point2D(4, 1), Point2D(4, 8)).intersection(
 			LineSeg2D(Point2D(2, 5), Point2D(12, 5)))
