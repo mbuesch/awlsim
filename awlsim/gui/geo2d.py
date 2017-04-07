@@ -25,6 +25,9 @@ from awlsim.common.compat import *
 from awlsim_loader.common import *
 
 
+__all__ = [ "Point2D", "Vect2D", "Inter2D", "LineSeg2D", ]
+
+
 class Base2D(object):
 	EPSILON = 0.000001
 
@@ -68,7 +71,8 @@ class BaseXY2D(Base2D):
 	def __eq__(self, other):
 		return self is other or\
 		       (other is not None and\
-		        self.x == other.x and self.y == other.y)
+		        abs(self.x - other.x) < self.EPSILON and\
+			abs(self.y - other.y) < self.EPSILON)
 
 	def __bool__(self):
 		return bool(self.x or self.y)
