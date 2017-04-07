@@ -27,7 +27,6 @@ FBD / FUP
 ---------
 
 * Fix evaluation order in case of multiple parallel assignments and other elements
-* Avoid overlaps when drawing wires
 * Add feature: Editor sidebar to drap & drop new elements
 * Add feature: Exchange elements
 * Add feature: Duplicate diagrams
@@ -37,3 +36,4 @@ FBD / FUP
 * Add feature: XML input and export of single diagrams
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: Optimize generated AWL/STL programs
+* Add feature: Support modifying wires by clicking onto them
