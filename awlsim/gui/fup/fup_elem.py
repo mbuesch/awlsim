@@ -225,6 +225,8 @@ class FupElem(FupBaseClass):
 		is a close operand.
 		"""
 		from awlsim.gui.fup.fup_elemoperand import FupElem_OPERAND
+		if isinstance(self, FupElem_OPERAND):
+			return False
 		if isinstance(otherElem, FupElem_OPERAND):
 			if otherElem.y >= self.y and\
 			   otherElem.y < self.y + self.height:
