@@ -142,6 +142,10 @@ class FupWire(FupBaseClass):
 		def allRegularSegments(self):
 			return self.segments
 
+	class StartIntersections(object):
+		posCount = 0
+		negCount = 0
+
 	def draw(self, painter):
 		if self.outConn is None:
 			return # Only inputs. Do not draw.
@@ -193,13 +197,16 @@ class FupWire(FupBaseClass):
 					pen=self.__wireCollidingPen)
 
 		# Draw the branch circles
-		self.__startIntersections = 0
+		startIntersections = self.StartIntersections()
 		for drawInfo in wireLines:
 			for seg in drawInfo.allRegularSegments:
 				intersections = {}
-				def addInter(interPoint):
+				def addInter(interPoint, otherSeg):
 					if interPoint == segStart.pointB:
-						self.__startIntersections += 1
+						if otherSeg.vect.y >= 0:
+							startIntersections.posCount += 1
+						else:
+							startIntersections.negCount += 1
 					else:
 						key = (interPoint.xInt, interPoint.yInt)
 						intersections[key] = intersections.setdefault(key, 0) + 1
@@ -211,12 +218,13 @@ class FupWire(FupBaseClass):
 						inter = seg.intersection(otherSeg)
 						if not inter.intersects:
 							continue
-						addInter(inter.pointA)
+						addInter(inter.pointA, otherSeg)
 						if inter.pointA != inter.pointB:
-							addInter(inter.pointB)
+							addInter(inter.pointB, otherSeg)
 
 				for (x, y), count in dictItems(intersections):
 					if count > 1:
 						drawBranch(x, y)
-		if self.__startIntersections > 1:
+		if startIntersections.posCount >= 1 and\
+		   startIntersections.negCount >= 1:
 			drawBranch(segStart.pointB.x, segStart.pointB.y)
