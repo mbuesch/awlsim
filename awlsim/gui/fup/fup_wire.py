@@ -182,28 +182,43 @@ class FupWire(FupBaseClass):
 			painter.drawEllipse(x - branchR, y - branchR,
 					    branchD, branchD)
 
-		def drawSeg(seg, handleBranches=True, pen=self.__wirePen):
+		def drawSeg(seg, pen=self.__wirePen):
 			painter.setPen(pen)
 			grid.drawWireLine(painter, self, seg)
-			if not handleBranches:
-				return
-			for otherDrawInfo in wireLines:
-				if drawInfo is otherDrawInfo:
-					continue
-				for otherSeg in otherDrawInfo.segments:
-					inter = seg.intersection(otherSeg)
-					if not inter.intersects:
-						continue
-					drawBranch(inter.pointA.x, inter.pointA.y)
-					drawBranch(inter.pointB.x, inter.pointB.y)
 
 		# Draw wire from output to all inputs
 		for drawInfo in wireLines:
-			drawSeg(drawInfo.segStart, handleBranches=False)
+			drawSeg(drawInfo.segStart)
 			if all(not grid.checkWireLine(painter, {self}, seg)
 			       for seg in drawInfo.segments):
 				for seg in drawInfo.segments:
 					drawSeg(seg)
 			else:
-				drawSeg(drawInfo.segDirect, handleBranches=False,
+				drawSeg(drawInfo.segDirect,
 					pen=self.__wireCollidingPen)
+
+		# Draw the branch circles
+		for drawInfo in wireLines:
+			for seg in drawInfo.allRegularSegments:
+				intersections = {}
+				def addInter(interPoint, otherSeg):
+					key = (interPoint.xInt, interPoint.yInt)
+					intersections[key] = intersections.setdefault(key, 0) + 1
+
+				for otherDrawInfo in wireLines:
+					if drawInfo is otherDrawInfo:
+						continue
+					for otherSeg in otherDrawInfo.allRegularSegments:
+						inter = seg.intersection(otherSeg)
+						if not inter.intersects:
+							continue
+						if inter.lineSeg == drawInfo.segStart or\
+						   inter.lineSeg == otherDrawInfo.segStart:
+							continue
+						addInter(inter.pointA, otherSeg)
+						if inter.pointA != inter.pointB:
+							addInter(inter.pointB, otherSeg)
+
+				for (x, y), count in dictItems(intersections):
+					if count > 1:
+						drawBranch(x, y)
