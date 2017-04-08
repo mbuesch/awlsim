@@ -143,27 +143,12 @@ class FupElem_BOOLEAN(FupElem):
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
 		painter.setBrush(self._bgBrush)
-		tlX, tlY = xpad, ypad			# top left corner
-		trX, trY = elemWidth - xpad, ypad	# top right corner
-		blX, blY = xpad, elemHeight - ypad	# bottom left corner
-		brX, brY = trX, blY			# bottom right corner
+		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		polygon = QPolygon([QPoint(tlX, tlY),
 				    QPoint(trX, trY),
 				    QPoint(brX, brY),
 				    QPoint(blX, blY)])
 		painter.drawPolygon(polygon, Qt.OddEvenFill)
-
-		# Add the body collision entry
-		trans = painter.transform()
-		grid.collisionCacheAdd(grid.CollLines(
-			lineSegments=(
-				LineSeg2D.fromCoords(*trans.map(tlX, tlY), *trans.map(trX, trY)),
-				LineSeg2D.fromCoords(*trans.map(trX, trY), *trans.map(brX, brY)),
-				LineSeg2D.fromCoords(*trans.map(brX, brY), *trans.map(blX, blY)),
-				LineSeg2D.fromCoords(*trans.map(blX, blY), *trans.map(tlX, tlY)),
-			),
-			elem=self)
-		)
 
 		# Draw symbol text
 		painter.setFont(getDefaultFixedFont(11))

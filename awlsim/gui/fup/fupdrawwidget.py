@@ -371,25 +371,27 @@ class FupDrawWidget(QWidget):
 				   "* Double-click onto inputs or outputs to create operand boxes")
 
 		# Draw the elements
-		def drawElems(wantForeground):
+		def drawElems(wantForeground, wantCollisions):
 			prevX, prevY = 0, 0
 			for elem in grid.elems:
+				xAbs, yAbs = elem.pixCoords
+				p.translate(xAbs - prevX, yAbs - prevY)
+				prevX, prevY = xAbs, yAbs
 				isForeground = elem.selected or elem.expanded
 				if wantForeground == isForeground:
-					xAbs, yAbs = elem.pixCoords
-					p.translate(xAbs - prevX, yAbs - prevY)
-					prevX, prevY = xAbs, yAbs
 					elem.draw(p)
+				if wantCollisions:
+					grid.collisionCacheAdd(elem.getCollisionLines(p))
 			p.translate(-prevX, -prevY)
 		# Draw background elements
-		drawElems(False)
+		drawElems(False, True)
 
 		# Draw the connection wires
 		for wire in grid.wires:
 			wire.draw(p)
 
 		# Draw foreground elements (selected/expanded)
-		drawElems(True)
+		drawElems(True, False)
 
 		# Draw the dragged connection
 		draggedConn = self.__draggedConn

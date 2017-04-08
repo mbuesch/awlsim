@@ -383,6 +383,38 @@ class FupElem(FupBaseClass):
 			return self.grid.cellPixHeight // 8
 		return 0
 
+	def _calcBodyBox(self):
+		"""Calculate the body bounding box coordinates.
+		May be overridden in a subclass.
+		"""
+		grid = self.grid
+		cellWidth = grid.cellPixWidth
+		cellHeight = grid.cellPixHeight
+		xpad, ypad = self._xpadding, self._ypadding
+		elemHeight = cellHeight * self.height
+		elemWidth = cellWidth
+		tlX, tlY = xpad, ypad			# top left corner
+		trX, trY = elemWidth - xpad, ypad	# top right corner
+		blX, blY = xpad, elemHeight - ypad	# bottom left corner
+		brX, brY = trX, blY			# bottom right corner
+		return (tlX, tlY), (trX, trY),\
+		       (blX, blY), (brX, brY)
+
+	def getCollisionLines(self, painter):
+		"""Calculate the collision box and return a FupGrid.CollLines() instance.
+		"""
+		trans = painter.transform()
+		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
+		return self.grid.CollLines(
+			lineSegments=(
+				LineSeg2D.fromCoords(*trans.map(tlX, tlY), *trans.map(trX, trY)),
+				LineSeg2D.fromCoords(*trans.map(trX, trY), *trans.map(brX, brY)),
+				LineSeg2D.fromCoords(*trans.map(brX, brY), *trans.map(blX, blY)),
+				LineSeg2D.fromCoords(*trans.map(blX, blY), *trans.map(tlX, tlY)),
+			),
+			elem=self
+		)
+
 	@property
 	def selected(self):
 		"""Returns True, if this element is selected.
