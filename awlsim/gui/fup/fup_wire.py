@@ -145,6 +145,7 @@ class FupWire(FupBaseClass):
 	class StartIntersections(object):
 		posCount = 0
 		negCount = 0
+		horizCount = 0
 
 	def draw(self, painter):
 		if self.outConn is None:
@@ -203,7 +204,10 @@ class FupWire(FupBaseClass):
 				intersections = {}
 				def addInter(interPoint, otherSeg):
 					if interPoint == segStart.pointB:
-						if otherSeg.vect.y >= 0:
+						vectY = otherSeg.vect.y
+						if vectY == 0:
+							startIntersections.horizCount += 1
+						elif vectY > 0:
 							startIntersections.posCount += 1
 						else:
 							startIntersections.negCount += 1
@@ -225,6 +229,10 @@ class FupWire(FupBaseClass):
 				for (x, y), count in dictItems(intersections):
 					if count > 1:
 						drawBranch(x, y)
-		if startIntersections.posCount >= 1 and\
-		   startIntersections.negCount >= 1:
+		# If there are at least two line segments starting from segStart
+		# pointing into opposite directions, draw the start branch.
+		count = int(bool(startIntersections.posCount)) +\
+			int(bool(startIntersections.negCount)) +\
+			int(bool(startIntersections.horizCount))
+		if count >= 2:
 			drawBranch(segStart.pointB.x, segStart.pointB.y)
