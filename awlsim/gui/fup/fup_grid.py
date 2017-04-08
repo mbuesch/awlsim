@@ -90,23 +90,27 @@ class FupGrid(object):
 	# If this is a callable, it it called with (width, height) on resize events.
 	resizeEvent = None
 
-	class Line(object):
+	class CollLines(object):
 		"""Collision cache line descriptor.
 		This is used for describing drawn wires and
 		detecting collisions among them.
 		"""
 
-		def __init__(self, lineSeg, wire=None):
-			"""lineSeg => LineSeg2D() line segment information.
-			wire => FupWire() that belongs to this line.
+		def __init__(self, lineSegments, wire=None, elem=None):
+			"""lineSeg => Tuple of LineSeg2D() line segments.
+			wire => FupWire() that this line belongs to, if any.
+			elem => FupElem() that this line belongs to, if any.
 			"""
-			self.lineSeg = lineSeg
+			self.lineSegments = lineSegments
 			self.wire = wire
+			self.elem = elem
 
 		def dup(self):
 			"""Make a shallow copy of this Line.
 			"""
-			return self.__class__(self.lineSeg, self.wire)
+			return self.__class__(self.lineSegments,
+					      self.wire,
+					      self.elem)
 
 	def __init__(self, drawWidget, width, height):
 		"""drawWidget => FupDrawWidget() instance.
@@ -139,14 +143,14 @@ class FupGrid(object):
 	def collisionCacheClear(self):
 		"""Clear the collision cache of drawn lines.
 		"""
-		# __collCacheLines is a list of FupGrid.Line() instances.
+		# __collCacheLines is a list of FupGrid.CollLines() instances.
 		self.__collCacheLines = []
 
 	def collisionCacheAdd(self, line):
 		"""Add a line entry to the collision cache.
-		line => A FupGrid.Line() instance
+		line => A FupGrid.CollLines() instance
 		"""
-		assert(isinstance(line, self.Line))
+		assert(isinstance(line, self.CollLines))
 		self.__collCacheLines.append(line)
 
 	def resize(self, width, height):
@@ -192,9 +196,10 @@ class FupGrid(object):
 		"""
 		with contextlib.suppress(KeyError):
 			self.wires.remove(wire)
-		# Remove Line()s that belong to 'wire' from the collision cache.
+		# Remove CollLines()s that belong to 'wire' from the collision cache.
 		self.__collCacheLines = [ line for line in self.__collCacheLines
-				 if line.wire is not wire ]
+					  if line.wire is None or\
+					     line.wire is not wire ]
 
 	def getWireById(self, wireIdNum):
 		"""Get a wire by its idNum.
@@ -226,17 +231,17 @@ class FupGrid(object):
 		with another wire line.
 		excludeWires => Iterable if FupWire()s to exclude from the check.
 		lineSeg => The LineSeg2D() that should be drawn.
-		Returns a set of colliding self.Line() instances.
+		Returns a set of colliding self.CollLines() instances.
 		"""
 		collisions = set()
 		for line in self.__collCacheLines:
 			if line.wire in excludeWires:
 				continue
-			inter = lineSeg.intersection(line.lineSeg)
-			if not inter:
-				continue
-			# We have a collision.
-			collisions.add(line.dup())
+			for otherLineSeg in line.lineSegments:
+				inter = lineSeg.intersection(otherLineSeg)
+				if inter:
+					# We have a collision.
+					collisions.add(line.dup())
 		return collisions
 
 	def drawWireLine(self, painter, wire, lineSeg):
@@ -248,7 +253,7 @@ class FupGrid(object):
 			return # Zero length line
 		painter.drawLine(lineSeg.pointA.xInt, lineSeg.pointA.yInt,
 				 lineSeg.pointB.xInt, lineSeg.pointB.yInt)
-		self.collisionCacheAdd(self.Line(lineSeg, wire=wire))
+		self.collisionCacheAdd(self.CollLines((lineSeg,), wire=wire))
 
 	@property
 	def cellPixWidth(self):
@@ -290,6 +295,10 @@ class FupGrid(object):
 		elem.breakConnections()
 		with contextlib.suppress(ValueError):
 			self.selectedElems.remove(elem)
+		# Remove CollLines()s that belong to 'elem' from the collision cache.
+		self.__collCacheLines = [ line for line in self.__collCacheLines
+					  if line.elem is None or\
+					     line.elem is not elem ]
 
 	def moveElemTo(self, elem, toX, toY,
 		       relativeCoords=False,
