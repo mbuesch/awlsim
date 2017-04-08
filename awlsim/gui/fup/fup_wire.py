@@ -131,11 +131,19 @@ class FupWire(FupBaseClass):
 			self.grid.removeWire(self)
 
 	class DrawInfo(object):
-		__slots__ = ("segStart", "segments", "segDirect")
+		__slots__ = ("segStart",  # First segment
+			     "segments",  # Regular segments (list)
+			     "segDirect") # Direct connection segment
+
 		def __init__(self, segStart, segments, segDirect):
 			self.segStart = segStart
 			self.segments = segments
 			self.segDirect = segDirect
+
+		@property
+		def allRegularSegments(self):
+			return itertools.chain((self.segStart,),
+					       self.segments)
 
 	def draw(self, painter):
 		if self.outConn is None:
