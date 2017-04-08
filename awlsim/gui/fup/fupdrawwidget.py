@@ -331,8 +331,8 @@ class FupDrawWidget(QWidget):
 		if not grid:
 			return
 
-		# Build a new line cache.
-		grid.clearLineCache()
+		# Build a new collision cache.
+		grid.collisionCacheClear()
 
 		size = self.size()
 		width, height = size.width(), size.height()
@@ -420,10 +420,6 @@ class FupDrawWidget(QWidget):
 			p.drawRoundedRect(xAbs0, yAbs0,
 					  selWidth, selHeight,
 					  r, r)
-
-		# We don't need the line cache anymore.
-		# The next paint event will build a new one.
-		grid.clearLineCache()
 
 	def posToGridCoords(self, pixX, pixY):
 		"""Convert pixel coordinates to grid coordinates.

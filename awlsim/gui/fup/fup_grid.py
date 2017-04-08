@@ -91,8 +91,9 @@ class FupGrid(object):
 	resizeEvent = None
 
 	class Line(object):
-		"""Inter-element line descriptor.
-		This is used for describing drawn wires.
+		"""Collision cache line descriptor.
+		This is used for describing drawn wires and
+		detecting collisions among them.
 		"""
 
 		def __init__(self, lineSeg, wire=None):
@@ -125,7 +126,7 @@ class FupGrid(object):
 		self.clickedConn = None		# The recently clicked connection in this grid
 		self.clickedArea = None		# The recently clicked area in this grid
 
-		self.clearLineCache()
+		self.collisionCacheClear()
 
 	def clear(self):
 		for wire in self.wires:
@@ -133,13 +134,20 @@ class FupGrid(object):
 		self.wires.clear()
 		self.elems = []
 		self.selectedElems.clear()
-		self.clearLineCache()
+		self.collisionCacheClear()
 
-	def clearLineCache(self):
-		"""Clear the cache of drawn inter-element lines.
+	def collisionCacheClear(self):
+		"""Clear the collision cache of drawn lines.
 		"""
-		# __lines is a list of Line() instances.
-		self.__lines = []
+		# __collCacheLines is a list of FupGrid.Line() instances.
+		self.__collCacheLines = []
+
+	def collisionCacheAdd(self, line):
+		"""Add a line entry to the collision cache.
+		line => A FupGrid.Line() instance
+		"""
+		assert(isinstance(line, self.Line))
+		self.__collCacheLines.append(line)
 
 	def resize(self, width, height):
 		"""Resize the grid.
@@ -184,8 +192,8 @@ class FupGrid(object):
 		"""
 		with contextlib.suppress(KeyError):
 			self.wires.remove(wire)
-		# Remove Line()s that belong to 'wire'.
-		self.__lines = [ line for line in self.__lines
+		# Remove Line()s that belong to 'wire' from the collision cache.
+		self.__collCacheLines = [ line for line in self.__collCacheLines
 				 if line.wire is not wire ]
 
 	def getWireById(self, wireIdNum):
@@ -221,7 +229,7 @@ class FupGrid(object):
 		Returns a set of colliding self.Line() instances.
 		"""
 		collisions = set()
-		for line in self.__lines:
+		for line in self.__collCacheLines:
 			if line.wire in excludeWires:
 				continue
 			inter = lineSeg.intersection(line.lineSeg)
@@ -240,7 +248,7 @@ class FupGrid(object):
 			return # Zero length line
 		painter.drawLine(lineSeg.pointA.xInt, lineSeg.pointA.yInt,
 				 lineSeg.pointB.xInt, lineSeg.pointB.yInt)
-		self.__lines.append(self.Line(lineSeg, wire=wire))
+		self.collisionCacheAdd(self.Line(lineSeg, wire=wire))
 
 	@property
 	def cellPixWidth(self):
