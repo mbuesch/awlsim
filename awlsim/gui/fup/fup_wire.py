@@ -131,12 +131,11 @@ class FupWire(FupBaseClass):
 			self.grid.removeWire(self)
 
 	class DrawInfo(object):
-		__slots__ = ("segments",  # Regular segments (list)
-			     "segDirect") # Direct connection segment
+		usesDirect = False
 
 		def __init__(self, segments, segDirect):
-			self.segments = segments
-			self.segDirect = segDirect
+			self.segments = segments	# Regular segments (list)
+			self.segDirect = segDirect	# Direct connection segment
 
 		@property
 		def allRegularSegments(self):
@@ -196,10 +195,13 @@ class FupWire(FupBaseClass):
 			else:
 				drawSeg(drawInfo.segDirect,
 					pen=self.__wireCollidingPen)
+				drawInfo.usesDirect = True
 
 		# Draw the branch circles
 		startIntersections = self.StartIntersections()
 		for drawInfo in wireLines:
+			if drawInfo.usesDirect:
+				continue
 			for seg in drawInfo.allRegularSegments:
 				intersections = {}
 				def addInter(interPoint, otherSeg):
@@ -216,7 +218,8 @@ class FupWire(FupBaseClass):
 						intersections[key] = intersections.setdefault(key, 0) + 1
 
 				for otherDrawInfo in wireLines:
-					if drawInfo is otherDrawInfo:
+					if otherDrawInfo is drawInfo or\
+					   otherDrawInfo.usesDirect:
 						continue
 					for otherSeg in otherDrawInfo.allRegularSegments:
 						inter = seg.intersection(otherSeg)
