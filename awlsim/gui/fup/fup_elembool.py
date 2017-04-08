@@ -110,10 +110,11 @@ class FupElem_BOOLEAN(FupElem):
 
 	# Overridden method. For documentation see base class.
 	def draw(self, painter):
-		if not self.grid:
+		grid = self.grid
+		if not grid:
 			return
-		cellWidth = self.grid.cellPixWidth
-		cellHeight = self.grid.cellPixHeight
+		cellWidth = grid.cellPixWidth
+		cellHeight = grid.cellPixHeight
 		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
@@ -142,11 +143,27 @@ class FupElem_BOOLEAN(FupElem):
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
 		painter.setBrush(self._bgBrush)
-		polygon = QPolygon([QPoint(xpad, ypad),
-				    QPoint(elemWidth - xpad, ypad),
-				    QPoint(elemWidth - xpad, elemHeight - ypad),
-				    QPoint(xpad, elemHeight - ypad)])
+		tlX, tlY = xpad, ypad			# top left corner
+		trX, trY = elemWidth - xpad, ypad	# top right corner
+		blX, blY = xpad, elemHeight - ypad	# bottom left corner
+		brX, brY = trX, blY			# bottom right corner
+		polygon = QPolygon([QPoint(tlX, tlY),
+				    QPoint(trX, trY),
+				    QPoint(brX, brY),
+				    QPoint(blX, blY)])
 		painter.drawPolygon(polygon, Qt.OddEvenFill)
+
+		# Add the body collision entry
+		trans = painter.transform()
+		grid.collisionCacheAdd(grid.CollLines(
+			lineSegments=(
+				LineSeg2D.fromCoords(*trans.map(tlX, tlY), *trans.map(trX, trY)),
+				LineSeg2D.fromCoords(*trans.map(trX, trY), *trans.map(brX, brY)),
+				LineSeg2D.fromCoords(*trans.map(brX, brY), *trans.map(blX, blY)),
+				LineSeg2D.fromCoords(*trans.map(blX, blY), *trans.map(tlX, tlY)),
+			),
+			elem=self)
+		)
 
 		# Draw symbol text
 		painter.setFont(getDefaultFixedFont(11))

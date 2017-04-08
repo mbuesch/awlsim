@@ -109,10 +109,11 @@ class FupElem_OPERAND(FupElem):
 
 	# Overridden method. For documentation see base class.
 	def draw(self, painter):
-		if not self.grid:
+		grid = self.grid
+		if not grid:
 			return
-		cellWidth = self.grid.cellPixWidth
-		cellHeight = self.grid.cellPixHeight
+		cellWidth = grid.cellPixWidth
+		cellHeight = grid.cellPixHeight
 		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
@@ -123,10 +124,26 @@ class FupElem_OPERAND(FupElem):
 		painter.setPen(self._noPen)
 		painter.setBrush(self._bgSelBrush if selected\
 				 else self._bgBrush)
-		bodyRect = QRect(xpad, ypad,
-				 elemWidth - 2 * xpad,
-				 elemHeight - 2 * ypad)
+		w = elemWidth - 2 * xpad	# width
+		h = elemHeight - 2 * ypad	# height
+		tlX, tlY = xpad, ypad		# top left corner
+		trX, trY = tlX + w, tlY		# top right corner
+		brX, brY = trX, trY + h		# bottom right corner
+		blX, blY = tlX, tlY + h		# bottom left corner
+		bodyRect = QRect(xpad, ypad, w, h)
 		painter.drawRect(bodyRect)
+
+		# Add the body collision entry
+		trans = painter.transform()
+		grid.collisionCacheAdd(grid.CollLines(
+			lineSegments=(
+				LineSeg2D.fromCoords(*trans.map(tlX, tlY), *trans.map(trX, trY)),
+				LineSeg2D.fromCoords(*trans.map(trX, trY), *trans.map(brX, brY)),
+				LineSeg2D.fromCoords(*trans.map(brX, brY), *trans.map(blX, blY)),
+				LineSeg2D.fromCoords(*trans.map(blX, blY), *trans.map(tlX, tlY)),
+			),
+			elem=self)
+		)
 
 		# Draw the text
 		text = self.contentText
@@ -136,7 +153,7 @@ class FupElem_OPERAND(FupElem):
 			if selected or expanded:
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop
 				textMaxRect = bodyRect.translated(0, 0)
-				textMaxRect.setHeight(self.grid.height * cellHeight)
+				textMaxRect.setHeight(grid.height * cellHeight)
 				textRect = painter.boundingRect(textMaxRect, textFlags, text)
 				actTextRect = textRect
 			else:
