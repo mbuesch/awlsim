@@ -95,20 +95,17 @@ class FupGrid(object):
 		This is used for describing drawn wires.
 		"""
 
-		# Inter2D() line intersection object, if any.
-		inter = None
-
-		def __init__(self, wire, lineSeg):
-			"""wire => FupWire() that belongs to this line.
-			lineSeg => LineSeg2D() line segment information.
+		def __init__(self, lineSeg, wire=None):
+			"""lineSeg => LineSeg2D() line segment information.
+			wire => FupWire() that belongs to this line.
 			"""
-			self.wire = wire
 			self.lineSeg = lineSeg
+			self.wire = wire
 
 		def dup(self):
 			"""Make a shallow copy of this Line.
 			"""
-			return self.__class__(self.wire, self.lineSeg)
+			return self.__class__(self.lineSeg, self.wire)
 
 	def __init__(self, drawWidget, width, height):
 		"""drawWidget => FupDrawWidget() instance.
@@ -231,10 +228,7 @@ class FupGrid(object):
 			if not inter:
 				continue
 			# We have a collision.
-			# Make a shallow copy of Line and add the Inter2D.
-			line = line.dup()
-			line.inter = inter
-			collisions.add(line)
+			collisions.add(line.dup())
 		return collisions
 
 	def drawWireLine(self, painter, wire, lineSeg):
@@ -246,7 +240,7 @@ class FupGrid(object):
 			return # Zero length line
 		painter.drawLine(lineSeg.pointA.xInt, lineSeg.pointA.yInt,
 				 lineSeg.pointB.xInt, lineSeg.pointB.yInt)
-		self.__lines.append(self.Line(wire, lineSeg))
+		self.__lines.append(self.Line(lineSeg, wire=wire))
 
 	@property
 	def cellPixWidth(self):
