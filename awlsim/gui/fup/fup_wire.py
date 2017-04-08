@@ -131,19 +131,16 @@ class FupWire(FupBaseClass):
 			self.grid.removeWire(self)
 
 	class DrawInfo(object):
-		__slots__ = ("segStart",  # First segment
-			     "segments",  # Regular segments (list)
+		__slots__ = ("segments",  # Regular segments (list)
 			     "segDirect") # Direct connection segment
 
-		def __init__(self, segStart, segments, segDirect):
-			self.segStart = segStart
+		def __init__(self, segments, segDirect):
 			self.segments = segments
 			self.segDirect = segDirect
 
 		@property
 		def allRegularSegments(self):
-			return itertools.chain((self.segStart,),
-					       self.segments)
+			return self.segments
 
 	def draw(self, painter):
 		if self.outConn is None:
@@ -155,9 +152,11 @@ class FupWire(FupBaseClass):
 		painter.setBrush(self.__wireBranchBrush)
 
 		# Calculate the coordinates of all wire lines.
-		wireLines = [] # List of DrawInfo()s
-		xAbs0, yAbs0 = self.outConn.pixCoords
 		cellPixWidth = self.grid.cellPixWidth
+		xAbs0, yAbs0 = self.outConn.pixCoords
+		x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
+		segStart = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
+		wireLines = [] # List of DrawInfo()s
 		for inConn in self.connections:
 			if inConn is self.outConn:
 				continue
@@ -166,16 +165,12 @@ class FupWire(FupBaseClass):
 			# Construct line segments to draw the wire from out to in.
 
 			xAbs1, yAbs1 = inConn.pixCoords
-			x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
 
-			segStart = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
 			seg0 = LineSeg2D.fromCoords(x, yAbs0, x, yAbs1)
 			seg1 = LineSeg2D.fromCoords(x, yAbs1, xAbs1, yAbs1)
 			segDirect = LineSeg2D.fromCoords(x, yAbs0, xAbs1, yAbs1)
 
-			wireLines.append(self.DrawInfo(segStart,
-						       (seg0, seg1),
-						       segDirect))
+			wireLines.append(self.DrawInfo((seg0, seg1), segDirect))
 
 		def drawBranch(x, y):
 			painter.setPen(self.__wireBranchPen)
@@ -187,8 +182,8 @@ class FupWire(FupBaseClass):
 			grid.drawWireLine(painter, self, seg)
 
 		# Draw wire from output to all inputs
+		drawSeg(segStart)
 		for drawInfo in wireLines:
-			drawSeg(drawInfo.segStart)
 			if all(not grid.checkWireLine(painter, {self}, seg)
 			       for seg in drawInfo.segments):
 				for seg in drawInfo.segments:
@@ -198,12 +193,16 @@ class FupWire(FupBaseClass):
 					pen=self.__wireCollidingPen)
 
 		# Draw the branch circles
+		self.__startIntersections = 0
 		for drawInfo in wireLines:
 			for seg in drawInfo.allRegularSegments:
 				intersections = {}
-				def addInter(interPoint, otherSeg):
-					key = (interPoint.xInt, interPoint.yInt)
-					intersections[key] = intersections.setdefault(key, 0) + 1
+				def addInter(interPoint):
+					if interPoint == segStart.pointB:
+						self.__startIntersections += 1
+					else:
+						key = (interPoint.xInt, interPoint.yInt)
+						intersections[key] = intersections.setdefault(key, 0) + 1
 
 				for otherDrawInfo in wireLines:
 					if drawInfo is otherDrawInfo:
@@ -212,13 +211,12 @@ class FupWire(FupBaseClass):
 						inter = seg.intersection(otherSeg)
 						if not inter.intersects:
 							continue
-						if inter.lineSeg == drawInfo.segStart or\
-						   inter.lineSeg == otherDrawInfo.segStart:
-							continue
-						addInter(inter.pointA, otherSeg)
+						addInter(inter.pointA)
 						if inter.pointA != inter.pointB:
-							addInter(inter.pointB, otherSeg)
+							addInter(inter.pointB)
 
 				for (x, y), count in dictItems(intersections):
 					if count > 1:
 						drawBranch(x, y)
+		if self.__startIntersections > 1:
+			drawBranch(segStart.pointB.x, segStart.pointB.y)
