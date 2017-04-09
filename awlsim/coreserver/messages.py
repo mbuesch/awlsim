@@ -28,8 +28,11 @@ from awlsim.common.hwmod import *
 from awlsim.common.datatypehelpers import *
 from awlsim.common.blockinfo import *
 from awlsim.common.net import *
+from awlsim.common.sources import *
 
 from awlsim.coreserver.memarea import *
+
+from awlsim.library.libselection import *
 
 import struct
 import socket

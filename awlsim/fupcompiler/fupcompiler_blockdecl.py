@@ -26,6 +26,7 @@ from awlsim.common.namevalidation import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.project import *
 from awlsim.common.version import *
+from awlsim.common.cpuspecs import *
 
 from awlsim.fupcompiler.fupcompiler_base import *
 
