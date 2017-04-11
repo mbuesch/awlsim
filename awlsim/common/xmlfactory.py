@@ -147,6 +147,10 @@ class XmlFactory(object):
 	def __init__(self, **kwargs):
 		self.__kwargs = kwargs
 		self.builder = None
+		self.__genXmlHeader = True
+		self.__baseIndent = 0
+		self.__lineBreakStr = "\n"
+		self.__attrLineBreak = False
 
 	def __getattr__(self, name):
 		with contextlib.suppress(KeyError):
@@ -176,56 +180,69 @@ class XmlFactory(object):
 	def composer_getTags(self):
 		raise NotImplementedError
 
-	def compose(self, genXmlHeader=True, baseIndent=0):
+	def __tags2text(self, tags, indent=0):
+		ret = []
+		for tag in tags:
+			ind = "\t" * indent
+			# Force convert attrs to str and remove empty attrs
+			attrs = { str(aName) : str(aVal)
+				  for aName, aVal in dictItems(tag.attrs)
+				  if tag.emitEmptyAttrs or str(aVal)
+			}
+			# Convert attrs to XML
+			if self.__attrLineBreak:
+				attrSpacer = self.__lineBreakStr + ind +\
+					     (" " * (1 + len(tag.name) + 1))
+			else:
+				attrSpacer = " "
+			attrText = (" " + attrSpacer.join(
+				"%s=%s" % (aName, saxutils.quoteattr(aVal))
+				for aName, aVal in sorted(dictItems(attrs),
+							  key=lambda a: a[0])
+			)).rstrip()
+			# Convert the child tags to XML
+			if tag.tags:
+				childTags = self.__tags2text(tag.tags, indent + 1)
+			else:
+				childTags = []
+			# Convert tags to XML
+			if tag.data or childTags:
+				ret.append(
+					"%s<%s%s>%s" % (
+					ind,
+					tag.name,
+					attrText,
+					saxutils.escape(tag.data or ""))
+				)
+				ret.extend(childTags)
+				ret.append("%s</%s>" % (
+					ind,
+					tag.name)
+				)
+			elif attrs or tag.emitEmptyTag:
+				ret.append(
+					"%s<%s%s />" % (
+					ind,
+					tag.name,
+					attrText)
+				)
+		return ret
+
+	def compose(self, genXmlHeader=True, baseIndent=0, lineBreakStr="\n", attrLineBreak=False):
 		self.builder = None
-		def tags2text(tags, indent=0):
-			ret = []
-			for tag in tags:
-				ind = "\t" * indent
-				# Force convert attrs to str and remove empty attrs
-				attrs = { str(aName) : str(aVal)
-					  for aName, aVal in dictItems(tag.attrs)
-					  if tag.emitEmptyAttrs or str(aVal)
-				}
-				# Convert atts to XML
-				attrText = (" " + " ".join(
-					"%s=%s" % (aName, saxutils.quoteattr(aVal))
-					for aName, aVal in sorted(dictItems(attrs),
-								  key=lambda a: a[0])
-				)).rstrip()
-				# Convert the child tags to XML
-				if tag.tags:
-					childTags = tags2text(tag.tags, indent + 1)
-				else:
-					childTags = []
-				# Convert tags to XML
-				if tag.data or childTags:
-					ret.append(
-						"%s<%s%s>%s" % (
-						ind,
-						tag.name,
-						attrText,
-						saxutils.escape(tag.data or ""))
-					)
-					ret.extend(childTags)
-					ret.append("%s</%s>" % (
-						ind,
-						tag.name)
-					)
-				elif attrs or tag.emitEmptyTag:
-					ret.append(
-						"%s<%s%s />" % (
-						ind,
-						tag.name,
-						attrText)
-					)
-			return ret
+		self.__genXmlHeader = genXmlHeader
+		self.__baseIndent = baseIndent
+		self.__lineBreakStr = lineBreakStr
+		self.__attrLineBreak = attrLineBreak
+
 		lines = []
-		if genXmlHeader:
+		if self.__genXmlHeader:
 			lines.append('<?xml version="%s" encoding="%s" standalone="yes"?>' % (
 				     self.XML_VERSION, self.XML_ENCODING))
-		lines.extend(tags2text(self.composer_getTags(), baseIndent))
-		return "\n".join(lines).encode(self.XML_ENCODING)
+		lines.extend(self.__tags2text(self.composer_getTags(),
+					      self.__baseIndent))
+
+		return lineBreakStr.join(lines).encode(self.XML_ENCODING)
 
 	def parser_switchTo(self, otherFactory):
 		self.builder.pushFactory(otherFactory)
