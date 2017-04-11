@@ -2,7 +2,7 @@
 #
 # XML factory - parser and composer
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -176,7 +176,7 @@ class XmlFactory(object):
 	def composer_getTags(self):
 		raise NotImplementedError
 
-	def compose(self):
+	def compose(self, genXmlHeader=True, baseIndent=0):
 		self.builder = None
 		def tags2text(tags, indent=0):
 			ret = []
@@ -220,9 +220,11 @@ class XmlFactory(object):
 						attrText)
 					)
 			return ret
-		lines = [ '<?xml version="%s" encoding="%s" standalone="yes"?>' % (
-			  self.XML_VERSION, self.XML_ENCODING) ]
-		lines.extend(tags2text(self.composer_getTags()))
+		lines = []
+		if genXmlHeader:
+			lines.append('<?xml version="%s" encoding="%s" standalone="yes"?>' % (
+				     self.XML_VERSION, self.XML_ENCODING))
+		lines.extend(tags2text(self.composer_getTags(), baseIndent))
 		return "\n".join(lines).encode(self.XML_ENCODING)
 
 	def parser_switchTo(self, otherFactory):
