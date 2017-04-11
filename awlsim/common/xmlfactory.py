@@ -103,12 +103,14 @@ class XmlFactory(object):
 
 		def __init__(self, name, attrs = None,
 			     tags = None, data = None,
+			     comment = None,
 			     emitEmptyAttrs = False,
 			     emitEmptyTag = False):
-			self.name = name			# Tag name
+			self.name = name or ""			# Tag name
 			self.attrs = attrs or {}		# Tag attributes
 			self.tags = tags or []			# Child tags
 			self.data = data or ""			# Tag data
+			self.commentData = comment or ""	# Comment data
 			self.emitEmptyAttrs = emitEmptyAttrs	# Emit attributes with empty data?
 			self.emitEmptyTag = emitEmptyTag	# Emit tag, if it is completely empty?
 
@@ -143,6 +145,11 @@ class XmlFactory(object):
 		def getAttrBool(self, name, default=NoDefault):
 			return bool(self.getAttrInt(name,
 				default if default is self.NoDefault else int(bool(default))))
+
+	class Comment(Tag):
+		def __init__(self, text):
+			super(XmlFactory.Comment, self).__init__(name=None,
+								 comment=text)
 
 	def __init__(self, **kwargs):
 		self.__kwargs = kwargs
@@ -205,27 +212,43 @@ class XmlFactory(object):
 				childTags = self.__tags2text(tag.tags, indent + 1)
 			else:
 				childTags = []
+			# Add comment, if any.
+			def addComment(commentData):
+				if commentData.startswith("\n"):
+					prefix = "\n"
+					commentData = commentData[1:]
+				else:
+					prefix = ""
+				ret.append("%s%s<!-- %s -->" % (
+					   prefix, ind,
+					   commentData.replace("-->", " ->")))
 			# Convert tags to XML
 			if tag.data or childTags:
-				ret.append(
-					"%s<%s%s>%s" % (
-					ind,
-					tag.name,
-					attrText,
-					saxutils.escape(tag.data or ""))
-				)
-				ret.extend(childTags)
-				ret.append("%s</%s>" % (
-					ind,
-					tag.name)
-				)
+				if tag.commentData:
+					addComment(tag.commentData)
+				if tag.name:
+					ret.append(
+						"%s<%s%s>%s" % (
+						ind,
+						tag.name,
+						attrText,
+						saxutils.escape(tag.data or ""))
+					)
+					ret.extend(childTags)
+					ret.append("%s</%s>" % (
+						ind,
+						tag.name)
+					)
 			elif attrs or tag.emitEmptyTag:
-				ret.append(
-					"%s<%s%s />" % (
-					ind,
-					tag.name,
-					attrText)
-				)
+				if tag.commentData:
+					addComment(tag.commentData)
+				if tag.name:
+					ret.append(
+						"%s<%s%s />" % (
+						ind,
+						tag.name,
+						attrText)
+					)
 		return ret
 
 	def compose(self, genXmlHeader=True, baseIndent=0, lineBreakStr="\n", attrLineBreak=False):
