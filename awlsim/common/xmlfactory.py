@@ -189,7 +189,7 @@ class XmlFactory(object):
 
 	def __tags2text(self, tags, indent=0):
 		ret = []
-		for tag in tags:
+		for tagIndex, tag in enumerate(tags):
 			ind = "\t" * indent
 			# Force convert attrs to str and remove empty attrs
 			attrs = { str(aName) : str(aVal)
@@ -215,7 +215,7 @@ class XmlFactory(object):
 			# Add comment, if any.
 			def addComment(commentData):
 				if commentData.startswith("\n"):
-					prefix = "\n"
+					prefix = "" if (tagIndex == 0) else self.__lineBreakStr
 					commentData = commentData[1:]
 				else:
 					prefix = ""
