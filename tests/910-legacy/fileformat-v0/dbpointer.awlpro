@@ -1,0 +1,34 @@
+[AWLSIM_PROJECT]
+file_version=0
+create_date=2015-03-28 17:10:50.809243
+modify_date=2015-03-29 11:14:15.760360
+
+[CPU]
+awl_file_0=dbpointer.awl
+mnemonics=0
+nr_accus=2
+clock_memory_byte=-1
+ob_startinfo_enable=0
+ext_insns_enable=1
+
+[SYMBOLS]
+sym_tab_0=MTI2LERhdGEgICAgICAgICAgICAgICAgICAgIERCIDQyICAgICAgIERCIDQyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KMTI2LEZDNzBfc3ltICAgICAgICAgICAgICAgIEZDIDcwICAgICAgIEZDIDcwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0K
+sym_tab_name_0=U3ltYm9sIHRhYmxl
+
+[LIBS]
+
+[CORE_LINK]
+spawn_local=1
+spawn_local_port_range=4183:8278
+spawn_local_interpreters=JERFRkFVTFQ=
+connect_host=bG9jYWxob3N0
+connect_port=4151
+connect_timeout_ms=3000
+
+[HWMODS]
+
+[GUI]
+editor_autoindent=1
+editor_paste_autoindent=1
+editor_validation=1
+editor_font=

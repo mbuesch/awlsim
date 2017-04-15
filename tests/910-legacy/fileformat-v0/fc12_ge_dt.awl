@@ -1,0 +1,769 @@
+DATA_BLOCK DB 1
+STRUCT 	
+	TEST1_A		: DATE_AND_TIME;
+	TEST1_B		: DATE_AND_TIME;
+	TEST2_A		: DATE_AND_TIME;
+	TEST2_B		: DATE_AND_TIME;
+	TEST3_A		: DATE_AND_TIME;
+	TEST3_B		: DATE_AND_TIME;
+	TEST4_A		: DATE_AND_TIME;
+	TEST4_B		: DATE_AND_TIME;
+	TEST5_A		: DATE_AND_TIME;
+	TEST5_B		: DATE_AND_TIME;
+	TEST6_A		: DATE_AND_TIME;
+	TEST6_B		: DATE_AND_TIME;
+	TEST7_A		: DATE_AND_TIME;
+	TEST7_B		: DATE_AND_TIME;
+	TEST8_A		: DATE_AND_TIME;
+	TEST8_B		: DATE_AND_TIME;
+	TEST9_A		: DATE_AND_TIME;
+	TEST9_B		: DATE_AND_TIME;
+	TEST10_A	: DATE_AND_TIME;
+	TEST10_B	: DATE_AND_TIME;
+	TEST11_A	: DATE_AND_TIME;
+	TEST11_B	: DATE_AND_TIME;
+	TEST12_A	: DATE_AND_TIME;
+	TEST12_B	: DATE_AND_TIME;
+	TEST13_A	: DATE_AND_TIME;
+	TEST13_B	: DATE_AND_TIME;
+	TEST14_A	: DATE_AND_TIME;
+	TEST14_B	: DATE_AND_TIME;
+	TEST15_A	: DATE_AND_TIME;
+	TEST15_B	: DATE_AND_TIME;
+	TEST16_A	: DATE_AND_TIME;
+	TEST16_B	: DATE_AND_TIME;
+	TEST17_A	: DATE_AND_TIME;
+	TEST17_B	: DATE_AND_TIME;
+	TEST18_A	: DATE_AND_TIME;
+	TEST18_B	: DATE_AND_TIME;
+	TEST19_A	: DATE_AND_TIME;
+	TEST19_B	: DATE_AND_TIME;
+	TEST20_A	: DATE_AND_TIME;
+	TEST20_B	: DATE_AND_TIME;
+	TEST21_A	: DATE_AND_TIME;
+	TEST21_B	: DATE_AND_TIME;
+	TEST22_A	: DATE_AND_TIME;
+	TEST22_B	: DATE_AND_TIME;
+	TEST23_A	: DATE_AND_TIME;
+	TEST23_B	: DATE_AND_TIME;
+	TEST24_A	: DATE_AND_TIME;
+	TEST24_B	: DATE_AND_TIME;
+	TEST25_A	: DATE_AND_TIME;
+	TEST25_B	: DATE_AND_TIME;
+	TEST26_A	: DATE_AND_TIME;
+	TEST26_B	: DATE_AND_TIME;
+	TEST27_A	: DATE_AND_TIME;
+	TEST27_B	: DATE_AND_TIME;
+	TEST28_A	: DATE_AND_TIME;
+	TEST28_B	: DATE_AND_TIME;
+	TEST29_A	: DATE_AND_TIME;
+	TEST29_B	: DATE_AND_TIME;
+	TEST30_A	: DATE_AND_TIME;
+	TEST30_B	: DATE_AND_TIME;
+	TEST31_A	: DATE_AND_TIME;
+	TEST31_B	: DATE_AND_TIME;
+	TEST32_A	: DATE_AND_TIME;
+	TEST32_B	: DATE_AND_TIME;
+	TEST33_A	: DATE_AND_TIME;
+	TEST33_B	: DATE_AND_TIME;
+	TEST34_A	: DATE_AND_TIME;
+	TEST34_B	: DATE_AND_TIME;
+END_STRUCT;
+BEGIN
+	TEST1_A		:= DT#1990-1-1-0:0:0.000;
+	TEST1_B		:= DT#1990-1-1-0:0:0.000;
+	
+	TEST2_A		:= DT#2089-12-31-23:59:59.999;
+	TEST2_B		:= DT#2089-12-31-23:59:59.999;
+	
+	TEST3_A		:= DT#1990-1-1-0:0:0.0;
+	TEST3_B		:= DT#2089-12-31-23:59:59.999;
+	
+	TEST4_A		:= DT#1991-1-2-3:4:5.679;
+	TEST4_B		:= DT#1991-1-2-3:4:5.678;
+	
+	TEST5_A		:= DT#1991-1-2-3:4:6.678;
+	TEST5_B		:= DT#1991-1-2-3:4:5.678;
+	
+	TEST6_A		:= DT#1991-1-2-3:5:5.678;
+	TEST6_B		:= DT#1991-1-2-3:4:5.678;
+	
+	TEST7_A		:= DT#1991-1-2-4:4:5.678;
+	TEST7_B		:= DT#1991-1-2-3:4:5.678;
+	
+	TEST8_A		:= DT#1991-1-3-3:4:5.678;
+	TEST8_B		:= DT#1991-1-2-3:4:5.678;
+	
+	TEST9_A		:= DT#1991-2-2-3:4:5.678;
+	TEST9_B		:= DT#1991-1-2-3:4:5.678;
+	
+	TEST10_A	:= DT#1992-1-2-3:4:5.678;
+	TEST10_B	:= DT#1991-1-2-3:4:5.678;
+	
+	TEST11_A	:= DT#1991-1-2-3:4:5.678;
+	TEST11_B	:= DT#1991-1-2-3:4:5.679;
+	
+	TEST12_A	:= DT#1991-1-2-3:4:5.678;
+	TEST12_B	:= DT#1991-1-2-3:4:6.678;
+	
+	TEST13_A	:= DT#1991-1-2-3:4:5.678;
+	TEST13_B	:= DT#1991-1-2-3:5:5.678;
+	
+	TEST14_A	:= DT#1991-1-2-3:4:5.678;
+	TEST14_B	:= DT#1991-1-2-4:4:5.678;
+	
+	TEST15_A	:= DT#1991-1-2-3:4:5.678;
+	TEST15_B	:= DT#1991-1-3-3:4:5.678;
+	
+	TEST16_A	:= DT#1991-1-2-3:4:5.678;
+	TEST16_B	:= DT#1991-2-2-3:4:5.678;
+	
+	TEST17_A	:= DT#1991-1-2-3:4:5.678;
+	TEST17_B	:= DT#1992-1-2-3:4:5.678;
+	
+	TEST18_A	:= DT#2001-1-2-3:4:5.679;
+	TEST18_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST19_A	:= DT#2001-1-2-3:4:6.678;
+	TEST19_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST20_A	:= DT#2001-1-2-3:5:5.678;
+	TEST20_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST21_A	:= DT#2001-1-2-4:4:5.678;
+	TEST21_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST22_A	:= DT#2001-1-3-3:4:5.678;
+	TEST22_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST23_A	:= DT#2001-2-2-3:4:5.678;
+	TEST23_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST24_A	:= DT#2002-1-2-3:4:5.678;
+	TEST24_B	:= DT#2001-1-2-3:4:5.678;
+	
+	TEST25_A	:= DT#2001-1-2-3:4:5.678;
+	TEST25_B	:= DT#2001-1-2-3:4:5.679;
+	
+	TEST26_A	:= DT#2001-1-2-3:4:5.678;
+	TEST26_B	:= DT#2001-1-2-3:4:6.678;
+	
+	TEST27_A	:= DT#2001-1-2-3:4:5.678;
+	TEST27_B	:= DT#2001-1-2-3:5:5.678;
+	
+	TEST28_A	:= DT#2001-1-2-3:4:5.678;
+	TEST28_B	:= DT#2001-1-2-4:4:5.678;
+	
+	TEST29_A	:= DT#2001-1-2-3:4:5.678;
+	TEST29_B	:= DT#2001-1-3-3:4:5.678;
+	
+	TEST30_A	:= DT#2001-1-2-3:4:5.678;
+	TEST30_B	:= DT#2001-2-2-3:4:5.678;
+	
+	TEST31_A	:= DT#2001-1-2-3:4:5.678;
+	TEST31_B	:= DT#2002-1-2-3:4:5.678;
+	
+	TEST32_A	:= DT#2002-1-2-3:4:5.678;
+	TEST32_B	:= DT#2001-2-2-3:4:5.678;
+	
+	TEST33_A	:= DT#2001-1-3-3:4:5.678;
+	TEST33_B	:= DT#2001-1-2-3:4:5.679;
+	
+	TEST34_A	:= DT#2001-1-2-3:4:6.678;
+	TEST34_B	:= DT#2001-1-2-3:4:5.679;
+	
+END_DATA_BLOCK
+
+ORGANIZATION_BLOCK OB 1
+VAR_TEMP
+	TMP_DT1		: DATE_AND_TIME;
+	TMP_DT2		: DATE_AND_TIME;
+END_VAR
+BEGIN
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST1_A,
+		DT2 := DB1.TEST1_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST2_A,
+		DT2 := DB1.TEST2_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST3_A,
+		DT2 := DB1.TEST3_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST4_A,
+		DT2 := DB1.TEST4_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST5_A,
+		DT2 := DB1.TEST5_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST6_A,
+		DT2 := DB1.TEST6_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST7_A,
+		DT2 := DB1.TEST7_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST8_A,
+		DT2 := DB1.TEST8_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST9_A,
+		DT2 := DB1.TEST9_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST10_A,
+		DT2 := DB1.TEST10_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST11_A,
+		DT2 := DB1.TEST11_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST12_A,
+		DT2 := DB1.TEST12_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST13_A,
+		DT2 := DB1.TEST13_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST14_A,
+		DT2 := DB1.TEST14_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST15_A,
+		DT2 := DB1.TEST15_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST16_A,
+		DT2 := DB1.TEST16_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST17_A,
+		DT2 := DB1.TEST17_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST18_A,
+		DT2 := DB1.TEST18_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST19_A,
+		DT2 := DB1.TEST19_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST20_A,
+		DT2 := DB1.TEST20_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST21_A,
+		DT2 := DB1.TEST21_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST22_A,
+		DT2 := DB1.TEST22_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST23_A,
+		DT2 := DB1.TEST23_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST24_A,
+		DT2 := DB1.TEST24_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST25_A,
+		DT2 := DB1.TEST25_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST26_A,
+		DT2 := DB1.TEST26_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST27_A,
+		DT2 := DB1.TEST27_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST28_A,
+		DT2 := DB1.TEST28_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST29_A,
+		DT2 := DB1.TEST29_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST30_A,
+		DT2 := DB1.TEST30_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST31_A,
+		DT2 := DB1.TEST31_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST32_A,
+		DT2 := DB1.TEST32_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST33_A,
+		DT2 := DB1.TEST33_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1 := DB1.TEST34_A,
+		DT2 := DB1.TEST34_B,
+		RET_VAL := M 0.0,
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	
+	// Invalid BCD values are ok, except for year field
+	LAR1		P##TMP_DT1
+	L		DW#16#00FFFFFF
+	T		D [AR1, P#0.0]
+	L		DW#16#FFFFFFFF
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		0
+	T		D [AR1, P#0.0]
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		DW#16#00FFFFFF
+	T		D [AR2, P#0.0]
+	L		DW#16#FFFFFFFF
+	T		D [AR2, P#4.0]
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		0
+	
+	// Check invalid year BCD value
+	LAR1		P##TMP_DT1
+	L		DW#16#FF000000
+	T		D [AR1, P#0.0]
+	L		0
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	M 0.0,		0
+	LAR1		P##TMP_DT1
+	L		0
+	T		D [AR1, P#0.0]
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		DW#16#FF000000
+	T		D [AR2, P#0.0]
+	L		0
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	M 0.0,		0
+	LAR1		P##TMP_DT1
+	L		DW#16#FF000000
+	T		D [AR1, P#0.0]
+	L		0
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		0
+	T		D [AR1, P#0.0]
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		DW#16#FF000000
+	T		D [AR2, P#0.0]
+	L		0
+	T		D [AR2, P#4.0]
+	SET
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	0
+	__ASSERT==	M 0.0,		1
+	
+	
+	// Check each byte invididually with invalid BCD value and upper bit set.
+	// This checks for a signedness bug in comparison.
+	LAR1		P##TMP_DT1
+	L		DW#16#00FF0000
+	T		D [AR1, P#0.0]
+	L		DW#16#00000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#0000FF00
+	T		D [AR1, P#0.0]
+	L		DW#16#00000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#000000FF
+	T		D [AR1, P#0.0]
+	L		DW#16#00000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#FF000000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#00FF0000
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#0000FF00
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	LAR1		P##TMP_DT1
+	L		DW#16#00000000
+	T		D [AR1, P#0.0]
+	L		DW#16#000000FF
+	T		D [AR1, P#4.0]
+	LAR2		P##TMP_DT2
+	L		0
+	T		D [AR2, P#0.0]
+	T		D [AR2, P#4.0]
+	CLR
+	=		M 0.0
+	CALL "GE_DT" (
+		DT1	:= #TMP_DT1,
+		DT2	:= #TMP_DT2,
+		RET_VAL	:= M 0.0
+	)
+	__ASSERT==	__STW BIE,	1
+	__ASSERT==	M 0.0,		1
+	
+	
+	
+	CALL		SFC 46 // Stop CPU
+END_ORGANIZATION_BLOCK

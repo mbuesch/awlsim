@@ -1,0 +1,3689 @@
+DATA_BLOCK "OB1_Daten"
+TITLE =
+VERSION : 0.1
+
+
+  STRUCT 	
+   SK1_Schritt_Nr : INT ;	
+   SK2_Schritt_Nr : INT ;	
+   SK3_Schritt_Nr : INT ;	
+   SK3_Schritt_Nr_2 : INT ;	
+   Schiebereg_Fuellstand : INT ;	
+  END_STRUCT ;	
+BEGIN
+   SK1_Schritt_Nr := 0; 
+   SK2_Schritt_Nr := 0; 
+   SK3_Schritt_Nr := 0; 
+   SK3_Schritt_Nr_2 := 0; 
+   Schiebereg_Fuellstand := 0; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Schieberegister"
+TITLE =Schieberegister (FIFO) für 5 Elemente
+VERSION : 0.1
+
+
+VAR_INPUT
+  Dicke_Eingang : WORD ;	
+  Farbe_Eingang : BOOL ;	
+  Einschieben : BOOL ;	
+  Ausschieben : BOOL ;	
+  reset : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  Anzahl_Teile : INT ;	
+  Farbe_Ausgang : BOOL ;	
+  Dicke_Ausgang : WORD ;	
+END_VAR
+VAR
+  Fuellstand : WORD ;	
+  FM_Einschieben : BOOL ;	
+  FM_Ausschieben : BOOL ;	
+  Dicke_0 : WORD ;	
+  Farbe_0 : BOOL ;	
+  Dicke_1 : WORD ;	
+  Farbe_1 : BOOL ;	
+  Dicke_2 : WORD ;	
+  Farbe_2 : BOOL ;	
+  Dicke_3 : WORD ;	
+  Farbe_3 : BOOL ;	
+  Dicke_4 : WORD ;	
+  Farbe_4 : BOOL ;	
+END_VAR
+VAR_TEMP
+  Zaehler : INT ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Element einfügen
+
+      U     #Einschieben; 
+      FP    #FM_Einschieben; 
+      SPBN  Eend; 
+
+      L     #Fuellstand; 
+      L     5; 
+      >=I   ; //Sicherheitsabfrage: Überlauf
+      SPB   Eend; 
+
+      L     #Fuellstand; //Überprüfung ob Schreibpuffer leer
+      L     0; 
+      ==I   ; 
+      SPB   Schr; //Schreiben
+
+      L     #Fuellstand; 
+next: T     #Zaehler; 
+      L     1; //Schreibindex errechnen
+      -D    ; 
+      L     P#4.0; //Mit dem Abstand der Elemente multiplizieren
+      *D    ; 
+      L     P##Dicke_0; //Zeiger auf erstes Element
+      +D    ; //Elementoffset addieren
+      LAR1  ; //Zeigerregister AR1 laden
+
+      U      [AR1,P#2.0]; //Position von Farbe im Register
+      =      [AR1,P#6.0]; //Position nächste Farbe im Register
+      L     W [AR1,P#0.0]; //Position Dicke im Register
+      T     W [AR1,P#4.0]; //Position nächste Dicke im Register
+
+      L     #Zaehler; 
+      LOOP  next; //LOOP (AKKU-1, weiter bis AKKU=0)
+
+Schr: U     #Farbe_Eingang; //Eingangselement abspeichern
+      =     #Farbe_0; 
+      L     #Dicke_Eingang; 
+      T     #Dicke_0; 
+
+      L     #Fuellstand; //Fuellstand um 1 erhöhen
+      L     1; 
+      +I    ; 
+      T     #Fuellstand; 
+
+Eend: NOP   0; 
+
+NETWORK
+TITLE =Element entnehmen
+
+      U     #Ausschieben; 
+      FP    #FM_Ausschieben; 
+      SPBN  Aend; 
+
+      L     #Fuellstand; 
+      L     0; 
+      <=I   ; //Sicherheitsabfrage: Kein Element im Register
+      SPB   Aend; 
+
+      L     #Fuellstand; 
+      L     1; 
+      -D    ; 
+      L     P#4.0; //Mit dem Abstand der Elemente multiplizieren 
+      *D    ; 
+      L     P##Dicke_0; //Zeiger auf erstes Element
+      +D    ; //Elementoffset addieren
+      LAR1  ; //Zeigerregister AR1 laden
+
+      U      [AR1,P#2.0]; //Position von Farbe im Register
+      =     #Farbe_Ausgang; 
+      L     W [AR1,P#0.0]; //Position Dicke im Register
+      T     #Dicke_Ausgang; 
+
+      CLR   ; //Position im Register mit 0 überschreiben
+      =      [AR1,P#2.0]; 
+      L     0; 
+      T     W [AR1,P#0.0]; 
+
+      L     #Fuellstand; //Fuellstand um 1 erniedrigen
+      L     1; 
+      -I    ; 
+      T     #Fuellstand; 
+
+Aend: NOP   0; 
+
+NETWORK
+TITLE =Reset: Alles löschen
+
+      U     #reset; //Reset liegt an?
+      SPBN  nrst; 
+
+      CLR   ; 
+      L     0; 
+      T     #Fuellstand; //Füllstand rücksetzen
+      T     #Dicke_Ausgang; //Dickenausgabe rücksetzen
+      =     #Farbe_Ausgang; //Farbenausgabe rücksetzen
+
+//Elle Elemente im Schieberegister löschen
+      L     5; //Über jedes Element iterieren
+rloo: T     #Zaehler; 
+      L     1; 
+      -D    ; 
+      L     P#4.0; //Mit Abstand der Elemente multiplizieren
+      *D    ; 
+      L     P##Dicke_0; //Zeiger auf erstes Element
+      +D    ; //Elementoffset addieren
+      LAR1  ; //Zeigerregister AR1 laden
+
+      CLR   ; //Element mit 0 überschreiben
+      =      [AR1,P#2.0]; 
+      L     0; 
+      T     W [AR1,P#0.0]; 
+
+      L     #Zaehler; 
+      LOOP  rloo; //Nächstes Element
+
+nrst: NOP   0; 
+
+NETWORK
+TITLE =Ausgangssignal: Anzahl Teile
+
+      L     #Fuellstand; //Füllstand ausgeben
+      T     #Anzahl_Teile; 
+
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Schiebereg_Band"
+TITLE =
+VERSION : 0.0
+
+"Schieberegister"
+BEGIN
+   Dicke_Eingang := W#16#0; 
+   Farbe_Eingang := FALSE; 
+   Einschieben := FALSE; 
+   Ausschieben := FALSE; 
+   reset := FALSE; 
+   Anzahl_Teile := 0; 
+   Farbe_Ausgang := FALSE; 
+   Dicke_Ausgang := W#16#0; 
+   Fuellstand := W#16#0; 
+   FM_Einschieben := FALSE; 
+   FM_Ausschieben := FALSE; 
+   Dicke_0 := W#16#0; 
+   Farbe_0 := FALSE; 
+   Dicke_1 := W#16#0; 
+   Farbe_1 := FALSE; 
+   Dicke_2 := W#16#0; 
+   Farbe_2 := FALSE; 
+   Dicke_3 := W#16#0; 
+   Farbe_3 := FALSE; 
+   Dicke_4 := W#16#0; 
+   Farbe_4 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Eingaenge_Schrittkette_1"
+TITLE =
+VERSION : 0.1
+
+
+VAR_OUTPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL ;	
+  T3_4 : BOOL ;	
+  T4_5 : BOOL ;	
+  T5_6 : BOOL ;	
+  T6_7 : BOOL ;	
+  T7_1 : BOOL ;	
+  T3_10 : BOOL ;	
+  T10_1 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U     "1B3"; 
+      U     "1S2"; 
+      U     "1S2"; 
+      U     "2B5"; 
+      =     #T1_2; 
+NETWORK
+TITLE =
+
+      U     "1B2"; 
+      =     #T2_3; 
+NETWORK
+TITLE =
+
+      U     "1S1"; 
+      =     #T3_4; 
+NETWORK
+TITLE =
+
+      U     "1S3"; 
+      UN    "2B2"; 
+      =     #T4_5; 
+NETWORK
+TITLE =
+
+      U     "1B1"; 
+      U     "2B5"; 
+      =     #T5_6; 
+NETWORK
+TITLE =
+
+      U     "1S2"; 
+      =     #T6_7; 
+NETWORK
+TITLE =
+
+
+
+      U     "2B2"; 
+      =     #T7_1; 
+NETWORK
+TITLE =
+
+      U     "T_zw_1B1_1S1"; 
+      =     #T3_10; 
+NETWORK
+TITLE =Magazinbefüllung quittieren
+
+      U     "Quit"; 
+      =     #T10_1; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Transitionen_SK1"
+TITLE =
+VERSION : 0.0
+
+"Eingaenge_Schrittkette_1"
+BEGIN
+   T1_2 := FALSE; 
+   T2_3 := FALSE; 
+   T3_4 := FALSE; 
+   T4_5 := FALSE; 
+   T5_6 := FALSE; 
+   T6_7 := FALSE; 
+   T7_1 := FALSE; 
+   T3_10 := FALSE; 
+   T10_1 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Ausgaenge_Schrittkette_1"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  Schritt_Nr : INT ;	
+  Reset : BOOL ;	
+  Aktorfreigabe : BOOL ;	
+  Aktornummer : INT ;	
+  Aktor_vor : BOOL ;	
+  Aktor_zurueck : BOOL ;	
+END_VAR
+VAR
+  Merker1 : BOOL ;	
+  Merker2 : BOOL ;	
+  Merker3 : BOOL ;	
+  Merker4 : BOOL ;	
+  Merker5 : BOOL ;	
+  Merker6 : BOOL ;	
+  Merker7 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =1Y1.10 = 1; Magazinschieber fährt nach hinten
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     10; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     6; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker1; 
+      U(    ; 
+      O(    ; 
+      L     2; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker1; 
+      U     #Merker1; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     101; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_zurueck; 
+      =     "1Y1.10"; 
+NETWORK
+TITLE =1Y1.11 = 1;Magazinschieber fährt nach vorne
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      S     #Merker2; 
+      U(    ; 
+      O(    ; 
+      L     10; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     6; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     1; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker2; 
+      U     #Merker2; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     101; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "1Y1.11"; 
+NETWORK
+TITLE =1Y2.10 = 1; Vakuum wird ausgeschaltet
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     1; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     7; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker3; 
+      U(    ; 
+      O(    ; 
+      L     5; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker3; 
+      U     #Merker3; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U     #Aktor_zurueck; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     102; 
+      ==I   ; 
+      )     ; 
+      =     "1Y2.10"; 
+NETWORK
+TITLE =1Y2.11 = 1; Vakuum wird eingeschaltet
+
+      U(    ; 
+      U(    ; 
+      L     5; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      S     #Merker4; 
+      U(    ; 
+      O(    ; 
+      L     7; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     1; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker4; 
+      U     #Merker4; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U     #Aktor_vor; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     102; 
+      ==I   ; 
+      )     ; 
+      =     "1Y2.11"; 
+NETWORK
+TITLE =1Y3.10 = 1; Rotor (Umsetzer) fährt in Stellung "Magazin"
+
+      U(    ; 
+      U(    ; 
+      L     4; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      S     #Merker5; 
+      U(    ; 
+      O(    ; 
+      L     6; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     1; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker5; 
+      U     #Merker5; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U     #Aktor_zurueck; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     103; 
+      ==I   ; 
+      )     ; 
+      =     "1Y3.10"; 
+NETWORK
+TITLE =1Y3.11 = 1; Rotor (Umsetzer) fährt in Stellung "Prüfen"
+
+      U(    ; 
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     6; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     1; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker6; 
+      U(    ; 
+      O(    ; 
+      L     4; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker6; 
+      U     #Merker6; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U     #Aktor_vor; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     103; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      U     "2B6"; 
+      =     "1Y3.11"; 
+NETWORK
+TITLE =Zeitunterschied zw. 1B1 und 1S1
+
+      U(    ; 
+      L     3; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      L     S5T#1S; 
+      SE    "T_zw_1B1_1S1"; 
+      U(    ; 
+      O(    ; 
+      L     4; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      O(    ; 
+      L     10; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     "T_zw_1B1_1S1"; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =H_Mag_Leer = 1; Lampe Magazin leer
+
+      L     10; 
+      L     #Schritt_Nr; 
+      ==I   ; 
+      =     L      0.0; 
+      U     L      0.0; 
+      BLD   102; 
+      =     "H_Mag_Leer"; 
+      U     L      0.0; 
+      U     "Automatikbetrieb"; 
+      =     "Hupe"; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Ausgänge_SK1"
+TITLE =
+VERSION : 0.0
+
+"Ausgaenge_Schrittkette_1"
+BEGIN
+   Schritt_Nr := 0; 
+   Reset := FALSE; 
+   Aktorfreigabe := FALSE; 
+   Aktornummer := 0; 
+   Aktor_vor := FALSE; 
+   Aktor_zurueck := FALSE; 
+   Merker1 := FALSE; 
+   Merker2 := FALSE; 
+   Merker3 := FALSE; 
+   Merker4 := FALSE; 
+   Merker5 := FALSE; 
+   Merker6 := FALSE; 
+   Merker7 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Eingänge_Schrittkette_2"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  fuellstand_schieberegist : INT ;	
+END_VAR
+VAR_OUTPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL ;	
+  T3_4 : BOOL ;	
+  T4_5 : BOOL ;	
+  T5_6 : BOOL ;	
+  T6_7 : BOOL ;	
+  T7_1 : BOOL ;	
+  T1_9 : BOOL ;	
+  T9_10 : BOOL ;	
+  T10_1 : BOOL ;	
+  T4_11 : BOOL ;	
+  T11_12 : BOOL ;	
+  T12_13 : BOOL ;	
+  T13_7 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =1Y3.10 = 1; Rotor (Umsetzer) fährt in Stellung "Magazin"
+
+      U     "1Y3.10"; 
+      UN    "2B3"; 
+      U     "2B2"; 
+      =     #T1_2; 
+NETWORK
+TITLE =
+
+      U     "2B7"; 
+      =     #T2_3; 
+NETWORK
+TITLE =
+
+      U     "T_Pruefen"; 
+      =     #T3_4; 
+NETWORK
+TITLE =
+
+      UN    "Erster_Zyklus"; 
+      U     "4B6"; 
+      U(    ; 
+      L     #fuellstand_schieberegist; 
+      L     4; 
+      <=I   ; 
+      )     ; 
+      UN    "3B1"; 
+      =     #T4_5; 
+NETWORK
+TITLE =
+
+      UN    "T_Bandzeit"; 
+      U     "2B4"; 
+      =     #T5_6; 
+NETWORK
+TITLE =
+
+      U     "1S3"; 
+      U     "2B5"; 
+      =     #T6_7; 
+NETWORK
+TITLE =
+
+
+
+      U     "2B6"; 
+      =     #T7_1; 
+NETWORK
+TITLE =
+
+      U     "1S3"; 
+      U     "2B3"; 
+      =     #T1_9; 
+NETWORK
+TITLE =
+
+      U     "2B4"; 
+      =     #T9_10; 
+NETWORK
+TITLE =
+
+      U     "2B5"; 
+      =     #T10_1; 
+NETWORK
+TITLE =
+
+      U     "Erster_Zyklus"; 
+      UN    "3B1"; 
+      U(    ; 
+      L     #fuellstand_schieberegist; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      U     "4B6"; 
+      =     #T4_11; 
+NETWORK
+TITLE =
+
+      U     "2B4"; 
+      =     #T11_12; 
+NETWORK
+TITLE =
+
+      U     "3B1"; 
+      =     #T12_13; 
+NETWORK
+TITLE =
+
+      U     "1S3"; 
+      U     "2B5"; 
+      =     #T13_7; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Transitionen_SK2"
+TITLE =
+VERSION : 0.0
+
+"Eingänge_Schrittkette_2"
+BEGIN
+   fuellstand_schieberegist := 0; 
+   T1_2 := FALSE; 
+   T2_3 := FALSE; 
+   T3_4 := FALSE; 
+   T4_5 := FALSE; 
+   T5_6 := FALSE; 
+   T6_7 := FALSE; 
+   T7_1 := FALSE; 
+   T1_9 := FALSE; 
+   T9_10 := FALSE; 
+   T10_1 := FALSE; 
+   T4_11 := FALSE; 
+   T11_12 := FALSE; 
+   T12_13 := FALSE; 
+   T13_7 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Betriebsarten"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  STG_AUS : BOOL  := TRUE;	//Steuerung aus
+  STG_EIN : BOOL ;	//Steuerung ein
+  Start : BOOL ;	//Start Automatikbetrieb
+  Auto : BOOL ;	//Betriebsart Automatikbetrieb
+  EmB : BOOL ;	//Betriebsart Einzelschritt mit Bedingungen 
+  EoB : BOOL ;	//Betriebsart Einzelschritt ohne Bedingungen 
+  EINR : BOOL ;	//Betriebsart Einrichtbetrieb
+  ZYKLUS : BOOL  := TRUE;	//zyklus EIN/AUS
+  NOT_AUS : BOOL ;	//Notaus
+  AKTOR_FR : BOOL  := TRUE;	//Aktionsfreigabe
+  GST_ANL : BOOL ;	//Anlage in Grundstellung (Signal von Anlage)
+  Tippen : BOOL ;	//Einzelschritt- Weiterschaltung der Schrittkette (EMBundEOB)
+  Quitt : BOOL ;	//Erzeugung reset- Signal 
+END_VAR
+VAR_OUTPUT
+  ANZ_STG : BOOL ;	//Anzeige Steuerung Ein aus
+  ANZ_AUTO : BOOL ;	//Anzeige Automatik Ein aus
+  ANZ_EmB : BOOL ;	//Anzeige Einzelschritt mit Bedingungen Ein Aus
+  ANZ_EoB : BOOL ;	//Anzeige Einzelschritt ohne Bedingungen Ein aus 
+  ANZ_EINR : BOOL ;	//Anzeige Einrichten Ein Aus
+  ANZ_ZYK_E : BOOL ;	//Anzeige Zyklus Ein 
+  ANZ_ZYK_A : BOOL ;	//Anzeige zyklus Aus
+  Reset : BOOL ;	//Signal Rücksetzten B0
+  FR_K_mB : BOOL ;	//Signal Weiterschalten mit Bedingungen B1
+  FR_K_oB : BOOL ;	//Signal Weiterschalten ohne Bedingungen B2
+  FR_AKTION : BOOL ;	//Signal Freigabe der Aktion B3
+END_VAR
+VAR
+  STEU_EIN : BOOL ;	//Hilfsvariable Steuerung eingeschaltet 
+  AUTO_EIN : BOOL ;	//Hilfsvariable Automatikbetrieb eingeschaltet 
+  TIPPEN_SP : BOOL ;	//Speichervariable für tippen
+  F02 : BOOL ;	//Hilfsvariable Flankenerkennung TIPPEN
+  IO_WEITER : BOOL ;	//Weiterschltimpuls im Einzelschrittbetrieb
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U     #STG_EIN; 
+      S     #STEU_EIN; 
+      U(    ; 
+      ON    #STG_AUS; 
+      ON    #NOT_AUS; 
+      )     ; 
+      R     #STEU_EIN; 
+      U     #STEU_EIN; 
+      =     #ANZ_STG; 
+NETWORK
+TITLE =
+
+      U     #Auto; 
+      U     #Start; 
+      S     #AUTO_EIN; 
+      U(    ; 
+      ON    #Auto; 
+      ON    #STEU_EIN; 
+      )     ; 
+      R     #AUTO_EIN; 
+      U     #AUTO_EIN; 
+      =     #ANZ_AUTO; 
+NETWORK
+TITLE =
+
+      U     #STEU_EIN; 
+      U     #EmB; 
+      =     #ANZ_EmB; 
+NETWORK
+TITLE =
+
+      U     #STEU_EIN; 
+      U     #EoB; 
+      =     #ANZ_EoB; 
+NETWORK
+TITLE =
+
+      U     #AUTO_EIN; 
+      U     #STEU_EIN; 
+      U     #ZYKLUS; 
+      =     #ANZ_ZYK_E; 
+NETWORK
+TITLE =
+
+      U     #STEU_EIN; 
+      UN    #ZYKLUS; 
+      U     #AUTO_EIN; 
+      =     #ANZ_ZYK_A; 
+NETWORK
+TITLE =
+
+      U     #STEU_EIN; 
+      U     #EINR; 
+      =     #ANZ_EINR; 
+NETWORK
+TITLE =
+
+      UN    #Auto; 
+      U(    ; 
+      U     #Tippen; 
+      FP    #F02; 
+      )     ; 
+      U     #STEU_EIN; 
+      =     #IO_WEITER; 
+NETWORK
+TITLE =
+
+      U     #ANZ_EmB; 
+      U     #IO_WEITER; 
+      O     #AUTO_EIN; 
+      =     #FR_K_mB; 
+NETWORK
+TITLE =
+
+      UN    #Auto; 
+      U     #ANZ_EoB; 
+      U     #IO_WEITER; 
+      =     #FR_K_oB; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      O     #AUTO_EIN; 
+      O     ; 
+      U(    ; 
+      U     #Tippen; 
+      S     #TIPPEN_SP; 
+      UN    #STEU_EIN; 
+      R     #TIPPEN_SP; 
+      U     #TIPPEN_SP; 
+      )     ; 
+      U     #ANZ_EmB; 
+      O     ; 
+      U     #ANZ_EoB; 
+      U     #AKTOR_FR; 
+      )     ; 
+      U     #STEU_EIN; 
+      =     #FR_AKTION; 
+NETWORK
+TITLE =
+
+      UN    #STEU_EIN; 
+      U     #NOT_AUS; 
+      U     #GST_ANL; 
+      U     #Quitt; 
+      =     #Reset; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Betriebsarten"
+TITLE =
+VERSION : 0.0
+
+"Betriebsarten"
+BEGIN
+   STG_AUS := TRUE; 
+   STG_EIN := FALSE; 
+   Start := FALSE; 
+   Auto := FALSE; 
+   EmB := FALSE; 
+   EoB := FALSE; 
+   EINR := FALSE; 
+   ZYKLUS := TRUE; 
+   NOT_AUS := FALSE; 
+   AKTOR_FR := TRUE; 
+   GST_ANL := FALSE; 
+   Tippen := FALSE; 
+   Quitt := FALSE; 
+   ANZ_STG := FALSE; 
+   ANZ_AUTO := FALSE; 
+   ANZ_EmB := FALSE; 
+   ANZ_EoB := FALSE; 
+   ANZ_EINR := FALSE; 
+   ANZ_ZYK_E := FALSE; 
+   ANZ_ZYK_A := FALSE; 
+   Reset := FALSE; 
+   FR_K_mB := FALSE; 
+   FR_K_oB := FALSE; 
+   FR_AKTION := FALSE; 
+   STEU_EIN := FALSE; 
+   AUTO_EIN := FALSE; 
+   TIPPEN_SP := FALSE; 
+   F02 := FALSE; 
+   IO_WEITER := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Schrittkette 1 (Magazin)"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL  := TRUE;	
+  T3_4 : BOOL  := TRUE;	
+  T3_10 : BOOL  := TRUE;	
+  T4_5 : BOOL  := TRUE;	
+  T5_6 : BOOL  := TRUE;	
+  T6_7 : BOOL  := TRUE;	
+  T7_1 : BOOL  := TRUE;	
+  T10_1 : BOOL  := TRUE;	
+  Reset : BOOL ;	
+  Weiter_oB : BOOL ;	
+  Weiter_mB : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  Schritt : INT ;	
+END_VAR
+VAR
+  SM_1 : BOOL  := TRUE;	
+  SM_2 : BOOL ;	
+  SM_3 : BOOL ;	
+  SM_4 : BOOL ;	
+  SM_5 : BOOL ;	
+  SM_6 : BOOL ;	
+  SM_7 : BOOL ;	
+  SM_10 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U(    ; 
+      U(    ; 
+      O     #Reset; 
+      O     ; 
+      U(    ; 
+      UN    #SM_3; 
+      U     #SM_10; 
+      O     ; 
+      UN    #SM_6; 
+      U     #SM_7; 
+      )     ; 
+      U(    ; 
+      U(    ; 
+      U     #T7_1; 
+      U     #SM_7; 
+      O     ; 
+      U     #T10_1; 
+      U     #SM_10; 
+      )     ; 
+      U     #Weiter_mB; 
+      O     #Weiter_oB; 
+      )     ; 
+      )     ; 
+      S     #SM_1; 
+      U     #SM_2; 
+      R     #SM_1; 
+      U     #SM_1; 
+      )     ; 
+      SPBNB _001; 
+      L     1; 
+      T     #Schritt; 
+_001: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_10; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T1_2; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_1; 
+      S     #SM_2; 
+      U(    ; 
+      O     #SM_3; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_2; 
+      U     #SM_2; 
+      )     ; 
+      SPBNB _002; 
+      L     2; 
+      T     #Schritt; 
+_002: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      U     #SM_2; 
+      U(    ; 
+      U     #T2_3; 
+      U     #Weiter_mB; 
+      O     #Weiter_oB; 
+      )     ; 
+      UN    #SM_1; 
+      S     #SM_3; 
+      U(    ; 
+      O     #SM_10; 
+      O     #SM_4; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_3; 
+      U     #SM_3; 
+      )     ; 
+      SPBNB _003; 
+      L     3; 
+      T     #Schritt; 
+_003: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_2; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T3_4; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_3; 
+      S     #SM_4; 
+      U(    ; 
+      O     #SM_5; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_4; 
+      U     #SM_4; 
+      )     ; 
+      SPBNB _004; 
+      L     4; 
+      T     #Schritt; 
+_004: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_3; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T4_5; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_4; 
+      S     #SM_5; 
+      U(    ; 
+      O     #SM_6; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_5; 
+      U     #SM_5; 
+      )     ; 
+      SPBNB _005; 
+      L     5; 
+      T     #Schritt; 
+_005: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_4; 
+      U(    ; 
+      U     #T5_6; 
+      U     #Weiter_mB; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_5; 
+      S     #SM_6; 
+      U(    ; 
+      O     #Reset; 
+      O     #SM_7; 
+      )     ; 
+      R     #SM_6; 
+      U     #SM_6; 
+      )     ; 
+      SPBNB _006; 
+      L     6; 
+      T     #Schritt; 
+_006: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_5; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T6_7; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_6; 
+      S     #SM_7; 
+      U(    ; 
+      O     #SM_1; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_7; 
+      U     #SM_7; 
+      )     ; 
+      SPBNB _007; 
+      L     7; 
+      T     #Schritt; 
+_007: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_2; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T3_10; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_3; 
+      S     #SM_10; 
+      U(    ; 
+      O     #SM_1; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_10; 
+      U     #SM_10; 
+      )     ; 
+      SPBNB _008; 
+      L     10; 
+      T     #Schritt; 
+_008: NOP   0; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Schrittkette_1"
+TITLE =
+VERSION : 0.0
+
+"Schrittkette 1 (Magazin)"
+BEGIN
+   T1_2 := FALSE; 
+   T2_3 := TRUE; 
+   T3_4 := TRUE; 
+   T3_10 := TRUE; 
+   T4_5 := TRUE; 
+   T5_6 := TRUE; 
+   T6_7 := TRUE; 
+   T7_1 := TRUE; 
+   T10_1 := TRUE; 
+   Reset := FALSE; 
+   Weiter_oB := FALSE; 
+   Weiter_mB := FALSE; 
+   Schritt := 0; 
+   SM_1 := TRUE; 
+   SM_2 := FALSE; 
+   SM_3 := FALSE; 
+   SM_4 := FALSE; 
+   SM_5 := FALSE; 
+   SM_6 := FALSE; 
+   SM_7 := FALSE; 
+   SM_10 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Ausgänge_Schrittkette_2"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  Schritt_Nr : INT ;	
+  Reset : BOOL ;	
+  Aktorfreigabe : BOOL ;	
+  Aktornummer : INT ;	
+  Aktor_vor : BOOL ;	
+  Aktor_zurueck : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  gemessene_dicke : WORD ;	
+  gemessene_farbe : BOOL ;	
+  gem_wert_schieben : BOOL ;	
+END_VAR
+VAR
+  Merker1 : BOOL ;	
+  Merker2 : BOOL ;	
+  Merker3 : BOOL ;	
+  Merker4 : BOOL ;	
+  Merker5 : BOOL ;	
+  Merker6 : BOOL ;	
+  Merker7 : BOOL ;	
+  Merker_Farbe : BOOL ;	
+  Merker_Erstdurchlauf : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =2Y2.10 = 1; Prüfzylinder wird gesenkt
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     7; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker1; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker1; 
+      U     #Merker1; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     201; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_zurueck; 
+      =     "2Y2.10"; 
+NETWORK
+TITLE =2Y2.11 = 1; Prüfzylinder wird gehoben
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      S     #Merker2; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     7; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker2; 
+      U     #Merker2; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     201; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "2Y2.11"; 
+NETWORK
+TITLE =Auswerfer vor
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     11; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     9; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     5; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker3; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     12; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     6; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     10; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker3; 
+      U     #Merker3; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U     #Aktor_vor; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     202; 
+      ==I   ; 
+      )     ; 
+      =     "2Y1"; 
+NETWORK
+TITLE =Pruefen Materialstaerke Zeit
+
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     3; 
+      ==I   ; 
+      )     ; 
+      L     S5T#1S; 
+      SE    "T_Pruefen"; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     4; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     "T_Pruefen"; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =2K1 = 1; Bandmotor wird eingeschaltet
+
+      O(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     11; 
+      ==I   ; 
+      )     ; 
+      S     #Merker_Erstdurchlauf; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     13; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     #Merker_Erstdurchlauf; 
+      U     #Merker_Erstdurchlauf; 
+      )     ; 
+      O     ; 
+      U     "T_Bandzeit"; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     5; 
+      ==I   ; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U     #Aktor_vor; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     203; 
+      ==I   ; 
+      )     ; 
+      =     "2K1"; 
+NETWORK
+TITLE =Bandvorschub an
+
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     5; 
+      ==I   ; 
+      )     ; 
+      L     S5T#500MS; 
+      SI    "T_Bandzeit"; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+      NOP   0; 
+NETWORK
+TITLE =Teilefarbe zwischenspeichern
+
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      U     "2B1"; 
+      S     #Merker_Farbe; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      UN    "2B1"; 
+      R     #Merker_Farbe; 
+      NOP   0; 
+NETWORK
+TITLE =Teilefarbe ausgeben
+
+      U     #Merker_Farbe; 
+      =     #gemessene_farbe; 
+NETWORK
+TITLE =Analogsensor einlesen
+
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     4; 
+      ==I   ; 
+      )     ; 
+      SPBNB _001; 
+      L     "Dicke_Analogwert"; 
+      T     #gemessene_dicke; 
+_001: NOP   0; 
+NETWORK
+TITLE =Erzeugung Signal: Schieberegister einschieben
+
+      L     #Schritt_Nr; 
+      L     4; 
+      ==I   ; 
+      =     #gem_wert_schieben; 
+NETWORK
+TITLE =Signal "Erster Zyklus" rücksetzen
+
+      L     #Schritt_Nr; 
+      L     13; 
+      ==I   ; 
+      R     "Erster_Zyklus"; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Ausgänge_SK2"
+TITLE =
+VERSION : 0.0
+
+"Ausgänge_Schrittkette_2"
+BEGIN
+   Schritt_Nr := 0; 
+   Reset := FALSE; 
+   Aktorfreigabe := FALSE; 
+   Aktornummer := 0; 
+   Aktor_vor := FALSE; 
+   Aktor_zurueck := FALSE; 
+   gemessene_dicke := W#16#0; 
+   gemessene_farbe := FALSE; 
+   gem_wert_schieben := FALSE; 
+   Merker1 := FALSE; 
+   Merker2 := FALSE; 
+   Merker3 := FALSE; 
+   Merker4 := FALSE; 
+   Merker5 := FALSE; 
+   Merker6 := FALSE; 
+   Merker7 := FALSE; 
+   Merker_Farbe := FALSE; 
+   Merker_Erstdurchlauf := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Schrittkette 2 (Prüfen)"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL  := TRUE;	
+  T3_4 : BOOL  := TRUE;	
+  T4_5 : BOOL  := TRUE;	
+  T5_6 : BOOL  := TRUE;	
+  T6_7 : BOOL  := TRUE;	
+  T7_1 : BOOL  := TRUE;	
+  T1_9 : BOOL  := TRUE;	
+  T9_10 : BOOL  := TRUE;	
+  T10_1 : BOOL  := TRUE;	
+  T4_11 : BOOL ;	
+  T11_12 : BOOL ;	
+  T12_13 : BOOL ;	
+  T13_7 : BOOL ;	
+  Reset : BOOL ;	
+  Weiter_oB : BOOL ;	
+  Weiter_mB : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  Schritt : INT ;	
+END_VAR
+VAR
+  SM_1 : BOOL  := TRUE;	
+  SM_2 : BOOL ;	
+  SM_3 : BOOL ;	
+  SM_4 : BOOL ;	
+  SM_5 : BOOL ;	
+  SM_6 : BOOL ;	
+  SM_7 : BOOL ;	
+  SM_9 : BOOL ;	
+  SM_10 : BOOL ;	
+  SM_11 : BOOL ;	
+  SM_12 : BOOL ;	
+  SM_13 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U(    ; 
+      U(    ; 
+      O     #Reset; 
+      O     ; 
+      U(    ; 
+      UN    #SM_9; 
+      U     #SM_10; 
+      ON    #SM_6; 
+      O     #SM_7; 
+      )     ; 
+      U(    ; 
+      U(    ; 
+      U     #T10_1; 
+      U     #SM_10; 
+      O     ; 
+      U     #T7_1; 
+      U     #SM_7; 
+      )     ; 
+      U     #Weiter_mB; 
+      O     #Weiter_oB; 
+      )     ; 
+      )     ; 
+      S     #SM_1; 
+      U(    ; 
+      O     #SM_2; 
+      O     #SM_9; 
+      )     ; 
+      R     #SM_1; 
+      U     #SM_1; 
+      )     ; 
+      SPBNB _001; 
+      L     1; 
+      T     #Schritt; 
+_001: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_7; 
+      UN    #SM_10; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T1_2; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_1; 
+      S     #SM_2; 
+      U(    ; 
+      O     #SM_3; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_2; 
+      U     #SM_2; 
+      )     ; 
+      SPBNB _002; 
+      L     2; 
+      T     #Schritt; 
+_002: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      U     #SM_2; 
+      U(    ; 
+      U     #T2_3; 
+      U     #Weiter_mB; 
+      O     #Weiter_oB; 
+      )     ; 
+      UN    #SM_1; 
+      S     #SM_3; 
+      U(    ; 
+      O     #SM_4; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_3; 
+      U     #SM_3; 
+      )     ; 
+      SPBNB _003; 
+      L     3; 
+      T     #Schritt; 
+_003: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_2; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T3_4; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_3; 
+      S     #SM_4; 
+      U(    ; 
+      O     #SM_11; 
+      O     #SM_5; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_4; 
+      U     #SM_4; 
+      )     ; 
+      SPBNB _004; 
+      L     4; 
+      T     #Schritt; 
+_004: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_3; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T4_5; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_4; 
+      S     #SM_5; 
+      U(    ; 
+      O     #SM_6; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_5; 
+      U     #SM_5; 
+      )     ; 
+      SPBNB _005; 
+      L     5; 
+      T     #Schritt; 
+_005: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_4; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T5_6; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_5; 
+      S     #SM_6; 
+      U(    ; 
+      O     #SM_7; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_6; 
+      U     #SM_6; 
+      )     ; 
+      SPBNB _006; 
+      L     6; 
+      T     #Schritt; 
+_006: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      U(    ; 
+      U     #SM_6; 
+      UN    #SM_5; 
+      O     ; 
+      UN    #SM_12; 
+      U     #SM_13; 
+      )     ; 
+      U(    ; 
+      U(    ; 
+      U     #T13_7; 
+      U     #SM_13; 
+      O     ; 
+      U     #T6_7; 
+      U     #SM_6; 
+      )     ; 
+      U     #Weiter_mB; 
+      O     #Weiter_oB; 
+      )     ; 
+      S     #SM_7; 
+      U(    ; 
+      O     #SM_1; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_7; 
+      U     #SM_7; 
+      )     ; 
+      SPBNB _007; 
+      L     7; 
+      T     #Schritt; 
+_007: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_7; 
+      UN    #SM_10; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T1_9; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_1; 
+      S     #SM_9; 
+      U(    ; 
+      O     #SM_10; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_9; 
+      U     #SM_9; 
+      )     ; 
+      SPBNB _008; 
+      L     9; 
+      T     #Schritt; 
+_008: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_1; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T9_10; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_9; 
+      S     #SM_10; 
+      U(    ; 
+      O     #SM_1; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_10; 
+      U     #SM_10; 
+      )     ; 
+      SPBNB _009; 
+      L     10; 
+      T     #Schritt; 
+_009: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_3; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T4_11; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_4; 
+      S     #SM_11; 
+      U(    ; 
+      O     #SM_12; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_11; 
+      U     #SM_11; 
+      )     ; 
+      SPBNB _00a; 
+      L     11; 
+      T     #Schritt; 
+_00a: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_4; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T11_12; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_11; 
+      S     #SM_12; 
+      U(    ; 
+      O     #SM_13; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_12; 
+      U     #SM_12; 
+      )     ; 
+      SPBNB _00b; 
+      L     12; 
+      T     #Schritt; 
+_00b: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_11; 
+      U(    ; 
+      U     #Weiter_mB; 
+      U     #T12_13; 
+      O     #Weiter_oB; 
+      )     ; 
+      U     #SM_12; 
+      S     #SM_13; 
+      U(    ; 
+      O     #SM_7; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_13; 
+      U     #SM_13; 
+      )     ; 
+      SPBNB _00c; 
+      L     13; 
+      T     #Schritt; 
+_00c: NOP   0; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Schrittkette_2"
+TITLE =
+VERSION : 0.0
+
+"Schrittkette 2 (Prüfen)"
+BEGIN
+   T1_2 := FALSE; 
+   T2_3 := TRUE; 
+   T3_4 := TRUE; 
+   T4_5 := TRUE; 
+   T5_6 := TRUE; 
+   T6_7 := TRUE; 
+   T7_1 := TRUE; 
+   T1_9 := TRUE; 
+   T9_10 := TRUE; 
+   T10_1 := TRUE; 
+   T4_11 := FALSE; 
+   T11_12 := FALSE; 
+   T12_13 := FALSE; 
+   T13_7 := FALSE; 
+   Reset := FALSE; 
+   Weiter_oB := FALSE; 
+   Weiter_mB := FALSE; 
+   Schritt := 0; 
+   SM_1 := TRUE; 
+   SM_2 := FALSE; 
+   SM_3 := FALSE; 
+   SM_4 := FALSE; 
+   SM_5 := FALSE; 
+   SM_6 := FALSE; 
+   SM_7 := FALSE; 
+   SM_9 := FALSE; 
+   SM_10 := FALSE; 
+   SM_11 := FALSE; 
+   SM_12 := FALSE; 
+   SM_13 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Eingänge Schrittkette_3"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  Anzahl_Teile : INT ;	
+  Farbe_Rot : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL ;	
+  T3_4 : BOOL ;	
+  T4_5 : BOOL ;	
+  T5_6 : BOOL ;	
+  T6_7_u_6_16 : BOOL ;	
+  T7_8 : BOOL ;	
+  T8_9_u_17_9 : BOOL ;	
+  T9_10 : BOOL ;	
+  T10_11_u_10_18 : BOOL ;	
+  T11_12 : BOOL ;	
+  T12_13_u_19_13 : BOOL ;	
+  T13_14 : BOOL ;	
+  T14_15 : BOOL ;	
+  T15_1 : BOOL ;	
+  T16_17 : BOOL ;	
+  T18_19 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U     "4B6"; 
+      =     #T1_2; 
+NETWORK
+TITLE =
+
+      O     "4B4"; 
+      O     "4B3"; 
+      =     #T2_3; 
+NETWORK
+TITLE =
+
+      U     "4B1"; 
+      =     #T3_4; 
+NETWORK
+TITLE =
+
+      U     "3B1"; 
+      =     #T4_5; 
+NETWORK
+TITLE =
+
+      U     "3B7"; 
+      U     "3B1"; 
+      =     #T5_6; 
+NETWORK
+TITLE =
+
+      U     "4B4"; 
+      =     #T6_7_u_6_16; 
+NETWORK
+TITLE =
+
+      U     "4B5"; 
+      =     #T7_8; 
+NETWORK
+TITLE =
+
+      U     "4B5"; 
+      U     "4B7"; 
+      =     #T8_9_u_17_9; 
+NETWORK
+TITLE =
+
+      U     "4B9"; 
+      =     #T9_10; 
+NETWORK
+TITLE =
+
+      U     "3B6"; 
+      =     #T10_11_u_10_18; 
+NETWORK
+TITLE =
+
+      U     "4B6"; 
+      =     #T11_12; 
+NETWORK
+TITLE =
+
+      U     "4B4"; 
+      U     "4B6"; 
+      =     #T12_13_u_19_13; 
+NETWORK
+TITLE =
+
+      U     "4B2"; 
+      =     #T13_14; 
+NETWORK
+TITLE =
+
+      U     #Farbe_Rot; 
+      U     "4B4"; 
+      O     ; 
+      UN    #Farbe_Rot; 
+      U     "4B5"; 
+      =     #T14_15; 
+NETWORK
+TITLE =
+
+      UN    "4B9"; 
+      =     #T15_1; 
+NETWORK
+TITLE =
+
+      U     "4B7"; 
+      =     #T16_17; 
+NETWORK
+TITLE =
+
+      U     "4B4"; 
+      =     #T18_19; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Transitionen_SK3"
+TITLE =
+VERSION : 0.0
+
+"Eingänge Schrittkette_3"
+BEGIN
+   Anzahl_Teile := 0; 
+   Farbe_Rot := FALSE; 
+   T1_2 := FALSE; 
+   T2_3 := FALSE; 
+   T3_4 := FALSE; 
+   T4_5 := FALSE; 
+   T5_6 := FALSE; 
+   T6_7_u_6_16 := FALSE; 
+   T7_8 := FALSE; 
+   T8_9_u_17_9 := FALSE; 
+   T9_10 := FALSE; 
+   T10_11_u_10_18 := FALSE; 
+   T11_12 := FALSE; 
+   T12_13_u_19_13 := FALSE; 
+   T13_14 := FALSE; 
+   T14_15 := FALSE; 
+   T15_1 := FALSE; 
+   T16_17 := FALSE; 
+   T18_19 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Schrittkette 3 (Greifer)"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  T1_2 : BOOL ;	
+  T2_3 : BOOL  := TRUE;	
+  T3_4 : BOOL  := TRUE;	
+  T4_5 : BOOL  := TRUE;	
+  T5_6 : BOOL  := TRUE;	
+  T6_7_u_6_16 : BOOL  := TRUE;	
+  T7_8 : BOOL  := TRUE;	
+  T8_9_u_17_9 : BOOL  := TRUE;	
+  T9_10 : BOOL  := TRUE;	
+  T10_11_u_10_18 : BOOL  := TRUE;	
+  T11_12 : BOOL  := TRUE;	
+  T12_13_u_19_13 : BOOL  := TRUE;	
+  T13_14 : BOOL  := TRUE;	
+  T14_15 : BOOL  := TRUE;	
+  T15_1 : BOOL ;	
+  T16_17 : BOOL ;	
+  T18_19 : BOOL ;	
+  Reset : BOOL ;	
+  Weiter_ob : BOOL ;	
+  Weiter_mb : BOOL ;	
+END_VAR
+VAR_OUTPUT
+  Schritt : INT ;	
+  Schritt2 : INT ;	
+END_VAR
+VAR
+  SM_1 : BOOL  := TRUE;	
+  SM_2 : BOOL ;	
+  SM_3 : BOOL ;	
+  SM_4 : BOOL ;	
+  SM_5 : BOOL ;	
+  SM_6 : BOOL ;	
+  SM_7 : BOOL ;	
+  SM_8 : BOOL ;	
+  SM_9 : BOOL ;	
+  SM_10 : BOOL ;	
+  SM_11 : BOOL ;	
+  SM_12 : BOOL ;	
+  SM_13 : BOOL ;	
+  SM_14 : BOOL ;	
+  SM_15 : BOOL ;	
+  SM_16 : BOOL ;	
+  SM_17 : BOOL ;	
+  SM_18 : BOOL ;	
+  SM_19 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+      U(    ; 
+      O     #Reset; 
+      O     ; 
+      UN    #SM_14; 
+      U     #SM_15; 
+      U(    ; 
+      U     #T15_1; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      )     ; 
+      S     #SM_1; 
+      U     #SM_2; 
+      R     #SM_1; 
+      U     #SM_1; 
+      =     L      0.0; 
+      U     L      0.0; 
+      SPBNB _001; 
+      L     1; 
+      T     #Schritt; 
+_001: NOP   0; 
+      U     L      0.0; 
+      SPBNB _002; 
+      L     0; 
+      T     #Schritt2; 
+_002: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_15; 
+      U     #SM_1; 
+      U(    ; 
+      U     #T1_2; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_2; 
+      U(    ; 
+      O     #SM_3; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_2; 
+      U     #SM_2; 
+      )     ; 
+      SPBNB _003; 
+      L     2; 
+      T     #Schritt; 
+_003: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_1; 
+      U     #SM_2; 
+      U(    ; 
+      U     #T2_3; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_3; 
+      U(    ; 
+      O     #SM_4; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_3; 
+      U     #SM_3; 
+      )     ; 
+      SPBNB _004; 
+      L     3; 
+      T     #Schritt; 
+_004: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_2; 
+      U     #SM_3; 
+      U(    ; 
+      U     #T3_4; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_4; 
+      U(    ; 
+      O     #SM_5; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_4; 
+      U     #SM_4; 
+      )     ; 
+      SPBNB _005; 
+      L     4; 
+      T     #Schritt; 
+_005: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_3; 
+      U     #SM_4; 
+      U(    ; 
+      U     #T4_5; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_5; 
+      U(    ; 
+      O     #SM_6; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_5; 
+      U     #SM_5; 
+      )     ; 
+      SPBNB _006; 
+      L     5; 
+      T     #Schritt; 
+_006: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_4; 
+      U     #SM_5; 
+      U(    ; 
+      U     #T5_6; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_6; 
+      U(    ; 
+      U     #SM_7; 
+      U     #SM_16; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_6; 
+      U     #SM_6; 
+      )     ; 
+      SPBNB _007; 
+      L     6; 
+      T     #Schritt; 
+_007: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_5; 
+      U     #SM_6; 
+      U(    ; 
+      U     #T6_7_u_6_16; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_7; 
+      U(    ; 
+      O     #SM_8; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_7; 
+      U     #SM_7; 
+      )     ; 
+      SPBNB _008; 
+      L     7; 
+      T     #Schritt; 
+_008: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_6; 
+      U     #SM_7; 
+      U(    ; 
+      U     #T7_8; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_8; 
+      U(    ; 
+      O     #SM_9; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_8; 
+      U     #SM_8; 
+      )     ; 
+      SPBNB _009; 
+      L     8; 
+      T     #Schritt; 
+_009: NOP   0; 
+NETWORK
+TITLE =
+
+      UN    #SM_16; 
+      U     #SM_17; 
+      UN    #SM_7; 
+      U     #SM_8; 
+      U(    ; 
+      U     #T8_9_u_17_9; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_9; 
+      U(    ; 
+      O     #SM_10; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_9; 
+      U     #SM_9; 
+      =     L      0.0; 
+      U     L      0.0; 
+      SPBNB _00a; 
+      L     9; 
+      T     #Schritt; 
+_00a: NOP   0; 
+      U     L      0.0; 
+      SPBNB _00b; 
+      L     0; 
+      T     #Schritt2; 
+_00b: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_17; 
+      UN    #SM_8; 
+      U     #SM_9; 
+      U(    ; 
+      U     #T9_10; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_10; 
+      U(    ; 
+      U     #SM_11; 
+      U     #SM_18; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_10; 
+      U     #SM_10; 
+      )     ; 
+      SPBNB _00c; 
+      L     10; 
+      T     #Schritt; 
+_00c: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_9; 
+      U     #SM_10; 
+      U(    ; 
+      U     #T10_11_u_10_18; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_11; 
+      U(    ; 
+      O     #SM_12; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_11; 
+      U     #SM_11; 
+      )     ; 
+      SPBNB _00d; 
+      L     11; 
+      T     #Schritt; 
+_00d: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_10; 
+      U     #SM_11; 
+      U(    ; 
+      U     #T11_12; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_12; 
+      U(    ; 
+      O     #SM_13; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_12; 
+      U     #SM_12; 
+      )     ; 
+      SPBNB _00e; 
+      L     12; 
+      T     #Schritt; 
+_00e: NOP   0; 
+NETWORK
+TITLE =
+
+      UN    #SM_18; 
+      U     #SM_19; 
+      UN    #SM_11; 
+      U     #SM_12; 
+      U(    ; 
+      U     #T12_13_u_19_13; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_13; 
+      U(    ; 
+      O     #SM_14; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_13; 
+      U     #SM_13; 
+      =     L      0.0; 
+      U     L      0.0; 
+      SPBNB _00f; 
+      L     13; 
+      T     #Schritt; 
+_00f: NOP   0; 
+      U     L      0.0; 
+      SPBNB _010; 
+      L     0; 
+      T     #Schritt2; 
+_010: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_19; 
+      UN    #SM_12; 
+      U     #SM_13; 
+      U(    ; 
+      U     #T13_14; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_14; 
+      U(    ; 
+      O     #SM_15; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_14; 
+      U     #SM_14; 
+      )     ; 
+      SPBNB _011; 
+      L     14; 
+      T     #Schritt; 
+_011: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_13; 
+      U     #SM_14; 
+      U(    ; 
+      U     #T14_15; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_15; 
+      U(    ; 
+      O     #SM_1; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_15; 
+      U     #SM_15; 
+      )     ; 
+      SPBNB _012; 
+      L     15; 
+      T     #Schritt; 
+_012: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_5; 
+      U     #SM_6; 
+      U(    ; 
+      U     #T6_7_u_6_16; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_16; 
+      U(    ; 
+      O     #SM_17; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_16; 
+      U     #SM_16; 
+      )     ; 
+      SPBNB _013; 
+      L     16; 
+      T     #Schritt2; 
+_013: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_6; 
+      U     #SM_16; 
+      U(    ; 
+      U     #T16_17; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_17; 
+      U(    ; 
+      O     #SM_9; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_17; 
+      U     #SM_17; 
+      )     ; 
+      SPBNB _014; 
+      L     17; 
+      T     #Schritt2; 
+_014: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_9; 
+      U     #SM_10; 
+      U(    ; 
+      U     #T10_11_u_10_18; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_18; 
+      U(    ; 
+      O     #SM_19; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_18; 
+      U     #SM_18; 
+      )     ; 
+      SPBNB _015; 
+      L     18; 
+      T     #Schritt2; 
+_015: NOP   0; 
+NETWORK
+TITLE =
+
+      U(    ; 
+      UN    #SM_10; 
+      U     #SM_18; 
+      U(    ; 
+      U     #T18_19; 
+      U     #Weiter_mb; 
+      O     #Weiter_ob; 
+      )     ; 
+      S     #SM_19; 
+      U(    ; 
+      O     #SM_13; 
+      O     #Reset; 
+      )     ; 
+      R     #SM_19; 
+      U     #SM_19; 
+      )     ; 
+      SPBNB _016; 
+      L     19; 
+      T     #Schritt2; 
+_016: NOP   0; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Schrittkette_3"
+TITLE =
+VERSION : 0.0
+
+"Schrittkette 3 (Greifer)"
+BEGIN
+   T1_2 := FALSE; 
+   T2_3 := TRUE; 
+   T3_4 := TRUE; 
+   T4_5 := TRUE; 
+   T5_6 := TRUE; 
+   T6_7_u_6_16 := TRUE; 
+   T7_8 := TRUE; 
+   T8_9_u_17_9 := TRUE; 
+   T9_10 := TRUE; 
+   T10_11_u_10_18 := TRUE; 
+   T11_12 := TRUE; 
+   T12_13_u_19_13 := TRUE; 
+   T13_14 := TRUE; 
+   T14_15 := TRUE; 
+   T15_1 := FALSE; 
+   T16_17 := FALSE; 
+   T18_19 := FALSE; 
+   Reset := FALSE; 
+   Weiter_ob := FALSE; 
+   Weiter_mb := FALSE; 
+   Schritt := 0; 
+   Schritt2 := 0; 
+   SM_1 := TRUE; 
+   SM_2 := FALSE; 
+   SM_3 := FALSE; 
+   SM_4 := FALSE; 
+   SM_5 := FALSE; 
+   SM_6 := FALSE; 
+   SM_7 := FALSE; 
+   SM_8 := FALSE; 
+   SM_9 := FALSE; 
+   SM_10 := FALSE; 
+   SM_11 := FALSE; 
+   SM_12 := FALSE; 
+   SM_13 := FALSE; 
+   SM_14 := FALSE; 
+   SM_15 := FALSE; 
+   SM_16 := FALSE; 
+   SM_17 := FALSE; 
+   SM_18 := FALSE; 
+   SM_19 := FALSE; 
+END_DATA_BLOCK
+
+FUNCTION_BLOCK "Ausgänge_Schrittkette_3"
+TITLE =
+VERSION : 0.1
+
+
+VAR_INPUT
+  Schritt_Nr : INT ;	
+  Schritt_Nr_2 : INT ;	
+  Reset : BOOL ;	
+  Aktornummer : INT ;	
+  Aktorfreigabe : BOOL ;	
+  Aktor_vor : BOOL ;	
+  Aktor_zurueck : BOOL ;	
+END_VAR
+VAR
+  Merker_1 : BOOL ;	
+  Merker_2 : BOOL ;	
+  Merker_3 : BOOL ;	
+  Merker_4 : BOOL ;	
+  Merker_5 : BOOL ;	
+  Merker_6 : BOOL ;	
+  Merker_7 : BOOL ;	
+  Merker_8 : BOOL ;	
+  Merker_9 : BOOL ;	
+  Merker_10 : BOOL ;	
+  Merker_11 : BOOL ;	
+  Merker_12 : BOOL ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =4K1 = 1; Vertikalmotor Handhabungsgerät hoch
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     11; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker_1; 
+      U(    ; 
+      O(    ; 
+      L     16; 
+      L     #Schritt_Nr_2; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     12; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_1; 
+      U     #Merker_1; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     303; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_zurueck; 
+      =     "4K1"; 
+NETWORK
+TITLE =4K2 = 1; Vertikalmotor Handhabungsgerät runter
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr_2; 
+      L     16; 
+      ==I   ; 
+      )     ; 
+      S     #Merker_2; 
+      U(    ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr_2; 
+      L     17; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     11; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_2; 
+      U     #Merker_2; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     303; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "4K2"; 
+NETWORK
+TITLE =4K3 = 1; Horizontalmotor Handhabungsgerät zurück
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      U(    ; 
+      L     #Schritt_Nr_2; 
+      L     18; 
+      ==I   ; 
+      )     ; 
+      L     S5T#1S300MS; 
+      SE    "T_Aushub_Handhabung"; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr_2; 
+      L     19; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      )     ; 
+      R     "T_Aushub_Handhabung"; 
+      NOP   0; 
+      NOP   0; 
+      U     "T_Aushub_Handhabung"; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker_3; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     3; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     14; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr_2; 
+      L     19; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     6; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_3; 
+      U     #Merker_3; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     304; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_zurueck; 
+      =     "4K3"; 
+NETWORK
+TITLE =4K4 = 1; Horizontalmotor Handhabungsgerät vor
+
+      O     E      1.6; 
+      O     ; 
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     6; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     14; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker_4; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     2; 
+      ==I   ; 
+      )     ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     15; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr_2; 
+      L     18; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     8; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_4; 
+      U     #Merker_4; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     304; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "4K4"; 
+NETWORK
+TITLE =4K5 = 1; Drehung Handhabungsgerät links
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     13; 
+      ==I   ; 
+      )     ; 
+      S     #Merker_5; 
+      U(    ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     14; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     3; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_5; 
+      U     #Merker_5; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     305; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "4K5"; 
+NETWORK
+TITLE =4K6 = 1; Drehung Handhabungsgerät rechts
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     3; 
+      ==I   ; 
+      )     ; 
+      S     #Merker_6; 
+      U(    ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     13; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     4; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_6; 
+      U     #Merker_6; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     305; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_zurueck; 
+      =     "4K6"; 
+NETWORK
+TITLE =3Y2 = 1; Werkstückspanner
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     5; 
+      ==I   ; 
+      )     ; 
+      S     #Merker_8; 
+      U(    ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     10; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_8; 
+      U     #Merker_8; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     301; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "3Y2"; 
+NETWORK
+TITLE =4Y1 = 1; Greifer auf
+
+      U(    ; 
+      U(    ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     15; 
+      ==I   ; 
+      )     ; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     1; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      S     #Merker_9; 
+      U(    ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     9; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_9; 
+      U     #Merker_9; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     302; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_zurueck; 
+      =     "4Y1"; 
+NETWORK
+TITLE =4Y2 = 1; Greifer zu
+
+      U(    ; 
+      U(    ; 
+      L     #Schritt_Nr; 
+      L     9; 
+      ==I   ; 
+      )     ; 
+      S     #Merker_10; 
+      U(    ; 
+      O     #Reset; 
+      O(    ; 
+      L     #Schritt_Nr; 
+      L     15; 
+      ==I   ; 
+      )     ; 
+      )     ; 
+      R     #Merker_10; 
+      U     #Merker_10; 
+      )     ; 
+      U     #Aktorfreigabe; 
+      O     ; 
+      U(    ; 
+      L     #Aktornummer; 
+      L     302; 
+      ==I   ; 
+      )     ; 
+      U     #Aktor_vor; 
+      =     "4Y2"; 
+END_FUNCTION_BLOCK
+
+DATA_BLOCK "DB_Ausgänge_SK3"
+TITLE =
+VERSION : 0.0
+
+"Ausgänge_Schrittkette_3"
+BEGIN
+   Schritt_Nr := 0; 
+   Schritt_Nr_2 := 0; 
+   Reset := FALSE; 
+   Aktornummer := 0; 
+   Aktorfreigabe := FALSE; 
+   Aktor_vor := FALSE; 
+   Aktor_zurueck := FALSE; 
+   Merker_1 := FALSE; 
+   Merker_2 := FALSE; 
+   Merker_3 := FALSE; 
+   Merker_4 := FALSE; 
+   Merker_5 := FALSE; 
+   Merker_6 := FALSE; 
+   Merker_7 := FALSE; 
+   Merker_8 := FALSE; 
+   Merker_9 := FALSE; 
+   Merker_10 := FALSE; 
+   Merker_11 := FALSE; 
+   Merker_12 := FALSE; 
+END_DATA_BLOCK
+
+ORGANIZATION_BLOCK "Programmzyklus"
+TITLE = "Main Program Sweep (Cycle)"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB1_EV_CLASS : BYTE ;	//Bits 0-3 = 1 (Coming event), Bits 4-7 = 1 (Event class 1)
+  OB1_SCAN_1 : BYTE ;	//1 (Cold restart scan 1 of OB 1), 3 (Scan 2-n of OB 1)
+  OB1_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB1_OB_NUMBR : BYTE ;	//1 (Organization block 1, OB1)
+  OB1_RESERVED_1 : BYTE ;	//Reserved for system
+  OB1_RESERVED_2 : BYTE ;	//Reserved for system
+  OB1_PREV_CYCLE : INT ;	//Cycle time of previous OB1 scan (milliseconds)
+  OB1_MIN_CYCLE : INT ;	//Minimum cycle time of OB1 (milliseconds)
+  OB1_MAX_CYCLE : INT ;	//Maximum cycle time of OB1 (milliseconds)
+  OB1_DATE_TIME : DATE_AND_TIME ;	//Date and time OB1 started
+  TEMP_T1_T2_SK1 : BOOL ;	
+  TEMP_T2_T3_SK1 : BOOL ;	
+  TEMP_T3_T4_SK1 : BOOL ;	
+  TEMP_T4_T5_SK1 : BOOL ;	
+  TEMP_T5_T6_SK1 : BOOL ;	
+  TEMP_T6_T7_SK1 : BOOL ;	
+  TEMP_T7_T1_Sk1 : BOOL ;	
+  TEMP_T3_T10_SK1 : BOOL ;	
+  TEMP_T10_T1_SK1 : BOOL ;	
+  TEMP_Reset : BOOL ;	
+  TEMP_T1_T2_SK2 : BOOL ;	
+  TEMP_T2_T3_SK2 : BOOL ;	
+  TEMP_T3_T4_SK2 : BOOL ;	
+  TEMP_T4_T5_SK2 : BOOL ;	
+  TEMP_T5_T6_SK2 : BOOL ;	
+  TEMP_T6_T7_SK2 : BOOL ;	
+  TEMP_T7_T1_SK2 : BOOL ;	
+  TEMP_T1_T9_SK2 : BOOL ;	
+  TEMP_T9_T10_SK2 : BOOL ;	
+  TEMP_T10_T1_SK2 : BOOL ;	
+  TEMP_T4_T11_SK2 : BOOL ;	
+  TEMP_T11_T12_SK2 : BOOL ;	
+  TEMP_T12_T13_SK2 : BOOL ;	
+  TEMP_T13_T7_SK2 : BOOL ;	
+  TEMP_Fr_k_mb : BOOL ;	
+  TEMP_Fr_k_ob : BOOL ;	
+  TEMP_Fr_Aktion : BOOL ;	
+  TEMP_gemessene_dicke : WORD ;	
+  TEMP_gemessene_farbe : BOOL ;	
+  TEMP_wert_einschieben : BOOL ;	
+  TEMP_T1_T2_SK3 : BOOL ;	
+  TEMP_T2_T3_SK3 : BOOL ;	
+  TEMP_T3_T4_SK3 : BOOL ;	
+  TEMP_T4_T5_SK3 : BOOL ;	
+  TEMP_T5_T6_SK3 : BOOL ;	
+  TEMP_T6_T7_u_T6_T16_SK3 : BOOL ;	
+  TEMP_T7_T8_SK3 : BOOL ;	
+  TEMP_T8_T9_u_T17_T9_SK3 : BOOL ;	
+  TEMP_T9_T10_SK3 : BOOL ;	
+  TEMP_T10_T11_u_10_18_SK3 : BOOL ;	
+  TEMP_T11_T12_SK3 : BOOL ;	
+  TEMP_T12_T13_u_19_13_SK3 : BOOL ;	
+  TEMP_T13_T14_SK3 : BOOL ;	
+  TEMP_T14_T15_SK3 : BOOL ;	
+  TEMP_T15_T1_SK3 : BOOL ;	
+  TEMP_T16_T17_SK3 : BOOL ;	
+  TEMP_T18_T19_SK3 : BOOL ;	
+  TEMP_schiebereg_aus : BOOL ;	
+  TEMP_schiebereg_farbe : BOOL ;	
+  TEMP_Aktor_vor : BOOL ;	
+  TEMP_Aktor_zurueck : BOOL ;	
+  TEMP_Aktornummer : INT ;	
+  TEMP_Dicke : WORD ;	
+END_VAR
+BEGIN
+NETWORK
+TITLE =Handbetrieb: "Aktor vor" Signal erzeugen und verriegeln
+
+      U     "Handbetrieb"; 
+      UN    "AktorRück_Hand"; 
+      U     "AktorVor_Hand"; 
+      =     #TEMP_Aktor_vor; 
+NETWORK
+TITLE =Handbetrieb: "Aktor zurueck" Signal erzeugen und verriegeln
+
+      U     "Handbetrieb"; 
+      U     "AktorRück_Hand"; 
+      UN    "AktorVor_Hand"; 
+      =     #TEMP_Aktor_zurueck; 
+NETWORK
+TITLE =Handbetrieb: Aktornummer von BCD wandeln
+//Der BTI-Befehl wird nicht direkt verwendet, weil dies bei einer fehlerhaften 
+//BCD-Zahl zu einem STOP der Anlage führt. Stattdessen wird mit dem FC100 im 
+//Fehlerfall eine -1 ausgegeben.
+      CALL "BCD_zu_INT_Wandler" (
+           bcd_wert                 := "Aktornummer_Hand",
+           fehler_wert              := -1,
+           RET_VAL                  := #TEMP_Aktornummer);
+      NOP   0; 
+NETWORK
+TITLE =Transitionen für Schrittkette 1
+
+      CALL "Eingaenge_Schrittkette_1" , "DB_Transitionen_SK1" (
+           T1_2                     := #TEMP_T1_T2_SK1,
+           T2_3                     := #TEMP_T2_T3_SK1,
+           T3_4                     := #TEMP_T3_T4_SK1,
+           T4_5                     := #TEMP_T4_T5_SK1,
+           T5_6                     := #TEMP_T5_T6_SK1,
+           T6_7                     := #TEMP_T6_T7_SK1,
+           T7_1                     := #TEMP_T7_T1_Sk1,
+           T3_10                    := #TEMP_T3_T10_SK1,
+           T10_1                    := #TEMP_T10_T1_SK1);
+      NOP   0; 
+NETWORK
+TITLE =Betriebsarten
+
+      U     "EIN"; 
+      =     L     34.0; 
+      BLD   103; 
+      U     "EIN"; 
+      =     L     34.1; 
+      BLD   103; 
+      U     "Start"; 
+      =     L     34.2; 
+      BLD   103; 
+      U     "Automatikbetrieb"; 
+      =     L     34.3; 
+      BLD   103; 
+      U     "Handbetrieb"; 
+      =     L     34.6; 
+      BLD   103; 
+      U     "NOT_AUS"; 
+      =     L     35.0; 
+      BLD   103; 
+      U     "Handbetrieb"; 
+      =     L     35.1; 
+      BLD   103; 
+      U     "Grundstellung"; 
+      =     L     35.2; 
+      BLD   103; 
+      U     "Quit"; 
+      =     L     35.4; 
+      BLD   103; 
+      CALL "Betriebsarten" , "DB_Betriebsarten" (
+           STG_AUS                  := L     34.0,
+           STG_EIN                  := L     34.1,
+           Start                    := L     34.2,
+           Auto                     := L     34.3,
+           EINR                     := L     34.6,
+           NOT_AUS                  := L     35.0,
+           AKTOR_FR                 := L     35.1,
+           GST_ANL                  := L     35.2,
+           Quitt                    := L     35.4,
+           ANZ_STG                  := "H_Steuerung_Ein",
+           ANZ_AUTO                 := "H_Automatikbetrieb",
+           ANZ_EINR                 := "H_Handbetrieb",
+           Reset                    := #TEMP_Reset,
+           FR_K_mB                  := #TEMP_Fr_k_mb,
+           FR_K_oB                  := #TEMP_Fr_k_ob,
+           FR_AKTION                := #TEMP_Fr_Aktion);
+      NOP   0; 
+NETWORK
+TITLE =Merker "Erster Zyklus"
+
+      U     #TEMP_Reset; // Wenn RESET aktiv, dann...
+      SPBN  ners; 
+
+      SET   ; // Merker "Erster Zyklus" setzen
+      =     "Erster_Zyklus"; 
+
+ners: NOP   0; 
+
+NETWORK
+TITLE =Schrittkette 1 (Magazin)
+
+      U     #TEMP_T1_T2_SK1; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_T2_T3_SK1; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_T3_T4_SK1; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_T3_T10_SK1; 
+      =     L     34.3; 
+      BLD   103; 
+      U     #TEMP_T4_T5_SK1; 
+      =     L     34.4; 
+      BLD   103; 
+      U     #TEMP_T5_T6_SK1; 
+      =     L     34.5; 
+      BLD   103; 
+      U     #TEMP_T6_T7_SK1; 
+      =     L     34.6; 
+      BLD   103; 
+      U     #TEMP_T7_T1_Sk1; 
+      =     L     34.7; 
+      BLD   103; 
+      U     #TEMP_T10_T1_SK1; 
+      =     L     35.0; 
+      BLD   103; 
+      U     #TEMP_Reset; 
+      =     L     35.1; 
+      BLD   103; 
+      U     #TEMP_Fr_k_ob; 
+      =     L     35.2; 
+      BLD   103; 
+      U     #TEMP_Fr_k_mb; 
+      =     L     35.3; 
+      BLD   103; 
+      CALL "Schrittkette 1 (Magazin)" , "DB_Schrittkette_1" (
+           T1_2                     := L     34.0,
+           T2_3                     := L     34.1,
+           T3_4                     := L     34.2,
+           T3_10                    := L     34.3,
+           T4_5                     := L     34.4,
+           T5_6                     := L     34.5,
+           T6_7                     := L     34.6,
+           T7_1                     := L     34.7,
+           T10_1                    := L     35.0,
+           Reset                    := L     35.1,
+           Weiter_oB                := L     35.2,
+           Weiter_mB                := L     35.3,
+           Schritt                  := "OB1_Daten".SK1_Schritt_Nr);
+      NOP   0; 
+NETWORK
+TITLE =Ausgänge für Schrittkette 1
+
+      U     #TEMP_Reset; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_Fr_Aktion; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_Aktor_vor; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_Aktor_zurueck; 
+      =     L     34.3; 
+      BLD   103; 
+      CALL "Ausgaenge_Schrittkette_1" , "DB_Ausgänge_SK1" (
+           Schritt_Nr               := "OB1_Daten".SK1_Schritt_Nr,
+           Reset                    := L     34.0,
+           Aktorfreigabe            := L     34.1,
+           Aktornummer              := #TEMP_Aktornummer,
+           Aktor_vor                := L     34.2,
+           Aktor_zurueck            := L     34.3);
+      NOP   0; 
+NETWORK
+TITLE =Transitionen für Schrittkette 2
+
+      CALL "Eingänge_Schrittkette_2" , "DB_Transitionen_SK2" (
+           fuellstand_schieberegist := "OB1_Daten".Schiebereg_Fuellstand,
+           T1_2                     := #TEMP_T1_T2_SK2,
+           T2_3                     := #TEMP_T2_T3_SK2,
+           T3_4                     := #TEMP_T3_T4_SK2,
+           T4_5                     := #TEMP_T4_T5_SK2,
+           T5_6                     := #TEMP_T5_T6_SK2,
+           T6_7                     := #TEMP_T6_T7_SK2,
+           T7_1                     := #TEMP_T7_T1_SK2,
+           T1_9                     := #TEMP_T1_T9_SK2,
+           T9_10                    := #TEMP_T9_T10_SK2,
+           T10_1                    := #TEMP_T10_T1_SK2,
+           T4_11                    := #TEMP_T4_T11_SK2,
+           T11_12                   := #TEMP_T11_T12_SK2,
+           T12_13                   := #TEMP_T12_T13_SK2,
+           T13_7                    := #TEMP_T13_T7_SK2);
+      NOP   0; 
+NETWORK
+TITLE =Schrittkette 2 (Prüfen)
+
+      U     #TEMP_T1_T2_SK2; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_T2_T3_SK2; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_T3_T4_SK2; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_T4_T5_SK2; 
+      =     L     34.3; 
+      BLD   103; 
+      U     #TEMP_T5_T6_SK2; 
+      =     L     34.4; 
+      BLD   103; 
+      U     #TEMP_T6_T7_SK2; 
+      =     L     34.5; 
+      BLD   103; 
+      U     #TEMP_T7_T1_SK2; 
+      =     L     34.6; 
+      BLD   103; 
+      U     #TEMP_T1_T9_SK2; 
+      =     L     34.7; 
+      BLD   103; 
+      U     #TEMP_T9_T10_SK2; 
+      =     L     35.0; 
+      BLD   103; 
+      U     #TEMP_T10_T1_SK2; 
+      =     L     35.1; 
+      BLD   103; 
+      U     #TEMP_T4_T11_SK2; 
+      =     L     35.2; 
+      BLD   103; 
+      U     #TEMP_T11_T12_SK2; 
+      =     L     35.3; 
+      BLD   103; 
+      U     #TEMP_T12_T13_SK2; 
+      =     L     35.4; 
+      BLD   103; 
+      U     #TEMP_T13_T7_SK2; 
+      =     L     35.5; 
+      BLD   103; 
+      U     #TEMP_Reset; 
+      =     L     35.6; 
+      BLD   103; 
+      U     #TEMP_Fr_k_ob; 
+      =     L     35.7; 
+      BLD   103; 
+      U     #TEMP_Fr_k_mb; 
+      =     L     36.0; 
+      BLD   103; 
+      CALL "Schrittkette 2 (Prüfen)" , "DB_Schrittkette_2" (
+           T1_2                     := L     34.0,
+           T2_3                     := L     34.1,
+           T3_4                     := L     34.2,
+           T4_5                     := L     34.3,
+           T5_6                     := L     34.4,
+           T6_7                     := L     34.5,
+           T7_1                     := L     34.6,
+           T1_9                     := L     34.7,
+           T9_10                    := L     35.0,
+           T10_1                    := L     35.1,
+           T4_11                    := L     35.2,
+           T11_12                   := L     35.3,
+           T12_13                   := L     35.4,
+           T13_7                    := L     35.5,
+           Reset                    := L     35.6,
+           Weiter_oB                := L     35.7,
+           Weiter_mB                := L     36.0,
+           Schritt                  := "OB1_Daten".SK2_Schritt_Nr);
+      NOP   0; 
+NETWORK
+TITLE =Ausgänge für Schrittkette 2
+
+      U     #TEMP_Reset; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_Fr_Aktion; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_Aktor_vor; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_Aktor_zurueck; 
+      =     L     34.3; 
+      BLD   103; 
+      CALL "Ausgänge_Schrittkette_2" , "DB_Ausgänge_SK2" (
+           Schritt_Nr               := "OB1_Daten".SK2_Schritt_Nr,
+           Reset                    := L     34.0,
+           Aktorfreigabe            := L     34.1,
+           Aktornummer              := #TEMP_Aktornummer,
+           Aktor_vor                := L     34.2,
+           Aktor_zurueck            := L     34.3,
+           gemessene_dicke          := #TEMP_gemessene_dicke,
+           gemessene_farbe          := #TEMP_gemessene_farbe,
+           gem_wert_schieben        := #TEMP_wert_einschieben);
+      NOP   0; 
+NETWORK
+TITLE =Signal erzeugen: Schieberegister entnehmen
+
+      L     8; 
+      L     "OB1_Daten".SK3_Schritt_Nr; 
+      ==I   ; 
+      =     #TEMP_schiebereg_aus; 
+NETWORK
+TITLE =Daten in Schieberegister einschieben und entnehmen
+
+      U     #TEMP_gemessene_farbe; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_wert_einschieben; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_schiebereg_aus; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_Reset; 
+      =     L     34.3; 
+      BLD   103; 
+      CALL "Schieberegister" , "DB_Schiebereg_Band" (
+           Dicke_Eingang            := #TEMP_gemessene_dicke,
+           Farbe_Eingang            := L     34.0,
+           Einschieben              := L     34.1,
+           Ausschieben              := L     34.2,
+           reset                    := L     34.3,
+           Anzahl_Teile             := "OB1_Daten".Schiebereg_Fuellstand,
+           Farbe_Ausgang            := #TEMP_schiebereg_farbe,
+           Dicke_Ausgang            := #TEMP_Dicke);
+      NOP   0; 
+NETWORK
+TITLE =Dicke von Teil im Greifer und Füllstand Schieberegister ausgeben
+
+      L     "OB1_Daten".Schiebereg_Fuellstand; 
+      DTB   ; // Kein ITB, weil ITB nur 3-stellig
+      T     "Ausgabe_SchReg_Fuellst"; // Auf BCD-Anzeige 1 ausgeben
+
+      L     #TEMP_Dicke; 
+      DTB   ; // Kein ITB, weil ITB nur 3-stellig
+      T     "Ausgabe_Teiledicke"; // Auf BCD-ANzeige 2 ausgeben
+
+NETWORK
+TITLE =Transitionen für Schrittkette 3
+
+      U     #TEMP_schiebereg_farbe; 
+      =     L     34.0; 
+      BLD   103; 
+      CALL "Eingänge Schrittkette_3" , "DB_Transitionen_SK3" (
+           Anzahl_Teile             := "OB1_Daten".SK3_Schritt_Nr_2,
+           Farbe_Rot                := L     34.0,
+           T1_2                     := #TEMP_T1_T2_SK3,
+           T2_3                     := #TEMP_T2_T3_SK3,
+           T3_4                     := #TEMP_T3_T4_SK3,
+           T4_5                     := #TEMP_T4_T5_SK3,
+           T5_6                     := #TEMP_T5_T6_SK3,
+           T6_7_u_6_16              := #TEMP_T6_T7_u_T6_T16_SK3,
+           T7_8                     := #TEMP_T7_T8_SK3,
+           T8_9_u_17_9              := #TEMP_T8_T9_u_T17_T9_SK3,
+           T9_10                    := #TEMP_T9_T10_SK3,
+           T10_11_u_10_18           := #TEMP_T10_T11_u_10_18_SK3,
+           T11_12                   := #TEMP_T11_T12_SK3,
+           T12_13_u_19_13           := #TEMP_T12_T13_u_19_13_SK3,
+           T13_14                   := #TEMP_T13_T14_SK3,
+           T14_15                   := #TEMP_T14_T15_SK3,
+           T15_1                    := #TEMP_T15_T1_SK3,
+           T16_17                   := #TEMP_T16_T17_SK3,
+           T18_19                   := #TEMP_T18_T19_SK3);
+      NOP   0; 
+NETWORK
+TITLE =Schrittkette 3 (Greifer)
+
+      U     #TEMP_T1_T2_SK3; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_T2_T3_SK3; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_T3_T4_SK3; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_T4_T5_SK3; 
+      =     L     34.3; 
+      BLD   103; 
+      U     #TEMP_T5_T6_SK3; 
+      =     L     34.4; 
+      BLD   103; 
+      U     #TEMP_T6_T7_u_T6_T16_SK3; 
+      =     L     34.5; 
+      BLD   103; 
+      U     #TEMP_T7_T8_SK3; 
+      =     L     34.6; 
+      BLD   103; 
+      U     #TEMP_T8_T9_u_T17_T9_SK3; 
+      =     L     34.7; 
+      BLD   103; 
+      U     #TEMP_T9_T10_SK3; 
+      =     L     35.0; 
+      BLD   103; 
+      U     #TEMP_T10_T11_u_10_18_SK3; 
+      =     L     35.1; 
+      BLD   103; 
+      U     #TEMP_T11_T12_SK3; 
+      =     L     35.2; 
+      BLD   103; 
+      U     #TEMP_T12_T13_u_19_13_SK3; 
+      =     L     35.3; 
+      BLD   103; 
+      U     #TEMP_T13_T14_SK3; 
+      =     L     35.4; 
+      BLD   103; 
+      U     #TEMP_T14_T15_SK3; 
+      =     L     35.5; 
+      BLD   103; 
+      U     #TEMP_T15_T1_SK3; 
+      =     L     35.6; 
+      BLD   103; 
+      U     #TEMP_T16_T17_SK3; 
+      =     L     35.7; 
+      BLD   103; 
+      U     #TEMP_T18_T19_SK3; 
+      =     L     36.0; 
+      BLD   103; 
+      U     #TEMP_Reset; 
+      =     L     36.1; 
+      BLD   103; 
+      U     #TEMP_Fr_k_ob; 
+      =     L     36.2; 
+      BLD   103; 
+      U     #TEMP_Fr_k_mb; 
+      =     L     36.3; 
+      BLD   103; 
+      CALL "Schrittkette 3 (Greifer)" , "DB_Schrittkette_3" (
+           T1_2                     := L     34.0,
+           T2_3                     := L     34.1,
+           T3_4                     := L     34.2,
+           T4_5                     := L     34.3,
+           T5_6                     := L     34.4,
+           T6_7_u_6_16              := L     34.5,
+           T7_8                     := L     34.6,
+           T8_9_u_17_9              := L     34.7,
+           T9_10                    := L     35.0,
+           T10_11_u_10_18           := L     35.1,
+           T11_12                   := L     35.2,
+           T12_13_u_19_13           := L     35.3,
+           T13_14                   := L     35.4,
+           T14_15                   := L     35.5,
+           T15_1                    := L     35.6,
+           T16_17                   := L     35.7,
+           T18_19                   := L     36.0,
+           Reset                    := L     36.1,
+           Weiter_ob                := L     36.2,
+           Weiter_mb                := L     36.3,
+           Schritt                  := "OB1_Daten".SK3_Schritt_Nr,
+           Schritt2                 := "OB1_Daten".SK3_Schritt_Nr_2);
+      NOP   0; 
+NETWORK
+TITLE =Ausgänge für Schrittkette 3
+
+      U     #TEMP_Reset; 
+      =     L     34.0; 
+      BLD   103; 
+      U     #TEMP_Fr_Aktion; 
+      =     L     34.1; 
+      BLD   103; 
+      U     #TEMP_Aktor_vor; 
+      =     L     34.2; 
+      BLD   103; 
+      U     #TEMP_Aktor_zurueck; 
+      =     L     34.3; 
+      BLD   103; 
+      CALL "Ausgänge_Schrittkette_3" , "DB_Ausgänge_SK3" (
+           Schritt_Nr               := "OB1_Daten".SK3_Schritt_Nr,
+           Schritt_Nr_2             := "OB1_Daten".SK3_Schritt_Nr_2,
+           Reset                    := L     34.0,
+           Aktornummer              := #TEMP_Aktornummer,
+           Aktorfreigabe            := L     34.1,
+           Aktor_vor                := L     34.2,
+           Aktor_zurueck            := L     34.3);
+      NOP   0; 
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK "RACK_FLT"
+TITLE = "Loss Of Rack Fault"
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB86_EV_CLASS : BYTE ;	//16#38/39 Event class 3
+  OB86_FLT_ID : BYTE ;	//16#C1/C4/C5, Fault identifcation code
+  OB86_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB86_OB_NUMBR : BYTE ;	//86 (Organization block 86, OB86)
+  OB86_RESERVED_1 : BYTE ;	//Reserved for system
+  OB86_RESERVED_2 : BYTE ;	//Reserved for system
+  OB86_MDL_ADDR : WORD ;	//Base address of IM module in rack with fault
+  OB86_RACKS_FLTD : ARRAY  [0 .. 31 ] OF BOOL ;	//Racks in fault
+  OB86_DATE_TIME : DATE_AND_TIME ;	//Date and time OB86 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =
+
+END_ORGANIZATION_BLOCK
+
+ORGANIZATION_BLOCK "COMPLETE RESTART"
+TITLE = "Complete Restart"
+//Hochlauf-OB
+//Wird einmal beim Start der SPS ausgeführt
+VERSION : 0.1
+
+
+VAR_TEMP
+  OB100_EV_CLASS : BYTE ;	//16#13, Event class 1, Entering event state, Event logged in diagnostic buffer
+  OB100_STRTUP : BYTE ;	//16#81/82/83/84 Method of startup
+  OB100_PRIORITY : BYTE ;	//Priority of OB Execution
+  OB100_OB_NUMBR : BYTE ;	//100 (Organization block 100, OB100)
+  OB100_RESERVED_1 : BYTE ;	//Reserved for system
+  OB100_RESERVED_2 : BYTE ;	//Reserved for system
+  OB100_STOP : WORD ;	//Event that caused CPU to stop (16#4xxx)
+  OB100_STRT_INFO : DWORD ;	//Information on how system started
+  OB100_DATE_TIME : DATE_AND_TIME ;	//Date and time OB100 started
+END_VAR
+BEGIN
+NETWORK
+TITLE =1: Erster Zyklus
+
+      SET   ; // Merker "Erster Zyklus" setzen
+      =     "Erster_Zyklus"; 
+
+END_ORGANIZATION_BLOCK
+
+
+FUNCTION "BCD_zu_INT_Wandler" : INT
+	VAR_INPUT
+		bcd_wert : WORD;
+		fehler_wert : INT;
+	END_VAR
+BEGIN
+      SET   ;
+      SAVE  ;
+      =     L      0.1;
+      L     #bcd_wert;
+      L     W#16#F;
+      UW    ;
+      L     9;
+      >I    ;
+      L     #bcd_wert;
+      L     W#16#F0;
+      UW    ;
+      L     144;
+      =     L      0.2;
+      >I    ;
+      O     L      0.2;
+      L     #bcd_wert;
+      L     W#16#F00;
+      UW    ;
+      L     2304;
+      =     L      0.2;
+      >I    ;
+      O     L      0.2;
+      SPBN  A7d0;
+      L     #fehler_wert;
+      T     #RET_VAL;
+      SPA   A7d1;
+A7d0: L     #bcd_wert;
+      BTI   ;
+      T     #RET_VAL;
+A7d1: CLR   ;
+      U     L      0.1;
+      SAVE  ;
+      BE    ;
+END_FUNCTION

@@ -1,0 +1,14 @@
+[AWLSIM_PROJECT]
+file_version=0
+date=2014-08-24 17:25:16.885350
+
+[CPU]
+awl_file_0=bnt_modell.awl
+mnemonics=0
+nr_accus=2
+clock_memory_byte=-1
+ob_startinfo_enable=0
+ext_insns_enable=0
+
+[SYMBOLS]
+sym_tab_file_0=bnt_modell.asc

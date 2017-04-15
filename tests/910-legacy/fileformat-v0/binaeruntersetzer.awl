@@ -1,0 +1,105 @@
+FUNCTION "Binäruntersetzer FC" : VOID
+TITLE =Binaeruntersetzer
+VERSION : 0.1
+
+BEGIN
+NETWORK
+TITLE =Merker 1
+
+      U     "b1"; 
+      FP    "b1_fm"; 
+      =     "b1_imp"; 
+NETWORK
+TITLE =Merker rueckwaerts
+
+      U     "A0"; 
+      U     "A1"; 
+      U     "A2"; 
+      S     "MRUECK"; 
+      UN    "A0"; 
+      UN    "A1"; 
+      UN    "A2"; 
+      R     "MRUECK"; 
+      NOP   0; 
+NETWORK
+TITLE =Merker Ausgang 0
+
+      UN    "MRUECK"; 
+      U     "b1_imp"; 
+      UN    "A0"; 
+      UN    "A1"; 
+      UN    "A2"; 
+      S     "temp_A0"; 
+      U     "MRUECK"; 
+      U     "b1_imp"; 
+      U     "A0"; 
+      UN    "A1"; 
+      UN    "A2"; 
+      R     "temp_A0"; 
+      NOP   0; 
+NETWORK
+TITLE =Merker Ausgang 1
+
+      UN    "MRUECK"; 
+      U     "b1_imp"; 
+      U     "A0"; 
+      UN    "A1"; 
+      UN    "A2"; 
+      S     "temp_A1"; 
+      U     "MRUECK"; 
+      U     "b1_imp"; 
+      U     "A0"; 
+      U     "A1"; 
+      UN    "A2"; 
+      R     "temp_A1"; 
+      NOP   0; 
+NETWORK
+TITLE =Merker Ausgang 2
+
+      UN    "MRUECK"; 
+      U     "b1_imp"; 
+      U     "A0"; 
+      U     "A1"; 
+      UN    "A2"; 
+      S     "temp_A2"; 
+      U     "MRUECK"; 
+      U     "b1_imp"; 
+      U     "A0"; 
+      U     "A1"; 
+      U     "A2"; 
+      R     "temp_A2"; 
+      NOP   0; 
+NETWORK
+TITLE =Ausgang 0
+
+      U     "temp_A0"; 
+      =     "A0"; 
+NETWORK
+TITLE =Ausgang 1
+
+      U     "temp_A1"; 
+      =     "A1"; 
+NETWORK
+TITLE =Ausgang 2
+
+      U     "temp_A2"; 
+      =     "A2"; 
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK "CYCLE"
+BEGIN
+	// Eingangssignal simulieren
+	UN	M 16.0
+	L	S5T#1S
+	SE	T 1
+	U	T 1
+	=	M 16.0
+	X	M 16.0
+	X	M 16.1
+	=	M 16.1
+	=	"b1"
+
+	// Binaeruntersetzer aufrufen
+	CALL	FC 4
+END_ORGANIZATION_BLOCK
