@@ -271,6 +271,7 @@ run_awl_test()
 		local expected_exit_code="$(get_conf "$awl" exit_code 0)"
 		[ $expected_exit_code -eq 0 ] || local loglevel=0
 		local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
+		local max_runtime="$(get_conf "$awl" max_runtime -1)"
 
 		command time -o "$test_time_file" -f '%E' --quiet \
 		"$interpreter" "$rootdir/awlsim-test" \
@@ -278,6 +279,7 @@ run_awl_test()
 			--extended-insns \
 			--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
 			--cycle-limit "$cycle_limit" \
+			--max-runtime "$max_runtime" \
 			"$@" \
 			"$awl"
 		local exit_code=$?
@@ -450,12 +452,7 @@ run_test_directory()
 		[ "$(echo -n "$entry" | tail -c7)" = ".awlpro" ] || continue
 		[ -e "$(dirname "$entry")/$(basename "$entry" .awlpro).sh" ] && continue
 
-		local extra=
-		[ "$(basename "$entry")" = "EXAMPLE.awlpro" -o\
-		  "$(basename $(dirname "$entry"))" = "999-projects" ] &&\
-			local extra="--max-runtime 1.0"
-
-		run_test "$interpreter" "$entry" $extra
+		run_test "$interpreter" "$entry"
 		check_job_failure && return
 	done
 	# run .awl tests
@@ -465,11 +462,7 @@ run_test_directory()
 		[ -e "$(dirname "$entry")/$(basename "$entry" .awl).awlpro" ] && continue
 		[ -e "$(dirname "$entry")/$(basename "$entry" .awl).sh" ] && continue
 
-		local extra=
-		[ "$(basename $(dirname "$entry"))" = "999-projects" ] &&\
-			local extra="--max-runtime 1.0"
-
-		run_test "$interpreter" "$entry" $extra
+		run_test "$interpreter" "$entry"
 		check_job_failure && return
 	done
 	# run .sh tests
