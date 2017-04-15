@@ -2,7 +2,7 @@
 #
 # AWL simulator - common utility functions
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -302,3 +302,27 @@ class nopContextManager(object):
 	def __exit__(self, exctype, excinst, exctb):
 		return False
 nopContext = nopContextManager()
+
+class RelPath(object):
+	def __init__(self, relativeToDir):
+		self.__relativeToDir = relativeToDir
+
+	def toRelative(self, path):
+		"""Generate an OS-independent relative string from a path."""
+		path = os.path.relpath(path, self.__relativeToDir)
+		if os.path.splitdrive(path)[0]:
+			raise AwlSimError("Failed to strip the drive letter from a path, "
+				"because the base and the path don't reside on the "
+				"same drive. Please make sure the base and the path "
+				"reside on the same drive.\n"
+				"Base: %s\n"
+				"Path: %s" % (
+				self.__relativeToDir, path))
+		path = path.replace(os.path.sep, "/")
+		return path
+
+	def fromRelative(self, path):
+		"""Generate a path from an OS-independent relative string."""
+		path = path.replace("/", os.path.sep)
+		path = os.path.join(self.__relativeToDir, path)
+		return path
