@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.hwmod import *
 from awlsim.common.util import *
@@ -62,7 +63,8 @@ class LegacyProjectParser(object):
 		kopSources = []
 		symTabSources = []
 		libSelections = []
-		cpuSpecs = S7CPUSpecs()
+		specs = S7CPUSpecs()
+		conf = S7CPUConfig()
 		obTempPresetsEn = False
 		extInsnsEn = False
 		guiSettings = GuiSettings()
@@ -123,13 +125,13 @@ class LegacyProjectParser(object):
 			getSrcs(awlSources, "CPU", "awl", AwlSource)
 			if p.has_option("CPU", "mnemonics"):
 				mnemonics = p.getint("CPU", "mnemonics")
-				cpuSpecs.setConfiguredMnemonics(mnemonics)
+				conf.setConfiguredMnemonics(mnemonics)
 			if p.has_option("CPU", "nr_accus"):
 				nrAccus = p.getint("CPU", "nr_accus")
-				cpuSpecs.setNrAccus(nrAccus)
+				specs.setNrAccus(nrAccus)
 			if p.has_option("CPU", "clock_memory_byte"):
 				clockMemByte = p.getint("CPU", "clock_memory_byte")
-				cpuSpecs.setClockMemByte(clockMemByte)
+				conf.setClockMemByte(clockMemByte)
 			if p.has_option("CPU", "ob_startinfo_enable"):
 				obTempPresetsEn = p.getboolean("CPU", "ob_startinfo_enable")
 			if p.has_option("CPU", "ext_insns_enable"):
@@ -296,7 +298,8 @@ class LegacyProjectParser(object):
 				    kopSources = kopSources,
 				    symTabSources = symTabSources,
 				    libSelections = libSelections,
-				    cpuSpecs = cpuSpecs,
+				    cpuSpecs = specs,
+				    cpuConf = conf,
 				    obTempPresetsEn = obTempPresetsEn,
 				    extInsnsEn = extInsnsEn,
 				    guiSettings = guiSettings,

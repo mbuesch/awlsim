@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server client
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -313,6 +313,7 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_IDENTS		: __rx_IDENTS,
 		AwlSimMessage.MSG_ID_BLOCKINFO		: __rx_BLOCKINFO,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_NOP,
+		AwlSimMessage.MSG_ID_CPUCONF		: __rx_NOP,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
@@ -684,8 +685,26 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: Failed to set cpuspecs")
 		return True
 
+	def getCpuConf(self):
+		if not self.__transceiver:
+			return None
+		msg = AwlSimMessage_GET_CPUCONF()
+		rxMsg = self.__sendAndWait(msg,
+			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUCONF)
+		return rxMsg.cpuconf
+
+	def setCpuConf(self, cpuconf):
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_CPUCONF(cpuconf)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		if status != AwlSimMessage_REPLY.STAT_OK:
+			raise AwlSimError("AwlSimClient: Failed to set cpuconf")
+		return True
+
 	def loadProject(self, project,
-			loadCpuSpecs=True, loadTempPresets=True,
+			loadCpuSpecs=True, loadCpuConf=True,
+			loadTempPresets=True,
 			loadExtInsns=True, loadHwMods=True,
 			loadSymTabs=True, loadLibSelections=True,
 			loadSources=True,
@@ -694,6 +713,8 @@ class AwlSimClient(object):
 		"""
 		if loadCpuSpecs:
 			self.setCpuSpecs(project.getCpuSpecs())
+		if loadCpuConf:
+			self.setCpuConf(project.getCpuConf())
 		if loadTempPresets:
 			self.enableOBTempPresets(project.getObTempPresetsEn())
 		if loadExtInsns:

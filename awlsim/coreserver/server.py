@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.subprocess import *
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.net import *
 
@@ -363,7 +364,7 @@ class AwlSimServer(object):
 		self.__running = bool(runstate == self.STATE_RUN)
 
 	def __getMnemonics(self):
-		return self.__sim.cpu.getSpecs().getMnemonics()
+		return self.__sim.cpu.getConf().getMnemonics()
 
 	def __rebuildSelectReadList(self):
 		rlist = [ self.__socket ]
@@ -490,6 +491,7 @@ class AwlSimServer(object):
 		symTabSources = self.symTabSourceContainer.getSources()
 		libSelections = self.loadedLibSelections[:]
 		cpuSpecs = cpu.getSpecs() # (Note: not a deep-copy)
+		cpuConf = cpu.getConf() # (Note: not a deep-copy)
 		hwmodSettings = HwmodSettings(
 			loadedModules = self.loadedHwModules[:]
 		)
@@ -501,6 +503,7 @@ class AwlSimServer(object):
 			symTabSources = symTabSources,
 			libSelections = libSelections,
 			cpuSpecs = cpuSpecs,
+			cpuConf = cpuConf,
 			obTempPresetsEn = cpu.obTempPresetsEnabled(),
 			extInsnsEn = cpu.extendedInsnsEnabled(),
 			guiSettings = None,
@@ -640,6 +643,10 @@ class AwlSimServer(object):
 
 	def cpuSetSpecs(self, cpuSpecs):
 		self.__sim.cpu.getSpecs().assignFrom(cpuSpecs)
+		self.__updateProjectFile()
+
+	def cpuSetConf(self, cpuConf):
+		self.__sim.cpu.getConf().assignFrom(cpuConf)
 		self.__updateProjectFile()
 
 	def setCycleExitHook(self, hook, hookData = None):
@@ -810,6 +817,17 @@ class AwlSimServer(object):
 		self.cpuSetSpecs(msg.cpuspecs)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_GET_CPUCONF(self, client, msg):
+		printDebug("Received message: GET_CPUCONF")
+		reply = AwlSimMessage_CPUCONF(self.__sim.cpu.getConf())
+		client.transceiver.send(reply)
+
+	def __rx_CPUCONF(self, client, msg):
+		printDebug("Received message: CPUCONF")
+		status = AwlSimMessage_REPLY.STAT_OK
+		self.cpuSetConf(msg.cpuconf)
+		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
 	def __rx_REQ_MEMORY(self, client, msg):
 		printDebug("Received message: REQ_MEMORY")
 		client.memReadRequestMsg = AwlSimMessage_MEMORY(0, msg.memAreas)
@@ -894,6 +912,8 @@ class AwlSimServer(object):
 		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: __rx_GET_BLOCKINFO,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
+		AwlSimMessage.MSG_ID_GET_CPUCONF	: __rx_GET_CPUCONF,
+		AwlSimMessage.MSG_ID_CPUCONF		: __rx_CPUCONF,
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,

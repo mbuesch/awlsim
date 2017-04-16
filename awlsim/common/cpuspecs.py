@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - CPU
+# AWL simulator - CPU core feature specification
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,20 +26,14 @@ from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
 
-class S7CPUSpecs(object):
-	"STEP 7 CPU Specifications"
+__all__ = [ "S7CPUSpecs", ]
 
-	# Mnemonic identifiers
-	# Note: These numbers are .awlpro file ABI.
-	EnumGen.start
-	MNEMONICS_AUTO		= EnumGen.item
-	MNEMONICS_EN		= EnumGen.item
-	MNEMONICS_DE		= EnumGen.item
-	EnumGen.end
+
+class S7CPUSpecs(object):
+	"""STEP 7 CPU core specifications"""
 
 	def __init__(self, cpu=None):
 		self.cpu = None
-		self.setConfiguredMnemonics(self.MNEMONICS_AUTO)
 		self.setNrAccus(2)
 		self.setNrTimers(2048)
 		self.setNrCounters(2048)
@@ -47,11 +41,9 @@ class S7CPUSpecs(object):
 		self.setNrInputs(8192)
 		self.setNrOutputs(8192)
 		self.setNrLocalbytes(2048)
-		self.setClockMemByte(-1)
 		self.cpu = cpu
 
 	def assignFrom(self, otherCpuSpecs):
-		self.setConfiguredMnemonics(otherCpuSpecs.getConfiguredMnemonics())
 		self.setNrAccus(otherCpuSpecs.nrAccus)
 		self.setNrTimers(otherCpuSpecs.nrTimers)
 		self.setNrCounters(otherCpuSpecs.nrCounters)
@@ -59,26 +51,6 @@ class S7CPUSpecs(object):
 		self.setNrInputs(otherCpuSpecs.nrInputs)
 		self.setNrOutputs(otherCpuSpecs.nrOutputs)
 		self.setNrLocalbytes(otherCpuSpecs.nrLocalbytes)
-		self.setClockMemByte(otherCpuSpecs.clockMemByte)
-
-	def setConfiguredMnemonics(self, mnemonics):
-		if mnemonics not in (self.MNEMONICS_AUTO,
-				     self.MNEMONICS_EN,
-				     self.MNEMONICS_DE):
-			raise AwlSimError("Invalid mnemonics configuration: %d" % mnemonics)
-		self.__configuredMnemonics = mnemonics
-		self.setDetectedMnemonics(self.MNEMONICS_AUTO)
-
-	def setDetectedMnemonics(self, mnemonics):
-		self.__detectedMnemonics = mnemonics
-
-	def getConfiguredMnemonics(self):
-		return self.__configuredMnemonics
-
-	def getMnemonics(self):
-		if self.__configuredMnemonics == self.MNEMONICS_AUTO:
-			return self.__detectedMnemonics
-		return self.__configuredMnemonics
 
 	def setNrAccus(self, count):
 		if count not in (2, 4):
@@ -114,10 +86,5 @@ class S7CPUSpecs(object):
 
 	def setNrLocalbytes(self, count):
 		self.nrLocalbytes = count
-		if self.cpu:
-			self.cpu.reallocate()
-
-	def setClockMemByte(self, byteAddress):
-		self.clockMemByte = byteAddress
 		if self.cpu:
 			self.cpu.reallocate()

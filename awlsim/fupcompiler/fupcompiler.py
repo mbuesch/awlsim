@@ -24,7 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.sources import *
 from awlsim.common.xmlfactory import *
-from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 
 #from awlsim.core.cpu cimport * #@cy
 from awlsim.core.cpu import * #@nocy
@@ -201,10 +201,10 @@ class FupCompiler(object):
 		mnemonics is either MNEMONICS_EN, MNEMONICS_DE or MNEMONICS_AUTO.
 		Returns an AwlSource.
 		"""
-		if mnemonics == S7CPUSpecs.MNEMONICS_AUTO:
+		if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
 			try:
-				return self.__trycompile(fupSource, S7CPUSpecs.MNEMONICS_EN)
+				return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_EN)
 			except AwlSimError as e:
 				pass
-			return self.__trycompile(fupSource, S7CPUSpecs.MNEMONICS_DE)
+			return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_DE)
 		return self.__trycompile(fupSource, mnemonics)

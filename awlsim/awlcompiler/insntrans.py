@@ -22,6 +22,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 
 from awlsim.core.util import *
 #from awlsim.core.instructions.all_insns cimport * #@cy
@@ -202,8 +203,8 @@ class AwlInsnTranslator(object):
 	}
 
 	mnemonics2nameTypeTable = {
-		S7CPUSpecs.MNEMONICS_EN:	AwlInsn.name2type_english,
-		S7CPUSpecs.MNEMONICS_DE:	AwlInsn.name2type_german,
+		S7CPUConfig.MNEMONICS_EN	: AwlInsn.name2type_english,
+		S7CPUConfig.MNEMONICS_DE	: AwlInsn.name2type_german,
 	}
 
 	@classmethod
@@ -216,7 +217,7 @@ class AwlInsnTranslator(object):
 
 	@classmethod
 	def fromRawInsn(cls, cpu, rawInsn):
-		mnemonics = cpu.getSpecs().getMnemonics()
+		mnemonics = cpu.getConf().getMnemonics()
 		try:
 			insnType = cls.name2type(rawInsn.getName(), mnemonics)
 			if insnType is None or\

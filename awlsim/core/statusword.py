@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 #from awlsim.core.statusword cimport * #@cy
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import *
 
 from awlsim.core.dynattrs import * #@nocy
@@ -99,9 +100,9 @@ class S7StatusWord(DynAttrs): #+cdef
 
 	@classmethod
 	def getBitnrByName(cls, name, mnemonics):
-		assert(mnemonics != S7CPUSpecs.MNEMONICS_AUTO)
+		assert(mnemonics != S7CPUConfig.MNEMONICS_AUTO)
 		try:
-			if mnemonics == S7CPUSpecs.MNEMONICS_EN:
+			if mnemonics == S7CPUConfig.MNEMONICS_EN:
 				name = cls.__english2german[name]
 			return cls.name2nr_german[name]
 		except KeyError as e:
@@ -221,15 +222,15 @@ class S7StatusWord(DynAttrs): #+cdef
 			self.A1, self.A0, self.OV = 1, 0, 0
 
 	def getString(self, mnemonics):
-		if mnemonics == S7CPUSpecs.MNEMONICS_AUTO:
-			mnemonics = S7CPUSpecs.MNEMONICS_EN
+		if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
+			mnemonics = S7CPUConfig.MNEMONICS_EN
 		ret = []
 		for i in range(self.NR_BITS - 1, -1, -1):
 			name = self.nr2name_german[i]
-			if mnemonics == S7CPUSpecs.MNEMONICS_EN:
+			if mnemonics == S7CPUConfig.MNEMONICS_EN:
 				name = self.__german2english[name]
 			ret.append("%s:%d" % (name, self.getByBitNumber(i)))
 		return '  '.join(ret)
 
 	def __repr__(self):
-		return self.getString(S7CPUSpecs.MNEMONICS_DE)
+		return self.getString(S7CPUConfig.MNEMONICS_DE)

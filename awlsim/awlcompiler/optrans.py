@@ -27,6 +27,7 @@ import re
 #from awlsim.core.statusword cimport * #@cy
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 
 from awlsim.core.util import *
 from awlsim.core.operators import *
@@ -230,14 +231,14 @@ class AwlOpTranslator(object):
 
 	# Mnemonics identifier to constOperTab lookup.
 	__mnemonics2constOperTab = {
-		S7CPUSpecs.MNEMONICS_DE:	__constOperTab_german,
-		S7CPUSpecs.MNEMONICS_EN:	__constOperTab_english,
+		S7CPUConfig.MNEMONICS_DE	: __constOperTab_german,
+		S7CPUConfig.MNEMONICS_EN	: __constOperTab_english,
 	}
 
 	def __init__(self, insn=None, mnemonics=None):
 		self.insn = insn
 		if mnemonics is None and insn is not None:
-			mnemonics = insn.getCpu().getSpecs().getMnemonics()
+			mnemonics = insn.getCpu().getConf().getMnemonics()
 		assert(mnemonics is not None)
 		self.mnemonics = mnemonics
 

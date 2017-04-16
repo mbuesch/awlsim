@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import datetime
 import random
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 from awlsim.common.blockinfo import *
 
 from awlsim.library.libentry import *
@@ -68,8 +69,8 @@ class ParenStackElem(object):
 	def __repr__(self):
 		mnemonics = self.cpu.getMnemonics()
 		type2name = {
-			S7CPUSpecs.MNEMONICS_EN : AwlInsn.type2name_english,
-			S7CPUSpecs.MNEMONICS_DE : AwlInsn.type2name_german,
+			S7CPUConfig.MNEMONICS_EN : AwlInsn.type2name_english,
+			S7CPUConfig.MNEMONICS_DE : AwlInsn.type2name_german,
 		}[mnemonics]
 		return '(insn="%s" VKE=%s OR=%d)' %\
 			(type2name[self.insnType],
@@ -145,8 +146,8 @@ class S7Prog(object):
 		self.symbolTable.merge(symbolTable)
 
 	def __detectMnemonics(self):
-		specs = self.cpu.getSpecs()
-		if specs.getConfiguredMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+		conf = self.cpu.getConf()
+		if conf.getConfiguredMnemonics() != S7CPUConfig.MNEMONICS_AUTO:
 			return
 
 		detected = None
@@ -155,15 +156,15 @@ class S7Prog(object):
 						 self.pendingRawFBs,
 						 self.pendingRawFCs))
 		if not rawBlocks:
-			if specs.getMnemonics() != S7CPUSpecs.MNEMONICS_AUTO:
+			if conf.getMnemonics() != S7CPUConfig.MNEMONICS_AUTO:
 				# It was already set. We are Ok.
 				return
 			# There are no blocks and we didn't detect anything, yet.
 			# Just set it to EN.
-			detected = S7CPUSpecs.MNEMONICS_EN
+			detected = S7CPUConfig.MNEMONICS_EN
 		if detected is None:
-			for mnemonics in (S7CPUSpecs.MNEMONICS_EN,
-					  S7CPUSpecs.MNEMONICS_DE):
+			for mnemonics in (S7CPUConfig.MNEMONICS_EN,
+					  S7CPUConfig.MNEMONICS_DE):
 				errorCount = 0
 				for rawBlock in rawBlocks:
 					for rawInsn in rawBlock.insns:
@@ -183,18 +184,18 @@ class S7Prog(object):
 				errorCounts[mnemonics] = errorCount
 		if detected is None:
 			# Select the mnemonics with the lower error count.
-			if errorCounts[S7CPUSpecs.MNEMONICS_EN] <= errorCounts[S7CPUSpecs.MNEMONICS_DE]:
-				detected = S7CPUSpecs.MNEMONICS_EN
+			if errorCounts[S7CPUConfig.MNEMONICS_EN] <= errorCounts[S7CPUConfig.MNEMONICS_DE]:
+				detected = S7CPUConfig.MNEMONICS_EN
 			else:
-				detected = S7CPUSpecs.MNEMONICS_DE
-		if specs.getMnemonics() not in {S7CPUSpecs.MNEMONICS_AUTO, detected}:
+				detected = S7CPUConfig.MNEMONICS_DE
+		if conf.getMnemonics() not in {S7CPUConfig.MNEMONICS_AUTO, detected}:
 			# Autodetected mnemonics were already set before
 			# to something different.
 			raise AwlSimError("Cannot mix multiple AWL files with "\
 				"distinct mnemonics. This error may be caused by "\
 				"incorrect autodetection. "\
 				"Force mnemonics to EN or DE to avoid this error.")
-		specs.setDetectedMnemonics(detected)
+		conf.setDetectedMnemonics(detected)
 
 	def __loadLibraries(self):
 		for libSelection in self.pendingLibSelections:
@@ -506,6 +507,7 @@ class S7CPU(object): #+cdef
 
 	def __init__(self):
 		self.specs = S7CPUSpecs(self)
+		self.conf = S7CPUConfig(self)
 		self.prog = S7Prog(self)
 		self.setCycleTimeLimit(5.0)
 		self.setCycleExitCallback(None)
@@ -524,7 +526,7 @@ class S7CPU(object): #+cdef
 		self.enableObTempPresets(False)
 
 	def getMnemonics(self):
-		return self.specs.getMnemonics()
+		return self.conf.getMnemonics()
 
 	def enableObTempPresets(self, en=True):
 		self.__obTempPresetsEnabled = bool(en)
@@ -840,8 +842,8 @@ class S7CPU(object): #+cdef
 		"""
 		self.__clockMemByteOffset = None
 		self.updateTimestamp()
-		if self.specs.clockMemByte >= 0:
-			self.__clockMemByteOffset = AwlOffset(self.specs.clockMemByte)
+		if self.conf.clockMemByte >= 0:
+			self.__clockMemByteOffset = AwlOffset(self.conf.clockMemByte)
 		self.__nextClockMemTime = self.now + 0.05
 		self.__clockMemCount = 0
 		self.__clockMemCountLCM = math_lcm(2, 4, 5, 8, 10, 16, 20)
@@ -1170,6 +1172,9 @@ class S7CPU(object): #+cdef
 
 	def getSpecs(self):
 		return self.specs
+
+	def getConf(self):
+		return self.conf
 
 	def setMcrActive(self, active):
 		self.mcrActive = active
@@ -1734,7 +1739,7 @@ class S7CPU(object): #+cdef
 		if not callStack:
 			return ""
 		mnemonics = self.getMnemonics()
-		isEnglish = (mnemonics == S7CPUSpecs.MNEMONICS_EN)
+		isEnglish = (mnemonics == S7CPUConfig.MNEMONICS_EN)
 		specs = self.specs
 		self.updateTimestamp()
 		ret = []

@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.cpuconfig import *
+
 #from awlsim.core.instructions.all_insns cimport * #@cy
 from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.datastructure import *
@@ -70,8 +72,8 @@ class AwlTranslator(object):
 
 	def translateLibraryCodeBlock(self, block):
 		# Switch mnemonics to DE for translation of library code.
-		oldMnemonics = self.cpu.getSpecs().getConfiguredMnemonics()
-		self.cpu.getSpecs().setConfiguredMnemonics(S7CPUSpecs.MNEMONICS_DE)
+		oldMnemonics = self.cpu.getConf().getConfiguredMnemonics()
+		self.cpu.getConf().setConfiguredMnemonics(S7CPUConfig.MNEMONICS_DE)
 
 		# Enable extended instructions for library code.
 		oldExtEn = self.cpu.extendedInsnsEnabled()
@@ -97,7 +99,7 @@ class AwlTranslator(object):
 		self.cpu.enableExtendedInsns(oldExtEn)
 
 		# Switch back to old mnemonics.
-		self.cpu.getSpecs().setConfiguredMnemonics(oldMnemonics)
+		self.cpu.getConf().setConfiguredMnemonics(oldMnemonics)
 
 		return block
 

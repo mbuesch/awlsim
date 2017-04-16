@@ -363,6 +363,7 @@ def main():
 		#TODO set cycle time limit
 		server.cpuSetRunTimeLimit(opt_maxRuntime)
 		server.cpuSetSpecs(project.getCpuSpecs())
+		server.cpuSetConf(project.getCpuConf())
 
 		# Load the program
 		for symSrc in project.getSymTabSources():

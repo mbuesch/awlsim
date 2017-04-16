@@ -22,7 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 
 from awlsim.core.datatypes import *
 from awlsim.core.util import *
@@ -46,7 +46,7 @@ class Symbol(object):
 	"""One symbol."""
 
 	def __init__(self, name="", operator=None, type=None, comment="",
-		     mnemonics=S7CPUSpecs.MNEMONICS_AUTO,
+		     mnemonics=S7CPUConfig.MNEMONICS_AUTO,
 		     lineNr=None, symTab=None):
 		self.setSymTab(symTab)
 		self.setName(name)		# The symbol name string
@@ -87,8 +87,8 @@ class Symbol(object):
 		if not newOperatorString.strip():
 			self.setOperator(None)
 			return
-		for m in (S7CPUSpecs.MNEMONICS_EN, S7CPUSpecs.MNEMONICS_DE):
-			if self.mnemonics != S7CPUSpecs.MNEMONICS_AUTO and\
+		for m in (S7CPUConfig.MNEMONICS_EN, S7CPUConfig.MNEMONICS_DE):
+			if self.mnemonics != S7CPUConfig.MNEMONICS_AUTO and\
 			   self.mnemonics != m:
 				continue
 			with contextlib.suppress(AwlSimError):
@@ -350,13 +350,13 @@ class SymTabParser(object):
 	@classmethod
 	def parseSource(cls, source,
 			autodetectFormat=True,
-			mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
+			mnemonics=S7CPUConfig.MNEMONICS_AUTO):
 		return cls.parseData(source.sourceBytes, autodetectFormat, mnemonics)
 
 	@classmethod
 	def parseData(cls, dataBytes,
 		      autodetectFormat=True,
-		      mnemonics=S7CPUSpecs.MNEMONICS_AUTO):
+		      mnemonics=S7CPUConfig.MNEMONICS_AUTO):
 		try:
 			if not dataBytes.strip():
 				return SymbolTable()
@@ -370,12 +370,12 @@ class SymTabParser(object):
 						"symbol table parser")
 			else:
 				parserClass = cls
-			if mnemonics == S7CPUSpecs.MNEMONICS_AUTO:
-				instance = parserClass(S7CPUSpecs.MNEMONICS_EN)
+			if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
+				instance = parserClass(S7CPUConfig.MNEMONICS_EN)
 				try:
 					symTab = instance._parse(dataBytes)
 				except AwlSimError as e:
-					instance = parserClass(S7CPUSpecs.MNEMONICS_DE)
+					instance = parserClass(S7CPUConfig.MNEMONICS_DE)
 					symTab = instance._parse(dataBytes)
 			else:
 				instance = parserClass(mnemonics)

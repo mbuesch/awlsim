@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import *
 
 from awlsim.core.operators import *
@@ -513,7 +514,7 @@ class AwlInsn(object): #+cdef
 	def __repr__(self):
 		ret = []
 		type2name = AwlInsn.type2name_english
-		if self.getMnemonics() == S7CPUSpecs.MNEMONICS_DE:
+		if self.getMnemonics() == S7CPUConfig.MNEMONICS_DE:
 			type2name = AwlInsn.type2name_german
 		try:
 			name = type2name[self.insnType]

@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.project_legacy import *
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.hwmod import *
 from awlsim.common.util import *
@@ -264,6 +265,8 @@ class ProjectFactory(XmlFactory):
 	def parser_open(self, tag=None):
 		self.inProject = False
 		self.inCpu = False
+		self.inCpuSpecs = False
+		self.inCpuConf = False
 		self.inLangAwl = False
 		self.inLangFup = False
 		self.inLangKop = False
@@ -274,7 +277,22 @@ class ProjectFactory(XmlFactory):
 	def parser_beginTag(self, tag):
 		project = self.project
 		if self.inProject:
-			if self.inLangAwl:
+			if self.inCpu:
+				if tag.name == "specs":
+					nrAccus = tag.getAttrInt("nr_accus", 2)
+					specs = project.getCpuSpecs()
+					specs.setNrAccus(nrAccus)
+					self.inCpuSpecs = True
+					return
+				elif tag.name == "config":
+					clockMem = tag.getAttrInt("clock_memory_byte", -1)
+					obStartEn = tag.getAttrBool("ob_startinfo_enable", False)
+					conf = project.getCpuConf()
+					conf.setClockMemByte(clockMem)
+					project.setObTempPresetsEn(obStartEn)
+					self.inCpuConf = True
+					return
+			elif self.inLangAwl:
 				if tag.name == "source":
 					source = AwlSource()
 					self.parser_switchTo(source.factory(project=project,
@@ -312,20 +330,13 @@ class ProjectFactory(XmlFactory):
 					return
 			else:
 				if tag.name == "cpu":
-					nrAccus = tag.getAttrInt("nr_accus", 2)
-					clockMem = tag.getAttrInt("clock_memory_byte", -1)
-					obStartEn = tag.getAttrBool("ob_startinfo_enable", False)
-					specs = project.getCpuSpecs()
-					specs.setNrAccus(nrAccus)
-					specs.setClockMemByte(clockMem)
-					project.setObTempPresetsEn(obStartEn)
 					self.inCpu = True
 					return
 				elif tag.name == "language_awl":
-					mnemonics = tag.getAttrInt("mnemonics", S7CPUSpecs.MNEMONICS_AUTO)
+					mnemonics = tag.getAttrInt("mnemonics", S7CPUConfig.MNEMONICS_AUTO)
 					extInsnsEn = tag.getAttrBool("ext_insns_enable", False)
-					specs = project.getCpuSpecs()
-					specs.setConfiguredMnemonics(mnemonics)
+					conf = project.getCpuConf()
+					conf.setConfiguredMnemonics(mnemonics)
 					project.setExtInsnsEn(extInsnsEn)
 					project.setAwlSources([])
 					self.inLangAwl = True
@@ -372,9 +383,18 @@ class ProjectFactory(XmlFactory):
 	def parser_endTag(self, tag):
 		if self.inProject:
 			if self.inCpu:
-				if tag.name == "cpu":
-					self.inCpu = False
-					return
+				if self.inCpuSpecs:
+					if tag.name == "specs":
+						self.inCpuSpecs = False
+						return
+				elif self.inCpuConf:
+					if tag.name == "config":
+						self.inCpuConf = False
+						return
+				else:
+					if tag.name == "cpu":
+						self.inCpu = False
+						return
 			elif self.inLangAwl:
 				if tag.name == "language_awl":
 					self.inLangAwl = False
@@ -404,18 +424,29 @@ class ProjectFactory(XmlFactory):
 
 	def composer_getTags(self):
 		project = self.project
-		specs = project.cpuSpecs
+		specs = project.getCpuSpecs()
+		conf = project.getCpuConf()
 
 		childTags = []
 
+		cpuChildTags = [
+			self.Tag(name="specs",
+				 comment="\nCPU core feature specification",
+				 attrs={
+					"nr_accus"		: str(int(specs.nrAccus)),
+					#TODO more
+				 }),
+			self.Tag(name="config",
+				 comment="\nCPU core configuration",
+				 attrs={
+					"ob_startinfo_enable"	: str(int(project.getObTempPresetsEn())),
+					"clock_memory_byte"	: str(int(conf.clockMemByte)),
+				 })
+		]
 		childTags.append(
 			self.Tag(name="cpu",
 				 comment="\nCPU core configuration",
-				 attrs={
-					"nr_accus"		: str(int(specs.nrAccus)),
-					"clock_memory_byte"	: str(int(specs.clockMemByte)),
-					"ob_startinfo_enable"	: str(int(project.getObTempPresetsEn())),
-				 }
+				 tags=cpuChildTags
 		))
 
 		awlChildTags = []
@@ -426,7 +457,7 @@ class ProjectFactory(XmlFactory):
 			self.Tag(name="language_awl",
 				 comment="\nAWL/STL language configuration",
 				 attrs={
-					"mnemonics"		: str(int(specs.getConfiguredMnemonics())),
+					"mnemonics"		: str(int(conf.getConfiguredMnemonics())),
 					"ext_insns_enable"	: str(int(project.getExtInsnsEn())),
 				 },
 				 tags=awlChildTags
@@ -705,6 +736,7 @@ class Project(object):
 		     symTabSources=None,
 		     libSelections=None,
 		     cpuSpecs=None,
+		     cpuConf=None,
 		     obTempPresetsEn=False,
 		     extInsnsEn=False,
 		     guiSettings=None,
@@ -719,6 +751,7 @@ class Project(object):
 		self.setSymTabSources(symTabSources)
 		self.setLibSelections(libSelections)
 		self.setCpuSpecs(cpuSpecs)
+		self.setCpuConf(cpuConf)
 		self.setObTempPresetsEn(obTempPresetsEn)
 		self.setExtInsnsEn(extInsnsEn)
 		self.setGuiSettings(guiSettings)
@@ -815,6 +848,12 @@ class Project(object):
 
 	def getCpuSpecs(self):
 		return self.cpuSpecs
+
+	def setCpuConf(self, cpuConf):
+		self.cpuConf = cpuConf or S7CPUConfig()
+
+	def getCpuConf(self):
+		return self.cpuConf
 
 	def setObTempPresetsEn(self, obTempPresetsEn):
 		self.obTempPresetsEn = bool(obTempPresetsEn)

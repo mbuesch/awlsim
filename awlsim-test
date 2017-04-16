@@ -152,12 +152,15 @@ def cpuDumpCallback(cpu):
 
 def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
 	cpuSpecs.assignFrom(projectCpuSpecs)
-	if opt_mnemonics is not None:
-		cpuSpecs.setConfiguredMnemonics(opt_mnemonics)
 	if opt_nrAccus is not None:
 		cpuSpecs.setNrAccus(opt_nrAccus)
+
+def assignCpuConf(cpuConf, projectCpuConf):
+	cpuConf.assignFrom(projectCpuConf)
+	if opt_mnemonics is not None:
+		cpuConf.setConfiguredMnemonics(opt_mnemonics)
 	if opt_clockMem is not None:
-		cpuSpecs.setClockMemByte(opt_clockMem)
+		cpuConf.setClockMemByte(opt_clockMem)
 
 def run(inputFile):
 	s = None
@@ -172,7 +175,7 @@ def run(inputFile):
 		generatedAwlSrcs = []
 
 		# Get mnemonics type
-		mnemonics = project.getCpuSpecs().getConfiguredMnemonics()
+		mnemonics = project.getCpuConf().getConfiguredMnemonics()
 		if opt_mnemonics is not None:
 			mnemonics = opt_mnemonics
 
@@ -220,6 +223,7 @@ def run(inputFile):
 		# Configure the CPU
 		cpu = s.getCPU()
 		assignCpuSpecs(cpu.getSpecs(), project.getCpuSpecs())
+		assignCpuConf(cpu.getConf(), project.getCpuConf())
 		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
 		cpu.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
 		if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
@@ -341,10 +345,14 @@ def runWithServerBackend(inputFile):
 		specs = client.getCpuSpecs()
 		assignCpuSpecs(specs, project.getCpuSpecs())
 		client.setCpuSpecs(specs)
+		conf = client.getCpuConf()
+		assignCpuConf(conf, project.getCpuConf())
+		client.setCpuConf(conf)
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
 		client.loadProject(project, loadCpuSpecs=False,
+				   loadCpuConf=False,
 				   loadTempPresets=False,
 				   loadExtInsns=False,
 				   loadHwMods=False)
@@ -548,9 +556,9 @@ def main():
 
 	opt_mnemonics = {
 		None	: None,
-		"en"	: S7CPUSpecs.MNEMONICS_EN,
-		"de"	: S7CPUSpecs.MNEMONICS_DE,
-		"auto"	: S7CPUSpecs.MNEMONICS_AUTO,
+		"en"	: S7CPUConfig.MNEMONICS_EN,
+		"de"	: S7CPUConfig.MNEMONICS_DE,
+		"auto"	: S7CPUConfig.MNEMONICS_AUTO,
 	}[opt_mnemonics]
 
 	try:

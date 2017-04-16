@@ -104,9 +104,9 @@ class CpuConfigWidget(QWidget):
 			"code. Note that this might fail, though.")
 		group.layout().addWidget(label, 0, 0)
 		self.mnemonicsCombo = QComboBox(self)
-		self.mnemonicsCombo.addItem("Automatic", S7CPUSpecs.MNEMONICS_AUTO)
-		self.mnemonicsCombo.addItem("English", S7CPUSpecs.MNEMONICS_EN)
-		self.mnemonicsCombo.addItem("German", S7CPUSpecs.MNEMONICS_DE)
+		self.mnemonicsCombo.addItem("Automatic", S7CPUConfig.MNEMONICS_AUTO)
+		self.mnemonicsCombo.addItem("English", S7CPUConfig.MNEMONICS_EN)
+		self.mnemonicsCombo.addItem("German", S7CPUConfig.MNEMONICS_DE)
 		self.mnemonicsCombo.setToolTip(label.toolTip())
 		group.layout().addWidget(self.mnemonicsCombo, 0, 1)
 
@@ -124,14 +124,15 @@ class CpuConfigWidget(QWidget):
 
 	def loadFromProject(self, project):
 		specs = project.getCpuSpecs()
+		conf = project.getCpuConf()
 
 		index = self.accuCombo.findData(specs.nrAccus)
 		assert(index >= 0)
 		self.accuCombo.setCurrentIndex(index)
 
-		self.clockMemSpin.setValue(specs.clockMemByte)
+		self.clockMemSpin.setValue(conf.clockMemByte)
 
-		index = self.mnemonicsCombo.findData(specs.getConfiguredMnemonics())
+		index = self.mnemonicsCombo.findData(conf.getConfiguredMnemonics())
 		assert(index >= 0)
 		self.mnemonicsCombo.setCurrentIndex(index)
 
@@ -147,6 +148,7 @@ class CpuConfigWidget(QWidget):
 
 	def storeToProject(self, project):
 		specs = project.getCpuSpecs()
+		conf = project.getCpuConf()
 
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
@@ -154,10 +156,9 @@ class CpuConfigWidget(QWidget):
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
 
-		specs = project.getCpuSpecs()
-		specs.setConfiguredMnemonics(mnemonics)
 		specs.setNrAccus(nrAccus)
-		specs.setClockMemByte(clockMemByte)
+		conf.setConfiguredMnemonics(mnemonics)
+		conf.setClockMemByte(clockMemByte)
 		project.setObTempPresetsEn(obTempEnabled)
 		project.setExtInsnsEn(extInsnsEnabled)
 

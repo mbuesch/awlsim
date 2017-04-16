@@ -26,7 +26,7 @@ from awlsim.common.namevalidation import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.project import *
 from awlsim.common.version import *
-from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 
 from awlsim.fupcompiler.fupcompiler_base import *
 
@@ -118,9 +118,9 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 					     stripAlpha=False,
 					     stripNum=False, stripSpace=False)
 
-		strAwl = "AWL" if mnemonics == S7CPUSpecs.MNEMONICS_DE else "STL"
-		strFup = "FUP" if mnemonics == S7CPUSpecs.MNEMONICS_DE else "FBD"
-		strMnemonics = "DE (German)" if mnemonics == S7CPUSpecs.MNEMONICS_DE\
+		strAwl = "AWL" if mnemonics == S7CPUConfig.MNEMONICS_DE else "STL"
+		strFup = "FUP" if mnemonics == S7CPUConfig.MNEMONICS_DE else "FBD"
+		strMnemonics = "DE (German)" if mnemonics == S7CPUConfig.MNEMONICS_DE\
 			       else "EN (international)"
 
 		def mkIntro(lines, blockTypeDecl):

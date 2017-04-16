@@ -18,6 +18,7 @@ cdef class S7CPU(object):
 	cdef public double now
 	cdef public double __nowOffset
 	cdef public object specs
+	cdef public object conf
 	cdef public object prog
 	cdef public double cycleTimeLimit
 	cdef public object __runtimeLimit

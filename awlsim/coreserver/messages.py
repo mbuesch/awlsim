@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server messages
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.cpuspecs import *
+from awlsim.common.cpuconfig import *
 from awlsim.common.project import *
 from awlsim.common.hwmod import *
 from awlsim.common.datatypehelpers import *
@@ -83,7 +84,7 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5716
+	HDR_MAGIC		= 0x5717
 	HDR_LENGTH		= hdrStruct.size
 
 	# Message IDs:
@@ -119,6 +120,8 @@ class AwlSimMessage(object):
 	MSG_ID_OPT		= EnumGen.item
 	MSG_ID_GET_CPUSPECS	= EnumGen.item
 	MSG_ID_CPUSPECS		= EnumGen.item
+	MSG_ID_GET_CPUCONF	= EnumGen.item
+	MSG_ID_CPUCONF		= EnumGen.item
 	# State
 	MSG_ID_GET_RUNSTATE	= EnumGen.itemAt(0x0300)
 	MSG_ID_RUNSTATE		= EnumGen.item
@@ -605,16 +608,14 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 		self.cpuspecs = cpuspecs
 
 	def toBytes(self):
-		pl = self.plStruct.pack(self.cpuspecs.getConfiguredMnemonics(),
-					self.cpuspecs.nrAccus,
+		pl = self.plStruct.pack(self.cpuspecs.nrAccus,
 					self.cpuspecs.nrTimers,
 					self.cpuspecs.nrCounters,
 					self.cpuspecs.nrFlags,
 					self.cpuspecs.nrInputs,
 					self.cpuspecs.nrOutputs,
 					self.cpuspecs.nrLocalbytes,
-					self.cpuspecs.clockMemByte & 0xFFFFFFFF,
-					*( (0,) * 23 ) # padding
+					*( (0,) * 25 ) # padding
 		)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
@@ -622,13 +623,12 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 	def fromBytes(cls, payload):
 		try:
 			data = cls.plStruct.unpack(payload)
-			(mnemonics, nrAccus, nrTimers,
+			(nrAccus, nrTimers,
 			 nrCounters, nrFlags, nrInputs,
-			 nrOutputs, nrLocalbytes, clockMemByte) = data[:9]
+			 nrOutputs, nrLocalbytes) = data[:7]
 		except struct.error as e:
 			raise TransferError("CPUSPECS: Invalid data format")
 		cpuspecs = S7CPUSpecs()
-		cpuspecs.setConfiguredMnemonics(mnemonics)
 		cpuspecs.setNrAccus(nrAccus)
 		cpuspecs.setNrTimers(nrTimers)
 		cpuspecs.setNrCounters(nrCounters)
@@ -636,8 +636,37 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 		cpuspecs.setNrInputs(nrInputs)
 		cpuspecs.setNrOutputs(nrOutputs)
 		cpuspecs.setNrLocalbytes(nrLocalbytes)
-		cpuspecs.setClockMemByte(-1 if clockMemByte > 0xFFFF else clockMemByte)
 		return cls(cpuspecs)
+
+class AwlSimMessage_GET_CPUCONF(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_GET_CPUCONF
+
+class AwlSimMessage_CPUCONF(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_CPUCONF
+
+	plStruct = struct.Struct(str(">32I"))
+
+	def __init__(self, cpuconf):
+		self.cpuconf = cpuconf
+
+	def toBytes(self):
+		pl = self.plStruct.pack(self.cpuconf.getConfiguredMnemonics(),
+					self.cpuconf.clockMemByte & 0xFFFFFFFF,
+					*( (0,) * 30 ) # padding
+		)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			data = cls.plStruct.unpack(payload)
+			(mnemonics, clockMemByte) = data[:2]
+		except struct.error as e:
+			raise TransferError("CPUCONF: Invalid data format")
+		cpuconf = S7CPUConfig()
+		cpuconf.setConfiguredMnemonics(mnemonics)
+		cpuconf.setClockMemByte(-1 if clockMemByte > 0xFFFF else clockMemByte)
+		return cls(cpuconf)
 
 class AwlSimMessage_REQ_MEMORY(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_REQ_MEMORY
@@ -1163,6 +1192,8 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_OPT		: AwlSimMessage_OPT,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: AwlSimMessage_GET_CPUSPECS,
 		AwlSimMessage.MSG_ID_CPUSPECS		: AwlSimMessage_CPUSPECS,
+		AwlSimMessage.MSG_ID_GET_CPUCONF	: AwlSimMessage_GET_CPUCONF,
+		AwlSimMessage.MSG_ID_CPUCONF		: AwlSimMessage_CPUCONF,
 		AwlSimMessage.MSG_ID_GET_RUNSTATE	: AwlSimMessage_GET_RUNSTATE,
 		AwlSimMessage.MSG_ID_RUNSTATE		: AwlSimMessage_RUNSTATE,
 #TODO		AwlSimMessage.MSG_ID_GET_CPUDUMP	: AwlSimMessage_GET_CPUDUMP,

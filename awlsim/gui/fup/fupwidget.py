@@ -232,7 +232,7 @@ class FupWidget(QWidget):
 		dlg.show()
 
 	def __compileAndShowAwl(self):
-		self.__compileAndShow(S7CPUSpecs.MNEMONICS_DE)
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_DE)
 
 	def __compileAndShowStl(self):
-		self.__compileAndShow(S7CPUSpecs.MNEMONICS_EN)
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN)
