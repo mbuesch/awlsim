@@ -2,7 +2,7 @@
 #
 # AWL simulator - source management
 #
-# Copyright 2014-2016 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.xmlfactory import *
 from awlsim.common.refmanager import *
 from awlsim.common.util import *
 
@@ -29,9 +30,88 @@ import base64, binascii
 import hashlib
 
 
+class SourceFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		project, source = self.project, self.source
+		self.__data = []
+		if tag:
+			srcType = tag.getAttrInt("type")
+			name = tag.getAttr("name", source.SRCTYPE)
+			filename = tag.getAttr("file", "")
+			if source.SRCTYPE_ID != srcType:
+				raise self.Error("SourceFactory: Got unexpected "
+					"source type %d instead of %d." % (
+					srcType, source.SRCTYPE_ID))
+			if filename:
+				filename = RelPath(project.projectDir).fromRelative(filename)
+			source.name = name
+			source.filepath = filename
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		source = self.source
+		if tag.name == "source":
+			sourceData = "".join(self.__data)
+			# Strip leading and trailing line break.
+			idx = sourceData.find("\n")
+			if idx >= 0 and not sourceData[:idx].strip():
+				sourceData = sourceData[idx+1:]
+			idx = sourceData.rfind("\n")
+			if idx >= 0 and not sourceData[idx+1:].strip():
+				sourceData = sourceData[:idx]
+			if sourceData.endswith("\r"):
+				sourceData = sourceData[:-1]
+			# Add the data to the source.
+			try:
+				source.sourceBytes = sourceData.encode(source.ENCODING)
+			except UnicodeError as e:
+				raise self.Error("Failed to encode source code data")
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
+	def parser_data(self, data):
+		self.__data.append(data)
+
+	def composer_getTags(self):
+		project, source = self.project, self.source
+
+		childTags = []
+
+		filename = ""
+		if source.isFileBacked():
+			filename = RelPath(project.projectDir).toRelative(source.filepath)
+			data = None
+		else:
+			try:
+				data = source.sourceBytes.decode(source.ENCODING)
+				# Add leading and trailing line break.
+				data = "\r\n%s\r\n" % data
+			except UnicodeError as e:
+				raise self.Error("Failed to decode source code data")
+		tags = [
+			self.Tag(name="source",
+				 comment="\n%s source code" % source.SRCTYPE,
+				 attrs={
+					"type"	: str(int(source.SRCTYPE_ID)),
+					"file"	: str(filename),
+					"name"	: str(source.name),
+				 },
+				 data=data,
+				 tags=childTags),
+		]
+		return tags
+
 class GenericSource(object):
 	SRCTYPE		= "<generic>"
+	SRCTYPE_ID	= -1 # .awlpro file format ID
 	IDENT_HASH	= hashlib.sha256
+	ENCODING	= "<unknown>"
+
+	factory		= SourceFactory
 
 	def __init__(self, name="", filepath="", sourceBytes=b""):
 		self.name = name
@@ -141,28 +221,36 @@ class GenericSource(object):
 				    self.SRCTYPE, self.name, self.identHashStr)
 
 class AwlSource(GenericSource):
-	SRCTYPE = "AWL/STL"
+	SRCTYPE		= "AWL/STL"
+	SRCTYPE_ID	= 0 # .awlpro file format ID
+	ENCODING	= "latin_1"
 
 	def dup(self):
 		return AwlSource(self.name, self.filepath,
 				 self.sourceBytes[:])
 
 class FupSource(GenericSource):
-	SRCTYPE = "FUP/FBD"
+	SRCTYPE		= "FUP/FBD"
+	SRCTYPE_ID	= 1 # .awlpro file format ID
+	ENCODING	= "UTF-8"
 
 	def dup(self):
 		return FupSource(self.name, self.filepath,
 				 self.sourceBytes[:])
 
 class KopSource(GenericSource):
-	SRCTYPE = "KOP/LAD"
+	SRCTYPE		= "KOP/LAD"
+	SRCTYPE_ID	= 2 # .awlpro file format ID
+	ENCODING	= "UTF-8"
 
 	def dup(self):
 		return KopSource(self.name, self.filepath,
 				 self.sourceBytes[:])
 
 class SymTabSource(GenericSource):
-	SRCTYPE = "symbol table"
+	SRCTYPE		= "symbol table"
+	SRCTYPE_ID	= 3 # .awlpro file format ID
+	ENCODING	= "latin_1"
 
 	def dup(self):
 		return SymTabSource(self.name, self.filepath,

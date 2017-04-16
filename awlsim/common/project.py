@@ -22,29 +22,486 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.xmlfactory import *
+from awlsim.common.project_legacy import *
 from awlsim.common.cpuspecs import *
 from awlsim.common.sources import *
 from awlsim.common.hwmod import *
 from awlsim.common.util import *
+from awlsim.common.version import *
 
 from awlsim.library.libselection import *
 
-import base64, binascii
 import datetime
 import os
-
-if isPy2Compat:
-	from ConfigParser import SafeConfigParser as _ConfigParser
-	from ConfigParser import Error as _ConfigParserError
-else:
-	from configparser import ConfigParser as _ConfigParser
-	from configparser import Error as _ConfigParserError
 
 
 __all__ = [ "GuiSettings", "CoreLinkSettings", "HwmodSettings", "Project", ]
 
 
+class GuiSettingsFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		self.inEditor = False
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		guiSettings = self.guiSettings
+		if not self.inEditor:
+			if tag.name == "editor":
+				autoIndent = tag.getAttrBool("autoindent", True)
+				pasteAutoIndent = tag.getAttrBool("paste_autoindent", True)
+				validation = tag.getAttrBool("validation", True)
+				font = tag.getAttr("font", "")
+				guiSettings.setEditorAutoIndentEn(autoIndent)
+				guiSettings.setEditorPasteIndentEn(pasteAutoIndent)
+				guiSettings.setEditorValidationEn(validation)
+				if font:
+					guiSettings.setEditorFont(font)
+				self.inEditor = True
+				return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if self.inEditor:
+			if tag.name == "editor":
+				self.inEditor = False
+				return
+		else:
+			if tag.name == "gui":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		project, guiSettings = self.project, self.guiSettings
+
+		childTags = []
+
+		childTags.append(self.Tag(name="editor",
+					  attrs={
+			"autoindent"		: str(int(guiSettings.getEditorAutoIndentEn())),
+			"paste_autoindent"	: str(int(guiSettings.getEditorPasteIndentEn())),
+			"validation"		: str(int(guiSettings.getEditorValidationEn())),
+			"font"			: str(guiSettings.getEditorFont()),
+		}))
+
+		tags = [
+			self.Tag(name="gui",
+				 comment="\nGraphical user interface configuration",
+				 tags=childTags
+			),
+		]
+		return tags
+
+class CoreLinkSettingsFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		self.inSpawnLocal = False
+		self.inConnect = False
+		self.inTunnel = False
+		self.inSsh = False
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		linkSettings = self.linkSettings
+		if self.inSpawnLocal:
+			pass
+		elif self.inConnect:
+			pass
+		elif self.inTunnel:
+			if not self.inSsh:
+				if tag.name == "ssh":
+					user = tag.getAttr("user", CoreLinkSettings.DEFAULT_SSH_USER)
+					port = tag.getAttrInt("port", CoreLinkSettings.DEFAULT_SSH_PORT)
+					exe = tag.getAttr("executable", CoreLinkSettings.DEFAULT_SSH_EXE)
+					linkSettings.setSSHUser(user)
+					linkSettings.setSSHPort(port)
+					linkSettings.setSSHExecutable(exe)
+					self.inSsh = True
+					return
+		else:
+			if tag.name == "spawn_local":
+				enable = tag.getAttrBool("enable", True)
+				portBegin = tag.getAttrInt("port_range_begin",
+							   CoreLinkSettings.SPAWN_PORT_BASE)
+				portEnd = tag.getAttrInt("port_range_end",
+							 portBegin + CoreLinkSettings.SPAWN_PORT_NUM)
+				interpreters = tag.getAttr("interpreters",
+							   CoreLinkSettings.DEFAULT_INTERP)
+				linkSettings.setSpawnLocalEn(enable)
+				linkSettings.setSpawnLocalPortRange(range(portBegin, portEnd + 1))
+				linkSettings.setSpawnLocalInterpreters(interpreters)
+				self.inSpawnLocal = True
+				return
+			elif tag.name == "connect":
+				host = tag.getAttr("host", CoreLinkSettings.DEFAULT_CONN_HOST)
+				port = tag.getAttrInt("port", CoreLinkSettings.DEFAULT_CONN_PORT)
+				timeout = tag.getAttrInt("timeout_ms", CoreLinkSettings.DEFAULT_CONN_TO)
+				linkSettings.setConnectHost(host)
+				linkSettings.setConnectPort(port)
+				linkSettings.setConnectTimeoutMs(timeout)
+				self.inConnect = True
+				return
+			elif tag.name == "tunnel":
+				tunnelType = tag.getAttrInt("type", CoreLinkSettings.TUNNEL_NONE)
+				localPort = tag.getAttrInt("local_port", CoreLinkSettings.TUNNEL_LOCPORT_AUTO)
+				linkSettings.setTunnel(tunnelType)
+				linkSettings.setTunnelLocalPort(localPort)
+				self.inTunnel = True
+				return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if self.inSpawnLocal:
+			if tag.name == "spawn_local":
+				self.inSpawnLocal = False
+				return
+		elif self.inConnect:
+			if tag.name == "connect":
+				self.inConnect = False
+				return
+		elif self.inTunnel:
+			if self.inSsh:
+				if tag.name == "ssh":
+					self.inSsh = False
+					return
+			else:
+				if tag.name == "tunnel":
+					self.inTunnel = False
+					return
+		else:
+			if tag.name == "core_link":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		project, linkSettings = self.project, self.linkSettings
+
+		childTags = []
+
+		childTags.append(self.Tag(name="spawn_local",
+					  comment="\nLocally spawned core server",
+					  attrs={
+			"enable"		: str(int(linkSettings.getSpawnLocalEn())),
+			"port_range_begin"	: str(int(linkSettings.getSpawnLocalPortRange()[0])),
+			"port_range_end"	: str(int(linkSettings.getSpawnLocalPortRange()[-1])),
+			"interpreters"		: str(linkSettings.getSpawnLocalInterpreters()),
+		}))
+
+		childTags.append(self.Tag(name="connect",
+					  comment="\nRemote server connection",
+					  attrs={
+			"host"			: str(linkSettings.getConnectHost()),
+			"port"			: str(int(linkSettings.getConnectPort())),
+			"timeout_ms"		: str(int(linkSettings.getConnectTimeoutMs())),
+		}))
+
+		tunnelChildTags = [self.Tag(name="ssh",
+					    attrs={
+			"user"			: str(linkSettings.getSSHUser()),
+			"port"			: str(int(linkSettings.getSSHPort())),
+			"executable"		: str(linkSettings.getSSHExecutable()),
+		})]
+		childTags.append(self.Tag(name="tunnel",
+					  comment="\nTransport tunnel",
+					  tags=tunnelChildTags,
+					  attrs={
+			"type"			: str(int(linkSettings.getTunnel())),
+			"local_port"		: str(int(linkSettings.getTunnelLocalPort())),
+		}))
+
+		tags = [
+			self.Tag(name="core_link",
+				 comment="\nCore server link configuration",
+				 tags=childTags
+			),
+		]
+		return tags
+
+class HwmodSettingsFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		hwmodSettings = self.hwmodSettings
+		hwmodSettings.setLoadedModules([])
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		hwmodSettings = self.hwmodSettings
+		if tag.name == "module":
+			hwmodDesc = HwmodDescriptor("")
+			self.parser_switchTo(hwmodDesc.factory(hwmodDesc=hwmodDesc))
+			hwmodSettings.addLoadedModule(hwmodDesc)
+			return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "hardware":
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		project, hwmodSettings = self.project, self.hwmodSettings
+
+		childTags = []
+
+		loadedMods = sorted(hwmodSettings.getLoadedModules(),
+				    key=lambda hwmodDesc: hwmodDesc.getModuleName())
+		for hwmodDesc in loadedMods:
+			childTags.extend(hwmodDesc.factory(
+				hwmodDesc=hwmodDesc).composer_getTags())
+
+		tags = [
+			self.Tag(name="hardware",
+				 comment="\nHardware modules configuration",
+				 tags=childTags
+			),
+		]
+		return tags
+
+class ProjectFactory(XmlFactory):
+	FILE_FORMAT_VERSION = 1
+
+	def parser_open(self, tag=None):
+		self.inProject = False
+		self.inCpu = False
+		self.inLangAwl = False
+		self.inLangFup = False
+		self.inLangKop = False
+		self.inSyms = False
+		self.inLibs = False
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		project = self.project
+		if self.inProject:
+			if self.inLangAwl:
+				if tag.name == "source":
+					source = AwlSource()
+					self.parser_switchTo(source.factory(project=project,
+									    source=source))
+					project.addAwlSource(source)
+					return
+			elif self.inLangFup:
+				if tag.name == "source":
+					source = FupSource()
+					self.parser_switchTo(source.factory(project=project,
+									    source=source))
+					project.addFupSource(source)
+					return
+			elif self.inLangKop:
+				if tag.name == "source":
+					source = KopSource()
+					self.parser_switchTo(source.factory(project=project,
+									    source=source))
+
+					project.addKopSource(source)
+					return
+			elif self.inSyms:
+				if tag.name == "source":
+					source = SymTabSource()
+					self.parser_switchTo(source.factory(project=project,
+									    source=source))
+					project.addSymTabSource(source)
+					return
+			elif self.inLibs:
+				if tag.name == "lib":
+					libSel = AwlLibEntrySelection()
+					self.parser_switchTo(libSel.factory(project=project,
+									    libSel=libSel))
+					project.addLibSelection(libSel)
+					return
+			else:
+				if tag.name == "cpu":
+					nrAccus = tag.getAttrInt("nr_accus", 2)
+					clockMem = tag.getAttrInt("clock_memory_byte", -1)
+					obStartEn = tag.getAttrBool("ob_startinfo_enable", False)
+					specs = project.getCpuSpecs()
+					specs.setNrAccus(nrAccus)
+					specs.setClockMemByte(clockMem)
+					project.setObTempPresetsEn(obStartEn)
+					self.inCpu = True
+					return
+				elif tag.name == "language_awl":
+					mnemonics = tag.getAttrInt("mnemonics", S7CPUSpecs.MNEMONICS_AUTO)
+					extInsnsEn = tag.getAttrBool("ext_insns_enable", False)
+					specs = project.getCpuSpecs()
+					specs.setConfiguredMnemonics(mnemonics)
+					project.setExtInsnsEn(extInsnsEn)
+					project.setAwlSources([])
+					self.inLangAwl = True
+					return
+				elif tag.name == "language_fup":
+					project.setFupSources([])
+					self.inLangFup = True
+					return
+				elif tag.name == "language_kop":
+					project.setKopSources([])
+					self.inLangKop = True
+					return
+				elif tag.name == "symbols":
+					project.setSymTabSources([])
+					self.inSyms = True
+					return
+				elif tag.name == "libraries":
+					project.setLibSelections([])
+					self.inLibs = True
+					return
+				elif tag.name == "core_link":
+					linkSettings = project.getCoreLinkSettings()
+					self.parser_switchTo(linkSettings.factory(linkSettings=linkSettings))
+					return
+				elif tag.name == "hardware":
+					hwmodSettings = project.getHwmodSettings()
+					self.parser_switchTo(hwmodSettings.factory(hwmodSettings=hwmodSettings))
+					return
+				elif tag.name == "gui":
+					guiSettings = project.getGuiSettings()
+					self.parser_switchTo(guiSettings.factory(guiSettings=guiSettings))
+					return
+		else:
+			if tag.name == "awlsim_project":
+				version = tag.getAttrInt("format_version")
+				if version != self.FILE_FORMAT_VERSION:
+					raise self.Error("Unsupported .awlpro format version. "
+						"Got %d, but expected %d." % (
+						version, self.FILE_FORMAT_VERSION))
+				self.inProject = True
+				return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if self.inProject:
+			if self.inCpu:
+				if tag.name == "cpu":
+					self.inCpu = False
+					return
+			elif self.inLangAwl:
+				if tag.name == "language_awl":
+					self.inLangAwl = False
+					return
+			elif self.inLangFup:
+				if tag.name == "language_fup":
+					self.inLangFup = False
+					return
+			elif self.inLangKop:
+				if tag.name == "language_kop":
+					self.inLangKop = False
+					return
+			elif self.inSyms:
+				if tag.name == "symbols":
+					self.inSyms = False
+					return
+			elif self.inLibs:
+				if tag.name == "libraries":
+					self.inLibs = False
+					return
+			else:
+				if tag.name == "awlsim_project":
+					self.inProject = False
+					self.parser_finish()
+					return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		project = self.project
+		specs = project.cpuSpecs
+
+		childTags = []
+
+		childTags.append(
+			self.Tag(name="cpu",
+				 comment="\nCPU core configuration",
+				 attrs={
+					"nr_accus"		: str(int(specs.nrAccus)),
+					"clock_memory_byte"	: str(int(specs.clockMemByte)),
+					"ob_startinfo_enable"	: str(int(project.getObTempPresetsEn())),
+				 }
+		))
+
+		awlChildTags = []
+		for awlSrc in project.getAwlSources():
+			awlChildTags.extend(awlSrc.factory(project=project,
+							   source=awlSrc).composer_getTags())
+		childTags.append(
+			self.Tag(name="language_awl",
+				 comment="\nAWL/STL language configuration",
+				 attrs={
+					"mnemonics"		: str(int(specs.getConfiguredMnemonics())),
+					"ext_insns_enable"	: str(int(project.getExtInsnsEn())),
+				 },
+				 tags=awlChildTags
+		))
+
+		fupChildTags = []
+		for fupSrc in project.getFupSources():
+			fupChildTags.extend(fupSrc.factory(project=project,
+							   source=fupSrc).composer_getTags())
+		childTags.append(
+			self.Tag(name="language_fup",
+				 comment="\nFUP/FBD language configuration",
+				 tags=fupChildTags
+		))
+
+		kopChildTags = []
+		for kopSrc in project.getKopSources():
+			kopChildTags.extend(kopSrc.factory(project=project,
+							   source=kopSrc).composer_getTags())
+		childTags.append(
+			self.Tag(name="language_kop",
+				 comment="\nKOP/LAD language configuration",
+				 tags=kopChildTags
+		))
+
+		symsChildTags = []
+		for symTabSrc in project.getSymTabSources():
+			symsChildTags.extend(symTabSrc.factory(project=project,
+							       source=symTabSrc).composer_getTags())
+		childTags.append(
+			self.Tag(name="symbols",
+				 comment="\nSymbol table configuration",
+				 tags=symsChildTags
+		))
+
+		libsChildTags = []
+		for libSel in project.getLibSelections():
+			libsChildTags.extend(libSel.factory(project=project,
+							    libSel=libSel).composer_getTags())
+		childTags.append(
+			self.Tag(name="libraries",
+				 comment="\nStandard library selections",
+				 tags=libsChildTags
+		))
+
+		linkSettings = project.getCoreLinkSettings()
+		childTags.extend(linkSettings.factory(project=project,
+						      linkSettings=linkSettings).composer_getTags())
+
+		hwmodSettings = project.getHwmodSettings()
+		childTags.extend(hwmodSettings.factory(project=project,
+						       hwmodSettings=hwmodSettings).composer_getTags())
+
+		guiSettings = project.getGuiSettings()
+		childTags.extend(guiSettings.factory(project=project,
+						     guiSettings=guiSettings).composer_getTags())
+
+		tags = [
+			self.Tag(name="awlsim_project",
+				 comment="Awlsim project file generated by awlsim-%s" % VERSION_STRING,
+				 attrs={
+					"format_version": str(self.FILE_FORMAT_VERSION),
+					"date_create"	: str(project.getCreateDate().strftime(
+							      project.DATETIME_FMT)),
+					"date_modify"	: str(project.getModifyDate().strftime(
+							      project.DATETIME_FMT)),
+				 },
+				 tags=childTags),
+		]
+
+		return tags
+
 class GuiSettings(object):
+	factory	= GuiSettingsFactory
+
 	def __init__(self,
 		     editorAutoIndentEn=True,
 		     editorPasteIndentEn=True,
@@ -56,19 +513,19 @@ class GuiSettings(object):
 		self.setEditorFont(editorFont)
 
 	def setEditorAutoIndentEn(self, editorAutoIndentEn):
-		self.editorAutoIndentEn = editorAutoIndentEn
+		self.editorAutoIndentEn = bool(editorAutoIndentEn)
 
 	def getEditorAutoIndentEn(self):
 		return self.editorAutoIndentEn
 
 	def setEditorPasteIndentEn(self, editorPasteIndentEn):
-		self.editorPasteIndentEn = editorPasteIndentEn
+		self.editorPasteIndentEn = bool(editorPasteIndentEn)
 
 	def getEditorPasteIndentEn(self):
 		return self.editorPasteIndentEn
 
 	def setEditorValidationEn(self, editorValidationEn):
-		self.editorValidationEn = editorValidationEn
+		self.editorValidationEn = bool(editorValidationEn)
 
 	def getEditorValidationEn(self):
 		return self.editorValidationEn
@@ -80,27 +537,40 @@ class GuiSettings(object):
 		return self.editorFont
 
 class CoreLinkSettings(object):
+	factory			= CoreLinkSettingsFactory
+
 	DEFAULT_INTERPRETERS	= "pypy3; pypy; $CURRENT; python3; python2; python; py"
+	DEFAULT_INTERP		= "$DEFAULT"
+
 	SPAWN_PORT_BASE		= 4151 + 32
+	SPAWN_PORT_NUM		= 4095
+
+	DEFAULT_CONN_HOST	= "localhost"
+	DEFAULT_CONN_PORT	= 4151
+	DEFAULT_CONN_TO		= 3000
 
 	TUNNEL_NONE		= 0
 	TUNNEL_SSH		= 1
 
 	TUNNEL_LOCPORT_AUTO	= -1
 
+	DEFAULT_SSH_USER	= "pi"
+	DEFAULT_SSH_PORT	= 22
+	DEFAULT_SSH_EXE		= "ssh"
+
 	def __init__(self,
 		     spawnLocalEn=True,
 		     spawnLocalPortRange=range(SPAWN_PORT_BASE,
-					       SPAWN_PORT_BASE + 4095 + 1),
-		     spawnLocalInterpreters="$DEFAULT",
-		     connectHost="localhost",
-		     connectPort=4151,
-		     connectTimeoutMs=3000,
+					       SPAWN_PORT_BASE + SPAWN_PORT_NUM + 1),
+		     spawnLocalInterpreters=DEFAULT_INTERP,
+		     connectHost=DEFAULT_CONN_HOST,
+		     connectPort=DEFAULT_CONN_PORT,
+		     connectTimeoutMs=DEFAULT_CONN_TO,
 		     tunnel=TUNNEL_NONE,
 		     tunnelLocalPort=TUNNEL_LOCPORT_AUTO,
-		     sshUser="pi",
-		     sshPort=22,
-		     sshExecutable="ssh"):
+		     sshUser=DEFAULT_SSH_USER,
+		     sshPort=DEFAULT_SSH_PORT,
+		     sshExecutable=DEFAULT_SSH_EXE):
 		self.setSpawnLocalEn(spawnLocalEn)
 		self.setSpawnLocalPortRange(spawnLocalPortRange)
 		self.setSpawnLocalInterpreters(spawnLocalInterpreters),
@@ -114,7 +584,7 @@ class CoreLinkSettings(object):
 		self.setSSHExecutable(sshExecutable)
 
 	def setSpawnLocalEn(self, spawnLocalEn):
-		self.spawnLocalEn = spawnLocalEn
+		self.spawnLocalEn = bool(spawnLocalEn)
 
 	def getSpawnLocalEn(self):
 		return self.spawnLocalEn
@@ -196,6 +666,8 @@ class CoreLinkSettings(object):
 		return self.sshExecutable
 
 class HwmodSettings(object):
+	factory	= HwmodSettingsFactory
+
 	def __init__(self,
 		     loadedModules=None):
 		self.setLoadedModules(loadedModules)
@@ -210,7 +682,19 @@ class HwmodSettings(object):
 		return self.loadedModules
 
 class Project(object):
+	"""Awlsim project.
+	This is the in-memory representation of an .awlpro file.
+	"""
+
+	factory		= ProjectFactory
+
 	DATETIME_FMT	= "%Y-%m-%d %H:%M:%S.%f"
+
+	EnumGen.start
+	TYPE_UNKNOWN	= EnumGen.item # unknown format
+	TYPE_V0		= EnumGen.item # legacy INI-format
+	TYPE_V1		= EnumGen.item # XML-format
+	EnumGen.end
 
 	def __init__(self, projectFile,
 		     createDate=None,
@@ -284,11 +768,17 @@ class Project(object):
 	def setAwlSources(self, awlSources):
 		self.awlSources = awlSources or []
 
+	def addAwlSource(self, source):
+		self.awlSources.append(source)
+
 	def getAwlSources(self):
 		return self.awlSources
 
 	def setFupSources(self, fupSources):
 		self.fupSources = fupSources or []
+
+	def addFupSource(self, source):
+		self.fupSources.append(source)
 
 	def getFupSources(self):
 		return self.fupSources
@@ -296,17 +786,26 @@ class Project(object):
 	def setKopSources(self, kopSources):
 		self.kopSources = kopSources or []
 
+	def addKopSource(self, source):
+		self.kopSources.append(source)
+
 	def getKopSources(self):
 		return self.kopSources
 
 	def setSymTabSources(self, symTabSources):
 		self.symTabSources = symTabSources or []
 
+	def addSymTabSource(self, source):
+		self.symTabSources.append(source)
+
 	def getSymTabSources(self):
 		return self.symTabSources
 
 	def setLibSelections(self, libSelections):
 		self.libSelections = libSelections or []
+
+	def addLibSelection(self, libSelection):
+		self.libSelections.append(libSelection)
 
 	def getLibSelections(self):
 		return self.libSelections
@@ -318,13 +817,13 @@ class Project(object):
 		return self.cpuSpecs
 
 	def setObTempPresetsEn(self, obTempPresetsEn):
-		self.obTempPresetsEn = obTempPresetsEn
+		self.obTempPresetsEn = bool(obTempPresetsEn)
 
 	def getObTempPresetsEn(self):
 		return self.obTempPresetsEn
 
 	def setExtInsnsEn(self, extInsnsEn):
-		self.extInsnsEn = extInsnsEn
+		self.extInsnsEn = bool(extInsnsEn)
 
 	def getExtInsnsEn(self):
 		return self.extInsnsEn
@@ -348,274 +847,55 @@ class Project(object):
 		return self.hwmodSettings
 
 	@classmethod
-	def dataIsProject(cls, data):
-		magic = b"[AWLSIM_PROJECT]"
-		if isIronPython and isinstance(data, str):
-			try:
-				"a".startswith(b"a") # Test for ipy byte conversion bug
-			except TypeError:
-				# XXX: Workaround for IronPython byte conversion bug
-				printInfo("Applying workaround for IronPython byte conversion bug")
-				magic = magic.decode("UTF-8")
-		return data.lstrip().startswith(magic)
+	def detectType(cls, dataBytes):
+		try:
+			dataText = dataBytes.decode("utf-8")
+			dataLines = dataText.splitlines()
+			magic_v0 = "[AWLSIM_PROJECT]"
+			magic_v1 = "<awlsim_project"
+			if dataText.lstrip().startswith(magic_v0):
+				return cls.TYPE_V0
+			if any(dataLine.startswith(magic_v1)
+			       for dataLine in dataLines):
+				return cls.TYPE_V1
+		except UnicodeError as e:
+			pass
+		return cls.TYPE_UNKNOWN
+
+	@classmethod
+	def detectFileType(cls, filename):
+		return cls.detectType(awlFileRead(filename, encoding="binary"))
+
+	@classmethod
+	def dataIsProject(cls, dataBytes):
+		return cls.detectType(dataBytes) != cls.TYPE_UNKNOWN
 
 	@classmethod
 	def fileIsProject(cls, filename):
-		return cls.dataIsProject(awlFileRead(filename, encoding="binary"))
+		return cls.detectFileType(filename) != cls.TYPE_UNKNOWN
 
 	@classmethod
 	def fromText(cls, text, projectFile):
-		if not cls.dataIsProject(text.encode("utf-8")):
+		textBytes = text.encode("utf-8")
+		projectType = cls.detectType(textBytes)
+		if projectType == cls.TYPE_V0:
+			return LegacyProjectParser.parse(cls, text, projectFile)
+		if projectType != cls.TYPE_V1:
 			raise AwlSimError("Project file: The data is "\
 				"not an awlsim project.")
-		projectDir = os.path.dirname(projectFile)
-		createDate = None
-		modifyDate = None
-		awlSources = []
-		fupSources = []
-		kopSources = []
-		symTabSources = []
-		libSelections = []
-		cpuSpecs = S7CPUSpecs()
-		obTempPresetsEn = False
-		extInsnsEn = False
-		guiSettings = GuiSettings()
-		linkSettings = CoreLinkSettings()
-		hwmodSettings = HwmodSettings()
+
+		project = cls(projectFile)
+		project.projectDir = os.path.dirname(projectFile)
+
 		try:
-			p = _ConfigParser()
-			p.readfp(StringIO(text), projectFile)
+			factory = cls.factory(project=project)
+			factory.parse(textBytes)
+		except cls.factory.Error as e:
+			raise AwlSimError("Project file: Failed to parse "
+				"project XML data: %s" % str(e))
 
-			# AWLSIM_PROJECT section
-			version = p.getint("AWLSIM_PROJECT", "file_version")
-			expectedVersion = 0
-			if version != expectedVersion:
-				raise AwlSimError("Project file: Unsupported version. "\
-					"File version is %d, but expected %d." %\
-					(version, expectedVersion))
-			if p.has_option("AWLSIM_PROJECT", "date"):
-				# Compatibility only. "date" is deprecated.
-				dStr = p.get("AWLSIM_PROJECT", "date")
-				createDate = datetime.datetime.strptime(dStr,
-							cls.DATETIME_FMT)
-				modifyDate = createDate
-			if p.has_option("AWLSIM_PROJECT", "create_date"):
-				dStr = p.get("AWLSIM_PROJECT", "create_date")
-				createDate = datetime.datetime.strptime(dStr,
-							cls.DATETIME_FMT)
-			if p.has_option("AWLSIM_PROJECT", "modify_date"):
-				dStr = p.get("AWLSIM_PROJECT", "modify_date")
-				modifyDate = datetime.datetime.strptime(dStr,
-							cls.DATETIME_FMT)
-
-			def getSrcs(srcList, section, prefix, SrcClass):
-				for i in range(0xFFFF):
-					option = "%s_file_%d" % (prefix, i)
-					if not p.has_option(section, option):
-						break
-					path = p.get(section, option)
-					src = SrcClass.fromFile(path,
-						cls.__generic2path(path, projectDir))
-					srcList.append(src)
-				for i in range(0xFFFF):
-					srcOption = "%s_%d" % (prefix, i)
-					nameOption = "%s_name_%d" % (prefix, i)
-					if not p.has_option(section, srcOption):
-						break
-					awlBase64 = p.get(section, srcOption)
-					name = None
-					if p.has_option(section, nameOption):
-						with contextlib.suppress(ValueError):
-							name = base64ToStr(
-								p.get(section, nameOption))
-					if name is None:
-						name = "%s #%d" % (SrcClass.SRCTYPE, i)
-					src = SrcClass.fromBase64(name, awlBase64)
-					srcList.append(src)
-
-			# CPU section
-			getSrcs(awlSources, "CPU", "awl", AwlSource)
-			if p.has_option("CPU", "mnemonics"):
-				mnemonics = p.getint("CPU", "mnemonics")
-				cpuSpecs.setConfiguredMnemonics(mnemonics)
-			if p.has_option("CPU", "nr_accus"):
-				nrAccus = p.getint("CPU", "nr_accus")
-				cpuSpecs.setNrAccus(nrAccus)
-			if p.has_option("CPU", "clock_memory_byte"):
-				clockMemByte = p.getint("CPU", "clock_memory_byte")
-				cpuSpecs.setClockMemByte(clockMemByte)
-			if p.has_option("CPU", "ob_startinfo_enable"):
-				obTempPresetsEn = p.getboolean("CPU", "ob_startinfo_enable")
-			if p.has_option("CPU", "ext_insns_enable"):
-				extInsnsEn = p.getboolean("CPU", "ext_insns_enable")
-
-			# FUP section
-			getSrcs(fupSources, "FUP", "fup", FupSource)
-
-			# KOP section
-			getSrcs(kopSources, "KOP", "kop", KopSource)
-
-			# SYMBOLS section
-			getSrcs(symTabSources, "SYMBOLS", "sym_tab", SymTabSource)
-
-			# LIBS section
-			for i in range(0xFFFF):
-				nameOption = "lib_name_%d" % i
-				blockOption = "lib_block_%d" % i
-				effOption = "lib_block_effective_%d" % i
-				if not p.has_option("LIBS", nameOption):
-					break
-				try:
-					libName = base64ToStr(p.get("LIBS", nameOption))
-				except ValueError as e:
-					continue
-				block = p.get("LIBS", blockOption).upper().strip()
-				effBlock = p.getint("LIBS", effOption)
-				try:
-					if block.startswith("FC"):
-						entryType = AwlLibEntrySelection.TYPE_FC
-						entryIndex = int(block[2:].strip())
-					elif block.startswith("FB"):
-						entryType = AwlLibEntrySelection.TYPE_FB
-						entryIndex = int(block[2:].strip())
-					elif block.startswith("UNKNOWN"):
-						entryType = AwlLibEntrySelection.TYPE_UNKNOWN
-						entryIndex = int(block[7:].strip())
-					else:
-						raise ValueError
-					if entryIndex < -1 or entryIndex > 0xFFFF:
-						raise ValueError
-				except ValueError:
-					raise AwlSimError("Project file: Invalid "
-						"library block: %s" % block)
-				libSelections.append(
-					AwlLibEntrySelection(libName = libName,
-							     entryType = entryType,
-							     entryIndex = entryIndex,
-							     effectiveEntryIndex = effBlock)
-				)
-
-			# CORE_LINK section
-			if p.has_option("CORE_LINK", "spawn_local"):
-				linkSettings.setSpawnLocalEn(
-					p.getboolean("CORE_LINK", "spawn_local"))
-			if p.has_option("CORE_LINK", "spawn_local_port_range"):
-				pRange = p.get("CORE_LINK", "spawn_local_port_range")
-				try:
-					pRange = pRange.split(":")
-					begin = int(pRange[0])
-					end = int(pRange[1])
-					if end < begin:
-						raise ValueError
-					pRange = range(begin, end + 1)
-				except (IndexError, ValueError) as e:
-					raise AwlSimError("Project file: Invalid port range")
-				linkSettings.setSpawnLocalPortRange(pRange)
-			if p.has_option("CORE_LINK", "spawn_local_interpreters"):
-				interp = p.get("CORE_LINK", "spawn_local_interpreters")
-				try:
-					interp = base64ToStr(interp)
-				except ValueError as e:
-					raise AwlSimError("Project file: "
-						"Invalid interpreter list")
-				linkSettings.setSpawnLocalInterpreters(interp)
-			if p.has_option("CORE_LINK", "connect_host"):
-				host = p.get("CORE_LINK", "connect_host")
-				try:
-					host = base64ToStr(host)
-				except ValueError as e:
-					raise AwlSimError("Project file: "
-						"Invalid host name")
-				linkSettings.setConnectHost(host)
-			if p.has_option("CORE_LINK", "connect_port"):
-				port = p.getint("CORE_LINK", "connect_port")
-				linkSettings.setConnectPort(port)
-			if p.has_option("CORE_LINK", "connect_timeout_ms"):
-				timeout = p.getint("CORE_LINK", "connect_timeout_ms")
-				linkSettings.setConnectTimeoutMs(timeout)
-			if p.has_option("CORE_LINK", "tunnel"):
-				tunnel = p.getint("CORE_LINK", "tunnel")
-				linkSettings.setTunnel(tunnel)
-			if p.has_option("CORE_LINK", "tunnel_local_port"):
-				tunnelLocalPort = p.getint("CORE_LINK", "tunnel_local_port")
-				linkSettings.setTunnelLocalPort(tunnelLocalPort)
-			if p.has_option("CORE_LINK", "ssh_user"):
-				sshUser = p.get("CORE_LINK", "ssh_user")
-				try:
-					sshUser = base64ToStr(sshUser)
-				except ValueError as e:
-					raise AwlSimError("Project file: "
-						"Invalid ssh_user")
-				linkSettings.setSSHUser(sshUser)
-			if p.has_option("CORE_LINK", "ssh_port"):
-				sshPort = p.getint("CORE_LINK", "ssh_port")
-				linkSettings.setSSHPort(sshPort)
-			if p.has_option("CORE_LINK", "ssh_executable"):
-				sshExecutable = p.get("CORE_LINK", "ssh_executable")
-				try:
-					sshExecutable = base64ToStr(sshExecutable)
-				except ValueError as e:
-					raise AwlSimError("Project file: "
-						"Invalid ssh_executable")
-				linkSettings.setSSHExecutable(sshExecutable)
-
-			# HWMODS section
-			for i in range(0xFFFF):
-				nameOption = "loaded_mod_%d" % i
-				if not p.has_option("HWMODS", nameOption):
-					break
-				modName = base64ToStr(p.get("HWMODS", nameOption))
-				modDesc = HwmodDescriptor(modName)
-				for j in range(0x3FF):
-					paramOption = "loaded_mod_%d_p%d" % (i, j)
-					if not p.has_option("HWMODS", paramOption):
-						break
-					param = p.get("HWMODS", paramOption)
-					try:
-						param = param.split(":")
-						if len(param) != 2:
-							raise ValueError
-						paramName = base64ToStr(param[0])
-						if param[1].strip():
-							paramValue = base64ToStr(param[1])
-						else:
-							paramValue = None
-					except ValueError:
-						raise AwlSimError("Project file: "
-							"Invalid hw mod parameter")
-					modDesc.addParameter(paramName, paramValue)
-				hwmodSettings.addLoadedModule(modDesc)
-
-			# GUI section
-			if p.has_option("GUI", "editor_autoindent"):
-				guiSettings.setEditorAutoIndentEn(
-					p.getboolean("GUI", "editor_autoindent"))
-			if p.has_option("GUI", "editor_paste_autoindent"):
-				guiSettings.setEditorPasteIndentEn(
-					p.getboolean("GUI", "editor_paste_autoindent"))
-			if p.has_option("GUI", "editor_validation"):
-				guiSettings.setEditorValidationEn(
-					p.getboolean("GUI", "editor_validation"))
-			if p.has_option("GUI", "editor_font"):
-				guiSettings.setEditorFont(p.get("GUI", "editor_font").strip())
-
-		except _ConfigParserError as e:
-			raise AwlSimError("Project parser error: " + str(e))
-
-		return cls(projectFile = projectFile,
-			   createDate = createDate,
-			   modifyDate = modifyDate,
-			   awlSources = awlSources,
-			   fupSources = fupSources,
-			   kopSources = kopSources,
-			   symTabSources = symTabSources,
-			   libSelections = libSelections,
-			   cpuSpecs = cpuSpecs,
-			   obTempPresetsEn = obTempPresetsEn,
-			   extInsnsEn = extInsnsEn,
-			   guiSettings = guiSettings,
-			   coreLinkSettings = linkSettings,
-			   hwmodSettings = hwmodSettings)
+		project.projectDir = None
+		return project
 
 	@classmethod
 	def fromFile(cls, filename):
@@ -636,152 +916,23 @@ class Project(object):
 					  awlSources = [ awlSrc, ])
 		return project
 
-	@classmethod
-	def __path2generic(cls, path, relativeToDir):
-		"""Generate an OS-independent string from a path."""
-		if "\r" in path or "\n" in path:
-			# The project file format cannot handle these
-			raise AwlSimError("Project file: Path '%s' contains invalid "\
-				"characters (line breaks)." % path)
-		path = os.path.relpath(path, relativeToDir)
-		if os.path.splitdrive(path)[0]:
-			raise AwlSimError("Project file: Failed to strip drive letter. "\
-				"Please make sure the project file, AWL code files and "\
-				"symbol tables files all reside on the same drive.")
-		path = path.replace(os.path.sep, "/")
-		return path
-
-	@classmethod
-	def __generic2path(cls, path, relativeToDir):
-		"""Generate a path from an OS-independent string."""
-		path = path.replace("/", os.path.sep)
-		path = os.path.join(relativeToDir, path)
-		return path
-
 	def toText(self, projectFile=None):
 		if not projectFile:
 			projectFile = self.projectFile
-		projectDir = os.path.dirname(projectFile)
+		self.projectDir = os.path.dirname(projectFile)
 
 		self.setModifyDate(datetime.datetime.utcnow())
 
-		lines = []
-		lines.append("[AWLSIM_PROJECT]")
-		lines.append("file_version=0")
-		lines.append("create_date=%s" %\
-			     self.getCreateDate().strftime(self.DATETIME_FMT))
-		lines.append("modify_date=%s" %\
-			     self.getModifyDate().strftime(self.DATETIME_FMT))
-		lines.append("")
+		try:
+			factory = self.factory(project=self)
+			xmlBytes = factory.compose(lineBreakStr="\r\n", attrLineBreak=True)
+			xmlText = xmlBytes.decode(factory.XML_ENCODING)
+		except self.factory.Error as e:
+			raise AwlSimError("Project file: Failed to compose XML: "
+				"%s" % str(e))
 
-		def makeSrcs(prefix, srcList):
-			fileBackedSources = (src for src in srcList if src.isFileBacked())
-			embeddedSources = (src for src in srcList if not src.isFileBacked())
-			for i, src in enumerate(fileBackedSources):
-				path = self.__path2generic(src.filepath, projectDir)
-				lines.append("%s_file_%d=%s" % (prefix, i, path))
-			for i, src in enumerate(embeddedSources):
-				lines.append("%s_%d=%s" % (prefix, i, src.toBase64()))
-				name = strToBase64(src.name, ignoreErrors=True)
-				lines.append("%s_name_%d=%s" % (prefix, i, name))
-
-		lines.append("[CPU]")
-		makeSrcs("awl", self.awlSources)
-		lines.append("mnemonics=%d" % self.cpuSpecs.getConfiguredMnemonics())
-		lines.append("nr_accus=%d" % self.cpuSpecs.nrAccus)
-		lines.append("clock_memory_byte=%d" % self.cpuSpecs.clockMemByte)
-		lines.append("ob_startinfo_enable=%d" % int(bool(self.obTempPresetsEn)))
-		lines.append("ext_insns_enable=%d" % int(bool(self.extInsnsEn)))
-		lines.append("")
-
-		lines.append("[FUP]")
-		makeSrcs("fup", self.fupSources)
-		lines.append("")
-
-		lines.append("[KOP]")
-		makeSrcs("kop", self.kopSources)
-		lines.append("")
-
-		lines.append("[SYMBOLS]")
-		makeSrcs("sym_tab", self.symTabSources)
-		lines.append("")
-
-		lines.append("[LIBS]")
-		for i, libSel in enumerate(self.libSelections):
-			libName = strToBase64(libSel.getLibName(), ignoreErrors=True)
-			lines.append("lib_name_%d=%s" % (i, libName))
-			lines.append("lib_block_%d=%s %d" % (
-				i, libSel.getEntryTypeStr(),
-				libSel.getEntryIndex()))
-			lines.append("lib_block_effective_%d=%d" % (
-				i, libSel.getEffectiveEntryIndex()))
-		lines.append("")
-
-		lines.append("[CORE_LINK]")
-		linkSettings = self.getCoreLinkSettings()
-		lines.append("spawn_local=%d" %\
-			     int(bool(linkSettings.getSpawnLocalEn())))
-		lines.append("spawn_local_port_range=%d:%d" %(\
-			     linkSettings.getSpawnLocalPortRange()[0],
-			     linkSettings.getSpawnLocalPortRange()[-1]))
-		interp = linkSettings.getSpawnLocalInterpreters()
-		interp = strToBase64(interp, ignoreErrors=True)
-		lines.append("spawn_local_interpreters=%s" % interp)
-		host = linkSettings.getConnectHost()
-		host = strToBase64(host, ignoreErrors=True)
-		lines.append("connect_host=%s" % host)
-		lines.append("connect_port=%d" %\
-			     int(linkSettings.getConnectPort()))
-		lines.append("connect_timeout_ms=%d" %\
-			     int(linkSettings.getConnectTimeoutMs()))
-		lines.append("tunnel=%d" % linkSettings.getTunnel())
-		lines.append("tunnel_local_port=%d" %\
-			     linkSettings.getTunnelLocalPort())
-		sshUser = linkSettings.getSSHUser()
-		sshUser = strToBase64(sshUser, ignoreErrors=True)
-		lines.append("ssh_user=%s" % sshUser)
-		lines.append("ssh_port=%d" % linkSettings.getSSHPort())
-		sshExecutable = linkSettings.getSSHExecutable()
-		sshExecutable = strToBase64(sshExecutable, ignoreErrors=True)
-		lines.append("ssh_executable=%s" % sshExecutable)
-		lines.append("")
-
-		lines.append("[HWMODS]")
-		hwSettings = self.getHwmodSettings()
-		loadedMods = sorted(hwSettings.getLoadedModules(),
-				    key = lambda modDesc: modDesc.getModuleName())
-		for modNr, modDesc in enumerate(loadedMods):
-			modName = strToBase64(modDesc.getModuleName(),
-					      ignoreErrors=True)
-			lines.append("loaded_mod_%d=%s" % (modNr, modName))
-			modParams = sorted(dictItems(modDesc.getParameters()),
-					   key = lambda p: p[0])
-			for paramNr, param in enumerate(modParams):
-				paramName, paramValue = param
-				paramName = strToBase64(paramName,
-							ignoreErrors=True)
-				if paramValue is None:
-					paramValue = ""
-				else:
-					paramValue = strToBase64(paramValue,
-								 ignoreErrors=True)
-				lines.append("loaded_mod_%d_p%d=%s:%s" %\
-					(modNr, paramNr,
-					 paramName, paramValue))
-		lines.append("")
-
-		lines.append("[GUI]")
-		guiSettings = self.getGuiSettings()
-		lines.append("editor_autoindent=%d" %\
-			     int(bool(guiSettings.getEditorAutoIndentEn())))
-		lines.append("editor_paste_autoindent=%d" %\
-			     int(bool(guiSettings.getEditorPasteIndentEn())))
-		lines.append("editor_validation=%d" %\
-			     int(bool(guiSettings.getEditorValidationEn())))
-		lines.append("editor_font=%s" % guiSettings.getEditorFont())
-		lines.append("")
-
-		return "\r\n".join(lines)
+		self.projectDir = None
+		return xmlText
 
 	def toFile(self, projectFile=None):
 		if not projectFile:

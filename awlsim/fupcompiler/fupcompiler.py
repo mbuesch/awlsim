@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -101,8 +101,6 @@ class FupCompilerFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler(object):
-	AWL_ENCODING = "latin_1"
-
 	def __init__(self):
 		self.reset()
 
@@ -133,7 +131,7 @@ class FupCompiler(object):
 
 	def __genAwlCode(self, insns):
 		"""Generate AWL code from a list of instructions.
-		Returns bytes encoded as self.AWL_ENCODING.
+		Returns bytes encoded as AwlSource.ENCODING.
 		"""
 		awl = []
 
@@ -155,7 +153,7 @@ class FupCompiler(object):
 		# Create the instance DBs
 		awl.extend(self.instanceDBsAwl or [])
 
-		return ('\r\n'.join(awl) + '\r\n').encode(self.AWL_ENCODING)
+		return ('\r\n'.join(awl) + '\r\n').encode(AwlSource.ENCODING)
 
 	def __compileBlockDecl(self):
 		"""Compile block declaration.

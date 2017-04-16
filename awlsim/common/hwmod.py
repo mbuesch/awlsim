@@ -2,7 +2,7 @@
 #
 # AWL simulator - Hardware module descriptors
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,14 +22,87 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.xmlfactory import *
 from awlsim.common.util import *
 
 import hashlib
 import binascii
 
 
+class HwmodDescriptorFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		hwmodDesc = self.hwmodDesc
+		self.inParams = False
+		self.inOneParam = False
+		if tag:
+			name = tag.getAttr("name")
+			hwmodDesc.setModuleName(name)
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		hwmodDesc = self.hwmodDesc
+		if self.inParams:
+			if not self.inOneParam:
+				if tag.name == "param":
+					name = tag.getAttr("name")
+					value = tag.getAttr("value", "")
+					hwmodDesc.addParameter(name, value)
+					self.inOneParam = True
+					return
+		else:
+			if tag.name == "params":
+				hwmodDesc.setParameters([])
+				self.inParams = True
+				return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if self.inParams:
+			if self.inOneParam:
+				if tag.name == "param":
+					self.inOneParam = False
+					return
+			else:
+				if tag.name == "params":
+					self.inParams = False
+					return
+		else:
+			if tag.name == "module":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		hwmodDesc = self.hwmodDesc
+
+		childTags = []
+
+		hwmodParams = sorted(dictItems(hwmodDesc.getParameters()),
+				     key = lambda p: p[0])
+		paramsTags = []
+		for modParamName, modParamValue in hwmodParams:
+			if modParamValue is None:
+				modParamValue = ""
+			paramsTags.append(self.Tag(name="param",
+						   attrs={
+				"name"	: str(modParamName),
+				"value"	: str(modParamValue),
+			}))
+		childTags.append(self.Tag(name="params",
+					  tags=paramsTags))
+
+		tags = [self.Tag(name="module",
+				 comment="\nLoaded hardware module",
+				 tags=childTags,
+				 attrs={
+					"name"	: str(hwmodDesc.getModuleName()),
+		})]
+		return tags
+
 class HwmodDescriptor(object):
 	"""Hardware module descriptor."""
+
+	factory = HwmodDescriptorFactory
 
 	IDENT_HASH	= hashlib.sha256
 

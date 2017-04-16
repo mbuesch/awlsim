@@ -210,7 +210,8 @@ class FupWidget(QWidget):
 			print("Parsing FUP XML:")
 			print(source.sourceBytes.decode(FupFactory.XML_ENCODING))
 		try:
-			factory = FupFactory(fupWidget=self).parse(source.sourceBytes)
+			factory = FupFactory(fupWidget=self)
+			factory.parse(source.sourceBytes)
 		except FupFactory.Error as e:
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))

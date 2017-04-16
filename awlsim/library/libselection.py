@@ -2,7 +2,7 @@
 #
 # AWL simulator - Library entry selection
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,10 +24,51 @@ from awlsim.common.compat import *
 
 from awlsim.common.enumeration import *
 from awlsim.common.wordpacker import *
+from awlsim.common.xmlfactory import *
 from awlsim.common.util import *
 
 import hashlib
 
+
+class AwlLibEntrySelectionFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		libSel = self.libSel
+		if tag:
+			name = tag.getAttr("name")
+			entryType = tag.getAttr("type")
+			index = tag.getAttrInt("index")
+			effectiveIndex = tag.getAttrInt("effective_index", index)
+			libSel.setLibName(name)
+			libSel.setEntryType(entryType)
+			libSel.setEntryIndex(index)
+			libSel.setEffectiveEntryIndex(effectiveIndex)
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "lib":
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		project, libSel = self.project, self.libSel
+
+		childTags = []
+
+		tags = [self.Tag(name="lib",
+				 comment="\nStandard library selection",
+				 attrs={
+					"name"		  : str(libSel.getLibName()),
+					"type"		  : str(libSel.getEntryTypeStr()),
+					"index"		  : str(int(libSel.getEntryIndex())),
+					"effective_index" : str(int(libSel.getEffectiveEntryIndex())),
+				 },
+				 tags=childTags),
+		]
+		return tags
 
 class AwlLibEntrySelection(object):
 	"""AWL library entry selection."""
@@ -41,6 +82,8 @@ class AwlLibEntrySelection(object):
 	TYPE_FC		= EnumGen.item
 	TYPE_FB		= EnumGen.item
 	EnumGen.end
+
+	factory = AwlLibEntrySelectionFactory
 
 	def __init__(self, libName="",
 		     entryType=TYPE_UNKNOWN,
@@ -59,6 +102,11 @@ class AwlLibEntrySelection(object):
 		return self.__libName
 
 	def setEntryType(self, entryType):
+		if isString(entryType):
+			if entryType.upper() == "FC":
+				entryType = self.TYPE_FC
+			elif entryType.upper() == "FB":
+				entryType = self.TYPE_FB
 		if entryType not in (self.TYPE_UNKNOWN,
 				     self.TYPE_FC,
 				     self.TYPE_FB):

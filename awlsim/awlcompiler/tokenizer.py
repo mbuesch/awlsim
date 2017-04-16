@@ -2,7 +2,7 @@
 #
 # AWL parser
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import re
 from awlsim.common.project import *
 from awlsim.common.refmanager import *
 from awlsim.common.namevalidation import *
+from awlsim.common.sources import AwlSource
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
@@ -389,7 +390,7 @@ class AwlParser(object):
 	STATE_IN_UDT_HDR_STRUCT		= EnumGen.item
 	EnumGen.end
 
-	TEXT_ENCODING = "latin_1"
+	TEXT_ENCODING = AwlSource.ENCODING
 
 	class TokenizerState(object):
 		def __init__(self, parser):
