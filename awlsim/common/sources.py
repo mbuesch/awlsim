@@ -101,7 +101,8 @@ class SourceFactory(XmlFactory):
 					"name"	: str(source.name),
 				 },
 				 data=data,
-				 tags=childTags),
+				 tags=childTags,
+				 useCDATA=source.USE_CDATA),
 		]
 		return tags
 
@@ -110,6 +111,7 @@ class GenericSource(object):
 	SRCTYPE_ID	= -1 # .awlpro file format ID
 	IDENT_HASH	= hashlib.sha256
 	ENCODING	= "<unknown>"
+	USE_CDATA	= False
 
 	factory		= SourceFactory
 
@@ -224,6 +226,7 @@ class AwlSource(GenericSource):
 	SRCTYPE		= "AWL/STL"
 	SRCTYPE_ID	= 0 # .awlpro file format ID
 	ENCODING	= "latin_1"
+	USE_CDATA	= False
 
 	def dup(self):
 		return AwlSource(self.name, self.filepath,
@@ -233,6 +236,7 @@ class FupSource(GenericSource):
 	SRCTYPE		= "FUP/FBD"
 	SRCTYPE_ID	= 1 # .awlpro file format ID
 	ENCODING	= "UTF-8"
+	USE_CDATA	= True
 
 	def dup(self):
 		return FupSource(self.name, self.filepath,
@@ -242,6 +246,7 @@ class KopSource(GenericSource):
 	SRCTYPE		= "KOP/LAD"
 	SRCTYPE_ID	= 2 # .awlpro file format ID
 	ENCODING	= "UTF-8"
+	USE_CDATA	= True
 
 	def dup(self):
 		return KopSource(self.name, self.filepath,
@@ -251,6 +256,7 @@ class SymTabSource(GenericSource):
 	SRCTYPE		= "symbol table"
 	SRCTYPE_ID	= 3 # .awlpro file format ID
 	ENCODING	= "latin_1"
+	USE_CDATA	= False
 
 	def dup(self):
 		return SymTabSource(self.name, self.filepath,
