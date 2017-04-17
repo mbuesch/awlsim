@@ -278,18 +278,17 @@ class XmlFactory(object):
 							data = "<![CDATA[%s]]>" % data
 						else:
 							data = saxutils.escape(tag.data)
-					ret.append(
-						"%s<%s%s>%s" % (
-						ind,
-						tag.name,
-						attrText,
-						data)
-					)
-					ret.extend(childTags)
-					ret.append("%s</%s>" % (
-						ind,
-						tag.name)
-					)
+					startStr = "%s<%s%s>%s" % (
+						ind, tag.name,
+						attrText, data)
+					if childTags:
+						ret.append(startStr)
+						ret.extend(childTags)
+						ret.append("%s</%s>" % (
+							   ind, tag.name))
+					else:
+						ret.append("%s</%s>" % (
+							   startStr, tag.name))
 			elif attrs or tag.emitEmptyTag:
 				if tag.comment:
 					addComment(tag.comment)
