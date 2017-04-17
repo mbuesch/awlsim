@@ -28,6 +28,9 @@ import xml.etree.ElementTree
 import xml.sax.saxutils as saxutils
 
 
+__all__ = [ "XmlFactory", ]
+
+
 class _XmlFactoryBuilder(object):
 	def __init__(self, xmlFactory):
 		self.__factoryList = []
@@ -87,7 +90,7 @@ class _XmlFactoryBuilder(object):
 		except IndexError:
 			pass
 
-class XmlFactoryError(Exception):
+class _XmlFactoryError(Exception):
 	pass
 
 class XmlFactory(object):
@@ -96,7 +99,7 @@ class XmlFactory(object):
 	XML_VERSION	= "1.0"
 	XML_ENCODING	= "UTF-8"
 
-	Error = XmlFactoryError
+	Error = _XmlFactoryError
 
 	class Tag(object):
 		"""An XML tag as it is being used for the
