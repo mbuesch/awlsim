@@ -55,15 +55,20 @@ class SourceFactory(XmlFactory):
 		source = self.source
 		if tag.name == "source":
 			sourceData = "".join(self.__data)
-			# Strip leading and trailing line break.
-			idx = sourceData.find("\n")
-			if idx >= 0 and not sourceData[:idx].strip():
-				sourceData = sourceData[idx+1:]
-			idx = sourceData.rfind("\n")
-			if idx >= 0 and not sourceData[idx+1:].strip():
-				sourceData = sourceData[:idx]
-			if sourceData.endswith("\r"):
-				sourceData = sourceData[:-1]
+			if source.STRIP_DATA:
+				# Strip all leading and trailing white space.
+				sourceData = sourceData.strip()
+			else:
+				# Only strip leading and trailing line break
+				# that we added during compose.
+				idx = sourceData.find("\n")
+				if idx >= 0 and not sourceData[:idx].strip():
+					sourceData = sourceData[idx+1:]
+				idx = sourceData.rfind("\n")
+				if idx >= 0 and not sourceData[idx+1:].strip():
+					sourceData = sourceData[:idx]
+				if sourceData.endswith("\r"):
+					sourceData = sourceData[:-1]
 			# Add the data to the source.
 			try:
 				source.sourceBytes = sourceData.encode(source.ENCODING)
@@ -88,8 +93,10 @@ class SourceFactory(XmlFactory):
 		else:
 			try:
 				data = source.sourceBytes.decode(source.ENCODING)
+				# Enforce UNIX line endings.
+				data = toUnixEol(data)
 				# Add leading and trailing line break.
-				data = "\r\n%s\r\n" % data
+				data = "\n%s\n" % data
 			except UnicodeError as e:
 				raise self.Error("Failed to decode source code data")
 		tags = [
@@ -112,6 +119,7 @@ class GenericSource(object):
 	IDENT_HASH	= hashlib.sha256
 	ENCODING	= "<unknown>"
 	USE_CDATA	= False
+	STRIP_DATA	= False
 
 	factory		= SourceFactory
 
@@ -153,11 +161,11 @@ class GenericSource(object):
 		if not self.__identHash:
 			# Calculate the ident hash
 			h = self.IDENT_HASH(self.SRCTYPE.encode(
-					"utf-8", "strict"))
+					self.ENCODING, "strict"))
 			if self.name is not None:
-				h.update(self.name.encode("utf-8", "ignore"))
+				h.update(self.name.encode(self.ENCODING, "ignore"))
 			if self.filepath is not None:
-				h.update(self.filepath.encode("utf-8", "ignore"))
+				h.update(self.filepath.encode(self.ENCODING, "ignore"))
 			h.update(self.sourceBytes)
 			self.__identHash = h.digest()
 		return self.__identHash
@@ -181,7 +189,7 @@ class GenericSource(object):
 		"Write the backing file, if any."
 		if not self.isFileBacked():
 			return
-		awlFileWrite(self.filepath, self.sourceBytes, encoding="binary")
+		safeFileWrite(self.filepath, self.sourceBytes)
 
 	def forceNonFileBacked(self, newName):
 		"Convert this source to a non-file-backed source."
@@ -195,7 +203,7 @@ class GenericSource(object):
 	@classmethod
 	def fromFile(cls, name, filepath):
 		try:
-			data = awlFileRead(filepath, encoding="binary")
+			data = safeFileRead(filepath)
 		except AwlSimError as e:
 			raise AwlSimError("Project: Could not read %s "
 				"source file '%s':\n%s" %\
@@ -227,6 +235,7 @@ class AwlSource(GenericSource):
 	SRCTYPE_ID	= 0 # .awlpro file format ID
 	ENCODING	= "latin_1"
 	USE_CDATA	= False
+	STRIP_DATA	= False
 
 	def dup(self):
 		return AwlSource(self.name, self.filepath,
@@ -235,8 +244,9 @@ class AwlSource(GenericSource):
 class FupSource(GenericSource):
 	SRCTYPE		= "FUP/FBD"
 	SRCTYPE_ID	= 1 # .awlpro file format ID
-	ENCODING	= "UTF-8"
+	ENCODING	= XmlFactory.XML_ENCODING
 	USE_CDATA	= True
+	STRIP_DATA	= True
 
 	def dup(self):
 		return FupSource(self.name, self.filepath,
@@ -245,8 +255,9 @@ class FupSource(GenericSource):
 class KopSource(GenericSource):
 	SRCTYPE		= "KOP/LAD"
 	SRCTYPE_ID	= 2 # .awlpro file format ID
-	ENCODING	= "UTF-8"
+	ENCODING	= XmlFactory.XML_ENCODING
 	USE_CDATA	= True
+	STRIP_DATA	= True
 
 	def dup(self):
 		return KopSource(self.name, self.filepath,
@@ -257,6 +268,7 @@ class SymTabSource(GenericSource):
 	SRCTYPE_ID	= 3 # .awlpro file format ID
 	ENCODING	= "latin_1"
 	USE_CDATA	= False
+	STRIP_DATA	= False
 
 	def dup(self):
 		return SymTabSource(self.name, self.filepath,

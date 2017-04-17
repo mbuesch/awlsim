@@ -98,8 +98,7 @@ def main():
 			else:
 				inDataBytes = sys.stdin.buffer.read()
 		else:
-			inDataBytes = awlFileRead(opt_infile,
-						  encoding="binary")
+			inDataBytes = safeFileRead(opt_infile)
 
 		if opt_inputParser:
 			tab = opt_inputParser.parseData(inDataBytes,

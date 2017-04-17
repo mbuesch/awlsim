@@ -448,7 +448,7 @@ class EditWidget(SourceCodeEdit):
 	def __updateSource(self):
 		sourceText = self.toPlainText()
 		# Convert to DOS-style line endings
-		sourceText = "\r\n".join(sourceText.splitlines())
+		sourceText = toDosEol(sourceText)
 		# Convert to binary
 		try:
 			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,

@@ -430,7 +430,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if not fn.endswith(".awl"):
 			fn += ".awl"
 		try:
-			awlFileWrite(fn, source.sourceBytes, encoding="binary")
+			safeFileWrite(fn, source.sourceBytes)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to export source", e)
@@ -617,7 +617,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		if not fn.endswith(".asc"):
 			fn += ".asc"
 		try:
-			awlFileWrite(fn, source.sourceBytes, encoding="binary")
+			safeFileWrite(fn, source.sourceBytes)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to export symbol table", e)

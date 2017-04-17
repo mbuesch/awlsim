@@ -719,6 +719,7 @@ class Project(object):
 
 	factory		= ProjectFactory
 
+	ENCODING	= XmlFactory.XML_ENCODING
 	DATETIME_FMT	= "%Y-%m-%d %H:%M:%S.%f"
 
 	EnumGen.start
@@ -888,7 +889,7 @@ class Project(object):
 	@classmethod
 	def detectType(cls, dataBytes):
 		try:
-			dataText = dataBytes.decode("utf-8")
+			dataText = dataBytes.decode(cls.ENCODING)
 			dataLines = dataText.splitlines()
 			magic_v0 = "[AWLSIM_PROJECT]"
 			magic_v1 = "<awlsim_project"
@@ -903,7 +904,7 @@ class Project(object):
 
 	@classmethod
 	def detectFileType(cls, filename):
-		return cls.detectType(awlFileRead(filename, encoding="binary"))
+		return cls.detectType(safeFileRead(filename))
 
 	@classmethod
 	def dataIsProject(cls, dataBytes):
@@ -915,7 +916,7 @@ class Project(object):
 
 	@classmethod
 	def fromText(cls, text, projectFile):
-		textBytes = text.encode("utf-8")
+		textBytes = text.encode(cls.ENCODING)
 		projectType = cls.detectType(textBytes)
 		if projectType == cls.TYPE_V0:
 			return LegacyProjectParser.parse(cls, text, projectFile)
@@ -938,7 +939,12 @@ class Project(object):
 
 	@classmethod
 	def fromFile(cls, filename):
-		return cls.fromText(awlFileRead(filename, encoding="utf8"), filename)
+		try:
+			return cls.fromText(safeFileRead(filename).decode(cls.ENCODING), filename)
+		except UnicodeError as e:
+			raise AwlSimError("Project file: Failed to %s decode "
+				"project file '%s': %s" % (
+				cls.ENCODING, filename, str(e)))
 
 	@classmethod
 	def fromProjectOrRawAwlFile(cls, filename):
@@ -964,7 +970,7 @@ class Project(object):
 
 		try:
 			factory = self.factory(project=self)
-			xmlBytes = factory.compose(lineBreakStr="\r\n", attrLineBreak=True)
+			xmlBytes = factory.compose(attrLineBreak=True)
 			xmlText = xmlBytes.decode(factory.XML_ENCODING)
 		except self.factory.Error as e:
 			raise AwlSimError("Project file: Failed to compose XML: "
@@ -980,7 +986,13 @@ class Project(object):
 			raise AwlSimError("Project file: Cannot generate project file. "
 				"No file name specified.")
 		text = self.toText(projectFile)
-		awlFileWrite(projectFile, text, encoding="utf8")
+		try:
+			data = text.encode(self.ENCODING)
+		except UnicodeError as e:
+			raise AwlSimError("Project file: Failed to %s encode "
+				"project file '%s': %s" % (
+				self.ENCODING, projectFile, str(e)))
+		safeFileWrite(projectFile, data)
 		for awlSrc in self.awlSources:
 			awlSrc.writeFileBacking()
 		for symSrc in self.symTabSources:

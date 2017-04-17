@@ -412,9 +412,10 @@ __run_test()
 	cd "$rootdir" || die "cd to $rootdir failed"
 
 	# Check the file type and run the tester
-	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" -o\
-	     "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
+	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" ]; then
 		check_dos_text_encoding "$testfile"
+		run_awl_test "$interpreter" "$testfile" "$@"
+	elif [ "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
 		run_awl_test "$interpreter" "$testfile" "$@"
 	elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
 		run_sh_test "$interpreter" "$testfile" "$@"

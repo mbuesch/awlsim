@@ -126,43 +126,37 @@ def fileExists(filename):
 		return None
 	return True
 
-def awlFileRead(filename, encoding="latin_1"):
+def safeFileRead(filename):
 	try:
-		fd = open(filename, "rb")
-		data = fd.read()
-		if encoding != "binary":
-			data = data.decode(encoding)
-		fd.close()
-	except (IOError, UnicodeError) as e:
-		raise AwlParserError("Failed to read '%s': %s" %\
+		with open(filename, "rb") as fd:
+			data = fd.read()
+			fd.close()
+	except IOError as e:
+		raise AwlSimError("Failed to read '%s': %s" %\
 			(filename, str(e)))
 	return data
 
-def awlFileWrite(filename, data, encoding="latin_1"):
-	if encoding != "binary":
-		data = "\r\n".join(data.splitlines()) + "\r\n"
+def safeFileWrite(filename, data):
 	for count in range(1000):
 		tmpFile = "%s-%d-%d.tmp" %\
 			(filename, random.randint(0, 0xFFFF), count)
 		if not os.path.exists(tmpFile):
 			break
 	else:
-		raise AwlParserError("Could not create temporary file")
+		raise AwlSimError("Could not create temporary file")
 	try:
-		fd = open(tmpFile, "wb")
-		if encoding != "binary":
-			data = data.encode(encoding)
-		fd.write(data)
-		fd.flush()
-		fd.close()
+		with open(tmpFile, "wb") as fd:
+			fd.write(data)
+			fd.flush()
+			fd.close()
 		if not osIsPosix:
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.
 			with contextlib.suppress(OSError):
 				os.unlink(filename)
 		os.rename(tmpFile, filename)
-	except (IOError, OSError, UnicodeError) as e:
-		raise AwlParserError("Failed to write file:\n" + str(e))
+	except (IOError, OSError) as e:
+		raise AwlSimError("Failed to write file:\n" + str(e))
 	finally:
 		with contextlib.suppress(IOError, OSError):
 			os.unlink(tmpFile)
@@ -212,6 +206,19 @@ def bytesToHexStr(_bytes):
 	if _bytes is None:
 		return None
 	return binascii.b2a_hex(_bytes).decode("ascii")
+
+def toUnixEol(string):
+	"""Convert a string to UNIX line endings,
+	no matter what line endings (mix) the input string is.
+	"""
+	return string.replace("\r\n", "\n")\
+		     .replace("\r", "\n")
+
+def toDosEol(string):
+	"""Convert a string to DOS line endings,
+	no matter what line endings (mix) the input string is.
+	"""
+	return toUnixEol(string).replace("\n", "\r\n")
 
 def envClearLang(env, lang = "C"):
 	"""Reset the language settings of an environment dict
