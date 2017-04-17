@@ -99,20 +99,56 @@ class XmlFactory(object):
 	Error = XmlFactoryError
 
 	class Tag(object):
+		"""An XML tag as it is being used for the
+		XmlFactory parser and composer interfaces.
+		"""
+
+		__slots__ = (
+			"name",
+			"attrs",
+			"tags",
+			"data",
+			"comment",
+			"flags",
+		)
+
 		class NoDefault: pass
 
-		def __init__(self, name, attrs = None,
-			     tags = None, data = None,
-			     comment = None,
-			     emitEmptyAttrs = False,
-			     emitEmptyTag = False):
-			self.name = name or ""			# Tag name
-			self.attrs = attrs or {}		# Tag attributes
-			self.tags = tags or []			# Child tags
-			self.data = data or ""			# Tag data
-			self.commentData = comment or ""	# Comment data
-			self.emitEmptyAttrs = emitEmptyAttrs	# Emit attributes with empty data?
-			self.emitEmptyTag = emitEmptyTag	# Emit tag, if it is completely empty?
+		EnumGen.start
+		FLAG_EMIT_EMPTY_ATTRS	= EnumGen.bitmask
+		FLAG_EMIT_EMPTY_TAG	= EnumGen.bitmask
+		FLAG_USE_CDATA		= EnumGen.bitmask
+		EnumGen.end
+
+		def __init__(self,
+			     name,			# Tag name
+			     attrs=None,		# Tag attributes
+			     tags=None,			# Child tags
+			     data=None,			# Tag data
+			     comment=None,		# Comment data
+			     emitEmptyAttrs=False,	# Emit attributes with empty data?
+			     emitEmptyTag=False,	# Emit tag, if it is completely empty?
+			     useCDATA=False):		# Use CDATA for tag data?
+			self.name = name or ""
+			self.attrs = attrs or {}
+			self.tags = tags or []
+			self.data = data or ""
+			self.comment = comment or ""
+			self.flags = self.FLAG_EMIT_EMPTY_ATTRS if emitEmptyAttrs else 0
+			self.flags |= self.FLAG_EMIT_EMPTY_TAG if emitEmptyTag else 0
+			self.flags |= self.FLAG_USE_CDATA if useCDATA else 0
+
+		@property
+		def emitEmptyAttrs(self):
+			return bool(self.flags & self.FLAG_EMIT_EMPTY_ATTRS)
+
+		@property
+		def emitEmptyTag(self):
+			return bool(self.flags & self.FLAG_EMIT_EMPTY_TAG)
+
+		@property
+		def useCDATA(self):
+			return bool(self.flags & self.FLAG_USE_CDATA)
 
 		def hasAttr(self, name):
 			return name in self.attrs
@@ -147,6 +183,9 @@ class XmlFactory(object):
 				default if default is self.NoDefault else int(bool(default))))
 
 	class Comment(Tag):
+		"""An XML comment.
+		"""
+
 		def __init__(self, text):
 			super(XmlFactory.Comment, self).__init__(name=None,
 								 comment=text)
@@ -213,26 +252,35 @@ class XmlFactory(object):
 			else:
 				childTags = []
 			# Add comment, if any.
-			def addComment(commentData):
-				if commentData.startswith("\n"):
+			def addComment(comment):
+				if comment.startswith("\n"):
 					prefix = "" if (tagIndex == 0) else self.__lineBreakStr
-					commentData = commentData[1:]
+					comment = comment[1:]
 				else:
 					prefix = ""
 				ret.append("%s%s<!-- %s -->" % (
 					   prefix, ind,
-					   commentData.replace("-->", " ->")))
+					   comment.replace("-->", " ->")))
 			# Convert tags to XML
-			if tag.data or childTags:
-				if tag.commentData:
-					addComment(tag.commentData)
+			data = tag.data
+			if data or childTags:
+				if tag.comment:
+					addComment(tag.comment)
 				if tag.name:
+					if data:
+						if tag.useCDATA:
+							# Escape CDATA-end
+							data = data.replace("]]>", "]]]]><![CDATA[>")
+							# Create CDATA section
+							data = "<![CDATA[%s]]>" % data
+						else:
+							data = saxutils.escape(tag.data)
 					ret.append(
 						"%s<%s%s>%s" % (
 						ind,
 						tag.name,
 						attrText,
-						saxutils.escape(tag.data or ""))
+						data)
 					)
 					ret.extend(childTags)
 					ret.append("%s</%s>" % (
@@ -240,8 +288,8 @@ class XmlFactory(object):
 						tag.name)
 					)
 			elif attrs or tag.emitEmptyTag:
-				if tag.commentData:
-					addComment(tag.commentData)
+				if tag.comment:
+					addComment(tag.comment)
 				if tag.name:
 					ret.append(
 						"%s<%s%s />" % (
