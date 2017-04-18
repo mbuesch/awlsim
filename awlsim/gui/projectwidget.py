@@ -390,9 +390,10 @@ class ProjectWidget(QTabWidget):
 
 	def __loadPlainAwlSource(self, filename):
 		project = Project(None) # Create an ad-hoc project
-		srcs = [ AwlSource.fromFile(name = filename,
-					    filepath = filename), ]
-		project.setAwlSources(srcs)
+		source = AwlSource.fromFile(name=filename,
+					    filepath=filename,
+					    compatReEncode=True)
+		project.setAwlSources([ source, ])
 		self.__loadProject(project)
 		self.__isAdHocProject = True
 		QMessageBox.information(self,

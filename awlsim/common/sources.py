@@ -118,6 +118,7 @@ class GenericSource(object):
 	SRCTYPE_ID	= -1 # .awlpro file format ID
 	IDENT_HASH	= hashlib.sha256
 	ENCODING	= "<unknown>"
+	COMPAT_ENCODING	= "<unknown>"
 	USE_CDATA	= False
 	STRIP_DATA	= False
 
@@ -149,12 +150,48 @@ class GenericSource(object):
 
 	@property
 	def sourceBytes(self):
+		"""Get the source byte stream, in native ENCODING format.
+		"""
 		return self.__sourceBytes
 
 	@sourceBytes.setter
 	def sourceBytes(self, newSourceBytes):
+		"""Set the source byte stream.
+		The bytes must be in native ENCODING format.
+		"""
 		self.__sourceBytes = newSourceBytes
 		self.__identHash = None
+
+	@property
+	def compatSourceBytes(self):
+		"""Get the source byte stream, in COMPAT_ENCODING format.
+		"""
+		return self._compatReEncode(self.sourceBytes, self.ENCODING,
+					    self.COMPAT_ENCODING)
+
+	@property
+	def sourceText(self):
+		"""Get the source as decoded text.
+		"""
+		try:
+			return self.sourceBytes.decode(self.ENCODING)
+		except UnicodeError as e:
+			raise AwlSimError("Failed to decode '%s' source code "
+				"bytes to text." % (
+				self.name))
+
+	@classmethod
+	def _compatReEncode(cls, sourceBytes, fromEncoding, toEncoding):
+		"""Re-encode the sourceBytes from 'fromEncoding' to 'toEncoding'.
+		"""
+		try:
+			if fromEncoding != toEncoding:
+				sourceString = sourceBytes.decode(fromEncoding, "ignore")
+				sourceBytes = sourceString.encode(toEncoding, "ignore")
+		except UnicodeError as e:
+			raise AwlSimError("Failed to re-encode source code "
+				"from %s to %s." % (fromEncoding, toEncoding))
+		return sourceBytes
 
 	@property
 	def identHash(self):
@@ -197,13 +234,13 @@ class GenericSource(object):
 			self.filepath = ""
 			self.name = newName
 
-	def toBase64(self):
-		return base64.b64encode(self.sourceBytes).decode("ascii")
-
 	@classmethod
-	def fromFile(cls, name, filepath):
+	def fromFile(cls, name, filepath, compatReEncode=False):
 		try:
 			data = safeFileRead(filepath)
+			if compatReEncode:
+				data = cls._compatReEncode(data, cls.COMPAT_ENCODING,
+							   cls.ENCODING)
 		except AwlSimError as e:
 			raise AwlSimError("Project: Could not read %s "
 				"source file '%s':\n%s" %\
@@ -233,7 +270,8 @@ class GenericSource(object):
 class AwlSource(GenericSource):
 	SRCTYPE		= "AWL/STL"
 	SRCTYPE_ID	= 0 # .awlpro file format ID
-	ENCODING	= "latin_1"
+	ENCODING	= XmlFactory.XML_ENCODING
+	COMPAT_ENCODING	= "latin_1"
 	USE_CDATA	= False
 	STRIP_DATA	= False
 
@@ -245,6 +283,7 @@ class FupSource(GenericSource):
 	SRCTYPE		= "FUP/FBD"
 	SRCTYPE_ID	= 1 # .awlpro file format ID
 	ENCODING	= XmlFactory.XML_ENCODING
+	COMPAT_ENCODING	= ENCODING
 	USE_CDATA	= True
 	STRIP_DATA	= True
 
@@ -256,6 +295,7 @@ class KopSource(GenericSource):
 	SRCTYPE		= "KOP/LAD"
 	SRCTYPE_ID	= 2 # .awlpro file format ID
 	ENCODING	= XmlFactory.XML_ENCODING
+	COMPAT_ENCODING	= ENCODING
 	USE_CDATA	= True
 	STRIP_DATA	= True
 
@@ -266,7 +306,8 @@ class KopSource(GenericSource):
 class SymTabSource(GenericSource):
 	SRCTYPE		= "symbol table"
 	SRCTYPE_ID	= 3 # .awlpro file format ID
-	ENCODING	= "latin_1"
+	ENCODING	= XmlFactory.XML_ENCODING
+	COMPAT_ENCODING	= "latin_1"
 	USE_CDATA	= False
 	STRIP_DATA	= False
 

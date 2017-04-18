@@ -102,8 +102,10 @@ class LegacyProjectParser(object):
 					if not p.has_option(section, option):
 						break
 					path = p.get(section, option)
-					src = SrcClass.fromFile(path,
-						RelPath(projectDir).fromRelative(path))
+					src = SrcClass.fromFile(
+						name=path,
+						filepath=RelPath(projectDir).fromRelative(path),
+						compatReEncode=True)
 					srcList.append(src)
 				for i in range(0xFFFF):
 					srcOption = "%s_%d" % (prefix, i)

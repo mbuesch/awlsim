@@ -11,6 +11,7 @@ from awlsim.common.exceptions import *
 from awlsim.common.immutable import *
 from awlsim.common.net import *
 from awlsim.common.project import *
+from awlsim.common.sources import *
 from awlsim.common.subprocess import *
 from awlsim.common.templates import *
 from awlsim.common.util import *

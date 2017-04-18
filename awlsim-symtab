@@ -100,21 +100,37 @@ def main():
 		else:
 			inDataBytes = safeFileRead(opt_infile)
 
+		# Decode the symbol table using S7 compatible encoding.
+		encoding = SymTabSource.COMPAT_ENCODING
+		try:
+			inDataText = inDataBytes.decode(encoding)
+		except UnicodeError as e:
+			raise AwlSimError("Failed to %s decode symbol table text: "
+				"%s" % (encoding, str(e)))
+
 		if opt_inputParser:
-			tab = opt_inputParser.parseData(inDataBytes,
+			tab = opt_inputParser.parseText(inDataText,
 							autodetectFormat=False)
 		else:
-			tab = SymTabParser.parseData(inDataBytes,
+			tab = SymTabParser.parseText(inDataText,
 						     autodetectFormat=True)
 
 		if opt_outputFormat == "csv":
-			outDataBytes = tab.toCSV()
+			outDataText = tab.toCSV()
 		elif opt_outputFormat == "readable-csv":
-			outDataBytes = tab.toReadableCSV()
+			outDataText = tab.toReadableCSV()
 		elif opt_outputFormat == "asc":
-			outDataBytes = tab.toASC()
+			outDataText = tab.toASC()
 		else:
 			assert(0)
+
+		# Encode the symbol table using S7 compatible encoding.
+		encoding = SymTabSource.COMPAT_ENCODING
+		try:
+			outDataBytes = outDataText.encode(encoding)
+		except UnicodeError as e:
+			raise AwlSimError("Failed to %s encode symbol table text: "
+				"%s" % (encoding, str(e)))
 
 		if opt_outfile == "-":
 			if isPy2Compat:

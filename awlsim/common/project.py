@@ -955,8 +955,9 @@ class Project(object):
 			project = Project.fromFile(filename)
 		else:
 			# Make a fake project
-			awlSrc = AwlSource.fromFile(name = filename,
-						    filepath = filename)
+			awlSrc = AwlSource.fromFile(name=filename,
+						    filepath=filename,
+						    compatReEncode=True)
 			project = Project(projectFile = None,
 					  awlSources = [ awlSrc, ])
 		return project

@@ -430,7 +430,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 		if not fn.endswith(".awl"):
 			fn += ".awl"
 		try:
-			safeFileWrite(fn, source.sourceBytes)
+			safeFileWrite(fn, source.compatSourceBytes)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to export source", e)
@@ -442,8 +442,9 @@ class AwlSourceTabWidget(SourceTabWidget):
 			"All files (*)")
 		if not fn:
 			return
-		source = AwlSource.fromFile("Imported source",
-					    fn)
+		source = AwlSource.fromFile(name="Imported source",
+					    filepath=fn,
+					    compatReEncode=True)
 		res = QMessageBox.question(self,
 			"Integrate source into project?",
 			"Do you want to integrate the source\n"
@@ -617,7 +618,7 @@ class SymSourceTabWidget(SourceTabWidget):
 		if not fn.endswith(".asc"):
 			fn += ".asc"
 		try:
-			safeFileWrite(fn, source.sourceBytes)
+			safeFileWrite(fn, source.compatSourceBytes)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to export symbol table", e)
@@ -629,8 +630,9 @@ class SymSourceTabWidget(SourceTabWidget):
 			"All files (*)")
 		if not fn:
 			return
-		source = SymTabSource.fromFile("Imported symbol table",
-					       fn)
+		source = SymTabSource.fromFile(name="Imported symbol table",
+					       filepath=fn,
+					       compatReEncode=True)
 		res = QMessageBox.question(self,
 			"Integrate symbol table into project?",
 			"Do you want to integrate the symbol table\n"

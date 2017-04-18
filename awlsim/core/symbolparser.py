@@ -2,7 +2,7 @@
 #
 # AWL simulator - symbol table parser
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -157,13 +157,13 @@ class Symbol(object):
 		return self.name.lower() == otherName.lower()
 
 	def __csvRecord(self, value):
-		value = str(value).encode(SymTabParser_CSV.ENCODING)
-		value = value.replace(b'"', b'""')
-		if b';' in value or\
-		   b'"' in value or\
-		   b'\r' in value or\
-		   b'\n' in value:
-			value = b'"' + value + b'"'
+		value = str(value)
+		value = value.replace('"', '""')
+		if ';' in value or\
+		   '"' in value or\
+		   '\r' in value or\
+		   '\n' in value:
+			value = '"' + value + '"'
 		return value
 
 	def toCSV(self):
@@ -175,8 +175,8 @@ class Symbol(object):
 			operator = self.__csvRecord(self.operator)
 			type = self.__csvRecord(self.type)
 			comment = self.__csvRecord(self.comment)
-			return b''.join((name, b';', operator, b';',
-					 type, b';', comment, b'\r\n'))
+			return ''.join((name, ';', operator, ';',
+					 type, ';', comment, '\r\n'))
 		except UnicodeError as e:
 			raise AwlSimError("Unicode error while trying to generate "
 				"symbol CSV dump.")
@@ -191,16 +191,16 @@ class Symbol(object):
 			operator = self.__csvRecord(self.operator)
 			type = self.__csvRecord(self.type)
 			comment = self.__csvRecord(self.comment)
-			namePadding = b" " * (24 - len(name)) + b" "
-			operatorPadding = b" " * (11 - len(operator)) + b" "
+			namePadding = " " * (24 - len(name)) + " "
+			operatorPadding = " " * (11 - len(operator)) + " "
 			if comment:
-				typePadding = b" " * (9 - len(type)) + b" "
+				typePadding = " " * (9 - len(type)) + " "
 			else:
-				typePadding = b""
-			return b''.join((name, b';', namePadding,
-					 operator, b';', operatorPadding,
-					 type, b';', typePadding,
-					 comment, b'\r\n'))
+				typePadding = ""
+			return ''.join((name, ';', namePadding,
+					operator, ';', operatorPadding,
+					type, ';', typePadding,
+					comment, '\r\n'))
 		except UnicodeError as e:
 			raise AwlSimError("Unicode error while trying to generate "
 				"symbol CSV dump.")
@@ -210,22 +210,22 @@ class Symbol(object):
 		# Return type is bytes.
 		self.validate()
 		try:
-			name = str(self.name).encode(SymTabParser_ASC.ENCODING)
-			operator = str(self.operator).encode(SymTabParser_ASC.ENCODING)
-			type = str(self.type).encode(SymTabParser_ASC.ENCODING)
-			comment = str(self.comment).encode(SymTabParser_ASC.ENCODING)
-			name += b" " * (24 - len(name))
-			operator += b" " * (11 - len(operator))
-			type += b" " * (9 - len(type))
-			comment += b" " * (80 - len(comment))
-			return b''.join((b'126,', name, operator,
-					 b' ', type, b' ', comment, b'\r\n'))
+			name = str(self.name)
+			operator = str(self.operator)
+			type = str(self.type)
+			comment = str(self.comment)
+			name += " " * (24 - len(name))
+			operator += " " * (11 - len(operator))
+			type += " " * (9 - len(type))
+			comment += " " * (80 - len(comment))
+			return ''.join(('126,', name, operator,
+					 ' ', type, ' ', comment, '\r\n'))
 		except UnicodeError as e:
 			raise AwlSimError("Unicode error while trying to generate "
 				"symbol ASC dump.")
 
 	def __repr__(self):
-		return self.toReadableCSV().decode(SymTabParser_CSV.ENCODING)
+		return self.toReadableCSV()
 
 class SymbolTable(object):
 	"""Parsed symbol table."""
@@ -237,19 +237,19 @@ class SymbolTable(object):
 		self.__symbolsList = []
  
 	def toCSV(self):
-		return b"".join(s.toCSV()\
-				for s in self.__symbolsList)
+		return "".join(s.toCSV()\
+			       for s in self.__symbolsList)
 
 	def toReadableCSV(self):
-		return b"".join(s.toReadableCSV()\
-				for s in self.__symbolsList)
+		return "".join(s.toReadableCSV()\
+			       for s in self.__symbolsList)
 
 	def toASC(self):
-		return b"".join(s.toASC()\
-				for s in self.__symbolsList)
+		return "".join(s.toASC()\
+			       for s in self.__symbolsList)
 
 	def __repr__(self):
-		return self.toReadableCSV().decode(SymTabParser_CSV.ENCODING)
+		return self.toReadableCSV()
 
 	def __len__(self):
 		return len(self.__symbolsList)
@@ -343,26 +343,24 @@ class SymbolTable(object):
 class SymTabParser(object):
 	"""Abstract symbol table parser."""
 
-	ENCODING	= "latin_1"
-
 	implementations = []
 
 	@classmethod
 	def parseSource(cls, source,
 			autodetectFormat=True,
 			mnemonics=S7CPUConfig.MNEMONICS_AUTO):
-		return cls.parseData(source.sourceBytes, autodetectFormat, mnemonics)
+		return cls.parseText(source.sourceText, autodetectFormat, mnemonics)
 
 	@classmethod
-	def parseData(cls, dataBytes,
+	def parseText(cls, sourceText,
 		      autodetectFormat=True,
 		      mnemonics=S7CPUConfig.MNEMONICS_AUTO):
 		try:
-			if not dataBytes.strip():
+			if not sourceText.strip():
 				return SymbolTable()
 			if autodetectFormat:
 				for implCls in cls.implementations:
-					if implCls._probe(dataBytes):
+					if implCls._probe(sourceText):
 						parserClass = implCls
 						break
 				else:
@@ -373,25 +371,25 @@ class SymTabParser(object):
 			if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
 				instance = parserClass(S7CPUConfig.MNEMONICS_EN)
 				try:
-					symTab = instance._parse(dataBytes)
+					symTab = instance._parse(sourceText)
 				except AwlSimError as e:
 					instance = parserClass(S7CPUConfig.MNEMONICS_DE)
-					symTab = instance._parse(dataBytes)
+					symTab = instance._parse(sourceText)
 			else:
 				instance = parserClass(mnemonics)
-				symTab = instance._parse(dataBytes)
+				symTab = instance._parse(sourceText)
 			return symTab
 		except UnicodeError as e:
 			raise AwlSimError("Encoding error while trying to decode "
 				"symbol table.")
 
 	@classmethod
-	def _probe(cls, dataBytes):
+	def _probe(cls, sourceText):
 		try:
-			if not dataBytes.decode(cls.ENCODING).strip():
+			if not sourceText.strip():
 				return False
 			p = cls(None)
-			p._parse(dataBytes, probeOnly=True)
+			p._parse(sourceText, probeOnly=True)
 		except AwlSimError as e:
 			return False
 		except UnicodeError as e:
@@ -436,20 +434,13 @@ class SymTabParser(object):
 		return sym
 
 class SymTabParser_ASC(SymTabParser):
-	def _parse(self, dataBytes, probeOnly=False):
-		data = dataBytes.decode(self.ENCODING)
+	def _parse(self, data, probeOnly=False):
 		table = SymbolTable()
 		lines = data.splitlines()
 		for i, line in enumerate(lines):
 			lineNr = i + 1
 			if not line.strip():
 				continue
-			if isMicroPython and\
-			   len(line) == 131 and\
-			   line[len(line) - 1] == '\r':
-				# Workaround for MicroPython splitlines() issue.
-				# https://github.com/micropython/micropython/issues/1689
-				line = line[ : len(line) - 1]
 			if len(line) != 130:
 				raise AwlSimError("ASC symbol table parser: "\
 					"Invalid line length (!= 130 chars) in "\
@@ -473,8 +464,7 @@ class SymTabParser_ASC(SymTabParser):
 SymTabParser.implementations.append(SymTabParser_ASC)
 
 class SymTabParser_CSV(SymTabParser):
-	def _parse(self, dataBytes, probeOnly=False):
-		data = dataBytes.decode(self.ENCODING)
+	def _parse(self, data, probeOnly=False):
 		table = SymbolTable()
 		csvReader = csv.reader(data.splitlines(),
 				       dialect="awlsim_symtab")

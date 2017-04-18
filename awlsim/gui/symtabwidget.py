@@ -156,7 +156,12 @@ class SymTabModel(QAbstractTableModel):
 
 	def __updateSource(self):
 		try:
-			self.__source.sourceBytes = self.symTab.toASC()
+			try:
+				data = self.symTab.toASC().encode(self.__source.ENCODING)
+				self.__source.sourceBytes = data
+			except UnicodeError as e:
+				raise AwlSimError("Failed to encode symbol "
+					"table characters.")
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(None,
 				"Symbol table contains invalid characters", e)
@@ -169,7 +174,7 @@ class SymTabModel(QAbstractTableModel):
 			self.symTab = SymbolTable()
 			self.__source = newSource.dup()
 			self.__source.sourceBytes = b""
-			self.symTab = SymTabParser.parseData(newSource.sourceBytes)
+			self.symTab = SymTabParser.parseText(newSource.sourceText)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(None,
 				"Could not parse symbol table information", e)

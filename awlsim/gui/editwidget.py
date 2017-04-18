@@ -433,13 +433,13 @@ class EditWidget(SourceCodeEdit):
 			self.__source.sourceBytes = b""
 			sourceBytes = source.sourceBytes
 			try:
-				sourceText = sourceBytes.decode(AwlParser.TEXT_ENCODING,
+				sourceText = sourceBytes.decode(AwlSource.ENCODING,
 								errors="strict")
 			except UnicodeError:
 				MessageBox.error(self, "The AWL/STL code contains "
 					"non-%s-characters. These were ignored and stripped "
-					"from the code." % AwlParser.TEXT_ENCODING)
-				sourceText = sourceBytes.decode(AwlParser.TEXT_ENCODING,
+					"from the code." % AwlSource.ENCODING)
+				sourceText = sourceBytes.decode(AwlSource.ENCODING,
 								errors="ignore")
 			self.setPlainText(sourceText)
 			self.resetCpuStats()
@@ -451,14 +451,14 @@ class EditWidget(SourceCodeEdit):
 		sourceText = toDosEol(sourceText)
 		# Convert to binary
 		try:
-			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,
+			sourceBytes = sourceText.encode(AwlSource.ENCODING,
 							errors="strict")
 			self.__source.sourceBytes = sourceBytes
 		except UnicodeError:
 			MessageBox.error(self, "The AWL/STL code contains "
 				"non-%s-characters. These were ignored and stripped "
-				"from the code." % AwlParser.TEXT_ENCODING)
-			sourceBytes = sourceText.encode(AwlParser.TEXT_ENCODING,
+				"from the code." % AwlSource.ENCODING)
+			sourceBytes = sourceText.encode(AwlSource.ENCODING,
 							errors="ignore")
 			self.__source.sourceBytes = sourceBytes
 			self.setSource(self.__source)

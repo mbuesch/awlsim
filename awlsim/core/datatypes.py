@@ -792,14 +792,20 @@ class AwlDataType(OptionalImmutable):
 		token = token[1:-1]
 		if len(token) > maxLen:
 			raise AwlSimError("String too long (>%d characters)" % maxLen)
+		from awlsim.common.sources import AwlSource
 		try:
-			data = token.encode(AwlParser.TEXT_ENCODING)
+			# Strings are supposed to be traditional
+			# "latin1" encoding compatible and the resulting
+			# bytes are "latin1" encoded bytes.
+			data = token.encode(AwlSource.COMPAT_ENCODING)
 			data = bytearray(data)
 			if len(data) != len(token):
 				raise ValueError
 		except (UnicodeError, ValueError) as e:
-			raise AwlSimError("Invalid characters in string '%s'." %\
-				token)
+			raise AwlSimError("Invalid characters in string '%s'. "
+				"Please make sure the string is "
+				"%s encoding compatible." % (
+				token, AwlSource.COMPAT_ENCODING))
 		return data
 
 	@classmethod

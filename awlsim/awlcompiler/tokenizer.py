@@ -390,8 +390,6 @@ class AwlParser(object):
 	STATE_IN_UDT_HDR_STRUCT		= EnumGen.item
 	EnumGen.end
 
-	TEXT_ENCODING = AwlSource.ENCODING
-
 	class TokenizerState(object):
 		def __init__(self, parser):
 			self.parser = parser
@@ -1331,13 +1329,13 @@ class AwlParser(object):
 
 	def parseData(self, sourceBytes, sourceId=None, sourceName=None):
 		try:
-			return self.parseText(sourceBytes.decode(self.TEXT_ENCODING),
+			return self.parseText(sourceBytes.decode(AwlSource.ENCODING),
 					      sourceId, sourceName)
 		except UnicodeError as e:
 			raise AwlParserError("Could not decode the AWL/STL "
 				"source code. It contains invalid characters. "
 				"The text encoding should be '%s'." %\
-				self.TEXT_ENCODING)
+				AwlSource.ENCODING)
 
 	def getParseTree(self):
 		return self.tree
