@@ -1721,17 +1721,18 @@ class S7CPU(object): #+cdef
 		if not memArray:
 			return prefix + "--"
 		ret, line, first, count, i = [], [], True, 0, 0
+		def append(line):
+			ret.append((prefix if first else (' ' * len(prefix))) +\
+				   ' '.join(line))
 		while i < maxLen:
 			line.append("%02X" % memArray[i])
 			count += 1
 			if count >= 16:
-				if not first:
-					prefix = ' ' * len(prefix)
-				first = False
-				ret.append(prefix + ' '.join(line))
-				line, count = [], 0
+				append(line)
+				line, count, first = [], 0, False
 			i += 1
-		assert(count == 0)
+		if count:
+			append(line)
 		return '\n'.join(ret)
 
 	def dump(self, withTime=True):
