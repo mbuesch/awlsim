@@ -229,11 +229,17 @@ class GenericSource(object):
 	def isFileBacked(self):
 		return bool(self.filepath)
 
-	def writeFileBacking(self):
-		"Write the backing file, if any."
+	def writeFileBacking(self, compatReEncode=False):
+		"""Write the backing file, if any.
+		"""
 		if not self.isFileBacked():
 			return
-		safeFileWrite(self.filepath, self.sourceBytes)
+		sourceBytes = self.sourceBytes
+		if compatReEncode:
+			sourceBytes = self._compatReEncode(sourceBytes,
+							   self.ENCODING,
+							   self.COMPAT_ENCODING)
+		safeFileWrite(self.filepath, sourceBytes)
 
 	def forceNonFileBacked(self, newName):
 		"Convert this source to a non-file-backed source."
@@ -245,7 +251,8 @@ class GenericSource(object):
 		try:
 			data = safeFileRead(filepath)
 			if compatReEncode:
-				data = self._compatReEncode(data, self.COMPAT_ENCODING,
+				data = self._compatReEncode(data,
+							    self.COMPAT_ENCODING,
 							    self.ENCODING)
 		except AwlSimError as e:
 			raise AwlSimError("Project: Could not read %s "

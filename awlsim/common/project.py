@@ -1018,9 +1018,9 @@ class Project(object):
 				self.ENCODING, projectFile, str(e)))
 		safeFileWrite(projectFile, data)
 		for awlSrc in self.awlSources:
-			awlSrc.writeFileBacking()
+			awlSrc.writeFileBacking(compatReEncode=True)
 		for symSrc in self.symTabSources:
-			symSrc.writeFileBacking()
+			symSrc.writeFileBacking(compatReEncode=True)
 
 	def __repr__(self):
 		if self.projectFile:
