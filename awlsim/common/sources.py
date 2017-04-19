@@ -44,8 +44,10 @@ class SourceFactory(XmlFactory):
 					srcType, source.SRCTYPE_ID))
 			if filename:
 				filename = RelPath(project.projectDir).fromRelative(filename)
+				source.readFromFile(filename, compatReEncode=True)
+			else:
+				source.filepath = ""
 			source.name = name
-			source.filepath = filename
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
@@ -54,32 +56,37 @@ class SourceFactory(XmlFactory):
 	def parser_endTag(self, tag):
 		source = self.source
 		if tag.name == "source":
-			sourceData = "".join(self.__data)
-			if source.STRIP_DATA:
-				# Strip all leading and trailing white space.
-				sourceData = sourceData.strip()
-			else:
-				# Only strip leading and trailing line break
-				# that we added during compose.
-				idx = sourceData.find("\n")
-				if idx >= 0 and not sourceData[:idx].strip():
-					sourceData = sourceData[idx+1:]
-				idx = sourceData.rfind("\n")
-				if idx >= 0 and not sourceData[idx+1:].strip():
-					sourceData = sourceData[:idx]
-				if sourceData.endswith("\r"):
-					sourceData = sourceData[:-1]
-			# Add the data to the source.
-			try:
-				source.sourceBytes = sourceData.encode(source.ENCODING)
-			except UnicodeError as e:
-				raise self.Error("Failed to encode source code data")
+			if self.__data:
+				sourceData = "".join(self.__data)
+				if source.STRIP_DATA:
+					# Strip all leading and trailing white space.
+					sourceData = sourceData.strip()
+				else:
+					# Only strip leading and trailing line break
+					# that we added during compose.
+					idx = sourceData.find("\n")
+					if idx >= 0 and not sourceData[:idx].strip():
+						sourceData = sourceData[idx+1:]
+					idx = sourceData.rfind("\n")
+					if idx >= 0 and not sourceData[idx+1:].strip():
+						sourceData = sourceData[:idx]
+					if sourceData.endswith("\r"):
+						sourceData = sourceData[:-1]
+				# Add the data to the source.
+				try:
+					source.sourceBytes = sourceData.encode(source.ENCODING)
+				except UnicodeError as e:
+					raise self.Error("Failed to encode source code data")
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)
 
 	def parser_data(self, data):
-		self.__data.append(data)
+		source = self.source
+		if not source.isFileBacked():
+			self.__data.append(data)
+			return
+		XmlFactory.parser_data(self, data)
 
 	def composer_getTags(self):
 		project, source = self.project, self.source
@@ -234,18 +241,24 @@ class GenericSource(object):
 			self.filepath = ""
 			self.name = newName
 
-	@classmethod
-	def fromFile(cls, name, filepath, compatReEncode=False):
+	def readFromFile(self, filepath, compatReEncode=False):
 		try:
 			data = safeFileRead(filepath)
 			if compatReEncode:
-				data = cls._compatReEncode(data, cls.COMPAT_ENCODING,
-							   cls.ENCODING)
+				data = self._compatReEncode(data, self.COMPAT_ENCODING,
+							    self.ENCODING)
 		except AwlSimError as e:
 			raise AwlSimError("Project: Could not read %s "
 				"source file '%s':\n%s" %\
-				(cls.SRCTYPE, filepath, str(e)))
-		return cls(name, filepath, data)
+				(self.SRCTYPE, filepath, str(e)))
+		self.sourceBytes = data
+		self.filepath = filepath
+
+	@classmethod
+	def fromFile(cls, name, filepath, compatReEncode=False):
+		source = cls(name, filepath, b"")
+		source.readFromFile(filepath, compatReEncode)
+		return source
 
 	@classmethod
 	def fromBase64(cls, name, b64):
