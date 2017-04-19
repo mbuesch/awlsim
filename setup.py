@@ -80,6 +80,7 @@ scripts = [ "awlsim-gui",
 	    "awlsim-client",
 	    "awlsim-server",
 	    "awlsim-symtab",
+	    "awlsim-proupgrade",
 	    "awlsim-test", ]
 if isWindows or fullBuild:
 	scripts.append("awlsim-win.cmd")
@@ -96,6 +97,7 @@ freezeExecutables = [ ("awlsim-gui", None, guiBase),
 		      ("awlsim-client", None, None),
 		      ("awlsim-server", None, None),
 		      ("awlsim-symtab", None, None),
+		      ("awlsim-proupgrade", None, None),
 		      ("awlsim-test", None, None),
 		      ("awlsim/coreserver/server.py", "awlsim-server-module", None), ]
 if py2exe:
