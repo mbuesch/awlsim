@@ -304,9 +304,11 @@ class ProjectFactory(XmlFactory):
 					self.inCpuSpecs = True
 					return
 				elif tag.name == "config":
-					clockMem = tag.getAttrInt("clock_memory_byte", -1)
+					clockMem = tag.getAttrInt("clock_memory_byte",
+								  S7CPUConfig.DEFAULT_CLOCKMEM)
 					obStartEn = tag.getAttrBool("ob_startinfo_enable", False)
-					mnemonics = tag.getAttrInt("mnemonics", S7CPUConfig.MNEMONICS_AUTO)
+					mnemonics = tag.getAttrInt("mnemonics",
+								   S7CPUConfig.DEFAULT_MNEMONICS)
 					extInsnsEn = tag.getAttrBool("ext_insns_enable", False)
 					conf = project.getCpuConf()
 					conf.setClockMemByte(clockMem)

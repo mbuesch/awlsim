@@ -40,10 +40,13 @@ class S7CPUConfig(object):
 	MNEMONICS_DE		= EnumGen.item
 	EnumGen.end
 
+	DEFAULT_MNEMONICS	= MNEMONICS_AUTO
+	DEFAULT_CLOCKMEM	= -1
+
 	def __init__(self, cpu=None):
 		self.cpu = None
-		self.setConfiguredMnemonics(self.MNEMONICS_AUTO)
-		self.setClockMemByte(-1)
+		self.setConfiguredMnemonics(self.DEFAULT_MNEMONICS)
+		self.setClockMemByte(self.DEFAULT_CLOCKMEM)
 		self.cpu = cpu
 
 	def assignFrom(self, otherCpuConfig):
