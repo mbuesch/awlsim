@@ -94,10 +94,10 @@ class AwlOffset(DynAttrs): #+cdef
 		       (self.bitOffset & 0x7)
 
 	@classmethod
-	def fromBitOffset(cls, bitOffset):
+	def fromLongBitOffset(cls, bitOffset):
 		return cls(bitOffset // 8, bitOffset % 8)
 
-	def toBitOffset(self):
+	def toLongBitOffset(self):
 		return self.byteOffset * 8 + self.bitOffset
 
 	def __add__(self, other):

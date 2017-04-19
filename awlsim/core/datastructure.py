@@ -241,7 +241,7 @@ class AwlStruct(object):
 					fieldInitData = None
 				self.addField(cpu, str(childIdent), childType,
 					      fieldInitData)
-				initOffset += AwlOffset.fromBitOffset(childType.width)
+				initOffset += AwlOffset.fromLongBitOffset(childType.width)
 				childIdent.advanceToNextArrayElement(dataType.arrayDimensions)
 				if childType.width > 8 and\
 				   intDivRoundUp(childType.width, 8) % 2 != 0:

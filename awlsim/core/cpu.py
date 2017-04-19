@@ -1444,6 +1444,7 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
+		# Fetch the data from the peripheral device.
 		value = None
 		if self.cbPeripheralRead:
 			value = self.cbPeripheralRead(self.cbPeripheralReadData,
@@ -1454,8 +1455,11 @@ class S7CPU(object): #+cdef
 				"the direct peripheral fetch. "
 				"(width=%d, offset=%d)" %\
 				(operator.width, operator.value.byteOffset))
-		self.inputs.store(operator.value, operator.width, value)
-		return self.inputs.fetch(operator.value, operator.width)
+
+		# Store the data to the process image, if it is within the inputs range.
+		if operator.value.toLongBitOffset() + operator.width < self.specs.nrInputs * 8:
+			self.inputs.store(operator.value, operator.width, value)
+		return value
 
 	def fetchT(self, operator, enforceWidth):
 		insnType = operator.insn.insnType
@@ -1657,7 +1661,11 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		self.outputs.store(operator.value, operator.width, value)
+		# Store the data to the process image, if it is within the outputs range.
+		if operator.value.toLongBitOffset() + operator.width < self.specs.nrOutputs * 8:
+			self.outputs.store(operator.value, operator.width, value)
+
+		# Store the data to the peripheral device.
 		ok = False
 		if self.cbPeripheralWrite:
 			ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,

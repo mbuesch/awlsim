@@ -205,8 +205,8 @@ class AwlTranslator(object):
 					value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
 					linArrayIndex = dataType.arrayIndicesCollapse(
 						rawDataInit.identChain[-1].indices)
-					offset = AwlOffset.fromBitOffset(linArrayIndex *
-									 dataType.arrayElementType.width)
+					offset = AwlOffset.fromLongBitOffset(linArrayIndex *
+									     dataType.arrayElementType.width)
 					try:
 						initBytes.store(offset, dataType.arrayElementType.width,
 								value)
