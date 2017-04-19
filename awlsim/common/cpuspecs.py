@@ -32,15 +32,23 @@ __all__ = [ "S7CPUSpecs", ]
 class S7CPUSpecs(object):
 	"""STEP 7 CPU core specifications"""
 
+	DEFAULT_NR_ACCUS	= 2
+	DEFAULT_NR_TIMERS	= 2048
+	DEFAULT_NR_COUNTERS	= 2048
+	DEFAULT_NR_FLAGS	= 8192
+	DEFAULT_NR_INPUTS	= 8192
+	DEFAULT_NR_OUTPUTS	= 8192
+	DEFAULT_NR_LOCALBYTES	= 2048
+
 	def __init__(self, cpu=None):
 		self.cpu = None
-		self.setNrAccus(2)
-		self.setNrTimers(2048)
-		self.setNrCounters(2048)
-		self.setNrFlags(8192)
-		self.setNrInputs(8192)
-		self.setNrOutputs(8192)
-		self.setNrLocalbytes(2048)
+		self.setNrAccus(self.DEFAULT_NR_ACCUS)
+		self.setNrTimers(self.DEFAULT_NR_TIMERS)
+		self.setNrCounters(self.DEFAULT_NR_COUNTERS)
+		self.setNrFlags(self.DEFAULT_NR_FLAGS)
+		self.setNrInputs(self.DEFAULT_NR_INPUTS)
+		self.setNrOutputs(self.DEFAULT_NR_OUTPUTS)
+		self.setNrLocalbytes(self.DEFAULT_NR_LOCALBYTES)
 		self.cpu = cpu
 
 	def assignFrom(self, otherCpuSpecs):
