@@ -315,7 +315,7 @@ class XmlFactory(object):
 		lines.extend(self.__tags2text(self.composer_getTags(),
 					      self.__baseIndent))
 
-		return lineBreakStr.join(lines).encode(self.XML_ENCODING)
+		return (lineBreakStr.join(lines) + lineBreakStr).encode(self.XML_ENCODING)
 
 	def parser_switchTo(self, otherFactory):
 		self.builder.pushFactory(otherFactory)
