@@ -279,17 +279,40 @@ class ProjectFactory(XmlFactory):
 		if self.inProject:
 			if self.inCpu:
 				if tag.name == "specs":
-					nrAccus = tag.getAttrInt("nr_accus", 2)
+					nrAccus = tag.getAttrInt("nr_accus",
+							S7CPUSpecs.DEFAULT_NR_ACCUS)
+					nrTimers = tag.getAttrInt("nr_timers",
+							S7CPUSpecs.DEFAULT_NR_TIMERS)
+					nrCounters = tag.getAttrInt("nr_counters",
+							S7CPUSpecs.DEFAULT_NR_COUNTERS)
+					nrFlags = tag.getAttrInt("nr_flags",
+							S7CPUSpecs.DEFAULT_NR_FLAGS)
+					nrInputs = tag.getAttrInt("nr_inputs",
+							S7CPUSpecs.DEFAULT_NR_INPUTS)
+					nrOutputs = tag.getAttrInt("nr_outputs",
+							S7CPUSpecs.DEFAULT_NR_OUTPUTS)
+					nrLocalbytes = tag.getAttrInt("nr_localbytes",
+							S7CPUSpecs.DEFAULT_NR_LOCALBYTES)
 					specs = project.getCpuSpecs()
 					specs.setNrAccus(nrAccus)
+					specs.setNrTimers(nrTimers)
+					specs.setNrCounters(nrCounters)
+					specs.setNrFlags(nrFlags)
+					specs.setNrInputs(nrInputs)
+					specs.setNrOutputs(nrOutputs)
+					specs.setNrLocalbytes(nrLocalbytes)
 					self.inCpuSpecs = True
 					return
 				elif tag.name == "config":
 					clockMem = tag.getAttrInt("clock_memory_byte", -1)
 					obStartEn = tag.getAttrBool("ob_startinfo_enable", False)
+					mnemonics = tag.getAttrInt("mnemonics", S7CPUConfig.MNEMONICS_AUTO)
+					extInsnsEn = tag.getAttrBool("ext_insns_enable", False)
 					conf = project.getCpuConf()
 					conf.setClockMemByte(clockMem)
+					conf.setConfiguredMnemonics(mnemonics)
 					project.setObTempPresetsEn(obStartEn)
+					project.setExtInsnsEn(extInsnsEn)
 					self.inCpuConf = True
 					return
 			elif self.inLangAwl:
@@ -333,11 +356,6 @@ class ProjectFactory(XmlFactory):
 					self.inCpu = True
 					return
 				elif tag.name == "language_awl":
-					mnemonics = tag.getAttrInt("mnemonics", S7CPUConfig.MNEMONICS_AUTO)
-					extInsnsEn = tag.getAttrBool("ext_insns_enable", False)
-					conf = project.getCpuConf()
-					conf.setConfiguredMnemonics(mnemonics)
-					project.setExtInsnsEn(extInsnsEn)
 					project.setAwlSources([])
 					self.inLangAwl = True
 					return
@@ -434,13 +452,20 @@ class ProjectFactory(XmlFactory):
 				 comment="\nCPU core feature specification",
 				 attrs={
 					"nr_accus"		: str(int(specs.nrAccus)),
-					#TODO more
+					"nr_timers"		: str(int(specs.nrTimers)),
+					"nr_counters"		: str(int(specs.nrCounters)),
+					"nr_flags"		: str(int(specs.nrFlags)),
+					"nr_inputs"		: str(int(specs.nrInputs)),
+					"nr_outputs"		: str(int(specs.nrOutputs)),
+					"nr_localbytes"		: str(int(specs.nrLocalbytes)),
 				 }),
 			self.Tag(name="config",
 				 comment="\nCPU core configuration",
 				 attrs={
 					"ob_startinfo_enable"	: str(int(project.getObTempPresetsEn())),
+					"ext_insns_enable"	: str(int(project.getExtInsnsEn())),
 					"clock_memory_byte"	: str(int(conf.clockMemByte)),
+					"mnemonics"		: str(int(conf.getConfiguredMnemonics())),
 				 })
 		]
 		childTags.append(
@@ -456,10 +481,6 @@ class ProjectFactory(XmlFactory):
 		childTags.append(
 			self.Tag(name="language_awl",
 				 comment="\nAWL/STL language configuration",
-				 attrs={
-					"mnemonics"		: str(int(conf.getConfiguredMnemonics())),
-					"ext_insns_enable"	: str(int(project.getExtInsnsEn())),
-				 },
 				 tags=awlChildTags
 		))
 
