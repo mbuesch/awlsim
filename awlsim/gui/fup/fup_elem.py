@@ -405,12 +405,14 @@ class FupElem(FupBaseClass):
 		"""
 		trans = painter.transform()
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
+		tl, tr = trans.map(tlX, tlY), trans.map(trX, trY)
+		bl, br = trans.map(blX, blY), trans.map(brX, brY)
 		return self.grid.CollLines(
 			lineSegments=(
-				LineSeg2D.fromCoords(*trans.map(tlX, tlY), *trans.map(trX, trY)),
-				LineSeg2D.fromCoords(*trans.map(trX, trY), *trans.map(brX, brY)),
-				LineSeg2D.fromCoords(*trans.map(brX, brY), *trans.map(blX, blY)),
-				LineSeg2D.fromCoords(*trans.map(blX, blY), *trans.map(tlX, tlY)),
+				LineSeg2D.fromCoords(tl[0], tl[1], tr[0], tr[1]),
+				LineSeg2D.fromCoords(tr[0], tr[1], br[0], br[1]),
+				LineSeg2D.fromCoords(br[0], br[1], bl[0], bl[1]),
+				LineSeg2D.fromCoords(bl[0], bl[1], tl[0], tl[1]),
 			),
 			elem=self
 		)
