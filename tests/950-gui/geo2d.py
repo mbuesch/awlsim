@@ -9,6 +9,7 @@ class Test_LineSeg2D(object):
 		p = Point2D()
 		assert_eq(p.x, 0)
 		assert_eq(p.y, 0)
+		assert_eq(bool(p), False)
 
 		p = Point2D(42, -42)
 		assert_eq(p.x, 42)
@@ -16,11 +17,13 @@ class Test_LineSeg2D(object):
 		assert_eq(p, Point2D(42, -42))
 		assert_ne(p, Point2D(42, 42))
 		assert_ne(p, Point2D(-42, -42))
+		assert_eq(bool(p), True)
 
 	def test_vect(self):
 		v = Vect2D()
 		assert_eq(v.x, 0)
 		assert_eq(v.y, 0)
+		assert_eq(bool(v), False)
 
 		v = Vect2D(42, -42)
 		assert_eq(v.x, 42)
@@ -28,17 +31,25 @@ class Test_LineSeg2D(object):
 		assert_eq(v, Vect2D(42, -42))
 		assert_ne(v, Vect2D(42, 42))
 		assert_ne(v, Vect2D(-42, -42))
+		assert_eq(bool(v), True)
 
 	def test_lineseg(self):
+		s = LineSeg2D.fromCoords(3, 4, 3, 4)
+		assert_eq(s.pointA, Point2D(3, 4))
+		assert_eq(s.pointB, Point2D(3, 4))
+		assert_eq(bool(s), False)
+
 		s = LineSeg2D.fromCoords(1, 2, 3, 4)
 		assert_eq(s.pointA, Point2D(1, 2))
 		assert_eq(s.pointB, Point2D(3, 4))
+		assert_eq(bool(s), True)
 
 		assert_eq(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, 2, 3, 4))
 		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(-1, 2, 3, 4))
 		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, -2, 3, 4))
 		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, 2, -3, 4))
 		assert_ne(LineSeg2D.fromCoords(1, 2, 3, 4), LineSeg2D.fromCoords(1, 2, 3, -4))
+		assert_eq(bool(s), True)
 
 	def test_intersection_base(self):
 		inter = Inter2D()
@@ -47,6 +58,7 @@ class Test_LineSeg2D(object):
 		assert_is(inter.intersects, False)
 		assert_is(inter.point, None)
 		assert_eq(inter.vect, Vect2D())
+		assert_eq(bool(inter), False)
 
 		inter = Inter2D(Point2D(42, -42), Vect2D(142, -142), False)
 		assert_eq(inter, Inter2D(Point2D(42, -42), Vect2D(142, -142), False))
@@ -54,6 +66,7 @@ class Test_LineSeg2D(object):
 		assert_is(inter.intersects, False)
 		assert_eq(inter.point, Point2D(42, -42))
 		assert_eq(inter.vect, Vect2D(142, -142))
+		assert_eq(bool(inter), False)
 
 		inter = Inter2D(Point2D(42, -42), Vect2D(142, -142), True)
 		assert_eq(inter, Inter2D(Point2D(42, -42), Vect2D(142, -142), True))
@@ -61,11 +74,13 @@ class Test_LineSeg2D(object):
 		assert_is(inter.intersects, True)
 		assert_eq(inter.point, Point2D(42, -42))
 		assert_eq(inter.vect, Vect2D(142, -142))
+		assert_eq(bool(inter), True)
 
 		inter = Inter2D(None, Vect2D(142, -142), True)
 		assert_is(inter.intersects, False)
 		assert_is(inter.point, None)
 		assert_eq(inter.vect, Vect2D(142, -142))
+		assert_eq(bool(inter), False)
 
 	def test_intersection(self):
 		# intersecting

@@ -44,7 +44,8 @@ class Base2D(object):
 	def __bool__(self):
 		return True
 
-	__nonzero__ = __bool__ # Python 2 compat
+	def __nonzero__(self): # Python 2 compat
+		return self.__bool__()
 
 class BaseXY2D(Base2D):
 	"""2D X/Y base object
