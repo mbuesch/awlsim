@@ -60,7 +60,7 @@ class CpuConfigWidget(QWidget):
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
 
-		group = QGroupBox("Hardware", self)
+		group = QGroupBox("Hardware resource specification", self)
 		group.setLayout(QGridLayout())
 
 		label = QLabel("Number of accumulator registers", self)
@@ -75,13 +75,83 @@ class CpuConfigWidget(QWidget):
 		self.accuCombo.setToolTip(label.toolTip())
 		group.layout().addWidget(self.accuCombo, 0, 1)
 
+		label = QLabel("Number of S7 timers", self)
+		label.setToolTip(
+			"Set the number of S7 timers the CPU will have.\n"
+			"This does only influence the number of S7 timers.\n"
+			"There will always be an unlimited amount of IEC timers.")
+		group.layout().addWidget(label, 1, 0)
+		self.timersSpinBox = QSpinBox(self)
+		self.timersSpinBox.setMinimum(0)
+		self.timersSpinBox.setMaximum(0xFFFF)
+		self.timersSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.timersSpinBox, 1, 1)
+
+		label = QLabel("Number of S7 counters", self)
+		label.setToolTip(
+			"Set the number of S7 counters the CPU will have.\n"
+			"This does only influence the number of S7 counters.\n"
+			"There will always be an unlimited amount of IEC counters.")
+		group.layout().addWidget(label, 2, 0)
+		self.countersSpinBox = QSpinBox(self)
+		self.countersSpinBox.setMinimum(0)
+		self.countersSpinBox.setMaximum(0xFFFF)
+		self.countersSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.countersSpinBox, 2, 1)
+
+		label = QLabel("Number flag (Merker) memory bytes", self)
+		label.setToolTip(
+			"Set the number flag (Merker) memory bytes the CPU will have.")
+		group.layout().addWidget(label, 3, 0)
+		self.flagsSpinBox = QSpinBox(self)
+		self.flagsSpinBox.setMinimum(0)
+		self.flagsSpinBox.setMaximum(0x7FFFFFFF)
+		self.flagsSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.flagsSpinBox, 3, 1)
+
+		label = QLabel("Number process image input bytes", self)
+		label.setToolTip(
+			"Set the number process image input memory bytes the CPU will have.")
+		group.layout().addWidget(label, 4, 0)
+		self.inputsSpinBox = QSpinBox(self)
+		self.inputsSpinBox.setMinimum(0)
+		self.inputsSpinBox.setMaximum(0x7FFFFFFF)
+		self.inputsSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.inputsSpinBox, 4, 1)
+
+		label = QLabel("Number process image output bytes", self)
+		label.setToolTip(
+			"Set the number process image output memory bytes the CPU will have.")
+		group.layout().addWidget(label, 5, 0)
+		self.outputsSpinBox = QSpinBox(self)
+		self.outputsSpinBox.setMinimum(0)
+		self.outputsSpinBox.setMaximum(0x7FFFFFFF)
+		self.outputsSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.outputsSpinBox, 5, 1)
+
+		label = QLabel("Number local stack memory (TEMP) bytes", self)
+		label.setToolTip(
+			"Set the number local stack memory (TEMP) bytes the\n"
+			"CPU will have per organization block invocation.")
+		group.layout().addWidget(label, 6, 0)
+		self.localbytesSpinBox = QSpinBox(self)
+		self.localbytesSpinBox.setMinimum(0)
+		self.localbytesSpinBox.setMaximum(0x7FFFFFFF)
+		self.localbytesSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.localbytesSpinBox, 6, 1)
+
+		self.layout().addWidget(group, 0, 0)
+
+		group = QGroupBox("Hardware configuration", self)
+		group.setLayout(QGridLayout())
+
 		label = QLabel("Clock memory byte (Taktmerker)", self)
 		label.setToolTip(
 			"Select an M byte for use as clock memory byte (Taktmerker).")
-		group.layout().addWidget(label, 1, 0)
+		group.layout().addWidget(label, 0, 0)
 		self.clockMemSpin = ClockMemSpinBox(self)
 		self.clockMemSpin.setToolTip(label.toolTip())
-		group.layout().addWidget(self.clockMemSpin, 1, 1)
+		group.layout().addWidget(self.clockMemSpin, 0, 1)
 
 		self.obTempCheckBox = QCheckBox("Enable writing of OB &TEMP "
 			"entry-variables", self)
@@ -89,9 +159,9 @@ class CpuConfigWidget(QWidget):
 			"If this box is not checked the entry variables in the\n"
 			"ORGANIZATION_BLOCK's TEMP region will not be filled\n"
 			"by the system on entry into the OB.")
-		group.layout().addWidget(self.obTempCheckBox, 2, 0, 1, 2)
+		group.layout().addWidget(self.obTempCheckBox, 1, 0, 1, 2)
 
-		self.layout().addWidget(group, 0, 0)
+		self.layout().addWidget(group, 1, 0)
 
 		group = QGroupBox("AWL language", self)
 		group.setLayout(QGridLayout())
@@ -118,9 +188,9 @@ class CpuConfigWidget(QWidget):
 			"if such instructions are not used.")
 		group.layout().addWidget(self.extInsnsCheckBox, 1, 0, 1, 2)
 
-		self.layout().addWidget(group, 1, 0)
+		self.layout().addWidget(group, 2, 0)
 
-		self.layout().setRowStretch(2, 1)
+		self.layout().setRowStretch(3, 1)
 
 	def loadFromProject(self, project):
 		specs = project.getCpuSpecs()
@@ -129,6 +199,12 @@ class CpuConfigWidget(QWidget):
 		index = self.accuCombo.findData(specs.nrAccus)
 		assert(index >= 0)
 		self.accuCombo.setCurrentIndex(index)
+		self.timersSpinBox.setValue(specs.nrTimers)
+		self.countersSpinBox.setValue(specs.nrCounters)
+		self.flagsSpinBox.setValue(specs.nrFlags)
+		self.inputsSpinBox.setValue(specs.nrInputs)
+		self.outputsSpinBox.setValue(specs.nrOutputs)
+		self.localbytesSpinBox.setValue(specs.nrLocalbytes)
 
 		self.clockMemSpin.setValue(conf.clockMemByte)
 
@@ -152,11 +228,23 @@ class CpuConfigWidget(QWidget):
 
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
+		nrTimers = self.timersSpinBox.value()
+		nrCounters = self.countersSpinBox.value()
+		nrFlags = self.flagsSpinBox.value()
+		nrInputs = self.inputsSpinBox.value()
+		nrOutputs = self.outputsSpinBox.value()
+		nrLocalbytes = self.localbytesSpinBox.value()
 		clockMemByte = self.clockMemSpin.value()
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
 
 		specs.setNrAccus(nrAccus)
+		specs.setNrTimers(nrTimers)
+		specs.setNrCounters(nrCounters)
+		specs.setNrFlags(nrFlags)
+		specs.setNrInputs(nrInputs)
+		specs.setNrOutputs(nrOutputs)
+		specs.setNrLocalbytes(nrLocalbytes)
 		conf.setConfiguredMnemonics(mnemonics)
 		conf.setClockMemByte(clockMemByte)
 		project.setObTempPresetsEn(obTempEnabled)
