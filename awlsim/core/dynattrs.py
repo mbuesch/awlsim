@@ -49,7 +49,7 @@ class DynAttrs(object): #+cdef
 		raise AttributeError(name)
 
 	def __eq__(self, other): #@nocy
-#@cy	cdef __eq(self, object other):
+#@cy	cpdef __eq(self, object other):
 		if self is other:
 			return True
 		if not isinstance(other, DynAttrs):

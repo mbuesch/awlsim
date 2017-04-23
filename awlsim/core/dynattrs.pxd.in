@@ -1,2 +1,2 @@
 cdef class DynAttrs(object):
-	cdef __eq(self, object other)
+	cpdef __eq(self, object other)

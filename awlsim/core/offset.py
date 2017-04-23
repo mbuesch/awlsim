@@ -60,7 +60,7 @@ class AwlOffset(DynAttrs): #+cdef
 			byteOffset, bitOffset
 
 	def __eq__(self, other): #@nocy
-#@cy	cdef __eq(self, object other):
+#@cy	cpdef __eq(self, object other):
 		return (self is other) or (\
 			isinstance(other, AwlOffset) and\
 			self.byteOffset == other.byteOffset and\

@@ -10,4 +10,4 @@ cdef class AwlOffset(DynAttrs):
 	cdef public object fbNumber
 	cdef public object subOffset
 
-	cdef __eq(self, object other)
+	cpdef __eq(self, object other)

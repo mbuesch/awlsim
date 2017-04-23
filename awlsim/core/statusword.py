@@ -82,7 +82,7 @@ class S7StatusWord(DynAttrs): #+cdef
 	}
 
 	def __eq__(self, other): #@nocy
-#@cy	cdef __eq(self, object other):
+#@cy	cpdef __eq(self, object other):
 		return (self is other) or (\
 			isinstance(other, S7StatusWord) and\
 			self.getWord() == other.getWord()\
