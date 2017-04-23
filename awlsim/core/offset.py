@@ -61,11 +61,14 @@ class AwlOffset(DynAttrs): #+cdef
 
 	def __eq__(self, other): #@nocy
 #@cy	cpdef __eq(self, object other):
+		"""Equality operator.
+		This does only compare byte and bit offset and
+		does _not_ check dynAttrs.
+		"""
 		return (self is other) or (\
 			isinstance(other, AwlOffset) and\
 			self.byteOffset == other.byteOffset and\
-			self.bitOffset == other.bitOffset and\
-			super(AwlOffset, self).__eq__(other)\
+			self.bitOffset == other.bitOffset\
 		)
 
 #@cy	def __richcmp__(self, object other, int op):
