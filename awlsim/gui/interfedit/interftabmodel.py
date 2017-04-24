@@ -144,6 +144,7 @@ class AwlInterfaceModel_factory(XmlFactory):
 					"allow_retval" : str(int(model.haveRetVal)),
 					"allow_initvalue" : str(int(model.haveInitValue)),
 				 },
+				 attrLineBreak=True,
 				 tags=[
 					self.Tag(name="inputs",
 						 tags=inputTags),
