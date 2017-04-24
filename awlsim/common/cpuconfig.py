@@ -74,3 +74,5 @@ class S7CPUConfig(object):
 
 	def setClockMemByte(self, byteAddress):
 		self.clockMemByte = byteAddress
+		if self.cpu:
+			self.cpu.initClockMemState()

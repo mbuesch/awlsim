@@ -32,7 +32,7 @@ class SFCm4(SFC):
 	def run(self):
 		s = self.cpu.statusWord
 
-		self.cpu._initializeTimestamp()
-		self.cpu._initClockMemState()
+		self.cpu.initializeTimestamp()
+		self.cpu.initClockMemState(force=True)
 
 		s.BIE = 1
