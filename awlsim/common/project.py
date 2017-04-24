@@ -347,7 +347,7 @@ class ProjectFactory(XmlFactory):
 					project.addSymTabSource(source)
 					return
 			elif self.inLibs:
-				if tag.name == "lib":
+				if tag.name == "lib_selection":
 					libSel = AwlLibEntrySelection()
 					self.parser_switchTo(libSel.factory(project=project,
 									    libSel=libSel))

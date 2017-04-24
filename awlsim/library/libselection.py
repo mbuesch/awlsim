@@ -48,7 +48,7 @@ class AwlLibEntrySelectionFactory(XmlFactory):
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if tag.name == "lib":
+		if tag.name == "lib_selection":
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)
@@ -58,7 +58,7 @@ class AwlLibEntrySelectionFactory(XmlFactory):
 
 		childTags = []
 
-		tags = [self.Tag(name="lib",
+		tags = [self.Tag(name="lib_selection",
 				 comment="\nStandard library selection",
 				 attrs={
 					"name"		  : str(libSel.getLibName()),
