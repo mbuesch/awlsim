@@ -118,6 +118,7 @@ class XmlFactory(object):
 		class NoDefault: pass
 
 		EnumGen.start
+		FLAG_ATTR_LINE_BREAK	= EnumGen.bitmask
 		FLAG_EMIT_EMPTY_ATTRS	= EnumGen.bitmask
 		FLAG_EMIT_EMPTY_TAG	= EnumGen.bitmask
 		FLAG_USE_CDATA		= EnumGen.bitmask
@@ -129,6 +130,7 @@ class XmlFactory(object):
 			     tags=None,			# Child tags
 			     data=None,			# Tag data
 			     comment=None,		# Comment data
+			     attrLineBreak=False,	# Use line breaks between attrs?
 			     emitEmptyAttrs=False,	# Emit attributes with empty data?
 			     emitEmptyTag=False,	# Emit tag, if it is completely empty?
 			     useCDATA=False):		# Use CDATA for tag data?
@@ -137,9 +139,14 @@ class XmlFactory(object):
 			self.tags = tags or []
 			self.data = data or ""
 			self.comment = comment or ""
-			self.flags = self.FLAG_EMIT_EMPTY_ATTRS if emitEmptyAttrs else 0
+			self.flags = self.FLAG_ATTR_LINE_BREAK if attrLineBreak else 0
+			self.flags |= self.FLAG_EMIT_EMPTY_ATTRS if emitEmptyAttrs else 0
 			self.flags |= self.FLAG_EMIT_EMPTY_TAG if emitEmptyTag else 0
 			self.flags |= self.FLAG_USE_CDATA if useCDATA else 0
+
+		@property
+		def attrLineBreak(self):
+			return bool(self.flags & self.FLAG_ATTR_LINE_BREAK)
 
 		@property
 		def emitEmptyAttrs(self):
@@ -199,7 +206,7 @@ class XmlFactory(object):
 		self.__genXmlHeader = True
 		self.__baseIndent = 0
 		self.__lineBreakStr = "\n"
-		self.__attrLineBreak = False
+		self.__globalAttrLineBreak = False
 
 	def __getattr__(self, name):
 		with contextlib.suppress(KeyError):
@@ -239,7 +246,7 @@ class XmlFactory(object):
 				  if tag.emitEmptyAttrs or str(aVal)
 			}
 			# Convert attrs to XML
-			if self.__attrLineBreak:
+			if self.__globalAttrLineBreak or tag.attrLineBreak:
 				attrSpacer = self.__lineBreakStr + ind +\
 					     (" " * (1 + len(tag.name) + 1))
 			else:
@@ -306,7 +313,7 @@ class XmlFactory(object):
 		self.__genXmlHeader = genXmlHeader
 		self.__baseIndent = baseIndent
 		self.__lineBreakStr = lineBreakStr
-		self.__attrLineBreak = attrLineBreak
+		self.__globalAttrLineBreak = attrLineBreak
 
 		lines = []
 		if self.__genXmlHeader:
