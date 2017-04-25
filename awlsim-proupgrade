@@ -47,6 +47,8 @@ def usage():
 def main():
 	opt_loglevel = Logging.LOG_WARNING
 
+	Logging.setPrefix("awlsim-proupgrade: ")
+
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
 			"hL:",
@@ -76,7 +78,9 @@ def main():
 		# Parse the project file and write it back immediately.
 		# The read will parse old formats, too.
 		# The write will write using the latest format.
+		printInfo("Upgrading file format of: %s" % projectFile)
 		project = Project.fromFile(projectFile)
+		#TODO (optionally) upgrade format of FUP source.
 		project.toFile()
 
 	except AwlSimError as e:
