@@ -22,10 +22,10 @@ cdef class S7CPU(object):
 	cdef public object prog
 	cdef public double cycleTimeLimit
 	cdef public object __runtimeLimit
-	cdef public bint is4accu
-	cdef public bint __obTempPresetsEnabled
-	cdef public bint __extendedInsnsEnabled
-	cdef public bint mcrActive
+	cdef public _Bool is4accu
+	cdef public _Bool __obTempPresetsEnabled
+	cdef public _Bool __extendedInsnsEnabled
+	cdef public _Bool mcrActive
 
 	cdef public dict udts
 	cdef public dict dbs

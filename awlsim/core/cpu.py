@@ -49,7 +49,8 @@ from awlsim.core.statusword import * #@nocy
 from awlsim.core.labels import *
 from awlsim.core.timers import *
 from awlsim.core.counters import *
-from awlsim.core.callstack import *
+#from awlsim.core.callstack cimport * #@cy
+from awlsim.core.callstack import * #@nocy
 from awlsim.core.obtemp import *
 from awlsim.core.util import *
 

@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU call stack
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+#from awlsim.core.dynattrs cimport * #@cy
+
 from awlsim.core.datatypes import *
 from awlsim.core.blocks import *
 from awlsim.core.parameters import *
@@ -30,8 +32,25 @@ from awlsim.core.lstack import *
 from awlsim.core.util import *
 
 
-class CallStackElem(object):
+class CallStackElem(object): #+cdef
 	"Call stack element"
+
+	__slots__ = (
+		"cpu",
+		"parenStack",
+		"ip",
+		"block",
+		"insns",
+		"isRawCall",
+		"instanceDB",
+		"prevDbRegister",
+		"prevDiRegister",
+		"prevAR2value",
+		"lalloc",
+		"localdata",
+		"__outboundParams",
+		"__interfRefs",
+	)
 
 	lallocCache = ObjectCache(
 		lambda cpu: LStackAllocator(cpu.specs.nrLocalbytes)
@@ -74,6 +93,7 @@ class CallStackElem(object):
 
 		# Handle parameters
 		self.__outboundParams = []
+#@cy		self.__interfRefs = {}
 		if parameters and not isRawCall:
 			if block.isFB:
 				structInstance, callByRef_Types =\
@@ -184,8 +204,11 @@ class CallStackElem(object):
 	# and register a copy-back request, if outbound.
 	# Returns the translated rvalueOp.
 	def __FC_trans_copyToVL(self, param, rvalueOp):
+#@cy		cdef S7CPU cpu
+
+		cpu = self.cpu
 		# Allocate space in the caller-L-stack.
-		loffset = self.cpu.callStackTop.lalloc.alloc(rvalueOp.width)
+		loffset = cpu.callStackTop.lalloc.alloc(rvalueOp.width)
 		# Make an operator for the allocated space.
 		oper = AwlOperator(AwlOperator.MEM_L,
 				   rvalueOp.width,
@@ -195,7 +218,7 @@ class CallStackElem(object):
 		# This would only be necessary for inbound parameters,
 		# but S7 supports read access to certain outbound
 		# FC parameters as well. So copy the value unconditionally.
-		self.cpu.store(oper, self.cpu.fetch(rvalueOp))
+		cpu.store(oper, cpu.fetch(rvalueOp))
 		# Change the operator to VL
 		oper.type = oper.MEM_VL
 		# If outbound, save param and operator for return from CALL.
@@ -211,17 +234,20 @@ class CallStackElem(object):
 	# Create a DB-pointer to the r-value in the caller's L-stack (VL).
 	# Returns the translated rvalueOp.
 	def __FC_trans_dbpointerInVL(self, param, rvalueOp):
+#@cy		cdef S7CPU cpu
+
+		cpu = self.cpu
 		# Allocate space for the DB-ptr in the caller-L-stack
-		loffset = self.cpu.callStackTop.lalloc.alloc(48) # 48 bits
+		loffset = cpu.callStackTop.lalloc.alloc(48) # 48 bits
 		# Create and store the the DB-ptr to the allocated space.
 		storeOper = AwlOperator(AwlOperator.MEM_L,
 					16,
 					loffset)
 		if rvalueOp.type == AwlOperator.MEM_DI:
-			dbNumber = self.cpu.diRegister.index
+			dbNumber = cpu.diRegister.index
 		else:
 			dbNumber = rvalueOp.value.dbNumber
-		self.cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
+		cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
 		storeOper.value = loffset + AwlOffset(2)
 		storeOper.width = 32
 		area = AwlIndirectOp.optype2area[rvalueOp.type]
@@ -232,8 +258,8 @@ class CallStackElem(object):
 					  "to called FC")
 		elif area == AwlIndirectOp.AREA_DI:
 			area = AwlIndirectOp.AREA_DB
-		self.cpu.store(storeOper,
-			       area | rvalueOp.value.toPointerValue())
+		cpu.store(storeOper,
+			  area | rvalueOp.value.toPointerValue())
 		# Return the operator for the DB pointer.
 		return AwlOperator(AwlOperator.MEM_VL,
 				   48,
@@ -354,6 +380,8 @@ class CallStackElem(object):
 	# This stack element (self) will already have been
 	# removed from the CPU's call stack.
 	def handleBlockExit(self):
+#@cy		cdef S7CPU cpu
+
 		cpu = self.cpu
 		if not self.isRawCall:
 			# Handle outbound parameters.

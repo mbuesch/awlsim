@@ -1,0 +1,17 @@
+from awlsim.core.cpu cimport *
+
+cdef class CallStackElem(object):
+	cdef public S7CPU cpu
+	cdef public list parenStack
+	cdef public uint32_t ip
+	cdef public object block
+	cdef public list insns
+	cdef public _Bool isRawCall
+	cdef public object instanceDB
+	cdef public object prevDbRegister
+	cdef public object prevDiRegister
+	cdef public object prevAR2value
+	cdef public object lalloc
+	cdef public object localdata
+	cdef public list __outboundParams
+	cdef public dict __interfRefs
