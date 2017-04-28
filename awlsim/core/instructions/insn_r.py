@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class AwlInsn_R(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s, oper = self.cpu.statusWord,\
-			self.ops[0].resolve(True)
+			self.op0.resolve(True)
 		if oper.type == AwlOperator.MEM_Z:
 			if s.VKE:
 				self.cpu.getCounter(oper.value.byteOffset).reset()
@@ -50,5 +50,5 @@ class AwlInsn_R(AwlInsn): #+cdef
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and (not self.cpu.mcrActive or self.cpu.mcrIsOn()):
-				self.cpu.store(oper, 0, {1,})
+				self.cpu.store(oper, 0, self._widths_1)
 			s.OR, s.STA, s.NER = 0, s.VKE, 0

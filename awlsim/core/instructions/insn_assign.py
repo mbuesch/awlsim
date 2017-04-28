@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,4 +43,4 @@ class AwlInsn_ASSIGN(AwlInsn): #+cdef
 			s.OR, s.STA, s.NER = 0, 0, 0
 		else:
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
-		self.cpu.store(self.ops[0], s.STA, {1,})
+		self.cpu.store(self.op0, s.STA, self._widths_1)

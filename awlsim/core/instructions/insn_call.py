@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,11 +32,11 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 	__slots__ = ()
 
 	def staticSanityChecks(self):
-		if len(self.ops) == 1:
+		if self.opCount == 1:
 			# "CALL FC/SFC" or
 			# "CALL #MULTIINSTANCE" or
 			# "UC/CC FC/SFC/FB/SFB"
-			blockOper = self.ops[0]
+			blockOper = self.op0
 
 			if blockOper.type == AwlOperator.BLKREF_FC:
 				try:
@@ -95,10 +95,10 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					(len(self.params), codeBlock.interface.interfaceFieldCount,
 					 str(codeBlock.interface)),
 					rawInsn = self.rawInsn)
-		elif len(self.ops) == 2:
+		elif self.opCount == 2:
 			# "CALL FB/SFB"
-			blockOper = self.ops[0]
-			dbOper = self.ops[1]
+			blockOper = self.op0
+			dbOper = self.op1
 
 			if dbOper.type != AwlOperator.BLKREF_DB:
 				raise AwlSimError("Second CALL operand is "
@@ -172,9 +172,9 @@ class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn, **kwargs)
-		self.assertOpCount((1,2))
+		self.assertOpCount((1, 2))
 
-		if len(self.ops) == 1:			#@nocy
+		if self.opCount == 1:			#@nocy
 			self.run = self.__run_CALL_FC	#@nocy
 		else:					#@nocy
 			self.run = self.__run_CALL_FB	#@nocy
@@ -182,19 +182,19 @@ class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 	def __run_CALL_FC(self): #+cdef
 #@cy		cdef S7StatusWord s
 
-		self.cpu.run_CALL(self.ops[0], None, self.params, False)
+		self.cpu.run_CALL(self.op0, None, self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
 	def __run_CALL_FB(self): #+cdef
 #@cy		cdef S7StatusWord s
 
-		self.cpu.run_CALL(self.ops[0], self.ops[1], self.params, False)
+		self.cpu.run_CALL(self.op0, self.op1, self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
 #@cy	def run(self):
-#@cy		if len(self.ops) == 1:
+#@cy		if self.opCount == 1:
 #@cy			self.__run_CALL_FC()
 #@cy		else:
 #@cy			self.__run_CALL_FB()
@@ -215,7 +215,7 @@ class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 
 		s = self.cpu.statusWord
 		if s.VKE:
-			self.cpu.run_CALL(self.ops[0], None, (), True)
+			self.cpu.run_CALL(self.op0, None, (), True)
 		s.OS, s.OR, s.STA, s.VKE, s.NER = 0, 0, 1, 1, 0
 
 class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
@@ -232,6 +232,6 @@ class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
 	def run(self):
 #@cy		cdef S7StatusWord s
 
-		self.cpu.run_CALL(self.ops[0], None, (), True)
+		self.cpu.run_CALL(self.op0, None, (), True)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0

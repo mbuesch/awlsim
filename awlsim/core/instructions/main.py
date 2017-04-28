@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -433,8 +433,19 @@ class AwlInsn(object): #+cdef
 		"rawInsn",
 		"ip",
 		"ops",
+		"opCount",
+		"op0",
+		"op1",
 		"params",
+		"_widths_1",
+		"_widths_8_16_32",
+		"_widths_32",
 	)
+
+	# Standard fetch/store widths.
+	_WIDTHS_1	= frozenset((1,))
+	_WIDTHS_8_16_32	= frozenset((8, 16, 32,))
+	_WIDTHS_32	= frozenset((32,))
 
 	def __init__(self, cpu, insnType, rawInsn=None, ops=None):
 		"""Initialize base instruction.
@@ -446,17 +457,30 @@ class AwlInsn(object): #+cdef
 		self.ops = ops or []		# AwlOperator()s
 		self.params = []		# Parameter assignments (for CALL)
 
+		# Local reference to the fetch/store widths.
+		self._widths_1 = self._WIDTHS_1
+		self._widths_8_16_32 = self._WIDTHS_8_16_32
+		self._widths_32 = self._WIDTHS_32
+
 		if rawInsn and ops is None:
 			opTrans = AwlOpTranslator(self)
 			opTrans.translateFromRawInsn(rawInsn)
+		self.__setupOpQuickRef()
 
-	def getMnemonics(self):
-		"""Return the MNEMONICS_... setting for this instruction.
-		Returns None, if the mnemonics setting is unknown.
+	def __setupOpQuickRef(self):
+		# Add a quick reference to the first and the second operator.
+		self.opCount = len(self.ops)
+		if self.opCount >= 1:
+			self.op0 = self.ops[0]
+		if self.opCount >= 2:
+			self.op1 = self.ops[1]
+
+	def finalSetup(self):
+		"""Run the final setup steps.
+		This method has to be called before the
+		instruction can be run for the first time.
 		"""
-		if self.cpu:
-			return self.cpu.getMnemonics()
-		return None
+		self.__setupOpQuickRef()
 
 	def staticSanityChecks(self):
 		"""Run static sanity checks.
@@ -467,11 +491,20 @@ class AwlInsn(object): #+cdef
 		"""Check whether we have the required operator count.
 		counts is a list/set/int of possible counts.
 		"""
+		assert(self.opCount == len(self.ops))
 		counts = toList(counts)
-		if len(self.ops) not in counts:
+		if self.opCount not in counts:
 			raise AwlSimError("Invalid number of operators. "
 				"Expected %s." % listToHumanStr(counts),
 				insn=self)
+
+	def getMnemonics(self):
+		"""Return the MNEMONICS_... setting for this instruction.
+		Returns None, if the mnemonics setting is unknown.
+		"""
+		if self.cpu:
+			return self.cpu.getMnemonics()
+		return None
 
 	def getRawInsn(self):
 		return self.rawInsn

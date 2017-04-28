@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,4 +39,4 @@ class AwlInsn_L(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.accu2.copyFrom(self.cpu.accu1)
-		self.cpu.accu1.set(self.cpu.fetch(self.ops[0], {8, 16, 32}))
+		self.cpu.accu1.set(self.cpu.fetch(self.op0, self._widths_8_16_32))

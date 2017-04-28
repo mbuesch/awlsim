@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class AwlInsn_SLEEP(AwlInsn): #+cdef
 	def run(self):
 #@cy		cdef S7StatusWord s
 
-		sleepMsecs = self.cpu.fetch(self.ops[0])
+		sleepMsecs = self.cpu.fetch(self.op0)
 		sleepSecs = sleepMsecs / 1000.0
 
 		if sleepSecs >= self.cpu.cycleTimeLimit:

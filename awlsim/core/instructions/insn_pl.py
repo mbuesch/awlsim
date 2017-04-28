@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,13 +34,13 @@ class AwlInsn_PL(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PL, rawInsn, **kwargs)
 		self.assertOpCount(1)
-		if self.ops[0].type != AwlOperator.IMM:
+		if self.op0.type != AwlOperator.IMM:
 			raise AwlSimError("Immediate expected")
 
 	def run(self):
 #@cy		cdef S7StatusWord s
 
-		oper = self.ops[0]
+		oper = self.op0
 		if oper.width == 16:
 			self.cpu.accu1.setWord(self.cpu.accu1.getSignedWord() +\
 					       self.cpu.fetch(oper))

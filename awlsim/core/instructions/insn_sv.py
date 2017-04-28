@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,10 +36,10 @@ class AwlInsn_SV(AwlInsn): #+cdef
 		self.assertOpCount(1)
 
 	def staticSanityChecks(self):
-		self.ops[0].assertType(AwlOperator.MEM_T)
+		self.op0.assertType(AwlOperator.MEM_T)
 
 	def run(self):
 #@cy		cdef S7StatusWord s
 
-		self.cpu.getTimer(self.ops[0].resolve(True).value.byteOffset
+		self.cpu.getTimer(self.op0.resolve(True).value.byteOffset
 			).run_SV(self.cpu.accu1.get())

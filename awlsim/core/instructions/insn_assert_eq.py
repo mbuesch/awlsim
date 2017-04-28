@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,8 +39,8 @@ class AwlInsn_ASSERT_EQ(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		val0 = self.cpu.fetch(self.ops[0])
-		val1 = self.cpu.fetch(self.ops[1])
+		val0 = self.cpu.fetch(self.op0)
+		val1 = self.cpu.fetch(self.op1)
 		if not (val0 == val1):
 			raise AwlSimError("Assertion failed")
 		s.NER = 0

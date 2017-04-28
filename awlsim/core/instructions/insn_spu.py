@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ class AwlInsn_SPU(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPU, rawInsn, **kwargs)
 		self.assertOpCount(1)
-		if self.ops[0].type != AwlOperator.LBL_REF:
+		if self.op0.type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self):
@@ -42,4 +42,4 @@ class AwlInsn_SPU(AwlInsn): #+cdef
 
 		s = self.cpu.statusWord
 		if s.A0 & s.A1:
-			self.cpu.jumpToLabel(self.ops[0].labelIndex)
+			self.cpu.jumpToLabel(self.op0.labelIndex)

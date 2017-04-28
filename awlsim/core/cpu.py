@@ -285,6 +285,10 @@ class S7Prog(object):
 				e.setInsn(insn)
 				raise e
 
+		# Run the final setup of all instructions.
+		for insn in block.insns:
+			insn.finalSetup()
+
 		# Check and account for direct L stack allocations and
 		# interface L stack allocations.
 		block.accountTempAllocations()
@@ -799,6 +803,8 @@ class S7CPU(object): #+cdef
 			self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	def __runOB(self, block):
+#@cy		cdef AwlInsn insn
+
 		# Update timekeeping
 		self.updateTimestamp()
 		self.cycleStartTime = self.now
@@ -1267,7 +1273,7 @@ class S7CPU(object): #+cdef
 		self.inputs[byteOffset : byteOffset + len(data)] = data
 
 	def fetch(self, operator, enforceWidth=set()): #@nocy
-#@cy	cpdef object fetch(self, object operator, set enforceWidth=set()):
+#@cy	cpdef object fetch(self, object operator, frozenset enforceWidth=frozenset()):
 		try:
 			fetchMethod = self.fetchTypeMethods[operator.type]
 		except KeyError:
@@ -1593,7 +1599,7 @@ class S7CPU(object): #+cdef
 	}
 
 	def store(self, operator, value, enforceWidth=set()): #@nocy
-#@cy	cpdef store(self, object operator, object value, set enforceWidth=set()):
+#@cy	cpdef store(self, object operator, object value, frozenset enforceWidth=frozenset()):
 		try:
 			storeMethod = self.storeTypeMethods[operator.type]
 		except KeyError:

@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ class AwlInsn_O(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_O, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
 
-		if self.ops:				#@nocy
+		if self.opCount:				#@nocy
 			self.run = self.__run_withOps	#@nocy
 		else:					#@nocy
 			self.run = self.__run_noOps	#@nocy
@@ -46,7 +46,7 @@ class AwlInsn_O(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s, STA = self.cpu.statusWord,\
-			self.cpu.fetch(self.ops[0], {1,})
+			self.cpu.fetch(self.op0, self._widths_1)
 		if s.NER:
 			s.OR, s.STA, s.VKE, s.NER = 0, STA, (s.VKE | STA), 1
 		else:
@@ -60,7 +60,7 @@ class AwlInsn_O(AwlInsn): #+cdef
 		s.OR, s.STA, s.NER = s.VKE, 1, 0
 
 #@cy	def run(self):
-#@cy		if self.ops:
+#@cy		if self.opCount:
 #@cy			self.__run_withOps()
 #@cy		else:
 #@cy			self.__run_noOps()

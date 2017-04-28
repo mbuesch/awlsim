@@ -7,4 +7,11 @@ cdef class AwlInsn(object):
 	cdef public object rawInsn
 	cdef public int32_t ip
 	cdef public list ops
+	cdef public uint32_t opCount
+	cdef public object op0
+	cdef public object op1
 	cdef public list params
+
+	cdef public frozenset _widths_1
+	cdef public frozenset _widths_8_16_32
+	cdef public frozenset _widths_32

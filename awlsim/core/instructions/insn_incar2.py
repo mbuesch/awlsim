@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,16 +34,16 @@ class AwlInsn_INCAR2(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_INCAR2, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
-		if self.ops:
-			self.ops[0].assertType(AwlOperator.IMM_PTR, widths={32,})
+		if self.opCount:
+			self.op0.assertType(AwlOperator.IMM_PTR, widths=self._widths_32)
 
 	def run(self):
 #@cy		cdef S7StatusWord s
 
 		ar = self.cpu.ar2.get()
-		if self.ops:
+		if self.opCount:
 			ar = (ar & 0xFF000000) |\
-			     (((ar & 0x00FFFFFF) + self.ops[0].value.toPointerValue()) & 0x00FFFFFF)
+			     (((ar & 0x00FFFFFF) + self.op0.value.toPointerValue()) & 0x00FFFFFF)
 		else:
 			ar = (ar & 0xFF000000) |\
 			     (((ar & 0x00FFFFFF) + self.cpu.accu1.getSignedWord()) & 0x00FFFFFF)

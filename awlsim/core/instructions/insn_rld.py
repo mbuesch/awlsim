@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,16 +34,16 @@ class AwlInsn_RLD(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RLD, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
-		if self.ops:
-			self.ops[0].assertType(AwlOperator.IMM, 0, 255)
+		if self.opCount:
+			self.op0.assertType(AwlOperator.IMM, 0, 255)
 
 	def run(self):
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
-		if self.ops:
-			count = self.ops[0].value
+		if self.opCount:
+			count = self.op0.value
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
