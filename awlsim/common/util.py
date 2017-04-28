@@ -161,6 +161,20 @@ def safeFileWrite(filename, data):
 		with contextlib.suppress(IOError, OSError):
 			os.unlink(tmpFile)
 
+# Fully partition a string by separator 'sep'.
+# Returns a list of strings:
+# [ "first-element", sep, "second-element", sep, ... ]
+# If 'keepEmpty' is True, empty elements are kept.
+def strPartitionFull(string, sep, keepEmpty=True):
+	first, ret = True, []
+	for elem in string.split(sep):
+		if not first:
+			ret.append(sep)
+		if elem or keepEmpty:
+			ret.append(elem)
+		first = False
+	return ret
+
 def str2bool(string, default=False):
 	"""Convert a human readable string to a boolean.
 	"""
@@ -287,6 +301,7 @@ getany = getfirst
 def toList(value):
 	"""Returns value, if value is a list.
 	Returns a list with the elements of value, if value is a set.
+	Returns a list with the elements of value, if value is a frozenset.
 	Returns a list with the elements of value, if value is an iterable, but not a string.
 	Otherwise returns a list with value as element.
 	"""
@@ -294,10 +309,80 @@ def toList(value):
 		return value
 	if isinstance(value, set):
 		return sorted(value)
+	if isinstance(value, frozenset):
+		return sorted(value)
 	if not isString(value):
 		if isiterable(value):
 			return list(value)
 	return [ value, ]
+
+# Returns value, if value is a set.
+# Returns a set, if value is a frozenset.
+# Returns a set with the elements of value, if value is a tuple.
+# Returns a set with the elements of value, if value is a list.
+# Otherwise returns a set with value as single element.
+def toSet(value):
+	if isinstance(value, set):
+		return value
+	if isinstance(value, frozenset):
+		return set(value)
+	if isinstance(value, list) or\
+	   isinstance(value, tuple):
+		return set(value)
+	return { value, }
+
+def pivotDict(inDict):
+	outDict = {}
+	for key, value in dictItems(inDict):
+		if value in outDict:
+			raise KeyError("Ambiguous key in pivot dict")
+		outDict[value] = key
+	return outDict
+
+# Returns the index of a list element, or -1 if not found.
+# If translate if not None, it should be a callable that translates
+# a list entry. Arguments are index, entry.
+def listIndex(_list, value, start=0, stop=-1, translate=None):
+	if stop < 0:
+		stop = len(_list)
+	if translate:
+		for i, ent in enumerate(_list[start:stop], start):
+			if translate(i, ent) == value:
+				return i
+		return -1
+	try:
+		return _list.index(value, start, stop)
+	except ValueError:
+		return -1
+
+# Convert an integer list to a human readable string.
+# Example: [1, 2, 3]  ->  "1, 2 or 3"
+def listToHumanStr(lst, lastSep="or"):
+	if not lst:
+		return ""
+	lst = toList(lst)
+	string = ", ".join(str(i) for i in lst)
+	# Replace last comma with 'lastSep'
+	string = string[::-1].replace(",", lastSep[::-1] + " ", 1)[::-1]
+	return string
+
+# Expand the elements of a list.
+# 'expander' is the expansion callback. 'expander' takes
+# one list element as argument. It returns a list.
+def listExpand(lst, expander):
+	ret = []
+	for item in lst:
+		ret.extend(expander(item))
+	return ret
+
+# Get "Greatest Common Divisor"
+def math_gcd(*args):
+	return reduce(compat_gcd, args)
+
+# Get "Least Common Multiple"
+def math_lcm(*args):
+	return reduce(lambda x, y: x * y // math_gcd(x, y),
+		      args)
 
 class nopContextManager(object):
 	"""No-operation context manager.
