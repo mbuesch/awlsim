@@ -37,6 +37,4 @@ class AwlInsn_NOP(AwlInsn): #+cdef
 		self.op0.assertType(AwlOperator.IMM, 0, 1)
 
 	def run(self):
-#@cy		cdef S7StatusWord s
-
 		pass # NOP
