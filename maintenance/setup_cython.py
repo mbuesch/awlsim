@@ -1,8 +1,8 @@
 #
 #   Cython patcher
-#   v1.0
+#   v1.1
 #
-#   Copyright (C) 2012-2016 Michael Buesch <m@bues.ch>
+#   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -123,7 +123,7 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 
 		if not basicOnly:
 			# Automagic types
-			line = re.sub(r'\b_Bool\b', "unsigned char", line)
+			line = re.sub(r'\b_Bool\b', "bint", line)
 			line = re.sub(r'\bint8_t\b', "signed char", line)
 			line = re.sub(r'\buint8_t\b', "unsigned char", line)
 			line = re.sub(r'\bint16_t\b', "signed short", line)
