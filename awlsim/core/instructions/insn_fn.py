@@ -37,6 +37,7 @@ class AwlInsn_FN(AwlInsn): #+cdef
 
 	def run(self):
 #@cy		cdef S7StatusWord s
+#@cy		cdef _Bool fm
 
 		s = self.cpu.statusWord
 		fm = self.cpu.fetch(self.op0, self._widths_1)
