@@ -25,24 +25,41 @@ from awlsim.common.compat import *
 from awlsim.core.instructions.main import * #@nocy
 from awlsim.core.operators import *
 #from awlsim.core.instructions.main cimport * #@cy
+#from awlsim.core.cpu cimport * #@cy
 
 
 class AwlInsn_BEND(AwlInsn): #+cdef
 
-	__slots__ = ()
+	__slots__ = (
+		"__typeCalls", #@nocy
+	)
 
 	def __init__(self, cpu, rawInsn=None, **kwargs):
+		self.__typeCalls = self.__typeCallsDict #@nocy
+#@cy		self.__type_UB = self.TYPE_UB
+#@cy		self.__type_UNB = self.TYPE_UNB
+#@cy		self.__type_OB = self.TYPE_OB
+#@cy		self.__type_ONB = self.TYPE_ONB
+#@cy		self.__type_XB = self.TYPE_XB
+#@cy		self.__type_XNB = self.TYPE_XNB
+
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_BEND, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def __run_UB(self, pse):
+	def __run_UB(self, pse): #@nocy
+#@cy	cdef __run_UB(self, ParenStackElem pse):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		if pse.NER:
 			s.VKE &= pse.VKE
 		s.VKE |= pse.OR
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
-	def __run_UNB(self, pse):
+	def __run_UNB(self, pse): #@nocy
+#@cy	cdef __run_UNB(self, ParenStackElem pse):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		s.VKE = s.VKE ^ 1
 		if pse.NER:
@@ -50,46 +67,74 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 		s.VKE |= pse.OR
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
-	def __run_OB(self, pse):
+	def __run_OB(self, pse): #@nocy
+#@cy	cdef __run_OB(self, ParenStackElem pse):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		if pse.NER:
 			s.VKE |= pse.VKE
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
-	def __run_ONB(self, pse):
+	def __run_ONB(self, pse): #@nocy
+#@cy	cdef __run_ONB(self, ParenStackElem pse):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		s.VKE = s.VKE ^ 1
 		if pse.NER:
 			s.VKE |= pse.VKE
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
-	def __run_XB(self, pse):
+	def __run_XB(self, pse): #@nocy
+#@cy	cdef __run_XB(self, ParenStackElem pse):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		if pse.NER:
 			s.VKE ^= pse.VKE
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
-	def __run_XNB(self, pse):
+	def __run_XNB(self, pse): #@nocy
+#@cy	cdef __run_XNB(self, ParenStackElem pse):
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		s.VKE = s.VKE ^ 1
 		if pse.NER:
 			s.VKE ^= pse.VKE & 1
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
-	__typeCalls = {
-		AwlInsn.TYPE_UB		: __run_UB,
-		AwlInsn.TYPE_UNB	: __run_UNB,
-		AwlInsn.TYPE_OB		: __run_OB,
-		AwlInsn.TYPE_ONB	: __run_ONB,
-		AwlInsn.TYPE_XB		: __run_XB,
-		AwlInsn.TYPE_XNB	: __run_XNB,
-	}
+	__typeCallsDict = {				#@nocy
+		AwlInsn.TYPE_UB		: __run_UB,	#@nocy
+		AwlInsn.TYPE_UNB	: __run_UNB,	#@nocy
+		AwlInsn.TYPE_OB		: __run_OB,	#@nocy
+		AwlInsn.TYPE_ONB	: __run_ONB,	#@nocy
+		AwlInsn.TYPE_XB		: __run_XB,	#@nocy
+		AwlInsn.TYPE_XNB	: __run_XNB,	#@nocy
+	}						#@nocy
 
 	def run(self):
-#@cy		cdef S7StatusWord s
+#@cy		cdef ParenStackElem pse
 
 		try:
 			pse = self.cpu.callStackTop.parenStack.pop()
 		except IndexError as e:
 			raise AwlSimError("Parenthesis stack underflow")
-		return self.__typeCalls[pse.insnType](self, pse)
+
+		self.__typeCalls[pse.insnType](self, pse) #@nocy
+
+#@cy		if pse.insnType == self.__type_UB:
+#@cy			self.__run_UB(pse)
+#@cy		elif pse.insnType == self.__type_UNB:
+#@cy			self.__run_UNB(pse)
+#@cy		elif pse.insnType == self.__type_OB:
+#@cy			self.__run_OB(pse)
+#@cy		elif pse.insnType == self.__type_ONB:
+#@cy			self.__run_ONB(pse)
+#@cy		elif pse.insnType == self.__type_XB:
+#@cy			self.__run_XB(pse)
+#@cy		elif pse.insnType == self.__type_XNB:
+#@cy			self.__run_XNB(pse)
+#@cy		else:
+#@cy			raise KeyError

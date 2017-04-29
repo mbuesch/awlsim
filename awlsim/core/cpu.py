@@ -59,10 +59,11 @@ from awlsim.core.util import *
 from awlsim.awlcompiler.translator import *
 
 
-class ParenStackElem(object):
+class ParenStackElem(object): #+cdef
 	"Parenthesis stack element"
 
-	def __init__(self, cpu, insnType, statusWord):
+	def __init__(self, cpu, insnType, statusWord): #@nocy
+#@cy	def __cinit__(self, S7CPU cpu, uint32_t insnType, S7StatusWord statusWord):
 		self.cpu = cpu
 		self.insnType = insnType
 		self.NER = statusWord.NER

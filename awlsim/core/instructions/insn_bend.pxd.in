@@ -1,4 +1,17 @@
 from awlsim.core.instructions.main cimport *
 
 cdef class AwlInsn_BEND(AwlInsn):
-	pass
+	cdef public dict __typeCalls
+	cdef uint32_t __type_UB
+	cdef uint32_t __type_UNB
+	cdef uint32_t __type_OB
+	cdef uint32_t __type_ONB
+	cdef uint32_t __type_XB
+	cdef uint32_t __type_XNB
+
+	cdef __run_UB(self, ParenStackElem pse)
+	cdef __run_UNB(self, ParenStackElem pse)
+	cdef __run_OB(self, ParenStackElem pse)
+	cdef __run_ONB(self, ParenStackElem pse)
+	cdef __run_XB(self, ParenStackElem pse)
+	cdef __run_XNB(self, ParenStackElem pse)

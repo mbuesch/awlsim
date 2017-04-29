@@ -93,3 +93,10 @@ cdef class S7CPU(object):
 	cdef jumpRelative(self, int32_t insnOffset)
 
 	cdef __translateFCNamedLocalOper(self, object operator, _Bool store)
+
+cdef class ParenStackElem(object):
+	cdef public S7CPU cpu
+	cdef public uint32_t insnType
+	cdef public _Bool NER
+	cdef public _Bool VKE
+	cdef public _Bool OR
