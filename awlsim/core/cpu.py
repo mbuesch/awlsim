@@ -802,7 +802,7 @@ class S7CPU(object): #+cdef
 		self.cbScreenUpdateData = data
 
 	def requestScreenUpdate(self):
-		if self.cbScreenUpdate:
+		if self.cbScreenUpdate is not None:
 			self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	def __runOB(self, block): #@nocy
@@ -835,7 +835,7 @@ class S7CPU(object): #+cdef
 			while cse.ip < len(cse.insns):
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
-				if self.cbPostInsn:
+				if self.cbPostInsn is not None:
 					self.cbPostInsn(cse, self.cbPostInsnData)
 				cse.ip += self.relativeJump
 				cse, self.__insnCount = self.callStackTop,\
@@ -843,7 +843,7 @@ class S7CPU(object): #+cdef
 				if not self.__insnCount % 64:
 					self.updateTimestamp()
 					self.__runTimeCheck()
-			if self.cbBlockExit:
+			if self.cbBlockExit is not None:
 				self.cbBlockExit(self.cbBlockExitData)
 			prevCse = self.callStack.pop()
 			if self.callStack:
@@ -941,7 +941,7 @@ class S7CPU(object): #+cdef
 			self.__speedMeasureStartCycleCount = self.__cycleCount
 
 		# Call the cycle exit callback, if any.
-		if self.cbCycleExit:
+		if self.cbCycleExit is not None:
 			self.cbCycleExit(self.cbCycleExitData)
 
 	# Returns 'self.now' as 31 bit millisecond representation.
@@ -1481,7 +1481,7 @@ class S7CPU(object): #+cdef
 
 		# Fetch the data from the peripheral device.
 		value = None
-		if self.cbPeripheralRead:
+		if self.cbPeripheralRead is not None:
 			value = self.cbPeripheralRead(self.cbPeripheralReadData,
 						      operator.width,
 						      operator.value.byteOffset)
@@ -1702,7 +1702,7 @@ class S7CPU(object): #+cdef
 
 		# Store the data to the peripheral device.
 		ok = False
-		if self.cbPeripheralWrite:
+		if self.cbPeripheralWrite is not None:
 			ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,
 						    operator.width,
 						    operator.value.byteOffset,
