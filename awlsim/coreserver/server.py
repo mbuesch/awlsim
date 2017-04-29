@@ -238,6 +238,7 @@ class AwlSimServer(object): #+cdef
 		return retval
 
 	def __init__(self):
+		self.__emptyList = []
 		self.__startupDone = False
 		self.__state = -1
 		self.__needOB10x = True
@@ -933,7 +934,7 @@ class AwlSimServer(object): #+cdef
 				 str(exception)))
 		self.__clientRemove(client)
 
-	def __handleClientComm(self, client):
+	def __handleClientComm(self, client): #+cdef
 		try:
 			msg = client.transceiver.receive(0.0)
 		except TransferError as e:
@@ -953,7 +954,8 @@ class AwlSimServer(object): #+cdef
 			self.__clientCommTransferError(e, client)
 			return
 
-	def __handleSocketComm(self, sockList):
+	def __handleSocketComm(self, sockList): #@nocy
+#@cy	cdef __handleSocketComm(self, list sockList):
 		if self.__socket in sockList:
 			sockList.remove(self.__socket)
 			self.__accept()
@@ -964,10 +966,16 @@ class AwlSimServer(object): #+cdef
 		raise AwlSimError("AwlSimServer: Communication error. "
 				  "'select' failed")
 
-	def __handleCommunication(self, __select = select.select, __Exception = Exception):
+	def __handleCommunication(self, __select=select.select, __Exception=Exception): #@nocy
+#@cy	cdef __handleCommunication(self, object __select=select.select, type __Exception=Exception):
+#@cy		cdef list rlist
+#@cy		cdef list wlist
+#@cy		cdef list xlist
+
 		try:
 			rlist, wlist, xlist = __select(self.__selectRlist,
-						       [], [], 0.0)
+						       self.__emptyList,
+						       self.__emptyList, 0.0)
 			if not rlist:
 				return
 		except __Exception as e:
@@ -978,7 +986,8 @@ class AwlSimServer(object): #+cdef
 		while True:
 			try:
 				rlist, wlist, xlist = __select(self.__selectRlist,
-							       [], [], 0.01)
+							       self.__emptyList,
+							       self.__emptyList, 0.01)
 				if not rlist:
 					return
 			except __Exception as e:
@@ -1115,6 +1124,7 @@ class AwlSimServer(object): #+cdef
 
 	def run(self):
 		"""Run the main server event loop."""
+#@cy		cdef AwlSim sim
 
 		# Check whether startup() was called and
 		# the CPU is in a runnable state.

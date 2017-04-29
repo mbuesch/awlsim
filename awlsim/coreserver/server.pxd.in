@@ -2,6 +2,7 @@ from awlsim.core.main cimport *
 
 cdef class AwlSimServer(object):
 	cdef public AwlSim __sim
+	cdef public list __emptyList
 	cdef public _Bool __startupDone
 	cdef public int32_t __state
 	cdef public _Bool __running
@@ -30,3 +31,7 @@ cdef class AwlSimServer(object):
 
 	cdef public object __cycleExitHook
 	cdef public object __cycleExitHookData
+
+	cdef __handleClientComm(self, client)
+	cdef __handleSocketComm(self, list sockList)
+	cdef __handleCommunication(self, object __select=*, type __Exception=*)
