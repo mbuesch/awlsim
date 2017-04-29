@@ -86,6 +86,7 @@ cdef class S7CPU(object):
 	cpdef updateTimestamp(self, object _getTime=*)
 	cdef __runTimeCheck(self)
 
+	cdef runCycle(self)
 	cdef __runOB(self, object block)
 
 	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex)

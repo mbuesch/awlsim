@@ -25,7 +25,8 @@ from awlsim.common.compat import *
 from awlsim.common.project import *
 
 from awlsim.core.util import *
-from awlsim.core.cpu import *
+from awlsim.core.cpu import * #@nocy
+#from awlsim.core.cpu cimport * #@cy
 from awlsim.core.hardware import *
 
 
@@ -33,7 +34,7 @@ def AwlSim_decorator_profiled(profileLevel):
 	"""Profiled call decorator.
 	"""
 	def profiled_decorator(func):
-		@functools.wraps(func)
+		@functools.wraps(func) #@nocy
 		def profiled_wrapper(self, *args, **kwargs):
 			if self._profileLevel >= profileLevel:
 				self._profileStart()
@@ -48,7 +49,7 @@ def AwlSim_decorator_profiled(profileLevel):
 def AwlSim_decorator_throwsAwlSimError(func):
 	"""Handler decorator for AwlSimError exceptions.
 	"""
-	@functools.wraps(func)
+	@functools.wraps(func) #@nocy
 	def awlSimErrorExtension_wrapper(self, *args, **kwargs):
 		try:
 			func(self, *args, **kwargs)
@@ -56,7 +57,7 @@ def AwlSim_decorator_throwsAwlSimError(func):
 			self._handleSimException(e)
 	return awlSimErrorExtension_wrapper
 
-class AwlSim(object):
+class AwlSim(object): #+cdef
 	"""Main awlsim core object.
 	"""
 
@@ -65,6 +66,7 @@ class AwlSim(object):
 
 	def __init__(self, profileLevel=0):
 		self.__registeredHardware = []
+		self.__registeredHardwareCount = 0
 		self._fatalHwErrors = True
 		self.cpu = S7CPU()
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
@@ -196,15 +198,15 @@ class AwlSim(object):
 		except MaintenanceRequest as e:
 			self.__handleMaintenanceRequest(e)
 
-	def runCycle(self):
+	def runCycle(self): #+cpdef
 		if self._profileLevel >= 1:
 			self._profileStart()
 
 		try:
-			if self.__registeredHardware:
+			if self.__registeredHardwareCount:
 				self.__readHwInputs()
 			self.cpu.runCycle()
-			if self.__registeredHardware:
+			if self.__registeredHardwareCount:
 				self.__writeHwOutputs()
 		except AwlSimError as e:
 			self._handleSimException(e)
@@ -225,11 +227,13 @@ class AwlSim(object):
 				newHwList.append(hw)
 			hw.shutdown()
 		self.__registeredHardware = newHwList
+		self.__registeredHardwareCount = len(self.__registeredHardware)
 
 	def registerHardware(self, hwClassInst):
 		"""Register a new hardware interface."""
 
 		self.__registeredHardware.append(hwClassInst)
+		self.__registeredHardwareCount = len(self.__registeredHardware)
 
 	def registerHardwareClass(self, hwClass, parameters={}):
 		"""Register a new hardware interface class.
@@ -264,7 +268,7 @@ class AwlSim(object):
 				# Always fatal in startup.
 				self._handleSimException(e, fatal = True)
 
-	def __readHwInputs(self):
+	def __readHwInputs(self): #+cdef
 		# Read all hardware module inputs.
 
 		for hw in self.__registeredHardware:
@@ -274,7 +278,7 @@ class AwlSim(object):
 				self._handleSimException(e,
 					fatal = self._fatalHwErrors)
 
-	def __writeHwOutputs(self):
+	def __writeHwOutputs(self): #+cdef
 		# Write all hardware module outputs.
 
 		for hw in self.__registeredHardware:

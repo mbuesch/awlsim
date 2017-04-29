@@ -907,7 +907,7 @@ class S7CPU(object): #+cdef
 			self.__runOB(self.obs[100])
 
 	# Run one cycle of the user program
-	def runCycle(self):
+	def runCycle(self): #+cdef
 #@cy		cdef double elapsedTime
 #@cy		cdef double cycleTime
 #@cy		cdef uint32_t cycleCount

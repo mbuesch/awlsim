@@ -1,0 +1,12 @@
+from awlsim.core.cpu cimport *
+
+cdef class AwlSim(object):
+	cdef public S7CPU cpu
+	cdef public int32_t _profileLevel
+	cdef public _Bool _fatalHwErrors
+	cdef public list __registeredHardware
+	cdef public uint32_t __registeredHardwareCount
+
+	cpdef runCycle(self)
+	cdef __readHwInputs(self)
+	cdef __writeHwOutputs(self)
