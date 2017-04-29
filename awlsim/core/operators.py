@@ -23,10 +23,11 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 #from awlsim.core.dynattrs cimport * #@cy
-#from awlsim.core.statusword cimport * #@cy
-
 from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.datatypes import *
+from awlsim.core.offset import * #@nocy
+#from awlsim.core.offset cimport * #@cy
+#from awlsim.core.statusword cimport * #@cy
 from awlsim.core.statusword import * #@nocy
 from awlsim.core.lstack import *
 from awlsim.core.util import *
