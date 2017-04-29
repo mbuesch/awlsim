@@ -35,7 +35,7 @@ class AwlInsn_TDB(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TDB, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.run_TDB()

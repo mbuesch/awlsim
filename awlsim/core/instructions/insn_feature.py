@@ -35,7 +35,7 @@ class AwlInsn_FEATURE(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_FEATURE, rawInsn, **kwargs)
 		self.assertOpCount((1, 2))
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		target = self.cpu.fetch(self.op0)

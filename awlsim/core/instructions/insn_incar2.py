@@ -37,7 +37,7 @@ class AwlInsn_INCAR2(AwlInsn): #+cdef
 		if self.opCount:
 			self.op0.assertType(AwlOperator.IMM_PTR, widths=self._widths_32)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		ar = self.cpu.ar2.get()

@@ -38,7 +38,7 @@ class AwlInsn_ZV(AwlInsn): #+cdef
 	def staticSanityChecks(self):
 		self.op0.assertType(AwlOperator.MEM_Z)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord

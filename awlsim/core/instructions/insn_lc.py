@@ -35,7 +35,7 @@ class AwlInsn_LC(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LC, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		#FIXME check whether operator is valid for LC

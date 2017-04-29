@@ -37,7 +37,7 @@ class AwlInsn_SRD(AwlInsn): #+cdef
 		if self.opCount:
 			self.op0.assertType(AwlOperator.IMM, 0, 255)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord

@@ -35,7 +35,7 @@ class AwlInsn_GE_I(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GE_I, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord

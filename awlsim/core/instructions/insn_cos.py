@@ -37,7 +37,7 @@ class AwlInsn_COS(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_COS, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		accu1 = math.cos(self.cpu.accu1.getPyFloat())

@@ -60,7 +60,7 @@ class AwlInsn_O(AwlInsn): #+cdef
 		# UND vor ODER
 		s.OR, s.STA, s.NER = s.VKE, 1, 0
 
-#@cy	def run(self):
+#@cy	def run(self): #+cdef
 #@cy		if self.opCount:
 #@cy			self.__run_withOps()
 #@cy		else:

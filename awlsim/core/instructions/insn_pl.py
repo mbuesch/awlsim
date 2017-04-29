@@ -37,7 +37,7 @@ class AwlInsn_PL(AwlInsn): #+cdef
 		if self.op0.type != AwlOperator.IMM:
 			raise AwlSimError("Immediate expected")
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		oper = self.op0

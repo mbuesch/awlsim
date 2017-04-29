@@ -37,7 +37,7 @@ class AwlInsn_SLEEP(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SLEEP, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		sleepMsecs = self.cpu.fetch(self.op0)

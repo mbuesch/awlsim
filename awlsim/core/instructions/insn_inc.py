@@ -36,7 +36,7 @@ class AwlInsn_INC(AwlInsn): #+cdef
 		self.assertOpCount(1)
 		self.op0.assertType(AwlOperator.IMM, 0, 255)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() +\

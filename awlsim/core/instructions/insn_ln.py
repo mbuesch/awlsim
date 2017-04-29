@@ -37,7 +37,7 @@ class AwlInsn_LN(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_LN, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		accu1 = self.cpu.accu1.getPyFloat()

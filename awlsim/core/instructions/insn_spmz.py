@@ -37,7 +37,7 @@ class AwlInsn_SPMZ(AwlInsn): #+cdef
 		if self.op0.type != AwlOperator.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord

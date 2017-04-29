@@ -35,7 +35,7 @@ class AwlInsn_TAR2(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR2, rawInsn, **kwargs)
 		self.assertOpCount((0, 1))
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		if self.opCount:

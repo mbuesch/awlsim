@@ -193,7 +193,7 @@ class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 
-#@cy	def run(self):
+#@cy	cdef run(self):
 #@cy		if self.opCount == 1:
 #@cy			self.__run_CALL_FC()
 #@cy		else:
@@ -210,7 +210,7 @@ class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 	def staticSanityChecks(self):
 		self._warnDeprecated("Please use CALL instead.")
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
@@ -229,7 +229,7 @@ class AwlInsn_UC(AwlInsn_AbstractCall): #+cdef
 	def staticSanityChecks(self):
 		self._warnDeprecated("Please use CALL instead.")
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.run_CALL(self.op0, None, (), True)

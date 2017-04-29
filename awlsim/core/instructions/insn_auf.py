@@ -39,7 +39,7 @@ class AwlInsn_AUF(AwlInsn): #+cdef
 		self.op0.assertType((AwlOperator.BLKREF_DB,
 					AwlOperator.BLKREF_DI))
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.run_AUF(self.op0)

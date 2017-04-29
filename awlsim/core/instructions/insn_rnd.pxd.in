@@ -1,4 +1,7 @@
 from awlsim.core.instructions.main cimport *
 
 cdef class AwlInsn_RND(AwlInsn):
-	pass
+	cdef _Bool __isPy2Compat
+
+	cdef __run_python2(self)
+	cdef __run_python3(self)

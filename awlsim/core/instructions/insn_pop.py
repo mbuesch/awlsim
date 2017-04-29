@@ -35,7 +35,7 @@ class AwlInsn_POP(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_POP, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		self.cpu.accu1.copyFrom(self.cpu.accu2)

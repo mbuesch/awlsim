@@ -35,7 +35,7 @@ class AwlInsn_ON(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ON, rawInsn, **kwargs)
 		self.assertOpCount(1)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef _Bool STA
 

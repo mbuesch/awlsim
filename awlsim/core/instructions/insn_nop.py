@@ -36,5 +36,5 @@ class AwlInsn_NOP(AwlInsn): #+cdef
 		self.assertOpCount(1)
 		self.op0.assertType(AwlOperator.IMM, 0, 1)
 
-	def run(self):
+	def run(self): #+cdef
 		pass # NOP

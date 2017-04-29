@@ -15,3 +15,5 @@ cdef class AwlInsn(object):
 	cdef public frozenset _widths_1
 	cdef public frozenset _widths_8_16_32
 	cdef public frozenset _widths_32
+
+	cdef run(self)

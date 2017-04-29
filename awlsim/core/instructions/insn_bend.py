@@ -114,7 +114,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 		AwlInsn.TYPE_XNB	: __run_XNB,	#@nocy
 	}						#@nocy
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef ParenStackElem pse
 
 		try:

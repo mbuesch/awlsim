@@ -32,37 +32,53 @@ class AwlInsn_RND(AwlInsn): #+cdef
 	__slots__ = ()
 
 	def __init__(self, cpu, rawInsn=None, **kwargs):
+#@cy		self.__isPy2Compat = isPy2Compat
+
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_RND, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def __run_python2(self):
+	def __run_python2(self): #+cdef
+#@cy		cdef S7StatusWord s
+#@cy		cdef double accu1
+#@cy		cdef int64_t accu1_floor
+#@cy		cdef int64_t accu1_int
+
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1_floor = int(accu1)
 			if abs(accu1 - accu1_floor) == 0.5:
-				accu1 = accu1_floor
-				if accu1 & 1:
-					accu1 += 1 if accu1 > 0 else -1
+				accu1_int = accu1_floor
+				if accu1_int & 1:
+					accu1_int += 1 if accu1_int > 0 else -1
 			else:
-				accu1 = int(round(accu1))
-			if accu1 > 2147483647 or accu1 < -2147483648:
+				accu1_int = int(round(accu1))
+			if accu1_int > 2147483647 or accu1_int < -2147483648:
 				raise ValueError
 		except ValueError:
 			s.OV, s.OS = 1, 1
 			return
-		self.cpu.accu1.setDWord(accu1)
+		self.cpu.accu1.setDWord(accu1_int)
 
-	def __run_python3(self):
+	def __run_python3(self): #+cdef
+#@cy		cdef S7StatusWord s
+#@cy		cdef double accu1
+#@cy		cdef int64_t accu1_int
+
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
-			accu1 = int(round(accu1))
-			if accu1 > 2147483647 or accu1 < -2147483648:
+			accu1_int = int(round(accu1))
+			if accu1_int > 2147483647 or accu1_int < -2147483648:
 				raise ValueError
 		except ValueError:
 			s.OV, s.OS = 1, 1
 			return
-		self.cpu.accu1.setDWord(accu1)
+		self.cpu.accu1.setDWord(accu1_int)
 
-	run = py23(__run_python2, __run_python3)
+	run = py23(__run_python2, __run_python3) #@nocy
+#@cy	cdef run(self):
+#@cy		if self.__isPy2Compat:
+#@cy			self.__run_python2()
+#@cy		else:
+#@cy			self.__run_python3()

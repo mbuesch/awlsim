@@ -37,7 +37,7 @@ class AwlInsn_ATAN(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_ATAN, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		accu1 = math.atan(self.cpu.accu1.getPyFloat())

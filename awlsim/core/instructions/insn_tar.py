@@ -35,7 +35,7 @@ class AwlInsn_TAR(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAR, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		oldAr1 = self.cpu.ar1.get()

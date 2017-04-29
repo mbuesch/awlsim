@@ -40,7 +40,7 @@ class AwlInsn_GENERIC_CALL(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_GENERIC_CALL, **kwargs)
 		self.callback = callback
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		try:

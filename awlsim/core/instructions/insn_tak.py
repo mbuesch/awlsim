@@ -35,7 +35,7 @@ class AwlInsn_TAK(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAK, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
-	def run(self):
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
 		oldAccu1 = self.cpu.accu1.get()
