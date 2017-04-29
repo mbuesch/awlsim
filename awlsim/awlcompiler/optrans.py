@@ -34,6 +34,8 @@ from awlsim.core.operators import *
 from awlsim.core.parameters import *
 from awlsim.core.datatypes import *
 from awlsim.core.timers import *
+from awlsim.core.offset import * #@nocy
+#from awlsim.core.offset cimport * #@cy
 
 from awlsim.awlcompiler import *
 

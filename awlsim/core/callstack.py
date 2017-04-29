@@ -22,9 +22,9 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-#from awlsim.core.dynattrs cimport * #@cy
-
 from awlsim.core.datatypes import *
+from awlsim.core.offset import * #@nocy
+#from awlsim.core.offset cimport * #@cy
 from awlsim.core.blocks import *
 from awlsim.core.parameters import *
 from awlsim.core.objectcache import *
@@ -60,10 +60,14 @@ class CallStackElem(object): #+cdef
 	def resetCache(cls):
 		cls.lallocCache.reset()
 
-	def __init__(self, cpu, block,
-		     instanceDB=None, instanceBaseOffset=None,
-		     parameters=(),
-		     isRawCall=False):
+	def __init__(self, cpu, block,				#@nocy
+		     instanceDB=None, instanceBaseOffset=None,	#@nocy
+		     parameters=[],				#@nocy
+		     isRawCall=False):				#@nocy
+#@cy	def __init__(self, S7CPU cpu, object block,
+#@cy		     object instanceDB=None, AwlOffset instanceBaseOffset=None,
+#@cy		     list parameters=[],
+#@cy		     _Bool isRawCall=False):
 		# Init the call stack element.
 		# cpu -> The CPU this runs on.
 		# block -> The code block that is being called.

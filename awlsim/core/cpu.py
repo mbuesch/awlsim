@@ -51,6 +51,8 @@ from awlsim.core.timers import *
 from awlsim.core.counters import *
 #from awlsim.core.callstack cimport * #@cy
 from awlsim.core.callstack import * #@nocy
+from awlsim.core.offset import * #@nocy
+#from awlsim.core.offset cimport * #@cy
 from awlsim.core.obtemp import *
 from awlsim.core.util import *
 
@@ -805,6 +807,7 @@ class S7CPU(object): #+cdef
 
 	def __runOB(self, block):
 #@cy		cdef AwlInsn insn
+#@cy		cdef CallStackElem cse
 
 		# Update timekeeping
 		self.updateTimestamp()
@@ -819,7 +822,7 @@ class S7CPU(object): #+cdef
 		self.ar1.reset()
 		self.ar2.reset()
 		self.statusWord.reset()
-		self.callStack = [ CallStackElem(self, block, None, None, (), True) ]
+		self.callStack = [ CallStackElem(self, block, None, None, [], True) ]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
@@ -1053,7 +1056,7 @@ class S7CPU(object): #+cdef
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
-		return CallStackElem(self, fc, None, None, (), True)
+		return CallStackElem(self, fc, None, None, [], True)
 
 	def __call_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
@@ -1064,7 +1067,7 @@ class S7CPU(object): #+cdef
 
 	def __call_RAW_FB(self, blockOper, dbOper, parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
-		return CallStackElem(self, fb, self.diRegister, None, (), True)
+		return CallStackElem(self, fb, self.diRegister, None, [], True)
 
 	def __call_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
@@ -1072,7 +1075,7 @@ class S7CPU(object): #+cdef
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfc, None, None, (), True)
+		return CallStackElem(self, sfc, None, None, [], True)
 
 	def __call_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
@@ -1083,7 +1086,7 @@ class S7CPU(object): #+cdef
 
 	def __call_RAW_SFB(self, blockOper, dbOper, parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfb, self.diRegister, None, (), True)
+		return CallStackElem(self, sfb, self.diRegister, None, [], True)
 
 	def __call_INDIRECT(self, blockOper, dbOper, parameters):
 		blockOper = blockOper.resolve()

@@ -1,4 +1,5 @@
 from awlsim.core.statusword cimport *
+from awlsim.core.callstack cimport *
 
 
 cdef class S7CPU(object):
@@ -50,7 +51,7 @@ cdef class S7CPU(object):
 	cdef public object dbRegister
 	cdef public object diRegister
 	cdef public list callStack
-	cdef public object callStackTop
+	cdef public CallStackElem callStackTop
 	cdef public list mcrStack
 	cdef public S7StatusWord statusWord
 	cdef public object __clockMemByteOffset

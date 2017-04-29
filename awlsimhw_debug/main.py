@@ -23,8 +23,9 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.hardware import *
-from awlsim.core.operators import AwlOperator
-from awlsim.core.datatypes import AwlOffset
+from awlsim.core.operators import *
+#from awlsim.core.offset cimport * #@cy
+from awlsim.core.offset import * #@nocy
 
 
 class HardwareInterface(AbstractHardwareInterface):

@@ -2,7 +2,7 @@
 #
 # AWL data offset
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,9 @@ from awlsim.common.datatypehelpers import *
 
 from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
+
+
+__all__ = [ "AwlOffset", ]
 
 
 class AwlOffset(DynAttrs): #+cdef

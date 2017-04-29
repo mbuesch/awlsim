@@ -27,7 +27,8 @@ from awlsim.common.immutable import *
 
 from awlsim.core.util import *
 from awlsim.core.timers import *
-from awlsim.core.offset import *
+from awlsim.core.offset import * #@nocy
+#from awlsim.core.offset cimport * #@cy
 from awlsim.core.identifier import *
 
 from awlsim.awlcompiler import AwlParser

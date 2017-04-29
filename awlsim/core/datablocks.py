@@ -29,6 +29,8 @@ from awlsim.core.operators import *
 from awlsim.core.datatypes import *
 from awlsim.core.datastructure import *
 from awlsim.core.blocks import *
+from awlsim.core.offset import * #@nocy
+#from awlsim.core.offset cimport * #@cy
 
 
 class DB(Block):
