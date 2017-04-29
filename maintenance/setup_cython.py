@@ -110,12 +110,14 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 			if not line.endswith("\n"):
 				line += "\n"
 
-		# Sprinkle magic cdef, as requested by #+cdef
+		# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
 		if "#+cdef" in stripLine:
 			if stripLine.startswith("class"):
 				line = line.replace("class", "cdef class")
 			else:
 				line = line.replace("def", "cdef")
+		if "#+cpdef" in stripLine:
+			line = line.replace("def", "cpdef")
 
 		# Comment all lines containing #@nocy
 		if "#@nocy" in stripLine:
