@@ -33,7 +33,6 @@ from awlsim.awlcompiler import *
 
 class AwlInsnTranslator(object):
 	type2class = {
-		AwlInsn.TYPE_INVALID	: AwlInsn_NotImplemented,
 		AwlInsn.TYPE_U	    	: AwlInsn_U,
 		AwlInsn.TYPE_UN	    	: AwlInsn_UN,
 		AwlInsn.TYPE_O	    	: AwlInsn_O,

@@ -84,7 +84,6 @@ from awlsim.core.instructions.insn_negr import * #@nocy
 from awlsim.core.instructions.insn_ne_i import * #@nocy
 from awlsim.core.instructions.insn_ne_r import * #@nocy
 from awlsim.core.instructions.insn_nop import * #@nocy
-from awlsim.core.instructions.insn_notimplemented import * #@nocy
 from awlsim.core.instructions.insn_not import * #@nocy
 from awlsim.core.instructions.insn_ob import * #@nocy
 from awlsim.core.instructions.insn_od import * #@nocy

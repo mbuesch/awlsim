@@ -1,4 +1,0 @@
-from awlsim.core.instructions.main cimport *
-
-cdef class AwlInsn_NotImplemented(AwlInsn):
-	pass

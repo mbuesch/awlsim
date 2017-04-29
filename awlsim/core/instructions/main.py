@@ -36,7 +36,6 @@ class AwlInsn(object): #+cdef
 	"""
 
 	EnumGen.start
-	TYPE_INVALID		= EnumGen.item
 	TYPE_U			= EnumGen.item	# U
 	TYPE_UN			= EnumGen.item	# UN
 	TYPE_O			= EnumGen.item	# O
