@@ -280,18 +280,13 @@ def runWithServerBackend(inputFile):
 	client = None
 	tunnel = None
 	try:
-		if cython_helper.shouldUseCython():
-			printError("The accelerated CYTHON core currently is incompatible "
-				   "with the backend server. Please remove the "
-				   "AWLSIM_CYTHON environment variable.")
-			return ExitCodes.EXIT_ERR_INTERP
-
 		project = Project.fromProjectOrRawAwlFile(inputFile)
 		linkSettings = project.getCoreLinkSettings()
 
 		if opt_spawnBackend:
 			host = AwlSimServer.DEFAULT_HOST
-			port = AwlSimServer.DEFAULT_PORT
+			port = range(AwlSimServer.DEFAULT_PORT,
+				     AwlSimServer.DEFAULT_PORT + 4096)
 		else:
 			host = linkSettings.getConnectHost()
 			port = linkSettings.getConnectPort()
@@ -299,7 +294,8 @@ def runWithServerBackend(inputFile):
 			host, port = opt_connectTo
 
 		# Establish SSH tunnel, if requested.
-		if linkSettings.getTunnel() == linkSettings.TUNNEL_SSH:
+		if linkSettings.getTunnel() == linkSettings.TUNNEL_SSH and\
+		   not opt_spawnBackend:
 			writeStdout("Establishing SSH tunnel...\n")
 			localPort = linkSettings.getTunnelLocalPort()
 			if localPort == linkSettings.TUNNEL_LOCPORT_AUTO:
@@ -320,6 +316,7 @@ def runWithServerBackend(inputFile):
 			client.spawnServer(interpreter = opt_interpreter,
 					   listenHost = host,
 					   listenPort = port)
+			port = client.serverProcessPort
 		writeStdout("Connecting to core server...\n")
 		client.connectToServer(host = host, port = port)
 
