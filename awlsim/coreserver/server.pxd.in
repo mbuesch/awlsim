@@ -1,0 +1,32 @@
+from awlsim.core.main cimport *
+
+cdef class AwlSimServer(object):
+	cdef public AwlSim __sim
+	cdef public _Bool __startupDone
+	cdef public int32_t __state
+	cdef public _Bool __running
+	cdef public _Bool __needOB10x
+	cdef public double __nextStats
+	cdef public uint32_t __commandMask
+	cdef public _Bool __handleExceptionServerside
+	cdef public _Bool __handleMaintenanceServerside
+	cdef public _Bool __haveAnyMemReadReq
+	cdef public object memReadRequestMsg
+	cdef public uint32_t __insnSerial
+
+	cdef public object __projectFile
+	cdef public _Bool __projectWriteBack
+
+	cdef public object __socket
+	cdef public object __unixSockPath
+	cdef public dict __sock2client
+	cdef public list __clients
+	cdef public list __selectRlist
+
+	cdef public object awlSourceContainer
+	cdef public object symTabSourceContainer
+	cdef public object loadedHwModules
+	cdef public object loadedLibSelections
+
+	cdef public object __cycleExitHook
+	cdef public object __cycleExitHookData

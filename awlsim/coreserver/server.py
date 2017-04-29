@@ -22,13 +22,15 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.common.subprocess import *
+from awlsim.common.subprocess_wrapper import *
 from awlsim.common.cpuspecs import *
 from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.net import *
 
-from awlsim.core.main import *
+from awlsim.core.main import * #@nocy
+#from awlsim.core.main cimport * #@cy
+from awlsim.core.symbolparser import *
 
 from awlsim.awlcompiler import *
 
@@ -46,7 +48,32 @@ import errno
 import time
 
 
-class AwlSimServer(object):
+class AwlSimClientInfo(object):
+	"""Client information."""
+
+	def __init__(self, sock, peerInfoString):
+		# Socket
+		self.socket = sock
+		self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
+
+		# Broken-flag. Set, if connection breaks.
+		self.broken = False
+
+		# CPU-dump
+		self.dumpInterval = 0
+		self.nextDump = 0
+
+		# Instruction state dump: Enabled lines.
+		# dict key: AWL source ID number.
+		# dict values: range() of AWL line numbers.
+		self.insnStateDump_enabledLines = {}
+
+		# Memory read requests
+		self.memReadRequestMsg = None
+		self.repetitionPeriod = 0.0
+		self.nextRepTime = monotonic_time()
+
+class AwlSimServer(object): #+cdef
 	"""Awlsim coreserver server API.
 	"""
 
@@ -65,31 +92,6 @@ class AwlSimServer(object):
 
 	# Command mask bits
 	CMDMSK_SHUTDOWN	= (1 << 0) # Allow shutdown command
-
-	class Client(object):
-		"""Client information."""
-
-		def __init__(self, sock, peerInfoString):
-			# Socket
-			self.socket = sock
-			self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
-
-			# Broken-flag. Set, if connection breaks.
-			self.broken = False
-
-			# CPU-dump
-			self.dumpInterval = 0
-			self.nextDump = 0
-
-			# Instruction state dump: Enabled lines.
-			# dict key: AWL source ID number.
-			# dict values: range() of AWL line numbers.
-			self.insnStateDump_enabledLines = {}
-
-			# Memory read requests
-			self.memReadRequestMsg = None
-			self.repetitionPeriod = 0.0
-			self.nextRepTime = monotonic_time()
 
 	@classmethod
 	def getaddrinfo(cls, host, port, family = None):
@@ -200,7 +202,7 @@ class AwlSimServer(object):
 						  "executable '%s'" % forkInterpreter)
 			try:
 				serverProcess = PopenWrapper(
-					[interp, "-m", "awlsim.coreserver.server"],
+					[interp, "-m", "awlsim.coreserver.run"],
 					env = env)
 			except OSError as e:
 				raise AwlSimError("Failed to run interpreter '%s': %s" %(
@@ -1244,7 +1246,7 @@ class AwlSimServer(object):
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
 		printInfo("Client '%s' connected" % peerInfoString)
 
-		client = self.Client(clientSock, peerInfoString)
+		client = AwlSimClientInfo(clientSock, peerInfoString)
 		self.__clientAdd(client)
 
 		return client

@@ -25,7 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 from awlsim.common.net import *
 from awlsim.common.util import *
-from awlsim.common.subprocess import *
+from awlsim.common.subprocess_wrapper import *
 
 if not osIsWindows:
 	import pty

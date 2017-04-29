@@ -12,7 +12,7 @@ from awlsim.common.immutable import *
 from awlsim.common.net import *
 from awlsim.common.project import *
 from awlsim.common.sources import *
-from awlsim.common.subprocess import *
+from awlsim.common.subprocess_wrapper import *
 from awlsim.common.templates import *
 from awlsim.common.util import *
 from awlsim.common.version import *
