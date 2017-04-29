@@ -15,3 +15,7 @@ cdef class CallStackElem(object):
 	cdef public object localdata
 	cdef public list __outboundParams
 	cdef public dict __interfRefs
+
+	cpdef getInterfIdxOper(self, uint32_t interfaceFieldIndex)
+	cdef __FB_trans_dbpointer(self, object param, object rvalueOp)
+	cdef handleBlockExit(self)

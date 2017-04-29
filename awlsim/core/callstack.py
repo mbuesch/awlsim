@@ -168,7 +168,8 @@ class CallStackElem(object): #+cdef
 				    instanceBaseOffset.toPointerValue())
 
 	# Get an FC interface operand by interface field index.
-	def getInterfIdxOper(self, interfaceFieldIndex):
+	def getInterfIdxOper(self, interfaceFieldIndex): #@nocy
+#@cy	cpdef getInterfIdxOper(self, uint32_t interfaceFieldIndex):
 		try:
 			return self.__interfRefs[interfaceFieldIndex]
 		except (AttributeError, KeyError) as e:
@@ -183,7 +184,10 @@ class CallStackElem(object): #+cdef
 	# Translate FB DB-pointer variable.
 	# This is used for FB IN_OUT compound data type parameters.
 	# Returns the actual DB-pointer data. (Not an operator!)
-	def __FB_trans_dbpointer(self, param, rvalueOp):
+	def __FB_trans_dbpointer(self, param, rvalueOp): #@nocy
+#@cy	cdef __FB_trans_dbpointer(self, object param, object rvalueOp):
+#@cy		cdef uint32_t ptr
+
 		dbPtrData = ByteArray(6)
 		dbNumber = rvalueOp.value.dbNumber
 		if dbNumber is not None:
@@ -200,15 +204,18 @@ class CallStackElem(object): #+cdef
 	# Don't perform translation.
 	# For various MEM and BLKREF accesses.
 	# Returns the translated rvalueOp.
-	def __FC_trans_direct(self, param, rvalueOp):
+	def __FC_trans_direct(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_direct(self, object param, object rvalueOp):
 		return rvalueOp
 
 	# FC parameter translation:
 	# Copy parameter r-value to the caller-L-stack, if inbound
 	# and register a copy-back request, if outbound.
 	# Returns the translated rvalueOp.
-	def __FC_trans_copyToVL(self, param, rvalueOp):
+	def __FC_trans_copyToVL(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_copyToVL(self, object param, object rvalueOp):
 #@cy		cdef S7CPU cpu
+#@cy		cdef AwlOffset loffset
 
 		cpu = self.cpu
 		# Allocate space in the caller-L-stack.
@@ -237,8 +244,11 @@ class CallStackElem(object): #+cdef
 	# FC parameter translation:
 	# Create a DB-pointer to the r-value in the caller's L-stack (VL).
 	# Returns the translated rvalueOp.
-	def __FC_trans_dbpointerInVL(self, param, rvalueOp):
+	def __FC_trans_dbpointerInVL(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_dbpointerInVL(self, object param, object rvalueOp):
 #@cy		cdef S7CPU cpu
+#@cy		cdef AwlOffset loffset
+#@cy		cdef uint32_t area
 
 		cpu = self.cpu
 		# Allocate space for the DB-ptr in the caller-L-stack
@@ -274,7 +284,8 @@ class CallStackElem(object): #+cdef
 	# Copy the r-value to the caller's L-stack (VL) and also create
 	# a DB-pointer to the copied value in VL.
 	# Returns the translated rvalueOp.
-	def __FC_trans_copyToVLWithDBPtr(self, param, rvalueOp):
+	def __FC_trans_copyToVLWithDBPtr(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_copyToVLWithDBPtr(self, object param, object rvalueOp):
 		oper = self.__FC_trans_copyToVL(param, rvalueOp)
 		oper.type = oper.MEM_L
 		return self.__FC_trans_dbpointerInVL(param, oper)
@@ -282,7 +293,8 @@ class CallStackElem(object): #+cdef
 	# FC parameter translation:
 	# Translate L-stack access r-value.
 	# Returns the translated rvalueOp.
-	def __FC_trans_MEM_L(self, param, rvalueOp):
+	def __FC_trans_MEM_L(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_MEM_L(self, object param, object rvalueOp):
 		# r-value is an L-stack memory access.
 		if rvalueOp.compound:
 			# rvalue is a compound data type.
@@ -297,7 +309,10 @@ class CallStackElem(object): #+cdef
 	# FC parameter translation:
 	# Translate DB access r-value.
 	# Returns the translated rvalueOp.
-	def __FC_trans_MEM_DB(self, param, rvalueOp, copyToVL=False):
+	def __FC_trans_MEM_DB(self, param, rvalueOp, copyToVL=False): #@nocy
+#@cy	def __FC_trans_MEM_DB(self, object param, object rvalueOp, _Bool copyToVL=False):
+#@cy		cdef AwlOffset offset
+
 		# A (fully qualified) DB variable is passed to an FC.
 		if rvalueOp.value.dbNumber is not None:
 			# This is a fully qualified DB access.
@@ -323,7 +338,8 @@ class CallStackElem(object): #+cdef
 	# FC parameter translation:
 	# Translate DI access r-value.
 	# Returns the translated rvalueOp.
-	def __FC_trans_MEM_DI(self, param, rvalueOp):
+	def __FC_trans_MEM_DI(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_MEM_DI(self, object param, object rvalueOp):
 		# A parameter is forwarded from an FB to an FC
 		if rvalueOp.compound:
 			# rvalue is a compound data type.
@@ -336,7 +352,8 @@ class CallStackElem(object): #+cdef
 	# FC parameter translation:
 	# Translate named local variable r-value.
 	# Returns the translated rvalueOp.
-	def __FC_trans_NAMED_LOCAL(self, param, rvalueOp):
+	def __FC_trans_NAMED_LOCAL(self, param, rvalueOp): #@nocy
+#@cy	def __FC_trans_NAMED_LOCAL(self, object param, object rvalueOp):
 		# r-value is a named-local (#abc)
 		oper = self.cpu.callStackTop.getInterfIdxOper(rvalueOp.interfaceIndex)
 		if oper.type == oper.MEM_DB:
@@ -383,8 +400,10 @@ class CallStackElem(object): #+cdef
 	# Handle the exit from this code block.
 	# This stack element (self) will already have been
 	# removed from the CPU's call stack.
-	def handleBlockExit(self):
+	def handleBlockExit(self): #@nocy
+#@cy	cdef handleBlockExit(self):
 #@cy		cdef S7CPU cpu
+#@cy		cdef AwlOffset instanceBaseOffset
 
 		cpu = self.cpu
 		if not self.isRawCall:
