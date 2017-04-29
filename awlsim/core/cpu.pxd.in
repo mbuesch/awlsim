@@ -79,5 +79,10 @@ cdef class S7CPU(object):
 	cpdef store(self, object operator, object value, frozenset enforceWidth=*)
 
 	cpdef updateTimestamp(self, object _getTime=*)
+	cdef __runTimeCheck(self)
 
 	cdef __runOB(self, object block)
+
+	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex)
+	cdef jumpToLabel(self, uint32_t labelIndex)
+	cdef jumpRelative(self, int32_t insnOffset)

@@ -1029,7 +1029,8 @@ class S7CPU(object): #+cdef
 		byteArray[offset + 7] = ((msec % 10) << 4) |\
 					AwlDataType.dateAndTimeWeekdayMap[dt.weekday()]
 
-	def __runTimeCheck(self):
+	def __runTimeCheck(self): #@nocy
+#@cy	cdef __runTimeCheck(self):
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:
 			raise AwlSimError("Cycle time exceed %.3f seconds" %\
 					  self.cycleTimeLimit)
@@ -1049,16 +1050,21 @@ class S7CPU(object): #+cdef
 		except IndexError as e:
 			return None
 
-	def labelIdxToRelJump(self, labelIndex):
+	def labelIdxToRelJump(self, labelIndex): #@nocy
+#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex):
+#@cy		cdef CallStackElem cse
+
 		# Translate a label index into a relative IP offset.
 		cse = self.callStackTop
 		label = cse.block.labels[labelIndex]
 		return label.getInsn().getIP() - cse.ip
 
-	def jumpToLabel(self, labelIndex):
+	def jumpToLabel(self, labelIndex): #@nocy
+#@cy	cdef jumpToLabel(self, uint32_t labelIndex):
 		self.relativeJump = self.labelIdxToRelJump(labelIndex)
 
-	def jumpRelative(self, insnOffset):
+	def jumpRelative(self, insnOffset): #@nocy
+#@cy	cdef jumpRelative(self, int32_t insnOffset):
 		self.relativeJump = insnOffset
 
 	def __call_FC(self, blockOper, dbOper, parameters):
