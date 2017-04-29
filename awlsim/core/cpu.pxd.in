@@ -73,6 +73,11 @@ cdef class S7CPU(object):
 	cdef public uint32_t __speedMeasureStartInsnCount
 	cdef public uint32_t __speedMeasureStartCycleCount
 
+	cdef dict __fetchTypeMethods
+	cdef dict __storeTypeMethods
+	cdef dict __callHelpers
+	cdef dict __rawCallHelpers
+
 	cdef parenStackAppend(self, uint32_t insnType, S7StatusWord statusWord)
 
 	cpdef object fetch(self, object operator, frozenset enforceWidth=*)
@@ -86,3 +91,5 @@ cdef class S7CPU(object):
 	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex)
 	cdef jumpToLabel(self, uint32_t labelIndex)
 	cdef jumpRelative(self, int32_t insnOffset)
+
+	cdef __translateFCNamedLocalOper(self, object operator, _Bool store)

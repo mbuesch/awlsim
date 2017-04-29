@@ -513,6 +513,11 @@ class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
 	def __init__(self):
+		self.__fetchTypeMethods = self.__fetchTypeMethodsDict
+		self.__storeTypeMethods = self.__storeTypeMethodsDict
+		self.__callHelpers = self.__callHelpersDict
+		self.__rawCallHelpers = self.__rawCallHelpersDict
+
 		self.__clockMemByteOffset = None
 		self.specs = S7CPUSpecs(self)
 		self.conf = S7CPUConfig(self)
@@ -1128,7 +1133,7 @@ class S7CPU(object): #+cdef
 		self.dbRegister = self.diRegister
 		return cse
 
-	__callHelpers = {
+	__callHelpersDict = {
 		AwlOperator.BLKREF_FC	: __call_FC,
 		AwlOperator.BLKREF_FB	: __call_FB,
 		AwlOperator.BLKREF_SFC	: __call_SFC,
@@ -1137,7 +1142,7 @@ class S7CPU(object): #+cdef
 		AwlOperator.MULTI_SFB	: __call_MULTI_SFB,
 	}
 
-	__rawCallHelpers = {
+	__rawCallHelpersDict = {
 		AwlOperator.BLKREF_FC	: __call_RAW_FC,
 		AwlOperator.BLKREF_FB	: __call_RAW_FB,
 		AwlOperator.BLKREF_SFC	: __call_RAW_SFC,
@@ -1240,7 +1245,12 @@ class S7CPU(object): #+cdef
 		if len(cse.parenStack) > 7:
 			raise AwlSimError("Parenthesis stack overflow")
 
-	def __translateFCNamedLocalOper(self, operator, store):
+	def __translateFCNamedLocalOper(self, operator, store): #@nocy
+#@cy	cdef __translateFCNamedLocalOper(self, object operator, _Bool store):
+#@cy		cdef uint32_t pointer
+#@cy		cdef uint32_t opType
+#@cy		cdef uint32_t dbNr
+
 		# Translate an 'operator' to a named local FC parameter.
 		# The returned operator is an operator to the actual data.
 		interfOp = self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(store)
@@ -1296,10 +1306,10 @@ class S7CPU(object): #+cdef
 	def storeInputRange(self, byteOffset, data):
 		self.inputs[byteOffset : byteOffset + len(data)] = data
 
-	def fetch(self, operator, enforceWidth=set()): #@nocy
+	def fetch(self, operator, enforceWidth=frozenset()): #@nocy
 #@cy	cpdef object fetch(self, object operator, frozenset enforceWidth=frozenset()):
 		try:
-			fetchMethod = self.fetchTypeMethods[operator.type]
+			fetchMethod = self.__fetchTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid fetch request: %s" %\
 				str(operator))
@@ -1311,19 +1321,24 @@ class S7CPU(object): #+cdef
 			(operator.width,
 			 listToHumanStr(enforceWidth)))
 
-	def fetchIMM(self, operator, enforceWidth):
+	def fetchIMM(self, operator, enforceWidth): #@nocy
+#@cy	def fetchIMM(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return operator.value
 
-	def fetchIMM_PTR(self, operator, enforceWidth):
+	def fetchIMM_PTR(self, operator, enforceWidth): #@nocy
+#@cy	def fetchIMM_PTR(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return operator.value.toNativePointerValue()
 
-	def fetchIMM_STR(self, operator, enforceWidth):
+	def fetchIMM_STR(self, operator, enforceWidth): #@nocy
+#@cy	def fetchIMM_STR(self, object operator, frozenset enforceWidth):
+#@cy		cdef uint32_t insnType
+
 		if operator.width <= 48 and operator.insn:
 			insnType = operator.insn.insnType
 			if insnType == AwlInsn.TYPE_L or\
@@ -1340,37 +1355,43 @@ class S7CPU(object): #+cdef
 
 		return operator.value
 
-	def fetchDBLG(self, operator, enforceWidth):
+	def fetchDBLG(self, operator, enforceWidth): #@nocy
+#@cy	def fetchDBLG(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.dbRegister.struct.getSize()
 
-	def fetchDBNO(self, operator, enforceWidth):
+	def fetchDBNO(self, operator, enforceWidth): #@nocy
+#@cy	def fetchDBNO(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.dbRegister.index
 
-	def fetchDILG(self, operator, enforceWidth):
+	def fetchDILG(self, operator, enforceWidth): #@nocy
+#@cy	def fetchDILG(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.diRegister.struct.getSize()
 
-	def fetchDINO(self, operator, enforceWidth):
+	def fetchDINO(self, operator, enforceWidth): #@nocy
+#@cy	def fetchDINO(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.diRegister.index
 
-	def fetchAR2(self, operator, enforceWidth):
+	def fetchAR2(self, operator, enforceWidth): #@nocy
+#@cy	def fetchAR2(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.getAR(2).get()
 
-	def fetchSTW(self, operator, enforceWidth):
+	def fetchSTW(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
@@ -1381,73 +1402,87 @@ class S7CPU(object): #+cdef
 		else:
 			assert(0)
 
-	def fetchSTW_Z(self, operator, enforceWidth):
+	def fetchSTW_Z(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_Z(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return (self.statusWord.A0 ^ 1) & (self.statusWord.A1 ^ 1)
 
-	def fetchSTW_NZ(self, operator, enforceWidth):
+	def fetchSTW_NZ(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_NZ(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.statusWord.A0 | self.statusWord.A1
 
-	def fetchSTW_POS(self, operator, enforceWidth):
+	def fetchSTW_POS(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_POS(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return (self.statusWord.A0 ^ 1) & self.statusWord.A1
 
-	def fetchSTW_NEG(self, operator, enforceWidth):
+	def fetchSTW_NEG(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_NEG(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.statusWord.A0 & (self.statusWord.A1 ^ 1)
 
-	def fetchSTW_POSZ(self, operator, enforceWidth):
+	def fetchSTW_POSZ(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_POSZ(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.statusWord.A0 ^ 1
 
-	def fetchSTW_NEGZ(self, operator, enforceWidth):
+	def fetchSTW_NEGZ(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_NEGZ(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.statusWord.A1 ^ 1
 
-	def fetchSTW_UO(self, operator, enforceWidth):
+	def fetchSTW_UO(self, operator, enforceWidth): #@nocy
+#@cy	def fetchSTW_UO(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.statusWord.A0 & self.statusWord.A1
 
-	def fetchE(self, operator, enforceWidth):
+	def fetchE(self, operator, enforceWidth): #@nocy
+#@cy	def fetchE(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.inputs.fetch(operator.value, operator.width)
 
-	def fetchA(self, operator, enforceWidth):
+	def fetchA(self, operator, enforceWidth): #@nocy
+#@cy	def fetchA(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.outputs.fetch(operator.value, operator.width)
 
-	def fetchM(self, operator, enforceWidth):
+	def fetchM(self, operator, enforceWidth): #@nocy
+#@cy	def fetchM(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.flags.fetch(operator.value, operator.width)
 
-	def fetchL(self, operator, enforceWidth):
+	def fetchL(self, operator, enforceWidth): #@nocy
+#@cy	def fetchL(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.callStackTop.localdata.fetch(operator.value, operator.width)
 
-	def fetchVL(self, operator, enforceWidth):
+	def fetchVL(self, operator, enforceWidth): #@nocy
+#@cy	def fetchVL(self, object operator, frozenset enforceWidth):
+#@cy		cdef CallStackElem cse
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
@@ -1458,7 +1493,8 @@ class S7CPU(object): #+cdef
 				"but no parent present.")
 		return cse.localdata.fetch(operator.value, operator.width)
 
-	def fetchDB(self, operator, enforceWidth):
+	def fetchDB(self, operator, enforceWidth): #@nocy
+#@cy	def fetchDB(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
@@ -1470,7 +1506,8 @@ class S7CPU(object): #+cdef
 						 operator.insn))
 		return self.dbRegister.fetch(operator)
 
-	def fetchDI(self, operator, enforceWidth):
+	def fetchDI(self, operator, enforceWidth): #@nocy
+#@cy	def fetchDI(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
@@ -1481,7 +1518,8 @@ class S7CPU(object): #+cdef
 		# Fetch without base offset.
 		return self.diRegister.fetch(operator)
 
-	def fetchPE(self, operator, enforceWidth):
+	def fetchPE(self, operator, enforceWidth): #@nocy
+#@cy	def fetchPE(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
@@ -1502,7 +1540,11 @@ class S7CPU(object): #+cdef
 			self.inputs.store(operator.value, operator.width, value)
 		return value
 
-	def fetchT(self, operator, enforceWidth):
+	def fetchT(self, operator, enforceWidth): #@nocy
+#@cy	def fetchT(self, object operator, frozenset enforceWidth):
+#@cy		cdef uint32_t insnType
+#@cy		cdef uint32_t width
+
 		insnType = operator.insn.insnType
 		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
 			width = 32
@@ -1518,7 +1560,11 @@ class S7CPU(object): #+cdef
 			return timer.getTimevalS5T()
 		return timer.get()
 
-	def fetchZ(self, operator, enforceWidth):
+	def fetchZ(self, operator, enforceWidth): #@nocy
+#@cy	def fetchZ(self, object operator, frozenset enforceWidth):
+#@cy		cdef uint32_t insnType
+#@cy		cdef uint32_t width
+
 		insnType = operator.insn.insnType
 		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
 			width = 32
@@ -1534,36 +1580,43 @@ class S7CPU(object): #+cdef
 			return counter.getValueBCD()
 		return counter.get()
 
-	def fetchNAMED_LOCAL(self, operator, enforceWidth):
+	def fetchNAMED_LOCAL(self, operator, enforceWidth): #@nocy
+#@cy	def fetchNAMED_LOCAL(self, object operator, frozenset enforceWidth):
 		# load from an FC interface field.
 		return self.fetch(self.__translateFCNamedLocalOper(operator, False),
 				  enforceWidth)
 
-	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth):
+	def fetchNAMED_LOCAL_PTR(self, operator, enforceWidth): #@nocy
+#@cy	def fetchNAMED_LOCAL_PTR(self, object operator, frozenset enforceWidth):
 		assert(operator.value.subOffset.byteOffset == 0)
 		return self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue()
 
-	def fetchNAMED_DBVAR(self, operator, enforceWidth):
+	def fetchNAMED_DBVAR(self, operator, enforceWidth): #@nocy
+#@cy	def fetchNAMED_DBVAR(self, object operator, frozenset enforceWidth):
 		# All legit accesses will have been translated to absolute addressing already
 		raise AwlSimError("Fully qualified load from DB variable "
 			"is not supported in this place.")
 
-	def fetchINDIRECT(self, operator, enforceWidth):
+	def fetchINDIRECT(self, operator, enforceWidth): #@nocy
+#@cy	def fetchINDIRECT(self, object operator, frozenset enforceWidth):
 		return self.fetch(operator.resolve(False), enforceWidth)
 
-	def fetchVirtACCU(self, operator, enforceWidth):
+	def fetchVirtACCU(self, operator, enforceWidth): #@nocy
+#@cy	def fetchVirtACCU(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.getAccu(operator.value.byteOffset).get()
 
-	def fetchVirtAR(self, operator, enforceWidth):
+	def fetchVirtAR(self, operator, enforceWidth): #@nocy
+#@cy	def fetchVirtAR(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
 		return self.getAR(operator.value.byteOffset).get()
 
-	def fetchVirtDBR(self, operator, enforceWidth):
+	def fetchVirtDBR(self, operator, enforceWidth): #@nocy
+#@cy	def fetchVirtDBR(self, object operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
@@ -1580,7 +1633,7 @@ class S7CPU(object): #+cdef
 				operator.value.byteOffset)
 		return 0
 
-	fetchTypeMethods = {
+	__fetchTypeMethodsDict = {
 		AwlOperator.IMM			: fetchIMM,
 		AwlOperator.IMM_REAL		: fetchIMM,
 		AwlOperator.IMM_S5T		: fetchIMM,
@@ -1622,10 +1675,10 @@ class S7CPU(object): #+cdef
 		AwlOperator.VIRT_DBR		: fetchVirtDBR,
 	}
 
-	def store(self, operator, value, enforceWidth=set()): #@nocy
+	def store(self, operator, value, enforceWidth=frozenset()): #@nocy
 #@cy	cpdef store(self, object operator, object value, frozenset enforceWidth=frozenset()):
 		try:
-			storeMethod = self.storeTypeMethods[operator.type]
+			storeMethod = self.__storeTypeMethods[operator.type]
 		except KeyError:
 			raise AwlSimError("Invalid store request: %s" %\
 				str(operator))
@@ -1637,31 +1690,38 @@ class S7CPU(object): #+cdef
 			(operator.width,
 			 listToHumanStr(enforceWidth)))
 
-	def storeE(self, operator, value, enforceWidth):
+	def storeE(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeE(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
 		self.inputs.store(operator.value, operator.width, value)
 
-	def storeA(self, operator, value, enforceWidth):
+	def storeA(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeA(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
 		self.outputs.store(operator.value, operator.width, value)
 
-	def storeM(self, operator, value, enforceWidth):
+	def storeM(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeM(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
 		self.flags.store(operator.value, operator.width, value)
 
-	def storeL(self, operator, value, enforceWidth):
+	def storeL(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeL(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
 		self.callStackTop.localdata.store(operator.value, operator.width, value)
 
-	def storeVL(self, operator, value, enforceWidth):
+	def storeVL(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeVL(self, object operator, object value, frozenset enforceWidth):
+#@cy		cdef CallStackElem cse
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
@@ -1672,7 +1732,8 @@ class S7CPU(object): #+cdef
 				"but no parent present.")
 		cse.localdata.store(operator.value, operator.width, value)
 
-	def storeDB(self, operator, value, enforceWidth):
+	def storeDB(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeDB(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
@@ -1686,7 +1747,8 @@ class S7CPU(object): #+cdef
 					"does not exist" % operator.value.dbNumber)
 		db.store(operator, value)
 
-	def storeDI(self, operator, value, enforceWidth):
+	def storeDI(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeDI(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
@@ -1698,7 +1760,8 @@ class S7CPU(object): #+cdef
 			# Store without base offset.
 			self.diRegister.store(operator, value)
 
-	def storePA(self, operator, value, enforceWidth):
+	def storePA(self, operator, value, enforceWidth): #@nocy
+#@cy	def storePA(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
@@ -1720,13 +1783,15 @@ class S7CPU(object): #+cdef
 				(operator.width, operator.value.byteOffset,
 				 value))
 
-	def storeAR2(self, operator, value, enforceWidth):
+	def storeAR2(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeAR2(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
 		self.getAR(2).set(value)
 
-	def storeSTW(self, operator, value, enforceWidth):
+	def storeSTW(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeSTW(self, object operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
@@ -1737,20 +1802,23 @@ class S7CPU(object): #+cdef
 		else:
 			assert(0)
 
-	def storeNAMED_LOCAL(self, operator, value, enforceWidth):
+	def storeNAMED_LOCAL(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeNAMED_LOCAL(self, object operator, object value, frozenset enforceWidth):
 		# store to an FC interface field.
 		self.store(self.__translateFCNamedLocalOper(operator, True),
 			   value, enforceWidth)
 
-	def storeNAMED_DBVAR(self, operator, value, enforceWidth):
+	def storeNAMED_DBVAR(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeNAMED_DBVAR(self, object operator, object value, frozenset enforceWidth):
 		# All legit accesses will have been translated to absolute addressing already
 		raise AwlSimError("Fully qualified store to DB variable "
 			"is not supported in this place.")
 
-	def storeINDIRECT(self, operator, value, enforceWidth):
+	def storeINDIRECT(self, operator, value, enforceWidth): #@nocy
+#@cy	def storeINDIRECT(self, object operator, object value, frozenset enforceWidth):
 		self.store(operator.resolve(True), value, enforceWidth)
 
-	storeTypeMethods = {
+	__storeTypeMethodsDict = {
 		AwlOperator.MEM_E		: storeE,
 		AwlOperator.MEM_A		: storeA,
 		AwlOperator.MEM_M		: storeM,
