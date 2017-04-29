@@ -805,9 +805,11 @@ class S7CPU(object): #+cdef
 		if self.cbScreenUpdate:
 			self.cbScreenUpdate(self.cbScreenUpdateData)
 
-	def __runOB(self, block):
+	def __runOB(self, block): #@nocy
+#@cy	cdef __runOB(self, object block):
 #@cy		cdef AwlInsn insn
 #@cy		cdef CallStackElem cse
+#@cy		cdef CallStackElem prevCse
 
 		# Update timekeeping
 		self.updateTimestamp()
@@ -900,6 +902,11 @@ class S7CPU(object): #+cdef
 
 	# Run one cycle of the user program
 	def runCycle(self):
+#@cy		cdef double elapsedTime
+#@cy		cdef double cycleTime
+#@cy		cdef uint32_t cycleCount
+#@cy		cdef uint32_t insnCount
+
 		# Run the actual OB1 code
 		self.__runOB(self.obs[1])
 
@@ -960,7 +967,11 @@ class S7CPU(object): #+cdef
 
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
-	def updateTimestamp(self, _getTime=perf_monotonic_time):
+	def updateTimestamp(self, _getTime=perf_monotonic_time): #@nocy
+#@cy	cpdef updateTimestamp(self, object _getTime=perf_monotonic_time):
+#@cy		cdef uint32_t value
+#@cy		cdef uint32_t count
+
 		# Update the system time
 		self.now = _getTime() + self.__nowOffset
 		# Update the clock memory byte

@@ -77,3 +77,7 @@ cdef class S7CPU(object):
 
 	cpdef object fetch(self, object operator, frozenset enforceWidth=*)
 	cpdef store(self, object operator, object value, frozenset enforceWidth=*)
+
+	cpdef updateTimestamp(self, object _getTime=*)
+
+	cdef __runOB(self, object block)
