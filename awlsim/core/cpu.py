@@ -1214,7 +1214,10 @@ class S7CPU(object): #+cdef
 		except IndexError:
 			raise AwlSimError("MCR stack underflow")
 
-	def parenStackAppend(self, insnType, statusWord):
+	def parenStackAppend(self, insnType, statusWord): #@nocy
+#@cy	cdef parenStackAppend(self, uint32_t insnType, S7StatusWord statusWord):
+#@cy		cdef CallStackElem cse
+
 		cse = self.callStackTop
 		cse.parenStack.append(ParenStackElem(self, insnType, statusWord))
 		if len(cse.parenStack) > 7:
