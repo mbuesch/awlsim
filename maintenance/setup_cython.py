@@ -103,12 +103,23 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 			continue
 
 		# Uncomment all lines containing #@cy
-		if "#@cy" in stripLine:
-			line = line.replace("#@cy", "")
+		def uncomment(line, removeStr):
+			line = line.replace(removeStr, "")
 			if line.startswith("#"):
 				line = line[1:]
 			if not line.endswith("\n"):
 				line += "\n"
+			return line
+		if "#@cy" in stripLine and\
+		   not "#@cy2" in stripLine and\
+		   not "#@cy3" in stripLine:
+			line = uncomment(line, "#@cy")
+		if sys.version_info[0] < 3:
+			if "#@cy2" in stripLine:
+				line = uncomment(line, "#@cy2")
+		else:
+			if "#@cy3" in stripLine:
+				line = uncomment(line, "#@cy3")
 
 		# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
 		if "#+cdef" in stripLine:
