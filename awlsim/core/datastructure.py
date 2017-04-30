@@ -180,6 +180,9 @@ class AwlStruct(object):
 		return baseField
 
 	def addField(self, cpu, name, dataType, initBytes=None):
+		initMem = AwlMemory()
+		initMem.dataBytes = initBytes
+
 		if dataType.type == dataType.TYPE_UDT_X:
 			# Add an UDT.
 			try:
@@ -235,10 +238,11 @@ class AwlStruct(object):
 				try:
 					if not initBytes:
 						raise ValueError
-					fieldInitData = ByteArray(intDivRoundUp(childType.width, 8))
-					fieldInitData.store(AwlOffset(), childType.width,
-							    initBytes.fetch(initOffset,
-									    childType.width))
+					fieldInitMem = AwlMemory(intDivRoundUp(childType.width, 8))
+					fieldInitData = fieldInitMem.dataBytes
+					fieldInitMem.store(AwlOffset(), childType.width,
+							    initMem.fetch(initOffset,
+									  childType.width))
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
 				self.addField(cpu, str(childIdent), childType,
@@ -300,15 +304,15 @@ class AwlStructInstance(object):
 	def __init__(self, struct):
 		# Store a reference to the data structure
 		self.struct = struct
-		# Allocate self.dataBytes
-		self.dataBytes = ByteArray(self.struct.getSize())
+		# Allocate self.memory
+		self.memory = AwlMemory(self.struct.getSize())
 		# Initialize the data structure
 		for field in self.struct.fields:
 			if not field.initBytes:
 				continue
 			try:
-				self.dataBytes.store(field.offset, field.bitSize,
-						     field.initBytes)
+				self.memory.store(field.offset, field.bitSize,
+						  field.initBytes)
 			except AwlSimError as e:
 				raise AwlSimError("Data structure field '%s' "
 					"initialization is out of range." %\
@@ -316,16 +320,16 @@ class AwlStructInstance(object):
 
 	def getFieldData(self, field, baseOffset=None):
 		if baseOffset is None:
-			return self.dataBytes.fetch(field.offset, field.bitSize)
-		return self.dataBytes.fetch(baseOffset + field.offset, field.bitSize)
+			return self.memory.fetch(field.offset, field.bitSize)
+		return self.memory.fetch(baseOffset + field.offset, field.bitSize)
 
 	def setFieldData(self, field, value, baseOffset=None):
 		if baseOffset is None:
-			self.dataBytes.store(field.offset,
-					     field.bitSize, value)
+			self.memory.store(field.offset,
+					  field.bitSize, value)
 		else:
-			self.dataBytes.store(baseOffset + field.offset,
-					     field.bitSize, value)
+			self.memory.store(baseOffset + field.offset,
+					  field.bitSize, value)
 
 	def getFieldDataByName(self, name):
 		return self.getFieldData(self.struct.getField(name))

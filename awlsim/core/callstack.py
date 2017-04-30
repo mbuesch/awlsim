@@ -187,8 +187,9 @@ class CallStackElem(object): #+cdef
 	def __FB_trans_dbpointer(self, param, rvalueOp): #@nocy
 #@cy	cdef __FB_trans_dbpointer(self, object param, object rvalueOp):
 #@cy		cdef uint32_t ptr
+#@cy		cdef bytearray dbPtrData
 
-		dbPtrData = ByteArray(6)
+		dbPtrData = bytearray(6)
 		dbNumber = rvalueOp.value.dbNumber
 		if dbNumber is not None:
 			dbPtrData[0] = (dbNumber >> 8) & 0xFF

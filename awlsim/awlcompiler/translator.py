@@ -200,8 +200,9 @@ class AwlTranslator(object):
 		# Get the field inits
 		if rawField.defaultInits:
 			# Translate the initialization values and
-			# put them into a ByteArray.
-			initBytes = ByteArray(intDivRoundUp(dataType.width, 8))
+			# put them into a bytearray.
+			initMem = AwlMemory(intDivRoundUp(dataType.width, 8))
+			initBytes = initMem.dataBytes
 			if dataType.type == AwlDataType.TYPE_ARRAY:
 				for rawDataInit in rawField.defaultInits:
 					value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
@@ -210,8 +211,8 @@ class AwlTranslator(object):
 					offset = AwlOffset.fromLongBitOffset(linArrayIndex *
 									     dataType.arrayElementType.width)
 					try:
-						initBytes.store(offset, dataType.arrayElementType.width,
-								value)
+						initMem.store(offset, dataType.arrayElementType.width,
+							      value)
 					except AwlSimError as e:
 						raise AwlSimError("Data field '%s' initialization "
 							"is out of range." % str(rawField))
@@ -219,7 +220,7 @@ class AwlTranslator(object):
 				assert(len(rawField.defaultInits) == 1)
 				value = dataType.parseMatchingImmediate(rawField.defaultInits[0].valueTokens)
 				try:
-					initBytes.store(AwlOffset(), dataType.width, value)
+					initMem.store(AwlOffset(), dataType.width, value)
 				except AwlSimError as e:
 					raise AwlSimError("Data field '%s' initialization "
 						"is out of range." % str(rawField))

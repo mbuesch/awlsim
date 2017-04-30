@@ -33,7 +33,7 @@ class LStackAllocator(object):
 
 	def __init__(self, maxSize):
 		# maxSize -> max size of the L-stack, in bytes.
-		self.localdata = ByteArray(maxSize)
+		self.localdata = AwlMemory(maxSize)
 		self.reset(maxSize)
 
 	# Reset all allocations on the L-stack.

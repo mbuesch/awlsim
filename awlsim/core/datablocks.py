@@ -73,8 +73,8 @@ class DB(Block):
 		self.structInstance = AwlStructInstance(self.struct)
 
 	def __fetch(self, operator, baseOffset=AwlOffset()):
-		return self.structInstance.dataBytes.fetch(baseOffset + operator.value,
-							   operator.width)
+		return self.structInstance.memory.fetch(baseOffset + operator.value,
+							operator.width)
 
 	def __fetch_noPermission(self, operator, baseOffset=None):
 		raise AwlSimError("Fetch from read protected DB %d" % self.index)
@@ -82,9 +82,9 @@ class DB(Block):
 	fetch = __fetch
 
 	def __store(self, operator, value, baseOffset=AwlOffset()):
-		self.structInstance.dataBytes.store(baseOffset + operator.value,
-						    operator.width,
-						    value)
+		self.structInstance.memory.store(baseOffset + operator.value,
+						 operator.width,
+						 value)
 
 	def __store_noPermission(self, operator, value, baseOffset=None):
 		raise AwlSimError("Store to write protected DB %d" % self.index)

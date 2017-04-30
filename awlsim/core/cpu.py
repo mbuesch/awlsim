@@ -719,11 +719,11 @@ class S7CPU(object): #+cdef
 			self.counters = [ Counter(self, i)
 					  for i in range(self.specs.nrCounters) ]
 		if force or self.specs.nrFlags != len(self.flags):
-			self.flags = ByteArray(self.specs.nrFlags)
+			self.flags = AwlMemory(self.specs.nrFlags)
 		if force or self.specs.nrInputs != len(self.inputs):
-			self.inputs = ByteArray(self.specs.nrInputs)
+			self.inputs = AwlMemory(self.specs.nrInputs)
 		if force or self.specs.nrOutputs != len(self.outputs):
-			self.outputs = ByteArray(self.specs.nrOutputs)
+			self.outputs = AwlMemory(self.specs.nrOutputs)
 		CallStackElem.resetCache()
 
 	def reset(self):
@@ -834,7 +834,7 @@ class S7CPU(object): #+cdef
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
-			self.obTempPresetHandlers[block.index].generate(cse.localdata)
+			self.obTempPresetHandlers[block.index].generate(cse.localdata.dataBytes)
 
 		# Run the user program cycle
 		while self.callStack:
@@ -1018,7 +1018,7 @@ class S7CPU(object): #+cdef
 					"CPU runtime timeout")
 
 	# Make a DATE_AND_TIME for the current wall-time and
-	# store it in byteArray, which is a ByteArray or bytearray or compatible.
+	# store it in byteArray, which is a bytearray or compatible.
 	# If byteArray is smaller than 8 bytes, an IndexError is raised.
 	def makeCurrentDateAndTime(self, byteArray, offset):
 		dt = datetime.datetime.now()
@@ -1299,13 +1299,13 @@ class S7CPU(object): #+cdef
 	# 'byteCount' is the number if bytes to fetch.
 	# Returns a bytearray.
 	def fetchOutputRange(self, byteOffset, byteCount):
-		return self.outputs[byteOffset : byteOffset + byteCount]
+		return self.outputs.dataBytes[byteOffset : byteOffset + byteCount]
 
 	# Store a range in the 'input' memory area.
 	# 'byteOffset' is the byte offset into the input area.
 	# 'data' is a bytearray.
 	def storeInputRange(self, byteOffset, data):
-		self.inputs[byteOffset : byteOffset + len(data)] = data
+		self.inputs.dataBytes[byteOffset : byteOffset + len(data)] = data
 
 	def fetch(self, operator, enforceWidth=frozenset()): #@nocy
 #@cy	cpdef object fetch(self, object operator, frozenset enforceWidth=frozenset()):
@@ -1835,9 +1835,10 @@ class S7CPU(object): #+cdef
 		AwlOperator.INDIRECT		: storeINDIRECT,
 	}
 
-	def __dumpMem(self, prefix, memArray, maxLen):
-		if not memArray:
+	def __dumpMem(self, prefix, memory, maxLen):
+		if not memory or not memory.dataBytes:
 			return prefix + "--"
+		memArray = memory.dataBytes
 		ret, line, first, count, i = [], [], True, 0, 0
 		def append(line):
 			ret.append((prefix if first else (' ' * len(prefix))) +\

@@ -291,7 +291,7 @@ class AwlDataType(OptionalImmutable):
 			import awlsim.core.datastructure as datastructure
 			struct = datastructure.AwlStruct()
 			struct.addField(cpu = None, name = None, dataType = byteType,
-					initBytes = ByteArray((strLen,)))
+					initBytes = bytearray((strLen,)))
 			struct.addField(cpu = None, name = None, dataType = byteType)
 			for i in range(strLen):
 				struct.addField(cpu = None, name = "[%s]" % (i + 1),
@@ -950,7 +950,7 @@ class AwlDataType(OptionalImmutable):
 			second = (second % 10) | (((second // 10) % 10) << 4)
 			msec = (msec % 10) | (((msec // 10) % 10) << 4) |\
 			       (((msec // 100) % 10) << 8)
-			data = ByteArray( (year, month, day, hour, minute, second,
+			data = bytearray( (year, month, day, hour, minute, second,
 					   (msec >> 4) & 0xFF,
 					   ((msec & 0xF) << 4) | weekday) )
 		except ValueError:
@@ -1313,8 +1313,15 @@ class GenericDWord(GenericInteger): #+cdef
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 32)
 
-class ByteArray(bytearray):
+class AwlMemory(object):
 	"""Generic memory representation."""
+
+	__slots__ = (
+		"dataBytes",
+	)
+
+	def __init__(self, init=0):
+		self.dataBytes = bytearray(init)
 
 	# Memory fetch operation.
 	# This method returns the data (bit, byte, word, dword, etc...) for
@@ -1326,28 +1333,30 @@ class ByteArray(bytearray):
 	def fetch(self, offset, width): #@nocy
 #@cy	def fetch(self, object offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
+#@cy		cdef bytearray dataBytes
 
+		dataBytes = self.dataBytes
 		try:
 			byteOffset = offset.byteOffset
 			if width == 1:
-				return (self[byteOffset] >> offset.bitOffset) & 1
+				return (dataBytes[byteOffset] >> offset.bitOffset) & 1
 			elif width == 8:
-				return self[byteOffset]
+				return dataBytes[byteOffset]
 			elif width == 16:
-				return (self[byteOffset] << 8) |\
-				       self[byteOffset + 1]
+				return (dataBytes[byteOffset] << 8) |\
+				       dataBytes[byteOffset + 1]
 			elif width == 32:
-				return (self[byteOffset] << 24) |\
-				       (self[byteOffset + 1] << 16) |\
-				       (self[byteOffset + 2] << 8) |\
-				       self[byteOffset + 3]
+				return (dataBytes[byteOffset] << 24) |\
+				       (dataBytes[byteOffset + 1] << 16) |\
+				       (dataBytes[byteOffset + 2] << 8) |\
+				       dataBytes[byteOffset + 3]
 			else:
 				assert(not offset.bitOffset)
 				nrBytes = intDivRoundUp(width, 8)
 				end = byteOffset + nrBytes
-				if end > len(self):
+				if end > len(dataBytes):
 					raise IndexError
-				return self[byteOffset : end]
+				return dataBytes[byteOffset : end]
 		except IndexError as e:
 			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
 					  str(offset))
@@ -1358,46 +1367,55 @@ class ByteArray(bytearray):
 	# offset => An AwlOffset() that specifies the region to store to.
 	# width => An integer specifying the width (in bits) to store.
 	# value => The value to store.
-	#          May be an int, ByteArray, bytearray, bytes or compatible.
+	#          May be an int, bytearray, bytes or compatible.
 	def store(self, offset, width, value): #@nocy
 #@cy	def store(self, object offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
+#@cy		cdef bytearray dataBytes
 
+		dataBytes = self.dataBytes
 		try:
 			byteOffset = offset.byteOffset
 			if isInteger(value):
 				if width == 1:
 					if value:
-						self[byteOffset] |= 1 << offset.bitOffset
+						dataBytes[byteOffset] |= 1 << offset.bitOffset
 					else:
-						self[byteOffset] &= ~(1 << offset.bitOffset)
+						dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
 				else:
 					while width:
 						width -= 8
-						self[byteOffset] = (value >> width) & 0xFF
+						dataBytes[byteOffset] = (value >> width) & 0xFF
 						byteOffset += 1
 			else:
 				if width == 1:
 					if value[0] & 1:
-						self[byteOffset] |= 1 << offset.bitOffset
+						dataBytes[byteOffset] |= 1 << offset.bitOffset
 					else:
-						self[byteOffset] &= ~(1 << offset.bitOffset)
+						dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
 				else:
 					nrBytes = intDivRoundUp(width, 8)
 					assert(nrBytes == len(value))
 					end = byteOffset + nrBytes
-					if end > len(self):
+					if end > len(dataBytes):
 						raise IndexError
-					# The use of memoryview() here just is
-					# a MicroPython workaround.
-					self[byteOffset : end] = memoryview(value)
+					dataBytes[byteOffset : end] = value
 		except IndexError as e:
 			raise AwlSimError("store: Operator offset '%s' out of range" %\
 					  str(offset))
 
+	def __len__(self):
+		return len(self.dataBytes)
+
+	def __bool__(self):
+		return bool(self.dataBytes)
+
+	def __nonzero__(self):
+		return bool(self.dataBytes)
+
 	def __repr__(self):
-		ret = [ 'ByteArray(b"', ]
-		for b in self:
+		ret = [ 'AwlMemory(b"', ]
+		for b in self.dataBytes:
 			ret.append("\\x%02X" % b)
 		ret.append('")')
 		return "".join(ret)
@@ -1748,7 +1766,7 @@ class ANYPointer(DBPointer): #+cdef
 			count = self.count
 			dbNr = self.dbNr
 			ptr = self.toPointerValue()
-			return ByteArray((self.MAGIC,
+			return bytearray((self.MAGIC,
 					  self.typeId2typeCode[self.dataType.type],
 					  (count >> 8) & 0xFF,
 					  count & 0xFF,

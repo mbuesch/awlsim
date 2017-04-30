@@ -114,7 +114,7 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Read access to "
 				"read-protected DB %d" % self.index)
 			)
-		dataBytes = db.structInstance.dataBytes
+		dataBytes = db.structInstance.memory.dataBytes
 		end = self.start + self.length
 		if end > len(dataBytes):
 			self.__raiseReadErr(
@@ -194,7 +194,7 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Write access to "
 				"write-protected DB %d" % self.index)
 			)
-		dataBytes = db.structInstance.dataBytes
+		dataBytes = db.structInstance.memory.dataBytes
 		end = self.start + self.length
 		if end > len(dataBytes):
 			self.__raiseWriteErr(
