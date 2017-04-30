@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.1
+#   v1.2
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -113,11 +113,15 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 		# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
 		if "#+cdef" in stripLine:
 			if stripLine.startswith("class"):
-				line = line.replace("class", "cdef class")
+				line = re.sub(r'\bclass\b', "cdef class", line)
 			else:
-				line = line.replace("def", "cdef")
+				line = re.sub(r'\bdef\b', "cdef", line)
 		if "#+cpdef" in stripLine:
-			line = line.replace("def", "cpdef")
+			line = re.sub(r'\bdef\b', "cpdef", line)
+
+		# Replace import by cimport as requested by #+cimport
+		if "#+cimport" in stripLine:
+			line = re.sub(r'\bimport\b', "cimport", line)
 
 		# Comment all lines containing #@nocy
 		if "#@nocy" in stripLine:
