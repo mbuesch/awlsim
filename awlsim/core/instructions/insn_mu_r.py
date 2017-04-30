@@ -37,6 +37,9 @@ class AwlInsn_MU_R(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef double accu1
+#@cy		cdef double accu2
+#@cy		cdef double prod
 
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
 			       self.cpu.accu1.getPyFloat()

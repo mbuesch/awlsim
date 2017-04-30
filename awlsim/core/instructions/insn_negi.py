@@ -37,6 +37,8 @@ class AwlInsn_NEGI(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t value
+#@cy		cdef int32_t accu1
 
 		s = self.cpu.statusWord
 		value = -(self.cpu.accu1.getSignedWord())

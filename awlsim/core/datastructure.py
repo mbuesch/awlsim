@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
+from awlsim.core.memory import * #@nocy
+#from awlsim.core.memory cimport * #@cy
 from awlsim.core.identifier import *
 from awlsim.core.offset import * #@nocy
 #from awlsim.core.offset cimport * #@cy

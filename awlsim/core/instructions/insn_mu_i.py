@@ -37,10 +37,11 @@ class AwlInsn_MU_I(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t prod
 
 		s = self.cpu.statusWord
-		prod = self.cpu.accu2.getSignedWord() *\
-		       self.cpu.accu1.getSignedWord()
+		prod = self.cpu.accu2.getSignedWord()
+		prod *= self.cpu.accu1.getSignedWord()
 		self.cpu.accu1.setDWord(prod)
 		if self.cpu.is4accu:
 			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())

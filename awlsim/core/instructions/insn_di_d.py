@@ -37,6 +37,9 @@ class AwlInsn_DI_D(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t accu1
+#@cy		cdef int32_t accu2
+#@cy		cdef int64_t quo
 
 		s = self.cpu.statusWord
 		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\

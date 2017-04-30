@@ -37,10 +37,12 @@ class AwlInsn_MI_D(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t accu1
+#@cy		cdef int64_t diff
 
 		s = self.cpu.statusWord
-		diff = self.cpu.accu2.getSignedDWord() -\
-		       self.cpu.accu1.getSignedDWord()
+		diff = self.cpu.accu2.getSignedDWord()
+		diff -= self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(diff)
 		if self.cpu.is4accu:
 			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())

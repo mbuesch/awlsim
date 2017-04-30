@@ -37,6 +37,9 @@ class AwlInsn_PL_R(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef double accu1
+#@cy		cdef double accu2
+#@cy		cdef double _sum
 
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
 			       self.cpu.accu1.getPyFloat()

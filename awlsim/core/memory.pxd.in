@@ -1,0 +1,71 @@
+cdef class GenericInteger(object):
+	cdef public uint32_t value
+	cdef public uint32_t mask
+
+	cpdef copyFrom(self, GenericInteger other)
+	cpdef reset(self)
+	cpdef set(self, int64_t value)
+	cpdef setByte(self, int64_t value)
+	cpdef setWord(self, int64_t value)
+	cpdef setDWord(self, int64_t value)
+	cpdef setPyFloat(self, pyfl)
+	cpdef uint32_t get(self)
+	cpdef uint8_t getByte(self)
+	cpdef uint16_t getWord(self)
+	cpdef uint32_t getDWord(self)
+	cpdef int8_t getSignedByte(self)
+	cpdef int16_t getSignedWord(self)
+	cpdef int32_t getSignedDWord(self)
+	cpdef getPyFloat(self)
+	cpdef setBit(self, uint8_t bitNumber)
+	cpdef clearBit(self, uint8_t bitNumber)
+	cpdef setBitValue(self, uint8_t bitNumber, uint8_t value)
+	cpdef unsigned char getBit(self, uint8_t bitNumber)
+
+cdef class GenericWord(GenericInteger):
+	pass
+
+cdef class GenericDWord(GenericInteger):
+	pass
+
+cdef class Pointer(GenericDWord):
+	cpdef toPointer(self)
+	cpdef uint32_t toPointerValue(self)
+	cpdef toDBPointer(self)
+	cpdef uint64_t toDBPointerValue(self)
+	cpdef ANYPointer toANYPointer(self)
+	cpdef object toANYPointerValue(self)
+	cpdef object toNativePointerValue(self)
+	cpdef uint8_t getArea(self)
+	cpdef setArea(self, uint8_t newArea)
+	cpdef uint16_t getByteOffset(self)
+	cpdef uint8_t getBitOffset(self)
+
+cdef class DBPointer(Pointer):
+	cdef public uint16_t dbNr
+
+	cpdef toDBPointer(self)
+	cpdef uint64_t toDBPointerValue(self)
+	cpdef ANYPointer toANYPointer(self)
+	cpdef object toNativePointerValue(self)
+
+cdef class SymbolicDBPointer(DBPointer):
+	cdef public object identChain
+	cdef public object dbSymbol
+
+cdef class ANYPointer(DBPointer):
+	cdef public object dataType
+	cdef public uint16_t count
+
+	cpdef ANYPointer toANYPointer(self)
+	cpdef object toANYPointerValue(self)
+	cpdef object toNativePointerValue(self)
+
+cdef class Accu(GenericDWord):
+	pass
+
+cdef class Addressregister(Pointer):
+	pass
+
+cdef class AwlMemory(object):
+	cdef public bytearray dataBytes

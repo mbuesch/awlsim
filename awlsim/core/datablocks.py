@@ -27,6 +27,8 @@ from awlsim.common.blockinfo import *
 from awlsim.core.util import *
 from awlsim.core.operators import *
 from awlsim.core.datatypes import *
+from awlsim.core.memory import * #@nocy
+#from awlsim.core.memory cimport * #@cy
 from awlsim.core.datastructure import *
 from awlsim.core.blocks import *
 from awlsim.core.offset import * #@nocy

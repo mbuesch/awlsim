@@ -37,6 +37,7 @@ class AwlInsn_NEGR(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef double accu1
 
 		accu1 = -(self.cpu.accu1.getPyFloat())
 		self.cpu.accu1.setPyFloat(accu1)

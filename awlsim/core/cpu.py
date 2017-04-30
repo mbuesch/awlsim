@@ -36,6 +36,8 @@ from awlsim.library.libentry import *
 #from awlsim.core.dynattrs cimport * #@cy
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
+from awlsim.core.memory import * #@nocy
+#from awlsim.core.memory cimport * #@cy
 #from awlsim.core.instructions.all_insns cimport * #@cy
 from awlsim.core.instructions.all_insns import * #@nocy
 from awlsim.core.systemblocks.system_sfb import *
@@ -557,8 +559,8 @@ class S7CPU(object): #+cdef
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
 
-	def setRunTimeLimit(self, timeoutSeconds=0.0):
-		self.__runtimeLimit = timeoutSeconds if timeoutSeconds > 0.0 else None
+	def setRunTimeLimit(self, timeoutSeconds=-1.0):
+		self.__runtimeLimit = timeoutSeconds if timeoutSeconds >= 0.0 else -1.0
 
 	# Returns all user defined code blocks (OBs, FBs, FCs)
 	def allUserCodeBlocks(self):
@@ -753,8 +755,8 @@ class S7CPU(object): #+cdef
 
 		self.is4accu = False
 		self.reallocate(force=True)
-		self.ar1 = Adressregister()
-		self.ar2 = Adressregister()
+		self.ar1 = Addressregister()
+		self.ar2 = Addressregister()
 		self.dbRegister = self.dbs[0]
 		self.diRegister = self.dbs[0]
 		self.callStack = [ ]
@@ -1012,7 +1014,7 @@ class S7CPU(object): #+cdef
 					"\n\nThe configured clock memory byte "
 					"address might be invalid." )
 		# Check whether the runtime timeout exceeded
-		if self.__runtimeLimit is not None:
+		if self.__runtimeLimit >= 0.0:
 			if self.now - self.startupTime >= self.__runtimeLimit:
 				raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
 					"CPU runtime timeout")

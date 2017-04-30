@@ -37,10 +37,12 @@ class AwlInsn_PL_D(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t accu1
+#@cy		cdef int64_t _sum
 
 		s = self.cpu.statusWord
-		_sum = self.cpu.accu2.getSignedDWord() +\
-		       self.cpu.accu1.getSignedDWord()
+		_sum = self.cpu.accu2.getSignedDWord()
+		_sum += self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(_sum)
 		if self.cpu.is4accu:
 			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())

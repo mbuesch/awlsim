@@ -25,6 +25,8 @@ from awlsim.common.compat import *
 #from awlsim.core.dynattrs cimport * #@cy
 from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.datatypes import *
+from awlsim.core.memory import * #@nocy
+#from awlsim.core.memory cimport * #@cy
 from awlsim.core.offset import * #@nocy
 #from awlsim.core.offset cimport * #@cy
 #from awlsim.core.statusword cimport * #@cy

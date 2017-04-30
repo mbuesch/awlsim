@@ -25,6 +25,8 @@ from awlsim.common.compat import *
 from awlsim.common.cpuconfig import *
 
 from awlsim.core.datatypes import *
+from awlsim.core.memory import * #@nocy
+#from awlsim.core.memory cimport * #@cy
 from awlsim.core.util import *
 
 from awlsim.awlcompiler.optrans import *
