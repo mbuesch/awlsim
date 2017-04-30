@@ -555,7 +555,7 @@ class AwlMemory(object): #+cdef
 	# Returns an int for small widths (<= 32 bits) and a memoryview
 	# for larger widths.
 	def fetch(self, offset, width): #@nocy
-#@cy	def fetch(self, object offset, uint32_t width):
+#@cy	cpdef object fetch(self, AwlOffset offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef bytearray dataBytes
 
@@ -593,7 +593,7 @@ class AwlMemory(object): #+cdef
 	# value => The value to store.
 	#          May be an int, bytearray, bytes or compatible.
 	def store(self, offset, width, value): #@nocy
-#@cy	def store(self, object offset, uint32_t width, object value):
+#@cy	cpdef store(self, AwlOffset offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef bytearray dataBytes
 

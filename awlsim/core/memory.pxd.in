@@ -1,3 +1,6 @@
+from awlsim.core.offset cimport *
+
+
 cdef class GenericInteger(object):
 	cdef public uint32_t value
 	cdef public uint32_t mask
@@ -69,3 +72,6 @@ cdef class Addressregister(Pointer):
 
 cdef class AwlMemory(object):
 	cdef public bytearray dataBytes
+
+	cpdef object fetch(self, AwlOffset offset, uint32_t width)
+	cpdef store(self, AwlOffset offset, uint32_t width, object value)
