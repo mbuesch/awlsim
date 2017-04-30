@@ -69,37 +69,40 @@ class MemoryArea(object):
 		raise exception
 
 	def __read_E(self, cpu):
+		dataBytes = cpu.inputs.dataBytes
 		end = self.start + self.length
-		if end > len(cpu.inputs):
+		if end > len(dataBytes):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = cpu.inputs[self.start : end]
+		self.data = dataBytes[self.start : end]
 
 	def __read_A(self, cpu):
+		dataBytes = cpu.outputs.dataBytes
 		end = self.start + self.length
-		if end > len(cpu.outputs):
+		if end > len(dataBytes):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = cpu.outputs[self.start : end]
+		self.data = dataBytes[self.start : end]
 
 	def __read_M(self, cpu):
+		dataBytes = cpu.flags.dataBytes
 		end = self.start + self.length
-		if end > len(cpu.flags):
+		if end > len(dataBytes):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = cpu.flags[self.start : end]
+		self.data = dataBytes[self.start : end]
 
 	def __read_L(self, cpu):
-		localdata = cpu.callStackTop.localdata
+		dataBytes = cpu.callStackTop.localdata.dataBytes
 		end = self.start + self.length
-		if end > len(localdata):
+		if end > len(dataBytes):
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = localdata[self.start : end]
+		self.data = dataBytes[self.start : end]
 
 	def __read_DB(self, cpu):
 		try:
@@ -158,28 +161,31 @@ class MemoryArea(object):
 	}
 
 	def __write_E(self, cpu):
+		dataBytes = cpu.inputs.dataBytes
 		end = self.start + self.length
-		if end > len(cpu.inputs):
+		if end > len(dataBytes):
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Write range error")
 			)
-		cpu.inputs[self.start : end] = self.data
+		dataBytes[self.start : end] = self.data
 
 	def __write_A(self, cpu):
+		dataBytes = cpu.outputs.dataBytes
 		end = self.start + self.length
-		if end > len(cpu.outputs):
+		if end > len(dataBytes):
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Write range error")
 			)
-		cpu.outputs[self.start : end] = self.data
+		dataBytes[self.start : end] = self.data
 
 	def __write_M(self, cpu):
+		dataBytes = cpu.flags.dataBytes
 		end = self.start + self.length
-		if end > len(cpu.flags):
+		if end > len(dataBytes):
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Write range error")
 			)
-		cpu.flags[self.start : end] = self.data
+		dataBytes[self.start : end] = self.data
 
 	def __write_DB(self, cpu):
 		try:
