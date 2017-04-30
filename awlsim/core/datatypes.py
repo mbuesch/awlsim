@@ -36,6 +36,11 @@ from awlsim.core.identifier import *
 import datetime
 
 
+__all__ = [
+	"AwlDataType",
+]
+
+
 class AwlDataType(OptionalImmutable):
 	# Data type IDs
 	EnumGen.start
