@@ -34,7 +34,8 @@ __all__ = [ "AwlOffset", ]
 
 
 class AwlOffset(DynAttrs): #+cdef
-	"Memory area offset"
+	"""Memory area offset
+	"""
 
 	dynAttrs = {
 		# A DB-number for fully qualified access, or None.
@@ -58,7 +59,8 @@ class AwlOffset(DynAttrs): #+cdef
 		"subOffset"	: lambda self, name: AwlOffset(),
 	}
 
-	def __init__(self, byteOffset=0, bitOffset=0):
+	def __init__(self, byteOffset=0, bitOffset=0): #@nocy
+#@cy	def __init__(self, int64_t byteOffset=0, int32_t bitOffset=0):
 		self.byteOffset, self.bitOffset =\
 			byteOffset, bitOffset
 
@@ -95,7 +97,8 @@ class AwlOffset(DynAttrs): #+cdef
 		return cls((value & 0x0007FFF8) >> 3,
 			   (value & 0x7))
 
-	def toPointerValue(self):
+	def toPointerValue(self): #@nocy
+#@cy	cpdef uint32_t toPointerValue(self):
 		return ((self.byteOffset << 3) & 0x0007FFF8) |\
 		       (self.bitOffset & 0x7)
 
@@ -103,17 +106,27 @@ class AwlOffset(DynAttrs): #+cdef
 	def fromLongBitOffset(cls, bitOffset):
 		return cls(bitOffset // 8, bitOffset % 8)
 
-	def toLongBitOffset(self):
-		return self.byteOffset * 8 + self.bitOffset
+	def toLongBitOffset(self):				#@nocy
+#@cy	cpdef uint64_t toLongBitOffset(self):
+#@cy		return <int64_t>self.byteOffset * <int64_t>8 + <int64_t>self.bitOffset
+		return self.byteOffset * 8 + self.bitOffset	#@nocy
 
-	def __add__(self, other):
-		bitOffset = (self.byteOffset + other.byteOffset) * 8 +\
-			    self.bitOffset + other.bitOffset
+	def __add__(self, other): #@nocy
+#@cy	def __add__(self, AwlOffset other):
+#@cy		cdef int64_t bitOffset
+#@cy		bitOffset = ((<int64_t>self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
+#@cy			     <int64_t>self.bitOffset + <int64_t>other.bitOffset)
+		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
+			     self.bitOffset + other.bitOffset)		#@nocy
 		return AwlOffset(bitOffset // 8, bitOffset % 8)
 
-	def __iadd__(self, other):
-		bitOffset = (self.byteOffset + other.byteOffset) * 8 +\
-			    self.bitOffset + other.bitOffset
+	def __iadd__(self, other): #@nocy
+#@cy	def __iadd__(self, AwlOffset other):
+#@cy		cdef int64_t bitOffset
+#@cy		bitOffset = ((<int64_t>self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
+#@cy			     <int64_t>self.bitOffset + <int64_t>other.bitOffset)
+		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
+			     self.bitOffset + other.bitOffset)		#@nocy
 		self.byteOffset = bitOffset // 8
 		self.bitOffset = bitOffset % 8
 		return self
@@ -121,6 +134,8 @@ class AwlOffset(DynAttrs): #+cdef
 	# Round the offset to a multiple of 'byteBase' bytes.
 	# Returns an AwlOffset.
 	def roundUp(self, byteBase):
+#@cy		cdef int64_t byteOffset
+
 		byteOffset = self.byteOffset
 		if self.bitOffset:
 			byteOffset += 1

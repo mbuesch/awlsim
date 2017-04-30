@@ -1,13 +1,15 @@
 from awlsim.core.dynattrs cimport *
 
 cdef class AwlOffset(DynAttrs):
-	cdef public object byteOffset
-	cdef public object bitOffset
+	cdef public int64_t byteOffset
+	cdef public int32_t bitOffset
 
 	cdef public object dbNumber
 	cdef public object dbName
 	cdef public object identChain
 	cdef public object fbNumber
-	cdef public object subOffset
+	cdef public AwlOffset subOffset
 
 	cpdef __eq(self, object other)
+	cpdef uint32_t toPointerValue(self)
+	cpdef uint64_t toLongBitOffset(self)

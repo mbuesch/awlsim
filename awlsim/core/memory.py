@@ -558,6 +558,8 @@ class AwlMemory(object): #+cdef
 #@cy	cpdef object fetch(self, AwlOffset offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef bytearray dataBytes
+#@cy		cdef uint64_t nrBytes
+#@cy		cdef uint64_t end
 
 		dataBytes = self.dataBytes
 		try:
@@ -596,20 +598,28 @@ class AwlMemory(object): #+cdef
 #@cy	cpdef store(self, AwlOffset offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef bytearray dataBytes
+#@cy		cdef uint64_t value_uint64
+#@cy		cdef uint64_t nrBytes
+#@cy		cdef uint64_t end
 
 		dataBytes = self.dataBytes
 		try:
 			byteOffset = offset.byteOffset
-			if isInteger(value):
+#@cy2			if isinstance(value, int) or isinstance(value, long):
+#@cy3			if isinstance(value, int):
+			if isInteger(value): #@nocy
+#@cy				value_uint64 = value & <uint64_t>0xFFFFFFFFFFFFFFFFULL
 				if width == 1:
-					if value:
+					if value: #@nocy
+#@cy					if value_uint64:
 						dataBytes[byteOffset] |= 1 << offset.bitOffset
 					else:
 						dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
 				else:
 					while width:
 						width -= 8
-						dataBytes[byteOffset] = (value >> width) & 0xFF
+						dataBytes[byteOffset] = (value >> width) & 0xFF #@nocy
+#@cy						dataBytes[byteOffset] = (value_uint64 >> width) & 0xFF
 						byteOffset += 1
 			else:
 				if width == 1:
