@@ -868,7 +868,7 @@ class AwlDataType(OptionalImmutable):
 				raise ValueError
 			hours, minutes, fseconds = int(time[0]), int(time[1]), float(time[2])
 			seconds = int(fseconds)
-			msecs = int(fseconds * 1000) - (seconds * 1000)
+			msecs = int(round(fseconds * 1000.0)) - (seconds * 1000)
 			if hours < 0 or hours > 23 or\
 			   minutes < 0 or minutes > 59 or\
 			   seconds < 0 or seconds > 59 or\
