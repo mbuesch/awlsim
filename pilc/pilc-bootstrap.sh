@@ -681,6 +681,8 @@ EOF
 			die "Failed to install awlsim-symtab"
 		dpkg -i ../awlsim-test_*.deb ||\
 			die "Failed to install awlsim-test"
+		dpkg -i ../awlsim-proupgrade_*.deb ||\
+			die "Failed to install awlsim-proupgrade"
 		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
 			die "Failed to install awlsim-linuxcnc-hal"
 		dpkg -i ../pilc-hat-conf_*.deb ||\
