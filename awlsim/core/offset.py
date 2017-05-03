@@ -24,40 +24,41 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import *
 
-#from awlsim.core.dynattrs cimport * #@cy
-
-from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
 
 
 __all__ = [ "AwlOffset", ]
 
 
-class AwlOffset(DynAttrs): #+cdef
+class AwlOffset(object): #+cdef
 	"""Memory area offset
 	"""
 
-	dynAttrs = {
-		# A DB-number for fully qualified access, or None.
-		"dbNumber"	: None,
+	# A DB-number for fully qualified access, or None.
+	dbNumber = None #@nocy
 
-		# A symbolic DB-name for fully qualified access, or None.
-		"dbName"	: None,
+	# A symbolic DB-name for fully qualified access, or None.
+	dbName = None #@nocy
 
-		# An AwlDataIdentChain, or None.
-		# Used for fully qualified (DBx.VAR) or named local (#VAR)
-		# global symbolic ("VAR") accesses.
-		# For global symbols the chain only has one element.
-		"identChain"	: None,
+	# An AwlDataIdentChain, or None.
+	# Used for fully qualified (DBx.VAR) or named local (#VAR)
+	# global symbolic ("VAR") accesses.
+	# For global symbols the chain only has one element.
+	identChain = None #@nocy
 
-		# A (S)FB-number for multi-instance calls, or None.
-		"fbNumber"	: None,
+	# A (S)FB-number for multi-instance calls, or None.
+	fbNumber = None #@nocy
 
-		# Additional sub-offset that is added to this offset.
-		# Defaults to 0.0
-		# This is used for arrays and structs.
-		"subOffset"	: lambda self, name: AwlOffset(),
-	}
+	# Additional sub-offset that is added to this offset, or None.
+	# This is used for arrays and structs.
+	subOffset = None #@nocy
+
+#@cy	def __cinit__(self):
+#@cy		self.dbNumber = None
+#@cy		self.dbName = None
+#@cy		self.identChain = None
+#@cy		self.fbNumber = None
+#@cy		self.subOffset = None
 
 	def __init__(self, byteOffset=0, bitOffset=0): #@nocy
 #@cy	def __init__(self, int64_t byteOffset=0, int32_t bitOffset=0):
