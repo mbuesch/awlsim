@@ -1,0 +1,20 @@
+from awlsim.core.offset cimport *
+
+cdef class AwlOperator(object):
+	cdef public uint32_t type
+	cdef public int32_t width
+	cdef public object value
+	cdef public object insn
+
+	cdef public _Bool isExtended
+	cdef public object labelIndex
+	cdef public object interfaceIndex
+	cdef public _Bool compound
+	cdef public object dataType
+
+	cdef __eq(self, AwlOperator other)
+
+cdef class AwlIndirectOp(AwlOperator):
+	cdef public uint64_t area
+	cdef public uint32_t addressRegister
+	cdef public AwlOperator offsetOper

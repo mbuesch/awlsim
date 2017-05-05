@@ -2,7 +2,7 @@
 #
 # AWL simulator - operators
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +22,6 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-#from awlsim.core.dynattrs cimport * #@cy
-from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #@nocy
 #from awlsim.core.memory cimport * #@cy
@@ -37,7 +35,7 @@ from awlsim.core.util import *
 from awlsim.awlcompiler import AwlParser
 
 
-class AwlOperator(DynAttrs):
+class AwlOperator(object): #+cdef
 	"""An AWL operator.
 	An operator is an 'argument' to an instruction.
 	For example MW 10 in:
@@ -172,27 +170,31 @@ class AwlOperator(DynAttrs):
 		VIRT_DBR	: "__DBR",
 	}
 
-	# Dynamic attributes
-	dynAttrs = {
-		# Extended-operator flag.
-		"isExtended"		: False,
+	# Extended-operator flag.
+	isExtended = False #@nocy
 
-		# Possible label index.
-		"labelIndex"		: None,
+	# Possible label index.
+	labelIndex = None #@nocy
 
-		# Interface index number.
-		# May be set by the symbol resolver.
-		"interfaceIndex"	: None,
+	# Interface index number.
+	# May be set by the symbol resolver.
+	interfaceIndex = None #@nocy
 
-		# Compound data type flag.
-		# Set to true for accesses > 32 bit or
-		# arrays/structs or array/struct elements.
-		"compound"		: False,
+	# Compound data type flag.
+	# Set to true for accesses > 32 bit or
+	# arrays/structs or array/struct elements.
+	compound = False #@nocy
 
-		# The access data type (AwlDataType), if known.
-		# Only set for resolved symbolic accesses.
-		"dataType"		: None,
-	}
+	# The access data type (AwlDataType), if known.
+	# Only set for resolved symbolic accesses.
+	dataType = None #@nocy
+
+#@cy	def __cinit__(self):
+#@cy		self.isExtended = False
+#@cy		self.labelIndex = None
+#@cy		self.interfaceIndex = None
+#@cy		self.compound = False
+#@cy		self.dataType = None
 
 	def __init__(self, type, width, value, insn=None):
 		# type -> The operator type ID number. See "Operator types" above.
@@ -202,7 +204,8 @@ class AwlOperator(DynAttrs):
 		self.type, self.width, self.value, self.insn =\
 			type, width, value, insn
 
-	def __eq__(self, other):
+	def __eq__(self, other): #@nocy
+#@cy	cdef __eq(self, AwlOperator other):
 		return (self is other) or (\
 			isinstance(other, AwlOperator) and\
 			self.type == other.type and\
@@ -211,8 +214,15 @@ class AwlOperator(DynAttrs):
 			super(AwlOperator, self).__eq__(other)\
 		)
 
-	def __ne__(self, other):
-		return not self.__eq__(other)
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy
+
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
 
 	# Make a deep copy, except for "insn".
 	def dup(self):
@@ -517,7 +527,7 @@ class AwlOperator(DynAttrs):
 		except KeyError:
 			assert(0)
 
-class AwlIndirectOp(AwlOperator):
+class AwlIndirectOp(AwlOperator): #+cdef
 	"Indirect addressing operand"
 
 	# Address register
