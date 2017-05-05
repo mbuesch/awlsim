@@ -2,7 +2,7 @@
 #
 # AWL simulator - status word
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,18 +22,16 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-#from awlsim.core.dynattrs cimport * #@cy
 #from awlsim.core.statusword cimport * #@cy
 
 from awlsim.common.cpuspecs import *
 from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import *
 
-from awlsim.core.dynattrs import * #@nocy
 from awlsim.core.util import *
 
 
-class S7StatusWord(DynAttrs): #+cdef
+class S7StatusWord(object): #+cdef
 	"""STEP 7 status word
 	The instance of this class holds the following nine
 	attributes. One for each STW bit:
@@ -66,20 +64,30 @@ class S7StatusWord(DynAttrs): #+cdef
 	}
 	__german2english = pivotDict(__english2german)
 
+	# Number of status bits in the status word.
 	NR_BITS = 9
 
-	# Dynamic attributes
-	dynAttrs = {
-		"NER"	: 0,
-		"VKE"	: 0,
-		"STA"	: 0,
-		"OR"	: 0,
-		"OS"	: 0,
-		"OV"	: 0,
-		"A0"	: 0,
-		"A1"	: 0,
-		"BIE"	: 0,
-	}
+	# Default values for status bits.
+	NER	= 0 #@nocy
+	VKE	= 0 #@nocy
+	STA	= 0 #@nocy
+	OR	= 0 #@nocy
+	OS	= 0 #@nocy
+	OV	= 0 #@nocy
+	A0	= 0 #@nocy
+	A1	= 0 #@nocy
+	BIE	= 0 #@nocy
+
+#@cy	def __cinit__(self):
+#@cy		self.NER = 0
+#@cy		self.VKE = 0
+#@cy		self.STA = 0
+#@cy		self.OR = 0
+#@cy		self.OS = 0
+#@cy		self.OV = 0
+#@cy		self.A0 = 0
+#@cy		self.A1 = 0
+#@cy		self.BIE = 0
 
 	def __eq__(self, other): #@nocy
 #@cy	cpdef __eq(self, object other):
