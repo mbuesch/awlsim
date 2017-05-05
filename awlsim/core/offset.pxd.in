@@ -1,6 +1,4 @@
-from awlsim.core.dynattrs cimport *
-
-cdef class AwlOffset(DynAttrs):
+cdef class AwlOffset(object):
 	cdef public int64_t byteOffset
 	cdef public int32_t bitOffset
 
