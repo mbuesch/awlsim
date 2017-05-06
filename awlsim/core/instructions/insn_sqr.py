@@ -22,9 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.instructions.main import * #@nocy
-from awlsim.core.operators import *
-#from awlsim.core.instructions.main cimport * #@cy
+from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operators import * #+cimport
 
 
 class AwlInsn_SQR(AwlInsn): #+cdef
@@ -36,7 +35,7 @@ class AwlInsn_SQR(AwlInsn): #+cdef
 		self.assertOpCount(0)
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
+#@cy		cdef double accu1
 
 		accu1 = self.cpu.accu1.getPyFloat()
 		accu1 **= 2

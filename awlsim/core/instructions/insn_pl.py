@@ -22,9 +22,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.instructions.main import * #@nocy
-from awlsim.core.operators import *
-#from awlsim.core.instructions.main cimport * #@cy
+from awlsim.common.exceptions import *
+
+from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operators import * #+cimport
 
 
 class AwlInsn_PL(AwlInsn): #+cdef
@@ -38,8 +39,6 @@ class AwlInsn_PL(AwlInsn): #+cdef
 			raise AwlSimError("Immediate expected")
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
-
 		oper = self.op0
 		if oper.width == 16:
 			self.cpu.accu1.setWord(self.cpu.accu1.getSignedWord() +\

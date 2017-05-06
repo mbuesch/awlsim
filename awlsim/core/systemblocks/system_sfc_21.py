@@ -27,7 +27,7 @@ from awlsim.common.wordpacker import *
 from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.offset import * #@nocy
 #from awlsim.core.offset cimport * #@cy
-from awlsim.core.operators import *
+from awlsim.core.operators import * #+cimport
 from awlsim.core.memory import * #@nocy
 #from awlsim.core.memory cimport * #@cy
 from awlsim.core.util import *

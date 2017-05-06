@@ -24,12 +24,11 @@ from awlsim.common.compat import *
 
 from awlsim.common.cpuconfig import *
 
-#from awlsim.core.instructions.all_insns cimport * #@cy
-from awlsim.core.instructions.all_insns import * #@nocy
+from awlsim.core.instructions.all_insns import * #+cimport
 from awlsim.core.datastructure import *
 from awlsim.core.util import *
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.offset import * #+cimport
+from awlsim.core.operators import * #+cimport
 
 from awlsim.awlcompiler.insntrans import *
 from awlsim.awlcompiler.optrans import *

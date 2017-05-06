@@ -25,7 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.blockinfo import *
 
 from awlsim.core.util import *
-from awlsim.core.operators import *
+from awlsim.core.operators import * #+cimport
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #@nocy
 #from awlsim.core.memory cimport * #@cy

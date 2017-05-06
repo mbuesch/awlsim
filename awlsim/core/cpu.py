@@ -33,28 +33,22 @@ from awlsim.common.blockinfo import *
 from awlsim.library.libentry import *
 
 #from awlsim.core.cpu cimport * #@cy
-#from awlsim.core.dynattrs cimport * #@cy
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
-#from awlsim.core.instructions.all_insns cimport * #@cy
-from awlsim.core.instructions.all_insns import * #@nocy
+from awlsim.core.memory import * #+cimport
+from awlsim.core.instructions.all_insns import * #+cimport
 from awlsim.core.systemblocks.system_sfb import *
 from awlsim.core.systemblocks.system_sfc import *
-from awlsim.core.operators import *
+from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import *
 from awlsim.core.datablocks import *
 from awlsim.core.userdefinedtypes import *
-#from awlsim.core.statusword cimport * #@cy
-from awlsim.core.statusword import * #@nocy
+from awlsim.core.statusword import * #+cimport
 from awlsim.core.labels import *
 from awlsim.core.timers import *
 from awlsim.core.counters import *
-#from awlsim.core.callstack cimport * #@cy
-from awlsim.core.callstack import * #@nocy
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.callstack import * #+cimport
+from awlsim.core.offset import * #+cimport
 from awlsim.core.obtemp import *
 from awlsim.core.util import *
 

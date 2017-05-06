@@ -23,10 +23,9 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.memory import * #+cimport
+from awlsim.core.offset import * #+cimport
+from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import *
 from awlsim.core.parameters import *
 from awlsim.core.objectcache import *

@@ -22,9 +22,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.instructions.main import * #@nocy
-from awlsim.core.operators import *
-#from awlsim.core.instructions.main cimport * #@cy
+from awlsim.common.exceptions import *
+
+from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operators import * #+cimport
 
 
 class AwlInsn_LOOP(AwlInsn): #+cdef
@@ -39,6 +40,7 @@ class AwlInsn_LOOP(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef uint16_t accu1l
 
 		s = self.cpu.statusWord
 		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF

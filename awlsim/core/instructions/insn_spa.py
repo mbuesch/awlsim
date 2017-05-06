@@ -22,9 +22,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.instructions.main import * #@nocy
-from awlsim.core.operators import *
-#from awlsim.core.instructions.main cimport * #@cy
+from awlsim.common.exceptions import *
+
+from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operators import * #+cimport
 
 
 class AwlInsn_SPA(AwlInsn): #+cdef
@@ -38,6 +39,4 @@ class AwlInsn_SPA(AwlInsn): #+cdef
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
-
 		self.cpu.jumpToLabel(self.op0.labelIndex)
