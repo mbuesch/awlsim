@@ -147,7 +147,7 @@ def emitCpuDump(dump):
 def cpuDumpCallback(cpu):
 	global nextScreenUpdate
 	if cpu.now >= nextScreenUpdate:
-		nextScreenUpdate = cpu.now + 0.1
+		nextScreenUpdate = cpu.now + 0.3
 		emitCpuDump(str(cpu))
 
 def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
