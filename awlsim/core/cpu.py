@@ -1338,6 +1338,7 @@ class S7CPU(object): #+cdef
 	def __fetchIMM_STR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchIMM_STR(self, AwlOperator operator, frozenset enforceWidth):
 #@cy		cdef uint32_t insnType
+#@cy		cdef uint32_t value
 
 		if operator.width <= 48 and operator.insn:
 			insnType = operator.insn.insnType
@@ -1762,6 +1763,8 @@ class S7CPU(object): #+cdef
 
 	def __storePA(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storePA(self, AwlOperator operator, object value, frozenset enforceWidth):
+#@cy		cdef _Bool ok
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
