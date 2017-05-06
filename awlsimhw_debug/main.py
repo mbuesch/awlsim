@@ -22,13 +22,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.hardware import *
+from awlsim.common.util import *
+
+#from awlsimhw_debug.main cimport * #@cy
+
+from awlsim.core.hardware_params import *
+from awlsim.core.hardware import * #+cimport
 from awlsim.core.operators import * #+cimport
-#from awlsim.core.offset cimport * #@cy
-from awlsim.core.offset import * #@nocy
+from awlsim.core.offset import * #+cimport
 
 
-class HardwareInterface(AbstractHardwareInterface):
+class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
 	name = "debug"
 
 	paramDescs = [
@@ -89,7 +93,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			if self.__shutdownErrorCount % self.__shutdownErrorRate == 0:
 				self.raiseException("Synthetic shutdown error")
 
-	def readInputs(self):
+	def readInputs(self): #+cdef
 		if self.__inputErrorRate:
 			self.__inputErrorCount += 1
 			if self.__inputErrorCount % self.__inputErrorRate == 0:
@@ -106,20 +110,20 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.sim.cpu.storeInputRange(self.inputAddressBase,
 					     dwordBytes)
 
-	def writeOutputs(self):
+	def writeOutputs(self): #+cdef
 		if self.__outputErrorRate:
 			self.__outputErrorCount += 1
 			if self.__outputErrorCount % self.__outputErrorRate == 0:
 				self.raiseException("Synthetic output error")
 
 		# Fetch a data range, but don't do anything with it.
-		outData = self.sim.cpu.fetchOutputRange(self.outputAddressBase,
-							512)
+		outData = self.sim.cpu.fetchOutputRange(self.outputAddressBase, 2)
 		assert(outData)
 
-	def directReadInput(self, accessWidth, accessOffset):
+	def directReadInput(self, accessWidth, accessOffset): #@nocy
+#@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
 		if accessOffset < self.inputAddressBase:
-			return None
+			return bytearray()
 
 		if self.__directReadErrorRate:
 			self.__directReadErrorCount += 1
@@ -128,14 +132,13 @@ class HardwareInterface(AbstractHardwareInterface):
 
 		# Just read the current value from the CPU and return it.
 		try:
-			return self.sim.cpu.fetch(AwlOperator(AwlOperator.MEM_E,
-							      accessWidth,
-							      AwlOffset(accessOffset)))
+			return self.sim.cpu.fetchInputRange(accessOffset, accessWidth // 8)
 		except AwlSimError as e:
 			# We may be out of process image range. Just return 0.
-			return 0
+			return bytearray( (0,) * (accessWidth // 8) )
 
-	def directWriteOutput(self, accessWidth, accessOffset, data):
+	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
+#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
 		if accessOffset < self.outputAddressBase:
 			return False
 
@@ -146,3 +149,6 @@ class HardwareInterface(AbstractHardwareInterface):
 
 		# Just pretend we wrote it somewhere.
 		return True
+
+# Module entry point
+HardwareInterface = HardwareInterface_Debug

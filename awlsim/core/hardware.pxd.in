@@ -1,0 +1,14 @@
+from awlsim.core.main cimport *
+
+cdef class AbstractHardwareInterface(object):
+	cdef public AwlSim sim
+	cdef public _Bool __running
+	cdef public uint32_t inputAddressBase
+	cdef public uint32_t outputAddressBase
+	cdef public dict __paramsByName
+	cdef public dict __paramsByDescType
+
+	cdef readInputs(self)
+	cdef writeOutputs(self)
+	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset)
+	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data)

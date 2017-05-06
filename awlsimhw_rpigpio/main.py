@@ -2,7 +2,7 @@
 #
 # AWL simulator - Raspberry Pi GPIO hardware interface
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,10 +22,14 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.hardware import *
+from awlsim.common.util import *
+
+#from awlsimhw_rpigpio.main cimport * #@cy
+
+from awlsim.core.hardware_params import *
+from awlsim.core.hardware import * #+cimport
 from awlsim.core.operators import * #+cimport
-#from awlsim.core.offset cimport * #@cy
-from awlsim.core.offset import * #@nocy
+from awlsim.core.offset import * #+cimport
 
 import re
 
@@ -94,7 +98,7 @@ class RpiGPIO_BitMapping(object):
 				  for i in range(8)) +\
 		       " }"
 
-class RpiGPIO_HwInterface(AbstractHardwareInterface):
+class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 	"""Raspberry Pi GPIO hardware interface.
 	"""
 	name = "RPi.GPIO"
@@ -174,7 +178,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface):
 	def doShutdown(self):
 		pass # Do nothing
 
-	def readInputs(self):
+	def readInputs(self): #+cdef
 		RPi_GPIO = self.__RPi_GPIO
 		for byteOffset, bitMapping in self.__inputList:
 			inByte = 0
@@ -183,7 +187,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface):
 					inByte |= 1 << bitOffset
 			self.sim.cpu.storeInputRange(byteOffset, (inByte, ))
 
-	def writeOutputs(self):
+	def writeOutputs(self): #+cdef
 		RPi_GPIO = self.__RPi_GPIO
 		for byteOffset, bitMapping in self.__outputList:
 			outByte = self.sim.cpu.fetchOutputRange(byteOffset, 1)[0]
@@ -191,15 +195,17 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface):
 				RPi_GPIO.output(bcmNumber,
 						outByte & (1 << bitOffset))
 
-	def directReadInput(self, accessWidth, accessOffset):
+	def directReadInput(self, accessWidth, accessOffset): #@nocy
+#@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
 		if accessOffset < self.inputAddressBase:
 			return None
 		RPi_GPIO = self.__RPi_GPIO
 		nrBytes = accessWidth // 8
 		pass#TODO
-		return None
+		return bytearray()
 
-	def directWriteOutput(self, accessWidth, accessOffset, data):
+	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
+#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
 		if accessOffset < self.outputAddressBase:
 			return False
 		RPi_GPIO = self.__RPi_GPIO
@@ -207,5 +213,5 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface):
 		pass#TODO
 		return True
 
-# The main entry point to the module.
+# Module entry point
 HardwareInterface = RpiGPIO_HwInterface

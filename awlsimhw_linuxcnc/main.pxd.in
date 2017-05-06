@@ -1,0 +1,16 @@
+from awlsim.core.hardware cimport *
+
+cdef class HardwareInterface_LinuxCNC(AbstractHardwareInterface):
+	cdef public _Bool linuxCNC_initialized
+	cdef public object LinuxCNC_HAL
+	cdef public object hal
+	cdef public uint32_t inputSize
+	cdef public uint32_t outputSize
+	cdef public _Bool __configDone
+	cdef public list __activeInputs
+	cdef public list __activeOutputs
+
+	cdef readInputs(self)
+	cdef writeOutputs(self)
+	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset)
+	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data)

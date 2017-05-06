@@ -2,7 +2,7 @@
 #
 # AWL simulator - Abstract hardware interface
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,114 +22,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.common.dynamic_import import *
-
+from awlsim.core.offset import * #+cimport
 from awlsim.core.util import AwlSimError
+from awlsim.core.hardware_loader import *
+from awlsim.core.hardware_params import *
+#from awlsim.core.hardware cimport * #@cy
 
 
-class HwParamDesc(object):
-	"""Abstract hardware parameter descriptor."""
+__all__ = [ "AbstractHardwareInterface", ]
 
-	class ParseError(Exception):
-		pass
 
-	typeStr = "<NoType>"
-	userEditable = True
-	defaultValue = None
-
-	def __init__(self, name, description="", mandatory=False):
-		self.name = name
-		self.description = description
-		self.mandatory = mandatory
-
-	def parse(self, value):
-		"""Parse a value string.
-		This must be overridden.
-		"""
-		raise NotImplementedError
-
-	def match(self, matchName):
-		"""Match a name string.
-		The default implementation just compares the string to self.name.
-		The parameter must not be 'mandatory', if this method is overridden.
-		"""
-		return self.name == matchName
-
-class HwParamDesc_pyobject(HwParamDesc):
-	"""Generic object parameter descriptor."""
-
-	typeStr = "PyObject"
-	userEditable = False
-
-	def __init__(self, name, description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
-
-	def parse(self, value):
-		return value
-
-class HwParamDesc_str(HwParamDesc):
-	"""String hardware parameter descriptor."""
-
-	typeStr = "string"
-
-	def __init__(self, name, defaultValue="", description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
-		self.defaultValue = defaultValue
-
-	def parse(self, value):
-		return value
-
-class HwParamDesc_int(HwParamDesc):
-	"""Integer hardware parameter descriptor."""
-
-	typeStr = "integer"
-
-	def __init__(self, name,
-		     defaultValue=0, minValue=None, maxValue=None,
-		     description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
-		self.defaultValue = defaultValue
-		self.minValue = minValue
-		self.maxValue = maxValue
-
-	def parse(self, value):
-		try:
-			value = int(value)
-		except ValueError:
-			raise self.ParseError("Value '%s' is not a valid integer." %\
-					      str(value))
-		if self.minValue is not None:
-			if value < self.minValue:
-				raise self.ParseError("Value '%d' is too small." % value)
-		if self.maxValue is not None:
-			if value > self.maxValue:
-				raise self.ParseError("Value '%d' is too big." % value)
-		return value
-
-class HwParamDesc_bool(HwParamDesc):
-	"""Boolean hardware parameter descriptor."""
-
-	typeStr = "boolean"
-
-	def __init__(self, name, defaultValue=False,
-		     description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
-		self.defaultValue = defaultValue
-
-	def parse(self, value):
-		value = value.strip()
-		if value.lower() in ("true", "yes", "on"):
-			return True
-		if value.lower() in ("false", "no", "off"):
-			return False
-		try:
-			value = int(value, 10)
-		except ValueError:
-			raise self.ParseError("Value '%s' is not a valid boolean." %\
-				str(value))
-		return bool(value)
-
-class AbstractHardwareInterface(object):
+class AbstractHardwareInterface(object): #+cdef
 	"""Abstract hardware interface class.
 	This class must be subclassed in the hardware interface module.
 	The subclass must be named 'HardwareInterface' for the automatic loading
@@ -221,32 +124,34 @@ class AbstractHardwareInterface(object):
 		Overload this method, if the hardware needs initialization"""
 		pass
 
-	def readInputs(self):
+	def readInputs(self): #+cdef
 		"""Read all hardware input data and store it in the PAE.
 		The implementation is supposed to put the data directly
 		into the cpu memory.
 		Overload this method, if the hardware has inputs."""
 		pass
 
-	def writeOutputs(self):
+	def writeOutputs(self): #+cdef
 		"""Write all hardware output data (read from PAA).
 		The implementation is supposed to read the data directly
 		from the cpu memory.
 		Overload this method, if the hardware has outputs."""
 		pass
 
-	def directReadInput(self, accessWidth, accessOffset):
+	def directReadInput(self, accessWidth, accessOffset): #@nocy
+#@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
 		"""Direct peripheral input data read operation.
 		'accessWidth' is the width of the access, in bits.
 		'accessOffset' is the byte offset of the access.
 		The read data is returned.
-		'None' is returned if the 'accessOffset' is not in
+		An empty bytearray is returned if the 'accessOffset' is not in
 		this hardware's range.
 		Overload this method, if the hardware has inputs and
 		supports direct peripheral access."""
-		return None
+		return bytearray()
 
-	def directWriteOutput(self, accessWidth, accessOffset, data):
+	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
+#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
 		"""Direct peripheral output data write operation.
 		'accessWidth' is the width of the access, in bits.
 		'accessOffset' is the byte offset of the access.
@@ -327,66 +232,3 @@ class AbstractHardwareInterface(object):
 			return self.__paramsByDescType[descType]
 		except KeyError:
 			return []
-
-class HwModLoader(object):
-	"""Awlsim hardware module loader."""
-
-	# Tuple of built-in awlsim hardware modules.
-	builtinHwModules = (
-		"debug",
-		"dummy",
-		"linuxcnc",
-		"pyprofibus",
-		"rpigpio",
-	)
-
-	def __init__(self, name, importName, mod):
-		self.name = name
-		self.importName = importName
-		self.mod = mod
-
-	@classmethod
-	def loadModule(cls, name):
-		"""Load a hardware module."""
-
-		# Module name sanity check
-		try:
-			if not name.strip():
-				raise ValueError
-			for c in name:
-				if not isalnum(c) and c != "_":
-					raise ValueError
-		except ValueError:
-			raise AwlSimError("Hardware module name '%s' "
-				"is invalid." % name)
-
-		# Create import name (add prefix)
-		importName = name
-		prefix = "awlsimhw_"
-		if importName.lower().startswith(prefix) and\
-		   not importName.startswith(prefix):
-			raise AwlSimError("Hardware module name: '%s' "
-				"prefix of '%s' must be all-lower-case." %\
-				(prefix, name))
-		if not importName.startswith(prefix):
-			importName = prefix + importName
-
-		# Try to import the module
-		try:
-			mod = importModule(importName)
-		except ImportError as e:
-			raise AwlSimError("Failed to import hardware interface "
-				"module '%s' (import name '%s'): %s" %\
-				(name, importName, str(e)))
-		return cls(name, importName, mod)
-
-	def getInterface(self):
-		"""Get the HardwareInterface class."""
-
-		hwClassName = "HardwareInterface"
-		hwClass = getattr(self.mod, hwClassName, None)
-		if not hwClass:
-			raise AwlSimError("Hardware module '%s' (import name '%s') "
-				"does not have a '%s' class." %\
-				(self.name, self.importName, hwClassName))
-		return hwClass

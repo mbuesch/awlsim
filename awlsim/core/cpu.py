@@ -800,12 +800,22 @@ class S7CPU(object): #+cdef
 		self.cbPostInsnData = data
 
 	def setPeripheralReadCallback(self, cb, data=None):
-		self.cbPeripheralRead = cb
-		self.cbPeripheralReadData = data
+		if cb:
+			self.cbPeripheralRead = cb
+			self.cbPeripheralReadData = data
+		else:
+			self.cbPeripheralRead =\
+				lambda data, bitWidth, byteOffset: bytearray()
+			self.cbPeripheralReadData = None
 
 	def setPeripheralWriteCallback(self, cb, data=None):
-		self.cbPeripheralWrite = cb
-		self.cbPeripheralWriteData = data
+		if cb:
+			self.cbPeripheralWrite = cb
+			self.cbPeripheralWriteData = data
+		else:
+			self.cbPeripheralWrite =\
+				lambda data, bitWidth, byteOffset, value: False
+			self.cbPeripheralWriteData = None
 
 	def setScreenUpdateCallback(self, cb, data=None):
 		self.cbScreenUpdate = cb
@@ -1373,14 +1383,48 @@ class S7CPU(object): #+cdef
 	# 'byteOffset' is the byte offset into the output area.
 	# 'byteCount' is the number if bytes to fetch.
 	# Returns a bytearray.
-	def fetchOutputRange(self, byteOffset, byteCount):
+	# This raises an AwlSimError, if the access if out of range.
+	def fetchOutputRange(self, byteOffset, byteCount): #@nocy
+#@cy	cpdef bytearray fetchOutputRange(self, uint32_t byteOffset, uint32_t byteCount):
+		if byteOffset + byteCount > len(self.outputs): #@nocy
+#@cy		if <uint64_t>byteOffset + <uint64_t>byteCount > <uint64_t>len(self.outputs):
+			raise AwlSimError("Fetch from output process image region "
+				"is out of range "
+				"(imageSize=%d, fetchOffset=%d, fetchSize=%d)." % (
+				len(self.outputs), byteOffset, byteCount))
 		return self.outputs.dataBytes[byteOffset : byteOffset + byteCount]
+
+	# Fetch a range in the 'input' memory area.
+	# 'byteOffset' is the byte offset into the input area.
+	# 'byteCount' is the number if bytes to fetch.
+	# Returns a bytearray.
+	# This raises an AwlSimError, if the access if out of range.
+	def fetchInputRange(self, byteOffset, byteCount): #@nocy
+#@cy	cpdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount):
+		if byteOffset + byteCount > len(self.inputs): #@nocy
+#@cy		if <uint64_t>byteOffset + <uint64_t>byteCount > <uint64_t>len(self.inputs):
+			raise AwlSimError("Fetch from input process image region "
+				"is out of range "
+				"(imageSize=%d, fetchOffset=%d, fetchSize=%d)." % (
+				len(self.inputs), byteOffset, byteCount))
+		return self.inputs.dataBytes[byteOffset : byteOffset + byteCount]
 
 	# Store a range in the 'input' memory area.
 	# 'byteOffset' is the byte offset into the input area.
 	# 'data' is a bytearray.
-	def storeInputRange(self, byteOffset, data):
-		self.inputs.dataBytes[byteOffset : byteOffset + len(data)] = data
+	# This raises an AwlSimError, if the access if out of range.
+	def storeInputRange(self, byteOffset, data): #@nocy
+#@cy	cpdef storeInputRange(self, uint32_t byteOffset, bytearray data):
+#@cy		cdef uint32_t dataLen
+
+		dataLen = len(data)
+		if byteOffset + dataLen > len(self.inputs): #@nocy
+#@cy		if <uint64_t>byteOffset + <uint64_t>dataLen > <uint64_t>len(self.inputs):
+			raise AwlSimError("Store to input process image region "
+				"is out of range "
+				"(imageSize=%d, storeOffset=%d, storeSize=%d)." % (
+				len(self.inputs), byteOffset, dataLen))
+		self.inputs.dataBytes[byteOffset : byteOffset + dataLen] = data
 
 	def fetch(self, operator, enforceWidth=frozenset()): #@nocy
 #@cy	cpdef object fetch(self, AwlOperator operator, frozenset enforceWidth=frozenset()):
@@ -1597,25 +1641,31 @@ class S7CPU(object): #+cdef
 
 	def __fetchPE(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchPE(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
+#@cy		cdef bytearray readBytes
+#@cy		cdef uint32_t readValue
+#@cy		cdef uint32_t bitWidth
+
+		bitWidth = operator.width
+		if bitWidth not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
+		operatorValue = operator.value
 
 		# Fetch the data from the peripheral device.
-		value = None
-		if self.cbPeripheralRead is not None:
-			value = self.cbPeripheralRead(self.cbPeripheralReadData,
-						      operator.width,
-						      operator.value.byteOffset)
-		if value is None:
+		readBytes = self.cbPeripheralRead(self.cbPeripheralReadData,
+						  bitWidth,
+						  operatorValue.byteOffset)
+		if not readBytes:
 			raise AwlSimError("There is no hardware to handle "
 				"the direct peripheral fetch. "
 				"(width=%d, offset=%d)" %\
-				(operator.width, operator.value.byteOffset))
+				(bitWidth, operatorValue.byteOffset))
+		readValue = WordPacker.fromBytes(readBytes, bitWidth)
 
 		# Store the data to the process image, if it is within the inputs range.
-		if operator.value.toLongBitOffset() + operator.width < self.specs.nrInputs * 8:
-			self.inputs.store(operator.value, operator.width, value)
-		return value
+		if operatorValue.toLongBitOffset() + bitWidth < self.specs.nrInputs * 8:
+			self.inputs.store(operatorValue, bitWidth, readValue)
+
+		return readValue
 
 	def __fetchT(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchT(self, AwlOperator operator, frozenset enforceWidth):
@@ -1840,26 +1890,30 @@ class S7CPU(object): #+cdef
 	def __storePA(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storePA(self, AwlOperator operator, object value, frozenset enforceWidth):
 #@cy		cdef _Bool ok
+#@cy		cdef uint32_t bitWidth
+#@cy		cdef bytearray valueBytes
 
-		if operator.width not in enforceWidth and enforceWidth:
+		bitWidth = operator.width
+		if bitWidth not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
+		operatorValue = operator.value
 
 		# Store the data to the process image, if it is within the outputs range.
-		if operator.value.toLongBitOffset() + operator.width < self.specs.nrOutputs * 8:
-			self.outputs.store(operator.value, operator.width, value)
+		if operatorValue.toLongBitOffset() + bitWidth < self.specs.nrOutputs * 8:
+			self.outputs.store(operatorValue, bitWidth, value)
 
 		# Store the data to the peripheral device.
-		ok = False
-		if self.cbPeripheralWrite is not None:
-			ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,
-						    operator.width,
-						    operator.value.byteOffset,
-						    value)
+		valueBytes = bytearray(bitWidth // 8)
+		WordPacker.toBytes(valueBytes, bitWidth, 0, value)
+		ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,
+					    bitWidth,
+					    operatorValue.byteOffset,
+					    valueBytes)
 		if not ok:
 			raise AwlSimError("There is no hardware to handle "
 				"the direct peripheral store. "
 				"(width=%d, offset=%d, value=0x%X)" %\
-				(operator.width, operator.value.byteOffset,
+				(bitWidth, operatorValue.byteOffset,
 				 value))
 
 	def __storeAR2(self, operator, value, enforceWidth): #@nocy

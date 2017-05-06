@@ -2,7 +2,7 @@
 #
 # AWL simulator
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,9 +25,9 @@ from awlsim.common.compat import *
 from awlsim.common.project import *
 
 from awlsim.core.util import *
-from awlsim.core.cpu import * #@nocy
-#from awlsim.core.cpu cimport * #@cy
-from awlsim.core.hardware import *
+from awlsim.core.cpu import * #+cimport
+from awlsim.core.hardware import * #+cimport
+from awlsim.core.hardware_loader import *
 
 
 def AwlSim_decorator_profiled(profileLevel):
@@ -269,7 +269,9 @@ class AwlSim(object): #+cdef
 				self._handleSimException(e, fatal = True)
 
 	def __readHwInputs(self): #+cdef
-		# Read all hardware module inputs.
+		"""Read all hardware module inputs.
+		"""
+#@cy		cdef AbstractHardwareInterface hw
 
 		for hw in self.__registeredHardware:
 			try:
@@ -279,7 +281,9 @@ class AwlSim(object): #+cdef
 					fatal = self._fatalHwErrors)
 
 	def __writeHwOutputs(self): #+cdef
-		# Write all hardware module outputs.
+		"""Write all hardware module outputs.
+		"""
+#@cy		cdef AbstractHardwareInterface hw
 
 		for hw in self.__registeredHardware:
 			try:
@@ -289,15 +293,19 @@ class AwlSim(object): #+cdef
 					fatal = self._fatalHwErrors)
 
 	def __peripheralReadCallback(self, userData, width, offset):
-		# The CPU issued a direct peripheral read access.
-		# Poke all registered hardware modules, but only return the value
-		# from the last module returning a valid value.
+		"""The CPU issued a direct peripheral read access.
+		Poke all registered hardware modules, but only return the value
+		from the last module returning a valid value.
+		"""
+#@cy		cdef AbstractHardwareInterface hw
+#@cy		cdef bytearray retValue
+#@cy		cdef bytearray value
 
-		retValue = None
+		retValue = bytearray()
 		for hw in self.__registeredHardware:
 			try:
 				value = hw.directReadInput(width, offset)
-				if value is not None:
+				if value:
 					retValue = value
 			except AwlSimError as e:
 				self._handleSimException(e,
@@ -305,9 +313,12 @@ class AwlSim(object): #+cdef
 		return retValue
 
 	def __peripheralWriteCallback(self, userData, width, offset, value):
-		# The CPU issued a direct peripheral write access.
-		# Send the write request down to all hardware modules.
-		# Returns true, if any hardware accepted the value.
+		"""The CPU issued a direct peripheral write access.
+		Send the write request down to all hardware modules.
+		Returns true, if any hardware accepted the value.
+		"""
+#@cy		cdef AbstractHardwareInterface hw
+#@cy		cdef _Bool retOk
 
 		retOk = False
 		try:

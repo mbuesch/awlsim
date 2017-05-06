@@ -1,0 +1,20 @@
+from awlsim.core.hardware cimport *
+
+cdef class HardwareInterface_Debug(AbstractHardwareInterface):
+	cdef public uint32_t __startupErrorRate
+	cdef public uint32_t __startupErrorCount
+	cdef public uint32_t __shutdownErrorRate
+	cdef public uint32_t __shutdownErrorCount
+	cdef public uint32_t __inputErrorRate
+	cdef public uint32_t __inputErrorCount
+	cdef public uint32_t __outputErrorRate
+	cdef public uint32_t __outputErrorCount
+	cdef public uint32_t __directReadErrorRate
+	cdef public uint32_t __directReadErrorCount
+	cdef public uint32_t __directWriteErrorRate
+	cdef public uint32_t __directWriteErrorCount
+
+	cdef readInputs(self)
+	cdef writeOutputs(self)
+	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset)
+	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data)

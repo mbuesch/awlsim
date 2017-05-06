@@ -1,0 +1,13 @@
+from awlsim.core.hardware cimport *
+
+cdef class RpiGPIO_HwInterface(AbstractHardwareInterface):
+	cdef public object __RPi_GPIO
+	cdef public dict __inputMap
+	cdef public dict __outputMap
+	cdef public list __inputList
+	cdef public list __outputList
+
+	cdef readInputs(self)
+	cdef writeOutputs(self)
+	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset)
+	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data)

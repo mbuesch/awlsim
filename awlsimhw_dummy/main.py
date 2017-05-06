@@ -22,13 +22,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.hardware import *
+from awlsim.common.util import *
+
+#from awlsimhw_dummy.main cimport * #@cy
+
+from awlsim.core.hardware_params import *
+from awlsim.core.hardware import * #+cimport
 from awlsim.core.operators import * #+cimport
-#from awlsim.core.offset cimport * #@cy
-from awlsim.core.offset import * #@nocy
+from awlsim.core.offset import * #+cimport
 
 
-class HardwareInterface(AbstractHardwareInterface):
+class HardwareInterface_Dummy(AbstractHardwareInterface): #+cdef
 	name = "dummy"
 
 	def __init__(self, sim, parameters={}):
@@ -42,26 +46,29 @@ class HardwareInterface(AbstractHardwareInterface):
 	def doShutdown(self):
 		pass # Do nothing
 
-	def readInputs(self):
+	def readInputs(self): #+cdef
 		pass # Do nothing
 
-	def writeOutputs(self):
+	def writeOutputs(self): #+cdef
 		pass # Do nothing
 
-	def directReadInput(self, accessWidth, accessOffset):
+	def directReadInput(self, accessWidth, accessOffset): #@nocy
+#@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
 		if accessOffset < self.inputAddressBase:
-			return None
+			return bytearray()
 		# Just read the current value from the CPU and return it.
 		try:
-			return self.sim.cpu.fetch(AwlOperator(AwlOperator.MEM_E,
-							      accessWidth,
-							      AwlOffset(accessOffset)))
+			return self.sim.cpu.fetchInputRange(accessOffset, accessWidth // 8)
 		except AwlSimError as e:
 			# We may be out of process image range. Just return 0.
-			return 0
+			return bytearray( (0,) * (accessWidth // 8) )
 
-	def directWriteOutput(self, accessWidth, accessOffset, data):
+	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
+#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
 		if accessOffset < self.outputAddressBase:
 			return False
 		# Just pretend we wrote it somewhere.
 		return True
+
+# Module entry point
+HardwareInterface = HardwareInterface_Dummy

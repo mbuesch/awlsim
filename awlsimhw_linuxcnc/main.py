@@ -2,7 +2,7 @@
 #
 # AWL simulator - LinuxCNC HAL interface
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,10 +22,16 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.util import *
+
+#from awlsimhw_linuxcnc.main cimport * #@cy
+
 from awlsim.common.datatypehelpers import *
 
-from awlsim.core.hardware import *
-from awlsim.core.util import *
+from awlsim.core.hardware_params import *
+from awlsim.core.hardware import * #+cimport
+from awlsim.core.operators import * #+cimport
+from awlsim.core.offset import * #+cimport
 
 
 class SigBit(object):
@@ -150,7 +156,7 @@ class SigFloat(object):
 		        srcBuf[self.offset + 3]
 		self.hal[self.halName] = dwordToPyFloat(dword)
 
-class HardwareInterface(AbstractHardwareInterface):
+class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 	name = "LinuxCNC"
 
 	paramDescs = [
@@ -256,7 +262,7 @@ class HardwareInterface(AbstractHardwareInterface):
 		self.__configDone = True
 		printInfo("HAL configuration done")
 
-	def readInputs(self):
+	def readInputs(self): #+cdef
 		if not self.__configDone:
 			self.__tryBuildConfig()
 			if not self.__configDone:
@@ -267,7 +273,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			desc.readInput(data)
 		self.sim.cpu.storeInputRange(self.inputAddressBase, data)
 
-	def writeOutputs(self):
+	def writeOutputs(self): #+cdef
 		if not self.__configDone:
 			return
 
@@ -276,8 +282,15 @@ class HardwareInterface(AbstractHardwareInterface):
 		for desc in self.__activeOutputs:
 			desc.writeOutput(data)
 
-	def directReadInput(self, accessWidth, accessOffset):
+	def directReadInput(self, accessWidth, accessOffset): #@nocy
+#@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
 		pass#TODO
+		return bytearray()
 
-	def directWriteOutput(self, accessWidth, accessOffset, data):
+	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
+#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
 		pass#TODO
+		return False
+
+# Module entry point
+HardwareInterface = HardwareInterface_LinuxCNC

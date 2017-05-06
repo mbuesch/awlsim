@@ -2,7 +2,7 @@
 #
 # AWL simulator - PyProfibus hardware interface
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.hardware import *
-from awlsim.core.util import *
+from awlsim.common.util import *
+
+#from awlsimhw_pyprofibus.main cimport * #@cy
+
+from awlsim.core.hardware_params import *
+from awlsim.core.hardware import * #+cimport
+from awlsim.core.operators import * #+cimport
+from awlsim.core.offset import * #+cimport
 
 
-class HardwareInterface(AbstractHardwareInterface):
+class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 	name = "PyProfibus"
 
 	# Hardware-specific parameters
@@ -135,7 +141,7 @@ class HardwareInterface(AbstractHardwareInterface):
 	def doShutdown(self):
 		self.__cleanup()
 
-	def readInputs(self):
+	def readInputs(self): #+cdef
 		address = self.inputAddressBase
 		for slave in self.slaveList:
 			# Get the cached slave-data
@@ -145,6 +151,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			inData = self.cachedInputs.pop(0)
 			if not inData:
 				continue
+			inData = bytearray(inData)
 			if len(inData) > inputSize:
 				inData = inData[0:inputSize]
 			if len(inData) < inputSize:
@@ -154,7 +161,7 @@ class HardwareInterface(AbstractHardwareInterface):
 			address += inputSize
 		assert(not self.cachedInputs)
 
-	def writeOutputs(self):
+	def writeOutputs(self): #+cdef
 		try:
 			address = self.outputAddressBase
 			for slave in self.slaveList:
@@ -171,8 +178,13 @@ class HardwareInterface(AbstractHardwareInterface):
 		except self.pyprofibus.ProfibusError as e:
 			self.raiseException("Hardware error: %s" % str(e))
 
-	def directReadInput(self, accessWidth, accessOffset):
-		return None#TODO
+	def directReadInput(self, accessWidth, accessOffset): #@nocy
+#@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
+		return bytearray()#TODO
 
-	def directWriteOutput(self, accessWidth, accessOffset, data):
+	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
+#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
 		return False#TODO
+
+# Module entry point
+HardwareInterface = HardwareInterface_PyProfibus
