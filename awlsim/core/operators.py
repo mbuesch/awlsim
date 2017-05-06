@@ -23,12 +23,9 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
-#from awlsim.core.statusword cimport * #@cy
-from awlsim.core.statusword import * #@nocy
+from awlsim.core.memory import * #+cimport
+from awlsim.core.offset import * #+cimport
+from awlsim.core.statusword import * #+cimport
 from awlsim.core.lstack import *
 from awlsim.core.util import *
 
@@ -196,7 +193,8 @@ class AwlOperator(object): #+cdef
 #@cy		self.compound = False
 #@cy		self.dataType = None
 
-	def __init__(self, type, width, value, insn=None):
+	def __init__(self, type, width, value, insn=None): #@nocy
+#@cy	def __init__(self, uint32_t type, int32_t width, object value, object insn=None):
 		# type -> The operator type ID number. See "Operator types" above.
 		# width -> The bit width of the access.
 		# value -> The value. May be an AwlOffset or a string (depends on type).
@@ -225,7 +223,10 @@ class AwlOperator(object): #+cdef
 #@cy		return False
 
 	# Make a deep copy, except for "insn".
-	def dup(self):
+	def dup(self): #@nocy
+#@cy	cpdef AwlOperator dup(self):
+#@cy		cdef AwlOperator oper
+
 		if isInteger(self.value):
 			dupValue = self.value
 		else:
@@ -234,8 +235,8 @@ class AwlOperator(object): #+cdef
 				   width = self.width,
 				   value = dupValue,
 				   insn = self.insn)
-		oper.setExtended(self.isExtended)
-		oper.setLabelIndex(self.labelIndex)
+		oper.isExtended = self.isExtended
+		oper.labelIndex = self.labelIndex
 		oper.interfaceIndex = self.interfaceIndex
 		return oper
 
@@ -248,7 +249,8 @@ class AwlOperator(object): #+cdef
 	def setLabelIndex(self, newLabelIndex):
 		self.labelIndex = newLabelIndex
 
-	def isImmediate(self):
+	def isImmediate(self): #@nocy
+#@cy	cpdef _Bool isImmediate(self):
 		return self.type > self.__IMM_START and\
 		       self.type < self.__IMM_END
 
@@ -352,7 +354,8 @@ class AwlOperator(object): #+cdef
 				mismatch(dataType, self, self.width)
 
 	# Resolve this indirect operator to a direct operator.
-	def resolve(self, store=True):
+	def resolve(self, store=True): #@nocy
+#@cy	cpdef AwlOperator resolve(self, _Bool store=True):
 		# This already is a direct operator.
 		if self.type == self.NAMED_LOCAL:
 			# This is a named-local access (#abc).
@@ -365,7 +368,10 @@ class AwlOperator(object): #+cdef
 		return Pointer(self.makePointerValue())
 
 	# Make an area-spanning pointer value (32 bit) to this memory area.
-	def makePointerValue(self):
+	def makePointerValue(self): #@nocy
+#@cy	cpdef uint32_t makePointerValue(self):
+#@cy		cdef uint32_t area
+
 		try:
 			area = AwlIndirectOp.optype2area[self.type]
 		except KeyError as e:
@@ -528,7 +534,8 @@ class AwlOperator(object): #+cdef
 			assert(0)
 
 class AwlIndirectOp(AwlOperator): #+cdef
-	"Indirect addressing operand"
+	"""Indirect addressing operand.
+	"""
 
 	# Address register
 	AR_NONE		= 0	# No address register
@@ -589,7 +596,9 @@ class AwlIndirectOp(AwlOperator): #+cdef
 	optype2area[AwlOperator.NAMED_DBVAR] = AREA_DB
 	optype2area[AwlOperator.UNSPEC] = AREA_NONE
 
-	def __init__(self, area, width, addressRegister, offsetOper, insn=None):
+	def __init__(self, area, width, addressRegister, offsetOper, insn=None): #@nocy
+#@cy	def __init__(self, uint64_t area, int32_t width, uint32_t addressRegister,
+#@cy		     AwlOperator offsetOper, object insn=None):
 		# area -> The area code for this indirect operation.
 		#         AREA_... or EXT_AREA_...
 		#         This corresponds to the area code in AWL pointer format.
@@ -613,7 +622,8 @@ class AwlIndirectOp(AwlOperator): #+cdef
 			area, addressRegister, offsetOper
 
 	# Make a deep copy, except for "insn".
-	def dup(self):
+	def dup(self): #@nocy
+#@cy	cpdef AwlIndirectOp dup(self):
 		return AwlIndirectOp(area = self.area,
 				     width = self.width,
 				     addressRegister = self.addressRegister,
@@ -639,7 +649,16 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				     AwlOperator.MEM_DI)
 
 	# Resolve this indirect operator to a direct operator.
-	def resolve(self, store=True):
+	def resolve(self, store=True): #@nocy
+#@cy	cpdef AwlOperator resolve(self, _Bool store=True):
+#@cy		cdef _Bool bitwiseDirectOffset
+#@cy		cdef AwlOffset directOffset
+#@cy		cdef AwlOperator offsetOper
+#@cy		cdef set possibleWidths
+#@cy		cdef uint32_t offsetValue
+#@cy		cdef uint64_t pointer
+#@cy		cdef uint32_t optype
+
 		bitwiseDirectOffset = True
 		offsetOper = self.offsetOper
 		# Construct the pointer
@@ -715,7 +734,8 @@ class AwlIndirectOp(AwlOperator): #+cdef
 	def makePointer(self):
 		self.__pointerError()
 
-	def makePointerValue(self):
+	def makePointerValue(self): #@nocy
+#@cy	cpdef uint32_t makePointerValue(self):
 		self.__pointerError()
 
 	def makeDBPointer(self):

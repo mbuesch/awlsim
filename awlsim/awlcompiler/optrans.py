@@ -30,14 +30,12 @@ from awlsim.common.cpuspecs import *
 from awlsim.common.cpuconfig import *
 
 from awlsim.core.util import *
-from awlsim.core.operators import * #+cimport
 from awlsim.core.parameters import *
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
+from awlsim.core.memory import * #+cimport
 from awlsim.core.timers import *
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.offset import * #+cimport
+from awlsim.core.operators import * #+cimport
 
 from awlsim.awlcompiler import *
 
