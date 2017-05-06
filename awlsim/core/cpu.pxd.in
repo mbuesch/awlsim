@@ -1,6 +1,7 @@
 from awlsim.core.statusword cimport *
 from awlsim.core.callstack cimport *
 from awlsim.core.offset cimport *
+from awlsim.core.operators cimport *
 from awlsim.core.memory cimport *
 
 
@@ -82,8 +83,8 @@ cdef class S7CPU(object):
 
 	cdef parenStackAppend(self, uint32_t insnType, S7StatusWord statusWord)
 
-	cpdef object fetch(self, object operator, frozenset enforceWidth=*)
-	cpdef store(self, object operator, object value, frozenset enforceWidth=*)
+	cpdef object fetch(self, AwlOperator operator, frozenset enforceWidth=*)
+	cpdef store(self, AwlOperator operator, object value, frozenset enforceWidth=*)
 
 	cpdef updateTimestamp(self, object _getTime=*)
 	cdef __runTimeCheck(self)
@@ -95,7 +96,7 @@ cdef class S7CPU(object):
 	cdef jumpToLabel(self, uint32_t labelIndex)
 	cdef jumpRelative(self, int32_t insnOffset)
 
-	cdef __translateFCNamedLocalOper(self, object operator, _Bool store)
+	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store)
 
 cdef class ParenStackElem(object):
 	cdef public S7CPU cpu

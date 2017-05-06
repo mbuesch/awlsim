@@ -1,5 +1,6 @@
 from awlsim.core.cpu cimport *
 from awlsim.core.statusword cimport *
+from awlsim.core.operators cimport *
 
 cdef class AwlInsn(object):
 	cdef public S7CPU cpu
@@ -8,8 +9,8 @@ cdef class AwlInsn(object):
 	cdef public int32_t ip
 	cdef public list ops
 	cdef public uint32_t opCount
-	cdef public object op0
-	cdef public object op1
+	cdef public AwlOperator op0
+	cdef public AwlOperator op1
 	cdef public list params
 
 	cdef public frozenset _widths_1
