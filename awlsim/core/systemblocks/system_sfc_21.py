@@ -25,11 +25,10 @@ from awlsim.common.compat import *
 from awlsim.common.wordpacker import *
 
 from awlsim.core.systemblocks.systemblocks import *
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.cpu import * #+cimport
+from awlsim.core.offset import * #+cimport
 from awlsim.core.operators import * #+cimport
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
+from awlsim.core.memory import * #+cimport
 from awlsim.core.util import *
 
 
@@ -50,6 +49,9 @@ class SFC21(SFC):
 	}
 
 	def run(self):
+#@cy		cdef S7CPU cpu
+#@cy		cdef S7StatusWord s
+
 		cpu = self.cpu
 		s = cpu.statusWord
 

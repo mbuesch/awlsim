@@ -63,11 +63,11 @@ class CallStackElem(object): #+cdef
 
 	def __init__(self, cpu, block,				#@nocy
 		     instanceDB=None, instanceBaseOffset=None,	#@nocy
-		     parameters=[],				#@nocy
+		     parameters=(),				#@nocy
 		     isRawCall=False):				#@nocy
 #@cy	def __init__(self, S7CPU cpu, object block,
 #@cy		     object instanceDB=None, AwlOffset instanceBaseOffset=None,
-#@cy		     list parameters=[],
+#@cy		     tuple parameters=(),
 #@cy		     _Bool isRawCall=False):
 		# Init the call stack element.
 		# cpu -> The CPU this runs on.
@@ -75,7 +75,7 @@ class CallStackElem(object): #+cdef
 		# instanceDB -> The instance-DB, if FB-call. Otherwise None.
 		# instanceBaseOffset -> AwlOffset for use as AR2 instance base (multi-instance).
 		#                       If None, AR2 is not modified.
-		# parameters -> An iterable of AwlParamAssign instances
+		# parameters -> A tuple of AwlParamAssign instances
 		#               representing the parameter assignments in CALL insn.
 		# isRawCall -> True, if the calling instruction was UC or CC.
 		self.cpu = cpu

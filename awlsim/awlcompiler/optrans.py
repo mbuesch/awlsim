@@ -672,7 +672,7 @@ class AwlOpTranslator(object):
 			# Create assignment
 			param = AwlParamAssign(lvalueName, opDesc.operator)
 			if self.insn:
-				self.insn.params.append(param)
+				self.insn.params = self.insn.params + (param,)
 
 			rawOps = rawOps[opDesc.fieldCount + 2 : ]
 			if rawOps:

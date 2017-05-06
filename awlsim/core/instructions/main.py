@@ -455,7 +455,7 @@ class AwlInsn(object): #+cdef
 		self.rawInsn = rawInsn		# RawAwlInsn() or None
 		self.ip = 0			# Instruction pointer (IP)
 		self.ops = ops or []		# AwlOperator()s
-		self.params = []		# Parameter assignments (for CALL)
+		self.params = ()		# Parameter assignments (for CALL)
 
 		# Local reference to the fetch/store widths.
 		self._widths_1 = self._WIDTHS_1

@@ -11,7 +11,7 @@ cdef class AwlInsn(object):
 	cdef public uint32_t opCount
 	cdef public AwlOperator op0
 	cdef public AwlOperator op1
-	cdef public list params
+	cdef public tuple params
 
 	cdef public frozenset _widths_1
 	cdef public frozenset _widths_8_16_32

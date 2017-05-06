@@ -510,10 +510,18 @@ class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
 	def __init__(self):
+#@cy		self._OPER_BLKREF_FC	= AwlOperator.BLKREF_FC
+#@cy		self._OPER_BLKREF_FB	= AwlOperator.BLKREF_FB
+#@cy		self._OPER_BLKREF_SFC	= AwlOperator.BLKREF_SFC
+#@cy		self._OPER_BLKREF_SFB	= AwlOperator.BLKREF_SFB
+#@cy		self._OPER_MULTI_FB 	= AwlOperator.MULTI_FB
+#@cy		self._OPER_MULTI_SFB	= AwlOperator.MULTI_SFB
+#@cy		self._OPER_INDIRECT 	= AwlOperator.INDIRECT
+
 		self.__fetchTypeMethods = self.__fetchTypeMethodsDict
 		self.__storeTypeMethods = self.__storeTypeMethodsDict
-		self.__callHelpers = self.__callHelpersDict
-		self.__rawCallHelpers = self.__rawCallHelpersDict
+		self.__callHelpers = self.__callHelpersDict		#@nocy
+		self.__rawCallHelpers = self.__rawCallHelpersDict	#@nocy
 
 		self.__clockMemByteOffset = None
 		self.specs = S7CPUSpecs(self)
@@ -826,7 +834,7 @@ class S7CPU(object): #+cdef
 		self.ar1.reset()
 		self.ar2.reset()
 		self.statusWord.reset()
-		self.callStack = [ CallStackElem(self, block, None, None, [], True) ]
+		self.callStack = [ CallStackElem(self, block, None, None, (), True) ]
 		cse = self.callStackTop = self.callStack[-1]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
@@ -1069,104 +1077,172 @@ class S7CPU(object): #+cdef
 #@cy	cdef jumpRelative(self, int32_t insnOffset):
 		self.relativeJump = insnOffset
 
-	def __call_FC(self, blockOper, dbOper, parameters):
+	def __call_FC(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
 		return CallStackElem(self, fc, None, None, parameters)
 
-	def __call_RAW_FC(self, blockOper, dbOper, parameters):
+	def __call_RAW_FC(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_RAW_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
-		return CallStackElem(self, fc, None, None, [], True)
+		return CallStackElem(self, fc, None, None, (), True)
 
-	def __call_FB(self, blockOper, dbOper, parameters):
+	def __call_FB(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef CallStackElem cse
+
 		fb = self.fbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
 		cse = CallStackElem(self, fb, db, AwlOffset(), parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
-	def __call_RAW_FB(self, blockOper, dbOper, parameters):
+	def __call_RAW_FB(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_RAW_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fb = self.fbs[blockOper.value.byteOffset]
-		return CallStackElem(self, fb, self.diRegister, None, [], True)
+		return CallStackElem(self, fb, self.diRegister, None, (), True)
 
-	def __call_SFC(self, blockOper, dbOper, parameters):
+	def __call_SFC(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
 		return CallStackElem(self, sfc, None, None, parameters)
 
-	def __call_RAW_SFC(self, blockOper, dbOper, parameters):
+	def __call_RAW_SFC(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_RAW_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfc, None, None, [], True)
+		return CallStackElem(self, sfc, None, None, (), True)
 
-	def __call_SFB(self, blockOper, dbOper, parameters):
+	def __call_SFB(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef CallStackElem cse
+
 		sfb = self.sfbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
 		cse = CallStackElem(self, sfb, db, AwlOffset(), parameters)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
-	def __call_RAW_SFB(self, blockOper, dbOper, parameters):
+	def __call_RAW_SFB(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_RAW_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		sfb = self.sfbs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfb, self.diRegister, None, [], True)
+		return CallStackElem(self, sfb, self.diRegister, None, (), True)
 
-	def __call_INDIRECT(self, blockOper, dbOper, parameters):
+	def __call_INDIRECT(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_INDIRECT(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+
 		blockOper = blockOper.resolve()
-		callHelper = self.__rawCallHelpers[blockOper.type]
-		try:
-			return callHelper(self, blockOper, dbOper, parameters)
-		except KeyError as e:
-			raise AwlSimError("Code block %d not found in indirect call" %\
-					  blockOper.value.byteOffset)
 
-	def __call_MULTI_FB(self, blockOper, dbOper, parameters):
+#@cy		if blockOper.type == self._OPER_BLKREF_FC:
+#@cy			return self.__call_RAW_FC(blockOper, dbOper, parameters)
+#@cy		elif blockOper.type == self._OPER_BLKREF_FB:
+#@cy			return self.__call_RAW_FB(blockOper, dbOper, parameters)
+#@cy		elif blockOper.type == self._OPER_BLKREF_SFC:
+#@cy			return self.__call_RAW_SFC(blockOper, dbOper, parameters)
+#@cy		elif blockOper.type == self._OPER_BLKREF_SFB:
+#@cy			return self.__call_RAW_SFB(blockOper, dbOper, parameters)
+#@cy		else:
+#@cy			raise AwlSimError("Invalid CALL operand")
+
+		callHelper = self.__rawCallHelpers[blockOper.type]			#@nocy
+		try:									#@nocy
+			return callHelper(self, blockOper, dbOper, parameters)		#@nocy
+		except KeyError as e:							#@nocy
+			raise AwlSimError("Code block %d not found in indirect call" %(	#@nocy
+					  blockOper.value.byteOffset))			#@nocy
+
+	def __call_MULTI_FB(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fb = self.fbs[blockOper.value.fbNumber]
 		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
 		cse = CallStackElem(self, fb, self.diRegister, base, parameters)
 		self.dbRegister = self.diRegister
 		return cse
 
-	def __call_MULTI_SFB(self, blockOper, dbOper, parameters):
+	def __call_MULTI_SFB(self, blockOper, dbOper, parameters): #@nocy
+#@cy	cdef CallStackElem __call_MULTI_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef AwlOffset base
+#@cy		cdef CallStackElem cse
+
 		sfb = self.sfbs[blockOper.value.fbNumber]
 		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
 		cse = CallStackElem(self, sfb, self.diRegister, base, parameters)
 		self.dbRegister = self.diRegister
 		return cse
 
-	__callHelpersDict = {
-		AwlOperator.BLKREF_FC	: __call_FC,
-		AwlOperator.BLKREF_FB	: __call_FB,
-		AwlOperator.BLKREF_SFC	: __call_SFC,
-		AwlOperator.BLKREF_SFB	: __call_SFB,
-		AwlOperator.MULTI_FB	: __call_MULTI_FB,
-		AwlOperator.MULTI_SFB	: __call_MULTI_SFB,
-	}
+	__callHelpersDict = {					#@nocy
+		AwlOperator.BLKREF_FC	: __call_FC,		#@nocy
+		AwlOperator.BLKREF_FB	: __call_FB,		#@nocy
+		AwlOperator.BLKREF_SFC	: __call_SFC,		#@nocy
+		AwlOperator.BLKREF_SFB	: __call_SFB,		#@nocy
+		AwlOperator.MULTI_FB	: __call_MULTI_FB,	#@nocy
+		AwlOperator.MULTI_SFB	: __call_MULTI_SFB,	#@nocy
+	}							#@nocy
 
-	__rawCallHelpersDict = {
-		AwlOperator.BLKREF_FC	: __call_RAW_FC,
-		AwlOperator.BLKREF_FB	: __call_RAW_FB,
-		AwlOperator.BLKREF_SFC	: __call_RAW_SFC,
-		AwlOperator.BLKREF_SFB	: __call_RAW_SFB,
-		AwlOperator.INDIRECT	: __call_INDIRECT,
-	}
+	__rawCallHelpersDict = {				#@nocy
+		AwlOperator.BLKREF_FC	: __call_RAW_FC,	#@nocy
+		AwlOperator.BLKREF_FB	: __call_RAW_FB,	#@nocy
+		AwlOperator.BLKREF_SFC	: __call_RAW_SFC,	#@nocy
+		AwlOperator.BLKREF_SFB	: __call_RAW_SFB,	#@nocy
+		AwlOperator.INDIRECT	: __call_INDIRECT,	#@nocy
+	}							#@nocy
 
-	def run_CALL(self, blockOper, dbOper=None, parameters=(), raw=False):
-		try:
-			if raw:
-				callHelper = self.__rawCallHelpers[blockOper.type]
-			else:
-				callHelper = self.__callHelpers[blockOper.type]
-		except KeyError:
-			raise AwlSimError("Invalid CALL operand")
-		newCse = callHelper(self, blockOper, dbOper, parameters)
+	def run_CALL(self, blockOper, dbOper=None, parameters=(), raw=False): #@nocy
+#@cy	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper=None,
+#@cy		     tuple parameters=(), _Bool raw=False):
+#@cy		cdef CallStackElem newCse
+#@cy		if raw:
+#@cy			if blockOper.type == self._OPER_BLKREF_FC:
+#@cy				newCse = self.__call_RAW_FC(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_BLKREF_FB:
+#@cy				newCse = self.__call_RAW_FB(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_BLKREF_SFC:
+#@cy				newCse = self.__call_RAW_SFC(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_BLKREF_SFB:
+#@cy				newCse = self.__call_RAW_SFB(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_INDIRECT:
+#@cy				newCse = self.__call_INDIRECT(blockOper, dbOper, parameters)
+#@cy			else:
+#@cy				raise AwlSimError("Invalid CALL operand")
+#@cy		else:
+#@cy			if blockOper.type == self._OPER_BLKREF_FC:
+#@cy				newCse = self.__call_FC(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_BLKREF_FB:
+#@cy				newCse = self.__call_FB(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_BLKREF_SFC:
+#@cy				newCse = self.__call_SFC(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_BLKREF_SFB:
+#@cy				newCse = self.__call_SFB(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_MULTI_FB:
+#@cy				newCse = self.__call_MULTI_FB(blockOper, dbOper, parameters)
+#@cy			elif blockOper.type == self._OPER_MULTI_SFB:
+#@cy				newCse = self.__call_MULTI_SFB(blockOper, dbOper, parameters)
+#@cy			else:
+#@cy				raise AwlSimError("Invalid CALL operand")
+
+		try:									#@nocy
+			if raw:								#@nocy
+				callHelper = self.__rawCallHelpers[blockOper.type]	#@nocy
+			else:								#@nocy
+				callHelper = self.__callHelpers[blockOper.type]		#@nocy
+		except KeyError:							#@nocy
+			raise AwlSimError("Invalid CALL operand")			#@nocy
+		newCse = callHelper(self, blockOper, dbOper, parameters)		#@nocy
+
 		self.callStack.append(newCse)
 		self.callStackTop = newCse
 
-	def run_BE(self):
+	def run_BE(self): #+cdef
+#@cy		cdef S7StatusWord s
+#@cy		cdef CallStackElem cse
+
 		s = self.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
 		cse = self.callStackTop
 		self.relativeJump = len(cse.insns) - cse.ip
 
-	def run_AUF(self, dbOper):
+	def run_AUF(self, dbOper): #@nocy
+#@cy	cdef run_AUF(self, AwlOperator dbOper):
 		dbOper = dbOper.resolve()
 		try:
 			db = self.dbs[dbOper.value.byteOffset]
@@ -1180,7 +1256,7 @@ class S7CPU(object): #+cdef
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
 
-	def run_TDB(self):
+	def run_TDB(self): #+cdef
 		# Swap global and instance DB
 		self.diRegister, self.dbRegister = self.dbRegister, self.diRegister
 
