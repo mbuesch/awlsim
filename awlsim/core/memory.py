@@ -591,7 +591,7 @@ class AwlMemory(object): #+cdef
 				        (dataBytes[byteOffset + 2] << 8) |\
 				        dataBytes[byteOffset + 3]) & 0xFFFFFFFF
 			else:
-				assert(not offset.bitOffset)
+				assert(not offset.bitOffset) #@nocy
 				nrBytes = intDivRoundUp(width, 8)
 				end = byteOffset + nrBytes
 				if end > len(dataBytes):
@@ -643,7 +643,7 @@ class AwlMemory(object): #+cdef
 						dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
 				else:
 					nrBytes = intDivRoundUp(width, 8)
-					assert(nrBytes == len(value))
+					assert(nrBytes == len(value)) #@nocy
 					end = byteOffset + nrBytes
 					if end > len(dataBytes):
 						raise IndexError

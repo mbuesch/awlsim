@@ -1715,7 +1715,7 @@ class S7CPU(object): #+cdef
 
 	def __fetchNAMED_LOCAL_PTR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, frozenset enforceWidth):
-		assert(operator.value.subOffset.byteOffset == 0)
+		assert(operator.value.subOffset.byteOffset == 0) #@nocy
 		return self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue()
 
 	def __fetchNAMED_DBVAR(self, operator, enforceWidth): #@nocy
