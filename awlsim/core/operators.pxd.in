@@ -24,6 +24,6 @@ cdef class AwlIndirectOp(AwlOperator):
 	cdef public uint32_t addressRegister
 	cdef public AwlOperator offsetOper
 
-	cpdef AwlIndirectOp dup(self)
+	cpdef AwlOperator dup(self)
 	cpdef AwlOperator resolve(self, _Bool store=*)
 	cpdef uint32_t makePointerValue(self)

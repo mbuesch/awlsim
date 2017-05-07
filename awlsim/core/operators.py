@@ -623,7 +623,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 
 	# Make a deep copy, except for "insn".
 	def dup(self): #@nocy
-#@cy	cpdef AwlIndirectOp dup(self):
+#@cy	cpdef AwlOperator dup(self):
 		return AwlIndirectOp(area = self.area,
 				     width = self.width,
 				     addressRegister = self.addressRegister,
