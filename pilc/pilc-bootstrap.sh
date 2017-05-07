@@ -28,6 +28,8 @@ basedir="$basedir/.."
 
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
 RPIGPIO_VERSION="0.6.3"
+RPIGPIO_MIRROR="https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
+RPIGPIO_SHA256="9366ff36104a39368759929e71f0d8ad6a88553497b3064cbc40f4248806cc19"
 
 
 die()
@@ -161,6 +163,19 @@ exit 101
 EOF
 }
 
+download()
+{
+	local target="$1"
+	local mirror="$2"
+	local sha256="$3"
+
+	info "Downloading $mirror..."
+	rm -f "$target"
+	wget -O "$target" "$mirror" || die "Failed to fetch $mirror"
+	[ "$(sha256sum -b "$target" | cut -f1 -d' ')" = "$sha256" ] ||\
+		die "SHA256 verification of $target failed"
+}
+
 pilc_bootstrap_first_stage()
 {
 	echo "Running first stage..."
@@ -240,11 +255,8 @@ pilc_bootstrap_first_stage()
 	) || die
 
 	# Fetch RPi.GPIO
-	info "Downloading RPi.GPIO $RPIGPIO_VERSION..."
-	rm -f "$opt_target_dir/tmp/RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
-	wget -O "$opt_target_dir/tmp/RPi.GPIO-$RPIGPIO_VERSION.tar.gz" \
-		"https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/RPi.GPIO-$RPIGPIO_VERSION.tar.gz" ||\
-		die "Failed to fetch RPi.GPIO"
+	download "$opt_target_dir/tmp/RPi.GPIO-$RPIGPIO_VERSION.tar.gz" \
+		"$RPIGPIO_MIRROR" "$RPIGPIO_SHA256"
 
 	# Copy kernel tree
 	if [ "$opt_kernel" = "pilc" ]; then
