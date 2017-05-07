@@ -723,6 +723,7 @@ EOF
 		    -e 's|@GROUP@|root|g' \
 		    -e "s|@PREFIX@|$awlsim_prefix|g" \
 		    -e 's|@PROJECT@|/etc/awlsim-server.awlpro|g' \
+		    -e "s|@PYTHON@|/usr/bin/python|g" >\
 		    -e "s|@PYTHON_SITE@|$site|g" >\
 		    /etc/systemd/system/awlsim-server.service ||\
 		    die "Failed to create awlsim-server.service"

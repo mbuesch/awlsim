@@ -10,10 +10,10 @@ User=@USER@
 Group=@GROUP@
 Nice=-15
 
-ExecStart=@PREFIX@/bin/awlsim-server -l localhost -4 -w @PROJECT@
-ExecStartPost=-@PREFIX@/bin/awlsim-client -C localhost -r RUN
+ExecStart=@PYTHON@ @PREFIX@/bin/awlsim-server -l localhost -4 -w @PROJECT@
+ExecStartPost=-@PYTHON@ @PREFIX@/bin/awlsim-client -C localhost -r RUN
 
-Environment=PYTHONPATH=@PYTHON_SITE@ AWLSIM_CYTHON=1
+Environment=PYTHONPATH=@PYTHON_SITE@ PYTHONHASHSEED=random PYTHONOPTIMIZE=2 PYTHONDONTWRITEBYTECODE=1 AWLSIM_CYTHON=1
 
 [Install]
 WantedBy=multi-user.target
