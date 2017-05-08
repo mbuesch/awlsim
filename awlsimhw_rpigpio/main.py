@@ -30,6 +30,7 @@ from awlsim.core.hardware_params import *
 from awlsim.core.hardware import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.offset import * #+cimport
+from awlsim.core.cpu import * #+cimport
 
 import re
 
@@ -112,6 +113,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		AbstractHardwareInterface.__init__(self,
 						   sim = sim,
 						   parameters = parameters)
+		self.__tmpStoreBytes = bytearray(1)
 
 	def doStartup(self):
 		"""Startup the hardware module.
@@ -179,38 +181,63 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		pass # Do nothing
 
 	def readInputs(self): #+cdef
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint8_t inByte
+#@cy		cdef uint32_t byteOffset
+#@cy		cdef uint32_t bitOffset
+#@cy		cdef uint32_t bcmNumber
+#@cy		cdef bytearray tmpBytes
+
 		RPi_GPIO = self.__RPi_GPIO
+		tmpBytes = self.__tmpStoreBytes
+		cpu = self.sim.cpu
 		for byteOffset, bitMapping in self.__inputList:
 			inByte = 0
 			for bitOffset, bcmNumber in bitMapping.mapList:
 				if RPi_GPIO.input(bcmNumber):
 					inByte |= 1 << bitOffset
-			self.sim.cpu.storeInputRange(byteOffset, (inByte, ))
+			tmpBytes[0] = inByte
+			self.sim.cpu.storeInputRange(byteOffset, tmpBytes)
 
 	def writeOutputs(self): #+cdef
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint8_t outByte
+#@cy		cdef uint32_t byteOffset
+#@cy		cdef uint32_t bitOffset
+#@cy		cdef uint32_t bcmNumber
+
 		RPi_GPIO = self.__RPi_GPIO
+		cpu = self.sim.cpu
 		for byteOffset, bitMapping in self.__outputList:
-			outByte = self.sim.cpu.fetchOutputRange(byteOffset, 1)[0]
+			outByte = cpu.fetchOutputRange(byteOffset, 1)[0]
 			for bitOffset, bcmNumber in bitMapping.mapList:
 				RPi_GPIO.output(bcmNumber,
 						outByte & (1 << bitOffset))
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
+#@cy		cdef uint32_t nrBytes
+
 		if accessOffset < self.inputAddressBase:
 			return None
+
 		RPi_GPIO = self.__RPi_GPIO
 		nrBytes = accessWidth // 8
 		pass#TODO
+
 		return bytearray()
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
 #@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
+#@cy		cdef uint32_t nrBytes
+
 		if accessOffset < self.outputAddressBase:
 			return False
+
 		RPi_GPIO = self.__RPi_GPIO
 		nrBytes = accessWidth // 8
 		pass#TODO
+
 		return True
 
 # Module entry point

@@ -6,6 +6,7 @@ cdef class RpiGPIO_HwInterface(AbstractHardwareInterface):
 	cdef public dict __outputMap
 	cdef public list __inputList
 	cdef public list __outputList
+	cdef public bytearray __tmpStoreBytes
 
 	cdef readInputs(self)
 	cdef writeOutputs(self)
