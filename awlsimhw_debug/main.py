@@ -30,6 +30,7 @@ from awlsim.core.hardware_params import *
 from awlsim.core.hardware import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.offset import * #+cimport
+from awlsim.core.cpu import * #+cimport
 
 
 class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
