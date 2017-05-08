@@ -192,7 +192,13 @@ setup_test_environment()
 	local interpreter="$1"
 	local tested_file="$2"
 
-	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
+	# Check if we want to run on Cython2/3 and set the environment
+	# for Cython2/3.
+	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ] ||\
+	   [ "$interpreter" = "python" -a "$AWLSIM_CYTHON" != "" ] ||\
+	   [ "$interpreter" = "python2" -a "$AWLSIM_CYTHON" != "" ]; then
+		# We want to run the test using Cython2
+
 		for i in "$rootdir"/build/lib.linux-*-2.*; do
 			export PYTHONPATH="$i"
 			break
@@ -201,7 +207,11 @@ setup_test_environment()
 		export AWLSIM_CYTHON=2
 		# The actual interpreter is Python
 		local interpreter=python2
-	elif [ "$interpreter" = "cython3" ]; then
+
+	elif [ "$interpreter" = "cython3" ] ||\
+	     [ "$interpreter" = "python3" -a "$AWLSIM_CYTHON" != "" ]; then
+		# We want to run the test using Cython3
+
 		for i in "$rootdir"/build/lib.linux-*-3.*; do
 			export PYTHONPATH="$i"
 			break
@@ -210,7 +220,9 @@ setup_test_environment()
 		export AWLSIM_CYTHON=2
 		# The actual interpreter is Python
 		local interpreter=python3
+
 	else
+		# Neither Cython2 nor Cython3
 		export PYTHONPATH=
 		export AWLSIM_CYTHON=
 	fi
@@ -229,6 +241,7 @@ setup_test_environment()
 	export IRONPYTHONPATH="$IRONPYTHONPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 
+	# Disable Python optimization so that assert statements are enabled.
 	export PYTHONOPTIMIZE=
 
 	RET="$interpreter"
@@ -530,7 +543,7 @@ build_cython3()
 # $@=testfiles
 do_tests()
 {
-	export EXTRA_PYTHONPATH=
+	cleanup_test_environment
 
 	if [ $opt_quick -eq 0 ]; then
 		local all_interp="python2 python3 pypy pypy3 jython ipy cython2 cython3"
@@ -562,6 +575,8 @@ do_tests()
 
 	for interpreter in "$opt_interpreter" $all_interp; do
 		[ -z "$interpreter" ] && continue
+
+		cleanup_test_environment
 
 		if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
 			have_prog cython && have_prog python2 || {
