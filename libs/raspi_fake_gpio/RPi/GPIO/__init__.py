@@ -61,17 +61,37 @@ def cleanup(channel = None):
 	pass
 
 def output(channels, values):
+	assert(isinstance(channels, int) or\
+	       isinstance(channels, list) or\
+	       isinstance(channels, tuple))
 	if isinstance(channels, int):
-		channels = [ channels, ]
+		channelsList = [ channels, ]
+		assert(isinstance(values, int))
+	else:
+		channelsList = channels
+		assert(isinstance(values, list) or\
+		       isinstance(values, tuple))
+
+	assert(isinstance(values, int) or\
+	       isinstance(values, list) or\
+	       isinstance(values, tuple))
 	if isinstance(values, int):
-		values = [ values, ] * len(channels)
-	for i, channel in enumerate(channels):
+		valuesList = [ values, ]
+		assert(isinstance(channels, int))
+	else:
+		valuesList = values
+		assert(isinstance(channels, list) or\
+		       isinstance(channels, tuple))
+
+	assert(len(channelsList) == len(valuesList))
+
+	for i, channel in enumerate(channelsList):
 		assert(isinstance(channel, int))
-		assert(isinstance(values[i], int) or\
-		       isinstance(values[i], bool))
+		assert(isinstance(valuesList[i], int) or\
+		       isinstance(valuesList[i], bool))
 		assert(channel >= 0 and channel < __nrChannels)
 		assert(OUT in __directions[channel])
-		__state[channel] = HIGH if values[i] else LOW
+		__state[channel] = HIGH if valuesList[i] else LOW
 
 def input(channel):
 	assert(isinstance(channel, int))
