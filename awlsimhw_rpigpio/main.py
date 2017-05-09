@@ -185,7 +185,6 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 #@cy		cdef uint8_t inByte
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef uint32_t bitOffset
-#@cy		cdef uint32_t bcmNumber
 #@cy		cdef bytearray tmpBytes
 
 		RPi_GPIO = self.__RPi_GPIO
@@ -201,10 +200,8 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 
 	def writeOutputs(self): #+cdef
 #@cy		cdef S7CPU cpu
-#@cy		cdef uint8_t outByte
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef uint32_t bitOffset
-#@cy		cdef uint32_t bcmNumber
 
 		RPi_GPIO = self.__RPi_GPIO
 		cpu = self.sim.cpu
