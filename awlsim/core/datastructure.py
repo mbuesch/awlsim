@@ -197,10 +197,10 @@ class AwlStruct(object):
 			# Assign the struct to the UDT data type, if
 			# not already done so.
 			assert(dataType.struct is None or
-			       dataType.struct is udt.struct)
-			dataType.setStruct(udt.struct)
+			       dataType.struct is udt._struct)
+			dataType.setStruct(udt._struct)
 			# Merge the UDT struct with this struct.
-			return self.merge(udt.struct, name, dataType)
+			return self.merge(udt._struct, name, dataType)
 
 		if dataType.width < 0:
 			raise AwlSimError("Width of data structure field '%s : %s' "

@@ -2,7 +2,7 @@
 #
 # AWL simulator - System-blocks
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +24,9 @@ from awlsim.common.compat import *
 
 from awlsim.core.instructions.insn_generic_call import * #+cimport
 from awlsim.core.systemblocks.error_codes import *
-from awlsim.core.blocks import *
+from awlsim.core.systemblocks.systemblockinterface import *
+from awlsim.core.blocks import * #+cimport
+from awlsim.core.blockinterface import *
 from awlsim.core.identifier import *
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operators import * #+cimport
@@ -32,7 +34,7 @@ from awlsim.core.operators import * #+cimport
 from awlsim.awlcompiler.translator import *
 
 
-class SystemBlock(StaticCodeBlock):
+class SystemBlock(StaticCodeBlock): #+cdef
 	# The block identification. To be overridden by the subclass.
 	# The tuple is: (number, name, short_description)
 	name = (-1, "<unknown>", None)
@@ -77,10 +79,7 @@ class SystemBlock(StaticCodeBlock):
 			# Store the scratch operator for later use.
 			self.__interfaceOpers[field.name] = oper
 
-class SFBInterface(FBInterface):
-	pass
-
-class SFB(SystemBlock):
+class SFB(SystemBlock): #+cdef
 	"""SFB base class.
 	"""
 
@@ -90,10 +89,7 @@ class SFB(SystemBlock):
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFBInterface())
 
-class SFCInterface(FCInterface):
-	pass
-
-class SFC(SystemBlock):
+class SFC(SystemBlock): #+cdef
 	"""SFC base class.
 	"""
 

@@ -2,7 +2,7 @@
 #
 # AWL simulator - User defined data types (UDT)
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,13 +23,18 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.util import *
-from awlsim.core.blocks import *
+from awlsim.core.blocks import * #+cimport
 from awlsim.core.datastructure import *
 
 from awlsim.awlcompiler.translator import *
 
 
-class UDTField(object):
+__all__ = [
+	"UDT",
+]
+
+
+class UDTField(object): #+cdef
 	"""User defined data type (UDT) data field."""
 
 	def __init__(self, name, dataType, initBytes=None):
@@ -48,7 +53,10 @@ class UDTField(object):
 				 str(self.initBytes))
 		return "%s : %s" % (self.name, str(self.dataType))
 
-class UDT(Block):
+class StructRecursion(Exception):
+	pass
+
+class UDT(Block): #+cdef
 	"""User defined data type (UDT) block."""
 
 	# self.struct build status.
@@ -57,8 +65,6 @@ class UDT(Block):
 	STRUCT_BUILDING		= EnumGen.item # Currently building structs.
 	STRUCT_BUILT		= EnumGen.item # Structs are completely built.
 	EnumGen.end
-
-	class StructRecursion(Exception): pass
 
 	# Convert a RawAwlUDT() to UDT()
 	@classmethod
@@ -79,7 +85,7 @@ class UDT(Block):
 		self.fields = []
 		self.fieldNameMap = {}
 		# The built data structure.
-		self.struct = AwlStruct()
+		self._struct = AwlStruct()
 		self.__structState = self.STRUCT_NOT_BUILT
 
 	def addField(self, field):
@@ -107,7 +113,7 @@ class UDT(Block):
 				# Build the data structure of the embedded UDT.
 				try:
 					udt.buildDataStructure(cpu)
-				except self.StructRecursion:
+				except StructRecursion:
 					raise AwlSimError("Recursion detected while "
 						"trying to resolve embedded 'UDT %d' "
 						"in '%s'." %\
@@ -119,9 +125,9 @@ class UDT(Block):
 					(str(self), str(field)))
 		# Insert the field into the data structure.
 		# If the field is an embedded UDT, addField will handle it.
-		self.struct.addFieldNaturallyAligned(cpu, field.name,
-						     field.dataType,
-						     field.initBytes)
+		self._struct.addFieldNaturallyAligned(cpu, field.name,
+						      field.dataType,
+						      field.initBytes)
 
 	# Build self.struct out of self.fields
 	def buildDataStructure(self, cpu):
@@ -130,12 +136,12 @@ class UDT(Block):
 			return
 		if self.__structState == self.STRUCT_BUILDING:
 			# Whoops, we recursed! This is bad.
-			raise self.StructRecursion()
+			raise StructRecursion()
 		self.__structState = self.STRUCT_BUILDING
 		for field in self.fields:
 			self.__buildField(cpu, field)
 		# Sanity check
-		if self.struct.getSize() == 0:
+		if self._struct.getSize() == 0:
 			# This is not supported by S7.
 			# Awlsim _could_ support it, though.
 			raise AwlSimError("UDTs with zero size "

@@ -1,0 +1,22 @@
+cdef class Block(object):
+	cdef public int32_t index
+	cdef public object sourceRef
+	cdef public object __identHash
+
+cdef class CodeBlock(Block):
+	cdef public list insns
+	cdef public object labels
+	cdef public object interface
+	cdef public uint32_t tempAllocation
+
+cdef class StaticCodeBlock(CodeBlock):
+	pass
+
+cdef class OB(CodeBlock):
+	pass
+
+cdef class FB(CodeBlock):
+	pass
+
+cdef class FC(CodeBlock):
+	pass

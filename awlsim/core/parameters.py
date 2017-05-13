@@ -22,13 +22,12 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-#from awlsim.core.dynattrs cimport * #@cy
-
+from awlsim.core.dynattrs import * #+cimport
 from awlsim.core.datastructure import *
-from awlsim.core.datablocks import *
-from awlsim.core.blocks import *
+from awlsim.core.datablocks import * #+cimport
+from awlsim.core.blocks import * #+cimport
+from awlsim.core.blockinterface import *
 from awlsim.core.util import *
-from awlsim.core.dynattrs import * #@nocy
 
 
 class AwlParamAssign(DynAttrs):

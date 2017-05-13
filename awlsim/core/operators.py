@@ -303,7 +303,7 @@ class AwlOperator(object): #+cdef
 		if dataType.type == AwlDataType.TYPE_UDT_X:
 			try:
 				udt = cpu.udts[dataType.index]
-				if udt.struct.getSize() * 8 != self.width:
+				if udt._struct.getSize() * 8 != self.width:
 					raise ValueError
 			except (KeyError, ValueError) as e:
 				mismatch(dataType, self, self.width)

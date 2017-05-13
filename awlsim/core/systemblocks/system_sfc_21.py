@@ -126,7 +126,8 @@ class SFC21(SFC):
 			BVAL_ptr.setArea(BVAL_ptr.AREA_DB)
 			BVAL_ptrArea = BVAL_ptr.getArea()
 			try:
-				if (cpu.dbs[BVAL_dbNr].permissions & DB.PERM_READ) == 0:
+				db = cpu.dbs[BVAL_dbNr]
+				if (db.permissions & db.PERM_READ) == 0:
 					raise KeyError
 				cpu.run_AUF(AwlOperator(
 					AwlOperator.BLKREF_DB, 16,
@@ -143,8 +144,8 @@ class SFC21(SFC):
 			BLK_ptr.setArea(BLK_ptr.AREA_DI)
 			BLK_ptrArea = BLK_ptr.getArea()
 			try:
-				cpu = self.cpu
-				if (cpu.dbs[BLK_dbNr].permissions & DB.PERM_WRITE) == 0:
+				db = cpu.dbs[BLK_dbNr]
+				if (db.permissions & db.PERM_WRITE) == 0:
 					raise KeyError
 				cpu.run_AUF(AwlOperator(
 					AwlOperator.BLKREF_DI, 16,

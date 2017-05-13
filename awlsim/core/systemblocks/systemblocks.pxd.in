@@ -1,0 +1,11 @@
+from awlsim.core.blocks cimport *
+from awlsim.core.cpu cimport *
+
+cdef class SystemBlock(StaticCodeBlock):
+	cdef public S7CPU cpu
+
+cdef class SFB(SystemBlock):
+	pass
+
+cdef class SFC(SystemBlock):
+	pass

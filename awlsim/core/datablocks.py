@@ -2,7 +2,7 @@
 #
 # AWL simulator - datablocks
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,17 +27,19 @@ from awlsim.common.blockinfo import *
 from awlsim.core.util import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
+from awlsim.core.memory import * #+cimport
 from awlsim.core.datastructure import *
-from awlsim.core.blocks import *
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.blocks import * #+cimport
+from awlsim.core.offset import * #+cimport
 
 
-class DB(Block):
+class DB(Block): #+cdef
 	PERM_READ	= 1 << 0
 	PERM_WRITE	= 1 << 1
+
+#@cy	def __cinit__(self):
+#@cy		self.fetch = self.__fetch
+#@cy		self.store = self.__store
 
 	def __init__(self, index, codeBlock=None,
 		     permissions=(PERM_READ|PERM_WRITE)):
@@ -81,7 +83,7 @@ class DB(Block):
 	def __fetch_noPermission(self, operator, baseOffset=None):
 		raise AwlSimError("Fetch from read protected DB %d" % self.index)
 
-	fetch = __fetch
+	fetch = __fetch #@nocy
 
 	def __store(self, operator, value, baseOffset=AwlOffset()):
 		self.structInstance.memory.store(baseOffset + operator.value,
@@ -91,7 +93,7 @@ class DB(Block):
 	def __store_noPermission(self, operator, value, baseOffset=None):
 		raise AwlSimError("Store to write protected DB %d" % self.index)
 
-	store = __store
+	store = __store #@nocy
 
 	def getBlockInfo(self):
 		"""Get a BlockInfo instance for this block.

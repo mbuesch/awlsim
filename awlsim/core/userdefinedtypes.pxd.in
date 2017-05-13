@@ -1,0 +1,12 @@
+from awlsim.core.blocks cimport *
+
+cdef class UDTField(object):
+	cdef public object name
+	cdef public object dataType
+	cdef public object initBytes
+
+cdef class UDT(Block):
+	cdef public list fields
+	cdef public dict fieldNameMap
+	cdef public object _struct
+	cdef public uint32_t __structState

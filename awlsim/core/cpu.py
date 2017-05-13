@@ -40,9 +40,9 @@ from awlsim.core.instructions.all_insns import * #+cimport
 from awlsim.core.systemblocks.system_sfb import *
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.operators import * #+cimport
-from awlsim.core.blocks import *
-from awlsim.core.datablocks import *
-from awlsim.core.userdefinedtypes import *
+from awlsim.core.blocks import * #+cimport
+from awlsim.core.datablocks import * #+cimport
+from awlsim.core.userdefinedtypes import * #+cimport
 from awlsim.core.statusword import * #+cimport
 from awlsim.core.labels import *
 from awlsim.core.timers import *

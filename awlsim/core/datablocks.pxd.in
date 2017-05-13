@@ -1,0 +1,10 @@
+from awlsim.core.blocks cimport *
+
+cdef class DB(Block):
+	cdef public uint32_t permissions
+	cdef public object codeBlock
+	cdef public object __struct
+	cdef public object structInstance
+
+	cdef public object fetch
+	cdef public object store

@@ -29,6 +29,9 @@ from awlsim.core.datastructure import *
 from awlsim.core.util import *
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operators import * #+cimport
+from awlsim.core.blocks import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datablocks import * #+cimport
 
 from awlsim.awlcompiler.insntrans import *
 from awlsim.awlcompiler.optrans import *
@@ -503,8 +506,8 @@ class AwlSymResolver(object):
 					raise AwlSimError("UDT %d not found on CPU" %\
 						dataType.index)
 				assert(dataType.struct is None or
-				       dataType.struct is udt.struct)
-				dataType.setStruct(udt.struct)
+				       dataType.struct is udt._struct)
+				dataType.setStruct(udt._struct)
 
 			# Add the struct field offset of this field to the subOffset.
 			# Need to look it up in the parent struct.
