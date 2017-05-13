@@ -492,7 +492,7 @@ class ProjectWidget(QTabWidget):
 				return True
 		# We don't have this symbol, yet. Parse it.
 		try:
-			p = SymTabParser(self.__project.getCpuSpecs().getConfiguredMnemonics())
+			p = SymTabParser(self.__project.getCpuConf().getConfiguredMnemonics())
 			symbol = p.parseSym(symbolName, address,
 					    dataType, comment, 0)
 		except AwlSimError as e:
