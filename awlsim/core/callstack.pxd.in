@@ -1,6 +1,8 @@
 from awlsim.core.cpu cimport *
 from awlsim.core.blocks cimport *
 from awlsim.core.datablocks cimport *
+from awlsim.core.lstack cimport *
+from awlsim.core.memory cimport *
 
 cdef class CallStackElem(object):
 	cdef public S7CPU cpu
@@ -13,8 +15,8 @@ cdef class CallStackElem(object):
 	cdef public DB prevDbRegister
 	cdef public DB prevDiRegister
 	cdef public uint32_t prevAR2value
-	cdef public object lalloc
-	cdef public object localdata
+	cdef public LStackAllocator lalloc
+	cdef public AwlMemory localdata
 	cdef public list __outboundParams
 	cdef public dict __interfRefs
 

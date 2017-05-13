@@ -30,7 +30,7 @@ from awlsim.core.blocks import * #+cimport
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.parameters import *
 from awlsim.core.objectcache import *
-from awlsim.core.lstack import *
+from awlsim.core.lstack import * #+cimport
 from awlsim.core.util import *
 
 

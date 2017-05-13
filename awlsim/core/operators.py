@@ -26,7 +26,6 @@ from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.statusword import * #+cimport
-from awlsim.core.lstack import *
 from awlsim.core.util import *
 
 from awlsim.awlcompiler import AwlParser

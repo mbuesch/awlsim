@@ -1,0 +1,10 @@
+from awlsim.core.memory cimport *
+
+cdef class LStackAllocator(object):
+	cdef public AwlMemory localdata
+	cdef public uint32_t __maxAllocBytes
+	cdef public uint32_t __curAllocBytes
+	cdef public uint32_t __curAllocBits
+
+	cdef reset(self, uint32_t maxAllocBytes, uint32_t curAllocBytes=*)
+	cdef AwlOffset alloc(self, uint32_t nrBits)
