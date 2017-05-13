@@ -201,7 +201,7 @@ class S7Prog(object):
 		for libSelection in self.pendingLibSelections:
 			# Get the block class from the library.
 			libEntryCls = AwlLib.getEntryBySelection(libSelection)
-			assert(not libEntryCls.isSystemBlock)
+			assert(not libEntryCls._isSystemBlock)
 
 			# Get the effective block index.
 			effIndex = libSelection.getEffectiveEntryIndex()
@@ -210,7 +210,7 @@ class S7Prog(object):
 
 			# Create and translate the block
 			translator = AwlTranslator(self.cpu)
-			if libEntryCls.isFC:
+			if libEntryCls._isFC:
 				block = libEntryCls(index = effIndex)
 				if block.index in self.cpu.fcs and\
 				   not self.cpu.fcs[block.index].isLibraryBlock:
@@ -220,7 +220,7 @@ class S7Prog(object):
 						(block.index, block.index))
 				block = translator.translateLibraryCodeBlock(block)
 				self.cpu.fcs[block.index] = block
-			elif libEntryCls.isFB:
+			elif libEntryCls._isFB:
 				block = libEntryCls(index = effIndex)
 				if block.index in self.cpu.fbs and\
 				   not self.cpu.fbs[block.index].isLibraryBlock:

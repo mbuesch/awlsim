@@ -111,14 +111,20 @@ class CodeBlock(Block): #+cdef
 
 	# Simple and fast tests for checking block identity.
 	# These are partially overridden in the subclasses.
-	isOB		= False
-	isFC		= False
-	isFB		= False
-	isSystemBlock	= False
-	isLibraryBlock	= False
+	_isOB		= False
+	_isFC		= False
+	_isFB		= False
+	_isSystemBlock	= False
+	_isLibraryBlock	= False
 
 	def __init__(self, insns, index, interface):
+		self.isOB = self._isOB
+		self.isFC = self._isFC
+		self.isFB = self._isFB
+		self.isSystemBlock = self._isSystemBlock
+		self.isLibraryBlock = self._isLibraryBlock
 		Block.__init__(self, index)
+
 		self.insns = insns
 		self.labels = None
 		self.interface = interface
@@ -205,7 +211,7 @@ class StaticCodeBlock(CodeBlock): #+cdef
 class OB(CodeBlock): #+cdef
 
 	BLOCKTYPESTR	= "OB"
-	isOB = True
+	_isOB = True
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, OBInterface())
@@ -220,7 +226,7 @@ class OB(CodeBlock): #+cdef
 class FB(CodeBlock): #+cdef
 
 	BLOCKTYPESTR	= "FB"
-	isFB = True
+	_isFB = True
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, FBInterface())
@@ -235,7 +241,7 @@ class FB(CodeBlock): #+cdef
 class FC(CodeBlock): #+cdef
 
 	BLOCKTYPESTR	= "FC"
-	isFC = True
+	_isFC = True
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, FCInterface())

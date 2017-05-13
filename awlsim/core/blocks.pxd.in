@@ -4,8 +4,14 @@ cdef class Block(object):
 	cdef public object __identHash
 
 cdef class CodeBlock(Block):
+	cdef public _Bool isOB
+	cdef public _Bool isFC
+	cdef public _Bool isFB
+	cdef public _Bool isSystemBlock
+	cdef public _Bool isLibraryBlock
+
 	cdef public list insns
-	cdef public object labels
+	cdef public list labels
 	cdef public object interface
 	cdef public uint32_t tempAllocation
 

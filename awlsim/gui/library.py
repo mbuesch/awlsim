@@ -134,14 +134,14 @@ class SysActionWidget(GenericActionWidget):
 	def __pasteCall(self):
 		blockNumber, symbolName, blockDesc = self.systemBlockCls.name
 		self._pasteCallGeneric("%s %d" % (self.blockPrefix, blockNumber),
-				       self.systemBlockCls.isFB,
+				       self.systemBlockCls._isFB,
 				       self.systemBlockCls.interfaceFields)
 		self.finish.emit()
 
 	def __pasteCallSym(self):
 		blockNumber, symbolName, blockDesc = self.systemBlockCls.name
 		self._pasteCallGeneric('"%s"' % symbolName,
-				       self.systemBlockCls.isFB,
+				       self.systemBlockCls._isFB,
 				       self.systemBlockCls.interfaceFields)
 		self.addSymbol.emit(symbolName,
 				    "%s %s" % (self.blockPrefix, blockNumber),
@@ -187,8 +187,8 @@ class LibActionWidget(GenericActionWidget):
 	def updateData(self, libEntryCls):
 		self.libEntryCls = libEntryCls
 
-		prefix = "FC" if libEntryCls.isFC else "FB"
-		typeStr = "FUNCTION" if libEntryCls.isFC else "FUNCTION_BLOCK"
+		prefix = "FC" if libEntryCls._isFC else "FB"
+		typeStr = "FUNCTION" if libEntryCls._isFC else "FUNCTION_BLOCK"
 		self.blockName = "%s %d" % (prefix, libEntryCls.staticIndex)
 
 		desc = self._blockToInterfaceText(self.blockName,
@@ -237,14 +237,14 @@ class LibActionWidget(GenericActionWidget):
 
 	def __pasteCall(self):
 		self._pasteCallGeneric(self.blockName,
-				       self.libEntryCls.isFB,
+				       self.libEntryCls._isFB,
 				       self.libEntryCls.interfaceFields)
 		self.addLibrary.emit(self.libEntryCls().makeSelection())
 		self.finish.emit()
 
 	def __pasteCallSym(self):
 		self._pasteCallGeneric('"%s"' % self.libEntryCls.symbolName,
-				       self.libEntryCls.isFB,
+				       self.libEntryCls._isFB,
 				       self.libEntryCls.interfaceFields)
 		self.addSymbol.emit(self.libEntryCls.symbolName,
 				    self.blockName,
@@ -369,7 +369,7 @@ class LibraryDialog(QDialog):
 						  key=lambda c: c.staticIndex)):
 			if libCls.broken:
 				continue
-			absName = "%s %d" % ("FC" if libCls.isFC else "FB",\
+			absName = "%s %d" % ("FC" if libCls._isFC else "FB",\
 					     libCls.staticIndex)
 			symName = '"%s"' % libCls.symbolName
 			if libCls.description:

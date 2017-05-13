@@ -40,7 +40,7 @@ class SystemBlock(StaticCodeBlock): #+cdef
 	name = (-1, "<unknown>", None)
 
 	BLOCKTYPESTR	= "SystemBlock"
-	isSystemBlock	= True
+	_isSystemBlock	= True
 
 	def __init__(self, cpu, interface):
 		insns = [
@@ -84,7 +84,7 @@ class SFB(SystemBlock): #+cdef
 	"""
 
 	BLOCKTYPESTR	= "SFB"
-	isFB = True
+	_isFB = True
 
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFBInterface())
@@ -94,7 +94,7 @@ class SFC(SystemBlock): #+cdef
 	"""
 
 	BLOCKTYPESTR	= "SFC"
-	isFC = True
+	_isFC = True
 
 	def __init__(self, cpu):
 		SystemBlock.__init__(self, cpu, SFCInterface())

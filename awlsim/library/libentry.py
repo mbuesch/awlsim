@@ -65,7 +65,7 @@ class AwlLibEntry(StaticCodeBlock): #+cdef
 	awlCodeVersion = "0.1"
 
 	# Mark this block as a library block.
-	isLibraryBlock = True
+	_isLibraryBlock = True
 
 	def __init__(self, index, interface):
 		if index is None:
@@ -218,7 +218,7 @@ class AwlLibEntry(StaticCodeBlock): #+cdef
 class AwlLibFC(AwlLibEntry): #+cdef
 	"""Base class for library FCs."""
 
-	isFC = True
+	_isFC = True
 
 	def __init__(self, index=None):
 		AwlLibEntry.__init__(self, index, AwlLibFCInterface())
@@ -261,7 +261,7 @@ class AwlLibFC(AwlLibEntry): #+cdef
 class AwlLibFB(AwlLibEntry):
 	"""Base class for library FBs."""
 
-	isFB = True
+	_isFB = True
 
 	def __init__(self, index=None):
 		AwlLibEntry.__init__(self, index, AwlLibFBInterface())

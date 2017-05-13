@@ -101,7 +101,7 @@ class AwlLib(object):
 
 		def sortKey(cls):
 			return cls.staticIndex +\
-			       0x10000 if cls.isFB else 0
+			       0x10000 if cls._isFB else 0
 
 		for cls in sorted(self.entryClasses, key=sortKey):
 			yield cls
@@ -112,10 +112,10 @@ class AwlLib(object):
 
 		for cls in self.entryClasses:
 			if selection.getEntryType() == selection.TYPE_FC:
-				if not cls.isFC:
+				if not cls._isFC:
 					continue
 			else:
-				if not cls.isFB:
+				if not cls._isFB:
 					continue
 			if cls.staticIndex != selection.getEntryIndex():
 				continue
