@@ -826,7 +826,7 @@ class S7CPU(object): #+cdef
 			self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	def __runOB(self, block): #@nocy
-#@cy	cdef __runOB(self, object block):
+#@cy	cdef __runOB(self, CodeBlock block):
 #@cy		cdef AwlInsn insn
 #@cy		cdef CallStackElem cse
 #@cy		cdef CallStackElem prevCse
@@ -844,8 +844,8 @@ class S7CPU(object): #+cdef
 		self.ar1.reset()
 		self.ar2.reset()
 		self.statusWord.reset()
-		self.callStack = [ CallStackElem(self, block, None, None, (), True) ]
-		cse = self.callStackTop = self.callStack[-1]
+		cse = self.callStackTop = CallStackElem(self, block, None, None, (), True)
+		self.callStack = [ cse, ]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
 			self.obTempPresetHandlers[block.index].generate(cse.localdata.dataBytes)
@@ -1100,6 +1100,7 @@ class S7CPU(object): #+cdef
 	def __call_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CallStackElem cse
+#@cy		cdef DB db
 
 		fb = self.fbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
@@ -1125,6 +1126,7 @@ class S7CPU(object): #+cdef
 	def __call_SFB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CallStackElem cse
+#@cy		cdef DB db
 
 		sfb = self.sfbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
@@ -1253,6 +1255,8 @@ class S7CPU(object): #+cdef
 
 	def run_AUF(self, dbOper): #@nocy
 #@cy	cdef run_AUF(self, AwlOperator dbOper):
+#@cy		cdef DB db
+
 		dbOper = dbOper.resolve()
 		try:
 			db = self.dbs[dbOper.value.byteOffset]
@@ -1861,6 +1865,8 @@ class S7CPU(object): #+cdef
 
 	def __storeDB(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storeDB(self, AwlOperator operator, object value, frozenset enforceWidth):
+#@cy		cdef DB db
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 

@@ -27,6 +27,7 @@ from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
+from awlsim.core.datablocks import * #+cimport
 from awlsim.core.parameters import *
 from awlsim.core.objectcache import *
 from awlsim.core.lstack import *
@@ -65,8 +66,8 @@ class CallStackElem(object): #+cdef
 		     instanceDB=None, instanceBaseOffset=None,	#@nocy
 		     parameters=(),				#@nocy
 		     isRawCall=False):				#@nocy
-#@cy	def __init__(self, S7CPU cpu, object block,
-#@cy		     object instanceDB=None, AwlOffset instanceBaseOffset=None,
+#@cy	def __init__(self, S7CPU cpu, CodeBlock block,
+#@cy		     DB instanceDB=None, AwlOffset instanceBaseOffset=None,
 #@cy		     tuple parameters=(),
 #@cy		     _Bool isRawCall=False):
 		# Init the call stack element.
