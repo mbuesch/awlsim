@@ -1,0 +1,7 @@
+cdef class ObjectCache(object):
+	cdef public object __createCallback
+	cdef public list __cache
+
+	cdef get(self, callbackData=*)
+	cdef put(self, obj)
+	cdef reset(self)

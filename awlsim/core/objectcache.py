@@ -2,7 +2,7 @@
 #
 # Generic object cache
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,19 +23,19 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 
-class ObjectCache(object):
+class ObjectCache(object): #+cdef
 	def __init__(self, createCallback):
 		self.__createCallback = createCallback
 		self.reset()
 
-	def get(self, callbackData=None):
+	def get(self, callbackData=None): #+cdef
 		try:
 			return self.__cache.pop()
 		except IndexError:
 			return self.__createCallback(callbackData)
 
-	def put(self, obj):
+	def put(self, obj): #+cdef
 		self.__cache.append(obj)
 
-	def reset(self):
+	def reset(self): #+cdef
 		self.__cache = []

@@ -29,7 +29,7 @@ from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.parameters import *
-from awlsim.core.objectcache import *
+from awlsim.core.objectcache import * #+cimport
 from awlsim.core.lstack import * #+cimport
 from awlsim.core.util import *
 
@@ -52,15 +52,19 @@ class CallStackElem(object): #+cdef
 		"localdata",
 		"__outboundParams",
 		"__interfRefs",
+		"lallocCache",
 	)
 
-	lallocCache = ObjectCache(
+	_lallocCache = ObjectCache(
 		lambda cpu: LStackAllocator(cpu.specs.nrLocalbytes)
 	)
 
 	@classmethod
 	def resetCache(cls):
-		cls.lallocCache.reset()
+#@cy		cdef ObjectCache lallocCache
+
+		lallocCache = cls._lallocCache
+		lallocCache.reset()
 
 	def __init__(self, cpu, block,				#@nocy
 		     instanceDB=None, instanceBaseOffset=None,	#@nocy
@@ -79,6 +83,9 @@ class CallStackElem(object): #+cdef
 		# parameters -> A tuple of AwlParamAssign instances
 		#               representing the parameter assignments in CALL insn.
 		# isRawCall -> True, if the calling instruction was UC or CC.
+
+#@cy		cdef ObjectCache lallocCache
+
 		self.cpu = cpu
 		self.parenStack = []
 		self.ip = 0
@@ -92,7 +99,8 @@ class CallStackElem(object): #+cdef
 		# Prepare the localdata stack.
 		# (This also clears all previous allocations on the cached
 		# region, if any.)
-		self.lalloc = self.lallocCache.get(cpu)
+		lallocCache = self.lallocCache = self._lallocCache
+		self.lalloc = lallocCache.get(cpu)
 		self.lalloc.reset(cpu.specs.nrLocalbytes, #FIXME we should not allow full nrLocalbytes range here.
 				  block.tempAllocation)
 		self.localdata = self.lalloc.localdata
