@@ -27,8 +27,9 @@ from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
+from awlsim.core.blockinterface import *
 from awlsim.core.datablocks import * #+cimport
-from awlsim.core.parameters import *
+from awlsim.core.parameters import * #+cimport
 from awlsim.core.objectcache import * #+cimport
 from awlsim.core.lstack import * #+cimport
 from awlsim.core.util import *

@@ -2,7 +2,7 @@
 #
 # AWL simulator - call parameters
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,42 +22,22 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.dynattrs import * #+cimport
 from awlsim.core.datastructure import *
+from awlsim.core.operators import * #+cimport
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.util import *
 
 
-class AwlParamAssign(DynAttrs):
-	"Parameter assignment for CALL"
+__all__ = [
+	"AwlParamAssign",
+]
 
-	dynAttrs = {
-		# isInbound attribute is True, if this is an
-		# IN or IN_OUT parameter assignment.
-		"isInbound"	: lambda self, name: self.__isInbound(),
 
-		# isOutbound attribute is True, if this is an
-		# OUT or IN_OUT parameter assignment.
-		"isOutbound"	: lambda self, name: self.__isOutbound(),
-
-		# lValueDataType attribute is the AwlDataType of the
-		# parameter's l-value.
-		"lValueDataType"	: lambda self, name: self.__lValueDataType(),
-
-		# lValueStructField attribute is the AwlStructField corresponding
-		# to this parameter's l-value.
-		"lValueStructField"	: lambda self, name: self.__lValueStructField(),
-
-		# interfaceFieldIndex attribute is the index number for the
-		# parameter assignment l-value in the block interface refs.
-		"interfaceFieldIndex"	: lambda self, name: self.__interfaceFieldIndex(),
-
-		# scratchSpaceOp attribute holds the possible AwlOperator for
-		# scratch space allocation.
-		"scratchSpaceOp"	: None,
-	}
+class AwlParamAssign(object): #+cdef
+	"""Parameter assignment for CALL.
+	"""
 
 	def __init__(self, lvalueName, rvalueOp):
 		# A parameter assignment consists of an lvalue and an rvalue:
@@ -66,20 +46,73 @@ class AwlParamAssign(DynAttrs):
 		# 'rvalueOp' is the AwlOperator that represents the rvalue.
 		self.lvalueName = lvalueName
 		self.rvalueOp = rvalueOp
+
+		# scratchSpaceOp attribute holds the possible AwlOperator for
+		# scratch space allocation.
+		# This element is assigned during runtime.
+		self.scratchSpaceOp = AwlOperator(type=AwlOperator.IMM,
+						  width=32, value=42)
+
 		# 'interface' is the BlockInterface of the called block.
-		# This element is assigned later in the translation phase.
+		# This element is assigned later in the translation phase
+		# with a call to setInterface()
 		self.interface = None
 
-	def __eq__(self, other):
+		# isInbound attribute is True, if this is an
+		# IN or IN_OUT parameter assignment.
+		# This element is assigned later in the translation phase
+		# with a call to setInterface()
+		self.isInbound = False
+
+		# isOutbound attribute is True, if this is an
+		# OUT or IN_OUT parameter assignment.
+		# This element is assigned later in the translation phase
+		# with a call to setInterface()
+		self.isOutbound = False
+
+		# lValueDataType attribute is the AwlDataType of the
+		# parameter's l-value.
+		# This element is assigned later in the translation phase
+		# with a call to setInterface()
+		self.lValueDataType = None
+
+		# lValueStructField attribute is the AwlStructField corresponding
+		# to this parameter's l-value.
+		# This element is assigned later in the translation phase
+		# with a call to setInterface()
+		self.lValueStructField = None
+
+		# interfaceFieldIndex attribute is the index number for the
+		# parameter assignment l-value in the block interface refs.
+		# This element is assigned later in the translation phase
+		# with a call to setInterface()
+		self.interfaceFieldIndex = -1
+
+	def __eq__(self, other): #@nocy
+#@cy	cpdef __eq(self, object other):
 		return (self is other) or (\
 			isinstance(other, AwlParamAssign) and\
 			self.lvalueName == other.lvalueName and\
-			self.rvalueOp == other.rvalueOp and\
-			super(AwlParamAssign, self).__eq__(other)\
+			self.rvalueOp == other.rvalueOp\
 		)
 
-	def __ne__(self, other):
-		return not self.__eq__(other)
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
+
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy
+
+	def setInterface(self, interface):
+		self.interface = interface
+		self.isInbound = self.__isInbound()
+		self.isOutbound = self.__isOutbound()
+		self.lValueDataType = self.__lValueDataType()
+		self.lValueStructField = self.__lValueStructField()
+		self.interfaceFieldIndex = self.__interfaceFieldIndex()
 
 	def __isInbound(self):
 		field = self.interface.getFieldByName(self.lvalueName)
@@ -91,13 +124,16 @@ class AwlParamAssign(DynAttrs):
 		return field.fieldType == BlockInterfaceField.FTYPE_OUT or\
 		       field.fieldType == BlockInterfaceField.FTYPE_INOUT
 
-	def __lValueStructField(self):
-		# Find the l-value struct field
-		return self.interface.struct.getField(self.lvalueName)
-
 	def __lValueDataType(self):
 		# Get the l-value data type
 		return self.interface.getFieldByName(self.lvalueName).dataType
+
+	def __lValueStructField(self):
+		# Find the l-value struct field
+		_struct = self.interface.struct
+		if _struct:
+			return _struct.getField(self.lvalueName)
+		return None
 
 	def __interfaceFieldIndex(self):
 		# Find the index number for the l-value

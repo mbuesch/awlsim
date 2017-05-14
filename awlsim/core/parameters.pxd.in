@@ -1,0 +1,14 @@
+from awlsim.core.operators cimport *
+
+cdef class AwlParamAssign(object):
+	cdef public object lvalueName
+	cdef public AwlOperator rvalueOp
+	cdef public AwlOperator scratchSpaceOp
+	cdef public object interface
+	cdef public _Bool isInbound
+	cdef public _Bool isOutbound
+	cdef public object lValueDataType
+	cdef public object lValueStructField
+	cdef public int32_t interfaceFieldIndex
+
+	cpdef __eq(self, object other)

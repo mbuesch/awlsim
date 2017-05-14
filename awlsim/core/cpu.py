@@ -32,7 +32,6 @@ from awlsim.common.blockinfo import *
 
 from awlsim.library.libentry import *
 
-#from awlsim.core.cpu cimport * #@cy
 from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
@@ -252,7 +251,7 @@ class S7Prog(object):
 			try:
 				for param in insn.params:
 					# Add interface references to the parameter assignment.
-					param.interface = calledCodeBlock.interface
+					param.setInterface(calledCodeBlock.interface)
 			except AwlSimError as e:
 				e.setInsn(insn)
 				raise e
