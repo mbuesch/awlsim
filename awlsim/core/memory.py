@@ -662,9 +662,12 @@ class AwlMemory(object): #+cdef
 		return bool(self.dataBytes)	#@cy2
 
 	def __repr__(self):
+#@cy		cdef list ret
+#@cy		cdef uint64_t i
+
 		ret = [ 'AwlMemory(b"', ]
-		for b in self.dataBytes:
-			ret.append("\\x%02X" % b)
+		for i in range(len(self.dataBytes)):
+			ret.append("\\x%02X" % self.dataBytes[i])
 		ret.append('")')
 		return "".join(ret)
 
