@@ -2,7 +2,7 @@
 #
 # AWL data types helper functions
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,38 @@ from awlsim.common.compat import *
 from awlsim.common.util import *
 
 import struct
+
+
+__all__ = [
+	"swapEndianWord",
+	"swapEndianDWord",
+	"byteToSignedPyInt",
+	"wordToSignedPyInt",
+	"dwordToSignedPyInt",
+	"pyFloatToDWord",
+	"dwordToPyFloat",
+	"minNormPosFloat32DWord",
+	"minNormPosFloat32",
+	"minNormNegFloat32DWord",
+	"minNormNegFloat32",
+	"maxNormNegFloat32DWord",
+	"maxNormNegFloat32",
+	"maxNormPosFloat32DWord",
+	"maxNormPosFloat32",
+	"posInfDWord",
+	"posInfFloat",
+	"negInfDWord",
+	"negInfFloat",
+	"pNaNDWord",
+	"nNaNDWord",
+	"nNaNFloat",
+	"isNaN",
+	"isDenormalPyFloat",
+	"pyFloatEqual",
+	"floatEqual",
+	"roundUp",
+	"intDivRoundUp",
+]
 
 
 __floatStruct = struct.Struct(str('>f'))
