@@ -54,7 +54,8 @@ class _Pin(object):
 		elif self.halType == HAL_FLOAT:
 			assert(isinstance(v, float))
 		elif self.halType == HAL_S32:
-			assert(v >= -2147483648 and v <= 2147483647)
+			assert(v >= -2147483648 and v <= 2147483647) #@nocy
+#@cy			assert(v >= -2147483648LL and v <= 2147483647LL)
 		elif self.halType == HAL_U32:
 			assert(v >= 0 and v <= 2147483647)
 		else:

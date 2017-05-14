@@ -46,7 +46,8 @@ class AwlInsn_RNDN(AwlInsn): #+cdef
 			if rounded < 0 and\
 			   not pyFloatEqual(float(rounded), accu1):
 				rounded -= 1
-			if accu1 > 2147483647 or accu1 < -2147483648:
+			if accu1 > 2147483647 or accu1 < -2147483648: #@nocy
+#@cy			if accu1 > 2147483647LL or accu1 < -2147483648LL:
 				raise ValueError
 		except ValueError:
 			s.OV, s.OS = 1, 1

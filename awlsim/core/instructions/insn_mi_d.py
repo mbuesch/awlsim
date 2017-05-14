@@ -53,5 +53,6 @@ class AwlInsn_MI_D(AwlInsn): #+cdef
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
-		if diff > 0x7FFFFFFF or diff < -2147483648:
+		if diff > 0x7FFFFFFF or diff < -2147483648: #@nocy
+#@cy		if diff > 0x7FFFFFFFLL or diff < -2147483648LL:
 			s.OV, s.OS = 1, 1

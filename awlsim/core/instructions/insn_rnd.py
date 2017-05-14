@@ -52,7 +52,8 @@ class AwlInsn_RND(AwlInsn): #+cdef
 					accu1_int += 1 if accu1_int > 0 else -1
 			else:
 				accu1_int = int(round(accu1))
-			if accu1_int > 2147483647 or accu1_int < -2147483648:
+			if accu1_int > 2147483647 or accu1_int < -2147483648: #@nocy
+#@cy			if accu1_int > 2147483647LL or accu1_int < -2147483648LL:
 				raise ValueError
 		except ValueError:
 			s.OV, s.OS = 1, 1
@@ -68,7 +69,8 @@ class AwlInsn_RND(AwlInsn): #+cdef
 		accu1 = self.cpu.accu1.getPyFloat()
 		try:
 			accu1_int = int(round(accu1))
-			if accu1_int > 2147483647 or accu1_int < -2147483648:
+			if accu1_int > 2147483647 or accu1_int < -2147483648: #@nocy
+#@cy			if accu1_int > 2147483647LL or accu1_int < -2147483648LL:
 				raise ValueError
 		except ValueError:
 			s.OV, s.OS = 1, 1

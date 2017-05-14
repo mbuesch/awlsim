@@ -676,8 +676,8 @@ class AwlDataType(OptionalImmutable):
 			return None
 		try:
 			immediate = int(token[2:], 10)
-			if immediate > 2147483647 or\
-			   immediate < -2147483648:
+			if immediate > 2147483647 or immediate < -2147483648: #@nocy
+#@cy			if immediate > 2147483647LL or immediate < -2147483648LL:
 				raise AwlSimError("32-bit immediate overflow")
 			immediate &= 0xFFFFFFFF
 		except ValueError as e:
