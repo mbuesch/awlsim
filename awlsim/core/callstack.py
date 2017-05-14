@@ -35,6 +35,11 @@ from awlsim.core.lstack import * #+cimport
 from awlsim.core.util import *
 
 
+__all__ = [
+	"CallStackElem",
+]
+
+
 class CallStackElem(object): #+cdef
 	"Call stack element"
 
@@ -67,14 +72,14 @@ class CallStackElem(object): #+cdef
 		lallocCache = cls._lallocCache
 		lallocCache.reset()
 
-	def __init__(self, cpu, block,				#@nocy
-		     instanceDB=None, instanceBaseOffset=None,	#@nocy
-		     parameters=(),				#@nocy
-		     isRawCall=False):				#@nocy
+	def __init__(self, cpu, block,			#@nocy
+		     instanceDB, instanceBaseOffset,	#@nocy
+		     parameters,			#@nocy
+		     isRawCall):			#@nocy
 #@cy	def __init__(self, S7CPU cpu, CodeBlock block,
-#@cy		     DB instanceDB=None, AwlOffset instanceBaseOffset=None,
-#@cy		     tuple parameters=(),
-#@cy		     _Bool isRawCall=False):
+#@cy		     DB instanceDB, AwlOffset instanceBaseOffset,
+#@cy		     tuple parameters,
+#@cy		     _Bool isRawCall):
 		# Init the call stack element.
 		# cpu -> The CPU this runs on.
 		# block -> The code block that is being called.
@@ -110,7 +115,6 @@ class CallStackElem(object): #+cdef
 
 		# Handle parameters
 		self.__outboundParams = []
-#@cy		self.__interfRefs = {}
 		if parameters and not isRawCall:
 			if block.isFB:
 				structInstance, callByRef_Types =\
@@ -184,6 +188,8 @@ class CallStackElem(object): #+cdef
 	def getInterfIdxOper(self, interfaceFieldIndex): #@nocy
 #@cy	cpdef AwlOperator getInterfIdxOper(self, uint32_t interfaceFieldIndex):
 		try:
+#@cy			if self.__interfRefs is None:
+#@cy				raise KeyError
 			return self.__interfRefs[interfaceFieldIndex]
 		except (AttributeError, KeyError) as e:
 			# Huh, no interface ref? We might have been called via raw call.

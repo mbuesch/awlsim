@@ -1089,7 +1089,7 @@ class S7CPU(object): #+cdef
 	def __call_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fc = self.fcs[blockOper.value.byteOffset]
-		return CallStackElem(self, fc, None, None, parameters)
+		return CallStackElem(self, fc, None, None, parameters, False)
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
@@ -1103,7 +1103,7 @@ class S7CPU(object): #+cdef
 
 		fb = self.fbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
-		cse = CallStackElem(self, fb, db, AwlOffset(), parameters)
+		cse = CallStackElem(self, fb, db, AwlOffset(), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
@@ -1115,7 +1115,7 @@ class S7CPU(object): #+cdef
 	def __call_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		sfc = self.sfcs[blockOper.value.byteOffset]
-		return CallStackElem(self, sfc, None, None, parameters)
+		return CallStackElem(self, sfc, None, None, parameters, False)
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
@@ -1129,7 +1129,7 @@ class S7CPU(object): #+cdef
 
 		sfb = self.sfbs[blockOper.value.byteOffset]
 		db = self.dbs[dbOper.value.byteOffset]
-		cse = CallStackElem(self, sfb, db, AwlOffset(), parameters)
+		cse = CallStackElem(self, sfb, db, AwlOffset(), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
@@ -1165,7 +1165,7 @@ class S7CPU(object): #+cdef
 #@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fb = self.fbs[blockOper.value.fbNumber]
 		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
-		cse = CallStackElem(self, fb, self.diRegister, base, parameters)
+		cse = CallStackElem(self, fb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
 
@@ -1176,7 +1176,7 @@ class S7CPU(object): #+cdef
 
 		sfb = self.sfbs[blockOper.value.fbNumber]
 		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
-		cse = CallStackElem(self, sfb, self.diRegister, base, parameters)
+		cse = CallStackElem(self, sfb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
 
