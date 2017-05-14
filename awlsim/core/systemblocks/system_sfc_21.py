@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.wordpacker import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.cpu import * #+cimport

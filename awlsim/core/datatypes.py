@@ -22,13 +22,12 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.common.datatypehelpers import *
+from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.immutable import *
 
 from awlsim.core.util import *
 from awlsim.core.timers import *
-from awlsim.core.offset import * #@nocy
-#from awlsim.core.offset cimport * #@cy
+from awlsim.core.offset import * #+cimport
 from awlsim.core.identifier import *
 
 #from awlsim.core.memory cimport * #@cy
@@ -711,11 +710,11 @@ class AwlDataType(OptionalImmutable):
 	@classmethod
 	def tryParseImmediate_REAL(cls, token):
 		try:
-			immediate = float(token)
-			immediate = pyFloatToDWord(immediate)
+			immFloat = float(token)
+			immWord = pyFloatToDWord(immFloat)
 		except ValueError:
 			return None
-		return immediate
+		return immWord
 
 	@classmethod
 	def __parseGenericTime(cls, token, allowNegative):

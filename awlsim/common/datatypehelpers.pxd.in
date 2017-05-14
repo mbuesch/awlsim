@@ -1,0 +1,39 @@
+cdef uint16_t swapEndianWord(uint16_t word)
+cdef uint32_t swapEndianDWord(uint32_t dword)
+
+cdef int32_t byteToSignedPyInt(uint8_t byte)
+cdef int32_t wordToSignedPyInt(uint16_t word)
+cdef int32_t dwordToSignedPyInt(uint32_t dword)
+
+cdef uint32_t pyFloatToDWord(double pyfl)
+cdef double dwordToPyFloat(uint32_t dword)
+
+cdef public uint32_t minNormPosFloat32DWord
+cdef public double minNormPosFloat32
+
+cdef public uint32_t minNormNegFloat32DWord
+cdef public double minNormNegFloat32
+
+cdef public uint32_t maxNormNegFloat32DWord
+cdef public double maxNormNegFloat32
+
+cdef public uint32_t maxNormPosFloat32DWord
+cdef public double maxNormPosFloat32
+
+cdef public uint32_t posInfDWord
+cdef public double posInfFloat
+
+cdef public uint32_t negInfDWord
+cdef public double negInfFloat
+
+cdef public uint32_t pNaNDWord
+
+cdef public uint32_t nNaNDWord
+cdef public double nNaNFloat
+
+cdef _Bool isNaN(uint32_t dword)
+cdef _Bool isDenormalPyFloat(double pyfl)
+cdef _Bool pyFloatEqual(double pyfl0, double pyfl1)
+cdef _Bool floatEqual(object fl0, object fl1)
+cdef uint32_t roundUp(uint32_t n, uint32_t s)
+cdef uint32_t intDivRoundUp(uint32_t n, uint32_t d)

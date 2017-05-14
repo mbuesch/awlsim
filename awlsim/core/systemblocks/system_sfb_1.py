@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.datatypehelpers import * #+cimport
+
 from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.util import *
 

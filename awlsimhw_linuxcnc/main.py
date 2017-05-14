@@ -26,7 +26,7 @@ from awlsim.common.util import *
 
 #from awlsimhw_linuxcnc.main cimport * #@cy
 
-from awlsim.common.datatypehelpers import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.hardware_params import *
 from awlsim.core.hardware import * #+cimport

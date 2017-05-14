@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.cpuconfig import *
-from awlsim.common.datatypehelpers import *
+from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
 from awlsim.core.operators import * #+cimport
