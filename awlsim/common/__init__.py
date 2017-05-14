@@ -4,7 +4,6 @@ from awlsim.common.compat import *
 from awlsim.common.blocker import *
 from awlsim.common.cpuspecs import *
 from awlsim.common.cpuconfig import *
-from awlsim.common.datatypehelpers import *
 from awlsim.common.debug import *
 from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
