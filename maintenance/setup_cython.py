@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.2
+#   v1.3
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -135,8 +135,15 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 			line = re.sub(r'\bimport\b', "cimport", line)
 
 		# Comment all lines containing #@nocy
+		# or #@cyX for the not matching version.
 		if "#@nocy" in stripLine:
 			line = "#" + line
+		if sys.version_info[0] < 3:
+			if "#@cy3" in stripLine:
+				line = "#" + line
+		else:
+			if "#@cy2" in stripLine:
+				line = "#" + line
 
 		if not basicOnly:
 			# Automagic types
