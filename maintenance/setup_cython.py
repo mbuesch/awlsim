@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.3
+#   v1.4
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -122,12 +122,36 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 				line = uncomment(line, "#@cy3")
 
 		# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
-		if "#+cdef" in stripLine:
+		if "#+cdef-" in stripLine:
+			# +cdef-foo-bar is the extended cdef patching.
+			# It adds cdef and any additional characters to the
+			# start of the line. Dashes are replaced with spaces.
+
+			# Get the additional text
+			idx = line.find("#+cdef-")
+			cdefText = line[idx+2 : ]
+			cdefText = cdefText.replace("-", " ").rstrip("\r\n")
+
+			# Get the initial space length
+			spaceCnt = 0
+			while spaceCnt < len(line) and line[spaceCnt].isspace():
+				spaceCnt += 1
+
+			# Construct the new line
+			line = line[ : spaceCnt] + cdefText + " " + line[spaceCnt : ]
+		elif "#+cdef" in stripLine:
+			# Simple cdef patching:
+			# def -> cdef
+			# class -> cdef class
+
 			if stripLine.startswith("class"):
 				line = re.sub(r'\bclass\b', "cdef class", line)
 			else:
 				line = re.sub(r'\bdef\b', "cdef", line)
 		if "#+cpdef" in stripLine:
+			# Simple cpdef patching:
+			# def -> cpdef
+
 			line = re.sub(r'\bdef\b', "cpdef", line)
 
 		# Replace import by cimport as requested by #+cimport
