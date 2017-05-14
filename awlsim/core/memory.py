@@ -655,11 +655,11 @@ class AwlMemory(object): #+cdef
 	def __len__(self):
 		return len(self.dataBytes)
 
-	def __bool__(self):
-		return bool(self.dataBytes)
+	def __bool__(self):			#@cy3
+		return bool(self.dataBytes)	#@cy3
 
-	def __nonzero__(self):
-		return bool(self.dataBytes)
+	def __nonzero__(self):			#@cy2
+		return bool(self.dataBytes)	#@cy2
 
 	def __repr__(self):
 		ret = [ 'AwlMemory(b"', ]
