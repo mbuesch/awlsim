@@ -4,6 +4,7 @@ from awlsim.core.datablocks cimport *
 from awlsim.core.lstack cimport *
 from awlsim.core.memory cimport *
 from awlsim.core.objectcache cimport *
+from awlsim.core.parameters cimport *
 
 cdef class CallStackElem(object):
 	cdef public S7CPU cpu
@@ -22,6 +23,6 @@ cdef class CallStackElem(object):
 	cdef public dict __interfRefs
 	cdef public ObjectCache lallocCache
 
-	cpdef getInterfIdxOper(self, uint32_t interfaceFieldIndex)
-	cdef __FB_trans_dbpointer(self, object param, object rvalueOp)
+	cpdef AwlOperator getInterfIdxOper(self, uint32_t interfaceFieldIndex)
+	cdef bytearray __FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef handleBlockExit(self)
