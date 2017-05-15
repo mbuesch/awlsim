@@ -44,9 +44,9 @@ class AwlInsn_TAN(AwlInsn): #+cdef
 
 		accu1 = self.cpu.accu1.getPyFloat()
 		if pyFloatEqual(accu1, math.pi / 2):
-			accu1 = posInfFloat
+			accu1 = floatConst.posInfFloat
 		elif pyFloatEqual(accu1, -math.pi / 2):
-			accu1 = negInfFloat
+			accu1 = floatConst.negInfFloat
 		else:
 			accu1 = math.tan(accu1)
 			for extremum in (-1.0, 0.0, 1.0):

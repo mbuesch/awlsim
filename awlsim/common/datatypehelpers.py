@@ -35,21 +35,7 @@ __all__ = [
 	"dwordToSignedPyInt",
 	"pyFloatToDWord",
 	"dwordToPyFloat",
-	"minNormPosFloat32DWord",
-	"minNormPosFloat32",
-	"minNormNegFloat32DWord",
-	"minNormNegFloat32",
-	"maxNormNegFloat32DWord",
-	"maxNormNegFloat32",
-	"maxNormPosFloat32DWord",
-	"maxNormPosFloat32",
-	"posInfDWord",
-	"posInfFloat",
-	"negInfDWord",
-	"negInfFloat",
-	"pNaNDWord",
-	"nNaNDWord",
-	"nNaNFloat",
+	"floatConst",
 	"isNaN",
 	"isDenormalPyFloat",
 	"pyFloatEqual",
@@ -150,36 +136,40 @@ def dwordToPyFloat(dword,						#@nocy
 #	return __floatStruct.unpack(__dwordStruct.pack(dword))[0]	#@cy
 
 
-# The smallest normalized positive 32-bit float.
-minNormPosFloat32DWord = 0x00000001					#+cdef-public-uint32_t
-minNormPosFloat32 = dwordToPyFloat(minNormPosFloat32DWord)		#+cdef-public-double
+class FloatConst(object): #+cdef
+	def __init__(self):
+		# The smallest normalized positive 32-bit float.
+		self.minNormPosFloat32DWord = 0x00000001
+		self.minNormPosFloat32 = dwordToPyFloat(self.minNormPosFloat32DWord)
 
-# The smallest normalized negative 32-bit float.
-minNormNegFloat32DWord = 0xFF7FFFFF					#+cdef-public-uint32_t
-minNormNegFloat32 = dwordToPyFloat(minNormNegFloat32DWord)		#+cdef-public-double
+		# The smallest normalized negative 32-bit float.
+		self.minNormNegFloat32DWord = 0xFF7FFFFF
+		self.minNormNegFloat32 = dwordToPyFloat(self.minNormNegFloat32DWord)
 
-# The biggest normalized negative 32-bit float.
-maxNormNegFloat32DWord = 0x80000001					#+cdef-public-uint32_t
-maxNormNegFloat32 = dwordToPyFloat(maxNormNegFloat32DWord)		#+cdef-public-double
+		# The biggest normalized negative 32-bit float.
+		self.maxNormNegFloat32DWord = 0x80000001
+		self.maxNormNegFloat32 = dwordToPyFloat(self.maxNormNegFloat32DWord)
 
-# The biggest normalized positive 32-bit float.
-maxNormPosFloat32DWord = 0x7F7FFFFF					#+cdef-public-uint32_t
-maxNormPosFloat32 = dwordToPyFloat(maxNormPosFloat32DWord)		#+cdef-public-double
+		# The biggest normalized positive 32-bit float.
+		self.maxNormPosFloat32DWord = 0x7F7FFFFF
+		self.maxNormPosFloat32 = dwordToPyFloat(self.maxNormPosFloat32DWord)
 
-# Positive infinity
-posInfDWord = 0x7F800000						#+cdef-public-uint32_t
-posInfFloat = dwordToPyFloat(posInfDWord)				#+cdef-public-double
+		# Positive infinity
+		self.posInfDWord = 0x7F800000
+		self.posInfFloat = dwordToPyFloat(self.posInfDWord)
 
-# Negative infinity
-negInfDWord = 0xFF800000						#+cdef-public-uint32_t
-negInfFloat = dwordToPyFloat(negInfDWord)				#+cdef-public-double
+		# Negative infinity
+		self.negInfDWord = 0xFF800000
+		self.negInfFloat = dwordToPyFloat(self.negInfDWord)
 
-# Positive NaN
-pNaNDWord = 0x7FFFFFFF							#+cdef-public-uint32_t
+		# Positive NaN
+		self.pNaNDWord = 0x7FFFFFFF
 
-# Negative NaN
-nNaNDWord = 0xFFFFFFFF							#+cdef-public-uint32_t
-nNaNFloat = dwordToPyFloat(nNaNDWord)					#+cdef-public-double
+		# Negative NaN
+		self.nNaNDWord = 0xFFFFFFFF
+		self.nNaNFloat = dwordToPyFloat(self.nNaNDWord)
+
+floatConst = FloatConst() #+cdef-FloatConst
 
 
 # Check if dword is positive or negative NaN
@@ -190,13 +180,13 @@ def isNaN(dword):							#@nocy
 
 # Check if a Python float is in the denormalized range.
 def isDenormalPyFloat(pyfl,						#@nocy
-		      __min=minNormPosFloat32,				#@nocy
-		      __max=maxNormNegFloat32):				#@nocy
+		      __min=floatConst.minNormPosFloat32,		#@nocy
+		      __max=floatConst.maxNormNegFloat32):		#@nocy
 	return ((pyfl > 0.0 and pyfl < __min) or			#@nocy
 	        (pyfl < 0.0 and pyfl > __max))				#@nocy
 #cdef _Bool isDenormalPyFloat(double pyfl):				#@cy
-#	return ((pyfl > 0.0 and pyfl < minNormPosFloat32) or		#@cy
-#	        (pyfl < 0.0 and pyfl > maxNormNegFloat32))		#@cy
+#	return ((pyfl > 0.0 and pyfl < floatConst.minNormPosFloat32) or	#@cy
+#	        (pyfl < 0.0 and pyfl > floatConst.maxNormNegFloat32))	#@cy
 
 
 # Check if two Python floats are equal.
@@ -216,13 +206,13 @@ def floatEqual(fl0, fl1):						#@nocy
 
 
 # Constant value sanity checks.
-assert(pyFloatToDWord(minNormPosFloat32) == minNormPosFloat32DWord)
-assert(pyFloatToDWord(minNormNegFloat32) == minNormNegFloat32DWord)
-assert(pyFloatToDWord(maxNormNegFloat32) == maxNormNegFloat32DWord)
-assert(pyFloatToDWord(maxNormPosFloat32) == maxNormPosFloat32DWord)
-assert(pyFloatToDWord(posInfFloat) == posInfDWord)
-assert(pyFloatToDWord(negInfFloat) == negInfDWord)
-assert(pyFloatToDWord(nNaNFloat) == nNaNDWord)
+assert(pyFloatToDWord(floatConst.minNormPosFloat32) == floatConst.minNormPosFloat32DWord)
+assert(pyFloatToDWord(floatConst.minNormNegFloat32) == floatConst.minNormNegFloat32DWord)
+assert(pyFloatToDWord(floatConst.maxNormNegFloat32) == floatConst.maxNormNegFloat32DWord)
+assert(pyFloatToDWord(floatConst.maxNormPosFloat32) == floatConst.maxNormPosFloat32DWord)
+assert(pyFloatToDWord(floatConst.posInfFloat) == floatConst.posInfDWord)
+assert(pyFloatToDWord(floatConst.negInfFloat) == floatConst.negInfDWord)
+assert(pyFloatToDWord(floatConst.nNaNFloat) == floatConst.nNaNDWord)
 
 
 # Round up integer 'n' to a multiple of integer 's'

@@ -47,8 +47,8 @@ class AwlInsn_LN(AwlInsn): #+cdef
 				raise ValueError
 			accu1 = math.log(accu1)
 		except ValueError:
-			self.cpu.accu1.setDWord(pNaNDWord)
-			accu1 = nNaNFloat
+			self.cpu.accu1.setDWord(floatConst.pNaNDWord)
+			accu1 = floatConst.nNaNFloat
 		else:
 			self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.statusWord.setForFloatingPoint(accu1)

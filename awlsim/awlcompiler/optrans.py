@@ -197,13 +197,13 @@ class AwlOpTranslator(object):
 		"__CNST_E" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
 					  pyFloatToDWord(math.e)), 1),
 		"__CNST_PINF" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
-					     posInfDWord), 1),
+					     floatConst.posInfDWord), 1),
 		"__CNST_NINF" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
-					     negInfDWord), 1),
+					     floatConst.negInfDWord), 1),
 		"__CNST_PNAN" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
-					     pNaNDWord), 1),
+					     floatConst.pNaNDWord), 1),
 		"__CNST_NNAN" : OpDescriptor(AwlOperator(AwlOperator.IMM_REAL, 32,
-					     nNaNDWord), 1),
+					     floatConst.nNaNDWord), 1),
 	}
 
 	__english2german = {

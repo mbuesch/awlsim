@@ -47,8 +47,8 @@ class AwlInsn_DI_R(AwlInsn): #+cdef
 			quo = accu2 / accu1
 		except ZeroDivisionError:
 			if accu2 >= 0.0:
-				quo = posInfFloat
+				quo = floatConst.posInfFloat
 			else:
-				quo = negInfFloat
+				quo = floatConst.negInfFloat
 		self.cpu.accu1.setPyFloat(quo)
 		self.cpu.statusWord.setForFloatingPoint(quo)
