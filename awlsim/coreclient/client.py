@@ -37,6 +37,20 @@ import errno
 import time
 
 
+class MsgWaiter(object):
+	"""Message waiter queue entry.
+	"""
+
+	def __init__(self, checkCallback):
+		self.checkCallback = checkCallback
+		self.rxMsg = None
+
+	def receiveMsg(self, rxMsg):
+		if self.checkCallback(rxMsg):
+			self.rxMsg = rxMsg
+			return True
+		return False
+
 class AwlSimClient(object):
 	"""Awlsim coreserver client API.
 	"""
@@ -47,6 +61,7 @@ class AwlSimClient(object):
 		self.serverProcessPort = None
 		self.__transceiver = None
 		self.__defaultTimeout = 3.0
+		self.__msgWaiters = []
 
 	def spawnServer(self,
 			interpreter=None,
@@ -203,7 +218,7 @@ class AwlSimClient(object):
 				(readableSockaddr, str(e)))
 		printInfo("AwlSimClient: Connected.")
 		self.__transceiver = AwlSimMessageTransceiver(sock, readableSockaddr)
-		self.lastRxMsg = None
+		self.__msgWaiters = []
 
 		# Ping the server
 		try:
@@ -325,7 +340,6 @@ class AwlSimClient(object):
 	#          0 -> No timeout (= Nonblocking). Return immediately.
 	#          x -> Timeout, in seconds.
 	def processMessages(self, timeout=None):
-		self.lastRxMsg = None
 		if not self.__transceiver:
 			return False
 		try:
@@ -344,13 +358,16 @@ class AwlSimClient(object):
 				self.__transceiver.peerInfoString)
 		if not msg:
 			return False
-		self.lastRxMsg = msg
-		try:
-			handler = self.__msgRxHandlers[msg.msgId]
-		except KeyError:
-			raise AwlSimError("AwlSimClient: Received unsupported "
-				"message 0x%02X" % msg.msgId)
-		handler(self, msg)
+		for waiter in self.__msgWaiters:
+			if waiter.receiveMsg(msg):
+				break
+		else:
+			try:
+				handler = self.__msgRxHandlers[msg.msgId]
+			except KeyError:
+				raise AwlSimError("AwlSimClient: Received unsupported "
+					"message 0x%02X" % msg.msgId)
+			handler(self, msg)
 		return True
 
 	def sleep(self, seconds):
@@ -369,22 +386,25 @@ class AwlSimClient(object):
 	def __sendAndWait(self, txMsg, checkRxMsg,
 			  waitTimeout=None,
 			  ignoreMaintenanceRequests=False):
-		self.__send(txMsg)
-		now = monotonic_time()
-		end = now + (self.__defaultTimeout if waitTimeout is None\
-			     else waitTimeout)
-		while now < end:
-			try:
-				if self.processMessages(0.1):
-					rxMsg = self.lastRxMsg
-					if rxMsg is not None and\
-					   checkRxMsg(rxMsg):
-						return rxMsg
-			except MaintenanceRequest as e:
-				if not ignoreMaintenanceRequests:
-					raise e
+		waiter = MsgWaiter(checkRxMsg)
+		self.__msgWaiters.append(waiter)
+		try:
+			self.__send(txMsg)
 			now = monotonic_time()
-		raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
+			end = now + (self.__defaultTimeout if waitTimeout is None\
+				     else waitTimeout)
+			while now < end:
+				try:
+					if self.processMessages(0.1):
+						if waiter.rxMsg is not None:
+							return waiter.rxMsg
+				except MaintenanceRequest as e:
+					if not ignoreMaintenanceRequests:
+						raise e
+				now = monotonic_time()
+			raise AwlSimError("AwlSimClient: Timeout waiting for server reply.")
+		finally:
+			self.__msgWaiters.remove(waiter)
 
 	def __sendAndWaitFor_REPLY(self, msg, timeout=None,
 				   ignoreMaintenanceRequests=False):
