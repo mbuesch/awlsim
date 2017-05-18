@@ -40,6 +40,7 @@ fullBuild = getEnvBool("AWLSIM_FULL_BUILD")
 buildCython = getEnvBool("AWLSIM_CYTHON", True)
 setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
 				  getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])
+setup_cython.profileEnabled = bool(getEnvInt("AWLSIM_PROFILE") > 0)
 
 
 def pyCythonPatchLine(line, basicOnly=False):

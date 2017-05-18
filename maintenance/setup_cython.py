@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.4
+#   v1.5
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -28,11 +28,9 @@ import shutil
 import hashlib
 import re
 
-from distutils.core import setup
-from distutils.extension import Extension
-
 
 parallelBuild = False
+profileEnabled = False
 ext_modules = []
 CythonBuildExtension = None
 
@@ -279,7 +277,13 @@ def registerCythonModule(baseDir, sourceModName):
 			if baseName != "__init__":
 				# Create a distutils Extension for the module
 				ext_modules.append(
-					Extension(cyModName, [toPyx])
+					_Cython_Distutils_Extension(
+						cyModName,
+						[toPyx],
+						cython_directives={
+							"profile" : profileEnabled,
+						}
+					)
 				)
 
 def registerCythonModules():
@@ -308,9 +312,11 @@ def cythonBuildPossible():
 		      "Windows installer.")
 		return False
 	try:
-		from Cython.Distutils import build_ext
+		from Cython.Distutils import build_ext, Extension
 		global _Cython_Distutils_build_ext
+		global _Cython_Distutils_Extension
 		_Cython_Distutils_build_ext = build_ext
+		_Cython_Distutils_Extension = Extension
 	except ImportError as e:
 		print("WARNING: Could not build the CYTHON modules: "
 		      "%s" % str(e))

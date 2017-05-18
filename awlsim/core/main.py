@@ -29,6 +29,14 @@ from awlsim.core.cpu import * #+cimport
 from awlsim.core.hardware import * #+cimport
 from awlsim.core.hardware_loader import *
 
+import sys
+import os
+
+
+__all__ = [
+	"AwlSim",
+]
+
 
 def AwlSim_decorator_profiled(profileLevel):
 	"""Profiled call decorator.
@@ -64,7 +72,7 @@ class AwlSim(object): #+cdef
 	profiled		= AwlSim_decorator_profiled
 	throwsAwlSimError	= AwlSim_decorator_throwsAwlSimError
 
-	def __init__(self, profileLevel=0):
+	def __init__(self):
 		self.__registeredHardware = []
 		self.__registeredHardwareCount = 0
 		self._fatalHwErrors = True
@@ -72,6 +80,10 @@ class AwlSim(object): #+cdef
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
 		self.cpu.setPeripheralWriteCallback(self.__peripheralWriteCallback)
 
+		try:
+			profileLevel = int(dict(os.environ).get("AWLSIM_PROFILE", "0"))
+		except ValueError:
+			profileLevel = 0
 		self.__setProfiler(profileLevel)
 
 	def getCPU(self):
@@ -215,6 +227,21 @@ class AwlSim(object): #+cdef
 
 		if self._profileLevel >= 1:
 			self._profileStop()
+
+	@throwsAwlSimError
+	def shutdown(self):
+		"""Shutdown the Awlsim core.
+		This will unregister all hardware modules and shut down execution.
+		"""
+		self.unregisterAllHardware()
+		ps = self.getProfileStats()
+		if ps:
+			sys.stdout.write("\n\nAwlsim core profile stats "
+					 "(level %d) follow:\n" %\
+					 self._profileLevel)
+			sys.stdout.write(ps)
+			sys.stdout.write("\n")
+			sys.stdout.flush()
 
 	def unregisterAllHardware(self, inCpuReset = False):
 		newHwList = []

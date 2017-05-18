@@ -61,7 +61,6 @@ def usage():
 	print(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
 	print(" -T|--clock-mem ADDR   Force clock memory address (Default: off)")
 	print(" -m|--mnemonics auto   Force mnemonics type: en, de, auto")
-	print(" -P|--profile 0        Set profiling level (Default: 0)")
 	print(" -L|--loglevel LVL     Set the log level:")
 	print("                       0: Log nothing")
 	print("                       1: Log errors")
@@ -90,6 +89,15 @@ def usage():
 	print(" --list-sfc-verbose    Verbose SFC list")
 	print(" --list-sfb            Print a list of all supported SFBs")
 	print(" --list-sfb-verbose    Verbose SFB list")
+	print("")
+	print("Environment variables:")
+	print("  AWLSIM_PROFILE       =0  Disable profiling (default)")
+	print("                       =1  Enable core cycle profiling")
+	print("                       =2  Enable full core profiling (including startup)")
+	print("")
+	print("  AWLSIM_CYTHON        =0  Do not attempt to use Cython core (default)")
+	print("                       =1  Attempt to use Cython core, but fall back to Python")
+	print("                       =2  Enforce Cython core")
 
 def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
 	for block in sorted(dictValues(blockTable),
@@ -205,7 +213,7 @@ def run(inputFile):
 			symTables.append(tab)
 
 		writeStdout("Initializing core...\n")
-		s = AwlSim(profileLevel = opt_profile)
+		s = AwlSim()
 		s.reset()
 
 		# Load hardware modules
@@ -267,13 +275,7 @@ def run(inputFile):
 				    "(%d: %s)...\n" % (e.requestType, str(e)))
 	finally:
 		if s:
-			s.unregisterAllHardware()
-			ps = s.getProfileStats()
-			if ps:
-				writeStdout("\n\nProfile stats (level %d) follow:\n" %\
-					    opt_profile)
-				writeStdout(ps)
-				writeStdout("\n")
+			s.shutdown()
 	return ExitCodes.EXIT_OK
 
 def runWithServerBackend(inputFile):
@@ -403,7 +405,6 @@ def main():
 	global opt_mnemonics
 	global opt_hwmods
 	global opt_hwinfos
-	global opt_profile
 	global opt_loglevel
 	global opt_connect
 	global opt_connectTo
@@ -420,7 +421,6 @@ def main():
 	opt_mnemonics = None
 	opt_hwmods = []
 	opt_hwinfos = []
-	opt_profile = 0
 	opt_loglevel = Logging.LOG_INFO
 	opt_connect = None
 	opt_connectTo = False
@@ -504,11 +504,6 @@ def main():
 				sys.exit(1)
 		if o in ("-I", "--hardware-info"):
 			opt_hwinfos.append(v.split(':')[0])
-		if o in ("-P", "--profile"):
-			try:
-				opt_profile = int(v)
-			except ValueError:
-				printError("-P|--profile: Invalid profile level")
 		if o in ("-L", "--loglevel"):
 			try:
 				opt_loglevel = int(v)

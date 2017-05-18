@@ -1303,7 +1303,7 @@ class AwlSimServer(object): #+cdef
 	def shutdown(self):
 		printInfo("Shutting down.")
 		self.close()
-		self.__sim.unregisterAllHardware()
+		self.__sim.shutdown()
 
 	def signalHandler(self, sig, frame):
 		printInfo("Received signal %d" % sig)
