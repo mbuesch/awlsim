@@ -5,6 +5,7 @@ from awlsim.core.lstack cimport *
 from awlsim.core.memory cimport *
 from awlsim.core.objectcache cimport *
 from awlsim.core.parameters cimport *
+from awlsim.core.operators cimport *
 
 cdef class CallStackElem(object):
 	cdef public S7CPU cpu

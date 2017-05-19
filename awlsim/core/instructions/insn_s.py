@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 
@@ -39,7 +40,7 @@ class AwlInsn_S(AwlInsn): #+cdef
 
 		s, oper = self.cpu.statusWord,\
 			self.op0.resolve(True)
-		if oper.type == AwlOperator.MEM_Z:
+		if oper.operType == AwlOperatorTypes.MEM_Z:
 			self.cpu.getCounter(oper.value.byteOffset).set(s.VKE)
 			s.OR, s.NER = 0, 0
 		else:

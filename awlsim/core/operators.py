@@ -24,13 +24,12 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 
+from awlsim.core.operatortypes import *
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.statusword import * #+cimport
 from awlsim.core.util import *
-
-from awlsim.awlcompiler import AwlParser
 
 
 class AwlOperator(object): #+cdef
@@ -40,133 +39,9 @@ class AwlOperator(object): #+cdef
 	L  MW 10
 	"""
 
-	EnumGen.start	# Operator types
-
-	__IMM_START	= EnumGen.item
-	IMM		= EnumGen.item	# Immediate value (constant)
-	IMM_REAL	= EnumGen.item	# Real
-	IMM_S5T		= EnumGen.item	# S5T immediate
-	IMM_TIME	= EnumGen.item	# T# immediate
-	IMM_DATE	= EnumGen.item	# D# immediate
-	IMM_TOD		= EnumGen.item	# TOD# immediate
-	IMM_DT		= EnumGen.item	# DT# immediate
-	IMM_PTR		= EnumGen.item	# Pointer immediate (P#x.y, P#area x.y, P#DBn.DBX x.y)
-	IMM_STR		= EnumGen.item	# STRING immediate ('abc')
-	__IMM_END	= EnumGen.item
-
-	MEM_E		= EnumGen.item	# Input
-	MEM_A		= EnumGen.item	# Output
-	MEM_M		= EnumGen.item	# Flags
-	MEM_L		= EnumGen.item	# Localstack
-	MEM_VL		= EnumGen.item	# Parent localstack (indirect access)
-	MEM_DB		= EnumGen.item	# Global datablock
-	MEM_DI		= EnumGen.item	# Instance datablock
-	MEM_T		= EnumGen.item	# Timer
-	MEM_Z		= EnumGen.item	# Counter
-	MEM_PA		= EnumGen.item	# Peripheral output
-	MEM_PE		= EnumGen.item	# Peripheral input
-
-	MEM_STW		= EnumGen.item	# Status word bit read
-	MEM_STW_Z	= EnumGen.item	# Status word "==0" read
-	MEM_STW_NZ	= EnumGen.item	# Status word "<>0" read
-	MEM_STW_POS	= EnumGen.item	# Status word ">0" read
-	MEM_STW_NEG	= EnumGen.item	# Status word "<0" read
-	MEM_STW_POSZ	= EnumGen.item	# Status word ">=0" read
-	MEM_STW_NEGZ	= EnumGen.item	# Status word "<=0" read
-	MEM_STW_UO	= EnumGen.item	# Status word "UO" read
-
-	MEM_DBLG	= EnumGen.item	# DB-register: DB length
-	MEM_DBNO	= EnumGen.item	# DB-register: DB number
-	MEM_DILG	= EnumGen.item	# DI-register: DB length
-	MEM_DINO	= EnumGen.item	# DI-register: DB number
-
-	MEM_AR2		= EnumGen.item	# AR2 register
-
-	BLKREF_FC	= EnumGen.item	# FC reference
-	BLKREF_SFC	= EnumGen.item	# SFC reference
-	BLKREF_FB	= EnumGen.item	# FB reference
-	BLKREF_SFB	= EnumGen.item	# SFB reference
-	BLKREF_UDT	= EnumGen.item	# UDT reference
-	BLKREF_DB	= EnumGen.item	# DB reference
-	BLKREF_DI	= EnumGen.item	# DI reference
-	BLKREF_OB	= EnumGen.item	# OB reference (only symbol table)
-	BLKREF_VAT	= EnumGen.item	# VAT reference (only symbol table)
-	MULTI_FB	= EnumGen.item	# FB multiinstance reference
-	MULTI_SFB	= EnumGen.item	# SFB multiinstance reference
-
-	LBL_REF		= EnumGen.item	# Label reference
-	SYMBOLIC	= EnumGen.item	# Classic symbolic reference ("xyz")
-	NAMED_LOCAL	= EnumGen.item	# Named local reference (#abc)
-	NAMED_LOCAL_PTR	= EnumGen.item	# Pointer to named local (P##abc)
-	NAMED_DBVAR	= EnumGen.item	# Named DB variable reference (DBx.VAR)
-
-	INDIRECT	= EnumGen.item	# Indirect access
-	UNSPEC		= EnumGen.item	# Not (yet) specified memory region
-
-	# Virtual operators used internally in awlsim, only.
-	# These operators do not have standard AWL mnemonics.
-	VIRT_ACCU	= EnumGen.item	# Accu
-	VIRT_AR		= EnumGen.item	# AR
-	VIRT_DBR	= EnumGen.item	# DB and DI registers
-
-	EnumGen.end	# Operator types
-
 	# Type to string map
-	type2str = {
-		IMM		: "IMMEDIATE",
-		IMM_REAL	: "REAL",
-		IMM_S5T		: "S5T",
-		IMM_TIME	: "TIME",
-		IMM_DATE	: "DATE",
-		IMM_TOD		: "TOD",
-		IMM_DT		: "DT",
-		IMM_PTR		: "P#",
+	type2str = AwlOperatorTypes.type2str
 
-		MEM_E		: "E",
-		MEM_A		: "A",
-		MEM_M		: "M",
-		MEM_L		: "L",
-		MEM_VL		: "VL",
-		MEM_DB		: "DB",
-		MEM_DI		: "DI",
-		MEM_T		: "T",
-		MEM_Z		: "Z",
-		MEM_PA		: "PA",
-		MEM_PE		: "PE",
-
-		MEM_DBLG	: "DBLG",
-		MEM_DBNO	: "DBNO",
-		MEM_DILG	: "DILG",
-		MEM_DINO	: "DINO",
-		MEM_AR2		: "AR2",
-
-		MEM_STW		: "STW",
-		MEM_STW_Z	: "==0",
-		MEM_STW_NZ	: "<>0",
-		MEM_STW_POS	: ">0",
-		MEM_STW_NEG	: "<0",
-		MEM_STW_POSZ	: ">=0",
-		MEM_STW_NEGZ	: "<=0",
-		MEM_STW_UO	: "UO",
-
-		LBL_REF		: "LABEL",
-
-		BLKREF_FC	: "BLOCK_FC",
-		BLKREF_SFC	: "BLOCK_SFC",
-		BLKREF_FB	: "BLOCK_FB",
-		BLKREF_SFB	: "BLOCK_SFB",
-		BLKREF_UDT	: "BLOCK_UDT",
-		BLKREF_DB	: "BLOCK_DB",
-		BLKREF_DI	: "BLOCK_DI",
-		BLKREF_OB	: "BLOCK_OB",
-		BLKREF_VAT	: "BLOCK_VAT",
-
-		INDIRECT	: "__INDIRECT",
-
-		VIRT_ACCU	: "__ACCU",
-		VIRT_AR		: "__AR",
-		VIRT_DBR	: "__DBR",
-	}
 
 	# Extended-operator flag.
 	isExtended = False #@nocy
@@ -194,20 +69,20 @@ class AwlOperator(object): #+cdef
 #@cy		self.compound = False
 #@cy		self.dataType = None
 
-	def __init__(self, type, width, value, insn=None): #@nocy
-#@cy	def __init__(self, uint32_t type, int32_t width, object value, object insn=None):
-		# type -> The operator type ID number. See "Operator types" above.
+	def __init__(self, operType, width, value, insn): #@nocy
+#@cy	def __init__(self, uint32_t operType, int32_t width, object value, AwlInsn insn):
+		# operType -> The operator type ID number. See "Operator types" above.
 		# width -> The bit width of the access.
 		# value -> The value. May be an AwlOffset or a string (depends on type).
 		# insn -> The instruction this operator is used in. May be None.
-		self.type, self.width, self.value, self.insn =\
-			type, width, value, insn
+		self.operType, self.width, self.value, self.insn =\
+			operType, width, value, insn
 
 	def __eq__(self, other): #@nocy
 #@cy	cdef __eq(self, AwlOperator other):
 		return (self is other) or (\
 			isinstance(other, AwlOperator) and\
-			self.type == other.type and\
+			self.operType == other.operType and\
 			self.width == other.width and\
 			self.value == other.value and\
 			super(AwlOperator, self).__eq__(other)\
@@ -232,10 +107,10 @@ class AwlOperator(object): #+cdef
 			dupValue = self.value
 		else:
 			dupValue = self.value.dup()
-		oper = AwlOperator(type = self.type,
-				   width = self.width,
-				   value = dupValue,
-				   insn = self.insn)
+		oper = AwlOperator(operType=self.operType,
+				   width=self.width,
+				   value=dupValue,
+				   insn=self.insn)
 		oper.isExtended = self.isExtended
 		oper.labelIndex = self.labelIndex
 		oper.interfaceIndex = self.interfaceIndex
@@ -252,8 +127,8 @@ class AwlOperator(object): #+cdef
 
 	def isImmediate(self): #@nocy
 #@cy	cpdef _Bool isImmediate(self):
-		return self.type > self.__IMM_START and\
-		       self.type < self.__IMM_END
+		return self.operType > AwlOperatorTypes._IMM_START and\
+		       self.operType < AwlOperatorTypes._IMM_END
 
 	def _raiseTypeError(self, actualType, expectedTypes):
 		expectedTypes = [ self.type2str[t] for t in sorted(expectedTypes) ]
@@ -263,12 +138,12 @@ class AwlOperator(object): #+cdef
 			insn=self.insn)
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None, widths=None):
-		if self.type == AwlOperator.NAMED_LOCAL or\
-		   self.type == AwlOperator.NAMED_LOCAL_PTR:
+		if self.operType == AwlOperatorTypes.NAMED_LOCAL or\
+		   self.operType == AwlOperatorTypes.NAMED_LOCAL_PTR:
 			return #FIXME we should check type for these, too.
 		types = toSet(types)
-		if not self.type in types:
-			self._raiseTypeError(self.type, types)
+		if not self.operType in types:
+			self._raiseTypeError(self.operType, types)
 		if lowerLimit is not None:
 			if self.value < lowerLimit:
 				raise AwlSimError("Operator value too small",
@@ -287,10 +162,10 @@ class AwlOperator(object): #+cdef
 	def checkDataTypeCompat(self, cpu, dataType):
 		assert(isinstance(dataType, AwlDataType))
 
-		if self.type in (AwlOperator.NAMED_LOCAL,
-				 AwlOperator.NAMED_LOCAL_PTR,
-				 AwlOperator.NAMED_DBVAR,
-				 AwlOperator.SYMBOLIC):
+		if self.operType in (AwlOperatorTypes.NAMED_LOCAL,
+				     AwlOperatorTypes.NAMED_LOCAL_PTR,
+				     AwlOperatorTypes.NAMED_DBVAR,
+				     AwlOperatorTypes.SYMBOLIC):
 			# These are checked again after resolve.
 			# So don't check them now.
 			return
@@ -310,7 +185,7 @@ class AwlOperator(object): #+cdef
 				mismatch(dataType, self, self.width)
 		elif dataType.type in {AwlDataType.TYPE_POINTER,
 				       AwlDataType.TYPE_ANY}:
-			if self.type == AwlOperator.IMM_PTR:
+			if self.operType == AwlOperatorTypes.IMM_PTR:
 				if dataType.type == AwlDataType.TYPE_POINTER and\
 				   self.width > 48:
 					raise AwlSimError("Invalid immediate pointer "
@@ -324,7 +199,7 @@ class AwlOperator(object): #+cdef
 				# This will raise AwlSimError on failure.
 				self.makePointer()
 		elif dataType.type == AwlDataType.TYPE_CHAR:
-			if self.type == AwlOperator.IMM_STR:
+			if self.operType == AwlOperatorTypes.IMM_STR:
 				if self.width != (2 + 1) * 8:
 					raise AwlSimError("String to CHAR parameter "
 						"must be only one single character "
@@ -337,7 +212,7 @@ class AwlOperator(object): #+cdef
 				if self.width != dataType.width:
 					mismatch(dataType, self, self.width)
 		elif dataType.type == AwlDataType.TYPE_STRING:
-			if self.type == AwlOperator.IMM_STR:
+			if self.operType == AwlOperatorTypes.IMM_STR:
 				if self.width > dataType.width:
 					mismatch(dataType, self, self.width)
 			else:
@@ -358,7 +233,7 @@ class AwlOperator(object): #+cdef
 	def resolve(self, store=True): #@nocy
 #@cy	cpdef AwlOperator resolve(self, _Bool store=True):
 		# This already is a direct operator.
-		if self.type == self.NAMED_LOCAL:
+		if self.operType == AwlOperatorTypes.NAMED_LOCAL:
 			# This is a named-local access (#abc).
 			# Resolve it to an interface-operator.
 			return self.insn.cpu.callStackTop.getInterfIdxOper(self.interfaceIndex).resolve(store)
@@ -374,7 +249,7 @@ class AwlOperator(object): #+cdef
 #@cy		cdef uint32_t area
 
 		try:
-			area = AwlIndirectOp.optype2area[self.type]
+			area = AwlIndirectOp.optype2area[self.operType]
 		except KeyError as e:
 			raise AwlSimError("Could not transform operator '%s' "
 				"into a pointer." % str(self))
@@ -401,7 +276,7 @@ class AwlOperator(object): #+cdef
 						  dbNr = self.value.dbNumber)
 
 	def __repr__(self):
-		if self.type == self.IMM:
+		if self.operType == AwlOperatorTypes.IMM:
 			if self.width == 1:
 				return "TRUE" if (self.value & 1) else "FALSE"
 			elif self.width == 8:
@@ -410,25 +285,25 @@ class AwlOperator(object): #+cdef
 				return str(wordToSignedPyInt(self.value))
 			elif self.width == 32:
 				return "L#" + str(dwordToSignedPyInt(self.value))
-		if self.type == self.IMM_REAL:
+		if self.operType == AwlOperatorTypes.IMM_REAL:
 			return str(dwordToPyFloat(self.value))
-		elif self.type == self.IMM_S5T:
+		elif self.operType == AwlOperatorTypes.IMM_S5T:
 			seconds = Timer.s5t_to_seconds(self.value)
 			return "S5T#" + AwlDataType.formatTime(seconds)
-		elif self.type == self.IMM_TIME:
+		elif self.operType == AwlOperatorTypes.IMM_TIME:
 			return "T#" + AwlDataType.formatTime(self.value / 1000.0)
-		elif self.type == self.IMM_DATE:
+		elif self.operType == AwlOperatorTypes.IMM_DATE:
 			return "D#" #TODO
-		elif self.type == self.IMM_TOD:
+		elif self.operType == AwlOperatorTypes.IMM_TOD:
 			return "TOD#" #TODO
-		elif self.type == self.IMM_PTR:
+		elif self.operType == AwlOperatorTypes.IMM_PTR:
 			return self.value.toPointerString()
-		elif self.type == self.IMM_STR:
+		elif self.operType == AwlOperatorTypes.IMM_STR:
 			strLen = self.value[1]
 			return "'" + self.value[2:2+strLen].decode(AwlSource.COMPAT_ENCODING) + "'"
-		elif self.type in (self.MEM_A, self.MEM_E,
-				   self.MEM_M, self.MEM_L, self.MEM_VL):
-			pfx = self.type2str[self.type]
+		elif self.operType in (AwlOperatorTypes.MEM_A, AwlOperatorTypes.MEM_E,
+				   AwlOperatorTypes.MEM_M, AwlOperatorTypes.MEM_L, AwlOperatorTypes.MEM_VL):
+			pfx = self.type2str[self.operType]
 			if self.width == 1:
 				return "%s %d.%d" %\
 					(pfx, self.value.byteOffset, self.value.bitOffset)
@@ -439,7 +314,7 @@ class AwlOperator(object): #+cdef
 			elif self.width == 32:
 				return "%sD %d" % (pfx, self.value.byteOffset)
 			return self.makeANYPointer().toPointerString()
-		elif self.type == self.MEM_DB:
+		elif self.operType == AwlOperatorTypes.MEM_DB:
 			if self.value.dbNumber is None:
 				dbPrefix = ""
 			else:
@@ -455,7 +330,7 @@ class AwlOperator(object): #+cdef
 			elif self.width == 32:
 				return "%sDBD %d" % (dbPrefix, self.value.byteOffset)
 			return self.makeANYPointer().toPointerString()
-		elif self.type == self.MEM_DI:
+		elif self.operType == AwlOperatorTypes.MEM_DI:
 			if self.width == 1:
 				return "DIX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
 			elif self.width == 8:
@@ -465,11 +340,11 @@ class AwlOperator(object): #+cdef
 			elif self.width == 32:
 				return "DID %d" % self.value.byteOffset
 			return self.makeANYPointer().toPointerString()
-		elif self.type == self.MEM_T:
+		elif self.operType == AwlOperatorTypes.MEM_T:
 			return "T %d" % self.value.byteOffset
-		elif self.type == self.MEM_Z:
+		elif self.operType == AwlOperatorTypes.MEM_Z:
 			return "Z %d" % self.value.byteOffset
-		elif self.type == self.MEM_PA:
+		elif self.operType == AwlOperatorTypes.MEM_PA:
 			if self.width == 8:
 				return "PAB %d" % self.value.byteOffset
 			elif self.width == 16:
@@ -477,7 +352,7 @@ class AwlOperator(object): #+cdef
 			elif self.width == 32:
 				return "PAD %d" % self.value.byteOffset
 			return self.makeANYPointer().toPointerString()
-		elif self.type == self.MEM_PE:
+		elif self.operType == AwlOperatorTypes.MEM_PE:
 			if self.width == 8:
 				return "PEB %d" % self.value.byteOffset
 			elif self.width == 16:
@@ -485,52 +360,52 @@ class AwlOperator(object): #+cdef
 			elif self.width == 32:
 				return "PED %d" % self.value.byteOffset
 			return self.makeANYPointer().toPointerString()
-		elif self.type == self.MEM_STW:
+		elif self.operType == AwlOperatorTypes.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name_german[self.value.bitOffset]
-		elif self.type == self.LBL_REF:
+		elif self.operType == AwlOperatorTypes.LBL_REF:
 			return self.value
-		elif self.type == self.BLKREF_FC:
+		elif self.operType == AwlOperatorTypes.BLKREF_FC:
 			return "FC %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_SFC:
+		elif self.operType == AwlOperatorTypes.BLKREF_SFC:
 			return "SFC %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_FB:
+		elif self.operType == AwlOperatorTypes.BLKREF_FB:
 			return "FB %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_SFB:
+		elif self.operType == AwlOperatorTypes.BLKREF_SFB:
 			return "SFB %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_UDT:
+		elif self.operType == AwlOperatorTypes.BLKREF_UDT:
 			return "UDT %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_DB:
+		elif self.operType == AwlOperatorTypes.BLKREF_DB:
 			return "DB %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_DI:
+		elif self.operType == AwlOperatorTypes.BLKREF_DI:
 			return "DI %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_OB:
+		elif self.operType == AwlOperatorTypes.BLKREF_OB:
 			return "OB %d" % self.value.byteOffset
-		elif self.type == self.BLKREF_VAT:
+		elif self.operType == AwlOperatorTypes.BLKREF_VAT:
 			return "VAT %d" % self.value.byteOffset
-		elif self.type == self.MULTI_FB:
+		elif self.operType == AwlOperatorTypes.MULTI_FB:
 			return "#FB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
-		elif self.type == self.MULTI_SFB:
+		elif self.operType == AwlOperatorTypes.MULTI_SFB:
 			return "#SFB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
-		elif self.type == self.SYMBOLIC:
+		elif self.operType == AwlOperatorTypes.SYMBOLIC:
 			return '"%s"' % self.value.identChain.getString()
-		elif self.type == self.NAMED_LOCAL:
+		elif self.operType == AwlOperatorTypes.NAMED_LOCAL:
 			return "#" + self.value.identChain.getString()
-		elif self.type == self.NAMED_LOCAL_PTR:
+		elif self.operType == AwlOperatorTypes.NAMED_LOCAL_PTR:
 			return "P##" + self.value.identChain.getString()
-		elif self.type == self.NAMED_DBVAR:
+		elif self.operType == AwlOperatorTypes.NAMED_DBVAR:
 			return str(self.value) # value is AwlOffset
-		elif self.type == self.INDIRECT:
+		elif self.operType == AwlOperatorTypes.INDIRECT:
 			assert(0) # Overloaded in AwlIndirectOp
-		elif self.type == self.VIRT_ACCU:
+		elif self.operType == AwlOperatorTypes.VIRT_ACCU:
 			return "__ACCU %d" % self.value.byteOffset
-		elif self.type == self.VIRT_AR:
+		elif self.operType == AwlOperatorTypes.VIRT_AR:
 			return "__AR %d" % self.value.byteOffset
-		elif self.type == self.VIRT_DBR:
+		elif self.operType == AwlOperatorTypes.VIRT_DBR:
 			return "__DBR %d" % self.value.byteOffset
-		elif self.type == self.UNSPEC:
+		elif self.operType == AwlOperatorTypes.UNSPEC:
 			return "__UNSPEC"
 		try:
-			return self.type2str[self.type]
+			return self.type2str[self.operType]
 		except KeyError:
 			assert(0)
 
@@ -569,37 +444,37 @@ class AwlIndirectOp(AwlOperator): #+cdef
 
 	# Map for converting area code to operator type for fetch operations
 	area2optype_fetch = {
-		AREA_P			: AwlOperator.MEM_PE,
-		AREA_E			: AwlOperator.MEM_E,
-		AREA_A			: AwlOperator.MEM_A,
-		AREA_M			: AwlOperator.MEM_M,
-		AREA_DB			: AwlOperator.MEM_DB,
-		AREA_DI			: AwlOperator.MEM_DI,
-		AREA_L			: AwlOperator.MEM_L,
-		AREA_VL			: AwlOperator.MEM_VL,
-		EXT_AREA_T		: AwlOperator.MEM_T,
-		EXT_AREA_Z		: AwlOperator.MEM_Z,
-		EXT_AREA_BLKREF_DB	: AwlOperator.BLKREF_DB,
-		EXT_AREA_BLKREF_DI	: AwlOperator.BLKREF_DI,
-		EXT_AREA_BLKREF_FB	: AwlOperator.BLKREF_FB,
-		EXT_AREA_BLKREF_FC	: AwlOperator.BLKREF_FC,
+		AREA_P			: AwlOperatorTypes.MEM_PE,
+		AREA_E			: AwlOperatorTypes.MEM_E,
+		AREA_A			: AwlOperatorTypes.MEM_A,
+		AREA_M			: AwlOperatorTypes.MEM_M,
+		AREA_DB			: AwlOperatorTypes.MEM_DB,
+		AREA_DI			: AwlOperatorTypes.MEM_DI,
+		AREA_L			: AwlOperatorTypes.MEM_L,
+		AREA_VL			: AwlOperatorTypes.MEM_VL,
+		EXT_AREA_T		: AwlOperatorTypes.MEM_T,
+		EXT_AREA_Z		: AwlOperatorTypes.MEM_Z,
+		EXT_AREA_BLKREF_DB	: AwlOperatorTypes.BLKREF_DB,
+		EXT_AREA_BLKREF_DI	: AwlOperatorTypes.BLKREF_DI,
+		EXT_AREA_BLKREF_FB	: AwlOperatorTypes.BLKREF_FB,
+		EXT_AREA_BLKREF_FC	: AwlOperatorTypes.BLKREF_FC,
 	}
 
 	# Map for converting area code to operator type for store operations
 	area2optype_store = area2optype_fetch.copy()
-	area2optype_store[AREA_P] = AwlOperator.MEM_PA
+	area2optype_store[AREA_P] = AwlOperatorTypes.MEM_PA
 
 	# Map for converting operator type to area code
 	optype2area = pivotDict(area2optype_fetch)
-	optype2area[AwlOperator.MEM_PA] = AREA_P
-	optype2area[AwlOperator.MULTI_FB] = AREA_DI
-	optype2area[AwlOperator.MULTI_SFB] = AREA_DI
-	optype2area[AwlOperator.NAMED_DBVAR] = AREA_DB
-	optype2area[AwlOperator.UNSPEC] = AREA_NONE
+	optype2area[AwlOperatorTypes.MEM_PA] = AREA_P
+	optype2area[AwlOperatorTypes.MULTI_FB] = AREA_DI
+	optype2area[AwlOperatorTypes.MULTI_SFB] = AREA_DI
+	optype2area[AwlOperatorTypes.NAMED_DBVAR] = AREA_DB
+	optype2area[AwlOperatorTypes.UNSPEC] = AREA_NONE
 
 	def __init__(self, area, width, addressRegister, offsetOper, insn=None): #@nocy
 #@cy	def __init__(self, uint64_t area, int32_t width, uint32_t addressRegister,
-#@cy		     AwlOperator offsetOper, object insn=None):
+#@cy		     AwlOperator offsetOper, AwlInsn insn=None):
 		# area -> The area code for this indirect operation.
 		#         AREA_... or EXT_AREA_...
 		#         This corresponds to the area code in AWL pointer format.
@@ -615,10 +490,10 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		#               with "type==IMM_PTR".
 		# insn -> The instruction this operator is used in. May be None.
 		AwlOperator.__init__(self,
-				     type = AwlOperator.INDIRECT,
-				     width = width,
-				     value = None,
-				     insn = insn)
+				     operType=AwlOperatorTypes.INDIRECT,
+				     width=width,
+				     value=None,
+				     insn=insn)
 		self.area, self.addressRegister, self.offsetOper =\
 			area, addressRegister, offsetOper
 
@@ -644,10 +519,10 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		assert(upperLimit is None)
 
 	# Possible offset oper types for indirect access
-	__possibleOffsetOperTypes = (AwlOperator.MEM_M,
-				     AwlOperator.MEM_L,
-				     AwlOperator.MEM_DB,
-				     AwlOperator.MEM_DI)
+	__possibleOffsetOperTypes = (AwlOperatorTypes.MEM_M,
+				     AwlOperatorTypes.MEM_L,
+				     AwlOperatorTypes.MEM_DB,
+				     AwlOperatorTypes.MEM_DI)
 
 	# Resolve this indirect operator to a direct operator.
 	def resolve(self, store=True): #@nocy
@@ -676,7 +551,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 			else:
 				# Is standard area
 				possibleWidths = {32,}
-			if offsetOper.type not in self.__possibleOffsetOperTypes:
+			if offsetOper.operType not in self.__possibleOffsetOperTypes:
 				raise AwlSimError("Offset operator in indirect "
 					"access is not a valid memory offset.")
 			if offsetOper.width not in possibleWidths:
@@ -687,7 +562,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 			pointer = (self.area | (offsetValue & 0x0007FFFF))
 		else:
 			# Register-indirect access
-			if offsetOper.type != AwlOperator.IMM_PTR:
+			if offsetOper.operType != AwlOperatorTypes.IMM_PTR:
 				raise AwlSimError("Offset operator in "
 					"register-indirect access is not a "
 					"pointer immediate.")

@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 
@@ -35,7 +36,7 @@ class AwlInsn_SPPZ(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_SPPZ, rawInsn, **kwargs)
 		self.assertOpCount(1)
-		if self.op0.type != AwlOperator.LBL_REF:
+		if self.op0.operType != AwlOperatorTypes.LBL_REF:
 			raise AwlSimError("Jump instruction expects label operand")
 
 	def run(self): #+cdef

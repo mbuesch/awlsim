@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.util import *
 
@@ -62,7 +63,7 @@ class AwlLabel(object):
 		# Resolve label references
 		for insn in insns:
 			for op in insn.ops:
-				if op.type != AwlOperator.LBL_REF:
+				if op.operType != AwlOperatorTypes.LBL_REF:
 					continue
 				labelIndex = cls.findInList(labels, op.value)
 				if labelIndex is None:

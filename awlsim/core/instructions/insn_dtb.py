@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 

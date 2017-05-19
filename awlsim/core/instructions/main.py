@@ -26,6 +26,8 @@ from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
+from awlsim.core.instructions.types import *
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.util import *
 
@@ -36,396 +38,180 @@ class AwlInsn(object): #+cdef
 	"""AWL instruction base class.
 	"""
 
-	EnumGen.start
-	TYPE_U			= EnumGen.item	# U
-	TYPE_UN			= EnumGen.item	# UN
-	TYPE_O			= EnumGen.item	# O
-	TYPE_ON			= EnumGen.item	# ON
-	TYPE_X			= EnumGen.item	# X
-	TYPE_XN			= EnumGen.item	# XN
-	TYPE_UB			= EnumGen.item	# U(
-	TYPE_UNB		= EnumGen.item	# UN(
-	TYPE_OB			= EnumGen.item	# O(
-	TYPE_ONB		= EnumGen.item	# ON(
-	TYPE_XB			= EnumGen.item	# X(
-	TYPE_XNB		= EnumGen.item	# XN(
-	TYPE_BEND		= EnumGen.item	# )
-	TYPE_ASSIGN		= EnumGen.item	# =
-	TYPE_R			= EnumGen.item	# R
-	TYPE_S			= EnumGen.item	# S
-	TYPE_NOT		= EnumGen.item	# NOT
-	TYPE_SET		= EnumGen.item	# SET
-	TYPE_CLR		= EnumGen.item	# CLR
-	TYPE_SAVE		= EnumGen.item	# SAVE
-	TYPE_FN			= EnumGen.item	# FN
-	TYPE_FP			= EnumGen.item	# FP
-	TYPE_EQ_I		= EnumGen.item	# ==I
-	TYPE_NE_I		= EnumGen.item	# <>I
-	TYPE_GT_I		= EnumGen.item	# >I
-	TYPE_LT_I		= EnumGen.item	# <I
-	TYPE_GE_I		= EnumGen.item	# >=I
-	TYPE_LE_I		= EnumGen.item	# <=I
-	TYPE_EQ_D		= EnumGen.item	# ==D
-	TYPE_NE_D		= EnumGen.item	# <>D
-	TYPE_GT_D		= EnumGen.item	# >D
-	TYPE_LT_D		= EnumGen.item	# <D
-	TYPE_GE_D		= EnumGen.item	# >=D
-	TYPE_LE_D		= EnumGen.item	# <=D
-	TYPE_EQ_R		= EnumGen.item	# ==R
-	TYPE_NE_R		= EnumGen.item	# <>R
-	TYPE_GT_R		= EnumGen.item	# >R
-	TYPE_LT_R		= EnumGen.item	# <R
-	TYPE_GE_R		= EnumGen.item	# >=R
-	TYPE_LE_R		= EnumGen.item	# <=R
-	TYPE_BTI		= EnumGen.item	# BTI
-	TYPE_ITB		= EnumGen.item	# ITB
-	TYPE_BTD		= EnumGen.item	# BTD
-	TYPE_ITD		= EnumGen.item	# ITD
-	TYPE_DTB		= EnumGen.item	# DTB
-	TYPE_DTR		= EnumGen.item	# DTR
-	TYPE_INVI		= EnumGen.item	# INVI
-	TYPE_INVD		= EnumGen.item	# INVD
-	TYPE_NEGI		= EnumGen.item	# NEGI
-	TYPE_NEGD		= EnumGen.item	# NEGD
-	TYPE_NEGR		= EnumGen.item	# NEGR
-	TYPE_TAW		= EnumGen.item	# TAW
-	TYPE_TAD		= EnumGen.item	# TAD
-	TYPE_RND		= EnumGen.item	# RND
-	TYPE_TRUNC		= EnumGen.item	# TRUNC
-	TYPE_RNDP		= EnumGen.item	# RND+
-	TYPE_RNDN		= EnumGen.item	# RND-
-	TYPE_FR			= EnumGen.item	# FR
-	TYPE_L			= EnumGen.item	# L
-	TYPE_LC			= EnumGen.item	# LC
-	TYPE_ZV			= EnumGen.item	# ZV
-	TYPE_ZR			= EnumGen.item	# ZR
-	TYPE_AUF		= EnumGen.item	# AUF
-	TYPE_TDB		= EnumGen.item	# TDB
-	TYPE_SPA		= EnumGen.item	# SPA
-	TYPE_SPL		= EnumGen.item	# SPL
-	TYPE_SPB		= EnumGen.item	# SPB
-	TYPE_SPBN		= EnumGen.item	# SPBN
-	TYPE_SPBB		= EnumGen.item	# SPBB
-	TYPE_SPBNB		= EnumGen.item	# SPBNB
-	TYPE_SPBI		= EnumGen.item	# SPBI
-	TYPE_SPBIN		= EnumGen.item	# SPBIN
-	TYPE_SPO		= EnumGen.item	# SPO
-	TYPE_SPS		= EnumGen.item	# SPS
-	TYPE_SPZ		= EnumGen.item	# SPZ
-	TYPE_SPN		= EnumGen.item	# SPN
-	TYPE_SPP		= EnumGen.item	# SPP
-	TYPE_SPM		= EnumGen.item	# SPM
-	TYPE_SPPZ		= EnumGen.item	# SPPZ
-	TYPE_SPMZ		= EnumGen.item	# SPMZ
-	TYPE_SPU		= EnumGen.item	# SPU
-	TYPE_LOOP		= EnumGen.item	# LOOP
-	TYPE_PL_I		= EnumGen.item	# +I
-	TYPE_MI_I		= EnumGen.item	# -I
-	TYPE_MU_I		= EnumGen.item	# *I
-	TYPE_DI_I		= EnumGen.item	# /I
-	TYPE_PL			= EnumGen.item	# +
-	TYPE_PL_D		= EnumGen.item	# +D
-	TYPE_MI_D		= EnumGen.item	# -D
-	TYPE_MU_D		= EnumGen.item	# *D
-	TYPE_DI_D		= EnumGen.item	# /D
-	TYPE_MOD		= EnumGen.item	# MOD
-	TYPE_PL_R		= EnumGen.item	# +R
-	TYPE_MI_R		= EnumGen.item	# -R
-	TYPE_MU_R		= EnumGen.item	# *R
-	TYPE_DI_R		= EnumGen.item	# /R
-	TYPE_ABS		= EnumGen.item	# ABS
-	TYPE_SQR		= EnumGen.item	# SQR
-	TYPE_SQRT		= EnumGen.item	# SQRT
-	TYPE_EXP		= EnumGen.item	# EXP
-	TYPE_LN			= EnumGen.item	# LN
-	TYPE_SIN		= EnumGen.item	# SIN
-	TYPE_COS		= EnumGen.item	# COS
-	TYPE_TAN		= EnumGen.item	# TAN
-	TYPE_ASIN		= EnumGen.item	# ASIN
-	TYPE_ACOS		= EnumGen.item	# ACOS
-	TYPE_ATAN		= EnumGen.item	# ATAN
-	TYPE_LAR1		= EnumGen.item	# LAR1
-	TYPE_LAR2		= EnumGen.item	# LAR2
-	TYPE_T			= EnumGen.item	# T
-	TYPE_TAR		= EnumGen.item	# TAR
-	TYPE_TAR1		= EnumGen.item	# TAR1
-	TYPE_TAR2		= EnumGen.item	# TAR2
-	TYPE_BE			= EnumGen.item	# BE
-	TYPE_BEB		= EnumGen.item	# BEB
-	TYPE_BEA		= EnumGen.item	# BEA
-	TYPE_CALL		= EnumGen.item	# CALL
-	TYPE_CC			= EnumGen.item	# CC
-	TYPE_UC			= EnumGen.item	# UC
-	TYPE_MCRB		= EnumGen.item	# MCR(
-	TYPE_BMCR		= EnumGen.item	# )MCR
-	TYPE_MCRA		= EnumGen.item	# MCRA
-	TYPE_MCRD		= EnumGen.item	# MCRD
-	TYPE_SSI		= EnumGen.item	# SSI
-	TYPE_SSD		= EnumGen.item	# SSD
-	TYPE_SLW		= EnumGen.item	# SLW
-	TYPE_SRW		= EnumGen.item	# SRW
-	TYPE_SLD		= EnumGen.item	# SLD
-	TYPE_SRD		= EnumGen.item	# SRD
-	TYPE_RLD		= EnumGen.item	# RLD
-	TYPE_RRD		= EnumGen.item	# RRD
-	TYPE_RLDA		= EnumGen.item	# RLDA
-	TYPE_RRDA		= EnumGen.item	# RRDA
-	TYPE_SI			= EnumGen.item	# SI
-	TYPE_SV			= EnumGen.item	# SV
-	TYPE_SE			= EnumGen.item	# SE
-	TYPE_SS			= EnumGen.item	# SS
-	TYPE_SA			= EnumGen.item	# SA
-	TYPE_UW			= EnumGen.item	# UW
-	TYPE_OW			= EnumGen.item	# OW
-	TYPE_XOW		= EnumGen.item	# XOW
-	TYPE_UD			= EnumGen.item	# UD
-	TYPE_OD			= EnumGen.item	# OD
-	TYPE_XOD		= EnumGen.item	# XOD
-	TYPE_TAK		= EnumGen.item	# TAK
-	TYPE_PUSH		= EnumGen.item	# PUSH
-	TYPE_POP		= EnumGen.item	# POP
-	TYPE_ENT		= EnumGen.item	# ENT
-	TYPE_LEAVE		= EnumGen.item	# LEAVE
-	TYPE_INC		= EnumGen.item	# INC
-	TYPE_DEC		= EnumGen.item	# DEC
-	TYPE_INCAR1		= EnumGen.item	# +AR1
-	TYPE_INCAR2		= EnumGen.item	# +AR2
-	TYPE_BLD		= EnumGen.item	# BLD
-	TYPE_NOP		= EnumGen.item	# NOP
-	# Special instructions for debugging of the simulator
-	TYPE_EXTENDED		= EnumGen.itemNoInc
-	TYPE_ASSERT_EQ		= EnumGen.item	# __ASSERT==
-	TYPE_ASSERT_EQ_R	= EnumGen.item 	# __ASSERT==R
-	TYPE_ASSERT_NE		= EnumGen.item 	# __ASSERT<>
-	TYPE_ASSERT_GT		= EnumGen.item 	# __ASSERT>
-	TYPE_ASSERT_LT		= EnumGen.item 	# __ASSERT<
-	TYPE_ASSERT_GE		= EnumGen.item 	# __ASSERT>=
-	TYPE_ASSERT_LE		= EnumGen.item 	# __ASSERT<=
-	TYPE_SLEEP		= EnumGen.item 	# __SLEEP
-	TYPE_STWRST		= EnumGen.item 	# __STWRST
-	TYPE_FEATURE		= EnumGen.item 	# __FEATURE
-	# Special instructions for internal usage
-	TYPE_GENERIC_CALL	= EnumGen.item	# No mnemonic
-	EnumGen.end
+	TYPE_U			= AwlInsnTypes.TYPE_U
+	TYPE_UN			= AwlInsnTypes.TYPE_UN
+	TYPE_O			= AwlInsnTypes.TYPE_O
+	TYPE_ON			= AwlInsnTypes.TYPE_ON
+	TYPE_X			= AwlInsnTypes.TYPE_X
+	TYPE_XN			= AwlInsnTypes.TYPE_XN
+	TYPE_UB			= AwlInsnTypes.TYPE_UB
+	TYPE_UNB		= AwlInsnTypes.TYPE_UNB
+	TYPE_OB			= AwlInsnTypes.TYPE_OB
+	TYPE_ONB		= AwlInsnTypes.TYPE_ONB
+	TYPE_XB			= AwlInsnTypes.TYPE_XB
+	TYPE_XNB		= AwlInsnTypes.TYPE_XNB
+	TYPE_BEND		= AwlInsnTypes.TYPE_BEND
+	TYPE_ASSIGN		= AwlInsnTypes.TYPE_ASSIGN
+	TYPE_R			= AwlInsnTypes.TYPE_R
+	TYPE_S			= AwlInsnTypes.TYPE_S
+	TYPE_NOT		= AwlInsnTypes.TYPE_NOT
+	TYPE_SET		= AwlInsnTypes.TYPE_SET
+	TYPE_CLR		= AwlInsnTypes.TYPE_CLR
+	TYPE_SAVE		= AwlInsnTypes.TYPE_SAVE
+	TYPE_FN			= AwlInsnTypes.TYPE_FN
+	TYPE_FP			= AwlInsnTypes.TYPE_FP
+	TYPE_EQ_I		= AwlInsnTypes.TYPE_EQ_I
+	TYPE_NE_I		= AwlInsnTypes.TYPE_NE_I
+	TYPE_GT_I		= AwlInsnTypes.TYPE_GT_I
+	TYPE_LT_I		= AwlInsnTypes.TYPE_LT_I
+	TYPE_GE_I		= AwlInsnTypes.TYPE_GE_I
+	TYPE_LE_I		= AwlInsnTypes.TYPE_LE_I
+	TYPE_EQ_D		= AwlInsnTypes.TYPE_EQ_D
+	TYPE_NE_D		= AwlInsnTypes.TYPE_NE_D
+	TYPE_GT_D		= AwlInsnTypes.TYPE_GT_D
+	TYPE_LT_D		= AwlInsnTypes.TYPE_LT_D
+	TYPE_GE_D		= AwlInsnTypes.TYPE_GE_D
+	TYPE_LE_D		= AwlInsnTypes.TYPE_LE_D
+	TYPE_EQ_R		= AwlInsnTypes.TYPE_EQ_R
+	TYPE_NE_R		= AwlInsnTypes.TYPE_NE_R
+	TYPE_GT_R		= AwlInsnTypes.TYPE_GT_R
+	TYPE_LT_R		= AwlInsnTypes.TYPE_LT_R
+	TYPE_GE_R		= AwlInsnTypes.TYPE_GE_R
+	TYPE_LE_R		= AwlInsnTypes.TYPE_LE_R
+	TYPE_BTI		= AwlInsnTypes.TYPE_BTI
+	TYPE_ITB		= AwlInsnTypes.TYPE_ITB
+	TYPE_BTD		= AwlInsnTypes.TYPE_BTD
+	TYPE_ITD		= AwlInsnTypes.TYPE_ITD
+	TYPE_DTB		= AwlInsnTypes.TYPE_DTB
+	TYPE_DTR		= AwlInsnTypes.TYPE_DTR
+	TYPE_INVI		= AwlInsnTypes.TYPE_INVI
+	TYPE_INVD		= AwlInsnTypes.TYPE_INVD
+	TYPE_NEGI		= AwlInsnTypes.TYPE_NEGI
+	TYPE_NEGD		= AwlInsnTypes.TYPE_NEGD
+	TYPE_NEGR		= AwlInsnTypes.TYPE_NEGR
+	TYPE_TAW		= AwlInsnTypes.TYPE_TAW
+	TYPE_TAD		= AwlInsnTypes.TYPE_TAD
+	TYPE_RND		= AwlInsnTypes.TYPE_RND
+	TYPE_TRUNC		= AwlInsnTypes.TYPE_TRUNC
+	TYPE_RNDP		= AwlInsnTypes.TYPE_RNDP
+	TYPE_RNDN		= AwlInsnTypes.TYPE_RNDN
+	TYPE_FR			= AwlInsnTypes.TYPE_FR
+	TYPE_L			= AwlInsnTypes.TYPE_L
+	TYPE_LC			= AwlInsnTypes.TYPE_LC
+	TYPE_ZV			= AwlInsnTypes.TYPE_ZV
+	TYPE_ZR			= AwlInsnTypes.TYPE_ZR
+	TYPE_AUF		= AwlInsnTypes.TYPE_AUF
+	TYPE_TDB		= AwlInsnTypes.TYPE_TDB
+	TYPE_SPA		= AwlInsnTypes.TYPE_SPA
+	TYPE_SPL		= AwlInsnTypes.TYPE_SPL
+	TYPE_SPB		= AwlInsnTypes.TYPE_SPB
+	TYPE_SPBN		= AwlInsnTypes.TYPE_SPBN
+	TYPE_SPBB		= AwlInsnTypes.TYPE_SPBB
+	TYPE_SPBNB		= AwlInsnTypes.TYPE_SPBNB
+	TYPE_SPBI		= AwlInsnTypes.TYPE_SPBI
+	TYPE_SPBIN		= AwlInsnTypes.TYPE_SPBIN
+	TYPE_SPO		= AwlInsnTypes.TYPE_SPO
+	TYPE_SPS		= AwlInsnTypes.TYPE_SPS
+	TYPE_SPZ		= AwlInsnTypes.TYPE_SPZ
+	TYPE_SPN		= AwlInsnTypes.TYPE_SPN
+	TYPE_SPP		= AwlInsnTypes.TYPE_SPP
+	TYPE_SPM		= AwlInsnTypes.TYPE_SPM
+	TYPE_SPPZ		= AwlInsnTypes.TYPE_SPPZ
+	TYPE_SPMZ		= AwlInsnTypes.TYPE_SPMZ
+	TYPE_SPU		= AwlInsnTypes.TYPE_SPU
+	TYPE_LOOP		= AwlInsnTypes.TYPE_LOOP
+	TYPE_PL_I		= AwlInsnTypes.TYPE_PL_I
+	TYPE_MI_I		= AwlInsnTypes.TYPE_MI_I
+	TYPE_MU_I		= AwlInsnTypes.TYPE_MU_I
+	TYPE_DI_I		= AwlInsnTypes.TYPE_DI_I
+	TYPE_PL			= AwlInsnTypes.TYPE_PL
+	TYPE_PL_D		= AwlInsnTypes.TYPE_PL_D
+	TYPE_MI_D		= AwlInsnTypes.TYPE_MI_D
+	TYPE_MU_D		= AwlInsnTypes.TYPE_MU_D
+	TYPE_DI_D		= AwlInsnTypes.TYPE_DI_D
+	TYPE_MOD		= AwlInsnTypes.TYPE_MOD
+	TYPE_PL_R		= AwlInsnTypes.TYPE_PL_R
+	TYPE_MI_R		= AwlInsnTypes.TYPE_MI_R
+	TYPE_MU_R		= AwlInsnTypes.TYPE_MU_R
+	TYPE_DI_R		= AwlInsnTypes.TYPE_DI_R
+	TYPE_ABS		= AwlInsnTypes.TYPE_ABS
+	TYPE_SQR		= AwlInsnTypes.TYPE_SQR
+	TYPE_SQRT		= AwlInsnTypes.TYPE_SQRT
+	TYPE_EXP		= AwlInsnTypes.TYPE_EXP
+	TYPE_LN			= AwlInsnTypes.TYPE_LN
+	TYPE_SIN		= AwlInsnTypes.TYPE_SIN
+	TYPE_COS		= AwlInsnTypes.TYPE_COS
+	TYPE_TAN		= AwlInsnTypes.TYPE_TAN
+	TYPE_ASIN		= AwlInsnTypes.TYPE_ASIN
+	TYPE_ACOS		= AwlInsnTypes.TYPE_ACOS
+	TYPE_ATAN		= AwlInsnTypes.TYPE_ATAN
+	TYPE_LAR1		= AwlInsnTypes.TYPE_LAR1
+	TYPE_LAR2		= AwlInsnTypes.TYPE_LAR2
+	TYPE_T			= AwlInsnTypes.TYPE_T
+	TYPE_TAR		= AwlInsnTypes.TYPE_TAR
+	TYPE_TAR1		= AwlInsnTypes.TYPE_TAR1
+	TYPE_TAR2		= AwlInsnTypes.TYPE_TAR2
+	TYPE_BE			= AwlInsnTypes.TYPE_BE
+	TYPE_BEB		= AwlInsnTypes.TYPE_BEB
+	TYPE_BEA		= AwlInsnTypes.TYPE_BEA
+	TYPE_CALL		= AwlInsnTypes.TYPE_CALL
+	TYPE_CC			= AwlInsnTypes.TYPE_CC
+	TYPE_UC			= AwlInsnTypes.TYPE_UC
+	TYPE_MCRB		= AwlInsnTypes.TYPE_MCRB
+	TYPE_BMCR		= AwlInsnTypes.TYPE_BMCR
+	TYPE_MCRA		= AwlInsnTypes.TYPE_MCRA
+	TYPE_MCRD		= AwlInsnTypes.TYPE_MCRD
+	TYPE_SSI		= AwlInsnTypes.TYPE_SSI
+	TYPE_SSD		= AwlInsnTypes.TYPE_SSD
+	TYPE_SLW		= AwlInsnTypes.TYPE_SLW
+	TYPE_SRW		= AwlInsnTypes.TYPE_SRW
+	TYPE_SLD		= AwlInsnTypes.TYPE_SLD
+	TYPE_SRD		= AwlInsnTypes.TYPE_SRD
+	TYPE_RLD		= AwlInsnTypes.TYPE_RLD
+	TYPE_RRD		= AwlInsnTypes.TYPE_RRD
+	TYPE_RLDA		= AwlInsnTypes.TYPE_RLDA
+	TYPE_RRDA		= AwlInsnTypes.TYPE_RRDA
+	TYPE_SI			= AwlInsnTypes.TYPE_SI
+	TYPE_SV			= AwlInsnTypes.TYPE_SV
+	TYPE_SE			= AwlInsnTypes.TYPE_SE
+	TYPE_SS			= AwlInsnTypes.TYPE_SS
+	TYPE_SA			= AwlInsnTypes.TYPE_SA
+	TYPE_UW			= AwlInsnTypes.TYPE_UW
+	TYPE_OW			= AwlInsnTypes.TYPE_OW
+	TYPE_XOW		= AwlInsnTypes.TYPE_XOW
+	TYPE_UD			= AwlInsnTypes.TYPE_UD
+	TYPE_OD			= AwlInsnTypes.TYPE_OD
+	TYPE_XOD		= AwlInsnTypes.TYPE_XOD
+	TYPE_TAK		= AwlInsnTypes.TYPE_TAK
+	TYPE_PUSH		= AwlInsnTypes.TYPE_PUSH
+	TYPE_POP		= AwlInsnTypes.TYPE_POP
+	TYPE_ENT		= AwlInsnTypes.TYPE_ENT
+	TYPE_LEAVE		= AwlInsnTypes.TYPE_LEAVE
+	TYPE_INC		= AwlInsnTypes.TYPE_INC
+	TYPE_DEC		= AwlInsnTypes.TYPE_DEC
+	TYPE_INCAR1		= AwlInsnTypes.TYPE_INCAR1
+	TYPE_INCAR2		= AwlInsnTypes.TYPE_INCAR2
+	TYPE_BLD		= AwlInsnTypes.TYPE_BLD
+	TYPE_NOP		= AwlInsnTypes.TYPE_NOP
+	TYPE_EXTENDED		= AwlInsnTypes.TYPE_EXTENDED
+	TYPE_ASSERT_EQ		= AwlInsnTypes.TYPE_ASSERT_EQ
+	TYPE_ASSERT_EQ_R	= AwlInsnTypes.TYPE_ASSERT_EQ_R
+	TYPE_ASSERT_NE		= AwlInsnTypes.TYPE_ASSERT_NE
+	TYPE_ASSERT_GT		= AwlInsnTypes.TYPE_ASSERT_GT
+	TYPE_ASSERT_LT		= AwlInsnTypes.TYPE_ASSERT_LT
+	TYPE_ASSERT_GE		= AwlInsnTypes.TYPE_ASSERT_GE
+	TYPE_ASSERT_LE		= AwlInsnTypes.TYPE_ASSERT_LE
+	TYPE_SLEEP		= AwlInsnTypes.TYPE_SLEEP
+	TYPE_STWRST		= AwlInsnTypes.TYPE_STWRST
+	TYPE_FEATURE		= AwlInsnTypes.TYPE_FEATURE
+	TYPE_GENERIC_CALL	= AwlInsnTypes.TYPE_GENERIC_CALL
 
-	name2type_german = {
-		"U"	: TYPE_U,
-		"UN"	: TYPE_UN,
-		"O"	: TYPE_O,
-		"ON"	: TYPE_ON,
-		"X"	: TYPE_X,
-		"XN"	: TYPE_XN,
-		"U("	: TYPE_UB,
-		"UN("	: TYPE_UNB,
-		"O("	: TYPE_OB,
-		"ON("	: TYPE_ONB,
-		"X("	: TYPE_XB,
-		"XN("	: TYPE_XNB,
-		")"	: TYPE_BEND,
-		"="	: TYPE_ASSIGN,
-		"R"	: TYPE_R,
-		"S"	: TYPE_S,
-		"NOT"	: TYPE_NOT,
-		"SET"	: TYPE_SET,
-		"CLR"	: TYPE_CLR,
-		"SAVE"	: TYPE_SAVE,
-		"FN"	: TYPE_FN,
-		"FP"	: TYPE_FP,
-		"==I"	: TYPE_EQ_I,
-		"<>I"	: TYPE_NE_I,
-		">I"	: TYPE_GT_I,
-		"<I"	: TYPE_LT_I,
-		">=I"	: TYPE_GE_I,
-		"<=I"	: TYPE_LE_I,
-		"==D"	: TYPE_EQ_D,
-		"<>D"	: TYPE_NE_D,
-		">D"	: TYPE_GT_D,
-		"<D"	: TYPE_LT_D,
-		">=D"	: TYPE_GE_D,
-		"<=D"	: TYPE_LE_D,
-		"==R"	: TYPE_EQ_R,
-		"<>R"	: TYPE_NE_R,
-		">R"	: TYPE_GT_R,
-		"<R"	: TYPE_LT_R,
-		">=R"	: TYPE_GE_R,
-		"<=R"	: TYPE_LE_R,
-		"BTI"	: TYPE_BTI,
-		"ITB"	: TYPE_ITB,
-		"BTD"	: TYPE_BTD,
-		"ITD"	: TYPE_ITD,
-		"DTB"	: TYPE_DTB,
-		"DTR"	: TYPE_DTR,
-		"INVI"	: TYPE_INVI,
-		"INVD"	: TYPE_INVD,
-		"NEGI"	: TYPE_NEGI,
-		"NEGD"	: TYPE_NEGD,
-		"NEGR"	: TYPE_NEGR,
-		"TAW"	: TYPE_TAW,
-		"TAD"	: TYPE_TAD,
-		"RND"	: TYPE_RND,
-		"TRUNC"	: TYPE_TRUNC,
-		"RND+"	: TYPE_RNDP,
-		"RND-"	: TYPE_RNDN,
-		"FR"	: TYPE_FR,
-		"L"	: TYPE_L,
-		"LC"	: TYPE_LC,
-		"ZV"	: TYPE_ZV,
-		"ZR"	: TYPE_ZR,
-		"AUF"	: TYPE_AUF,
-		"TDB"	: TYPE_TDB,
-		"SPA"	: TYPE_SPA,
-		"SPL"	: TYPE_SPL,
-		"SPB"	: TYPE_SPB,
-		"SPBN"	: TYPE_SPBN,
-		"SPBB"	: TYPE_SPBB,
-		"SPBNB"	: TYPE_SPBNB,
-		"SPBI"	: TYPE_SPBI,
-		"SPBIN"	: TYPE_SPBIN,
-		"SPO"	: TYPE_SPO,
-		"SPS"	: TYPE_SPS,
-		"SPZ"	: TYPE_SPZ,
-		"SPN"	: TYPE_SPN,
-		"SPP"	: TYPE_SPP,
-		"SPM"	: TYPE_SPM,
-		"SPPZ"	: TYPE_SPPZ,
-		"SPMZ"	: TYPE_SPMZ,
-		"SPU"	: TYPE_SPU,
-		"LOOP"	: TYPE_LOOP,
-		"+I"	: TYPE_PL_I,
-		"-I"	: TYPE_MI_I,
-		"*I"	: TYPE_MU_I,
-		"/I"	: TYPE_DI_I,
-		"+"	: TYPE_PL,
-		"+D"	: TYPE_PL_D,
-		"-D"	: TYPE_MI_D,
-		"*D"	: TYPE_MU_D,
-		"/D"	: TYPE_DI_D,
-		"MOD"	: TYPE_MOD,
-		"+R"	: TYPE_PL_R,
-		"-R"	: TYPE_MI_R,
-		"*R"	: TYPE_MU_R,
-		"/R"	: TYPE_DI_R,
-		"ABS"	: TYPE_ABS,
-		"SQR"	: TYPE_SQR,
-		"SQRT"	: TYPE_SQRT,
-		"EXP"	: TYPE_EXP,
-		"LN"	: TYPE_LN,
-		"SIN"	: TYPE_SIN,
-		"COS"	: TYPE_COS,
-		"TAN"	: TYPE_TAN,
-		"ASIN"	: TYPE_ASIN,
-		"ACOS"	: TYPE_ACOS,
-		"ATAN"	: TYPE_ATAN,
-		"LAR1"	: TYPE_LAR1,
-		"LAR2"	: TYPE_LAR2,
-		"T"	: TYPE_T,
-		"TAR"	: TYPE_TAR,
-		"TAR1"	: TYPE_TAR1,
-		"TAR2"	: TYPE_TAR2,
-		"BE"	: TYPE_BE,
-		"BEB"	: TYPE_BEB,
-		"BEA"	: TYPE_BEA,
-		"CALL"	: TYPE_CALL,
-		"CC"	: TYPE_CC,
-		"UC"	: TYPE_UC,
-		"MCR("	: TYPE_MCRB,
-		")MCR"	: TYPE_BMCR,
-		"MCRA"	: TYPE_MCRA,
-		"MCRD"	: TYPE_MCRD,
-		"SSI"	: TYPE_SSI,
-		"SSD"	: TYPE_SSD,
-		"SLW"	: TYPE_SLW,
-		"SRW"	: TYPE_SRW,
-		"SLD"	: TYPE_SLD,
-		"SRD"	: TYPE_SRD,
-		"RLD"	: TYPE_RLD,
-		"RRD"	: TYPE_RRD,
-		"RLDA"	: TYPE_RLDA,
-		"RRDA"	: TYPE_RRDA,
-		"SI"	: TYPE_SI,
-		"SV"	: TYPE_SV,
-		"SE"	: TYPE_SE,
-		"SS"	: TYPE_SS,
-		"SA"	: TYPE_SA,
-		"UW"	: TYPE_UW,
-		"OW"	: TYPE_OW,
-		"XOW"	: TYPE_XOW,
-		"UD"	: TYPE_UD,
-		"OD"	: TYPE_OD,
-		"XOD"	: TYPE_XOD,
-		"TAK"	: TYPE_TAK,
-		"PUSH"	: TYPE_PUSH,
-		"POP"	: TYPE_POP,
-		"ENT"	: TYPE_ENT,
-		"LEAVE"	: TYPE_LEAVE,
-		"INC"	: TYPE_INC,
-		"DEC"	: TYPE_DEC,
-		"+AR1"	: TYPE_INCAR1,
-		"+AR2"	: TYPE_INCAR2,
-		"BLD"	: TYPE_BLD,
-		"NOP"	: TYPE_NOP,
-
-		"__ASSERT=="		: TYPE_ASSERT_EQ,
-		"__ASSERT==R"		: TYPE_ASSERT_EQ_R,
-		"__ASSERT<>"		: TYPE_ASSERT_NE,
-		"__ASSERT>"		: TYPE_ASSERT_GT,
-		"__ASSERT<"		: TYPE_ASSERT_LT,
-		"__ASSERT>="		: TYPE_ASSERT_GE,
-		"__ASSERT<="		: TYPE_ASSERT_LE,
-		"__SLEEP"		: TYPE_SLEEP,
-		"__STWRST"		: TYPE_STWRST,
-		"__FEATURE"		: TYPE_FEATURE,
-		"__GENERIC_CALL__"	: TYPE_GENERIC_CALL,
-	}
-	type2name_german = pivotDict(name2type_german)
-
-	english2german = {
-		"OPN"	: "AUF",
-		"BEU"	: "BEA",
-		"BEC"	: "BEB",
-		"SF"	: "SA",
-		"SD"	: "SE",
-		"SP"	: "SI",
-		"JU"	: "SPA",
-		"JC"	: "SPB",
-		"JCB"	: "SPBB",
-		"JBI"	: "SPBI",
-		"JNBI"	: "SPBIN",
-		"JCN"	: "SPBN",
-		"JNB"	: "SPBNB",
-		"JL"	: "SPL",
-		"JM"	: "SPM",
-		"JMZ"	: "SPMZ",
-		"JN"	: "SPN",
-		"JO"	: "SPO",
-		"JP"	: "SPP",
-		"JPZ"	: "SPPZ",
-		"JOS"	: "SPS",
-		"JUO"	: "SPU",
-		"JZ"	: "SPZ",
-		"SE"	: "SV",
-		"CAD"	: "TAD",
-		"CAR"	: "TAR",
-		"CAW"	: "TAW",
-		"CDB"	: "TDB",
-		"A"	: "U",
-		"A("	: "U(",
-		"AD"	: "UD",
-		"AN"	: "UN",
-		"AN("	: "UN(",
-		"AW"	: "UW",
-		"CD"	: "ZR",
-		"CU"	: "ZV",
-	}
-	german2english = pivotDict(english2german)
-
-	# Create a name2type dict for english mnemonics using the translation dict.
-	name2type_english = {}
-	for _name, _insnType in dictItems(name2type_german):
-		with contextlib.suppress(KeyError):
-			_name = german2english[_name]
-		name2type_english[_name] = _insnType
-	type2name_english = pivotDict(name2type_english)
+	english2german = AwlInsnTypes.english2german
+	german2english = AwlInsnTypes.german2english
+	name2type_german = AwlInsnTypes.name2type_german
+	type2name_german = AwlInsnTypes.type2name_german
+	name2type_english = AwlInsnTypes.name2type_english
+	type2name_english = AwlInsnTypes.type2name_english
 
 	__slots__ = (
 		"cpu",

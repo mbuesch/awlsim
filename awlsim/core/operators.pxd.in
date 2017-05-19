@@ -1,10 +1,11 @@
 from awlsim.core.offset cimport *
+from awlsim.core.instructions.main cimport *
 
 cdef class AwlOperator(object):
-	cdef public uint32_t type
+	cdef public uint32_t operType
 	cdef public int32_t width
 	cdef public object value
-	cdef public object insn
+	cdef public AwlInsn insn
 
 	cdef public _Bool isExtended
 	cdef public object labelIndex

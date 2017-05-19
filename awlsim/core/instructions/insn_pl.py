@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 
@@ -35,7 +36,7 @@ class AwlInsn_PL(AwlInsn): #+cdef
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_PL, rawInsn, **kwargs)
 		self.assertOpCount(1)
-		if self.op0.type != AwlOperator.IMM:
+		if self.op0.operType != AwlOperatorTypes.IMM:
 			raise AwlSimError("Immediate expected")
 
 	def run(self): #+cdef

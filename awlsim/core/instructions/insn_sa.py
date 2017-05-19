@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 
@@ -35,7 +36,7 @@ class AwlInsn_SA(AwlInsn): #+cdef
 		self.assertOpCount(1)
 
 	def staticSanityChecks(self):
-		self.op0.assertType(AwlOperator.MEM_T)
+		self.op0.assertType(AwlOperatorTypes.MEM_T)
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s

@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.core.datastructure import *
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.blocks import * #+cimport
@@ -50,8 +51,9 @@ class AwlParamAssign(object): #+cdef
 		# scratchSpaceOp attribute holds the possible AwlOperator for
 		# scratch space allocation.
 		# This element is assigned during runtime.
-		self.scratchSpaceOp = AwlOperator(type=AwlOperator.IMM,
-						  width=32, value=42)
+		self.scratchSpaceOp = AwlOperator(operType=AwlOperatorTypes.IMM,
+						  width=32, value=42,
+						  insn=None)
 
 		# 'interface' is the BlockInterface of the called block.
 		# This element is assigned later in the translation phase

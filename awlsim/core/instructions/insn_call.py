@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.instructions.main import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 
@@ -39,20 +40,20 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			# "UC/CC FC/SFC/FB/SFB"
 			blockOper = self.op0
 
-			if blockOper.type == AwlOperator.BLKREF_FC:
+			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
 				try:
 					codeBlock = self.cpu.fcs[blockOper.value.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FC not found",
 						rawInsn = self.rawInsn)
-			elif blockOper.type == AwlOperator.BLKREF_SFC:
+			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
 				try:
 					codeBlock = self.cpu.sfcs[blockOper.value.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFC %d not implemented, yet" %\
 						blockOper.value.byteOffset,
 						rawInsn = self.rawInsn)
-			elif blockOper.type == AwlOperator.BLKREF_FB:
+			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
 				if self.insnType == AwlInsn.TYPE_CALL:
 					raise AwlSimError("Missing DB in function "
 						"block call",
@@ -62,7 +63,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 				except KeyError as e:
 					raise AwlSimError("Called FB not found",
 						rawInsn = self.rawInsn)
-			elif blockOper.type == AwlOperator.BLKREF_SFB:
+			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
 				if self.insnType == AwlInsn.TYPE_CALL:
 					raise AwlSimError("Missing DB in system function "
 						"block call",
@@ -73,12 +74,12 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					raise AwlSimError("SFB %d not implemented, yet" %\
 						blockOper.value.byteOffset,
 						rawInsn = self.rawInsn)
-			elif blockOper.type == AwlOperator.INDIRECT:
+			elif blockOper.operType == AwlOperatorTypes.INDIRECT:
 				# Indirect call. (like UC FC[MW 0])
 				codeBlock = None
-			elif blockOper.type in (AwlOperator.MULTI_FB, AwlOperator.MULTI_SFB):
+			elif blockOper.operType in (AwlOperatorTypes.MULTI_FB, AwlOperatorTypes.MULTI_SFB):
 				# Multi instance call (like CALL #FOO)
-				if blockOper.type == AwlOperator.MULTI_FB:
+				if blockOper.operType == AwlOperatorTypes.MULTI_FB:
 					codeBlock = self.cpu.fbs[blockOper.value.fbNumber]
 				else:
 					codeBlock = self.cpu.sfbs[blockOper.value.fbNumber]
@@ -101,7 +102,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			blockOper = self.op0
 			dbOper = self.op1
 
-			if dbOper.type != AwlOperator.BLKREF_DB:
+			if dbOper.operType != AwlOperatorTypes.BLKREF_DB:
 				raise AwlSimError("Second CALL operand is "
 					"not a DB operand.",
 					rawInsn = self.rawInsn)
@@ -115,7 +116,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					dbOper.value.byteOffset,
 					rawInsn = self.rawInsn)
 
-			if blockOper.type == AwlOperator.BLKREF_FB:
+			if blockOper.operType == AwlOperatorTypes.BLKREF_FB:
 				try:
 					fb = self.cpu.fbs[blockOper.value.byteOffset]
 				except KeyError as e:
@@ -123,7 +124,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 						rawInsn = self.rawInsn)
 				# TODO check if this is an FB-DB
 				pass#TODO
-			elif blockOper.type == AwlOperator.BLKREF_SFB:
+			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
 				try:
 					fb = self.cpu.sfbs[blockOper.value.byteOffset]
 				except KeyError as e:
@@ -132,8 +133,8 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 						rawInsn = self.rawInsn)
 				# TODO check if this is an SFB-DB
 				pass#TODO
-			elif blockOper.type == AwlOperator.BLKREF_FC or\
-			     blockOper.type == AwlOperator.BLKREF_SFC:
+			elif blockOper.operType == AwlOperatorTypes.BLKREF_FC or\
+			     blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
 				raise AwlSimError("Calling function, but "
 					"a DB was specified.",
 					rawInsn = self.rawInsn)
@@ -151,13 +152,13 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 		# Check parameter assignments
 		for param in self.params:
 			if param.isOutbound:
-				if ((blockOper.type == AwlOperator.BLKREF_FB or\
-				     blockOper.type == AwlOperator.BLKREF_SFB) and\
+				if ((blockOper.operType == AwlOperatorTypes.BLKREF_FB or\
+				     blockOper.operType == AwlOperatorTypes.BLKREF_SFB) and\
 				    param.rvalueOp.isImmediate()) or\
-				   ((blockOper.type == AwlOperator.BLKREF_FC or\
-				     blockOper.type == AwlOperator.BLKREF_SFC) and\
+				   ((blockOper.operType == AwlOperatorTypes.BLKREF_FC or\
+				     blockOper.operType == AwlOperatorTypes.BLKREF_SFC) and\
 				    param.rvalueOp.isImmediate() and\
-				    param.rvalueOp.type != AwlOperator.IMM_PTR):
+				    param.rvalueOp.operType != AwlOperatorTypes.IMM_PTR):
 					raise AwlSimError("Immediate value assignment '%s' "
 						"to OUTPUT or IN_OUT parameter '%s' is "
 						"not allowed." %\

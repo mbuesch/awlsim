@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.blockinterface import *
@@ -169,7 +170,7 @@ class CallStackElem(object): #+cdef
 				self.__interfRefs = {}
 				for param in parameters:
 					try:
-						trans = self.__FC_paramTrans[param.rvalueOp.type]
+						trans = self.__FC_paramTrans[param.rvalueOp.operType]
 					except KeyError as e:
 						raise AwlSimError("Do not know how to translate "
 							"FC parameter '%s' for call. The specified "
@@ -242,7 +243,7 @@ class CallStackElem(object): #+cdef
 		# Allocate space in the caller-L-stack.
 		loffset = cpu.callStackTop.lalloc.alloc(rvalueOp.width)
 		# Make an operator for the allocated space.
-		oper = AwlOperator(AwlOperator.MEM_L,
+		oper = AwlOperator(AwlOperatorTypes.MEM_L,
 				   rvalueOp.width,
 				   loffset,
 				   rvalueOp.insn)
@@ -252,7 +253,7 @@ class CallStackElem(object): #+cdef
 		# FC parameters as well. So copy the value unconditionally.
 		cpu.store(oper, cpu.fetch(rvalueOp))
 		# Change the operator to VL
-		oper.type = oper.MEM_VL
+		oper.operType = AwlOperatorTypes.MEM_VL
 		# If outbound, save param and operator for return from CALL.
 		# Do not do this for immediates (which would be pointer
 		# immediates, for example), because there is nothing to copy
@@ -276,17 +277,18 @@ class CallStackElem(object): #+cdef
 		# Allocate space for the DB-ptr in the caller-L-stack
 		loffset = cpu.callStackTop.lalloc.alloc(48) # 48 bits
 		# Create and store the the DB-ptr to the allocated space.
-		storeOper = AwlOperator(AwlOperator.MEM_L,
+		storeOper = AwlOperator(AwlOperatorTypes.MEM_L,
 					16,
-					loffset)
-		if rvalueOp.type == AwlOperator.MEM_DI:
+					loffset,
+					rvalueOp.insn)
+		if rvalueOp.operType == AwlOperatorTypes.MEM_DI:
 			dbNumber = cpu.diRegister.index
 		else:
 			dbNumber = rvalueOp.value.dbNumber
 		cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
 		storeOper.value = loffset + AwlOffset(2)
 		storeOper.width = 32
-		area = AwlIndirectOp.optype2area[rvalueOp.type]
+		area = AwlIndirectOp.optype2area[rvalueOp.operType]
 		if area == AwlIndirectOp.AREA_L:
 			area = AwlIndirectOp.AREA_VL
 		elif area == AwlIndirectOp.AREA_VL:
@@ -297,7 +299,7 @@ class CallStackElem(object): #+cdef
 		cpu.store(storeOper,
 			  area | rvalueOp.value.toPointerValue())
 		# Return the operator for the DB pointer.
-		return AwlOperator(AwlOperator.MEM_VL,
+		return AwlOperator(AwlOperatorTypes.MEM_VL,
 				   48,
 				   loffset,
 				   rvalueOp.insn)
@@ -311,7 +313,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef AwlOperator oper
 
 		oper = self.__FC_trans_copyToVL(param, rvalueOp)
-		oper.type = oper.MEM_L
+		oper.operType = AwlOperatorTypes.MEM_L
 		return self.__FC_trans_dbpointerInVL(param, oper)
 
 	# FC parameter translation:
@@ -325,7 +327,7 @@ class CallStackElem(object): #+cdef
 			# Create a DB-pointer to it in VL.
 			return self.__FC_trans_dbpointerInVL(param, rvalueOp)
 		# Translate it to a VL-stack memory access.
-		return AwlOperator(rvalueOp.MEM_VL,
+		return AwlOperator(AwlOperatorTypes.MEM_VL,
 				   rvalueOp.width,
 				   rvalueOp.value,
 				   rvalueOp.insn)
@@ -345,7 +347,7 @@ class CallStackElem(object): #+cdef
 				# Create a DB-pointer to it in VL.
 				return self.__FC_trans_dbpointerInVL(param, rvalueOp)
 			# Basic data type.
-			self.cpu.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
+			self.cpu.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 						     AwlOffset(rvalueOp.value.dbNumber),
 						     rvalueOp.insn))
 			copyToVL = True
@@ -354,7 +356,7 @@ class CallStackElem(object): #+cdef
 			return self.__FC_trans_copyToVL(param, rvalueOp)
 		# Do not copy to caller-L-stack. Just make a DB-reference.
 		offset = rvalueOp.value.dup()
-		return AwlOperator(rvalueOp.MEM_DB,
+		return AwlOperator(AwlOperatorTypes.MEM_DB,
 				   rvalueOp.width,
 				   offset,
 				   rvalueOp.insn)
@@ -382,10 +384,10 @@ class CallStackElem(object): #+cdef
 
 		# r-value is a named-local (#abc)
 		oper = self.cpu.callStackTop.getInterfIdxOper(rvalueOp.interfaceIndex)
-		if oper.type == oper.MEM_DB:
+		if oper.operType == AwlOperatorTypes.MEM_DB:
 			return self.__FC_trans_MEM_DB(param, oper, True)
 		try:
-			return self.__FC_paramTrans[oper.type](self, param, oper)
+			return self.__FC_paramTrans[oper.operType](self, param, oper)
 		except KeyError as e:
 			raise AwlSimBug("Unhandled call translation of "
 				"named local parameter assignment:\n"
@@ -394,33 +396,33 @@ class CallStackElem(object): #+cdef
 
 	# FC call parameter translators
 	__FC_paramTrans = {
-		AwlOperator.IMM			: __FC_trans_copyToVL,
-		AwlOperator.IMM_REAL		: __FC_trans_copyToVL,
-		AwlOperator.IMM_S5T		: __FC_trans_copyToVL,
-		AwlOperator.IMM_TIME		: __FC_trans_copyToVL,
-		AwlOperator.IMM_DATE		: __FC_trans_copyToVL,
-		AwlOperator.IMM_TOD		: __FC_trans_copyToVL,
-		AwlOperator.IMM_DT		: __FC_trans_copyToVLWithDBPtr,
-		AwlOperator.IMM_PTR		: __FC_trans_copyToVL,
-		AwlOperator.IMM_STR		: __FC_trans_copyToVLWithDBPtr,
+		AwlOperatorTypes.IMM			: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_REAL		: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_S5T		: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_TIME		: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_DATE		: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_TOD		: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_DT		: __FC_trans_copyToVLWithDBPtr,
+		AwlOperatorTypes.IMM_PTR		: __FC_trans_copyToVL,
+		AwlOperatorTypes.IMM_STR		: __FC_trans_copyToVLWithDBPtr,
 
-		AwlOperator.MEM_E		: __FC_trans_direct,
-		AwlOperator.MEM_A		: __FC_trans_direct,
-		AwlOperator.MEM_M		: __FC_trans_direct,
-		AwlOperator.MEM_L		: __FC_trans_MEM_L,
-		AwlOperator.MEM_VL		: __FC_trans_copyToVL,
-		AwlOperator.MEM_DB		: __FC_trans_MEM_DB,
-		AwlOperator.MEM_DI		: __FC_trans_MEM_DI,
-		AwlOperator.MEM_T		: __FC_trans_direct,
-		AwlOperator.MEM_Z		: __FC_trans_direct,
-		AwlOperator.MEM_PA		: __FC_trans_direct,
-		AwlOperator.MEM_PE		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_E		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_A		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_M		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_L		: __FC_trans_MEM_L,
+		AwlOperatorTypes.MEM_VL		: __FC_trans_copyToVL,
+		AwlOperatorTypes.MEM_DB		: __FC_trans_MEM_DB,
+		AwlOperatorTypes.MEM_DI		: __FC_trans_MEM_DI,
+		AwlOperatorTypes.MEM_T		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_Z		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_PA		: __FC_trans_direct,
+		AwlOperatorTypes.MEM_PE		: __FC_trans_direct,
 
-		AwlOperator.BLKREF_FC		: __FC_trans_direct,
-		AwlOperator.BLKREF_FB		: __FC_trans_direct,
-		AwlOperator.BLKREF_DB		: __FC_trans_direct,
+		AwlOperatorTypes.BLKREF_FC		: __FC_trans_direct,
+		AwlOperatorTypes.BLKREF_FB		: __FC_trans_direct,
+		AwlOperatorTypes.BLKREF_DB		: __FC_trans_direct,
 
-		AwlOperator.NAMED_LOCAL		: __FC_trans_NAMED_LOCAL,
+		AwlOperatorTypes.NAMED_LOCAL		: __FC_trans_NAMED_LOCAL,
 	}
 
 	# Handle the exit from this code block.
@@ -463,9 +465,10 @@ class CallStackElem(object): #+cdef
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
-						cpu.fetch(AwlOperator(AwlOperator.MEM_L,
+						cpu.fetch(AwlOperator(AwlOperatorTypes.MEM_L,
 								      param.scratchSpaceOp.width,
-								      param.scratchSpaceOp.value))
+								      param.scratchSpaceOp.value,
+								      None))
 					)
 				# Assign the DB/DI registers.
 				cpu.dbRegister, cpu.diRegister = self.prevDbRegister, self.prevDiRegister

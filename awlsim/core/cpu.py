@@ -509,13 +509,13 @@ class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
 	def __init__(self):
-#@cy		self._OPER_BLKREF_FC	= AwlOperator.BLKREF_FC
-#@cy		self._OPER_BLKREF_FB	= AwlOperator.BLKREF_FB
-#@cy		self._OPER_BLKREF_SFC	= AwlOperator.BLKREF_SFC
-#@cy		self._OPER_BLKREF_SFB	= AwlOperator.BLKREF_SFB
-#@cy		self._OPER_MULTI_FB 	= AwlOperator.MULTI_FB
-#@cy		self._OPER_MULTI_SFB	= AwlOperator.MULTI_SFB
-#@cy		self._OPER_INDIRECT 	= AwlOperator.INDIRECT
+#@cy		self._OPER_BLKREF_FC	= AwlOperatorTypes.BLKREF_FC
+#@cy		self._OPER_BLKREF_FB	= AwlOperatorTypes.BLKREF_FB
+#@cy		self._OPER_BLKREF_SFC	= AwlOperatorTypes.BLKREF_SFC
+#@cy		self._OPER_BLKREF_SFB	= AwlOperatorTypes.BLKREF_SFB
+#@cy		self._OPER_MULTI_FB 	= AwlOperatorTypes.MULTI_FB
+#@cy		self._OPER_MULTI_SFB	= AwlOperatorTypes.MULTI_SFB
+#@cy		self._OPER_INDIRECT 	= AwlOperatorTypes.INDIRECT
 
 		self.__fetchTypeMethods = self.__fetchTypeMethodsDict
 		self.__storeTypeMethods = self.__storeTypeMethodsDict
@@ -594,7 +594,7 @@ class S7CPU(object): #+cdef
 				dataBlock = None
 			elif len(insn.ops) == 2:
 				dataBlockOp = insn.ops[1]
-				if dataBlockOp.type == AwlOperator.SYMBOLIC:
+				if dataBlockOp.operType == AwlOperatorTypes.SYMBOLIC:
 					blockIndex, symbol = resolver.resolveBlockName(
 							{AwlDataType.TYPE_FB_X,
 							 AwlDataType.TYPE_SFB_X},
@@ -602,7 +602,7 @@ class S7CPU(object): #+cdef
 					dataBlockOp = symbol.operator.dup()
 				dataBlockIndex = dataBlockOp.value.byteOffset
 				try:
-					if dataBlockOp.type == AwlOperator.BLKREF_DB:
+					if dataBlockOp.operType == AwlOperatorTypes.BLKREF_DB:
 						dataBlock = self.dbs[dataBlockIndex]
 					else:
 						raise AwlSimError("Data block operand "
@@ -616,7 +616,7 @@ class S7CPU(object): #+cdef
 
 			# Get the code block, if any.
 			codeBlockOp = insn.ops[0]
-			if codeBlockOp.type == AwlOperator.SYMBOLIC:
+			if codeBlockOp.operType == AwlOperatorTypes.SYMBOLIC:
 				blockIndex, symbol = resolver.resolveBlockName(
 						{AwlDataType.TYPE_FC_X,
 						 AwlDataType.TYPE_FB_X,
@@ -624,24 +624,24 @@ class S7CPU(object): #+cdef
 						 AwlDataType.TYPE_SFB_X},
 						codeBlockOp.value.identChain.getString())
 				codeBlockOp = symbol.operator.dup()
-			elif codeBlockOp.type == AwlOperator.NAMED_LOCAL:
+			elif codeBlockOp.operType == AwlOperatorTypes.NAMED_LOCAL:
 				codeBlockOp = resolver.resolveNamedLocal(block, insn, codeBlockOp)
 
-			if codeBlockOp.type in {AwlOperator.MULTI_FB,
-						AwlOperator.MULTI_SFB}:
+			if codeBlockOp.operType in {AwlOperatorTypes.MULTI_FB,
+						    AwlOperatorTypes.MULTI_SFB}:
 				codeBlockIndex = codeBlockOp.value.fbNumber
 			else:
 				codeBlockIndex = codeBlockOp.value.byteOffset
 			try:
-				if codeBlockOp.type == AwlOperator.BLKREF_FC:
+				if codeBlockOp.operType == AwlOperatorTypes.BLKREF_FC:
 					codeBlock = self.fcs[codeBlockIndex]
-				elif codeBlockOp.type in {AwlOperator.BLKREF_FB,
-							  AwlOperator.MULTI_FB}:
+				elif codeBlockOp.operType in {AwlOperatorTypes.BLKREF_FB,
+							      AwlOperatorTypes.MULTI_FB}:
 					codeBlock = self.fbs[codeBlockIndex]
-				elif codeBlockOp.type == AwlOperator.BLKREF_SFC:
+				elif codeBlockOp.operType == AwlOperatorTypes.BLKREF_SFC:
 					codeBlock = self.sfcs[codeBlockIndex]
-				elif codeBlockOp.type in {AwlOperator.BLKREF_SFB,
-							  AwlOperator.MULTI_SFB}:
+				elif codeBlockOp.operType in {AwlOperatorTypes.BLKREF_SFB,
+							      AwlOperatorTypes.MULTI_SFB}:
 					codeBlock = self.sfbs[codeBlockIndex]
 				else:
 					raise AwlSimError("Code block operand "
@@ -1143,18 +1143,18 @@ class S7CPU(object): #+cdef
 
 		blockOper = blockOper.resolve()
 
-#@cy		if blockOper.type == self._OPER_BLKREF_FC:
+#@cy		if blockOper.operType == self._OPER_BLKREF_FC:
 #@cy			return self.__call_RAW_FC(blockOper, dbOper, parameters)
-#@cy		elif blockOper.type == self._OPER_BLKREF_FB:
+#@cy		elif blockOper.operType == self._OPER_BLKREF_FB:
 #@cy			return self.__call_RAW_FB(blockOper, dbOper, parameters)
-#@cy		elif blockOper.type == self._OPER_BLKREF_SFC:
+#@cy		elif blockOper.operType == self._OPER_BLKREF_SFC:
 #@cy			return self.__call_RAW_SFC(blockOper, dbOper, parameters)
-#@cy		elif blockOper.type == self._OPER_BLKREF_SFB:
+#@cy		elif blockOper.operType == self._OPER_BLKREF_SFB:
 #@cy			return self.__call_RAW_SFB(blockOper, dbOper, parameters)
 #@cy		else:
 #@cy			raise AwlSimError("Invalid CALL operand")
 
-		callHelper = self.__rawCallHelpers[blockOper.type]			#@nocy
+		callHelper = self.__rawCallHelpers[blockOper.operType]			#@nocy
 		try:									#@nocy
 			return callHelper(self, blockOper, dbOper, parameters)		#@nocy
 		except KeyError as e:							#@nocy
@@ -1181,20 +1181,20 @@ class S7CPU(object): #+cdef
 		return cse
 
 	__callHelpersDict = {					#@nocy
-		AwlOperator.BLKREF_FC	: __call_FC,		#@nocy
-		AwlOperator.BLKREF_FB	: __call_FB,		#@nocy
-		AwlOperator.BLKREF_SFC	: __call_SFC,		#@nocy
-		AwlOperator.BLKREF_SFB	: __call_SFB,		#@nocy
-		AwlOperator.MULTI_FB	: __call_MULTI_FB,	#@nocy
-		AwlOperator.MULTI_SFB	: __call_MULTI_SFB,	#@nocy
+		AwlOperatorTypes.BLKREF_FC	: __call_FC,		#@nocy
+		AwlOperatorTypes.BLKREF_FB	: __call_FB,		#@nocy
+		AwlOperatorTypes.BLKREF_SFC	: __call_SFC,		#@nocy
+		AwlOperatorTypes.BLKREF_SFB	: __call_SFB,		#@nocy
+		AwlOperatorTypes.MULTI_FB	: __call_MULTI_FB,	#@nocy
+		AwlOperatorTypes.MULTI_SFB	: __call_MULTI_SFB,	#@nocy
 	}							#@nocy
 
 	__rawCallHelpersDict = {				#@nocy
-		AwlOperator.BLKREF_FC	: __call_RAW_FC,	#@nocy
-		AwlOperator.BLKREF_FB	: __call_RAW_FB,	#@nocy
-		AwlOperator.BLKREF_SFC	: __call_RAW_SFC,	#@nocy
-		AwlOperator.BLKREF_SFB	: __call_RAW_SFB,	#@nocy
-		AwlOperator.INDIRECT	: __call_INDIRECT,	#@nocy
+		AwlOperatorTypes.BLKREF_FC	: __call_RAW_FC,	#@nocy
+		AwlOperatorTypes.BLKREF_FB	: __call_RAW_FB,	#@nocy
+		AwlOperatorTypes.BLKREF_SFC	: __call_RAW_SFC,	#@nocy
+		AwlOperatorTypes.BLKREF_SFB	: __call_RAW_SFB,	#@nocy
+		AwlOperatorTypes.INDIRECT	: __call_INDIRECT,	#@nocy
 	}							#@nocy
 
 	def run_CALL(self, blockOper, dbOper=None, parameters=(), raw=False): #@nocy
@@ -1202,39 +1202,39 @@ class S7CPU(object): #+cdef
 #@cy		     tuple parameters=(), _Bool raw=False):
 #@cy		cdef CallStackElem newCse
 #@cy		if raw:
-#@cy			if blockOper.type == self._OPER_BLKREF_FC:
+#@cy			if blockOper.operType == self._OPER_BLKREF_FC:
 #@cy				newCse = self.__call_RAW_FC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_BLKREF_FB:
+#@cy			elif blockOper.operType == self._OPER_BLKREF_FB:
 #@cy				newCse = self.__call_RAW_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_BLKREF_SFC:
+#@cy			elif blockOper.operType == self._OPER_BLKREF_SFC:
 #@cy				newCse = self.__call_RAW_SFC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_BLKREF_SFB:
+#@cy			elif blockOper.operType == self._OPER_BLKREF_SFB:
 #@cy				newCse = self.__call_RAW_SFB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_INDIRECT:
+#@cy			elif blockOper.operType == self._OPER_INDIRECT:
 #@cy				newCse = self.__call_INDIRECT(blockOper, dbOper, parameters)
 #@cy			else:
 #@cy				raise AwlSimError("Invalid CALL operand")
 #@cy		else:
-#@cy			if blockOper.type == self._OPER_BLKREF_FC:
+#@cy			if blockOper.operType == self._OPER_BLKREF_FC:
 #@cy				newCse = self.__call_FC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_BLKREF_FB:
+#@cy			elif blockOper.operType == self._OPER_BLKREF_FB:
 #@cy				newCse = self.__call_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_BLKREF_SFC:
+#@cy			elif blockOper.operType == self._OPER_BLKREF_SFC:
 #@cy				newCse = self.__call_SFC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_BLKREF_SFB:
+#@cy			elif blockOper.operType == self._OPER_BLKREF_SFB:
 #@cy				newCse = self.__call_SFB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_MULTI_FB:
+#@cy			elif blockOper.operType == self._OPER_MULTI_FB:
 #@cy				newCse = self.__call_MULTI_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.type == self._OPER_MULTI_SFB:
+#@cy			elif blockOper.operType == self._OPER_MULTI_SFB:
 #@cy				newCse = self.__call_MULTI_SFB(blockOper, dbOper, parameters)
 #@cy			else:
 #@cy				raise AwlSimError("Invalid CALL operand")
 
 		try:									#@nocy
 			if raw:								#@nocy
-				callHelper = self.__rawCallHelpers[blockOper.type]	#@nocy
+				callHelper = self.__rawCallHelpers[blockOper.operType]	#@nocy
 			else:								#@nocy
-				callHelper = self.__callHelpers[blockOper.type]		#@nocy
+				callHelper = self.__callHelpers[blockOper.operType]	#@nocy
 		except KeyError:							#@nocy
 			raise AwlSimError("Invalid CALL operand")			#@nocy
 		newCse = callHelper(self, blockOper, dbOper, parameters)		#@nocy
@@ -1262,9 +1262,9 @@ class S7CPU(object): #+cdef
 		except KeyError:
 			raise AwlSimError("Datablock %i does not exist" %\
 					  dbOper.value.byteOffset)
-		if dbOper.type == AwlOperator.BLKREF_DB:
+		if dbOper.operType == AwlOperatorTypes.BLKREF_DB:
 			self.dbRegister = db
-		elif dbOper.type == AwlOperator.BLKREF_DI:
+		elif dbOper.operType == AwlOperatorTypes.BLKREF_DI:
 			self.diRegister = db
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
@@ -1355,7 +1355,7 @@ class S7CPU(object): #+cdef
 			pointer = self.fetch(dbPtrOp)
 			# Open the DB pointed to by the DB-ptr.
 			# (This is ok, if dbNr is 0, too)
-			self.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
+			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 						 AwlOffset(dbNr),
 						 operator.insn))
 			# Make an operator from the DB-ptr.
@@ -1432,7 +1432,7 @@ class S7CPU(object): #+cdef
 	def fetch(self, operator, enforceWidth=frozenset()): #@nocy
 #@cy	cpdef object fetch(self, AwlOperator operator, frozenset enforceWidth=frozenset()):
 		try:
-			fetchMethod = self.__fetchTypeMethods[operator.type]
+			fetchMethod = self.__fetchTypeMethods[operator.operType]
 		except KeyError:
 			raise AwlSimError("Invalid fetch request: %s" %\
 				str(operator))
@@ -1625,7 +1625,7 @@ class S7CPU(object): #+cdef
 		if operator.value.dbNumber is not None:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
-			self.run_AUF(AwlOperator(AwlOperator.BLKREF_DB, 16,
+			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 						 AwlOffset(operator.value.dbNumber),
 						 operator.insn))
 		return self.dbRegister.fetch(operator)
@@ -1764,51 +1764,51 @@ class S7CPU(object): #+cdef
 		return 0
 
 	__fetchTypeMethodsDict = {
-		AwlOperator.IMM			: __fetchIMM,
-		AwlOperator.IMM_REAL		: __fetchIMM,
-		AwlOperator.IMM_S5T		: __fetchIMM,
-		AwlOperator.IMM_TIME		: __fetchIMM,
-		AwlOperator.IMM_DATE		: __fetchIMM,
-		AwlOperator.IMM_DT		: __fetchIMM,
-		AwlOperator.IMM_TOD		: __fetchIMM,
-		AwlOperator.IMM_PTR		: __fetchIMM_PTR,
-		AwlOperator.IMM_STR		: __fetchIMM_STR,
-		AwlOperator.MEM_E		: __fetchE,
-		AwlOperator.MEM_A		: __fetchA,
-		AwlOperator.MEM_M		: __fetchM,
-		AwlOperator.MEM_L		: __fetchL,
-		AwlOperator.MEM_VL		: __fetchVL,
-		AwlOperator.MEM_DB		: __fetchDB,
-		AwlOperator.MEM_DI		: __fetchDI,
-		AwlOperator.MEM_T		: __fetchT,
-		AwlOperator.MEM_Z		: __fetchZ,
-		AwlOperator.MEM_PE		: __fetchPE,
-		AwlOperator.MEM_DBLG		: __fetchDBLG,
-		AwlOperator.MEM_DBNO		: __fetchDBNO,
-		AwlOperator.MEM_DILG		: __fetchDILG,
-		AwlOperator.MEM_DINO		: __fetchDINO,
-		AwlOperator.MEM_AR2		: __fetchAR2,
-		AwlOperator.MEM_STW		: __fetchSTW,
-		AwlOperator.MEM_STW_Z		: __fetchSTW_Z,
-		AwlOperator.MEM_STW_NZ		: __fetchSTW_NZ,
-		AwlOperator.MEM_STW_POS		: __fetchSTW_POS,
-		AwlOperator.MEM_STW_NEG		: __fetchSTW_NEG,
-		AwlOperator.MEM_STW_POSZ	: __fetchSTW_POSZ,
-		AwlOperator.MEM_STW_NEGZ	: __fetchSTW_NEGZ,
-		AwlOperator.MEM_STW_UO		: __fetchSTW_UO,
-		AwlOperator.NAMED_LOCAL		: __fetchNAMED_LOCAL,
-		AwlOperator.NAMED_LOCAL_PTR	: __fetchNAMED_LOCAL_PTR,
-		AwlOperator.NAMED_DBVAR		: __fetchNAMED_DBVAR,
-		AwlOperator.INDIRECT		: __fetchINDIRECT,
-		AwlOperator.VIRT_ACCU		: __fetchVirtACCU,
-		AwlOperator.VIRT_AR		: __fetchVirtAR,
-		AwlOperator.VIRT_DBR		: __fetchVirtDBR,
+		AwlOperatorTypes.IMM			: __fetchIMM,
+		AwlOperatorTypes.IMM_REAL		: __fetchIMM,
+		AwlOperatorTypes.IMM_S5T		: __fetchIMM,
+		AwlOperatorTypes.IMM_TIME		: __fetchIMM,
+		AwlOperatorTypes.IMM_DATE		: __fetchIMM,
+		AwlOperatorTypes.IMM_DT		: __fetchIMM,
+		AwlOperatorTypes.IMM_TOD		: __fetchIMM,
+		AwlOperatorTypes.IMM_PTR		: __fetchIMM_PTR,
+		AwlOperatorTypes.IMM_STR		: __fetchIMM_STR,
+		AwlOperatorTypes.MEM_E		: __fetchE,
+		AwlOperatorTypes.MEM_A		: __fetchA,
+		AwlOperatorTypes.MEM_M		: __fetchM,
+		AwlOperatorTypes.MEM_L		: __fetchL,
+		AwlOperatorTypes.MEM_VL		: __fetchVL,
+		AwlOperatorTypes.MEM_DB		: __fetchDB,
+		AwlOperatorTypes.MEM_DI		: __fetchDI,
+		AwlOperatorTypes.MEM_T		: __fetchT,
+		AwlOperatorTypes.MEM_Z		: __fetchZ,
+		AwlOperatorTypes.MEM_PE		: __fetchPE,
+		AwlOperatorTypes.MEM_DBLG		: __fetchDBLG,
+		AwlOperatorTypes.MEM_DBNO		: __fetchDBNO,
+		AwlOperatorTypes.MEM_DILG		: __fetchDILG,
+		AwlOperatorTypes.MEM_DINO		: __fetchDINO,
+		AwlOperatorTypes.MEM_AR2		: __fetchAR2,
+		AwlOperatorTypes.MEM_STW		: __fetchSTW,
+		AwlOperatorTypes.MEM_STW_Z		: __fetchSTW_Z,
+		AwlOperatorTypes.MEM_STW_NZ		: __fetchSTW_NZ,
+		AwlOperatorTypes.MEM_STW_POS		: __fetchSTW_POS,
+		AwlOperatorTypes.MEM_STW_NEG		: __fetchSTW_NEG,
+		AwlOperatorTypes.MEM_STW_POSZ	: __fetchSTW_POSZ,
+		AwlOperatorTypes.MEM_STW_NEGZ	: __fetchSTW_NEGZ,
+		AwlOperatorTypes.MEM_STW_UO		: __fetchSTW_UO,
+		AwlOperatorTypes.NAMED_LOCAL		: __fetchNAMED_LOCAL,
+		AwlOperatorTypes.NAMED_LOCAL_PTR	: __fetchNAMED_LOCAL_PTR,
+		AwlOperatorTypes.NAMED_DBVAR		: __fetchNAMED_DBVAR,
+		AwlOperatorTypes.INDIRECT		: __fetchINDIRECT,
+		AwlOperatorTypes.VIRT_ACCU		: __fetchVirtACCU,
+		AwlOperatorTypes.VIRT_AR		: __fetchVirtAR,
+		AwlOperatorTypes.VIRT_DBR		: __fetchVirtDBR,
 	}
 
 	def store(self, operator, value, enforceWidth=frozenset()): #@nocy
 #@cy	cpdef store(self, AwlOperator operator, object value, frozenset enforceWidth=frozenset()):
 		try:
-			storeMethod = self.__storeTypeMethods[operator.type]
+			storeMethod = self.__storeTypeMethods[operator.operType]
 		except KeyError:
 			raise AwlSimError("Invalid store request: %s" %\
 				str(operator))
@@ -1957,19 +1957,19 @@ class S7CPU(object): #+cdef
 		self.store(operator.resolve(True), value, enforceWidth)
 
 	__storeTypeMethodsDict = {
-		AwlOperator.MEM_E		: __storeE,
-		AwlOperator.MEM_A		: __storeA,
-		AwlOperator.MEM_M		: __storeM,
-		AwlOperator.MEM_L		: __storeL,
-		AwlOperator.MEM_VL		: __storeVL,
-		AwlOperator.MEM_DB		: __storeDB,
-		AwlOperator.MEM_DI		: __storeDI,
-		AwlOperator.MEM_PA		: __storePA,
-		AwlOperator.MEM_AR2		: __storeAR2,
-		AwlOperator.MEM_STW		: __storeSTW,
-		AwlOperator.NAMED_LOCAL		: __storeNAMED_LOCAL,
-		AwlOperator.NAMED_DBVAR		: __storeNAMED_DBVAR,
-		AwlOperator.INDIRECT		: __storeINDIRECT,
+		AwlOperatorTypes.MEM_E		: __storeE,
+		AwlOperatorTypes.MEM_A		: __storeA,
+		AwlOperatorTypes.MEM_M		: __storeM,
+		AwlOperatorTypes.MEM_L		: __storeL,
+		AwlOperatorTypes.MEM_VL		: __storeVL,
+		AwlOperatorTypes.MEM_DB		: __storeDB,
+		AwlOperatorTypes.MEM_DI		: __storeDI,
+		AwlOperatorTypes.MEM_PA		: __storePA,
+		AwlOperatorTypes.MEM_AR2		: __storeAR2,
+		AwlOperatorTypes.MEM_STW		: __storeSTW,
+		AwlOperatorTypes.NAMED_LOCAL		: __storeNAMED_LOCAL,
+		AwlOperatorTypes.NAMED_DBVAR		: __storeNAMED_DBVAR,
+		AwlOperatorTypes.INDIRECT		: __storeINDIRECT,
 	}
 
 	def __dumpMem(self, prefix, memory, maxLen):

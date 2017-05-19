@@ -24,9 +24,10 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 
-from awlsim.core.memory import *
+from awlsim.core.memory import * #+cimport
 from awlsim.core.datatypes import *
 from awlsim.core.datastructure import *
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 
 
@@ -365,12 +366,14 @@ class BlockInterface(object):
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			ptrValue |= AwlIndirectOp.AREA_L
-			return AwlOperator(type = AwlOperator.IMM_PTR,
-					   width = 32,
-					   value = Pointer(ptrValue))
-		oper = AwlOperator(type=AwlOperator.MEM_L,
+			return AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+					   width=32,
+					   value=Pointer(ptrValue),
+					   insn=None)
+		oper = AwlOperator(operType=AwlOperatorTypes.MEM_L,
 				   width=structField.bitSize,
-				   value=structField.offset.dup())
+				   value=structField.offset.dup(),
+				   insn=None)
 		# If this is a compound data type access, mark
 		# the operand as such.
 		oper.compound = structField.dataType.compound
@@ -397,17 +400,19 @@ class BlockInterface(object):
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			ptrValue |= AwlIndirectOp.AREA_DI
-			return AwlOperator(type = AwlOperator.IMM_PTR,
-					   width = 32,
-					   value = Pointer(ptrValue))
+			return AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+					   width=32,
+					   value=Pointer(ptrValue),
+					   insn=None)
 
 		# Translate to instance-DB access
 
 		if structField.dataType.type in BlockInterface.callByRef_Types:
 			# "call by reference"
-			offsetOper = AwlOperator(type=AwlOperator.MEM_DI,
+			offsetOper = AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 						 width=structField.dataType.width,
-						 value=structField.offset.dup())
+						 value=structField.offset.dup(),
+						 insn=None)
 			if structField.dataType.type == AwlDataType.TYPE_TIMER:
 				area = AwlIndirectOp.EXT_AREA_T
 				width = 16
@@ -435,19 +440,21 @@ class BlockInterface(object):
 						 AwlDataType.TYPE_SFB_X):
 			# Multi-instance operator (CALL)
 			if structField.dataType.type == AwlDataType.TYPE_FB_X:
-				operType = AwlOperator.MULTI_FB
+				operType = AwlOperatorTypes.MULTI_FB
 			else:
-				operType = AwlOperator.MULTI_SFB
+				operType = AwlOperatorTypes.MULTI_SFB
 			offset = structField.offset.dup()
 			offset.fbNumber = structField.dataType.index
-			return AwlOperator(type = operType,
-					   width = structField.bitSize,
-					   value = offset)
+			return AwlOperator(operType=operType,
+					   width=structField.bitSize,
+					   value=offset,
+					   insn=None)
 
 		# "call by value"
-		oper = AwlOperator(type=AwlOperator.MEM_DI,
+		oper = AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 				   width=structField.bitSize,
-				   value=structField.offset.dup())
+				   value=structField.offset.dup(),
+				   insn=None)
 		# If this is a compound data type access, mark
 		# the operand as such.
 		oper.compound = structField.dataType.compound

@@ -28,6 +28,7 @@ from awlsim.common.util import *
 
 from awlsim.core.hardware_params import *
 from awlsim.core.hardware import * #+cimport
+from awlsim.core.operatortypes import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.cpu import * #+cimport
@@ -101,9 +102,10 @@ class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
 				self.raiseException("Synthetic input error")
 
 		# Get the first input dword and write it back.
-		dword = self.sim.cpu.fetch(AwlOperator(AwlOperator.MEM_E,
+		dword = self.sim.cpu.fetch(AwlOperator(AwlOperatorTypes.MEM_E,
 						       32,
-						       AwlOffset(self.inputAddressBase)))
+						       AwlOffset(self.inputAddressBase),
+						       None))
 		dwordBytes = bytearray( ( ((dword >> 24) & 0xFF),
 					  ((dword >> 16) & 0xFF),
 					  ((dword >> 8) & 0xFF),

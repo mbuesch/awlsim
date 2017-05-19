@@ -131,8 +131,8 @@ class SFC21(SFC):
 				if (db.permissions & db.PERM_READ) == 0:
 					raise KeyError
 				cpu.run_AUF(AwlOperator(
-					AwlOperator.BLKREF_DB, 16,
-					AwlOffset(BVAL_dbNr)))
+					AwlOperatorTypes.BLKREF_DB, 16,
+					AwlOffset(BVAL_dbNr), None))
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 1))
@@ -149,8 +149,8 @@ class SFC21(SFC):
 				if (db.permissions & db.PERM_WRITE) == 0:
 					raise KeyError
 				cpu.run_AUF(AwlOperator(
-					AwlOperator.BLKREF_DI, 16,
-					AwlOffset(BLK_dbNr)))
+					AwlOperatorTypes.BLKREF_DI, 16,
+					AwlOffset(BLK_dbNr), None))
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 3))
@@ -169,7 +169,7 @@ class SFC21(SFC):
 			return
 		BVAL_fetchOper = AwlOperator(
 			AwlIndirectOp.area2optype_fetch[BVAL_ptrArea << Pointer.AREA_SHIFT],
-			8, BVAL_offset)
+			8, BVAL_offset, None)
 		BLK_offset = AwlOffset.fromPointerValue(BLK_ptr.toPointerValue())
 		BLK_end = BLK_offset + AwlOffset(BLK_len)
 		if BLK_offset.bitOffset:
@@ -180,7 +180,7 @@ class SFC21(SFC):
 			return
 		BLK_storeOper = AwlOperator(
 			AwlIndirectOp.area2optype_fetch[BLK_ptrArea << Pointer.AREA_SHIFT],
-			8, BLK_offset)
+			8, BLK_offset, None)
 		while BLK_offset.byteOffset < BLK_end.byteOffset:
 			if BLK_offset.byteOffset + 4 <= BLK_end.byteOffset and\
 			   BVAL_offset.byteOffset + 4 <= BVAL_end.byteOffset:

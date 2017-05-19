@@ -327,7 +327,7 @@ class AwlTranslator(object):
 	def __translateParamPointer(self, param):
 		if param.lValueDataType.type == AwlDataType.TYPE_POINTER:
 			# POINTER parameter.
-			if param.rvalueOp.type == AwlOperator.IMM_PTR:
+			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR:
 				# Make sure this is a DB-pointer immediate (48 bit).
 				if param.rvalueOp.width not in {32, 48}:
 					raise AwlSimError("Invalid pointer immediate "
@@ -343,23 +343,23 @@ class AwlTranslator(object):
 						"operator '%s' to POINTER." %\
 						str(param.rvalueOp))
 				param.rvalueOp = AwlOperator(
-					type = AwlOperator.IMM_PTR,
-					width = ptr.width,
-					value = ptr,
-					insn = param.rvalueOp.insn)
+					operType=AwlOperatorTypes.IMM_PTR,
+					width=ptr.width,
+					value=ptr,
+					insn=param.rvalueOp.insn)
 			if param.rvalueOp.value.getArea() == Pointer.AREA_L:
 				# L-stack access must be translated to VL.
 				param.rvalueOp.value.setArea(Pointer.AREA_VL)
 		elif param.lValueDataType.type == AwlDataType.TYPE_ANY:
 			# ANY-pointer parameter.
-			if param.rvalueOp.type == AwlOperator.IMM_PTR:
+			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR:
 				# Make sure this is an ANY-pointer immediate (80 bit).
 				if param.rvalueOp.width not in {32, 48, 80}:
 					raise AwlSimError("Invalid pointer immediate "
 						"assignment to ANY parameter.")
 				param.rvalueOp.value = param.rvalueOp.value.toANYPointer()
 				param.rvalueOp.width = param.rvalueOp.value.width
-			elif param.rvalueOp.type == AwlOperator.MEM_L and\
+			elif param.rvalueOp.operType == AwlOperatorTypes.MEM_L and\
 			     param.rvalueOp.dataType is not None and\
 			     param.rvalueOp.dataType.type == AwlDataType.TYPE_ANY:
 				# r-value is an ANY pointer in L (as TEMP variable).
@@ -376,11 +376,11 @@ class AwlTranslator(object):
 						"operator '%s' to ANY pointer." %\
 						str(param.rvalueOp))
 				param.rvalueOp = AwlOperator(
-					type = AwlOperator.IMM_PTR,
-					width = ptr.width,
-					value = ptr,
-					insn = param.rvalueOp.insn)
-			if param.rvalueOp.type == AwlOperator.IMM_PTR and\
+					operType=AwlOperatorTypes.IMM_PTR,
+					width=ptr.width,
+					value=ptr,
+					insn=param.rvalueOp.insn)
+			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR and\
 			   param.rvalueOp.value.getArea() == Pointer.AREA_L:
 				# L-stack access must be translated to VL.
 				param.rvalueOp.value.setArea(Pointer.AREA_VL)
@@ -390,18 +390,18 @@ class AwlTranslator(object):
 	def __translateParamString(self, param):
 		if param.lValueDataType.type == AwlDataType.TYPE_CHAR:
 			# CHAR parameter.
-			if param.rvalueOp.type == AwlOperator.IMM_STR:
+			if param.rvalueOp.operType == AwlOperatorTypes.IMM_STR:
 				# Translate single-character string immediates
 				# to 8 bit integer immediates.
 				if param.rvalueOp.width == (2 + 1) * 8:
 					param.rvalueOp = AwlOperator(
-						type = AwlOperator.IMM,
-						width = 8,
-						value = param.rvalueOp.value[2],
-						insn = param.rvalueOp.insn)
+						operType=AwlOperatorTypes.IMM,
+						width=8,
+						value=param.rvalueOp.value[2],
+						insn=param.rvalueOp.insn)
 		elif param.lValueDataType.type == AwlDataType.TYPE_STRING:
 			# STRING parameter.
-			if param.rvalueOp.type == AwlOperator.IMM_STR:
+			if param.rvalueOp.operType == AwlOperatorTypes.IMM_STR:
 				if param.rvalueOp.width < param.lValueDataType.width:
 					# Expand the string immediate length.
 					# This is an awlsim extension.
@@ -428,7 +428,7 @@ class AwlSymResolver(object):
 
 	# Resolve classic symbols ("abc")
 	def __resolveClassicSym(self, block, insn, oper):
-		if oper.type == AwlOperator.SYMBOLIC:
+		if oper.operType == AwlOperatorTypes.SYMBOLIC:
 			symbol = self.cpu.symbolTable.findByName(
 				oper.value.identChain.getString())
 			if not symbol:
@@ -464,10 +464,10 @@ class AwlSymResolver(object):
 		# Check whether we need to do something.
 		# Otherwise just return the source operator.
 		if pointer:
-			if oper.type != AwlOperator.NAMED_LOCAL_PTR:
+			if oper.operType != AwlOperatorTypes.NAMED_LOCAL_PTR:
 				return oper
 		else:
-			if oper.type != AwlOperator.NAMED_LOCAL:
+			if oper.operType != AwlOperatorTypes.NAMED_LOCAL:
 				return oper
 
 		# Walk the ident chain to accumulate the sub-offsets
@@ -487,7 +487,7 @@ class AwlSymResolver(object):
 					     AwlDataType.TYPE_STRING}:
 				if isLastElement and\
 				   not chain[-1].indices and\
-				   oper.type != AwlOperator.NAMED_LOCAL_PTR and\
+				   oper.operType != AwlOperatorTypes.NAMED_LOCAL_PTR and\
 				   not allowWholeArrayAccess:
 					raise AwlSimError("Cannot address array #%s "
 						"without subscript list." %\
@@ -594,7 +594,7 @@ class AwlSymResolver(object):
 			# This is an FC. Accesses to local symbols
 			# are resolved at runtime.
 			# Just set interface index in the operator.
-			# Pointer access (oper.type == NAMED_LOCAL_PTR) is resolved
+			# Pointer access (oper.operType == NAMED_LOCAL_PTR) is resolved
 			# later at runtime.
 			identChain = oper.value.identChain.dup(withIndices = False)
 			index = block.interface.getFieldByIdentChain(identChain).fieldIndex
@@ -661,7 +661,7 @@ class AwlSymResolver(object):
 	# to array variables are supported.
 	def __resolveNamedFullyQualified(self, block, insn, oper,
 					 allowWholeArrayAccess=False):
-		if oper.type != AwlOperator.NAMED_DBVAR:
+		if oper.operType != AwlOperatorTypes.NAMED_DBVAR:
 			return oper
 
 		# Resolve the symbolic DB name, if needed
@@ -677,10 +677,10 @@ class AwlSymResolver(object):
 		offset.dbNumber = oper.value.dbNumber
 
 		# Construct an absolute operator
-		oper = AwlOperator(type = AwlOperator.MEM_DB,
-				   width = width,
-				   value = offset,
-				   insn = oper.insn)
+		oper = AwlOperator(operType=AwlOperatorTypes.MEM_DB,
+				   width=width,
+				   value=offset,
+				   insn=oper.insn)
 		# If this is a compound data type access, mark
 		# the operand as such.
 		oper.compound = fieldDataType.compound
@@ -693,7 +693,7 @@ class AwlSymResolver(object):
 	# Resolve named fully qualified pointers (P#DBx.VARx)
 	# This is an awlsim extension.
 	def __resolveNamedFQPointer(self, block, insn, oper, param=None):
-		if oper.type != AwlOperator.IMM_PTR:
+		if oper.operType != AwlOperatorTypes.IMM_PTR:
 			return oper
 		if oper.value.width > 0:
 			return oper
@@ -744,7 +744,7 @@ class AwlSymResolver(object):
 					oper = self.__resolveNamedFullyQualified(block,
 										 insn, oper, False)
 					oper = self.__resolveNamedFQPointer(block, insn, oper)
-					if oper.type == AwlOperator.INDIRECT:
+					if oper.operType == AwlOperatorTypes.INDIRECT:
 						oper.offsetOper = self.__resolveClassicSym(block,
 									insn, oper.offsetOper)
 						oper.offsetOper = self.resolveNamedLocal(block,
@@ -758,7 +758,7 @@ class AwlSymResolver(object):
 					oper = self.__resolveNamedFullyQualified(block,
 										 insn, oper, True)
 					oper = self.__resolveNamedFQPointer(block, insn, oper, param)
-					if oper.type == AwlOperator.INDIRECT:
+					if oper.operType == AwlOperatorTypes.INDIRECT:
 						oper.offsetOper = self.__resolveClassicSym(block,
 									insn, oper.offsetOper)
 						oper.offsetOper = self.resolveNamedLocal(block,
