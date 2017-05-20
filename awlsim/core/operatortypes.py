@@ -25,131 +25,139 @@ from awlsim.common.compat import *
 from awlsim.common.enumeration import *
 
 
-class AwlOperatorTypes(object):
-	EnumGen.start	# Operator types
+__all__ = [
+	"AwlOperatorTypes",
+]
 
-	_IMM_START	= EnumGen.item
-	IMM		= EnumGen.item	# Immediate value (constant)
-	IMM_REAL	= EnumGen.item	# Real
-	IMM_S5T		= EnumGen.item	# S5T immediate
-	IMM_TIME	= EnumGen.item	# T# immediate
-	IMM_DATE	= EnumGen.item	# D# immediate
-	IMM_TOD		= EnumGen.item	# TOD# immediate
-	IMM_DT		= EnumGen.item	# DT# immediate
-	IMM_PTR		= EnumGen.item	# Pointer immediate (P#x.y, P#area x.y, P#DBn.DBX x.y)
-	IMM_STR		= EnumGen.item	# STRING immediate ('abc')
-	_IMM_END	= EnumGen.item
 
-	MEM_E		= EnumGen.item	# Input
-	MEM_A		= EnumGen.item	# Output
-	MEM_M		= EnumGen.item	# Flags
-	MEM_L		= EnumGen.item	# Localstack
-	MEM_VL		= EnumGen.item	# Parent localstack (indirect access)
-	MEM_DB		= EnumGen.item	# Global datablock
-	MEM_DI		= EnumGen.item	# Instance datablock
-	MEM_T		= EnumGen.item	# Timer
-	MEM_Z		= EnumGen.item	# Counter
-	MEM_PA		= EnumGen.item	# Peripheral output
-	MEM_PE		= EnumGen.item	# Peripheral input
+class __AwlOperatorTypesClass(object):
+	def __init__(self):
+		EnumGen.start	# Operator types
 
-	MEM_STW		= EnumGen.item	# Status word bit read
-	MEM_STW_Z	= EnumGen.item	# Status word "==0" read
-	MEM_STW_NZ	= EnumGen.item	# Status word "<>0" read
-	MEM_STW_POS	= EnumGen.item	# Status word ">0" read
-	MEM_STW_NEG	= EnumGen.item	# Status word "<0" read
-	MEM_STW_POSZ	= EnumGen.item	# Status word ">=0" read
-	MEM_STW_NEGZ	= EnumGen.item	# Status word "<=0" read
-	MEM_STW_UO	= EnumGen.item	# Status word "UO" read
+		self._IMM_START		= EnumGen.item
+		self.IMM		= EnumGen.item	# Immediate value (constant)
+		self.IMM_REAL		= EnumGen.item	# Real
+		self.IMM_S5T		= EnumGen.item	# S5T immediate
+		self.IMM_TIME		= EnumGen.item	# T# immediate
+		self.IMM_DATE		= EnumGen.item	# D# immediate
+		self.IMM_TOD		= EnumGen.item	# TOD# immediate
+		self.IMM_DT		= EnumGen.item	# DT# immediate
+		self.IMM_PTR		= EnumGen.item	# Pointer immediate (P#x.y, P#area x.y, P#DBn.DBX x.y)
+		self.IMM_STR		= EnumGen.item	# STRING immediate ('abc')
+		self._IMM_END		= EnumGen.item
 
-	MEM_DBLG	= EnumGen.item	# DB-register: DB length
-	MEM_DBNO	= EnumGen.item	# DB-register: DB number
-	MEM_DILG	= EnumGen.item	# DI-register: DB length
-	MEM_DINO	= EnumGen.item	# DI-register: DB number
+		self.MEM_E		= EnumGen.item	# Input
+		self.MEM_A		= EnumGen.item	# Output
+		self.MEM_M		= EnumGen.item	# Flags
+		self.MEM_L		= EnumGen.item	# Localstack
+		self.MEM_VL		= EnumGen.item	# Parent localstack (indirect access)
+		self.MEM_DB		= EnumGen.item	# Global datablock
+		self.MEM_DI		= EnumGen.item	# Instance datablock
+		self.MEM_T		= EnumGen.item	# Timer
+		self.MEM_Z		= EnumGen.item	# Counter
+		self.MEM_PA		= EnumGen.item	# Peripheral output
+		self.MEM_PE		= EnumGen.item	# Peripheral input
 
-	MEM_AR2		= EnumGen.item	# AR2 register
+		self.MEM_STW		= EnumGen.item	# Status word bit read
+		self.MEM_STW_Z		= EnumGen.item	# Status word "==0" read
+		self.MEM_STW_NZ		= EnumGen.item	# Status word "<>0" read
+		self.MEM_STW_POS	= EnumGen.item	# Status word ">0" read
+		self.MEM_STW_NEG	= EnumGen.item	# Status word "<0" read
+		self.MEM_STW_POSZ	= EnumGen.item	# Status word ">=0" read
+		self.MEM_STW_NEGZ	= EnumGen.item	# Status word "<=0" read
+		self.MEM_STW_UO		= EnumGen.item	# Status word "UO" read
 
-	BLKREF_FC	= EnumGen.item	# FC reference
-	BLKREF_SFC	= EnumGen.item	# SFC reference
-	BLKREF_FB	= EnumGen.item	# FB reference
-	BLKREF_SFB	= EnumGen.item	# SFB reference
-	BLKREF_UDT	= EnumGen.item	# UDT reference
-	BLKREF_DB	= EnumGen.item	# DB reference
-	BLKREF_DI	= EnumGen.item	# DI reference
-	BLKREF_OB	= EnumGen.item	# OB reference (only symbol table)
-	BLKREF_VAT	= EnumGen.item	# VAT reference (only symbol table)
-	MULTI_FB	= EnumGen.item	# FB multiinstance reference
-	MULTI_SFB	= EnumGen.item	# SFB multiinstance reference
+		self.MEM_DBLG		= EnumGen.item	# DB-register: DB length
+		self.MEM_DBNO		= EnumGen.item	# DB-register: DB number
+		self.MEM_DILG		= EnumGen.item	# DI-register: DB length
+		self.MEM_DINO		= EnumGen.item	# DI-register: DB number
 
-	LBL_REF		= EnumGen.item	# Label reference
-	SYMBOLIC	= EnumGen.item	# Classic symbolic reference ("xyz")
-	NAMED_LOCAL	= EnumGen.item	# Named local reference (#abc)
-	NAMED_LOCAL_PTR	= EnumGen.item	# Pointer to named local (P##abc)
-	NAMED_DBVAR	= EnumGen.item	# Named DB variable reference (DBx.VAR)
+		self.MEM_AR2		= EnumGen.item	# AR2 register
 
-	INDIRECT	= EnumGen.item	# Indirect access
-	UNSPEC		= EnumGen.item	# Not (yet) specified memory region
+		self.BLKREF_FC		= EnumGen.item	# FC reference
+		self.BLKREF_SFC		= EnumGen.item	# SFC reference
+		self.BLKREF_FB		= EnumGen.item	# FB reference
+		self.BLKREF_SFB		= EnumGen.item	# SFB reference
+		self.BLKREF_UDT		= EnumGen.item	# UDT reference
+		self.BLKREF_DB		= EnumGen.item	# DB reference
+		self.BLKREF_DI		= EnumGen.item	# DI reference
+		self.BLKREF_OB		= EnumGen.item	# OB reference (only symbol table)
+		self.BLKREF_VAT		= EnumGen.item	# VAT reference (only symbol table)
+		self.MULTI_FB		= EnumGen.item	# FB multiinstance reference
+		self.MULTI_SFB		= EnumGen.item	# SFB multiinstance reference
 
-	# Virtual operators used internally in awlsim, only.
-	# These operators do not have standard AWL mnemonics.
-	VIRT_ACCU	= EnumGen.item	# Accu
-	VIRT_AR		= EnumGen.item	# AR
-	VIRT_DBR	= EnumGen.item	# DB and DI registers
+		self.LBL_REF		= EnumGen.item	# Label reference
+		self.SYMBOLIC		= EnumGen.item	# Classic symbolic reference ("xyz")
+		self.NAMED_LOCAL	= EnumGen.item	# Named local reference (#abc)
+		self.NAMED_LOCAL_PTR	= EnumGen.item	# Pointer to named local (P##abc)
+		self.NAMED_DBVAR	= EnumGen.item	# Named DB variable reference (DBx.VAR)
 
-	EnumGen.end	# Operator types
+		self.INDIRECT		= EnumGen.item	# Indirect access
+		self.UNSPEC		= EnumGen.item	# Not (yet) specified memory region
 
-	# Type to string map
-	type2str = {
-		IMM		: "IMMEDIATE",
-		IMM_REAL	: "REAL",
-		IMM_S5T		: "S5T",
-		IMM_TIME	: "TIME",
-		IMM_DATE	: "DATE",
-		IMM_TOD		: "TOD",
-		IMM_DT		: "DT",
-		IMM_PTR		: "P#",
+		# Virtual operators used internally in awlsim, only.
+		# These operators do not have standard AWL mnemonics.
+		self.VIRT_ACCU		= EnumGen.item	# Accu
+		self.VIRT_AR		= EnumGen.item	# AR
+		self.VIRT_DBR		= EnumGen.item	# DB and DI registers
 
-		MEM_E		: "E",
-		MEM_A		: "A",
-		MEM_M		: "M",
-		MEM_L		: "L",
-		MEM_VL		: "VL",
-		MEM_DB		: "DB",
-		MEM_DI		: "DI",
-		MEM_T		: "T",
-		MEM_Z		: "Z",
-		MEM_PA		: "PA",
-		MEM_PE		: "PE",
+		EnumGen.end	# Operator types
 
-		MEM_DBLG	: "DBLG",
-		MEM_DBNO	: "DBNO",
-		MEM_DILG	: "DILG",
-		MEM_DINO	: "DINO",
-		MEM_AR2		: "AR2",
+		# Type to string map
+		self.type2str = {
+			self.IMM		: "IMMEDIATE",
+			self.IMM_REAL		: "REAL",
+			self.IMM_S5T		: "S5T",
+			self.IMM_TIME		: "TIME",
+			self.IMM_DATE		: "DATE",
+			self.IMM_TOD		: "TOD",
+			self.IMM_DT		: "DT",
+			self.IMM_PTR		: "P#",
 
-		MEM_STW		: "STW",
-		MEM_STW_Z	: "==0",
-		MEM_STW_NZ	: "<>0",
-		MEM_STW_POS	: ">0",
-		MEM_STW_NEG	: "<0",
-		MEM_STW_POSZ	: ">=0",
-		MEM_STW_NEGZ	: "<=0",
-		MEM_STW_UO	: "UO",
+			self.MEM_E		: "E",
+			self.MEM_A		: "A",
+			self.MEM_M		: "M",
+			self.MEM_L		: "L",
+			self.MEM_VL		: "VL",
+			self.MEM_DB		: "DB",
+			self.MEM_DI		: "DI",
+			self.MEM_T		: "T",
+			self.MEM_Z		: "Z",
+			self.MEM_PA		: "PA",
+			self.MEM_PE		: "PE",
 
-		LBL_REF		: "LABEL",
+			self.MEM_DBLG		: "DBLG",
+			self.MEM_DBNO		: "DBNO",
+			self.MEM_DILG		: "DILG",
+			self.MEM_DINO		: "DINO",
+			self.MEM_AR2		: "AR2",
 
-		BLKREF_FC	: "BLOCK_FC",
-		BLKREF_SFC	: "BLOCK_SFC",
-		BLKREF_FB	: "BLOCK_FB",
-		BLKREF_SFB	: "BLOCK_SFB",
-		BLKREF_UDT	: "BLOCK_UDT",
-		BLKREF_DB	: "BLOCK_DB",
-		BLKREF_DI	: "BLOCK_DI",
-		BLKREF_OB	: "BLOCK_OB",
-		BLKREF_VAT	: "BLOCK_VAT",
+			self.MEM_STW		: "STW",
+			self.MEM_STW_Z		: "==0",
+			self.MEM_STW_NZ		: "<>0",
+			self.MEM_STW_POS	: ">0",
+			self.MEM_STW_NEG	: "<0",
+			self.MEM_STW_POSZ	: ">=0",
+			self.MEM_STW_NEGZ	: "<=0",
+			self.MEM_STW_UO		: "UO",
 
-		INDIRECT	: "__INDIRECT",
+			self.LBL_REF		: "LABEL",
 
-		VIRT_ACCU	: "__ACCU",
-		VIRT_AR		: "__AR",
-		VIRT_DBR	: "__DBR",
-	}
+			self.BLKREF_FC		: "BLOCK_FC",
+			self.BLKREF_SFC		: "BLOCK_SFC",
+			self.BLKREF_FB		: "BLOCK_FB",
+			self.BLKREF_SFB		: "BLOCK_SFB",
+			self.BLKREF_UDT		: "BLOCK_UDT",
+			self.BLKREF_DB		: "BLOCK_DB",
+			self.BLKREF_DI		: "BLOCK_DI",
+			self.BLKREF_OB		: "BLOCK_OB",
+			self.BLKREF_VAT		: "BLOCK_VAT",
+
+			self.INDIRECT		: "__INDIRECT",
+
+			self.VIRT_ACCU		: "__ACCU",
+			self.VIRT_AR		: "__AR",
+			self.VIRT_DBR		: "__DBR",
+		}
+
+AwlOperatorTypes = __AwlOperatorTypesClass()
