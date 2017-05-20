@@ -28,7 +28,7 @@ from awlsim.common.util import *
 
 from awlsim.core.hardware_params import *
 from awlsim.core.hardware import * #+cimport
-from awlsim.core.operatortypes import *
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.cpu import * #+cimport

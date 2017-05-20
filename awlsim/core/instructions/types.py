@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 
-class __AwlInsnTypesClass(object):
+class __AwlInsnTypesClass(object): #+cdef
 	def __init__(self):
 		EnumGen.start
 		self.TYPE_U		= EnumGen.item	# U
@@ -424,4 +424,4 @@ class __AwlInsnTypesClass(object):
 			self.name2type_english[_name] = _insnType
 		self.type2name_english = pivotDict(self.name2type_english)
 
-AwlInsnTypes = __AwlInsnTypesClass()
+AwlInsnTypes = __AwlInsnTypesClass() #+cdef-public-__AwlInsnTypesClass

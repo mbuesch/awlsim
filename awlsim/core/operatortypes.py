@@ -30,7 +30,7 @@ __all__ = [
 ]
 
 
-class __AwlOperatorTypesClass(object):
+class __AwlOperatorTypesClass(object): #+cdef
 	def __init__(self):
 		EnumGen.start	# Operator types
 
@@ -160,4 +160,4 @@ class __AwlOperatorTypesClass(object):
 			self.VIRT_DBR		: "__DBR",
 		}
 
-AwlOperatorTypes = __AwlOperatorTypesClass()
+AwlOperatorTypes = __AwlOperatorTypesClass() #+cdef-public-__AwlOperatorTypesClass

@@ -38,6 +38,7 @@ from awlsim.core.memory import * #+cimport
 from awlsim.core.instructions.all_insns import * #+cimport
 from awlsim.core.systemblocks.system_sfb import *
 from awlsim.core.systemblocks.system_sfc import *
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.datablocks import * #+cimport

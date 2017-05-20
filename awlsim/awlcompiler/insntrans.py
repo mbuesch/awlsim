@@ -26,7 +26,7 @@ from awlsim.common.cpuconfig import *
 
 from awlsim.core.util import *
 from awlsim.core.instructions.all_insns import * #+cimport
-from awlsim.core.instructions.types import *
+from awlsim.core.instructions.types import * #+cimport
 
 from awlsim.awlcompiler import *
 

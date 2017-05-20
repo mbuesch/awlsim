@@ -28,6 +28,7 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.core.systemblocks.systemblocks import *
 from awlsim.core.cpu import * #+cimport
 from awlsim.core.offset import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.memory import * #+cimport
 from awlsim.core.util import *

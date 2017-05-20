@@ -1,0 +1,69 @@
+cdef class __AwlOperatorTypesClass(object):
+	cdef public uint32_t _IMM_START
+	cdef public uint32_t IMM
+	cdef public uint32_t IMM_REAL
+	cdef public uint32_t IMM_S5T
+	cdef public uint32_t IMM_TIME
+	cdef public uint32_t IMM_DATE
+	cdef public uint32_t IMM_TOD
+	cdef public uint32_t IMM_DT
+	cdef public uint32_t IMM_PTR
+	cdef public uint32_t IMM_STR
+	cdef public uint32_t _IMM_END
+
+	cdef public uint32_t MEM_E
+	cdef public uint32_t MEM_A
+	cdef public uint32_t MEM_M
+	cdef public uint32_t MEM_L
+	cdef public uint32_t MEM_VL
+	cdef public uint32_t MEM_DB
+	cdef public uint32_t MEM_DI
+	cdef public uint32_t MEM_T
+	cdef public uint32_t MEM_Z
+	cdef public uint32_t MEM_PA
+	cdef public uint32_t MEM_PE
+
+	cdef public uint32_t MEM_STW
+	cdef public uint32_t MEM_STW_Z
+	cdef public uint32_t MEM_STW_NZ
+	cdef public uint32_t MEM_STW_POS
+	cdef public uint32_t MEM_STW_NEG
+	cdef public uint32_t MEM_STW_POSZ
+	cdef public uint32_t MEM_STW_NEGZ
+	cdef public uint32_t MEM_STW_UO
+
+	cdef public uint32_t MEM_DBLG
+	cdef public uint32_t MEM_DBNO
+	cdef public uint32_t MEM_DILG
+	cdef public uint32_t MEM_DINO
+
+	cdef public uint32_t MEM_AR2
+
+	cdef public uint32_t BLKREF_FC
+	cdef public uint32_t BLKREF_SFC
+	cdef public uint32_t BLKREF_FB
+	cdef public uint32_t BLKREF_SFB
+	cdef public uint32_t BLKREF_UDT
+	cdef public uint32_t BLKREF_DB
+	cdef public uint32_t BLKREF_DI
+	cdef public uint32_t BLKREF_OB
+	cdef public uint32_t BLKREF_VAT
+	cdef public uint32_t MULTI_FB
+	cdef public uint32_t MULTI_SFB
+
+	cdef public uint32_t LBL_REF
+	cdef public uint32_t SYMBOLIC
+	cdef public uint32_t NAMED_LOCAL
+	cdef public uint32_t NAMED_LOCAL_PTR
+	cdef public uint32_t NAMED_DBVAR
+
+	cdef public uint32_t INDIRECT
+	cdef public uint32_t UNSPEC
+
+	cdef public uint32_t VIRT_ACCU
+	cdef public uint32_t VIRT_AR	
+	cdef public uint32_t VIRT_DBR
+
+	cdef public dict type2str
+
+cdef public __AwlOperatorTypesClass AwlOperatorTypes

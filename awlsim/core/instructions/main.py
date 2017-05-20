@@ -26,8 +26,8 @@ from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
-from awlsim.core.instructions.types import *
-from awlsim.core.operatortypes import *
+from awlsim.core.instructions.types import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.util import *
 

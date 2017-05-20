@@ -29,6 +29,7 @@ from awlsim.core.blocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.identifier import *
 from awlsim.core.offset import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
 from awlsim.awlcompiler.translator import *

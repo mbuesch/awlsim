@@ -37,7 +37,7 @@ from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.timers import *
 from awlsim.core.offset import * #+cimport
-from awlsim.core.operatortypes import *
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.identifier import *
 
 

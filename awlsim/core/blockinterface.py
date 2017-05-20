@@ -27,7 +27,7 @@ from awlsim.common.util import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.datatypes import *
 from awlsim.core.datastructure import *
-from awlsim.core.operatortypes import *
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
 
