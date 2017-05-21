@@ -1470,14 +1470,15 @@ class S7CPU(object): #+cdef
 #@cy	def __fetchIMM_STR(self, AwlOperator operator, frozenset enforceWidth):
 #@cy		cdef uint32_t insnType
 #@cy		cdef uint32_t value
+#@cy		cdef int32_t i
 
-		if operator.width <= 48 and operator.insn:
+		if operator.width <= 48 and operator.insn is not None:
 			insnType = operator.insn.insnType
 			if insnType == AwlInsn.TYPE_L or\
 			   insnType >= AwlInsn.TYPE_EXTENDED:
 				# This is a special 0-4 character fetch (L) that
 				# is transparently translated into an integer.
-				value, data = 0, operator.value
+				value, data = 0, operator.immediateBytes
 				for i in range(2, operator.width // 8):
 					value = (value << 8) | data[i]
 				return value
@@ -1485,7 +1486,7 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return operator.value
+		return operator.immediateBytes
 
 	def __fetchDBLG(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchDBLG(self, AwlOperator operator, frozenset enforceWidth):

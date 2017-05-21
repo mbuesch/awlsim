@@ -2,7 +2,7 @@
 #
 # AWL simulator - labels
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
+
+from awlsim.common.sources import AwlSource
 
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
@@ -53,19 +55,28 @@ class AwlLabel(object):
 			rawInsn = insn.getRawInsn()
 			if not rawInsn or not rawInsn.hasLabel():
 				continue
+			try:
+				# Labels are supposed to be traditional
+				# "latin1" encoding compatible.
+				rawInsnLabel = rawInsn.getLabel().encode(
+						AwlSource.COMPAT_ENCODING)
+				rawInsnLabel = bytearray(rawInsnLabel)
+			except UnicodeError as e:
+				raise AwlSimError("Invalid characters in label: %s" % (
+					str(rawInsn)))
 			for label in labels:
-				if label.getLabelName() == rawInsn.getLabel():
+				if label.getLabelName() == rawInsnLabel:
 					raise AwlSimError("Duplicate label '%s' found. "
 						"Label names have to be unique in a code block." %\
-						rawInsn.getLabel(),
+						rawInsnLabel,
 						insn = insn)
-			labels.append(cls(insn, rawInsn.getLabel()))
+			labels.append(cls(insn, rawInsnLabel))
 		# Resolve label references
 		for insn in insns:
 			for op in insn.ops:
 				if op.operType != AwlOperatorTypes.LBL_REF:
 					continue
-				labelIndex = cls.findInList(labels, op.value)
+				labelIndex = cls.findInList(labels, op.immediateBytes)
 				if labelIndex is None:
 					raise AwlSimError("Referenced label not found",
 							  insn = insn)

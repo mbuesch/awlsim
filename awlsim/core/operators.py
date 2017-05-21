@@ -48,7 +48,7 @@ class AwlOperator(object): #+cdef
 	immediate = 0 #@nocy
 
 	# Immediate bytes/bytearray.
-	# Only used for IMM_DT type.
+	# Only used for IMM_DT and IMM_STR types.
 	immediateBytes = b"" #@nocy
 
 	# Immediate pointer.

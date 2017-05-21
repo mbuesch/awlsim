@@ -21,6 +21,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.sources import AwlSource
+
 import math
 import re
 
@@ -453,8 +455,16 @@ class AwlOpTranslator(object):
 		assert(len(rawOps) >= 1)
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.LBL_REF, 0,
-					    rawOps[0], None), 1)
+			try:
+				# Labels are supposed to be traditional
+				# "latin1" encoding compatible.
+				labelBytes = rawOps[0].encode(AwlSource.COMPAT_ENCODING)
+			except UnicodeError as e:
+				raise AwlSimError("Invalid characters in "
+					"label reference: %s" % (rawOps[0]))
+			oper = AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
+			oper.immediateBytes = bytearray(labelBytes)
+			return OpDescriptor(oper, 1)
 		token0 = rawOps[0].upper()
 
 		# Constant operator (from table)
@@ -615,9 +625,10 @@ class AwlOpTranslator(object):
 		# String immediate
 		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_STR,
-					    len(immediate) * 8,
-					    immediate, None), 1)
+			oper = AwlOperator(AwlOperatorTypes.IMM_STR,
+					   len(immediate) * 8, None, None)
+			oper.immediateBytes = immediate
+			return OpDescriptor(oper, 1)
 		# DBx.DBX/B/W/D addressing
 		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])
 		if match:

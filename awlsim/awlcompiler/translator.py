@@ -397,7 +397,7 @@ class AwlTranslator(object):
 				# Translate single-character string immediates
 				# to 8 bit integer immediates.
 				if param.rvalueOp.width == (2 + 1) * 8:
-					immediate = param.rvalueOp.value[2]
+					immediate = param.rvalueOp.immediateBytes[2]
 					param.rvalueOp = AwlOperator(
 						operType=AwlOperatorTypes.IMM,
 						width=8,
@@ -413,10 +413,10 @@ class AwlTranslator(object):
 					curLen = param.rvalueOp.width // 8
 					newLen = param.lValueDataType.width // 8
 					assert(curLen >= 2 and newLen >= 2)
-					data = param.rvalueOp.value[:]
+					data = bytearray(param.rvalueOp.immediateBytes)
 					data[0] = newLen - 2
-					data.extend(b'\x00' * (newLen - curLen))
-					param.rvalueOp.value = data
+					data += b'\x00' * (newLen - curLen)
+					param.rvalueOp.immediateBytes = data
 					param.rvalueOp.width = newLen * 8
 
 	# Final translation of AwlParamAssign r-value operands.
