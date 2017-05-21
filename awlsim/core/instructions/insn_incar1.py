@@ -39,12 +39,15 @@ class AwlInsn_INCAR1(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint32_t ar
 
-		ar = self.cpu.ar1.get()
+		cpu = self.cpu
+		ar = cpu.ar1.get()
 		if self.opCount:
 			ar = (ar & 0xFF000000) |\
-			     (((ar & 0x00FFFFFF) + self.op0.value.toPointerValue()) & 0x00FFFFFF)
+			     (((ar & 0x00FFFFFF) + self.op0.pointer.toPointerValue()) & 0x00FFFFFF)
 		else:
 			ar = (ar & 0xFF000000) |\
-			     (((ar & 0x00FFFFFF) + self.cpu.accu1.getSignedWord()) & 0x00FFFFFF)
-		self.cpu.ar1.set(ar)
+			     (((ar & 0x00FFFFFF) + cpu.accu1.getSignedWord()) & 0x00FFFFFF)
+		cpu.ar1.set(ar)

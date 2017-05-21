@@ -1457,7 +1457,7 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return operator.value.toNativePointerValue()
+		return operator.pointer.toNativePointerValue()
 
 	def __fetchIMM_STR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchIMM_STR(self, AwlOperator operator, frozenset enforceWidth):

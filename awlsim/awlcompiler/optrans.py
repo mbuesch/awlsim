@@ -276,8 +276,9 @@ class AwlOpTranslator(object):
 						"register indirect addressing operator")
 				offsetOp = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 						       width=32,
-						       value=offsetPtr,
+						       value=None,
 						       insn=opDesc.operator.insn)
+				offsetOp.pointer = offsetPtr
 				try:
 					area = AwlIndirectOp.optype2area[opDesc.operator.operType]
 				except KeyError:
@@ -536,8 +537,10 @@ class AwlOpTranslator(object):
 		# Pointer immediate
 		pointer, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
 		if pointer is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_PTR, pointer.width,
-					    pointer, None), fields)
+			oper = AwlOperator(AwlOperatorTypes.IMM_PTR, pointer.width,
+					   None, None)
+			oper.pointer = pointer
+			return OpDescriptor(oper, fields)
 		# Binary immediate
 		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
 		if immediate is not None:

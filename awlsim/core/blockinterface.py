@@ -366,10 +366,12 @@ class BlockInterface(object):
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			ptrValue |= AwlIndirectOp.AREA_L
-			return AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+			oper = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
-					   value=Pointer(ptrValue),
+					   value=None,
 					   insn=None)
+			oper.pointer = Pointer(ptrValue)
+			return oper
 		oper = AwlOperator(operType=AwlOperatorTypes.MEM_L,
 				   width=structField.bitSize,
 				   value=structField.offset.dup(),
@@ -400,10 +402,12 @@ class BlockInterface(object):
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			ptrValue |= AwlIndirectOp.AREA_DI
-			return AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+			oper = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
-					   value=Pointer(ptrValue),
+					   value=None,
 					   insn=None)
+			oper.pointer = Pointer(ptrValue)
+			return oper
 
 		# Translate to instance-DB access
 
