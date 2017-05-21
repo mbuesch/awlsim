@@ -37,7 +37,5 @@ class AwlInsn_INC(AwlInsn): #+cdef
 		self.op0.assertType(AwlOperatorTypes.IMM, 0, 255)
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
-
 		self.cpu.accu1.setByte(self.cpu.accu1.getByte() +\
-				       self.op0.value)
+				       self.op0.immediate)

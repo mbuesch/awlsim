@@ -8,6 +8,8 @@ cdef class AwlOperator(object):
 	cdef public AwlInsn insn
 
 	cdef public object value
+	cdef public uint32_t immediate
+	cdef public bytearray immediateBytes
 	cdef public Pointer pointer
 
 	cdef public _Bool isExtended

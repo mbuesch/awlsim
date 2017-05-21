@@ -1450,7 +1450,14 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return operator.value
+		return operator.immediate
+
+	def __fetchIMM_DT(self, operator, enforceWidth): #@nocy
+#@cy	def __fetchIMM_DT(self, AwlOperator operator, frozenset enforceWidth):
+		if operator.width not in enforceWidth and enforceWidth:
+			self.__fetchWidthError(operator, enforceWidth)
+
+		return operator.immediateBytes
 
 	def __fetchIMM_PTR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchIMM_PTR(self, AwlOperator operator, frozenset enforceWidth):
@@ -1770,20 +1777,20 @@ class S7CPU(object): #+cdef
 		AwlOperatorTypes.IMM_S5T		: __fetchIMM,
 		AwlOperatorTypes.IMM_TIME		: __fetchIMM,
 		AwlOperatorTypes.IMM_DATE		: __fetchIMM,
-		AwlOperatorTypes.IMM_DT		: __fetchIMM,
+		AwlOperatorTypes.IMM_DT			: __fetchIMM_DT,
 		AwlOperatorTypes.IMM_TOD		: __fetchIMM,
 		AwlOperatorTypes.IMM_PTR		: __fetchIMM_PTR,
 		AwlOperatorTypes.IMM_STR		: __fetchIMM_STR,
-		AwlOperatorTypes.MEM_E		: __fetchE,
-		AwlOperatorTypes.MEM_A		: __fetchA,
-		AwlOperatorTypes.MEM_M		: __fetchM,
-		AwlOperatorTypes.MEM_L		: __fetchL,
-		AwlOperatorTypes.MEM_VL		: __fetchVL,
-		AwlOperatorTypes.MEM_DB		: __fetchDB,
-		AwlOperatorTypes.MEM_DI		: __fetchDI,
-		AwlOperatorTypes.MEM_T		: __fetchT,
-		AwlOperatorTypes.MEM_Z		: __fetchZ,
-		AwlOperatorTypes.MEM_PE		: __fetchPE,
+		AwlOperatorTypes.MEM_E			: __fetchE,
+		AwlOperatorTypes.MEM_A			: __fetchA,
+		AwlOperatorTypes.MEM_M			: __fetchM,
+		AwlOperatorTypes.MEM_L			: __fetchL,
+		AwlOperatorTypes.MEM_VL			: __fetchVL,
+		AwlOperatorTypes.MEM_DB			: __fetchDB,
+		AwlOperatorTypes.MEM_DI			: __fetchDI,
+		AwlOperatorTypes.MEM_T			: __fetchT,
+		AwlOperatorTypes.MEM_Z			: __fetchZ,
+		AwlOperatorTypes.MEM_PE			: __fetchPE,
 		AwlOperatorTypes.MEM_DBLG		: __fetchDBLG,
 		AwlOperatorTypes.MEM_DBNO		: __fetchDBNO,
 		AwlOperatorTypes.MEM_DILG		: __fetchDILG,
@@ -1794,8 +1801,8 @@ class S7CPU(object): #+cdef
 		AwlOperatorTypes.MEM_STW_NZ		: __fetchSTW_NZ,
 		AwlOperatorTypes.MEM_STW_POS		: __fetchSTW_POS,
 		AwlOperatorTypes.MEM_STW_NEG		: __fetchSTW_NEG,
-		AwlOperatorTypes.MEM_STW_POSZ	: __fetchSTW_POSZ,
-		AwlOperatorTypes.MEM_STW_NEGZ	: __fetchSTW_NEGZ,
+		AwlOperatorTypes.MEM_STW_POSZ		: __fetchSTW_POSZ,
+		AwlOperatorTypes.MEM_STW_NEGZ		: __fetchSTW_NEGZ,
 		AwlOperatorTypes.MEM_STW_UO		: __fetchSTW_UO,
 		AwlOperatorTypes.NAMED_LOCAL		: __fetchNAMED_LOCAL,
 		AwlOperatorTypes.NAMED_LOCAL_PTR	: __fetchNAMED_LOCAL_PTR,
@@ -1958,14 +1965,14 @@ class S7CPU(object): #+cdef
 		self.store(operator.resolve(True), value, enforceWidth)
 
 	__storeTypeMethodsDict = {
-		AwlOperatorTypes.MEM_E		: __storeE,
-		AwlOperatorTypes.MEM_A		: __storeA,
-		AwlOperatorTypes.MEM_M		: __storeM,
-		AwlOperatorTypes.MEM_L		: __storeL,
-		AwlOperatorTypes.MEM_VL		: __storeVL,
-		AwlOperatorTypes.MEM_DB		: __storeDB,
-		AwlOperatorTypes.MEM_DI		: __storeDI,
-		AwlOperatorTypes.MEM_PA		: __storePA,
+		AwlOperatorTypes.MEM_E			: __storeE,
+		AwlOperatorTypes.MEM_A			: __storeA,
+		AwlOperatorTypes.MEM_M			: __storeM,
+		AwlOperatorTypes.MEM_L			: __storeL,
+		AwlOperatorTypes.MEM_VL			: __storeVL,
+		AwlOperatorTypes.MEM_DB			: __storeDB,
+		AwlOperatorTypes.MEM_DI			: __storeDI,
+		AwlOperatorTypes.MEM_PA			: __storePA,
 		AwlOperatorTypes.MEM_AR2		: __storeAR2,
 		AwlOperatorTypes.MEM_STW		: __storeSTW,
 		AwlOperatorTypes.NAMED_LOCAL		: __storeNAMED_LOCAL,

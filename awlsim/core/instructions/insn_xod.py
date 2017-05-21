@@ -39,11 +39,13 @@ class AwlInsn_XOD(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef uint32_t accu1
+#@cy		cdef uint32_t accu2
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
 		if self.opCount:
-			accu2 = self.op0.value
+			accu2 = self.op0.immediate
 		else:
 			accu2 = self.cpu.accu2.getDWord()
 		accu1 ^= accu2

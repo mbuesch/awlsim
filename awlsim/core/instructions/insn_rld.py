@@ -39,11 +39,13 @@ class AwlInsn_RLD(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef uint32_t accu1
+#@cy		cdef int64_t count
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
 		if self.opCount:
-			count = self.op0.value
+			count = self.op0.immediate
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:

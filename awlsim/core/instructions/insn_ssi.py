@@ -39,11 +39,14 @@ class AwlInsn_SSI(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t accu1
+#@cy		cdef int64_t count
 
 		s = self.cpu.statusWord
-		accu1 = self.cpu.accu1.getSignedWord()
+		accu1 = self.cpu.accu1.getSignedWord() #@nocy
+#@cy		accu1 = <int32_t>(<int16_t>(self.cpu.accu1.getSignedWord()))
 		if self.opCount:
-			count = self.op0.value
+			count = self.op0.immediate
 		else:
 			count = self.cpu.accu2.getByte()
 		if count <= 0:

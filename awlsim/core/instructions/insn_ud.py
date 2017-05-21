@@ -43,7 +43,7 @@ class AwlInsn_UD(AwlInsn): #+cdef
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
 		if self.opCount:
-			accu2 = self.op0.value
+			accu2 = self.op0.immediate
 		else:
 			accu2 = self.cpu.accu2.getDWord()
 		accu1 &= accu2

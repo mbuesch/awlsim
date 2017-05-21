@@ -397,11 +397,13 @@ class AwlTranslator(object):
 				# Translate single-character string immediates
 				# to 8 bit integer immediates.
 				if param.rvalueOp.width == (2 + 1) * 8:
+					immediate = param.rvalueOp.value[2]
 					param.rvalueOp = AwlOperator(
 						operType=AwlOperatorTypes.IMM,
 						width=8,
-						value=param.rvalueOp.value[2],
+						value=None,
 						insn=param.rvalueOp.insn)
+					param.rvalueOp.immediate = immediate
 		elif param.lValueDataType.type == AwlDataType.TYPE_STRING:
 			# STRING parameter.
 			if param.rvalueOp.operType == AwlOperatorTypes.IMM_STR:

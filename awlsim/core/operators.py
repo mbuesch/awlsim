@@ -43,6 +43,18 @@ class AwlOperator(object): #+cdef
 	type2str = AwlOperatorTypes.type2str
 
 
+	# Immediate integer.
+	# Only used for IMM types.
+	immediate = 0 #@nocy
+
+	# Immediate bytes/bytearray.
+	# Only used for IMM_DT type.
+	immediateBytes = b"" #@nocy
+
+	# Immediate pointer.
+	# Only used for IMM_PTR type.
+	pointer = None #@nocy
+
 	# Extended-operator flag.
 	isExtended = False #@nocy
 
@@ -63,6 +75,9 @@ class AwlOperator(object): #+cdef
 	dataType = None #@nocy
 
 #@cy	def __cinit__(self):
+#@cy		self.immediate = 0
+#@cy		self.immediateBytes = bytearray()
+#@cy		self.pointer = None
 #@cy		self.isExtended = False
 #@cy		self.labelIndex = None
 #@cy		self.interfaceIndex = None
@@ -103,7 +118,9 @@ class AwlOperator(object): #+cdef
 #@cy	cpdef AwlOperator dup(self):
 #@cy		cdef AwlOperator oper
 
-		if isInteger(self.value):
+		if self.value is None:
+			dupValue = None
+		elif isInteger(self.value):
 			dupValue = self.value
 		else:
 			dupValue = self.value.dup()
@@ -111,6 +128,9 @@ class AwlOperator(object): #+cdef
 				   width=self.width,
 				   value=dupValue,
 				   insn=self.insn)
+		oper.pointer = self.pointer
+		oper.immediate = self.immediate
+		oper.immediateBytes = bytearray(self.immediateBytes)
 		oper.isExtended = self.isExtended
 		oper.labelIndex = self.labelIndex
 		oper.interfaceIndex = self.interfaceIndex
@@ -145,11 +165,15 @@ class AwlOperator(object): #+cdef
 		if not self.operType in types:
 			self._raiseTypeError(self.operType, types)
 		if lowerLimit is not None:
-			if self.value < lowerLimit:
+			if not self.isImmediate() or self.operType == AwlOperatorTypes.IMM_DT:
+				raise AwlSimBug("Invalid operator type for lowerLimit check")
+			if self.immediate < lowerLimit:
 				raise AwlSimError("Operator value too small",
 						  insn=self.insn)
 		if upperLimit is not None:
-			if self.value > upperLimit:
+			if not self.isImmediate() or self.operType == AwlOperatorTypes.IMM_DT:
+				raise AwlSimBug("Invalid operator type for upperLimit check")
+			if self.immediate > upperLimit:
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 		if widths is not None:
@@ -278,26 +302,26 @@ class AwlOperator(object): #+cdef
 	def __repr__(self):
 		if self.operType == AwlOperatorTypes.IMM:
 			if self.width == 1:
-				return "TRUE" if (self.value & 1) else "FALSE"
+				return "TRUE" if (self.immediate & 1) else "FALSE"
 			elif self.width == 8:
-				return str(byteToSignedPyInt(self.value))
+				return str(byteToSignedPyInt(self.immediate))
 			elif self.width == 16:
-				return str(wordToSignedPyInt(self.value))
+				return str(wordToSignedPyInt(self.immediate))
 			elif self.width == 32:
-				return "L#" + str(dwordToSignedPyInt(self.value))
+				return "L#" + str(dwordToSignedPyInt(self.immediate))
 		if self.operType == AwlOperatorTypes.IMM_REAL:
-			return str(dwordToPyFloat(self.value))
+			return str(dwordToPyFloat(self.immediate))
 		elif self.operType == AwlOperatorTypes.IMM_S5T:
-			seconds = Timer.s5t_to_seconds(self.value)
+			seconds = Timer.s5t_to_seconds(self.immediate)
 			return "S5T#" + AwlDataType.formatTime(seconds)
 		elif self.operType == AwlOperatorTypes.IMM_TIME:
-			return "T#" + AwlDataType.formatTime(self.value / 1000.0)
+			return "T#" + AwlDataType.formatTime(self.immediate / 1000.0)
 		elif self.operType == AwlOperatorTypes.IMM_DATE:
 			return "D#" #TODO
 		elif self.operType == AwlOperatorTypes.IMM_TOD:
 			return "TOD#" #TODO
 		elif self.operType == AwlOperatorTypes.IMM_PTR:
-			return self.value.toPointerString()
+			return self.pointer.toPointerString()
 		elif self.operType == AwlOperatorTypes.IMM_STR:
 			strLen = self.value[1]
 			return "'" + self.value[2:2+strLen].decode(AwlSource.COMPAT_ENCODING) + "'"

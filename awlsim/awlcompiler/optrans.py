@@ -90,6 +90,19 @@ class AwlOpTranslator(object):
 		assert(mnemonics is not None)
 		self.mnemonics = mnemonics
 
+		operPi = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operPi.immediate = pyFloatToDWord(math.pi)
+		operE = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operE.immediate = pyFloatToDWord(math.e)
+		operPInf = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operPInf.immediate = floatConst.posInfDWord
+		operNInf = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operNInf.immediate = floatConst.negInfDWord
+		operPNaN = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operPNaN.immediate = floatConst.pNaNDWord
+		operNNaN = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operNNaN.immediate = floatConst.nNaNDWord
+
 		# Build the constant operator table for german mnemonics
 		self.__constOperTab_german = {
 			"B"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 8,
@@ -220,18 +233,12 @@ class AwlOpTranslator(object):
 						AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"__DBR"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_DBR, 16,
 						AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"__CNST_PI" : OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-						   pyFloatToDWord(math.pi), None), 1),
-			"__CNST_E" : OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-						  pyFloatToDWord(math.e), None), 1),
-			"__CNST_PINF" : OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-						     floatConst.posInfDWord, None), 1),
-			"__CNST_NINF" : OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-						     floatConst.negInfDWord, None), 1),
-			"__CNST_PNAN" : OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-						     floatConst.pNaNDWord, None), 1),
-			"__CNST_NNAN" : OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-						     floatConst.nNaNDWord, None), 1),
+			"__CNST_PI"	: OpDescriptor(operPi, 1),
+			"__CNST_E"	: OpDescriptor(operE, 1),
+			"__CNST_PINF"	: OpDescriptor(operPInf, 1),
+			"__CNST_NINF"	: OpDescriptor(operNInf, 1),
+			"__CNST_PNAN"	: OpDescriptor(operPNaN, 1),
+			"__CNST_NNAN"	: OpDescriptor(operNNaN, 1),
 		}
 
 		# Create a constOperTab for english mnemonics
@@ -495,45 +502,59 @@ class AwlOpTranslator(object):
 		# Immediate boolean
 		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 1,
-					                immediate, None), 1)
+			immediate &= 1
+			oper = AwlOperator(AwlOperatorTypes.IMM, 1, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Immediate integer
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 16,
-					    immediate, None), 1)
+			oper = AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Immediate float
 		immediate = AwlDataType.tryParseImmediate_REAL(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_REAL, 32,
-					    immediate, None), 1)
+			immediate &= 0xFFFFFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# S5Time immediate
 		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_S5T, 16,
-					    immediate, None), 1)
+			immediate &= 0xFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM_S5T, 16, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Time immediate
 		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_TIME, 32,
-					    immediate, None), 1)
+			immediate &= 0xFFFFFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM_TIME, 32, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# TIME_OF_DAY immediate
 		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_TOD, 32,
-					    immediate, None), 1)
+			immediate &= 0xFFFFFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM_TOD, 32, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# DATE immediate
 		immediate = AwlDataType.tryParseImmediate_DATE(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_DATE, 16,
-					    immediate, None), 1)
+			immediate &= 0xFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM_DATE, 16, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# DATE_AND_TIME immediate
 		immediate = AwlDataType.tryParseImmediate_DT(rawOps)
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM_DT,
-					    len(immediate) * 8,
-					    immediate, None), 5)
+			oper = AwlOperator(AwlOperatorTypes.IMM_DT,
+					   len(immediate) * 8, None, None)
+			oper.immediateBytes = immediate
+			return OpDescriptor(oper, 5)
 		# Pointer immediate
 		pointer, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
 		if pointer is not None:
@@ -544,40 +565,53 @@ class AwlOpTranslator(object):
 		# Binary immediate
 		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
 		if immediate is not None:
+			immediate &= 0xFFFFFFFF
 			size = 32 if (immediate > 0xFFFF) else 16
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, size,
-					    immediate, None), 1)
+			oper = AwlOperator(AwlOperatorTypes.IMM, size, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Byte array immediate
 		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
 		if immediate is not None:
 			size = 32 if fields == 9 else 16
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, size,
-					    immediate, None), fields)
+			oper = AwlOperator(AwlOperatorTypes.IMM, size, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, fields)
 		# Hex byte immediate
 		immediate = AwlDataType.tryParseImmediate_HexByte(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 8,
-					    immediate, None), 1)
+			immediate &= 0xFF
+			oper = AwlOperator(AwlOperatorTypes.IMM, 8, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Hex word immediate
 		immediate = AwlDataType.tryParseImmediate_HexWord(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 16,
-					    immediate, None), 1)
+			immediate &= 0xFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Hex dword immediate
 		immediate = AwlDataType.tryParseImmediate_HexDWord(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 32,
-					    immediate, None), 1)
+			immediate &= 0xFFFFFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# Long integer immediate
 		immediate = AwlDataType.tryParseImmediate_DINT(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 32,
-					    immediate, None), 1)
+			immediate &= 0xFFFFFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# BCD word immediate
 		immediate = AwlDataType.tryParseImmediate_BCD_word(rawOps[0])
 		if immediate is not None:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.IMM, 16,
-					    immediate, None), 1)
+			immediate &= 0xFFFF
+			oper = AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper.immediate = immediate
+			return OpDescriptor(oper, 1)
 		# String immediate
 		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
 		if immediate is not None:

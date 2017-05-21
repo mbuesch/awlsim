@@ -52,7 +52,7 @@ class AwlParamAssign(object): #+cdef
 		# scratch space allocation.
 		# This element is assigned during runtime.
 		self.scratchSpaceOp = AwlOperator(operType=AwlOperatorTypes.IMM,
-						  width=32, value=42,
+						  width=32, value=None,
 						  insn=None)
 
 		# 'interface' is the BlockInterface of the called block.
