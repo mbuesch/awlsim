@@ -77,7 +77,7 @@ class DB(Block): #+cdef
 		self.structInstance = AwlStructInstance(self.struct)
 
 	def __fetch(self, operator, baseOffset=AwlOffset()):
-		return self.structInstance.memory.fetch(baseOffset + operator.value,
+		return self.structInstance.memory.fetch(baseOffset + operator.offset,
 							operator.width)
 
 	def __fetch_noPermission(self, operator, baseOffset=None):
@@ -86,7 +86,7 @@ class DB(Block): #+cdef
 	fetch = __fetch #@nocy
 
 	def __store(self, operator, value, baseOffset=AwlOffset()):
-		self.structInstance.memory.store(baseOffset + operator.value,
+		self.structInstance.memory.store(baseOffset + operator.offset,
 						 operator.width,
 						 value)
 

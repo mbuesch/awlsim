@@ -8,7 +8,7 @@ cdef class AwlOperator(object):
 	cdef public AwlInsn insn
 
 	# The operator value. Only one of these is used.
-	cdef public object value
+	cdef public AwlOffset offset
 	cdef public uint32_t immediate
 	cdef public bytearray immediateBytes
 	cdef public Pointer pointer

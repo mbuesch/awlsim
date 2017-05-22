@@ -42,11 +42,11 @@ class AwlInsn_R(AwlInsn): #+cdef
 			self.op0.resolve(True)
 		if oper.operType == AwlOperatorTypes.MEM_Z:
 			if s.VKE:
-				self.cpu.getCounter(oper.value.byteOffset).reset()
+				self.cpu.getCounter(oper.offset.byteOffset).reset()
 			s.OR, s.NER = 0, 0
 		elif oper.operType == AwlOperatorTypes.MEM_T:
 			if s.VKE:
-				self.cpu.getTimer(oper.value.byteOffset).reset()
+				self.cpu.getTimer(oper.offset.byteOffset).reset()
 			s.OR, s.NER = 0, 0
 		else:
 			if s.VKE and (not self.cpu.mcrActive or self.cpu.mcrIsOn()):

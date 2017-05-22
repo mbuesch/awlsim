@@ -84,14 +84,14 @@ class AwlOperator(object): #+cdef
 #@cy		self.compound = False
 #@cy		self.dataType = None
 
-	def __init__(self, operType, width, value, insn): #@nocy
-#@cy	def __init__(self, uint32_t operType, int32_t width, object value, AwlInsn insn):
+	def __init__(self, operType, width, offset, insn): #@nocy
+#@cy	def __init__(self, uint32_t operType, int32_t width, AwlOffset offset, AwlInsn insn):
 		# operType -> The operator type ID number. See "Operator types" above.
 		# width -> The bit width of the access.
-		# value -> The value. May be an AwlOffset or a string (depends on type).
+		# offset -> The AwlOffset of this operator. May be None.
 		# insn -> The instruction this operator is used in. May be None.
-		self.operType, self.width, self.value, self.insn =\
-			operType, width, value, insn
+		self.operType, self.width, self.offset, self.insn =\
+			operType, width, offset, insn
 
 	def __eq__(self, other): #@nocy
 #@cy	cdef __eq(self, AwlOperator other):
@@ -99,7 +99,10 @@ class AwlOperator(object): #+cdef
 			isinstance(other, AwlOperator) and\
 			self.operType == other.operType and\
 			self.width == other.width and\
-			self.value == other.value and\
+			self.offset == other.offset and\
+			self.immediate == other.immediate and\
+			self.immediateBytes == other.immediateBytes and\
+			self.pointer == other.pointer and\
 			super(AwlOperator, self).__eq__(other)\
 		)
 
@@ -118,15 +121,10 @@ class AwlOperator(object): #+cdef
 #@cy	cpdef AwlOperator dup(self):
 #@cy		cdef AwlOperator oper
 
-		if self.value is None:
-			dupValue = None
-		elif isInteger(self.value):
-			dupValue = self.value
-		else:
-			dupValue = self.value.dup()
 		oper = AwlOperator(operType=self.operType,
 				   width=self.width,
-				   value=dupValue,
+				   offset=None if self.offset is None\
+					  else self.offset.dup(),
 				   insn=self.insn)
 		oper.pointer = self.pointer
 		oper.immediate = self.immediate
@@ -277,12 +275,12 @@ class AwlOperator(object): #+cdef
 		except KeyError as e:
 			raise AwlSimError("Could not transform operator '%s' "
 				"into a pointer." % str(self))
-		return area | self.value.toPointerValue()
+		return area | self.offset.toPointerValue()
 
 	# Make a DBPointer (48 bit) to this memory area.
 	def makeDBPointer(self):
 		return DBPointer(self.makePointerValue(),
-				 self.value.dbNumber)
+				 self.offset.dbNumber)
 
 	# Make an ANY-pointer to this memory area.
 	# Returns an ANYPointer().
@@ -294,10 +292,10 @@ class AwlOperator(object): #+cdef
 		if ANYPointer.dataTypeIsSupported(self.dataType):
 			return ANYPointer.makeByAutoType(dataType = self.dataType,
 							 ptrValue = ptrValue,
-							 dbNr = self.value.dbNumber)
+							 dbNr = self.offset.dbNumber)
 		return ANYPointer.makeByTypeWidth(bitWidth = self.width,
 						  ptrValue = ptrValue,
-						  dbNr = self.value.dbNumber)
+						  dbNr = self.offset.dbNumber)
 
 	def __repr__(self):
 		if self.operType == AwlOperatorTypes.IMM:
@@ -323,109 +321,113 @@ class AwlOperator(object): #+cdef
 		elif self.operType == AwlOperatorTypes.IMM_PTR:
 			return self.pointer.toPointerString()
 		elif self.operType == AwlOperatorTypes.IMM_STR:
-			strLen = self.value[1]
-			return "'" + self.value[2:2+strLen].decode(AwlSource.COMPAT_ENCODING) + "'"
-		elif self.operType in (AwlOperatorTypes.MEM_A, AwlOperatorTypes.MEM_E,
-				   AwlOperatorTypes.MEM_M, AwlOperatorTypes.MEM_L, AwlOperatorTypes.MEM_VL):
+			strLen = self.immediateBytes[1]
+			return "'" + self.immediateBytes[2:2+strLen].decode(
+					AwlSource.COMPAT_ENCODING) + "'"
+		elif self.operType in {AwlOperatorTypes.MEM_A,
+				       AwlOperatorTypes.MEM_E,
+				       AwlOperatorTypes.MEM_M,
+				       AwlOperatorTypes.MEM_L,
+				       AwlOperatorTypes.MEM_VL}:
 			pfx = self.type2str[self.operType]
 			if self.width == 1:
 				return "%s %d.%d" %\
-					(pfx, self.value.byteOffset, self.value.bitOffset)
+					(pfx, self.offset.byteOffset, self.offset.bitOffset)
 			elif self.width == 8:
-				return "%sB %d" % (pfx, self.value.byteOffset)
+				return "%sB %d" % (pfx, self.offset.byteOffset)
 			elif self.width == 16:
-				return "%sW %d" % (pfx, self.value.byteOffset)
+				return "%sW %d" % (pfx, self.offset.byteOffset)
 			elif self.width == 32:
-				return "%sD %d" % (pfx, self.value.byteOffset)
+				return "%sD %d" % (pfx, self.offset.byteOffset)
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_DB:
-			if self.value.dbNumber is None:
+			if self.offset.dbNumber is None:
 				dbPrefix = ""
 			else:
-				dbPrefix = "DB%d." % self.value.dbNumber
+				dbPrefix = "DB%d." % self.offset.dbNumber
 			if self.width == 1:
 				return "%sDBX %d.%d" % (dbPrefix,
-							self.value.byteOffset,
-							self.value.bitOffset)
+							self.offset.byteOffset,
+							self.offset.bitOffset)
 			elif self.width == 8:
-				return "%sDBB %d" % (dbPrefix, self.value.byteOffset)
+				return "%sDBB %d" % (dbPrefix, self.offset.byteOffset)
 			elif self.width == 16:
-				return "%sDBW %d" % (dbPrefix, self.value.byteOffset)
+				return "%sDBW %d" % (dbPrefix, self.offset.byteOffset)
 			elif self.width == 32:
-				return "%sDBD %d" % (dbPrefix, self.value.byteOffset)
+				return "%sDBD %d" % (dbPrefix, self.offset.byteOffset)
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_DI:
 			if self.width == 1:
-				return "DIX %d.%d" % (self.value.byteOffset, self.value.bitOffset)
+				return "DIX %d.%d" % (self.offset.byteOffset, self.offset.bitOffset)
 			elif self.width == 8:
-				return "DIB %d" % self.value.byteOffset
+				return "DIB %d" % self.offset.byteOffset
 			elif self.width == 16:
-				return "DIW %d" % self.value.byteOffset
+				return "DIW %d" % self.offset.byteOffset
 			elif self.width == 32:
-				return "DID %d" % self.value.byteOffset
+				return "DID %d" % self.offset.byteOffset
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_T:
-			return "T %d" % self.value.byteOffset
+			return "T %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.MEM_Z:
-			return "Z %d" % self.value.byteOffset
+			return "Z %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.MEM_PA:
 			if self.width == 8:
-				return "PAB %d" % self.value.byteOffset
+				return "PAB %d" % self.offset.byteOffset
 			elif self.width == 16:
-				return "PAW %d" % self.value.byteOffset
+				return "PAW %d" % self.offset.byteOffset
 			elif self.width == 32:
-				return "PAD %d" % self.value.byteOffset
+				return "PAD %d" % self.offset.byteOffset
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_PE:
 			if self.width == 8:
-				return "PEB %d" % self.value.byteOffset
+				return "PEB %d" % self.offset.byteOffset
 			elif self.width == 16:
-				return "PEW %d" % self.value.byteOffset
+				return "PEW %d" % self.offset.byteOffset
 			elif self.width == 32:
-				return "PED %d" % self.value.byteOffset
+				return "PED %d" % self.offset.byteOffset
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_STW:
-			return "__STW " + S7StatusWord.nr2name_german[self.value.bitOffset]
+			return "__STW " + S7StatusWord.nr2name_german[self.offset.bitOffset]
 		elif self.operType == AwlOperatorTypes.LBL_REF:
-			return self.value
+			return self.immediateBytes.decode(AwlSource.COMPAT_ENCODING)
 		elif self.operType == AwlOperatorTypes.BLKREF_FC:
-			return "FC %d" % self.value.byteOffset
+			return "FC %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_SFC:
-			return "SFC %d" % self.value.byteOffset
+			return "SFC %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_FB:
-			return "FB %d" % self.value.byteOffset
+			return "FB %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_SFB:
-			return "SFB %d" % self.value.byteOffset
+			return "SFB %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_UDT:
-			return "UDT %d" % self.value.byteOffset
+			return "UDT %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_DB:
-			return "DB %d" % self.value.byteOffset
+			return "DB %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_DI:
-			return "DI %d" % self.value.byteOffset
+			return "DI %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_OB:
-			return "OB %d" % self.value.byteOffset
+			return "OB %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_VAT:
-			return "VAT %d" % self.value.byteOffset
+			return "VAT %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.MULTI_FB:
 			return "#FB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
 		elif self.operType == AwlOperatorTypes.MULTI_SFB:
 			return "#SFB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
 		elif self.operType == AwlOperatorTypes.SYMBOLIC:
-			return '"%s"' % self.value.identChain.getString()
+			return '"%s"' % self.offset.identChain.getString()
 		elif self.operType == AwlOperatorTypes.NAMED_LOCAL:
-			return "#" + self.value.identChain.getString()
+			return "#" + self.offset.identChain.getString()
 		elif self.operType == AwlOperatorTypes.NAMED_LOCAL_PTR:
-			return "P##" + self.value.identChain.getString()
+			return "P##" + self.offset.identChain.getString()
 		elif self.operType == AwlOperatorTypes.NAMED_DBVAR:
-			return str(self.value) # value is AwlOffset
+			return str(self.offset)
 		elif self.operType == AwlOperatorTypes.INDIRECT:
 			assert(0) # Overloaded in AwlIndirectOp
 		elif self.operType == AwlOperatorTypes.VIRT_ACCU:
-			return "__ACCU %d" % self.value.byteOffset
+			return "__ACCU %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.VIRT_AR:
-			return "__AR %d" % self.value.byteOffset
+			return "__AR %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.VIRT_DBR:
-			return "__DBR %d" % self.value.byteOffset
+			return "__DBR %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.UNSPEC:
 			return "__UNSPEC"
 		try:
@@ -516,7 +518,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		AwlOperator.__init__(self,
 				     operType=AwlOperatorTypes.INDIRECT,
 				     width=width,
-				     value=None,
+				     offset=None,
 				     insn=insn)
 		self.area, self.addressRegister, self.offsetOper =\
 			area, addressRegister, offsetOper

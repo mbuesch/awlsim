@@ -285,7 +285,7 @@ class AwlOpTranslator(object):
 						"register indirect addressing operator")
 				offsetOp = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 						       width=32,
-						       value=None,
+						       offset=None,
 						       insn=opDesc.operator.insn)
 				offsetOp.pointer = offsetPtr
 				try:
@@ -370,56 +370,56 @@ class AwlOpTranslator(object):
 			raise AwlSimError("No memory area specified in operator")
 		# Direct addressing
 		if opDesc.operator.width == 1:
-			if opDesc.operator.value.byteOffset == 0 and\
-			   opDesc.operator.value.bitOffset == self.CALC_OFFS:
+			if opDesc.operator.offset.byteOffset == 0 and\
+			   opDesc.operator.offset.bitOffset == self.CALC_OFFS:
 				try:
-					opDesc.operator.value.bitOffset = int(rawOps[0], 10)
+					opDesc.operator.offset.bitOffset = int(rawOps[0], 10)
 				except ValueError as e:
 					if opDesc.operator.operType == AwlOperatorTypes.MEM_STW:
-						opDesc.operator.value.bitOffset =\
+						opDesc.operator.offset.bitOffset =\
 							S7StatusWord.getBitnrByName(rawOps[0],
 										    self.mnemonics)
 					else:
 						raise AwlSimError("Invalid bit address")
 			else:
-				assert(opDesc.operator.value.byteOffset == self.CALC_OFFS and\
-				       opDesc.operator.value.bitOffset == self.CALC_OFFS)
+				assert(opDesc.operator.offset.byteOffset == self.CALC_OFFS and\
+				       opDesc.operator.offset.bitOffset == self.CALC_OFFS)
 				offset = rawOps[0].split('.')
 				if len(offset) != 2:
 					raise AwlSimError("Invalid bit address")
 				try:
-					opDesc.operator.value.byteOffset = int(offset[0], 10)
-					opDesc.operator.value.bitOffset = int(offset[1], 10)
+					opDesc.operator.offset.byteOffset = int(offset[0], 10)
+					opDesc.operator.offset.bitOffset = int(offset[1], 10)
 				except ValueError as e:
 					raise AwlSimError("Invalid bit address")
 		elif opDesc.operator.width == 8:
-			assert(opDesc.operator.value.byteOffset == self.CALC_OFFS and\
-			       opDesc.operator.value.bitOffset == 0)
+			assert(opDesc.operator.offset.byteOffset == self.CALC_OFFS and\
+			       opDesc.operator.offset.bitOffset == 0)
 			try:
-				opDesc.operator.value.byteOffset = int(rawOps[0], 10)
+				opDesc.operator.offset.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid byte address")
 		elif opDesc.operator.width == 16:
-			assert(opDesc.operator.value.byteOffset == self.CALC_OFFS and\
-			       opDesc.operator.value.bitOffset == 0)
+			assert(opDesc.operator.offset.byteOffset == self.CALC_OFFS and\
+			       opDesc.operator.offset.bitOffset == 0)
 			try:
-				opDesc.operator.value.byteOffset = int(rawOps[0], 10)
+				opDesc.operator.offset.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid word address")
 		elif opDesc.operator.width == 32:
-			assert(opDesc.operator.value.byteOffset == self.CALC_OFFS and
-			       opDesc.operator.value.bitOffset == 0)
+			assert(opDesc.operator.offset.byteOffset == self.CALC_OFFS and
+			       opDesc.operator.offset.bitOffset == 0)
 			try:
-				opDesc.operator.value.byteOffset = int(rawOps[0], 10)
+				opDesc.operator.offset.byteOffset = int(rawOps[0], 10)
 			except ValueError as e:
 				raise AwlSimError("Invalid doubleword address")
 		else:
 			assert(0)
 		if opDesc.operator.operType != AwlOperatorTypes.MEM_STW and\
-		   opDesc.operator.value.bitOffset > 7:
+		   opDesc.operator.offset.bitOffset > 7:
 			raise AwlSimError("Invalid bit offset %d. "
 				"Biggest possible bit offset is 7." %\
-				opDesc.operator.value.bitOffset)
+				opDesc.operator.offset.bitOffset)
 
 	def __transVarIdents(self, tokens):
 		tokens, count = AwlDataIdentChain.expandTokens(tokens)
@@ -657,9 +657,9 @@ class AwlOpTranslator(object):
 		#	= M0.0
 		# (Note the missing white space between M and 0.0)
 		for name, opDesc in dictItems(operTable):
-			if isinstance(opDesc.operator.value, AwlOffset) and\
-			   opDesc.operator.value.byteOffset >= 0 and\
-			   opDesc.operator.value.bitOffset >= 0:
+			if opDesc.operator.offset is not None and\
+			   opDesc.operator.offset.byteOffset >= 0 and\
+			   opDesc.operator.offset.bitOffset >= 0:
 				# Only for operators with bit/byte addresses.
 				continue
 			try:
@@ -683,9 +683,9 @@ class AwlOpTranslator(object):
 			raise AwlSimError("Cannot parse operator: Operator is empty")
 		opDesc = self.__doTrans(rawInsn, rawOps)
 
-		if isinstance(opDesc.operator.value, AwlOffset) and\
-		   (opDesc.operator.value.byteOffset == self.CALC_OFFS or\
-		    opDesc.operator.value.bitOffset == self.CALC_OFFS):
+		if opDesc.operator.offset is not None and\
+		   (opDesc.operator.offset.byteOffset == self.CALC_OFFS or\
+		    opDesc.operator.offset.bitOffset == self.CALC_OFFS):
 			if opDesc.stripLeadingChars:
 				strippedRawOps = rawOps[:]
 				strippedRawOps[0] = strippedRawOps[0][opDesc.stripLeadingChars : ]

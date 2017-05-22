@@ -42,16 +42,16 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 
 			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
 				try:
-					codeBlock = self.cpu.fcs[blockOper.value.byteOffset]
+					codeBlock = self.cpu.fcs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FC not found",
 						rawInsn = self.rawInsn)
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
 				try:
-					codeBlock = self.cpu.sfcs[blockOper.value.byteOffset]
+					codeBlock = self.cpu.sfcs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFC %d not implemented, yet" %\
-						blockOper.value.byteOffset,
+						blockOper.offset.byteOffset,
 						rawInsn = self.rawInsn)
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
 				if self.insnType == AwlInsn.TYPE_CALL:
@@ -59,7 +59,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 						"block call",
 						rawInsn = self.rawInsn)
 				try:
-					codeBlock = self.cpu.fbs[blockOper.value.byteOffset]
+					codeBlock = self.cpu.fbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FB not found",
 						rawInsn = self.rawInsn)
@@ -69,10 +69,10 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 						"block call",
 						rawInsn = self.rawInsn)
 				try:
-					codeBlock = self.cpu.sfbs[blockOper.value.byteOffset]
+					codeBlock = self.cpu.sfbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFB %d not implemented, yet" %\
-						blockOper.value.byteOffset,
+						blockOper.offset.byteOffset,
 						rawInsn = self.rawInsn)
 			elif blockOper.operType == AwlOperatorTypes.INDIRECT:
 				# Indirect call. (like UC FC[MW 0])
@@ -80,9 +80,9 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			elif blockOper.operType in (AwlOperatorTypes.MULTI_FB, AwlOperatorTypes.MULTI_SFB):
 				# Multi instance call (like CALL #FOO)
 				if blockOper.operType == AwlOperatorTypes.MULTI_FB:
-					codeBlock = self.cpu.fbs[blockOper.value.fbNumber]
+					codeBlock = self.cpu.fbs[blockOper.offset.fbNumber]
 				else:
-					codeBlock = self.cpu.sfbs[blockOper.value.fbNumber]
+					codeBlock = self.cpu.sfbs[blockOper.offset.fbNumber]
 			else:
 				raise AwlSimError("Invalid CALL operand",
 					rawInsn = self.rawInsn)
@@ -107,18 +107,18 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					"not a DB operand.",
 					rawInsn = self.rawInsn)
 			try:
-				db = self.cpu.dbs[dbOper.value.byteOffset]
+				db = self.cpu.dbs[dbOper.offset.byteOffset]
 			except KeyError as e:
 				raise AwlSimError("DB used in FB call not found",
 					rawInsn = self.rawInsn)
 			if not db.isInstanceDB():
 				raise AwlSimError("DB %d is not an instance DB" %\
-					dbOper.value.byteOffset,
+					dbOper.offset.byteOffset,
 					rawInsn = self.rawInsn)
 
 			if blockOper.operType == AwlOperatorTypes.BLKREF_FB:
 				try:
-					fb = self.cpu.fbs[blockOper.value.byteOffset]
+					fb = self.cpu.fbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FB not found",
 						rawInsn = self.rawInsn)
@@ -126,10 +126,10 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 				pass#TODO
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
 				try:
-					fb = self.cpu.sfbs[blockOper.value.byteOffset]
+					fb = self.cpu.sfbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFB %d not implemented, yet" %\
-						blockOper.value.byteOffset,
+						blockOper.offset.byteOffset,
 						rawInsn = self.rawInsn)
 				# TODO check if this is an SFB-DB
 				pass#TODO
@@ -144,8 +144,8 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 
 			if db.codeBlock.index != fb.index:
 				raise AwlSimError("DB %d is not an instance DB for FB %d" %\
-					(dbOper.value.byteOffset,
-					 blockOper.value.byteOffset),
+					(dbOper.offset.byteOffset,
+					 blockOper.offset.byteOffset),
 					rawInsn = self.rawInsn)
 		else:
 			assert(0)

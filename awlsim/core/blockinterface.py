@@ -368,13 +368,13 @@ class BlockInterface(object):
 			ptrValue |= AwlIndirectOp.AREA_L
 			oper = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
-					   value=None,
+					   offset=None,
 					   insn=None)
 			oper.pointer = Pointer(ptrValue)
 			return oper
 		oper = AwlOperator(operType=AwlOperatorTypes.MEM_L,
 				   width=structField.bitSize,
-				   value=structField.offset.dup(),
+				   offset=structField.offset.dup(),
 				   insn=None)
 		# If this is a compound data type access, mark
 		# the operand as such.
@@ -404,7 +404,7 @@ class BlockInterface(object):
 			ptrValue |= AwlIndirectOp.AREA_DI
 			oper = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
-					   value=None,
+					   offset=None,
 					   insn=None)
 			oper.pointer = Pointer(ptrValue)
 			return oper
@@ -415,7 +415,7 @@ class BlockInterface(object):
 			# "call by reference"
 			offsetOper = AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 						 width=structField.dataType.width,
-						 value=structField.offset.dup(),
+						 offset=structField.offset.dup(),
 						 insn=None)
 			if structField.dataType.type == AwlDataType.TYPE_TIMER:
 				area = AwlIndirectOp.EXT_AREA_T
@@ -451,13 +451,13 @@ class BlockInterface(object):
 			offset.fbNumber = structField.dataType.index
 			return AwlOperator(operType=operType,
 					   width=structField.bitSize,
-					   value=offset,
+					   offset=offset,
 					   insn=None)
 
 		# "call by value"
 		oper = AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 				   width=structField.bitSize,
-				   value=structField.offset.dup(),
+				   offset=structField.offset.dup(),
 				   insn=None)
 		# If this is a compound data type access, mark
 		# the operand as such.

@@ -153,7 +153,7 @@ class CallStackElem(object): #+cdef
 							if structField.dataType.type in callByRef_Types:
 								# Do not fetch. Type is passed 'by reference'.
 								# This is for TIMER, COUNTER, etc...
-								data = param.rvalueOp.resolve().value.byteOffset
+								data = param.rvalueOp.resolve().offset.byteOffset
 							else:
 								data = cpu.fetch(param.rvalueOp)
 						# Transfer data into DBI.
@@ -210,7 +210,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef bytearray dbPtrData
 
 		dbPtrData = bytearray(6)
-		dbNumber = rvalueOp.value.dbNumber
+		dbNumber = rvalueOp.offset.dbNumber
 		if dbNumber is not None:
 			dbPtrData[0] = (dbNumber >> 8) & 0xFF
 			dbPtrData[1] = dbNumber & 0xFF
@@ -284,9 +284,9 @@ class CallStackElem(object): #+cdef
 		if rvalueOp.operType == AwlOperatorTypes.MEM_DI:
 			dbNumber = cpu.diRegister.index
 		else:
-			dbNumber = rvalueOp.value.dbNumber
+			dbNumber = rvalueOp.offset.dbNumber
 		cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
-		storeOper.value = loffset + AwlOffset(2)
+		storeOper.offset = loffset + AwlOffset(2)
 		storeOper.width = 32
 		area = AwlIndirectOp.optype2area[rvalueOp.operType]
 		if area == AwlIndirectOp.AREA_L:
@@ -297,7 +297,7 @@ class CallStackElem(object): #+cdef
 		elif area == AwlIndirectOp.AREA_DI:
 			area = AwlIndirectOp.AREA_DB
 		cpu.store(storeOper,
-			  area | rvalueOp.value.toPointerValue())
+			  area | rvalueOp.offset.toPointerValue())
 		# Return the operator for the DB pointer.
 		return AwlOperator(AwlOperatorTypes.MEM_VL,
 				   48,
@@ -329,7 +329,7 @@ class CallStackElem(object): #+cdef
 		# Translate it to a VL-stack memory access.
 		return AwlOperator(AwlOperatorTypes.MEM_VL,
 				   rvalueOp.width,
-				   rvalueOp.value,
+				   rvalueOp.offset,
 				   rvalueOp.insn)
 
 	# FC parameter translation:
@@ -340,7 +340,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef AwlOffset offset
 
 		# A (fully qualified) DB variable is passed to an FC.
-		if rvalueOp.value.dbNumber is not None:
+		if rvalueOp.offset.dbNumber is not None:
 			# This is a fully qualified DB access.
 			if rvalueOp.compound:
 				# rvalue is a compound data type.
@@ -348,14 +348,14 @@ class CallStackElem(object): #+cdef
 				return self.__FC_trans_dbpointerInVL(param, rvalueOp)
 			# Basic data type.
 			self.cpu.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						     AwlOffset(rvalueOp.value.dbNumber),
+						     AwlOffset(rvalueOp.offset.dbNumber),
 						     rvalueOp.insn))
 			copyToVL = True
 		if copyToVL:
 			# Copy to caller-L-stack.
 			return self.__FC_trans_copyToVL(param, rvalueOp)
 		# Do not copy to caller-L-stack. Just make a DB-reference.
-		offset = rvalueOp.value.dup()
+		offset = rvalueOp.offset.dup()
 		return AwlOperator(AwlOperatorTypes.MEM_DB,
 				   rvalueOp.width,
 				   offset,
@@ -467,7 +467,7 @@ class CallStackElem(object): #+cdef
 						param.rvalueOp,
 						cpu.fetch(AwlOperator(AwlOperatorTypes.MEM_L,
 								      param.scratchSpaceOp.width,
-								      param.scratchSpaceOp.value,
+								      param.scratchSpaceOp.offset,
 								      None))
 					)
 				# Assign the DB/DI registers.

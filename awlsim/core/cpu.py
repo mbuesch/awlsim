@@ -599,9 +599,9 @@ class S7CPU(object): #+cdef
 					blockIndex, symbol = resolver.resolveBlockName(
 							{AwlDataType.TYPE_FB_X,
 							 AwlDataType.TYPE_SFB_X},
-							dataBlockOp.value.identChain.getString())
+							dataBlockOp.offset.identChain.getString())
 					dataBlockOp = symbol.operator.dup()
-				dataBlockIndex = dataBlockOp.value.byteOffset
+				dataBlockIndex = dataBlockOp.offset.byteOffset
 				try:
 					if dataBlockOp.operType == AwlOperatorTypes.BLKREF_DB:
 						dataBlock = self.dbs[dataBlockIndex]
@@ -623,16 +623,16 @@ class S7CPU(object): #+cdef
 						 AwlDataType.TYPE_FB_X,
 						 AwlDataType.TYPE_SFC_X,
 						 AwlDataType.TYPE_SFB_X},
-						codeBlockOp.value.identChain.getString())
+						codeBlockOp.offset.identChain.getString())
 				codeBlockOp = symbol.operator.dup()
 			elif codeBlockOp.operType == AwlOperatorTypes.NAMED_LOCAL:
 				codeBlockOp = resolver.resolveNamedLocal(block, insn, codeBlockOp)
 
 			if codeBlockOp.operType in {AwlOperatorTypes.MULTI_FB,
 						    AwlOperatorTypes.MULTI_SFB}:
-				codeBlockIndex = codeBlockOp.value.fbNumber
+				codeBlockIndex = codeBlockOp.offset.fbNumber
 			else:
-				codeBlockIndex = codeBlockOp.value.byteOffset
+				codeBlockIndex = codeBlockOp.offset.byteOffset
 			try:
 				if codeBlockOp.operType == AwlOperatorTypes.BLKREF_FC:
 					codeBlock = self.fcs[codeBlockIndex]
@@ -1089,12 +1089,12 @@ class S7CPU(object): #+cdef
 
 	def __call_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		fc = self.fcs[blockOper.value.byteOffset]
+		fc = self.fcs[blockOper.offset.byteOffset]
 		return CallStackElem(self, fc, None, None, parameters, False)
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		fc = self.fcs[blockOper.value.byteOffset]
+		fc = self.fcs[blockOper.offset.byteOffset]
 		return CallStackElem(self, fc, None, None, (), True)
 
 	def __call_FB(self, blockOper, dbOper, parameters): #@nocy
@@ -1102,25 +1102,25 @@ class S7CPU(object): #+cdef
 #@cy		cdef CallStackElem cse
 #@cy		cdef DB db
 
-		fb = self.fbs[blockOper.value.byteOffset]
-		db = self.dbs[dbOper.value.byteOffset]
+		fb = self.fbs[blockOper.offset.byteOffset]
+		db = self.dbs[dbOper.offset.byteOffset]
 		cse = CallStackElem(self, fb, db, AwlOffset(), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
 	def __call_RAW_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		fb = self.fbs[blockOper.value.byteOffset]
+		fb = self.fbs[blockOper.offset.byteOffset]
 		return CallStackElem(self, fb, self.diRegister, None, (), True)
 
 	def __call_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		sfc = self.sfcs[blockOper.value.byteOffset]
+		sfc = self.sfcs[blockOper.offset.byteOffset]
 		return CallStackElem(self, sfc, None, None, parameters, False)
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		sfc = self.sfcs[blockOper.value.byteOffset]
+		sfc = self.sfcs[blockOper.offset.byteOffset]
 		return CallStackElem(self, sfc, None, None, (), True)
 
 	def __call_SFB(self, blockOper, dbOper, parameters): #@nocy
@@ -1128,15 +1128,15 @@ class S7CPU(object): #+cdef
 #@cy		cdef CallStackElem cse
 #@cy		cdef DB db
 
-		sfb = self.sfbs[blockOper.value.byteOffset]
-		db = self.dbs[dbOper.value.byteOffset]
+		sfb = self.sfbs[blockOper.offset.byteOffset]
+		db = self.dbs[dbOper.offset.byteOffset]
 		cse = CallStackElem(self, sfb, db, AwlOffset(), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
 	def __call_RAW_SFB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		sfb = self.sfbs[blockOper.value.byteOffset]
+		sfb = self.sfbs[blockOper.offset.byteOffset]
 		return CallStackElem(self, sfb, self.diRegister, None, (), True)
 
 	def __call_INDIRECT(self, blockOper, dbOper, parameters): #@nocy
@@ -1160,12 +1160,12 @@ class S7CPU(object): #+cdef
 			return callHelper(self, blockOper, dbOper, parameters)		#@nocy
 		except KeyError as e:							#@nocy
 			raise AwlSimError("Code block %d not found in indirect call" %(	#@nocy
-					  blockOper.value.byteOffset))			#@nocy
+					  blockOper.offset.byteOffset))			#@nocy
 
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
-		fb = self.fbs[blockOper.value.fbNumber]
-		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
+		fb = self.fbs[blockOper.offset.fbNumber]
+		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.offset
 		cse = CallStackElem(self, fb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
@@ -1175,8 +1175,8 @@ class S7CPU(object): #+cdef
 #@cy		cdef AwlOffset base
 #@cy		cdef CallStackElem cse
 
-		sfb = self.sfbs[blockOper.value.fbNumber]
-		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.value
+		sfb = self.sfbs[blockOper.offset.fbNumber]
+		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.offset
 		cse = CallStackElem(self, sfb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
@@ -1259,10 +1259,10 @@ class S7CPU(object): #+cdef
 
 		dbOper = dbOper.resolve()
 		try:
-			db = self.dbs[dbOper.value.byteOffset]
+			db = self.dbs[dbOper.offset.byteOffset]
 		except KeyError:
 			raise AwlSimError("Datablock %i does not exist" %\
-					  dbOper.value.byteOffset)
+					  dbOper.offset.byteOffset)
 		if dbOper.operType == AwlOperatorTypes.BLKREF_DB:
 			self.dbRegister = db
 		elif dbOper.operType == AwlOperatorTypes.BLKREF_DI:
@@ -1351,7 +1351,7 @@ class S7CPU(object): #+cdef
 			dbPtrOp = interfOp.dup()
 			dbPtrOp.width = 16
 			dbNr = self.fetch(dbPtrOp)
-			dbPtrOp.value += AwlOffset(2)
+			dbPtrOp.offset += AwlOffset(2)
 			dbPtrOp.width = 32
 			pointer = self.fetch(dbPtrOp)
 			# Open the DB pointed to by the DB-ptr.
@@ -1376,7 +1376,7 @@ class S7CPU(object): #+cdef
 			finalOp = interfOp.dup()
 			finalOp.width = operator.width
 		# Add possible sub-offsets (ARRAY, STRUCT) to the offset.
-		finalOp.value += operator.value.subOffset
+		finalOp.offset += operator.offset.subOffset
 		# Reparent the operator to the originating instruction.
 		# This is especially important for T and Z fetches due
 		# to their semantic dependency on the instruction being used.
@@ -1529,7 +1529,7 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, enforceWidth)
 
 		if operator.width == 1:
-			return self.statusWord.getByBitNumber(operator.value.bitOffset)
+			return self.statusWord.getByBitNumber(operator.offset.bitOffset)
 		elif operator.width == 16:
 			return self.statusWord.getWord()
 		else:
@@ -1589,28 +1589,28 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.inputs.fetch(operator.value, operator.width)
+		return self.inputs.fetch(operator.offset, operator.width)
 
 	def __fetchA(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchA(self, AwlOperator operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.outputs.fetch(operator.value, operator.width)
+		return self.outputs.fetch(operator.offset, operator.width)
 
 	def __fetchM(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchM(self, AwlOperator operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.flags.fetch(operator.value, operator.width)
+		return self.flags.fetch(operator.offset, operator.width)
 
 	def __fetchL(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchL(self, AwlOperator operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.callStackTop.localdata.fetch(operator.value, operator.width)
+		return self.callStackTop.localdata.fetch(operator.offset, operator.width)
 
 	def __fetchVL(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchVL(self, AwlOperator operator, frozenset enforceWidth):
@@ -1624,18 +1624,18 @@ class S7CPU(object): #+cdef
 		except IndexError:
 			raise AwlSimError("Fetch of parent localstack, "
 				"but no parent present.")
-		return cse.localdata.fetch(operator.value, operator.width)
+		return cse.localdata.fetch(operator.offset, operator.width)
 
 	def __fetchDB(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchDB(self, AwlOperator operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		if operator.value.dbNumber is not None:
+		if operator.offset.dbNumber is not None:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
 			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						 AwlOffset(operator.value.dbNumber),
+						 AwlOffset(operator.offset.dbNumber),
 						 operator.insn))
 		return self.dbRegister.fetch(operator)
 
@@ -1656,26 +1656,27 @@ class S7CPU(object): #+cdef
 #@cy		cdef bytearray readBytes
 #@cy		cdef uint32_t readValue
 #@cy		cdef uint32_t bitWidth
+#@cy		cdef AwlOffset operatorOffset
 
 		bitWidth = operator.width
 		if bitWidth not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
-		operatorValue = operator.value
+		operatorOffset = operator.offset
 
 		# Fetch the data from the peripheral device.
 		readBytes = self.cbPeripheralRead(self.cbPeripheralReadData,
 						  bitWidth,
-						  operatorValue.byteOffset)
+						  operatorOffset.byteOffset)
 		if not readBytes:
 			raise AwlSimError("There is no hardware to handle "
 				"the direct peripheral fetch. "
 				"(width=%d, offset=%d)" %\
-				(bitWidth, operatorValue.byteOffset))
+				(bitWidth, operatorOffset.byteOffset))
 		readValue = WordPacker.fromBytes(readBytes, bitWidth)
 
 		# Store the data to the process image, if it is within the inputs range.
-		if operatorValue.toLongBitOffset() + bitWidth < self.specs.nrInputs * 8:
-			self.inputs.store(operatorValue, bitWidth, readValue)
+		if operatorOffset.toLongBitOffset() + bitWidth < self.specs.nrInputs * 8:
+			self.inputs.store(operatorOffset, bitWidth, readValue)
 
 		return readValue
 
@@ -1692,7 +1693,7 @@ class S7CPU(object): #+cdef
 		if width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		timer = self.getTimer(operator.value.byteOffset)
+		timer = self.getTimer(operator.offset.byteOffset)
 		if insnType == AwlInsn.TYPE_L:
 			return timer.getTimevalBin()
 		elif insnType == AwlInsn.TYPE_LC:
@@ -1712,7 +1713,7 @@ class S7CPU(object): #+cdef
 		if width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		counter = self.getCounter(operator.value.byteOffset)
+		counter = self.getCounter(operator.offset.byteOffset)
 		if insnType == AwlInsn.TYPE_L:
 			return counter.getValueBin()
 		elif insnType == AwlInsn.TYPE_LC:
@@ -1727,7 +1728,7 @@ class S7CPU(object): #+cdef
 
 	def __fetchNAMED_LOCAL_PTR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, frozenset enforceWidth):
-		assert(operator.value.subOffset.byteOffset == 0) #@nocy
+		assert(operator.offset.subOffset.byteOffset == 0) #@nocy
 		return self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue()
 
 	def __fetchNAMED_DBVAR(self, operator, enforceWidth): #@nocy
@@ -1745,31 +1746,31 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.getAccu(operator.value.byteOffset).get()
+		return self.getAccu(operator.offset.byteOffset).get()
 
 	def __fetchVirtAR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchVirtAR(self, AwlOperator operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.getAR(operator.value.byteOffset).get()
+		return self.getAR(operator.offset.byteOffset).get()
 
 	def __fetchVirtDBR(self, operator, enforceWidth): #@nocy
 #@cy	def __fetchVirtDBR(self, AwlOperator operator, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		if operator.value.byteOffset == 1:
+		if operator.offset.byteOffset == 1:
 			if self.dbRegister:
 				return self.dbRegister.index
-		elif operator.value.byteOffset == 2:
+		elif operator.offset.byteOffset == 2:
 			if self.diRegister:
 				return self.diRegister.index
 		else:
 			raise AwlSimError("Invalid __DBR %d. "
 				"Must be 1 for DB-register or "
 				"2 for DI-register." %\
-				operator.value.byteOffset)
+				operator.offset.byteOffset)
 		return 0
 
 	__fetchTypeMethodsDict = {
@@ -1834,28 +1835,28 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		self.inputs.store(operator.value, operator.width, value)
+		self.inputs.store(operator.offset, operator.width, value)
 
 	def __storeA(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storeA(self, AwlOperator operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		self.outputs.store(operator.value, operator.width, value)
+		self.outputs.store(operator.offset, operator.width, value)
 
 	def __storeM(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storeM(self, AwlOperator operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		self.flags.store(operator.value, operator.width, value)
+		self.flags.store(operator.offset, operator.width, value)
 
 	def __storeL(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storeL(self, AwlOperator operator, object value, frozenset enforceWidth):
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		self.callStackTop.localdata.store(operator.value, operator.width, value)
+		self.callStackTop.localdata.store(operator.offset, operator.width, value)
 
 	def __storeVL(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storeVL(self, AwlOperator operator, object value, frozenset enforceWidth):
@@ -1869,7 +1870,7 @@ class S7CPU(object): #+cdef
 		except IndexError:
 			raise AwlSimError("Store to parent localstack, "
 				"but no parent present.")
-		cse.localdata.store(operator.value, operator.width, value)
+		cse.localdata.store(operator.offset, operator.width, value)
 
 	def __storeDB(self, operator, value, enforceWidth): #@nocy
 #@cy	def __storeDB(self, AwlOperator operator, object value, frozenset enforceWidth):
@@ -1878,14 +1879,14 @@ class S7CPU(object): #+cdef
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		if operator.value.dbNumber is None:
+		if operator.offset.dbNumber is None:
 			db = self.dbRegister
 		else:
 			try:
-				db = self.dbs[operator.value.dbNumber]
+				db = self.dbs[operator.offset.dbNumber]
 			except KeyError:
 				raise AwlSimError("Store to DB %d, but DB "
-					"does not exist" % operator.value.dbNumber)
+					"does not exist" % operator.offset.dbNumber)
 		db.store(operator, value)
 
 	def __storeDI(self, operator, value, enforceWidth): #@nocy
@@ -1906,28 +1907,29 @@ class S7CPU(object): #+cdef
 #@cy		cdef _Bool ok
 #@cy		cdef uint32_t bitWidth
 #@cy		cdef bytearray valueBytes
+#@cy		cdef AwlOffset operatorOffset
 
 		bitWidth = operator.width
 		if bitWidth not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
-		operatorValue = operator.value
+		operatorOffset = operator.offset
 
 		# Store the data to the process image, if it is within the outputs range.
-		if operatorValue.toLongBitOffset() + bitWidth < self.specs.nrOutputs * 8:
-			self.outputs.store(operatorValue, bitWidth, value)
+		if operatorOffset.toLongBitOffset() + bitWidth < self.specs.nrOutputs * 8:
+			self.outputs.store(operatorOffset, bitWidth, value)
 
 		# Store the data to the peripheral device.
 		valueBytes = bytearray(bitWidth // 8)
 		WordPacker.toBytes(valueBytes, bitWidth, 0, value)
 		ok = self.cbPeripheralWrite(self.cbPeripheralWriteData,
 					    bitWidth,
-					    operatorValue.byteOffset,
+					    operatorOffset.byteOffset,
 					    valueBytes)
 		if not ok:
 			raise AwlSimError("There is no hardware to handle "
 				"the direct peripheral store. "
 				"(width=%d, offset=%d, value=0x%X)" %\
-				(bitWidth, operatorValue.byteOffset,
+				(bitWidth, operatorOffset.byteOffset,
 				 value))
 
 	def __storeAR2(self, operator, value, enforceWidth): #@nocy

@@ -346,7 +346,7 @@ class AwlTranslator(object):
 				param.rvalueOp = AwlOperator(
 					operType=AwlOperatorTypes.IMM_PTR,
 					width=ptr.width,
-					value=None,
+					offset=None,
 					insn=param.rvalueOp.insn)
 				param.rvalueOp.pointer = ptr
 			if param.rvalueOp.pointer.getArea() == Pointer.AREA_L:
@@ -380,7 +380,7 @@ class AwlTranslator(object):
 				param.rvalueOp = AwlOperator(
 					operType=AwlOperatorTypes.IMM_PTR,
 					width=ptr.width,
-					value=None,
+					offset=None,
 					insn=param.rvalueOp.insn)
 				param.rvalueOp.pointer = ptr
 			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR and\
@@ -401,7 +401,7 @@ class AwlTranslator(object):
 					param.rvalueOp = AwlOperator(
 						operType=AwlOperatorTypes.IMM,
 						width=8,
-						value=None,
+						offset=None,
 						insn=param.rvalueOp.insn)
 					param.rvalueOp.immediate = immediate
 		elif param.lValueDataType.type == AwlDataType.TYPE_STRING:
@@ -435,11 +435,11 @@ class AwlSymResolver(object):
 	def __resolveClassicSym(self, block, insn, oper):
 		if oper.operType == AwlOperatorTypes.SYMBOLIC:
 			symbol = self.cpu.symbolTable.findByName(
-				oper.value.identChain.getString())
+				oper.offset.identChain.getString())
 			if not symbol:
 				raise AwlSimError("Symbol \"%s\" not found in "
 					"symbol table." %\
-					oper.value.identChain.getString(),
+					oper.offset.identChain.getString(),
 					insn = insn)
 			newOper = symbol.operator.dup()
 			newOper.setInsn(oper.insn)
@@ -456,7 +456,7 @@ class AwlSymResolver(object):
 			if symbol.type.type not in blockTypeIds:
 				raise AwlSimError("Symbolic block name \"%s\" "
 					"has an invalid type." % blockName)
-			return symbol.operator.value.byteOffset, symbol
+			return symbol.operator.offset.byteOffset, symbol
 		return blockName, None
 
 	# Resolve local symbols (#abc or P##abc)
@@ -479,12 +479,12 @@ class AwlSymResolver(object):
 		# for the ARRAY accesses.
 		parentStruct = None
 		subOffset = AwlOffset()
-		for i in range(len(oper.value.identChain)):
+		for i in range(len(oper.offset.identChain)):
 			isFirstElement = (i == 0)
-			isLastElement = (i == len(oper.value.identChain) - 1)
+			isLastElement = (i == len(oper.offset.identChain) - 1)
 
 			# Get the sub-chain and the interface field.
-			chain = AwlDataIdentChain(oper.value.identChain[:i+1])
+			chain = AwlDataIdentChain(oper.offset.identChain[:i+1])
 			dataType = block.interface.getFieldDataType(chain)
 
 			# Sanity checks
@@ -558,7 +558,7 @@ class AwlSymResolver(object):
 
 		isWholeArrayAccess = ((dataType.type == AwlDataType.TYPE_ARRAY or\
 				       dataType.type == AwlDataType.TYPE_STRING) and\
-				      not oper.value.identChain[-1].indices)
+				      not oper.offset.identChain[-1].indices)
 		if dataType.type == AwlDataType.TYPE_ARRAY and\
 		   not isWholeArrayAccess:
 			# This is an array element access.
@@ -576,19 +576,19 @@ class AwlSymResolver(object):
 		assert(oper.width > 0)
 
 		# Store the sub-offset (might be zero).
-		oper.value.subOffset = subOffset
+		oper.offset.subOffset = subOffset
 
 		# If interface field is of compound data type access, mark
 		# the operand as such.
 		basicType = block.interface.getFieldDataType(chain, deep=False)
 		oper.compound = basicType.compound
 
-		fieldType = block.interface.getFieldType(oper.value.identChain)
+		fieldType = block.interface.getFieldType(oper.offset.identChain)
 		if block.interface.hasInstanceDB or\
 		   fieldType == BlockInterfaceField.FTYPE_TEMP:
 			# This is an FB or a TEMP access. Translate the operator
 			# to a DI/TEMP access.
-			newOper = block.interface.getOperatorForField(oper.value.identChain,
+			newOper = block.interface.getOperatorForField(oper.offset.identChain,
 								      pointer)
 			assert(newOper.width > 0)
 			newOper.setInsn(oper.insn)
@@ -601,7 +601,7 @@ class AwlSymResolver(object):
 			# Just set interface index in the operator.
 			# Pointer access (oper.operType == NAMED_LOCAL_PTR) is resolved
 			# later at runtime.
-			identChain = oper.value.identChain.dup(withIndices = False)
+			identChain = oper.offset.identChain.dup(withIndices = False)
 			index = block.interface.getFieldByIdentChain(identChain).fieldIndex
 			oper.interfaceIndex = index
 		return oper
@@ -617,7 +617,7 @@ class AwlSymResolver(object):
 			raise AwlSimError("Symbol \"%s\" specified as DB in "
 				"fully qualified operator is not a DB-symbol." %\
 				dbName)
-		return symbol.operator.value.byteOffset
+		return symbol.operator.offset.byteOffset
 
 	# Get offset and width of a DB field.
 	def __dbVarToOffset(self, dbNumber, identChain, allowWholeArrayAccess=True):
@@ -649,7 +649,7 @@ class AwlSymResolver(object):
 						       AwlDataType.TYPE_STRING}:
 				raise AwlSimError("Indexed variable '%s' in fully qualified "
 					"DB access is not an ARRAY or STRING." %\
-					oper.value.identChain.getString())
+					oper.offset.identChain.getString())
 			# Get the actual data field.
 			# (Don't remove indices from the last chain element.)
 			field = db.struct.getField(identChain.getString())
@@ -670,21 +670,21 @@ class AwlSymResolver(object):
 			return oper
 
 		# Resolve the symbolic DB name, if needed
-		assert(oper.value.dbNumber is not None or\
-		       oper.value.dbName is not None)
-		if oper.value.dbNumber is None:
-			oper.value.dbNumber = self.__resolveDBName(oper.value.dbName)
+		assert(oper.offset.dbNumber is not None or\
+		       oper.offset.dbName is not None)
+		if oper.offset.dbNumber is None:
+			oper.offset.dbNumber = self.__resolveDBName(oper.offset.dbName)
 
 		# Get the offset data and the width of the field.
-		offset, width, fieldDataType = self.__dbVarToOffset(oper.value.dbNumber,
-								    oper.value.identChain,
+		offset, width, fieldDataType = self.__dbVarToOffset(oper.offset.dbNumber,
+								    oper.offset.identChain,
 								    allowWholeArrayAccess)
-		offset.dbNumber = oper.value.dbNumber
+		offset.dbNumber = oper.offset.dbNumber
 
 		# Construct an absolute operator
 		oper = AwlOperator(operType=AwlOperatorTypes.MEM_DB,
 				   width=width,
-				   value=offset,
+				   offset=offset,
 				   insn=oper.insn)
 		# If this is a compound data type access, mark
 		# the operand as such.

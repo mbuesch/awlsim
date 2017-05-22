@@ -41,5 +41,5 @@ class AwlInsn_FR(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
-		self.cpu.getCounter(self.op0.resolve(True).value.byteOffset
+		self.cpu.getCounter(self.op0.resolve(True).offset.byteOffset
 			).run_FR(self.cpu.statusWord.VKE)

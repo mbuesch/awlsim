@@ -41,5 +41,5 @@ class AwlInsn_SA(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
-		self.cpu.getTimer(self.op0.resolve(True).value.byteOffset
+		self.cpu.getTimer(self.op0.resolve(True).offset.byteOffset
 			).run_SA(self.cpu.accu1.get())
