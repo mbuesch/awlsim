@@ -125,7 +125,7 @@ class AwlSim(object): #+cdef
 		sio = StringIO()
 		ps = self.__pstatsModule.Stats(self.__profiler,
 					       stream = sio)
-		ps.sort_stats("cumulative")
+		ps.sort_stats("time")
 		ps.print_stats()
 
 		return sio.getvalue()
