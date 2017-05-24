@@ -87,7 +87,10 @@ class AwlOffset(object): #+cdef
 	def __ne__(self, other):		#@nocy
 		return not self.__eq__(other)	#@nocy
 
-	def dup(self):
+	def dup(self): #@nocy
+#@cy	cpdef AwlOffset dup(self):
+#@cy		cdef AwlOffset offset
+
 		offset = AwlOffset(self.byteOffset,
 				   self.bitOffset)
 		offset.dbNumber = self.dbNumber

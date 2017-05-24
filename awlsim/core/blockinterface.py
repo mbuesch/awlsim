@@ -438,7 +438,8 @@ class BlockInterface(object):
 				area=area,
 				width=width,
 				addressRegister=AwlIndirectOp.AR_NONE,
-				offsetOper=offsetOper)
+				offsetOper=offsetOper,
+				insn=None)
 
 		if structField.dataType.type in (AwlDataType.TYPE_FB_X,
 						 AwlDataType.TYPE_SFB_X):

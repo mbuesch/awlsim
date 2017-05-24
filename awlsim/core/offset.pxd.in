@@ -9,5 +9,8 @@ cdef class AwlOffset(object):
 	cdef public AwlOffset subOffset
 
 	cpdef __eq(self, object other)
+
+	cpdef AwlOffset dup(self)
+
 	cpdef uint32_t toPointerValue(self)
 	cpdef uint64_t toLongBitOffset(self)

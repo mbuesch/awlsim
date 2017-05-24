@@ -49,7 +49,7 @@ class AwlOperator(object): #+cdef
 
 	# Immediate bytes/bytearray.
 	# Only used for IMM_DT and IMM_STR types.
-	immediateBytes = b"" #@nocy
+	immediateBytes = None #@nocy
 
 	# Immediate pointer.
 	# Only used for IMM_PTR type.
@@ -76,7 +76,7 @@ class AwlOperator(object): #+cdef
 
 #@cy	def __cinit__(self):
 #@cy		self.immediate = 0
-#@cy		self.immediateBytes = bytearray()
+#@cy		self.immediateBytes = None
 #@cy		self.pointer = None
 #@cy		self.isExtended = False
 #@cy		self.labelIndex = None
@@ -120,15 +120,21 @@ class AwlOperator(object): #+cdef
 	def dup(self): #@nocy
 #@cy	cpdef AwlOperator dup(self):
 #@cy		cdef AwlOperator oper
+#@cy		cdef AwlOffset offset
 
-		oper = AwlOperator(operType=self.operType,
-				   width=self.width,
-				   offset=None if self.offset is None\
-					  else self.offset.dup(),
-				   insn=self.insn)
+		offset = self.offset
+		if offset is not None:
+			offset = offset.dup()
+		oper = AwlOperator(self.operType,
+				   self.width,
+				   offset,
+				   self.insn)
 		oper.pointer = self.pointer
 		oper.immediate = self.immediate
-		oper.immediateBytes = bytearray(self.immediateBytes)
+		if self.immediateBytes is None:
+			oper.immediateBytes = None
+		else:
+			oper.immediateBytes = bytearray(self.immediateBytes)
 		oper.isExtended = self.isExtended
 		oper.labelIndex = self.labelIndex
 		oper.interfaceIndex = self.interfaceIndex
@@ -498,9 +504,9 @@ class AwlIndirectOp(AwlOperator): #+cdef
 	optype2area[AwlOperatorTypes.NAMED_DBVAR] = AREA_DB
 	optype2area[AwlOperatorTypes.UNSPEC] = AREA_NONE
 
-	def __init__(self, area, width, addressRegister, offsetOper, insn=None): #@nocy
+	def __init__(self, area, width, addressRegister, offsetOper, insn): #@nocy
 #@cy	def __init__(self, uint64_t area, int32_t width, uint32_t addressRegister,
-#@cy		     AwlOperator offsetOper, AwlInsn insn=None):
+#@cy		     AwlOperator offsetOper, AwlInsn insn):
 		# area -> The area code for this indirect operation.
 		#         AREA_... or EXT_AREA_...
 		#         This corresponds to the area code in AWL pointer format.
@@ -526,11 +532,11 @@ class AwlIndirectOp(AwlOperator): #+cdef
 	# Make a deep copy, except for "insn".
 	def dup(self): #@nocy
 #@cy	cpdef AwlOperator dup(self):
-		return AwlIndirectOp(area = self.area,
-				     width = self.width,
-				     addressRegister = self.addressRegister,
-				     offsetOper = self.offsetOper.dup(),
-				     insn = self.insn)
+		return AwlIndirectOp(self.area,
+				     self.width,
+				     self.addressRegister,
+				     self.offsetOper.dup(),
+				     self.insn)
 
 	def setInsn(self, newInsn):
 		AwlOperator.setInsn(self, newInsn)
