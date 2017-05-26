@@ -1354,7 +1354,7 @@ class S7CPU(object): #+cdef
 			pointer = self.fetch(dbPtrOp)
 			# Open the DB pointed to by the DB-ptr.
 			# (This is ok, if dbNr is 0, too)
-			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
+			self.run_AUF(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 						 make_AwlOffset(dbNr, 0),
 						 operator.insn))
 			# Make an operator from the DB-ptr.
@@ -1365,7 +1365,7 @@ class S7CPU(object): #+cdef
 				raise AwlSimError("Corrupt DB pointer in compound "
 					"data type FC variable detected "
 					"(invalid area).", insn = operator.insn)
-			finalOp = AwlOperator(opType, operator.width,
+			finalOp = make_AwlOperator(opType, operator.width,
 					      make_AwlOffset_fromPointerValue(pointer),
 					      operator.insn)
 		else:
@@ -1717,7 +1717,7 @@ class S7CPU(object): #+cdef
 		if operator.offset.dbNumber is not None:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
-			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
+			self.run_AUF(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 						 make_AwlOffset(operator.offset.dbNumber, 0),
 						 operator.insn))
 		return self.dbRegister.fetch(operator)

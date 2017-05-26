@@ -366,13 +366,13 @@ class BlockInterface(object):
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			ptrValue |= AwlIndirectOp.AREA_L
-			oper = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+			oper = make_AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
 					   offset=None,
 					   insn=None)
 			oper.pointer = Pointer(ptrValue)
 			return oper
-		oper = AwlOperator(operType=AwlOperatorTypes.MEM_L,
+		oper = make_AwlOperator(operType=AwlOperatorTypes.MEM_L,
 				   width=structField.bitSize,
 				   offset=structField.offset.dup(),
 				   insn=None)
@@ -402,7 +402,7 @@ class BlockInterface(object):
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
 			ptrValue |= AwlIndirectOp.AREA_DI
-			oper = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+			oper = make_AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
 					   offset=None,
 					   insn=None)
@@ -413,7 +413,7 @@ class BlockInterface(object):
 
 		if structField.dataType.type in BlockInterface.callByRef_Types:
 			# "call by reference"
-			offsetOper = AwlOperator(operType=AwlOperatorTypes.MEM_DI,
+			offsetOper = make_AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 						 width=structField.dataType.width,
 						 offset=structField.offset.dup(),
 						 insn=None)
@@ -434,7 +434,7 @@ class BlockInterface(object):
 				width = 16
 			else:
 				assert(0)
-			return AwlIndirectOp(
+			return make_AwlIndirectOp(
 				area=area,
 				width=width,
 				addressRegister=AwlIndirectOp.AR_NONE,
@@ -450,13 +450,13 @@ class BlockInterface(object):
 				operType = AwlOperatorTypes.MULTI_SFB
 			offset = structField.offset.dup()
 			offset.fbNumber = structField.dataType.index
-			return AwlOperator(operType=operType,
+			return make_AwlOperator(operType=operType,
 					   width=structField.bitSize,
 					   offset=offset,
 					   insn=None)
 
 		# "call by value"
-		oper = AwlOperator(operType=AwlOperatorTypes.MEM_DI,
+		oper = make_AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 				   width=structField.bitSize,
 				   offset=structField.offset.dup(),
 				   insn=None)

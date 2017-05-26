@@ -74,7 +74,7 @@ class SystemBlock(StaticCodeBlock): #+cdef
 			# Create a scratch-operator for the access.
 			offset = make_AwlOffset(0, 0)
 			offset.identChain = AwlDataIdentChain.parseString(field.name)
-			oper = AwlOperator(AwlOperatorTypes.NAMED_LOCAL, 0,
+			oper = make_AwlOperator(AwlOperatorTypes.NAMED_LOCAL, 0,
 					   offset, None)
 			# Resolve the scratch-operator.
 			oper = resolver.resolveNamedLocal(block=self, insn=None,

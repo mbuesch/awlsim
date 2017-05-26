@@ -74,7 +74,7 @@ class AwlOperator(object): #+cdef
 	# Only set for resolved symbolic accesses.
 	dataType = None #@nocy
 
-#@cy	def __cinit__(self):
+#@cy	cdef _cy_init(self):
 #@cy		self.immediate = 0
 #@cy		self.immediateBytes = None
 #@cy		self.pointer = None
@@ -83,15 +83,6 @@ class AwlOperator(object): #+cdef
 #@cy		self.interfaceIndex = None
 #@cy		self.compound = False
 #@cy		self.dataType = None
-
-	def __init__(self, operType, width, offset, insn): #@nocy
-#@cy	def __init__(self, uint32_t operType, int32_t width, AwlOffset offset, AwlInsn insn):
-		# operType -> The operator type ID number. See "Operator types" above.
-		# width -> The bit width of the access.
-		# offset -> The AwlOffset of this operator. May be None.
-		# insn -> The instruction this operator is used in. May be None.
-		self.operType, self.width, self.offset, self.insn =\
-			operType, width, offset, insn
 
 	def __eq__(self, other): #@nocy
 #@cy	cdef __eq(self, AwlOperator other):
@@ -125,10 +116,10 @@ class AwlOperator(object): #+cdef
 		offset = self.offset
 		if offset is not None:
 			offset = offset.dup()
-		oper = AwlOperator(self.operType,
-				   self.width,
-				   offset,
-				   self.insn)
+		oper = make_AwlOperator(self.operType,
+					self.width,
+					offset,
+					self.insn)
 		oper.pointer = self.pointer
 		oper.immediate = self.immediate
 		if self.immediateBytes is None:
@@ -441,6 +432,28 @@ class AwlOperator(object): #+cdef
 		except KeyError:
 			assert(0)
 
+#
+# make_AwlOperator - Construct an AwlOperator instance.
+#
+# operType -> The operator type ID number. See "Operator types" above.
+# width -> The bit width of the access.
+# offset -> The AwlOffset of this operator. May be None.
+# insn -> The instruction this operator is used in. May be None.
+#
+def make_AwlOperator(operType, width, offset, insn,			#@nocy
+		     AwlOperator=AwlOperator):				#@nocy
+#cdef AwlOperator make_AwlOperator(uint32_t operType, int32_t width,	#@cy
+#				   AwlOffset offset, AwlInsn insn):	#@cy
+#@cy	cdef AwlOperator operator
+
+	operator = AwlOperator()
+#@cy	operator._cy_init()
+
+	operator.operType, operator.width, operator.offset, operator.insn =\
+		operType, width, offset, insn
+
+	return operator
+
 class AwlIndirectOp(AwlOperator): #+cdef
 	"""Indirect addressing operand.
 	"""
@@ -504,39 +517,14 @@ class AwlIndirectOp(AwlOperator): #+cdef
 	optype2area[AwlOperatorTypes.NAMED_DBVAR] = AREA_DB
 	optype2area[AwlOperatorTypes.UNSPEC] = AREA_NONE
 
-	def __init__(self, area, width, addressRegister, offsetOper, insn): #@nocy
-#@cy	def __init__(self, uint64_t area, int32_t width, uint32_t addressRegister,
-#@cy		     AwlOperator offsetOper, AwlInsn insn):
-		# area -> The area code for this indirect operation.
-		#         AREA_... or EXT_AREA_...
-		#         This corresponds to the area code in AWL pointer format.
-		# width -> The width (in bits) of the region that is being adressed.
-		# addressRegister -> One of:
-		#                    AR_NONE => This is a memory-indirect access.
-		#                    AR_1 => This is a register-indirect access with AR1.
-		#                    AR_2 => This is a register-indirect access with AR2.
-		# offsetOper -> This is the AwlOperator for the offset.
-		#               For memory-indirect access, this must be an AwlOperator
-		#               with "type in __possibleOffsetOperTypes".
-		#               For register-indirect access, this must be an AwlOperator
-		#               with "type==IMM_PTR".
-		# insn -> The instruction this operator is used in. May be None.
-		AwlOperator.__init__(self,
-				     operType=AwlOperatorTypes.INDIRECT,
-				     width=width,
-				     offset=None,
-				     insn=insn)
-		self.area, self.addressRegister, self.offsetOper =\
-			area, addressRegister, offsetOper
-
 	# Make a deep copy, except for "insn".
 	def dup(self): #@nocy
 #@cy	cpdef AwlOperator dup(self):
-		return AwlIndirectOp(self.area,
-				     self.width,
-				     self.addressRegister,
-				     self.offsetOper.dup(),
-				     self.insn)
+		return make_AwlIndirectOp(self.area,
+					  self.width,
+					  self.addressRegister,
+					  self.offsetOper.dup(),
+					  self.insn)
 
 	def setInsn(self, newInsn):
 		AwlOperator.setInsn(self, newInsn)
@@ -631,7 +619,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				"indirect addressing is not zero. "
 				"(Computed offset is: %s)" %\
 				(self.width, str(directOffset)))
-		return AwlOperator(optype, self.width, directOffset, self.insn)
+		return make_AwlOperator(optype, self.width, directOffset, self.insn)
 
 	def __pointerError(self):
 		# This is a programming error.
@@ -654,3 +642,44 @@ class AwlIndirectOp(AwlOperator): #+cdef
 
 	def __repr__(self):
 		return "__INDIRECT" #TODO
+
+#
+# make_AwlIndirectOp() - Construct an AwlIndirectOp instance.
+#
+# area -> The area code for this indirect operation.
+#         AREA_... or EXT_AREA_...
+#         This corresponds to the area code in AWL pointer format.
+# width -> The width (in bits) of the region that is being adressed.
+# addressRegister -> One of:
+#                    AR_NONE => This is a memory-indirect access.
+#                    AR_1 => This is a register-indirect access with AR1.
+#                    AR_2 => This is a register-indirect access with AR2.
+# offsetOper -> This is the AwlOperator for the offset.
+#               For memory-indirect access, this must be an AwlOperator
+#               with "type in __possibleOffsetOperTypes".
+#               For register-indirect access, this must be an AwlOperator
+#               with "type==IMM_PTR".
+# insn -> The instruction this operator is used in. May be None.
+#
+def make_AwlIndirectOp(area, width, addressRegister, offsetOper, insn,	#@nocy
+		       AwlIndirectOp=AwlIndirectOp):			#@nocy
+#cdef AwlIndirectOp make_AwlIndirectOp(uint64_t area,			#@cy
+#				       int32_t width,			#@cy
+#				       uint32_t addressRegister,	#@cy
+#				       AwlOperator offsetOper,		#@cy
+#				       AwlInsn insn):			#@cy
+#@cy	cdef AwlIndirectOp operator
+
+	operator = AwlIndirectOp()
+#@cy	operator._cy_init()
+
+	operator.operType = AwlOperatorTypes.INDIRECT
+	operator.width = width
+	operator.offset = None
+	operator.insn = insn
+
+	operator.area = area
+	operator.addressRegister = addressRegister
+	operator.offsetOper = offsetOper
+
+	return operator

@@ -51,7 +51,7 @@ class AwlParamAssign(object): #+cdef
 		# scratchSpaceOp attribute holds the possible AwlOperator for
 		# scratch space allocation.
 		# This element is assigned during runtime.
-		self.scratchSpaceOp = AwlOperator(operType=AwlOperatorTypes.IMM,
+		self.scratchSpaceOp = make_AwlOperator(operType=AwlOperatorTypes.IMM,
 						  width=32, offset=None,
 						  insn=None)
 

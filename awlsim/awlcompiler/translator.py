@@ -344,7 +344,7 @@ class AwlTranslator(object):
 					raise AwlSimError("Unable to transform "
 						"operator '%s' to POINTER." %\
 						str(param.rvalueOp))
-				param.rvalueOp = AwlOperator(
+				param.rvalueOp = make_AwlOperator(
 					operType=AwlOperatorTypes.IMM_PTR,
 					width=ptr.width,
 					offset=None,
@@ -378,7 +378,7 @@ class AwlTranslator(object):
 					raise AwlSimError("Unable to transform "
 						"operator '%s' to ANY pointer." %\
 						str(param.rvalueOp))
-				param.rvalueOp = AwlOperator(
+				param.rvalueOp = make_AwlOperator(
 					operType=AwlOperatorTypes.IMM_PTR,
 					width=ptr.width,
 					offset=None,
@@ -399,7 +399,7 @@ class AwlTranslator(object):
 				# to 8 bit integer immediates.
 				if param.rvalueOp.width == (2 + 1) * 8:
 					immediate = param.rvalueOp.immediateBytes[2]
-					param.rvalueOp = AwlOperator(
+					param.rvalueOp = make_AwlOperator(
 						operType=AwlOperatorTypes.IMM,
 						width=8,
 						offset=None,
@@ -683,7 +683,7 @@ class AwlSymResolver(object):
 		offset.dbNumber = oper.offset.dbNumber
 
 		# Construct an absolute operator
-		oper = AwlOperator(operType=AwlOperatorTypes.MEM_DB,
+		oper = make_AwlOperator(operType=AwlOperatorTypes.MEM_DB,
 				   width=width,
 				   offset=offset,
 				   insn=oper.insn)

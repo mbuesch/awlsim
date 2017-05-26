@@ -134,7 +134,7 @@ class SFC21(SFC): #+cdef
 				db = cpu.dbs[BVAL_dbNr]
 				if (db.permissions & db.PERM_READ) == 0:
 					raise KeyError
-				cpu.run_AUF(AwlOperator(
+				cpu.run_AUF(make_AwlOperator(
 					AwlOperatorTypes.BLKREF_DB, 16,
 					make_AwlOffset(BVAL_dbNr, 0), None))
 			except (AwlSimError, KeyError) as e:
@@ -152,7 +152,7 @@ class SFC21(SFC): #+cdef
 				db = cpu.dbs[BLK_dbNr]
 				if (db.permissions & db.PERM_WRITE) == 0:
 					raise KeyError
-				cpu.run_AUF(AwlOperator(
+				cpu.run_AUF(make_AwlOperator(
 					AwlOperatorTypes.BLKREF_DI, 16,
 					make_AwlOffset(BLK_dbNr, 0), None))
 			except (AwlSimError, KeyError) as e:
@@ -171,7 +171,7 @@ class SFC21(SFC): #+cdef
 				SystemErrCode.make(SystemErrCode.E_RALIGN, 1))
 			s.BIE = 0
 			return
-		BVAL_fetchOper = AwlOperator(
+		BVAL_fetchOper = make_AwlOperator(
 			AwlIndirectOp.area2optype_fetch[BVAL_ptrArea << Pointer.AREA_SHIFT],
 			8, BVAL_offset, None)
 		BLK_offset = make_AwlOffset_fromPointerValue(BLK_ptr.toPointerValue())
@@ -182,7 +182,7 @@ class SFC21(SFC): #+cdef
 				SystemErrCode.make(SystemErrCode.E_WALIGN, 3))
 			s.BIE = 0
 			return
-		BLK_storeOper = AwlOperator(
+		BLK_storeOper = make_AwlOperator(
 			AwlIndirectOp.area2optype_fetch[BLK_ptrArea << Pointer.AREA_SHIFT],
 			8, BLK_offset, None)
 		while BLK_offset.byteOffset < BLK_end.byteOffset:

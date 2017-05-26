@@ -92,148 +92,148 @@ class AwlOpTranslator(object):
 		assert(mnemonics is not None)
 		self.mnemonics = mnemonics
 
-		operPi = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operPi = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 		operPi.immediate = pyFloatToDWord(math.pi)
-		operE = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operE = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 		operE.immediate = pyFloatToDWord(math.e)
-		operPInf = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operPInf = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 		operPInf.immediate = floatConst.posInfDWord
-		operNInf = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operNInf = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 		operNInf.immediate = floatConst.negInfDWord
-		operPNaN = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operPNaN = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 		operPNaN.immediate = floatConst.pNaNDWord
-		operNNaN = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+		operNNaN = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 		operNNaN.immediate = floatConst.nNaNDWord
 
 		# Build the constant operator table for german mnemonics
 		self.__constOperTab_german = {
-			"B"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 8,
+			"B"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.UNSPEC, 8,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"W"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 16,
+			"W"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.UNSPEC, 16,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"D"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 32,
+			"D"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.UNSPEC, 32,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"==0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_Z, 1,
+			"==0"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_Z, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			"<>0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_NZ, 1,
+			"<>0"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_NZ, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			">0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_POS, 1,
+			">0"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_POS, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			"<0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_NEG, 1,
+			"<0"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_NEG, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			">=0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_POSZ, 1,
+			">=0"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_POSZ, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			"<=0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_NEGZ, 1,
+			"<=0"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_NEGZ, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			"OV"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
+			"OV"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
 					       make_AwlOffset(0, 5), None), 1),
-			"OS"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
+			"OS"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
 					       make_AwlOffset(0, 4), None), 1),
-			"UO"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_UO, 1,
+			"UO"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW_UO, 1,
 					       make_AwlOffset(0, 0), None), 1),
-			"BIE"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
+			"BIE"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
 					       make_AwlOffset(0, 8), None), 1),
-			"E"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 1,
+			"E"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_E, 1,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"EB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 8,
+			"EB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_E, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"EW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 16,
+			"EW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_E, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"ED"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 32,
+			"ED"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_E, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"A"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 1,
+			"A"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_A, 1,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"AB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 8,
+			"AB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_A, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"AW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 16,
+			"AW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_A, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"AD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 32,
+			"AD"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_A, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"L"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 1,
+			"L"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_L, 1,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"LB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 8,
+			"LB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_L, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"LW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 16,
+			"LW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_L, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"LD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 32,
+			"LD"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_L, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"M"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 1,
+			"M"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_M, 1,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"MB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 8,
+			"MB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_M, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"MW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 16,
+			"MW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_M, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"MD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 32,
+			"MD"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_M, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"T"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_T, 16,
+			"T"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_T, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"Z"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_Z, 16,
+			"Z"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_Z, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"FC"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_FC, 16,
+			"FC"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_FC, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"SFC"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_SFC, 16,
+			"SFC"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_SFC, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"FB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_FB, 16,
+			"FB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_FB, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"SFB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_SFB, 16,
+			"SFB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_SFB, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"UDT"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_UDT, 16,
+			"UDT"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_UDT, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
+			"DB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DI"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_DI, 16,
+			"DI"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_DI, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"OB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_OB, 16,
+			"OB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_OB, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"VAT"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_VAT, 16,
+			"VAT"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.BLKREF_VAT, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DBX"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 1,
+			"DBX"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DB, 1,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"DBB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 8,
+			"DBB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DB, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DBW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 16,
+			"DBW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DB, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DBD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 32,
+			"DBD"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DB, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DIX"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 1,
+			"DIX"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DI, 1,
 					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
-			"DIB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 8,
+			"DIB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DI, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DIW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 16,
+			"DIW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DI, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DID"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 32,
+			"DID"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DI, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"DBLG"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DBLG, 32,
+			"DBLG"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DBLG, 32,
 					       make_AwlOffset(0, 0), None), 1),
-			"DBNO"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DBNO, 32,
+			"DBNO"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DBNO, 32,
 					       make_AwlOffset(0, 0), None), 1),
-			"DILG"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DILG, 32,
+			"DILG"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DILG, 32,
 					       make_AwlOffset(0, 0), None), 1),
-			"DINO"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DINO, 32,
+			"DINO"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DINO, 32,
 					       make_AwlOffset(0, 0), None), 1),
-			"PEB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PE, 8,
+			"PEB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_PE, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"PEW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PE, 16,
+			"PEW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_PE, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"PED"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PE, 32,
+			"PED"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_PE, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"PAB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PA, 8,
+			"PAB"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_PA, 8,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"PAW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PA, 16,
+			"PAW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_PA, 16,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"PAD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PA, 32,
+			"PAD"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_PA, 32,
 					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"STW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 16,
+			"STW"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW, 16,
 					       make_AwlOffset(0, 0), None), 1),
-			"AR2"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_AR2, 32,
+			"AR2"	: OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_AR2, 32,
 					       make_AwlOffset(2, 0), None), 1),
-			"__STW"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
+			"__STW"	 : OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
 						make_AwlOffset(0, self.CALC_OFFS), None), 2),
-			"__ACCU" : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_ACCU, 32,
+			"__ACCU" : OpDescriptor(make_AwlOperator(AwlOperatorTypes.VIRT_ACCU, 32,
 						make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"__AR"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_AR, 32,
+			"__AR"	 : OpDescriptor(make_AwlOperator(AwlOperatorTypes.VIRT_AR, 32,
 						make_AwlOffset(self.CALC_OFFS, 0), None), 2),
-			"__DBR"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_DBR, 16,
+			"__DBR"	 : OpDescriptor(make_AwlOperator(AwlOperatorTypes.VIRT_DBR, 16,
 						make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"__CNST_PI"	: OpDescriptor(operPi, 1),
 			"__CNST_E"	: OpDescriptor(operE, 1),
@@ -283,7 +283,7 @@ class AwlOpTranslator(object):
 				if rawOps[3] != ']':
 					raise AwlSimError("Missing closing brackets in "
 						"register indirect addressing operator")
-				offsetOp = AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
+				offsetOp = make_AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 						       width=32,
 						       offset=None,
 						       insn=opDesc.operator.insn)
@@ -293,11 +293,11 @@ class AwlOpTranslator(object):
 				except KeyError:
 					raise AwlSimError("Invalid memory area type in "
 						"register indirect addressing operator")
-				indirectOp = AwlIndirectOp(area = area,
-							   width = opDesc.operator.width,
-							   addressRegister = ar,
-							   offsetOper = offsetOp,
-							   insn = opDesc.operator.insn)
+				indirectOp = make_AwlIndirectOp(area=area,
+								width=opDesc.operator.width,
+								addressRegister=ar,
+								offsetOper=offsetOp,
+								insn=opDesc.operator.insn)
 				fieldCount = 4	# ARx + comma + P# + ]
 			else:
 				# Indirect access:  "L MW [MD 42]"
@@ -347,11 +347,11 @@ class AwlOpTranslator(object):
 						"indirect addressing operator has invalid width. "
 						"Got %d bit, but expected %d bit." %\
 						(offsetOp.width, expectedOffsetOpWidth))
-				indirectOp = AwlIndirectOp(area = area,
-							   width = opDesc.operator.width,
-							   addressRegister = AwlIndirectOp.AR_NONE,
-							   offsetOper = offsetOp,
-							   insn = opDesc.operator.insn)
+				indirectOp = make_AwlIndirectOp(area=area,
+								width=opDesc.operator.width,
+								addressRegister=AwlIndirectOp.AR_NONE,
+								offsetOper=offsetOp,
+								insn=opDesc.operator.insn)
 				fieldCount = offsetOpDesc.fieldCount + 1  # offsetOperator + ]
 		except IndexError:
 			raise AwlSimError("Invalid indirect addressing operator")
@@ -462,7 +462,7 @@ class AwlOpTranslator(object):
 			except UnicodeError as e:
 				raise AwlSimError("Invalid characters in "
 					"label reference: %s" % (rawOps[0]))
-			oper = AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
 			oper.immediateBytes = bytearray(labelBytes)
 			return OpDescriptor(oper, 1)
 		token0 = rawOps[0].upper()
@@ -475,7 +475,7 @@ class AwlOpTranslator(object):
 		if token0 == '[':
 			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
 			# Create a descriptor for the (yet) unspecified bitwise access.
-			opDesc = OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 1,
+			opDesc = OpDescriptor(make_AwlOperator(AwlOperatorTypes.UNSPEC, 1,
 							  make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS),
 							  None), 1)
 			# And hand over to indirect address parsing.
@@ -488,7 +488,7 @@ class AwlOpTranslator(object):
 			if not offset:
 				raise AwlSimError("Failed to parse variable name: %s" %\
 					"".join(rawOps))
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.NAMED_LOCAL, 0,
+			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.NAMED_LOCAL, 0,
 							offset, None), count)
 		# Pointer to local variable
 		if token0.startswith("P##"):
@@ -498,7 +498,7 @@ class AwlOpTranslator(object):
 			offset.identChain = AwlDataIdentChain(
 				[ AwlDataIdent(rawOps[0][3:]), ]
 			)
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.NAMED_LOCAL_PTR, 0,
+			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.NAMED_LOCAL_PTR, 0,
 							offset, None), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
@@ -507,68 +507,68 @@ class AwlOpTranslator(object):
 				[ AwlDataIdent(rawOps[0][1:-1],
 					       doValidateName = False), ]
 			)
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.SYMBOLIC, 0,
+			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.SYMBOLIC, 0,
 							offset, None), 1)
 		# Immediate boolean
 		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
 		if immediate is not None:
 			immediate &= 1
-			oper = AwlOperator(AwlOperatorTypes.IMM, 1, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 1, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Immediate integer
 		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Immediate float
 		immediate = AwlDataType.tryParseImmediate_REAL(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# S5Time immediate
 		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM_S5T, 16, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_S5T, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Time immediate
 		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM_TIME, 32, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_TIME, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# TIME_OF_DAY immediate
 		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM_TOD, 32, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_TOD, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# DATE immediate
 		immediate = AwlDataType.tryParseImmediate_DATE(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM_DATE, 16, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_DATE, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# DATE_AND_TIME immediate
 		immediate = AwlDataType.tryParseImmediate_DT(rawOps)
 		if immediate is not None:
-			oper = AwlOperator(AwlOperatorTypes.IMM_DT,
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_DT,
 					   len(immediate) * 8, None, None)
 			oper.immediateBytes = immediate
 			return OpDescriptor(oper, 5)
 		# Pointer immediate
 		pointer, fields = AwlDataType.tryParseImmediate_Pointer(rawOps)
 		if pointer is not None:
-			oper = AwlOperator(AwlOperatorTypes.IMM_PTR, pointer.width,
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_PTR, pointer.width,
 					   None, None)
 			oper.pointer = pointer
 			return OpDescriptor(oper, fields)
@@ -577,55 +577,55 @@ class AwlOpTranslator(object):
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			size = 32 if (immediate > 0xFFFF) else 16
-			oper = AwlOperator(AwlOperatorTypes.IMM, size, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, size, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Byte array immediate
 		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
 		if immediate is not None:
 			size = 32 if fields == 9 else 16
-			oper = AwlOperator(AwlOperatorTypes.IMM, size, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, size, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, fields)
 		# Hex byte immediate
 		immediate = AwlDataType.tryParseImmediate_HexByte(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFF
-			oper = AwlOperator(AwlOperatorTypes.IMM, 8, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 8, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Hex word immediate
 		immediate = AwlDataType.tryParseImmediate_HexWord(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Hex dword immediate
 		immediate = AwlDataType.tryParseImmediate_HexDWord(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Long integer immediate
 		immediate = AwlDataType.tryParseImmediate_DINT(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# BCD word immediate
 		immediate = AwlDataType.tryParseImmediate_BCD_word(rawOps[0])
 		if immediate is not None:
 			immediate &= 0xFFFF
-			oper = AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# String immediate
 		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
 		if immediate is not None:
-			oper = AwlOperator(AwlOperatorTypes.IMM_STR,
+			oper = make_AwlOperator(AwlOperatorTypes.IMM_STR,
 					   len(immediate) * 8, None, None)
 			oper.immediateBytes = immediate
 			return OpDescriptor(oper, 1)
@@ -641,13 +641,13 @@ class AwlOpTranslator(object):
 			}[match.group(2)]
 			offset = make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS if (width == 1) else 0)
 			offset.dbNumber = dbNumber
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, width,
+			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.MEM_DB, width,
 					    offset, None), 2)
 
 		# Try to parse DBx.VARIABLE or "DBname".VARIABLE adressing
 		offset, count = self.__transVarIdents(rawOps)
 		if offset:
-			return OpDescriptor(AwlOperator(AwlOperatorTypes.NAMED_DBVAR, 0,
+			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.NAMED_DBVAR, 0,
 					    offset, None), count)
 
 		# Try convenience operators.

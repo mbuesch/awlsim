@@ -164,11 +164,17 @@ def make_AwlOffset(byteOffset, bitOffset, AwlOffset=AwlOffset):		#@nocy
 
 	return offset
 
+#
+# make_AwlOffset_fromPointerValue() - Construct an AwlOffset from a S7 pointer value.
+#
 def make_AwlOffset_fromPointerValue(value, make_AwlOffset=make_AwlOffset): #@nocy
 #cdef AwlOffset make_AwlOffset_fromPointerValue(uint32_t value):	#@cy
 	return make_AwlOffset((value & 0x0007FFF8) >> 3,
 			      (value & 0x7))
 
+#
+# make_AwlOffset_fromLongBitOffset() - Construct an AwlOffset from a bit offset.
+#
 def make_AwlOffset_fromLongBitOffset(bitOffset, make_AwlOffset=make_AwlOffset): #@nocy
 #cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset):	#@cy
 	return make_AwlOffset(bitOffset // 8, bitOffset % 8)

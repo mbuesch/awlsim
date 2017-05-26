@@ -243,7 +243,7 @@ class CallStackElem(object): #+cdef
 		# Allocate space in the caller-L-stack.
 		loffset = cpu.callStackTop.lalloc.alloc(rvalueOp.width)
 		# Make an operator for the allocated space.
-		oper = AwlOperator(AwlOperatorTypes.MEM_L,
+		oper = make_AwlOperator(AwlOperatorTypes.MEM_L,
 				   rvalueOp.width,
 				   loffset,
 				   rvalueOp.insn)
@@ -277,7 +277,7 @@ class CallStackElem(object): #+cdef
 		# Allocate space for the DB-ptr in the caller-L-stack
 		loffset = cpu.callStackTop.lalloc.alloc(48) # 48 bits
 		# Create and store the the DB-ptr to the allocated space.
-		storeOper = AwlOperator(AwlOperatorTypes.MEM_L,
+		storeOper = make_AwlOperator(AwlOperatorTypes.MEM_L,
 					16,
 					loffset,
 					rvalueOp.insn)
@@ -299,7 +299,7 @@ class CallStackElem(object): #+cdef
 		cpu.store(storeOper,
 			  area | rvalueOp.offset.toPointerValue())
 		# Return the operator for the DB pointer.
-		return AwlOperator(AwlOperatorTypes.MEM_VL,
+		return make_AwlOperator(AwlOperatorTypes.MEM_VL,
 				   48,
 				   loffset,
 				   rvalueOp.insn)
@@ -327,7 +327,7 @@ class CallStackElem(object): #+cdef
 			# Create a DB-pointer to it in VL.
 			return self.__FC_trans_dbpointerInVL(param, rvalueOp)
 		# Translate it to a VL-stack memory access.
-		return AwlOperator(AwlOperatorTypes.MEM_VL,
+		return make_AwlOperator(AwlOperatorTypes.MEM_VL,
 				   rvalueOp.width,
 				   rvalueOp.offset,
 				   rvalueOp.insn)
@@ -347,7 +347,7 @@ class CallStackElem(object): #+cdef
 				# Create a DB-pointer to it in VL.
 				return self.__FC_trans_dbpointerInVL(param, rvalueOp)
 			# Basic data type.
-			self.cpu.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
+			self.cpu.run_AUF(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
 						     make_AwlOffset(rvalueOp.offset.dbNumber, 0),
 						     rvalueOp.insn))
 			copyToVL = True
@@ -356,7 +356,7 @@ class CallStackElem(object): #+cdef
 			return self.__FC_trans_copyToVL(param, rvalueOp)
 		# Do not copy to caller-L-stack. Just make a DB-reference.
 		offset = rvalueOp.offset.dup()
-		return AwlOperator(AwlOperatorTypes.MEM_DB,
+		return make_AwlOperator(AwlOperatorTypes.MEM_DB,
 				   rvalueOp.width,
 				   offset,
 				   rvalueOp.insn)
@@ -465,7 +465,7 @@ class CallStackElem(object): #+cdef
 				for param in self.__outboundParams:
 					cpu.store(
 						param.rvalueOp,
-						cpu.fetch(AwlOperator(AwlOperatorTypes.MEM_L,
+						cpu.fetch(make_AwlOperator(AwlOperatorTypes.MEM_L,
 								      param.scratchSpaceOp.width,
 								      param.scratchSpaceOp.offset,
 								      None))

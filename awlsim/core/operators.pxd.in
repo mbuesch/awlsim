@@ -19,12 +19,17 @@ cdef class AwlOperator(object):
 	cdef public _Bool compound
 	cdef public object dataType
 
+	cdef _cy_init(self)
+
 	cdef __eq(self, AwlOperator other)
 
 	cpdef AwlOperator dup(self)
 	cpdef _Bool isImmediate(self)
 	cpdef AwlOperator resolve(self, _Bool store=*)
 	cpdef uint32_t makePointerValue(self)
+
+cdef AwlOperator make_AwlOperator(uint32_t operType, int32_t width,
+				   AwlOffset offset, AwlInsn insn)
 
 cdef class AwlIndirectOp(AwlOperator):
 	cdef public uint64_t area
@@ -34,3 +39,9 @@ cdef class AwlIndirectOp(AwlOperator):
 	cpdef AwlOperator dup(self)
 	cpdef AwlOperator resolve(self, _Bool store=*)
 	cpdef uint32_t makePointerValue(self)
+
+cdef AwlIndirectOp make_AwlIndirectOp(uint64_t area,
+				      int32_t width,
+				      uint32_t addressRegister,
+				      AwlOperator offsetOper,
+				      AwlInsn insn)
