@@ -20,10 +20,17 @@ cdef class CallStackElem(object):
 	cdef public uint32_t prevAR2value
 	cdef public LStackAllocator lalloc
 	cdef public AwlMemory localdata
-	cdef public list __outboundParams
-	cdef public dict __interfRefs
+	cdef public list _outboundParams
+	cdef public dict _interfRefs
 	cdef public ObjectCache lallocCache
 
 	cpdef AwlOperator getInterfIdxOper(self, uint32_t interfaceFieldIndex)
-	cdef bytearray __FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef bytearray _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef handleBlockExit(self)
+
+cdef CallStackElem make_CallStackElem(S7CPU cpu,
+				       CodeBlock block,
+				       DB instanceDB,
+				       AwlOffset instanceBaseOffset,
+				       tuple parameters,
+				       _Bool isRawCall)
