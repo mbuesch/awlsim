@@ -44,6 +44,14 @@ class SFC47(SFC): #+cdef
 
 	def run(self): #+cpdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t WT
+#@cy		cdef double start
+#@cy		cdef double end
+#@cy		cdef double now
+
+		# Get the start time early before fetching WT.
+		timer = perf_monotonic_time
+		start = timer()
 
 		s = self.cpu.statusWord
 
@@ -51,7 +59,10 @@ class SFC47(SFC): #+cdef
 		# WT is an int, so the maximum delay is 32767 us.
 		WT = wordToSignedPyInt(self.fetchInterfaceFieldByName("WT"))
 		if WT > 0:
-			time.sleep(WT / 1000000.0)
+			end = start + (min(WT, 32767) / 1000000.0)
+			now = timer()
+			while now < end and now >= start:
+				now = timer()
 		self.cpu.updateTimestamp()
 
 		s.BIE = 1
