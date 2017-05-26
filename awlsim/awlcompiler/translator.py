@@ -212,8 +212,9 @@ class AwlTranslator(object):
 					value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
 					linArrayIndex = dataType.arrayIndicesCollapse(
 						rawDataInit.identChain[-1].indices)
-					offset = AwlOffset.fromLongBitOffset(linArrayIndex *
-									     dataType.arrayElementType.width)
+					offset = make_AwlOffset_fromLongBitOffset(
+							linArrayIndex *
+							dataType.arrayElementType.width)
 					try:
 						initMem.store(offset, dataType.arrayElementType.width,
 							      value)
@@ -224,7 +225,7 @@ class AwlTranslator(object):
 				assert(len(rawField.defaultInits) == 1)
 				value = dataType.parseMatchingImmediate(rawField.defaultInits[0].valueTokens)
 				try:
-					initMem.store(AwlOffset(), dataType.width, value)
+					initMem.store(make_AwlOffset(0, 0), dataType.width, value)
 				except AwlSimError as e:
 					raise AwlSimError("Data field '%s' initialization "
 						"is out of range." % str(rawField))
@@ -478,7 +479,7 @@ class AwlSymResolver(object):
 		# Walk the ident chain to accumulate the sub-offsets
 		# for the ARRAY accesses.
 		parentStruct = None
-		subOffset = AwlOffset()
+		subOffset = make_AwlOffset(0, 0)
 		for i in range(len(oper.offset.identChain)):
 			isFirstElement = (i == 0)
 			isLastElement = (i == len(oper.offset.identChain) - 1)
@@ -549,7 +550,7 @@ class AwlSymResolver(object):
 				else:
 					assert(0)
 				# Add it to the accumulated offset.
-				subOffset += AwlOffset(byteOffset, bitOffset)
+				subOffset += make_AwlOffset(byteOffset, bitOffset)
 
 			parentStruct = dataType.itemStruct
 

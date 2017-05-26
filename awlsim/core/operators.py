@@ -622,10 +622,10 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				 Pointer.AREA_SHIFT))
 		if bitwiseDirectOffset:
 			# 'pointer' has pointer format
-			directOffset = AwlOffset.fromPointerValue(pointer)
+			directOffset = make_AwlOffset_fromPointerValue(pointer)
 		else:
 			# 'pointer' is a byte offset
-			directOffset = AwlOffset(pointer & 0x0000FFFF)
+			directOffset = make_AwlOffset(pointer & 0x0000FFFF, 0)
 		if self.width != 1 and directOffset.bitOffset:
 			raise AwlSimError("Bit offset (lowest three bits) in %d-bit "
 				"indirect addressing is not zero. "

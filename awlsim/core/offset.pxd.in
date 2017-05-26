@@ -14,3 +14,7 @@ cdef class AwlOffset(object):
 
 	cpdef uint32_t toPointerValue(self)
 	cpdef uint64_t toLongBitOffset(self)
+
+cdef AwlOffset make_AwlOffset(int64_t byteOffset, int32_t bitOffset)
+cdef AwlOffset make_AwlOffset_fromPointerValue(uint32_t value)
+cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset)

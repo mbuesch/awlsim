@@ -72,7 +72,7 @@ class SystemBlock(StaticCodeBlock): #+cdef
 		self.__interfaceOpers = {}
 		for field in self.interface.fields_IN_OUT_INOUT_STAT:
 			# Create a scratch-operator for the access.
-			offset = AwlOffset()
+			offset = make_AwlOffset(0, 0)
 			offset.identChain = AwlDataIdentChain.parseString(field.name)
 			oper = AwlOperator(AwlOperatorTypes.NAMED_LOCAL, 0,
 					   offset, None)

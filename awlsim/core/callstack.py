@@ -286,7 +286,7 @@ class CallStackElem(object): #+cdef
 		else:
 			dbNumber = rvalueOp.offset.dbNumber
 		cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
-		storeOper.offset = loffset + AwlOffset(2)
+		storeOper.offset = loffset + make_AwlOffset(2, 0)
 		storeOper.width = 32
 		area = AwlIndirectOp.optype2area[rvalueOp.operType]
 		if area == AwlIndirectOp.AREA_L:
@@ -348,7 +348,7 @@ class CallStackElem(object): #+cdef
 				return self.__FC_trans_dbpointerInVL(param, rvalueOp)
 			# Basic data type.
 			self.cpu.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						     AwlOffset(rvalueOp.offset.dbNumber),
+						     make_AwlOffset(rvalueOp.offset.dbNumber, 0),
 						     rvalueOp.insn))
 			copyToVL = True
 		if copyToVL:
@@ -441,7 +441,7 @@ class CallStackElem(object): #+cdef
 				# We are returning from an FB.
 
 				# Get the multi-instance base offset.
-				instanceBaseOffset = AwlOffset.fromPointerValue(cpu.ar2.get())
+				instanceBaseOffset = make_AwlOffset_fromPointerValue(cpu.ar2.get())
 				# Restore the AR2 register.
 				cpu.ar2.set(self.prevAR2value)
 

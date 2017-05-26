@@ -149,7 +149,7 @@ class CodeBlock(Block): #+cdef
 		def accountDirect(currentAlloc, oper):
 			if oper.operType != AwlOperatorTypes.MEM_L:
 				return currentAlloc
-			offset = oper.offset + AwlOffset(0, oper.width)
+			offset = oper.offset + make_AwlOffset(0, oper.width)
 			return max(offset.roundUp(2).byteOffset,
 				   currentAlloc)
 

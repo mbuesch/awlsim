@@ -27,7 +27,11 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.core.util import *
 
 
-__all__ = [ "AwlOffset", ]
+__all__ = [ "AwlOffset",
+	    "make_AwlOffset",
+	    "make_AwlOffset_fromPointerValue",
+	    "make_AwlOffset_fromLongBitOffset",
+]
 
 
 class AwlOffset(object): #+cdef
@@ -52,18 +56,6 @@ class AwlOffset(object): #+cdef
 	# Additional sub-offset that is added to this offset, or None.
 	# This is used for arrays and structs.
 	subOffset = None #@nocy
-
-#@cy	def __cinit__(self):
-#@cy		self.dbNumber = None
-#@cy		self.dbName = None
-#@cy		self.identChain = None
-#@cy		self.fbNumber = None
-#@cy		self.subOffset = None
-
-	def __init__(self, byteOffset=0, bitOffset=0): #@nocy
-#@cy	def __init__(self, int64_t byteOffset=0, int32_t bitOffset=0):
-		self.byteOffset, self.bitOffset =\
-			byteOffset, bitOffset
 
 	def __eq__(self, other): #@nocy
 #@cy	cpdef __eq(self, object other):
@@ -91,24 +83,15 @@ class AwlOffset(object): #+cdef
 #@cy	cpdef AwlOffset dup(self):
 #@cy		cdef AwlOffset offset
 
-		offset = AwlOffset(self.byteOffset,
-				   self.bitOffset)
+		offset = make_AwlOffset(self.byteOffset,
+					self.bitOffset)
 		offset.dbNumber = self.dbNumber
 		return offset
-
-	@classmethod
-	def fromPointerValue(cls, value):
-		return cls((value & 0x0007FFF8) >> 3,
-			   (value & 0x7))
 
 	def toPointerValue(self): #@nocy
 #@cy	cpdef uint32_t toPointerValue(self):
 		return ((self.byteOffset << 3) & 0x0007FFF8) |\
 		       (self.bitOffset & 0x7)
-
-	@classmethod
-	def fromLongBitOffset(cls, bitOffset):
-		return cls(bitOffset // 8, bitOffset % 8)
 
 	def toLongBitOffset(self):				#@nocy
 #@cy	cpdef uint64_t toLongBitOffset(self):
@@ -122,7 +105,7 @@ class AwlOffset(object): #+cdef
 #@cy			     <int64_t>self.bitOffset + <int64_t>other.bitOffset)
 		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
 			     self.bitOffset + other.bitOffset)		#@nocy
-		return AwlOffset(bitOffset // 8, bitOffset % 8)
+		return make_AwlOffset(bitOffset // 8, bitOffset % 8)
 
 	def __iadd__(self, other): #@nocy
 #@cy	def __iadd__(self, AwlOffset other):
@@ -144,7 +127,7 @@ class AwlOffset(object): #+cdef
 		if self.bitOffset:
 			byteOffset += 1
 		byteOffset = roundUp(byteOffset, byteBase)
-		return AwlOffset(byteOffset)
+		return make_AwlOffset(byteOffset, 0)
 
 	def __repr__(self):
 		prefix = ""
@@ -162,3 +145,30 @@ class AwlOffset(object): #+cdef
 			return "%s%d.%d" % (prefix,
 					    self.byteOffset,
 					    self.bitOffset)
+
+#
+# make_AwlOffset() - Construct an AwlOffset instance.
+# For Cython performance reasons we don't use __init__ with arguments.
+#
+def make_AwlOffset(byteOffset, bitOffset, AwlOffset=AwlOffset):		#@nocy
+#cdef AwlOffset make_AwlOffset(int64_t byteOffset, int32_t bitOffset):	#@cy
+#@cy	cdef AwlOffset offset
+
+	offset = AwlOffset()
+#@cy	offset.dbNumber = None
+#@cy	offset.dbName = None
+#@cy	offset.identChain = None
+#@cy	offset.fbNumber = None
+#@cy	offset.subOffset = None
+	offset.byteOffset, offset.bitOffset = byteOffset, bitOffset
+
+	return offset
+
+def make_AwlOffset_fromPointerValue(value, make_AwlOffset=make_AwlOffset): #@nocy
+#cdef AwlOffset make_AwlOffset_fromPointerValue(uint32_t value):	#@cy
+	return make_AwlOffset((value & 0x0007FFF8) >> 3,
+			      (value & 0x7))
+
+def make_AwlOffset_fromLongBitOffset(bitOffset, make_AwlOffset=make_AwlOffset): #@nocy
+#cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset):	#@cy
+	return make_AwlOffset(bitOffset // 8, bitOffset % 8)

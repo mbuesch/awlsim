@@ -104,7 +104,7 @@ class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
 		# Get the first input dword and write it back.
 		dword = self.sim.cpu.fetch(AwlOperator(AwlOperatorTypes.MEM_E,
 						       32,
-						       AwlOffset(self.inputAddressBase),
+						       make_AwlOffset(self.inputAddressBase, 0),
 						       None))
 		dwordBytes = bytearray( ( ((dword >> 24) & 0xFF),
 					  ((dword >> 16) & 0xFF),

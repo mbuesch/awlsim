@@ -64,8 +64,8 @@ class LStackAllocator(object): #+cdef
 
 		if nrBits == 1:
 			# Bit-aligned allocation
-			offset = AwlOffset(curAllocBytes,
-					   curAllocBits)
+			offset = make_AwlOffset(curAllocBytes,
+						curAllocBits)
 			curAllocBits += 1
 			if curAllocBits >= 8:
 				curAllocBytes += 1
@@ -76,7 +76,7 @@ class LStackAllocator(object): #+cdef
 				curAllocBytes += 1
 				curAllocBits = 0
 			nrBytes = intDivRoundUp(nrBits, 8)
-			offset = AwlOffset(curAllocBytes, 0)
+			offset = make_AwlOffset(curAllocBytes, 0)
 			curAllocBytes += nrBytes
 
 		if curAllocBytes >= self.__maxAllocBytes:

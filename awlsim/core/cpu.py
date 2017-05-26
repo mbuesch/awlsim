@@ -869,7 +869,7 @@ class S7CPU(object): #+cdef
 		"""Reset/initialize the clock memory byte state.
 		"""
 		if self.conf.clockMemByte >= 0:
-			clockMemByteOffset = AwlOffset(self.conf.clockMemByte)
+			clockMemByteOffset = make_AwlOffset(self.conf.clockMemByte, 0)
 		else:
 			clockMemByteOffset = None
 		if force:
@@ -1102,7 +1102,7 @@ class S7CPU(object): #+cdef
 
 		fb = self.fbs[blockOper.offset.byteOffset]
 		db = self.dbs[dbOper.offset.byteOffset]
-		cse = CallStackElem(self, fb, db, AwlOffset(), parameters, False)
+		cse = CallStackElem(self, fb, db, make_AwlOffset(0, 0), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
@@ -1128,7 +1128,7 @@ class S7CPU(object): #+cdef
 
 		sfb = self.sfbs[blockOper.offset.byteOffset]
 		db = self.dbs[dbOper.offset.byteOffset]
-		cse = CallStackElem(self, sfb, db, AwlOffset(), parameters, False)
+		cse = CallStackElem(self, sfb, db, make_AwlOffset(0, 0), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
 		return cse
 
@@ -1163,7 +1163,7 @@ class S7CPU(object): #+cdef
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 		fb = self.fbs[blockOper.offset.fbNumber]
-		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.offset
+		base = make_AwlOffset_fromPointerValue(self.ar2.get()) + blockOper.offset
 		cse = CallStackElem(self, fb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
@@ -1174,7 +1174,7 @@ class S7CPU(object): #+cdef
 #@cy		cdef CallStackElem cse
 
 		sfb = self.sfbs[blockOper.offset.fbNumber]
-		base = AwlOffset.fromPointerValue(self.ar2.get()) + blockOper.offset
+		base = make_AwlOffset_fromPointerValue(self.ar2.get()) + blockOper.offset
 		cse = CallStackElem(self, sfb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
@@ -1349,13 +1349,13 @@ class S7CPU(object): #+cdef
 			dbPtrOp = interfOp.dup()
 			dbPtrOp.width = 16
 			dbNr = self.fetch(dbPtrOp)
-			dbPtrOp.offset += AwlOffset(2)
+			dbPtrOp.offset += make_AwlOffset(2, 0)
 			dbPtrOp.width = 32
 			pointer = self.fetch(dbPtrOp)
 			# Open the DB pointed to by the DB-ptr.
 			# (This is ok, if dbNr is 0, too)
 			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						 AwlOffset(dbNr),
+						 make_AwlOffset(dbNr, 0),
 						 operator.insn))
 			# Make an operator from the DB-ptr.
 			try:
@@ -1366,7 +1366,7 @@ class S7CPU(object): #+cdef
 					"data type FC variable detected "
 					"(invalid area).", insn = operator.insn)
 			finalOp = AwlOperator(opType, operator.width,
-					      AwlOffset.fromPointerValue(pointer),
+					      make_AwlOffset_fromPointerValue(pointer),
 					      operator.insn)
 		else:
 			# Not a compound data type.
@@ -1718,7 +1718,7 @@ class S7CPU(object): #+cdef
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
 			self.run_AUF(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						 AwlOffset(operator.offset.dbNumber),
+						 make_AwlOffset(operator.offset.dbNumber, 0),
 						 operator.insn))
 		return self.dbRegister.fetch(operator)
 
@@ -1730,7 +1730,7 @@ class S7CPU(object): #+cdef
 		if self.callStackTop.block.isFB:
 			# Fetch the data using the multi-instance base offset from AR2.
 			return self.diRegister.fetch(operator,
-						     AwlOffset.fromPointerValue(self.ar2.get()))
+						     make_AwlOffset_fromPointerValue(self.ar2.get()))
 		# Fetch without base offset.
 		return self.diRegister.fetch(operator)
 
@@ -2014,7 +2014,7 @@ class S7CPU(object): #+cdef
 		if self.callStackTop.block.isFB:
 			# Store the data using the multi-instance base offset from AR2.
 			self.diRegister.store(operator, value,
-					      AwlOffset.fromPointerValue(self.ar2.get()))
+					      make_AwlOffset_fromPointerValue(self.ar2.get()))
 		else:
 			# Store without base offset.
 			self.diRegister.store(operator, value)

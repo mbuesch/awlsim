@@ -136,7 +136,7 @@ class SFC21(SFC): #+cdef
 					raise KeyError
 				cpu.run_AUF(AwlOperator(
 					AwlOperatorTypes.BLKREF_DB, 16,
-					AwlOffset(BVAL_dbNr), None))
+					make_AwlOffset(BVAL_dbNr, 0), None))
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 1))
@@ -154,7 +154,7 @@ class SFC21(SFC): #+cdef
 					raise KeyError
 				cpu.run_AUF(AwlOperator(
 					AwlOperatorTypes.BLKREF_DI, 16,
-					AwlOffset(BLK_dbNr), None))
+					make_AwlOffset(BLK_dbNr, 0), None))
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 3))
@@ -162,9 +162,9 @@ class SFC21(SFC): #+cdef
 				return
 
 		# Copy the data.
-		BVAL_begin = AwlOffset.fromPointerValue(BVAL_ptr.toPointerValue())
+		BVAL_begin = make_AwlOffset_fromPointerValue(BVAL_ptr.toPointerValue())
 		BVAL_offset = BVAL_begin.dup()
-		BVAL_end = BVAL_offset + AwlOffset(BVAL_len)
+		BVAL_end = BVAL_offset + make_AwlOffset(BVAL_len, 0)
 		if BVAL_offset.bitOffset:
 			# BVAL data is not byte aligned.
 			self.storeInterfaceFieldByName("RET_VAL",
@@ -174,8 +174,8 @@ class SFC21(SFC): #+cdef
 		BVAL_fetchOper = AwlOperator(
 			AwlIndirectOp.area2optype_fetch[BVAL_ptrArea << Pointer.AREA_SHIFT],
 			8, BVAL_offset, None)
-		BLK_offset = AwlOffset.fromPointerValue(BLK_ptr.toPointerValue())
-		BLK_end = BLK_offset + AwlOffset(BLK_len)
+		BLK_offset = make_AwlOffset_fromPointerValue(BLK_ptr.toPointerValue())
+		BLK_end = BLK_offset + make_AwlOffset(BLK_len, 0)
 		if BLK_offset.bitOffset:
 			# BLK data is not byte aligned.
 			self.storeInterfaceFieldByName("RET_VAL",

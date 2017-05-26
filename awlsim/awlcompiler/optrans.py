@@ -108,133 +108,133 @@ class AwlOpTranslator(object):
 		# Build the constant operator table for german mnemonics
 		self.__constOperTab_german = {
 			"B"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 8,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"W"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 16,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"D"	: OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 32,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"==0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_Z, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"<>0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_NZ, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			">0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_POS, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"<0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_NEG, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			">=0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_POSZ, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"<=0"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_NEGZ, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"OV"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
-					       AwlOffset(0, 5), None), 1),
+					       make_AwlOffset(0, 5), None), 1),
 			"OS"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
-					       AwlOffset(0, 4), None), 1),
+					       make_AwlOffset(0, 4), None), 1),
 			"UO"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW_UO, 1,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"BIE"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
-					       AwlOffset(0, 8), None), 1),
+					       make_AwlOffset(0, 8), None), 1),
 			"E"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 1,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"EB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"EW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"ED"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_E, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"A"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 1,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"AB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"AW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"AD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_A, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"L"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 1,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"LB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"LW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"LD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_L, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"M"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 1,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"MB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"MW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"MD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_M, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"T"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_T, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"Z"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_Z, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"FC"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_FC, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"SFC"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_SFC, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"FB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_FB, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"SFB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_SFB, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"UDT"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_UDT, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DI"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_DI, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"OB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_OB, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"VAT"	: OpDescriptor(AwlOperator(AwlOperatorTypes.BLKREF_VAT, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DBX"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 1,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"DBB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DBW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DBD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DIX"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 1,
-					       AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS), None), 2),
 			"DIB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DIW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DID"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DI, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"DBLG"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DBLG, 32,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"DBNO"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DBNO, 32,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"DILG"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DILG, 32,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"DINO"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DINO, 32,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"PEB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PE, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"PEW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PE, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"PED"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PE, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"PAB"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PA, 8,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"PAW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PA, 16,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"PAD"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_PA, 32,
-					       AwlOffset(self.CALC_OFFS, 0), None), 2),
+					       make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"STW"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 16,
-					       AwlOffset(0, 0), None), 1),
+					       make_AwlOffset(0, 0), None), 1),
 			"AR2"	: OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_AR2, 32,
-					       AwlOffset(2, 0), None), 1),
+					       make_AwlOffset(2, 0), None), 1),
 			"__STW"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_STW, 1,
-						AwlOffset(0, self.CALC_OFFS), None), 2),
+						make_AwlOffset(0, self.CALC_OFFS), None), 2),
 			"__ACCU" : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_ACCU, 32,
-						AwlOffset(self.CALC_OFFS, 0), None), 2),
+						make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"__AR"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_AR, 32,
-						AwlOffset(self.CALC_OFFS, 0), None), 2),
+						make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"__DBR"	 : OpDescriptor(AwlOperator(AwlOperatorTypes.VIRT_DBR, 16,
-						AwlOffset(self.CALC_OFFS, 0), None), 2),
+						make_AwlOffset(self.CALC_OFFS, 0), None), 2),
 			"__CNST_PI"	: OpDescriptor(operPi, 1),
 			"__CNST_E"	: OpDescriptor(operE, 1),
 			"__CNST_PINF"	: OpDescriptor(operPInf, 1),
@@ -431,12 +431,12 @@ class AwlOpTranslator(object):
 			if tokens[0].startswith("DB") and\
 			   isdecimal(tokens[0][2:]):
 				# DBx.VARIABLE
-				offset = AwlOffset(self.NO_OFFS, self.NO_OFFS)
+				offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 				offset.dbNumber = int(tokens[0][2:])
 			elif tokens[0].startswith('"') and\
 			     tokens[0].endswith('"'):
 				# "DBname".VARIABLE
-				offset = AwlOffset(self.NO_OFFS, self.NO_OFFS)
+				offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 				offset.dbName = tokens[0][1:-1]
 			if offset:
 				# Parse the variable idents.
@@ -445,7 +445,7 @@ class AwlOpTranslator(object):
 		   len(tokens) >= 1 and\
 		   tokens[0].startswith('#'):
 			tokens[0] = tokens[0][1:] # Strip the '#' from the first token
-			offset = AwlOffset(self.NO_OFFS, self.NO_OFFS)
+			offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 			offset.identChain = AwlDataIdentChain.parseTokens(tokens)
 		if not offset:
 			count = 0
@@ -476,7 +476,7 @@ class AwlOpTranslator(object):
 			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
 			# Create a descriptor for the (yet) unspecified bitwise access.
 			opDesc = OpDescriptor(AwlOperator(AwlOperatorTypes.UNSPEC, 1,
-							  AwlOffset(self.CALC_OFFS, self.CALC_OFFS),
+							  make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS),
 							  None), 1)
 			# And hand over to indirect address parsing.
 			self.__translateIndirectAddressing(opDesc, rawOps[1:])
@@ -492,7 +492,7 @@ class AwlOpTranslator(object):
 							offset, None), count)
 		# Pointer to local variable
 		if token0.startswith("P##"):
-			offset = AwlOffset(self.NO_OFFS, self.NO_OFFS)
+			offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 			# Doesn't support struct or array indexing.
 			# Parse it as one identification.
 			offset.identChain = AwlDataIdentChain(
@@ -502,7 +502,7 @@ class AwlOpTranslator(object):
 							offset, None), 1)
 		# Symbolic name
 		if token0.startswith('"') and token0.endswith('"'):
-			offset = AwlOffset(self.NO_OFFS, self.NO_OFFS)
+			offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 			offset.identChain = AwlDataIdentChain(
 				[ AwlDataIdent(rawOps[0][1:-1],
 					       doValidateName = False), ]
@@ -639,7 +639,7 @@ class AwlOpTranslator(object):
 				"W"	: 16,
 				"D"	: 32,
 			}[match.group(2)]
-			offset = AwlOffset(self.CALC_OFFS, self.CALC_OFFS if (width == 1) else 0)
+			offset = make_AwlOffset(self.CALC_OFFS, self.CALC_OFFS if (width == 1) else 0)
 			offset.dbNumber = dbNumber
 			return OpDescriptor(AwlOperator(AwlOperatorTypes.MEM_DB, width,
 					    offset, None), 2)

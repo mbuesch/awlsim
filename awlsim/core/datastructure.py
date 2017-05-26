@@ -140,7 +140,7 @@ class AwlStruct(object):
 
 	# Add zero-length field.
 	def addDummyField(self, name=None):
-		offset = AwlOffset(self.getUnalignedSize())
+		offset = make_AwlOffset(self.getUnalignedSize(), 0)
 		field = AwlStructField(name, offset, "VOID")
 		self.__registerField(field)
 
@@ -153,14 +153,14 @@ class AwlStruct(object):
 		# First add a field with the sub-structure's name.
 		# This field is used for retrieval of a pointer to the sub-struct,
 		# for alignment and for informational purposes only.
-		baseOffset = AwlOffset(self.getUnalignedSize())
+		baseOffset = make_AwlOffset(self.getUnalignedSize(), 0)
 		baseField = AwlStructField(otherStructName,
 				baseOffset, otherStructDataType,
 				override = AwlStructField(otherStructName,
 							  baseOffset, "VOID"))
 		self.__registerField(baseField)
 		# Add all fields from the other struct.
-		baseOffset = AwlOffset(self.getUnalignedSize())
+		baseOffset = make_AwlOffset(self.getUnalignedSize(), 0)
 		for otherField in otherStruct.fields:
 			if otherStructName and otherField.name:
 				if otherField.name.startswith('[') and\
@@ -222,13 +222,13 @@ class AwlStruct(object):
 			# Add an ARRAY.
 			# First add a field with the array's name.
 			# It has the data type 'ARRAY' and is informational only.
-			offset = AwlOffset(self.getUnalignedSize())
+			offset = make_AwlOffset(self.getUnalignedSize(), 0)
 			baseField = AwlStructField(name, offset, dataType,
 					override = AwlStructField(name, offset,
 								  "VOID"))
 			self.__registerField(baseField)
 			# Add fields for each ARRAY entry.
-			initOffset = AwlOffset()
+			initOffset = make_AwlOffset(0, 0)
 			childIdent = AwlDataIdent(name,
 					[ d[0] for d in dataType.arrayDimensions ],
 					doValidateName = False)
@@ -242,14 +242,14 @@ class AwlStruct(object):
 						raise ValueError
 					fieldInitMem = AwlMemory(intDivRoundUp(childType.width, 8))
 					fieldInitData = fieldInitMem.dataBytes
-					fieldInitMem.store(AwlOffset(), childType.width,
+					fieldInitMem.store(make_AwlOffset(0, 0), childType.width,
 							    initMem.fetch(initOffset,
 									  childType.width))
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
 				self.addField(cpu, str(childIdent), childType,
 					      fieldInitData)
-				initOffset += AwlOffset.fromLongBitOffset(childType.width)
+				initOffset += make_AwlOffset_fromLongBitOffset(childType.width)
 				childIdent.advanceToNextArrayElement(dataType.arrayDimensions)
 				if childType.width > 8 and\
 				   intDivRoundUp(childType.width, 8) % 2 != 0:
@@ -267,10 +267,10 @@ class AwlStruct(object):
 			   self.fields[-1].bitSize == 1 and\
 			   self.fields[-1].offset.bitOffset < 7:
 				# Consecutive bitfields are merged into one byte
-				offset = AwlOffset(self.fields[-1].offset.byteOffset,
+				offset = make_AwlOffset(self.fields[-1].offset.byteOffset,
 						   self.fields[-1].offset.bitOffset + 1)
 			else:
-				offset = AwlOffset(self.getUnalignedSize())
+				offset = make_AwlOffset(self.getUnalignedSize(), 0)
 			baseField = AwlStructField(name, offset, dataType, initBytes)
 			self.__registerField(baseField)
 		return baseField
