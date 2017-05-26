@@ -1,0 +1,4 @@
+from awlsim.core.systemblocks.systemblocks cimport *
+
+cdef class SFCm2(SFC):
+	cpdef run(self)

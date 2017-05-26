@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014-2015 Michael Buesch <m@bues.ch>
+# Copyright 2014-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 
-from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 
-class SFB4(SFB):
+class SFB4(SFB): #+cdef
 	name = (4, "TON", "IEC 1131-3 delayed set")
 
 	interfaceFields = {
@@ -58,7 +60,9 @@ class SFB4(SFB):
 	STATE_RUNNING		= 1 << 0
 	STATE_FINISHED		= 1 << 1
 
-	def run(self):
+	def run(self): #+cpdef
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		s.BIE = 1
 

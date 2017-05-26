@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2015 Michael Buesch <m@bues.ch>
+# Copyright 2015-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,13 +24,15 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 
-from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 import time
 
 
-class SFC47(SFC):
+class SFC47(SFC): #+cdef
 	name = (47, "WAIT", "delay time")
 
 	interfaceFields = {
@@ -40,7 +42,9 @@ class SFC47(SFC):
 		)
 	}
 
-	def run(self):
+	def run(self): #+cpdef
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 
 		# Delay for the specified amount of microseconds.

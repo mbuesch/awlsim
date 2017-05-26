@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - SFBs
+# AWL simulator - system block table
 #
 # Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -22,24 +22,13 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.systemblocks.system_sfb_m1 import * #+cimport
-from awlsim.core.systemblocks.system_sfb_0 import * #+cimport
-from awlsim.core.systemblocks.system_sfb_1 import * #+cimport
-from awlsim.core.systemblocks.system_sfb_2 import * #+cimport
-from awlsim.core.systemblocks.system_sfb_3 import * #+cimport
-from awlsim.core.systemblocks.system_sfb_4 import * #+cimport
-from awlsim.core.systemblocks.system_sfb_5 import * #+cimport
+from awlsim.core.systemblocks.system_sfb import * #+cimport
+from awlsim.core.systemblocks.system_sfc import * #+cimport
 
 __all__ = [
-	"_SFB_table",
+	"SFC_table",
+	"SFB_table",
 ]
 
-_SFB_table = { #+cdef-dict
-	-1	: SFBm1,	# __SFB_NOP
-	0	: SFB0,		# CTU
-	1	: SFB1,		# CTD
-	2	: SFB2,		# CTUD
-	3	: SFB3,		# TP
-	4	: SFB4,		# TON
-	5	: SFB5,		# TOF
-}
+SFC_table = _SFC_table
+SFB_table = _SFB_table

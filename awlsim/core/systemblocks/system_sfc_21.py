@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,16 +25,19 @@ from awlsim.common.compat import *
 from awlsim.common.wordpacker import *
 from awlsim.common.datatypehelpers import * #+cimport
 
-from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import * #+cimport
+from awlsim.core.systemblocks.error_codes import *
 from awlsim.core.cpu import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.memory import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 
-class SFC21(SFC):
+class SFC21(SFC): #+cdef
 	name = (21, "FILL", "fill memory area")
 
 	interfaceFields = {
@@ -50,7 +53,7 @@ class SFC21(SFC):
 		),
 	}
 
-	def run(self):
+	def run(self): #+cpdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef S7StatusWord s
 

@@ -1,0 +1,4 @@
+from awlsim.core.systemblocks.systemblocks cimport *
+
+cdef class SFB5(SFB):
+	cpdef run(self)

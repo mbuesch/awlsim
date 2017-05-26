@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,13 +22,17 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 
-class SFCm1(SFC):
+class SFCm1(SFC): #+cdef
 	name = (-1, "__SFC_NOP", None)
 
-	def run(self):
+	def run(self): #+cpdef
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 		s.BIE = 1

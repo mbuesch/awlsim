@@ -3,6 +3,9 @@ from awlsim.core.cpu cimport *
 
 cdef class SystemBlock(StaticCodeBlock):
 	cdef public S7CPU cpu
+	cdef public dict __interfaceOpers
+
+	cpdef run(self)
 
 cdef class SFB(SystemBlock):
 	pass

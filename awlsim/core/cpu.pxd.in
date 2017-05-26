@@ -55,6 +55,7 @@ cdef class S7CPU(object):
 	cdef public Addressregister ar2
 	cdef public DB dbRegister
 	cdef public DB diRegister
+	cdef public DB db0
 	cdef public list callStack
 	cdef public CallStackElem callStackTop
 	cdef public list mcrStack
@@ -135,7 +136,7 @@ cdef class S7CPU(object):
 	cpdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount)
 	cpdef storeInputRange(self, uint32_t byteOffset, bytearray data)
 
-	cpdef updateTimestamp(self, object _getTime=*)
+	cdef updateTimestamp(self)
 	cdef __runTimeCheck(self)
 
 	cdef runCycle(self)

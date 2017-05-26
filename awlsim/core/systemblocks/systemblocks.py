@@ -50,7 +50,7 @@ class SystemBlock(StaticCodeBlock): #+cdef
 		StaticCodeBlock.__init__(self, insns, self.name[0], interface)
 		self.cpu = cpu
 
-	def run(self):
+	def run(self): #+cpdef
 		# Reimplement this method
 		raise NotImplementedError
 

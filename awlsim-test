@@ -530,11 +530,13 @@ def main():
 			opt_interpreter = v
 		if o in ("--list-sfc", "--list-sfc-verbose"):
 			print("The supported system functions (SFCs) are:")
+			from awlsim.core.systemblocks.tables import SFC_table
 			printSysblockInfo(SFC_table, "SFC", opt_extInsns,
 					  o.endswith("verbose"))
 			return ExitCodes.EXIT_OK
 		if o in ("--list-sfb", "--list-sfb-verbose"):
 			print("The supported system function blocks (SFBs) are:")
+			from awlsim.core.systemblocks.tables import SFB_table
 			printSysblockInfo(SFB_table, "SFB", opt_extInsns,
 					  o.endswith("verbose"))
 			return ExitCodes.EXIT_OK

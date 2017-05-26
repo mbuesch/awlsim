@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 
-from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 
-class SFCm3(SFC):
+class SFCm3(SFC): #+cdef
 	name = (-3, "__SHUTDOWN", None)
 
 	interfaceFields = {
@@ -38,7 +40,7 @@ class SFCm3(SFC):
 		),
 	}
 
-	def run(self):
+	def run(self): #+cpdef
 		shutdownType = wordToSignedPyInt(self.fetchInterfaceFieldByName("SHUTDOWN_TYPE"))
 		if shutdownType == 1:
 			raise MaintenanceRequest(MaintenanceRequest.TYPE_SHUTDOWN,

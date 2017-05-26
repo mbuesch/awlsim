@@ -36,8 +36,7 @@ from awlsim.core.symbolparser import *
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.instructions.all_insns import * #+cimport
-from awlsim.core.systemblocks.system_sfb import *
-from awlsim.core.systemblocks.system_sfc import *
+from awlsim.core.systemblocks.tables import *
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
@@ -751,8 +750,9 @@ class S7CPU(object): #+cdef
 		self.reallocate(force=True)
 		self.ar1 = Addressregister()
 		self.ar2 = Addressregister()
-		self.dbRegister = self.dbs[0]
-		self.diRegister = self.dbs[0]
+		self.db0 = self.dbs[0]
+		self.dbRegister = self.db0
+		self.diRegister = self.db0
 		self.callStack = [ ]
 		self.callStackTop = None
 		self.setMcrActive(False)
@@ -828,7 +828,7 @@ class S7CPU(object): #+cdef
 		self.cycleStartTime = self.now
 
 		# Initialize CPU state
-		self.dbRegister = self.diRegister = self.dbs[0]
+		self.dbRegister = self.diRegister = self.db0
 		self.accu1.reset()
 		self.accu2.reset()
 		self.accu3.reset()
@@ -843,7 +843,7 @@ class S7CPU(object): #+cdef
 			self.obTempPresetHandlers[block.index].generate(cse.localdata.dataBytes)
 
 		# Run the user program cycle
-		while self.callStack:
+		while 1:
 			while cse.ip < len(cse.insns):
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
@@ -852,7 +852,7 @@ class S7CPU(object): #+cdef
 				cse.ip += self.relativeJump
 				cse, self.__insnCount = self.callStackTop,\
 							(self.__insnCount + 1) & 0x3FFFFFFF
-				if not self.__insnCount % 64:
+				if not (self.__insnCount & 0x3F):
 					self.updateTimestamp()
 					self.__runTimeCheck()
 			if self.cbBlockExit is not None:
@@ -860,7 +860,10 @@ class S7CPU(object): #+cdef
 			prevCse = self.callStack.pop()
 			if self.callStack:
 				cse = self.callStackTop = self.callStack[-1]
-			prevCse.handleBlockExit()
+				prevCse.handleBlockExit()
+			else:
+				prevCse.handleBlockExit()
+				break
 
 	def initClockMemState(self, force=False):
 		"""Reset/initialize the clock memory byte state.
@@ -980,38 +983,42 @@ class S7CPU(object): #+cdef
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
 	def updateTimestamp(self, _getTime=perf_monotonic_time): #@nocy
-#@cy	cpdef updateTimestamp(self, object _getTime=perf_monotonic_time):
+#@cy	cdef updateTimestamp(self):
 #@cy		cdef uint32_t value
 #@cy		cdef uint32_t count
+#@cy		cdef double now
 
 		# Update the system time
-		self.now = _getTime() + self.__nowOffset
+		now = _getTime() #@nocy
+#@cy		now = perf_monotonic_time()
+		self.now = now = now + self.__nowOffset
+
 		# Update the clock memory byte
-		if self.__clockMemByteOffset:
+		if self.__clockMemByteOffset is not None and\
+		   now >= self.__nextClockMemTime:
 			try:
-				if self.now >= self.__nextClockMemTime:
-					self.__nextClockMemTime += 0.05
-					value = self.flags.fetch(self.__clockMemByteOffset, 8)
-					value ^= 0x01 # 0.1s period
-					count = self.__clockMemCount + 1
-					self.__clockMemCount = count
-					if not count % 2:
-						value ^= 0x02 # 0.2s period
-					if not count % 4:
-						value ^= 0x04 # 0.4s period
-					if not count % 5:
-						value ^= 0x08 # 0.5s period
-					if not count % 8:
-						value ^= 0x10 # 0.8s period
-					if not count % 10:
-						value ^= 0x20 # 1.0s period
-					if not count % 16:
-						value ^= 0x40 # 1.6s period
-					if not count % 20:
-						value ^= 0x80 # 2.0s period
-					if count >= self.__clockMemCountLCM:
-						self.__clockMemCount = 0
-					self.flags.store(self.__clockMemByteOffset, 8, value)
+				self.__nextClockMemTime += 0.05
+				value = self.flags.fetch(self.__clockMemByteOffset, 8)
+				value ^= 0x01 # 0.1s period
+				count = self.__clockMemCount + 1
+				self.__clockMemCount = count
+				if not count % 2:
+					value ^= 0x02 # 0.2s period
+				if not count % 4:
+					value ^= 0x04 # 0.4s period
+				if not count % 5:
+					value ^= 0x08 # 0.5s period
+				if not count % 8:
+					value ^= 0x10 # 0.8s period
+				if not count % 10:
+					value ^= 0x20 # 1.0s period
+				if not count % 16:
+					value ^= 0x40 # 1.6s period
+				if not count % 20:
+					value ^= 0x80 # 2.0s period
+				if count >= self.__clockMemCountLCM:
+					self.__clockMemCount = 0
+				self.flags.store(self.__clockMemByteOffset, 8, value)
 			except AwlSimError as e:
 				raise AwlSimError("Failed to generate clock "
 					"memory signal:\n" + str(e) +\
@@ -1019,7 +1026,7 @@ class S7CPU(object): #+cdef
 					"address might be invalid." )
 		# Check whether the runtime timeout exceeded
 		if self.__runtimeLimit >= 0.0:
-			if self.now - self.startupTime >= self.__runtimeLimit:
+			if now - self.startupTime >= self.__runtimeLimit:
 				raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
 					"CPU runtime timeout")
 
@@ -1041,8 +1048,7 @@ class S7CPU(object): #+cdef
 		byteArray[offset + 7] = ((msec % 10) << 4) |\
 					AwlDataType.dateAndTimeWeekdayMap[dt.weekday()]
 
-	def __runTimeCheck(self): #@nocy
-#@cy	cdef __runTimeCheck(self):
+	def __runTimeCheck(self): #+cdef
 		if self.now - self.cycleStartTime > self.cycleTimeLimit:
 			raise AwlSimError("Cycle time exceed %.3f seconds" %\
 					  self.cycleTimeLimit)

@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,13 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.systemblocks.systemblocks import *
+from awlsim.core.systemblocks.systemblocks import * #+cimport
+from awlsim.core.blockinterface import *
+from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 
-class SFC64(SFC):
+class SFC64(SFC): #+cdef
 	name = (64, "TIME_TCK", "time tick")
 
 	interfaceFields = {
@@ -36,7 +38,9 @@ class SFC64(SFC):
 		)
 	}
 
-	def run(self):
+	def run(self): #+cpdef
+#@cy		cdef S7StatusWord s
+
 		s = self.cpu.statusWord
 
 		# Return a 31-bit millisecond representation of "now".

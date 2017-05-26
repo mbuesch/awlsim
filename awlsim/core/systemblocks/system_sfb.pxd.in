@@ -1,0 +1,9 @@
+from awlsim.core.systemblocks.system_sfb_m1 cimport *
+from awlsim.core.systemblocks.system_sfb_0 cimport *
+from awlsim.core.systemblocks.system_sfb_1 cimport *
+from awlsim.core.systemblocks.system_sfb_2 cimport *
+from awlsim.core.systemblocks.system_sfb_3 cimport *
+from awlsim.core.systemblocks.system_sfb_4 cimport *
+from awlsim.core.systemblocks.system_sfb_5 cimport *
+
+cdef dict _SFB_table
