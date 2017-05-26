@@ -5,6 +5,9 @@ cdef class SystemBlock(StaticCodeBlock):
 	cdef public S7CPU cpu
 	cdef public dict __interfaceOpers
 
+	cdef object fetchInterfaceFieldByName(self, object name)
+	cdef storeInterfaceFieldByName(self, object name, object value)
+
 	cpdef run(self)
 
 cdef class SFB(SystemBlock):

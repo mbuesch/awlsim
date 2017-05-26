@@ -55,11 +55,13 @@ class SystemBlock(StaticCodeBlock): #+cdef
 		raise NotImplementedError
 
 	# Fetch the value of a block-interface field.
-	def fetchInterfaceFieldByName(self, name):
+	def fetchInterfaceFieldByName(self, name): #@nocy
+#@cy	cdef object fetchInterfaceFieldByName(self, object name):
 		return self.cpu.fetch(self.__interfaceOpers[name])
 
 	# Store a value to a block-interface field.
-	def storeInterfaceFieldByName(self, name, value):
+	def storeInterfaceFieldByName(self, name, value): #@nocy
+#@cy	cdef storeInterfaceFieldByName(self, object name, object value):
 		return self.cpu.store(self.__interfaceOpers[name], value)
 
 	# Resolve hard wired symbolic accesses
