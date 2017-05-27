@@ -23,13 +23,12 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.subprocess_wrapper import *
-from awlsim.common.cpuspecs import *
+from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.net import *
 
-from awlsim.core.main import * #@nocy
-#from awlsim.core.main cimport * #@cy
+from awlsim.core.main import * #+cimport
 from awlsim.core.symbolparser import *
 
 from awlsim.awlcompiler import *

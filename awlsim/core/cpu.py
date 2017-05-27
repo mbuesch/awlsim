@@ -26,7 +26,7 @@ import time
 import datetime
 import random
 
-from awlsim.common.cpuspecs import *
+from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.blockinfo import *
 

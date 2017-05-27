@@ -29,7 +29,7 @@ from awlsim.common.exceptions import *
 __all__ = [ "S7CPUSpecs", ]
 
 
-class S7CPUSpecs(object):
+class S7CPUSpecs(object): #+cdef
 	"""STEP 7 CPU core specifications"""
 
 	DEFAULT_NR_ACCUS	= 2

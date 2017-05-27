@@ -24,7 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 from awlsim.common.project_legacy import *
-from awlsim.common.cpuspecs import *
+from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.hwmod import *
