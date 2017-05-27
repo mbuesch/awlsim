@@ -42,6 +42,10 @@ __all__ = [
 ]
 
 
+lStackAllocatorCache = ObjectCache( #+cdef-ObjectCache
+	lambda cpu: LStackAllocator(cpu.specs.nrLocalbytes)
+)
+
 class CallStackElem(object): #+cdef
 	"""Call stack element.
 	"""
@@ -64,15 +68,14 @@ class CallStackElem(object): #+cdef
 		"lallocCache",
 	)
 
-	_lallocCache = ObjectCache(
-		lambda cpu: LStackAllocator(cpu.specs.nrLocalbytes)
-	)
+	_lallocCache = lStackAllocatorCache #@nocy
 
 	@classmethod
 	def resetCache(cls):
 #@cy		cdef ObjectCache lallocCache
 
-		lallocCache = cls._lallocCache
+		lallocCache = cls._lallocCache #@nocy
+#@cy		lallocCache = lStackAllocatorCache
 		lallocCache.reset()
 
 	# Get an FC interface operand by interface field index.
@@ -417,7 +420,8 @@ def make_CallStackElem(cpu,						#@nocy
 	# Prepare the localdata stack.
 	# (This also clears all previous allocations on the cached
 	# region, if any.)
-	lallocCache = cse.lallocCache = cse._lallocCache
+	lallocCache = cse.lallocCache = cse._lallocCache #@nocy
+#@cy	lallocCache = cse.lallocCache = lStackAllocatorCache
 	cse.lalloc = lallocCache.get(cpu)
 	cse.lalloc.reset(cpu.specs.nrLocalbytes, #FIXME we should not allow full nrLocalbytes range here.
 			 block.tempAllocation)
