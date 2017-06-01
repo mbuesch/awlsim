@@ -1,5 +1,6 @@
 from awlsim.core.statusword cimport *
 from awlsim.core.callstack cimport *
+from awlsim.core.lstack cimport *
 from awlsim.core.offset cimport *
 from awlsim.core.operators cimport *
 from awlsim.core.memory cimport *
@@ -60,6 +61,7 @@ cdef class S7CPU(object):
 	cdef public list callStack
 	cdef public CallStackElem callStackTop
 	cdef public list mcrStack
+	cdef public LStackAllocator activeLStack
 	cdef public S7StatusWord statusWord
 	cdef public AwlOffset __clockMemByteOffset
 	cdef public double __nextClockMemTime
@@ -164,6 +166,8 @@ cdef class S7CPU(object):
 	cdef CallStackElem __call_MULTI_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters)
 
 	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store)
+
+	cdef __dumpLStackFrame(self, prefix, LStackFrame *frame)
 
 cdef class ParenStackElem(object):
 	cdef public S7CPU cpu

@@ -31,8 +31,6 @@ from awlsim.core.blocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.parameters import * #+cimport
-from awlsim.core.objectcache import * #+cimport
-from awlsim.core.lstack import * #+cimport
 from awlsim.core.util import *
 
 
@@ -41,10 +39,6 @@ __all__ = [
 	"make_CallStackElem",
 ]
 
-
-lStackAllocatorCache = ObjectCache( #+cdef-ObjectCache
-	lambda cpu: LStackAllocator(cpu.specs.nrLocalbytes)
-)
 
 class CallStackElem(object): #+cdef
 	"""Call stack element.
@@ -61,22 +55,9 @@ class CallStackElem(object): #+cdef
 		"prevDbRegister",
 		"prevDiRegister",
 		"prevAR2value",
-		"lalloc",
-		"localdata",
 		"_outboundParams",
 		"_interfRefs",
-		"lallocCache",
 	)
-
-	_lallocCache = lStackAllocatorCache #@nocy
-
-	@classmethod
-	def resetCache(cls):
-#@cy		cdef ObjectCache lallocCache
-
-		lallocCache = cls._lallocCache #@nocy
-#@cy		lallocCache = lStackAllocatorCache
-		lallocCache.reset()
 
 	# Get an FC interface operand by interface field index.
 	def getInterfIdxOper(self, interfaceFieldIndex): #@nocy
@@ -134,7 +115,7 @@ class CallStackElem(object): #+cdef
 
 		cpu = self.cpu
 		# Allocate space in the caller-L-stack.
-		loffset = cpu.callStackTop.lalloc.alloc(rvalueOp.width)
+		loffset = cpu.activeLStack.alloc(rvalueOp.width)
 		# Make an operator for the allocated space.
 		oper = make_AwlOperator(AwlOperatorTypes.MEM_L,
 				   rvalueOp.width,
@@ -168,7 +149,7 @@ class CallStackElem(object): #+cdef
 
 		cpu = self.cpu
 		# Allocate space for the DB-ptr in the caller-L-stack
-		loffset = cpu.callStackTop.lalloc.alloc(48) # 48 bits
+		loffset = cpu.activeLStack.alloc(48) # 48 bits
 		# Create and store the the DB-ptr to the allocated space.
 		storeOper = make_AwlOperator(AwlOperatorTypes.MEM_L,
 					16,
@@ -328,6 +309,10 @@ class CallStackElem(object): #+cdef
 #@cy		cdef AwlParamAssign param
 
 		cpu = self.cpu
+
+		# Destroy this call stack element.
+		cpu.activeLStack.exitStackFrame()
+
 		if not self.isRawCall:
 			# Handle outbound parameters.
 			if self.block.isFB:
@@ -366,11 +351,6 @@ class CallStackElem(object): #+cdef
 				# Assign the DB/DI registers.
 				cpu.dbRegister, cpu.diRegister = self.prevDbRegister, self.prevDiRegister
 
-		# Destroy this call stack element (self).
-		# Put the L-stack back into the cache, if the size did not change.
-		if len(self.localdata) == cpu.specs.nrLocalbytes:
-			self.lallocCache.put(self.lalloc)
-
 	def __repr__(self):
 		return str(self.block)
 
@@ -401,7 +381,6 @@ def make_CallStackElem(cpu,						#@nocy
 #				       tuple parameters,		#@cy
 #				       _Bool isRawCall):		#@cy
 #@cy	cdef CallStackElem cse
-#@cy	cdef ObjectCache lallocCache
 #@cy	cdef AwlParamAssign param
 #@cy	cdef tuple callByRef_Types
 
@@ -416,16 +395,6 @@ def make_CallStackElem(cpu,						#@nocy
 	cse.instanceDB = instanceDB
 	cse.prevDbRegister = cpu.dbRegister
 	cse.prevDiRegister = cpu.diRegister
-
-	# Prepare the localdata stack.
-	# (This also clears all previous allocations on the cached
-	# region, if any.)
-	lallocCache = cse.lallocCache = cse._lallocCache #@nocy
-#@cy	lallocCache = cse.lallocCache = lStackAllocatorCache
-	cse.lalloc = lallocCache.get(cpu)
-	cse.lalloc.reset(cpu.specs.nrLocalbytes, #FIXME we should not allow full nrLocalbytes range here.
-			 block.tempAllocation)
-	cse.localdata = cse.lalloc.localdata
 
 	# Handle parameters
 	cse._outboundParams = []
@@ -490,6 +459,11 @@ def make_CallStackElem(cpu,						#@nocy
 						"actual-parameter is not allowed in this call." %\
 						str(param))
 				cse._interfRefs[param.interfaceFieldIndex] = trans(cse, param, param.rvalueOp)
+
+	# Prepare the localdata stack.
+	cpu.activeLStack.enterStackFrame()
+	if block.tempAllocation:
+		cpu.activeLStack.alloc(block.tempAllocation * 8)
 
 	# Set AR2 to the specified multi-instance base
 	# and save the old AR2 value.

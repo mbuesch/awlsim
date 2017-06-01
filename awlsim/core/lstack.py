@@ -30,61 +30,132 @@ from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 
+#from cpython.mem cimport PyMem_Malloc, PyMem_Free #@cy
+
+
+class LStackFrame(object):		#@nocy
+	offset = None			#@nocy
+	allocBits = 0			#@nocy
+	prevFrame = None		#@nocy
 
 class LStackAllocator(object): #+cdef
-	"""Memory allocator for the L-stack
+	"""Memory allocator for the L-stack.
+	This class manages the L-stack of one OB instance.
 	"""
+
+	__frameFreeSet = set() #@nocy
+
+#@cy	def __dealloc__(self):
+#@cy		cdef LStackFrame *frame
+#@cy		cdef LStackFrame *oldFrame
+#@cy		frame = self.topFrame
+#@cy		while frame:
+#@cy			oldFrame = frame
+#@cy			frame = frame.prevFrame
+#@cy			PyMem_Free(oldFrame)
 
 	def __init__(self, maxSize): #@nocy
 #@cy	def __init__(self, uint32_t maxSize):
 		# maxSize -> max size of the L-stack, in bytes.
-		self.localdata = AwlMemory(maxSize)
-		self.reset(maxSize)
+
+		self.topFrame = None #@nocy
+#@cy		self.topFrame = NULL
+		self.resize(maxSize)
 
 	# Reset all allocations on the L-stack.
 	# Sets the maximum possible allocation to maxAllocBytes.
-	# maxAllocBytes must be smaller or equal to self.localdata size.
-	def reset(self, maxAllocBytes, curAllocBytes=0): #@nocy
-#@cy	cdef reset(self, uint32_t maxAllocBytes, uint32_t curAllocBytes=0):
-		self.__maxAllocBytes = maxAllocBytes
-		self.__curAllocBytes = curAllocBytes
-		self.__curAllocBits = 0
+	# maxAllocBytes must be smaller or equal to self.memory size.
+	def resize(self, maxAllocBytes): #@nocy
+#@cy	cdef resize(self, uint32_t maxAllocBytes):
+		self.memory = AwlMemory(maxAllocBytes)
+		self.maxAllocBits = maxAllocBytes * 8
+
+	def reset(self): #+cdef
+#@cy		cdef LStackFrame *frame
+#@cy		cdef LStackFrame *oldFrame
+
+		self.globAllocBits = 0
+
+		frame = self.topFrame
+		while frame:
+			oldFrame = frame
+			self.topFrame = frame = frame.prevFrame
+
+			oldFrame.prevFrame = None		#@nocy
+			self.__frameFreeSet.add(oldFrame)	#@nocy
+#@cy			PyMem_Free(oldFrame)
+
+	def enterStackFrame(self): #+cdef
+#@cy		cdef LStackFrame *frame
+#@cy		cdef uint32_t globAllocBits
+
+		prevAllocBits = self.globAllocBits
+		self.globAllocBits = globAllocBits = (((prevAllocBits + 7) >> 3) << 3)
+		globAllocBytes = globAllocBits // 8
+
+		# Allocate a new stack frame.
+		try:						#@nocy
+			frame = self.__frameFreeSet.pop()	#@nocy
+		except KeyError:				#@nocy
+			frame = LStackFrame()			#@nocy
+#@cy		frame = <LStackFrame *>PyMem_Malloc(sizeof(LStackFrame))
+
+		frame.byteOffset = globAllocBytes
+		# Account the rounded-up bits to the new frame.
+		frame.allocBits = globAllocBits - prevAllocBits
+
+		frame.prevFrame = self.topFrame
+		self.topFrame = frame
+		self.topFrameOffset = make_AwlOffset(globAllocBytes, 0)
+
+	def exitStackFrame(self): #+cdef
+#@cy		cdef LStackFrame *frame
+#@cy		cdef LStackFrame *topFrame
+
+		frame = self.topFrame
+		topFrame = self.topFrame = frame.prevFrame
+
+		self.globAllocBits = globAllocBits = self.globAllocBits - frame.allocBits
+		if topFrame:
+			self.topFrameOffset = make_AwlOffset_fromLongBitOffset(
+					globAllocBits - topFrame.allocBits)
+		else:
+			self.topFrameOffset = make_AwlOffset(0, 0)
+
+		frame.prevFrame = None		#@nocy
+		self.__frameFreeSet.add(frame)	#@nocy
+#@cy		PyMem_Free(frame)
 
 	# Allocate a number of bits on the L-stack.
 	# Returns an AwlOffset as the offset the bits are allocated on.
 	def alloc(self, nrBits): #@nocy
 #@cy	cdef AwlOffset alloc(self, uint32_t nrBits):
-#@cy		cdef uint32_t curAllocBytes
-#@cy		cdef uint32_t curAllocBits
-#@cy		cdef uint32_t nrBytes
+#@cy		cdef LStackFrame *frame
+#@cy		cdef uint32_t globAllocBits
 #@cy		cdef AwlOffset offset
 
-		curAllocBytes, curAllocBits =\
-			self.__curAllocBytes, self.__curAllocBits
+		frame = self.topFrame
+		globAllocBits = self.globAllocBits
 
 		if nrBits == 1:
 			# Bit-aligned allocation
-			offset = make_AwlOffset(curAllocBytes,
-						curAllocBits)
-			curAllocBits += 1
-			if curAllocBits >= 8:
-				curAllocBytes += 1
-				curAllocBits = 0
+			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,
+						globAllocBits % 8)
 		else:
 			# Byte-aligned allocation
-			if curAllocBits > 0:
-				curAllocBytes += 1
-				curAllocBits = 0
-			nrBytes = intDivRoundUp(nrBits, 8)
-			offset = make_AwlOffset(curAllocBytes, 0)
-			curAllocBytes += nrBytes
+			if globAllocBits & 7:
+				roundBits = 8 - (globAllocBits & 7)
+				frame.allocBits += roundBits
+				globAllocBits += roundBits
+			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset, 0)
 
-		if curAllocBytes >= self.__maxAllocBytes:
+		self.globAllocBits = globAllocBits = globAllocBits + nrBits
+		frame.allocBits += nrBits
+
+		if (((globAllocBits + 7) >> 3) << 3) >= self.maxAllocBits:
 			raise AwlSimError(
-				"Cannot allocate another %d bits on L-stack. "
-				"The L-stack is exhausted." %\
-				nrBits)
+				"Cannot allocate another %d bits on the L-stack. "
+				"The L-stack is exhausted. Maximum size = %d bytes." % (
+				nrBits, self.maxAllocBits))
 
-		self.__curAllocBytes, self.__curAllocBits =\
-			curAllocBytes, curAllocBits
 		return offset

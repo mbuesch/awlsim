@@ -34,6 +34,7 @@ from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.util import *
 from awlsim.core.offset import * #+cimport
+from awlsim.core.lstack import * #+cimport
 
 import hashlib
 
@@ -216,6 +217,8 @@ class OB(CodeBlock): #+cdef
 
 	def __init__(self, insns, index):
 		CodeBlock.__init__(self, insns, index, OBInterface())
+
+		self.lstack = LStackAllocator(0)
 
 	def getBlockInfo(self):
 		"""Get a BlockInfo instance for this block.

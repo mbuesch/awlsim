@@ -1,3 +1,5 @@
+from awlsim.core.lstack cimport *
+
 cdef class Block(object):
 	cdef public int32_t index
 	cdef public object sourceRef
@@ -19,7 +21,7 @@ cdef class StaticCodeBlock(CodeBlock):
 	pass
 
 cdef class OB(CodeBlock):
-	pass
+	cdef public LStackAllocator lstack
 
 cdef class FB(CodeBlock):
 	pass

@@ -1,0 +1,11 @@
+from awlsim.core.cpu cimport *
+
+cdef class S7CPUSpecs(object):
+	cdef public S7CPU cpu
+	cdef public uint32_t nrAccus
+	cdef public uint32_t nrTimers
+	cdef public uint32_t nrCounters
+	cdef public uint32_t nrFlags
+	cdef public uint32_t nrInputs
+	cdef public uint32_t nrOutputs
+	cdef public uint32_t nrLocalbytes

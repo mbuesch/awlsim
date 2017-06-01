@@ -29,6 +29,7 @@ import random
 from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.blockinfo import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.library.libentry import *
 
@@ -47,6 +48,7 @@ from awlsim.core.labels import *
 from awlsim.core.timers import *
 from awlsim.core.counters import *
 from awlsim.core.callstack import * #+cimport
+from awlsim.core.lstack import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.obtemp import *
 from awlsim.core.util import *
@@ -530,6 +532,7 @@ class S7CPU(object): #+cdef
 		self.obs = {}
 		self.fcs = {}
 		self.fbs = {}
+		self.activeLStack = None
 		self.reset()
 		self.enableExtendedInsns(False)
 		self.enableObTempPresets(False)
@@ -652,6 +655,7 @@ class S7CPU(object): #+cdef
 		"""Translate the loaded sources into their executable forms.
 		"""
 		self.prog.build()
+		self.reallocate(force=True)
 
 	def load(self, parseTree, rebuild = False, sourceManager = None):
 		for rawDB in dictValues(parseTree.dbs):
@@ -703,6 +707,8 @@ class S7CPU(object): #+cdef
 		self.prog.removeBlock(blockInfo, sanityChecks)
 
 	def reallocate(self, force=False):
+#@cy		cdef OB ob
+
 		if force or (self.specs.nrAccus == 4) != self.is4accu:
 			self.accu1, self.accu2, self.accu3, self.accu4 =\
 				Accu(), Accu(), Accu(), Accu()
@@ -719,7 +725,9 @@ class S7CPU(object): #+cdef
 			self.inputs = AwlMemory(self.specs.nrInputs)
 		if force or self.specs.nrOutputs != len(self.outputs):
 			self.outputs = AwlMemory(self.specs.nrOutputs)
-		CallStackElem.resetCache()
+		for ob in dictValues(self.obs):
+			if force or self.specs.nrLocalbytes * 8 != ob.lstack.maxAllocBits:
+				ob.lstack.resize(self.specs.nrLocalbytes)
 
 	def reset(self):
 		self.prog.reset()
@@ -822,10 +830,17 @@ class S7CPU(object): #+cdef
 #@cy		cdef AwlInsn insn
 #@cy		cdef CallStackElem cse
 #@cy		cdef CallStackElem prevCse
+#@cy		cdef LStackAllocator activeLStack
 
 		# Update timekeeping
 		self.updateTimestamp()
 		self.cycleStartTime = self.now
+
+		# Initialize the L-stack. A previous block execution might
+		# have exited with an exception and left allocation behind.
+		# Clear all allocated bits.
+		self.activeLStack = activeLStack = block.lstack
+		activeLStack.reset()
 
 		# Initialize CPU state
 		self.dbRegister = self.diRegister = self.db0
@@ -840,7 +855,7 @@ class S7CPU(object): #+cdef
 		self.callStack = [ cse, ]
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
-			self.obTempPresetHandlers[block.index].generate(cse.localdata.dataBytes)
+			self.obTempPresetHandlers[block.index].generate(activeLStack.memory.dataBytes)
 
 		# Run the user program cycle
 		while 1:
@@ -1690,24 +1705,31 @@ class S7CPU(object): #+cdef
 
 	def __fetchL(self, operator, enforceWidth): #@nocy
 #@cy	cdef object __fetchL(self, AwlOperator operator, frozenset enforceWidth):
+#@cy		cdef LStackAllocator lstack
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		return self.callStackTop.localdata.fetch(operator.offset, operator.width)
+		lstack = self.activeLStack
+		return lstack.memory.fetch(lstack.topFrameOffset + operator.offset,
+					   operator.width)
 
 	def __fetchVL(self, operator, enforceWidth): #@nocy
 #@cy	cdef object __fetchVL(self, AwlOperator operator, frozenset enforceWidth):
 #@cy		cdef CallStackElem cse
+#@cy		cdef LStackAllocator lstack
+#@cy		cdef LStackFrame *prevFrame
 
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		try:
-			cse = self.callStack[-2]
-		except IndexError:
+		lstack = self.activeLStack
+		prevFrame = lstack.topFrame.prevFrame
+		if not prevFrame:
 			raise AwlSimError("Fetch of parent localstack, "
 				"but no parent present.")
-		return cse.localdata.fetch(operator.offset, operator.width)
+		return lstack.memory.fetch(make_AwlOffset(prevFrame.byteOffset, 0) + operator.offset,
+					   operator.width)
 
 	def __fetchDB(self, operator, enforceWidth): #@nocy
 #@cy	cdef object __fetchDB(self, AwlOperator operator, frozenset enforceWidth):
@@ -1970,24 +1992,32 @@ class S7CPU(object): #+cdef
 
 	def __storeL(self, operator, value, enforceWidth): #@nocy
 #@cy	cdef __storeL(self, AwlOperator operator, object value, frozenset enforceWidth):
+#@cy		cdef LStackAllocator lstack
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		self.callStackTop.localdata.store(operator.offset, operator.width, value)
+		lstack = self.activeLStack
+		lstack.memory.store(lstack.topFrameOffset + operator.offset,
+				    operator.width,
+				    value)
 
 	def __storeVL(self, operator, value, enforceWidth): #@nocy
 #@cy	cdef __storeVL(self, AwlOperator operator, object value, frozenset enforceWidth):
 #@cy		cdef CallStackElem cse
+#@cy		cdef LStackFrame *prevFrame
 
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		try:
-			cse = self.callStack[-2]
-		except IndexError:
+		lstack = self.activeLStack
+		prevFrame = lstack.topFrame.prevFrame
+		if not prevFrame:
 			raise AwlSimError("Store to parent localstack, "
 				"but no parent present.")
-		cse.localdata.store(operator.offset, operator.width, value)
+		lstack.memory.store(make_AwlOffset(prevFrame.byteOffset, 0) + operator.offset,
+				    operator.width,
+				    value)
 
 	def __storeDB(self, operator, value, enforceWidth): #@nocy
 #@cy	cdef __storeDB(self, AwlOperator operator, object value, frozenset enforceWidth):
@@ -2100,15 +2130,16 @@ class S7CPU(object): #+cdef
 		AwlOperatorTypes.INDIRECT		: __storeINDIRECT,	#@nocy
 	}									#@nocy
 
-	def __dumpMem(self, prefix, memory, maxLen):
-		if not memory or not memory.dataBytes:
+	def __dumpMem(self, prefix, memory, byteOffset, maxLen):
+		if not memory or not memory.dataBytes or maxLen <= 0:
 			return prefix + "--"
 		memArray = memory.dataBytes
-		ret, line, first, count, i = [], [], True, 0, 0
+		ret, line, first, count, i = [], [], True, 0, byteOffset
 		def append(line):
 			ret.append((prefix if first else (' ' * len(prefix))) +\
 				   ' '.join(line))
-		while i < maxLen:
+		end = maxLen + byteOffset
+		while i < end:
 			line.append("%02X" % memArray[i])
 			count += 1
 			if count >= 16:
@@ -2119,7 +2150,22 @@ class S7CPU(object): #+cdef
 			append(line)
 		return '\n'.join(ret)
 
+	def __dumpLStackFrame(self, prefix, frame): #@nocy
+#@cy	cdef __dumpLStackFrame(self, prefix, LStackFrame *frame):
+		if frame:
+			memory = self.activeLStack.memory
+			byteOffset = frame.byteOffset
+			allocBits = frame.allocBits
+		else:
+			memory, byteOffset, allocBits = None, 0, 0
+		return self.__dumpMem(prefix,
+				      memory,
+				      byteOffset,
+				      min(64, intDivRoundUp(allocBits, 8)))
+
 	def dump(self, withTime=True):
+#@cy		cdef LStackFrame *frame
+
 		callStack, callStackTop = self.callStack, self.callStackTop
 		if not callStack:
 			return ""
@@ -2146,15 +2192,15 @@ class S7CPU(object): #+cdef
 			for ar in (self.ar1, self.ar2) )
 		ret.append("     AR:  " + "  ".join(ars))
 		ret.append(self.__dumpMem("      M:  ",
-					  self.flags,
+					  self.flags, 0,
 					  min(64, specs.nrFlags)))
 		prefix = "      I:  " if isEnglish else "      E:  "
 		ret.append(self.__dumpMem(prefix,
-					  self.inputs,
+					  self.inputs, 0,
 					  min(64, specs.nrInputs)))
 		prefix = "      Q:  " if isEnglish else "      A:  "
 		ret.append(self.__dumpMem(prefix,
-					  self.outputs,
+					  self.outputs, 0,
 					  min(64, specs.nrOutputs)))
 		pstack = str(callStackTop.parenStack) if callStackTop.parenStack else "Empty"
 		ret.append(" PStack:  " + pstack)
@@ -2166,17 +2212,11 @@ class S7CPU(object): #+cdef
 			elemsEnd = " ..." if (len(callStack) > elemsMax) else ""
 			ret.append("  Calls:  %d:  %s%s" %\
 				   (len(callStack), elems, elemsEnd))
-			localdata = callStack[-1].localdata
-			ret.append(self.__dumpMem("      L:  ",
-						  localdata,
-						  min(16, specs.nrLocalbytes)))
-			try:
-				localdata = callStack[-2].localdata
-			except IndexError:
-				localdata = None
-			ret.append(self.__dumpMem("     VL:  ",
-						  localdata,
-						  min(16, specs.nrLocalbytes)))
+			frame = self.activeLStack.topFrame
+			ret.append(self.__dumpLStackFrame("      L:  ", frame))
+			frame = frame.prevFrame if frame else None #@nocy
+#@cy			frame = frame.prevFrame if frame else NULL
+			ret.append(self.__dumpLStackFrame("     VL:  ", frame))
 		else:
 			ret.append("  Calls:  None")
 		curInsn = self.getCurrentInsn()
