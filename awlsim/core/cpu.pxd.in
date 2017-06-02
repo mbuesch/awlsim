@@ -58,7 +58,6 @@ cdef class S7CPU(object):
 	cdef public DB dbRegister
 	cdef public DB diRegister
 	cdef public DB db0
-	cdef public list callStack
 	cdef public CallStackElem callStackTop
 	cdef public list mcrStack
 	cdef public LStackAllocator activeLStack

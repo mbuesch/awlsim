@@ -45,18 +45,19 @@ class CallStackElem(object): #+cdef
 	"""
 
 	__slots__ = (
-		"cpu",
-		"parenStack",
-		"ip",
-		"block",
-		"insns",
-		"isRawCall",
-		"instanceDB",
-		"prevDbRegister",
-		"prevDiRegister",
-		"prevAR2value",
-		"_outboundParams",
-		"_interfRefs",
+		"prevCse",		# Previous call stack element (None if at OB level)
+		"cpu",			# S7CPU that belongs to this CSE
+		"parenStack",		# Active parenthesis stack
+		"insns",		# Instruction list that is being executed
+		"ip",			# Current instruction pointer
+		"block",		# CodeBlock that is being executed
+		"isRawCall",		# True, if this call is raw (UC, CC)
+		"instanceDB",		# Instance data block, if any
+		"prevDbRegister",	# DB register from before this call
+		"prevDiRegister",	# DI register from before this call
+		"prevAR2value",		# AR2 register from before this call
+		"_outboundParams",	# List of outbound AwlParamAssign. (Internal)
+		"_interfRefs",		# List of translated interface references (Internal; FC only)
 	)
 
 	# Get an FC interface operand by interface field index.
@@ -302,8 +303,7 @@ class CallStackElem(object): #+cdef
 	# Handle the exit from this code block.
 	# This stack element (self) will already have been
 	# removed from the CPU's call stack.
-	def handleBlockExit(self): #@nocy
-#@cy	cdef handleBlockExit(self):
+	def handleBlockExit(self): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset instanceBaseOffset
 #@cy		cdef AwlParamAssign param
@@ -351,8 +351,11 @@ class CallStackElem(object): #+cdef
 				# Assign the DB/DI registers.
 				cpu.dbRegister, cpu.diRegister = self.prevDbRegister, self.prevDiRegister
 
+		# Unlink this call stack element from the previous one.
+		self.prevCse = None
+
 	def __repr__(self):
-		return str(self.block)
+		return "CallStackElem of %s" % str(self.block)
 
 #
 # make_CallStackElem() - Create a CallStackElem instance.
@@ -395,6 +398,7 @@ def make_CallStackElem(cpu,						#@nocy
 	cse.instanceDB = instanceDB
 	cse.prevDbRegister = cpu.dbRegister
 	cse.prevDiRegister = cpu.diRegister
+	cse.prevCse = cpu.callStackTop
 
 	# Handle parameters
 	cse._outboundParams = []

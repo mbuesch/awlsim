@@ -761,7 +761,6 @@ class S7CPU(object): #+cdef
 		self.db0 = self.dbs[0]
 		self.dbRegister = self.db0
 		self.diRegister = self.db0
-		self.callStack = [ ]
 		self.callStackTop = None
 		self.setMcrActive(False)
 		self.mcrStack = [ ]
@@ -829,7 +828,7 @@ class S7CPU(object): #+cdef
 #@cy	cdef __runOB(self, CodeBlock block):
 #@cy		cdef AwlInsn insn
 #@cy		cdef CallStackElem cse
-#@cy		cdef CallStackElem prevCse
+#@cy		cdef CallStackElem exitCse
 #@cy		cdef LStackAllocator activeLStack
 
 		# Update timekeeping
@@ -851,14 +850,16 @@ class S7CPU(object): #+cdef
 		self.ar1.reset()
 		self.ar2.reset()
 		self.statusWord.reset()
+
+		self.callStackTop = None
 		cse = self.callStackTop = make_CallStackElem(self, block, None, None, (), True)
-		self.callStack = [ cse, ]
+
 		if self.__obTempPresetsEnabled:
 			# Populate the TEMP region
 			self.obTempPresetHandlers[block.index].generate(activeLStack.memory.dataBytes)
 
 		# Run the user program cycle
-		while 1:
+		while cse is not None:
 			while cse.ip < len(cse.insns):
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
@@ -872,13 +873,9 @@ class S7CPU(object): #+cdef
 					self.__runTimeCheck()
 			if self.cbBlockExit is not None:
 				self.cbBlockExit(self.cbBlockExitData)
-			prevCse = self.callStack.pop()
-			if self.callStack:
-				cse = self.callStackTop = self.callStack[-1]
-				prevCse.handleBlockExit()
-			else:
-				prevCse.handleBlockExit()
-				break
+			cse, exitCse = cse.prevCse, cse
+			self.callStackTop = cse
+			exitCse.handleBlockExit()
 
 	def initClockMemState(self, force=False):
 		"""Reset/initialize the clock memory byte state.
@@ -1253,7 +1250,7 @@ class S7CPU(object): #+cdef
 			raise AwlSimError("Invalid CALL operand")			#@nocy
 		newCse = callHelper(self, blockOper, dbOper, parameters)		#@nocy
 
-		self.callStack.append(newCse)
+		newCse.prevCse = self.callStackTop
 		self.callStackTop = newCse
 
 	def run_BE(self): #+cdef
@@ -2166,8 +2163,8 @@ class S7CPU(object): #+cdef
 	def dump(self, withTime=True):
 #@cy		cdef LStackFrame *frame
 
-		callStack, callStackTop = self.callStack, self.callStackTop
-		if not callStack:
+		callStackTop = self.callStackTop
+		if not callStackTop:
 			return ""
 		mnemonics = self.getMnemonics()
 		isEnglish = (mnemonics == S7CPUConfig.MNEMONICS_EN)
@@ -2206,12 +2203,19 @@ class S7CPU(object): #+cdef
 		ret.append(" PStack:  " + pstack)
 		ret.append("     DB:  %s" % str(self.dbRegister))
 		ret.append("     DI:  %s" % str(self.diRegister))
-		if callStack:
-			elemsMax = 8
-			elems = " => ".join(str(cse) for cse in callStack[:elemsMax])
-			elemsEnd = " ..." if (len(callStack) > elemsMax) else ""
+		if callStackTop:
+			elemsMax, elemsCount, elems, more, cse =\
+				8, 0, [], False, callStackTop
+			while cse is not None:
+				elemsCount += 1
+				if elemsCount <= elemsMax:
+					elems.append(str(cse.block))
+				else:
+					more = True
+				cse = cse.prevCse
 			ret.append("  Calls:  %d:  %s%s" %\
-				   (len(callStack), elems, elemsEnd))
+				   (elemsCount, " -> ".join(elems),
+				    " ..." if more else ""))
 			frame = self.activeLStack.topFrame
 			ret.append(self.__dumpLStackFrame("      L:  ", frame))
 			frame = frame.prevFrame if frame else None #@nocy
