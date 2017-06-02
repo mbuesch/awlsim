@@ -869,6 +869,24 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: RND(nINF)
+	__STWRST
+	L		__CNST_NINF
+	RND
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND(pINF)
+	__STWRST
+	L		__CNST_PINF
+	RND
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: TRUNC(1.1)
 	__STWRST
 	L		1.1
@@ -946,6 +964,24 @@
 	L		__CNST_PNAN
 	TRUNC
 	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: TRUNC(nINF)
+	__STWRST
+	L		__CNST_NINF
+	TRUNC
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: TRUNC(pINF)
+	__STWRST
+	L		__CNST_PINF
+	TRUNC
+	__ASSERT==	__ACCU 1,	__CNST_PINF
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
 
@@ -1031,6 +1067,24 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: RND+(nINF)
+	__STWRST
+	L		__CNST_NINF
+	RND+
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND+(pINF)
+	__STWRST
+	L		__CNST_PINF
+	RND+
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: RND-(1.0)
 	__STWRST
 	L		1.0
@@ -1108,6 +1162,24 @@
 	L		__CNST_PNAN
 	RND-
 	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND-(nINF)
+	__STWRST
+	L		__CNST_NINF
+	RND-
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: RND-(pINF)
+	__STWRST
+	L		__CNST_PINF
+	RND-
+	__ASSERT==	__ACCU 1,	__CNST_PINF
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
 
