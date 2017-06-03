@@ -95,9 +95,9 @@ elif isIronPython:
 elif isMicroPython:
 	pythonInterpreter = "MicroPython"
 elif isWinStandalone:
-	pythonInterpreter = "Python (standalone)"
+	pythonInterpreter = "CPython (frozen)"
 else:
-	pythonInterpreter = "Python"
+	pythonInterpreter = "CPython"
 
 # input() compatibility.
 # Force Python3 behavior
