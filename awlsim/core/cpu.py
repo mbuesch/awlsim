@@ -2267,19 +2267,19 @@ class S7CPU(object): #+cdef
 			    str(curInsn) if curInsn else "none"))
 		insnPerSecond = self.insnPerSecond
 		if insnPerSecond >= 1000000.0:
-			insnPerSecond /= 1000000.0
-			suffix = "M "
+			insnPerSecondStr = "%.02f M" % (insnPerSecond / 1000000.0)
 		elif insnPerSecond >= 1000.0:
-			insnPerSecond /= 1000.0
-			suffix = "k "
+			insnPerSecondStr = "%.02f k" % (insnPerSecond / 1000.0)
+		elif insnPerSecond > 0.0:
+			insnPerSecondStr = "%.02f" % insnPerSecond
 		else:
-			suffix = ""
-		if self.insnPerSecond:
-			usPerInsn = "%.03f" % ((1.0 / self.insnPerSecond) * 1000000)
+			insnPerSecondStr = "-/-"
+		if insnPerSecond > 0.0:
+			usPerInsn = "%.03f" % ((1.0 / insnPerSecond) * 1000000)
 		else:
 			usPerInsn = "-/-"
-		ret.append("  Speed:  %.02f %sstmt/s (= %s us/stmt)  %.01f stmt/cycle" % (
-			   insnPerSecond, suffix,
+		ret.append("  Speed:  %s stmt/s (= %s us/stmt)  %.01f stmt/cycle" % (
+			   insnPerSecondStr,
 			   usPerInsn,
 			   self.avgInsnPerCycle))
 		avgCycleTime = self.avgCycleTime
