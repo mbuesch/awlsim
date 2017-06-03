@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.5
+#   v1.6
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -100,6 +100,16 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 			outfd.write(line)
 			continue
 
+		# Replace import by cimport as requested by #+cimport
+		if "#+cimport" in stripLine:
+			line = line.replace("#+cimport", "#")
+			line = re.sub(r'\bimport\b', "cimport", line)
+
+		# Convert None to NULL
+		if "#@cy-NoneToNULL" in stripLine:
+			line = line.replace("#@cy-NoneToNULL", "#")
+			line = re.sub(r'\bNone\b', "NULL", line)
+
 		# Uncomment all lines containing #@cy
 		def uncomment(line, removeStr):
 			line = line.replace(removeStr, "")
@@ -152,10 +162,6 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 
 			line = re.sub(r'\bdef\b', "cpdef", line)
 
-		# Replace import by cimport as requested by #+cimport
-		if "#+cimport" in stripLine:
-			line = re.sub(r'\bimport\b', "cimport", line)
-
 		# Comment all lines containing #@nocy
 		# or #@cyX for the not matching version.
 		if "#@nocy" in stripLine:
@@ -188,8 +194,9 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 	infd.close()
 	outfd.flush()
 	outfd.close()
-	if not moveIfChanged(tmpFile, toFile):
-		print("(already up to date)")
+	if moveIfChanged(tmpFile, toFile):
+		print("(updated)")
+	else:
 		os.unlink(tmpFile)
 
 class CythonBuildUnit(object):
