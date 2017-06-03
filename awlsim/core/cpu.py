@@ -521,6 +521,7 @@ class S7CPU(object): #+cdef
 		self.conf = S7CPUConfig(self)
 		self.prog = S7Prog(self)
 		self.setCycleTimeLimit(5.0)
+		self.setMaxCallStackDepth(65535)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
@@ -557,6 +558,9 @@ class S7CPU(object): #+cdef
 
 	def setRunTimeLimit(self, timeoutSeconds=-1.0):
 		self.__runtimeLimit = timeoutSeconds if timeoutSeconds >= 0.0 else -1.0
+
+	def setMaxCallStackDepth(self, newMaxDepth):
+		self.maxCallStackDepth = min(max(int(newMaxDepth), 1), 0xFFFFFFFF)
 
 	# Returns all user defined code blocks (OBs, FBs, FCs)
 	def allUserCodeBlocks(self):
@@ -762,6 +766,7 @@ class S7CPU(object): #+cdef
 		self.dbRegister = self.db0
 		self.diRegister = self.db0
 		self.callStackTop = None
+		self.callStackDepth = 0
 		self.setMcrActive(False)
 		self.mcrStack = [ ]
 		self.statusWord = S7StatusWord()
@@ -851,7 +856,7 @@ class S7CPU(object): #+cdef
 		self.ar2.reset()
 		self.statusWord.reset()
 
-		self.callStackTop = None
+		self.callStackTop, self.callStackDepth = None, 1
 		cse = self.callStackTop = make_CallStackElem(self, block, None, None, (), True)
 
 		if self.__obTempPresetsEnabled:
@@ -875,7 +880,9 @@ class S7CPU(object): #+cdef
 				self.cbBlockExit(self.cbBlockExitData)
 			cse, exitCse = cse.prevCse, cse
 			self.callStackTop = cse
+			self.callStackDepth -= 1
 			exitCse.handleBlockExit()
+		assert(self.callStackDepth == 0) #@nocy
 
 	def initClockMemState(self, force=False):
 		"""Reset/initialize the clock memory byte state.
@@ -1212,6 +1219,13 @@ class S7CPU(object): #+cdef
 #@cy	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper=None,
 #@cy		     tuple parameters=(), _Bool raw=False):
 #@cy		cdef CallStackElem newCse
+#@cy		cdef uint32_t callStackDepth
+
+		callStackDepth = self.callStackDepth
+		if callStackDepth >= self.maxCallStackDepth:
+			raise AwlSimError("Maximum CALL stack depth of %d CALLs exceed." % (
+				self.maxCallStackDepth))
+
 #@cy		if raw:
 #@cy			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
 #@cy				newCse = self.__call_RAW_FC(blockOper, dbOper, parameters)
@@ -1251,7 +1265,7 @@ class S7CPU(object): #+cdef
 		newCse = callHelper(self, blockOper, dbOper, parameters)		#@nocy
 
 		newCse.prevCse = self.callStackTop
-		self.callStackTop = newCse
+		self.callStackTop, self.callStackDepth = newCse, callStackDepth + 1
 
 	def run_BE(self): #+cdef
 #@cy		cdef S7StatusWord s
@@ -2204,22 +2218,19 @@ class S7CPU(object): #+cdef
 		ret.append("     DB:  %s" % str(self.dbRegister))
 		ret.append("     DI:  %s" % str(self.diRegister))
 		if callStackTop:
-			elemsMax, elemsCount, elems, more, cse =\
-				8, 0, [], False, callStackTop
+			elemsMax, elemsCount, elems, cse =\
+				8, 0, [], callStackTop
 			while cse is not None:
 				elemsCount += 1
-				if elemsCount <= elemsMax:
-					elems.append(str(cse.block))
-				else:
-					more = True
+				elems.insert(0, cse.block)
 				cse = cse.prevCse
-			ret.append("  Calls:  %d:  %s%s" %\
-				   (elemsCount, " -> ".join(elems),
-				    " ..." if more else ""))
+			assert(elemsCount == self.callStackDepth)
+			ret.append("  Calls:  (%d)  %s%s" %\
+				   (elemsCount, " -> ".join(str(e) for e in elems[:elemsMax]),
+				    " -> ..." if len(elems) > elemsMax else ""))
 			frame = self.activeLStack.topFrame
 			ret.append(self.__dumpLStackFrame("      L:  ", frame))
-			frame = frame.prevFrame if frame else None #@nocy
-#@cy			frame = frame.prevFrame if frame else NULL
+			frame = frame.prevFrame if frame else None #@cy-NoneToNULL
 			ret.append(self.__dumpLStackFrame("     VL:  ", frame))
 		else:
 			ret.append("  Calls:  None")
