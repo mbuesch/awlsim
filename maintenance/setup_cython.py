@@ -176,6 +176,8 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 		if not basicOnly:
 			# Automagic types
 			line = re.sub(r'\b_Bool\b', "bint", line)
+			line = re.sub(r'\bExBool_t\b', "signed char", line)
+			line = re.sub(r'\bExBool_val\b', "-1", line)
 			line = re.sub(r'\bint8_t\b', "signed char", line)
 			line = re.sub(r'\buint8_t\b', "unsigned char", line)
 			line = re.sub(r'\bint16_t\b', "signed short", line)
