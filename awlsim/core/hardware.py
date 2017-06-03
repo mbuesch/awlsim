@@ -151,7 +151,7 @@ class AbstractHardwareInterface(object): #+cdef
 		return bytearray()
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
-#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
+#@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
 		"""Direct peripheral output data write operation.
 		'accessWidth' is the width of the access, in bits.
 		'accessOffset' is the byte offset of the access.

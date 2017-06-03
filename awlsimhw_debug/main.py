@@ -141,7 +141,7 @@ class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
 			return bytearray( (0,) * (accessWidth // 8) )
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
-#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
+#@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
 		if accessOffset < self.outputAddressBase:
 			return False
 

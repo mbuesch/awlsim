@@ -1088,13 +1088,13 @@ class S7CPU(object): #+cdef
 			return None
 
 	def labelIdxToRelJump(self, labelIndex): #@nocy
-#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex):
+#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? -2147483648:
 #@cy		cdef CallStackElem cse
 
 		# Translate a label index into a relative IP offset.
 		cse = self.callStackTop
 		label = cse.block.labels[labelIndex]
-		return label.getInsn().getIP() - cse.ip
+		return label.insn.ip - cse.ip
 
 	def jumpToLabel(self, labelIndex): #@nocy
 #@cy	cdef jumpToLabel(self, uint32_t labelIndex):

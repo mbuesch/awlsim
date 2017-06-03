@@ -184,7 +184,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 		return bytearray()#TODO
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
-#@cy	cdef _Bool directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data):
+#@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
 		return False#TODO
 
 # Module entry point
