@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 import time
 import datetime
 import random
+from collections import deque
 
 from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
@@ -784,6 +785,9 @@ class S7CPU(object): #+cdef
 		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
+		self.__avgCycleTimes = deque()
+		self.__avgCycleTimesCount = 0
+		self.__avgCycleTimesSum = 0.0
 		self.startupTime = perf_monotonic_time()
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
@@ -938,6 +942,11 @@ class S7CPU(object): #+cdef
 	def runCycle(self): #+cdef
 #@cy		cdef double elapsedTime
 #@cy		cdef double cycleTime
+#@cy		cdef double avgCycleTime
+#@cy		cdef double avgCycleTimesSum
+#@cy		cdef double firstSample
+#@cy		cdef double avgInsnPerCycle
+#@cy		cdef double avgTimePerInsn
 #@cy		cdef uint32_t cycleCount
 #@cy		cdef uint32_t insnCount
 
@@ -957,17 +966,35 @@ class S7CPU(object): #+cdef
 			insnCount = (self.__insnCount - self.__speedMeasureStartInsnCount) &\
 				    0x3FFFFFFF
 
-			# Calculate instruction statistics.
-			self.insnPerSecond = insnCount / elapsedTime
-			self.avgInsnPerCycle = insnCount / cycleCount
-
 			# Get the average cycle time over the measurement period.
 			cycleTime = elapsedTime / cycleCount
 
-			# Store overall-average cycle time and maximum cycle time.
+			# Calculate and store maximum and minimum cycle time.
 			self.maxCycleTime = max(self.maxCycleTime, cycleTime)
 			self.minCycleTime = min(self.minCycleTime, cycleTime)
-			self.avgCycleTime = (self.avgCycleTime + cycleTime) / 2.0
+
+			# Calculate and store moving average cycle time.
+			avgCycleTimes = self.__avgCycleTimes
+			avgCycleTimes.append(cycleTime)
+			avgCycleTimesSum = self.__avgCycleTimesSum
+			if self.__avgCycleTimesCount >= 3: # 3 samples
+				firstSample = avgCycleTimes.popleft()
+				avgCycleTimesSum -= firstSample
+				avgCycleTimesSum += cycleTime
+				self.avgCycleTime = avgCycleTime = avgCycleTimesSum / 3.0 # 3 samples
+			else:
+				avgCycleTimesSum += cycleTime
+				self.__avgCycleTimesCount += 1
+				self.avgCycleTime = avgCycleTime = 0.0
+			self.__avgCycleTimesSum = avgCycleTimesSum
+
+			# Calculate instruction statistics.
+			self.avgInsnPerCycle = avgInsnPerCycle = insnCount / cycleCount
+			avgTimePerInsn = avgCycleTime / avgInsnPerCycle
+			if avgTimePerInsn > 0.0:
+				self.insnPerSecond = 1.0 / avgTimePerInsn
+			else:
+				self.insnPerSecond = 0.0
 
 			# Reset the counters
 			self.__speedMeasureStartTime = self.now
@@ -2261,10 +2288,13 @@ class S7CPU(object): #+cdef
 		if maxCycleTime == 0.0:
 			avgCycleTimeStr = minCycleTimeStr = maxCycleTimeStr = "-/-"
 		else:
-			avgCycleTimeStr = "%.03f" % (self.avgCycleTime * 1000.0)
+			if avgCycleTime == 0.0:
+				avgCycleTimeStr = "-/-"
+			else:
+				avgCycleTimeStr = "%.03f" % (self.avgCycleTime * 1000.0)
 			minCycleTimeStr = "%.03f" % (self.minCycleTime * 1000.0)
 			maxCycleTimeStr = "%.03f" % (self.maxCycleTime * 1000.0)
-		ret.append(" CycleT:  avg: %s ms  min: %s ms  max: %s ms" % (
+		ret.append("OB1time:  avg: %s ms  min: %s ms  max: %s ms" % (
 			   avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr))
 		return '\n'.join(ret)
 

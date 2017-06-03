@@ -82,6 +82,9 @@ cdef class S7CPU(object):
 	cdef public double minCycleTime
 	cdef public double maxCycleTime
 	cdef public double avgCycleTime
+	cdef public object __avgCycleTimes
+	cdef public uint32_t __avgCycleTimesCount
+	cdef public double __avgCycleTimesSum
 	cdef public double startupTime
 	cdef public double __speedMeasureStartTime
 	cdef public uint32_t __speedMeasureStartInsnCount
