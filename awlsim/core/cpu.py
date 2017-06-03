@@ -2213,10 +2213,10 @@ class S7CPU(object): #+cdef
 		ret.append(self.__dumpMem(prefix,
 					  self.outputs, 0,
 					  min(64, specs.nrOutputs)))
-		pstack = str(callStackTop.parenStack) if callStackTop.parenStack else "Empty"
+		pstack = str(callStackTop.parenStack) if callStackTop.parenStack else "--"
 		ret.append(" PStack:  " + pstack)
-		ret.append("     DB:  %s" % str(self.dbRegister))
-		ret.append("     DI:  %s" % str(self.diRegister))
+		ret.append("  DBreg:  %s  %s" % (str(self.dbRegister),
+						 str(self.diRegister).replace("DB", "DI")))
 		if callStackTop:
 			elemsMax, elemsCount, elems, cse =\
 				8, 0, [], callStackTop
@@ -2237,18 +2237,35 @@ class S7CPU(object): #+cdef
 		curInsn = self.getCurrentInsn()
 		ret.append("   Stmt:  IP:%s   %s" %\
 			   (str(self.getCurrentIP()),
-			    str(curInsn) if curInsn else ""))
+			    str(curInsn) if curInsn else "none"))
+		insnPerSecond = self.insnPerSecond
+		if insnPerSecond >= 1000000.0:
+			insnPerSecond /= 1000000.0
+			suffix = "M "
+		elif insnPerSecond >= 1000.0:
+			insnPerSecond /= 1000.0
+			suffix = "k "
+		else:
+			suffix = ""
 		if self.insnPerSecond:
 			usPerInsn = "%.03f" % ((1.0 / self.insnPerSecond) * 1000000)
 		else:
 			usPerInsn = "-/-"
-		ret.append("  Speed:  %d stmt/s (= %s us/stmt)  %.01f stmt/cycle" %\
-			   (int(round(self.insnPerSecond)),
-			    usPerInsn,
-			    self.avgInsnPerCycle))
-		ret.append(" CycleT:  avg: %.06f s  min: %.06f s  max: %.06f s" %\
-			   (self.avgCycleTime, self.minCycleTime,
-			    self.maxCycleTime))
+		ret.append("  Speed:  %.02f %sstmt/s (= %s us/stmt)  %.01f stmt/cycle" % (
+			   insnPerSecond, suffix,
+			   usPerInsn,
+			   self.avgInsnPerCycle))
+		avgCycleTime = self.avgCycleTime
+		minCycleTime = self.minCycleTime
+		maxCycleTime = self.maxCycleTime
+		if maxCycleTime == 0.0:
+			avgCycleTimeStr = minCycleTimeStr = maxCycleTimeStr = "-/-"
+		else:
+			avgCycleTimeStr = "%.03f" % (self.avgCycleTime * 1000.0)
+			minCycleTimeStr = "%.03f" % (self.minCycleTime * 1000.0)
+			maxCycleTimeStr = "%.03f" % (self.maxCycleTime * 1000.0)
+		ret.append(" CycleT:  avg: %s ms  min: %s ms  max: %s ms" % (
+			   avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr))
 		return '\n'.join(ret)
 
 	def __repr__(self):
