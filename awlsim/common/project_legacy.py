@@ -84,17 +84,26 @@ class LegacyProjectParser(object):
 			if p.has_option("AWLSIM_PROJECT", "date"):
 				# Compatibility only. "date" is deprecated.
 				dStr = p.get("AWLSIM_PROJECT", "date")
-				createDate = datetime.datetime.strptime(dStr,
-							projectClass.DATETIME_FMT)
+				try:
+					createDate = datetime.datetime.strptime(dStr,
+								projectClass.DATETIME_FMT)
+				except (ValueError, TypeError) as e:
+					createDate = None
 				modifyDate = createDate
 			if p.has_option("AWLSIM_PROJECT", "create_date"):
 				dStr = p.get("AWLSIM_PROJECT", "create_date")
-				createDate = datetime.datetime.strptime(dStr,
-							projectClass.DATETIME_FMT)
+				try:
+					createDate = datetime.datetime.strptime(dStr,
+								projectClass.DATETIME_FMT)
+				except (ValueError, TypeError) as e:
+					createDate = None
 			if p.has_option("AWLSIM_PROJECT", "modify_date"):
 				dStr = p.get("AWLSIM_PROJECT", "modify_date")
-				modifyDate = datetime.datetime.strptime(dStr,
-							projectClass.DATETIME_FMT)
+				try:
+					modifyDate = datetime.datetime.strptime(dStr,
+								projectClass.DATETIME_FMT)
+				except (ValueError, TypeError) as e:
+					modifyDate = None
 
 			def getSrcs(srcList, section, prefix, SrcClass):
 				for i in range(0xFFFF):

@@ -396,6 +396,22 @@ class ProjectFactory(XmlFactory):
 					raise self.Error("Unsupported .awlpro format version. "
 						"Got %d, but expected %d." % (
 						version, self.FILE_FORMAT_VERSION))
+				createDate = tag.getAttr("date_create", None)
+				modifyDate = tag.getAttr("date_modify", None)
+				try:
+					if createDate:
+						createDate = datetime.datetime.strptime(
+							createDate, project.DATETIME_FMT)
+						project.setCreateDate(createDate)
+				except (ValueError, TypeError) as e:
+					pass
+				try:
+					if modifyDate:
+						modifyDate = datetime.datetime.strptime(
+							modifyDate, project.DATETIME_FMT)
+						project.setModifyDate(modifyDate)
+				except (ValueError, TypeError) as e:
+					pass
 				self.inProject = True
 				return
 		XmlFactory.parser_beginTag(self, tag)
