@@ -214,7 +214,7 @@ class Symbol(object):
 			raise AwlSimError("Unicode error while trying to generate "
 				"symbol CSV dump.")
 
-	def toASC(self):
+	def toASC(self, stripWhitespace=False):
 		# Returns ASC format of this symbol.
 		self.validate()
 		try:
@@ -226,11 +226,26 @@ class Symbol(object):
 			operator += " " * (11 - len(operator))
 			type += " " * (9 - len(type))
 			comment += " " * (80 - len(comment))
-			return ''.join(('126,', name, operator,
-					 ' ', type, ' ', comment, '\r\n'))
+			line = ''.join(('126,', name, operator,
+					' ', type, ' ', comment))
+			if stripWhitespace:
+				# Strip the right hand white space.
+				# This does not produce compliant ASC format.
+				# But the Awlsim parser supports this as
+				# an editing convenience.
+				# See SymTabParser_ASC.
+				# This is an Awlsim extension.
+				line = line.rstrip()
+				minLen = SymTabParser_ASC.LEN_LEN +\
+					 SymTabParser_ASC.LEN_NAME +\
+					 SymTabParser_ASC.LEN_ADDR + 1
+				if len(line) < minLen:
+					line += " " * (minLen - len(line))
+			line += '\r\n'
 		except UnicodeError as e:
 			raise AwlSimError("Unicode error while trying to generate "
 				"symbol ASC dump.")
+		return line
 
 	def __repr__(self):
 		return self.toReadableCSV()
@@ -253,8 +268,8 @@ class SymbolTable(object):
 		return "".join(s.toReadableCSV()\
 			       for s in self.__symbolsList)
 
-	def toASC(self):
-		return "".join(s.toASC()\
+	def toASC(self, stripWhitespace=False):
+		return "".join(s.toASC(stripWhitespace=stripWhitespace)\
 			       for s in self.__symbolsList)
 
 	def __repr__(self):

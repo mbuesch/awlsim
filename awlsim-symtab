@@ -120,7 +120,7 @@ def main():
 		elif opt_outputFormat == "readable-csv":
 			outDataText = tab.toReadableCSV()
 		elif opt_outputFormat == "asc":
-			outDataText = tab.toASC()
+			outDataText = tab.toASC(stripWhitespace=False)
 		else:
 			assert(0)
 
