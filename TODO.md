@@ -13,10 +13,8 @@ core
 * Improve performance (cython)
 * Blocks that are no longer linked to (created by) sources should be removed.
 * Single download of symtab causes a redefinition error.
-* XML based .awlpro file format
 * Add feature: FBD (FUP) decompiler
 * Add feature: LAD (KOP) (de-)compiler
-* Relax the symbol parser to also parse slightly malformed asc files
 
 GUI
 ---

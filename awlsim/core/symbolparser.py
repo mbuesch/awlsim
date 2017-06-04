@@ -25,8 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.cpuconfig import *
 
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
+from awlsim.core.memory import * #+cimport
 from awlsim.core.util import *
 
 from awlsim.awlcompiler.optrans import *
@@ -170,7 +169,6 @@ class Symbol(object):
 
 	def toCSV(self):
 		# Returns compact CSV of this symbol.
-		# Return type is bytes.
 		self.validate()
 		try:
 			name = self.__csvRecord(self.name)
@@ -186,7 +184,6 @@ class Symbol(object):
 	def toReadableCSV(self):
 		# Returns human readable, but also machine processable
 		# CSV of this symbol.
-		# Return type is bytes.
 		self.validate()
 		try:
 			name = self.__csvRecord(self.name)
@@ -209,7 +206,6 @@ class Symbol(object):
 
 	def toASC(self):
 		# Returns ASC format of this symbol.
-		# Return type is bytes.
 		self.validate()
 		try:
 			name = str(self.name)
@@ -436,6 +432,18 @@ class SymTabParser(object):
 		return sym
 
 class SymTabParser_ASC(SymTabParser):
+	"""ASC symbol table file parser.
+	"""
+
+	# Character lengths of the fields.
+	# (The length field being restricted to 4 characters
+	#  is an Awlsim restriction.)
+	LEN_LEN		= 4
+	LEN_NAME	= 24
+	LEN_ADDR	= 12
+	LEN_TYPE	= 10
+	LEN_COMMENT	= 80
+
 	def _parse(self, data, probeOnly=False):
 		table = SymbolTable()
 		lines = data.splitlines()
@@ -443,18 +451,34 @@ class SymTabParser_ASC(SymTabParser):
 			lineNr = i + 1
 			if not line.strip():
 				continue
+			if not line.startswith("126,"):
+				# Technically it is allowed to have a different length
+				# prefix, but we do not support that.
+				# S7 and Awlsim do only generate entries with
+				# 126 characters, so we restrict the parser to that.
+				raise AwlSimError("ASC symbol table parser: "\
+					"Invalid line start (!= '126,') in "\
+					"line %d" % lineNr)
+			if len(line) >= self.LEN_LEN + self.LEN_NAME + self.LEN_ADDR + 1 and\
+			   len(line) < 130:
+				# As a convenience we support entries with the trailing
+				# whitespace after the data type being stripped.
+				# (We assume a data type length of at least 1 character here)
+				# Just add some white space to fill the 130 characters.
+				# This is an Awlsim extension.
+				line += " " * (130 - len(line))
 			if len(line) != 130:
 				raise AwlSimError("ASC symbol table parser: "\
 					"Invalid line length (!= 130 chars) in "\
 					"line %d" % lineNr)
-			if not line.startswith("126,"):
-				raise AwlSimError("ASC symbol table parser: "\
-					"Invalid line start (!= '126,') in "\
-					"line %d" % lineNr)
-			symName = line[4:28]
-			symAddr = line[28:40]
-			symType = line[40:50]
-			symComment = line[50:]
+			offs = self.LEN_LEN
+			symName = line[offs : offs + self.LEN_NAME]
+			offs += self.LEN_NAME
+			symAddr = line[offs : offs + self.LEN_ADDR]
+			offs += self.LEN_ADDR
+			symType = line[offs : offs + self.LEN_TYPE]
+			offs += self.LEN_TYPE
+			symComment = line[offs : ]
 			if not probeOnly:
 				table.add(self.parseSym(symName = symName,
 							symAddr = symAddr,
@@ -466,6 +490,9 @@ class SymTabParser_ASC(SymTabParser):
 SymTabParser.implementations.append(SymTabParser_ASC)
 
 class SymTabParser_CSV(SymTabParser):
+	"""CSV symbol table file parser.
+	"""
+
 	def _parse(self, data, probeOnly=False):
 		table = SymbolTable()
 		csvReader = csv.reader(data.splitlines(),
