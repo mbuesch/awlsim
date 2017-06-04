@@ -410,7 +410,6 @@ class ProjectWidget(QTabWidget):
 			# This might be a plain AWL-file.
 			# Try to load it.
 			self.__loadPlainAwlSource(filename)
-		return 1
 
 	def saveProjectFile(self, filename):
 		if self.__isAdHocProject:

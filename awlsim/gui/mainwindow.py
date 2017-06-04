@@ -155,7 +155,7 @@ class MainWidget(QWidget):
 				str(e), executableName))
 			return
 
-	def loadFile(self, filename):
+	def loadFile(self, filename, newIfNotExist=False):
 		if self.dirty:
 			res = QMessageBox.question(self,
 				"Unsaved project",
@@ -181,17 +181,24 @@ class MainWidget(QWidget):
 			else:
 				assert(0)
 		self.getCpuWidget().goOffline()
-		try:
-			res = self.projectWidget.loadProjectFile(filename)
-			if not res:
+		if not fileExists(filename) and newIfNotExist:
+			# The file does not exist. We implicitly create it.
+			# The actual file will be created when the project is saved.
+			isNewProject = True
+			self.projectWidget.reset()
+		else:
+			isNewProject = False
+			try:
+				self.projectWidget.loadProjectFile(filename)
+			except AwlSimError as e:
+				QMessageBox.critical(self,
+					"Failed to load project file", str(e))
 				return False
-		except AwlSimError as e:
-			QMessageBox.critical(self,
-				"Failed to load project file", str(e))
-			return False
 		self.filename = filename
-		self.setDirty(dirty = not bool(self.getProject().getProjectFile()),
-			      force = True)
+		if isNewProject or not self.getProject().getProjectFile():
+			self.setDirty(True, force=True)
+		else:
+			self.setDirty(False, force=True)
 		self.projectLoaded.emit(self.getProject())
 		return True
 
@@ -208,7 +215,7 @@ class MainWidget(QWidget):
 			"All files (*)")
 		if not fn:
 			return
-		self.loadFile(fn)
+		self.loadFile(fn, newIfNotExist=False)
 
 	def saveFile(self, filename):
 		try:
@@ -462,7 +469,7 @@ class MainWindow(QMainWindow):
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 
 		if awlSource:
-			self.mainWidget.loadFile(awlSource)
+			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
 
 	@property
 	def cpuWidget(self):
