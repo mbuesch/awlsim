@@ -404,7 +404,8 @@ def make_CallStackElem(cpu,						#@nocy
 
 	# Handle parameters
 	cse._outboundParams = []
-	if parameters and not isRawCall:
+	if parameters and not isRawCall: #@nocy
+#@cy	if not isRawCall:
 		if block.isFB:
 			structInstance = instanceDB.structInstance
 			callByRefTypes = callByRef_Types
