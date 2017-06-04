@@ -40,6 +40,7 @@ class AwlStructField(object):
 		"dataType",
 		"initBytes",
 		"override",
+		"finalOverride",
 		"bitSize",
 		"byteSize",
 		"compound",
@@ -60,6 +61,7 @@ class AwlStructField(object):
 		self.dataType = dataType
 		self.initBytes = initBytes
 		self.override = override
+		self.finalOverride = None # Not known, yet.
 
 		self.bitSize = self.dataType.width
 		self.byteSize = intDivRoundUp(self.bitSize, 8)
@@ -83,10 +85,9 @@ class AwlStructField(object):
 		return not self.__eq__(other)
 
 	# Return the final AwlStructField override in the chain.
-	@property
-	def finalOverride(self):
+	def getFinalOverride(self):
 		if self.override:
-			return self.override.finalOverride
+			return self.override.getFinalOverride()
 		return self
 
 	def __repr__(self):
@@ -130,7 +131,7 @@ class AwlStruct(object):
 			return 0
 		# Get the offset of the last field and
 		# add its size.
-		lastField = self.fields[-1].finalOverride
+		lastField = self.fields[-1].getFinalOverride()
 		return lastField.offset.byteOffset + lastField.byteSize
 
 	def __registerField(self, field):

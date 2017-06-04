@@ -116,6 +116,12 @@ class AwlParamAssign(object): #+cdef
 		self.lValueStructField = self.__lValueStructField()
 		self.interfaceFieldIndex = self.__interfaceFieldIndex()
 
+		# Store a static reference to the finalOverride in the
+		# struct field. This improves performance of CALLs.
+		structField = self.lValueStructField
+		if structField:
+			structField.finalOverride = structField.getFinalOverride()
+
 	def __isInbound(self):
 		field = self.interface.getFieldByName(self.lvalueName)
 		return field.fieldType == BlockInterfaceField.FTYPE_IN or\
