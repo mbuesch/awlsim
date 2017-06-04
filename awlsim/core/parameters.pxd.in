@@ -1,4 +1,5 @@
 from awlsim.core.operators cimport *
+from awlsim.core.datastructure cimport *
 
 cdef class AwlParamAssign(object):
 	cdef public object lvalueName
@@ -8,7 +9,7 @@ cdef class AwlParamAssign(object):
 	cdef public _Bool isInbound
 	cdef public _Bool isOutbound
 	cdef public object lValueDataType
-	cdef public object lValueStructField
+	cdef public AwlStructField lValueStructField
 	cdef public int32_t interfaceFieldIndex
 
 	cpdef __eq(self, object other)

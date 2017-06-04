@@ -24,7 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.core.util import *
 from awlsim.core.blocks import * #+cimport
-from awlsim.core.datastructure import *
+from awlsim.core.datastructure import * #+cimport
 
 from awlsim.awlcompiler.translator import *
 
@@ -59,7 +59,7 @@ class StructRecursion(Exception):
 class UDT(Block): #+cdef
 	"""User defined data type (UDT) block."""
 
-	# self.struct build status.
+	# self._struct build status.
 	EnumGen.start
 	STRUCT_NOT_BUILT	= EnumGen.item # Structs not built, yet.
 	STRUCT_BUILDING		= EnumGen.item # Currently building structs.
@@ -129,7 +129,7 @@ class UDT(Block): #+cdef
 						      field.dataType,
 						      field.initBytes)
 
-	# Build self.struct out of self.fields
+	# Build self._struct out of self.fields
 	def buildDataStructure(self, cpu):
 		if self.__structState == self.STRUCT_BUILT:
 			# We already built this block's interface structure.

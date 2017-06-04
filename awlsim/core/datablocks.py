@@ -28,7 +28,7 @@ from awlsim.core.util import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
-from awlsim.core.datastructure import *
+from awlsim.core.datastructure import * #+cimport
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.offset import * #+cimport
 
@@ -67,7 +67,7 @@ class DB(Block): #+cdef
 	@property
 	def struct(self):
 		if self.codeBlock:
-			return self.codeBlock.interface.struct
+			return self.codeBlock.interface._struct
 		return self.__struct
 
 	def isInstanceDB(self):

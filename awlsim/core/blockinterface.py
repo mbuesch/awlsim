@@ -26,7 +26,8 @@ from awlsim.common.util import *
 
 from awlsim.core.memory import * #+cimport
 from awlsim.core.datatypes import *
-from awlsim.core.datastructure import *
+from awlsim.core.identifier import *
+from awlsim.core.datastructure import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
@@ -116,7 +117,7 @@ class BlockInterface(object):
 		AwlDataType.TYPE_BLOCK_FC,
 	)
 
-	# Structs (self.struct and self.tempStruct) build status.
+	# Structs (self._struct and self.tempStruct) build status.
 	EnumGen.start
 	STRUCT_NOT_BUILT	= EnumGen.item # Structs not built, yet.
 	STRUCT_BUILDING		= EnumGen.item # Currently building structs.
@@ -134,7 +135,7 @@ class BlockInterface(object):
 	class StructRecursion(Exception): pass
 
 	def __init__(self):
-		self.struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)
+		self._struct = None # Instance-DB structure (IN, OUT, INOUT, STAT)
 		self.tempStruct = None # Local-stack structure (TEMP)
 		self.__structState = self.STRUCT_NOT_BUILT
 
@@ -262,7 +263,7 @@ class BlockInterface(object):
 				(str(multiFB)))
 
 		# Assign the type width, in bits.
-		field.dataType.width = multiFB.interface.struct.getSize() * 8
+		field.dataType.width = multiFB.interface._struct.getSize() * 8
 		if field.dataType.width == 0:
 			# This is not supported by S7.
 			# Awlsim _could_ support it, though.
@@ -290,15 +291,15 @@ class BlockInterface(object):
 				self.__resolveMultiInstanceField(cpu, field)
 
 			# Build instance-DB structure for the FB
-			self.struct = AwlStruct()
+			self._struct = AwlStruct()
 			for i, field in enumerate(self.fields_IN):
-				self.__buildField(cpu, self.struct, field, i==0)
+				self.__buildField(cpu, self._struct, field, i==0)
 			for i, field in enumerate(self.fields_OUT):
-				self.__buildField(cpu, self.struct, field, i==0)
+				self.__buildField(cpu, self._struct, field, i==0)
 			for i, field in enumerate(self.fields_INOUT):
-				self.__buildField(cpu, self.struct, field, i==0)
+				self.__buildField(cpu, self._struct, field, i==0)
 			for i, field in enumerate(self.fields_STAT):
-				self.__buildField(cpu, self.struct, field, i==0)
+				self.__buildField(cpu, self._struct, field, i==0)
 		else:
 			# An FC does not have an instance-DB
 			assert(not self.fields_STAT) # No static data.
@@ -394,7 +395,7 @@ class BlockInterface(object):
 							       wantPointer)
 		# otherwise get IN/OUT/INOUT/STAT interface field operator
 
-		structField = self.struct.getField(identChain.getString())
+		structField = self._struct.getField(identChain.getString())
 
 		# FC-parameters cannot be resolved statically.
 		assert(self.hasInstanceDB)

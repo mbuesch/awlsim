@@ -387,6 +387,8 @@ def make_CallStackElem(cpu,						#@nocy
 #				       _Bool isRawCall):		#@cy
 #@cy	cdef CallStackElem cse
 #@cy	cdef AwlParamAssign param
+#@cy	cdef AwlStructField structField
+#@cy	cdef AwlStructInstance structInstance
 #@cy	cdef frozenset callByRefTypes
 
 	cse = CallStackElem()
@@ -438,7 +440,7 @@ def make_CallStackElem(cpu,						#@nocy
 						# Non-compound (basic) data type or
 						# not IN_OUT declaration.
 						# Get the actual data.
-						if structField.dataType.type in callByRefTypes:
+						if structField.dataTypeId in callByRefTypes:
 							# Do not fetch. Type is passed 'by reference'.
 							# This is for TIMER, COUNTER, etc...
 							data = param.rvalueOp.resolve().offset.byteOffset

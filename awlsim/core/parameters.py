@@ -22,7 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.datastructure import *
+from awlsim.core.datastructure import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.datablocks import * #+cimport
@@ -138,7 +138,7 @@ class AwlParamAssign(object): #+cdef
 
 	def __lValueStructField(self):
 		# Find the l-value struct field
-		_struct = self.interface.struct
+		_struct = self.interface._struct
 		if _struct:
 			return _struct.getField(self.lvalueName)
 		return None

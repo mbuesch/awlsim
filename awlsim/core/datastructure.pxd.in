@@ -1,0 +1,26 @@
+from awlsim.core.memory cimport *
+from awlsim.core.offset cimport *
+
+cdef class AwlStructField(object):
+	cdef public object name
+	cdef public AwlOffset offset
+	cdef public object dataType
+	cdef public uint32_t dataTypeId
+	cdef public object initBytes
+	cdef public AwlStructField override
+	cdef public AwlStructField finalOverride
+	cdef public uint32_t bitSize
+	cdef public uint32_t byteSize
+	cdef public _Bool compound
+
+	cdef __eq(self, other)
+
+cdef class AwlStruct(object):
+	cdef public list fields
+	cdef public dict name2field
+
+	cdef __eq(self, other)
+
+cdef class AwlStructInstance(object):
+	cdef public AwlStruct _struct
+	cdef public AwlMemory memory

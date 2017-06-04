@@ -342,7 +342,7 @@ class AwlDataType(OptionalImmutable):
 				assert(dataType.index is None)
 				assert(dataType.arrayDimensions is None)
 				assert(dataType.arrayElementType is None)
-				assert(dataType.struct is None)
+				assert(dataType._struct is None)
 				assert(cls.__staticTypes[type] is None)
 				cls.__staticTypes[type] = dataType
 
@@ -353,7 +353,7 @@ class AwlDataType(OptionalImmutable):
 		"index",
 		"arrayDimensions",
 		"arrayElementType",
-		"struct",
+		"_struct",
 		"__widthOverride",
 	)
 
@@ -377,7 +377,7 @@ class AwlDataType(OptionalImmutable):
 			self.index == other.index and\
 			self.arrayDimensions == other.arrayDimensions and\
 			self.arrayElementType == other.arrayElementType and\
-			self.struct == other.struct and\
+			self._struct == other._struct and\
 			self.__widthOverride == other.__widthOverride\
 		)
 
@@ -390,7 +390,7 @@ class AwlDataType(OptionalImmutable):
 		       self.type == self.TYPE_STRUCT or
 		       self.type == self.TYPE_UDT_X or
 		       self.type == self.TYPE_STRING)
-		self.struct = struct
+		self._struct = struct
 
 	# Get the type element structure.
 	# This is the element's struct for ARRAYs and the struct
@@ -399,8 +399,8 @@ class AwlDataType(OptionalImmutable):
 	@property
 	def itemStruct(self):
 		if self.type == self.TYPE_ARRAY:
-			return self.arrayElementType.struct
-		return self.struct
+			return self.arrayElementType._struct
+		return self._struct
 
 	# Returns the width of this data type, in bits.
 	@property
@@ -410,8 +410,8 @@ class AwlDataType(OptionalImmutable):
 		if self.type == self.TYPE_ARRAY:
 			nrElements = self.arrayGetNrElements()
 			if self.arrayElementType.type == self.TYPE_STRUCT:
-				if self.arrayElementType.struct:
-					oneElemWidth = self.arrayElementType.struct.getSize() * 8
+				if self.arrayElementType._struct:
+					oneElemWidth = self.arrayElementType._struct.getSize() * 8
 					width = nrElements * oneElemWidth
 				else:
 					width = -1
@@ -420,12 +420,12 @@ class AwlDataType(OptionalImmutable):
 				width = nrElements * oneElemWidth
 		elif self.type == self.TYPE_STRUCT or\
 		     self.type == self.TYPE_UDT_X:
-			if self.struct:
-				width = self.struct.getSize() * 8
+			if self._struct:
+				width = self._struct.getSize() * 8
 			else:
 				width = -1
 		elif self.type == self.TYPE_STRING:
-			width = self.struct.getUnalignedSize() * 8
+			width = self._struct.getUnalignedSize() * 8
 		else:
 			width = self.typeWidths[self.type]
 		return width

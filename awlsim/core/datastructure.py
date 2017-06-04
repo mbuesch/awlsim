@@ -26,18 +26,27 @@ from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.util import *
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #+cimport
 from awlsim.core.identifier import *
+from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 
 
-class AwlStructField(object):
-	"Data structure field"
+__all__ = [
+	"AwlStructField",
+	"AwlStruct",
+	"AwlStructInstance",
+]
+
+
+class AwlStructField(object): #+cdef
+	"""Data structure field.
+	"""
 
 	__slots__ = (
 		"name",
 		"offset",
 		"dataType",
+		"dataTypeId",
 		"initBytes",
 		"override",
 		"finalOverride",
@@ -59,6 +68,7 @@ class AwlStructField(object):
 		self.name = name
 		self.offset = offset
 		self.dataType = dataType
+		self.dataTypeId = dataType.type
 		self.initBytes = initBytes
 		self.override = override
 		self.finalOverride = None # Not known, yet.
@@ -71,7 +81,8 @@ class AwlStructField(object):
 		if self.initBytes is not None:
 			assert(len(self.initBytes) == self.byteSize)
 
-	def __eq__(self, other):
+	def __eq__(self, other): #@nocy
+#@cy	cdef __eq(self, other):
 		return (self is other) or (\
 			isinstance(other, AwlStructField) and\
 			self.name == other.name and\
@@ -81,8 +92,15 @@ class AwlStructField(object):
 			self.override == other.override\
 		)
 
-	def __ne__(self, other):
-		return not self.__eq__(other)
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy
+
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
 
 	# Return the final AwlStructField override in the chain.
 	def getFinalOverride(self):
@@ -102,21 +120,38 @@ class AwlStructField(object):
 			s += str(self.override)
 		return s
 
-class AwlStruct(object):
-	"Data structure"
+class AwlStruct(object): #+cdef
+	"""Data structure.
+	This is a generic class holding information about data structures
+	in an AWL program. That might be an actual STRUCT or the internal
+	low level representation of an UDT, DB, etc...
+	"""
+
+	__slots__ = (
+		"fields",
+		"name2field",
+	)
 
 	def __init__(self):
 		self.fields = []
 		self.name2field = {}
 
-	def __eq__(self, other):
+	def __eq__(self, other): #@nocy
+#@cy	cdef __eq(self, other):
 		return (self is other) or (\
 			isinstance(other, AwlStruct) and\
 			self.fields == other.fields\
 		)
 
-	def __ne__(self, other):
-		return not self.__eq__(other)
+	def __ne__(self, other):		#@nocy
+		return not self.__eq__(other)	#@nocy
+
+#@cy	def __richcmp__(self, object other, int op):
+#@cy		if op == 2: # __eq__
+#@cy			return self.__eq(other)
+#@cy		elif op == 3: # __ne__
+#@cy			return not self.__eq(other)
+#@cy		return False
 
 	# Return aligned size, in bytes.
 	def getSize(self):
@@ -195,8 +230,8 @@ class AwlStruct(object):
 			assert(not initBytes)
 			# Assign the struct to the UDT data type, if
 			# not already done so.
-			assert(dataType.struct is None or
-			       dataType.struct is udt._struct)
+			assert(dataType._struct is None or
+			       dataType._struct is udt._struct)
 			dataType.setStruct(udt._struct)
 			# Merge the UDT struct with this struct.
 			return self.merge(udt._struct, name, dataType)
@@ -212,8 +247,8 @@ class AwlStruct(object):
 			# Add a STRUCT (or STRING, which is represented as struct).
 			# The struct is represented by the data types struct.
 			# Merge the data type struct into this struct.
-			assert(dataType.struct)
-			baseField = self.merge(dataType.struct, name, dataType)
+			assert(dataType._struct)
+			baseField = self.merge(dataType._struct, name, dataType)
 			baseField.override = AwlStructField(baseField.name,
 							    baseField.offset,
 							    "VOID")
@@ -301,16 +336,23 @@ class AwlStruct(object):
 	def __repr__(self):
 		return "\n".join(str(field) for field in self.fields)
 
-class AwlStructInstance(object):
-	"Data structure instance"
+class AwlStructInstance(object): #+cdef
+	"""Data structure instance.
+	This represents an instance that corresponds to an AwlStruct() object.
+	"""
 
-	def __init__(self, struct):
+	__slots__ = (
+		"_struct",
+		"memory",
+	)
+
+	def __init__(self, _struct):
 		# Store a reference to the data structure
-		self.struct = struct
+		self._struct = _struct
 		# Allocate self.memory
-		self.memory = AwlMemory(self.struct.getSize())
+		self.memory = AwlMemory(self._struct.getSize())
 		# Initialize the data structure
-		for field in self.struct.fields:
+		for field in self._struct.fields:
 			if not field.initBytes:
 				continue
 			try:
@@ -335,7 +377,7 @@ class AwlStructInstance(object):
 					  field.bitSize, value)
 
 	def getFieldDataByName(self, name):
-		return self.getFieldData(self.struct.getField(name))
+		return self.getFieldData(self._struct.getField(name))
 
 	def setFieldDataByName(self, name, value):
-		self.setFieldData(self.struct.getField(name), value)
+		self.setFieldData(self._struct.getField(name), value)
