@@ -33,6 +33,15 @@ from awlsim.awlcompiler.optrans import *
 import csv
 
 
+__all__ = [
+	"Symbol",
+	"SymbolTable",
+	"SymTabParser",
+	"SymTabParser_ASC",
+	"SymTabParser_CSV",
+]
+
+
 class AwlsimSymTabCSVDialect(csv.Dialect):
 	delimiter = str(';')
 	quotechar = str('"')
@@ -44,7 +53,8 @@ class AwlsimSymTabCSVDialect(csv.Dialect):
 csv.register_dialect("awlsim_symtab", AwlsimSymTabCSVDialect)
 
 class Symbol(object):
-	"""One symbol."""
+	"""One symbol.
+	"""
 
 	def __init__(self, name="", operator=None, type=None, comment="",
 		     mnemonics=S7CPUConfig.MNEMONICS_AUTO,
@@ -226,7 +236,8 @@ class Symbol(object):
 		return self.toReadableCSV()
 
 class SymbolTable(object):
-	"""Parsed symbol table."""
+	"""Parsed symbol table.
+	"""
 
 	def __init__(self):
 		self.clear()
@@ -339,7 +350,8 @@ class SymbolTable(object):
 			self.add(symbol, overrideExisting)
 
 class SymTabParser(object):
-	"""Abstract symbol table parser."""
+	"""Abstract symbol table parser.
+	"""
 
 	implementations = []
 
