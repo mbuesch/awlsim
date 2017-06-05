@@ -10,8 +10,8 @@ cdef class S7StatusWord(object):
 	cdef public _Bool BIE
 
 	cpdef __eq(self, object other)
-	cpdef reset(self)
+	cpdef void reset(self)
 	cpdef uint16_t getWord(self)
-	cpdef setWord(self, uint16_t word)
+	cpdef void setWord(self, uint16_t word)
 	cpdef dup(self)
-	cpdef setForFloatingPoint(self, pyFloat)
+	cpdef void setForFloatingPoint(self, pyFloat)

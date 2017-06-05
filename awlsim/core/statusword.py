@@ -164,7 +164,7 @@ class S7StatusWord(object): #+cdef
 				"out of range" % bitNumber)
 
 	def reset(self): #@nocy
-#@cy	cpdef reset(self):
+#@cy	cpdef void reset(self):
 		self.NER = self.VKE = self.STA =\
 		self.OR = self.OS = self.OV =\
 		self.A0 = self.A1 = self.BIE = 0
@@ -176,7 +176,7 @@ class S7StatusWord(object): #+cdef
 		       (self.A0 << 6) | (self.A1 << 7) | (self.BIE << 8)
 
 	def setWord(self, word): #@nocy
-#@cy	cpdef setWord(self, uint16_t word):
+#@cy	cpdef void setWord(self, uint16_t word):
 		self.NER = word & 1
 		self.VKE = (word >> 1) & 1
 		self.STA = (word >> 2) & 1
@@ -187,8 +187,7 @@ class S7StatusWord(object): #+cdef
 		self.A1 = (word >> 7) & 1
 		self.BIE = (word >> 8) & 1
 
-	def dup(self): #@nocy
-#@cy	cpdef dup(self):
+	def dup(self): #+cpdef
 		new = S7StatusWord()
 		new.NER = self.NER
 		new.VKE = self.VKE
@@ -202,7 +201,7 @@ class S7StatusWord(object): #+cdef
 		return new
 
 	def setForFloatingPoint(self, pyFloat): #@nocy
-#@cy	cpdef setForFloatingPoint(self, pyFloat):
+#@cy	cpdef void setForFloatingPoint(self, pyFloat):
 		dword = pyFloatToDWord(pyFloat)
 		dwordNoSign = dword & 0x7FFFFFFF
 		if isDenormalPyFloat(pyFloat) or\
