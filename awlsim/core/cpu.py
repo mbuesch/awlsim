@@ -834,7 +834,7 @@ class S7CPU(object): #+cdef
 			self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	def __runOB(self, block): #@nocy
-#@cy	cdef __runOB(self, CodeBlock block):
+#@cy	cdef __runOB(self, OB block):
 #@cy		cdef AwlInsn insn
 #@cy		cdef CallStackElem cse
 #@cy		cdef CallStackElem exitCse

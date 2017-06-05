@@ -151,7 +151,7 @@ cdef class S7CPU(object):
 	cdef __runTimeCheck(self)
 
 	cdef runCycle(self)
-	cdef __runOB(self, CodeBlock block)
+	cdef __runOB(self, OB block)
 	cdef run_BE(self)
 	cdef run_AUF(self, AwlOperator dbOper)
 	cdef run_TDB(self)
