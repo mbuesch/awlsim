@@ -1396,6 +1396,7 @@ class S7CPU(object): #+cdef
 #@cy		cdef AwlOperator interfOp
 #@cy		cdef AwlOperator dbPtrOp
 #@cy		cdef AwlOperator finalOp
+#@cy		cdef AwlOffset subOffset
 
 		# Translate an 'operator' to a named local FC parameter.
 		# The returned operator is an operator to the actual data.
@@ -1407,7 +1408,7 @@ class S7CPU(object): #+cdef
 			dbPtrOp = interfOp.dup()
 			dbPtrOp.width = 16
 			dbNr = self.fetch(dbPtrOp)
-			dbPtrOp.offset += make_AwlOffset(2, 0)
+			dbPtrOp.offset.byteOffset += 2
 			dbPtrOp.width = 32
 			pointer = self.fetch(dbPtrOp)
 			# Open the DB pointed to by the DB-ptr.
@@ -1432,7 +1433,9 @@ class S7CPU(object): #+cdef
 			finalOp = interfOp.dup()
 			finalOp.width = operator.width
 		# Add possible sub-offsets (ARRAY, STRUCT) to the offset.
-		finalOp.offset += operator.offset.subOffset
+		subOffset = operator.offset.subOffset
+		if subOffset is not None:
+			finalOp.offset += subOffset
 		# Reparent the operator to the originating instruction.
 		# This is especially important for T and Z fetches due
 		# to their semantic dependency on the instruction being used.
@@ -1876,7 +1879,7 @@ class S7CPU(object): #+cdef
 
 	def __fetchNAMED_LOCAL_PTR(self, operator, enforceWidth): #@nocy
 #@cy	cdef object __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, frozenset enforceWidth):
-		assert(operator.offset.subOffset.byteOffset == 0) #@nocy
+		assert(operator.offset.subOffset is None) #@nocy
 		return self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue()
 
 	def __fetchNAMED_DBVAR(self, operator, enforceWidth): #@nocy

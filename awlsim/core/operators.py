@@ -63,7 +63,7 @@ class AwlOperator(object): #+cdef
 
 	# Interface index number.
 	# May be set by the symbol resolver.
-	interfaceIndex = None #@nocy
+	interfaceIndex = 0xFFFF #@nocy
 
 	# Compound data type flag.
 	# Set to true for accesses > 32 bit or
@@ -80,7 +80,7 @@ class AwlOperator(object): #+cdef
 #@cy		self.pointer = None
 #@cy		self.isExtended = False
 #@cy		self.labelIndex = None
-#@cy		self.interfaceIndex = None
+#@cy		self.interfaceIndex = 0xFFFF
 #@cy		self.compound = False
 #@cy		self.dataType = None
 

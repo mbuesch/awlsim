@@ -578,7 +578,10 @@ class AwlSymResolver(object):
 		assert(oper.width > 0)
 
 		# Store the sub-offset (might be zero).
-		oper.offset.subOffset = subOffset
+		if subOffset.byteOffset or subOffset.bitOffset:
+			oper.offset.subOffset = subOffset
+		else:
+			oper.offset.subOffset = None
 
 		# If interface field is of compound data type access, mark
 		# the operand as such.
