@@ -839,6 +839,7 @@ class S7CPU(object): #+cdef
 #@cy		cdef CallStackElem cse
 #@cy		cdef CallStackElem exitCse
 #@cy		cdef LStackAllocator activeLStack
+#@cy		cdef uint32_t insnCount
 
 		# Update timekeeping
 		self.updateTimestamp()
@@ -875,9 +876,9 @@ class S7CPU(object): #+cdef
 				if self.cbPostInsn is not None:
 					self.cbPostInsn(cse, self.cbPostInsnData)
 				cse.ip += self.relativeJump
-				cse, self.__insnCount = self.callStackTop,\
-							(self.__insnCount + 1) & 0x3FFFFFFF
-				if not (self.__insnCount & 0x3F):
+				cse = self.callStackTop
+				self.__insnCount = insnCount = (self.__insnCount + 1) & 0x3FFFFFFF
+				if not (insnCount & 0x3F):
 					self.updateTimestamp()
 					self.__runTimeCheck()
 			if self.cbBlockExit is not None:
