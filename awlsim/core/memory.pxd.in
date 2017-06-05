@@ -5,12 +5,12 @@ cdef class GenericInteger(object):
 	cdef public uint32_t value
 	cdef public uint32_t mask
 
-	cpdef copyFrom(self, GenericInteger other)
-	cpdef reset(self)
-	cpdef set(self, int64_t value)
-	cpdef setByte(self, int64_t value)
-	cpdef setWord(self, int64_t value)
-	cpdef setDWord(self, int64_t value)
+	cpdef void copyFrom(self, GenericInteger other)
+	cpdef void reset(self)
+	cpdef void set(self, int64_t value)
+	cpdef void setByte(self, int64_t value)
+	cpdef void setWord(self, int64_t value)
+	cpdef void setDWord(self, int64_t value)
 	cpdef setPyFloat(self, pyfl)
 	cpdef uint32_t get(self)
 	cpdef uint8_t getByte(self)
@@ -20,9 +20,9 @@ cdef class GenericInteger(object):
 	cpdef int16_t getSignedWord(self)
 	cpdef int32_t getSignedDWord(self)
 	cpdef getPyFloat(self)
-	cpdef setBit(self, uint8_t bitNumber)
-	cpdef clearBit(self, uint8_t bitNumber)
-	cpdef setBitValue(self, uint8_t bitNumber, uint8_t value)
+	cpdef void setBit(self, uint8_t bitNumber)
+	cpdef void clearBit(self, uint8_t bitNumber)
+	cpdef void setBitValue(self, uint8_t bitNumber, _Bool value)
 	cpdef unsigned char getBit(self, uint8_t bitNumber)
 
 cdef class GenericWord(GenericInteger):

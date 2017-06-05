@@ -57,31 +57,31 @@ class GenericInteger(object): #+cdef
 		self.mask = int(((one << width) - 1) & 0xFFFFFFFF)
 
 	def copyFrom(self, other): #@nocy
-#@cy	cpdef copyFrom(self, GenericInteger other):
+#@cy	cpdef void copyFrom(self, GenericInteger other):
 		self.value = other.value & self.mask
 
 	def reset(self): #@nocy
-#@cy	cpdef reset(self):
+#@cy	cpdef void reset(self):
 		self.value = 0
 
 	def set(self, value): #@nocy
-#@cy	cpdef set(self, int64_t value):
+#@cy	cpdef void set(self, int64_t value):
 		self.value = value & self.mask
 
 	def setByte(self, value): #@nocy
-#@cy	cpdef setByte(self, int64_t value):
+#@cy	cpdef void setByte(self, int64_t value):
 		self.value = ((self.value & 0xFFFFFF00) |\
 			      (value & 0xFF)) &\
 			     self.mask
 
 	def setWord(self, value): #@nocy
-#@cy	cpdef setWord(self, int64_t value):
+#@cy	cpdef void setWord(self, int64_t value):
 		self.value = ((self.value & 0xFFFF0000) |\
 			      (value & 0xFFFF)) &\
 			     self.mask
 
 	def setDWord(self, value): #@nocy
-#@cy	cpdef setDWord(self, int64_t value):
+#@cy	cpdef void setDWord(self, int64_t value):
 		self.value = value & 0xFFFFFFFF & self.mask
 
 	def setPyFloat(self, pyfl): #@nocy
@@ -121,15 +121,15 @@ class GenericInteger(object): #+cdef
 		return dwordToPyFloat(self.value)
 
 	def setBit(self, bitNumber): #@nocy
-#@cy	cpdef setBit(self, uint8_t bitNumber):
+#@cy	cpdef void setBit(self, uint8_t bitNumber):
 		self.value = (self.value | (1 << bitNumber)) & self.mask
 
 	def clearBit(self, bitNumber): #@nocy
-#@cy	cpdef clearBit(self, uint8_t bitNumber):
+#@cy	cpdef void clearBit(self, uint8_t bitNumber):
 		self.value &= ~(1 << bitNumber)
 
 	def setBitValue(self, bitNumber, value): #@nocy
-#@cy	cpdef setBitValue(self, uint8_t bitNumber, uint8_t value):
+#@cy	cpdef void setBitValue(self, uint8_t bitNumber, _Bool value):
 		if value:
 			self.setBit(bitNumber)
 		else:
