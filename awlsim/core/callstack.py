@@ -223,9 +223,7 @@ class CallStackElem(object): #+cdef
 				# Create a DB-pointer to it in VL.
 				return self._FC_trans_dbpointerInVL(param, rvalueOp)
 			# Basic data type.
-			self.cpu.run_AUF(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						     make_AwlOffset(rvalueOp.offset.dbNumber, 0),
-						     rvalueOp.insn))
+			self.cpu.openDB(rvalueOp.offset.dbNumber, False)
 			copyToVL = True
 		if copyToVL:
 			# Copy to caller-L-stack.

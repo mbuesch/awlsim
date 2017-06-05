@@ -134,9 +134,7 @@ class SFC21(SFC): #+cdef
 				db = cpu.dbs[BVAL_dbNr]
 				if (db.permissions & db.PERM_READ) == 0:
 					raise KeyError
-				cpu.run_AUF(make_AwlOperator(
-					AwlOperatorTypes.BLKREF_DB, 16,
-					make_AwlOffset(BVAL_dbNr, 0), None))
+				cpu.openDB(BVAL_dbNr, False)
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 1))
@@ -152,9 +150,7 @@ class SFC21(SFC): #+cdef
 				db = cpu.dbs[BLK_dbNr]
 				if (db.permissions & db.PERM_WRITE) == 0:
 					raise KeyError
-				cpu.run_AUF(make_AwlOperator(
-					AwlOperatorTypes.BLKREF_DI, 16,
-					make_AwlOffset(BLK_dbNr, 0), None))
+				cpu.openDB(BLK_dbNr, True)
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 3))

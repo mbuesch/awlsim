@@ -154,6 +154,7 @@ cdef class S7CPU(object):
 	cdef runCycle(self)
 	cdef __runOB(self, OB block)
 	cdef run_BE(self)
+	cdef openDB(self, int32_t dbNumber, _Bool openDI)
 	cdef run_AUF(self, AwlOperator dbOper)
 	cdef run_TDB(self)
 

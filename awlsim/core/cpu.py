@@ -1309,22 +1309,40 @@ class S7CPU(object): #+cdef
 		cse = self.callStackTop
 		self.relativeJump = len(cse.insns) - cse.ip
 
-	def run_AUF(self, dbOper): #@nocy
-#@cy	cdef run_AUF(self, AwlOperator dbOper):
+	def openDB(self, dbNumber, openDI): #@nocy
+#@cy	cdef openDB(self, int32_t dbNumber, _Bool openDI):
 #@cy		cdef DB db
 
+		if dbNumber <= 0:
+			if openDI:
+				self.diRegister = self.db0
+			else:
+				self.dbRegister = self.db0
+		else:
+			try:
+				if openDI:
+					self.diRegister = self.dbs[dbNumber]
+				else:
+					self.dbRegister = self.dbs[dbNumber]
+			except KeyError:
+				raise AwlSimError("Datablock %i does not exist" % dbNumber)
+
+	def run_AUF(self, dbOper): #@nocy
+#@cy	cdef run_AUF(self, AwlOperator dbOper):
+#@cy		cdef _Bool openDI
+#@cy		cdef uint32_t operType
+
 		dbOper = dbOper.resolve()
-		try:
-			db = self.dbs[dbOper.offset.byteOffset]
-		except KeyError:
-			raise AwlSimError("Datablock %i does not exist" %\
-					  dbOper.offset.byteOffset)
-		if dbOper.operType == AwlOperatorTypes.BLKREF_DB:
-			self.dbRegister = db
-		elif dbOper.operType == AwlOperatorTypes.BLKREF_DI:
-			self.diRegister = db
+
+		operType = dbOper.operType
+		if operType == AwlOperatorTypes.BLKREF_DB:
+			openDI = False
+		elif operType == AwlOperatorTypes.BLKREF_DI:
+			openDI = True
 		else:
 			raise AwlSimError("Invalid DB reference in AUF")
+
+		self.openDB(dbOper.offset.byteOffset, openDI)
 
 	def run_TDB(self): #+cdef
 		# Swap global and instance DB
@@ -1413,9 +1431,7 @@ class S7CPU(object): #+cdef
 			pointer = self.fetch(dbPtrOp)
 			# Open the DB pointed to by the DB-ptr.
 			# (This is ok, if dbNr is 0, too)
-			self.run_AUF(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						 make_AwlOffset(dbNr, 0),
-						 operator.insn))
+			self.openDB(dbNr, False)
 			# Make an operator from the DB-ptr.
 			try:
 				opType = AwlIndirectOp.area2optype_fetch[
@@ -1785,9 +1801,7 @@ class S7CPU(object): #+cdef
 		if operator.offset.dbNumber is not None:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
-			self.run_AUF(make_AwlOperator(AwlOperatorTypes.BLKREF_DB, 16,
-						 make_AwlOffset(operator.offset.dbNumber, 0),
-						 operator.insn))
+			self.openDB(operator.offset.dbNumber, False)
 		return self.dbRegister.fetch(operator)
 
 	def __fetchDI(self, operator, enforceWidth): #@nocy
