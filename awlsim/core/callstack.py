@@ -83,11 +83,12 @@ class CallStackElem(object): #+cdef
 	def _FB_trans_dbpointer(self, param, rvalueOp): #@nocy
 #@cy	cdef bytearray _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp):
 #@cy		cdef uint32_t ptr
+#@cy		cdef int32_t dbNumber
 #@cy		cdef bytearray dbPtrData
 
 		dbPtrData = bytearray(6)
 		dbNumber = rvalueOp.offset.dbNumber
-		if dbNumber is not None:
+		if dbNumber >= 0:
 			dbPtrData[0] = (dbNumber >> 8) & 0xFF
 			dbPtrData[1] = dbNumber & 0xFF
 		ptr = rvalueOp.makePointerValue()
@@ -146,6 +147,7 @@ class CallStackElem(object): #+cdef
 #@cy	cdef AwlOperator _FC_trans_dbpointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp):
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset loffset
+#@cy		cdef int32_t dbNumber
 #@cy		cdef uint32_t area
 #@cy		cdef AwlOperator storeOper
 
@@ -161,7 +163,7 @@ class CallStackElem(object): #+cdef
 			dbNumber = cpu.diRegister.index
 		else:
 			dbNumber = rvalueOp.offset.dbNumber
-		cpu.store(storeOper, 0 if dbNumber is None else dbNumber)
+		cpu.store(storeOper, max(0, dbNumber))
 		storeOper.offset = loffset + make_AwlOffset(2, 0)
 		storeOper.width = 32
 		area = AwlIndirectOp.optype2area[rvalueOp.operType]
@@ -214,16 +216,18 @@ class CallStackElem(object): #+cdef
 	def _FC_trans_MEM_DB(self, param, rvalueOp, copyToVL=False): #@nocy
 #@cy	cdef AwlOperator _FC_trans_MEM_DB(self, AwlParamAssign param, AwlOperator rvalueOp, _Bool copyToVL=False):
 #@cy		cdef AwlOffset offset
+#@cy		cdef int32_t dbNumber
 
 		# A (fully qualified) DB variable is passed to an FC.
-		if rvalueOp.offset.dbNumber is not None:
+		dbNumber = rvalueOp.offset.dbNumber
+		if dbNumber >= 0:
 			# This is a fully qualified DB access.
 			if rvalueOp.compound:
 				# rvalue is a compound data type.
 				# Create a DB-pointer to it in VL.
 				return self._FC_trans_dbpointerInVL(param, rvalueOp)
 			# Basic data type.
-			self.cpu.openDB(rvalueOp.offset.dbNumber, False)
+			self.cpu.openDB(dbNumber, False)
 			copyToVL = True
 		if copyToVL:
 			# Copy to caller-L-stack.

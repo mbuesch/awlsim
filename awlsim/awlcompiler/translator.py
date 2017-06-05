@@ -675,9 +675,9 @@ class AwlSymResolver(object):
 			return oper
 
 		# Resolve the symbolic DB name, if needed
-		assert(oper.offset.dbNumber is not None or\
+		assert(oper.offset.dbNumber >= 0 or\
 		       oper.offset.dbName is not None)
-		if oper.offset.dbNumber is None:
+		if oper.offset.dbNumber < 0:
 			oper.offset.dbNumber = self.__resolveDBName(oper.offset.dbName)
 
 		# Get the offset data and the width of the field.

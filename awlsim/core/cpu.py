@@ -1795,13 +1795,16 @@ class S7CPU(object): #+cdef
 
 	def __fetchDB(self, operator, enforceWidth): #@nocy
 #@cy	cdef object __fetchDB(self, AwlOperator operator, frozenset enforceWidth):
+#@cy		cdef int32_t dbNumber
+
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__fetchWidthError(operator, enforceWidth)
 
-		if operator.offset.dbNumber is not None:
+		dbNumber = operator.offset.dbNumber
+		if dbNumber >= 0:
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
-			self.openDB(operator.offset.dbNumber, False)
+			self.openDB(dbNumber, False)
 		return self.dbRegister.fetch(operator)
 
 	def __fetchDI(self, operator, enforceWidth): #@nocy
@@ -2082,18 +2085,20 @@ class S7CPU(object): #+cdef
 	def __storeDB(self, operator, value, enforceWidth): #@nocy
 #@cy	cdef __storeDB(self, AwlOperator operator, object value, frozenset enforceWidth):
 #@cy		cdef DB db
+#@cy		cdef int32_t dbNumber
 
 		if operator.width not in enforceWidth and enforceWidth:
 			self.__storeWidthError(operator, enforceWidth)
 
-		if operator.offset.dbNumber is None:
+		dbNumber = operator.offset.dbNumber
+		if dbNumber < 0:
 			db = self.dbRegister
 		else:
 			try:
-				db = self.dbs[operator.offset.dbNumber]
+				db = self.dbs[dbNumber]
 			except KeyError:
 				raise AwlSimError("Store to DB %d, but DB "
-					"does not exist" % operator.offset.dbNumber)
+					"does not exist" % dbNumber)
 		db.store(operator, value)
 
 	def __storeDI(self, operator, value, enforceWidth): #@nocy

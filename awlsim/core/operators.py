@@ -338,7 +338,7 @@ class AwlOperator(object): #+cdef
 				return "%sD %d" % (pfx, self.offset.byteOffset)
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_DB:
-			if self.offset.dbNumber is None:
+			if self.offset.dbNumber < 0:
 				dbPrefix = ""
 			else:
 				dbPrefix = "DB%d." % self.offset.dbNumber

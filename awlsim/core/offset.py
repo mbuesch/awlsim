@@ -39,7 +39,7 @@ class AwlOffset(object): #+cdef
 	"""
 
 	# A DB-number for fully qualified access, or None.
-	dbNumber = None #@nocy
+	dbNumber = -1 #@nocy
 
 	# A symbolic DB-name for fully qualified access, or None.
 	dbName = None #@nocy
@@ -131,7 +131,7 @@ class AwlOffset(object): #+cdef
 
 	def __repr__(self):
 		prefix = ""
-		if self.dbNumber is not None:
+		if self.dbNumber >= 0:
 			prefix = "DB%d" % self.dbNumber
 		if self.dbName is not None:
 			prefix = '"%s"' % self.dbName
@@ -155,7 +155,7 @@ def make_AwlOffset(byteOffset, bitOffset, AwlOffset=AwlOffset):		#@nocy
 #@cy	cdef AwlOffset offset
 
 	offset = AwlOffset()
-#@cy	offset.dbNumber = None
+#@cy	offset.dbNumber = -1
 #@cy	offset.dbName = None
 #@cy	offset.identChain = None
 #@cy	offset.fbNumber = None
