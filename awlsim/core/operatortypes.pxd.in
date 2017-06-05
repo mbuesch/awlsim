@@ -67,3 +67,20 @@ cdef class __AwlOperatorTypesClass(object):
 	cdef public dict type2str
 
 cdef public __AwlOperatorTypesClass AwlOperatorTypes
+
+
+cdef class __AwlOperatorWidthsClass(object):
+	cdef public uint32_t WIDTH_MASK_1
+	cdef public uint32_t WIDTH_MASK_8
+	cdef public uint32_t WIDTH_MASK_16
+	cdef public uint32_t WIDTH_MASK_24
+	cdef public uint32_t WIDTH_MASK_32
+	cdef public uint32_t WIDTH_MASK_COMP
+
+	cdef public uint32_t WIDTH_MASK_8_16_32
+	cdef public uint32_t WIDTH_MASK_SCALAR
+	cdef public uint32_t WIDTH_MASK_ALL
+
+	cdef uint32_t makeMask(self, uint32_t width)
+
+cdef public __AwlOperatorWidthsClass AwlOperatorWidths

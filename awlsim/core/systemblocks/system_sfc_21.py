@@ -195,7 +195,8 @@ class SFC21(SFC): #+cdef
 				BVAL_fetchOper.width = BLK_storeOper.width = 8
 			# Fetch the data from BVAL
 			try:
-				data = cpu.fetch(BVAL_fetchOper)
+				data = cpu.fetch(BVAL_fetchOper,
+						 AwlOperatorWidths.WIDTH_MASK_ALL)
 			except AwlSimError:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_RAREA, 1))
@@ -203,7 +204,8 @@ class SFC21(SFC): #+cdef
 				return
 			# Store the data to BLK
 			try:
-				cpu.store(BLK_storeOper, data)
+				cpu.store(BLK_storeOper, data,
+					  AwlOperatorWidths.WIDTH_MASK_ALL)
 			except AwlSimError:
 				self.storeInterfaceFieldByName("RET_VAL",
 					SystemErrCode.make(SystemErrCode.E_WAREA, 3))

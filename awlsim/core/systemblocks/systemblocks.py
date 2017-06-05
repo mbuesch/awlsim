@@ -49,6 +49,7 @@ class SystemBlock(StaticCodeBlock): #+cdef
 		]
 		StaticCodeBlock.__init__(self, insns, self.name[0], interface)
 		self.cpu = cpu
+		self.__widthMaskAll = AwlOperatorWidths.WIDTH_MASK_ALL
 
 	def run(self): #+cpdef
 		# Reimplement this method
@@ -57,12 +58,14 @@ class SystemBlock(StaticCodeBlock): #+cdef
 	# Fetch the value of a block-interface field.
 	def fetchInterfaceFieldByName(self, name): #@nocy
 #@cy	cdef object fetchInterfaceFieldByName(self, object name):
-		return self.cpu.fetch(self.__interfaceOpers[name])
+		return self.cpu.fetch(self.__interfaceOpers[name],
+				      self.__widthMaskAll)
 
 	# Store a value to a block-interface field.
 	def storeInterfaceFieldByName(self, name, value): #@nocy
 #@cy	cdef storeInterfaceFieldByName(self, object name, object value):
-		return self.cpu.store(self.__interfaceOpers[name], value)
+		return self.cpu.store(self.__interfaceOpers[name], value,
+				      self.__widthMaskAll)
 
 	# Resolve hard wired symbolic accesses
 	# (i.e. accesses not done in AWL instructions)

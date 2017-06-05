@@ -41,8 +41,8 @@ class AwlInsn_ASSERT_EQ(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		val0 = self.cpu.fetch(self.op0)
-		val1 = self.cpu.fetch(self.op1)
+		val0 = self.cpu.fetch(self.op0, self._widths_all)
+		val1 = self.cpu.fetch(self.op1, self._widths_all)
 		if not (val0 == val1):
 			raise AwlSimError("Assertion failed")
 		s.NER = 0

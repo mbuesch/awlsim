@@ -4,6 +4,7 @@ from awlsim.core.cpu cimport *
 cdef class SystemBlock(StaticCodeBlock):
 	cdef public S7CPU cpu
 	cdef public dict __interfaceOpers
+	cdef public uint32_t __widthMaskAll
 
 	cdef object fetchInterfaceFieldByName(self, object name)
 	cdef storeInterfaceFieldByName(self, object name, object value)

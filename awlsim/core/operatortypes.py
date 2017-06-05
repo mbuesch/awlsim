@@ -27,6 +27,7 @@ from awlsim.common.enumeration import *
 
 __all__ = [
 	"AwlOperatorTypes",
+	"AwlOperatorWidths",
 ]
 
 
@@ -161,3 +162,56 @@ class __AwlOperatorTypesClass(object): #+cdef
 		}
 
 AwlOperatorTypes = __AwlOperatorTypesClass() #+cdef-public-__AwlOperatorTypesClass
+
+
+class __AwlOperatorWidthsClass(object): #+cdef
+	def __init__(self):
+		self.WIDTH_MASK_1	= self.makeMask(1)
+		self.WIDTH_MASK_8	= self.makeMask(8)
+		self.WIDTH_MASK_16	= self.makeMask(16)
+		self.WIDTH_MASK_24	= self.makeMask(24)
+		self.WIDTH_MASK_32	= self.makeMask(32)
+		self.WIDTH_MASK_COMP	= self.makeMask(0xFFFF) # Compound type
+
+		self.WIDTH_MASK_8_16_32	= self.WIDTH_MASK_8 |\
+					  self.WIDTH_MASK_16 |\
+					  self.WIDTH_MASK_32
+
+		self.WIDTH_MASK_SCALAR	= self.WIDTH_MASK_1 |\
+					  self.WIDTH_MASK_8_16_32
+
+		self.WIDTH_MASK_ALL	= self.WIDTH_MASK_SCALAR |\
+					  self.WIDTH_MASK_24 |\
+					  self.WIDTH_MASK_COMP
+
+	# Make a "width mask".
+	# That is a bit mask representing a width.
+	# Different width masks can be ORed together.
+	# It must be assured that width is either 1, bigger than 32 or a multiple of 8.
+	def makeMask(self, width):						#@nocy
+		return (1 << (width // 8)) if (width <= 32) else 0x10000	#@nocy
+#@cy	cdef uint32_t makeMask(self, uint32_t width):
+#@cy		return (1u << (width // 8u)) if (width <= 32u) else 0x10000u
+
+	def maskToList(self, widthMask):
+		ret = []
+		if widthMask & self.WIDTH_MASK_1:
+			ret.append(1)
+		if widthMask & self.WIDTH_MASK_8:
+			ret.append(8)
+		if widthMask & self.WIDTH_MASK_16:
+			ret.append(16)
+		if widthMask & self.WIDTH_MASK_24:
+			ret.append(24)
+		if widthMask & self.WIDTH_MASK_32:
+			ret.append(32)
+		return ret
+
+AwlOperatorWidths = __AwlOperatorWidthsClass() #+cdef-public-__AwlOperatorWidthsClass
+
+assert(AwlOperatorWidths.WIDTH_MASK_1 == (1 << 0))
+assert(AwlOperatorWidths.WIDTH_MASK_8 == (1 << 1))
+assert(AwlOperatorWidths.WIDTH_MASK_16 == (1 << 2))
+assert(AwlOperatorWidths.WIDTH_MASK_24 == (1 << 3))
+assert(AwlOperatorWidths.WIDTH_MASK_32 == (1 << 4))
+assert(AwlOperatorWidths.WIDTH_MASK_COMP == (1 << 16))

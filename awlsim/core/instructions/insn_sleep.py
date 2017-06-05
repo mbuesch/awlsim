@@ -40,7 +40,7 @@ class AwlInsn_SLEEP(AwlInsn): #+cdef
 		self.assertOpCount(1)
 
 	def run(self): #+cdef
-		sleepMsecs = self.cpu.fetch(self.op0)
+		sleepMsecs = self.cpu.fetch(self.op0, self._widths_scalar)
 		sleepSecs = sleepMsecs / 1000.0
 
 		if sleepSecs >= self.cpu.cycleTimeLimit:

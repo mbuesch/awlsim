@@ -38,10 +38,10 @@ class AwlInsn_FEATURE(AwlInsn): #+cdef
 		self.assertOpCount((1, 2))
 
 	def run(self): #+cdef
-		target = self.cpu.fetch(self.op0)
+		target = self.cpu.fetch(self.op0, self._widths_scalar)
 		value = None
 		if self.opCount >= 2:
-			value = self.cpu.fetch(self.op1)
+			value = self.cpu.fetch(self.op1, self._widths_scalar)
 
 		if target == 0:
 			# Set/get the number of accumulator registers.

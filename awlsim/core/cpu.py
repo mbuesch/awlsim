@@ -1425,10 +1425,10 @@ class S7CPU(object): #+cdef
 			# First fetch the DB pointer values from VL.
 			dbPtrOp = interfOp.dup()
 			dbPtrOp.width = 16
-			dbNr = self.fetch(dbPtrOp)
+			dbNr = self.fetch(dbPtrOp, AwlOperatorWidths.WIDTH_MASK_16)
 			dbPtrOp.offset.byteOffset += 2
 			dbPtrOp.width = 32
-			pointer = self.fetch(dbPtrOp)
+			pointer = self.fetch(dbPtrOp, AwlOperatorWidths.WIDTH_MASK_32)
 			# Open the DB pointed to by the DB-ptr.
 			# (This is ok, if dbNr is 0, too)
 			self.openDB(dbNr, False)
@@ -1505,129 +1505,129 @@ class S7CPU(object): #+cdef
 				len(self.inputs), byteOffset, dataLen))
 		self.inputs.dataBytes[byteOffset : byteOffset + dataLen] = data
 
-	def fetch(self, operator, enforceWidth=frozenset()):				#@nocy
+	def fetch(self, operator, allowedWidths):					#@nocy
 		try:									#@nocy
 			fetchMethod = self.__fetchTypeMethods[operator.operType]	#@nocy
 		except KeyError:							#@nocy
 			self.__invalidFetch(operator)					#@nocy
-		return fetchMethod(self, operator, enforceWidth)			#@nocy
+		return fetchMethod(self, operator, allowedWidths)			#@nocy
 
-#@cy	cpdef object fetch(self, AwlOperator operator, frozenset enforceWidth=frozenset()):
+#@cy	cpdef object fetch(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef uint32_t operType
 #@cy
 #@cy		operType = operator.operType
 #@cy		if operType == AwlOperatorTypes.IMM:
-#@cy			return self.__fetchIMM(operator, enforceWidth)
+#@cy			return self.__fetchIMM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_REAL:
-#@cy			return self.__fetchIMM(operator, enforceWidth)
+#@cy			return self.__fetchIMM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_S5T:
-#@cy			return self.__fetchIMM(operator, enforceWidth)
+#@cy			return self.__fetchIMM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_TIME:
-#@cy			return self.__fetchIMM(operator, enforceWidth)
+#@cy			return self.__fetchIMM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_DATE:
-#@cy			return self.__fetchIMM(operator, enforceWidth)
+#@cy			return self.__fetchIMM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_DT:
-#@cy			return self.__fetchIMM_DT(operator, enforceWidth)
+#@cy			return self.__fetchIMM_DT(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_TOD:
-#@cy			return self.__fetchIMM(operator, enforceWidth)
+#@cy			return self.__fetchIMM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_PTR:
-#@cy			return self.__fetchIMM_PTR(operator, enforceWidth)
+#@cy			return self.__fetchIMM_PTR(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.IMM_STR:
-#@cy			return self.__fetchIMM_STR(operator, enforceWidth)
+#@cy			return self.__fetchIMM_STR(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_E:
-#@cy			return self.__fetchE(operator, enforceWidth)
+#@cy			return self.__fetchE(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_A:
-#@cy			return self.__fetchA(operator, enforceWidth)
+#@cy			return self.__fetchA(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_M:
-#@cy			return self.__fetchM(operator, enforceWidth)
+#@cy			return self.__fetchM(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_L:
-#@cy			return self.__fetchL(operator, enforceWidth)
+#@cy			return self.__fetchL(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_VL:
-#@cy			return self.__fetchVL(operator, enforceWidth)
+#@cy			return self.__fetchVL(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DB:
-#@cy			return self.__fetchDB(operator, enforceWidth)
+#@cy			return self.__fetchDB(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DI:
-#@cy			return self.__fetchDI(operator, enforceWidth)
+#@cy			return self.__fetchDI(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_T:
-#@cy			return self.__fetchT(operator, enforceWidth)
+#@cy			return self.__fetchT(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_Z:
-#@cy			return self.__fetchZ(operator, enforceWidth)
+#@cy			return self.__fetchZ(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_PE:
-#@cy			return self.__fetchPE(operator, enforceWidth)
+#@cy			return self.__fetchPE(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DBLG:
-#@cy			return self.__fetchDBLG(operator, enforceWidth)
+#@cy			return self.__fetchDBLG(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DBNO:
-#@cy			return self.__fetchDBNO(operator, enforceWidth)
+#@cy			return self.__fetchDBNO(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DILG:
-#@cy			return self.__fetchDILG(operator, enforceWidth)
+#@cy			return self.__fetchDILG(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DINO:
-#@cy			return self.__fetchDINO(operator, enforceWidth)
+#@cy			return self.__fetchDINO(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_AR2:
-#@cy			return self.__fetchAR2(operator, enforceWidth)
+#@cy			return self.__fetchAR2(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW:
-#@cy			return self.__fetchSTW(operator, enforceWidth)
+#@cy			return self.__fetchSTW(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_Z:
-#@cy			return self.__fetchSTW_Z(operator, enforceWidth)
+#@cy			return self.__fetchSTW_Z(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_NZ:
-#@cy			return self.__fetchSTW_NZ(operator, enforceWidth)
+#@cy			return self.__fetchSTW_NZ(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_POS:
-#@cy			return self.__fetchSTW_POS(operator, enforceWidth)
+#@cy			return self.__fetchSTW_POS(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_NEG:
-#@cy			return self.__fetchSTW_NEG(operator, enforceWidth)
+#@cy			return self.__fetchSTW_NEG(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_POSZ:
-#@cy			return self.__fetchSTW_POSZ(operator, enforceWidth)
+#@cy			return self.__fetchSTW_POSZ(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_NEGZ:
-#@cy			return self.__fetchSTW_NEGZ(operator, enforceWidth)
+#@cy			return self.__fetchSTW_NEGZ(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW_UO:
-#@cy			return self.__fetchSTW_UO(operator, enforceWidth)
+#@cy			return self.__fetchSTW_UO(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.NAMED_LOCAL:
-#@cy			return self.__fetchNAMED_LOCAL(operator, enforceWidth)
+#@cy			return self.__fetchNAMED_LOCAL(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.NAMED_LOCAL_PTR:
-#@cy			return self.__fetchNAMED_LOCAL_PTR(operator, enforceWidth)
+#@cy			return self.__fetchNAMED_LOCAL_PTR(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.NAMED_DBVAR:
-#@cy			return self.__fetchNAMED_DBVAR(operator, enforceWidth)
+#@cy			return self.__fetchNAMED_DBVAR(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.INDIRECT:
-#@cy			return self.__fetchINDIRECT(operator, enforceWidth)
+#@cy			return self.__fetchINDIRECT(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.VIRT_ACCU:
-#@cy			return self.__fetchVirtACCU(operator, enforceWidth)
+#@cy			return self.__fetchVirtACCU(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.VIRT_AR:
-#@cy			return self.__fetchVirtAR(operator, enforceWidth)
+#@cy			return self.__fetchVirtAR(operator, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.VIRT_DBR:
-#@cy			return self.__fetchVirtDBR(operator, enforceWidth)
+#@cy			return self.__fetchVirtDBR(operator, allowedWidths)
 #@cy		self.__invalidFetch(operator)
 
 	def __invalidFetch(self, operator):
 		raise AwlSimError("Invalid fetch request: %s" % str(operator))
 
-	def __fetchWidthError(self, operator, enforceWidth):
+	def __fetchWidthError(self, operator, allowedWidths):
 		raise AwlSimError("Data fetch of %d bits, "
 			"but only %s bits are allowed." %\
 			(operator.width,
-			 listToHumanStr(enforceWidth)))
+			 listToHumanStr(AwlOperatorWidths.maskToList(allowedWidths))))
 
-	def __fetchIMM(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchIMM(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchIMM(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchIMM(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return operator.immediate
 
-	def __fetchIMM_DT(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchIMM_DT(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchIMM_DT(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchIMM_DT(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return operator.immediateBytes
 
-	def __fetchIMM_PTR(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchIMM_PTR(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchIMM_PTR(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchIMM_PTR(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return operator.pointer.toNativePointerValue()
 
-	def __fetchIMM_STR(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchIMM_STR(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchIMM_STR(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchIMM_STR(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef uint32_t insnType
 #@cy		cdef uint32_t value
 #@cy		cdef int32_t i
@@ -1643,50 +1643,50 @@ class S7CPU(object): #+cdef
 					value = (value << 8) | data[i]
 				return value
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return operator.immediateBytes
 
-	def __fetchDBLG(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchDBLG(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchDBLG(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchDBLG(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.dbRegister.struct.getSize()
 
-	def __fetchDBNO(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchDBNO(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchDBNO(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchDBNO(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.dbRegister.index
 
-	def __fetchDILG(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchDILG(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchDILG(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchDILG(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.diRegister.struct.getSize()
 
-	def __fetchDINO(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchDINO(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchDINO(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchDINO(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.diRegister.index
 
-	def __fetchAR2(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchAR2(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchAR2(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchAR2(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.getAR(2).get()
 
-	def __fetchSTW(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		if operator.width == 1:
 			return self.statusWord.getByBitNumber(operator.offset.bitOffset)
@@ -1695,95 +1695,95 @@ class S7CPU(object): #+cdef
 		else:
 			assert(0)
 
-	def __fetchSTW_Z(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_Z(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_Z(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_Z(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return (self.statusWord.A0 ^ 1) & (self.statusWord.A1 ^ 1)
 
-	def __fetchSTW_NZ(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_NZ(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_NZ(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_NZ(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.statusWord.A0 | self.statusWord.A1
 
-	def __fetchSTW_POS(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_POS(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_POS(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_POS(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return (self.statusWord.A0 ^ 1) & self.statusWord.A1
 
-	def __fetchSTW_NEG(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_NEG(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_NEG(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_NEG(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.statusWord.A0 & (self.statusWord.A1 ^ 1)
 
-	def __fetchSTW_POSZ(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_POSZ(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_POSZ(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_POSZ(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.statusWord.A0 ^ 1
 
-	def __fetchSTW_NEGZ(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_NEGZ(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_NEGZ(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_NEGZ(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.statusWord.A1 ^ 1
 
-	def __fetchSTW_UO(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchSTW_UO(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchSTW_UO(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchSTW_UO(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.statusWord.A0 & self.statusWord.A1
 
-	def __fetchE(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchE(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchE(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchE(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.inputs.fetch(operator.offset, operator.width)
 
-	def __fetchA(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchA(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchA(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchA(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.outputs.fetch(operator.offset, operator.width)
 
-	def __fetchM(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchM(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchM(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchM(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.flags.fetch(operator.offset, operator.width)
 
-	def __fetchL(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchL(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchL(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchL(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef LStackAllocator lstack
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		lstack = self.activeLStack
 		return lstack.memory.fetch(lstack.topFrameOffset + operator.offset,
 					   operator.width)
 
-	def __fetchVL(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchVL(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchVL(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchVL(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef CallStackElem cse
 #@cy		cdef LStackAllocator lstack
 #@cy		cdef LStackFrame *prevFrame
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		lstack = self.activeLStack
 		prevFrame = lstack.topFrame.prevFrame
@@ -1793,12 +1793,12 @@ class S7CPU(object): #+cdef
 		return lstack.memory.fetch(make_AwlOffset(prevFrame.byteOffset, 0) + operator.offset,
 					   operator.width)
 
-	def __fetchDB(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchDB(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchDB(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchDB(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef int32_t dbNumber
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		dbNumber = operator.offset.dbNumber
 		if dbNumber >= 0:
@@ -1807,10 +1807,10 @@ class S7CPU(object): #+cdef
 			self.openDB(dbNumber, False)
 		return self.dbRegister.fetch(operator)
 
-	def __fetchDI(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchDI(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchDI(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchDI(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		if self.callStackTop.block.isFB:
 			# Fetch the data using the multi-instance base offset from AR2.
@@ -1819,16 +1819,16 @@ class S7CPU(object): #+cdef
 		# Fetch without base offset.
 		return self.diRegister.fetch(operator)
 
-	def __fetchPE(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchPE(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchPE(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchPE(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef bytearray readBytes
 #@cy		cdef uint32_t readValue
 #@cy		cdef uint32_t bitWidth
 #@cy		cdef AwlOffset operatorOffset
 
 		bitWidth = operator.width
-		if bitWidth not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(bitWidth) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 		operatorOffset = operator.offset
 
 		# Fetch the data from the peripheral device.
@@ -1848,8 +1848,8 @@ class S7CPU(object): #+cdef
 
 		return readValue
 
-	def __fetchT(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchT(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchT(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchT(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef uint32_t insnType
 #@cy		cdef uint32_t width
 
@@ -1858,8 +1858,8 @@ class S7CPU(object): #+cdef
 			width = 32
 		else:
 			width = 1
-		if width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		timer = self.getTimer(operator.offset.byteOffset)
 		if insnType == AwlInsn.TYPE_L:
@@ -1868,8 +1868,8 @@ class S7CPU(object): #+cdef
 			return timer.getTimevalS5T()
 		return timer.get()
 
-	def __fetchZ(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchZ(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchZ(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchZ(self, AwlOperator operator, uint32_t allowedWidths):
 #@cy		cdef uint32_t insnType
 #@cy		cdef uint32_t width
 
@@ -1878,8 +1878,8 @@ class S7CPU(object): #+cdef
 			width = 32
 		else:
 			width = 1
-		if width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		counter = self.getCounter(operator.offset.byteOffset)
 		if insnType == AwlInsn.TYPE_L:
@@ -1888,45 +1888,45 @@ class S7CPU(object): #+cdef
 			return counter.getValueBCD()
 		return counter.get()
 
-	def __fetchNAMED_LOCAL(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchNAMED_LOCAL(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchNAMED_LOCAL(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchNAMED_LOCAL(self, AwlOperator operator, uint32_t allowedWidths):
 		# load from an FC interface field.
 		return self.fetch(self.__translateFCNamedLocalOper(operator, False),
-				  enforceWidth)
+				  allowedWidths)
 
-	def __fetchNAMED_LOCAL_PTR(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchNAMED_LOCAL_PTR(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, uint32_t allowedWidths):
 		assert(operator.offset.subOffset is None) #@nocy
 		return self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue()
 
-	def __fetchNAMED_DBVAR(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchNAMED_DBVAR(self, AwlOperator operator, frozenset enforceWidth):
+	def __fetchNAMED_DBVAR(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchNAMED_DBVAR(self, AwlOperator operator, uint32_t allowedWidths):
 		# All legit accesses will have been translated to absolute addressing already
 		raise AwlSimError("Fully qualified load from DB variable "
 			"is not supported in this place.")
 
-	def __fetchINDIRECT(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchINDIRECT(self, AwlOperator operator, frozenset enforceWidth):
-		return self.fetch(operator.resolve(False), enforceWidth)
+	def __fetchINDIRECT(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchINDIRECT(self, AwlOperator operator, uint32_t allowedWidths):
+		return self.fetch(operator.resolve(False), allowedWidths)
 
-	def __fetchVirtACCU(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchVirtACCU(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchVirtACCU(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchVirtACCU(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.getAccu(operator.offset.byteOffset).get()
 
-	def __fetchVirtAR(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchVirtAR(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchVirtAR(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchVirtAR(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		return self.getAR(operator.offset.byteOffset).get()
 
-	def __fetchVirtDBR(self, operator, enforceWidth): #@nocy
-#@cy	cdef object __fetchVirtDBR(self, AwlOperator operator, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__fetchWidthError(operator, enforceWidth)
+	def __fetchVirtDBR(self, operator, allowedWidths): #@nocy
+#@cy	cdef object __fetchVirtDBR(self, AwlOperator operator, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__fetchWidthError(operator, allowedWidths)
 
 		if operator.offset.byteOffset == 1:
 			if self.dbRegister:
@@ -1983,95 +1983,95 @@ class S7CPU(object): #+cdef
 		AwlOperatorTypes.VIRT_DBR		: __fetchVirtDBR,		#@nocy
 	}										#@nocy
 
-	def store(self, operator, value, enforceWidth=frozenset()):			#@nocy
+	def store(self, operator, value, allowedWidths):				#@nocy
 		try:									#@nocy
 			storeMethod = self.__storeTypeMethods[operator.operType]	#@nocy
 		except KeyError:							#@nocy
 			self.__invalidStore(operator)					#@nocy
-		storeMethod(self, operator, value, enforceWidth)			#@nocy
+		storeMethod(self, operator, value, allowedWidths)			#@nocy
 
-#@cy	cpdef store(self, AwlOperator operator, object value, frozenset enforceWidth=frozenset()):
+#@cy	cpdef store(self, AwlOperator operator, object value, uint32_t allowedWidths):
 #@cy		cdef uint32_t operType
 #@cy
 #@cy		operType = operator.operType
 #@cy		if operType == AwlOperatorTypes.MEM_E:
-#@cy			self.__storeE(operator, value, enforceWidth)
+#@cy			self.__storeE(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_A:
-#@cy			self.__storeA(operator, value, enforceWidth)
+#@cy			self.__storeA(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_M:
-#@cy			self.__storeM(operator, value, enforceWidth)
+#@cy			self.__storeM(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_L:
-#@cy			self.__storeL(operator, value, enforceWidth)
+#@cy			self.__storeL(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_VL:
-#@cy			self.__storeVL(operator, value, enforceWidth)
+#@cy			self.__storeVL(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DB:
-#@cy			self.__storeDB(operator, value, enforceWidth)
+#@cy			self.__storeDB(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_DI:
-#@cy			self.__storeDI(operator, value, enforceWidth)
+#@cy			self.__storeDI(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_PA:
-#@cy			self.__storePA(operator, value, enforceWidth)
+#@cy			self.__storePA(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_AR2:
-#@cy			self.__storeAR2(operator, value, enforceWidth)
+#@cy			self.__storeAR2(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.MEM_STW:
-#@cy			self.__storeSTW(operator, value, enforceWidth)
+#@cy			self.__storeSTW(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.NAMED_LOCAL:
-#@cy			self.__storeNAMED_LOCAL(operator, value, enforceWidth)
+#@cy			self.__storeNAMED_LOCAL(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.NAMED_DBVAR:
-#@cy			self.__storeNAMED_DBVAR(operator, value, enforceWidth)
+#@cy			self.__storeNAMED_DBVAR(operator, value, allowedWidths)
 #@cy		elif operType == AwlOperatorTypes.INDIRECT:
-#@cy			self.__storeINDIRECT(operator, value, enforceWidth)
+#@cy			self.__storeINDIRECT(operator, value, allowedWidths)
 #@cy		else:
 #@cy			self.__invalidStore(operator)
 
 	def __invalidStore(self, operator):
 		raise AwlSimError("Invalid store request: %s" % str(operator))
 
-	def __storeWidthError(self, operator, enforceWidth):
+	def __storeWidthError(self, operator, allowedWidths):
 		raise AwlSimError("Data store of %d bits, "
 			"but only %s bits are allowed." %\
 			(operator.width,
-			 listToHumanStr(enforceWidth)))
+			 listToHumanStr(AwlOperatorWidths.maskToList(allowedWidths))))
 
-	def __storeE(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeE(self, AwlOperator operator, object value, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+	def __storeE(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeE(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		self.inputs.store(operator.offset, operator.width, value)
 
-	def __storeA(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeA(self, AwlOperator operator, object value, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+	def __storeA(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeA(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		self.outputs.store(operator.offset, operator.width, value)
 
-	def __storeM(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeM(self, AwlOperator operator, object value, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+	def __storeM(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeM(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		self.flags.store(operator.offset, operator.width, value)
 
-	def __storeL(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeL(self, AwlOperator operator, object value, frozenset enforceWidth):
+	def __storeL(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeL(self, AwlOperator operator, object value, uint32_t allowedWidths):
 #@cy		cdef LStackAllocator lstack
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		lstack = self.activeLStack
 		lstack.memory.store(lstack.topFrameOffset + operator.offset,
 				    operator.width,
 				    value)
 
-	def __storeVL(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeVL(self, AwlOperator operator, object value, frozenset enforceWidth):
+	def __storeVL(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeVL(self, AwlOperator operator, object value, uint32_t allowedWidths):
 #@cy		cdef CallStackElem cse
 #@cy		cdef LStackFrame *prevFrame
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		lstack = self.activeLStack
 		prevFrame = lstack.topFrame.prevFrame
@@ -2082,13 +2082,13 @@ class S7CPU(object): #+cdef
 				    operator.width,
 				    value)
 
-	def __storeDB(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeDB(self, AwlOperator operator, object value, frozenset enforceWidth):
+	def __storeDB(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeDB(self, AwlOperator operator, object value, uint32_t allowedWidths):
 #@cy		cdef DB db
 #@cy		cdef int32_t dbNumber
 
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		dbNumber = operator.offset.dbNumber
 		if dbNumber < 0:
@@ -2101,10 +2101,10 @@ class S7CPU(object): #+cdef
 					"does not exist" % dbNumber)
 		db.store(operator, value)
 
-	def __storeDI(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeDI(self, AwlOperator operator, object value, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+	def __storeDI(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeDI(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		if self.callStackTop.block.isFB:
 			# Store the data using the multi-instance base offset from AR2.
@@ -2114,16 +2114,16 @@ class S7CPU(object): #+cdef
 			# Store without base offset.
 			self.diRegister.store(operator, value)
 
-	def __storePA(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storePA(self, AwlOperator operator, object value, frozenset enforceWidth):
+	def __storePA(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storePA(self, AwlOperator operator, object value, uint32_t allowedWidths):
 #@cy		cdef _Bool ok
 #@cy		cdef uint32_t bitWidth
 #@cy		cdef bytearray valueBytes
 #@cy		cdef AwlOffset operatorOffset
 
 		bitWidth = operator.width
-		if bitWidth not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+		if not (AwlOperatorWidths.makeMask(bitWidth) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 		operatorOffset = operator.offset
 
 		# Store the data to the process image, if it is within the outputs range.
@@ -2144,17 +2144,17 @@ class S7CPU(object): #+cdef
 				(bitWidth, operatorOffset.byteOffset,
 				 value))
 
-	def __storeAR2(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeAR2(self, AwlOperator operator, object value, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+	def __storeAR2(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeAR2(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		self.getAR(2).set(value)
 
-	def __storeSTW(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeSTW(self, AwlOperator operator, object value, frozenset enforceWidth):
-		if operator.width not in enforceWidth and enforceWidth:
-			self.__storeWidthError(operator, enforceWidth)
+	def __storeSTW(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeSTW(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		if not (AwlOperatorWidths.makeMask(operator.width) & allowedWidths):
+			self.__storeWidthError(operator, allowedWidths)
 
 		if operator.width == 1:
 			raise AwlSimError("Cannot store to individual STW bits")
@@ -2163,21 +2163,21 @@ class S7CPU(object): #+cdef
 		else:
 			assert(0)
 
-	def __storeNAMED_LOCAL(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeNAMED_LOCAL(self, AwlOperator operator, object value, frozenset enforceWidth):
+	def __storeNAMED_LOCAL(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeNAMED_LOCAL(self, AwlOperator operator, object value, uint32_t allowedWidths):
 		# store to an FC interface field.
 		self.store(self.__translateFCNamedLocalOper(operator, True),
-			   value, enforceWidth)
+			   value, allowedWidths)
 
-	def __storeNAMED_DBVAR(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeNAMED_DBVAR(self, AwlOperator operator, object value, frozenset enforceWidth):
+	def __storeNAMED_DBVAR(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeNAMED_DBVAR(self, AwlOperator operator, object value, uint32_t allowedWidths):
 		# All legit accesses will have been translated to absolute addressing already
 		raise AwlSimError("Fully qualified store to DB variable "
 			"is not supported in this place.")
 
-	def __storeINDIRECT(self, operator, value, enforceWidth): #@nocy
-#@cy	cdef __storeINDIRECT(self, AwlOperator operator, object value, frozenset enforceWidth):
-		self.store(operator.resolve(True), value, enforceWidth)
+	def __storeINDIRECT(self, operator, value, allowedWidths): #@nocy
+#@cy	cdef __storeINDIRECT(self, AwlOperator operator, object value, uint32_t allowedWidths):
+		self.store(operator.resolve(True), value, allowedWidths)
 
 	__storeTypeMethodsDict = {						#@nocy
 		AwlOperatorTypes.MEM_E			: __storeE,		#@nocy

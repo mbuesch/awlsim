@@ -172,11 +172,11 @@ class AwlOperator(object): #+cdef
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 		if widths is not None:
-			widths = toSet(widths)
-			if not self.width in widths:
+			if not (AwlOperatorWidths.makeMask(self.width) & widths):
 				raise AwlSimError("Invalid operator width. "
-					"Got %d, but expected %s." %\
-					(self.width, listToHumanStr(widths)))
+					"Got %d, but expected %s." % (
+					self.width,
+					listToHumanStr(AwlOperatorWidths.maskToList(widths))))
 
 	def checkDataTypeCompat(self, cpu, dataType):
 		assert(isinstance(dataType, AwlDataType))
@@ -319,6 +319,7 @@ class AwlOperator(object): #+cdef
 			return self.pointer.toPointerString()
 		elif self.operType == AwlOperatorTypes.IMM_STR:
 			strLen = self.immediateBytes[1]
+			from awlsim.common.sources import AwlSource
 			return "'" + self.immediateBytes[2:2+strLen].decode(
 					AwlSource.COMPAT_ENCODING) + "'"
 		elif self.operType in {AwlOperatorTypes.MEM_A,
@@ -386,6 +387,7 @@ class AwlOperator(object): #+cdef
 		elif self.operType == AwlOperatorTypes.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name_german[self.offset.bitOffset]
 		elif self.operType == AwlOperatorTypes.LBL_REF:
+			from awlsim.common.sources import AwlSource
 			return self.immediateBytes.decode(AwlSource.COMPAT_ENCODING)
 		elif self.operType == AwlOperatorTypes.BLKREF_FC:
 			return "FC %d" % self.offset.byteOffset
@@ -578,7 +580,8 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				raise AwlSimError("Offset operator in indirect "
 					"access is not of %s bit width." %\
 					listToHumanStr(possibleWidths))
-			offsetValue = self.insn.cpu.fetch(offsetOper)
+			offsetValue = self.insn.cpu.fetch(offsetOper,
+							  AwlOperatorWidths.WIDTH_MASK_8_16_32)
 			pointer = (self.area | (offsetValue & 0x0007FFFF))
 		else:
 			# Register-indirect access
@@ -586,7 +589,9 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				raise AwlSimError("Offset operator in "
 					"register-indirect access is not a "
 					"pointer immediate.")
-			offsetValue = self.insn.cpu.fetch(offsetOper) & 0x0007FFFF
+			offsetValue = self.insn.cpu.fetch(offsetOper,
+							  AwlOperatorWidths.WIDTH_MASK_8_16_32) &\
+							  0x0007FFFF
 			if self.area == AwlIndirectOp.AREA_NONE:
 				# Area-spanning access
 				pointer = (self.insn.cpu.getAR(self.addressRegister).get() +\

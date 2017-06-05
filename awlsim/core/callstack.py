@@ -115,8 +115,11 @@ class CallStackElem(object): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset loffset
 #@cy		cdef AwlOperator oper
+#@cy		cdef uint32_t widthMaskAll
 
+		widthMaskAll = AwlOperatorWidths.WIDTH_MASK_ALL
 		cpu = self.cpu
+
 		# Allocate space in the caller-L-stack.
 		loffset = cpu.activeLStack.alloc(rvalueOp.width)
 		# Make an operator for the allocated space.
@@ -128,7 +131,9 @@ class CallStackElem(object): #+cdef
 		# This would only be necessary for inbound parameters,
 		# but S7 supports read access to certain outbound
 		# FC parameters as well. So copy the value unconditionally.
-		cpu.store(oper, cpu.fetch(rvalueOp))
+		cpu.store(oper,
+			  cpu.fetch(rvalueOp, widthMaskAll),
+			  widthMaskAll)
 		# Change the operator to VL
 		oper.operType = AwlOperatorTypes.MEM_VL
 		# If outbound, save param and operator for return from CALL.
@@ -150,8 +155,11 @@ class CallStackElem(object): #+cdef
 #@cy		cdef int32_t dbNumber
 #@cy		cdef uint32_t area
 #@cy		cdef AwlOperator storeOper
+#@cy		cdef uint32_t widthMaskAll
 
+		widthMaskAll = AwlOperatorWidths.WIDTH_MASK_ALL
 		cpu = self.cpu
+
 		# Allocate space for the DB-ptr in the caller-L-stack
 		loffset = cpu.activeLStack.alloc(48) # 48 bits
 		# Create and store the the DB-ptr to the allocated space.
@@ -163,7 +171,9 @@ class CallStackElem(object): #+cdef
 			dbNumber = cpu.diRegister.index
 		else:
 			dbNumber = rvalueOp.offset.dbNumber
-		cpu.store(storeOper, max(0, dbNumber))
+		cpu.store(storeOper,
+			  max(0, dbNumber),
+			  widthMaskAll)
 		storeOper.offset = loffset + make_AwlOffset(2, 0)
 		storeOper.width = 32
 		area = AwlIndirectOp.optype2area[rvalueOp.operType]
@@ -175,7 +185,8 @@ class CallStackElem(object): #+cdef
 		elif area == AwlIndirectOp.AREA_DI:
 			area = AwlIndirectOp.AREA_DB
 		cpu.store(storeOper,
-			  area | rvalueOp.offset.toPointerValue())
+			  area | rvalueOp.offset.toPointerValue(),
+			  widthMaskAll)
 		# Return the operator for the DB pointer.
 		return make_AwlOperator(AwlOperatorTypes.MEM_VL,
 				   48,
@@ -382,6 +393,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset instanceBaseOffset
 #@cy		cdef AwlParamAssign param
+#@cy		cdef uint32_t widthMaskAll
 
 		cpu = self.cpu
 
@@ -389,6 +401,8 @@ class CallStackElem(object): #+cdef
 		cpu.activeLStack.exitStackFrame()
 
 		if not self.isRawCall:
+			widthMaskAll = AwlOperatorWidths.WIDTH_MASK_ALL
+
 			# Handle outbound parameters.
 			if self.block.isFB:
 				# We are returning from an FB.
@@ -404,7 +418,8 @@ class CallStackElem(object): #+cdef
 					cpu.store(
 						param.rvalueOp,
 						structInstance.getFieldData(param.lValueStructField,
-									    instanceBaseOffset)
+									    instanceBaseOffset),
+						widthMaskAll
 					)
 				# Assign the DB/DI registers.
 				cpu.dbRegister, cpu.diRegister = self.instanceDB, self.prevDiRegister
@@ -419,9 +434,11 @@ class CallStackElem(object): #+cdef
 					cpu.store(
 						param.rvalueOp,
 						cpu.fetch(make_AwlOperator(AwlOperatorTypes.MEM_L,
-								      param.scratchSpaceOp.width,
-								      param.scratchSpaceOp.offset,
-								      None))
+									   param.scratchSpaceOp.width,
+									   param.scratchSpaceOp.offset,
+									   None),
+							  widthMaskAll),
+						widthMaskAll
 					)
 				# Assign the DB/DI registers.
 				cpu.dbRegister, cpu.diRegister = self.prevDbRegister, self.prevDiRegister
@@ -463,6 +480,7 @@ def make_CallStackElem(cpu,						#@nocy
 #@cy	cdef AwlParamAssign param
 #@cy	cdef AwlStructField structField
 #@cy	cdef AwlStructInstance structInstance
+#@cy	cdef uint32_t widthMaskAll
 
 	cse = CallStackElem()
 
@@ -484,6 +502,7 @@ def make_CallStackElem(cpu,						#@nocy
 #@cy	if not isRawCall:
 		if block.isFB:
 			structInstance = instanceDB.structInstance
+			widthMaskAll = AwlOperatorWidths.WIDTH_MASK_ALL
 			# This is a call to an FB.
 			# Copy the inbound data into the instance DB
 			# and add the outbound parameters to the list.
@@ -518,7 +537,7 @@ def make_CallStackElem(cpu,						#@nocy
 							# This is for TIMER, COUNTER, etc...
 							data = param.rvalueOp.resolve().offset.byteOffset
 						else:
-							data = cpu.fetch(param.rvalueOp)
+							data = cpu.fetch(param.rvalueOp, widthMaskAll)
 					# Transfer data into DBI.
 					structInstance.setFieldData(structField,
 								    data,

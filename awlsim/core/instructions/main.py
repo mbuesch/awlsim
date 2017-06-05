@@ -225,13 +225,11 @@ class AwlInsn(object): #+cdef
 		"params",
 		"_widths_1",
 		"_widths_8_16_32",
+		"_widths_16",
 		"_widths_32",
+		"_widths_scalar",
+		"_widths_all",
 	)
-
-	# Standard fetch/store widths.
-	_WIDTHS_1	= frozenset((1,))
-	_WIDTHS_8_16_32	= frozenset((8, 16, 32,))
-	_WIDTHS_32	= frozenset((32,))
 
 	def __init__(self, cpu, insnType, rawInsn=None, ops=None):
 		"""Initialize base instruction.
@@ -243,10 +241,13 @@ class AwlInsn(object): #+cdef
 		self.ops = ops or []		# AwlOperator()s
 		self.params = ()		# Parameter assignments (for CALL)
 
-		# Local reference to the fetch/store widths.
-		self._widths_1 = self._WIDTHS_1
-		self._widths_8_16_32 = self._WIDTHS_8_16_32
-		self._widths_32 = self._WIDTHS_32
+		# Local copy of commonly used fetch/store widths.
+		self._widths_1		= AwlOperatorWidths.WIDTH_MASK_1
+		self._widths_8_16_32	= AwlOperatorWidths.WIDTH_MASK_8_16_32
+		self._widths_16		= AwlOperatorWidths.WIDTH_MASK_16
+		self._widths_32		= AwlOperatorWidths.WIDTH_MASK_32
+		self._widths_scalar	= AwlOperatorWidths.WIDTH_MASK_SCALAR
+		self._widths_all	= AwlOperatorWidths.WIDTH_MASK_ALL
 
 		if rawInsn and ops is None:
 			opTrans = AwlOpTranslator(self)

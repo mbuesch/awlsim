@@ -13,8 +13,11 @@ cdef class AwlInsn(object):
 	cdef public AwlOperator op1
 	cdef public tuple params
 
-	cdef public frozenset _widths_1
-	cdef public frozenset _widths_8_16_32
-	cdef public frozenset _widths_32
+	cdef public uint32_t _widths_1
+	cdef public uint32_t _widths_8_16_32
+	cdef public uint32_t _widths_16
+	cdef public uint32_t _widths_32
+	cdef public uint32_t _widths_scalar
+	cdef public uint32_t _widths_all
 
 	cdef run(self)

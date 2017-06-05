@@ -43,9 +43,9 @@ class AwlInsn_PL(AwlInsn): #+cdef
 		oper = self.op0
 		if oper.width == 16:
 			self.cpu.accu1.setWord(self.cpu.accu1.getSignedWord() +\
-					       self.cpu.fetch(oper))
+					       self.cpu.fetch(oper, self._widths_16))
 		elif oper.width == 32:
 			self.cpu.accu1.setDWord(self.cpu.accu1.getSignedDWord() +\
-						self.cpu.fetch(oper))
+						self.cpu.fetch(oper, self._widths_32))
 		else:
 			raise AwlSimError("Unexpected operator width")
