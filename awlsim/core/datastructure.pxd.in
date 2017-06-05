@@ -5,13 +5,13 @@ cdef class AwlStructField(object):
 	cdef public object name
 	cdef public AwlOffset offset
 	cdef public object dataType
-	cdef public uint32_t dataTypeId
 	cdef public object initBytes
 	cdef public AwlStructField override
 	cdef public AwlStructField finalOverride
 	cdef public uint32_t bitSize
 	cdef public uint32_t byteSize
 	cdef public _Bool compound
+	cdef public _Bool callByRef
 
 	cdef __eq(self, other)
 

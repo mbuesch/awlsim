@@ -6,8 +6,6 @@ from awlsim.core.memory cimport *
 from awlsim.core.parameters cimport *
 from awlsim.core.operators cimport *
 
-cdef public frozenset callByRef_Types
-
 cdef class CallStackElem(object):
 	cdef public CallStackElem prevCse
 	cdef public S7CPU cpu

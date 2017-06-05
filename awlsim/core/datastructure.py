@@ -53,6 +53,7 @@ class AwlStructField(object): #+cdef
 		"bitSize",
 		"byteSize",
 		"compound",
+		"callByRef",
 	)
 
 	# name => Field name string
@@ -68,7 +69,6 @@ class AwlStructField(object): #+cdef
 		self.name = name
 		self.offset = offset
 		self.dataType = dataType
-		self.dataTypeId = dataType.type
 		self.initBytes = initBytes
 		self.override = override
 		self.finalOverride = None # Not known, yet.
@@ -76,7 +76,10 @@ class AwlStructField(object): #+cdef
 		self.bitSize = self.dataType.width
 		self.byteSize = intDivRoundUp(self.bitSize, 8)
 
-		self.compound = dataType.compound
+		self.compound = bool(dataType.compound)
+
+		from awlsim.core.blockinterface import BlockInterface
+		self.callByRef = bool(dataType.type in BlockInterface.callByRef_Types)
 
 		if self.initBytes is not None:
 			assert(len(self.initBytes) == self.byteSize)

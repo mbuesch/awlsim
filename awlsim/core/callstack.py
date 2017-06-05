@@ -40,8 +40,6 @@ __all__ = [
 ]
 
 
-callByRef_Types = frozenset(BlockInterface.callByRef_Types) #+cdef-public-frozenset
-
 class CallStackElem(object): #+cdef
 	"""Call stack element.
 	"""
@@ -462,7 +460,6 @@ def make_CallStackElem(cpu,						#@nocy
 #@cy	cdef AwlParamAssign param
 #@cy	cdef AwlStructField structField
 #@cy	cdef AwlStructInstance structInstance
-#@cy	cdef frozenset callByRefTypes
 
 	cse = CallStackElem()
 
@@ -483,7 +480,6 @@ def make_CallStackElem(cpu,						#@nocy
 #@cy	if not isRawCall:
 		if block.isFB:
 			structInstance = instanceDB.structInstance
-			callByRefTypes = callByRef_Types
 			# This is a call to an FB.
 			# Copy the inbound data into the instance DB
 			# and add the outbound parameters to the list.
@@ -513,7 +509,7 @@ def make_CallStackElem(cpu,						#@nocy
 						# Non-compound (basic) data type or
 						# not IN_OUT declaration.
 						# Get the actual data.
-						if structField.dataTypeId in callByRefTypes:
+						if structField.callByRef:
 							# Do not fetch. Type is passed 'by reference'.
 							# This is for TIMER, COUNTER, etc...
 							data = param.rvalueOp.resolve().offset.byteOffset
