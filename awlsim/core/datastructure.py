@@ -363,12 +363,14 @@ class AwlStructInstance(object): #+cdef
 					"initialization is out of range." %\
 					str(field))
 
-	def getFieldData(self, field, baseOffset=None):
+	def getFieldData(self, field, baseOffset=None): #@nocy
+#@cy	cdef object getFieldData(self, AwlStructField field, AwlOffset baseOffset=None):
 		if baseOffset is None:
 			return self.memory.fetch(field.offset, field.bitSize)
 		return self.memory.fetch(baseOffset + field.offset, field.bitSize)
 
-	def setFieldData(self, field, value, baseOffset=None):
+	def setFieldData(self, field, value, baseOffset=None): #@nocy
+#@cy	cdef setFieldData(self, AwlStructField field, object value, AwlOffset baseOffset=None):
 		if baseOffset is None:
 			self.memory.store(field.offset,
 					  field.bitSize, value)

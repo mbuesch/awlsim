@@ -25,7 +25,18 @@ cdef class CallStackElem(object):
 	cdef public dict _interfRefs
 
 	cpdef AwlOperator getInterfIdxOper(self, uint32_t interfaceFieldIndex)
+
 	cdef bytearray _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_direct(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_copyToVL(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_dbpointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_copyToVLWithDBPtr(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_MEM_L(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_MEM_DB(self, AwlParamAssign param, AwlOperator rvalueOp, _Bool copyToVL=*)
+	cdef AwlOperator _FC_trans_MEM_DI(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_NAMED_LOCAL(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef AwlOperator _translateFCParam(self, AwlParamAssign param, AwlOperator rvalueOp)
+
 	cdef handleBlockExit(self)
 
 cdef CallStackElem make_CallStackElem(S7CPU cpu,

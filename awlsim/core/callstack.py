@@ -103,7 +103,7 @@ class CallStackElem(object): #+cdef
 	# For various MEM and BLKREF accesses.
 	# Returns the translated rvalueOp.
 	def _FC_trans_direct(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_direct(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_direct(self, AwlParamAssign param, AwlOperator rvalueOp):
 		return rvalueOp
 
 	# FC parameter translation:
@@ -111,7 +111,7 @@ class CallStackElem(object): #+cdef
 	# and register a copy-back request, if outbound.
 	# Returns the translated rvalueOp.
 	def _FC_trans_copyToVL(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_copyToVL(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_copyToVL(self, AwlParamAssign param, AwlOperator rvalueOp):
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset loffset
 #@cy		cdef AwlOperator oper
@@ -144,7 +144,7 @@ class CallStackElem(object): #+cdef
 	# Create a DB-pointer to the r-value in the caller's L-stack (VL).
 	# Returns the translated rvalueOp.
 	def _FC_trans_dbpointerInVL(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_dbpointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_dbpointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp):
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset loffset
 #@cy		cdef uint32_t area
@@ -186,7 +186,7 @@ class CallStackElem(object): #+cdef
 	# a DB-pointer to the copied value in VL.
 	# Returns the translated rvalueOp.
 	def _FC_trans_copyToVLWithDBPtr(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_copyToVLWithDBPtr(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_copyToVLWithDBPtr(self, AwlParamAssign param, AwlOperator rvalueOp):
 #@cy		cdef AwlOperator oper
 
 		oper = self._FC_trans_copyToVL(param, rvalueOp)
@@ -197,7 +197,7 @@ class CallStackElem(object): #+cdef
 	# Translate L-stack access r-value.
 	# Returns the translated rvalueOp.
 	def _FC_trans_MEM_L(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_MEM_L(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_MEM_L(self, AwlParamAssign param, AwlOperator rvalueOp):
 		# r-value is an L-stack memory access.
 		if rvalueOp.compound:
 			# rvalue is a compound data type.
@@ -213,7 +213,7 @@ class CallStackElem(object): #+cdef
 	# Translate DB access r-value.
 	# Returns the translated rvalueOp.
 	def _FC_trans_MEM_DB(self, param, rvalueOp, copyToVL=False): #@nocy
-#@cy	def _FC_trans_MEM_DB(self, AwlParamAssign param, AwlOperator rvalueOp, _Bool copyToVL=False):
+#@cy	cdef AwlOperator _FC_trans_MEM_DB(self, AwlParamAssign param, AwlOperator rvalueOp, _Bool copyToVL=False):
 #@cy		cdef AwlOffset offset
 
 		# A (fully qualified) DB variable is passed to an FC.
@@ -242,7 +242,7 @@ class CallStackElem(object): #+cdef
 	# Translate DI access r-value.
 	# Returns the translated rvalueOp.
 	def _FC_trans_MEM_DI(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_MEM_DI(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_MEM_DI(self, AwlParamAssign param, AwlOperator rvalueOp):
 		# A parameter is forwarded from an FB to an FC
 		if rvalueOp.compound:
 			# rvalue is a compound data type.
@@ -256,51 +256,123 @@ class CallStackElem(object): #+cdef
 	# Translate named local variable r-value.
 	# Returns the translated rvalueOp.
 	def _FC_trans_NAMED_LOCAL(self, param, rvalueOp): #@nocy
-#@cy	def _FC_trans_NAMED_LOCAL(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy	cdef AwlOperator _FC_trans_NAMED_LOCAL(self, AwlParamAssign param, AwlOperator rvalueOp):
 #@cy		cdef AwlOperator oper
 
 		# r-value is a named-local (#abc)
 		oper = self.cpu.callStackTop.getInterfIdxOper(rvalueOp.interfaceIndex)
 		if oper.operType == AwlOperatorTypes.MEM_DB:
 			return self._FC_trans_MEM_DB(param, oper, True)
-		try:
-			return self._FC_paramTrans[oper.operType](self, param, oper)
-		except KeyError as e:
-			raise AwlSimBug("Unhandled call translation of "
-				"named local parameter assignment:\n"
-				"'%s' => r-value operator '%s'" %\
-				(str(param), str(oper)))
+
+		# Call the operator translation handler (Python)
+		try:							#@nocy
+			trans = self._FC_paramTrans[oper.operType]	#@nocy
+		except KeyError as e:					#@nocy
+			self._FCTransBug(param, oper)			#@nocy
+		return trans(self, param, oper)				#@nocy
+
+		# Call the operator translation handler (Cython)
+#@cy		oper = self._translateFCParam(param, oper)
+#@cy		if oper is None:
+#@cy			self._FCTransBug(param, oper)
+#@cy		return oper
 
 	# FC call parameter translators
-	_FC_paramTrans = {
-		AwlOperatorTypes.IMM		: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_REAL	: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_S5T	: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_TIME	: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_DATE	: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_TOD	: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_DT		: _FC_trans_copyToVLWithDBPtr,
-		AwlOperatorTypes.IMM_PTR	: _FC_trans_copyToVL,
-		AwlOperatorTypes.IMM_STR	: _FC_trans_copyToVLWithDBPtr,
+	_FC_paramTrans = {							#@nocy
+		AwlOperatorTypes.IMM		: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_REAL	: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_S5T	: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_TIME	: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_DATE	: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_TOD	: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_DT		: _FC_trans_copyToVLWithDBPtr,	#@nocy
+		AwlOperatorTypes.IMM_PTR	: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.IMM_STR	: _FC_trans_copyToVLWithDBPtr,	#@nocy
+		AwlOperatorTypes.MEM_E		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.MEM_A		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.MEM_M		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.MEM_L		: _FC_trans_MEM_L,		#@nocy
+		AwlOperatorTypes.MEM_VL		: _FC_trans_copyToVL,		#@nocy
+		AwlOperatorTypes.MEM_DB		: _FC_trans_MEM_DB,		#@nocy
+		AwlOperatorTypes.MEM_DI		: _FC_trans_MEM_DI,		#@nocy
+		AwlOperatorTypes.MEM_T		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.MEM_Z		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.MEM_PA		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.MEM_PE		: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.BLKREF_FC	: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.BLKREF_FB	: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.BLKREF_DB	: _FC_trans_direct,		#@nocy
+		AwlOperatorTypes.NAMED_LOCAL	: _FC_trans_NAMED_LOCAL,	#@nocy
+	}									#@nocy
 
-		AwlOperatorTypes.MEM_E		: _FC_trans_direct,
-		AwlOperatorTypes.MEM_A		: _FC_trans_direct,
-		AwlOperatorTypes.MEM_M		: _FC_trans_direct,
-		AwlOperatorTypes.MEM_L		: _FC_trans_MEM_L,
-		AwlOperatorTypes.MEM_VL		: _FC_trans_copyToVL,
-		AwlOperatorTypes.MEM_DB		: _FC_trans_MEM_DB,
-		AwlOperatorTypes.MEM_DI		: _FC_trans_MEM_DI,
-		AwlOperatorTypes.MEM_T		: _FC_trans_direct,
-		AwlOperatorTypes.MEM_Z		: _FC_trans_direct,
-		AwlOperatorTypes.MEM_PA		: _FC_trans_direct,
-		AwlOperatorTypes.MEM_PE		: _FC_trans_direct,
+#@cy	cdef AwlOperator _translateFCParam(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy		cdef uint32_t operType
+#@cy		cdef AwlOperator oper
+#@cy
+#@cy		operType = rvalueOp.operType
+#@cy		if operType == AwlOperatorTypes.IMM:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_REAL:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_S5T:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_TIME:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_DATE:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_TOD:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_DT:
+#@cy			oper = self._FC_trans_copyToVLWithDBPtr(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_PTR:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.IMM_STR:
+#@cy			oper = self._FC_trans_copyToVLWithDBPtr(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_E:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_A:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_M:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_L:
+#@cy			oper = self._FC_trans_MEM_L(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_VL:
+#@cy			oper = self._FC_trans_copyToVL(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_DB:
+#@cy			oper = self._FC_trans_MEM_DB(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_DI:
+#@cy			oper = self._FC_trans_MEM_DI(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_T:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_Z:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_PA:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.MEM_PE:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.BLKREF_FC:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.BLKREF_FB:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.BLKREF_DB:
+#@cy			oper = self._FC_trans_direct(param, rvalueOp)
+#@cy		elif operType == AwlOperatorTypes.NAMED_LOCAL:
+#@cy			oper = self._FC_trans_NAMED_LOCAL(param, rvalueOp)
+#@cy		else:
+#@cy			oper = None
+#@cy		return oper
 
-		AwlOperatorTypes.BLKREF_FC	: _FC_trans_direct,
-		AwlOperatorTypes.BLKREF_FB	: _FC_trans_direct,
-		AwlOperatorTypes.BLKREF_DB	: _FC_trans_direct,
+	def _FCTransError(self, param, oper):
+		raise AwlSimError("Do not know how to translate "
+			"FC parameter '%s' for call. The specified "
+			"actual-parameter is not allowed in this call." % (
+			str(param)))
 
-		AwlOperatorTypes.NAMED_LOCAL	: _FC_trans_NAMED_LOCAL,
-	}
+	def _FCTransBug(self, param, oper):
+		raise AwlSimBug("Unhandled call translation of "
+			"named local parameter assignment:\n"
+			"'%s' => r-value operator '%s'" % (
+			(str(param), str(oper))))
 
 	# Handle the exit from this code block.
 	# This stack element (self) will already have been
@@ -386,6 +458,7 @@ def make_CallStackElem(cpu,						#@nocy
 #				       tuple parameters,		#@cy
 #				       _Bool isRawCall):		#@cy
 #@cy	cdef CallStackElem cse
+#@cy	cdef AwlOperator oper
 #@cy	cdef AwlParamAssign param
 #@cy	cdef AwlStructField structField
 #@cy	cdef AwlStructInstance structInstance
@@ -459,14 +532,21 @@ def make_CallStackElem(cpu,						#@nocy
 			#                   the FC interface r-value.
 			cse._interfRefs = {}
 			for param in parameters:
-				try:
-					trans = cse._FC_paramTrans[param.rvalueOp.operType]
-				except KeyError as e:
-					raise AwlSimError("Do not know how to translate "
-						"FC parameter '%s' for call. The specified "
-						"actual-parameter is not allowed in this call." %\
-						str(param))
-				cse._interfRefs[param.interfaceFieldIndex] = trans(cse, param, param.rvalueOp)
+				oper = param.rvalueOp
+
+				# Call the operator translation handler (Python)
+				try:							#@nocy
+					trans = cse._FC_paramTrans[oper.operType]	#@nocy
+				except KeyError as e:					#@nocy
+					cse._FCTransError(param, oper)			#@nocy
+				cse._interfRefs[param.interfaceFieldIndex] = trans(	#@nocy
+						cse, param, oper)			#@nocy
+
+				# Call the operator translation handler (Cython)
+#@cy				oper = cse._translateFCParam(param, oper)
+#@cy				if oper is None:
+#@cy					cse._FCTransError(param, oper)
+#@cy				cse._interfRefs[param.interfaceFieldIndex] = oper
 
 	# Prepare the localdata stack.
 	cpu.activeLStack.enterStackFrame()
