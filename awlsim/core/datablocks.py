@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.blockinfo import *
+from awlsim.common.enumeration import *
 
 from awlsim.core.util import *
 from awlsim.core.operators import * #+cimport
@@ -34,17 +35,19 @@ from awlsim.core.offset import * #+cimport
 
 
 class DB(Block): #+cdef
-	PERM_READ	= 1 << 0
-	PERM_WRITE	= 1 << 1
-
-#@cy	def __cinit__(self):
-#@cy		self.fetch = self.__fetch
-#@cy		self.store = self.__store
+	EnumGen.start
+	PERM_READ	= EnumGen.bitmask
+	PERM_WRITE	= EnumGen.bitmask
+	EnumGen.end
 
 	def __init__(self, index, codeBlock=None,
 		     permissions=(PERM_READ|PERM_WRITE)):
 		Block.__init__(self, index)
+		self._PERM_READ = self.PERM_READ
+		self._PERM_WRITE = self.PERM_WRITE
+
 		self.setPermissions(permissions)
+
 		self.codeBlock = codeBlock	# The FB, if this is an instance-DB.
 		if self.codeBlock:
 			# The data structure is declared by the interface.
@@ -55,14 +58,6 @@ class DB(Block): #+cdef
 
 	def setPermissions(self, newPermissions):
 		self.permissions = newPermissions
-		if self.permissions & self.PERM_READ:
-			self.fetch = self.__fetch
-		else:
-			self.fetch = self.__fetch_noPermission
-		if self.permissions & self.PERM_WRITE:
-			self.store = self.__store
-		else:
-			self.store = self.__store_noPermission
 
 	@property
 	def struct(self):
@@ -76,33 +71,34 @@ class DB(Block): #+cdef
 	def allocate(self):
 		self.structInstance = AwlStructInstance(self.struct)
 
-	def __fetch(self, operator, baseOffset=None):
-		if baseOffset is None:
-			return self.structInstance.memory.fetch(operator.offset,
-								operator.width)
-		else:
-			return self.structInstance.memory.fetch(baseOffset + operator.offset,
-								operator.width)
-
-	def __fetch_noPermission(self, operator, baseOffset=None):
+	def fetch(self, operator, baseOffset): #@nocy
+#@cy	cdef object fetch(self, AwlOperator operator, AwlOffset baseOffset):
+		if self.permissions & self._PERM_READ:
+			if baseOffset is None:
+				return self.structInstance.memory.fetch(
+						operator.offset,
+						operator.width)
+			else:
+				return self.structInstance.memory.fetch(
+						baseOffset + operator.offset,
+						operator.width)
 		raise AwlSimError("Fetch from read protected DB %d" % self.index)
 
-	fetch = __fetch #@nocy
-
-	def __store(self, operator, value, baseOffset=None):
-		if baseOffset is None:
-			self.structInstance.memory.store(operator.offset,
-							 operator.width,
-							 value)
+	def store(self, operator, value, baseOffset): #@nocy
+#@cy	cdef store(self, AwlOperator operator, object value, AwlOffset baseOffset):
+		if self.permissions & self._PERM_WRITE:
+			if baseOffset is None:
+				self.structInstance.memory.store(
+						operator.offset,
+						operator.width,
+						value)
+			else:
+				self.structInstance.memory.store(
+						baseOffset + operator.offset,
+						operator.width,
+						value)
 		else:
-			self.structInstance.memory.store(baseOffset + operator.offset,
-							 operator.width,
-							 value)
-
-	def __store_noPermission(self, operator, value, baseOffset=None):
-		raise AwlSimError("Store to write protected DB %d" % self.index)
-
-	store = __store #@nocy
+			raise AwlSimError("Store to write protected DB %d" % self.index)
 
 	def getBlockInfo(self):
 		"""Get a BlockInfo instance for this block.

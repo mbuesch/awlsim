@@ -1805,7 +1805,7 @@ class S7CPU(object): #+cdef
 			# This is a fully qualified access (DBx.DBx X)
 			# Open the data block first.
 			self.openDB(dbNumber, False)
-		return self.dbRegister.fetch(operator)
+		return self.dbRegister.fetch(operator, None)
 
 	def __fetchDI(self, operator, allowedWidths): #@nocy
 #@cy	cdef object __fetchDI(self, AwlOperator operator, uint32_t allowedWidths):
@@ -1817,7 +1817,7 @@ class S7CPU(object): #+cdef
 			return self.diRegister.fetch(operator,
 						     make_AwlOffset_fromPointerValue(self.ar2.get()))
 		# Fetch without base offset.
-		return self.diRegister.fetch(operator)
+		return self.diRegister.fetch(operator, None)
 
 	def __fetchPE(self, operator, allowedWidths): #@nocy
 #@cy	cdef object __fetchPE(self, AwlOperator operator, uint32_t allowedWidths):
@@ -2099,7 +2099,7 @@ class S7CPU(object): #+cdef
 			except KeyError:
 				raise AwlSimError("Store to DB %d, but DB "
 					"does not exist" % dbNumber)
-		db.store(operator, value)
+		db.store(operator, value, None)
 
 	def __storeDI(self, operator, value, allowedWidths): #@nocy
 #@cy	cdef __storeDI(self, AwlOperator operator, object value, uint32_t allowedWidths):
@@ -2112,7 +2112,7 @@ class S7CPU(object): #+cdef
 					      make_AwlOffset_fromPointerValue(self.ar2.get()))
 		else:
 			# Store without base offset.
-			self.diRegister.store(operator, value)
+			self.diRegister.store(operator, value, None)
 
 	def __storePA(self, operator, value, allowedWidths): #@nocy
 #@cy	cdef __storePA(self, AwlOperator operator, object value, uint32_t allowedWidths):

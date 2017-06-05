@@ -1,11 +1,16 @@
 from awlsim.core.blocks cimport *
 from awlsim.core.datastructure cimport *
+from awlsim.core.offset cimport *
+from awlsim.core.operators cimport *
 
 cdef class DB(Block):
+	cdef public uint32_t _PERM_READ
+	cdef public uint32_t _PERM_WRITE
 	cdef public uint32_t permissions
+
 	cdef public object codeBlock
 	cdef public AwlStruct __struct
 	cdef public AwlStructInstance structInstance
 
-	cdef public object fetch
-	cdef public object store
+	cdef object fetch(self, AwlOperator operator, AwlOffset baseOffset)
+	cdef store(self, AwlOperator operator, object value, AwlOffset baseOffset)
