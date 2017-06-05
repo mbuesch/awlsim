@@ -308,7 +308,9 @@ class DBPointer(Pointer): #+cdef
 
 	def __init__(self, ptrValue = 0, dbNr = 0):
 		Pointer.__init__(self, ptrValue)
-		self.dbNr = dbNr or 0
+		if not dbNr or dbNr < 0:
+			dbNr = 0
+		self.dbNr = dbNr
 
 	# Get the pointer as DB-pointer (48 bit).
 	def toDBPointer(self): #@nocy
@@ -439,6 +441,8 @@ class ANYPointer(DBPointer): #+cdef
 	# Automatically selects an appropriate data type and count.
 	@classmethod
 	def makeByTypeWidth(cls, bitWidth, ptrValue = 0, dbNr = 0):
+		if dbNr < 0:
+			dbNr = 0
 		if bitWidth % 32 == 0:
 			dataType = AwlDataType.makeByName("DWORD")
 			count = bitWidth // 32
@@ -460,6 +464,8 @@ class ANYPointer(DBPointer): #+cdef
 	# Select the right ANY data type automatically.
 	@classmethod
 	def makeByAutoType(cls, dataType, ptrValue = 0, dbNr = 0):
+		if dbNr < 0:
+			dbNr = 0
 		if dataType.type == AwlDataType.TYPE_ARRAY and\
 		   cls.dataTypeIsSupported(dataType.arrayElementType):
 			return cls(ptrValue = ptrValue,
