@@ -788,7 +788,6 @@ class S7CPU(object): #+cdef
 		self.__avgCycleTimes = deque()
 		self.__avgCycleTimesCount = 0
 		self.__avgCycleTimesSum = 0.0
-		self.startupTime = perf_monotonic_time()
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
@@ -880,7 +879,8 @@ class S7CPU(object): #+cdef
 				self.__insnCount = insnCount = (self.__insnCount + 1) & 0x3FFFFFFF
 				if not (insnCount & 0x3F):
 					self.updateTimestamp()
-					self.__runTimeCheck()
+					if self.now - self.cycleStartTime > self.cycleTimeLimit:
+						self.__cycleTimeExceed()
 			if self.cbBlockExit is not None:
 				self.cbBlockExit(self.cbBlockExitData)
 			cse, exitCse = cse.prevCse, cse
@@ -921,7 +921,6 @@ class S7CPU(object): #+cdef
 		self.__speedMeasureStartTime = self.now
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
-		self.startupTime = self.now
 
 		self.initClockMemState(force=True)
 
@@ -1025,6 +1024,8 @@ class S7CPU(object): #+cdef
 		# time 'self.now' is updated.
 		now = perf_monotonic_time()
 		self.__nowOffset = -(now) + (2147483.647 - 0.1)
+		self.now = now = now + self.__nowOffset
+		self.startupTime = now
 		self.updateTimestamp()
 
 	# updateTimestamp() updates self.now, which is a
@@ -1071,11 +1072,19 @@ class S7CPU(object): #+cdef
 					"memory signal:\n" + str(e) +\
 					"\n\nThe configured clock memory byte "
 					"address might be invalid." )
+
 		# Check whether the runtime timeout exceeded
 		if self.__runtimeLimit >= 0.0:
 			if now - self.startupTime >= self.__runtimeLimit:
-				raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
-					"CPU runtime timeout")
+				self.__runTimeExceed()
+
+	def __cycleTimeExceed(self): #+cdef
+		raise AwlSimError("Cycle time exceed %.3f seconds" % (
+				  self.cycleTimeLimit))
+
+	def __runTimeExceed(self): #+cdef
+		raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
+					 "CPU runtime timeout")
 
 	# Make a DATE_AND_TIME for the current wall-time and
 	# store it in byteArray, which is a bytearray or compatible.
@@ -1094,11 +1103,6 @@ class S7CPU(object): #+cdef
 		byteArray[offset + 6] = ((msec // 10) % 10) | (((msec // 100) % 10) << 4)
 		byteArray[offset + 7] = ((msec % 10) << 4) |\
 					AwlDataType.dateAndTimeWeekdayMap[dt.weekday()]
-
-	def __runTimeCheck(self): #+cdef
-		if self.now - self.cycleStartTime > self.cycleTimeLimit:
-			raise AwlSimError("Cycle time exceed %.3f seconds" %\
-					  self.cycleTimeLimit)
 
 	def getCurrentIP(self):
 		try:

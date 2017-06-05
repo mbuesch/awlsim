@@ -148,7 +148,8 @@ cdef class S7CPU(object):
 	cpdef storeInputRange(self, uint32_t byteOffset, bytearray data)
 
 	cdef updateTimestamp(self)
-	cdef __runTimeCheck(self)
+	cdef __cycleTimeExceed(self)
+	cdef __runTimeExceed(self)
 
 	cdef runCycle(self)
 	cdef __runOB(self, OB block)
