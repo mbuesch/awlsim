@@ -869,7 +869,7 @@ class S7CPU(object): #+cdef
 
 		# Run the user program cycle
 		while cse is not None:
-			while cse.ip < len(cse.insns):
+			while cse.ip < cse.nrInsns:
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
 				if self.cbPostInsn is not None:

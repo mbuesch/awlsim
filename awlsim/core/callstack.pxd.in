@@ -13,6 +13,7 @@ cdef class CallStackElem(object):
 	cdef public uint32_t ip
 	cdef public CodeBlock block
 	cdef public list insns
+	cdef public uint32_t nrInsns
 	cdef public _Bool isRawCall
 	cdef public DB instanceDB
 	cdef public DB prevDbRegister

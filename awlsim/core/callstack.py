@@ -49,6 +49,7 @@ class CallStackElem(object): #+cdef
 		"cpu",			# S7CPU that belongs to this CSE
 		"parenStack",		# Active parenthesis stack
 		"insns",		# Instruction list that is being executed
+		"nrInsns",		# Length of the instruction list
 		"ip",			# Current instruction pointer
 		"block",		# CodeBlock that is being executed
 		"isRawCall",		# True, if this call is raw (UC, CC)
@@ -468,6 +469,7 @@ def make_CallStackElem(cpu,						#@nocy
 	cse.ip = 0
 	cse.block = block
 	cse.insns = block.insns
+	cse.nrInsns = block.nrInsns
 	cse.isRawCall = isRawCall
 	cse.instanceDB = instanceDB
 	cse.prevDbRegister = cpu.dbRegister

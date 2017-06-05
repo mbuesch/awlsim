@@ -128,6 +128,7 @@ class CodeBlock(Block): #+cdef
 		Block.__init__(self, index)
 
 		self.insns = insns
+		self.nrInsns = len(insns)
 		self.labels = None
 		self.interface = interface
 		self.tempAllocation = 0		# The number of allocated TEMP bytes
