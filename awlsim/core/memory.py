@@ -68,21 +68,28 @@ class GenericInteger(object): #+cdef
 #@cy	cpdef void set(self, int64_t value):
 		self.value = value & self.mask
 
-	def setByte(self, value): #@nocy
+	def setByte(self, value):				#@nocy
+		self.value = (((self.value & 0xFFFFFF00) |	#@nocy
+			       (value & 0xFF)) &		#@nocy
+			      self.mask)			#@nocy
 #@cy	cpdef void setByte(self, int64_t value):
-		self.value = ((self.value & 0xFFFFFF00) |\
-			      (value & 0xFF)) &\
-			     self.mask
+#@cy		self.value = (((self.value & 0xFFFFFF00u) |
+#@cy			       <uint8_t>value) &
+#@cy			      self.mask)
 
-	def setWord(self, value): #@nocy
+	def setWord(self, value):				#@nocy
+		self.value = (((self.value & 0xFFFF0000) |	#@nocy
+			       (value & 0xFFFF)) &		#@nocy
+			      self.mask)			#@nocy
 #@cy	cpdef void setWord(self, int64_t value):
-		self.value = ((self.value & 0xFFFF0000) |\
-			      (value & 0xFFFF)) &\
-			     self.mask
+#@cy		self.value = (((self.value & 0xFFFF0000u) |
+#@cy			       <uint16_t>value) &
+#@cy			      self.mask)
 
-	def setDWord(self, value): #@nocy
+	def setDWord(self, value):				#@nocy
+		self.value = value & 0xFFFFFFFF & self.mask	#@nocy
 #@cy	cpdef void setDWord(self, int64_t value):
-		self.value = value & 0xFFFFFFFF & self.mask
+#@cy		self.value = <uint32_t>value & self.mask
 
 	def setPyFloat(self, pyfl): #@nocy
 #@cy	cpdef setPyFloat(self, pyfl):
@@ -92,17 +99,20 @@ class GenericInteger(object): #+cdef
 #@cy	cpdef uint32_t get(self):
 		return self.value
 
-	def getByte(self): #@nocy
+	def getByte(self):			#@nocy
+		return self.value & 0xFF	#@nocy
 #@cy	cpdef uint8_t getByte(self):
-		return self.value & 0xFF
+#@cy		return self.value & 0xFFu
 
-	def getWord(self): #@nocy
+	def getWord(self):			#@nocy
+		return self.value & 0xFFFF	#@nocy
 #@cy	cpdef uint16_t getWord(self):
-		return self.value & 0xFFFF
+#@cy		return self.value & 0xFFFFu
 
-	def getDWord(self): #@nocy
+	def getDWord(self):			#@nocy
+		return self.value & 0xFFFFFFFF	#@nocy
 #@cy	cpdef uint32_t getDWord(self):
-		return self.value & 0xFFFFFFFF
+#@cy		return self.value & 0xFFFFFFFFu
 
 	def getSignedByte(self): #@nocy
 #@cy	cpdef int8_t getSignedByte(self):
@@ -579,17 +589,25 @@ class AwlMemory(object): #+cdef
 		try:
 			byteOffset = offset.byteOffset
 			if width == 1:
-				return (dataBytes[byteOffset] >> offset.bitOffset) & 1
+				return (dataBytes[byteOffset] >> offset.bitOffset) & 1	#@nocy
+#@cy				return (<uint8_t>(dataBytes[byteOffset]) >> offset.bitOffset) & 1u
 			elif width == 8:
-				return dataBytes[byteOffset] & 0xFF
+				return dataBytes[byteOffset] & 0xFF			#@nocy
+#@cy				return <uint8_t>(dataBytes[byteOffset])
 			elif width == 16:
-				return ((dataBytes[byteOffset] << 8) |\
-				        dataBytes[byteOffset + 1]) & 0xFFFF
+				return (((dataBytes[byteOffset] << 8) |			#@nocy
+				         dataBytes[byteOffset + 1]) & 0xFFFF)		#@nocy
+#@cy				return (((<uint8_t>(dataBytes[byteOffset]) << 8) |
+#@cy				         <uint8_t>(dataBytes[byteOffset + 1])) & 0xFFFFu)
 			elif width == 32:
-				return ((dataBytes[byteOffset] << 24) |\
-				        (dataBytes[byteOffset + 1] << 16) |\
-				        (dataBytes[byteOffset + 2] << 8) |\
-				        dataBytes[byteOffset + 3]) & 0xFFFFFFFF
+				return (((dataBytes[byteOffset] << 24) |		#@nocy
+				         (dataBytes[byteOffset + 1] << 16) |		#@nocy
+				         (dataBytes[byteOffset + 2] << 8) |		#@nocy
+				         dataBytes[byteOffset + 3]) & 0xFFFFFFFF)	#@nocy
+#@cy				return (((<uint8_t>(dataBytes[byteOffset]) << 24) |
+#@cy				         (<uint8_t>(dataBytes[byteOffset + 1]) << 16) |
+#@cy				         (<uint8_t>(dataBytes[byteOffset + 2]) << 8) |
+#@cy				         <uint8_t>(dataBytes[byteOffset + 3])) & 0xFFFFFFFFu)
 			else:
 				assert(not offset.bitOffset) #@nocy
 				nrBytes = intDivRoundUp(width, 8)
@@ -622,7 +640,7 @@ class AwlMemory(object): #+cdef
 #@cy2			if isinstance(value, int) or isinstance(value, long):
 #@cy3			if isinstance(value, int):
 			if isInteger(value): #@nocy
-#@cy				value_uint64 = value & <uint64_t>0xFFFFFFFFFFFFFFFFULL
+#@cy				value_uint64 = <uint64_t>(<int64_t>value)
 				if width == 1:
 					if value: #@nocy
 #@cy					if value_uint64:
