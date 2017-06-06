@@ -991,9 +991,12 @@ class S7CPU(object): #+cdef
 
 			# Calculate instruction statistics.
 			self.avgInsnPerCycle = avgInsnPerCycle = insnCount / cycleCount
-			avgTimePerInsn = avgCycleTime / avgInsnPerCycle
-			if avgTimePerInsn > 0.0:
-				self.insnPerSecond = 1.0 / avgTimePerInsn
+			if avgInsnPerCycle > 0.0:
+				avgTimePerInsn = avgCycleTime / avgInsnPerCycle
+				if avgTimePerInsn > 0.0:
+					self.insnPerSecond = 1.0 / avgTimePerInsn
+				else:
+					self.insnPerSecond = 0.0
 			else:
 				self.insnPerSecond = 0.0
 
