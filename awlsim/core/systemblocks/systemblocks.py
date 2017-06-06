@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.exceptions import *
+
 from awlsim.core.instructions.insn_generic_call import * #+cimport
 from awlsim.core.systemblocks.error_codes import *
 from awlsim.core.systemblocks.systemblockinterface import *

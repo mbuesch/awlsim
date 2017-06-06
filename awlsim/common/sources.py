@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.refmanager import *
 from awlsim.common.util import *
+from awlsim.common.exceptions import *
 
 import base64, binascii
 import hashlib

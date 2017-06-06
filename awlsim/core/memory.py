@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 from awlsim.common.datatypehelpers import * #+cimport
+from awlsim.common.exceptions import *
 
 from awlsim.core.datatypes import *
 from awlsim.core.offset import * #+cimport

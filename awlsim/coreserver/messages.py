@@ -30,6 +30,7 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.blockinfo import *
 from awlsim.common.net import *
 from awlsim.common.sources import *
+from awlsim.common.exceptions import *
 
 from awlsim.coreserver.memarea import *
 

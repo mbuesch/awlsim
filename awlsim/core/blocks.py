@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.refmanager import *
 from awlsim.common.blockinfo import *
 from awlsim.common.wordpacker import *
+from awlsim.common.exceptions import *
 
 from awlsim.core.blockinterface import *
 from awlsim.core.labels import *

@@ -31,6 +31,7 @@ from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.blockinfo import *
 from awlsim.common.datatypehelpers import * #+cimport
+from awlsim.common.exceptions import *
 
 from awlsim.library.libentry import *
 

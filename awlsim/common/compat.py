@@ -31,6 +31,9 @@ import contextlib
 
 
 __all__ = [
+	"sys",
+	"os",
+	"contextlib",
 	"osIsWindows",
 	"osIsPosix",
 	"standaloneServerExe",

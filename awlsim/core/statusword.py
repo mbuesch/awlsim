@@ -27,6 +27,7 @@ from awlsim.common.compat import *
 from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import * #+cimport
+from awlsim.common.exceptions import *
 
 from awlsim.core.util import *
 

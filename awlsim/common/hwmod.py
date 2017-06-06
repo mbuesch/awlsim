@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 from awlsim.common.util import *
+from awlsim.common.exceptions import *
 
 import hashlib
 import binascii
