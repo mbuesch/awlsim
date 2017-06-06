@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.util import *
+from awlsim.common.exceptions import *
 
 #from awlsimhw_rpigpio.main cimport * #@cy
 
