@@ -27,6 +27,11 @@ from awlsim.common.exceptions import *
 import struct
 
 
+__all__ = [
+	"WordPacker",
+]
+
+
 class _WordPacker:
 	"""Pack/unpack bytes/words/dwords into/from a byte stream."""
 

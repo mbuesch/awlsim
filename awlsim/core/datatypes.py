@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.immutable import *
+from awlsim.common.enumeration import *
 
 from awlsim.core.util import *
 from awlsim.core.timers import *

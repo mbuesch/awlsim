@@ -25,6 +25,17 @@ from awlsim.common.compat import *
 from awlsim.common.enumeration import *
 
 
+__all__ = [
+	"AwlSimError",
+	"AwlParserError",
+	"AwlSimBug",
+	"FrozenAwlSimError",
+	"MaintenanceRequest",
+	"ExitCodes",
+	"suppressAllExc",
+]
+
+
 class AwlSimError(Exception):
 	"""Main AwlSim exception.
 	"""

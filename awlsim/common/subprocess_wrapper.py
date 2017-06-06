@@ -24,6 +24,13 @@ from awlsim.common.compat import *
 
 import distutils.spawn
 
+
+__all__ = [
+	"findExecutable",
+	"PopenWrapper",
+]
+
+
 if isIronPython:
 	import os
 	import signal

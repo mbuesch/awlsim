@@ -30,6 +30,39 @@ import math
 import contextlib
 
 
+__all__ = [
+	"osIsWindows",
+	"osIsPosix",
+	"standaloneServerExe",
+	"isPyPy",
+	"isJython",
+	"isIronPython",
+	"isCython",
+	"isMicroPython",
+	"isWinStandalone",
+	"isPy3Compat",
+	"isPy2Compat",
+	"py23",
+	"pythonInterpreter",
+	"input",
+	"range",
+	"reduce",
+	"queue",
+	"monotonic_time",
+	"perf_monotonic_time",
+	"BlockingIOError",
+	"ConnectionError",
+	"StringIO",
+	"isalnum",
+	"isdecimal",
+	"compat_gcd",
+	"contextlib",
+	"dictItems",
+	"dictKeys",
+	"dictValues",
+]
+
+
 # Convenient operating system identifiers
 if os.name == "java":
 	import java.lang.System
@@ -103,16 +136,22 @@ else:
 # Force Python3 behavior
 if isPy2Compat:
 	input = raw_input
+else:
+	input = input
 
 # range() compatibility.
 # Force Python3 behavior
 if isPy2Compat:
 	range = xrange
+else:
+	range = range
 
 # reduce() compatibility.
 # Force Python2 behavior
 if isPy3Compat:
 	from functools import reduce
+else:
+	reduce = reduce
 
 # queue compatibility
 # Force Python3 behavior
@@ -131,12 +170,14 @@ try:
 	BlockingIOError
 except NameError:
 	class BlockingIOError(BaseException): pass
+BlockingIOError = BlockingIOError
 
 # ConnectionError dummy
 try:
 	ConnectionError
 except NameError:
 	ConnectionError = OSError
+ConnectionError = ConnectionError
 
 # Import StringIO
 if isIronPython and isPy2Compat:
@@ -144,6 +185,7 @@ if isIronPython and isPy2Compat:
 	from StringIO import StringIO
 else:
 	from io import StringIO
+StringIO = StringIO
 from io import BytesIO
 
 # str.isalnum() compatibility

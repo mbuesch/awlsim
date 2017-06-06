@@ -29,6 +29,11 @@ from awlsim.coreclient.client import *
 import threading
 
 
+__all__ = [
+	"AwlValidator",
+]
+
+
 class AwlValidator(object):
 	"""Source code validation.
 	"""

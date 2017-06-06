@@ -22,8 +22,9 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.exceptions import *
+
 from awlsim.core.offset import * #+cimport
-from awlsim.core.util import AwlSimError
 from awlsim.core.hardware_loader import *
 from awlsim.core.hardware_params import *
 #from awlsim.core.hardware cimport * #@cy

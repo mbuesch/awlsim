@@ -23,6 +23,12 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 
+__all__ = [
+	"ObjRef",
+	"ObjRefManager",
+]
+
+
 class ObjRef(object):
 	"""An object reference."""
 

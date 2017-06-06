@@ -26,6 +26,12 @@ import gc as garbageCollector
 
 #garbageCollector.set_debug(garbageCollector.DEBUG_LEAK)
 
+
+__all__ = [
+	"AwlDebug",
+]
+
+
 class AwlDebug(object):
 	@classmethod
 	def getMemoryLeaks(cls):

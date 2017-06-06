@@ -25,6 +25,11 @@ from awlsim.common.compat import *
 import re
 
 
+__all__ = [
+	"AwlName",
+]
+
+
 class AwlName(object):
 	labelRe = re.compile(r'^[_a-zA-Z][_0-9a-zA-Z]{0,3}$')
 	alpha_lower = "abcdefghijklmnopqrstuvwxyz"

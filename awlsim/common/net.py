@@ -26,6 +26,14 @@ from awlsim.common.util import *
 import socket
 
 
+__all__ = [
+	"AF_UNIX",
+	"SocketErrors",
+	"netGetAddrInfo",
+	"netPortIsUnused",
+]
+
+
 if hasattr(socket, "AF_UNIX"):
 	AF_UNIX = socket.AF_UNIX
 else:

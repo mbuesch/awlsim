@@ -23,6 +23,11 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 
+__all__ = [
+	"Blocker",
+]
+
+
 class Blocker(object):
 	"""'with'-statement based single threaded blocker.
 	This is _not_ a multi-thread lock."""

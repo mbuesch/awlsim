@@ -29,6 +29,12 @@ import hashlib
 import binascii
 
 
+__all__ = [
+	"HwmodDescriptorFactory",
+	"HwmodDescriptor",
+]
+
+
 class HwmodDescriptorFactory(XmlFactory):
 	def parser_open(self, tag=None):
 		hwmodDesc = self.hwmodDesc

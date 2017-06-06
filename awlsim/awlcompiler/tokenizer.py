@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 import sys
 import re
 
+from awlsim.common.enumeration import *
 from awlsim.common.project import *
 from awlsim.common.refmanager import *
 from awlsim.common.namevalidation import *

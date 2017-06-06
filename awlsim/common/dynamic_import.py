@@ -23,6 +23,11 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 
+__all__ = [
+	"importModule",
+]
+
+
 def importModule(moduleName):
 	"""Import a module with the name string 'moduleName'.
 	Returns the module object.

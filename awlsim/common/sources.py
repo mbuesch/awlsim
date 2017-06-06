@@ -30,6 +30,16 @@ import base64, binascii
 import hashlib
 
 
+__all__ = [
+	"AwlSource",
+	"FupSource",
+	"KopSource",
+	"SymTabSource",
+	"SourceManager",
+	"SourceContainer",
+]
+
+
 class SourceFactory(XmlFactory):
 	def parser_open(self, tag=None):
 		project, source = self.project, self.source
