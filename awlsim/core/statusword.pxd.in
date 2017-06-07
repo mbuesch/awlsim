@@ -1,17 +1,17 @@
 cdef class S7StatusWord(object):
-	cdef public _Bool NER
-	cdef public _Bool VKE
-	cdef public _Bool STA
-	cdef public _Bool OR
-	cdef public _Bool OS
-	cdef public _Bool OV
-	cdef public _Bool A0
-	cdef public _Bool A1
-	cdef public _Bool BIE
+	cdef _Bool NER
+	cdef _Bool VKE
+	cdef _Bool STA
+	cdef _Bool OR
+	cdef _Bool OS
+	cdef _Bool OV
+	cdef _Bool A0
+	cdef _Bool A1
+	cdef _Bool BIE
 
-	cpdef __eq(self, object other)
-	cpdef void reset(self)
-	cpdef uint16_t getWord(self)
-	cpdef void setWord(self, uint16_t word)
-	cpdef dup(self)
-	cpdef void setForFloatingPoint(self, pyFloat)
+	cdef __eq(self, object other)
+	cdef void reset(self)
+	cdef uint16_t getWord(self)
+	cdef void setWord(self, uint16_t word)
+	cdef dup(self)
+	cdef void setForFloatingPoint(self, double pyFloat)

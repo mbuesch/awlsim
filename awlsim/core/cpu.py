@@ -79,17 +79,6 @@ class ParenStackElem(object): #+cdef
 			(type2name[self.insnType],
 			 self.VKE, self.OR)
 
-class McrStackElem(object):
-	"MCR stack element"
-
-	def __init__(self, statusWord):
-		self.VKE = statusWord.VKE
-
-	def __bool__(self):
-		return bool(self.VKE)
-
-	__nonzero__ = __bool__
-
 class S7Prog(object):
 	"S7 CPU program management"
 
@@ -1399,20 +1388,23 @@ class S7CPU(object): #+cdef
 	def getConf(self):
 		return self.conf
 
-	def setMcrActive(self, active):
+	def setMcrActive(self, active): #@nocy
+#@cy	cdef void setMcrActive(self, _Bool active):
 		self.mcrActive = active
 
-	def mcrIsOn(self):
+	def mcrIsOn(self): #@nocy
+#@cy	cdef _Bool mcrIsOn(self):
 		return (not self.mcrActive or all(self.mcrStack))
 
-	def mcrStackAppend(self, statusWord):
-		self.mcrStack.append(McrStackElem(statusWord))
+	def mcrStackAppend(self, statusWord): #@nocy
+#@cy	cdef mcrStackAppend(self, S7StatusWord statusWord):
+		self.mcrStack.append(statusWord.VKE)
 		if len(self.mcrStack) > 8:
 			raise AwlSimError("MCR stack overflow")
 
-	def mcrStackPop(self):
+	def mcrStackPop(self): #+cdef
 		try:
-			return self.mcrStack.pop()
+			self.mcrStack.pop()
 		except IndexError:
 			raise AwlSimError("MCR stack underflow")
 

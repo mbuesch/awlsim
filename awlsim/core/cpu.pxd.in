@@ -91,6 +91,10 @@ cdef class S7CPU(object):
 	cdef public uint32_t __speedMeasureStartInsnCount
 	cdef public uint32_t __speedMeasureStartCycleCount
 
+	cdef void setMcrActive(self, _Bool active)
+	cdef _Bool mcrIsOn(self)
+	cdef mcrStackAppend(self, S7StatusWord statusWord)
+	cdef mcrStackPop(self)
 	cdef parenStackAppend(self, uint32_t insnType, S7StatusWord statusWord)
 
 	cpdef object fetch(self, AwlOperator operator, uint32_t allowedWidths)
