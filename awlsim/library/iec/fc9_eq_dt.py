@@ -33,18 +33,14 @@ class Lib__IEC__FC9_EQ_DT(AwlLibFC):
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "DT1",
-					    dataType = AwlDataType.makeByName("DATE_AND_TIME")),
-			BlockInterfaceField(name = "DT2",
-					    dataType = AwlDataType.makeByName("DATE_AND_TIME")),
+			BlockInterfaceField(name="DT1", dataType="DATE_AND_TIME"),
+			BlockInterfaceField(name="DT2", dataType="DATE_AND_TIME"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "RET_VAL",
-					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name="RET_VAL", dataType="BOOL"),
 		),
 		BlockInterfaceField.FTYPE_TEMP	: (
-			BlockInterfaceField(name = "DBNR",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="DBNR", dataType="INT"),
 		),
 	}
 

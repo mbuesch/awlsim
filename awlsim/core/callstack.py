@@ -155,7 +155,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset loffset
 #@cy		cdef int32_t dbNumber
-#@cy		cdef uint32_t area
+#@cy		cdef uint64_t area
 #@cy		cdef AwlOperator storeOper
 #@cy		cdef uint32_t widthMaskAll
 
@@ -178,14 +178,14 @@ class CallStackElem(object): #+cdef
 			  widthMaskAll)
 		storeOper.offset = loffset + make_AwlOffset(2, 0)
 		storeOper.width = 32
-		area = AwlIndirectOp.optype2area[rvalueOp.operType]
-		if area == AwlIndirectOp.AREA_L:
-			area = AwlIndirectOp.AREA_VL
-		elif area == AwlIndirectOp.AREA_VL:
+		area = AwlIndirectOpConst.optype2area[rvalueOp.operType]
+		if area == PointerConst.AREA_L_S:
+			area = PointerConst.AREA_VL_S
+		elif area == PointerConst.AREA_VL_S:
 			raise AwlSimError("Cannot forward VL-parameter "
 					  "to called FC")
-		elif area == AwlIndirectOp.AREA_DI:
-			area = AwlIndirectOp.AREA_DB
+		elif area == PointerConst.AREA_DI_S:
+			area = PointerConst.AREA_DB_S
 		cpu.store(storeOper,
 			  area | rvalueOp.offset.toPointerValue(),
 			  widthMaskAll)
@@ -578,7 +578,7 @@ def make_CallStackElem(cpu,						#@nocy
 	# and save the old AR2 value.
 	cse.prevAR2value = cpu.ar2.get()
 	if instanceBaseOffset is not None:
-		cpu.ar2.set(AwlIndirectOp.AREA_DB |\
+		cpu.ar2.set(PointerConst.AREA_DB_S |\
 			    instanceBaseOffset.toPointerValue())
 
 	return cse

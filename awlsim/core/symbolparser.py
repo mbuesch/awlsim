@@ -25,7 +25,6 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 from awlsim.common.cpuconfig import *
 
-from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.util import *
 
@@ -129,6 +128,7 @@ class Symbol(object):
 			self.setType(None)
 			return
 		try:
+			from awlsim.core.datatypes import AwlDataType
 			awlType = AwlDataType.makeByName(newTypeString.split())
 		except AwlSimError as e:
 			raise AwlSimError("Symbol table parser: Can't parse symbol "
@@ -356,7 +356,6 @@ class SymbolTable(object):
 		"""Get all symbols with the given AwlDataType.
 		Returns a generator.
 		"""
-		assert(isinstance(dataType, AwlDataType))
 		return (symbol for symbol in self.__symbolsList\
 			if symbol.getType() == dataType)
 

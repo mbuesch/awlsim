@@ -38,8 +38,7 @@ class SFC47(SFC): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "WT",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="WT", dataType="INT"),
 		)
 	}
 

@@ -23,12 +23,16 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.enumeration import *
+from awlsim.common.util import *
 from awlsim.common.exceptions import *
+
+from awlsim.core.memory import * #+cimport
 
 
 __all__ = [
 	"AwlOperatorTypes",
 	"AwlOperatorWidths",
+	"AwlIndirectOpConst",
 ]
 
 
@@ -216,3 +220,91 @@ assert(AwlOperatorWidths.WIDTH_MASK_16 == (1 << 2))
 assert(AwlOperatorWidths.WIDTH_MASK_24 == (1 << 3))
 assert(AwlOperatorWidths.WIDTH_MASK_32 == (1 << 4))
 assert(AwlOperatorWidths.WIDTH_MASK_COMP == (1 << 16))
+
+
+class __AwlIndirectOpConstClass(object): #+cdef
+	def __init__(self):
+		# Address register
+		self.AR_NONE		= 0	# No address register
+		self.AR_1		= 1	# Use AR1
+		self.AR_2		= 2	# Use AR2
+
+		# Area code position
+		self.AREA_SHIFT		= 24
+		self.AREA_MASK		= 0xFF
+		self.AREA_MASK_S	= self.AREA_MASK << self.AREA_SHIFT
+
+		# Area codes
+		self.AREA_NONE		= 0x00
+		self.AREA_P		= 0x80	# Peripheral area
+		self.AREA_E		= 0x81	# Input
+		self.AREA_A		= 0x82	# Output
+		self.AREA_M		= 0x83	# Flags
+		self.AREA_DB		= 0x84	# Global datablock
+		self.AREA_DI		= 0x85	# Instance datablock
+		self.AREA_L		= 0x86	# Localstack
+		self.AREA_VL		= 0x87	# Parent localstack
+
+		# Area codes (shifted to the pointer location)
+		self.AREA_NONE_S	= self.AREA_NONE << self.AREA_SHIFT
+		self.AREA_P_S		= self.AREA_P << self.AREA_SHIFT
+		self.AREA_E_S		= self.AREA_E << self.AREA_SHIFT
+		self.AREA_A_S		= self.AREA_A << self.AREA_SHIFT
+		self.AREA_M_S		= self.AREA_M << self.AREA_SHIFT
+		self.AREA_DB_S		= self.AREA_DB << self.AREA_SHIFT
+		self.AREA_DI_S		= self.AREA_DI << self.AREA_SHIFT
+		self.AREA_L_S		= self.AREA_L << self.AREA_SHIFT
+		self.AREA_VL_S		= self.AREA_VL << self.AREA_SHIFT
+
+		# Pointer area constants
+		self.EXT_AREA_MASK	= 0xFFFF
+		self.EXT_AREA_MASK_S	= self.EXT_AREA_MASK << self.AREA_SHIFT
+
+		# Extended area encodings. Only used for internal purposes.
+		# These are not used in the interpreted AWL code.
+		self.EXT_AREA_T			= 0x01FF	# Timer
+		self.EXT_AREA_Z			= 0x02FF	# Counter
+		self.EXT_AREA_BLKREF_DB		= 0x03FF	# DB block reference
+		self.EXT_AREA_BLKREF_DI		= 0x04FF	# DI block reference
+		self.EXT_AREA_BLKREF_FB		= 0x05FF	# FB block reference
+		self.EXT_AREA_BLKREF_FC		= 0x06FF	# FC block reference
+
+		# Extended area encodings (shifted).
+		self.EXT_AREA_T_S		= self.EXT_AREA_T << self.AREA_SHIFT
+		self.EXT_AREA_Z_S		= self.EXT_AREA_Z << self.AREA_SHIFT
+		self.EXT_AREA_BLKREF_DB_S	= self.EXT_AREA_BLKREF_DB << self.AREA_SHIFT
+		self.EXT_AREA_BLKREF_DI_S	= self.EXT_AREA_BLKREF_DI << self.AREA_SHIFT
+		self.EXT_AREA_BLKREF_FB_S	= self.EXT_AREA_BLKREF_FB << self.AREA_SHIFT
+		self.EXT_AREA_BLKREF_FC_S	= self.EXT_AREA_BLKREF_FC << self.AREA_SHIFT
+
+		# Map for converting area code to operator type for fetch operations
+		self.area2optype_fetch = {
+			self.AREA_P_S			: AwlOperatorTypes.MEM_PE,
+			self.AREA_E_S			: AwlOperatorTypes.MEM_E,
+			self.AREA_A_S			: AwlOperatorTypes.MEM_A,
+			self.AREA_M_S			: AwlOperatorTypes.MEM_M,
+			self.AREA_DB_S			: AwlOperatorTypes.MEM_DB,
+			self.AREA_DI_S			: AwlOperatorTypes.MEM_DI,
+			self.AREA_L_S			: AwlOperatorTypes.MEM_L,
+			self.AREA_VL_S			: AwlOperatorTypes.MEM_VL,
+			self.EXT_AREA_T_S		: AwlOperatorTypes.MEM_T,
+			self.EXT_AREA_Z_S		: AwlOperatorTypes.MEM_Z,
+			self.EXT_AREA_BLKREF_DB_S	: AwlOperatorTypes.BLKREF_DB,
+			self.EXT_AREA_BLKREF_DI_S	: AwlOperatorTypes.BLKREF_DI,
+			self.EXT_AREA_BLKREF_FB_S	: AwlOperatorTypes.BLKREF_FB,
+			self.EXT_AREA_BLKREF_FC_S	: AwlOperatorTypes.BLKREF_FC,
+		}
+
+		# Map for converting area code to operator type for store operations
+		self.area2optype_store = self.area2optype_fetch.copy()
+		self.area2optype_store[self.AREA_P_S] = AwlOperatorTypes.MEM_PA
+
+		# Map for converting operator type to area code
+		self.optype2area = pivotDict(self.area2optype_fetch)
+		self.optype2area[AwlOperatorTypes.MEM_PA]	= self.AREA_P_S
+		self.optype2area[AwlOperatorTypes.MULTI_FB]	= self.AREA_DI_S
+		self.optype2area[AwlOperatorTypes.MULTI_SFB]	= self.AREA_DI_S
+		self.optype2area[AwlOperatorTypes.NAMED_DBVAR]	= self.AREA_DB_S
+		self.optype2area[AwlOperatorTypes.UNSPEC]	= self.AREA_NONE_S
+
+AwlIndirectOpConst = __AwlIndirectOpConstClass() #+cdef-public-__AwlIndirectOpConstClass

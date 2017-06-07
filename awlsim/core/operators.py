@@ -26,7 +26,6 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
 from awlsim.core.operatortypes import * #+cimport
-from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.statusword import * #+cimport
@@ -180,6 +179,8 @@ class AwlOperator(object): #+cdef
 					listToHumanStr(AwlOperatorWidths.maskToList(widths))))
 
 	def checkDataTypeCompat(self, cpu, dataType):
+		from awlsim.core.datatypes import AwlDataType
+
 		assert(isinstance(dataType, AwlDataType))
 
 		if self.operType in (AwlOperatorTypes.NAMED_LOCAL,
@@ -269,7 +270,7 @@ class AwlOperator(object): #+cdef
 #@cy		cdef uint32_t area
 
 		try:
-			area = AwlIndirectOp.optype2area[self.operType]
+			area = AwlIndirectOpConst.optype2area[self.operType]
 		except KeyError as e:
 			raise AwlSimError("Could not transform operator '%s' "
 				"into a pointer." % str(self))
@@ -285,7 +286,7 @@ class AwlOperator(object): #+cdef
 	def makeANYPointer(self, areaShifted=None):
 		ptrValue = self.makePointerValue()
 		if areaShifted:
-			ptrValue &= ~Pointer.AREA_MASK_S
+			ptrValue &= ~PointerConst.AREA_MASK_S
 			ptrValue |= areaShifted
 		if ANYPointer.dataTypeIsSupported(self.dataType):
 			return ANYPointer.makeByAutoType(dataType = self.dataType,
@@ -296,6 +297,9 @@ class AwlOperator(object): #+cdef
 						  dbNr = self.offset.dbNumber)
 
 	def __repr__(self):
+		from awlsim.core.datatypes import AwlDataType
+		from awlsim.common.sources import AwlSource
+
 		if self.operType == AwlOperatorTypes.IMM:
 			if self.width == 1:
 				return "TRUE" if (self.immediate & 1) else "FALSE"
@@ -320,7 +324,6 @@ class AwlOperator(object): #+cdef
 			return self.pointer.toPointerString()
 		elif self.operType == AwlOperatorTypes.IMM_STR:
 			strLen = self.immediateBytes[1]
-			from awlsim.common.sources import AwlSource
 			return "'" + self.immediateBytes[2:2+strLen].decode(
 					AwlSource.COMPAT_ENCODING) + "'"
 		elif self.operType in {AwlOperatorTypes.MEM_A,
@@ -388,7 +391,6 @@ class AwlOperator(object): #+cdef
 		elif self.operType == AwlOperatorTypes.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name_german[self.offset.bitOffset]
 		elif self.operType == AwlOperatorTypes.LBL_REF:
-			from awlsim.common.sources import AwlSource
 			return self.immediateBytes.decode(AwlSource.COMPAT_ENCODING)
 		elif self.operType == AwlOperatorTypes.BLKREF_FC:
 			return "FC %d" % self.offset.byteOffset
@@ -409,9 +411,9 @@ class AwlOperator(object): #+cdef
 		elif self.operType == AwlOperatorTypes.BLKREF_VAT:
 			return "VAT %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.MULTI_FB:
-			return "#FB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
+			return "#FB<" + self.makeANYPointer(PointerConst.AREA_DI_S).toPointerString() + ">"
 		elif self.operType == AwlOperatorTypes.MULTI_SFB:
-			return "#SFB<" + self.makeANYPointer(AwlIndirectOp.AREA_DI).toPointerString() + ">"
+			return "#SFB<" + self.makeANYPointer(PointerConst.AREA_DI_S).toPointerString() + ">"
 		elif self.operType == AwlOperatorTypes.SYMBOLIC:
 			return '"%s"' % self.offset.identChain.getString()
 		elif self.operType == AwlOperatorTypes.NAMED_LOCAL:
@@ -461,65 +463,6 @@ class AwlIndirectOp(AwlOperator): #+cdef
 	"""Indirect addressing operand.
 	"""
 
-	# Address register
-	AR_NONE		= 0	# No address register
-	AR_1		= 1	# Use AR1
-	AR_2		= 2	# Use AR2
-
-	# Pointer area constants
-	AREA_MASK	= Pointer.AREA_MASK_S
-	EXT_AREA_MASK	= Pointer.AREA_MASK_S | 0xFF00000000
-
-	# Pointer area encodings
-	AREA_NONE	= 0
-	AREA_P		= Pointer.AREA_P << Pointer.AREA_SHIFT
-	AREA_E		= Pointer.AREA_E << Pointer.AREA_SHIFT
-	AREA_A		= Pointer.AREA_A << Pointer.AREA_SHIFT
-	AREA_M		= Pointer.AREA_M << Pointer.AREA_SHIFT
-	AREA_DB		= Pointer.AREA_DB << Pointer.AREA_SHIFT
-	AREA_DI		= Pointer.AREA_DI << Pointer.AREA_SHIFT
-	AREA_L		= Pointer.AREA_L << Pointer.AREA_SHIFT
-	AREA_VL		= Pointer.AREA_VL << Pointer.AREA_SHIFT
-
-	# Extended area encodings. Only used for internal purposes.
-	# These are not used in the interpreted AWL code.
-	EXT_AREA_T		= 0x01FF000000	# Timer
-	EXT_AREA_Z		= 0x02FF000000	# Counter
-	EXT_AREA_BLKREF_DB	= 0x03FF000000	# DB block reference
-	EXT_AREA_BLKREF_DI	= 0x04FF000000	# DI block reference
-	EXT_AREA_BLKREF_FB	= 0x05FF000000	# FB block reference
-	EXT_AREA_BLKREF_FC	= 0x06FF000000	# FC block reference
-
-	# Map for converting area code to operator type for fetch operations
-	area2optype_fetch = {
-		AREA_P			: AwlOperatorTypes.MEM_PE,
-		AREA_E			: AwlOperatorTypes.MEM_E,
-		AREA_A			: AwlOperatorTypes.MEM_A,
-		AREA_M			: AwlOperatorTypes.MEM_M,
-		AREA_DB			: AwlOperatorTypes.MEM_DB,
-		AREA_DI			: AwlOperatorTypes.MEM_DI,
-		AREA_L			: AwlOperatorTypes.MEM_L,
-		AREA_VL			: AwlOperatorTypes.MEM_VL,
-		EXT_AREA_T		: AwlOperatorTypes.MEM_T,
-		EXT_AREA_Z		: AwlOperatorTypes.MEM_Z,
-		EXT_AREA_BLKREF_DB	: AwlOperatorTypes.BLKREF_DB,
-		EXT_AREA_BLKREF_DI	: AwlOperatorTypes.BLKREF_DI,
-		EXT_AREA_BLKREF_FB	: AwlOperatorTypes.BLKREF_FB,
-		EXT_AREA_BLKREF_FC	: AwlOperatorTypes.BLKREF_FC,
-	}
-
-	# Map for converting area code to operator type for store operations
-	area2optype_store = area2optype_fetch.copy()
-	area2optype_store[AREA_P] = AwlOperatorTypes.MEM_PA
-
-	# Map for converting operator type to area code
-	optype2area = pivotDict(area2optype_fetch)
-	optype2area[AwlOperatorTypes.MEM_PA] = AREA_P
-	optype2area[AwlOperatorTypes.MULTI_FB] = AREA_DI
-	optype2area[AwlOperatorTypes.MULTI_SFB] = AREA_DI
-	optype2area[AwlOperatorTypes.NAMED_DBVAR] = AREA_DB
-	optype2area[AwlOperatorTypes.UNSPEC] = AREA_NONE
-
 	# Make a deep copy, except for "insn".
 	def dup(self): #@nocy
 #@cy	cpdef AwlOperator dup(self):
@@ -535,9 +478,9 @@ class AwlIndirectOp(AwlOperator): #+cdef
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
 		types = toSet(types)
-		if not self.area2optype_fetch[self.area] in types and\
-		   not self.area2optype_store[self.area] in types:
-			self._raiseTypeError(self.area2optype_fetch[self.area], types)
+		if not AwlIndirectOpConst.area2optype_fetch[self.area] in types and\
+		   not AwlIndirectOpConst.area2optype_store[self.area] in types:
+			self._raiseTypeError(AwlIndirectOpConst.area2optype_fetch[self.area], types)
 		assert(lowerLimit is None)
 		assert(upperLimit is None)
 
@@ -561,13 +504,13 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		bitwiseDirectOffset = True
 		offsetOper = self.offsetOper
 		# Construct the pointer
-		if self.addressRegister == AwlIndirectOp.AR_NONE:
+		if self.addressRegister == AwlIndirectOpConst.AR_NONE:
 			# Memory-indirect access
-			if self.area == AwlIndirectOp.AREA_NONE:
+			if self.area == PointerConst.AREA_NONE_S:
 				raise AwlSimError("Area-spanning access not "
 					"possible in indirect access without "
 					"address register.")
-			if self.area > AwlIndirectOp.AREA_MASK:
+			if self.area > PointerConst.AREA_MASK_S:
 				# Is extended area
 				possibleWidths = {8, 16, 32}
 				bitwiseDirectOffset = False
@@ -578,6 +521,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				raise AwlSimError("Offset operator in indirect "
 					"access is not a valid memory offset.")
 			if offsetOper.width not in possibleWidths:
+				print(offsetOper.width)
 				raise AwlSimError("Offset operator in indirect "
 					"access is not of %s bit width." %\
 					listToHumanStr(possibleWidths))
@@ -593,7 +537,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 			offsetValue = self.insn.cpu.fetch(offsetOper,
 							  AwlOperatorWidths.WIDTH_MASK_8_16_32) &\
 							  0x0007FFFF
-			if self.area == AwlIndirectOp.AREA_NONE:
+			if self.area == PointerConst.AREA_NONE_S:
 				# Area-spanning access
 				pointer = (self.insn.cpu.getAR(self.addressRegister).get() +\
 					   offsetValue) & 0xFFFFFFFF
@@ -605,15 +549,15 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		# Create a direct operator
 		try:
 			if store:
-				optype = AwlIndirectOp.area2optype_store[
-						pointer & AwlIndirectOp.EXT_AREA_MASK]
+				optype = AwlIndirectOpConst.area2optype_store[
+						pointer & AwlIndirectOpConst.EXT_AREA_MASK_S]
 			else:
-				optype = AwlIndirectOp.area2optype_fetch[
-						pointer & AwlIndirectOp.EXT_AREA_MASK]
+				optype = AwlIndirectOpConst.area2optype_fetch[
+						pointer & AwlIndirectOpConst.EXT_AREA_MASK_S]
 		except KeyError:
 			raise AwlSimError("Invalid area code (%X hex) in indirect addressing" %\
-				((pointer & AwlIndirectOp.EXT_AREA_MASK) >>\
-				 Pointer.AREA_SHIFT))
+				((pointer & AwlIndirectOpConst.EXT_AREA_MASK_S) >>\
+				 PointerConst.AREA_SHIFT))
 		if bitwiseDirectOffset:
 			# 'pointer' has pointer format
 			directOffset = make_AwlOffset_fromPointerValue(pointer)

@@ -36,30 +36,20 @@ class SFB2(SFB): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "CU",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "CD",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "R",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "LOAD",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "PV",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="CU", dataType="BOOL"),
+			BlockInterfaceField(name="CD", dataType="BOOL"),
+			BlockInterfaceField(name="R", dataType="BOOL"),
+			BlockInterfaceField(name="LOAD", dataType="BOOL"),
+			BlockInterfaceField(name="PV", dataType="INT"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "QU",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "QD",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "CV",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="QU", dataType="BOOL"),
+			BlockInterfaceField(name="QD", dataType="BOOL"),
+			BlockInterfaceField(name="CV", dataType="INT"),
 		),
 		BlockInterfaceField.FTYPE_STAT	: (
-			BlockInterfaceField(name = "CUO",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "CDO",
-					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name="CUO", dataType="BOOL"),
+			BlockInterfaceField(name="CDO", dataType="BOOL"),
 		),
 	}
 

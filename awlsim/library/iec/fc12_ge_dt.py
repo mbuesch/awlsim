@@ -34,22 +34,16 @@ class Lib__IEC__FC12_GE_DT(AwlLibFC):
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "DT1",
-					    dataType = AwlDataType.makeByName("DATE_AND_TIME")),
-			BlockInterfaceField(name = "DT2",
-					    dataType = AwlDataType.makeByName("DATE_AND_TIME")),
+			BlockInterfaceField(name="DT1", dataType="DATE_AND_TIME"),
+			BlockInterfaceField(name="DT2", dataType="DATE_AND_TIME"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "RET_VAL",
-					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name="RET_VAL", dataType="BOOL"),
 		),
 		BlockInterfaceField.FTYPE_TEMP	: (
-			BlockInterfaceField(name = "YEAR1",
-					    dataType = AwlDataType.makeByName("WORD")),
-			BlockInterfaceField(name = "YEAR2",
-					    dataType = AwlDataType.makeByName("WORD")),
-			BlockInterfaceField(name = "AR1_SAVE",
-					    dataType = AwlDataType.makeByName("DWORD")),
+			BlockInterfaceField(name="YEAR1", dataType="WORD"),
+			BlockInterfaceField(name="YEAR2", dataType="WORD"),
+			BlockInterfaceField(name="AR1_SAVE", dataType="DWORD"),
 		),
 	}
 

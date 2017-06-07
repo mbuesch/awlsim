@@ -27,7 +27,7 @@ from awlsim.common.exceptions import *
 from awlsim.core.util import *
 
 
-class Counter(object):
+class Counter(object): #+cdef
 	"""Classic AWL counter."""
 
 	__slots__ = (

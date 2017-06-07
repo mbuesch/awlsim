@@ -1,0 +1,10 @@
+from awlsim.core.cpu cimport *
+
+cdef class Counter(object):
+	cdef public S7CPU cpu
+	cdef public uint32_t index
+	cdef public _Bool prevVKE_FR
+	cdef public _Bool prevVKE_S
+	cdef public _Bool prevVKE_ZV
+	cdef public _Bool prevVKE_ZR
+	cdef public uint32_t counter

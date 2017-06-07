@@ -36,22 +36,16 @@ class SFB1(SFB): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "CD",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "LOAD",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "PV",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="CD", dataType="BOOL"),
+			BlockInterfaceField(name="LOAD", dataType="BOOL"),
+			BlockInterfaceField(name="PV", dataType="INT"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "Q",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "CV",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="Q", dataType="BOOL"),
+			BlockInterfaceField(name="CV", dataType="INT"),
 		),
 		BlockInterfaceField.FTYPE_STAT	: (
-			BlockInterfaceField(name = "CDO",
-					    dataType = AwlDataType.makeByName("BOOL")),
+			BlockInterfaceField(name="CDO", dataType="BOOL"),
 		),
 	}
 

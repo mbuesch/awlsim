@@ -5,31 +5,60 @@ cdef class GenericInteger(object):
 	cdef public uint32_t value
 	cdef public uint32_t mask
 
-	cpdef void copyFrom(self, GenericInteger other)
-	cpdef void reset(self)
-	cpdef void set(self, int64_t value)
-	cpdef void setByte(self, int64_t value)
-	cpdef void setWord(self, int64_t value)
-	cpdef void setDWord(self, int64_t value)
-	cpdef setPyFloat(self, pyfl)
-	cpdef uint32_t get(self)
-	cpdef uint8_t getByte(self)
-	cpdef uint16_t getWord(self)
-	cpdef uint32_t getDWord(self)
-	cpdef int8_t getSignedByte(self)
-	cpdef int16_t getSignedWord(self)
-	cpdef int32_t getSignedDWord(self)
-	cpdef getPyFloat(self)
-	cpdef void setBit(self, uint8_t bitNumber)
-	cpdef void clearBit(self, uint8_t bitNumber)
-	cpdef void setBitValue(self, uint8_t bitNumber, _Bool value)
-	cpdef unsigned char getBit(self, uint8_t bitNumber)
+	cdef void copyFrom(self, GenericInteger other)
+	cdef void reset(self)
+	cdef void set(self, int64_t value)
+	cdef void setByte(self, int64_t value)
+	cdef void setWord(self, int64_t value)
+	cdef void setDWord(self, int64_t value)
+	cdef setPyFloat(self, pyfl)
+	cdef uint32_t get(self)
+	cdef uint8_t getByte(self)
+	cdef uint16_t getWord(self)
+	cdef uint32_t getDWord(self)
+	cdef int8_t getSignedByte(self)
+	cdef int16_t getSignedWord(self)
+	cdef int32_t getSignedDWord(self)
+	cdef getPyFloat(self)
+	cdef void setBit(self, uint8_t bitNumber)
+	cdef void clearBit(self, uint8_t bitNumber)
+	cdef void setBitValue(self, uint8_t bitNumber, _Bool value)
+	cdef unsigned char getBit(self, uint8_t bitNumber)
 
 cdef class GenericWord(GenericInteger):
 	pass
 
 cdef class GenericDWord(GenericInteger):
 	pass
+
+cdef class __PointerConstClass(object):
+	cdef public uint32_t AREA_SHIFT
+	cdef public uint64_t AREA_MASK
+	cdef public uint64_t AREA_MASK_S
+
+	cdef public uint64_t AREA_NONE
+	cdef public uint64_t AREA_P
+	cdef public uint64_t AREA_E
+	cdef public uint64_t AREA_A
+	cdef public uint64_t AREA_M
+	cdef public uint64_t AREA_DB
+	cdef public uint64_t AREA_DI
+	cdef public uint64_t AREA_L
+	cdef public uint64_t AREA_VL
+
+	cdef public uint64_t AREA_NONE_S
+	cdef public uint64_t AREA_P_S
+	cdef public uint64_t AREA_E_S
+	cdef public uint64_t AREA_A_S
+	cdef public uint64_t AREA_M_S
+	cdef public uint64_t AREA_DB_S
+	cdef public uint64_t AREA_DI_S
+	cdef public uint64_t AREA_L_S
+	cdef public uint64_t AREA_VL_S
+
+	cdef public dict area2str
+
+cdef public __PointerConstClass PointerConst
 
 cdef class Pointer(GenericDWord):
 	cpdef toPointer(self)
@@ -56,6 +85,13 @@ cdef class SymbolicDBPointer(DBPointer):
 	cdef public object identChain
 	cdef public object dbSymbol
 
+cdef class __ANYPointerConstClass(object):
+	cdef public uint8_t MAGIC
+	cdef public dict typeId2typeCode
+	cdef public dict typeCode2typeId
+
+cdef public __ANYPointerConstClass ANYPointerConst
+
 cdef class ANYPointer(DBPointer):
 	cdef public object dataType
 	cdef public uint16_t count
@@ -73,5 +109,5 @@ cdef class Addressregister(Pointer):
 cdef class AwlMemory(object):
 	cdef public bytearray dataBytes
 
-	cpdef object fetch(self, AwlOffset offset, uint32_t width)
-	cpdef store(self, AwlOffset offset, uint32_t width, object value)
+	cdef object fetch(self, AwlOffset offset, uint32_t width)
+	cdef store(self, AwlOffset offset, uint32_t width, object value)

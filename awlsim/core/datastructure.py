@@ -26,7 +26,6 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
 from awlsim.core.util import *
-from awlsim.core.datatypes import *
 from awlsim.core.identifier import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
@@ -64,6 +63,8 @@ class AwlStructField(object): #+cdef
 	# override => Optional: Another AwlStructField that overrides this one.
 	#             May be None, if unused.
 	def __init__(self, name, offset, dataType, initBytes=None, override=None):
+		from awlsim.core.datatypes import AwlDataType
+
 		if isString(dataType):
 			dataType = AwlDataType.makeByName(dataType)
 
@@ -80,7 +81,7 @@ class AwlStructField(object): #+cdef
 		self.compound = bool(dataType.compound)
 
 		from awlsim.core.blockinterface import BlockInterface
-		self.callByRef = bool(dataType.type in BlockInterface.callByRef_Types)
+		self.callByRef = bool(dataType.type in AwlDataType.callByRefTypes)
 
 		if self.initBytes is not None:
 			assert(len(self.initBytes) == self.byteSize)
@@ -222,6 +223,8 @@ class AwlStruct(object): #+cdef
 		return baseField
 
 	def addField(self, cpu, name, dataType, initBytes=None):
+		from awlsim.core.datatypes import AwlDataType
+
 		initMem = AwlMemory()
 		initMem.dataBytes = initBytes
 
@@ -316,6 +319,8 @@ class AwlStruct(object): #+cdef
 		return baseField
 
 	def addFieldAligned(self, cpu, name, dataType, byteAlignment, initBytes=None):
+		from awlsim.core.datatypes import AwlDataType
+
 		padding = byteAlignment - self.getUnalignedSize() % byteAlignment
 		if padding == byteAlignment:
 			padding = 0

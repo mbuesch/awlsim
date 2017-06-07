@@ -36,24 +36,17 @@ class SFB4(SFB): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "IN",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "PT",
-					    dataType = AwlDataType.makeByName("TIME")),
+			BlockInterfaceField(name="IN", dataType="BOOL"),
+			BlockInterfaceField(name="PT", dataType="TIME"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "Q",
-					    dataType = AwlDataType.makeByName("BOOL")),
-			BlockInterfaceField(name = "ET",
-					    dataType = AwlDataType.makeByName("TIME")),
+			BlockInterfaceField(name="Q", dataType="BOOL"),
+			BlockInterfaceField(name="ET", dataType="TIME"),
 		),
 		BlockInterfaceField.FTYPE_STAT	: (
-			BlockInterfaceField(name = "STATE",
-					    dataType = AwlDataType.makeByName("BYTE")),
-			BlockInterfaceField(name = "STIME",
-					    dataType = AwlDataType.makeByName("TIME")),
-			BlockInterfaceField(name = "ATIME",
-					    dataType = AwlDataType.makeByName("TIME")),
+			BlockInterfaceField(name="STATE", dataType="BYTE"),
+			BlockInterfaceField(name="STIME", dataType="TIME"),
+			BlockInterfaceField(name="ATIME", dataType="TIME"),
 		),
 	}
 

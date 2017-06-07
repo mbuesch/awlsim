@@ -98,6 +98,8 @@ class UDT(Block): #+cdef
 		self.fieldNameMap[field.name] = field
 
 	def __buildField(self, cpu, field):
+		from awlsim.core.datatypes import AwlDataType
+
 		if field.dataType.width < 0:
 			# The size of the field is unknown, yet.
 			# Try to resolve it.

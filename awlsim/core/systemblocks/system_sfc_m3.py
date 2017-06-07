@@ -36,8 +36,7 @@ class SFCm3(SFC): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "SHUTDOWN_TYPE",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="SHUTDOWN_TYPE", dataType="INT"),
 		),
 	}
 

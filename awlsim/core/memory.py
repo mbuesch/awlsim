@@ -32,9 +32,11 @@ from awlsim.core.offset import * #+cimport
 
 __all__ = [
 	"Pointer",
+	"PointerConst",
 	"DBPointer",
 	"SymbolicDBPointer",
 	"ANYPointer",
+	"ANYPointerConst",
 	"Accu",
 	"Addressregister",
 	"AwlMemory",
@@ -58,22 +60,22 @@ class GenericInteger(object): #+cdef
 		self.mask = int(((one << width) - 1) & 0xFFFFFFFF)
 
 	def copyFrom(self, other): #@nocy
-#@cy	cpdef void copyFrom(self, GenericInteger other):
+#@cy	cdef void copyFrom(self, GenericInteger other):
 		self.value = other.value & self.mask
 
 	def reset(self): #@nocy
-#@cy	cpdef void reset(self):
+#@cy	cdef void reset(self):
 		self.value = 0
 
 	def set(self, value): #@nocy
-#@cy	cpdef void set(self, int64_t value):
+#@cy	cdef void set(self, int64_t value):
 		self.value = value & self.mask
 
 	def setByte(self, value):				#@nocy
 		self.value = (((self.value & 0xFFFFFF00) |	#@nocy
 			       (value & 0xFF)) &		#@nocy
 			      self.mask)			#@nocy
-#@cy	cpdef void setByte(self, int64_t value):
+#@cy	cdef void setByte(self, int64_t value):
 #@cy		self.value = (((self.value & 0xFFFFFF00u) |
 #@cy			       <uint8_t>value) &
 #@cy			      self.mask)
@@ -82,72 +84,72 @@ class GenericInteger(object): #+cdef
 		self.value = (((self.value & 0xFFFF0000) |	#@nocy
 			       (value & 0xFFFF)) &		#@nocy
 			      self.mask)			#@nocy
-#@cy	cpdef void setWord(self, int64_t value):
+#@cy	cdef void setWord(self, int64_t value):
 #@cy		self.value = (((self.value & 0xFFFF0000u) |
 #@cy			       <uint16_t>value) &
 #@cy			      self.mask)
 
 	def setDWord(self, value):				#@nocy
 		self.value = value & 0xFFFFFFFF & self.mask	#@nocy
-#@cy	cpdef void setDWord(self, int64_t value):
+#@cy	cdef void setDWord(self, int64_t value):
 #@cy		self.value = <uint32_t>value & self.mask
 
 	def setPyFloat(self, pyfl): #@nocy
-#@cy	cpdef setPyFloat(self, pyfl):
+#@cy	cdef setPyFloat(self, pyfl):
 		self.value = pyFloatToDWord(pyfl)
 
 	def get(self): #@nocy
-#@cy	cpdef uint32_t get(self):
+#@cy	cdef uint32_t get(self):
 		return self.value
 
 	def getByte(self):			#@nocy
 		return self.value & 0xFF	#@nocy
-#@cy	cpdef uint8_t getByte(self):
+#@cy	cdef uint8_t getByte(self):
 #@cy		return self.value & 0xFFu
 
 	def getWord(self):			#@nocy
 		return self.value & 0xFFFF	#@nocy
-#@cy	cpdef uint16_t getWord(self):
+#@cy	cdef uint16_t getWord(self):
 #@cy		return self.value & 0xFFFFu
 
 	def getDWord(self):			#@nocy
 		return self.value & 0xFFFFFFFF	#@nocy
-#@cy	cpdef uint32_t getDWord(self):
+#@cy	cdef uint32_t getDWord(self):
 #@cy		return self.value & 0xFFFFFFFFu
 
 	def getSignedByte(self): #@nocy
-#@cy	cpdef int8_t getSignedByte(self):
+#@cy	cdef int8_t getSignedByte(self):
 		return byteToSignedPyInt(self.value)
 
 	def getSignedWord(self): #@nocy
-#@cy	cpdef int16_t getSignedWord(self):
+#@cy	cdef int16_t getSignedWord(self):
 		return wordToSignedPyInt(self.value)
 
 	def getSignedDWord(self): #@nocy
-#@cy	cpdef int32_t getSignedDWord(self):
+#@cy	cdef int32_t getSignedDWord(self):
 		return dwordToSignedPyInt(self.value)
 
 	def getPyFloat(self): #@nocy
-#@cy	cpdef getPyFloat(self):
+#@cy	cdef getPyFloat(self):
 		return dwordToPyFloat(self.value)
 
 	def setBit(self, bitNumber): #@nocy
-#@cy	cpdef void setBit(self, uint8_t bitNumber):
+#@cy	cdef void setBit(self, uint8_t bitNumber):
 		self.value = (self.value | (1 << bitNumber)) & self.mask
 
 	def clearBit(self, bitNumber): #@nocy
-#@cy	cpdef void clearBit(self, uint8_t bitNumber):
+#@cy	cdef void clearBit(self, uint8_t bitNumber):
 		self.value &= ~(1 << bitNumber)
 
 	def setBitValue(self, bitNumber, value): #@nocy
-#@cy	cpdef void setBitValue(self, uint8_t bitNumber, _Bool value):
+#@cy	cdef void setBitValue(self, uint8_t bitNumber, _Bool value):
 		if value:
 			self.setBit(bitNumber)
 		else:
 			self.clearBit(bitNumber)
 
 	def getBit(self, bitNumber): #@nocy
-#@cy	cpdef unsigned char getBit(self, uint8_t bitNumber):
+#@cy	cdef unsigned char getBit(self, uint8_t bitNumber):
 		return (self.value >> bitNumber) & 1
 
 	def toHex(self):
@@ -172,35 +174,78 @@ class GenericDWord(GenericInteger): #+cdef
 	def __init__(self, value=0):
 		GenericInteger.__init__(self, value, 32)
 
+class __PointerConstClass(object): #+cdef
+	__slots__ = (
+		"AREA_SHIFT",
+		"AREA_MASK",
+		"AREA_MASK_S",
+		"AREA_NONE",
+		"AREA_P",
+		"AREA_E",
+		"AREA_A",
+		"AREA_M",
+		"AREA_DB",
+		"AREA_DI",
+		"AREA_L",
+		"AREA_VL",
+		"AREA_NONE_S",
+		"AREA_P_S",
+		"AREA_E_S",
+		"AREA_A_S",
+		"AREA_M_S",
+		"AREA_DB_S",
+		"AREA_DI_S",
+		"AREA_L_S",
+		"AREA_VL_S",
+		"area2str",
+	)
+
+	def __init__(self):
+		# Area code position
+		self.AREA_SHIFT		= 24
+		self.AREA_MASK		= 0xFF
+		self.AREA_MASK_S	= self.AREA_MASK << self.AREA_SHIFT
+
+		# Area codes
+		self.AREA_NONE		= 0x00
+		self.AREA_P		= 0x80	# Peripheral area
+		self.AREA_E		= 0x81	# Input
+		self.AREA_A		= 0x82	# Output
+		self.AREA_M		= 0x83	# Flags
+		self.AREA_DB		= 0x84	# Global datablock
+		self.AREA_DI		= 0x85	# Instance datablock
+		self.AREA_L		= 0x86	# Localstack
+		self.AREA_VL		= 0x87	# Parent localstack
+
+		# Area codes (shifted to the pointer location)
+		self.AREA_NONE_S	= self.AREA_NONE << self.AREA_SHIFT
+		self.AREA_P_S		= self.AREA_P << self.AREA_SHIFT
+		self.AREA_E_S		= self.AREA_E << self.AREA_SHIFT
+		self.AREA_A_S		= self.AREA_A << self.AREA_SHIFT
+		self.AREA_M_S		= self.AREA_M << self.AREA_SHIFT
+		self.AREA_DB_S		= self.AREA_DB << self.AREA_SHIFT
+		self.AREA_DI_S		= self.AREA_DI << self.AREA_SHIFT
+		self.AREA_L_S		= self.AREA_L << self.AREA_SHIFT
+		self.AREA_VL_S		= self.AREA_VL << self.AREA_SHIFT
+
+		# Convert an area code to string
+		self.area2str = {
+			self.AREA_P	: "P",
+			self.AREA_E	: "E",
+			self.AREA_A	: "A",
+			self.AREA_M	: "M",
+			self.AREA_DB	: "DBX",
+			self.AREA_DI	: "DIX",
+			self.AREA_L	: "L",
+			self.AREA_VL	: "V",
+		}
+
+PointerConst = __PointerConstClass() #+cdef-public-__PointerConstClass
+
 class Pointer(GenericDWord): #+cdef
 	"""Pointer value.
 	The basic data type (GenericDWord) holds the pointer value
 	and the area code."""
-
-	AREA_SHIFT	= 24
-	AREA_MASK	= 0xFF
-	AREA_MASK_S	= AREA_MASK << AREA_SHIFT
-
-	AREA_P		= 0x80	# Peripheral area
-	AREA_E		= 0x81	# Input
-	AREA_A		= 0x82	# Output
-	AREA_M		= 0x83	# Flags
-	AREA_DB		= 0x84	# Global datablock
-	AREA_DI		= 0x85	# Instance datablock
-	AREA_L		= 0x86	# Localstack
-	AREA_VL		= 0x87	# Parent localstack
-
-	# Convert an area code to string
-	area2str = {
-		AREA_P			: "P",
-		AREA_E			: "E",
-		AREA_A			: "A",
-		AREA_M			: "M",
-		AREA_DB			: "DBX",
-		AREA_DI			: "DIX",
-		AREA_L			: "L",
-		AREA_VL			: "V",
-	}
 
 	# Width, in bits.
 	width = 32
@@ -269,21 +314,21 @@ class Pointer(GenericDWord): #+cdef
 	def toPointerString(self):
 		area = self.getArea()
 		if area:
-			if area == self.AREA_P:
+			if area == PointerConst.AREA_P:
 				prefix = "P "
-			elif area == self.AREA_E:
+			elif area == PointerConst.AREA_E:
 				prefix = "E "
-			elif area == self.AREA_A:
+			elif area == PointerConst.AREA_A:
 				prefix = "A "
-			elif area == self.AREA_M:
+			elif area == PointerConst.AREA_M:
 				prefix = "M "
-			elif area == self.AREA_DB:
+			elif area == PointerConst.AREA_DB:
 				prefix = "DBX "
-			elif area == self.AREA_DI:
+			elif area == PointerConst.AREA_DI:
 				prefix = "DIX "
-			elif area == self.AREA_L:
+			elif area == PointerConst.AREA_L:
 				prefix = "L "
-			elif area == self.AREA_VL:
+			elif area == PointerConst.AREA_VL:
 				prefix = "V "
 			else:
 				prefix = "(%02X) " % area
@@ -340,7 +385,7 @@ class DBPointer(Pointer): #+cdef
 	def toPointerString(self):
 		if self.dbNr:
 			assert(self.dbNr > 0 and self.dbNr <= 0xFFFF)
-			if self.getArea() == self.AREA_DB:
+			if self.getArea() == PointerConst.AREA_DB:
 				prefix = "DB%d.DBX " % self.dbNr
 			else:
 				prefix = "DB%d.(%02X) " % (self.dbNr, self.getArea())
@@ -383,7 +428,7 @@ class SymbolicDBPointer(DBPointer): #+cdef
 				return "P#%s%s" % (prefix,
 					self.identChain.getString())
 			else:
-				if self.getArea() == self.AREA_DB:
+				if self.getArea() == PointerConst.AREA_DB:
 					prefix += "DBX "
 				else:
 					prefix += "(%02X) " % self.getArea()
@@ -392,6 +437,46 @@ class SymbolicDBPointer(DBPointer): #+cdef
 		else:
 			assert(not self.identChain)
 			return Pointer.toPointerString(self)
+
+class __ANYPointerConstClass(object): #+cdef
+	__slots__ = (
+		"MAGIC",
+		"typeId2typeCode",
+		"typeCode2typeId",
+	)
+
+	def __init__(self):
+		# ANY pointer magic value.
+		self.MAGIC = 0x10
+
+		# AwlDataType to ANY-Pointer type code.
+		self.typeId2typeCode = {
+			AwlDataType.TYPE_NIL		: 0x00,
+			AwlDataType.TYPE_BOOL		: 0x01,
+			AwlDataType.TYPE_BYTE		: 0x02,
+			AwlDataType.TYPE_CHAR		: 0x03,
+			AwlDataType.TYPE_WORD		: 0x04,
+			AwlDataType.TYPE_INT		: 0x05,
+			AwlDataType.TYPE_DWORD		: 0x06,
+			AwlDataType.TYPE_DINT		: 0x07,
+			AwlDataType.TYPE_REAL		: 0x08,
+			AwlDataType.TYPE_DATE		: 0x09,
+			AwlDataType.TYPE_TOD		: 0x0A,
+			AwlDataType.TYPE_TIME		: 0x0B,
+			AwlDataType.TYPE_S5T		: 0x0C,
+			AwlDataType.TYPE_DT		: 0x0E,
+			AwlDataType.TYPE_STRING		: 0x13,
+			AwlDataType.TYPE_BLOCK_FB	: 0x17,
+			AwlDataType.TYPE_BLOCK_FC	: 0x18,
+			AwlDataType.TYPE_BLOCK_DB	: 0x19,
+			AwlDataType.TYPE_BLOCK_SDB	: 0x1A,
+			AwlDataType.TYPE_COUNTER	: 0x1C,
+			AwlDataType.TYPE_TIMER		: 0x1D,
+		}
+		# ANY-Pointer type code to AwlDataType.
+		self.typeCode2typeId = pivotDict(self.typeId2typeCode)
+
+ANYPointerConst = __ANYPointerConstClass() #+cdef-public-__ANYPointerConstClass
 
 class ANYPointer(DBPointer): #+cdef
 	"""ANY-Pointer value.
@@ -404,36 +489,6 @@ class ANYPointer(DBPointer): #+cdef
 		"dataType",
 		"count",
 	)
-
-	# ANY pointer magic value.
-	MAGIC = 0x10
-
-	# AwlDataType to ANY-Pointer type code.
-	typeId2typeCode = {
-		AwlDataType.TYPE_NIL		: 0x00,
-		AwlDataType.TYPE_BOOL		: 0x01,
-		AwlDataType.TYPE_BYTE		: 0x02,
-		AwlDataType.TYPE_CHAR		: 0x03,
-		AwlDataType.TYPE_WORD		: 0x04,
-		AwlDataType.TYPE_INT		: 0x05,
-		AwlDataType.TYPE_DWORD		: 0x06,
-		AwlDataType.TYPE_DINT		: 0x07,
-		AwlDataType.TYPE_REAL		: 0x08,
-		AwlDataType.TYPE_DATE		: 0x09,
-		AwlDataType.TYPE_TOD		: 0x0A,
-		AwlDataType.TYPE_TIME		: 0x0B,
-		AwlDataType.TYPE_S5T		: 0x0C,
-		AwlDataType.TYPE_DT		: 0x0E,
-		AwlDataType.TYPE_STRING		: 0x13,
-		AwlDataType.TYPE_BLOCK_FB	: 0x17,
-		AwlDataType.TYPE_BLOCK_FC	: 0x18,
-		AwlDataType.TYPE_BLOCK_DB	: 0x19,
-		AwlDataType.TYPE_BLOCK_SDB	: 0x1A,
-		AwlDataType.TYPE_COUNTER	: 0x1C,
-		AwlDataType.TYPE_TIMER		: 0x1D,
-	}
-	# ANY-Pointer type code to AwlDataType.
-	typeCode2typeId = pivotDict(typeId2typeCode)
 
 	# Width, in bits.
 	width = 80
@@ -487,7 +542,7 @@ class ANYPointer(DBPointer): #+cdef
 	@classmethod
 	def dataTypeIsSupported(cls, dataType):
 		return dataType and\
-		       dataType.type in cls.typeId2typeCode
+		       dataType.type in ANYPointerConst.typeId2typeCode
 
 	def __init__(self, ptrValue = 0, dbNr = 0, dataType = None, count = 1):
 		DBPointer.__init__(self, ptrValue, dbNr)
@@ -516,8 +571,8 @@ class ANYPointer(DBPointer): #+cdef
 			count = self.count
 			dbNr = self.dbNr
 			ptr = self.toPointerValue()
-			return bytearray((self.MAGIC,
-					  self.typeId2typeCode[self.dataType.type],
+			return bytearray((ANYPointerConst.MAGIC,
+					  ANYPointerConst.typeId2typeCode[self.dataType.type],
 					  (count >> 8) & 0xFF,
 					  count & 0xFF,
 					  (dbNr >> 8) & 0xFF,
@@ -542,7 +597,7 @@ class ANYPointer(DBPointer): #+cdef
 		if self.dbNr:
 			dbStr = "DB%d." % self.dbNr
 		try:
-			areaStr = self.area2str[self.getArea()]
+			areaStr = PointerConst.area2str[self.getArea()]
 		except KeyError as e:
 			areaStr = "(%02X)" % self.getArea()
 		return "P#%s%s %d.%d %s %d" %\
@@ -586,7 +641,7 @@ class AwlMemory(object): #+cdef
 	# Returns an int for small widths (<= 32 bits) and a memoryview
 	# for larger widths.
 	def fetch(self, offset, width): #@nocy
-#@cy	cpdef object fetch(self, AwlOffset offset, uint32_t width):
+#@cy	cdef object fetch(self, AwlOffset offset, uint32_t width):
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef bytearray dataBytes
 #@cy		cdef uint64_t nrBytes
@@ -634,7 +689,7 @@ class AwlMemory(object): #+cdef
 	# value => The value to store.
 	#          May be an int, bytearray, bytes or compatible.
 	def store(self, offset, width, value): #@nocy
-#@cy	cpdef store(self, AwlOffset offset, uint32_t width, object value):
+#@cy	cdef store(self, AwlOffset offset, uint32_t width, object value):
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef bytearray dataBytes
 #@cy		cdef uint64_t value_uint64

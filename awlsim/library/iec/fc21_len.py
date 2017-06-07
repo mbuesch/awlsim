@@ -33,18 +33,14 @@ class Lib__IEC__FC21_LEN(AwlLibFC):
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "S",
-					    dataType = AwlDataType.makeByName("STRING")),
+			BlockInterfaceField(name="S", dataType="STRING"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "RET_VAL",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="RET_VAL", dataType="INT"),
 		),
 		BlockInterfaceField.FTYPE_TEMP	: (
-			BlockInterfaceField(name = "AR1_SAVE",
-					    dataType = AwlDataType.makeByName("DWORD")),
-			BlockInterfaceField(name = "DBNR",
-					    dataType = AwlDataType.makeByName("WORD")),
+			BlockInterfaceField(name="AR1_SAVE", dataType="DWORD"),
+			BlockInterfaceField(name="DBNR", dataType="WORD"),
 		),
 	}
 

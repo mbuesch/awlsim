@@ -35,9 +35,7 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.util import *
 from awlsim.core.parameters import * #+cimport
-from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
-from awlsim.core.timers import *
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.identifier import *
@@ -262,10 +260,12 @@ class AwlOpTranslator(object):
 		# rawOps starts _after_ the opening bracket '['
 		try:
 			if rawOps[0].upper() in ("AR1", "AR2"):
+				from awlsim.core.datatypes import AwlDataType
+
 				# Register-indirect access:  "L W [AR1, P#0.0]"
 				ar = {
-					"AR1"	: AwlIndirectOp.AR_1,
-					"AR2"	: AwlIndirectOp.AR_2,
+					"AR1"	: AwlIndirectOpConst.AR_1,
+					"AR2"	: AwlIndirectOpConst.AR_2,
 				}[rawOps[0].upper()]
 				if rawOps[1] != ',':
 					raise AwlSimError("Missing comma in register-indirect "
@@ -289,7 +289,7 @@ class AwlOpTranslator(object):
 						       insn=opDesc.operator.insn)
 				offsetOp.pointer = offsetPtr
 				try:
-					area = AwlIndirectOp.optype2area[opDesc.operator.operType]
+					area = AwlIndirectOpConst.optype2area[opDesc.operator.operType]
 				except KeyError:
 					raise AwlSimError("Invalid memory area type in "
 						"register indirect addressing operator")
@@ -324,19 +324,19 @@ class AwlOpTranslator(object):
 					raise AwlSimError("Only direct operators supported "
 						"inside of indirect operator brackets.")
 				try:
-					area = AwlIndirectOp.optype2area[opDesc.operator.operType]
+					area = AwlIndirectOpConst.optype2area[opDesc.operator.operType]
 				except KeyError:
 					raise AwlSimError("Invalid memory area type in "
 						"indirect addressing operator")
-				if area == AwlIndirectOp.AREA_NONE:
+				if area == PointerConst.AREA_NONE_S:
 					raise AwlSimError("No memory area code specified in "
 						"indirect addressing operator")
-				if area in (AwlIndirectOp.EXT_AREA_T,
-					    AwlIndirectOp.EXT_AREA_Z,
-					    AwlIndirectOp.EXT_AREA_BLKREF_DB,
-					    AwlIndirectOp.EXT_AREA_BLKREF_DI,
-					    AwlIndirectOp.EXT_AREA_BLKREF_FC,
-					    AwlIndirectOp.EXT_AREA_BLKREF_FB):
+				if area in (AwlIndirectOpConst.EXT_AREA_T_S,
+					    AwlIndirectOpConst.EXT_AREA_Z_S,
+					    AwlIndirectOpConst.EXT_AREA_BLKREF_DB_S,
+					    AwlIndirectOpConst.EXT_AREA_BLKREF_DI_S,
+					    AwlIndirectOpConst.EXT_AREA_BLKREF_FC_S,
+					    AwlIndirectOpConst.EXT_AREA_BLKREF_FB_S):
 					expectedOffsetOpWidth = 16
 				else:
 					expectedOffsetOpWidth = 32
@@ -349,7 +349,7 @@ class AwlOpTranslator(object):
 						(offsetOp.width, expectedOffsetOpWidth))
 				indirectOp = make_AwlIndirectOp(area=area,
 								width=opDesc.operator.width,
-								addressRegister=AwlIndirectOp.AR_NONE,
+								addressRegister=AwlIndirectOpConst.AR_NONE,
 								offsetOper=offsetOp,
 								insn=opDesc.operator.insn)
 				fieldCount = offsetOpDesc.fieldCount + 1  # offsetOperator + ]
@@ -509,6 +509,9 @@ class AwlOpTranslator(object):
 			)
 			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.SYMBOLIC, 0,
 							offset, None), 1)
+
+		from awlsim.core.datatypes import AwlDataType
+
 		# Immediate boolean
 		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
 		if immediate is not None:

@@ -28,7 +28,7 @@ from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.util import *
-from awlsim.core.timers import *
+from awlsim.core.timers import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.identifier import *
 
@@ -214,6 +214,15 @@ class AwlDataType(OptionalImmutable):
 		TYPE_BLOCK_FC,
 		TYPE_FB_X,
 		TYPE_SFB_X,
+	}
+
+	# Data-types that must be passed "by-reference" to FCs/FBs.
+	callByRefTypes = {
+		TYPE_TIMER,
+		TYPE_COUNTER,
+		TYPE_BLOCK_DB,
+		TYPE_BLOCK_FB,
+		TYPE_BLOCK_FC,
 	}
 
 	# Convert a list of array dimensions into a number of elements.
@@ -839,7 +848,7 @@ class AwlDataType(OptionalImmutable):
 			return None
 		seconds = cls.__parseGenericTime(token[4:],
 						 allowNegative=False)
-		s5t = Timer.seconds_to_s5t(seconds)
+		s5t = Timer_seconds_to_s5t(seconds)
 		return s5t
 
 	@classmethod
@@ -980,6 +989,8 @@ class AwlDataType(OptionalImmutable):
 
 	@classmethod
 	def tryParseImmediate_Pointer(cls, tokens):
+#@cy		cdef Pointer pointer
+
 		prefix = tokens[0]
 		if not prefix.upper().startswith("P#"):
 			return None, None

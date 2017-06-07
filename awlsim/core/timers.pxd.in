@@ -1,0 +1,15 @@
+from awlsim.core.cpu cimport *
+
+cdef class Timer(object):
+	cdef public S7CPU cpu
+	cdef public uint32_t index
+	cdef public _Bool prevVKE
+	cdef public uint16_t timebase
+	cdef public object deadlineCallback
+	cdef public double deadline
+	cdef public double remaining
+	cdef public uint32_t status
+	cdef public _Bool running
+
+cdef Timer_seconds_to_s5t(seconds)
+cdef Timer_s5t_to_seconds(s5t)

@@ -56,7 +56,7 @@ def _seconds_to_s5t_tb10s(seconds):
 	s5t |= ((decasecs // 10) % 10) << 4
 	return s5t | ((decasecs // 100) % 10) << 8
 
-class Timer(object):
+class Timer(object): #+cdef
 	"""Classic AWL timer."""
 
 	# Timebases
@@ -254,3 +254,9 @@ class Timer(object):
 	# Deadline callback - clear status
 	def __cb_clearStatus(self):
 		self.running, self.status = False, 0
+
+def Timer_seconds_to_s5t(seconds): #+cdef
+	return Timer.seconds_to_s5t(seconds)
+
+def Timer_s5t_to_seconds(s5t): #+cdef
+	return Timer.s5t_to_seconds(s5t)

@@ -27,7 +27,6 @@ from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.memory import * #+cimport
-from awlsim.core.datatypes import *
 from awlsim.core.identifier import *
 from awlsim.core.datastructure import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -58,7 +57,7 @@ class BlockInterfaceField(object):
 
 	__slots__ = (
 		"name",
-		"dataType",
+		"__dataType",
 		"fieldType",
 		"fieldIndex",
 	)
@@ -66,11 +65,21 @@ class BlockInterfaceField(object):
 	def __init__(self, name, dataType):
 		# name -> The name string of the field, as defined
 		#         in the block interface definition.
-		# dataType -> One of AwlDataType instance.
+		# dataType -> AwlDataType instance or a type name string.
 		self.name = name
-		self.dataType = dataType
+		self.__dataType = dataType
 		self.fieldType = self.FTYPE_UNKNOWN	# set later
 		self.fieldIndex = None			# set later
+
+	@property
+	def dataType(self):
+		from awlsim.core.datatypes import AwlDataType
+
+		dataType = self.__dataType
+		if not isinstance(dataType, AwlDataType):
+			dataType = AwlDataType.makeByName(dataType)
+			self.__dataType = dataType
+		return dataType
 
 	def varDeclString(self):
 		return "%s : %s;" %\
@@ -109,15 +118,6 @@ class VerboseBlockIntfField(BlockInterfaceField):
 
 class BlockInterface(object):
 	"""Code block interface (IN/OUT/IN_OUT/STAT/TEMP parameters) base class."""
-
-	# Data-types that must be passed "by-reference" to FCs/FBs.
-	callByRef_Types = (
-		AwlDataType.TYPE_TIMER,
-		AwlDataType.TYPE_COUNTER,
-		AwlDataType.TYPE_BLOCK_DB,
-		AwlDataType.TYPE_BLOCK_FB,
-		AwlDataType.TYPE_BLOCK_FC,
-	)
 
 	# Structs (self._struct and self.tempStruct) build status.
 	EnumGen.start
@@ -233,6 +233,8 @@ class BlockInterface(object):
 					"POINTER")
 
 	def __resolveMultiInstanceField(self, cpu, field):
+		from awlsim.core.datatypes import AwlDataType
+
 		if field.dataType.type != AwlDataType.TYPE_FB_X and\
 		   field.dataType.type != AwlDataType.TYPE_SFB_X:
 			# Not a multi-instance field.
@@ -368,7 +370,7 @@ class BlockInterface(object):
 			identChain.dup(withIndices=False).getString())
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
-			ptrValue |= AwlIndirectOp.AREA_L
+			ptrValue |= PointerConst.AREA_L_S
 			oper = make_AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
 					   offset=None,
@@ -389,6 +391,8 @@ class BlockInterface(object):
 	# If wantPointer is true, an IMM_PTR AwlOperator to the interfaceField
 	# is returned.
 	def getOperatorForField(self, identChain, wantPointer):
+		from awlsim.core.datatypes import AwlDataType
+
 		interfaceFieldType = self.getFieldType(identChain)
 
 		if interfaceFieldType == BlockInterfaceField.FTYPE_TEMP:
@@ -404,7 +408,7 @@ class BlockInterface(object):
 
 		if wantPointer:
 			ptrValue = structField.offset.toPointerValue()
-			ptrValue |= AwlIndirectOp.AREA_DI
+			ptrValue |= PointerConst.AREA_DI_S
 			oper = make_AwlOperator(operType=AwlOperatorTypes.IMM_PTR,
 					   width=32,
 					   offset=None,
@@ -414,33 +418,34 @@ class BlockInterface(object):
 
 		# Translate to instance-DB access
 
-		if structField.dataType.type in BlockInterface.callByRef_Types:
+		if structField.dataType.type in AwlDataType.callByRefTypes:
 			# "call by reference"
 			offsetOper = make_AwlOperator(operType=AwlOperatorTypes.MEM_DI,
 						 width=structField.dataType.width,
 						 offset=structField.offset.dup(),
 						 insn=None)
 			if structField.dataType.type == AwlDataType.TYPE_TIMER:
-				area = AwlIndirectOp.EXT_AREA_T
+				area = AwlIndirectOpConst.EXT_AREA_T_S
 				width = 16
 			elif structField.dataType.type == AwlDataType.TYPE_COUNTER:
-				area = AwlIndirectOp.EXT_AREA_Z
+				area = AwlIndirectOpConst.EXT_AREA_Z_S
 				width = 16
 			elif structField.dataType.type == AwlDataType.TYPE_BLOCK_DB:
-				area = AwlIndirectOp.EXT_AREA_BLKREF_DB
+				area = AwlIndirectOpConst.EXT_AREA_BLKREF_DB_S
 				width = 16
 			elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FB:
-				area = AwlIndirectOp.EXT_AREA_BLKREF_FB
+				area = AwlIndirectOpConst.EXT_AREA_BLKREF_FB_S
 				width = 16
 			elif structField.dataType.type == AwlDataType.TYPE_BLOCK_FC:
-				area = AwlIndirectOp.EXT_AREA_BLKREF_FC
+				area = AwlIndirectOpConst.EXT_AREA_BLKREF_FC_S
 				width = 16
 			else:
 				assert(0)
+				return
 			return make_AwlIndirectOp(
 				area=area,
 				width=width,
-				addressRegister=AwlIndirectOp.AR_NONE,
+				addressRegister=AwlIndirectOpConst.AR_NONE,
 				offsetOper=offsetOper,
 				insn=None)
 

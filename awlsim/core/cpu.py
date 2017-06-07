@@ -27,6 +27,7 @@ import datetime
 import random
 from collections import deque
 
+from awlsim.common.util import *
 from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.blockinfo import *
@@ -36,7 +37,6 @@ from awlsim.common.exceptions import *
 from awlsim.library.libentry import *
 
 from awlsim.core.symbolparser import *
-from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.instructions.all_insns import * #+cimport
 from awlsim.core.systemblocks.tables import *
@@ -47,8 +47,8 @@ from awlsim.core.datablocks import * #+cimport
 from awlsim.core.userdefinedtypes import * #+cimport
 from awlsim.core.statusword import * #+cimport
 from awlsim.core.labels import *
-from awlsim.core.timers import *
-from awlsim.core.counters import *
+from awlsim.core.timers import * #+cimport
+from awlsim.core.counters import * #+cimport
 from awlsim.core.callstack import * #+cimport
 from awlsim.core.lstack import * #+cimport
 from awlsim.core.offset import * #+cimport
@@ -318,6 +318,8 @@ class S7Prog(object):
 		"""Translate the loaded sources into their executable forms.
 		"""
 
+		from awlsim.core.datatypes import AwlDataType
+
 		translator = AwlTranslator(self.cpu)
 		resolver = AwlSymResolver(self.cpu)
 
@@ -584,6 +586,8 @@ class S7CPU(object): #+cdef
 			yield block
 
 	def allCallInsns(self, block):
+		from awlsim.core.datatypes import AwlDataType
+
 		resolver = AwlSymResolver(self)
 
 		for insn in block.insns:
@@ -1094,6 +1098,8 @@ class S7CPU(object): #+cdef
 	# store it in byteArray, which is a bytearray or compatible.
 	# If byteArray is smaller than 8 bytes, an IndexError is raised.
 	def makeCurrentDateAndTime(self, byteArray, offset):
+		from awlsim.core.datatypes import AwlDataType
+
 		dt = datetime.datetime.now()
 		year, month, day, hour, minute, second, msec =\
 			dt.year, dt.month, dt.day, dt.hour, \
@@ -1352,16 +1358,15 @@ class S7CPU(object): #+cdef
 		# Swap global and instance DB
 		self.diRegister, self.dbRegister = self.dbRegister, self.diRegister
 
-	def getStatusWord(self):
-		return self.statusWord
-
-	def getAccu(self, index):
+	def getAccu(self, index): #@nocy
+#@cy	cdef Accu getAccu(self, uint32_t index):
 		if index < 1 or index > self.specs.nrAccus:
 			raise AwlSimError("Invalid ACCU offset")
 		return (self.accu1, self.accu2,
 			self.accu3, self.accu4)[index - 1]
 
-	def getAR(self, index):
+	def getAR(self, index): #@nocy
+#@cy	cdef Addressregister getAR(self, uint32_t index):
 		if index < 1 or index > 2:
 			raise AwlSimError("Invalid AR offset")
 		return (self.ar1, self.ar2)[index - 1]
@@ -1438,8 +1443,8 @@ class S7CPU(object): #+cdef
 			self.openDB(dbNr, False)
 			# Make an operator from the DB-ptr.
 			try:
-				opType = AwlIndirectOp.area2optype_fetch[
-						pointer & AwlIndirectOp.AREA_MASK]
+				opType = AwlIndirectOpConst.area2optype_fetch[
+						pointer & PointerConst.AREA_MASK_S]
 			except KeyError:
 				raise AwlSimError("Corrupt DB pointer in compound "
 					"data type FC variable detected "

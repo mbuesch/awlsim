@@ -34,7 +34,6 @@ from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.memory import * #+cimport
 from awlsim.core.blockinterface import *
-from awlsim.core.datatypes import *
 from awlsim.core.util import *
 
 
@@ -43,16 +42,20 @@ class SFC21(SFC): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "BVAL",
-					    dataType = AwlDataType.makeByName("ANY")),
+			BlockInterfaceField(name="BVAL", dataType="ANY"),
 		),
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "RET_VAL",
-					    dataType = AwlDataType.makeByName("INT")),
-			BlockInterfaceField(name = "BLK",
-					    dataType = AwlDataType.makeByName("ANY")),
+			BlockInterfaceField(name="RET_VAL", dataType="INT"),
+			BlockInterfaceField(name="BLK", dataType="ANY"),
 		),
 	}
+
+	def __init__(self, *args, **kwargs):
+		SFC.__init__(self, *args, **kwargs)
+
+		from awlsim.core.datatypes import AwlDataType
+
+		self.__typeWidths = AwlDataType.typeWidths
 
 	def run(self): #+cpdef
 #@cy		cdef S7CPU cpu
@@ -66,12 +69,12 @@ class SFC21(SFC): #+cdef
 		BLK = self.fetchInterfaceFieldByName("BLK")
 
 		# Check ANY pointer S7 magic.
-		if BVAL[0] != ANYPointer.MAGIC:
+		if BVAL[0] != ANYPointerConst.MAGIC:
 			s.BIE = 0
 			self.storeInterfaceFieldByName("RET_VAL",
 				SystemErrCode.make(SystemErrCode.E_RAREA, 1))
 			return
-		if BLK[0] != ANYPointer.MAGIC:
+		if BLK[0] != ANYPointerConst.MAGIC:
 			s.BIE = 0
 			self.storeInterfaceFieldByName("RET_VAL",
 				SystemErrCode.make(SystemErrCode.E_WAREA, 3))
@@ -83,8 +86,8 @@ class SFC21(SFC): #+cdef
 
 		# Get the data types from the ANY pointers.
 		try:
-			BVAL_typeId = ANYPointer.typeCode2typeId[BVAL[1]]
-			BVAL_typeWidth = AwlDataType.typeWidths[BVAL_typeId]
+			BVAL_typeId = ANYPointerConst.typeCode2typeId[BVAL[1]]
+			BVAL_typeWidth = self.__typeWidths[BVAL_typeId]
 			if BVAL_typeWidth <= 0:
 				raise KeyError
 		except KeyError:
@@ -93,8 +96,8 @@ class SFC21(SFC): #+cdef
 			s.BIE = 0
 			return
 		try:
-			BLK_typeId = ANYPointer.typeCode2typeId[BLK[1]]
-			BLK_typeWidth = AwlDataType.typeWidths[BLK_typeId]
+			BLK_typeId = ANYPointerConst.typeCode2typeId[BLK[1]]
+			BLK_typeWidth = self.__typeWidths[BLK_typeId]
 			if BLK_typeWidth <= 0:
 				raise KeyError
 		except KeyError:
@@ -125,11 +128,11 @@ class SFC21(SFC): #+cdef
 		BLK_ptr = Pointer(WordPacker.fromBytes(BLK, 32, 6))
 		BLK_ptrArea = BLK_ptr.getArea()
 
-		if BVAL_ptrArea in {BVAL_ptr.AREA_DB, BVAL_ptr.AREA_DI}:
+		if BVAL_ptrArea in {PointerConst.AREA_DB, PointerConst.AREA_DI}:
 			# Get the DB number from BVAL ANY pointer
 			BVAL_dbNr = WordPacker.fromBytes(BVAL, 16, 4)
 			# Open the DB
-			BVAL_ptr.setArea(BVAL_ptr.AREA_DB)
+			BVAL_ptr.setArea(PointerConst.AREA_DB)
 			BVAL_ptrArea = BVAL_ptr.getArea()
 			try:
 				db = cpu.dbs[BVAL_dbNr]
@@ -141,11 +144,11 @@ class SFC21(SFC): #+cdef
 					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 1))
 				s.BIE = 0
 				return
-		if BLK_ptrArea in {BLK_ptr.AREA_DB, BLK_ptr.AREA_DI}:
+		if BLK_ptrArea in {PointerConst.AREA_DB, PointerConst.AREA_DI}:
 			# Get the DB number from BLK ANY pointer
 			BLK_dbNr = WordPacker.fromBytes(BLK, 16, 4)
 			# Open the DB (as DI)
-			BLK_ptr.setArea(BLK_ptr.AREA_DI)
+			BLK_ptr.setArea(PointerConst.AREA_DI)
 			BLK_ptrArea = BLK_ptr.getArea()
 			try:
 				db = cpu.dbs[BLK_dbNr]
@@ -169,7 +172,7 @@ class SFC21(SFC): #+cdef
 			s.BIE = 0
 			return
 		BVAL_fetchOper = make_AwlOperator(
-			AwlIndirectOp.area2optype_fetch[BVAL_ptrArea << Pointer.AREA_SHIFT],
+			AwlIndirectOpConst.area2optype_fetch[BVAL_ptrArea << PointerConst.AREA_SHIFT],
 			8, BVAL_offset, None)
 		BLK_offset = make_AwlOffset_fromPointerValue(BLK_ptr.toPointerValue())
 		BLK_end = BLK_offset + make_AwlOffset(BLK_len, 0)
@@ -180,7 +183,7 @@ class SFC21(SFC): #+cdef
 			s.BIE = 0
 			return
 		BLK_storeOper = make_AwlOperator(
-			AwlIndirectOp.area2optype_fetch[BLK_ptrArea << Pointer.AREA_SHIFT],
+			AwlIndirectOpConst.area2optype_fetch[BLK_ptrArea << PointerConst.AREA_SHIFT],
 			8, BLK_offset, None)
 		while BLK_offset.byteOffset < BLK_end.byteOffset:
 			if BLK_offset.byteOffset + 4 <= BLK_end.byteOffset and\

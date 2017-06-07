@@ -84,3 +84,56 @@ cdef class __AwlOperatorWidthsClass(object):
 	cdef uint32_t makeMask(self, uint32_t width)
 
 cdef public __AwlOperatorWidthsClass AwlOperatorWidths
+
+
+cdef class __AwlIndirectOpConstClass(object):
+	cdef public uint32_t AR_NONE
+	cdef public uint32_t AR_1
+	cdef public uint32_t AR_2
+
+	cdef public uint32_t AREA_SHIFT
+	cdef public uint64_t AREA_MASK
+	cdef public uint64_t AREA_MASK_S
+
+	cdef public uint64_t AREA_NONE
+	cdef public uint64_t AREA_P
+	cdef public uint64_t AREA_E
+	cdef public uint64_t AREA_A
+	cdef public uint64_t AREA_M
+	cdef public uint64_t AREA_DB
+	cdef public uint64_t AREA_DI
+	cdef public uint64_t AREA_L
+	cdef public uint64_t AREA_VL
+
+	cdef public uint64_t AREA_NONE_S
+	cdef public uint64_t AREA_P_S
+	cdef public uint64_t AREA_E_S
+	cdef public uint64_t AREA_A_S
+	cdef public uint64_t AREA_M_S
+	cdef public uint64_t AREA_DB_S
+	cdef public uint64_t AREA_DI_S
+	cdef public uint64_t AREA_L_S
+	cdef public uint64_t AREA_VL_S
+
+	cdef public uint64_t EXT_AREA_MASK
+	cdef public uint64_t EXT_AREA_MASK_S
+
+	cdef public uint64_t EXT_AREA_T
+	cdef public uint64_t EXT_AREA_Z
+	cdef public uint64_t EXT_AREA_BLKREF_DB
+	cdef public uint64_t EXT_AREA_BLKREF_DI
+	cdef public uint64_t EXT_AREA_BLKREF_FB
+	cdef public uint64_t EXT_AREA_BLKREF_FC
+
+	cdef public uint64_t EXT_AREA_T_S
+	cdef public uint64_t EXT_AREA_Z_S
+	cdef public uint64_t EXT_AREA_BLKREF_DB_S
+	cdef public uint64_t EXT_AREA_BLKREF_DI_S
+	cdef public uint64_t EXT_AREA_BLKREF_FB_S
+	cdef public uint64_t EXT_AREA_BLKREF_FC_S
+
+	cdef public dict area2optype_fetch
+	cdef public dict area2optype_store
+	cdef public dict optype2area
+
+cdef public __AwlIndirectOpConstClass AwlIndirectOpConst

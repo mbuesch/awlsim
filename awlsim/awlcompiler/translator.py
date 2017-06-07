@@ -111,6 +111,8 @@ class AwlTranslator(object):
 		return block
 
 	def translateCodeBlock(self, rawBlock, blockClass):
+		from awlsim.core.datatypes import AwlDataType
+
 		insns = self.__translateInsns(rawBlock.insns)
 		block = blockClass(insns, rawBlock.index)
 		block.setSourceRef(rawBlock.sourceRef, inheritRef = True)
@@ -151,6 +153,8 @@ class AwlTranslator(object):
 
 	# Translate a RawAwlDataField to an AwlDataType.
 	def __rawFieldToDataType(self, rawField):
+		from awlsim.core.datatypes import AwlDataType
+
 		dtype = AwlDataType.makeByName(nameTokens = rawField.typeTokens,
 					       arrayDimensions = rawField.dimensions)
 		if dtype.type == AwlDataType.TYPE_STRUCT:
@@ -181,6 +185,8 @@ class AwlTranslator(object):
 	# dataType: The AwlDataType for this field.
 	# initBytes: The initialization bytes for this field, or None.
 	def rawFieldTranslate(self, rawField):
+		from awlsim.core.datatypes import AwlDataType
+
 		# Get the field name
 		name = rawField.getIdentString()
 		# Get the field data type
@@ -250,6 +256,8 @@ class AwlTranslator(object):
 						   dataType, initBytes)
 
 	def __translateGlobalDB(self, rawDB):
+		from awlsim.core.datatypes import AwlDataType
+
 		db = DB(rawDB.index, None)
 		db.setSourceRef(rawDB.sourceRef, inheritRef = True)
 		# Create the data structure fields
@@ -273,6 +281,8 @@ class AwlTranslator(object):
 		return db
 
 	def __translateInstanceDB(self, rawDB):
+		from awlsim.core.datatypes import AwlDataType
+
 		if rawDB.fields:
 			raise AwlSimError("DB %d is an "
 				"instance DB, but it also "
@@ -328,6 +338,10 @@ class AwlTranslator(object):
 	# Implicit pointer immediates are assignments of non-pointer
 	# operands to POINTER or ANY l-values.
 	def __translateParamPointer(self, param):
+#@cy		cdef Pointer pointer
+
+		from awlsim.core.datatypes import AwlDataType
+
 		if param.lValueDataType.type == AwlDataType.TYPE_POINTER:
 			# POINTER parameter.
 			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR:
@@ -335,25 +349,27 @@ class AwlTranslator(object):
 				if param.rvalueOp.width not in {32, 48}:
 					raise AwlSimError("Invalid pointer immediate "
 						"assignment to POINTER parameter.")
-				param.rvalueOp.pointer = param.rvalueOp.pointer.toDBPointer()
-				param.rvalueOp.width = param.rvalueOp.pointer.width
+				pointer = param.rvalueOp.pointer
+				pointer = param.rvalueOp.pointer = pointer.toDBPointer()
+				param.rvalueOp.width = pointer.width
 			else:
 				# Translate the r-value to POINTER.
 				try:
-					ptr = param.rvalueOp.makeDBPointer()
+					pointer = param.rvalueOp.makeDBPointer()
 				except (AwlSimBug, AwlSimError) as e:
 					raise AwlSimError("Unable to transform "
 						"operator '%s' to POINTER." %\
 						str(param.rvalueOp))
 				param.rvalueOp = make_AwlOperator(
 					operType=AwlOperatorTypes.IMM_PTR,
-					width=ptr.width,
+					width=pointer.width,
 					offset=None,
 					insn=param.rvalueOp.insn)
-				param.rvalueOp.pointer = ptr
-			if param.rvalueOp.pointer.getArea() == Pointer.AREA_L:
+				param.rvalueOp.pointer = pointer
+			pointer = param.rvalueOp.pointer
+			if pointer.getArea() == PointerConst.AREA_L:
 				# L-stack access must be translated to VL.
-				param.rvalueOp.pointer.setArea(Pointer.AREA_VL)
+				pointer.setArea(PointerConst.AREA_VL)
 		elif param.lValueDataType.type == AwlDataType.TYPE_ANY:
 			# ANY-pointer parameter.
 			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR:
@@ -361,8 +377,9 @@ class AwlTranslator(object):
 				if param.rvalueOp.width not in {32, 48, 80}:
 					raise AwlSimError("Invalid pointer immediate "
 						"assignment to ANY parameter.")
-				param.rvalueOp.pointer = param.rvalueOp.pointer.toANYPointer()
-				param.rvalueOp.width = param.rvalueOp.pointer.width
+				pointer = param.rvalueOp.pointer
+				pointer = param.rvalueOp.pointer = pointer.toANYPointer()
+				param.rvalueOp.width = pointer.width
 			elif param.rvalueOp.operType == AwlOperatorTypes.MEM_L and\
 			     param.rvalueOp.dataType is not None and\
 			     param.rvalueOp.dataType.type == AwlDataType.TYPE_ANY:
@@ -374,25 +391,28 @@ class AwlTranslator(object):
 			else:
 				# Translate the r-value to ANY.
 				try:
-					ptr = param.rvalueOp.makeANYPointer()
+					pointer = param.rvalueOp.makeANYPointer()
 				except (AwlSimBug, AwlSimError) as e:
 					raise AwlSimError("Unable to transform "
 						"operator '%s' to ANY pointer." %\
 						str(param.rvalueOp))
 				param.rvalueOp = make_AwlOperator(
 					operType=AwlOperatorTypes.IMM_PTR,
-					width=ptr.width,
+					width=pointer.width,
 					offset=None,
 					insn=param.rvalueOp.insn)
-				param.rvalueOp.pointer = ptr
+				param.rvalueOp.pointer = pointer
+			pointer = param.rvalueOp.pointer
 			if param.rvalueOp.operType == AwlOperatorTypes.IMM_PTR and\
-			   param.rvalueOp.pointer.getArea() == Pointer.AREA_L:
+			   pointer.getArea() == PointerConst.AREA_L:
 				# L-stack access must be translated to VL.
-				param.rvalueOp.pointer.setArea(Pointer.AREA_VL)
+				pointer.setArea(PointerConst.AREA_VL)
 
 	# Translate STRING immediates.
 	# Converts STRING to CHAR, if required, or expands string lengths.
 	def __translateParamString(self, param):
+		from awlsim.core.datatypes import AwlDataType
+
 		if param.lValueDataType.type == AwlDataType.TYPE_CHAR:
 			# CHAR parameter.
 			if param.rvalueOp.operType == AwlOperatorTypes.IMM_STR:
@@ -468,6 +488,8 @@ class AwlSymResolver(object):
 	# to array variables are supported.
 	def resolveNamedLocal(self, block, insn, oper,
 			      pointer=False, allowWholeArrayAccess=False):
+		from awlsim.core.datatypes import AwlDataType
+
 		# Check whether we need to do something.
 		# Otherwise just return the source operator.
 		if pointer:
@@ -613,6 +635,8 @@ class AwlSymResolver(object):
 
 	# Resolve a symbolic DB name. Returns DB index number.
 	def __resolveDBName(self, dbName):
+		from awlsim.core.datatypes import AwlDataType
+
 		symbol = self.cpu.symbolTable.findByName(dbName)
 		if not symbol:
 			raise AwlSimError("Symbol \"%s\" specified as DB in "
@@ -626,6 +650,8 @@ class AwlSymResolver(object):
 
 	# Get offset and width of a DB field.
 	def __dbVarToOffset(self, dbNumber, identChain, allowWholeArrayAccess=True):
+		from awlsim.core.datatypes import AwlDataType
+
 		# Get the DB
 		try:
 			db = self.cpu.dbs[dbNumber]
@@ -703,43 +729,48 @@ class AwlSymResolver(object):
 	# Resolve named fully qualified pointers (P#DBx.VARx)
 	# This is an awlsim extension.
 	def __resolveNamedFQPointer(self, block, insn, oper, param=None):
+#@cy		cdef Pointer pointer
+
+		from awlsim.core.datatypes import AwlDataType
+
+		pointer = oper.pointer
 		if oper.operType != AwlOperatorTypes.IMM_PTR:
 			return oper
-		if oper.pointer.width > 0:
+		if pointer.width > 0:
 			return oper
-		assert(isinstance(oper.pointer, SymbolicDBPointer))
+		assert(isinstance(pointer, SymbolicDBPointer))
 
 		# Resolve the symbolic DB name, if needed
-		assert(oper.pointer.dbNr or\
-		       oper.pointer.dbSymbol is not None)
-		if oper.pointer.dbSymbol is not None:
-			oper.pointer.dbNr = self.__resolveDBName(oper.pointer.dbSymbol)
+		assert(pointer.dbNr or\
+		       pointer.dbSymbol is not None)
+		if pointer.dbSymbol is not None:
+			pointer.dbNr = self.__resolveDBName(pointer.dbSymbol)
 
 		# Get the offset data and the width of the field.
-		offset, width, fieldDataType = self.__dbVarToOffset(oper.pointer.dbNr,
-								    oper.pointer.identChain)
+		offset, width, fieldDataType = self.__dbVarToOffset(pointer.dbNr,
+								    pointer.identChain)
 
 		# Write the pointer value.
-		oper.pointer.setDWord(offset.toPointerValue() |\
-				    (Pointer.AREA_DB << Pointer.AREA_SHIFT))
+		pointer.setDWord(offset.toPointerValue() |\
+				 (PointerConst.AREA_DB << PointerConst.AREA_SHIFT))
 
 		# Create a resolved Pointer.
 		if param and\
 		   param.lValueDataType.type == AwlDataType.TYPE_POINTER:
 			# Create a resolved DB-Pointer (48 bit).
-			oper.pointer = oper.pointer.toDBPointer()
+			pointer = oper.pointer = pointer.toDBPointer()
 		elif param and\
 		     param.lValueDataType.type == AwlDataType.TYPE_ANY:
 			# Create a resolved ANY-Pointer (80 bit).
-			oper.pointer = ANYPointer.makeByAutoType(
-				dataType = fieldDataType,
-				ptrValue = oper.pointer.toPointerValue(),
-				dbNr = oper.pointer.toDBPointer().dbNr)
+			pointer = oper.pointer = ANYPointer.makeByAutoType(
+					dataType=fieldDataType,
+					ptrValue=pointer.toPointerValue(),
+					dbNr=pointer.toDBPointer().dbNr)
 		else:
 			# Create a resolved pointer (32 bit).
-			oper.pointer = oper.pointer.toPointer()
+			pointer = oper.pointer = pointer.toPointer()
 		oper.dataType = fieldDataType
-		oper.width = oper.pointer.width
+		oper.width = pointer.width
 
 		return oper
 

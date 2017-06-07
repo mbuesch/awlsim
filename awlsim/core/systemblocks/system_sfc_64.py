@@ -35,8 +35,7 @@ class SFC64(SFC): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_OUT	: (
-			BlockInterfaceField(name = "RET_VAL",
-					    dataType = AwlDataType.makeByName("TIME")),
+			BlockInterfaceField(name="RET_VAL", dataType="TIME"),
 		)
 	}
 

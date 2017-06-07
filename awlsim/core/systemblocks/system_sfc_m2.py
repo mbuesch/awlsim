@@ -36,8 +36,7 @@ class SFCm2(SFC): #+cdef
 
 	interfaceFields = {
 		BlockInterfaceField.FTYPE_IN	: (
-			BlockInterfaceField(name = "REBOOT_TYPE",
-					    dataType = AwlDataType.makeByName("INT")),
+			BlockInterfaceField(name="REBOOT_TYPE", dataType="INT"),
 		),
 	}
 
