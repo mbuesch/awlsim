@@ -131,6 +131,8 @@ def writeStdout(message):
 
 nextScreenUpdate = 0.0
 lastDump = ""
+lastDumpNrLines = 0
+emptyLine =  " " * 79
 
 def clearConsole():
 	# Make cursor visible, clear console and
@@ -141,14 +143,27 @@ def clearConsole():
 		os.system("cls")
 
 def emitCpuDump(dump):
-	# Pad lines
-	dump = '\n'.join(line + (78 - len(line)) * ' ' + '|'
-			 for line in dump.splitlines())
 	global lastDump
+	global lastDumpNrLines
+
+	# Pad lines
+	dumpLines = list(line + (78 - len(line)) * ' ' + '|'
+			 for line in dump.splitlines())
+	dumpNrLines = len(dumpLines)
+
+	# Clear lines from previous dump.
+	if dumpNrLines < lastDumpNrLines:
+		dumpLines.extend([ emptyLine, ] * (lastDumpNrLines - dumpNrLines))
+
+	dump = "\n".join(dumpLines)
+	lastDumpNrLines = dumpNrLines
 	lastDump = dump
+
 	if osIsPosix:
-		writeStdout("\x1B[H" + dump)
+		# Clear console, move home and print dump.
+		writeStdout("\x1B[2J\x1B[H" + dump)
 	else:
+		# Clear console, move home and print dump.
 		clearConsole()
 		writeStdout(dump)
 
