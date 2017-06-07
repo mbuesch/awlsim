@@ -25,6 +25,8 @@ from awlsim.common.compat import *
 from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
 
+from awlsim.core.hardware_loader import HwModLoader
+
 
 class HwmodParamModel(QAbstractTableModel):
 	# Signal: Emitted, if a new error appeared or an old error disappeared.
