@@ -516,7 +516,7 @@ class S7CPU(object): #+cdef
 		self.conf = S7CPUConfig(self)
 		self.prog = S7Prog(self)
 		self.setCycleTimeLimit(5.0)
-		self.setMaxCallStackDepth(65535)
+		self.setMaxCallStackDepth(256)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
