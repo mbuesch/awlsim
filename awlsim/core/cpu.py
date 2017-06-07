@@ -1129,7 +1129,7 @@ class S7CPU(object): #+cdef
 			return None
 
 	def labelIdxToRelJump(self, labelIndex): #@nocy
-#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? -2147483648:
+#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? 0x7FFFFFFF:
 #@cy		cdef CallStackElem cse
 
 		# Translate a label index into a relative IP offset.

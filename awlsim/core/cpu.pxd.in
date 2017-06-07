@@ -166,7 +166,7 @@ cdef class S7CPU(object):
 	cdef Accu getAccu(self, uint32_t index)
 	cdef Addressregister getAR(self, uint32_t index)
 
-	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? -2147483648
+	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? 0x7FFFFFFF
 	cdef jumpToLabel(self, uint32_t labelIndex)
 	cdef jumpRelative(self, int32_t insnOffset)
 
