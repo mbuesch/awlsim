@@ -515,6 +515,8 @@ class S7CPU(object): #+cdef
 	"STEP 7 CPU"
 
 	def __init__(self):
+		from awlsim.core.datatypes import AwlDataType
+
 		self.__fetchTypeMethods = self.__fetchTypeMethodsDict	#@nocy
 		self.__storeTypeMethods = self.__storeTypeMethodsDict	#@nocy
 		self.__callHelpers = self.__callHelpersDict		#@nocy
@@ -541,6 +543,7 @@ class S7CPU(object): #+cdef
 		self.reset()
 		self.enableExtendedInsns(False)
 		self.enableObTempPresets(False)
+		self.__dateAndTimeWeekdayMap = AwlDataType.dateAndTimeWeekdayMap
 
 	def getMnemonics(self):
 		return self.conf.getMnemonics()
@@ -1097,8 +1100,15 @@ class S7CPU(object): #+cdef
 	# Make a DATE_AND_TIME for the current wall-time and
 	# store it in byteArray, which is a bytearray or compatible.
 	# If byteArray is smaller than 8 bytes, an IndexError is raised.
-	def makeCurrentDateAndTime(self, byteArray, offset):
-		from awlsim.core.datatypes import AwlDataType
+	def makeCurrentDateAndTime(self, byteArray, offset): #@nocy
+#@cy	cdef makeCurrentDateAndTime(self, bytearray byteArray, uint32_t offset):
+#@cy		cdef uint32_t year
+#@cy		cdef uint32_t month
+#@cy		cdef uint32_t day
+#@cy		cdef uint32_t hour
+#@cy		cdef uint32_t minute
+#@cy		cdef uint32_t second
+#@cy		cdef uint32_t msec
 
 		dt = datetime.datetime.now()
 		year, month, day, hour, minute, second, msec =\
@@ -1112,7 +1122,7 @@ class S7CPU(object): #+cdef
 		byteArray[offset + 5] = (second % 10) | (((second // 10) % 10) << 4)
 		byteArray[offset + 6] = ((msec // 10) % 10) | (((msec // 100) % 10) << 4)
 		byteArray[offset + 7] = ((msec % 10) << 4) |\
-					AwlDataType.dateAndTimeWeekdayMap[dt.weekday()]
+					self.__dateAndTimeWeekdayMap[dt.weekday()]
 
 	def getCurrentIP(self):
 		try:

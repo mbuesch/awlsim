@@ -33,6 +33,7 @@ cdef class S7CPU(object):
 	cdef public double __runtimeLimit
 	cdef public _Bool __obTempPresetsEnabled
 	cdef public _Bool __extendedInsnsEnabled
+	cdef public dict __dateAndTimeWeekdayMap
 
 	cdef public dict udts
 	cdef public dict dbs
@@ -179,6 +180,8 @@ cdef class S7CPU(object):
 	cdef CallStackElem __call_MULTI_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters)
 
 	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store)
+
+	cdef makeCurrentDateAndTime(self, bytearray byteArray, uint32_t offset)
 
 	cdef __dumpLStackFrame(self, prefix, LStackFrame *frame)
 

@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.util import *
+from awlsim.core.cpu import * #+cimport
 
 import math
 
@@ -62,6 +63,8 @@ class OB1TempPresets(OBTempPresets):
 		OBTempPresets.__init__(self, 1, cpu)
 
 	def generate(self, localdata):
+#@cy		cdef S7CPU cpu
+
 		cpu, ceil = self.cpu, math.ceil
 		try:
 			avgMs = min(0x7FFF, int(ceil(cpu.avgCycleTime * 1000)))
