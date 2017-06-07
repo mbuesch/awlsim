@@ -286,6 +286,8 @@ pilc_bootstrap_second_stage()
 	export LC_ALL=C
 	export LANGUAGE=C
 	export LANG=C
+	export CFLAGS="-O3 -march=armv6j -mfpu=vfp -mfloat-abi=hard -pipe"
+	export CXXFLAGS="$CFLAGS"
 
 	# debootstrap second stage.
 	if [ $opt_skip_debootstrap2 -eq 0 ]; then
