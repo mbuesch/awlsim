@@ -68,6 +68,13 @@ class AwlValidator(object):
 		return cls.startup()
 
 	def __init__(self):
+		self.__thread = None
+		self.__job = None
+		self.__exception = None
+		self.__running = False
+		self.__lock = threading.Lock()
+		self.__condition = threading.Condition(self.__lock)
+
 		self.__client = AwlSimClient()
 		try:
 			self.__client.setLoglevel(Logging.LOG_ERROR,
@@ -83,12 +90,8 @@ class AwlValidator(object):
 		except AwlSimError as e:
 			self.doShutdown()
 			raise e
-		self.__lock = threading.Lock()
-		self.__condition = threading.Condition(self.__lock)
-		self.__job = None
-		self.__exception = None
-		self.__running = False
-		self.__thread = threading.Thread(target=self.__thread)
+
+		self.__thread = threading.Thread(target=self.__threadFunc)
 		self.__thread.daemon = False
 		self.__thread.start()
 
@@ -135,7 +138,7 @@ class AwlValidator(object):
 				self.__running = False
 			self.__exception = exception
 
-	def __thread(self):
+	def __threadFunc(self):
 		"""This is the validation thread.
 		"""
 		while True:
