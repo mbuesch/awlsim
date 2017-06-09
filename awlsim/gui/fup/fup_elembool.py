@@ -63,8 +63,14 @@ class FupElem_BOOLEAN(FupElem):
 		self.outputs = [ FupConnOut(self) ]
 
 	# Overridden method. For documentation see base class.
+	def insertConn(self, beforeIndex, conn):
+		if conn and conn.OUT:
+			return False
+		return FupElem.insertConn(self, beforeIndex, conn)
+
+	# Overridden method. For documentation see base class.
 	def addConn(self, conn):
-		if conn.OUT:
+		if conn and conn.OUT:
 			return False
 		return FupElem.addConn(self, conn)
 
@@ -154,7 +160,7 @@ class FupElem_BOOLEAN(FupElem):
 		painter.setFont(getDefaultFixedFont(11))
 		painter.drawText(0, 5,
 				 elemWidth, elemHeight - 5,
-				 Qt.AlignCenter | Qt.AlignTop,
+				 Qt.AlignVCenter | Qt.AlignHCenter,
 				 self.OP_SYM)
 
 	# Overridden method. For documentation see base class.
