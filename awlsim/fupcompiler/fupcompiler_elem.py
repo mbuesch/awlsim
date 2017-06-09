@@ -56,7 +56,11 @@ class FupCompiler_ElemFactory(XmlFactory):
 				self.elem = FupCompiler_Elem.parse(self.grid,
 					x, y, elemType, subType, content)
 				if not self.elem:
-					raise self.Error("Failed to parse element")
+					raise self.Error("Failed to parse element "
+						"type '%s'%s at x=%d y=%d" % (
+						elemType,
+						"" if subType is None else (" subtype '%s'" % subType),
+						x, y))
 				return
 		XmlFactory.parser_beginTag(self, tag)
 
