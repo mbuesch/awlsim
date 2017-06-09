@@ -708,49 +708,82 @@ class FupDrawWidget(QWidget):
 		if not self.__grid:
 			return ignore()
 
+		# Convert the event position to the grid coordinates.
+		pos = event.pos()
+		gridX, gridY = self.posToGridCoords(pos.x(), pos.y())
+
+		# Get the MIME data from the event.
 		mime = event.mimeData()
 		if not mime.hasFormat("application/x-awlsim-fup-elem"):
 			return ignore()
-		mimeData = mime.data("application/x-awlsim-fup-elem")
+		mimeData = bytearray(mime.data("application/x-awlsim-fup-elem"))
+		if not mimeData:
+			return ignore()
 
-		pos = event.pos()
-		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(pos.x(), pos.y())
-		if elem:
-			# There already is a colliding element.
-			return ignore(gridX, gridY)
+#		print("FupDrawWidget.__drop() MIME data:\n" + mimeData.decode("UTF-8"))
 
-		#TODO the XML format shall be used instead
-		if mimeData == b"bool-and":
-			newElem = FupElem_AND(gridX, gridY)
-		elif mimeData == b"bool-or":
-			newElem = FupElem_OR(gridX, gridY)
-		elif mimeData == b"bool-xor":
-			newElem = FupElem_XOR(gridX, gridY)
-		elif mimeData == b"bool-load":
-			newElem = FupElem_LOAD(gridX, gridY)
-		elif mimeData == b"bool-assign":
-			newElem = FupElem_ASSIGN(gridX, gridY)
-		else:
-			return ignore(gridX, gridY)
+		# Parse the MIME data.
+		# The data is expected to be a FUP element in XML format.
+		newElements = None
+		try:
+			elemFactory = FupElem_factory(grid=self.__grid)
+			elemFactory.GRID_INSERT = False
+			elemFactory.parse(mimeData)
+			newElements = elemFactory.elements
+		except XmlFactory.Error as e:
+			return ignore()
+		if not newElements:
+			return ignore()
 
-		if checkOnly:
+		# Recalculate the element positions.
+		yOffs = 0
+		for newElem in newElements:
+			newElem.x = gridX
+			newElem.y = gridY + yOffs
+			yOffs += newElem.height
+
+		# Check if all elements can be placed.
+		for newElem in newElements:
 			if not self.__grid.canPlaceElem(newElem):
 				return ignore(gridX, gridY)
-		else:
-			if not self.addElem(newElem):
-				return ignore(gridX, gridY)
+
+		# Insert the elements into the grid.
+		if not checkOnly:
+			for newElem in newElements:
+				if not self.addElem(newElem):
+					return ignore(gridX, gridY)
+			self.setFocus(True)
 
 		return accept(gridX, gridY)
 
 	def dragEnterEvent(self, event):
-		self.__drop(event, checkOnly=True)
+		try:
+			self.__drop(event, checkOnly=True)
+		except Exception as e:
+			printError("Unexpected exception in "
+				"FupDrawWidget.dragEnterEvent(): "
+				"%s" % str(e))
 
 	def dragLeaveEvent(self, event):
-		event.accept()
+		try:
+			event.accept()
+		except Exception as e:
+			printError("Unexpected exception in "
+				"FupDrawWidget.dragLeaveEvent(): "
+				"%s" % str(e))
 
 	def dragMoveEvent(self, event):
-		self.__drop(event, checkOnly=True)
+		try:
+			self.__drop(event, checkOnly=True)
+		except Exception as e:
+			printError("Unexpected exception in "
+				"FupDrawWidget.dragMoveEvent(): "
+				"%s" % str(e))
 
 	def dropEvent(self, event):
-		self.__drop(event)
-		self.setFocus(True)
+		try:
+			self.__drop(event)
+		except Exception as e:
+			printError("Unexpected exception in "
+				"FupDrawWidget.dropEvent(): "
+				"%s" % str(e))

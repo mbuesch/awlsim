@@ -25,6 +25,8 @@ from awlsim.common.compat import *
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
+from awlsim.gui.fup.fup_elembool import *
+
 
 class FupElemItemClass(QTreeWidgetItem):
 	def __init__(self, text, iconName):
@@ -39,6 +41,14 @@ class FupElemItem(QTreeWidgetItem):
 		self.setIcon(0, getIcon(iconName))
 
 class FupElemContainerWidget(QTreeWidget):
+	"""FUP element container tree widget.
+	"""
+
+	@staticmethod
+	def elemToXml(elem):
+		xmlBytes = elem.factory(elem=elem).compose()
+		return xmlBytes
+
 	def __init__(self, parent=None):
 		QTreeWidget.__init__(self, parent)
 
@@ -48,19 +58,25 @@ class FupElemContainerWidget(QTreeWidget):
 		elemMimeType = "application/x-awlsim-fup-elem"
 
 		itemBool = FupElemItemClass("Boolean", "stdlib")
-		itemBoolU = FupElemItem("[&]  and", "new", elemMimeType, b"bool-and")
+		itemBoolU = FupElemItem("[&]  and", "new", elemMimeType,
+					self.elemToXml(FupElem_AND(-1, -1)))
 		itemBool.addChild(itemBoolU)
-		itemBoolO = FupElemItem("[>=1]  or", "new", elemMimeType, b"bool-or")
+		itemBoolO = FupElemItem("[>=1]  or", "new", elemMimeType,
+					self.elemToXml(FupElem_OR(-1, -1)))
 		itemBool.addChild(itemBoolO)
-		itemBoolX = FupElemItem("[X]  xor", "new", elemMimeType, b"bool-xor")
+		itemBoolX = FupElemItem("[X]  xor", "new", elemMimeType,
+					self.elemToXml(FupElem_XOR(-1, -1)))
 		itemBool.addChild(itemBoolX)
 
 		itemMove = FupElemItemClass("Move", "stdlib")
-		itemMoveL = FupElemItem("[L]  load", "new", elemMimeType, b"move-load")
+		itemMoveL = FupElemItem("[L]  load", "new", elemMimeType,
+					self.elemToXml(FupElem_LOAD(-1, -1)))
 		itemMove.addChild(itemMoveL)
-		itemMoveA = FupElemItem("[=]  assign", "new", elemMimeType, b"move-assign")
+		itemMoveA = FupElemItem("[=]  assign", "new", elemMimeType,
+					self.elemToXml(FupElem_ASSIGN(-1, -1)))
 		itemMove.addChild(itemMoveA)
-		itemMoveMove = FupElemItem("-[=]-  move box", "new", elemMimeType, b"move-box")
+		itemMoveMove = FupElemItem("-[=]-  move box", "new", elemMimeType,
+					   b"")#TODO
 		itemMove.addChild(itemMoveMove)
 
 		itemArithI = FupElemItemClass("Int arithmetic", "stdlib")
@@ -80,7 +96,6 @@ class FupElemContainerWidget(QTreeWidget):
 		if not isinstance(item, FupElemItem):
 			return
 
-		#TODO the XML format shall be used instead
 		mimeData = QMimeData()
 		mimeData.setData(item.mimeType, item.mimeData)
 
