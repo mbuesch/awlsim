@@ -753,3 +753,4 @@ class FupDrawWidget(QWidget):
 
 	def dropEvent(self, event):
 		self.__drop(event)
+		self.setFocus(True)
