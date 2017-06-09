@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.gui.fup.fupdrawwidget import *
+from awlsim.gui.fup.fupelemcontainerwidget import *
 from awlsim.gui.interfedit.interfwidget import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.util import *
@@ -107,9 +108,6 @@ class FupFactory(XmlFactory):
 				tags=childTags),
 		]
 		return tags
-
-class FupElemContainerWidget(QListWidget):
-	pass#TODO
 
 class FupEditWidgetMenu(QMenu):
 	showAwl = Signal()

@@ -197,6 +197,7 @@ class FupDrawWidget(QWidget):
 
 		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
 		self.setMouseTracking(True)
+		self.setAcceptDrops(True)
 
 	@property
 	def interfDef(self):
@@ -422,6 +423,15 @@ class FupDrawWidget(QWidget):
 			p.drawRoundedRect(xAbs0, yAbs0,
 					  selWidth, selHeight,
 					  r, r)
+
+	def gridCoordsToQRect(self, gridX, gridY):
+		"""Convert grid coordinates to the pixel QRect surrounding that cell.
+		"""
+		width, height = self.__cellWidth, self.__cellHeight
+		return QRect(gridX * width,
+			     gridY * height,
+			     width,
+			     height)
 
 	def posToGridCoords(self, pixX, pixY):
 		"""Convert pixel coordinates to grid coordinates.
@@ -679,3 +689,67 @@ class FupDrawWidget(QWidget):
 
 	def keyReleaseEvent(self, event):
 		QWidget.keyReleaseEvent(self, event)
+
+	def __drop(self, event, checkOnly=False):
+		"""Handle a drop event from a Drag&Drop action.
+		"""
+		def accept(gridX=None, gridY=None):
+			if gridX is not None and gridY is not None and\
+			   isinstance(event, QDragMoveEvent):
+				return event.accept(self.gridCoordsToQRect(gridX, gridY))
+			return event.accept()
+
+		def ignore(gridX=None, gridY=None):
+			if gridX is not None and gridY is not None and\
+			   isinstance(event, QDragMoveEvent):
+				return event.ignore(self.gridCoordsToQRect(gridX, gridY))
+			return event.ignore()
+
+		if not self.__grid:
+			return ignore()
+
+		mime = event.mimeData()
+		if not mime.hasFormat("application/x-awlsim-fup-elem"):
+			return ignore()
+		mimeData = mime.data("application/x-awlsim-fup-elem")
+
+		pos = event.pos()
+		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(pos.x(), pos.y())
+		if elem:
+			# There already is a colliding element.
+			return ignore(gridX, gridY)
+
+		#TODO the XML format shall be used instead
+		if mimeData == b"bool-and":
+			newElem = FupElem_AND(gridX, gridY)
+		elif mimeData == b"bool-or":
+			newElem = FupElem_OR(gridX, gridY)
+		elif mimeData == b"bool-xor":
+			newElem = FupElem_XOR(gridX, gridY)
+		elif mimeData == b"bool-load":
+			newElem = FupElem_LOAD(gridX, gridY)
+		elif mimeData == b"bool-assign":
+			newElem = FupElem_ASSIGN(gridX, gridY)
+		else:
+			return ignore(gridX, gridY)
+
+		if checkOnly:
+			if not self.__grid.canPlaceElem(newElem):
+				return ignore(gridX, gridY)
+		else:
+			if not self.addElem(newElem):
+				return ignore(gridX, gridY)
+
+		return accept(gridX, gridY)
+
+	def dragEnterEvent(self, event):
+		self.__drop(event, checkOnly=True)
+
+	def dragLeaveEvent(self, event):
+		event.accept()
+
+	def dragMoveEvent(self, event):
+		self.__drop(event, checkOnly=True)
+
+	def dropEvent(self, event):
+		self.__drop(event)
