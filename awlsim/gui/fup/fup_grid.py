@@ -30,6 +30,7 @@ from awlsim.gui.fup.fup_wire import *
 from awlsim.gui.fup.fup_elem import *
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemoperand import *
+from awlsim.gui.fup.fup_elemmove import *
 
 
 class FupGrid_factory(XmlFactory):

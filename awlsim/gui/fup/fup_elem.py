@@ -77,6 +77,12 @@ class FupElem_factory(XmlFactory):
 							contentText=content)
 						self.elem.grid = self.grid
 						return
+				elif elemType == "move":
+					from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
+					self.elem = FupElem_MOVE(x=x, y=y,
+								 nrOutputs=0)
+					self.elem.grid = self.grid
+					return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
@@ -267,19 +273,31 @@ class FupElem(FupBaseClass):
 		except IndexError:
 			return None
 
-	def addConn(self, conn):
-		"""Add a connection to the end of the connection list.
+	def insertConn(self, beforeIndex, conn):
+		"""Add a connection to the connection list.
+		Insert it before the specified 'beforeIndex'.
 		"""
+		if beforeIndex is not None and beforeIndex < 0:
+			return False
 		if conn:
 			if conn.IN:
 				conn.elem = self
-				self.inputs.append(conn)
+				if beforeIndex is None:
+					beforeIndex = len(self.inputs)
+				self.inputs.insert(beforeIndex, conn)
 				return True
 			elif conn.OUT:
 				conn.elem = self
-				self.outputs.append(conn)
+				if beforeIndex is None:
+					beforeIndex = len(self.outputs)
+				self.outputs.insert(beforeIndex, conn)
 				return True
 		return False
+
+	def addConn(self, conn):
+		"""Add a connection to the end of the connection list.
+		"""
+		self.insertConn(None, conn)
 
 	def removeConn(self, conn):
 		"""Remove a connection from the connection list.
@@ -378,7 +396,7 @@ class FupElem(FupBaseClass):
 		"""The horizontal pixel padding for the element body.
 		"""
 		if self.grid:
-			return self.grid.cellPixWidth // 6
+			return self.grid.cellPixWidth // 8
 		return 0
 
 	@property

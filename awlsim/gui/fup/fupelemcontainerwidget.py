@@ -26,6 +26,7 @@ from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
 from awlsim.gui.fup.fup_elembool import *
+from awlsim.gui.fup.fup_elemmove import *
 
 
 class FupElemItemClass(QTreeWidgetItem):
@@ -76,7 +77,7 @@ class FupElemContainerWidget(QTreeWidget):
 					self.elemToXml(FupElem_ASSIGN(-1, -1)))
 		itemMove.addChild(itemMoveA)
 		itemMoveMove = FupElemItem("-[=]-  move box", "new", elemMimeType,
-					   b"")#TODO
+					   self.elemToXml(FupElem_MOVE(-1, -1)))
 		itemMove.addChild(itemMoveMove)
 
 		itemArithI = FupElemItemClass("Int arithmetic", "stdlib")

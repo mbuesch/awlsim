@@ -53,6 +53,9 @@ class FupContextMenu(QMenu):
 		self.__actInsXOR = self.addAction(getIcon("doc_new"),
 						  "Insert &XOR", self.__addXOR)
 		self.addSeparator()
+		self.__actInsMOVE = self.addAction(getIcon("doc_new"),
+						   "Insert &MOVE box",
+						   self.__addMOVE)
 		self.__actInsLOAD = self.addAction(getIcon("doc_new"),
 						   "Insert &LOAD operand",
 						   self.__addLOAD)
@@ -87,6 +90,9 @@ class FupContextMenu(QMenu):
 
 	def __addXOR(self):
 		self.add.emit(FupElem_XOR(self.gridX, self.gridY))
+
+	def __addMOVE(self):
+		self.add.emit(FupElem_MOVE(self.gridX, self.gridY))
 
 	def __addLOAD(self):
 		self.add.emit(FupElem_LOAD(self.gridX, self.gridY))
@@ -184,7 +190,7 @@ class FupDrawWidget(QWidget):
 		# The dragged connection.
 		self.__draggedConn = None
 
-		self.__cellWidth = 60		# Cell width, in pixels
+		self.__cellWidth = 70		# Cell width, in pixels
 		self.__cellHeight = 20		# Cell height, in pixels
 
 		self.__gridMinSize = (12, 18)	# Smallest possible grid size
