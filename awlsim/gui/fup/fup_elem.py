@@ -30,9 +30,12 @@ from awlsim.gui.fup.fup_conn import *
 
 
 class FupElem_factory(XmlFactory):
+	GRID_INSERT = True
+
 	def parser_open(self, tag=None):
 		self.inElem = False
 		self.elem = None
+		self.elements = []
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
@@ -80,14 +83,17 @@ class FupElem_factory(XmlFactory):
 		if self.inElem:
 			if tag.name == "element":
 				if self.elem:
-					# Insert the element into the grid.
-					if not all(self.elem.inputs) or\
-					   not all(self.elem.outputs):
-						raise self.Error("<element> connections "
-							"are incomplete.")
-					if not self.grid.placeElem(self.elem):
-						raise self.Error("<element> caused "
-							"a grid collision.")
+					if self.GRID_INSERT:
+						# Insert the element into the grid.
+						if not all(self.elem.inputs) or\
+						   not all(self.elem.outputs):
+							raise self.Error("<element> connections "
+								"are incomplete.")
+						if not self.grid.placeElem(self.elem):
+							raise self.Error("<element> caused "
+								"a grid collision.")
+					else:
+						self.elements.append(self.elem)
 				self.inElem = False
 				self.elem = None
 				return
