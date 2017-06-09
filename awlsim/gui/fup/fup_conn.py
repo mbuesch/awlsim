@@ -41,6 +41,7 @@ class FupConn_factory(XmlFactory):
 				dirIn = tag.getAttrInt("dir_in")
 				dirOut = tag.getAttrInt("dir_out")
 				wireId = tag.getAttrInt("wire")
+				text = tag.getAttr("text", "")
 				if pos < 0 or pos > 0xFFFF:
 					raise self.Error("Invalid <connection> pos.")
 				wire = self.elem.grid.getWireById(wireId)
@@ -52,6 +53,7 @@ class FupConn_factory(XmlFactory):
 						if wire:
 							wire.connect(conn)
 						self.elem.inputs[pos] = conn
+						conn.text = text
 						return
 					elif dirOut and not dirIn:
 						self.elem.outputs.extend(
@@ -60,6 +62,7 @@ class FupConn_factory(XmlFactory):
 						if wire:
 							wire.connect(conn)
 						self.elem.outputs[pos] = conn
+						conn.text = text
 						return
 				except ValueError:
 					raise self.Error("Invalid <connection>")
@@ -85,6 +88,7 @@ class FupConn_factory(XmlFactory):
 					"pos" : str(self.conn.pos),
 					"wire" : str(-1) if self.conn.wire is None
 						 else str(self.conn.wire.idNum),
+					"text" : str(self.conn.text),
 				}),
 		]
 
@@ -98,10 +102,11 @@ class FupConn(FupBaseClass):
 
 	CONN_OFFS = 4	# Pixel offset in X direction
 
-	def __init__(self, elem=None, wire=None):
+	def __init__(self, elem=None, wire=None, text=""):
 		FupBaseClass.__init__(self)
 		self.elem = elem	# The FupElem this connection belongs to
 		self.wire = wire	# The FupWire this connection is connected to (if any).
+		self.text = text	# Description text
 
 	@property
 	def pos(self):
