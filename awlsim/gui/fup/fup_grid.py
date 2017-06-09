@@ -280,9 +280,18 @@ class FupGrid(object):
 				return True # Collision with other element.
 		return False
 
+	def canPlaceElem(self, elem):
+		"""Check it we could place the element,
+		but do not actually insert it into the grid.
+		"""
+		return not self.__haveCollision(elem.x, elem.y, elem.height)
+
 	def placeElem(self, elem):
+		"""Insert an element into the grid.
+		Returns False, if it was not possible to place the element.
+		"""
 		# Check if we have a collision.
-		if self.__haveCollision(elem.x, elem.y, elem.height):
+		if not self.canPlaceElem(elem):
 			return False
 		# Add the element.
 		self.elems.append(elem)
