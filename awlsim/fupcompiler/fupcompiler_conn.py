@@ -40,8 +40,9 @@ class FupCompiler_ConnFactory(XmlFactory):
 				dirIn = tag.getAttrInt("dir_in")
 				dirOut = tag.getAttrInt("dir_out")
 				wireId = tag.getAttrInt("wire")
+				text = tag.getAttr("text", "")
 				conn = FupCompiler_Conn(self.elem,
-					pos, dirIn, dirOut, wireId)
+					pos, dirIn, dirOut, wireId, text)
 				if not self.elem.addConn(conn):
 					raise self.Error("Invalid connection")
 				return
@@ -61,15 +62,23 @@ class FupCompiler_ConnFactory(XmlFactory):
 class FupCompiler_Conn(FupCompiler_BaseObj):
 	factory = FupCompiler_ConnFactory
 
-	def __init__(self, elem, pos, dirIn, dirOut, wireId):
+	def __init__(self, elem, pos, dirIn, dirOut, wireId, text):
 		FupCompiler_BaseObj.__init__(self)
 		self.elem = elem		# FupCompiler_Elem
 		self.pos = pos			# Position index
 		self.dirIn = bool(dirIn)	# Input
 		self.dirOut = bool(dirOut)	# Output
 		self.wireId = wireId		# Wire ID number
+		self.text = text or ""		# Connection text (optional)
 
 		self.wire = None
+
+	@property
+	def isOptional(self):
+		"""Returns True, if this connection is optional.
+		An optional connection does not have to be connected.
+		"""
+		return self.elem.connIsOptional(self)
 
 	def getConnected(self, getOutputs=False, getInputs=False):
 		"""Get all other connections that are connected
