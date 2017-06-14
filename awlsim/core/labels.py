@@ -53,31 +53,22 @@ class AwlLabel(object):
 		# Build the label table
 		labels = []
 		for i, insn in enumerate(insns):
-			rawInsn = insn.getRawInsn()
-			if not rawInsn or not rawInsn.hasLabel():
+			if not insn.hasLabel():
 				continue
-			try:
-				# Labels are supposed to be traditional
-				# "latin1" encoding compatible.
-				rawInsnLabel = rawInsn.getLabel().encode(
-						AwlSource.COMPAT_ENCODING)
-				rawInsnLabel = bytearray(rawInsnLabel)
-			except UnicodeError as e:
-				raise AwlSimError("Invalid characters in label: %s" % (
-					str(rawInsn)))
+			insnLabel = insn.getLabel()
 			for label in labels:
-				if label.getLabelName() == rawInsnLabel:
+				if label.getLabelName() == insnLabel:
 					raise AwlSimError("Duplicate label '%s' found. "
 						"Label names have to be unique in a code block." %\
-						rawInsnLabel,
+						insnLabel,
 						insn = insn)
-			labels.append(cls(insn, rawInsnLabel))
+			labels.append(cls(insn, insnLabel))
 		# Resolve label references
 		for insn in insns:
 			for op in insn.ops:
 				if op.operType != AwlOperatorTypes.LBL_REF:
 					continue
-				labelIndex = cls.findInList(labels, op.immediateBytes)
+				labelIndex = cls.findInList(labels, op.immediateStr)
 				if labelIndex is None:
 					raise AwlSimError("Referenced label not found",
 							  insn = insn)

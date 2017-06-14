@@ -48,7 +48,7 @@ class AwlOperator(object): #+cdef
 	immediate = 0 #@nocy
 
 	# Immediate bytes/bytearray.
-	# Only used for IMM_DT and IMM_STR types.
+	# Only used for IMM_DT, IMM_STR and LBL_REF types.
 	immediateBytes = None #@nocy
 
 	# Immediate pointer.
@@ -130,6 +130,22 @@ class AwlOperator(object): #+cdef
 		oper.labelIndex = self.labelIndex
 		oper.interfaceIndex = self.interfaceIndex
 		return oper
+
+	@property
+	def immediateStr(self):
+		from awlsim.common.sources import AwlSource
+		try:
+			return self.immediateBytes.decode(AwlSource.COMPAT_ENCODING)
+		except UnicodeError as e:
+			raise AwlSimError("Invalid characters in operator (decode).")
+
+	@immediateStr.setter
+	def immediateStr(self, newStr):
+		from awlsim.common.sources import AwlSource
+		try:
+			self.immediateBytes = bytearray(newStr.encode(AwlSource.COMPAT_ENCODING))
+		except UnicodeError as e:
+			raise AwlSimError("Invalid characters in operator (encode).")
 
 	def setInsn(self, newInsn):
 		self.insn = newInsn
@@ -391,7 +407,7 @@ class AwlOperator(object): #+cdef
 		elif self.operType == AwlOperatorTypes.MEM_STW:
 			return "__STW " + S7StatusWord.nr2name_german[self.offset.bitOffset]
 		elif self.operType == AwlOperatorTypes.LBL_REF:
-			return self.immediateBytes.decode(AwlSource.COMPAT_ENCODING)
+			return self.immediateStr
 		elif self.operType == AwlOperatorTypes.BLKREF_FC:
 			return "FC %d" % self.offset.byteOffset
 		elif self.operType == AwlOperatorTypes.BLKREF_SFC:

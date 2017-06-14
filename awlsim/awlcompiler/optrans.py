@@ -455,15 +455,8 @@ class AwlOpTranslator(object):
 		assert(len(rawOps) >= 1)
 		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
 			# Label reference
-			try:
-				# Labels are supposed to be traditional
-				# "latin1" encoding compatible.
-				labelBytes = rawOps[0].encode(AwlSource.COMPAT_ENCODING)
-			except UnicodeError as e:
-				raise AwlSimError("Invalid characters in "
-					"label reference: %s" % (rawOps[0]))
 			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
-			oper.immediateBytes = bytearray(labelBytes)
+			oper.immediateStr = rawOps[0]
 			return OpDescriptor(oper, 1)
 		token0 = rawOps[0].upper()
 

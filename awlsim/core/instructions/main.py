@@ -223,6 +223,7 @@ class AwlInsn(object): #+cdef
 		"op0",
 		"op1",
 		"params",
+		"labelStr",
 		"_widths_1",
 		"_widths_8_16_32",
 		"_widths_16",
@@ -240,6 +241,7 @@ class AwlInsn(object): #+cdef
 		self.ip = 0			# Instruction pointer (IP)
 		self.ops = ops or []		# AwlOperator()s
 		self.params = ()		# Parameter assignments (for CALL)
+		self.labelStr = None		# Optional label string.
 
 		# Local copy of commonly used fetch/store widths.
 		self._widths_1		= AwlOperatorWidths.WIDTH_MASK_1
@@ -296,6 +298,20 @@ class AwlInsn(object): #+cdef
 	def getRawInsn(self):
 		return self.rawInsn
 
+	def hasLabel(self):
+		"""Returns True, if this insn has a label.
+		"""
+		if self.rawInsn:
+			return self.rawInsn.hasLabel()
+		return bool(self.labelStr)
+
+	def getLabel(self):
+		"""Returns the label string.
+		"""
+		if self.rawInsn:
+			return self.rawInsn.getLabel()
+		return self.labelStr
+
 	def getIP(self):
 		return self.ip
 
@@ -333,6 +349,8 @@ class AwlInsn(object): #+cdef
 
 	def __repr__(self):
 		ret = []
+		if self.hasLabel():
+			ret.append("%s: " % self.getLabel())
 		type2name = AwlInsn.type2name_english
 		if self.getMnemonics() == S7CPUConfig.MNEMONICS_DE:
 			type2name = AwlInsn.type2name_german
