@@ -163,6 +163,18 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			if conn.dirOut:
 				yield conn
 
+	def connIsOptional(self, conn):
+		"""Check if a connection is optional.
+		The default implementation always returns False.
+		"""
+		return False
+
+	def getConnType(self, conn):
+		"""Get the type of a connection.
+		The default implementation always returns VKE based type.
+		"""
+		return FupCompiler_Conn.TYPE_VKE
+
 	def _mayStoreToTemp(self):
 		insns = []
 

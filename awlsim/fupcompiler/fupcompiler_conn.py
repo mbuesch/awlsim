@@ -62,6 +62,14 @@ class FupCompiler_ConnFactory(XmlFactory):
 class FupCompiler_Conn(FupCompiler_BaseObj):
 	factory = FupCompiler_ConnFactory
 
+	# Connection types
+	EnumGen.start
+	TYPE_UNKNOWN	= EnumGen.item
+	TYPE_VKE	= EnumGen.item # Bit operation
+	TYPE_ACCU	= EnumGen.item # Byte/word/dword operation
+	TYPE_SYMBOLIC	= EnumGen.item # Symbolic operator
+	EnumGen.end
+
 	def __init__(self, elem, pos, dirIn, dirOut, wireId, text):
 		FupCompiler_BaseObj.__init__(self)
 		self.elem = elem		# FupCompiler_Elem
@@ -79,6 +87,23 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		An optional connection does not have to be connected.
 		"""
 		return self.elem.connIsOptional(self)
+
+	@property
+	def connType(self):
+		"""Get the connection type.
+		This returns whether this connection is VKE based (TYPE_VKE)
+		or accu based (TYPE_ACCU).
+		If this connection is wired to an unresolved symbolic operator,
+		TYPE_SYMBOLIC is returned.
+		If the type is unknown TYPE_UNKNOWN is returned.
+		"""
+		return self.elem.getConnType(self)
+
+	@property
+	def isConnected(self):
+		"""Returns True, if this connection is connected to a wire.
+		"""
+		return self.wire is not None
 
 	def getConnected(self, getOutputs=False, getInputs=False):
 		"""Get all other connections that are connected
