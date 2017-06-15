@@ -363,9 +363,6 @@ EOF
 	sed -i -e 's|BUG_REPORT_URL=.*|BUG_REPORT_URL="https://bues.ch/a/pilc"|' \
 		/etc/os-release ||\
 		die "Failed to set os-release BUG_REPORT_URL."
-	sed -i -e 's|#FSCKFIX=no|FSCKFIX=yes|' \
-		/etc/default/rcS ||\
-		die "Failed to set FSCKFIX=yes"
 
 	info "Updating packages..."
 cat <<EOF | debconf-set-selections
