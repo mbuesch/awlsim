@@ -117,9 +117,24 @@ class FupCompiler(object):
 		self.instanceDBsAwl = []	# Instance DBs AWL code strings
 		self.fupSource = None		# FUP source
 		self.awlSource = None		# Compiled AWL source
+		self.__labelCounter = 0		# Current label name counter
 
 	def getAwlSource(self):
 		return self.awlSource
+
+	def newLabel(self):
+		"""Generate a new block-unique label.
+		A label name string is returned.
+		The name does not include the final ':' character.
+		"""
+		labelMax = 0xFFF
+		labelCounter = self.__labelCounter
+		if labelCounter > labelMax:
+			raise AwlSimError("FUP compiler: Out of jump labels. "
+				"Cannot create more than %d labels." % (
+				labelMax))
+		self.__labelCounter += 1
+		return "L%03X" % labelCounter
 
 	def __parse(self):
 		try:
