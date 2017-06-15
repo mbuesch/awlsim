@@ -89,15 +89,22 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 			wire.connections = set()
 		for elem in self.elems:
 			for conn in elem.connections:
-				if conn.wireId == -1:
-					raise AwlSimError("FUP: Unconnected pin found "
-						"in FUP element.")
-				wire = self.getWire(conn.wireId)
-				if not wire:
-					raise AwlSimError("FUP: Wire with ID %d "
-						"does not exist" % (conn.wireId))
-				wire.connections.add(conn)
-				conn.wire = wire
+				if conn.wireId == conn.WIREID_NONE and not conn.isOptional:
+					raise AwlSimError("FUP: Unconnected pin%s found "
+						"in FUP element %s." % (
+						(" \"%s\"" % conn.text) if conn.text else "",
+						str(elem)))
+				if conn.wireId == conn.WIREID_NONE:
+					conn.wire = None
+				else:
+					wire = self.getWire(conn.wireId)
+					if not wire:
+						raise AwlSimError("FUP: Wire with ID %d "
+							"does not exist, but %s "
+							"references it." % (
+							conn.wireId, str(elem)))
+					wire.connections.add(conn)
+					conn.wire = wire
 		for wire in dictValues(self.wires):
 			if len(wire.connections) == 0:
 				raise AwlSimError("FUP: Found unconnected wire %s" % (

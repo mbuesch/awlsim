@@ -70,6 +70,9 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 	TYPE_SYMBOLIC	= EnumGen.item # Symbolic operator
 	EnumGen.end
 
+	# Wire-ID used for unconnected connections
+	WIREID_NONE	= -1
+
 	def __init__(self, elem, pos, dirIn, dirOut, wireId, text):
 		FupCompiler_BaseObj.__init__(self)
 		self.elem = elem		# FupCompiler_Elem
