@@ -133,3 +133,36 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		"""
 		for conn in self.getConnected(getOutputs=viaOut, getInputs=viaIn):
 			yield conn.elem
+
+	def getConnectedElem(self, viaOut=False, viaIn=False):
+		"""Get the single element that is connected to this connection.
+		If 'viaOut' is True, elements connected to the wire via OUT
+		connection are returned.
+		If 'viaIn' is True, elements connected to the wire via OUT
+		connection are returned.
+		If neither 'viaOut' nor 'viaIn' is True, None is returned.
+		If there is no matching element or more that one matching
+		element, an exception is raised.
+		"""
+		if not viaOut and not viaIn:
+			return None
+		viaText = "%s%s%s" % (
+			"IN" if viaIn else "",
+			"/" if viaIn and viaOut else "",
+			"OUT" if viaOut else "")
+		connections = list(self.getConnected(getOutputs=viaOut, getInputs=viaIn))
+		if len(connections) > 0:
+			if len(connections) > 1:
+				raise AwlSimError("The connection%s of element '%s' does "
+					"only support a single %s-wire, "
+					"but has %d %s-connections." % (
+					(" \"%s\"" % self.text) if self.text else "",
+					str(self.elem),
+					viaText,
+					len(connections),
+					viaText))
+			return connections[0].elem
+		raise AwlSimError("The connection%s of element '%s' does "
+			"does not have a valid %s-connected element." % (
+			(" \"%s\"" % self.text) if self.text else "",
+			str(self.elem), viaText))

@@ -75,42 +75,42 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		for conn in sorted(self.inConnections, key=lambda c: c.pos):
 			# For each element that is connected to this element's
 			# input connection via its output connection.
-			for otherElem in conn.getConnectedElems(viaOut=True):
-				if otherElem.elemType == self.TYPE_OPERAND and\
-				   otherElem.subType == FupCompiler_ElemOper.SUBTYPE_LOAD:
-					# The other element is a LOAD operand.
-					# Compile the boolean (load) instruction.
-					try:
-						otherElem.setInsnClass(insnClass)
-						insns.extend(otherElem.compile())
-						if otherElem.getConnType(None) not in {
-								FupCompiler_Conn.TYPE_VKE,
-								FupCompiler_Conn.TYPE_SYMBOLIC}:
-							raise AwlSimError("FUP compiler: "
-								"The load operand '%s' "
-								"to element '%s' is not "
-								"VKE (bit) based." % (
-								str(otherElem.content),
-								str(self)))
-					finally:
-						otherElem.setInsnClass(None)
-				elif otherElem.elemType == self.TYPE_BOOLEAN:
-					# The other element we get the signal from
-					# is a boolean element. Compile this to get its
-					# resulting VKE.
-					if otherElem.compileState == self.NOT_COMPILED:
-						insns.append(insnBranchClass(cpu=None))
-						insns.extend(otherElem.compile())
-						# Store result to a TEMP variable, if required.
-						insns.extend(otherElem._mayStoreToTemp())
-						insns.append(AwlInsn_BEND(cpu=None))
-					else:
-						# Get the stored result from TEMP.
-						insns.extend(otherElem._loadFromTemp(insnClass))
+			otherElem = conn.getConnectedElem(viaOut=True)
+			if otherElem.elemType == self.TYPE_OPERAND and\
+			   otherElem.subType == FupCompiler_ElemOper.SUBTYPE_LOAD:
+				# The other element is a LOAD operand.
+				# Compile the boolean (load) instruction.
+				try:
+					otherElem.setInsnClass(insnClass)
+					insns.extend(otherElem.compile())
+					if otherElem.getConnType(None) not in {
+							FupCompiler_Conn.TYPE_VKE,
+							FupCompiler_Conn.TYPE_SYMBOLIC}:
+						raise AwlSimError("FUP compiler: "
+							"The load operand '%s' "
+							"to element '%s' is not "
+							"VKE (bit) based." % (
+							str(otherElem.content),
+							str(self)))
+				finally:
+					otherElem.setInsnClass(None)
+			elif otherElem.elemType == self.TYPE_BOOLEAN:
+				# The other element we get the signal from
+				# is a boolean element. Compile this to get its
+				# resulting VKE.
+				if otherElem.compileState == self.NOT_COMPILED:
+					insns.append(insnBranchClass(cpu=None))
+					insns.extend(otherElem.compile())
+					# Store result to a TEMP variable, if required.
+					insns.extend(otherElem._mayStoreToTemp())
+					insns.append(AwlInsn_BEND(cpu=None))
 				else:
-					raise AwlSimError("FUP compiler: Invalid "
-						"element '%s' connected to '%s'." % (
-						str(otherElem), str(self)))
+					# Get the stored result from TEMP.
+					insns.extend(otherElem._loadFromTemp(insnClass))
+			else:
+				raise AwlSimError("FUP compiler: Invalid "
+					"element '%s' connected to '%s'." % (
+					str(otherElem), str(self)))
 		return insns
 
 class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
