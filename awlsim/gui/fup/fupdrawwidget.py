@@ -666,7 +666,8 @@ class FupDrawWidget(QWidget):
 					if newElem and newConn:
 						if self.addElem(newElem):
 							with contextlib.suppress(ValueError):
-								newConn.connectTo(conn)
+								if not newConn.isConnected:
+									newConn.connectTo(conn)
 								newElem.edit(self)
 							self.__contentChanged()
 				else:
