@@ -30,8 +30,7 @@ from awlsim.fupcompiler.fupcompiler_conn import *
 
 from awlsim.awlcompiler.optrans import *
 
-#from awlsim.core.instructions.all_insns cimport * #@cy
-from awlsim.core.instructions.all_insns import * #@nocy
+from awlsim.core.instructions.all_insns import * #+cimport
 
 
 class FupCompiler_ElemFactory(XmlFactory):
@@ -208,5 +207,6 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
-			"subType=%d, content=%s)" % (
-			self.x, self.y, self.elemType, self.subType, self.content)
+			"subType=%s, content=\"%s\")" % (
+			self.x, self.y, self.elemType,
+			str(self.subType), self.content)
