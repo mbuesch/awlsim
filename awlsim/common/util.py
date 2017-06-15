@@ -57,6 +57,7 @@ __all__ = [
 	"envClearLang",
 	"isInteger",
 	"isString",
+	"strEqual",
 	"isiterable",
 	"getfirst",
 	"getany",
@@ -305,6 +306,18 @@ def __isString_python3(value):
 
 isString = py23(__isString_python2,
 		__isString_python3)
+
+def strEqual(string0, string1, caseSensitive=True):
+	"""Compare string0 to string1.
+	If caseSensitive is False, case is ignored.
+	Returns True, if both strings are equal.
+	"""
+	if not caseSensitive:
+		if hasattr(string0, "casefold"):
+			string0, string1 = string0.casefold(), string1.casefold()
+		else:
+			string0, string1 = string0.lower(), string1.lower()
+	return string0 == string1
 
 def isiterable(obj):
 	"""Check if an object is iterable.
