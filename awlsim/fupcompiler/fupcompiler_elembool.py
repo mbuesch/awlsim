@@ -25,8 +25,7 @@ from awlsim.common.compat import *
 from awlsim.fupcompiler.fupcompiler_elem import *
 from awlsim.fupcompiler.fupcompiler_elemoper import *
 
-#from awlsim.core.instructions.all_insns cimport * #@cy
-from awlsim.core.instructions.all_insns import * #@nocy
+from awlsim.core.instructions.all_insns import * #+cimport
 
 
 class FupCompiler_ElemBool(FupCompiler_Elem):
@@ -73,9 +72,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 	def _doCompileBool(self, insnClass, insnBranchClass):
 		insns = []
 		# Walk down each input connection of this element.
-		for conn in sorted(self.connections, key=lambda c: c.pos):
-			if not conn.dirIn:
-				continue
+		for conn in sorted(self.inConnections, key=lambda c: c.pos):
 			# For each element that is connected to this element's
 			# input connection via its output connection.
 			for otherElem in conn.getConnectedElems(viaOut=True):
@@ -86,6 +83,15 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 					try:
 						otherElem.setInsnClass(insnClass)
 						insns.extend(otherElem.compile())
+						if otherElem.getConnType(None) not in {
+								FupCompiler_Conn.TYPE_VKE,
+								FupCompiler_Conn.TYPE_SYMBOLIC}:
+							raise AwlSimError("FUP compiler: "
+								"The load operand '%s' "
+								"to element '%s' is not "
+								"VKE (bit) based." % (
+								str(otherElem.content),
+								str(self)))
 					finally:
 						otherElem.setInsnClass(None)
 				elif otherElem.elemType == self.TYPE_BOOLEAN:

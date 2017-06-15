@@ -24,8 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.fupcompiler.fupcompiler_elem import *
 
-#from awlsim.core.instructions.all_insns cimport * #@cy
-from awlsim.core.instructions.all_insns import * #@nocy
+from awlsim.core.instructions.all_insns import * #+cimport
 
 
 class FupCompiler_ElemOper(FupCompiler_Elem):
@@ -63,6 +62,21 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 					  elemType=FupCompiler_Elem.TYPE_OPERAND,
 					  subType=subType, content=content)
 
+		# The translated operator, if any, yet.
+		# This will be available after compilation of this element.
+		self._operator = None
+
+	def getConnType(self, conn):
+		if (conn in self.connections or conn is None) and\
+		   self._operator:
+			if self._operator.width == 0:
+				return FupCompiler_Conn.TYPE_SYMBOLIC
+			elif self._operator.width == 1:
+				return FupCompiler_Conn.TYPE_VKE
+			else:
+				return FupCompiler_Conn.TYPE_ACCU
+		return FupCompiler_Conn.TYPE_UNKNOWN
+
 class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	"""FUP compiler - Operand LOAD element.
 	"""
@@ -92,7 +106,11 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 
 		# Translate the LOAD operand and create the
 		# corresponding instruction.
+		if not self.content.strip():
+			raise AwlSimError("FUP LOAD: Found empty load operator: %s" % (
+				str(self)))
 		opDesc = self.opTrans.translateFromString(self.content)
+		self._operator = opDesc.operator
 		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
 
 		return insns
@@ -135,7 +153,12 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 			insns.extend(otherElem._loadFromTemp(AwlInsn_U))
 
 		# Create the ASSIGN instruction.
+		if not self.content.strip():
+			raise AwlSimError("FUP ASSIGN: Found empty assignment operator %s "
+				"that is connected to %s" % (
+				str(self), str(otherElem)))
 		opDesc = self.opTrans.translateFromString(self.content)
+		self._operator = opDesc.operator
 		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
 
 		insns.extend(otherElem._mayStoreToTemp())
