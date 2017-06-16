@@ -80,6 +80,8 @@ class FupCompiler_ElemFactory(XmlFactory):
 class FupCompiler_Elem(FupCompiler_BaseObj):
 	factory = FupCompiler_ElemFactory
 
+	ELEM_NAME = "FUP-element"
+
 	EnumGen.start
 	TYPE_BOOLEAN		= EnumGen.item
 	TYPE_OPERAND		= EnumGen.item
@@ -247,9 +249,15 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		return insns
 
 	def _doCompile(self):
+		"""Element compiler.
+		Override this.
+		"""
 		raise NotImplementedError
 
 	def compile(self):
+		"""Main element compiler entry point.
+		Do not override this. Override _doCompile instead.
+		"""
 		self.compileState = self.COMPILE_RUNNING
 		result = self._doCompile()
 		self.compileState = self.COMPILE_DONE
@@ -260,3 +268,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			"subType=%s, content=\"%s\")" % (
 			self.x, self.y, self.elemType,
 			str(self.subType), self.content)
+
+	def __str__(self):
+		values = [
+			"x=%d" % (self.x + 1),
+			"y=%d" % (self.y + 1),
+		]
+		if self.content.strip():
+			values.append('"%s"' % self.content)
+		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))

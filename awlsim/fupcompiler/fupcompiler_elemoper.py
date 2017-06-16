@@ -31,6 +31,8 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 	"""FUP compiler - Operand element.
 	"""
 
+	ELEM_NAME = "operator"
+
 	EnumGen.start
 	SUBTYPE_LOAD		= EnumGen.item
 	SUBTYPE_ASSIGN		= EnumGen.item
@@ -81,6 +83,8 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	"""FUP compiler - Operand LOAD element.
 	"""
 
+	ELEM_NAME = "load-operator"
+
 	# Allow multiple compilations of LOAD operand.
 	allowTrans_done2Running = True
 
@@ -120,7 +124,8 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 		if not insnClass:
 			# This shall never happen.
 			raise AwlSimError("FUP LOAD: Load without a "
-				"known instruction class.")
+				"known instruction class at %s." % (
+				str(self)))
 
 		# Translate the LOAD operand and create the
 		# corresponding instruction.
@@ -136,6 +141,8 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 	"""FUP compiler - Operand ASSIGN element.
 	"""
+
+	ELEM_NAME = "store-operator"
 
 	def __init__(self, grid, x, y, content):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,

@@ -32,6 +32,8 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 	"""FUP compiler - Boolean element.
 	"""
 
+	ELEM_NAME = "BOOL"
+
 	EnumGen.start
 	SUBTYPE_AND		= EnumGen.item
 	SUBTYPE_OR		= EnumGen.item
@@ -120,6 +122,8 @@ class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean AND element.
 	"""
 
+	ELEM_NAME = "AND"
+
 	def __init__(self, grid, x, y, content):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemBool.SUBTYPE_AND,
@@ -132,6 +136,8 @@ class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean OR element.
 	"""
 
+	ELEM_NAME = "OR"
+
 	def __init__(self, grid, x, y, content):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemBool.SUBTYPE_OR,
@@ -143,6 +149,8 @@ class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean XOR element.
 	"""
+
+	ELEM_NAME = "XOR"
 
 	def __init__(self, grid, x, y, content):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
