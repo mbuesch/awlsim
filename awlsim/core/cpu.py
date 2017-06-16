@@ -2303,22 +2303,9 @@ class S7CPU(object): #+cdef
 		ret.append("   Stmt:  IP:%s   %s" %\
 			   (str(self.getCurrentIP()),
 			    str(curInsn) if curInsn else "none"))
-		insnPerSecond = self.insnPerSecond
-		if insnPerSecond >= 1000000.0:
-			insnPerSecondStr = "%.02f M" % (insnPerSecond / 1000000.0)
-		elif insnPerSecond >= 1000.0:
-			insnPerSecondStr = "%.02f k" % (insnPerSecond / 1000.0)
-		elif insnPerSecond > 0.0:
-			insnPerSecondStr = "%.02f" % insnPerSecond
-		else:
-			insnPerSecondStr = "-/-"
-		if insnPerSecond > 0.0:
-			usPerInsn = "%.03f" % ((1.0 / insnPerSecond) * 1000000)
-		else:
-			usPerInsn = "-/-"
 		ret.append("  Speed:  %s stmt/s (= %s us/stmt)  %.01f stmt/cycle" % (
-			   insnPerSecondStr,
-			   usPerInsn,
+			   self.insnPerSecondHR,
+			   self.usPerInsnHR,
 			   self.avgInsnPerCycle))
 		avgCycleTime = self.avgCycleTime
 		minCycleTime = self.minCycleTime
@@ -2335,6 +2322,32 @@ class S7CPU(object): #+cdef
 		ret.append("OB1time:  avg: %s ms  min: %s ms  max: %s ms" % (
 			   avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr))
 		return '\n'.join(ret)
+
+	@property
+	def insnPerSecondHR(self):
+		"""Get a human readable instructions per seconds string.
+		"""
+		insnPerSecond = self.insnPerSecond
+		if insnPerSecond >= 1000000.0:
+			insnPerSecondStr = "%.02f M" % (insnPerSecond / 1000000.0)
+		elif insnPerSecond >= 1000.0:
+			insnPerSecondStr = "%.02f k" % (insnPerSecond / 1000.0)
+		elif insnPerSecond > 0.0:
+			insnPerSecondStr = "%.02f" % insnPerSecond
+		else:
+			insnPerSecondStr = "-/-"
+		return insnPerSecondStr
+
+	@property
+	def usPerInsnHR(self):
+		"""Get a human readable microseconds per instructions string.
+		"""
+		insnPerSecond = self.insnPerSecond
+		if insnPerSecond > 0.0:
+			usPerInsnStr = "%.03f" % ((1.0 / insnPerSecond) * 1000000)
+		else:
+			usPerInsnStr = "-/-"
+		return usPerInsnStr
 
 	def __repr__(self):
 		return self.dump()
