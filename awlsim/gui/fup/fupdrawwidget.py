@@ -344,7 +344,7 @@ class FupDrawWidget(QWidget):
 		size = self.size()
 		width, height = size.width(), size.height()
 		p = QPainter(self)
-		p.setFont(getDefaultFixedFont(7))
+		p.setFont(getDefaultFixedFont(9))
 
 		# Draw background
 		p.fillRect(self.rect(), self.__bgBrush)
@@ -356,13 +356,13 @@ class FupDrawWidget(QWidget):
 			p.drawLine(x, 0, x, height)
 			p.drawText(x, -5, self.__cellWidth, self.__cellHeight,
 				   Qt.AlignCenter | Qt.AlignTop,
-				   str(x // self.__cellWidth))
+				   str((x // self.__cellWidth) + 1))
 		# horizontal lines
 		for y in range(0, height, self.__cellHeight):
 			p.drawLine(0, y, width, y)
 			p.drawText(5, y, self.__cellWidth, self.__cellHeight,
 				   Qt.AlignLeft | Qt.AlignVCenter,
-				   str(y // self.__cellHeight))
+				   str((y // self.__cellHeight) + 1))
 
 		# Draw the help text, if the grid is empty.
 		if not grid.elems:
