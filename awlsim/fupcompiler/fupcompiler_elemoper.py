@@ -140,27 +140,27 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 				"properties in '%s'." % (
 				str(self)))
 
-		# Compile the element connected to the input.
-		connsOut = tuple(conn.getConnected(getOutputs=True))
-		if len(connsOut) != 1:
-			raise AwlSimError("FUP ASSIGN: Multiple outbound signals "
-				"connected to '%s'." % (
-				str(self)))
-		otherElem = connsOut[0].elem
-		if otherElem.compileState == self.NOT_COMPILED:
-			insns.extend(otherElem.compile())
-		else:
-			insns.extend(otherElem._loadFromTemp(AwlInsn_U))
+		# Get the element that is connected to this operator.
+		otherElem = conn.getConnectedElem(viaOut=True)
 
-		# Create the ASSIGN instruction.
+		# Translate the operator.
+		# Do this before compiling the connected element so that
+		# the operator is available to the element.
 		if not self.content.strip():
 			raise AwlSimError("FUP ASSIGN: Found empty assignment operator %s "
 				"that is connected to %s" % (
 				str(self), str(otherElem)))
 		opDesc = self.opTrans.translateFromString(self.content)
 		self._operator = opDesc.operator
-		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
 
+		# Compile the element connected to the input.
+		if otherElem.compileState == self.NOT_COMPILED:
+			insns.extend(otherElem.compile())
+		else:
+			insns.extend(otherElem._loadFromTemp(AwlInsn_U))
+
+		# Create the ASSIGN instruction.
+		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
 		insns.extend(otherElem._mayStoreToTemp())
 
 		# Compile additional assign operators.
