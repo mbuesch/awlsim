@@ -95,6 +95,24 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	def setInsnClass(self, insnClass):
 		self.__insnClass = insnClass
 
+	def compileOperLoad(self, insnClass, allowedConnTypes):
+		"""Set the instruction class and compile this load operator.
+		insnClass => The AwlInsn class that performs the load.
+		allowedConnTypes => Iterable of allowed connection types.
+		Returns the instruction.
+		"""
+		try:
+			self.setInsnClass(insnClass)
+			insn = self.compile()
+			if self.getConnType(None) not in allowedConnTypes:
+				raise AwlSimError("FUP compiler: "
+					"The load operand '%s' type is not "
+					"allowed here." % (
+					str(self)))
+			return insn
+		finally:
+			self.setInsnClass(None)
+
 	def _doCompile(self):
 		insns = []
 
