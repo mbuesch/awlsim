@@ -148,6 +148,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemOper.SUBTYPE_ASSIGN,
 					      content=content)
+		self.__storeEmitted = False
 
 	def _doCompile(self):
 		insns = []
@@ -184,8 +185,19 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		else:
 			insns.extend(otherElem._loadFromTemp(AwlInsn_U))
 
+		if not self.__storeEmitted:
+			insns.extend(self.emitStore_VKE())
+
+		return insns
+
+	def emitStore_VKE(self):
+		insns = []
+
+		conn = getany(self.connections)
+		otherElem = conn.getConnectedElem(viaOut=True)
+
 		# Create the ASSIGN instruction.
-		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
+		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[self._operator]))
 		insns.extend(otherElem._mayStoreToTemp())
 
 		# Compile additional assign operators.
@@ -200,4 +212,5 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 				insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
 				otherElem.compileState = self.COMPILE_DONE
 
+		self.__storeEmitted = True
 		return insns
