@@ -175,6 +175,44 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return FupCompiler_Conn.TYPE_VKE
 
+	def getConnByText(self, connText,
+			  searchInputs=False, searchOutputs=False,
+			  caseSensitive=False):
+		"""Get connections by name.
+		Search in inputs, if 'searchInputs' is True.
+		Search in outputs, if 'searchOutputs' is True.
+		Returns a generator over the found connections.
+		"""
+		for conn in self.connections:
+			if not strEqual(connText, conn.text, caseSensitive):
+				continue
+			if searchInputs and conn.dirIn:
+				yield conn
+			if searchOutputs and conn.dirOut:
+				yield conn
+
+	def getUniqueConnByText(self, connText,
+				searchInputs=False, searchOutputs=False,
+				caseSensitive=False):
+		"""Get a unique connection by name.
+		Search in inputs, if 'searchInputs' is True.
+		Search in outputs, if 'searchOutputs' is True.
+		This raises AwlSimError, if the connection is not unique.
+		Returns the FupCompiler_Conn() or None if not found.
+		"""
+		connections = list(self.getConnByText(connText,
+						      searchInputs,
+						      searchOutputs,
+						      caseSensitive))
+		if len(connections) <= 0:
+			return None
+		if len(connections) > 1:
+			raise AwlSimError("FUP compiler: The element '%s' "
+				"has multiple connections with the "
+				"same name '%s'." % (
+				str(self), connText))
+		return connections[0]
+
 	def _mayStoreToTemp(self):
 		insns = []
 
