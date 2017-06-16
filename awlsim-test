@@ -167,11 +167,22 @@ def emitCpuDump(dump):
 		clearConsole()
 		writeStdout(dump)
 
+def emitSpeedDump(cpu):
+	dump = "S7 CPU speed:  %s stmt/s" % cpu.insnPerSecondHR
+	dump += " " * (79 - len(dump))
+	writeStdout("\x1B[2J\x1B[H" + dump + "\n")
+
 def cpuDumpCallback(cpu):
 	global nextScreenUpdate
 	if cpu.now >= nextScreenUpdate:
 		nextScreenUpdate = cpu.now + 0.3
 		emitCpuDump(str(cpu))
+
+def cpuStatsCallback(cpu):
+	global nextScreenUpdate
+	if cpu.now >= nextScreenUpdate:
+		nextScreenUpdate = cpu.now + 1.0
+		emitSpeedDump(cpu)
 
 def assignCpuSpecs(cpuSpecs, projectCpuSpecs):
 	cpuSpecs.assignFrom(projectCpuSpecs)
@@ -249,8 +260,11 @@ def run(inputFile):
 		assignCpuConf(cpu.getConf(), project.getCpuConf())
 		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
 		cpu.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
-		if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
-			cpu.setBlockExitCallback(cpuDumpCallback, cpu)
+		if not opt_noCpuDump:
+			if opt_speedStats:
+				cpu.setBlockExitCallback(cpuStatsCallback, cpu)
+			elif opt_loglevel >= Logging.LOG_INFO:
+				cpu.setBlockExitCallback(cpuDumpCallback, cpu)
 		cpu.setCycleTimeLimit(opt_cycletime)
 		cpu.setRunTimeLimit(opt_maxRuntime)
 
@@ -413,6 +427,7 @@ def main():
 	global opt_cycletime
 	global opt_maxRuntime
 	global opt_noCpuDump
+	global opt_speedStats
 	global opt_nrAccus
 	global opt_extInsns
 	global opt_obtemp
@@ -429,6 +444,7 @@ def main():
 	opt_cycletime = 5.0
 	opt_maxRuntime = -1.0
 	opt_noCpuDump = False
+	opt_speedStats = False
 	opt_nrAccus = None
 	opt_extInsns = False
 	opt_obtemp = False
@@ -444,9 +460,9 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hY:M:24qDxt:T:m:H:I:P:L:cC:bi:",
+			"hY:M:24qDSxt:T:m:H:I:P:L:cC:bi:",
 			[ "help", "cycle-limit=", "max-runtime=", "twoaccu", "fouraccu",
-			  "quiet", "no-cpu-dump", "extended-insns",
+			  "quiet", "no-cpu-dump", "speed-stats", "extended-insns",
 			  "obtemp=", "clock-mem=", "mnemonics=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "loglevel=",
@@ -479,6 +495,8 @@ def main():
 			opt_nrAccus = 4
 		if o in ("-D", "--no-cpu-dump"):
 			opt_noCpuDump = True
+		if o in ("-S", "--speed-stats"):
+			opt_speedStats = True
 		if o in ("-x", "--extended-insns"):
 			opt_extInsns = True
 		if o in ("-t", "--obtemp"):
