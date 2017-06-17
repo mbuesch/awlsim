@@ -70,7 +70,7 @@ def __autodetectGuiFramework():
 			  urls["pyqt5"]))
 
 # The Qt bindings can be set via AWLSIM_GUI environment variable.
-__guiFramework = os.getenv("AWLSIM_GUI", "auto").lower()
+__guiFramework = AwlSimEnv.getGuiFramework()
 
 # Run Qt autodetection
 if __guiFramework == "auto":

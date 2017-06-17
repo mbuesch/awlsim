@@ -72,3 +72,9 @@ class AwlSimEnv(object):
 		except ValueError as e:
 			profileLevel = 0
 		return clamp(profileLevel, 0, 2)
+
+	@classmethod
+	def getGuiFramework(cls):
+		"""Get AWLSIM_GUI.
+		"""
+		return cls.__getVar("GUI", "auto").lower()
