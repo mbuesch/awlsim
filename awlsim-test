@@ -98,6 +98,9 @@ def usage():
 	print("  AWLSIM_CYTHON        =0  Do not attempt to use Cython core (default)")
 	print("                       =1  Attempt to use Cython core, but fall back to Python")
 	print("                       =2  Enforce Cython core")
+	print("")
+	print("  AWLSIM_AFFINITY      =0,2,...  Comma separated list of host CPU cores")
+	print("                                 to run on. Default: all cores.")
 
 def printSysblockInfo(blockTable, prefix, withExtended, withInterface):
 	for block in sorted(dictValues(blockTable),

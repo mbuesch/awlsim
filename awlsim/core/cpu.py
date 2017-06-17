@@ -33,6 +33,7 @@ from awlsim.common.cpuconfig import *
 from awlsim.common.blockinfo import *
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
+from awlsim.common.env import *
 
 from awlsim.library.libentry import *
 
@@ -506,6 +507,8 @@ class S7CPU(object): #+cdef
 	def __init__(self):
 		from awlsim.core.datatypes import AwlDataType
 
+		self.__setAffinity()
+
 		self.__fetchTypeMethods = self.__fetchTypeMethodsDict	#@nocy
 		self.__storeTypeMethods = self.__storeTypeMethodsDict	#@nocy
 		self.__callHelpers = self.__callHelpersDict		#@nocy
@@ -533,6 +536,24 @@ class S7CPU(object): #+cdef
 		self.enableExtendedInsns(False)
 		self.enableObTempPresets(False)
 		self.__dateAndTimeWeekdayMap = AwlDataType.dateAndTimeWeekdayMap
+
+	def __setAffinity(self):
+		"""Set the host CPU affinity that what is set via AWLSIM_AFFINITY
+		environment variable.
+		"""
+		affinity = AwlSimEnv.getAffinity()
+		if affinity:
+			if hasattr(os, "sched_setaffinity"):
+				try:
+					os.sched_setaffinity(0, affinity)
+				except OSError as e:
+					raise AwlSimError("Failed to set host CPU "
+						"affinity to %s: %s" % (
+						affinity, str(e)))
+			else:
+				printError("Cannot set CPU affinity "
+					   "on this version of Python. "
+					   "os.sched_setaffinity is not available.")
 
 	def getMnemonics(self):
 		return self.conf.getMnemonics()

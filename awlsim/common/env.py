@@ -78,3 +78,17 @@ class AwlSimEnv(object):
 		"""Get AWLSIM_GUI.
 		"""
 		return cls.__getVar("GUI", "auto").lower()
+
+	@classmethod
+	def getAffinity(cls):
+		"""Get AWLSIM_AFFINITY.
+		Returns a list of host CPU indices or an empty list,
+		if all host CPUs are allowed.
+		"""
+		affinity = cls.__getVar("AFFINITY", "")
+		try:
+			affinity = [ int(cpuIndex)
+				     for cpuIndex in affinity.split(",") ]
+		except ValueError as e:
+			affinity = []
+		return affinity
