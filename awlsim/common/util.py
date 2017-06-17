@@ -67,6 +67,7 @@ __all__ = [
 	"listIndex",
 	"listToHumanStr",
 	"listExpand",
+	"clamp",
 	"math_gcd",
 	"math_lcm",
 	"nopContext",
@@ -425,6 +426,14 @@ def listExpand(lst, expander):
 	for item in lst:
 		ret.extend(expander(item))
 	return ret
+
+def clamp(value, minValue, maxValue):
+	"""Clamp value to the range minValue-maxValue.
+	ValueError is raised, if minValue is bigger than maxValue.
+	"""
+	if minValue > maxValue:
+		raise ValueError
+	return max(min(value, maxValue), minValue)
 
 # Get "Greatest Common Divisor"
 def math_gcd(*args):
