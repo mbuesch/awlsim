@@ -146,7 +146,7 @@ class MainWidget(QWidget):
 		if filename:
 			argv.append(filename)
 		try:
-			PopenWrapper(argv, env = os.environ)
+			PopenWrapper(argv, env=AwlSimEnv.getEnv())
 		except OSError as e:
 			QMessageBox.critical(self,
 				"Failed to execute '%s'" % executableName,

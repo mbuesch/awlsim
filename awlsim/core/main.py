@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.project import *
+from awlsim.common.env import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.util import *
@@ -31,7 +32,6 @@ from awlsim.core.hardware import * #+cimport
 from awlsim.core.hardware_loader import *
 
 import sys
-import os
 
 
 __all__ = [
@@ -81,11 +81,7 @@ class AwlSim(object): #+cdef
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
 		self.cpu.setPeripheralWriteCallback(self.__peripheralWriteCallback)
 
-		try:
-			profileLevel = int(dict(os.environ).get("AWLSIM_PROFILE", "0"))
-		except ValueError:
-			profileLevel = 0
-		self.__setProfiler(profileLevel)
+		self.__setProfiler(AwlSimEnv.getProfileLevel())
 
 	def getCPU(self):
 		return self.cpu

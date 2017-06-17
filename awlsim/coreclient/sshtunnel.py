@@ -2,7 +2,7 @@
 #
 # AWL simulator - SSH tunnel helper
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
 from awlsim.common.net import *
+from awlsim.common.env import *
 from awlsim.common.util import *
 from awlsim.common.subprocess_wrapper import *
 
@@ -86,7 +87,7 @@ class SSHTunnel(object):
 		self.__sshPid = None
 		try:
 			# Prepare SSH environment and arguments.
-			env = envClearLang(os.environ)
+			env = AwlSimEnv.clearLang(AwlSimEnv.getEnv())
 			if osIsWindows and "plink" in self.sshExecutable.lower():
 				# Run plink.exe (PuTTY)
 				pw = self.getPassphrase("%s's Password:" % self.remoteHost)

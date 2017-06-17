@@ -27,6 +27,7 @@ from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.sources import *
 from awlsim.common.net import *
+from awlsim.common.env import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
@@ -170,7 +171,7 @@ class AwlSimServer(object): #+cdef
 
 		# Prepare the environment for the server process.
 		# Inherit from the starter and add awlsim specific variables.
-		env = dict(os.environ)
+		env = AwlSimEnv.getEnv()
 		env[AwlSimServer.ENV_MAGIC]		= AwlSimServer.ENV_MAGIC
 		env["AWLSIM_CORESERVER_HOST"]		= str(listenHost)
 		env["AWLSIM_CORESERVER_PORT"]		= str(int(listenPort))
@@ -275,10 +276,10 @@ class AwlSimServer(object): #+cdef
 	def runFromEnvironment(self, env=None):
 		"""Run the server.
 		Configuration is passed via environment variables in 'env'.
-		If 'env' is not passed, os.environ is used."""
+		If 'env' is not passed, the current environment is used."""
 
 		if not env:
-			env = dict(os.environ)
+			env = AwlSimEnv.getEnv()
 
 		try:
 			loglevel = int(env.get("AWLSIM_CORESERVER_LOGLEVEL"))

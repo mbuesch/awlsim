@@ -54,7 +54,6 @@ __all__ = [
 	"bytesToHexStr",
 	"toUnixEol",
 	"toDosEol",
-	"envClearLang",
 	"isInteger",
 	"isString",
 	"strEqual",
@@ -273,20 +272,6 @@ def toDosEol(string):
 	no matter what line endings (mix) the input string is.
 	"""
 	return toUnixEol(string).replace("\n", "\r\n")
-
-def envClearLang(env, lang = "C"):
-	"""Reset the language settings of an environment dict
-	to some expected value and return the result.
-	"""
-	env = dict(env)
-	env["LANG"] = lang
-	for i in {"LANGUAGE", "LC_CTYPE", "LC_NUMERIC",
-		  "LC_TIME", "LC_COLLATE", "LC_MONETARY",
-		  "LC_MESSAGES", "LC_PAPER", "LC_NAME",
-		  "LC_ADDRESS", "LC_TELEPHONE", "LC_MEASUREMENT",
-		  "LC_IDENTIFICATION",}:
-		env.pop(i, None)
-	return env
 
 def __isInteger_python2(value):
 	return isinstance(value, int) or\
