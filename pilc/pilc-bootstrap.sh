@@ -812,7 +812,7 @@ pilc_bootstrap_third_stage()
 
 	info "Configuring boot..."
 	cat > "$opt_target_dir/boot/cmdline.txt" <<EOF
-dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet
+dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline isolcpus=2,3 rcu_nocbs=2,3 nohz_full=2,3 fsck.repair=yes rootwait quiet
 EOF
 	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
 	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
