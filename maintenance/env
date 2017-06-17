@@ -1,0 +1,39 @@
+# No startup script.
+unset PYTHONSTARTUP
+
+# Do not require 4-digit years.
+unset PYTHONY2K
+
+# No optimization. We want assert statements.
+unset PYTHONOPTIMIZE
+
+# Disable Python debugging.
+unset PYTHONDEBUG
+
+# Do not write bytecode files.
+export PYTHONDONTWRITEBYTECODE=1
+
+# Disable inspect.
+unset PYTHONINSPECT
+
+# Use default I/O encoding.
+unset PYTHONIOENCODING
+
+# Default user-site.
+unset PYTHONNOUSERSITE
+
+# Use buffered I/O.
+unset PYTHONUNBUFFERED
+
+# Be non-verbose.
+unset PYTHONVERBOSE
+
+# Default warnings.
+unset PYTHONWARNINGS
+
+# Disable hash randomization to get stable dict collisions
+# and thus stable benchmark results.
+export PYTHONHASHSEED=0
+
+# Enforce CPU affinity to the last host CPU.
+export AWLSIM_AFFINITY=-1
