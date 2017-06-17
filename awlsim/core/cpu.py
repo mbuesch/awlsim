@@ -546,7 +546,7 @@ class S7CPU(object): #+cdef
 			if hasattr(os, "sched_setaffinity"):
 				try:
 					os.sched_setaffinity(0, affinity)
-				except OSError as e:
+				except (OSError, ValueError) as e:
 					raise AwlSimError("Failed to set host CPU "
 						"affinity to %s: %s" % (
 						affinity, str(e)))

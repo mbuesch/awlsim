@@ -26,6 +26,7 @@ from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
 import os
+import multiprocessing
 
 
 __all__ = [
@@ -85,10 +86,16 @@ class AwlSimEnv(object):
 		Returns a list of host CPU indices or an empty list,
 		if all host CPUs are allowed.
 		"""
-		affinity = cls.__getVar("AFFINITY", "")
+		affinityStr = cls.__getVar("AFFINITY", "")
+		affinity = []
 		try:
-			affinity = [ int(cpuIndex)
-				     for cpuIndex in affinity.split(",") ]
+			for cpuIndex in affinityStr.split(","):
+				cpuIndex = int(cpuIndex)
+				if cpuIndex < 0:
+					cpuIndex = multiprocessing.cpu_count() + cpuIndex
+				if cpuIndex < 0:
+					cpuIndex = 0
+				affinity.append(cpuIndex)
 		except ValueError as e:
 			affinity = []
 		return affinity
