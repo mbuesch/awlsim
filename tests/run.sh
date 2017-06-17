@@ -242,7 +242,22 @@ setup_test_environment()
 	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 
 	# Disable Python optimization so that assert statements are enabled.
-	export PYTHONOPTIMIZE=
+	# Enable hash seed randomization.
+	unset PYTHONSTARTUP
+	unset PYTHONY2K
+	unset PYTHONOPTIMIZE
+	unset PYTHONDEBUG
+	unset PYTHONDONTWRITEBYTECODE
+	unset PYTHONINSPECT
+	unset PYTHONIOENCODING
+	unset PYTHONNOUSERSITE
+	unset PYTHONUNBUFFERED
+	unset PYTHONVERBOSE
+	unset PYTHONWARNINGS
+	export PYTHONHASHSEED=random
+
+	# Disable CPU affinity
+	unset AWLSIM_AFFINITY
 
 	RET="$interpreter"
 }
