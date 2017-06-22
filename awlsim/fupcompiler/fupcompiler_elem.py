@@ -240,9 +240,10 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		assert(self.compileState != self.NOT_COMPILED)
 		varName = self.__resultVkeVarName
 		if not varName:
-			raise AwlSimError("FUP compiler: Result of a "
-				"compiled element has not been stored "
-				"to a TEMP variable.")
+			raise AwlSimError("FUP compiler: Result of the "
+				"compiled element %s has not been stored "
+				"to a TEMP variable." % (
+				str(self)))
 		opDesc = self.opTrans.translateFromString("#" + varName)
 		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
 
