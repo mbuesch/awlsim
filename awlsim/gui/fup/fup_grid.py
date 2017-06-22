@@ -61,6 +61,7 @@ class FupGrid_factory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		self.grid.renumberWires()
 		wireTags = []
 		for wire in sorted(self.grid.wires, key=lambda w: w.idNum):
 			wireTags.extend(wire.factory(wire=wire).composer_getTags())
@@ -224,7 +225,8 @@ class FupGrid(object):
 	def renumberWires(self):
 		"""Re-assign all wire idNums.
 		"""
-		for i, wire in enumerate(self.wires):
+		for i, wire in enumerate(sorted(self.wires,
+						key=lambda w: w.idNum)):
 			wire.idNum = i
 
 	def checkWireLine(self, painter, excludeWires, lineSeg):
