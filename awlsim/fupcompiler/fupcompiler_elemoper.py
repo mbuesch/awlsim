@@ -120,21 +120,31 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	def _doCompile(self):
 		insns = []
 
-		insnClass = self.__insnClass
-		if not insnClass:
-			# This shall never happen.
-			raise AwlSimError("FUP LOAD: Load without a "
-				"known instruction class at %s." % (
-				str(self)))
-
-		# Translate the LOAD operand and create the
-		# corresponding instruction.
+		# Translate the operator
 		if not self.content.strip():
 			raise AwlSimError("FUP LOAD: Found empty load operator: %s" % (
 				str(self)))
 		opDesc = self.opTrans.translateFromString(self.content)
 		self._operator = opDesc.operator
-		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
+
+		insnClass = self.__insnClass
+		if not insnClass:
+			# No instruction class has been set.
+			# Infer the instruction class from the operator.
+			# Note that this can't distinguish between different
+			# boolean types and always uses U.
+			if self._operator.width == 0:
+				#TODO: Symbolic operators have to be resolved.
+				raise AwlSimError("FUP LOAD: Do not know how to "
+					"handle symbolic operator: %s" % (
+					str(self)))
+			elif self._operator.width == 1:
+				insnClass = AwlInsn_U
+			else:
+				insnClass = AwlInsn_L
+
+		# Create the LOAD instruction.
+		insns.append(insnClass(cpu=None, ops=[self._operator]))
 
 		return insns
 
@@ -153,6 +163,44 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 	def _doCompile(self):
 		insns = []
 
+		# Get the element that is connected to this operator.
+		otherElem = self.__getConnectedElem()
+
+		# Translate the operator.
+		# Do this before compiling the connected element so that
+		# the operator is available to the element.
+		self.__translateContent()
+
+		# Compile the element connected to the input.
+		if otherElem.compileState == self.NOT_COMPILED:
+			insns.extend(otherElem.compile())
+		else:
+			if not self.__storeEmitted:
+				insns.extend(otherElem._loadFromTemp(AwlInsn_U))
+		if not self.__storeEmitted:
+			# This assign operator has not been emitted, yet.
+			# Do a VKE store now.
+			insns.extend(self.emitStore_VKE())
+
+			# Compile additional assign operators.
+			# This is an optimization to avoid additional compilations
+			# of the whole tree. We just assign the VKE once again.
+			#FIXME this might lead to problems in evaluation order, if we have a branch with interleaved assigns and other elems.
+			conn = getany(self.connections)
+			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
+				if otherElem.elemType == self.TYPE_OPERAND and\
+				   otherElem.subType == self.SUBTYPE_ASSIGN:
+					otherElem.compileState = self.COMPILE_RUNNING
+					opDesc = self.opTrans.translateFromString(otherElem.content)
+					insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
+					otherElem.compileState = self.COMPILE_DONE
+
+		return insns
+
+	def __getConnectedElem(self):
+		"""Get the element that is connected to this operator element.
+		"""
+
 		# Only one connection allowed per ASSIGN.
 		if len(self.connections) != 1:
 			raise AwlSimError("FUP ASSIGN: Invalid number of "
@@ -166,51 +214,53 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 				"properties in '%s'." % (
 				str(self)))
 
-		# Get the element that is connected to this operator.
+		conn = getany(self.connections)
 		otherElem = conn.getConnectedElem(viaOut=True)
+		return otherElem
 
-		# Translate the operator.
-		# Do this before compiling the connected element so that
-		# the operator is available to the element.
+	def __translateContent(self):
+		"""Translate the element content and create self._operator,
+		if not already done so.
+		"""
+		if self._operator:
+			return
 		if not self.content.strip():
 			raise AwlSimError("FUP ASSIGN: Found empty assignment operator %s "
 				"that is connected to %s" % (
-				str(self), str(otherElem)))
+				str(self), str(self.__getConnectedElem())))
 		opDesc = self.opTrans.translateFromString(self.content)
 		self._operator = opDesc.operator
 
-		# Compile the element connected to the input.
-		if otherElem.compileState == self.NOT_COMPILED:
-			insns.extend(otherElem.compile())
-		else:
-			insns.extend(otherElem._loadFromTemp(AwlInsn_U))
-
-		if not self.__storeEmitted:
-			insns.extend(self.emitStore_VKE())
-
-		return insns
-
 	def emitStore_VKE(self):
+		"""Emit a VKE store instruction (=) for this operator element.
+		This does not check whether the operator actually is a boolean operator.
+		A list of instructions is returned.
+		"""
 		insns = []
 
-		conn = getany(self.connections)
-		otherElem = conn.getConnectedElem(viaOut=True)
+		# Translate the assign operator content, if not already done so.
+		self.__translateContent()
 
 		# Create the ASSIGN instruction.
 		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[self._operator]))
+		otherElem = self.__getConnectedElem()
 		insns.extend(otherElem._mayStoreToTemp())
 
-		# Compile additional assign operators.
-		# This is an optimization to avoid additional compilations
-		# of the whole tree. We just assign the VKE once again.
-		#FIXME this might lead to problems in evaluation order, if we have a branch with interleaved assigns and other elems.
-		for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
-			if otherElem.elemType == self.TYPE_OPERAND and\
-			   otherElem.subType == self.SUBTYPE_ASSIGN:
-				otherElem.compileState = self.COMPILE_RUNNING
-				opDesc = self.opTrans.translateFromString(otherElem.content)
-				insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
-				otherElem.compileState = self.COMPILE_DONE
+		self.__storeEmitted = True
+		return insns
+
+	def emitStore_ACCU(self):
+		"""Emit an ACCU store instruction (T) for this operator element.
+		This does not check whether the operator actually is a non-bool operator.
+		A list of instructions is returned.
+		"""
+		insns = []
+
+		# Translate the assign operator content, if not already done so.
+		self.__translateContent()
+
+		# Create a transfer instruction.
+		insns.append(AwlInsn_T(cpu=None, ops=[self._operator]))
 
 		self.__storeEmitted = True
 		return insns
