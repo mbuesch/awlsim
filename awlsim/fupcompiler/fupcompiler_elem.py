@@ -85,11 +85,13 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	EnumGen.start
 	TYPE_BOOLEAN		= EnumGen.item
 	TYPE_OPERAND		= EnumGen.item
+	TYPE_MOVE		= EnumGen.item
 	EnumGen.end
 
 	str2type = {
 		"boolean"	: TYPE_BOOLEAN,
 		"operand"	: TYPE_OPERAND,
+		"move"		: TYPE_MOVE,
 	}
 
 	@classmethod
@@ -111,6 +113,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	def parse(cls, grid, x, y, elemType, subType, content):
 		from awlsim.fupcompiler.fupcompiler_elembool import FupCompiler_ElemBool
 		from awlsim.fupcompiler.fupcompiler_elemoper import FupCompiler_ElemOper
+		from awlsim.fupcompiler.fupcompiler_elemmove import FupCompiler_ElemMove
 		try:
 			elemType = cls.str2type[elemType]
 			if elemType == cls.TYPE_BOOLEAN:
@@ -120,6 +123,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 								  content=content)
 			elif elemType == cls.TYPE_OPERAND:
 				return FupCompiler_ElemOper.parse(grid=grid,
+								  x=x, y=y,
+								  subType=subType,
+								  content=content)
+			elif elemType == cls.TYPE_MOVE:
+				return FupCompiler_ElemMove.parse(grid=grid,
 								  x=x, y=y,
 								  subType=subType,
 								  content=content)
