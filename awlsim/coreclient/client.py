@@ -47,9 +47,12 @@ class MsgWaiter(object):
 		self.rxMsg = None
 
 	def receiveMsg(self, rxMsg):
-		if self.checkCallback(rxMsg):
-			self.rxMsg = rxMsg
-			return True
+		if rxMsg is None:
+			return False
+		if self.rxMsg is None:
+			if self.checkCallback(rxMsg):
+				self.rxMsg = rxMsg
+				return True
 		return False
 
 class AwlSimClient(object):
@@ -359,6 +362,7 @@ class AwlSimClient(object):
 				self.__transceiver.peerInfoString)
 		if not msg:
 			return False
+		printDebug("AwlSimClient: Received message 0x%04X" % msg.msgId)
 		for waiter in self.__msgWaiters:
 			if waiter.receiveMsg(msg):
 				break
@@ -375,6 +379,7 @@ class AwlSimClient(object):
 		time.sleep(seconds)
 
 	def __send(self, txMsg):
+		printDebug("AwlSimClient: Sending message 0x%04X" % txMsg.msgId)
 		try:
 			self.__transceiver.send(txMsg)
 		except TransferError as e:
