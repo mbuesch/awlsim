@@ -218,8 +218,10 @@ class FupDrawWidget(QWidget):
 	def __dynGridExpansion(self):
 		"""Expand the grid, if required.
 		"""
-		maxWidth = max(e.x + e.width for e in self.__grid.elems)
-		maxHeight = max(e.y + e.height for e in self.__grid.elems)
+		maxWidth = maxHeight = 0
+		if self.__grid.elems:
+			maxWidth = max(e.x + e.width for e in self.__grid.elems)
+			maxHeight = max(e.y + e.height for e in self.__grid.elems)
 		gridWidth = max(maxWidth + self.__gridClearance[0],
 				self.__gridMinSize[0])
 		gridHeight = max(maxHeight + self.__gridClearance[1],
