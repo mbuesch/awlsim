@@ -135,17 +135,18 @@ class OnlineData(QObject):
 
 	def handle_IDENTS(self, msg):
 		# Parse the symbol table sources
-		symTabCache = {}
+		newSymTabCache = {}
 		symTabList = []
 		for symTabSrc in msg.symTabSources:
 			identHash = symTabSrc.identHash
 			symTab = self.__symTabCache.get(identHash, None)
 			if symTab is None:
 				symTab = self.__getSymTabByIdent(identHash)
-			symTabCache[identHash] = symTab
+			newSymTabCache[identHash] = symTab
+			self.__symTabCache[identHash] = symTab
 			if symTab is not None:
 				symTabList.append((symTabSrc, symTab))
-		self.__symTabCache = symTabCache
+		self.__symTabCache = newSymTabCache
 		self.symTabsUpdate.emit(symTabList)
 
 class GuiAwlSimClient(AwlSimClient, QObject):
