@@ -32,7 +32,6 @@ from awlsim.gui.fup.fup_grid import *
 class FupContextMenu(QMenu):
 	"""FUP/FBD draw widget context menu."""
 
-	add = Signal(FupElem)
 	edit = Signal()
 	remove = Signal()
 	addInput = Signal()
@@ -46,23 +45,6 @@ class FupContextMenu(QMenu):
 		self.gridX = 0
 		self.gridY = 0
 
-		self.__actInsAND = self.addAction(getIcon("doc_new"),
-						  "Insert &AND", self.__addAND)
-		self.__actInsOR = self.addAction(getIcon("doc_new"),
-						 "Insert &OR", self.__addOR)
-		self.__actInsXOR = self.addAction(getIcon("doc_new"),
-						  "Insert &XOR", self.__addXOR)
-		self.addSeparator()
-		self.__actInsMOVE = self.addAction(getIcon("doc_new"),
-						   "Insert &MOVE box",
-						   self.__addMOVE)
-		self.__actInsLOAD = self.addAction(getIcon("doc_new"),
-						   "Insert &LOAD operand",
-						   self.__addLOAD)
-		self.__actInsASSIGN = self.addAction(getIcon("doc_new"),
-						     "Insert A&SSIGN operand",
-						     self.__addASSIGN)
-		self.addSeparator()
 		self.__actEdit = self.addAction(getIcon("doc_edit"),
 						"&Edit element...",
 						self.__edit)
@@ -82,24 +64,6 @@ class FupContextMenu(QMenu):
 						       "&Disconnect wire",
 						       self.__disconnWire)
 
-	def __addAND(self):
-		self.add.emit(FupElem_AND(self.gridX, self.gridY))
-
-	def __addOR(self):
-		self.add.emit(FupElem_OR(self.gridX, self.gridY))
-
-	def __addXOR(self):
-		self.add.emit(FupElem_XOR(self.gridX, self.gridY))
-
-	def __addMOVE(self):
-		self.add.emit(FupElem_MOVE(self.gridX, self.gridY))
-
-	def __addLOAD(self):
-		self.add.emit(FupElem_LOAD(self.gridX, self.gridY))
-
-	def __addASSIGN(self):
-		self.add.emit(FupElem_ASSIGN(self.gridX, self.gridY))
-
 	def __edit(self):
 		self.edit.emit()
 
@@ -117,13 +81,6 @@ class FupContextMenu(QMenu):
 
 	def __disconnWire(self):
 		self.disconnWire.emit()
-
-	def enableInsert(self, en=True):
-		self.__actInsAND.setEnabled(en)
-		self.__actInsOR.setEnabled(en)
-		self.__actInsXOR.setEnabled(en)
-		self.__actInsLOAD.setEnabled(en)
-		self.__actInsASSIGN.setEnabled(en)
 
 	def enableEdit(self, en=True):
 		self.__actEdit.setEnabled(en)
@@ -161,7 +118,6 @@ class FupDrawWidget(QWidget):
 		self.__repaintBlocked = Blocker()
 
 		self.__contextMenu = FupContextMenu(self)
-		self.__contextMenu.add.connect(self.addElem)
 		self.__contextMenu.remove.connect(self.removeElems)
 		self.__contextMenu.edit.connect(self.editElems)
 		self.__contextMenu.addInput.connect(self.addElemInput)
@@ -374,7 +330,7 @@ class FupDrawWidget(QWidget):
 			p.drawText(x, y, width - x, height - y,
 				   Qt.AlignLeft | Qt.AlignTop,
 				   "Hints:\n"
-				   "* Right-click here to insert FUP/FBD elements\n"
+				   "* To add elements drag&drop them from the FUP/FBD library to the grid\n"
 				   "* Left-drag to connect inputs and outputs\n"
 				   "* Middle-click to delete connections and wires\n"
 				   "* Double-click onto inputs or outputs to create operand boxes")
@@ -526,7 +482,6 @@ class FupDrawWidget(QWidget):
 			self.__grid.selectElem(elem)
 			self.repaint()
 			# Open the context menu
-			self.__contextMenu.enableInsert(elem is None)
 			self.__contextMenu.enableRemove(elem is not None)
 			self.__contextMenu.enableEdit(False)
 			self.__contextMenu.enableAddInput(False)
