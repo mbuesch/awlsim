@@ -271,7 +271,7 @@ class FupCompiler(object):
 		if paramLines:
 			awlLines[-1] += " ("
 			awlLines.extend(paramLines)
-			awlLines.append(")")
+			awlLines.append("\t)")
 
 		awlString = "\r\n".join(awlLines)
 		awlSource = AwlSource(name=("CALL " + self.fupSource.name))

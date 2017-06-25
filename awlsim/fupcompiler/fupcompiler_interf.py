@@ -201,8 +201,16 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			fieldComment = field.comment.strip()
 			if fieldComment:
 				comment.append(fieldComment)
-			awlLines.append("\t%s\t:= ... ,%s" % (
-				field.name,
+			fieldName = field.name.strip()
+			if len(fieldName) >= 16:
+				indent = " "
+			elif len(fieldName) >= 8:
+				indent = "\t"
+			else:
+				indent = "\t\t"
+			awlLines.append("\t\t%s%s:= ... ,%s" % (
+				fieldName,
+				indent,
 				("  // %s" % "; ".join(comment)) if comment else ""))
 		return awlLines
 
@@ -214,13 +222,13 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		awlLines = []
 
 		if self.inFields:
-			awlLines.append("\t// VAR_INPUT")
+			awlLines.append("\t\t// VAR_INPUT")
 			awlLines.extend(self.__generateAssigns(self.inFields))
 		if self.outFields:
-			awlLines.append("\t// VAR_OUTPUT")
+			awlLines.append("\t\t// VAR_OUTPUT")
 			awlLines.extend(self.__generateAssigns(self.outFields))
 		if self.inOutFields:
-			awlLines.append("\t// VAR_IN_OUT")
+			awlLines.append("\t\t// VAR_IN_OUT")
 			awlLines.extend(self.__generateAssigns(self.inOutFields))
 
 		return awlLines

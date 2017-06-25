@@ -211,9 +211,9 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		awlLines = []
 
 		if self.blockType == "FC":
-			awlLines.append("CALL %s" % self.blockName)
+			awlLines.append("\tCALL %s" % self.blockName)
 		elif self.blockType == "FB":
-			awlLines.append("CALL %s, DB ..." % self.blockName)
+			awlLines.append("\tCALL %s, DB ..." % self.blockName)
 		else:
 			raise AwlSimError("FupCompiler_BlockDecl: Cannot generate "
 				"CALL to %s block." % (
