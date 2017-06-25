@@ -26,16 +26,16 @@ from awlsim.common.sources import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.cpuconfig import *
 
-#from awlsim.core.cpu cimport * #@cy
-from awlsim.core.cpu import * #@nocy
+from awlsim.core.cpu import * #+cimport
+from awlsim.core.operators import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
+
+from awlsim.core.instructions.all_insns import * #+cimport
 
 from awlsim.fupcompiler.fupcompiler_blockdecl import *
 from awlsim.fupcompiler.fupcompiler_interf import *
 from awlsim.fupcompiler.fupcompiler_grid import *
 from awlsim.fupcompiler.fupcompiler_elem import *
-
-#from awlsim.core.instructions.all_insns cimport * #@cy
-from awlsim.core.instructions.all_insns import * #@nocy
 
 
 class FupFakeCpu(S7CPU):
@@ -135,6 +135,38 @@ class FupCompiler(object):
 				labelMax))
 		self.__labelCounter += 1
 		return "L%03X" % labelCounter
+
+	def getOperDataWidth(self, oper):
+		"""Helper function to get the data type width (in bits)
+		of an operator. This will first attempt to resolve the operator,
+		if it is symbolic.
+		"""
+		from awlsim.core.datatypes import AwlDataType
+
+		if oper.width > 0:
+			return oper.width
+		if oper.operType == AwlOperatorTypes.NAMED_LOCAL:
+			# Get the type of an interface field
+			# and return its bit width.
+			fieldName = str(oper.offset.identChain)
+			field = self.interf.getFieldByName(fieldName)
+			if not field:
+				raise AwlSimError("FUP compiler: Interface field "
+					"'#%s' could not be found in the "
+					"declared interface." % (
+					fieldName))
+			dataType = AwlDataType.makeByName(field.typeStr)
+			if dataType:
+				return dataType.width
+		elif oper.operType == AwlOperatorTypes.SYMBOLIC:
+			# Get the type of a classic symbolic operator
+			# and return its bit width.
+			fieldName = str(oper.offset.identChain)
+			pass#TODO
+			raise AwlSimError("FUP compiler: The symbolic operator \"%s\" is "
+				"not supported, yet." % (
+				fieldName))
+		return 0
 
 	def __parse(self):
 		try:
