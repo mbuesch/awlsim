@@ -255,3 +255,25 @@ class FupCompiler(object):
 				pass
 			return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_DE)
 		return self.__trycompile(fupSource, mnemonics)
+
+	def generateCallTemplate(self):
+		"""Generate template AWL code for a CALL operation
+		to this block.
+		Returns an AwlSource.
+		"""
+		if not self.fupSource:
+			raise AwlSimError("FUP/FBD source is not compiled.")
+
+		awlLines = []
+		awlLines.extend(self.decl.generateCallTemplate())
+
+		paramLines = self.interf.generateCallTemplate()
+		if paramLines:
+			awlLines[-1] += " ("
+			awlLines.extend(paramLines)
+			awlLines.append(")")
+
+		awlString = "\r\n".join(awlLines)
+		awlSource = AwlSource(name=("CALL " + self.fupSource.name))
+		awlSource.sourceBytes = awlString.encode(AwlSource.ENCODING)
+		return awlSource

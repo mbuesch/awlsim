@@ -190,3 +190,37 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 
 		self.compileState = self.COMPILE_DONE
 		return awlLines
+
+	def __generateAssigns(self, fields):
+		awlLines = []
+		for field in fields:
+			typeStr = field.typeStr.strip()
+			comment = []
+			if typeStr:
+				comment.append(typeStr)
+			fieldComment = field.comment.strip()
+			if fieldComment:
+				comment.append(fieldComment)
+			awlLines.append("\t%s\t:= ... ,%s" % (
+				field.name,
+				("  // %s" % "; ".join(comment)) if comment else ""))
+		return awlLines
+
+	def generateCallTemplate(self):
+		"""Generate template AWL code for a CALL operation
+		to this block.
+		Returns a list of AWL lines.
+		"""
+		awlLines = []
+
+		if self.inFields:
+			awlLines.append("\t// VAR_INPUT")
+			awlLines.extend(self.__generateAssigns(self.inFields))
+		if self.outFields:
+			awlLines.append("\t// VAR_OUTPUT")
+			awlLines.extend(self.__generateAssigns(self.outFields))
+		if self.inOutFields:
+			awlLines.append("\t// VAR_IN_OUT")
+			awlLines.extend(self.__generateAssigns(self.inOutFields))
+
+		return awlLines

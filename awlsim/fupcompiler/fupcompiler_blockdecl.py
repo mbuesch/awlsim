@@ -201,3 +201,22 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 
 		self.compileState = self.COMPILE_DONE
 		return blockHeader, blockFooter, instDBs
+
+
+	def generateCallTemplate(self):
+		"""Generate template AWL code for a CALL operation
+		to this block.
+		Returns a list of AWL lines.
+		"""
+		awlLines = []
+
+		if self.blockType == "FC":
+			awlLines.append("CALL %s" % self.blockName)
+		elif self.blockType == "FB":
+			awlLines.append("CALL %s, DB ..." % self.blockName)
+		else:
+			raise AwlSimError("FupCompiler_BlockDecl: Cannot generate "
+				"CALL to %s block." % (
+				self.blockType))
+
+		return awlLines
