@@ -127,6 +127,16 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			pass#TODO
 			raise AwlSimError("MOVEBOX: Store to temp is not implemented, yet")
 
+		# Make sure BIE is set, if EN is not connected and ENO is connected.
+		if not conn_EN.isConnected and conn_ENO.isConnected:
+			# Set VKE=1 and create a dummy SPBNB to
+			# set BIE=1 and /ER=0.
+			# The SPBNB branch is never taken due to VKE=1.
+			insns.append(AwlInsn_SET(cpu=None, ops=[]))
+			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
+			oper.immediateStr = endLabel
+			insns.append(AwlInsn_SPBNB(cpu=None, ops=[oper]))
+
 		# Create the jump target label for EN=0.
 		oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 		oper.immediate = 0
