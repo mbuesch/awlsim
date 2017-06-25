@@ -580,7 +580,12 @@ class AwlInterfaceModel(AbstractTableModel):
 
 			# Set the field data
 			if self.__isColumn_name(column):
-				field.name = value.strip()
+				name = value.strip()
+				if name.startswith("#"):
+					# Permit the user to add the # prefix,
+					# but remove it automatically.
+					name = name[1:]
+				field.name = name
 			elif self.__isColumn_type(column):
 				# Try to parse the type and use the actual type name
 				# But only do this, if the type does not start with
