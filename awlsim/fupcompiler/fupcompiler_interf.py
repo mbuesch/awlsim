@@ -123,6 +123,16 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			if field:
 				yield field
 
+	def getFieldByName(self, fieldName):
+		"""Get an interface field by name.
+		Returns an FupCompiler_InterfField instance
+		or None, if there is no such field.
+		"""
+		for field in self.allFields:
+			if field.name == fieldName:
+				return field
+		return None
+
 	def allocTEMP(self, dataTypeName="BOOL", name=None):
 		"""Allocate an additional TEMP field.
 		'dataTypeName' is the data type to create.
