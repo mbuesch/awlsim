@@ -25,6 +25,9 @@ from awlsim.common.compat import *
 from awlsim.fupcompiler.fupcompiler_elem import *
 from awlsim.fupcompiler.fupcompiler_elemoper import *
 
+from awlsim.core.operators import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
+
 from awlsim.core.instructions.all_insns import * #+cimport
 
 import re
@@ -82,8 +85,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				# This generates:  U #EN
 				insns.extend(otherElem.compileOperLoad(
 						AwlInsn_U,
-						{ FupCompiler_Conn.TYPE_VKE,
-						  FupCompiler_Conn.TYPE_SYMBOLIC, }))
+						{ FupCompiler_Conn.TYPE_VKE, }))
 			elif otherElem.elemType == self.TYPE_BOOLEAN:
 				# The other element we get the signal from
 				# is a boolean element. Compile this to get its
@@ -104,8 +106,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			insns.extend(otherElem.compile())
 		else:
 			insns.extend(otherElem._loadFromTemp(AwlInsn_L))
-		if conn_IN.connType not in {FupCompiler_Conn.TYPE_ACCU,
-					    FupCompiler_Conn.TYPE_SYMBOLIC}:
+		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise AwlSimError("FUP compiler: The IN connection "
 				"of the FUP move box %s must not be connected "
 				"to a bit (VKE) wire." % (

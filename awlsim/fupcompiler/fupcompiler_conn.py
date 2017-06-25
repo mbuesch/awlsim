@@ -67,7 +67,6 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 	TYPE_UNKNOWN	= EnumGen.item
 	TYPE_VKE	= EnumGen.item # Bit operation
 	TYPE_ACCU	= EnumGen.item # Byte/word/dword operation
-	TYPE_SYMBOLIC	= EnumGen.item # Symbolic operator
 	EnumGen.end
 
 	# Wire-ID used for unconnected connections
@@ -96,8 +95,6 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		"""Get the connection type.
 		This returns whether this connection is VKE based (TYPE_VKE)
 		or accu based (TYPE_ACCU).
-		If this connection is wired to an unresolved symbolic operator,
-		TYPE_SYMBOLIC is returned.
 		If the type is unknown TYPE_UNKNOWN is returned.
 		"""
 		return self.elem.getConnType(self)

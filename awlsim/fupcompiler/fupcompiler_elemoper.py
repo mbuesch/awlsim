@@ -24,6 +24,9 @@ from awlsim.common.compat import *
 
 from awlsim.fupcompiler.fupcompiler_elem import *
 
+from awlsim.core.operators import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
+
 from awlsim.core.instructions.all_insns import * #+cimport
 
 
@@ -67,15 +70,28 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		# The translated operator, if any, yet.
 		# This will be available after compilation of this element.
 		self._operator = None
+		self.__operatorWidth = None
+
+	@property
+	def operatorWidth(self):
+		if self.__operatorWidth is None:
+			if self._operator:
+				# Get the width of a possibly symbolic operator.
+				compiler = self.grid.compiler
+				width = compiler.getOperDataWidth(self._operator)
+				self.__operatorWidth = width
+				return width
+		else:
+			return self.__operatorWidth
+		# Unknown width
+		return 0
 
 	def getConnType(self, conn):
-		if (conn in self.connections or conn is None) and\
-		   self._operator:
-			if self._operator.width == 0:
-				return FupCompiler_Conn.TYPE_SYMBOLIC
-			elif self._operator.width == 1:
+		if conn in self.connections or conn is None:
+			operWidth = self.operatorWidth
+			if operWidth == 1:
 				return FupCompiler_Conn.TYPE_VKE
-			else:
+			elif operWidth in {8, 16, 32}:
 				return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
 
@@ -133,15 +149,14 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 			# Infer the instruction class from the operator.
 			# Note that this can't distinguish between different
 			# boolean types and always uses U.
-			if self._operator.width == 0:
-				#TODO: Symbolic operators have to be resolved.
-				raise AwlSimError("FUP LOAD: Do not know how to "
-					"handle symbolic operator: %s" % (
-					str(self)))
-			elif self._operator.width == 1:
+			if self.operatorWidth == 1:
 				insnClass = AwlInsn_U
-			else:
+			elif self.operatorWidth in {8, 16, 32}:
 				insnClass = AwlInsn_L
+			else:
+				raise AwlSimError("FUP LOAD: Invalid operator width %d "
+					"in load operator: %s" % (
+					self.operatorWidth, str(self)))
 
 		# Create the LOAD instruction.
 		insns.append(insnClass(cpu=None, ops=[self._operator]))

@@ -25,6 +25,9 @@ from awlsim.common.compat import *
 from awlsim.fupcompiler.fupcompiler_elem import *
 from awlsim.fupcompiler.fupcompiler_elemoper import *
 
+from awlsim.core.operators import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
+
 from awlsim.core.instructions.all_insns import * #+cimport
 
 
@@ -85,8 +88,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				# This generates:  U #oper , O #oper or something similar.
 				insns.extend(otherElem.compileOperLoad(
 						insnClass,
-						{ FupCompiler_Conn.TYPE_VKE,
-						  FupCompiler_Conn.TYPE_SYMBOLIC, }))
+						{ FupCompiler_Conn.TYPE_VKE, }))
 			elif otherElem.elemType == self.TYPE_BOOLEAN:
 				# The other element we get the signal from
 				# is a boolean element. Compile this to get its
