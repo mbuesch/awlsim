@@ -418,10 +418,89 @@ class AwlInterfaceModel(AbstractTableModel):
 		self.contentChanged.emit()
 
 	def moveEntry(self, fromRow, toRow):
-		self.beginResetModel()
-		pass#TODO
-		self.endResetModel()
-		self.contentChanged.emit()
+		if fromRow == toRow:
+			return
+
+		if toRow > fromRow:
+			toRow += 1
+
+		fromList = fromListIndex = None
+		toList = toListIndex = None
+
+		# Get the from-list
+		localRow = fromRow
+		if self.__isRow_IN(fromRow):
+			fromList = self.interf.inFields
+			fromListIndex = localRow
+		localRow -= self.__nrRows_IN
+		if self.__isRow_OUT(fromRow):
+			fromList = self.interf.outFields
+			fromListIndex = localRow
+		localRow -= self.__nrRows_OUT
+		if self.__isRow_INOUT(fromRow):
+			fromList = self.interf.inOutFields
+			fromListIndex = localRow
+		localRow -= self.__nrRows_INOUT
+		if self.__isRow_STAT(fromRow):
+			fromList = self.interf.statFields
+			fromListIndex = localRow
+		localRow -= self.__nrRows_STAT
+		if self.__isRow_TEMP(fromRow):
+			fromList = self.interf.tempFields
+			fromListIndex = localRow
+
+		# Get the to-list
+		localRow = toRow
+		if self.__isRow_IN(toRow):
+			toList = self.interf.inFields
+			toListIndex = localRow
+		if self.__isRow_newIN(toRow):
+			toList = self.interf.inFields
+			toListIndex = len(toList)
+		localRow -= self.__nrRows_IN
+		if self.__isRow_OUT(toRow):
+			toList = self.interf.outFields
+			toListIndex = localRow
+		if self.__isRow_newOUT(toRow):
+			toList = self.interf.outFields
+			toListIndex = len(toList)
+		localRow -= self.__nrRows_OUT
+		if self.__isRow_INOUT(toRow):
+			toList = self.interf.inOutFields
+			toListIndex = localRow
+		if self.__isRow_newINOUT(toRow):
+			toList = self.interf.inOutFields
+			toListIndex = len(toList)
+		localRow -= self.__nrRows_INOUT
+		if self.__isRow_STAT(toRow):
+			toList = self.interf.statFields
+			toListIndex = localRow
+		if self.__isRow_newSTAT(toRow):
+			toList = self.interf.statFields
+			toListIndex = len(toList)
+		localRow -= self.__nrRows_STAT
+		if self.__isRow_TEMP(toRow):
+			toList = self.interf.tempFields
+			toListIndex = localRow
+		if self.__isRow_newTEMP(toRow):
+			toList = self.interf.tempFields
+			toListIndex = len(toList)
+
+		# If we have both a from-list and a to-list
+		# remove the field from the from-list
+		# and insert it into the to-list.
+		if fromList is not None and toList is not None:
+			self.beginResetModel()
+
+			if fromList is toList and\
+			   fromListIndex < toListIndex:
+				toListIndex -= 1
+
+			field = fromList.pop(fromListIndex)
+			toList.insert(toListIndex, field)
+
+			self.endResetModel()
+			self.contentChanged.emit()
 
 	def rowCount(self, parent=QModelIndex()):
 		return sum((self.__nrRows_IN,
