@@ -337,6 +337,7 @@ class FupGrid(object):
 		if not checkOnly:
 			elem.x = toX
 			elem.y = toY
+			elem.checkWireCollisions()
 		return True
 
 	def getElemAt(self, x, y):

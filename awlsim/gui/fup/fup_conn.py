@@ -223,6 +223,13 @@ class FupConn(FupBaseClass):
 			return self.elem.removeConn(self)
 		return False
 
+	def checkWireCollisions(self):
+		"""Mark the wire as must-check-collisions.
+		The collision check will be done at the next wire re-draw.
+		"""
+		if self.wire:
+			self.wire.checkCollisions()
+
 class FupConnIn(FupConn):
 	"""FUP/FBD element input connection"""
 	IN = True

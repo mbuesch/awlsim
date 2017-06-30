@@ -153,6 +153,13 @@ class FupElem(FupBaseClass):
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
 
+	def checkWireCollisions(self):
+		"""Mark all wires connected to all connections as must-check-collisions.
+		The collision check will be done at the next wire re-draw.
+		"""
+		for conn in itertools.chain(self.inputs, self.outputs):
+			conn.checkWireCollisions()
+
 	def matchCloseConns(self, otherElem):
 		"""Get a set of (selfConn, otherConn) pairs of connections
 		that are close and could possibly be connected easily.

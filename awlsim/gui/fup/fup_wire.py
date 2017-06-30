@@ -92,6 +92,15 @@ class FupWire(FupBaseClass):
 		self.__wireBranchPen.setWidth(1)
 		self.__wireBranchBrush = QBrush(QColor("#000000"))
 
+		self.checkCollisions()
+
+	def checkCollisions(self):
+		"""Mark the wire as must-check-collisions.
+		The collision check will be done at the next re-draw.
+		"""
+		self.__checkCollisions = True
+		self.__hasCollision = False
+
 	def connect(self, conn):
 		"""Add a connection to this wire.
 		"""
@@ -106,6 +115,7 @@ class FupWire(FupBaseClass):
 		conn.wire = self
 		if conn.OUT:
 			self.outConn = conn
+		self.checkCollisions()
 
 	def disconnectAll(self):
 		"""Disconenct all connections.
@@ -115,6 +125,7 @@ class FupWire(FupBaseClass):
 		self.connections.clear()
 		self.outConn = None
 		self.grid.removeWire(self)
+		self.checkCollisions()
 
 	def disconnect(self, conn):
 		"""Disconnect a connection from this wire.
@@ -129,6 +140,7 @@ class FupWire(FupBaseClass):
 			self.disconnectAll()
 		if not self.connections and not self.outConn:
 			self.grid.removeWire(self)
+		self.checkCollisions()
 
 	class DrawInfo(object):
 		usesDirect = False
@@ -185,17 +197,29 @@ class FupWire(FupBaseClass):
 			painter.setPen(pen)
 			grid.drawWireLine(painter, self, seg)
 
+		# Check for wire collisions, if requested.
+		# Store the result for future re-draws.
+		if self.__checkCollisions:
+			hasCollision = 0
+			excludeWires = {self}
+			for drawInfo in wireLines:
+				hasCollision |= int(any(
+					grid.checkWireLine(painter, excludeWires, seg)
+					for seg in drawInfo.segments
+				))
+			self.__hasCollision = bool(hasCollision)
+			self.__checkCollisions = False
+
 		# Draw wire from output to all inputs
 		drawSeg(segStart)
 		for drawInfo in wireLines:
-			if all(not grid.checkWireLine(painter, {self}, seg)
-			       for seg in drawInfo.segments):
-				for seg in drawInfo.segments:
-					drawSeg(seg)
-			else:
+			if self.__hasCollision:
 				drawSeg(drawInfo.segDirect,
 					pen=self.__wireCollidingPen)
 				drawInfo.usesDirect = True
+			else:
+				for seg in drawInfo.segments:
+					drawSeg(seg)
 
 		# Draw the branch circles
 		startIntersections = self.StartIntersections()
