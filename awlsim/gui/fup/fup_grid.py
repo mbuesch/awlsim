@@ -258,6 +258,13 @@ class FupGrid(object):
 				 lineSeg.pointB.xInt, lineSeg.pointB.yInt)
 		self.collisionCacheAdd(self.CollLines((lineSeg,), wire=wire))
 
+	def checkWireCollisions(self):
+		"""Mark all wires as must-check-collisions.
+		The collision check will be done at the next wire re-draw.
+		"""
+		for wire in self.wires:
+			wire.checkCollisions()
+
 	@property
 	def cellPixWidth(self):
 		if self.__drawWidget:

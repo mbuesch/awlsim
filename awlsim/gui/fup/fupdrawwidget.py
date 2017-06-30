@@ -142,6 +142,7 @@ class FupDrawWidget(QWidget):
 
 		# Start grid coordinates of an element drag.
 		self.__dragStart = None
+		self.__checkWireCollAfterDrag = False
 
 		# The dragged connection.
 		self.__draggedConn = None
@@ -510,8 +511,16 @@ class FupDrawWidget(QWidget):
 			connected = any( elem.establishAutoConns()
 					 for elem in self.__grid.selectedElems )
 			self.__dragStart = None
+			# Check wire collisions, if required
+			if self.__checkWireCollAfterDrag:
+				self.__checkWireCollAfterDrag = False
+				self.__grid.checkWireCollisions()
+				# Only repaint, if we are not going to repaint anyway.
+				if not connected:
+					self.repaint()
 			if connected:
 				self.__contentChanged()
+
 
 		# Handle end of connection dragging
 		draggedConn = self.__draggedConn
@@ -588,6 +597,7 @@ class FupDrawWidget(QWidget):
 						self.__dragStart = (gridX, gridY)
 					# Dynamically expand or shrink the grid
 					self.__dynGridExpansion()
+				self.__checkWireCollAfterDrag = True
 				self.repaint()
 
 		# Handle connection dragging
