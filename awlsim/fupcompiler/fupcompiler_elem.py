@@ -147,7 +147,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 		# If this field has already been compiled and the result is
 		# stored in a temp-field, this is the name of that field.
-		self.__resultVkeVarName = None
+		self.__resultVarName = None
 
 	@property
 	def opTrans(self):
@@ -223,20 +223,14 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				str(self), connText))
 		return connections[0]
 
-	def _mayStoreToTemp(self):
+	def _storeToTemp(self, dataTypeName, insnClass):
 		insns = []
 
-		# Check if we need to save the result
-		# for other element inputs.
-		# This is the case, if we have more than one input connection
-		# to 'otherElem's output connection.
-		if any(len(tuple(c.getConnected(getInputs=True))) > 1
-		       for c in self.outConnections):
-			varName = self.grid.compiler.interf.allocTEMP("BOOL")
-			opDesc = self.opTrans.translateFromString("#" + varName)
-			insns.append(AwlInsn_ASSIGN(cpu=None,
-						    ops=[opDesc.operator]))
-			self.__resultVkeVarName = varName
+		varName = self.grid.compiler.interf.allocTEMP(dataTypeName)
+		opDesc = self.opTrans.translateFromString("#" + varName)
+		insns.append(insnClass(cpu=None,
+				       ops=[opDesc.operator]))
+		self.__resultVarName = varName
 
 		return insns
 
@@ -246,7 +240,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		# otherElem has already been compiled and the result has
 		# been stored in TEMP. Use the stored result.
 		assert(self.compileState != self.NOT_COMPILED)
-		varName = self.__resultVkeVarName
+		varName = self.__resultVarName
 		if not varName:
 			raise AwlSimError("FUP compiler: Result of the "
 				"compiled element %s has not been stored "

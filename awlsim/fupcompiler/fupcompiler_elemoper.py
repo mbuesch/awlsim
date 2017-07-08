@@ -259,7 +259,12 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		# Create the ASSIGN instruction.
 		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[self._operator]))
 		otherElem = self.__getConnectedElem()
-		insns.extend(otherElem._mayStoreToTemp())
+
+		# If the other element connected to this operand has more
+		# than one connected element, we need to store the VKE for them.
+		if any(len(tuple(c.getConnected(getInputs=True))) > 1
+		       for c in otherElem.outConnections):
+			insns.extend(otherElem._storeToTemp("BOOL", AwlInsn_ASSIGN))
 
 		self.__storeEmitted = True
 		return insns
