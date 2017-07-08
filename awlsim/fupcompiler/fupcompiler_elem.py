@@ -226,7 +226,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	def _storeToTemp(self, dataTypeName, insnClass):
 		insns = []
 
-		varName = self.grid.compiler.interf.allocTEMP(dataTypeName)
+		varName = self.grid.compiler.interf.allocTEMP(dataTypeName,
+							      elem=self)
 		opDesc = self.opTrans.translateFromString("#" + varName)
 		insns.append(insnClass(cpu=None,
 				       ops=[opDesc.operator]))

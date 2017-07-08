@@ -133,17 +133,21 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 				return field
 		return None
 
-	def allocTEMP(self, dataTypeName="BOOL", name=None):
+	def allocTEMP(self, dataTypeName="BOOL", name=None, elem=None):
 		"""Allocate an additional TEMP field.
 		'dataTypeName' is the data type to create.
 		'name' is the optional name of the new field.
+		'elem' is the optional element that allocates the field.
 		Returns the name string of the allocated field.
 		"""
+		comment = "Allocated by FUP compiler"
+		if elem:
+			comment += " for %s" % str(elem)
 		field = FupCompiler_InterfField(
-			name=name or ("_FUP_COMPILER_temp_%d" % len(self.tempFields)),
+			name=name or ("_FUP_COMP_temp_%d" % len(self.tempFields)),
 			typeStr=dataTypeName,
 			initValueStr="",
-			comment="Allocated by FUP compiler",
+			comment=comment,
 			enableNameCheck=False)
 		self.tempFields.append(field)
 		return field.name
