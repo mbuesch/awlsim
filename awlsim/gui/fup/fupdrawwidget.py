@@ -521,7 +521,6 @@ class FupDrawWidget(QWidget):
 			if connected:
 				self.__contentChanged()
 
-
 		# Handle end of connection dragging
 		draggedConn = self.__draggedConn
 		if draggedConn:

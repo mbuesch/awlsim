@@ -74,6 +74,18 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				"in FUP move box %s." % (
 				str(self)))
 
+		# Get the element that is connected via its output to our IN connection.
+		connectedElem_IN = conn_IN.getConnectedElem(viaOut=True)
+
+		# If the element connected to IN is not a LOAD operand, we have
+		# a chained element (for example another move box).
+		# Compile that first.
+		if connectedElem_IN.compileState == self.NOT_COMPILED and\
+		   (connectedElem_IN.elemType != self.TYPE_OPERAND or\
+		    connectedElem_IN.subType != FupCompiler_ElemOper.SUBTYPE_LOAD):
+			insns.extend(connectedElem_IN.compile())
+
+		# Generate a jump target for the EN jump.
 		endLabel = self.grid.compiler.newLabel()
 
 		if conn_EN.isConnected:
@@ -101,11 +113,10 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			insns.append(AwlInsn_SPBNB(cpu=None, ops=[oper]))
 
 		# Compile the element connected to the input.
-		otherElem = conn_IN.getConnectedElem(viaOut=True)
-		if otherElem.compileState == self.NOT_COMPILED:
-			insns.extend(otherElem.compile())
+		if connectedElem_IN.compileState == self.NOT_COMPILED:
+			insns.extend(connectedElem_IN.compile())
 		else:
-			insns.extend(otherElem._loadFromTemp(AwlInsn_L))
+			insns.extend(connectedElem_IN._loadFromTemp(AwlInsn_L))
 		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise AwlSimError("FUP compiler: The IN connection "
 				"of the FUP move box %s must not be connected "
@@ -124,8 +135,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				else:
 					storeToTemp = True
 		if storeToTemp:
-			pass#TODO
-			raise AwlSimError("MOVEBOX: Store to temp is not implemented, yet")
+			insns.extend(self._storeToTemp("DWORD", AwlInsn_T))
 
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
