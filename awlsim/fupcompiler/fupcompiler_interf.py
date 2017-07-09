@@ -97,7 +97,8 @@ class FupCompiler_InterfField(object):
 		self.enableNameCheck = enableNameCheck
 
 class FupCompiler_Interf(FupCompiler_BaseObj):
-	factory = FupCompiler_InterfFactory
+	factory			= FupCompiler_InterfFactory
+	noPreprocessing		= True
 
 	def __init__(self, compiler):
 		FupCompiler_BaseObj.__init__(self)

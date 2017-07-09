@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Grid
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,13 +50,22 @@ class FupCompiler_GridFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler_Grid(FupCompiler_BaseObj):
-	factory = FupCompiler_GridFactory
+	factory			= FupCompiler_GridFactory
+	noPreprocessing		= True
 
 	def __init__(self, compiler):
 		FupCompiler_BaseObj.__init__(self)
 		self.compiler = compiler	# FupCompiler
 		self.wires = {}			# FupCompiler_Wire
 		self.elems = set()		# FupCompiler_Elem
+
+	def newWire(self, virtual=False):
+		newWireId = 0
+		if self.wires:
+			newWireId = max(dictKeys(self.wires)) + 1
+		wire = FupCompiler_Wire(self, newWireId, virtual)
+		self.addWire(wire)
+		return wire
 
 	def addWire(self, wire):
 		if wire.idNum in self.wires:
@@ -84,9 +93,11 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		self.compileState = self.COMPILE_RUNNING
 		insns = []
 
+		from awlsim.fupcompiler.fupcompiler_elemoper import FupCompiler_ElemOper
+
 		# Resolve all wire-IDs
 		for wire in dictValues(self.wires):
-			wire.connections = set()
+			wire.clearConnections()
 		for elem in self.elems:
 			for conn in elem.connections:
 				if conn.wireId == conn.WIREID_NONE and not conn.isOptional:
@@ -103,7 +114,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 							"does not exist, but %s "
 							"references it." % (
 							conn.wireId, str(elem)))
-					wire.connections.add(conn)
+					wire.addConn(conn)
 					conn.wire = wire
 		for wire in dictValues(self.wires):
 			if len(wire.connections) == 0:
@@ -114,20 +125,36 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 					"%s with only one connection" % (
 					str(wire)))
 
+		def checkAllElemStates(checkState):
+			# Check if all elements have been processed.
+			for elem in self.elems:
+				if elem.compileState != checkState:
+					raise AwlSimError("FUP: Found dangling element "
+						"'%s'. Please make sure all connections of "
+						"this element are connected." % (
+						str(elem)))
+
+		# Preprocess all elements.
 		# Find all assignment operators and walk the logic chain upwards.
 		for elem in FupCompiler_Elem.sorted(self.elems):
-			if elem.elemType == elem.TYPE_OPERAND and\
-			   elem.subType == elem.SUBTYPE_ASSIGN and\
-			   elem.compileState == elem.NOT_COMPILED:
+			if elem.isType(FupCompiler_Elem.TYPE_OPERAND,
+				       FupCompiler_ElemOper.SUBTYPE_ASSIGN) and\
+			   elem.needPreprocess:
+				elem.preprocess()
+
+		# Check if all elements have been preprocessed.
+		checkAllElemStates(elem.COMPILE_PREPROCESSED)
+
+		# Compile all elements.
+		# Find all assignment operators and walk the logic chain upwards.
+		for elem in FupCompiler_Elem.sorted(self.elems):
+			if elem.isType(FupCompiler_Elem.TYPE_OPERAND,
+				       FupCompiler_ElemOper.SUBTYPE_ASSIGN) and\
+			   elem.needCompile:
 				insns.extend(elem.compile())
 
 		# Check if all elements have been compiled.
-		for elem in self.elems:
-			if elem.compileState != elem.COMPILE_DONE:
-				raise AwlSimError("FUP: Found dangling element "
-					"'%s'. Please make sure all connections of "
-					"this element are connected." % (
-					str(elem)))
+		checkAllElemStates(elem.COMPILE_DONE)
 
 		self.compileState = self.COMPILE_DONE
 		return insns

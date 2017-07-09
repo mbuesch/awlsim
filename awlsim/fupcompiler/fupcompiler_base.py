@@ -32,6 +32,8 @@ class FupCompilerError(AwlSimError):
 	"""
 
 	def __init__(self, message, fupObj=None):
+		if fupObj:
+			message += "\nAffected FUP/FBD element: %s" % str(fupObj)
 		AwlSimError.__init__(self, message)
 		self.fupObj = fupObj
 
@@ -43,17 +45,37 @@ class FupCompiler_BaseObj(object):
 
 	# compileState values
 	EnumGen.start
-	NOT_COMPILED		= EnumGen.item
+	COMPILE_IDLE		= EnumGen.item
+	COMPILE_PREPROCESSING	= EnumGen.item
+	COMPILE_PREPROCESSED	= EnumGen.item
 	COMPILE_RUNNING		= EnumGen.item
 	COMPILE_DONE		= EnumGen.item
 	EnumGen.end
 
+	compileState2name = {
+		COMPILE_IDLE		: "COMPILE_IDLE",
+		COMPILE_PREPROCESSING	: "COMPILE_PREPROCESSING",
+		COMPILE_PREPROCESSED	: "COMPILE_PREPROCESSED",
+		COMPILE_RUNNING		: "COMPILE_RUNNING",
+		COMPILE_DONE		: "COMPILE_DONE",
+	}
+
+	# Set to True, if preprocessing is not used for this object.
+	noPreprocessing = False
+
 	# Allow certain state transitions?
 	allowTrans_done2Running	= False # DONE -> RUNNING
-	allowTrans_2NotCompiled	= False # any -> NOT_COMPILED
 
 	def __init__(self):
-		self.__compileState = self.NOT_COMPILED
+		self.__compileState = self.COMPILE_IDLE
+
+	@property
+	def needPreprocess(self):
+		return self.__compileState < self.COMPILE_PREPROCESSING
+
+	@property
+	def needCompile(self):
+		return self.__compileState < self.COMPILE_RUNNING
 
 	@property
 	def compileState(self):
@@ -61,40 +83,49 @@ class FupCompiler_BaseObj(object):
 
 	@compileState.setter
 	def compileState(self, state):
-		if state == self.NOT_COMPILED and\
-		   not self.allowTrans_2NotCompiled:
-			raise FupCompilerError(
-				"Tried to set FBD/FUP object (%s) state to "
-				"NOT_COMPILED." % (
-				type(self).__name__), self)
-		elif state == self.COMPILE_RUNNING:
-			if self.__compileState == self.COMPILE_RUNNING:
+		if self.noPreprocessing:
+			allowedTransitions_IDLE = (self.COMPILE_RUNNING, )
+			allowedTransitions_PREPROCESSING = ()
+			allowedTransitions_PREPROCESSED = ()
+		else:
+			allowedTransitions_IDLE = (self.COMPILE_PREPROCESSING, )
+			allowedTransitions_PREPROCESSING = (self.COMPILE_PREPROCESSED, )
+			allowedTransitions_PREPROCESSED = (self.COMPILE_RUNNING, )
+		allowedTransitions_RUNNING = (self.COMPILE_DONE, )
+		if self.allowTrans_done2Running:
+			allowedTransitions_DONE = (self.COMPILE_RUNNING, )
+		else:
+			allowedTransitions_DONE = ()
+		allowedTransitionsMap = {
+			# fromState : (toStates)
+			self.COMPILE_IDLE		: allowedTransitions_IDLE,
+			self.COMPILE_PREPROCESSING	: allowedTransitions_PREPROCESSING,
+			self.COMPILE_PREPROCESSED	: allowedTransitions_PREPROCESSED,
+			self.COMPILE_RUNNING		: allowedTransitions_RUNNING,
+			self.COMPILE_DONE		: allowedTransitions_DONE,
+		}
+
+		allowedTransitions = allowedTransitionsMap[self.__compileState]
+
+		if self.__compileState == state:
+			if state == self.COMPILE_RUNNING:
 				raise FupCompilerError(
-					"Tried to set FBD/FUP object (%s) state to "
-					"COMPILE_RUNNING while already being in that state.\n"
+					"Tried to set FUP/FBD element state to "
+					"%s while already being in that state.\n"
 					"This most likely happened due to some dependency "
 					"loop in the FBD/FUP diagram.\n"
 					"Please check the diagram for signal loops." % (
-					type(self).__name__), self)
-			if self.__compileState == self.COMPILE_DONE and\
-			   not self.allowTrans_done2Running:
-				raise FupCompilerError(
-					"Tried to set FBD/FUP object (%s) state to "
-					"COMPILE_RUNNING while being in state COMPILE_DONE." % (
-					type(self).__name__), self)
-		elif state == self.COMPILE_DONE:
-			if self.__compileState == self.COMPILE_DONE:
-				raise FupCompilerError(
-					"Tried to set FBD/FUP object (%s) state to "
-					"COMPILE_DONE while already being in that state." % (
-					type(self).__name__), self)
-			if self.__compileState == self.NOT_COMPILED:
-				raise FupCompilerError(
-					"Tried to set FBD/FUP object (%s) state to "
-					"COMPILE_DONE, but skipping COMPILE_RUNNING state." % (
-					type(self).__name__), self)
-		else:
-			assert(0)
+					self.compileState2name[state]),
+					self)
+
+		if state not in allowedTransitions:
+			raise FupCompilerError(
+				"The FUP/FBD element compile state transition "
+				"from %s to %s is not allowed." % (
+				self.compileState2name[self.__compileState],
+				self.compileState2name[state]),
+				self)
+
 		self.__compileState = state
 
 	def __eq__(self, other):

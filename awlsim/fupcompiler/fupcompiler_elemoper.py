@@ -187,7 +187,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		self.__translateContent()
 
 		# Compile the element connected to the input.
-		if otherElem.compileState == self.NOT_COMPILED:
+		if otherElem.needCompile:
 			insns.extend(otherElem.compile())
 		else:
 			if not self.__storeEmitted:

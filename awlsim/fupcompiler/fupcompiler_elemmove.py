@@ -63,9 +63,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
 
-	def _doCompile(self):
-		insns = []
-
+	def __getConnections(self):
 		conn_EN = self.getUniqueConnByText("EN", searchInputs=True)
 		conn_IN = self.getUniqueConnByText("IN", searchInputs=True)
 		conn_ENO = self.getUniqueConnByText("ENO", searchOutputs=True)
@@ -73,6 +71,37 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			raise AwlSimError("FUP compiler: Invalid connections "
 				"in FUP move box %s." % (
 				str(self)))
+		return conn_EN, conn_IN, conn_ENO
+
+	def _doPreprocess(self):
+		conn_EN, conn_IN, conn_ENO = self.__getConnections()
+
+		# Get the element that is connected via its output to our IN connection.
+		connectedElem_IN = conn_IN.getConnectedElem(viaOut=True)
+
+		# If the element connected to IN is not a LOAD operand, we must
+		# take its ENO into account.
+		# If we don't have a connection on EN, we implicitly connect
+		# the IN-element's ENO to our EN here.
+		# If we already have a connection on EN, we implicitly add an AND-element
+		# between the IN-element's ENO and our EN.
+		if not connectedElem_IN.isType(self.TYPE_OPERAND,
+					       FupCompiler_ElemOper.SUBTYPE_LOAD):
+			if not connectedElem_IN.isType(self.TYPE_MOVE):
+				raise AwlSimError("FUP compiler: The element %s that is "
+					"connected to IN of %s is not allowed here." % (
+					str(connectedElem_IN), str(self)))
+			if conn_EN.isConnected:
+				pass#TODO
+			else:
+				otherConn_ENO = connectedElem_IN.getUniqueConnByText("ENO",
+										     searchOutputs=True)
+				conn_EN.connectTo(otherConn_ENO)
+
+	def _doCompile(self):
+		insns = []
+
+		conn_EN, conn_IN, conn_ENO = self.__getConnections()
 
 		# Get the element that is connected via its output to our IN connection.
 		connectedElem_IN = conn_IN.getConnectedElem(viaOut=True)
@@ -80,43 +109,55 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		# If the element connected to IN is not a LOAD operand, we have
 		# a chained element (for example another move box).
 		# Compile that first.
-		if connectedElem_IN.compileState == self.NOT_COMPILED and\
-		   (connectedElem_IN.elemType != self.TYPE_OPERAND or\
-		    connectedElem_IN.subType != FupCompiler_ElemOper.SUBTYPE_LOAD):
+		if connectedElem_IN.needCompile and\
+		   not connectedElem_IN.isType(self.TYPE_OPERAND,
+					       FupCompiler_ElemOper.SUBTYPE_LOAD):
 			insns.extend(connectedElem_IN.compile())
 
-		# Generate a jump target for the EN jump.
+		# Generate a jump target label name for the EN jump.
+		# This might end up being unused, though.
 		endLabel = self.grid.compiler.newLabel()
 
+		# If we have an EN input, emit the corresponding conditional jump.
+		# If EN is not a plain operator, this might involve compiling
+		# the connected element.
 		if conn_EN.isConnected:
 			otherElem = conn_EN.getConnectedElem(viaOut=True)
-			if otherElem.elemType == self.TYPE_OPERAND and\
-			   otherElem.subType == FupCompiler_ElemOper.SUBTYPE_LOAD:
+			if otherElem.isType(self.TYPE_OPERAND,
+					    FupCompiler_ElemOper.SUBTYPE_LOAD):
 				# The other element is a LOAD operand.
 				# Compile the boolean (load) instruction.
 				# This generates:  U #EN
 				insns.extend(otherElem.compileOperLoad(
 						AwlInsn_U,
 						{ FupCompiler_Conn.TYPE_VKE, }))
-			elif otherElem.elemType == self.TYPE_BOOLEAN:
+			elif otherElem.isType(self.TYPE_BOOLEAN):
 				# The other element we get the signal from
 				# is a boolean element. Compile this to get its
 				# resulting VKE.
 				insns.extend(otherElem.compileToVKE(AwlInsn_U, AwlInsn_UB))
+			elif otherElem.isType(self.TYPE_MOVE):
+				if otherElem.needCompile:
+					insns.extend(otherElem.compile())
+				else:
+					otherConn_ENO = otherElem.getUniqueConnByText("ENO", searchOutputs=True)
+					insns.extend(otherElem._loadFromTemp(AwlInsn_U, otherConn_ENO))
 			else:
 				raise AwlSimError("FUP compiler: Invalid "
 					"element '%s' connected to '%s'." % (
 					str(otherElem), str(self)))
 
+			# Emit the jump instruction.
+			# This will evaluate the current VKE.
 			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
 			oper.immediateStr = endLabel
 			insns.append(AwlInsn_SPBNB(cpu=None, ops=[oper]))
 
 		# Compile the element connected to the input.
-		if connectedElem_IN.compileState == self.NOT_COMPILED:
+		if connectedElem_IN.needCompile:
 			insns.extend(connectedElem_IN.compile())
 		else:
-			insns.extend(connectedElem_IN._loadFromTemp(AwlInsn_L))
+			insns.extend(connectedElem_IN._loadFromTemp(AwlInsn_L, self.MAIN_RESULT))
 		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise AwlSimError("FUP compiler: The IN connection "
 				"of the FUP move box %s must not be connected "
@@ -124,18 +165,19 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				str(self)))
 
 		# Assign the outputs.
-		storeToTemp = False
+		storeToTempConns = set()
 		for conn in self.outConnections:
 			if not re.match(r"OUT\d+", conn.text, re.IGNORECASE):
 				continue
 			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
-				if otherElem.elemType == self.TYPE_OPERAND and\
-				   otherElem.subType == FupCompiler_ElemOper.SUBTYPE_ASSIGN:
+				if otherElem.isType(self.TYPE_OPERAND,
+						    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
 					insns.extend(otherElem.emitStore_ACCU())
 				else:
-					storeToTemp = True
-		if storeToTemp:
-			insns.extend(self._storeToTemp("DWORD", AwlInsn_T))
+					storeToTempConns.add(conn)
+		if storeToTempConns:
+			storeToTempConns.add(self.MAIN_RESULT)
+			insns.extend(self._storeToTemp("DWORD", AwlInsn_T, storeToTempConns))
 
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
@@ -148,6 +190,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			insns.append(AwlInsn_SPBNB(cpu=None, ops=[oper]))
 
 		# Create the jump target label for EN=0.
+		# This might end up being unused, though.
 		oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 		oper.immediate = 0
 		insn = AwlInsn_NOP(cpu=None, ops=[oper])
@@ -156,14 +199,21 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 
 		# Handle ENO output.
 		if conn_ENO.isConnected:
-			otherElem = conn_ENO.getConnectedElem(viaIn=True)
-
 			# Add instruction:  U BIE
 			oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
 						make_AwlOffset(0, 8), None)
 			insns.append(AwlInsn_U(cpu=None, ops=[oper]))
 
 			# Add VKE assignment instruction.
-			insns.extend(otherElem.emitStore_VKE())
+			storeToTempConns = set()
+			for otherElem in self.sorted(conn_ENO.getConnectedElems(viaIn=True)):
+				if otherElem.isType(self.TYPE_OPERAND,
+						    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
+					insns.extend(otherElem.emitStore_VKE())
+				else:
+					storeToTempConns.add(conn_ENO)
+			if storeToTempConns:
+				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN,
+							       storeToTempConns))
 
 		return insns

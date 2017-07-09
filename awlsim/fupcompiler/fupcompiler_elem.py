@@ -145,9 +145,24 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.content = content or ""		# content string
 		self.connections = set()		# FupCompiler_Conn
 
-		# If this field has already been compiled and the result is
-		# stored in a temp-field, this is the name of that field.
-		self.__resultVarName = None
+		# This dict contains the values of the connections,
+		# if this element has already been compiled.
+		# Dict key is FupCompiler_Conn and value is the TEMP var name string.
+		self.__tempVarNames = {}
+
+	def isType(self, elemType, subType=None):
+		"""Check the TYPE and SUBTYPE of this element.
+		If 'subType' is None, the subType is not checked.
+		Both elemType or subType may be iterables. In this case
+		all types from the iterable are allowed.
+		True is returned, if the types match.
+		"""
+		elemTypes = toList(elemType)
+		if subType is None:
+			return self.elemType in elemTypes
+		subTypes = toList(subType)
+		return self.elemType in elemTypes and\
+		       self.subType in subTypes
 
 	@property
 	def opTrans(self):
@@ -223,7 +238,9 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				str(self), connText))
 		return connections[0]
 
-	def _storeToTemp(self, dataTypeName, insnClass):
+	MAIN_RESULT = None
+
+	def _storeToTemp(self, dataTypeName, insnClass, connections=MAIN_RESULT):
 		insns = []
 
 		varName = self.grid.compiler.interf.allocTEMP(dataTypeName,
@@ -231,32 +248,65 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		opDesc = self.opTrans.translateFromString("#" + varName)
 		insns.append(insnClass(cpu=None,
 				       ops=[opDesc.operator]))
-		self.__resultVarName = varName
+		if connections:
+			for conn in connections:
+				self.__tempVarNames[conn] = varName
+		else:
+			self.__tempVarNames[None] = varName
 
 		return insns
 
-	def _loadFromTemp(self, insnClass):
+	def _loadFromTemp(self, insnClass, conn=MAIN_RESULT):
 		insns = []
 
 		# otherElem has already been compiled and the result has
 		# been stored in TEMP. Use the stored result.
-		assert(self.compileState != self.NOT_COMPILED)
-		varName = self.__resultVarName
-		if not varName:
-			raise AwlSimError("FUP compiler: Result of the "
+		assert(not self.needCompile)
+		try:
+			varName = self.__tempVarNames[conn]
+		except KeyError as e:
+			if conn and conn.text:
+				connText = "The output %s" % conn.text
+			else:
+				connText = "The result"
+			raise AwlSimError("FUP compiler: %s of the "
 				"compiled element %s has not been stored "
 				"to a TEMP variable." % (
-				str(self)))
+				connText, str(self)))
 		opDesc = self.opTrans.translateFromString("#" + varName)
 		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
 
 		return insns
+
+	def _doPreprocess(self):
+		"""Element preprocessor.
+		Defaults to no preprocessing.
+		Override this method, if required.
+		"""
+		pass
 
 	def _doCompile(self):
 		"""Element compiler.
 		Override this.
 		"""
 		raise NotImplementedError
+
+	def preprocess(self):
+		"""Main element preprocessor entry point.
+		Do not override this. Override _doPreprocess instead.
+		"""
+		self.compileState = self.COMPILE_PREPROCESSING
+
+		# Preprocess the elements connected to the in-connections first.
+		for conn in self.inConnections:
+			for elem in conn.getConnectedElems(viaOut=True):
+				if elem.needPreprocess:
+					elem.preprocess()
+
+		# Preprocess this element
+		self._doPreprocess()
+
+		self.compileState = self.COMPILE_PREPROCESSED
 
 	def compile(self):
 		"""Main element compiler entry point.

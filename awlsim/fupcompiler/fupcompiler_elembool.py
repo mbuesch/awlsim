@@ -109,7 +109,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		Returns a list of AwlInsn instances.
 		"""
 		insns = []
-		if self.compileState == self.NOT_COMPILED:
+		if self.needCompile:
 			insns.append(insnBranchClass(cpu=None))
 			insns.extend(self.compile())
 			# Store result to a TEMP variable, if required.

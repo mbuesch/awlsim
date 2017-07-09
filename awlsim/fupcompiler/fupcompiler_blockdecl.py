@@ -69,7 +69,8 @@ class FupCompiler_BlockDeclFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler_BlockDecl(FupCompiler_BaseObj):
-	factory = FupCompiler_BlockDeclFactory
+	factory			= FupCompiler_BlockDeclFactory
+	noPreprocessing		= True
 
 	def __init__(self, compiler):
 		FupCompiler_BaseObj.__init__(self)
