@@ -72,6 +72,16 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 	# Wire-ID used for unconnected connections
 	WIREID_NONE	= -1
 
+	__slots__ = (
+		"elem",
+		"pos",
+		"dirIn",
+		"dirOut",
+		"wireId",
+		"text",
+		"wire",
+	)
+
 	def __init__(self, elem, pos, dirIn, dirOut, wireId, text):
 		FupCompiler_BaseObj.__init__(self)
 		self.elem = elem		# FupCompiler_Elem
@@ -163,3 +173,18 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			"does not have a valid %s-connected element." % (
 			(" \"%s\"" % self.text) if self.text else "",
 			str(self.elem), viaText))
+
+	def connectTo(self, otherConn):
+		if self.isConnected:
+			raise AwlSimError("Connection %s is already connected" % (
+				str(self)))
+		if otherConn.isConnected:
+			wire = otherConn.wire
+		else:
+			wire = self.elem.grid.newWire(virtual=True)
+			otherConn.wire = wire
+			otherConn.wireId = wire.idNum
+			wire.addConn(otherConn)
+		self.wire = wire
+		self.wireId = wire.idNum
+		wire.addConn(self)
