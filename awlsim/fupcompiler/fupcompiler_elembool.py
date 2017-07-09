@@ -69,10 +69,11 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			pass
 		return None
 
-	def __init__(self, grid, x, y, subType, content):
+	def __init__(self, grid, x, y, subType, content, **kwargs):
 		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
 					  elemType=FupCompiler_Elem.TYPE_BOOLEAN,
-					  subType=subType, content=content)
+					  subType=subType, content=content,
+					  **kwargs)
 
 	def _doCompileBool(self, insnClass, insnBranchClass):
 		insns = []
@@ -128,10 +129,11 @@ class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 
 	ELEM_NAME = "AND"
 
-	def __init__(self, grid, x, y, content):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemBool.SUBTYPE_AND,
-					      content=content)
+					      content=content,
+					      **kwargs)
 
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_U, AwlInsn_UB)
@@ -142,10 +144,11 @@ class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 
 	ELEM_NAME = "OR"
 
-	def __init__(self, grid, x, y, content):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemBool.SUBTYPE_OR,
-					      content=content)
+					      content=content,
+					      **kwargs)
 
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_O, AwlInsn_OB)
@@ -156,10 +159,11 @@ class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 
 	ELEM_NAME = "XOR"
 
-	def __init__(self, grid, x, y, content):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemBool.SUBTYPE_XOR,
-					      content=content)
+					      content=content,
+					      **kwargs)
 
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_X, AwlInsn_XB)

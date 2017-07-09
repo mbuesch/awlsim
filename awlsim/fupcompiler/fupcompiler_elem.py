@@ -135,7 +135,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			pass
 		return None
 
-	def __init__(self, grid, x, y, elemType, subType, content):
+	def __init__(self, grid, x, y, elemType, subType, content, virtual=False):
 		FupCompiler_BaseObj.__init__(self)
 		self.grid = grid			# FupCompiler_Grid
 		self.x = x				# X coordinate
@@ -144,6 +144,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.subType = subType			# SUBTYPE_... or None
 		self.content = content or ""		# content string
 		self.connections = set()		# FupCompiler_Conn
+		self.virtual = virtual
 
 		# This dict contains the values of the connections,
 		# if this element has already been compiled.
@@ -319,15 +320,19 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
-			"subType=%s, content=\"%s\")" % (
+			"subType=%s, content=\"%s\", virtual=%s)" % (
 			self.x, self.y, self.elemType,
-			str(self.subType), self.content)
+			str(self.subType), self.content,
+			str(self.virtual))
 
 	def __str__(self):
-		values = [
-			"x=%d" % (self.x + 1),
-			"y=%d" % (self.y + 1),
-		]
+		values = []
+		if self.x >= 0:
+			values.append("x=%d" % (self.x + 1))
+		if self.y >= 0:
+			values.append("y=%d" % (self.y + 1))
+		if self.virtual:
+			values.append("virtual-element")
 		if self.content.strip():
 			values.append('"%s"' % self.content)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))

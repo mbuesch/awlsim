@@ -45,11 +45,12 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 					    x=x, y=y,
 					    content=content)
 
-	def __init__(self, grid, x, y, content):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
 					  elemType=FupCompiler_Elem.TYPE_MOVE,
 					  subType=None,
-					  content=content)
+					  content=content,
+					  **kwargs)
 
 	def connIsOptional(self, conn):
 		connText = conn.text.upper()

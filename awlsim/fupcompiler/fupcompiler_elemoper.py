@@ -62,10 +62,11 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 			pass
 		return None
 
-	def __init__(self, grid, x, y, subType, content):
+	def __init__(self, grid, x, y, subType, content, **kwargs):
 		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
 					  elemType=FupCompiler_Elem.TYPE_OPERAND,
-					  subType=subType, content=content)
+					  subType=subType, content=content,
+					  **kwargs)
 
 		# The translated operator, if any, yet.
 		# This will be available after compilation of this element.
@@ -104,10 +105,11 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	# Allow multiple compilations of LOAD operand.
 	allowTrans_done2Running = True
 
-	def __init__(self, grid, x, y, content):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemOper.SUBTYPE_LOAD,
-					      content=content)
+					      content=content,
+					      **kwargs)
 
 		# Constructor class used for LOAD operand.
 		self.__insnClass = None
@@ -169,10 +171,11 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 	ELEM_NAME = "store-operator"
 
-	def __init__(self, grid, x, y, content):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,
 					      subType=FupCompiler_ElemOper.SUBTYPE_ASSIGN,
-					      content=content)
+					      content=content,
+					      **kwargs)
 		self.__storeEmitted = False
 
 	def _doCompile(self):
