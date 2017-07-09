@@ -57,9 +57,23 @@ class FupCompiler_WireFactory(XmlFactory):
 class FupCompiler_Wire(FupCompiler_BaseObj):
 	factory = FupCompiler_WireFactory
 
-	def __init__(self, grid, idNum):
+	__slots__ = (
+		"grid",
+		"idNum",
+		"virtual",
+		"connections",
+	)
+
+	def __init__(self, grid, idNum, virtual=False):
 		FupCompiler_BaseObj.__init__(self)
 		self.grid = grid		# FupCompiler_Grid
 		self.idNum = idNum		# Wire ID
+		self.virtual = virtual		# True, if this is a virtual wire
 
+		self.clearConnections()
+
+	def clearConnections(self):
 		self.connections = set()
+
+	def addConn(self, conn):
+		self.connections.add(conn)
