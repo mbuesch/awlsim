@@ -66,6 +66,10 @@ class FupCompiler_BaseObj(object):
 	# Allow certain state transitions?
 	allowTrans_done2Running	= False # DONE -> RUNNING
 
+	__slots__ = (
+		"__compileState",
+	)
+
 	def __init__(self):
 		self.__compileState = self.COMPILE_IDLE
 
