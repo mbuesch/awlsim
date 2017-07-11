@@ -79,10 +79,11 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		"dirOut",
 		"wireId",
 		"text",
+		"virtual",
 		"wire",
 	)
 
-	def __init__(self, elem, pos, dirIn, dirOut, wireId, text):
+	def __init__(self, elem, pos, dirIn, dirOut, wireId, text, virtual=False):
 		FupCompiler_BaseObj.__init__(self)
 		self.elem = elem		# FupCompiler_Elem
 		self.pos = pos			# Position index
@@ -90,6 +91,7 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		self.dirOut = bool(dirOut)	# Output
 		self.wireId = wireId		# Wire ID number
 		self.text = text or ""		# Connection text (optional)
+		self.virtual = virtual		# True, if this is a virtual connection
 
 		self.wire = None
 
@@ -182,9 +184,23 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			wire = otherConn.wire
 		else:
 			wire = self.elem.grid.newWire(virtual=True)
-			otherConn.wire = wire
-			otherConn.wireId = wire.idNum
 			wire.addConn(otherConn)
-		self.wire = wire
-		self.wireId = wire.idNum
 		wire.addConn(self)
+
+	def __repr__(self):
+		return "FupCompiler_Conn(elem, pos=%d, dirIn=%s, dirOut=%s, "\
+					"wireId=%d, text=\"%s\", virtual=%s)" % (
+			self.pos, self.dirIn, self.dirOut, self.wireId,
+			self.text, self.virtual)
+
+	def __str__(self):
+		fields = []
+		if self.text:
+			fields.append('"%s"' % self.text)
+		else:
+			fields.append("pos=%s" % self.pos)
+		if self.elem:
+			fields.append(str(self.elem))
+		if self.virtual:
+			fields.append("VIRTUAL")
+		return "CONNECTION(%s)" % (", ".join(fields))
