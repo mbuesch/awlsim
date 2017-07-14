@@ -130,6 +130,9 @@ class FupCompiler_BaseObj(object):
 				self.compileState2name[state]),
 				self)
 
+		self.forceCompileState(state)
+
+	def forceCompileState(self, state):
 		self.__compileState = state
 
 	def __eq__(self, other):
