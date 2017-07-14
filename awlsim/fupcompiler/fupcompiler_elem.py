@@ -151,6 +151,9 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		# Dict key is FupCompiler_Conn and value is the TEMP var name string.
 		self.__tempVarNames = {}
 
+		if virtual:
+			self.forceCompileState(self.COMPILE_PREPROCESSED)
+
 	def isType(self, elemType, subType=None):
 		"""Check the TYPE and SUBTYPE of this element.
 		If 'subType' is None, the subType is not checked.
