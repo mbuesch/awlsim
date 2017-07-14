@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.fupcompiler.fupcompiler_elem import *
 from awlsim.fupcompiler.fupcompiler_elemoper import *
+from awlsim.fupcompiler.fupcompiler_elembool import *
 
 from awlsim.core.operators import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -74,6 +75,75 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				str(self)))
 		return conn_EN, conn_IN, conn_ENO
 
+	def __genVirtualAND(self, leftConn, rightConn):
+		# Transform this:
+		#   [x]-----------------------[rightConn]
+		#
+		# into this:            _
+		#   [x]---------------0|&|0---[rightConn]
+		#   [leftConn]--------1|_|
+		#
+		# If leftConn is connected already (to y), the result will look like this:
+		#                       _
+		#   [x]---------------0|&|0---[rightConn]
+		#   [leftConn]----+---1|_|
+		#                 |
+		#                 +----[y]
+		#
+		# x is at least one arbitrary connection.
+		# leftConn must be an output.
+		# rightConn must be an input.
+		# rightConn must be connected (to x).
+
+		assert(leftConn.dirOut)
+		assert(rightConn.dirIn)
+		assert(rightConn.isConnected)
+
+		# Get the left-handed wire or create one.
+		if leftConn.isConnected:
+			leftWire = leftConn.wire
+		else:
+			leftWire = self.grid.newWire()
+			leftWire.addConn(leftConn)
+
+		# disconnect the right-handed connection from its wire.
+		origWire = rightConn.wire
+		origWire.removeConn(rightConn)
+
+		# Create a new right-handed wire
+		rightWire = self.grid.newWire()
+		rightWire.addConn(rightConn)
+
+		# Create a virtual AND element to connect the elements.
+		virtElemAnd = FupCompiler_ElemBoolAnd(grid=self.grid,
+						      x=self.x, y=self.y,
+						      content=None,
+						      virtual=True)
+		virtElemAndIn0 = FupCompiler_Conn(elem=virtElemAnd,
+						  pos=0,
+						  dirIn=True, dirOut=False,
+						  wireId=origWire.idNum,
+						  text=None,
+						  virtual=True)
+		virtElemAnd.addConn(virtElemAndIn0)
+		origWire.addConn(virtElemAndIn0)
+		virtElemAndIn1 = FupCompiler_Conn(elem=virtElemAnd,
+						  pos=1,
+						  dirIn=True, dirOut=False,
+						  wireId=leftWire.idNum,
+						  text=None,
+						  virtual=True)
+		virtElemAnd.addConn(virtElemAndIn1)
+		leftWire.addConn(virtElemAndIn1)
+		virtElemAndOut = FupCompiler_Conn(elem=virtElemAnd,
+						  pos=0,
+						  dirIn=False, dirOut=True,
+						  wireId=rightWire.idNum,
+						  text=None,
+						  virtual=True)
+		virtElemAnd.addConn(virtElemAndOut)
+		rightWire.addConn(virtElemAndOut)
+
 	def _doPreprocess(self):
 		conn_EN, conn_IN, conn_ENO = self.__getConnections()
 
@@ -92,11 +162,12 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				raise AwlSimError("FUP compiler: The element %s that is "
 					"connected to IN of %s is not allowed here." % (
 					str(connectedElem_IN), str(self)))
+			otherConn_ENO = connectedElem_IN.getUniqueConnByText("ENO",
+									     searchOutputs=True)
 			if conn_EN.isConnected:
-				pass#TODO
+				self.__genVirtualAND(leftConn=otherConn_ENO,
+						     rightConn=conn_EN)
 			else:
-				otherConn_ENO = connectedElem_IN.getUniqueConnByText("ENO",
-										     searchOutputs=True)
 				conn_EN.connectTo(otherConn_ENO)
 
 	def _doCompile(self):
