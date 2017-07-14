@@ -77,3 +77,10 @@ class FupCompiler_Wire(FupCompiler_BaseObj):
 
 	def addConn(self, conn):
 		self.connections.add(conn)
+		conn.wire = self
+		conn.wireId = self.idNum
+
+	def removeConn(self, conn):
+		self.connections.remove(conn)
+		conn.wire = None
+		conn.wireId = conn.WIREID_NONE
