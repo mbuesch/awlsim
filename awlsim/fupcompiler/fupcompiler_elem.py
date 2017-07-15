@@ -335,7 +335,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		if self.y >= 0:
 			values.append("y=%d" % (self.y + 1))
 		if self.virtual:
-			values.append("virtual-element")
+			values.append("VIRTUAL")
 		if self.content.strip():
 			values.append('"%s"' % self.content)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))

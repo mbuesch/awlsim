@@ -114,7 +114,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			insns.append(insnBranchClass(cpu=None))
 			insns.extend(self.compile())
 			# Store result to a TEMP variable, if required.
-			if any(len(tuple(c.getConnected(getInputs=True))) > 1
+			if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
 			       for c in self.outConnections):
 				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN))
 			insns.append(AwlInsn_BEND(cpu=None))

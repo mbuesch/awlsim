@@ -265,7 +265,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 		# If the other element connected to this operand has more
 		# than one connected element, we need to store the VKE for them.
-		if any(len(tuple(c.getConnected(getInputs=True))) > 1
+		if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
 		       for c in otherElem.outConnections):
 			insns.extend(otherElem._storeToTemp("BOOL", AwlInsn_ASSIGN))
 
