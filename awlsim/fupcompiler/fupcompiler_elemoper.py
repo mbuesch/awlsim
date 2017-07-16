@@ -161,7 +161,7 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 					self.operatorWidth, str(self)))
 
 		# Create the LOAD instruction.
-		insns.append(insnClass(cpu=None, ops=[self._operator]))
+		insns.append(self.newInsn(insnClass, ops=[self._operator]))
 
 		return insns
 
@@ -210,7 +210,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 				   otherElem.subType == self.SUBTYPE_ASSIGN:
 					otherElem.compileState = self.COMPILE_RUNNING
 					opDesc = self.opTrans.translateFromString(otherElem.content)
-					insns.append(AwlInsn_ASSIGN(cpu=None, ops=[opDesc.operator]))
+					insns.append(self.newInsn(AwlInsn_ASSIGN, ops=[opDesc.operator]))
 					otherElem.compileState = self.COMPILE_DONE
 
 		return insns
@@ -260,7 +260,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		self.__translateContent()
 
 		# Create the ASSIGN instruction.
-		insns.append(AwlInsn_ASSIGN(cpu=None, ops=[self._operator]))
+		insns.append(self.newInsn(AwlInsn_ASSIGN, ops=[self._operator]))
 		otherElem = self.__getConnectedElem()
 
 		# If the other element connected to this operand has more
@@ -283,7 +283,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		self.__translateContent()
 
 		# Create a transfer instruction.
-		insns.append(AwlInsn_T(cpu=None, ops=[self._operator]))
+		insns.append(self.newInsn(AwlInsn_T, ops=[self._operator]))
 
 		self.__storeEmitted = True
 		return insns
