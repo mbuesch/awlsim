@@ -81,7 +81,8 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		for conn in sorted(self.inConnections, key=lambda c: c.pos):
 			# For each element that is connected to this element's
 			# input connection via its output connection.
-			otherElem = conn.getConnectedElem(viaOut=True)
+			otherConn = conn.getConnectedConn(getOutput=True)
+			otherElem = otherConn.elem
 			if otherElem.isType(self.TYPE_OPERAND,
 					    FupCompiler_ElemOper.SUBTYPE_LOAD):
 				# The other element is a LOAD operand.
@@ -111,13 +112,13 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		"""
 		insns = []
 		if self.needCompile:
-			insns.append(insnBranchClass(cpu=None))
+			insns.append(self.newInsn(insnBranchClass))
 			insns.extend(self.compile())
 			# Store result to a TEMP variable, if required.
 			if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
 			       for c in self.outConnections):
 				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN))
-			insns.append(AwlInsn_BEND(cpu=None))
+			insns.append(self.newInsn(AwlInsn_BEND))
 		else:
 			# Get the stored result from TEMP.
 			insns.extend(self._loadFromTemp(insnClass))
