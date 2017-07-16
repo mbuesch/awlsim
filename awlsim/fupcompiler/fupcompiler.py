@@ -136,6 +136,17 @@ class FupCompiler(object):
 		self.__labelCounter += 1
 		return "L%03X" % labelCounter
 
+	def newInsn(self, parentFupElem, insnClass, ops=[]):
+		"""Create a new instruction instance.
+		parentFupElem: The FUP element that creates this insn.
+		insnClass: The class that shall be instantiated.
+		ops: Optional list of operators.
+		"""
+		insn = insnClass(cpu=None, ops=ops)
+		if parentFupElem:
+			insn.commentStr = str(parentFupElem)
+		return insn
+
 	def getOperDataWidth(self, oper):
 		"""Helper function to get the data type width (in bits)
 		of an operator. This will first attempt to resolve the operator,

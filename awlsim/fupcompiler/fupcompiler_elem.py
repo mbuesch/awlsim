@@ -321,6 +321,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.compileState = self.COMPILE_DONE
 		return result
 
+	def newInsn(self, insnClass, ops=[]):
+		"""Wrapper: Call the compiler method to create an instruction.
+		"""
+		return self.grid.compiler.newInsn(self, insnClass, ops)
+
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
 			"subType=%s, content=\"%s\", virtual=%s)" % (
