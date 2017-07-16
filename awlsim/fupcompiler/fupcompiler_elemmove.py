@@ -223,7 +223,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			# This will evaluate the current VKE.
 			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
 			oper.immediateStr = endLabel
-			insns.append(AwlInsn_SPBNB(cpu=None, ops=[oper]))
+			insns.append(self.newInsn(AwlInsn_SPBNB, ops=[oper]))
 
 		# Compile the element connected to the input.
 		if connectedElem_IN.needCompile:
@@ -256,16 +256,16 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			# Set VKE=1 and create a dummy SPBNB to
 			# set BIE=1 and /ER=0.
 			# The SPBNB branch is never taken due to VKE=1.
-			insns.append(AwlInsn_SET(cpu=None, ops=[]))
+			insns.append(self.newInsn(AwlInsn_SET))
 			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
 			oper.immediateStr = endLabel
-			insns.append(AwlInsn_SPBNB(cpu=None, ops=[oper]))
+			insns.append(self.newInsn(AwlInsn_SPBNB, ops=[oper]))
 
 		# Create the jump target label for EN=0.
 		# This might end up being unused, though.
 		oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 		oper.immediate = 0
-		insn = AwlInsn_NOP(cpu=None, ops=[oper])
+		insn = self.newInsn(AwlInsn_NOP, ops=[oper])
 		insn.labelStr = endLabel
 		insns.append(insn)
 
@@ -274,7 +274,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			# Add instruction:  U BIE
 			oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
 						make_AwlOffset(0, 8), None)
-			insns.append(AwlInsn_U(cpu=None, ops=[oper]))
+			insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
 
 			# Add VKE assignment instruction.
 			storeToTempConns = set()
