@@ -96,11 +96,23 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 				return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
 
+	def __str__(self):
+		extra = []
+		if len(self.connections) == 1:
+			conn = getany(self.connections)
+			elems = list(conn.getConnectedElems(viaOut=True, viaIn=True))
+			if elems:
+				text = []
+				for elem in elems:
+					text.append(str(elem))
+				extra.append("for " + " and ".join(text))
+		return self.toStr(extra=extra)
+
 class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	"""FUP compiler - Operand LOAD element.
 	"""
 
-	ELEM_NAME = "load-operator"
+	ELEM_NAME = "LOAD"
 
 	# Allow multiple compilations of LOAD operand.
 	allowTrans_done2Running = True
@@ -169,7 +181,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 	"""FUP compiler - Operand ASSIGN element.
 	"""
 
-	ELEM_NAME = "store-operator"
+	ELEM_NAME = "STORE"
 
 	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,

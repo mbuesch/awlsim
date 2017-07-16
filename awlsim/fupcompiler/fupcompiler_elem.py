@@ -333,7 +333,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			str(self.subType), self.content,
 			str(self.virtual))
 
-	def __str__(self):
+	def toStr(self, extra=()):
 		values = []
 		if self.x >= 0:
 			values.append("x=%d" % (self.x + 1))
@@ -343,4 +343,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			values.append("VIRTUAL")
 		if self.content.strip():
 			values.append('"%s"' % self.content)
+		values.extend(extra)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
+
+	def __str__(self):
+		return self.toStr()
