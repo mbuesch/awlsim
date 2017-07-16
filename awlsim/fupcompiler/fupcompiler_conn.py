@@ -95,6 +95,12 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 
 		self.wire = None
 
+	def hasText(self, text):
+		"""Returns True, if the connection text matches.
+		This does a case insensitive compare.
+		"""
+		return strEqual(self.text, text, caseSensitive=False)
+
 	@property
 	def isOptional(self):
 		"""Returns True, if this connection is optional.
