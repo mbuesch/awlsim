@@ -224,6 +224,7 @@ class AwlInsn(object): #+cdef
 		"op1",
 		"params",
 		"labelStr",
+		"commentStr",
 		"_widths_1",
 		"_widths_8_16_32",
 		"_widths_16",
@@ -242,6 +243,7 @@ class AwlInsn(object): #+cdef
 		self.ops = ops or []		# AwlOperator()s
 		self.params = ()		# Parameter assignments (for CALL)
 		self.labelStr = None		# Optional label string.
+		self.commentStr = ""		# Optional comment string.
 
 		# Local copy of commonly used fetch/store widths.
 		self._widths_1		= AwlOperatorWidths.WIDTH_MASK_1
@@ -366,7 +368,11 @@ class AwlInsn(object): #+cdef
 			ret.append(" ( ")
 			ret.append(", ".join(str(param) for param in self.params))
 			ret.append(" )")
-		return "".join(ret)
+		text = "".join(ret)
+		if self.commentStr:
+			text += " " * (32 - len(text))
+			text += "// %s" % self.commentStr
+		return text
 
 # Sanity check of english2german table
 assert(all(germanName in AwlInsn.name2type_german \
