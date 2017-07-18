@@ -250,8 +250,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		varName = self.grid.compiler.interf.allocTEMP(dataTypeName,
 							      elem=self)
 		opDesc = self.opTrans.translateFromString("#" + varName)
-		insns.append(insnClass(cpu=None,
-				       ops=[opDesc.operator]))
+		insns.append(self.newInsn(insnClass,
+					  ops=[opDesc.operator]))
 		if connections:
 			for conn in connections:
 				self.__tempVarNames[conn] = varName
@@ -278,7 +278,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				"to a TEMP variable." % (
 				connText, str(self)))
 		opDesc = self.opTrans.translateFromString("#" + varName)
-		insns.append(insnClass(cpu=None, ops=[opDesc.operator]))
+		insns.append(self.newInsn(insnClass, ops=[opDesc.operator]))
 
 		return insns
 
