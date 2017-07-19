@@ -282,6 +282,17 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 		return insns
 
+	def compileConn(self, conn, desiredTarget):
+		"""Compile this element
+		and get the value corresponding to the given connection.
+		The desiredTarget is one of FupCompiler_Conn.TARGET_...
+		The default implementation raises an exception.
+		Override this method, if required.
+		"""
+		raise AwlSimError("FUP compiler: Do not know how to "
+			"compile the connection %s of element %s." % (
+			str(conn), str(self)))
+
 	def _doPreprocess(self):
 		"""Element preprocessor.
 		Defaults to no preprocessing.

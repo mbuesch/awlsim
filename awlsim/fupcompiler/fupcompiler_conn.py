@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.core.instructions.all_insns import * #+cimport
+
 from awlsim.fupcompiler.fupcompiler_base import *
 
 
@@ -69,6 +71,29 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 	TYPE_ACCU	= EnumGen.item # Byte/word/dword operation
 	EnumGen.end
 
+	# The target instruction to be used for TYPE_VKE/TYPE_ACCU compilation
+	EnumGen.start
+	TARGET_VKE_U	= EnumGen.item
+	TARGET_VKE_O	= EnumGen.item
+	TARGET_VKE_X	= EnumGen.item
+	TARGET_ACCU1	= EnumGen.item
+	EnumGen.end
+
+	target2LoadInsnClass = {
+		TARGET_VKE_U	: AwlInsn_U,
+		TARGET_VKE_O	: AwlInsn_O,
+		TARGET_VKE_X	: AwlInsn_X,
+		TARGET_ACCU1	: AwlInsn_L,
+	}
+	loadInsnClass2Target = pivotDict(target2LoadInsnClass)
+
+	target2StoreInsnClass = {
+		TARGET_VKE_U	: AwlInsn_ASSIGN,
+		TARGET_VKE_O	: AwlInsn_ASSIGN,
+		TARGET_VKE_X	: AwlInsn_ASSIGN,
+		TARGET_ACCU1	: AwlInsn_T,
+	}
+
 	# Wire-ID used for unconnected connections
 	WIREID_NONE	= -1
 
@@ -82,6 +107,24 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		"virtual",
 		"wire",
 	)
+
+	@classmethod
+	def targetIsVKE(cls, target):
+		"""Returns True, if a target ID is a VKE target.
+		"""
+		return target in {cls.TARGET_VKE_U,
+				  cls.TARGET_VKE_O,
+				  cls.TARGET_VKE_X}
+
+	@classmethod
+	def targetToInsnClass(cls, target, toLoad=True):
+		"""Convert a target ID to its corresponding instruction class.
+		If 'toLoad' is True, the load instruction is returned.
+		If 'toLoad' is False, the store instruction is returned.
+		"""
+		if toLoad:
+			return cls.target2LoadInsnClass[target]
+		return cls.target2StoreInsnClass[target]
 
 	def __init__(self, elem, pos, dirIn, dirOut, wireId, text, virtual=False):
 		FupCompiler_BaseObj.__init__(self)
@@ -210,6 +253,20 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			wire = self.elem.grid.newWire(virtual=True)
 			wire.addConn(otherConn)
 		wire.addConn(self)
+
+	def compileConn(self, target=None, targetInsnClass=None):
+		"""Compile the element that owns this connection.
+		A compile target has to be specified. That is either a VKE
+		instruction target, or an ACCU1 load target.
+		target: one of TARGET_xxx,
+		targetInsnClass: An AwlInsn_xxx class.
+		Either target or targetInsnClass must be specified, but not both.
+		"""
+		assert(self.elem)
+		assert(bool(target) ^ bool(targetInsnClass))
+		if targetInsnClass:
+			target = self.loadInsnClass2Target[targetInsnClass]
+		return self.elem.compileConn(self, target)
 
 	def __repr__(self):
 		return "FupCompiler_Conn(elem, pos=%d, dirIn=%s, dirOut=%s, "\
