@@ -104,7 +104,7 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 			if elems:
 				text = []
 				for elem in elems:
-					text.append(str(elem))
+					text.append(elem.toStr())
 				extra.append("for " + " and ".join(text))
 		return self.toStr(extra=extra)
 
