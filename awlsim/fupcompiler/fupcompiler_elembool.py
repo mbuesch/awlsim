@@ -97,9 +97,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				# resulting VKE.
 				insns.extend(otherElem.compileToVKE(insnClass, insnBranchClass))
 			else:
-				raise AwlSimError("FUP compiler: Invalid "
-					"element '%s' connected to '%s'." % (
-					str(otherElem), str(self)))
+				insns.extend(otherConn.compileConn(targetInsnClass=insnClass))
 		return insns
 
 	def compileToVKE(self, insnClass, insnBranchClass):
