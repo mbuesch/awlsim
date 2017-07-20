@@ -75,6 +75,28 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				str(self)))
 		return conn_EN, conn_IN, conn_ENO
 
+	def compileConn(self, conn, desiredTarget):
+		insns = []
+		assert(conn in self.connections)
+		if conn.hasText("ENO"):
+			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
+				raise AwlSimError("FUP compiler: The ENO output "
+					"of FUP move box %s must only be connected "
+					"to boolean inputs." % (
+					str(self)))
+			if self.needCompile:
+				insns.extend(self.compile())
+			else:
+				awlInsnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
+										  toLoad=True)
+				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
+		else:
+			raise AwlSimError("FUP compiler: It is not known how to compile "
+				"the connection '%s' of FUP move box %s." % (
+				conn.text,
+				str(self)))
+		return insns
+
 	def __genVirtualAND(self, leftConn, rightConn):
 		# Transform this:
 		#   [x]-----------------------[rightConn]
