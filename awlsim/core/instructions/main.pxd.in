@@ -7,6 +7,7 @@ cdef class AwlInsn(object):
 	cdef public uint32_t insnType
 	cdef public object rawInsn
 	cdef public object labelStr
+	cdef public object commentStr
 	cdef public int32_t ip
 	cdef public list ops
 	cdef public uint32_t opCount
