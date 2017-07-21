@@ -275,11 +275,12 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		insns.append(self.newInsn(AwlInsn_ASSIGN, ops=[self._operator]))
 		otherElem = self.__getConnectedElem()
 
-		# If the other element connected to this operand has more
+		# If the other element connected to this operand is a boolean and has more
 		# than one connected element, we need to store the VKE for them.
-		if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
-		       for c in otherElem.outConnections):
-			insns.extend(otherElem._storeToTemp("BOOL", AwlInsn_ASSIGN))
+		if otherElem.isType(self.TYPE_BOOLEAN):
+			if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
+			       for c in otherElem.outConnections):
+				insns.extend(otherElem._storeToTemp("BOOL", AwlInsn_ASSIGN))
 
 		self.__storeEmitted = True
 		return insns
