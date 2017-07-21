@@ -242,7 +242,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				str(self), connText))
 		return connections[0]
 
-	MAIN_RESULT = None
+	MAIN_RESULT = 42
 
 	def _storeToTemp(self, dataTypeName, insnClass, connections=MAIN_RESULT):
 		insns = []
@@ -252,11 +252,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		opDesc = self.opTrans.translateFromString("#" + varName)
 		insns.append(self.newInsn(insnClass,
 					  ops=[opDesc.operator]))
-		if connections:
+		if connections is self.MAIN_RESULT:
+			self.__tempVarNames[self.MAIN_RESULT] = varName
+		else:
 			for conn in connections:
 				self.__tempVarNames[conn] = varName
-		else:
-			self.__tempVarNames[None] = varName
 
 		return insns
 
