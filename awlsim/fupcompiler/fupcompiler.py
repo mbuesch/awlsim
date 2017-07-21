@@ -226,7 +226,7 @@ class FupCompiler(object):
 		"""
 		self.blockInterfAwl = self.interf.compile()
 
-	def __compileGrids(self):
+	def __compileGrids(self, optimize):
 		"""Compile all self.grids
 		"""
 		# Compile the grids
@@ -235,13 +235,14 @@ class FupCompiler(object):
 			insns.extend(grid.compile())
 		insns.append(AwlInsn_BE(cpu=None))
 
-		# Optimize the generated instructions
-		optimizer = AwlOptimizer()
-		insns = optimizer.optimizeInsns(insns)
+		if optimize:
+			# Optimize the generated instructions
+			optimizer = AwlOptimizer()
+			insns = optimizer.optimizeInsns(insns)
 
 		return insns
 
-	def __trycompile(self, fupSource, mnemonics):
+	def __trycompile(self, fupSource, mnemonics, optimize):
 		self.reset()
 		self.fupSource = fupSource
 		self.mnemonics = mnemonics
@@ -250,25 +251,27 @@ class FupCompiler(object):
 					   filepath=fupSource.filepath)
 		if self.__parse():
 			self.__compileBlockDecl()
-			insns = self.__compileGrids()
+			insns = self.__compileGrids(optimize)
 			self.__compileInterface()
 
 			# Store the AWL code in the AWL source object.
 			self.awlSource.sourceBytes = self.__genAwlCode(insns)
 		return self.getAwlSource()
 
-	def compile(self, fupSource, mnemonics):
+	def compile(self, fupSource, mnemonics, optimize=True):
 		"""Compile a FupSource.
 		mnemonics is either MNEMONICS_EN, MNEMONICS_DE or MNEMONICS_AUTO.
 		Returns an AwlSource.
 		"""
 		if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
 			try:
-				return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_EN)
+				return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_EN,
+							 optimize=optimize)
 			except AwlSimError as e:
 				pass
-			return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_DE)
-		return self.__trycompile(fupSource, mnemonics)
+			return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_DE,
+						 optimize=optimize)
+		return self.__trycompile(fupSource, mnemonics, optimize=optimize)
 
 	def generateCallTemplate(self):
 		"""Generate template AWL code for a CALL operation
