@@ -110,14 +110,20 @@ class FupFactory(XmlFactory):
 		return tags
 
 class FupEditWidgetMenu(QMenu):
+	showAwlOpt = Signal()
 	showAwl = Signal()
+	showStlOpt = Signal()
 	showStl = Signal()
 	genCall = Signal()
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
+		self.addAction("Show AWL code (DE, optimized)...",
+			       lambda: self.showAwlOpt.emit())
 		self.addAction("Show AWL code (DE)...",
 			       lambda: self.showAwl.emit())
+		self.addAction("Show STL code (EN, optimized)...",
+			       lambda: self.showStlOpt.emit())
 		self.addAction("Show STL code (EN)...",
 			       lambda: self.showStl.emit())
 		self.addAction("Generate CALL template...",
@@ -178,7 +184,9 @@ class FupWidget(QWidget):
 
 		self.interf.contentChanged.connect(self.diagramChanged)
 		self.edit.draw.diagramChanged.connect(self.diagramChanged)
+		self.edit.menu.showAwlOpt.connect(self.__compileAndShowAwlOpt)
 		self.edit.menu.showAwl.connect(self.__compileAndShowAwl)
+		self.edit.menu.showStlOpt.connect(self.__compileAndShowStlOpt)
 		self.edit.menu.showStl.connect(self.__compileAndShowStl)
 		self.edit.menu.genCall.connect(self.__generateCallTemplate)
 		self.diagramChanged.connect(self.__handleDiagramChange)
@@ -219,12 +227,13 @@ class FupWidget(QWidget):
 				"%s" % str(e))
 		self.__needSourceUpdate = True
 
-	def __compileAndShow(self, mnemonics, showCall):
+	def __compileAndShow(self, mnemonics, showCall, optimize=False):
 		fupSource = self.getSource()
 		try:
 			compiler = FupCompiler()
 			blockAwlSource = compiler.compile(fupSource=fupSource,
-							  mnemonics=mnemonics)
+							  mnemonics=mnemonics,
+							  optimize=optimize)
 			callAwlSource = compiler.generateCallTemplate()
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self, "FUP compiler error", e)
@@ -240,11 +249,17 @@ class FupWidget(QWidget):
 		dlg.edit.setSource(awlSource)
 		dlg.show()
 
+	def __compileAndShowAwlOpt(self):
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_DE, showCall=False, optimize=True)
+
 	def __compileAndShowAwl(self):
-		self.__compileAndShow(S7CPUConfig.MNEMONICS_DE, False)
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_DE, showCall=False, optimize=False)
+
+	def __compileAndShowStlOpt(self):
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, showCall=False, optimize=True)
 
 	def __compileAndShowStl(self):
-		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, False)
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, showCall=False, optimize=False)
 
 	def __generateCallTemplate(self):
-		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, True)
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, showCall=True)
