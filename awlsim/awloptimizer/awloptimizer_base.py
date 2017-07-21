@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - AWL optimizer
+# AWL simulator - AWL optimizer base class
 #
 # Copyright 2017 Michael Buesch <m@bues.ch>
 #
@@ -22,38 +22,22 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.awloptimizer.awloptimizer_nop import *
 
 __all__ = [
-	"AwlOptimizer",
+	"AwlOptimizer_Base",
 ]
 
 
-class AwlOptimizer(object):
-	"""AWL/STL program optimizer.
+class AwlOptimizer_Base(object):
+	"""AWL/STL optimizer base class
 	"""
 
-	def __init__(self,
-		     removeNOPs=True):
-		self.removeNOPs = removeNOPs
+	def __init__(self, optimizer):
+		self.optimizer = optimizer
 
-	def __optimize_Stage1(self, insns):
-		if self.removeNOPs:
-			insns = AwlOptimizer_NopRemove(self).run(insns)
-		return insns
-
-	def __optimize_Stage2(self, insns):
-		return insns
-
-	def __optimize_Stage3(self, insns):
-		return insns
-
-	def optimizeInsns(self, insns):
-		"""Optimize a list of AwlInsn_xxx instances.
-		insns: The list of instructions to optimize.
+	def run(self, insns):
+		"""Run the optimizer on the supplied list of instructions.
 		Returns the optimized list of instructions.
+		Override this method.
 		"""
-		insns = self.__optimize_Stage1(insns)
-		insns = self.__optimize_Stage2(insns)
-		insns = self.__optimize_Stage3(insns)
-		return insns
+		raise NotImplementedError
