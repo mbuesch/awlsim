@@ -24,7 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.awloptimizer.awloptimizer_base import *
 
-from awlsim.core.instructions.all_insns import *
+from awlsim.core.instructions.all_insns import * #+cimport
 
 
 __all__ = [
