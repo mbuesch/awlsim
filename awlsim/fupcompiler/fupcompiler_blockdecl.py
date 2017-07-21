@@ -101,9 +101,10 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 			dbName = "DB" + dbName[2:]
 		self.instanceDBs.append(dbName)
 
-	def compile(self, interf):
+	def compile(self, interf, optimize):
 		"""Compile this FUP block declaration to AWL.
 		interf => FupCompiler_Interf
+		optimized => True, if optimizer is enabled
 		Returns a tuple: (list of AWL header lines,
 				  list of AWL footer lines,
 				  list of AWL lines for instance DBs).
@@ -132,6 +133,7 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 			lines.append("// Source            : %s" % srcName)
 			lines.append("// Compiler version  : %s" % VERSION_STRING)
 			lines.append("// %s mnemonics     : %s" % (strAwl, strMnemonics))
+			lines.append("// Optimizer         : %s" % ("enabled" if optimize else "disabled"))
 			lines.append("// ")
 
 		def mkHdrInfo(lines):

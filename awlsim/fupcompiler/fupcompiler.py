@@ -215,16 +215,16 @@ class FupCompiler(object):
 
 		return ('\r\n'.join(awl) + '\r\n').encode(AwlSource.ENCODING)
 
-	def __compileBlockDecl(self):
+	def __compileBlockDecl(self, optimize):
 		"""Compile block declaration.
 		"""
 		self.blockHeaderAwl, self.blockFooterAwl, self.instanceDBsAwl =\
-			self.decl.compile(self.interf)
+			self.decl.compile(self.interf, optimize)
 
-	def __compileInterface(self):
+	def __compileInterface(self, optimize):
 		"""Compile block interface.
 		"""
-		self.blockInterfAwl = self.interf.compile()
+		self.blockInterfAwl = self.interf.compile(optimize)
 
 	def __compileGrids(self, optimize):
 		"""Compile all self.grids
@@ -250,9 +250,9 @@ class FupCompiler(object):
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
 		if self.__parse():
-			self.__compileBlockDecl()
+			self.__compileBlockDecl(optimize)
 			insns = self.__compileGrids(optimize)
-			self.__compileInterface()
+			self.__compileInterface(optimize)
 
 			# Store the AWL code in the AWL source object.
 			self.awlSource.sourceBytes = self.__genAwlCode(insns)
