@@ -32,6 +32,8 @@ from awlsim.core.operatortypes import * #+cimport
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
+from awlsim.awloptimizer.awloptimizer import *
+
 from awlsim.fupcompiler.fupcompiler_blockdecl import *
 from awlsim.fupcompiler.fupcompiler_interf import *
 from awlsim.fupcompiler.fupcompiler_grid import *
@@ -234,7 +236,8 @@ class FupCompiler(object):
 		insns.append(AwlInsn_BE(cpu=None))
 
 		# Optimize the generated instructions
-		pass#TODO
+		optimizer = AwlOptimizer()
+		insns = optimizer.optimizeInsns(insns)
 
 		return insns
 
