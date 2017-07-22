@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.core.operatortypes import * #+cimport
+
 
 __all__ = [
 	"AwlOptimizer_Base",
@@ -41,3 +43,28 @@ class AwlOptimizer_Base(object):
 		Override this method.
 		"""
 		raise NotImplementedError
+
+	class __FindResult(object):
+		def __init__(self, jmpSourceInsns=None, jmpTargetInsns=None):
+			"""jmpSourceInsns: Set of found jump instructions.
+			jmpTargetInsns: Set of found jump target instructions.
+			"""
+			self.jmpSourceInsns = jmpSourceInsns or set()
+			self.jmpTargetInsns = jmpTargetInsns or set()
+
+	def _findInsnsByLabel(self, insns, labelStr):
+		"""Find instructions by label.
+		insns: The list of instructions to search.
+		labelStr: The label string to look for.
+		"""
+		res = self.__FindResult()
+		for insn in insns:
+			# Check if this instruction is the jump target.
+			if insn.labelStr == labelStr:
+				res.jmpTargetInsns.add(insn)
+			# Check if this instruction is the jump source.
+			if len(insn.ops) == 1 and\
+			   insn.ops[0].operType == AwlOperatorTypes.LBL_REF and\
+			   insn.ops[0].immediateStr == labelStr:
+				res.jmpSourceInsns.add(insn)
+		return res
