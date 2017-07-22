@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.awloptimizer.awloptimizer_nop import *
+from awlsim.awloptimizer.awloptimizer_bieforward import *
+
 
 __all__ = [
 	"AwlOptimizer",
@@ -34,12 +36,16 @@ class AwlOptimizer(object):
 	"""
 
 	def __init__(self,
-		     removeNOPs=True):
+		     removeNOPs=True,
+		     removeBIEForwards=True):
 		self.removeNOPs = removeNOPs
+		self.removeBIEForwards = removeBIEForwards
 
 	def __optimize_Stage1(self, insns):
 		if self.removeNOPs:
 			insns = AwlOptimizer_NopRemove(self).run(insns)
+		if self.removeBIEForwards:
+			insns = AwlOptimizer_BIEForward(self).run(insns)
 		return insns
 
 	def __optimize_Stage2(self, insns):
