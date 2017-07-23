@@ -42,6 +42,7 @@ class FupConn_factory(XmlFactory):
 				dirOut = tag.getAttrInt("dir_out")
 				wireId = tag.getAttrInt("wire")
 				text = tag.getAttr("text", "")
+				inverted = tag.getAttrBool("inverted", False)
 				if pos < 0 or pos > 0xFFFF:
 					raise self.Error("Invalid <connection> pos.")
 				wire = self.elem.grid.getWireById(wireId)
@@ -49,7 +50,8 @@ class FupConn_factory(XmlFactory):
 					if dirIn and not dirOut:
 						self.elem.inputs.extend(
 							[None] * (pos + 1 - len(self.elem.inputs)))
-						conn = FupConnIn(elem=self.elem, wire=wire)
+						conn = FupConnIn(elem=self.elem, wire=wire,
+								 inverted=inverted)
 						if wire:
 							wire.connect(conn)
 						self.elem.inputs[pos] = conn
@@ -58,7 +60,8 @@ class FupConn_factory(XmlFactory):
 					elif dirOut and not dirIn:
 						self.elem.outputs.extend(
 							[None] * (pos + 1 - len(self.elem.outputs)))
-						conn = FupConnOut(elem=self.elem, wire=wire)
+						conn = FupConnOut(elem=self.elem, wire=wire,
+								  inverted=inverted)
 						if wire:
 							wire.connect(conn)
 						self.elem.outputs[pos] = conn
@@ -80,15 +83,18 @@ class FupConn_factory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		conn = self.conn
 		return [
 			self.Tag(name="connection",
 				attrs={
-					"dir_in" : str(int(self.conn.IN)),
-					"dir_out" : str(int(self.conn.OUT)),
-					"pos" : str(self.conn.pos),
-					"wire" : str(-1) if self.conn.wire is None
-						 else str(self.conn.wire.idNum),
-					"text" : str(self.conn.text),
+					"dir_in" : str(int(conn.IN)),
+					"dir_out" : str(int(conn.OUT)),
+					"pos" : str(conn.pos),
+					"wire" : str(-1) if conn.wire is None
+						 else str(conn.wire.idNum),
+					"text" : str(conn.text),
+					"inverted" : str(int(conn.inverted))\
+						     if conn.inverted else "",
 				}),
 		]
 
@@ -100,13 +106,14 @@ class FupConn(FupBaseClass):
 	IN = False
 	OUT = False
 
-	CONN_OFFS = 4	# Pixel offset in X direction
+	CONN_OFFS = 1	# Pixel offset in X direction
 
-	def __init__(self, elem=None, wire=None, text=""):
+	def __init__(self, elem=None, wire=None, text="", inverted=False):
 		FupBaseClass.__init__(self)
-		self.elem = elem	# The FupElem this connection belongs to
-		self.wire = wire	# The FupWire this connection is connected to (if any).
-		self.text = text	# Description text
+		self.elem = elem		# The FupElem this connection belongs to
+		self.wire = wire		# The FupWire this connection is connected to (if any).
+		self.text = text		# Description text
+		self.inverted = inverted	# Inverted connection (NOT)
 
 	@property
 	def pos(self):

@@ -636,6 +636,11 @@ class FupDrawWidget(QWidget):
 									newConn.connectTo(conn)
 								newElem.edit(self)
 							self.__contentChanged()
+				elif conn and conn.isConnected:
+					# Double click on a connected IN or OUT connection
+					# inverts the connection.
+					if elem.setConnInverted(conn, not conn.inverted):
+						self.__contentChanged()
 				else:
 					# Edit the element's contents
 					if elem.edit(self):

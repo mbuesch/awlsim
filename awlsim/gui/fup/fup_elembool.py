@@ -124,16 +124,26 @@ class FupElem_BOOLEAN(FupElem):
 		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
+		notR = 3
+		notD = notR * 2
 
 		# Draw inputs
+		painter.setBrush(self._bgBrush)
 		for i, conn in enumerate(self.inputs):
 			x = conn.CONN_OFFS if conn.isConnected else 0
 			y = (i * cellHeight) + (cellHeight // 2)
 			painter.setPen(self._connPen if conn.isConnected
 				       else self._connOpenPen)
 			painter.drawLine(x, y, xpad, y)
+			if conn.inverted:
+				painter.setPen(self._connInvSelPen\
+					       if self.selected else\
+					       self._connInvPen)
+				painter.drawEllipse(xpad - notD, y - notR,
+						    notD, notD)
 
 		# Draw output
+		painter.setBrush(self._bgBrush)
 		if self.outputs:
 			assert(len(self.outputs) == 1)
 			conn = self.outputs[0]
@@ -144,6 +154,12 @@ class FupElem_BOOLEAN(FupElem):
 				       else self._connOpenPen)
 			painter.drawLine(cellWidth - xpad, y,
 					 cellWidth, y)
+			if conn.inverted:
+				painter.setPen(self._connInvSelPen\
+					       if self.selected else\
+					       self._connInvPen)
+				painter.drawEllipse(cellWidth - xpad, y - notR,
+						    notD, notD)
 
 		# Draw body
 		painter.setPen(self._outlineSelPen if self.selected
@@ -168,6 +184,13 @@ class FupElem_BOOLEAN(FupElem):
 		menu.enableAddInput(True)
 		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)
+
+	# Overridden method. For documentation see base class.
+	def setConnInverted(self, conn, inverted=True):
+		if conn in self.inputs or conn in self.outputs:
+			conn.inverted = inverted
+			return True
+		return False
 
 class FupElem_AND(FupElem_BOOLEAN):
 	"""AND FUP/FBD element"""

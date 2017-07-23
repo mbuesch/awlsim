@@ -148,6 +148,10 @@ class FupElem(FupBaseClass):
 		self._connPen.setWidth(lineWidth)
 		self._connOpenPen = QPen(QColor("#DF6060"))
 		self._connOpenPen.setWidth(lineWidth)
+		self._connInvPen = QPen(QColor("#000000"))
+		self._connInvPen.setWidth(lineWidth)
+		self._connInvSelPen = QPen(QColor("#0000FF"))
+		self._connInvSelPen.setWidth(lineWidth)
 		self._bgBrush = QBrush(QColor("#FFFFFF"))
 		self._bgSelBrush = QBrush(QColor("#BBBBBB"))
 		self._textPen = QPen(QColor("#000000"))
@@ -479,6 +483,12 @@ class FupElem(FupBaseClass):
 	def edit(self, parentWidget):
 		"""Edit the element's contents.
 		Returns True, if a repaint is required.
+		"""
+		return False
+
+	def setConnInverted(self, conn, inverted=True):
+		"""Set a connection to inverted or not-inverted.
+		Returns True, if the connection has successfully been inverted.
 		"""
 		return False
 
