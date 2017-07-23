@@ -181,6 +181,7 @@ class FupElem_BOOLEAN(FupElem):
 
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
+		menu.enableInvertConn(True)
 		menu.enableAddInput(True)
 		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)

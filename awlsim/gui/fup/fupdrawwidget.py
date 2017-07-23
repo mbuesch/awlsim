@@ -34,6 +34,7 @@ class FupContextMenu(QMenu):
 
 	edit = Signal()
 	remove = Signal()
+	invertConn = Signal()
 	addInput = Signal()
 	addOutput = Signal()
 	removeConn = Signal()
@@ -51,6 +52,9 @@ class FupContextMenu(QMenu):
 		self.__actDel = self.addAction(getIcon("doc_close"),
 					       "&Remove element", self.__del)
 		self.addSeparator()
+		self.__actInvertConn = self.addAction(getIcon("doc_edit"),
+						      "In&vert connection",
+						      self.__invertConn)
 		self.__actAddInp = self.addAction(getIcon("new"),
 						  "Add input &connection",
 						  self.__addInput)
@@ -70,6 +74,9 @@ class FupContextMenu(QMenu):
 	def __del(self):
 		self.remove.emit()
 
+	def __invertConn(self):
+		self.invertConn.emit()
+
 	def __addInput(self):
 		self.addInput.emit()
 
@@ -87,6 +94,9 @@ class FupContextMenu(QMenu):
 
 	def enableRemove(self, en=True):
 		self.__actDel.setEnabled(en)
+
+	def enableInvertConn(self, en=True):
+		self.__actInvertConn.setEnabled(en)
 
 	def enableAddInput(self, en=True):
 		self.__actAddInp.setEnabled(en)
@@ -120,6 +130,7 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu = FupContextMenu(self)
 		self.__contextMenu.remove.connect(self.removeElems)
 		self.__contextMenu.edit.connect(self.editElems)
+		self.__contextMenu.invertConn.connect(self.invertElemConn)
 		self.__contextMenu.addInput.connect(self.addElemInput)
 		self.__contextMenu.addOutput.connect(self.addElemOutput)
 		self.__contextMenu.removeConn.connect(self.removeElemConn)
@@ -282,6 +293,15 @@ class FupDrawWidget(QWidget):
 				elem = self.__grid.clickedElem
 			if elem:
 				if elem.addConn(FupConnOut()):
+					self.__contentChanged()
+
+	def invertElemConn(self, conn=None):
+		if self.__grid:
+			if not conn:
+				conn = self.__grid.clickedConn
+			if conn and conn.elem:
+				if conn.elem.setConnInverted(conn,
+							     not conn.inverted):
 					self.__contentChanged()
 
 	def removeElemConn(self, conn=None):
@@ -485,6 +505,7 @@ class FupDrawWidget(QWidget):
 			# Open the context menu
 			self.__contextMenu.enableRemove(elem is not None)
 			self.__contextMenu.enableEdit(False)
+			self.__contextMenu.enableInvertConn(False)
 			self.__contextMenu.enableAddInput(False)
 			self.__contextMenu.enableAddOutput(False)
 			self.__contextMenu.enableRemoveConn(False)
@@ -639,8 +660,7 @@ class FupDrawWidget(QWidget):
 				elif conn and conn.isConnected:
 					# Double click on a connected IN or OUT connection
 					# inverts the connection.
-					if elem.setConnInverted(conn, not conn.inverted):
-						self.__contentChanged()
+					self.invertElemConn(conn)
 				else:
 					# Edit the element's contents
 					if elem.edit(self):
