@@ -55,6 +55,8 @@ class FupElem_OPERAND(FupElem):
 
 	factory = FupElem_OPERAND_factory
 
+	BODY_CORNER_RADIUS = 2
+
 	def __init__(self, x, y, contentText=""):
 		FupElem.__init__(self, x, y)
 
@@ -127,7 +129,9 @@ class FupElem_OPERAND(FupElem):
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		w, h = trX - tlX, blY - tlY	# width / height
 		bodyRect = QRect(tlX, tlY, w, h)
-		painter.drawRect(bodyRect)
+		painter.drawRoundedRect(bodyRect,
+					self.BODY_CORNER_RADIUS,
+					self.BODY_CORNER_RADIUS)
 
 		# Draw the text
 		text = self.contentText

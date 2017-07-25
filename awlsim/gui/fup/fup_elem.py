@@ -126,6 +126,9 @@ class FupElem(FupBaseClass):
 	AREA_OUTPUT	= EnumGen.item
 	EnumGen.end
 
+	# Corner radius of the body box
+	BODY_CORNER_RADIUS	= 5
+
 	def __init__(self, x, y):
 		FupBaseClass.__init__(self)
 		self.x = x		# X position as grid coordinates

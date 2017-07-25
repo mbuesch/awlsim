@@ -168,11 +168,10 @@ class FupElem_MOVE(FupElem):
 			       else self._outlinePen)
 		painter.setBrush(self._bgBrush)
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
-		polygon = QPolygon([QPoint(tlX, tlY),
-				    QPoint(trX, trY),
-				    QPoint(brX, brY),
-				    QPoint(blX, blY)])
-		painter.drawPolygon(polygon, Qt.OddEvenFill)
+		painter.drawRoundedRect(tlX, tlY,
+					trX - tlX, blY - tlY,
+					self.BODY_CORNER_RADIUS,
+					self.BODY_CORNER_RADIUS)
 
 		# Draw inputs
 		painter.setFont(getDefaultFixedFont(8))
