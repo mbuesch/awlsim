@@ -103,6 +103,29 @@ class FupCompilerFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler(object):
+
+	# Convert U to UN and vice versa.
+	invertedInsnClass = {
+		AwlInsn_UN	: AwlInsn_U,
+		AwlInsn_UNB	: AwlInsn_UB,
+		AwlInsn_ON	: AwlInsn_O,
+		AwlInsn_ONB	: AwlInsn_OB,
+		AwlInsn_XN	: AwlInsn_X,
+		AwlInsn_XNB	: AwlInsn_XB,
+	}
+	invertedInsnClass.update(pivotDict(invertedInsnClass))
+
+	# Convert U to UB and vice versa.
+	branchInsnClass = {
+		AwlInsn_UB	: AwlInsn_U,
+		AwlInsn_UNB	: AwlInsn_UN,
+		AwlInsn_OB	: AwlInsn_O,
+		AwlInsn_ONB	: AwlInsn_ON,
+		AwlInsn_XB	: AwlInsn_X,
+		AwlInsn_XNB	: AwlInsn_XN,
+	}
+	branchInsnClass.update(pivotDict(branchInsnClass))
+
 	def __init__(self):
 		self.reset()
 
