@@ -126,17 +126,19 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 		# Constructor class used for LOAD operand.
 		self.__insnClass = None
 
-	def setInsnClass(self, insnClass):
+	def setInsnClass(self, insnClass, inverted=False):
+		if inverted and insnClass:
+			insnClass = self.compiler.invertedInsnClass[insnClass]
 		self.__insnClass = insnClass
 
-	def compileOperLoad(self, insnClass, allowedConnTypes):
+	def compileOperLoad(self, insnClass, allowedConnTypes, inverted=False):
 		"""Set the instruction class and compile this load operator.
 		insnClass => The AwlInsn class that performs the load.
 		allowedConnTypes => Iterable of allowed connection types.
 		Returns the instruction.
 		"""
 		try:
-			self.setInsnClass(insnClass)
+			self.setInsnClass(insnClass, inverted)
 			insn = self.compile()
 			if self.getConnType(None) not in allowedConnTypes:
 				raise AwlSimError("FUP compiler: "
@@ -227,10 +229,9 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 		return insns
 
-	def __getConnectedElem(self):
-		"""Get the element that is connected to this operator element.
+	def __getConn(self):
+		"""Get the one input connection of this element.
 		"""
-
 		# Only one connection allowed per ASSIGN.
 		if len(self.connections) != 1:
 			raise AwlSimError("FUP ASSIGN: Invalid number of "
@@ -244,7 +245,12 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 				"properties in '%s'." % (
 				str(self)))
 
-		conn = getany(self.connections)
+		return conn
+
+	def __getConnectedElem(self):
+		"""Get the element that is connected to this operator element.
+		"""
+		conn = self.__getConn()
 		otherElem = conn.getConnectedElem(viaOut=True)
 		return otherElem
 
