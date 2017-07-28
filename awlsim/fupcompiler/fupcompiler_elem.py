@@ -288,10 +288,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 		return insns
 
-	def compileConn(self, conn, desiredTarget):
+	def compileConn(self, conn, desiredTarget, inverted=False):
 		"""Compile this element
 		and get the value corresponding to the given connection.
 		The desiredTarget is one of FupCompiler_Conn.TARGET_...
+		If 'inverted' is True, the result will be stored inverted.
+		Inversion is only possible for VKE based targets.
 		The default implementation raises an exception.
 		Override this method, if required.
 		"""

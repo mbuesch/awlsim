@@ -75,7 +75,13 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 					  subType=subType, content=content,
 					  **kwargs)
 
-	def _doCompileBool(self, insnClass, insnBranchClass):
+	def __getOutConn(self):
+		outConnections = list(self.outConnections)
+		if len(outConnections) != 1:
+			raise AwlSimError("Boolean elements only support one output.")
+		return outConnections[0]
+
+	def _doCompileBool(self, insnClass):
 		insns = []
 		# Walk down each input connection of this element.
 		for conn in sorted(self.inConnections, key=lambda c: c.pos):
@@ -90,35 +96,44 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				# This generates:  U #oper , O #oper or something similar.
 				insns.extend(otherElem.compileOperLoad(
 						insnClass,
-						{ FupCompiler_Conn.TYPE_VKE, }))
+						{ FupCompiler_Conn.TYPE_VKE, },
+						inverted=conn.inverted))
 			elif otherElem.isType(self.TYPE_BOOLEAN):
 				# The other element we get the signal from
 				# is a boolean element. Compile this to get its
 				# resulting VKE.
-				insns.extend(otherElem.compileToVKE(insnClass, insnBranchClass))
+				insns.extend(otherElem.compileToVKE(insnClass=insnClass,
+								    inverted=conn.inverted))
 			else:
-				insns.extend(otherConn.compileConn(targetInsnClass=insnClass))
+				insns.extend(otherConn.compileConn(targetInsnClass=insnClass,
+								   inverted=conn.inverted))
+		outConn = self.__getOutConn()
+		if outConn.inverted:
+			insns.append(self.newInsn(AwlInsn_NOT))
 		return insns
 
-	def compileToVKE(self, insnClass, insnBranchClass):
+	def compileToVKE(self, insnClass, inverted=False):
 		"""Compile this boolean operation in a way that after the last
 		instruction returned by this method the result of this element
 		resides in the VKE.
 		insnClass => The AwlInsn class used to load to VKE.
-		insnBranchClass => The AwlInsn class used to open a branch.
 		Returns a list of AwlInsn instances.
 		"""
 		insns = []
 		if self.needCompile:
+			insnBranchClass = self.compiler.branchInsnClass[insnClass]
+			if inverted:
+				insnBranchClass = self.compiler.invertedInsnClass[insnBranchClass]
 			insns.append(self.newInsn(insnBranchClass))
 			insns.extend(self.compile())
 			# Store result to a TEMP variable, if required.
-			if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
-			       for c in self.outConnections):
+			if len(tuple(self.__getOutConn().getConnectedConns(getInputs=True))) > 1:
 				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN))
 			insns.append(self.newInsn(AwlInsn_BEND))
 		else:
 			# Get the stored result from TEMP.
+			if inverted:
+				insnClass = self.compiler.invertedInsnClass[insnClass]
 			insns.extend(self._loadFromTemp(insnClass))
 		return insns
 
@@ -135,7 +150,7 @@ class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 					      **kwargs)
 
 	def _doCompile(self):
-		return self._doCompileBool(AwlInsn_U, AwlInsn_UB)
+		return self._doCompileBool(AwlInsn_U)
 
 class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean OR element.
@@ -150,7 +165,7 @@ class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 					      **kwargs)
 
 	def _doCompile(self):
-		return self._doCompileBool(AwlInsn_O, AwlInsn_OB)
+		return self._doCompileBool(AwlInsn_O)
 
 class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean XOR element.
@@ -165,4 +180,4 @@ class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 					      **kwargs)
 
 	def _doCompile(self):
-		return self._doCompileBool(AwlInsn_X, AwlInsn_XB)
+		return self._doCompileBool(AwlInsn_X)

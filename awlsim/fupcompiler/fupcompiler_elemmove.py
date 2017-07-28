@@ -75,7 +75,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				str(self)))
 		return conn_EN, conn_IN, conn_ENO
 
-	def compileConn(self, conn, desiredTarget):
+	def compileConn(self, conn, desiredTarget, inverted=False):
 		insns = []
 		assert(conn in self.connections)
 		if conn.hasText("ENO"):
@@ -86,9 +86,12 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 					str(self)))
 			if self.needCompile:
 				insns.extend(self.compile())
+				if inverted:
+					insns.append(self.newInsn(AwlInsn_NOT))
 			else:
 				awlInsnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
-										  toLoad=True)
+										  toLoad=True,
+										  inverted=inverted)
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
 			raise AwlSimError("FUP compiler: It is not known how to compile "
@@ -229,7 +232,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 				# The other element we get the signal from
 				# is a boolean element. Compile this to get its
 				# resulting VKE.
-				insns.extend(otherElem.compileToVKE(AwlInsn_U, AwlInsn_UB))
+				insns.extend(otherElem.compileToVKE(AwlInsn_U))
 			elif otherElem.isType(self.TYPE_MOVE):
 				if otherElem.needCompile:
 					insns.extend(otherElem.compile())

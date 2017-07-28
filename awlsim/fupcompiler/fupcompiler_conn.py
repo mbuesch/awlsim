@@ -43,8 +43,9 @@ class FupCompiler_ConnFactory(XmlFactory):
 				dirOut = tag.getAttrInt("dir_out")
 				wireId = tag.getAttrInt("wire")
 				text = tag.getAttr("text", "")
+				inverted = tag.getAttrBool("inverted", False)
 				conn = FupCompiler_Conn(self.elem,
-					pos, dirIn, dirOut, wireId, text)
+					pos, dirIn, dirOut, wireId, text, inverted)
 				if not self.elem.addConn(conn):
 					raise self.Error("Invalid connection")
 				return
@@ -104,6 +105,7 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		"dirOut",
 		"wireId",
 		"text",
+		"inverted",
 		"virtual",
 		"wire",
 	)
@@ -117,16 +119,28 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 				  cls.TARGET_VKE_X}
 
 	@classmethod
-	def targetToInsnClass(cls, target, toLoad=True):
+	def targetToInsnClass(cls, target, toLoad=True, inverted=False):
 		"""Convert a target ID to its corresponding instruction class.
 		If 'toLoad' is True, the load instruction is returned.
 		If 'toLoad' is False, the store instruction is returned.
+		If 'inverted' is True, the inverted boolean is returned.
 		"""
-		if toLoad:
-			return cls.target2LoadInsnClass[target]
-		return cls.target2StoreInsnClass[target]
+		from awlsim.fupcompiler.fupcompiler import FupCompiler
 
-	def __init__(self, elem, pos, dirIn, dirOut, wireId, text, virtual=False):
+		if inverted and not toLoad:
+			raise AwlSimError("Boolean inversion is not "
+				"supported for boolean store instructions.")
+		if toLoad:
+			insnClass = cls.target2LoadInsnClass[target]
+		else:
+			insnClass = cls.target2StoreInsnClass[target]
+		if inverted:
+			insnClass = FupCompiler.invertedInsnClass[insnClass]
+		return insnClass
+
+	def __init__(self, elem, pos, dirIn, dirOut, wireId, text,
+		     inverted=False,
+		     virtual=False):
 		FupCompiler_BaseObj.__init__(self)
 		self.elem = elem		# FupCompiler_Elem
 		self.pos = pos			# Position index
@@ -134,7 +148,8 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		self.dirOut = bool(dirOut)	# Output
 		self.wireId = wireId		# Wire ID number
 		self.text = text or ""		# Connection text (optional)
-		self.virtual = virtual		# True, if this is a virtual connection
+		self.inverted = bool(inverted)	# True, if logically inverted connection
+		self.virtual = bool(virtual)	# True, if this is a virtual connection
 
 		self.wire = None
 
@@ -260,25 +275,27 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			wire.addConn(otherConn)
 		wire.addConn(self)
 
-	def compileConn(self, target=None, targetInsnClass=None):
+	def compileConn(self, target=None, targetInsnClass=None, inverted=False):
 		"""Compile the element that owns this connection.
 		A compile target has to be specified. That is either a VKE
 		instruction target, or an ACCU1 load target.
 		target: one of TARGET_xxx,
 		targetInsnClass: An AwlInsn_xxx class.
+		inverted: If True, generate an inverted boolean instruction.
 		Either target or targetInsnClass must be specified, but not both.
 		"""
 		assert(self.elem)
 		assert(bool(target) ^ bool(targetInsnClass))
 		if targetInsnClass:
 			target = self.loadInsnClass2Target[targetInsnClass]
-		return self.elem.compileConn(self, target)
+		return self.elem.compileConn(self, target, inverted)
 
 	def __repr__(self):
 		return "FupCompiler_Conn(elem, pos=%d, dirIn=%s, dirOut=%s, "\
-					"wireId=%d, text=\"%s\", virtual=%s)" % (
+					"wireId=%d, text=\"%s\", "\
+					"inverted=%s, virtual=%s)" % (
 			self.pos, self.dirIn, self.dirOut, self.wireId,
-			self.text, self.virtual)
+			self.text, self.inverted, self.virtual)
 
 	def __str__(self):
 		fields = []
@@ -286,6 +303,8 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			fields.append('"%s"' % self.text)
 		else:
 			fields.append("pos=%s" % self.pos)
+		if self.inverted:
+			fields.append("inverted")
 		if self.elem:
 			fields.append(str(self.elem))
 		if self.virtual:
