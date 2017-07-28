@@ -154,6 +154,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		if virtual:
 			self.forceCompileState(self.COMPILE_PREPROCESSED)
 
+	@property
+	def compiler(self):
+		if self.grid:
+			return self.grid.compiler
+		return None
+
 	def isType(self, elemType, subType=None):
 		"""Check the TYPE and SUBTYPE of this element.
 		If 'subType' is None, the subType is not checked.

@@ -138,6 +138,12 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 
 		self.wire = None
 
+	@property
+	def compiler(self):
+		if self.elem:
+			return self.elem.compiler
+		return None
+
 	def hasText(self, text):
 		"""Returns True, if the connection text matches.
 		This does a case insensitive compare.
