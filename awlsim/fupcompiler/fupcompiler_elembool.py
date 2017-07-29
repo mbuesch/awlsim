@@ -78,7 +78,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 	def __getOutConn(self):
 		outConnections = list(self.outConnections)
 		if len(outConnections) != 1:
-			raise AwlSimError("Boolean elements only support one output.")
+			raise FupElemError("Boolean elements only support one output.", self)
 		return outConnections[0]
 
 	def _doCompileBool(self, insnClass):

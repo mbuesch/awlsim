@@ -82,8 +82,9 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 	def setBlockType(self, blockType):
 		self.blockType = blockType.upper().strip()
 		if self.blockType not in {"FC", "FB", "OB"}:
-			raise AwlSimError("FupCompiler_BlockDecl: Invalid block "
-				"type: %s" % self.blockType)
+			raise FupDeclError("Invalid block type: %s" % (
+				self.blockType),
+				self)
 
 	def setBlockName(self, blockName):
 		blockName = blockName.strip()
@@ -143,13 +144,14 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 
 		if self.blockType == "FC":
 			if not interf.retValField:
-				raise AwlSimError("FupCompiler_BlockDecl: RET_VAL "
-					"is not defined for %s." %\
-					 self.blockName)
+				raise FupDeclError("RET_VAL is not defined for %s." % (
+					 self.blockName),
+					 self)
 			retVal = interf.retValField.typeStr
 			if not AwlName.mayBeValidType(retVal):
-				raise AwlSimError("FupCompiler_BlockDecl: RET_VAL "
-					"data type contains invalid characters.")
+				raise FupDeclError("RET_VAL data type contains "
+					"invalid characters.",
+					self)
 			mkIntro(blockHeader, "FUNCTION")
 			blockHeader.append("FUNCTION %s : %s" %(
 					   self.blockName, retVal))
@@ -168,8 +170,9 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 			mkHdrInfo(blockHeader)
 			blockFooter.append("END_ORGANIZATION_BLOCK")
 		else:
-			raise AwlSimError("FupCompiler_BlockDecl: Unknown block "
-				"type: %s" % self.blockType)
+			raise FupDeclError("Unknown block type: %s" % (
+				self.blockType),
+				self)
 
 		for dbName in self.instanceDBs:
 			instDBs.append("")
@@ -186,17 +189,20 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 				if not initValueStr:
 					continue
 				if not AwlName.isValidVarName(fieldName):
-					raise AwlSimError("FupCompiler_BlockDecl: Variable name "
-						"'%s' contains invalid characters." %\
-						fieldName)
+					raise FupDeclError("Variable name "
+						"'%s' contains invalid characters." % (
+						fieldName),
+						self)
 				if not AwlName.mayBeValidValue(initValueStr):
-					raise AwlSimError("FupCompiler_BlockDecl: Variable value "
-						"'%s' contains invalid characters." %\
-						initValueStr)
+					raise FupDeclError("Variable value "
+						"'%s' contains invalid characters." % (
+						initValueStr),
+						self)
 				if not AwlName.isValidComment(comment):
-					raise AwlSimError("FupCompiler_BlockDecl: Comment "
-						"'%s' contains invalid characters." %\
-						comment)
+					raise FupDeclError("Comment "
+						"'%s' contains invalid characters." % (
+						comment),
+						self)
 				instDBs.append("\t%s := %s;%s" %(
 					fieldName, initValueStr,
 					("  // " + comment) if comment else ""))
@@ -218,8 +224,15 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 		elif self.blockType == "FB":
 			awlLines.append("\tCALL %s, DB ..." % self.blockName)
 		else:
-			raise AwlSimError("FupCompiler_BlockDecl: Cannot generate "
+			raise FupDeclError("Cannot generate "
 				"CALL to %s block." % (
-				self.blockType))
+				self.blockType),
+				self)
 
 		return awlLines
+
+	def __repr__(self):
+		return "FupCompiler_BlockDecl(compiler)"
+
+	def __str__(self):
+		return "FUP-block-declaration"

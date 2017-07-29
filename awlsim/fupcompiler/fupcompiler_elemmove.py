@@ -70,9 +70,10 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		conn_IN = self.getUniqueConnByText("IN", searchInputs=True)
 		conn_ENO = self.getUniqueConnByText("ENO", searchOutputs=True)
 		if not conn_EN or not conn_IN or not conn_ENO:
-			raise AwlSimError("FUP compiler: Invalid connections "
+			raise FupElemError("Invalid connections "
 				"in FUP move box %s." % (
-				str(self)))
+				str(self)),
+				self)
 		return conn_EN, conn_IN, conn_ENO
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
@@ -80,10 +81,11 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		assert(conn in self.connections)
 		if conn.hasText("ENO"):
 			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
-				raise AwlSimError("FUP compiler: The ENO output "
+				raise FupElemError("The ENO output "
 					"of FUP move box %s must only be connected "
 					"to boolean inputs." % (
-					str(self)))
+					str(self)),
+					self)
 			if self.needCompile:
 				insns.extend(self.compile())
 				if inverted:
@@ -94,10 +96,11 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 										  inverted=inverted)
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
-			raise AwlSimError("FUP compiler: It is not known how to compile "
+			raise FupElemError("It is not known how to compile "
 				"the connection '%s' of FUP move box %s." % (
 				conn.text,
-				str(self)))
+				str(self)),
+				self)
 		return insns
 
 	def __genVirtualAND(self, leftConn, rightConn):
@@ -184,9 +187,10 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		if not connectedElem_IN.isType(self.TYPE_OPERAND,
 					       FupCompiler_ElemOper.SUBTYPE_LOAD):
 			if not connectedElem_IN.isType(self.TYPE_MOVE):
-				raise AwlSimError("FUP compiler: The element %s that is "
+				raise FupElemError("The element %s that is "
 					"connected to IN of %s is not allowed here." % (
-					str(connectedElem_IN), str(self)))
+					str(connectedElem_IN), str(self)),
+					self)
 			otherConn_ENO = connectedElem_IN.getUniqueConnByText("ENO",
 									     searchOutputs=True)
 			if conn_EN.isConnected:
@@ -240,9 +244,10 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 					otherConn_ENO = otherElem.getUniqueConnByText("ENO", searchOutputs=True)
 					insns.extend(otherElem._loadFromTemp(AwlInsn_U, otherConn_ENO))
 			else:
-				raise AwlSimError("FUP compiler: Invalid "
+				raise FupElemError("Invalid "
 					"element '%s' connected to '%s'." % (
-					str(otherElem), str(self)))
+					str(otherElem), str(self)),
+					self)
 
 			# Emit the jump instruction.
 			# This will evaluate the current VKE.
@@ -256,10 +261,11 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		else:
 			insns.extend(connectedElem_IN._loadFromTemp(AwlInsn_L, self.MAIN_RESULT))
 		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
-			raise AwlSimError("FUP compiler: The IN connection "
+			raise FupElemError("The IN connection "
 				"of the FUP move box %s must not be connected "
 				"to a bit (VKE) wire." % (
-				str(self)))
+				str(self)),
+				self)
 
 		# Assign the outputs.
 		storeToTempConns = set()

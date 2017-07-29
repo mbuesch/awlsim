@@ -155,7 +155,7 @@ class FupCompiler(object):
 		labelMax = 0xFFF
 		labelCounter = self.__labelCounter
 		if labelCounter > labelMax:
-			raise AwlSimError("FUP compiler: Out of jump labels. "
+			raise FupCompilerError("Out of jump labels. "
 				"Cannot create more than %d labels." % (
 				labelMax))
 		self.__labelCounter += 1
@@ -187,7 +187,7 @@ class FupCompiler(object):
 			fieldName = str(oper.offset.identChain)
 			field = self.interf.getFieldByName(fieldName)
 			if not field:
-				raise AwlSimError("FUP compiler: Interface field "
+				raise FupCompilerError("Interface field "
 					"'#%s' could not be found in the "
 					"declared interface." % (
 					fieldName))
@@ -199,7 +199,7 @@ class FupCompiler(object):
 			# and return its bit width.
 			fieldName = str(oper.offset.identChain)
 			pass#TODO
-			raise AwlSimError("FUP compiler: The symbolic operator \"%s\" is "
+			raise FupCompilerError("The symbolic operator \"%s\" is "
 				"not supported, yet." % (
 				fieldName))
 		return 0
@@ -209,7 +209,7 @@ class FupCompiler(object):
 			return FupCompilerFactory(compiler=self).parse(
 				self.fupSource.sourceBytes)
 		except FupCompilerFactory.Error as e:
-			raise AwlSimError("Failed to parse FUP source: "
+			raise FupCompilerError("Failed to parse FUP source: "
 				"%s" % str(e))
 
 	def __genAwlCode(self, insns):
@@ -302,7 +302,7 @@ class FupCompiler(object):
 		Returns an AwlSource.
 		"""
 		if not self.fupSource:
-			raise AwlSimError("FUP/FBD source is not compiled.")
+			raise FupCompilerError("FUP/FBD source is not compiled.")
 
 		awlLines = []
 		awlLines.extend(self.decl.generateCallTemplate())
@@ -317,3 +317,9 @@ class FupCompiler(object):
 		awlSource = AwlSource(name=("CALL " + self.fupSource.name))
 		awlSource.sourceBytes = awlString.encode(AwlSource.ENCODING)
 		return awlSource
+
+	def __repr__(self):
+		return "FupCompiler()"
+
+	def __str__(self):
+		return "FUP-compiler"

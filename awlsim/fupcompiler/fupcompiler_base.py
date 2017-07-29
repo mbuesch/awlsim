@@ -33,9 +33,36 @@ class FupCompilerError(AwlSimError):
 
 	def __init__(self, message, fupObj=None):
 		if fupObj:
-			message += "\nAffected FUP/FBD element: %s" % str(fupObj)
+			fupObjStr = str(fupObj).strip()
+			if fupObjStr:
+				message += "\n\nThe reporting FUP/FBD element is:\n"\
+					   "%s" % fupObjStr
 		AwlSimError.__init__(self, message)
 		self.fupObj = fupObj
+
+class FupInterfError(FupCompilerError):
+	"""FUP compiler exception in FUP interface.
+	"""
+
+class FupDeclError(FupCompilerError):
+	"""FUP compiler exception in FUP declaration.
+	"""
+
+class FupGridError(FupCompilerError):
+	"""FUP compiler exception in FUP grid.
+	"""
+
+class FupConnError(FupCompilerError):
+	"""FUP compiler exception in FUP connection.
+	"""
+
+class FupElemError(FupCompilerError):
+	"""FUP compiler exception in FUP element.
+	"""
+
+class FupOperError(FupElemError):
+	"""FUP compiler exception in FUP operator.
+	"""
 
 class FupCompiler_BaseObj(object):
 	"""FUP compiler base class.

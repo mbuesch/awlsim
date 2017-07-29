@@ -100,7 +100,8 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		extra = []
 		if len(self.connections) == 1:
 			conn = getany(self.connections)
-			elems = list(conn.getConnectedElems(viaOut=True, viaIn=True))
+			elems = list(conn.getConnectedElems(viaOut=conn.dirIn,
+							    viaIn=conn.dirOut))
 			if elems:
 				text = []
 				for elem in elems:
@@ -141,10 +142,10 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 			self.setInsnClass(insnClass, inverted)
 			insn = self.compile()
 			if self.getConnType(None) not in allowedConnTypes:
-				raise AwlSimError("FUP compiler: "
-					"The load operand '%s' type is not "
+				raise FupOperError("The load operand '%s' type is not "
 					"allowed here." % (
-					str(self)))
+					str(self)),
+					self)
 			return insn
 		finally:
 			self.setInsnClass(None)
@@ -154,8 +155,9 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 
 		# Translate the operator
 		if not self.content.strip():
-			raise AwlSimError("FUP LOAD: Found empty load operator: %s" % (
-				str(self)))
+			raise FupOperError("Found empty load operator: %s" % (
+				str(self)),
+				self)
 		opDesc = self.opTrans.translateFromString(self.content)
 		self._operator = opDesc.operator
 
@@ -170,9 +172,10 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 			elif self.operatorWidth in {8, 16, 32}:
 				insnClass = AwlInsn_L
 			else:
-				raise AwlSimError("FUP LOAD: Invalid operator width %d "
+				raise FupOperError("Invalid operator width %d "
 					"in load operator: %s" % (
-					self.operatorWidth, str(self)))
+					self.operatorWidth, str(self)),
+					self)
 
 		# Create the LOAD instruction.
 		insns.append(self.newInsn(insnClass, ops=[self._operator]))
@@ -234,16 +237,18 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		"""
 		# Only one connection allowed per ASSIGN.
 		if len(self.connections) != 1:
-			raise AwlSimError("FUP ASSIGN: Invalid number of "
+			raise FupOperError("Invalid number of "
 				"connections in '%s'." % (
-				str(self)))
+				str(self)),
+				self)
 
 		# The connection must be input.
 		conn = getany(self.connections)
 		if not conn.dirIn or conn.dirOut or conn.pos != 0:
-			raise AwlSimError("FUP ASSIGN: Invalid connection "
+			raise FupOperError("Invalid connection "
 				"properties in '%s'." % (
-				str(self)))
+				str(self)),
+				self)
 
 		return conn
 
@@ -261,9 +266,10 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		if self._operator:
 			return
 		if not self.content.strip():
-			raise AwlSimError("FUP ASSIGN: Found empty assignment operator %s "
+			raise FupOperError("Found empty assignment operator %s "
 				"that is connected to %s" % (
-				str(self), str(self.__getConnectedElem())))
+				str(self), str(self.__getConnectedElem())),
+				self)
 		opDesc = self.opTrans.translateFromString(self.content)
 		self._operator = opDesc.operator
 

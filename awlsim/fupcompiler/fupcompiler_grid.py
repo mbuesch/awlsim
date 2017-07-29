@@ -101,38 +101,43 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		for elem in self.elems:
 			for conn in elem.connections:
 				if conn.wireId == conn.WIREID_NONE and not conn.isOptional:
-					raise AwlSimError("FUP: Unconnected pin%s found "
+					raise FupGridError("Unconnected pin%s found "
 						"in FUP element %s." % (
 						(" \"%s\"" % conn.text) if conn.text else "",
-						str(elem)))
+						str(elem)),
+						self)
 				if conn.wireId == conn.WIREID_NONE:
 					conn.wire = None
 				else:
 					wire = self.getWire(conn.wireId)
 					if not wire:
-						raise AwlSimError("FUP: Wire with ID %d "
+						raise FupGridError("Wire with ID %d "
 							"does not exist, but %s "
 							"references it." % (
-							conn.wireId, str(elem)))
+							conn.wireId, str(elem)),
+							self)
 					wire.addConn(conn)
 					conn.wire = wire
 		for wire in dictValues(self.wires):
 			if len(wire.connections) == 0:
-				raise AwlSimError("FUP: Found unconnected wire %s" % (
-					str(wire)))
+				raise FupGridError("Found unconnected wire %s" % (
+					str(wire)),
+					self)
 			if len(wire.connections) == 1:
-				raise AwlSimError("FUP: Found dangling wire "
+				raise FupGridError("Found dangling wire "
 					"%s with only one connection" % (
-					str(wire)))
+					str(wire)),
+					self)
 
 		def checkAllElemStates(checkState):
 			# Check if all elements have been processed.
 			for elem in self.elems:
 				if elem.compileState != checkState:
-					raise AwlSimError("FUP: Found dangling element "
+					raise FupGridError("Found dangling element "
 						"'%s'. Please make sure all connections of "
 						"this element are connected." % (
-						str(elem)))
+						str(elem)),
+						self)
 
 		# Preprocess all elements.
 		# Find all assignment operators and walk the logic chain upwards.
@@ -144,6 +149,9 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 
 		# Check if all elements have been preprocessed.
 		checkAllElemStates(elem.COMPILE_PREPROCESSED)
+
+		# Check if inverted connections are only used on supported elements.
+		#TODO
 
 		# Compile all elements.
 		# Find all assignment operators and walk the logic chain upwards.
@@ -158,3 +166,9 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 
 		self.compileState = self.COMPILE_DONE
 		return insns
+
+	def __repr__(self):
+		return "FupCompiler_Grid(compiler)"
+
+	def __str__(self):
+		return "FUP-grid"

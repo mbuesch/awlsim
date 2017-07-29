@@ -163,17 +163,20 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			comment = field.comment
 			if not AwlName.isValidVarName(varName) and\
 			   field.enableNameCheck:
-				raise AwlSimError("FupCompiler_Interf: Variable name "
-					"'%s' contains invalid characters." %\
-					varName)
+				raise FupInterfError("Variable name "
+					"'%s' contains invalid characters." % (
+					varName),
+					self)
 			if not AwlName.mayBeValidType(typeStr):
-				raise AwlSimError("FupCompiler_Interf: Variable type "
-					"'%s' contains invalid characters." %\
-					typeStr)
+				raise FupInterfError("Variable type "
+					"'%s' contains invalid characters." % (
+					typeStr),
+					self)
 			if not AwlName.isValidComment(comment):
-				raise AwlSimError("FupCompiler_Interf: Comment "
-					"'%s' contains invalid characters." %\
-					comment)
+				raise FupInterfError("Comment "
+					"'%s' contains invalid characters." % (
+					comment),
+					self)
 			awlLines.append("\t\t%s : %s;%s" %(
 				varName, typeStr,
 				("  // " + comment) if comment else ""))
@@ -237,3 +240,9 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			awlLines.extend(self.__generateAssigns(self.inOutFields))
 
 		return awlLines
+
+	def __repr__(self):
+		return "FupCompiler_Interf(compiler)"
+
+	def __str__(self):
+		return "FUP-block-interface"

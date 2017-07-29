@@ -232,7 +232,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""Get a unique connection by name.
 		Search in inputs, if 'searchInputs' is True.
 		Search in outputs, if 'searchOutputs' is True.
-		This raises AwlSimError, if the connection is not unique.
+		This raises FupElemError, if the connection is not unique.
 		Returns the FupCompiler_Conn() or None if not found.
 		"""
 		connections = list(self.getConnByText(connText,
@@ -242,10 +242,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		if len(connections) <= 0:
 			return None
 		if len(connections) > 1:
-			raise AwlSimError("FUP compiler: The element '%s' "
+			raise FupElemError("The element '%s' "
 				"has multiple connections with the "
 				"same name '%s'." % (
-				str(self), connText))
+				str(self), connText),
+				self)
 		return connections[0]
 
 	MAIN_RESULT = 42
@@ -279,10 +280,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				connText = "The output %s" % conn.text
 			else:
 				connText = "The result"
-			raise AwlSimError("FUP compiler: %s of the "
+			raise FupElemError("%s of the "
 				"compiled element %s has not been stored "
 				"to a TEMP variable." % (
-				connText, str(self)))
+				connText, str(self)),
+				self)
 		opDesc = self.opTrans.translateFromString("#" + varName)
 		insns.append(self.newInsn(insnClass, ops=[opDesc.operator]))
 
@@ -297,9 +299,10 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		The default implementation raises an exception.
 		Override this method, if required.
 		"""
-		raise AwlSimError("FUP compiler: Do not know how to "
+		raise FupElemError("Do not know how to "
 			"compile the connection %s of element %s." % (
-			str(conn), str(self)))
+			str(conn), str(self)),
+			self)
 
 	def _doPreprocess(self):
 		"""Element preprocessor.

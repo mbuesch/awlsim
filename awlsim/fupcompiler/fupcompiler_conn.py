@@ -128,7 +128,7 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		from awlsim.fupcompiler.fupcompiler import FupCompiler
 
 		if inverted and not toLoad:
-			raise AwlSimError("Boolean inversion is not "
+			raise FupConnError("Boolean inversion is not "
 				"supported for boolean store instructions.")
 		if toLoad:
 			insnClass = cls.target2LoadInsnClass[target]
@@ -222,20 +222,22 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 							  getInputs=getInput))
 		if len(connections) > 0:
 			if len(connections) > 1:
-				raise AwlSimError("The connection%s of element '%s' does "
+				raise FupConnError("The connection%s of element '%s' does "
 					"only support a single %s-wire, "
 					"but has %d %s-connections." % (
 					selfText,
 					str(self.elem),
 					dirText,
 					len(connections),
-					dirText))
+					dirText),
+					self)
 			return connections[0]
-		raise AwlSimError("The connection%s of element '%s' does "
+		raise FupConnError("The connection%s of element '%s' does "
 			"does not have a valid %s-connected element." % (
 			selfText,
 			str(self.elem),
-			dirText))
+			dirText),
+			self)
 
 	def getConnectedElems(self, viaOut=False, viaIn=False):
 		"""Get all elements that are connected to this connection.
@@ -266,8 +268,9 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 
 	def connectTo(self, otherConn):
 		if self.isConnected:
-			raise AwlSimError("Connection %s is already connected" % (
-				str(self)))
+			raise FupConnError("Connection %s is already connected" % (
+				str(self)),
+				self)
 		if otherConn.isConnected:
 			wire = otherConn.wire
 		else:
