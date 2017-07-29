@@ -208,8 +208,6 @@ class BlockTypeWidget(QWidget):
 			"or a symbolic block name like\n"
 			"  \"My function block\"\n"
 			"(The symbolic name must be present in the symbol table.)")
-		self.blockNameEdit.setValidator(BlockValidator(self.blockNameEdit,
-							       ("FC",)))
 		self.layout().addWidget(self.blockNameEdit, 0, 1)
 
 		self.dbEditLabel = QLabel("DIs:", self)
@@ -243,6 +241,8 @@ class BlockTypeWidget(QWidget):
 
 	def __handleTypeChange(self, comboIndex):
 		typeStr = self.typeCombo.itemData(comboIndex)
+		self.blockNameEdit.setValidator(BlockValidator(self.blockNameEdit,
+							       (typeStr,)))
 		if typeStr == "FB":
 			self.dbEditLabel.show()
 			self.dbEdit.show()
