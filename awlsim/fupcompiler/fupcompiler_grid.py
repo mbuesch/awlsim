@@ -148,7 +148,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 				elem.preprocess()
 
 		# Check if all elements have been preprocessed.
-		checkAllElemStates(elem.COMPILE_PREPROCESSED)
+		checkAllElemStates(FupCompiler_Elem.COMPILE_PREPROCESSED)
 
 		# Check if inverted connections are only used on supported elements.
 		#TODO
@@ -162,7 +162,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 				insns.extend(elem.compile())
 
 		# Check if all elements have been compiled.
-		checkAllElemStates(elem.COMPILE_DONE)
+		checkAllElemStates(FupCompiler_Elem.COMPILE_DONE)
 
 		self.compileState = self.COMPILE_DONE
 		return insns
