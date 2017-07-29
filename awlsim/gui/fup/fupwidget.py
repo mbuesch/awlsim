@@ -234,7 +234,8 @@ class FupWidget(QWidget):
 			blockAwlSource = compiler.compile(fupSource=fupSource,
 							  mnemonics=mnemonics,
 							  optimize=optimize)
-			callAwlSource = compiler.generateCallTemplate()
+			if showCall:
+				callAwlSource = compiler.generateCallTemplate()
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self, "FUP compiler error", e)
 			return
