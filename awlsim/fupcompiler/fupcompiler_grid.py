@@ -151,7 +151,16 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		checkAllElemStates(FupCompiler_Elem.COMPILE_PREPROCESSED)
 
 		# Check if inverted connections are only used on supported elements.
-		#TODO
+		for elem in FupCompiler_Elem.sorted(self.elems):
+			for conn in elem.connections:
+				if conn.inverted and\
+				   conn.connType != conn.TYPE_VKE:
+					raise FupGridError("An inverted connection "
+						"is only allowed for VKE based (boolean) "
+						"connections. The connection '%s' in "
+						"element '%s' is not supported." % (
+						str(conn), str(elem)),
+						self)
 
 		# Compile all elements.
 		# Find all assignment operators and walk the logic chain upwards.
