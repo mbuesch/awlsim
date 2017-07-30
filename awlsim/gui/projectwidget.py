@@ -198,21 +198,23 @@ class ProjectWidget(QTabWidget):
 		if not editWidget or self.__suppressValidation:
 			return
 		validator = AwlValidator.get()
-		validator.validate(project = self.__project,
-				   symTabSources = self.getSymTabSources(),
-				   libSelections = self.getLibSelections(),
-				   awlSources = self.getAwlSources(),
-				   fupSources = self.getFupSources(),
-				   kopSources = self.getKopSources())
-		QTimer.singleShot(100, self.__checkValidationResult)
+		if validator:
+			validator.validate(project=self.__project,
+					   symTabSources=self.getSymTabSources(),
+					   libSelections=self.getLibSelections(),
+					   awlSources=self.getAwlSources(),
+					   fupSources=self.getFupSources(),
+					   kopSources=self.getKopSources())
+			QTimer.singleShot(100, self.__checkValidationResult)
 
 	# Poll the validation result
 	def __checkValidationResult(self):
 		validator = AwlValidator.get()
-		running, exception = validator.getState()
-		self.__handleValidationResult(exception)
-		if running:
-			QTimer.singleShot(100, self.__checkValidationResult)
+		if validator:
+			running, exception = validator.getState()
+			self.__handleValidationResult(exception)
+			if running:
+				QTimer.singleShot(100, self.__checkValidationResult)
 
 	# Handle a validator exception
 	def __handleValidationResult(self, exception):
