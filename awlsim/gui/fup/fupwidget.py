@@ -263,4 +263,4 @@ class FupWidget(QWidget):
 		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, showCall=False, optimize=False)
 
 	def __generateCallTemplate(self):
-		self.__compileAndShow(S7CPUConfig.MNEMONICS_EN, showCall=True)
+		self.__compileAndShow(S7CPUConfig.MNEMONICS_AUTO, showCall=True)
