@@ -884,4 +884,4 @@ class EditDialog(QDialog):
 				       withCpuStats=withCpuStats)
 		self.layout().addWidget(self.edit, 0, 0)
 
-		self.resize(700, 550)
+		self.resize(1000, 550)
