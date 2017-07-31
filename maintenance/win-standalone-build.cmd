@@ -1,6 +1,7 @@
 @echo off
-
 setlocal ENABLEDELAYEDEXPANSION
+
+set project=awlsim
 
 set PATH=%PATH%;C:\WINDOWS;C:\WINDOWS\SYSTEM32
 for /D %%f in ( "C:\PYTHON*" ) do set PATH=!PATH!;%%f
@@ -15,15 +16,20 @@ if ERRORLEVEL 1 goto error_version
 set /p version= < version.txt
 del version.txt
 
-set distdir=awlsim-win-standalone-%version%
-set sfxfile=awlsim-win-%version%.package.exe
-set bindirname=awlsim-bin
+if "%PROCESSOR_ARCHITECTURE%" == "x86" (
+	set winprefix=win32
+) else (
+	set winprefix=win64
+)
+set distdir=%project%-%winprefix%-standalone-%version%
+set sfxfile=%project%-%winprefix%-%version%.package.exe
+set bindirname=%project%-bin
 set bindir=%distdir%\%bindirname%
 set licensedirname=licenses
 set licensedir=%distdir%\%licensedirname%
 
 
-echo Building standalone Windows executable for awlsim v%version%...
+echo Building standalone Windows executable for %project% v%version%...
 echo.
 
 echo Please select GUI framework:
@@ -122,9 +128,9 @@ if ERRORLEVEL 1 goto error_copy
 
 
 echo === Generating startup wrapper
-set wrapper=%distdir%\awlsim.cmd
+set wrapper=%distdir%\%project%.cmd
 echo @set PATH=%bindirname%;%%PATH%%> %wrapper%
-echo @start awlsim-bin\awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9>> %wrapper%
+echo @start %project%-bin\awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9>> %wrapper%
 if ERRORLEVEL 1 goto error_wrapper
 
 
@@ -156,7 +162,7 @@ echo FAILED to CD to base directory
 goto error
 
 :error_version
-echo FAILED to detect awlsim version
+echo FAILED to detect version
 goto error
 
 :error_prep
