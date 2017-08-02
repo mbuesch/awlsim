@@ -470,7 +470,8 @@ class FupDrawWidget(QWidget):
 		# Handle left button press
 		if event.button() == Qt.LeftButton:
 			if elem:
-				if area == FupElem.AREA_BODY:
+				if area in {FupElem.AREA_BODY,
+					    FupElem.AREA_BODYOPER}:
 					# Start dragging of the selected element(s).
 					self.__dragStart = (gridX, gridY)
 					if not elem.selected:
@@ -568,10 +569,11 @@ class FupDrawWidget(QWidget):
 		# Temporarily expand elements on mouse-over
 		if event.buttons() == Qt.NoButton:
 			chg = 0
-			if elem and area == FupElem.AREA_BODY:
+			if elem and area in {FupElem.AREA_BODY,
+					     FupElem.AREA_BODYOPER}:
 				if elem not in self.__grid.expandedElems:
 					chg += int(self.__grid.unexpandAllElems())
-					chg += int(self.__grid.expandElem(elem, True))
+					chg += int(self.__grid.expandElem(elem, True, area))
 			else:
 				chg += int(self.__grid.unexpandAllElems())
 			if chg:

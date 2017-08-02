@@ -80,13 +80,13 @@ class FupElem_OPERAND(FupElem):
 			totalWidth = cellWidth
 			totalHeight = cellHeight * self.height
 			xpad, ypad = self._xpadding, self._ypadding
-			if pixelY > ypad and pixelY < totalHeight - ypad:
+			if pixelY >= ypad and pixelY < totalHeight - ypad:
 				if pixelX < xpad:
 					# inputs
 					if self.inputs and\
 					   pixelY >= totalHeight - cellHeight:
 						return self.AREA_INPUT, 0
-				elif pixelX > totalWidth - xpad:
+				elif pixelX >= totalWidth - xpad:
 					# outputs
 					if self.outputs and\
 					   pixelY >= totalHeight - cellHeight:
@@ -189,7 +189,7 @@ class FupElem_OPERAND(FupElem):
 		return False
 
 	# Overridden method. For documentation see base class.
-	def expand(self, expand=True):
+	def expand(self, expand=True, area=None):
 		if not self.partialContent and expand:
 			return False
 		if expand != self.expanded:
@@ -264,3 +264,29 @@ class FupElem_LOAD(FupElem_OPERAND):
 			       else self._connOpenPen)
 		painter.drawLine(cellWidth - xpad, y,
 				 cellWidth, y)
+
+class FupElem_EmbeddedOper(FupElem_OPERAND):
+	"""Embedded operand element.
+	This is NOT an actual element.
+	It is used embedded in other elements only.
+	"""
+
+	OP_SYM		= ""
+	OP_SYM_NAME	= ""
+
+	def __init__(self, parentElem, contentText=""):
+		FupElem_OPERAND.__init__(self, 0, 0, contentText)
+		self.parentElem = parentElem
+		self.__grid = None
+
+	@property
+	def grid(self):
+		if self.__grid:
+			return self.__grid
+		if self.parentElem:
+			return self.parentElem.grid
+		return None
+
+	@grid.setter
+	def grid(self, grid):
+		self.__grid = grid

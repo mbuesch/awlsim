@@ -116,13 +116,13 @@ class FupElem_MOVE(FupElem):
 			totalWidth = cellWidth
 			totalHeight = cellHeight * self.height
 			xpad, ypad = self._xpadding, self._ypadding
-			if pixelY > ypad and pixelY < totalHeight - ypad:
+			if pixelY >= ypad and pixelY < totalHeight - ypad:
 				if pixelX < xpad:
 					# inputs
 					idx = (pixelY // cellHeight) - 1
 					if idx >= 0 and idx < len(self.inputs):
 						return self.AREA_INPUT, idx
-				elif pixelX > totalWidth - xpad:
+				elif pixelX >= totalWidth - xpad:
 					# outputs
 					idx = (pixelY // cellHeight) - 1
 					if idx >= 0 and idx < len(self.outputs):

@@ -68,6 +68,24 @@ class FupElemContainerWidget(QTreeWidget):
 		itemBoolX = FupElemItem("[X]  xor", "new", elemMimeType,
 					self.elemToXml(FupElem_XOR(-1, -1)))
 		itemBool.addChild(itemBoolX)
+		itemBoolS = FupElemItem("[S]  set", "new", elemMimeType,
+					self.elemToXml(FupElem_S(-1, -1)))
+		itemBool.addChild(itemBoolS)
+		itemBoolR = FupElemItem("[R]  reset", "new", elemMimeType,
+					self.elemToXml(FupElem_R(-1, -1)))
+		itemBool.addChild(itemBoolR)
+		itemBoolSR = FupElemItem("[SR]  SR flip-flop", "new", elemMimeType,
+					self.elemToXml(FupElem_SR(-1, -1)))
+		itemBool.addChild(itemBoolSR)
+		itemBoolRS = FupElemItem("[RS]  RS flip-flop", "new", elemMimeType,
+					self.elemToXml(FupElem_RS(-1, -1)))
+		itemBool.addChild(itemBoolRS)
+		itemBoolFP = FupElemItem("[FP]  positive edge", "new", elemMimeType,
+					self.elemToXml(FupElem_FP(-1, -1)))
+		itemBool.addChild(itemBoolFP)
+		itemBoolFN = FupElemItem("[FN]  negative edge", "new", elemMimeType,
+					self.elemToXml(FupElem_FN(-1, -1)))
+		itemBool.addChild(itemBoolFN)
 
 		itemMove = FupElemItemClass("Move", "stdlib")
 		itemMoveL = FupElemItem("[L]  load", "new", elemMimeType,

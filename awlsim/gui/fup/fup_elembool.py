@@ -36,6 +36,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 			connTags.extend(inp.factory(conn=inp).composer_getTags())
 		for out in self.elem.outputs:
 			connTags.extend(out.factory(conn=out).composer_getTags())
+		#TODO add body oper as child
 		return [
 			self.Tag(name="element",
 				attrs={
@@ -53,14 +54,26 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 class FupElem_BOOLEAN(FupElem):
 	"""Boolean FUP/FBD element base class"""
 
-	factory = FupElem_BOOLEAN_factory
+	factory			= FupElem_BOOLEAN_factory
+
+	FIXED_NR_INPUTS		= -1
+	FIXED_NR_OUTPUTS	= 1
+	WITH_BODY_OPERATOR	= False
 
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
 
-		self.inputs = [ FupConnIn(self)\
+		if self.FIXED_NR_INPUTS >= 0:
+			nrInputs = self.FIXED_NR_INPUTS
+		nrOutputs = self.FIXED_NR_OUTPUTS
+
+		self.inputs = [ FupConnIn(self)
 				for i in range(nrInputs) ]
-		self.outputs = [ FupConnOut(self) ]
+		self.outputs = [ FupConnOut(self)
+				for i in range(nrOutputs) ]
+
+		if self.WITH_BODY_OPERATOR:
+			self.bodyOper = FupElem_EmbeddedOper(self)
 
 	# Overridden method. For documentation see base class.
 	def insertConn(self, beforeIndex, conn):
@@ -82,12 +95,23 @@ class FupElem_BOOLEAN(FupElem):
 			totalWidth = cellWidth
 			totalHeight = cellHeight * self.height
 			xpad, ypad = self._xpadding, self._ypadding
-			if pixelY > ypad and pixelY < totalHeight - ypad:
+			if self.WITH_BODY_OPERATOR:
+				if pixelY >= ypad and pixelY < cellHeight and\
+				   pixelX >= xpad and pixelX < cellWidth - xpad:
+					return self.AREA_BODYOPER, 0
+				yInBodyRange = pixelY >= cellHeight + ypad and\
+					       pixelY < totalHeight - ypad
+			else:
+				yInBodyRange = pixelY >= ypad and\
+					       pixelY < totalHeight - ypad
+			if yInBodyRange:
 				if pixelX < xpad:
 					# inputs
 					idx = pixelY // cellHeight
+					if self.WITH_BODY_OPERATOR:
+						idx -= 1
 					return self.AREA_INPUT, idx
-				elif pixelX > totalWidth - xpad:
+				elif pixelX >= totalWidth - xpad:
 					# outputs
 					if pixelY >= totalHeight - cellHeight:
 						return self.AREA_OUTPUT, 0
@@ -101,6 +125,8 @@ class FupElem_BOOLEAN(FupElem):
 		x, y = 0, -1
 		if conn.IN:
 			y = self.inputs.index(conn)
+			if self.WITH_BODY_OPERATOR and y >= 0:
+				y += 1
 		elif conn.OUT:
 			y = self.outputs.index(conn)
 			if y >= 0:
@@ -112,7 +138,8 @@ class FupElem_BOOLEAN(FupElem):
 	# Overridden method. For documentation see base class.
 	@property
 	def height(self):
-		return len(self.inputs)
+		return len(self.inputs) +\
+			(1 if self.WITH_BODY_OPERATOR else 0)
 
 	# Overridden method. For documentation see base class.
 	def draw(self, painter):
@@ -127,11 +154,27 @@ class FupElem_BOOLEAN(FupElem):
 		notR = 3
 		notD = notR * 2
 
+		# Draw body
+		painter.setPen(self._outlineSelPen if self.selected
+			       else self._outlinePen)
+		painter.setBrush(self._bgBrush)
+		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
+		if self.WITH_BODY_OPERATOR:
+			offset = cellHeight
+		else:
+			offset = 0
+		painter.drawRoundedRect(tlX, tlY + offset,
+					trX - tlX, blY - (tlY + offset),
+					self.BODY_CORNER_RADIUS,
+					self.BODY_CORNER_RADIUS)
+
 		# Draw inputs
 		painter.setBrush(self._bgBrush)
 		for i, conn in enumerate(self.inputs):
 			x = conn.CONN_OFFS if conn.isConnected else 0
 			y = (i * cellHeight) + (cellHeight // 2)
+			if self.WITH_BODY_OPERATOR:
+				y += cellHeight
 			painter.setPen(self._connPen if conn.isConnected
 				       else self._connOpenPen)
 			painter.drawLine(x, y, xpad, y)
@@ -141,9 +184,10 @@ class FupElem_BOOLEAN(FupElem):
 					       self._connInvPen)
 				painter.drawEllipse(xpad - notD, y - notR,
 						    notD, notD)
+			if conn.text:
+				pass#TODO
 
 		# Draw output
-		painter.setBrush(self._bgBrush)
 		if self.outputs:
 			assert(len(self.outputs) == 1)
 			conn = self.outputs[0]
@@ -152,6 +196,7 @@ class FupElem_BOOLEAN(FupElem):
 			y = elemHeight - (cellHeight // 2)
 			painter.setPen(self._connPen if conn.isConnected
 				       else self._connOpenPen)
+			painter.setBrush(self._bgBrush)
 			painter.drawLine(cellWidth - xpad, y,
 					 cellWidth, y)
 			if conn.inverted:
@@ -160,28 +205,48 @@ class FupElem_BOOLEAN(FupElem):
 					       self._connInvPen)
 				painter.drawEllipse(cellWidth - xpad, y - notR,
 						    notD, notD)
+			if conn.text:
+				pass#TODO
 
-		# Draw body
+		# Draw symbol text
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
 		painter.setBrush(self._bgBrush)
-		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
-		painter.drawRoundedRect(tlX, tlY,
-					trX - tlX, blY - tlY,
-					self.BODY_CORNER_RADIUS,
-					self.BODY_CORNER_RADIUS)
-
-		# Draw symbol text
 		painter.setFont(getDefaultFixedFont(11))
-		painter.drawText(0, 5,
-				 elemWidth, elemHeight - 5,
+		if self.WITH_BODY_OPERATOR:
+			y, h = cellHeight, elemHeight - cellHeight
+		else:
+			y, h = 0, elemHeight
+		painter.drawText(0, y,
+				 elemWidth, h,
 				 Qt.AlignVCenter | Qt.AlignHCenter,
 				 self.OP_SYM)
 
+		# Draw body operator
+		if self.WITH_BODY_OPERATOR:
+			self.bodyOper.draw(painter)
+
+	# Overridden method. For documentation see base class.
+	def edit(self, parentWidget):
+		if self.WITH_BODY_OPERATOR:
+			return self.bodyOper.edit(parentWidget)
+		return False
+
+	# Overridden method. For documentation see base class.
+	def expand(self, expand=True, area=None):
+		if self.WITH_BODY_OPERATOR and\
+		   (not expand or area == self.AREA_BODYOPER):
+			changed = self.bodyOper.expand(expand)
+			self.expanded = self.bodyOper.expanded
+			return changed
+		return False
+
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
+		if self.WITH_BODY_OPERATOR:
+			menu.enableEdit(True)
 		menu.enableInvertConn(True)
-		menu.enableAddInput(True)
+		menu.enableAddInput(self.FIXED_NR_INPUTS < 0)
 		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)
 
@@ -195,17 +260,75 @@ class FupElem_BOOLEAN(FupElem):
 class FupElem_AND(FupElem_BOOLEAN):
 	"""AND FUP/FBD element"""
 
-	OP_SYM		= "&"
-	OP_SYM_NAME	= "and"	# XML ABI name
+	OP_SYM			= "&"
+	OP_SYM_NAME		= "and"	# XML ABI name
 
 class FupElem_OR(FupElem_BOOLEAN):
 	"""OR FUP/FBD element"""
 
-	OP_SYM		= ">=1"
-	OP_SYM_NAME	= "or"	# XML ABI name
+	OP_SYM			= ">=1"
+	OP_SYM_NAME		= "or"	# XML ABI name
 
 class FupElem_XOR(FupElem_BOOLEAN):
 	"""XOR FUP/FBD element"""
 
-	OP_SYM		= "X"
-	OP_SYM_NAME	= "xor"	# XML ABI name
+	OP_SYM			= "X"
+	OP_SYM_NAME		= "xor"	# XML ABI name
+
+class FupElem_S(FupElem_BOOLEAN):
+	"""SET FUP/FBD element"""
+
+	OP_SYM			= "S"
+	OP_SYM_NAME		= "s" # XML ABI name
+
+	FIXED_NR_INPUTS		= 1
+	FIXED_NR_OUTPUTS	= 0
+	WITH_BODY_OPERATOR	= True
+
+class FupElem_R(FupElem_BOOLEAN):
+	"""RESET FUP/FBD element"""
+
+	OP_SYM			= "R"
+	OP_SYM_NAME		= "r" # XML ABI name
+
+	FIXED_NR_INPUTS		= 1
+	FIXED_NR_OUTPUTS	= 0
+	WITH_BODY_OPERATOR	= True
+
+class FupElem_SR(FupElem_BOOLEAN):
+	"""SR flip-flop FUP/FBD element"""
+
+	OP_SYM			= "SR"
+	OP_SYM_NAME		= "sr" # XML ABI name
+
+	FIXED_NR_INPUTS		= 2
+	WITH_BODY_OPERATOR	= True
+
+class FupElem_RS(FupElem_BOOLEAN):
+	"""RS flip-flop FUP/FBD element"""
+
+	OP_SYM			= "RS"
+	OP_SYM_NAME		= "rs" # XML ABI name
+
+	FIXED_NR_INPUTS		= 2
+	WITH_BODY_OPERATOR	= True
+
+class FupElem_FP(FupElem_BOOLEAN):
+	"""Positive edge FUP/FBD element"""
+
+	OP_SYM			= "FP"
+	OP_SYM_NAME		= "fp" # XML ABI name
+
+	FIXED_NR_INPUTS		= 1
+	FIXED_NR_OUTPUTS	= 0
+	WITH_BODY_OPERATOR	= True
+
+class FupElem_FN(FupElem_BOOLEAN):
+	"""Negative edge FUP/FBD element"""
+
+	OP_SYM			= "FN"
+	OP_SYM_NAME		= "fn" # XML ABI name
+
+	FIXED_NR_INPUTS		= 1
+	FIXED_NR_OUTPUTS	= 0
+	WITH_BODY_OPERATOR	= True

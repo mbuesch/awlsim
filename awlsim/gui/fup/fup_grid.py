@@ -396,14 +396,14 @@ class FupGrid(object):
 	def deselectAll(self):
 		self.selectedElems.clear()
 
-	def expandElem(self, elem, expand=True):
+	def expandElem(self, elem, expand=True, area=None):
 		ok = False
 		if elem and expand and not elem in self.expandedElems:
-			ok = elem.expand(expand)
+			ok = elem.expand(expand, area)
 			if ok:
 				self.expandedElems.add(elem)
 		if elem and not expand and elem in self.expandedElems:
-			ok = elem.expand(expand)
+			ok = elem.expand(expand, area)
 			if ok:
 				self.expandedElems.remove(elem)
 		return ok

@@ -51,12 +51,20 @@ class FupElem_factory(XmlFactory):
 				y = tag.getAttrInt("y")
 				if elemType == "boolean":
 					from awlsim.gui.fup.fup_elembool import\
-						FupElem_AND, FupElem_OR, FupElem_XOR
+						FupElem_AND, FupElem_OR, FupElem_XOR,\
+						FupElem_S, FupElem_R, FupElem_SR, FupElem_RS,\
+						FupElem_FP, FupElem_FN
 					subType = tag.getAttr("subtype")
 					elemClass = {
 						FupElem_AND.OP_SYM_NAME	: FupElem_AND,
 						FupElem_OR.OP_SYM_NAME	: FupElem_OR,
 						FupElem_XOR.OP_SYM_NAME	: FupElem_XOR,
+						FupElem_S.OP_SYM_NAME	: FupElem_S,
+						FupElem_R.OP_SYM_NAME	: FupElem_R,
+						FupElem_SR.OP_SYM_NAME	: FupElem_SR,
+						FupElem_RS.OP_SYM_NAME	: FupElem_RS,
+						FupElem_FP.OP_SYM_NAME	: FupElem_FP,
+						FupElem_FN.OP_SYM_NAME	: FupElem_FN,
 					}.get(subType)
 					if elemClass:
 						self.elem = elemClass(
@@ -122,6 +130,7 @@ class FupElem(FupBaseClass):
 	EnumGen.start
 	AREA_NONE	= EnumGen.item
 	AREA_BODY	= EnumGen.item
+	AREA_BODYOPER	= EnumGen.item
 	AREA_INPUT	= EnumGen.item
 	AREA_OUTPUT	= EnumGen.item
 	EnumGen.end
@@ -477,7 +486,7 @@ class FupElem(FupBaseClass):
 		"""
 		pass
 
-	def expand(self, expand=True):
+	def expand(self, expand=True, area=None):
 		"""Expand this element to fully show it, if expand=True.
 		Returns True, if the expansion state changed.
 		"""
