@@ -55,7 +55,8 @@ class FupElem_OPERAND(FupElem):
 
 	factory = FupElem_OPERAND_factory
 
-	BODY_CORNER_RADIUS = 2
+	BODY_CORNER_RADIUS	= 2
+	EXPAND_WHEN_SELECTED	= True
 
 	def __init__(self, x, y, contentText=""):
 		FupElem.__init__(self, x, y)
@@ -136,9 +137,13 @@ class FupElem_OPERAND(FupElem):
 		# Draw the text
 		text = self.contentText
 		if text:
+			if self.EXPAND_WHEN_SELECTED:
+				drawExpanded = selected or expanded
+			else:
+				drawExpanded = expanded
 			painter.setFont(getDefaultFixedFont(8))
 			painter.setPen(self._textPen)
-			if selected or expanded:
+			if drawExpanded:
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop
 				textMaxRect = bodyRect.translated(0, 0)
 				textMaxRect.setHeight(grid.height * cellHeight)
@@ -148,7 +153,7 @@ class FupElem_OPERAND(FupElem):
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignHCenter | Qt.AlignTop
 				textRect = bodyRect
 				actTextRect = painter.boundingRect(bodyRect, textFlags, text)
-			if selected or expanded:
+			if drawExpanded:
 				painter.setBrush(self._bgSelBrush if selected\
 						 else self._bgBrush)
 				painter.setPen(self._noPen)
@@ -156,7 +161,7 @@ class FupElem_OPERAND(FupElem):
 			painter.setPen(self._textPen)
 			painter.drawText(textRect, textFlags, text)
 			if not bodyRect.contains(actTextRect):
-				if not selected and not expanded:
+				if not drawExpanded:
 					# Draw continuation
 					painter.setPen(self._continuePen)
 					painter.drawLine(xpad, cellHeight - 1,
@@ -271,8 +276,9 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	It is used embedded in other elements only.
 	"""
 
-	OP_SYM		= ""
-	OP_SYM_NAME	= ""
+	OP_SYM			= ""
+	OP_SYM_NAME		= ""
+	EXPAND_WHEN_SELECTED	= False
 
 	def __init__(self, parentElem, contentText=""):
 		FupElem_OPERAND.__init__(self, 0, 0, contentText)
@@ -290,3 +296,9 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	@grid.setter
 	def grid(self, grid):
 		self.__grid = grid
+
+	@property
+	def selected(self):
+		if self.parentElem:
+			return self.parentElem.selected
+		return False
