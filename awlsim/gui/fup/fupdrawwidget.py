@@ -722,14 +722,32 @@ class FupDrawWidget(QWidget):
 
 #		print("FupDrawWidget.__drop() MIME data:\n" + mimeData.decode("UTF-8"))
 
+		class FakeGrid(object):
+			"""FupGrid stub to get FupElem_factory working.
+			"""
+
+			def __init__(self):
+				self.elements = []
+
+			def getWireById(self, wireIdNum):
+				if wireIdNum < 0:
+					return None
+				raise AwlSimError("application/x-awlsim-fup-elem drop: "
+					"wireId=%d not allowed here." % (
+					wireIdNum))
+
+			def placeElem(self, elem):
+				self.elements.append(elem)
+				return True
+
 		# Parse the MIME data.
 		# The data is expected to be a FUP element in XML format.
 		newElements = None
 		try:
-			elemFactory = FupElem_factory(grid=self.__grid)
-			elemFactory.GRID_INSERT = False
+			fakeGrid = FakeGrid()
+			elemFactory = FupElem_factory(grid=fakeGrid)
 			elemFactory.parse(mimeData)
-			newElements = elemFactory.elements
+			newElements = fakeGrid.elements
 		except XmlFactory.Error as e:
 			return ignore()
 		if not newElements:

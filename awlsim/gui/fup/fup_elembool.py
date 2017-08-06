@@ -30,24 +30,76 @@ from awlsim.gui.fup.fup_elemoperand import *
 
 
 class FupElem_BOOLEAN_factory(FupElem_factory):
+	def parser_open(self, tag):
+		assert(tag)
+		x = tag.getAttrInt("x")
+		y = tag.getAttrInt("y")
+		subType = tag.getAttr("subtype")
+		elemClass = {
+			FupElem_AND.OP_SYM_NAME	: FupElem_AND,
+			FupElem_OR.OP_SYM_NAME	: FupElem_OR,
+			FupElem_XOR.OP_SYM_NAME	: FupElem_XOR,
+			FupElem_S.OP_SYM_NAME	: FupElem_S,
+			FupElem_R.OP_SYM_NAME	: FupElem_R,
+			FupElem_SR.OP_SYM_NAME	: FupElem_SR,
+			FupElem_RS.OP_SYM_NAME	: FupElem_RS,
+			FupElem_FP.OP_SYM_NAME	: FupElem_FP,
+			FupElem_FN.OP_SYM_NAME	: FupElem_FN,
+		}.get(subType)
+		if not elemClass:
+			raise self.Error("Boolean subtype '%s' is not known "
+				"to the element parser." % (
+				subType))
+		self.elem = elemClass(
+			x=x, y=y, nrInputs=0)
+		self.elem.grid = self.grid
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		if tag.name == "connections":
+			self.parser_switchTo(FupConn.factory(elem=self.elem))
+			return
+		if tag.name == "subelements":
+			pass#TODO
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "element":
+			# Insert the element into the grid.
+			if not self.grid.placeElem(self.elem):
+				raise self.Error("<element> caused "
+					"a grid collision.")
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
 	def composer_getTags(self):
+		elem = self.elem
+
 		connTags = []
-		for inp in self.elem.inputs:
+		for inp in elem.inputs:
 			connTags.extend(inp.factory(conn=inp).composer_getTags())
-		for out in self.elem.outputs:
+		for out in elem.outputs:
 			connTags.extend(out.factory(conn=out).composer_getTags())
-		#TODO add body oper as child
+
+		subElemTags = []
+		if elem.WITH_BODY_OPERATOR:
+			bodyOper = elem.bodyOper
+			subElemTags.extend(bodyOper.factory(elem=bodyOper).composer_getTags())
+
 		return [
 			self.Tag(name="element",
 				attrs={
 					"type" : "boolean",
-					"subtype" : self.elem.OP_SYM_NAME,
-					"x" : str(self.elem.x),
-					"y" : str(self.elem.y),
+					"subtype" : elem.OP_SYM_NAME,
+					"x" : str(elem.x),
+					"y" : str(elem.y),
 				},
 				tags=[
 					self.Tag(name="connections",
 						 tags=connTags),
+					self.Tag(name="subelements",
+						 tags=subElemTags),
 				])
 		]
 

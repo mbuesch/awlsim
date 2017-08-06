@@ -29,6 +29,41 @@ from awlsim.gui.fup.fup_elem import *
 
 
 class FupElem_OPERAND_factory(FupElem_factory):
+	def parser_open(self, tag):
+		assert(tag)
+		x = tag.getAttrInt("x")
+		y = tag.getAttrInt("y")
+		subType = tag.getAttr("subtype")
+		content = tag.getAttr("content", "")
+		elemClass = {
+			FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
+			FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
+		}.get(subType)
+		if not elemClass:
+			raise self.Error("Operand subtype '%s' is not known "
+				"to the element parser." % (
+				subType))
+		self.elem = elemClass(x=x, y=y,
+			contentText=content)
+		self.elem.grid = self.grid
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		if tag.name == "connections":
+			self.parser_switchTo(FupConn.factory(elem=self.elem))
+			return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "element":
+			# Insert the element into the grid.
+			if not self.grid.placeElem(self.elem):
+				raise self.Error("<element> caused "
+					"a grid collision.")
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
 	def composer_getTags(self):
 		connTags = []
 		for inp in self.elem.inputs:

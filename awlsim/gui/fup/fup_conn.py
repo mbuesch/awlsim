@@ -78,6 +78,10 @@ class FupConn_factory(XmlFactory):
 				return
 		else:
 			if tag.name == "connections":
+				if not all(self.elem.inputs) or\
+				   not all(self.elem.outputs):
+					raise self.Error("<element> connections "
+						"are incomplete.")
 				self.parser_finish()
 				return
 		XmlFactory.parser_endTag(self, tag)

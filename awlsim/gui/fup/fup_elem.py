@@ -30,91 +30,30 @@ from awlsim.gui.fup.fup_conn import *
 
 
 class FupElem_factory(XmlFactory):
-	GRID_INSERT = True
-
 	def parser_open(self, tag=None):
-		self.inElem = False
-		self.elem = None
-		self.elements = []
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
-		if self.inElem:
-			if tag.name == "connections":
-				self.parser_switchTo(FupConn.factory(elem=self.elem))
+		if tag.name == "element":
+			elemType = tag.getAttr("type")
+			if elemType == "boolean":
+				from awlsim.gui.fup.fup_elembool import FupElem_BOOLEAN
+				self.parser_switchTo(FupElem_BOOLEAN.factory(grid=self.grid))
 				return
-		else:
-			if tag.name == "element":
-				self.inElem = True
-				elemType = tag.getAttr("type")
-				x = tag.getAttrInt("x")
-				y = tag.getAttrInt("y")
-				if elemType == "boolean":
-					from awlsim.gui.fup.fup_elembool import\
-						FupElem_AND, FupElem_OR, FupElem_XOR,\
-						FupElem_S, FupElem_R, FupElem_SR, FupElem_RS,\
-						FupElem_FP, FupElem_FN
-					subType = tag.getAttr("subtype")
-					elemClass = {
-						FupElem_AND.OP_SYM_NAME	: FupElem_AND,
-						FupElem_OR.OP_SYM_NAME	: FupElem_OR,
-						FupElem_XOR.OP_SYM_NAME	: FupElem_XOR,
-						FupElem_S.OP_SYM_NAME	: FupElem_S,
-						FupElem_R.OP_SYM_NAME	: FupElem_R,
-						FupElem_SR.OP_SYM_NAME	: FupElem_SR,
-						FupElem_RS.OP_SYM_NAME	: FupElem_RS,
-						FupElem_FP.OP_SYM_NAME	: FupElem_FP,
-						FupElem_FN.OP_SYM_NAME	: FupElem_FN,
-					}.get(subType)
-					if elemClass:
-						self.elem = elemClass(
-							x=x, y=y, nrInputs=0)
-						self.elem.grid = self.grid
-						return
-				elif elemType == "operand":
-					from awlsim.gui.fup.fup_elemoperand import\
-						FupElem_LOAD, FupElem_ASSIGN
-					subType = tag.getAttr("subtype")
-					content = tag.getAttr("content", "")
-					elemClass = {
-						FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
-						FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
-					}.get(subType)
-					if elemClass:
-						self.elem = elemClass(x=x, y=y,
-							contentText=content)
-						self.elem.grid = self.grid
-						return
-				elif elemType == "move":
-					from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
-					self.elem = FupElem_MOVE(x=x, y=y,
-								 nrOutputs=0)
-					self.elem.grid = self.grid
-					return
+			elif elemType == "operand":
+				from awlsim.gui.fup.fup_elemoperand import FupElem_OPERAND
+				self.parser_switchTo(FupElem_OPERAND.factory(grid=self.grid))
+				return
+			elif elemType == "move":
+				from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
+				self.parser_switchTo(FupElem_MOVE.factory(grid=self.grid))
+				return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if self.inElem:
-			if tag.name == "element":
-				if self.elem:
-					if self.GRID_INSERT:
-						# Insert the element into the grid.
-						if not all(self.elem.inputs) or\
-						   not all(self.elem.outputs):
-							raise self.Error("<element> connections "
-								"are incomplete.")
-						if not self.grid.placeElem(self.elem):
-							raise self.Error("<element> caused "
-								"a grid collision.")
-					else:
-						self.elements.append(self.elem)
-				self.inElem = False
-				self.elem = None
-				return
-		else:
-			if tag.name == "elements":
-				self.parser_finish()
-				return
+		if tag.name == "elements":
+			self.parser_finish()
+			return
 		XmlFactory.parser_endTag(self, tag)
 
 class FupElem(FupBaseClass):
