@@ -242,7 +242,8 @@ class FupElem_MOVE(FupElem):
 
 		# Draw element descriptor text
 		painter.setFont(getDefaultFixedFont(8))
-		painter.setPen(self._outlinePen)
+		painter.setPen(self._outlineSelPen if self.selected
+			       else self._outlinePen)
 		painter.drawText(0, 0,
 				 elemWidth, cellHeight,
 				 Qt.AlignHCenter | Qt.AlignVCenter,

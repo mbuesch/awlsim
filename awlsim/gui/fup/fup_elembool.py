@@ -108,21 +108,25 @@ class FupElem_BOOLEAN(FupElem):
 
 	factory			= FupElem_BOOLEAN_factory
 
-	FIXED_NR_INPUTS		= -1
-	FIXED_NR_OUTPUTS	= 1
+	FIXED_INPUTS		= None
+	FIXED_OUTPUTS		= [ None, ]
 	WITH_BODY_OPERATOR	= False
 
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
 
-		if self.FIXED_NR_INPUTS >= 0:
-			nrInputs = self.FIXED_NR_INPUTS
-		nrOutputs = self.FIXED_NR_OUTPUTS
+		if self.FIXED_INPUTS is None:
+			self.inputs = [ FupConnIn(self)
+					for i in range(nrInputs) ]
+		else:
+			self.inputs = [ FupConnIn(self, text=text)
+					for text in self.FIXED_INPUTS ]
 
-		self.inputs = [ FupConnIn(self)
-				for i in range(nrInputs) ]
-		self.outputs = [ FupConnOut(self)
-				for i in range(nrOutputs) ]
+		if self.FIXED_OUTPUTS is None:
+			self.outputs = []
+		else:
+			self.outputs = [ FupConnOut(self, text=text)
+					 for text in self.FIXED_OUTPUTS ]
 
 		if self.WITH_BODY_OPERATOR:
 			self.bodyOper = FupElem_EmbeddedOper(self)
@@ -222,11 +226,14 @@ class FupElem_BOOLEAN(FupElem):
 
 		# Draw inputs
 		painter.setBrush(self._bgBrush)
+		painter.setFont(getDefaultFixedFont(8))
 		for i, conn in enumerate(self.inputs):
-			x = conn.CONN_OFFS if conn.isConnected else 0
-			y = (i * cellHeight) + (cellHeight // 2)
+			cellIdx = i
 			if self.WITH_BODY_OPERATOR:
-				y += cellHeight
+				cellIdx += 1
+
+			x = conn.CONN_OFFS if conn.isConnected else 0
+			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			painter.setPen(self._connPen if conn.isConnected
 				       else self._connOpenPen)
 			painter.drawLine(x, y, xpad, y)
@@ -237,7 +244,14 @@ class FupElem_BOOLEAN(FupElem):
 				painter.drawEllipse(xpad - notD, y - notR,
 						    notD, notD)
 			if conn.text:
-				pass#TODO
+				painter.setPen(self._connPen if conn.isConnected
+					       else self._connOpenPen)
+				x = xpad + 2
+				y = (cellIdx * cellHeight)
+				painter.drawText(x, y,
+						 elemWidth - xpad - 2, cellHeight,
+						 Qt.AlignLeft | Qt.AlignVCenter,
+						 conn.text)
 
 		# Draw output
 		if self.outputs:
@@ -258,7 +272,15 @@ class FupElem_BOOLEAN(FupElem):
 				painter.drawEllipse(cellWidth - xpad, y - notR,
 						    notD, notD)
 			if conn.text:
-				pass#TODO
+				painter.setPen(self._connPen if conn.isConnected
+					       else self._connOpenPen)
+				painter.setFont(getDefaultFixedFont(8))
+				x = 0
+				y = elemHeight - cellHeight
+				painter.drawText(x, y,
+						 elemWidth - xpad - 2, cellHeight,
+						 Qt.AlignRight | Qt.AlignVCenter,
+						 conn.text)
 
 		# Draw symbol text
 		painter.setPen(self._outlineSelPen if self.selected
@@ -298,7 +320,7 @@ class FupElem_BOOLEAN(FupElem):
 		if self.WITH_BODY_OPERATOR:
 			menu.enableEdit(True)
 		menu.enableInvertConn(True)
-		menu.enableAddInput(self.FIXED_NR_INPUTS < 0)
+		menu.enableAddInput(self.FIXED_INPUTS is None)
 		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)
 
@@ -333,8 +355,8 @@ class FupElem_S(FupElem_BOOLEAN):
 	OP_SYM			= "S"
 	OP_SYM_NAME		= "s" # XML ABI name
 
-	FIXED_NR_INPUTS		= 1
-	FIXED_NR_OUTPUTS	= 0
+	FIXED_INPUTS		= [ None, ]
+	FIXED_OUTPUTS		= None
 	WITH_BODY_OPERATOR	= True
 
 class FupElem_R(FupElem_BOOLEAN):
@@ -343,8 +365,8 @@ class FupElem_R(FupElem_BOOLEAN):
 	OP_SYM			= "R"
 	OP_SYM_NAME		= "r" # XML ABI name
 
-	FIXED_NR_INPUTS		= 1
-	FIXED_NR_OUTPUTS	= 0
+	FIXED_INPUTS		= [ None, ]
+	FIXED_OUTPUTS		= None
 	WITH_BODY_OPERATOR	= True
 
 class FupElem_SR(FupElem_BOOLEAN):
@@ -353,7 +375,8 @@ class FupElem_SR(FupElem_BOOLEAN):
 	OP_SYM			= "SR"
 	OP_SYM_NAME		= "sr" # XML ABI name
 
-	FIXED_NR_INPUTS		= 2
+	FIXED_INPUTS		= [ "S", "R", ]
+	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
 
 class FupElem_RS(FupElem_BOOLEAN):
@@ -362,7 +385,8 @@ class FupElem_RS(FupElem_BOOLEAN):
 	OP_SYM			= "RS"
 	OP_SYM_NAME		= "rs" # XML ABI name
 
-	FIXED_NR_INPUTS		= 2
+	FIXED_INPUTS		= [ "R", "S", ]
+	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
 
 class FupElem_FP(FupElem_BOOLEAN):
@@ -371,8 +395,8 @@ class FupElem_FP(FupElem_BOOLEAN):
 	OP_SYM			= "FP"
 	OP_SYM_NAME		= "fp" # XML ABI name
 
-	FIXED_NR_INPUTS		= 1
-	FIXED_NR_OUTPUTS	= 0
+	FIXED_INPUTS		= [ None, ]
+	FIXED_OUTPUTS		= [ None, ]
 	WITH_BODY_OPERATOR	= True
 
 class FupElem_FN(FupElem_BOOLEAN):
@@ -381,6 +405,6 @@ class FupElem_FN(FupElem_BOOLEAN):
 	OP_SYM			= "FN"
 	OP_SYM_NAME		= "fn" # XML ABI name
 
-	FIXED_NR_INPUTS		= 1
-	FIXED_NR_OUTPUTS	= 0
+	FIXED_INPUTS		= [ None, ]
+	FIXED_OUTPUTS		= [ None, ]
 	WITH_BODY_OPERATOR	= True

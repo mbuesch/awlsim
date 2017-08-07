@@ -116,7 +116,7 @@ class FupConn(FupBaseClass):
 		FupBaseClass.__init__(self)
 		self.elem = elem		# The FupElem this connection belongs to
 		self.wire = wire		# The FupWire this connection is connected to (if any).
-		self.text = text		# Description text
+		self.text = text or ""		# Description text
 		self.inverted = inverted	# Inverted connection (NOT)
 
 	@property
