@@ -202,17 +202,13 @@ class XmlFactory(object):
 								 comment=text)
 
 	def __init__(self, **kwargs):
-		self.__kwargs = kwargs
 		self.builder = None
 		self.__genXmlHeader = True
 		self.__baseIndent = 0
 		self.__lineBreakStr = "\n"
 		self.__globalAttrLineBreak = False
-
-	def __getattr__(self, name):
-		with contextlib.suppress(KeyError):
-			return self.__kwargs[name]
-		raise AttributeError
+		for kwarg, kwval in dictItems(kwargs):
+			setattr(self, kwarg, kwval)
 
 	def parser_open(self, tag=None):
 		pass
