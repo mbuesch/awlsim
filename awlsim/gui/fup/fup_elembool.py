@@ -84,7 +84,8 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 							"boolean <element>.")
 					del self.elem.bodyOper
 					self.elem.bodyOper = subelements[0]
-					self.elem.bodyOper.grid = self.grid
+					self.elem.bodyOper.parentElem = self.elem
+					del self.elem.bodyOper.grid
 			else:
 				if self.subelemsFakeGrid:
 					raise self.Error("<subelements> is not "

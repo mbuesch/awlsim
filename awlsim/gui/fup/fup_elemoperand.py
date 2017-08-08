@@ -333,6 +333,10 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	def grid(self, grid):
 		self.__grid = grid
 
+	@grid.deleter
+	def grid(self):
+		self.__grid = None
+
 	@property
 	def selected(self):
 		if self.parentElem:
