@@ -312,7 +312,7 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	It is used embedded in other elements only.
 	"""
 
-	OP_SYM			= ""
+	OP_SYM			= "embedded"
 	OP_SYM_NAME		= "embedded"	# XML ABI name
 	EXPAND_WHEN_SELECTED	= False
 
