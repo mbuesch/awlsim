@@ -414,3 +414,21 @@ class FupGrid(object):
 				self.expandElem(elem, False)
 			return True
 		return False
+
+class FupGridStub(object):
+	"""FupGrid stub to get FupElem_factory working.
+	"""
+
+	def __init__(self):
+		self.elements = []
+
+	def getWireById(self, wireIdNum):
+		if wireIdNum < 0:
+			return None
+		raise AwlSimError("FupGridStub: "
+			"wireId=%d not allowed here." % (
+			wireIdNum))
+
+	def placeElem(self, elem):
+		self.elements.append(elem)
+		return True

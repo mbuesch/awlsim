@@ -53,6 +53,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		self.elem = elemClass(
 			x=x, y=y, nrInputs=0)
 		self.elem.grid = self.grid
+		self.subelemsFakeGrid = None
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
@@ -60,11 +61,35 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 			self.parser_switchTo(FupConn.factory(elem=self.elem))
 			return
 		if tag.name == "subelements":
-			pass#TODO
+			from awlsim.gui.fup.fup_grid import FupGridStub
+			if self.subelemsFakeGrid:
+				raise self.Error("Found multiple <subelements> tags "
+					"inside of boolean <element>.")
+			self.subelemsFakeGrid = FupGridStub()
+			self.parser_switchTo(FupElem.factory(grid=self.subelemsFakeGrid,
+							     CONTAINER_TAG="subelements"))
+			return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
 		if tag.name == "element":
+			# Add body element
+			if self.elem.WITH_BODY_OPERATOR:
+				subelements = self.subelemsFakeGrid.elements
+				if subelements:
+					if len(subelements) != 1 or\
+					   not isinstance(subelements[0], FupElem_EmbeddedOper):
+						raise self.Error("Only one subelement of type "
+							"'embedded operand' supported in "
+							"boolean <element>.")
+					del self.elem.bodyOper
+					self.elem.bodyOper = subelements[0]
+					self.elem.bodyOper.grid = self.grid
+			else:
+				if self.subelemsFakeGrid:
+					raise self.Error("<subelements> is not "
+						"supported for %s." % (
+						str(self.elem)))
 			# Insert the element into the grid.
 			if not self.grid.placeElem(self.elem):
 				raise self.Error("<element> caused "
@@ -129,7 +154,7 @@ class FupElem_BOOLEAN(FupElem):
 					 for text in self.FIXED_OUTPUTS ]
 
 		if self.WITH_BODY_OPERATOR:
-			self.bodyOper = FupElem_EmbeddedOper(self)
+			self.bodyOper = FupElem_EmbeddedOper(parentElem=self)
 
 	# Overridden method. For documentation see base class.
 	def insertConn(self, beforeIndex, conn):

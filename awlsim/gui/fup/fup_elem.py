@@ -30,6 +30,8 @@ from awlsim.gui.fup.fup_conn import *
 
 
 class FupElem_factory(XmlFactory):
+	CONTAINER_TAG	= "elements"
+
 	def parser_open(self, tag=None):
 		XmlFactory.parser_open(self, tag)
 
@@ -51,7 +53,7 @@ class FupElem_factory(XmlFactory):
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
-		if tag.name == "elements":
+		if tag.name == self.CONTAINER_TAG:
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)

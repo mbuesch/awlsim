@@ -38,6 +38,7 @@ class FupElem_OPERAND_factory(FupElem_factory):
 		elemClass = {
 			FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
 			FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
+			FupElem_EmbeddedOper.OP_SYM_NAME : FupElem_EmbeddedOper,
 		}.get(subType)
 		if not elemClass:
 			raise self.Error("Operand subtype '%s' is not known "
@@ -312,11 +313,11 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	"""
 
 	OP_SYM			= ""
-	OP_SYM_NAME		= ""
+	OP_SYM_NAME		= "embedded"	# XML ABI name
 	EXPAND_WHEN_SELECTED	= False
 
-	def __init__(self, parentElem, contentText=""):
-		FupElem_OPERAND.__init__(self, 0, 0, contentText)
+	def __init__(self, x=0, y=0, contentText="", parentElem=None):
+		FupElem_OPERAND.__init__(self, x, y, contentText)
 		self.parentElem = parentElem
 		self.__grid = None
 
