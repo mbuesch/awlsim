@@ -106,7 +106,7 @@ class FupElem(FupBaseClass):
 		self._connInvSelPen = QPen(QColor("#0000FF"))
 		self._connInvSelPen.setWidth(lineWidth)
 		self._bgBrush = QBrush(QColor("#FFFFFF"))
-		self._bgSelBrush = QBrush(QColor("#BBBBBB"))
+		self._bgSelBrush = QBrush(QColor("#F2F25A"))
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
 

@@ -191,7 +191,8 @@ class FupElem_MOVE(FupElem):
 		# Draw body
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
-		painter.setBrush(self._bgBrush)
+		painter.setBrush(self._bgSelBrush if self.selected\
+				 else self._bgBrush)
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		painter.drawRoundedRect(tlX, tlY,
 					trX - tlX, blY - tlY,

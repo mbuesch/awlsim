@@ -239,7 +239,8 @@ class FupElem_BOOLEAN(FupElem):
 		# Draw body
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
-		painter.setBrush(self._bgBrush)
+		painter.setBrush(self._bgSelBrush if self.selected\
+				 else self._bgBrush)
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		if self.WITH_BODY_OPERATOR:
 			offset = cellHeight
@@ -251,7 +252,8 @@ class FupElem_BOOLEAN(FupElem):
 					self.BODY_CORNER_RADIUS)
 
 		# Draw inputs
-		painter.setBrush(self._bgBrush)
+		painter.setBrush(self._bgSelBrush if self.selected\
+				 else self._bgBrush)
 		painter.setFont(getDefaultFixedFont(8))
 		for i, conn in enumerate(self.inputs):
 			cellIdx = i
@@ -288,7 +290,8 @@ class FupElem_BOOLEAN(FupElem):
 			y = elemHeight - (cellHeight // 2)
 			painter.setPen(self._connPen if conn.isConnected
 				       else self._connOpenPen)
-			painter.setBrush(self._bgBrush)
+			painter.setBrush(self._bgSelBrush if self.selected\
+					 else self._bgBrush)
 			painter.drawLine(cellWidth - xpad, y,
 					 cellWidth, y)
 			if conn.inverted:
@@ -311,7 +314,8 @@ class FupElem_BOOLEAN(FupElem):
 		# Draw symbol text
 		painter.setPen(self._outlineSelPen if self.selected
 			       else self._outlinePen)
-		painter.setBrush(self._bgBrush)
+		painter.setBrush(self._bgSelBrush if self.selected\
+				 else self._bgBrush)
 		painter.setFont(getDefaultFixedFont(11))
 		if self.WITH_BODY_OPERATOR:
 			y, h = cellHeight, elemHeight - cellHeight
