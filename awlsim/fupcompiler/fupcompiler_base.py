@@ -101,6 +101,14 @@ class FupCompiler_BaseObj(object):
 		self.__compileState = self.COMPILE_IDLE
 
 	@property
+	def isCompileEntryPoint(self):
+		"""Return True, if this element is a compilation entry point.
+		Override this, if this element (possibly) is an entry point.
+		The default implementation returns False.
+		"""
+		return False
+
+	@property
 	def needPreprocess(self):
 		return self.__compileState < self.COMPILE_PREPROCESSING
 

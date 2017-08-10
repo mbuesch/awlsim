@@ -195,6 +195,10 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 					      **kwargs)
 		self.__storeEmitted = False
 
+	@property
+	def isCompileEntryPoint(self):
+		return True # This is a compilation entry point.
+
 	def _doCompile(self):
 		insns = []
 

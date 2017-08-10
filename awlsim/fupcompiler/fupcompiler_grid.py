@@ -142,9 +142,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		# Preprocess all elements.
 		# Find all assignment operators and walk the logic chain upwards.
 		for elem in FupCompiler_Elem.sorted(self.elems):
-			if elem.isType(FupCompiler_Elem.TYPE_OPERAND,
-				       FupCompiler_ElemOper.SUBTYPE_ASSIGN) and\
-			   elem.needPreprocess:
+			if elem.isCompileEntryPoint and elem.needPreprocess:
 				elem.preprocess()
 
 		# Check if all elements have been preprocessed.
@@ -165,9 +163,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		# Compile all elements.
 		# Find all assignment operators and walk the logic chain upwards.
 		for elem in FupCompiler_Elem.sorted(self.elems):
-			if elem.isType(FupCompiler_Elem.TYPE_OPERAND,
-				       FupCompiler_ElemOper.SUBTYPE_ASSIGN) and\
-			   elem.needCompile:
+			if elem.isCompileEntryPoint and elem.needCompile:
 				insns.extend(elem.compile())
 
 		# Check if all elements have been compiled.
