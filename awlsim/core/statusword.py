@@ -157,12 +157,34 @@ class S7StatusWord(object): #+cdef
 		__getBIE,
 	)
 
-	def getByBitNumber(self, bitNumber):
-		try:
-			return self.__bitnr2getter[bitNumber](self)
-		except IndexError as e:
-			raise AwlSimError("Status word bit fetch '%d' "
-				"out of range" % bitNumber)
+	def getByBitNumber(self, bitNumber):					#@nocy
+		try:								#@nocy
+			return self.__bitnr2getter[bitNumber](self)		#@nocy
+		except IndexError as e:						#@nocy
+			raise AwlSimError("Status word bit fetch '%d' "		#@nocy
+				"out of range" % bitNumber)			#@nocy
+
+#@cy	cdef _Bool getByBitNumber(self, uint8_t bitNumber):
+#@cy		if bitNumber == 0:
+#@cy			return self.NER
+#@cy		elif bitNumber == 1:
+#@cy			return self.VKE
+#@cy		elif bitNumber == 2:
+#@cy			return self.STA
+#@cy		elif bitNumber == 3:
+#@cy			return self.OR
+#@cy		elif bitNumber == 4:
+#@cy			return self.OS
+#@cy		elif bitNumber == 5:
+#@cy			return self.OV
+#@cy		elif bitNumber == 6:
+#@cy			return self.A0
+#@cy		elif bitNumber == 7:
+#@cy			return self.A1
+#@cy		elif bitNumber == 8:
+#@cy			return self.BIE
+#@cy		raise AwlSimError("Status word bit fetch '%d' "
+#@cy			"out of range" % bitNumber)
 
 	def reset(self): #@nocy
 #@cy	cdef void reset(self):

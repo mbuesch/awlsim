@@ -10,6 +10,7 @@ cdef class S7StatusWord(object):
 	cdef _Bool BIE
 
 	cdef __eq(self, object other)
+	cdef _Bool getByBitNumber(self, uint8_t bitNumber)
 	cdef void reset(self)
 	cdef uint16_t getWord(self)
 	cdef void setWord(self, uint16_t word)
