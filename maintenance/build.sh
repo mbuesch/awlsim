@@ -13,9 +13,9 @@ if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
 fi
 
 cd "$awlsim_base"
-python2 ./setup.py build &
+nice -n 10 python2 ./setup.py build &
 python2_build_pid=$!
-python3 ./setup.py build &
+nice -n 10 python3 ./setup.py build &
 python3_build_pid=$!
 if ! wait $python2_build_pid; then
 	echo "Python 2 build FAILED!"
