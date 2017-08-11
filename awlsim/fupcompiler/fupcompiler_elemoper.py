@@ -39,25 +39,31 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 	EnumGen.start
 	SUBTYPE_LOAD		= EnumGen.item
 	SUBTYPE_ASSIGN		= EnumGen.item
+	SUBTYPE_EMBEDDED	= EnumGen.item
 	EnumGen.end
 
 	str2subtype = {
 		"load"		: SUBTYPE_LOAD,
 		"assign"	: SUBTYPE_ASSIGN,
+		"embedded"	: SUBTYPE_EMBEDDED,
 	}
 
 	@classmethod
 	def parse(cls, grid, x, y, subType, content):
 		try:
 			subType = cls.str2subtype[subType]
-			if subType == cls.SUBTYPE_LOAD:
-				return FupCompiler_ElemOperLoad(grid=grid,
-							        x=x, y=y,
-							        content=content)
-			elif subType == cls.SUBTYPE_ASSIGN:
-				return FupCompiler_ElemOperAssign(grid=grid,
-								  x=x, y=y,
-								  content=content)
+			type2class = {
+				cls.SUBTYPE_LOAD	: FupCompiler_ElemOperLoad,
+				cls.SUBTYPE_ASSIGN	: FupCompiler_ElemOperAssign,
+				cls.SUBTYPE_EMBEDDED	: FupCompiler_ElemOperEmbedded,
+			}
+			elemClass = None
+			with contextlib.suppress(KeyError):
+				elemClass = type2class[subType]
+			if elemClass:
+				return elemClass(grid=grid,
+						 x=x, y=y,
+						 content=content)
 		except KeyError:
 			pass
 		return None
@@ -316,3 +322,19 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 		self.__storeEmitted = True
 		return insns
+
+class FupCompiler_ElemOperEmbedded(FupCompiler_ElemOper):
+	"""FUP compiler - Embedded operand element.
+	"""
+
+	ELEM_NAME = "EMBEDDED"
+
+	def __init__(self, grid, x, y, content, **kwargs):
+		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,
+					      subType=FupCompiler_ElemOper.SUBTYPE_EMBEDDED,
+					      content=content,
+					      **kwargs)
+
+	def _doCompile(self):
+		pass #TODO
+		return []

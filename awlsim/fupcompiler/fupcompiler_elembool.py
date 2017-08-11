@@ -41,30 +41,48 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 	SUBTYPE_AND		= EnumGen.item
 	SUBTYPE_OR		= EnumGen.item
 	SUBTYPE_XOR		= EnumGen.item
+	SUBTYPE_S		= EnumGen.item
+	SUBTYPE_R		= EnumGen.item
+	SUBTYPE_SR		= EnumGen.item
+	SUBTYPE_RS		= EnumGen.item
+	SUBTYPE_FP		= EnumGen.item
+	SUBTYPE_FN		= EnumGen.item
 	EnumGen.end
 
 	str2subtype = {
 		"and"		: SUBTYPE_AND,
 		"or"		: SUBTYPE_OR,
 		"xor"		: SUBTYPE_XOR,
+		"s"		: SUBTYPE_S,
+		"r"		: SUBTYPE_R,
+		"sr"		: SUBTYPE_SR,
+		"rs"		: SUBTYPE_RS,
+		"fp"		: SUBTYPE_FP,
+		"fn"		: SUBTYPE_FN,
 	}
 
 	@classmethod
 	def parse(cls, grid, x, y, subType, content):
 		try:
 			subType = cls.str2subtype[subType]
-			if subType == cls.SUBTYPE_AND:
-				return FupCompiler_ElemBoolAnd(grid=grid,
-							       x=x, y=y,
-							       content=content)
-			elif subType == cls.SUBTYPE_OR:
-				return FupCompiler_ElemBoolOr(grid=grid,
-							      x=x, y=y,
-							      content=content)
-			elif subType == cls.SUBTYPE_XOR:
-				return FupCompiler_ElemBoolXor(grid=grid,
-							       x=x, y=y,
-							       content=content)
+			type2class = {
+				cls.SUBTYPE_AND		: FupCompiler_ElemBoolAnd,
+				cls.SUBTYPE_OR		: FupCompiler_ElemBoolOr,
+				cls.SUBTYPE_XOR		: FupCompiler_ElemBoolXor,
+				cls.SUBTYPE_S		: FupCompiler_ElemBoolS,
+				cls.SUBTYPE_R		: FupCompiler_ElemBoolR,
+				cls.SUBTYPE_SR		: FupCompiler_ElemBoolSR,
+				cls.SUBTYPE_RS		: FupCompiler_ElemBoolRS,
+				cls.SUBTYPE_FP		: FupCompiler_ElemBoolFP,
+				cls.SUBTYPE_FN		: FupCompiler_ElemBoolFN,
+			}
+			elemClass = None
+			with contextlib.suppress(KeyError):
+				elemClass = type2class[subType]
+			if elemClass:
+				return elemClass(grid=grid,
+						 x=x, y=y,
+						 content=content)
 		except KeyError:
 			pass
 		return None
@@ -181,3 +199,83 @@ class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_X)
+
+class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
+	"""FUP compiler - Boolean SR element.
+	"""
+
+	ELEM_NAME	= "SR"
+	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_SR
+	HAVE_S		= True
+	HAVE_R		= True
+	HAVE_Q		= True
+	HIGH_PRIO_R	= True
+
+	def __init__(self, grid, x, y, content, **kwargs):
+		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
+					      subType=self.SUBTYPE,
+					      content=content,
+					      **kwargs)
+
+	def _doCompile(self):
+		pass#TODO
+		return []
+
+class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
+	"""FUP compiler - Boolean RS element.
+	"""
+
+	ELEM_NAME	= "RS"
+	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_RS
+	HAVE_S		= True
+	HAVE_R		= True
+	HAVE_Q		= True
+	HIGH_PRIO_R	= False
+
+class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
+	"""FUP compiler - Boolean S element.
+	"""
+
+	ELEM_NAME	= "S"
+	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_S
+	HAVE_S		= True
+	HAVE_R		= False
+	HAVE_Q		= False
+	HIGH_PRIO_R	= False
+
+class FupCompiler_ElemBoolR(FupCompiler_ElemBoolSR):
+	"""FUP compiler - Boolean R element.
+	"""
+
+	ELEM_NAME	= "R"
+	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_R
+	HAVE_S		= False
+	HAVE_R		= True
+	HAVE_Q		= False
+	HIGH_PRIO_R	= True
+
+class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
+	"""FUP compiler - Boolean FP element.
+	"""
+
+	ELEM_NAME	= "FP"
+	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_FP
+	POSITIVE	= True
+
+	def __init__(self, grid, x, y, content, **kwargs):
+		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
+					      subType=self.SUBTYPE,
+					      content=content,
+					      **kwargs)
+
+	def _doCompile(self):
+		pass#TODO
+		return []
+
+class FupCompiler_ElemBoolFN(FupCompiler_ElemBoolFP):
+	"""FUP compiler - Boolean FN element.
+	"""
+
+	ELEM_NAME	= "FN"
+	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_FN
+	POSITIVE	= False

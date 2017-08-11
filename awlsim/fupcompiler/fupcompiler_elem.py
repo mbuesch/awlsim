@@ -34,15 +34,27 @@ from awlsim.core.instructions.all_insns import * #+cimport
 
 
 class FupCompiler_ElemFactory(XmlFactory):
+	CONTAINER_TAG	= "elements"
+
 	def parser_open(self, tag=None):
 		self.inElem = False
 		self.elem = None
+		self.subelemsFakeGrid = None
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		if self.inElem:
 			if self.elem and tag.name == "connections":
 				self.parser_switchTo(FupCompiler_Conn.factory(elem=self.elem))
+				return
+			if self.elem and tag.name == "subelements":
+				from awlsim.fupcompiler.fupcompiler_grid import FupCompiler_Grid
+				if self.subelemsFakeGrid:
+					raise self.Error("Found multiple <subelements> tags "
+						"inside of boolean <element>.")
+				self.subelemsFakeGrid = FupCompiler_Grid(None)
+				self.parser_switchTo(FupCompiler_Elem.factory(grid=self.subelemsFakeGrid,
+									      CONTAINER_TAG="subelements"))
 				return
 		else:
 			if tag.name == "element":
@@ -67,12 +79,15 @@ class FupCompiler_ElemFactory(XmlFactory):
 		if self.inElem:
 			if tag.name == "element":
 				if self.elem:
+					if self.subelemsFakeGrid and\
+					   self.subelemsFakeGrid.elems:
+						self.elem.subElems = self.subelemsFakeGrid.elems.copy()
 					self.grid.addElem(self.elem)
 				self.inElem = False
 				self.elem = None
 				return
 		else:
-			if tag.name == "elements":
+			if tag.name == self.CONTAINER_TAG:
 				self.parser_finish()
 				return
 		XmlFactory.parser_endTag(self, tag)
@@ -116,21 +131,19 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		from awlsim.fupcompiler.fupcompiler_elemmove import FupCompiler_ElemMove
 		try:
 			elemType = cls.str2type[elemType]
-			if elemType == cls.TYPE_BOOLEAN:
-				return FupCompiler_ElemBool.parse(grid=grid,
-								  x=x, y=y,
-								  subType=subType,
-								  content=content)
-			elif elemType == cls.TYPE_OPERAND:
-				return FupCompiler_ElemOper.parse(grid=grid,
-								  x=x, y=y,
-								  subType=subType,
-								  content=content)
-			elif elemType == cls.TYPE_MOVE:
-				return FupCompiler_ElemMove.parse(grid=grid,
-								  x=x, y=y,
-								  subType=subType,
-								  content=content)
+			type2class = {
+				cls.TYPE_BOOLEAN	: FupCompiler_ElemBool,
+				cls.TYPE_OPERAND	: FupCompiler_ElemOper,
+				cls.TYPE_MOVE		: FupCompiler_ElemMove
+			}
+			elemClass = None
+			with contextlib.suppress(KeyError):
+				elemClass = type2class[elemType]
+			if elemClass:
+				return elemClass.parse(grid=grid,
+						       x=x, y=y,
+						       subType=subType,
+						       content=content)
 		except KeyError:
 			pass
 		return None
@@ -144,7 +157,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.subType = subType			# SUBTYPE_... or None
 		self.content = content or ""		# content string
 		self.connections = set()		# FupCompiler_Conn
-		self.virtual = virtual
+		self.virtual = bool(virtual)		# Flag: Virtual element
+		self.subElems = set()			# Set of sub-elements (if any)
 
 		# This dict contains the values of the connections,
 		# if this element has already been compiled.
