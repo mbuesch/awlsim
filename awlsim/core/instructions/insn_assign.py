@@ -39,10 +39,12 @@ class AwlInsn_ASSIGN(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef S7CPU cpu
 
-		s = self.cpu.statusWord
-		if self.cpu.mcrActive and not self.cpu.mcrIsOn():
+		cpu = self.cpu
+		s = cpu.statusWord
+		if cpu.mcrActive and not cpu.mcrIsOn():
 			s.OR, s.STA, s.NER = 0, 0, 0
 		else:
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
-		self.cpu.store(self.op0, s.STA, self._widths_1)
+		cpu.store(self.op0, s.STA, self._widths_1)

@@ -39,13 +39,16 @@ class AwlInsn_S(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef S7CPU cpu
+#@cy		cdef AwlOperator oper
 
-		s, oper = self.cpu.statusWord,\
-			self.op0.resolve(True)
+		cpu = self.cpu
+		s = cpu.statusWord
+		oper = self.op0.resolve(True)
 		if oper.operType == AwlOperatorTypes.MEM_Z:
-			self.cpu.getCounter(oper.offset.byteOffset).set(s.VKE)
+			cpu.getCounter(oper.offset.byteOffset).set(s.VKE)
 			s.OR, s.NER = 0, 0
 		else:
-			if s.VKE and (not self.cpu.mcrActive or self.cpu.mcrIsOn()):
-				self.cpu.store(oper, 1, self._widths_1)
+			if s.VKE and (not cpu.mcrActive or cpu.mcrIsOn()):
+				cpu.store(oper, 1, self._widths_1)
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
