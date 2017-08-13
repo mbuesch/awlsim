@@ -79,6 +79,34 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		self._operator = None
 		self.__operatorWidth = None
 
+	def _getConn(self, getInput=True):
+		"""Get the one connection of this element.
+		"""
+		# Only one connection allowed per oper.
+		if len(self.connections) != 1:
+			raise FupOperError("Invalid number of "
+				"connections in '%s'." % (
+				str(self)),
+				self)
+
+		# The connection must be input.
+		conn = getany(self.connections)
+		if conn.dirIn != getInput or\
+		   conn.dirOut == getInput or\
+		   conn.pos != 0:
+			raise FupOperError("Invalid connection "
+				"properties in '%s'." % (
+				str(self)),
+				self)
+		return conn
+
+	def _getConnectedElem(self, viaOut=True):
+		"""Get the element that is connected to this operator element.
+		"""
+		conn = self._getConn(getInput=viaOut)
+		otherElem = conn.getConnectedElem(viaOut=viaOut)
+		return otherElem
+
 	def _translateContent(self):
 		"""Translate the element content and create self._operator,
 		if not already done so.
@@ -124,6 +152,20 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		self._translateContent()
 		insns.append(self.newInsn(insnClass, ops=[self._operator]))
 
+		return insns
+
+	def compileConn(self, conn, desiredTarget, inverted=False):
+		self.compileState = self.COMPILE_RUNNING
+
+		insns = []
+
+		assert(conn in self.connections)
+		insnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
+							       toLoad=conn.dirOut,
+							       inverted=inverted)
+		insns.extend(self.compileAs(insnClass))
+
+		self.compileState = self.COMPILE_DONE
 		return insns
 
 	def __str__(self):
@@ -228,7 +270,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		insns = []
 
 		# Get the element that is connected to this operator.
-		otherElem = self.__getConnectedElem()
+		otherElem = self._getConnectedElem()
 
 		# Translate the operator.
 		# Do this before compiling the connected element so that
@@ -260,33 +302,6 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 		return insns
 
-	def __getConn(self):
-		"""Get the one input connection of this element.
-		"""
-		# Only one connection allowed per ASSIGN.
-		if len(self.connections) != 1:
-			raise FupOperError("Invalid number of "
-				"connections in '%s'." % (
-				str(self)),
-				self)
-
-		# The connection must be input.
-		conn = getany(self.connections)
-		if not conn.dirIn or conn.dirOut or conn.pos != 0:
-			raise FupOperError("Invalid connection "
-				"properties in '%s'." % (
-				str(self)),
-				self)
-
-		return conn
-
-	def __getConnectedElem(self):
-		"""Get the element that is connected to this operator element.
-		"""
-		conn = self.__getConn()
-		otherElem = conn.getConnectedElem(viaOut=True)
-		return otherElem
-
 	def emitStore_VKE(self):
 		"""Emit a VKE store instruction (=) for this operator element.
 		This does not check whether the operator actually is a boolean operator.
@@ -296,7 +311,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 		# Create the ASSIGN instruction.
 		insns.extend(self.compileAs(AwlInsn_ASSIGN))
-		otherElem = self.__getConnectedElem()
+		otherElem = self._getConnectedElem()
 
 		# If the other element connected to this operand is a boolean and has more
 		# than one connected element, we need to store the VKE for them.
