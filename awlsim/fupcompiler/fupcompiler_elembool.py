@@ -155,8 +155,11 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			insns.extend(self._loadFromTemp(insnClass))
 		return insns
 
-#	def compileConn(self, conn, desiredTarget, inverted=False):
-#		pass#TODO
+	def compileConn(self, conn, desiredTarget, inverted=False):
+		insnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
+							       toLoad=conn.dirOut,
+							       inverted=inverted)
+		return self.compileToVKE(insnClass)
 
 class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean AND element.
