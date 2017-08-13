@@ -155,6 +155,9 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			insns.extend(self._loadFromTemp(insnClass))
 		return insns
 
+#	def compileConn(self, conn, desiredTarget, inverted=False):
+#		pass#TODO
+
 class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean AND element.
 	"""
@@ -210,6 +213,7 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 	HAVE_R		= True
 	HAVE_Q		= True
 	HIGH_PRIO_R	= True
+	OPTIONAL_CONNS	= { "R", "Q", }
 
 	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
@@ -217,9 +221,72 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 					      content=content,
 					      **kwargs)
 
+	def __getBodyOper(self):
+		if len(self.subElems) != 1:
+			raise FupElemError("Invalid body operator in '%s'" % (
+				str(self)),
+				self)
+		subElem = getany(self.subElems)
+		if not subElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+				      FupCompiler_ElemOper.SUBTYPE_EMBEDDED):
+			raise FupElemError("Body operator element '%s' "
+				"is of invalid type." % (
+				str(subElem)),
+				self)
+		return subElem
+
+	def __compileSR(self, bodyOper, connName, insnClass):
+		conn = self.getUniqueConnByText(connName, searchInputs=True)
+		if not conn or not conn.isConnected:
+			return []
+		otherConn = conn.getConnectedConn(getOutput=True)
+		insns = otherConn.compileConn(targetInsnClass=AwlInsn_U,
+					      inverted=conn.inverted)
+		insns.extend(bodyOper.compileAs(insnClass))
+		return insns
+
+	def __compileS(self, bodyOper):
+		if not self.HAVE_S:
+			return []
+		return self.__compileSR(bodyOper, "S", AwlInsn_S)
+
+	def __compileR(self, bodyOper):
+		if not self.HAVE_R:
+			return []
+		return self.__compileSR(bodyOper, "R", AwlInsn_R)
+
+	@property
+	def isCompileEntryPoint(self):
+		# We are a compilation entry, if Q is not connected.
+		if self.HAVE_Q:
+			conn = self.getUniqueConnByText("Q", searchOutputs=True)
+			if not conn or not conn.isConnected:
+				return True
+		return False
+
 	def _doCompile(self):
-		pass#TODO
-		return []
+		insns = []
+
+		bodyOper = self.__getBodyOper()
+
+		if self.HIGH_PRIO_R:
+			insns.extend(self.__compileS(bodyOper))
+			insns.extend(self.__compileR(bodyOper))
+		else:
+			insns.extend(self.__compileR(bodyOper))
+			insns.extend(self.__compileS(bodyOper))
+
+		if self.HAVE_Q:
+			conn_Q = self.getUniqueConnByText("Q", searchOutputs=True)
+			if conn_Q and conn_Q.isConnected:
+				insns.extend(bodyOper.compileAs(AwlInsn_UN if conn_Q.inverted
+								else AwlInsn_U))
+
+		return insns
+
+	def connIsOptional(self, conn):
+		connText = conn.text.upper()
+		return connText in self.OPTIONAL_CONNS
 
 class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
 	"""FUP compiler - Boolean RS element.
@@ -231,6 +298,7 @@ class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
 	HAVE_R		= True
 	HAVE_Q		= True
 	HIGH_PRIO_R	= False
+	OPTIONAL_CONNS	= { "S", "Q", }
 
 class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	"""FUP compiler - Boolean S element.
@@ -242,8 +310,19 @@ class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	HAVE_R		= False
 	HAVE_Q		= False
 	HIGH_PRIO_R	= False
+	OPTIONAL_CONNS	= set()
 
-class FupCompiler_ElemBoolR(FupCompiler_ElemBoolSR):
+	def _doCompile(self):
+		if len(self.connections) == 1:
+			conn = getany(self.connections)
+			conn.text = self.ELEM_NAME
+		return FupCompiler_ElemBoolSR._doCompile(self)
+
+	@property
+	def isCompileEntryPoint(self):
+		return True
+
+class FupCompiler_ElemBoolR(FupCompiler_ElemBoolS):
 	"""FUP compiler - Boolean R element.
 	"""
 
@@ -253,6 +332,7 @@ class FupCompiler_ElemBoolR(FupCompiler_ElemBoolSR):
 	HAVE_R		= True
 	HAVE_Q		= False
 	HIGH_PRIO_R	= True
+	OPTIONAL_CONNS	= set()
 
 class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean FP element.
