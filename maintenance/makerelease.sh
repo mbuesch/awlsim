@@ -20,7 +20,8 @@ hook_get_version()
 	local file="$1/awlsim/common/version.py"
 	local maj="$(cat "$file" | grep -e 'VERSION_MAJOR =' | head -n1 | awk '{print $3;}')"
 	local min="$(cat "$file" | grep -e 'VERSION_MINOR =' | head -n1 | awk '{print $3;}')"
-	version="$maj.$min"
+	local ext="$(cat "$file" | grep -e 'VERSION_EXTRA =' | head -n1 | awk '{print $3;}' | cut -d'"' -f2)"
+	version="${maj}.${min}${ext}"
 }
 
 hook_post_checkout()
