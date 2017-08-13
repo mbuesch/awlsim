@@ -137,6 +137,7 @@ class FupElem_BOOLEAN(FupElem):
 	FIXED_INPUTS		= None
 	FIXED_OUTPUTS		= [ None, ]
 	WITH_BODY_OPERATOR	= False
+	OPTIONAL_CONNS		= set()
 
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
@@ -260,10 +261,13 @@ class FupElem_BOOLEAN(FupElem):
 			if self.WITH_BODY_OPERATOR:
 				cellIdx += 1
 
+			connPen = self._connPen\
+				if (conn.isConnected or conn.text in self.OPTIONAL_CONNS)\
+				else self._connOpenPen
+
 			x = conn.CONN_OFFS if conn.isConnected else 0
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
-			painter.setPen(self._connPen if conn.isConnected
-				       else self._connOpenPen)
+			painter.setPen(connPen)
 			painter.drawLine(x, y, xpad, y)
 			if conn.inverted:
 				painter.setPen(self._connInvSelPen\
@@ -272,8 +276,7 @@ class FupElem_BOOLEAN(FupElem):
 				painter.drawEllipse(xpad - notD, y - notR,
 						    notD, notD)
 			if conn.text:
-				painter.setPen(self._connPen if conn.isConnected
-					       else self._connOpenPen)
+				painter.setPen(connPen)
 				x = xpad + 2
 				y = (cellIdx * cellHeight)
 				painter.drawText(x, y,
@@ -285,11 +288,15 @@ class FupElem_BOOLEAN(FupElem):
 		if self.outputs:
 			assert(len(self.outputs) == 1)
 			conn = self.outputs[0]
+
+			connPen = self._connPen\
+				if (conn.isConnected or conn.text in self.OPTIONAL_CONNS)\
+				else self._connOpenPen
+
 			x = (cellWidth - conn.CONN_OFFS) if conn.isConnected\
 			    else cellWidth
 			y = elemHeight - (cellHeight // 2)
-			painter.setPen(self._connPen if conn.isConnected
-				       else self._connOpenPen)
+			painter.setPen(connPen)
 			painter.setBrush(self._bgSelBrush if self.selected\
 					 else self._bgBrush)
 			painter.drawLine(cellWidth - xpad, y,
@@ -301,8 +308,7 @@ class FupElem_BOOLEAN(FupElem):
 				painter.drawEllipse(cellWidth - xpad, y - notR,
 						    notD, notD)
 			if conn.text:
-				painter.setPen(self._connPen if conn.isConnected
-					       else self._connOpenPen)
+				painter.setPen(connPen)
 				painter.setFont(getDefaultFixedFont(8))
 				x = 0
 				y = elemHeight - cellHeight
@@ -408,6 +414,7 @@ class FupElem_SR(FupElem_BOOLEAN):
 	FIXED_INPUTS		= [ "S", "R", ]
 	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
+	OPTIONAL_CONNS		= { "R", "Q", }
 
 class FupElem_RS(FupElem_BOOLEAN):
 	"""RS flip-flop FUP/FBD element"""
@@ -418,6 +425,7 @@ class FupElem_RS(FupElem_BOOLEAN):
 	FIXED_INPUTS		= [ "R", "S", ]
 	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
+	OPTIONAL_CONNS		= { "S", "Q", }
 
 class FupElem_FP(FupElem_BOOLEAN):
 	"""Positive edge FUP/FBD element"""
