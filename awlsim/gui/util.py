@@ -27,6 +27,7 @@ import awlsim_loader.cython_helper as cython_helper
 
 import sys
 import traceback
+import xml.sax.saxutils as saxutils
 
 if isPyPy or isJython:
 	# PySide does not work on PyPy or Jython, yet.
@@ -69,6 +70,7 @@ def getErrorColor():
 def handleFatalException(parentWidget=None):
 	text = str(traceback.format_exc())
 	print("Fatal exception:\n", text)
+	text = saxutils.escape(text)
 	QMessageBox.critical(parentWidget,
 		"A fatal exception occurred",
 		"<pre>"
@@ -86,7 +88,7 @@ class MessageBox(QDialog):
 		self.setLayout(QGridLayout())
 		self.setWindowTitle(title)
 
-		self.text = "<pre>" + text + "\n</pre>"
+		self.text = "<pre>" + saxutils.escape(text) + "\n</pre>"
 		self.verboseText = None
 		if verboseText and verboseText.strip() != text.strip():
 			self.verboseText = "<pre>" + verboseText + "\n</pre>"
