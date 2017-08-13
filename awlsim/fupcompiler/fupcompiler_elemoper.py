@@ -79,6 +79,19 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		self._operator = None
 		self.__operatorWidth = None
 
+	def _translateContent(self):
+		"""Translate the element content and create self._operator,
+		if not already done so.
+		"""
+		if not self._operator:
+			if not self.content.strip():
+				raise FupOperError("Found empty operator: %s" % (
+					str(self)),
+					self)
+			opDesc = self.opTrans.translateFromString(self.content)
+			self._operator = opDesc.operator
+		return self._operator
+
 	@property
 	def operatorWidth(self):
 		if self.__operatorWidth is None:
@@ -101,6 +114,17 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 			elif operWidth in {8, 16, 32}:
 				return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
+
+	def compileAs(self, insnClass):
+		"""Compile this operator as the specified instruction.
+		This may be AwlInsn_U, AwlInsn_S or similar.
+		"""
+		insns = []
+
+		self._translateContent()
+		insns.append(self.newInsn(insnClass, ops=[self._operator]))
+
+		return insns
 
 	def __str__(self):
 		extra = []
@@ -159,13 +183,8 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	def _doCompile(self):
 		insns = []
 
-		# Translate the operator
-		if not self.content.strip():
-			raise FupOperError("Found empty load operator: %s" % (
-				str(self)),
-				self)
-		opDesc = self.opTrans.translateFromString(self.content)
-		self._operator = opDesc.operator
+		# Translate the operator content
+		self._translateContent()
 
 		insnClass = self.__insnClass
 		if not insnClass:
@@ -184,7 +203,7 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 					self)
 
 		# Create the LOAD instruction.
-		insns.append(self.newInsn(insnClass, ops=[self._operator]))
+		insns.extend(self.compileAs(insnClass))
 
 		return insns
 
@@ -214,7 +233,7 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		# Translate the operator.
 		# Do this before compiling the connected element so that
 		# the operator is available to the element.
-		self.__translateContent()
+		self._translateContent()
 
 		# Compile the element connected to the input.
 		if otherElem.needCompile:
@@ -233,11 +252,10 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 			#FIXME this might lead to problems in evaluation order, if we have a branch with interleaved assigns and other elems.
 			conn = getany(self.connections)
 			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
-				if otherElem.elemType == self.TYPE_OPERAND and\
-				   otherElem.subType == self.SUBTYPE_ASSIGN:
+				if otherElem.isType(self.TYPE_OPERAND,
+						    self.SUBTYPE_ASSIGN):
 					otherElem.compileState = self.COMPILE_RUNNING
-					opDesc = self.opTrans.translateFromString(otherElem.content)
-					insns.append(self.newInsn(AwlInsn_ASSIGN, ops=[opDesc.operator]))
+					insns.extend(otherElem.compileAs(AwlInsn_ASSIGN))
 					otherElem.compileState = self.COMPILE_DONE
 
 		return insns
@@ -269,20 +287,6 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		otherElem = conn.getConnectedElem(viaOut=True)
 		return otherElem
 
-	def __translateContent(self):
-		"""Translate the element content and create self._operator,
-		if not already done so.
-		"""
-		if self._operator:
-			return
-		if not self.content.strip():
-			raise FupOperError("Found empty assignment operator %s "
-				"that is connected to %s" % (
-				str(self), str(self.__getConnectedElem())),
-				self)
-		opDesc = self.opTrans.translateFromString(self.content)
-		self._operator = opDesc.operator
-
 	def emitStore_VKE(self):
 		"""Emit a VKE store instruction (=) for this operator element.
 		This does not check whether the operator actually is a boolean operator.
@@ -290,11 +294,8 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		"""
 		insns = []
 
-		# Translate the assign operator content, if not already done so.
-		self.__translateContent()
-
 		# Create the ASSIGN instruction.
-		insns.append(self.newInsn(AwlInsn_ASSIGN, ops=[self._operator]))
+		insns.extend(self.compileAs(AwlInsn_ASSIGN))
 		otherElem = self.__getConnectedElem()
 
 		# If the other element connected to this operand is a boolean and has more
@@ -314,11 +315,8 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		"""
 		insns = []
 
-		# Translate the assign operator content, if not already done so.
-		self.__translateContent()
-
 		# Create a transfer instruction.
-		insns.append(self.newInsn(AwlInsn_T, ops=[self._operator]))
+		insns.extend(self.compileAs(AwlInsn_T))
 
 		self.__storeEmitted = True
 		return insns
@@ -336,5 +334,6 @@ class FupCompiler_ElemOperEmbedded(FupCompiler_ElemOper):
 					      **kwargs)
 
 	def _doCompile(self):
-		pass #TODO
-		return []
+		raise FupOperError("It's unknown how to compile "
+			"the embedded operand.",
+			self)
