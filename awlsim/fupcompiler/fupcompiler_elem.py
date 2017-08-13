@@ -82,6 +82,9 @@ class FupCompiler_ElemFactory(XmlFactory):
 					if self.subelemsFakeGrid and\
 					   self.subelemsFakeGrid.elems:
 						self.elem.subElems = self.subelemsFakeGrid.elems.copy()
+						for e in self.elem.subElems:
+							e.grid = self.grid
+						self.subelemsFakeGrid = None
 					self.grid.addElem(self.elem)
 				self.inElem = False
 				self.elem = None
@@ -290,7 +293,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		try:
 			varName = self.__tempVarNames[conn]
 		except KeyError as e:
-			if conn and conn.text:
+			if conn and conn != self.MAIN_RESULT and conn.text:
 				connText = "The output %s" % conn.text
 			else:
 				connText = "The result"
