@@ -3,7 +3,7 @@ Awlsim - S7 compatible Soft-PLC
 
 Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
-The latest version of awlsim can be downloaded from the [official awlsim site](https://bues.ch/a/awlsim).
+The latest version of awlsim can be downloaded from the [official awlsim site](https://awlsim.de).
 
 
 Awlsim - Soft-PLC
