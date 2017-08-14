@@ -93,6 +93,22 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 					  subType=subType, content=content,
 					  **kwargs)
 
+	def _getBodyOper(self):
+		"""Get the body operand.
+		"""
+		if len(self.subElems) != 1:
+			raise FupElemError("Invalid body operator in '%s'" % (
+				str(self)),
+				self)
+		subElem = getany(self.subElems)
+		if not subElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+				      FupCompiler_ElemOper.SUBTYPE_EMBEDDED):
+			raise FupElemError("Body operator element '%s' "
+				"is of invalid type." % (
+				str(subElem)),
+				self)
+		return subElem
+
 	def __getOutConn(self):
 		outConnections = list(self.outConnections)
 		if len(outConnections) != 1:
@@ -224,20 +240,6 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 					      content=content,
 					      **kwargs)
 
-	def __getBodyOper(self):
-		if len(self.subElems) != 1:
-			raise FupElemError("Invalid body operator in '%s'" % (
-				str(self)),
-				self)
-		subElem = getany(self.subElems)
-		if not subElem.isType(FupCompiler_Elem.TYPE_OPERAND,
-				      FupCompiler_ElemOper.SUBTYPE_EMBEDDED):
-			raise FupElemError("Body operator element '%s' "
-				"is of invalid type." % (
-				str(subElem)),
-				self)
-		return subElem
-
 	def __compileSR(self, bodyOper, connName, insnClass):
 		conn = self.getUniqueConnByText(connName, searchInputs=True)
 		if not conn or not conn.isConnected:
@@ -270,7 +272,7 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 	def _doCompile(self):
 		insns = []
 
-		bodyOper = self.__getBodyOper()
+		bodyOper = self._getBodyOper()
 
 		if self.HIGH_PRIO_R:
 			insns.extend(self.__compileS(bodyOper))
@@ -352,8 +354,31 @@ class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
 					      **kwargs)
 
 	def _doCompile(self):
-		pass#TODO
-		return []
+		insns = []
+
+		bodyOper = self._getBodyOper()
+
+		inConns = list(self.inConnections)
+		if len(inConns) != 1:
+			raise FupElemError("Invalid number of input connections",
+				self)
+		inConn = inConns[0]
+
+		outConns = list(self.outConnections)
+		if len(outConns) != 1:
+			raise FupElemError("Invalid number of output connections",
+				self)
+		outConn = outConns[0]
+
+		otherConn = inConn.getConnectedConn(getOutput=True)
+		insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_U,
+						   inverted=inConn.inverted))
+		insns.extend(bodyOper.compileAs(AwlInsn_FP if self.POSITIVE
+						else AwlInsn_FN))
+		if outConn.inverted:
+			insns.append(self.newInsn(AwlInsn_NOT))
+
+		return insns
 
 class FupCompiler_ElemBoolFN(FupCompiler_ElemBoolFP):
 	"""FUP compiler - Boolean FN element.
