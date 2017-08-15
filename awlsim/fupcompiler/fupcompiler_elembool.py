@@ -312,7 +312,7 @@ class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	HAVE_S		= True
 	HAVE_R		= False
 	HIGH_PRIO_R	= False
-	OPTIONAL_CONNS	= set()
+	OPTIONAL_CONNS	= { "Q", }
 
 	def _doCompile(self):
 		# Enforce connection names.
@@ -334,7 +334,7 @@ class FupCompiler_ElemBoolR(FupCompiler_ElemBoolS):
 	HAVE_S		= False
 	HAVE_R		= True
 	HIGH_PRIO_R	= True
-	OPTIONAL_CONNS	= set()
+	OPTIONAL_CONNS	= { "Q", }
 
 class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean FP element.
