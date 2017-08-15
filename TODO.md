@@ -40,3 +40,9 @@ FBD / FUP
 * Add feature: XML input and export of single diagrams
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: Support modifying wires by clicking onto them
+* Add feature: Add option to disable elements
+* Add element: Timers
+* Add element: Counters
+* Add element: Arithmetic
+* Add element: Compare
+* Add element: CALL
