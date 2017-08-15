@@ -230,7 +230,6 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_SR
 	HAVE_S		= True
 	HAVE_R		= True
-	HAVE_Q		= True
 	HIGH_PRIO_R	= True
 	OPTIONAL_CONNS	= { "R", "Q", }
 
@@ -263,10 +262,9 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 	@property
 	def isCompileEntryPoint(self):
 		# We are a compilation entry, if Q is not connected.
-		if self.HAVE_Q:
-			conn = self.getUniqueConnByText("Q", searchOutputs=True)
-			if not conn or not conn.isConnected:
-				return True
+		conn = self.getUniqueConnByText("Q", searchOutputs=True)
+		if not conn or not conn.isConnected:
+			return True
 		return False
 
 	def _doCompile(self):
@@ -274,6 +272,7 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 
 		bodyOper = self._getBodyOper()
 
+		# Compile S and R inputs
 		if self.HIGH_PRIO_R:
 			insns.extend(self.__compileS(bodyOper))
 			insns.extend(self.__compileR(bodyOper))
@@ -281,11 +280,11 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 			insns.extend(self.__compileR(bodyOper))
 			insns.extend(self.__compileS(bodyOper))
 
-		if self.HAVE_Q:
-			conn_Q = self.getUniqueConnByText("Q", searchOutputs=True)
-			if conn_Q and conn_Q.isConnected:
-				insns.extend(bodyOper.compileAs(AwlInsn_UN if conn_Q.inverted
-								else AwlInsn_U))
+		# Compile Q output
+		conn_Q = self.getUniqueConnByText("Q", searchOutputs=True)
+		if conn_Q and conn_Q.isConnected:
+			insns.extend(bodyOper.compileAs(AwlInsn_UN if conn_Q.inverted
+							else AwlInsn_U))
 
 		return insns
 
@@ -301,7 +300,6 @@ class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
 	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_RS
 	HAVE_S		= True
 	HAVE_R		= True
-	HAVE_Q		= True
 	HIGH_PRIO_R	= False
 	OPTIONAL_CONNS	= { "S", "Q", }
 
@@ -313,19 +311,19 @@ class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_S
 	HAVE_S		= True
 	HAVE_R		= False
-	HAVE_Q		= False
 	HIGH_PRIO_R	= False
 	OPTIONAL_CONNS	= set()
 
 	def _doCompile(self):
-		if len(self.connections) == 1:
-			conn = getany(self.connections)
-			conn.text = self.ELEM_NAME
-		return FupCompiler_ElemBoolSR._doCompile(self)
+		# Enforce connection names.
+		# They might not be present in the project file.
+		if len(list(self.inConnections)) == 1:
+			getany(self.inConnections).text = self.ELEM_NAME
+		if len(list(self.outConnections)) == 1:
+			getany(self.outConnections).text = "Q"
 
-	@property
-	def isCompileEntryPoint(self):
-		return True
+		# Run the SR compiler
+		return FupCompiler_ElemBoolSR._doCompile(self)
 
 class FupCompiler_ElemBoolR(FupCompiler_ElemBoolS):
 	"""FUP compiler - Boolean R element.
@@ -335,7 +333,6 @@ class FupCompiler_ElemBoolR(FupCompiler_ElemBoolS):
 	SUBTYPE		= FupCompiler_ElemBool.SUBTYPE_R
 	HAVE_S		= False
 	HAVE_R		= True
-	HAVE_Q		= False
 	HIGH_PRIO_R	= True
 	OPTIONAL_CONNS	= set()
 

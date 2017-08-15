@@ -135,9 +135,10 @@ class FupElem_BOOLEAN(FupElem):
 	factory			= FupElem_BOOLEAN_factory
 
 	FIXED_INPUTS		= None
-	FIXED_OUTPUTS		= [ None, ]
+	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= False
 	OPTIONAL_CONNS		= set()
+	BLANK_CONNS		= { "Q", }
 
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
@@ -275,7 +276,7 @@ class FupElem_BOOLEAN(FupElem):
 					       self._connInvPen)
 				painter.drawEllipse(xpad - notD, y - notR,
 						    notD, notD)
-			if conn.text:
+			if conn.text and conn.text not in self.BLANK_CONNS:
 				painter.setPen(connPen)
 				x = xpad + 2
 				y = (cellIdx * cellHeight)
@@ -307,7 +308,7 @@ class FupElem_BOOLEAN(FupElem):
 					       self._connInvPen)
 				painter.drawEllipse(cellWidth - xpad, y - notR,
 						    notD, notD)
-			if conn.text:
+			if conn.text and conn.text not in self.BLANK_CONNS:
 				painter.setPen(connPen)
 				painter.setFont(getDefaultFixedFont(8))
 				x = 0
@@ -391,9 +392,11 @@ class FupElem_S(FupElem_BOOLEAN):
 	OP_SYM			= "S"
 	OP_SYM_NAME		= "s" # XML ABI name
 
-	FIXED_INPUTS		= [ None, ]
-	FIXED_OUTPUTS		= None
+	FIXED_INPUTS		= [ "S", ]
+	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
+	OPTIONAL_CONNS		= { "Q", }
+	BLANK_CONNS		= { "S", "Q", }
 
 class FupElem_R(FupElem_BOOLEAN):
 	"""RESET FUP/FBD element"""
@@ -401,9 +404,11 @@ class FupElem_R(FupElem_BOOLEAN):
 	OP_SYM			= "R"
 	OP_SYM_NAME		= "r" # XML ABI name
 
-	FIXED_INPUTS		= [ None, ]
-	FIXED_OUTPUTS		= None
+	FIXED_INPUTS		= [ "R", ]
+	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
+	OPTIONAL_CONNS		= { "Q", }
+	BLANK_CONNS		= { "R", "Q", }
 
 class FupElem_SR(FupElem_BOOLEAN):
 	"""SR flip-flop FUP/FBD element"""
@@ -415,6 +420,7 @@ class FupElem_SR(FupElem_BOOLEAN):
 	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
 	OPTIONAL_CONNS		= { "R", "Q", }
+	BLANK_CONNS		= set()
 
 class FupElem_RS(FupElem_BOOLEAN):
 	"""RS flip-flop FUP/FBD element"""
@@ -426,6 +432,7 @@ class FupElem_RS(FupElem_BOOLEAN):
 	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
 	OPTIONAL_CONNS		= { "S", "Q", }
+	BLANK_CONNS		= set()
 
 class FupElem_FP(FupElem_BOOLEAN):
 	"""Positive edge FUP/FBD element"""
@@ -433,16 +440,14 @@ class FupElem_FP(FupElem_BOOLEAN):
 	OP_SYM			= "FP"
 	OP_SYM_NAME		= "fp" # XML ABI name
 
-	FIXED_INPUTS		= [ None, ]
-	FIXED_OUTPUTS		= [ None, ]
+	FIXED_INPUTS		= [ "IN", ]
+	FIXED_OUTPUTS		= [ "Q", ]
 	WITH_BODY_OPERATOR	= True
+	OPTIONAL_CONNS		= set()
+	BLANK_CONNS		= { "IN", "Q", }
 
-class FupElem_FN(FupElem_BOOLEAN):
+class FupElem_FN(FupElem_FP):
 	"""Negative edge FUP/FBD element"""
 
 	OP_SYM			= "FN"
 	OP_SYM_NAME		= "fn" # XML ABI name
-
-	FIXED_INPUTS		= [ None, ]
-	FIXED_OUTPUTS		= [ None, ]
-	WITH_BODY_OPERATOR	= True
