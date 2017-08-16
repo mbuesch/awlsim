@@ -235,13 +235,14 @@ class FupElem_BOOLEAN(FupElem):
 		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
+		selected = self.selected
 		notR = 3
 		notD = notR * 2
 
 		# Draw body
-		painter.setPen(self._outlineSelPen if self.selected
+		painter.setPen(self._outlineSelPen if selected
 			       else self._outlinePen)
-		painter.setBrush(self._bgSelBrush if self.selected\
+		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		if self.WITH_BODY_OPERATOR:
@@ -254,7 +255,7 @@ class FupElem_BOOLEAN(FupElem):
 					self.BODY_CORNER_RADIUS)
 
 		# Draw inputs
-		painter.setBrush(self._bgSelBrush if self.selected\
+		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
 		painter.setFont(getDefaultFixedFont(8))
 		for i, conn in enumerate(self.inputs):
@@ -271,8 +272,8 @@ class FupElem_BOOLEAN(FupElem):
 			painter.setPen(connPen)
 			painter.drawLine(x, y, xpad, y)
 			if conn.inverted:
-				painter.setPen(self._connInvSelPen\
-					       if self.selected else\
+				painter.setPen(self._connInvSelPen
+					       if selected else
 					       self._connInvPen)
 				painter.drawEllipse(xpad - notD, y - notR,
 						    notD, notD)
@@ -298,13 +299,13 @@ class FupElem_BOOLEAN(FupElem):
 			    else cellWidth
 			y = elemHeight - (cellHeight // 2)
 			painter.setPen(connPen)
-			painter.setBrush(self._bgSelBrush if self.selected\
+			painter.setBrush(self._bgSelBrush if selected
 					 else self._bgBrush)
 			painter.drawLine(cellWidth - xpad, y,
 					 cellWidth, y)
 			if conn.inverted:
-				painter.setPen(self._connInvSelPen\
-					       if self.selected else\
+				painter.setPen(self._connInvSelPen
+					       if selected else
 					       self._connInvPen)
 				painter.drawEllipse(cellWidth - xpad, y - notR,
 						    notD, notD)
@@ -319,9 +320,9 @@ class FupElem_BOOLEAN(FupElem):
 						 conn.text)
 
 		# Draw symbol text
-		painter.setPen(self._outlineSelPen if self.selected
+		painter.setPen(self._outlineSelPen if selected
 			       else self._outlinePen)
-		painter.setBrush(self._bgSelBrush if self.selected\
+		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
 		painter.setFont(getDefaultFixedFont(11))
 		if self.WITH_BODY_OPERATOR:

@@ -187,11 +187,12 @@ class FupElem_MOVE(FupElem):
 		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
+		selected = self.selected
 
 		# Draw body
-		painter.setPen(self._outlineSelPen if self.selected
+		painter.setPen(self._outlineSelPen if selected
 			       else self._outlinePen)
-		painter.setBrush(self._bgSelBrush if self.selected\
+		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		painter.drawRoundedRect(tlX, tlY,
@@ -243,7 +244,7 @@ class FupElem_MOVE(FupElem):
 
 		# Draw element descriptor text
 		painter.setFont(getDefaultFixedFont(8))
-		painter.setPen(self._outlineSelPen if self.selected
+		painter.setPen(self._outlineSelPen if selected
 			       else self._outlinePen)
 		painter.drawText(0, 0,
 				 elemWidth, cellHeight,

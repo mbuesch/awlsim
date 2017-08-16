@@ -161,7 +161,7 @@ class FupElem_OPERAND(FupElem):
 
 		# Draw body
 		painter.setPen(self._noPen)
-		painter.setBrush(self._bgSelBrush if selected\
+		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
 		(tlX, tlY), (trX, trY), (blX, blY), (brX, brY) = self._calcBodyBox()
 		w, h = trX - tlX, blY - tlY	# width / height
@@ -190,7 +190,7 @@ class FupElem_OPERAND(FupElem):
 				textRect = bodyRect
 				actTextRect = painter.boundingRect(bodyRect, textFlags, text)
 			if drawExpanded:
-				painter.setBrush(self._bgSelBrush if selected\
+				painter.setBrush(self._bgSelBrush if selected
 						 else self._bgBrush)
 				painter.setPen(self._noPen)
 				painter.drawRect(actTextRect)
