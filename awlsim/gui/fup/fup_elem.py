@@ -37,18 +37,23 @@ class FupElem_factory(XmlFactory):
 
 	def parser_beginTag(self, tag):
 		if tag.name == "element":
+			from awlsim.gui.fup.fup_elembool import FupElem_BOOLEAN
+			from awlsim.gui.fup.fup_elemoperand import FupElem_OPERAND
+			from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
+			from awlsim.gui.fup.fup_elemarith import FupElem_ARITH
+
 			elemType = tag.getAttr("type")
-			if elemType == "boolean":
-				from awlsim.gui.fup.fup_elembool import FupElem_BOOLEAN
-				self.parser_switchTo(FupElem_BOOLEAN.factory(grid=self.grid))
-				return
-			elif elemType == "operand":
-				from awlsim.gui.fup.fup_elemoperand import FupElem_OPERAND
-				self.parser_switchTo(FupElem_OPERAND.factory(grid=self.grid))
-				return
-			elif elemType == "move":
-				from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
-				self.parser_switchTo(FupElem_MOVE.factory(grid=self.grid))
+			type2class = {
+				"boolean"	: FupElem_BOOLEAN,
+				"operand"	: FupElem_OPERAND,
+				"move"		: FupElem_MOVE,
+				"arithmetic"	: FupElem_ARITH
+			}
+			elemClass = None
+			with contextlib.suppress(KeyError):
+				elemClass = type2class[elemType]
+			if elemClass:
+				self.parser_switchTo(elemClass.factory(grid=self.grid))
 				return
 		XmlFactory.parser_beginTag(self, tag)
 

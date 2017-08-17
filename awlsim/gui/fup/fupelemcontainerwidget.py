@@ -27,6 +27,7 @@ from awlsim.gui.util import *
 
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
+from awlsim.gui.fup.fup_elemarith import *
 
 
 class FupElemItemClass(QTreeWidgetItem):
@@ -99,6 +100,31 @@ class FupElemContainerWidget(QTreeWidget):
 		itemMove.addChild(itemMoveMove)
 
 		itemArithI = FupElemItemClass("Int arithmetic", "stdlib")
+		itemArithADDI = FupElemItem("[+I]  INT addition", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_ADD_I(-1, -1)))
+		itemArithI.addChild(itemArithADDI)
+		itemArithSUBI = FupElemItem("[-I]  INT subtraction", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_SUB_I(-1, -1)))
+		itemArithI.addChild(itemArithSUBI)
+		itemArithMULI = FupElemItem("[*I]  INT multiplication", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_MUL_I(-1, -1)))
+		itemArithI.addChild(itemArithMULI)
+		itemArithDIVI = FupElemItem("[/I]  INT division", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_DIV_I(-1, -1)))
+		itemArithI.addChild(itemArithDIVI)
+		itemArithADDD = FupElemItem("[+D]  DINT addition", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_ADD_D(-1, -1)))
+		itemArithI.addChild(itemArithADDD)
+		itemArithSUBD = FupElemItem("[-D]  DINT subtraction", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_SUB_D(-1, -1)))
+		itemArithI.addChild(itemArithSUBD)
+		itemArithMULD = FupElemItem("[*D]  DINT multiplication", "new", elemMimeType,
+					   self.elemToXml(FupElem_ARITH_MUL_D(-1, -1)))
+		itemArithI.addChild(itemArithMULD)
+		itemArithDIVD = FupElemItem("[/D]  DINT division", "new", elemMimeType,
+					   self.elemToXml(FupElem_ARITH_DIV_D(-1, -1)))
+		itemArithI.addChild(itemArithDIVD)
+
 		itemArithR = FupElemItemClass("Real arithmetic", "stdlib")
 
 		self.addTopLevelItem(itemBool)
