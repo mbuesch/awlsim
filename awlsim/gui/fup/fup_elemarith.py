@@ -97,26 +97,21 @@ class FupElem_ARITH(FupElem):
 
 	factory			= FupElem_ARITH_factory
 
-	FIXED_INPUTS		= None
-	FIXED_OUTPUTS		= [ "OUT", ]
-	OPTIONAL_CONNS		= set()
-	BLANK_CONNS		= { "OUT", }
+	FIXED_INPUTS		= [ "EN", ]
+	FIXED_OUTPUTS		= [ "OUT", "ENO", ]
+	OPTIONAL_CONNS		= { "EN", "ENO", }
+	BLANK_CONNS		= { "IN", "OUT", }
 
 	def __init__(self, x, y, nrInputs=2):
 		FupElem.__init__(self, x, y)
 
-		if self.FIXED_INPUTS is None:
-			self.inputs = [ FupConnIn(self)
-					for i in range(nrInputs) ]
-		else:
-			self.inputs = [ FupConnIn(self, text=text)
-					for text in self.FIXED_INPUTS ]
+		self.inputs = [ FupConnIn(self, text=text)
+				for text in self.FIXED_INPUTS ]
+		self.inputs.extend( FupConnIn(self, text=("IN%d" % i))
+				    for i in range(nrInputs) )
 
-		if self.FIXED_OUTPUTS is None:
-			self.outputs = []
-		else:
-			self.outputs = [ FupConnOut(self, text=text)
-					 for text in self.FIXED_OUTPUTS ]
+		self.outputs = [ FupConnOut(self, text=text)
+				 for text in self.FIXED_OUTPUTS ]
 
 	# Overridden method. For documentation see base class.
 	def insertConn(self, beforeIndex, conn):
@@ -143,11 +138,16 @@ class FupElem_ARITH(FupElem):
 				if pixelX < xpad:
 					# inputs
 					idx = pixelY // cellHeight
-					return self.AREA_INPUT, idx
+					lastIdx = len(self.inputs) - 1
+					if idx <= lastIdx:
+						return self.AREA_INPUT, idx
 				elif pixelX >= totalWidth - xpad:
 					# outputs
-					if pixelY >= totalHeight - cellHeight:
-						return self.AREA_OUTPUT, 0
+					idx = pixelY // cellHeight
+					firstIdx = self.height - len(self.outputs)
+					if idx >= firstIdx:
+						idx -= firstIdx
+						return self.AREA_OUTPUT, idx
 				else:
 					# body
 					return self.AREA_BODY, 0
@@ -161,7 +161,7 @@ class FupElem_ARITH(FupElem):
 		elif conn.OUT:
 			y = self.outputs.index(conn)
 			if y >= 0:
-				y = self.height - 1
+				y = self.height - len(self.outputs) + y
 		if x >= 0 and y >= 0:
 			return x, y
 		return FupElem.getConnRelCoords(self, conn)
@@ -169,7 +169,8 @@ class FupElem_ARITH(FupElem):
 	# Overridden method. For documentation see base class.
 	@property
 	def height(self):
-		return len(self.inputs)
+		return max(len(self.inputs),
+			   len(self.outputs))
 
 	# Overridden method. For documentation see base class.
 	def draw(self, painter):
@@ -182,8 +183,6 @@ class FupElem_ARITH(FupElem):
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
 		selected = self.selected
-		notR = 3
-		notD = notR * 2
 
 		# Draw body
 		painter.setPen(self._outlineSelPen if selected
@@ -211,13 +210,9 @@ class FupElem_ARITH(FupElem):
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			painter.setPen(connPen)
 			painter.drawLine(x, y, xpad, y)
-			if conn.inverted:
-				painter.setPen(self._connInvSelPen
-					       if selected else
-					       self._connInvPen)
-				painter.drawEllipse(xpad - notD, y - notR,
-						    notD, notD)
-			if conn.text and conn.text not in self.BLANK_CONNS:
+
+			if conn.text and\
+			   not any(conn.text.startswith(b) for b in self.BLANK_CONNS):
 				painter.setPen(connPen)
 				x = xpad + 2
 				y = (cellIdx * cellHeight)
@@ -226,10 +221,10 @@ class FupElem_ARITH(FupElem):
 						 Qt.AlignLeft | Qt.AlignVCenter,
 						 conn.text)
 
-		# Draw output
-		if self.outputs:
-			assert(len(self.outputs) == 1)
-			conn = self.outputs[0]
+		# Draw outputs
+		painter.setFont(getDefaultFixedFont(8))
+		for i, conn in enumerate(self.outputs):
+			cellIdx = self.height - len(self.outputs) + i
 
 			connPen = self._connPen\
 				if (conn.isConnected or conn.text in self.OPTIONAL_CONNS)\
@@ -237,23 +232,17 @@ class FupElem_ARITH(FupElem):
 
 			x = (cellWidth - conn.CONN_OFFS) if conn.isConnected\
 			    else cellWidth
-			y = elemHeight - (cellHeight // 2)
+			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			painter.setPen(connPen)
 			painter.setBrush(self._bgSelBrush if selected
 					 else self._bgBrush)
 			painter.drawLine(cellWidth - xpad, y,
 					 cellWidth, y)
-			if conn.inverted:
-				painter.setPen(self._connInvSelPen
-					       if selected else
-					       self._connInvPen)
-				painter.drawEllipse(cellWidth - xpad, y - notR,
-						    notD, notD)
-			if conn.text and conn.text not in self.BLANK_CONNS:
-				painter.setPen(connPen)
-				painter.setFont(getDefaultFixedFont(8))
+
+			if conn.text and\
+			   not any(conn.text.startswith(b) for b in self.BLANK_CONNS):
 				x = 0
-				y = elemHeight - cellHeight
+				y = (cellIdx * cellHeight)
 				painter.drawText(x, y,
 						 elemWidth - xpad - 2, cellHeight,
 						 Qt.AlignRight | Qt.AlignVCenter,
@@ -272,17 +261,9 @@ class FupElem_ARITH(FupElem):
 
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
-		menu.enableInvertConn(True)
-		menu.enableAddInput(self.FIXED_INPUTS is None)
+		menu.enableAddInput(True)
 		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)
-
-	# Overridden method. For documentation see base class.
-	def setConnInverted(self, conn, inverted=True):
-		if conn in self.inputs or conn in self.outputs:
-			conn.inverted = inverted
-			return True
-		return False
 
 class FupElem_ARITH_ADD_I(FupElem_ARITH):
 	"""+I FUP/FBD element"""
