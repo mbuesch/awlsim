@@ -156,31 +156,10 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		# If EN is not a plain operator, this might involve compiling
 		# the connected element.
 		if conn_EN.isConnected:
-			otherElem = conn_EN.getConnectedElem(viaOut=True)
-			if otherElem.isType(self.TYPE_OPERAND,
-					    FupCompiler_ElemOper.SUBTYPE_LOAD):
-				# The other element is a LOAD operand.
-				# Compile the boolean (load) instruction.
-				# This generates:  U #EN
-				insns.extend(otherElem.compileOperLoad(
-						AwlInsn_U,
-						{ FupCompiler_Conn.TYPE_VKE, }))
-			elif otherElem.isType(self.TYPE_BOOLEAN):
-				# The other element we get the signal from
-				# is a boolean element. Compile this to get its
-				# resulting VKE.
-				insns.extend(otherElem.compileToVKE(AwlInsn_U))
-			elif otherElem.isType(self.TYPE_MOVE):
-				if otherElem.needCompile:
-					insns.extend(otherElem.compile())
-				else:
-					otherConn_ENO = otherElem.getUniqueConnByText("ENO", searchOutputs=True)
-					insns.extend(otherElem._loadFromTemp(AwlInsn_U, otherConn_ENO))
-			else:
-				raise FupElemError("Invalid "
-					"element '%s' connected to '%s'." % (
-					str(otherElem), str(self)),
-					self)
+			# Compile the element that drives this wire.
+			otherConn = conn_EN.getConnectedConn(getOutput=True)
+			insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_U,
+							   inverted=False))
 
 			# Emit the jump instruction.
 			# This will evaluate the current VKE.
