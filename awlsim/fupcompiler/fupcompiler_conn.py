@@ -288,7 +288,7 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 		Either target or targetInsnClass must be specified, but not both.
 		"""
 		assert(self.elem)
-		assert(bool(target) ^ bool(targetInsnClass))
+		assert((target is not None) ^ (targetInsnClass is not None))
 		if targetInsnClass:
 			target = self.loadInsnClass2Target[targetInsnClass]
 		return self.elem.compileConn(self, target, inverted)
