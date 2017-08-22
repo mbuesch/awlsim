@@ -172,6 +172,18 @@ class FupCompiler(object):
 			insn.commentStr = str(parentFupElem)
 		return insn
 
+	def newInsn_JMP(self, parentFupElem, insnClass, labelStr):
+		"""Create a new jump instruction instance.
+		parentFupElem: The FUP element that creates this insn.
+		insnClass: The jump instruction class that shall be instantiated.
+		labelStr: The label name string of the jump target.
+		"""
+		oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
+		oper.immediateStr = labelStr
+		return self.newInsn(parentFupElem=parentFupElem,
+				    insnClass=insnClass,
+				    ops=[oper])
+
 	def getOperDataWidth(self, oper):
 		"""Helper function to get the data type width (in bits)
 		of an operator. This will first attempt to resolve the operator,

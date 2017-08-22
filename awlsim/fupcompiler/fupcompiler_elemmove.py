@@ -163,9 +163,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 
 			# Emit the jump instruction.
 			# This will evaluate the current VKE.
-			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
-			oper.immediateStr = endLabel
-			insns.append(self.newInsn(AwlInsn_SPBNB, ops=[oper]))
+			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
 
 		# Compile the element connected to the input.
 		if connectedElem_IN.needCompile:
@@ -200,9 +198,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			# set BIE=1 and /ER=0.
 			# The SPBNB branch is never taken due to VKE=1.
 			insns.append(self.newInsn(AwlInsn_SET))
-			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
-			oper.immediateStr = endLabel
-			insns.append(self.newInsn(AwlInsn_SPBNB, ops=[oper]))
+			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
 
 		# Create the jump target label for EN=0.
 		# This might end up being unused, though.

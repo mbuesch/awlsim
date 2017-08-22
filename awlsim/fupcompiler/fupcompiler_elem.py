@@ -365,6 +365,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn(self, insnClass, ops)
 
+	def newInsn_JMP(self, insnClass, labelStr):
+		"""Wrapper: Call the compiler method to create a jump instruction.
+		"""
+		return self.grid.compiler.newInsn_JMP(self, insnClass, labelStr)
+
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
 			"subType=%s, content=\"%s\", virtual=%s)" % (
