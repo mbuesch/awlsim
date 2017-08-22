@@ -202,11 +202,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 
 		# Create the jump target label for EN=0.
 		# This might end up being unused, though.
-		oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
-		oper.immediate = 0
-		insn = self.newInsn(AwlInsn_NOP, ops=[oper])
-		insn.labelStr = endLabel
-		insns.append(insn)
+		insns.append(self.newInsn_NOP(labelStr=endLabel))
 
 		# Handle ENO output.
 		if conn_ENO.isConnected:

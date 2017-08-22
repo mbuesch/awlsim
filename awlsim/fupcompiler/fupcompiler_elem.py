@@ -370,6 +370,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn_JMP(self, insnClass, labelStr)
 
+	def newInsn_NOP(self, labelStr=None):
+		"""Wrapper: Call the compiler method to create a NOP instruction.
+		"""
+		return self.grid.compiler.newInsn_NOP(self, labelStr)
+
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
 			"subType=%s, content=\"%s\", virtual=%s)" % (
