@@ -98,11 +98,11 @@ class FupElem_ARITH(FupElem):
 	factory			= FupElem_ARITH_factory
 
 	FIXED_INPUTS		= [ "EN", ]
-	FIXED_OUTPUTS		= [ "OUT", "ENO", ]
+	FIXED_OUTPUTS		= [ "ENO", ]
 	OPTIONAL_CONNS		= { "EN", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
 
-	def __init__(self, x, y, nrInputs=2):
+	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
 		FupElem.__init__(self, x, y)
 
 		self.inputs = [ FupConnIn(self, text=text)
@@ -110,20 +110,42 @@ class FupElem_ARITH(FupElem):
 		self.inputs.extend( FupConnIn(self, text=("IN%d" % i))
 				    for i in range(nrInputs) )
 
-		self.outputs = [ FupConnOut(self, text=text)
-				 for text in self.FIXED_OUTPUTS ]
+		self.outputs = [ FupConnOut(self, text=("OUT%d" % i))
+				 for i in range(nrOutputs) ]
+		self.outputs.extend(FupConnOut(self, text=text)
+				    for text in self.FIXED_OUTPUTS )
+
+		self.__renumberConns()
+
+	def __renumberConns(self):
+		i = 0
+		for conn in self.inputs:
+			if not conn.text or conn.text.startswith("IN"):
+				conn.text = "IN%d" % i
+				i += 1
+		i = 0
+		for conn in self.outputs:
+			if not conn.text or conn.text.startswith("OUT"):
+				conn.text = "OUT%d" % i
+				i += 1
 
 	# Overridden method. For documentation see base class.
 	def insertConn(self, beforeIndex, conn):
-		if conn and conn.OUT:
-			return False
-		return FupElem.insertConn(self, beforeIndex, conn)
-
-	# Overridden method. For documentation see base class.
-	def addConn(self, conn):
-		if conn and conn.OUT:
-			return False
-		return FupElem.addConn(self, conn)
+		if conn:
+			if conn.IN:
+				if beforeIndex is None:
+					beforeIndex = len(self.inputs)
+				if beforeIndex <= 0:
+					return False
+			else:
+				if beforeIndex is None:
+					beforeIndex = len(self.outputs) - 1
+				if beforeIndex >= len(self.outputs):
+					return False
+		ok = FupElem.insertConn(self, beforeIndex, conn)
+		if ok:
+			self.__renumberConns()
+		return ok
 
 	# Overridden method. For documentation see base class.
 	def getAreaViaPixCoord(self, pixelX, pixelY):
@@ -262,8 +284,13 @@ class FupElem_ARITH(FupElem):
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableAddInput(True)
-		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
-		menu.enableDisconnWire(conn is not None and conn.isConnected)
+		menu.enableAddOutput(True)
+		if conn:
+			if conn.IN:
+				menu.enableRemoveConn(len(self.inputs) > 2)
+			else:
+				menu.enableRemoveConn(len(self.outputs) > 1)
+			menu.enableDisconnWire(conn.isConnected)
 
 class FupElem_ARITH_ADD_I(FupElem_ARITH):
 	"""+I FUP/FBD element"""
