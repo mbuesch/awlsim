@@ -143,6 +143,7 @@ class FupCompiler(object):
 		self.instanceDBsAwl = []	# Instance DBs AWL code strings
 		self.fupSource = None		# FUP source
 		self.awlSource = None		# Compiled AWL source
+		self.optimizer = None		# Optimizer instance, if any
 		self.__labelCounter = 0		# Current label name counter
 
 	def getAwlSource(self):
@@ -273,18 +274,18 @@ class FupCompiler(object):
 
 		return ('\r\n'.join(awl) + '\r\n').encode(AwlSource.ENCODING)
 
-	def __compileBlockDecl(self, optimize):
+	def __compileBlockDecl(self):
 		"""Compile block declaration.
 		"""
 		self.blockHeaderAwl, self.blockFooterAwl, self.instanceDBsAwl =\
-			self.decl.compile(self.interf, optimize)
+			self.decl.compile(self.interf)
 
-	def __compileInterface(self, optimize):
+	def __compileInterface(self):
 		"""Compile block interface.
 		"""
-		self.blockInterfAwl = self.interf.compile(optimize)
+		self.blockInterfAwl = self.interf.compile()
 
-	def __compileGrids(self, optimize):
+	def __compileGrids(self):
 		"""Compile all self.grids
 		"""
 		# Compile the grids
@@ -293,10 +294,11 @@ class FupCompiler(object):
 			insns.extend(grid.compile())
 		insns.append(AwlInsn_BE(cpu=None))
 
-		if optimize:
+		if self.optimizer:
 			# Optimize the generated instructions
-			optimizer = AwlOptimizer()
-			insns = optimizer.optimizeInsns(insns)
+			insns = self.optimizer.optimizeInsns(
+				insns,
+				infoStr=str(self.fupSource))
 
 		return insns
 
@@ -304,13 +306,14 @@ class FupCompiler(object):
 		self.reset()
 		self.fupSource = fupSource
 		self.mnemonics = mnemonics
+		self.optimizer = AwlOptimizer() if optimize else None
 		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
 		if self.__parse():
-			self.__compileBlockDecl(optimize)
-			insns = self.__compileGrids(optimize)
-			self.__compileInterface(optimize)
+			self.__compileBlockDecl()
+			insns = self.__compileGrids()
+			self.__compileInterface()
 
 			# Store the AWL code in the AWL source object.
 			self.awlSource.sourceBytes = self.__genAwlCode(insns)

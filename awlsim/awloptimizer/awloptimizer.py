@@ -22,8 +22,14 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.awloptimizer.opt_nop import *
+from awlsim.common.exceptions import *
+from awlsim.common.util import *
+
+from awlsim.awloptimizer.base import *
 from awlsim.awloptimizer.opt_bieforward import *
+from awlsim.awloptimizer.opt_nop import *
+
+import functools
 
 
 __all__ = [
@@ -35,31 +41,74 @@ class AwlOptimizer(object):
 	"""AWL/STL program optimizer.
 	"""
 
-	def __init__(self,
-		     removeNOPs=True,
-		     removeBIEForwards=True):
-		self.removeNOPs = removeNOPs
-		self.removeBIEForwards = removeBIEForwards
+	ALL_OPTIMIZERS = (
+		AwlOptimizer_BIEForward,
+		AwlOptimizer_NopRemove,
+	)
+
+	class AllOptsEnabled(object):
+		def __contains__(self, other):
+			return True
+
+	def __init__(self, enabledOpts=AllOptsEnabled()):
+		self.enabledOpts = enabledOpts
+		self.infoStr = ""
+
+	def __sortOptimizerClasses(self, optClasses):
+		def cmpFunc(optClass0, optClass1):
+			if optClass0.NAME == optClass1.NAME:
+				return 0
+			before = (optClass0.NAME in optClass1.AFTER or\
+				  optClass1.NAME in optClass0.BEFORE)
+			after = (optClass1.NAME in optClass0.AFTER or\
+				 optClass0.NAME in optClass1.BEFORE)
+			if before and after:
+				raise AwlSimError("AwlOptimizer: Ambiguous "
+					"dependency between '%s' and '%s'." % (
+					optClass0.NAME, optClass1.NAME))
+			if before:
+				return -1 # optClass0 before optClass1
+			if after:
+				return 1 # optClass1 before optClass0
+			return 0
+		return sorted(optClasses,
+			      key=functools.cmp_to_key(cmpFunc))
+
+	def __getOptimizerClasses(self, currentStage):
+		optClasses = [ optClass for optClass in self.ALL_OPTIMIZERS\
+			       if (currentStage in optClass.STAGES and\
+				   optClass.NAME in self.enabledOpts) ]
+		return self.__sortOptimizerClasses(optClasses)
+
+	def __runOptimizers(self, currentStage, insns):
+		for optClass in self.__getOptimizerClasses(AwlOptimizer_Base.STAGE1):
+			printDebug("AwlOptimizer%s: Running optimizer '%s'..." % (
+				(" / %s" % self.infoStr) if self.infoStr else "",
+				optClass.NAME))
+			insns = optClass(optimizer=self).run(insns=insns)
+		return insns
 
 	def __optimize_Stage1(self, insns):
-		if self.removeNOPs:
-			insns = AwlOptimizer_NopRemove(self).run(insns)
-		if self.removeBIEForwards:
-			insns = AwlOptimizer_BIEForward(self).run(insns)
-		return insns
+		return self.__runOptimizers(AwlOptimizer_Base.STAGE1, insns)
 
 	def __optimize_Stage2(self, insns):
-		return insns
+		return self.__runOptimizers(AwlOptimizer_Base.STAGE2, insns)
 
 	def __optimize_Stage3(self, insns):
-		return insns
+		return self.__runOptimizers(AwlOptimizer_Base.STAGE3, insns)
 
-	def optimizeInsns(self, insns):
+	def optimizeInsns(self, insns, infoStr=""):
 		"""Optimize a list of AwlInsn_xxx instances.
 		insns: The list of instructions to optimize.
 		Returns the optimized list of instructions.
 		"""
+		self.infoStr = infoStr
 		insns = self.__optimize_Stage1(insns)
 		insns = self.__optimize_Stage2(insns)
 		insns = self.__optimize_Stage3(insns)
 		return insns
+
+	def getEnableStr(self):
+		return ", ".join(
+			optClass.NAME for optClass in self.ALL_OPTIMIZERS
+			if optClass.NAME in self.enabledOpts)

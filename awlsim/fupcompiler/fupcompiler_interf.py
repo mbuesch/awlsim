@@ -183,7 +183,7 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		awlLines.append("\tEND_VAR")
 		return awlLines
 
-	def compile(self, optimize=True):
+	def compile(self):
 		"""Compile this FUP interface declaration to AWL.
 		Returns a list of AWL lines.
 		"""

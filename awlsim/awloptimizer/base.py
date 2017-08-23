@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.enumeration import *
+
 from awlsim.core.operatortypes import * #+cimport
 
 
@@ -33,6 +35,20 @@ __all__ = [
 class AwlOptimizer_Base(object):
 	"""AWL/STL optimizer base class
 	"""
+
+	EnumGen.start
+	STAGE1	= EnumGen.item
+	STAGE2	= EnumGen.item
+	STAGE3	= EnumGen.item
+	EnumGen.end
+
+	# The optimization pass name.
+	NAME	= "<none>"
+	# The stage(s) this optimization is supposed to run in.
+	STAGES	= frozenset((STAGE1, ))
+	# Dependency lists.
+	BEFORE	= frozenset()
+	AFTER	= frozenset()
 
 	def __init__(self, optimizer):
 		self.optimizer = optimizer

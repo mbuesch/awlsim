@@ -46,6 +46,9 @@ class AwlOptimizer_BIEForward(AwlOptimizer_Base):
 	This optimizer depends on a preceding NOP removal run.
 	"""
 
+	NAME	= "biefwd"
+	AFTER	= frozenset(("noprem", ))
+
 	def __init__(self, optimizer):
 		AwlOptimizer_Base.__init__(self, optimizer)
 
