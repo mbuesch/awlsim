@@ -25,7 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.cpuconfig import *
 from awlsim.common.util import *
 
-from awlsim.awloptimizer.awloptimizer_base import *
+from awlsim.awloptimizer.base import *
 
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.statusword import * #+cimport

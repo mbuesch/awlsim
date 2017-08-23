@@ -22,8 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.awloptimizer.awloptimizer_nop import *
-from awlsim.awloptimizer.awloptimizer_bieforward import *
+from awlsim.awloptimizer.opt_nop import *
+from awlsim.awloptimizer.opt_bieforward import *
 
 
 __all__ = [
