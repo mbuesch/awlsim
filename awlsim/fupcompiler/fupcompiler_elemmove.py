@@ -179,7 +179,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 
 		# Assign the outputs.
 		storeToTempConns = set()
-		for conn in self.outConnections:
+		for conn in FupCompiler_Conn.sorted(self.outConnections):
 			if not re.match(r"OUT\d+", conn.text, re.IGNORECASE):
 				continue
 			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):

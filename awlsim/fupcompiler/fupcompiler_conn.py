@@ -111,6 +111,13 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 	)
 
 	@classmethod
+	def sorted(cls, connections):
+		"""Sort all connections from 'connections' sequence in ascending order by position.
+		The sorted list is returned.
+		"""
+		return sorted(connections, key=lambda c: c.pos)
+
+	@classmethod
 	def targetIsVKE(cls, target):
 		"""Returns True, if a target ID is a VKE target.
 		"""
