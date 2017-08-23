@@ -28,6 +28,8 @@ from awlsim.gui.icons import *
 from awlsim.gui.util import *
 from awlsim.gui.fup.fup_grid import *
 
+import traceback
+
 
 class FupContextMenu(QMenu):
 	"""FUP/FBD draw widget context menu."""
@@ -716,7 +718,10 @@ class FupDrawWidget(QWidget):
 		mime = event.mimeData()
 		if not mime.hasFormat("application/x-awlsim-fup-elem"):
 			return ignore()
-		mimeData = bytearray(mime.data("application/x-awlsim-fup-elem"))
+		mimeData = mime.data("application/x-awlsim-fup-elem")
+		if isQt4:
+			mimeData = mimeData.data() # QByteArray to bytes/str
+		mimeData = bytearray(mimeData)
 		if not mimeData:
 			return ignore()
 
@@ -762,7 +767,8 @@ class FupDrawWidget(QWidget):
 		except Exception as e:
 			printError("Unexpected exception in "
 				"FupDrawWidget.dragEnterEvent(): "
-				"%s" % str(e))
+				"%s\n\n%s" % (
+				str(e), traceback.format_exc()))
 
 	def dragLeaveEvent(self, event):
 		try:
@@ -770,7 +776,8 @@ class FupDrawWidget(QWidget):
 		except Exception as e:
 			printError("Unexpected exception in "
 				"FupDrawWidget.dragLeaveEvent(): "
-				"%s" % str(e))
+				"%s\n\n%s" % (
+				str(e), traceback.format_exc()))
 
 	def dragMoveEvent(self, event):
 		try:
@@ -778,7 +785,8 @@ class FupDrawWidget(QWidget):
 		except Exception as e:
 			printError("Unexpected exception in "
 				"FupDrawWidget.dragMoveEvent(): "
-				"%s" % str(e))
+				"%s\n\n%s" % (
+				str(e), traceback.format_exc()))
 
 	def dropEvent(self, event):
 		try:
@@ -786,4 +794,5 @@ class FupDrawWidget(QWidget):
 		except Exception as e:
 			printError("Unexpected exception in "
 				"FupDrawWidget.dropEvent(): "
-				"%s" % str(e))
+				"%s\n\n%s" % (
+				str(e), traceback.format_exc()))
