@@ -29,6 +29,7 @@ from awlsim.common.cpuconfig import *
 from awlsim.core.cpu import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
+from awlsim.core.statusword import * #+cimport
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
@@ -195,6 +196,16 @@ class FupCompiler(object):
 		if labelStr:
 			insn.labelStr = labelStr
 		return insn
+
+	def newInsn_LOAD_BIE(self, parentFupElem, insnClass):
+		"""Create a new BIE load instruction instance.
+		parentFupElem: The FUP element that creates this insn.
+		insnClass: The loadinstruction class that shall be instantiated (i.e. U)
+		"""
+		bitPos = S7StatusWord.getBitnrByName("BIE", S7CPUConfig.MNEMONICS_DE)
+		offset = make_AwlOffset(0, bitPos)
+		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1, offset, None)
+		return self.newInsn(parentFupElem, insnClass, ops=[oper])
 
 	def getOperDataWidth(self, oper):
 		"""Helper function to get the data type width (in bits)

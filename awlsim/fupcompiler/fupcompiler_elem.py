@@ -375,6 +375,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn_NOP(self, labelStr)
 
+	def newInsn_LOAD_BIE(self, insnClass):
+		"""Wrapper: Call the compiler method to create a BIE load instruction.
+		"""
+		return self.grid.compiler.newInsn_LOAD_BIE(self, insnClass)
+
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
 			"subType=%s, content=\"%s\", virtual=%s)" % (

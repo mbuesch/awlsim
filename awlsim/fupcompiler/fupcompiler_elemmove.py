@@ -207,9 +207,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		# Handle ENO output.
 		if conn_ENO.isConnected:
 			# Add instruction:  U BIE
-			oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1,
-						make_AwlOffset(0, 8), None)
-			insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
+			insns.append(self.newInsn_LOAD_BIE(AwlInsn_U))
 
 			# Add VKE assignment instruction.
 			storeToTempConns = set()
