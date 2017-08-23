@@ -22,11 +22,13 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.cpuconfig import *
 from awlsim.common.util import *
 
 from awlsim.awloptimizer.awloptimizer_base import *
 
 from awlsim.core.operatortypes import * #+cimport
+from awlsim.core.statusword import * #+cimport
 from awlsim.core.instructions.all_insns import * #+cimport
 
 
@@ -48,6 +50,9 @@ class AwlOptimizer_BIEForward(AwlOptimizer_Base):
 		AwlOptimizer_Base.__init__(self, optimizer)
 
 	def run(self, insns):
+		BIE_bitPos = S7StatusWord.getBitnrByName("BIE", S7CPUConfig.MNEMONICS_DE)
+		BIE_offset = make_AwlOffset(0, BIE_bitPos)
+
 		newInsns = []
 		skip = 0
 		for i, insn in enumerate(insns):
@@ -67,7 +72,7 @@ class AwlOptimizer_BIEForward(AwlOptimizer_Base):
 
 				if len(U_insn.ops) == 1 and\
 				   U_insn.ops[0].operType == AwlOperatorTypes.MEM_STW and\
-				   U_insn.ops[0].offset == make_AwlOffset(0, 8) and\
+				   U_insn.ops[0].offset == BIE_offset and\
 				   len(SPBxB_insn.ops) == 1 and\
 				   SPBxB_insn.ops[0].operType == AwlOperatorTypes.LBL_REF:
 
