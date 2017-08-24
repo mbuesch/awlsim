@@ -81,9 +81,11 @@ class AwlOptimizer(object):
 		return self.__sortOptimizerClasses(optClasses)
 
 	def __runOptimizers(self, currentStage, insns):
-		for optClass in self.__getOptimizerClasses(AwlOptimizer_Base.STAGE1):
-			printDebug("AwlOptimizer%s: Running optimizer '%s'..." % (
-				(" / %s" % self.infoStr) if self.infoStr else "",
+		printDebug("AwlOptimizer: Running STAGE %d%s..." % (
+			(currentStage + 1),
+			(" for '%s'" % self.infoStr) if self.infoStr else ""))
+		for optClass in self.__getOptimizerClasses(currentStage):
+			printDebug("AwlOptimizer: Running optimizer '%s'..." % (
 				optClass.NAME))
 			insns = optClass(optimizer=self).run(insns=insns)
 		return insns
