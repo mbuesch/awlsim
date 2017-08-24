@@ -264,7 +264,7 @@ class FupCompiler(object):
 		fakeCpu.fupCompiler = self
 		for insn in insns:
 			insn.cpu = fakeCpu
-			awl.append("\t" + str(insn))
+			awl.append(insn.getStr(compact=False))
 
 		# Create footer
 		awl.extend(self.blockFooterAwl)
