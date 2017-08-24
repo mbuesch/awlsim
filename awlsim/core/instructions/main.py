@@ -303,16 +303,23 @@ class AwlInsn(object): #+cdef
 	def hasLabel(self):
 		"""Returns True, if this insn has a label.
 		"""
+		if self.labelStr is not None:
+			return bool(self.labelStr)
 		if self.rawInsn:
 			return self.rawInsn.hasLabel()
-		return bool(self.labelStr)
+		return False
 
 	def getLabel(self):
 		"""Returns the label string.
 		"""
+		if self.labelStr is not None:
+			return self.labelStr
 		if self.rawInsn:
 			return self.rawInsn.getLabel()
-		return self.labelStr
+		return None
+
+	def setLabel(self, labelStr):
+		self.labelStr = labelStr or ""
 
 	def getIP(self):
 		return self.ip
