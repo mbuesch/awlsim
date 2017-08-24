@@ -24,10 +24,10 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
-from awlsim.fupcompiler.fupcompiler_base import *
-from awlsim.fupcompiler.fupcompiler_conn import *
-from awlsim.fupcompiler.fupcompiler_wire import *
-from awlsim.fupcompiler.fupcompiler_elem import *
+from awlsim.fupcompiler.base import *
+from awlsim.fupcompiler.conn import *
+from awlsim.fupcompiler.wire import *
+from awlsim.fupcompiler.elem import *
 
 
 class FupCompiler_GridFactory(XmlFactory):
@@ -93,7 +93,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		self.compileState = self.COMPILE_RUNNING
 		insns = []
 
-		from awlsim.fupcompiler.fupcompiler_elemoper import FupCompiler_ElemOper
+		from awlsim.fupcompiler.elemoper import FupCompiler_ElemOper
 
 		# Resolve all wire-IDs
 		for wire in dictValues(self.wires):

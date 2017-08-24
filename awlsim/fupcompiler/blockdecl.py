@@ -28,7 +28,7 @@ from awlsim.common.project import *
 from awlsim.common.version import *
 from awlsim.common.cpuconfig import *
 
-from awlsim.fupcompiler.fupcompiler_base import *
+from awlsim.fupcompiler.base import *
 
 
 class FupCompiler_BlockDeclFactory(XmlFactory):

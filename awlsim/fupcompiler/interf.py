@@ -25,7 +25,7 @@ from awlsim.common.compat import *
 from awlsim.common.namevalidation import *
 from awlsim.common.xmlfactory import *
 
-from awlsim.fupcompiler.fupcompiler_base import *
+from awlsim.fupcompiler.base import *
 
 
 class FupCompiler_InterfFactory(XmlFactory):

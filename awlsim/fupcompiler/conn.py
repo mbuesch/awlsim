@@ -26,7 +26,7 @@ from awlsim.common.xmlfactory import *
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
-from awlsim.fupcompiler.fupcompiler_base import *
+from awlsim.fupcompiler.base import *
 
 
 class FupCompiler_ConnFactory(XmlFactory):

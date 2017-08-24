@@ -35,10 +35,10 @@ from awlsim.core.instructions.all_insns import * #+cimport
 
 from awlsim.awloptimizer.awloptimizer import *
 
-from awlsim.fupcompiler.fupcompiler_blockdecl import *
-from awlsim.fupcompiler.fupcompiler_interf import *
-from awlsim.fupcompiler.fupcompiler_grid import *
-from awlsim.fupcompiler.fupcompiler_elem import *
+from awlsim.fupcompiler.blockdecl import *
+from awlsim.fupcompiler.interf import *
+from awlsim.fupcompiler.grid import *
+from awlsim.fupcompiler.elem import *
 
 
 class FupFakeCpu(S7CPU):

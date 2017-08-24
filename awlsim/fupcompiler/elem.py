@@ -25,8 +25,8 @@ from awlsim.common.compat import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.util import *
 
-from awlsim.fupcompiler.fupcompiler_base import *
-from awlsim.fupcompiler.fupcompiler_conn import *
+from awlsim.fupcompiler.base import *
+from awlsim.fupcompiler.conn import *
 
 from awlsim.awlcompiler.optrans import *
 
@@ -48,7 +48,7 @@ class FupCompiler_ElemFactory(XmlFactory):
 				self.parser_switchTo(FupCompiler_Conn.factory(elem=self.elem))
 				return
 			if self.elem and tag.name == "subelements":
-				from awlsim.fupcompiler.fupcompiler_grid import FupCompiler_Grid
+				from awlsim.fupcompiler.grid import FupCompiler_Grid
 				if self.subelemsFakeGrid:
 					raise self.Error("Found multiple <subelements> tags "
 						"inside of boolean <element>.")
@@ -129,9 +129,9 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	@classmethod
 	def parse(cls, grid, x, y, elemType, subType, content):
-		from awlsim.fupcompiler.fupcompiler_elembool import FupCompiler_ElemBool
-		from awlsim.fupcompiler.fupcompiler_elemoper import FupCompiler_ElemOper
-		from awlsim.fupcompiler.fupcompiler_elemmove import FupCompiler_ElemMove
+		from awlsim.fupcompiler.elembool import FupCompiler_ElemBool
+		from awlsim.fupcompiler.elemoper import FupCompiler_ElemOper
+		from awlsim.fupcompiler.elemmove import FupCompiler_ElemMove
 		try:
 			elemType = cls.str2type[elemType]
 			type2class = {
