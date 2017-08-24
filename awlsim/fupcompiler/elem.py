@@ -389,14 +389,14 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def toStr(self, extra=()):
 		values = []
-		if self.x >= 0:
-			values.append("x=%d" % (self.x + 1))
-		if self.y >= 0:
-			values.append("y=%d" % (self.y + 1))
+		if self.x >= 0 and self.y >= 0:
+			values.append("x%d/y%d" % (
+				self.x + 1,
+				self.y + 1))
 		if self.virtual:
 			values.append("VIRTUAL")
 		if self.content.strip():
-			values.append('"%s"' % self.content)
+			values.append("'%s'" % self.content)
 		values.extend(extra)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
 
