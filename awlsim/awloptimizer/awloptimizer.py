@@ -27,6 +27,7 @@ from awlsim.common.util import *
 
 from awlsim.awloptimizer.base import *
 from awlsim.awloptimizer.opt_bieforward import *
+from awlsim.awloptimizer.opt_labelremove import *
 from awlsim.awloptimizer.opt_nop import *
 
 import functools
@@ -43,6 +44,7 @@ class AwlOptimizer(object):
 
 	ALL_OPTIMIZERS = (
 		AwlOptimizer_BIEForward,
+		AwlOptimizer_LabelRemove,
 		AwlOptimizer_NopRemove,
 	)
 
