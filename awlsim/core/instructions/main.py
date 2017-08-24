@@ -356,10 +356,18 @@ class AwlInsn(object): #+cdef
 		printWarning("Found DEPRECATED instruction%s:\n  %s%s" % (
 			     lineNrStr, str(self), moreText))
 
-	def __repr__(self):
+	def getStr(self, compact=True):
 		ret = []
 		if self.hasLabel():
-			ret.append("%s: " % self.getLabel())
+			labelStr = self.getLabel() + ":"
+			ret.append(labelStr)
+			nrPad = 1
+			if not compact:
+				nrPad = 8 - len(labelStr)
+			ret.append(" " * nrPad)
+		else:
+			if not compact:
+				ret.append(" " * 8)
 		type2name = AwlInsn.type2name_english
 		if self.getMnemonics() == S7CPUConfig.MNEMONICS_DE:
 			type2name = AwlInsn.type2name_german
@@ -380,6 +388,9 @@ class AwlInsn(object): #+cdef
 			text += " " * (32 - len(text))
 			text += "// %s" % self.commentStr
 		return text
+
+	def __repr__(self):
+		return self.getStr()
 
 # Sanity check of english2german table
 assert(all(germanName in AwlInsn.name2type_german \
