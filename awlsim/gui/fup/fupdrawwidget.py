@@ -757,7 +757,7 @@ class FupDrawWidget(QWidget):
 			for newElem in newElements:
 				if not self.addElem(newElem):
 					return ignore(gridX, gridY)
-			self.setFocus(True)
+			self.setFocus(Qt.OtherFocusReason)
 
 		return accept(gridX, gridY)
 
