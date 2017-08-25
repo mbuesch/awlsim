@@ -356,7 +356,7 @@ class AwlInsn(object): #+cdef
 		printWarning("Found DEPRECATED instruction%s:\n  %s%s" % (
 			     lineNrStr, str(self), moreText))
 
-	def getStr(self, compact=True):
+	def getStr(self, compact=True, withSemicolon=False, withComment=False):
 		ret = []
 		if self.hasLabel():
 			labelStr = self.getLabel() + ":"
@@ -383,8 +383,10 @@ class AwlInsn(object): #+cdef
 			ret.append(" ( ")
 			ret.append(", ".join(str(param) for param in self.params))
 			ret.append(" )")
+		if withSemicolon:
+			ret.append(";")
 		text = "".join(ret)
-		if self.commentStr:
+		if withComment and self.commentStr:
 			text += " " * (32 - len(text))
 			text += "// %s" % self.commentStr
 		return text
