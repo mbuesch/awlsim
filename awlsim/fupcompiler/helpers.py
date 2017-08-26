@@ -80,6 +80,9 @@ class FupCompiler_Helpers(object):
 		    |__________|
 		"""
 
+		if not elemsA or not elemB:
+			return # We have nothing to do.
+
 		assert(len(elemsA) == len(connNamesA))
 		assert(issubclass(boolElemClass, FupCompiler_ElemBool))
 
@@ -125,8 +128,9 @@ class FupCompiler_Helpers(object):
 
 		# Connect all output connections of the A elements to the
 		# virtual BOOL.
-		for i, elemA in enumerate(elemsA):
-			connA = elemA.getUniqueConnByText(connNamesA[i],
+		connPos = -1
+		for connPos, elemA in enumerate(elemsA):
+			connA = elemA.getUniqueConnByText(connNamesA[connPos],
 							  searchOutputs=True)
 
 			# Get A's wire, or create a new wire, if A is not connected.
@@ -139,7 +143,7 @@ class FupCompiler_Helpers(object):
 			# Create an input connection to the virtual BOOL
 			# and connect A's wire to it.
 			virtElemIn = FupCompiler_Conn(elem=virtElemBool,
-						      pos=i,
+						      pos=connPos,
 						      dirIn=True, dirOut=False,
 						      wireId=wireA.idNum,
 						      text=None,
@@ -151,7 +155,7 @@ class FupCompiler_Helpers(object):
 		# to a virtual BOOL input.
 		if origWireB:
 			virtElemIn = FupCompiler_Conn(elem=virtElemBool,
-						      pos=i + 1,
+						      pos=connPos + 1,
 						      dirIn=True, dirOut=False,
 						      wireId=origWireB.idNum,
 						      text=None,
