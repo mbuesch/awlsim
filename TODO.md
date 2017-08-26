@@ -5,7 +5,6 @@ S7 compatibility
 ----------------
 
 * Add feature: Parsing of attributes
-* Add feature: Implement the remaining FUP block types
 
 core
 ----
@@ -21,6 +20,7 @@ AWL / STL optimizer
 
 * Add optimization pass: O(UU)O(UU) -> UUOUU
 * Add optimization pass: U(UU)= -> UU=  (also for other insn types)
+* Add optimization pass: Reordering of TEMP variables for space packing
 
 GUI
 ---
@@ -29,10 +29,9 @@ GUI
 * Add feature: Show UDTs in block tree
 * Add feature: LAD (KOP) editor
 
-FBD / FUP
----------
+FBD/FUP GUI only
+----------------
 
-* Fix evaluation order in case of multiple parallel assignments and other elements
 * Add feature: Exchange elements
 * Add feature: Duplicate diagrams
 * Add feature: Copy & paste elements
@@ -40,9 +39,16 @@ FBD / FUP
 * Add feature: XML input and export of single diagrams
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: Support modifying wires by clicking onto them
+
+FBD/FUP compiler and GUI
+------------------------
+
+* Fix evaluation order in case of multiple parallel assignments and other elements
 * Add feature: Add option to disable elements
 * Add element: Timers
 * Add element: Counters
-* Add element: Arithmetic
+* Add element: Int arithmetic flags outputs (OV, ==0, <>0, >0, <0, >=0, <=0, UO)
+* Add element: Real arithmetic
+* Add element: Real arithmetic flags outputs (OV, ==0, <>0, >0, <0, >=0, <=0, UO)
 * Add element: Compare
 * Add element: CALL
