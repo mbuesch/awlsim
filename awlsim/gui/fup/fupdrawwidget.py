@@ -92,25 +92,25 @@ class FupContextMenu(QMenu):
 		self.disconnWire.emit()
 
 	def enableEdit(self, en=True):
-		self.__actEdit.setEnabled(en)
+		self.__actEdit.setVisible(en)
 
 	def enableRemove(self, en=True):
-		self.__actDel.setEnabled(en)
+		self.__actDel.setVisible(en)
 
 	def enableInvertConn(self, en=True):
-		self.__actInvertConn.setEnabled(en)
+		self.__actInvertConn.setVisible(en)
 
 	def enableAddInput(self, en=True):
-		self.__actAddInp.setEnabled(en)
+		self.__actAddInp.setVisible(en)
 
 	def enableAddOutput(self, en=True):
-		self.__actAddOut.setEnabled(en)
+		self.__actAddOut.setVisible(en)
 
 	def enableRemoveConn(self, en=True):
-		self.__actDelConn.setEnabled(en)
+		self.__actDelConn.setVisible(en)
 
 	def enableDisconnWire(self, en=True):
-		self.__actDisconnWire.setEnabled(en)
+		self.__actDisconnWire.setVisible(en)
 
 class FupDrawWidget(QWidget):
 	"""FUP/FBD draw widget."""
