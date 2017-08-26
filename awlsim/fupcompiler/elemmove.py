@@ -118,19 +118,13 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		# between the IN-element's ENO and our EN.
 		if not connectedElem_IN.isType(self.TYPE_OPERAND,
 					       FupCompiler_ElemOper.SUBTYPE_LOAD):
-			if not connectedElem_IN.isType(self.TYPE_MOVE):
-				raise FupElemError("The element %s that is "
-					"connected to IN of %s is not allowed here." % (
-					str(connectedElem_IN), str(self)),
-					self)
-			otherConn_ENO = connectedElem_IN.getUniqueConnByText("ENO",
-									     searchOutputs=True)
-			if conn_EN.isConnected:
-				FupCompiler_Helpers.genIntermediateAND(parentElem=self,
-								       leftConn=otherConn_ENO,
-								       rightConn=conn_EN)
-			else:
-				conn_EN.connectTo(otherConn_ENO)
+			FupCompiler_Helpers.genIntermediateBool(
+					parentElem=self,
+					elemsA=[connectedElem_IN],
+					connNamesA=["ENO"],
+					elemB=self,
+					connNameB="EN",
+					boolElemClass=FupCompiler_ElemBoolAnd)
 
 	def _doCompile(self):
 		insns = []

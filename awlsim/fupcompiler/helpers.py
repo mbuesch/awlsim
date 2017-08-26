@@ -35,73 +35,126 @@ class FupCompiler_Helpers(object):
 	"""
 
 	@staticmethod
-	def genIntermediateAND(parentElem, leftConn, rightConn):
+	def genIntermediateBool(parentElem,
+				elemsA, connNamesA,
+				elemB, connNameB,
+				boolElemClass):
 		"""
-		Transform this:
-		  [x]-----------------------[rightConn]
+		parentElem:	The parent FUP element for exception accounting, etc.
+		elemsA:		A list of the left handed elements.
+		connNamesA:	A list of the connection names of the left handed elements.
+		elemB:		The right handed element.
+		connNameB:	The connection name of the right handed element.
+		boolElemClass:	The FUP element class used to create the virtual BOOL element.
+		Returns:	None
 
-		into this:           _____
-		  [x]---------------|0 & 0|---[rightConn]
-		  [leftConn]--------|1____|
+		This function converts this:
 
-		If leftConn is connected already (to y), the result will look like this:
-		                     _____
-		  [x]---------------|0 & 0|---[rightConn]
-		  [leftConn]----+---|1____|
-		                |
-		                +----[y]
+		      left elem                           elemB
+		     __________                         __________
+		    | orig conn|-----(optional)--------|connNameB |
+		    |(optional)|                       |          |
+		    |__________|                       |__________|
 
-		x is at least one arbitrary connection.
-		leftConn must be an output.
-		rightConn must be an input.
-		rightConn must be connected (to x).
+		to this:
+
+		       elemsA                             elemB
+		     __________         virtual         __________
+		    | connNameA|--+      BOOL       +--|connNameB |
+		    |          |  |     _______     |  |          |
+		    |__________|  +----|   &   |----+  |__________|
+		     __________        |  >=1  |
+		    | connNameA|-------|   x   |
+		    |          |       |       |
+		    |__________|  +----|       |
+		     __________   |    |       |
+		    | connNameA|--+    |       |
+		    |          |       |       |
+		    |__________|  +----|_______|
+		                  |
+		                  |
+		      left elem   |
+		     __________   |
+		    | orig conn|--+
+		    |(optional)|
+		    |__________|
 		"""
 
-		assert(leftConn.dirOut)
-		assert(rightConn.dirIn)
-		assert(rightConn.isConnected)
+		assert(len(elemsA) == len(connNamesA))
+		assert(issubclass(boolElemClass, FupCompiler_ElemBool))
 
-		# Get the left-handed wire or create one.
-		if leftConn.isConnected:
-			leftWire = leftConn.wire
+		connB = elemB.getUniqueConnByText(connNameB, searchInputs=True)
+
+		if len(elemsA) == 1 and not connB.isConnected:
+			# Element B is not connected and we have only one element A.
+			# This is a special case.
+			# We don't need a virtual BOOL. We can just connect B to A.
+			elemA = elemsA[0]
+			connA = elemA.getUniqueConnByText(connNamesA[0], searchOutputs=True)
+			connB.connectTo(connA)
+			return
+
+		# If element B is already connected to a wire, keep that wire
+		# for later connection to the virtual BOOL.
+		if connB.isConnected:
+			origWireB = connB.wire
+			origWireB.removeConn(connB)
 		else:
-			leftWire = parentElem.grid.newWire()
-			leftWire.addConn(leftConn)
+			origWireB = None
 
-		# disconnect the right-handed connection from its wire.
-		origWire = rightConn.wire
-		origWire.removeConn(rightConn)
+		# Create a wire that connects the virtual BOOL's output
+		# to the connB input.
+		wireB = parentElem.grid.newWire(virtual=True)
+		wireB.addConn(connB)
 
-		# Create a new right-handed wire
-		rightWire = parentElem.grid.newWire()
-		rightWire.addConn(rightConn)
+		# Create a virtual BOOL element to connect the elements.
+		virtElemBool = boolElemClass(grid=parentElem.grid,
+					     x=parentElem.x, y=parentElem.y,
+					     content=None, virtual=True)
 
-		# Create a virtual AND element to connect the elements.
-		virtElemAnd = FupCompiler_ElemBoolAnd(grid=parentElem.grid,
-						      x=parentElem.x, y=parentElem.y,
-						      content=None,
+		# Add an output connection to the virtual BOOL
+		# and connect it to wireB.
+		virtElemOut = FupCompiler_Conn(elem=virtElemBool,
+					       pos=0,
+					       dirIn=False, dirOut=True,
+					       wireId=wireB.idNum,
+					       text=None,
+					       virtual=True)
+		virtElemBool.addConn(virtElemOut)
+		wireB.addConn(virtElemOut)
+
+		# Connect all output connections of the A elements to the
+		# virtual BOOL.
+		for i, elemA in enumerate(elemsA):
+			connA = elemA.getUniqueConnByText(connNamesA[i],
+							  searchOutputs=True)
+
+			# Get A's wire, or create a new wire, if A is not connected.
+			if connA.isConnected:
+				wireA = connA.wire
+			else:
+				wireA = parentElem.grid.newWire(virtual=True)
+				wireA.addConn(connA)
+
+			# Create an input connection to the virtual BOOL
+			# and connect A's wire to it.
+			virtElemIn = FupCompiler_Conn(elem=virtElemBool,
+						      pos=i,
+						      dirIn=True, dirOut=False,
+						      wireId=wireA.idNum,
+						      text=None,
 						      virtual=True)
-		virtElemAndIn0 = FupCompiler_Conn(elem=virtElemAnd,
-						  pos=0,
-						  dirIn=True, dirOut=False,
-						  wireId=origWire.idNum,
-						  text=None,
-						  virtual=True)
-		virtElemAnd.addConn(virtElemAndIn0)
-		origWire.addConn(virtElemAndIn0)
-		virtElemAndIn1 = FupCompiler_Conn(elem=virtElemAnd,
-						  pos=1,
-						  dirIn=True, dirOut=False,
-						  wireId=leftWire.idNum,
-						  text=None,
-						  virtual=True)
-		virtElemAnd.addConn(virtElemAndIn1)
-		leftWire.addConn(virtElemAndIn1)
-		virtElemAndOut = FupCompiler_Conn(elem=virtElemAnd,
-						  pos=0,
-						  dirIn=False, dirOut=True,
-						  wireId=rightWire.idNum,
-						  text=None,
-						  virtual=True)
-		virtElemAnd.addConn(virtElemAndOut)
-		rightWire.addConn(virtElemAndOut)
+			virtElemBool.addConn(virtElemIn)
+			wireA.addConn(virtElemIn)
+
+		# Connect the element that was originally connected to element B
+		# to a virtual BOOL input.
+		if origWireB:
+			virtElemIn = FupCompiler_Conn(elem=virtElemBool,
+						      pos=i + 1,
+						      dirIn=True, dirOut=False,
+						      wireId=origWireB.idNum,
+						      text=None,
+						      virtual=True)
+			virtElemBool.addConn(virtElemIn)
+			origWireB.addConn(virtElemIn)
