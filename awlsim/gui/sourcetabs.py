@@ -727,10 +727,41 @@ class FupTabWidget(SourceTabWidget):
 					self.updateTabTexts()
 
 	def exportCurrent(self):
-		pass#TODO
+		fupWidget = self.currentWidget()
+		if not fupWidget:
+			return
+		source = fupWidget.getSource()
+		if not source:
+			return
+		fn, fil = QFileDialog.getSaveFileName(self,
+			"FUP/FBD XML source export", "",
+			"FUP/FBD XML source file (*.fupxml)",
+			"*.fupxml")
+		if not fn:
+			return
+		if not fn.endswith(".fupxml"):
+			fn += ".fupxml"
+		try:
+			safeFileWrite(fn, source.sourceBytes)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to export source", e)
 
 	def importSource(self):
-		pass#TODO
+		fn, fil = QFileDialog.getOpenFileName(self,
+			"Import FUP/FBD XML source", "",
+			"FUP/FBD XML source (*.fupxml);;"
+			"All files (*)")
+		if not fn:
+			return
+		source = FupSource.fromFile(name="Imported source",
+					    filepath=fn)
+		source.forceNonFileBacked(source.name)
+		index, fupWidget = self.addDiagram()
+		fupWidget.setSource(source)
+		self.setCurrentIndex(index)
+		self.updateTabTexts()
+		self.updateActionMenu()
 
 	def handleIdentsMsg(self, identsMsg):
 		pass#TODO
