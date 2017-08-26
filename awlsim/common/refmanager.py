@@ -66,7 +66,8 @@ class ObjRef(object):
 		self.__name = name
 		self.__obj = obj
 		self.__manager = manager
-		self.__manager._addRef(self)
+		if self.__manager is not None:
+			self.__manager._addRef(self)
 
 	def destroy(self):
 		"""Destroy (unref) this reference.
