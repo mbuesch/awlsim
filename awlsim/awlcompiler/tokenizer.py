@@ -517,7 +517,8 @@ class AwlParser(object):
 				t.inComment = True
 				cont(); continue
 			if c == '=' and len(t.tokens) == 1 and\
-			   not t.haveLabelToken() and not t.curToken:
+			   not t.haveLabelToken() and not t.curToken and\
+			   cNext != '=':
 				# NAME = VALUE assignment
 				t.inAssignment = True
 				t.addCharacter(c)
@@ -558,6 +559,10 @@ class AwlParser(object):
 						t.finishCurToken()
 					elif c == '.':
 						# This is only a single '.'
+						t.addCharacter(c)
+					elif c == '=':
+						# '=' is not a separator here.
+						# (e.g. might be a '==0' operator)
 						t.addCharacter(c)
 					else:
 						# Any other non-space token separator.
