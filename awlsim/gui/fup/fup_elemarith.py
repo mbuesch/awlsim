@@ -103,6 +103,11 @@ class FupElem_ARITH(FupElem):
 				    ">=0", "<=0", "UO", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
 
+	# Sequence of special connections.
+	__CONN_IN_SEQUENCE	= ( "EN", )
+	__CONN_OUT_SEQUENCE	= ( "OV", "==0", "<>0", ">0", "<0",
+				    ">=0", "<=0", "UO", "ENO", )
+
 	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
 		FupElem.__init__(self, x, y)
 
@@ -130,10 +135,13 @@ class FupElem_ARITH(FupElem):
 				conn.text = "OUT%d" % i
 				i += 1
 
+	def __inferInInsertIndex(self, conn):
+		beforeIndex = len(self.inputs)
+		return beforeIndex
+
 	def __inferOutInsertIndex(self, conn):
 		connText = conn.text.upper()
-		connOutSeq = ("OV", "==0", "<>0", ">0", "<0",
-			      ">=0", "<=0", "UO", "ENO")
+		connOutSeq = self.__CONN_OUT_SEQUENCE
 		if connText in connOutSeq:
 			# This is one of the special outputs.
 			# Add it to its fixed position (see connOutSeq).
@@ -163,7 +171,7 @@ class FupElem_ARITH(FupElem):
 			return False
 		if conn.IN:
 			if beforeIndex is None:
-				beforeIndex = len(self.inputs)
+				beforeIndex = self.__inferInInsertIndex(conn)
 			if beforeIndex <= 0:
 				return False
 		else:
@@ -315,10 +323,19 @@ class FupElem_ARITH(FupElem):
 		menu.enableAddInput(True)
 		menu.enableAddOutput(True)
 		if conn:
+			normalInputs = [ c for c in self.inputs
+					 if c.text.upper() not in self.__CONN_IN_SEQUENCE ]
+			normalOutputs = [ c for c in self.outputs
+					  if c.text.upper() not in self.__CONN_OUT_SEQUENCE ]
 			if conn.IN:
-				menu.enableRemoveConn(len(self.inputs) > 2)
+				if conn.text.upper() != "EN":
+					menu.enableRemoveConn(len(normalInputs) > 2)
 			else:
-				menu.enableRemoveConn(len(self.outputs) > 1)
+				if conn.text.upper() != "ENO":
+					if conn.text.upper() in self.__CONN_OUT_SEQUENCE:
+						menu.enableRemoveConn(True)
+					else:
+						menu.enableRemoveConn(len(normalOutputs) > 1)
 			menu.enableDisconnWire(conn.isConnected)
 		if not conn or conn.OUT:
 			existing = set(c.text.upper() for c in self.outputs)
