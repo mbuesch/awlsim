@@ -377,7 +377,10 @@ class AwlInsn(object): #+cdef
 			name = "<unknown type %d>" % self.insnType
 		ret.append(name)
 		if self.ops:
-			ret.append(" ")
+			if compact:
+				ret.append(" ")
+			else:
+				ret.append(" " * (8 - len(name)))
 			ret.append(", ".join(str(op) for op in self.ops))
 		if self.params:
 			ret.append(" ( ")
@@ -387,7 +390,7 @@ class AwlInsn(object): #+cdef
 			ret.append(";")
 		text = "".join(ret)
 		if withComment and self.commentStr:
-			text += " " * (32 - len(text))
+			text += " " * (40 - len(text))
 			text += "// %s" % self.commentStr
 		return text
 
