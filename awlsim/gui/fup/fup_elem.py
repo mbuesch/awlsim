@@ -84,6 +84,10 @@ class FupElem(FupBaseClass):
 	# Corner radius of the body box
 	BODY_CORNER_RADIUS	= 5
 
+	# Tuple of custom action handlers.
+	# Override this in the subclass, if required.
+	CUSTOM_ACTIONS = ()
+
 	def __init__(self, x, y):
 		FupBaseClass.__init__(self)
 		self.x = x		# X position as grid coordinates
@@ -426,6 +430,17 @@ class FupElem(FupBaseClass):
 		"""Draw this element.
 		"""
 		pass
+
+	def handleCustomAction(self, index):
+		"""Handle an element custom action.
+		These actions are typically triggered from the element context menu.
+		Returns True, if the element content changed.
+		"""
+		try:
+			handler = self.CUSTOM_ACTIONS[index]
+		except IndexError as e:
+			return False
+		return handler(self, index)
 
 	def prepareContextMenu(self, menu, area=None, conn=None):
 		"""Add element specific context menu entries.

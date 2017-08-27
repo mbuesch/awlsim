@@ -41,6 +41,9 @@ class FupContextMenu(QMenu):
 	addOutput = Signal()
 	removeConn = Signal()
 	disconnWire = Signal()
+	customAction = Signal(int)
+
+	NR_CUSTOM = 10
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
@@ -69,6 +72,14 @@ class FupContextMenu(QMenu):
 		self.__actDisconnWire = self.addAction(getIcon("doc_close"),
 						       "&Disconnect wire",
 						       self.__disconnWire)
+		self.addSeparator()
+		self.__actCustom = []
+		for i in range(self.NR_CUSTOM):
+			self.__actCustom.append(
+				self.addAction(getIcon("doc_edit"),
+					       "custom %d" % i,
+					       lambda i=i: self.__customAction(i))
+			)
 
 	def __edit(self):
 		self.edit.emit()
@@ -91,6 +102,9 @@ class FupContextMenu(QMenu):
 	def __disconnWire(self):
 		self.disconnWire.emit()
 
+	def __customAction(self, index):
+		self.customAction.emit(index)
+
 	def enableEdit(self, en=True):
 		self.__actEdit.setVisible(en)
 
@@ -111,6 +125,16 @@ class FupContextMenu(QMenu):
 
 	def enableDisconnWire(self, en=True):
 		self.__actDisconnWire.setVisible(en)
+
+	def enableCustomAction(self, index, en=True, text=None, iconName=None):
+		if index < 0 or index >= len(self.__actCustom):
+			return
+		action = self.__actCustom[index]
+		action.setVisible(en)
+		if text is not None:
+			action.setText(text)
+		if iconName is not None:
+			action.setIcon(getIcon(iconName))
 
 class FupDrawWidget(QWidget):
 	"""FUP/FBD draw widget."""
@@ -137,6 +161,7 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu.addOutput.connect(self.addElemOutput)
 		self.__contextMenu.removeConn.connect(self.removeElemConn)
 		self.__contextMenu.disconnWire.connect(self.disconnectConn)
+		self.__contextMenu.customAction.connect(self.__elemCustomAction)
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
@@ -312,6 +337,13 @@ class FupDrawWidget(QWidget):
 				conn = self.__grid.clickedConn
 			if conn:
 				if conn.removeFromElem():
+					self.__contentChanged()
+
+	def __elemCustomAction(self, index):
+		if self.__grid:
+			elem = self.__grid.clickedElem
+			if elem:
+				if elem.handleCustomAction(index):
 					self.__contentChanged()
 
 	def paintEvent(self, event=None):
@@ -513,6 +545,8 @@ class FupDrawWidget(QWidget):
 			self.__contextMenu.enableAddOutput(False)
 			self.__contextMenu.enableRemoveConn(False)
 			self.__contextMenu.enableDisconnWire(False)
+			for i in range(self.__contextMenu.NR_CUSTOM):
+				self.__contextMenu.enableCustomAction(i, False)
 			if elem:
 				elem.prepareContextMenu(self.__contextMenu, area, conn)
 			self.__contextMenu.exec_(self.mapToGlobal(event.pos()))
