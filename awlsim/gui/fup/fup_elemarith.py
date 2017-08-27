@@ -99,7 +99,8 @@ class FupElem_ARITH(FupElem):
 
 	FIXED_INPUTS		= [ "EN", ]
 	FIXED_OUTPUTS		= [ "ENO", ]
-	OPTIONAL_CONNS		= { "EN", "ENO", }
+	OPTIONAL_CONNS		= { "EN", "OV", "==0", "<>0", ">0", "<0",
+				    ">=0", "<=0", "UO", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
 
 	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
@@ -129,18 +130,46 @@ class FupElem_ARITH(FupElem):
 				conn.text = "OUT%d" % i
 				i += 1
 
+	def __inferOutInsertIndex(self, conn):
+		connText = conn.text.upper()
+		connOutSeq = ("OV", "==0", "<>0", ">0", "<0",
+			      ">=0", "<=0", "UO", "ENO")
+		if connText in connOutSeq:
+			# This is one of the special outputs.
+			# Add it to its fixed position (see connOutSeq).
+			if connText in (c.text.upper() for c in self.outputs):
+				return -1 # We already have this one.
+			beforeIndex = len(self.outputs)
+			for idx, c in enumerate(self.outputs):
+				if c.text.upper() not in connOutSeq:
+					continue
+				if connOutSeq.index(connText) <\
+				   connOutSeq.index(c.text.upper()):
+					beforeIndex = idx
+					break
+		else:
+			# This is a regular OUTx output.
+			# Add it just before the special outputs.
+			beforeIndex = len(self.outputs)
+			for idx, c in enumerate(self.outputs):
+				if c.text.upper() in connOutSeq:
+					beforeIndex = idx
+					break
+		return beforeIndex
+
 	# Overridden method. For documentation see base class.
 	def insertConn(self, beforeIndex, conn):
-		if conn:
-			if conn.IN:
-				if beforeIndex is None:
-					beforeIndex = len(self.inputs)
-				if beforeIndex <= 0:
-					return False
-			else:
-				if beforeIndex is None:
-					beforeIndex = len(self.outputs) - 1
-				if beforeIndex >= len(self.outputs):
+		if not conn:
+			return False
+		if conn.IN:
+			if beforeIndex is None:
+				beforeIndex = len(self.inputs)
+			if beforeIndex <= 0:
+				return False
+		else:
+			if beforeIndex is None:
+				beforeIndex = self.__inferOutInsertIndex(conn)
+				if beforeIndex < 0:
 					return False
 		ok = FupElem.insertConn(self, beforeIndex, conn)
 		if ok:
@@ -291,6 +320,62 @@ class FupElem_ARITH(FupElem):
 			else:
 				menu.enableRemoveConn(len(self.outputs) > 1)
 			menu.enableDisconnWire(conn.isConnected)
+		if not conn or conn.OUT:
+			existing = set(c.text.upper() for c in self.outputs)
+			if "OV" not in existing:
+				menu.enableCustomAction(0, True, text="Add OV output")
+			if "==0" not in existing:
+				menu.enableCustomAction(1, True, text="Add ==0 output")
+			if "<>0" not in existing:
+				menu.enableCustomAction(2, True, text="Add <>0 output")
+			if ">0" not in existing:
+				menu.enableCustomAction(3, True, text="Add >0 output")
+			if "<0" not in existing:
+				menu.enableCustomAction(4, True, text="Add <0 output")
+			if ">=0" not in existing:
+				menu.enableCustomAction(5, True, text="Add >=0 output")
+			if "<=0" not in existing:
+				menu.enableCustomAction(6, True, text="Add <=0 output")
+			if "UO" not in existing:
+				menu.enableCustomAction(7, True, text="Add UO output")
+
+	def __addStateOutput(self, name):
+		return self.addConn(FupConnOut(text=name))
+
+	def __handleAddOV(self, index):
+		return self.__addStateOutput("OV")
+
+	def __handleAddEQ0(self, index):
+		return self.__addStateOutput("==0")
+
+	def __handleAddNE0(self, index):
+		return self.__addStateOutput("<>0")
+
+	def __handleAddGT0(self, index):
+		return self.__addStateOutput(">0")
+
+	def __handleAddLT0(self, index):
+		return self.__addStateOutput("<0")
+
+	def __handleAddGE0(self, index):
+		return self.__addStateOutput(">=0")
+
+	def __handleAddLE0(self, index):
+		return self.__addStateOutput("<=0")
+
+	def __handleAddUO(self, index):
+		return self.__addStateOutput("UO")
+
+	CUSTOM_ACTIONS = (
+		__handleAddOV,		# index 0
+		__handleAddEQ0,		# index 1
+		__handleAddNE0,		# index 2
+		__handleAddGT0,		# index 3
+		__handleAddLT0,		# index 4
+		__handleAddGE0,		# index 5
+		__handleAddLE0,		# index 6
+		__handleAddUO,		# index 7
+	)
 
 class FupElem_ARITH_ADD_I(FupElem_ARITH):
 	"""+I FUP/FBD element"""
