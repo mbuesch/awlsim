@@ -26,6 +26,8 @@ from awlsim.awloptimizer.base import *
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
+from awlsim.core.operatortypes import * #+cimport
+
 
 __all__ = [
 	"AwlOptimizer_LabelRemove",
