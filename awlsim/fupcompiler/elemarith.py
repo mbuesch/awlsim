@@ -97,12 +97,14 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 
 	def connIsOptional(self, conn):
 		connText = conn.text.upper()
-		return connText in {"EN", "ENO"}
+		return connText in { "EN", "ENO", "OV", "==0", "<>0",
+				     ">0", "<0", ">=0", "<=0", "UO", }
 
 	def getConnType(self, conn):
 		if conn in self.connections:
 			connText = conn.text.upper()
-			if connText in {"EN", "ENO"}:
+			if connText in { "EN", "ENO", "OV", "==0", "<>0",
+					 ">0", "<0", ">=0", "<=0", "UO", }:
 				return FupCompiler_Conn.TYPE_VKE
 			return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
@@ -243,6 +245,34 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		if storeToTempConns:
 			storeToTempConns.add(self.MAIN_RESULT)
 			insns.extend(self._storeToTemp("DWORD", AwlInsn_T, storeToTempConns))
+
+		# Compile flags outputs.
+		storeToTempConns = set()
+		def compileFlagsOut(connName, operType, bitPos):
+			conn = self.getUniqueConnByText(connName, searchOutputs=True)
+			if not conn or not conn.isConnected:
+				return
+			# Load the flag from STW.
+			offset = make_AwlOffset(0, bitPos)
+			oper = make_AwlOperator(operType, 1, offset, None)
+			insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
+			# Store the flag to the output.
+			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
+				if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+						    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
+					insns.extend(otherElem.emitStore_VKE())
+				else:
+					storeToTempConns.add(conn)
+		compileFlagsOut("OV", AwlOperatorTypes.MEM_STW,
+				      S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE))
+		compileFlagsOut("==0", AwlOperatorTypes.MEM_STW_Z, 0)
+		compileFlagsOut("<>0", AwlOperatorTypes.MEM_STW_NZ, 0)
+		compileFlagsOut(">0", AwlOperatorTypes.MEM_STW_POS, 0)
+		compileFlagsOut("<0", AwlOperatorTypes.MEM_STW_NEG, 0)
+		compileFlagsOut(">=0", AwlOperatorTypes.MEM_STW_POSZ, 0)
+		compileFlagsOut("<=0", AwlOperatorTypes.MEM_STW_NEGZ, 0)
+		compileFlagsOut("UO", AwlOperatorTypes.MEM_STW_UO, 0)
+		insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
 
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
