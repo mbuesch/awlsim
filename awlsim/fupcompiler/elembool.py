@@ -289,8 +289,7 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 		return insns
 
 	def connIsOptional(self, conn):
-		connText = conn.text.upper()
-		return connText in self.OPTIONAL_CONNS
+		return conn.hasText(self.OPTIONAL_CONNS)
 
 class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
 	"""FUP compiler - Boolean RS element.

@@ -55,13 +55,11 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 					  **kwargs)
 
 	def connIsOptional(self, conn):
-		connText = conn.text.upper()
-		return connText in {"EN", "ENO"}
+		return conn.hasText({"EN", "ENO"})
 
 	def getConnType(self, conn):
 		if conn in self.connections:
-			connText = conn.text.upper()
-			if connText in {"EN", "ENO"}:
+			if conn.hasText({"EN", "ENO"}):
 				return FupCompiler_Conn.TYPE_VKE
 			return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN

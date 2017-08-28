@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
+from awlsim.common.util import *
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
@@ -169,8 +170,10 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 	def hasText(self, text):
 		"""Returns True, if the connection text matches.
 		This does a case insensitive compare.
+		'text' is either a single string or a list of strings.
 		"""
-		return strEqual(self.text, text, caseSensitive=False)
+		return any(strEqual(self.text, t, caseSensitive=False)
+			   for t in toList(text))
 
 	@property
 	def isOptional(self):

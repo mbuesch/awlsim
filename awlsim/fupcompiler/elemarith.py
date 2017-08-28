@@ -96,15 +96,13 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 					  **kwargs)
 
 	def connIsOptional(self, conn):
-		connText = conn.text.upper()
-		return connText in { "EN", "ENO", "OV", "==0", "<>0",
-				     ">0", "<0", ">=0", "<=0", "UO", }
+		return conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
+				      ">0", "<0", ">=0", "<=0", "UO", })
 
 	def getConnType(self, conn):
 		if conn in self.connections:
-			connText = conn.text.upper()
-			if connText in { "EN", "ENO", "OV", "==0", "<>0",
-					 ">0", "<0", ">=0", "<=0", "UO", }:
+			if conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
+					  ">0", "<0", ">=0", "<=0", "UO", }):
 				return FupCompiler_Conn.TYPE_VKE
 			return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
