@@ -275,16 +275,18 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	def _storeToTemp(self, dataTypeName, insnClass, connections=MAIN_RESULT):
 		insns = []
 
-		varName = self.grid.compiler.interf.allocTEMP(dataTypeName,
-							      elem=self)
-		opDesc = self.opTrans.translateFromString("#" + varName)
-		insns.append(self.newInsn(insnClass,
-					  ops=[opDesc.operator]))
-		if connections is self.MAIN_RESULT:
-			self.__tempVarNames[self.MAIN_RESULT] = varName
-		else:
-			for conn in connections:
-				self.__tempVarNames[conn] = varName
+		if connections or\
+		   connections is self.MAIN_RESULT:
+			varName = self.grid.compiler.interf.allocTEMP(dataTypeName,
+								      elem=self)
+			opDesc = self.opTrans.translateFromString("#" + varName)
+			insns.append(self.newInsn(insnClass,
+						  ops=[opDesc.operator]))
+			if connections is self.MAIN_RESULT:
+				self.__tempVarNames[self.MAIN_RESULT] = varName
+			else:
+				for conn in connections:
+					self.__tempVarNames[conn] = varName
 
 		return insns
 
