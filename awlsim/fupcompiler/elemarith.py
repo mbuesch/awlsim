@@ -136,6 +136,11 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 	def compileConn(self, conn, desiredTarget, inverted=False):
 		insns = []
 		assert(conn in self.connections)
+
+		awlInsnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
+								  toLoad=True,
+								  inverted=inverted)
+
 		if conn.hasText("ENO"):
 			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
 				raise FupElemError("The ENO output "
@@ -148,10 +153,18 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				if inverted:
 					insns.append(self.newInsn(AwlInsn_NOT))
 			else:
-				awlInsnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
-										  toLoad=True,
-										  inverted=inverted)
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
+		elif conn.hasText({ "OV", "==0", "<>0", ">0",
+				    "<0", ">=0", "<=0", "UO", }):
+			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
+				raise FupElemError("The %s output "
+					"of FUP arithmetic box %s must only be connected "
+					"to boolean inputs." % (
+					conn.text, str(self)),
+					self)
+			if self.needCompile:
+				insns.extend(self.compile())
+			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
 			raise FupElemError("It is not known how to compile "
 				"the connection '%s' of FUP arithmetic box %s." % (
@@ -245,7 +258,6 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			insns.extend(self._storeToTemp("DWORD", AwlInsn_T, storeToTempConns))
 
 		# Compile flags outputs.
-		storeToTempConns = set()
 		def compileFlagsOut(connName, operType, bitPos):
 			conn = self.getUniqueConnByText(connName, searchOutputs=True)
 			if not conn or not conn.isConnected:
@@ -255,12 +267,14 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			oper = make_AwlOperator(operType, 1, offset, None)
 			insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
 			# Store the flag to the output.
+			storeToTempConns = set()
 			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
 				if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
 						    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
 					insns.extend(otherElem.emitStore_VKE())
 				else:
 					storeToTempConns.add(conn)
+			insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
 		compileFlagsOut("OV", AwlOperatorTypes.MEM_STW,
 				      S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE))
 		compileFlagsOut("==0", AwlOperatorTypes.MEM_STW_Z, 0)
@@ -270,7 +284,6 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		compileFlagsOut(">=0", AwlOperatorTypes.MEM_STW_POSZ, 0)
 		compileFlagsOut("<=0", AwlOperatorTypes.MEM_STW_NEGZ, 0)
 		compileFlagsOut("UO", AwlOperatorTypes.MEM_STW_UO, 0)
-		insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
 
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
