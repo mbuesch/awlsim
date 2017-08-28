@@ -1,0 +1,253 @@
+FUNCTION FC 1 : VOID
+BEGIN
+	// Store the status word in MW 0.
+	L	STW
+	T	MW 0
+
+	// Compare U BIE to the actual STW bit.
+	U		BIE
+	=		M 10.0
+	__ASSERT==	M 10.0,	M 0.0 // BIE
+	__ASSERT==	M 10.0, __STW BIE
+
+	// Compare U OV to the actual STW bit.
+	U		OV
+	=		M 10.0
+	__ASSERT==	M 10.0,	M 1.5 // OV
+	__ASSERT==	M 10.0, __STW OV
+
+	// Compare U OS to the actual STW bit.
+	U		OS
+	=		M 10.0
+	__ASSERT==	M 10.0,	M 1.4 // OS
+	__ASSERT==	M 10.0, __STW OS
+
+	// Compare U ==0 to the actual STW bits.
+	U		==0
+	=		M 10.0
+	UN		M 1.6 // A0
+	UN		M 1.7 // A1
+	=		M 10.1
+	UN		__STW A0
+	UN		__STW A1
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+
+	// Compare U <>0 to the actual STW bits.
+	U		<>0
+	=		M 10.0
+	O		M 1.6 // A0
+	O		M 1.7 // A1
+	=		M 10.1
+	O		__STW A0
+	O		__STW A1
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+
+	// Compare U >0 to the actual STW bits.
+	U		>0
+	=		M 10.0
+	UN		M 1.6 // A0
+	U		M 1.7 // A1
+	=		M 10.1
+	UN		__STW A0
+	U		__STW A1
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+
+	// Compare U <0 to the actual STW bits.
+	U		<0
+	=		M 10.0
+	U		M 1.6 // A0
+	UN		M 1.7 // A1
+	=		M 10.1
+	U		__STW A0
+	UN		__STW A1
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+
+	// Compare U >=0 to the actual STW bits.
+	U		>=0
+	=		M 10.0
+	UN		M 1.6 // A0
+	=		M 10.1
+	UN		__STW A0
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+
+	// Compare U <=0 to the actual STW bits.
+	U		<=0
+	=		M 10.0
+	UN		M 1.7 // A1
+	=		M 10.1
+	UN		__STW A1
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+
+	// Compare U UO to the actual STW bits.
+	U		UO
+	=		M 10.0
+	U		M 1.6 // A0
+	U		M 1.7 // A1
+	=		M 10.1
+	U		__STW A0
+	U		__STW A1
+	=		M 10.2
+	__ASSERT==	M 10.0,	M 10.1
+	__ASSERT==	M 10.0,	M 10.2
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// Test STW=0
+	__STWRST
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	0
+	__ASSERT==	OS,	0
+	__ASSERT==	==0,	1
+	__ASSERT==	<>0,	0
+	__ASSERT==	>0,	0
+	__ASSERT==	<0,	0
+	__ASSERT==	>=0,	1
+	__ASSERT==	<=0,	1
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test zero
+	__STWRST
+	L		0
+	L		0
+	+I
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	0
+	__ASSERT==	OS,	0
+	__ASSERT==	==0,	1
+	__ASSERT==	<>0,	0
+	__ASSERT==	>0,	0
+	__ASSERT==	<0,	0
+	__ASSERT==	>=0,	1
+	__ASSERT==	<=0,	1
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test positive
+	__STWRST
+	L		0
+	L		1
+	+I
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	0
+	__ASSERT==	OS,	0
+	__ASSERT==	==0,	0
+	__ASSERT==	<>0,	1
+	__ASSERT==	>0,	1
+	__ASSERT==	<0,	0
+	__ASSERT==	>=0,	1
+	__ASSERT==	<=0,	0
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test negative
+	__STWRST
+	L		0
+	L		1
+	-I
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	0
+	__ASSERT==	OS,	0
+	__ASSERT==	==0,	0
+	__ASSERT==	<>0,	1
+	__ASSERT==	>0,	0
+	__ASSERT==	<0,	1
+	__ASSERT==	>=0,	0
+	__ASSERT==	<=0,	1
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test overflow (OV)
+	__STWRST
+	L		32767
+	L		1
+	+I
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	1
+	__ASSERT==	OS,	1
+	__ASSERT==	==0,	0
+	__ASSERT==	<>0,	1
+	__ASSERT==	>0,	0
+	__ASSERT==	<0,	1
+	__ASSERT==	>=0,	0
+	__ASSERT==	<=0,	1
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test overflow (OS)
+	__STWRST
+	L		32767
+	L		1
+	+I
+	L		1
+	L		2
+	+I
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	0
+	__ASSERT==	OS,	1
+	__ASSERT==	==0,	0
+	__ASSERT==	<>0,	1
+	__ASSERT==	>0,	1
+	__ASSERT==	<0,	0
+	__ASSERT==	>=0,	1
+	__ASSERT==	<=0,	0
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test BIE
+	__STWRST
+	SET
+	SAVE
+	__ASSERT==	BIE,	1
+	__ASSERT==	OV,	0
+	__ASSERT==	OS,	0
+	__ASSERT==	==0,	1
+	__ASSERT==	<>0,	0
+	__ASSERT==	>0,	0
+	__ASSERT==	<0,	0
+	__ASSERT==	>=0,	1
+	__ASSERT==	<=0,	1
+	__ASSERT==	UO,	0
+	CALL		FC 1
+
+
+	// Test division by zero (UO)
+	__STWRST
+	L		1
+	L		0
+	/I
+	__ASSERT==	BIE,	0
+	__ASSERT==	OV,	1
+	__ASSERT==	OS,	1
+	__ASSERT==	==0,	0
+	__ASSERT==	<>0,	1
+	__ASSERT==	>0,	0
+	__ASSERT==	<0,	0
+	__ASSERT==	>=0,	0
+	__ASSERT==	<=0,	0
+	__ASSERT==	UO,	1
+	CALL		FC 1
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
