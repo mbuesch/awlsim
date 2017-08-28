@@ -99,14 +99,14 @@ class FupElem_ARITH(FupElem):
 
 	FIXED_INPUTS		= [ "EN", ]
 	FIXED_OUTPUTS		= [ "ENO", ]
-	OPTIONAL_CONNS		= { "EN", "OV", "==0", "<>0", ">0", "<0",
-				    ">=0", "<=0", "UO", "ENO", }
+	OPTIONAL_CONNS		= { "EN", "==0", "<>0", ">0", "<0",
+				    ">=0", "<=0", "OV", "UO", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
 
 	# Sequence of special connections.
 	__CONN_IN_SEQUENCE	= ( "EN", )
-	__CONN_OUT_SEQUENCE	= ( "OV", "==0", "<>0", ">0", "<0",
-				    ">=0", "<=0", "UO", "ENO", )
+	__CONN_OUT_SEQUENCE	= ( "==0", "<>0", ">0", "<0",
+				    ">=0", "<=0", "OV", "UO", "ENO", )
 
 	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
 		FupElem.__init__(self, x, y)
@@ -339,28 +339,25 @@ class FupElem_ARITH(FupElem):
 			menu.enableDisconnWire(conn.isConnected)
 		if not conn or conn.OUT:
 			existing = set(c.text.upper() for c in self.outputs)
-			if "OV" not in existing:
-				menu.enableCustomAction(0, True, text="Add OV output")
 			if "==0" not in existing:
-				menu.enableCustomAction(1, True, text="Add ==0 output")
+				menu.enableCustomAction(0, True, text="Add ==0 output")
 			if "<>0" not in existing:
-				menu.enableCustomAction(2, True, text="Add <>0 output")
+				menu.enableCustomAction(1, True, text="Add <>0 output")
 			if ">0" not in existing:
-				menu.enableCustomAction(3, True, text="Add >0 output")
+				menu.enableCustomAction(2, True, text="Add >0 output")
 			if "<0" not in existing:
-				menu.enableCustomAction(4, True, text="Add <0 output")
+				menu.enableCustomAction(3, True, text="Add <0 output")
 			if ">=0" not in existing:
-				menu.enableCustomAction(5, True, text="Add >=0 output")
+				menu.enableCustomAction(4, True, text="Add >=0 output")
 			if "<=0" not in existing:
-				menu.enableCustomAction(6, True, text="Add <=0 output")
+				menu.enableCustomAction(5, True, text="Add <=0 output")
+			if "OV" not in existing:
+				menu.enableCustomAction(6, True, text="Add OV output")
 			if "UO" not in existing:
 				menu.enableCustomAction(7, True, text="Add UO output")
 
 	def __addStateOutput(self, name):
 		return self.addConn(FupConnOut(text=name))
-
-	def __handleAddOV(self, index):
-		return self.__addStateOutput("OV")
 
 	def __handleAddEQ0(self, index):
 		return self.__addStateOutput("==0")
@@ -380,17 +377,20 @@ class FupElem_ARITH(FupElem):
 	def __handleAddLE0(self, index):
 		return self.__addStateOutput("<=0")
 
+	def __handleAddOV(self, index):
+		return self.__addStateOutput("OV")
+
 	def __handleAddUO(self, index):
 		return self.__addStateOutput("UO")
 
 	CUSTOM_ACTIONS = (
-		__handleAddOV,		# index 0
-		__handleAddEQ0,		# index 1
-		__handleAddNE0,		# index 2
-		__handleAddGT0,		# index 3
-		__handleAddLT0,		# index 4
-		__handleAddGE0,		# index 5
-		__handleAddLE0,		# index 6
+		__handleAddEQ0,		# index 0
+		__handleAddNE0,		# index 1
+		__handleAddGT0,		# index 2
+		__handleAddLT0,		# index 3
+		__handleAddGE0,		# index 4
+		__handleAddLE0,		# index 5
+		__handleAddOV,		# index 6
 		__handleAddUO,		# index 7
 	)
 
