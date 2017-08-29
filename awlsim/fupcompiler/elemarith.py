@@ -257,6 +257,18 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			storeToTempConns.add(self.MAIN_RESULT)
 			insns.extend(self._storeToTemp("DWORD", AwlInsn_T, storeToTempConns))
 
+		# Make sure BIE is set, if EN is not connected and ENO is connected.
+		if not conn_EN.isConnected and conn_ENO.isConnected:
+			# Set VKE=1 and create a dummy SPBNB to
+			# set BIE=1 and /ER=0.
+			# The SPBNB branch is never taken due to VKE=1.
+			insns.append(self.newInsn(AwlInsn_SET))
+			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
+
+		# Create the jump target label for EN=0.
+		# This might end up being unused, though.
+		insns.append(self.newInsn_NOP(labelStr=endLabel))
+
 		# Compile flags outputs.
 		def compileFlagsOut(connName, operType, bitPos):
 			conn = self.getUniqueConnByText(connName, searchOutputs=True)
@@ -266,6 +278,10 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			offset = make_AwlOffset(0, bitPos)
 			oper = make_AwlOperator(operType, 1, offset, None)
 			insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
+			if conn_EN.isConnected:
+				# AND the EN input to the flag, so that the flag
+				# output is 0 in case EN is 0.
+				insns.append(self.newInsn_LOAD_BIE(AwlInsn_U))
 			# Store the flag to the output.
 			storeToTempConns = set()
 			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
@@ -284,18 +300,6 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		compileFlagsOut(">=0", AwlOperatorTypes.MEM_STW_POSZ, 0)
 		compileFlagsOut("<=0", AwlOperatorTypes.MEM_STW_NEGZ, 0)
 		compileFlagsOut("UO", AwlOperatorTypes.MEM_STW_UO, 0)
-
-		# Make sure BIE is set, if EN is not connected and ENO is connected.
-		if not conn_EN.isConnected and conn_ENO.isConnected:
-			# Set VKE=1 and create a dummy SPBNB to
-			# set BIE=1 and /ER=0.
-			# The SPBNB branch is never taken due to VKE=1.
-			insns.append(self.newInsn(AwlInsn_SET))
-			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
-
-		# Create the jump target label for EN=0.
-		# This might end up being unused, though.
-		insns.append(self.newInsn_NOP(labelStr=endLabel))
 
 		# Handle ENO output.
 		if conn_ENO.isConnected:
