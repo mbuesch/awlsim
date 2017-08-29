@@ -105,6 +105,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	TYPE_OPERAND		= EnumGen.item
 	TYPE_MOVE		= EnumGen.item
 	TYPE_ARITH		= EnumGen.item
+	TYPE_COMMENT		= EnumGen.item
 	EnumGen.end
 
 	str2type = {
@@ -112,6 +113,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"operand"	: TYPE_OPERAND,
 		"move"		: TYPE_MOVE,
 		"arithmetic"	: TYPE_ARITH,
+		"comment"	: TYPE_COMMENT,
 	}
 
 	@classmethod
@@ -135,6 +137,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		from awlsim.fupcompiler.elemoper import FupCompiler_ElemOper
 		from awlsim.fupcompiler.elemmove import FupCompiler_ElemMove
 		from awlsim.fupcompiler.elemarith import FupCompiler_ElemArith
+		from awlsim.fupcompiler.elemcomment import FupCompiler_ElemComment
 		try:
 			elemType = cls.str2type[elemType]
 			type2class = {
@@ -142,6 +145,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				cls.TYPE_OPERAND	: FupCompiler_ElemOper,
 				cls.TYPE_MOVE		: FupCompiler_ElemMove,
 				cls.TYPE_ARITH		: FupCompiler_ElemArith,
+				cls.TYPE_COMMENT	: FupCompiler_ElemComment,
 			}
 			elemClass = None
 			with contextlib.suppress(KeyError):

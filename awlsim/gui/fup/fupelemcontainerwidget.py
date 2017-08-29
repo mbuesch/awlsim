@@ -28,6 +28,7 @@ from awlsim.gui.util import *
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
 from awlsim.gui.fup.fup_elemarith import *
+from awlsim.gui.fup.fup_elemcomment import *
 
 
 class FupElemItemClass(QTreeWidgetItem):
@@ -58,6 +59,10 @@ class FupElemContainerWidget(QTreeWidget):
 		self.setHeaderLabels(["Elements"])
 
 		elemMimeType = "application/x-awlsim-fup-elem"
+
+		itemComment = FupElemItem("[...]  Comment", "new", elemMimeType,
+					  self.elemToXml(FupElem_COMMENT(-1, -1)))
+		self.addTopLevelItem(itemComment)
 
 		itemBool = FupElemItemClass("Boolean", "stdlib")
 		itemBoolU = FupElemItem("[&]  and", "new", elemMimeType,

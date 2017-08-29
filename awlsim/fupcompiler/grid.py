@@ -28,6 +28,7 @@ from awlsim.fupcompiler.base import *
 from awlsim.fupcompiler.conn import *
 from awlsim.fupcompiler.wire import *
 from awlsim.fupcompiler.elem import *
+from awlsim.fupcompiler.elemcomment import *
 
 
 class FupCompiler_GridFactory(XmlFactory):
@@ -132,7 +133,8 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		def checkAllElemStates(checkState):
 			# Check if all elements have been processed.
 			for elem in self.elems:
-				if elem.compileState != checkState:
+				if elem.compileState != checkState and\
+				   not isinstance(elem, FupCompiler_ElemComment):
 					raise FupGridError("Found dangling element "
 						"'%s'. Please make sure all connections of "
 						"this element are connected." % (
