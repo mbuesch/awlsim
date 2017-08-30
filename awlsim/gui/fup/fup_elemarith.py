@@ -44,6 +44,10 @@ class FupElem_ARITH_factory(FupElem_factory):
 			FupElem_ARITH_SUB_D.OP_SYM_NAME	: FupElem_ARITH_SUB_D,
 			FupElem_ARITH_MUL_D.OP_SYM_NAME	: FupElem_ARITH_MUL_D,
 			FupElem_ARITH_DIV_D.OP_SYM_NAME	: FupElem_ARITH_DIV_D,
+			FupElem_ARITH_ADD_R.OP_SYM_NAME	: FupElem_ARITH_ADD_R,
+			FupElem_ARITH_SUB_R.OP_SYM_NAME	: FupElem_ARITH_SUB_R,
+			FupElem_ARITH_MUL_R.OP_SYM_NAME	: FupElem_ARITH_MUL_R,
+			FupElem_ARITH_DIV_R.OP_SYM_NAME	: FupElem_ARITH_DIV_R,
 		}.get(subType)
 		if not elemClass:
 			raise self.Error("Arithmetic subtype '%s' is not known "
@@ -441,3 +445,27 @@ class FupElem_ARITH_DIV_D(FupElem_ARITH):
 
 	OP_SYM			= "/D"
 	OP_SYM_NAME		= "div-dint"	# XML ABI name
+
+class FupElem_ARITH_ADD_R(FupElem_ARITH):
+	"""+R FUP/FBD element"""
+
+	OP_SYM			= "+R"
+	OP_SYM_NAME		= "add-real"	# XML ABI name
+
+class FupElem_ARITH_SUB_R(FupElem_ARITH):
+	"""-R FUP/FBD element"""
+
+	OP_SYM			= "-R"
+	OP_SYM_NAME		= "sub-real"	# XML ABI name
+
+class FupElem_ARITH_MUL_R(FupElem_ARITH):
+	"""*R FUP/FBD element"""
+
+	OP_SYM			= "*R"
+	OP_SYM_NAME		= "mul-real"	# XML ABI name
+
+class FupElem_ARITH_DIV_R(FupElem_ARITH):
+	"""/R FUP/FBD element"""
+
+	OP_SYM			= "/R"
+	OP_SYM_NAME		= "div-real"	# XML ABI name

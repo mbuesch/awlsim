@@ -131,6 +131,18 @@ class FupElemContainerWidget(QTreeWidget):
 		itemArithI.addChild(itemArithDIVD)
 
 		itemArithR = FupElemItemClass("Real arithmetic", "stdlib")
+		itemArithADDR = FupElemItem("[+R]  REAL addition", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_ADD_R(-1, -1)))
+		itemArithR.addChild(itemArithADDR)
+		itemArithSUBR = FupElemItem("[-R]  REAL subtraction", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_SUB_R(-1, -1)))
+		itemArithR.addChild(itemArithSUBR)
+		itemArithMULR = FupElemItem("[*R]  REAL multiplication", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_MUL_R(-1, -1)))
+		itemArithR.addChild(itemArithMULR)
+		itemArithDIVR = FupElemItem("[/R]  REAL division", "new", elemMimeType,
+					    self.elemToXml(FupElem_ARITH_DIV_R(-1, -1)))
+		itemArithR.addChild(itemArithDIVR)
 
 		self.addTopLevelItem(itemBool)
 		itemBool.setExpanded(True)
