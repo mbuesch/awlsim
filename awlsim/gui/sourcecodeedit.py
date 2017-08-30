@@ -250,9 +250,24 @@ class SourceCodeEdit(QPlainTextEdit):
 	def __tryShowValidateErrToolTip(self, lineNr, globalPos):
 		errLineNr = self.__errLineNr
 		errLineMsg = self.__errLineMsg
-		if self.__validateEn and errLineNr is not None and errLineMsg:
+		if self.__validateEn and\
+		   not self.textCursor().hasSelection() and\
+		   errLineNr is not None and\
+		   errLineMsg:
 			errLineNr += 1
 			if lineNr in {errLineNr - 1, errLineNr, errLineNr + 1}:
+				lines = []
+				for line in errLineMsg.splitlines():
+					# Limit line length.
+					if len(line) > 237:
+						line = line[:237] + "..."
+					# Enforce line breaks.
+					while len(line) > 80:
+						lines.append(line[:80] + " \\")
+						line = line[80:]
+					lines.append(line)
+				errLineMsg = "\n".join(lines)
+				# Show the validation result.
 				QToolTip.showText(globalPos, errLineMsg,
 						  self, QRect())
 				return True
