@@ -34,6 +34,9 @@ class StateWindow(QWidget):
 	# Config-change (address, type, etc...) signal
 	configChanged = Signal(QWidget)
 
+	COLOR_ACTIVE		= "#F0F000"
+	COLOR_LIGHTACTIVE	= "#FFFFC0"
+
 	def __init__(self, client, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
@@ -181,16 +184,23 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		AbstractDisplayWidget.__init__(self, stateWindow, addrSpace,
 					       addr, width, db, parent)
 
+		self.__cbActColor = QColor(StateWindow.COLOR_ACTIVE)
+		self.__pbActColor = QColor(StateWindow.COLOR_ACTIVE)
+		self.__frActColor = QColor(StateWindow.COLOR_LIGHTACTIVE)
+
+		self.__frames = {}
 		self.cbs = {}
 		self.pbs = {}
 		self.prevButtonStates = {}
 		y = 0
 		for i in range(self.width - 1, -1, -1):
 			frame = QFrame(self)
-			frame.setFrameShadow(QFrame.Plain)
-			frame.setFrameShape(QFrame.Box)
+			frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+			frame.setLineWidth(2)
 			frame.setLayout(QHBoxLayout())
+			frame.setAutoFillBackground(True)
 			frame.layout().setContentsMargins(QMargins(3, 0, 0, 0))
+			self.__frames[i] = frame
 
 			pb = QPushButton(self)
 			pb.setMaximumSize(QSize(13, 13))
@@ -201,13 +211,45 @@ class BitDisplayWidget(AbstractDisplayWidget):
 			pb.released.connect(self.__buttonUpdate)
 
 			cb = QCheckBox(str(i), self)
+			cb.setAutoFillBackground(False)
 			frame.layout().addWidget(cb)
 			self.cbs[i] = cb
+
+			self.__cbOrigColor = cb.palette().color(QPalette.Base)
+			self.__pbOrigColor = pb.palette().color(QPalette.Button)
+			self.__frOrigColor = frame.palette().color(QPalette.Window)
+
 			cb.stateChanged.connect(self.changed)
+			cb.stateChanged.connect(
+				lambda state, i=i: self.__updateColors(i, state))
+			self.__updateColors(i, Qt.Unchecked)
 
 			self.layout().addWidget(frame, y, (self.width - i - 1) % 8)
 			if i and i % 8 == 0:
 				y += 1
+
+	def __updateColors(self, bitNr, newState):
+		cb = self.cbs[bitNr]
+		pb = self.pbs[bitNr]
+		fr = self.__frames[bitNr]
+		palCb = cb.palette()
+		palPb = pb.palette()
+		palFr = fr.palette()
+		if newState == Qt.Checked:
+			cbColor = self.__cbActColor
+			pbColor = self.__pbActColor
+			frColor = self.__frActColor
+		else:
+			cbColor = self.__cbOrigColor
+			pbColor = self.__pbOrigColor
+			frColor = self.__frOrigColor
+		if palCb.color(QPalette.Base) != cbColor:
+			palCb.setColor(QPalette.Base, cbColor)
+			palPb.setColor(QPalette.Button, pbColor)
+			palFr.setColor(QPalette.Window, frColor)
+			cb.setPalette(palCb)
+			pb.setPalette(palPb)
+			fr.setPalette(palFr)
 
 	def __buttonUpdate(self):
 		for bitNr, pb in dictItems(self.pbs):
@@ -742,6 +784,8 @@ class _State_TimerCounter(StateWindow):
 		self.valueEdit = ValueLineEdit(self.__validateInput, self)
 		hbox.addWidget(self.valueEdit)
 		self.statusLabel = QLabel(self)
+		self.__statusLabelOrigColor = self.statusLabel.palette().color(QPalette.Window)
+		self.__statusLabelActColor = QColor(StateWindow.COLOR_ACTIVE)
 		hbox.addWidget(self.statusLabel)
 		self.resetButton = QPushButton("R", self)
 		hbox.addWidget(self.resetButton)
@@ -763,6 +807,17 @@ class _State_TimerCounter(StateWindow):
 
 	def __updateStatus(self):
 		self.statusLabel.setText("Q=%d" % self.displayedStatus)
+		pal = self.statusLabel.palette()
+		if self.displayedStatus == 0:
+			color = self.__statusLabelOrigColor
+			fill = False
+		else:
+			color = self.__statusLabelActColor
+			fill = True
+		if pal.color(QPalette.Window) != color:
+			pal.setColor(QPalette.Window, color)
+			self.statusLabel.setAutoFillBackground(fill)
+			self.statusLabel.setPalette(pal)
 
 	def rebuild(self):
 		self.valueEdit.clear()
