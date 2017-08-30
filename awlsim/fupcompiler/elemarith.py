@@ -40,6 +40,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 	"""
 
 	ELEM_NAME		= "ARITH"
+	SUBTYPE			= None # Override this in the subclass
 	ARITH_INSN_CLASS	= None # Override this in the subclass
 
 	EnumGen.start
@@ -51,6 +52,10 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 	SUBTYPE_SUB_D		= EnumGen.item
 	SUBTYPE_MUL_D		= EnumGen.item
 	SUBTYPE_DIV_D		= EnumGen.item
+	SUBTYPE_ADD_R		= EnumGen.item
+	SUBTYPE_SUB_R		= EnumGen.item
+	SUBTYPE_MUL_R		= EnumGen.item
+	SUBTYPE_DIV_R		= EnumGen.item
 	EnumGen.end
 
 	str2subtype = {
@@ -62,6 +67,10 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		"sub-dint"	: SUBTYPE_SUB_D,
 		"mul-dint"	: SUBTYPE_MUL_D,
 		"div-dint"	: SUBTYPE_DIV_D,
+		"add-real"	: SUBTYPE_ADD_R,
+		"sub-real"	: SUBTYPE_SUB_R,
+		"mul-real"	: SUBTYPE_MUL_R,
+		"div-real"	: SUBTYPE_DIV_R,
 	}
 
 	@classmethod
@@ -77,6 +86,10 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				cls.SUBTYPE_SUB_D	: FupCompiler_ElemArithSubD,
 				cls.SUBTYPE_MUL_D	: FupCompiler_ElemArithMulD,
 				cls.SUBTYPE_DIV_D	: FupCompiler_ElemArithDivD,
+				cls.SUBTYPE_ADD_R	: FupCompiler_ElemArithAddR,
+				cls.SUBTYPE_SUB_R	: FupCompiler_ElemArithSubR,
+				cls.SUBTYPE_MUL_R	: FupCompiler_ElemArithMulR,
+				cls.SUBTYPE_DIV_R	: FupCompiler_ElemArithDivR,
 			}
 			elemClass = None
 			with contextlib.suppress(KeyError):
@@ -88,10 +101,10 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			pass
 		return None
 
-	def __init__(self, grid, x, y, subType, content, **kwargs):
+	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
 					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=subType,
+					  subType=self.SUBTYPE,
 					  content=content,
 					  **kwargs)
 
@@ -325,111 +338,93 @@ class FupCompiler_ElemArithAddI(FupCompiler_ElemArith):
 	"""
 
 	ELEM_NAME		= "+I"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_ADD_I
 	ARITH_INSN_CLASS	= AwlInsn_PL_I
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_ADD_I,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithSubI(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - -I
 	"""
 
 	ELEM_NAME		= "-I"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_SUB_I
 	ARITH_INSN_CLASS	= AwlInsn_MI_I
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_SUB_I,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithMulI(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - *I
 	"""
 
 	ELEM_NAME		= "*I"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_MUL_I
 	ARITH_INSN_CLASS	= AwlInsn_MU_I
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_MUL_I,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithDivI(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - /I
 	"""
 
 	ELEM_NAME		= "/I"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_DIV_I
 	ARITH_INSN_CLASS	= AwlInsn_DI_I
-
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_DIV_I,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithAddD(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - +D
 	"""
 
 	ELEM_NAME		= "+D"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_ADD_D
 	ARITH_INSN_CLASS	= AwlInsn_PL_D
-
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_ADD_D,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithSubD(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - -D
 	"""
 
 	ELEM_NAME		= "-D"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_SUB_D
 	ARITH_INSN_CLASS	= AwlInsn_MI_D
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_SUB_D,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithMulD(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - *D
 	"""
 
 	ELEM_NAME		= "*D"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_MUL_D
 	ARITH_INSN_CLASS	= AwlInsn_MU_D
-
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_MUL_D,
-					  content=content,
-					  **kwargs)
 
 class FupCompiler_ElemArithDivD(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - /D
 	"""
 
 	ELEM_NAME		= "/D"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_DIV_D
 	ARITH_INSN_CLASS	= AwlInsn_DI_D
 
-	def __init__(self, grid, x, y, content, **kwargs):
-		FupCompiler_Elem.__init__(self, grid=grid, x=x, y=y,
-					  elemType=FupCompiler_Elem.TYPE_ARITH,
-					  subType=FupCompiler_ElemArith.SUBTYPE_DIV_D,
-					  content=content,
-					  **kwargs)
+class FupCompiler_ElemArithAddR(FupCompiler_ElemArith):
+	"""FUP compiler - Arithmetic operation - +R
+	"""
+
+	ELEM_NAME		= "+R"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_ADD_R
+	ARITH_INSN_CLASS	= AwlInsn_PL_R
+
+class FupCompiler_ElemArithSubR(FupCompiler_ElemArith):
+	"""FUP compiler - Arithmetic operation - -R
+	"""
+
+	ELEM_NAME		= "-R"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_SUB_R
+	ARITH_INSN_CLASS	= AwlInsn_MI_R
+
+class FupCompiler_ElemArithMulR(FupCompiler_ElemArith):
+	"""FUP compiler - Arithmetic operation - *R
+	"""
+
+	ELEM_NAME		= "*R"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_MUL_R
+	ARITH_INSN_CLASS	= AwlInsn_MU_R
+
+class FupCompiler_ElemArithDivR(FupCompiler_ElemArith):
+	"""FUP compiler - Arithmetic operation - /R
+	"""
+
+	ELEM_NAME		= "/R"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_DIV_R
+	ARITH_INSN_CLASS	= AwlInsn_DI_R

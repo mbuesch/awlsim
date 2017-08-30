@@ -46,8 +46,5 @@ FBD/FUP compiler and GUI
 * Add feature: Add option to disable elements
 * Add element: Timers
 * Add element: Counters
-* Add element: Int arithmetic flags outputs (OV, ==0, <>0, >0, <0, >=0, <=0, UO)
-* Add element: Real arithmetic
-* Add element: Real arithmetic flags outputs (OV, ==0, <>0, >0, <0, >=0, <=0, UO)
 * Add element: Compare
 * Add element: CALL
