@@ -27,6 +27,8 @@ basedir="$basedir/.."
 
 
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
+DEFAULT_SUITE=stretch
+
 RPIGPIO_VERSION="0.6.3"
 RPIGPIO_MIRROR="https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
 RPIGPIO_SHA256="9366ff36104a39368759929e71f0d8ad6a88553497b3064cbc40f4248806cc19"
@@ -553,6 +555,7 @@ fi
 exit 0
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/rc.local"
+	chmod 755 /etc/rc.local || die "Failed to chmod /etc/rc.local"
 
 	info "Creating /etc/modules-load.d/i2c.conf..."
 	cat > /etc/modules-load.d/i2c.conf <<EOF
@@ -771,6 +774,18 @@ auto lo
 iface lo inet loopback
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/lo"
+	cat > /etc/network/interfaces.d/enx <<EOF
+allow-hotplug /enx*=enx
+iface enx inet dhcp
+iface enx inet6 auto
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/enx"
+	cat > /etc/network/interfaces.d/eth <<EOF
+allow-hotplug /eth*=eth
+iface eth inet dhcp
+iface eth inet6 auto
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth"
 	for i in $(seq 0 9); do
 		cat > /etc/network/interfaces.d/eth$i <<EOF
 allow-hotplug eth$i
@@ -812,7 +827,7 @@ pilc_bootstrap_third_stage()
 
 	info "Configuring boot..."
 	cat > "$opt_target_dir/boot/cmdline.txt" <<EOF
-dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline isolcpus=2,3 rcu_nocbs=2,3 nohz_full=2,3 fsck.repair=yes rootwait quiet
+dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline isolcpus=2,3 rcu_nocbs=2,3 nohz_full=2,3 fsck.repair=yes net.ifnames=0 rootwait quiet
 EOF
 	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
 	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
@@ -983,7 +998,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	[ -n "$_NPROCESSORS_ONLN" ] || die "Failed to get # of online CPUs"
 
 	default_branch="master"
-	default_suite="jessie"
+	default_suite="$DEFAULT_SUITE"
 	default_arch="armhf"
 	default_kernel="raspi"
 	default_qemu="/usr/bin/qemu-arm-static"
