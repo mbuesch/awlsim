@@ -4,6 +4,7 @@ debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/core usr
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/coreclient usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/coreserver usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/awlcompiler usr/lib/python2.7/dist-packages/awlsim_cython
+debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/awloptimizer usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/fupcompiler usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_cython/library usr/lib/python2.7/dist-packages/awlsim_cython
 debian/destdir-py2-awlsim/usr/lib/python2.7/dist-packages/awlsim_loader_cython usr/lib/python2.7/dist-packages

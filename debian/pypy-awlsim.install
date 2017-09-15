@@ -4,6 +4,7 @@ debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/core usr/lib/pypy/d
 debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/coreclient usr/lib/pypy/dist-packages/awlsim
 debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/coreserver usr/lib/pypy/dist-packages/awlsim
 debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/awlcompiler usr/lib/pypy/dist-packages/awlsim
+debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/awloptimizer usr/lib/pypy/dist-packages/awlsim
 debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/fupcompiler usr/lib/pypy/dist-packages/awlsim
 debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim/library usr/lib/pypy/dist-packages/awlsim
 debian/destdir-pypy-awlsim/usr/lib/pypy/dist-packages/awlsim_loader usr/lib/pypy/dist-packages
