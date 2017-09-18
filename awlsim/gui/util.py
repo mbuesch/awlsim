@@ -55,12 +55,13 @@ def intToDualString(value, bitWidth):
 	return ''.join(string)
 
 # Get the default fixed font
-def getDefaultFixedFont(pointSize=11):
+def getDefaultFixedFont(pointSize=11, bold=False):
 	font = QFont()
 	font.setStyleHint(QFont.Courier)
 	font.setFamily("Courier")
 	font.setPointSize(pointSize)
 	font.setWeight(QFont.Normal)
+	font.setBold(bold)
 	return font
 
 # Color used for errors
