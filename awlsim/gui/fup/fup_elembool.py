@@ -324,7 +324,7 @@ class FupElem_BOOLEAN(FupElem):
 			       else self._outlinePen)
 		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
-		painter.setFont(getDefaultFixedFont(11))
+		painter.setFont(getDefaultFixedFont(12, bold=True))
 		if self.WITH_BODY_OPERATOR:
 			y, h = cellHeight, elemHeight - cellHeight
 		else:

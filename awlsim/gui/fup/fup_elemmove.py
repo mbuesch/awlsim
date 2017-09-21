@@ -243,7 +243,7 @@ class FupElem_MOVE(FupElem):
 					 conn.text)
 
 		# Draw element descriptor text
-		painter.setFont(getDefaultFixedFont(8))
+		painter.setFont(getDefaultFixedFont(9, bold=True))
 		painter.setPen(self._outlineSelPen if selected
 			       else self._outlinePen)
 		painter.drawText(0, 0,

@@ -316,9 +316,9 @@ class FupElem_ARITH(FupElem):
 			       else self._outlinePen)
 		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
-		painter.setFont(getDefaultFixedFont(11))
+		painter.setFont(getDefaultFixedFont(12, bold=True))
 		painter.drawText(0, 0,
-				 elemWidth, elemHeight,
+				 int(round(elemWidth * 0.75)), elemHeight,
 				 Qt.AlignVCenter | Qt.AlignHCenter,
 				 self.OP_SYM)
 
