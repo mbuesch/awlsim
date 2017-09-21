@@ -44,6 +44,7 @@ class FupElem_ARITH_factory(FupElem_factory):
 			FupElem_ARITH_SUB_D.OP_SYM_NAME	: FupElem_ARITH_SUB_D,
 			FupElem_ARITH_MUL_D.OP_SYM_NAME	: FupElem_ARITH_MUL_D,
 			FupElem_ARITH_DIV_D.OP_SYM_NAME	: FupElem_ARITH_DIV_D,
+			FupElem_ARITH_MOD_D.OP_SYM_NAME	: FupElem_ARITH_MOD_D,
 			FupElem_ARITH_ADD_R.OP_SYM_NAME	: FupElem_ARITH_ADD_R,
 			FupElem_ARITH_SUB_R.OP_SYM_NAME	: FupElem_ARITH_SUB_R,
 			FupElem_ARITH_MUL_R.OP_SYM_NAME	: FupElem_ARITH_MUL_R,
@@ -103,13 +104,14 @@ class FupElem_ARITH(FupElem):
 
 	FIXED_INPUTS		= [ "EN", ]
 	FIXED_OUTPUTS		= [ "ENO", ]
-	OPTIONAL_CONNS		= { "EN", "==0", "<>0", ">0", "<0",
+	OPTIONAL_CONNS		= { "EN", "REM", "==0", "<>0", ">0", "<0",
 				    ">=0", "<=0", "OV", "UO", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
+	HAVE_REMAINDER		= False
 
 	# Sequence of special connections.
 	__CONN_IN_SEQUENCE	= ( "EN", )
-	__CONN_OUT_SEQUENCE	= ( "==0", "<>0", ">0", "<0",
+	__CONN_OUT_SEQUENCE	= ( "REM", "==0", "<>0", ">0", "<0",
 				    ">=0", "<=0", "OV", "UO", "ENO", )
 
 	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
@@ -343,25 +345,30 @@ class FupElem_ARITH(FupElem):
 			menu.enableDisconnWire(conn.isConnected)
 		if not conn or conn.OUT:
 			existing = set(c.text.upper() for c in self.outputs)
+			if "REM" not in existing and self.HAVE_REMAINDER:
+				menu.enableCustomAction(0, True, text="Add REMainder output")
 			if "==0" not in existing:
-				menu.enableCustomAction(0, True, text="Add ==0 output")
+				menu.enableCustomAction(1, True, text="Add ==0 output")
 			if "<>0" not in existing:
-				menu.enableCustomAction(1, True, text="Add <>0 output")
+				menu.enableCustomAction(2, True, text="Add <>0 output")
 			if ">0" not in existing:
-				menu.enableCustomAction(2, True, text="Add >0 output")
+				menu.enableCustomAction(3, True, text="Add >0 output")
 			if "<0" not in existing:
-				menu.enableCustomAction(3, True, text="Add <0 output")
+				menu.enableCustomAction(4, True, text="Add <0 output")
 			if ">=0" not in existing:
-				menu.enableCustomAction(4, True, text="Add >=0 output")
+				menu.enableCustomAction(5, True, text="Add >=0 output")
 			if "<=0" not in existing:
-				menu.enableCustomAction(5, True, text="Add <=0 output")
+				menu.enableCustomAction(6, True, text="Add <=0 output")
 			if "OV" not in existing:
-				menu.enableCustomAction(6, True, text="Add OV output")
+				menu.enableCustomAction(7, True, text="Add OV output")
 			if "UO" not in existing:
-				menu.enableCustomAction(7, True, text="Add UO output")
+				menu.enableCustomAction(8, True, text="Add UO output")
 
 	def __addStateOutput(self, name):
 		return self.addConn(FupConnOut(text=name))
+
+	def __handleAddREM(self, index):
+		return self.__addStateOutput("REM")
 
 	def __handleAddEQ0(self, index):
 		return self.__addStateOutput("==0")
@@ -388,14 +395,15 @@ class FupElem_ARITH(FupElem):
 		return self.__addStateOutput("UO")
 
 	CUSTOM_ACTIONS = (
-		__handleAddEQ0,		# index 0
-		__handleAddNE0,		# index 1
-		__handleAddGT0,		# index 2
-		__handleAddLT0,		# index 3
-		__handleAddGE0,		# index 4
-		__handleAddLE0,		# index 5
-		__handleAddOV,		# index 6
-		__handleAddUO,		# index 7
+		__handleAddREM,		# index 0
+		__handleAddEQ0,		# index 1
+		__handleAddNE0,		# index 2
+		__handleAddGT0,		# index 3
+		__handleAddLT0,		# index 4
+		__handleAddGE0,		# index 5
+		__handleAddLE0,		# index 6
+		__handleAddOV,		# index 7
+		__handleAddUO,		# index 8
 	)
 
 class FupElem_ARITH_ADD_I(FupElem_ARITH):
@@ -421,6 +429,7 @@ class FupElem_ARITH_DIV_I(FupElem_ARITH):
 
 	OP_SYM			= "/I"
 	OP_SYM_NAME		= "div-int"	# XML ABI name
+	HAVE_REMAINDER		= True
 
 class FupElem_ARITH_ADD_D(FupElem_ARITH):
 	"""+D FUP/FBD element"""
@@ -445,6 +454,12 @@ class FupElem_ARITH_DIV_D(FupElem_ARITH):
 
 	OP_SYM			= "/D"
 	OP_SYM_NAME		= "div-dint"	# XML ABI name
+
+class FupElem_ARITH_MOD_D(FupElem_ARITH):
+	"""MOD FUP/FBD element"""
+
+	OP_SYM			= "MOD"
+	OP_SYM_NAME		= "mod-dint"	# XML ABI name
 
 class FupElem_ARITH_ADD_R(FupElem_ARITH):
 	"""+R FUP/FBD element"""

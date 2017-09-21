@@ -129,6 +129,9 @@ class FupElemContainerWidget(QTreeWidget):
 		itemArithDIVD = FupElemItem("[/D]  DINT division", "new", elemMimeType,
 					   self.elemToXml(FupElem_ARITH_DIV_D(-1, -1)))
 		itemArithI.addChild(itemArithDIVD)
+		itemArithMODD = FupElemItem("[MOD]  DINT modulo", "new", elemMimeType,
+					   self.elemToXml(FupElem_ARITH_MOD_D(-1, -1)))
+		itemArithI.addChild(itemArithMODD)
 
 		itemArithR = FupElemItemClass("Real arithmetic", "stdlib")
 		itemArithADDR = FupElemItem("[+R]  REAL addition", "new", elemMimeType,
