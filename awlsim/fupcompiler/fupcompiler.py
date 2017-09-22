@@ -208,6 +208,35 @@ class FupCompiler(object):
 		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1, offset, None)
 		return self.newInsn(parentFupElem, insnClass, ops=[oper])
 
+	def newInsn_L_STW(self, parentFupElem):
+		"""Create a new L STW instruction instance.
+		parentFupElem: The FUP element that creates this insn.
+		"""
+		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 16,
+					make_AwlOffset(0, 0), None)
+		return self.newInsn(parentFupElem, AwlInsn_L, ops=[oper])
+
+	def newInsn_T_STW(self, parentFupElem):
+		"""Create a new T STW instruction instance.
+		parentFupElem: The FUP element that creates this insn.
+		"""
+		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 16,
+					make_AwlOffset(0, 0), None)
+		return self.newInsn(parentFupElem, AwlInsn_T, ops=[oper])
+
+	def newInsn_SRD(self, parentFupElem, count=None):
+		"""Create a new SRD instruction instance.
+		parentFupElem: The FUP element that creates this insn.
+		count: The shift count (or None).
+		"""
+		if count is None:
+			ops = []
+		else:
+			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
+			oper.immediate = count
+			ops = [oper]
+		return self.newInsn(parentFupElem, AwlInsn_SRD, ops=ops)
+
 	def getOperDataWidth(self, oper):
 		"""Helper function to get the data type width (in bits)
 		of an operator. This will first attempt to resolve the operator,

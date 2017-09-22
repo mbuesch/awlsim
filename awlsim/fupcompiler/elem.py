@@ -390,6 +390,21 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn_LOAD_BIE(self, insnClass)
 
+	def newInsn_L_STW(self):
+		"""Wrapper: Call the compiler method to create a L STW instruction.
+		"""
+		return self.grid.compiler.newInsn_L_STW(self)
+
+	def newInsn_T_STW(self):
+		"""Wrapper: Call the compiler method to create a T STW instruction.
+		"""
+		return self.grid.compiler.newInsn_T_STW(self)
+
+	def newInsn_SRD(self, count=None):
+		"""Wrapper: Call the compiler method to create a SRD instruction.
+		"""
+		return self.grid.compiler.newInsn_SRD(self, count)
+
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
 			"subType=%s, content=\"%s\", virtual=%s)" % (
