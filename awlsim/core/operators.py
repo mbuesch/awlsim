@@ -405,11 +405,14 @@ class AwlOperator(object): #+cdef
 				return "PED %d" % self.offset.byteOffset
 			return self.makeANYPointer().toPointerString()
 		elif self.operType == AwlOperatorTypes.MEM_STW:
-			bitNumber = self.offset.bitOffset
-			bitName = S7StatusWord.nr2name_german[bitNumber]
-			if bitNumber in {4, 5, 8}:
-				return bitName
-			return "__STW " + bitName
+			if self.width == 1:
+				bitNumber = self.offset.bitOffset
+				bitName = S7StatusWord.nr2name_german[bitNumber]
+				if bitNumber in {4, 5, 8}:
+					return bitName
+				return "__STW " + bitName
+			else:
+				return "STW"
 		elif self.operType == AwlOperatorTypes.LBL_REF:
 			return self.immediateStr
 		elif self.operType == AwlOperatorTypes.BLKREF_FC:
