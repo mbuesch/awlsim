@@ -165,12 +165,9 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 								  inverted=inverted)
 
 		if conn.hasText("ENO"):
-			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
-				raise FupElemError("The ENO output "
-					"of FUP arithmetic box %s must only be connected "
-					"to boolean inputs." % (
-					str(self)),
-					self)
+			self._compileConn_checkTarget(conn, desiredTarget, inverted,
+						      targetExpectVKE=True,
+						      allowInversion=True)
 			if self.needCompile:
 				insns.extend(self.compile())
 				if inverted:
@@ -179,32 +176,22 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		elif conn.hasText({ "OV", "==0", "<>0", ">0",
 				    "<0", ">=0", "<=0", "UO", }):
-			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
-				raise FupElemError("The %s output "
-					"of FUP arithmetic box %s must only be connected "
-					"to boolean inputs." % (
-					conn.text, str(self)),
-					self)
+			self._compileConn_checkTarget(conn, desiredTarget, inverted,
+						      targetExpectVKE=True,
+						      allowInversion=False)
 			if self.needCompile:
 				insns.extend(self.compile())
 			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		elif re.match(r"OUT\d+", conn.text, re.IGNORECASE) or\
 		     conn.hasText("REM"):
-			if FupCompiler_Conn.targetIsVKE(desiredTarget):
-				raise FupElemError("The OUTx or REM output "
-					"of FUP arithmetic box %s must only be connected "
-					"to non-boolean inputs." % (
-					str(self)),
-					self)
+			self._compileConn_checkTarget(conn, desiredTarget, inverted,
+						      targetExpectVKE=False,
+						      allowInversion=False)
 			if self.needCompile:
 				insns.extend(self.compile())
 			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
-			raise FupElemError("It is not known how to compile "
-				"the connection '%s' of FUP arithmetic box %s." % (
-				conn.text,
-				str(self)),
-				self)
+			return FupCompiler_Elem.compileConn(self, conn, desiredTarget, inverted)
 		return insns
 
 	def _doPreprocess(self):

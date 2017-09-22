@@ -79,12 +79,9 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		insns = []
 		assert(conn in self.connections)
 		if conn.hasText("ENO"):
-			if not FupCompiler_Conn.targetIsVKE(desiredTarget):
-				raise FupElemError("The ENO output "
-					"of FUP move box %s must only be connected "
-					"to boolean inputs." % (
-					str(self)),
-					self)
+			self._compileConn_checkTarget(conn, desiredTarget, inverted,
+						      targetExpectVKE=True,
+						      allowInversion=True)
 			if self.needCompile:
 				insns.extend(self.compile())
 				if inverted:
@@ -95,11 +92,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 										  inverted=inverted)
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
-			raise FupElemError("It is not known how to compile "
-				"the connection '%s' of FUP move box %s." % (
-				conn.text,
-				str(self)),
-				self)
+			return FupCompiler_Elem.compileConn(self, conn, desiredTarget, inverted)
 		return insns
 
 	def _doPreprocess(self):

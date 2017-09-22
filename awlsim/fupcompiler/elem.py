@@ -326,10 +326,38 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		The default implementation raises an exception.
 		Override this method, if required.
 		"""
-		raise FupElemError("Do not know how to "
-			"compile the connection %s of element %s." % (
+		raise FupElemError("It is not known how to "
+			"compile the connection %s of element %s. "
+			"That probably means it's not allowed to "
+			"connect these FUP elements in this way." % (
 			str(conn), str(self)),
 			self)
+
+	def _compileConn_checkTarget(self, conn, desiredTarget, inverted,
+				     targetExpectVKE=False,
+				     allowInversion=False):
+		"""compileConn() helper to check whether the target matches expectations.
+		targetExpectVKE: True, if desiredTarget must be a VKE based target.
+		allowInversion: True, if 'inverted=True' is allowed.
+		"""
+		targetIsVKE = FupCompiler_Conn.targetIsVKE(desiredTarget)
+		if targetIsVKE != targetExpectVKE:
+			raise FupElemError("The %s %s "
+				"of FUP element %s must only be connected "
+				"to %s %s." % (
+				str(conn),
+				"input" if conn.dirIn else "output",
+				str(self),
+				"boolean" if targetExpectVKE else "non-boolean",
+				"outputs" if conn.dirIn else "inputs"),
+				self)
+		if not allowInversion and inverted:
+			raise FupElemError("Inversion is not allowed on %s %s "
+				"of FUP element %s." % (
+				str(conn),
+				"input" if conn.dirIn else "output",
+				str(self)),
+				self)
 
 	def _doPreprocess(self):
 		"""Element preprocessor.

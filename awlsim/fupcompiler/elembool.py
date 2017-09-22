@@ -172,6 +172,9 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		return insns
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
+		self._compileConn_checkTarget(conn, desiredTarget, inverted,
+					      targetExpectVKE=True,
+					      allowInversion=True)
 		insnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
 							       toLoad=conn.dirOut,
 							       inverted=inverted)
