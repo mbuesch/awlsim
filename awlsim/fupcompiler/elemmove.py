@@ -78,6 +78,11 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 	def compileConn(self, conn, desiredTarget, inverted=False):
 		insns = []
 		assert(conn in self.connections)
+
+		awlInsnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
+								  toLoad=True,
+								  inverted=inverted)
+
 		if conn.hasText("ENO"):
 			self._compileConn_checkTarget(conn, desiredTarget, inverted,
 						      targetExpectVKE=True,
@@ -91,6 +96,13 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 										  toLoad=True,
 										  inverted=inverted)
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
+		elif re.match(r"OUT\d+", conn.text, re.IGNORECASE):
+			self._compileConn_checkTarget(conn, desiredTarget, inverted,
+						      targetExpectVKE=False,
+						      allowInversion=False)
+			if self.needCompile:
+				insns.extend(self.compile())
+			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
 			return FupCompiler_Elem.compileConn(self, conn, desiredTarget, inverted)
 		return insns
@@ -151,10 +163,11 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
 
 		# Compile the element connected to the input.
+		otherConn_IN = conn_IN.getConnectedConn(getOutput=True)
 		if connectedElem_IN.needCompile:
 			insns.extend(connectedElem_IN.compile())
 		else:
-			insns.extend(connectedElem_IN._loadFromTemp(AwlInsn_L, self.MAIN_RESULT))
+			insns.extend(otherConn_IN.compileConn(targetInsnClass=AwlInsn_L))
 		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise FupElemError("The IN connection "
 				"of the FUP move box %s must not be connected "
