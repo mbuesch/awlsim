@@ -81,7 +81,7 @@ term_signal()
 cleanup()
 {
 	info "Cleaning up..."
-	for mp in "$mp_shm" "$mp_proc" "$mp_sys" "$mp_bootimgfile" "$mp_rootimgfile"; do
+	for mp in "$mp_shm" "$mp_proc_binfmt_misc" "$mp_proc" "$mp_sys" "$mp_bootimgfile" "$mp_rootimgfile"; do
 		[ -n "$mp" -a -d "$mp" ] &&\
 			umount "$mp" >/dev/null 2>&1
 	done
@@ -273,6 +273,7 @@ pilc_bootstrap_first_stage()
 	# Second stage will mount a few filesystems.
 	# Keep track to umount them in cleanup.
 	mp_proc="$opt_target_dir/proc"
+	mp_proc_binfmt_misc="$opt_target_dir/proc/sys/fs/binfmt_misc"
 	mp_sys="$opt_target_dir/sys"
 	mp_shm="$opt_target_dir/dev/shm"
 }
@@ -290,6 +291,7 @@ pilc_bootstrap_second_stage()
 	export LANG=C
 	export CFLAGS="-O3 -march=armv6j -mfpu=vfp -mfloat-abi=hard -pipe"
 	export CXXFLAGS="$CFLAGS"
+#	export CC=clang LINKCC=clang LDSHARED="clang -shared" CXX=clang++
 
 	# debootstrap second stage.
 	if [ $opt_skip_debootstrap2 -eq 0 ]; then
@@ -401,6 +403,7 @@ EOF
 		bc \
 		build-essential \
 		bwidget \
+		clang \
 		console-setup \
 		cython \
 		cython3 \
@@ -808,18 +811,20 @@ EOF
 	for i in dbus ssh atd irqbalance; do
 		/etc/init.d/$i stop
 	done
-
-	info "Umounting /dev/shm..."
-	umount /dev/shm || die "Failed to umount /dev/shm"
-	info "Umounting /sys..."
-	umount /sys || die "Failed to umount /sys"
-	info "Umounting /proc..."
-	umount /proc || die "Failed to umount /proc"
 }
 
 pilc_bootstrap_third_stage()
 {
 	info "Running third stage..."
+
+	info "Umounting /dev/shm..."
+	umount "$mp_shm" || die "Failed to umount /dev/shm"
+	info "Umounting /sys..."
+	umount "$mp_sys" || die "Failed to umount /sys"
+	info "Umounting /proc/sys/fs/binfmt_misc..."
+	umount "$mp_proc_binfmt_misc"
+	info "Umounting /proc..."
+	umount "$mp_proc" || die "Failed to umount /proc"
 
 	info "Removing PiLC bootstrap script..."
 	rm "$opt_target_dir/pilc-bootstrap.sh" ||\
@@ -983,6 +988,7 @@ basedir="$(readlink -e "$basedir")"
 # Mountpoints. Will be umounted on cleanup.
 mp_shm=
 mp_proc=
+mp_proc_binfmt_misc=
 mp_sys=
 mp_bootimgfile=
 mp_rootimgfile=
