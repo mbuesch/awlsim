@@ -42,6 +42,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 	ELEM_NAME		= "ARITH"
 	SUBTYPE			= None # Override this in the subclass
 	ARITH_INSN_CLASS	= None # Override this in the subclass
+	HAVE_REMAINDER		= False # Operation has remainder?
 
 	EnumGen.start
 	SUBTYPE_ADD_I		= EnumGen.item
@@ -52,6 +53,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 	SUBTYPE_SUB_D		= EnumGen.item
 	SUBTYPE_MUL_D		= EnumGen.item
 	SUBTYPE_DIV_D		= EnumGen.item
+	SUBTYPE_MOD_D		= EnumGen.item
 	SUBTYPE_ADD_R		= EnumGen.item
 	SUBTYPE_SUB_R		= EnumGen.item
 	SUBTYPE_MUL_R		= EnumGen.item
@@ -67,6 +69,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		"sub-dint"	: SUBTYPE_SUB_D,
 		"mul-dint"	: SUBTYPE_MUL_D,
 		"div-dint"	: SUBTYPE_DIV_D,
+		"mod-dint"	: SUBTYPE_MOD_D,
 		"add-real"	: SUBTYPE_ADD_R,
 		"sub-real"	: SUBTYPE_SUB_R,
 		"mul-real"	: SUBTYPE_MUL_R,
@@ -86,6 +89,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				cls.SUBTYPE_SUB_D	: FupCompiler_ElemArithSubD,
 				cls.SUBTYPE_MUL_D	: FupCompiler_ElemArithMulD,
 				cls.SUBTYPE_DIV_D	: FupCompiler_ElemArithDivD,
+				cls.SUBTYPE_MOD_D	: FupCompiler_ElemArithModD,
 				cls.SUBTYPE_ADD_R	: FupCompiler_ElemArithAddR,
 				cls.SUBTYPE_SUB_R	: FupCompiler_ElemArithSubR,
 				cls.SUBTYPE_MUL_R	: FupCompiler_ElemArithMulR,
@@ -109,7 +113,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 					  **kwargs)
 
 	def connIsOptional(self, conn):
-		return conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
+		return conn.hasText({ "EN", "ENO", "OV", "REM", "==0", "<>0",
 				      ">0", "<0", ">=0", "<=0", "UO", })
 
 	def getConnType(self, conn):
@@ -131,6 +135,12 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				str(self)),
 				self)
 		return conn_EN, conn_ENO
+
+	def __getConnFlag(self, connName):
+		conn = self.getUniqueConnByText(connName, searchOutputs=True)
+		if conn and conn.isConnected:
+			return conn
+		return None
 
 	def __allConnsIN(self):
 		"""Get all INx connections.
@@ -178,6 +188,17 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			if self.needCompile:
 				insns.extend(self.compile())
 			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
+		elif re.match(r"OUT\d+", conn.text, re.IGNORECASE) or\
+		     conn.hasText("REM"):
+			if FupCompiler_Conn.targetIsVKE(desiredTarget):
+				raise FupElemError("The OUTx or REM output "
+					"of FUP arithmetic box %s must only be connected "
+					"to non-boolean inputs." % (
+					str(self)),
+					self)
+			if self.needCompile:
+				insns.extend(self.compile())
+			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
 		else:
 			raise FupElemError("It is not known how to compile "
 				"the connection '%s' of FUP arithmetic box %s." % (
@@ -206,6 +227,37 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				elemB=self,
 				connNameB="EN",
 				boolElemClass=FupCompiler_ElemBoolAnd)
+
+	def __compileFlagOut(self, connName, operType, bitPos):
+		"""Compile one flag output connection.
+		"""
+		conn = self.__getConnFlag(connName)
+		if not conn:
+			return []
+
+		insns = []
+		conn_EN, conn_ENO = self.__getConnsEN()
+
+		# Load the flag from STW.
+		offset = make_AwlOffset(0, bitPos)
+		oper = make_AwlOperator(operType, 1, offset, None)
+		insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
+		if conn_EN.isConnected:
+			# AND the EN input to the flag, so that the flag
+			# output is 0 in case EN is 0.
+			insns.append(self.newInsn_LOAD_BIE(AwlInsn_U))
+
+		# Store the flag to the output.
+		storeToTempConns = set()
+		for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
+			if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+					    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
+				insns.extend(otherElem.emitStore_VKE())
+			else:
+				storeToTempConns.add(conn)
+		insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
+
+		return insns
 
 	def _doCompile(self):
 		insns = []
@@ -238,14 +290,16 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			# This will evaluate the current VKE.
 			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
 
+		# Compile the actual operation.
 		for i, conn in enumerate(self.__allConnsIN()):
-			connectedElem = conn.getConnectedElem(viaOut=True)
+			otherConn = conn.getConnectedConn(getOutput=True)
+			otherElem = otherConn.elem
 
 			# Compile the element connected to the input.
-			if connectedElem.needCompile:
-				insns.extend(connectedElem.compile())
+			if otherElem.needCompile:
+				insns.extend(otherElem.compile())
 			else:
-				insns.extend(connectedElem._loadFromTemp(AwlInsn_L, self.MAIN_RESULT))
+				insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
 			if conn.connType != FupCompiler_Conn.TYPE_ACCU:
 				raise FupElemError("The IN connection "
 					"of the FUP arithmetic box %s must not be connected "
@@ -270,6 +324,38 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			storeToTempConns.add(self.MAIN_RESULT)
 			insns.extend(self._storeToTemp("DWORD", AwlInsn_T, storeToTempConns))
 
+		# Check if any of the flags outputs is used.
+		anyFlagConnected = any(bool(self.__getConnFlag(name))
+				       for name in {"OV", "==0", "<>0", ">0",
+						    "<0", ">=0", "<=0", "UO"})
+
+		# Handle REMainder output.
+		if self.HAVE_REMAINDER:
+			conn_REM = self.getUniqueConnByText("REM", searchOutputs=True)
+			if conn_REM and conn_REM.isConnected:
+				# Shift the remainder to the lower 16 bits.
+				# The division result will be lost.
+				# But save the status word before shifting to avoid
+				# clobbering STW by SRD. This is only done, if the
+				# STW is used later on for the flags outputs.
+				if anyFlagConnected:
+					insns.append(self.newInsn_L_STW())
+					insns.append(self.newInsn(AwlInsn_TAK))
+				insns.append(self.newInsn_SRD(16))
+				# Store the REM output (or store to TEMP).
+				storeToTempConns = set()
+				for otherElem in self.sorted(conn_REM.getConnectedElems(viaIn=True)):
+					if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+							    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
+						insns.extend(otherElem.emitStore_ACCU())
+					else:
+						storeToTempConns.add(conn_REM)
+				insns.extend(self._storeToTemp("WORD", AwlInsn_T, storeToTempConns))
+				# Restore STW.
+				if anyFlagConnected:
+					insns.append(self.newInsn(AwlInsn_TAK))
+					insns.append(self.newInsn_T_STW())
+
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
 			# Set VKE=1 and create a dummy SPBNB to
@@ -283,36 +369,16 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		insns.append(self.newInsn_NOP(labelStr=endLabel))
 
 		# Compile flags outputs.
-		def compileFlagsOut(connName, operType, bitPos):
-			conn = self.getUniqueConnByText(connName, searchOutputs=True)
-			if not conn or not conn.isConnected:
-				return
-			# Load the flag from STW.
-			offset = make_AwlOffset(0, bitPos)
-			oper = make_AwlOperator(operType, 1, offset, None)
-			insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
-			if conn_EN.isConnected:
-				# AND the EN input to the flag, so that the flag
-				# output is 0 in case EN is 0.
-				insns.append(self.newInsn_LOAD_BIE(AwlInsn_U))
-			# Store the flag to the output.
-			storeToTempConns = set()
-			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
-				if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
-						    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
-					insns.extend(otherElem.emitStore_VKE())
-				else:
-					storeToTempConns.add(conn)
-			insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
-		compileFlagsOut("OV", AwlOperatorTypes.MEM_STW,
-				      S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE))
-		compileFlagsOut("==0", AwlOperatorTypes.MEM_STW_Z, 0)
-		compileFlagsOut("<>0", AwlOperatorTypes.MEM_STW_NZ, 0)
-		compileFlagsOut(">0", AwlOperatorTypes.MEM_STW_POS, 0)
-		compileFlagsOut("<0", AwlOperatorTypes.MEM_STW_NEG, 0)
-		compileFlagsOut(">=0", AwlOperatorTypes.MEM_STW_POSZ, 0)
-		compileFlagsOut("<=0", AwlOperatorTypes.MEM_STW_NEGZ, 0)
-		compileFlagsOut("UO", AwlOperatorTypes.MEM_STW_UO, 0)
+		if anyFlagConnected:
+			insns.extend(self.__compileFlagOut("OV", AwlOperatorTypes.MEM_STW,
+					S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE)))
+			insns.extend(self.__compileFlagOut("==0", AwlOperatorTypes.MEM_STW_Z, 0))
+			insns.extend(self.__compileFlagOut("<>0", AwlOperatorTypes.MEM_STW_NZ, 0))
+			insns.extend(self.__compileFlagOut(">0", AwlOperatorTypes.MEM_STW_POS, 0))
+			insns.extend(self.__compileFlagOut("<0", AwlOperatorTypes.MEM_STW_NEG, 0))
+			insns.extend(self.__compileFlagOut(">=0", AwlOperatorTypes.MEM_STW_POSZ, 0))
+			insns.extend(self.__compileFlagOut("<=0", AwlOperatorTypes.MEM_STW_NEGZ, 0))
+			insns.extend(self.__compileFlagOut("UO", AwlOperatorTypes.MEM_STW_UO, 0))
 
 		# Handle ENO output.
 		if conn_ENO.isConnected:
@@ -364,6 +430,7 @@ class FupCompiler_ElemArithDivI(FupCompiler_ElemArith):
 	ELEM_NAME		= "/I"
 	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_DIV_I
 	ARITH_INSN_CLASS	= AwlInsn_DI_I
+	HAVE_REMAINDER		= True
 
 class FupCompiler_ElemArithAddD(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - +D
@@ -396,6 +463,14 @@ class FupCompiler_ElemArithDivD(FupCompiler_ElemArith):
 	ELEM_NAME		= "/D"
 	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_DIV_D
 	ARITH_INSN_CLASS	= AwlInsn_DI_D
+
+class FupCompiler_ElemArithModD(FupCompiler_ElemArith):
+	"""FUP compiler - Arithmetic operation - MOD
+	"""
+
+	ELEM_NAME		= "MOD"
+	SUBTYPE			= FupCompiler_ElemArith.SUBTYPE_MOD_D
+	ARITH_INSN_CLASS	= AwlInsn_MOD
 
 class FupCompiler_ElemArithAddR(FupCompiler_ElemArith):
 	"""FUP compiler - Arithmetic operation - +R
