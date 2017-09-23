@@ -41,6 +41,7 @@ class FupElem_factory(XmlFactory):
 			from awlsim.gui.fup.fup_elemoperand import FupElem_OPERAND
 			from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
 			from awlsim.gui.fup.fup_elemarith import FupElem_ARITH
+			from awlsim.gui.fup.fup_elemcmp import FupElem_CMP
 			from awlsim.gui.fup.fup_elemcomment import FupElem_COMMENT
 
 			elemType = tag.getAttr("type")
@@ -49,6 +50,7 @@ class FupElem_factory(XmlFactory):
 				"operand"	: FupElem_OPERAND,
 				"move"		: FupElem_MOVE,
 				"arithmetic"	: FupElem_ARITH,
+				"compare"	: FupElem_CMP,
 				"comment"	: FupElem_COMMENT,
 			}
 			elemClass = None

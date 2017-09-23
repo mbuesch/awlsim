@@ -28,6 +28,7 @@ from awlsim.gui.util import *
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
 from awlsim.gui.fup.fup_elemarith import *
+from awlsim.gui.fup.fup_elemcmp import *
 from awlsim.gui.fup.fup_elemcomment import *
 
 
@@ -104,7 +105,7 @@ class FupElemContainerWidget(QTreeWidget):
 					   self.elemToXml(FupElem_MOVE(-1, -1)))
 		itemMove.addChild(itemMoveMove)
 
-		itemArithI = FupElemItemClass("Int arithmetic", "stdlib")
+		itemArithI = FupElemItemClass("INT", "stdlib")
 		itemArithADDI = FupElemItem("[+I]  INT addition", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_ADD_I(-1, -1)))
 		itemArithI.addChild(itemArithADDI)
@@ -117,23 +118,25 @@ class FupElemContainerWidget(QTreeWidget):
 		itemArithDIVI = FupElemItem("[/I]  INT division", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_DIV_I(-1, -1)))
 		itemArithI.addChild(itemArithDIVI)
+
+		itemArithD = FupElemItemClass("DINT", "stdlib")
 		itemArithADDD = FupElemItem("[+D]  DINT addition", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_ADD_D(-1, -1)))
-		itemArithI.addChild(itemArithADDD)
+		itemArithD.addChild(itemArithADDD)
 		itemArithSUBD = FupElemItem("[-D]  DINT subtraction", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_SUB_D(-1, -1)))
-		itemArithI.addChild(itemArithSUBD)
+		itemArithD.addChild(itemArithSUBD)
 		itemArithMULD = FupElemItem("[*D]  DINT multiplication", "new", elemMimeType,
 					   self.elemToXml(FupElem_ARITH_MUL_D(-1, -1)))
-		itemArithI.addChild(itemArithMULD)
+		itemArithD.addChild(itemArithMULD)
 		itemArithDIVD = FupElemItem("[/D]  DINT division", "new", elemMimeType,
 					   self.elemToXml(FupElem_ARITH_DIV_D(-1, -1)))
-		itemArithI.addChild(itemArithDIVD)
+		itemArithD.addChild(itemArithDIVD)
 		itemArithMODD = FupElemItem("[MOD]  DINT modulo", "new", elemMimeType,
 					   self.elemToXml(FupElem_ARITH_MOD_D(-1, -1)))
-		itemArithI.addChild(itemArithMODD)
+		itemArithD.addChild(itemArithMODD)
 
-		itemArithR = FupElemItemClass("Real arithmetic", "stdlib")
+		itemArithR = FupElemItemClass("REAL", "stdlib")
 		itemArithADDR = FupElemItem("[+R]  REAL addition", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_ADD_R(-1, -1)))
 		itemArithR.addChild(itemArithADDR)
@@ -147,12 +150,82 @@ class FupElemContainerWidget(QTreeWidget):
 					    self.elemToXml(FupElem_ARITH_DIV_R(-1, -1)))
 		itemArithR.addChild(itemArithDIVR)
 
+		itemCmpI = FupElemItemClass("INT", "stdlib")
+		itemCmpEQI = FupElemItem("[==I]  INT equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_EQ_I(-1, -1)))
+		itemCmpI.addChild(itemCmpEQI)
+		itemCmpNEI = FupElemItem("[<>I]  INT not equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_NE_I(-1, -1)))
+		itemCmpI.addChild(itemCmpNEI)
+		itemCmpGTI = FupElemItem("[>I]  INT greater than", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_GT_I(-1, -1)))
+		itemCmpI.addChild(itemCmpGTI)
+		itemCmpLTI = FupElemItem("[<I]  INT less than", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_LT_I(-1, -1)))
+		itemCmpI.addChild(itemCmpLTI)
+		itemCmpGEI = FupElemItem("[>=I]  INT greater or equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_GE_I(-1, -1)))
+		itemCmpI.addChild(itemCmpGEI)
+		itemCmpLEI = FupElemItem("[<=I]  INT less or equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_LE_I(-1, -1)))
+		itemCmpI.addChild(itemCmpLEI)
+
+		itemCmpD = FupElemItemClass("DINT", "stdlib")
+		itemCmpEQD = FupElemItem("[==D]  DINT equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_EQ_D(-1, -1)))
+		itemCmpD.addChild(itemCmpEQD)
+		itemCmpNED = FupElemItem("[<>D]  DINT not equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_NE_D(-1, -1)))
+		itemCmpD.addChild(itemCmpNED)
+		itemCmpGTD = FupElemItem("[>D]  DINT greater than", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_GT_D(-1, -1)))
+		itemCmpD.addChild(itemCmpGTD)
+		itemCmpLTD = FupElemItem("[<D]  DINT less than", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_LT_D(-1, -1)))
+		itemCmpD.addChild(itemCmpLTD)
+		itemCmpGED = FupElemItem("[>=D]  DINT greater or equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_GE_D(-1, -1)))
+		itemCmpD.addChild(itemCmpGED)
+		itemCmpLED = FupElemItem("[<=D]  DINT less or equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_LE_D(-1, -1)))
+		itemCmpD.addChild(itemCmpLED)
+
+		itemCmpR = FupElemItemClass("REAL", "stdlib")
+		itemCmpEQR = FupElemItem("[==R]  REAL equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_EQ_R(-1, -1)))
+		itemCmpR.addChild(itemCmpEQR)
+		itemCmpNER = FupElemItem("[<>R]  REAL not equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_NE_R(-1, -1)))
+		itemCmpR.addChild(itemCmpNER)
+		itemCmpGTR = FupElemItem("[>R]  REAL greater than", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_GT_R(-1, -1)))
+		itemCmpR.addChild(itemCmpGTR)
+		itemCmpLTR = FupElemItem("[<R]  REAL less than", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_LT_R(-1, -1)))
+		itemCmpR.addChild(itemCmpLTR)
+		itemCmpGER = FupElemItem("[>=R]  REAL greater or equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_GE_R(-1, -1)))
+		itemCmpR.addChild(itemCmpGER)
+		itemCmpLER = FupElemItem("[<=R]  REAL less or equal", "new", elemMimeType,
+					 self.elemToXml(FupElem_CMP_LE_R(-1, -1)))
+		itemCmpR.addChild(itemCmpLER)
+
+		itemArith = FupElemItemClass("Arithmetic", "stdlib")
+		itemArith.addChild(itemArithI)
+		itemArith.addChild(itemArithD)
+		itemArith.addChild(itemArithR)
+		itemCmp = FupElemItemClass("Compare", "stdlib")
+		itemCmp.addChild(itemCmpI)
+		itemCmp.addChild(itemCmpD)
+		itemCmp.addChild(itemCmpR)
+
 		self.addTopLevelItem(itemBool)
 		itemBool.setExpanded(True)
 		self.addTopLevelItem(itemMove)
-		itemMove.setExpanded(True)
-		self.addTopLevelItem(itemArithI)
-		self.addTopLevelItem(itemArithR)
+		self.addTopLevelItem(itemArith)
+		itemArith.setExpanded(True)
+		self.addTopLevelItem(itemCmp)
+		itemCmp.setExpanded(True)
 
 		self.itemDoubleClicked.connect(self.handleItemDoubleClick)
 
