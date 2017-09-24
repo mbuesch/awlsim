@@ -29,6 +29,8 @@ from awlsim.core.instructions.all_insns import * #+cimport
 
 from awlsim.fupcompiler.base import *
 
+import re
+
 
 class FupCompiler_ConnFactory(XmlFactory):
 	def parser_open(self, tag=None):
@@ -167,13 +169,19 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			return self.elem.compiler
 		return None
 
-	def hasText(self, text):
-		"""Returns True, if the connection text matches.
-		This does a case insensitive compare.
+	def hasText(self, text, caseSensitive=False):
+		"""Returns True, if the connection text is equal.
 		'text' is either a single string or a list of strings.
+		This does a case insensitive compare if caseSensitive=False.
 		"""
-		return any(strEqual(self.text, t, caseSensitive=False)
+		return any(strEqual(self.text, t, caseSensitive=caseSensitive)
 			   for t in toList(text))
+
+	def textMatch(self, regexString, regexFlags=(re.IGNORECASE | re.DOTALL)):
+		"""Match the connection text to a regular expression.
+		Returns the match object, or None if there was no match.
+		"""
+		return re.match(regexString, self.text, regexFlags)
 
 	@property
 	def isOptional(self):
