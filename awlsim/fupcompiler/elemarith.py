@@ -32,8 +32,6 @@ from awlsim.core.operatortypes import * #+cimport
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
-import re
-
 
 class FupCompiler_ElemArith(FupCompiler_Elem):
 	"""FUP compiler - Arithmetic operation.
@@ -146,14 +144,14 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		"""Get all INx connections.
 		"""
 		for conn in FupCompiler_Conn.sorted(self.inConnections):
-			if re.match(r"IN\d+", conn.text, re.IGNORECASE):
+			if conn.textMatch(r"IN\d+"):
 				yield conn
 
 	def __allConnsOUT(self):
 		"""Get all OUTx connections.
 		"""
 		for conn in FupCompiler_Conn.sorted(self.outConnections):
-			if re.match(r"OUT\d+", conn.text, re.IGNORECASE):
+			if conn.textMatch(r"OUT\d+"):
 				yield conn
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
@@ -182,8 +180,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 			if self.needCompile:
 				insns.extend(self.compile())
 			insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
-		elif re.match(r"OUT\d+", conn.text, re.IGNORECASE) or\
-		     conn.hasText("REM"):
+		elif conn.textMatch(r"(REM)|(OUT\d+)"):
 			self._compileConn_checkTarget(conn, desiredTarget, inverted,
 						      targetExpectVKE=False,
 						      allowInversion=False)

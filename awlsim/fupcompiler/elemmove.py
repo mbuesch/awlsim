@@ -32,8 +32,6 @@ from awlsim.core.operatortypes import * #+cimport
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
-import re
-
 
 class FupCompiler_ElemMove(FupCompiler_Elem):
 	"""FUP compiler - Move box.
@@ -96,7 +94,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 										  toLoad=True,
 										  inverted=inverted)
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
-		elif re.match(r"OUT\d+", conn.text, re.IGNORECASE):
+		elif conn.textMatch(r"OUT\d+"):
 			self._compileConn_checkTarget(conn, desiredTarget, inverted,
 						      targetExpectVKE=False,
 						      allowInversion=False)
@@ -178,7 +176,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 		# Assign the outputs.
 		storeToTempConns = set()
 		for conn in FupCompiler_Conn.sorted(self.outConnections):
-			if not re.match(r"OUT\d+", conn.text, re.IGNORECASE):
+			if not conn.textMatch(r"OUT\d+"):
 				continue
 			for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
 				if otherElem.isType(self.TYPE_OPERAND,
