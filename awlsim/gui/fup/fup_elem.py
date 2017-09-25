@@ -274,7 +274,7 @@ class FupElem(FupBaseClass):
 	def addConn(self, conn):
 		"""Add a connection to the end of the connection list.
 		"""
-		self.insertConn(None, conn)
+		return self.insertConn(None, conn)
 
 	def removeConn(self, conn):
 		"""Remove a connection from the connection list.
