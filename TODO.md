@@ -12,8 +12,7 @@ core
 * Improve performance (cython)
 * Blocks that are no longer linked to (created by) sources should be removed.
 * Single download of symtab causes a redefinition error.
-* Add feature: FBD (FUP) decompiler
-* Add feature: LAD (KOP) (de-)compiler
+* Add feature: LAD (KOP) compiler
 
 AWL / STL optimizer
 -------------------
@@ -46,5 +45,4 @@ FBD/FUP compiler and GUI
 * Add feature: Add option to disable elements
 * Add element: Timers
 * Add element: Counters
-* Add element: Compare
 * Add element: CALL
