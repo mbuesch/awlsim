@@ -875,13 +875,24 @@ class EditDialog(QDialog):
 
 	def __init__(self, parent=None,
 		     readOnly=False,
-		     withHeader=True, withCpuStats=True):
+		     withHeader=True, withCpuStats=True,
+		     okButton=False, cancelButton=False):
 		QDialog.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
 		self.edit = EditWidget(self, readOnly=readOnly,
 				       withHeader=withHeader,
 				       withCpuStats=withCpuStats)
-		self.layout().addWidget(self.edit, 0, 0)
+		self.layout().addWidget(self.edit, 0, 0, 1, 2)
+
+		if okButton:
+			self.__okButton = QPushButton("&Ok", self)
+			self.layout().addWidget(self.__okButton, 1, 0)
+			self.__okButton.released.connect(self.accept)
+
+		if cancelButton:
+			self.__cancelButton = QPushButton("&Cancel", self)
+			self.layout().addWidget(self.__cancelButton, 1, 1)
+			self.__cancelButton.released.connect(self.reject)
 
 		self.resize(1000, 550)
