@@ -393,7 +393,7 @@ class FupElem(FupBaseClass):
 		cellHeight = grid.cellPixHeight
 		xpad, ypad = self._xpadding, self._ypadding
 		elemHeight = cellHeight * self.height
-		elemWidth = cellWidth
+		elemWidth = cellWidth * self.width
 		tlX, tlY = xpad, ypad			# top left corner
 		trX, trY = elemWidth - xpad, ypad	# top right corner
 		blX, blY = xpad, elemHeight - ypad	# bottom left corner
