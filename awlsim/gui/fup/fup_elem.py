@@ -43,6 +43,7 @@ class FupElem_factory(XmlFactory):
 			from awlsim.gui.fup.fup_elemarith import FupElem_ARITH
 			from awlsim.gui.fup.fup_elemcmp import FupElem_CMP
 			from awlsim.gui.fup.fup_elemcomment import FupElem_COMMENT
+			from awlsim.gui.fup.fup_elemawl import FupElem_AWL
 
 			elemType = tag.getAttr("type")
 			type2class = {
@@ -52,6 +53,7 @@ class FupElem_factory(XmlFactory):
 				"arithmetic"	: FupElem_ARITH,
 				"compare"	: FupElem_CMP,
 				"comment"	: FupElem_COMMENT,
+				"awl"		: FupElem_AWL,
 			}
 			elemClass = None
 			with contextlib.suppress(KeyError):

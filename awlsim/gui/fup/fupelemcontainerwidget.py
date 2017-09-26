@@ -30,6 +30,7 @@ from awlsim.gui.fup.fup_elemmove import *
 from awlsim.gui.fup.fup_elemarith import *
 from awlsim.gui.fup.fup_elemcmp import *
 from awlsim.gui.fup.fup_elemcomment import *
+from awlsim.gui.fup.fup_elemawl import *
 
 
 class FupElemItemClass(QTreeWidgetItem):
@@ -63,7 +64,6 @@ class FupElemContainerWidget(QTreeWidget):
 
 		itemComment = FupElemItem("[...]  Comment", "new", elemMimeType,
 					  self.elemToXml(FupElem_COMMENT(-1, -1)))
-		self.addTopLevelItem(itemComment)
 
 		itemBool = FupElemItemClass("Boolean", "stdlib")
 		itemBoolU = FupElemItem("[&]  and", "new", elemMimeType,
@@ -210,6 +210,9 @@ class FupElemContainerWidget(QTreeWidget):
 					 self.elemToXml(FupElem_CMP_LE_R(-1, -1)))
 		itemCmpR.addChild(itemCmpLER)
 
+		itemAWL = FupElemItem("[AWL]  Inline AWL code", "new", elemMimeType,
+				      self.elemToXml(FupElem_AWL(-1, -1)))
+
 		itemArith = FupElemItemClass("Arithmetic", "stdlib")
 		itemArith.addChild(itemArithI)
 		itemArith.addChild(itemArithD)
@@ -219,6 +222,7 @@ class FupElemContainerWidget(QTreeWidget):
 		itemCmp.addChild(itemCmpD)
 		itemCmp.addChild(itemCmpR)
 
+		self.addTopLevelItem(itemComment)
 		self.addTopLevelItem(itemBool)
 		itemBool.setExpanded(True)
 		self.addTopLevelItem(itemMove)
@@ -226,6 +230,7 @@ class FupElemContainerWidget(QTreeWidget):
 		itemArith.setExpanded(True)
 		self.addTopLevelItem(itemCmp)
 		itemCmp.setExpanded(True)
+		self.addTopLevelItem(itemAWL)
 
 		self.itemDoubleClicked.connect(self.handleItemDoubleClick)
 
