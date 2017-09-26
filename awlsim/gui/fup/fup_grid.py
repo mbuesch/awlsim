@@ -277,24 +277,26 @@ class FupGrid(object):
 			return self.__drawWidget.cellPixHeight
 		return 0
 
-	def __haveCollision(self, x, y, height, excludeElems=set()):
+	def __haveCollision(self, x, y, height, width, excludeElems=set()):
 		if x < 0 or x >= self.width or\
 		   y < 0 or y >= self.height:
 			# Position is not on grid.
 			return True
-		for yy in range(y, y + height):
-			elem = self.getElemAt(x, yy)
-			if elem in excludeElems:
-				continue # Element is ignored.
-			if elem:
-				return True # Collision with other element.
+		for xx in range(x, x + width):
+			for yy in range(y, y + height):
+				elem = self.getElemAt(xx, yy)
+				if elem in excludeElems:
+					continue # Element is ignored.
+				if elem:
+					return True # Collision with other element.
 		return False
 
 	def canPlaceElem(self, elem):
 		"""Check it we could place the element,
 		but do not actually insert it into the grid.
 		"""
-		return not self.__haveCollision(elem.x, elem.y, elem.height)
+		return not self.__haveCollision(elem.x, elem.y,
+						elem.height, elem.width)
 
 	def placeElem(self, elem):
 		"""Insert an element into the grid.
@@ -337,7 +339,8 @@ class FupGrid(object):
 		# Check collision
 		excludeElems = excludeCheckElems.copy()
 		excludeElems.add(elem) # Can't collide with ourselves.
-		if self.__haveCollision(toX, toY, elem.height,
+		if self.__haveCollision(toX, toY,
+					elem.height, elem.width,
 					excludeElems=excludeElems):
 			return False # Collision. Cannot move.
 		# Move the element.
