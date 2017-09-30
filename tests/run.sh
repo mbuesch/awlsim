@@ -282,7 +282,7 @@ run_awl_test()
 	shift; shift
 
 	setup_test_environment "$interpreter" "$awl"
-	local interpreter="$RET"
+	local actual_interpreter="$RET"
 
 	local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
 
@@ -302,7 +302,7 @@ run_awl_test()
 		local max_runtime="$(get_conf "$awl" max_runtime -1)"
 
 		command time -o "$test_time_file" -f '%E' --quiet \
-		"$interpreter" "$rootdir/awlsim-test" \
+		"$actual_interpreter" "$rootdir/awlsim-test" \
 			--loglevel $loglevel \
 			--extended-insns \
 			--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
@@ -319,6 +319,7 @@ run_awl_test()
 	done
 	if [ $ok -eq 0 ]; then
 		test_failed "\nTest '$(basename "$awl")'   FAILED" \
+			"\nInterpreter        = $interpreter" \
 			"\nActual exit code   = $exit_code" \
 			"\nExpected exit code = $expected_exit_code"
 	fi
