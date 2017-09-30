@@ -284,51 +284,60 @@ run_awl_test()
 	setup_test_environment "$interpreter" "$awl"
 	local actual_interpreter="$RET"
 
-	local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
+	# By default run once with all optimizers enabled.
+	local optimizer_runs="$(get_conf "$awl" optimizer_runs all)"
 
-	local tries="$(get_conf "$awl" tries 1)"
-	[ $tries -lt 1 ] && local tries=1
+	for optimizers in $optimizer_runs; do
+		local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
 
-	local ok=0
-	local exit_code=-1
-	local expected_exit_code=-2
-	while [ $tries -gt 0 -a $ok -eq 0 ]; do
-		local ok=1
-		local tries="$(expr "$tries" - 1)"
-		local loglevel="$(get_conf "$awl" loglevel 2)"
-		local expected_exit_code="$(get_conf "$awl" exit_code 0)"
-		[ $expected_exit_code -eq 0 ] || local loglevel=0
-		local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
-		local max_runtime="$(get_conf "$awl" max_runtime -1)"
+		local tries="$(get_conf "$awl" tries 1)"
+		[ $tries -lt 1 ] && local tries=1
 
-		command time -o "$test_time_file" -f '%E' --quiet \
-		"$actual_interpreter" "$rootdir/awlsim-test" \
-			--loglevel $loglevel \
-			--extended-insns \
-			--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
-			--cycle-limit "$cycle_limit" \
-			--max-runtime "$max_runtime" \
-			"$@" \
-			"$awl"
-		local exit_code=$?
-		[ $exit_code -eq $expected_exit_code ] || {
-			local ok=0
-			[ $tries -gt 0 ] &&\
-				echo "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
-		}
+		local ok=0
+		local exit_code=-1
+		local expected_exit_code=-2
+		while [ $tries -gt 0 -a $ok -eq 0 ]; do
+			local ok=1
+			local tries="$(expr "$tries" - 1)"
+			local loglevel="$(get_conf "$awl" loglevel 2)"
+			local expected_exit_code="$(get_conf "$awl" exit_code 0)"
+			[ $expected_exit_code -eq 0 ] || local loglevel=0
+			local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
+			local max_runtime="$(get_conf "$awl" max_runtime -1)"
+
+			command time -o "$test_time_file" -f '%E' --quiet \
+			"$actual_interpreter" "$rootdir/awlsim-test" \
+				--loglevel $loglevel \
+				--extended-insns \
+				--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
+				--cycle-limit "$cycle_limit" \
+				--max-runtime "$max_runtime" \
+				--optimizers "$optimizers" \
+				"$@" \
+				"$awl"
+			local exit_code=$?
+			[ $exit_code -eq $expected_exit_code ] || {
+				local ok=0
+				[ $tries -gt 0 ] &&\
+					echo "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
+			}
+		done
+		if [ $ok -eq 0 ]; then
+			test_failed "\nTest '$(basename "$awl")'   FAILED" \
+				"\nInterpreter        = $interpreter" \
+				"\nOptimizers         = $optimizers" \
+				"\nActual exit code   = $exit_code" \
+				"\nExpected exit code = $expected_exit_code"
+		fi
+		if is_parallel_run; then
+			[ $ok -ne 0 ] && echo "[$(basename "$awl"): O=$optimizers t=$(cat "$test_time_file") -> OK]  "
+		else
+			[ $ok -ne 0 ] && echo -n "[O=$optimizers t=$(cat "$test_time_file") -> OK]  "
+		fi
+		rm "$test_time_file"
 	done
-	if [ $ok -eq 0 ]; then
-		test_failed "\nTest '$(basename "$awl")'   FAILED" \
-			"\nInterpreter        = $interpreter" \
-			"\nActual exit code   = $exit_code" \
-			"\nExpected exit code = $expected_exit_code"
-	fi
-	if is_parallel_run; then
-		[ $ok -ne 0 ] && echo "[$(basename "$awl"): OK $(cat "$test_time_file")]"
-	else
-		[ $ok -ne 0 ] && echo "[OK: $(cat "$test_time_file")]"
-	fi
-	rm "$test_time_file"
+	is_parallel_run || echo
+
 	cleanup_test_environment
 }
 
