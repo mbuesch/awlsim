@@ -320,7 +320,7 @@ class AwlOperator(object): #+cdef
 			if self.width == 1:
 				return "TRUE" if (self.immediate & 1) else "FALSE"
 			elif self.width == 8:
-				return str(byteToSignedPyInt(self.immediate))
+				return str(self.immediate)
 			elif self.width == 16:
 				return str(wordToSignedPyInt(self.immediate))
 			elif self.width == 32:
