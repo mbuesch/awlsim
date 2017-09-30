@@ -139,8 +139,11 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				insns.extend(otherElem.compileToVKE(insnClass=insnClass,
 								    inverted=conn.inverted))
 			else:
+				insnBranchClass = self.compiler.branchInsnClass[insnClass]
+				insns.append(self.newInsn(insnBranchClass))
 				insns.extend(otherConn.compileConn(targetInsnClass=insnClass,
 								   inverted=conn.inverted))
+				insns.append(self.newInsn(AwlInsn_BEND))
 		outConn = self.__getOutConn()
 		if outConn.inverted:
 			insns.append(self.newInsn(AwlInsn_NOT))
