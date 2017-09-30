@@ -61,6 +61,11 @@ def usage():
 	print(" -t|--obtemp 1/0       Enable/disable writing of OB-temp variables (Default: off)")
 	print(" -T|--clock-mem ADDR   Force clock memory address (Default: off)")
 	print(" -m|--mnemonics auto   Force mnemonics type: en, de, auto")
+	print(" -O|--optimizers OPT   Sets the optimization mode.")
+	print("                       OPT may be one of or a comma separated combination of:")
+	print("                         all:     Enable all optimizers (default)")
+	print("                         off:     Disable all optimizers")
+	print("                         fup-all: Enable all FUP optimizers")
 	print(" -L|--loglevel LVL     Set the log level:")
 	print("                       0: Log nothing")
 	print("                       1: Log errors")
@@ -217,9 +222,14 @@ def run(inputFile):
 			mnemonics = opt_mnemonics
 
 		# Parse FUP sources
+		fupOptimize = False
+		if "all" in opt_optimizers or "fup-all" in opt_optimizers:
+			fupOptimize = True
 		for fupSrc in project.getFupSources():
 			generatedAwlSrcs.append(FupCompiler().compile(
-				fupSource=fupSrc, mnemonics=mnemonics))
+				fupSource=fupSrc,
+				mnemonics=mnemonics,
+				optimize=fupOptimize))
 
 		# Parse KOP sources
 		for kopSrc in project.getKopSources():
@@ -379,6 +389,7 @@ def runWithServerBackend(inputFile):
 		conf = client.getCpuConf()
 		assignCpuConf(conf, project.getCpuConf())
 		client.setCpuConf(conf)
+		#TODO configure optimizers
 
 		# Fire up the core
 		writeStdout("Initializing CPU...\n")
@@ -436,6 +447,7 @@ def main():
 	global opt_obtemp
 	global opt_clockMem
 	global opt_mnemonics
+	global opt_optimizers
 	global opt_hwmods
 	global opt_hwinfos
 	global opt_loglevel
@@ -453,6 +465,7 @@ def main():
 	opt_obtemp = False
 	opt_clockMem = None
 	opt_mnemonics = None
+	opt_optimizers = set(("all",))
 	opt_hwmods = []
 	opt_hwinfos = []
 	opt_loglevel = Logging.LOG_INFO
@@ -463,10 +476,10 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hY:M:24qDSxt:T:m:H:I:P:L:cC:bi:",
+			"hY:M:24qDSxt:T:m:O:H:I:P:L:cC:bi:",
 			[ "help", "cycle-limit=", "max-runtime=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "speed-stats", "extended-insns",
-			  "obtemp=", "clock-mem=", "mnemonics=",
+			  "obtemp=", "clock-mem=", "mnemonics=", "optimizers=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "loglevel=",
 			  "connect", "connect-to=", "spawn-backend", "interpreter=",
@@ -511,10 +524,26 @@ def main():
 					raise ValueError
 			except ValueError:
 				printError("-T|--clock-mem: Invalid byte address")
+				sys.exit(1)
 		if o in ("-m", "--mnemonics"):
 			opt_mnemonics = v.lower()
 			if opt_mnemonics not in ("en", "de", "auto"):
 				printError("-m|--mnemonics: Invalid mnemonics type")
+				sys.exit(1)
+		if o in ("-O", "--optimizers"):
+			try:
+				modes = v.split(",")
+				for mode in modes:
+					mode = mode.lower()
+					if mode == "off":
+						opt_optimizers.clear()
+					elif mode in ("all", "fup-all"):
+						opt_optimizers.add(mode)
+					else:
+						printError("-O|--optimizers: Unknown optimizer: %s" % mode)
+						sys.exit(1)
+			except (ValueError, IndexError) as e:
+				printError("-O|--optimizers: Invalid optimization mode")
 				sys.exit(1)
 		if o in ("-H", "--hardware"):
 			try:
