@@ -50,6 +50,7 @@ from awlsim.core.instructions.insn_gt_r import * #@nocy
 from awlsim.core.instructions.insn_incar1 import * #@nocy
 from awlsim.core.instructions.insn_incar2 import * #@nocy
 from awlsim.core.instructions.insn_inc import * #@nocy
+from awlsim.core.instructions.insn_inline_awl import * #@nocy
 from awlsim.core.instructions.insn_invd import * #@nocy
 from awlsim.core.instructions.insn_invi import * #@nocy
 from awlsim.core.instructions.insn_itb import * #@nocy

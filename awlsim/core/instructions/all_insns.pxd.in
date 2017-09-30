@@ -47,6 +47,7 @@ from awlsim.core.instructions.insn_gt_r cimport *
 from awlsim.core.instructions.insn_incar1 cimport *
 from awlsim.core.instructions.insn_incar2 cimport *
 from awlsim.core.instructions.insn_inc cimport *
+from awlsim.core.instructions.insn_inline_awl cimport *
 from awlsim.core.instructions.insn_invd cimport *
 from awlsim.core.instructions.insn_invi cimport *
 from awlsim.core.instructions.insn_itb cimport *

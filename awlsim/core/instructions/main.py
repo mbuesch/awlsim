@@ -205,6 +205,7 @@ class AwlInsn(object): #+cdef
 	TYPE_STWRST		= AwlInsnTypes.TYPE_STWRST
 	TYPE_FEATURE		= AwlInsnTypes.TYPE_FEATURE
 	TYPE_GENERIC_CALL	= AwlInsnTypes.TYPE_GENERIC_CALL
+	TYPE_INLINE_AWL		= AwlInsnTypes.TYPE_INLINE_AWL
 
 	english2german = AwlInsnTypes.english2german
 	german2english = AwlInsnTypes.german2english

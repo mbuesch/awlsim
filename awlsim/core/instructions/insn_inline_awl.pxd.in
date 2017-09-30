@@ -1,0 +1,4 @@
+from awlsim.core.instructions.main cimport *
+
+cdef class AwlInsn_INLINE_AWL(AwlInsn):
+	cdef public object awlCodeStr

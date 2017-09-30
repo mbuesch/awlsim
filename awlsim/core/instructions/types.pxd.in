@@ -166,6 +166,7 @@ cdef class __AwlInsnTypesClass(object):
 	cdef public uint32_t TYPE_STWRST
 	cdef public uint32_t TYPE_FEATURE
 	cdef public uint32_t TYPE_GENERIC_CALL
+	cdef public uint32_t TYPE_INLINE_AWL
 
 	cdef public dict name2type_german
 	cdef public dict name2type_english

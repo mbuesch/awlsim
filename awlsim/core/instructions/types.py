@@ -203,6 +203,7 @@ class __AwlInsnTypesClass(object): #+cdef
 		self.TYPE_FEATURE	= EnumGen.item 	# __FEATURE
 		# Special instructions for internal usage
 		self.TYPE_GENERIC_CALL	= EnumGen.item	# No mnemonic
+		self.TYPE_INLINE_AWL	= EnumGen.item	# No mnemonic
 		EnumGen.end
 
 		self.name2type_german = {
@@ -372,7 +373,9 @@ class __AwlInsnTypesClass(object): #+cdef
 			"__SLEEP"		: self.TYPE_SLEEP,
 			"__STWRST"		: self.TYPE_STWRST,
 			"__FEATURE"		: self.TYPE_FEATURE,
+
 			"__GENERIC_CALL__"	: self.TYPE_GENERIC_CALL,
+			"__INLINE_AWL__"	: self.TYPE_INLINE_AWL,
 		}
 		self.type2name_german = pivotDict(self.name2type_german)
 
