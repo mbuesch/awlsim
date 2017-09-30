@@ -107,6 +107,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	TYPE_ARITH		= EnumGen.item
 	TYPE_CMP		= EnumGen.item
 	TYPE_COMMENT		= EnumGen.item
+	TYPE_AWL		= EnumGen.item
 	EnumGen.end
 
 	str2type = {
@@ -116,7 +117,10 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"arithmetic"	: TYPE_ARITH,
 		"compare"	: TYPE_CMP,
 		"comment"	: TYPE_COMMENT,
+		"awl"		: TYPE_AWL,
 	}
+
+	DUMP_SHOW_CONTENT = True
 
 	@classmethod
 	def sorted(cls, elems):
@@ -141,6 +145,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		from awlsim.fupcompiler.elemarith import FupCompiler_ElemArith
 		from awlsim.fupcompiler.elemcmp import FupCompiler_ElemCmp
 		from awlsim.fupcompiler.elemcomment import FupCompiler_ElemComment
+		from awlsim.fupcompiler.elemawl import FupCompiler_ElemAWL
 		try:
 			elemType = cls.str2type[elemType]
 			type2class = {
@@ -150,6 +155,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				cls.TYPE_ARITH		: FupCompiler_ElemArith,
 				cls.TYPE_CMP		: FupCompiler_ElemCmp,
 				cls.TYPE_COMMENT	: FupCompiler_ElemComment,
+				cls.TYPE_AWL		: FupCompiler_ElemAWL,
 			}
 			elemClass = None
 			with contextlib.suppress(KeyError):
@@ -407,6 +413,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn(self, insnClass, ops)
 
+	def newInsn_INLINEAWL(self, awlCodeStr):
+		"""Wrapper: Call the compiler method to create a INLINE-AWL pseudo instruction.
+		"""
+		return self.grid.compiler.newInsn_INLINEAWL(self, awlCodeStr)
+
 	def newInsn_JMP(self, insnClass, labelStr):
 		"""Wrapper: Call the compiler method to create a jump instruction.
 		"""
@@ -452,8 +463,9 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				self.y + 1))
 		if self.virtual:
 			values.append("VIRTUAL")
-		if self.content.strip():
-			values.append("'%s'" % self.content)
+		if self.DUMP_SHOW_CONTENT and self.content.strip():
+			content = self.content.strip().replace('\n', ' ').replace('\r', '')
+			values.append("'%s'" % content)
 		values.extend(extra)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
 

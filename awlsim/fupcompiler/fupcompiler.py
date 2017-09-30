@@ -174,6 +174,12 @@ class FupCompiler(object):
 			insn.commentStr = str(parentFupElem)
 		return insn
 
+	def newInsn_INLINEAWL(self, parentFupElem, awlCodeStr):
+		insn = AwlInsn_INLINE_AWL(cpu=None, awlCodeStr=awlCodeStr)
+		if parentFupElem:
+			insn.commentStr = str(parentFupElem)
+		return insn
+
 	def newInsn_JMP(self, parentFupElem, insnClass, labelStr):
 		"""Create a new jump instruction instance.
 		parentFupElem: The FUP element that creates this insn.
