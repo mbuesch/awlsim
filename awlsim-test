@@ -228,6 +228,7 @@ def run(inputFile):
 		for fupSrc in project.getFupSources():
 			generatedAwlSrcs.append(FupCompiler().compile(
 				fupSource=fupSrc,
+				symTabSources=project.getSymTabSources(),
 				mnemonics=mnemonics,
 				optimize=fupOptimize))
 

@@ -135,10 +135,10 @@ class ProjectWidget(QTabWidget):
 
 		self.__suppressValidation = False
 
-		self.fupTabs = FupTabWidget(self)
+		self.fupTabs = FupTabWidget(self, projectWidget=self)
 		self.kopTabs = None #TODO
-		self.awlTabs = AwlSourceTabWidget(self)
-		self.symTabs = SymSourceTabWidget(self)
+		self.awlTabs = AwlSourceTabWidget(self, projectWidget=self)
+		self.symTabs = SymSourceTabWidget(self, projectWidget=self)
 		self.libTable = LibTableView(None, self)
 
 		i = 0

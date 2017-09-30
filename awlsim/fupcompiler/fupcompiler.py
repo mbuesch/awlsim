@@ -132,6 +132,7 @@ class FupCompiler(object):
 
 	def reset(self):
 		self.mnemonics = None
+		self.symTab = SymbolTable()
 		self.opTrans = None
 		self.decl = None	# FupCompiler_BlockDecl
 		self.interf = None	# FupCompiler_Interf
@@ -269,10 +270,14 @@ class FupCompiler(object):
 			# Get the type of a classic symbolic operator
 			# and return its bit width.
 			fieldName = str(oper.offset.identChain)
-			pass#TODO
-			raise FupCompilerError("The symbolic operator \"%s\" is "
-				"not supported, yet." % (
-				fieldName))
+			symbol = self.symTab.findByName(fieldName)
+			if not symbol:
+				raise FupCompilerError("The symbolic operator "
+					"\"%s\" not found in symbol tables." % (
+					fieldName))
+			dataType = symbol.getType()
+			if dataType:
+				return dataType.width
 		return 0
 
 	def __parse(self):
@@ -339,12 +344,22 @@ class FupCompiler(object):
 
 		return insns
 
-	def __trycompile(self, fupSource, mnemonics, optimize):
+	def __trycompile(self, fupSource, symTabSources, mnemonics, optimize):
 		self.reset()
+
 		self.fupSource = fupSource
 		self.mnemonics = mnemonics
+
 		self.optimizer = AwlOptimizer() if optimize else None
 		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
+
+		self.symTab.clear()
+		for symTabSrc in symTabSources:
+			tab = SymTabParser.parseSource(symTabSrc,
+						       autodetectFormat=True,
+						       mnemonics=mnemonics)
+			self.symTab.merge(tab, overrideExisting=True)
+
 		self.awlSource = AwlSource(name=fupSource.name,
 					   filepath=fupSource.filepath)
 		if self.__parse():
@@ -356,20 +371,27 @@ class FupCompiler(object):
 			self.awlSource.sourceBytes = self.__genAwlCode(insns)
 		return self.getAwlSource()
 
-	def compile(self, fupSource, mnemonics, optimize=True):
+	def compile(self, fupSource, symTabSources, mnemonics, optimize=True):
 		"""Compile a FupSource.
 		mnemonics is either MNEMONICS_EN, MNEMONICS_DE or MNEMONICS_AUTO.
 		Returns an AwlSource.
 		"""
 		if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
 			try:
-				return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_EN,
+				return self.__trycompile(fupSource,
+							 symTabSources,
+							 S7CPUConfig.MNEMONICS_EN,
 							 optimize=optimize)
 			except AwlSimError as e:
 				pass
-			return self.__trycompile(fupSource, S7CPUConfig.MNEMONICS_DE,
+			return self.__trycompile(fupSource,
+						 symTabSources,
+						 S7CPUConfig.MNEMONICS_DE,
 						 optimize=optimize)
-		return self.__trycompile(fupSource, mnemonics, optimize=optimize)
+		return self.__trycompile(fupSource,
+					 symTabSources,
+					 mnemonics,
+					 optimize=optimize)
 
 	def generateCallTemplate(self):
 		"""Generate template AWL code for a CALL operation

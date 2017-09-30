@@ -125,9 +125,10 @@ class SourceTabWidget(QTabWidget):
 	validateDocument = Signal(SourceCodeEdit)
 
 
-	def __init__(self, itemName, parent=None):
+	def __init__(self, itemName, parent, projectWidget):
 		QTabWidget.__init__(self, parent)
 		self.itemName = itemName
+		self.projectWidget = projectWidget
 
 		self.guiSettings = GuiSettings()
 
@@ -263,8 +264,8 @@ class AwlSourceTabWidget(SourceTabWidget):
 	#         Parameters are: source, visibleFromLine, visibleToLine
 	visibleLinesChanged = Signal(object, int, int)
 
-	def __init__(self, parent=None):
-		SourceTabWidget.__init__(self, "source", parent)
+	def __init__(self, parent, projectWidget):
+		SourceTabWidget.__init__(self, "source", parent, projectWidget)
 
 		self.reset()
 
@@ -534,8 +535,8 @@ class AwlSourceTabWidget(SourceTabWidget):
 class SymSourceTabWidget(SourceTabWidget):
 	"Symbol table source tab-widget"	
 
-	def __init__(self, parent=None):
-		SourceTabWidget.__init__(self, "symbol table", parent)
+	def __init__(self, parent, projectWidget):
+		SourceTabWidget.__init__(self, "symbol table", parent, projectWidget)
 
 		self.reset()
 
@@ -658,8 +659,8 @@ class SymSourceTabWidget(SourceTabWidget):
 class FupTabWidget(SourceTabWidget):
 	"FUP/FBD tab widget"
 
-	def __init__(self, parent=None):
-		SourceTabWidget.__init__(self, "FUP/FBD diagram", parent)
+	def __init__(self, parent, projectWidget):
+		SourceTabWidget.__init__(self, "FUP/FBD diagram", parent, projectWidget)
 
 		self.reset()
 
@@ -687,7 +688,7 @@ class FupTabWidget(SourceTabWidget):
 		self.setCurrentIndex(0)
 
 	def addDiagram(self):
-		fupWidget = FupWidget(self)
+		fupWidget = FupWidget(self, projectWidget=self.projectWidget)
 		fupWidget.diagramChanged.connect(self.sourceChanged)
 		self.removeDummyWidgets()
 		index = self.addTab(fupWidget, fupWidget.getSource().name)

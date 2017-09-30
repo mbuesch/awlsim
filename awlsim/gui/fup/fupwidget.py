@@ -166,10 +166,11 @@ class FupWidget(QWidget):
 
 	diagramChanged = Signal()
 
-	def __init__(self, parent=None):
+	def __init__(self, parent, projectWidget):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
+		self.projectWidget = projectWidget
 		self.__source = FupSource(name = "Diagram 1")
 		self.__needSourceUpdate = True
 
@@ -231,8 +232,10 @@ class FupWidget(QWidget):
 	def __compileAndShow(self, mnemonics, showCall, optimize=False):
 		fupSource = self.getSource()
 		try:
+			symTabSources = self.projectWidget.getSymTabSources()
 			compiler = FupCompiler()
 			blockAwlSource = compiler.compile(fupSource=fupSource,
+							  symTabSources=symTabSources,
 							  mnemonics=mnemonics,
 							  optimize=optimize)
 			if showCall:
