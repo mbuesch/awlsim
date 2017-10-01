@@ -571,9 +571,15 @@ do_tests()
 	cleanup_test_environment
 
 	if [ $opt_quick -eq 0 ]; then
-		local all_interp="python2 python3 pypy pypy3 jython cython2 cython3"
+		local all_interp="python2 python3 pypy pypy3 cython2 cython3"
+		if [ $opt_extended -ne 0 ]; then
+			local all_interp="$all_interp jython"
+		fi
 	else
 		local all_interp="python2 python3"
+		if [ $opt_extended -ne 0 ]; then
+			die "The options --quick and --extended are mutually exclusive."
+		fi
 	fi
 
 	find_executable nosetests
@@ -685,7 +691,11 @@ do_tests()
 		echo " (with interpreter '$opt_interpreter')"
 	else
 		if [ $opt_quick -eq 0 ]; then
-			echo " (full run)"
+			if [ $opt_extended -eq 0 ]; then
+				echo " (full run)"
+			else
+				echo " (extended run)"
+			fi
 		else
 			echo " (quick run)"
 		fi
@@ -705,6 +715,7 @@ show_help()
 	echo "                               0 means number-of-CPUs"
 	echo "                               Default: 1"
 	echo " -q|--quick                    Only run python2 and python3 tests"
+	echo " -x|--extended                 Run tests on additional interpreters"
 }
 
 trap cleanup_and_exit INT TERM
@@ -719,6 +730,7 @@ echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 opt_interpreter=
 opt_softfail=0
 opt_quick=0
+opt_extended=0
 opt_renice=
 opt_jobs=1
 
@@ -753,6 +765,9 @@ while [ $# -ge 1 ]; do
 		;;
 	-q|--quick)
 		opt_quick=1
+		;;
+	-x|--extended)
+		opt_extended=1
 		;;
 	-n|--renice)
 		shift
