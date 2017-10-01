@@ -979,6 +979,9 @@ usage()
 	echo
 	echo " --skip-debootstrap1|-1  Skip debootstrap first stage."
 	echo " --skip-debootstrap2|-2  Skip debootstrap second stage."
+	echo
+	echo " --quick|-q              Quick build. This is a shortcut for:"
+	echo "                         --no-cython --no-zimg"
 }
 
 # canonicalize basedir
@@ -997,8 +1000,6 @@ trap term_signal TERM INT
 
 if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	# First stage
-
-	trap cleanup EXIT
 
 	export _NPROCESSORS_ONLN="$(getconf _NPROCESSORS_ONLN)"
 	[ -n "$_NPROCESSORS_ONLN" ] || die "Failed to get # of online CPUs"
@@ -1076,6 +1077,10 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 		--no-img|-I)
 			opt_img=0
 			;;
+		--quick|-q)
+			opt_cython=0
+			opt_zimg=0
+			;;
 		*)
 			opt_target_dir="$*"
 			break
@@ -1087,6 +1092,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 		die "No TARGET_DIR"
 	[ -d "$opt_target_dir" -o ! -e "$opt_target_dir" ] ||\
 		die "$opt_target_dir is not a directory"
+
+	trap cleanup EXIT
 
 	# Run first stage.
 	pilc_bootstrap_first_stage
