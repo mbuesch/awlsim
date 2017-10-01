@@ -29,6 +29,7 @@ from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.statusword import * #+cimport
+from awlsim.core.timers import * #+cimport
 from awlsim.core.util import *
 
 
