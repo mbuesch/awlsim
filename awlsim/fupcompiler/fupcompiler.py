@@ -30,6 +30,7 @@ from awlsim.core.cpu import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.statusword import * #+cimport
+from awlsim.core.symbolparser import *
 
 from awlsim.core.instructions.all_insns import * #+cimport
 
