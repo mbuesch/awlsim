@@ -982,7 +982,7 @@ usage()
 	echo "                         raspi  -> raspberrypi-bootloader package (default)"
 	echo "                         pilc   -> PiLC kernel"
 	echo
-	echo " --qemu-bin|-q PATH      Select qemu-user-static binary."
+	echo " --qemu-bin|-Q PATH      Select qemu-user-static binary."
 	echo "                         Default: $default_qemu"
 	echo
 	echo " --img-suffix|-s SUFFIX  Image file suffix."
@@ -1083,7 +1083,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			[ "$opt_kernel" = "raspi" -o \
 			  "$opt_kernel" = "pilc" ] || die "Invalid kernel"
 			;;
-		--qemu-bin|-q)
+		--qemu-bin|-Q)
 			shift
 			opt_qemu="$1"
 			[ -x "$opt_qemu" ] || die "No valid qemu binary given"
