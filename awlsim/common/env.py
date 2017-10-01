@@ -26,7 +26,6 @@ from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
 import os
-import multiprocessing
 
 
 __all__ = [
@@ -92,7 +91,11 @@ class AwlSimEnv(object):
 			for cpuIndex in affinityStr.split(","):
 				cpuIndex = int(cpuIndex)
 				if cpuIndex < 0:
-					cpuIndex = multiprocessing.cpu_count() + cpuIndex
+					try:
+						import multiprocessing
+						cpuIndex = multiprocessing.cpu_count() + cpuIndex
+					except ImportError as e:
+						pass
 				if cpuIndex < 0:
 					cpuIndex = 0
 				affinity.append(cpuIndex)
