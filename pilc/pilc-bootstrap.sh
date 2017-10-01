@@ -91,6 +91,20 @@ cleanup()
 	done
 }
 
+write_image()
+{
+	local image="$1"
+	local dev="$2"
+
+	info "Writing $image to $dev ..."
+
+	[ -b "$dev" ] || die "$dev is not a block device"
+	mount | grep -q "$dev" && die "$dev is mounted. Refusing to write to it!"
+
+	dd if="$image" of="$dev" bs=32M status=progress ||\
+		die "Failed to write image."
+}
+
 boot_config_file()
 {
 	cat <<EOF
@@ -859,9 +873,7 @@ EOF
 	fi
 
 	# Prepare image paths.
-	local target_dir="$(readlink -m "${opt_target_dir}")"
-	[ -n "$target_dir" ] || die "Failed to resolve target dir."
-	local imgfile="${target_dir}${opt_imgsuffix}.img"
+	local imgfile="${opt_target_dir}${opt_imgsuffix}.img"
 	local imgfile_zip="${imgfile}.7z"
 	local bootimgfile="${imgfile}.boot"
 	mp_bootimgfile="${bootimgfile}.mp"
@@ -881,7 +893,7 @@ EOF
 		mount -o loop "$bootimgfile" "$mp_bootimgfile" ||\
 			die "Failed to mount boot partition."
 		rsync -aHAX --inplace \
-			"$target_dir/boot/" "$mp_bootimgfile/" ||\
+			"$opt_target_dir/boot/" "$mp_bootimgfile/" ||\
 			die "Failed to copy boot files."
 		umount "$mp_bootimgfile" ||\
 			die "Failed to umount boot partition."
@@ -902,7 +914,7 @@ EOF
 			--exclude='dev/shm/*' \
 			--exclude='tmp/*' \
 			--exclude="$(basename "$opt_qemu")" \
-			"$target_dir/" "$mp_rootimgfile/" ||\
+			"$opt_target_dir/" "$mp_rootimgfile/" ||\
 			die "Failed to copy root files."
 		umount "$mp_rootimgfile" ||\
 			die "Failed to umount root partition."
@@ -939,6 +951,11 @@ EOF
 			info "Compressing image..."
 			7z -mx=9 a "$imgfile_zip" "$imgfile" ||\
 				die "Failed to compress partition image."
+		fi
+
+		# Write the image to the SD card.
+		if [ -n "$opt_writedev" ]; then
+			write_image "$imgfile" "$opt_writedev"
 		fi
 	fi
 }
@@ -977,6 +994,12 @@ usage()
 	echo " --no-zimg|-Z            Do not create a 7zipped image."
 	echo "                         Default: Create 7zipped image."
 	echo
+	echo " --write|-w DEV          Write image to an SD card after bootstrap."
+	echo "                         DEV must be the /dev/mmcblkX path to the card."
+	echo
+	echo " --write-only|-W DEV     Write an existing image to an SD card"
+	echo "                         without bootstrap and image generation."
+	echo
 	echo " --skip-debootstrap1|-1  Skip debootstrap first stage."
 	echo " --skip-debootstrap2|-2  Skip debootstrap second stage."
 	echo
@@ -1012,6 +1035,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_imgsuffix="-$(date '+%Y%m%d')"
 	default_img=1
 	default_zimg=1
+	default_writedev=
+	default_writeonly=0
 
 	opt_target_dir=
 	opt_branch="$default_branch"
@@ -1025,6 +1050,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_imgsuffix="$default_imgsuffix"
 	opt_img="$default_img"
 	opt_zimg="$default_zimg"
+	opt_writedev="$default_writedev"
+	opt_writeonly="$default_writeonly"
 
 	while [ $# -ge 1 ]; do
 		case "$1" in
@@ -1081,6 +1108,16 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			opt_cython=0
 			opt_zimg=0
 			;;
+		--write|-w|--write-only|-W)
+			if [ "$1" = "--write" -o "$1" = "-w" ]; then
+				opt_writeonly=0
+			else
+				opt_writeonly=1
+			fi
+			shift
+			opt_writedev="$1"
+			[ -b "$opt_writedev" ] || die "Invalid SD card block device"
+			;;
 		*)
 			opt_target_dir="$*"
 			break
@@ -1090,10 +1127,18 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	done
 	[ -n "$opt_target_dir" ] ||\
 		die "No TARGET_DIR"
+	opt_target_dir="$(readlink -m "${opt_target_dir}")"
+	[ -n "$opt_target_dir" ] || die "Failed to resolve target dir."
 	[ -d "$opt_target_dir" -o ! -e "$opt_target_dir" ] ||\
 		die "$opt_target_dir is not a directory"
 
 	trap cleanup EXIT
+
+	if [ -n "$opt_writedev" -a $opt_writeonly -ne 0 ]; then
+		# Just write the image to the SD card, then exit.
+		write_image "${opt_target_dir}${opt_imgsuffix}.img" "$opt_writedev"
+		exit 0
+	fi
 
 	# Run first stage.
 	pilc_bootstrap_first_stage
@@ -1112,6 +1157,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_imgsuffix
 	export opt_zimg
 	export opt_img
+	export opt_writedev
+	export opt_writeonly
 	export __PILC_BOOTSTRAP_SECOND_STAGE__=1
 	chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
 		die "Chroot failed."
