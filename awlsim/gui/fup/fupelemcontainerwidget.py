@@ -28,6 +28,7 @@ from awlsim.gui.util import *
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
 from awlsim.gui.fup.fup_elemarith import *
+from awlsim.gui.fup.fup_elemshift import *
 from awlsim.gui.fup.fup_elemcmp import *
 from awlsim.gui.fup.fup_elemcomment import *
 from awlsim.gui.fup.fup_elemawl import *
@@ -62,9 +63,11 @@ class FupElemContainerWidget(QTreeWidget):
 
 		elemMimeType = "application/x-awlsim-fup-elem"
 
+		# Comment element
 		itemComment = FupElemItem("[...]  Comment", "new", elemMimeType,
 					  self.elemToXml(FupElem_COMMENT(-1, -1)))
 
+		# Boolean elements
 		itemBool = FupElemItemClass("Boolean", "stdlib")
 		itemBoolU = FupElemItem("[&]  and", "new", elemMimeType,
 					self.elemToXml(FupElem_AND(-1, -1)))
@@ -94,6 +97,7 @@ class FupElemContainerWidget(QTreeWidget):
 					self.elemToXml(FupElem_FN(-1, -1)))
 		itemBool.addChild(itemBoolFN)
 
+		# Move elements
 		itemMove = FupElemItemClass("Move", "stdlib")
 		itemMoveL = FupElemItem("[L]  load", "new", elemMimeType,
 					self.elemToXml(FupElem_LOAD(-1, -1)))
@@ -105,6 +109,7 @@ class FupElemContainerWidget(QTreeWidget):
 					   self.elemToXml(FupElem_MOVE(-1, -1)))
 		itemMove.addChild(itemMoveMove)
 
+		# INT arithmetic elements
 		itemArithI = FupElemItemClass("INT", "stdlib")
 		itemArithADDI = FupElemItem("[+I]  INT addition", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_ADD_I(-1, -1)))
@@ -119,6 +124,7 @@ class FupElemContainerWidget(QTreeWidget):
 					    self.elemToXml(FupElem_ARITH_DIV_I(-1, -1)))
 		itemArithI.addChild(itemArithDIVI)
 
+		# DINT arithmetic elements
 		itemArithD = FupElemItemClass("DINT", "stdlib")
 		itemArithADDD = FupElemItem("[+D]  DINT addition", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_ADD_D(-1, -1)))
@@ -136,6 +142,7 @@ class FupElemContainerWidget(QTreeWidget):
 					   self.elemToXml(FupElem_ARITH_MOD_D(-1, -1)))
 		itemArithD.addChild(itemArithMODD)
 
+		# REAL arithmetic elements
 		itemArithR = FupElemItemClass("REAL", "stdlib")
 		itemArithADDR = FupElemItem("[+R]  REAL addition", "new", elemMimeType,
 					    self.elemToXml(FupElem_ARITH_ADD_R(-1, -1)))
@@ -150,6 +157,37 @@ class FupElemContainerWidget(QTreeWidget):
 					    self.elemToXml(FupElem_ARITH_DIV_R(-1, -1)))
 		itemArithR.addChild(itemArithDIVR)
 
+		# Shift WORD elements
+		itemShiftW = FupElemItemClass("WORD / INT", "stdlib")
+		itemShiftSSI = FupElemItem("[SSI >>]  Signed INT right shift", "new", elemMimeType,
+					   self.elemToXml(FupElem_SSI(-1, -1)))
+		itemShiftW.addChild(itemShiftSSI)
+		itemShiftSRW = FupElemItem("[SRW >>]  WORD right shift", "new", elemMimeType,
+					   self.elemToXml(FupElem_SRW(-1, -1)))
+		itemShiftW.addChild(itemShiftSRW)
+		itemShiftSLW = FupElemItem("[SLW <<]  WORD left shift", "new", elemMimeType,
+					   self.elemToXml(FupElem_SLW(-1, -1)))
+		itemShiftW.addChild(itemShiftSLW)
+
+		# Shift DWORD elements
+		itemShiftD = FupElemItemClass("DWORD / DINT", "stdlib")
+		itemShiftSSD = FupElemItem("[SSD >>]  Signed DINT right shift", "new", elemMimeType,
+					   self.elemToXml(FupElem_SSD(-1, -1)))
+		itemShiftD.addChild(itemShiftSSD)
+		itemShiftSRD = FupElemItem("[SRD >>]  DWORD right shift", "new", elemMimeType,
+					   self.elemToXml(FupElem_SRD(-1, -1)))
+		itemShiftD.addChild(itemShiftSRD)
+		itemShiftSLD = FupElemItem("[SLD <<]  DWORD left shift", "new", elemMimeType,
+					   self.elemToXml(FupElem_SLD(-1, -1)))
+		itemShiftD.addChild(itemShiftSLD)
+		itemShiftRLD = FupElemItem("[RLD <<]  DWORD rotate left", "new", elemMimeType,
+					   self.elemToXml(FupElem_RLD(-1, -1)))
+		itemShiftD.addChild(itemShiftRLD)
+		itemShiftRRD = FupElemItem("[RRD <<]  DWORD rotate right", "new", elemMimeType,
+					   self.elemToXml(FupElem_RRD(-1, -1)))
+		itemShiftD.addChild(itemShiftRRD)
+
+		# Compare INT elements
 		itemCmpI = FupElemItemClass("INT", "stdlib")
 		itemCmpEQI = FupElemItem("[==I]  INT equal", "new", elemMimeType,
 					 self.elemToXml(FupElem_CMP_EQ_I(-1, -1)))
@@ -170,6 +208,7 @@ class FupElemContainerWidget(QTreeWidget):
 					 self.elemToXml(FupElem_CMP_LE_I(-1, -1)))
 		itemCmpI.addChild(itemCmpLEI)
 
+		# Compare DINT elements
 		itemCmpD = FupElemItemClass("DINT", "stdlib")
 		itemCmpEQD = FupElemItem("[==D]  DINT equal", "new", elemMimeType,
 					 self.elemToXml(FupElem_CMP_EQ_D(-1, -1)))
@@ -190,6 +229,7 @@ class FupElemContainerWidget(QTreeWidget):
 					 self.elemToXml(FupElem_CMP_LE_D(-1, -1)))
 		itemCmpD.addChild(itemCmpLED)
 
+		# Compare REAL elements
 		itemCmpR = FupElemItemClass("REAL", "stdlib")
 		itemCmpEQR = FupElemItem("[==R]  REAL equal", "new", elemMimeType,
 					 self.elemToXml(FupElem_CMP_EQ_R(-1, -1)))
@@ -210,24 +250,32 @@ class FupElemContainerWidget(QTreeWidget):
 					 self.elemToXml(FupElem_CMP_LE_R(-1, -1)))
 		itemCmpR.addChild(itemCmpLER)
 
+		# Inline-AWL element
 		itemAWL = FupElemItem("[AWL]  Inline AWL code", "new", elemMimeType,
 				      self.elemToXml(FupElem_AWL(-1, -1)))
 
+		# Main groups
 		itemArith = FupElemItemClass("Arithmetic", "stdlib")
 		itemArith.addChild(itemArithI)
 		itemArith.addChild(itemArithD)
 		itemArith.addChild(itemArithR)
+		itemShift = FupElemItemClass("Shift", "stdlib")
+		itemShift.addChild(itemShiftW)
+		itemShift.addChild(itemShiftD)
 		itemCmp = FupElemItemClass("Compare", "stdlib")
 		itemCmp.addChild(itemCmpI)
 		itemCmp.addChild(itemCmpD)
 		itemCmp.addChild(itemCmpR)
 
+		# Top level tree items
 		self.addTopLevelItem(itemComment)
 		self.addTopLevelItem(itemBool)
 		itemBool.setExpanded(True)
 		self.addTopLevelItem(itemMove)
 		self.addTopLevelItem(itemArith)
 		itemArith.setExpanded(True)
+		self.addTopLevelItem(itemShift)
+		itemShift.setExpanded(True)
 		self.addTopLevelItem(itemCmp)
 		itemCmp.setExpanded(True)
 		self.addTopLevelItem(itemAWL)

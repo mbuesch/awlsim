@@ -105,6 +105,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	TYPE_OPERAND		= EnumGen.item
 	TYPE_MOVE		= EnumGen.item
 	TYPE_ARITH		= EnumGen.item
+	TYPE_SHIFT		= EnumGen.item
 	TYPE_CMP		= EnumGen.item
 	TYPE_COMMENT		= EnumGen.item
 	TYPE_AWL		= EnumGen.item
@@ -115,6 +116,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"operand"	: TYPE_OPERAND,
 		"move"		: TYPE_MOVE,
 		"arithmetic"	: TYPE_ARITH,
+		"shift"		: TYPE_SHIFT,
 		"compare"	: TYPE_CMP,
 		"comment"	: TYPE_COMMENT,
 		"awl"		: TYPE_AWL,
@@ -143,6 +145,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		from awlsim.fupcompiler.elemoper import FupCompiler_ElemOper
 		from awlsim.fupcompiler.elemmove import FupCompiler_ElemMove
 		from awlsim.fupcompiler.elemarith import FupCompiler_ElemArith
+		from awlsim.fupcompiler.elemshift import FupCompiler_ElemShift
 		from awlsim.fupcompiler.elemcmp import FupCompiler_ElemCmp
 		from awlsim.fupcompiler.elemcomment import FupCompiler_ElemComment
 		from awlsim.fupcompiler.elemawl import FupCompiler_ElemAWL
@@ -153,6 +156,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				cls.TYPE_OPERAND	: FupCompiler_ElemOper,
 				cls.TYPE_MOVE		: FupCompiler_ElemMove,
 				cls.TYPE_ARITH		: FupCompiler_ElemArith,
+				cls.TYPE_SHIFT		: FupCompiler_ElemShift,
 				cls.TYPE_CMP		: FupCompiler_ElemCmp,
 				cls.TYPE_COMMENT	: FupCompiler_ElemComment,
 				cls.TYPE_AWL		: FupCompiler_ElemAWL,
