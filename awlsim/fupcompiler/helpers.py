@@ -24,6 +24,11 @@ from awlsim.common.compat import *
 
 from awlsim.fupcompiler.elembool import *
 
+from awlsim.core.operators import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
+
+from awlsim.core.instructions.all_insns import * #+cimport
+
 
 __all__ = [
 	"FupCompiler_Helpers",
@@ -162,3 +167,43 @@ class FupCompiler_Helpers(object):
 						      virtual=True)
 			virtElemBool.addConn(virtElemIn)
 			origWireB.addConn(virtElemIn)
+
+	@staticmethod
+	def genSTWOutputOper(parentElem, conn, andWithBIE, operType, bitPos=0):
+		"""Generate instructions for a STW based element output.
+		STW operands are ==0, <>0, >0, <0, >=0, <=0, OV, OS, UO
+
+		conn: The output connection.
+		andWithBIE: If True, then the operation is ANDed to BIE.
+		            This is useful, if the EN state is in BIE.
+		operType: The STW operand type to generate.
+		bitPos: The STW bit position to generate.
+
+		Returns a list of instructions.
+		"""
+		if not conn or not conn.isConnected:
+			return []
+		insns = []
+
+		# Load the flag from STW.
+		offset = make_AwlOffset(0, bitPos)
+		oper = make_AwlOperator(operType, 1, offset, None)
+		insns.append(parentElem.newInsn(AwlInsn_U, ops=[oper]))
+		if andWithBIE:
+			# AND the EN input to the flag, so that the flag
+			# output is 0 in case EN is 0.
+			insns.append(parentElem.newInsn_LOAD_BIE(AwlInsn_U))
+
+		# Store the flag to the output.
+		storeToTempConns = set()
+		for otherElem in parentElem.sorted(conn.getConnectedElems(viaIn=True)):
+			if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+					    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
+				insns.extend(otherElem.emitStore_VKE())
+			else:
+				storeToTempConns.add(conn)
+		insns.extend(parentElem._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
+
+		return insns
+
+

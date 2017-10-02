@@ -212,37 +212,6 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 				connNameB="EN",
 				boolElemClass=FupCompiler_ElemBoolAnd)
 
-	def __compileFlagOut(self, connName, operType, bitPos):
-		"""Compile one flag output connection.
-		"""
-		conn = self.__getConnFlag(connName)
-		if not conn:
-			return []
-
-		insns = []
-		conn_EN, conn_ENO = self.__getConnsEN()
-
-		# Load the flag from STW.
-		offset = make_AwlOffset(0, bitPos)
-		oper = make_AwlOperator(operType, 1, offset, None)
-		insns.append(self.newInsn(AwlInsn_U, ops=[oper]))
-		if conn_EN.isConnected:
-			# AND the EN input to the flag, so that the flag
-			# output is 0 in case EN is 0.
-			insns.append(self.newInsn_LOAD_BIE(AwlInsn_U))
-
-		# Store the flag to the output.
-		storeToTempConns = set()
-		for otherElem in self.sorted(conn.getConnectedElems(viaIn=True)):
-			if otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
-					    FupCompiler_ElemOper.SUBTYPE_ASSIGN):
-				insns.extend(otherElem.emitStore_VKE())
-			else:
-				storeToTempConns.add(conn)
-		insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN, storeToTempConns))
-
-		return insns
-
 	def _doCompile(self):
 		insns = []
 
@@ -354,15 +323,39 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 
 		# Compile flags outputs.
 		if anyFlagConnected:
-			insns.extend(self.__compileFlagOut("OV", AwlOperatorTypes.MEM_STW,
-					S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE)))
-			insns.extend(self.__compileFlagOut("==0", AwlOperatorTypes.MEM_STW_Z, 0))
-			insns.extend(self.__compileFlagOut("<>0", AwlOperatorTypes.MEM_STW_NZ, 0))
-			insns.extend(self.__compileFlagOut(">0", AwlOperatorTypes.MEM_STW_POS, 0))
-			insns.extend(self.__compileFlagOut("<0", AwlOperatorTypes.MEM_STW_NEG, 0))
-			insns.extend(self.__compileFlagOut(">=0", AwlOperatorTypes.MEM_STW_POSZ, 0))
-			insns.extend(self.__compileFlagOut("<=0", AwlOperatorTypes.MEM_STW_NEGZ, 0))
-			insns.extend(self.__compileFlagOut("UO", AwlOperatorTypes.MEM_STW_UO, 0))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag("OV"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW,
+					bitPos=S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE)))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag("==0"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_Z))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag("<>0"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_NZ))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag(">0"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_POS))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag("<0"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_NEG))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag(">=0"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_POSZ))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag("<=0"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_NEGZ))
+			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
+					conn=self.__getConnFlag("UO"),
+					andWithBIE=conn_EN.isConnected,
+					operType=AwlOperatorTypes.MEM_STW_UO))
 
 		# Handle ENO output.
 		if conn_ENO.isConnected:
