@@ -575,12 +575,13 @@ class AwlSimServer(object): #+cdef
 
 		srcManager = SourceManager(awlSource)
 
-		needRebuild = False
-		if self.__state == self.STATE_RUN or\
-		   (self.__state == self.STATE_STOP and\
-		    not self.__needOB10x):
-			needRebuild = True
-		self.__sim.load(parser.getParseTree(), needRebuild, srcManager)
+		if awlSource.enabled:
+			needRebuild = False
+			if self.__state == self.STATE_RUN or\
+			   (self.__state == self.STATE_STOP and\
+			    not self.__needOB10x):
+				needRebuild = True
+			self.__sim.load(parser.getParseTree(), needRebuild, srcManager)
 
 		self.awlSourceContainer.addManager(srcManager)
 		self.__updateProjectFile()
@@ -588,27 +589,30 @@ class AwlSimServer(object): #+cdef
 	def loadFupSource(self, fupSource):
 		#TODO src manager
 		#TODO do not add to awlSourceContainer
-		compiler = FupCompiler()
-		#FIXME mnemonics auto detection might cause mismatching mnemonics w.r.t. the main blocks.
-		#TODO optimizer settings
-		symSrcs = self.symTabSourceContainer.getSources()
-		awlSource = compiler.compile(fupSource=fupSource,
-					     symTabSources=symSrcs,
-					     mnemonics=self.__getMnemonics())
-		self.loadAwlSource(awlSource)
+		if fupSource.enabled:
+			compiler = FupCompiler()
+			#FIXME mnemonics auto detection might cause mismatching mnemonics w.r.t. the main blocks.
+			#TODO optimizer settings
+			symSrcs = self.symTabSourceContainer.getSources()
+			awlSource = compiler.compile(fupSource=fupSource,
+						     symTabSources=symSrcs,
+						     mnemonics=self.__getMnemonics())
+			self.loadAwlSource(awlSource)
 
 	def loadKopSource(self, kopSource):
-		pass#TODO
+		if kopSource.enabled:
+			pass#TODO
 
 	def loadSymTabSource(self, symTabSource):
-		symbolTable = SymTabParser.parseSource(symTabSource,
-					autodetectFormat=True,
-					mnemonics=self.__getMnemonics())
-
 		srcManager = SourceManager(symTabSource)
 
-		self.setRunState(self.STATE_STOP)
-		self.__sim.loadSymbolTable(symbolTable)
+		if symTabSource.enabled:
+			symbolTable = SymTabParser.parseSource(symTabSource,
+						autodetectFormat=True,
+						mnemonics=self.__getMnemonics())
+
+			self.setRunState(self.STATE_STOP)
+			self.__sim.loadSymbolTable(symbolTable)
 
 		self.symTabSourceContainer.addManager(srcManager)
 		self.__updateProjectFile()

@@ -42,6 +42,8 @@ class SourceTabContextMenu(QMenu):
 	import_ = Signal()
 	# Signal: Export source
 	export = Signal()
+	# Signal: Enable/disable source
+	enableDisable = Signal()
 
 	def __init__(self, itemName, parent=None):
 		QMenu.__init__(self, parent)
@@ -56,8 +58,11 @@ class SourceTabContextMenu(QMenu):
 		self.addAction(getIcon("doc_export"), "&Export %s..." % itemName, self.__export)
 		self.__integrateAction = self.addAction("&Integrate %s into project..." % itemName,
 							self.__integrate)
+		self.addSeparator()
+		self.__enableAction = self.addAction("", self.__enableDisable)
 
 		self.showIntegrateButton(False)
+		self.showEnable(False)
 
 	def __add(self):
 		self.add.emit()
@@ -85,8 +90,17 @@ class SourceTabContextMenu(QMenu):
 		if res == QMessageBox.Yes:
 			self.integrate.emit()
 
+	def __enableDisable(self):
+		self.enableDisable.emit()
+
 	def showIntegrateButton(self, show=True):
 		self.__integrateAction.setVisible(show)
+
+	def showEnable(self, enable=False):
+		if enable:
+			self.__enableAction.setText("Enable %s" % self.itemName)
+		else:
+			self.__enableAction.setText("Disable %s" % self.itemName)
 
 class SourceTabCorner(QWidget):
 	def __init__(self, itemName, contextMenu, parent=None):
@@ -139,6 +153,7 @@ class SourceTabWidget(QTabWidget):
 		self.setCornerWidget(self.actionButton, Qt.TopRightCorner)
 
 		self.contextMenu.integrate.connect(self.integrateSource)
+		self.contextMenu.enableDisable.connect(self.__toggleSourceEnable)
 		self.currentChanged.connect(self.__currentChanged)
 		self.tabBar().tabMoved.connect(self.__tabMoved)
 
@@ -154,17 +169,24 @@ class SourceTabWidget(QTabWidget):
 	def updateActionMenu(self):
 		curWidget = self.currentWidget()
 		showIntegrate = False
+		showEnable = False
 		if curWidget:
 			source = curWidget.getSource()
 			if source:
 				showIntegrate = source.isFileBacked()
+				showEnable = not source.enabled
 		self.contextMenu.showIntegrateButton(showIntegrate)
+		self.contextMenu.showEnable(showEnable)
 
 	def updateTabTexts(self):
 		for i in range(self.count()):
+			text = ""
 			source = self.widget(i).getSource()
 			if source:
-				self.setTabText(i, source.name)
+				text = source.name
+				if not source.enabled:
+					text += " (DISABLED)"
+			self.setTabText(i, text)
 		self.sourceChanged.emit()
 
 	def allTabWidgets(self):
@@ -210,6 +232,15 @@ class SourceTabWidget(QTabWidget):
 			source = curWidget.getSource()
 			if source:
 				source.forceNonFileBacked(self.contextMenu.itemName)
+				self.updateActionMenu()
+				self.updateTabTexts()
+
+	def __toggleSourceEnable(self):
+		curWidget = self.currentWidget()
+		if curWidget:
+			source = curWidget.getSource()
+			if source:
+				source.enabled = not source.enabled
 				self.updateActionMenu()
 				self.updateTabTexts()
 
@@ -357,10 +388,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 			return
 		for awlSource in awlSources:
 			index, editWidget = self.addEditWidget()
-			self.setTabText(index, awlSource.name)
 			editWidget.setSource(awlSource)
 		self.updateActionMenu()
 		self.setCurrentIndex(0)
+		self.updateTabTexts()
 
 	def setSettings(self, guiSettings):
 		SourceTabWidget.setSettings(self, guiSettings)
@@ -560,10 +591,10 @@ class SymSourceTabWidget(SourceTabWidget):
 			return
 		for symTabSource in symTabSources:
 			index, symTabView = self.addSymTable()
-			self.setTabText(index, symTabSource.name)
 			symTabView.model().setSource(symTabSource)
 		self.updateActionMenu()
 		self.setCurrentIndex(0)
+		self.updateTabTexts()
 
 	def addSymTable(self):
 		symTabView = SymTabView(self)
@@ -682,10 +713,10 @@ class FupTabWidget(SourceTabWidget):
 			return
 		for fupSource in fupSources:
 			index, fupWidget = self.addDiagram()
-			self.setTabText(index, fupSource.name)
 			fupWidget.setSource(fupSource)
 		self.updateActionMenu()
 		self.setCurrentIndex(0)
+		self.updateTabTexts()
 
 	def addDiagram(self):
 		fupWidget = FupWidget(self, projectWidget=self.projectWidget)

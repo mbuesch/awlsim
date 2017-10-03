@@ -49,6 +49,7 @@ class SourceFactory(XmlFactory):
 			srcType = tag.getAttrInt("type")
 			name = tag.getAttr("name", source.SRCTYPE)
 			filename = tag.getAttr("file", "")
+			enabled = tag.getAttrBool("enabled", True)
 			if source.SRCTYPE_ID != srcType:
 				raise self.Error("SourceFactory: Got unexpected "
 					"source type %d instead of %d." % (
@@ -59,6 +60,7 @@ class SourceFactory(XmlFactory):
 			else:
 				source.filepath = ""
 			source.name = name
+			source.enabled = enabled
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
@@ -121,9 +123,10 @@ class SourceFactory(XmlFactory):
 			self.Tag(name="source",
 				 comment="\n%s source code" % source.SRCTYPE,
 				 attrs={
-					"type"	: str(int(source.SRCTYPE_ID)),
-					"file"	: str(filename),
-					"name"	: str(source.name),
+					"type"		: str(int(source.SRCTYPE_ID)),
+					"file"		: str(filename),
+					"name"		: str(source.name),
+					"enabled"	: "1" if source.enabled else "0",
 				 },
 				 data=data,
 				 tags=childTags,
@@ -141,8 +144,13 @@ class GenericSource(object):
 
 	factory		= SourceFactory
 
-	def __init__(self, name="", filepath="", sourceBytes=b""):
+	def __init__(self,
+		     name="",
+		     enabled=True,
+		     filepath="",
+		     sourceBytes=b""):
 		self.name = name
+		self.enabled = enabled
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
 		self.__identHash = None
@@ -154,6 +162,15 @@ class GenericSource(object):
 	@name.setter
 	def name(self, newName):
 		self.__name = newName
+		self.__identHash = None
+
+	@property
+	def enabled(self):
+		return self.__enabled
+
+	@enabled.setter
+	def enabled(self, enabled):
+		self.__enabled = bool(enabled)
 		self.__identHash = None
 
 	@property
@@ -218,6 +235,8 @@ class GenericSource(object):
 					self.ENCODING, "strict"))
 			if self.name is not None:
 				h.update(self.name.encode(self.ENCODING, "ignore"))
+			if not self.enabled:
+				h.update(b'disabled')
 			if self.filepath is not None:
 				h.update(self.filepath.encode(self.ENCODING, "ignore"))
 			h.update(self.sourceBytes)
@@ -234,7 +253,10 @@ class GenericSource(object):
 		return bytesToHexStr(self.identHash)
 
 	def dup(self):
-		raise NotImplementedError
+		return self.__class__(name=self.name,
+				      enabled=self.enabled,
+				      filepath=self.filepath,
+				      sourceBytes=self.sourceBytes[:])
 
 	def isFileBacked(self):
 		return bool(self.filepath)
@@ -273,7 +295,9 @@ class GenericSource(object):
 
 	@classmethod
 	def fromFile(cls, name, filepath, compatReEncode=False):
-		source = cls(name, filepath, b"")
+		source = cls(name=name,
+			     filepath=filepath,
+			     sourceBytes=b"")
 		source.readFromFile(filepath, compatReEncode)
 		return source
 
@@ -285,7 +309,9 @@ class GenericSource(object):
 			raise AwlSimError("Project: %s source '%s' "
 				"has invalid base64 encoding." %\
 				(cls.SRCTYPE, name))
-		return cls(name, None, data)
+		return cls(name=name,
+			   filepath=None,
+			   sourceBytes=data)
 
 	def __eq__(self, other):
 		return self.identHash == other.identHash
@@ -294,8 +320,12 @@ class GenericSource(object):
 		return not self.__eq__(other)
 
 	def __repr__(self):
-		return "%s%s %s %s" % ("" if self.isFileBacked() else "project ",
-				    self.SRCTYPE, self.name, self.identHashStr)
+		return "%s%s %s%s %s" % (
+			self.SRCTYPE,
+			"" if self.isFileBacked() else " project",
+			self.name,
+			"" if self.enabled else " (DISABLED)",
+			self.identHashStr)
 
 class AwlSource(GenericSource):
 	SRCTYPE		= "AWL/STL"
@@ -304,20 +334,12 @@ class AwlSource(GenericSource):
 	COMPAT_ENCODING	= "latin_1"
 	STRIP_DATA	= False
 
-	def dup(self):
-		return AwlSource(self.name, self.filepath,
-				 self.sourceBytes[:])
-
 class FupSource(GenericSource):
 	SRCTYPE		= "FUP/FBD"
 	SRCTYPE_ID	= 1 # .awlpro file format ID
 	ENCODING	= XmlFactory.XML_ENCODING
 	COMPAT_ENCODING	= ENCODING
 	STRIP_DATA	= True
-
-	def dup(self):
-		return FupSource(self.name, self.filepath,
-				 self.sourceBytes[:])
 
 class KopSource(GenericSource):
 	SRCTYPE		= "KOP/LAD"
@@ -326,20 +348,12 @@ class KopSource(GenericSource):
 	COMPAT_ENCODING	= ENCODING
 	STRIP_DATA	= True
 
-	def dup(self):
-		return KopSource(self.name, self.filepath,
-				 self.sourceBytes[:])
-
 class SymTabSource(GenericSource):
 	SRCTYPE		= "symbol table"
 	SRCTYPE_ID	= 3 # .awlpro file format ID
 	ENCODING	= XmlFactory.XML_ENCODING
 	COMPAT_ENCODING	= "latin_1"
 	STRIP_DATA	= False
-
-	def dup(self):
-		return SymTabSource(self.name, self.filepath,
-				    self.sourceBytes[:])
 
 class SourceManager(ObjRefManager):
 	"""Manages one source."""

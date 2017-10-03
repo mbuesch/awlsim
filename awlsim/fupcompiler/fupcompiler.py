@@ -362,6 +362,7 @@ class FupCompiler(object):
 			self.symTab.merge(tab, overrideExisting=True)
 
 		self.awlSource = AwlSource(name=fupSource.name,
+					   enabled=fupSource.enabled,
 					   filepath=fupSource.filepath)
 		if self.__parse():
 			self.__compileBlockDecl()

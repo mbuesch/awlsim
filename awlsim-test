@@ -226,6 +226,8 @@ def run(inputFile):
 		if "all" in opt_optimizers or "fup-all" in opt_optimizers:
 			fupOptimize = True
 		for fupSrc in project.getFupSources():
+			if not fupSrc.enabled:
+				continue
 			generatedAwlSrcs.append(FupCompiler().compile(
 				fupSource=fupSrc,
 				symTabSources=project.getSymTabSources(),
@@ -234,12 +236,16 @@ def run(inputFile):
 
 		# Parse KOP sources
 		for kopSrc in project.getKopSources():
+			if not kopSrc.enabled:
+				continue
 			pass#TODO
 
 		# Parse AWL sources
 		parseTrees = []
 		for awlSrc in itertools.chain(project.getAwlSources(),
 					      generatedAwlSrcs):
+			if not awlSrc.enabled:
+				continue
 			p = AwlParser()
 			p.parseSource(awlSrc)
 			parseTrees.append(p.getParseTree())
@@ -247,6 +253,8 @@ def run(inputFile):
 		# Parse symbol tables
 		symTables = []
 		for symTabSrc in project.getSymTabSources():
+			if not symTabSrc.enabled:
+				continue
 			tab = SymTabParser.parseSource(symTabSrc,
 						       autodetectFormat = True,
 						       mnemonics = mnemonics)

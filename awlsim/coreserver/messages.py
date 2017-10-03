@@ -85,7 +85,7 @@ class AwlSimMessage(object):
 	#	Payload (optional)
 	hdrStruct = struct.Struct(str(">HHHHI"))
 
-	HDR_MAGIC		= 0x5717
+	HDR_MAGIC		= 0x5718
 	HDR_LENGTH		= hdrStruct.size
 
 	# Message IDs:
@@ -347,6 +347,18 @@ class _AwlSimMessage_GET_source(AwlSimMessage):
 class _AwlSimMessage_source(AwlSimMessage):
 	sourceClass = None
 
+	# Payload struct:
+	#	flags (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	sourceName (string)
+	#	sourceFilePath (string)
+	#	sourceBytes (bytes)
+	plStruct = struct.Struct(str(">IIII"))
+
+	FLAG_ENABLED	= 1 << 0
+
 	def __init__(self, source):
 		if not source:
 			source = self.sourceClass()
@@ -354,7 +366,11 @@ class _AwlSimMessage_source(AwlSimMessage):
 
 	def toBytes(self):
 		try:
-			pl = self.packString(self.source.name) +\
+			flags = 0
+			if self.source.enabled:
+				flags |= self.FLAG_ENABLED
+			pl = self.plStruct.pack(flags, 0, 0, 0) +\
+				self.packString(self.source.name) +\
 				self.packString(self.source.filepath) +\
 				self.packBytes(self.source.sourceBytes)
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
@@ -364,15 +380,21 @@ class _AwlSimMessage_source(AwlSimMessage):
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			count = 0
-			name, cnt = cls.unpackString(payload, count)
-			count += cnt
-			filepath, cnt = cls.unpackString(payload, count)
-			count += cnt
-			sourceBytes, cnt = cls.unpackBytes(payload, count)
+			offset = 0
+			flags, unused0, unused1, unused2 =\
+				cls.plStruct.unpack_from(payload, offset)
+			offset += cls.plStruct.size
+			name, cnt = cls.unpackString(payload, offset)
+			offset += cnt
+			filepath, cnt = cls.unpackString(payload, offset)
+			offset += cnt
+			sourceBytes, cnt = cls.unpackBytes(payload, offset)
 		except (ValueError, struct.error) as e:
 			raise TransferError("SOURCE: Data format error")
-		return cls(cls.sourceClass(name, filepath, sourceBytes))
+		return cls(cls.sourceClass(name=name,
+					   enabled=(flags & cls.FLAG_ENABLED),
+					   filepath=filepath,
+					   sourceBytes=sourceBytes))
 
 class AwlSimMessage_GET_SYMTABSRC(_AwlSimMessage_GET_source):
 	msgId = AwlSimMessage.MSG_ID_GET_SYMTABSRC
