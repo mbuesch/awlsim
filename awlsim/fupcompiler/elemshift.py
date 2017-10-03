@@ -233,7 +233,8 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
 
 		# Compile the actual operation.
-		for conn in self.__getConnsIN():
+		conn_IN, conn_N = self.__getConnsIN()
+		for conn in (conn_N, conn_IN):
 			otherConn = conn.getConnectedConn(getOutput=True)
 			otherElem = otherConn.elem
 

@@ -97,7 +97,7 @@ class FupElem_SHIFT(FupElem):
 
 	factory			= FupElem_SHIFT_factory
 
-	FIXED_INPUTS		= [ "EN", "IN", "N", ]
+	FIXED_INPUTS		= [ "EN", "N", "IN", ]
 	FIXED_OUTPUTS		= [ "ENO", ]
 	OPTIONAL_CONNS		= { "EN", "==0", "<>0", ">0", "<0",
 				    ">=0", "<=0", "OV", "ENO", }
