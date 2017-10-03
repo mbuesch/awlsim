@@ -359,7 +359,7 @@ class FupElem_BOOLEAN(FupElem):
 			menu.enableEdit(True)
 		menu.enableInvertConn(True)
 		menu.enableAddInput(self.FIXED_INPUTS is None)
-		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 2)
+		menu.enableRemoveConn(conn is not None and conn.IN and len(self.inputs) > 1)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)
 
 	# Overridden method. For documentation see base class.
