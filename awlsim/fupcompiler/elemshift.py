@@ -98,7 +98,7 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 		return conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
 				      ">0", "<0", ">=0", "<=0", })
 
-	def getConnType(self, conn):
+	def getConnType(self, conn, preferVKE=False):
 		if conn in self.connections:
 			if conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
 					  ">0", "<0", ">=0", "<=0", }):

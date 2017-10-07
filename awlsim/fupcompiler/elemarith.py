@@ -114,7 +114,7 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 		return conn.hasText({ "EN", "ENO", "OV", "REM", "==0", "<>0",
 				      ">0", "<0", ">=0", "<=0", "UO", })
 
-	def getConnType(self, conn):
+	def getConnType(self, conn, preferVKE=False):
 		if conn in self.connections:
 			if conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
 					  ">0", "<0", ">=0", "<=0", "UO", }):

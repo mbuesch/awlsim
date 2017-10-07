@@ -243,7 +243,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return False
 
-	def getConnType(self, conn):
+	def getConnType(self, conn, preferVKE=False):
 		"""Get the type of a connection.
 		The default implementation always returns VKE based type.
 		"""

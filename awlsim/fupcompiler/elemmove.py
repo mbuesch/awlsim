@@ -55,7 +55,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 	def connIsOptional(self, conn):
 		return conn.hasText({"EN", "ENO"})
 
-	def getConnType(self, conn):
+	def getConnType(self, conn, preferVKE=False):
 		if conn in self.connections:
 			if conn.hasText({"EN", "ENO"}):
 				return FupCompiler_Conn.TYPE_VKE

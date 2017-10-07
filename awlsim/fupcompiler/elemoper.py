@@ -134,7 +134,7 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		# Unknown width
 		return 0
 
-	def getConnType(self, conn):
+	def getConnType(self, conn, preferVKE=False):
 		if conn in self.connections or conn is None:
 			operWidth = self.operatorWidth
 			if operWidth == 1:
