@@ -136,6 +136,15 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 
 	def getConnType(self, conn, preferVKE=False):
 		if conn in self.connections or conn is None:
+			self._translateContent()
+			operType = self._operator.operType
+			if operType == AwlOperatorTypes.SYMBOLIC:
+				pass#TODO
+			if operType in {AwlOperatorTypes.MEM_T,
+					AwlOperatorTypes.MEM_Z}:
+				if preferVKE:
+					return FupCompiler_Conn.TYPE_VKE
+				return FupCompiler_Conn.TYPE_ACCU
 			operWidth = self.operatorWidth
 			if operWidth == 1:
 				return FupCompiler_Conn.TYPE_VKE
@@ -212,13 +221,18 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 		"""
 		try:
 			self.setInsnClass(insnClass, inverted)
-			insn = self.compile()
-			if self.getConnType(None) not in allowedConnTypes:
+
+			insns = self.compile()
+
+			preferVKE = FupCompiler_Conn.TYPE_VKE in allowedConnTypes
+			connType = self.getConnType(conn=None, preferVKE=preferVKE)
+			if connType not in allowedConnTypes:
 				raise FupOperError("The load operand '%s' type is not "
 					"allowed here." % (
 					str(self)),
 					self)
-			return insn
+
+			return insns
 		finally:
 			self.setInsnClass(None)
 
