@@ -421,28 +421,28 @@ class AwlSourceTabWidget(SourceTabWidget):
 	def deleteCurrent(self):
 		index = self.currentIndex()
 		if index >= 0 and self.count() > 1:
-			text = self.tabText(index)
+			editWidget = self.widget(index)
+			source = editWidget.getSource()
 			res = QMessageBox.question(self,
-				"Delete %s" % text,
-				"Delete source '%s'?" % text,
+				"Delete %s" % source.name,
+				"Delete source '%s'?" % source.name,
 				QMessageBox.Yes, QMessageBox.No)
 			if res == QMessageBox.Yes:
-				self.widget(index).shutdown()
+				editWidget.shutdown()
 				self.removeTab(index)
 				self.sourceChanged.emit()
 
 	def renameCurrent(self):
 		index = self.currentIndex()
 		if index >= 0:
-			text = self.tabText(index)
+			editWidget = self.widget(index)
+			source = editWidget.getSource()
 			newText, ok = QInputDialog.getText(self,
-					"Rename %s" % text,
+					"Rename %s" % source.name,
 					"New name for current source:",
 					QLineEdit.Normal,
-					text)
-			if ok and newText != text:
-				editWidget = self.widget(index)
-				source = editWidget.getSource()
+					source.name)
+			if ok and newText != source.name:
 				source.name = newText
 				self.updateTabTexts()
 
@@ -610,10 +610,11 @@ class SymSourceTabWidget(SourceTabWidget):
 	def deleteCurrent(self):
 		index = self.currentIndex()
 		if index >= 0 and self.count() > 1:
-			text = self.tabText(index)
+			symTabView = self.widget(index)
+			source = symTabView.getSource()
 			res = QMessageBox.question(self,
-				"Delete %s" % text,
-				"Delete symbol table '%s'?" % text,
+				"Delete %s" % source.name,
+				"Delete symbol table '%s'?" % source.name,
 				QMessageBox.Yes, QMessageBox.No)
 			if res == QMessageBox.Yes:
 				self.removeTab(index)
@@ -622,15 +623,14 @@ class SymSourceTabWidget(SourceTabWidget):
 	def renameCurrent(self):
 		index = self.currentIndex()
 		if index >= 0:
-			text = self.tabText(index)
+			symTabView = self.widget(index)
+			source = symTabView.getSource()
 			newText, ok = QInputDialog.getText(self,
-					"Rename %s" % text,
+					"Rename %s" % source.name,
 					"New name for current symbol table:",
 					QLineEdit.Normal,
-					text)
-			if ok and newText != text:
-				symTabView = self.widget(index)
-				source = symTabView.getSource()
+					source.name)
+			if ok and newText != source.name:
 				source.name = newText
 				self.updateTabTexts()
 
@@ -731,10 +731,11 @@ class FupTabWidget(SourceTabWidget):
 	def deleteCurrent(self):
 		index = self.currentIndex()
 		if index >= 0:
-			text = self.tabText(index)
+			fupWidget = self.widget(index)
+			source = fupWidget.getSource()
 			res = QMessageBox.question(self,
-				"Delete %s" % text,
-				"Delete FUP/FBD diagram '%s'?" % text,
+				"Delete %s" % source.name,
+				"Delete FUP/FBD diagram '%s'?" % source.name,
 				QMessageBox.Yes, QMessageBox.No)
 			if res == QMessageBox.Yes:
 				self.removeTab(index)
@@ -745,16 +746,15 @@ class FupTabWidget(SourceTabWidget):
 	def renameCurrent(self):
 		index = self.currentIndex()
 		if index >= 0:
-			text = self.tabText(index)
 			fupWidget = self.widget(index)
 			source = fupWidget.getSource()
 			if source:
 				newText, ok = QInputDialog.getText(self,
-						"Rename %s" % text,
+						"Rename %s" % source.name,
 						"New name for current FUP/FBD diagram:",
 						QLineEdit.Normal,
-						text)
-				if ok and newText != text:
+						source.name)
+				if ok and newText != source.name:
 					source.name = newText
 					self.updateTabTexts()
 
