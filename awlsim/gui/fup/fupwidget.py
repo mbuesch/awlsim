@@ -147,7 +147,7 @@ class FupEditWidget(QWidget):
 
 		self.menu = FupEditWidgetMenu(self)
 
-		self.menuButton = QPushButton("FUP/FBD", self)
+		self.menuButton = QPushButton("FUP/FBD compiler...", self)
 		self.menuButton.setMenu(self.menu)
 		self.__leftWidget.layout().addWidget(self.menuButton)
 
