@@ -99,13 +99,11 @@ class FupElem_SHIFT(FupElem):
 
 	FIXED_INPUTS		= [ "EN", "N", "IN", ]
 	FIXED_OUTPUTS		= [ "ENO", ]
-	OPTIONAL_CONNS		= { "EN", "==0", "<>0", ">0", "<0",
-				    ">=0", "<=0", "OV", "ENO", }
+	OPTIONAL_CONNS		= { "EN", "LOB", "ENO", }
 	BLANK_CONNS		= { "OUT", }
 
 	# Sequence of special connections.
-	__CONN_OUT_SEQUENCE	= ( "==0", "<>0", ">0", "<0",
-				    ">=0", "<=0", "OV", "ENO", )
+	__CONN_OUT_SEQUENCE	= ( "LOB", "ENO", )
 
 	def __init__(self, x, y, nrOutputs=1):
 		FupElem.__init__(self, x, y)
@@ -318,53 +316,17 @@ class FupElem_SHIFT(FupElem):
 			menu.enableDisconnWire(conn.isConnected)
 		if not conn or conn.OUT:
 			existing = set(c.text.upper() for c in self.outputs)
-			if "==0" not in existing:
-				menu.enableCustomAction(0, True, text="Add ==0 output")
-			if "<>0" not in existing:
-				menu.enableCustomAction(1, True, text="Add <>0 output")
-			if ">0" not in existing:
-				menu.enableCustomAction(2, True, text="Add >0 output")
-			if "<0" not in existing:
-				menu.enableCustomAction(3, True, text="Add <0 output")
-			if ">=0" not in existing:
-				menu.enableCustomAction(4, True, text="Add >=0 output")
-			if "<=0" not in existing:
-				menu.enableCustomAction(5, True, text="Add <=0 output")
-			if "OV" not in existing:
-				menu.enableCustomAction(6, True, text="Add OV output")
+			if "LOB" not in existing:
+				menu.enableCustomAction(0, True, text="Add LOB (Last shifted Out Bit) output")
 
 	def __addStateOutput(self, name):
 		return self.addConn(FupConnOut(text=name))
 
-	def __handleAddEQ0(self, index):
-		return self.__addStateOutput("==0")
-
-	def __handleAddNE0(self, index):
-		return self.__addStateOutput("<>0")
-
-	def __handleAddGT0(self, index):
-		return self.__addStateOutput(">0")
-
-	def __handleAddLT0(self, index):
-		return self.__addStateOutput("<0")
-
-	def __handleAddGE0(self, index):
-		return self.__addStateOutput(">=0")
-
-	def __handleAddLE0(self, index):
-		return self.__addStateOutput("<=0")
-
-	def __handleAddOV(self, index):
-		return self.__addStateOutput("OV")
+	def __handleAddLOB(self, index):
+		return self.__addStateOutput("LOB")
 
 	CUSTOM_ACTIONS = (
-		__handleAddEQ0,		# index 0
-		__handleAddNE0,		# index 1
-		__handleAddGT0,		# index 2
-		__handleAddLT0,		# index 3
-		__handleAddGE0,		# index 4
-		__handleAddLE0,		# index 5
-		__handleAddOV,		# index 6
+		__handleAddLOB,		# index 0
 	)
 
 class FupElem_SSI(FupElem_SHIFT):

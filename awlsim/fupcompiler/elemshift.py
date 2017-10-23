@@ -95,13 +95,11 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 					  **kwargs)
 
 	def connIsOptional(self, conn):
-		return conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
-				      ">0", "<0", ">=0", "<=0", })
+		return conn.hasText({ "EN", "ENO", "LOB", })
 
 	def getConnType(self, conn, preferVKE=False):
 		if conn in self.connections:
-			if conn.hasText({ "EN", "ENO", "OV", "==0", "<>0",
-					  ">0", "<0", ">=0", "<=0", }):
+			if conn.hasText({ "EN", "ENO", "LOB", }):
 				return FupCompiler_Conn.TYPE_VKE
 			return FupCompiler_Conn.TYPE_ACCU
 		return FupCompiler_Conn.TYPE_UNKNOWN
@@ -161,8 +159,7 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 					insns.append(self.newInsn(AwlInsn_NOT))
 			else:
 				insns.extend(conn.elem._loadFromTemp(awlInsnClass, conn))
-		elif conn.hasText({ "OV", "==0", "<>0", ">0",
-				    "<0", ">=0", "<=0", }):
+		elif conn.hasText("LOB"):
 			self._compileConn_checkTarget(conn, desiredTarget, inverted,
 						      targetExpectVKE=True,
 						      allowInversion=False)
@@ -267,8 +264,7 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 
 		# Check if any of the flags outputs is used.
 		anyFlagConnected = any(bool(self.__getConnFlag(name))
-				       for name in {"OV", "==0", "<>0", ">0",
-						    "<0", ">=0", "<=0", })
+				       for name in {"LOB", })
 
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
@@ -285,34 +281,9 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 		# Compile flags outputs.
 		if anyFlagConnected:
 			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag("OV"),
-					andWithBIE=conn_EN.isConnected,
-					operType=AwlOperatorTypes.MEM_STW,
-					bitPos=S7StatusWord.getBitnrByName("OV", S7CPUConfig.MNEMONICS_DE)))
-			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag("==0"),
-					andWithBIE=conn_EN.isConnected,
-					operType=AwlOperatorTypes.MEM_STW_Z))
-			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag("<>0"),
+					conn=self.__getConnFlag("LOB"),
 					andWithBIE=conn_EN.isConnected,
 					operType=AwlOperatorTypes.MEM_STW_NZ))
-			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag(">0"),
-					andWithBIE=conn_EN.isConnected,
-					operType=AwlOperatorTypes.MEM_STW_POS))
-			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag("<0"),
-					andWithBIE=conn_EN.isConnected,
-					operType=AwlOperatorTypes.MEM_STW_NEG))
-			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag(">=0"),
-					andWithBIE=conn_EN.isConnected,
-					operType=AwlOperatorTypes.MEM_STW_POSZ))
-			insns.extend(FupCompiler_Helpers.genSTWOutputOper(self,
-					conn=self.__getConnFlag("<=0"),
-					andWithBIE=conn_EN.isConnected,
-					operType=AwlOperatorTypes.MEM_STW_NEGZ))
 
 		# Handle ENO output.
 		if conn_ENO.isConnected:
