@@ -158,9 +158,11 @@ class SourceCodeEdit(QPlainTextEdit):
 				while self.__wheelSteps <= -1.0:
 					self.resizeFont.emit(True)
 					self.__wheelSteps += 1.0
+			ev.accept()
 			return
 		else:
 			self.__wheelSteps = 0.0
+			ev.ignore()
 
 		QPlainTextEdit.wheelEvent(self, ev)
 
