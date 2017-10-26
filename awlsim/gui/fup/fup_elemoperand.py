@@ -177,7 +177,7 @@ class FupElem_OPERAND(FupElem):
 				drawExpanded = selected or expanded
 			else:
 				drawExpanded = expanded
-			painter.setFont(getDefaultFixedFont(8))
+			painter.setFont(self.getFont(8))
 			painter.setPen(self._textPen)
 			if drawExpanded:
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop

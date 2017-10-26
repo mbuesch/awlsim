@@ -122,7 +122,7 @@ class FupElem_COMMENT(FupElem):
 		# Draw the text
 		text = self.contentText
 		if text:
-			painter.setFont(getDefaultFixedFont(8))
+			painter.setFont(self.getFont(8))
 			painter.setPen(self._textPen)
 			if expanded:
 				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop

@@ -134,6 +134,9 @@ class FupGrid(object):
 
 		self.collisionCacheClear()
 
+	def getFont(self, size=8, bold=False):
+		return self.__drawWidget.getFont(size=size, bold=bold)
+
 	def clear(self):
 		for wire in self.wires:
 			wire.disconnectAll()

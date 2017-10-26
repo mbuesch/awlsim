@@ -139,6 +139,13 @@ class FupContextMenu(QMenu):
 class FupDrawWidget(QWidget):
 	"""FUP/FBD draw widget."""
 
+	# Base pixel width/height of a grid cell.
+	GRID_PIX_BASE = (90, 20)
+
+	# Zoom factor limits
+	MIN_ZOOM = 1.0
+	MAX_ZOOM = 4.0
+
 	# Signal: Something in the FUP diagram changed
 	diagramChanged = Signal()
 
@@ -185,8 +192,8 @@ class FupDrawWidget(QWidget):
 		# The dragged connection.
 		self.__draggedConn = None
 
-		self.__cellWidth = 70		# Cell width, in pixels
-		self.__cellHeight = 20		# Cell height, in pixels
+		self.__zoom = 1.0
+		self.__wheelSteps = 0.0
 
 		self.__gridMinSize = (12, 18)	# Smallest possible grid size
 		self.__gridClearance = (3, 4)	# Left and bottom clearance
@@ -194,7 +201,8 @@ class FupDrawWidget(QWidget):
 		self.__grid = FupGrid(self, self.__gridMinSize[0],
 				      self.__gridMinSize[1])
 		self.__grid.resizeEvent = self.__handleGridResize
-		self.__handleGridResize(self.__grid.width, self.__grid.height)
+
+		self.__handleZoomChange()
 
 		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
 		self.setMouseTracking(True)
@@ -206,7 +214,43 @@ class FupDrawWidget(QWidget):
 		"""
 		return self.__interfWidget.interfDef
 
+	def getFont(self, size=8, bold=False):
+		"""Get a font.
+		"""
+		size = int(round(size * self.__zoom))
+		return getDefaultFixedFont(size, bold=bold)
+
+	@property
+	def zoom(self):
+		"""Get the current zoom level.
+		Returns a float between MIN_ZOOM and MAX_ZOOM.
+		1.0 corresponds to 100% zoom.
+		"""
+		return self.__zoom
+
+	@zoom.setter
+	def zoom(self, zoom):
+		self.__zoom = zoom
+		self.__handleZoomChange()
+
+	def __handleZoomChange(self):
+		"""Handle a change in zoom and trigger a redraw.
+		"""
+		self.__zoom = clamp(self.__zoom, self.MIN_ZOOM, self.MAX_ZOOM)
+
+		self.__cellWidth = int(round(max(self.GRID_PIX_BASE[0] * self.__zoom,
+						 self.GRID_PIX_BASE[0])))
+		self.__cellHeight = int(round(max(self.GRID_PIX_BASE[1] * self.__zoom,
+						  self.GRID_PIX_BASE[1])))
+
+		self.__handleGridResize(self.__grid.width, self.__grid.height)
+
+		self.repaint()
+		self.diagramChanged.emit()
+
 	def __handleGridResize(self, gridWidth, gridHeight):
+		"""Handle a change in grid size and resize the widget.
+		"""
 		self.resize(gridWidth * self.__cellWidth,
 			    gridHeight * self.__cellHeight)
 
@@ -357,7 +401,7 @@ class FupDrawWidget(QWidget):
 		size = self.size()
 		width, height = size.width(), size.height()
 		p = QPainter(self)
-		p.setFont(getDefaultFixedFont(9))
+		p.setFont(self.getFont(9))
 
 		# Draw background
 		p.fillRect(self.rect(), self.__bgBrush)
@@ -380,7 +424,7 @@ class FupDrawWidget(QWidget):
 		# Draw the help text, if the grid is empty.
 		if not grid.elems:
 			p.setPen(self.__textPen)
-			p.setFont(getDefaultFixedFont(9))
+			p.setFont(self.getFont(9))
 			x, y = self.__cellWidth + 5, self.__cellHeight * 2 - 5
 			p.drawText(x, y, width - x, height - y,
 				   Qt.AlignLeft | Qt.AlignTop,
@@ -388,7 +432,8 @@ class FupDrawWidget(QWidget):
 				   "* To add elements drag&drop them from the FUP/FBD library to the grid\n"
 				   "* Left-drag to connect inputs and outputs\n"
 				   "* Middle-click to delete connections and wires\n"
-				   "* Double-click onto inputs or outputs to create operand boxes")
+				   "* Double-click onto inputs or outputs to create operand boxes\n"
+				   "* Use CTRL + Scroll Wheel to zoom")
 
 		# Draw the elements
 		def drawElems(wantForeground, wantCollisions):
@@ -708,6 +753,28 @@ class FupDrawWidget(QWidget):
 		self.__suppressMousePress += 1
 
 		QWidget.mouseDoubleClickEvent(self, event)
+
+	def wheelEvent(self, ev):
+		if ev.modifiers() & Qt.ControlModifier:
+			# Ctrl + Scroll-wheel: Zoom
+			if isQt4:
+				numDegrees = ev.delta() / 8
+			else:
+				numDegrees = ev.angleDelta().y() / 8
+			numSteps = numDegrees / 15
+
+			self.__wheelSteps += numSteps
+			self.__zoom += self.__wheelSteps / 10.0
+			self.__wheelSteps = self.__wheelSteps % 1.0
+
+			self.__handleZoomChange()
+
+			ev.accept()
+			return
+		else:
+			self.__wheelSteps = 0.0
+			ev.ignore()
+		QWidget.wheelEvent(self, ev)
 
 	def keyPressEvent(self, event):
 		if event.matches(QKeySequence.Delete):

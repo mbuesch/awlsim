@@ -257,7 +257,7 @@ class FupElem_BOOLEAN(FupElem):
 		# Draw inputs
 		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
-		painter.setFont(getDefaultFixedFont(8))
+		painter.setFont(self.getFont(8))
 		for i, conn in enumerate(self.inputs):
 			cellIdx = i
 			if self.WITH_BODY_OPERATOR:
@@ -311,7 +311,7 @@ class FupElem_BOOLEAN(FupElem):
 						    notD, notD)
 			if conn.text and conn.text not in self.BLANK_CONNS:
 				painter.setPen(connPen)
-				painter.setFont(getDefaultFixedFont(8))
+				painter.setFont(self.getFont(8))
 				x = 0
 				y = elemHeight - cellHeight
 				painter.drawText(x, y,
@@ -324,7 +324,7 @@ class FupElem_BOOLEAN(FupElem):
 			       else self._outlinePen)
 		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
-		painter.setFont(getDefaultFixedFont(12, bold=True))
+		painter.setFont(self.getFont(12, bold=True))
 		if self.WITH_BODY_OPERATOR:
 			y, h = cellHeight, elemHeight - cellHeight
 		else:

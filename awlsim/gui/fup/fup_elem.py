@@ -127,6 +127,9 @@ class FupElem(FupBaseClass):
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
 
+	def getFont(self, size=8, bold=False):
+		return self.grid.getFont(size=size, bold=bold)
+
 	def checkWireCollisions(self):
 		"""Mark all wires connected to all connections as must-check-collisions.
 		The collision check will be done at the next wire re-draw.

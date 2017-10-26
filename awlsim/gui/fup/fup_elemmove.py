@@ -201,7 +201,7 @@ class FupElem_MOVE(FupElem):
 					self.BODY_CORNER_RADIUS)
 
 		# Draw inputs
-		painter.setFont(getDefaultFixedFont(8))
+		painter.setFont(self.getFont(8))
 		for i, conn in enumerate(self.inputs):
 			cellIdx = i + 1 # skip header
 
@@ -221,7 +221,7 @@ class FupElem_MOVE(FupElem):
 					 conn.text)
 
 		# Draw outputs
-		painter.setFont(getDefaultFixedFont(8))
+		painter.setFont(self.getFont(8))
 		for i, conn in enumerate(self.outputs):
 			cellIdx = i + 1 # skip header
 
@@ -243,7 +243,7 @@ class FupElem_MOVE(FupElem):
 					 conn.text)
 
 		# Draw element descriptor text
-		painter.setFont(getDefaultFixedFont(9, bold=True))
+		painter.setFont(self.getFont(9, bold=True))
 		painter.setPen(self._outlineSelPen if selected
 			       else self._outlinePen)
 		painter.drawText(0, 0,

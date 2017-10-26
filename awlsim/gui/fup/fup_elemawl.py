@@ -138,7 +138,7 @@ class FupElem_AWL(FupElem):
 				painter.drawRect(textRect)
 			painter.setPen(self._textPen if expanded
 				       else self._lightTextPen)
-			painter.setFont(getDefaultFixedFont(8))
+			painter.setFont(self.getFont(8))
 			painter.drawText(textRect, textFlags, text)
 
 		# Draw symbol text
@@ -147,7 +147,7 @@ class FupElem_AWL(FupElem):
 				       else self._outlinePen)
 			painter.setBrush(self._bgSelBrush if selected
 					 else self._bgBrush)
-			painter.setFont(getDefaultFixedFont(16, bold=True))
+			painter.setFont(self.getFont(16, bold=True))
 			painter.drawText(0, 0,
 					 elemWidth, elemHeight,
 					 Qt.AlignVCenter | Qt.AlignHCenter,

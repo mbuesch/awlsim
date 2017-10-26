@@ -263,7 +263,7 @@ class FupElem_ARITH(FupElem):
 		# Draw inputs
 		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
-		painter.setFont(getDefaultFixedFont(8))
+		painter.setFont(self.getFont(8))
 		for i, conn in enumerate(self.inputs):
 			cellIdx = i
 
@@ -287,7 +287,7 @@ class FupElem_ARITH(FupElem):
 						 conn.text)
 
 		# Draw outputs
-		painter.setFont(getDefaultFixedFont(8))
+		painter.setFont(self.getFont(8))
 		for i, conn in enumerate(self.outputs):
 			cellIdx = self.height - len(self.outputs) + i
 
@@ -318,7 +318,7 @@ class FupElem_ARITH(FupElem):
 			       else self._outlinePen)
 		painter.setBrush(self._bgSelBrush if selected
 				 else self._bgBrush)
-		painter.setFont(getDefaultFixedFont(12, bold=True))
+		painter.setFont(self.getFont(12, bold=True))
 		painter.drawText(0, 0,
 				 int(round(elemWidth * 0.75)), elemHeight,
 				 Qt.AlignVCenter | Qt.AlignHCenter,
