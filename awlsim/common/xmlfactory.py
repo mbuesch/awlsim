@@ -193,6 +193,22 @@ class XmlFactory(object):
 			return bool(self.getAttrInt(name,
 				default if default is self.NoDefault else int(bool(default))))
 
+		def getAttrFloat(self, name, default=NoDefault):
+			try:
+				return float(self.attrs[name])
+			except KeyError:
+				if default is self.NoDefault:
+					raise XmlFactory.Error("Tag <%s> attribute "
+						"'%s' does not exist." % (
+						self.name, name))
+			except ValueError:
+				if default is self.NoDefault:
+					raise XmlFactory.Error("Tag <%s> attribute "
+						"'%s' is not an floating point value." % (
+						self.name, name))
+			return default
+
+
 	class Comment(Tag):
 		"""An XML comment.
 		"""
