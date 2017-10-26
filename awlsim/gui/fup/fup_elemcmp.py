@@ -236,7 +236,7 @@ class FupElem_CMP(FupElem):
 				if (conn.isConnected or conn.text in self.OPTIONAL_CONNS)\
 				else self._connOpenPen
 
-			x = conn.CONN_OFFS if conn.isConnected else 0
+			x = conn.drawOffset
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			painter.setPen(connPen)
 			painter.drawLine(x, y, xpad, y)
@@ -260,14 +260,13 @@ class FupElem_CMP(FupElem):
 				if (conn.isConnected or conn.text in self.OPTIONAL_CONNS)\
 				else self._connOpenPen
 
-			x = (cellWidth - conn.CONN_OFFS) if conn.isConnected\
-			    else cellWidth
+			x = cellWidth - conn.drawOffset
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			painter.setPen(connPen)
 			painter.setBrush(self._bgSelBrush if selected
 					 else self._bgBrush)
 			painter.drawLine(cellWidth - xpad, y,
-					 cellWidth, y)
+					 x, y)
 
 			if conn.text and\
 			   not any(conn.text.startswith(b) for b in self.BLANK_CONNS):

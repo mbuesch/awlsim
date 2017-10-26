@@ -110,14 +110,21 @@ class FupConn(FupBaseClass):
 	IN = False
 	OUT = False
 
-	CONN_OFFS = 1	# Pixel offset in X direction
-
 	def __init__(self, elem=None, wire=None, text="", inverted=False):
 		FupBaseClass.__init__(self)
 		self.elem = elem		# The FupElem this connection belongs to
 		self.wire = wire		# The FupWire this connection is connected to (if any).
 		self.text = text or ""		# Description text
 		self.inverted = inverted	# Inverted connection (NOT)
+
+	@property
+	def drawOffset(self):
+		"""Get the draw offset; in X direction.
+		"""
+		elem = self.elem
+		if elem:
+			return elem._connDrawOffset
+		return 0
 
 	@property
 	def pos(self):

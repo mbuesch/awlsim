@@ -205,7 +205,7 @@ class FupElem_MOVE(FupElem):
 		for i, conn in enumerate(self.inputs):
 			cellIdx = i + 1 # skip header
 
-			x = conn.CONN_OFFS if conn.isConnected else 0
+			x = conn.drawOffset
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			if conn.isConnected or conn.text == "EN":
 				painter.setPen(self._connPen)
@@ -225,15 +225,14 @@ class FupElem_MOVE(FupElem):
 		for i, conn in enumerate(self.outputs):
 			cellIdx = i + 1 # skip header
 
-			x = (cellWidth - conn.CONN_OFFS) if conn.isConnected\
-			    else cellWidth
+			x = cellWidth - conn.drawOffset
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
 			if conn.isConnected or conn.text == "ENO":
 				painter.setPen(self._connPen)
 			else:
 				painter.setPen(self._connOpenPen)
 			painter.drawLine(cellWidth - xpad, y,
-					 cellWidth, y)
+					 x, y)
 
 			x = 0
 			y = (cellIdx * cellHeight)

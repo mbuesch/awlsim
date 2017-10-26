@@ -345,11 +345,11 @@ class FupElem(FupBaseClass):
 			cellPixHeight = self.grid.cellPixHeight
 			cellPixWidth = self.grid.cellPixWidth
 			if conn.IN:
-				xPix = (x * cellPixWidth) + conn.CONN_OFFS
+				xPix = (x * cellPixWidth) + conn.drawOffset
 				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
 				return xPix, yPix
 			elif conn.OUT:
-				xPix = (x * cellPixWidth) + cellPixWidth - conn.CONN_OFFS
+				xPix = (x * cellPixWidth) + cellPixWidth - conn.drawOffset
 				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
 				return xPix, yPix
 		raise IndexError
@@ -390,6 +390,12 @@ class FupElem(FupBaseClass):
 		if self.grid:
 			return self.grid.cellPixHeight // 8
 		return 0
+
+	@property
+	def _connDrawOffset(self):
+		"""The connection offset in X direction.
+		"""
+		return int(round(self._xpadding * 0.5))
 
 	def _calcBodyBox(self):
 		"""Calculate the body bounding box coordinates.
