@@ -137,6 +137,10 @@ class FupGrid(object):
 	def getFont(self, size=8, bold=False):
 		return self.__drawWidget.getFont(size=size, bold=bold)
 
+	@property
+	def zoom(self):
+		return self.__drawWidget.zoom
+
 	def clear(self):
 		for wire in self.wires:
 			wire.disconnectAll()

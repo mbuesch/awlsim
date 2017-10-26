@@ -236,7 +236,7 @@ class FupElem_BOOLEAN(FupElem):
 		elemHeight = cellHeight * self.height
 		elemWidth = cellWidth
 		selected = self.selected
-		notR = 3
+		notR = int(round(3 * grid.zoom))
 		notD = notR * 2
 
 		# Draw body
