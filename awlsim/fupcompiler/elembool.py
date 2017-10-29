@@ -128,9 +128,8 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				# The other element is a LOAD operand.
 				# Compile the boolean (load) instruction.
 				# This generates:  U #oper , O #oper or something similar.
-				insns.extend(otherElem.compileOperLoad(
-						insnClass,
-						{ FupCompiler_Conn.TYPE_VKE, },
+				insns.extend(otherConn.compileConn(
+						targetInsnClass=insnClass,
 						inverted=conn.inverted))
 			elif otherElem.isType(self.TYPE_BOOLEAN):
 				# The other element we get the signal from

@@ -205,58 +205,24 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 					      content=content,
 					      **kwargs)
 
-		# Constructor class used for LOAD operand.
-		self.__insnClass = None
-
-	def setInsnClass(self, insnClass, inverted=False):
-		if inverted and insnClass:
-			insnClass = self.compiler.invertedInsnClass[insnClass]
-		self.__insnClass = insnClass
-
-	def compileOperLoad(self, insnClass, allowedConnTypes, inverted=False):
-		"""Set the instruction class and compile this load operator.
-		insnClass => The AwlInsn class that performs the load.
-		allowedConnTypes => Iterable of allowed connection types.
-		Returns the instruction.
-		"""
-		try:
-			self.setInsnClass(insnClass, inverted)
-
-			insns = self.compile()
-
-			preferVKE = FupCompiler_Conn.TYPE_VKE in allowedConnTypes
-			connType = self.getConnType(conn=None, preferVKE=preferVKE)
-			if connType not in allowedConnTypes:
-				raise FupOperError("The load operand '%s' type is not "
-					"allowed here." % (
-					str(self)),
-					self)
-
-			return insns
-		finally:
-			self.setInsnClass(None)
-
 	def _doCompile(self):
 		insns = []
 
 		# Translate the operator content
 		self._translateContent()
 
-		insnClass = self.__insnClass
-		if not insnClass:
-			# No instruction class has been set.
-			# Infer the instruction class from the operator.
-			# Note that this can't distinguish between different
-			# boolean types and always uses U.
-			if self.operatorWidth == 1:
-				insnClass = AwlInsn_U
-			elif self.operatorWidth in {8, 16, 32}:
-				insnClass = AwlInsn_L
-			else:
-				raise FupOperError("Invalid operator width %d "
-					"in load operator: %s" % (
-					self.operatorWidth, str(self)),
-					self)
+		# Infer the instruction class from the operator.
+		# Note that this can't distinguish between different
+		# boolean types and always uses U.
+		if self.operatorWidth == 1:
+			insnClass = AwlInsn_U
+		elif self.operatorWidth in {8, 16, 32}:
+			insnClass = AwlInsn_L
+		else:
+			raise FupOperError("Invalid operator width %d "
+				"in load operator: %s" % (
+				self.operatorWidth, str(self)),
+				self)
 
 		# Create the LOAD instruction.
 		insns.extend(self.compileAs(insnClass))
