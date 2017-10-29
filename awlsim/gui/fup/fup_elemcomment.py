@@ -34,8 +34,10 @@ class FupElem_COMMENT_factory(FupElem_factory):
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
 		content = tag.getAttr("content", "")
+		uuid = tag.getAttr("uuid", None)
 		self.elem = FupElem_COMMENT(x=x, y=y,
-					    contentText=content)
+					    contentText=content,
+					    uuid=uuid)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -60,6 +62,7 @@ class FupElem_COMMENT_factory(FupElem_factory):
 					"x" : str(self.elem.x),
 					"y" : str(self.elem.y),
 					"content" : self.elem.contentText,
+					"uuid" : str(self.elem.uuid),
 				}
 			)
 		]
@@ -72,8 +75,8 @@ class FupElem_COMMENT(FupElem):
 
 	BODY_CORNER_RADIUS	= 4
 
-	def __init__(self, x, y, contentText=""):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, contentText="", uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
 		self._continuePen.setColor(QColor("#000000"))

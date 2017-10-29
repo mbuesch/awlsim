@@ -35,6 +35,7 @@ class FupElem_CMP_factory(FupElem_factory):
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
+		uuid = tag.getAttr("uuid", None)
 		elemClass = {
 			FupElem_CMP_EQ_I.OP_SYM_NAME	: FupElem_CMP_EQ_I,
 			FupElem_CMP_NE_I.OP_SYM_NAME	: FupElem_CMP_NE_I,
@@ -59,7 +60,7 @@ class FupElem_CMP_factory(FupElem_factory):
 			raise self.Error("Compare subtype '%s' is not known "
 				"to the element parser." % (
 				subType))
-		self.elem = elemClass(x=x, y=y, nrInputs=0)
+		self.elem = elemClass(x=x, y=y, nrInputs=0, uuid=uuid)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -95,6 +96,7 @@ class FupElem_CMP_factory(FupElem_factory):
 					"subtype" : elem.OP_SYM_NAME,
 					"x" : str(elem.x),
 					"y" : str(elem.y),
+					"uuid" : str(elem.uuid),
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -112,8 +114,8 @@ class FupElem_CMP(FupElem):
 	OPTIONAL_CONNS		= { "EN", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
 
-	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, nrInputs=2, nrOutputs=1, uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self.inputs = [ FupConnIn(self, text=text)
 				for text in self.FIXED_INPUTS ]

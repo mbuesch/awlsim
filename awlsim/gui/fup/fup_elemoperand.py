@@ -35,6 +35,7 @@ class FupElem_OPERAND_factory(FupElem_factory):
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
 		content = tag.getAttr("content", "")
+		uuid = tag.getAttr("uuid", None)
 		elemClass = {
 			FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
 			FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
@@ -45,7 +46,8 @@ class FupElem_OPERAND_factory(FupElem_factory):
 				"to the element parser." % (
 				subType))
 		self.elem = elemClass(x=x, y=y,
-			contentText=content)
+			contentText=content,
+			uuid=uuid)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -79,6 +81,7 @@ class FupElem_OPERAND_factory(FupElem_factory):
 					"x" : str(self.elem.x),
 					"y" : str(self.elem.y),
 					"content" : self.elem.contentText,
+					"uuid" : str(self.elem.uuid),
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -94,8 +97,8 @@ class FupElem_OPERAND(FupElem):
 	BODY_CORNER_RADIUS	= 2
 	EXPAND_WHEN_SELECTED	= True
 
-	def __init__(self, x, y, contentText=""):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, contentText="", uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
 		self._continuePen.setColor(QColor("#000000"))
@@ -248,8 +251,8 @@ class FupElem_ASSIGN(FupElem_OPERAND):
 	OP_SYM		= "assign"
 	OP_SYM_NAME	= "assign"	# XML ABI name
 
-	def __init__(self, x, y, contentText=""):
-		FupElem_OPERAND.__init__(self, x, y, contentText)
+	def __init__(self, x, y, contentText="", uuid=None):
+		FupElem_OPERAND.__init__(self, x, y, contentText, uuid=uuid)
 
 		self.inputs = [ FupConnIn(self) ]
 
@@ -279,8 +282,8 @@ class FupElem_LOAD(FupElem_OPERAND):
 	OP_SYM		= "load"
 	OP_SYM_NAME	= "load"	# XML ABI name
 
-	def __init__(self, x, y, contentText=""):
-		FupElem_OPERAND.__init__(self, x, y, contentText)
+	def __init__(self, x, y, contentText="", uuid=None):
+		FupElem_OPERAND.__init__(self, x, y, contentText, uuid=uuid)
 
 		self.outputs = [ FupConnOut(self) ]
 
@@ -316,8 +319,8 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	OP_SYM_NAME		= "embedded"	# XML ABI name
 	EXPAND_WHEN_SELECTED	= False
 
-	def __init__(self, x=0, y=0, contentText="", parentElem=None):
-		FupElem_OPERAND.__init__(self, x, y, contentText)
+	def __init__(self, x=0, y=0, contentText="", parentElem=None, uuid=None):
+		FupElem_OPERAND.__init__(self, x, y, contentText, uuid=uuid)
 		self.parentElem = parentElem
 		self.__grid = None
 

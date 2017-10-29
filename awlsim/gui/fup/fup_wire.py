@@ -39,11 +39,12 @@ class FupWire_factory(XmlFactory):
 			if tag.name == "wire":
 				self.inWire = True
 				idNum = tag.getAttrInt("id")
+				uuid = tag.getAttr("uuid", None)
 				if idNum in (w.idNum for w in self.grid.wires):
 					raise self.Error("<wire id=%d> does "
 						"already exist." % idNum)
 				# Create wire and add it to the grid.
-				FupWire(grid=self.grid, idNum=idNum)
+				FupWire(grid=self.grid, idNum=idNum, uuid=uuid)
 				return
 		XmlFactory.parser_beginTag(self, tag)
 
@@ -63,6 +64,7 @@ class FupWire_factory(XmlFactory):
 			self.Tag(name="wire",
 				attrs={
 					"id" : str(self.wire.idNum),
+					"uuid" : str(self.wire.uuid),
 				}),
 		]
 
@@ -73,8 +75,8 @@ class FupWire(FupBaseClass):
 
 	BRANCH_DIA = 4
 
-	def __init__(self, grid, idNum=None):
-		FupBaseClass.__init__(self)
+	def __init__(self, grid, idNum=None, uuid=None):
+		FupBaseClass.__init__(self, uuid=uuid)
 		self.grid = grid
 		self.connections = set()	# The connections this wire is connected to
 		self.outConn = None		# The out-connection this is connected to

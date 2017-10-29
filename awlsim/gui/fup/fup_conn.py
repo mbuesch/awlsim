@@ -43,6 +43,7 @@ class FupConn_factory(XmlFactory):
 				wireId = tag.getAttrInt("wire")
 				text = tag.getAttr("text", "")
 				inverted = tag.getAttrBool("inverted", False)
+				uuid = tag.getAttr("uuid", None)
 				if pos < 0 or pos > 0xFFFF:
 					raise self.Error("Invalid <connection> pos.")
 				wire = self.elem.grid.getWireById(wireId)
@@ -51,7 +52,8 @@ class FupConn_factory(XmlFactory):
 						self.elem.inputs.extend(
 							[None] * (pos + 1 - len(self.elem.inputs)))
 						conn = FupConnIn(elem=self.elem, wire=wire,
-								 inverted=inverted)
+								 inverted=inverted,
+								 uuid=uuid)
 						if wire:
 							wire.connect(conn)
 						self.elem.inputs[pos] = conn
@@ -61,7 +63,8 @@ class FupConn_factory(XmlFactory):
 						self.elem.outputs.extend(
 							[None] * (pos + 1 - len(self.elem.outputs)))
 						conn = FupConnOut(elem=self.elem, wire=wire,
-								  inverted=inverted)
+								  inverted=inverted,
+								  uuid=uuid)
 						if wire:
 							wire.connect(conn)
 						self.elem.outputs[pos] = conn
@@ -99,6 +102,7 @@ class FupConn_factory(XmlFactory):
 					"text" : str(conn.text),
 					"inverted" : str(int(conn.inverted))\
 						     if conn.inverted else "",
+					"uuid" : str(conn.uuid),
 				}),
 		]
 
@@ -110,8 +114,8 @@ class FupConn(FupBaseClass):
 	IN = False
 	OUT = False
 
-	def __init__(self, elem=None, wire=None, text="", inverted=False):
-		FupBaseClass.__init__(self)
+	def __init__(self, elem=None, wire=None, text="", inverted=False, uuid=None):
+		FupBaseClass.__init__(self, uuid=uuid)
 		self.elem = elem		# The FupElem this connection belongs to
 		self.wire = wire		# The FupWire this connection is connected to (if any).
 		self.text = text or ""		# Description text

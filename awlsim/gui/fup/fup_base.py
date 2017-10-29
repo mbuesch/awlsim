@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Abstract base classes
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2017 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,11 +24,39 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 
+import uuid
+
+
+__all__ = [
+	"FupBaseClass",
+]
+
 
 class FupBaseClass(object):
 	"""Abstract FUP/FBD base class"""
 
 	factory = None
+
+	__slots__ = (
+		"__uuid",
+	)
+
+	@classmethod
+	def newUUID(cls):
+		"""Generate a new unique identifier string.
+		"""
+		return str(uuid.uuid4())
+
+	def __init__(self, uuid=None):
+		self.uuid = uuid
+
+	@property
+	def uuid(self):
+		return self.__uuid
+
+	@uuid.setter
+	def uuid(self, uuid):
+		self.__uuid = uuid or self.newUUID()
 
 	def __eq__(self, other):
 		return self is other

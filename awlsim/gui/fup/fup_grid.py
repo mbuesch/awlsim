@@ -40,7 +40,9 @@ class FupGrid_factory(XmlFactory):
 		if tag:
 			width = tag.getAttrInt("width")
 			height = tag.getAttrInt("height")
+			uuid = tag.getAttr("uuid", None)
 			self.grid.resize(width, height)
+			self.grid.uuid = uuid
 
 		XmlFactory.parser_open(self, tag)
 
@@ -79,10 +81,11 @@ class FupGrid_factory(XmlFactory):
 				attrs={
 					"width" : str(self.grid.width),
 					"height" : str(self.grid.height),
+					"uuid" : str(self.grid.uuid),
 				}),
 		]
 
-class FupGrid(object):
+class FupGrid(FupBaseClass):
 	"""FUP/FBD element grid.
 	"""
 
@@ -114,11 +117,13 @@ class FupGrid(object):
 					      self.wire,
 					      self.elem)
 
-	def __init__(self, drawWidget, width, height):
+	def __init__(self, drawWidget, width, height, uuid=None):
 		"""drawWidget => FupDrawWidget() instance.
 		width => The grid width.
 		height => The grid height.
 		"""
+		FupBaseClass.__init__(self, uuid=uuid)
+
 		self.__drawWidget = drawWidget
 		self.width = width
 		self.height = height

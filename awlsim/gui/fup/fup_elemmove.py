@@ -34,8 +34,10 @@ class FupElem_MOVE_factory(FupElem_factory):
 		assert(tag)
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
+		uuid = tag.getAttr("uuid", None)
 		self.elem = FupElem_MOVE(x=x, y=y,
-					 nrOutputs=0)
+					 nrOutputs=0,
+					 uuid=uuid)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -67,6 +69,7 @@ class FupElem_MOVE_factory(FupElem_factory):
 					"type" : "move",
 					"x" : str(self.elem.x),
 					"y" : str(self.elem.y),
+					"uuid" : str(self.elem.uuid),
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -80,8 +83,8 @@ class FupElem_MOVE(FupElem):
 
 	factory = FupElem_MOVE_factory
 
-	def __init__(self, x, y, nrOutputs=1):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, nrOutputs=1, uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self.inputs = [ FupConnIn(self), # EN
 				FupConnIn(self), # IN

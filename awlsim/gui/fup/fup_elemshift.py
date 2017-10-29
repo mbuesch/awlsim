@@ -35,6 +35,7 @@ class FupElem_SHIFT_factory(FupElem_factory):
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
+		uuid = tag.getAttr("uuid", None)
 		elemClass = {
 			FupElem_SSI.OP_SYM_NAME	: FupElem_SSI,
 			FupElem_SSD.OP_SYM_NAME	: FupElem_SSD,
@@ -49,7 +50,7 @@ class FupElem_SHIFT_factory(FupElem_factory):
 			raise self.Error("Shift subtype '%s' is not known "
 				"to the element parser." % (
 				subType))
-		self.elem = elemClass(x=x, y=y)
+		self.elem = elemClass(x=x, y=y, uuid=uuid)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -85,6 +86,7 @@ class FupElem_SHIFT_factory(FupElem_factory):
 					"subtype" : elem.OP_SYM_NAME,
 					"x" : str(elem.x),
 					"y" : str(elem.y),
+					"uuid" : str(elem.uuid),
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -105,8 +107,8 @@ class FupElem_SHIFT(FupElem):
 	# Sequence of special connections.
 	__CONN_OUT_SEQUENCE	= ( "LOB", "ENO", )
 
-	def __init__(self, x, y, nrOutputs=1):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, nrOutputs=1, uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self.inputs = [ FupConnIn(self, text=text)
 				for text in self.FIXED_INPUTS ]

@@ -35,6 +35,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
+		uuid = tag.getAttr("uuid", None)
 		elemClass = {
 			FupElem_AND.OP_SYM_NAME	: FupElem_AND,
 			FupElem_OR.OP_SYM_NAME	: FupElem_OR,
@@ -51,7 +52,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 				"to the element parser." % (
 				subType))
 		self.elem = elemClass(
-			x=x, y=y, nrInputs=0)
+			x=x, y=y, nrInputs=0, uuid=uuid)
 		self.elem.grid = self.grid
 		self.subelemsFakeGrid = None
 		XmlFactory.parser_open(self, tag)
@@ -120,6 +121,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 					"subtype" : elem.OP_SYM_NAME,
 					"x" : str(elem.x),
 					"y" : str(elem.y),
+					"uuid" : str(elem.uuid),
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -140,8 +142,8 @@ class FupElem_BOOLEAN(FupElem):
 	OPTIONAL_CONNS		= set()
 	BLANK_CONNS		= { "Q", }
 
-	def __init__(self, x, y, nrInputs=2):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, nrInputs=2, uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		if self.FIXED_INPUTS is None:
 			self.inputs = [ FupConnIn(self)

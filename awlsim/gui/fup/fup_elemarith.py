@@ -35,6 +35,7 @@ class FupElem_ARITH_factory(FupElem_factory):
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
+		uuid = tag.getAttr("uuid", None)
 		elemClass = {
 			FupElem_ARITH_ADD_I.OP_SYM_NAME	: FupElem_ARITH_ADD_I,
 			FupElem_ARITH_SUB_I.OP_SYM_NAME	: FupElem_ARITH_SUB_I,
@@ -54,7 +55,7 @@ class FupElem_ARITH_factory(FupElem_factory):
 			raise self.Error("Arithmetic subtype '%s' is not known "
 				"to the element parser." % (
 				subType))
-		self.elem = elemClass(x=x, y=y, nrInputs=0)
+		self.elem = elemClass(x=x, y=y, nrInputs=0, uuid=uuid)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -90,6 +91,7 @@ class FupElem_ARITH_factory(FupElem_factory):
 					"subtype" : elem.OP_SYM_NAME,
 					"x" : str(elem.x),
 					"y" : str(elem.y),
+					"uuid" : str(elem.uuid),
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -114,8 +116,8 @@ class FupElem_ARITH(FupElem):
 	__CONN_OUT_SEQUENCE	= ( "REM", "==0", "<>0", ">0", "<0",
 				    ">=0", "<=0", "OV", "UO", "ENO", )
 
-	def __init__(self, x, y, nrInputs=2, nrOutputs=1):
-		FupElem.__init__(self, x, y)
+	def __init__(self, x, y, nrInputs=2, nrOutputs=1, uuid=None):
+		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self.inputs = [ FupConnIn(self, text=text)
 				for text in self.FIXED_INPUTS ]
