@@ -24,13 +24,22 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 
+import uuid
+
 
 class AwlInterfFieldDef(object):
-	def __init__(self, name="", typeStr="", initValueStr="", comment=""):
+	@classmethod
+	def newUUID(cls):
+		"""Generate a new unique identifier string.
+		"""
+		return str(uuid.uuid4())
+
+	def __init__(self, name="", typeStr="", initValueStr="", comment="", uuid=None):
 		self.name = name
 		self.typeStr = typeStr
 		self.initValueStr = initValueStr
 		self.comment = comment
+		self.uuid = uuid or self.newUUID()
 
 	def isValid(self):
 		return self.name and self.typeStr

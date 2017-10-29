@@ -59,7 +59,8 @@ class AwlInterfaceModel_factory(XmlFactory):
 				name=tag.getAttr("name", ""),
 				typeStr=tag.getAttr("type", ""),
 				initValueStr=tag.getAttr("init", ""),
-				comment=tag.getAttr("comment", ""))
+				comment=tag.getAttr("comment", ""),
+				uuid=tag.getAttr("uuid", None))
 
 		if self.inSection == "interface":
 			if (tag.name == "inputs" and self.model.haveIn) or\
@@ -124,6 +125,7 @@ class AwlInterfaceModel_factory(XmlFactory):
 					"type" : str(field.typeStr),
 					"init" : str(field.initValueStr),
 					"comment" : str(field.comment),
+					"uuid" : str(field.uuid),
 				}))
 			return tags
 
