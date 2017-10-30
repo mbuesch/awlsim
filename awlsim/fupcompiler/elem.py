@@ -64,8 +64,9 @@ class FupCompiler_ElemFactory(XmlFactory):
 				elemType = tag.getAttr("type")
 				subType = tag.getAttr("subtype", None)
 				content = tag.getAttr("content", None)
+				uuid = tag.getAttr("uuid", None)
 				self.elem = FupCompiler_Elem.parse(self.grid,
-					x, y, elemType, subType, content)
+					x, y, elemType, subType, content, uuid)
 				if not self.elem:
 					raise self.Error("Failed to parse element "
 						"type '%s'%s at x=%d y=%d" % (
@@ -140,7 +141,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			      key=lambda e: (e.y << yShift) + e.x)
 
 	@classmethod
-	def parse(cls, grid, x, y, elemType, subType, content):
+	def parse(cls, grid, x, y, elemType, subType, content, uuid):
 		from awlsim.fupcompiler.elembool import FupCompiler_ElemBool
 		from awlsim.fupcompiler.elemoper import FupCompiler_ElemOper
 		from awlsim.fupcompiler.elemmove import FupCompiler_ElemMove
@@ -165,16 +166,18 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			with contextlib.suppress(KeyError):
 				elemClass = type2class[elemType]
 			if elemClass:
-				return elemClass.parse(grid=grid,
+				elem = elemClass.parse(grid=grid,
 						       x=x, y=y,
 						       subType=subType,
 						       content=content)
+				elem.uuid = uuid
+				return elem
 		except KeyError:
 			pass
 		return None
 
-	def __init__(self, grid, x, y, elemType, subType, content, virtual=False):
-		FupCompiler_BaseObj.__init__(self)
+	def __init__(self, grid, x, y, elemType, subType, content, virtual=False, uuid=None):
+		FupCompiler_BaseObj.__init__(self, uuid=uuid)
 		self.grid = grid			# FupCompiler_Grid
 		self.x = x				# X coordinate
 		self.y = y				# Y coordinate
@@ -412,45 +415,45 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.compileState = self.COMPILE_DONE
 		return result
 
-	def newInsn(self, insnClass, ops=[]):
+	def newInsn(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create an instruction.
 		"""
-		return self.grid.compiler.newInsn(self, insnClass, ops)
+		return self.grid.compiler.newInsn(self, *args, **kwargs)
 
-	def newInsn_INLINEAWL(self, awlCodeStr):
+	def newInsn_INLINEAWL(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a INLINE-AWL pseudo instruction.
 		"""
-		return self.grid.compiler.newInsn_INLINEAWL(self, awlCodeStr)
+		return self.grid.compiler.newInsn_INLINEAWL(self, *args, **kwargs)
 
-	def newInsn_JMP(self, insnClass, labelStr):
+	def newInsn_JMP(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a jump instruction.
 		"""
-		return self.grid.compiler.newInsn_JMP(self, insnClass, labelStr)
+		return self.grid.compiler.newInsn_JMP(self, *args, **kwargs)
 
-	def newInsn_NOP(self, labelStr=None):
+	def newInsn_NOP(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a NOP instruction.
 		"""
-		return self.grid.compiler.newInsn_NOP(self, labelStr)
+		return self.grid.compiler.newInsn_NOP(self, *args, **kwargs)
 
-	def newInsn_LOAD_BIE(self, insnClass):
+	def newInsn_LOAD_BIE(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a BIE load instruction.
 		"""
-		return self.grid.compiler.newInsn_LOAD_BIE(self, insnClass)
+		return self.grid.compiler.newInsn_LOAD_BIE(self, *args, **kwargs)
 
-	def newInsn_L_STW(self):
+	def newInsn_L_STW(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a L STW instruction.
 		"""
-		return self.grid.compiler.newInsn_L_STW(self)
+		return self.grid.compiler.newInsn_L_STW(self, *args, **kwargs)
 
-	def newInsn_T_STW(self):
+	def newInsn_T_STW(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a T STW instruction.
 		"""
-		return self.grid.compiler.newInsn_T_STW(self)
+		return self.grid.compiler.newInsn_T_STW(self, *args, **kwargs)
 
-	def newInsn_SRD(self, count=None):
+	def newInsn_SRD(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a SRD instruction.
 		"""
-		return self.grid.compiler.newInsn_SRD(self, count)
+		return self.grid.compiler.newInsn_SRD(self, *args, **kwargs)
 
 	def __repr__(self):
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
@@ -470,6 +473,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		if self.DUMP_SHOW_CONTENT and self.content.strip():
 			content = self.content.strip().replace('\n', ' ').replace('\r', '')
 			values.append("'%s'" % content)
+		values.append(str(self.uuid))
 		values.extend(extra)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
 

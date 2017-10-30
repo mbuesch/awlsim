@@ -37,7 +37,8 @@ class FupCompiler_WireFactory(XmlFactory):
 			if tag.name == "wire":
 				self.inWire = True
 				idNum = tag.getAttrInt("id")
-				wire = FupCompiler_Wire(self.grid, idNum)
+				uuid = tag.getAttr("uuid", None)
+				wire = FupCompiler_Wire(self.grid, idNum, uuid=uuid)
 				if not self.grid.addWire(wire):
 					raise self.Error("Invalid wire")
 				return
@@ -64,8 +65,8 @@ class FupCompiler_Wire(FupCompiler_BaseObj):
 		"connections",
 	)
 
-	def __init__(self, grid, idNum, virtual=False):
-		FupCompiler_BaseObj.__init__(self)
+	def __init__(self, grid, idNum, virtual=False, uuid=None):
+		FupCompiler_BaseObj.__init__(self, uuid=uuid)
 		self.grid = grid		# FupCompiler_Grid
 		self.idNum = idNum		# Wire ID
 		self.virtual = virtual		# True, if this is a virtual wire

@@ -33,6 +33,9 @@ from awlsim.fupcompiler.elemcomment import *
 
 class FupCompiler_GridFactory(XmlFactory):
 	def parser_open(self, tag=None):
+		assert(tag)
+		uuid = tag.getAttr("uuid", None)
+		self.grid.uuid = uuid
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
@@ -54,8 +57,8 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 	factory			= FupCompiler_GridFactory
 	noPreprocessing		= True
 
-	def __init__(self, compiler):
-		FupCompiler_BaseObj.__init__(self)
+	def __init__(self, compiler, uuid=None):
+		FupCompiler_BaseObj.__init__(self, uuid=uuid)
 		self.compiler = compiler	# FupCompiler
 		self.wires = {}			# FupCompiler_Wire
 		self.elems = set()		# FupCompiler_Elem

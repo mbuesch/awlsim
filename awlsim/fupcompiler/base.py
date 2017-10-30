@@ -94,11 +94,21 @@ class FupCompiler_BaseObj(object):
 	allowTrans_done2Running	= False # DONE -> RUNNING
 
 	__slots__ = (
+		"__uuid",
 		"__compileState",
 	)
 
-	def __init__(self):
+	def __init__(self, uuid=None):
 		self.__compileState = self.COMPILE_IDLE
+		self.uuid = uuid
+
+	@property
+	def uuid(self):
+		return self.__uuid
+
+	@uuid.setter
+	def uuid(self, uuid):
+		self.__uuid = uuid or "00000000-0000-0000-0000-000000000000"
 
 	@property
 	def isCompileEntryPoint(self):

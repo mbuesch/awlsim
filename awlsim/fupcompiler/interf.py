@@ -42,7 +42,8 @@ class FupCompiler_InterfFactory(XmlFactory):
 				name=tag.getAttr("name", ""),
 				typeStr=tag.getAttr("type", ""),
 				initValueStr=tag.getAttr("init", ""),
-				comment=tag.getAttr("comment", ""))
+				comment=tag.getAttr("comment", ""),
+				uuid=tag.getAttr("uuid", None))
 
 		if self.inSection == "interface":
 			if tag.name in {"inputs", "outputs", "inouts",
@@ -89,11 +90,12 @@ class FupCompiler_InterfFactory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 class FupCompiler_InterfField(object):
-	def __init__(self, name="", typeStr="", initValueStr="", comment="", enableNameCheck=True):
+	def __init__(self, name="", typeStr="", initValueStr="", comment="", uuid=None, enableNameCheck=True):
 		self.name = name
 		self.typeStr = typeStr
 		self.initValueStr = initValueStr
 		self.comment = comment
+		self.uuid = uuid or "00000000-0000-0000-0000-000000000000"
 		self.enableNameCheck = enableNameCheck
 
 class FupCompiler_Interf(FupCompiler_BaseObj):
@@ -149,6 +151,7 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 			typeStr=dataTypeName,
 			initValueStr="",
 			comment=comment,
+			uuid=None,
 			enableNameCheck=False)
 		self.tempFields.append(field)
 		return field.name

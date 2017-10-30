@@ -47,8 +47,9 @@ class FupCompiler_ConnFactory(XmlFactory):
 				wireId = tag.getAttrInt("wire")
 				text = tag.getAttr("text", "")
 				inverted = tag.getAttrBool("inverted", False)
+				uuid = tag.getAttr("uuid", None)
 				conn = FupCompiler_Conn(self.elem,
-					pos, dirIn, dirOut, wireId, text, inverted)
+					pos, dirIn, dirOut, wireId, text, inverted, uuid)
 				if not self.elem.addConn(conn):
 					raise self.Error("Invalid connection")
 				return
@@ -150,8 +151,9 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 
 	def __init__(self, elem, pos, dirIn, dirOut, wireId, text,
 		     inverted=False,
-		     virtual=False):
-		FupCompiler_BaseObj.__init__(self)
+		     virtual=False,
+		     uuid=None):
+		FupCompiler_BaseObj.__init__(self, uuid=uuid)
 		self.elem = elem		# FupCompiler_Elem
 		self.pos = pos			# Position index
 		self.dirIn = bool(dirIn)	# Input

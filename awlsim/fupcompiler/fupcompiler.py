@@ -33,6 +33,7 @@ from awlsim.core.statusword import * #+cimport
 from awlsim.core.symbolparser import *
 
 from awlsim.core.instructions.all_insns import * #+cimport
+from awlsim.core.instructions.parentinfo import *
 
 from awlsim.awloptimizer.awloptimizer import *
 
@@ -165,15 +166,32 @@ class FupCompiler(object):
 		self.__labelCounter += 1
 		return "L%03X" % labelCounter
 
-	def newInsn(self, parentFupElem, insnClass, ops=[]):
+	def newInsn(self, parentFupElem, insnClass, ops=[], parentFupConn=None):
 		"""Create a new instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		insnClass: The class that shall be instantiated.
 		ops: Optional list of operators.
+		parentFupConn: Optional FUP connection this insn belongs to.
 		"""
 		insn = insnClass(cpu=None, ops=ops)
 		if parentFupElem:
 			insn.commentStr = str(parentFupElem)
+			connType = AwlInsnParentInfo.CONNTYPE_NONE
+			connIndex = -1
+			if parentFupConn:
+				if parentFupConn.dirIn and parentFupConn.dirOut:
+					connType = AwlInsnParentInfo.CONNTYPE_INOUT
+					connIndex = parentFupConn.pos
+				elif parentFupConn.dirIn:
+					connType = AwlInsnParentInfo.CONNTYPE_IN
+					connIndex = parentFupConn.pos
+				elif parentFupConn.dirOut:
+					connType = AwlInsnParentInfo.CONNTYPE_OUT
+					connIndex = parentFupConn.pos
+			insn.parentInfo = AwlInsnParentInfo(
+					uuid=parentFupElem.uuid,
+					connType=connType,
+					connIndex=connIndex)
 		return insn
 
 	def newInsn_INLINEAWL(self, parentFupElem, awlCodeStr):
@@ -182,7 +200,7 @@ class FupCompiler(object):
 			insn.commentStr = str(parentFupElem)
 		return insn
 
-	def newInsn_JMP(self, parentFupElem, insnClass, labelStr):
+	def newInsn_JMP(self, parentFupElem, insnClass, labelStr, parentFupConn=None):
 		"""Create a new jump instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		insnClass: The jump instruction class that shall be instantiated.
@@ -192,21 +210,23 @@ class FupCompiler(object):
 		oper.immediateStr = labelStr
 		return self.newInsn(parentFupElem=parentFupElem,
 				    insnClass=insnClass,
-				    ops=[oper])
+				    ops=[oper],
+				    parentFupConn=parentFupConn)
 
-	def newInsn_NOP(self, parentFupElem, labelStr):
+	def newInsn_NOP(self, parentFupElem, labelStr, parentFupConn=None):
 		"""Create a new jump instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		labelStr: Optional label name string.
 		"""
 		oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 		oper.immediate = 0
-		insn = self.newInsn(parentFupElem, AwlInsn_NOP, ops=[oper])
+		insn = self.newInsn(parentFupElem, AwlInsn_NOP, ops=[oper],
+				    parentFupConn=parentFupConn)
 		if labelStr:
 			insn.labelStr = labelStr
 		return insn
 
-	def newInsn_LOAD_BIE(self, parentFupElem, insnClass):
+	def newInsn_LOAD_BIE(self, parentFupElem, insnClass, parentFupConn=None):
 		"""Create a new BIE load instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		insnClass: The loadinstruction class that shall be instantiated (i.e. U)
@@ -214,25 +234,28 @@ class FupCompiler(object):
 		bitPos = S7StatusWord.getBitnrByName("BIE", S7CPUConfig.MNEMONICS_DE)
 		offset = make_AwlOffset(0, bitPos)
 		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1, offset, None)
-		return self.newInsn(parentFupElem, insnClass, ops=[oper])
+		return self.newInsn(parentFupElem, insnClass, ops=[oper],
+				    parentFupConn=parentFupConn)
 
-	def newInsn_L_STW(self, parentFupElem):
+	def newInsn_L_STW(self, parentFupElem, parentFupConn=None):
 		"""Create a new L STW instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		"""
 		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 16,
 					make_AwlOffset(0, 0), None)
-		return self.newInsn(parentFupElem, AwlInsn_L, ops=[oper])
+		return self.newInsn(parentFupElem, AwlInsn_L, ops=[oper],
+				    parentFupConn=parentFupConn)
 
-	def newInsn_T_STW(self, parentFupElem):
+	def newInsn_T_STW(self, parentFupElem, parentFupConn=None):
 		"""Create a new T STW instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		"""
 		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 16,
 					make_AwlOffset(0, 0), None)
-		return self.newInsn(parentFupElem, AwlInsn_T, ops=[oper])
+		return self.newInsn(parentFupElem, AwlInsn_T, ops=[oper],
+				    parentFupConn=parentFupConn)
 
-	def newInsn_SRD(self, parentFupElem, count=None):
+	def newInsn_SRD(self, parentFupElem, count=None, parentFupConn=None):
 		"""Create a new SRD instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		count: The shift count (or None).
@@ -243,7 +266,8 @@ class FupCompiler(object):
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = count
 			ops = [oper]
-		return self.newInsn(parentFupElem, AwlInsn_SRD, ops=ops)
+		return self.newInsn(parentFupElem, AwlInsn_SRD, ops=ops,
+				    parentFupConn=parentFupConn)
 
 	def getOperDataWidth(self, oper):
 		"""Helper function to get the data type width (in bits)
