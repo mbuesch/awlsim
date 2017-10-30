@@ -5,9 +5,9 @@ from awlsim.core.operators cimport *
 cdef class AwlInsn(object):
 	cdef public S7CPU cpu
 	cdef public uint32_t insnType
-	cdef public object rawInsn
 	cdef public object labelStr
 	cdef public object commentStr
+	cdef public object parentInfo
 	cdef public int32_t ip
 	cdef public list ops
 	cdef public uint32_t opCount

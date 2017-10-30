@@ -27,6 +27,7 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
 from awlsim.core.instructions.types import * #+cimport
+from awlsim.core.instructions.parentinfo import *
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 from awlsim.core.util import *
@@ -217,7 +218,6 @@ class AwlInsn(object): #+cdef
 	__slots__ = (
 		"cpu",
 		"insnType",
-		"rawInsn",
 		"ip",
 		"ops",
 		"opCount",
@@ -226,6 +226,7 @@ class AwlInsn(object): #+cdef
 		"params",
 		"labelStr",
 		"commentStr",
+		"parentInfo",
 		"_widths_1",
 		"_widths_8_16_32",
 		"_widths_16",
@@ -237,14 +238,15 @@ class AwlInsn(object): #+cdef
 	def __init__(self, cpu, insnType, rawInsn=None, ops=None):
 		"""Initialize base instruction.
 		"""
-		self.cpu = cpu			# S7CPU() or None
-		self.insnType = insnType	# TYPE_...
-		self.rawInsn = rawInsn		# RawAwlInsn() or None
-		self.ip = 0			# Instruction pointer (IP)
-		self.ops = ops or []		# AwlOperator()s
-		self.params = ()		# Parameter assignments (for CALL)
-		self.labelStr = None		# Optional label string.
-		self.commentStr = ""		# Optional comment string.
+		self.parentInfo = AwlInsnParentInfo()	# Parent information
+		self.cpu = cpu				# S7CPU() or None
+		self.insnType = insnType		# TYPE_...
+		self.parentInfo.rawInsn = rawInsn	# RawAwlInsn() or None
+		self.ip = 0				# Instruction pointer (IP)
+		self.ops = ops or []			# AwlOperator()s
+		self.params = ()			# Parameter assignments (for CALL)
+		self.labelStr = None			# Optional label string.
+		self.commentStr = ""			# Optional comment string.
 
 		# Local copy of commonly used fetch/store widths.
 		self._widths_1		= AwlOperatorWidths.WIDTH_MASK_1
@@ -299,15 +301,15 @@ class AwlInsn(object): #+cdef
 		return None
 
 	def getRawInsn(self):
-		return self.rawInsn
+		return self.parentInfo.rawInsn
 
 	def hasLabel(self):
 		"""Returns True, if this insn has a label.
 		"""
 		if self.labelStr is not None:
 			return bool(self.labelStr)
-		if self.rawInsn:
-			return self.rawInsn.hasLabel()
+		if self.parentInfo.rawInsn:
+			return self.parentInfo.rawInsn.hasLabel()
 		return False
 
 	def getLabel(self):
@@ -315,8 +317,8 @@ class AwlInsn(object): #+cdef
 		"""
 		if self.labelStr is not None:
 			return self.labelStr
-		if self.rawInsn:
-			return self.rawInsn.getLabel()
+		if self.parentInfo.rawInsn:
+			return self.parentInfo.rawInsn.getLabel()
 		return None
 
 	def setLabel(self, labelStr):
@@ -332,14 +334,14 @@ class AwlInsn(object): #+cdef
 		return self.cpu
 
 	def getSourceId(self):
-		if not self.rawInsn:
+		if not self.parentInfo.rawInsn:
 			return None
-		return self.rawInsn.getSourceId()
+		return self.parentInfo.rawInsn.getSourceId()
 
 	def getLineNr(self):
-		if not self.rawInsn:
+		if not self.parentInfo.rawInsn:
 			return -1
-		return self.rawInsn.getLineNr()
+		return self.parentInfo.rawInsn.getLineNr()
 
 	def run(self): #+cdef
 		"""Run the instruction.
@@ -390,9 +392,15 @@ class AwlInsn(object): #+cdef
 		if withSemicolon:
 			ret.append(";")
 		text = "".join(ret)
-		if withComment and self.commentStr:
+		if withComment and (self.commentStr or self.parentInfo):
 			text += " " * (40 - len(text))
-			text += "// %s" % self.commentStr
+			text += "// "
+			if self.commentStr:
+				text += self.commentStr
+				if self.parentInfo:
+					text += "    "
+			if self.parentInfo:
+				text += str(self.parentInfo)
 		return text
 
 	def __repr__(self):
