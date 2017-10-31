@@ -172,8 +172,14 @@ class FupCompiler(object):
 		insnClass: The class that shall be instantiated.
 		ops: Optional list of operators.
 		parentFupConn: Optional FUP connection this insn belongs to.
+			       If the connection is given, parentFupElem will
+			       also be overriden by parentFupConn.elem.
 		"""
+		if parentFupConn and parentFupConn.elem:
+			parentFupElem = parentFupConn.elem
+
 		insn = insnClass(cpu=None, ops=ops)
+
 		if parentFupElem:
 			insn.commentStr = str(parentFupElem)
 			connType = AwlInsnParentInfo.CONNTYPE_NONE
