@@ -79,22 +79,20 @@ class AwlInsnParentInfo(object):
 	__nonzero__ = __bool__ # Python 2 compat
 
 	def __str__(self):
-		conn = {
-			self.CONNTYPE_NONE	: "",
-			self.CONNTYPE_IN	: " IN",
-			self.CONNTYPE_OUT	: " OUT",
-			self.CONNTYPE_INOUT	: " IN_OUT",
-		}[self.connType]
-		if self.connType == self.CONNTYPE_NONE:
-			connIdx = ""
-		else:
-			connIdx = " %d" % self.connIndex
+		fields = []
+		if self.uuid:
+			fields.append(self.uuid)
 		if self.rawInsn:
-			rawInsnStr = " " + str(self.rawInsn)
-		else:
-			rawInsnStr = ""
-		return "parent: %s%s%s%s" % (
-				self.uuid,
-				rawInsnStr,
-				conn,
-				connIdx)
+			fields.append(str(self.rawInsn))
+		if self.connType != self.CONNTYPE_NONE:
+			connTypeStr = {
+				self.CONNTYPE_IN	: "IN",
+				self.CONNTYPE_OUT	: "OUT",
+				self.CONNTYPE_INOUT	: "IN_OUT",
+			}[self.connType]
+			if self.connIndex >= 0:
+				fields.append("%s-%d" % (connTypeStr,
+							 self.connIndex))
+			else:
+				fields.append(connTypeStr)
+		return "parent=(%s)" % ", ".join(fields)
