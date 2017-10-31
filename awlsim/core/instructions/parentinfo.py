@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.util import *
 from awlsim.common.enumeration import *
 
 
@@ -81,7 +82,7 @@ class AwlInsnParentInfo(object):
 	def __str__(self):
 		fields = []
 		if self.uuid:
-			fields.append(self.uuid)
+			fields.append(shortUUID(self.uuid))
 		if self.rawInsn:
 			fields.append(str(self.rawInsn))
 		if self.connType != self.CONNTYPE_NONE:

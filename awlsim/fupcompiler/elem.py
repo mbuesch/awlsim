@@ -480,7 +480,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		if self.DUMP_SHOW_CONTENT and self.content.strip():
 			content = self.content.strip().replace('\n', ' ').replace('\r', '')
 			values.append("'%s'" % content)
-		values.append(str(self.uuid))
+		values.append(shortUUID(self.uuid))
 		values.extend(extra)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
 
