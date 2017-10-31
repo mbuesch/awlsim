@@ -293,25 +293,32 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	MAIN_RESULT = 42
 
-	def _storeToTemp(self, dataTypeName, insnClass, connections=MAIN_RESULT):
+	def _storeToTemp(self, dataTypeName, insnClass, connections):
+		"""Store a value from ACCU or VKE to TEMP.
+		dataTypeName: The name string of the TEMP field data type.
+		insnClass: The AWL instruction class to store the value.
+		connections: An iterable of connections this value belongs to.
+			     The iterable may contain the special value MAIN_RESULT.
+		"""
 		insns = []
 
-		if connections or\
-		   connections is self.MAIN_RESULT:
+		if connections:
 			varName = self.grid.compiler.interf.allocTEMP(dataTypeName,
 								      elem=self)
 			opDesc = self.opTrans.translateFromString("#" + varName)
 			insns.append(self.newInsn(insnClass,
 						  ops=[opDesc.operator]))
-			if connections is self.MAIN_RESULT:
-				self.__tempVarNames[self.MAIN_RESULT] = varName
-			else:
-				for conn in connections:
-					self.__tempVarNames[conn] = varName
+			for conn in connections:
+				self.__tempVarNames[conn] = varName
 
 		return insns
 
 	def _loadFromTemp(self, insnClass, conn=MAIN_RESULT):
+		"""Get a value associated with a connection from TEMP.
+		insnClass: The AWL instruction class to fetch the value.
+		conn: The connection to get the value for.
+		      If conn is MAIN_RESULT the main value of the element is fetched.
+		"""
 		insns = []
 
 		# otherElem has already been compiled and the result has

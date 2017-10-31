@@ -298,7 +298,10 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		if otherElem.isType(self.TYPE_BOOLEAN):
 			if any(len(tuple(c.getConnectedConns(getInputs=True))) > 1
 			       for c in otherElem.outConnections):
-				insns.extend(otherElem._storeToTemp("BOOL", AwlInsn_ASSIGN))
+				outConn = otherElem.getOutConn()
+				insns.extend(otherElem._storeToTemp("BOOL", AwlInsn_ASSIGN,
+								    { outConn,
+								      otherElem.MAIN_RESULT }))
 
 		self.__storeEmitted = True
 		return insns

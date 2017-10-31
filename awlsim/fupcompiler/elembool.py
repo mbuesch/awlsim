@@ -109,7 +109,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				self)
 		return subElem
 
-	def __getOutConn(self):
+	def getOutConn(self):
 		outConnections = list(self.outConnections)
 		if len(outConnections) != 1:
 			raise FupElemError("Boolean elements only support one output.", self)
@@ -135,7 +135,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				# The other element we get the signal from
 				# is a boolean element. Compile this to get its
 				# resulting VKE.
-				insns.extend(otherElem.compileToVKE(insnClass=insnClass,
+				insns.extend(otherElem.__compileToVKE(insnClass=insnClass,
 								    inverted=conn.inverted))
 			else:
 				insnBranchClass = self.compiler.branchInsnClass[insnClass]
@@ -143,12 +143,12 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				insns.extend(otherConn.compileConn(targetInsnClass=insnClass,
 								   inverted=conn.inverted))
 				insns.append(self.newInsn(AwlInsn_BEND))
-		outConn = self.__getOutConn()
+		outConn = self.getOutConn()
 		if outConn.inverted:
 			insns.append(self.newInsn(AwlInsn_NOT))
 		return insns
 
-	def compileToVKE(self, insnClass, inverted=False):
+	def __compileToVKE(self, insnClass, inverted=False):
 		"""Compile this boolean operation in a way that after the last
 		instruction returned by this method the result of this element
 		resides in the VKE.
@@ -156,6 +156,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		Returns a list of AwlInsn instances.
 		"""
 		insns = []
+		outConn = self.getOutConn()
 		if self.needCompile:
 			insnBranchClass = self.compiler.branchInsnClass[insnClass]
 			if inverted:
@@ -163,14 +164,16 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			insns.append(self.newInsn(insnBranchClass))
 			insns.extend(self.compile())
 			# Store result to a TEMP variable, if required.
-			if len(tuple(self.__getOutConn().getConnectedConns(getInputs=True))) > 1:
-				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN))
+			if len(tuple(outConn.getConnectedConns(getInputs=True))) > 1:
+				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN,
+							       { outConn,
+							         self.MAIN_RESULT }))
 			insns.append(self.newInsn(AwlInsn_BEND))
 		else:
 			# Get the stored result from TEMP.
 			if inverted:
 				insnClass = self.compiler.invertedInsnClass[insnClass]
-			insns.extend(self._loadFromTemp(insnClass))
+			insns.extend(self._loadFromTemp(insnClass, conn=outConn))
 		return insns
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
@@ -180,7 +183,7 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		insnClass = FupCompiler_Conn.targetToInsnClass(desiredTarget,
 							       toLoad=conn.dirOut,
 							       inverted=inverted)
-		return self.compileToVKE(insnClass)
+		return self.__compileToVKE(insnClass)
 
 class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean AND element.
