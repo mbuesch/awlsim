@@ -71,6 +71,7 @@ __all__ = [
 	"math_lcm",
 	"nopContext",
 	"RelPath",
+	"shortUUID",
 ]
 
 
@@ -463,3 +464,15 @@ class RelPath(object):
 		path = path.replace("/", os.path.sep)
 		path = os.path.join(self.__relativeToDir, path)
 		return path
+
+def shortUUID(uuidStr):
+	"""Shorten an uuid string.
+	"""
+	uuidStr = str(uuidStr).strip()
+	if len(uuidStr) == 36 and\
+	   uuidStr[8] == '-' and\
+	   uuidStr[13] == '-' and\
+	   uuidStr[18] == '-' and\
+	   uuidStr[23] == '-':
+		uuidStr = uuidStr[0:8] + "-..-" + uuidStr[-12:-1]
+	return uuidStr
