@@ -536,6 +536,10 @@ class FupDrawWidget(QWidget):
 		x, y = event.x(), event.y()
 		modifiers = QGuiApplication.keyboardModifiers()
 
+		def eventHandled():
+			event.accept()
+			self.repaint()
+
 		# Get the element (if any)
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		self.__contextMenu.gridX = gridX
@@ -558,22 +562,23 @@ class FupDrawWidget(QWidget):
 						if not (modifiers & Qt.ControlModifier):
 							self.__grid.deselectAll()
 						self.__grid.selectElem(elem)
-						self.repaint()
+						eventHandled()
 				if conn and (not conn.wire or conn.OUT):
 					# Start dragging of the selected connection.
 					self.__draggedConn = conn
-					self.repaint()
+					eventHandled()
 			else:
 				# Start a multi-selection
 				if not (modifiers & Qt.ControlModifier):
 					self.__grid.deselectAll()
 				self.__selectStartPix = (x, y)
 				self.__selectEndPix = None
-				self.repaint()
+				eventHandled()
 
 		# Handle middle button press
 		if event.button() == Qt.MidButton:
 			self.disconnectConn(conn)
+			eventHandled()
 
 		# Handle right button press
 		if event.button() == Qt.RightButton:
@@ -581,7 +586,7 @@ class FupDrawWidget(QWidget):
 				if not (modifiers & Qt.ControlModifier):
 					self.__grid.deselectAll()
 			self.__grid.selectElem(elem)
-			self.repaint()
+			eventHandled()
 			# Open the context menu
 			self.__contextMenu.enableRemove(elem is not None)
 			self.__contextMenu.enableEdit(False)
@@ -596,17 +601,22 @@ class FupDrawWidget(QWidget):
 				elem.prepareContextMenu(self.__contextMenu, area, conn)
 			self.__contextMenu.exec_(self.mapToGlobal(event.pos()))
 
-		QWidget.mousePressEvent(self, event)
+		if not event.isAccepted():
+			QWidget.mousePressEvent(self, event)
 
 	def mouseReleaseEvent(self, event):
 		x, y = event.x(), event.y()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 
+		def eventHandled():
+			event.accept()
+			self.repaint()
+
 		# Handle end of multi-selection
 		if self.__selectStartPix:
 			self.__selectStartPix = None
 			self.__selectEndPix = None
-			self.repaint()
+			eventHandled()
 
 		# Handle end of element dragging
 		if self.__dragStart:
@@ -620,9 +630,10 @@ class FupDrawWidget(QWidget):
 				self.__grid.checkWireCollisions()
 				# Only repaint, if we are not going to repaint anyway.
 				if not connected:
-					self.repaint()
+					eventHandled()
 			if connected:
 				self.__contentChanged()
+				eventHandled()
 
 		# Handle end of connection dragging
 		draggedConn = self.__draggedConn
@@ -632,20 +643,26 @@ class FupDrawWidget(QWidget):
 				targetConn = elem.getConnViaPixCoord(elemRelX, elemRelY)
 				self.establishWire(draggedConn, targetConn)
 			self.__draggedConn = None
-			self.repaint()
+			eventHandled()
 
 		# Drop "clicked element" reference
 		if not self.__contextMenu.isVisible():
 			self.__grid.clickedElem = None
 			self.__grid.clickedConn = None
 			self.__grid.clickedArea = FupElem.AREA_NONE
+			eventHandled()
 
-		QWidget.mouseReleaseEvent(self, event)
+		if not event.isAccepted():
+			QWidget.mouseReleaseEvent(self, event)
 
 	def mouseMoveEvent(self, event):
 		x, y = event.x(), event.y()
 		modifiers = QGuiApplication.keyboardModifiers()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+
+		def eventHandled():
+			event.accept()
+			self.repaint()
 
 		# Temporarily expand elements on mouse-over
 		if event.buttons() == Qt.NoButton:
@@ -658,7 +675,7 @@ class FupDrawWidget(QWidget):
 			else:
 				chg += int(self.__grid.unexpandAllElems())
 			if chg:
-				self.repaint()
+				eventHandled()
 
 		# Handle multi-selection
 		if self.__selectStartPix:
@@ -668,7 +685,7 @@ class FupDrawWidget(QWidget):
 			clear = not (modifiers & Qt.ControlModifier)
 			self.__grid.selectElemsInRect(startGridX, startGridY,
 						      gridX, gridY, clear=clear)
-			self.repaint()
+			eventHandled()
 
 		# Handle element dragging
 		if self.__dragStart:
@@ -701,17 +718,22 @@ class FupDrawWidget(QWidget):
 					# Dynamically expand or shrink the grid
 					self.__dynGridExpansion()
 				self.__checkWireCollAfterDrag = True
-				self.repaint()
+				eventHandled()
 
 		# Handle connection dragging
 		if self.__draggedConn:
-			self.repaint()
+			eventHandled()
 
-		QWidget.mouseMoveEvent(self, event)
+		if not event.isAccepted():
+			QWidget.mouseMoveEvent(self, event)
 
 	def mouseDoubleClickEvent(self, event):
 		x, y = event.x(), event.y()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+
+		def eventHandled():
+			event.accept()
+			self.repaint()
 
 		# Force end of dragging.
 		self.__dragStart = None
@@ -740,19 +762,23 @@ class FupDrawWidget(QWidget):
 									newConn.connectTo(conn)
 								newElem.edit(self)
 							self.__contentChanged()
+							eventHandled()
 				elif conn and conn.isConnected:
 					# Double click on a connected IN or OUT connection
 					# inverts the connection.
 					self.invertElemConn(conn)
+					eventHandled()
 				else:
 					# Edit the element's contents
 					if elem.edit(self):
 						self.__contentChanged()
+						eventHandled()
 
 		# Suppress the next press event
 		self.__suppressMousePress += 1
 
-		QWidget.mouseDoubleClickEvent(self, event)
+		if not event.isAccepted():
+			QWidget.mouseDoubleClickEvent(self, event)
 
 	def wheelEvent(self, ev):
 		if ev.modifiers() & Qt.ControlModifier:
@@ -779,14 +805,17 @@ class FupDrawWidget(QWidget):
 	def keyPressEvent(self, event):
 		if event.matches(QKeySequence.Delete):
 			self.removeElems()
+			return
 		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
 				event.matches(QKeySequence.Deselect)):
 			self.__grid.deselectAll()
 			self.repaint()
+			return
 		elif event.matches(QKeySequence.SelectAll):
 			for elem in self.__grid.elems:
 				self.__grid.selectElem(elem)
 			self.repaint()
+			return
 
 		QWidget.keyPressEvent(self, event)
 
