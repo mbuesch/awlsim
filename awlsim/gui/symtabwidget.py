@@ -52,6 +52,14 @@ class SymTabModel(QAbstractTableModel):
 			del self.symTab[row]
 			self.endResetModel()
 			self.emitSourceChanged()
+			return True
+		return False
+
+	def deleteSymbols(self, rows):
+		offset = 0
+		for row in sorted(rows):
+			if self.deleteSymbol(row + offset):
+				offset -= 1
 
 	def moveSymbol(self, fromRow, toRow):
 		self.beginResetModel()
@@ -222,12 +230,12 @@ class SymTabView(QTableView):
 		if hdr.sectionSize(3) < 200:
 			hdr.resizeSection(3, 200)
 
-	def deleteSym(self, index=None):
-		if not index:
-			index = self.currentIndex()
-		if not index:
-			return
-		self.model().deleteSymbol(index.row())
+	def deleteSyms(self, rows=None):
+		if rows is None:
+			rows = set()
+			for index in self.selectedIndexes():
+				rows.add(index.row())
+		self.model().deleteSymbols(rows)
 
 	def __handleMousePress(self, index):
 		btns = QApplication.mouseButtons()
@@ -238,7 +246,7 @@ class SymTabView(QTableView):
 		QTableView.keyPressEvent(self, ev)
 
 		if ev.key() == Qt.Key_Delete:
-			self.deleteSym()
+			self.deleteSyms()
 
 	def focusInEvent(self, ev):
 		QTableView.focusInEvent(self, ev)
