@@ -474,5 +474,5 @@ def shortUUID(uuidStr):
 	   uuidStr[13] == '-' and\
 	   uuidStr[18] == '-' and\
 	   uuidStr[23] == '-':
-		uuidStr = uuidStr[0:8] + "-..-" + uuidStr[-12:-1]
+		uuidStr = uuidStr[0:8] + ".." + uuidStr[-6:-1]
 	return uuidStr
