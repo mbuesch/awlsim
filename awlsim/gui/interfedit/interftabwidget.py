@@ -79,11 +79,12 @@ class AwlInterfaceView(QTableView):
 			else:
 				setMinSize(2, 250)
 
-	def deleteRow(self, index=None):
-		if not index:
-			index = self.currentIndex()
-		if index:
-			self.model().deleteRow(index.row())
+	def deleteRows(self, rows=None):
+		if rows is None:
+			rows = set()
+			for index in self.selectedIndexes():
+				rows.add(index.row())
+		self.model().deleteRows(rows)
 
 	def __handleMousePress(self, index):
 		btns = QApplication.mouseButtons()
@@ -94,7 +95,7 @@ class AwlInterfaceView(QTableView):
 		QTableView.keyPressEvent(self, ev)
 
 		if ev.key() == Qt.Key_Delete:
-			self.deleteRow()
+			self.deleteRows()
 
 	def focusInEvent(self, ev):
 		QTableView.focusInEvent(self, ev)

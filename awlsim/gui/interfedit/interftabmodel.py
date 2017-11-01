@@ -394,30 +394,43 @@ class AwlInterfaceModel(AbstractTableModel):
 			self.beginResetModel()
 			del self.interf.inFields[localRow]
 			self.endResetModel()
+			self.contentChanged.emit()
+			return True
 		localRow -= self.__nrRows_IN
 		if self.__isRow_OUT(row):
 			self.beginResetModel()
 			del self.interf.outFields[localRow]
 			self.endResetModel()
+			self.contentChanged.emit()
+			return True
 		localRow -= self.__nrRows_OUT
 		if self.__isRow_INOUT(row):
 			self.beginResetModel()
 			del self.interf.inOutFields[localRow]
 			self.endResetModel()
+			self.contentChanged.emit()
+			return True
 		localRow -= self.__nrRows_INOUT
 		if self.__isRow_STAT(row):
 			self.beginResetModel()
 			del self.interf.statFields[localRow]
 			self.endResetModel()
+			self.contentChanged.emit()
+			return True
 		localRow -= self.__nrRows_STAT
 		if self.__isRow_TEMP(row):
 			self.beginResetModel()
 			del self.interf.tempFields[localRow]
 			self.endResetModel()
-		if self.__isRow_RETVAL(row):
-			# Can't delete RETVAL
-			return
-		self.contentChanged.emit()
+			self.contentChanged.emit()
+			return True
+		return False
+
+	def deleteRows(self, rows):
+		offset = 0
+		for row in sorted(rows):
+			if self.deleteRow(row + offset):
+				offset -= 1
 
 	def moveEntry(self, fromRow, toRow):
 		if fromRow == toRow:
