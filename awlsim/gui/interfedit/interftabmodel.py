@@ -531,18 +531,24 @@ class AwlInterfaceModel(AbstractTableModel):
 				if self.__isColumn_comment(column):
 					return field.comment
 				assert(0)
-		elif role == Qt.BackgroundRole:
+		elif role in {Qt.BackgroundRole,
+			      Qt.ForegroundRole}:
 			field = self.__row2field(row)
 			if field:
 				if (self.__isRow_RETVAL(row) and self.__isColumn_name(column)) or\
 				   (self.__isRow_TEMP(row) and self.__isColumn_initValue(column)):
-					return QBrush(QColor("#C0C0C0"))
+					if role == Qt.BackgroundRole:
+						return QBrush(QColor("#C0C0C0"))
+					return QBrush(QColor("black"))
 				if not field.isValid() and\
 				   not self.__isColumn_comment(column):
-					return QBrush(QColor("red"))
-				else:
-					return QBrush(QColor("white"))
-			return QBrush(QColor("#E0E0E0"))
+					if role == Qt.BackgroundRole:
+						return QBrush(QColor("red"))
+					return QBrush(QColor("black"))
+			else:
+				if role == Qt.BackgroundRole:
+					return QBrush(QColor("#E0E0E0"))
+				return QBrush(QColor("black"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			if self.__isRow_newIN(row):
 				return "Create a new INPUT field here..."

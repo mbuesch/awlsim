@@ -111,16 +111,20 @@ class LibTableModel(QAbstractTableModel):
 				)
 			else:
 				assert(0)
-		elif role == Qt.BackgroundRole:
+		elif role in {Qt.BackgroundRole,
+			      Qt.ForegroundRole}:
 			if row < len(self.libSelections):
 				sel = self.libSelections[row]
 				if not sel.isValid():
-					return QBrush(QColor("red"))
+					if role == Qt.BackgroundRole:
+						return QBrush(QColor("red"))
+					return QBrush(QColor("black"))
 				try:
 					AwlLib.getEntryBySelection(sel)
 				except AwlSimError as e:
-					return QBrush(QColor("orange"))
-			return QBrush(QColor("white"))
+					if role == Qt.BackgroundRole:
+						return QBrush(QColor("orange"))
+					return QBrush(QColor("black"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			return (
 				# Library name

@@ -112,18 +112,22 @@ class HwmodParamModel(QAbstractTableModel):
 				if params[row][1] is None:
 					return ""
 				return params[row][1]
-		elif role == Qt.BackgroundRole:
+		elif role in {Qt.BackgroundRole,
+			      Qt.ForegroundRole}:
 			params = self.__params
 			if row < len(params):
 				paramDesc = self.__getParamDesc(params[row][0])
 				if paramDesc and not paramDesc.userEditable:
 					# Not user editable
-					return QBrush(QColor("darkgrey"))
+					if role == Qt.BackgroundRole:
+						return QBrush(QColor("darkgrey"))
+					return QBrush(QColor("black"))
 				if column == 0:
 					if paramDesc:
 						# This is a standard parameter.
-						return QBrush(QColor("lightgrey"))
-			return QBrush(QColor("white"))
+						if role == Qt.BackgroundRole:
+							return QBrush(QColor("lightgrey"))
+						return QBrush(QColor("black"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			params = self.__params
 			if row < len(params):

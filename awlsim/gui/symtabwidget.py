@@ -82,11 +82,13 @@ class SymTabModel(QAbstractTableModel):
 				return sym.getTypeString()
 			else:
 				return sym.getComment()
-		elif role == Qt.BackgroundRole:
-			if row >= len(self.symTab) or\
-			   self.symTab[row].isValid():
-				return QBrush(QColor("white"))
-			return QBrush(QColor("red"))
+		elif role in {Qt.BackgroundRole,
+			      Qt.ForegroundRole}:
+			if row < len(self.symTab) and\
+			   not self.symTab[row].isValid():
+				if role == Qt.BackgroundRole:
+					return QBrush(QColor("red"))
+				return QBrush(QColor("black"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			return (
 				"The symbol name.\n(The name is case insensitive.)",
