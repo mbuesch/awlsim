@@ -52,6 +52,14 @@ class LibTableModel(QAbstractTableModel):
 			del self.libSelections[row]
 			self.endResetModel()
 			self.contentChanged.emit()
+			return True
+		return False
+
+	def deleteEntries(self, rows):
+		offset = 0
+		for row in sorted(rows):
+			if self.deleteEntry(row + offset):
+				offset -= 1
 
 	def addEntry(self, libSelection):
 		for sel in self.libSelections:
@@ -270,12 +278,12 @@ class LibTableView(QTableView):
 		QTableView.focusOutEvent(self, ev)
 		self.focusChanged.emit(False)
 
-	def deleteEntry(self, index=None):
-		if not index:
-			index = self.currentIndex()
-		if not index:
-			return
-		self.model().deleteEntry(index.row())
+	def deleteEntries(self, rows=None):
+		if rows is None:
+			rows = set()
+			for index in self.selectedIndexes():
+				rows.add(index.row())
+		self.model().deleteEntries(rows)
 
 	def addEntry(self, libSelection):
 		self.model().addEntry(libSelection)
@@ -289,7 +297,7 @@ class LibTableView(QTableView):
 		QTableView.keyPressEvent(self, ev)
 
 		if ev.key() == Qt.Key_Delete:
-			self.deleteEntry()
+			self.deleteEntries()
 
 	def handleValidationResult(self, exception):
 		pass
