@@ -34,7 +34,9 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 	"""FUP compiler - Operand element.
 	"""
 
-	ELEM_NAME = "operator"
+	ELEM_NAME		= "operator"
+	IS_LOAD_OPER		= False
+	IS_EMBEDDED_OPER	= False
 
 	EnumGen.start
 	SUBTYPE_LOAD		= EnumGen.item
@@ -159,7 +161,14 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		insns = []
 
 		self._translateContent()
-		insns.append(self.newInsn(insnClass, ops=[self._operator]))
+
+		if self.IS_EMBEDDED_OPER:
+			conn = None
+		else:
+			conn = self._getConn(not self.IS_LOAD_OPER)
+
+		insns.append(self.newInsn(insnClass, ops=[self._operator],
+					  parentFupConn=conn))
 
 		return insns
 
@@ -194,7 +203,9 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	"""FUP compiler - Operand LOAD element.
 	"""
 
-	ELEM_NAME = "LOAD"
+	ELEM_NAME		= "LOAD"
+	IS_LOAD_OPER		= True
+	IS_EMBEDDED_OPER	= False
 
 	# Allow multiple compilations of LOAD operand.
 	allowTrans_done2Running = True
@@ -233,7 +244,9 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 	"""FUP compiler - Operand ASSIGN element.
 	"""
 
-	ELEM_NAME = "STORE"
+	ELEM_NAME		= "STORE"
+	IS_LOAD_OPER		= False
+	IS_EMBEDDED_OPER	= False
 
 	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,
@@ -323,7 +336,9 @@ class FupCompiler_ElemOperEmbedded(FupCompiler_ElemOper):
 	"""FUP compiler - Embedded operand element.
 	"""
 
-	ELEM_NAME = "EMBEDDED"
+	ELEM_NAME		= "EMBEDDED"
+	IS_LOAD_OPER		= False
+	IS_EMBEDDED_OPER	= True
 
 	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemOper.__init__(self, grid=grid, x=x, y=y,

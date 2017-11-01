@@ -139,13 +139,13 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 								    inverted=conn.inverted))
 			else:
 				insnBranchClass = self.compiler.branchInsnClass[insnClass]
-				insns.append(self.newInsn(insnBranchClass))
+				insns.append(self.newInsn(insnBranchClass, parentFupConn=conn))
 				insns.extend(otherConn.compileConn(targetInsnClass=insnClass,
 								   inverted=conn.inverted))
-				insns.append(self.newInsn(AwlInsn_BEND))
+				insns.append(self.newInsn(AwlInsn_BEND, parentFupConn=conn))
 		outConn = self.getOutConn()
 		if outConn.inverted:
-			insns.append(self.newInsn(AwlInsn_NOT))
+			insns.append(self.newInsn(AwlInsn_NOT, parentFupConn=outConn))
 		return insns
 
 	def __compileToVKE(self, insnClass, inverted=False):
@@ -161,14 +161,14 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			insnBranchClass = self.compiler.branchInsnClass[insnClass]
 			if inverted:
 				insnBranchClass = self.compiler.invertedInsnClass[insnBranchClass]
-			insns.append(self.newInsn(insnBranchClass))
+			insns.append(self.newInsn(insnBranchClass, parentFupConn=outConn))
 			insns.extend(self.compile())
 			# Store result to a TEMP variable, if required.
 			if len(tuple(outConn.getConnectedConns(getInputs=True))) > 1:
 				insns.extend(self._storeToTemp("BOOL", AwlInsn_ASSIGN,
 							       { outConn,
 							         self.MAIN_RESULT }))
-			insns.append(self.newInsn(AwlInsn_BEND))
+			insns.append(self.newInsn(AwlInsn_BEND, parentFupConn=outConn))
 		else:
 			# Get the stored result from TEMP.
 			if inverted:
@@ -380,7 +380,7 @@ class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
 		insns.extend(bodyOper.compileAs(AwlInsn_FP if self.POSITIVE
 						else AwlInsn_FN))
 		if outConn.inverted:
-			insns.append(self.newInsn(AwlInsn_NOT))
+			insns.append(self.newInsn(AwlInsn_NOT, parentFupConn=outConn))
 
 		return insns
 
