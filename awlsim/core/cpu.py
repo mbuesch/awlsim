@@ -34,6 +34,7 @@ from awlsim.common.blockinfo import *
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 from awlsim.common.env import *
+from awlsim.common.version import *
 
 from awlsim.library.libentry import *
 
@@ -2271,11 +2272,12 @@ class S7CPU(object): #+cdef
 		specs = self.specs
 		self.updateTimestamp()
 		ret = []
-		ret.append("[S7-CPU]  t: %.01fs  %s / py %d compat / %s" %\
+		ret.append("[S7-CPU]  t: %.01fs  %s / py %d compat / %s / v%s" %\
 			   ((self.now - self.startupTime) if withTime else 0.0,
 			    pythonInterpreter,
 			    3 if isPy3Compat else 2,
-			    "Win" if osIsWindows else ("Posix" if osIsPosix else "unknown")))
+			    "Win" if osIsWindows else ("Posix" if osIsPosix else "unknown"),
+			    VERSION_STRING))
 		ret.append("    STW:  " + self.statusWord.getString(mnemonics))
 		if self.is4accu:
 			accus = ( accu.toHex()
