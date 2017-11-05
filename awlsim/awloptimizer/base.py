@@ -43,12 +43,15 @@ class AwlOptimizer_Base(object):
 	EnumGen.end
 
 	# The optimization pass name.
-	NAME	= "<none>"
+	NAME		= "<none>"
+	LONGNAME	= ""
+	# The optimization pass description string.
+	DESC		= ""
 	# The stage(s) this optimization is supposed to run in.
-	STAGES	= frozenset((STAGE1, ))
+	STAGES		= frozenset((STAGE1, ))
 	# Dependency lists.
-	BEFORE	= frozenset()
-	AFTER	= frozenset()
+	BEFORE		= frozenset()
+	AFTER		= frozenset()
 
 	def __init__(self, optimizer):
 		self.optimizer = optimizer

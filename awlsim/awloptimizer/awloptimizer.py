@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
 from awlsim.common.util import *
+from awlsim.common.xmlfactory import *
 
 from awlsim.awloptimizer.base import *
 from awlsim.awloptimizer.opt_bieforward import *
@@ -35,6 +36,8 @@ import functools
 
 __all__ = [
 	"AwlOptimizer",
+	"AwlOptimizerSettings",
+	"AwlOptimizerSettingsContainer",
 ]
 
 
@@ -116,3 +119,134 @@ class AwlOptimizer(object):
 		return ", ".join(
 			optClass.NAME for optClass in self.ALL_OPTIMIZERS
 			if optClass.NAME in self.enabledOpts)
+
+class AwlOptimizerSettingsContainer_factory(XmlFactory):
+	def parser_open(self, tag):
+		assert(tag)
+		container = self.settingsContainer
+
+		self.inOptimizer = False
+		self.settings = None
+
+		globalEnable = tag.getAttr("enabled")
+		optType = tag.getAttr("type")
+		if optType != "awl":
+			raise self.Error("Unknown optimizer type '%s' "
+				"settings found." % optType)
+
+		container.clear()
+		container.globalEnable = globalEnable
+
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		container = self.settingsContainer
+
+		if tag.name == "optimizer":
+			self.inOptimizer = True
+			name = tag.getAttr("name")
+			enabled = tag.getAttrBool("enabled", True)
+			self.settings = AwlOptimizerSettings(
+				name=name,
+				enabled=enabled)
+			return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		container = self.settingsContainer
+
+		if self.inOptimizer:
+			if tag.name == "optimizer":
+				self.inOptimizer = False
+				container.add(self.settings)
+				return
+		else:
+			if tag.name == "optimizers":
+				self.parser_finish()
+				return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		container = self.settingsContainer
+
+		childTags = []
+		for settings in sorted(dictValues(container.settingsDict),
+				       key=lambda s: s.name):
+			childTags.append(
+				self.Tag(name="optimizer",
+					 attrs={
+						"name" : str(settings.name),
+						"enabled" : "1" if settings.enabled else "0",
+					 }
+			))
+
+		return [
+			self.Tag(name="optimizers",
+				attrs={
+					"enabled" : "1" if container.globalEnable else "0",
+					"type" : "awl",
+				},
+				tags=childTags
+			)
+		]
+
+class AwlOptimizerSettings(object):
+	"""Optimizer settings.
+	"""
+
+	__slots__ = (
+		"name",
+		"enabled",
+	)
+
+	def __init__(self, name, enabled=True):
+		"""name: The optimizer run name.
+		enabled: Optimizer run enable/disable.
+		"""
+		self.name = name
+		self.enabled = enabled
+
+	def dup(self):
+		return self.__class__(name=self.name,
+				      enabled=self.enabled)
+
+class AwlOptimizerSettingsContainer(object):
+	factory = AwlOptimizerSettingsContainer_factory
+
+	__slots__ = (
+		"globalEnable",
+		"settingsDict",
+	)
+
+	def __init__(self, globalEnable=True, settingsDict=None):
+		self.globalEnable = globalEnable
+		self.settingsDict = settingsDict or {}
+
+	def dup(self):
+		settingsDict = {}
+		for settings in dictValues(self.settingsDict):
+			settingsDict[settings.name] = settings.dup()
+		return self.__class__(globalEnable=self.globalEnable,
+				      settingsDict=settingsDict)
+
+	def clear(self):
+		self.globalEnable = True
+		self.settingsDict.clear()
+
+	def add(self, settings):
+		if settings.name in self.settingsDict:
+			return False
+		self.settingsDict[settings.name] = settings
+		return True
+
+	def remove(self, settings):
+		self.settingsDict.pop(settings.name, None)
+
+	def setDefaultSettings(self):
+		self.clear()
+		for optClass in AwlOptimizer.ALL_OPTIMIZERS:
+			s = AwlOptimizerSettings(
+				name=optClass.NAME,
+				enabled=True
+			)
+			self.add(s)
