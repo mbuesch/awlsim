@@ -26,9 +26,11 @@ from awlsim.gui.fup.fupdrawwidget import *
 from awlsim.gui.fup.fupelemcontainerwidget import *
 from awlsim.gui.interfedit.interfwidget import *
 from awlsim.gui.editwidget import *
+from awlsim.gui.optimizerconfig import *
 from awlsim.gui.util import *
 
 from awlsim.fupcompiler import *
+from awlsim.awloptimizer.awloptimizer import *
 
 
 FUP_DEBUG = 0
@@ -119,6 +121,7 @@ class FupFactory(XmlFactory):
 		return tags
 
 class FupEditWidgetMenu(QMenu):
+	configOpt = Signal()
 	showAwlOpt = Signal()
 	showAwl = Signal()
 	showStlOpt = Signal()
@@ -127,6 +130,8 @@ class FupEditWidgetMenu(QMenu):
 
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
+		self.addAction("Configure &optimizer...",
+			       lambda: self.configOpt.emit())
 		self.addAction("Show AWL code (DE, optimized)...",
 			       lambda: self.showAwlOpt.emit())
 		self.addAction("Show AWL code (DE)...",
@@ -194,6 +199,7 @@ class FupWidget(QWidget):
 
 		self.interf.contentChanged.connect(self.diagramChanged)
 		self.edit.draw.diagramChanged.connect(self.diagramChanged)
+		self.edit.menu.configOpt.connect(self.__configureOptimizer)
 		self.edit.menu.showAwlOpt.connect(self.__compileAndShowAwlOpt)
 		self.edit.menu.showAwl.connect(self.__compileAndShowAwl)
 		self.edit.menu.showStlOpt.connect(self.__compileAndShowStlOpt)
@@ -236,6 +242,15 @@ class FupWidget(QWidget):
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
 		self.__needSourceUpdate = True
+
+	def __configureOptimizer(self):
+		grid = self.edit.draw.grid
+		dlg = OptimizerConfigDialog(
+				settingsContainer=grid.optSettingsCont.dup(),
+				parent=self)
+		if dlg.exec_() == QDialog.Accepted:
+			grid.optSettingsCont = dlg.getSettingsContainer()
+			self.diagramChanged.emit()
 
 	def __compileAndShow(self, mnemonics, showCall, optimize=False):
 		fupSource = self.getSource()

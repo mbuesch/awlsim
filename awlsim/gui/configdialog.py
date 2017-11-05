@@ -71,7 +71,9 @@ class AbstractConfigDialog(QDialog):
 		self.accepted.connect(self.storeToProject)
 
 	def loadFromProject(self):
-		raise NotImplementedError
+		if self.project:
+			raise NotImplementedError
 
 	def storeToProject(self):
-		raise NotImplementedError
+		if self.project:
+			raise NotImplementedError

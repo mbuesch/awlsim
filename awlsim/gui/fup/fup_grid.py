@@ -53,6 +53,13 @@ class FupGrid_factory(XmlFactory):
 		if tag.name == "elements":
 			self.parser_switchTo(FupElem.factory(grid=self.grid))
 			return
+		if tag.name == "optimizers":
+			optType = tag.getAttr("type")
+			if optType == "awl":
+				optSettingsCont = self.grid.optSettingsCont
+				self.parser_switchTo(optSettingsCont.factory(
+					settingsContainer=optSettingsCont))
+				return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
@@ -63,25 +70,34 @@ class FupGrid_factory(XmlFactory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
-		self.grid.renumberWires()
+		grid = self.grid
+		childTags = []
+
+		optSettingsCont = grid.optSettingsCont
+		childTags.extend(
+			optSettingsCont.factory(
+				settingsContainer=optSettingsCont).composer_getTags())
+
 		wireTags = []
-		for wire in sorted(self.grid.wires, key=lambda w: w.idNum):
+		grid.renumberWires()
+		for wire in sorted(grid.wires, key=lambda w: w.idNum):
 			wireTags.extend(wire.factory(wire=wire).composer_getTags())
+		childTags.append(self.Tag(name="wires",
+					  tags=wireTags))
+
 		elemTags = []
-		for elem in self.grid.elems:
+		for elem in grid.elems:
 			elemTags.extend(elem.factory(elem=elem).composer_getTags())
+		childTags.append(self.Tag(name="elements",
+					  tags=elemTags))
+
 		return [
 			self.Tag(name="grid",
-				tags=[
-					self.Tag(name="wires",
-						 tags=wireTags),
-					self.Tag(name="elements",
-						 tags=elemTags),
-				],
+				tags=childTags,
 				attrs={
-					"width" : str(self.grid.width),
-					"height" : str(self.grid.height),
-					"uuid" : str(self.grid.uuid),
+					"width" : str(grid.width),
+					"height" : str(grid.height),
+					"uuid" : str(grid.uuid),
 				}),
 		]
 
@@ -136,6 +152,9 @@ class FupGrid(FupBaseClass):
 		self.clickedElem = None		# The recently clicked element in this grid
 		self.clickedConn = None		# The recently clicked connection in this grid
 		self.clickedArea = None		# The recently clicked area in this grid
+
+		self.optSettingsCont = AwlOptimizerSettingsContainer()
+		self.optSettingsCont.setDefaultSettings()
 
 		self.collisionCacheClear()
 
