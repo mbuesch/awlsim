@@ -43,12 +43,12 @@ class OptimizerConfigWidget(QWidget):
 		label = QLabel("Available optimizers:")
 		self.layout().addWidget(label, 0, 0)
 		self.availOptList = QListWidget(self)
-		self.layout().addWidget(self.availOptList, 1, 0)
+		self.layout().addWidget(self.availOptList, 1, 0, 2, 1)
 		self.otherOpt = QLineEdit(self)
 		self.otherOpt.setToolTip("Enter a custom optimizer here.\n"
 					 "A wrong name will cause a build error "
 					 "on the target CPU.")
-		self.layout().addWidget(self.otherOpt, 2, 0)
+		self.layout().addWidget(self.otherOpt, 3, 0)
 
 		vbox = QVBoxLayout()
 		self.addButton = QPushButton(self)
@@ -59,13 +59,22 @@ class OptimizerConfigWidget(QWidget):
 		self.delButton.setIcon(getIcon("previous"))
 		self.delButton.setToolTip("Disable the selected optimizer.")
 		vbox.addWidget(self.delButton)
-		self.layout().addLayout(vbox, 0, 1, 3, 1)
+		self.layout().addLayout(vbox, 0, 1, 4, 1)
 
 		label = QLabel("Enabled optimizers:")
 		self.layout().addWidget(label, 0, 2)
 		self.enOptList = QListWidget(self)
 		self.layout().addWidget(self.enOptList, 1, 2)
-		self.globalEnCheckBox = QCheckBox("&Run enabled optimizers", self)
+		self.allEnCheckBox = QCheckBox("Enable &all available optimizers (recommended)", self)
+		self.allEnCheckBox.setToolTip(
+			"If this box is ticked all available optimizers\n"
+			"will be enabled.\n"
+			"This is recommended.")
+		self.allEnCheckBox.setCheckState(Qt.Checked
+						 if settingsContainer.allEnable
+						 else Qt.Unchecked)
+		self.layout().addWidget(self.allEnCheckBox, 2, 2)
+		self.globalEnCheckBox = QCheckBox("&Run enabled optimizers (recommended)", self)
 		self.globalEnCheckBox.setToolTip(
 			"If this box is not ticked, none of the \n"
 			"enabled optimizers will actually be \n"
@@ -73,7 +82,7 @@ class OptimizerConfigWidget(QWidget):
 		self.globalEnCheckBox.setCheckState(Qt.Checked
 						    if settingsContainer.globalEnable
 						    else Qt.Unchecked)
-		self.layout().addWidget(self.globalEnCheckBox, 2, 2)
+		self.layout().addWidget(self.globalEnCheckBox, 3, 2)
 
 		enOptSettings = list(sorted(dictValues(self.settingsContainer.settingsDict),
 					    key=lambda s: s.name))
@@ -93,8 +102,11 @@ class OptimizerConfigWidget(QWidget):
 			item = self.__mkListEntry(optSetting.name, optSetting)
 			self.enOptList.addItem(item)
 
+		self.__handleAllEnChange(self.allEnCheckBox.checkState())
+
 		self.addButton.released.connect(self.__handleAdd)
 		self.delButton.released.connect(self.__handleDel)
+		self.allEnCheckBox.stateChanged.connect(self.__handleAllEnChange)
 		self.globalEnCheckBox.stateChanged.connect(self.__handleGlobalEnChange)
 
 	@classmethod
@@ -158,6 +170,15 @@ class OptimizerConfigWidget(QWidget):
 			newItem = self.__mkListEntry(optClass.NAME, optClass)
 			self.availOptList.addItem(newItem)
 		self.settingsContainer.remove(optSetting)
+
+	def __handleAllEnChange(self, state):
+		en = bool(state == Qt.Checked)
+		self.settingsContainer.allEnable = en
+		self.availOptList.setEnabled(not en)
+		self.otherOpt.setEnabled(not en)
+		self.enOptList.setEnabled(not en)
+		self.addButton.setEnabled(not en)
+		self.delButton.setEnabled(not en)
 
 	def __handleGlobalEnChange(self, state):
 		self.settingsContainer.globalEnable = bool(state == Qt.Checked)

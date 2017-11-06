@@ -154,7 +154,6 @@ class FupGrid(FupBaseClass):
 		self.clickedArea = None		# The recently clicked area in this grid
 
 		self.optSettingsCont = AwlOptimizerSettingsContainer()
-		self.optSettingsCont.setDefaultSettings()
 
 		self.collisionCacheClear()
 

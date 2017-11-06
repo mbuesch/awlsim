@@ -128,7 +128,8 @@ class AwlOptimizerSettingsContainer_factory(XmlFactory):
 		self.inOptimizer = False
 		self.settings = None
 
-		globalEnable = tag.getAttr("enabled")
+		globalEnable = tag.getAttrBool("enabled", True)
+		allEnable = tag.getAttrBool("all", True)
 		optType = tag.getAttr("type")
 		if optType != "awl":
 			raise self.Error("Unknown optimizer type '%s' "
@@ -136,6 +137,7 @@ class AwlOptimizerSettingsContainer_factory(XmlFactory):
 
 		container.clear()
 		container.globalEnable = globalEnable
+		container.allEnable = allEnable
 
 		XmlFactory.parser_open(self, tag)
 
@@ -184,6 +186,7 @@ class AwlOptimizerSettingsContainer_factory(XmlFactory):
 			self.Tag(name="optimizers",
 				attrs={
 					"enabled" : "1" if container.globalEnable else "0",
+					"all" : "1" if container.allEnable else "0",
 					"type" : "awl",
 				},
 				tags=childTags
@@ -207,30 +210,37 @@ class AwlOptimizerSettings(object):
 		self.enabled = enabled
 
 	def dup(self):
-		return self.__class__(name=self.name,
-				      enabled=self.enabled)
+		return self.__class__(name=str(self.name),
+				      enabled=bool(self.enabled))
 
 class AwlOptimizerSettingsContainer(object):
 	factory = AwlOptimizerSettingsContainer_factory
 
 	__slots__ = (
 		"globalEnable",
+		"allEnable",
 		"settingsDict",
 	)
 
-	def __init__(self, globalEnable=True, settingsDict=None):
+	def __init__(self,
+		     globalEnable=True,
+		     allEnable=True,
+		     settingsDict=None):
 		self.globalEnable = globalEnable
+		self.allEnable = allEnable
 		self.settingsDict = settingsDict or {}
 
 	def dup(self):
 		settingsDict = {}
 		for settings in dictValues(self.settingsDict):
 			settingsDict[settings.name] = settings.dup()
-		return self.__class__(globalEnable=self.globalEnable,
+		return self.__class__(globalEnable=bool(self.globalEnable),
+				      allEnable=bool(self.allEnable),
 				      settingsDict=settingsDict)
 
 	def clear(self):
 		self.globalEnable = True
+		self.allEnable = True
 		self.settingsDict.clear()
 
 	def add(self, settings):
@@ -241,12 +251,3 @@ class AwlOptimizerSettingsContainer(object):
 
 	def remove(self, settings):
 		self.settingsDict.pop(settings.name, None)
-
-	def setDefaultSettings(self):
-		self.clear()
-		for optClass in AwlOptimizer.ALL_OPTIMIZERS:
-			s = AwlOptimizerSettings(
-				name=optClass.NAME,
-				enabled=True
-			)
-			self.add(s)
