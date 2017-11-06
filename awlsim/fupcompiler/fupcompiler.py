@@ -146,7 +146,7 @@ class FupCompiler(object):
 		self.instanceDBsAwl = []	# Instance DBs AWL code strings
 		self.fupSource = None		# FUP source
 		self.awlSource = None		# Compiled AWL source
-		self.optimizer = None		# Optimizer instance, if any
+		self.optimizerSettingsContainer = None
 		self.__labelCounter = 0		# Current label name counter
 
 	def getAwlSource(self):
@@ -361,27 +361,37 @@ class FupCompiler(object):
 	def __compileGrids(self):
 		"""Compile all self.grids
 		"""
-		# Compile the grids
-		insns = []
-		for grid in self.grids:
-			insns.extend(grid.compile())
-		insns.append(AwlInsn_BE(cpu=None))
+		allInsns = []
+		for i, grid in enumerate(self.grids):
+			# Compile the grid
+			insns = grid.compile()
+			if i >= len(self.grids) - 1:
+				insns.append(AwlInsn_BE(cpu=None))
 
-		if self.optimizer:
 			# Optimize the generated instructions
-			insns = self.optimizer.optimizeInsns(
+			if self.optimizerSettingsContainer is None:
+				optSettCont = grid.optimizerSettingsContainer
+			else:
+				optSettCont = self.optimizerSettingsContainer
+			optimizer = AwlOptimizer(settingsContainer=optSettCont)
+			insns = optimizer.optimizeInsns(
 				insns,
 				infoStr=str(self.fupSource))
 
-		return insns
+			allInsns.extend(insns)
+		return allInsns
 
-	def __trycompile(self, fupSource, symTabSources, mnemonics, optimize):
+	def __trycompile(self,
+			 fupSource,
+			 symTabSources,
+			 mnemonics,
+			 optimizerSettingsContainer=None):
 		self.reset()
 
 		self.fupSource = fupSource
 		self.mnemonics = mnemonics
+		self.optimizerSettingsContainer = optimizerSettingsContainer
 
-		self.optimizer = AwlOptimizer() if optimize else None
 		self.opTrans = AwlOpTranslator(mnemonics=mnemonics)
 
 		self.symTab.clear()
@@ -403,9 +413,16 @@ class FupCompiler(object):
 			self.awlSource.sourceBytes = self.__genAwlCode(insns)
 		return self.getAwlSource()
 
-	def compile(self, fupSource, symTabSources, mnemonics, optimize=True):
+	def compile(self,
+		    fupSource,
+		    symTabSources,
+		    mnemonics,
+		    optimizerSettingsContainer=None):
 		"""Compile a FupSource.
-		mnemonics is either MNEMONICS_EN, MNEMONICS_DE or MNEMONICS_AUTO.
+		fupSource: FUP source to compile.
+		symTabSources: List of symbol table sources.
+		mnemonics: Either MNEMONICS_EN, MNEMONICS_DE or MNEMONICS_AUTO.
+		optimizerSettingsContainer: AwlOptimizerSettingsContainer() instance.
 		Returns an AwlSource.
 		"""
 		if mnemonics == S7CPUConfig.MNEMONICS_AUTO:
@@ -413,17 +430,17 @@ class FupCompiler(object):
 				return self.__trycompile(fupSource,
 							 symTabSources,
 							 S7CPUConfig.MNEMONICS_EN,
-							 optimize=optimize)
+							 optimizerSettingsContainer)
 			except AwlSimError as e:
 				pass
 			return self.__trycompile(fupSource,
 						 symTabSources,
 						 S7CPUConfig.MNEMONICS_DE,
-						 optimize=optimize)
+						 optimizerSettingsContainer)
 		return self.__trycompile(fupSource,
 					 symTabSources,
 					 mnemonics,
-					 optimize=optimize)
+					 optimizerSettingsContainer)
 
 	def generateCallTemplate(self):
 		"""Generate template AWL code for a CALL operation

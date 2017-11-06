@@ -592,7 +592,6 @@ class AwlSimServer(object): #+cdef
 		if fupSource.enabled:
 			compiler = FupCompiler()
 			#FIXME mnemonics auto detection might cause mismatching mnemonics w.r.t. the main blocks.
-			#TODO optimizer settings
 			symSrcs = self.symTabSourceContainer.getSources()
 			awlSource = compiler.compile(fupSource=fupSource,
 						     symTabSources=symSrcs,

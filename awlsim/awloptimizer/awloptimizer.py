@@ -51,12 +51,8 @@ class AwlOptimizer(object):
 		AwlOptimizer_NopRemove,
 	)
 
-	class AllOptsEnabled(object):
-		def __contains__(self, other):
-			return True
-
-	def __init__(self, enabledOpts=AllOptsEnabled()):
-		self.enabledOpts = enabledOpts
+	def __init__(self, settingsContainer=None):
+		self.settingsContainer = settingsContainer or AwlOptimizerSettingsContainer()
 		self.infoStr = ""
 
 	def __sortOptimizerClasses(self, optClasses):
@@ -82,7 +78,7 @@ class AwlOptimizer(object):
 	def __getOptimizerClasses(self, currentStage):
 		optClasses = [ optClass for optClass in self.ALL_OPTIMIZERS\
 			       if (currentStage in optClass.STAGES and\
-				   optClass.NAME in self.enabledOpts) ]
+				   self.settingsContainer.isEnabled(optClass.NAME)) ]
 		return self.__sortOptimizerClasses(optClasses)
 
 	def __runOptimizers(self, currentStage, insns):
@@ -109,16 +105,18 @@ class AwlOptimizer(object):
 		insns: The list of instructions to optimize.
 		Returns the optimized list of instructions.
 		"""
-		self.infoStr = infoStr
-		insns = self.__optimize_Stage1(insns)
-		insns = self.__optimize_Stage2(insns)
-		insns = self.__optimize_Stage3(insns)
+		if self.settingsContainer.globalEnable:
+			self.infoStr = infoStr
+			insns = self.__optimize_Stage1(insns)
+			insns = self.__optimize_Stage2(insns)
+			insns = self.__optimize_Stage3(insns)
 		return insns
 
 	def getEnableStr(self):
 		return ", ".join(
 			optClass.NAME for optClass in self.ALL_OPTIMIZERS
-			if optClass.NAME in self.enabledOpts)
+			if self.settingsContainer.isEnabled(optClass.NAME)
+		)
 
 class AwlOptimizerSettingsContainer_factory(XmlFactory):
 	def parser_open(self, tag):
@@ -230,6 +228,12 @@ class AwlOptimizerSettingsContainer(object):
 		self.allEnable = allEnable
 		self.settingsDict = settingsDict or {}
 
+	def isEnabled(self, name):
+		assert(isString(name))
+		return self.globalEnable and\
+		       (name in dictKeys(self.settingsDict) or\
+			self.allEnable)
+
 	def dup(self):
 		settingsDict = {}
 		for settings in dictValues(self.settingsDict):
@@ -251,3 +255,9 @@ class AwlOptimizerSettingsContainer(object):
 
 	def remove(self, settings):
 		self.settingsDict.pop(settings.name, None)
+
+	def __str__(self):
+		return ", ".join(
+			optClass.NAME for optClass in AwlOptimizer.ALL_OPTIMIZERS
+			if self.isEnabled(optClass.NAME)
+		)

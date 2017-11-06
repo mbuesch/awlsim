@@ -24,6 +24,8 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.awloptimizer.awloptimizer import *
+
 from awlsim.fupcompiler.base import *
 from awlsim.fupcompiler.conn import *
 from awlsim.fupcompiler.wire import *
@@ -39,6 +41,11 @@ class FupCompiler_GridFactory(XmlFactory):
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
+		if tag.name == "optimizers":
+			optSettCont = self.grid.optimizerSettingsContainer
+			optSettCont.clear()
+			self.parser_switchTo(optSettCont.factory(settingsContainer=optSettCont))
+			return
 		if tag.name == "wires":
 			self.parser_switchTo(FupCompiler_Wire.factory(grid=self.grid))
 			return
@@ -62,6 +69,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		self.compiler = compiler	# FupCompiler
 		self.wires = {}			# FupCompiler_Wire
 		self.elems = set()		# FupCompiler_Elem
+		self.optimizerSettingsContainer = AwlOptimizerSettingsContainer()
 
 	def newWire(self, virtual=False):
 		newWireId = 0

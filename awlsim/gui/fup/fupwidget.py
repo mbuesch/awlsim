@@ -256,11 +256,14 @@ class FupWidget(QWidget):
 		fupSource = self.getSource()
 		try:
 			symTabSources = self.projectWidget.getSymTabSources()
+			optSettCont = None
+			if not optimize:
+				optSettCont = AwlOptimizerSettingsContainer(globalEnable=False)
 			compiler = FupCompiler()
 			blockAwlSource = compiler.compile(fupSource=fupSource,
 							  symTabSources=symTabSources,
 							  mnemonics=mnemonics,
-							  optimize=optimize)
+							  optimizerSettingsContainer=optSettCont)
 			if showCall:
 				callAwlSource = compiler.generateCallTemplate()
 		except AwlSimError as e:
