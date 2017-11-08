@@ -27,9 +27,9 @@ from awlsim.common.util import *
 from awlsim.common.xmlfactory import *
 
 from awlsim.awloptimizer.base import *
-from awlsim.awloptimizer.opt_bieforward import *
-from awlsim.awloptimizer.opt_labelremove import *
-from awlsim.awloptimizer.opt_nop import *
+from awlsim.awloptimizer.opt_biefwd import *
+from awlsim.awloptimizer.opt_lblrem import *
+from awlsim.awloptimizer.opt_noprem import *
 
 import functools
 

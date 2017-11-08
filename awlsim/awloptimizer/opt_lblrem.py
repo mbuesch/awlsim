@@ -38,10 +38,12 @@ class AwlOptimizer_LabelRemove(AwlOptimizer_Base):
 	"""AWL/STL optimizer: Remove unused labels
 	"""
 
-	NAME	= "lblrem"
-	STAGES	= frozenset((AwlOptimizer_Base.STAGE3, ))
-	BEFORE	= frozenset()
-	AFTER	= frozenset()
+	NAME		= "lblrem"
+	LONGNAME	= "Remove unused labels"
+	DESC		= "Remove labels that are not referenced by any instruction."
+	STAGES		= frozenset((AwlOptimizer_Base.STAGE3, ))
+	BEFORE		= frozenset()
+	AFTER		= frozenset()
 
 	def __init__(self, optimizer):
 		AwlOptimizer_Base.__init__(self, optimizer)

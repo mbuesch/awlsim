@@ -36,7 +36,9 @@ class AwlOptimizer_NopRemove(AwlOptimizer_Base):
 	"""AWL/STL optimizer: Remove NOP instructions
 	"""
 
-	NAME	= "noprem"
+	NAME		= "noprem"
+	LONGNAME	= "Remove superfluous NOP instructions"
+	DESC		= "Removes almost all NOP instructions from the program."
 
 	def __init__(self, optimizer):
 		AwlOptimizer_Base.__init__(self, optimizer)

@@ -121,7 +121,7 @@ class OptimizerConfigWidget(QWidget):
 		optClass = cls.__getOptClass(name)
 		if optClass:
 			icon = getIcon("prefs")
-			tip = "%s - %s\n"\
+			tip = "%s - %s\n\n"\
 			      "%s" % (
 				optClass.NAME,
 				optClass.LONGNAME,
