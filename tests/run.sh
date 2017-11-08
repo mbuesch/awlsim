@@ -706,7 +706,7 @@ show_help()
 {
 	echo "awlsim unit test script"
 	echo
-	echo "Usage: run.sh [OPTIONS] [testscript.awl/.sh]"
+	echo "Usage: run.sh [OPTIONS] [testdirectory/testscript.awl/.awlpro/.sh/.py]"
 	echo
 	echo "Options:"
 	echo " -i|--interpreter INTER        Use INTER as interpreter for the tests"
@@ -715,6 +715,7 @@ show_help()
 	echo "                               0 means number-of-CPUs"
 	echo "                               Default: 1"
 	echo " -q|--quick                    Only run python2 and python3 tests"
+	echo " -qq                           Shortcut for: -q -j 0"
 	echo " -x|--extended                 Run tests on additional interpreters"
 }
 
@@ -754,17 +755,13 @@ while [ $# -ge 1 ]; do
 	-j|--jobs)
 		shift
 		opt_jobs="$1"
-		[ -z "$opt_jobs" -o -n "$(printf '%s' "$opt_jobs" | tr -d '[0-9]')" ] &&\
-			die "--jobs: '$opt_jobs' is not a positive integer number."
-		if [ $opt_jobs -eq 0 ]; then
-			opt_jobs="$(getconf _NPROCESSORS_ONLN)"
-			opt_jobs="$(expr $opt_jobs + 2)"
-		fi
-		[ -z "$opt_jobs" ] &&\
-			die "Could not detect number of CPUs."
 		;;
 	-q|--quick)
 		opt_quick=1
+		;;
+	-qq)
+		opt_quick=1
+		opt_jobs=0
 		;;
 	-x|--extended)
 		opt_extended=1
@@ -780,6 +777,16 @@ while [ $# -ge 1 ]; do
 	esac
 	shift
 done
+
+[ -z "$opt_jobs" -o -n "$(printf '%s' "$opt_jobs" | tr -d '[0-9]')" ] &&\
+	die "--jobs: '$opt_jobs' is not a positive integer number."
+if [ $opt_jobs -eq 0 ]; then
+	opt_jobs="$(getconf _NPROCESSORS_ONLN)"
+	opt_jobs="$(expr $opt_jobs + 2)"
+fi
+[ -z "$opt_jobs" ] &&\
+	die "Could not detect number of CPUs."
+
 
 do_renice()
 {
