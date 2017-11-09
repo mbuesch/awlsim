@@ -12,11 +12,34 @@ if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
 	exit 1
 fi
 
+opt_verbose=0
+if [ "$1" = "-v" ]; then
+	opt_verbose=1
+fi
+
+run()
+{
+	nice -n 10 "$1" ./setup.py build &
+	RET=$!
+}
+
 cd "$awlsim_base"
-nice -n 10 python2 ./setup.py build &
-python2_build_pid=$!
-nice -n 10 python3 ./setup.py build &
-python3_build_pid=$!
+echo "Running build..."
+
+if [ $opt_verbose -eq 0 ]; then
+	run python2 >/dev/null
+else
+	run python2
+fi
+python2_build_pid=$RET
+
+if [ $opt_verbose -eq 0 ]; then
+	run python3 >/dev/null
+else
+	run python3
+fi
+python3_build_pid=$RET
+
 if ! wait $python2_build_pid; then
 	echo "Python 2 build FAILED!"
 	exit 1
@@ -25,6 +48,7 @@ if ! wait $python3_build_pid; then
 	echo "Python 3 build FAILED!"
 	exit 1
 fi
+
 echo
 echo "build done."
 exit 0

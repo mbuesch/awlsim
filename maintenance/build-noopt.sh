@@ -13,4 +13,4 @@ if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
 fi
 
 export CFLAGS="$CFLAGS -O0"
-exec "$awlsim_base/maintenance/build.sh"
+exec "$awlsim_base/maintenance/build.sh" "$@"
