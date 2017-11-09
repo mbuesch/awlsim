@@ -1236,6 +1236,7 @@ class AwlSimMessageTransceiver(object):
 		self.__isTCP = sock.family in (socket.AF_INET, socket.AF_INET6) and\
 			       sock.type == socket.SOCK_STREAM
 		self.__haveCork = hasattr(socket, "TCP_CORK")
+		self.__haveCork = False #XXX disabled
 
 		# Transmit status
 		self.txSeqCount = 0
@@ -1290,7 +1291,6 @@ class AwlSimMessageTransceiver(object):
 			self.sock = None
 
 	def txCork(self, cork = True):
-		return #XXX disabled
 		if self.__isTCP and self.__haveCork:
 			self.sock.setsockopt(socket.IPPROTO_TCP,
 					     socket.TCP_CORK,
