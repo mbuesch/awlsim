@@ -7,13 +7,14 @@ for /D %%f in ( "C:\PYTHON*" ) do set PATH=!PATH!;%%f
 for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set PATH=!PATH!;%%f;%%f\Scripts
 
 
-echo Installing PyQt5 ...
-pip3 install --upgrade PyQt5
-if ERRORLEVEL 1 goto error_qt5
-
-echo Installing cx_Freeze ...
-pip3 install --upgrade cx_Freeze
-if ERRORLEVEL 1 goto error_cx_freeze
+rem call :install pywin32
+rem if ERRORLEVEL 1 exit /B 1
+call :install Cython
+if ERRORLEVEL 1 exit /B 1
+call :install PyQt5
+if ERRORLEVEL 1 exit /B 1
+call :install cx_Freeze
+if ERRORLEVEL 1 exit /B 1
 
 
 echo ---
@@ -22,14 +23,12 @@ pause
 exit /B 0
 
 
-:error_qt5
-echo FAILED to install PyQt5
-goto error
-
-:error_cx_freeze
-echo FAILED to install cx_Freeze
-goto error
-
-:error
-pause
-exit 1
+:install
+	echo Installing %1 ...
+	pip3 install --upgrade %1
+	if ERRORLEVEL 1 (
+		echo FAILED to install %1
+		pause
+		exit /B 1
+	)
+	exit /B 0
