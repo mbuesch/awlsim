@@ -8,11 +8,11 @@ for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set P
 
 
 echo Installing PyQt5 ...
-pip3 install PyQt5
+pip3 install --upgrade PyQt5
 if ERRORLEVEL 1 goto error_qt5
 
 echo Installing cx_Freeze ...
-pip3 install cx_Freeze
+pip3 install --upgrade cx_Freeze
 if ERRORLEVEL 1 goto error_cx_freeze
 
 
