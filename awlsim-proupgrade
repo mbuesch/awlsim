@@ -26,6 +26,8 @@ import sys
 import getopt
 
 from awlsim_loader.common import *
+from awlsim.gui.util import *
+from awlsim.gui.fup.fupwidget import FupFactory, FupWidget
 
 
 def usage():
@@ -79,8 +81,17 @@ def main():
 		# The read will parse old formats, too.
 		# The write will write using the latest format.
 		printInfo("Upgrading file format of: %s" % projectFile)
+
 		project = Project.fromFile(projectFile)
-		#TODO (optionally) upgrade format of FUP source.
+
+		for fupSource in project.getFupSources():
+			factory = FupFactory(fupWidget=FupWidget(None, None))
+			factory.parse(fupSource.sourceBytes)
+			fupSource.sourceBytes = factory.compose()
+
+		for kopSource in project.getKopSources():
+			pass#TODO
+
 		project.toFile()
 
 	except AwlSimError as e:
@@ -90,4 +101,5 @@ def main():
 	return ExitCodes.EXIT_OK
 
 if __name__ == "__main__":
+	qapp = QApplication(sys.argv)
 	sys.exit(main())
