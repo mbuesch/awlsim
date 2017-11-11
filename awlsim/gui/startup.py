@@ -87,6 +87,8 @@ if args:
 Logging.setPrefix("awlsim-gui: ")
 Logging.setLoglevel(opt_loglevel)
 
+printInfo("Using %s GUI framework" % getGuiFrameworkName())
+
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
 QToolTip.setFont(getDefaultFixedFont())
 res = qapp.exec_()
