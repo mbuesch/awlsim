@@ -28,4 +28,19 @@ sh_test()
 	"$interpreter" ./awlsim-test --list-sfb-verbose >/dev/null ||\
 		test_failed "Call to awlsim-test --list-sfb-verbose failed"
 
+
+	# check awlsim-proupgrade executable
+
+	local tmp_project="$(maketemp project)"
+	cat "$basedir"/000-base/EXAMPLE.awlpro > "$tmp_project" ||\
+		test_failed "Copying of EXAMPLE.awlpro failed"
+
+	"$interpreter" ./awlsim-proupgrade -h >/dev/null ||\
+		test_failed "Call to awlsim-proupgrade -h failed"
+	"$interpreter" ./awlsim-proupgrade --help >/dev/null ||\
+		test_failed "Call to awlsim-proupgrade --help failed"
+	"$interpreter" ./awlsim-proupgrade "$tmp_project" >/dev/null ||\
+		test_failed "Call to awlsim-proupgrade '$tmp_project' failed"
+	"$interpreter" ./awlsim-proupgrade -L 5 "$tmp_project" >/dev/null ||\
+		test_failed "Call to awlsim-proupgrade '$tmp_project' failed"
 }
