@@ -150,6 +150,20 @@ get_interpreter_version()
 	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
 }
 
+# Check if an interpreter is able to run GUI code.
+# $1=interpreter
+interpreter_is_gui_compat()
+{
+	local interpreter="$1"
+
+	[ "$interpreter" = "python" -o \
+	  "$interpreter" = "python2" -o \
+	  "$interpreter" = "python3" -o \
+	  "$interpreter" = "cython" -o \
+	  "$interpreter" = "cython2" -o \
+	  "$interpreter" = "cython3" ]
+}
+
 # $1=program_name
 have_prog()
 {
