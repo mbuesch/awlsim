@@ -26,6 +26,14 @@ die()
 	exit 1
 }
 
+# Create a temporary file. $1=name
+maketemp()
+{
+	local prefix="$1"
+
+	mktemp --tmpdir="$tmp_dir" awlsim-test-${prefix}.XXXXXX
+}
+
 # $1=message
 test_failed()
 {
@@ -45,13 +53,7 @@ cleanup()
 {
 	wait
 
-	rm -f "/tmp/$test_time_file_template"* >/dev/null 2>&1
-	[ -n "$test_fail_file" ] &&\
-		rm -f "$test_fail_file" >/dev/null 2>&1
-	[ -n "$port_alloc_file" ] &&\
-		rm -f "$port_alloc_file"* >/dev/null 2>&1
-	[ -n "$jobs_tmp_file" ] &&\
-		rm -f "$jobs_tmp_file"* >/dev/null 2>&1
+	rm -rf "$tmp_dir" >/dev/null 2>&1
 }
 
 cleanup_and_exit()
@@ -288,7 +290,7 @@ run_awl_test()
 	local optimizer_runs="$(get_conf "$awl" optimizer_runs all)"
 
 	for optimizers in $optimizer_runs; do
-		local test_time_file="$(mktemp --tmpdir=/tmp ${test_time_file_template}.XXXXXX)"
+		local test_time_file="$(maketemp time)"
 
 		local tries="$(get_conf "$awl" tries 1)"
 		[ $tries -lt 1 ] && local tries=1
@@ -719,12 +721,16 @@ show_help()
 	echo " -x|--extended                 Run tests on additional interpreters"
 }
 
+tmp_dir="/tmp/awlsim-test-$$"
+rm -rf "$tmp_dir" >/dev/null 2>&1
+mkdir -p "$tmp_dir" || die "Failed to create temp dir '$tmp_dir'"
+
 trap cleanup_and_exit INT TERM
 trap cleanup EXIT
-test_time_file_template="awlsim-test-time.$$"
-test_fail_file="$(mktemp --tmpdir=/tmp awlsim-test-fail.XXXXXX)"
-port_alloc_file="$(mktemp --tmpdir=/tmp awlsim-test-port.XXXXXX)"
-jobs_tmp_file="$(mktemp --tmpdir=/tmp awlsim-test-jobs.XXXXXX)"
+
+test_fail_file="$(maketemp fail)"
+port_alloc_file="$(maketemp port)"
+jobs_tmp_file="$(maketemp jobs)"
 touch "${port_alloc_file}.lock"
 echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 
