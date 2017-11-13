@@ -468,6 +468,8 @@ class MainWindow(QMainWindow):
 		self.cpuWidget.haveIdentsMsg.connect(self.mainWidget.projectWidget.handleIdentsMsg)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 
+		self.resize(1024, 768)
+
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
 
