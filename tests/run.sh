@@ -584,6 +584,10 @@ build_cython3()
 # $@=testfiles
 do_tests()
 {
+	have_prog time ||\
+		die "ERROR: 'time' executable not available."\
+		    "Please install the 'time' package."
+
 	cleanup_test_environment
 
 	if [ $opt_quick -eq 0 ]; then
