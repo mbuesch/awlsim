@@ -156,6 +156,7 @@ interpreter_is_gui_compat()
 {
 	local interpreter="$1"
 
+	[ $opt_nogui -eq 0 ] &&\
 	[ "$interpreter" = "python" -o \
 	  "$interpreter" = "python2" -o \
 	  "$interpreter" = "python3" -o \
@@ -736,6 +737,7 @@ show_help()
 	echo "                               Default: 1"
 	echo " -q|--quick                    Only run python2 and python3 tests"
 	echo " -qq                           Shortcut for: -q -j 0"
+	echo " -g|--no-gui                   Avoid tests that need GUI libraries"
 	echo " -x|--extended                 Run tests on additional interpreters"
 }
 
@@ -755,6 +757,7 @@ echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 opt_interpreter=
 opt_softfail=0
 opt_quick=0
+opt_nogui=0
 opt_extended=0
 opt_renice=
 opt_jobs=1
@@ -786,6 +789,9 @@ while [ $# -ge 1 ]; do
 	-qq)
 		opt_quick=1
 		opt_jobs=0
+		;;
+	-g|--no-gui)
+		opt_nogui=1
 		;;
 	-x|--extended)
 		opt_extended=1
