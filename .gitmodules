@@ -1,9 +1,6 @@
 [submodule "submodules/raspi-hat-tools"]
 	path = submodules/raspi-hat-tools
 	url = https://github.com/raspberrypi/hats.git
-[submodule "submodules/kernel"]
-	path = submodules/kernel
-	url = https://git.bues.ch/git/linux.git
 [submodule "submodules/pyprofibus"]
 	path = submodules/pyprofibus
 	url = https://git.bues.ch/git/pyprofibus.git
