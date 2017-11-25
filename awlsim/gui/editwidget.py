@@ -799,6 +799,8 @@ class EditWidget(SourceCodeEdit):
 			runText += "..."
 			runText = runText[ : maxNrChars]
 
+		p.setPen(QPen(QColor("black")))
+
 		p.drawText(5, 5,
 			   metr.width(runText.replace(" ", "_")),
 			   self.headerWidget.height(),

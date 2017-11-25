@@ -101,6 +101,7 @@ class BlockValidator(QValidator):
 		self.lineEdit = lineEdit
 		if lineEdit:
 			self.defaultBgColor = lineEdit.palette().color(QPalette.Base)
+			self.defaultFgColor = lineEdit.palette().color(QPalette.Text)
 		self.blockTypes = blockTypes or ()
 
 	def doFixup(self, input):
@@ -149,8 +150,10 @@ class BlockValidator(QValidator):
 			palette = self.lineEdit.palette()
 			if valid:
 				palette.setColor(QPalette.Base, self.defaultBgColor)
+				palette.setColor(QPalette.Text, self.defaultFgColor)
 			else:
 				palette.setColor(QPalette.Base, getErrorColor())
+				palette.setColor(QPalette.Text, QColor("black"))
 			self.lineEdit.setPalette(palette)
 
 		state = self.Acceptable

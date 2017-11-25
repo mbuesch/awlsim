@@ -39,6 +39,9 @@ class SourceCodeEdit(QPlainTextEdit):
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
 
+		self.__errLineBrushBg = QBrush(getErrorColor())
+		self.__errLineBrushFg = QBrush(QColor("black"))
+
 		self.__wheelSteps = 0.0
 
 		self.__undoIsAvailable = False
@@ -234,8 +237,6 @@ class SourceCodeEdit(QPlainTextEdit):
 		cursor.select(QTextCursor.LineUnderCursor)
 		return cursor
 
-	__errLineBrush = QBrush(getErrorColor())
-
 	def __validate(self):
 		if not self.__validateEn:
 			return
@@ -282,7 +283,8 @@ class SourceCodeEdit(QPlainTextEdit):
 		else:
 			cursor = self.textCursor()
 			fmt = self.currentCharFormat()
-			fmt.setBackground(self.__errLineBrush)
+			fmt.setBackground(self.__errLineBrushBg)
+			fmt.setForeground(self.__errLineBrushFg)
 			extraSel = self.__makeExtraSel(
 				self.__makeTextCursorLineSel(cursor, lineNr),
 				fmt)
