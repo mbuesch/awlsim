@@ -730,17 +730,28 @@ class AwlDataType(OptionalImmutable):
 	@classmethod
 	def __parseGenericTime(cls, token, allowNegative):
 		# Parse T# or S5T# time formats.
-		# The prefix is already stripped.
+		# Returns the number of seconds as float.
+
+		# Remove T# or S5T# prefix
+		idx = token.find("#")
+		if idx < 0:
+			raise AwlSimError("Invalid time immediate: No prefix")
+		token = token[idx+1 : ]
+
+		# Remove underscores
+		token = token.replace("_", "")
+
 		if not token:
-			raise AwlSimError("Invalid time")
-		token = token.upper()
-		p = token
+			raise AwlSimError("Invalid time immediate.")
+		p = token.upper()
+
 		isNegative = False
 		if p.startswith("-"):
 			if not allowNegative:
-				raise AwlSimError("Negative time now allowed")
+				raise AwlSimError("Negative time not allowed")
 			isNegative = True
 			p = p[1:]
+
 		seconds = 0.0
 		while p:
 			if p.endswith("MS"):
@@ -759,15 +770,15 @@ class AwlDataType(OptionalImmutable):
 				mult = 86400.0
 				p = p[:-1]
 			else:
-				raise AwlSimError("Invalid time")
-			if not p:
-				raise AwlSimError("Invalid time")
+				raise AwlSimError("Invalid time immediate: "
+					"Unknown unit suffix '%s'." % p)
 			num = ""
 			while p and p[-1] in "0123456789":
 				num = p[-1] + num
 				p = p[:-1]
 			if not num:
-				raise AwlSimError("Invalid time")
+				raise AwlSimError("Invalid time immediate: "
+					"No time amount specified.")
 			num = int(num, 10)
 			seconds += num * mult
 		if isNegative:
@@ -846,7 +857,7 @@ class AwlDataType(OptionalImmutable):
 		token = token.upper()
 		if not token.startswith("S5T#"):
 			return None
-		seconds = cls.__parseGenericTime(token[4:],
+		seconds = cls.__parseGenericTime(token,
 						 allowNegative=False)
 		s5t = Timer_seconds_to_s5t(seconds)
 		return s5t
@@ -857,7 +868,6 @@ class AwlDataType(OptionalImmutable):
 		if not token.startswith("T#") and\
 		   not token.startswith("TIME#"):
 			return None
-		token = token[token.find("#") + 1 : ] # Remove prefix
 		seconds = cls.__parseGenericTime(token,
 						 allowNegative=True)
 		msec = int(seconds * 1000)

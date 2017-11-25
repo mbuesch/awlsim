@@ -86,12 +86,37 @@ BEGIN
 
 
 	// Test TIME immediates
+	L		T#2d
+	__ASSERT==	__ACCU 1,	L#172800000
 	L		T#1s100ms
 	__ASSERT==	__ACCU 1,	1100
 	L		TIME#1s100ms
 	__ASSERT==	__ACCU 1,	1100
 	L		T#-1s100ms
 	__ASSERT==	__ACCU 1,	L#-1100
+	L		TIME#2s_400ms			// Underscore separators
+	__ASSERT==	__ACCU 1,	2400
+	L		TIME#__2_s__400__ms__		// Awlsim extension: arbitrary underscores
+	__ASSERT==	__ACCU 1,	2400
+
+
+	// Test S5T immediates
+	L		S5T#1H
+	__ASSERT==	__ACCU 1,	W#16#3360
+	L		S5T#2h
+	__ASSERT==	__ACCU 1,	W#16#3720
+	L		S5T#2M
+	__ASSERT==	__ACCU 1,	W#16#2120
+	L		S5T#3S
+	__ASSERT==	__ACCU 1,	W#16#0300
+	L		S5T#400MS
+	__ASSERT==	__ACCU 1,	W#16#0040
+	L		S5T#1H2M3S400MS
+	__ASSERT==	__ACCU 1,	W#16#3372
+	L		S5T#2M_3S_400MS			// Underscore separators
+	__ASSERT==	__ACCU 1,	W#16#2123
+	L		S5T#__1_M__2_S__100__MS__	// Awlsim extension: arbitrary underscores
+	__ASSERT==	__ACCU 1,	W#16#1621
 
 
 	CALL SFC 46 // STOP CPU
