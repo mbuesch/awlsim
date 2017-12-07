@@ -209,12 +209,16 @@ setup_test_environment()
 	local interpreter="$1"
 	local tested_file="$2"
 
+	local use_cython=0
+
 	# Check if we want to run on Cython2/3 and set the environment
 	# for Cython2/3.
 	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ] ||\
 	   [ "$interpreter" = "python" -a "$AWLSIM_CYTHON" != "" ] ||\
 	   [ "$interpreter" = "python2" -a "$AWLSIM_CYTHON" != "" ]; then
 		# We want to run the test using Cython2
+
+		local use_cython=2
 
 		for i in "$rootdir"/build/lib.linux-*-2.*; do
 			export PYTHONPATH="$i"
@@ -228,6 +232,8 @@ setup_test_environment()
 	elif [ "$interpreter" = "cython3" ] ||\
 	     [ "$interpreter" = "python3" -a "$AWLSIM_CYTHON" != "" ]; then
 		# We want to run the test using Cython3
+
+		local use_cython=3
 
 		for i in "$rootdir"/build/lib.linux-*-3.*; do
 			export PYTHONPATH="$i"
@@ -259,6 +265,7 @@ setup_test_environment()
 	export MICROPYPATH="$MICROPYPATH:$EXTRA_PYTHONPATH:$conf_pythonpath"
 
 	# Disable Python optimization so that assert statements are enabled.
+	# Enable warnings
 	# Enable hash seed randomization.
 	unset PYTHONSTARTUP
 	unset PYTHONY2K
@@ -270,7 +277,11 @@ setup_test_environment()
 	unset PYTHONNOUSERSITE
 	unset PYTHONUNBUFFERED
 	unset PYTHONVERBOSE
-	unset PYTHONWARNINGS
+	if [ $use_cython -eq 0 ]; then
+		export PYTHONWARNINGS=once
+	else
+		export PYTHONWARNINGS=once,ignore::ImportWarning
+	fi
 	export PYTHONHASHSEED=random
 
 	# Disable CPU affinity
