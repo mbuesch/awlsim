@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.6
+#   v1.7
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -54,7 +54,8 @@ def hashFile(path):
 	else:
 		ExpectedException = FileNotFoundError
 	try:
-		return hashlib.sha1(open(path, "rb").read()).hexdigest()
+		with open(path, "rb") as fd:
+			return hashlib.sha1(fd.read()).hexdigest()
 	except ExpectedException as e:
 		return None
 
@@ -79,9 +80,8 @@ def makeDummyFile(path):
 		return
 	print("creating dummy file '%s'" % path)
 	makedirs(os.path.dirname(path))
-	fd = open(path, "w")
-	fd.write("\n")
-	fd.close()
+	with open(path, "w") as fd:
+		fd.write("\n")
 
 def pyCythonPatchLine(line, basicOnly=False):
 	return line
