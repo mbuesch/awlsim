@@ -265,6 +265,7 @@ def main():
 	projectFile = args[0]
 
 	result = ExitCodes.EXIT_OK
+	server = None
 	try:
 		Logging.setPrefix("awlsim-linuxcnc: ")
 		Logging.setLoglevel(opt_loglevel)
@@ -426,6 +427,9 @@ def main():
 			printError("Received invalid maintenance request %d" %\
 				   e.requestType)
 			result = ExitCodes.EXIT_ERR_SIM
+	finally:
+		if server:
+			server.shutdown()
 	printInfo("LinuxCNC HAL module shutdown.")
 
 	return result
