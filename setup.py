@@ -124,6 +124,8 @@ if cx_Freeze:
 			}
 		}
 
+with open("README.md") as fd:
+	readmeText = fd.read()
 
 setup(	name		= "awlsim",
 	version		= VERSION_STRING,
@@ -193,6 +195,6 @@ setup(	name		= "awlsim",
 		"Topic :: Software Development :: Testing",
 		"Topic :: System :: Emulators",
 	],
-	long_description = open("README.md").read(),
+	long_description=readmeText,
 	**extraKeywords
 )
