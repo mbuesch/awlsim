@@ -131,28 +131,6 @@ class AwlSimServer(object): #+cdef
 		return (family, socktype, sockaddr)
 
 	@classmethod
-	def portIsUnused(cls, host, port):
-		sock = None
-		result = True
-		try:
-			family, socktype, sockaddr = AwlSimServer.getaddrinfo(host, port)
-			if family == AF_UNIX:
-				if fileExists(sockaddr) == False:
-					return True
-				return False
-			sock = socket.socket(family, socktype)
-			sock.bind(sockaddr)
-			sock.close()
-		except SocketErrors as e:
-			result = False
-		if sock:
-			with suppressAllExc:
-				sock.shutdown(socket.SHUT_RDWR)
-			with suppressAllExc:
-				sock.close()
-		return result
-
-	@classmethod
 	def start(cls, listenHost, listenPort,
 		  listenFamily=None,
 		  forkInterpreter=None,
@@ -1211,6 +1189,7 @@ class AwlSimServer(object): #+cdef
 			family = None # autodetect
 
 		self.close()
+		sock, ok = None, False
 		try:
 			if host:
 				family, socktype, sockaddr = netGetAddrInfo(
@@ -1239,9 +1218,16 @@ class AwlSimServer(object): #+cdef
 			sock.setblocking(False)
 			sock.bind(sockaddr)
 			sock.listen(5)
+			ok = True
 		except SocketErrors as e:
 			raise AwlSimError("AwlSimServer: Failed to create server "
 				"socket: " + str(e))
+		finally:
+			if not ok and sock:
+				with suppressAllExc:
+					sock.shutdown(socket.SHUT_RDWR)
+				with suppressAllExc:
+					sock.close()
 		self.__socket = sock
 
 	def __accept(self):

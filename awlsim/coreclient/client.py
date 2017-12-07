@@ -191,6 +191,7 @@ class AwlSimClient(object):
 		self.__defaultTimeout = timeout
 		startTime = monotonic_time()
 		readableSockaddr = host
+		sock, ok = None, False
 		try:
 			family, socktype, sockaddr = netGetAddrInfo(host, port)
 			if family == AF_UNIX:
@@ -217,9 +218,16 @@ class AwlSimClient(object):
 						continue
 					raise
 				break
+			ok = True
 		except SocketErrors as e:
 			raise AwlSimError("Failed to connect to AwlSimServer %s: %s" %\
 				(readableSockaddr, str(e)))
+		finally:
+			if not ok and sock:
+				with suppressAllExc:
+					sock.shutdown(socket.SHUT_RDWR)
+				with suppressAllExc:
+					sock.close()
 		printInfo("AwlSimClient: Connected.")
 		self.__transceiver = AwlSimMessageTransceiver(sock, readableSockaddr)
 		self.__msgWaiters = []

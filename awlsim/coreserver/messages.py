@@ -1270,6 +1270,7 @@ class AwlSimMessageTransceiver(object):
 						     socket.TCP_NODELAY,
 						     1)
 		except SocketErrors as e:
+			self.shutdown()
 			raise AwlSimError("Failed to initialize socket: %s" % str(e))
 
 	def setTxBufSize(self, size):
