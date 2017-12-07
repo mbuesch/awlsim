@@ -73,7 +73,11 @@ class LegacyProjectParser(object):
 		hwmodSettings = HwmodSettings()
 		try:
 			p = _ConfigParser()
-			p.readfp(StringIO(text), projectFile)
+			textIO = StringIO(text)
+			if hasattr(p, "read_file"):
+				p.read_file(textIO, projectFile)
+			else:
+				p.readfp(textIO, projectFile)
 
 			# AWLSIM_PROJECT section
 			version = p.getint("AWLSIM_PROJECT", "file_version")
