@@ -132,7 +132,8 @@ class component(object):
 
 	def __importHalFile(self, filename):
 		assert(not self.__signals)
-		lines = open(filename, "r").readlines()
+		with open(filename, "r") as fp:
+			lines = fp.readlines()
 		import re
 		setp_re = re.compile(r'^setp\s+([\w\.\-]+)\s+([\w\.\-]+)$')
 		net_re = re.compile(r'^net\s+([\w\.\-]+)\s+<?=?>?\s*([\w\.\-]+)(?:\s+<?=?>?\s*([\w\.\-]+))?$')
