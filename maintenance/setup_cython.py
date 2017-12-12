@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.7
+#   v1.8
 #
 #   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
 #
@@ -80,8 +80,8 @@ def makeDummyFile(path):
 		return
 	print("creating dummy file '%s'" % path)
 	makedirs(os.path.dirname(path))
-	with open(path, "w") as fd:
-		fd.write("\n")
+	with open(path, "wb") as fd:
+		fd.write("\n".encode("UTF-8"))
 
 def pyCythonPatchLine(line, basicOnly=False):
 	return line
@@ -91,111 +91,109 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 	      (fromFile, toFile))
 	tmpFile = toFile + ".TMP"
 	makedirs(os.path.dirname(tmpFile))
-	infd = open(fromFile, "r")
-	outfd = open(tmpFile, "w")
-	for line in infd.readlines():
-		stripLine = line.strip()
+	with open(fromFile, "rb") as infd,\
+	     open(tmpFile, "wb") as outfd:
+		for line in infd.read().decode("UTF-8").splitlines(True):
+			stripLine = line.strip()
 
-		if stripLine.endswith("#<no-cython-patch"):
-			outfd.write(line)
-			continue
+			if stripLine.endswith("#<no-cython-patch"):
+				outfd.write(line.encode("UTF-8"))
+				continue
 
-		# Replace import by cimport as requested by #+cimport
-		if "#+cimport" in stripLine:
-			line = line.replace("#+cimport", "#")
-			line = re.sub(r'\bimport\b', "cimport", line)
+			# Replace import by cimport as requested by #+cimport
+			if "#+cimport" in stripLine:
+				line = line.replace("#+cimport", "#")
+				line = re.sub(r'\bimport\b', "cimport", line)
 
-		# Convert None to NULL
-		if "#@cy-NoneToNULL" in stripLine:
-			line = line.replace("#@cy-NoneToNULL", "#")
-			line = re.sub(r'\bNone\b', "NULL", line)
+			# Convert None to NULL
+			if "#@cy-NoneToNULL" in stripLine:
+				line = line.replace("#@cy-NoneToNULL", "#")
+				line = re.sub(r'\bNone\b', "NULL", line)
 
-		# Uncomment all lines containing #@cy
-		def uncomment(line, removeStr):
-			line = line.replace(removeStr, "")
-			if line.startswith("#"):
-				line = line[1:]
-			if not line.endswith("\n"):
-				line += "\n"
-			return line
-		if "#@cy" in stripLine and\
-		   not "#@cy2" in stripLine and\
-		   not "#@cy3" in stripLine:
-			line = uncomment(line, "#@cy")
-		if sys.version_info[0] < 3:
-			if "#@cy2" in stripLine:
-				line = uncomment(line, "#@cy2")
-		else:
-			if "#@cy3" in stripLine:
-				line = uncomment(line, "#@cy3")
-
-		# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
-		if "#+cdef-" in stripLine:
-			# +cdef-foo-bar is the extended cdef patching.
-			# It adds cdef and any additional characters to the
-			# start of the line. Dashes are replaced with spaces.
-
-			# Get the additional text
-			idx = line.find("#+cdef-")
-			cdefText = line[idx+2 : ]
-			cdefText = cdefText.replace("-", " ").rstrip("\r\n")
-
-			# Get the initial space length
-			spaceCnt = 0
-			while spaceCnt < len(line) and line[spaceCnt].isspace():
-				spaceCnt += 1
-
-			# Construct the new line
-			line = line[ : spaceCnt] + cdefText + " " + line[spaceCnt : ]
-		elif "#+cdef" in stripLine:
-			# Simple cdef patching:
-			# def -> cdef
-			# class -> cdef class
-
-			if stripLine.startswith("class"):
-				line = re.sub(r'\bclass\b', "cdef class", line)
+			# Uncomment all lines containing #@cy
+			def uncomment(line, removeStr):
+				line = line.replace(removeStr, "")
+				if line.startswith("#"):
+					line = line[1:]
+				if not line.endswith("\n"):
+					line += "\n"
+				return line
+			if "#@cy" in stripLine and\
+			   not "#@cy2" in stripLine and\
+			   not "#@cy3" in stripLine:
+				line = uncomment(line, "#@cy")
+			if sys.version_info[0] < 3:
+				if "#@cy2" in stripLine:
+					line = uncomment(line, "#@cy2")
 			else:
-				line = re.sub(r'\bdef\b', "cdef", line)
-		if "#+cpdef" in stripLine:
-			# Simple cpdef patching:
-			# def -> cpdef
+				if "#@cy3" in stripLine:
+					line = uncomment(line, "#@cy3")
 
-			line = re.sub(r'\bdef\b', "cpdef", line)
+			# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
+			if "#+cdef-" in stripLine:
+				# +cdef-foo-bar is the extended cdef patching.
+				# It adds cdef and any additional characters to the
+				# start of the line. Dashes are replaced with spaces.
 
-		# Comment all lines containing #@nocy
-		# or #@cyX for the not matching version.
-		if "#@nocy" in stripLine:
-			line = "#" + line
-		if sys.version_info[0] < 3:
-			if "#@cy3" in stripLine:
+				# Get the additional text
+				idx = line.find("#+cdef-")
+				cdefText = line[idx+2 : ]
+				cdefText = cdefText.replace("-", " ").rstrip("\r\n")
+
+				# Get the initial space length
+				spaceCnt = 0
+				while spaceCnt < len(line) and line[spaceCnt].isspace():
+					spaceCnt += 1
+
+				# Construct the new line
+				line = line[ : spaceCnt] + cdefText + " " + line[spaceCnt : ]
+			elif "#+cdef" in stripLine:
+				# Simple cdef patching:
+				# def -> cdef
+				# class -> cdef class
+
+				if stripLine.startswith("class"):
+					line = re.sub(r'\bclass\b', "cdef class", line)
+				else:
+					line = re.sub(r'\bdef\b', "cdef", line)
+			if "#+cpdef" in stripLine:
+				# Simple cpdef patching:
+				# def -> cpdef
+
+				line = re.sub(r'\bdef\b', "cpdef", line)
+
+			# Comment all lines containing #@nocy
+			# or #@cyX for the not matching version.
+			if "#@nocy" in stripLine:
 				line = "#" + line
-		else:
-			if "#@cy2" in stripLine:
-				line = "#" + line
+			if sys.version_info[0] < 3:
+				if "#@cy3" in stripLine:
+					line = "#" + line
+			else:
+				if "#@cy2" in stripLine:
+					line = "#" + line
 
-		if not basicOnly:
-			# Automagic types
-			line = re.sub(r'\b_Bool\b', "bint", line)
-			line = re.sub(r'\bExBool_t\b', "signed char", line)
-			line = re.sub(r'\bExBool_val\b', "-1", line)
-			line = re.sub(r'\bint8_t\b', "signed char", line)
-			line = re.sub(r'\buint8_t\b', "unsigned char", line)
-			line = re.sub(r'\bint16_t\b', "signed short", line)
-			line = re.sub(r'\buint16_t\b', "unsigned short", line)
-			line = re.sub(r'\bint32_t\b', "signed int", line)
-			line = re.sub(r'\buint32_t\b', "unsigned int", line)
-			line = re.sub(r'\bint64_t\b', "signed long long", line)
-			line = re.sub(r'\buint64_t\b', "unsigned long long", line)
+			if not basicOnly:
+				# Automagic types
+				line = re.sub(r'\b_Bool\b', "bint", line)
+				line = re.sub(r'\bExBool_t\b', "signed char", line)
+				line = re.sub(r'\bExBool_val\b', "-1", line)
+				line = re.sub(r'\bint8_t\b', "signed char", line)
+				line = re.sub(r'\buint8_t\b', "unsigned char", line)
+				line = re.sub(r'\bint16_t\b', "signed short", line)
+				line = re.sub(r'\buint16_t\b', "unsigned short", line)
+				line = re.sub(r'\bint32_t\b', "signed int", line)
+				line = re.sub(r'\buint32_t\b', "unsigned int", line)
+				line = re.sub(r'\bint64_t\b', "signed long long", line)
+				line = re.sub(r'\buint64_t\b', "unsigned long long", line)
 
-			# Remove compat stuff
-			line = line.replace("absolute_import,", "")
+				# Remove compat stuff
+				line = line.replace("absolute_import,", "")
 
-		line = pyCythonPatchLine(line, basicOnly)
+			line = pyCythonPatchLine(line, basicOnly)
 
-		outfd.write(line)
-	infd.close()
-	outfd.flush()
-	outfd.close()
+			outfd.write(line.encode("UTF-8"))
+		outfd.flush()
 	if moveIfChanged(tmpFile, toFile):
 		print("(updated)")
 	else:

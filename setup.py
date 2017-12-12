@@ -124,8 +124,8 @@ if cx_Freeze:
 			}
 		}
 
-with open("README.md") as fd:
-	readmeText = fd.read()
+with open("README.md", "rb") as fd:
+	readmeText = fd.read().decode("UTF-8")
 
 setup(	name		= "awlsim",
 	version		= VERSION_STRING,
