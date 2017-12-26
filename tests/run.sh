@@ -315,7 +315,11 @@ run_awl_test()
 	# By default run once with all optimizers enabled.
 	local optimizer_runs="$(get_conf "$awl" optimizer_runs all)"
 
+	local first=1
 	for optimizers in $optimizer_runs; do
+		[ $first -eq 0 ] && echo -n " / "
+		local first=0
+
 		local test_time_file="$(maketemp time)"
 
 		local tries="$(get_conf "$awl" tries 1)"
@@ -358,9 +362,9 @@ run_awl_test()
 				"\nExpected exit code = $expected_exit_code"
 		fi
 		if is_parallel_run; then
-			[ $ok -ne 0 ] && echo "[$(basename "$awl"): O=$optimizers t=$(cat "$test_time_file") -> OK]  "
+			[ $ok -ne 0 ] && echo "$(basename "$awl"): O=$optimizers t=$(cat "$test_time_file") -> OK"
 		else
-			[ $ok -ne 0 ] && echo -n "[O=$optimizers t=$(cat "$test_time_file") -> OK]  "
+			[ $ok -ne 0 ] && echo -n "O=$optimizers t=$(cat "$test_time_file") -> OK"
 		fi
 		rm "$test_time_file"
 	done
@@ -397,9 +401,9 @@ run_sh_test()
 
 	[ $result -eq 0 ] || die "Test failed with error code $result"
 	if is_parallel_run; then
-		echo "[$(basename "$sh_file"): OK]"
+		echo "$(basename "$sh_file"): OK"
 	else
-		echo "[OK]"
+		echo "OK"
 	fi
 }
 
@@ -467,12 +471,10 @@ __run_test()
 	# Don't run the test helper library
 	[ "$(basename "$testfile")" = "awlsim_tstlib.py" ] && return
 
-	if is_parallel_run; then
-		local nl=
-	else
-		local nl="-n"
-	fi
-	echo $nl "Running test '$(basename "$testfile")' with '$(basename "$interpreter")' ... "
+	# Print test headline
+	local nl="-n"
+	is_parallel_run && local nl=
+	echo $nl "$(basename "$testfile") @ $(basename "$interpreter"): "
 
 	local prev_dir="$(pwd)"
 	cd "$rootdir" || die "cd to $rootdir failed"
@@ -512,7 +514,9 @@ run_test_directory()
 	local interpreter="$1"
 	local directory="$2"
 
-	echo "--- Entering directory '$directory'"
+	local prettydir="$(realpath -m --relative-base="$rootdir" "$directory")/"
+
+	echo ">>> entering $prettydir"
 	# run .awlpro tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
@@ -551,7 +555,7 @@ run_test_directory()
 		[ -d "$entry" ] || continue
 		run_test_directory "$interpreter" "$entry"
 	done
-	echo "--- Leaving directory '$directory'"
+	echo "<<< leaving $prettydir"
 }
 
 # $1=interpreter
