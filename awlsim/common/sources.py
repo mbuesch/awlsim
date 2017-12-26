@@ -229,19 +229,25 @@ class GenericSource(object):
 
 	@property
 	def identHash(self):
-		if not self.__identHash:
+		identHash = self.__identHash
+		if not identHash:
 			# Calculate the ident hash
-			h = self.IDENT_HASH(self.SRCTYPE.encode(
-					self.ENCODING, "strict"))
-			if self.name is not None:
-				h.update(self.name.encode(self.ENCODING, "ignore"))
-			if not self.enabled:
-				h.update(b'disabled')
-			if self.filepath is not None:
-				h.update(self.filepath.encode(self.ENCODING, "ignore"))
-			h.update(self.sourceBytes)
-			self.__identHash = h.digest()
-		return self.__identHash
+			bd = deque()
+			bd.append(self.SRCTYPE.encode(self.ENCODING, "strict"))
+			if self.name is None:
+				bd.append(b'0')
+			else:
+				bd.append(b'1')
+				bd.append(self.name.encode(self.ENCODING, "ignore"))
+			bd.append(b'1' if self.enabled else b'0')
+			if self.filepath:
+				bd.append(b'1')
+				bd.append(self.filepath.encode(self.ENCODING, "ignore"))
+			else:
+				bd.append(b'0')
+			bd.append(self.sourceBytes)
+			identHash = self.__identHash = self.IDENT_HASH(b'|'.join(bd)).digest()
+		return identHash
 
 	@identHash.setter
 	def identHash(self, identHash):
