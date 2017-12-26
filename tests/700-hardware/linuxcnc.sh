@@ -32,18 +32,18 @@ sh_test()
 
 	cd "$rootdir" || die "Failed to change to rootdir '$rootdir'"
 
-	echo ""
+	infomsg
 	for testfile in "000-base/empty.awl"\
 			"000-base/shutdown.awl"\
 			"000-base/EXAMPLE.awlpro"; do
-		echo "    Running linuxcnc test with: $testfile"
+		infomsg "    Running linuxcnc test with: $testfile"
 
 		__run_awlsim_linuxcnc_hal "$interpreter" "$test_dir" \
 			"$rootdir/tests/$testfile" \
 			--max-runtime 1.0
 	done
 
-	echo "    Running I/O test"
+	infomsg "    Running I/O test"
 	__run_awlsim_linuxcnc_hal "$interpreter" "$test_dir" \
 		"$test_dir/linuxcnc-iotest.awl__"
 }

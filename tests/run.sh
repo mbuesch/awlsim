@@ -16,9 +16,24 @@ failfile_write()
 	) 9< "$test_fail_file"
 }
 
+infomsg()
+{
+	[ -z "$AWLSIM_TEST_QUIET" ] && echo "$@"
+}
+
+warnmsg()
+{
+	echo "$@" >&2
+}
+
+errormsg()
+{
+	echo "$@" >&2
+}
+
 die()
 {
-	echo "$*"
+	errormsg "$*"
 
 	# We might be in a sub-job. So write to fail-file.
 	failfile_write "$*"
@@ -37,14 +52,14 @@ maketemp()
 # $1=message
 test_failed()
 {
-	echo "=== TEST FAILED ==="
+	errormsg "=== TEST FAILED ==="
 
 	if [ $opt_softfail -eq 0 ]; then
 		die "$@"
 	else
 		failfile_write "$*"
-		echo "$*"
-		echo "^^^ TEST FAILED ^^^"
+		errormsg "$*"
+		errormsg "^^^ TEST FAILED ^^^"
 		[ $global_retval -eq 0 ] && global_retval=1
 	fi
 }
@@ -317,7 +332,7 @@ run_awl_test()
 
 	local first=1
 	for optimizers in $optimizer_runs; do
-		[ $first -eq 0 ] && echo -n " / "
+		[ $first -eq 0 ] && infomsg -n " / "
 		local first=0
 
 		local test_time_file="$(maketemp time)"
@@ -351,7 +366,7 @@ run_awl_test()
 			[ $exit_code -eq $expected_exit_code ] || {
 				local ok=0
 				[ $tries -gt 0 ] &&\
-					echo "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
+					infomsg "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
 			}
 		done
 		if [ $ok -eq 0 ]; then
@@ -362,13 +377,13 @@ run_awl_test()
 				"\nExpected exit code = $expected_exit_code"
 		fi
 		if is_parallel_run; then
-			[ $ok -ne 0 ] && echo "$(basename "$awl"): O=$optimizers t=$(cat "$test_time_file") -> OK"
+			[ $ok -ne 0 ] && infomsg "$(basename "$awl"): O=$optimizers t=$(cat "$test_time_file") -> OK"
 		else
-			[ $ok -ne 0 ] && echo -n "O=$optimizers t=$(cat "$test_time_file") -> OK"
+			[ $ok -ne 0 ] && infomsg -n "O=$optimizers t=$(cat "$test_time_file") -> OK"
 		fi
 		rm "$test_time_file"
 	done
-	is_parallel_run || echo
+	is_parallel_run || infomsg
 
 	cleanup_test_environment
 }
@@ -401,9 +416,9 @@ run_sh_test()
 
 	[ $result -eq 0 ] || die "Test failed with error code $result"
 	if is_parallel_run; then
-		echo "$(basename "$sh_file"): OK"
+		infomsg "$(basename "$sh_file"): OK"
 	else
-		echo "OK"
+		infomsg "OK"
 	fi
 }
 
@@ -448,14 +463,17 @@ run_nose_test()
 
 	# Run the nose test case
 	cd "$rootdir" || die "Failed to cd to rootdir."
-	"$interpreter" "$nose" --no-byte-compile "$test_case" ||\
-		die "Nose test case '$(basename "$test_case")' failed."
-
-	if is_parallel_run; then
-		echo "[$(basename "$test_case"): OK]"
+	local opts="--no-byte-compile --verbosity=2"
+	if [ -n "$AWLSIM_TEST_QUIET" ]; then
+		"$interpreter" "$nose" $opts "$test_case" >/dev/null 2>&1 ||\
+			die "Nose test case '$(basename "$test_case")' failed."
 	else
-		echo "[nose OK]"
+		"$interpreter" "$nose" $opts "$test_case" ||\
+			die "Nose test case '$(basename "$test_case")' failed."
 	fi
+
+	infomsg "$(basename "$test_case"): OK"
+
 	cleanup_test_environment
 }
 
@@ -474,7 +492,7 @@ __run_test()
 	# Print test headline
 	local nl="-n"
 	is_parallel_run && local nl=
-	echo $nl "$(basename "$testfile") @ $(basename "$interpreter"): "
+	infomsg $nl "$(basename "$testfile") @ $(basename "$interpreter"): "
 
 	local prev_dir="$(pwd)"
 	cd "$rootdir" || die "cd to $rootdir failed"
@@ -516,7 +534,7 @@ run_test_directory()
 
 	local prettydir="$(realpath -m --relative-base="$rootdir" "$directory")/"
 
-	echo ">>> entering $prettydir"
+	infomsg ">>> entering $prettydir"
 	# run .awlpro tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
@@ -555,7 +573,7 @@ run_test_directory()
 		[ -d "$entry" ] || continue
 		run_test_directory "$interpreter" "$entry"
 	done
-	echo "<<< leaving $prettydir"
+	infomsg "<<< leaving $prettydir"
 }
 
 # $1=interpreter
@@ -563,18 +581,18 @@ warn_skipped()
 {
 	local interpreter="$1"
 
-	echo "=== WARNING: '$interpreter' interpreter not found. Test skipped."
-	echo
+	warnmsg "=== WARNING: '$interpreter' interpreter not found. Test skipped."
+	warnmsg
 }
 
 build_cython2()
 {
 	have_prog cython && have_prog python2 || {
-		echo "=== WARNING: Cannot build cython2 modules"
+		warnmsg "=== WARNING: Cannot build cython2 modules"
 		return 1
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
-	echo "=== Building awlsim with python2"
+	infomsg "=== Building awlsim with python2"
 	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
 	AWLSIM_CYTHON_PARALLEL=1 \
 	nice -n 5 \
@@ -585,11 +603,11 @@ build_cython2()
 build_cython3()
 {
 	have_prog cython3 && have_prog python3 || {
-		echo "=== WARNING: Cannot build cython3 modules"
+		warnmsg "=== WARNING: Cannot build cython3 modules"
 		return 1
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
-	echo "=== Building awlsim with python3"
+	infomsg "=== Building awlsim with python3"
 	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
 	AWLSIM_CYTHON_PARALLEL=1 \
 	nice -n 5 \
@@ -682,7 +700,7 @@ do_tests()
 		[ "$interp_major" -eq 2 -a "$interp_minor" -lt 7 ] &&\
 			die "'$interpreter' interpreter version '$interp_ver_dot' too old."
 
-		echo "=== Running tests with '$interpreter'"
+		infomsg "=== Running tests with '$interpreter'"
 		if [ $# -eq 0 ]; then
 			run_test_directory "$interpreter" "$basedir"
 		else
@@ -696,7 +714,7 @@ do_tests()
 				check_job_failure && break
 			done
 		fi
-		echo
+		infomsg
 
 		check_job_failure && break
 		[ -n "$opt_interpreter" ] && break
@@ -704,56 +722,58 @@ do_tests()
 
 	if is_parallel_run; then
 		# This is a parallel run. Wait for all jobs.
-		echo "Waiting for background jobs..."
+		infomsg "Waiting for background jobs..."
 		wait
 		# Print the fail information.
 		if check_job_failure; then
-			echo
-			echo "===== FAILURES in parallel run: ====="
-			cat "$test_fail_file"
-			echo "====================================="
+			errormsg
+			errormsg "===== FAILURES in parallel run: ====="
+			cat "$test_fail_file" >&2
+			errormsg "====================================="
 			global_retval=1
 		fi
 	fi
 
 	# Print summary
-	echo
 	if [ $global_retval -eq 0 ]; then
-		echo -n "All tests succeeded"
+		infomsg
+		infomsg -n "All tests succeeded"
 	else
-		echo -n "Some tests FAILED"
+		errormsg
+		errormsg -n "Some tests FAILED"
 	fi
 	if [ -n "$opt_interpreter" ]; then
-		echo " (with interpreter '$opt_interpreter')"
+		infomsg " (with interpreter '$opt_interpreter')"
 	else
 		if [ $opt_quick -eq 0 ]; then
 			if [ $opt_extended -eq 0 ]; then
-				echo " (full run)"
+				infomsg " (full run)"
 			else
-				echo " (extended run)"
+				infomsg " (extended run)"
 			fi
 		else
-			echo " (quick run)"
+			infomsg " (quick run)"
 		fi
 	fi
 }
 
 show_help()
 {
-	echo "awlsim unit test script"
-	echo
-	echo "Usage: run.sh [OPTIONS] [testdirectory/testscript.awl/.awlpro/.sh/.py]"
-	echo
-	echo "Options:"
-	echo " -i|--interpreter INTER        Use INTER as interpreter for the tests"
-	echo " -s|--softfail                 Do not abort on single test failures"
-	echo " -j|--jobs NR                  Set the number of jobs to run in parallel."
-	echo "                               0 means number-of-CPUs"
-	echo "                               Default: 1"
-	echo " -q|--quick                    Only run python2 and python3 tests"
-	echo " -qq                           Shortcut for: -q -j 0"
-	echo " -g|--no-gui                   Avoid tests that need GUI libraries"
-	echo " -x|--extended                 Run tests on additional interpreters"
+	infomsg "awlsim unit test script"
+	infomsg
+	infomsg "Usage: run.sh [OPTIONS] [testdirectory/testscript.awl/.awlpro/.sh/.py]"
+	infomsg
+	infomsg "Options:"
+	infomsg " -i|--interpreter INTER        Use INTER as interpreter for the tests"
+	infomsg " -s|--softfail                 Do not abort on single test failures"
+	infomsg " -j|--jobs NR                  Set the number of jobs to run in parallel."
+	infomsg "                               0 means number-of-CPUs"
+	infomsg "                               Default: 1"
+	infomsg " -q|--quick                    Only run python2 and python3 tests"
+	infomsg " -qq                           Shortcut for: -q -j 0"
+	infomsg " -g|--no-gui                   Avoid tests that need GUI libraries"
+	infomsg " -x|--extended                 Run tests on additional interpreters"
+	infomsg " -Q|--quiet                    Less messages"
 }
 
 tmp_dir="/tmp/awlsim-test-$$"
@@ -815,8 +835,11 @@ while [ $# -ge 1 ]; do
 		shift
 		opt_renice="$1"
 		;;
+	-Q|--quiet)
+		export AWLSIM_TEST_QUIET=1
+		;;
 	*)
-		echo "Unknown option: $1"
+		errormsg "Unknown option: $1"
 		exit 1
 		;;
 	esac
@@ -835,7 +858,7 @@ fi
 
 do_renice()
 {
-	renice "$1" "$$"
+	renice "$1" "$$" >/dev/null
 }
 
 if [ -n "$opt_renice" ]; then
