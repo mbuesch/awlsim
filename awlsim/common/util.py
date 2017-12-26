@@ -33,11 +33,13 @@ import base64
 import binascii
 import functools
 import itertools
+from collections import deque
 
 
 __all__ = [
 	"functools",
 	"itertools",
+	"deque",
 	"Logging",
 	"printDebug",
 	"printVerbose",

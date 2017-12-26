@@ -25,7 +25,6 @@ from awlsim.common.compat import *
 import time
 import datetime
 import random
-from collections import deque
 
 from awlsim.common.util import *
 from awlsim.common.cpuspecs import * #+cimport
