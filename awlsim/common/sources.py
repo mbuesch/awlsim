@@ -148,11 +148,24 @@ class GenericSource(object):
 		     name="",
 		     enabled=True,
 		     filepath="",
-		     sourceBytes=b""):
+		     sourceBytes=b"",
+		     userData={}):
+		"""Initialize a source code object.
+		name: Name string of the source.
+		enabled: True, if the source is active.
+		filepath: Path string to the source file, or an empty string.
+		sourceBytes: bytes object of the actual source code.
+		userData: Optional dict that may be filled with user data.
+		          The source code object will not touch this data.
+			  This data will _not_ be transferred to the core server.
+			  This data does _not_ contribute to the identHash.
+		"""
 		self.name = name
 		self.enabled = enabled
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
+		self.userData = userData.copy()
+
 		self.__identHash = None
 
 	@property
@@ -262,7 +275,8 @@ class GenericSource(object):
 		return self.__class__(name=self.name,
 				      enabled=self.enabled,
 				      filepath=self.filepath,
-				      sourceBytes=self.sourceBytes[:])
+				      sourceBytes=self.sourceBytes[:],
+				      userData=self.userData)
 
 	def isFileBacked(self):
 		return bool(self.filepath)
