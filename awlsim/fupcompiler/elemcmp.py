@@ -172,7 +172,7 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 								  toLoad=True,
 								  inverted=inverted)
 
-		if conn.textMatch("(ENO)|(OUT\d+)"):
+		if conn.textMatch(r"(ENO)|(OUT\d+)"):
 			self._compileConn_checkTarget(conn, desiredTarget, inverted,
 						      targetExpectVKE=True,
 						      allowInversion=True)
