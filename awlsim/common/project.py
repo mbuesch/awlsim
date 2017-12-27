@@ -876,6 +876,13 @@ class Project(object):
 	def getSymTabSources(self):
 		return self.symTabSources
 
+	def getAllSources(self):
+		for source in itertools.chain(self.getAwlSources(),
+					      self.getFupSources(),
+					      self.getKopSources(),
+					      self.getSymTabSources()):
+			yield source
+
 	def setLibSelections(self, libSelections):
 		self.libSelections = libSelections or []
 
