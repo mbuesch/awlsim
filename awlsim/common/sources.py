@@ -271,13 +271,6 @@ class GenericSource(object):
 	def identHashStr(self):
 		return bytesToHexStr(self.identHash)
 
-	def dup(self):
-		return self.__class__(name=self.name,
-				      enabled=self.enabled,
-				      filepath=self.filepath,
-				      sourceBytes=self.sourceBytes[:],
-				      userData=self.userData)
-
 	def isFileBacked(self):
 		return bool(self.filepath)
 
@@ -332,6 +325,24 @@ class GenericSource(object):
 		return cls(name=name,
 			   filepath=None,
 			   sourceBytes=data)
+
+	def dup(self):
+		"""Duplicate this source. Returns a copy.
+		"""
+		return self.__class__(name=self.name,
+				      enabled=self.enabled,
+				      filepath=self.filepath,
+				      sourceBytes=self.sourceBytes[:],
+				      userData=self.userData)
+
+	def copyFrom(self, other):
+		"""Copy the content of another source into this one.
+		"""
+		self.name = other.name
+		self.enabled = other.enabled
+		self.filepath = other.filepath
+		self.sourceBytes = other.sourceBytes[:]
+		self.userData = other.userData.copy()
 
 	def __eq__(self, other):
 		return self.identHash == other.identHash
