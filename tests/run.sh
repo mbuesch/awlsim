@@ -585,34 +585,33 @@ warn_skipped()
 	warnmsg
 }
 
-build_cython2()
+__build_cython()
 {
-	have_prog cython && have_prog python2 || {
-		warnmsg "=== WARNING: Cannot build cython2 modules"
+	local cython="$1"
+	local python="$2"
+
+	have_prog "$cython" && have_prog "$python" || {
+		warnmsg "=== WARNING: Cannot build $cython modules"
 		return 1
 	}
 	cd "$rootdir" || die "cd to $rootdir failed"
-	infomsg "=== Building awlsim with python2"
-	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
-	AWLSIM_CYTHON_PARALLEL=1 \
-	nice -n 5 \
-	python2 ./setup.py build >/dev/null || die "'python2 ./setup.py build' failed"
+	infomsg "=== Building awlsim $cython modules with $python"
+	CFLAGS="-O0" CPPFLAGS= CXXFLAGS="-O0" LDFLAGS= \
+		AWLSIM_CYTHON_PARALLEL=1 \
+		nice -n 5 \
+		"$python" ./setup.py build >/dev/null ||\
+		die "'$python ./setup.py build' failed"
 	return 0
+}
+
+build_cython2()
+{
+	__build_cython cython python2
 }
 
 build_cython3()
 {
-	have_prog cython3 && have_prog python3 || {
-		warnmsg "=== WARNING: Cannot build cython3 modules"
-		return 1
-	}
-	cd "$rootdir" || die "cd to $rootdir failed"
-	infomsg "=== Building awlsim with python3"
-	CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
-	AWLSIM_CYTHON_PARALLEL=1 \
-	nice -n 5 \
-	python3 ./setup.py build >/dev/null || die "'python3 ./setup.py build' failed"
-	return 0
+	__build_cython cython3 python3
 }
 
 # $@=testfiles
