@@ -28,6 +28,8 @@ import os
 from awlsim.gui.util import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.projectwidget import *
+from awlsim.gui.editmdiarea import *
+from awlsim.gui.projecttreewidget import *
 from awlsim.gui.cpuwidget import *
 from awlsim.gui.guiconfig import *
 from awlsim.gui.cpuconfig import *
@@ -61,6 +63,30 @@ class CpuDockWidget(QDockWidget):
 		else:
 			self.setWindowTitle("")
 
+class ProjectTreeDockWidget(QDockWidget):
+	def __init__(self, mainWidget, parent=None):
+		QDockWidget.__init__(self, "", parent)
+		self.mainWidget = mainWidget
+
+		self.setFeatures(QDockWidget.DockWidgetMovable |
+				 QDockWidget.DockWidgetFloatable)
+		self.setAllowedAreas(Qt.AllDockWidgetAreas)
+
+		self.projectTreeModel = ProjectTreeModel(mainWidget=mainWidget)
+		self.projectTreeView = ProjectTreeView(model=self.projectTreeModel,
+						       parent=self)
+		self.setWidget(self.projectTreeView)
+
+		self.topLevelChanged.connect(self.__handleTopLevelChange)
+		self.__handleTopLevelChange(self.isFloating())
+
+	def __handleTopLevelChange(self, floating):
+		if floating:
+			self.setWindowTitle("%s - Project view" %\
+				self.mainWidget.mainWindow.TITLE)
+		else:
+			self.setWindowTitle("")
+
 class MainWidget(QWidget):
 	# Signal: Project loaded
 	projectLoaded = Signal(Project)
@@ -86,23 +112,30 @@ class MainWidget(QWidget):
 
 		self.simClient = GuiAwlSimClient()
 
-		self.projectWidget = ProjectWidget(self)
-		self.layout().addWidget(self.projectWidget, 0, 0)
+		self.editMdiArea = EditMdiArea(self)
+		self.layout().addWidget(self.editMdiArea, 0, 0)
 
 		self.filename = None
 		self.dirty = False
 
-		self.projectWidget.codeChanged.connect(self.somethingChanged)
-		self.projectWidget.fupChanged.connect(self.somethingChanged)
-		self.projectWidget.kopChanged.connect(self.somethingChanged)
-		self.projectWidget.symTabChanged.connect(self.somethingChanged)
-		self.projectWidget.libTableChanged.connect(self.somethingChanged)
-		self.projectWidget.textFocusChanged.connect(self.textFocusChanged)
-		self.projectWidget.selResourceChanged.connect(self.selResourceChanged)
-		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
-		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
-		self.projectWidget.copyAvailableChanged.connect(self.copyAvailableChanged)
-		self.runStateChanged.connect(self.projectWidget.updateRunState)
+#TODO		self.projectWidget.codeChanged.connect(self.somethingChanged)
+#TODO		self.projectWidget.fupChanged.connect(self.somethingChanged)
+#TODO		self.projectWidget.kopChanged.connect(self.somethingChanged)
+#TODO		self.projectWidget.symTabChanged.connect(self.somethingChanged)
+#TODO		self.projectWidget.libTableChanged.connect(self.somethingChanged)
+#TODO		self.projectWidget.textFocusChanged.connect(self.textFocusChanged)
+#TODO		self.projectWidget.selResourceChanged.connect(self.selResourceChanged)
+#TODO		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
+#TODO		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
+#TODO		self.projectWidget.copyAvailableChanged.connect(self.copyAvailableChanged)
+#TODO		self.runStateChanged.connect(self.projectWidget.updateRunState)
+
+	@property
+	def projectTreeModel(self):
+		return self.mainWindow.projectTreeModel
+
+	def getProject(self):
+		return self.projectTreeModel.getProject()
 
 	def isDirty(self):
 		return self.dirty
@@ -123,9 +156,6 @@ class MainWidget(QWidget):
 
 	def getCpuWidget(self):
 		return self.mainWindow.cpuWidget
-
-	def getProject(self):
-		return self.projectWidget.getProject()
 
 	def newFile(self, filename=None):
 		if isWinStandalone:
@@ -185,11 +215,11 @@ class MainWidget(QWidget):
 			# The file does not exist. We implicitly create it.
 			# The actual file will be created when the project is saved.
 			isNewProject = True
-			self.projectWidget.reset()
+			self.projectTreeModel.reset()
 		else:
 			isNewProject = False
 			try:
-				self.projectWidget.loadProjectFile(filename)
+				self.projectTreeModel.loadProjectFile(filename, self)
 			except AwlSimError as e:
 				QMessageBox.critical(self,
 					"Failed to load project file", str(e))
@@ -219,7 +249,7 @@ class MainWidget(QWidget):
 
 	def saveFile(self, filename):
 		try:
-			res = self.projectWidget.saveProjectFile(filename)
+			res = self.projectTreeModel.saveProjectFile(filename, self)
 			if res == 0: # Failure
 				return False
 			elif res < 0: # Force save-as
@@ -254,6 +284,7 @@ class MainWidget(QWidget):
 		dlg = GuiConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
 		if dlg.exec_() == dlg.Accepted:
+			#TODO
 			self.projectWidget.setSettings(self.getProject().getGuiSettings())
 		dlg.deleteLater()
 
@@ -276,51 +307,67 @@ class MainWidget(QWidget):
 		dlg.deleteLater()
 
 	def insertOB(self):
+		#TODO
 		self.projectWidget.insertOB()
 
 	def insertFC(self):
+		#TODO
 		self.projectWidget.insertFC()
 
 	def insertFB(self):
+		#TODO
 		self.projectWidget.insertFB()
 
 	def insertInstanceDB(self):
+		#TODO
 		self.projectWidget.insertInstanceDB()
 
 	def insertGlobalDB(self):
+		#TODO
 		self.projectWidget.insertGlobalDB()
 
 	def insertUDT(self):
+		#TODO
 		self.projectWidget.insertUDT()
 
 	def insertFCcall(self):
+		#TODO
 		self.projectWidget.insertFCcall()
 
 	def insertFBcall(self):
+		#TODO
 		self.projectWidget.insertFBcall()
 
 	def openLibrary(self):
+		#TODO
 		self.projectWidget.openLibrary()
 
 	def undo(self):
+		#TODO
 		self.projectWidget.undo()
 
 	def redo(self):
+		#TODO
 		self.projectWidget.redo()
 
 	def cut(self):
+		#TODO
 		self.projectWidget.clipboardCut()
 
 	def copy(self):
+		#TODO
 		self.projectWidget.clipboardCopy()
 
 	def paste(self):
+		#TODO
 		self.projectWidget.clipboardPaste()
 
 	def findText(self):
+		#TODO
 		self.projectWidget.findText()
 
 	def findReplaceText(self):
+		#TODO
 		self.projectWidget.findReplaceText()
 
 class MainWindow(QMainWindow):
@@ -345,8 +392,10 @@ class MainWindow(QMainWindow):
 
 		self.mainWidget = MainWidget(self, self)
 		self.cpuDockWidget = CpuDockWidget(self.mainWidget, self)
+		self.treeDockWidget = ProjectTreeDockWidget(self.mainWidget, self)
 
 		self.setCentralWidget(self.mainWidget)
+		self.addDockWidget(Qt.LeftDockWidgetArea, self.treeDockWidget)
 		self.addDockWidget(Qt.RightDockWidgetArea, self.cpuDockWidget)
 
 		self.tb = QToolBar(self)
@@ -462,17 +511,26 @@ class MainWindow(QMainWindow):
 		self.ctrlTb.connectToCpuWidget(self.cpuWidget)
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
-		self.mainWidget.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
+		#TODO
+#		self.mainWidget.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
 		self.cpuWidget.runStateChanged.connect(self.mainWidget.runStateChanged)
-		self.cpuWidget.onlineDiagChanged.connect(self.mainWidget.projectWidget.handleOnlineDiagChange)
-		self.cpuWidget.haveInsnDump.connect(self.mainWidget.projectWidget.handleInsnDump)
-		self.cpuWidget.haveIdentsMsg.connect(self.mainWidget.projectWidget.handleIdentsMsg)
+		#TODO
+#		self.cpuWidget.onlineDiagChanged.connect(self.mainWidget.projectWidget.handleOnlineDiagChange)
+		#TODO
+#		self.cpuWidget.haveInsnDump.connect(self.mainWidget.projectWidget.handleInsnDump)
+		#TODO
+#		self.cpuWidget.haveIdentsMsg.connect(self.mainWidget.projectWidget.handleIdentsMsg)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
+		self.treeDockWidget.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
 
 		self.resize(1024, 768)
 
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
+
+	@property
+	def projectTreeModel(self):
+		return self.treeDockWidget.projectTreeModel
 
 	@property
 	def cpuWidget(self):

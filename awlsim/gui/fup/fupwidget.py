@@ -187,11 +187,11 @@ class FupWidget(QWidget):
 
 	diagramChanged = Signal()
 
-	def __init__(self, parent, projectWidget):
+	def __init__(self, parent, getSymTabSourcesFunc):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
-		self.projectWidget = projectWidget
+		self.__getSymTabSourcesFunc = getSymTabSourcesFunc
 		self.__source = FupSource(name = "Diagram 1")
 		self.__needSourceUpdate = True
 
@@ -263,7 +263,7 @@ class FupWidget(QWidget):
 	def __compileAndShow(self, mnemonics, showCall, optimize=False):
 		fupSource = self.getSource()
 		try:
-			symTabSources = self.projectWidget.getSymTabSources()
+			symTabSources = self.__getSymTabSourcesFunc()
 			optSettCont = None
 			if not optimize:
 				optSettCont = AwlOptimizerSettingsContainer(globalEnable=False)
