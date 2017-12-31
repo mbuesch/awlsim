@@ -335,14 +335,24 @@ class GenericSource(object):
 				      sourceBytes=self.sourceBytes[:],
 				      userData=self.userData)
 
-	def copyFrom(self, other):
+	def copyFrom(self, other,
+		     copyName=True,
+		     copyEnabled=True,
+		     copyFilepath=True,
+		     copySourceBytes=True,
+		     copyUserData=True):
 		"""Copy the content of another source into this one.
 		"""
-		self.name = other.name
-		self.enabled = other.enabled
-		self.filepath = other.filepath
-		self.sourceBytes = other.sourceBytes[:]
-		self.userData = other.userData.copy()
+		if copyName:
+			self.name = other.name
+		if copyEnabled:
+			self.enabled = other.enabled
+		if copyFilepath:
+			self.filepath = other.filepath
+		if copySourceBytes:
+			self.sourceBytes = other.sourceBytes[:]
+		if copyUserData:
+			self.userData = other.userData.copy()
 
 	def __eq__(self, other):
 		return self.identHash == other.identHash
