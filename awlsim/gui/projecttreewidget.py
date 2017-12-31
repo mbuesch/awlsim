@@ -226,7 +226,12 @@ class ProjectTreeModel(QAbstractItemModel):
 				continue
 			newSource = mdiSubWin.getSource()
 			if newSource:
-				source.copyFrom(newSource)
+				source.copyFrom(newSource,
+						copyName=False,
+						copyEnabled=False,
+						copyFilepath=False,
+						copySourceBytes=True,
+						copyUserData=False)
 			else:
 				ret = False
 		# Refresh the library selections.
