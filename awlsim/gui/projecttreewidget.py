@@ -36,6 +36,9 @@ class ProjectTreeModel(QAbstractItemModel):
 	"""Main project tree model.
 	"""
 
+	# Signal: Project has just been loaded.
+	projectLoaded = Signal()
+
 	# Signal: Some project data changed.
 	projectContentChanged = Signal()
 
@@ -289,6 +292,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			# This might be a plain AWL-file.
 			# Try to load it.
 			self.__loadPlainAwlSourceFile(filename, parentWidget)
+		self.projectLoaded.emit()
 
 	def saveProjectFile(self, filename, parentWidget):
 		if self.__isAdHocProject:
@@ -503,8 +507,6 @@ class ProjectTreeView(QTreeView):
 	def __init__(self, model, parent=None):
 		QTreeView.__init__(self, parent)
 		self.setModel(model)
-		if model:
-			self.expand(model.idToIndex(model.INDEXID_SRCS))
 
 		self.__currentIndex = None
 
@@ -514,6 +516,20 @@ class ProjectTreeView(QTreeView):
 
 		self.pressed.connect(self.__mouseBtnPressed)
 		self.doubleClicked.connect(self.__mouseBtnDoubleClicked)
+
+	def setModel(self, model):
+		oldModel = self.model()
+		if oldModel:
+			oldModel.projectLoaded.disconnect(self.__handleProjectLoaded)
+		QTreeView.setModel(self, model)
+		if model:
+			model.projectLoaded.connect(self.__handleProjectLoaded)
+
+	def __handleProjectLoaded(self):
+		model = self.model()
+		if model:
+			self.expand(model.idToIndex(model.INDEXID_SRCS))
+			self.expand(model.idToIndex(model.INDEXID_SRCS_AWL))
 
 	def __mouseBtnPressed(self, index):
 		model, buttons = self.model(), QApplication.mouseButtons()
