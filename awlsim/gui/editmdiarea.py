@@ -29,6 +29,11 @@ from awlsim.gui.fup.fupwidget import FupWidget
 from awlsim.gui.util import *
 
 
+__all__ = [
+	"EditMdiArea",
+]
+
+
 class EditMdiArea(QMdiArea):
 	"""Main editor MDI area.
 	"""

@@ -26,6 +26,12 @@ from awlsim.gui.util import *
 from awlsim.gui.icons import *
 
 
+__all__ = [
+	"ProjectTreeModel",
+	"ProjectTreeView",
+]
+
+
 class ProjectTreeModel(QAbstractItemModel):
 	"""Main project tree model.
 	"""
