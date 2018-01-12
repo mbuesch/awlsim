@@ -48,6 +48,12 @@ hook_post_checkout()
 	done
 }
 
+hook_testbuild()
+{
+	CFLAGS=-O0 CPPFLAGS= CXXFLAGS=-O0 LDFLAGS= \
+		default_hook_testbuild "$@"
+}
+
 hook_regression_tests()
 {
 	default_hook_regression_tests "$@"
