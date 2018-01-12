@@ -620,7 +620,7 @@ class MainWindow(QMainWindow):
 		QMessageBox.about(self, "About AWL/STL soft-PLC",
 			"Awlsim soft-PLC version %s\n"
 			"\n"
-			"Copyright 2012-2017 Michael Büsch <m@bues.ch>\n"
+			"Copyright 2012-2018 Michael Büsch <m@bues.ch>\n"
 			"\n"
 			"Project home:  %s\n"
 			"\n"
