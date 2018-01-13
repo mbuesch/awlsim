@@ -79,6 +79,14 @@ class ProjectTreeModel(QAbstractItemModel):
 	}
 	id2row_srcs = pivotDict(row2id_srcs)
 
+	id2childBase = {
+		INDEXID_SRCS_AWL	: INDEXID_SRCS_AWL_BASE,
+		INDEXID_SRCS_FUP	: INDEXID_SRCS_FUP_BASE,
+		INDEXID_SRCS_KOP	: INDEXID_SRCS_KOP_BASE,
+		INDEXID_SRCS_SYMTAB	: INDEXID_SRCS_SYMTAB_BASE,
+	}
+	base2parentId = pivotDict(id2childBase)
+
 	EnumGen.start
 	COLUMN_NAME	= EnumGen.item
 	EnumGen.end
@@ -97,16 +105,13 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.rowsMoved.connect(self.__projectContentChanged)
 		self.rowsRemoved.connect(self.__projectContentChanged)
 
-	def __projectContentChanged(self):
-		self.projectContentChanged.emit()
-
 	@property
 	def editMdiArea(self):
 		"""Get EditMdiArea instance.
 		"""
 		return self.mainWidget.editMdiArea
 
-	def handleEntryActivation(self, index, parentWidget=None):
+	def entryActivate(self, index, parentWidget=None):
 		if not index or not index.isValid():
 			return
 		idxIdBase, idxId, itemNr = self.indexToId(index)
@@ -169,24 +174,13 @@ class ProjectTreeModel(QAbstractItemModel):
 			return True
 		return False
 
-	def handleEntryDelete(self, index, parentWidget=None):
+	def entryDelete(self, index, parentWidget=None):
 		if not index or not index.isValid():
 			return False
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 
-		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-			getter = self.__project.getAwlSources
-			setter = self.__project.setAwlSources
-		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-			getter = self.__project.getFupSources
-			setter = self.__project.setFupSources
-		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-			getter = self.__project.getKopSources
-			setter = self.__project.setKopSources
-		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-			getter = self.__project.getSymTabSources
-			setter = self.__project.setSymTabSources
-		else:
+		getter, setter = self.sourceGetter(idxIdBase)
+		if not getter or not setter:
 			return False
 
 		sourceList = getter()
@@ -213,6 +207,97 @@ class ProjectTreeModel(QAbstractItemModel):
 			setter(sourceList)
 		finally:
 			self.endRemoveRows()
+		return True
+
+	def entryAdd(self, idxIdBase, source=None, pos=-1, parentWidget=None):
+		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			parentIdxId = self.INDEXID_SRCS_AWL
+			if not source:
+				source = AwlSource()
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			parentIdxId = self.INDEXID_SRCS_FUP
+			if not source:
+				source = FupSource()
+		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			parentIdxId = self.INDEXID_SRCS_KOP
+			if not source:
+				source = KopSource()
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			parentIdxId = self.INDEXID_SRCS_SYMTAB
+			if not source:
+				source = SymTabSource()
+		else:
+			return False
+
+		if not source.name:
+			source.name = ">>> New source <<<"
+
+		getter, setter = self.sourceGetter(idxIdBase)
+		parentIndex = self.idToIndex(parentIdxId)
+
+		sources = getter()
+		if pos < 0:
+			pos = len(sources)
+		pos = min(pos, len(sources))
+		self.beginInsertRows(parentIndex, pos, pos)
+		try:
+			sources.insert(pos, source)
+			setter(sources)
+		finally:
+			self.endInsertRows()
+		return True
+
+	def entryRename(self, index, newName=None, parentWidget=None):
+		idxIdBase, idxId, itemNr = self.indexToId(index)
+		getter, setter = self.sourceGetter(idxIdBase)
+		if getter:
+
+			pass#TODO
+			return True
+		return False
+
+	def entryIntegrate(self, index, parentWidget=None):
+		pass#TODO
+		return True
+
+	def entryEnable(self, index, enable=True, parentWidget=None):
+		idxIdBase, idxId, itemNr = self.indexToId(index)
+		getter, setter = self.sourceGetter(idxIdBase)
+		if getter:
+			source = getter()[itemNr]
+			source.enabled = enable
+			self.projectContentChanged.emit()
+			return True
+		return False
+
+	def entryImport(self, idxIdBase, parentWidget=None):
+		pass#TODO
+		return True
+
+	def entryExport(self, index, filePath=None, parentWidget=None):
+		pass#TODO
+		return True
+
+	def sourceGetter(self, idxIdBase):
+		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			getter = self.__project.getAwlSources
+			setter = self.__project.setAwlSources
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			getter = self.__project.getFupSources
+			setter = self.__project.setFupSources
+		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			getter = self.__project.getKopSources
+			setter = self.__project.setKopSources
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			getter = self.__project.getSymTabSources
+			setter = self.__project.setSymTabSources
+		else:
+			getter = None
+			setter = None
+		return getter, setter
+
+	def __projectContentChanged(self):
+		self.projectContentChanged.emit()
 
 	def __refreshProject(self):
 		"""Copy the modified sources from the edit widgets.
@@ -365,7 +450,14 @@ class ProjectTreeModel(QAbstractItemModel):
 	def flags(self, index):
 		if not index.isValid():
 			return Qt.NoItemFlags
-		return Qt.ItemIsEnabled
+		idxIdBase, idxId, itemNr = self.indexToId(index)
+		flags = Qt.ItemIsEnabled
+		if idxIdBase in {self.INDEXID_SRCS_AWL_BASE,
+				 self.INDEXID_SRCS_FUP_BASE,
+				 self.INDEXID_SRCS_KOP_BASE,
+				 self.INDEXID_SRCS_SYMTAB_BASE,}:
+			flags |= Qt.ItemIsEditable
+		return flags
 
 	def columnCount(self, parentIndex=QModelIndex()):
 		return 1
@@ -503,10 +595,112 @@ class ProjectTreeModel(QAbstractItemModel):
 					return getIcon("hwmod")
 		return None
 
+	def setData(self, index, value, role=Qt.EditRole):
+		if not index or not index.isValid():
+			return False
+
+		if role == Qt.EditRole:
+			pass#TODO
+		else:
+			return False
+
+		self.dataChanged.emit(index, index, [role])
+		return True
+
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
 		if role == Qt.DisplayRole:
 			return "Project"
 		return None
+
+class SourceContextMenu(QMenu):
+	# Signal: Add new source
+	add = Signal()
+	# Signal: Delete current source
+	delete = Signal()
+	# Signal: Rename current source
+	rename = Signal()
+	# Signal: Integrate source
+	integrate = Signal()
+	# Signal: Import source
+	import_ = Signal()
+	# Signal: Export source
+	export = Signal()
+	# Signal: Enable/disable source
+	enable = Signal(bool)
+
+	def __init__(self, itemCategoryName, itemName,
+		     withAddButton=True,
+		     withDeleteButton=True,
+		     withRenameButton=True,
+		     withIntegrateButton=True,
+		     withImportButton=True,
+		     withExportButton=True,
+		     withEnableButton=False,
+		     withDisableButton=False,
+		     parent=None):
+		QMenu.__init__(self, parent)
+
+		self.itemCategoryName = itemCategoryName
+		self.itemName = itemName
+
+		if withAddButton:
+			self.addAction(getIcon("doc_new"),
+				       "&Add %s" % itemCategoryName, self.__add)
+		if withDeleteButton:
+			self.addAction(getIcon("doc_close"),
+				       "&Delete '%s'..." % itemName, self.__delete)
+		if withRenameButton:
+			self.addAction(getIcon("doc_edit"),
+				       "&Rename '%s'..." % itemName, self.__rename)
+		self.addSeparator()
+		if withImportButton:
+			self.addAction(getIcon("doc_import"),
+				       "&Import %s..." % itemCategoryName, self.__import)
+		if withExportButton:
+			self.addAction(getIcon("doc_export"),
+				       "&Export '%s'..." % itemName, self.__export)
+		if withIntegrateButton:
+			self.addAction("&Integrate '%s' into project..." % itemName,
+				       self.__integrate)
+		self.addSeparator()
+		if withEnableButton:
+			self.addAction("E&nable '%s'" % itemName,
+				       self.__enable)
+		if withDisableButton:
+			self.addAction("D&isable '%s'" % itemName,
+				       self.__disable)
+
+	def __add(self):
+		self.add.emit()
+
+	def __delete(self):
+		self.delete.emit()
+
+	def __rename(self):
+		self.rename.emit()
+
+	def __import(self):
+		self.import_.emit()
+
+	def __export(self):
+		self.export.emit()
+
+	def __integrate(self):
+		res = QMessageBox.question(self,
+			"Integrate current %s" % self.itemName,
+			"The current %s is stored in an external file.\n"
+			"Do you want to integrate this file info "
+			"the awlsim project file (.awlpro)?" %\
+			self.itemName,
+			QMessageBox.Yes, QMessageBox.No)
+		if res == QMessageBox.Yes:
+			self.integrate.emit()
+
+	def __enable(self):
+		self.enable.emit(True)
+
+	def __disable(self):
+		self.enable.emit(False)
 
 class ProjectTreeView(QTreeView):
 	def __init__(self, model, parent=None):
@@ -536,6 +730,92 @@ class ProjectTreeView(QTreeView):
 			self.expand(model.idToIndex(model.INDEXID_SRCS))
 			self.expand(model.idToIndex(model.INDEXID_SRCS_AWL))
 
+	baseToCatName = {
+		ProjectTreeModel.INDEXID_SRCS_AWL_BASE		: "AWL source",
+		ProjectTreeModel.INDEXID_SRCS_FUP_BASE		: "FUP source",
+		ProjectTreeModel.INDEXID_SRCS_KOP_BASE		: "KOP source",
+		ProjectTreeModel.INDEXID_SRCS_SYMTAB_BASE	: "Symbol Table",
+	}
+	idToCatName = {
+		ProjectTreeModel.INDEXID_SRCS_AWL	: baseToCatName[ProjectTreeModel.INDEXID_SRCS_AWL_BASE],
+		ProjectTreeModel.INDEXID_SRCS_FUP	: baseToCatName[ProjectTreeModel.INDEXID_SRCS_FUP_BASE],
+		ProjectTreeModel.INDEXID_SRCS_KOP	: baseToCatName[ProjectTreeModel.INDEXID_SRCS_KOP_BASE],
+		ProjectTreeModel.INDEXID_SRCS_SYMTAB	: baseToCatName[ProjectTreeModel.INDEXID_SRCS_SYMTAB_BASE],
+	}
+
+	def __showSourceContextMenu(self, index, catName, onContainer):
+		model = self.model()
+		idxIdBase, idxId, itemNr = model.indexToId(index)
+
+		# Get the source, if any.
+		source = None
+		getter, setter = model.sourceGetter(idxIdBase)
+		if getter:
+			source = getter()[itemNr]
+
+		# Extract source information
+		itemIsEnabled = bool(source and source.enabled)
+		itemIsFileBacked = bool(source and source.isFileBacked())
+		itemName = source.name if source else None
+
+		# Source-add handler
+		def handleAdd():
+			base = idxIdBase
+			if base == 0:
+				base = model.id2childBase[idxId]
+			model.entryAdd(base, parentWidget=self)
+			#TODO open it
+			#TODO start rename
+
+		# Source-remove handler
+		def handleDelete():
+			model.entryDelete(index, parentWidget=self)
+
+		# Source-rename handler
+		def handleRename():
+			model.entryRename(index, parentWidget=self)
+
+		# Source-integrate handler
+		def handleIntegrate():
+			model.entryIntegrate(index, parentWidget=self)
+
+		# Source-import handler
+		def handleImport():
+			base = idxIdBase
+			if base == 0:
+				base = model.id2childBase[idxId]
+			model.entryImport(base, parentWidget=self)
+
+		# Source-export handler
+		def handleExport():
+			model.entryExport(index, parentWidget=self)
+
+		# Source-enable/disable handler
+		def handleEnable(enable):
+			model.entryEnable(index, enable, parentWidget=self)
+
+		# Construct the context menu and show it modally.
+		menu = SourceContextMenu(
+				itemCategoryName=catName,
+				itemName=itemName,
+				withAddButton=True,
+				withDeleteButton=not onContainer,
+				withRenameButton=not onContainer,
+				withIntegrateButton=not onContainer and itemIsFileBacked,
+				withImportButton=True,
+				withExportButton=not onContainer,
+				withEnableButton=not onContainer and not itemIsEnabled,
+				withDisableButton=not onContainer and itemIsEnabled,
+				parent=self)
+		menu.add.connect(handleAdd)
+		menu.delete.connect(handleDelete)
+		menu.rename.connect(handleRename)
+		menu.integrate.connect(handleIntegrate)
+		menu.import_.connect(handleImport)
+		menu.export.connect(handleExport)
+		menu.enable.connect(handleEnable)
+		menu.exec_(QCursor.pos())
+
 	def __mouseBtnPressed(self, index):
 		model, buttons = self.model(), QApplication.mouseButtons()
 		if not model:
@@ -545,11 +825,17 @@ class ProjectTreeView(QTreeView):
 
 			if buttons & Qt.RightButton:
 				idxIdBase, idxId, itemNr = model.indexToId(index)
-				if idxIdBase in (model.INDEXID_SRCS_AWL_BASE,
-						 model.INDEXID_SRCS_FUP_BASE,
-						 model.INDEXID_SRCS_KOP_BASE,
-						 model.INDEXID_SRCS_SYMTAB_BASE):
-					self.__srcMenu.exec_(QCursor.pos())
+
+				onContainer = False
+				catName = self.baseToCatName.get(idxIdBase)
+				if not catName:
+					catName = self.idToCatName.get(idxId)
+					if catName:
+						onContainer = True
+				if catName:
+					self.__showSourceContextMenu(index=index,
+								     catName=catName,
+								     onContainer=onContainer)
 		finally:
 			self.__currentIndex = None
 
@@ -557,7 +843,7 @@ class ProjectTreeView(QTreeView):
 		model = self.model()
 		if model:
 			self.__currentIndex = index
-			model.handleEntryActivation(index, self)
+			model.entryActivate(index, self)
 
 	def keyPressEvent(self, ev):
 		QTreeView.keyPressEvent(self, ev)
@@ -566,7 +852,7 @@ class ProjectTreeView(QTreeView):
 		if model:
 			index = self.currentIndex()
 			if ev.key() == Qt.Key_Delete:
-				model.handleEntryDelete(index, self)
+				model.entryDelete(index, self)
 
 	def __removeSource(self):
 		model = self.model()
@@ -574,4 +860,4 @@ class ProjectTreeView(QTreeView):
 			index = self.__currentIndex
 			if index is None:
 				index = self.currentIndex()
-			model.handleEntryDelete(index, self)
+			model.entryDelete(index, self)
