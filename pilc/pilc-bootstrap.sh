@@ -30,8 +30,14 @@ MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
 DEFAULT_SUITE=stretch
 
 RPIGPIO_VERSION="0.6.3"
-RPIGPIO_MIRROR="https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
+RPIGPIO_FILE="RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
+RPIGPIO_MIRROR="https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/$RPIGPIO_FILE"
 RPIGPIO_SHA256="9366ff36104a39368759929e71f0d8ad6a88553497b3064cbc40f4248806cc19"
+
+SPIDEV_VERSION="3.2"
+SPIDEV_FILE="spidev-$SPIDEV_VERSION.tar.gz"
+SPIDEV_MIRROR="https://pypi.python.org/packages/36/83/73748b6e1819b57d8e1df8090200195cdae33aaa22a49a91ded16785eedd/$SPIDEV_FILE"
+SPIDEV_SHA256="09d2b5122f0dd79910713a11f9a0020f71537224bf829916def4fffc0ea59456"
 
 
 die()
@@ -159,7 +165,7 @@ gpu_mem=16
 dtparam=i2c_arm=on
 dtparam=i2c_vc=on
 #dtparam=i2s=on
-#dtparam=spi=on
+dtparam=spi=on
 
 # Uncomment this to enable the lirc-rpi module
 #dtoverlay=lirc-rpi
@@ -190,6 +196,43 @@ download()
 	wget -O "$target" "$mirror" || die "Failed to fetch $mirror"
 	[ "$(sha256sum -b "$target" | cut -f1 -d' ')" = "$sha256" ] ||\
 		die "SHA256 verification of $target failed"
+}
+
+build_pythonpack()
+{
+	local python="$1"
+	local name="$2"
+	local archive="$3"
+	local extract_dir="$4"
+
+	info "Building $name for $python..."
+	(
+		cd /tmp || die "Failed to cd /tmp"
+		tar xf "$archive" ||\
+			die "Failed to unpack $archive"
+		cd "$extract_dir" ||\
+			die "Failed to cd $extract_dir"
+		"$python" ./setup.py install ||\
+			die "Failed to install $name"
+	) || die
+	rm -r "/tmp/$archive" "/tmp/$extract_dir" ||\
+		die "Failed to remove $name build files."
+}
+
+build_rpigpio()
+{
+	local python="$1"
+
+	build_pythonpack "$python" "RPi.GPIO-$RPIGPIO_VERSION" \
+			 "$RPIGPIO_FILE" "RPi.GPIO-$RPIGPIO_VERSION"
+}
+
+build_spidev()
+{
+	local python="$1"
+
+	build_pythonpack "$python" "spidev-$SPIDEV_VERSION" \
+			 "$SPIDEV_FILE" "spidev-$SPIDEV_VERSION"
 }
 
 pilc_bootstrap_first_stage()
@@ -271,8 +314,10 @@ pilc_bootstrap_first_stage()
 	) || die
 
 	# Fetch RPi.GPIO
-	download "$opt_target_dir/tmp/RPi.GPIO-$RPIGPIO_VERSION.tar.gz" \
-		"$RPIGPIO_MIRROR" "$RPIGPIO_SHA256"
+	download "$opt_target_dir/tmp/$RPIGPIO_FILE" "$RPIGPIO_MIRROR" "$RPIGPIO_SHA256"
+
+	# Fetch spidev
+	download "$opt_target_dir/tmp/$SPIDEV_FILE" "$SPIDEV_MIRROR" "$SPIDEV_SHA256"
 
 	# Copy kernel tree
 	if [ "$opt_kernel" = "pilc" ]; then
@@ -459,6 +504,7 @@ EOF
 		python-serial \
 		python-setuptools \
 		python-smbus \
+		python-spidev \
 		python-tk \
 		python3 \
 		python3-all-dev \
@@ -468,6 +514,7 @@ EOF
 		python3-serial \
 		python3-setuptools \
 		python3-smbus \
+		python3-spidev \
 		python3-tk \
 		schedtool \
 		screen \
@@ -479,8 +526,6 @@ EOF
 		tmux \
 		vim ||\
 		die "apt-get install failed"
-	apt-get install --reinstall libc6-dev ||\
-		die "Failed to reinstall"
 cat <<EOF | debconf-set-selections
 debconf	debconf/frontend	select	Dialog
 locales	locales/default_environment_locale	select	en_US.UTF-8
@@ -491,19 +536,9 @@ EOF
 	apt-get -y clean ||\
 		die "apt-get clean failed"
 
-	# Build RPi.GPIO
-	info "Building RPi.GPIO $RPIGPIO_VERSION for PyPy..."
-	(
-		cd /tmp || die "Failed to cd /tmp"
-		tar xf "RPi.GPIO-$RPIGPIO_VERSION.tar.gz" ||\
-			die "Failed to unpack RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
-		cd "RPi.GPIO-$RPIGPIO_VERSION" ||\
-			die "Failed to cd RPi.GPIO-$RPIGPIO_VERSION"
-		pypy ./setup.py install ||\
-			die "Failed to install RPi.GPIO-$RPIGPIO_VERSION"
-	) || die
-	rm -r /tmp/RPi.GPIO* ||\
-		die "Failed to remove RPi.GPIO."
+	# Build python modules
+	build_rpigpio pypy
+	build_spidev pypy
 
 	# Build and install kernel
 	if [ "$opt_kernel" = "pilc" ]; then
