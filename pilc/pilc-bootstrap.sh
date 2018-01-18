@@ -2,7 +2,7 @@
 #
 # PiLC bootstrap
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,16 @@ SPIDEV_VERSION="3.2"
 SPIDEV_FILE="spidev-$SPIDEV_VERSION.tar.gz"
 SPIDEV_MIRROR="https://pypi.python.org/packages/36/83/73748b6e1819b57d8e1df8090200195cdae33aaa22a49a91ded16785eedd/$SPIDEV_FILE"
 SPIDEV_SHA256="09d2b5122f0dd79910713a11f9a0020f71537224bf829916def4fffc0ea59456"
+
+PPL_VERSION="0.1.0"
+PPL_FILE="ppl_v$PPL_VERSION.zip"
+PPL_MIRROR="https://www.pixtend.de/files/downloads/$PPL_FILE"
+PPL_SHA256="d9e27d7347da04ba9a96bbe72b7fea0096886c6ec32fbcd781e396614f4718a4"
+
+PPL2_VERSION="0.1.0"
+PPL2_FILE="pplv2_v$PPL2_VERSION.zip"
+PPL2_MIRROR="https://www.pixtend.de/files/downloads/$PPL2_FILE"
+PPL2_SHA256="b53e2b5b91fce5218eecf3e70afdca6058f6a678d1a40d86e84d36128d54d21a"
 
 
 die()
@@ -198,41 +208,99 @@ download()
 		die "SHA256 verification of $target failed"
 }
 
+extract_archive()
+{
+	local archive="$1"
+	local extract_dir="$2"
+	local make_extract_dir="$3"
+
+	if [ $make_extract_dir -ne 0 ]; then
+		mkdir "$extract_dir" ||\
+			die "Failed to create directory $extract_dir"
+	fi
+	if printf '%s' "$archive" | grep -qEe '\.zip$'; then
+		if [ $make_extract_dir -ne 0 ]; then
+			unzip -d "$extract_dir" "$archive" ||\
+				die "Failed to unpack $archive"
+		else
+			unzip "$archive" ||\
+				die "Failed to unpack $archive"
+		fi
+	else
+		if [ $make_extract_dir -ne 0 ]; then
+			tar --one-top-level="$extract_dir" -xf "$archive" ||\
+				die "Failed to unpack $archive"
+		else
+			tar -xf "$archive" ||\
+				die "Failed to unpack $archive"
+		fi
+	fi
+}
+
 build_pythonpack()
 {
 	local python="$1"
 	local name="$2"
 	local archive="$3"
 	local extract_dir="$4"
+	local make_extract_dir="$5"
 
 	info "Building $name for $python..."
+	rm -rf "/tmp/$extract_dir"
 	(
 		cd /tmp || die "Failed to cd /tmp"
-		tar xf "$archive" ||\
-			die "Failed to unpack $archive"
+		extract_archive "$archive" "$extract_dir" "$make_extract_dir"
 		cd "$extract_dir" ||\
 			die "Failed to cd $extract_dir"
 		"$python" ./setup.py install ||\
 			die "Failed to install $name"
 	) || die
-	rm -r "/tmp/$archive" "/tmp/$extract_dir" ||\
+	rm -r "/tmp/$extract_dir" ||\
 		die "Failed to remove $name build files."
 }
 
 build_rpigpio()
 {
-	local python="$1"
-
-	build_pythonpack "$python" "RPi.GPIO-$RPIGPIO_VERSION" \
-			 "$RPIGPIO_FILE" "RPi.GPIO-$RPIGPIO_VERSION"
+	local archive="$RPIGPIO_FILE"
+	for python in pypy; do
+		build_pythonpack "$python" "RPi.GPIO-$RPIGPIO_VERSION" \
+				 "$archive" "RPi.GPIO-$RPIGPIO_VERSION" 0
+	done
+	rm "/tmp/$archive" ||\
+		die "Failed to remove /tmp/$archive."
 }
 
 build_spidev()
 {
-	local python="$1"
+	local archive="$SPIDEV_FILE"
+	for python in pypy; do
+		build_pythonpack "$python" "spidev-$SPIDEV_VERSION" \
+				 "$archive" "spidev-$SPIDEV_VERSION" 0
+	done
+	rm "/tmp/$archive" ||\
+		die "Failed to remove /tmp/$archive."
+}
 
-	build_pythonpack "$python" "spidev-$SPIDEV_VERSION" \
-			 "$SPIDEV_FILE" "spidev-$SPIDEV_VERSION"
+build_ppl()
+{
+	local archive="$PPL_FILE"
+	for python in python python3 pypy; do
+		build_pythonpack "$python" "ppl-$PPL_VERSION" \
+				 "$archive" "ppl-$PPL_VERSION" 1
+	done
+	rm "/tmp/$archive" ||\
+		die "Failed to remove /tmp/$archive."
+}
+
+build_ppl2()
+{
+	local archive="$PPL2_FILE"
+	for python in python python3 pypy; do
+		build_pythonpack "$python" "ppl2-$PPL2_VERSION" \
+				 "$archive" "ppl2-$PPL2_VERSION" 1
+	done
+	rm "/tmp/$archive" ||\
+		die "Failed to remove /tmp/$archive."
 }
 
 pilc_bootstrap_first_stage()
@@ -250,6 +318,8 @@ pilc_bootstrap_first_stage()
 	assert_program mkfs.vfat
 	assert_program mkfs.ext4
 	assert_program 7z
+	assert_program tar
+	assert_program unzip
 	assert_program install
 	[ -x "$opt_qemu" ] ||\
 		die "The qemu binary '$opt_qemu' is not executable."
@@ -278,6 +348,9 @@ pilc_bootstrap_first_stage()
 		die "Failed to create policy-rc.d"
 	chmod 755 "$opt_target_dir/usr/sbin/policy-rc.d" ||\
 		die "Failed to chmod policy-rc.d"
+
+	info "Cleaning tmp..."
+	rm -rf "$opt_target_dir"/tmp/*
 
 	# Copy qemu.
 	local qemu_bin="$opt_target_dir/$opt_qemu"
@@ -313,11 +386,11 @@ pilc_bootstrap_first_stage()
 			die "Failed to move pyprofibus submodule."
 	) || die
 
-	# Fetch RPi.GPIO
+	# Fetch packages
 	download "$opt_target_dir/tmp/$RPIGPIO_FILE" "$RPIGPIO_MIRROR" "$RPIGPIO_SHA256"
-
-	# Fetch spidev
 	download "$opt_target_dir/tmp/$SPIDEV_FILE" "$SPIDEV_MIRROR" "$SPIDEV_SHA256"
+	download "$opt_target_dir/tmp/$PPL_FILE" "$PPL_MIRROR" "$PPL_SHA256"
+	download "$opt_target_dir/tmp/$PPL2_FILE" "$PPL2_MIRROR" "$PPL2_SHA256"
 
 	# Copy kernel tree
 	if [ "$opt_kernel" = "pilc" ]; then
@@ -495,6 +568,7 @@ EOF
 		pkg-config \
 		pypy \
 		pypy-dev \
+		pypy-setuptools \
 		python \
 		python-all-dev \
 		python-cairo \
@@ -537,8 +611,10 @@ EOF
 		die "apt-get clean failed"
 
 	# Build python modules
-	build_rpigpio pypy
-	build_spidev pypy
+	build_rpigpio
+	build_spidev
+	build_ppl
+	build_ppl2
 
 	# Build and install kernel
 	if [ "$opt_kernel" = "pilc" ]; then
@@ -878,6 +954,9 @@ pilc_bootstrap_third_stage()
 	info "Removing PiLC bootstrap script..."
 	rm "$opt_target_dir/pilc-bootstrap.sh" ||\
 		die "Failed to remove bootstrap script."
+
+	info "Cleaning tmp..."
+	rm -rf "$opt_target_dir"/tmp/*
 
 	info "Configuring boot..."
 	cat > "$opt_target_dir/boot/cmdline.txt" <<EOF
