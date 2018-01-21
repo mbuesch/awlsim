@@ -1,0 +1,20 @@
+from awlsim.core.hardware cimport *
+
+cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
+	cdef object __PiXtend_class
+	cdef object __pixtend
+	cdef _Bool __pixtendInitialized
+	cdef list __relays
+	cdef list __DOs
+	cdef list __DIs
+	cdef uint32_t __outBase
+	cdef uint32_t __outSize
+	cdef uint32_t __inBase
+	cdef uint32_t __inSize
+	cdef double __pollInt
+	cdef double __nextPoll
+
+	cdef readInputs(self)
+	cdef writeOutputs(self)
+	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset)
+	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val

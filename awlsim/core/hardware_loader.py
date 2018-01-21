@@ -39,6 +39,7 @@ class HwModLoader(object):
 		"debug",
 		"dummy",
 		"linuxcnc",
+		"pixtend",
 		"pyprofibus",
 		"rpigpio",
 	)
