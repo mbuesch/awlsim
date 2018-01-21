@@ -96,7 +96,7 @@ class AbstractHardwareInterface(object): #+cdef
 		'sim' is the AwlSim instance.
 		'parameters' is a dict of hardware specific parameters."""
 		self.sim = sim
-		self.cpu = sim.cpu
+		self.cpu = sim.cpu if sim else None
 		self.__running = False
 		self.__parseParameters(parameters)
 
