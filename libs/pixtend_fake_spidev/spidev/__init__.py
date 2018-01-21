@@ -181,13 +181,43 @@ class Fake_SpiDev_PiXtend_1_3(Fake_SpiDev):
 
 	def __command_autoMode(self, data):
 		ret = [0] * 34
-		ret[0] = 128
-		ret[1] = 255
-		ret[33] = 128
-		#TODO
+		ret[1] = 128
+
+		ret[2] = 0 # DI
+		ret[3] = 0 # AI0/0
+		ret[4] = 0 # AI0/1
+		ret[5] = 0 # AI1/0
+		ret[6] = 0 # AI1/1
+		ret[7] = 0 # AI2/0
+		ret[8] = 0 # AI2/1
+		ret[9] = 0 # AI3/0
+		ret[10] = 0 # AI3/1
+		ret[11] = 0 # GPIO-in
+		ret[12] = 0 # temp0/0
+		ret[13] = 0 # temp0/1
+		ret[14] = 0 # temp1/0
+		ret[15] = 0 # temp1/1
+		ret[16] = 0 # temp2/0
+		ret[17] = 0 # temp2/1
+		ret[18] = 0 # temp3/0
+		ret[19] = 0 # temp3/1
+		ret[20] = 0 # humid0/0
+		ret[21] = 0 # humid0/1
+		ret[22] = 0 # humid1/0
+		ret[23] = 0 # humid1/1
+		ret[24] = 0 # humid2/0
+		ret[25] = 0 # humid2/1
+		ret[26] = 0 # humid3/0
+		ret[27] = 0 # humid3/1
+		ret[28] = 0x02 # UC-ver-l
+		ret[29] = 0x0D # UC-ver-h
+		ret[30] = 0x01 # UC-status
+
 		crc = self.__crc16Block(ret[2:31])
 		ret[31] = crc & 0xFF
 		ret[32] = (crc >> 8) & 0xFF
+		ret[33] = 128
+
 		return ret
 
 	__commandHandlers = {

@@ -175,7 +175,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 	paramDescs = [
 		HwParamDesc_int("pollIntMs",
-				defaultValue=25,
+				defaultValue=100,
 				minValue=25,
 				maxValue=10000,
 				description="PiXtend auto-mode poll interval time, in milliseconds")
@@ -298,12 +298,14 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				self.raiseException("Failed to import pixtendlib.Pixtend module"
 					":\n%s" % str(e))
 
+			self.__pollInt = float(self.getParamValueByName("pollIntMs")) / 1000.0
+
 			# Initialize PiXtend
 			try:
 				self.__pixtend = self.__PiXtend_class()
 				self.__pixtend.open()
 				t = 0
-				while self.__pixtend.auto_mode():
+				while not self.__pixtendPoll(self.cpu.now):
 					t += 1
 					if t >= 50:
 						self.raiseException("Timeout waiting "
@@ -314,7 +316,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					str(e)))
 			self.__build()
 
-			self.__pollInt = float(self.getParamValueByName("pollIntMs")) / 1000.0
 			self.__nextPoll = self.cpu.now + self.__pollInt
 			self.__pixtendInitialized = True
 
@@ -354,12 +355,17 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Run one PiXtend poll cycle, if required.
 		now = cpu.now
 		if now >= self.__nextPoll:
-			self.__nextPoll = now + self.__pollInt
-			if self.__pixtend.auto_mode():
-				self.raiseException("PiXtend auto_mode() poll failed")
+			if not self.__pixtendPoll(now):
+				self.raiseException("PiXtend auto_mode() poll failed.")
 
-	def __asyncPixtendPoll(self):
-		# Run one PiXtend poll cycle.
+	def __pixtendPoll(self, now):
+		# Poll PiXtend auto_mode
+		self.__nextPoll = now + self.__pollInt
+		return self.__pixtend.auto_mode() == 0 and\
+		       (self.__pixtend.uc_status & 1) != 0
+
+	def __syncPixtendPoll(self):
+		# Synchronously run one PiXtend poll cycle.
 		cpu = self.cpu
 		retries = 0
 		while True:
@@ -368,26 +374,25 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			while cpu.now < self.__nextPoll:
 				timeout -= 1
 				if timeout <= 0:
-					self.raiseException("PiXtend poll wait timeout")
+					self.raiseException("PiXtend poll wait timeout.")
 				time.sleep(0.001)
 				cpu.updateTimestamp()
-			self.__nextPoll = cpu.now + self.__pollInt
 			# Poll PiXtend.
-			if self.__pixtend.auto_mode():
+			if not self.__pixtendPoll(cpu.now):
 				retries += 1
 				if retries >= 3:
-					self.raiseException("PiXtend auto_mode() poll failed")
+					self.raiseException("PiXtend auto_mode() poll failed (sync).")
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
-		self.__asyncPixtendPoll()
+		self.__syncPixtendPoll()
 		pass#TODO
 		return bytearray()
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
 #@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
 		pass#TODO
-		self.__asyncPixtendPoll()
+		self.__syncPixtendPoll()
 		return False
 
 # Module entry point
