@@ -158,12 +158,18 @@ class __HwParamDesc_addr(HwParamDesc):
 		self.maxValue = maxValue
 
 	def _parseAddr(self, value):
-		if not value.strip():
+		value = value.strip()
+		if not value:
 			return self.defaultValue
 		try:
 			v = value.split()
 			if len(v) != 2:
-				raise ValueError
+				for p in self.ADDR_PREFIXES:
+					if value.startswith(p):
+						v = [ p, value[len(p):] ]
+						break
+				else:
+					raise ValueError
 			if not any(strEqual(v[0], p, False) for p in self.ADDR_PREFIXES):
 				raise ValueError
 			o = v[1].split(".")
