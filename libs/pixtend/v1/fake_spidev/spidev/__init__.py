@@ -22,95 +22,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class Fake_SpiDev(object):
+from abstract_spidev import Abstract_SpiDev
 
-	__slots__ = (
-		"mode",
-		"bits_per_word",
-		"max_speed_hz",
-		"_opened",
-	)
 
-	def __init__(self, bus=-1, client=-1):
-		self.mode = 0
-		self.bits_per_word = 0
-		self.max_speed_hz = 0
-		self._opened = -1
-		if bus >= 0:
-			self.open(bus, client)
-
-	@property
-	def cshigh(self):
-		raise NotImplementedError
-
-	@cshigh.setter
-	def cshigh(self, cshigh):
-		raise NotImplementedError
-
-	@property
-	def threewire(self):
-		raise NotImplementedError
-
-	@threewire.setter
-	def threewire(self, threewire):
-		raise NotImplementedError
-
-	@property
-	def lsbfirst(self):
-		raise NotImplementedError
-
-	@lsbfirst.setter
-	def lsbfirst(self, lsbfirst):
-		raise NotImplementedError
-
-	@property
-	def loop(self):
-		raise NotImplementedError
-
-	@loop.setter
-	def loop(self, loop):
-		raise NotImplementedError
-
-	@property
-	def no_cs(self):
-		raise NotImplementedError
-
-	@no_cs.setter
-	def no_cs(self, no_cs):
-		raise NotImplementedError
-
-	def open(self, bus, device):
-		assert(bus >= 0)
-		assert(device >= 0)
-		self._opened = 42
-
-	def close(self):
-		if self._opened >= 0:
-			self._opened = -1
-
-	def fileno(self):
-		raise NotImplementedError
-
-	def readbytes(self, length):
-		raise NotImplementedError
-
-	def writebytes(self, data):
-		raise NotImplementedError
-
-	def xfer(self, data, speed_hz=0, delay_usecs=0, bits_per_word=0):
-		raise NotImplementedError
-
-	def xfer2(self, data, speed_hz=0, delay_usecs=0, bits_per_word=0):
-		raise NotImplementedError
-
-	def __enter__(self):
-		pass
-
-	def __exit__(self, exc_type, exc_value, traceback):
-		self.close()
-		return False
-
-class Fake_SpiDev_PiXtend_1_3(Fake_SpiDev):
+class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 	"""PiXtend v1.3 emulation.
 
 	This class contains code from pixtendlib.
@@ -138,6 +53,8 @@ class Fake_SpiDev_PiXtend_1_3(Fake_SpiDev):
 	# You should have received a copy of the GNU General Public License
 	# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	"""
+
+	__slots__ = ()
 
 	PIXTEND_SPI_HANDSHAKE = 0b10101010
 	# 4-Byte Command length

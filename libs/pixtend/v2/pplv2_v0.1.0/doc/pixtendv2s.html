@@ -1,0 +1,820 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: package pixtendv2s</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2s</strong></big></big> (version 0.1.0)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/pi/pplv2/pixtendv2s/__init__.py">/home/pi/pplv2/pixtendv2s/__init__.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;coding=utf-8</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Package Contents</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="pixtendv2s.html#PiXtendV2S">PiXtendV2S</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="PiXtendV2S">class <strong>PiXtendV2S</strong></a>(<a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>The&nbsp;<a href="#PiXtendV2S">PiXtendV2S</a>&nbsp;class&nbsp;is&nbsp;based&nbsp;off&nbsp;of&nbsp;the&nbsp;<a href="pixtendv2core.html#PiXtendV2Core">PiXtendV2Core</a>&nbsp;class,&nbsp;which&nbsp;provides&nbsp;basic&nbsp;and&nbsp;most&nbsp;common&nbsp;functions&nbsp;for<br>
+PiXtend&nbsp;V2.&nbsp;This&nbsp;class&nbsp;must&nbsp;implement&nbsp;the&nbsp;abstract&nbsp;methods&nbsp;_unpack_spi_data&nbsp;and&nbsp;_pack_spi_data&nbsp;otherwise&nbsp;there<br>
+can&nbsp;be&nbsp;no&nbsp;functioning&nbsp;data&nbsp;communication&nbsp;and&nbsp;no&nbsp;usable&nbsp;object&nbsp;at&nbsp;runtime.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="pixtendv2s.html#PiXtendV2S">PiXtendV2S</a></dd>
+<dd><a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="PiXtendV2S-__init__"><strong>__init__</strong></a>(self, spi_speed<font color="#909090">=700000</font>, com_interval<font color="#909090">=0.03</font>, model<font color="#909090">=83</font>)</dt><dd><tt>Constructor&nbsp;of&nbsp;the&nbsp;PixtendV2S&nbsp;class.&nbsp;Create&nbsp;needed&nbsp;variables&nbsp;to&nbsp;store&nbsp;the&nbsp;settings&nbsp;and&nbsp;values&nbsp;for&nbsp;the&nbsp;PiXtend&nbsp;V2<br>
+board&nbsp;which&nbsp;are&nbsp;transferred&nbsp;via&nbsp;SPI&nbsp;to&nbsp;the&nbsp;on-board&nbsp;microcontroller.&nbsp;The&nbsp;the&nbsp;core&nbsp;class&nbsp;(<a href="pixtendv2core.html#PiXtendV2Core">PiXtendV2Core</a>)&nbsp;does<br>
+not&nbsp;provide&nbsp;all&nbsp;needed&nbsp;variables&nbsp;and&nbsp;functions,&nbsp;only&nbsp;the&nbsp;basic&nbsp;and&nbsp;most&nbsp;common&nbsp;functions&nbsp;of&nbsp;the&nbsp;PiXtend&nbsp;V2<br>
+system.&nbsp;This&nbsp;class&nbsp;has&nbsp;to&nbsp;build&nbsp;and&nbsp;supply&nbsp;the&nbsp;rest.<br>
+&nbsp;<br>
+:param&nbsp;spi_speed:&nbsp;int<br>
+:param&nbsp;com_interval:&nbsp;float<br>
+:param&nbsp;model:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="PiXtendV2S-close"><strong>close</strong></a>(self)</dt><dd><tt>The&nbsp;'close'&nbsp;function&nbsp;needs&nbsp;to&nbsp;be&nbsp;called&nbsp;to&nbsp;terminate&nbsp;the&nbsp;asynchronous&nbsp;SPI&nbsp;communication&nbsp;in&nbsp;the&nbsp;background&nbsp;and&nbsp;to<br>
+close&nbsp;the&nbsp;SPI&nbsp;driver.&nbsp;This&nbsp;function&nbsp;must&nbsp;be&nbsp;called&nbsp;before&nbsp;the&nbsp;<a href="#PiXtendV2S">PiXtendV2S</a>&nbsp;object&nbsp;is&nbsp;destroyed&nbsp;in&nbsp;the&nbsp;program<br>
+it&nbsp;is&nbsp;used&nbsp;in.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>analog_in0</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;0&nbsp;as&nbsp;a&nbsp;float&nbsp;value&nbsp;converted&nbsp;to&nbsp;volts.&nbsp;The&nbsp;returned&nbsp;value&nbsp;is<br>
+based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>analog_in0_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;raw&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;0.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>analog_in1</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;1&nbsp;as&nbsp;a&nbsp;float&nbsp;value&nbsp;converted&nbsp;to&nbsp;volts.&nbsp;The&nbsp;returned&nbsp;value&nbsp;is<br>
+based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>analog_in1_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;raw&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;1.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>crc_data_in_error</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;error&nbsp;state&nbsp;of&nbsp;the&nbsp;CRC&nbsp;check&nbsp;performed&nbsp;on&nbsp;the&nbsp;SPI&nbsp;data<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value,&nbsp;False&nbsp;means&nbsp;no&nbsp;error,&nbsp;True&nbsp;means&nbsp;the&nbsp;data&nbsp;is&nbsp;not&nbsp;correct,&nbsp;error<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in0</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;0.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in1</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;1.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in2</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;2.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in3</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;3.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in4</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;4.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in5</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;5.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in6</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;6.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in7</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;7.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;0.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;1.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out2</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;2.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out3</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;3.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>jumper_setting_ai0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting,&nbsp;depending&nbsp;if&nbsp;the&nbsp;jumper&nbsp;was&nbsp;physically&nbsp;set&nbsp;on&nbsp;the<br>
+PiXtend&nbsp;V2&nbsp;-S-&nbsp;board&nbsp;or&nbsp;not.<br>
+The&nbsp;library&nbsp;needs&nbsp;to&nbsp;know&nbsp;this&nbsp;setting&nbsp;to&nbsp;perform&nbsp;correct&nbsp;calculations&nbsp;of&nbsp;the&nbsp;raw&nbsp;analog<br>
+value&nbsp;of&nbsp;the&nbsp;analog&nbsp;input&nbsp;0&nbsp;when&nbsp;it&nbsp;is&nbsp;converted&nbsp;it's&nbsp;final&nbsp;float&nbsp;value.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;setting&nbsp;is&nbsp;10&nbsp;volts&nbsp;(True),&nbsp;no&nbsp;jumper&nbsp;set.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;jumper&nbsp;setting<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>jumper_setting_ai1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting,&nbsp;depending&nbsp;if&nbsp;the&nbsp;jumper&nbsp;was&nbsp;physically&nbsp;set&nbsp;on&nbsp;the<br>
+PiXtend&nbsp;V2&nbsp;-S-&nbsp;board&nbsp;or&nbsp;not.<br>
+The&nbsp;library&nbsp;needs&nbsp;to&nbsp;know&nbsp;this&nbsp;setting&nbsp;to&nbsp;perform&nbsp;correct&nbsp;calculations&nbsp;of&nbsp;the&nbsp;raw&nbsp;analog<br>
+value&nbsp;of&nbsp;the&nbsp;analog&nbsp;input&nbsp;1&nbsp;when&nbsp;it&nbsp;is&nbsp;converted&nbsp;it's&nbsp;final&nbsp;float&nbsp;value.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;setting&nbsp;is&nbsp;10&nbsp;volts&nbsp;(True),&nbsp;no&nbsp;jumper&nbsp;set.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;jumper&nbsp;setting<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>pwm0_ctrl0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM0Ctrl0&nbsp;property.&nbsp;This&nbsp;int&nbsp;value&nbsp;controls&nbsp;the&nbsp;configuration&nbsp;of&nbsp;PWM0&nbsp;channel&nbsp;A&nbsp;&amp;&nbsp;B.<br>
+This&nbsp;property&nbsp;has&nbsp;the&nbsp;following&nbsp;bits&nbsp;which&nbsp;control&nbsp;PWM0:<br>
+Bit&nbsp;0&nbsp;-&nbsp;Mode0<br>
+Bit&nbsp;1&nbsp;-&nbsp;Mode1<br>
+Bit&nbsp;3&nbsp;-&nbsp;EnableA<br>
+Bit&nbsp;4&nbsp;-&nbsp;EnableB<br>
+Bit&nbsp;5&nbsp;-&nbsp;Prescaler0<br>
+Bit&nbsp;6&nbsp;-&nbsp;Prescaler1<br>
+Bit&nbsp;7&nbsp;-&nbsp;Prescaler2<br>
+&nbsp;<br>
+See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;details&nbsp;on&nbsp;this&nbsp;property&nbsp;and&nbsp;it's&nbsp;bits.<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM0Ctrl0&nbsp;value.<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm0_ctrl1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM0Ctrl1&nbsp;property.&nbsp;It&nbsp;is&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;frequency&nbsp;for&nbsp;PWM0&nbsp;channels&nbsp;A&nbsp;&amp;&nbsp;B,&nbsp;but&nbsp;only&nbsp;if&nbsp;the<br>
+selected&nbsp;PWM&nbsp;mode&nbsp;makes&nbsp;use&nbsp;of&nbsp;this&nbsp;value.&nbsp;See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;this&nbsp;topic.<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;65535&nbsp;(16&nbsp;bits).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM0Ctrl1&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm0a</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM0&nbsp;channel&nbsp;A.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM0,&nbsp;however&nbsp;the<br>
+exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm0_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM0&nbsp;channel&nbsp;A&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm0b</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM0&nbsp;channel&nbsp;B.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM0,&nbsp;however&nbsp;the<br>
+exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm0_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM0&nbsp;channel&nbsp;B&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm1_ctrl0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM1Ctrl0&nbsp;property.&nbsp;This&nbsp;int&nbsp;value&nbsp;controls&nbsp;the&nbsp;configuration&nbsp;of&nbsp;PWM1&nbsp;channel&nbsp;A&nbsp;&amp;&nbsp;B.<br>
+This&nbsp;property&nbsp;has&nbsp;the&nbsp;following&nbsp;bits&nbsp;which&nbsp;control&nbsp;PWM1:<br>
+Bit&nbsp;0&nbsp;-&nbsp;Mode0<br>
+Bit&nbsp;1&nbsp;-&nbsp;Mode1<br>
+Bit&nbsp;3&nbsp;-&nbsp;EnableA<br>
+Bit&nbsp;4&nbsp;-&nbsp;EnableB<br>
+Bit&nbsp;5&nbsp;-&nbsp;Prescaler0<br>
+Bit&nbsp;6&nbsp;-&nbsp;Prescaler1<br>
+Bit&nbsp;7&nbsp;-&nbsp;Prescaler2<br>
+&nbsp;<br>
+See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;details&nbsp;on&nbsp;this&nbsp;property&nbsp;and&nbsp;it's&nbsp;bits.<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM1Ctrl0&nbsp;value.<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm1_ctrl1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM1Ctrl1&nbsp;property.&nbsp;It&nbsp;is&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;frequency&nbsp;for&nbsp;PWM1&nbsp;channels&nbsp;A&nbsp;&amp;&nbsp;B,&nbsp;but&nbsp;only&nbsp;if&nbsp;the<br>
+selected&nbsp;PWM&nbsp;mode&nbsp;makes&nbsp;use&nbsp;of&nbsp;this&nbsp;value.&nbsp;See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;this&nbsp;topic.<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(8&nbsp;bits).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM1Ctrl1&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm1a</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM1&nbsp;channel&nbsp;A.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM1,&nbsp;however&nbsp;the<br>
+exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm1_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
+0&nbsp;and&nbsp;255,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM1&nbsp;channel&nbsp;A&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm1b</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM1&nbsp;channel&nbsp;B.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM1,&nbsp;however&nbsp;the<br>
+exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm1_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
+0&nbsp;and&nbsp;255,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM1&nbsp;channel&nbsp;B&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>relay0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;relay&nbsp;0.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>relay1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;relay&nbsp;1.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>relay2</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;relay&nbsp;2.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>relay3</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;relay&nbsp;3.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>retain_data_in</strong></dt>
+<dd><tt>From&nbsp;RetainDataIn&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;32&nbsp;int's,&nbsp;each&nbsp;list&nbsp;element&nbsp;has&nbsp;a&nbsp;value&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(byte&nbsp;value).<br>
+If&nbsp;the&nbsp;Retain&nbsp;functions&nbsp;was&nbsp;enabled,&nbsp;this&nbsp;list&nbsp;will&nbsp;contain&nbsp;the&nbsp;data&nbsp;previously&nbsp;stored&nbsp;in&nbsp;the&nbsp;microcontroller's<br>
+flash&nbsp;memory.&nbsp;The&nbsp;values&nbsp;will&nbsp;remain&nbsp;there&nbsp;even&nbsp;if&nbsp;the&nbsp;Retain&nbsp;Enable&nbsp;flag&nbsp;is&nbsp;not&nbsp;set.<br>
+&nbsp;<br>
+:return:&nbsp;list[int]</tt></dd>
+</dl>
+<dl><dt><strong>retain_data_out</strong></dt>
+<dd><tt>From&nbsp;RetainDataOut&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;32&nbsp;int's,&nbsp;each&nbsp;list&nbsp;element&nbsp;has&nbsp;a&nbsp;value&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(byte&nbsp;value).<br>
+&nbsp;<br>
+:return:&nbsp;list[int]</tt></dd>
+</dl>
+<dl><dt><strong>servo0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;0&nbsp;channel&nbsp;A&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;16000.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>servo1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;0&nbsp;channel&nbsp;B&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;16000.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>servo2</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;1&nbsp;channel&nbsp;A&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;125.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>servo3</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;1&nbsp;channel&nbsp;B&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;125.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>__abstractmethods__</strong> = frozenset([])</dl>
+
+<hr>
+Methods inherited from <a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>:<br>
+<dl><dt><a name="PiXtendV2S-__del__"><strong>__del__</strong></a>(self)</dt><dd><tt>Destructor&nbsp;of&nbsp;the&nbsp;Pixtend&nbsp;V2&nbsp;class.&nbsp;Delete&nbsp;objects.</tt></dd></dl>
+
+<dl><dt><a name="PiXtendV2S-set_dac_output"><strong>set_dac_output</strong></a>(self, dac_channel<font color="#909090">=0</font>, value<font color="#909090">=0</font>)</dt><dd><tt>Set&nbsp;the&nbsp;analog&nbsp;output&nbsp;value&nbsp;for&nbsp;the&nbsp;chosen&nbsp;DAC.&nbsp;The&nbsp;value&nbsp;0&nbsp;or&nbsp;constant&nbsp;DAC_A&nbsp;selects&nbsp;DAC&nbsp;A&nbsp;and&nbsp;the&nbsp;value&nbsp;1&nbsp;or<br>
+constant&nbsp;DAC_B&nbsp;selects&nbsp;DAC&nbsp;B.<br>
+Example:<br>
+Selecting&nbsp;and&nbsp;setting&nbsp;DAC&nbsp;A:<br>
+p.set_dac_output&nbsp;(p.DAC_A,&nbsp;512)<br>
+&nbsp;<br>
+Selecting&nbsp;and&nbsp;setting&nbsp;DAC&nbsp;B:<br>
+p.set_dac_output&nbsp;(p.DAC_B,&nbsp;256)<br>
+&nbsp;<br>
+:param&nbsp;int&nbsp;dac_channel:&nbsp;Number&nbsp;of&nbsp;the&nbsp;DAC&nbsp;to&nbsp;set&nbsp;the&nbsp;new&nbsp;value&nbsp;to<br>
+:param&nbsp;int&nbsp;value:&nbsp;Output&nbsp;value&nbsp;for&nbsp;the&nbsp;chosen&nbsp;DAC.<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;value&nbsp;is&nbsp;smaller&nbsp;then&nbsp;0&nbsp;or&nbsp;larger&nbsp;then&nbsp;1023</tt></dd></dl>
+
+<hr>
+Static methods inherited from <a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>:<br>
+<dl><dt><a name="PiXtendV2S-clear_bit"><strong>clear_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-clear_bit">clear_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;cleared,&nbsp;set&nbsp;to&nbsp;0.<br>
+&nbsp;<br>
+:param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;in&nbsp;which&nbsp;to&nbsp;clear&nbsp;one&nbsp;bit<br>
+:param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;clear<br>
+:return:&nbsp;Integer&nbsp;with&nbsp;bit&nbsp;cleared&nbsp;a&nbsp;'offset'<br>
+:rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="PiXtendV2S-set_bit"><strong>set_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-set_bit">set_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;set&nbsp;to&nbsp;1.<br>
+&nbsp;<br>
+:param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;in&nbsp;which&nbsp;to&nbsp;set&nbsp;one&nbsp;bit<br>
+:param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;set<br>
+:return:&nbsp;Integer&nbsp;with&nbsp;bit&nbsp;set&nbsp;at&nbsp;'offset'<br>
+:rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="PiXtendV2S-test_bit"><strong>test_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-test_bit">test_bit</a>()&nbsp;returns&nbsp;1,&nbsp;if&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;is&nbsp;one&nbsp;else&nbsp;0&nbsp;if&nbsp;the&nbsp;bit&nbsp;is&nbsp;not&nbsp;set.<br>
+&nbsp;<br>
+:param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;to&nbsp;test<br>
+:param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;test<br>
+:return:&nbsp;Integer&nbsp;based&nbsp;value&nbsp;of&nbsp;0&nbsp;if&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;is&nbsp;not&nbsp;set&nbsp;or&nbsp;1&nbsp;if&nbsp;bit&nbsp;is&nbsp;set<br>
+:rtype:&nbsp;int</tt></dd></dl>
+
+<dl><dt><a name="PiXtendV2S-toggle_bit"><strong>toggle_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-toggle_bit">toggle_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;inverted,&nbsp;0&nbsp;-&gt;&nbsp;1&nbsp;and&nbsp;1&nbsp;-&gt;&nbsp;0.<br>
+&nbsp;<br>
+:param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;to&nbsp;toggle&nbsp;one&nbsp;bit&nbsp;within<br>
+:param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;toggle<br>
+:return:&nbsp;integer&nbsp;with&nbsp;bit&nbsp;toggled&nbsp;at&nbsp;'offset'<br>
+:rtype:&nbsp;int</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>crc_header_in_error</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;error&nbsp;state&nbsp;of&nbsp;the&nbsp;CRC&nbsp;check&nbsp;performed&nbsp;on&nbsp;the&nbsp;SPI&nbsp;data&nbsp;header.&nbsp;If&nbsp;the&nbsp;CRC&nbsp;comparision&nbsp;is&nbsp;wrong<br>
+the&nbsp;value&nbsp;will&nbsp;be&nbsp;True,&nbsp;if&nbsp;the&nbsp;header&nbsp;of&nbsp;the&nbsp;SPI&nbsp;data&nbsp;is&nbsp;correct,&nbsp;the&nbsp;value&nbsp;will&nbsp;be&nbsp;False.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value,&nbsp;False&nbsp;means&nbsp;no&nbsp;error,&nbsp;True&nbsp;means&nbsp;the&nbsp;header&nbsp;is&nbsp;not&nbsp;correct,&nbsp;error<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>firmware</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;microcontroller's&nbsp;firmware&nbsp;version.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>gpio0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;GPIO&nbsp;0.&nbsp;The&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+Example:<br>
+p.gpio0&nbsp;=&nbsp;p.ON&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio0&nbsp;=&nbsp;p.OFF&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+or&nbsp;use<br>
+p.gpio0&nbsp;=&nbsp;True&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio0&nbsp;=&nbsp;False&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>gpio0_ctrl</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;configuration&nbsp;of&nbsp;GPIO&nbsp;0.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;(Input),&nbsp;1&nbsp;(Output),&nbsp;2&nbsp;(DHT11)&nbsp;or&nbsp;3&nbsp;(DHT22).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;configuration<br>
+:rtype:&nbsp;int<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;0,&nbsp;1,&nbsp;2&nbsp;or&nbsp;3</tt></dd>
+</dl>
+<dl><dt><strong>gpio1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;GPIO&nbsp;1.&nbsp;The&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+Example:<br>
+p.gpio1&nbsp;=&nbsp;p.ON&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio1&nbsp;=&nbsp;p.OFF&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+or&nbsp;use<br>
+p.gpio1&nbsp;=&nbsp;True&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio1&nbsp;=&nbsp;False&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>gpio1_ctrl</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;configuration&nbsp;of&nbsp;GPIO&nbsp;1.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;(Input),&nbsp;1&nbsp;(Output),&nbsp;2&nbsp;(DHT11)&nbsp;or&nbsp;3&nbsp;(DHT22).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;configuration<br>
+:rtype:&nbsp;int<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;0,&nbsp;1,&nbsp;2&nbsp;or&nbsp;3</tt></dd>
+</dl>
+<dl><dt><strong>gpio2</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;GPIO&nbsp;2.&nbsp;The&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+Example:<br>
+p.gpio2&nbsp;=&nbsp;p.ON&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio2&nbsp;=&nbsp;p.OFF&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+or&nbsp;use<br>
+p.gpio2&nbsp;=&nbsp;True&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio2&nbsp;=&nbsp;False&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>gpio2_ctrl</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;configuration&nbsp;of&nbsp;GPIO&nbsp;2.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;(Input),&nbsp;1&nbsp;(Output),&nbsp;2&nbsp;(DHT11)&nbsp;or&nbsp;3&nbsp;(DHT22).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;configuration<br>
+:rtype:&nbsp;int<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;0,&nbsp;1,&nbsp;2&nbsp;&nbsp;or&nbsp;3</tt></dd>
+</dl>
+<dl><dt><strong>gpio3</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;GPIO&nbsp;3.&nbsp;The&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+Example:<br>
+p.gpio3&nbsp;=&nbsp;p.ON&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio3&nbsp;=&nbsp;p.OFF&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+or&nbsp;use<br>
+p.gpio3&nbsp;=&nbsp;True&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;on<br>
+p.gpio3&nbsp;=&nbsp;False&nbsp;#&nbsp;Turns&nbsp;the&nbsp;GPIO&nbsp;off<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>gpio3_ctrl</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;configuration&nbsp;of&nbsp;GPIO&nbsp;3.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;(Input),&nbsp;1&nbsp;(Output),&nbsp;2&nbsp;(DHT11)&nbsp;or&nbsp;3&nbsp;(DHT22).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;configuration<br>
+:rtype:&nbsp;int<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;0,&nbsp;1,&nbsp;2&nbsp;or&nbsp;3</tt></dd>
+</dl>
+<dl><dt><strong>gpio_pullups_enable</strong></dt>
+<dd><tt>Enable&nbsp;or&nbsp;Disable&nbsp;the&nbsp;GPIO&nbsp;0-3&nbsp;pullups&nbsp;if&nbsp;the&nbsp;GPIOs&nbsp;are&nbsp;configured&nbsp;as&nbsp;outputs&nbsp;and&nbsp;the&nbsp;pullups&nbsp;are&nbsp;needed.<br>
+Setting&nbsp;this&nbsp;property&nbsp;to&nbsp;True&nbsp;enables&nbsp;the&nbsp;pullups,&nbsp;if&nbsp;it&nbsp;is&nbsp;set&nbsp;to&nbsp;False&nbsp;the&nbsp;pullups&nbsp;remain&nbsp;off.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>hardware</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;PiXtend&nbsp;V2&nbsp;hardware&nbsp;revision.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>hum_input0_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;humidity&nbsp;raw&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;0.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>hum_input1_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;humidity&nbsp;raw&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;1.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>hum_input2_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;humidity&nbsp;raw&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;2.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>hum_input3_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;humidity&nbsp;raw&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;3.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>humid0</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;humidity&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;0&nbsp;if&nbsp;a&nbsp;DHT11/DHT22&nbsp;sensor&nbsp;is&nbsp;physically&nbsp;attached.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>humid1</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;humidity&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;1&nbsp;if&nbsp;a&nbsp;DHT11/DHT22&nbsp;sensor&nbsp;is&nbsp;physically&nbsp;attached.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>humid2</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;humidity&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;2&nbsp;if&nbsp;a&nbsp;DHT11/DHT22&nbsp;sensor&nbsp;is&nbsp;physically&nbsp;attached.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>humid3</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;humidity&nbsp;value&nbsp;from&nbsp;humidity&nbsp;input&nbsp;3&nbsp;if&nbsp;a&nbsp;DHT11/DHT22&nbsp;sensor&nbsp;is&nbsp;physically&nbsp;attached.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>model_in</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;PiXtend&nbsp;V2&nbsp;model&nbsp;information&nbsp;from&nbsp;the&nbsp;microcontroller.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>model_in_error</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;result&nbsp;of&nbsp;the&nbsp;comparison&nbsp;between&nbsp;the&nbsp;configured&nbsp;model,&nbsp;supplied&nbsp;by&nbsp;the&nbsp;child&nbsp;class&nbsp;through&nbsp;the&nbsp;init<br>
+function&nbsp;(constructor)&nbsp;when&nbsp;the&nbsp;object&nbsp;is&nbsp;created,&nbsp;and&nbsp;the&nbsp;reported&nbsp;model&nbsp;by&nbsp;the&nbsp;microcontroller.<br>
+If&nbsp;the&nbsp;configured&nbsp;model&nbsp;and&nbsp;the&nbsp;reported&nbsp;model&nbsp;match,&nbsp;the&nbsp;value&nbsp;will&nbsp;be&nbsp;False,<br>
+if&nbsp;they&nbsp;don't&nbsp;match,&nbsp;the&nbsp;value&nbsp;will&nbsp;be&nbsp;True&nbsp;and&nbsp;signifies&nbsp;an&nbsp;error.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value,&nbsp;False&nbsp;means&nbsp;no&nbsp;error,&nbsp;True&nbsp;means&nbsp;the&nbsp;reported&nbsp;model&nbsp;does&nbsp;not&nbsp;match<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>retain_copy</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;microcontroller's&nbsp;Retain&nbsp;memory&nbsp;option&nbsp;to&nbsp;copy&nbsp;incoming&nbsp;data&nbsp;to&nbsp;the&nbsp;outgoing&nbsp;data<br>
+stream.&nbsp;This&nbsp;way&nbsp;the&nbsp;data&nbsp;which&nbsp;will&nbsp;be&nbsp;stored&nbsp;on&nbsp;the&nbsp;microcontroller,&nbsp;in&nbsp;the&nbsp;event&nbsp;of&nbsp;a&nbsp;sudden&nbsp;power&nbsp;loss,<br>
+can&nbsp;be&nbsp;verified&nbsp;that&nbsp;the&nbsp;data&nbsp;really&nbsp;reaches&nbsp;the&nbsp;microcontroller&nbsp;and&nbsp;that&nbsp;values&nbsp;are&nbsp;correct.&nbsp;This&nbsp;option&nbsp;is<br>
+mainly&nbsp;intended&nbsp;for&nbsp;debugging,&nbsp;but&nbsp;can&nbsp;be&nbsp;used&nbsp;by&nbsp;anyone.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;True&nbsp;or&nbsp;False</tt></dd>
+</dl>
+<dl><dt><strong>retain_enable</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;microcontroller's&nbsp;Retain&nbsp;memory&nbsp;option&nbsp;to&nbsp;enabled.&nbsp;With&nbsp;this&nbsp;option&nbsp;active&nbsp;a&nbsp;specified&nbsp;amount&nbsp;of<br>
+data&nbsp;will&nbsp;be&nbsp;stored&nbsp;in&nbsp;the&nbsp;microcontroller's&nbsp;flash&nbsp;memory&nbsp;in&nbsp;the&nbsp;event&nbsp;of&nbsp;a&nbsp;sudden&nbsp;power&nbsp;loss.&nbsp;The&nbsp;exact&nbsp;amount<br>
+of&nbsp;int's/bytes&nbsp;which&nbsp;a&nbsp;PiXtend&nbsp;V2&nbsp;board&nbsp;can&nbsp;store&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;SPI&nbsp;protocol&nbsp;specifications.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;True&nbsp;or&nbsp;False</tt></dd>
+</dl>
+<dl><dt><strong>save_state</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;microcontroller's&nbsp;SaveState&nbsp;bit&nbsp;in&nbsp;case&nbsp;the&nbsp;computer&nbsp;has&nbsp;to&nbsp;shutdown&nbsp;or&nbsp;needs&nbsp;to&nbsp;reboot.<br>
+Settings&nbsp;this&nbsp;property&nbsp;to&nbsp;True&nbsp;will&nbsp;halt&nbsp;the&nbsp;microcontroller&nbsp;and&nbsp;a&nbsp;reset&nbsp;is&nbsp;needed&nbsp;in&nbsp;order&nbsp;to&nbsp;start&nbsp;any<br>
+communication&nbsp;again.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;True&nbsp;or&nbsp;False</tt></dd>
+</dl>
+<dl><dt><strong>state_led_off</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;if&nbsp;the&nbsp;State&nbsp;LED&nbsp;(L1)&nbsp;on&nbsp;the&nbsp;PiXtend&nbsp;V2&nbsp;board&nbsp;is&nbsp;on&nbsp;or&nbsp;off.<br>
+True&nbsp;turns&nbsp;the&nbsp;LED&nbsp;off&nbsp;and&nbsp;False&nbsp;leave&nbsp;the&nbsp;State&nbsp;LED&nbsp;(L1)&nbsp;on.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;True&nbsp;or&nbsp;False</tt></dd>
+</dl>
+<dl><dt><strong>temp0</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;temperature&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;0&nbsp;from&nbsp;a&nbsp;DHT11&nbsp;or&nbsp;DHT22&nbsp;sensor.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>temp1</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;temperature&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;1&nbsp;from&nbsp;a&nbsp;DHT11&nbsp;or&nbsp;DHT22&nbsp;sensor.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>temp2</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;temperature&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;2&nbsp;from&nbsp;a&nbsp;DHT11&nbsp;or&nbsp;DHT22&nbsp;sensor.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>temp3</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;converted&nbsp;temperature&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;3&nbsp;from&nbsp;a&nbsp;DHT11&nbsp;or&nbsp;DHT22&nbsp;sensor.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>temp_input0_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;temperature&nbsp;raw&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;0.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>temp_input1_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;temperature&nbsp;raw&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;1.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>temp_input2_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;temperature&nbsp;raw&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;2.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>temp_input3_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;temperature&nbsp;raw&nbsp;value&nbsp;from&nbsp;temperature&nbsp;input&nbsp;3.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>uc_state</strong></dt>
+<dd><tt>The&nbsp;UCState&nbsp;byte&nbsp;from&nbsp;the&nbsp;microcontroller&nbsp;contains&nbsp;information&nbsp;of&nbsp;the&nbsp;following&nbsp;internal&nbsp;states:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;0:&nbsp;Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;The&nbsp;microcontroller&nbsp;is&nbsp;up&nbsp;and&nbsp;running,&nbsp;this&nbsp;is&nbsp;just&nbsp;a&nbsp;helper&nbsp;bit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;4:&nbsp;Error0&nbsp;&nbsp;&nbsp;-&nbsp;Bit&nbsp;0&nbsp;of&nbsp;the&nbsp;4&nbsp;bit&nbsp;error&nbsp;number&nbsp;from&nbsp;the&nbsp;microcontroller.&nbsp;Together&nbsp;with&nbsp;the&nbsp;next&nbsp;3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;5:&nbsp;Error1&nbsp;&nbsp;&nbsp;-&nbsp;bits&nbsp;a&nbsp;4&nbsp;bit&nbsp;number&nbsp;can&nbsp;be&nbsp;formed&nbsp;which&nbsp;results&nbsp;in&nbsp;an&nbsp;error&nbsp;number&nbsp;which&nbsp;is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;6:&nbsp;Error2&nbsp;&nbsp;&nbsp;-&nbsp;listed&nbsp;in&nbsp;the&nbsp;SPI&nbsp;protocol&nbsp;specification&nbsp;or&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;7:&nbsp;Error3<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>uc_warnings</strong></dt>
+<dd><tt>The&nbsp;UCWarnings&nbsp;byte&nbsp;from&nbsp;the&nbsp;microcontroller&nbsp;contains&nbsp;information&nbsp;of&nbsp;the&nbsp;following&nbsp;internal&nbsp;errors:<br>
+Bit&nbsp;1:&nbsp;RetainCRCError&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;Signals&nbsp;a&nbsp;CRC&nbsp;error&nbsp;in&nbsp;the&nbsp;retain&nbsp;data&nbsp;in&nbsp;the&nbsp;microcontroller<br>
+Bit&nbsp;2:&nbsp;RetainVoltageError&nbsp;&nbsp;&nbsp;-&nbsp;The&nbsp;supply&nbsp;voltage&nbsp;is&nbsp;below&nbsp;19&nbsp;volts,&nbsp;the&nbsp;Retain&nbsp;memory&nbsp;option&nbsp;cannot&nbsp;be&nbsp;used.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>use_fahrenheit</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;if&nbsp;the&nbsp;conversion&nbsp;of&nbsp;the&nbsp;temperature&nbsp;raw&nbsp;value&nbsp;should&nbsp;be&nbsp;done&nbsp;in&nbsp;Fahrenheit.<br>
+Default&nbsp;is&nbsp;'False',&nbsp;meaning&nbsp;by&nbsp;getting&nbsp;the&nbsp;temperature&nbsp;from&nbsp;temp0&nbsp;to&nbsp;temp3<br>
+the&nbsp;value&nbsp;will&nbsp;be&nbsp;in&nbsp;degrees&nbsp;Celsius,&nbsp;if&nbsp;set&nbsp;to&nbsp;'True'&nbsp;the&nbsp;values&nbsp;will&nbsp;be&nbsp;in&nbsp;Fahrenheit.<br>
+&nbsp;<br>
+:returns:&nbsp;Bool&nbsp;value,&nbsp;'False'&nbsp;for&nbsp;Celsius&nbsp;and&nbsp;'True'&nbsp;for&nbsp;Fahrenheit<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>watchdog</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PiXtend&nbsp;V2&nbsp;watchdog&nbsp;option.&nbsp;WDT_OFF&nbsp;or&nbsp;0&nbsp;ms&nbsp;means&nbsp;the&nbsp;watchdog&nbsp;is&nbsp;disabled.&nbsp;One&nbsp;of&nbsp;the<br>
+following&nbsp;time&nbsp;values&nbsp;16&nbsp;ms,&nbsp;32&nbsp;ms,&nbsp;64&nbsp;ms,&nbsp;125&nbsp;ms,&nbsp;250&nbsp;ms,&nbsp;500&nbsp;ms,&nbsp;1000&nbsp;ms&nbsp;(1s),&nbsp;2000&nbsp;ms&nbsp;(2s),&nbsp;4000&nbsp;ms&nbsp;(4s)<br>
+and&nbsp;8000&nbsp;ms&nbsp;(8s)&nbsp;turns&nbsp;the&nbsp;watchdog&nbsp;function&nbsp;in&nbsp;the&nbsp;microcontroller&nbsp;on.&nbsp;If&nbsp;no&nbsp;SPI&nbsp;communication&nbsp;occurs&nbsp;within<br>
+this&nbsp;time&nbsp;frame,&nbsp;the&nbsp;microcontroller&nbsp;will&nbsp;stop&nbsp;working&nbsp;and&nbsp;goes&nbsp;into&nbsp;save&nbsp;state.&nbsp;Only&nbsp;a&nbsp;reset&nbsp;or&nbsp;power&nbsp;cycle<br>
+will&nbsp;bring&nbsp;it&nbsp;back&nbsp;to&nbsp;life&nbsp;once&nbsp;it&nbsp;has&nbsp;entered&nbsp;this&nbsp;stage.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int<br>
+:raises&nbsp;ValueError:&nbsp;If&nbsp;the&nbsp;passed&nbsp;value&nbsp;is&nbsp;not&nbsp;one&nbsp;of&nbsp;the&nbsp;following:&nbsp;16,&nbsp;32,&nbsp;64,&nbsp;125,&nbsp;250,&nbsp;500,&nbsp;1000,<br>
+2000,&nbsp;4000&nbsp;or&nbsp;8000</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>:<br>
+<dl><dt><strong>BIT_0</strong> = 0</dl>
+
+<dl><dt><strong>BIT_1</strong> = 1</dl>
+
+<dl><dt><strong>BIT_10</strong> = 10</dl>
+
+<dl><dt><strong>BIT_11</strong> = 11</dl>
+
+<dl><dt><strong>BIT_12</strong> = 12</dl>
+
+<dl><dt><strong>BIT_13</strong> = 13</dl>
+
+<dl><dt><strong>BIT_14</strong> = 14</dl>
+
+<dl><dt><strong>BIT_15</strong> = 15</dl>
+
+<dl><dt><strong>BIT_2</strong> = 2</dl>
+
+<dl><dt><strong>BIT_3</strong> = 3</dl>
+
+<dl><dt><strong>BIT_4</strong> = 4</dl>
+
+<dl><dt><strong>BIT_5</strong> = 5</dl>
+
+<dl><dt><strong>BIT_6</strong> = 6</dl>
+
+<dl><dt><strong>BIT_7</strong> = 7</dl>
+
+<dl><dt><strong>BIT_8</strong> = 8</dl>
+
+<dl><dt><strong>BIT_9</strong> = 9</dl>
+
+<dl><dt><strong>COM_INTERVAL_DEFAULT</strong> = 0.03</dl>
+
+<dl><dt><strong>COM_INTERVAL_DHT</strong> = 0.03</dl>
+
+<dl><dt><strong>COM_INTERVAL_MINIMUM</strong> = 0.01</dl>
+
+<dl><dt><strong>DAC_A</strong> = 0</dl>
+
+<dl><dt><strong>DAC_B</strong> = 1</dl>
+
+<dl><dt><strong>DHT11</strong> = 0</dl>
+
+<dl><dt><strong>DHT22</strong> = 1</dl>
+
+<dl><dt><strong>GPIO_DHT11</strong> = 2</dl>
+
+<dl><dt><strong>GPIO_DHT22</strong> = 3</dl>
+
+<dl><dt><strong>GPIO_INPUT</strong> = 0</dl>
+
+<dl><dt><strong>GPIO_OUTPUT</strong> = 1</dl>
+
+<dl><dt><strong>JUMPER_10V</strong> = 1</dl>
+
+<dl><dt><strong>JUMPER_5V</strong> = 0</dl>
+
+<dl><dt><strong>MC_RESET_PIN</strong> = 23</dl>
+
+<dl><dt><strong>OFF</strong> = False</dl>
+
+<dl><dt><strong>ON</strong> = True</dl>
+
+<dl><dt><strong>PIXTENDV2S_MODEL</strong> = 83</dl>
+
+<dl><dt><strong>PWM_MODE</strong> = 1</dl>
+
+<dl><dt><strong>RS232</strong> = 0</dl>
+
+<dl><dt><strong>RS485</strong> = 0</dl>
+
+<dl><dt><strong>SERVO_MODE</strong> = 0</dl>
+
+<dl><dt><strong>SPI_ENABLE_PIN</strong> = 24</dl>
+
+<dl><dt><strong>SPI_NOT_FOUND</strong> = -1</dl>
+
+<dl><dt><strong>SPI_SPEED</strong> = 700000</dl>
+
+<dl><dt><strong>WDT_125MS</strong> = 125</dl>
+
+<dl><dt><strong>WDT_16MS</strong> = 16</dl>
+
+<dl><dt><strong>WDT_1S</strong> = 1000</dl>
+
+<dl><dt><strong>WDT_250MS</strong> = 250</dl>
+
+<dl><dt><strong>WDT_2S</strong> = 2000</dl>
+
+<dl><dt><strong>WDT_32MS</strong> = 32</dl>
+
+<dl><dt><strong>WDT_4S</strong> = 4000</dl>
+
+<dl><dt><strong>WDT_500MS</strong> = 500</dl>
+
+<dl><dt><strong>WDT_64MS</strong> = 64</dl>
+
+<dl><dt><strong>WDT_8S</strong> = 8000</dl>
+
+<dl><dt><strong>WDT_OFF</strong> = 0</dl>
+
+<dl><dt><strong>__metaclass__</strong> = &lt;class 'abc.ABCMeta'&gt;<dd><tt>Metaclass&nbsp;for&nbsp;defining&nbsp;Abstract&nbsp;Base&nbsp;Classes&nbsp;(ABCs).<br>
+&nbsp;<br>
+Use&nbsp;this&nbsp;metaclass&nbsp;to&nbsp;create&nbsp;an&nbsp;ABC.&nbsp;&nbsp;An&nbsp;ABC&nbsp;can&nbsp;be&nbsp;subclassed<br>
+directly,&nbsp;and&nbsp;then&nbsp;acts&nbsp;as&nbsp;a&nbsp;mix-in&nbsp;class.&nbsp;&nbsp;You&nbsp;can&nbsp;also&nbsp;register<br>
+unrelated&nbsp;concrete&nbsp;classes&nbsp;(even&nbsp;built-in&nbsp;classes)&nbsp;and&nbsp;unrelated<br>
+ABCs&nbsp;as&nbsp;'virtual&nbsp;subclasses'&nbsp;--&nbsp;these&nbsp;and&nbsp;their&nbsp;descendants&nbsp;will<br>
+be&nbsp;considered&nbsp;subclasses&nbsp;of&nbsp;the&nbsp;registering&nbsp;ABC&nbsp;by&nbsp;the&nbsp;built-in<br>
+issubclass()&nbsp;function,&nbsp;but&nbsp;the&nbsp;registering&nbsp;ABC&nbsp;won't&nbsp;show&nbsp;up&nbsp;in<br>
+their&nbsp;MRO&nbsp;(Method&nbsp;Resolution&nbsp;Order)&nbsp;nor&nbsp;will&nbsp;method<br>
+implementations&nbsp;defined&nbsp;by&nbsp;the&nbsp;registering&nbsp;ABC&nbsp;be&nbsp;callable&nbsp;(not<br>
+even&nbsp;via&nbsp;super()).</tt></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__author__</strong> = 'Robin Turner'<br>
+<strong>__version__</strong> = '0.1.0'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Robin&nbsp;Turner</td></tr></table>
+</body></html>
