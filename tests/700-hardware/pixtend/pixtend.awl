@@ -27,12 +27,35 @@ BEGIN
 END_FUNCTION
 
 
+// GPIO tests
+// PiXtend GPIO 0, 1 are wired to A 2.0, A 2.1
+// PiXtend GPIO 2, 3 are wired to E 2.0, E 2.1
+FUNCTION FC 2 : VOID
+BEGIN
+	// Calculate the expected E 2.0, E 2.1 from A 2.0, A 2.1
+	// The fake PiXtend spidev module wires GPIO 0, 1 to GPIO 2, 3
+	L		AB 2
+	UW		W#16#03
+	T		MB 20
+
+	// Compare the actual EB 1 to the expected EB 1 (MB 20)
+	L		EB 2
+	L		MB 20
+	__ASSERT==	__ACCU 1,	__ACCU 2
+
+	// Increment the EB 2 / AB 2 test pattern by one
+	L		AB 2
+	+		1
+	T		AB 2
+END_FUNCTION
+
+
 ORGANIZATION_BLOCK OB 1
 BEGIN
 	// This test only works with the fake PiXtend-Spidev module
 
-	// Test DI/DO
-	CALL		FC 1
+	CALL		FC 1	// Test DI/DO
+	CALL		FC 2	// Test GPIOs
 
 	// If we ran 256 test cycles then exit.
 	L		MW 100
@@ -49,5 +72,6 @@ ORGANIZATION_BLOCK OB 100
 BEGIN
 	L		0
 	T		AB 1
+	T		AB 2
 	T		MW 100
 END_ORGANIZATION_BLOCK

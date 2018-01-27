@@ -41,6 +41,7 @@ import time
 class AbstractIO(object):
 	setters = ()
 	getters = ()
+	directionSetters = ()
 
 	def __init__(self, pixtend, index, bitOffset):
 		self.pixtend = pixtend
@@ -60,6 +61,10 @@ class AbstractIO(object):
 			self.getter = self.getters[self.index]
 		except IndexError:
 			self.getter = None
+		try:
+			self.directionSetter = self.directionSetters[self.index]
+		except IndexError:
+			self.directionSetter = None
 
 	def set(self, dataBytes):
 		self.setter(self, (dataBytes[self.byteOffset] >> self.bitOffset) & 1)
@@ -69,6 +74,10 @@ class AbstractIO(object):
 			dataBytes[self.byteOffset] |= self.bitMask
 		else:
 			dataBytes[self.byteOffset] &= self.invBitMask
+
+	def setDirection(self, outDirection):
+		if self.directionSetter:
+			self.directionSetter(self, outDirection)
 
 class Relay(AbstractIO):
 	def __setRelay0(self, state):
@@ -119,45 +128,110 @@ class DigitalOut(AbstractIO):
 	)
 
 class DigitalIn(AbstractIO):
-	def __setDI0(self):
+	def __getDI0(self):
 		return self.pixtend.digital_input0
 
-	def __setDI1(self):
+	def __getDI1(self):
 		return self.pixtend.digital_input1
 
-	def __setDI2(self):
+	def __getDI2(self):
 		return self.pixtend.digital_input2
 
-	def __setDI3(self):
+	def __getDI3(self):
 		return self.pixtend.digital_input3
 
-	def __setDI4(self):
+	def __getDI4(self):
 		return self.pixtend.digital_input4
 
-	def __setDI5(self):
+	def __getDI5(self):
 		return self.pixtend.digital_input5
 
-	def __setDI6(self):
+	def __getDI6(self):
 		return self.pixtend.digital_input6
 
-	def __setDI7(self):
+	def __getDI7(self):
 		return self.pixtend.digital_input7
 
 	getters = (
-		__setDI0,
-		__setDI1,
-		__setDI2,
-		__setDI3,
-		__setDI4,
-		__setDI5,
-		__setDI6,
-		__setDI7,
+		__getDI0,
+		__getDI1,
+		__getDI2,
+		__getDI3,
+		__getDI4,
+		__getDI5,
+		__getDI6,
+		__getDI7,
+	)
+
+class GPIO(AbstractIO):
+	def __getGPIO0(self):
+		return self.pixtend.gpio0
+
+	def __getGPIO1(self):
+		return self.pixtend.gpio1
+
+	def __getGPIO2(self):
+		return self.pixtend.gpio2
+
+	def __getGPIO3(self):
+		return self.pixtend.gpio3
+
+	getters = (
+		__getGPIO0,
+		__getGPIO1,
+		__getGPIO2,
+		__getGPIO3,
+	)
+
+	def __setGPIO0(self, state):
+		self.pixtend.gpio0 = state
+
+	def __setGPIO1(self, state):
+		self.pixtend.gpio1 = state
+
+	def __setGPIO2(self, state):
+		self.pixtend.gpio2 = state
+
+	def __setGPIO3(self, state):
+		self.pixtend.gpio3 = state
+
+	setters = (
+		__setGPIO0,
+		__setGPIO1,
+		__setGPIO2,
+		__setGPIO3,
+	)
+
+	def __setDirGPIO0(self, outDirection):
+		self.pixtend.gpio0_direction =\
+			self.pixtend.GPIO_OUTPUT if outDirection else\
+			self.pixtend.GPIO_INPUT
+
+	def __setDirGPIO1(self, outDirection):
+		self.pixtend.gpio1_direction =\
+			self.pixtend.GPIO_OUTPUT if outDirection else\
+			self.pixtend.GPIO_INPUT
+
+	def __setDirGPIO2(self, outDirection):
+		self.pixtend.gpio2_direction =\
+			self.pixtend.GPIO_OUTPUT if outDirection else\
+			self.pixtend.GPIO_INPUT
+
+	def __setDirGPIO3(self, outDirection):
+		self.pixtend.gpio3_direction =\
+			self.pixtend.GPIO_OUTPUT if outDirection else\
+			self.pixtend.GPIO_INPUT
+
+	directionSetters = (
+		__setDirGPIO0,
+		__setDirGPIO1,
+		__setDirGPIO2,
+		__setDirGPIO3,
 	)
 
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name = "PiXtend"
 
-	#TODO GPIOs
 	#TODO DHT
 	#TODO servo
 	#TODO PWM
@@ -170,6 +244,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	NR_RELAYS	= 4
 	NR_DO		= 6
 	NR_DI		= 8
+	NR_GPIO		= 4
 	NR_DAC		= 2
 	NR_ADC		= 4
 
@@ -196,6 +271,10 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		paramDescs.append(HwParamDesc_inAddr(
 				"di%d" % i,
 				description="Digital input %d address" % i))
+	for i in range(NR_GPIO):
+		paramDescs.append(HwParamDesc_inOutAddr(
+				"gpio%d" % i,
+				description="GPIO %d address (can be input (I/E) or output (Q/A))" % i))
 	for i in range(NR_DAC):
 		paramDescs.append(HwParamDesc_outAddr(
 				"analogOut%s" % ("AB"[i]),
@@ -225,44 +304,77 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		firstRelayByte = lastRelayByte = None
 		for i in range(self.NR_RELAYS):
 			bitOffset = self.getParamValueByName("relay%d" % i)
-			if bitOffset is not None:
-				r = Relay(self.__pixtend, i, bitOffset)
-				self.__relays.append(r)
-				firstRelayByte, lastRelayByte = updateOffs(
-						bitOffset // 8, firstRelayByte, lastRelayByte)
+			if bitOffset is None:
+				continue
+			r = Relay(self.__pixtend, i, bitOffset)
+			self.__relays.append(r)
+			firstRelayByte, lastRelayByte = updateOffs(
+					bitOffset // 8, firstRelayByte, lastRelayByte)
 
 		# Build all DigitalOut() objects
 		self.__DOs = []
 		firstDOByte = lastDOByte = None
 		for i in range(self.NR_DO):
 			bitOffset = self.getParamValueByName("do%d" % i)
-			if bitOffset is not None:
-				do = DigitalOut(self.__pixtend, i, bitOffset)
-				self.__DOs.append(do)
-				firstDOByte, lastDOByte = updateOffs(
-						bitOffset // 8, firstDOByte, lastDOByte)
+			if bitOffset is None:
+				continue
+			do = DigitalOut(self.__pixtend, i, bitOffset)
+			self.__DOs.append(do)
+			firstDOByte, lastDOByte = updateOffs(
+					bitOffset // 8, firstDOByte, lastDOByte)
 
 		# Build all DigitalIn() objects
 		self.__DIs = []
 		firstDIByte = lastDIByte = None
 		for i in range(self.NR_DI):
 			bitOffset = self.getParamValueByName("di%d" % i)
-			if bitOffset is not None:
-				di = DigitalIn(self.__pixtend, i, bitOffset)
-				self.__DIs.append(di)
-				firstDIByte, lastDIByte = updateOffs(
-						bitOffset // 8, firstDIByte, lastDIByte)
+			if bitOffset is None:
+				continue
+			di = DigitalIn(self.__pixtend, i, bitOffset)
+			self.__DIs.append(di)
+			firstDIByte, lastDIByte = updateOffs(
+					bitOffset // 8, firstDIByte, lastDIByte)
+
+		# Build all GPIO output objects
+		self.__GPIO_out = []
+		firstGPIOOutByte = lastGPIOOutByte = None
+		for i in range(self.NR_GPIO):
+			param = self.getParamValueByName("gpio%d" % i)
+			if param is None:
+				continue
+			direction, bitOffset = param
+			if direction != HwParamDesc_inOutAddr.OUT:
+				continue
+			gpio = GPIO(self.__pixtend, i, bitOffset)
+			self.__GPIO_out.append(gpio)
+			firstGPIOOutByte, lastGPIOOutByte = updateOffs(
+					bitOffset // 8, firstGPIOOutByte, lastGPIOOutByte)
+
+		# Build all GPIO input objects
+		self.__GPIO_in = []
+		firstGPIOInByte = lastGPIOInByte = None
+		for i in range(self.NR_GPIO):
+			param = self.getParamValueByName("gpio%d" % i)
+			if param is None:
+				continue
+			direction, bitOffset = param
+			if direction != HwParamDesc_inOutAddr.IN:
+				continue
+			gpio = GPIO(self.__pixtend, i, bitOffset)
+			self.__GPIO_in.append(gpio)
+			firstGPIOInByte, lastGPIOInByte = updateOffs(
+					bitOffset // 8, firstGPIOInByte, lastGPIOInByte)
 
 		# Find the offsets of the first and the last output byte
 		firstOutByte = lastOutByte = None
-		for offs in (firstRelayByte, firstDOByte):
+		for offs in (firstRelayByte, firstDOByte, firstGPIOOutByte):
 			if offs is not None:
 				firstOutByte, lastOutByte = updateOffs(offs,
 					firstOutByte, lastOutByte)
 
 		# Find the offsets of the first and the last input byte
 		firstInByte = lastInByte = None
-		for offs in (firstDIByte,):
+		for offs in (firstDIByte, firstGPIOInByte):
 			if offs is not None:
 				firstInByte, lastInByte = updateOffs(offs,
 					firstInByte, lastInByte)
@@ -276,10 +388,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			self.__outSize = lastOutByte - firstOutByte + 1
 
 			# Setup all outputs
-			for relay in self.__relays:
-				relay.setup(secondaryOffset=(-firstOutByte))
-			for do in self.__DOs:
-				do.setup(secondaryOffset=(-firstOutByte))
+			for out in itertools.chain(self.__relays,
+						   self.__DOs,
+						   self.__GPIO_out):
+				out.setup(secondaryOffset=(-firstOutByte))
+				out.setDirection(outDirection=True)
 
 		# Store the input base and size
 		if firstInByte is None or lastInByte is None:
@@ -290,8 +403,10 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			self.__inSize = lastInByte - firstInByte + 1
 
 			# Setup all inputs
-			for di in self.__DIs:
-				di.setup(secondaryOffset=(-firstInByte))
+			for inp in itertools.chain(self.__DIs,
+						   self.__GPIO_in):
+				inp.setup(secondaryOffset=(-firstInByte))
+				inp.setDirection(outDirection=False)
 
 	def doStartup(self):
 		if not self.__pixtendInitialized:
@@ -341,6 +456,9 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Handle digital inputs
 			for di in self.__DIs:
 				di.get(data)
+			# Handle all GPIO inputs
+			for gpio in self.__GPIO_in:
+				gpio.get(data)
 
 			cpu.storeInputRange(self.__inBase, data)
 
@@ -357,6 +475,9 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Handle digital outputs
 			for do in self.__DOs:
 				do.set(data)
+			# Handle all GPIO outputs
+			for gpio in self.__GPIO_out:
+				gpio.set(data)
 
 		# Run one PiXtend poll cycle, if required.
 		now = cpu.now
