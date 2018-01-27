@@ -178,7 +178,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				defaultValue=100,
 				minValue=25,
 				maxValue=10000,
-				description="PiXtend auto-mode poll interval time, in milliseconds")
+				description="PiXtend auto-mode poll interval time, in milliseconds"),
+		HwParamDesc_bool("testMode",
+				defaultValue=False,
+				description="Enable testing mode. DO NOT USE THIS OPTION!",
+				hidden=True),
 	]
 	for i in range(NR_RELAYS):
 		paramDescs.append(HwParamDesc_outAddr(
@@ -299,6 +303,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					":\n%s" % str(e))
 
 			self.__pollInt = float(self.getParamValueByName("pollIntMs")) / 1000.0
+			if self.getParamValueByName("testMode"):
+				self.__pollInt = 0.0 # In test mode use poll interval = 0
 
 			# Initialize PiXtend
 			try:
@@ -310,7 +316,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					if t >= 50:
 						self.raiseException("Timeout waiting "
 							"for PiXtend auto-mode.")
-					time.sleep(0.1)
+					time.sleep(self.__pollInt)
 			except Exception as e:
 				self.raiseException("Failed to init PiXtend: %s" % (
 					str(e)))
