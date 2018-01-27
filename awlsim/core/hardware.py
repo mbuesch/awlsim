@@ -59,16 +59,18 @@ class AbstractHardwareInterface(object): #+cdef
 	]
 
 	@classmethod
-	def getParamDescs(cls):
+	def getParamDescs(cls, includeHidden=False):
 		"""Get all parameter descriptors for this class."""
-		descs = cls.__standardParamDescs[:]
-		descs.extend(cls.paramDescs)
+		descs = [ d for d in cls.__standardParamDescs
+			  if not d.hidden or includeHidden ]
+		descs.extend(d for d in cls.paramDescs
+			     if not d.hidden or includeHidden)
 		return descs
 
 	@classmethod
-	def getParamDesc(cls, paramName):
+	def getParamDesc(cls, paramName, includeHidden=False):
 		"""Get one parameter descriptor."""
-		for desc in cls.getParamDescs():
+		for desc in cls.getParamDescs(includeHidden):
 			if desc.match(paramName):
 				return desc
 		return None
@@ -182,7 +184,7 @@ class AbstractHardwareInterface(object): #+cdef
 		self.__paramsByName = {}
 		self.__paramsByDescType = {}
 		for name, value in dictItems(parameters):
-			for desc in self.getParamDescs():
+			for desc in self.getParamDescs(includeHidden=True):
 				if desc.match(name):
 					break
 			else:
@@ -199,7 +201,7 @@ class AbstractHardwareInterface(object): #+cdef
 					(name, parsedValue))
 
 		# Check mandatory parameters
-		for desc in self.getParamDescs():
+		for desc in self.getParamDescs(includeHidden=True):
 			if not desc.mandatory:
 				continue
 			if desc.name not in dictKeys(self.__paramsByName):
@@ -212,7 +214,8 @@ class AbstractHardwareInterface(object): #+cdef
 		'name' is the name string of the parameter.
 		"""
 
-		descs = [ d for d in self.getParamDescs() if d.match(name) ]
+		descs = [ d for d in self.getParamDescs(includeHidden=True)
+			  if d.match(name) ]
 		# Programming error, if getParamValueByName() was called with a name
 		# that was not declared in paramDescs.
 		assert(descs)

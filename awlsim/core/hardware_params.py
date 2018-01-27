@@ -46,10 +46,11 @@ class HwParamDesc(object):
 	userEditable = True
 	defaultValue = None
 
-	def __init__(self, name, description="", mandatory=False):
+	def __init__(self, name, description="", mandatory=False, hidden=False):
 		self.name = name
 		self.description = description
 		self.mandatory = mandatory
+		self.hidden = hidden
 
 	def parse(self, value):
 		"""Parse a value string.
@@ -70,8 +71,8 @@ class HwParamDesc_pyobject(HwParamDesc):
 	typeStr = "PyObject"
 	userEditable = False
 
-	def __init__(self, name, description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
+	def __init__(self, name, description="", mandatory=False, hidden=False):
+		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 
 	def parse(self, value):
 		return value
@@ -81,8 +82,8 @@ class HwParamDesc_str(HwParamDesc):
 
 	typeStr = "string"
 
-	def __init__(self, name, defaultValue="", description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
+	def __init__(self, name, defaultValue="", description="", mandatory=False, hidden=False):
+		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
@@ -95,8 +96,8 @@ class HwParamDesc_int(HwParamDesc):
 
 	def __init__(self, name,
 		     defaultValue=0, minValue=None, maxValue=None,
-		     description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
+		     description="", mandatory=False, hidden=False):
+		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 		self.defaultValue = defaultValue
 		self.minValue = minValue
 		self.maxValue = maxValue
@@ -123,8 +124,8 @@ class HwParamDesc_bool(HwParamDesc):
 	typeStr = "boolean"
 
 	def __init__(self, name, defaultValue=False,
-		     description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
+		     description="", mandatory=False, hidden=False):
+		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
@@ -150,8 +151,8 @@ class __HwParamDesc_addr(HwParamDesc):
 
 	def __init__(self, name,
 		     defaultValue=None, minValue=None, maxValue=None,
-		     description="", mandatory=False):
-		HwParamDesc.__init__(self, name, description, mandatory)
+		     description="", mandatory=False, hidden=False):
+		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 		self.defaultValue = defaultValue
 		self.minValue = minValue
 		self.maxValue = maxValue
