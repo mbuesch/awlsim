@@ -180,35 +180,59 @@ class Fake_SpiDev_PiXtend_1_3(Fake_SpiDev):
 		return [0] * len(data)
 
 	def __command_autoMode(self, data):
+		assert(data[0] == 128)
+		assert(data[1] == 255)
+		crc = self.__crc16Block(data[2:31])
+		assert(data[31] == crc & 0xFF)
+		assert(data[32] == (crc >> 8) & 0xFF)
+		assert(data[33] == 128)
+
+		DOs = data[2]
+		relays = data[3]
+		gpiosOut = data[4]
+		pwm00 = data[5]
+		pwm01 = data[6]
+		pwm10 = data[7]
+		pwm11 = data[8]
+		pwmCtrl0 = data[9]
+		pwmCtrl1 = data[10]
+		pwmCtrl2 = data[11]
+		gpioCtrl = data[12]
+		ucCtrl = data[13]
+		aiCtrl0 = data[14]
+		aiCtrl1 = data[15]
+		piStatus = data[16]
+		assert(all((d == 0) for d in data[17:31]))
+
 		ret = [0] * 34
 		ret[1] = 128
 
-		ret[2] = 0 # DI
-		ret[3] = 0 # AI0/0
+		ret[2] = (DOs & 0x3F) | (((DOs ^ 0x03) & 0x03) << 6) # DI
+		ret[3] = aiCtrl0 # AI0/0
 		ret[4] = 0 # AI0/1
-		ret[5] = 0 # AI1/0
+		ret[5] = aiCtrl1 # AI1/0
 		ret[6] = 0 # AI1/1
-		ret[7] = 0 # AI2/0
+		ret[7] = gpiosOut # AI2/0
 		ret[8] = 0 # AI2/1
-		ret[9] = 0 # AI3/0
+		ret[9] = gpioCtrl # AI3/0
 		ret[10] = 0 # AI3/1
-		ret[11] = 0 # GPIO-in
-		ret[12] = 0 # temp0/0
-		ret[13] = 0 # temp0/1
-		ret[14] = 0 # temp1/0
-		ret[15] = 0 # temp1/1
-		ret[16] = 0 # temp2/0
-		ret[17] = 0 # temp2/1
-		ret[18] = 0 # temp3/0
+		ret[11] = relays # GPIO-in
+		ret[12] = pwm00 # temp0/0
+		ret[13] = pwm01 # temp0/1
+		ret[14] = pwm10 # temp1/0
+		ret[15] = pwm11 # temp1/1
+		ret[16] = pwmCtrl0 # temp2/0
+		ret[17] = pwmCtrl1 # temp2/1
+		ret[18] = pwmCtrl2 # temp3/0
 		ret[19] = 0 # temp3/1
-		ret[20] = 0 # humid0/0
+		ret[20] = ucCtrl # humid0/0
 		ret[21] = 0 # humid0/1
-		ret[22] = 0 # humid1/0
-		ret[23] = 0 # humid1/1
-		ret[24] = 0 # humid2/0
-		ret[25] = 0 # humid2/1
-		ret[26] = 0 # humid3/0
-		ret[27] = 0 # humid3/1
+		ret[22] = piStatus # humid1/0
+		ret[23] = 0x3B # humid1/1
+		ret[24] = 0x3C # humid2/0
+		ret[25] = 0x3D # humid2/1
+		ret[26] = 0x3E # humid3/0
+		ret[27] = 0x3F # humid3/1
 		ret[28] = 0x02 # UC-ver-l
 		ret[29] = 0x0D # UC-ver-h
 		ret[30] = 0x01 # UC-status

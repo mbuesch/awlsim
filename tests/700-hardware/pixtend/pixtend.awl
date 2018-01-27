@@ -1,0 +1,53 @@
+// Digital input (DI) / output (DO) tests.
+// PiXtend DIs are wired to EB 1
+// PiXtend DOs are wired to AB 1
+FUNCTION FC 1 : VOID
+BEGIN
+	// Calculate the expected EB 1 from AB 1.
+	// The fake PiXtend spidev module wires DI do DO in the following way:
+	// EB1 := ((AB1 & 0x3F) | (((AB1 ^ 0x03) & 0x03) << 6))
+	L		AB 1
+	UW		W#16#3F
+	L		AB 1
+	XOW		W#16#03
+	UW		W#16#03
+	SLW		6
+	OW
+	T		MB 10
+
+	// Compare the actual EB 1 to the expected EB 1 (MB 10)
+	L		EB 1
+	L		MB 10
+	__ASSERT==	__ACCU 1,	__ACCU 2
+
+	// Increment the EB 1 / AB 1 test pattern by one
+	L		AB 1
+	+		1
+	T		AB 1
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// This test only works with the fake PiXtend-Spidev module
+
+	// Test DI/DO
+	CALL		FC 1
+
+	// If we ran 256 test cycles then exit.
+	L		MW 100
+	+		1
+	T		MW 100
+	L		256
+	<I
+	BEB
+	CALL		SFC 46 // Exit test; Stop CPU.
+END_ORGANIZATION_BLOCK
+
+
+ORGANIZATION_BLOCK OB 100
+BEGIN
+	L		0
+	T		AB 1
+	T		MW 100
+END_ORGANIZATION_BLOCK
