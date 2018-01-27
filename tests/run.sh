@@ -268,9 +268,14 @@ setup_test_environment()
 	# Get extra PYTHONPATH from test case config file.
 	local conf_pythonpath=
 	if [ -n "$tested_file" ]; then
-		local conf_pythonpath="$(get_conf "$awl" PYTHONPATH)"
-		[ -n "$conf_pythonpath" ] &&\
-			local conf_pythonpath="$(readlink -m "$rootdir/$conf_pythonpath")"
+		local raw_conf_pythonpath="$(get_conf "$tested_file" PYTHONPATH)"
+		local onepath=
+		for onepath in $(printf '%s' "$raw_conf_pythonpath" | tr ':' ' '); do
+			if [ -n "$conf_pythonpath" ]; then
+				local conf_pythonpath="$conf_pythonpath:"
+			fi
+			local conf_pythonpath="${conf_pythonpath}$(readlink -m "$rootdir/$onepath")"
+		done
 	fi
 
 	# Export PYTHONPATHs
