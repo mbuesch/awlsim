@@ -408,6 +408,17 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				inp.setup(secondaryOffset=(-firstInByte))
 				inp.setDirection(outDirection=False)
 
+		# Build a list of all outputs
+		self.__allOutputs = []
+		self.__allOutputs.extend(self.__relays)
+		self.__allOutputs.extend(self.__DOs)
+		self.__allOutputs.extend(self.__GPIO_out)
+
+		# Build a list of all inputs
+		self.__allInputs = []
+		self.__allInputs.extend(self.__DIs)
+		self.__allInputs.extend(self.__GPIO_in)
+
 	def doStartup(self):
 		if not self.__pixtendInitialized:
 			try:
@@ -447,37 +458,37 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			self.__pixtendInitialized = False
 
 	def readInputs(self): #+cdef
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint32_t size
+#@cy		cdef bytearray data
+
 		cpu = self.cpu
 
 		size = self.__inSize
 		if size:
 			data = cpu.fetchInputRange(self.__inBase, size)
 
-			# Handle digital inputs
-			for di in self.__DIs:
-				di.get(data)
-			# Handle all GPIO inputs
-			for gpio in self.__GPIO_in:
-				gpio.get(data)
+			# Handle all inputs
+			for inp in self.__allInputs:
+				inp.get(data)
 
 			cpu.storeInputRange(self.__inBase, data)
 
 	def writeOutputs(self): #+cdef
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint32_t size
+#@cy		cdef double now
+#@cy		cdef bytearray data
+
 		cpu = self.cpu
 
 		size = self.__outSize
 		if size:
 			data = cpu.fetchOutputRange(self.__outBase, size)
 
-			# Handle relays
-			for relay in self.__relays:
-				relay.set(data)
-			# Handle digital outputs
-			for do in self.__DOs:
-				do.set(data)
-			# Handle all GPIO outputs
-			for gpio in self.__GPIO_out:
-				gpio.set(data)
+			# Handle all outputs
+			for out in self.__allOutputs:
+				out.set(data)
 
 		# Run one PiXtend poll cycle, if required.
 		now = cpu.now
@@ -485,13 +496,18 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if not self.__pixtendPoll(now):
 				self.raiseException("PiXtend auto_mode() poll failed.")
 
-	def __pixtendPoll(self, now):
+	def __pixtendPoll(self, now): #@nocy
+#@cy	cdef ExBool_t __pixtendPoll(self, double now):
 		# Poll PiXtend auto_mode
 		self.__nextPoll = now + self.__pollInt
 		return self.__pixtend.auto_mode() == 0 and\
 		       (self.__pixtend.uc_status & 1) != 0
 
-	def __syncPixtendPoll(self):
+	def __syncPixtendPoll(self): #+cdef
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint32_t retries
+#@cy		cdef uint32_t timeout
+
 		# Synchronously run one PiXtend poll cycle.
 		cpu = self.cpu
 		retries = 0

@@ -7,12 +7,19 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef list __relays
 	cdef list __DOs
 	cdef list __DIs
+	cdef list __GPIO_out
+	cdef list __GPIO_in
+	cdef list __allOutputs
+	cdef list __allInputs
 	cdef uint32_t __outBase
 	cdef uint32_t __outSize
 	cdef uint32_t __inBase
 	cdef uint32_t __inSize
 	cdef double __pollInt
 	cdef double __nextPoll
+
+	cdef ExBool_t __pixtendPoll(self, double now)
+	cdef __syncPixtendPoll(self)
 
 	cdef readInputs(self)
 	cdef writeOutputs(self)
