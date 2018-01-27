@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.enumeration import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
@@ -33,6 +34,7 @@ __all__ = [ "HwParamDesc",
 	    "HwParamDesc_bool",
 	    "HwParamDesc_outAddr",
 	    "HwParamDesc_inAddr",
+	    "HwParamDesc_inOutAddr",
 ]
 
 
@@ -143,7 +145,7 @@ class HwParamDesc_bool(HwParamDesc):
 				str(value))
 		return bool(value)
 
-class __HwParamDesc_addr(HwParamDesc):
+class _HwParamDesc_addr(HwParamDesc):
 	"""Address hardware parameter descriptor."""
 
 	typeStr = None
@@ -158,6 +160,7 @@ class __HwParamDesc_addr(HwParamDesc):
 		self.maxValue = maxValue
 
 	def _parseAddr(self, value):
+		self._actualPrefix = None
 		value = value.strip()
 		if not value:
 			return self.defaultValue
@@ -172,6 +175,7 @@ class __HwParamDesc_addr(HwParamDesc):
 					raise ValueError
 			if not any(strEqual(v[0], p, False) for p in self.ADDR_PREFIXES):
 				raise ValueError
+			self._actualPrefix = v[0]
 			o = v[1].split(".")
 			if len(o) != 2:
 				raise ValueError
@@ -195,14 +199,40 @@ class __HwParamDesc_addr(HwParamDesc):
 				raise self.ParseError("Address '%s' is too big." % value)
 		return bitOffset
 
-class HwParamDesc_outAddr(__HwParamDesc_addr):
+class HwParamDesc_outAddr(_HwParamDesc_addr):
 	"""Output address hardware parameter descriptor."""
 
 	typeStr = "outputAddress"
 	ADDR_PREFIXES = ("Q", "A")
 
-class HwParamDesc_inAddr(__HwParamDesc_addr):
+class HwParamDesc_inAddr(_HwParamDesc_addr):
 	"""Input address hardware parameter descriptor."""
 
 	typeStr = "inputAddress"
 	ADDR_PREFIXES = ("I", "E")
+
+class HwParamDesc_inOutAddr(_HwParamDesc_addr):
+	"""Input or output address hardware parameter descriptor."""
+
+	typeStr = "inOutAddress"
+	ADDR_PREFIXES = ("I", "E", "Q", "A")
+
+	EnumGen.start
+	UNKNOWN_DIR	= EnumGen.item
+	OUT		= EnumGen.item
+	IN		= EnumGen.item
+	EnumGen.end
+
+	def parse(self, value):
+		bitOffset = _HwParamDesc_addr.parse(self, value)
+		if self._actualPrefix is not None and\
+		   (strEqual(self._actualPrefix, "I", False) or\
+		    strEqual(self._actualPrefix, "E", False)):
+			direction = self.IN
+		elif self._actualPrefix is not None and\
+		     (strEqual(self._actualPrefix, "Q", False) or\
+		      strEqual(self._actualPrefix, "A", False)):
+			direction = self.OUT
+		else:
+			direction = self.UNKNOWN_DIR
+		return (direction, bitOffset)
