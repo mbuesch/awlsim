@@ -38,7 +38,7 @@ from awlsim.core.cpu import * #+cimport
 import time
 
 
-class AbstractIO(object):
+class AbstractIO(object): #+cdef
 	setters = ()
 	getters = ()
 	directionSetters = ()
@@ -49,7 +49,7 @@ class AbstractIO(object):
 		self.byteOffset = bitOffset // 8
 		self.bitOffset = bitOffset % 8
 
-	def setup(self, secondaryOffset):
+	def setup(self, secondaryOffset): #+cpdef
 		self.byteOffset += secondaryOffset
 		self.bitMask = 1 << self.bitOffset
 		self.invBitMask = (~self.bitMask) & 0xFF
@@ -66,20 +66,22 @@ class AbstractIO(object):
 		except IndexError:
 			self.directionSetter = None
 
-	def set(self, dataBytes):
+	def set(self, dataBytes): #@nocy
+#@cy	cdef set(self, bytearray dataBytes):
 		self.setter(self, (dataBytes[self.byteOffset] >> self.bitOffset) & 1)
 
-	def get(self, dataBytes):
+	def get(self, dataBytes): #@nocy
+#@cy	cdef get(self, bytearray dataBytes):
 		if self.getter(self):
 			dataBytes[self.byteOffset] |= self.bitMask
 		else:
 			dataBytes[self.byteOffset] &= self.invBitMask
 
-	def setDirection(self, outDirection):
+	def setDirection(self, outDirection): #+cpdef
 		if self.directionSetter:
 			self.directionSetter(self, outDirection)
 
-class Relay(AbstractIO):
+class Relay(AbstractIO): #+cdef
 	def __setRelay0(self, state):
 		self.pixtend.relay0 = state
 
@@ -99,7 +101,7 @@ class Relay(AbstractIO):
 		__setRelay3,
 	)
 
-class DigitalOut(AbstractIO):
+class DigitalOut(AbstractIO): #+cdef
 	def __setDO0(self, state):
 		self.pixtend.digital_output0 = state
 
@@ -127,7 +129,7 @@ class DigitalOut(AbstractIO):
 		__setDO5,
 	)
 
-class DigitalIn(AbstractIO):
+class DigitalIn(AbstractIO): #+cdef
 	def __getDI0(self):
 		return self.pixtend.digital_input0
 
@@ -163,7 +165,7 @@ class DigitalIn(AbstractIO):
 		__getDI7,
 	)
 
-class GPIO(AbstractIO):
+class GPIO(AbstractIO): #+cdef
 	def __getGPIO0(self):
 		return self.pixtend.gpio0
 
@@ -391,8 +393,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			for out in itertools.chain(self.__relays,
 						   self.__DOs,
 						   self.__GPIO_out):
-				out.setup(secondaryOffset=(-firstOutByte))
-				out.setDirection(outDirection=True)
+				out.setup(-firstOutByte)
+				out.setDirection(True)
 
 		# Store the input base and size
 		if firstInByte is None or lastInByte is None:
@@ -405,8 +407,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Setup all inputs
 			for inp in itertools.chain(self.__DIs,
 						   self.__GPIO_in):
-				inp.setup(secondaryOffset=(-firstInByte))
-				inp.setDirection(outDirection=False)
+				inp.setup(-firstInByte)
+				inp.setDirection(False)
 
 		# Build a list of all outputs
 		self.__allOutputs = []
@@ -461,6 +463,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef uint32_t size
 #@cy		cdef bytearray data
+#@cy		cdef AbstractIO inp
 
 		cpu = self.cpu
 
@@ -479,6 +482,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 #@cy		cdef uint32_t size
 #@cy		cdef double now
 #@cy		cdef bytearray data
+#@cy		cdef AbstractIO out
 
 		cpu = self.cpu
 

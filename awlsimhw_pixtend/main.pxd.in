@@ -1,5 +1,33 @@
 from awlsim.core.hardware cimport *
 
+cdef class AbstractIO(object):
+	cdef object pixtend
+	cdef uint32_t index
+	cdef uint32_t byteOffset
+	cdef uint32_t bitOffset
+	cdef uint32_t bitMask
+	cdef uint32_t invBitMask
+	cdef object setter
+	cdef object getter
+	cdef object directionSetter
+
+	cpdef setup(self, secondaryOffset)
+	cdef set(self, bytearray dataBytes)
+	cdef get(self, bytearray dataBytes)
+	cpdef setDirection(self, outDirection)
+
+cdef class Relay(AbstractIO):
+	pass
+
+cdef class DigitalOut(AbstractIO):
+	pass
+
+cdef class DigitalIn(AbstractIO):
+	pass
+
+cdef class GPIO(AbstractIO):
+	pass
+
 cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef object __PiXtend_class
 	cdef object __pixtend
