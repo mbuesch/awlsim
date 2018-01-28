@@ -816,6 +816,19 @@ EOF
 			dpkg -i ../cython3-awlsimhw-rpigpio_*.deb ||\
 				die "Failed to install cython3-awlsimhw-rpigpio"
 		fi
+		# hardware: PiXtend
+		dpkg -i ../python-awlsimhw-pixtend_*.deb ||\
+			die "Failed to install python-awlsimhw-pixtend"
+		dpkg -i ../python3-awlsimhw-pixtend_*.deb ||\
+			die "Failed to install python3-awlsimhw-pixtend"
+		dpkg -i ../pypy-awlsimhw-pixtend_*.deb ||\
+			die "Failed to install pypy-awlsimhw-pixtend"
+		if [ $opt_cython -ne 0 ]; then
+			dpkg -i ../cython-awlsimhw-pixtend_*.deb ||\
+				die "Failed to install cython-awlsimhw-pixtend"
+			dpkg -i ../cython3-awlsimhw-pixtend_*.deb ||\
+				die "Failed to install cython3-awlsimhw-pixtend"
+		fi
 		# Executables
 		dpkg -i ../awlsim-server_*.deb ||\
 			die "Failed to install awlsim-server"

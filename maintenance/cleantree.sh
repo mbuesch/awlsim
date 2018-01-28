@@ -37,30 +37,36 @@ rm -rf debian/destdir-* \
        debian/python-awlsimhw-linuxcnc \
        debian/python-awlsimhw-profibus \
        debian/python-awlsimhw-rpigpio \
+       debian/python-awlsimhw-pixtend \
        debian/python-awlsim-gui \
        debian/cython-awlsim \
        debian/cython-awlsimhw-dummy \
        debian/cython-awlsimhw-linuxcnc \
        debian/cython-awlsimhw-profibus \
        debian/cython-awlsimhw-rpigpio \
+       debian/cython-awlsimhw-pixtend \
        debian/python3-awlsim \
        debian/python3-awlsim-gui \
        debian/python3-awlsimhw-dummy \
        debian/python3-awlsimhw-linuxcnc \
        debian/python3-awlsimhw-profibus \
        debian/python3-awlsimhw-rpigpio \
+       debian/python3-awlsimhw-pixtend \
        debian/cython3-awlsim \
        debian/cython3-awlsimhw-dummy \
        debian/cython3-awlsimhw-linuxcnc \
        debian/cython3-awlsimhw-profibus \
        debian/cython3-awlsimhw-rpigpio \
+       debian/cython3-awlsimhw-pixtend \
        debian/pypy-awlsim \
        debian/pypy-awlsimhw-dummy \
        debian/pypy-awlsimhw-profibus \
        debian/pypy-awlsimhw-rpigpio \
+       debian/pypy-awlsimhw-pixtend \
        debian/awlsim-client \
        debian/awlsim-server \
        debian/awlsim-symtab \
        debian/awlsim-test \
        debian/awlsim-linuxcnc-hal \
-       debian/awlsim-gui
+       debian/awlsim-gui \
+       debian/awlsim-proupgrade
