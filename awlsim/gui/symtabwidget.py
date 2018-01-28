@@ -139,7 +139,11 @@ class SymTabModel(QAbstractTableModel):
 				sym = self.symTab[row]
 			try:
 				if column == 0:
-					sym.setName(value.strip())
+					if value.startswith('"') and\
+					   value.endswith('"'):
+						value = value[1:-1]
+					value = value.strip()
+					sym.setName(value)
 				elif column == 1:
 					sym.setOperatorString(value)
 				elif column == 2:
