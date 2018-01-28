@@ -854,6 +854,8 @@ EOF
 			die "Failed to copy raspberrypi-gpio.awlpro."
 		cp examples/raspberrypi-profibus.awlpro /home/pi/raspberrypi-profibus-example.awlpro ||\
 			die "Failed to copy raspberrypi-profibus.awlpro."
+		cp examples/raspberrypi-pixtend.awlpro /home/pi/raspberrypi-pixtend-example.awlpro ||\
+			die "Failed to copy raspberrypi-pixtend.awlpro."
 
 		#TODO run the testsuite
 
