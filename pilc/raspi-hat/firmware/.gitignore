@@ -1,7 +1,0 @@
-dep/
-obj/
-
-*.bin
-*.hex
-
-eepemu_24cxx_content.c

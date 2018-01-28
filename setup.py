@@ -87,7 +87,6 @@ if isWindows or fullBuild:
 	scripts.append("awlsim-win.cmd")
 if not isWindows or fullBuild:
 	scripts.append("awlsim-linuxcnc-hal")
-	scripts.append("pilc/pilc-hat-conf")
 
 
 # Create freeze executable list.
@@ -155,9 +154,7 @@ setup(	name		= "awlsim",
 			    "awlsimhw_dummy",
 			    "awlsimhw_linuxcnc",
 			    "awlsimhw_pyprofibus",
-			    "awlsimhw_rpigpio",
-			    "libpilc", ],
-	package_dir	= { "libpilc" : "pilc/libpilc", },
+			    "awlsimhw_rpigpio", ],
 	scripts		= scripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,

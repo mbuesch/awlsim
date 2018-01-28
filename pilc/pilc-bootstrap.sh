@@ -816,11 +816,6 @@ EOF
 			dpkg -i ../cython3-awlsimhw-rpigpio_*.deb ||\
 				die "Failed to install cython3-awlsimhw-rpigpio"
 		fi
-		# PiLC libraries
-		dpkg -i ../python-libpilc_*.deb ||\
-			die "Failed to install python-libpilc"
-		dpkg -i ../python3-libpilc_*.deb ||\
-			die "Failed to install python3-libpilc"
 		# Executables
 		dpkg -i ../awlsim-server_*.deb ||\
 			die "Failed to install awlsim-server"
@@ -834,8 +829,6 @@ EOF
 			die "Failed to install awlsim-proupgrade"
 		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
 			die "Failed to install awlsim-linuxcnc-hal"
-		dpkg -i ../pilc-hat-conf_*.deb ||\
-			die "Failed to install pilc-hat-conf"
 		# GUI and misc
 		mkdir -p /home/pi/awlsim-gui ||\
 			die "mkdir /home/pi/awlsim-gui failed"

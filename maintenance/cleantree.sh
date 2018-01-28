@@ -38,7 +38,6 @@ rm -rf debian/destdir-* \
        debian/python-awlsimhw-profibus \
        debian/python-awlsimhw-rpigpio \
        debian/python-awlsim-gui \
-       debian/python-libpilc \
        debian/cython-awlsim \
        debian/cython-awlsimhw-dummy \
        debian/cython-awlsimhw-linuxcnc \
@@ -46,7 +45,6 @@ rm -rf debian/destdir-* \
        debian/cython-awlsimhw-rpigpio \
        debian/python3-awlsim \
        debian/python3-awlsim-gui \
-       debian/python3-libpilc \
        debian/python3-awlsimhw-dummy \
        debian/python3-awlsimhw-linuxcnc \
        debian/python3-awlsimhw-profibus \
@@ -65,5 +63,4 @@ rm -rf debian/destdir-* \
        debian/awlsim-symtab \
        debian/awlsim-test \
        debian/awlsim-linuxcnc-hal \
-       debian/awlsim-gui \
-       debian/pilc-hat-conf
+       debian/awlsim-gui
