@@ -41,12 +41,12 @@ SPIDEV_SHA256="09d2b5122f0dd79910713a11f9a0020f71537224bf829916def4fffc0ea59456"
 
 PPL_VERSION="0.1.0"
 PPL_FILE="ppl_v$PPL_VERSION.zip"
-PPL_MIRROR="https://www.pixtend.de/files/downloads/$PPL_FILE"
+PPL_MIRROR="./libs/pixtend/v1/$PPL_FILE"
 PPL_SHA256="d9e27d7347da04ba9a96bbe72b7fea0096886c6ec32fbcd781e396614f4718a4"
 
 PPL2_VERSION="0.1.0"
 PPL2_FILE="pplv2_v$PPL2_VERSION.zip"
-PPL2_MIRROR="https://www.pixtend.de/files/downloads/$PPL2_FILE"
+PPL2_MIRROR="./libs/pixtend/v2/$PPL2_FILE"
 PPL2_SHA256="b53e2b5b91fce5218eecf3e70afdca6058f6a678d1a40d86e84d36128d54d21a"
 
 
@@ -203,7 +203,14 @@ download()
 
 	info "Downloading $mirror..."
 	rm -f "$target"
-	wget -O "$target" "$mirror" || die "Failed to fetch $mirror"
+	if printf '%s' "$mirror" | grep -qe '^\./'; then
+		# "mirror" starts with ./
+		# This is a local file in the repository.
+		cp "$basedir/$mirror" "$target" || die "Failed to fetch $mirror"
+	else
+		# Download the file
+		wget -O "$target" "$mirror" || die "Failed to fetch $mirror"
+	fi
 	[ "$(sha256sum -b "$target" | cut -f1 -d' ')" = "$sha256" ] ||\
 		die "SHA256 verification of $target failed"
 }
