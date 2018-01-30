@@ -25,6 +25,11 @@ from awlsim.common.compat import *
 from awlsim.common.enumeration import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
+from awlsim.common.cpuconfig import *
+
+from awlsim.core.operatortypes import * #+cimport
+
+from awlsim.awlcompiler.optrans import *
 
 
 __all__ = [ "HwParamDesc",
@@ -32,9 +37,7 @@ __all__ = [ "HwParamDesc",
 	    "HwParamDesc_str",
 	    "HwParamDesc_int",
 	    "HwParamDesc_bool",
-	    "HwParamDesc_outAddr",
-	    "HwParamDesc_inAddr",
-	    "HwParamDesc_inOutAddr",
+	    "HwParamDesc_oper",
 ]
 
 
@@ -145,94 +148,44 @@ class HwParamDesc_bool(HwParamDesc):
 				str(value))
 		return bool(value)
 
-class _HwParamDesc_addr(HwParamDesc):
-	"""Address hardware parameter descriptor."""
+class HwParamDesc_oper(HwParamDesc):
+	"""Hardware parameter descriptor for operators.
+	"""
 
-	typeStr = None
-	ADDR_PREFIXES = None
+	typeStr = "operator"
 
 	def __init__(self, name,
-		     defaultValue=None, minValue=None, maxValue=None,
+		     allowedOperTypes=(),
+		     allowedOperWidths=(),
 		     description="", mandatory=False, hidden=False):
 		HwParamDesc.__init__(self, name, description, mandatory, hidden)
-		self.defaultValue = defaultValue
-		self.minValue = minValue
-		self.maxValue = maxValue
+		self.allowedOperTypes = allowedOperTypes
+		self.allowedOperWidths = allowedOperWidths
 
-	def _parseAddr(self, value):
-		self._actualPrefix = None
-		value = value.strip()
-		if not value:
-			return self.defaultValue
+	def __tryParse(self, value, mnemonics):
 		try:
-			v = value.split()
-			if len(v) != 2:
-				for p in self.ADDR_PREFIXES:
-					if value.startswith(p):
-						v = [ p, value[len(p):] ]
-						break
-				else:
-					raise ValueError
-			if not any(strEqual(v[0], p, False) for p in self.ADDR_PREFIXES):
-				raise ValueError
-			self._actualPrefix = v[0]
-			o = v[1].split(".")
-			if len(o) != 2:
-				raise ValueError
-			byteOffset, bitOffset = int(o[0], 10), int(o[1], 10)
-			if byteOffset < 0 or bitOffset < 0 or bitOffset > 7:
-				raise ValueError
-			return byteOffset * 8 + bitOffset
-		except ValueError:
-			raise self.ParseError("Value '%s' is not a %s." % (
-					      str(value), self.typeStr))
+			trans = AwlOpTranslator(mnemonics=mnemonics)
+			opDesc = trans.translateFromString(value)
+			oper = opDesc.operator
+		except AwlSimError as e:
+			oper = None
+		return oper
 
 	def parse(self, value):
-		bitOffset = self._parseAddr(value)
-		if self.minValue is not None:
-			minBitOffset = self._parseAddr(self.minValue)
-			if bitOffset < minBitOffset:
-				raise self.ParseError("Address '%s' is too small." % value)
-		if self.maxValue is not None:
-			maxAddr = self._parseAddr(self.maxValue)
-			if bitOffset > maxBitOffset:
-				raise self.ParseError("Address '%s' is too big." % value)
-		return bitOffset
-
-class HwParamDesc_outAddr(_HwParamDesc_addr):
-	"""Output address hardware parameter descriptor."""
-
-	typeStr = "outputAddress"
-	ADDR_PREFIXES = ("Q", "A")
-
-class HwParamDesc_inAddr(_HwParamDesc_addr):
-	"""Input address hardware parameter descriptor."""
-
-	typeStr = "inputAddress"
-	ADDR_PREFIXES = ("I", "E")
-
-class HwParamDesc_inOutAddr(_HwParamDesc_addr):
-	"""Input or output address hardware parameter descriptor."""
-
-	typeStr = "inOutAddress"
-	ADDR_PREFIXES = ("I", "E", "Q", "A")
-
-	EnumGen.start
-	UNKNOWN_DIR	= EnumGen.item
-	OUT		= EnumGen.item
-	IN		= EnumGen.item
-	EnumGen.end
-
-	def parse(self, value):
-		bitOffset = _HwParamDesc_addr.parse(self, value)
-		if self._actualPrefix is not None and\
-		   (strEqual(self._actualPrefix, "I", False) or\
-		    strEqual(self._actualPrefix, "E", False)):
-			direction = self.IN
-		elif self._actualPrefix is not None and\
-		     (strEqual(self._actualPrefix, "Q", False) or\
-		      strEqual(self._actualPrefix, "A", False)):
-			direction = self.OUT
-		else:
-			direction = self.UNKNOWN_DIR
-		return (direction, bitOffset)
+		if not value.strip():
+			return None
+		oper = self.__tryParse(value, S7CPUConfig.MNEMONICS_EN)
+		if not oper:
+			oper = self.__tryParse(value, S7CPUConfig.MNEMONICS_DE)
+			if not oper:
+				raise self.ParseError("Operator '%s' "
+					"is not valid." % value)
+		if self.allowedOperTypes:
+			if oper.operType not in self.allowedOperTypes:
+				raise self.ParseError("Operator '%s' "
+					"does not have a valid type." % value)
+		if self.allowedOperWidths:
+			if oper.width not in self.allowedOperWidths:
+				raise self.ParseError("Operator '%s' "
+					"does not have a valid bit width." % value)
+		return oper
