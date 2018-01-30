@@ -1,50 +1,67 @@
 from awlsim.core.hardware cimport *
 
 cdef class AbstractIO(object):
-	cdef object pixtend
-	cdef uint32_t index
-	cdef uint32_t byteOffset
-	cdef uint32_t bitOffset
-	cdef uint32_t bitMask
-	cdef uint32_t invBitMask
-	cdef object setter
-	cdef object getter
-	cdef object directionSetter
+	cdef public object pixtend
+	cdef public uint32_t index
+	cdef public uint32_t byteOffset
+	cdef public uint32_t bitOffset
+	cdef public uint32_t bitMask
+	cdef public uint32_t invBitMask
+	cdef public object setter
+	cdef public object getter
+	cdef public object directionSetter
 
 	cpdef setup(self, secondaryOffset)
 	cdef set(self, bytearray dataBytes)
 	cdef get(self, bytearray dataBytes)
 	cpdef setDirection(self, outDirection)
 
-cdef class Relay(AbstractIO):
+cdef class AbstractBitIO(AbstractIO):
+	cdef set(self, bytearray dataBytes)
+	cdef get(self, bytearray dataBytes)
+
+cdef class AbstractWordIO(AbstractIO):
+	cdef set(self, bytearray dataBytes)
+	cdef get(self, bytearray dataBytes)
+
+cdef class Relay(AbstractBitIO):
 	pass
 
-cdef class DigitalOut(AbstractIO):
+cdef class DigitalOut(AbstractBitIO):
 	pass
 
-cdef class DigitalIn(AbstractIO):
+cdef class DigitalIn(AbstractBitIO):
 	pass
 
-cdef class GPIO(AbstractIO):
+cdef class GPIO(AbstractBitIO):
 	pass
+
+cdef class AnalogIn(AbstractWordIO):
+	cdef public object jumper10V
+	cdef public object numberOfSamples
+
+	cdef uint16_t __convertV(self, double V)
+	cdef uint16_t __convertMA(self, double mA)
+	cpdef setup(self, secondaryOffset)
 
 cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
-	cdef object __PiXtend_class
-	cdef object __pixtend
-	cdef _Bool __pixtendInitialized
-	cdef list __relays
-	cdef list __DOs
-	cdef list __DIs
-	cdef list __GPIO_out
-	cdef list __GPIO_in
-	cdef list __allOutputs
-	cdef list __allInputs
-	cdef uint32_t __outBase
-	cdef uint32_t __outSize
-	cdef uint32_t __inBase
-	cdef uint32_t __inSize
-	cdef double __pollInt
-	cdef double __nextPoll
+	cdef public object __PiXtend_class
+	cdef public object __pixtend
+	cdef public _Bool __pixtendInitialized
+	cdef public list __relays
+	cdef public list __DOs
+	cdef public list __DIs
+	cdef public list __GPIO_out
+	cdef public list __GPIO_in
+	cdef public list __AIs
+	cdef public list __allOutputs
+	cdef public list __allInputs
+	cdef public uint32_t __outBase
+	cdef public uint32_t __outSize
+	cdef public uint32_t __inBase
+	cdef public uint32_t __inSize
+	cdef public double __pollInt
+	cdef public double __nextPoll
 
 	cdef ExBool_t __pixtendPoll(self, double now)
 	cdef __syncPixtendPoll(self)

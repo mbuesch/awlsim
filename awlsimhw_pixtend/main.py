@@ -32,6 +32,7 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.core.hardware_params import *
 from awlsim.core.hardware import * #+cimport
 from awlsim.core.operators import * #+cimport
+from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.cpu import * #+cimport
 
@@ -39,6 +40,9 @@ import time
 
 
 class AbstractIO(object): #+cdef
+	"""PiXtend abstract I/O handler.
+	"""
+
 	setters = ()
 	getters = ()
 	directionSetters = ()
@@ -68,6 +72,22 @@ class AbstractIO(object): #+cdef
 
 	def set(self, dataBytes): #@nocy
 #@cy	cdef set(self, bytearray dataBytes):
+		raise NotImplementedError
+
+	def get(self, dataBytes): #@nocy
+#@cy	cdef get(self, bytearray dataBytes):
+		raise NotImplementedError
+
+	def setDirection(self, outDirection): #+cpdef
+		if self.directionSetter:
+			self.directionSetter(self, outDirection)
+
+class AbstractBitIO(AbstractIO): #+cdef
+	"""PiXtend abstract bit I/O handler.
+	"""
+
+	def set(self, dataBytes): #@nocy
+#@cy	cdef set(self, bytearray dataBytes):
 		self.setter(self, (dataBytes[self.byteOffset] >> self.bitOffset) & 1)
 
 	def get(self, dataBytes): #@nocy
@@ -77,11 +97,28 @@ class AbstractIO(object): #+cdef
 		else:
 			dataBytes[self.byteOffset] &= self.invBitMask
 
-	def setDirection(self, outDirection): #+cpdef
-		if self.directionSetter:
-			self.directionSetter(self, outDirection)
+class AbstractWordIO(AbstractIO): #+cdef
+	"""PiXtend abstract word I/O handler.
+	"""
 
-class Relay(AbstractIO): #+cdef
+	def set(self, dataBytes): #@nocy
+#@cy	cdef set(self, bytearray dataBytes):
+		self.setter(self,
+			    (dataBytes[self.byteOffset] << 8) |\
+			    (dataBytes[self.byteOffset + 1]))
+
+	def get(self, dataBytes): #@nocy
+#@cy	cdef get(self, bytearray dataBytes):
+#@cy		cdef uint16_t value
+
+		value = self.getter(self)
+		dataBytes[self.byteOffset] = (value >> 8) & 0xFF
+		dataBytes[self.byteOffset + 1] = value & 0xFF
+
+class Relay(AbstractBitIO): #+cdef
+	"""PiXtend relay I/O handler.
+	"""
+
 	def __setRelay0(self, state):
 		self.pixtend.relay0 = state
 
@@ -101,7 +138,10 @@ class Relay(AbstractIO): #+cdef
 		__setRelay3,
 	)
 
-class DigitalOut(AbstractIO): #+cdef
+class DigitalOut(AbstractBitIO): #+cdef
+	"""PiXtend digital output I/O handler.
+	"""
+
 	def __setDO0(self, state):
 		self.pixtend.digital_output0 = state
 
@@ -129,7 +169,10 @@ class DigitalOut(AbstractIO): #+cdef
 		__setDO5,
 	)
 
-class DigitalIn(AbstractIO): #+cdef
+class DigitalIn(AbstractBitIO): #+cdef
+	"""PiXtend digital input I/O handler.
+	"""
+
 	def __getDI0(self):
 		return self.pixtend.digital_input0
 
@@ -165,7 +208,10 @@ class DigitalIn(AbstractIO): #+cdef
 		__getDI7,
 	)
 
-class GPIO(AbstractIO): #+cdef
+class GPIO(AbstractBitIO): #+cdef
+	"""PiXtend GPIO I/O handler.
+	"""
+
 	def __getGPIO0(self):
 		return self.pixtend.gpio0
 
@@ -231,13 +277,93 @@ class GPIO(AbstractIO): #+cdef
 		__setDirGPIO3,
 	)
 
+class AnalogIn(AbstractWordIO): #+cdef
+	"""PiXtend analog input I/O handler.
+	"""
+
+	def __init__(self, *args, **kwargs):
+		AbstractWordIO.__init__(self, *args, **kwargs)
+
+		self.jumper10V = None
+		self.numberOfSamples = None
+
+	def __convertV(self, V): #@nocy
+#@cy	cdef uint16_t __convertV(self, double V):
+		return max(min(int(round(V * 2764.8)), 32767), -32768)
+
+	def __convertMA(self, mA): #@nocy
+#@cy	cdef uint16_t __convertMA(self, double mA):
+		return max(min(int(round((mA - 4.0) * 1728.0)), 32767), -32768)
+
+	def __getAI0(self):
+		return self.__convertV(self.pixtend.analog_input0)
+
+	def __getAI1(self):
+		return self.__convertV(self.pixtend.analog_input1)
+
+	def __getAI2(self):
+		return self.__convertMA(self.pixtend.analog_input2)
+
+	def __getAI3(self):
+		return self.__convertMA(self.pixtend.analog_input3)
+
+	getters = (
+		__getAI0,
+		__getAI1,
+		__getAI2,
+		__getAI3,
+	)
+
+	def __setJumper10V_AI0(self, jumper10V):
+		self.pixtend.analog_input0_10volts_jumper = jumper10V
+
+	def __setJumper10V_AI1(self, jumper10V):
+		self.pixtend.analog_input1_10volts_jumper = jumper10V
+
+	settersJumper10V = (
+		__setJumper10V_AI0,
+		__setJumper10V_AI1,
+	)
+
+	def __setNos_AI0(self, nos):
+		self.pixtend.analog_input0_nos = nos
+
+	def __setNos_AI1(self, nos):
+		self.pixtend.analog_input1_nos = nos
+
+	def __setNos_AI2(self, nos):
+		self.pixtend.analog_input2_nos = nos
+
+	def __setNos_AI3(self, nos):
+		self.pixtend.analog_input3_nos = nos
+
+	settersNos = (
+		__setNos_AI0,
+		__setNos_AI1,
+		__setNos_AI2,
+		__setNos_AI3,
+	)
+
+#TODO freq
+
+	def setup(self, secondaryOffset): #+cpdef
+		AbstractWordIO.setup(self, secondaryOffset)
+
+		if self.jumper10V is not None:
+			setJumper10V = self.settersJumper10V[self.index]
+			setJumper10V(self, self.pixtend.ON if self.jumper10V
+					   else self.pixtend.OFF)
+
+		if self.numberOfSamples is not None:
+			setNos = self.settersNos[self.index]
+			setNos(self, self.numberOfSamples)
+
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name = "PiXtend"
 
 	#TODO DHT
 	#TODO servo
 	#TODO PWM
-	#TODO analog in
 	#TODO hum
 	#TODO DAC
 	#TODO RS232
@@ -262,29 +388,53 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				hidden=True),
 	]
 	for i in range(NR_RELAYS):
-		paramDescs.append(HwParamDesc_outAddr(
+		paramDescs.append(HwParamDesc_oper(
 				"relay%d" % i,
+				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
+				allowedOperWidths=(1,),
 				description="Relay output %d address" % i))
 	for i in range(NR_DO):
-		paramDescs.append(HwParamDesc_outAddr(
+		paramDescs.append(HwParamDesc_oper(
 				"do%d" % i,
+				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
+				allowedOperWidths=(1,),
 				description="Digital output %d address" % i))
 	for i in range(NR_DI):
-		paramDescs.append(HwParamDesc_inAddr(
+		paramDescs.append(HwParamDesc_oper(
 				"di%d" % i,
+				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
+				allowedOperWidths=(1,),
 				description="Digital input %d address" % i))
 	for i in range(NR_GPIO):
-		paramDescs.append(HwParamDesc_inOutAddr(
+		paramDescs.append(HwParamDesc_oper(
 				"gpio%d" % i,
+				allowedOperTypes=(AwlOperatorTypes.MEM_E,
+						  AwlOperatorTypes.MEM_A,),
+				allowedOperWidths=(1,),
 				description="GPIO %d address (can be input (I/E) or output (Q/A))" % i))
 	for i in range(NR_DAC):
-		paramDescs.append(HwParamDesc_outAddr(
+		paramDescs.append(HwParamDesc_oper(
 				"analogOut%s" % ("AB"[i]),
+				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
+				allowedOperWidths=(16,),
 				description="Analog output (DAC) %s address" % ("AB"[i])))
 	for i in range(NR_ADC):
-		paramDescs.append(HwParamDesc_inAddr(
+		paramDescs.append(HwParamDesc_oper(
 				"analogIn%d" % i,
-				description="Analog input %d address" % i))
+				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
+				allowedOperWidths=(16,),
+				description="Analog input %d word address" % i))
+		if i <= 1:
+			paramDescs.append(HwParamDesc_bool(
+					"analogIn%d_10V" % i,
+					defaultValue=True,
+					description="TRUE: Use 10 volts input. FALSE: Use 5 volts input"))
+		paramDescs.append(HwParamDesc_int(
+				"analogIn%d_NoS" % i,
+				defaultValue=10,
+				minValue=1,
+				maxValue=50,
+				description="Number of samples for analog input (1, 5, 10 or 50)"))
 
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
@@ -294,92 +444,127 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__pixtend = None
 
 	def __build(self):
-		def updateOffs(byteOffset, first, last):
+		def updateOffs(byteOffset, byteWidth, first, last):
 			if first is None or byteOffset < first:
 				first = byteOffset
-			if last is None or byteOffset > last:
-				last = byteOffset
+			if last is None or byteOffset + byteWidth - 1 > last:
+				last = byteOffset + byteWidth - 1
 			return first, last
 
 		# Build all Relay() objects
 		self.__relays = []
 		firstRelayByte = lastRelayByte = None
 		for i in range(self.NR_RELAYS):
-			bitOffset = self.getParamValueByName("relay%d" % i)
-			if bitOffset is None:
+			oper = self.getParamValueByName("relay%d" % i)
+			if oper is None:
 				continue
+			bitOffset = oper.offset.toLongBitOffset()
 			r = Relay(self.__pixtend, i, bitOffset)
 			self.__relays.append(r)
 			firstRelayByte, lastRelayByte = updateOffs(
-					bitOffset // 8, firstRelayByte, lastRelayByte)
+					bitOffset // 8, 1,
+					firstRelayByte, lastRelayByte)
 
 		# Build all DigitalOut() objects
 		self.__DOs = []
 		firstDOByte = lastDOByte = None
 		for i in range(self.NR_DO):
-			bitOffset = self.getParamValueByName("do%d" % i)
-			if bitOffset is None:
+			oper = self.getParamValueByName("do%d" % i)
+			if oper is None:
 				continue
+			bitOffset = oper.offset.toLongBitOffset()
 			do = DigitalOut(self.__pixtend, i, bitOffset)
 			self.__DOs.append(do)
 			firstDOByte, lastDOByte = updateOffs(
-					bitOffset // 8, firstDOByte, lastDOByte)
+					bitOffset // 8, 1,
+					firstDOByte, lastDOByte)
 
 		# Build all DigitalIn() objects
 		self.__DIs = []
 		firstDIByte = lastDIByte = None
 		for i in range(self.NR_DI):
-			bitOffset = self.getParamValueByName("di%d" % i)
-			if bitOffset is None:
+			oper = self.getParamValueByName("di%d" % i)
+			if oper is None:
 				continue
+			bitOffset = oper.offset.toLongBitOffset()
 			di = DigitalIn(self.__pixtend, i, bitOffset)
 			self.__DIs.append(di)
 			firstDIByte, lastDIByte = updateOffs(
-					bitOffset // 8, firstDIByte, lastDIByte)
+					bitOffset // 8, 1,
+					firstDIByte, lastDIByte)
 
 		# Build all GPIO output objects
 		self.__GPIO_out = []
 		firstGPIOOutByte = lastGPIOOutByte = None
 		for i in range(self.NR_GPIO):
-			param = self.getParamValueByName("gpio%d" % i)
-			if param is None:
+			oper = self.getParamValueByName("gpio%d" % i)
+			if oper is None:
 				continue
-			direction, bitOffset = param
-			if direction != HwParamDesc_inOutAddr.OUT:
+			if oper.operType != AwlOperatorTypes.MEM_A:
 				continue
+			bitOffset = oper.offset.toLongBitOffset()
 			gpio = GPIO(self.__pixtend, i, bitOffset)
 			self.__GPIO_out.append(gpio)
 			firstGPIOOutByte, lastGPIOOutByte = updateOffs(
-					bitOffset // 8, firstGPIOOutByte, lastGPIOOutByte)
+					bitOffset // 8, 1,
+					firstGPIOOutByte, lastGPIOOutByte)
 
 		# Build all GPIO input objects
 		self.__GPIO_in = []
 		firstGPIOInByte = lastGPIOInByte = None
 		for i in range(self.NR_GPIO):
-			param = self.getParamValueByName("gpio%d" % i)
-			if param is None:
+			oper = self.getParamValueByName("gpio%d" % i)
+			if oper is None:
 				continue
-			direction, bitOffset = param
-			if direction != HwParamDesc_inOutAddr.IN:
+			if oper.operType != AwlOperatorTypes.MEM_E:
 				continue
+			bitOffset = oper.offset.toLongBitOffset()
 			gpio = GPIO(self.__pixtend, i, bitOffset)
 			self.__GPIO_in.append(gpio)
 			firstGPIOInByte, lastGPIOInByte = updateOffs(
-					bitOffset // 8, firstGPIOInByte, lastGPIOInByte)
+					bitOffset // 8, 1,
+					firstGPIOInByte, lastGPIOInByte)
+
+		# Build all analog input objects
+		self.__AIs = []
+		firstAIByte = lastAIByte = None
+		for i in range(self.NR_ADC):
+			oper = self.getParamValueByName("analogIn%d" % i)
+			if oper is None:
+				continue
+			bitOffset = oper.offset.toLongBitOffset()
+			ai = AnalogIn(self.__pixtend, i, bitOffset)
+			self.__AIs.append(ai)
+			firstAIByte, lastAIByte = updateOffs(
+					bitOffset // 8, 2,
+					firstAIByte, lastAIByte)
+			if i <= 1:
+				ai.jumper10V = self.getParamValueByName("analogIn%d_10V" % i)
+			ai.numberOfSamples = self.getParamValueByName("analogIn%d_NoS" % i)
 
 		# Find the offsets of the first and the last output byte
 		firstOutByte = lastOutByte = None
-		for offs in (firstRelayByte, firstDOByte, firstGPIOOutByte):
-			if offs is not None:
-				firstOutByte, lastOutByte = updateOffs(offs,
-					firstOutByte, lastOutByte)
+		for firstByteOffset, lastByteOffset in (
+				(firstRelayByte, lastRelayByte),
+				(firstDOByte, lastDOByte),
+				(firstGPIOOutByte, lastGPIOOutByte)):
+			for byteOffset in (firstByteOffset, lastByteOffset):
+				if byteOffset is not None:
+					firstOutByte, lastOutByte = updateOffs(
+						byteOffset, 1,
+						firstOutByte, lastOutByte)
 
 		# Find the offsets of the first and the last input byte
 		firstInByte = lastInByte = None
-		for offs in (firstDIByte, firstGPIOInByte):
-			if offs is not None:
-				firstInByte, lastInByte = updateOffs(offs,
-					firstInByte, lastInByte)
+		for firstByteOffset, lastByteOffset in (
+				(firstDIByte, lastDIByte),
+				(firstGPIOInByte, lastGPIOInByte),
+				(firstAIByte, lastAIByte)):
+			for byteOffset in (firstByteOffset, lastByteOffset):
+				if byteOffset is not None:
+					firstInByte, lastInByte = updateOffs(
+						byteOffset, 1,
+						firstInByte, lastInByte)
 
 		# Store the output base and size
 		if firstOutByte is None or lastOutByte is None:
@@ -406,7 +591,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 			# Setup all inputs
 			for inp in itertools.chain(self.__DIs,
-						   self.__GPIO_in):
+						   self.__GPIO_in,
+						   self.__AIs):
 				inp.setup(-firstInByte)
 				inp.setDirection(False)
 
@@ -420,6 +606,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__allInputs = []
 		self.__allInputs.extend(self.__DIs)
 		self.__allInputs.extend(self.__GPIO_in)
+		self.__allInputs.extend(self.__AIs)
 
 	def doStartup(self):
 		if not self.__pixtendInitialized:

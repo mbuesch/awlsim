@@ -124,15 +124,20 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 		ret = [0] * 34
 		ret[1] = 128
 
+		ai0 = int(round(1.0 * 1024 / 10))
+		ai1 = int(round(2.0 * 1024 / 10))
+		ai2 = int(round(20.0 / 0.024194115990990990990990990991))
+		ai3 = int(round(14.0 / 0.024194115990990990990990990991))
+
 		ret[2] = (DOs & 0x3F) | (((DOs ^ 0x03) & 0x03) << 6) # DI
-		ret[3] = aiCtrl0 # AI0/0
-		ret[4] = 0 # AI0/1
-		ret[5] = aiCtrl1 # AI1/0
-		ret[6] = 0 # AI1/1
-		ret[7] = 0 # AI2/0
-		ret[8] = 0 # AI2/1
-		ret[9] = gpioCtrl # AI3/0
-		ret[10] = 0 # AI3/1
+		ret[3] = ai0 & 0xFF # AI0/0
+		ret[4] = (ai0 >> 8) & 0xFF # AI0/1
+		ret[5] = ai1 & 0xFF # AI1/0
+		ret[6] = (ai1 >> 8) & 0xFF # AI1/1
+		ret[7] = ai2 & 0xFF # AI2/0
+		ret[8] = (ai2 >> 8) & 0xFF # AI2/1
+		ret[9] = ai3 & 0xFF # AI3/0
+		ret[10] = (ai3 >> 8) & 0xFF # AI3/1
 		ret[11] = (gpiosOut & 0x03) << 2 # GPIO-in
 		ret[12] = pwm00 # temp0/0
 		ret[13] = pwm01 # temp0/1

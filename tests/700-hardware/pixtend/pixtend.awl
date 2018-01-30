@@ -50,12 +50,42 @@ BEGIN
 END_FUNCTION
 
 
+// Analog input tests
+FUNCTION FC 3 : VOID
+BEGIN
+	// Check AI0
+	// The fake PiXtend spidev module always reports 1 V
+	L		EW 10
+	L		2754
+	__ASSERT==	__ACCU 1,	__ACCU 2
+
+	// Check AI1
+	// The fake PiXtend spidev module always reports 2 V
+	L		EW 12
+	L		5535
+	__ASSERT==	__ACCU 1,	__ACCU 2
+
+	// Check AI2
+	// The fake PiXtend spidev module always reports 20.1 mA
+	L		EW 14
+	L		27663
+	__ASSERT==	__ACCU 1,	__ACCU 2
+
+	// Check AI3
+	// The fake PiXtend spidev module always reports 14.1 mA
+	L		EW 16
+	L		17295
+	__ASSERT==	__ACCU 1,	__ACCU 2
+END_FUNCTION
+
+
 ORGANIZATION_BLOCK OB 1
 BEGIN
 	// This test only works with the fake PiXtend-Spidev module
 
 	CALL		FC 1	// Test DI/DO
 	CALL		FC 2	// Test GPIOs
+	CALL		FC 3	// Test analog inputs
 
 	// If we ran 256 test cycles then exit.
 	L		MW 100
