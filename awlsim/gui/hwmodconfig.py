@@ -132,13 +132,10 @@ class HwmodParamModel(QAbstractTableModel):
 			params = self.__params
 			if row < len(params):
 				paramDesc = self.__getParamDesc(params[row][0])
-				if column == 0:
+				if column in (0, 1):
 					if paramDesc and paramDesc.description:
 						return paramDesc.description
 					return "The parameter's name"
-				elif column == 1:
-					return "Value for '%s'" %\
-						params[row][0]
 			else:
 				if column == 0:
 					return "New parameter name"
