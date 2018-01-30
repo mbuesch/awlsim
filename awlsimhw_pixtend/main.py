@@ -344,7 +344,22 @@ class AnalogIn(AbstractWordIO): #+cdef
 		__setNos_AI3,
 	)
 
-#TODO freq
+	@staticmethod
+	def setFreq(pixtend, freqKHz):
+		kHz2MHz = {
+			125	: 0.125,
+			250	: 0.250,
+			500	: 0.500,
+			1000	: 1.0,
+			2000	: 2.0,
+			4000	: 4.0,
+			8000	: 8.0,
+		}
+		try:
+			freqMHz = kHz2MHz[freqKHz]
+		except KeyError as e:
+			raise ValueError
+		pixtend.analog_input_nos_freq = freqMHz
 
 	def setup(self, secondaryOffset): #+cpdef
 		AbstractWordIO.setup(self, secondaryOffset)
@@ -389,38 +404,38 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	]
 	for i in range(NR_RELAYS):
 		paramDescs.append(HwParamDesc_oper(
-				"relay%d" % i,
+				"relay%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
 				description="Relay output %d address" % i))
 	for i in range(NR_DO):
 		paramDescs.append(HwParamDesc_oper(
-				"do%d" % i,
+				"digitalOut%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
 				description="Digital output %d address" % i))
 	for i in range(NR_DI):
 		paramDescs.append(HwParamDesc_oper(
-				"di%d" % i,
+				"digitalIn%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
 				allowedOperWidths=(1,),
 				description="Digital input %d address" % i))
 	for i in range(NR_GPIO):
 		paramDescs.append(HwParamDesc_oper(
-				"gpio%d" % i,
+				"gpio%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_E,
 						  AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
 				description="GPIO %d address (can be input (I/E) or output (Q/A))" % i))
 	for i in range(NR_DAC):
 		paramDescs.append(HwParamDesc_oper(
-				"analogOut%s" % ("AB"[i]),
+				"analogOut%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(16,),
-				description="Analog output (DAC) %s address" % ("AB"[i])))
+				description="Analog output (DAC) %d address" % i))
 	for i in range(NR_ADC):
 		paramDescs.append(HwParamDesc_oper(
-				"analogIn%d" % i,
+				"analogIn%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
 				allowedOperWidths=(16,),
 				description="Analog input %d word address" % i))
@@ -430,11 +445,18 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					defaultValue=True,
 					description="TRUE: Use 10 volts input. FALSE: Use 5 volts input"))
 		paramDescs.append(HwParamDesc_int(
-				"analogIn%d_NoS" % i,
+				"analogIn%d_nos" % i,
 				defaultValue=10,
 				minValue=1,
 				maxValue=50,
 				description="Number of samples for analog input (1, 5, 10 or 50)"))
+		#TODO optional: analogs in PEW only
+	paramDescs.append(HwParamDesc_int(
+			"analogIn_kHz",
+			defaultValue=125,
+			minValue=125,
+			maxValue=8000,
+			description="Analog sampling frequency in kHz. Default: 125 kHz."))
 
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
@@ -455,7 +477,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__relays = []
 		firstRelayByte = lastRelayByte = None
 		for i in range(self.NR_RELAYS):
-			oper = self.getParamValueByName("relay%d" % i)
+			oper = self.getParamValueByName("relay%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
@@ -469,7 +491,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__DOs = []
 		firstDOByte = lastDOByte = None
 		for i in range(self.NR_DO):
-			oper = self.getParamValueByName("do%d" % i)
+			oper = self.getParamValueByName("digitalOut%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
@@ -483,7 +505,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__DIs = []
 		firstDIByte = lastDIByte = None
 		for i in range(self.NR_DI):
-			oper = self.getParamValueByName("di%d" % i)
+			oper = self.getParamValueByName("digitalIn%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
@@ -497,7 +519,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__GPIO_out = []
 		firstGPIOOutByte = lastGPIOOutByte = None
 		for i in range(self.NR_GPIO):
-			oper = self.getParamValueByName("gpio%d" % i)
+			oper = self.getParamValueByName("gpio%d_addr" % i)
 			if oper is None:
 				continue
 			if oper.operType != AwlOperatorTypes.MEM_A:
@@ -513,7 +535,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__GPIO_in = []
 		firstGPIOInByte = lastGPIOInByte = None
 		for i in range(self.NR_GPIO):
-			oper = self.getParamValueByName("gpio%d" % i)
+			oper = self.getParamValueByName("gpio%d_addr" % i)
 			if oper is None:
 				continue
 			if oper.operType != AwlOperatorTypes.MEM_E:
@@ -529,7 +551,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__AIs = []
 		firstAIByte = lastAIByte = None
 		for i in range(self.NR_ADC):
-			oper = self.getParamValueByName("analogIn%d" % i)
+			oper = self.getParamValueByName("analogIn%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
@@ -540,7 +562,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					firstAIByte, lastAIByte)
 			if i <= 1:
 				ai.jumper10V = self.getParamValueByName("analogIn%d_10V" % i)
-			ai.numberOfSamples = self.getParamValueByName("analogIn%d_NoS" % i)
+			ai.numberOfSamples = self.getParamValueByName("analogIn%d_nos" % i)
 
 		# Find the offsets of the first and the last output byte
 		firstOutByte = lastOutByte = None
@@ -595,6 +617,14 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						   self.__AIs):
 				inp.setup(-firstInByte)
 				inp.setDirection(False)
+
+		# Configure global values
+		try:
+			AnalogIn.setFreq(self.__pixtend,
+					 self.getParamValueByName("analogIn_kHz"))
+		except ValueError as e:
+			self.raiseException("Unsupported 'analogIn_kHz' parameter value. "
+				"Supported values are: 125, 250, 500, 1000, 4000, 8000.")
 
 		# Build a list of all outputs
 		self.__allOutputs = []
