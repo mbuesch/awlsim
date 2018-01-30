@@ -292,8 +292,6 @@ class HwmodConfigWidget(QWidget):
 
 		self.layout().addWidget(group, 0, 0)
 
-		self.layout().setRowStretch(1, 1)
-
 		self.__handleLoadedSelectChange(None, None)
 		self.__updateAddButton()
 		self.setAvailableModules(HwModLoader.builtinHwModules)
