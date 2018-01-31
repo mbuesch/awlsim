@@ -62,21 +62,6 @@ hook_regression_tests()
 	sh "$1/tests/run.sh" -j 0
 }
 
-hook_pre_archives()
-{
-	local archive_dir="$1"
-	local checkout_dir="$2"
-
-	default_hook_pre_archives "$@"
-
-	info "Building PiLC firmware"
-	local raspihat_fw_dir="$checkout_dir/pilc/raspi-hat/firmware"
-	for target in all clean; do
-		CFLAGS= CPPFLAGS= CXXFLAGS= LDFLAGS= \
-		make -C "$raspihat_fw_dir" $target
-	done
-}
-
 export AWLSIM_FULL_BUILD=1
 export AWLSIM_CYTHON=1
 export AWLSIM_CYTHON_PARALLEL=1
