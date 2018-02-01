@@ -613,6 +613,8 @@ class ProjectTreeModel(QAbstractItemModel):
 		return None
 
 class SourceContextMenu(QMenu):
+	# Signal: Opem the edit for the selected source
+	edit = Signal()
 	# Signal: Add new source
 	add = Signal()
 	# Signal: Delete current source
@@ -629,6 +631,7 @@ class SourceContextMenu(QMenu):
 	enable = Signal(bool)
 
 	def __init__(self, itemCategoryName, itemName,
+		     withEditButton=True,
 		     withAddButton=True,
 		     withDeleteButton=True,
 		     withRenameButton=True,
@@ -643,6 +646,10 @@ class SourceContextMenu(QMenu):
 		self.itemCategoryName = itemCategoryName
 		self.itemName = itemName
 
+		if withEditButton:
+			self.addAction(getIcon("doc_edit"),
+				       "&Edit '%s'..." % itemName, self.__edit)
+		self.addSeparator()
 		if withAddButton:
 			self.addAction(getIcon("doc_new"),
 				       "&Add %s" % itemCategoryName, self.__add)
@@ -669,6 +676,9 @@ class SourceContextMenu(QMenu):
 		if withDisableButton:
 			self.addAction("D&isable '%s'" % itemName,
 				       self.__disable)
+
+	def __edit(self):
+		self.edit.emit()
 
 	def __add(self):
 		self.add.emit()
@@ -758,6 +768,10 @@ class ProjectTreeView(QTreeView):
 		itemIsFileBacked = bool(source and source.isFileBacked())
 		itemName = source.name if source else None
 
+		# Source-edit handler
+		def handleEdit():
+			model.entryActivate(index, parentWidget=self)
+
 		# Source-add handler
 		def handleAdd():
 			base = idxIdBase
@@ -798,6 +812,7 @@ class ProjectTreeView(QTreeView):
 		menu = SourceContextMenu(
 				itemCategoryName=catName,
 				itemName=itemName,
+				withEditButton=True,
 				withAddButton=True,
 				withDeleteButton=not onContainer,
 				withRenameButton=not onContainer,
@@ -807,6 +822,7 @@ class ProjectTreeView(QTreeView):
 				withEnableButton=not onContainer and not itemIsEnabled,
 				withDisableButton=not onContainer and itemIsEnabled,
 				parent=self)
+		menu.edit.connect(handleEdit)
 		menu.add.connect(handleAdd)
 		menu.delete.connect(handleDelete)
 		menu.rename.connect(handleRename)
