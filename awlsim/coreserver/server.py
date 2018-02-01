@@ -1056,6 +1056,7 @@ class AwlSimServer(object): #+cdef
 		self.cpuEnableObTempPresets(project.getObTempPresetsEn())
 		self.cpuEnableExtendedInsns(project.getExtInsnsEn())
 		self.cpuSetSpecs(project.getCpuSpecs())
+		self.cpuSetConf(project.getCpuConf())
 		#TODO set cycle time limit
 		#TODO set run time limit
 
