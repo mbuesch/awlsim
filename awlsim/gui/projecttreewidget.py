@@ -251,11 +251,17 @@ class ProjectTreeModel(QAbstractItemModel):
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 		getter, setter = self.sourceGetter(idxIdBase)
 		if getter and setter:
+			sources = getter()
+			source = sources[itemNr]
 			if newName is None:
-				pass#TODO
+				newName, ok = QInputDialog.getText(parentWidget,
+					"Rename %s source" % source.SRCTYPE,
+					"Rename %s source" % source.SRCTYPE,
+					QLineEdit.Normal,
+					source.name)
+				if not ok:
+					newName = None
 			if newName is not None:
-				sources = getter()
-				source = sources[itemNr]
 				source.name = newName
 				setter(sources)
 
