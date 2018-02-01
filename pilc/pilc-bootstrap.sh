@@ -597,6 +597,7 @@ EOF
 		python3-smbus \
 		python3-spidev \
 		python3-tk \
+		raspi-config \
 		schedtool \
 		screen \
 		sudo \
