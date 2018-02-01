@@ -123,7 +123,6 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 
 		self.setWindowTitle(source.name + " (FUP)")
 
-	@property
 	def getSource(self):
 		return self.fupWidget.getSource()
 
@@ -141,7 +140,6 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 
 		self.setWindowTitle(source.name + " (Symbols)")
 
-	@property
 	def getSource(self):
 		return self.symTabView.model().getSource()
 
@@ -155,6 +153,5 @@ class LibSelEditMdiSubWindow(EditMdiSubWindow):
 
 		self.setWindowTitle("Library selections")
 
-	@property
 	def getLibSelections(self):
 		return self.libTabView.model().getLibSelections()
