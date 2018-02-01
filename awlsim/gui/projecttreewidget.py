@@ -250,10 +250,17 @@ class ProjectTreeModel(QAbstractItemModel):
 	def entryRename(self, index, newName=None, parentWidget=None):
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 		getter, setter = self.sourceGetter(idxIdBase)
-		if getter:
+		if getter and setter:
+			if newName is None:
+				pass#TODO
+			if newName is not None:
+				sources = getter()
+				source = sources[itemNr]
+				source.name = newName
+				setter(sources)
 
-			pass#TODO
-			return True
+				self.dataChanged.emit(index, index, [Qt.EditRole])
+				return True
 		return False
 
 	def entryIntegrate(self, index, parentWidget=None):
@@ -600,11 +607,10 @@ class ProjectTreeModel(QAbstractItemModel):
 			return False
 
 		if role == Qt.EditRole:
-			pass#TODO
+			if not self.entryRename(index, newName=value):
+				return False
 		else:
 			return False
-
-		self.dataChanged.emit(index, index, [role])
 		return True
 
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -716,6 +722,9 @@ class ProjectTreeView(QTreeView):
 	def __init__(self, model, parent=None):
 		QTreeView.__init__(self, parent)
 		self.setModel(model)
+
+		# Disable double-click-edit
+		self.setEditTriggers(self.editTriggers() & ~QTreeView.DoubleClicked)
 
 		self.__currentIndex = None
 
