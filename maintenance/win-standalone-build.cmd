@@ -107,9 +107,11 @@ copy TODO.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
 copy QUICK-START.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
-copy doc\foreign-licenses\*.txt %licensedir%\
+xcopy /E /I doc %distdir%\doc
 if ERRORLEVEL 1 goto error_copy
-xcopy /E /I doc\pic-quick-start %distdir%\doc\pic-quick-start
+deltree /Y %distdir%\doc\foreign-licenses
+if ERRORLEVEL 1 goto error_copy
+copy doc\foreign-licenses\*.txt %licensedir%\
 if ERRORLEVEL 1 goto error_copy
 copy COPYING.txt %licensedir%\AWLSIM-LICENSE.txt
 if ERRORLEVEL 1 goto error_copy
