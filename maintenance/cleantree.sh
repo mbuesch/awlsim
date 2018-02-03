@@ -24,7 +24,9 @@ find . \( \
 rm -rf build dist release-archives .pybuild
 rm -f MANIFEST
 
-rm -f *.pdf *.html
+rm -f *.html
+find ./doc -name '*.html' -delete
+
 
 rm -f debian/files \
       debian/*.debhelper \

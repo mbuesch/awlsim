@@ -22,9 +22,8 @@ gen()
 	local docname="$(basename "$md" .md)"
 	local dir="$(dirname "$md")"
 	local html="$dir/$docname.html"
-	local pdf="$dir/$docname.pdf"
 
-	echo "Generating $docname ..."
+	echo "Generating $(realpath --relative-to="$srcdir" "$html") from $(realpath --relative-to="$srcdir" "$md") ..."
 
 	echo "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"></head><body>" > "$html" ||\
 		die "Failed to generate"
@@ -32,30 +31,10 @@ gen()
 		die "Failed to generate"
 	echo "</body></html>" >> "$html" ||\
 		die "Failed to generate"
-
-	wkhtmltopdf "$html" "$pdf" ||\
-		die "Failed to generate"
 }
 
-for i in "$srcdir"/*.md; do
+for i in $(find "$srcdir" \( -name submodules -prune \) -o \( -name '*.md' -print \)); do
 	gen "$i"
 done
-
-cd "$srcdir" || die "Failed to cd"
-
-html2ps --encoding "UTF-8" \
-	--web b \
-	--dsc \
-	--frame \
-	--xref \
-	--number \
-	--underline \
-	--colour \
-	--hyphenate \
-	README.html > AWLSIM.ps ||\
-	die "Failed to generate"
-
-ps2pdf AWLSIM.ps AWLSIM.pdf ||\
-	die "Failed to generate"
 
 exit 0

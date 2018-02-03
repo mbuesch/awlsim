@@ -13,12 +13,11 @@ __pycache__/
 *.gss
 
 /*.html
-/*.pdf
 
-.pybuild/
-build/
-dist/
-MANIFEST
+/.pybuild/
+/build/
+/dist/
+/MANIFEST
 
-awlsim_cython
-pyprofibus
+/awlsim_cython
+/pyprofibus
