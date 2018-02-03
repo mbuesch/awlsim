@@ -28,6 +28,23 @@ Example project
 If you don't know where to start, you can find an example project in the `examples` directory as `EXAMPLE.awlpro`. You can easily run this example in simulation mode without the need for special hardware.
 
 
+Git repository
+--------------
+
+The latest development version of Awlsim can be fetched with git:
+
+<pre>
+git clone https://git.bues.ch/git/awlsim.git
+cd awlsim
+</pre>
+
+After cloning the main repository the git submodules must also be fetched. The following helper script can be used:
+
+<pre>
+./maintenance/update-submodules
+</pre>
+
+
 Directory structure
 -------------------
 
