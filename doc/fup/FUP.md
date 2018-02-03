@@ -14,6 +14,10 @@ In FUP lots of non-boolean elements carry an EN input and an ENO output. The EN 
 
 That means an element is only executed, if its EN is TRUE _and_ the EN of its parent elements is also TRUE.
 
+<a href="fup-implicit-en-0.png"><img src="fup-implicit-en-0.png" alt="awlsim-fup" /></a>
+<br />
+<a href="fup-implicit-en-1.png"><img src="fup-implicit-en-1.png" alt="awlsim-fup" /></a>
+
 Boolean vs. non-boolean outputs in elements with EN input
 ---------------------------------------------------------
 

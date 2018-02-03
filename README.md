@@ -109,6 +109,12 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 </pre>
 
 
+FUP - Funktionsplan - Function block diagram
+--------------------------------------------
+
+Awlsim supports programming in an S7-FUP like language. See [the FUP documentation](doc/fup/FUP.html) for more information about Awlsim's implementation of FUP.
+
+
 Unit tests
 ----------
 
