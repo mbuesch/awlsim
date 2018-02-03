@@ -25,8 +25,8 @@
 	<language_awl>
 		<!-- AWL/STL source code -->
 		<source enabled="1"
-		        file="pixtend.awl"
-		        name="pixtend.awl"
+		        file="pixtend-iotest.awl"
+		        name="pixtend-iotest.awl"
 		        type="0" />
 	</language_awl>
 
