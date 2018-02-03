@@ -274,7 +274,7 @@ setup_test_environment()
 			if [ -n "$conf_pythonpath" ]; then
 				local conf_pythonpath="$conf_pythonpath:"
 			fi
-			local conf_pythonpath="${conf_pythonpath}$(readlink -m "$rootdir/$onepath")"
+			local conf_pythonpath="${conf_pythonpath}$(realpath -m --no-symlinks "$rootdir/$onepath")"
 		done
 	fi
 
@@ -537,7 +537,7 @@ run_test_directory()
 	local interpreter="$1"
 	local directory="$2"
 
-	local prettydir="$(realpath -m --relative-base="$rootdir" "$directory")/"
+	local prettydir="$(realpath -m --no-symlinks --relative-base="$rootdir" "$directory")/"
 
 	infomsg ">>> entering $prettydir"
 	# run .awlpro tests
@@ -709,7 +709,7 @@ do_tests()
 			run_test_directory "$interpreter" "$basedir"
 		else
 			for opt in "$@"; do
-				local opt="$(readlink -m "$opt")"
+				local opt="$(realpath -m --no-symlinks "$opt")"
 				if [ -d "$opt" ]; then
 					run_test_directory "$interpreter" "$opt"
 				else
