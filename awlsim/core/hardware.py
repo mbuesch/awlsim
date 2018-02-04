@@ -47,15 +47,16 @@ class AbstractHardwareInterface(object): #+cdef
 	# The standard parameters.
 	__standardParamDescs = [
 		HwParamDesc_bool("removeOnReset",
-				 defaultValue = True,
-				 description = "If set to 'True' the module will "
-					       "be removed on CPU reset."),
+				 defaultValue=True,
+				 description="If set to 'False' the module will "
+					      "not be removed on CPU reset. ",
+				 hidden=True),
 		HwParamDesc_int("inputAddressBase",
-				defaultValue = 0, minValue = 0,
-				description = "Start address in input address range"),
+				defaultValue=0, minValue=0,
+				description="Start address in input address range"),
 		HwParamDesc_int("outputAddressBase",
-				defaultValue = 0, minValue = 0,
-				description = "Start address in output address range"),
+				defaultValue=0, minValue=0,
+				description="Start address in output address range"),
 	]
 
 	@classmethod
