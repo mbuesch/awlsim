@@ -420,8 +420,8 @@ class CpuWidget(QWidget):
 				return
 			self.updateOnlineViewState()
 
-			# Start the message handler (fast mode).
-			self.__startCoreMessageHandler(inRunMode=True)
+			# Re-Start the message handler.
+			self.__startCoreMessageHandler()
 
 			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
@@ -454,8 +454,12 @@ class CpuWidget(QWidget):
 			client.shutdown()
 			handleFatalException(self)
 
-	def __startCoreMessageHandler(self, inRunMode=False):
+	def __startCoreMessageHandler(self):
 		self.__stopCoreMessageHandler()
+
+		# Check if the CPU is in RUN mode.
+		client = self.mainWidget.getSimClient()
+		inRunMode = client.getRunState()
 
 		# Start the main message fetcher.
 		self.__coreMsgTimer.start(0 if inRunMode else 300)
@@ -515,7 +519,7 @@ class CpuWidget(QWidget):
 				MessageBox.handleAwlSimError(self,
 					"Could not stop CPU", e)
 
-		# Start the message handler (slow mode).
+		# Re-Start the message handler.
 		self.__startCoreMessageHandler()
 
 		self.state.setState(RunState.STATE_ONLINE)
@@ -562,7 +566,7 @@ class CpuWidget(QWidget):
 				# Set the GUI to run state, too.
 				self.__run(goOnlineFirst = False)
 
-			# Start the message handler (slow mode).
+			# Re-Start the message handler.
 			self.__startCoreMessageHandler()
 
 		except AwlSimError as e:
@@ -578,7 +582,6 @@ class CpuWidget(QWidget):
 			self.__handleMaintenance(e)
 
 	def __goOffline(self):
-		self.__stopCoreMessageHandler()
 		client = self.mainWidget.getSimClient()
 		try:
 			client.setMode_OFFLINE()
@@ -589,6 +592,7 @@ class CpuWidget(QWidget):
 		# This will _not_ stop the CPU, as we're offline already.
 		self.stop()
 		self.state.setState(RunState.STATE_OFFLINE)
+		self.__stopCoreMessageHandler()
 
 	def _onlineToggled(self, onlineBtnPressed):
 		self.__onlineBtnPressed = onlineBtnPressed
