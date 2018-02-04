@@ -135,7 +135,10 @@ class HwmodParamModel(QAbstractTableModel):
 				paramDesc = self.__getParamDesc(params[row][0])
 				if column in (0, 1):
 					if paramDesc and paramDesc.description:
-						return paramDesc.description
+						text = "%s\nDefault value: %s" % (
+							paramDesc.description,
+							str(paramDesc.defaultValue))
+						return text
 					return "The parameter's name"
 			else:
 				if column == 0:
