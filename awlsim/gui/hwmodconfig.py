@@ -48,7 +48,8 @@ class HwmodParamModel(QAbstractTableModel):
 
 	def __getParamDesc(self, paramName):
 		if self.modInterface:
-			return self.modInterface.getParamDesc(paramName)
+			return self.modInterface.getParamDesc(paramName,
+							      includeHidden=True)
 		return None
 
 	def __verifyParams(self):
