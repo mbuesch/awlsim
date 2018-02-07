@@ -121,6 +121,21 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 		piStatus = data[16]
 		assert(all((d == 0) for d in data[17:31]))
 
+		# Check PWM values
+		pwmCS = (pwmCtrl0 >> 5) & 7
+		if pwmCS: # PWM enabled?
+			# Check the magic values that are set by the test.
+#			assert(pwm01 == 0x12 and pwm00 == 0x34)
+#			assert(pwm11 == 0x43 and pwm10 == 0x21)
+			assert(pwmCS == 1) # 16 MHz
+			assert((pwmCtrl0 & (1 << 0)) != 0) # PWM mode
+			assert((pwmCtrl0 & (1 << 1)) == 0) # OD 0 off
+			assert((pwmCtrl0 & (1 << 2)) == 0) # OD 1 off
+			assert(pwmCtrl2 == 0xFD and pwmCtrl1 == 0xE8) # period = 65000
+		else:
+			assert(pwm01 == 0 and pwm00 == 0)
+			assert(pwm11 == 0 and pwm10 == 0)
+
 		ret = [0] * 34
 		ret[1] = 128
 
@@ -139,17 +154,17 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 		ret[9] = ai3 & 0xFF # AI3/0
 		ret[10] = (ai3 >> 8) & 0xFF # AI3/1
 		ret[11] = (gpiosOut & 0x03) << 2 # GPIO-in
-		ret[12] = pwm00 # temp0/0
-		ret[13] = pwm01 # temp0/1
-		ret[14] = pwm10 # temp1/0
-		ret[15] = pwm11 # temp1/1
-		ret[16] = pwmCtrl0 # temp2/0
-		ret[17] = pwmCtrl1 # temp2/1
-		ret[18] = pwmCtrl2 # temp3/0
-		ret[19] = 0 # temp3/1
-		ret[20] = ucCtrl # humid0/0
-		ret[21] = 0 # humid0/1
-		ret[22] = piStatus # humid1/0
+		ret[12] = 0x10 # temp0/0
+		ret[13] = 0x11 # temp0/1
+		ret[14] = 0x12 # temp1/0
+		ret[15] = 0x13 # temp1/1
+		ret[16] = 0x14 # temp2/0
+		ret[17] = 0x15 # temp2/1
+		ret[18] = 0x16 # temp3/0
+		ret[19] = 0x17 # temp3/1
+		ret[20] = 0x20 # humid0/0
+		ret[21] = 0x21 # humid0/1
+		ret[22] = 0x22 # humid1/0
 		ret[23] = 0x3B # humid1/1
 		ret[24] = 0x3C # humid2/0
 		ret[25] = 0x3D # humid2/1

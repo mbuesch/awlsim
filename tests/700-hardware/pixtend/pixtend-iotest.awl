@@ -79,6 +79,28 @@ BEGIN
 END_FUNCTION
 
 
+// Analog output tests
+FUNCTION FC 4 : VOID
+BEGIN
+	//TODO
+END_FUNCTION
+
+
+// PWM output tests
+FUNCTION FC 5 : VOID
+BEGIN
+	// Set PWM0
+	// The magic value is checked by the fake PiXtend-Spidev module
+	L		W#16#1234
+	T		AW 20
+	
+	// Set PWM1
+	// The magic value is checked by the fake PiXtend-Spidev module
+	L		W#16#4321
+	T		AW 22
+END_FUNCTION
+
+
 ORGANIZATION_BLOCK OB 1
 BEGIN
 	// This test only works with the fake PiXtend-Spidev module
@@ -86,6 +108,8 @@ BEGIN
 	CALL		FC 1	// Test DI/DO
 	CALL		FC 2	// Test GPIOs
 	CALL		FC 3	// Test analog inputs
+	CALL		FC 4	// Test analog outputs
+	CALL		FC 5	// Test PWMs
 
 	// If we ran 256 test cycles then exit.
 	L		MW 100
@@ -104,4 +128,5 @@ BEGIN
 	T		AB 1
 	T		AB 2
 	T		MW 100
+	CALL		FC 5	// Init PWMs
 END_ORGANIZATION_BLOCK

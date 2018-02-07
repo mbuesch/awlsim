@@ -44,6 +44,11 @@ cdef class AnalogIn(AbstractWordIO):
 	cdef uint16_t __convertMA(self, double mA)
 	cpdef setup(self, secondaryOffset)
 
+cdef class PWM(AbstractWordIO):
+	cdef public object overDrive
+
+	cpdef setup(self, secondaryOffset)
+
 cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public object __PiXtend_class
 	cdef public object __pixtend
@@ -54,6 +59,7 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public list __GPIO_out
 	cdef public list __GPIO_in
 	cdef public list __AIs
+	cdef public list __PWMs
 	cdef public list __allOutputs
 	cdef public list __allInputs
 	cdef public uint32_t __outBase
