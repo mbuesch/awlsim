@@ -23,6 +23,7 @@
 
 
 from abstract_spidev import Abstract_SpiDev
+import os
 
 
 class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
@@ -124,14 +125,15 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 		# Check PWM values
 		pwmCS = (pwmCtrl0 >> 5) & 7
 		if pwmCS: # PWM enabled?
-			# Check the magic values that are set by the test.
-#			assert(pwm01 == 0x12 and pwm00 == 0x34)
-#			assert(pwm11 == 0x43 and pwm10 == 0x21)
-			assert(pwmCS == 1) # 16 MHz
-			assert((pwmCtrl0 & (1 << 0)) != 0) # PWM mode
-			assert((pwmCtrl0 & (1 << 1)) == 0) # OD 0 off
-			assert((pwmCtrl0 & (1 << 2)) == 0) # OD 1 off
-			assert(pwmCtrl2 == 0xFD and pwmCtrl1 == 0xE8) # period = 65000
+			if os.getenv("PIXTEND_IOTEST", ""):
+				# Check the magic values that are set by pixtend-iotest.awlpro
+				assert(pwm01 == 0x12 and pwm00 == 0x34)
+				assert(pwm11 == 0x43 and pwm10 == 0x21)
+				assert(((pwmCtrl0 >> 5) & 7) == 1) # 16 MHz
+				assert((pwmCtrl0 & (1 << 0)) != 0) # PWM mode
+				assert((pwmCtrl0 & (1 << 1)) == 0) # OD 0 off
+				assert((pwmCtrl0 & (1 << 2)) == 0) # OD 1 off
+				assert(pwmCtrl2 == 0xFD and pwmCtrl1 == 0xE8) # period = 65000
 		else:
 			assert(pwm01 == 0 and pwm00 == 0)
 			assert(pwm11 == 0 and pwm10 == 0)
