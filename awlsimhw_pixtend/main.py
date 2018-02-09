@@ -373,6 +373,18 @@ class AnalogIn(AbstractWordIO): #+cdef
 			setNos = self.settersNos[self.index]
 			setNos(self, self.numberOfSamples)
 
+class PWMPeriod(AbstractWordIO): #+cdef
+	"""PiXtend PWM period I/O handler.
+	"""
+
+	def setPWMPeriod(self, period):
+		self.pixtend.pwm_ctrl_period = clamp(period, 0, 65000)
+		self.pixtend.pwm_ctrl_configure()
+
+	setters = (
+		setPWMPeriod,
+	)
+
 class PWM(AbstractWordIO): #+cdef
 	"""PiXtend PWM output I/O handler.
 	"""
@@ -410,11 +422,6 @@ class PWM(AbstractWordIO): #+cdef
 		__setServoOverDrive0,
 		__setServoOverDrive1,
 	)
-
-	@staticmethod
-	def setPeriod(pixtend, period):
-		pixtend.pwm_ctrl_period = clamp(period, 0, 65000)
-		pixtend.pwm_ctrl_configure()
 
 	@staticmethod
 	def setBaseFreq(pixtend, freqHz):
@@ -551,12 +558,15 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			description="PWM base frequency, in Hz. "
 				    "Possible values: 16000000, 2000000, 250000, 62500, 15625, 0. "
 				    "Set to 0 to disable PWM."))
-	paramDescs.append(HwParamDesc_int(
+	paramDescs.append(HwParamDesc_oper(
 			"pwm_period",
-			defaultValue=65000,
-			minValue=0,
-			maxValue=65000,
-			description="PWM period."))
+			allowedOperTypes=(AwlOperatorTypes.MEM_A,
+					  AwlOperatorTypes.IMM),
+			description="PWM period.\n"
+				"This can either be an integer between 0 and L#65000.\n"
+				"Or an output word (AW, QW) where the program "
+				"writes the desired period to.\n"
+				"Defaults to L#65000, if not specified."))
 
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
@@ -682,6 +692,33 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					bitOffset // 8, 2,
 					firstPWMByte, lastPWMByte)
 			pwm.overDrive = self.getParamValueByName("pwm%d_servoOverDrive" % i)
+		# Handle pwm_period parameter.
+		try:
+			oper = self.getParamValueByName("pwm_period")
+			if not oper:
+				# Use default constant pwm_period
+				PWMPeriod(self.__pixtend, 0, 0).setPWMPeriod(65000)
+			else:
+				if oper.operType == AwlOperatorTypes.IMM:
+					# Use custom constant pwm_period
+					period = oper.immediate
+					if period < 0 or period > 65000:
+						raise ValueError
+					PWMPeriod(self.__pixtend, 0, 0).setPWMPeriod(period)
+				elif oper.operType == AwlOperatorTypes.MEM_A and\
+				     oper.width == 16:
+					# Use custom dynamic pwm_period
+					bitOffset = oper.offset.toLongBitOffset()
+					pwm = PWMPeriod(self.__pixtend, 0, bitOffset)
+					self.__PWMs.append(pwm)
+					firstPWMByte, lastPWMByte = updateOffs(
+							bitOffset // 8, 2,
+							firstPWMByte, lastPWMByte)
+					pwm.setPWMPeriod(0)
+				else:
+					raise ValueError
+		except ValueError as e:
+			self.raiseException("Unsupported 'pwm_period' parameter value.")
 
 		# Find the offsets of the first and the last output byte
 		firstOutByte = lastOutByte = None
@@ -761,11 +798,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		except ValueError as e:
 			self.raiseException("Unsupported 'pwm_baseFreqHz' parameter value. "
 				"Supported values are: 16000000, 2000000, 250000, 62500, 15625, 0.")
-		try:
-			PWM.setPeriod(self.__pixtend,
-				      self.getParamValueByName("pwm_period"))
-		except ValueError as e:
-			self.raiseException("Unsupported 'pwm_period' parameter value.")
 
 		# Build a list of all outputs
 		self.__allOutputs = []
