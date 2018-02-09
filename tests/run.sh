@@ -92,7 +92,7 @@ get_conf()
 	if [ -r "$conf" ]; then
 		local regex="^${option_name}="
 		if grep -qEe "$regex" "$conf"; then
-			local val="$(grep -Ee "$regex" "$conf" | cut -d'=' -f2)"
+			local val="$(grep -Ee "$regex" "$conf" | cut -d'=' -f2-)"
 		fi
 	fi
 	printf '%s' "$val"
@@ -265,6 +265,12 @@ setup_test_environment()
 		export AWLSIM_CYTHON=
 	fi
 
+	# Extra environment variables
+	RAW_EXTRA_ENV="$(get_conf "$tested_file" env)"
+	for env in $(printf '%s' "$RAW_EXTRA_ENV" | tr ':' ' '); do
+		eval export "$env"
+	done
+
 	# Get extra PYTHONPATH from test case config file.
 	local conf_pythonpath=
 	if [ -n "$tested_file" ]; then
@@ -320,6 +326,11 @@ cleanup_test_environment()
 	export MICROPYPATH=
 
 	export EXTRA_PYTHONPATH=
+
+	# Unexport all extra envs
+	for env in $(printf '%s' "$RAW_EXTRA_ENV" | tr ':' ' '); do
+		eval export "$(printf '%s' "$env" | cut -d'=' -f1)"=
+	done
 }
 
 # $1=interpreter $2=awl_file ($3ff additional options to awlsim-test)
