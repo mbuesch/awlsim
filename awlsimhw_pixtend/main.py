@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - PiXtend HAL interface
+# AWL simulator - PiXtend hardware interface
 #
 # Copyright 2018 Michael Buesch <m@bues.ch>
 #
@@ -55,8 +55,6 @@ class AbstractIO(object): #+cdef
 
 	def setup(self, secondaryOffset): #+cpdef
 		self.byteOffset += secondaryOffset
-		self.bitMask = 1 << self.bitOffset
-		self.invBitMask = (~self.bitMask) & 0xFF
 		try:
 			self.setter = self.setters[self.index]
 		except IndexError:
@@ -85,6 +83,12 @@ class AbstractIO(object): #+cdef
 class AbstractBitIO(AbstractIO): #+cdef
 	"""PiXtend abstract bit I/O handler.
 	"""
+
+	def setup(self, secondaryOffset): #+cpdef
+		AbstractIO.setup(self, secondaryOffset)
+
+		self.bitMask = 1 << self.bitOffset
+		self.invBitMask = (~self.bitMask) & 0xFF
 
 	def set(self, dataBytes): #@nocy
 #@cy	cdef set(self, bytearray dataBytes):
@@ -454,8 +458,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name = "PiXtend"
 
 	#TODO DHT
-	#TODO servo
-	#TODO PWM
 	#TODO hum
 	#TODO DAC
 	#TODO RS232

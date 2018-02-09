@@ -5,8 +5,6 @@ cdef class AbstractIO(object):
 	cdef public uint32_t index
 	cdef public uint32_t byteOffset
 	cdef public uint32_t bitOffset
-	cdef public uint32_t bitMask
-	cdef public uint32_t invBitMask
 	cdef public object setter
 	cdef public object getter
 	cdef public object directionSetter
@@ -17,8 +15,12 @@ cdef class AbstractIO(object):
 	cpdef setDirection(self, outDirection)
 
 cdef class AbstractBitIO(AbstractIO):
+	cdef public uint32_t bitMask
+	cdef public uint32_t invBitMask
+
 	cdef set(self, bytearray dataBytes)
 	cdef get(self, bytearray dataBytes)
+	cpdef setup(self, secondaryOffset)
 
 cdef class AbstractWordIO(AbstractIO):
 	cdef set(self, bytearray dataBytes)
@@ -43,6 +45,9 @@ cdef class AnalogIn(AbstractWordIO):
 	cdef uint16_t __convertV(self, double V)
 	cdef uint16_t __convertMA(self, double mA)
 	cpdef setup(self, secondaryOffset)
+
+cdef class PWMPeriod(AbstractWordIO):
+	pass
 
 cdef class PWM(AbstractWordIO):
 	cdef public object overDrive
