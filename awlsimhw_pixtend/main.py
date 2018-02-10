@@ -377,6 +377,31 @@ class AnalogIn(AbstractWordIO): #+cdef
 			setNos = self.settersNos[self.index]
 			setNos(self, self.numberOfSamples)
 
+class AnalogOut(AbstractWordIO): #+cdef
+	"""PiXtend analog output I/O handler.
+	"""
+
+	def __convert(self, s7Value): #@nocy
+#@cy	cdef uint16_t __convert(self, uint16_t s7Value):
+		# dac = (s7Value / 27648) * 1023
+		return clamp(int(round((wordToSignedPyInt(s7Value) * 1023) / 27648)),
+			     0, 1023)
+
+	def __setAO0(self, value):
+		pixtend = self.pixtend
+		pixtend.dac_selection = pixtend.DAC_A
+		pixtend.set_dac_output(self.__convert(value))
+
+	def __setAO1(self, value):
+		pixtend = self.pixtend
+		pixtend.dac_selection = pixtend.DAC_B
+		pixtend.set_dac_output(self.__convert(value))
+
+	setters = (
+		__setAO0,
+		__setAO1,
+	)
+
 class PWMPeriod(AbstractWordIO): #+cdef
 	"""PiXtend PWM period I/O handler.
 	"""
@@ -678,6 +703,22 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				ai.jumper10V = self.getParamValueByName("analogIn%d_10V" % i)
 			ai.numberOfSamples = self.getParamValueByName("analogIn%d_nos" % i)
 
+		# Build all analog output objects
+		self.__AOs = []
+		firstAOByte = lastAOByte = None
+		for i in range(self.NR_DAC):
+			oper = self.getParamValueByName("analogOut%d_addr" % i)
+			if oper is None:
+				continue
+			if oper.offset.bitOffset or oper.width != 16:
+				pass#TODO error
+			bitOffset = oper.offset.toLongBitOffset()
+			ao = AnalogOut(self.__pixtend, i, bitOffset)
+			self.__AOs.append(ao)
+			firstAOByte, lastAOByte = updateOffs(
+					bitOffset // 8, 2,
+					firstAOByte, lastAOByte)
+
 		# Build all PWM() objects
 		self.__PWMs = []
 		firstPWMByte = lastPWMByte = None
@@ -728,6 +769,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				(firstRelayByte, lastRelayByte),
 				(firstDOByte, lastDOByte),
 				(firstGPIOOutByte, lastGPIOOutByte),
+				(firstAOByte, lastAOByte),
 				(firstPWMByte, lastPWMByte)):
 			for byteOffset in (firstByteOffset, lastByteOffset):
 				if byteOffset is not None:
@@ -759,6 +801,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			for out in itertools.chain(self.__relays,
 						   self.__DOs,
 						   self.__GPIO_out,
+						   self.__AOs,
 						   self.__PWMs):
 				out.setup(-firstOutByte)
 				out.setDirection(True)
@@ -777,6 +820,13 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						   self.__AIs):
 				inp.setup(-firstInByte)
 				inp.setDirection(False)
+
+		# Configure AnalogOut SPI communication.
+		try:
+			if self.__AOs:
+				self.__pixtend.open_dac()
+		except (IOError, ValueError) as e:
+			self.raiseException("Failed to open DAC communication: %s" % str(e))
 
 		# Configure global values of AnalogIn.
 		try:
@@ -883,7 +933,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		if size:
 			data = cpu.fetchOutputRange(self.__outBase, size)
 
-			# Handle all outputs
+			# Handle all outputs (except DAC/AnalogOut)
 			for out in self.__allOutputs:
 				out.set(data)
 
@@ -892,6 +942,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		if now >= self.__nextPoll:
 			if not self.__pixtendPoll(now):
 				self.raiseException("PiXtend auto_mode() poll failed.")
+
+			if size:
+				# Handle the DAC/AnalogOut outputs.
+				for out in self.__AOs:
+					out.set(data)
 
 	def __pixtendPoll(self, now): #@nocy
 #@cy	cdef ExBool_t __pixtendPoll(self, double now):

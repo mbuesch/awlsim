@@ -220,18 +220,38 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 	}
 
 	def xfer2(self, data, speed_hz=0, delay_usecs=0, bits_per_word=0):
-		if data[0] == self.PIXTEND_SPI_HANDSHAKE:
-			command = data[1]
-			try:
-				handler = self.__commandHandlers[command]
-			except KeyError as e:
+		if (self._bus, self._device) == (0, 0):
+			# PiXtend microcontroller
+			if data[0] == self.PIXTEND_SPI_HANDSHAKE:
+				command = data[1]
+				try:
+					handler = self.__commandHandlers[command]
+				except KeyError as e:
+					assert(0)
+				ret = handler(self, data)
+			elif data[0] == 128:
+				ret = self.__command_autoMode(data)
+			else:
 				assert(0)
-			ret = handler(self, data)
-		elif data[0] == 128:
-			ret = self.__command_autoMode(data)
+			return ret
+		elif (self._bus, self._device) == (0, 1):
+			# MCP4812 DAC chip
+			GA = data[0] & 0x20
+			assert(GA == 0)
+			SHDN = data[0] & 0x10
+			assert(SHDN != 0)
+			D = ((data[0] & 0xF) << 6) | ((data[1] & 0xFF) >> 2)
+			if (data[0] & 0x80) == 0:
+				# DAC_A
+				if os.getenv("PIXTEND_IOTEST", ""):
+					assert(D == 1023)
+			else:
+				# DAC_B
+				if os.getenv("PIXTEND_IOTEST", ""):
+					assert(D == 102)
+			return [0] * len(data)
 		else:
 			assert(0)
-		return ret
 
 	@classmethod
 	def __crc16(cls, crc, data):

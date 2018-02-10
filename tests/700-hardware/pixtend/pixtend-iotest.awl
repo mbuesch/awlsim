@@ -82,7 +82,15 @@ END_FUNCTION
 // Analog output tests
 FUNCTION FC 4 : VOID
 BEGIN
-	//TODO
+	// Check DAC_A
+	// The magic value is checked by the fake PiXtend-Spidev module
+	L		27648
+	T		AW 10
+	
+	// Check DAC_B
+	// The magic value is checked by the fake PiXtend-Spidev module
+	L		2764
+	T		AW 12
 END_FUNCTION
 
 
@@ -128,5 +136,6 @@ BEGIN
 	T		AB 1
 	T		AB 2
 	T		MW 100
+	CALL		FC 4	// Init analog outputs
 	CALL		FC 5	// Init PWMs
 END_ORGANIZATION_BLOCK
