@@ -256,8 +256,9 @@ class AwlSim(object): #+cdef
 	def registerHardware(self, hwClassInst):
 		"""Register a new hardware interface."""
 
-		self.__registeredHardware.append(hwClassInst)
-		self.__registeredHardwareCount = len(self.__registeredHardware)
+		if hwClassInst.getParamValueByName("enabled"):
+			self.__registeredHardware.append(hwClassInst)
+			self.__registeredHardwareCount = len(self.__registeredHardware)
 
 	def registerHardwareClass(self, hwClass, parameters={}):
 		"""Register a new hardware interface class.

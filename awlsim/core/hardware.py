@@ -57,6 +57,9 @@ class AbstractHardwareInterface(object): #+cdef
 		HwParamDesc_int("outputAddressBase",
 				defaultValue=0, minValue=0,
 				description="Start address in output address range"),
+		HwParamDesc_bool("enabled",
+				 defaultValue=True,
+				 description="Enable this hardware module.")
 	]
 
 	@classmethod
