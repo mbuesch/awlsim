@@ -24,6 +24,8 @@ class Abstract_SpiDev(object):
 		"mode",
 		"bits_per_word",
 		"max_speed_hz",
+		"_bus",
+		"_device",
 		"_opened",
 	)
 
@@ -78,6 +80,8 @@ class Abstract_SpiDev(object):
 	def open(self, bus, device):
 		assert(bus >= 0)
 		assert(device >= 0)
+		self._bus = bus
+		self._device = device
 		self._opened = 42
 
 	def close(self):
