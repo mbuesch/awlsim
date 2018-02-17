@@ -2,7 +2,7 @@
 #
 # AWL simulator - Generic source code edit widget
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.gui.finddialog import *
 from awlsim.gui.util import *
 
 
@@ -38,6 +39,8 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
+
+		self.__findDialog = FindReplaceDialog(self, self)
 
 		self.__errLineBrushBg = QBrush(getErrorColor())
 		self.__errLineBrushFg = QBrush(QColor("black"))
@@ -138,6 +141,11 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def keyPressEvent(self, ev):
 		QPlainTextEdit.keyPressEvent(self, ev)
+
+		if ev.matches(QKeySequence.Find):
+			self.findText()
+		elif ev.matches(QKeySequence.Replace):
+			self.findReplaceText()
 
 		if ev.key() in (Qt.Key_Return, Qt.Key_Enter):
 			self.__autoIndentHandleNewline()
@@ -309,3 +317,13 @@ class SourceCodeEdit(QPlainTextEdit):
 		if ev.type() == QEvent.ToolTip:
 			self.__toolTipEvent(ev)
 		return super(SourceCodeEdit, self).event(ev)
+
+	def __findText(self, replace=False):
+		self.__findDialog.setReplaceMode(replace)
+		self.__findDialog.show()
+
+	def findText(self):
+		self.__findText(False)
+
+	def findReplaceText(self):
+		self.__findText(True)

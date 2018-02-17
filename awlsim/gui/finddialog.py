@@ -2,7 +2,7 @@
 #
 # Find and replace dialog
 #
-# Copyright 2015 Michael Buesch <m@bues.ch>
+# Copyright 2015-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,12 +28,8 @@ from awlsim.gui.util import *
 class FindReplaceDialog(QDialog):
 	"""Text find and replace dialog."""
 
-	def __init__(self, textEdit, withReplace=True, parent=None):
+	def __init__(self, textEdit, parent=None):
 		QDialog.__init__(self, parent)
-		if withReplace:
-			self.setWindowTitle("Find and replace text")
-		else:
-			self.setWindowTitle("Find text")
 		self.setLayout(QGridLayout())
 
 		label = QLabel("Find:", self)
@@ -44,11 +40,10 @@ class FindReplaceDialog(QDialog):
 		self.regEx = QCheckBox("Regular &expression", self)
 		self.layout().addWidget(self.regEx, 1, 1)
 
-		if withReplace:
-			label = QLabel("Replace with:", self)
-			self.layout().addWidget(label, 2, 0)
-			self.replaceText = QLineEdit(self)
-			self.layout().addWidget(self.replaceText, 2, 1)
+		self.replaceTextLabel = QLabel("Replace with:", self)
+		self.layout().addWidget(self.replaceTextLabel, 2, 0)
+		self.replaceText = QLineEdit(self)
+		self.layout().addWidget(self.replaceText, 2, 1)
 
 		optsLayout = QHBoxLayout()
 
@@ -84,12 +79,11 @@ class FindReplaceDialog(QDialog):
 		self.findButton = QPushButton(self)
 		buttonsLayout.addWidget(self.findButton)
 
-		if withReplace:
-			self.replaceButton = QPushButton("&Replace", self)
-			buttonsLayout.addWidget(self.replaceButton)
+		self.replaceButton = QPushButton("&Replace", self)
+		buttonsLayout.addWidget(self.replaceButton)
 
-			self.replaceAllButton = QPushButton("Replace &all", self)
-			buttonsLayout.addWidget(self.replaceAllButton)
+		self.replaceAllButton = QPushButton("Replace &all", self)
+		buttonsLayout.addWidget(self.replaceAllButton)
 
 		self.closeButton = QPushButton("C&lose", self)
 		buttonsLayout.addWidget(self.closeButton)
@@ -97,15 +91,29 @@ class FindReplaceDialog(QDialog):
 		buttonsLayout.addStretch()
 		self.layout().addLayout(buttonsLayout, 0, 2, 5, 1)
 
+		self.setReplaceMode(False)
 		self.__handleFromCursorChange(self.fromCursor.checkState())
 		self.setTextEdit(textEdit)
 
 		self.closeButton.released.connect(self.accept)
 		self.findButton.released.connect(self.__handleFind)
-		if withReplace:
-			self.replaceButton.released.connect(self.__handleReplace)
-			self.replaceAllButton.released.connect(self.__handleReplaceAll)
+		self.replaceButton.released.connect(self.__handleReplace)
+		self.replaceAllButton.released.connect(self.__handleReplaceAll)
 		self.fromCursor.stateChanged.connect(self.__handleFromCursorChange)
+
+	def setReplaceMode(self, replaceMode=True):
+		if replaceMode:
+			self.setWindowTitle("Find and replace text")
+			self.replaceTextLabel.show()
+			self.replaceText.show()
+			self.replaceButton.show()
+			self.replaceAllButton.show()
+		else:
+			self.setWindowTitle("Find text")
+			self.replaceTextLabel.hide()
+			self.replaceText.hide()
+			self.replaceButton.hide()
+			self.replaceAllButton.hide()
 
 	def setTextEdit(self, textEdit):
 		self.__textEdit = textEdit
