@@ -96,11 +96,19 @@ class FindReplaceDialog(QDialog):
 		self.setReplaceMode(False)
 		self.__handleFromCursorChange(self.fromCursor.checkState())
 
+		self.findButton.setDefault(True)
+
 		self.closeButton.released.connect(self.accept)
 		self.findButton.released.connect(self.__handleFind)
 		self.replaceButton.released.connect(self.__handleReplace)
 		self.replaceAllButton.released.connect(self.__handleReplaceAll)
 		self.fromCursor.stateChanged.connect(self.__handleFromCursorChange)
+
+	def show(self):
+		QDialog.show(self)
+
+		# Set focus to find-text input.
+		QTimer.singleShot(0, self.findText.setFocus)
 
 	def setReplaceMode(self, replaceMode=True):
 		if replaceMode:
