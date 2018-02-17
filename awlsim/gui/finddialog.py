@@ -122,6 +122,11 @@ class FindReplaceDialog(QDialog):
 		self.__textEdit.setTextCursor(textCursor)
 		self.statusLabel.clear()
 
+	def __moveCursor(self, position):
+		textCursor = self.__textEdit.textCursor()
+		textCursor.setPosition(position)
+		self.__textEdit.setTextCursor(textCursor)
+
 	def __handleFind(self):
 		self.statusLabel.clear()
 
@@ -136,9 +141,7 @@ class FindReplaceDialog(QDialog):
 
 		if not self.fromCursor.isChecked():
 			# Move the cursor to the start of the document.
-			textCursor = self.__textEdit.textCursor()
-			textCursor.setPosition(0)
-			self.__textEdit.setTextCursor(textCursor)
+			self.__moveCursor(0)
 
 		found = False
 		if self.regEx.isChecked():
@@ -177,6 +180,9 @@ class FindReplaceDialog(QDialog):
 		return result
 
 	def __handleReplaceAll(self):
+		# Always start replace-all from the top of the document.
+		self.__moveCursor(0)
+
 		self.statusLabel.clear()
 		count = 0
 		while True:
