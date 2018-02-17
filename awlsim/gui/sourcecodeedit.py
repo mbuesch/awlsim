@@ -37,10 +37,18 @@ class SourceCodeEdit(QPlainTextEdit):
 	#	  The parameter is self.
 	validateDocument = Signal(QObject)
 
+	__findDialog = None
+
+	@classmethod
+	def initFindDialog(cls, parent):
+		cls.__findDialog = FindReplaceDialog(parent)
+
+	@classmethod
+	def getFindDialog(cls):
+		return cls.__findDialog
+
 	def __init__(self, parent=None):
 		QPlainTextEdit.__init__(self, parent)
-
-		self.__findDialog = FindReplaceDialog(self, self)
 
 		self.__errLineBrushBg = QBrush(getErrorColor())
 		self.__errLineBrushFg = QBrush(QColor("black"))
@@ -319,8 +327,11 @@ class SourceCodeEdit(QPlainTextEdit):
 		return super(SourceCodeEdit, self).event(ev)
 
 	def __findText(self, replace=False):
-		self.__findDialog.setReplaceMode(replace)
-		self.__findDialog.show()
+		dlg = self.getFindDialog()
+		if dlg:
+			dlg.hide()
+			dlg.setReplaceMode(replace)
+			dlg.show()
 
 	def findText(self):
 		self.__findText(False)

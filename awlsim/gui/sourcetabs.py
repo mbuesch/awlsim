@@ -297,6 +297,7 @@ class AwlSourceTabWidget(SourceTabWidget):
 	def __init__(self, parent, projectWidget):
 		SourceTabWidget.__init__(self, "source", parent, projectWidget)
 
+		EditWidget.initFindDialog(self)
 		self.reset()
 
 		self.contextMenu.add.connect(self.addEditWidget)
@@ -359,6 +360,10 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.copyAvailableChanged.emit(editWidget.copyIsAvailable()
 					       if editWidget else False)
 		self.validateDocument.emit(editWidget)
+		# Update find dialog reference
+		findDialog = EditWidget.getFindDialog()
+		if findDialog:
+			findDialog.setTextEdit(editWidget)
 
 	def updateRunState(self, runState):
 		for editWidget in self.allTabWidgets():

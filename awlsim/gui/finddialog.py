@@ -28,9 +28,11 @@ from awlsim.gui.util import *
 class FindReplaceDialog(QDialog):
 	"""Text find and replace dialog."""
 
-	def __init__(self, textEdit, parent=None):
+	def __init__(self, parent=None):
 		QDialog.__init__(self, parent)
 		self.setLayout(QGridLayout())
+
+		self.__textEdit = None
 
 		label = QLabel("Find:", self)
 		self.layout().addWidget(label, 0, 0)
@@ -93,7 +95,6 @@ class FindReplaceDialog(QDialog):
 
 		self.setReplaceMode(False)
 		self.__handleFromCursorChange(self.fromCursor.checkState())
-		self.setTextEdit(textEdit)
 
 		self.closeButton.released.connect(self.accept)
 		self.findButton.released.connect(self.__handleFind)
@@ -117,18 +118,18 @@ class FindReplaceDialog(QDialog):
 
 	def setTextEdit(self, textEdit):
 		self.__textEdit = textEdit
-		textCursor = self.__textEdit.textCursor()
-		textCursor.clearSelection()
-		self.__textEdit.setTextCursor(textCursor)
 		self.statusLabel.clear()
 
 	def __moveCursor(self, position):
-		textCursor = self.__textEdit.textCursor()
-		textCursor.setPosition(position)
-		self.__textEdit.setTextCursor(textCursor)
+		if self.__textEdit:
+			textCursor = self.__textEdit.textCursor()
+			textCursor.setPosition(position)
+			self.__textEdit.setTextCursor(textCursor)
 
 	def __handleFind(self):
 		self.statusLabel.clear()
+		if not self.__textEdit:
+			return
 
 		findFlags = QTextDocument.FindFlags()
 		if not self.fromCursor.isChecked() and\
@@ -171,6 +172,9 @@ class FindReplaceDialog(QDialog):
 
 	def __handleReplace(self):
 		self.statusLabel.clear()
+		if not self.__textEdit:
+			return False
+
 		textCursor = self.__textEdit.textCursor()
 		result = False
 		if textCursor.hasSelection():
@@ -180,10 +184,13 @@ class FindReplaceDialog(QDialog):
 		return result
 
 	def __handleReplaceAll(self):
+		self.statusLabel.clear()
+		if not self.__textEdit:
+			return
+
 		# Always start replace-all from the top of the document.
 		self.__moveCursor(0)
 
-		self.statusLabel.clear()
 		count = 0
 		while True:
 			if self.__handleReplace():
