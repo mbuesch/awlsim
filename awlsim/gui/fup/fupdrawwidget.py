@@ -894,6 +894,7 @@ class FupDrawWidget(QWidget):
 	def dragEnterEvent(self, event):
 		try:
 			self.__drop(event, checkOnly=True)
+			event.accept()
 		except Exception as e:
 			printError("Unexpected exception in "
 				"FupDrawWidget.dragEnterEvent(): "
