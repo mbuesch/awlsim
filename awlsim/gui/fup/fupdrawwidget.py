@@ -155,6 +155,12 @@ class FupDrawWidget(QWidget):
 	#	The parameters are the X/Y pixel coordinates.
 	selectTipChanged = Signal(int, int)
 
+	# Signal: Emitted whenever the 'active' element move tip point
+	#	changes. That is the point of the mouse cursor
+	#	during element move.
+	#	The parameters are the X/Y pixel coordinates.
+	moveTipChanged = Signal(int, int)
+
 	def __init__(self, parent, interfWidget):
 		"""parent => Parent QWidget().
 		interfWidget => AwlInterfWidget() instance
@@ -725,6 +731,7 @@ class FupDrawWidget(QWidget):
 					# Dynamically expand or shrink the grid
 					self.__dynGridExpansion()
 				self.__checkWireCollAfterDrag = True
+				self.moveTipChanged.emit(x, y)
 				eventHandled()
 
 		# Handle connection dragging

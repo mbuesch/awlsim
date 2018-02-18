@@ -174,10 +174,12 @@ class FupEditWidget(QWidget):
 
 		self.layout().addWidget(self.__splitter, 0, 0)
 
-		self.draw.selectTipChanged.connect(self.__handleSelectChange)
+		self.draw.selectTipChanged.connect(self.__handleMouseTipChange)
+		self.draw.moveTipChanged.connect(self.__handleMouseTipChange)
 
-	def __handleSelectChange(self, x, y):
-		# Scroll the draw area so that the selection is visible.
+	def __handleMouseTipChange(self, x, y):
+		# Scroll the draw area so that the
+		# selection or element move is visible.
 		self.__drawScroll.ensureVisible(x, y)
 
 class FupWidget(QWidget):
