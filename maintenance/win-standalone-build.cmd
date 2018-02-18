@@ -109,7 +109,7 @@ copy QUICK-START.* %distdir%\
 if ERRORLEVEL 1 goto error_copy
 xcopy /E /I doc %distdir%\doc
 if ERRORLEVEL 1 goto error_copy
-deltree /Y %distdir%\doc\foreign-licenses
+rmdir /S /Q %distdir%\doc\foreign-licenses
 if ERRORLEVEL 1 goto error_copy
 copy doc\foreign-licenses\*.txt %licensedir%\
 if ERRORLEVEL 1 goto error_copy
