@@ -149,6 +149,12 @@ class FupDrawWidget(QWidget):
 	# Signal: Something in the FUP diagram changed
 	diagramChanged = Signal()
 
+	# Signal: Emitted whenever the 'active' selection tip point
+	#	changes. That is the point of the mouse cursor
+	#	during selection.
+	#	The parameters are the X/Y pixel coordinates.
+	selectTipChanged = Signal(int, int)
+
 	def __init__(self, parent, interfWidget):
 		"""parent => Parent QWidget().
 		interfWidget => AwlInterfWidget() instance
@@ -685,6 +691,7 @@ class FupDrawWidget(QWidget):
 			clear = not (modifiers & Qt.ControlModifier)
 			self.__grid.selectElemsInRect(startGridX, startGridY,
 						      gridX, gridY, clear=clear)
+			self.selectTipChanged.emit(x, y)
 			eventHandled()
 
 		# Handle element dragging

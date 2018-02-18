@@ -174,6 +174,12 @@ class FupEditWidget(QWidget):
 
 		self.layout().addWidget(self.__splitter, 0, 0)
 
+		self.draw.selectTipChanged.connect(self.__handleSelectChange)
+
+	def __handleSelectChange(self, x, y):
+		# Scroll the draw area so that the selection is visible.
+		self.__drawScroll.ensureVisible(x, y)
+
 class FupWidget(QWidget):
 	"""Main FUP/FBD widget."""
 
