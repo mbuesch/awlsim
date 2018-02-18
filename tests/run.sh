@@ -379,11 +379,13 @@ run_awl_test()
 				"$@" \
 				"$awl"
 			local exit_code=$?
-			[ $exit_code -eq $expected_exit_code ] || {
+			if [ $exit_code -ne $expected_exit_code ]; then
 				local ok=0
-				[ $tries -gt 0 ] &&\
+				if [ $tries -gt 0 ]; then
 					infomsg "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
-			}
+					sleep 1
+				fi
+			fi
 		done
 		if [ $ok -eq 0 ]; then
 			test_failed "\nTest '$(basename "$awl")'   FAILED" \
