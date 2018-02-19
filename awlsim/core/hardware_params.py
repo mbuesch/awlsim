@@ -187,5 +187,7 @@ class HwParamDesc_oper(HwParamDesc):
 		if self.allowedOperWidths:
 			if oper.width not in self.allowedOperWidths:
 				raise self.ParseError("Operator '%s' "
-					"does not have a valid bit width." % value)
+					"does not have a valid bit width. "
+					"Valid widths are: %s bits." % (
+					value, listToHumanStr(self.allowedOperWidths)))
 		return oper
