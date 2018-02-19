@@ -691,8 +691,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			oper = self.getParamValueByName("analogIn%d_addr" % i)
 			if oper is None:
 				continue
-			if oper.offset.bitOffset or oper.width != 16:
-				pass#TODO error
 			bitOffset = oper.offset.toLongBitOffset()
 			ai = AnalogIn(self.__pixtend, i, bitOffset)
 			self.__AIs.append(ai)
@@ -710,8 +708,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			oper = self.getParamValueByName("analogOut%d_addr" % i)
 			if oper is None:
 				continue
-			if oper.offset.bitOffset or oper.width != 16:
-				pass#TODO error
 			bitOffset = oper.offset.toLongBitOffset()
 			ao = AnalogOut(self.__pixtend, i, bitOffset)
 			self.__AOs.append(ao)
@@ -726,8 +722,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			oper = self.getParamValueByName("pwm%d_addr" % i)
 			if oper is None:
 				continue
-			if oper.offset.bitOffset or oper.width != 16:
-				pass#TODO error
 			bitOffset = oper.offset.toLongBitOffset()
 			pwm = PWM(self.__pixtend, i, bitOffset)
 			self.__PWMs.append(pwm)
