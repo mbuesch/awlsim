@@ -601,6 +601,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						   parameters = parameters)
 		self.__pixtendInitialized = False
 		self.__pixtend = None
+		self.__haveInputData = False
 
 	def __build(self):
 		def updateOffs(byteOffset, byteWidth, first, last):
@@ -850,6 +851,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__allOutputs.extend(self.__relays)
 		self.__allOutputs.extend(self.__DOs)
 		self.__allOutputs.extend(self.__GPIO_out)
+		self.__allOutputs.extend(self.__AOs)
 		self.__allOutputs.extend(self.__PWMs)
 
 		# Build a list of all inputs
@@ -887,6 +889,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					str(e)))
 			self.__build()
 
+			self.__haveInputData = False
 			self.__nextPoll = self.cpu.now + self.__pollInt
 			self.__pixtendInitialized = True
 
@@ -902,17 +905,18 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 #@cy		cdef bytearray data
 #@cy		cdef AbstractIO inp
 
-		cpu = self.cpu
+		if self.__haveInputData:
+			self.__haveInputData = False
+			cpu = self.cpu
+			size = self.__inSize
+			if size:
+				data = cpu.fetchInputRange(self.__inBase, size)
 
-		size = self.__inSize
-		if size:
-			data = cpu.fetchInputRange(self.__inBase, size)
+				# Handle all inputs
+				for inp in self.__allInputs:
+					inp.get(data)
 
-			# Handle all inputs
-			for inp in self.__allInputs:
-				inp.get(data)
-
-			cpu.storeInputRange(self.__inBase, data)
+				cpu.storeInputRange(self.__inBase, data)
 
 	def writeOutputs(self): #+cdef
 #@cy		cdef S7CPU cpu
@@ -923,24 +927,20 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		cpu = self.cpu
 
-		size = self.__outSize
-		if size:
-			data = cpu.fetchOutputRange(self.__outBase, size)
-
-			# Handle all outputs (except DAC/AnalogOut)
-			for out in self.__allOutputs:
-				out.set(data)
-
 		# Run one PiXtend poll cycle, if required.
 		now = cpu.now
 		if now >= self.__nextPoll:
+			size = self.__outSize
+			if size:
+				data = cpu.fetchOutputRange(self.__outBase, size)
+
+				# Handle all outputs
+				for out in self.__allOutputs:
+					out.set(data)
+
 			if not self.__pixtendPoll(now):
 				self.raiseException("PiXtend auto_mode() poll failed.")
-
-			if size:
-				# Handle the DAC/AnalogOut outputs.
-				for out in self.__AOs:
-					out.set(data)
+			self.__haveInputData = True
 
 	def __pixtendPoll(self, now): #@nocy
 #@cy	cdef ExBool_t __pixtendPoll(self, double now):

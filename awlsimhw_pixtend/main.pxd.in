@@ -71,6 +71,7 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public list __PWMs
 	cdef public list __allOutputs
 	cdef public list __allInputs
+	cdef public _Bool __haveInputData
 	cdef public uint32_t __outBase
 	cdef public uint32_t __outSize
 	cdef public uint32_t __inBase
