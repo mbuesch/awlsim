@@ -241,3 +241,21 @@ class AbstractHardwareInterface(object): #+cdef
 			return self.__paramsByDescType[descType]
 		except KeyError:
 			return []
+
+	def isInProcessImage(self, offset, bitSize, isOutput):
+		"""Check whether a given offset is within the process image range.
+		Returns True, if the offset is accessible via process image E/A, I/Q.
+		Returns False, if the offset is accessible directly only PEx/PAx, PIx/PQx.
+		offset: An AwlOffset instance that describes the offset to be checked.
+		bitSize: The size of the I/O region to check, in bits.
+		isOutput: True, if offset is in the input address range.
+		          False, if offset is in the output address range.
+		"""
+		specs = self.cpu.getSpecs()
+		if isOutput:
+			procImageSizeBytes = specs.nrOutputs
+		else:
+			procImageSizeBytes = specs.nrInputs
+		procImageSizeBits = procImageSizeBytes * 8
+		endOffset = offset + make_AwlOffset_fromLongBitOffset(bitSize)
+		return endOffset.toLongBitOffset() <= procImageSizeBits
