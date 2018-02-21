@@ -47,11 +47,27 @@ class AbstractIO(object): #+cdef
 	getters = ()
 	directionSetters = ()
 
-	def __init__(self, pixtend, index, bitOffset):
+	def __init__(self, pixtend, index, bitOffset, directOnly=False, bitSize=1):
+		"""PiXtend I/O abstraction layer.
+		pixtend:	class Pixtend instance
+		index:		Index number of this I/O resource.
+				e.g. 2 for DI2.
+		bitOffset:	The bit offset in the AWL E or A region this
+				PiXtend resource is mapped to.
+		directOnly:	If False, then the resource is read/written in the
+				user cycle and stored in or written to the process image
+				region specified by bitOffset.
+				If True, this resource is only accessible by
+				direct PEx or PAx access only.
+		bitSize:	The size of this I/O instance, in bits.
+		"""
 		self.pixtend = pixtend
 		self.index = index
 		self.byteOffset = bitOffset // 8
 		self.bitOffset = bitOffset % 8
+		self.directOnly = directOnly
+		self.bitSize = bitSize
+		self.byteSize = intDivRoundUp(self.bitSize, 8)
 
 	def setup(self, secondaryOffset): #+cpdef
 		self.byteOffset += secondaryOffset
@@ -84,6 +100,9 @@ class AbstractBitIO(AbstractIO): #+cdef
 	"""PiXtend abstract bit I/O handler.
 	"""
 
+	def __init__(self, *args, **kwargs):
+		AbstractIO.__init__(self, *args, bitSize=1, **kwargs)
+
 	def setup(self, secondaryOffset): #+cpdef
 		AbstractIO.setup(self, secondaryOffset)
 
@@ -104,6 +123,9 @@ class AbstractBitIO(AbstractIO): #+cdef
 class AbstractWordIO(AbstractIO): #+cdef
 	"""PiXtend abstract word I/O handler.
 	"""
+
+	def __init__(self, *args, **kwargs):
+		AbstractIO.__init__(self, *args, bitSize=16, **kwargs)
 
 	def set(self, dataBytes): #@nocy
 #@cy	cdef set(self, bytearray dataBytes):
@@ -555,7 +577,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				minValue=1,
 				maxValue=50,
 				description="Number of samples for analog input (1, 5, 10 or 50)"))
-		#TODO optional: analogs in PEW only
 	paramDescs.append(HwParamDesc_int(
 			"analogIn_kHz",
 			defaultValue=125,
@@ -604,58 +625,41 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__haveInputData = False
 
 	def __build(self):
-		def updateOffs(byteOffset, byteWidth, first, last):
-			if first is None or byteOffset < first:
-				first = byteOffset
-			if last is None or byteOffset + byteWidth - 1 > last:
-				last = byteOffset + byteWidth - 1
-			return first, last
-
 		# Build all Relay() objects
 		self.__relays = []
-		firstRelayByte = lastRelayByte = None
 		for i in range(self.NR_RELAYS):
 			oper = self.getParamValueByName("relay%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			r = Relay(self.__pixtend, i, bitOffset)
+			r = Relay(self.__pixtend, i, bitOffset,
+				  not self.isInProcessImage(oper.offset, 1, True))
 			self.__relays.append(r)
-			firstRelayByte, lastRelayByte = updateOffs(
-					bitOffset // 8, 1,
-					firstRelayByte, lastRelayByte)
 
 		# Build all DigitalOut() objects
 		self.__DOs = []
-		firstDOByte = lastDOByte = None
 		for i in range(self.NR_DO):
 			oper = self.getParamValueByName("digitalOut%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			do = DigitalOut(self.__pixtend, i, bitOffset)
+			do = DigitalOut(self.__pixtend, i, bitOffset,
+					not self.isInProcessImage(oper.offset, 1, True))
 			self.__DOs.append(do)
-			firstDOByte, lastDOByte = updateOffs(
-					bitOffset // 8, 1,
-					firstDOByte, lastDOByte)
 
 		# Build all DigitalIn() objects
 		self.__DIs = []
-		firstDIByte = lastDIByte = None
 		for i in range(self.NR_DI):
 			oper = self.getParamValueByName("digitalIn%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			di = DigitalIn(self.__pixtend, i, bitOffset)
+			di = DigitalIn(self.__pixtend, i, bitOffset,
+				       not self.isInProcessImage(oper.offset, 1, False))
 			self.__DIs.append(di)
-			firstDIByte, lastDIByte = updateOffs(
-					bitOffset // 8, 1,
-					firstDIByte, lastDIByte)
 
 		# Build all GPIO output objects
 		self.__GPIO_out = []
-		firstGPIOOutByte = lastGPIOOutByte = None
 		for i in range(self.NR_GPIO):
 			oper = self.getParamValueByName("gpio%d_addr" % i)
 			if oper is None:
@@ -663,15 +667,12 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper.operType != AwlOperatorTypes.MEM_A:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			gpio = GPIO(self.__pixtend, i, bitOffset)
+			gpio = GPIO(self.__pixtend, i, bitOffset,
+				    not self.isInProcessImage(oper.offset, 1, True))
 			self.__GPIO_out.append(gpio)
-			firstGPIOOutByte, lastGPIOOutByte = updateOffs(
-					bitOffset // 8, 1,
-					firstGPIOOutByte, lastGPIOOutByte)
 
 		# Build all GPIO input objects
 		self.__GPIO_in = []
-		firstGPIOInByte = lastGPIOInByte = None
 		for i in range(self.NR_GPIO):
 			oper = self.getParamValueByName("gpio%d_addr" % i)
 			if oper is None:
@@ -679,56 +680,45 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper.operType != AwlOperatorTypes.MEM_E:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			gpio = GPIO(self.__pixtend, i, bitOffset)
+			gpio = GPIO(self.__pixtend, i, bitOffset,
+				    not self.isInProcessImage(oper.offset, 1, False))
 			self.__GPIO_in.append(gpio)
-			firstGPIOInByte, lastGPIOInByte = updateOffs(
-					bitOffset // 8, 1,
-					firstGPIOInByte, lastGPIOInByte)
 
 		# Build all analog input objects
 		self.__AIs = []
-		firstAIByte = lastAIByte = None
 		for i in range(self.NR_ADC):
 			oper = self.getParamValueByName("analogIn%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			ai = AnalogIn(self.__pixtend, i, bitOffset)
+			ai = AnalogIn(self.__pixtend, i, bitOffset,
+				      not self.isInProcessImage(oper.offset, 16, False))
 			self.__AIs.append(ai)
-			firstAIByte, lastAIByte = updateOffs(
-					bitOffset // 8, 2,
-					firstAIByte, lastAIByte)
 			if i <= 1:
 				ai.jumper10V = self.getParamValueByName("analogIn%d_10V" % i)
 			ai.numberOfSamples = self.getParamValueByName("analogIn%d_nos" % i)
 
 		# Build all analog output objects
 		self.__AOs = []
-		firstAOByte = lastAOByte = None
 		for i in range(self.NR_DAC):
 			oper = self.getParamValueByName("analogOut%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			ao = AnalogOut(self.__pixtend, i, bitOffset)
+			ao = AnalogOut(self.__pixtend, i, bitOffset,
+				       not self.isInProcessImage(oper.offset, 16, True))
 			self.__AOs.append(ao)
-			firstAOByte, lastAOByte = updateOffs(
-					bitOffset // 8, 2,
-					firstAOByte, lastAOByte)
 
 		# Build all PWM() objects
 		self.__PWMs = []
-		firstPWMByte = lastPWMByte = None
 		for i in range(self.NR_PWM):
 			oper = self.getParamValueByName("pwm%d_addr" % i)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			pwm = PWM(self.__pixtend, i, bitOffset)
+			pwm = PWM(self.__pixtend, i, bitOffset,
+				  not self.isInProcessImage(oper.offset, 16, True))
 			self.__PWMs.append(pwm)
-			firstPWMByte, lastPWMByte = updateOffs(
-					bitOffset // 8, 2,
-					firstPWMByte, lastPWMByte)
 			pwm.overDrive = self.getParamValueByName("pwm%d_servoOverDrive" % i)
 		# Handle pwm_period parameter.
 		try:
@@ -747,42 +737,53 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				     oper.width == 16:
 					# Use custom dynamic pwm_period
 					bitOffset = oper.offset.toLongBitOffset()
-					pwm = PWMPeriod(self.__pixtend, 0, bitOffset)
+					pwm = PWMPeriod(self.__pixtend, 0, bitOffset,
+							not self.isInProcessImage(oper.offset, 16, True))
 					self.__PWMs.append(pwm)
-					firstPWMByte, lastPWMByte = updateOffs(
-							bitOffset // 8, 2,
-							firstPWMByte, lastPWMByte)
 					pwm.setPWMPeriod(0)
 				else:
 					raise ValueError
 		except ValueError as e:
 			self.raiseException("Unsupported 'pwm_period' parameter value.")
 
-		# Find the offsets of the first and the last output byte
-		firstOutByte = lastOutByte = None
-		for firstByteOffset, lastByteOffset in (
-				(firstRelayByte, lastRelayByte),
-				(firstDOByte, lastDOByte),
-				(firstGPIOOutByte, lastGPIOOutByte),
-				(firstAOByte, lastAOByte),
-				(firstPWMByte, lastPWMByte)):
-			for byteOffset in (firstByteOffset, lastByteOffset):
-				if byteOffset is not None:
-					firstOutByte, lastOutByte = updateOffs(
-						byteOffset, 1,
-						firstOutByte, lastOutByte)
+		# Build a list of all outputs
+		self.__allOutputs = []
+		self.__allOutputs.extend(self.__relays)
+		self.__allOutputs.extend(self.__DOs)
+		self.__allOutputs.extend(self.__GPIO_out)
+		self.__allOutputs.extend(self.__AOs)
+		self.__allOutputs.extend(self.__PWMs)
 
-		# Find the offsets of the first and the last input byte
-		firstInByte = lastInByte = None
-		for firstByteOffset, lastByteOffset in (
-				(firstDIByte, lastDIByte),
-				(firstGPIOInByte, lastGPIOInByte),
-				(firstAIByte, lastAIByte)):
-			for byteOffset in (firstByteOffset, lastByteOffset):
-				if byteOffset is not None:
-					firstInByte, lastInByte = updateOffs(
-						byteOffset, 1,
-						firstInByte, lastInByte)
+		# Build a list of all inputs
+		self.__allInputs = []
+		self.__allInputs.extend(self.__DIs)
+		self.__allInputs.extend(self.__GPIO_in)
+		self.__allInputs.extend(self.__AIs)
+
+		# Build a list of all process image accessible outputs.
+		self.__allProcOutputs = [ o for o in self.__allOutputs if not o.directOnly ]
+		# Build a list of all directly accessible outputs.
+		self.__allDirectOutputs = self.__allOutputs[:]
+
+		# Build a list of all process image accessible inputs.
+		self.__allProcInputs = [ i for i in self.__allInputs if not i.directOnly ]
+		# Build a list of all directly accessible inputs.
+		self.__allDirectInputs = self.__allInputs[:]
+
+		def calcFirstLastByte(IOs):
+			first = last = None
+			for io in IOs:
+				beginByteOffset = ((io.byteOffset * 8) + io.bitOffset) // 8
+				endByteOffset = beginByteOffset + io.byteSize - 1
+				if first is None or beginByteOffset < first:
+					first = beginByteOffset
+				if last is None or endByteOffset > last:
+					last = endByteOffset
+			return first, last
+
+		# Find the offsets of the first and the last output byte
+		firstOutByte, lastOutByte = calcFirstLastByte(self.__allProcOutputs)
+		firstInByte, lastInByte = calcFirstLastByte(self.__allProcInputs)
 
 		# Store the output base and size
 		if firstOutByte is None or lastOutByte is None:
@@ -846,20 +847,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			self.raiseException("Unsupported 'pwm_baseFreqHz' parameter value. "
 				"Supported values are: 16000000, 2000000, 250000, 62500, 15625, 0.")
 
-		# Build a list of all outputs
-		self.__allOutputs = []
-		self.__allOutputs.extend(self.__relays)
-		self.__allOutputs.extend(self.__DOs)
-		self.__allOutputs.extend(self.__GPIO_out)
-		self.__allOutputs.extend(self.__AOs)
-		self.__allOutputs.extend(self.__PWMs)
-
-		# Build a list of all inputs
-		self.__allInputs = []
-		self.__allInputs.extend(self.__DIs)
-		self.__allInputs.extend(self.__GPIO_in)
-		self.__allInputs.extend(self.__AIs)
-
 	def doStartup(self):
 		if not self.__pixtendInitialized:
 			try:
@@ -912,8 +899,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if size:
 				data = cpu.fetchInputRange(self.__inBase, size)
 
-				# Handle all inputs
-				for inp in self.__allInputs:
+				# Handle all process image inputs
+				for inp in self.__allProcInputs:
 					inp.get(data)
 
 				cpu.storeInputRange(self.__inBase, data)
@@ -934,8 +921,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if size:
 				data = cpu.fetchOutputRange(self.__outBase, size)
 
-				# Handle all outputs
-				for out in self.__allOutputs:
+				# Handle all process image outputs
+				for out in self.__allProcOutputs:
 					out.set(data)
 
 			if not self.__pixtendPoll(now):

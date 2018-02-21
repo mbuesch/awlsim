@@ -5,6 +5,9 @@ cdef class AbstractIO(object):
 	cdef public uint32_t index
 	cdef public uint32_t byteOffset
 	cdef public uint32_t bitOffset
+	cdef public uint32_t bitSize
+	cdef public uint32_t byteSize
+	cdef public _Bool directOnly
 	cdef public object setter
 	cdef public object getter
 	cdef public object directionSetter
@@ -70,7 +73,11 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public list __AOs
 	cdef public list __PWMs
 	cdef public list __allOutputs
+	cdef public list __allProcOutputs
+	cdef public list __allDirectOutputs
 	cdef public list __allInputs
+	cdef public list __allProcInputs
+	cdef public list __allDirectInputs
 	cdef public _Bool __haveInputData
 	cdef public uint32_t __outBase
 	cdef public uint32_t __outSize
