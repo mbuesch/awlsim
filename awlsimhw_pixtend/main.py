@@ -946,7 +946,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		retries = 0
 		while True:
 			# Wait for the next possible poll slot.
-			timeout = int(self.__pollInt * 2000.0)
+			timeout = int(self.__pollInt * 2.0 * 1000.0)
 			while cpu.now < self.__nextPoll:
 				timeout -= 1
 				if timeout <= 0:
@@ -954,10 +954,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				time.sleep(0.001)
 				cpu.updateTimestamp()
 			# Poll PiXtend.
-			if not self.__pixtendPoll(cpu.now):
-				retries += 1
-				if retries >= 3:
-					self.raiseException("PiXtend auto_mode() poll failed (sync).")
+			if self.__pixtendPoll(cpu.now):
+				break # Success
+			retries += 1
+			if retries >= 3:
+				self.raiseException("PiXtend auto_mode() poll failed (sync).")
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
