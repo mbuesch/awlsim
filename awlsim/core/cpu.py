@@ -1856,25 +1856,36 @@ class S7CPU(object): #+cdef
 #@cy		cdef uint32_t readValue
 #@cy		cdef uint32_t bitWidth
 #@cy		cdef AwlOffset operatorOffset
+#@cy		cdef _Bool isInProcImg
 
 		bitWidth = operator.width
 		if not (AwlOperatorWidths.makeMask(bitWidth) & allowedWidths):
 			self.__fetchWidthError(operator, allowedWidths)
 		operatorOffset = operator.offset
 
+		isInProcImg = operatorOffset.toLongBitOffset() + bitWidth < self.specs.nrInputs * 8
+
 		# Fetch the data from the peripheral device.
 		readBytes = self.cbPeripheralRead(self.cbPeripheralReadData,
 						  bitWidth,
 						  operatorOffset.byteOffset)
 		if not readBytes:
-			raise AwlSimError("There is no hardware to handle "
+			printError("There is no hardware to handle "
 				"the direct peripheral fetch. "
 				"(width=%d, offset=%d)" %\
 				(bitWidth, operatorOffset.byteOffset))
+			# Read the value from the current process image instead,
+			# if it is within the range of the process image.
+			# Otherwise return all-zeros.
+			if isInProcImg:
+				readBytes = self.fetchInputRange(operatorOffset.byteOffset,
+								 bitWidth // 8)
+			else:
+				readBytes = bytearray(bitWidth // 8)
 		readValue = WordPacker.fromBytes(readBytes, bitWidth)
 
 		# Store the data to the process image, if it is within the inputs range.
-		if operatorOffset.toLongBitOffset() + bitWidth < self.specs.nrInputs * 8:
+		if isInProcImg:
 			self.inputs.store(operatorOffset, bitWidth, readValue)
 
 		return readValue
@@ -2169,7 +2180,7 @@ class S7CPU(object): #+cdef
 					    operatorOffset.byteOffset,
 					    valueBytes)
 		if not ok:
-			raise AwlSimError("There is no hardware to handle "
+			printError("There is no hardware to handle "
 				"the direct peripheral store. "
 				"(width=%d, offset=%d, value=0x%X)" %\
 				(bitWidth, operatorOffset.byteOffset,
