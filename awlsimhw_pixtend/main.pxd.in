@@ -14,20 +14,22 @@ cdef class AbstractIO(object):
 
 	cpdef setup(self, secondaryOffset)
 	cdef set(self, bytearray dataBytes)
+	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
 	cdef get(self, bytearray dataBytes)
+	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
 	cpdef setDirection(self, outDirection)
 
 cdef class AbstractBitIO(AbstractIO):
 	cdef public uint32_t bitMask
 	cdef public uint32_t invBitMask
 
-	cdef set(self, bytearray dataBytes)
-	cdef get(self, bytearray dataBytes)
+	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
+	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
 	cpdef setup(self, secondaryOffset)
 
 cdef class AbstractWordIO(AbstractIO):
-	cdef set(self, bytearray dataBytes)
-	cdef get(self, bytearray dataBytes)
+	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
+	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
 
 cdef class Relay(AbstractBitIO):
 	pass
@@ -74,15 +76,15 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public list __PWMs
 	cdef public list __allOutputs
 	cdef public list __allProcOutputs
-	cdef public list __allDirectOutputs
 	cdef public list __allInputs
 	cdef public list __allProcInputs
-	cdef public list __allDirectInputs
 	cdef public _Bool __haveInputData
 	cdef public uint32_t __outBase
 	cdef public uint32_t __outSize
 	cdef public uint32_t __inBase
 	cdef public uint32_t __inSize
+	cdef public dict __byteOffsetToInput
+	cdef public dict __byteOffsetToOutput
 	cdef public double __pollInt
 	cdef public double __nextPoll
 

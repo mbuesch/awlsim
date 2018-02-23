@@ -55,7 +55,9 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 	# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	"""
 
-	__slots__ = ()
+	__slots__ = (
+		"__autoCount"
+	)
 
 	PIXTEND_SPI_HANDSHAKE = 0b10101010
 	# 4-Byte Command length
@@ -93,6 +95,11 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 	PIXTEND_SPI_SET_PWM_CTRL = 0b10000100
 	# Auto Mode - 34 bytes Command length
 	PIXTEND_SPI_AUTO_MODE = 0b11100111
+
+	def __init__(self, *args, **kwargs):
+		Abstract_SpiDev.__init__(self, *args, **kwargs)
+
+		self.__autoCount = 0
 
 	def __command_generic(self, data):
 		return [0] * len(data)
@@ -134,6 +141,11 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 				assert((pwmCtrl0 & (1 << 1)) == 0) # OD 0 off
 				assert((pwmCtrl0 & (1 << 2)) == 0) # OD 1 off
 				assert(pwmCtrl2 == 0xFD and pwmCtrl1 == 0xE8) # period = 65000
+			elif os.getenv("PIXTEND_PERIPHERALIOTEST", ""):
+				# Check the magic values that are set by pixtend-peripheral-io.awlpro
+				if self.__autoCount >= 2:
+					assert(pwm01 == 0x13 and pwm00 == 0x37)
+					assert(pwm11 == 0x42 and pwm10 == 0x24)
 		else:
 			assert(pwm01 == 0 and pwm00 == 0)
 			assert(pwm11 == 0 and pwm10 == 0)
@@ -180,6 +192,8 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 		ret[31] = crc & 0xFF
 		ret[32] = (crc >> 8) & 0xFF
 		ret[33] = 128
+
+		self.__autoCount += 1
 
 		return ret
 

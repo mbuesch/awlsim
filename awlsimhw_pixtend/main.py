@@ -86,10 +86,18 @@ class AbstractIO(object): #+cdef
 
 	def set(self, dataBytes): #@nocy
 #@cy	cdef set(self, bytearray dataBytes):
+		self.setWithByteOffset(dataBytes, self.byteOffset)
+
+	def setWithByteOffset(self, dataBytes, byteOffset): #@nocy
+#@cy	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
 		raise NotImplementedError
 
 	def get(self, dataBytes): #@nocy
 #@cy	cdef get(self, bytearray dataBytes):
+		self.getWithByteOffset(dataBytes, self.byteOffset)
+
+	def getWithByteOffset(self, dataBytes, byteOffset): #@nocy
+#@cy	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
 		raise NotImplementedError
 
 	def setDirection(self, outDirection): #+cpdef
@@ -109,16 +117,16 @@ class AbstractBitIO(AbstractIO): #+cdef
 		self.bitMask = 1 << self.bitOffset
 		self.invBitMask = (~self.bitMask) & 0xFF
 
-	def set(self, dataBytes): #@nocy
-#@cy	cdef set(self, bytearray dataBytes):
-		self.setter(self, (dataBytes[self.byteOffset] >> self.bitOffset) & 1)
+	def setWithByteOffset(self, dataBytes, byteOffset): #@nocy
+#@cy	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
+		self.setter(self, (dataBytes[byteOffset] >> self.bitOffset) & 1)
 
-	def get(self, dataBytes): #@nocy
-#@cy	cdef get(self, bytearray dataBytes):
+	def getWithByteOffset(self, dataBytes, byteOffset): #@nocy
+#@cy	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
 		if self.getter(self):
-			dataBytes[self.byteOffset] |= self.bitMask
+			dataBytes[byteOffset] |= self.bitMask
 		else:
-			dataBytes[self.byteOffset] &= self.invBitMask
+			dataBytes[byteOffset] &= self.invBitMask
 
 class AbstractWordIO(AbstractIO): #+cdef
 	"""PiXtend abstract word I/O handler.
@@ -127,19 +135,19 @@ class AbstractWordIO(AbstractIO): #+cdef
 	def __init__(self, *args, **kwargs):
 		AbstractIO.__init__(self, *args, bitSize=16, **kwargs)
 
-	def set(self, dataBytes): #@nocy
-#@cy	cdef set(self, bytearray dataBytes):
+	def setWithByteOffset(self, dataBytes, byteOffset): #@nocy
+#@cy	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
 		self.setter(self,
-			    (dataBytes[self.byteOffset] << 8) |\
-			    (dataBytes[self.byteOffset + 1]))
+			    (dataBytes[byteOffset] << 8) |\
+			    (dataBytes[byteOffset + 1]))
 
-	def get(self, dataBytes): #@nocy
-#@cy	cdef get(self, bytearray dataBytes):
+	def getWithByteOffset(self, dataBytes, byteOffset): #@nocy
+#@cy	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
 #@cy		cdef uint16_t value
 
 		value = self.getter(self)
-		dataBytes[self.byteOffset] = (value >> 8) & 0xFF
-		dataBytes[self.byteOffset + 1] = value & 0xFF
+		dataBytes[byteOffset] = (value >> 8) & 0xFF
+		dataBytes[byteOffset + 1] = value & 0xFF
 
 class Relay(AbstractBitIO): #+cdef
 	"""PiXtend relay I/O handler.
@@ -762,13 +770,9 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Build a list of all process image accessible outputs.
 		self.__allProcOutputs = [ o for o in self.__allOutputs if not o.directOnly ]
-		# Build a list of all directly accessible outputs.
-		self.__allDirectOutputs = self.__allOutputs[:]
 
 		# Build a list of all process image accessible inputs.
 		self.__allProcInputs = [ i for i in self.__allInputs if not i.directOnly ]
-		# Build a list of all directly accessible inputs.
-		self.__allDirectInputs = self.__allInputs[:]
 
 		def calcFirstLastByte(IOs):
 			first = last = None
@@ -784,6 +788,16 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Find the offsets of the first and the last output byte
 		firstOutByte, lastOutByte = calcFirstLastByte(self.__allProcOutputs)
 		firstInByte, lastInByte = calcFirstLastByte(self.__allProcInputs)
+
+		# Build dicts to map from byteOffset to I/O wrapper.
+		self.__byteOffsetToInput = {
+			inp.byteOffset : inp
+			for inp in self.__allInputs
+		}
+		self.__byteOffsetToOutput = {
+			out.byteOffset : out
+			for out in self.__allOutputs
+		}
 
 		# Store the output base and size
 		if firstOutByte is None or lastOutByte is None:
@@ -963,15 +977,42 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
+#@cy		cdef AbstractIO inp
+
+		try:
+			inp = self.__byteOffsetToInput[accessOffset]
+		except KeyError as e:
+			return bytearray()
+		if accessWidth != inp.bitSize:
+			self.raiseException("Directly accessing input at I %d.0 "
+				"with width %d bit, but only %d bit wide "
+				"accesses are supported." % (
+				accessOffset, accessWidth, inp.bitSize))
+
 		self.__syncPixtendPoll()
-		pass#TODO
-		return bytearray()
+		data = bytearray(accessWidth // 8)
+		inp.getWithByteOffset(data, 0)
+
+		return data
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
 #@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
-		pass#TODO
+#@cy		cdef AbstractIO out
+
+		try:
+			out = self.__byteOffsetToOutput[accessOffset]
+		except KeyError as e:
+			return False
+		if accessWidth != out.bitSize:
+			self.raiseException("Directly accessing output at Q %d.0 "
+				"with width %d bit, but only %d bit wide "
+				"accesses are supported." % (
+				accessOffset, accessWidth, out.bitSize))
+
+		out.setWithByteOffset(data, 0)
 		self.__syncPixtendPoll()
-		return False
+
+		return True
 
 # Module entry point
 HardwareInterface = HardwareInterface_PiXtend
