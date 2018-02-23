@@ -939,20 +939,21 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	def __syncPixtendPoll(self): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef uint32_t retries
-#@cy		cdef uint32_t timeout
 
 		# Synchronously run one PiXtend poll cycle.
 		cpu = self.cpu
 		retries = 0
 		while True:
 			# Wait for the next possible poll slot.
-			timeout = int(self.__pollInt * 2.0 * 1000.0)
-			while cpu.now < self.__nextPoll:
-				timeout -= 1
-				if timeout <= 0:
+			cpu.updateTimestamp()
+			waitTime = self.__nextPoll - cpu.now
+			if waitTime > 0.0:
+				if waitTime > self.__pollInt * 2.0:
+					# Wait time is too big.
 					self.raiseException("PiXtend poll wait timeout.")
-				time.sleep(0.001)
-				cpu.updateTimestamp()
+				time.sleep(waitTime)
+			cpu.updateTimestamp()
+
 			# Poll PiXtend.
 			if self.__pixtendPoll(cpu.now):
 				break # Success
