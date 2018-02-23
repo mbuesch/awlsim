@@ -326,16 +326,16 @@ class AwlSim(object): #+cdef
 #@cy		cdef bytearray retValue
 #@cy		cdef bytearray value
 
-		retValue = bytearray()
 		for hw in self.__registeredHardware:
 			try:
 				value = hw.directReadInput(width, offset)
 				if value:
-					retValue = value
+					return value
 			except AwlSimError as e:
 				self._handleSimException(e,
 					fatal = self._fatalHwErrors)
-		return retValue
+				return bytearray(width // 8)
+		return bytearray()
 
 	def __peripheralWriteCallback(self, userData, width, offset, value):
 		"""The CPU issued a direct peripheral write access.
@@ -344,16 +344,17 @@ class AwlSim(object): #+cdef
 		"""
 #@cy		cdef AbstractHardwareInterface hw
 #@cy		cdef _Bool retOk
+#@cy		cdef ExBool_t ok
 
 		retOk = False
 		try:
 			for hw in self.__registeredHardware:
 				ok = hw.directWriteOutput(width, offset, value)
-				if not retOk:
-					retOk = ok
+				retOk = ok or retOk
 		except AwlSimError as e:
 			self._handleSimException(e,
 				fatal = self._fatalHwErrors)
+			return True
 		return retOk
 
 	def __repr__(self):
