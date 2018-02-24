@@ -568,6 +568,7 @@ EOF
 		libxmu-dev \
 		locales \
 		nano \
+		ntp \
 		openssh-server \
 		openssh-blacklist \
 		openssh-blacklist-extra \
