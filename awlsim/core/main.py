@@ -334,6 +334,7 @@ class AwlSim(object): #+cdef
 			except AwlSimError as e:
 				self._handleSimException(e,
 					fatal = self._fatalHwErrors)
+				break
 		return bytearray()
 
 	def __peripheralWriteCallback(self, userData, width, offset, value):
