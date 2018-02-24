@@ -514,9 +514,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 	#TODO DHT
 	#TODO hum
-	#TODO DAC
-	#TODO RS232
-	#TODO RS485
 
 	NR_RELAYS	= 4
 	NR_DO		= 6
@@ -532,6 +529,13 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				minValue=25,
 				maxValue=10000,
 				description="PiXtend auto-mode poll interval time, in milliseconds"),
+		HwParamDesc_bool("rs485",
+				 defaultValue=False,
+				 description="Enable RS485 mode. (PiXtend v1.x only)\n"
+				 "If set to True the RS485 output is enabled "
+				 "and the RS232 output is disabled.\n"
+				 "If set to False the RS485 output is disabled "
+				 "and the RS232 output is enabled."),
 		HwParamDesc_bool("testMode",
 				defaultValue=False,
 				description="Enable testing mode. DO NOT USE THIS OPTION!",
@@ -830,6 +834,16 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						   self.__AIs):
 				inp.setup(-firstInByte)
 				inp.setDirection(False)
+
+		# Configure RS232/RS485
+		try:
+			rs485 = self.getParamValueByName("rs485")
+			if rs485:
+				self.__pixtend.serial_mode = self.__pixtend.RS485
+			else:
+				self.__pixtend.serial_mode = self.__pixtend.RS232
+		except Exception as e:
+			self.raiseException("Failed to set RS232/RS485 mode: %s" % str(e))
 
 		# Configure AnalogOut SPI communication.
 		try:
