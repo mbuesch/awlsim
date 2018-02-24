@@ -552,11 +552,13 @@ EOF
 		dbus \
 		debconf-utils \
 		devscripts \
+		firmware-brcm80211 \
 		git \
 		gnu-fdisk \
 		htop \
 		i2c-tools \
 		irqbalance \
+		iw \
 		libboost-python-dev \
 		libgl1-mesa-dev \
 		libglu1-mesa-dev \
@@ -610,7 +612,9 @@ EOF
 		tclx \
 		tk-dev \
 		tmux \
-		vim ||\
+		vim \
+		wireless-tools \
+		wpasupplicant ||\
 		die "apt-get install failed"
 cat <<EOF | debconf-set-selections
 debconf	debconf/frontend	select	Dialog
@@ -942,6 +946,14 @@ iface eth$i inet6 auto
 EOF
 		[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth$i"
 	done
+	cat > /etc/network/interfaces.d/wlan0 <<EOF
+#allow-hotplug wlan0
+#iface wlan0 inet dhcp
+#	wpa-ssid 'enter your SSID here'
+#	wpa-psk 'enter your pre-shared-key (PSK) here'
+#iface wlan0 inet6 auto
+EOF
+	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/wlan0"
 
 	info "Updating home directory permissions..."
 	chown -R pi:pi /home/pi || die "Failed to change /home/pi permissions."
