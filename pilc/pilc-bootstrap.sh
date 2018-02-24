@@ -180,6 +180,9 @@ dtparam=spi=on
 # Uncomment this to enable the lirc-rpi module
 #dtoverlay=lirc-rpi
 
+# Enable DS1307 real time clock
+dtoverlay=i2c-rtc,ds1307
+
 # Additional overlays and parameters are documented /boot/overlays/README
 
 # Enable audio (loads snd_bcm2835)
