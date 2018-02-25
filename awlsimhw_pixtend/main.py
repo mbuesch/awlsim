@@ -45,6 +45,7 @@ __all__ = [
 	"HardwareInterface",
 ]
 
+
 class HwParamDesc_boardType(HwParamDesc_str):
 	typeStr = "BoardType"
 
@@ -240,8 +241,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			do = DigitalOut(self.__pixtend, i, bitOffset,
-					not self.isInProcessImage(oper.offset, 1, True))
+			directOnly = not self.isInProcessImage(oper.offset, 1, True)
+			if self.__isV2:
+				do = DigitalOut_V2(self.__pixtend, i, bitOffset, directOnly)
+			else:
+				do = DigitalOut_V1(self.__pixtend, i, bitOffset, directOnly)
 			self.__DOs.append(do)
 
 		# Build all DigitalIn() objects
@@ -251,8 +255,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			di = DigitalIn(self.__pixtend, i, bitOffset,
-				       not self.isInProcessImage(oper.offset, 1, False))
+			directOnly = not self.isInProcessImage(oper.offset, 1, False)
+			if self.__isV2:
+				di = DigitalIn_V2(self.__pixtend, i, bitOffset, directOnly)
+			else:
+				di = DigitalIn_V1(self.__pixtend, i, bitOffset, directOnly)
 			self.__DIs.append(di)
 
 		# Build all GPIO output objects

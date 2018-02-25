@@ -30,8 +30,10 @@ from awlsim.common.datatypehelpers import * #+cimport
 
 __all__ = [
 	"Relay",
-	"DigitalOut",
-	"DigitalIn",
+	"DigitalOut_V1",
+	"DigitalOut_V2",
+	"DigitalIn_V1",
+	"DigitalIn_V2",
 	"GPIO",
 	"AnalogIn",
 	"AnalogOut",
@@ -150,7 +152,7 @@ class AbstractWordIO(AbstractIO): #+cdef
 		dataBytes[byteOffset + 1] = value & 0xFF
 
 class Relay(AbstractBitIO): #+cdef
-	"""PiXtend relay I/O handler.
+	"""PiXtend V1.x/V2.x relay I/O handler.
 	"""
 
 	def __setRelay0(self, state):
@@ -172,8 +174,8 @@ class Relay(AbstractBitIO): #+cdef
 		__setRelay3,
 	)
 
-class DigitalOut(AbstractBitIO): #+cdef
-	"""PiXtend digital output I/O handler.
+class DigitalOut_V1(AbstractBitIO): #+cdef
+	"""PiXtend V1.x digital output I/O handler.
 	"""
 
 	def __setDO0(self, state):
@@ -203,8 +205,31 @@ class DigitalOut(AbstractBitIO): #+cdef
 		__setDO5,
 	)
 
-class DigitalIn(AbstractBitIO): #+cdef
-	"""PiXtend digital input I/O handler.
+class DigitalOut_V2(AbstractBitIO): #+cdef
+	"""PiXtend V2.x digital output I/O handler.
+	"""
+
+	def __setDO0(self, state):
+		self.pixtend.digital_out0 = state
+
+	def __setDO1(self, state):
+		self.pixtend.digital_out1 = state
+
+	def __setDO2(self, state):
+		self.pixtend.digital_out2 = state
+
+	def __setDO3(self, state):
+		self.pixtend.digital_out3 = state
+
+	setters = (
+		__setDO0,
+		__setDO1,
+		__setDO2,
+		__setDO3,
+	)
+
+class DigitalIn_V1(AbstractBitIO): #+cdef
+	"""PiXtend V1.x digital input I/O handler.
 	"""
 
 	def __getDI0(self):
@@ -242,9 +267,49 @@ class DigitalIn(AbstractBitIO): #+cdef
 		__getDI7,
 	)
 
+class DigitalIn_V2(AbstractBitIO): #+cdef
+	"""PiXtend V2.x digital input I/O handler.
+	"""
+
+	def __getDI0(self):
+		return self.pixtend.digital_in0
+
+	def __getDI1(self):
+		return self.pixtend.digital_in1
+
+	def __getDI2(self):
+		return self.pixtend.digital_in2
+
+	def __getDI3(self):
+		return self.pixtend.digital_in3
+
+	def __getDI4(self):
+		return self.pixtend.digital_in4
+
+	def __getDI5(self):
+		return self.pixtend.digital_in5
+
+	def __getDI6(self):
+		return self.pixtend.digital_in6
+
+	def __getDI7(self):
+		return self.pixtend.digital_in7
+
+	getters = (
+		__getDI0,
+		__getDI1,
+		__getDI2,
+		__getDI3,
+		__getDI4,
+		__getDI5,
+		__getDI6,
+		__getDI7,
+	)
+
 class GPIO(AbstractBitIO): #+cdef
 	"""PiXtend GPIO I/O handler.
 	"""
+	#TODO V2
 
 	def __getGPIO0(self):
 		return self.pixtend.gpio0
@@ -314,6 +379,7 @@ class GPIO(AbstractBitIO): #+cdef
 class AnalogIn(AbstractWordIO): #+cdef
 	"""PiXtend analog input I/O handler.
 	"""
+	#TODO V2
 
 	def __init__(self, *args, **kwargs):
 		AbstractWordIO.__init__(self, *args, **kwargs)
@@ -410,6 +476,7 @@ class AnalogIn(AbstractWordIO): #+cdef
 class AnalogOut(AbstractWordIO): #+cdef
 	"""PiXtend analog output I/O handler.
 	"""
+	#TODO V2
 
 	def __convert(self, s7Value): #@nocy
 #@cy	cdef uint16_t __convert(self, uint16_t s7Value):
@@ -435,6 +502,7 @@ class AnalogOut(AbstractWordIO): #+cdef
 class PWMPeriod(AbstractWordIO): #+cdef
 	"""PiXtend PWM period I/O handler.
 	"""
+	#TODO V2
 
 	def setPWMPeriod(self, period):
 		self.pixtend.pwm_ctrl_period = clamp(period, 0, 65000)
@@ -447,6 +515,7 @@ class PWMPeriod(AbstractWordIO): #+cdef
 class PWM(AbstractWordIO): #+cdef
 	"""PiXtend PWM output I/O handler.
 	"""
+	#TODO V2
 
 	def __init__(self, *args, **kwargs):
 		AbstractWordIO.__init__(self, *args, **kwargs)
