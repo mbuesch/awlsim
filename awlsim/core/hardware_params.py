@@ -52,11 +52,12 @@ class HwParamDesc(object):
 	defaultValue = None	# Default value; represented as parsed value
 	defaultValueStr = None	# Default value; represented as parser input string
 
-	def __init__(self, name, description="", mandatory=False, hidden=False):
+	def __init__(self, name, description="", mandatory=False, hidden=False, deprecated=False):
 		self.name = name
 		self.description = description
 		self.mandatory = mandatory
 		self.hidden = hidden
+		self.deprecated = deprecated
 
 	def parse(self, value):
 		"""Parse a value string.
@@ -77,8 +78,8 @@ class HwParamDesc_pyobject(HwParamDesc):
 	typeStr = "PyObject"
 	userEditable = False
 
-	def __init__(self, name, description="", mandatory=False, hidden=False):
-		HwParamDesc.__init__(self, name, description, mandatory, hidden)
+	def __init__(self, name, **kwargs):
+		HwParamDesc.__init__(self, name, **kwargs)
 
 	def parse(self, value):
 		return value
@@ -88,8 +89,8 @@ class HwParamDesc_str(HwParamDesc):
 
 	typeStr = "string"
 
-	def __init__(self, name, defaultValue="", description="", mandatory=False, hidden=False):
-		HwParamDesc.__init__(self, name, description, mandatory, hidden)
+	def __init__(self, name, defaultValue="", **kwargs):
+		HwParamDesc.__init__(self, name, **kwargs)
 		self.defaultValue = defaultValue
 		self.defaultValueStr = defaultValue
 
@@ -104,9 +105,8 @@ class HwParamDesc_int(HwParamDesc):
 	typeStr = "integer"
 
 	def __init__(self, name,
-		     defaultValue=0, minValue=None, maxValue=None,
-		     description="", mandatory=False, hidden=False):
-		HwParamDesc.__init__(self, name, description, mandatory, hidden)
+		     defaultValue=0, minValue=None, maxValue=None, **kwargs):
+		HwParamDesc.__init__(self, name, **kwargs)
 		self.defaultValue = defaultValue
 		self.defaultValueStr = None if defaultValue is None else str(defaultValue)
 		self.minValue = minValue
@@ -133,9 +133,8 @@ class HwParamDesc_bool(HwParamDesc):
 
 	typeStr = "boolean"
 
-	def __init__(self, name, defaultValue=False,
-		     description="", mandatory=False, hidden=False):
-		HwParamDesc.__init__(self, name, description, mandatory, hidden)
+	def __init__(self, name, defaultValue=False, **kwargs):
+		HwParamDesc.__init__(self, name, **kwargs)
 		self.defaultValue = None if defaultValue is None else bool(defaultValue)
 		self.defaultValueStr = None if defaultValue is None else str(bool(defaultValue))
 
@@ -163,8 +162,8 @@ class HwParamDesc_oper(HwParamDesc):
 	def __init__(self, name,
 		     allowedOperTypes=(),
 		     allowedOperWidths=(),
-		     description="", mandatory=False, hidden=False):
-		HwParamDesc.__init__(self, name, description, mandatory, hidden)
+		     **kwargs):
+		HwParamDesc.__init__(self, name, **kwargs)
 		self.allowedOperTypes = allowedOperTypes
 		self.allowedOperWidths = allowedOperWidths
 
