@@ -53,25 +53,39 @@ class HwParamDesc_boardType(HwParamDesc_str):
 	BOARD_V2_X	= EnumGen.item
 	EnumGen.end
 
-	validTypes = {
-		"v1.x"	: BOARD_V1_X,
-		"v1.2"	: BOARD_V1_X,
-		"v1.3"	: BOARD_V1_X,
-		"v2.x"	: BOARD_V2_X,
-		"v2.0"	: BOARD_V2_X,
+	str2type = {
+		"v1.x"		: BOARD_V1_X,
+		"v1.2"		: BOARD_V1_X,
+		"v1.3"		: BOARD_V1_X,
+		"v2.x"		: BOARD_V2_X,
+		"v2.0"		: BOARD_V2_X,
 	}
+	type2str = {
+		BOARD_V1_X	: "v1.x",
+		BOARD_V2_X	: "v2.x",
+	}
+
+	def __init__(self, name, defaultValue, description, mandatory=False, hidden=False):
+		HwParamDesc_str.__init__(self,
+					 name=name,
+					 defaultValue=None,
+					 description=description,
+					 mandatory=mandatory,
+					 hidden=hidden)
+		self.defaultValue = defaultValue
+		self.defaultValueStr = self.type2str[defaultValue]
 
 	def parse(self, value):
 		lowerValue = value.lower().strip()
 		if not lowerValue:
 			return self.defaultValue
 		try:
-			return self.validTypes[lowerValue]
+			return self.str2type[lowerValue]
 		except KeyError as e:
 			pass
 		raise self.ParseError("Invalid board type '%s'. "
 			"A valid boardType can be either %s." % (
-			value, listToHumanStr(sorted(self.validTypes.keys()))))
+			value, listToHumanStr(sorted(self.str2type.keys()))))
 
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name = "PiXtend"
@@ -81,18 +95,20 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	#TODO watchdog
 
 	NR_RELAYS	= 4
-	NR_DO		= 6
+	NR_DO_V1	= 6
+	NR_DO_V2	= 4
 	NR_DI		= 8
 	NR_GPIO		= 4
-	NR_DAC		= 2
-	NR_ADC		= 4
+	NR_AO		= 2
+	NR_AI_V1	= 4
+	NR_AI_V2	= 2
 	NR_PWM		= 2
 
 	paramDescs = [
 		HwParamDesc_boardType("boardType",
 				defaultValue=HwParamDesc_boardType.BOARD_V1_X,
 				description="PiXtend board type. This can be either %s." % (
-				listToHumanStr(sorted(HwParamDesc_boardType.validTypes.keys())))),
+				listToHumanStr(sorted(HwParamDesc_boardType.str2type.keys())))),
 		HwParamDesc_int("pollIntMs",
 				defaultValue=100,
 				minValue=3,
@@ -116,7 +132,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
 				description="Relay output %d address" % i))
-	for i in range(NR_DO):
+	for i in range(max(NR_DO_V1, NR_DO_V2)):
 		paramDescs.append(HwParamDesc_oper(
 				"digitalOut%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
@@ -135,13 +151,13 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						  AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
 				description="GPIO %d address (can be input (I/E) or output (Q/A))" % i))
-	for i in range(NR_DAC):
+	for i in range(NR_AO):
 		paramDescs.append(HwParamDesc_oper(
 				"analogOut%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(16,),
 				description="Analog output (DAC) %d address" % i))
-	for i in range(NR_ADC):
+	for i in range(max(NR_AI_V1, NR_AI_V2)):
 		paramDescs.append(HwParamDesc_oper(
 				"analogIn%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
@@ -219,7 +235,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Build all DigitalOut() objects
 		self.__DOs = []
-		for i in range(self.NR_DO):
+		for i in range(self.NR_DO_V2 if self.__isV2 else self.NR_DO_V1):
 			oper = self.getParamValueByName("digitalOut%d_addr" % i)
 			if oper is None:
 				continue
@@ -267,7 +283,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Build all analog input objects
 		self.__AIs = []
-		for i in range(self.NR_ADC):
+		for i in range(self.NR_AI_V2 if self.__isV2 else self.NR_AI_V1):
 			oper = self.getParamValueByName("analogIn%d_addr" % i)
 			if oper is None:
 				continue
@@ -281,7 +297,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Build all analog output objects
 		self.__AOs = []
-		for i in range(self.NR_DAC):
+		for i in range(self.NR_AO):
 			oper = self.getParamValueByName("analogOut%d_addr" % i)
 			if oper is None:
 				continue
