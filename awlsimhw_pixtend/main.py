@@ -45,12 +45,40 @@ __all__ = [
 	"HardwareInterface",
 ]
 
+class HwParamDesc_boardType(HwParamDesc_str):
+	typeStr = "BoardType"
+
+	EnumGen.start
+	BOARD_V1_X	= EnumGen.item
+	BOARD_V2_X	= EnumGen.item
+	EnumGen.end
+
+	validTypes = {
+		"v1.x"	: BOARD_V1_X,
+		"v1.2"	: BOARD_V1_X,
+		"v1.3"	: BOARD_V1_X,
+		"v2.x"	: BOARD_V2_X,
+		"v2.0"	: BOARD_V2_X,
+	}
+
+	def parse(self, value):
+		lowerValue = value.lower().strip()
+		if not lowerValue:
+			return self.defaultValue
+		try:
+			return self.validTypes[lowerValue]
+		except KeyError as e:
+			pass
+		raise self.ParseError("Invalid board type '%s'. "
+			"A valid boardType can be either %s." % (
+			value, listToHumanStr(sorted(self.validTypes.keys()))))
 
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name = "PiXtend"
 
 	#TODO DHT
 	#TODO hum
+	#TODO watchdog
 
 	NR_RELAYS	= 4
 	NR_DO		= 6
@@ -61,9 +89,13 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	NR_PWM		= 2
 
 	paramDescs = [
+		HwParamDesc_boardType("boardType",
+				defaultValue=HwParamDesc_boardType.BOARD_V1_X,
+				description="PiXtend board type. This can be either %s." % (
+				listToHumanStr(sorted(HwParamDesc_boardType.validTypes.keys())))),
 		HwParamDesc_int("pollIntMs",
 				defaultValue=100,
-				minValue=25,
+				minValue=3,
 				maxValue=10000,
 				description="PiXtend auto-mode poll interval time, in milliseconds"),
 		HwParamDesc_bool("rs485",
@@ -372,15 +404,16 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				inp.setup(-firstInByte)
 				inp.setDirection(False)
 
-		# Configure RS232/RS485
-		try:
-			rs485 = self.getParamValueByName("rs485")
-			if rs485:
-				self.__pixtend.serial_mode = self.__pixtend.RS485
-			else:
-				self.__pixtend.serial_mode = self.__pixtend.RS232
-		except Exception as e:
-			self.raiseException("Failed to set RS232/RS485 mode: %s" % str(e))
+		if not self.__isV2:
+			# Configure RS232/RS485
+			try:
+				rs485 = self.getParamValueByName("rs485")
+				if rs485:
+					self.__pixtend.serial_mode = self.__pixtend.RS485
+				else:
+					self.__pixtend.serial_mode = self.__pixtend.RS232
+			except Exception as e:
+				self.raiseException("Failed to set RS232/RS485 mode: %s" % str(e))
 
 		# Configure AnalogOut SPI communication.
 		try:
@@ -413,43 +446,103 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				"Supported values are: 16000000, 2000000, 250000, 62500, 15625, 0.")
 
 	def doStartup(self):
-		if not self.__pixtendInitialized:
+		if self.__pixtendInitialized:
+			return
+
+		self.__prevSpiCount = 0
+
+		# Import the Pixtend library.
+		boardType = self.getParamValueByName("boardType")
+		if boardType == HwParamDesc_boardType.BOARD_V1_X:
+			self.__isV2 = False
 			try:
-				from pixtendlib import Pixtend
-				self.__PiXtend_class = Pixtend
+				from pixtendlib import Pixtend as pixtend_class
 			except ImportError as e:
 				self.raiseException("Failed to import pixtendlib.Pixtend module"
 					":\n%s" % str(e))
-
-			self.__pollInt = float(self.getParamValueByName("pollIntMs")) / 1000.0
-			if self.getParamValueByName("testMode"):
-				self.__pollInt = 0.0 # In test mode use poll interval = 0
-
-			# Initialize PiXtend
+		elif boardType == HwParamDesc_boardType.BOARD_V2_X:
+			self.__isV2 = True
 			try:
-				self.__pixtend = self.__PiXtend_class()
+				from pixtendv2s import PiXtendV2S as pixtend_class
+			except ImportError as e:
+				self.raiseException("Failed to import pixtendv2s.PiXtendV2S module"
+					":\n%s" % str(e))
+		else:
+			self.raiseException("Unknown board type.")
+		self.__pixtend_class = pixtend_class
+
+		# Get the configured poll interval
+		self.__pollInt = float(self.getParamValueByName("pollIntMs")) / 1000.0
+		if not self.__isV2 and self.__pollInt < 0.025:
+			self.raiseException("pollIntMs is too low. It must be at least 25 ms.")
+		if self.__isV2 and self.__pollInt < 0.0025:
+			self.raiseException("pollIntMs is too low. It must be at least 3 ms.")
+		if self.getParamValueByName("testMode"):
+			# In test mode use poll interval as small as possible.
+			self.__pollInt = 0.0025 if self.__isV2 else 0.0
+
+		# Initialize PiXtend
+		self.__pixtend = None
+		try:
+			if self.__isV2:
+				# PiXtend v2.x
+				self.__pixtend = self.__pixtend_class(
+					com_interval=self.__pollInt,
+					model=self.__pixtend_class.PIXTENDV2S_MODEL,
+				)
+				self.__prevSpiCount = self.__pixtend._spi_transfers & 0xFFFF
+			else:
+				# PiXtend v1.x
+				self.__pixtend = self.__pixtend_class()
 				self.__pixtend.open()
-				t = 0
-				while not self.__pixtendPoll(self.cpu.now):
-					t += 1
-					if t >= 50:
-						self.raiseException("Timeout waiting "
-							"for PiXtend auto-mode.")
-					time.sleep(self.__pollInt)
-			except Exception as e:
-				self.raiseException("Failed to init PiXtend: %s" % (
-					str(e)))
+			# Wait for PiXtend to wake up.
+			t = 0
+			while True:
+				self.cpu.updateTimestamp()
+				if self.__isV2:
+					spiCount = self.__pixtend._spi_transfers & 0xFFFF
+					if self.__pixtendPoll(self.cpu.now) and\
+					   spiCount != self.__prevSpiCount:
+						break # success
+				else:
+					if self.__pixtendPoll(self.cpu.now):
+						break # success
+				t += 1
+				if t >= 50:
+					self.raiseException("Timeout waiting "
+						"for PiXtend auto-mode.")
+				time.sleep(self.__pollInt)
+			if self.__isV2 and self.__pixtend.model_in_error:
+				self.raiseException("Invalid board model number detected")
+		except Exception as e:
+			with suppressAllExc:
+				self.__shutdown()
+			self.raiseException("Failed to init PiXtend: %s" % (
+				str(e)))
+
+		# Build the HW shim and configure the hardware
+		try:
 			self.__build()
+		except Exception as e:
+			with suppressAllExc:
+				self.__shutdown()
+			raise e
 
-			self.__haveInputData = False
-			self.__nextPoll = self.cpu.now + self.__pollInt
-			self.__pixtendInitialized = True
+		if self.__isV2:
+			self.__prevSpiCount = self.__pixtend._spi_transfers & 0xFFFF
+		self.__haveInputData = False
+		self.__nextPoll = self.cpu.now + self.__pollInt
+		self.__pixtendInitialized = True
 
-	def doShutdown(self):
-		if self.__pixtendInitialized:
+	def __shutdown(self):
+		if self.__pixtend:
 			self.__pixtend.close()
 			self.__pixtend = None
 			self.__pixtendInitialized = False
+
+	def doShutdown(self):
+		if self.__pixtendInitialized:
+			self.__shutdown()
 
 	def readInputs(self): #+cdef
 #@cy		cdef S7CPU cpu
@@ -481,7 +574,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Run one PiXtend poll cycle, if required.
 		now = cpu.now
-		if now >= self.__nextPoll:
+		if self.__isV2 or now >= self.__nextPoll:
 			size = self.__outSize
 			if size:
 				data = cpu.fetchOutputRange(self.__outBase, size)
@@ -492,31 +585,66 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 			if not self.__pixtendPoll(now):
 				self.raiseException("PiXtend auto_mode() poll failed.")
-			self.__haveInputData = True
 
 	def __pixtendPoll(self, now): #@nocy
 #@cy	cdef ExBool_t __pixtendPoll(self, double now):
-		# Poll PiXtend auto_mode
-		self.__nextPoll = now + self.__pollInt
-		return self.__pixtend.auto_mode() == 0 and\
-		       (self.__pixtend.uc_status & 1) != 0
+#@cy		cdef uint16_t spiCount
+
+		pixtend = self.__pixtend
+		if self.__isV2:
+			# Check if we have new data from the poll thread
+			spiCount = pixtend._spi_transfers & 0xFFFF
+			self.__haveInputData = (spiCount != self.__prevSpiCount)
+			self.__prevSpiCount = spiCount
+			# Check for errors from the poll thread
+			if not pixtend.crc_header_in_error and\
+			   not pixtend.crc_data_in_error and\
+			   ((pixtend.uc_state & 1) != 0):
+				return True
+		else:
+			# Poll PiXtend auto_mode
+			self.__nextPoll = now + self.__pollInt
+			if (pixtend.auto_mode() == 0) and\
+			   ((pixtend.uc_status & 1) != 0):
+				self.__haveInputData = True
+				return True
+		# An error occurred.
+		self.__haveInputData = False
+		return False
 
 	def __syncPixtendPoll(self): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef uint32_t retries
+#@cy		cdef uint16_t spiCount
+#@cy		cdef uint16_t prevSpiCount
+#@cy		cdef double timeout
 
 		# Synchronously run one PiXtend poll cycle.
 		cpu = self.cpu
 		retries = 0
 		while True:
-			# Wait for the next possible poll slot.
 			cpu.updateTimestamp()
-			waitTime = self.__nextPoll - cpu.now
-			if waitTime > 0.0:
-				if waitTime > self.__pollInt * 2.0:
-					# Wait time is too big.
-					self.raiseException("PiXtend poll wait timeout.")
-				time.sleep(waitTime)
+			if self.__isV2:
+				pixtend = self.__pixtend
+				# Wait until the poll thread did one transfer.
+				timeout = cpu.now + (self.__pollInt * 10000.0)
+				prevSpiCount = pixtend._spi_transfers & 0xFFFF
+				while True:
+					spiCount = pixtend._spi_transfers & 0xFFFF
+					if spiCount != prevSpiCount:
+						break
+					cpu.updateTimestamp()
+					if cpu.now >= timeout:
+						self.raiseException("PiXtend poll wait timeout.")
+					time.sleep(0.001)
+			else:
+				# Wait for the next possible poll slot.
+				waitTime = self.__nextPoll - cpu.now
+				if waitTime > 0.0:
+					if waitTime > self.__pollInt * 2.0:
+						# Wait time is too big.
+						self.raiseException("PiXtend poll wait timeout.")
+					time.sleep(waitTime)
 			cpu.updateTimestamp()
 
 			# Poll PiXtend.

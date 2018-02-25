@@ -1,9 +1,10 @@
 from awlsim.core.hardware cimport *
 
 cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
-	cdef public object __PiXtend_class
+	cdef public object __pixtend_class
 	cdef public object __pixtend
 	cdef public _Bool __pixtendInitialized
+	cdef public _Bool __isV2
 	cdef public list __relays
 	cdef public list __DOs
 	cdef public list __DIs
@@ -25,6 +26,7 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public dict __byteOffsetToOutput
 	cdef public double __pollInt
 	cdef public double __nextPoll
+	cdef public uint16_t __prevSpiCount
 
 	cdef ExBool_t __pixtendPoll(self, double now)
 	cdef __syncPixtendPoll(self)
