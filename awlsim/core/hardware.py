@@ -220,10 +220,12 @@ class AbstractHardwareInterface(object): #+cdef
 				self.paramErrorHandler(desc.name,
 					"Mandatory parameter not specified")
 
-	def getParamValueByName(self, name):
+	def getParamValueByName(self, name, fallbackToDefault=True):
 		"""This is the main method to get a parameter value by name
 		from the hardware module.
 		'name' is the name string of the parameter.
+		If 'fallbackToDefault' is True the 'defaultValue' will be used,
+		if the parameter is not present in the module config.
 		"""
 
 		descs = [ d for d in self.getParamDescs(includeHidden=True,
@@ -237,7 +239,9 @@ class AbstractHardwareInterface(object): #+cdef
 		try:
 			return self.__paramsByName[name]
 		except KeyError:
-			return getattr(descs[0], "defaultValue", None)
+			if fallbackToDefault:
+				return getattr(descs[0], "defaultValue", None)
+		return None
 
 	getParam = getParamValueByName # Old deprecated getParam() API
 
