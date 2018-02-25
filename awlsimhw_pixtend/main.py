@@ -513,7 +513,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					com_interval=self.__pollInt,
 					model=self.__pixtend_class.PIXTENDV2S_MODEL,
 				)
-				self.__prevSpiCount = self.__pixtend._spi_transfers & 0xFFFF
+				initialSpiCount = self.__pixtend._spi_transfers & 0xFFFF
 			else:
 				# PiXtend v1.x
 				self.__pixtend = self.__pixtend_class()
@@ -523,10 +523,12 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			while True:
 				self.cpu.updateTimestamp()
 				if self.__isV2:
-					spiCount = self.__pixtend._spi_transfers & 0xFFFF
-					if self.__pixtendPoll(self.cpu.now) and\
-					   spiCount != self.__prevSpiCount:
-						break # success
+					if self.__pixtendPoll(self.cpu.now):
+						spiCount = self.__pixtend._spi_transfers & 0xFFFF
+						if spiCount != initialSpiCount:
+							break # success
+					else:
+						initialSpiCount = self.__pixtend._spi_transfers & 0xFFFF
 				else:
 					if self.__pixtendPoll(self.cpu.now):
 						break # success
