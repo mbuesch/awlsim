@@ -49,7 +49,8 @@ class HwParamDesc(object):
 
 	typeStr = "<NoType>"
 	userEditable = True
-	defaultValue = None
+	defaultValue = None	# Default value; represented as parsed value
+	defaultValueStr = None	# Default value; represented as parser input string
 
 	def __init__(self, name, description="", mandatory=False, hidden=False):
 		self.name = name
@@ -90,6 +91,7 @@ class HwParamDesc_str(HwParamDesc):
 	def __init__(self, name, defaultValue="", description="", mandatory=False, hidden=False):
 		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 		self.defaultValue = defaultValue
+		self.defaultValueStr = defaultValue
 
 	def parse(self, value):
 		if not value.strip():
@@ -106,6 +108,7 @@ class HwParamDesc_int(HwParamDesc):
 		     description="", mandatory=False, hidden=False):
 		HwParamDesc.__init__(self, name, description, mandatory, hidden)
 		self.defaultValue = defaultValue
+		self.defaultValueStr = None if defaultValue is None else str(defaultValue)
 		self.minValue = minValue
 		self.maxValue = maxValue
 
@@ -133,7 +136,8 @@ class HwParamDesc_bool(HwParamDesc):
 	def __init__(self, name, defaultValue=False,
 		     description="", mandatory=False, hidden=False):
 		HwParamDesc.__init__(self, name, description, mandatory, hidden)
-		self.defaultValue = defaultValue
+		self.defaultValue = None if defaultValue is None else bool(defaultValue)
+		self.defaultValueStr = None if defaultValue is None else str(bool(defaultValue))
 
 	def parse(self, value):
 		value = value.strip()

@@ -137,7 +137,7 @@ class HwmodParamModel(QAbstractTableModel):
 					if paramDesc and paramDesc.description:
 						text = "%s\nDefault value: %s" % (
 							paramDesc.description,
-							str(paramDesc.defaultValue))
+							paramDesc.defaultValueStr)
 						return text
 					return "The parameter's name"
 			else:
@@ -386,10 +386,10 @@ class HwmodConfigWidget(QWidget):
 			params = {}
 			if interface:
 				for paramDesc in interface.getParamDescs():
-					if paramDesc.defaultValue is None:
+					if paramDesc.defaultValueStr is None:
 						params[paramDesc.name] = None
 						continue
-					params[paramDesc.name] = str(paramDesc.defaultValue)
+					params[paramDesc.name] = paramDesc.defaultValueStr
 			modDesc = HwmodDescriptor(moduleName = modName,
 						  parameters = params)
 			item.setData(Qt.UserRole, modDesc)
