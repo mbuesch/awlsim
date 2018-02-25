@@ -23,7 +23,7 @@ infomsg()
 
 warnmsg()
 {
-	echo "$@" >&2
+	echo "WARNING: $@" >&2
 }
 
 errormsg()
@@ -507,29 +507,35 @@ __run_test()
 	# Don't run the test helper library
 	[ "$(basename "$testfile")" = "awlsim_tstlib.py" ] && return
 
-	# Print test headline
-	local nl="-n"
-	is_parallel_run && local nl=
-	infomsg $nl "$(basename "$testfile") @ $(basename "$interpreter"): "
+	local disabled="$(get_conf "$testfile" disabled)"
+	if [ -z "$disabled" ]; then
 
-	local prev_dir="$(pwd)"
-	cd "$rootdir" || die "cd to $rootdir failed"
+		# Print test headline
+		local nl="-n"
+		is_parallel_run && local nl=
+		infomsg $nl "$(basename "$testfile") @ $(basename "$interpreter"): "
 
-	# Check the file type and run the tester
-	if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" ]; then
-		check_dos_text_encoding "$testfile"
-		run_awl_test "$interpreter" "$testfile" "$@"
-	elif [ "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
-		run_awl_test "$interpreter" "$testfile" "$@"
-	elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
-		run_sh_test "$interpreter" "$testfile" "$@"
-	elif [ "$(echo -n "$testfile" | tail -c3)" = ".py" ]; then
-		run_nose_test "$interpreter" "$testfile" "$@"
+		local prev_dir="$(pwd)"
+		cd "$rootdir" || die "cd to $rootdir failed"
+
+		# Check the file type and run the tester
+		if [ "$(echo -n "$testfile" | tail -c4)" = ".awl" ]; then
+			check_dos_text_encoding "$testfile"
+			run_awl_test "$interpreter" "$testfile" "$@"
+		elif [ "$(echo -n "$testfile" | tail -c7)" = ".awlpro" ]; then
+			run_awl_test "$interpreter" "$testfile" "$@"
+		elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
+			run_sh_test "$interpreter" "$testfile" "$@"
+		elif [ "$(echo -n "$testfile" | tail -c3)" = ".py" ]; then
+			run_nose_test "$interpreter" "$testfile" "$@"
+		else
+			die "Test file type of '$testfile' not recognized"
+		fi
+
+		cd "$prev_dir" || die "cd to $prev_dir failed"
 	else
-		die "Test file type of '$testfile' not recognized"
+		warnmsg "Skipping '$testfile' as it is disabled."
 	fi
-
-	cd "$prev_dir" || die "cd to $prev_dir failed"
 }
 
 run_test()
