@@ -92,6 +92,8 @@ class HwParamDesc_str(HwParamDesc):
 		self.defaultValue = defaultValue
 
 	def parse(self, value):
+		if not value.strip():
+			return self.defaultValue
 		return value
 
 class HwParamDesc_int(HwParamDesc):
