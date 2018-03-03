@@ -156,16 +156,20 @@ class Relay(AbstractBitIO): #+cdef
 	"""
 
 	def __setRelay0(self, state):
-		self.pixtend.relay0 = state
+		pixtend = self.pixtend
+		pixtend.relay0 = pixtend.ON if state else pixtend.OFF
 
 	def __setRelay1(self, state):
-		self.pixtend.relay1 = state
+		pixtend = self.pixtend
+		pixtend.relay1 = pixtend.ON if state else pixtend.OFF
 
 	def __setRelay2(self, state):
-		self.pixtend.relay2 = state
+		pixtend = self.pixtend
+		pixtend.relay2 = pixtend.ON if state else pixtend.OFF
 
 	def __setRelay3(self, state):
-		self.pixtend.relay3 = state
+		pixtend = self.pixtend
+		pixtend.relay3 = pixtend.ON if state else pixtend.OFF
 
 	setters = (
 		__setRelay0,
@@ -179,22 +183,28 @@ class DigitalOut_V1(AbstractBitIO): #+cdef
 	"""
 
 	def __setDO0(self, state):
-		self.pixtend.digital_output0 = state
+		pixtend = self.pixtend
+		pixtend.digital_output0 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO1(self, state):
-		self.pixtend.digital_output1 = state
+		pixtend = self.pixtend
+		pixtend.digital_output1 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO2(self, state):
-		self.pixtend.digital_output2 = state
+		pixtend = self.pixtend
+		pixtend.digital_output2 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO3(self, state):
-		self.pixtend.digital_output3 = state
+		pixtend = self.pixtend
+		pixtend.digital_output3 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO4(self, state):
-		self.pixtend.digital_output4 = state
+		pixtend = self.pixtend
+		pixtend.digital_output4 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO5(self, state):
-		self.pixtend.digital_output5 = state
+		pixtend = self.pixtend
+		pixtend.digital_output5 = pixtend.ON if state else pixtend.OFF
 
 	setters = (
 		__setDO0,
@@ -210,16 +220,20 @@ class DigitalOut_V2(AbstractBitIO): #+cdef
 	"""
 
 	def __setDO0(self, state):
-		self.pixtend.digital_out0 = state
+		pixtend = self.pixtend
+		pixtend.digital_out0 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO1(self, state):
-		self.pixtend.digital_out1 = state
+		pixtend = self.pixtend
+		pixtend.digital_out1 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO2(self, state):
-		self.pixtend.digital_out2 = state
+		pixtend = self.pixtend
+		pixtend.digital_out2 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO3(self, state):
-		self.pixtend.digital_out3 = state
+		pixtend = self.pixtend
+		pixtend.digital_out3 = pixtend.ON if state else pixtend.OFF
 
 	setters = (
 		__setDO0,
@@ -233,28 +247,36 @@ class DigitalIn_V1(AbstractBitIO): #+cdef
 	"""
 
 	def __getDI0(self):
-		return self.pixtend.digital_input0
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input0 == pixtend.ON else 0
 
 	def __getDI1(self):
-		return self.pixtend.digital_input1
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input1 == pixtend.ON else 0
 
 	def __getDI2(self):
-		return self.pixtend.digital_input2
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input2 == pixtend.ON else 0
 
 	def __getDI3(self):
-		return self.pixtend.digital_input3
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input3 == pixtend.ON else 0
 
 	def __getDI4(self):
-		return self.pixtend.digital_input4
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input4 == pixtend.ON else 0
 
 	def __getDI5(self):
-		return self.pixtend.digital_input5
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input5 == pixtend.ON else 0
 
 	def __getDI6(self):
-		return self.pixtend.digital_input6
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input6 == pixtend.ON else 0
 
 	def __getDI7(self):
-		return self.pixtend.digital_input7
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_input7 == pixtend.ON else 0
 
 	getters = (
 		__getDI0,
@@ -272,28 +294,36 @@ class DigitalIn_V2(AbstractBitIO): #+cdef
 	"""
 
 	def __getDI0(self):
-		return self.pixtend.digital_in0
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in0 == pixtend.ON else 0
 
 	def __getDI1(self):
-		return self.pixtend.digital_in1
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in1 == pixtend.ON else 0
 
 	def __getDI2(self):
-		return self.pixtend.digital_in2
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in2 == pixtend.ON else 0
 
 	def __getDI3(self):
-		return self.pixtend.digital_in3
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in3 == pixtend.ON else 0
 
 	def __getDI4(self):
-		return self.pixtend.digital_in4
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in4 == pixtend.ON else 0
 
 	def __getDI5(self):
-		return self.pixtend.digital_in5
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in5 == pixtend.ON else 0
 
 	def __getDI6(self):
-		return self.pixtend.digital_in6
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in6 == pixtend.ON else 0
 
 	def __getDI7(self):
-		return self.pixtend.digital_in7
+		pixtend = self.pixtend
+		return 1 if pixtend.digital_in7 == pixtend.ON else 0
 
 	getters = (
 		__getDI0,
@@ -312,16 +342,20 @@ class GPIO(AbstractBitIO): #+cdef
 	#TODO V2
 
 	def __getGPIO0(self):
-		return self.pixtend.gpio0
+		pixtend = self.pixtend
+		return 1 if pixtend.gpio0 == pixtend.ON else 0
 
 	def __getGPIO1(self):
-		return self.pixtend.gpio1
+		pixtend = self.pixtend
+		return 1 if pixtend.gpio1 == pixtend.ON else 0
 
 	def __getGPIO2(self):
-		return self.pixtend.gpio2
+		pixtend = self.pixtend
+		return 1 if pixtend.gpio2 == pixtend.ON else 0
 
 	def __getGPIO3(self):
-		return self.pixtend.gpio3
+		pixtend = self.pixtend
+		return 1 if pixtend.gpio3 == pixtend.ON else 0
 
 	getters = (
 		__getGPIO0,
@@ -331,16 +365,20 @@ class GPIO(AbstractBitIO): #+cdef
 	)
 
 	def __setGPIO0(self, state):
-		self.pixtend.gpio0 = state
+		pixtend = self.pixtend
+		pixtend.gpio0 = pixtend.ON if state else pixtend.OFF
 
 	def __setGPIO1(self, state):
-		self.pixtend.gpio1 = state
+		pixtend = self.pixtend
+		pixtend.gpio1 = pixtend.ON if state else pixtend.OFF
 
 	def __setGPIO2(self, state):
-		self.pixtend.gpio2 = state
+		pixtend = self.pixtend
+		pixtend.gpio2 = pixtend.ON if state else pixtend.OFF
 
 	def __setGPIO3(self, state):
-		self.pixtend.gpio3 = state
+		pixtend = self.pixtend
+		pixtend.gpio3 = pixtend.ON if state else pixtend.OFF
 
 	setters = (
 		__setGPIO0,
@@ -350,24 +388,28 @@ class GPIO(AbstractBitIO): #+cdef
 	)
 
 	def __setDirGPIO0(self, outDirection):
-		self.pixtend.gpio0_direction =\
-			self.pixtend.GPIO_OUTPUT if outDirection else\
-			self.pixtend.GPIO_INPUT
+		pixtend = self.pixtend
+		pixtend.gpio0_direction =\
+			pixtend.GPIO_OUTPUT if outDirection else\
+			pixtend.GPIO_INPUT
 
 	def __setDirGPIO1(self, outDirection):
-		self.pixtend.gpio1_direction =\
-			self.pixtend.GPIO_OUTPUT if outDirection else\
-			self.pixtend.GPIO_INPUT
+		pixtend = self.pixtend
+		pixtend.gpio1_direction =\
+			pixtend.GPIO_OUTPUT if outDirection else\
+			pixtend.GPIO_INPUT
 
 	def __setDirGPIO2(self, outDirection):
-		self.pixtend.gpio2_direction =\
-			self.pixtend.GPIO_OUTPUT if outDirection else\
-			self.pixtend.GPIO_INPUT
+		pixtend = self.pixtend
+		pixtend.gpio2_direction =\
+			pixtend.GPIO_OUTPUT if outDirection else\
+			pixtend.GPIO_INPUT
 
 	def __setDirGPIO3(self, outDirection):
-		self.pixtend.gpio3_direction =\
-			self.pixtend.GPIO_OUTPUT if outDirection else\
-			self.pixtend.GPIO_INPUT
+		pixtend = self.pixtend
+		pixtend.gpio3_direction =\
+			pixtend.GPIO_OUTPUT if outDirection else\
+			pixtend.GPIO_INPUT
 
 	directionSetters = (
 		__setDirGPIO0,
