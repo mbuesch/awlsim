@@ -60,6 +60,7 @@ class HwParamDesc_boardType(HwParamDesc_str):
 		"v1.3"		: BOARD_V1_X,
 		"v2.x"		: BOARD_V2_X,
 		"v2.0"		: BOARD_V2_X,
+		"v2.1"		: BOARD_V2_X,
 	}
 	type2str = {
 		BOARD_V1_X	: "v1.x",
