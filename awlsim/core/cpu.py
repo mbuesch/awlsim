@@ -678,7 +678,7 @@ class S7CPU(object): #+cdef
 		"""Translate the loaded sources into their executable forms.
 		"""
 		self.prog.build()
-		self.reallocate(force=True)
+		self.reallocate()
 
 	def load(self, parseTree, rebuild = False, sourceManager = None):
 		for rawDB in dictValues(parseTree.dbs):
