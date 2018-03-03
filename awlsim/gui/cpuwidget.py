@@ -643,6 +643,7 @@ class CpuWidget(QWidget):
 			client.loadAwlSources(awlSources)
 			client.loadFupSources(fupSources)
 			client.loadKopSources(kopSources)
+			client.build()
 
 			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
