@@ -438,12 +438,13 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			except Exception as e:
 				self.raiseException("Failed to set RS232/RS485 mode: %s" % str(e))
 
-		# Configure AnalogOut SPI communication.
-		try:
-			if self.__AOs:
-				self.__pixtend.open_dac()
-		except (IOError, ValueError) as e:
-			self.raiseException("Failed to open DAC communication: %s" % str(e))
+		if not self.__isV2:
+			# Configure AnalogOut SPI communication.
+			try:
+				if self.__AOs:
+					self.__pixtend.open_dac()
+			except (IOError, ValueError) as e:
+				self.raiseException("Failed to open DAC communication: %s" % str(e))
 
 		# Configure global values of AnalogIn.
 		try:
@@ -507,6 +508,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Initialize PiXtend
 		self.__pixtend = None
 		try:
+			printInfo("Initializing PiXtend v%d.x" % 2 if self.__isV2 else 1)
 			if self.__isV2:
 				# PiXtend v2.x
 				self.__pixtend = self.__pixtend_class(
