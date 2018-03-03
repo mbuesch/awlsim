@@ -45,7 +45,9 @@ cdef class DigitalIn_V2(AbstractBitIO):
 	pass
 
 cdef class GPIO(AbstractBitIO):
-	pass
+	cdef public object pullUp
+
+	cpdef setup(self, secondaryOffset)
 
 cdef class AnalogIn(AbstractWordIO):
 	cdef public object jumper10V

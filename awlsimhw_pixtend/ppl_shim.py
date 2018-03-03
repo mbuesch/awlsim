@@ -339,7 +339,11 @@ class DigitalIn_V2(AbstractBitIO): #+cdef
 class GPIO(AbstractBitIO): #+cdef
 	"""PiXtend GPIO I/O handler.
 	"""
-	#TODO V2
+
+	def __init__(self, *args, **kwargs):
+		AbstractBitIO.__init__(self, *args, **kwargs)
+
+		self.pullUp = None
 
 	def __getGPIO0(self):
 		pixtend = self.pixtend
@@ -389,27 +393,39 @@ class GPIO(AbstractBitIO): #+cdef
 
 	def __setDirGPIO0(self, outDirection):
 		pixtend = self.pixtend
-		pixtend.gpio0_direction =\
-			pixtend.GPIO_OUTPUT if outDirection else\
+		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			pixtend.gpio0_ctrl = value
+		else:
+			pixtend.gpio0_direction = value
 
 	def __setDirGPIO1(self, outDirection):
 		pixtend = self.pixtend
-		pixtend.gpio1_direction =\
-			pixtend.GPIO_OUTPUT if outDirection else\
+		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			pixtend.gpio1_ctrl = value
+		else:
+			pixtend.gpio1_direction = value
 
 	def __setDirGPIO2(self, outDirection):
 		pixtend = self.pixtend
-		pixtend.gpio2_direction =\
-			pixtend.GPIO_OUTPUT if outDirection else\
+		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			pixtend.gpio2_ctrl = value
+		else:
+			pixtend.gpio2_direction = value
 
 	def __setDirGPIO3(self, outDirection):
 		pixtend = self.pixtend
-		pixtend.gpio3_direction =\
-			pixtend.GPIO_OUTPUT if outDirection else\
+		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			pixtend.gpio3_ctrl = value
+		else:
+			pixtend.gpio3_direction = value
 
 	directionSetters = (
 		__setDirGPIO0,
@@ -417,6 +433,49 @@ class GPIO(AbstractBitIO): #+cdef
 		__setDirGPIO2,
 		__setDirGPIO3,
 	)
+
+	def __setPullUp0(self, state):
+		pixtend = self.pixtend
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			if state == pixtend.ON:
+				pixtend.gpio_pullups_enable = pixtend.ON
+			pixtend.gpio0 = pixtend.ON if state else pixtend.OFF
+
+	def __setPullUp1(self, state):
+		pixtend = self.pixtend
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			if state == pixtend.ON:
+				pixtend.gpio_pullups_enable = pixtend.ON
+			pixtend.gpio1 = pixtend.ON if state else pixtend.OFF
+
+	def __setPullUp2(self, state):
+		pixtend = self.pixtend
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			if state == pixtend.ON:
+				pixtend.gpio_pullups_enable = pixtend.ON
+			pixtend.gpio2 = pixtend.ON if state else pixtend.OFF
+
+	def __setPullUp3(self, state):
+		pixtend = self.pixtend
+		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+			if state == pixtend.ON:
+				pixtend.gpio_pullups_enable = pixtend.ON
+			pixtend.gpio3 = pixtend.ON if state else pixtend.OFF
+
+	settersPullUp = (
+		__setPullUp0,
+		__setPullUp1,
+		__setPullUp2,
+		__setPullUp3,
+	)
+
+	def setup(self, secondaryOffset): #+cpdef
+		AbstractBitIO.setup(self, secondaryOffset)
+
+		if self.pullUp is not None:
+			setPullUp = self.settersPullUp[self.index]
+			setPullUp(self, self.pixtend.ON if self.pullUp
+					else self.pixtend.OFF)
 
 class AnalogIn(AbstractWordIO): #+cdef
 	"""PiXtend analog input I/O handler.
