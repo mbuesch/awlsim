@@ -462,7 +462,7 @@ class CpuWidget(QWidget):
 		inRunMode = client.getRunState()
 
 		# Start the main message fetcher.
-		self.__coreMsgTimer.start(0 if inRunMode else 300)
+		self.__coreMsgTimer.start(0 if inRunMode else 50)
 
 		# Start the periodic core work handler.
 		self.__periodicCoreWork()
