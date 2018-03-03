@@ -57,6 +57,7 @@ from awlsim.gui.icons.hwmod import *
 from awlsim.gui.icons.next import *
 from awlsim.gui.icons.previous import *
 from awlsim.gui.icons.doc_close import *
+from awlsim.gui.icons.doc_delete import *
 from awlsim.gui.icons.doc_edit import *
 from awlsim.gui.icons.doc_export import *
 from awlsim.gui.icons.doc_import import *
@@ -105,6 +106,7 @@ __icons = {
 	"next"		: icon_next,
 	"previous"	: icon_previous,
 	"doc_close"	: icon_doc_close,
+	"doc_delete"	: icon_doc_delete,
 	"doc_edit"	: icon_doc_edit,
 	"doc_export"	: icon_doc_export,
 	"doc_import"	: icon_doc_import,

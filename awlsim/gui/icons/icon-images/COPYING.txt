@@ -38,6 +38,7 @@ download-one.png              | network-server.svg and        | CC-BY-SA 3.0 or 
 edit-4.svg                    | nuvola                        | LGPL-2.1
 edit-copy-4.svg               | tango                         | PD
 edit-cut-4.svg                | tango                         | PD
+edit-delete-3.png             | tango                         | PD
 edit-find-4.svg               | tango                         | PD
 edit-find-replace-4.svg       | tango                         | PD
 edit-paste-4.svg              | tango                         | PD

@@ -171,6 +171,10 @@ class CpuControlToolBar(QToolBar):
 
 		self.onlineAction = OnlineSelectAction(self)
 		self.addAction(self.onlineAction)
+		self.resetAction = QAction(getIcon("doc_delete"),
+					   "Reset the CPU",
+					   self)
+		self.addAction(self.resetAction)
 		self.downloadAction = QAction(getIcon("download"),
 					      "Download all sources to CPU",
 					      self)
@@ -186,6 +190,7 @@ class CpuControlToolBar(QToolBar):
 
 	def connectToCpuWidget(self, cpuWidget):
 		self.onlineAction.toggled.connect(cpuWidget._onlineToggled)
+		self.resetAction.triggered.connect(cpuWidget.resetCpu)
 		self.downloadAction.triggered.connect(cpuWidget.download)
 		self.downloadSingleAction.triggered.connect(cpuWidget.downloadSingle)
 		self.runAction.toggled.connect(cpuWidget._runStateToggled)
@@ -742,6 +747,35 @@ class CpuWidget(QWidget):
 		except Exception:
 			client.shutdown()
 			handleFatalException(self)
+		return True
+
+	def resetCpu(self):
+		"""Reset the CPU.
+		"""
+
+		# Make sure we are online.
+		self.goOnline()
+		if not self.isOnline():
+			return False
+
+		client = self.mainWidget.getSimClient()
+		try:
+			client.setRunState(False)
+			client.reset()
+		except AwlParserError as e:
+			MessageBox.handleAwlParserError(self, e)
+			return False
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Error while reseting CPU", e)
+			return False
+		except MaintenanceRequest as e:
+			self.__handleMaintenance(e)
+			return False
+		except Exception:
+			client.shutdown()
+			handleFatalException(self)
+
 		return True
 
 	def _runStateToggled(self, runBtnPressed):
