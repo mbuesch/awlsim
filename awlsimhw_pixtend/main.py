@@ -509,7 +509,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Initialize PiXtend
 		self.__pixtend = None
 		try:
-			printInfo("Initializing PiXtend v%d.x" % 2 if self.__isV2 else 1)
+			printInfo("Initializing PiXtend v%d.x" % (2 if self.__isV2 else 1))
 			if self.__isV2:
 				# PiXtend v2.x
 				self.__pixtend = self.__pixtend_class(
