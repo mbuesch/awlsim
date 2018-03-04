@@ -935,6 +935,8 @@ class S7CPU(object): #+cdef
 		# Build (translate) the blocks, if not already done so.
 		self.build()
 
+		self.updateTimestamp()
+		self.startupTime = self.now
 		self.__speedMeasureStartTime = self.now
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
