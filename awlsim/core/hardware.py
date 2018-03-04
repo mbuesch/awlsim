@@ -96,7 +96,7 @@ class AbstractHardwareInterface(object): #+cdef
 			if desc.mandatory:
 				defStr = "mandatory"
 			else:
-				defStr = "default: %s" % str(getattr(desc, "defaultValue", None))
+				defStr = "default: %s" % str(getattr(desc, "defaultValueStr", None))
 			ret.append(" %s = %s (%s)%s" %\
 				(desc.name, desc.typeStr.upper(),
 				 defStr,
