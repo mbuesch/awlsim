@@ -1,5 +1,6 @@
 cdef class AbstractIO(object):
 	cdef public object pixtend
+	cdef public _Bool isV2
 	cdef public uint32_t index
 	cdef public uint32_t byteOffset
 	cdef public uint32_t bitOffset
@@ -60,10 +61,20 @@ cdef class AnalogIn(AbstractWordIO):
 cdef class AnalogOut(AbstractWordIO):
 	cdef uint16_t __convert(self, uint16_t s7Value)
 
-cdef class PWMPeriod(AbstractWordIO):
+cdef class PWM0Period(AbstractWordIO):
 	pass
 
-cdef class PWM(AbstractWordIO):
-	cdef public object overDrive
+cdef class PWM0(AbstractWordIO):
+	cdef public _Bool enabled
+	cdef public _Bool servoMode
+
+	cpdef setup(self, secondaryOffset)
+
+cdef class PWM1Period(AbstractWordIO):
+	pass
+
+cdef class PWM1(AbstractWordIO):
+	cdef public _Bool enabled
+	cdef public _Bool servoMode
 
 	cpdef setup(self, secondaryOffset)

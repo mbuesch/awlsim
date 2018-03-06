@@ -67,13 +67,12 @@ class HwParamDesc_boardType(HwParamDesc_str):
 		BOARD_V2_X	: "v2.x",
 	}
 
-	def __init__(self, name, defaultValue, description, mandatory=False, hidden=False):
+	def __init__(self, name, defaultValue, description, **kwargs):
 		HwParamDesc_str.__init__(self,
 					 name=name,
 					 defaultValue=None,
 					 description=description,
-					 mandatory=mandatory,
-					 hidden=hidden)
+					 **kwargs)
 		self.defaultValue = defaultValue
 		self.defaultValueStr = self.type2str[defaultValue]
 
@@ -87,7 +86,43 @@ class HwParamDesc_boardType(HwParamDesc_str):
 			pass
 		raise self.ParseError("Invalid board type '%s'. "
 			"A valid boardType can be either %s." % (
-			value, listToHumanStr(sorted(self.str2type.keys()))))
+			value, listToHumanStr(sorted(dictKeys(self.str2type)))))
+
+class HwParamDesc_pwmMode(HwParamDesc_str):
+	typeStr = "pwmMode"
+
+	EnumGen.start
+	MODE_SERVO	= EnumGen.item
+	MODE_DUTYCYCLE	= EnumGen.item
+	EnumGen.end
+
+	type2str = {
+		MODE_SERVO	: "servo",
+		MODE_DUTYCYCLE	: "dutycycle",
+	}
+	str2type = pivotDict(type2str)
+
+	def __init__(self, name, defaultValue, description, **kwargs):
+		HwParamDesc_str.__init__(self,
+					 name=name,
+					 defaultValue=None,
+					 description=description,
+					 **kwargs)
+		self.defaultValue = defaultValue
+		self.defaultValueStr = self.type2str[defaultValue]
+
+	def parse(self, value):
+		lowerValue = value.lower().strip()
+		if not lowerValue:
+			return self.defaultValue
+		lowerValue = lowerValue.replace("-", "").replace("_", "")
+		try:
+			return self.str2type[lowerValue]
+		except KeyError as e:
+			pass
+		raise self.ParseError("Invalid PWM mode '%s'. "
+			"A valid pwmMode can be either %s." % (
+			value, listToHumanStr(sorted(dictKeys(self.str2type)))))
 
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name = "PiXtend"
@@ -104,13 +139,14 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	NR_AO		= 2
 	NR_AI_V1	= 4
 	NR_AI_V2	= 2
-	NR_PWM		= 2
+	NR_PWM0		= 2
+	NR_PWM1		= 2
 
 	paramDescs = [
 		HwParamDesc_boardType("boardType",
 				defaultValue=HwParamDesc_boardType.BOARD_V1_X,
 				description="PiXtend board type. This can be either %s." % (
-				listToHumanStr(sorted(HwParamDesc_boardType.str2type.keys())))),
+				listToHumanStr(sorted(dictKeys(HwParamDesc_boardType.str2type))))),
 		HwParamDesc_int("pollIntMs",
 				defaultValue=100,
 				minValue=3,
@@ -153,6 +189,10 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						  AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
 				description="GPIO %d address (can be input (I/E) or output (Q/A))" % i))
+		paramDescs.append(HwParamDesc_bool(
+				"gpio%d_pullup" % i,
+				defaultValue=False,
+				description="Enable the pull-up resistors for GPIO input %d" % i))
 	for i in range(NR_AO):
 		paramDescs.append(HwParamDesc_oper(
 				"analogOut%d_addr" % i,
@@ -182,38 +222,92 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			minValue=125,
 			maxValue=8000,
 			description="Analog sampling frequency in kHz. Default: 125 kHz."))
-	for i in range(NR_PWM):
+	for i in range(NR_PWM0):
+		__name = "AB"[i]
+		paramDescs.append(HwParamDesc_oper(
+				"pwm0%s_addr" % __name,
+				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
+				allowedOperWidths=(16,),
+				description="Output word address of 16 bit PWM "
+					"(Pulse Width Modulation) module 0%s" % __name))
 		paramDescs.append(HwParamDesc_oper(
 				"pwm%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(16,),
-				description="PWM (Pulse Width Modulation) output %d word address" % i))
+				deprecated=True))
 		paramDescs.append(HwParamDesc_bool(
 				"pwm%d_servoOverDrive" % i,
-				defaultValue=False,
-				description="Enable PWM %d servo mode "
-					    "over drive (only if pwm_servoMode=True)." % i))
+				deprecated=True))
+	paramDescs.append(HwParamDesc_pwmMode(
+			"pwm0_mode",
+			defaultValue=HwParamDesc_pwmMode.MODE_DUTYCYCLE,
+			description="Set PWM0 operation mode. "
+				"Possible values: %s" % (
+				listToHumanStr(sorted(dictKeys(HwParamDesc_pwmMode.str2type))))))
 	paramDescs.append(HwParamDesc_bool(
 			"pwm_servoMode",
 			defaultValue=False,
-			description="Enable PWM servo mode."))
+			deprecated=True))
+	paramDescs.append(HwParamDesc_int(
+			"pwm0_baseFreqHz",
+			defaultValue=0,
+			minValue=0,
+			maxValue=16000000,
+			description="PWM0 base frequency, in Hz. "
+				    "Possible values: 16000000, 2000000, 250000, 62500, 15625, 0. "
+				    "Set to 0 to disable PWM0."))
+	paramDescs.append(HwParamDesc_oper(
+			"pwm0_period",
+			allowedOperTypes=(AwlOperatorTypes.MEM_A,
+					  AwlOperatorTypes.IMM),
+			description="PWM0 period.\n"
+				"This can either be an integer between 0 and L#65000.\n"
+				"Or an output word (AW, QW) where the program "
+				"writes the desired period to.\n"
+				"Defaults to L#65000, if not specified."))
 	paramDescs.append(HwParamDesc_int(
 			"pwm_baseFreqHz",
 			defaultValue=0,
 			minValue=0,
 			maxValue=16000000,
-			description="PWM base frequency, in Hz. "
-				    "Possible values: 16000000, 2000000, 250000, 62500, 15625, 0. "
-				    "Set to 0 to disable PWM."))
+			deprecated=True))
 	paramDescs.append(HwParamDesc_oper(
 			"pwm_period",
 			allowedOperTypes=(AwlOperatorTypes.MEM_A,
 					  AwlOperatorTypes.IMM),
-			description="PWM period.\n"
-				"This can either be an integer between 0 and L#65000.\n"
+			deprecated=True))
+	for i in range(NR_PWM1):
+		__name = "AB"[i]
+		paramDescs.append(HwParamDesc_oper(
+				"pwm1%s_addr" % __name,
+				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
+				allowedOperWidths=(16,),
+				description="Output word address of 8 bit PWM "
+					"(Pulse Width Modulation) module 1%s" % __name))
+	paramDescs.append(HwParamDesc_pwmMode(
+			"pwm1_mode",
+			defaultValue=HwParamDesc_pwmMode.MODE_DUTYCYCLE,
+			description="Set PWM1 operation mode. "
+				"Possible values: %s" % (
+				listToHumanStr(sorted(dictKeys(HwParamDesc_pwmMode.str2type))))))
+	paramDescs.append(HwParamDesc_int(
+			"pwm1_baseFreqHz",
+			defaultValue=0,
+			minValue=0,
+			maxValue=16000000,
+			description="PWM1 base frequency, in Hz. "
+				    "Possible values: 16000000, 2000000, 500000, "
+				    "250000, 125000, 62500, 15625, 0. "
+				    "Set to 0 to disable PWM1."))
+	paramDescs.append(HwParamDesc_oper(
+			"pwm1_period",
+			allowedOperTypes=(AwlOperatorTypes.MEM_A,
+					  AwlOperatorTypes.IMM),
+			description="PWM1 period.\n"
+				"This can either be an integer between 0 and 255.\n"
 				"Or an output word (AW, QW) where the program "
 				"writes the desired period to.\n"
-				"Defaults to L#65000, if not specified."))
+				"Defaults to 255, if not specified."))
 
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
@@ -231,7 +325,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			r = Relay(self.__pixtend, i, bitOffset,
+			r = Relay(self.__pixtend, self.__isV2, i, bitOffset,
 				  not self.isInProcessImage(oper.offset, 1, True))
 			self.__relays.append(r)
 
@@ -243,10 +337,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
 			directOnly = not self.isInProcessImage(oper.offset, 1, True)
-			if self.__isV2:
-				do = DigitalOut_V2(self.__pixtend, i, bitOffset, directOnly)
-			else:
-				do = DigitalOut_V1(self.__pixtend, i, bitOffset, directOnly)
+			do = DigitalOut(self.__pixtend, self.__isV2, i, bitOffset, directOnly)
 			self.__DOs.append(do)
 
 		# Build all DigitalIn() objects
@@ -257,10 +348,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
 			directOnly = not self.isInProcessImage(oper.offset, 1, False)
-			if self.__isV2:
-				di = DigitalIn_V2(self.__pixtend, i, bitOffset, directOnly)
-			else:
-				di = DigitalIn_V1(self.__pixtend, i, bitOffset, directOnly)
+			di = DigitalIn(self.__pixtend, self.__isV2, i, bitOffset, directOnly)
 			self.__DIs.append(di)
 
 		# Build all GPIO output objects
@@ -272,7 +360,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper.operType != AwlOperatorTypes.MEM_A:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			gpio = GPIO(self.__pixtend, i, bitOffset,
+			gpio = GPIO(self.__pixtend, self.__isV2, i, bitOffset,
 				    not self.isInProcessImage(oper.offset, 1, True))
 			self.__GPIO_out.append(gpio)
 
@@ -285,8 +373,9 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper.operType != AwlOperatorTypes.MEM_E:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			gpio = GPIO(self.__pixtend, i, bitOffset,
+			gpio = GPIO(self.__pixtend, self.__isV2, i, bitOffset,
 				    not self.isInProcessImage(oper.offset, 1, False))
+			gpio.pullUp = self.getParamValueByName("gpio%d_pullup" % i)
 			self.__GPIO_in.append(gpio)
 
 		# Build all analog input objects
@@ -296,7 +385,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			ai = AnalogIn(self.__pixtend, i, bitOffset,
+			ai = AnalogIn(self.__pixtend, self.__isV2, i, bitOffset,
 				      not self.isInProcessImage(oper.offset, 16, False))
 			self.__AIs.append(ai)
 			if i <= 1:
@@ -310,46 +399,64 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			ao = AnalogOut(self.__pixtend, i, bitOffset,
+			ao = AnalogOut(self.__pixtend, self.__isV2, i, bitOffset,
 				       not self.isInProcessImage(oper.offset, 16, True))
 			self.__AOs.append(ao)
 
-		# Build all PWM() objects
-		self.__PWMs = []
-		for i in range(self.NR_PWM):
-			oper = self.getParamValueByName("pwm%d_addr" % i)
+		# Build all PWM() objects for PWM0
+		self.__PWM0s = []
+		for i in range(self.NR_PWM0):
+			pwmName = "AB"[i]
+			oper = self.getParamValueByName("pwm%d_addr" % i,
+							fallbackToDefault=False)
+			if oper is None:
+				oper = self.getParamValueByName("pwm0%s_addr" % pwmName)
 			if oper is None:
 				continue
 			bitOffset = oper.offset.toLongBitOffset()
-			pwm = PWM(self.__pixtend, i, bitOffset,
-				  not self.isInProcessImage(oper.offset, 16, True))
-			self.__PWMs.append(pwm)
-			pwm.overDrive = self.getParamValueByName("pwm%d_servoOverDrive" % i)
-		# Handle pwm_period parameter.
+			pwm = PWM0(self.__pixtend, self.__isV2, i, bitOffset,
+				   not self.isInProcessImage(oper.offset, 16, True))
+			self.__PWM0s.append(pwm)
+			pwm.enabled = True
+			servoMode = self.getParamValueByName("pwm_servoMode",
+							     fallbackToDefault=False)
+			if servoMode is None:
+				mode = self.getParamValueByName("pwm0_mode")
+				servoMode = (mode == HwParamDesc_pwmMode.MODE_SERVO)
+			pwm.servoMode = servoMode
+		# Handle pwm0_period parameter.
 		try:
+			maxPeriod = 65535 if self.__isV2 else 65000
 			oper = self.getParamValueByName("pwm_period")
 			if not oper:
-				# Use default constant pwm_period
-				PWMPeriod(self.__pixtend, 0, 0).setPWMPeriod(65000)
+				oper = self.getParamValueByName("pwm0_period")
+			if not oper:
+				# Use default constant pwm0_period
+				PWM0Period(self.__pixtend, self.__isV2, 0, 0).setPWMPeriod(maxPeriod)
 			else:
 				if oper.operType == AwlOperatorTypes.IMM:
-					# Use custom constant pwm_period
+					# Use custom constant pwm0_period
 					period = oper.immediate
-					if period < 0 or period > 65000:
+					if period < 0 or period > maxPeriod:
 						raise ValueError
-					PWMPeriod(self.__pixtend, 0, 0).setPWMPeriod(period)
+					PWM0Period(self.__pixtend, self.__isV2, 0, 0).setPWMPeriod(period)
 				elif oper.operType == AwlOperatorTypes.MEM_A and\
 				     oper.width == 16:
-					# Use custom dynamic pwm_period
+					# Use custom dynamic pwm0_period
 					bitOffset = oper.offset.toLongBitOffset()
-					pwm = PWMPeriod(self.__pixtend, 0, bitOffset,
-							not self.isInProcessImage(oper.offset, 16, True))
-					self.__PWMs.append(pwm)
+					pwm = PWM0Period(self.__pixtend, self.__isV2, 0, bitOffset,
+							 not self.isInProcessImage(oper.offset, 16, True))
+					self.__PWM0s.append(pwm)
 					pwm.setPWMPeriod(0)
 				else:
 					raise ValueError
 		except ValueError as e:
-			self.raiseException("Unsupported 'pwm_period' parameter value.")
+			self.raiseException("Unsupported 'pwm0_period' parameter value.")
+
+		# Build all PWM() objects for PWM1
+		self.__PWM1s = []
+		if self.__isV2:
+			pass#TODO
 
 		# Build a list of all outputs
 		self.__allOutputs = []
@@ -357,7 +464,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__allOutputs.extend(self.__DOs)
 		self.__allOutputs.extend(self.__GPIO_out)
 		self.__allOutputs.extend(self.__AOs)
-		self.__allOutputs.extend(self.__PWMs)
+		self.__allOutputs.extend(self.__PWM0s)
+		self.__allOutputs.extend(self.__PWM1s)
 
 		# Build a list of all inputs
 		self.__allInputs = []
@@ -409,7 +517,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						   self.__DOs,
 						   self.__GPIO_out,
 						   self.__AOs,
-						   self.__PWMs):
+						   self.__PWM0s,
+						   self.__PWM1s):
 				out.setup(-firstOutByte)
 				out.setDirection(True)
 
@@ -449,26 +558,31 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Configure global values of AnalogIn.
 		try:
-			AnalogIn.setFreq(self.__pixtend,
+			AnalogIn.setFreq(self.__pixtend, self.__isV2,
 					 self.getParamValueByName("analogIn_kHz"))
 		except ValueError as e:
 			self.raiseException("Unsupported 'analogIn_kHz' parameter value. "
 				"Supported values are: 125, 250, 500, 1000, 4000, 8000.")
 
-		# Configure global values of PWM.
+		# Configure global values of PWM0.
 		try:
-			PWM.setServoMode(self.__pixtend,
-					 self.getParamValueByName("pwm_servoMode"))
+			if self.__PWM0s:
+				PWM0.setServoMode(self.__pixtend, self.__isV2,
+						  self.__PWM0s[0].servoMode)
 		except ValueError as e:
 			self.raiseException("Unsupported 'pwm_servoMode' parameter value.")
 		try:
 			freqHz = self.getParamValueByName("pwm_baseFreqHz")
-			if not self.__PWMs:
+			if not self.__PWM0s:
 				freqHz = 0
-			PWM.setBaseFreq(self.__pixtend, freqHz)
+			PWM0Period.setBaseFreq(self.__pixtend, self.__isV2, freqHz)
 		except ValueError as e:
 			self.raiseException("Unsupported 'pwm_baseFreqHz' parameter value. "
 				"Supported values are: 16000000, 2000000, 250000, 62500, 15625, 0.")
+
+		if self.__isV2:
+			# Configure global values of PWM1.
+			pass#TODO
 
 	def doStartup(self):
 		if self.__pixtendInitialized:

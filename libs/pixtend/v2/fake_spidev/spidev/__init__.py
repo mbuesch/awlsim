@@ -118,29 +118,32 @@ class Fake_SpiDev_PiXtend_2_0(Abstract_SpiDev):
 		ret[7] = hdrCrc & 0xFF
 		ret[8] = (hdrCrc >> 8) & 0xFF
 
+		ai0 = int(round(1.0 * 1024 / 10))
+		ai1 = int(round(2.0 * 1024 / 10))
+
 		# Sent data
-		ret[9] = 0	# Digital in
-		ret[10] = 0	# Analog in 0L
-		ret[11] = 0	# Analog in 0H
-		ret[12] = 0	# Analog in 1L
-		ret[13] = 0	# Analog in 1H
-		ret[14] = 0	# GPIO in
-		ret[15] = 0	# Temp 0L
-		ret[16] = 0	# Temp 0H
-		ret[17] = 0	# Humid 0L
-		ret[18] = 0	# Humid 0H
-		ret[19] = 0	# Temp 1L
-		ret[20] = 0	# Temp 1H
-		ret[21] = 0	# Humid 1L
-		ret[22] = 0	# Humid 1H
-		ret[23] = 0	# Temp 2L
-		ret[24] = 0	# Temp 2H
-		ret[25] = 0	# Humid 2L
-		ret[26] = 0	# Humid 2H
-		ret[27] = 0	# Temp 3L
-		ret[28] = 0	# Temp 3H
-		ret[29] = 0	# Humid 3L
-		ret[30] = 0	# Humid 3H
+		ret[9] = (digital_out & 0x0F) | (((digital_out ^ 0x0F) & 0x0F) << 4) # Digital in
+		ret[10] = ai0 & 0xFF		# Analog in 0L
+		ret[11] = (ai0 >> 8) & 0xFF	# Analog in 0H
+		ret[12] = ai1 & 0xFF		# Analog in 1L
+		ret[13] = (ai1 >> 8) & 0xFF	# Analog in 1H
+		ret[14] = (gpio_out & 0x03) << 2 # GPIO in
+		ret[15] = 0			# Temp 0L
+		ret[16] = 0			# Temp 0H
+		ret[17] = 0			# Humid 0L
+		ret[18] = 0			# Humid 0H
+		ret[19] = 0			# Temp 1L
+		ret[20] = 0			# Temp 1H
+		ret[21] = 0			# Humid 1L
+		ret[22] = 0			# Humid 1H
+		ret[23] = 0			# Temp 2L
+		ret[24] = 0			# Temp 2H
+		ret[25] = 0			# Humid 2L
+		ret[26] = 0			# Humid 2H
+		ret[27] = 0			# Temp 3L
+		ret[28] = 0			# Temp 3H
+		ret[29] = 0			# Humid 3L
+		ret[30] = 0			# Humid 3H
 
 		ret[32:64] = retain_data
 

@@ -30,15 +30,15 @@ from awlsim.common.datatypehelpers import * #+cimport
 
 __all__ = [
 	"Relay",
-	"DigitalOut_V1",
-	"DigitalOut_V2",
-	"DigitalIn_V1",
-	"DigitalIn_V2",
+	"DigitalOut",
+	"DigitalIn",
 	"GPIO",
 	"AnalogIn",
 	"AnalogOut",
-	"PWMPeriod",
-	"PWM",
+	"PWM0Period",
+	"PWM0",
+	"PWM1Period",
+	"PWM1",
 ]
 
 class AbstractIO(object): #+cdef
@@ -49,9 +49,10 @@ class AbstractIO(object): #+cdef
 	getters = ()
 	directionSetters = ()
 
-	def __init__(self, pixtend, index, bitOffset, directOnly=False, bitSize=1):
+	def __init__(self, pixtend, isV2, index, bitOffset, directOnly=False, bitSize=1):
 		"""PiXtend I/O abstraction layer.
 		pixtend:	class Pixtend instance
+		isV2:		True, if 'pixtend' is V2.x.
 		index:		Index number of this I/O resource.
 				e.g. 2 for DI2.
 		bitOffset:	The bit offset in the AWL E or A region this
@@ -64,6 +65,7 @@ class AbstractIO(object): #+cdef
 		bitSize:	The size of this I/O instance, in bits.
 		"""
 		self.pixtend = pixtend
+		self.isV2 = isV2
 		self.index = index
 		self.byteOffset = bitOffset // 8
 		self.bitOffset = bitOffset % 8
@@ -152,7 +154,7 @@ class AbstractWordIO(AbstractIO): #+cdef
 		dataBytes[byteOffset + 1] = value & 0xFF
 
 class Relay(AbstractBitIO): #+cdef
-	"""PiXtend V1.x/V2.x relay I/O handler.
+	"""PiXtend relay I/O handler.
 	"""
 
 	def __setRelay0(self, state):
@@ -178,33 +180,51 @@ class Relay(AbstractBitIO): #+cdef
 		__setRelay3,
 	)
 
-class DigitalOut_V1(AbstractBitIO): #+cdef
-	"""PiXtend V1.x digital output I/O handler.
+class DigitalOut(AbstractBitIO): #+cdef
+	"""PiXtend digital output I/O handler.
 	"""
 
 	def __setDO0(self, state):
 		pixtend = self.pixtend
-		pixtend.digital_output0 = pixtend.ON if state else pixtend.OFF
+		if self.isV2:
+			pixtend.digital_out0 = pixtend.ON if state else pixtend.OFF
+		else:
+			pixtend.digital_output0 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO1(self, state):
 		pixtend = self.pixtend
-		pixtend.digital_output1 = pixtend.ON if state else pixtend.OFF
+		if self.isV2:
+			pixtend.digital_out1 = pixtend.ON if state else pixtend.OFF
+		else:
+			pixtend.digital_output1 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO2(self, state):
 		pixtend = self.pixtend
-		pixtend.digital_output2 = pixtend.ON if state else pixtend.OFF
+		if self.isV2:
+			pixtend.digital_out2 = pixtend.ON if state else pixtend.OFF
+		else:
+			pixtend.digital_output2 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO3(self, state):
 		pixtend = self.pixtend
-		pixtend.digital_output3 = pixtend.ON if state else pixtend.OFF
+		if self.isV2:
+			pixtend.digital_out3 = pixtend.ON if state else pixtend.OFF
+		else:
+			pixtend.digital_output3 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO4(self, state):
 		pixtend = self.pixtend
-		pixtend.digital_output4 = pixtend.ON if state else pixtend.OFF
+		if self.isV2:
+			assert(0)
+		else:
+			pixtend.digital_output4 = pixtend.ON if state else pixtend.OFF
 
 	def __setDO5(self, state):
 		pixtend = self.pixtend
-		pixtend.digital_output5 = pixtend.ON if state else pixtend.OFF
+		if self.isV2:
+			assert(0)
+		else:
+			pixtend.digital_output5 = pixtend.ON if state else pixtend.OFF
 
 	setters = (
 		__setDO0,
@@ -215,115 +235,57 @@ class DigitalOut_V1(AbstractBitIO): #+cdef
 		__setDO5,
 	)
 
-class DigitalOut_V2(AbstractBitIO): #+cdef
-	"""PiXtend V2.x digital output I/O handler.
-	"""
-
-	def __setDO0(self, state):
-		pixtend = self.pixtend
-		pixtend.digital_out0 = pixtend.ON if state else pixtend.OFF
-
-	def __setDO1(self, state):
-		pixtend = self.pixtend
-		pixtend.digital_out1 = pixtend.ON if state else pixtend.OFF
-
-	def __setDO2(self, state):
-		pixtend = self.pixtend
-		pixtend.digital_out2 = pixtend.ON if state else pixtend.OFF
-
-	def __setDO3(self, state):
-		pixtend = self.pixtend
-		pixtend.digital_out3 = pixtend.ON if state else pixtend.OFF
-
-	setters = (
-		__setDO0,
-		__setDO1,
-		__setDO2,
-		__setDO3,
-	)
-
-class DigitalIn_V1(AbstractBitIO): #+cdef
-	"""PiXtend V1.x digital input I/O handler.
+class DigitalIn(AbstractBitIO): #+cdef
+	"""PiXtend digital input I/O handler.
 	"""
 
 	def __getDI0(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in0 == pixtend.ON else 0
 		return 1 if pixtend.digital_input0 == pixtend.ON else 0
 
 	def __getDI1(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in1 == pixtend.ON else 0
 		return 1 if pixtend.digital_input1 == pixtend.ON else 0
 
 	def __getDI2(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in2 == pixtend.ON else 0
 		return 1 if pixtend.digital_input2 == pixtend.ON else 0
 
 	def __getDI3(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in3 == pixtend.ON else 0
 		return 1 if pixtend.digital_input3 == pixtend.ON else 0
 
 	def __getDI4(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in4 == pixtend.ON else 0
 		return 1 if pixtend.digital_input4 == pixtend.ON else 0
 
 	def __getDI5(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in5 == pixtend.ON else 0
 		return 1 if pixtend.digital_input5 == pixtend.ON else 0
 
 	def __getDI6(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in6 == pixtend.ON else 0
 		return 1 if pixtend.digital_input6 == pixtend.ON else 0
 
 	def __getDI7(self):
 		pixtend = self.pixtend
+		if self.isV2:
+			return 1 if pixtend.digital_in7 == pixtend.ON else 0
 		return 1 if pixtend.digital_input7 == pixtend.ON else 0
-
-	getters = (
-		__getDI0,
-		__getDI1,
-		__getDI2,
-		__getDI3,
-		__getDI4,
-		__getDI5,
-		__getDI6,
-		__getDI7,
-	)
-
-class DigitalIn_V2(AbstractBitIO): #+cdef
-	"""PiXtend V2.x digital input I/O handler.
-	"""
-
-	def __getDI0(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in0 == pixtend.ON else 0
-
-	def __getDI1(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in1 == pixtend.ON else 0
-
-	def __getDI2(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in2 == pixtend.ON else 0
-
-	def __getDI3(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in3 == pixtend.ON else 0
-
-	def __getDI4(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in4 == pixtend.ON else 0
-
-	def __getDI5(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in5 == pixtend.ON else 0
-
-	def __getDI6(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in6 == pixtend.ON else 0
-
-	def __getDI7(self):
-		pixtend = self.pixtend
-		return 1 if pixtend.digital_in7 == pixtend.ON else 0
 
 	getters = (
 		__getDI0,
@@ -395,7 +357,7 @@ class GPIO(AbstractBitIO): #+cdef
 		pixtend = self.pixtend
 		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			pixtend.gpio0_ctrl = value
 		else:
 			pixtend.gpio0_direction = value
@@ -404,7 +366,7 @@ class GPIO(AbstractBitIO): #+cdef
 		pixtend = self.pixtend
 		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			pixtend.gpio1_ctrl = value
 		else:
 			pixtend.gpio1_direction = value
@@ -413,7 +375,7 @@ class GPIO(AbstractBitIO): #+cdef
 		pixtend = self.pixtend
 		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			pixtend.gpio2_ctrl = value
 		else:
 			pixtend.gpio2_direction = value
@@ -422,7 +384,7 @@ class GPIO(AbstractBitIO): #+cdef
 		pixtend = self.pixtend
 		value = pixtend.GPIO_OUTPUT if outDirection else\
 			pixtend.GPIO_INPUT
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			pixtend.gpio3_ctrl = value
 		else:
 			pixtend.gpio3_direction = value
@@ -436,31 +398,31 @@ class GPIO(AbstractBitIO): #+cdef
 
 	def __setPullUp0(self, state):
 		pixtend = self.pixtend
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			if state == pixtend.ON:
 				pixtend.gpio_pullups_enable = pixtend.ON
-			pixtend.gpio0 = pixtend.ON if state else pixtend.OFF
+#TODO			pixtend.gpio0 = pixtend.ON if state else pixtend.OFF
 
 	def __setPullUp1(self, state):
 		pixtend = self.pixtend
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			if state == pixtend.ON:
 				pixtend.gpio_pullups_enable = pixtend.ON
-			pixtend.gpio1 = pixtend.ON if state else pixtend.OFF
+#TODO			pixtend.gpio1 = pixtend.ON if state else pixtend.OFF
 
 	def __setPullUp2(self, state):
 		pixtend = self.pixtend
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			if state == pixtend.ON:
 				pixtend.gpio_pullups_enable = pixtend.ON
-			pixtend.gpio2 = pixtend.ON if state else pixtend.OFF
+#TODO			pixtend.gpio2 = pixtend.ON if state else pixtend.OFF
 
 	def __setPullUp3(self, state):
 		pixtend = self.pixtend
-		if hasattr(pixtend, "PIXTENDV2S_MODEL"): # pplv2?
+		if self.isV2:
 			if state == pixtend.ON:
 				pixtend.gpio_pullups_enable = pixtend.ON
-			pixtend.gpio3 = pixtend.ON if state else pixtend.OFF
+#TODO			pixtend.gpio3 = pixtend.ON if state else pixtend.OFF
 
 	settersPullUp = (
 		__setPullUp0,
@@ -480,7 +442,6 @@ class GPIO(AbstractBitIO): #+cdef
 class AnalogIn(AbstractWordIO): #+cdef
 	"""PiXtend analog input I/O handler.
 	"""
-	#TODO V2
 
 	def __init__(self, *args, **kwargs):
 		AbstractWordIO.__init__(self, *args, **kwargs)
@@ -497,15 +458,25 @@ class AnalogIn(AbstractWordIO): #+cdef
 		return max(min(int(round((mA - 4.0) * 1728.0)), 32767), -32768)
 
 	def __getAI0(self):
+		if self.isV2:
+			return self.__convertV(self.pixtend.analog_in0)
 		return self.__convertV(self.pixtend.analog_input0)
 
 	def __getAI1(self):
+		if self.isV2:
+			return self.__convertV(self.pixtend.analog_in1)
 		return self.__convertV(self.pixtend.analog_input1)
 
 	def __getAI2(self):
+		if self.isV2:
+			assert(0)
+			return 0
 		return self.__convertMA(self.pixtend.analog_input2)
 
 	def __getAI3(self):
+		if self.isV2:
+			assert(0)
+			return 0
 		return self.__convertMA(self.pixtend.analog_input3)
 
 	getters = (
@@ -516,10 +487,20 @@ class AnalogIn(AbstractWordIO): #+cdef
 	)
 
 	def __setJumper10V_AI0(self, jumper10V):
-		self.pixtend.analog_input0_10volts_jumper = jumper10V
+		pixtend = self.pixtend
+		value = pixtend.ON if jumper10V else pixtend.OFF
+		if self.isV2:
+			pixtend.jumper_setting_ai0 = value
+		else:
+			pixtend.analog_input0_10volts_jumper = value
 
 	def __setJumper10V_AI1(self, jumper10V):
-		self.pixtend.analog_input1_10volts_jumper = jumper10V
+		pixtend = self.pixtend
+		value = pixtend.ON if jumper10V else pixtend.OFF
+		if self.isV2:
+			pixtend.jumper_setting_ai1 = value
+		else:
+			pixtend.analog_input1_10volts_jumper = value
 
 	settersJumper10V = (
 		__setJumper10V_AI0,
@@ -527,16 +508,20 @@ class AnalogIn(AbstractWordIO): #+cdef
 	)
 
 	def __setNos_AI0(self, nos):
-		self.pixtend.analog_input0_nos = nos
+		if not self.isV2:
+			self.pixtend.analog_input0_nos = nos
 
 	def __setNos_AI1(self, nos):
-		self.pixtend.analog_input1_nos = nos
+		if not self.isV2:
+			self.pixtend.analog_input1_nos = nos
 
 	def __setNos_AI2(self, nos):
-		self.pixtend.analog_input2_nos = nos
+		if not self.isV2:
+			self.pixtend.analog_input2_nos = nos
 
 	def __setNos_AI3(self, nos):
-		self.pixtend.analog_input3_nos = nos
+		if not self.isV2:
+			self.pixtend.analog_input3_nos = nos
 
 	settersNos = (
 		__setNos_AI0,
@@ -546,7 +531,9 @@ class AnalogIn(AbstractWordIO): #+cdef
 	)
 
 	@staticmethod
-	def setFreq(pixtend, freqKHz):
+	def setFreq(pixtend, isV2, freqKHz):
+		if isV2:
+			return
 		kHz2MHz = {
 			125	: 0.125,
 			250	: 0.250,
@@ -577,7 +564,6 @@ class AnalogIn(AbstractWordIO): #+cdef
 class AnalogOut(AbstractWordIO): #+cdef
 	"""PiXtend analog output I/O handler.
 	"""
-	#TODO V2
 
 	def __convert(self, s7Value): #@nocy
 #@cy	cdef uint16_t __convert(self, uint16_t s7Value):
@@ -587,73 +573,42 @@ class AnalogOut(AbstractWordIO): #+cdef
 
 	def __setAO0(self, value):
 		pixtend = self.pixtend
-		pixtend.dac_selection = pixtend.DAC_A
-		pixtend.set_dac_output(self.__convert(value))
+		if self.isV2:
+			pixtend.set_dac_output(pixtend.DAC_A, self.__convert(value))
+		else:
+			pixtend.dac_selection = pixtend.DAC_A
+			pixtend.set_dac_output(self.__convert(value))
 
 	def __setAO1(self, value):
 		pixtend = self.pixtend
-		pixtend.dac_selection = pixtend.DAC_B
-		pixtend.set_dac_output(self.__convert(value))
+		if self.isV2:
+			pixtend.set_dac_output(pixtend.DAC_B, self.__convert(value))
+		else:
+			pixtend.dac_selection = pixtend.DAC_B
+			pixtend.set_dac_output(self.__convert(value))
 
 	setters = (
 		__setAO0,
 		__setAO1,
 	)
 
-class PWMPeriod(AbstractWordIO): #+cdef
-	"""PiXtend PWM period I/O handler.
+class PWM0Period(AbstractWordIO): #+cdef
+	"""PiXtend PWM0 period I/O handler.
 	"""
-	#TODO V2
 
 	def setPWMPeriod(self, period):
-		self.pixtend.pwm_ctrl_period = clamp(period, 0, 65000)
-		self.pixtend.pwm_ctrl_configure()
+		if self.isV2:
+			self.pixtend.pwm0_ctrl1 = clamp(period, 0, 65535)
+		else:
+			self.pixtend.pwm_ctrl_period = clamp(period, 0, 65000)
+			self.pixtend.pwm_ctrl_configure()
 
 	setters = (
 		setPWMPeriod,
 	)
 
-class PWM(AbstractWordIO): #+cdef
-	"""PiXtend PWM output I/O handler.
-	"""
-	#TODO V2
-
-	def __init__(self, *args, **kwargs):
-		AbstractWordIO.__init__(self, *args, **kwargs)
-
-		self.overDrive = None
-
-	def __setPWM0(self, value):
-		self.pixtend.pwm0 = clamp(value, 0, 65000)
-
-	def __setPWM1(self, value):
-		self.pixtend.pwm1 = clamp(value, 0, 65000)
-
-	setters = (
-		__setPWM0,
-		__setPWM1,
-	)
-
 	@staticmethod
-	def setServoMode(pixtend, enServoMode):
-		pixtend.pwm_ctrl_mode = 0 if enServoMode else 1
-		pixtend.pwm_ctrl_configure()
-
-	def __setServoOverDrive0(self, enOverDrive):
-		self.pixtend.pwm_ctrl_od0 = 1 if enOverDrive else 0
-		self.pixtend.pwm_ctrl_configure()
-
-	def __setServoOverDrive1(self, enOverDrive):
-		self.pixtend.pwm_ctrl_od1 = 1 if enOverDrive else 0
-		self.pixtend.pwm_ctrl_configure()
-
-	settersOverDrive = (
-		__setServoOverDrive0,
-		__setServoOverDrive1,
-	)
-
-	@staticmethod
-	def setBaseFreq(pixtend, freqHz):
+	def setBaseFreq(pixtend, isV2, freqHz):
 		cpuHz = 16000000
 		csMap = {
 			0		: (0, 0, 0), # PS=off
@@ -667,14 +622,215 @@ class PWM(AbstractWordIO): #+cdef
 			cs2, cs1, cs0 = csMap[freqHz]
 		except KeyError as e:
 			raise ValueError
-		pixtend.pwm_ctrl_cs0 = cs0
-		pixtend.pwm_ctrl_cs1 = cs1
-		pixtend.pwm_ctrl_cs2 = cs2
-		pixtend.pwm_ctrl_configure()
+		if isV2:
+			ctrl0 = pixtend.pwm0_ctrl0
+			ctrl0 &= ~((1 << 5) | (1 << 6) | (1 << 7))
+			ctrl0 |= (cs0 << 5) | (cs1 << 6) | (cs2 << 7)
+			if freqHz == 0:
+				ctrl0 &= ~((1 << 3) | (1 << 4)) # Disable A and B
+			pixtend.pwm0_ctrl0 = ctrl0 & 0xFF
+		else:
+			pixtend.pwm_ctrl_cs0 = cs0
+			pixtend.pwm_ctrl_cs1 = cs1
+			pixtend.pwm_ctrl_cs2 = cs2
+			pixtend.pwm_ctrl_configure()
+
+class PWM0(AbstractWordIO): #+cdef
+	"""PiXtend PWM0 output I/O handler.
+	"""
+
+	def __init__(self, *args, **kwargs):
+		AbstractWordIO.__init__(self, *args, **kwargs)
+
+		self.enabled = False
+		self.servoMode = False
+
+	def __setPWMA(self, value):
+		if self.enabled:
+			if self.servoMode:
+				if self.isV2:
+					self.pixtend.servo0 = clamp(value, 0, 16000)
+				else:
+					self.pixtend.servo0 = clamp(value, 0, 250)
+			else:
+				if self.isV2:
+					self.pixtend.pwm0a = clamp(value, 0, 65535)
+				else:
+					self.pixtend.pwm0 = clamp(value, 0, 65000)
+
+	def __setPWMB(self, value):
+		if self.enabled:
+			if self.servoMode:
+				if self.isV2:
+					self.pixtend.servo1 = clamp(value, 0, 16000)
+				else:
+					self.pixtend.servo1 = clamp(value, 0, 250)
+			else:
+				if self.isV2:
+					self.pixtend.pwm0b = clamp(value, 0, 65535)
+				else:
+					self.pixtend.pwm1 = clamp(value, 0, 65000)
+
+	setters = (
+		__setPWMA,
+		__setPWMB,
+	)
+
+	@staticmethod
+	def setServoMode(pixtend, isV2, enServoMode):
+		if isV2:
+			ctrl0 = pixtend.pwm0_ctrl0
+			ctrl0 &= ~((1 << 0) | (1 << 1))
+			if not enServoMode:
+				ctrl0 |= 1 << 0
+			pixtend.pwm0_ctrl0 = ctrl0
+		else:
+			pixtend.pwm_ctrl_mode = 0 if enServoMode else 1
+			pixtend.pwm_ctrl_configure()
+
+	def __doSetEnabled(self, enabled, bitNr):
+		self.enabled = enabled
+		if self.isV2:
+			ctrl0 = self.pixtend.pwm0_ctrl0
+			ctrl0 &= ~(1 << bitNr)
+			if enabled:
+				ctrl0 |= (1 << bitNr)
+			self.pixtend.pwm0_ctrl0 = ctrl0
+
+	def __setEnabled0(self, enabled):
+		self.__doSetEnabled(enabled, 3)
+
+	def __setEnabled1(self, enabled):
+		self.__doSetEnabled(enabled, 4)
+
+	settersEnabled = (
+		__setEnabled0,
+		__setEnabled1,
+	)
 
 	def setup(self, secondaryOffset): #+cpdef
 		AbstractWordIO.setup(self, secondaryOffset)
 
-		if self.overDrive is not None:
-			setOverDrive = self.settersOverDrive[self.index]
-			setOverDrive(self, self.overDrive)
+		setEnabled = self.settersEnabled[self.index]
+		setEnabled(self, self.enabled)
+
+class PWM1Period(AbstractWordIO): #+cdef
+	"""PiXtend PWM1 period I/O handler. (v2.x only)
+	"""
+
+	def setPWMPeriod(self, period):
+		if self.isV2:
+			self.pixtend.pwm1_ctrl1 = clamp(period, 0, 255)
+		else:
+			assert(0)
+
+	setters = (
+		setPWMPeriod,
+	)
+
+	@staticmethod
+	def setBaseFreq(pixtend, freqHz):
+		cpuHz = 16000000
+		csMap = {
+			0		: (0, 0, 0), # PS=off
+			cpuHz // 1	: (0, 0, 1), # PS=1
+			cpuHz // 8	: (0, 1, 0), # PS=8
+			cpuHz // 32	: (0, 1, 1), # PS=32
+			cpuHz // 64	: (1, 0, 0), # PS=64
+			cpuHz // 128	: (1, 0, 1), # PS=128
+			cpuHz // 256	: (1, 1, 0), # PS=256
+			cpuHz // 1024	: (1, 1, 1), # PS=1024
+		}
+		try:
+			cs2, cs1, cs0 = csMap[freqHz]
+		except KeyError as e:
+			raise ValueError
+		if isV2:
+			ctrl0 = pixtend.pwm1_ctrl0
+			ctrl0 &= ~((1 << 5) | (1 << 6) | (1 << 7))
+			ctrl0 |= (cs0 << 5) | (cs1 << 6) | (cs2 << 7)
+			if freqHz == 0:
+				ctrl0 &= ~((1 << 3) | (1 << 4)) # Disable A and B
+			pixtend.pwm1_ctrl0 = ctrl0 & 0xFF
+		else:
+			assert(0)
+
+class PWM1(AbstractWordIO): #+cdef
+	"""PiXtend PWM1 output I/O handler. (v2.x only)
+	"""
+
+	def __init__(self, *args, **kwargs):
+		AbstractWordIO.__init__(self, *args, **kwargs)
+
+		self.enabled = False
+		self.servoMode = False
+
+	def __setPWMA(self, value):
+		if self.enabled:
+			if self.servoMode:
+				if self.isV2:
+					self.pixtend.servo2 = clamp(value, 0, 125)
+				else:
+					assert(0)
+			else:
+				if self.isV2:
+					self.pixtend.pwm1a = clamp(value, 0, 255)
+				else:
+					assert(0)
+
+	def __setPWMB(self, value):
+		if self.enabled:
+			if self.servoMode:
+				if self.isV2:
+					self.pixtend.servo3 = clamp(value, 0, 125)
+				else:
+					assert(0)
+			else:
+				if self.isV2:
+					self.pixtend.pwm1b = clamp(value, 0, 255)
+				else:
+					assert(0)
+
+	setters = (
+		__setPWMA,
+		__setPWMB,
+	)
+
+	@staticmethod
+	def setServoMode(pixtend, enServoMode):
+		if isV2:
+			ctrl0 = pixtend.pwm1_ctrl0
+			ctrl0 &= ~((1 << 0) | (1 << 1))
+			if not enServoMode:
+				ctrl0 |= 1 << 0
+			pixtend.pwm1_ctrl0 = ctrl0
+		else:
+			assert(0)
+
+	def __doSetEnabled(self, enabled, bitNr):
+		self.enabled = enabled
+		if self.isV2:
+			ctrl0 = self.pixtend.pwm1_ctrl0
+			ctrl0 &= ~(1 << bitNr)
+			if enabled:
+				ctrl0 |= (1 << bitNr)
+			self.pixtend.pwm1_ctrl0 = ctrl0
+		else:
+			assert(0)
+
+	def __setEnabled0(self, enabled):
+		self.__doSetEnabled(enabled, 3)
+
+	def __setEnabled1(self, enabled):
+		self.__doSetEnabled(enabled, 4)
+
+	settersEnabled = (
+		__setEnabled0,
+		__setEnabled1,
+	)
+
+	def setup(self, secondaryOffset): #+cpdef
+		AbstractWordIO.setup(self, secondaryOffset)
+
+		setEnabled = self.settersEnabled[self.index]
+		setEnabled(self, self.enabled)
