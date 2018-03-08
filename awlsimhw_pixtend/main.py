@@ -147,10 +147,10 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				defaultValue=HwParamDesc_boardType.BOARD_V1_X,
 				description="PiXtend board type. This can be either %s." % (
 				listToHumanStr(sorted(dictKeys(HwParamDesc_boardType.str2type))))),
-		HwParamDesc_int("pollIntMs",
-				defaultValue=100,
-				minValue=3,
-				maxValue=10000,
+		HwParamDesc_float("pollIntMs",
+				defaultValue=100.0,
+				minValue=2.5,
+				maxValue=10000.0,
 				description="PiXtend auto-mode poll interval time, in milliseconds"),
 		HwParamDesc_bool("rs485",
 				 defaultValue=False,
@@ -615,7 +615,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		if not self.__isV2 and self.__pollInt < 0.025:
 			self.raiseException("pollIntMs is too low. It must be at least 25 ms.")
 		if self.__isV2 and self.__pollInt < 0.0025:
-			self.raiseException("pollIntMs is too low. It must be at least 3 ms.")
+			self.raiseException("pollIntMs is too low. It must be at least 2.5 ms.")
 		if self.getParamValueByName("testMode"):
 			# In test mode use poll interval as small as possible.
 			self.__pollInt = 0.0025 if self.__isV2 else 0.0
