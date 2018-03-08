@@ -36,6 +36,7 @@ __all__ = [ "HwParamDesc",
 	    "HwParamDesc_pyobject",
 	    "HwParamDesc_str",
 	    "HwParamDesc_int",
+	    "HwParamDesc_float",
 	    "HwParamDesc_bool",
 	    "HwParamDesc_oper",
 ]
@@ -126,6 +127,35 @@ class HwParamDesc_int(HwParamDesc):
 		if self.maxValue is not None:
 			if value > self.maxValue:
 				raise self.ParseError("Value '%d' is too big." % value)
+		return value
+
+class HwParamDesc_float(HwParamDesc):
+	"""Float hardware parameter descriptor."""
+
+	typeStr = "float"
+
+	def __init__(self, name,
+		     defaultValue=0.0, minValue=None, maxValue=None, **kwargs):
+		HwParamDesc.__init__(self, name, **kwargs)
+		self.defaultValue = defaultValue
+		self.defaultValueStr = None if defaultValue is None else str(defaultValue)
+		self.minValue = minValue
+		self.maxValue = maxValue
+
+	def parse(self, value):
+		if not value.strip():
+			return self.defaultValue
+		try:
+			value = float(value)
+		except ValueError:
+			raise self.ParseError("Value '%s' is not a valid floating point number." %\
+					      str(value))
+		if self.minValue is not None:
+			if value < self.minValue:
+				raise self.ParseError("Value '%f' is too small." % value)
+		if self.maxValue is not None:
+			if value > self.maxValue:
+				raise self.ParseError("Value '%f' is too big." % value)
 		return value
 
 class HwParamDesc_bool(HwParamDesc):
