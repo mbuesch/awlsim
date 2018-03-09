@@ -33,16 +33,10 @@ cdef class AbstractWordIO(AbstractIO):
 cdef class Relay(AbstractBitIO):
 	pass
 
-cdef class DigitalOut_V1(AbstractBitIO):
+cdef class DigitalOut(AbstractBitIO):
 	pass
 
-cdef class DigitalOut_V2(AbstractBitIO):
-	pass
-
-cdef class DigitalIn_V1(AbstractBitIO):
-	pass
-
-cdef class DigitalIn_V2(AbstractBitIO):
+cdef class DigitalIn(AbstractBitIO):
 	pass
 
 cdef class GPIO(AbstractBitIO):
