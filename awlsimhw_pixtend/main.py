@@ -616,7 +616,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			self.raiseException("pollIntMs is too low. It must be at least 25 ms.")
 		if self.__isV2 and self.__pollInt < 0.0025:
 			self.raiseException("pollIntMs is too low. It must be at least 2.5 ms.")
-		if self.getParamValueByName("testMode"):
+		self.__testMode = self.getParamValueByName("testMode")
+		if self.__testMode:
 			# In test mode use poll interval as small as possible.
 			self.__pollInt = 0.0025 if self.__isV2 else 0.0
 
@@ -731,11 +732,21 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	def __pixtendPoll(self, now): #@nocy
 #@cy	cdef ExBool_t __pixtendPoll(self, double now):
 #@cy		cdef uint16_t spiCount
+#@cy		cdef uint16_t spiCountWait
 
 		pixtend = self.__pixtend
 		if self.__isV2:
 			# Check if we have new data from the poll thread
-			spiCount = pixtend._spi_transfers & 0xFFFF
+			# In test mode actually wait for the worker thread.
+			if self.__testMode:
+				spiCountWait = (pixtend._spi_transfers + 2) & 0xFFFF
+				while True:
+					spiCount = pixtend._spi_transfers & 0xFFFF
+					if (spiCount - spiCountWait) & 0x8000 == 0:
+						break
+					time.sleep(0.001)
+			else:
+				spiCount = pixtend._spi_transfers & 0xFFFF
 			self.__haveInputData = (spiCount != self.__prevSpiCount)
 			self.__prevSpiCount = spiCount
 			# Check for errors from the poll thread

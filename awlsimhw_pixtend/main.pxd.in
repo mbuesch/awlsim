@@ -5,6 +5,7 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public object __pixtend
 	cdef public _Bool __pixtendInitialized
 	cdef public _Bool __isV2
+	cdef public _Bool __testMode
 	cdef public list __relays
 	cdef public list __DOs
 	cdef public list __DIs
