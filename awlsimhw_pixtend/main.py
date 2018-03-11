@@ -377,6 +377,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				    not self.isInProcessImage(oper.offset, 1, False))
 			gpio.pullUp = self.getParamValueByName("gpio%d_pullup" % i)
 			self.__GPIO_in.append(gpio)
+		GPIO.setGlobalPullUpEnable(self.__pixtend, self.__isV2,
+					   any(gpio.pullUp for gpio in self.__GPIO_in))
 
 		# Build all analog input objects
 		self.__AIs = []

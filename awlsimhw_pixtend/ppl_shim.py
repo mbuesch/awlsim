@@ -399,30 +399,26 @@ class GPIO(AbstractBitIO): #+cdef
 	def __setPullUp0(self, state):
 		pixtend = self.pixtend
 		if self.isV2:
-			if state == pixtend.ON:
-				pixtend.gpio_pullups_enable = pixtend.ON
-#TODO			pixtend.gpio0 = pixtend.ON if state else pixtend.OFF
+			if pixtend.gpio_pullups_enable:
+				pixtend.gpio0 = pixtend.ON if state else pixtend.OFF
 
 	def __setPullUp1(self, state):
 		pixtend = self.pixtend
 		if self.isV2:
-			if state == pixtend.ON:
-				pixtend.gpio_pullups_enable = pixtend.ON
-#TODO			pixtend.gpio1 = pixtend.ON if state else pixtend.OFF
+			if pixtend.gpio_pullups_enable:
+				pixtend.gpio1 = pixtend.ON if state else pixtend.OFF
 
 	def __setPullUp2(self, state):
 		pixtend = self.pixtend
 		if self.isV2:
-			if state == pixtend.ON:
-				pixtend.gpio_pullups_enable = pixtend.ON
-#TODO			pixtend.gpio2 = pixtend.ON if state else pixtend.OFF
+			if pixtend.gpio_pullups_enable:
+				pixtend.gpio2 = pixtend.ON if state else pixtend.OFF
 
 	def __setPullUp3(self, state):
 		pixtend = self.pixtend
 		if self.isV2:
-			if state == pixtend.ON:
-				pixtend.gpio_pullups_enable = pixtend.ON
-#TODO			pixtend.gpio3 = pixtend.ON if state else pixtend.OFF
+			if pixtend.gpio_pullups_enable:
+				pixtend.gpio3 = pixtend.ON if state else pixtend.OFF
 
 	settersPullUp = (
 		__setPullUp0,
@@ -430,6 +426,11 @@ class GPIO(AbstractBitIO): #+cdef
 		__setPullUp2,
 		__setPullUp3,
 	)
+
+	@staticmethod
+	def setGlobalPullUpEnable(pixtend, isV2, pullUpEnable):
+		if isV2:
+			pixtend.gpio_pullups_enable = pixtend.ON if pullUpEnable else pixtend.OFF
 
 	def setup(self, secondaryOffset): #+cpdef
 		AbstractBitIO.setup(self, secondaryOffset)
