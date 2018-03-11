@@ -90,6 +90,8 @@ class Logging(object):
 	loglevel = LOG_INFO
 	prefix = ""
 
+	startupTime = monotonic_time()
+
 	@classmethod
 	def setLoglevel(cls, loglevel):
 		if loglevel not in (cls.LOG_NONE,
@@ -111,6 +113,8 @@ class Logging(object):
 			if stream:
 				if cls.prefix:
 					stream.write(cls.prefix)
+				now = monotonic_time() - cls.startupTime
+				stream.write("[%.3f] " % now)
 				stream.write(text)
 				stream.write("\n")
 				stream.flush()
