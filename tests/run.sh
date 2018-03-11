@@ -362,11 +362,13 @@ run_awl_test()
 		while [ $tries -gt 0 -a $ok -eq 0 ]; do
 			local ok=1
 			local tries="$(expr "$tries" - 1)"
-			local loglevel="$(get_conf "$awl" loglevel 2)"
+			local loglevel="$(get_conf "$awl" loglevel "$opt_loglevel")"
 			local expected_exit_code="$(get_conf "$awl" exit_code 0)"
 			[ $expected_exit_code -eq 0 ] || local loglevel=0
 			local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
 			local max_runtime="$(get_conf "$awl" max_runtime -1)"
+			local dump_opt=
+			[ $loglevel -ge 3 ] && local dump_opt="--no-cpu-dump"
 
 			command time -o "$test_time_file" -f '%E' --quiet \
 			"$actual_interpreter" "$rootdir/awlsim-test" \
@@ -376,6 +378,7 @@ run_awl_test()
 				--cycle-limit "$cycle_limit" \
 				--max-runtime "$max_runtime" \
 				--optimizers "$optimizers" \
+				$dump_opt \
 				"$@" \
 				"$awl"
 			local exit_code=$?
@@ -797,6 +800,7 @@ show_help()
 	infomsg " -g|--no-gui                   Avoid tests that need GUI libraries"
 	infomsg " -x|--extended                 Run tests on additional interpreters"
 	infomsg " -Q|--quiet                    Less messages"
+	infomsg " -L|--loglevel                 Default log level."
 }
 
 tmp_dir="/tmp/awlsim-test-$$"
@@ -819,6 +823,7 @@ opt_nogui=0
 opt_extended=0
 opt_renice=
 opt_jobs=1
+opt_loglevel=2
 
 while [ $# -ge 1 ]; do
 	[ "$(printf '%s' "$1" | cut -c1)" != "-" ] && break
@@ -860,6 +865,10 @@ while [ $# -ge 1 ]; do
 		;;
 	-Q|--quiet)
 		export AWLSIM_TEST_QUIET=1
+		;;
+	-L|--loglevel)
+		shift
+		opt_loglevel="$1"
 		;;
 	*)
 		errormsg "Unknown option: $1"
