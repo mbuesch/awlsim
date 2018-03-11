@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # coding=utf-8
 
-# This file is part of the PiXtend(R) V2 Project.
+# This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -30,7 +30,7 @@ import spidev
 import threading
 
 __author__ = "Robin Turner"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 class PiXtendV2Core:
@@ -134,18 +134,6 @@ class PiXtendV2Core:
         # self.__spi_cs = 0
         self.__spi = None
 
-        # Turn RPi GPIO warnings off in case GPIOs are still/already in use
-        GPIO.setwarnings(False)
-        # Change layout to BCM
-        GPIO.setmode(GPIO.BCM)
-        # Set SPI Enable pin to output
-        GPIO.setup(self.SPI_ENABLE_PIN, GPIO.OUT)
-        GPIO.setup(self.MC_RESET_PIN, GPIO.OUT)
-        # Activate SPI Enable, allow communication
-        GPIO.output(self.SPI_ENABLE_PIN, True)
-        # Turn microcontroller reset pin off
-        GPIO.output(self.MC_RESET_PIN, False)
-
         # Initialize variables
         self.__thread = None
         self.__thread_interval = com_interval
@@ -191,6 +179,18 @@ class PiXtendV2Core:
         self.__analog0_dac_value = 0
         self.__analog1_dac_value = 0
 
+        # Turn RPi GPIO warnings off in case GPIOs are still/already in use
+        GPIO.setwarnings(False)
+        # Change layout to BCM
+        GPIO.setmode(GPIO.BCM)
+        # Set SPI Enable pin to output
+        GPIO.setup(self.SPI_ENABLE_PIN, GPIO.OUT)
+        GPIO.setup(self.MC_RESET_PIN, GPIO.OUT)
+        # Activate SPI Enable, allow communication
+        GPIO.output(self.SPI_ENABLE_PIN, True)
+        # Turn microcontroller reset pin off
+        GPIO.output(self.MC_RESET_PIN, False)        
+        
         # Open SPI Master 0 with CS 0 for communication with the microcontroller
         self._open(0, 0, self.__spi_speed)
         # Open SPI Master 0 with CS 1 for communication with the DAC
@@ -281,14 +281,17 @@ class PiXtendV2Core:
         """
 
         # Stop the timer thread which calls the _auto_mode() function automatically in the background
-        self._loop_stop()
-
+        try:
+            self._loop_stop()
+        except:
+            pass
+        
         # Initialize variables
         self.__thread_terminate = False
         self.__thread = None
         self.__thread_waiting_time = 0
         self.__use_fahrenheit = False
-
+        
         self.__model_out = 0
         self.__uc_mode = 0
         self.__uc_ctrl0 = 0
@@ -299,17 +302,26 @@ class PiXtendV2Core:
         self.__model_in = 0
         self.__uc_state = 0
         self.__uc_warnings = 0
-
-        GPIO.cleanup()
-
+        
+        try:
+            GPIO.cleanup()
+        except:
+            pass
+        
         if self.__is_spi_open:
-            self.__spi.close()
+            try:
+                self.__spi.close()
+            except:
+                pass
         self.__spi = None
         self.__is_spi_open = False
-
+        
         if self.__is_spi_dac_open:
-            self.__spi_dac.close()
-
+            try:
+                self.__spi_dac.close()
+            except:
+                pass
+        
         self.__spi_dac = None
         self.__is_spi_dac_open = False
         self.__analog0_dac_value = 0
@@ -896,10 +908,11 @@ class PiXtendV2Core:
         else:
             raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
         bit_num = self.BIT_0
-        if self.test_bit(self._gpio_ctrl, bit_num) == 1:
+        # Check if a GPIO pin is configured as output or if not if the GPIO PullUps have been enabled
+        if self.test_bit(self._gpio_ctrl, bit_num) == 1 or (self.test_bit(self._gpio_ctrl, bit_num) == 0 and self.test_bit(self.__uc_ctrl1, self.BIT_4) == 1):
             self._gpio_out_change(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 0 configured as INPUT! Cannot use as OUTPUT!")
+            raise IOError("IOError: GPIO 0 configured as INPUT! Cannot use as OUTPUT or PullUps setting is wrong!")
 
     @property
     def gpio1(self):
@@ -926,10 +939,11 @@ class PiXtendV2Core:
         else:
             raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
         bit_num = self.BIT_1
-        if self.test_bit(self._gpio_ctrl, bit_num) == 1:
+        # Check if a GPIO pin is configured as output or if not if the GPIO PullUps have been enabled
+        if self.test_bit(self._gpio_ctrl, bit_num) == 1 or (self.test_bit(self._gpio_ctrl, bit_num) == 0 and self.test_bit(self.__uc_ctrl1, self.BIT_4) == 1):
             self._gpio_out_change(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 1 configured as INPUT! Cannot use as OUTPUT!")
+            raise IOError("IOError: GPIO 1 configured as INPUT! Cannot use as OUTPUT or PullUps setting is wrong!")
 
     @property
     def gpio2(self):
@@ -956,10 +970,11 @@ class PiXtendV2Core:
         else:
             raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
         bit_num = self.BIT_2
-        if self.test_bit(self._gpio_ctrl, bit_num) == 1:
+        # Check if a GPIO pin is configured as output or if not if the GPIO PullUps have been enabled
+        if self.test_bit(self._gpio_ctrl, bit_num) == 1 or (self.test_bit(self._gpio_ctrl, bit_num) == 0 and self.test_bit(self.__uc_ctrl1, self.BIT_4) == 1):
             self._gpio_out_change(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 2 configured as INPUT! Cannot use as OUTPUT!")
+            raise IOError("IOError: GPIO 2 configured as INPUT! Cannot use as OUTPUT or PullUps setting is wrong!")
 
     @property
     def gpio3(self):
@@ -986,11 +1001,12 @@ class PiXtendV2Core:
         else:
             raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
         bit_num = self.BIT_3
-        if self.test_bit(self._gpio_ctrl, bit_num) == 1:
+        # Check if a GPIO pin is configured as output or if not if the GPIO PullUps have been enabled
+        if self.test_bit(self._gpio_ctrl, bit_num) == 1 or (self.test_bit(self._gpio_ctrl, bit_num) == 0 and self.test_bit(self.__uc_ctrl1, self.BIT_4) == 1):
             self._gpio_out_change(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 3 configured as INPUT! Cannot use as OUTPUT!")
-
+            raise IOError("IOError: GPIO 3 configured as INPUT! Cannot use as OUTPUT or PullUps setting is wrong!")
+            
     # </editor-fold>
 
     # <editor-fold desc="Region: Temperature Inputs 0 - 3">

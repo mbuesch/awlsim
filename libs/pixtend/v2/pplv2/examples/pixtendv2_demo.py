@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-# This file is part of the PiXtend(R) V2 Project.
+# This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -24,7 +24,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-# Import Pixtend class
+# Import Pixtend V2 class
 from pixtendv2s import PiXtendV2S
 import time
 import sys

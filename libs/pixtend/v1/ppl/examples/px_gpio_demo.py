@@ -4,9 +4,9 @@
 # This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -29,8 +29,8 @@ from pixtendlib import Pixtend
 import time
 import sys
 
-strSlogan1 = "PiXtend Python Library (PPL) demo for PWM usage."
-strSlogan2 = "PiXtend Python Library (PPL) demo for PWM usage finished."
+strSlogan1 = "PiXtend Python Library (PPL) demo for GPIO usage."
+strSlogan2 = "PiXtend Python Library (PPL) demo for GPIO usage finished."
 
 # -----------------------------------------------------------------
 # Print Art and Slogan
@@ -68,7 +68,6 @@ if p is not None:
     is_config = False
     cycle_counter = 0
     toggle_counter = 0
-    pwm_freq_change = 0
 
     while True:
         try:
@@ -78,43 +77,45 @@ if p is not None:
 
                 if not is_config:
                     is_config = True
-                    print("One time configuration: Setting the PWM configuration for PWMs 0 and 1")
+                    print("One time configuration: Setting the GPIOs")
                     print("")
-                    # Setting the PWMs configuration
-                    p.pwm_ctrl_mode = p.PWM_MODE
-                    # Setting Clock Select to 250 kHz
-                    p.pwm_ctrl_cs0 = p.ON  # 1
-                    p.pwm_ctrl_cs1 = p.ON  # 1
-                    p.pwm_ctrl_cs2 = p.OFF  # 0
-                    # Overdrive off
-                    p.pwm_ctrl_od0 = p.OFF  # 0
-                    p.pwm_ctrl_od1 = p.OFF  # 0
-                    p.pwm_ctrl_period = 5000
-                    # Configure the PWM outputs
-                    p.pwm_ctrl_configure()
+                    p.gpio0_direction = p.GPIO_OUTPUT
+                    p.gpio1_direction = p.GPIO_OUTPUT
+                    p.gpio2_direction = p.GPIO_OUTPUT
+                    p.gpio3_direction = p.GPIO_OUTPUT
 
-                if pwm_freq_change >= 50:
-                    pwm_freq_change = 0
+                    p.gpio0 = p.ON
+                    p.gpio1 = p.OFF
+                    p.gpio2 = p.ON
+                    p.gpio3 = p.OFF
 
-                    if p.pwm0 == 2500:
-                        p.pwm0 = 5000
-                        p.pwm1 = 2500
+                if toggle_counter >= 10:
+                    toggle_counter = 0
+                    if p.gpio0 == p.ON:
+                        p.gpio0 = p.OFF
+                        p.gpio1 = p.ON
+                        p.gpio2 = p.OFF
+                        p.gpio3 = p.ON
                     else:
-                        p.pwm0 = 2500
-                        p.pwm1 = 5000
+                        p.gpio0 = p.ON
+                        p.gpio1 = p.OFF
+                        p.gpio2 = p.ON
+                        p.gpio3 = p.OFF
 
-                pwm_freq_change += 1
+                toggle_counter += 1
 
-                # Build text with values from both PWMs
+                # Build text with values from the GPIOs
                 str_text = "Cycle No.: {0}\n".format(cycle_counter)
-                str_text += "PWM Output 0: {0}\n".format(p.pwm0)
-                str_text += "PWM Output 1: {0}\n".format(p.pwm1)
+                str_text += "GPIO 0: {0}\n".format(p.gpio0)
+                str_text += "GPIO 1: {0}\n".format(p.gpio1)
+                str_text += "GPIO 2: {0}\n".format(p.gpio2)
+                str_text += "GPIO 3: {0}\n".format(p.gpio3)
 
                 # Print text to console
                 print(str_text, end="\r")
 
                 # Reset cursor
-                for i in range(0, 3, 1):
+                for i in range(0, 5, 1):
                     sys.stdout.write("\x1b[A")
 
             else:
@@ -127,7 +128,7 @@ if p is not None:
             # Keyboard interrupt caught, Ctrl + C, now clean up and leave program
             p.close()
             p = None
-            for i in range(0, 4, 1):
+            for i in range(0, 6, 1):
                 print("")
 
             print(strSlogan2)

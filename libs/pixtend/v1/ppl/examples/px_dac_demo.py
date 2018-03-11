@@ -4,9 +4,9 @@
 # This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -29,8 +29,8 @@ from pixtendlib import Pixtend
 import time
 import sys
 
-strSlogan1 = "PiXtend Python Library (PPL) demo for analog inputs."
-strSlogan2 = "PiXtend Python Library (PPL) demo for analog inputs finished."
+strSlogan1 = "PiXtend Python Library (PPL) demo for DAC usage."
+strSlogan2 = "PiXtend Python Library (PPL) demo for DAC usage finished."
 
 # -----------------------------------------------------------------
 # Print Art and Slogan
@@ -52,7 +52,10 @@ p = Pixtend()
 
 # Open SPI bus for communication
 try:
+    # MC SPI 0 CS 0
     p.open()
+    # DAC SPI 0 CS 1
+    p.open_dac()
 except IOError as io_err:
     # On error, print an error text and delete the Pixtend instance.
     print("Error opening the SPI bus! Error is: ", io_err)
@@ -67,6 +70,10 @@ if p is not None:
     # Set some variables needed in the main loop
     is_config = False
     cycle_counter = 0
+    dac_value_1 = 0
+    dac_value_2 = 1023
+    inc_value_dac_1 = 8
+    inc_value_dac_2 = 8
 
     while True:
         try:
@@ -76,25 +83,46 @@ if p is not None:
 
                 if not is_config:
                     is_config = True
-                    print("Configuring 10 volts jumper setting for analog inputs 0 and 1")
+                    print("One time configuration: Setting up DAC A & B")
                     print("")
-                    # Set the 10 volts jumper setting, OFF means 5 volts are used as conversion base.
-                    p.analog_input0_10volts_jumper = p.OFF
-                    p.analog_input1_10volts_jumper = p.OFF
+                    # -- Setup DAC A and B --
+                    # Select DAC A
+                    p.dac_selection = p.DAC_A
+                    p.set_dac_output(1023)
+                    # Select DAC B
+                    p.dac_selection = p.DAC_B
+                    p.set_dac_output(1023)
 
-                # Build text with values from all 4 analog inputs
+                # Select DAC A and change its value
+                if dac_value_1 + inc_value_dac_1 >= 1023:
+                    dac_value_1 = 0
+                # Select
+                p.dac_selection = p.DAC_A
+                # Set new output value
+                p.set_dac_output(dac_value_1)
+                dac_value_1 = dac_value_1 + inc_value_dac_1
+
+                # Select DAC B and change its value
+                if dac_value_2 - inc_value_dac_2 <= 0:
+                    dac_value_2 = 1023
+                    # Select
+                p.dac_selection = p.DAC_B
+                # Set new output value
+                p.set_dac_output(dac_value_2)
+                dac_value_2 = dac_value_2 - inc_value_dac_2
+
+                # Build text with values for DAC A & B
                 str_text = "Cycle No.: {0}\n".format(cycle_counter)
-                str_text += "Analog Input 0: {0}V\n".format(p.analog_input0)
-                str_text += "Analog Input 1: {0}V\n".format(p.analog_input1)
-                str_text += "Analog Input 2: {0}mA\n".format(p.analog_input2)
-                str_text += "Analog Input 3: {0}mA\n".format(p.analog_input3)
+                str_text += "DAC A: {0}\n".format(dac_value_1)
+                str_text += "DAC B: {0}\n".format(dac_value_2)
 
                 # Print text to console
                 print(str_text, end="\r")
 
                 # Reset cursor
-                for i in range(0, 5, 1):
+                for i in range(0, 3, 1):
                     sys.stdout.write("\x1b[A")
+
             else:
                 print("Auto Mode - Communication is not yet up...Please wait...")
 
@@ -105,7 +133,7 @@ if p is not None:
             # Keyboard interrupt caught, Ctrl + C, now clean up and leave program
             p.close()
             p = None
-            for i in range(0, 6, 1):
+            for i in range(0, 4, 1):
                 print("")
 
             print(strSlogan2)

@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='pixtendlibv2',
-      version='0.1.0',
+      version='0.1.1',
       description='Python module for PiXtend V2 boards.',
       url='http://www.pixtend.de',
       author='Qube Solutions UG',

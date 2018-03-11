@@ -4,9 +4,9 @@
 # This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -29,8 +29,8 @@ from pixtendlib import Pixtend
 import time
 import sys
 
-strSlogan1 = "PiXtend Python Library (PPL) demo for DAC usage."
-strSlogan2 = "PiXtend Python Library (PPL) demo for DAC usage finished."
+strSlogan1 = "PiXtend Python Library (PPL) demo for DHT11 sensors."
+strSlogan2 = "PiXtend Python Library (PPL) demo for DHT11 sensors finished."
 
 # -----------------------------------------------------------------
 # Print Art and Slogan
@@ -52,10 +52,7 @@ p = Pixtend()
 
 # Open SPI bus for communication
 try:
-    # MC SPI 0 CS 0
     p.open()
-    # DAC SPI 0 CS 1
-    p.open_dac()
 except IOError as io_err:
     # On error, print an error text and delete the Pixtend instance.
     print("Error opening the SPI bus! Error is: ", io_err)
@@ -67,13 +64,8 @@ except IOError as io_err:
 # -----------------------------------------------------
 if p is not None:
     print("Running Main Program - Hit Ctrl + C to exit")
-    # Set some variables needed in the main loop
     is_config = False
     cycle_counter = 0
-    dac_value_1 = 0
-    dac_value_2 = 1023
-    inc_value_dac_1 = 8
-    inc_value_dac_2 = 8
 
     while True:
         try:
@@ -83,38 +75,16 @@ if p is not None:
 
                 if not is_config:
                     is_config = True
-                    print("One time configuration: Setting up DAC A & B")
+                    print("Configuring GPIO 0 for DHT11 use")
                     print("")
-                    # -- Setup DAC A and B --
-                    # Select DAC A
-                    p.dac_selection = p.DAC_A
-                    p.set_dac_output(1023)
-                    # Select DAC B
-                    p.dac_selection = p.DAC_B
-                    p.set_dac_output(1023)
+                    # Set GPIO 0 to DHT11/DHT22 mode
+                    p.dht0 = p.ON
 
-                # Select DAC A and change its value
-                if dac_value_1 + inc_value_dac_1 >= 1023:
-                    dac_value_1 = 0
-                # Select
-                p.dac_selection = p.DAC_A
-                # Set new output value
-                p.set_dac_output(dac_value_1)
-                dac_value_1 = dac_value_1 + inc_value_dac_1
-
-                # Select DAC B and change its value
-                if dac_value_2 - inc_value_dac_2 <= 0:
-                    dac_value_2 = 1023
-                    # Select
-                p.dac_selection = p.DAC_B
-                # Set new output value
-                p.set_dac_output(dac_value_2)
-                dac_value_2 = dac_value_2 - inc_value_dac_2
-
-                # Build text with values for DAC A & B
+                # Build text with values from temperature 0 and humidity 0 input based on a DHT11 sensor
+                # connected at GPIO 0.
                 str_text = "Cycle No.: {0}\n".format(cycle_counter)
-                str_text += "DAC A: {0}\n".format(dac_value_1)
-                str_text += "DAC B: {0}\n".format(dac_value_2)
+                str_text += "Current Temperature is: {0}°C\n".format(p.t0_dht11)
+                str_text += "Current Humidity    is: {0}%\n".format(p.h0_dht11)
 
                 # Print text to console
                 print(str_text, end="\r")
@@ -122,7 +92,6 @@ if p is not None:
                 # Reset cursor
                 for i in range(0, 3, 1):
                     sys.stdout.write("\x1b[A")
-
             else:
                 print("Auto Mode - Communication is not yet up...Please wait...")
 

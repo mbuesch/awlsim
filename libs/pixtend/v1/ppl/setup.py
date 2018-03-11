@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(name='pixtendlib',
-      version='0.1.0',
+      version='0.1.1',
       description='A Python library to control the PiXtend board.',
-      url='http://www.pixtend.de',
+      url='https://www.pixtend.de',
       author='Qube Solutions UG',
       author_email='info@pixtend.de',
       license='GPLv3 Open Source License',

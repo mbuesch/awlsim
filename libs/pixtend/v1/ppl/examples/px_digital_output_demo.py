@@ -4,9 +4,9 @@
 # This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -29,8 +29,8 @@ from pixtendlib import Pixtend
 import time
 import sys
 
-strSlogan1 = "PiXtend Python Library (PPL) demo for Servo usage."
-strSlogan2 = "PiXtend Python Library (PPL) demo for Servo usage finished."
+strSlogan1 = "PiXtend Python Library (PPL) demo for digital outputs including relays."
+strSlogan2 = "PiXtend Python Library (PPL) demo for digital outputs including relays finished."
 
 # -----------------------------------------------------------------
 # Print Art and Slogan
@@ -67,12 +67,7 @@ if p is not None:
     # Set some variables needed in the main loop
     is_config = False
     cycle_counter = 0
-    servo_mode = True
-    pwm_init = False
-    servo0_value = 0
-    servo1_value = 0
-    inc_value_s0 = 10
-    inc_value_s1 = 10
+    toggle_counter = 0
 
     while True:
         try:
@@ -82,59 +77,69 @@ if p is not None:
 
                 if not is_config:
                     is_config = True
-                    print("One time configuration: Setting the PWM configuration to Servo Mode")
+                    print("One time configuration: Setting the relays and digital outputs in an alternating pattern")
+                    print("The value 0 = OFF and the value 1 = ON")
                     print("")
-                    p.pwm_ctrl_mode = p.SERVO_MODE
-                    # Set some base values to play with
-                    p.servo0 = 0
-                    p.servo1 = 250
+                    # Setting the relays and digital outputs with a pattern which can be toggled later.
+                    # Side effect the LEDs on the PiXtend board alternate nicely back and forth.
+                    p.relay0 = p.ON
+                    p.relay1 = p.OFF
+                    p.relay2 = p.ON
+                    p.relay3 = p.OFF
+                    p.digital_output0 = p.ON
+                    p.digital_output1 = p.OFF
+                    p.digital_output2 = p.ON
+                    p.digital_output3 = p.OFF
+                    p.digital_output4 = p.ON
+                    p.digital_output5 = p.OFF
 
-                # Servo Mode: Write values to the PWMs in Servo Mode
-                servo0_value = servo0_value + inc_value_s0
-                if servo0_value >= 250:
-                    servo0_value = 0
-                p.servo0 = servo0_value
-
-                servo1_value = servo1_value - inc_value_s1
-                if servo1_value <= 0:
-                    servo1_value = 250
-                p.servo1 = servo1_value
-
-                # Clear text from before
+                # Build text with values from all digital outputs und relays
                 str_text = "Cycle No.: {0}\n".format(cycle_counter)
-                str_text += "Servo 0:    \n"
-                str_text += "Servo 1:    \n"
+                str_text += "Digital Output 0: {0}\n".format(p.digital_output0)
+                str_text += "Digital Output 1: {0}\n".format(p.digital_output1)
+                str_text += "Digital Output 2: {0}\n".format(p.digital_output2)
+                str_text += "Digital Output 3: {0}\n".format(p.digital_output3)
+                str_text += "Digital Output 4: {0}\n".format(p.digital_output4)
+                str_text += "Digital Output 5: {0}\n".format(p.digital_output5)
+                str_text += "Relay 0:          {0}\n".format(p.relay0)
+                str_text += "Relay 1:          {0}\n".format(p.relay1)
+                str_text += "Relay 2:          {0}\n".format(p.relay2)
+                str_text += "Relay 3:          {0}\n".format(p.relay3)
 
                 # Print text to console
                 print(str_text, end="\r")
 
                 # Reset cursor
-                for i in range(0, 3, 1):
+                for i in range(0, 11, 1):
                     sys.stdout.write("\x1b[A")
 
-                # Build text with values from both PWMs in Servo Mode
-                str_text = "Cycle No.: {0}\n".format(cycle_counter)
-                str_text += "Servo 0: {0}\n".format(servo0_value)
-                str_text += "Servo 1: {0}\n".format(servo1_value)
-
-                # Print text to console
-                print(str_text, end="\r")
-
-                # Reset cursor
-                for i in range(0, 3, 1):
-                    sys.stdout.write("\x1b[A")
+                if toggle_counter >= 25:
+                    # Toggle the relays and digital outputs on and off
+                    p.relay0 = p.relay0 ^ 1
+                    p.relay1 = p.relay1 ^ 1
+                    p.relay2 = p.relay2 ^ 1
+                    p.relay3 = p.relay3 ^ 1
+                    p.digital_output0 = p.digital_output0 ^ 1
+                    p.digital_output1 = p.digital_output1 ^ 1
+                    p.digital_output2 = p.digital_output2 ^ 1
+                    p.digital_output3 = p.digital_output3 ^ 1
+                    p.digital_output4 = p.digital_output4 ^ 1
+                    p.digital_output5 = p.digital_output5 ^ 1
+                    toggle_counter = 0
+                else:
+                    toggle_counter += 1
 
             else:
                 print("Auto Mode - Communication is not yet up...Please wait...")
 
-            # Wait at minimum 0.1sec, for the Servos 1 second might be better
-            time.sleep(1)
+            # Wait at minimum 0.1sec or 100ms before getting new values
+            time.sleep(0.1)
 
         except KeyboardInterrupt:
             # Keyboard interrupt caught, Ctrl + C, now clean up and leave program
             p.close()
             p = None
-            for i in range(0, 4, 1):
+            for i in range(0, 12, 1):
                 print("")
 
             print(strSlogan2)

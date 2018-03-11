@@ -10,9 +10,9 @@ import shlex
 # This file is part of the PiXtend(R) Project.
 #
 # For more information about PiXtend(R) and this program,
-# see <http://www.pixtend.de> or <http://www.pixtend.com>
+# see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
-# Copyright (C) 2017 Robin Turner
+# Copyright (C) 2018 Robin Turner
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
@@ -30,7 +30,7 @@ import shlex
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 __author__ = "Robin Turner"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # <editor-fold desc="Region: cTypes definitions into short names">
 
@@ -383,21 +383,6 @@ class Pixtend(object):
         self.__spi = None
         self.__spi_dac = None
 
-        # Turn RPi GPIO warnings off in case GPIOs are still/already in use
-        GPIO.setwarnings(False)
-        # Change layout to BCM
-        GPIO.setmode(GPIO.BCM)
-        # Set SPI Enable pin to output
-        GPIO.setup(self.PIXTEND_SPI_ENABLE_PIN, GPIO.OUT)
-        GPIO.setup(self.PIXTEND_MC_RESET_PIN, GPIO.OUT)
-        GPIO.setup(self.PIXTEND_SERIAL_PIN, GPIO.OUT)
-        # Activate SPI Enable, allow communication
-        GPIO.output(self.PIXTEND_SPI_ENABLE_PIN, True)
-        # Turn microcontroller reset pin off
-        GPIO.output(self.PIXTEND_MC_RESET_PIN, False)
-        # Set serial mode to RS232
-        GPIO.output(self.PIXTEND_SERIAL_PIN, False)
-
         # Initialize variables
         self.__use_fahrenheit = False
         self.__is_automatic_mode_active = False
@@ -455,6 +440,21 @@ class Pixtend(object):
         self.__humid3_value = c_float(0.0)
         self.__analog0_dac_value = Flags16()
         self.__analog1_dac_value = Flags16()
+        
+        # Turn RPi GPIO warnings off in case GPIOs are still/already in use
+        GPIO.setwarnings(False)
+        # Change layout to BCM
+        GPIO.setmode(GPIO.BCM)
+        # Set SPI Enable pin to output
+        GPIO.setup(self.PIXTEND_SPI_ENABLE_PIN, GPIO.OUT)
+        GPIO.setup(self.PIXTEND_MC_RESET_PIN, GPIO.OUT)
+        GPIO.setup(self.PIXTEND_SERIAL_PIN, GPIO.OUT)
+        # Activate SPI Enable, allow communication
+        GPIO.output(self.PIXTEND_SPI_ENABLE_PIN, True)
+        # Turn microcontroller reset pin off
+        GPIO.output(self.PIXTEND_MC_RESET_PIN, False)
+        # Set serial mode to RS232
+        GPIO.output(self.PIXTEND_SERIAL_PIN, False)
 
     @staticmethod
     def __dump(obj):
@@ -470,71 +470,237 @@ class Pixtend(object):
 
         self.__use_fahrenheit = False
         self.__is_automatic_mode_active = False
-        del self.__relays_states
-        del self.__digital_inputs_states
-        del self.__digital_outputs_states
-        del self.__analog_value
-        del self.__gpio_states_manual
-        del self.__gpio_states_auto_in
-        del self.__gpio_states_auto_out
-        del self.__servo0_value
-        del self.__servo1_value
-        del self.__pwm0_value
-        del self.__pwm1_value
-        del self.__pwm_ctrl0
-        del self.__pwm_ctrl1
-        del self.__pwm_ctrl2
-        del self.__pwm_period
-        del self.__analog_dac_value
-        del self.__uc_ctrl
-        del self.__ai_ctrl0
-        del self.__ai_ctrl1
-        del self.__pi_status
-        del self.__ai0_jumper_setting_10_volts
-        del self.__ai1_jumper_setting_10_volts
-        del self.__ai0_raw_value
-        del self.__ai1_raw_value
-        del self.__ai2_raw_value
-        del self.__ai3_raw_value
-        del self.__temp0_raw_value
-        del self.__temp1_raw_value
-        del self.__temp2_raw_value
-        del self.__temp3_raw_value
-        del self.__humid0_raw_value
-        del self.__humid1_raw_value
-        del self.__humid2_raw_value
-        del self.__humid3_raw_value
-        del self.__ai0_value
-        del self.__ai1_value
-        del self.__ai2_value
-        del self.__ai3_value
-        del self.__temp0_value
-        del self.__temp1_value
-        del self.__temp2_value
-        del self.__temp3_value
-        del self.__humid0_value
-        del self.__humid1_value
-        del self.__humid2_value
-        del self.__humid3_value
-        del self.__analog0_dac_value
-        del self.__analog1_dac_value
+        try:
+            del self.__relays_states
+        except:
+            pass
+        try:
+            del self.__digital_inputs_states
+        except:
+            pass
+        try:
+            del self.__digital_outputs_states
+        except:
+            pass
+        try:
+            del self.__analog_value
+        except:
+            pass
+        try:
+            del self.__gpio_states_manual
+        except:
+            pass
+        try:
+            del self.__gpio_states_auto_in
+        except:
+            pass
+        try:
+            del self.__gpio_states_auto_out
+        except:
+            pass
+        try:
+            del self.__servo0_value
+        except:
+            pass
+        try:
+            del self.__servo1_value
+        except:
+            pass
+        try:
+            del self.__pwm0_value
+        except:
+            pass
+        try:
+            del self.__pwm1_value
+        except:
+            pass
+        try:
+            del self.__pwm_ctrl0
+        except:
+            pass
+        try:
+            del self.__pwm_ctrl1
+        except:
+            pass
+        try:
+            del self.__pwm_ctrl2
+        except:
+            pass
+        try:
+            del self.__pwm_period
+        except:
+            pass
+        try:
+            del self.__analog_dac_value
+        except:
+            pass
+        try:
+            del self.__uc_ctrl
+        except:
+            pass
+        try:
+            del self.__ai_ctrl0
+        except:
+            pass
+        try:
+            del self.__ai_ctrl1
+        except:
+            pass
+        try:
+            del self.__pi_status
+        except:
+            pass
+        try:
+            del self.__ai0_jumper_setting_10_volts
+        except:
+            pass
+        try:
+            del self.__ai1_jumper_setting_10_volts
+        except:
+            pass
+        try:
+            del self.__ai0_raw_value
+        except:
+            pass
+        try:
+            del self.__ai1_raw_value
+        except:
+            pass
+        try:
+            del self.__ai2_raw_value
+        except:
+            pass
+        try:
+            del self.__ai3_raw_value
+        except:
+            pass
+        try:
+            del self.__temp0_raw_value
+        except:
+            pass
+        try:
+            del self.__temp1_raw_value
+        except:
+            pass
+        try:
+            del self.__temp2_raw_value
+        except:
+            pass
+        try:
+            del self.__temp3_raw_value
+        except:
+            pass
+        try:
+            del self.__humid0_raw_value
+        except:
+            pass
+        try:
+            del self.__humid1_raw_value
+        except:
+            pass
+        try:
+            del self.__humid2_raw_value
+        except:
+            pass
+        try:
+            del self.__humid3_raw_value
+        except:
+            pass
+        try:
+            del self.__ai0_value
+        except:
+            pass
+        try:
+            del self.__ai1_value
+        except:
+            pass
+        try:
+            del self.__ai2_value
+        except:
+            pass
+        try:
+            del self.__ai3_value
+        except:
+            pass
+        try:
+            del self.__temp0_value
+        except:
+            pass
+        try:
+            del self.__temp1_value
+        except:
+            pass
+        try:
+            del self.__temp2_value
+        except:
+            pass
+        try:
+            del self.__temp3_value
+        except:
+            pass
+        try:
+            del self.__humid0_value
+        except:
+            pass
+        try:
+            del self.__humid1_value
+        except:
+            pass
+        try:
+            del self.__humid2_value
+        except:
+            pass
+        try:
+            del self.__humid3_value
+        except:
+            pass
+        try:
+            del self.__analog0_dac_value
+        except:
+            pass
+        try:
+            del self.__analog1_dac_value
+        except:
+            pass
 
-        GPIO.cleanup()
-
+        try:
+            GPIO.cleanup()
+        except:
+            pass
+        
         if self.__is_spi_open:
-            self.__spi.close()
+            try:
+                self.__spi.close()
+            except:
+                pass
             self.__spi = None
             self.__is_spi_open = False
 
         if self.__is_spi_dac_open:
-            self.__spi_dac.close()
+            try:
+                self.__spi_dac.close()
+            except:
+                pass
             self.__spi_dac = None
             self.__is_spi_dac_open = False
 
-        del self.__spi
-        del self.__spi_dac
-        del self.__is_spi_open
-        del self.__is_spi_dac_open
+        try:
+            del self.__spi
+        except:
+            pass
+        try:
+            del self.__spi_dac
+        except:
+            pass
+        try:
+            del self.__is_spi_open
+        except:
+            pass
+        try:
+            del self.__is_spi_dac_open
+        except:
+            pass
+
 
     def __transfer_spi_data(self, command, value0=0b00000000, value1=0b00000000, value2=0b00000000, auto_data=None):
         """
@@ -684,67 +850,78 @@ class Pixtend(object):
         """
         Close SPI device, clean up Raspberry Pi GPIO device and set all variables to None.
         """
+        try:
+            self.__is_automatic_mode_active = None
+            self.__use_fahrenheit = None
+            self.__relays_states = None
+            self.__digital_inputs_states = None
+            self.__digital_outputs_states = None
+            self.__analog_value = None
+            self.__gpio_states_manual = None
+            self.__gpio_states_auto_in = None
+            self.__gpio_states_auto_out = None
+            self.__servo0_value = None
+            self.__servo1_value = None
+            self.__pwm0_value = None
+            self.__pwm1_value = None
+            self.__pwm_ctrl0 = None
+            self.__pwm_ctrl1 = None
+            self.__pwm_ctrl2 = None
+            self.__pwm_period = None
+            self.__analog_dac_value = None
+            self.__uc_ctrl = None
+            self.__ai_ctrl0 = None
+            self.__ai_ctrl1 = None
+            self.__pi_status = None
+            self.__ai0_jumper_setting_10_volts = None
+            self.__ai1_jumper_setting_10_volts = None
+            self.__ai0_raw_value = None
+            self.__ai1_raw_value = None
+            self.__ai2_raw_value = None
+            self.__ai3_raw_value = None
+            self.__temp0_raw_value = None
+            self.__temp1_raw_value = None
+            self.__temp2_raw_value = None
+            self.__temp3_raw_value = None
+            self.__humid0_raw_value = None
+            self.__humid1_raw_value = None
+            self.__humid2_raw_value = None
+            self.__humid3_raw_value = None
+            self.__ai0_value = None
+            self.__ai1_value = None
+            self.__ai2_value = None
+            self.__ai3_value = None
+            self.__temp0_value = None
+            self.__temp1_value = None
+            self.__temp2_value = None
+            self.__temp3_value = None
+            self.__humid0_value = None
+            self.__humid1_value = None
+            self.__humid2_value = None
+            self.__humid3_value = None
+            self.__analog0_dac_value = None
+            self.__analog1_dac_value = None
+        except:
+            pass
 
-        self.__is_automatic_mode_active = None
-        self.__use_fahrenheit = None
-        self.__relays_states = None
-        self.__digital_inputs_states = None
-        self.__digital_outputs_states = None
-        self.__analog_value = None
-        self.__gpio_states_manual = None
-        self.__gpio_states_auto_in = None
-        self.__gpio_states_auto_out = None
-        self.__servo0_value = None
-        self.__servo1_value = None
-        self.__pwm0_value = None
-        self.__pwm1_value = None
-        self.__pwm_ctrl0 = None
-        self.__pwm_ctrl1 = None
-        self.__pwm_ctrl2 = None
-        self.__pwm_period = None
-        self.__analog_dac_value = None
-        self.__uc_ctrl = None
-        self.__ai_ctrl0 = None
-        self.__ai_ctrl1 = None
-        self.__pi_status = None
-        self.__ai0_jumper_setting_10_volts = None
-        self.__ai1_jumper_setting_10_volts = None
-        self.__ai0_raw_value = None
-        self.__ai1_raw_value = None
-        self.__ai2_raw_value = None
-        self.__ai3_raw_value = None
-        self.__temp0_raw_value = None
-        self.__temp1_raw_value = None
-        self.__temp2_raw_value = None
-        self.__temp3_raw_value = None
-        self.__humid0_raw_value = None
-        self.__humid1_raw_value = None
-        self.__humid2_raw_value = None
-        self.__humid3_raw_value = None
-        self.__ai0_value = None
-        self.__ai1_value = None
-        self.__ai2_value = None
-        self.__ai3_value = None
-        self.__temp0_value = None
-        self.__temp1_value = None
-        self.__temp2_value = None
-        self.__temp3_value = None
-        self.__humid0_value = None
-        self.__humid1_value = None
-        self.__humid2_value = None
-        self.__humid3_value = None
-        self.__analog0_dac_value = None
-        self.__analog1_dac_value = None
-
-        GPIO.cleanup()
-
+        try:
+            GPIO.cleanup()
+        except:
+            pass
+        
         if self.__is_spi_open:
-            self.__spi.close()
+            try:
+                self.__spi.close()
+            except:
+                pass
             self.__spi = None
             self.__is_spi_open = None
 
         if self.__is_spi_dac_open:
-            self.__spi_dac.close()
+            try:
+                self.__spi_dac.close()
+            except:
+                pass
             self.__spi_dac = None
             self.__is_spi_dac_open = None
 
@@ -1146,7 +1323,7 @@ class Pixtend(object):
         if self.__test_bit(self.__gpio_ctrl, bit_num) == 1:
             self.__gpio_states_change_value(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 1 configured as INPUT! Cannot use as OUTPUT!",
+            raise IOError("IOError: GPIO 0 configured as INPUT! Cannot use as OUTPUT!",
                           "- DirectionBit=" + str(self.__test_bit(self.__gpio_ctrl, bit_num)))
 
     @property
@@ -1202,7 +1379,7 @@ class Pixtend(object):
         if self.__test_bit(self.__gpio_ctrl, bit_num) == 1:
             self.__gpio_states_change_value(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 1 configured as INPUT! Cannot use as OUTPUT!",
+            raise IOError("IOError: GPIO 2 configured as INPUT! Cannot use as OUTPUT!",
                           "- DirectionBit=" + str(self.__test_bit(self.__gpio_ctrl, bit_num)))
 
     @property
@@ -1230,7 +1407,7 @@ class Pixtend(object):
         if self.__test_bit(self.__gpio_ctrl, bit_num) == 1:
             self.__gpio_states_change_value(value, bit_num)
         else:
-            raise IOError("IOError: GPIO 1 configured as INPUT! Cannot use as OUTPUT!",
+            raise IOError("IOError: GPIO 3 configured as INPUT! Cannot use as OUTPUT!",
                           "- DirectionBit=" + str(self.__test_bit(self.__gpio_ctrl, bit_num)))
 
     # </editor-fold>
