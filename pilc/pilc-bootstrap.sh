@@ -851,12 +851,14 @@ EOF
 			die "Failed to install awlsim-proupgrade"
 		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
 			die "Failed to install awlsim-linuxcnc-hal"
-		# GUI and misc
-		mkdir -p /home/pi/awlsim-gui ||\
-			die "mkdir /home/pi/awlsim-gui failed"
-		cp ../python*-awlsim-gui_*.deb ../awlsim-gui_*.deb \
-			/home/pi/awlsim-gui/ ||\
-			die "Failed to copy awlsim-gui"
+		# Copy debs
+		rm -rf /home/pi/deb/awlsim
+		mkdir -p /home/pi/deb/awlsim ||\
+			die "mkdir /home/pi/deb/awlsim failed"
+		cp ../*awlsim*.deb ../*awlsim*.buildinfo ../*awlsim*.changes \
+			/home/pi/deb/awlsim/ ||\
+			die "Failed to copy awlsim debs"
+		# Copy examples
 		cp examples/EXAMPLE.awlpro /home/pi/generic-example.awlpro ||\
 			die "Failed to copy EXAMPLE.awlpro."
 		cp examples/raspberrypi-gpio.awlpro /home/pi/raspberrypi-gpio-example.awlpro ||\
@@ -905,6 +907,15 @@ EOF
 			die "Failed to install gsdparser"
 		dpkg -i ../pyprofibus-linuxcnc-hal_*.deb ||\
 			die "Failed to install pyprofibus-linuxcnc-hal"
+
+		# Copy debs
+		rm -rf /home/pi/deb/pyprofibus
+		mkdir -p /home/pi/deb/pyprofibus ||\
+			die "mkdir /home/pi/deb/pyprofibus failed"
+		cp ../*pyprofibus*.deb ../*pyprofibus*.buildinfo ../*pyprofibus*.changes \
+			../profisniff_*.deb ../gsdparser_*.deb \
+			/home/pi/deb/pyprofibus/ ||\
+			die "Failed to copy pyprofibus debs"
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
