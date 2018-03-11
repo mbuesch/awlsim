@@ -99,7 +99,7 @@ cleanup()
 	info "Cleaning up..."
 	for mp in "$mp_shm" "$mp_proc_binfmt_misc" "$mp_proc" "$mp_sys" "$mp_bootimgfile" "$mp_rootimgfile"; do
 		[ -n "$mp" -a -d "$mp" ] &&\
-			umount "$mp" >/dev/null 2>&1
+			umount -l "$mp" >/dev/null 2>&1
 	done
 	for mp in "$mp_bootimgfile" "$mp_rootimgfile"; do
 		[ -n "$mp" -a -d "$mp" ] &&\
@@ -975,13 +975,13 @@ pilc_bootstrap_third_stage()
 	info "Running third stage..."
 
 	info "Umounting /dev/shm..."
-	umount "$mp_shm" || die "Failed to umount /dev/shm"
+	umount -l "$mp_shm" || die "Failed to umount /dev/shm"
 	info "Umounting /sys..."
-	umount "$mp_sys" || die "Failed to umount /sys"
+	umount -l "$mp_sys" || die "Failed to umount /sys"
 	info "Umounting /proc/sys/fs/binfmt_misc..."
-	umount "$mp_proc_binfmt_misc"
+	umount -l "$mp_proc_binfmt_misc"
 	info "Umounting /proc..."
-	umount "$mp_proc" || die "Failed to umount /proc"
+	umount -l "$mp_proc" || die "Failed to umount /proc"
 
 	info "Removing PiLC bootstrap script..."
 	rm "$opt_target_dir/pilc-bootstrap.sh" ||\
