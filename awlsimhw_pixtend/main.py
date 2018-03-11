@@ -50,11 +50,13 @@ class HwParamDesc_boardType(HwParamDesc_str):
 	typeStr = "BoardType"
 
 	EnumGen.start
+	BOARD_AUTO	= EnumGen.item
 	BOARD_V1_X	= EnumGen.item
 	BOARD_V2_X	= EnumGen.item
 	EnumGen.end
 
 	str2type = {
+		"auto"		: BOARD_AUTO,
 		"v1.x"		: BOARD_V1_X,
 		"v1.2"		: BOARD_V1_X,
 		"v1.3"		: BOARD_V1_X,
@@ -63,6 +65,7 @@ class HwParamDesc_boardType(HwParamDesc_str):
 		"v2.1"		: BOARD_V2_X,
 	}
 	type2str = {
+		BOARD_AUTO	: "auto",
 		BOARD_V1_X	: "v1.x",
 		BOARD_V2_X	: "v2.x",
 	}
@@ -144,7 +147,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 	paramDescs = [
 		HwParamDesc_boardType("boardType",
-				defaultValue=HwParamDesc_boardType.BOARD_V1_X,
+				defaultValue=HwParamDesc_boardType.BOARD_AUTO,
 				description="PiXtend board type. This can be either %s." % (
 				listToHumanStr(sorted(dictKeys(HwParamDesc_boardType.str2type))))),
 		HwParamDesc_float("pollIntMs",
@@ -586,16 +589,16 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Configure global values of PWM1.
 			pass#TODO
 
-	def doStartup(self):
-		if self.__pixtendInitialized:
-			return
+	def __tryConnect(self, boardType, timeout=5.0):
+		"""Try to connect to the PiXtend board.
+		"""
 
 		self.__prevSpiCount = 0
 
 		# Import the Pixtend library.
-		boardType = self.getParamValueByName("boardType")
 		if boardType == HwParamDesc_boardType.BOARD_V1_X:
 			self.__isV2 = False
+			printDebug("Trying to import PiXtend v1.x library")
 			try:
 				from pixtendlib import Pixtend as pixtend_class
 			except ImportError as e:
@@ -603,6 +606,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					":\n%s" % str(e))
 		elif boardType == HwParamDesc_boardType.BOARD_V2_X:
 			self.__isV2 = True
+			printDebug("Trying to import PiXtend v2.x library")
 			try:
 				from pixtendv2s import PiXtendV2S as pixtend_class
 			except ImportError as e:
@@ -626,7 +630,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Initialize PiXtend
 		self.__pixtend = None
 		try:
-			printInfo("Initializing PiXtend v%d.x" % (2 if self.__isV2 else 1))
+			printDebug("Trying to connect to PiXtend v%d.x" % (2 if self.__isV2 else 1))
 			if self.__isV2:
 				# PiXtend v2.x
 				self.__pixtend = self.__pixtend_class(
@@ -639,7 +643,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				self.__pixtend = self.__pixtend_class()
 				self.__pixtend.open()
 			# Wait for PiXtend to wake up.
-			t = 0
+			t, tMax = 0, int(round(timeout * 10))
 			while True:
 				self.cpu.updateTimestamp()
 				if self.__isV2:
@@ -653,10 +657,10 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					if self.__pixtendPoll(self.cpu.now):
 						break # success
 				t += 1
-				if t >= 50:
+				if t >= tMax:
 					self.raiseException("Timeout waiting "
 						"for PiXtend auto-mode.")
-				time.sleep(self.__pollInt)
+				time.sleep(0.1)
 			if self.__isV2 and self.__pixtend.model_in_error:
 				self.raiseException("Invalid board model number detected")
 		except Exception as e:
@@ -664,6 +668,22 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				self.__shutdown()
 			self.raiseException("Failed to init PiXtend: %s" % (
 				str(e)))
+		printInfo("Connected to PiXtend v%d.x" % (2 if self.__isV2 else 1))
+
+	def doStartup(self):
+		if self.__pixtendInitialized:
+			return
+
+		# Connect to the PiXtend board
+		boardType = self.getParamValueByName("boardType")
+		if boardType == HwParamDesc_boardType.BOARD_AUTO:
+			try:
+				self.__tryConnect(HwParamDesc_boardType.BOARD_V1_X,
+						  timeout=1.0)
+			except AwlSimError as e:
+				self.__tryConnect(HwParamDesc_boardType.BOARD_V2_X)
+		else:
+			self.__tryConnect(boardType)
 
 		# Build the HW shim and configure the hardware
 		try:
