@@ -114,8 +114,19 @@ class HwParamDesc_int(HwParamDesc):
 		self.maxValue = maxValue
 
 	def parse(self, value):
-		if not value.strip():
+		value = value.strip()
+		if not value:
 			return self.defaultValue
+
+		valueUpper = value.upper()
+		if valueUpper.startswith("B#16#") or\
+		   valueUpper.startswith("W#16#"):
+			value = "0x" + value[5:]
+		elif valueUpper.startswith("DW#16#"):
+			value = "0x" + value[6:]
+		elif valueUpper.startswith("L#"):
+			value = value[2:] # Strip L# prefix
+
 		try:
 			value = int(value)
 		except ValueError:
