@@ -31,6 +31,8 @@ from awlsim.core.operatortypes import * #+cimport
 
 from awlsim.awlcompiler.optrans import *
 
+import re
+
 
 __all__ = [ "HwParamDesc",
 	    "HwParamDesc_pyobject",
@@ -208,7 +210,19 @@ class HwParamDesc_oper(HwParamDesc):
 		self.allowedOperTypes = allowedOperTypes
 		self.allowedOperWidths = allowedOperWidths
 
+	numRe = re.compile(r'^\-?\d+$', re.DOTALL)
+
 	def __tryParse(self, value, mnemonics):
+		# Add a L# prefix, if this is a constant long integer.
+		if self.numRe.match(value):
+			try:
+				v = int(value, 10)
+				if (v > 32767 and v <= 2147483647) or\
+				   (v < -32768 and v >= -2147483648):
+					value = "L#" + value
+			except ValueError as e:
+				pass
+		# Parse value as operator.
 		try:
 			trans = AwlOpTranslator(mnemonics=mnemonics)
 			opDesc = trans.translateFromString(value)
