@@ -2241,7 +2241,7 @@ class S7CPU(object): #+cdef
 
 	def __dumpMem(self, prefix, memory, byteOffset, maxLen):
 		if not memory or not memory.dataBytes or maxLen <= 0:
-			return prefix + "--"
+			return [ prefix + "--" ]
 		memArray = memory.dataBytes
 		ret, line, first, count, i = [], [], True, 0, byteOffset
 		def append(line):
@@ -2257,7 +2257,7 @@ class S7CPU(object): #+cdef
 			i += 1
 		if count:
 			append(line)
-		return '\n'.join(ret)
+		return ret
 
 	def __dumpLStackFrame(self, prefix, frame): #@nocy
 #@cy	cdef __dumpLStackFrame(self, prefix, LStackFrame *frame):
@@ -2267,10 +2267,12 @@ class S7CPU(object): #+cdef
 			allocBits = frame.allocBits
 		else:
 			memory, byteOffset, allocBits = None, 0, 0
-		return self.__dumpMem(prefix,
-				      memory,
-				      byteOffset,
-				      min(64, intDivRoundUp(allocBits, 8)))
+		lines = self.__dumpMem(prefix,
+				       memory,
+				       byteOffset,
+				       min(64, intDivRoundUp(allocBits, 8)))
+		lines.extend( [ (" " * len(prefix)) + "--" ] * (4 - len(lines)) )
+		return lines
 
 	def dump(self, withTime=True):
 #@cy		cdef LStackFrame *frame
@@ -2301,15 +2303,15 @@ class S7CPU(object): #+cdef
 		ars = ( "%s (%s)" % (ar.toHex(), ar.toPointerString())
 			for ar in (self.ar1, self.ar2) )
 		ret.append("     AR:  " + "  ".join(ars))
-		ret.append(self.__dumpMem("      M:  ",
+		ret.extend(self.__dumpMem("      M:  ",
 					  self.flags, 0,
 					  min(64, specs.nrFlags)))
 		prefix = "      I:  " if isEnglish else "      E:  "
-		ret.append(self.__dumpMem(prefix,
+		ret.extend(self.__dumpMem(prefix,
 					  self.inputs, 0,
 					  min(64, specs.nrInputs)))
 		prefix = "      Q:  " if isEnglish else "      A:  "
-		ret.append(self.__dumpMem(prefix,
+		ret.extend(self.__dumpMem(prefix,
 					  self.outputs, 0,
 					  min(64, specs.nrOutputs)))
 		pstack = str(callStackTop.parenStack) if callStackTop.parenStack else "--"
@@ -2328,9 +2330,9 @@ class S7CPU(object): #+cdef
 				   (elemsCount, " -> ".join(str(e) for e in elems[:elemsMax]),
 				    " -> ..." if len(elems) > elemsMax else ""))
 			frame = self.activeLStack.topFrame
-			ret.append(self.__dumpLStackFrame("      L:  ", frame))
+			ret.extend(self.__dumpLStackFrame("      L:  ", frame))
 			frame = frame.prevFrame if frame else None #@cy-NoneToNULL
-			ret.append(self.__dumpLStackFrame("     VL:  ", frame))
+			ret.extend(self.__dumpLStackFrame("     VL:  ", frame))
 		else:
 			ret.append("  Calls:  None")
 		curInsn = self.getCurrentInsn()
