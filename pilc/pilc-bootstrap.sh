@@ -402,16 +402,6 @@ pilc_bootstrap_first_stage()
 	download "$opt_target_dir/tmp/$PPL_FILE" "$PPL_MIRROR" "$PPL_SHA256"
 	download "$opt_target_dir/tmp/$PPL2_FILE" "$PPL2_MIRROR" "$PPL2_SHA256"
 
-	# Copy kernel tree
-	if [ "$opt_kernel" = "pilc" ]; then
-		info "Copying PiLC kernel tree..."
-		rsync -rlt --inplace --exclude='.git*' \
-			"$basedir/pilc/kernel/" "$opt_target_dir/tmp/kernel/" ||\
-			die "Failed to copy PiLC kernel."
-		cp "$basedir/pilc/kernel.config" "$opt_target_dir/tmp/kernel/.config" ||\
-			die "Failed to copy PiLC kernel config."
-	fi
-
 	# Second stage will mount a few filesystems.
 	# Keep track to umount them in cleanup.
 	mp_proc="$opt_target_dir/proc"
@@ -526,19 +516,7 @@ EOF
 		die "apt-get dist-upgrade failed"
 
 	info "Installing packages..."
-	if [ "$opt_kernel" = "raspi" ]; then
-		local bootloader=raspberrypi-bootloader
-		apt-get -y purge raspberrypi-bootloader-nokernel ||\
-			die "Failed to remove bootloader"
-	elif [ "$opt_kernel" = "pilc" ]; then
-		local bootloader=raspberrypi-bootloader-nokernel
-		apt-get -y purge raspberrypi-bootloader ||\
-			die "Failed to remove bootloader"
-	else
-		die "Invalid opt_kernel"
-	fi
 	apt-get -y install \
-		"$bootloader" \
 		aptitude \
 		autoconf \
 		automake \
@@ -603,6 +581,7 @@ EOF
 		python3-smbus \
 		python3-spidev \
 		python3-tk \
+		raspberrypi-bootloader \
 		raspi-config \
 		schedtool \
 		screen \
@@ -631,21 +610,6 @@ EOF
 	build_spidev
 	build_ppl
 	build_ppl2
-
-	# Build and install kernel
-	if [ "$opt_kernel" = "pilc" ]; then
-		info "Building PiLC kernel..."
-		(
-			cd "/tmp/kernel" ||\
-				die "Failed to cd to /tmp/kernel"
-			make oldconfig ||\
-				die "Kernel oldconfig failed"
-			make -j "$_NPROCESSORS_ONLN" ||\
-				die "Kernel build failed"
-			#TODO
-		) || die
-		die "TODO: PiLC kernel"
-	fi
 
 	info "Removing ssh keys..."
 	if [ -e "$(first /etc/ssh/ssh_host_*_key*)" ]; then
@@ -1135,10 +1099,6 @@ usage()
 	echo " --arch|-a ARCH          Select the default arch."
 	echo "                         Default: $default_arch"
 	echo
-	echo " --kernel|-k KERNEL      Kernel selection. Any of:"
-	echo "                         raspi  -> raspberrypi-bootloader package (default)"
-	echo "                         pilc   -> PiLC kernel"
-	echo
 	echo " --qemu-bin|-Q PATH      Select qemu-user-static binary."
 	echo "                         Default: $default_qemu"
 	echo
@@ -1187,7 +1147,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_branch="master"
 	default_suite="$DEFAULT_SUITE"
 	default_arch="armhf"
-	default_kernel="raspi"
 	default_qemu="/usr/bin/qemu-arm-static"
 	default_imgsuffix="-$(date '+%Y%m%d')"
 	default_img=1
@@ -1200,7 +1159,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_cython=1
 	opt_suite="$default_suite"
 	opt_arch="$default_arch"
-	opt_kernel="$default_kernel"
 	opt_qemu="$default_qemu"
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
@@ -1233,12 +1191,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			shift
 			opt_arch="$1"
 			[ -n "$opt_arch" ] || die "No arch given"
-			;;
-		--kernel|-k)
-			shift
-			opt_kernel="$1"
-			[ "$opt_kernel" = "raspi" -o \
-			  "$opt_kernel" = "pilc" ] || die "Invalid kernel"
 			;;
 		--qemu-bin|-Q)
 			shift
@@ -1307,7 +1259,6 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_cython
 	export opt_suite
 	export opt_arch
-	export opt_kernel
 	export opt_qemu
 	export opt_skip_debootstrap1
 	export opt_skip_debootstrap2
