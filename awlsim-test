@@ -208,12 +208,12 @@ def run(inputFile):
 	s = None
 	try:
 		if cython_helper.shouldUseCython():
-			writeStdout("*** Using accelerated CYTHON core "
-				    "(AWLSIM_CYTHON environment variable is set)\n")
+			printInfo("*** Using accelerated CYTHON core "
+				  "(AWLSIM_CYTHON environment variable is set)")
 
 		project = Project.fromProjectOrRawAwlFile(inputFile)
 
-		writeStdout("Parsing code...\n")
+		printInfo("Parsing code...")
 		generatedAwlSrcs = []
 
 		# Get mnemonics type
@@ -263,13 +263,13 @@ def run(inputFile):
 						       mnemonics = mnemonics)
 			symTables.append(tab)
 
-		writeStdout("Initializing core...\n")
+		printInfo("Initializing core...")
 		s = AwlSim()
 		s.reset()
 
 		# Load hardware modules
 		def loadMod(name, parameters):
-			writeStdout("Loading hardware module '%s'...\n" % name)
+			printInfo("Loading hardware module '%s'..." % name)
 			hwClass = s.loadHardwareModule(name)
 			s.registerHardwareClass(hwClass = hwClass,
 						parameters = parameters)
@@ -294,7 +294,7 @@ def run(inputFile):
 		cpu.setRunTimeLimit(opt_maxRuntime)
 
 		# Download the program
-		writeStdout("Initializing CPU...\n")
+		printInfo("Initializing CPU...")
 		for symTable in symTables:
 			s.loadSymbolTable(symTable)
 		for libSel in project.getLibSelections():
@@ -304,7 +304,7 @@ def run(inputFile):
 
 		# Run the program
 		s.startup()
-		writeStdout("[Initialization finished - CPU is executing user code]\n")
+		printInfo("[Initialization finished - CPU is executing user code]")
 		try:
 			if not opt_noCpuDump:
 				clearConsole()
@@ -323,10 +323,10 @@ def run(inputFile):
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
 				     MaintenanceRequest.TYPE_STOP,
 				     MaintenanceRequest.TYPE_RTTIMEOUT):
-			writeStdout("Shutting down, as requested (%s)...\n" % str(e))
+			printInfo("Shutting down, as requested (%s)..." % str(e))
 		else:
-			writeStdout("Received unknown maintenance request "
-				    "(%d: %s)...\n" % (e.requestType, str(e)))
+			printError("Received unknown maintenance request "
+				   "(%d: %s)..." % (e.requestType, str(e)))
 	finally:
 		if s:
 			s.shutdown()
@@ -352,7 +352,7 @@ def runWithServerBackend(inputFile):
 		# Establish SSH tunnel, if requested.
 		if linkSettings.getTunnel() == linkSettings.TUNNEL_SSH and\
 		   not opt_spawnBackend:
-			writeStdout("Establishing SSH tunnel...\n")
+			printInfo("Establishing SSH tunnel...")
 			localPort = linkSettings.getTunnelLocalPort()
 			if localPort == linkSettings.TUNNEL_LOCPORT_AUTO:
 				localPort = None
@@ -373,10 +373,10 @@ def runWithServerBackend(inputFile):
 					   listenHost = host,
 					   listenPort = port)
 			port = client.serverProcessPort
-		writeStdout("Connecting to core server...\n")
+		printInfo("Connecting to core server...")
 		client.connectToServer(host = host, port = port)
 
-		writeStdout("Initializing core...\n")
+		printInfo("Initializing core...")
 		client.setLoglevel(opt_loglevel)
 		client.setRunState(False)
 		client.reset()
@@ -404,7 +404,7 @@ def runWithServerBackend(inputFile):
 		#TODO configure optimizers
 
 		# Fire up the core
-		writeStdout("Initializing CPU...\n")
+		printInfo("Initializing CPU...")
 		client.loadProject(project, loadCpuSpecs=False,
 				   loadCpuConf=False,
 				   loadTempPresets=False,
@@ -413,7 +413,7 @@ def runWithServerBackend(inputFile):
 		client.setRunState(True)
 
 		# Run the client-side event loop
-		writeStdout("[Initialization finished - Remote-CPU is executing user code]\n")
+		printInfo("[Initialization finished - Remote-CPU is executing user code]")
 		try:
 			if not opt_noCpuDump:
 				clearConsole()
@@ -430,10 +430,10 @@ def runWithServerBackend(inputFile):
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
 				     MaintenanceRequest.TYPE_STOP,
 				     MaintenanceRequest.TYPE_RTTIMEOUT):
-			writeStdout("Shutting down, as requested (%s)...\n" % str(e))
+			printInfo("Shutting down, as requested (%s)..." % str(e))
 		else:
-			writeStdout("Received unknown maintenance request "
-				    "(%d: %s)...\n" % (e.requestType, str(e)))
+			printError("Received unknown maintenance request "
+				   "(%d: %s)..." % (e.requestType, str(e)))
 	except KeyboardInterrupt as e:
 		pass
 	finally:
