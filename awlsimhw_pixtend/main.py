@@ -581,12 +581,15 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		except ValueError as e:
 			self.raiseException("Unsupported 'pwm_servoMode' parameter value.")
 		try:
-			freqHz = self.getParamValueByName("pwm_baseFreqHz")
+			freqHz = self.getParamValueByName("pwm_baseFreqHz",
+							  fallbackToDefault=False)
+			if freqHz is None:
+				freqHz = self.getParamValueByName("pwm0_baseFreqHz")
 			if not self.__PWM0s:
 				freqHz = 0
 			PWM0Period.setBaseFreq(self.__pixtend, self.__isV2, freqHz)
 		except ValueError as e:
-			self.raiseException("Unsupported 'pwm_baseFreqHz' parameter value. "
+			self.raiseException("Unsupported 'pwm0_baseFreqHz' parameter value. "
 				"Supported values are: 16000000, 2000000, 250000, 62500, 15625, 0.")
 
 		if self.__isV2:
