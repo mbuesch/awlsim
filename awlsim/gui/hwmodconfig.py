@@ -522,8 +522,6 @@ class HwmodConfigWidget(QWidget):
 		self.__loadedModDescs = []
 		for modDesc in hwSettings.getLoadedModules():
 			modDesc = modDesc.dup()
-			interface = HwmodParamModel.getModuleInterface(modDesc.getModuleName())
-
 			item = self.__makeLoadedListItem(modDesc)
 			self.loadedList.addItem(item)
 			self.__loadedModDescs.append(modDesc)
