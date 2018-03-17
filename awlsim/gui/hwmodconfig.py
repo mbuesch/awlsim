@@ -84,10 +84,36 @@ class HwmodParamModel(QAbstractTableModel):
 		params = self.modDesc.getParameters().copy()
 		for paramName, paramValue in dictItems(defaultParams):
 			if paramName not in params:
-				self.modDesc.addParameter(paramName, paramValue)
+				self.modDesc.addParameter(paramName, "")
 
-		# Replace deprecated params.
-		pass#TODO
+		# Replace deprecated params having fully compatible replacements.
+		for paramDesc in self.modInterface.getParamDescs(includeHidden=True,
+								 includeDeprecated=True):
+			if not paramDesc.compatReplacement:
+				continue
+			# Try to replace this one.
+			srcValue = self.modDesc.getParameter(paramDesc.name)
+			if srcValue is None:
+				# The original parameter is not used.
+				continue
+			destValue = self.modDesc.getParameter(paramDesc.compatReplacement)
+			if destValue:
+				# The replacement parameter is already used.
+				continue
+			printInfo("Hardware parameters [%s]: Replacing parameter '%s' "
+				  "with fully compatible parameter '%s'." % (
+				  self.modDesc.getModuleName(),
+				  paramDesc.name,
+				  paramDesc.compatReplacement))
+			self.modDesc.addParameter(paramDesc.compatReplacement, srcValue)
+			self.modDesc.removeParameter(paramDesc.name)
+
+		# Set default values, if no value is specified.
+		for paramName, paramValue in dictItems(self.modDesc.getParameters()):
+			if not paramValue:
+				defaultValueStr = defaultParams.get(paramName, None)
+				if defaultValueStr:
+					self.modDesc.setParameterValue(paramName, defaultValueStr)
 
 	def setHwmod(self, modDesc):
 		"""Set a HwmodDescriptor() instance to be represented by this model.
