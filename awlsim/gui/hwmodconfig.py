@@ -392,6 +392,8 @@ class HwmodConfigWidget(QWidget):
 		self.paramViewLabel.setEnabled(bool(cur))
 		self.paramView.setEnabled(bool(cur))
 		self.delButton.setEnabled(bool(cur))
+		self.upButton.setEnabled(bool(cur))
+		self.downButton.setEnabled(bool(cur))
 		self.__handleNewErrorText("")
 
 	def __handleAdd(self):
