@@ -260,7 +260,7 @@ class HwmodParamView(QTableView):
 		self.verticalHeader().setDefaultSectionSize(20)
 
 		self.setColumnWidth(0, 170)
-		self.setColumnWidth(1, 80)
+		self.setColumnWidth(1, 150)
 
 	def deleteEntry(self, index=None):
 		if not index:
