@@ -761,21 +761,14 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	def __pixtendPoll(self, now): #@nocy
 #@cy	cdef ExBool_t __pixtendPoll(self, double now):
 #@cy		cdef uint16_t spiCount
-#@cy		cdef uint16_t spiCountWait
 
 		pixtend = self.__pixtend
 		if self.__isV2:
 			# Check if we have new data from the poll thread
 			# In test mode actually wait for the worker thread.
 			if self.__testMode:
-				spiCountWait = (pixtend.spi_transfers + 2) & 0xFFFF
-				while True:
-					spiCount = pixtend.spi_transfers & 0xFFFF
-					if (spiCount - spiCountWait) & 0x8000 == 0:
-						break
-					time.sleep(0.001)
-			else:
-				spiCount = pixtend.spi_transfers & 0xFFFF
+				self.__waitV2Transfer()
+			spiCount = pixtend.spi_transfers & 0xFFFF
 			self.__haveInputData = (spiCount != self.__prevSpiCount)
 			self.__prevSpiCount = spiCount
 			# Check for errors from the poll thread
@@ -794,12 +787,39 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__haveInputData = False
 		return False
 
+	def __waitV2Transfer(self): #+cdef
+		"""Wait for the V2 I/O thread to run completely at least once.
+		"""
+#@cy		cdef S7CPU cpu
+#@cy		cdef uint16_t spiCount
+#@cy		cdef uint16_t spiBeginCount
+#@cy		cdef uint16_t prevSpiCount
+#@cy		cdef uint16_t prevSpiBeginCount
+#@cy		cdef double timeout
+
+		cpu = self.cpu
+		pixtend = self.__pixtend
+
+		timeout = cpu.now + (self.__pollInt * 10000.0)
+		prevSpiCount = pixtend.spi_transfers & 0xFFFF
+		prevSpiBeginCount = pixtend.spi_transfers_begin & 0xFFFF
+		while True:
+			spiCount = pixtend.spi_transfers & 0xFFFF
+			spiBeginCount = pixtend.spi_transfers_begin & 0xFFFF
+			if spiCount != prevSpiCount and\
+			   spiBeginCount != prevSpiBeginCount:
+				# The I/O thread ran at least once.
+				break
+			cpu.updateTimestamp()
+			if cpu.now >= timeout:
+				self.raiseException("PiXtend poll wait timeout.")
+			time.sleep(0.001)
+
 	def __syncPixtendPoll(self): #+cdef
+		"""Synchronously wait for the data transfer to/from PiXtend.
+		"""
 #@cy		cdef S7CPU cpu
 #@cy		cdef uint32_t retries
-#@cy		cdef uint16_t spiCount
-#@cy		cdef uint16_t prevSpiCount
-#@cy		cdef double timeout
 
 		# Synchronously run one PiXtend poll cycle.
 		cpu = self.cpu
@@ -807,18 +827,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		while True:
 			cpu.updateTimestamp()
 			if self.__isV2:
-				pixtend = self.__pixtend
-				# Wait until the poll thread did one transfer.
-				timeout = cpu.now + (self.__pollInt * 10000.0)
-				prevSpiCount = pixtend.spi_transfers & 0xFFFF
-				while True:
-					spiCount = pixtend.spi_transfers & 0xFFFF
-					if spiCount != prevSpiCount:
-						break
-					cpu.updateTimestamp()
-					if cpu.now >= timeout:
-						self.raiseException("PiXtend poll wait timeout.")
-					time.sleep(0.001)
+				# Wait until the I/O thread did one transfer.
+				self.__waitV2Transfer()
 			else:
 				# Wait for the next possible poll slot.
 				waitTime = self.__nextPoll - cpu.now
@@ -872,7 +882,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		out.setWithByteOffset(data, 0)
 		self.__syncPixtendPoll()
-		#TODO not enough for pplv2
 
 		return True
 

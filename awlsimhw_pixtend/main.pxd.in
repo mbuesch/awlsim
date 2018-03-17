@@ -31,6 +31,7 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public uint16_t __prevSpiCount
 
 	cdef ExBool_t __pixtendPoll(self, double now)
+	cdef __waitV2Transfer(self)
 	cdef __syncPixtendPoll(self)
 
 	cdef readInputs(self)
