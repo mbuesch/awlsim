@@ -387,13 +387,16 @@ class HwmodConfigWidget(QWidget):
 				self.availList.setCurrentItem(None)
 				self.manualModName.setText("")
 			self.paramView.setHwmod(cur.data(Qt.UserRole))
+			curRow = self.loadedList.row(cur)
 		else:
 			self.paramView.setHwmod(None)
+			curRow = -1
 		self.paramViewLabel.setEnabled(bool(cur))
 		self.paramView.setEnabled(bool(cur))
 		self.delButton.setEnabled(bool(cur))
-		self.upButton.setEnabled(bool(cur))
-		self.downButton.setEnabled(bool(cur))
+		self.upButton.setEnabled(bool(cur) and curRow >= 1)
+		self.downButton.setEnabled(bool(cur) and curRow >= 0 and\
+					   curRow < self.loadedList.count() - 1)
 		self.__handleNewErrorText("")
 
 	def __handleAdd(self):
