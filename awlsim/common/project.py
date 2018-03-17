@@ -247,8 +247,7 @@ class HwmodSettingsFactory(XmlFactory):
 
 		childTags = []
 
-		loadedMods = sorted(hwmodSettings.getLoadedModules(),
-				    key=lambda hwmodDesc: hwmodDesc.getModuleName())
+		loadedMods = hwmodSettings.getLoadedModules()
 		for hwmodDesc in loadedMods:
 			childTags.extend(hwmodDesc.factory(
 				hwmodDesc=hwmodDesc).composer_getTags())
