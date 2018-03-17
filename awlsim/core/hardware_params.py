@@ -55,12 +55,31 @@ class HwParamDesc(object):
 	defaultValue = None	# Default value; represented as parsed value
 	defaultValueStr = None	# Default value; represented as parser input string
 
-	def __init__(self, name, description="", mandatory=False, hidden=False, deprecated=False):
+	def __init__(self, name,
+		     description="",
+		     mandatory=False,
+		     hidden=False,
+		     deprecated=False,
+		     compatReplacement="",
+		     replacement=""):
+		"""
+		name: The parameter name string.
+		description: The parameter description string.
+		mandatory: If True, then this parameter must be specified.
+		hidden: If True, then this parameter will not be shown by default.
+		deprecated: If True, then the use of this parameter is discouraged.
+		compatReplacement: Optional name of a fully compatible parameter
+		                   that replaces this one. (Also see 'deprecated').
+		replacement: Optional name of an incompatible parameter
+		             that replaces this one. (Also see 'deprecated').
+		"""
 		self.name = name
 		self.description = description
 		self.mandatory = mandatory
 		self.hidden = hidden
 		self.deprecated = deprecated
+		self.compatReplacement = compatReplacement
+		self.replacement = replacement
 
 	def parse(self, value):
 		"""Parse a value string.
