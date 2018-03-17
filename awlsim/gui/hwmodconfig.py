@@ -32,6 +32,20 @@ class HwmodParamModel(QAbstractTableModel):
 	# Signal: Emitted, if a new error appeared or an old error disappeared.
 	newErrorText = Signal(str)
 
+	@staticmethod
+	def getModuleInterface(moduleName):
+		try:
+			if not moduleName:
+				raise ValueError
+			# Load the module.
+			# modLoader is an HwModLoader() instance.
+			modLoader = HwModLoader.loadModule(moduleName)
+			# Get the HardwareInterface() instance
+			interface = modLoader.getInterface()
+		except (AwlSimError, ValueError) as e:
+			interface = None
+		return interface
+
 	def __init__(self):
 		QAbstractTableModel.__init__(self)
 
@@ -121,16 +135,9 @@ class HwmodParamModel(QAbstractTableModel):
 
 		self.beginResetModel()
 		try:
-			try:
-				if not modDesc:
-					raise ValueError
-				# Load the module.
-				# modLoader is an HwModLoader() instance.
-				modLoader = HwModLoader.loadModule(modDesc.getModuleName())
-				# Get the HardwareInterface() instance
-				interface = modLoader.getInterface()
-			except (AwlSimError, ValueError) as e:
-				interface = None
+			interface = None
+			if modDesc:
+				interface = self.getModuleInterface(modDesc.getModuleName())
 
 			# Store HardwareInterface()
 			self.modInterface = interface
@@ -425,6 +432,17 @@ class HwmodConfigWidget(QWidget):
 					   curRow < self.loadedList.count() - 1)
 		self.__handleNewErrorText("")
 
+	def __makeLoadedListItem(self, modDesc):
+		interface = HwmodParamModel.getModuleInterface(modDesc.getModuleName())
+
+		item = QListWidgetItem(modDesc.getModuleName())
+		item.setData(Qt.UserRole, modDesc)
+		if interface:
+			desc = interface.description
+			if desc:
+				item.setToolTip(desc)
+		return item
+
 	def __handleAdd(self):
 		manualModName = self.manualModName.text().strip()
 		if manualModName:
@@ -435,9 +453,9 @@ class HwmodConfigWidget(QWidget):
 			if not item:
 				return
 			modDesc = item.data(Qt.UserRole).dup()
-		item = QListWidgetItem(modDesc.getModuleName(),
-				       self.loadedList)
-		item.setData(Qt.UserRole, modDesc)
+
+		item = self.__makeLoadedListItem(modDesc)
+		self.loadedList.addItem(item)
 		self.__loadedModDescs.append(modDesc)
 
 	def __handleDel(self):
@@ -489,13 +507,14 @@ class HwmodConfigWidget(QWidget):
 		self.availableMods = mods
 		for modName in mods:
 			item = QListWidgetItem(modName, self.availList)
-			try:
-				interface = HwModLoader.loadModule(modName).getInterface()
-			except AwlSimError as e:
-				interface = None
+			interface = HwmodParamModel.getModuleInterface(modName)
 			modDesc = HwmodDescriptor(moduleName=modName,
 						  parameters={})
 			item.setData(Qt.UserRole, modDesc)
+			if interface:
+				desc = interface.description
+				if desc:
+					item.setToolTip(desc)
 
 	def loadFromProject(self, project):
 		self.loadedList.clear()
@@ -503,8 +522,9 @@ class HwmodConfigWidget(QWidget):
 		self.__loadedModDescs = []
 		for modDesc in hwSettings.getLoadedModules():
 			modDesc = modDesc.dup()
-			item = QListWidgetItem(modDesc.getModuleName())
-			item.setData(Qt.UserRole, modDesc)
+			interface = HwmodParamModel.getModuleInterface(modDesc.getModuleName())
+
+			item = self.__makeLoadedListItem(modDesc)
 			self.loadedList.addItem(item)
 			self.__loadedModDescs.append(modDesc)
 
