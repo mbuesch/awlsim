@@ -10,6 +10,8 @@
 # Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
+# Copyright (C) 2018 Michael Buesch
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -143,7 +145,8 @@ class PiXtendV2Core:
         # General data common for all boards, internal variables and statistics
         self._gpio_dht11 = 0
         self._crc_header_in_errors = 0
-        self._spi_transfers = 0
+        self.spi_transfers_begin = 0
+        self.spi_transfers = 0
         self._model_in_error = False
         self._is_crc_header_error = False
 
@@ -289,7 +292,6 @@ class PiXtendV2Core:
         # Initialize variables
         self.__thread_terminate = False
         self.__thread = None
-        self.__thread_waiting_time = 0
         self.__use_fahrenheit = False
         
         self.__model_out = 0
@@ -332,12 +334,29 @@ class PiXtendV2Core:
         This function call loops in an infinite loop every n milliseconds. It process SPI communication by
         calling the _auto_mode() function.
         """
-        # Call the auto mode function
-        self._auto_mode()
-        # Re-Schedule the timer to call the _loop_forever function again
-        self.__thread = threading.Timer(self.__thread_interval, lambda: self._loop_forever())
-        self.__thread.daemon = False
-        self.__thread.start()
+
+        # Get a precise timer that always only monotonically increases
+        # and never decreases.
+        monotonic_time = getattr(time, "monotonic", time.clock)
+
+        next_auto_mode = monotonic_time()
+        while not self.__thread_terminate:
+
+            # Call the auto mode function
+            self._auto_mode()
+
+            # Calculate when the next auto mode is due.
+            next_auto_mode += self.__thread_interval
+            now = monotonic_time()
+            if next_auto_mode < now:
+                # The next auto_mode already is in the past.
+                # We probably are not executing fast enough
+                # to hold the deadlines.
+                next_auto_mode = now
+
+            # Calculate the duration to the next auto mode deadline
+            # and sleep until then.
+            time.sleep(next_auto_mode - now)
 
     def _loop_start(self):
         """
@@ -346,7 +365,8 @@ class PiXtendV2Core:
         if self.__thread is not None:
             return -1
 
-        self.__thread = threading.Timer(self.__thread_interval, lambda: self._loop_forever())
+        self.__thread_terminate = False
+        self.__thread = threading.Thread(target=self._loop_forever)
         self.__thread.daemon = False
         self.__thread.start()
 
@@ -358,7 +378,8 @@ class PiXtendV2Core:
         if self.__thread is None:
             return -1
 
-        self.__thread.cancel()
+        self.__thread_terminate = True
+        self.__thread.join()
         self.__thread = None
 
     # <editor-fold desc="Region: PiXtend V2 Configuration, Settings and Information">
@@ -1636,6 +1657,8 @@ class PiXtendV2Core:
         in one block and states and values of all digital and analog inputs are received as response.
         """
         if self.__is_spi_open:
+            self.spi_transfers_begin += 1
+
             # Get the data to be sent to the uC
             data = self._pack_spi_data()
             # Build header - CRC calculation
@@ -1647,6 +1670,8 @@ class PiXtendV2Core:
             # Call unpack function to split up incoming data, but it will be defined by the child class
             self._unpack_spi_data(response)
 
-            self._spi_transfers += 1
+            self.spi_transfers += 1
 
     # </editor-fold>
+
+# vim: ts=4 sw=4 expandtab
