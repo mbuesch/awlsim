@@ -354,6 +354,7 @@ class HwmodConfigWidget(QWidget):
 		self.setAvailableModules(HwModLoader.builtinHwModules)
 
 		self.availList.currentItemChanged.connect(self.__handleAvailSelectChange)
+		self.availList.itemDoubleClicked.connect(self.__handleAdd)
 		self.manualModName.textChanged.connect(self.__handleManualModChange)
 		self.loadedList.currentItemChanged.connect(self.__handleLoadedSelectChange)
 		self.addButton.released.connect(self.__handleAdd)
