@@ -237,7 +237,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				"pwm%d_addr" % i,
 				allowedOperTypes=(AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(16,),
-				deprecated=True))
+				deprecated=True,
+				compatReplacement=("pwm0%s_addr" % __name)))
 		paramDescs.append(HwParamDesc_bool(
 				"pwm%d_servoOverDrive" % i,
 				deprecated=True))
@@ -250,7 +251,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	paramDescs.append(HwParamDesc_bool(
 			"pwm_servoMode",
 			defaultValue=False,
-			deprecated=True))
+			deprecated=True,
+			replacement="pwm0_mode"))
 	paramDescs.append(HwParamDesc_int(
 			"pwm0_baseFreqHz",
 			defaultValue=0,
@@ -273,12 +275,14 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			defaultValue=0,
 			minValue=0,
 			maxValue=16000000,
-			deprecated=True))
+			deprecated=True,
+			compatReplacement="pwm0_baseFreqHz"))
 	paramDescs.append(HwParamDesc_oper(
 			"pwm_period",
 			allowedOperTypes=(AwlOperatorTypes.MEM_A,
 					  AwlOperatorTypes.IMM),
-			deprecated=True))
+			deprecated=True,
+			compatReplacement="pwm0_period"))
 	for i in range(NR_PWM1):
 		__name = "AB"[i]
 		paramDescs.append(HwParamDesc_oper(
@@ -865,6 +869,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		out.setWithByteOffset(data, 0)
 		self.__syncPixtendPoll()
+		#TODO not enough for pplv2
 
 		return True
 
