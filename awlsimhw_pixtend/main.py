@@ -871,7 +871,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				"accesses are supported." % (
 				accessOffset, accessWidth, inp.bitSize))
 
-		self.__syncPixtendPoll(False)
+		self.__syncPixtendPoll(True)
 		data = bytearray(accessWidth // 8)
 		inp.getWithByteOffset(data, 0)
 
