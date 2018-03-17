@@ -801,6 +801,9 @@ show_help()
 	infomsg " -x|--extended                 Run tests on additional interpreters"
 	infomsg " -Q|--quiet                    Less messages"
 	infomsg " -L|--loglevel                 Default log level."
+	infomsg " -l|--loop COUNT               Number of test loops to execute."
+	infomsg "                               Default: 1"
+	infomsg "                               Set to 0 for infinite looping."
 }
 
 tmp_dir="/tmp/awlsim-test-$$"
@@ -824,6 +827,7 @@ opt_extended=0
 opt_renice=
 opt_jobs=1
 opt_loglevel=2
+opt_loop=1
 
 while [ $# -ge 1 ]; do
 	[ "$(printf '%s' "$1" | cut -c1)" != "-" ] && break
@@ -870,6 +874,10 @@ while [ $# -ge 1 ]; do
 		shift
 		opt_loglevel="$1"
 		;;
+	-l|--loop)
+		shift
+		opt_loop="$1"
+		;;
 	*)
 		errormsg "Unknown option: $1"
 		exit 1
@@ -887,6 +895,9 @@ fi
 [ -z "$opt_jobs" ] &&\
 	die "Could not detect number of CPUs."
 
+if [ -z "$opt_loop" -o -n "$(printf '%s' "$opt_loop" | tr -d '[0-9]')" ] || [ $opt_loop -le 0 ]; then
+	opt_loop=infinite
+fi
 
 do_renice()
 {
@@ -900,7 +911,22 @@ else
 	do_renice 10
 fi
 
+
+# Run the tests
 global_retval=0
-do_tests "$@"
+loop_iteration=0
+while [ "$opt_loop" = "infinite" ] || [ $opt_loop -gt 0 ]; do
+	infomsg "Running test loop iteration $(expr "$loop_iteration" + 1)"
+
+	do_tests "$@"
+
+	if [ $global_retval -ne 0 ]; then
+		break
+	fi
+	if [ "$opt_loop" != "infinite" ]; then
+		opt_loop="$(expr "$opt_loop" - 1)"
+	fi
+	loop_iteration="$(expr "$loop_iteration" + 1)"
+done
 
 exit $global_retval
