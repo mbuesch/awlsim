@@ -644,7 +644,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 					com_interval=self.__pollInt,
 					model=self.__pixtend_class.PIXTENDV2S_MODEL,
 				)
-				initialSpiCount = self.__pixtend._spi_transfers & 0xFFFF
+				initialSpiCount = self.__pixtend.spi_transfers & 0xFFFF
 			else:
 				# PiXtend v1.x
 				self.__pixtend = self.__pixtend_class()
@@ -655,11 +655,11 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				self.cpu.updateTimestamp()
 				if self.__isV2:
 					if self.__pixtendPoll(self.cpu.now):
-						spiCount = self.__pixtend._spi_transfers & 0xFFFF
+						spiCount = self.__pixtend.spi_transfers & 0xFFFF
 						if spiCount != initialSpiCount:
 							break # success
 					else:
-						initialSpiCount = self.__pixtend._spi_transfers & 0xFFFF
+						initialSpiCount = self.__pixtend.spi_transfers & 0xFFFF
 				else:
 					if self.__pixtendPoll(self.cpu.now):
 						break # success
@@ -701,7 +701,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			raise e
 
 		if self.__isV2:
-			self.__prevSpiCount = self.__pixtend._spi_transfers & 0xFFFF
+			self.__prevSpiCount = self.__pixtend.spi_transfers & 0xFFFF
 		self.__haveInputData = False
 		self.__nextPoll = self.cpu.now + self.__pollInt
 		self.__pixtendInitialized = True
@@ -768,14 +768,14 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Check if we have new data from the poll thread
 			# In test mode actually wait for the worker thread.
 			if self.__testMode:
-				spiCountWait = (pixtend._spi_transfers + 2) & 0xFFFF
+				spiCountWait = (pixtend.spi_transfers + 2) & 0xFFFF
 				while True:
-					spiCount = pixtend._spi_transfers & 0xFFFF
+					spiCount = pixtend.spi_transfers & 0xFFFF
 					if (spiCount - spiCountWait) & 0x8000 == 0:
 						break
 					time.sleep(0.001)
 			else:
-				spiCount = pixtend._spi_transfers & 0xFFFF
+				spiCount = pixtend.spi_transfers & 0xFFFF
 			self.__haveInputData = (spiCount != self.__prevSpiCount)
 			self.__prevSpiCount = spiCount
 			# Check for errors from the poll thread
@@ -810,9 +810,9 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				pixtend = self.__pixtend
 				# Wait until the poll thread did one transfer.
 				timeout = cpu.now + (self.__pollInt * 10000.0)
-				prevSpiCount = pixtend._spi_transfers & 0xFFFF
+				prevSpiCount = pixtend.spi_transfers & 0xFFFF
 				while True:
-					spiCount = pixtend._spi_transfers & 0xFFFF
+					spiCount = pixtend.spi_transfers & 0xFFFF
 					if spiCount != prevSpiCount:
 						break
 					cpu.updateTimestamp()
