@@ -222,6 +222,8 @@ class HwmodParamView(QTableView):
 			model = HwmodParamModel()
 		self.setModel(model)
 
+		self.verticalHeader().setDefaultSectionSize(20)
+
 		self.setColumnWidth(0, 170)
 		self.setColumnWidth(1, 80)
 
