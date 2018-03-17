@@ -767,7 +767,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Check if we have new data from the poll thread
 			# In test mode actually wait for the worker thread.
 			if self.__testMode:
-				self.__waitV2Transfer()
+				self.__waitV2Transfer(True)
 			spiCount = pixtend.spi_transfers & 0xFFFF
 			self.__haveInputData = (spiCount != self.__prevSpiCount)
 			self.__prevSpiCount = spiCount
@@ -787,7 +787,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__haveInputData = False
 		return False
 
-	def __waitV2Transfer(self): #+cdef
+	def __waitV2Transfer(self, waitForBegin): #@nocy
+#@cy	cdef __waitV2Transfer(self, _Bool waitForBegin):
 		"""Wait for the V2 I/O thread to run completely at least once.
 		"""
 #@cy		cdef S7CPU cpu
@@ -796,6 +797,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 #@cy		cdef uint16_t prevSpiCount
 #@cy		cdef uint16_t prevSpiBeginCount
 #@cy		cdef double timeout
+#@cy		cdef _Bool begin
 
 		cpu = self.cpu
 		pixtend = self.__pixtend
@@ -803,19 +805,28 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		timeout = cpu.now + (self.__pollInt * 10000.0)
 		prevSpiCount = pixtend.spi_transfers & 0xFFFF
 		prevSpiBeginCount = pixtend.spi_transfers_begin & 0xFFFF
+		begin = not waitForBegin
 		while True:
-			spiCount = pixtend.spi_transfers & 0xFFFF
-			spiBeginCount = pixtend.spi_transfers_begin & 0xFFFF
-			if spiCount != prevSpiCount and\
-			   spiBeginCount != prevSpiBeginCount:
-				# The I/O thread ran at least once.
-				break
 			cpu.updateTimestamp()
 			if cpu.now >= timeout:
 				self.raiseException("PiXtend poll wait timeout.")
 			time.sleep(0.001)
 
-	def __syncPixtendPoll(self): #+cdef
+			spiBeginCount = pixtend.spi_transfers_begin & 0xFFFF
+			spiCount = pixtend.spi_transfers & 0xFFFF
+			if begin:
+				if spiCount != prevSpiCount:
+					# The I/O thread ran at least once.
+					break
+			else:
+				if spiBeginCount == prevSpiBeginCount:
+					# The thread did not begin, yet.
+					prevSpiCount = spiCount
+				else:
+					begin = True
+
+	def __syncPixtendPoll(self, waitForBegin): #@nocy
+#@cy	cdef __syncPixtendPoll(self, _Bool waitForBegin):
 		"""Synchronously wait for the data transfer to/from PiXtend.
 		"""
 #@cy		cdef S7CPU cpu
@@ -828,7 +839,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			cpu.updateTimestamp()
 			if self.__isV2:
 				# Wait until the I/O thread did one transfer.
-				self.__waitV2Transfer()
+				self.__waitV2Transfer(waitForBegin)
 			else:
 				# Wait for the next possible poll slot.
 				waitTime = self.__nextPoll - cpu.now
@@ -860,7 +871,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				"accesses are supported." % (
 				accessOffset, accessWidth, inp.bitSize))
 
-		self.__syncPixtendPoll()
+		self.__syncPixtendPoll(False)
 		data = bytearray(accessWidth // 8)
 		inp.getWithByteOffset(data, 0)
 
@@ -881,7 +892,7 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				accessOffset, accessWidth, out.bitSize))
 
 		out.setWithByteOffset(data, 0)
-		self.__syncPixtendPoll()
+		self.__syncPixtendPoll(True)
 
 		return True
 
