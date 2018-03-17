@@ -128,7 +128,10 @@ class HwParamDesc_pwmMode(HwParamDesc_str):
 			value, listToHumanStr(sorted(dictKeys(self.str2type)))))
 
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
-	name = "PiXtend"
+	name		= "PiXtend"
+	description	= "PiXtend V1.x and V2.x "\
+			  "extension board support.\n"\
+			  "https://www.pixtend.de/"
 
 	#TODO DHT
 	#TODO hum

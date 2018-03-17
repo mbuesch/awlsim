@@ -159,7 +159,10 @@ class SigFloat(object):
 		self.hal[self.halName] = dwordToPyFloat(dword)
 
 class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
-	name = "LinuxCNC"
+	name		= "LinuxCNC"
+	description	= "LinuxCNC and MachineKit hardware support.\n"\
+			  "http://linuxcnc.org/\n"\
+			  "http://www.machinekit.io/"
 
 	paramDescs = [
 		HwParamDesc_pyobject("hal",

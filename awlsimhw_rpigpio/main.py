@@ -103,7 +103,9 @@ class RpiGPIO_BitMapping(object):
 class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 	"""Raspberry Pi GPIO hardware interface.
 	"""
-	name = "RPi.GPIO"
+	name		= "RPi.GPIO"
+	description	= "Raspberry Pi GPIO support.\n"\
+			  "https://www.raspberrypi.org/"
 
 	paramDescs = [
 		HwParamDesc_IMap(),

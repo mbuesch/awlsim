@@ -35,7 +35,8 @@ from awlsim.core.cpu import * #+cimport
 
 
 class HardwareInterface_Dummy(AbstractHardwareInterface): #+cdef
-	name = "dummy"
+	name		= "dummy"
+	description	= "Dummy hardware module that does nothing."
 
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,

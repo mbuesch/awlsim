@@ -35,7 +35,9 @@ from awlsim.core.cpu import * #+cimport
 
 
 class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
-	name = "PyProfibus"
+	name		= "PyProfibus"
+	description	= "PROFIBUS-DP support with PyProfibus.\n"\
+			  "https://bues.ch/a/profibus"
 
 	# Hardware-specific parameters
 	paramDescs = [

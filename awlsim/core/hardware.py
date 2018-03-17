@@ -42,6 +42,9 @@ class AbstractHardwareInterface(object): #+cdef
 	# The name of the module. Overload in the subclass.
 	name = "<unnamed>"
 
+	# Optional module description. Overload in the subclass.
+	description = ""
+
 	# The parameter descriptors.
 	paramDescs = []
 	# The standard parameters.

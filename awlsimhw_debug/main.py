@@ -36,7 +36,9 @@ from awlsim.core.cpu import * #+cimport
 
 
 class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
-	name = "debug"
+	name		= "debug"
+	description	= "Debugging hardware module.\n"\
+			  "This can be used to inject faults into the system."
 
 	paramDescs = [
 		HwParamDesc_bool("dummyParam",
