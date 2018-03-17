@@ -64,21 +64,56 @@ class HwmodParamModel(QAbstractTableModel):
 				return
 		self.newErrorText.emit("")
 
+	def __upgradeParams(self):
+		"""Add missing parameters to the descriptor and
+		replace deprecated ones.
+		"""
+
+		if not self.modInterface or not self.modDesc:
+			return
+
+		# Create a dict of default params
+		defaultParams = {}
+		for paramDesc in self.modInterface.getParamDescs():
+			if paramDesc.defaultValueStr is None:
+				defaultParams[paramDesc.name] = None
+			else:
+				defaultParams[paramDesc.name] = paramDesc.defaultValueStr
+
+		# Add missing parameters to the descriptor.
+		params = self.modDesc.getParameters().copy()
+		for paramName, paramValue in dictItems(defaultParams):
+			if paramName not in params:
+				self.modDesc.addParameter(paramName, paramValue)
+
+		# Replace deprecated params.
+		pass#TODO
+
 	def setHwmod(self, modDesc):
+		"""Set a HwmodDescriptor() instance to be represented by this model.
+		"""
+
 		self.beginResetModel()
-
 		try:
-			if not modDesc:
-				raise ValueError
-			mod = HwModLoader.loadModule(modDesc.getModuleName())
-			interface = mod.getInterface()
-		except (AwlSimError, ValueError) as e:
-			interface = None
+			try:
+				if not modDesc:
+					raise ValueError
+				# Load the module.
+				# modLoader is an HwModLoader() instance.
+				modLoader = HwModLoader.loadModule(modDesc.getModuleName())
+				# Get the HardwareInterface() instance
+				interface = modLoader.getInterface()
+			except (AwlSimError, ValueError) as e:
+				interface = None
 
-		self.modInterface = interface
-		self.modDesc = modDesc
+			# Store HardwareInterface()
+			self.modInterface = interface
+			# Store HwmodDescriptor()
+			self.modDesc = modDesc
 
-		self.endResetModel()
+			self.__upgradeParams()
+		finally:
+			self.endResetModel()
 
 	def deleteEntry(self, row):
 		params = self.__params
@@ -426,15 +461,8 @@ class HwmodConfigWidget(QWidget):
 				interface = HwModLoader.loadModule(modName).getInterface()
 			except AwlSimError as e:
 				interface = None
-			params = {}
-			if interface:
-				for paramDesc in interface.getParamDescs():
-					if paramDesc.defaultValueStr is None:
-						params[paramDesc.name] = None
-						continue
-					params[paramDesc.name] = paramDesc.defaultValueStr
-			modDesc = HwmodDescriptor(moduleName = modName,
-						  parameters = params)
+			modDesc = HwmodDescriptor(moduleName=modName,
+						  parameters={})
 			item.setData(Qt.UserRole, modDesc)
 
 	def loadFromProject(self, project):
