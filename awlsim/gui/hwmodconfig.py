@@ -259,6 +259,7 @@ class HwmodConfigWidget(QWidget):
 		group.layout().addWidget(label, 0, 0)
 		self.availList = QListWidget(self)
 		self.availList.setMaximumWidth(180)
+		self.availList.setSelectionMode(QListWidget.SingleSelection)
 		group.layout().addWidget(self.availList, 1, 0)
 		self.manualModName = QLineEdit(self)
 		self.manualModName.setToolTip("Name of another module to add.\n"
@@ -284,10 +285,24 @@ class HwmodConfigWidget(QWidget):
 		group.layout().addWidget(label, 0, 2)
 		self.loadedList = QListWidget(self)
 		self.loadedList.setMaximumWidth(180)
+		self.loadedList.setSelectionMode(QListWidget.SingleSelection)
 		group.layout().addWidget(self.loadedList, 1, 2, 2, 1)
 
+		vbox = QVBoxLayout()
+		self.upButton = QPushButton(self)
+		self.upButton.setIcon(getIcon("up"))
+		self.upButton.setToolTip("Move the selected loaded module up.\n"
+			"Modules are executed in order from top to bottom.")
+		vbox.addWidget(self.upButton)
+		self.downButton = QPushButton(self)
+		self.downButton.setIcon(getIcon("down"))
+		self.downButton.setToolTip("Move the selected loaded module down.\n"
+			"Modules are executed in order from top to bottom.")
+		vbox.addWidget(self.downButton)
+		group.layout().addLayout(vbox, 0, 3, 3, 1)
+
 		self.paramViewLabel = QLabel("Module parameters:", self)
-		group.layout().addWidget(self.paramViewLabel, 0, 3)
+		group.layout().addWidget(self.paramViewLabel, 0, 4)
 		vbox = QVBoxLayout()
 		self.paramView = HwmodParamView(None, self)
 		self.paramView.setMinimumWidth(300)
@@ -295,7 +310,7 @@ class HwmodConfigWidget(QWidget):
 		self.paramErrorText = QLabel(self)
 		self.paramErrorText.setWordWrap(True)
 		vbox.addWidget(self.paramErrorText)
-		group.layout().addLayout(vbox, 1, 3, 2, 1)
+		group.layout().addLayout(vbox, 1, 4, 2, 1)
 
 		self.layout().addWidget(group, 0, 0)
 
@@ -308,6 +323,8 @@ class HwmodConfigWidget(QWidget):
 		self.loadedList.currentItemChanged.connect(self.__handleLoadedSelectChange)
 		self.addButton.released.connect(self.__handleAdd)
 		self.delButton.released.connect(self.__handleDel)
+		self.upButton.released.connect(self.__handleUp)
+		self.downButton.released.connect(self.__handleDown)
 		self.paramView.model().newErrorText.connect(self.__handleNewErrorText)
 
 	def __updateAddButton(self):
@@ -364,6 +381,29 @@ class HwmodConfigWidget(QWidget):
 		modDesc = item.data(Qt.UserRole)
 		self.__loadedModDescs.remove(modDesc)
 		self.__handleLoadedSelectChange(self.loadedList.currentItem(), None)
+
+	def __moveLoadedItem(self, direction, item=None):
+		if not item:
+			item = self.loadedList.currentItem()
+		if not item:
+			return
+		row = self.loadedList.row(item)
+		if (row + direction < 0) or\
+		   (row + direction >= self.loadedList.count()):
+			return
+
+		item = self.loadedList.takeItem(row)
+		self.loadedList.insertItem(row + direction, item)
+		self.loadedList.setCurrentItem(item)
+
+		desc = self.__loadedModDescs.pop(row)
+		self.__loadedModDescs.insert(row + direction, desc)
+
+	def __handleUp(self):
+		self.__moveLoadedItem(-1)
+
+	def __handleDown(self):
+		self.__moveLoadedItem(1)
 
 	def __handleNewErrorText(self, text):
 		if text.strip().startswith("["):
