@@ -464,7 +464,9 @@ class CpuWidget(QWidget):
 
 		# Check if the CPU is in RUN mode.
 		client = self.mainWidget.getSimClient()
-		inRunMode = client.getRunState()
+		inRunMode = False
+		with suppressAllExc:
+			inRunMode = client.getRunState()
 
 		# Start the main message fetcher.
 		self.__coreMsgTimer.start(0 if inRunMode else 50)
