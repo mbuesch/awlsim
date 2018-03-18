@@ -421,6 +421,7 @@ class MainWindow(QMainWindow):
 
 		menu = QMenu("&CPU", self)
 		menu.addAction(self.ctrlTb.onlineAction)
+		menu.addAction(self.ctrlTb.resetAction)
 		menu.addAction(self.ctrlTb.downloadAction)
 		menu.addAction(self.ctrlTb.downloadSingleAction)
 		menu.addAction(self.ctrlTb.runAction)
