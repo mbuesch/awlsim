@@ -50,7 +50,7 @@ class SFC47(SFC): #+cdef
 #@cy		cdef double now
 
 		# Get the start time early before fetching WT.
-		timer = perf_monotonic_time
+		timer = monotonic_time
 		start = timer()
 
 		s = self.cpu.statusWord

@@ -1044,7 +1044,7 @@ class S7CPU(object): #+cdef
 		# which is 2147483647 ms, which is 2147483.647 s.
 		# Create an offset to 'self.now' that is added every
 		# time 'self.now' is updated.
-		now = perf_monotonic_time()
+		now = monotonic_time()
 		self.__nowOffset = -(now) + (2147483.647 - 0.1)
 		self.now = now = now + self.__nowOffset
 		self.startupTime = now
@@ -1052,7 +1052,7 @@ class S7CPU(object): #+cdef
 
 	# updateTimestamp() updates self.now, which is a
 	# floating point count of seconds.
-	def updateTimestamp(self, _getTime=perf_monotonic_time): #@nocy
+	def updateTimestamp(self, _getTime=monotonic_time): #@nocy
 #@cy	cdef updateTimestamp(self):
 #@cy		cdef uint32_t value
 #@cy		cdef uint32_t count
@@ -1060,7 +1060,7 @@ class S7CPU(object): #+cdef
 
 		# Update the system time
 		now = _getTime() #@nocy
-#@cy		now = perf_monotonic_time()
+#@cy		now = monotonic_time()
 		self.now = now = now + self.__nowOffset
 
 		# Update the clock memory byte
