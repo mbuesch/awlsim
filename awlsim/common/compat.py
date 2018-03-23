@@ -36,6 +36,7 @@ __all__ = [
 	"contextlib",
 	"osIsWindows",
 	"osIsPosix",
+	"osIsLinux",
 	"standaloneServerExe",
 	"isPyPy",
 	"isJython",
@@ -74,6 +75,7 @@ if os.name == "java":
 else:
 	osIsWindows = os.name == "nt" or os.name == "ce"
 	osIsPosix = os.name == "posix"
+osIsLinux = osIsPosix and "linux" in sys.platform.lower()
 
 # Executable name of the standalone server.
 standaloneServerExe = "awlsim-server-module.exe"
