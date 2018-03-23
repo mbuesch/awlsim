@@ -34,6 +34,7 @@ import binascii
 import functools
 import itertools
 from collections import deque
+import time
 
 
 __all__ = [
@@ -90,7 +91,7 @@ class Logging(object):
 	loglevel = LOG_INFO
 	prefix = ""
 
-	startupTime = monotonic_time()
+	startupTime = time.time()
 
 	@classmethod
 	def setLoglevel(cls, loglevel):
@@ -113,7 +114,7 @@ class Logging(object):
 			if stream:
 				if cls.prefix:
 					stream.write(cls.prefix)
-				now = monotonic_time() - cls.startupTime
+				now = time.time() - cls.startupTime
 				stream.write("[%.3f] " % now)
 				stream.write(text)
 				stream.write("\n")
