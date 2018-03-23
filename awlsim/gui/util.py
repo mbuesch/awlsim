@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim_loader.common import *
 from awlsim_loader.coreclient import *
 import awlsim_loader.cython_helper as cython_helper
+from awlsim.common.monotonic import monotonic_time #+cimport
 
 import sys
 import traceback

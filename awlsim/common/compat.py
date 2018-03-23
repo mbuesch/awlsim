@@ -52,7 +52,6 @@ __all__ = [
 	"range",
 	"reduce",
 	"queue",
-	"monotonic_time",
 	"BlockingIOError",
 	"ConnectionError",
 	"StringIO",
@@ -163,9 +162,6 @@ if isPy2Compat:
 	import Queue as queue
 else:
 	import queue
-
-# Monotonic time. Returns a float second count.
-monotonic_time = getattr(time, "perf_counter", getattr(time, "monotonic", time.time))
 
 # BlockingIOError dummy
 try:

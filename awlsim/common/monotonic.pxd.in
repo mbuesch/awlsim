@@ -1,0 +1,8 @@
+cdef class _monotonic_raw_factory(object):
+	cdef public int __id_CLOCK_MONOTONIC_RAW
+	cdef public object __c
+	cdef public object __ts
+	cdef public object __ffi
+	cdef public double __previous
+
+cdef double monotonic_time()

@@ -26,6 +26,7 @@ from awlsim.common.util import *
 from awlsim.common.subprocess_wrapper import *
 from awlsim.common.net import *
 from awlsim.common.exceptions import *
+from awlsim.common.monotonic import * #+cimport
 
 from awlsim.coreclient.sshtunnel import *
 from awlsim.coreclient.util import *

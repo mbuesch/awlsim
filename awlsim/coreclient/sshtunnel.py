@@ -27,6 +27,7 @@ from awlsim.common.net import *
 from awlsim.common.env import *
 from awlsim.common.util import *
 from awlsim.common.subprocess_wrapper import *
+from awlsim.common.monotonic import * #+cimport
 
 if not osIsWindows:
 	import pty

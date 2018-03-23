@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
+from awlsim.common.monotonic import * #+cimport
 
 from awlsim.core.systemblocks.systemblocks import * #+cimport
 from awlsim.core.blockinterface import *

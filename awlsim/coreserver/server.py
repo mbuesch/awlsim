@@ -30,6 +30,7 @@ from awlsim.common.net import *
 from awlsim.common.env import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
+from awlsim.common.monotonic import * #+cimport
 
 from awlsim.core.main import * #+cimport
 from awlsim.core.symbolparser import *

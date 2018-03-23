@@ -34,6 +34,7 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 from awlsim.common.env import *
 from awlsim.common.version import *
+from awlsim.common.monotonic import * #+cimport
 
 from awlsim.library.libentry import *
 
