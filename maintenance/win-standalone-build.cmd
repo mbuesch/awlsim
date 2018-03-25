@@ -131,7 +131,7 @@ if ERRORLEVEL 1 goto error_copy
 
 echo === Generating startup wrapper
 set wrapper=%distdir%\%project%.cmd
-echo @set PATH=%bindirname%;%%PATH%%> %wrapper%
+echo @set PATH=%bindirname%;%bindirname%\lib;%bindirname%\platforms;%bindirname%\imageformats;%%PATH%%> %wrapper%
 echo @start %project%-bin\awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9>> %wrapper%
 if ERRORLEVEL 1 goto error_wrapper
 
