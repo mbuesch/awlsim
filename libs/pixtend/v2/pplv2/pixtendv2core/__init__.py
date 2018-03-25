@@ -335,11 +335,16 @@ class PiXtendV2Core:
         calling the _auto_mode() function.
         """
 
-        # Get a precise timer that always only monotonically increases
-        # and never decreases.
-        monotonic_time = getattr(time, "monotonic", time.clock)
+        # Get a precise timer for our interval timing.
+        # Try to get a timer that is guaranteed to only monotonically increase.
+        if hasattr(time, "clock_gettime") and hasattr(time, "CLOCK_MONOTONIC_RAW"):
+            timer = lambda: time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+        elif hasattr(time, "monotonic"):
+            timer = time.monotonic
+        else:
+            timer = time.time
 
-        next_auto_mode = monotonic_time()
+        next_auto_mode = timer()
         while not self.__thread_terminate:
 
             # Call the auto mode function
@@ -347,12 +352,14 @@ class PiXtendV2Core:
 
             # Calculate when the next auto mode is due.
             next_auto_mode += self.__thread_interval
-            now = monotonic_time()
+            now = timer()
             if next_auto_mode < now:
                 # The next auto_mode already is in the past.
                 # We probably are not executing fast enough
                 # to hold the deadlines.
-                next_auto_mode = now
+                # But sleep at least one millisecond to give other threads
+                # a chance. Otherwise we might starve them.
+                next_auto_mode = now + 1e-3
 
             # Calculate the duration to the next auto mode deadline
             # and sleep until then.
