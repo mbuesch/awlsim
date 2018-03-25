@@ -1,8 +1,8 @@
 #
 #   Cython patcher
-#   v1.8
+#   v1.9
 #
-#   Copyright (C) 2012-2017 Michael Buesch <m@bues.ch>
+#   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -319,6 +319,14 @@ def cythonBuildPossible():
 		      "Windows installer.")
 		return False
 	try:
+		import Cython.Compiler.Options
+		# Omit docstrings in cythoned modules.
+		Cython.Compiler.Options.docstrings = False
+		# Generate module exit cleanup code.
+		Cython.Compiler.Options.generate_cleanup_code = True
+		# Generate HTML outputs.
+		Cython.Compiler.Options.annotate = True
+
 		from Cython.Distutils import build_ext, Extension
 		global _Cython_Distutils_build_ext
 		global _Cython_Distutils_Extension
