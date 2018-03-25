@@ -87,7 +87,7 @@ py setup.py py2exe ^
 	--bundle-files=3 ^
 	--ignores=win32api,win32con,readline,awlsim_cython ^
 	--excludes=%excludes% ^
-	--packages=awlsimhw_debug,awlsimhw_dummy,awlsim.library.iec ^
+	--packages=awlsimhw_debug,awlsimhw_dummy,awlsimhw_linuxcnc,awlsimhw_pyprofibus,awlsimhw_rpigpio,awlsimhw_pixtend,awlsim.library.iec ^
 	--quiet
 if ERRORLEVEL 1 goto error_exe
 goto copy_files

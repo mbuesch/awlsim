@@ -88,6 +88,15 @@ if isWindows or fullBuild:
 if not isWindows or fullBuild:
 	scripts.append("awlsim-linuxcnc-hal")
 
+# List of all hardware modules.
+hwmodules = [
+	"awlsimhw_debug",
+	"awlsimhw_dummy",
+	"awlsimhw_linuxcnc",
+	"awlsimhw_pyprofibus",
+	"awlsimhw_rpigpio",
+	"awlsimhw_pixtend",
+]
 
 # Create freeze executable list.
 guiBase = None
@@ -116,10 +125,8 @@ if cx_Freeze:
 						      base = base))
 	extraKeywords["executables"] = executables
 	extraKeywords["options"] = {
-			"build_exe"     : {
-				"packages"      : [ "awlsimhw_debug",
-						    "awlsimhw_dummy",
-						    "awlsim.library.iec", ],
+			"build_exe" : {
+				"packages" : hwmodules + [ "awlsim.library.iec", ],
 			}
 		}
 
@@ -150,12 +157,7 @@ setup(	name		= "awlsim",
 			    "awlsim/gui/interfedit",
 			    "awlsim/library",
 			    "awlsim/library/iec",
-			    "awlsimhw_debug",
-			    "awlsimhw_dummy",
-			    "awlsimhw_linuxcnc",
-			    "awlsimhw_pyprofibus",
-			    "awlsimhw_rpigpio",
-			    "awlsimhw_pixtend", ],
+			  ] + hwmodules,
 	scripts		= scripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
