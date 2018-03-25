@@ -177,11 +177,14 @@ dtparam=i2c_vc=on
 #dtparam=i2s=on
 dtparam=spi=on
 
-# Uncomment this to enable the lirc-rpi module
-#dtoverlay=lirc-rpi
+# I2C-1 baud rate 100 kHz
+dtparam=i2c1_baudrate=100000
 
 # Enable DS1307 real time clock
 dtoverlay=i2c-rtc,ds1307
+
+# Uncomment this to enable the lirc-rpi module
+#dtoverlay=lirc-rpi
 
 # Additional overlays and parameters are documented /boot/overlays/README
 
@@ -650,11 +653,6 @@ for i in 28 29; do
 	/bin/echo in > /sys/class/gpio/gpio\${i}/direction
 done
 
-# Add HAT eeprom device.
-if ! [ -d "/sys/class/i2c-adapter/i2c-0/0-0050" ]; then
-	/bin/echo "24c32 0x50" > /sys/class/i2c-adapter/i2c-0/new_device
-fi
-
 # Add /dev/ttyS0 link for convenience.
 if ! [ -e /dev/ttyS0 ]; then
 	/bin/ln -s /dev/ttyAMA0 /dev/ttyS0
@@ -667,10 +665,7 @@ EOF
 
 	info "Creating /etc/modules-load.d/i2c.conf..."
 	cat > /etc/modules-load.d/i2c.conf <<EOF
-i2c-dev
-i2c-bcm2708
-at24
-rtc-rv3029c2
+i2c_dev
 EOF
 	[ $? -eq 0 ] || die "Failed to create /etc/modules-load.d/i2c.conf"
 
