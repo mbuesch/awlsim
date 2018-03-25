@@ -24,7 +24,6 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 
-from cffi import FFI
 import time
 
 
@@ -90,6 +89,14 @@ class _MONOTONIC_RAW_CFFI_factory(_MONOTONIC_RAW_factory): #+cdef
 	def probe(self):
 		if not osIsLinux:
 			printInfo("CLOCK_MONOTONIC_RAW is only available on Linux.")
+			return False
+
+		try:
+			from cffi import FFI
+		except ImportError as e:
+			printWarning("Failed to import CFFI: %s\n"
+				     "Cannot use CLOCK_MONOTONIC_RAW via CFFI." % (
+				     str(e)))
 			return False
 
 		self.__id_CLOCK_MONOTONIC_RAW = 4
