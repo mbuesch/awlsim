@@ -10,6 +10,8 @@ exec apt install \
 	cython \
 	cython3 \
 	build-essential \
+	python-cffi \
+	python3-cffi \
 	python-nose \
 	python3-nose \
 	python-serial \
