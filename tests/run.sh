@@ -799,6 +799,7 @@ show_help()
 	infomsg " -qq                           Shortcut for: -q -j 0"
 	infomsg " -g|--no-gui                   Avoid tests that need GUI libraries"
 	infomsg " -x|--extended                 Run tests on additional interpreters"
+	infomsg " -n|--renice NICENESS          Renice by NICENESS. Defaults to 10."
 	infomsg " -Q|--quiet                    Less messages"
 	infomsg " -L|--loglevel                 Default log level."
 	infomsg " -l|--loop COUNT               Number of test loops to execute."
