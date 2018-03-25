@@ -33,17 +33,64 @@ __all__ = [
 ]
 
 
-class _monotonic_raw_factory(object): #+cdef
+class _MONOTONIC_RAW_factory(object): #+cdef
+	"""CLOCK_MONOTONIC_RAW wrapper base class.
+	"""
+
+	def probe(self):
+		"""Probe this timer.
+		Returns True, if this timer works correctly.
+		"""
+		raise NotImplementedError
+
+	def monotonic_raw(self):
+		"""Returns the timer as float.
+		"""
+		raise NotImplementedError
+
+	def _sanityCheck(self):
+		"""Check if CLOCK_MONOTONIC_RAW works correctly.
+		"""
+		try:
+			a = self.monotonic_raw()
+			time.sleep(1e-3)
+			b = self.monotonic_raw()
+			if b - a <= 0.0 or b - a > 1.0:
+				raise RuntimeError
+		except Exception as e:
+			return False
+		return True
+
+class _MONOTONIC_RAW_timemodule_factory(_MONOTONIC_RAW_factory): #+cdef
+	"""CLOCK_MONOTONIC_RAW time module wrapper.
+	"""
+
+	def probe(self):
+		if not hasattr(time, "clock_gettime") or\
+		   not hasattr(time, "CLOCK_MONOTONIC_RAW"):
+			return False
+
+		self.__clock_gettime = time.clock_gettime
+		self.__id_CLOCK_MONOTONIC_RAW = time.CLOCK_MONOTONIC_RAW
+
+		if not self._sanityCheck():
+			printWarning("CLOCK_MONOTONIC_RAW (time module) does not work "
+				     "correctly on this system. Falling "
+				     "back to an alternative.")
+			return False
+		return True
+
+	def monotonic_raw(self):
+		return self.__clock_gettime(self.__id_CLOCK_MONOTONIC_RAW)
+
+class _MONOTONIC_RAW_CFFI_factory(_MONOTONIC_RAW_factory): #+cdef
 	"""CLOCK_MONOTONIC_RAW CFFI wrapper.
 	"""
 
-	def make(self):
-		"""Returns the CLOCK_MONOTONIC_RAW function
-		or None on failure.
-		"""
+	def probe(self):
 		if not osIsLinux:
 			printInfo("CLOCK_MONOTONIC_RAW is only available on Linux.")
-			return None
+			return False
 
 		self.__id_CLOCK_MONOTONIC_RAW = 4
 
@@ -58,65 +105,73 @@ class _monotonic_raw_factory(object): #+cdef
 		""")
 		self.__c = self.__ffi.dlopen(None)
 		self.__ts = self.__ffi.new("struct timespec *")
-		self.__previous = -1.0
 
-		# Sanity check
-		try:
-			a = self.__monotonic_raw()
-			time.sleep(1e-3)
-			b = self.__monotonic_raw()
-			if a < 0.0 or b < 0.0 or\
-			   b - a <= 0.0 or b - a > 1.0:
-				raise RuntimeError
-		except Exception as e:
-			printWarning("CLOCK_MONOTONIC_RAW does not work "
+		if not self._sanityCheck():
+			printWarning("CLOCK_MONOTONIC_RAW (CFFI) does not work "
 				     "correctly on this system. Falling "
 				     "back to an alternative.")
-			return None
+			return False
+		return True
 
-		return self.__monotonic_raw
-
-	def __monotonic_raw(self):
-#@cy		cdef double t
-
+	def monotonic_raw(self):
 		ts = self.__ts
 		if self.__c.clock_gettime(self.__id_CLOCK_MONOTONIC_RAW, ts):
-			printError("CLOCK_MONOTONIC_RAW failed.")
-			t = self.__previous
-		else:
-			self.__previous = t = float(ts.tv_sec) + (float(ts.tv_nsec) / 1e9)
-		return t
+			raise OSError("CLOCK_MONOTONIC_RAW failed.")
+		return float(ts.tv_sec) + (float(ts.tv_nsec) / 1e9)
 
 def _monotonic_time_init():
-	"""Initialize _monotonic_time_handler.
+	"""Initialize _monotonicTimeHandler.
 	This will be called on the first call to monotonic_time().
 	"""
-	global _monotonic_time_handler
+	global _monotonicTimeHandler
 
-	_monotonic_time_handler = _monotonic_raw_factory().make()
-	if _monotonic_time_handler:
-		printVerbose("Using CLOCK_MONOTONIC_RAW as monotonic timer.")
-		return _monotonic_time_handler()
+	# Probe time.clock_gettime(CLOCK_MONOTONIC_RAW)
+	factory = _MONOTONIC_RAW_timemodule_factory()
+	if factory.probe():
+		printVerbose("Using CLOCK_MONOTONIC_RAW (time module) as monotonic timer.")
+		_monotonicTimeHandler = factory.monotonic_raw
+		return _monotonicTimeHandler()
 
-	_monotonic_time_handler = getattr(time, "perf_counter", None)
-	if _monotonic_time_handler:
+	# Probe CFFI clock_gettime(CLOCK_MONOTONIC_RAW)
+	factory = _MONOTONIC_RAW_CFFI_factory()
+	if factory.probe():
+		printVerbose("Using CLOCK_MONOTONIC_RAW (CFFI) as monotonic timer.")
+		_monotonicTimeHandler = factory.monotonic_raw
+		return _monotonicTimeHandler()
+
+	# Probe time.perf_counter
+	_monotonicTimeHandler = getattr(time, "perf_counter", None)
+	if _monotonicTimeHandler:
 		printInfo("Using time.perf_counter() as monotonic timer.")
-		return _monotonic_time_handler()
+		return _monotonicTimeHandler()
 
-	_monotonic_time_handler = getattr(time, "monotonic", None)
-	if _monotonic_time_handler:
+	# Probe time.monotonic
+	_monotonicTimeHandler = getattr(time, "monotonic", None)
+	if _monotonicTimeHandler:
 		printInfo("Using time.monotonic() as monotonic timer.")
-		return _monotonic_time_handler()
+		return _monotonicTimeHandler()
 
+	# Out of luck. Use non-monotonic time.time
 	printWarning("Falling back to non-monotonic time.time() timer.")
-	_monotonic_time_handler = time.time
-	return _monotonic_time_handler()
+	_monotonicTimeHandler = time.time
+	return _monotonicTimeHandler()
 
-_monotonic_time_handler = _monotonic_time_init
+#cdef object _monotonicTimeHandler #@cy
+_monotonicTimeHandler = _monotonic_time_init
+
+#cdef double _prevMonotonicTime #@cy
+_prevMonotonicTime = 0.0
 
 # Get a monotonic time count, as float second count.
-# The zero reference is undefined.
+# The reference is undefined, so this can only be used for relative times.
 def monotonic_time(): #@nocy
 #cdef double monotonic_time(): #@cy
-	global _monotonic_time_handler
-	return _monotonic_time_handler()
+#@cy	cdef double t
+	global _monotonicTimeHandler
+	global _prevMonotonicTime
+
+	try:
+		t = _prevMonotonicTime = _monotonicTimeHandler()
+	except Exception as e:
+		t = _prevMonotonicTime
+	return t
