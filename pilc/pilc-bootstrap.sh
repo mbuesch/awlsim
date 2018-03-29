@@ -50,15 +50,25 @@ PPL2_MIRROR="./libs/pixtend/v2/pplv2/$PPL2_FILE"
 PPL2_SHA256="ba5259e612beccb55f664bfa22d27390ec766ce655b193c27695fe8a2ceca606"
 
 
-die()
-{
-	echo "=== $*" >&2
-	exit 1
-}
-
 info()
 {
 	echo "--- $*"
+}
+
+error()
+{
+	echo "=== ERROR: $*" >&2
+}
+
+warning()
+{
+	echo "=== WARNING: $*" >&2
+}
+
+die()
+{
+	error "$*"
+	exit 1
 }
 
 # print the first of its arguments.
@@ -111,6 +121,14 @@ write_image()
 {
 	local image="$1"
 	local dev="$2"
+
+	if have_program blkdiscard; then
+		info "Discarding $dev ..."
+		blkdiscard "$dev" ||\
+			error "blkdiscard failed."
+	else
+		warning "Skipping discard. blkdiscard not installed."
+	fi
 
 	info "Writing $image to $dev ..."
 
