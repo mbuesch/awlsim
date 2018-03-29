@@ -15,6 +15,8 @@ call :install PyQt5
 if ERRORLEVEL 1 exit /B 1
 call :install cx_Freeze
 if ERRORLEVEL 1 exit /B 1
+call :install pywin32
+if ERRORLEVEL 1 exit /B 1
 
 
 echo ---
