@@ -832,13 +832,14 @@ EOF
 		#TODO install unit via package
 		info "Installing awlsim service unit..."
 		local awlsim_prefix=/usr
-		local site="$awlsim_prefix/lib/python2.7/dist-packages"
+		local pyver=3
+		local site="$awlsim_prefix/lib/python$pyver/dist-packages"
 		cat awlsim-server.service.in |\
 		sed -e 's|@USER@|root|g' \
 		    -e 's|@GROUP@|root|g' \
 		    -e "s|@PREFIX@|$awlsim_prefix|g" \
 		    -e 's|@PROJECT@|/etc/awlsim-server.awlpro|g' \
-		    -e 's|@PYTHON@|/usr/bin/python2.7|g' \
+		    -e "s|@PYTHON@|/usr/bin/python$pyver|g" \
 		    -e "s|@PYTHON_SITE@|$site|g" >\
 		    /etc/systemd/system/awlsim-server.service ||\
 		    die "Failed to create awlsim-server.service"
@@ -878,17 +879,6 @@ EOF
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
-
-	info "Extending pi user environment..."
-	cat >> /home/pi/.bashrc <<EOF
-
-# PiLC
-for __i in /opt/awlsim/lib/python*/site-packages/; do
-	export PYTHONPATH="\$PYTHONPATH:\$__i"
-done
-export PATH="\$PATH:/opt/awlsim/bin"
-EOF
-	[ $? -eq 0 ] || die "Failed to extend /home/pi/.bashrc"
 
 	info "Configuring network..."
 	cat > /etc/network/interfaces.d/lo <<EOF
