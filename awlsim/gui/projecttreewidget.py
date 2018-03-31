@@ -643,13 +643,13 @@ class SourceContextMenu(QMenu):
 	enable = Signal(bool)
 
 	def __init__(self, itemCategoryName, itemName,
-		     withEditButton=True,
-		     withAddButton=True,
-		     withDeleteButton=True,
-		     withRenameButton=True,
-		     withIntegrateButton=True,
-		     withImportButton=True,
-		     withExportButton=True,
+		     withEditButton=False,
+		     withAddButton=False,
+		     withDeleteButton=False,
+		     withRenameButton=False,
+		     withIntegrateButton=False,
+		     withImportButton=False,
+		     withExportButton=False,
 		     withEnableButton=False,
 		     withDisableButton=False,
 		     parent=None):
@@ -768,7 +768,12 @@ class ProjectTreeView(QTreeView):
 		ProjectTreeModel.INDEXID_SRCS_SYMTAB	: baseToCatName[ProjectTreeModel.INDEXID_SRCS_SYMTAB_BASE],
 	}
 
-	def __showSourceContextMenu(self, index, catName, onContainer):
+	def __showSourceContextMenu(self, index,
+				    catName=None,
+				    itemName=None,
+				    onContainer=False,
+				    onSource=False,
+				    onStaticItem=False):
 		model = self.model()
 		idxIdBase, idxId, itemNr = model.indexToId(index)
 
@@ -781,7 +786,8 @@ class ProjectTreeView(QTreeView):
 		# Extract source information
 		itemIsEnabled = bool(source and source.enabled)
 		itemIsFileBacked = bool(source and source.isFileBacked())
-		itemName = source.name if source else None
+		if not itemName:
+			itemName = source.name if source else None
 
 		# Source-edit handler
 		def handleEdit():
@@ -827,15 +833,15 @@ class ProjectTreeView(QTreeView):
 		menu = SourceContextMenu(
 				itemCategoryName=catName,
 				itemName=itemName,
-				withEditButton=True,
-				withAddButton=True,
-				withDeleteButton=not onContainer,
-				withRenameButton=not onContainer,
-				withIntegrateButton=not onContainer and itemIsFileBacked,
-				withImportButton=True,
-				withExportButton=not onContainer,
-				withEnableButton=not onContainer and not itemIsEnabled,
-				withDisableButton=not onContainer and itemIsEnabled,
+				withEditButton=(onSource or onStaticItem),
+				withAddButton=(onContainer or onSource),
+				withDeleteButton=onSource,
+				withRenameButton=onSource,
+				withIntegrateButton=(onSource and itemIsFileBacked),
+				withImportButton=(onContainer or onSource),
+				withExportButton=onSource,
+				withEnableButton=(onSource and not itemIsEnabled),
+				withDisableButton=(onSource and itemIsEnabled),
 				parent=self)
 		menu.edit.connect(handleEdit)
 		menu.add.connect(handleAdd)
@@ -857,16 +863,24 @@ class ProjectTreeView(QTreeView):
 			if buttons & Qt.RightButton:
 				idxIdBase, idxId, itemNr = model.indexToId(index)
 
-				onContainer = False
+				onContainer, onSource = False, True
 				catName = self.baseToCatName.get(idxIdBase)
 				if not catName:
 					catName = self.idToCatName.get(idxId)
 					if catName:
-						onContainer = True
+						onContainer, onSource = True, False
 				if catName:
 					self.__showSourceContextMenu(index=index,
 								     catName=catName,
-								     onContainer=onContainer)
+								     onContainer=onContainer,
+								     onSource=onSource)
+				elif idxId in {ProjectTreeModel.INDEXID_CPU,
+					       ProjectTreeModel.INDEXID_CONN,
+					       ProjectTreeModel.INDEXID_HW}:
+					itemName = model.data(index)
+					self.__showSourceContextMenu(index=index,
+								     itemName=itemName,
+								     onStaticItem=True)
 		finally:
 			self.__currentIndex = None
 
