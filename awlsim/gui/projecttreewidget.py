@@ -227,7 +227,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			if not source:
 				source = SymTabSource()
 		else:
-			return False
+			return None
 
 		if not source.name:
 			source.name = ">>> New source <<<"
@@ -245,7 +245,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			setter(sources)
 		finally:
 			self.endInsertRows()
-		return True
+		return self.index(pos, 0, parentIndex)
 
 	def entryRename(self, index, newName=None, parentWidget=None):
 		idxIdBase, idxId, itemNr = self.indexToId(index)
@@ -798,9 +798,10 @@ class ProjectTreeView(QTreeView):
 			base = idxIdBase
 			if base == 0:
 				base = model.id2childBase[idxId]
-			model.entryAdd(base, parentWidget=self)
+			index = model.entryAdd(base, parentWidget=self)
+			#TODO expand tree
+			model.entryRename(index, parentWidget=self)
 			#TODO open it
-			#TODO start rename
 
 		# Source-remove handler
 		def handleDelete():
