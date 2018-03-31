@@ -798,10 +798,11 @@ class ProjectTreeView(QTreeView):
 			base = idxIdBase
 			if base == 0:
 				base = model.id2childBase[idxId]
-			index = model.entryAdd(base, parentWidget=self)
-			#TODO expand tree
-			model.entryRename(index, parentWidget=self)
-			#TODO open it
+			newIndex = model.entryAdd(base, parentWidget=self)
+			if newIndex:
+				self.expand(index)
+				model.entryRename(newIndex, parentWidget=self)
+				model.entryActivate(newIndex, parentWidget=self)
 
 		# Source-remove handler
 		def handleDelete():
