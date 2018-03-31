@@ -754,6 +754,7 @@ class ProjectTreeView(QTreeView):
 		if model:
 			self.expand(model.idToIndex(model.INDEXID_SRCS))
 			self.expand(model.idToIndex(model.INDEXID_SRCS_AWL))
+			self.expand(model.idToIndex(model.INDEXID_SRCS_FUP))
 
 	baseToCatName = {
 		ProjectTreeModel.INDEXID_SRCS_AWL_BASE		: "AWL source",
@@ -878,7 +879,8 @@ class ProjectTreeView(QTreeView):
 								     onSource=onSource)
 				elif idxId in {ProjectTreeModel.INDEXID_CPU,
 					       ProjectTreeModel.INDEXID_CONN,
-					       ProjectTreeModel.INDEXID_HW}:
+					       ProjectTreeModel.INDEXID_HW,
+					       ProjectTreeModel.INDEXID_SRCS_LIBSEL}:
 					itemName = model.data(index)
 					self.__showSourceContextMenu(index=index,
 								     itemName=itemName,
