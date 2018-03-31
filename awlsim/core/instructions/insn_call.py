@@ -45,35 +45,35 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					codeBlock = self.cpu.fcs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FC not found",
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
 				try:
 					codeBlock = self.cpu.sfcs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFC %d not implemented, yet" %\
 						blockOper.offset.byteOffset,
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
 				if self.insnType == AwlInsn.TYPE_CALL:
 					raise AwlSimError("Missing DB in function "
 						"block call",
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 				try:
 					codeBlock = self.cpu.fbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FB not found",
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
 				if self.insnType == AwlInsn.TYPE_CALL:
 					raise AwlSimError("Missing DB in system function "
 						"block call",
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 				try:
 					codeBlock = self.cpu.sfbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("SFB %d not implemented, yet" %\
 						blockOper.offset.byteOffset,
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 			elif blockOper.operType == AwlOperatorTypes.INDIRECT:
 				# Indirect call. (like UC FC[MW 0])
 				codeBlock = None
@@ -85,7 +85,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					codeBlock = self.cpu.sfbs[blockOper.offset.fbNumber]
 			else:
 				raise AwlSimError("Invalid CALL operand",
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 
 			if self.insnType == AwlInsn.TYPE_CALL and\
 			   codeBlock and\
@@ -96,7 +96,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					"====  The block interface is:\n%s\n====" %\
 					(len(self.params), codeBlock.interface.interfaceFieldCount,
 					 str(codeBlock.interface)),
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 		elif self.opCount == 2:
 			# "CALL FB/SFB"
 			blockOper = self.op0
@@ -105,23 +105,23 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			if dbOper.operType != AwlOperatorTypes.BLKREF_DB:
 				raise AwlSimError("Second CALL operand is "
 					"not a DB operand.",
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 			try:
 				db = self.cpu.dbs[dbOper.offset.byteOffset]
 			except KeyError as e:
 				raise AwlSimError("DB used in FB call not found",
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 			if not db.isInstanceDB():
 				raise AwlSimError("DB %d is not an instance DB" %\
 					dbOper.offset.byteOffset,
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 
 			if blockOper.operType == AwlOperatorTypes.BLKREF_FB:
 				try:
 					fb = self.cpu.fbs[blockOper.offset.byteOffset]
 				except KeyError as e:
 					raise AwlSimError("Called FB not found",
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 				# TODO check if this is an FB-DB
 				pass#TODO
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
@@ -130,23 +130,23 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 				except KeyError as e:
 					raise AwlSimError("SFB %d not implemented, yet" %\
 						blockOper.offset.byteOffset,
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 				# TODO check if this is an SFB-DB
 				pass#TODO
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_FC or\
 			     blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
 				raise AwlSimError("Calling function, but "
 					"a DB was specified.",
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 			else:
 				raise AwlSimError("Invalid CALL operand",
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 
 			if db.codeBlock.index != fb.index:
 				raise AwlSimError("DB %d is not an instance DB for FB %d" %\
 					(dbOper.offset.byteOffset,
 					 blockOper.offset.byteOffset),
-					rawInsn = self.rawInsn)
+					rawInsn=self.getRawInsn())
 		else:
 			assert(0)
 		# Check parameter assignments
@@ -164,7 +164,7 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 						"not allowed." %\
 						(str(param.rvalueOp),
 						 param.lvalueName),
-						rawInsn = self.rawInsn)
+						rawInsn=self.getRawInsn())
 
 class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 
