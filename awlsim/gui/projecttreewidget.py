@@ -2,7 +2,7 @@
 #
 # AWL simulator - Project tree widget
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -73,9 +73,9 @@ class ProjectTreeModel(QAbstractItemModel):
 	row2id_srcs = {
 		0	: INDEXID_SRCS_AWL,
 		1	: INDEXID_SRCS_FUP,
-		2	: INDEXID_SRCS_KOP,
-		3	: INDEXID_SRCS_SYMTAB,
-		4	: INDEXID_SRCS_LIBSEL,
+#		2	: INDEXID_SRCS_KOP,
+		2	: INDEXID_SRCS_SYMTAB,
+		3	: INDEXID_SRCS_LIBSEL,
 	}
 	id2row_srcs = pivotDict(row2id_srcs)
 
@@ -734,10 +734,6 @@ class ProjectTreeView(QTreeView):
 
 		self.__currentIndex = None
 
-		self.__srcMenu = QMenu(self)
-		self.__srcMenu.addAction("&Remove source from project...",
-					 self.__removeSource)
-
 		self.pressed.connect(self.__mouseBtnPressed)
 		self.doubleClicked.connect(self.__mouseBtnDoubleClicked)
 
@@ -780,9 +776,10 @@ class ProjectTreeView(QTreeView):
 
 		# Get the source, if any.
 		source = None
-		getter, setter = model.sourceGetter(idxIdBase)
-		if getter:
-			source = getter()[itemNr]
+		if onSource:
+			getter, setter = model.sourceGetter(idxIdBase)
+			if getter:
+				source = getter()[itemNr]
 
 		# Extract source information
 		itemIsEnabled = bool(source and source.enabled)
@@ -866,6 +863,7 @@ class ProjectTreeView(QTreeView):
 			if buttons & Qt.RightButton:
 				idxIdBase, idxId, itemNr = model.indexToId(index)
 
+				# Open the context menu.
 				onContainer, onSource = False, True
 				catName = self.baseToCatName.get(idxIdBase)
 				if not catName:
