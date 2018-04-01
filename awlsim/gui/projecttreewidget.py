@@ -358,6 +358,9 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.beginResetModel()
 		try:
 			self.__project = project
+			editMdiArea = self.editMdiArea
+			#TODO close MDI windows
+
 #			self.setSettings(project.getGuiSettings())
 #			if self.awlTabs:
 #				self.awlTabs.setSources(self.__project.getAwlSources())

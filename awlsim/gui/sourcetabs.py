@@ -143,8 +143,6 @@ class SourceTabWidget(QTabWidget):
 		self.itemName = itemName
 		self.projectWidget = projectWidget
 
-		self.guiSettings = GuiSettings()
-
 		self.contextMenu = SourceTabContextMenu(itemName, self)
 
 		self.setMovable(True)
@@ -221,9 +219,6 @@ class SourceTabWidget(QTabWidget):
 		if curWidget:
 			return curWidget.getSource()
 		return None
-
-	def setSettings(self, guiSettings):
-		self.guiSettings = guiSettings
 
 	def integrateSource(self):
 		curWidget = self.currentWidget()
@@ -396,31 +391,6 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.updateActionMenu()
 		self.setCurrentIndex(0)
 		self.updateTabTexts()
-
-	def setSettings(self, guiSettings):
-		SourceTabWidget.setSettings(self, guiSettings)
-
-		for editWidget in self.allTabWidgets():
-			editWidget.setSettings(guiSettings)
-
-	def addEditWidget(self):
-		editWidget = EditWidget(self)
-		editWidget.setSettings(self.guiSettings)
-		editWidget.codeChanged.connect(self.sourceChanged)
-		editWidget.focusChanged.connect(self.focusChanged)
-		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
-		editWidget.cpuCodeMatchChanged.connect(self.__handleCodeMatchChange)
-		editWidget.undoAvailable.connect(self.undoAvailableChanged)
-		editWidget.redoAvailable.connect(self.redoAvailableChanged)
-		editWidget.copyAvailable.connect(self.copyAvailableChanged)
-		editWidget.resizeFont.connect(self.resizeFont)
-		editWidget.validateDocument.connect(
-			lambda editWidget: self.validateDocument.emit(editWidget))
-		index = self.addTab(editWidget, editWidget.getSource().name)
-		self.setCurrentIndex(index)
-		self.updateActionMenu()
-		self.sourceChanged.emit()
-		return index, editWidget
 
 	def deleteCurrent(self):
 		index = self.currentIndex()

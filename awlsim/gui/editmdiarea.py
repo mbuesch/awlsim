@@ -44,6 +44,7 @@ class EditMdiArea(QMdiArea):
 		self.setViewMode(QMdiArea.TabbedView)
 		self.setTabsClosable(True)
 		self.setTabsMovable(True)
+		self._guiSettings = GuiSettings()
 
 	def getProjectTreeModel(self):
 		return self.mainWidget.projectTreeModel
@@ -54,19 +55,19 @@ class EditMdiArea(QMdiArea):
 		return mdiSubWin
 
 	def newWin_AWL(self, source):
-		return self.__newWin(AwlEditMdiSubWindow(source))
+		return self.__newWin(AwlEditMdiSubWindow(self, source))
 
 	def newWin_FUP(self, source):
-		return self.__newWin(FupEditMdiSubWindow(source))
+		return self.__newWin(FupEditMdiSubWindow(self, source))
 
 	def newWin_KOP(self, source):
-		return self.__newWin(KopEditMdiSubWindow(source))
+		return self.__newWin(KopEditMdiSubWindow(self, source))
 
 	def newWin_SymTab(self, source):
-		return self.__newWin(SymTabEditMdiSubWindow(source))
+		return self.__newWin(SymTabEditMdiSubWindow(self, source))
 
 	def newWin_Libsel(self, libSelections):
-		return self.__newWin(LibSelEditMdiSubWindow(libSelections))
+		return self.__newWin(LibSelEditMdiSubWindow(self, libSelections))
 
 	def undoIsAvailable(self):
 		mdiSubWin = self.activeSubWindow()
@@ -123,6 +124,11 @@ class EditMdiArea(QMdiArea):
 	def findReplaceText(self):
 		mdiSubWin = self.activeSubWindow()
 		return mdiSubWin.findReplaceText() if mdiSubWin else False
+
+	def setGuiSettings(self, guiSettings):
+		self._guiSettings = guiSettings
+		for mdiSubWin in self.subWindowList():
+			mdiSubWin.setGuiSettings(guiSettings)
 
 class EditMdiSubWindow(QMdiSubWindow):
 	closed = Signal(QMdiSubWindow)
@@ -191,13 +197,28 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def findReplaceText(self):
 		return False
 
+	def setGuiSettings(self, guiSettings):
+		pass
+
 class AwlEditMdiSubWindow(EditMdiSubWindow):
-	def __init__(self, source):
+	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
 		self.editWidget = EditWidget(self)
 		self.editWidget.setSource(source)
+		self.editWidget.setSettings(mdiArea._guiSettings)
 		self.setWidget(self.editWidget)
+
+#TODO		editWidget.codeChanged.connect(self.sourceChanged)
+#TODO		editWidget.focusChanged.connect(self.focusChanged)
+#TODO		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
+#TODO		editWidget.cpuCodeMatchChanged.connect(self.__handleCodeMatchChange)
+#TODO		editWidget.undoAvailable.connect(self.undoAvailableChanged)
+#TODO		editWidget.redoAvailable.connect(self.redoAvailableChanged)
+#TODO		editWidget.copyAvailable.connect(self.copyAvailableChanged)
+#TODO		editWidget.resizeFont.connect(self.resizeFont)
+#TODO		editWidget.validateDocument.connect(
+#TODO			lambda editWidget: self.validateDocument.emit(editWidget))
 
 		self.setWindowTitle(source.name + " (AWL)")
 
@@ -253,8 +274,11 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.findReplaceText()
 		return True
 
+	def setGuiSettings(self, guiSettings):
+		self.editWidget.setSettings(guiSettings)
+
 class FupEditMdiSubWindow(EditMdiSubWindow):
-	def __init__(self, source):
+	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
 		def getSymTabSourcesFunc():
@@ -274,10 +298,13 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		return self.fupWidget.getSource()
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
+	def __init__(self, mdiArea, source):
+		EditMdiSubWindow.__init__(self)
+
 	pass#TODO
 
 class SymTabEditMdiSubWindow(EditMdiSubWindow):
-	def __init__(self, source):
+	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
 		self.symTabView = SymTabView(self)
@@ -291,7 +318,7 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 		return self.symTabView.model().getSource()
 
 class LibSelEditMdiSubWindow(EditMdiSubWindow):
-	def __init__(self, libSelections):
+	def __init__(self, mdiArea, libSelections):
 		EditMdiSubWindow.__init__(self)
 
 		self.libTabView = LibTableView(model=None, parent=self)

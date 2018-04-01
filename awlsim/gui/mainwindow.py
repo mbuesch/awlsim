@@ -286,27 +286,22 @@ class MainWidget(QWidget):
 		dlg = GuiConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
 		if dlg.exec_() == dlg.Accepted:
-			#TODO
-			self.projectWidget.setSettings(self.getProject().getGuiSettings())
-		dlg.deleteLater()
+			self.editMdiArea.setGuiSettings(self.getProject().getGuiSettings())
 
 	def linkConfig(self):
 		dlg = LinkConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
 		dlg.exec_()
-		dlg.deleteLater()
 
 	def cpuConfig(self):
 		dlg = CpuConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
 		dlg.exec_()
-		dlg.deleteLater()
 
 	def hwmodConfig(self):
 		dlg = HwmodConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
 		dlg.exec_()
-		dlg.deleteLater()
 
 	def __pasteAwlText(self, text):
 		if not self.editMdiArea.paste(text):
