@@ -44,10 +44,18 @@ class EditMdiArea(QMdiArea):
 		self.setViewMode(QMdiArea.TabbedView)
 		self.setTabsClosable(True)
 		self.setTabsMovable(True)
-		self._guiSettings = GuiSettings()
+		self.resetArea()
 
 	def getProjectTreeModel(self):
 		return self.mainWidget.projectTreeModel
+
+	def resetArea(self):
+		"""Close all MDI sub windows and clear all state.
+		"""
+		for mdiSubWin in list(self.subWindowList()):
+			mdiSubWin.forceClose()
+			del mdiSubWin
+		self._guiSettings = GuiSettings()
 
 	def __newWin(self, mdiSubWin):
 		self.addSubWindow(mdiSubWin)

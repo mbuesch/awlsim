@@ -358,21 +358,17 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.beginResetModel()
 		try:
 			self.__project = project
-			editMdiArea = self.editMdiArea
-			#TODO close MDI windows
 
-#			self.setSettings(project.getGuiSettings())
-#			if self.awlTabs:
-#				self.awlTabs.setSources(self.__project.getAwlSources())
-#			if self.fupTabs:
-#				self.fupTabs.setSources(self.__project.getFupSources())
-#			if self.kopTabs:
-#				self.kopTabs.setSources(self.__project.getKopSources())
-#			if self.symTabs:
-#				self.symTabs.setSources(self.__project.getSymTabSources())
-#			self.libTable.model().setLibSelections(self.__project.getLibSelections())
+			# Close all possibly open edit windows.
+			editMdiArea = self.editMdiArea
+			editMdiArea.resetArea()
+
+			editMdiArea.setGuiSettings(project.getGuiSettings())
+
 			self.__warnedFileBacked = False
 			self.__isAdHocProject = False
+		except Exception as e:
+			self.__reset()
 		finally:
 			self.endResetModel()
 
