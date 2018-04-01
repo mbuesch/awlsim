@@ -500,64 +500,6 @@ class AwlSourceTabWidget(SourceTabWidget):
 		self.updateTabTexts()
 		self.updateActionMenu()
 
-	def pasteText(self, text):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.pasteText(text)
-
-	def undoIsAvailable(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			return editWidget.undoIsAvailable()
-		return False
-
-	def undo(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.undo()
-
-	def redo(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.redo()
-
-	def redoIsAvailable(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			return editWidget.redoIsAvailable()
-		return False
-
-	def copyIsAvailable(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			return editWidget.copyIsAvailable()
-		return False
-
-	def clipboardCut(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.cut()
-
-	def clipboardCopy(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.copy()
-
-	def clipboardPaste(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.paste()
-
-	def findText(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.findText()
-
-	def findReplaceText(self):
-		editWidget = self.currentWidget()
-		if editWidget:
-			editWidget.findReplaceText()
-
 	def handleIdentsMsg(self, identsMsg):
 		SourceTabWidget.handleIdentsMsg(self, identsMsg)
 		for editWidget in self.allTabWidgets():

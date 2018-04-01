@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI editor MDI area
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -68,6 +68,62 @@ class EditMdiArea(QMdiArea):
 	def newWin_Libsel(self, libSelections):
 		return self.__newWin(LibSelEditMdiSubWindow(libSelections))
 
+	def undoIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.undoIsAvailable() if mdiSubWin else False
+
+	def undo(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.undo() if mdiSubWin else False
+
+	def redoIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.redoIsAvailable() if mdiSubWin else False
+
+	def redo(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.redo() if mdiSubWin else False
+
+	def cutIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.cutIsAvailable() if mdiSubWin else False
+
+	def cut(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.cut() if mdiSubWin else False
+
+	def copyIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.copyIsAvailable() if mdiSubWin else False
+
+	def copy(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.copy() if mdiSubWin else False
+
+	def pasteIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.pasteIsAvailable() if mdiSubWin else False
+
+	def paste(self, text=None):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.paste(text) if mdiSubWin else False
+
+	def findTextIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.findTextIsAvailable() if mdiSubWin else False
+
+	def findText(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.findText() if mdiSubWin else False
+
+	def findReplaceTextIsAvailable(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.findReplaceTextIsAvailable() if mdiSubWin else False
+
+	def findReplaceText(self):
+		mdiSubWin = self.activeSubWindow()
+		return mdiSubWin.findReplaceText() if mdiSubWin else False
+
 class EditMdiSubWindow(QMdiSubWindow):
 	closed = Signal(QMdiSubWindow)
 
@@ -93,6 +149,48 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def getSource(self):
 		raise NotImplementedError
 
+	def undoIsAvailable(self):
+		return False
+
+	def undo(self):
+		return False
+
+	def redoIsAvailable(self):
+		return False
+
+	def redo(self):
+		return False
+
+	def cutIsAvailable(self):
+		return False
+
+	def cut(self):
+		return False
+
+	def copyIsAvailable(self):
+		return False
+
+	def copy(self):
+		return False
+
+	def pasteIsAvailable(self):
+		return False
+
+	def paste(self, text=None):
+		return False
+
+	def findTextIsAvailable(self):
+		return False
+
+	def findText(self):
+		return False
+
+	def findReplaceTextIsAvailable(self):
+		return self.findTextIsAvailable()
+
+	def findReplaceText(self):
+		return False
+
 class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def __init__(self, source):
 		EditMdiSubWindow.__init__(self)
@@ -105,6 +203,55 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 	def getSource(self):
 		return self.editWidget.getSource()
+
+	def undoIsAvailable(self):
+		return self.editWidget.undoIsAvailable()
+
+	def undo(self):
+		self.editWidget.undo()
+		return True
+
+	def redoIsAvailable(self):
+		return self.editWidget.redoIsAvailable()
+
+	def redo(self):
+		self.editWidget.redo()
+		return True
+
+	def cutIsAvailable(self):
+		return self.copyIsAvailable()
+
+	def cut(self):
+		self.editWidget.cut()
+		return True
+
+	def copyIsAvailable(self):
+		return self.editWidget.copyIsAvailable()
+
+	def copy(self):
+		self.editWidget.copy()
+		return True
+
+	def pasteIsAvailable(self):
+		return True
+
+	def paste(self, text=None):
+		if text:
+			self.editWidget.pasteText(text)
+		else:
+			self.editWidget.paste()
+		return True
+
+	def findTextIsAvailable(self):
+		return True
+
+	def findText(self):
+		self.editWidget.findText()
+		return True
+
+	def findReplaceText(self):
+		self.editWidget.findReplaceText()
+		return True
 
 class FupEditMdiSubWindow(EditMdiSubWindow):
 	def __init__(self, source):

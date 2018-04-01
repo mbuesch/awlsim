@@ -36,6 +36,8 @@ from awlsim.gui.cpuconfig import *
 from awlsim.gui.linkconfig import *
 from awlsim.gui.hwmodconfig import *
 from awlsim.gui.icons import *
+from awlsim.gui.templatedialog import *
+from awlsim.gui.library import *
 
 
 class CpuDockWidget(QDockWidget):
@@ -306,69 +308,154 @@ class MainWidget(QWidget):
 		dlg.exec_()
 		dlg.deleteLater()
 
-	def insertOB(self):
+	def __pasteAwlText(self, text):
+		if not self.editMdiArea.paste(text):
+			QMessageBox.information(self,
+				"Please select AWL/STL source",
+				"Can not paste text.\n\n"
+				"Please move the text cursor to the place "
+				"in the AWL/STL code where you want to paste to.")
+			return False
+		return True
+
+	def __pasteSymbol(self, symbolName, address, dataType, comment):
 		#TODO
-		self.projectWidget.insertOB()
+		return
+		# Check if we already have this symbol.
+		for tabWidget in self.symTabs.allTabWidgets():
+			symTable = tabWidget.getSymTab()
+			if symbolName in symTable:
+				# We already have it.
+				return True
+		# We don't have this symbol, yet. Parse it.
+		try:
+			p = SymTabParser(self.__project.getCpuConf().getConfiguredMnemonics())
+			symbol = p.parseSym(symbolName, address,
+					    dataType, comment, 0)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Library symbol error", e)
+			return False
+		assert(self.symTabs.count() >= 1)
+		if self.symTabs.count() == 1:
+			# We only have one table. Add the symbol.
+			self.__addSymbolToTabWidget(self.symTabs.widget(0),
+						    symbol)
+		else:
+			# Ask which table to add the symbol to.
+			tabWidgets = tuple(self.symTabs.allTabWidgets())
+			entries = []
+			for i, tabWidget in enumerate(tabWidgets):
+				entries.append("%d: %s" %\
+					(i + 1, tabWidget.getSource().name))
+			entry, ok = QInputDialog.getItem(self,
+				"Select symbol table",
+				"Please select the symbol table "\
+				"where to add the symbol to:"
+				"\n%s  \"%s\"" %\
+				(address, symbolName),
+				entries, 0, False)
+			if not ok or not entry:
+				return False
+			selIndex = int(entry.split(":")[0]) - 1
+			tabWidget = tabWidgets[selIndex]
+			self.__addSymbolToTabWidget(tabWidget, symbol)
+		return True
+
+	def __pasteLibSel(self, libSelection):
+		#TODO
+		return
+		self.libTable.addEntry(libSelection)
+		return True
+
+	def insertOB(self):
+		dlg = TemplateDialog.make_OB(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getOB(dlg.getBlockNumber(),
+							    dlg.getVerbose()))
 
 	def insertFC(self):
-		#TODO
-		self.projectWidget.insertFC()
+		dlg = TemplateDialog.make_FC(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFC(dlg.getBlockNumber(),
+							    dlg.getVerbose()))
 
 	def insertFB(self):
-		#TODO
-		self.projectWidget.insertFB()
+		dlg = TemplateDialog.make_FB(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFB(dlg.getBlockNumber(),
+							    dlg.getVerbose()))
 
 	def insertInstanceDB(self):
-		#TODO
-		self.projectWidget.insertInstanceDB()
+		dlg = TemplateDialog.make_instanceDB(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getInstanceDB(dlg.getBlockNumber(),
+								    dlg.getExtraNumber(),
+								    dlg.getVerbose()))
 
 	def insertGlobalDB(self):
-		#TODO
-		self.projectWidget.insertGlobalDB()
+		dlg = TemplateDialog.make_globalDB(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
+								  dlg.getVerbose()))
 
 	def insertUDT(self):
-		#TODO
-		self.projectWidget.insertUDT()
+		dlg = TemplateDialog.make_UDT(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getUDT(dlg.getBlockNumber(),
+							     dlg.getVerbose()))
 
 	def insertFCcall(self):
-		#TODO
-		self.projectWidget.insertFCcall()
+		dlg = TemplateDialog.make_FCcall(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFCcall(dlg.getBlockNumber(),
+								dlg.getVerbose()))
 
 	def insertFBcall(self):
-		#TODO
-		self.projectWidget.insertFBcall()
+		dlg = TemplateDialog.make_FBcall(self)
+		if dlg.exec_() == QDialog.Accepted:
+			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
+								dlg.getExtraNumber(),
+								dlg.getVerbose()))
 
 	def openLibrary(self):
-		#TODO
-		self.projectWidget.openLibrary()
+		dlg = LibraryDialog(self.getProject(), self)
+		if dlg.exec_() == QDialog.Accepted:
+			if dlg.pasteText:
+				# Paste the code.
+				if not self.__pasteAwlText(dlg.pasteText):
+					return
+			if dlg.pasteSymbol:
+				# Add a symbol to a symbol table.
+				symbolName, address, dataType, comment = dlg.pasteSymbol
+				if not self.__pasteSymbol(symbolName, address,
+						          dataType, comment):
+					return
+			if dlg.pasteLibSel:
+				# Add a library selection to the library table.
+				if not self.__pasteLibSel(dlg.pasteLibSel):
+					return
 
 	def undo(self):
-		#TODO
-		self.projectWidget.undo()
+		self.editMdiArea.undo()
 
 	def redo(self):
-		#TODO
-		self.projectWidget.redo()
+		self.editMdiArea.redo()
 
 	def cut(self):
-		#TODO
-		self.projectWidget.clipboardCut()
+		self.editMdiArea.cut()
 
 	def copy(self):
-		#TODO
-		self.projectWidget.clipboardCopy()
+		self.editMdiArea.copy()
 
 	def paste(self):
-		#TODO
-		self.projectWidget.clipboardPaste()
+		self.editMdiArea.paste()
 
 	def findText(self):
-		#TODO
-		self.projectWidget.findText()
+		self.editMdiArea.findText()
 
 	def findReplaceText(self):
-		#TODO
-		self.projectWidget.findReplaceText()
+		self.editMdiArea.findReplaceText()
 
 class MainWindow(QMainWindow):
 	TITLE = "AWL/STL soft-PLC v%s" % VERSION_STRING
@@ -531,6 +618,9 @@ class MainWindow(QMainWindow):
 	@property
 	def projectTreeModel(self):
 		return self.treeDockWidget.projectTreeModel
+
+	def getProject(self):
+		return self.projectTreeModel.getProject()
 
 	@property
 	def cpuWidget(self):
