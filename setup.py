@@ -5,6 +5,7 @@ from __future__ import print_function
 import sys
 import os
 import re
+import warnings
 from distutils.core import setup
 from awlsim.common.version import VERSION_STRING
 try:
@@ -22,6 +23,7 @@ except ImportError as e:
 sys.path.insert(0, "./maintenance")
 import setup_cython
 
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 isWindows = os.name.lower() in {"nt", "ce"}
 
@@ -130,7 +132,10 @@ if cx_Freeze:
 			}
 		}
 
-with open("README.md", "rb") as fd:
+warnings.filterwarnings("ignore", r".*'python_requires'.*")
+warnings.filterwarnings("ignore", r".*'long_description_content_type'.*")
+
+with open(os.path.join(basedir, "README.md"), "rb") as fd:
 	readmeText = fd.read().decode("UTF-8")
 
 setup(	name		= "awlsim",
@@ -140,6 +145,7 @@ setup(	name		= "awlsim",
 	author		= "Michael Buesch",
 	author_email	= "m@bues.ch",
 	url		= "https://awlsim.de",
+	python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*",
 	packages	= [ "awlsim",
 			    "awlsim_loader",
 			    "awlsim/common",
@@ -161,9 +167,9 @@ setup(	name		= "awlsim",
 	scripts		= scripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
-	keywords	= [ "AWL", "STL", "SPS", "PLC", "Step 7",
-			    "Siemens", "emulator", "simulator",
-			    "PROFIBUS", "LinuxCNC", ],
+	keywords	= "AWL STL SPS PLC emulator simulator "
+			  "Step-7 Siemens PROFIBUS "
+			  "LinuxCNC PiXtend RaspberryPi",
 	classifiers	= [
 		"Development Status :: 4 - Beta",
 		"Environment :: Console",
@@ -196,5 +202,6 @@ setup(	name		= "awlsim",
 		"Topic :: System :: Emulators",
 	],
 	long_description=readmeText,
+	long_description_content_type="text/markdown",
 	**extraKeywords
 )
