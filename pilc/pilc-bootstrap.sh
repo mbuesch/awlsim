@@ -730,7 +730,7 @@ EOF
 			sed -i -e '/Package: cython/,/^$/ d' \
 				debian/control ||\
 				die "Failed to patch control file"
-			sed -i -e 's/export AWLSIM_CYTHON=1/export AWLSIM_CYTHON=0/' \
+			sed -i -e 's/export AWLSIM_CYTHON_BUILD=1/export AWLSIM_CYTHON_BUILD=0/' \
 				debian/rules ||\
 				die "Failed to patch rules file"
 		fi
@@ -740,78 +740,54 @@ EOF
 
 		info "Installing awlsim..."
 		# Core
-		dpkg -i ../python-awlsim_*.deb ||\
-			die "Failed to install python-awlsim"
 		dpkg -i ../python3-awlsim_*.deb ||\
 			die "Failed to install python3-awlsim"
 		dpkg -i ../pypy-awlsim_*.deb ||\
 			die "Failed to install pypy-awlsim"
 		if [ $opt_cython -ne 0 ]; then
-			dpkg -i ../cython-awlsim_*.deb ||\
-				die "Failed to install cython-awlsim"
 			dpkg -i ../cython3-awlsim_*.deb ||\
 				die "Failed to install cython3-awlsim"
 		fi
 		# hardware: dummy
-		dpkg -i ../python-awlsimhw-dummy_*.deb ||\
-			die "Failed to install python-awlsimhw-dummy"
 		dpkg -i ../python3-awlsimhw-dummy_*.deb ||\
 			die "Failed to install python3-awlsimhw-dummy"
 		dpkg -i ../pypy-awlsimhw-dummy_*.deb ||\
 			die "Failed to install pypy-awlsimhw-dummy"
 		if [ $opt_cython -ne 0 ]; then
-			dpkg -i ../cython-awlsimhw-dummy_*.deb ||\
-				die "Failed to install cython-awlsimhw-dummy"
 			dpkg -i ../cython3-awlsimhw-dummy_*.deb ||\
 				die "Failed to install cython3-awlsimhw-dummy"
 		fi
 		# hardware: linuxcnc
-		dpkg -i ../python-awlsimhw-linuxcnc_*.deb ||\
-			die "Failed to install python-awlsimhw-linuxcnc"
 		dpkg -i ../python3-awlsimhw-linuxcnc_*.deb ||\
 			die "Failed to install python3-awlsimhw-linuxcnc"
 		if [ $opt_cython -ne 0 ]; then
-			dpkg -i ../cython-awlsimhw-linuxcnc_*.deb ||\
-				die "Failed to install cython-awlsimhw-linuxcnc"
 			dpkg -i ../cython3-awlsimhw-linuxcnc_*.deb ||\
 				die "Failed to install cython3-awlsimhw-linuxcnc"
 		fi
 		# hardware: profibus
-		dpkg -i ../python-awlsimhw-profibus_*.deb ||\
-			die "Failed to install python-awlsimhw-profibus"
 		dpkg -i ../python3-awlsimhw-profibus_*.deb ||\
 			die "Failed to install python3-awlsimhw-profibus"
 		dpkg -i ../pypy-awlsimhw-profibus_*.deb ||\
 			die "Failed to install pypy-awlsimhw-profibus"
 		if [ $opt_cython -ne 0 ]; then
-			dpkg -i ../cython-awlsimhw-profibus_*.deb ||\
-				die "Failed to install cython-awlsimhw-profibus"
 			dpkg -i ../cython3-awlsimhw-profibus_*.deb ||\
 				die "Failed to install cython3-awlsimhw-profibus"
 		fi
 		# hardware: RPi GPIO
-		dpkg -i ../python-awlsimhw-rpigpio_*.deb ||\
-			die "Failed to install python-awlsimhw-rpigpio"
 		dpkg -i ../python3-awlsimhw-rpigpio_*.deb ||\
 			die "Failed to install python3-awlsimhw-rpigpio"
 		dpkg -i ../pypy-awlsimhw-rpigpio_*.deb ||\
 			die "Failed to install pypy-awlsimhw-rpigpio"
 		if [ $opt_cython -ne 0 ]; then
-			dpkg -i ../cython-awlsimhw-rpigpio_*.deb ||\
-				die "Failed to install cython-awlsimhw-rpigpio"
 			dpkg -i ../cython3-awlsimhw-rpigpio_*.deb ||\
 				die "Failed to install cython3-awlsimhw-rpigpio"
 		fi
 		# hardware: PiXtend
-		dpkg -i ../python-awlsimhw-pixtend_*.deb ||\
-			die "Failed to install python-awlsimhw-pixtend"
 		dpkg -i ../python3-awlsimhw-pixtend_*.deb ||\
 			die "Failed to install python3-awlsimhw-pixtend"
 		dpkg -i ../pypy-awlsimhw-pixtend_*.deb ||\
 			die "Failed to install pypy-awlsimhw-pixtend"
 		if [ $opt_cython -ne 0 ]; then
-			dpkg -i ../cython-awlsimhw-pixtend_*.deb ||\
-				die "Failed to install cython-awlsimhw-pixtend"
 			dpkg -i ../cython3-awlsimhw-pixtend_*.deb ||\
 				die "Failed to install cython3-awlsimhw-pixtend"
 		fi
@@ -826,8 +802,6 @@ EOF
 			die "Failed to install awlsim-test"
 		dpkg -i ../awlsim-proupgrade_*.deb ||\
 			die "Failed to install awlsim-proupgrade"
-		dpkg -i ../awlsim-linuxcnc-hal_*.deb ||\
-			die "Failed to install awlsim-linuxcnc-hal"
 		# Copy debs
 		rm -rf /home/pi/deb/awlsim
 		mkdir -p /home/pi/deb/awlsim ||\
@@ -873,8 +847,6 @@ EOF
 		ls .. || die "Failed to list results"
 
 		info "Installing pyprofibus..."
-		dpkg -i ../python-pyprofibus_*.deb ||\
-			die "Failed to install python-pyprofibus"
 		dpkg -i ../python3-pyprofibus_*.deb ||\
 			die "Failed to install python3-pyprofibus"
 		dpkg -i ../pypy-pyprofibus_*.deb ||\
@@ -883,8 +855,6 @@ EOF
 			die "Failed to install profisniff"
 		dpkg -i ../gsdparser_*.deb ||\
 			die "Failed to install gsdparser"
-		dpkg -i ../pyprofibus-linuxcnc-hal_*.deb ||\
-			die "Failed to install pyprofibus-linuxcnc-hal"
 
 		# Copy debs
 		rm -rf /home/pi/deb/pyprofibus
