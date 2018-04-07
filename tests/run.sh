@@ -624,6 +624,7 @@ __build_cython()
 	cd "$rootdir" || die "cd to $rootdir failed"
 	infomsg "=== Building awlsim $cython modules with $python"
 	CFLAGS="-O0" CPPFLAGS= CXXFLAGS="-O0" LDFLAGS= \
+		AWLSIM_CYTHON_BUILD=1 \
 		AWLSIM_CYTHON_PARALLEL=1 \
 		nice -n 5 \
 		"$python" ./setup.py build >/dev/null ||\

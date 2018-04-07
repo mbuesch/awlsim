@@ -26,6 +26,8 @@ run()
 cd "$awlsim_base"
 echo "Running build..."
 
+export AWLSIM_CYTHON_BUILD=1
+
 if [ $opt_verbose -eq 0 ]; then
 	run python2 >/dev/null
 else

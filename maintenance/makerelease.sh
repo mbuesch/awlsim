@@ -63,7 +63,7 @@ hook_regression_tests()
 }
 
 export AWLSIM_FULL_BUILD=1
-export AWLSIM_CYTHON=1
+export AWLSIM_CYTHON_BUILD=1
 export AWLSIM_CYTHON_PARALLEL=1
 
 project=awlsim

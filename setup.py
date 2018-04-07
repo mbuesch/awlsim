@@ -1,4 +1,29 @@
 #!/usr/bin/env python3
+#
+# Awlsim setup.py Python build script.
+#
+# These environment variables affect the setup.py build:
+#
+#  AWLSIM_FULL_BUILD:
+#	0 (default): Do not include scripts that are not necessary on this platform.
+#	1:           Include all scripts; also those that aren't required on the platform.
+#
+#  AWLSIM_CYTHON_BUILD:
+#	0:           Do not build any Cython modules.
+#	1:           Build Cython modules.
+#	2:           Build Cython modules only, if setup.py is being executed by Python 2.
+#	3 (default): Build Cython modules only, if setup.py is being executed by Python 3.
+#
+#  AWLSIM_CYTHON_PARALLEL:
+#	0:           Do not use parallel compilation for Cython modules.
+#	1 (default): Invoke multiple compilers in parallel (faster on multicore).
+#	2:           Invole multiple compilers only, if setup.py is being executed by Python 2.
+#	3:           Invole multiple compilers only, if setup.py is being executed by Python 3.
+#
+#  AWLSIM_PROFILE:
+#	0 (default): Do not enable profiling support in compiled Cython modules.
+#	1:           Enable profiling support in compiled Cython modules.
+#
 
 from __future__ import print_function
 
@@ -39,7 +64,8 @@ def getEnvBool(name, default = False):
 
 
 fullBuild = getEnvBool("AWLSIM_FULL_BUILD")
-buildCython = getEnvBool("AWLSIM_CYTHON", True)
+buildCython = getEnvInt("AWLSIM_CYTHON_BUILD", 3)
+buildCython = ((buildCython == 1) or (buildCython == sys.version_info[0]))
 setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
 				  getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])
 setup_cython.profileEnabled = bool(getEnvInt("AWLSIM_PROFILE") > 0)
