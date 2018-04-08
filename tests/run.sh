@@ -652,12 +652,12 @@ do_tests()
 	cleanup_test_environment
 
 	if [ $opt_quick -eq 0 ]; then
-		local all_interp="python2 python3 pypy pypy3 cython2 cython3"
+		local all_interp="python3 python2 pypy3 pypy cython3"
 		if [ $opt_extended -ne 0 ]; then
 			local all_interp="$all_interp jython"
 		fi
 	else
-		local all_interp="python2 python3"
+		local all_interp="python3 python2"
 		if [ $opt_extended -ne 0 ]; then
 			die "The options --quick and --extended are mutually exclusive."
 		fi
