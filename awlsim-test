@@ -374,7 +374,7 @@ def runWithServerBackend(inputFile):
 					   listenPort = port)
 			port = client.serverProcessPort
 		printInfo("Connecting to core server...")
-		client.connectToServer(host = host, port = port)
+		client.connectToServer(host=host, port=port, timeout=20.0)
 
 		printInfo("Initializing core...")
 		client.setLoglevel(opt_loglevel)
