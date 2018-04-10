@@ -127,14 +127,50 @@ class HwParamDesc_pwmMode(HwParamDesc_str):
 			"A valid pwmMode can be either %s." % (
 			value, listToHumanStr(sorted(dictKeys(self.str2type)))))
 
+class HwParamDesc_gpioMode(HwParamDesc_str):
+	typeStr = "GPIO-mode"
+
+	EnumGen.start
+	MODE_GPIO	= EnumGen.item
+	MODE_DHT11	= EnumGen.item
+	MODE_DHT22	= EnumGen.item
+	EnumGen.end
+
+	type2str = {
+		MODE_GPIO	: "GPIO",
+		MODE_DHT11	: "DHT11",
+		MODE_DHT22	: "DHT22",
+	}
+	str2type = pivotDict(type2str)
+
+	def __init__(self, name, defaultValue, description, **kwargs):
+		HwParamDesc_str.__init__(self,
+					 name=name,
+					 defaultValue=None,
+					 description=description,
+					 **kwargs)
+		self.defaultValue = defaultValue
+		self.defaultValueStr = self.type2str[defaultValue]
+
+	def parse(self, value):
+		upperValue = value.upper().strip()
+		if not upperValue:
+			return self.defaultValue
+		upperValue = upperValue.replace("-", "").replace("_", "")
+		try:
+			return self.str2type[upperValue]
+		except KeyError as e:
+			pass
+		raise self.ParseError("Invalid GPIO mode '%s'. "
+			"A valid gpioMode can be either %s." % (
+			value, listToHumanStr(sorted(dictKeys(self.str2type)))))
+
 class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	name		= "PiXtend"
 	description	= "PiXtend V1.x and V2.x "\
 			  "extension board support.\n"\
 			  "https://www.pixtend.de/"
 
-	#TODO DHT
-	#TODO hum
 	#TODO watchdog
 
 	NR_RELAYS	= 4
@@ -194,7 +230,23 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 				allowedOperTypes=(AwlOperatorTypes.MEM_E,
 						  AwlOperatorTypes.MEM_A,),
 				allowedOperWidths=(1,),
-				description="GPIO %d address (can be input (I/E) or output (Q/A))" % i))
+				description="GPIO %d bit address (can be input (I/E) or output (Q/A))" % i))
+		paramDescs.append(HwParamDesc_oper(
+				"gpio%d_temp_addr" % i,
+				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
+				allowedOperWidths=(16,),
+				description="DHT11/DHT22 on GPIO %d temperature sensor input address" % i))
+		paramDescs.append(HwParamDesc_oper(
+				"gpio%d_hum_addr" % i,
+				allowedOperTypes=(AwlOperatorTypes.MEM_E,),
+				allowedOperWidths=(16,),
+				description="DHT11/DHT22 on GPIO %d humidity sensor input address" % i))
+		paramDescs.append(HwParamDesc_gpioMode(
+				"gpio%d_mode" % i,
+				defaultValue=HwParamDesc_gpioMode.MODE_GPIO,
+				description="GPIO %d operation mode."
+					    "Possible values: %s" % (i,
+				listToHumanStr(sorted(dictKeys(HwParamDesc_gpioMode.str2type))))))
 		paramDescs.append(HwParamDesc_bool(
 				"gpio%d_pullup" % i,
 				defaultValue=False,
@@ -364,6 +416,9 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Build all GPIO output objects
 		self.__GPIO_out = []
 		for i in range(self.NR_GPIO):
+			mode = self.getParamValueByName("gpio%d_mode" % i)
+			if mode != HwParamDesc_gpioMode.MODE_GPIO:
+				continue
 			oper = self.getParamValueByName("gpio%d_addr" % i)
 			if oper is None:
 				continue
@@ -372,11 +427,15 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			bitOffset = oper.offset.toLongBitOffset()
 			gpio = GPIO(self.__pixtend, self.__isV2, i, bitOffset,
 				    not self.isInProcessImage(oper.offset, 1, True))
+			gpio.mode = GPIO.MODE_OUTPUT
 			self.__GPIO_out.append(gpio)
 
 		# Build all GPIO input objects
 		self.__GPIO_in = []
 		for i in range(self.NR_GPIO):
+			mode = self.getParamValueByName("gpio%d_mode" % i)
+			if mode != HwParamDesc_gpioMode.MODE_GPIO:
+				continue
 			oper = self.getParamValueByName("gpio%d_addr" % i)
 			if oper is None:
 				continue
@@ -385,10 +444,38 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			bitOffset = oper.offset.toLongBitOffset()
 			gpio = GPIO(self.__pixtend, self.__isV2, i, bitOffset,
 				    not self.isInProcessImage(oper.offset, 1, False))
+			gpio.mode = GPIO.MODE_INPUT
 			gpio.pullUp = self.getParamValueByName("gpio%d_pullup" % i)
 			self.__GPIO_in.append(gpio)
 		GPIO.setGlobalPullUpEnable(self.__pixtend, self.__isV2,
 					   any(gpio.pullUp for gpio in self.__GPIO_in))
+
+		# Build all DHT11/DHT22 input objects
+		self.__temps = []
+		self.__hums = []
+		for i in range(self.NR_GPIO):
+			mode = self.getParamValueByName("gpio%d_mode" % i)
+			if mode not in {HwParamDesc_gpioMode.MODE_DHT11,
+					HwParamDesc_gpioMode.MODE_DHT22}:
+				continue
+			sensorType = {
+				HwParamDesc_gpioMode.MODE_DHT11 : EnvSensorBase.TYPE_DHT11,
+				HwParamDesc_gpioMode.MODE_DHT22 : EnvSensorBase.TYPE_DHT22,
+			}[mode]
+			tempOper = self.getParamValueByName("gpio%d_temp_addr" % i)
+			humOper = self.getParamValueByName("gpio%d_hum_addr" % i)
+			if tempOper is not None:
+				bitOffset = tempOper.offset.toLongBitOffset()
+				temp = TempIn(sensorType,
+					self.__pixtend, self.__isV2, i, bitOffset,
+					not self.isInProcessImage(tempOper.offset, 16, False))
+				self.__temps.append(temp)
+			if humOper is not None:
+				bitOffset = humOper.offset.toLongBitOffset()
+				hum = HumIn(sensorType,
+					self.__pixtend, self.__isV2, i, bitOffset,
+					not self.isInProcessImage(humOper.offset, 16, False))
+				self.__hums.append(hum)
 
 		# Build all analog input objects
 		self.__AIs = []
@@ -483,6 +570,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		self.__allInputs = []
 		self.__allInputs.extend(self.__DIs)
 		self.__allInputs.extend(self.__GPIO_in)
+		self.__allInputs.extend(self.__temps)
+		self.__allInputs.extend(self.__hums)
 		self.__allInputs.extend(self.__AIs)
 
 		# Build a list of all process image accessible outputs.
@@ -532,7 +621,6 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 						   self.__PWM0s,
 						   self.__PWM1s):
 				out.setup(-firstOutByte)
-				out.setDirection(True)
 
 		# Store the input base and size
 		if firstInByte is None or lastInByte is None:
@@ -545,9 +633,10 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 			# Setup all inputs
 			for inp in itertools.chain(self.__DIs,
 						   self.__GPIO_in,
+						   self.__temps,
+						   self.__hums,
 						   self.__AIs):
 				inp.setup(-firstInByte)
-				inp.setDirection(False)
 
 		if not self.__isV2:
 			# Configure RS232/RS485

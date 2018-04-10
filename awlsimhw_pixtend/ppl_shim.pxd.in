@@ -16,7 +16,6 @@ cdef class AbstractIO(object):
 	cdef setWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
 	cdef get(self, bytearray dataBytes)
 	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset)
-	cpdef setDirection(self, outDirection)
 
 cdef class AbstractBitIO(AbstractIO):
 	cdef public uint32_t bitMask
@@ -40,9 +39,22 @@ cdef class DigitalIn(AbstractBitIO):
 	pass
 
 cdef class GPIO(AbstractBitIO):
+	cdef public object mode
 	cdef public object pullUp
 
 	cpdef setup(self, secondaryOffset)
+
+cdef class EnvSensorBase(AbstractWordIO):
+	cdef public uint32_t sensorType
+	cdef public GPIO gpio
+
+	cpdef setup(self, secondaryOffset)
+
+cdef class TempIn(EnvSensorBase):
+	cdef uint16_t __convert(self, double temp)
+
+cdef class HumIn(EnvSensorBase):
+	cdef uint16_t __convert(self, double hum)
 
 cdef class AnalogIn(AbstractWordIO):
 	cdef public object jumper10V

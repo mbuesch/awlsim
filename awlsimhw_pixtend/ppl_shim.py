@@ -33,6 +33,9 @@ __all__ = [
 	"DigitalOut",
 	"DigitalIn",
 	"GPIO",
+	"EnvSensorBase",
+	"TempIn",
+	"HumIn",
 	"AnalogIn",
 	"AnalogOut",
 	"PWM0Period",
@@ -47,7 +50,6 @@ class AbstractIO(object): #+cdef
 
 	setters = ()
 	getters = ()
-	directionSetters = ()
 
 	def __init__(self, pixtend, isV2, index, bitOffset, directOnly=False, bitSize=1):
 		"""PiXtend I/O abstraction layer.
@@ -83,10 +85,6 @@ class AbstractIO(object): #+cdef
 			self.getter = self.getters[self.index]
 		except IndexError:
 			self.getter = None
-		try:
-			self.directionSetter = self.directionSetters[self.index]
-		except IndexError:
-			self.directionSetter = None
 
 	def set(self, dataBytes): #@nocy
 #@cy	cdef set(self, bytearray dataBytes):
@@ -103,10 +101,6 @@ class AbstractIO(object): #+cdef
 	def getWithByteOffset(self, dataBytes, byteOffset): #@nocy
 #@cy	cdef getWithByteOffset(self, bytearray dataBytes, uint32_t byteOffset):
 		raise NotImplementedError
-
-	def setDirection(self, outDirection): #+cpdef
-		if self.directionSetter:
-			self.directionSetter(self, outDirection)
 
 class AbstractBitIO(AbstractIO): #+cdef
 	"""PiXtend abstract bit I/O handler.
@@ -302,9 +296,17 @@ class GPIO(AbstractBitIO): #+cdef
 	"""PiXtend GPIO I/O handler.
 	"""
 
+	EnumGen.start
+	MODE_OUTPUT	= EnumGen.item
+	MODE_INPUT	= EnumGen.item
+	MODE_DHT11	= EnumGen.item
+	MODE_DHT22	= EnumGen.item
+	EnumGen.end
+
 	def __init__(self, *args, **kwargs):
 		AbstractBitIO.__init__(self, *args, **kwargs)
 
+		self.mode = None
 		self.pullUp = None
 
 	def __getGPIO0(self):
@@ -353,47 +355,65 @@ class GPIO(AbstractBitIO): #+cdef
 		__setGPIO3,
 	)
 
-	def __setDirGPIO0(self, outDirection):
+	def __getV2Ctrl(self, mode):
 		pixtend = self.pixtend
-		value = pixtend.GPIO_OUTPUT if outDirection else\
-			pixtend.GPIO_INPUT
-		if self.isV2:
-			pixtend.gpio0_ctrl = value
-		else:
-			pixtend.gpio0_direction = value
+		ctrlValue = {
+			self.MODE_OUTPUT : pixtend.GPIO_OUTPUT,
+			self.MODE_INPUT  : pixtend.GPIO_INPUT,
+			self.MODE_DHT11  : pixtend.GPIO_DHT11,
+			self.MODE_DHT22  : pixtend.GPIO_DHT22,
+		}[mode]
+		return ctrlValue
 
-	def __setDirGPIO1(self, outDirection):
+	def __getV1Dir(self, mode):
 		pixtend = self.pixtend
-		value = pixtend.GPIO_OUTPUT if outDirection else\
-			pixtend.GPIO_INPUT
-		if self.isV2:
-			pixtend.gpio1_ctrl = value
-		else:
-			pixtend.gpio1_direction = value
+		if mode == self.MODE_OUTPUT:
+			return pixtend.GPIO_OUTPUT
+		return pixtend.GPIO_INPUT
 
-	def __setDirGPIO2(self, outDirection):
+	def __getV1DHTOn(self, mode):
 		pixtend = self.pixtend
-		value = pixtend.GPIO_OUTPUT if outDirection else\
-			pixtend.GPIO_INPUT
-		if self.isV2:
-			pixtend.gpio2_ctrl = value
-		else:
-			pixtend.gpio2_direction = value
+		if mode in {self.MODE_DHT11, self.MODE_DHT22}:
+			return pixtend.ON
+		return pixtend.OFF
 
-	def __setDirGPIO3(self, outDirection):
+	def __setModeGPIO0(self, mode):
 		pixtend = self.pixtend
-		value = pixtend.GPIO_OUTPUT if outDirection else\
-			pixtend.GPIO_INPUT
 		if self.isV2:
-			pixtend.gpio3_ctrl = value
+			pixtend.gpio0_ctrl = self.__getV2Ctrl(mode)
 		else:
-			pixtend.gpio3_direction = value
+			pixtend.gpio0_direction = self.__getV1Dir(mode)
+			pixtend.dht0 = self.__getV1DHTOn(mode)
 
-	directionSetters = (
-		__setDirGPIO0,
-		__setDirGPIO1,
-		__setDirGPIO2,
-		__setDirGPIO3,
+	def __setModeGPIO1(self, mode):
+		pixtend = self.pixtend
+		if self.isV2:
+			pixtend.gpio1_ctrl = self.__getV2Ctrl(mode)
+		else:
+			pixtend.gpio1_direction = self.__getV1Dir(mode)
+			pixtend.dht1 = self.__getV1DHTOn(mode)
+
+	def __setModeGPIO2(self, mode):
+		pixtend = self.pixtend
+		if self.isV2:
+			pixtend.gpio2_ctrl = self.__getV2Ctrl(mode)
+		else:
+			pixtend.gpio2_direction = self.__getV1Dir(mode)
+			pixtend.dht2 = self.__getV1DHTOn(mode)
+
+	def __setModeGPIO3(self, mode):
+		pixtend = self.pixtend
+		if self.isV2:
+			pixtend.gpio3_ctrl = self.__getV2Ctrl(mode)
+		else:
+			pixtend.gpio3_direction = self.__getV1Dir(mode)
+			pixtend.dht3 = self.__getV1DHTOn(mode)
+
+	settersMode = (
+		__setModeGPIO0,
+		__setModeGPIO1,
+		__setModeGPIO2,
+		__setModeGPIO3,
 	)
 
 	def __setPullUp0(self, state):
@@ -435,10 +455,129 @@ class GPIO(AbstractBitIO): #+cdef
 	def setup(self, secondaryOffset): #+cpdef
 		AbstractBitIO.setup(self, secondaryOffset)
 
+		if self.mode is not None:
+			setMode = self.settersMode[self.index]
+			setMode(self, self.mode)
+
 		if self.pullUp is not None:
 			setPullUp = self.settersPullUp[self.index]
 			setPullUp(self, self.pixtend.ON if self.pullUp
 					else self.pixtend.OFF)
+
+class EnvSensorBase(AbstractWordIO): #+cdef
+	"""Environmental sensor base class.
+	"""
+
+	EnumGen.start
+	TYPE_DHT11	= EnumGen.item
+	TYPE_DHT22	= EnumGen.item
+	EnumGen.end
+
+	def __init__(self, sensorType, *args, **kwargs):
+		AbstractWordIO.__init__(self, *args, **kwargs)
+		self.sensorType = sensorType
+
+		# Create a child GPIO object.
+		gpioMode = {
+			self.TYPE_DHT11 : GPIO.MODE_DHT11,
+			self.TYPE_DHT22 : GPIO.MODE_DHT22,
+		}[self.sensorType]
+		self.gpio = GPIO(self.pixtend, self.isV2, self.index, 0, True)
+		self.gpio.mode = gpioMode
+
+	def setup(self, secondaryOffset): #+cpdef
+		AbstractWordIO.setup(self, secondaryOffset)
+
+		# Configure the child GPIO object.
+		self.gpio.setup(secondaryOffset)
+
+		#TODO Fahrenheit
+
+class TempIn(EnvSensorBase): #+cdef
+	"""DHT11/DHT22 temperature input.
+	"""
+
+	def __convert(self, temp): #@nocy
+#@cy	cdef uint16_t __convert(self, double temp):
+		return max(min(int(round(temp * 10.0)), 8500), -2000) & 0xFFFF
+
+	def __getTemp0(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.temp0)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.t0_dht11)
+		return self.__convert(self.pixtend.t0_dht22)
+
+	def __getTemp1(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.temp1)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.t1_dht11)
+		return self.__convert(self.pixtend.t1_dht22)
+
+	def __getTemp2(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.temp2)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.t2_dht11)
+		return self.__convert(self.pixtend.t2_dht22)
+
+	def __getTemp3(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.temp3)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.t3_dht11)
+		return self.__convert(self.pixtend.t3_dht22)
+
+	getters = (
+		__getTemp0,
+		__getTemp1,
+		__getTemp2,
+		__getTemp3,
+	)
+
+class HumIn(EnvSensorBase): #+cdef
+	"""DHT11/DHT22 humidity input.
+	"""
+
+	def __convert(self, hum): #@nocy
+#@cy	cdef uint16_t __convert(self, double hum):
+		return max(min(int(round(hum * 10.0)), 1000), 0)
+
+	def __getHum0(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.humid0)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.h0_dht11)
+		return self.__convert(self.pixtend.h0_dht22)
+
+	def __getHum1(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.humid1)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.h1_dht11)
+		return self.__convert(self.pixtend.h1_dht22)
+
+	def __getHum2(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.humid2)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.h2_dht11)
+		return self.__convert(self.pixtend.h2_dht22)
+
+	def __getHum3(self):
+		if self.isV2:
+			return self.__convert(self.pixtend.humid3)
+		if self.sensorType == self.TYPE_DHT11:
+			return self.__convert(self.pixtend.h3_dht11)
+		return self.__convert(self.pixtend.h3_dht22)
+
+	getters = (
+		__getHum0,
+		__getHum1,
+		__getHum2,
+		__getHum3,
+	)
 
 class AnalogIn(AbstractWordIO): #+cdef
 	"""PiXtend analog input I/O handler.

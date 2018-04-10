@@ -11,6 +11,8 @@ cdef class HardwareInterface_PiXtend(AbstractHardwareInterface):
 	cdef public list __DIs
 	cdef public list __GPIO_out
 	cdef public list __GPIO_in
+	cdef public list __temps
+	cdef public list __hums
 	cdef public list __AIs
 	cdef public list __AOs
 	cdef public list __PWM0s
