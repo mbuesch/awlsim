@@ -76,7 +76,7 @@ class AbstractIO(object): #+cdef
 		self.byteSize = intDivRoundUp(self.bitSize, 8)
 
 	def setup(self, secondaryOffset): #+cpdef
-		self.byteOffset += secondaryOffset
+		self.byteOffset = max(self.byteOffset + secondaryOffset, 0)
 		try:
 			self.setter = self.setters[self.index]
 		except IndexError:
