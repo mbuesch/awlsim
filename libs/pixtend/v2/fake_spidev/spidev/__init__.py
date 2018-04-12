@@ -127,7 +127,7 @@ class Fake_SpiDev_PiXtend_2_0(Abstract_SpiDev):
 		ret[11] = (ai0 >> 8) & 0xFF	# Analog in 0H
 		ret[12] = ai1 & 0xFF		# Analog in 1L
 		ret[13] = (ai1 >> 8) & 0xFF	# Analog in 1H
-		ret[14] = (gpio_out & 0x03) << 2 # GPIO in
+		ret[14] = (gpio_out & 0x02) >> 1 # GPIO in
 		ret[15] = 0			# Temp 0L
 		ret[16] = 0			# Temp 0H
 		ret[17] = 0			# Humid 0L

@@ -167,7 +167,7 @@ class Fake_SpiDev_PiXtend_1_3(Abstract_SpiDev):
 		ret[8] = (ai2 >> 8) & 0xFF # AI2/1
 		ret[9] = ai3 & 0xFF # AI3/0
 		ret[10] = (ai3 >> 8) & 0xFF # AI3/1
-		ret[11] = (gpiosOut & 0x03) << 2 # GPIO-in
+		ret[11] = (gpiosOut & 0x02) >> 1 # GPIO-in
 		ret[12] = 0x10 # temp0/0
 		ret[13] = 0x11 # temp0/1
 		ret[14] = 0x12 # temp1/0
