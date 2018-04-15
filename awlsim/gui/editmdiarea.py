@@ -42,6 +42,21 @@ class EditMdiArea(QMdiArea):
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
 
+	# Signal: UndoAvailable state changed
+	undoAvailableChanged = Signal(bool)
+
+	# Signal: RedoAvailable state changed
+	redoAvailableChanged = Signal(bool)
+
+	# Signal: CopyAvailable state changed
+	copyAvailableChanged = Signal(bool)
+
+	# Signal: CutAvailable state changed
+	cutAvailableChanged = Signal(bool)
+
+	# Signal: PasteAvailable state changed
+	pasteAvailableChanged = Signal(bool)
+
 	def __init__(self, mainWidget):
 		QMdiArea.__init__(self, parent=mainWidget)
 		self.mainWidget = mainWidget
@@ -49,6 +64,8 @@ class EditMdiArea(QMdiArea):
 		self.setTabsClosable(True)
 		self.setTabsMovable(True)
 		self.resetArea()
+
+		self.subWindowActivated.connect(self.__handleSubWindowActivated)
 
 	def getProjectTreeModel(self):
 		return self.mainWidget.projectTreeModel
@@ -72,14 +89,50 @@ class EditMdiArea(QMdiArea):
 			del mdiSubWin
 		self._guiSettings = GuiSettings()
 
+	def __handleSubWindowActivated(self, mdiSubWin):
+		"""An MDI sub window has just been activated.
+		"""
+		self.__handleSubWinUndoAvailChanged(mdiSubWin)
+		self.__handleSubWinRedoAvailChanged(mdiSubWin)
+		self.__handleSubWinCopyAvailChanged(mdiSubWin)
+		self.__handleSubWinCutAvailChanged(mdiSubWin)
+		self.__handleSubWinPasteAvailChanged(mdiSubWin)
+
 	def __handleSubWinFocusChanged(self, mdiSubWin, hasFocus):
 		"""Text focus of one sub window has changed.
 		"""
-		activeMdiSubWin = self.activeOpenSubWindow
-		if activeMdiSubWin is mdiSubWin:
-			self.focusChanged.emit(hasFocus)
-		else:
-			self.focusChanged.emit(False)
+		self.focusChanged.emit((self.activeOpenSubWindow is mdiSubWin) and\
+				       hasFocus)
+
+	def __handleSubWinUndoAvailChanged(self, mdiSubWin):
+		"""Undo-state of one sub window has changed.
+		"""
+		self.undoAvailableChanged.emit((self.activeOpenSubWindow is mdiSubWin) and\
+					       self.undoIsAvailable())
+
+	def __handleSubWinRedoAvailChanged(self, mdiSubWin):
+		"""Redo-state of one sub window has changed.
+		"""
+		self.redoAvailableChanged.emit((self.activeOpenSubWindow is mdiSubWin) and\
+					       self.redoIsAvailable())
+
+	def __handleSubWinCopyAvailChanged(self, mdiSubWin):
+		"""Copy-state of one sub window has changed.
+		"""
+		self.copyAvailableChanged.emit((self.activeOpenSubWindow is mdiSubWin) and\
+					       self.copyIsAvailable())
+
+	def __handleSubWinCutAvailChanged(self, mdiSubWin):
+		"""Cut-state of one sub window has changed.
+		"""
+		self.cutAvailableChanged.emit((self.activeOpenSubWindow is mdiSubWin) and\
+					      self.cutIsAvailable())
+
+	def __handleSubWinPasteAvailChanged(self, mdiSubWin):
+		"""Paste-state of one sub window has changed.
+		"""
+		self.pasteAvailableChanged.emit((self.activeOpenSubWindow is mdiSubWin) and\
+					        self.pasteIsAvailable())
 
 	def __newWin(self, mdiSubWin):
 		self.addSubWindow(mdiSubWin)
@@ -88,6 +141,17 @@ class EditMdiArea(QMdiArea):
 		# Connect signals of sub window.
 		mdiSubWin.focusChanged.connect(
 			lambda hasFocus: self.__handleSubWinFocusChanged(mdiSubWin, hasFocus))
+		mdiSubWin.undoAvailableChanged.connect(
+			lambda undoAvail: self.__handleSubWinUndoAvailChanged(mdiSubWin))
+		mdiSubWin.redoAvailableChanged.connect(
+			lambda redoAvail: self.__handleSubWinRedoAvailChanged(mdiSubWin))
+		mdiSubWin.copyAvailableChanged.connect(
+			lambda copyAvail: self.__handleSubWinCopyAvailChanged(mdiSubWin))
+		mdiSubWin.cutAvailableChanged.connect(
+			lambda cutAvail: self.__handleSubWinCutAvailChanged(mdiSubWin))
+		mdiSubWin.pasteAvailableChanged.connect(
+			lambda pasteAvail: self.__handleSubWinPasteAvailChanged(mdiSubWin))
+
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
 
 		return mdiSubWin
@@ -174,19 +238,32 @@ class EditMdiSubWindow(QMdiSubWindow):
 
 	# Signal: Emitted, if this MDI sub window is about to close.
 	closed = Signal(QMdiSubWindow)
+
 	# Signal: Emitted, if the source code changed.
 	sourceChanged = Signal()
+
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
+
 	# Signal: UndoAvailable state changed
 	undoAvailableChanged = Signal(bool)
+
 	# Signal: RedoAvailable state changed
 	redoAvailableChanged = Signal(bool)
+
 	# Signal: CopyAvailable state changed
 	copyAvailableChanged = Signal(bool)
+
+	# Signal: CutAvailable state changed
+	cutAvailableChanged = Signal(bool)
+
+	# Signal: PasteAvailable state changed
+	pasteAvailableChanged = Signal(bool)
+
 	# Signal: Change the font size.
 	#         If the parameter is True, increase font size.
 	resizeFont = Signal(bool)
+
 	# Signal: Validation request.
 	#	  A code validation should take place.
 	#	  The parameter is the source editor.
@@ -287,6 +364,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.undoAvailable.connect(self.undoAvailableChanged)
 		self.editWidget.redoAvailable.connect(self.redoAvailableChanged)
 		self.editWidget.copyAvailable.connect(self.copyAvailableChanged)
+		self.editWidget.copyAvailable.connect(self.cutAvailableChanged)
 		self.editWidget.resizeFont.connect(self.resizeFont)
 		self.editWidget.validateDocument.connect(
 			lambda editWidget: self.validateDocument.emit(editWidget))
