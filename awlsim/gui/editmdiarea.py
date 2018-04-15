@@ -27,6 +27,7 @@ from awlsim.gui.symtabwidget import SymTabView
 from awlsim.gui.libtablewidget import LibTableView
 from awlsim.gui.fup.fupwidget import FupWidget
 from awlsim.gui.util import *
+from awlsim.gui.sourcecodeedit import *
 
 
 __all__ = [
@@ -37,6 +38,9 @@ __all__ = [
 class EditMdiArea(QMdiArea):
 	"""Main editor MDI area.
 	"""
+
+	# Signal: Keyboard focus in/out event.
+	focusChanged = Signal(bool)
 
 	def __init__(self, mainWidget):
 		QMdiArea.__init__(self, parent=mainWidget)
@@ -49,6 +53,17 @@ class EditMdiArea(QMdiArea):
 	def getProjectTreeModel(self):
 		return self.mainWidget.projectTreeModel
 
+	@property
+	def activeOpenSubWindow(self):
+		"""Get the currently active and open sub window.
+		"""
+		mdiSubWin = self.activeSubWindow()
+		if not mdiSubWin:
+			return None
+		if mdiSubWin.isClosing():
+			return None
+		return mdiSubWin
+
 	def resetArea(self):
 		"""Close all MDI sub windows and clear all state.
 		"""
@@ -57,9 +72,24 @@ class EditMdiArea(QMdiArea):
 			del mdiSubWin
 		self._guiSettings = GuiSettings()
 
+	def __handleSubWinFocusChanged(self, mdiSubWin, hasFocus):
+		"""Text focus of one sub window has changed.
+		"""
+		activeMdiSubWin = self.activeOpenSubWindow
+		if activeMdiSubWin is mdiSubWin:
+			self.focusChanged.emit(hasFocus)
+		else:
+			self.focusChanged.emit(False)
+
 	def __newWin(self, mdiSubWin):
 		self.addSubWindow(mdiSubWin)
 		mdiSubWin.show()
+
+		# Connect signals of sub window.
+		mdiSubWin.focusChanged.connect(
+			lambda hasFocus: self.__handleSubWinFocusChanged(mdiSubWin, hasFocus))
+		self.__handleSubWinFocusChanged(mdiSubWin, True)
+
 		return mdiSubWin
 
 	def newWin_AWL(self, source):
@@ -78,59 +108,59 @@ class EditMdiArea(QMdiArea):
 		return self.__newWin(LibSelEditMdiSubWindow(self, libSelections))
 
 	def undoIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.undoIsAvailable() if mdiSubWin else False
 
 	def undo(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.undo() if mdiSubWin else False
 
 	def redoIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.redoIsAvailable() if mdiSubWin else False
 
 	def redo(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.redo() if mdiSubWin else False
 
 	def cutIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.cutIsAvailable() if mdiSubWin else False
 
 	def cut(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.cut() if mdiSubWin else False
 
 	def copyIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.copyIsAvailable() if mdiSubWin else False
 
 	def copy(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.copy() if mdiSubWin else False
 
 	def pasteIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.pasteIsAvailable() if mdiSubWin else False
 
 	def paste(self, text=None):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.paste(text) if mdiSubWin else False
 
 	def findTextIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.findTextIsAvailable() if mdiSubWin else False
 
 	def findText(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.findText() if mdiSubWin else False
 
 	def findReplaceTextIsAvailable(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.findReplaceTextIsAvailable() if mdiSubWin else False
 
 	def findReplaceText(self):
-		mdiSubWin = self.activeSubWindow()
+		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.findReplaceText() if mdiSubWin else False
 
 	def setGuiSettings(self, guiSettings):
@@ -139,10 +169,32 @@ class EditMdiArea(QMdiArea):
 			mdiSubWin.setGuiSettings(guiSettings)
 
 class EditMdiSubWindow(QMdiSubWindow):
+	"""Edit MDI sub window base class.
+	"""
+
+	# Signal: Emitted, if this MDI sub window is about to close.
 	closed = Signal(QMdiSubWindow)
+	# Signal: Emitted, if the source code changed.
+	sourceChanged = Signal()
+	# Signal: Keyboard focus in/out event.
+	focusChanged = Signal(bool)
+	# Signal: UndoAvailable state changed
+	undoAvailableChanged = Signal(bool)
+	# Signal: RedoAvailable state changed
+	redoAvailableChanged = Signal(bool)
+	# Signal: CopyAvailable state changed
+	copyAvailableChanged = Signal(bool)
+	# Signal: Change the font size.
+	#         If the parameter is True, increase font size.
+	resizeFont = Signal(bool)
+	# Signal: Validation request.
+	#	  A code validation should take place.
+	#	  The parameter is the source editor.
+	validateDocument = Signal(SourceCodeEdit)
 
 	def __init__(self):
 		self.__forceClose = False
+		self.__isClosing = False
 		QMdiSubWindow.__init__(self)
 		self.setAttribute(Qt.WA_DeleteOnClose)
 
@@ -153,12 +205,18 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def closeEvent(self, ev):
 		if not self.__forceClose:
 			pass#TODO check if dirty
+
+		# No way back. We are closing.
+		self.__isClosing = True
 		self.closed.emit(self)
 		QMdiSubWindow.closeEvent(self, ev)
 
 	def forceClose(self):
 		self.__forceClose = True
 		return self.close()
+
+	def isClosing(self):
+		return self.__isClosing
 
 	def getSource(self):
 		raise NotImplementedError
@@ -209,6 +267,11 @@ class EditMdiSubWindow(QMdiSubWindow):
 		pass
 
 class AwlEditMdiSubWindow(EditMdiSubWindow):
+
+	# Signal: The visible AWL line range changed
+	#         Parameters are: source, visibleFromLine, visibleToLine
+	visibleLinesChanged = Signal(object, int, int)
+
 	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
@@ -217,16 +280,16 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.setSettings(mdiArea._guiSettings)
 		self.setWidget(self.editWidget)
 
-#TODO		editWidget.codeChanged.connect(self.sourceChanged)
-#TODO		editWidget.focusChanged.connect(self.focusChanged)
+		self.editWidget.codeChanged.connect(self.sourceChanged)
+		self.editWidget.focusChanged.connect(self.focusChanged)
 #TODO		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
 #TODO		editWidget.cpuCodeMatchChanged.connect(self.__handleCodeMatchChange)
-#TODO		editWidget.undoAvailable.connect(self.undoAvailableChanged)
-#TODO		editWidget.redoAvailable.connect(self.redoAvailableChanged)
-#TODO		editWidget.copyAvailable.connect(self.copyAvailableChanged)
-#TODO		editWidget.resizeFont.connect(self.resizeFont)
-#TODO		editWidget.validateDocument.connect(
-#TODO			lambda editWidget: self.validateDocument.emit(editWidget))
+		self.editWidget.undoAvailable.connect(self.undoAvailableChanged)
+		self.editWidget.redoAvailable.connect(self.redoAvailableChanged)
+		self.editWidget.copyAvailable.connect(self.copyAvailableChanged)
+		self.editWidget.resizeFont.connect(self.resizeFont)
+		self.editWidget.validateDocument.connect(
+			lambda editWidget: self.validateDocument.emit(editWidget))
 
 		self.setWindowTitle(source.name + " (AWL)")
 
@@ -320,6 +383,9 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 		self.symTabView.model().setSource(source)
 		self.setWidget(self.symTabView)
 
+		self.symTabView.focusChanged.connect(self.focusChanged)
+		self.symTabView.model().sourceChanged.connect(self.sourceChanged)
+
 		self.setWindowTitle(source.name + " (Symbols)")
 
 	def getSource(self):
@@ -332,6 +398,9 @@ class LibSelEditMdiSubWindow(EditMdiSubWindow):
 		self.libTabView = LibTableView(model=None, parent=self)
 		self.libTabView.model().setLibSelections(libSelections)
 		self.setWidget(self.libTabView)
+
+		self.libTabView.focusChanged.connect(self.focusChanged)
+		self.libTabView.model().contentChanged.connect(self.sourceChanged)
 
 		self.setWindowTitle("Library selections")
 
