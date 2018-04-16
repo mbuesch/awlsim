@@ -42,6 +42,7 @@ class ProjectTreeModel(QAbstractItemModel):
 	# Signal: Some project data changed.
 	projectContentChanged = Signal()
 
+
 	EnumGen.start
 	INDEXID_SRCS			= EnumGen.item
 	INDEXID_SRCS_AWL		= EnumGen.item
@@ -146,11 +147,14 @@ class ProjectTreeModel(QAbstractItemModel):
 			if mdiSubWin:
 				editMdiArea.setActiveSubWindow(mdiSubWin)
 			else:
+				# Create a new MDI window.
 				mdiSubWin = makeNewWin(source)
 				mdiSubWin.closed.connect(lambda w:
 					source.userData.pop("gui-edit-window", None))
 				source.userData["gui-edit-window"] = mdiSubWin
-				#TODO connect signals
+
+				# Connect signals.
+				mdiSubWin.sourceChanged.connect(self.projectContentChanged)
 
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			handleSourceWindowActivation(
