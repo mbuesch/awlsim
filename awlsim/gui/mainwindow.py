@@ -106,6 +106,10 @@ class MainWidget(QWidget):
 	redoAvailableChanged = Signal(bool)
 	# Signal: CopyAvailable state changed
 	copyAvailableChanged = Signal(bool)
+	# Signal: CutAvailable state changed
+	cutAvailableChanged = Signal(bool)
+	# Signal: PasteAvailable state changed
+	pasteAvailableChanged = Signal(bool)
 
 	def __init__(self, mainWindow, parent=None):
 		QWidget.__init__(self, parent)
@@ -120,17 +124,12 @@ class MainWidget(QWidget):
 		self.filename = None
 		self.dirty = False
 
-#TODO		self.projectWidget.codeChanged.connect(self.somethingChanged)
-#TODO		self.projectWidget.fupChanged.connect(self.somethingChanged)
-#TODO		self.projectWidget.kopChanged.connect(self.somethingChanged)
-#TODO		self.projectWidget.symTabChanged.connect(self.somethingChanged)
-#TODO		self.projectWidget.libTableChanged.connect(self.somethingChanged)
-#TODO		self.projectWidget.textFocusChanged.connect(self.textFocusChanged)
-#TODO		self.projectWidget.selResourceChanged.connect(self.selResourceChanged)
-#TODO		self.projectWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
-#TODO		self.projectWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
-#TODO		self.projectWidget.copyAvailableChanged.connect(self.copyAvailableChanged)
-#TODO		self.runStateChanged.connect(self.projectWidget.updateRunState)
+		self.editMdiArea.focusChanged.connect(self.textFocusChanged)
+		self.editMdiArea.undoAvailableChanged.connect(self.undoAvailableChanged)
+		self.editMdiArea.redoAvailableChanged.connect(self.redoAvailableChanged)
+		self.editMdiArea.copyAvailableChanged.connect(self.copyAvailableChanged)
+		self.editMdiArea.cutAvailableChanged.connect(self.cutAvailableChanged)
+		self.editMdiArea.pasteAvailableChanged.connect(self.pasteAvailableChanged)
 
 	@property
 	def projectTreeModel(self):
@@ -582,6 +581,8 @@ class MainWindow(QMainWindow):
 		self.__undoAvailableChanged(False)
 		self.__redoAvailableChanged(False)
 		self.__copyAvailableChanged(False)
+		self.__cutAvailableChanged(False)
+		self.__pasteAvailableChanged(False)
 
 		self.mainWidget.projectLoaded.connect(self.__handleProjectLoaded)
 		self.mainWidget.dirtyChanged.connect(self.__dirtyChanged)
@@ -590,6 +591,8 @@ class MainWindow(QMainWindow):
 		self.mainWidget.undoAvailableChanged.connect(self.__undoAvailableChanged)
 		self.mainWidget.redoAvailableChanged.connect(self.__redoAvailableChanged)
 		self.mainWidget.copyAvailableChanged.connect(self.__copyAvailableChanged)
+		self.mainWidget.cutAvailableChanged.connect(self.__cutAvailableChanged)
+		self.mainWidget.pasteAvailableChanged.connect(self.__pasteAvailableChanged)
 		self.ctrlTb.connectToCpuWidget(self.cpuWidget)
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
@@ -603,12 +606,16 @@ class MainWindow(QMainWindow):
 		#TODO
 #		self.cpuWidget.haveIdentsMsg.connect(self.mainWidget.projectWidget.handleIdentsMsg)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
-		self.treeDockWidget.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
-
-		self.resize(1024, 768)
+		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
+#TODO		self.projectTreeModel.selResourceChanged.connect(self.selResourceChanged)
+#TODO		self.runStateChanged.connect(self.projectWidget.updateRunState)
 
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
+
+	@property
+	def editMdiArea(self):
+		return self.mainWidget.editMdiArea
 
 	@property
 	def projectTreeModel(self):
@@ -666,16 +673,13 @@ class MainWindow(QMainWindow):
 		self.__updateFindActions()
 
 	def __updateFindActions(self):
-		if self.__selProjectResource == ProjectWidget.RES_SOURCES:
-			self.tbFindAct.setEnabled(True)
-			self.tbFindReplaceAct.setEnabled(True)
-			self.findAct.setEnabled(True)
-			self.findReplaceAct.setEnabled(True)
-		else:
-			self.tbFindAct.setEnabled(False)
-			self.tbFindReplaceAct.setEnabled(False)
-			self.findAct.setEnabled(False)
-			self.findReplaceAct.setEnabled(False)
+		findAvailable = self.editMdiArea.findTextIsAvailable()
+		self.tbFindAct.setEnabled(findAvailable)
+		self.findAct.setEnabled(findAvailable)
+
+		replaceAvailable = self.editMdiArea.findReplaceTextIsAvailable()
+		self.tbFindReplaceAct.setEnabled(replaceAvailable)
+		self.findReplaceAct.setEnabled(replaceAvailable)
 
 	def __updateLibActions(self):
 		# Enable/disable the library toolbar button.
@@ -703,40 +707,25 @@ class MainWindow(QMainWindow):
 		self.__updateLibActions()
 		self.__updateFindActions()
 
-	def __updateUndoActions(self):
-		self.undoAct.setEnabled(
-			self.__undoAvailable and
-			self.__selProjectResource == ProjectWidget.RES_SOURCES
-		)
-		self.tbUndoAct.setEnabled(self.undoAct.isEnabled())
-
 	def __undoAvailableChanged(self, undoAvailable):
-		self.__undoAvailable = undoAvailable
-		self.__updateUndoActions()
-
-	def __updateRedoActions(self):
-		self.redoAct.setEnabled(
-			self.__redoAvailable and
-			self.__selProjectResource == ProjectWidget.RES_SOURCES
-		)
-		self.tbRedoAct.setEnabled(self.redoAct.isEnabled())
+		self.undoAct.setEnabled(undoAvailable)
+		self.tbUndoAct.setEnabled(undoAvailable)
 
 	def __redoAvailableChanged(self, redoAvailable):
-		self.__redoAvailable = redoAvailable
-		self.__updateRedoActions()
-
-	def __updateClipboardActions(self):
-		self.cutAct.setEnabled(
-			self.__copyAvailable and
-			self.__selProjectResource == ProjectWidget.RES_SOURCES
-		)
-		self.tbCutAct.setEnabled(self.cutAct.isEnabled())
-		self.copyAct.setEnabled(self.cutAct.isEnabled())
-		self.tbCopyAct.setEnabled(self.copyAct.isEnabled())
+		self.redoAct.setEnabled(redoAvailable)
+		self.tbRedoAct.setEnabled(redoAvailable)
 
 	def __copyAvailableChanged(self, copyAvailable):
-		self.__copyAvailable = copyAvailable
-		self.__updateClipboardActions()
+		self.copyAct.setEnabled(copyAvailable)
+		self.tbCopyAct.setEnabled(copyAvailable)
+
+	def __cutAvailableChanged(self, cutAvailable):
+		self.cutAct.setEnabled(cutAvailable)
+		self.tbCutAct.setEnabled(cutAvailable)
+
+	def __pasteAvailableChanged(self, pasteAvailable):
+		self.pasteAct.setEnabled(pasteAvailable)
+		self.tbPasteAct.setEnabled(pasteAvailable)
 
 	def closeEvent(self, ev):
 		if self.mainWidget.isDirty():
