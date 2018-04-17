@@ -39,6 +39,9 @@ class EditMdiArea(QMdiArea):
 	"""Main editor MDI area.
 	"""
 
+	# Signal: Emitted, if the source code changed.
+	sourceChanged = Signal()
+
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
 
@@ -69,6 +72,9 @@ class EditMdiArea(QMdiArea):
 
 	def getProjectTreeModel(self):
 		return self.mainWidget.projectTreeModel
+
+	def getProject(self):
+		return self.getProjectTreeModel().getProject()
 
 	@property
 	def activeOpenSubWindow(self):
@@ -139,6 +145,7 @@ class EditMdiArea(QMdiArea):
 		mdiSubWin.show()
 
 		# Connect signals of sub window.
+		mdiSubWin.sourceChanged.connect(self.sourceChanged)
 		mdiSubWin.focusChanged.connect(
 			lambda hasFocus: self.__handleSubWinFocusChanged(mdiSubWin, hasFocus))
 		mdiSubWin.undoAvailableChanged.connect(
@@ -151,6 +158,7 @@ class EditMdiArea(QMdiArea):
 			lambda cutAvail: self.__handleSubWinCutAvailChanged(mdiSubWin))
 		mdiSubWin.pasteAvailableChanged.connect(
 			lambda pasteAvail: self.__handleSubWinPasteAvailChanged(mdiSubWin))
+		mdiSubWin.resizeFont.connect(self.__handleSourceCodeFontResize)
 
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
 
@@ -170,6 +178,29 @@ class EditMdiArea(QMdiArea):
 
 	def newWin_Libsel(self, libSelections):
 		return self.__newWin(LibSelEditMdiSubWindow(self, libSelections))
+
+	def __handleSourceCodeFontResize(self, bigger):
+		self.__sourceCodeFontResize(1 if bigger else -1)
+
+	def __sourceCodeFontResize(self, increment):
+		"""Resize the editor font.
+		"""
+		if increment == 0:
+			return
+		project = self.getProject()
+		font = getDefaultFixedFont()
+		fontStr = project.getGuiSettings().getEditorFont()
+		if fontStr:
+			font.fromString(fontStr)
+			font.setStyleHint(QFont.Courier)
+		font.setPointSize(font.pointSize() + increment)
+		if (increment > 0 and font.pointSize() > 72) or\
+		   (increment < 0 and font.pointSize() < 6):
+			return
+		project.getGuiSettings().setEditorFont(font.toString())
+		self.setGuiSettings(project.getGuiSettings())
+
+		self.sourceChanged.emit()
 
 	def undoIsAvailable(self):
 		mdiSubWin = self.activeOpenSubWindow

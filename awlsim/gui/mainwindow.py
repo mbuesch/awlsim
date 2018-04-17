@@ -124,6 +124,7 @@ class MainWidget(QWidget):
 		self.filename = None
 		self.dirty = False
 
+		self.editMdiArea.sourceChanged.connect(self.somethingChanged)
 		self.editMdiArea.focusChanged.connect(self.textFocusChanged)
 		self.editMdiArea.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.editMdiArea.redoAvailableChanged.connect(self.redoAvailableChanged)

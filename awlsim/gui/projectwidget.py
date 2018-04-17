@@ -160,27 +160,6 @@ class ProjectWidget(QTabWidget):
 		self.symTabs.handleValidationResult(exception)
 		self.libTable.handleValidationResult(exception)
 
-	# Resize project editor font.
-	def __doSourceCodeFontResize(self, bigger):
-		font = getDefaultFixedFont()
-		fontStr = self.__project.getGuiSettings().getEditorFont()
-		if fontStr:
-			font.fromString(fontStr)
-			font.setStyleHint(QFont.Courier)
-		if bigger:
-			font.setPointSize(font.pointSize() + 1)
-			if font.pointSize() > 72:
-				return
-		else:
-			font.setPointSize(font.pointSize() - 1)
-			if font.pointSize() < 6:
-				return
-		self.__project.getGuiSettings().setEditorFont(font.toString())
-		self.setSettings(self.__project.getGuiSettings())
-
-		self.codeChanged.emit()
-		self.symTabChanged.emit()
-
 	def __setSelectedResource(self, res):
 		self.__selectedResource = res
 		self.selResourceChanged.emit(res)
