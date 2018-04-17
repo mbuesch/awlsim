@@ -2,7 +2,7 @@
 #
 # AWL simulator - Code validator
 #
-# Copyright 2014-2016 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -119,16 +119,23 @@ class AwlValidator(object):
 		try:
 			client.setRunState(False)
 			client.reset()
-			client.loadProject(project, loadSymTabs=False,
-					   loadLibSelections=False,
-					   loadSources=False,
-					   loadFup=False,
-					   loadKop=False)
-			client.loadSymTabSources(symTabSources)
-			client.loadLibraryBlocks(libSelections)
-			client.loadAwlSources(awlSources)
-			client.loadFupSources(fupSources)
-			client.loadKopSources(kopSources)
+			client.loadProject(
+				project,
+				loadSymTabs=(symTabSources is None),
+				loadLibSelections=(libSelections is None),
+				loadSources=(awlSources is None),
+				loadFup=(fupSources is None),
+				loadKop=(kopSources is None))
+			if symTabSources is not None:
+				client.loadSymTabSources(symTabSources)
+			if libSelections is not None:
+				client.loadLibraryBlocks(libSelections)
+			if awlSources is not None:
+				client.loadAwlSources(awlSources)
+			if fupSources is not None:
+				client.loadFupSources(fupSources)
+			if kopSources is not None:
+				client.loadKopSources(kopSources)
 			client.build()
 			client.reset()
 		except AwlSimError as e:
@@ -152,12 +159,12 @@ class AwlValidator(object):
 				self.__runJob(job)
 
 	def validate(self, project,
-		     symTabSources, libSelections, awlSources,
-		     fupSources, kopSources):
+		     symTabSources=None, libSelections=None, awlSources=None,
+		     fupSources=None, kopSources=None):
 		"""Schedule a validation.
 		Get the result with getState().
 		"""
-		if not project or not awlSources:
+		if not project:
 			return
 		with self.__lock:
 			if self.__job is self._EXIT_THREAD:
