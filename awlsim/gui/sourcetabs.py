@@ -101,21 +101,6 @@ class SourceTabContextMenu(QMenu):
 		else:
 			self.__enableAction.setText("Disable %s" % self.itemName)
 
-class SourceTabCorner(QWidget):
-	def __init__(self, itemName, contextMenu, parent=None):
-		QWidget.__init__(self, parent)
-		self.setLayout(QGridLayout())
-		self.layout().setContentsMargins(QMargins(3, 0, 0, 0))
-
-		self.menuButton = QPushButton("+/-", self)
-		self.menuButton.setIcon(getIcon("tab_new"))
-		self.menuButton.setMenu(contextMenu)
-		self.layout().addWidget(self.menuButton, 0, 0)
-
-class DummySourceWidget(QWidget):
-	def getSource(self):
-		return None
-
 class SourceTabWidget(QTabWidget):
 	"Abstract source tab-widget"
 
@@ -202,9 +187,6 @@ class SourceTabWidget(QTabWidget):
 	def updateRunState(self, runState):
 		pass
 
-	def handleValidationResult(self, exception):
-		pass
-
 	def getSources(self):
 		"Returns a list of sources"
 		return [ s for s in (w.getSource() for w in self.allTabWidgets())
@@ -248,39 +230,6 @@ class SourceTabWidget(QTabWidget):
 			if index >= 0:
 				tabBar.setCurrentIndex(index)
 				self.contextMenu.exec_(self.mapToGlobal(ev.pos()))
-
-	def undoIsAvailable(self):
-		return False
-
-	def undo(self):
-		pass
-
-	def redoIsAvailable(self):
-		return False
-
-	def redo(self):
-		pass
-
-	def copyIsAvailable(self):
-		return False
-
-	def clipboardCut(self):
-		pass
-
-	def clipboardCopy(self):
-		pass
-
-	def clipboardPaste(self):
-		pass
-
-	def findText(self):
-		pass
-
-	def findReplaceText(self):
-		pass
-
-	def handleIdentsMsg(self, identsMsg):
-		pass
 
 class AwlSourceTabWidget(SourceTabWidget):
 	"AWL source tab-widget"
@@ -363,10 +312,6 @@ class AwlSourceTabWidget(SourceTabWidget):
 	def updateRunState(self, runState):
 		for editWidget in self.allTabWidgets():
 			editWidget.runStateChanged(runState)
-
-	def handleValidationResult(self, exception):
-		for editWidget in self.allTabWidgets():
-			editWidget.handleValidationResult(exception)
 
 	def handleOnlineDiagChange(self, enabled):
 		self.onlineDiagEnabled = enabled
@@ -596,9 +541,6 @@ class SymSourceTabWidget(SourceTabWidget):
 		self.updateTabTexts()
 		self.updateActionMenu()
 
-	def handleIdentsMsg(self, identsMsg):
-		pass#TODO
-
 class FupTabWidget(SourceTabWidget):
 	"FUP/FBD tab widget"
 
@@ -706,6 +648,3 @@ class FupTabWidget(SourceTabWidget):
 		self.setCurrentIndex(index)
 		self.updateTabTexts()
 		self.updateActionMenu()
-
-	def handleIdentsMsg(self, identsMsg):
-		pass#TODO

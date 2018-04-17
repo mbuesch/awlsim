@@ -22,12 +22,13 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.codevalidator import *
+
 from awlsim.gui.editwidget import EditWidget
 from awlsim.gui.symtabwidget import SymTabView
 from awlsim.gui.libtablewidget import LibTableView
 from awlsim.gui.fup.fupwidget import FupWidget
 from awlsim.gui.util import *
-from awlsim.gui.sourcecodeedit import *
 
 
 __all__ = [
@@ -103,6 +104,7 @@ class EditMdiArea(QMdiArea):
 		self.__handleSubWinCopyAvailChanged(mdiSubWin)
 		self.__handleSubWinCutAvailChanged(mdiSubWin)
 		self.__handleSubWinPasteAvailChanged(mdiSubWin)
+		self.__handleDocumentValidation()
 
 	def __handleSubWinFocusChanged(self, mdiSubWin, hasFocus):
 		"""Text focus of one sub window has changed.
@@ -159,6 +161,7 @@ class EditMdiArea(QMdiArea):
 		mdiSubWin.pasteAvailableChanged.connect(
 			lambda pasteAvail: self.__handleSubWinPasteAvailChanged(mdiSubWin))
 		mdiSubWin.resizeFont.connect(self.__handleSourceCodeFontResize)
+		mdiSubWin.validateDocument.connect(self.__handleDocumentValidation)
 
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
 
@@ -201,6 +204,31 @@ class EditMdiArea(QMdiArea):
 		self.setGuiSettings(project.getGuiSettings())
 
 		self.sourceChanged.emit()
+
+	def __handleDocumentValidation(self):
+		"""Handle a background document validation request.
+		"""
+		validator = AwlValidator.get()
+		if validator:
+			project = self.getProject()
+			validator.validate(project=project)
+			QTimer.singleShot(100, self.__checkDocumentValidationResult)
+
+	def __checkDocumentValidationResult(self):
+		"""Poll the background source code validation result.
+		"""
+		validator = AwlValidator.get()
+		if validator:
+			running, exception = validator.getState()
+			self.__handleDocumentValidationResult(exception)
+			if running:
+				QTimer.singleShot(100, self.__checkDocumentValidationResult)
+
+	def __handleDocumentValidationResult(self, exception):
+		"""Handle a background source code validator exception.
+		"""
+		for mdiSubWin in self.subWindowList():
+			mdiSubWin.handleDocumentValidationResult(exception)
 
 	def undoIsAvailable(self):
 		mdiSubWin = self.activeOpenSubWindow
@@ -297,8 +325,7 @@ class EditMdiSubWindow(QMdiSubWindow):
 
 	# Signal: Validation request.
 	#	  A code validation should take place.
-	#	  The parameter is the source editor.
-	validateDocument = Signal(SourceCodeEdit)
+	validateDocument = Signal()
 
 	def __init__(self):
 		self.__forceClose = False
@@ -374,6 +401,9 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def setGuiSettings(self, guiSettings):
 		pass
 
+	def handleDocumentValidationResult(self, exception):
+		pass
+
 class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 	# Signal: The visible AWL line range changed
@@ -398,7 +428,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.copyAvailable.connect(self.cutAvailableChanged)
 		self.editWidget.resizeFont.connect(self.resizeFont)
 		self.editWidget.validateDocument.connect(
-			lambda editWidget: self.validateDocument.emit(editWidget))
+			lambda editWidget: self.validateDocument.emit())
 
 		self.setWindowTitle(source.name + " (AWL)")
 
@@ -456,6 +486,9 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 	def setGuiSettings(self, guiSettings):
 		self.editWidget.setSettings(guiSettings)
+
+	def handleDocumentValidationResult(self, exception):
+		self.editWidget.handleValidationResult(exception)
 
 class FupEditMdiSubWindow(EditMdiSubWindow):
 	def __init__(self, mdiArea, source):
