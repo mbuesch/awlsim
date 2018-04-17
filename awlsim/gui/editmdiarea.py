@@ -71,6 +71,9 @@ class EditMdiArea(QMdiArea):
 
 		self.subWindowActivated.connect(self.__handleSubWindowActivated)
 
+	def getMainWidget(self):
+		return self.mainWidget
+
 	def getProjectTreeModel(self):
 		return self.mainWidget.projectTreeModel
 
@@ -164,6 +167,7 @@ class EditMdiArea(QMdiArea):
 		mdiSubWin.validateDocument.connect(self.__handleDocumentValidation)
 
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
+		QTimer.singleShot(0, self.__handleDocumentValidation)
 
 		return mdiSubWin
 
@@ -338,8 +342,25 @@ class EditMdiSubWindow(QMdiSubWindow):
 		childWidget.setParent(self)
 
 	def closeEvent(self, ev):
-		if not self.__forceClose:
-			pass#TODO check if dirty
+		mdiArea = self.mdiArea()
+		mainWidget = mdiArea.getMainWidget()
+		projectTreeModel = mdiArea.getProjectTreeModel()
+
+		if mainWidget.isDirty():
+			# The closed window might contain changes that
+			# have not yet been merged with the project.
+			# Refresh the project now.
+			refreshOk = projectTreeModel.refreshProject()
+			if not refreshOk and not self.__forceClose:
+				# Refresh failed.
+				QMessageBox.critical(self,
+					"Failed to refresh project",
+					"Failed to refresh project data.\n"
+					"Not closing the editor window "
+					"to avoid loss of data.")
+				# Do not close the sub window.
+				ev.ignore()
+				return
 
 		# No way back. We are closing.
 		self.__isClosing = True

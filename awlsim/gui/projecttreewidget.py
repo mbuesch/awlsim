@@ -316,7 +316,7 @@ class ProjectTreeModel(QAbstractItemModel):
 	def __projectContentChanged(self):
 		self.projectContentChanged.emit()
 
-	def __refreshProject(self):
+	def refreshProject(self):
 		"""Copy the modified sources from the edit widgets.
 		"""
 		ret = True
@@ -348,7 +348,7 @@ class ProjectTreeModel(QAbstractItemModel):
 
 	def getProject(self, refresh=True):
 		if refresh:
-			self.__refreshProject()
+			self.refreshProject()
 		return self.__project
 
 	def __reset(self, project=None):
@@ -421,7 +421,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				# Signal this to our caller.
 				return -1
 
-		if not self.__refreshProject():
+		if not self.refreshProject():
 			# Failed to generate some sources
 			return 0
 		project = self.__project
