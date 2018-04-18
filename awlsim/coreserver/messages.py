@@ -1242,11 +1242,7 @@ class AwlSimMessageTransceiver(object):
 		self.txSeqCount = 0
 
 		# Receive buffer
-		self.rxBuffers = []
-		self.rxByteCnt = 0
-		self.msgId = None
-		self.seq = None
-		self.payloadLen = None
+		self.__resetRxBuf()
 
 		try:
 			if isJython: #XXX Workaround
@@ -1311,7 +1307,7 @@ class AwlSimMessageTransceiver(object):
 			try:
 				offset += sock.send(data[offset : ])
 			except _SocketErrors as e:
-				transferError = TransferError(None, parentException = e)
+				transferError = TransferError(None, parentException=e)
 				if transferError.reason != TransferError.REASON_BLOCKING:
 					raise transferError
 
@@ -1325,14 +1321,16 @@ class AwlSimMessageTransceiver(object):
 			try:
 				data = self.sock.recv(hdrLen - rxByteCnt)
 			except SocketErrors as e:
-				transferError = TransferError(None, parentException = e)
+				transferError = TransferError(None, parentException=e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None
+				self.__resetRxBuf()
 				raise transferError
 			if not data:
 				# The remote end closed the connection
+				self.__resetRxBuf()
 				raise TransferError(None,
-					reason = TransferError.REASON_REMOTEDIED)
+					reason=TransferError.REASON_REMOTEDIED)
 			self.rxBuffers.append(data)
 			self.rxByteCnt = rxByteCnt = rxByteCnt + len(data)
 			if rxByteCnt < hdrLen:
@@ -1342,9 +1340,11 @@ class AwlSimMessageTransceiver(object):
 					AwlSimMessage.hdrStruct.unpack(b"".join(self.rxBuffers))
 				self.rxBuffers = [] # Discard raw header bytes.
 			except struct.error as e:
+				self.__resetRxBuf()
 				raise AwlSimError("Received message with invalid "
 					"header format.")
 			if magic != AwlSimMessage.HDR_MAGIC:
+				self.__resetRxBuf()
 				raise AwlSimError("Received message with invalid "
 					"magic value (was 0x%04X, expected 0x%04X)." %\
 					(magic, AwlSimMessage.HDR_MAGIC))
@@ -1355,14 +1355,16 @@ class AwlSimMessageTransceiver(object):
 			try:
 				data = self.sock.recv(msgLen - rxByteCnt)
 			except SocketErrors as e:
-				transferError = TransferError(None, parentException = e)
+				transferError = TransferError(None, parentException=e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None
+				self.__resetRxBuf()
 				raise transferError
 			if not data:
 				# The remote end closed the connection
+				self.__resetRxBuf()
 				raise TransferError(None,
-					reason = TransferError.REASON_REMOTEDIED)
+					reason=TransferError.REASON_REMOTEDIED)
 			self.rxBuffers.append(data)
 			self.rxByteCnt = rxByteCnt = rxByteCnt + len(data)
 			if rxByteCnt < msgLen:
@@ -1370,10 +1372,17 @@ class AwlSimMessageTransceiver(object):
 		try:
 			cls = self.id2class[self.msgId]
 		except KeyError:
-			raise AwlSimError("Received unknown message: 0x%04X" %\
-				self.msgId)
+			self.__resetRxBuf()
+			msgId = "No ID" if self.msgId is None else ("0x%04X" % self.msgId)
+			raise AwlSimError("Received unknown message: %s" % msgId)
 		msg = cls.fromBytes(b"".join(self.rxBuffers))
 		msg.seq = self.seq
-		self.rxBuffers, self.rxByteCnt, self.msgId, self.seq, self.payloadLen =\
-			[], 0, None, None, None
+		self.__resetRxBuf()
 		return msg
+
+	def __resetRxBuf(self):
+		self.rxBuffers = []
+		self.rxByteCnt = 0
+		self.msgId = None
+		self.seq = None
+		self.payloadLen = None
