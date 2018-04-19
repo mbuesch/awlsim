@@ -53,6 +53,7 @@ class ProjectTreeModel(QAbstractItemModel):
 	INDEXID_CPU			= EnumGen.item
 	INDEXID_CONN			= EnumGen.item
 	INDEXID_HW			= EnumGen.item
+	INDEXID_GUICONF			= EnumGen.item
 	EnumGen.end
 
 	# Base ID mask for dynamic elements
@@ -68,6 +69,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		1	: INDEXID_CPU,
 		2	: INDEXID_CONN,
 		3	: INDEXID_HW,
+		4	: INDEXID_GUICONF,
 	}
 	id2row_toplevel = pivotDict(row2id_toplevel)
 
@@ -127,6 +129,9 @@ class ProjectTreeModel(QAbstractItemModel):
 			return True
 		elif idxId == self.INDEXID_HW:
 			self.mainWidget.hwmodConfig()
+			return True
+		elif idxId == self.INDEXID_GUICONF:
+			self.mainWidget.guiConfig()
 			return True
 		elif idxId == self.INDEXID_SRCS_LIBSEL:
 			libSelMdiSubWin = self.__libSelMdiSubWin
@@ -574,6 +579,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		  self.INDEXID_CPU		: "CPU",
 		  self.INDEXID_CONN		: "Connection",
 		  self.INDEXID_HW		: "Hardware",
+		  self.INDEXID_GUICONF		: "Editor settings",
 		}
 		return names.get(idxId)
 
@@ -609,6 +615,8 @@ class ProjectTreeModel(QAbstractItemModel):
 					return getIcon("network")
 				elif idxId == self.INDEXID_HW:
 					return getIcon("hwmod")
+				elif idxId == self.INDEXID_GUICONF:
+					return getIcon("prefs")
 		return None
 
 	def setData(self, index, value, role=Qt.EditRole):
@@ -881,6 +889,7 @@ class ProjectTreeView(QTreeView):
 				elif idxId in {ProjectTreeModel.INDEXID_CPU,
 					       ProjectTreeModel.INDEXID_CONN,
 					       ProjectTreeModel.INDEXID_HW,
+					       ProjectTreeModel.INDEXID_GUICONF,
 					       ProjectTreeModel.INDEXID_SRCS_LIBSEL}:
 					itemName = model.data(index)
 					self.__showSourceContextMenu(index=index,
