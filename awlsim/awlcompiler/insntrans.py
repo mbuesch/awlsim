@@ -217,18 +217,19 @@ class AwlInsnTranslator(object):
 	@classmethod
 	def fromRawInsn(cls, cpu, rawInsn):
 		mnemonics = cpu.getConf().getMnemonics()
+		extendedInsnsEnabled = cpu.extendedInsnsEnabled()
 		try:
 			insnType = cls.name2type(rawInsn.getName(), mnemonics)
 			if insnType is None or\
 			   (insnType >= AwlInsnTypes.TYPE_EXTENDED and\
-			    not cpu.extendedInsnsEnabled()):
+			    not extendedInsnsEnabled):
 				raise KeyError
 			insnClass = cls.type2class[insnType]
 		except KeyError:
 			raise AwlSimError("Cannot translate instruction: '%s'" %\
 				rawInsn.getName())
 		insn = insnClass(cpu, rawInsn)
-		if not cpu.extendedInsnsEnabled():
-			if any(op.isExtended for op in insn.ops):
-				raise AwlSimError("Extended operands disabled")
+		if not extendedInsnsEnabled and\
+		   any(op.isExtended for op in insn.ops):
+			raise AwlSimError("Extended operands disabled")
 		return insn
