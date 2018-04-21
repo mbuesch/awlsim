@@ -252,7 +252,7 @@ class CpuWidget(QWidget):
 		self.__corePeriodicTimer.setSingleShot(False)
 		self.__corePeriodicTimer.timeout.connect(self.__periodicCoreWork)
 
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		client.haveException.connect(self.__handleCpuException)
 		client.haveCpuDump.connect(self.__handleCpuDump)
 		client.haveInsnDump.connect(self.haveInsnDump)
@@ -271,6 +271,12 @@ class CpuWidget(QWidget):
 		self.newWin_CPU()
 		self.update()
 
+	def getProject(self):
+		return self.mainWidget.getProject()
+
+	def getSimClient(self):
+		return self.mainWidget.getSimClient()
+
 	def __stateMdiWindowClosed(self, mdiWin):
 		QTimer.singleShot(0, self.__uploadMemReadAreas)
 
@@ -284,41 +290,41 @@ class CpuWidget(QWidget):
 		self.__uploadMemReadAreas()
 
 	def newWin_CPU(self):
-		self.__addWindow(State_CPU(self.mainWidget.getSimClient(), self))
+		self.__addWindow(State_CPU(self.getSimClient(), self))
 
 	def newWin_DB(self):
-		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Mem(self.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_DB,
 					   self))
 
 	def newWin_E(self):
-		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Mem(self.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_E,
 					   self))
 
 	def newWin_A(self):
-		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Mem(self.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_A,
 					   self))
 
 	def newWin_M(self):
-		self.__addWindow(State_Mem(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Mem(self.getSimClient(),
 					   AbstractDisplayWidget.ADDRSPACE_M,
 					   self))
 
 	def newWin_T(self):
-		self.__addWindow(State_Timer(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Timer(self.getSimClient(),
 					     self))
 
 	def newWin_Z(self):
-		self.__addWindow(State_Counter(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Counter(self.getSimClient(),
 					       self))
 
 	def newWin_LCD(self):
-		self.__addWindow(State_LCD(self.mainWidget.getSimClient(), self))
+		self.__addWindow(State_LCD(self.getSimClient(), self))
 
 	def newWin_Blocks(self):
-		self.__addWindow(State_Blocks(self.mainWidget.getSimClient(),
+		self.__addWindow(State_Blocks(self.getSimClient(),
 					      self))
 
 	def __stateWinConfigChanged(self, stateWin):
@@ -331,7 +337,7 @@ class CpuWidget(QWidget):
 
 	# Upload the used memory area descriptors to the core.
 	def __uploadMemReadAreas(self):
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		wantDump = False
 		memAreas = []
 		for mdiWin in self.stateMdi.subWindowList():
@@ -374,7 +380,7 @@ class CpuWidget(QWidget):
 			win.setMemories(memAreas)
 
 	def __handleMaintenance(self, maintRequest):
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 
 		if maintRequest.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
 			res = QMessageBox.question(self,
@@ -400,7 +406,7 @@ class CpuWidget(QWidget):
 			self.stop()
 
 	def __run(self, goOnlineFirst=True):
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 
 		# Make sure the button is pressed.
 		with self.__runStateChangeBlocked:
@@ -440,7 +446,7 @@ class CpuWidget(QWidget):
 
 	# Periodic timer for core message handling.
 	def __processCoreMessages(self):
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		try:
 			# Receive messages, until we hit a timeout
 			while client.processMessages(0.02):
@@ -463,7 +469,7 @@ class CpuWidget(QWidget):
 		self.__stopCoreMessageHandler()
 
 		# Check if the CPU is in RUN mode.
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		inRunMode = False
 		with suppressAllExc:
 			inRunMode = client.getRunState()
@@ -484,7 +490,7 @@ class CpuWidget(QWidget):
 
 	# Periodic timer for core status work.
 	def __periodicCoreWork(self):
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		hasBlockTree = client.blockTreeModelActive()
 		try:
 			client.requestIdents(reqAwlSources = True,
@@ -519,7 +525,7 @@ class CpuWidget(QWidget):
 			self.stop()
 
 		if self.isOnline():
-			client = self.mainWidget.getSimClient()
+			client = self.getSimClient()
 			try:
 				client.setRunState(False)
 			except AwlSimError as e:
@@ -538,7 +544,7 @@ class CpuWidget(QWidget):
 		self.reqRunButtonState.emit(True)
 
 	def __goOnline(self):
-		project = self.mainWidget.getProject()
+		project = self.getProject()
 
 		if LinkConfigWidget.askWhenConnecting():
 			dlg = LinkConfigDialog(project, self)
@@ -550,7 +556,7 @@ class CpuWidget(QWidget):
 			dlg.deleteLater()
 
 		linkConfig = project.getCoreLinkSettings()
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		try:
 			if linkConfig.getSpawnLocalEn():
 				portRange = linkConfig.getSpawnLocalPortRange()
@@ -589,7 +595,7 @@ class CpuWidget(QWidget):
 			self.__handleMaintenance(e)
 
 	def __goOffline(self):
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		try:
 			client.setMode_OFFLINE()
 		except AwlSimError as e:
@@ -624,32 +630,15 @@ class CpuWidget(QWidget):
 		if not self.isOnline():
 			return False
 
-		client = self.mainWidget.getSimClient()
-		project = self.mainWidget.getProject()
-		awlSources = self.mainWidget.projectWidget.getAwlSources()
-		fupSources = self.mainWidget.projectWidget.getFupSources()
-		kopSources = self.mainWidget.projectWidget.getKopSources()
-		symTabSources = self.mainWidget.projectWidget.getSymTabSources()
-		libSelections = self.mainWidget.projectWidget.getLibSelections()
-		if not all(awlSources) or not all(symTabSources):
-			return False
-
+		client = self.getSimClient()
+		project = self.getProject()
 		try:
 			self.state.setState(RunState.STATE_LOAD)
 
 			client.setRunState(False)
 			client.reset()
 
-			client.loadProject(project, loadSymTabs=False,
-					   loadLibSelections=False,
-					   loadSources=False,
-					   loadFup=False,
-					   loadKop=False)
-			client.loadSymTabSources(symTabSources)
-			client.loadLibraryBlocks(libSelections)
-			client.loadAwlSources(awlSources)
-			client.loadFupSources(fupSources)
-			client.loadKopSources(kopSources)
+			client.loadProject(project)
 			client.build()
 
 			self.state.setState(RunState.STATE_ONLINE)
@@ -685,9 +674,10 @@ class CpuWidget(QWidget):
 		if not self.isOnline():
 			return False
 
-		client = self.mainWidget.getSimClient()
-		project = self.mainWidget.getProject()
+		client = self.getSimClient()
+		project = self.getProject()
 		projectWidget = self.mainWidget.projectWidget
+		#TODO
 		selectedResource = projectWidget.getSelectedResource()
 
 		try:
@@ -760,7 +750,7 @@ class CpuWidget(QWidget):
 		if not self.isOnline():
 			return False
 
-		client = self.mainWidget.getSimClient()
+		client = self.getSimClient()
 		try:
 			client.setRunState(False)
 			client.reset()
@@ -801,7 +791,7 @@ class CpuWidget(QWidget):
 
 	def updateVisibleLineRange(self, source, fromLine, toLine):
 		try:
-			client = self.mainWidget.getSimClient()
+			client = self.getSimClient()
 			if self.__onlineDiagBtnPressed and source:
 				client.setInsnStateDump(enable=True,
 							sourceId=source.identHash,
