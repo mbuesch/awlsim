@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.cpuconfig import *
+
 from awlsim.fupcompiler.elem import *
 from awlsim.fupcompiler.elemoper import *
 from awlsim.fupcompiler.elembool import *
