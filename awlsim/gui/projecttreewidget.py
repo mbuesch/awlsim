@@ -271,8 +271,15 @@ class ProjectTreeModel(QAbstractItemModel):
 				if not ok:
 					newName = None
 			if newName is not None:
+				# Set the new name in the project.
 				source.name = newName
 				setter(sources)
+
+				# Update the MDI window, if any.
+				mdiSubWin = source.userData.get("gui-edit-window")
+				if mdiSubWin:
+					mdiSubWin.getSource().name = newName
+					mdiSubWin.updateTitle()
 
 				self.dataChanged.emit(index, index, [Qt.EditRole])
 				return True
@@ -286,8 +293,16 @@ class ProjectTreeModel(QAbstractItemModel):
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 		getter, setter = self.sourceGetter(idxIdBase)
 		if getter:
+			# Set the new enable status in the project.
 			source = getter()[itemNr]
 			source.enabled = enable
+
+			# Update the MDI window, if any.
+			mdiSubWin = source.userData.get("gui-edit-window")
+			if mdiSubWin:
+				mdiSubWin.getSource().enabled = enable
+				mdiSubWin.updateTitle()
+
 			self.projectContentChanged.emit()
 			return True
 		return False
