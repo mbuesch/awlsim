@@ -563,26 +563,24 @@ class ProjectTreeModel(QAbstractItemModel):
 		return QModelIndex()
 
 	def __data_columnName(self, index, idxId, idxIdBase, itemNr):
+
+		def getSourceName(sourceList):
+			if itemNr >= len(sourceList):
+				return None
+			source = sourceList[itemNr]
+			name = source.name
+			if not source.enabled:
+				name += " (DISABLED)"
+			return name
+
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-			awlSources = self.__project.getAwlSources()
-			if itemNr >= len(awlSources):
-				return None
-			return awlSources[itemNr].name
+			return getSourceName(self.__project.getAwlSources())
 		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-			fupSources = self.__project.getFupSources()
-			if itemNr >= len(fupSources):
-				return None
-			return fupSources[itemNr].name
+			return getSourceName(self.__project.getFupSources())
 		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-			kopSources = self.__project.getKopSources()
-			if itemNr >= len(kopSources):
-				return None
-			return kopSources[itemNr].name
+			return getSourceName(self.__project.getKopSources())
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-			symTabSources = self.__project.getSymTabSources()
-			if itemNr >= len(symTabSources):
-				return None
-			return symTabSources[itemNr].name
+			return getSourceName(self.__project.getSymTabSources())
 
 		names = {
 		  self.INDEXID_SRCS		: "Program",
