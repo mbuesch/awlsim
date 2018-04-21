@@ -63,6 +63,15 @@ class OpDescriptor(object):
 				    stripLeadingChars = self.stripLeadingChars)
 
 _AwlOpTranslator_mnemonics2constOperTab = None
+_AwlDataType = None
+
+def _getAwlDataTypeClass():
+	global _AwlDataType
+	AwlDataType = _AwlDataType
+	if AwlDataType is None:
+		from awlsim.core.datatypes import AwlDataType
+		_AwlDataType = AwlDataType
+	return AwlDataType
 
 class AwlOpTranslator(object):
 	"Instruction operator translator"
@@ -283,7 +292,7 @@ class AwlOpTranslator(object):
 		# rawOps starts _after_ the opening bracket '['
 		try:
 			if rawOps[0].upper() in ("AR1", "AR2"):
-				from awlsim.core.datatypes import AwlDataType
+				AwlDataType = _getAwlDataTypeClass()
 
 				# Register-indirect access:  "L W [AR1, P#0.0]"
 				ar = {
@@ -485,8 +494,9 @@ class AwlOpTranslator(object):
 
 		# Constant operator (from table)
 		operTable = self.__mnemonics2constOperTab[self.mnemonics]
-		if token0 in operTable:
-			return operTable[token0].dup()
+		opDesc = operTable.get(token0, None)
+		if opDesc is not None:
+			return opDesc.dup()
 		# Bitwise indirect addressing
 		if token0 == '[':
 			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
@@ -526,7 +536,7 @@ class AwlOpTranslator(object):
 			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.SYMBOLIC, 0,
 							offset, None), 1)
 
-		from awlsim.core.datatypes import AwlDataType
+		AwlDataType = _getAwlDataTypeClass()
 
 		# Immediate boolean
 		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
