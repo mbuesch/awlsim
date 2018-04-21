@@ -485,20 +485,22 @@ class AwlOpTranslator(object):
 
 	def __doTrans(self, rawInsn, rawOps):
 		assert(len(rawOps) >= 1)
-		if rawInsn and rawInsn.block.hasLabel(rawOps[0]):
+		token0 = rawOps[0]
+		token0Upper = token0.upper()
+
+		if rawInsn and rawInsn.block.hasLabel(token0):
 			# Label reference
 			oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
-			oper.immediateStr = rawOps[0]
+			oper.immediateStr = token0
 			return OpDescriptor(oper, 1)
-		token0 = rawOps[0].upper()
 
 		# Constant operator (from table)
 		operTable = self.__mnemonics2constOperTab[self.mnemonics]
-		opDesc = operTable.get(token0, None)
+		opDesc = operTable.get(token0Upper, None)
 		if opDesc is not None:
 			return opDesc.dup()
 		# Bitwise indirect addressing
-		if token0 == '[':
+		if token0Upper == '[':
 			# This is special case for the "U [AR1,P#0.0]" bitwise addressing.
 			# Create a descriptor for the (yet) unspecified bitwise access.
 			opDesc = OpDescriptor(make_AwlOperator(AwlOperatorTypes.UNSPEC, 1,
@@ -509,7 +511,7 @@ class AwlOpTranslator(object):
 			assert(opDesc.operator.operType != AwlOperatorTypes.UNSPEC)
 			return opDesc
 		# Local variable
-		if token0.startswith('#'):
+		if token0Upper.startswith('#'):
 			offset, count = self.__transVarIdents(rawOps)
 			if not offset:
 				raise AwlSimError("Failed to parse variable name: %s" %\
@@ -517,20 +519,20 @@ class AwlOpTranslator(object):
 			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.NAMED_LOCAL, 0,
 							offset, None), count)
 		# Pointer to local variable
-		if token0.startswith("P##"):
+		if token0Upper.startswith("P##"):
 			offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 			# Doesn't support struct or array indexing.
 			# Parse it as one identification.
 			offset.identChain = AwlDataIdentChain(
-				[ AwlDataIdent(rawOps[0][3:]), ]
+				[ AwlDataIdent(token0[3:]), ]
 			)
 			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.NAMED_LOCAL_PTR, 0,
 							offset, None), 1)
 		# Symbolic name
-		if token0.startswith('"') and token0.endswith('"'):
+		if token0Upper.startswith('"') and token0Upper.endswith('"'):
 			offset = make_AwlOffset(self.NO_OFFS, self.NO_OFFS)
 			offset.identChain = AwlDataIdentChain(
-				[ AwlDataIdent(rawOps[0][1:-1],
+				[ AwlDataIdent(token0[1:-1],
 					       doValidateName = False), ]
 			)
 			return OpDescriptor(make_AwlOperator(AwlOperatorTypes.SYMBOLIC, 0,
@@ -539,49 +541,49 @@ class AwlOpTranslator(object):
 		AwlDataType = _getAwlDataTypeClass()
 
 		# Immediate boolean
-		immediate = AwlDataType.tryParseImmediate_BOOL(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_BOOL(token0)
 		if immediate is not None:
 			immediate &= 1
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 1, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Immediate integer
-		immediate = AwlDataType.tryParseImmediate_INT(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_INT(token0)
 		if immediate is not None:
 			immediate &= 0xFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Immediate float
-		immediate = AwlDataType.tryParseImmediate_REAL(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_REAL(token0)
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM_REAL, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# S5Time immediate
-		immediate = AwlDataType.tryParseImmediate_S5T(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_S5T(token0)
 		if immediate is not None:
 			immediate &= 0xFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM_S5T, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Time immediate
-		immediate = AwlDataType.tryParseImmediate_TIME(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_TIME(token0)
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM_TIME, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# TIME_OF_DAY immediate
-		immediate = AwlDataType.tryParseImmediate_TOD(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_TOD(token0)
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM_TOD, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# DATE immediate
-		immediate = AwlDataType.tryParseImmediate_DATE(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_DATE(token0)
 		if immediate is not None:
 			immediate &= 0xFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM_DATE, 16, None, None)
@@ -602,7 +604,7 @@ class AwlOpTranslator(object):
 			oper.pointer = pointer
 			return OpDescriptor(oper, fields)
 		# Binary immediate
-		immediate = AwlDataType.tryParseImmediate_Bin(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_Bin(token0)
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			size = 32 if (immediate > 0xFFFF) else 16
@@ -617,49 +619,49 @@ class AwlOpTranslator(object):
 			oper.immediate = immediate
 			return OpDescriptor(oper, fields)
 		# Hex byte immediate
-		immediate = AwlDataType.tryParseImmediate_HexByte(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_HexByte(token0)
 		if immediate is not None:
 			immediate &= 0xFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 8, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Hex word immediate
-		immediate = AwlDataType.tryParseImmediate_HexWord(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_HexWord(token0)
 		if immediate is not None:
 			immediate &= 0xFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Hex dword immediate
-		immediate = AwlDataType.tryParseImmediate_HexDWord(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_HexDWord(token0)
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# Long integer immediate
-		immediate = AwlDataType.tryParseImmediate_DINT(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_DINT(token0)
 		if immediate is not None:
 			immediate &= 0xFFFFFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 32, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# BCD word immediate
-		immediate = AwlDataType.tryParseImmediate_BCD_word(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_BCD_word(token0)
 		if immediate is not None:
 			immediate &= 0xFFFF
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, 1)
 		# String immediate
-		immediate = AwlDataType.tryParseImmediate_STRING(rawOps[0])
+		immediate = AwlDataType.tryParseImmediate_STRING(token0)
 		if immediate is not None:
 			oper = make_AwlOperator(AwlOperatorTypes.IMM_STR,
 					   len(immediate) * 8, None, None)
 			oper.immediateBytes = immediate
 			return OpDescriptor(oper, 1)
 		# DBx.DBX/B/W/D addressing
-		match = re.match(r'^DB(\d+)\.DB([XBWD])$', rawOps[0])
+		match = re.match(r'^DB(\d+)\.DB([XBWD])$', token0)
 		if match:
 			dbNumber = int(match.group(1))
 			width = {
@@ -693,8 +695,8 @@ class AwlOpTranslator(object):
 				continue
 			try:
 				# Try convenience operator
-				if token0.startswith(name) and\
-				   token0[len(name)].isdigit():
+				if token0Upper.startswith(name) and\
+				   token0Upper[len(name)].isdigit():
 					opDesc = opDesc.dup()
 					opDesc.stripLeadingChars = len(name)
 					opDesc.fieldCount -= 1
@@ -702,7 +704,7 @@ class AwlOpTranslator(object):
 			except IndexError:
 				pass
 		raise AwlSimError("Cannot parse operator: " +\
-				str(rawOps[0]))
+				  str(token0))
 
 	def translateOp(self, rawInsn, rawOps):
 		"""Translate operator tokens.
