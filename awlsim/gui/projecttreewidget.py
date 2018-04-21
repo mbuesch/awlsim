@@ -596,6 +596,64 @@ class ProjectTreeModel(QAbstractItemModel):
 		}
 		return names.get(idxId)
 
+	def __data_icon(self, index, idxId, idxIdBase, itemNr):
+		if idxId == self.INDEXID_SRCS:
+			return getIcon("textsource")
+		elif idxId == self.INDEXID_SRCS_AWL or\
+		     idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			return getIcon("textsource")
+		elif idxId == self.INDEXID_SRCS_FUP or\
+		     idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			return getIcon("fup")
+		elif idxId == self.INDEXID_SRCS_KOP or\
+		     idxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			return getIcon("kop")
+		elif idxId == self.INDEXID_SRCS_SYMTAB or\
+		     idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			return getIcon("tag")
+		elif idxId == self.INDEXID_SRCS_LIBSEL:
+			return getIcon("stdlib")
+		elif idxId == self.INDEXID_CPU:
+			return getIcon("cpu")
+		elif idxId == self.INDEXID_CONN:
+			return getIcon("network")
+		elif idxId == self.INDEXID_HW:
+			return getIcon("hwmod")
+		elif idxId == self.INDEXID_GUICONF:
+			return getIcon("prefs")
+		return None
+
+	def __data_toolTip(self, index, idxId, idxIdBase, itemNr):
+		if idxId == self.INDEXID_SRCS:
+			return None
+		elif idxId == self.INDEXID_SRCS_AWL:
+			return "Right click here to add new AWL source."
+		elif idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			return "Double click here to edit this AWL source."
+		elif idxId == self.INDEXID_SRCS_FUP:
+			return "Right click here to add new FUP source."
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			return "Double click here to edit this FUP diagram."
+		elif idxId == self.INDEXID_SRCS_KOP:
+			return "Right click here to add new KOP source."
+		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			return "Double click here to edit this KOP diagram."
+		elif idxId == self.INDEXID_SRCS_SYMTAB:
+			return "Right click here to add new symbol table."
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			return "Double click here to edit this symbol table."
+		elif idxId == self.INDEXID_SRCS_LIBSEL:
+			return "Double click here to edit system library selections."
+		elif idxId == self.INDEXID_CPU:
+			return "Double click here to edit CPU settings."
+		elif idxId == self.INDEXID_CONN:
+			return "Double click here to edit core server connection settings."
+		elif idxId == self.INDEXID_HW:
+			return "Double click here to edit hardware module settings."
+		elif idxId == self.INDEXID_GUICONF:
+			return "Double click here to edit GUI settings."
+		return None
+
 	def data(self, index, role=Qt.DisplayRole):
 		column = index.column()
 		idxIdBase, idxId, itemNr = self.indexToId(index)
@@ -603,33 +661,12 @@ class ProjectTreeModel(QAbstractItemModel):
 		if role in (Qt.DisplayRole, Qt.EditRole):
 			if column == self.COLUMN_NAME:
 				return self.__data_columnName(index, idxId, idxIdBase, itemNr)
-
 		elif role == Qt.DecorationRole:
 			if column == self.COLUMN_NAME:
-				if idxId == self.INDEXID_SRCS:
-					return getIcon("textsource")
-				elif idxId == self.INDEXID_SRCS_AWL or\
-				     idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-					return getIcon("textsource")
-				elif idxId == self.INDEXID_SRCS_FUP or\
-				     idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-					return getIcon("fup")
-				elif idxId == self.INDEXID_SRCS_KOP or\
-				     idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-					return getIcon("kop")
-				elif idxId == self.INDEXID_SRCS_SYMTAB or\
-				     idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-					return getIcon("tag")
-				elif idxId == self.INDEXID_SRCS_LIBSEL:
-					return getIcon("stdlib")
-				elif idxId == self.INDEXID_CPU:
-					return getIcon("cpu")
-				elif idxId == self.INDEXID_CONN:
-					return getIcon("network")
-				elif idxId == self.INDEXID_HW:
-					return getIcon("hwmod")
-				elif idxId == self.INDEXID_GUICONF:
-					return getIcon("prefs")
+				return self.__data_icon(index, idxId, idxIdBase, itemNr)
+		elif role == Qt.ToolTipRole:
+			if column == self.COLUMN_NAME:
+				return self.__data_toolTip(index, idxId, idxIdBase, itemNr)
 		return None
 
 	def setData(self, index, value, role=Qt.EditRole):
