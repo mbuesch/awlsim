@@ -57,7 +57,10 @@ from awlsim.core.offset import * #+cimport
 from awlsim.core.obtemp import *
 from awlsim.core.util import *
 
+from awlsim.awlcompiler.tokenizer import *
 from awlsim.awlcompiler.translator import *
+from awlsim.awlcompiler.insntrans import *
+from awlsim.awlcompiler.optrans import *
 
 
 class ParenStackElem(object): #+cdef

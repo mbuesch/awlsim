@@ -2,7 +2,7 @@
 #
 # AWL simulator - AWL translator and symbol resolver
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,9 +34,11 @@ from awlsim.core.operators import * #+cimport
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.datablocks import * #+cimport
+from awlsim.core.identifier import *
 
 from awlsim.awlcompiler.insntrans import *
 from awlsim.awlcompiler.optrans import *
+from awlsim.awlcompiler.tokenizer import *
 
 
 class AwlTranslator(object):
