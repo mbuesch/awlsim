@@ -669,6 +669,27 @@ class CpuWidget(QWidget):
 
 	# Download the current source.
 	def downloadSingle(self):
+		editMdiArea = self.mainWidget.editMdiArea
+		mdiSubWin = editMdiArea.activeOpenSubWindow
+		source = libSelections = None
+		if mdiSubWin:
+			if mdiSubWin.TYPE in {mdiSubWin.TYPE_AWL,
+					      mdiSubWin.TYPE_FUP,
+					      mdiSubWin.TYPE_KOP,
+					      mdiSubWin.TYPE_SYMTAB,}:
+				source = mdiSubWin.getSource()
+			elif mdiSubWin.TYPE == mdiSubWin.TYPE_LIBSEL:
+				libSelections = mdiSubWin.getLibSelections()
+			else:
+				assert(0)
+		if not mdiSubWin or (not source and not libSelections):
+			QMessageBox.critical(self,
+				"No source selected.",
+				"Cannot download a single source.\n"
+				"No source has been opened in the edit area.",
+				QMessageBox.Ok)
+			return False
+
 		# Make sure we are online.
 		self.goOnline()
 		if not self.isOnline():
@@ -676,43 +697,30 @@ class CpuWidget(QWidget):
 
 		client = self.getSimClient()
 		project = self.getProject()
-		projectWidget = self.mainWidget.projectWidget
-		#TODO
-		selectedResource = projectWidget.getSelectedResource()
-
 		try:
 			self.state.setState(RunState.STATE_LOAD)
 
-			if selectedResource == projectWidget.RES_SOURCES:
-				awlSource = projectWidget.getCurrentAwlSource()
-				if awlSource:
-					printVerbose("Single AWL download: %s/%s" %\
-						(awlSource.name,
-						 awlSource.identHashStr))
-					client.loadAwlSource(awlSource)
-			elif selectedResource == projectWidget.RES_FUP:
-				fupSource = projectWidget.getCurrentFupSource()
-				if fupSource:
-					printVerbose("Single FUP download: %s/%s" %\
-						(fupSource.name,
-						 fupSource.identHashStr))
-					client.loadFupSource(fupSource)
-			elif selectedResource == projectWidget.RES_KOP:
-				kopSource = projectWidget.getCurrentKopSource()
-				if kopSource:
-					printVerbose("Single KOP download: %s/%s" %\
-						(kopSource.name,
-						 kopSource.identHashStr))
-					client.loadKopSource(kopSource)
-			elif selectedResource == projectWidget.RES_SYMTABS:
-				symTabSource = projectWidget.getCurrentSymTabSource()
-				if symTabSource:
-					printVerbose("Single sym download: %s/%s" %\
-						(symTabSource.name,
-						 symTabSource.identHashStr))
-					client.loadSymTabSource(symTabSource)
-			elif selectedResource == projectWidget.RES_LIBSELS:
-				libSelections = projectWidget.getLibSelections()
+			if mdiSubWin.TYPE == mdiSubWin.TYPE_AWL:
+				printVerbose("Single AWL download: %s/%s" %\
+					(source.name,
+					 source.identHashStr))
+				client.loadAwlSource(source)
+			elif mdiSubWin.TYPE == mdiSubWin.TYPE_FUP:
+				printVerbose("Single FUP download: %s/%s" %\
+					(source.name,
+					 source.identHashStr))
+				client.loadFupSource(source)
+			elif mdiSubWin.TYPE == mdiSubWin.TYPE_KOP:
+				printVerbose("Single KOP download: %s/%s" %\
+					(source.name,
+					 source.identHashStr))
+				client.loadKopSource(source)
+			elif mdiSubWin.TYPE == mdiSubWin.TYPE_SYMTAB:
+				printVerbose("Single sym download: %s/%s" %\
+					(source.name,
+					 source.identHashStr))
+				client.loadSymTabSource(source)
+			elif mdiSubWin.TYPE == mdiSubWin.TYPE_LIBSEL:
 				printVerbose("Single libSelections download.")
 				client.loadLibraryBlocks(libSelections)
 			else:
