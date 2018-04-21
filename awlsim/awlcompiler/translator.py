@@ -41,6 +41,22 @@ from awlsim.awlcompiler.optrans import *
 from awlsim.awlcompiler.tokenizer import *
 
 
+__all__ = [
+	"AwlTranslator",
+	"AwlSymResolver",
+]
+
+
+_AwlDataType = None
+
+def _getAwlDataTypeClass():
+	global _AwlDataType
+	AwlDataType = _AwlDataType
+	if AwlDataType is None:
+		from awlsim.core.datatypes import AwlDataType
+		_AwlDataType = AwlDataType
+	return AwlDataType
+
 class AwlTranslator(object):
 	"AWL instruction and operator translator."
 
@@ -113,8 +129,6 @@ class AwlTranslator(object):
 		return block
 
 	def translateCodeBlock(self, rawBlock, blockClass):
-		from awlsim.core.datatypes import AwlDataType
-
 		insns = self.__translateInsns(rawBlock.insns)
 		block = blockClass(insns, rawBlock.index)
 		block.setSourceRef(rawBlock.sourceRef, inheritRef = True)
@@ -126,6 +140,7 @@ class AwlTranslator(object):
 			block.interface.addField_OUT(self.__translateInterfaceField(rawVar))
 		if rawBlock.retTypeTokens:
 			# ARRAY is not supported for RET_VAL. So make non-array dtype.
+			AwlDataType = _getAwlDataTypeClass()
 			dtype = AwlDataType.makeByName(rawBlock.retTypeTokens)
 			if dtype.type != AwlDataType.TYPE_VOID:
 				# Ok, we have a RET_VAL.
@@ -155,7 +170,7 @@ class AwlTranslator(object):
 
 	# Translate a RawAwlDataField to an AwlDataType.
 	def __rawFieldToDataType(self, rawField):
-		from awlsim.core.datatypes import AwlDataType
+		AwlDataType = _getAwlDataTypeClass()
 
 		dtype = AwlDataType.makeByName(nameTokens = rawField.typeTokens,
 					       arrayDimensions = rawField.dimensions)
@@ -187,8 +202,6 @@ class AwlTranslator(object):
 	# dataType: The AwlDataType for this field.
 	# initBytes: The initialization bytes for this field, or None.
 	def rawFieldTranslate(self, rawField):
-		from awlsim.core.datatypes import AwlDataType
-
 		# Get the field name
 		name = rawField.getIdentString()
 		# Get the field data type
@@ -202,6 +215,7 @@ class AwlTranslator(object):
 			assert(not rawField.dimensions)
 			symStr = rawField.typeTokens[0][1:-1] # Strip quotes
 			resolver = AwlSymResolver(self.cpu)
+			AwlDataType = _getAwlDataTypeClass()
 			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,
 								   AwlDataType.TYPE_SFB_X),
 								  symStr)
@@ -216,6 +230,7 @@ class AwlTranslator(object):
 			# put them into a bytearray.
 			initMem = AwlMemory(intDivRoundUp(dataType.width, 8))
 			initBytes = initMem.dataBytes
+			AwlDataType = _getAwlDataTypeClass()
 			if dataType.type == AwlDataType.TYPE_ARRAY:
 				for rawDataInit in rawField.defaultInits:
 					value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
@@ -258,8 +273,6 @@ class AwlTranslator(object):
 						   dataType, initBytes)
 
 	def __translateGlobalDB(self, rawDB):
-		from awlsim.core.datatypes import AwlDataType
-
 		db = DB(rawDB.index, None)
 		db.setSourceRef(rawDB.sourceRef, inheritRef = True)
 		# Create the data structure fields
@@ -275,6 +288,7 @@ class AwlTranslator(object):
 					"but does not declare it." %\
 					(rawDB.index, init.getIdentString()))
 			assert(field.getIdentChain() == init.identChain)
+			AwlDataType = _getAwlDataTypeClass()
 			dtype = self.__rawFieldToDataType(field)
 			if dtype == AwlDataType.TYPE_STRUCT:
 				raise AwlSimError(
@@ -283,8 +297,6 @@ class AwlTranslator(object):
 		return db
 
 	def __translateInstanceDB(self, rawDB):
-		from awlsim.core.datatypes import AwlDataType
-
 		if rawDB.fields:
 			raise AwlSimError("DB %d is an "
 				"instance DB, but it also "
@@ -299,6 +311,7 @@ class AwlTranslator(object):
 			isSFB = rawDB.fb.isSFB
 		else:
 			# The FB name is symbolic. Resolve it.
+			AwlDataType = _getAwlDataTypeClass()
 			resolver = AwlSymResolver(self.cpu)
 			fbStr = '"%s"' % rawDB.fb.fbSymbol
 			fbNumber, sym = resolver.resolveBlockName((AwlDataType.TYPE_FB_X,
@@ -342,7 +355,7 @@ class AwlTranslator(object):
 	def __translateParamPointer(self, param):
 #@cy		cdef Pointer pointer
 
-		from awlsim.core.datatypes import AwlDataType
+		AwlDataType = _getAwlDataTypeClass()
 
 		if param.lValueDataType.type == AwlDataType.TYPE_POINTER:
 			# POINTER parameter.
@@ -413,7 +426,7 @@ class AwlTranslator(object):
 	# Translate STRING immediates.
 	# Converts STRING to CHAR, if required, or expands string lengths.
 	def __translateParamString(self, param):
-		from awlsim.core.datatypes import AwlDataType
+		AwlDataType = _getAwlDataTypeClass()
 
 		if param.lValueDataType.type == AwlDataType.TYPE_CHAR:
 			# CHAR parameter.
@@ -490,8 +503,6 @@ class AwlSymResolver(object):
 	# to array variables are supported.
 	def resolveNamedLocal(self, block, insn, oper,
 			      pointer=False, allowWholeArrayAccess=False):
-		from awlsim.core.datatypes import AwlDataType
-
 		# Check whether we need to do something.
 		# Otherwise just return the source operator.
 		if pointer:
@@ -500,6 +511,8 @@ class AwlSymResolver(object):
 		else:
 			if oper.operType != AwlOperatorTypes.NAMED_LOCAL:
 				return oper
+
+		AwlDataType = _getAwlDataTypeClass()
 
 		# Walk the ident chain to accumulate the sub-offsets
 		# for the ARRAY accesses.
@@ -637,7 +650,7 @@ class AwlSymResolver(object):
 
 	# Resolve a symbolic DB name. Returns DB index number.
 	def __resolveDBName(self, dbName):
-		from awlsim.core.datatypes import AwlDataType
+		AwlDataType = _getAwlDataTypeClass()
 
 		symbol = self.cpu.symbolTable.findByName(dbName)
 		if not symbol:
@@ -652,14 +665,14 @@ class AwlSymResolver(object):
 
 	# Get offset and width of a DB field.
 	def __dbVarToOffset(self, dbNumber, identChain, allowWholeArrayAccess=True):
-		from awlsim.core.datatypes import AwlDataType
-
 		# Get the DB
 		try:
 			db = self.cpu.dbs[dbNumber]
 		except KeyError as e:
 			raise AwlSimError("DB %d specified in fully qualified "
 				"operator does not exist." % dbNumber)
+
+		AwlDataType = _getAwlDataTypeClass()
 
 		# Get the data structure base field descriptor.
 		# For arrays, this is the base name of the array.
@@ -733,8 +746,6 @@ class AwlSymResolver(object):
 	def __resolveNamedFQPointer(self, block, insn, oper, param=None):
 #@cy		cdef Pointer pointer
 
-		from awlsim.core.datatypes import AwlDataType
-
 		pointer = oper.pointer
 		if oper.operType != AwlOperatorTypes.IMM_PTR:
 			return oper
@@ -755,6 +766,8 @@ class AwlSymResolver(object):
 		# Write the pointer value.
 		pointer.setDWord(offset.toPointerValue() |\
 				 (PointerConst.AREA_DB << PointerConst.AREA_SHIFT))
+
+		AwlDataType = _getAwlDataTypeClass()
 
 		# Create a resolved Pointer.
 		if param and\
