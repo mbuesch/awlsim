@@ -2,7 +2,7 @@
 #
 # AWL parser
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -260,13 +260,13 @@ class RawAwlDataField(object):
 		return str(self.ident)
 
 	def getChild(self, identChain):
-		try:
-			field = [f for f in self.children if f.ident == identChain[0]][0]
-			if len(identChain) > 1:
-				return field.getChild(identChain[1:])
-			return field
-		except IndexError as e:
-			return None
+		firstIdent = identChain[0]
+		for field in self.children:
+			if field.ident == firstIdent:
+				if len(identChain) > 1:
+					return field.getChild(identChain[1:])
+				return field
+		return None
 	def __repr__(self):
 		return self.getIdentString()
 
@@ -302,13 +302,13 @@ class RawAwlDB(RawAwlBlock):
 		self.fieldInits = []	# List of RawAwlDataInit()s
 
 	def getField(self, identChain):
-		try:
-			field = [f for f in self.fields if f.ident == identChain[0]][0]
-			if len(identChain) > 1:
-				return field.getChild(identChain[1:])
-			return field
-		except IndexError as e:
-			return None
+		firstIdent = identChain[0]
+		for field in self.fields:
+			if field.ident == firstIdent:
+				if len(identChain) > 1:
+					return field.getChild(identChain[1:])
+				return field
+		return None
 
 	def addFieldInit(self, fieldInit):
 		self.fieldInits.append(fieldInit)
