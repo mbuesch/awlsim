@@ -102,6 +102,8 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		self.__reset(project)
 
+		self.mainWidget.dirtyChanged.connect(self.__handleProjectDirtyChanged)
+
 		self.dataChanged.connect(self.__projectContentChanged)
 		self.modelReset.connect(self.__projectContentChanged)
 		self.rowsInserted.connect(self.__projectContentChanged)
@@ -680,10 +682,23 @@ class ProjectTreeModel(QAbstractItemModel):
 			return False
 		return True
 
+	def setHeaderData(self, section, orientation, value, role=Qt.EditRole):
+		return False
+
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
 		if role == Qt.DisplayRole:
-			return "Project"
+			filename = self.__project.getProjectFile()
+			if filename:
+				title = os.path.basename(filename)
+			else:
+				title = "Project"
+			if self.mainWidget.isDirty():
+				title += "*"
+			return title
 		return None
+
+	def __handleProjectDirtyChanged(self, dirty):
+		self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
 
 class SourceContextMenu(QMenu):
 	# Signal: Opem the edit for the selected source
