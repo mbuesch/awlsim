@@ -2,7 +2,7 @@
 #
 # AWL simulator - common utility functions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -282,8 +282,7 @@ def toDosEol(string):
 	return toUnixEol(string).replace("\n", "\r\n")
 
 def __isInteger_python2(value):
-	return isinstance(value, int) or\
-	       isinstance(value, long)
+	return isinstance(value, (int, long))
 
 def __isInteger_python3(value):
 	return isinstance(value, int)
@@ -292,8 +291,7 @@ isInteger = py23(__isInteger_python2,
 		 __isInteger_python3)
 
 def __isString_python2(value):
-	return isinstance(value, unicode) or\
-	       isinstance(value, str)
+	return isinstance(value, (unicode, str))
 
 def __isString_python3(value):
 	return isinstance(value, str)
@@ -352,13 +350,10 @@ def toList(value):
 	"""
 	if isinstance(value, list):
 		return value
-	if isinstance(value, set):
+	if isinstance(value, (set, frozenset)):
 		return sorted(value)
-	if isinstance(value, frozenset):
-		return sorted(value)
-	if not isString(value):
-		if isiterable(value):
-			return list(value)
+	if not isString(value) and isiterable(value):
+		return list(value)
 	return [ value, ]
 
 # Returns value, if value is a set.
@@ -369,10 +364,7 @@ def toList(value):
 def toSet(value):
 	if isinstance(value, set):
 		return value
-	if isinstance(value, frozenset):
-		return set(value)
-	if isinstance(value, list) or\
-	   isinstance(value, tuple):
+	if isinstance(value, (frozenset, list, tuple)):
 		return set(value)
 	return { value, }
 
