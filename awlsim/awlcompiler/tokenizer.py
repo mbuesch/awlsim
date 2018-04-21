@@ -162,6 +162,7 @@ class RawAwlCodeBlock(RawAwlBlock):
 
 	__slots__ = (
 		"insns",
+		"__labelSet",
 		"vars_in",
 		"vars_out",
 		"vars_inout",
@@ -173,6 +174,7 @@ class RawAwlCodeBlock(RawAwlBlock):
 	def __init__(self, tree, index):
 		RawAwlBlock.__init__(self, tree, index)
 		self.insns = []		# List of RawAwlInsn()s
+		self.__labelSet = None
 		# The block interface
 		self.vars_in = []	# List of RawAwlDataField()s for IN vars
 		self.vars_out = []	# List of RawAwlDataField()s for OUT vars
@@ -181,11 +183,18 @@ class RawAwlCodeBlock(RawAwlBlock):
 		self.vars_temp = []	# List of RawAwlDataField()s for TEMP vars
 		self.retTypeTokens = None
 
+	def appendInsn(self, insn):
+		self.insns.append(insn)
+		self.__labelSet = None
+
 	def hasLabel(self, string):
 		if AwlName.isValidLabel(string):
-			for insn in self.insns:
-				if insn.getLabel() == string:
-					return True
+			labelSet = self.__labelSet
+			if labelSet is None:
+				labelSet = {insn.getLabel()
+					    for insn in self.insns}
+				self.__labelSet = labelSet
+			return string in labelSet
 		return False
 
 class RawAwlDataInit(object):
@@ -675,7 +684,7 @@ class AwlParser(object):
 			if not self.tree.curBlock:
 				self.tree.curBlock = self.tree.obs[1]
 			insn = self.__parseInstruction(t)
-			self.tree.obs[1].insns.append(insn)
+			self.tree.obs[1].appendInsn(insn)
 			return
 
 		try:
@@ -1155,7 +1164,7 @@ class AwlParser(object):
 		if name in ("NETWORK", "TITLE"):
 			return # ignore
 		insn = self.__parseInstruction(t)
-		self.tree.curBlock.insns.append(insn)
+		self.tree.curBlock.appendInsn(insn)
 
 	def __parseTokens_fc_hdr(self, t):
 		name = t.tokens[0].upper()
@@ -1227,7 +1236,7 @@ class AwlParser(object):
 		if name in ("NETWORK", "TITLE"):
 			return # ignore
 		insn = self.__parseInstruction(t)
-		self.tree.curBlock.insns.append(insn)
+		self.tree.curBlock.appendInsn(insn)
 
 	def __parseTokens_ob_hdr(self, t):
 		name = t.tokens[0].upper()
@@ -1272,7 +1281,7 @@ class AwlParser(object):
 		if name in ("NETWORK", "TITLE"):
 			return # ignore
 		insn = self.__parseInstruction(t)
-		self.tree.curBlock.insns.append(insn)
+		self.tree.curBlock.appendInsn(insn)
 
 	def __parseTokens_udt_hdr(self, t):
 		name = t.tokens[0].upper()
