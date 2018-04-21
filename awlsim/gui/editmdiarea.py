@@ -299,6 +299,15 @@ class EditMdiSubWindow(QMdiSubWindow):
 	"""Edit MDI sub window base class.
 	"""
 
+	EnumGen.start
+	TYPE_AWL	= EnumGen.item
+	TYPE_FUP	= EnumGen.item
+	TYPE_KOP	= EnumGen.item
+	TYPE_SYMTAB	= EnumGen.item
+	TYPE_LIBSEL	= EnumGen.item
+	EnumGen.end
+	TYPE		= None
+
 	# Signal: Emitted, if this MDI sub window is about to close.
 	closed = Signal(QMdiSubWindow)
 
@@ -429,6 +438,7 @@ class EditMdiSubWindow(QMdiSubWindow):
 		pass
 
 class AwlEditMdiSubWindow(EditMdiSubWindow):
+	TYPE = EditMdiSubWindow.TYPE_AWL
 
 	# Signal: The visible AWL line range changed
 	#         Parameters are: source, visibleFromLine, visibleToLine
@@ -523,6 +533,8 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.handleValidationResult(exception)
 
 class FupEditMdiSubWindow(EditMdiSubWindow):
+	TYPE = EditMdiSubWindow.TYPE_FUP
+
 	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
@@ -551,12 +563,16 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		return self.fupWidget.getSource()
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
+	TYPE = EditMdiSubWindow.TYPE_KOP
+
 	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
 	pass#TODO
 
 class SymTabEditMdiSubWindow(EditMdiSubWindow):
+	TYPE = EditMdiSubWindow.TYPE_SYMTAB
+
 	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
 
@@ -584,6 +600,8 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 		return self.symTabView.model().getSource()
 
 class LibSelEditMdiSubWindow(EditMdiSubWindow):
+	TYPE = EditMdiSubWindow.TYPE_LIBSEL
+
 	def __init__(self, mdiArea, libSelections):
 		EditMdiSubWindow.__init__(self)
 
