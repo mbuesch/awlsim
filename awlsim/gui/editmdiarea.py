@@ -367,6 +367,9 @@ class EditMdiSubWindow(QMdiSubWindow):
 		self.closed.emit(self)
 		QMdiSubWindow.closeEvent(self, ev)
 
+	def updateTitle(self):
+		pass
+
 	def forceClose(self):
 		self.__forceClose = True
 		return self.close()
@@ -451,7 +454,15 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.validateDocument.connect(
 			lambda editWidget: self.validateDocument.emit())
 
-		self.setWindowTitle(source.name + " (AWL)")
+		self.updateTitle()
+
+	def updateTitle(self):
+		title = ""
+		source = self.editWidget.getSource()
+		if source:
+			title = source.name + " (AWL)" +\
+				("" if source.enabled else " (DISABLED)")
+		self.setWindowTitle(title)
 
 	def getSource(self):
 		return self.editWidget.getSource()
@@ -526,7 +537,15 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		self.fupWidget.setSource(source)
 		self.setWidget(self.fupWidget)
 
-		self.setWindowTitle(source.name + " (FUP)")
+		self.updateTitle()
+
+	def updateTitle(self):
+		title = ""
+		source = self.fupWidget.getSource()
+		if source:
+			title = source.name + " (FUP)" +\
+				("" if source.enabled else " (DISABLED)")
+		self.setWindowTitle(title)
 
 	def getSource(self):
 		return self.fupWidget.getSource()
@@ -549,7 +568,17 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 		self.symTabView.focusChanged.connect(self.focusChanged)
 		self.symTabView.model().sourceChanged.connect(self.sourceChanged)
 
-		self.setWindowTitle(source.name + " (Symbols)")
+		self.updateTitle()
+
+	def updateTitle(self):
+		title = ""
+		model = self.symTabView.model()
+		if model:
+			source = model.getSource()
+			if source:
+				title = source.name + " (Symbol-table)" +\
+					("" if source.enabled else " (DISABLED)")
+		self.setWindowTitle(title)
 
 	def getSource(self):
 		return self.symTabView.model().getSource()
