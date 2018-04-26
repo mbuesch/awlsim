@@ -94,8 +94,6 @@ class MainWidget(QWidget):
 	projectLoaded = Signal(Project)
 	# Signal: Dirty-status changed
 	dirtyChanged = Signal(bool)
-	# Signal: CPU run state changed
-	runStateChanged = Signal(RunState)
 	# Signal: Source text focus changed
 	textFocusChanged = Signal(bool)
 	# Signal: Selected project resource changed
@@ -597,19 +595,14 @@ class MainWindow(QMainWindow):
 		self.ctrlTb.connectToCpuWidget(self.cpuWidget)
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
-		#TODO
-#		self.mainWidget.projectWidget.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
-		self.cpuWidget.runStateChanged.connect(self.mainWidget.runStateChanged)
-		#TODO
-#		self.cpuWidget.onlineDiagChanged.connect(self.mainWidget.projectWidget.handleOnlineDiagChange)
-		#TODO
-#		self.cpuWidget.haveInsnDump.connect(self.mainWidget.projectWidget.handleInsnDump)
-		#TODO
-#		self.cpuWidget.haveIdentsMsg.connect(self.mainWidget.projectWidget.handleIdentsMsg)
+		self.editMdiArea.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
+		self.cpuWidget.onlineDiagChanged.connect(self.editMdiArea.enableOnlineDiag)
+		self.cpuWidget.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
+		self.cpuWidget.haveIdentsMsg.connect(self.editMdiArea.handleIdentsMsg)
+		self.cpuWidget.runStateChanged.connect(self.editMdiArea.setCpuRunState)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
 #TODO		self.projectTreeModel.selResourceChanged.connect(self.selResourceChanged)
-#TODO		self.runStateChanged.connect(self.projectWidget.updateRunState)
 
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
