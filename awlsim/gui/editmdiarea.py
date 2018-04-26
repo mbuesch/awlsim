@@ -61,6 +61,10 @@ class EditMdiArea(QMdiArea):
 	# Signal: PasteAvailable state changed
 	pasteAvailableChanged = Signal(bool)
 
+	# Signal: The visible AWL line range changed
+	#         Parameters are: AwlSource, visibleFromLine, visibleToLine
+	visibleLinesChanged = Signal(object, int, int)
+
 	def __init__(self, mainWidget):
 		QMdiArea.__init__(self, parent=mainWidget)
 		self.mainWidget = mainWidget
@@ -94,6 +98,8 @@ class EditMdiArea(QMdiArea):
 	def resetArea(self):
 		"""Close all MDI sub windows and clear all state.
 		"""
+		self.__onlineDiagEnabled = False
+		self.__cpuRunState = None
 		for mdiSubWin in list(self.subWindowList()):
 			mdiSubWin.forceClose()
 			del mdiSubWin
@@ -108,6 +114,7 @@ class EditMdiArea(QMdiArea):
 		self.__handleSubWinCutAvailChanged(mdiSubWin)
 		self.__handleSubWinPasteAvailChanged(mdiSubWin)
 		self.__handleDocumentValidation()
+		self.__refreshOnlineDiagState()
 
 	def __handleSubWinFocusChanged(self, mdiSubWin, hasFocus):
 		"""Text focus of one sub window has changed.
@@ -165,9 +172,11 @@ class EditMdiArea(QMdiArea):
 			lambda pasteAvail: self.__handleSubWinPasteAvailChanged(mdiSubWin))
 		mdiSubWin.resizeFont.connect(self.__handleSourceCodeFontResize)
 		mdiSubWin.validateDocument.connect(self.__handleDocumentValidation)
+		mdiSubWin.visibleLinesChanged.connect(self.__handleVisibleLinesChanged)
 
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
 		QTimer.singleShot(0, self.__handleDocumentValidation)
+		mdiSubWin.setCpuRunState(self.__cpuRunState)
 
 		return mdiSubWin
 
@@ -233,6 +242,54 @@ class EditMdiArea(QMdiArea):
 		"""
 		for mdiSubWin in self.subWindowList():
 			mdiSubWin.handleDocumentValidationResult(exception)
+
+	def __refreshOnlineDiagState(self):
+		"""Refresh the online diagnosis state of the sub windows.
+		"""
+		activeMdiSubWin = self.activeOpenSubWindow
+
+		# Disable all inactive sub windows.
+		for mdiSubWin in self.subWindowList():
+			if mdiSubWin.ONLINE_DIAG:
+				if not self.__onlineDiagEnabled or\
+				   mdiSubWin is not activeMdiSubWin:
+					mdiSubWin.enableOnlineDiag(False)
+
+		# Enable the active sub window, if possible.
+		if activeMdiSubWin and activeMdiSubWin.ONLINE_DIAG:
+			if self.__onlineDiagEnabled:
+				activeMdiSubWin.enableOnlineDiag(True)
+			source = activeMdiSubWin.getSource()
+			fromLine, toLine = activeMdiSubWin.getVisibleLineRange()
+			self.visibleLinesChanged.emit(source, fromLine, toLine)
+		else:
+			self.visibleLinesChanged.emit(None, -1, -1)
+
+	def __handleVisibleLinesChanged(self, mdiSubWin, source, visibleFromLine, visibleToLine):
+		self.visibleLinesChanged.emit(source, visibleFromLine, visibleToLine)
+
+	def enableOnlineDiag(self, enabled):
+		"""Enable or disable online diagnosis in the active sub window.
+		"""
+		self.__onlineDiagEnabled = enabled
+		self.__refreshOnlineDiagState()
+
+	def handleInsnDump(self, insnDumpMsg):
+		mdiSubWin = self.activeOpenSubWindow
+		if mdiSubWin:
+			mdiSubWin.handleInsnDump(insnDumpMsg)
+
+	def handleIdentsMsg(self, identsMsg):
+		for mdiSubWin in self.subWindowList():
+			mdiSubWin.handleIdentsMsg(identsMsg)
+
+	def setCpuRunState(self, runState):
+		"""Update the CPU run state.
+		runState is a RunState instance.
+		"""
+		self.__cpuRunState = runState
+		for mdiSubWin in self.subWindowList():
+			mdiSubWin.setCpuRunState(runState)
 
 	def undoIsAvailable(self):
 		mdiSubWin = self.activeOpenSubWindow
@@ -308,6 +365,9 @@ class EditMdiSubWindow(QMdiSubWindow):
 	EnumGen.end
 	TYPE		= None
 
+	# True, if this sub window support online diagnosis.
+	ONLINE_DIAG	= False
+
 	# Signal: Emitted, if this MDI sub window is about to close.
 	closed = Signal(QMdiSubWindow)
 
@@ -339,6 +399,10 @@ class EditMdiSubWindow(QMdiSubWindow):
 	# Signal: Validation request.
 	#	  A code validation should take place.
 	validateDocument = Signal()
+
+	# Signal: The visible AWL line range changed
+	#         Parameters are: EditMdiSubWindow, AwlSource, visibleFromLine, visibleToLine
+	visibleLinesChanged = Signal(object, object, int, int)
 
 	def __init__(self):
 		self.__forceClose = False
@@ -437,12 +501,24 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def handleDocumentValidationResult(self, exception):
 		pass
 
-class AwlEditMdiSubWindow(EditMdiSubWindow):
-	TYPE = EditMdiSubWindow.TYPE_AWL
+	def enableOnlineDiag(self, enabled):
+		return False
 
-	# Signal: The visible AWL line range changed
-	#         Parameters are: source, visibleFromLine, visibleToLine
-	visibleLinesChanged = Signal(object, int, int)
+	def getVisibleLineRange(self):
+		return (-1, -1)
+
+	def handleInsnDump(self, insnDumpMsg):
+		pass
+
+	def handleIdentsMsg(self, identsMsg):
+		pass
+
+	def setCpuRunState(self, runState):
+		pass
+
+class AwlEditMdiSubWindow(EditMdiSubWindow):
+	TYPE		= EditMdiSubWindow.TYPE_AWL
+	ONLINE_DIAG	= True
 
 	def __init__(self, mdiArea, source):
 		EditMdiSubWindow.__init__(self)
@@ -454,7 +530,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 		self.editWidget.codeChanged.connect(self.sourceChanged)
 		self.editWidget.focusChanged.connect(self.focusChanged)
-#TODO		editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
+		self.editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
 #TODO		editWidget.cpuCodeMatchChanged.connect(self.__handleCodeMatchChange)
 		self.editWidget.undoAvailable.connect(self.undoAvailableChanged)
 		self.editWidget.redoAvailable.connect(self.redoAvailableChanged)
@@ -531,6 +607,30 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 	def handleDocumentValidationResult(self, exception):
 		self.editWidget.handleValidationResult(exception)
+
+	def enableOnlineDiag(self, enabled):
+		self.editWidget.enableCpuStats(enabled)
+		if not enabled:
+			self.editWidget.resetCpuStats()
+		return True
+
+	def getVisibleLineRange(self):
+		return self.editWidget.getVisibleLineRange()
+
+	def __emitVisibleLinesSignal(self):
+		fromLine, toLine = self.getVisibleLineRange()
+		source = self.editWidget.getSource()
+		self.visibleLinesChanged.emit(self, source, fromLine, toLine)
+
+	def handleInsnDump(self, insnDumpMsg):
+		self.editWidget.updateCpuStats_afterInsn(insnDumpMsg)
+
+	def handleIdentsMsg(self, identsMsg):
+		self.editWidget.handleIdentsMsg(identsMsg)
+
+	def setCpuRunState(self, runState):
+		if runState is not None:
+			self.editWidget.runStateChanged(runState)
 
 class FupEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_FUP
