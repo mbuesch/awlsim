@@ -85,6 +85,11 @@ class SourceFactory(XmlFactory):
 						sourceData = sourceData[:idx]
 					if sourceData.endswith("\r"):
 						sourceData = sourceData[:-1]
+				# Enforce the line end format.
+				if source.DOS_EOL:
+					sourceData = toDosEol(sourceData)
+				else:
+					sourceData = toUnixEol(sourceData)
 				# Add the data to the source.
 				try:
 					source.sourceBytes = sourceData.encode(source.ENCODING)
@@ -141,6 +146,7 @@ class GenericSource(object):
 	ENCODING	= "<unknown>"
 	COMPAT_ENCODING	= "<unknown>"
 	STRIP_DATA	= False
+	DOS_EOL		= False
 
 	factory		= SourceFactory
 
@@ -374,6 +380,7 @@ class AwlSource(GenericSource):
 	ENCODING	= XmlFactory.XML_ENCODING
 	COMPAT_ENCODING	= "latin_1"
 	STRIP_DATA	= False
+	DOS_EOL		= True
 
 class FupSource(GenericSource):
 	SRCTYPE		= "FUP/FBD"
@@ -381,6 +388,7 @@ class FupSource(GenericSource):
 	ENCODING	= XmlFactory.XML_ENCODING
 	COMPAT_ENCODING	= ENCODING
 	STRIP_DATA	= True
+	DOS_EOL		= False
 
 class KopSource(GenericSource):
 	SRCTYPE		= "KOP/LAD"
@@ -388,6 +396,7 @@ class KopSource(GenericSource):
 	ENCODING	= XmlFactory.XML_ENCODING
 	COMPAT_ENCODING	= ENCODING
 	STRIP_DATA	= True
+	DOS_EOL		= False
 
 class SymTabSource(GenericSource):
 	SRCTYPE		= "symbol table"
@@ -395,6 +404,7 @@ class SymTabSource(GenericSource):
 	ENCODING	= XmlFactory.XML_ENCODING
 	COMPAT_ENCODING	= "latin_1"
 	STRIP_DATA	= False
+	DOS_EOL		= True
 
 class SourceManager(ObjRefManager):
 	"""Manages one source."""
