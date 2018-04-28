@@ -444,7 +444,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			if not mdiSubWin:
 				continue
 			newSource = mdiSubWin.getSource()
-			if newSource:
+			if newSource is not None:
 				source.copyFrom(newSource,
 						copyName=False,
 						copyEnabled=False,
@@ -457,7 +457,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		libSelMdiSubWin = self.__libSelMdiSubWin
 		if libSelMdiSubWin:
 			libSelections = libSelMdiSubWin.getLibSelections()
-			if libSelections:
+			if libSelections is not None:
 				self.__project.setLibSelections(libSelections)
 			else:
 				ret = False
