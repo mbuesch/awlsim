@@ -2,7 +2,7 @@
 #
 # AWL simulator - symbol table parser
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -272,6 +272,20 @@ class SymbolTable(object):
 	def toASC(self, stripWhitespace=False):
 		return "".join(s.toASC(stripWhitespace=stripWhitespace)\
 			       for s in self.__symbolsList)
+
+	def toSource(self, source):
+		"""Convert the symbol table to bytes for use in the SymTabSource().
+		The source bytes will be written into source.sourceBytes.
+		Raises AwlSimError if something goes wrong.
+		"""
+		try:
+			stripWs = not source.isFileBacked()
+			dataString = self.toASC(stripWhitespace=stripWs)
+			data = dataString.encode(source.ENCODING)
+			source.sourceBytes = data
+		except UnicodeError as e:
+			raise AwlSimError("Failed to encode symbol "
+				"table characters.")
 
 	def __repr__(self):
 		return self.toReadableCSV()
