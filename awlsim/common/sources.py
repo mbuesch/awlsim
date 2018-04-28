@@ -43,27 +43,35 @@ __all__ = [
 
 class SourceFactory(XmlFactory):
 	def parser_open(self, tag=None):
-		project, source = self.project, self.source
 		self.__data = []
+		self.__haveSourceTag = False
 		if tag:
-			srcType = tag.getAttrInt("type")
-			name = tag.getAttr("name", source.SRCTYPE)
-			filename = tag.getAttr("file", "")
-			enabled = tag.getAttrBool("enabled", True)
-			if source.SRCTYPE_ID != srcType:
-				raise self.Error("SourceFactory: Got unexpected "
-					"source type %d instead of %d." % (
-					srcType, source.SRCTYPE_ID))
-			if filename:
-				filename = RelPath(project.projectDir).fromRelative(filename)
-				source.readFromFile(filename, compatReEncode=True)
-			else:
-				source.filepath = ""
-			source.name = name
-			source.enabled = enabled
+			self.__parseSourceTag(tag)
 		XmlFactory.parser_open(self, tag)
 
+	def __parseSourceTag(self, tag):
+		project, source = self.project, self.source
+		srcType = tag.getAttrInt("type")
+		name = tag.getAttr("name", source.SRCTYPE)
+		filename = tag.getAttr("file", "")
+		enabled = tag.getAttrBool("enabled", True)
+		if source.SRCTYPE_ID != srcType:
+			raise self.Error("SourceFactory: Got unexpected "
+				"source type %d instead of %d." % (
+				srcType, source.SRCTYPE_ID))
+		if filename:
+			filename = RelPath(project.projectDir).fromRelative(filename)
+			source.readFromFile(filename, compatReEncode=True)
+		else:
+			source.filepath = ""
+		source.name = name
+		source.enabled = enabled
+		self.__haveSourceTag = True
+
 	def parser_beginTag(self, tag):
+		if not self.__haveSourceTag and tag.name == "source":
+			self.__parseSourceTag(tag)
+			return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
