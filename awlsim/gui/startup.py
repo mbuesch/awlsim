@@ -3,7 +3,7 @@
 #
 # AWL simulator - GUI
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 from awlsim.common import *
 from awlsim.common.codevalidator import *
+from awlsim.common.exceptions import *
 from awlsim.gui.mainwindow import *
 
 import getopt
@@ -89,8 +90,32 @@ Logging.setLoglevel(opt_loglevel)
 
 printInfo("Using %s GUI framework" % getGuiFrameworkName())
 
+# Create the main window.
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
 QToolTip.setFont(getDefaultFixedFont())
+
+# Shutdown helper to clean up possibly spawned sub-processes.
+def guiShutdownCleanup():
+	# Force-shutdown spawned servers, if any.
+	with suppressAllExc:
+		mainwnd.getSimClient().shutdown()
+	# Force-shutdown the validator, if any.
+	with suppressAllExc:
+		AwlValidator.shutdown()
+
+# Install a handler for unhandled exceptions.
+def __unhandledExceptionHook(type, value, traceback):
+	print("awlsim-gui: ABORTING due to unhandled exception:",
+	      file=sys.stderr)
+	__orig_excepthook(type, value, traceback)
+	# Try to clean up now.
+	guiShutdownCleanup()
+	# Call QCoreApplication.exit() so that we return from exec_()
+	qapp.exit(ExitCodes.EXIT_ERR_OTHER)
+__orig_excepthook = sys.excepthook
+sys.excepthook = __unhandledExceptionHook
+
+# Run the main loop.
 res = qapp.exec_()
-AwlValidator.shutdown()
+guiShutdownCleanup()
 sys.exit(res)
