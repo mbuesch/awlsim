@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI main window
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -96,8 +96,6 @@ class MainWidget(QWidget):
 	dirtyChanged = Signal(bool)
 	# Signal: Source text focus changed
 	textFocusChanged = Signal(bool)
-	# Signal: Selected project resource changed
-	selResourceChanged = Signal(int)
 	# Signal: UndoAvailable state changed
 	undoAvailableChanged = Signal(bool)
 	# Signal: RedoAvailable state changed
@@ -495,6 +493,9 @@ class MainWindow(QMainWindow):
 							  "Find and replace...", self.findReplaceText)
 		self.tb.addSeparator()
 		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
+		self.tbLibAct.setToolTip("Standard library.\n"
+					 "(Please click into the AWL/STL source code\n"
+					 "at the place where to paste the library call)")
 		self.addToolBar(Qt.TopToolBarArea, self.tb)
 
 		self.ctrlTb = CpuControlToolBar(self)
@@ -575,7 +576,6 @@ class MainWindow(QMainWindow):
 
 		self.__sourceTextHasFocus = False
 		self.__dirtyChanged(False)
-		self.__selResourceChanged(ProjectWidget.RES_SOURCES)
 		self.__textFocusChanged(False)
 		self.__undoAvailableChanged(False)
 		self.__redoAvailableChanged(False)
@@ -586,7 +586,6 @@ class MainWindow(QMainWindow):
 		self.mainWidget.projectLoaded.connect(self.__handleProjectLoaded)
 		self.mainWidget.dirtyChanged.connect(self.__dirtyChanged)
 		self.mainWidget.textFocusChanged.connect(self.__textFocusChanged)
-		self.mainWidget.selResourceChanged.connect(self.__selResourceChanged)
 		self.mainWidget.undoAvailableChanged.connect(self.__undoAvailableChanged)
 		self.mainWidget.redoAvailableChanged.connect(self.__redoAvailableChanged)
 		self.mainWidget.copyAvailableChanged.connect(self.__copyAvailableChanged)
@@ -602,7 +601,6 @@ class MainWindow(QMainWindow):
 		self.cpuWidget.runStateChanged.connect(self.editMdiArea.setCpuRunState)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
-#TODO		self.projectTreeModel.selResourceChanged.connect(self.selResourceChanged)
 
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
@@ -678,26 +676,10 @@ class MainWindow(QMainWindow):
 	def __updateLibActions(self):
 		# Enable/disable the library toolbar button.
 		# The menu library button is always available on purpose.
-		if self.tbLibAct.isEnabled():
-			if self.__selProjectResource != ProjectWidget.RES_SOURCES:
-				self.tbLibAct.setEnabled(False)
-				self.tbLibAct.setToolTip("Standard library.\n"
-					"Please click in the AWL/STL source "
-					"code at the place where to paste the "
-					"library call.")
-		else:
-			if self.__selProjectResource == ProjectWidget.RES_SOURCES and\
-			   self.__sourceTextHasFocus:
-				self.tbLibAct.setEnabled(True)
-				self.tbLibAct.setToolTip("Standard library")
+		self.tbLibAct.setEnabled(self.editMdiArea.pasteIsAvailable())
 
 	def __textFocusChanged(self, textHasFocus):
 		self.__sourceTextHasFocus = textHasFocus
-		self.__updateLibActions()
-		self.__updateFindActions()
-
-	def __selResourceChanged(self, resourceNumber):
-		self.__selProjectResource = resourceNumber
 		self.__updateLibActions()
 		self.__updateFindActions()
 
@@ -720,6 +702,7 @@ class MainWindow(QMainWindow):
 	def __pasteAvailableChanged(self, pasteAvailable):
 		self.pasteAct.setEnabled(pasteAvailable)
 		self.tbPasteAct.setEnabled(pasteAvailable)
+		self.__updateLibActions()
 
 	def closeEvent(self, ev):
 		if self.mainWidget.isDirty():
