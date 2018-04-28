@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.core.symbolparser import SymTabParser
+
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
 
@@ -315,6 +317,77 @@ class ProjectTreeModel(QAbstractItemModel):
 
 	def entryExport(self, index, filePath=None, parentWidget=None):
 		pass#TODO
+		return True
+
+	def symbolAdd(self, symbol, parentWidget=None):
+		"""Try to add the symbol to a symbol table.
+		symbol: The Symbol() instance to add.
+		Returns True, if adding was successfull.
+		"""
+		project = self.getProject()
+		mnemonics = project.getCpuConf().getConfiguredMnemonics()
+		symTabSources = project.getSymTabSources()
+
+		# Check if we already have this symbol.
+		for symTabSource in symTabSources:
+			try:
+				symTab = SymTabParser.parseSource(symTabSource,
+								  mnemonics=mnemonics)
+			except AwlSimError as e:
+				MessageBox.handleAwlSimError(parentWidget,
+					"Failed to parse symbol table", e)
+			if symbol in symTab:
+				# We already have this symbol.
+				#TODO modify it, if needed
+				return True
+
+		if not symTabSources:
+			# We don't have a symbol table.
+			#TODO add one
+			return False
+
+		if len(symTabSources) == 1:
+			# We only have one table. Add the symbol to that table.
+			symTabIndex = 0
+		else:
+			# Ask which table to add the symbol to.
+			entries = [ "%d: %s" % (i + 1, symTabSource.name)
+				for i, symTabSource in enumerate(symTabSources)
+			]
+			entry, ok = QInputDialog.getItem(parentWidget,
+				"Select symbol table",
+				"Please select the symbol table "\
+				"where to add the symbol to:"
+				"\n%s  \"%s\"" %\
+				(symbol.getOperatorString(), symbol.getName()),
+				entries, 0, False)
+			if not ok or not entry:
+				return False
+			symTabIndex = int(entry.split(":")[0]) - 1
+
+		# Add the symbol to the sym tab source.
+		symTabSource = symTabSources[symTabIndex]
+		try:
+			symTab = SymTabParser.parseSource(symTabSource,
+							  mnemonics=mnemonics)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(parentWidget,
+				"Failed to parse symbol table", e)
+		symTab.add(symbol, True)
+
+		# Update the sym tab source.
+		try:
+			symTab.toSource(symTabSource)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(parentWidget,
+				"Failed to update symbol table", e)
+
+		# If an MDI edit window is open for this source, update it.
+		mdiSubWin = symTabSource.userData.get("gui-edit-window")
+		if mdiSubWin:
+			mdiSubWin.setSource(symTabSource)
+
+		self.projectContentChanged.emit()
 		return True
 
 	def sourceGetter(self, idxIdBase):

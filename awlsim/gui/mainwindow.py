@@ -310,48 +310,27 @@ class MainWidget(QWidget):
 		return True
 
 	def __pasteSymbol(self, symbolName, address, dataType, comment):
-		#TODO
-		return
-		# Check if we already have this symbol.
-		for tabWidget in self.symTabs.allTabWidgets():
-			symTable = tabWidget.getSymTab()
-			if symbolName in symTable:
-				# We already have it.
-				return True
-		# We don't have this symbol, yet. Parse it.
+		"""Paste a symbol into one of the available symbol tables.
+		symbolName: Symbol name string.
+		address: Symbol address string.
+		dataType: Symbol type string.
+		comment: Symbol comment string.
+		Returns True, if the symbol has successfully been added.
+		"""
+
+		# Parse the symbol.
 		try:
-			p = SymTabParser(self.__project.getCpuConf().getConfiguredMnemonics())
+			project = self.getProject()
+			p = SymTabParser(project.getCpuConf().getConfiguredMnemonics())
 			symbol = p.parseSym(symbolName, address,
 					    dataType, comment, 0)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Library symbol error", e)
 			return False
-		assert(self.symTabs.count() >= 1)
-		if self.symTabs.count() == 1:
-			# We only have one table. Add the symbol.
-			self.__addSymbolToTabWidget(self.symTabs.widget(0),
-						    symbol)
-		else:
-			# Ask which table to add the symbol to.
-			tabWidgets = tuple(self.symTabs.allTabWidgets())
-			entries = []
-			for i, tabWidget in enumerate(tabWidgets):
-				entries.append("%d: %s" %\
-					(i + 1, tabWidget.getSource().name))
-			entry, ok = QInputDialog.getItem(self,
-				"Select symbol table",
-				"Please select the symbol table "\
-				"where to add the symbol to:"
-				"\n%s  \"%s\"" %\
-				(address, symbolName),
-				entries, 0, False)
-			if not ok or not entry:
-				return False
-			selIndex = int(entry.split(":")[0]) - 1
-			tabWidget = tabWidgets[selIndex]
-			self.__addSymbolToTabWidget(tabWidget, symbol)
-		return True
+
+		# Try to add the symbol to a symbol table
+		return self.projectTreeModel.symbolAdd(symbol, parentWidget=self)
 
 	def __pasteLibSel(self, libSelection):
 		#TODO
