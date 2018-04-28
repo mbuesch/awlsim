@@ -553,6 +553,10 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def getSource(self):
 		return self.editWidget.getSource()
 
+	def setSource(self, source):
+		self.editWidget.setSource(source)
+		self.sourceChanged.emit()
+
 	def undoIsAvailable(self):
 		return self.editWidget.undoIsAvailable()
 
@@ -662,6 +666,10 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 	def getSource(self):
 		return self.fupWidget.getSource()
 
+	def setSource(self, source):
+		self.fupWidget.setSource(source)
+		self.sourceChanged.emit()
+
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP
 
@@ -699,6 +707,10 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 	def getSource(self):
 		return self.symTabView.model().getSource()
 
+	def setSource(self, source):
+		self.symTabView.model().setSource(source)
+		self.sourceChanged.emit()
+
 class LibSelEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_LIBSEL
 
@@ -716,3 +728,7 @@ class LibSelEditMdiSubWindow(EditMdiSubWindow):
 
 	def getLibSelections(self):
 		return self.libTabView.model().getLibSelections()
+
+	def setLibSelections(self, libSelections):
+		self.libTabView.model().setLibSelections(libSelections)
+		self.sourceChanged.emit()
