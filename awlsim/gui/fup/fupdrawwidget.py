@@ -860,9 +860,9 @@ class FupDrawWidget(QWidget):
 
 		# Get the MIME data from the event.
 		mime = event.mimeData()
-		if not mime.hasFormat("application/x-awlsim-fup-elem"):
+		if not mime.hasFormat("application/x-awlsim-xml-fup-elem"):
 			return ignore()
-		mimeData = mime.data("application/x-awlsim-fup-elem")
+		mimeData = mime.data("application/x-awlsim-xml-fup-elem")
 		if isQt4:
 			mimeData = mimeData.data() # QByteArray to bytes/str
 		mimeData = bytearray(mimeData)

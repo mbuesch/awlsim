@@ -61,7 +61,7 @@ class FupElemContainerWidget(QTreeWidget):
 		self.setDragEnabled(True)
 		self.setHeaderLabels(["Elements"])
 
-		elemMimeType = "application/x-awlsim-fup-elem"
+		elemMimeType = "application/x-awlsim-xml-fup-elem"
 
 		# Comment element
 		itemComment = FupElemItem("[...]  Comment", "new", elemMimeType,
