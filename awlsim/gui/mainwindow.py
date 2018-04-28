@@ -477,22 +477,33 @@ class MainWindow(QMainWindow):
 		self.addDockWidget(Qt.RightDockWidgetArea, self.cpuDockWidget)
 
 		self.tb = QToolBar(self)
-		self.tb.addAction(getIcon("new"), "New project", self.new)
-		self.tb.addAction(getIcon("open"), "Open project", self.load)
-		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project", self.save)
+		self.tb.addAction(getIcon("new"), "New project",
+				  self.mainWidget.newFile)
+		self.tb.addAction(getIcon("open"), "Open project",
+				  self.mainWidget.load)
+		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project",
+						   self.mainWidget.save)
 		self.tb.addSeparator()
-		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit", self.undo)
-		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo", self.redo)
+		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit",
+						   self.mainWidget.undo)
+		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo",
+						   self.mainWidget.redo)
 		self.tb.addSeparator()
-		self.tbCutAct = self.tb.addAction(getIcon("cut"), "Cut", self.cut)
-		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy", self.copy)
-		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste", self.paste)
+		self.tbCutAct = self.tb.addAction(getIcon("cut"), "Cut",
+						  self.mainWidget.cut)
+		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy",
+						   self.mainWidget.copy)
+		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste",
+						    self.mainWidget.paste)
 		self.tb.addSeparator()
-		self.tbFindAct = self.tb.addAction(getIcon("find"), "Find...", self.findText)
+		self.tbFindAct = self.tb.addAction(getIcon("find"), "Find...",
+						   self.mainWidget.findText)
 		self.tbFindReplaceAct = self.tb.addAction(getIcon("findreplace"),
-							  "Find and replace...", self.findReplaceText)
+							  "Find and replace...",
+							  self.mainWidget.findReplaceText)
 		self.tb.addSeparator()
-		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library", self.openLibrary)
+		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library",
+						  self.mainWidget.openLibrary)
 		self.tbLibAct.setToolTip("Standard library.\n"
 					 "(Please click into the AWL/STL source code\n"
 					 "at the place where to paste the library call)")
@@ -507,46 +518,70 @@ class MainWindow(QMainWindow):
 		self.setMenuBar(QMenuBar(self))
 
 		menu = QMenu("&File", self)
-		menu.addAction(getIcon("new"), "&New project", self.new)
-		menu.addAction(getIcon("open"), "&Open project...", self.load)
-		self.saveAct = menu.addAction(getIcon("save"), "&Save project", self.save)
-		menu.addAction(getIcon("save"), "&Save project as...", self.saveAs)
+		menu.addAction(getIcon("new"), "&New project",
+			       self.mainWidget.newFile)
+		menu.addAction(getIcon("open"), "&Open project...",
+			       self.mainWidget.load)
+		self.saveAct = menu.addAction(getIcon("save"), "&Save project",
+					      self.mainWidget.save)
+		menu.addAction(getIcon("save"), "&Save project as...",
+			       lambda: self.mainWidget.save(True))
 		menu.addSeparator()
 		menu.addAction(getIcon("exit"), "&Exit...", self.close)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Edit", self)
-		self.undoAct = menu.addAction(getIcon("undo"), "&Undo", self.undo)
-		self.redoAct = menu.addAction(getIcon("redo"), "&Redo", self.redo)
+		self.undoAct = menu.addAction(getIcon("undo"), "&Undo",
+					      self.mainWidget.undo)
+		self.redoAct = menu.addAction(getIcon("redo"), "&Redo",
+					      self.mainWidget.redo)
 		menu.addSeparator()
-		self.cutAct = menu.addAction(getIcon("cut"), "&Cut", self.cut)
-		self.copyAct = menu.addAction(getIcon("copy"), "&Copy", self.copy)
-		self.pasteAct = menu.addAction(getIcon("paste"), "&Paste", self.paste)
+		self.cutAct = menu.addAction(getIcon("cut"), "&Cut",
+					     self.mainWidget.cut)
+		self.copyAct = menu.addAction(getIcon("copy"), "&Copy",
+					      self.mainWidget.copy)
+		self.pasteAct = menu.addAction(getIcon("paste"), "&Paste",
+					       self.mainWidget.paste)
 		menu.addSeparator()
-		self.findAct = menu.addAction(getIcon("find"), "&Find...", self.findText)
+		self.findAct = menu.addAction(getIcon("find"), "&Find...",
+					      self.mainWidget.findText)
 		self.findReplaceAct = menu.addAction(getIcon("findreplace"),
-						     "Find and r&eplace...", self.findReplaceText)
+						     "Find and r&eplace...",
+						     self.mainWidget.findReplaceText)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Library", self)
-		menu.addAction(getIcon("textsource"), "Insert &OB template...", self.insertOB)
-		menu.addAction(getIcon("textsource"), "Insert F&C template...", self.insertFC)
-		menu.addAction(getIcon("textsource"), "Insert F&B template...", self.insertFB)
-		menu.addAction(getIcon("textsource"), "Insert &instance-DB template...", self.insertInstanceDB)
-		menu.addAction(getIcon("textsource"), "Insert &DB template...", self.insertGlobalDB)
-		menu.addAction(getIcon("textsource"), "Insert &UDT template...", self.insertUDT)
+		menu.addAction(getIcon("textsource"), "Insert &OB template...",
+			       self.mainWidget.insertOB)
+		menu.addAction(getIcon("textsource"), "Insert F&C template...",
+			       self.mainWidget.insertFC)
+		menu.addAction(getIcon("textsource"), "Insert F&B template...",
+			       self.mainWidget.insertFB)
+		menu.addAction(getIcon("textsource"), "Insert &instance-DB template...",
+			       self.mainWidget.insertInstanceDB)
+		menu.addAction(getIcon("textsource"), "Insert &DB template...",
+			       self.mainWidget.insertGlobalDB)
+		menu.addAction(getIcon("textsource"), "Insert &UDT template...",
+			       self.mainWidget.insertUDT)
 		menu.addSeparator()
-		menu.addAction(getIcon("textsource"), "Insert FC C&ALL template...", self.insertFCcall)
-		menu.addAction(getIcon("textsource"), "Insert FB CA&LL template...", self.insertFBcall)
+		menu.addAction(getIcon("textsource"), "Insert FC C&ALL template...",
+			       self.mainWidget.insertFCcall)
+		menu.addAction(getIcon("textsource"), "Insert FB CA&LL template...",
+			       self.mainWidget.insertFBcall)
 		menu.addSeparator()
-		self.libAct = menu.addAction(getIcon("stdlib"), "&Standard library...", self.openLibrary)
+		self.libAct = menu.addAction(getIcon("stdlib"), "&Standard library...",
+					     self.mainWidget.openLibrary)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&Settings", self)
-		menu.addAction(getIcon("network"), "&Server connection...", self.linkConfig)
-		menu.addAction(getIcon("cpu"), "&CPU config...", self.cpuConfig)
-		menu.addAction(getIcon("hwmod"), "&Hardware modules...", self.hwmodConfig)
-		menu.addAction(getIcon("prefs"), "&User interface...", self.guiConfig)
+		menu.addAction(getIcon("network"), "&Server connection...",
+			       self.mainWidget.linkConfig)
+		menu.addAction(getIcon("cpu"), "&CPU config...",
+			       self.mainWidget.cpuConfig)
+		menu.addAction(getIcon("hwmod"), "&Hardware modules...",
+			       self.mainWidget.hwmodConfig)
+		menu.addAction(getIcon("prefs"), "&User interface...",
+			       self.mainWidget.guiConfig)
 		self.menuBar().addMenu(menu)
 
 		menu = QMenu("&CPU", self)
@@ -613,36 +648,12 @@ class MainWindow(QMainWindow):
 	def projectTreeModel(self):
 		return self.treeDockWidget.projectTreeModel
 
-	def getProject(self):
-		return self.projectTreeModel.getProject()
-
 	@property
 	def cpuWidget(self):
 		return self.cpuDockWidget.cpuWidget
 
-	def insertOB(self):
-		self.mainWidget.insertOB()
-
-	def insertFC(self):
-		self.mainWidget.insertFC()
-
-	def insertFB(self):
-		self.mainWidget.insertFB()
-
-	def insertInstanceDB(self):
-		self.mainWidget.insertInstanceDB()
-
-	def insertGlobalDB(self):
-		self.mainWidget.insertGlobalDB()
-
-	def insertUDT(self):
-		self.mainWidget.insertUDT()
-
-	def insertFCcall(self):
-		self.mainWidget.insertFCcall()
-
-	def insertFBcall(self):
-		self.mainWidget.insertFBcall()
+	def getProject(self):
+		return self.projectTreeModel.getProject()
 
 	def getSimClient(self):
 		return self.mainWidget.getSimClient()
@@ -719,7 +730,7 @@ class MainWindow(QMainWindow):
 			elif res == QMessageBox.Cancel:
 				ev.ignore()
 				return
-		self.mainWidget.getSimClient().shutdown()
+		self.getSimClient().shutdown()
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
 
@@ -749,51 +760,3 @@ class MainWindow(QMainWindow):
 			"with this program; if not, write to the Free Software Foundation, Inc., "
 			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." %\
 			(VERSION_STRING, AWLSIM_HOME_URL))
-
-	def new(self):
-		self.mainWidget.newFile()
-
-	def load(self):
-		self.mainWidget.load()
-
-	def save(self):
-		self.mainWidget.save()
-
-	def saveAs(self):
-		self.mainWidget.save(True)
-
-	def guiConfig(self):
-		self.mainWidget.guiConfig()
-
-	def hwmodConfig(self):
-		self.mainWidget.hwmodConfig()
-
-	def linkConfig(self):
-		self.mainWidget.linkConfig()
-
-	def cpuConfig(self):
-		self.mainWidget.cpuConfig()
-
-	def openLibrary(self):
-		self.mainWidget.openLibrary()
-
-	def undo(self):
-		self.mainWidget.undo()
-
-	def redo(self):
-		self.mainWidget.redo()
-
-	def cut(self):
-		self.mainWidget.cut()
-
-	def copy(self):
-		self.mainWidget.copy()
-
-	def paste(self):
-		self.mainWidget.paste()
-
-	def findText(self):
-		self.mainWidget.findText()
-
-	def findReplaceText(self):
-		self.mainWidget.findReplaceText()
