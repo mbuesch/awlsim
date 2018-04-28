@@ -185,6 +185,27 @@ class ProjectTreeModel(QAbstractItemModel):
 				sources=self.__project.getSymTabSources(),
 				makeNewWin=lambda source: editMdiArea.newWin_SymTab(source))
 			return True
+
+		# If an empty source container is activated,
+		# we add a new source to that container and activate it.
+		addNew = False
+		if idxId == self.INDEXID_SRCS_AWL:
+			if not self.__project.getAwlSources():
+				addNew = True
+		elif idxId == self.INDEXID_SRCS_FUP:
+			if not self.__project.getFupSources():
+				addNew = True
+		elif idxId == self.INDEXID_SRCS_KOP:
+			if not self.__project.getKopSources():
+				addNew = True
+		elif idxId == self.INDEXID_SRCS_SYMTAB:
+			if not self.__project.getSymTabSources():
+				addNew = True
+		if addNew:
+			newIndex = self.entryAdd(self.id2childBase[idxId],
+						 parentWidget=parentWidget)
+			self.entryActivate(newIndex, parentWidget=parentWidget)
+
 		return False
 
 	def entryDelete(self, index, force=False, parentWidget=None):
