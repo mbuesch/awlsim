@@ -170,14 +170,7 @@ class SymTabModel(QAbstractTableModel):
 
 	def __updateSource(self):
 		try:
-			try:
-				stripWhitespace = not self.__source.isFileBacked()
-				data = self.symTab.toASC(stripWhitespace=stripWhitespace).encode(
-					self.__source.ENCODING)
-				self.__source.sourceBytes = data
-			except UnicodeError as e:
-				raise AwlSimError("Failed to encode symbol "
-					"table characters.")
+			self.symTab.toSource(self.__source)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(None,
 				"Symbol table contains invalid characters", e)
