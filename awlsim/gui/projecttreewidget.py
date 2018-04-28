@@ -187,7 +187,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			return True
 		return False
 
-	def entryDelete(self, index, parentWidget=None):
+	def entryDelete(self, index, force=False, parentWidget=None):
 		if not index or not index.isValid():
 			return False
 		idxIdBase, idxId, itemNr = self.indexToId(index)
@@ -198,15 +198,16 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		sourceList = getter()
 		source = sourceList[itemNr]
-		res = QMessageBox.question(parentWidget or self.mainWidget,
-			"Remove selected source?",
-			"Remove the selected source '%s' from the project?\n"
-			"This can't be undone.\n" % (
-			source.name),
-			QMessageBox.Yes | QMessageBox.No,
-			QMessageBox.Yes)
-		if res != QMessageBox.Yes:
-			return False
+		if not force:
+			res = QMessageBox.question(parentWidget or self.mainWidget,
+				"Remove selected source?",
+				"Remove the selected source '%s' from the project?\n"
+				"This can't be undone.\n" % (
+				source.name),
+				QMessageBox.Yes | QMessageBox.No,
+				QMessageBox.Yes)
+			if res != QMessageBox.Yes:
+				return False
 
 		self.beginRemoveRows(index.parent(), itemNr, itemNr)
 		try:
@@ -561,14 +562,29 @@ class ProjectTreeModel(QAbstractItemModel):
 	def flags(self, index):
 		if not index.isValid():
 			return Qt.NoItemFlags
+
 		idxIdBase, idxId, itemNr = self.indexToId(index)
+
 		flags = Qt.ItemIsEnabled
 		if idxIdBase in {self.INDEXID_SRCS_AWL_BASE,
 				 self.INDEXID_SRCS_FUP_BASE,
 				 self.INDEXID_SRCS_KOP_BASE,
 				 self.INDEXID_SRCS_SYMTAB_BASE,}:
-			flags |= Qt.ItemIsEditable
+			flags |= Qt.ItemIsEditable |\
+				 Qt.ItemIsDragEnabled |\
+				 Qt.ItemIsSelectable
+		if idxId in {self.INDEXID_SRCS_AWL,
+			     self.INDEXID_SRCS_FUP,
+			     self.INDEXID_SRCS_KOP,
+			     self.INDEXID_SRCS_SYMTAB,}:
+			flags |= Qt.ItemIsDropEnabled
 		return flags
+
+	def supportedDragActions(self):
+		return Qt.CopyAction | Qt.MoveAction
+
+	def supportedDropActions(self):
+		return Qt.CopyAction | Qt.MoveAction
 
 	def columnCount(self, parentIndex=QModelIndex()):
 		return 1
@@ -773,6 +789,110 @@ class ProjectTreeModel(QAbstractItemModel):
 	def __handleProjectDirtyChanged(self, dirty):
 		self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
 
+	def mimeData(self, indexes):
+		if not indexes:
+			return None
+		mimedata = QMimeData()
+		for index in indexes:
+			if not index.isValid():
+				continue
+			idxIdBase, idxId, itemNr = self.indexToId(index)
+
+			getter, _ = self.sourceGetter(idxIdBase)
+			if not getter:
+				return False
+			sources = getter()
+			source = sources[itemNr]
+
+			# Squash the file backing (if any)
+			source = source.dup()
+			source.forceNonFileBacked(source.filepath)
+
+			# Generate XML data
+			try:
+				mimeType = {
+					self.INDEXID_SRCS_AWL_BASE : "application/x-awlsim-xml-awl",
+					self.INDEXID_SRCS_FUP_BASE : "application/x-awlsim-xml-fup",
+					self.INDEXID_SRCS_KOP_BASE : "application/x-awlsim-xml-kop",
+					self.INDEXID_SRCS_SYMTAB_BASE : "application/x-awlsim-xml-symtab",
+				}[idxIdBase]
+				factory = source.factory(project=self.getProject(),
+							 source=source)
+				mimedata.setData(mimeType, factory.compose())
+			except (XmlFactory.Error, KeyError) as e:
+				return None
+		return mimedata
+
+	def canDropMimeData(self, mimeData, action, row, column, parentIndex):
+		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
+
+		if action not in {Qt.MoveAction, Qt.CopyAction}:
+			return False
+		try:
+			expectedMimeFormat = {
+				self.INDEXID_SRCS_AWL : "application/x-awlsim-xml-awl",
+				self.INDEXID_SRCS_FUP : "application/x-awlsim-xml-fup",
+				self.INDEXID_SRCS_KOP : "application/x-awlsim-xml-kop",
+				self.INDEXID_SRCS_SYMTAB : "application/x-awlsim-xml-symtab",
+			}[parentIdxId]
+		except KeyError as e:
+			return False
+		mimeFormats = list(mimeData.formats())
+		if len(mimeFormats) != 1:
+			return False
+		if mimeFormats[0] != expectedMimeFormat:
+			return False
+
+		return True
+
+	def dropMimeData(self, mimeData, action, row, column, parentIndex):
+		if not self.canDropMimeData(mimeData, action, row, column, parentIndex):
+			return False
+		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
+
+		# Parse the MIME data.
+		mimeFormat = list(mimeData.formats())[0]
+		data = bytes(mimeData.data(mimeFormat))
+		try:
+			if mimeFormat == "application/x-awlsim-xml-awl":
+				source = AwlSource()
+			elif mimeFormat == "application/x-awlsim-xml-fup":
+				source = FupSource()
+			elif mimeFormat == "application/x-awlsim-xml-kop":
+				source = KopSource()
+				return False # Not yet
+			elif mimeFormat == "application/x-awlsim-xml-symtab":
+				source = SymTabSource()
+			else:
+				return False
+			factory = source.factory(project=self.getProject(),
+						 source=source)
+			if not factory.parse(data):
+				return False
+		except XmlFactory.Error as e:
+			return False
+
+		# Insert the new element
+		if not self.entryAdd(idxIdBase=self.id2childBase[parentIdxId],
+				     source=source, pos=row):
+			return False
+		return True
+
+	def mimeTypes(self):
+		return [
+			"application/x-awlsim-xml-awl",
+			"application/x-awlsim-xml-fup",
+			"application/x-awlsim-xml-kop",
+			"application/x-awlsim-xml-symtab",
+		]
+
+	def removeRows(self, row, count, parentIndex):
+		for i in range(count):
+			index = self.index(row, 0, parentIndex)
+			if not self.entryDelete(index, force=True):
+				return False
+		return True
+
 class SourceContextMenu(QMenu):
 	# Signal: Opem the edit for the selected source
 	edit = Signal()
@@ -878,8 +998,16 @@ class ProjectTreeView(QTreeView):
 		QTreeView.__init__(self, parent)
 		self.setModel(model)
 
+		self.setSelectionMode(QAbstractItemView.SingleSelection)
+
 		# Disable double-click-edit
 		self.setEditTriggers(self.editTriggers() & ~QTreeView.DoubleClicked)
+
+		self.setDragDropMode(QAbstractItemView.DragDrop)
+		self.setDefaultDropAction(Qt.MoveAction)
+		self.setAcceptDrops(True)
+		self.setDragEnabled(True)
+		self.setDropIndicatorShown(True)
 
 		self.__currentIndex = None
 
@@ -1049,7 +1177,7 @@ class ProjectTreeView(QTreeView):
 		if model:
 			index = self.currentIndex()
 			if ev.key() == Qt.Key_Delete:
-				model.entryDelete(index, self)
+				model.entryDelete(index, parentWidget=self)
 
 	def __removeSource(self):
 		model = self.model()
@@ -1057,4 +1185,4 @@ class ProjectTreeView(QTreeView):
 			index = self.__currentIndex
 			if index is None:
 				index = self.currentIndex()
-			model.entryDelete(index, self)
+			model.entryDelete(index, parentWidget=self)
