@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU widget
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,6 +65,18 @@ class RunState(QObject):
 		self.port = port
 		self.haveTunnel = haveTunnel
 		self.__emitStateChanged()
+
+	def __eq__(self, other):
+		if isinstance(self, RunState) and\
+		   isinstance(other, RunState):
+			return self.state == other.state
+		if isinstance(self, RunState) and\
+		   isInteger(other):
+			return self.state == other
+		raise RuntimeError
+
+	def __ne__(self, other):
+		return not self.__eq__(other)
 
 class OnlineSelectAction(QAction):
 	def __init__(self, parent):

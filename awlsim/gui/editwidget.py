@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI edit widget
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -482,10 +482,10 @@ class EditWidget(SourceCodeEdit):
 
 	def runStateChanged(self, newState):
 		self.__runState = newState
-		if newState.state == RunState.STATE_LOAD:
+		if newState == RunState.STATE_LOAD:
 			self.resetCpuStats()
 			self.__setSourceMatchesCpuSource(True)
-		if newState.state == RunState.STATE_RUN:
+		if newState == RunState.STATE_RUN:
 			self.__setSourceMatchesCpuSource(
 				self.__sourceMatchesCpuSource, force = True)
 			self.__runAniTimer.start(200)
@@ -610,7 +610,7 @@ class EditWidget(SourceCodeEdit):
 			self.__cpuStatsStamp += 1
 
 	def __pruneInvisibleCpuStats(self):
-		if self.__runState.state == RunState.STATE_OFFLINE:
+		if self.__runState == RunState.STATE_OFFLINE:
 			return
 		firstLine, lastLine = self.getVisibleLineRange()
 		for line, stats in dictItems(self.__lineCpuStats):
@@ -632,7 +632,7 @@ class EditWidget(SourceCodeEdit):
 			self.cpuCodeMatchChanged.emit(self, sourceIsOnCpu)
 
 	def handleIdentsMsg(self, identsMsg):
-		if self.__runState.state == RunState.STATE_RUN:
+		if self.__runState == RunState.STATE_RUN:
 			cpuHashes = [ s.identHash for s in identsMsg.awlSources ]
 			self.__setSourceMatchesCpuSource(
 				self.getSource().identHash in cpuHashes)
@@ -759,7 +759,7 @@ class EditWidget(SourceCodeEdit):
 			return
 		p = self.headerWidget.getPainter()
 		if not self.__sourceMatchesCpuSource and\
-		   self.__runState.state == RunState.STATE_RUN:
+		   self.__runState == RunState.STATE_RUN:
 			p.fillRect(ev.rect(), getErrorColor())
 		else:
 			p.fillRect(ev.rect(), Qt.lightGray)
@@ -782,7 +782,7 @@ class EditWidget(SourceCodeEdit):
 				self.__runState.port,
 				" via SSH" if\
 				self.__runState.haveTunnel else ""), ]
-		if self.__runState.state == RunState.STATE_RUN:
+		if self.__runState == RunState.STATE_RUN:
 			if self.__sourceMatchesCpuSource:
 				runText.append(self.__runAni[self.__hdrAniStat])
 			else:
@@ -858,7 +858,7 @@ class EditWidget(SourceCodeEdit):
 		self.__needSourceUpdate = True
 		self.codeChanged.emit()
 		self.resetCpuStats()
-		if self.__runState.state != RunState.STATE_RUN:
+		if self.__runState != RunState.STATE_RUN:
 			# The CPU is not in RUN state.
 			# We don't make a big deal out of code mismatch, even
 			# if the code most likely _does_ mismatch after this edit.
