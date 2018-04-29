@@ -453,6 +453,15 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def getSource(self):
 		raise NotImplementedError
 
+	def setSource(self, source):
+		raise NotImplementedError
+
+	def importSource(self, fileName=None):
+		return False
+
+	def exportSource(self, fileName=None):
+		return False
+
 	def undoIsAvailable(self):
 		return False
 
@@ -556,6 +565,40 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def setSource(self, source):
 		self.editWidget.setSource(source)
 		self.sourceChanged.emit()
+
+	def importSource(self, fileName=None):
+		if not fileName:
+			fileName, filt = QFileDialog.getOpenFileName(self,
+				"Import AWL/STL source", "",
+				"AWL source (*.awl);;"
+				"All files (*)")
+			if not fileName:
+				return False
+		source = self.getSource().fromFile(name="Imported source",
+						   filepath=fileName,
+						   compatReEncode=True)
+		source.forceNonFileBacked(source.name)
+		self.setSource(source)
+		return True
+
+	def exportSource(self, fileName=None):
+		if not fileName:
+			fileName, filt = QFileDialog.getSaveFileName(self,
+				"AWL/STL source export", "",
+				"AWL/STL source file (*.awl)",
+				"*.awl")
+			if not fileName:
+				return False
+			if not fileName.endswith(".awl"):
+				fileName += ".awl"
+		try:
+			safeFileWrite(fileName,
+				      self.getSource().compatSourceBytes)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to export source", e)
+			return False
+		return True
 
 	def undoIsAvailable(self):
 		return self.editWidget.undoIsAvailable()
@@ -670,6 +713,40 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		self.fupWidget.setSource(source)
 		self.sourceChanged.emit()
 
+	def importSource(self, fileName=None):
+		if not fileName:
+			fileName, filt = QFileDialog.getOpenFileName(self,
+				"Import FUP/FBD XML source", "",
+				"FUP/FBD XML source (*.fupxml);;"
+				"All files (*)")
+			if not fileName:
+				return False
+		source = self.getSource().fromFile(name="Imported source",
+						   filepath=fileName,
+						   compatReEncode=True)
+		source.forceNonFileBacked(source.name)
+		self.setSource(source)
+		return True
+
+	def exportSource(self, fileName=None):
+		if not fileName:
+			fileName, filt = QFileDialog.getSaveFileName(self,
+				"fup/fbd xml source export", "",
+				"fup/fbd xml source file (*.fupxml)",
+				"*.fupxml")
+			if not fileName:
+				return False
+			if not fileName.endswith(".fupxml"):
+				fileName += ".fupxml"
+		try:
+			safeFileWrite(fileName,
+				      self.getSource().compatSourceBytes)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to export source", e)
+			return False
+		return True
+
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP
 
@@ -710,6 +787,40 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 	def setSource(self, source):
 		self.symTabView.model().setSource(source)
 		self.sourceChanged.emit()
+
+	def importSource(self, fileName=None):
+		if not fileName:
+			fileName, filt = QFileDialog.getOpenFileName(self,
+				"Import symbol table", "",
+				"Symbol table file (*.asc);;"
+				"All files (*)")
+			if not fileName:
+				return False
+		source = self.getSource().fromFile(name="Imported source",
+						   filepath=fileName,
+						   compatReEncode=True)
+		source.forceNonFileBacked(source.name)
+		self.setSource(source)
+		return True
+
+	def exportSource(self, fileName=None):
+		if not fileName:
+			fileName, filt = QFileDialog.getSaveFileName(self,
+				"symbol table export", "",
+				"symbol table file (*.asc)",
+				"*.asc")
+			if not fileName:
+				return False
+			if not fileName.endswith(".asc"):
+				fileName += ".asc"
+		try:
+			safeFileWrite(fileName,
+				      self.getSource().compatSourceBytes)
+		except AwlSimError as e:
+			MessageBox.handleAwlSimError(self,
+				"Failed to export source", e)
+			return False
+		return True
 
 class LibSelEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_LIBSEL

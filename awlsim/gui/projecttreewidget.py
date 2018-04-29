@@ -196,7 +196,7 @@ class ProjectTreeModel(QAbstractItemModel):
 
 	def entryActivate(self, index, parentWidget=None):
 		if not index or not index.isValid():
-			return
+			return False
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 
 		editMdiArea = self.editMdiArea
@@ -414,11 +414,50 @@ class ProjectTreeModel(QAbstractItemModel):
 		return False
 
 	def entryImport(self, idxIdBase, parentWidget=None):
-		pass#TODO
+		"""Import an entry from an external file.
+		"""
+		# Create a new entry that we import the data to.
+		newIndex = self.entryAdd(idxIdBase, parentWidget=parentWidget)
+		if not newIndex:
+			return False
+
+		def error():
+			self.entryDelete(newIndex, force=True, parentWidget=parentWidget)
+			return False
+
+		# Activate the new entry.
+		if not self.entryActivate(newIndex, parentWidget=parentWidget):
+			return error()
+		# Get the source of the new item.
+		source = self.indexToSource(newIndex)
+		if not source:
+			return error()
+		# Get the MDI sub window of the new entry.
+		mdiSubWin = source.userData.get("gui-edit-window")
+		if not mdiSubWin:
+			return error()
+		# Call import of the new entry.
+		if not mdiSubWin.importSource():
+			return error()
 		return True
 
 	def entryExport(self, index, filePath=None, parentWidget=None):
-		pass#TODO
+		"""Export an entry to an external file.
+		"""
+		# Activate the export entry.
+		if not self.entryActivate(index, parentWidget=parentWidget):
+			return False
+		# Get the source of the export item.
+		source = self.indexToSource(index)
+		if not source:
+			return False
+		# Get the MDI sub window of the export entry.
+		mdiSubWin = source.userData.get("gui-edit-window")
+		if not mdiSubWin:
+			return False
+		# Call export of the new entry.
+		if not mdiSubWin.exportSource():
+			return False
 		return True
 
 	def entryClipboardCopy(self, index, parentWidget=None):
@@ -722,6 +761,25 @@ class ProjectTreeModel(QAbstractItemModel):
 		itemNr = idxId - idxIdBase
 		return idxIdBase, idxId, itemNr
 
+	def indexToSource(self, index):
+		"""Get the source that corresponds to an index, if any.
+		"""
+		idxIdBase, idxId, itemNr = self.indexToId(index)
+
+		sources = None
+		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			sources = self.getProject().getAwlSources()
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			sources = self.getProject().getFupSources()
+		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			sources = self.getProject().getKopSources()
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			sources = self.getProject().getSymTabSources()
+
+		if sources is None or itemNr >= len(sources):
+			return None
+		return sources[itemNr]
+
 	def flags(self, index):
 		if not index.isValid():
 			return Qt.NoItemFlags
@@ -817,24 +875,12 @@ class ProjectTreeModel(QAbstractItemModel):
 		return QModelIndex()
 
 	def __data_columnName(self, index, idxId, idxIdBase, itemNr):
-
-		def getSourceName(sourceList):
-			if itemNr >= len(sourceList):
-				return None
-			source = sourceList[itemNr]
+		source = self.indexToSource(index)
+		if source:
 			name = source.name
 			if not source.enabled:
 				name += " (DISABLED)"
 			return name
-
-		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-			return getSourceName(self.__project.getAwlSources())
-		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-			return getSourceName(self.__project.getFupSources())
-		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-			return getSourceName(self.__project.getKopSources())
-		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-			return getSourceName(self.__project.getSymTabSources())
 
 		names = {
 		  self.INDEXID_SRCS		: "Program",
