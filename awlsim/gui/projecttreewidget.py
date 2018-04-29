@@ -107,7 +107,7 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		self.mainWidget.dirtyChanged.connect(self.__handleProjectDirtyChanged)
 
-		self.dataChanged.connect(self.__projectContentChanged)
+		self.dataChanged.connect(self.__handleDataChanged)
 		self.modelReset.connect(self.__projectContentChanged)
 		self.rowsInserted.connect(self.__projectContentChanged)
 		self.rowsMoved.connect(self.__projectContentChanged)
@@ -239,7 +239,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				source.userData["gui-edit-window"] = mdiSubWin
 
 				# Connect signals.
-				mdiSubWin.sourceChanged.connect(self.projectContentChanged)
+				mdiSubWin.sourceChanged.connect(self.__projectContentChanged)
 
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			handleSourceWindowActivation(
@@ -383,7 +383,7 @@ class ProjectTreeModel(QAbstractItemModel):
 					mdiSubWin.getSource().name = newName
 					mdiSubWin.updateTitle()
 
-				self.dataChanged.emit(index, index, [Qt.EditRole])
+				self.dataChanged.emit(index, index, (Qt.EditRole,))
 				return True
 		return False
 
@@ -405,7 +405,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				mdiSubWin.getSource().enabled = enable
 				mdiSubWin.updateTitle()
 
-			self.projectContentChanged.emit()
+			self.__projectContentChanged()
 			return True
 		return False
 
@@ -485,7 +485,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		if mdiSubWin:
 			mdiSubWin.setSource(symTabSource)
 
-		self.projectContentChanged.emit()
+		self.__projectContentChanged()
 		return True
 
 	def sourceGetter(self, idxIdBase):
@@ -505,6 +505,13 @@ class ProjectTreeModel(QAbstractItemModel):
 			getter = None
 			setter = None
 		return getter, setter
+
+	def __handleDataChanged(self, topLeftIndex, bottomRightIndex, roles=()):
+		# Handle the self.dataChanged signal.
+		if not roles or\
+		   Qt.EditRole in roles or\
+		   Qt.DisplayRole in roles:
+			self.__projectContentChanged()
 
 	def __projectContentChanged(self):
 		self.projectContentChanged.emit()
