@@ -26,8 +26,6 @@ import sys
 import os
 
 from awlsim.gui.util import *
-from awlsim.gui.editwidget import *
-from awlsim.gui.projectwidget import *
 from awlsim.gui.editmdiarea import *
 from awlsim.gui.projecttreewidget import *
 from awlsim.gui.cpuwidget import *
@@ -612,7 +610,9 @@ class MainWindow(QMainWindow):
 		self.cpuWidget.onlineDiagChanged.connect(self.editMdiArea.enableOnlineDiag)
 		self.cpuWidget.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
 		self.cpuWidget.haveIdentsMsg.connect(self.editMdiArea.handleIdentsMsg)
+		self.cpuWidget.haveIdentsMsg.connect(self.projectTreeModel.handleIdentsMsg)
 		self.cpuWidget.runStateChanged.connect(self.editMdiArea.setCpuRunState)
+		self.cpuWidget.runStateChanged.connect(self.projectTreeModel.setCpuRunState)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
 

@@ -24,6 +24,7 @@ from awlsim.common.compat import *
 
 from awlsim.core.symbolparser import SymTabParser
 
+from awlsim.gui.cpuwidget import RunState
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
 
@@ -117,6 +118,81 @@ class ProjectTreeModel(QAbstractItemModel):
 		"""Get EditMdiArea instance.
 		"""
 		return self.mainWidget.editMdiArea
+
+	def handleIdentsMsg(self, identsMsg):
+		"""Handle a new identifier message from AwlSimClient().
+		identsMsg: AwlSimMessage_IDENTS() instance.
+		"""
+		identsMsgAwlSources = identsMsg.awlSources if identsMsg else []
+		identsMsgFupSources = identsMsg.fupSources if identsMsg else []
+		identsMsgKopSources = identsMsg.kopSources if identsMsg else []
+		identsMsgSymTabSources = identsMsg.symTabSources if identsMsg else []
+
+		awlIdentHashes = [ s.identHash for s in identsMsgAwlSources ]
+		fupIdentHashes = [ s.identHash for s in identsMsgFupSources ]
+		kopIdentHashes = [ s.identHash for s in identsMsgKopSources ]
+		symTabIdentHashes = [ s.identHash for s in identsMsgSymTabSources ]
+
+		# Iterate over all sources in the project and check if the
+		# identHash matches what's in the CPU.
+		project = self.getProject()
+		roles = (Qt.DecorationRole, Qt.ToolTipRole)
+		anyChanged = False
+		for getSources, identHashes, idxId in (
+				(project.getAwlSources, awlIdentHashes, self.INDEXID_SRCS_AWL),
+#TODO				(project.getFupSources, fupIdentHashes, self.INDEXID_SRCS_FUP),
+				(project.getKopSources, kopIdentHashes, self.INDEXID_SRCS_KOP),
+				(project.getSymTabSources, symTabIdentHashes, self.INDEXID_SRCS_SYMTAB)):
+			anySourceChanged = False
+			for i, source in enumerate(getSources()):
+				# Update the match state in the source user data.
+				oldMatchState = source.userData.get("gui-cpu-idents-match")
+				newMatchState = source.identHash in identHashes
+				source.userData["gui-cpu-idents-match"] = newMatchState
+
+				# If the match state changed, emit the dataChanged signal.
+				if oldMatchState != newMatchState:
+					anyChanged = anySourceChanged = True
+					parentIndex = self.idToIndex(idxId)
+					if parentIndex.isValid():
+						index = self.index(i, 0, parentIndex)
+						self.dataChanged.emit(index, index, roles)
+			# Mark the parent source container as changed.
+			if anySourceChanged:
+				parentIndex = self.idToIndex(idxId)
+				if parentIndex.isValid():
+					self.dataChanged.emit(parentIndex, parentIndex, roles)
+		# Mark the program container as changed.
+		if anyChanged:
+			index = self.idToIndex(self.INDEXID_SRCS)
+			self.dataChanged.emit(index, index, roles)
+
+	def setCpuRunState(self, cpuRunState):
+		"""Handle a CPU run state change.
+		cpuRunState: RunState() instance.
+		"""
+
+		# Store the run state object.
+		self.__cpuRunState = cpuRunState
+
+		# Emit the dataChanged signal for all sources
+		# and all parent source containers.
+		project = self.getProject()
+		roles = (Qt.DecorationRole, Qt.ToolTipRole)
+		for getSources, idxId in (
+				(project.getAwlSources, self.INDEXID_SRCS_AWL),
+				(project.getFupSources, self.INDEXID_SRCS_FUP),
+				(project.getKopSources, self.INDEXID_SRCS_KOP),
+				(project.getSymTabSources, self.INDEXID_SRCS_SYMTAB)):
+			parentIndex = self.idToIndex(idxId)
+			if parentIndex.isValid():
+				for i, source in enumerate(getSources()):
+					index = self.index(i, 0, parentIndex)
+					self.dataChanged.emit(index, index, roles)
+				self.dataChanged.emit(parentIndex, parentIndex, roles)
+		index = self.idToIndex(self.INDEXID_SRCS)
+		self.dataChanged.emit(index, index, roles)
+		self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
 
 	def entryActivate(self, index, parentWidget=None):
 		if not index or not index.isValid():
@@ -464,6 +540,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		return ret
 
 	def getProject(self, refresh=True):
+		#TODO only refresh, if required
 		if refresh:
 			self.refreshProject()
 		return self.__project
@@ -474,6 +551,8 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.__project = project
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
+		self.__cpuRunState = RunState()
+		self.handleIdentsMsg(None)
 
 	def __loadProject(self, project):
 		self.beginResetModel()
@@ -572,7 +651,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			if idxId in table:
 				return self.createIndex(table[idxId],
 							column, idxId)
-		assert(0)
+		return QModelIndex()
 
 	def indexToId(self, index):
 		idxId = index.internalId()
@@ -709,20 +788,60 @@ class ProjectTreeModel(QAbstractItemModel):
 		return names.get(idxId)
 
 	def __data_icon(self, index, idxId, idxIdBase, itemNr):
+		"""Get the QIcon for displaying in the tree.
+		"""
+
+		def getSourceContainerIcon(sourceList, okIconName):
+			# If the identHash of any source does not match what's on the CPU,
+			# use a warning icon. But only do that, if the CPU is
+			# in RUN state.
+			if self.__cpuRunState == RunState.STATE_RUN and\
+			   any(not source.userData.get("gui-cpu-idents-match", True)
+			       for source in sourceList):
+				return getIcon("warning")
+			return getIcon(okIconName)
+
+		def getSourceIcon(sourceList, okIconName):
+			if itemNr >= len(sourceList):
+				return False
+			return getSourceContainerIcon((sourceList[itemNr],), okIconName)
+
+		def getProgramContainerIcon(okIconName):
+			project = self.getProject()
+			return getSourceContainerIcon(
+				itertools.chain(
+					project.getAwlSources(),
+					project.getFupSources(),
+					project.getKopSources(),
+					project.getSymTabSources()),
+				okIconName)
+
 		if idxId == self.INDEXID_SRCS:
-			return getIcon("textsource")
-		elif idxId == self.INDEXID_SRCS_AWL or\
-		     idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-			return getIcon("textsource")
-		elif idxId == self.INDEXID_SRCS_FUP or\
-		     idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-			return getIcon("fup")
-		elif idxId == self.INDEXID_SRCS_KOP or\
-		     idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-			return getIcon("kop")
-		elif idxId == self.INDEXID_SRCS_SYMTAB or\
-		     idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-			return getIcon("tag")
+			return getProgramContainerIcon("textsource")
+		elif idxId == self.INDEXID_SRCS_AWL:
+			return getSourceContainerIcon(self.getProject().getAwlSources(),
+						      "textsource")
+		elif idxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			return getSourceIcon(self.getProject().getAwlSources(),
+					     "textsource")
+		elif idxId == self.INDEXID_SRCS_FUP:
+			return getSourceContainerIcon(self.getProject().getFupSources(),
+						      "fup")
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			return getSourceIcon(self.getProject().getFupSources(),
+					     "fup")
+		elif idxId == self.INDEXID_SRCS_KOP:
+			return getSourceContainerIcon(self.getProject().getKopSources(),
+						      "kop")
+		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			return getSourceIcon(self.getProject().getKopSources(),
+					     "kop")
+		elif idxId == self.INDEXID_SRCS_SYMTAB:
+			return getSourceContainerIcon(self.getProject().getSymTabSources(),
+						      "tag")
+		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			return getSourceIcon(self.getProject().getSymTabSources(),
+					     "tag")
 		elif idxId == self.INDEXID_SRCS_LIBSEL:
 			return getIcon("stdlib")
 		elif idxId == self.INDEXID_CPU:
@@ -736,24 +855,64 @@ class ProjectTreeModel(QAbstractItemModel):
 		return None
 
 	def __data_toolTip(self, index, idxId, idxIdBase, itemNr):
+		"""Get the tool-tip for displaying in the tree.
+		"""
+
+		def getSourceContainerTip(sourceList, okToolTip):
+			# If the identHash of any source does not match what's on the CPU,
+			# use a warning tool tip. But only do that, if the CPU is
+			# in RUN state.
+			if self.__cpuRunState == RunState.STATE_RUN and\
+			   any(not source.userData.get("gui-cpu-idents-match", True)
+			       for source in sourceList):
+				return "WARNING: The source contained in the project\n"\
+				       "does not match the source on the CPU.\n"\
+				       "That means the CPU is currenly running an outdated program.\n"\
+				       "Please re-download the sources to the CPU\n"\
+				       "by clicking the download button in the tool bar."
+			return okToolTip
+
+		def getSourceTip(sourceList, okToolTip):
+			if itemNr >= len(sourceList):
+				return False
+			return getSourceContainerTip((sourceList[itemNr],), okToolTip)
+
+		def getProgramContainerTip(okToolTip):
+			project = self.getProject()
+			return getSourceContainerTip(
+				itertools.chain(
+					project.getAwlSources(),
+					project.getFupSources(),
+					project.getKopSources(),
+					project.getSymTabSources()),
+				okToolTip)
+
 		if idxId == self.INDEXID_SRCS:
-			return None
+			return getProgramContainerTip(None)
 		elif idxId == self.INDEXID_SRCS_AWL:
-			return "Right click here to add new AWL source."
+			return getSourceContainerTip(self.getProject().getAwlSources(),
+				"Right click here to add new AWL source.")
 		elif idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-			return "Double click here to edit this AWL source."
+			return getSourceTip(self.getProject().getAwlSources(),
+				"Double click here to edit this AWL source.")
 		elif idxId == self.INDEXID_SRCS_FUP:
-			return "Right click here to add new FUP source."
+			return getSourceContainerTip(self.getProject().getFupSources(),
+				"Right click here to add new FUP source.")
 		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-			return "Double click here to edit this FUP diagram."
+			return getSourceTip(self.getProject().getFupSources(),
+				"Double click here to edit this FUP diagram.")
 		elif idxId == self.INDEXID_SRCS_KOP:
-			return "Right click here to add new KOP source."
+			return getSourceContainerTip(self.getProject().getKopSources(),
+				"Right click here to add new KOP source.")
 		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-			return "Double click here to edit this KOP diagram."
+			return getSourceTip(self.getProject().getKopSources(),
+				"Double click here to edit this KOP diagram.")
 		elif idxId == self.INDEXID_SRCS_SYMTAB:
-			return "Right click here to add new symbol table."
+			return getSourceContainerTip(self.getProject().getSymTabSources(),
+				"Right click here to add new symbol table.")
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-			return "Double click here to edit this symbol table."
+			return getSourceTip(self.getProject().getSymTabSources(),
+				"Double click here to edit this symbol table.")
 		elif idxId == self.INDEXID_SRCS_LIBSEL:
 			return "Double click here to edit system library selections."
 		elif idxId == self.INDEXID_CPU:
@@ -804,6 +963,16 @@ class ProjectTreeModel(QAbstractItemModel):
 				title = "Project"
 			if self.mainWidget.isDirty():
 				title += "*"
+			if self.__cpuRunState == RunState.STATE_OFFLINE:
+				title += " (CPU: offline)"
+			elif self.__cpuRunState == RunState.STATE_ONLINE:
+				title += " (CPU: online / STOP)"
+			elif self.__cpuRunState == RunState.STATE_LOAD:
+				title += " (CPU: loading)"
+			elif self.__cpuRunState == RunState.STATE_RUN:
+				title += " (CPU: RUN)"
+			elif self.__cpuRunState == RunState.STATE_EXCEPTION:
+				title += " (CPU: EXCEPTION)"
 			return title
 		return None
 
