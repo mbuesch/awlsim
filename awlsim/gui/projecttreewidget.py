@@ -436,13 +436,22 @@ class ProjectTreeModel(QAbstractItemModel):
 		clipboard.setMimeData(mimeData, QClipboard.Selection)
 		return True
 
+	def entryClipboardCut(self, index, parentWidget=None):
+		"""Cut the item at 'index' into the global clipboard.
+		"""
+		if self.entryClipboardCopy(index, parentWidget=parentWidget):
+			if self.entryDelete(index, force=True, parentWidget=parentWidget):
+				return True
+		return False
+
 	def entryClipboardPaste(self, parentIndex, parentWidget=None):
 		"""Try to paste an entry from the global clipboard.
+		Returns the index of the pasted item, or None.
 		"""
 		# Get the data from the clipboard.
 		clipboard = QGuiApplication.clipboard()
 		if not clipboard:
-			return False
+			return None
 		mimeData = clipboard.mimeData(QClipboard.Clipboard)
 
 		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
@@ -454,7 +463,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			row = parentIndex.row() + 1
 			parentIndex = self.parent(parentIndex)
 
-		return self.dropMimeData(mimeData, Qt.CopyAction, row, 0, parentIndex)
+		return self.__dropMimeData(mimeData, Qt.CopyAction, row, 0, parentIndex)
 
 	def symbolAdd(self, symbol, parentWidget=None):
 		"""Try to add the symbol to a symbol table.
@@ -1106,9 +1115,9 @@ class ProjectTreeModel(QAbstractItemModel):
 			return False
 		return True
 
-	def dropMimeData(self, mimeData, action, row, column, parentIndex):
+	def __dropMimeData(self, mimeData, action, row, column, parentIndex):
 		if not self.canDropMimeData(mimeData, action, row, column, parentIndex):
-			return False
+			return None
 		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
 
 		# Parse the MIME data.
@@ -1121,26 +1130,29 @@ class ProjectTreeModel(QAbstractItemModel):
 				source = FupSource()
 			elif mimeFormat == "application/x-awlsim-xml-kop":
 				source = KopSource()
-				return False # Not yet
+				return None # Not yet
 			elif mimeFormat == "application/x-awlsim-xml-symtab":
 				source = SymTabSource()
 			else:
-				return False
+				return None
 			factory = source.factory(project=self.getProject(),
 						 source=source)
 			if not factory.parse(data):
-				return False
+				return None
 		except XmlFactory.Error as e:
-			return False
+			return None
 
 		if action == Qt.CopyAction:
 			source.name += " (Copy)"
 
 		# Insert the new element
-		if not self.entryAdd(idxIdBase=self.id2childBase[parentIdxId],
-				     source=source, pos=row):
-			return False
-		return True
+		return self.entryAdd(idxIdBase=self.id2childBase[parentIdxId],
+				     source=source, pos=row)
+
+	def dropMimeData(self, mimeData, action, row, column, parentIndex):
+		if self.__dropMimeData(mimeData, action, row, column, parentIndex):
+			return True
+		return False
 
 	def mimeTypes(self):
 		return [
@@ -1168,6 +1180,8 @@ class SourceContextMenu(QMenu):
 	rename = Signal()
 	# Signal: Copy source
 	copy = Signal()
+	# Signal: Cut source
+	cut = Signal()
 	# Signal: Paste source
 	paste = Signal()
 	# Signal: Integrate source
@@ -1186,6 +1200,7 @@ class SourceContextMenu(QMenu):
 		     withRenameButton=False,
 		     withIntegrateButton=False,
 		     withCopyButton=False,
+		     withCutButton=False,
 		     withPasteButton=False,
 		     withImportButton=False,
 		     withExportButton=False,
@@ -1214,9 +1229,13 @@ class SourceContextMenu(QMenu):
 		if withCopyButton:
 			self.addAction(getIcon("copy"),
 				       "&Copy '%s'..." % itemName, self.__copy)
+		if withCutButton:
+			self.addAction(getIcon("cut"),
+				       "&Cut '%s'..." % itemName, self.__cut)
 		if withPasteButton:
 			self.addAction(getIcon("paste"),
 				       "&Paste '%s'..." % itemCategoryName, self.__paste)
+		self.addSeparator()
 		if withImportButton:
 			self.addAction(getIcon("doc_import"),
 				       "&Import %s..." % itemCategoryName, self.__import)
@@ -1248,6 +1267,9 @@ class SourceContextMenu(QMenu):
 
 	def __copy(self):
 		self.copy.emit()
+
+	def __cut(self):
+		self.cut.emit()
 
 	def __paste(self):
 		self.paste.emit()
@@ -1373,10 +1395,16 @@ class ProjectTreeView(QTreeView):
 		def handleCopy():
 			model.entryClipboardCopy(index, parentWidget=self)
 
+		# Source-cut handler
+		def handleCut():
+			model.entryClipboardCut(index, parentWidget=self)
+
 		# Source-paste handler
 		def handlePaste():
-			if model.entryClipboardPaste(index, parentWidget=self):
+			pastedIndex = model.entryClipboardPaste(index, parentWidget=self)
+			if pastedIndex:
 				self.expand(index)
+				self.setCurrentIndex(pastedIndex)
 			else:
 				QMessageBox.critical(self,
 					"Clipboard paste failed",
@@ -1411,6 +1439,7 @@ class ProjectTreeView(QTreeView):
 				withDeleteButton=onSource,
 				withRenameButton=onSource,
 				withCopyButton=onSource,
+				withCutButton=onSource,
 				withPasteButton=(onSource or onContainer),
 				withIntegrateButton=(onSource and itemIsFileBacked),
 				withImportButton=(onContainer or onSource),
@@ -1423,6 +1452,7 @@ class ProjectTreeView(QTreeView):
 		menu.delete.connect(handleDelete)
 		menu.rename.connect(handleRename)
 		menu.copy.connect(handleCopy)
+		menu.cut.connect(handleCut)
 		menu.paste.connect(handlePaste)
 		menu.integrate.connect(handleIntegrate)
 		menu.import_.connect(handleImport)
@@ -1476,8 +1506,17 @@ class ProjectTreeView(QTreeView):
 		model = self.model()
 		if model:
 			index = self.currentIndex()
-			if ev.key() == Qt.Key_Delete:
+			if ev.matches(QKeySequence.Delete):
 				model.entryDelete(index, parentWidget=self)
+			elif ev.matches(QKeySequence.Copy):
+				model.entryClipboardCopy(index, parentWidget=self)
+			elif ev.matches(QKeySequence.Cut):
+				model.entryClipboardCut(index, parentWidget=self)
+			elif ev.matches(QKeySequence.Paste):
+				pastedIndex = model.entryClipboardPaste(index, parentWidget=self)
+				if pastedIndex:
+					self.expand(index)
+					self.setCurrentIndex(pastedIndex)
 
 	def __removeSource(self):
 		model = self.model()
