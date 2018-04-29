@@ -224,6 +224,9 @@ class ProjectTreeModel(QAbstractItemModel):
 				libSelMdiSubWin = editMdiArea.newWin_Libsel(libSelections)
 				libSelMdiSubWin.closed.connect(removeLibSelMdiSubWin)
 				self.__libSelMdiSubWin = libSelMdiSubWin
+
+				# Connect signals.
+				libSelMdiSubWin.sourceChanged.connect(self.__setProjectNeedRefresh)
 			return True
 
 		def handleSourceWindowActivation(sources, makeNewWin):
@@ -240,6 +243,7 @@ class ProjectTreeModel(QAbstractItemModel):
 
 				# Connect signals.
 				mdiSubWin.sourceChanged.connect(self.__projectContentChanged)
+				mdiSubWin.sourceChanged.connect(self.__setProjectNeedRefresh)
 
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			handleSourceWindowActivation(
@@ -520,22 +524,23 @@ class ProjectTreeModel(QAbstractItemModel):
 		"""Copy the modified sources from the edit widgets.
 		"""
 		ret = True
+
 		# Refresh the sources in the project from
 		# the edit widgets (if any).
 		for source in self.__project.getAllSources():
 			mdiSubWin = source.userData.get("gui-edit-window")
-			if not mdiSubWin:
-				continue
-			newSource = mdiSubWin.getSource()
-			if newSource is not None:
-				source.copyFrom(newSource,
-						copyName=False,
-						copyEnabled=False,
-						copyFilepath=False,
-						copySourceBytes=True,
-						copyUserData=False)
-			else:
-				ret = False
+			if mdiSubWin:
+				newSource = mdiSubWin.getSource()
+				if newSource is not None:
+					source.copyFrom(newSource,
+							copyName=False,
+							copyEnabled=False,
+							copyFilepath=False,
+							copySourceBytes=True,
+							copyUserData=False)
+				else:
+					ret = False
+
 		# Refresh the library selections.
 		libSelMdiSubWin = self.__libSelMdiSubWin
 		if libSelMdiSubWin:
@@ -544,11 +549,17 @@ class ProjectTreeModel(QAbstractItemModel):
 				self.__project.setLibSelections(libSelections)
 			else:
 				ret = False
+
+		self.__projectNeedRefresh = not ret
 		return ret
 
-	def getProject(self, refresh=True):
-		#TODO only refresh, if required
-		if refresh:
+	def __setProjectNeedRefresh(self):
+		self.__projectNeedRefresh = True
+
+	def getProject(self):
+		"""Get the Project() instance that is being represented by this tree.
+		"""
+		if self.__projectNeedRefresh:
 			self.refreshProject()
 		return self.__project
 
@@ -556,6 +567,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		if not project:
 			project = Project(None) # Empty project
 		self.__project = project
+		self.__setProjectNeedRefresh()
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
 		self.__cpuRunState = RunState()
