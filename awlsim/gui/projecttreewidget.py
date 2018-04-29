@@ -421,6 +421,41 @@ class ProjectTreeModel(QAbstractItemModel):
 		pass#TODO
 		return True
 
+	def entryClipboardCopy(self, index, parentWidget=None):
+		"""Copy the item at 'index' into the global clipboard.
+		"""
+		mimeData = self.mimeData((index,))
+		if not mimeData:
+			return False
+
+		# Write the data to the clipboard.
+		clipboard = QGuiApplication.clipboard()
+		if not clipboard:
+			return False
+		clipboard.setMimeData(mimeData, QClipboard.Clipboard)
+		clipboard.setMimeData(mimeData, QClipboard.Selection)
+		return True
+
+	def entryClipboardPaste(self, parentIndex, parentWidget=None):
+		"""Try to paste an entry from the global clipboard.
+		"""
+		# Get the data from the clipboard.
+		clipboard = QGuiApplication.clipboard()
+		if not clipboard:
+			return False
+		mimeData = clipboard.mimeData(QClipboard.Clipboard)
+
+		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
+		if parentIdxIdBase == 0:
+			# Append to the end of the container.
+			row = -1
+		else:
+			# Paste it after this element.
+			row = parentIndex.row() + 1
+			parentIndex = self.parent(parentIndex)
+
+		return self.dropMimeData(mimeData, Qt.CopyAction, row, 0, parentIndex)
+
 	def symbolAdd(self, symbol, parentWidget=None):
 		"""Try to add the symbol to a symbol table.
 		symbol: The Symbol() instance to add.
@@ -1001,7 +1036,7 @@ class ProjectTreeModel(QAbstractItemModel):
 	def mimeData(self, indexes):
 		if not indexes:
 			return None
-		mimedata = QMimeData()
+		mimeData = QMimeData()
 		for index in indexes:
 			if not index.isValid():
 				continue
@@ -1027,31 +1062,48 @@ class ProjectTreeModel(QAbstractItemModel):
 				}[idxIdBase]
 				factory = source.factory(project=self.getProject(),
 							 source=source)
-				mimedata.setData(mimeType, factory.compose())
+
+				# Store the data as Awlsim object.
+				dataBytes = factory.compose()
+				mimeData.setData(mimeType, dataBytes)
+
+				# Store the data as plain XML.
+				mimeData.setData("application/xml", dataBytes)
+
+				# Store the source bytes as plain text.
+				mimeData.setText(source.sourceText)
+
 			except (XmlFactory.Error, KeyError) as e:
 				return None
-		return mimedata
+		return mimeData
 
-	def canDropMimeData(self, mimeData, action, row, column, parentIndex):
+	def __getExpectedMimeFormat(self, parentIndex):
 		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
 
+		if parentIdxId == self.INDEXID_SRCS_AWL or\
+		   parentIdxIdBase == self.INDEXID_SRCS_AWL_BASE:
+			return "application/x-awlsim-xml-awl"
+		if parentIdxId == self.INDEXID_SRCS_FUP or\
+		   parentIdxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			return "application/x-awlsim-xml-fup"
+		if parentIdxId == self.INDEXID_SRCS_KOP or\
+		   parentIdxIdBase == self.INDEXID_SRCS_KOP_BASE:
+			return "application/x-awlsim-xml-kop"
+		if parentIdxId == self.INDEXID_SRCS_SYMTAB or\
+		   parentIdxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
+			return "application/x-awlsim-xml-symtab"
+		return None
+
+	def canDropMimeData(self, mimeData, action, row, column, parentIndex):
+		if not parentIndex.isValid():
+			return False
 		if action not in {Qt.MoveAction, Qt.CopyAction}:
 			return False
-		try:
-			expectedMimeFormat = {
-				self.INDEXID_SRCS_AWL : "application/x-awlsim-xml-awl",
-				self.INDEXID_SRCS_FUP : "application/x-awlsim-xml-fup",
-				self.INDEXID_SRCS_KOP : "application/x-awlsim-xml-kop",
-				self.INDEXID_SRCS_SYMTAB : "application/x-awlsim-xml-symtab",
-			}[parentIdxId]
-		except KeyError as e:
+		expectedMimeFormat = self.__getExpectedMimeFormat(parentIndex)
+		if not expectedMimeFormat:
 			return False
-		mimeFormats = list(mimeData.formats())
-		if len(mimeFormats) != 1:
+		if expectedMimeFormat not in mimeData.formats():
 			return False
-		if mimeFormats[0] != expectedMimeFormat:
-			return False
-
 		return True
 
 	def dropMimeData(self, mimeData, action, row, column, parentIndex):
@@ -1060,7 +1112,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
 
 		# Parse the MIME data.
-		mimeFormat = list(mimeData.formats())[0]
+		mimeFormat = self.__getExpectedMimeFormat(parentIndex)
 		data = bytes(mimeData.data(mimeFormat))
 		try:
 			if mimeFormat == "application/x-awlsim-xml-awl":
@@ -1080,6 +1132,9 @@ class ProjectTreeModel(QAbstractItemModel):
 				return False
 		except XmlFactory.Error as e:
 			return False
+
+		if action == Qt.CopyAction:
+			source.name += " (Copy)"
 
 		# Insert the new element
 		if not self.entryAdd(idxIdBase=self.id2childBase[parentIdxId],
@@ -1111,6 +1166,10 @@ class SourceContextMenu(QMenu):
 	delete = Signal()
 	# Signal: Rename current source
 	rename = Signal()
+	# Signal: Copy source
+	copy = Signal()
+	# Signal: Paste source
+	paste = Signal()
 	# Signal: Integrate source
 	integrate = Signal()
 	# Signal: Import source
@@ -1126,6 +1185,8 @@ class SourceContextMenu(QMenu):
 		     withDeleteButton=False,
 		     withRenameButton=False,
 		     withIntegrateButton=False,
+		     withCopyButton=False,
+		     withPasteButton=False,
 		     withImportButton=False,
 		     withExportButton=False,
 		     withEnableButton=False,
@@ -1150,6 +1211,12 @@ class SourceContextMenu(QMenu):
 			self.addAction(getIcon("doc_edit"),
 				       "&Rename '%s'..." % itemName, self.__rename)
 		self.addSeparator()
+		if withCopyButton:
+			self.addAction(getIcon("copy"),
+				       "&Copy '%s'..." % itemName, self.__copy)
+		if withPasteButton:
+			self.addAction(getIcon("paste"),
+				       "&Paste '%s'..." % itemCategoryName, self.__paste)
 		if withImportButton:
 			self.addAction(getIcon("doc_import"),
 				       "&Import %s..." % itemCategoryName, self.__import)
@@ -1178,6 +1245,12 @@ class SourceContextMenu(QMenu):
 
 	def __rename(self):
 		self.rename.emit()
+
+	def __copy(self):
+		self.copy.emit()
+
+	def __paste(self):
+		self.paste.emit()
 
 	def __import(self):
 		self.import_.emit()
@@ -1296,6 +1369,20 @@ class ProjectTreeView(QTreeView):
 		def handleRename():
 			self.edit(index)
 
+		# Source-copy handler
+		def handleCopy():
+			model.entryClipboardCopy(index, parentWidget=self)
+
+		# Source-paste handler
+		def handlePaste():
+			if model.entryClipboardPaste(index, parentWidget=self):
+				self.expand(index)
+			else:
+				QMessageBox.critical(self,
+					"Clipboard paste failed",
+					"The clipboard does not seem to contain data "
+					"that can be pasted here.")
+
 		# Source-integrate handler
 		def handleIntegrate():
 			model.entryIntegrate(index, parentWidget=self)
@@ -1323,6 +1410,8 @@ class ProjectTreeView(QTreeView):
 				withAddButton=(onContainer or onSource),
 				withDeleteButton=onSource,
 				withRenameButton=onSource,
+				withCopyButton=onSource,
+				withPasteButton=(onSource or onContainer),
 				withIntegrateButton=(onSource and itemIsFileBacked),
 				withImportButton=(onContainer or onSource),
 				withExportButton=onSource,
@@ -1333,6 +1422,8 @@ class ProjectTreeView(QTreeView):
 		menu.add.connect(handleAdd)
 		menu.delete.connect(handleDelete)
 		menu.rename.connect(handleRename)
+		menu.copy.connect(handleCopy)
+		menu.paste.connect(handlePaste)
 		menu.integrate.connect(handleIntegrate)
 		menu.import_.connect(handleImport)
 		menu.export.connect(handleExport)
