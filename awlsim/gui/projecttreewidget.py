@@ -290,8 +290,8 @@ class ProjectTreeModel(QAbstractItemModel):
 			source = sources[itemNr]
 			if newName is None:
 				newName, ok = QInputDialog.getText(parentWidget,
-					"Rename %s source" % source.SRCTYPE,
-					"Rename %s source" % source.SRCTYPE,
+					"Name for %s source" % source.SRCTYPE,
+					"Name for %s source" % source.SRCTYPE,
 					QLineEdit.Normal,
 					source.name)
 				if not ok:
@@ -1106,7 +1106,7 @@ class ProjectTreeView(QTreeView):
 
 		# Source-rename handler
 		def handleRename():
-			model.entryRename(index, parentWidget=self)
+			self.edit(index)
 
 		# Source-integrate handler
 		def handleIntegrate():
