@@ -564,6 +564,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 	def setSource(self, source):
 		self.editWidget.setSource(source)
+		self.updateTitle()
 		self.sourceChanged.emit()
 
 	def importSource(self, fileName=None):
@@ -711,6 +712,7 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 
 	def setSource(self, source):
 		self.fupWidget.setSource(source)
+		self.updateTitle()
 		self.sourceChanged.emit()
 
 	def importSource(self, fileName=None):
@@ -786,6 +788,7 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 
 	def setSource(self, source):
 		self.symTabView.model().setSource(source)
+		self.updateTitle()
 		self.sourceChanged.emit()
 
 	def importSource(self, fileName=None):
