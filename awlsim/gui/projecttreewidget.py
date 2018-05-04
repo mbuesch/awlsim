@@ -608,6 +608,9 @@ class ProjectTreeModel(QAbstractItemModel):
 		"""
 		ret = True
 
+		# Temporarily set the refresh flag to false to avoid recursions.
+		self.__projectNeedRefresh = False
+
 		# Refresh the sources in the project from
 		# the edit widgets (if any).
 		for source in self.__project.getAllSources():
@@ -616,11 +619,8 @@ class ProjectTreeModel(QAbstractItemModel):
 				newSource = mdiSubWin.getSource()
 				if newSource is not None:
 					source.copyFrom(newSource,
-							copyName=False,
-							copyEnabled=False,
-							copyFilepath=False,
-							copySourceBytes=True,
-							copyUserData=False)
+							copyUserData=False,
+							updateUserData=True)
 				else:
 					ret = False
 
@@ -633,6 +633,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			else:
 				ret = False
 
+		# Set the refresh-flag to False, if we succeeded.
 		self.__projectNeedRefresh = not ret
 		return ret
 
