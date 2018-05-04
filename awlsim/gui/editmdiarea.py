@@ -575,7 +575,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 				"All files (*)")
 			if not fileName:
 				return False
-		source = self.getSource().fromFile(name="Imported source",
+		source = self.getSource().fromFile(name=os.path.basename(fileName),
 						   filepath=fileName,
 						   compatReEncode=True)
 		source.forceNonFileBacked(source.name)
@@ -723,7 +723,7 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 				"All files (*)")
 			if not fileName:
 				return False
-		source = self.getSource().fromFile(name="Imported source",
+		source = self.getSource().fromFile(name=os.path.basename(fileName),
 						   filepath=fileName,
 						   compatReEncode=True)
 		source.forceNonFileBacked(source.name)
@@ -799,7 +799,7 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 				"All files (*)")
 			if not fileName:
 				return False
-		source = self.getSource().fromFile(name="Imported source",
+		source = self.getSource().fromFile(name=os.path.basename(fileName),
 						   filepath=fileName,
 						   compatReEncode=True)
 		source.forceNonFileBacked(source.name)
