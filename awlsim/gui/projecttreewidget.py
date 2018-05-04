@@ -200,6 +200,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 
 		editMdiArea = self.editMdiArea
+		project = self.getProject()
 
 		if idxId == self.INDEXID_CPU:
 			self.mainWidget.cpuConfig()
@@ -218,7 +219,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			if libSelMdiSubWin:
 				editMdiArea.setActiveSubWindow(libSelMdiSubWin)
 			else:
-				libSelections = self.__project.getLibSelections()
+				libSelections = project.getLibSelections()
 				def removeLibSelMdiSubWin(w):
 					self.__libSelMdiSubWin = None
 				libSelMdiSubWin = editMdiArea.newWin_Libsel(libSelections)
@@ -247,22 +248,22 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			handleSourceWindowActivation(
-				sources=self.__project.getAwlSources(),
+				sources=project.getAwlSources(),
 				makeNewWin=lambda source: editMdiArea.newWin_AWL(source))
 			return True
 		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
 			handleSourceWindowActivation(
-				sources=self.__project.getFupSources(),
+				sources=project.getFupSources(),
 				makeNewWin=lambda source: editMdiArea.newWin_FUP(source))
 			return True
 		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
 			handleSourceWindowActivation(
-				sources=self.__project.getKopSources(),
+				sources=project.getKopSources(),
 				makeNewWin=lambda source: editMdiArea.newWin_KOP(source))
 			return True
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
 			handleSourceWindowActivation(
-				sources=self.__project.getSymTabSources(),
+				sources=project.getSymTabSources(),
 				makeNewWin=lambda source: editMdiArea.newWin_SymTab(source))
 			return True
 
@@ -270,16 +271,16 @@ class ProjectTreeModel(QAbstractItemModel):
 		# we add a new source to that container and activate it.
 		addNew = False
 		if idxId == self.INDEXID_SRCS_AWL:
-			if not self.__project.getAwlSources():
+			if not project.getAwlSources():
 				addNew = True
 		elif idxId == self.INDEXID_SRCS_FUP:
-			if not self.__project.getFupSources():
+			if not project.getFupSources():
 				addNew = True
 		elif idxId == self.INDEXID_SRCS_KOP:
-			if not self.__project.getKopSources():
+			if not project.getKopSources():
 				addNew = True
 		elif idxId == self.INDEXID_SRCS_SYMTAB:
-			if not self.__project.getSymTabSources():
+			if not project.getSymTabSources():
 				addNew = True
 		if addNew:
 			newIndex = self.entryAdd(self.id2childBase[idxId],
@@ -576,18 +577,19 @@ class ProjectTreeModel(QAbstractItemModel):
 		return True
 
 	def sourceGetter(self, idxIdBase):
+		project = self.getProject()
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
-			getter = self.__project.getAwlSources
-			setter = self.__project.setAwlSources
+			getter = project.getAwlSources
+			setter = project.setAwlSources
 		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
-			getter = self.__project.getFupSources
-			setter = self.__project.setFupSources
+			getter = project.getFupSources
+			setter = project.setFupSources
 		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
-			getter = self.__project.getKopSources
-			setter = self.__project.setKopSources
+			getter = project.getKopSources
+			setter = project.setKopSources
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
-			getter = self.__project.getSymTabSources
-			setter = self.__project.setSymTabSources
+			getter = project.getSymTabSources
+			setter = project.setSymTabSources
 		else:
 			getter = None
 			setter = None
@@ -814,16 +816,17 @@ class ProjectTreeModel(QAbstractItemModel):
 	def rowCount(self, parentIndex=QModelIndex()):
 		if parentIndex.isValid():
 			parentIdBase, parentId, parentItemNr, = self.indexToId(parentIndex)
+			project = self.getProject()
 			if parentId == self.INDEXID_SRCS:
 				return len(self.row2id_srcs)
 			elif parentId == self.INDEXID_SRCS_AWL:
-				return len(self.__project.getAwlSources())
+				return len(project.getAwlSources())
 			elif parentId == self.INDEXID_SRCS_FUP:
-				return len(self.__project.getFupSources())
+				return len(project.getFupSources())
 			elif parentId == self.INDEXID_SRCS_KOP:
-				return len(self.__project.getKopSources())
+				return len(project.getKopSources())
 			elif parentId == self.INDEXID_SRCS_SYMTAB:
-				return len(self.__project.getSymTabSources())
+				return len(project.getSymTabSources())
 		else:
 			return len(self.row2id_toplevel)
 		return 0
@@ -1066,7 +1069,8 @@ class ProjectTreeModel(QAbstractItemModel):
 
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
 		if role == Qt.DisplayRole:
-			filename = self.__project.getProjectFile()
+			project = self.getProject()
+			filename = project.getProjectFile()
 			if filename:
 				title = os.path.basename(filename)
 			else:
