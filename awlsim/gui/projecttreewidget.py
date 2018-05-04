@@ -755,13 +755,8 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		project.setProjectFile(filename)
 		project.toFile()
+		self.__isAdHocProject = False
 
-		if self.__isAdHocProject:
-			pass#TODO
-			# We got converted to a real project. Update the tabs.
-			#self.awlTabs.setSources(self.__project.getAwlSources())
-			#self.symTabs.setSources(self.__project.getSymTabSources())
-			self.__isAdHocProject = False
 		return 1
 
 	def idToIndex(self, idxId, column = 0):
