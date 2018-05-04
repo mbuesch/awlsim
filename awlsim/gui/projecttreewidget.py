@@ -393,8 +393,21 @@ class ProjectTreeModel(QAbstractItemModel):
 		return False
 
 	def entryIntegrate(self, index, parentWidget=None):
-		pass#TODO
-		return True
+		idxIdBase, idxId, itemNr = self.indexToId(index)
+		getter, setter = self.sourceGetter(idxIdBase)
+		if getter:
+			# Remove the file backing reference.
+			source = getter()[itemNr]
+			source.forceNonFileBacked(source.name)
+
+			# Update the MDI window, if any.
+			mdiSubWin = source.userData.get("gui-edit-window")
+			if mdiSubWin:
+				mdiSubWin.setSource(source)
+
+			self.__projectContentChanged()
+			return True
+		return False
 
 	def entryEnable(self, index, enable=True, parentWidget=None):
 		idxIdBase, idxId, itemNr = self.indexToId(index)
