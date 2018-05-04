@@ -354,7 +354,8 @@ class GenericSource(object):
 		     copyEnabled=True,
 		     copyFilepath=True,
 		     copySourceBytes=True,
-		     copyUserData=True):
+		     copyUserData=True,
+		     updateUserData=False):
 		"""Copy the content of another source into this one.
 		"""
 		if copyName:
@@ -367,6 +368,8 @@ class GenericSource(object):
 			self.sourceBytes = other.sourceBytes[:]
 		if copyUserData:
 			self.userData = other.userData.copy()
+		if updateUserData:
+			self.userData.update(other.userData)
 
 	def __eq__(self, other):
 		return self.identHash == other.identHash
