@@ -440,6 +440,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		# Call import of the new entry.
 		if not mdiSubWin.importSource():
 			return error()
+		self.dataChanged.emit(newIndex, newIndex)
 		return True
 
 	def entryExport(self, index, filePath=None, parentWidget=None):
