@@ -13,6 +13,12 @@ if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
 fi
 
 
+die()
+{
+	echo "$*" >&2
+	exit 1
+}
+
 usage()
 {
 	echo "build.sh [OPTIONS]"
@@ -20,10 +26,12 @@ usage()
 	echo " -h|--help     Show help"
 	echo " -v|--verbose  Verbose build"
 	echo " -f|--full     Full build; Cython2 and Cython3"
+	echo " -r|--rebuild  Clean the tree before starting build"
 }
 
 opt_verbose=0
 opt_full=0
+opt_rebuild=0
 while [ $# -ge 1 ]; do
 	case "$1" in
 	-h|--help)
@@ -35,6 +43,9 @@ while [ $# -ge 1 ]; do
 		;;
 	-f|--full)
 		opt_full=1
+		;;
+	-r|--rebuild)
+		opt_rebuild=1
 		;;
 	esac
 	shift
@@ -61,6 +72,10 @@ build()
 }
 
 cd "$awlsim_base"
+if [ $opt_rebuild -ne 0 ]; then
+	echo "Cleaning tree..."
+	"$basedir"/cleantree.sh || die "Failed to clean tree."
+fi
 export AWLSIM_CYTHON_BUILD=1
 if [ $opt_full -ne 0 ]; then
 	build Cython2 python2
