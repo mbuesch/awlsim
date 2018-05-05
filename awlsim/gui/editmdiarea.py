@@ -28,6 +28,7 @@ from awlsim.gui.editwidget import EditWidget
 from awlsim.gui.symtabwidget import SymTabView
 from awlsim.gui.libtablewidget import LibTableView
 from awlsim.gui.fup.fupwidget import FupWidget
+from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
 
@@ -68,7 +69,7 @@ class EditMdiArea(QMdiArea):
 	def __init__(self, mainWidget):
 		QMdiArea.__init__(self, parent=mainWidget)
 		self.mainWidget = mainWidget
-		self.setViewMode(QMdiArea.TabbedView)
+		self.setViewMode(QMdiArea.SubWindowView)
 		self.setTabsClosable(True)
 		self.setTabsMovable(True)
 		self.resetArea()
@@ -550,6 +551,9 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 
 		self.updateTitle()
 
+	def sizeHint(self):
+		return QSize(600, 500)
+
 	def updateTitle(self):
 		title = ""
 		source = self.editWidget.getSource()
@@ -557,6 +561,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 			title = source.name + " (AWL)" +\
 				("" if source.enabled else " (DISABLED)")
 		self.setWindowTitle(title)
+		self.setWindowIcon(getIcon("textsource"))
 
 	def getSource(self):
 		return self.editWidget.getSource()
@@ -698,6 +703,9 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 
 		self.updateTitle()
 
+	def sizeHint(self):
+		return QSize(1000, 500)
+
 	def updateTitle(self):
 		title = ""
 		source = self.fupWidget.getSource()
@@ -705,6 +713,7 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 			title = source.name + " (FUP)" +\
 				("" if source.enabled else " (DISABLED)")
 		self.setWindowTitle(title)
+		self.setWindowIcon(getIcon("fup"))
 
 	def getSource(self):
 		return self.fupWidget.getSource()
@@ -772,6 +781,9 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 
 		self.updateTitle()
 
+	def sizeHint(self):
+		return QSize(650, 400)
+
 	def updateTitle(self):
 		title = ""
 		model = self.symTabView.model()
@@ -781,6 +793,7 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 				title = source.name + " (Symbol-table)" +\
 					("" if source.enabled else " (DISABLED)")
 		self.setWindowTitle(title)
+		self.setWindowIcon(getIcon("tag"))
 
 	def getSource(self):
 		return self.symTabView.model().getSource()
@@ -838,6 +851,10 @@ class LibSelEditMdiSubWindow(EditMdiSubWindow):
 		self.libTabView.model().contentChanged.connect(self.sourceChanged)
 
 		self.setWindowTitle("Library selections")
+		self.setWindowIcon(getIcon("stdlib"))
+
+	def sizeHint(self):
+		return QSize(650, 300)
 
 	def getLibSelections(self):
 		return self.libTabView.model().getLibSelections()
