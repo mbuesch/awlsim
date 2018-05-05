@@ -673,6 +673,15 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.__cpuRunState = RunState()
 		self.handleIdentsMsg(None)
 
+	def reset(self, project=None):
+		"""Completely reset the data model.
+		"""
+		self.beginResetModel()
+		self.__reset(project)
+		self.endResetModel()
+		self.projectLoaded.emit()
+		self.__projectContentChanged()
+
 	def __loadProject(self, project):
 		self.beginResetModel()
 		try:

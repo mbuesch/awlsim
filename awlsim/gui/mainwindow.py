@@ -211,6 +211,7 @@ class MainWidget(QWidget):
 			# The file does not exist. We implicitly create it.
 			# The actual file will be created when the project is saved.
 			isNewProject = True
+			self.editMdiArea.resetArea()
 			self.projectTreeModel.reset()
 		else:
 			isNewProject = False
