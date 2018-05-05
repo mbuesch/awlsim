@@ -70,6 +70,8 @@ class EditMdiArea(QMdiArea):
 		QMdiArea.__init__(self, parent=mainWidget)
 		self.mainWidget = mainWidget
 		self.setViewMode(QMdiArea.SubWindowView)
+		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setTabsClosable(True)
 		self.setTabsMovable(True)
 		self.resetArea()
