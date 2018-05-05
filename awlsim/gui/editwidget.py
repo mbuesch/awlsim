@@ -339,10 +339,6 @@ class EditWidget(SourceCodeEdit):
 	codeChanged = Signal()
 	# Signal: Emitted, if the visible source lines changed (e.g. scrolled)
 	visibleRangeChanged = Signal()
-	# Signal: editor<->Cpu source code match changed.
-	# Parameter 0: This EditWidget
-	# Parameter 1: Bool: True -> Editor code does match CPU code.
-	cpuCodeMatchChanged = Signal(SourceCodeEdit, bool)
 	# Signal: Keyboard focus in/out event.
 	focusChanged = Signal(bool)
 
@@ -629,7 +625,6 @@ class EditWidget(SourceCodeEdit):
 			self.__sourceMatchesCpuSource = sourceIsOnCpu
 			if self.headerWidget:
 				self.headerWidget.update()
-			self.cpuCodeMatchChanged.emit(self, sourceIsOnCpu)
 
 	def handleIdentsMsg(self, identsMsg):
 		if self.__runState == RunState.STATE_RUN:

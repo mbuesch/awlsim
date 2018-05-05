@@ -540,7 +540,6 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.codeChanged.connect(self.sourceChanged)
 		self.editWidget.focusChanged.connect(self.focusChanged)
 		self.editWidget.visibleRangeChanged.connect(self.__emitVisibleLinesSignal)
-#TODO		editWidget.cpuCodeMatchChanged.connect(self.__handleCodeMatchChange)
 		self.editWidget.undoAvailable.connect(self.undoAvailableChanged)
 		self.editWidget.redoAvailable.connect(self.redoAvailableChanged)
 		self.editWidget.copyAvailable.connect(self.copyAvailableChanged)
