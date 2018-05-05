@@ -22,7 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
-from awlsim.core.symbolparser import SymTabParser
+from awlsim.core.symbolparser import SymTabParser, Symbol
+from awlsim.library.libselection import AwlLibEntrySelection
 
 from awlsim.gui.cpuwidget import RunState
 from awlsim.gui.util import *
@@ -100,8 +101,6 @@ class ProjectTreeModel(QAbstractItemModel):
 	def __init__(self, mainWidget, project=None, parent=None):
 		QAbstractItemModel.__init__(self, parent)
 		self.mainWidget = mainWidget
-
-		self.__libSelMdiSubWin = None
 
 		self.__reset(project)
 
@@ -524,6 +523,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		symbol: The Symbol() instance to add.
 		Returns True, if adding was successfull.
 		"""
+		assert(isinstance(symbol, Symbol))
 		project = self.getProject()
 		mnemonics = project.getCpuConf().getConfiguredMnemonics()
 		symTabSources = project.getSymTabSources()
@@ -586,6 +586,30 @@ class ProjectTreeModel(QAbstractItemModel):
 		mdiSubWin = symTabSource.userData.get("gui-edit-window")
 		if mdiSubWin:
 			mdiSubWin.setSource(symTabSource)
+
+		self.__projectContentChanged()
+		return True
+
+	def libSelectionAdd(self, libSelection, parentWidget=None):
+		"""Try to add the library selection to the library selection table.
+		libSelection: The AwlLibEntrySelection() to add.
+		Returns True, if adding was successfull.
+		"""
+		assert(isinstance(libSelection, AwlLibEntrySelection))
+		project = self.getProject()
+		libSelections = project.getLibSelections()
+
+		# Check if we already have this selection.
+		if libSelection in libSelections:
+			return True # We already have this lib.
+
+		# Add the library selection to the table.
+		libSelections.append(libSelection)
+		project.setLibSelections(libSelections)
+
+		# If an MDI edit window is open, update it.
+		if self.__libSelMdiSubWin:
+			self.__libSelMdiSubWin.setLibSelections(libSelections)
 
 		self.__projectContentChanged()
 		return True
@@ -668,6 +692,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			project = Project(None) # Empty project
 		self.__project = project
 		self.__setProjectNeedRefresh()
+		self.__libSelMdiSubWin = None
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
 		self.__cpuRunState = RunState()

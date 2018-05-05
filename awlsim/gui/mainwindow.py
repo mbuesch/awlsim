@@ -332,10 +332,13 @@ class MainWidget(QWidget):
 		return self.projectTreeModel.symbolAdd(symbol, parentWidget=self)
 
 	def __pasteLibSel(self, libSelection):
-		#TODO
-		return
-		self.libTable.addEntry(libSelection)
-		return True
+		"""Paste a library selection into the library selection table.
+		libSelection: The AwlLibEntrySelection() instance.
+		Returns True, if the selection has successfully been added.
+		"""
+		assert(isinstance(libSelection, AwlLibEntrySelection))
+		return self.projectTreeModel.libSelectionAdd(libSelection,
+							     parentWidget=self)
 
 	def insertOB(self):
 		dlg = TemplateDialog.make_OB(self)
