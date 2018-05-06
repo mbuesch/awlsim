@@ -43,9 +43,11 @@ class CpuDockWidget(QDockWidget):
 		QDockWidget.__init__(self, "", parent)
 		self.mainWidget = mainWidget
 		self.setObjectName("CpuDockWidget")
+		self.toggleViewAction().setIcon(getIcon("cpu"))
 
 		self.setFeatures(QDockWidget.DockWidgetMovable |
-				 QDockWidget.DockWidgetFloatable)
+				 QDockWidget.DockWidgetFloatable |
+				 QDockWidget.DockWidgetClosable)
 		self.setAllowedAreas(Qt.AllDockWidgetAreas)
 
 		self.setWidget(CpuWidget(mainWidget))
@@ -68,6 +70,7 @@ class ProjectTreeDockWidget(QDockWidget):
 		QDockWidget.__init__(self, "", parent)
 		self.mainWidget = mainWidget
 		self.setObjectName("ProjectTreeDockWidget")
+		self.toggleViewAction().setIcon(getIcon("doc_edit"))
 
 		self.setFeatures(QDockWidget.DockWidgetMovable |
 				 QDockWidget.DockWidgetFloatable)
@@ -461,6 +464,8 @@ class MainWindow(QMainWindow):
 
 		self.tb = QToolBar(self)
 		self.tb.setObjectName("Main QToolBar")
+		self.tb.setWindowTitle("Main tool bar")
+		self.tb.toggleViewAction().setIcon(getIcon("prefs"))
 		self.tb.addAction(getIcon("new"), "New project",
 				  self.mainWidget.newFile)
 		self.tb.addAction(getIcon("open"), "Open project",
@@ -494,10 +499,12 @@ class MainWindow(QMainWindow):
 		self.addToolBar(Qt.TopToolBarArea, self.tb)
 
 		self.ctrlTb = CpuControlToolBar(self)
-		self.addToolBar(Qt.TopToolBarArea, self.ctrlTb)
+		self.ctrlTb.toggleViewAction().setIcon(getIcon("prefs"))
+		self.addToolBar(Qt.LeftToolBarArea, self.ctrlTb)
 
 		self.inspectTb = CpuInspectToolBar(self)
-		self.addToolBar(Qt.BottomToolBarArea, self.inspectTb)
+		self.inspectTb.toggleViewAction().setIcon(getIcon("prefs"))
+		self.addToolBar(Qt.LeftToolBarArea, self.inspectTb)
 
 		self.setMenuBar(QMenuBar(self))
 
@@ -614,6 +621,7 @@ class MainWindow(QMainWindow):
 		self.mainWidget.copyAvailableChanged.connect(self.__copyAvailableChanged)
 		self.mainWidget.cutAvailableChanged.connect(self.__cutAvailableChanged)
 		self.mainWidget.pasteAvailableChanged.connect(self.__pasteAvailableChanged)
+		self.cpuDockWidget.toggleViewAction().toggled.connect(self.__cpuDockToggled)
 		self.ctrlTb.connectToCpuWidget(self.cpuWidget)
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
@@ -650,6 +658,12 @@ class MainWindow(QMainWindow):
 	def getSimClient(self):
 		return self.mainWidget.getSimClient()
 
+	def __cpuDockToggled(self, cpuDockEnabled):
+		action = self.inspectTb.toggleViewAction()
+		if action.isChecked() != cpuDockEnabled:
+			action.trigger()
+		action.setEnabled(cpuDockEnabled)
+
 	def __buildWindowMenu(self):
 		"""Rebuild the window menu.
 		"""
@@ -668,40 +682,57 @@ class MainWindow(QMainWindow):
 					font = action.font()
 					font.setBold(True)
 					action.setFont(font)
-			menu.addSeparator()
-			def closeActive():
-				w = self.editMdiArea.activeOpenSubWindow
-				if w:
+		menu.addSeparator()
+		def closeActive():
+			w = self.editMdiArea.activeOpenSubWindow
+			if w:
+				w.close()
+		def closeAllExceptActive():
+			active = self.editMdiArea.activeOpenSubWindow
+			for w in self.editMdiArea.subWindowList():
+				if w is not active:
 					w.close()
-			def closeAllExceptActive():
-				active = self.editMdiArea.activeOpenSubWindow
-				for w in self.editMdiArea.subWindowList():
-					if w is not active:
-						w.close()
-			menu.addAction(getIcon("doc_close"),
-				       "&Close active window",
-				       closeActive)
-			menu.addAction(getIcon("doc_close"),
-				       "Close &all except active",
-				       closeAllExceptActive)
-		else:
-			menu.addAction("- No editor window -")
+		action = menu.addAction(getIcon("doc_close"),
+					"&Close active window",
+					closeActive)
+		action.setEnabled(bool(mdiSubWins))
+		action = menu.addAction(getIcon("doc_close"),
+					"Close &all except active",
+					closeAllExceptActive)
+		action.setEnabled(bool(mdiSubWins))
+		menu.addSeparator()
+		menu.addAction(self.cpuDockWidget.toggleViewAction())
+		menu.addSeparator()
+		for tb in (self.tb, self.ctrlTb, self.inspectTb):
+			menu.addAction(tb.toggleViewAction())
 
 	def __saveState(self):
 		settings = QSettings()
+
+		# Save the main window state
 		settings.setValue("gui_main_window_state",
 				  self.saveState(VERSION_ID))
+
+		# Save the main window geometry
 		settings.setValue("gui_main_window_geo",
 				  self.saveGeometry())
 
 	def __restoreState(self):
 		settings = QSettings()
-		state = settings.value("gui_main_window_state")
-		if state:
-			self.restoreState(state, VERSION_ID)
+
+		# Restore the main window geometry
 		geo = settings.value("gui_main_window_geo")
 		if geo:
 			self.restoreGeometry(geo)
+
+		# Restore the main window state
+		state = settings.value("gui_main_window_state")
+		if state:
+			self.restoreState(state, VERSION_ID)
+
+		# Only allow inspect tool bar switching, if the CPU dock is available.
+		cpuDockEn = self.cpuDockWidget.toggleViewAction().isChecked()
+		self.inspectTb.toggleViewAction().setEnabled(cpuDockEn)
 
 	def __dirtyChanged(self, isDirty):
 		self.saveAct.setEnabled(isDirty)

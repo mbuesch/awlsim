@@ -129,6 +129,7 @@ class CpuInspectToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
 		self.setObjectName("CpuInspectToolBar")
+		self.setWindowTitle("CPU inspection tool bar")
 
 		self.blocksAction = QAction(getIcon("plugin"),
 					    "Add inspection: Online blocks",
@@ -182,6 +183,7 @@ class CpuControlToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
 		self.setObjectName("CpuControlToolBar")
+		self.setWindowTitle("CPU control tool bar")
 
 		self.onlineAction = OnlineSelectAction(self)
 		self.addAction(self.onlineAction)
