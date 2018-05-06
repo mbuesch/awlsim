@@ -128,6 +128,7 @@ class DiagSelectAction(QAction):
 class CpuInspectToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
+		self.setObjectName("CpuInspectToolBar")
 
 		self.blocksAction = QAction(getIcon("plugin"),
 					    "Add inspection: Online blocks",
@@ -180,6 +181,7 @@ class CpuInspectToolBar(QToolBar):
 class CpuControlToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
+		self.setObjectName("CpuControlToolBar")
 
 		self.onlineAction = OnlineSelectAction(self)
 		self.addAction(self.onlineAction)
@@ -828,4 +830,4 @@ class CpuWidget(QWidget):
 			return
 
 	def sizeHint(self):
-		return QSize(550, 400)
+		return QSize(550, 200)

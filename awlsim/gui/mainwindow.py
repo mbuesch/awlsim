@@ -42,6 +42,7 @@ class CpuDockWidget(QDockWidget):
 	def __init__(self, mainWidget, parent=None):
 		QDockWidget.__init__(self, "", parent)
 		self.mainWidget = mainWidget
+		self.setObjectName("CpuDockWidget")
 
 		self.setFeatures(QDockWidget.DockWidgetMovable |
 				 QDockWidget.DockWidgetFloatable)
@@ -57,16 +58,16 @@ class CpuDockWidget(QDockWidget):
 		return self.widget()
 
 	def __handleTopLevelChange(self, floating):
+		prefix = ""
 		if floating:
-			self.setWindowTitle("%s - CPU view" %\
-				self.mainWidget.mainWindow.TITLE)
-		else:
-			self.setWindowTitle("")
+			prefix = "%s - " % self.mainWidget.mainWindow.TITLE
+		self.setWindowTitle("%sCPU view" % prefix)
 
 class ProjectTreeDockWidget(QDockWidget):
 	def __init__(self, mainWidget, parent=None):
 		QDockWidget.__init__(self, "", parent)
 		self.mainWidget = mainWidget
+		self.setObjectName("ProjectTreeDockWidget")
 
 		self.setFeatures(QDockWidget.DockWidgetMovable |
 				 QDockWidget.DockWidgetFloatable)
@@ -81,11 +82,10 @@ class ProjectTreeDockWidget(QDockWidget):
 		self.__handleTopLevelChange(self.isFloating())
 
 	def __handleTopLevelChange(self, floating):
+		prefix = ""
 		if floating:
-			self.setWindowTitle("%s - Project view" %\
-				self.mainWidget.mainWindow.TITLE)
-		else:
-			self.setWindowTitle("")
+			prefix = "%s - " % self.mainWidget.mainWindow.TITLE
+		self.setWindowTitle("%sProject" % prefix)
 
 class MainWidget(QWidget):
 	# Signal: Project loaded
@@ -430,7 +430,7 @@ class MainWidget(QWidget):
 		self.editMdiArea.findReplaceText()
 
 class MainWindow(QMainWindow):
-	TITLE = "AWL/STL soft-PLC v%s" % VERSION_STRING
+	TITLE = "Awlsim PLC v%s" % VERSION_STRING
 
 	@classmethod
 	def start(cls,
@@ -454,10 +454,13 @@ class MainWindow(QMainWindow):
 		self.treeDockWidget = ProjectTreeDockWidget(self.mainWidget, self)
 
 		self.setCentralWidget(self.mainWidget)
+
+		self.setDockOptions(self.dockOptions() | QMainWindow.AllowTabbedDocks)
 		self.addDockWidget(Qt.LeftDockWidgetArea, self.treeDockWidget)
-		self.addDockWidget(Qt.RightDockWidgetArea, self.cpuDockWidget)
+		self.addDockWidget(Qt.BottomDockWidgetArea, self.cpuDockWidget)
 
 		self.tb = QToolBar(self)
+		self.tb.setObjectName("Main QToolBar")
 		self.tb.addAction(getIcon("new"), "New project",
 				  self.mainWidget.newFile)
 		self.tb.addAction(getIcon("open"), "Open project",
@@ -494,7 +497,7 @@ class MainWindow(QMainWindow):
 		self.addToolBar(Qt.TopToolBarArea, self.ctrlTb)
 
 		self.inspectTb = CpuInspectToolBar(self)
-		self.addToolBar(Qt.RightToolBarArea, self.inspectTb)
+		self.addToolBar(Qt.BottomToolBarArea, self.inspectTb)
 
 		self.setMenuBar(QMenuBar(self))
 
@@ -623,6 +626,8 @@ class MainWindow(QMainWindow):
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
 
+		self.__restoreState()
+
 	@property
 	def editMdiArea(self):
 		return self.mainWidget.editMdiArea
@@ -640,6 +645,22 @@ class MainWindow(QMainWindow):
 
 	def getSimClient(self):
 		return self.mainWidget.getSimClient()
+
+	def __saveState(self):
+		settings = QSettings()
+		settings.setValue("gui_main_window_state",
+				  self.saveState(VERSION_ID))
+		settings.setValue("gui_main_window_geo",
+				  self.saveGeometry())
+
+	def __restoreState(self):
+		settings = QSettings()
+		state = settings.value("gui_main_window_state")
+		if state:
+			self.restoreState(state, VERSION_ID)
+		geo = settings.value("gui_main_window_geo")
+		if geo:
+			self.restoreGeometry(geo)
 
 	def __dirtyChanged(self, isDirty):
 		self.saveAct.setEnabled(isDirty)
@@ -713,6 +734,7 @@ class MainWindow(QMainWindow):
 			elif res == QMessageBox.Cancel:
 				ev.ignore()
 				return
+		self.__saveState()
 		self.getSimClient().shutdown()
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
