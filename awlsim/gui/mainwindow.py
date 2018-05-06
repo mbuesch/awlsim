@@ -587,6 +587,10 @@ class MainWindow(QMainWindow):
 		menu.addAction(self.inspectTb.lcdAction)
 		self.menuBar().addMenu(menu)
 
+		self.__windowMenu = QMenu("&Window", self)
+		self.menuBar().addMenu(self.__windowMenu)
+		self.__windowMenu.aboutToShow.connect(self.__buildWindowMenu)
+
 		menu = QMenu("&Help", self)
 		menu.addAction(getIcon("browser"), "Awlsim &homepage...", self.awlsimHomepage)
 		menu.addSeparator()
@@ -645,6 +649,43 @@ class MainWindow(QMainWindow):
 
 	def getSimClient(self):
 		return self.mainWidget.getSimClient()
+
+	def __buildWindowMenu(self):
+		"""Rebuild the window menu.
+		"""
+		menu = self.__windowMenu
+		menu.clear()
+		mdiSubWins = self.editMdiArea.subWindowList()
+		if mdiSubWins:
+			activeMdiSubWin = self.editMdiArea.activeOpenSubWindow
+			for mdiSubWin in mdiSubWins:
+				def activateWin(mdiSubWin=mdiSubWin):
+					self.editMdiArea.setActiveSubWindow(mdiSubWin)
+				action = menu.addAction(mdiSubWin.windowIcon(),
+							mdiSubWin.windowTitle(),
+							activateWin)
+				if mdiSubWin is activeMdiSubWin:
+					font = action.font()
+					font.setBold(True)
+					action.setFont(font)
+			menu.addSeparator()
+			def closeActive():
+				w = self.editMdiArea.activeOpenSubWindow
+				if w:
+					w.close()
+			def closeAllExceptActive():
+				active = self.editMdiArea.activeOpenSubWindow
+				for w in self.editMdiArea.subWindowList():
+					if w is not active:
+						w.close()
+			menu.addAction(getIcon("doc_close"),
+				       "&Close active window",
+				       closeActive)
+			menu.addAction(getIcon("doc_close"),
+				       "Close &all except active",
+				       closeAllExceptActive)
+		else:
+			menu.addAction("- No editor window -")
 
 	def __saveState(self):
 		settings = QSettings()
