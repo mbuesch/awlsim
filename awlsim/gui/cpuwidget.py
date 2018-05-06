@@ -283,7 +283,6 @@ class CpuWidget(QWidget):
 
 		self.newWin_Blocks()
 		self.newWin_CPU()
-		self.update()
 
 	def getProject(self):
 		return self.mainWidget.getProject()
@@ -300,7 +299,6 @@ class CpuWidget(QWidget):
 		self.stateMdi.addSubWindow(mdiWin, Qt.Window)
 		win.configChanged.connect(self.__stateWinConfigChanged)
 		win.show()
-		self.update()
 		self.__uploadMemReadAreas()
 
 	def newWin_CPU(self):
@@ -343,11 +341,6 @@ class CpuWidget(QWidget):
 
 	def __stateWinConfigChanged(self, stateWin):
 		self.__uploadMemReadAreas()
-
-	def update(self):
-		for mdiWin in self.stateMdi.subWindowList():
-			win = mdiWin.widget()
-			win.update()
 
 	# Upload the used memory area descriptors to the core.
 	def __uploadMemReadAreas(self):
