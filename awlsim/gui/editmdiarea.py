@@ -28,6 +28,7 @@ from awlsim.gui.editwidget import EditWidget
 from awlsim.gui.symtabwidget import SymTabView
 from awlsim.gui.libtablewidget import LibTableView
 from awlsim.gui.fup.fupwidget import FupWidget
+from awlsim.gui.sourcecodeedit import SourceCodeEdit
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
@@ -69,6 +70,10 @@ class EditMdiArea(QMdiArea):
 	def __init__(self, mainWidget):
 		QMdiArea.__init__(self, parent=mainWidget)
 		self.mainWidget = mainWidget
+
+		# Init the editor find dialog.
+		SourceCodeEdit.initFindDialog(self)
+
 		self.setViewMode(QMdiArea.SubWindowView)
 		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
@@ -118,6 +123,7 @@ class EditMdiArea(QMdiArea):
 		self.__handleSubWinPasteAvailChanged(mdiSubWin)
 		self.__handleDocumentValidation()
 		self.__refreshOnlineDiagState()
+		self.__setFindDialogReference(mdiSubWin)
 
 	def __handleSubWinFocusChanged(self, mdiSubWin, hasFocus):
 		"""Text focus of one sub window has changed.
@@ -349,6 +355,16 @@ class EditMdiArea(QMdiArea):
 	def findReplaceText(self):
 		mdiSubWin = self.activeOpenSubWindow
 		return mdiSubWin.findReplaceText() if mdiSubWin else False
+
+	def __setFindDialogReference(self, mdiSubWin):
+		"""Switch the find dialog reference to the new window (or None).
+		"""
+		findDlg = SourceCodeEdit.getFindDialog()
+		if findDlg:
+			if mdiSubWin and mdiSubWin.TYPE == mdiSubWin.TYPE_AWL:
+				findDlg.setTextEdit(mdiSubWin.editWidget)
+			else:
+				findDlg.setTextEdit(None)
 
 	def setGuiSettings(self, guiSettings):
 		self._guiSettings = guiSettings
