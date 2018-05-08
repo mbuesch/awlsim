@@ -201,6 +201,12 @@ class ProjectTreeModel(QAbstractItemModel):
 		editMdiArea = self.editMdiArea
 		project = self.getProject()
 
+		def connectMdiSubWinSignals(mdiSubWin):
+			# Connect signals from newly created mdiSubWin
+			# to this project tree.
+			mdiSubWin.sourceChanged.connect(
+				lambda: self.__handleMdiSubWinSourceChanged(mdiSubWin))
+
 		if idxId == self.INDEXID_CPU:
 			self.mainWidget.cpuConfig()
 			return True
@@ -224,9 +230,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				libSelMdiSubWin = editMdiArea.newWin_Libsel(libSelections)
 				libSelMdiSubWin.closed.connect(removeLibSelMdiSubWin)
 				self.__libSelMdiSubWin = libSelMdiSubWin
-
-				# Connect signals.
-				libSelMdiSubWin.sourceChanged.connect(self.__setProjectNeedRefresh)
+				connectMdiSubWinSignals(libSelMdiSubWin)
 			return True
 
 		def handleSourceWindowActivation(sources, makeNewWin):
@@ -240,10 +244,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				mdiSubWin.closed.connect(lambda w:
 					source.userData.pop("gui-edit-window", None))
 				source.userData["gui-edit-window"] = mdiSubWin
-
-				# Connect signals.
-				mdiSubWin.sourceChanged.connect(self.__projectContentChanged)
-				mdiSubWin.sourceChanged.connect(self.__setProjectNeedRefresh)
+				connectMdiSubWinSignals(mdiSubWin)
 
 		if idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			handleSourceWindowActivation(
@@ -632,6 +633,11 @@ class ProjectTreeModel(QAbstractItemModel):
 			getter = None
 			setter = None
 		return getter, setter
+
+	def __handleMdiSubWinSourceChanged(self, mdiSubWin):
+		# Handle sourceChanged signal of an edit area MDI window.
+		self.__projectContentChanged()
+		self.__setProjectNeedRefresh()
 
 	def __handleDataChanged(self, topLeftIndex, bottomRightIndex, roles=()):
 		# Handle the self.dataChanged signal.
