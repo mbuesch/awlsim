@@ -345,57 +345,91 @@ class MainWidget(QWidget):
 
 	def insertOB(self):
 		dlg = TemplateDialog.make_OB(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getOB(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertFC(self):
 		dlg = TemplateDialog.make_FC(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getFC(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertFB(self):
 		dlg = TemplateDialog.make_FB(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getFB(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertInstanceDB(self):
 		dlg = TemplateDialog.make_instanceDB(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getInstanceDB(dlg.getBlockNumber(),
 								    dlg.getExtraNumber(),
 								    dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertGlobalDB(self):
 		dlg = TemplateDialog.make_globalDB(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
 								  dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertUDT(self):
 		dlg = TemplateDialog.make_UDT(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getUDT(dlg.getBlockNumber(),
 							     dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertFCcall(self):
 		dlg = TemplateDialog.make_FCcall(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getFCcall(dlg.getBlockNumber(),
 								dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def insertFBcall(self):
 		dlg = TemplateDialog.make_FBcall(self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
 								dlg.getExtraNumber(),
 								dlg.getVerbose()))
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def openLibrary(self):
 		dlg = LibraryDialog(self.getProject(), self)
-		if dlg.exec_() == QDialog.Accepted:
+		def dialogFinished(result):
+			if result != QDialog.Accepted:
+				return
 			if dlg.pasteText:
 				# Paste the code.
 				if not self.__pasteAwlText(dlg.pasteText):
@@ -410,6 +444,8 @@ class MainWidget(QWidget):
 				# Add a library selection to the library table.
 				if not self.__pasteLibSel(dlg.pasteLibSel):
 					return
+		dlg.finished.connect(dialogFinished)
+		dlg.show()
 
 	def undo(self):
 		self.editMdiArea.undo()
