@@ -600,17 +600,6 @@ class MainWindow(QMainWindow):
 					     self.mainWidget.openLibrary)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&Settings", self)
-		menu.addAction(getIcon("network"), "&Server connection...",
-			       self.mainWidget.linkConfig)
-		menu.addAction(getIcon("cpu"), "&CPU config...",
-			       self.mainWidget.cpuConfig)
-		menu.addAction(getIcon("hwmod"), "&Hardware modules...",
-			       self.mainWidget.hwmodConfig)
-		menu.addAction(getIcon("prefs"), "&User interface...",
-			       self.mainWidget.guiConfig)
-		self.menuBar().addMenu(menu)
-
 		menu = QMenu("&CPU", self)
 		menu.addAction(self.ctrlTb.onlineAction)
 		menu.addAction(self.ctrlTb.resetAction)
