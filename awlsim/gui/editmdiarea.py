@@ -719,6 +719,8 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		self.fupWidget.setSource(source)
 		self.setWidget(self.fupWidget)
 
+		self.fupWidget.diagramChanged.connect(self.sourceChanged)
+
 		self.updateTitle()
 
 	def sizeHint(self):
