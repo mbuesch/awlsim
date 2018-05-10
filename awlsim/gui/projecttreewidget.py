@@ -487,7 +487,8 @@ class ProjectTreeModel(QAbstractItemModel):
 		if not clipboard:
 			return False
 		clipboard.setMimeData(mimeData, QClipboard.Clipboard)
-		clipboard.setMimeData(mimeData, QClipboard.Selection)
+		if clipboard.supportsSelection():
+			clipboard.setMimeData(mimeData, QClipboard.Selection)
 		return True
 
 	def entryClipboardCut(self, index, parentWidget=None):
@@ -507,6 +508,8 @@ class ProjectTreeModel(QAbstractItemModel):
 		if not clipboard:
 			return None
 		mimeData = clipboard.mimeData(QClipboard.Clipboard)
+		if not mimeData:
+			return None
 
 		parentIdxIdBase, parentIdxId, parentItemNr = self.indexToId(parentIndex)
 		if parentIdxIdBase == 0:
