@@ -477,7 +477,8 @@ class MainWindow(QMainWindow):
 		# Set basic qapp-details.
 		# This is important for QSettings.
 		QApplication.setOrganizationName("awlsim")
-		QApplication.setApplicationName("Awlsim GUI")
+		QApplication.setOrganizationDomain(AWLSIM_HOME_DOMAIN)
+		QApplication.setApplicationName("awlsim-gui")
 		QApplication.setApplicationVersion(VERSION_STRING)
 
 		mainwnd = cls(initialAwlSource)
@@ -840,8 +841,8 @@ class MainWindow(QMainWindow):
 		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.StrictMode))
 
 	def about(self):
-		QMessageBox.about(self, "About AWL/STL soft-PLC",
-			"Awlsim soft-PLC version %s\n"
+		QMessageBox.about(self, "About Awlsim PLC",
+			"Awlsim PLC version %s\n"
 			"\n"
 			"Copyright 2012-2018 Michael Büsch <m@bues.ch>\n"
 			"\n"

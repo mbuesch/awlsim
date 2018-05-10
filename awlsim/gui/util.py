@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI utility functions
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,8 @@ if cython_helper.shouldUseCython():
 from awlsim.gui.qt_bindings import *
 
 
-AWLSIM_HOME_URL = "https://awlsim.de"
+AWLSIM_HOME_DOMAIN = "awlsim.de"
+AWLSIM_HOME_URL = "https://" + AWLSIM_HOME_DOMAIN
 
 
 # Convert an integer to a dual-string
