@@ -62,6 +62,41 @@ hook_regression_tests()
 	sh "$1/tests/run.sh" -j 0
 }
 
+hook_doc_archives()
+{
+	local archive_dir="$1"
+	local checkout_dir="$2"
+
+	local doc_name="$project-doc-$version"
+	local doc_dir="$tmpdir/$doc_name"
+	mkdir "$doc_dir" ||\
+		die "Failed to create directory '$doc_dir'"
+	(
+		cd "$checkout_dir" || die "Failed to cd '$checkout_dir'"
+		rsync --recursive --prune-empty-dirs \
+			--include='/doc/' \
+			--include='/doc/**/' \
+			--include='/doc/**.png' \
+			--include='/doc/**.jpg' \
+			--include='/doc/**.jpeg' \
+			--include='/doc/**.1' \
+			--include='/doc/**.html' \
+			--include='/doc/**.htm' \
+			--include='/doc/**.txt' \
+			--include='/doc/**/README' \
+			--include='/*.html' \
+			--include='/*.htm' \
+			--include='/*.txt' \
+			--exclude='*' \
+			. "$doc_dir" ||\
+			die "Failed to copy documentation."
+		cd "$tmpdir" || die "Failed to cd '$tmpdir'"
+		tar cjf "$archive_dir"/$doc_name.tar.bz2 \
+			"$doc_name" ||\
+			die "Failed to create doc archive."
+	) || die
+}
+
 export AWLSIM_FULL_BUILD=1
 export AWLSIM_CYTHON_BUILD=1
 export AWLSIM_CYTHON_PARALLEL=1
