@@ -2289,7 +2289,7 @@ class S7CPU(object): #+cdef
 		specs = self.specs
 		self.updateTimestamp()
 		ret = []
-		ret.append("[S7-CPU]  t: %.01fs  %s / py %d compat / %s / v%s" %\
+		ret.append("[S7-CPU]  t: %.01fs  %s / py%d / %s / v%s" %\
 			   ((self.now - self.startupTime) if withTime else 0.0,
 			    pythonInterpreter,
 			    3 if isPy3Compat else 2,
@@ -2359,7 +2359,7 @@ class S7CPU(object): #+cdef
 				avgCycleTimeStr = "%.03f" % (self.avgCycleTime * 1000.0)
 			minCycleTimeStr = "%.03f" % (self.minCycleTime * 1000.0)
 			maxCycleTimeStr = "%.03f" % (self.maxCycleTime * 1000.0)
-		ret.append("OB1time:  avg: %s ms  min: %s ms  max: %s ms" % (
+		ret.append("    OB1:  avg: %s ms  min: %s ms  max: %s ms" % (
 			   avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr))
 		return '\n'.join(ret)
 
