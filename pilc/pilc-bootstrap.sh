@@ -445,17 +445,14 @@ pilc_bootstrap_second_stage()
 	if [ "$opt_rpiver" = "1" -o "$opt_rpiver" = "0" ]; then
 		info "Optimizing for RPi 1.x or later"
 		local march="armv6kz"
-		local mtune="arm1176jzf-s"
 	elif [ "$opt_rpiver" = "2" ]; then
 		info "Optimizing for RPi 2.x or later"
 		local march="armv7-a"
-		local mtune="cortex-a7"
 	else
 		info "Optimizing for RPi 3.x or later"
 		local march="armv8-a"
-		local mtune="cortex-a53"
 	fi
-	export CFLAGS="-O3 -march=$march -mtune=$mtune -mfpu=vfp -mfloat-abi=hard -pipe"
+	export CFLAGS="-O3 -march=$march -mfpu=vfp -mfloat-abi=hard -pipe"
 	export CXXFLAGS="$CFLAGS"
 #	export CC=clang LINKCC=clang LDSHARED="clang -shared" CXX=clang++
 
