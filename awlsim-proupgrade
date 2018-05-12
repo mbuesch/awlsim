@@ -3,7 +3,7 @@
 #
 # AWL simulator - Project file upgrade utility
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 import sys
+import os
 import getopt
 
 from awlsim_loader.common import *
@@ -101,5 +102,11 @@ def main():
 	return ExitCodes.EXIT_OK
 
 if __name__ == "__main__":
-	qapp = QApplication(sys.argv)
+	qtArgv = list(sys.argv)
+	if osIsPosix and not os.environ.get("DISPLAY"):
+		# The X server is not running.
+		# Smuggle the offscreen option into Qt argv.
+		qtArgv.insert(1, "-platform")
+		qtArgv.insert(2, "offscreen")
+	qapp = QApplication(qtArgv)
 	sys.exit(main())
