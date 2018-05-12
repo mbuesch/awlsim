@@ -144,6 +144,7 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
   awlsim-server.service.in  : Systemd unit template for awlsim-server.
   debian/                   : Debian packaging support.
   maintenance/              : Maintainer scripts.
+  misc/                     : Miscellaneous scripts and files.
   pilc/                     : PiLC distribution build scripts.
   setup.py                  : Python package build script. This also builds the Cython modules.
 </pre>

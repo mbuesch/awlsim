@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-
+#
+# This script is used to generate the music for
+# examples/raspberrypi-pixtend-musicplayer.awlpro
+#
 
 notes = []
 

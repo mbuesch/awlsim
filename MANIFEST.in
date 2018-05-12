@@ -6,6 +6,7 @@ graft doc
 graft examples
 graft libs
 graft maintenance
+graft misc
 graft pilc
 graft progs
 graft submodules
@@ -21,10 +22,8 @@ include QUICK-START.md
 include QUICK-START.html
 include README.md
 include README.html
-include setup_cython.py
 include TODO.md
 include TODO.html
-include win-standalone-build.cmd
 
 prune ./build
 prune build
