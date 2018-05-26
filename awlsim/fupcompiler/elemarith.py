@@ -313,11 +313,8 @@ class FupCompiler_ElemArith(FupCompiler_Elem):
 
 		# Make sure BIE is set, if EN is not connected and ENO is connected.
 		if not conn_EN.isConnected and conn_ENO.isConnected:
-			# Set VKE=1 and create a dummy SPBNB to
 			# set BIE=1 and /ER=0.
-			# The SPBNB branch is never taken due to VKE=1.
-			insns.append(self.newInsn(AwlInsn_SET))
-			insns.append(self.newInsn_JMP(AwlInsn_SPBNB, endLabel))
+			insns.extend(self.newInsns_SET_BIE_CLR_ER())
 
 		# Create the jump target label for EN=0.
 		# This might end up being unused, though.
