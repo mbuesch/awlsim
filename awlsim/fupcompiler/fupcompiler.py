@@ -166,11 +166,13 @@ class FupCompiler(object):
 		self.__labelCounter += 1
 		return "L%03X" % labelCounter
 
-	def newInsn(self, parentFupElem, insnClass, ops=[], parentFupConn=None):
+	def newInsn(self, parentFupElem, insnClass, ops=[],
+		    labelStr=None, parentFupConn=None):
 		"""Create a new instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		insnClass: The class that shall be instantiated.
 		ops: Optional list of operators.
+		labelStr: Optional label name string for this instruction.
 		parentFupConn: Optional FUP connection this insn belongs to.
 			       If the connection is given, parentFupElem will
 			       also be overriden by parentFupConn.elem.
@@ -179,6 +181,9 @@ class FupCompiler(object):
 			parentFupElem = parentFupConn.elem
 
 		insn = insnClass(cpu=None, ops=ops)
+
+		if labelStr:
+			insn.labelStr = labelStr
 
 		if parentFupElem:
 			insn.commentStr = str(parentFupElem)
@@ -206,17 +211,21 @@ class FupCompiler(object):
 			insn.commentStr = str(parentFupElem)
 		return insn
 
-	def newInsn_JMP(self, parentFupElem, insnClass, labelStr, parentFupConn=None):
+	def newInsn_JMP(self, parentFupElem, insnClass,
+			targetLabelStr, labelStr=None,
+			parentFupConn=None):
 		"""Create a new jump instruction instance.
 		parentFupElem: The FUP element that creates this insn.
 		insnClass: The jump instruction class that shall be instantiated.
-		labelStr: The label name string of the jump target.
+		targetLabelStr: The label name string of the jump target.
+		labelStr: Optional label name string of this jump insn.
 		"""
 		oper = make_AwlOperator(AwlOperatorTypes.LBL_REF, 0, None, None)
-		oper.immediateStr = labelStr
+		oper.immediateStr = targetLabelStr
 		return self.newInsn(parentFupElem=parentFupElem,
 				    insnClass=insnClass,
 				    ops=[oper],
+				    labelStr=labelStr,
 				    parentFupConn=parentFupConn)
 
 	def newInsn_NOP(self, parentFupElem, labelStr, parentFupConn=None):
@@ -226,11 +235,9 @@ class FupCompiler(object):
 		"""
 		oper = make_AwlOperator(AwlOperatorTypes.IMM, 16, None, None)
 		oper.immediate = 0
-		insn = self.newInsn(parentFupElem, AwlInsn_NOP, ops=[oper],
+		return self.newInsn(parentFupElem, AwlInsn_NOP, ops=[oper],
+				    labelStr=labelStr,
 				    parentFupConn=parentFupConn)
-		if labelStr:
-			insn.labelStr = labelStr
-		return insn
 
 	def newInsn_LOAD_BIE(self, parentFupElem, insnClass, parentFupConn=None):
 		"""Create a new BIE load instruction instance.
@@ -242,6 +249,26 @@ class FupCompiler(object):
 		oper = make_AwlOperator(AwlOperatorTypes.MEM_STW, 1, offset, None)
 		return self.newInsn(parentFupElem, insnClass, ops=[oper],
 				    parentFupConn=parentFupConn)
+
+	def newInsns_SET_BIE_CLR_ER(self, parentFupElem, parentFupConn=None):
+		"""Create instructions to set BIE and clear /ER.
+		The instructions will clobber VKE.
+		parentFupElem: The FUP element that creates this insn.
+		"""
+		labelStr = self.newLabel()
+		# Add instruction to SET VKE.
+		insns = [ self.newInsn(parentFupElem,
+				       AwlInsn_SET,
+				       parentFupConn=parentFupConn) ]
+		# Add jump instruction that copies VKE to BIE.
+		# This jump _never_ actually jumps, because VKE is 1.
+		# The jump instruction also resets /ER to 0.
+		insns.append(self.newInsn_JMP(parentFupElem,
+					      AwlInsn_SPBNB,
+					      targetLabelStr=labelStr,
+					      labelStr=labelStr,
+					      parentFupConn=parentFupConn))
+		return insns
 
 	def newInsn_L_STW(self, parentFupElem, parentFupConn=None):
 		"""Create a new L STW instruction instance.

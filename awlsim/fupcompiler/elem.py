@@ -469,6 +469,11 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn_LOAD_BIE(self, *args, **kwargs)
 
+	def newInsns_SET_BIE_CLR_ER(self, *args, **kwargs):
+		"""Wrapper: Call the compiler method to create instructions to set BIE and clear ER.
+		"""
+		return self.grid.compiler.newInsns_SET_BIE_CLR_ER(self, *args, **kwargs)
+
 	def newInsn_L_STW(self, *args, **kwargs):
 		"""Wrapper: Call the compiler method to create a L STW instruction.
 		"""
