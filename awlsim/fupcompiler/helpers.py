@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Helper routines
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -91,14 +91,27 @@ class FupCompiler_Helpers(object):
 		assert(len(elemsA) == len(connNamesA))
 		assert(issubclass(boolElemClass, FupCompiler_ElemBool))
 
-		connB = elemB.getUniqueConnByText(connNameB, searchInputs=True)
+		def makeConn(text, elem, isOut):
+			pos = elem.numOutConnections if isOut else\
+			      elem.numInConnections
+			return FupCompiler_Conn(elem=elem,
+						pos=pos,
+						dirIn=(not isOut), dirOut=isOut,
+						wireId=FupCompiler_Conn.WIREID_NONE,
+						text=text,
+						virtual=True)
+
+		connB = elemB.getUniqueConnByText(connNameB, searchInputs=True,
+				constructDefault=lambda: makeConn(connNameB, elemB, False))
 
 		if len(elemsA) == 1 and not connB.isConnected:
 			# Element B is not connected and we have only one element A.
 			# This is a special case.
 			# We don't need a virtual BOOL. We can just connect B to A.
 			elemA = elemsA[0]
-			connA = elemA.getUniqueConnByText(connNamesA[0], searchOutputs=True)
+			connNameA = connNamesA[0]
+			connA = elemA.getUniqueConnByText(connNameA, searchOutputs=True,
+					constructDefault=lambda: makeConn(connNameA, elemA, True))
 			connB.connectTo(connA)
 			return
 
@@ -135,8 +148,10 @@ class FupCompiler_Helpers(object):
 		# virtual BOOL.
 		connPos = -1
 		for connPos, elemA in enumerate(elemsA):
-			connA = elemA.getUniqueConnByText(connNamesA[connPos],
-							  searchOutputs=True)
+			connNameA = connNamesA[connPos]
+			connA = elemA.getUniqueConnByText(connNameA,
+					searchOutputs=True,
+					constructDefault=lambda: makeConn(connNameA, elemA, True))
 
 			# Get A's wire, or create a new wire, if A is not connected.
 			if connA.isConnected:
