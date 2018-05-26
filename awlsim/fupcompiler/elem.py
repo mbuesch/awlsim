@@ -233,12 +233,24 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				yield conn
 
 	@property
+	def numInConnections(self):
+		"""Get the number of input connections.
+		"""
+		return sum(1 for conn in self.connections if conn.dirIn)
+
+	@property
 	def outConnections(self):
 		"""Get all output connections.
 		"""
 		for conn in self.connections:
 			if conn.dirOut:
 				yield conn
+
+	@property
+	def numOutConnections(self):
+		"""Get the number of output connections.
+		"""
+		return sum(1 for conn in self.connections if conn.dirOut)
 
 	def connIsOptional(self, conn):
 		"""Check if a connection is optional.
