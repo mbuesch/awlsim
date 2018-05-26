@@ -282,10 +282,14 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def getUniqueConnByText(self, connText,
 				searchInputs=False, searchOutputs=False,
-				caseSensitive=False):
+				caseSensitive=False,
+				constructDefault=None):
 		"""Get a unique connection by name.
 		Search in inputs, if 'searchInputs' is True.
 		Search in outputs, if 'searchOutputs' is True.
+		Use case sensitive search, if 'caseSensitive' is True.
+		'constructDefault' can be a callable that returns a new connection.
+		'constructDefault' is called, if the requested connection was not found.
 		This raises FupElemError, if the connection is not unique.
 		Returns the FupCompiler_Conn() or None if not found.
 		"""
@@ -294,6 +298,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 						      searchOutputs,
 						      caseSensitive))
 		if len(connections) <= 0:
+			if constructDefault:
+				# Try to make a new connection.
+				newConn = constructDefault()
+				if newConn is not None:
+					self.addConn(newConn)
+				return newConn
 			return None
 		if len(connections) > 1:
 			raise FupElemError("The element '%s' "
