@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP element container widget
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from awlsim.gui.util import *
 
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
+from awlsim.gui.fup.fup_elemconv import *
 from awlsim.gui.fup.fup_elemarith import *
 from awlsim.gui.fup.fup_elemshift import *
 from awlsim.gui.fup.fup_elemcmp import *
@@ -97,8 +98,8 @@ class FupElemContainerWidget(QTreeWidget):
 					self.elemToXml(FupElem_FN(-1, -1)))
 		itemBool.addChild(itemBoolFN)
 
-		# Move elements
-		itemMove = FupElemItemClass("Move", "stdlib")
+		# Move and convert elements
+		itemMove = FupElemItemClass("Move / convert", "stdlib")
 		itemMoveL = FupElemItem("[L]  load", "new", elemMimeType,
 					self.elemToXml(FupElem_LOAD(-1, -1)))
 		itemMove.addChild(itemMoveL)
@@ -108,6 +109,73 @@ class FupElemContainerWidget(QTreeWidget):
 		itemMoveMove = FupElemItem("-[=]-  move box", "new", elemMimeType,
 					   self.elemToXml(FupElem_MOVE(-1, -1)))
 		itemMove.addChild(itemMoveMove)
+
+		# INT convert elements
+		itemConvI = FupElemItemClass("INT / DINT", "stdlib")
+		itemConvITD = FupElemItem("[I->D]  INT to DINT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_ITD(-1, -1)))
+		itemConvI.addChild(itemConvITD)
+		itemConvNEGI = FupElemItem("[neg I]  negate INT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_NEGI(-1, -1)))
+		itemConvI.addChild(itemConvNEGI)
+		itemConvNEGD = FupElemItem("[neg D]  negate DINT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_NEGD(-1, -1)))
+		itemConvI.addChild(itemConvNEGD)
+		itemConvINVI = FupElemItem("[inv I]  bitwise invert INT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_INVI(-1, -1)))
+		itemConvI.addChild(itemConvINVI)
+		itemConvINVD = FupElemItem("[inv D]  bitwise invert DINT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_INVD(-1, -1)))
+		itemConvI.addChild(itemConvINVD)
+		itemMove.addChild(itemConvI)
+
+		# REAL convert elements
+		itemConvR = FupElemItemClass("REAL", "stdlib")
+		itemConvDTR = FupElemItem("[D->R]  DINT to REAL", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_DTR(-1, -1)))
+		itemConvR.addChild(itemConvDTR)
+		itemConvNEGR = FupElemItem("[neg R]  negate REAL", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_NEGR(-1, -1)))
+		itemConvR.addChild(itemConvNEGR)
+		itemConvRND = FupElemItem("[round]  round REAL", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_RND(-1, -1)))
+		itemConvR.addChild(itemConvRND)
+		itemConvTRUNC = FupElemItem("[trunc]  truncate REAL", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_TRUNC(-1, -1)))
+		itemConvR.addChild(itemConvTRUNC)
+		itemConvRNDP = FupElemItem("[round+]  round REAL to pos.", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_RNDP(-1, -1)))
+		itemConvR.addChild(itemConvRNDP)
+		itemConvRNDN = FupElemItem("[round-]  round REAL to neg.", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_RNDN(-1, -1)))
+		itemConvR.addChild(itemConvRNDN)
+		itemMove.addChild(itemConvR)
+
+		# BCD convert elements
+		itemConvB = FupElemItemClass("BCD", "stdlib")
+		itemConvBTI = FupElemItem("[BCD->I]  BCD to INT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_BTI(-1, -1)))
+		itemConvB.addChild(itemConvBTI)
+		itemConvBTD = FupElemItem("[BCD->D]  BCD to DINT", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_BTD(-1, -1)))
+		itemConvB.addChild(itemConvBTD)
+		itemConvITB = FupElemItem("[I->BCD]  INT to BCD", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_ITB(-1, -1)))
+		itemConvB.addChild(itemConvITB)
+		itemConvDTB = FupElemItem("[D->BCD]  DINT to BCD", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_DTB(-1, -1)))
+		itemConvB.addChild(itemConvDTB)
+		itemMove.addChild(itemConvB)
+
+		# Byteorder convert elements
+		itemConvOrd = FupElemItemClass("Byte order", "stdlib")
+		itemConvTAW = FupElemItem("[swap W]  swap WORD order", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_TAW(-1, -1)))
+		itemConvOrd.addChild(itemConvTAW)
+		itemConvTAD = FupElemItem("[swap D]  swap DWORD order", "new", elemMimeType,
+					   self.elemToXml(FupElem_CONV_TAD(-1, -1)))
+		itemConvOrd.addChild(itemConvTAD)
+		itemMove.addChild(itemConvOrd)
 
 		# INT arithmetic elements
 		itemArithI = FupElemItemClass("INT", "stdlib")
