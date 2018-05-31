@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP draw widget
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -303,7 +303,7 @@ class FupDrawWidget(QWidget):
 	def addElem(self, elem):
 		if self.__grid:
 			if self.__grid.placeElem(elem):
-				self.__grid.deselectAll()
+				self.__grid.deselectAllElems()
 				self.__grid.selectElem(elem)
 				elem.establishAutoConns()
 				self.__contentChanged()
@@ -546,6 +546,7 @@ class FupDrawWidget(QWidget):
 			return
 
 		x, y = event.x(), event.y()
+		grid = self.__grid
 		modifiers = QGuiApplication.keyboardModifiers()
 
 		def eventHandled():
@@ -558,9 +559,9 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu.gridY = gridY
 
 		# Store the clicked element for later use
-		self.__grid.clickedElem = elem
-		self.__grid.clickedConn = conn
-		self.__grid.clickedArea = area
+		grid.clickedElem = elem
+		grid.clickedConn = conn
+		grid.clickedArea = area
 
 		# Handle left button press
 		if event.button() == Qt.LeftButton:
@@ -572,8 +573,8 @@ class FupDrawWidget(QWidget):
 					if not elem.selected:
 						# Select this element.
 						if not (modifiers & Qt.ControlModifier):
-							self.__grid.deselectAll()
-						self.__grid.selectElem(elem)
+							grid.deselectAllElems()
+						grid.selectElem(elem)
 						eventHandled()
 				if conn and (not conn.wire or conn.OUT):
 					# Start dragging of the selected connection.
@@ -582,7 +583,7 @@ class FupDrawWidget(QWidget):
 			else:
 				# Start a multi-selection
 				if not (modifiers & Qt.ControlModifier):
-					self.__grid.deselectAll()
+					grid.deselectAllElems()
 				self.__selectStartPix = (x, y)
 				self.__selectEndPix = None
 				eventHandled()
@@ -594,10 +595,11 @@ class FupDrawWidget(QWidget):
 
 		# Handle right button press
 		if event.button() == Qt.RightButton:
+			# Select the clicked element.
 			if elem and not elem.selected:
 				if not (modifiers & Qt.ControlModifier):
-					self.__grid.deselectAll()
-			self.__grid.selectElem(elem)
+					grid.deselectAllElems()
+			grid.selectElem(elem)
 			eventHandled()
 			# Open the context menu
 			self.__contextMenu.enableRemove(elem is not None)
@@ -619,6 +621,7 @@ class FupDrawWidget(QWidget):
 	def mouseReleaseEvent(self, event):
 		x, y = event.x(), event.y()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+		grid = self.__grid
 
 		def eventHandled():
 			event.accept()
@@ -634,12 +637,12 @@ class FupDrawWidget(QWidget):
 		if self.__dragStart:
 			# Automatically connect close connections
 			connected = any( elem.establishAutoConns()
-					 for elem in self.__grid.selectedElems )
+					 for elem in grid.selectedElems )
 			self.__dragStart = None
 			# Check wire collisions, if required
 			if self.__checkWireCollAfterDrag:
 				self.__checkWireCollAfterDrag = False
-				self.__grid.checkWireCollisions()
+				grid.checkWireCollisions()
 				# Only repaint, if we are not going to repaint anyway.
 				if not connected:
 					eventHandled()
@@ -659,9 +662,9 @@ class FupDrawWidget(QWidget):
 
 		# Drop "clicked element" reference
 		if not self.__contextMenu.isVisible():
-			self.__grid.clickedElem = None
-			self.__grid.clickedConn = None
-			self.__grid.clickedArea = FupElem.AREA_NONE
+			grid.clickedElem = None
+			grid.clickedConn = None
+			grid.clickedArea = FupElem.AREA_NONE
 			eventHandled()
 
 		if not event.isAccepted():
@@ -671,6 +674,7 @@ class FupDrawWidget(QWidget):
 		x, y = event.x(), event.y()
 		modifiers = QGuiApplication.keyboardModifiers()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+		grid = self.__grid
 
 		def eventHandled():
 			event.accept()
@@ -681,11 +685,11 @@ class FupDrawWidget(QWidget):
 			chg = 0
 			if elem and area in {FupElem.AREA_BODY,
 					     FupElem.AREA_BODYOPER}:
-				if elem not in self.__grid.expandedElems:
-					chg += int(self.__grid.unexpandAllElems())
-					chg += int(self.__grid.expandElem(elem, True, area))
+				if elem not in grid.expandedElems:
+					chg += int(grid.unexpandAllElems())
+					chg += int(grid.expandElem(elem, True, area))
 			else:
-				chg += int(self.__grid.unexpandAllElems())
+				chg += int(grid.unexpandAllElems())
 			if chg:
 				eventHandled()
 
@@ -695,8 +699,8 @@ class FupDrawWidget(QWidget):
 			# Mark all elements within the rectangle as selected.
 			startGridX, startGridY = self.posToGridCoords(*self.__selectStartPix)
 			clear = not (modifiers & Qt.ControlModifier)
-			self.__grid.selectElemsInRect(startGridX, startGridY,
-						      gridX, gridY, clear=clear)
+			grid.selectElemsInRect(startGridX, startGridY,
+					       gridX, gridY, clear=clear)
 			self.selectTipChanged.emit(x, y)
 			eventHandled()
 
@@ -706,7 +710,7 @@ class FupDrawWidget(QWidget):
 					 gridY - self.__dragStart[1]
 			if deltaX or deltaY:
 				with self.__repaintBlocked:
-					selectedElems = self.__grid.selectedElems
+					selectedElems = grid.selectedElems
 					# Get all elements that have to be moved
 					moveElems = selectedElems.copy()
 					for elem in selectedElems:
@@ -822,7 +826,7 @@ class FupDrawWidget(QWidget):
 			return
 		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
 				event.matches(QKeySequence.Deselect)):
-			self.__grid.deselectAll()
+			self.__grid.deselectAllElems()
 			self.repaint()
 			return
 		elif event.matches(QKeySequence.SelectAll):

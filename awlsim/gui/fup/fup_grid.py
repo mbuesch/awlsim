@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Grid classes
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -147,6 +147,7 @@ class FupGrid(FupBaseClass):
 		self.elems = []			# The FupElem_xxx()s in this grid
 		self.wires = set()		# The FupConnIn/Out()s in this grid
 
+		self.selectedCells = set()	# Set of tuples (gridX, gridY) of selected cells
 		self.selectedElems = set()	# Set of selected elements in this grid
 		self.expandedElems = set()	# Set of expanded elements in this grid
 		self.clickedElem = None		# The recently clicked element in this grid
@@ -169,6 +170,7 @@ class FupGrid(FupBaseClass):
 			wire.disconnectAll()
 		self.wires.clear()
 		self.elems = []
+		self.selectedCells.clear()
 		self.selectedElems.clear()
 		self.collisionCacheClear()
 
@@ -407,13 +409,13 @@ class FupGrid(FupBaseClass):
 		if elem:
 			self.selectElem(elem)
 		else:
-			self.deselectAll()
+			self.deselectAllElems()
 
 	def selectElemsInRect(self, x0, y0, x1, y1, clear=False):
 		"""Select all elements within the given grid rectangle.
 		"""
 		if clear:
-			self.deselectAll()
+			self.deselectAllElems()
 		for elem in self.getElemsInRect(x0, y0, x1, y1):
 			self.selectElem(elem)
 
@@ -426,7 +428,7 @@ class FupGrid(FupBaseClass):
 		if elem:
 			self.deselectElem(elem)
 
-	def deselectAll(self):
+	def deselectAllElems(self):
 		self.selectedElems.clear()
 
 	def expandElem(self, elem, expand=True, area=None):
@@ -447,6 +449,29 @@ class FupGrid(FupBaseClass):
 				self.expandElem(elem, False)
 			return True
 		return False
+
+	def selectCell(self, x, y):
+		"""Select the cell at grid coordinate X/Y.
+		This does not affect element selection.
+		"""
+		self.selectedCells.add((x, y))
+
+	def deselectCell(self, x, y):
+		"""Deselect the cell at grid coordinate X/Y.
+		This does not affect element selection.
+		"""
+		self.selectedCells.remove((x, y))
+
+	def deselectAllCells(self):
+		"""Deselect all cells.
+		This does not affect element selection.
+		"""
+		self.selectedCells.clear()
+
+	def cellIsSelected(self, x, y):
+		"""Check if a cell is selected.
+		"""
+		return (x, y) in self.selectedCells
 
 class FupGridStub(object):
 	"""FupGrid stub to get FupElem_factory working.
