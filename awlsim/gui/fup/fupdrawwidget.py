@@ -791,8 +791,10 @@ class FupDrawWidget(QWidget):
 		self.__dragStart = None
 		self.__draggedConn = None
 
-		# Deselect all cells
+		# Select the cell
 		grid.deselectAllCells()
+		if not elem:
+			grid.selectCell(gridX, gridY)
 
 		# Handle left button double click
 		if event.button() == Qt.LeftButton:
