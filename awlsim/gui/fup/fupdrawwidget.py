@@ -168,8 +168,6 @@ class FupDrawWidget(QWidget):
 		QWidget.__init__(self, parent)
 
 		self.__interfWidget = interfWidget
-
-		self.__suppressMousePress = 0
 		self.__repaintBlocked = Blocker()
 
 		self.__contextMenu = FupContextMenu(self)
@@ -554,10 +552,6 @@ class FupDrawWidget(QWidget):
 		return elem, conn, area, gridX, gridY, elemRelX, elemRelY
 
 	def mousePressEvent(self, event):
-		if self.__suppressMousePress:
-			self.__suppressMousePress -= 1
-			return
-
 		x, y = event.x(), event.y()
 		grid = self.__grid
 		modifiers = QGuiApplication.keyboardModifiers()
@@ -830,9 +824,6 @@ class FupDrawWidget(QWidget):
 					if elem.edit(self):
 						self.__contentChanged()
 						eventHandled()
-
-		# Suppress the next press event
-		self.__suppressMousePress += 1
 
 		if not event.isAccepted():
 			QWidget.mouseDoubleClickEvent(self, event)
