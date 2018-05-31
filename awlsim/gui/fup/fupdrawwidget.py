@@ -183,6 +183,7 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu.customAction.connect(self.__elemCustomAction)
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
+		self.__bgSelBrush = QBrush(QColor("#F2F25A"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
 		self.__gridPen.setWidth(1)
 		self.__textPen = QColor("#808080")
@@ -195,6 +196,7 @@ class FupDrawWidget(QWidget):
 
 		# Start and end pixel coordinates of a selection rectangle.
 		self.__selectStartPix = None
+		self.__selectStartCell = None
 		self.__selectEndPix = None
 
 		# Start grid coordinates of an element drag.
@@ -412,6 +414,7 @@ class FupDrawWidget(QWidget):
 
 		size = self.size()
 		width, height = size.width(), size.height()
+		cellWidth, cellHeight = self.__cellWidth, self.__cellHeight
 		p = QPainter(self)
 		p.setFont(self.getFont(9))
 
@@ -446,6 +449,16 @@ class FupDrawWidget(QWidget):
 				   "* Middle-click to delete connections and wires\n"
 				   "* Double-click onto inputs or outputs to create operand boxes\n"
 				   "* Use CTRL + Scroll Wheel to zoom")
+
+		# Draw the selected cells.
+		p.setBrush(self.__bgSelBrush)
+		p.setPen(Qt.NoPen)
+		r = 5
+		for gridX, gridY in grid.selectedCells:
+			p.drawRoundedRect(gridX * cellWidth + 1,
+					  gridY * cellHeight + 1,
+					  cellWidth - 1, cellHeight - 1,
+					  r, r)
 
 		# Draw the elements
 		def drawElems(wantForeground, wantCollisions):
@@ -566,6 +579,9 @@ class FupDrawWidget(QWidget):
 		# Handle left button press
 		if event.button() == Qt.LeftButton:
 			if elem:
+				# Clear the cell selection
+				grid.deselectAllCells()
+
 				if area in {FupElem.AREA_BODY,
 					    FupElem.AREA_BODYOPER}:
 					# Start dragging of the selected element(s).
@@ -581,10 +597,18 @@ class FupDrawWidget(QWidget):
 					self.__draggedConn = conn
 					eventHandled()
 			else:
+				# (De-)select the cell
+				if grid.cellIsSelected(gridX, gridY):
+					grid.deselectAllCells()
+				else:
+					grid.deselectAllCells()
+					if not grid.selectedElems:
+						grid.selectCell(gridX, gridY)
 				# Start a multi-selection
 				if not (modifiers & Qt.ControlModifier):
 					grid.deselectAllElems()
 				self.__selectStartPix = (x, y)
+				self.__selectStartCell = (gridX, gridY)
 				self.__selectEndPix = None
 				eventHandled()
 
@@ -595,6 +619,10 @@ class FupDrawWidget(QWidget):
 
 		# Handle right button press
 		if event.button() == Qt.RightButton:
+			# Deselect the cells, if any.
+			if grid.selectedCells:
+				grid.deselectAllCells()
+				self.repaint()
 			# Select the clicked element.
 			if elem and not elem.selected:
 				if not (modifiers & Qt.ControlModifier):
@@ -629,7 +657,12 @@ class FupDrawWidget(QWidget):
 
 		# Handle end of multi-selection
 		if self.__selectStartPix:
+			# Deselect all cells, if we had a multi-selection.
+			if self.__selectStartCell != (gridX, gridY):
+				grid.deselectAllCells()
+			# End multi selection.
 			self.__selectStartPix = None
+			self.__selectStartCell = None
 			self.__selectEndPix = None
 			eventHandled()
 
@@ -748,6 +781,7 @@ class FupDrawWidget(QWidget):
 	def mouseDoubleClickEvent(self, event):
 		x, y = event.x(), event.y()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
+		grid = self.__grid
 
 		def eventHandled():
 			event.accept()
@@ -756,6 +790,9 @@ class FupDrawWidget(QWidget):
 		# Force end of dragging.
 		self.__dragStart = None
 		self.__draggedConn = None
+
+		# Deselect all cells
+		grid.deselectAllCells()
 
 		# Handle left button double click
 		if event.button() == Qt.LeftButton:
