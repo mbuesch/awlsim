@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Grid
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,6 +69,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		self.compiler = compiler	# FupCompiler
 		self.wires = {}			# FupCompiler_Wire
 		self.elems = set()		# FupCompiler_Elem
+		self.uuids = {}			# Dict of { uuid : uuid-owner-object }
 		self.optimizerSettingsContainer = AwlOptimizerSettingsContainer()
 
 	def newWire(self, virtual=False):
@@ -83,6 +84,13 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		if wire.idNum in self.wires:
 			return False
 		self.wires[wire.idNum] = wire
+		# Check and warn if we have a duplicate UUID.
+		if wire.uuid != wire.NIL_UUID:
+			other = self.uuids.get(wire.uuid, None)
+			if other and other is not wire:
+				printError("FUP-compiler ERROR: "
+					"Duplicate wire UUID: %s" % wire.uuid)
+			self.uuids[wire.uuid] = wire
 		return True
 
 	def getWire(self, wireId):
@@ -95,6 +103,13 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 
 	def addElem(self, elem):
 		self.elems.add(elem)
+		# Check and warn if we have a duplicate UUID.
+		if elem.uuid != elem.NIL_UUID:
+			other = self.uuids.get(elem.uuid, None)
+			if other and other is not elem:
+				printError("FUP-compiler ERROR: "
+					"Duplicate element UUID: %s" % elem.uuid)
+			self.uuids[elem.uuid] = elem
 
 	def compile(self):
 		"""Compile this FUP grid to AWL.

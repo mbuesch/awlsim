@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Element
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -226,6 +226,13 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def addConn(self, conn):
 		self.connections.add(conn)
+		# Check and warn if we have a duplicate UUID.
+		if conn.uuid != conn.NIL_UUID:
+			other = self.grid.uuids.get(conn.uuid, None)
+			if other and other is not conn:
+				printError("FUP-compiler ERROR: "
+					"Duplicate connection UUID: %s" % conn.uuid)
+			self.grid.uuids[conn.uuid] = conn
 		return True
 
 	@property

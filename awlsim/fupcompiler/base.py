@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Base object
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,6 +93,8 @@ class FupCompiler_BaseObj(object):
 	# Allow certain state transitions?
 	allowTrans_done2Running	= False # DONE -> RUNNING
 
+	NIL_UUID = "00000000-0000-0000-0000-000000000000"
+
 	__slots__ = (
 		"__uuid",
 		"__compileState",
@@ -108,7 +110,7 @@ class FupCompiler_BaseObj(object):
 
 	@uuid.setter
 	def uuid(self, uuid):
-		self.__uuid = uuid or "00000000-0000-0000-0000-000000000000"
+		self.__uuid = uuid or self.NIL_UUID
 
 	@property
 	def isCompileEntryPoint(self):
