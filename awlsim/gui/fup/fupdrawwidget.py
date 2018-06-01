@@ -613,10 +613,11 @@ class FupDrawWidget(QWidget):
 
 		# Handle right button press
 		if event.button() == Qt.RightButton:
-			# Deselect the cells, if any.
-			if grid.selectedCells:
-				grid.deselectAllCells()
-				self.repaint()
+			# If clicked on a cell, select it and deselect all elements.
+			grid.deselectAllCells()
+			if not elem:
+				grid.selectCell(gridX, gridY)
+				grid.deselectAllElems()
 			# Select the clicked element.
 			if elem and not elem.selected:
 				if not (modifiers & Qt.ControlModifier):
@@ -789,6 +790,7 @@ class FupDrawWidget(QWidget):
 		grid.deselectAllCells()
 		if not elem:
 			grid.selectCell(gridX, gridY)
+			grid.deselectAllElems()
 
 		# Handle left button double click
 		if event.button() == Qt.LeftButton:
