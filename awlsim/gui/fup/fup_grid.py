@@ -145,6 +145,7 @@ class FupGrid(FupBaseClass):
 		self.height = height
 
 		self.elems = []			# The FupElem_xxx()s in this grid
+		self.__elemsByUUID = {}
 		self.wires = set()		# The FupConnIn/Out()s in this grid
 
 		self.selectedCells = set()	# Set of tuples (gridX, gridY) of selected cells
@@ -170,6 +171,7 @@ class FupGrid(FupBaseClass):
 			wire.disconnectAll()
 		self.wires.clear()
 		self.elems = []
+		self.__elemsByUUID = {}
 		self.selectedCells.clear()
 		self.selectedElems.clear()
 		self.collisionCacheClear()
@@ -334,17 +336,25 @@ class FupGrid(FupBaseClass):
 		"""Insert an element into the grid.
 		Returns False, if it was not possible to place the element.
 		"""
+		# Check if we already have this UUID.
+		# A bug in old Awlsim versions generated duplicate UUIDs.
+		if self.getElemByUUID(elem.uuid):
+			printWarning("FUP element %s duplicate UUID. "
+				"Generating new UUID." % elem)
+			elem.regenAllUUIDs()
 		# Check if we have a collision.
 		if not self.canPlaceElem(elem):
 			return False
 		# Add the element.
 		self.elems.append(elem)
+		self.__elemsByUUID[elem.uuid] = elem
 		elem.grid = self
 		return True
 
 	def removeElem(self, elem):
 		with contextlib.suppress(ValueError):
 			self.elems.remove(elem)
+		self.__elemsByUUID.pop(elem.uuid, None)
 		elem.breakConnections()
 		with contextlib.suppress(ValueError):
 			self.selectedElems.remove(elem)
@@ -381,6 +391,12 @@ class FupGrid(FupBaseClass):
 			elem.y = toY
 			elem.checkWireCollisions()
 		return True
+
+	def getElemByUUID(self, uuid):
+		"""Get an element by UUID string.
+		Returns None, if no such element was found.
+		"""
+		return self.__elemsByUUID.get(uuid, None)
 
 	def getElemAt(self, x, y):
 		for elem in self.elems:

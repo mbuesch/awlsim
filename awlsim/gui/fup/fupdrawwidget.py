@@ -920,6 +920,10 @@ class FupDrawWidget(QWidget):
 		if not newElements:
 			return ignore()
 
+		# Regenerate the element UUIDs
+		for newElem in newElements:
+			newElem.regenAllUUIDs()
+
 		# Recalculate the element positions.
 		yOffs = 0
 		for newElem in newElements:

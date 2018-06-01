@@ -136,7 +136,7 @@ class FupElem(FupBaseClass):
 		"""Mark all wires connected to all connections as must-check-collisions.
 		The collision check will be done at the next wire re-draw.
 		"""
-		for conn in itertools.chain(self.inputs, self.outputs):
+		for conn in self.connections:
 			conn.checkWireCollisions()
 
 	def matchCloseConns(self, otherElem):
@@ -258,6 +258,12 @@ class FupElem(FupBaseClass):
 			return self.outputs[index]
 		except IndexError:
 			return None
+
+	@property
+	def connections(self):
+		"""Get an iterable over all connections.
+		"""
+		return itertools.chain(self.inputs, self.outputs)
 
 	def insertConn(self, beforeIndex, conn):
 		"""Add a connection to the connection list.
@@ -483,6 +489,17 @@ class FupElem(FupBaseClass):
 		Returns True, if the connection has successfully been inverted.
 		"""
 		return False
+
+	def regenAllUUIDs(self):
+		"""Re-generate all UUIDs that belong to this element,
+		all its connections and all connected wires.
+		This does not regenerate UUIDs of elements connected to this element.
+		"""
+		self.uuid = None # regenerate
+		for conn in self.connections:
+			conn.uuid = None # regenerate
+			if conn.wire:
+				conn.wire.uuid = None # regenerate
 
 	def __repr__(self):
 		return "FupElem(%d, %d)" % (self.x, self.y)
