@@ -157,7 +157,7 @@ class LStackAllocator(object): #+cdef
 		if (((globAllocBits + 7) >> 3) << 3) >= self.maxAllocBits:
 			raise AwlSimError(
 				"Cannot allocate another %d+%d bits on the L-stack. "
-				"The L-stack is exhausted. Maximum size = %d bytes." % (
+				"The L-stack is exhausted. Maximum size = %d bits." % (
 				nrBits, roundBits, self.maxAllocBits))
 
 		# Actually allocate the bits.
