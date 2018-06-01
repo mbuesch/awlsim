@@ -2,7 +2,7 @@
 #
 # AWL simulator - L-stack handling
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -131,11 +131,15 @@ class LStackAllocator(object): #+cdef
 #@cy	cdef AwlOffset alloc(self, uint32_t nrBits):
 #@cy		cdef LStackFrame *frame
 #@cy		cdef uint32_t globAllocBits
+#@cy		cdef uint32_t roundBits
 #@cy		cdef AwlOffset offset
 
 		frame = self.topFrame
 		globAllocBits = self.globAllocBits
 
+		# Calculate the number of bits to actually allocate and
+		# calculate the AwlOffset to this allocation.
+		roundBits = 0
 		if nrBits == 1:
 			# Bit-aligned allocation
 			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,
@@ -143,18 +147,21 @@ class LStackAllocator(object): #+cdef
 		else:
 			# Byte-aligned allocation
 			if globAllocBits & 7:
+				# Round up to the next byte boundary.
 				roundBits = 8 - (globAllocBits & 7)
-				frame.allocBits += roundBits
 				globAllocBits += roundBits
-			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset, 0)
-
-		self.globAllocBits = globAllocBits = globAllocBits + nrBits
-		frame.allocBits += nrBits
+			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,
+						0)
+		globAllocBits += nrBits
 
 		if (((globAllocBits + 7) >> 3) << 3) >= self.maxAllocBits:
 			raise AwlSimError(
-				"Cannot allocate another %d bits on the L-stack. "
+				"Cannot allocate another %d+%d bits on the L-stack. "
 				"The L-stack is exhausted. Maximum size = %d bytes." % (
-				nrBits, self.maxAllocBits))
+				nrBits, roundBits, self.maxAllocBits))
+
+		# Actually allocate the bits.
+		self.globAllocBits = globAllocBits
+		frame.allocBits += nrBits + roundBits
 
 		return offset
