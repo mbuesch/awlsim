@@ -262,22 +262,31 @@ class FupGrid(FupBaseClass):
 					return wire
 		return None
 
-	def removeOrphanWires(self):
+	def removeOrphanWires(self, dangling=True):
 		"""Remove all unconnected wires.
+		If 'dangling' is True, wires that only have a single connection
+		are also removed.
 		"""
+		connLimit = 1 if dangling else 0
 		newWiresSet = set()
 		while self.wires:
 			wire = self.wires.pop()
-			if wire.connections:
+			if len(wire.connections) > connLimit:
+				# Keep this wire.
 				newWiresSet.add(wire)
+			else:
+				# Drop this wire and remove all
+				# connections from it.
+				for conn in set(wire.connections):
+					wire.disconnect(conn)
 		self.wires = newWiresSet
 
-	def renumberWires(self):
+	def renumberWires(self, idNumOffset=0):
 		"""Re-assign all wire idNums.
 		"""
 		for i, wire in enumerate(sorted(self.wires,
 						key=lambda w: w.idNum)):
-			wire.idNum = i
+			wire.idNum = i + idNumOffset
 
 	def checkWireLine(self, painter, excludeWires, lineSeg):
 		"""Checks if a wire line would be drawable and does not collide
