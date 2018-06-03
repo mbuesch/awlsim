@@ -174,7 +174,7 @@ class FupDrawWidget(QWidget):
 	GRID_PIX_BASE = (90, 20)
 
 	# Zoom factor limits
-	MIN_ZOOM = 1.0
+	MIN_ZOOM = 0.3
 	MAX_ZOOM = 4.0
 
 	# Signal: Something in the FUP diagram changed
@@ -218,7 +218,8 @@ class FupDrawWidget(QWidget):
 		self.__bgSelBrush = QBrush(QColor("#F2F25A"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
 		self.__gridPen.setWidth(1)
-		self.__textPen = QColor("#808080")
+		self.__lightTextPen = QColor("#808080")
+		self.__textPen = QColor("#000000")
 		self.__dragConnPenOpen = QPen(QColor("#FF0000"))
 		self.__dragConnPenOpen.setWidth(4)
 		self.__dragConnPenClosed = QPen(QColor("#000000"))
@@ -240,6 +241,11 @@ class FupDrawWidget(QWidget):
 
 		self.__zoom = 1.0
 		self.__wheelSteps = 0.0
+		self.__showZoomLevel = False
+		self.__showZoomLevelTimer = QTimer(self)
+		self.__showZoomLevelTimer.setSingleShot(True)
+		self.__showZoomLevelTimer.timeout.connect(self.__showZoomLevelTimeout)
+		self.__mousePos = (0, 0)
 
 		self.__gridMinSize = (12, 18)	# Smallest possible grid size
 		self.__gridClearance = (3, 4)	# Left and bottom clearance
@@ -248,11 +254,21 @@ class FupDrawWidget(QWidget):
 				      self.__gridMinSize[1])
 		self.__grid.resizeEvent = self.__handleGridResize
 
-		self.__handleZoomChange()
+		self.__handleZoomChange(showZoomLevel=False)
 
 		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
 		self.setMouseTracking(True)
 		self.setAcceptDrops(True)
+
+	def beginLoad(self):
+		"""Begin load. This is called before data is being loaded.
+		"""
+		pass
+
+	def finalizeLoad(self):
+		"""Finalize load. This is called after data has been loaded.
+		"""
+		self.__handleZoomChange(showZoomLevel=False)
 
 	@property
 	def interfDef(self):
@@ -260,10 +276,11 @@ class FupDrawWidget(QWidget):
 		"""
 		return self.__interfWidget.interfDef
 
-	def getFont(self, size=8, bold=False):
+	def getFont(self, size=8, bold=False, scale=True):
 		"""Get a font.
 		"""
-		size = int(round(size * self.__zoom))
+		if scale:
+			size = int(round(size * self.__zoom))
 		return getDefaultFixedFont(size, bold=bold)
 
 	@property
@@ -279,20 +296,28 @@ class FupDrawWidget(QWidget):
 		self.__zoom = zoom
 		self.__handleZoomChange()
 
-	def __handleZoomChange(self):
+	def __handleZoomChange(self, showZoomLevel=True):
 		"""Handle a change in zoom and trigger a redraw.
 		"""
 		self.__zoom = clamp(self.__zoom, self.MIN_ZOOM, self.MAX_ZOOM)
 
-		self.__cellWidth = int(round(max(self.GRID_PIX_BASE[0] * self.__zoom,
-						 self.GRID_PIX_BASE[0])))
-		self.__cellHeight = int(round(max(self.GRID_PIX_BASE[1] * self.__zoom,
-						  self.GRID_PIX_BASE[1])))
+		self.__cellWidth = int(round(self.GRID_PIX_BASE[0] * self.__zoom))
+		self.__cellHeight = int(round(self.GRID_PIX_BASE[1] * self.__zoom))
 
 		self.__handleGridResize(self.__grid.width, self.__grid.height)
 
+		self.__showZoomLevel = showZoomLevel
+		if showZoomLevel:
+			self.__showZoomLevelTimer.start(1000)
+		else:
+			self.__showZoomLevelTimer.stop()
+
 		self.repaint()
 		self.diagramChanged.emit()
+
+	def __showZoomLevelTimeout(self):
+		self.__showZoomLevel = False
+		self.repaint()
 
 	def __handleGridResize(self, gridWidth, gridHeight):
 		"""Handle a change in grid size and resize the widget.
@@ -470,7 +495,7 @@ class FupDrawWidget(QWidget):
 
 		# Draw the help text, if the grid is empty.
 		if not grid.elems:
-			p.setPen(self.__textPen)
+			p.setPen(self.__lightTextPen)
 			p.setFont(self.getFont(9))
 			x, y = self.__cellWidth + 5, self.__cellHeight * 2 - 5
 			p.drawText(x, y, width - x, height - y,
@@ -545,6 +570,19 @@ class FupDrawWidget(QWidget):
 					  selWidth, selHeight,
 					  r, r)
 
+		# Draw zoom indicator box
+		if self.__showZoomLevel:
+			xAbs, yAbs = self.__mousePos[0] + 10, self.__mousePos[1] + 20
+			p.setBrush(self.__bgSelBrush)
+			p.setPen(self.__textPen)
+			p.setFont(self.getFont(14, bold=True, scale=False))
+			textFlags = Qt.AlignLeft | Qt.AlignTop
+			text = "Zoom: %d%%" % int(round((self.zoom * 100.0)))
+			rect = p.boundingRect(xAbs, yAbs, width - xAbs, height - yAbs,
+					      textFlags, text)
+			p.drawRect(rect)
+			p.drawText(rect, textFlags, text)
+
 	def gridCoordsToQRect(self, gridX, gridY):
 		"""Convert grid coordinates to the pixel QRect surrounding that cell.
 		"""
@@ -587,6 +625,7 @@ class FupDrawWidget(QWidget):
 
 	def mousePressEvent(self, event):
 		x, y = event.x(), event.y()
+		self.__mousePos = (x, y)
 		grid = self.__grid
 		modifiers = QGuiApplication.keyboardModifiers()
 
@@ -680,6 +719,7 @@ class FupDrawWidget(QWidget):
 
 	def mouseReleaseEvent(self, event):
 		x, y = event.x(), event.y()
+		self.__mousePos = (x, y)
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		grid = self.__grid
 
@@ -737,6 +777,7 @@ class FupDrawWidget(QWidget):
 
 	def mouseMoveEvent(self, event):
 		x, y = event.x(), event.y()
+		self.__mousePos = (x, y)
 		modifiers = QGuiApplication.keyboardModifiers()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		grid = self.__grid
@@ -807,11 +848,16 @@ class FupDrawWidget(QWidget):
 		if self.__draggedConn:
 			eventHandled()
 
+		# Update the zoom level label, if shown.
+		if self.__showZoomLevel:
+			self.repaint()
+
 		if not event.isAccepted():
 			QWidget.mouseMoveEvent(self, event)
 
 	def mouseDoubleClickEvent(self, event):
 		x, y = event.x(), event.y()
+		self.__mousePos = (x, y)
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		grid = self.__grid
 

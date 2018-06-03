@@ -74,12 +74,14 @@ class FupFactory(XmlFactory):
 					raise self.Error("Unsupported FUP version. "
 						"Got %d, but expected %d." % (
 						version, self.FUP_VERSION))
+				drawWidget.beginLoad()
 				drawWidget.zoom = zoom
 				self.inFup = True
 				return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
+		drawWidget = self.fupWidget.edit.draw
 		if self.inFup:
 			if self.inGrids:
 				if tag.name == "grids":
@@ -88,6 +90,7 @@ class FupFactory(XmlFactory):
 			else:
 				if tag.name == "FUP":
 					self.inFup = False
+					drawWidget.finalizeLoad()
 					self.parser_finish()
 					return
 		XmlFactory.parser_endTag(self, tag)
