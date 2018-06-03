@@ -387,7 +387,11 @@ class FupGrid(FupBaseClass):
 		# Add the element.
 		self.elems.append(elem)
 		self.__elemsByUUID[elem.uuid] = elem
+		# Reparent the element and all connected wires.
 		elem.grid = self
+		for conn in elem.connections:
+			if conn.wire:
+				conn.wire.grid = self
 		return True
 
 	def removeElem(self, elem):
