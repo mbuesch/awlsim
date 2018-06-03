@@ -1134,6 +1134,7 @@ class FupDrawWidget(QWidget):
 		if self.clipboardCopy():
 			# Remove all copied elements.
 			self.removeElems(grid.selectedElems)
+			self.__contentChanged()
 		return True
 
 	def clipboardPaste(self):
@@ -1166,5 +1167,5 @@ class FupDrawWidget(QWidget):
 				"Paste of FUP grid failed",
 				"The FUP grid cannot be pasted here, because elements collide.\n"
 				"Please select another position in the grid.")
-		self.repaint()
+		self.__contentChanged()
 		return True
