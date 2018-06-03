@@ -75,25 +75,35 @@ class FupGrid_factory(XmlFactory):
 			return
 		XmlFactory.parser_endTag(self, tag)
 
+	# Composer filters:
+	composer_withOptSettings	= lambda self: True
+	composer_withWireRenum		= lambda self: True
+	composer_wireFilter		= lambda self, wire: True
+	composer_elemFilter		= lambda self, wire: True
+
 	def composer_getTags(self):
 		grid = self.grid
 		childTags = []
 
-		optSettingsCont = grid.optSettingsCont
-		childTags.extend(
-			optSettingsCont.factory(
-				settingsContainer=optSettingsCont).composer_getTags())
+		if self.composer_withOptSettings():
+			optSettingsCont = grid.optSettingsCont
+			childTags.extend(
+				optSettingsCont.factory(
+					settingsContainer=optSettingsCont).composer_getTags())
 
+		if self.composer_withWireRenum():
+			grid.renumberWires()
 		wireTags = []
-		grid.renumberWires()
 		for wire in sorted(grid.wires, key=lambda w: w.idNum):
-			wireTags.extend(wire.factory(wire=wire).composer_getTags())
+			if self.composer_wireFilter(wire):
+				wireTags.extend(wire.factory(wire=wire).composer_getTags())
 		childTags.append(self.Tag(name="wires",
 					  tags=wireTags))
 
 		elemTags = []
 		for elem in grid.elems:
-			elemTags.extend(elem.factory(elem=elem).composer_getTags())
+			if self.composer_elemFilter(elem):
+				elemTags.extend(elem.factory(elem=elem).composer_getTags())
 		childTags.append(self.Tag(name="elements",
 					  tags=elemTags))
 
