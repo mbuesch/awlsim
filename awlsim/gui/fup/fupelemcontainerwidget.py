@@ -319,8 +319,10 @@ class FupElemContainerWidget(QTreeWidget):
 		itemCmpR.addChild(itemCmpLER)
 
 		# Inline-AWL element
+		prog = "// Enter your AWL/STL program code here...\n\n"
 		itemAWL = FupElemItem("[AWL]  Inline AWL code", "new", elemMimeType,
-				      self.elemToXml(FupElem_AWL(-1, -1)))
+				      self.elemToXml(FupElem_AWL(-1, -1,
+				      contentText=prog)))
 
 		# Main groups
 		itemArith = FupElemItemClass("Arithmetic", "stdlib")
