@@ -565,3 +565,13 @@ class FupGrid(FupBaseClass):
 			for elem in otherGrid.elems:
 				self.selectElem(elem)
 		return True
+
+	def regenAllUUIDs(self):
+		"""Re-generate all UUIDs that belong to this grid,
+		all its elements, connections and all wires.
+		"""
+		self.uuid = None # regenerate
+		for elem in self.elems:
+			elem.regenAllUUIDs()
+		for wire in self.wires:
+			wire.uuid = None # regenerate
