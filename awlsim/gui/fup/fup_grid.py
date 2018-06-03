@@ -35,18 +35,24 @@ from awlsim.gui.fup.fup_elemmove import *
 
 class FupGrid_factory(XmlFactory):
 	def parser_open(self, tag=None):
-		self.grid.clear()
-
+		self.__haveGridTag = False
 		if tag:
-			width = tag.getAttrInt("width")
-			height = tag.getAttrInt("height")
-			uuid = tag.getAttr("uuid", None)
-			self.grid.resize(width, height)
-			self.grid.uuid = uuid
-
+			self.__parseGridTag(tag)
 		XmlFactory.parser_open(self, tag)
 
+	def __parseGridTag(self, tag):
+		self.grid.clear()
+		width = tag.getAttrInt("width")
+		height = tag.getAttrInt("height")
+		uuid = tag.getAttr("uuid", None)
+		self.grid.resize(width, height)
+		self.grid.uuid = uuid
+		self.__haveGridTag = True
+
 	def parser_beginTag(self, tag):
+		if tag.name == "grid" and not self.__haveGridTag:
+			self.__parseGridTag(tag)
+			return
 		if tag.name == "wires":
 			self.parser_switchTo(FupWire.factory(grid=self.grid))
 			return
@@ -111,6 +117,9 @@ class FupGrid(FupBaseClass):
 	# If this is a callable, it it called with (width, height) on resize events.
 	resizeEvent = None
 
+	# Infinite width/height
+	INFINITE = -1
+
 	class CollLines(object):
 		"""Collision cache line descriptor.
 		This is used for describing drawn wires and
@@ -160,11 +169,15 @@ class FupGrid(FupBaseClass):
 		self.collisionCacheClear()
 
 	def getFont(self, size=8, bold=False):
-		return self.__drawWidget.getFont(size=size, bold=bold)
+		if self.__drawWidget:
+			return self.__drawWidget.getFont(size=size, bold=bold)
+		return QFont()
 
 	@property
 	def zoom(self):
-		return self.__drawWidget.zoom
+		if self.__drawWidget:
+			return self.__drawWidget.zoom
+		return 1.0
 
 	def clear(self):
 		for wire in self.wires:
@@ -199,7 +212,8 @@ class FupGrid(FupBaseClass):
 				minHeight = max(e.y + e.height for e in self.elems)
 			else:
 				minWidth = minHeight = 0
-			if width >= minWidth and height >= minHeight:
+			if (width >= minWidth or width == self.INFINITE) and\
+			   (height >= minHeight or height == self.INFINITE):
 				self.width = width
 				self.height = height
 				if callable(self.resizeEvent):
@@ -211,7 +225,9 @@ class FupGrid(FupBaseClass):
 	def interfDef(self):
 		"""Get the block interface definition (AwlInterfDef() instance).
 		"""
-		return self.__drawWidget.interfDef
+		if self.__drawWidget:
+			return self.__drawWidget.interfDef
+		return None
 
 	def getUnusedWireIdNum(self):
 		"""Get an unused wire idNum.
@@ -312,10 +328,12 @@ class FupGrid(FupBaseClass):
 		return 0
 
 	def __haveCollision(self, x, y, height, width, excludeElems=set()):
-		if x < 0 or x >= self.width or\
-		   y < 0 or y >= self.height:
-			# Position is not on grid.
-			return True
+		if (self.width != self.INFINITE) and\
+		   (x < 0 or x >= self.width):
+			return True # Position is not on grid.
+		if (self.height != self.INFINITE) and\
+		   (y < 0 or y >= self.height):
+			return True # Position is not on grid.
 		for xx in range(x, x + width):
 			for yy in range(y, y + height):
 				elem = self.getElemAt(xx, yy)
@@ -488,21 +506,3 @@ class FupGrid(FupBaseClass):
 		"""Check if a cell is selected.
 		"""
 		return (x, y) in self.selectedCells
-
-class FupGridStub(object):
-	"""FupGrid stub to get FupElem_factory working.
-	"""
-
-	def __init__(self):
-		self.elements = []
-
-	def getWireById(self, wireIdNum):
-		if wireIdNum < 0:
-			return None
-		raise AwlSimError("FupGridStub: "
-			"wireId=%d not allowed here." % (
-			wireIdNum))
-
-	def placeElem(self, elem):
-		self.elements.append(elem)
-		return True

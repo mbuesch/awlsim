@@ -62,11 +62,13 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 			self.parser_switchTo(FupConn.factory(elem=self.elem))
 			return
 		if tag.name == "subelements":
-			from awlsim.gui.fup.fup_grid import FupGridStub
+			from awlsim.gui.fup.fup_grid import FupGrid
 			if self.subelemsFakeGrid:
 				raise self.Error("Found multiple <subelements> tags "
 					"inside of boolean <element>.")
-			self.subelemsFakeGrid = FupGridStub()
+			self.subelemsFakeGrid = FupGrid(drawWidget=None,
+							width=FupGrid.INFINITE,
+							height=FupGrid.INFINITE)
 			self.parser_switchTo(FupElem.factory(grid=self.subelemsFakeGrid,
 							     CONTAINER_TAG="subelements"))
 			return
@@ -76,7 +78,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		if tag.name == "element":
 			# Add body element
 			if self.elem.WITH_BODY_OPERATOR:
-				subelements = self.subelemsFakeGrid.elements
+				subelements = self.subelemsFakeGrid.elems
 				if subelements:
 					if len(subelements) != 1 or\
 					   not isinstance(subelements[0], FupElem_EmbeddedOper):

@@ -911,10 +911,12 @@ class FupDrawWidget(QWidget):
 		# The data is expected to be a FUP element in XML format.
 		newElements = None
 		try:
-			fakeGrid = FupGridStub()
+			fakeGrid = FupGrid(drawWidget=None,
+					   width=FupGrid.INFINITE,
+					   height=FupGrid.INFINITE)
 			elemFactory = FupElem_factory(grid=fakeGrid)
 			elemFactory.parse(mimeData)
-			newElements = fakeGrid.elements
+			newElements = fakeGrid.elems
 		except XmlFactory.Error as e:
 			return ignore()
 		if not newElements:
