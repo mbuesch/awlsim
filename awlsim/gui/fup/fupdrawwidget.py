@@ -35,6 +35,10 @@ class FupContextMenu(QMenu):
 	"""FUP/FBD draw widget context menu."""
 
 	edit = Signal()
+	copy = Signal()
+	cut = Signal()
+	paste = Signal()
+	edit = Signal()
 	remove = Signal()
 	invertConn = Signal()
 	addInput = Signal()
@@ -54,6 +58,15 @@ class FupContextMenu(QMenu):
 		self.__actEdit = self.addAction(getIcon("doc_edit"),
 						"&Edit element...",
 						self.__edit)
+		self.__actCopy = self.addAction(getIcon("copy"),
+						"&Copy element(s)...",
+						self.__copy)
+		self.__actCut = self.addAction(getIcon("cut"),
+					       "C&ut element(s)...",
+					       self.__cut)
+		self.__actPaste = self.addAction(getIcon("paste"),
+						"&Paste element(s)...",
+						self.__paste)
 		self.__actDel = self.addAction(getIcon("doc_close"),
 					       "&Remove element", self.__del)
 		self.addSeparator()
@@ -84,6 +97,15 @@ class FupContextMenu(QMenu):
 	def __edit(self):
 		self.edit.emit()
 
+	def __copy(self):
+		self.copy.emit()
+
+	def __cut(self):
+		self.cut.emit()
+
+	def __paste(self):
+		self.paste.emit()
+
 	def __del(self):
 		self.remove.emit()
 
@@ -107,6 +129,15 @@ class FupContextMenu(QMenu):
 
 	def enableEdit(self, en=True):
 		self.__actEdit.setVisible(en)
+
+	def enableCopy(self, en=True):
+		self.__actCopy.setVisible(en)
+
+	def enableCut(self, en=True):
+		self.__actCut.setVisible(en)
+
+	def enablePaste(self, en=True):
+		self.__actPaste.setVisible(en)
 
 	def enableRemove(self, en=True):
 		self.__actDel.setVisible(en)
@@ -173,6 +204,9 @@ class FupDrawWidget(QWidget):
 		self.__contextMenu = FupContextMenu(self)
 		self.__contextMenu.remove.connect(self.removeElems)
 		self.__contextMenu.edit.connect(self.editElems)
+		self.__contextMenu.copy.connect(self.clipboardCopy)
+		self.__contextMenu.cut.connect(self.clipboardCut)
+		self.__contextMenu.paste.connect(self.clipboardPaste)
 		self.__contextMenu.invertConn.connect(self.invertElemConn)
 		self.__contextMenu.addInput.connect(self.addElemInput)
 		self.__contextMenu.addOutput.connect(self.addElemOutput)
@@ -627,6 +661,9 @@ class FupDrawWidget(QWidget):
 			# Open the context menu
 			self.__contextMenu.enableRemove(elem is not None)
 			self.__contextMenu.enableEdit(False)
+			self.__contextMenu.enableCopy(bool(grid.selectedElems))
+			self.__contextMenu.enableCut(bool(grid.selectedElems))
+			self.__contextMenu.enablePaste(elem is None)
 			self.__contextMenu.enableInvertConn(False)
 			self.__contextMenu.enableAddInput(False)
 			self.__contextMenu.enableAddOutput(False)
@@ -855,22 +892,104 @@ class FupDrawWidget(QWidget):
 	def keyPressEvent(self, event):
 		if event.matches(QKeySequence.Delete):
 			self.removeElems()
+			event.accept()
 			return
 		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
 				event.matches(QKeySequence.Deselect)):
 			self.__grid.deselectAllElems()
 			self.repaint()
+			event.accept()
 			return
 		elif event.matches(QKeySequence.SelectAll):
 			for elem in self.__grid.elems:
 				self.__grid.selectElem(elem)
 			self.repaint()
+			event.accept()
+			return
+		elif event.matches(QKeySequence.Copy):
+			self.clipboardCopy()
+			event.accept()
+			return
+		elif event.matches(QKeySequence.Cut):
+			self.clipboardCut()
+			event.accept()
+			return
+		elif event.matches(QKeySequence.Paste):
+			self.clipboardPaste()
+			event.accept()
 			return
 
 		QWidget.keyPressEvent(self, event)
 
 	def keyReleaseEvent(self, event):
 		QWidget.keyReleaseEvent(self, event)
+
+	@classmethod
+	def __gridToMimeData(cls, grid, elems):
+		"""Create MIME data from a selected set of elements in a grid.
+		"""
+		# Create the XML composer factory.
+		factory = FupGrid_factory(grid=grid)
+
+		# Create a set of wires to include.
+		includeWires = set()
+		for wire in grid.wires:
+			for conn in wire.connections:
+				if conn.elem in elems:
+					includeWires.add(wire)
+
+		# Set composer filters.
+		factory.composer_withOptSettings = lambda: False
+		factory.composer_withWireRenum = lambda: False
+		factory.composer_wireFilter = lambda wire: wire in includeWires
+		factory.composer_elemFilter = lambda elem: elem in elems
+
+		# Generate the raw data.
+		mimeDataBytes = factory.compose()
+
+		# Construct the MIME data object.
+		mimeData = QMimeData()
+		mimeData.setData("application/x-awlsim-xml-fup-grid", mimeDataBytes)
+		mimeData.setData("application/xml", mimeDataBytes)
+		mimeData.setText(mimeDataBytes.decode(factory.XML_ENCODING))
+
+		return mimeData
+
+	@classmethod
+	def __mimeDataToGrid(cls, mimeData):
+		"""Create a FupGrid instance from QMimeData.
+		Returns None, if the conversion failed.
+		"""
+		if not mimeData.hasFormat("application/x-awlsim-xml-fup-grid"):
+			return None
+		mimeDataBytes = bytearray(mimeData.data("application/x-awlsim-xml-fup-grid"))
+
+		# Parse the data.
+		try:
+			grid = FupGrid(drawWidget=None,
+				       width=FupGrid.INFINITE,
+				       height=FupGrid.INFINITE)
+			factory = FupGrid_factory(grid=grid)
+			factory.parse(mimeDataBytes)
+		except XmlFactory.Error as e:
+			printWarning("__mimeDataToGrid: Failed to parse MIME data: "
+				"%s" % str(e))
+			return None
+
+		# Move elements to the top left corner of the grid.
+		topLeftX = min(elem.x for elem in grid.elems)
+		topLeftY = min(elem.y for elem in grid.elems)
+		elems = set(grid.elems)
+		for elem in elems:
+			if not grid.moveElemTo(elem,
+					       -topLeftX,
+					       -topLeftY,
+					       relativeCoords=True,
+					       excludeCheckElems=elems):
+				printWarning("__mimeDataToGrid: Failed to "
+					"relocate elements.")
+				return None
+		return grid
 
 	def __drop(self, event, checkOnly=False):
 		"""Handle a drop event from a Drag&Drop action.
@@ -983,3 +1102,69 @@ class FupDrawWidget(QWidget):
 				"FupDrawWidget.dropEvent(): "
 				"%s\n\n%s" % (
 				str(e), traceback.format_exc()))
+
+	def clipboardCopy(self):
+		"""Copy all selected elements to the clipboard.
+		"""
+		grid = self.__grid
+		if not grid:
+			return False
+
+		# Generate mime data from all selected elems.
+		mimeData = self.__gridToMimeData(grid, grid.selectedElems)
+		if not mimeData:
+			return False
+
+		# Copy the mime data to the clipboard.
+		clipboard = QGuiApplication.clipboard()
+		if not clipboard:
+			return False
+		clipboard.setMimeData(mimeData, QClipboard.Clipboard)
+		if clipboard.supportsSelection():
+			clipboard.setMimeData(mimeData, QClipboard.Selection)
+		return True
+
+	def clipboardCut(self):
+		"""Cut all selected elements to the clipboard.
+		"""
+		grid = self.__grid
+		if not grid:
+			return False
+
+		if self.clipboardCopy():
+			# Remove all copied elements.
+			self.removeElems(grid.selectedElems)
+		return True
+
+	def clipboardPaste(self):
+		"""Paste all selected elements from the clipboard.
+		"""
+		# Get the mime data from the clipboard.
+		clipboard = QGuiApplication.clipboard()
+		if not clipboard:
+			return False
+		mimeData = clipboard.mimeData()
+		if not mimeData:
+			return False
+
+		# Parse the mime data and create a FupGrid.
+		grid = self.__mimeDataToGrid(mimeData)
+		if not grid:
+			return False
+
+		# Find the top-left cell selection.
+		if not self.__grid.selectedCells:
+			return False
+		cell = min(self.__grid.selectedCells)
+		# The merge offset is the top-left cell.
+		offsetX, offsetY = cell
+
+		# Merge the new grid into our grid.
+		grid.regenAllUUIDs()
+		if not self.__grid.merge(grid, offsetX=offsetX, offsetY=offsetY):
+			QMessageBox.critical(self,
+				"Paste of FUP grid failed",
+				"The FUP grid cannot be pasted here, because elements collide.\n"
+				"Please select another position in the grid.")
+		self.repaint()
+		return True
