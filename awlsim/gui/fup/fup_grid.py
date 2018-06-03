@@ -362,12 +362,14 @@ class FupGrid(FupBaseClass):
 					return True # Collision with other element.
 		return False
 
-	def canPlaceElem(self, elem):
+	def canPlaceElem(self, elem, offsetX=0, offsetY=0):
 		"""Check it we could place the element,
 		but do not actually insert it into the grid.
 		"""
-		return not self.__haveCollision(elem.x, elem.y,
-						elem.height, elem.width)
+		return not self.__haveCollision(elem.x + offsetX,
+						elem.y + offsetY,
+						elem.height,
+						elem.width)
 
 	def placeElem(self, elem):
 		"""Insert an element into the grid.
@@ -525,3 +527,41 @@ class FupGrid(FupBaseClass):
 		"""Check if a cell is selected.
 		"""
 		return (x, y) in self.selectedCells
+
+	def merge(self, otherGrid,
+		  offsetX=0, offsetY=0,
+		  selectInsertedElems=True):
+		"""Merge another grid 'otherGrid' into this grid.
+		'offsetX' and 'offsetY' are the positions in 'self'
+		by which 'otherGrid' shall be shifted.
+		If 'selectInsertedElems' is True, all inserted elements
+		will be selected and other elements will be deselected.
+		Returns True, if the merge was successful without collisions.
+		Returns False and does nothing, if there are collisions.
+		"""
+
+		# Check if we can place all elements.
+		for elem in otherGrid.elems:
+			if not self.canPlaceElem(elem, offsetX, offsetY):
+				return False
+
+		# Actually place all elements.
+		for elem in otherGrid.elems:
+			elem.x += offsetX
+			elem.y += offsetY
+			self.placeElem(elem)
+
+		# Merge the wires with this grid.
+		# Renumber all wires to ensure we don't have duplications.
+		self.renumberWires()
+		freeIdNum = len(self.wires)
+		otherGrid.renumberWires(idNumOffset=freeIdNum)
+		self.wires |= otherGrid.wires
+
+		# Update selections.
+		self.deselectAllCells()
+		if selectInsertedElems:
+			self.deselectAllElems()
+			for elem in otherGrid.elems:
+				self.selectElem(elem)
+		return True
