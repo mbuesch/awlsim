@@ -216,20 +216,21 @@ class FupGrid(FupBaseClass):
 		"""Resize the grid.
 		Returns True, if the resize was successfull.
 		"""
-		if width != self.width or height != self.height:
-			if self.elems:
-				minWidth = max(e.x + e.width for e in self.elems)
-				minHeight = max(e.y + e.height for e in self.elems)
-			else:
-				minWidth = minHeight = 0
-			if (width >= minWidth or width == self.INFINITE) and\
-			   (height >= minHeight or height == self.INFINITE):
-				self.width = width
-				self.height = height
-				if callable(self.resizeEvent):
-					self.resizeEvent(width, height)
-				return True
-		return False
+		if width == self.width and height == self.height:
+			return True
+		if self.elems:
+			minWidth = max(e.x + e.width for e in self.elems)
+			minHeight = max(e.y + e.height for e in self.elems)
+		else:
+			minWidth = minHeight = 0
+		if (width < minWidth and width != self.INFINITE) or\
+		   (height < minHeight and height != self.INFINITE):
+			return False
+		self.width = width
+		self.height = height
+		if callable(self.resizeEvent):
+			self.resizeEvent(width, height)
+		return True
 
 	@property
 	def interfDef(self):
@@ -544,10 +545,31 @@ class FupGrid(FupBaseClass):
 		Returns False and does nothing, if there are collisions.
 		"""
 
+		oldWidth, oldHeight = self.width, self.height
+
+		def fail():
+			self.resize(oldWidth, oldHeight)
+			return False
+
+		# Resize the grid, if it is too small to old all
+		# elements from otherGrid.
+		maxXElem = sorted((e for e in otherGrid.elems),
+				  key=lambda e: e.x,
+				  reverse=True)[0]
+		maxYElem = sorted((e for e in otherGrid.elems),
+				  key=lambda e: e.y,
+				  reverse=True)[0]
+		newWidth = max(offsetX + maxXElem.x + maxXElem.width,
+			       oldWidth)
+		newHeight = max(offsetY + maxYElem.y + maxYElem.height,
+				oldHeight)
+		if not self.resize(newWidth, newHeight):
+			return fail()
+
 		# Check if we can place all elements.
 		for elem in otherGrid.elems:
 			if not self.canPlaceElem(elem, offsetX, offsetY):
-				return False
+				return fail()
 
 		# Actually place all elements.
 		for elem in otherGrid.elems:
