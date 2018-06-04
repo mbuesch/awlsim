@@ -720,6 +720,8 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		self.setWidget(self.fupWidget)
 
 		self.fupWidget.diagramChanged.connect(self.sourceChanged)
+		self.fupWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
+		self.fupWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
 
 		self.updateTitle()
 
@@ -776,6 +778,18 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 				"Failed to export source", e)
 			return False
 		return True
+
+	def undoIsAvailable(self):
+		return self.fupWidget.undoIsAvailable()
+
+	def undo(self):
+		return self.fupWidget.undo()
+
+	def redoIsAvailable(self):
+		return self.fupWidget.redoIsAvailable()
+
+	def redo(self):
+		return self.fupWidget.redo()
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP

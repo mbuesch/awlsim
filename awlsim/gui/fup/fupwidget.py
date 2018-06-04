@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP widget
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@ from awlsim.common.compat import *
 
 from awlsim.gui.fup.fupdrawwidget import *
 from awlsim.gui.fup.fupelemcontainerwidget import *
+from awlsim.gui.fup.undo import *
 from awlsim.gui.interfedit.interfwidget import *
 from awlsim.gui.editwidget import *
 from awlsim.gui.optimizerconfig import *
 from awlsim.gui.util import *
 
+from awlsim.common.blocker import *
 from awlsim.fupcompiler import *
 from awlsim.awloptimizer.awloptimizer import *
 
@@ -190,9 +192,17 @@ class FupWidget(QWidget):
 
 	diagramChanged = Signal()
 
+	undoAvailableChanged = Signal(bool)
+	redoAvailableChanged = Signal(bool)
+
 	def __init__(self, parent, getSymTabSourcesFunc):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
+
+		self.__undoStack = FupUndoStack(self)
+		self.__undoStackUpdateTimer = QTimer(self)
+		self.__undoStackUpdateTimer.setSingleShot(True)
+		self.undoStackBlocked = Blocker()
 
 		self.__getSymTabSourcesFunc = getSymTabSourcesFunc
 		self.__source = FupSource(name = "Diagram 1")
@@ -217,9 +227,24 @@ class FupWidget(QWidget):
 		self.edit.menu.showStl.connect(self.__compileAndShowStl)
 		self.edit.menu.genCall.connect(self.__generateCallTemplate)
 		self.diagramChanged.connect(self.__handleDiagramChange)
+		self.__undoStackUpdateTimer.timeout.connect(self.__updateUndoStack)
+		self.__undoStack.canUndoChanged.connect(self.undoAvailableChanged)
+		self.__undoStack.canRedoChanged.connect(self.redoAvailableChanged)
 
 	def __handleDiagramChange(self):
+		"""Handle a change in the FUP diagram or interface.
+		"""
 		self.__needSourceUpdate = True
+		if self.undoStackBlocked:
+			self.__undoStackUpdateTimer.stop()
+		else:
+			# Schedule an undo stack update.
+			self.__undoStackUpdateTimer.start(0)
+
+	def __updateUndoStack(self):
+		"""Push an entry onto the undo stack.
+		"""
+		self.__undoStack.appendSourceChange(self.getSource())
 
 	def __updateSource(self):
 		# Generate XML
@@ -239,9 +264,10 @@ class FupWidget(QWidget):
 			self.__updateSource()
 		return self.__source
 
-	def setSource(self, source):
+	def setSource(self, source, initUndoStack=True):
 		self.__source = source.dup()
 		self.__source.sourceBytes = b""
+
 		# Parse XML
 		if FUP_DEBUG:
 			print("Parsing FUP XML:")
@@ -253,6 +279,8 @@ class FupWidget(QWidget):
 			raise AwlSimError("Failed to parse FUP source: "
 				"%s" % str(e))
 		self.__needSourceUpdate = True
+		if initUndoStack:
+			self.__undoStack.initializeStack(self.getSource())
 
 	def __configureOptimizer(self):
 		grid = self.edit.draw.grid
@@ -305,3 +333,17 @@ class FupWidget(QWidget):
 
 	def __generateCallTemplate(self):
 		self.__compileAndShow(S7CPUConfig.MNEMONICS_AUTO, showCall=True)
+
+	def undoIsAvailable(self):
+		return self.__undoStack.canUndo()
+
+	def undo(self):
+		self.__undoStack.undo()
+		return True
+
+	def redoIsAvailable(self):
+		return self.__undoStack.canRedo()
+
+	def redo(self):
+		self.__undoStack.redo()
+		return True
