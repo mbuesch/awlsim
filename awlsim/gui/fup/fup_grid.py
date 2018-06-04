@@ -190,7 +190,7 @@ class FupGrid(FupBaseClass):
 		return 1.0
 
 	def clear(self):
-		for wire in self.wires:
+		for wire in set(self.wires):
 			wire.disconnectAll()
 		self.wires.clear()
 		self.elems = []
