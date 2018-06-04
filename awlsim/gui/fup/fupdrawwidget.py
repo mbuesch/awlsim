@@ -242,6 +242,7 @@ class FupDrawWidget(QWidget):
 		self.__zoom = 1.0
 		self.__wheelSteps = 0.0
 		self.__showZoomLevel = False
+		self.__suppressZoomLevel = False
 		self.__showZoomLevelTimer = QTimer(self)
 		self.__showZoomLevelTimer.setSingleShot(True)
 		self.__showZoomLevelTimer.timeout.connect(self.__showZoomLevelTimeout)
@@ -263,12 +264,14 @@ class FupDrawWidget(QWidget):
 	def beginLoad(self):
 		"""Begin load. This is called before data is being loaded.
 		"""
+		self.__suppressZoomLevel = True
 		pass
 
 	def finalizeLoad(self):
 		"""Finalize load. This is called after data has been loaded.
 		"""
-		self.__handleZoomChange(showZoomLevel=False)
+		self.__suppressZoomLevel = False
+		self.repaint()
 
 	@property
 	def interfDef(self):
@@ -306,10 +309,11 @@ class FupDrawWidget(QWidget):
 
 		self.__handleGridResize(self.__grid.width, self.__grid.height)
 
-		self.__showZoomLevel = showZoomLevel
-		if showZoomLevel:
+		if showZoomLevel and not self.__suppressZoomLevel:
+			self.__showZoomLevel = True
 			self.__showZoomLevelTimer.start(1000)
 		else:
+			self.__showZoomLevel = False
 			self.__showZoomLevelTimer.stop()
 
 		self.repaint()
