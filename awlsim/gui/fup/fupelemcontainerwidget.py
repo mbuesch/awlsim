@@ -28,6 +28,7 @@ from awlsim.gui.util import *
 from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
 from awlsim.gui.fup.fup_elemconv import *
+from awlsim.gui.fup.fup_elemcount import *
 from awlsim.gui.fup.fup_elemarith import *
 from awlsim.gui.fup.fup_elemshift import *
 from awlsim.gui.fup.fup_elemcmp import *
@@ -97,6 +98,12 @@ class FupElemContainerWidget(QTreeWidget):
 		itemBoolFN = FupElemItem("[FN]  negative edge", "new", elemMimeType,
 					self.elemToXml(FupElem_FN(-1, -1)))
 		itemBool.addChild(itemBoolFN)
+
+		# Timers and counters
+		itemTC = FupElemItemClass("Timers / counters", "stdlib")
+		itemCounter = FupElemItem("[CUD]  Counter", "new", elemMimeType,
+					  self.elemToXml(FupElem_COUNT(-1, -1)))
+		itemTC.addChild(itemCounter)
 
 		# Move and convert elements
 		itemMove = FupElemItemClass("Move / convert", "stdlib")
@@ -342,6 +349,7 @@ class FupElemContainerWidget(QTreeWidget):
 		self.addTopLevelItem(itemBool)
 		itemBool.setExpanded(True)
 		self.addTopLevelItem(itemMove)
+		self.addTopLevelItem(itemTC)
 		self.addTopLevelItem(itemArith)
 		itemArith.setExpanded(True)
 		self.addTopLevelItem(itemShift)
