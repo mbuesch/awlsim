@@ -78,17 +78,18 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		if tag.name == "element":
 			# Add body element
 			if self.elem.WITH_BODY_OPERATOR:
+				if not self.subelemsFakeGrid or\
+				   len(self.subelemsFakeGrid.elems) != 1 or\
+				   not isinstance(self.subelemsFakeGrid.elems[0],
+						  FupElem_EmbeddedOper):
+					raise self.Error("Exactly one subelement of type "
+						"'embedded operand' is required in "
+						"boolean <element>.")
 				subelements = self.subelemsFakeGrid.elems
 				if subelements:
-					if len(subelements) != 1 or\
-					   not isinstance(subelements[0], FupElem_EmbeddedOper):
-						raise self.Error("Only one subelement of type "
-							"'embedded operand' supported in "
-							"boolean <element>.")
-					del self.elem.bodyOper
 					self.elem.bodyOper = subelements[0]
 					self.elem.bodyOper.parentElem = self.elem
-					del self.elem.bodyOper.grid
+					self.elem.bodyOper.grid = None
 			else:
 				if self.subelemsFakeGrid:
 					raise self.Error("<subelements> is not "
