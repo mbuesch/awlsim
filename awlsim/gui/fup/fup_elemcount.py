@@ -29,13 +29,26 @@ from awlsim.gui.fup.fup_elem import *
 from awlsim.gui.fup.fup_elemoperand import *
 
 
-class FupElem_COUNT_factory(FupElem_factory):
+class FupElem_CUD_factory(FupElem_factory):
 	def parser_open(self, tag):
 		assert(tag)
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
+		subType = tag.getAttr("subtype")
 		uuid = tag.getAttr("uuid", None)
-		self.elem = FupElem_COUNT(x=x, y=y, uuid=uuid)
+		elemClass = {
+			FupElem_CUD.OP_SYM_NAME	: FupElem_CUD,
+			FupElem_CU.OP_SYM_NAME	: FupElem_CU,
+			FupElem_CUO.OP_SYM_NAME	: FupElem_CUO,
+			FupElem_CD.OP_SYM_NAME	: FupElem_CD,
+			FupElem_CDO.OP_SYM_NAME	: FupElem_CDO,
+			FupElem_CSO.OP_SYM_NAME	: FupElem_CSO,
+		}.get(subType)
+		if not elemClass:
+			raise self.Error("Counter subtype '%s' is not known "
+				"to the element parser." % (
+				subType))
+		self.elem = elemClass(x=x, y=y, uuid=uuid)
 		self.elem.grid = self.grid
 		self.subelemsFakeGrid = None
 		XmlFactory.parser_open(self, tag)
@@ -99,6 +112,7 @@ class FupElem_COUNT_factory(FupElem_factory):
 			self.Tag(name="element",
 				attrs={
 					"type" : "counter",
+					"subtype" : elem.OP_SYM_NAME,
 					"x" : str(elem.x),
 					"y" : str(elem.y),
 					"uuid" : str(elem.uuid),
@@ -111,27 +125,47 @@ class FupElem_COUNT_factory(FupElem_factory):
 				])
 		]
 
-class FupElem_COUNT(FupElem):
+class FupElem_CUD(FupElem):
 	"""FUP/FBD S7 counter box.
 	"""
 
-	factory = FupElem_COUNT_factory
+	factory = FupElem_CUD_factory
 
-	OP_SYM = "counter"
+	OP_SYM		= "count"
+	OP_SYM_NAME	= "cud" # XML ABI name
+	WITH_TITLE	= True
+	WITH_CU		= True
+	WITH_CD		= True
+	WITH_S		= True
+	WITH_PV		= True
+	WITH_R		= True
+	WITH_CV		= True
+	WITH_CVB	= True
+	WITH_Q		= True
 
 	def __init__(self, x, y, uuid=None):
 		FupElem.__init__(self, x, y, uuid=uuid)
 
-		self.inputs = [ FupConnIn(self, text="CU"),
-				FupConnIn(self, text="CD"),
-				FupConnIn(self, text="S"),
-				FupConnIn(self, text="PV"),
-				FupConnIn(self, text="R"),
-		]
-		self.outputs = [ FupConnOut(self, text="CV"),
-				 FupConnOut(self, text="CVB"),
-				 FupConnOut(self, text="Q"),
-		]
+		self.inputs = []
+		if self.WITH_CU:
+			self.inputs.append(FupConnIn(self, text="CU"))
+		if self.WITH_CD:
+			self.inputs.append(FupConnIn(self, text="CD"))
+		if self.WITH_S:
+			self.inputs.append(FupConnIn(self, text="S"))
+		if self.WITH_PV:
+			self.inputs.append(FupConnIn(self, text="PV"))
+		if self.WITH_R:
+			self.inputs.append(FupConnIn(self, text="R"))
+
+		self.outputs = []
+		if self.WITH_CV:
+			self.outputs.append(FupConnOut(self, text="CV"))
+		if self.WITH_CVB:
+			self.outputs.append(FupConnOut(self, text="CVB"))
+		if self.WITH_Q:
+			self.outputs.append(FupConnOut(self, text="Q"))
+
 		self.bodyOper = FupElem_EmbeddedOper(parentElem=self)
 
 	# Overridden method. For documentation see base class.
@@ -151,7 +185,7 @@ class FupElem_COUNT(FupElem):
 			   pixelY < totalHeight - ypad:
 				if pixelX < xpad:
 					# inputs
-					idx = (pixelY // cellHeight) - 2
+					idx = (pixelY // cellHeight) - self.headerHeight
 					if idx >= 0 and idx < len(self.inputs):
 						return self.AREA_INPUT, idx
 				elif pixelX >= totalWidth - xpad:
@@ -173,7 +207,7 @@ class FupElem_COUNT(FupElem):
 		if conn.IN:
 			y = self.inputs.index(conn)
 			if y >= 0:
-				y += 2
+				y += self.headerHeight
 		elif conn.OUT:
 			y = self.outputs.index(conn)
 			if y >= 0:
@@ -182,10 +216,14 @@ class FupElem_COUNT(FupElem):
 			return x, y
 		return FupElem.getConnRelCoords(self, conn)
 
+	@property
+	def headerHeight(self):
+		return 2 if self.WITH_TITLE else 1
+
 	# Overridden method. For documentation see base class.
 	@property
 	def height(self):
-		return max(len(self.inputs), len(self.outputs)) + 2
+		return max(len(self.inputs), len(self.outputs)) + self.headerHeight
 
 	# Overridden method. For documentation see base class.
 	def draw(self, painter):
@@ -196,6 +234,7 @@ class FupElem_COUNT(FupElem):
 		cellHeight = grid.cellPixHeight
 		xpad, ypad = self._xpadding, self._ypadding
 		height = self.height
+		headerHeight = self.headerHeight
 		elemHeight = cellHeight * height
 		elemWidth = cellWidth
 		selected = self.selected
@@ -225,7 +264,7 @@ class FupElem_COUNT(FupElem):
 		# Draw inputs
 		painter.setFont(self.getFont(8))
 		for i, conn in enumerate(self.inputs):
-			cellIdx = i + 2 # skip header
+			cellIdx = i + headerHeight # skip header
 
 			x = conn.drawOffset
 			y = (cellIdx * cellHeight) + (cellHeight // 2)
@@ -260,14 +299,15 @@ class FupElem_COUNT(FupElem):
 					 conn.text)
 			cellIdx -= 1
 
-		# Draw element descriptor text
-		painter.setFont(self.getFont(9, bold=True))
-		painter.setPen(self._outlineSelPen if selected
-			       else self._outlinePen)
-		painter.drawText(0, cellHeight,
-				 elemWidth, cellHeight,
-				 Qt.AlignHCenter | Qt.AlignVCenter,
-				 self.OP_SYM)
+		if self.WITH_TITLE:
+			# Draw element descriptor text
+			painter.setFont(self.getFont(9, bold=True))
+			painter.setPen(self._outlineSelPen if selected
+				       else self._outlinePen)
+			painter.drawText(0, cellHeight,
+					 elemWidth, cellHeight,
+					 Qt.AlignHCenter | Qt.AlignVCenter,
+					 self.OP_SYM)
 
 		# Draw body operator
 		self.bodyOper.draw(painter)
@@ -288,3 +328,83 @@ class FupElem_COUNT(FupElem):
 	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableEdit(True)
 		menu.enableDisconnWire(conn is not None and conn.isConnected)
+
+class FupElem_CU(FupElem_CUD):
+	"""FUP/FBD S7 counter box - up
+	"""
+
+	OP_SYM		= "cnt up"
+	OP_SYM_NAME	= "cu" # XML ABI name
+	WITH_TITLE	= True
+	WITH_CU		= True
+	WITH_CD		= False
+	WITH_S		= True
+	WITH_PV		= True
+	WITH_R		= True
+	WITH_CV		= True
+	WITH_CVB	= True
+	WITH_Q		= True
+
+class FupElem_CUO(FupElem_CUD):
+	"""FUP/FBD S7 counter box - up-only
+	"""
+
+	OP_SYM		= "cnt up"
+	OP_SYM_NAME	= "cuo" # XML ABI name
+	WITH_TITLE	= True
+	WITH_CU		= True
+	WITH_CD		= False
+	WITH_S		= False
+	WITH_PV		= False
+	WITH_R		= False
+	WITH_CV		= False
+	WITH_CVB	= False
+	WITH_Q		= True
+
+class FupElem_CD(FupElem_CUD):
+	"""FUP/FBD S7 counter box - down
+	"""
+
+	OP_SYM		= "cnt down"
+	OP_SYM_NAME	= "cd" # XML ABI name
+	WITH_TITLE	= True
+	WITH_CU		= False
+	WITH_CD		= True
+	WITH_S		= True
+	WITH_PV		= True
+	WITH_R		= True
+	WITH_CV		= True
+	WITH_CVB	= True
+	WITH_Q		= True
+
+class FupElem_CDO(FupElem_CUD):
+	"""FUP/FBD S7 counter box - down-only
+	"""
+
+	OP_SYM		= "cnt down"
+	OP_SYM_NAME	= "cdo" # XML ABI name
+	WITH_TITLE	= True
+	WITH_CU		= False
+	WITH_CD		= True
+	WITH_S		= False
+	WITH_PV		= False
+	WITH_R		= False
+	WITH_CV		= False
+	WITH_CVB	= False
+	WITH_Q		= True
+
+class FupElem_CSO(FupElem_CUD):
+	"""FUP/FBD S7 counter box - set-counter-only
+	"""
+
+	OP_SYM		= "cnt set"
+	OP_SYM_NAME	= "cso" # XML ABI name
+	WITH_TITLE	= True
+	WITH_CU		= False
+	WITH_CD		= False
+	WITH_S		= True
+	WITH_PV		= True
+	WITH_R		= False
+	WITH_CV		= False
+	WITH_CVB	= False
+	WITH_Q		= True

@@ -99,11 +99,26 @@ class FupElemContainerWidget(QTreeWidget):
 					self.elemToXml(FupElem_FN(-1, -1)))
 		itemBool.addChild(itemBoolFN)
 
-		# Timers and counters
-		itemTC = FupElemItemClass("Timers / counters", "stdlib")
-		itemCounter = FupElemItem("[CUD]  Counter", "new", elemMimeType,
-					  self.elemToXml(FupElem_COUNT(-1, -1)))
-		itemTC.addChild(itemCounter)
+		# Counters
+		itemC = FupElemItemClass("Counters", "stdlib")
+		itemCUD = FupElemItem("[CUD]  Counter", "new", elemMimeType,
+				      self.elemToXml(FupElem_CUD(-1, -1)))
+		itemC.addChild(itemCUD)
+		itemCU = FupElemItem("[CU]  Counter up", "new", elemMimeType,
+				     self.elemToXml(FupElem_CU(-1, -1)))
+		itemC.addChild(itemCU)
+		itemCUO = FupElemItem("[CUo]  Counter up-only", "new", elemMimeType,
+				      self.elemToXml(FupElem_CUO(-1, -1)))
+		itemC.addChild(itemCUO)
+		itemCD = FupElemItem("[CD]  Counter down", "new", elemMimeType,
+				     self.elemToXml(FupElem_CD(-1, -1)))
+		itemC.addChild(itemCD)
+		itemCDO = FupElemItem("[CDo]  Counter down-only", "new", elemMimeType,
+				      self.elemToXml(FupElem_CDO(-1, -1)))
+		itemC.addChild(itemCDO)
+		itemCSO = FupElemItem("[CSo]  Counter set", "new", elemMimeType,
+				      self.elemToXml(FupElem_CSO(-1, -1)))
+		itemC.addChild(itemCSO)
 
 		# Move and convert elements
 		itemMove = FupElemItemClass("Move / convert", "stdlib")
@@ -349,7 +364,7 @@ class FupElemContainerWidget(QTreeWidget):
 		self.addTopLevelItem(itemBool)
 		itemBool.setExpanded(True)
 		self.addTopLevelItem(itemMove)
-		self.addTopLevelItem(itemTC)
+		self.addTopLevelItem(itemC)
 		self.addTopLevelItem(itemArith)
 		itemArith.setExpanded(True)
 		self.addTopLevelItem(itemShift)
