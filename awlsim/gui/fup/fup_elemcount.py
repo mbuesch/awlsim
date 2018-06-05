@@ -134,6 +134,7 @@ class FupElem_CUD(FupElem):
 	OP_SYM		= "count"
 	OP_SYM_NAME	= "cud" # XML ABI name
 	WITH_TITLE	= True
+	WITH_EN		= True
 	WITH_CU		= True
 	WITH_CD		= True
 	WITH_S		= True
@@ -142,11 +143,14 @@ class FupElem_CUD(FupElem):
 	WITH_CV		= True
 	WITH_CVB	= True
 	WITH_Q		= True
+	WITH_ENO	= True
 
 	def __init__(self, x, y, uuid=None):
 		FupElem.__init__(self, x, y, uuid=uuid)
 
 		self.inputs = []
+		if self.WITH_EN:
+			self.inputs.append(FupConnIn(self, text="EN"))
 		if self.WITH_CU:
 			self.inputs.append(FupConnIn(self, text="CU"))
 		if self.WITH_CD:
@@ -165,6 +169,8 @@ class FupElem_CUD(FupElem):
 			self.outputs.append(FupConnOut(self, text="CVB"))
 		if self.WITH_Q:
 			self.outputs.append(FupConnOut(self, text="Q"))
+		if self.WITH_ENO:
+			self.outputs.append(FupConnOut(self, text="ENO"))
 
 		self.bodyOper = FupElem_EmbeddedOper(parentElem=self)
 
@@ -336,6 +342,7 @@ class FupElem_CU(FupElem_CUD):
 	OP_SYM		= "cnt up"
 	OP_SYM_NAME	= "cu" # XML ABI name
 	WITH_TITLE	= True
+	WITH_EN		= True
 	WITH_CU		= True
 	WITH_CD		= False
 	WITH_S		= True
@@ -344,6 +351,7 @@ class FupElem_CU(FupElem_CUD):
 	WITH_CV		= True
 	WITH_CVB	= True
 	WITH_Q		= True
+	WITH_ENO	= True
 
 class FupElem_CUO(FupElem_CUD):
 	"""FUP/FBD S7 counter box - up-only
@@ -352,6 +360,7 @@ class FupElem_CUO(FupElem_CUD):
 	OP_SYM		= "cnt up"
 	OP_SYM_NAME	= "cuo" # XML ABI name
 	WITH_TITLE	= True
+	WITH_EN		= False
 	WITH_CU		= True
 	WITH_CD		= False
 	WITH_S		= False
@@ -360,6 +369,7 @@ class FupElem_CUO(FupElem_CUD):
 	WITH_CV		= False
 	WITH_CVB	= False
 	WITH_Q		= True
+	WITH_ENO	= False
 
 class FupElem_CD(FupElem_CUD):
 	"""FUP/FBD S7 counter box - down
@@ -368,6 +378,7 @@ class FupElem_CD(FupElem_CUD):
 	OP_SYM		= "cnt down"
 	OP_SYM_NAME	= "cd" # XML ABI name
 	WITH_TITLE	= True
+	WITH_EN		= True
 	WITH_CU		= False
 	WITH_CD		= True
 	WITH_S		= True
@@ -376,6 +387,7 @@ class FupElem_CD(FupElem_CUD):
 	WITH_CV		= True
 	WITH_CVB	= True
 	WITH_Q		= True
+	WITH_ENO	= True
 
 class FupElem_CDO(FupElem_CUD):
 	"""FUP/FBD S7 counter box - down-only
@@ -384,6 +396,7 @@ class FupElem_CDO(FupElem_CUD):
 	OP_SYM		= "cnt down"
 	OP_SYM_NAME	= "cdo" # XML ABI name
 	WITH_TITLE	= True
+	WITH_EN		= False
 	WITH_CU		= False
 	WITH_CD		= True
 	WITH_S		= False
@@ -392,6 +405,7 @@ class FupElem_CDO(FupElem_CUD):
 	WITH_CV		= False
 	WITH_CVB	= False
 	WITH_Q		= True
+	WITH_ENO	= False
 
 class FupElem_CSO(FupElem_CUD):
 	"""FUP/FBD S7 counter box - set-counter-only
@@ -400,6 +414,7 @@ class FupElem_CSO(FupElem_CUD):
 	OP_SYM		= "cnt set"
 	OP_SYM_NAME	= "cso" # XML ABI name
 	WITH_TITLE	= True
+	WITH_EN		= False
 	WITH_CU		= False
 	WITH_CD		= False
 	WITH_S		= True
@@ -408,3 +423,4 @@ class FupElem_CSO(FupElem_CUD):
 	WITH_CV		= False
 	WITH_CVB	= False
 	WITH_Q		= True
+	WITH_ENO	= False
