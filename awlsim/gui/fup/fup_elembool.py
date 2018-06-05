@@ -75,9 +75,11 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
+		elem = self.elem
+
 		if tag.name == "element":
 			# Add body element
-			if self.elem.WITH_BODY_OPERATOR:
+			if elem.WITH_BODY_OPERATOR:
 				if not self.subelemsFakeGrid or\
 				   len(self.subelemsFakeGrid.elems) != 1 or\
 				   not isinstance(self.subelemsFakeGrid.elems[0],
@@ -87,16 +89,16 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 						"boolean <element>.")
 				subelements = self.subelemsFakeGrid.elems
 				if subelements:
-					self.elem.bodyOper = subelements[0]
-					self.elem.bodyOper.parentElem = self.elem
-					self.elem.bodyOper.grid = None
+					elem.bodyOper = subelements[0]
+					elem.bodyOper.parentElem = elem
+					elem.bodyOper.grid = None
 			else:
 				if self.subelemsFakeGrid:
 					raise self.Error("<subelements> is not "
 						"supported for %s." % (
 						str(self.elem)))
 			# Insert the element into the grid.
-			if not self.grid.placeElem(self.elem):
+			if not self.grid.placeElem(elem):
 				raise self.Error("<element> caused "
 					"a grid collision.")
 			self.parser_finish()
