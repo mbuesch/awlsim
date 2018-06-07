@@ -166,7 +166,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 			insns.extend(connectedElem_IN.compile())
 		else:
 			insns.extend(otherConn_IN.compileConn(targetInsnClass=AwlInsn_L))
-		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
+		if otherConn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise FupElemError("The IN connection "
 				"of the FUP move box %s must not be connected "
 				"to a bit (VKE) wire." % (

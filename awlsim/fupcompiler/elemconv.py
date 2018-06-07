@@ -247,7 +247,7 @@ class FupCompiler_ElemConv(FupCompiler_Elem):
 			insns.extend(otherElem.compile())
 		else:
 			insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
-		if conn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
+		if otherConn.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise FupElemError("The IN connection "
 				"of the FUP arithmetic box %s must not be connected "
 				"to a bit (VKE) wire." % (

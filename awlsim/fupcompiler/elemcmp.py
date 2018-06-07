@@ -239,7 +239,7 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 				insns.extend(otherConn.elem.compile())
 			else:
 				insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
-			if conn.connType != FupCompiler_Conn.TYPE_ACCU:
+			if otherConn.connType != FupCompiler_Conn.TYPE_ACCU:
 				raise FupElemError("The IN connection "
 					"of the FUP compare box %s must not be connected "
 					"to a bit (VKE) wire." % (
