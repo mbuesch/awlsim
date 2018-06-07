@@ -172,10 +172,9 @@ class SymTabModel(QAbstractTableModel):
 		try:
 			self.symTab.toSource(self.__source)
 		except AwlSimError as e:
-			MessageBox.handleAwlSimError(None,
-				"Symbol table contains invalid characters", e)
-			return
+			return False
 		self.__needSourceUpdate = False
+		return True
 
 	def setSource(self, newSource):
 		self.beginResetModel()

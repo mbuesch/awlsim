@@ -261,7 +261,10 @@ class FupWidget(QWidget):
 
 	def getSource(self):
 		if self.__needSourceUpdate:
-			self.__updateSource()
+			try:
+				self.__updateSource()
+			except AwlSimError as e:
+				printWarning(str(e))
 		return self.__source
 
 	def setSource(self, source, initUndoStack=True):
