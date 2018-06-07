@@ -316,7 +316,7 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 			if conn_EN and conn_EN.isConnected:
 				# AND the EN input to Q, so that Q
 				# output is 0 in case EN is 0.
-				insns.append(parentElem.newInsn_LOAD_BIE(AwlInsn_U))
+				insns.append(self.newInsn_LOAD_BIE(AwlInsn_U))
 
 			# Add VKE assignment instruction.
 			storeToTempConns = set()
