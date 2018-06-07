@@ -930,12 +930,13 @@ class ProjectTreeModel(QAbstractItemModel):
 			return self.idToIndex(self.INDEXID_SRCS_SYMTAB)
 		return QModelIndex()
 
-	def __data_columnName(self, index, idxId, idxIdBase, itemNr):
+	def __data_columnName(self, role, index, idxId, idxIdBase, itemNr):
 		source = self.indexToSource(index)
 		if source:
 			name = source.name
-			if not source.enabled:
-				name += " (DISABLED)"
+			if role != Qt.EditRole:
+				if not source.enabled:
+					name += " (DISABLED)"
 			return name
 
 		names = {
@@ -952,7 +953,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		}
 		return names.get(idxId)
 
-	def __data_icon(self, index, idxId, idxIdBase, itemNr):
+	def __data_icon(self, role, index, idxId, idxIdBase, itemNr):
 		"""Get the QIcon for displaying in the tree.
 		"""
 
@@ -1019,7 +1020,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			return getIcon("prefs")
 		return None
 
-	def __data_toolTip(self, index, idxId, idxIdBase, itemNr):
+	def __data_toolTip(self, role, index, idxId, idxIdBase, itemNr):
 		"""Get the tool-tip for displaying in the tree.
 		"""
 
@@ -1096,13 +1097,13 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		if role in (Qt.DisplayRole, Qt.EditRole):
 			if column == self.COLUMN_NAME:
-				return self.__data_columnName(index, idxId, idxIdBase, itemNr)
+				return self.__data_columnName(role, index, idxId, idxIdBase, itemNr)
 		elif role == Qt.DecorationRole:
 			if column == self.COLUMN_NAME:
-				return self.__data_icon(index, idxId, idxIdBase, itemNr)
+				return self.__data_icon(role, index, idxId, idxIdBase, itemNr)
 		elif role == Qt.ToolTipRole:
 			if column == self.COLUMN_NAME:
-				return self.__data_toolTip(index, idxId, idxIdBase, itemNr)
+				return self.__data_toolTip(role, index, idxId, idxIdBase, itemNr)
 		return None
 
 	def setData(self, index, value, role=Qt.EditRole):
