@@ -206,7 +206,6 @@ class FupCompiler_ElemConv(FupCompiler_Elem):
 				boolElemClass=FupCompiler_ElemBoolAnd)
 
 	def _doCompile(self):
-		#TODO
 		insns = []
 
 		conn_EN, conn_ENO = self.__getConnsEN()
@@ -249,7 +248,7 @@ class FupCompiler_ElemConv(FupCompiler_Elem):
 			insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
 		if otherConn.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise FupElemError("The IN connection "
-				"of the FUP arithmetic box %s must not be connected "
+				"of the FUP conversion box %s must not be connected "
 				"to a bit (VKE) wire." % (
 				str(self)),
 				self)
