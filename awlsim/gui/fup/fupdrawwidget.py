@@ -971,9 +971,6 @@ class FupDrawWidget(QWidget):
 
 		QWidget.keyPressEvent(self, event)
 
-	def keyReleaseEvent(self, event):
-		QWidget.keyReleaseEvent(self, event)
-
 	@classmethod
 	def __gridToMimeData(cls, grid, elems):
 		"""Create MIME data from a selected set of elements in a grid.

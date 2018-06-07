@@ -294,10 +294,12 @@ class LibTableView(QTableView):
 			pass#TODO context menu
 
 	def keyPressEvent(self, ev):
-		QTableView.keyPressEvent(self, ev)
-
-		if ev.key() == Qt.Key_Delete:
+		if ev.matches(QKeySequence.Delete):
 			self.deleteEntries()
+			ev.accept()
+			return
+
+		QTableView.keyPressEvent(self, ev)
 
 	def handleValidationResult(self, exception):
 		pass

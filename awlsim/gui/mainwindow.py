@@ -837,6 +837,18 @@ class MainWindow(QMainWindow):
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
 
+	def keyPressEvent(self, ev):
+		if ev.matches(QKeySequence.Save):
+			self.mainWidget.save(False)
+			ev.accept()
+			return
+		elif ev.matches(QKeySequence.SaveAs):
+			self.mainWidget.save(True)
+			ev.accept()
+			return
+
+		QMainWindow.keyPressEvent(self, ev)
+
 	def awlsimHomepage(self):
 		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.StrictMode))
 

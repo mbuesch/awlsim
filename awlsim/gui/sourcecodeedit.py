@@ -148,17 +148,21 @@ class SourceCodeEdit(QPlainTextEdit):
 			cursor.deleteChar()
 
 	def keyPressEvent(self, ev):
-		QPlainTextEdit.keyPressEvent(self, ev)
-
 		if ev.matches(QKeySequence.Find):
 			self.findText()
+			ev.accept()
+			return
 		elif ev.matches(QKeySequence.Replace):
 			self.findReplaceText()
+			ev.accept()
+			return
 
 		if ev.key() in (Qt.Key_Return, Qt.Key_Enter):
 			self.__autoIndentHandleNewline()
 		elif ev.key() == Qt.Key_Delete:
 			self.__validate()
+
+		QPlainTextEdit.keyPressEvent(self, ev)
 
 	def wheelEvent(self, ev):
 		if ev.modifiers() & Qt.ControlModifier:
