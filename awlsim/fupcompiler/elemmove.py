@@ -162,10 +162,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 
 		# Compile the element connected to the input.
 		otherConn_IN = conn_IN.getConnectedConn(getOutput=True)
-		if connectedElem_IN.needCompile:
-			insns.extend(connectedElem_IN.compile())
-		else:
-			insns.extend(otherConn_IN.compileConn(targetInsnClass=AwlInsn_L))
+		insns.extend(otherConn_IN.compileConn(targetInsnClass=AwlInsn_L))
 		if otherConn_IN.connType != FupCompiler_Conn.TYPE_ACCU:
 			raise FupElemError("The IN connection "
 				"of the FUP move box %s must not be connected "

@@ -236,10 +236,7 @@ class FupCompiler_ElemShift(FupCompiler_Elem):
 			otherElem = otherConn.elem
 
 			# Compile the element connected to the input.
-			if otherElem.needCompile:
-				insns.extend(otherElem.compile())
-			else:
-				insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
+			insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
 			if otherConn.connType != FupCompiler_Conn.TYPE_ACCU:
 				raise FupElemError("The IN connection "
 					"of the FUP element %s must not be connected "

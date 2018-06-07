@@ -235,10 +235,7 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 		for conn in self.__allConnsIN():
 			# Compile the element connected to the input.
 			otherConn = conn.getConnectedConn(getOutput=True)
-			if otherConn.elem.needCompile:
-				insns.extend(otherConn.elem.compile())
-			else:
-				insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
+			insns.extend(otherConn.compileConn(targetInsnClass=AwlInsn_L))
 			if otherConn.connType != FupCompiler_Conn.TYPE_ACCU:
 				raise FupElemError("The IN connection "
 					"of the FUP compare box %s must not be connected "
