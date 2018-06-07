@@ -157,12 +157,12 @@ class SourceCodeEdit(QPlainTextEdit):
 			ev.accept()
 			return
 
+		QPlainTextEdit.keyPressEvent(self, ev)
+
 		if ev.key() in (Qt.Key_Return, Qt.Key_Enter):
 			self.__autoIndentHandleNewline()
 		elif ev.key() == Qt.Key_Delete:
 			self.__validate()
-
-		QPlainTextEdit.keyPressEvent(self, ev)
 
 	def wheelEvent(self, ev):
 		if ev.modifiers() & Qt.ControlModifier:
