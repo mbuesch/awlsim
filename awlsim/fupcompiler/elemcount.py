@@ -151,18 +151,31 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 		return insns
 
 	def _doPreprocess(self):
-		# If any element connected to any non-bool input is not a LOAD operand, we must
+		# If any element connected to any input is not a LOAD operand, we must
 		# take its ENO into account.
 		# If we don't have a connection on EN, we implicitly connect
 		# the IN-element's ENO to our EN here.
 		# If we already have a connection on EN, we implicitly add an AND-element
 		# between the IN-element's ENO and our EN.
 		elemsA = []
+		conn_CU = self.getUniqueConnByText("CU", searchInputs=True)
+		conn_CD = self.getUniqueConnByText("CD", searchInputs=True)
+		conn_S = self.getUniqueConnByText("S", searchInputs=True)
 		conn_PV = self.getUniqueConnByText("PV", searchInputs=True)
-		if conn_PV and conn_PV.isConnected:
-			connectedElem = conn_PV.getConnectedElem(viaOut=True)
-			if not connectedElem.isType(FupCompiler_Elem.TYPE_OPERAND,
-						    FupCompiler_ElemOper.SUBTYPE_LOAD):
+		conn_R = self.getUniqueConnByText("R", searchInputs=True)
+		for conn in (conn_CU, conn_CD, conn_S, conn_PV, conn_R):
+			if conn and conn.isConnected:
+				connectedElem = conn.getConnectedElem(viaOut=True)
+				if conn is not conn_PV:
+					# If a simple BOOLEAN is connected to CU, CD, S or R
+					# then we do not need to connect its ENO.
+					if connectedElem.isType(FupCompiler_Elem.TYPE_BOOLEAN):
+						continue
+				if connectedElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+							FupCompiler_ElemOper.SUBTYPE_LOAD):
+					# No ENO connection for simple load operands.
+					continue
+				# For everything else, add an ENO wire.
 				elemsA.append(connectedElem)
 		FupCompiler_Helpers.genIntermediateBool(
 				parentElem=self,
@@ -348,6 +361,20 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 							       storeToTempConns))
 
 		return insns
+
+	@property
+	def isCompileEntryPoint(self):
+		# We are a compilation entry, if no output is connected.
+		conn_CV = self.getUniqueConnByText("CV", searchOutputs=True)
+		conn_CVB = self.getUniqueConnByText("CVB", searchOutputs=True)
+		conn_Q = self.getUniqueConnByText("Q", searchOutputs=True)
+		conn_ENO = self.getUniqueConnByText("ENO", searchOutputs=True)
+		if (conn_CV and conn_CV.isConnected) or\
+		   (conn_CVB and conn_CVB.isConnected) or\
+		   (conn_Q and conn_Q.isConnected) or\
+		   (conn_ENO and conn_ENO.isConnected):
+			return False
+		return True
 
 class FupCompiler_ElemCUD(FupCompiler_ElemCount):
 	"""FUP compiler - S7 counter - up-down
