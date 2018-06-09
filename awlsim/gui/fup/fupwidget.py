@@ -231,6 +231,21 @@ class FupWidget(QWidget):
 		self.__undoStack.canUndoChanged.connect(self.undoAvailableChanged)
 		self.__undoStack.canRedoChanged.connect(self.redoAvailableChanged)
 
+	@property
+	def allGrids(self):
+		"""Get an iterator over all grids.
+		Currently there's only one grid.
+		"""
+		for grid in (self.edit.draw.grid,):
+			yield grid
+
+	def regenAllUUIDs(self):
+		"""Re-generate all UUIDs that belong to this FUP diagram.
+		"""
+		self.interf.regenAllUUIDs()
+		for grid in self.allGrids:
+			grid.regenAllUUIDs()
+
 	def __handleDiagramChange(self):
 		"""Handle a change in the FUP diagram or interface.
 		"""
