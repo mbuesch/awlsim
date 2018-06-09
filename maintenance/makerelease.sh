@@ -18,10 +18,11 @@ done
 hook_get_version()
 {
 	local file="$1/awlsim/common/version.py"
-	local maj="$(cat "$file" | grep -e 'VERSION_MAJOR =' | head -n1 | awk '{print $3;}')"
-	local min="$(cat "$file" | grep -e 'VERSION_MINOR =' | head -n1 | awk '{print $3;}')"
-	local ext="$(cat "$file" | grep -e 'VERSION_EXTRA =' | head -n1 | awk '{print $3;}' | cut -d'"' -f2)"
-	version="${maj}.${min}${ext}"
+	local maj="$(cat "$file" | grep -Ee '^VERSION_MAJOR\s+=\s+' | head -n1 | awk '{print $3;}')"
+	local min="$(cat "$file" | grep -Ee '^VERSION_MINOR\s+=\s+' | head -n1 | awk '{print $3;}')"
+	local bug="$(cat "$file" | grep -Ee '^VERSION_BUGFIX\s+=\s+' | head -n1 | awk '{print $3;}')"
+	local ext="$(cat "$file" | grep -Ee '^VERSION_EXTRA\s+=\s+' | head -n1 | awk '{print $3;}' | cut -d'"' -f2)"
+	version="${maj}.${min}.${bug}${ext}"
 }
 
 hook_post_checkout()
