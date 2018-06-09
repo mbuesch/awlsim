@@ -166,7 +166,7 @@ with open(os.path.join(basedir, "README.md"), "rb") as fd:
 
 setup(	name		= "awlsim",
 	version		= VERSION_STRING,
-	description	= "S7 AWL/STL Soft-PLC",
+	description	= "S7 compatible Programmable Logic Controller PLC/SPS (AWL, STL, FUP, FBD)",
 	license		= "GNU General Public License v2 or later",
 	author		= "Michael Buesch",
 	author_email	= "m@bues.ch",
@@ -193,7 +193,7 @@ setup(	name		= "awlsim",
 	scripts		= scripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
-	keywords	= "AWL STL SPS PLC emulator simulator "
+	keywords	= "AWL STL FUP FBD SPS PLC emulator simulator "
 			  "Step-7 Siemens PROFIBUS "
 			  "LinuxCNC PiXtend RaspberryPi",
 	classifiers	= [
@@ -216,8 +216,6 @@ setup(	name		= "awlsim",
 		"Programming Language :: Python :: 3",
 		"Programming Language :: Python :: Implementation :: CPython",
 		"Programming Language :: Python :: Implementation :: PyPy",
-		"Programming Language :: Python :: Implementation :: Jython",
-		"Programming Language :: Python :: Implementation :: IronPython",
 		"Topic :: Education",
 		"Topic :: Home Automation",
 		"Topic :: Scientific/Engineering",

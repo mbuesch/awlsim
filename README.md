@@ -1,25 +1,25 @@
-Awlsim - S7 compatible Soft-PLC
-===============================
+Awlsim - S7 compatible Programmable Logic Controller (PLC/SPS)
+==============================================================
 
-Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
+Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports the automation languages AWL/STL and FUP/FBD. Awlsim itself is written in Python.
 
-The latest version of awlsim can be downloaded from the [official awlsim site](https://awlsim.de).
+The latest version of Awlsim can be downloaded at the [official Awlsim site](https://awlsim.de).
 
 
-Awlsim - Soft-PLC
------------------
+Awlsim - Programmable Logic Controller (PLC/SPS)
+------------------------------------------------
 
-Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python. Depending on the host machine and the Python interpreter used, it achieves good performance of several thousand to millions of AWL/STL instructions per second. German and English S7 AWL/STL mnemonics are supported.
+Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports the automation languages AWL/STL and FUP/FBD. Awlsim itself is written in Python. The speed of execution ranges from several ten thousand AWL/STL instructions per second on slow embedded machines to a couple of million instructions per second on faster computers.
 
 AWL/STL programs on PLCs are used for automation of industrial processes. However Awlsim is very flexible, so it can be used for other purposes beyond industrial applications, too. Awlsim aims to be compatible with the industry standard S7 software on the AWL/STL level.
 
-Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason awlsim ships an extensive selftest suite. Missing features and differences between awlsim and Step 7 are documented in the [COMPATIBILITY documentation](COMPATIBILITY.html) and [TODO documentation](TODO.html) files.
+Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the Awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason Awlsim ships an extensive selftest suite. Missing features and differences between Awlsim and Step 7 are documented in the [COMPATIBILITY documentation](COMPATIBILITY.html) and [TODO documentation](TODO.html) files.
 
 
 Quick start tutorial
 --------------------
 
-See the [quick start tutorial](QUICK-START.html) for a simple example on how to use Awlsim in simulator mode. Simulator mode does not require any special hardware to run.
+See the [quick start tutorial](QUICK-START.html) for a simple example on how to use Awlsim in simulator mode. In simulator mode Awlsim can be run on any desktop PC. No special hardware is required.
 
 
 Example project
