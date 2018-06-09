@@ -9,6 +9,7 @@ S7 compatibility
 core
 ----
 
+* Add file information to exceptions
 * Improve performance (cython)
 * Blocks that are no longer linked to (created by) sources should be removed.
 * Single download of symtab causes a redefinition error.
@@ -44,5 +45,4 @@ FBD/FUP compiler and GUI
 * Fix evaluation order in case of multiple parallel assignments and other elements
 * Add feature: Add option to disable elements
 * Add element: Timers
-* Add element: Counters
 * Add element: CALL
