@@ -39,6 +39,7 @@ def usage():
 	print("Usage: awlsim-proupgrade [OPTIONS] PROJECTFILE.awlpro")
 	print("")
 	print("Options:")
+	print(" -u|--gen-uuids               Regenerate all UUIDs.")
 	print(" -L|--loglevel LVL            Set the client log level:")
 	print("                              0: Log nothing")
 	print("                              1: Log errors")
@@ -48,14 +49,15 @@ def usage():
 	print("                              5: Extremely verbose logging")
 
 def main():
+	opt_genUUIDs = False
 	opt_loglevel = Logging.LOG_WARNING
 
 	Logging.setPrefix("awlsim-proupgrade: ")
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hL:",
-			[ "help", "loglevel=", ])
+			"huL:",
+			[ "help", "gen-uuids", "loglevel=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -64,6 +66,8 @@ def main():
 		if o in ("-h", "--help"):
 			usage()
 			return ExitCodes.EXIT_OK
+		if o in ("-u", "--gen-uuids"):
+			opt_genUUIDs = True
 		if o in ("-L", "--loglevel"):
 			try:
 				opt_loglevel = int(v)
@@ -86,8 +90,12 @@ def main():
 		project = Project.fromFile(projectFile)
 
 		for fupSource in project.getFupSources():
-			factory = FupFactory(fupWidget=FupWidget(None, None))
+			fupWidget = FupWidget(None, None)
+			factory = FupFactory(fupWidget=fupWidget)
 			factory.parse(fupSource.sourceBytes)
+			if opt_genUUIDs:
+				# Re-generate all UUIDs.
+				fupWidget.regenAllUUIDs()
 			fupSource.sourceBytes = factory.compose()
 
 		for kopSource in project.getKopSources():
