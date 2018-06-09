@@ -44,7 +44,11 @@ sh_test()
 			test_failed "Call to awlsim-proupgrade --help failed"
 		"$interpreter" ./awlsim-proupgrade "$tmp_project" >/dev/null ||\
 			test_failed "Call to awlsim-proupgrade '$tmp_project' failed"
+		"$interpreter" ./awlsim-proupgrade -u "$tmp_project" >/dev/null ||\
+			test_failed "Call to awlsim-proupgrade -u '$tmp_project' failed"
+		"$interpreter" ./awlsim-proupgrade --gen-uuids "$tmp_project" >/dev/null ||\
+			test_failed "Call to awlsim-proupgrade --gen-uuids '$tmp_project' failed"
 		"$interpreter" ./awlsim-proupgrade -L 5 "$tmp_project" >/dev/null ||\
-			test_failed "Call to awlsim-proupgrade '$tmp_project' failed"
+			test_failed "Call to awlsim-proupgrade -L 5 '$tmp_project' failed"
 	fi
 }
