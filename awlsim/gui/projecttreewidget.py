@@ -1041,7 +1041,9 @@ class ProjectTreeModel(QAbstractItemModel):
 		def getSourceTip(sourceList, okToolTip):
 			if itemNr >= len(sourceList):
 				return False
-			return getSourceContainerTip((sourceList[itemNr],), okToolTip)
+			source = sourceList[itemNr]
+			okToolTip += "\nSource hash: %s..." % source.identHashStr[:10]
+			return getSourceContainerTip((source,), okToolTip)
 
 		def getProgramContainerTip(okToolTip):
 			project = self.getProject()
