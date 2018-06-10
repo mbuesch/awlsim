@@ -94,7 +94,7 @@ class MessageBox(QDialog):
 		self.text = "<pre>" + saxutils.escape(text) + "\n</pre>"
 		self.verboseText = None
 		if verboseText and verboseText.strip() != text.strip():
-			self.verboseText = "<pre>" + verboseText + "\n</pre>"
+			self.verboseText = "<pre>" + saxutils.escape(verboseText) + "\n</pre>"
 
 		self.textBox = QLabel(self)
 		self.textBox.setTextInteractionFlags(Qt.TextSelectableByMouse |\
