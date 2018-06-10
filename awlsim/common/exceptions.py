@@ -2,7 +2,7 @@
 #
 # AWL simulator - Exceptions
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.enumeration import *
+
+import binascii
 
 
 __all__ = [
@@ -172,28 +174,45 @@ class AwlSimError(Exception):
 		return errorStr
 
 	def doGetReport(self, title, verbose=True):
-		sourceName = self.getSourceName()
-		if sourceName:
-			sourceName = "source '%s' " % sourceName
-		else:
-			sourceName = ""
 		ret = [ "%s:\n\n" % title ]
+
+		# Format the source file name.
+		sourceName = self.getSourceName()
+		sourceId = self.getSourceId()
 		fileStr = ""
+		if sourceName or sourceId:
+			fileStr = "\n  in source"
 		if sourceName:
-			fileStr = " in %s" % sourceName
+			fileStr += " '%s'" % sourceName
+		if sourceId:
+			identHashHex = binascii.hexlify(sourceId)
+			identHashStr = identHashHex.decode("UTF-8", "ignore")
+			fileStr += "\n  with source hash '%s...'" % identHashStr[:10]
+
+		# Format the line string.
 		lineStr = ""
-		if self.getLineNr() is not None:
-			lineStr = " at line %d" % self.getLineNr()
+		lineNr = self.getLineNr()
+		if lineNr is not None:
+			lineStr = "\n  at line %d" % lineNr
+
+		# Append file and line information to report.
 		if fileStr or lineStr:
-			ret.append("Error%s%s:\n" % (fileStr, lineStr))
+			ret.append("Error%s%s:\n\n" % (fileStr, lineStr))
+
+		# Append instruction information to report.
 		insnStr = self.getFailingInsnStr()
 		if insnStr:
 			ret.append("  %s\n" % insnStr)
+
+		# Append the actual error message to the report.
 		ret.append("\n  %s\n" % self.message)
+
+		# Append a CPU dump, if verbose.
 		if verbose:
 			cpu = self.getCpu()
 			if cpu:
 				ret.append("\n%s\n" % str(cpu))
+
 		return "".join(ret)
 
 	def getReport(self, verbose=True):
