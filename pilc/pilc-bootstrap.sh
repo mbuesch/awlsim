@@ -443,7 +443,7 @@ pilc_bootstrap_second_stage()
 	export LANGUAGE=C
 	export LANG=C
 	if [ "$opt_rpiver" = "1" -o "$opt_rpiver" = "0" ]; then
-		info "Optimizing for RPi 1.x or later"
+		info "Optimizing for RPi 1.x, zero(w) or later"
 		local march="armv6kz"
 	elif [ "$opt_rpiver" = "2" ]; then
 		info "Optimizing for RPi 2.x or later"
@@ -1108,6 +1108,7 @@ usage()
 	echo
 	echo " --rpiver|-R VERSION     Minimum Raspberry Pi version to build for."
 	echo "                         Can be either 0, 1, 2 or 3."
+	echo "                         0 and 1 are equivalent."
 	echo "                         Default: 1"
 }
 
