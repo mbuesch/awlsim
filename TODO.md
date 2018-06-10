@@ -9,7 +9,6 @@ S7 compatibility
 core
 ----
 
-* Add file information to exceptions
 * Improve performance (cython)
 * Blocks that are no longer linked to (created by) sources should be removed.
 * Single download of symtab causes a redefinition error.

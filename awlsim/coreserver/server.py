@@ -1075,6 +1075,23 @@ class AwlSimServer(object): #+cdef
 		self.__projectFile = project.getProjectFile()
 		self.__projectWriteBack = writeBack
 
+	def __extendAwlSimError(self, e):
+		"""Try to add more useful information to an exception.
+		"""
+		# If we have a source ident hash in the exception, but no
+		# source name, try to get it.
+		sourceIdentHash = e.getSourceId()
+		if not e.getSourceName() and sourceIdentHash:
+			# The source name is not set, yet, but we have a source-ID.
+			# Try to get the name.
+			for sourceContainer in (self.awlSourceContainer,
+						self.symTabSourceContainer):
+				srcMgr = sourceContainer.getSourceManagerByIdent(sourceIdentHash)
+				if srcMgr and srcMgr.source:
+					# We got it. Set the name.
+					e.setSourceName(srcMgr.source.name)
+					break
+
 	def startup(self, host, port, family = None,
 		    commandMask = 0,
 		    handleExceptionServerside = False,
@@ -1147,6 +1164,9 @@ class AwlSimServer(object): #+cdef
 				self.setRunState(self.STATE_STOP)
 				# Schedule a CPU restart/rebuild.
 				self.__needOB10x = True
+
+				# Try to add more information to the exception.
+				self.__extendAwlSimError(e)
 
 				if self.__handleExceptionServerside:
 					# Let the server handle the exception
