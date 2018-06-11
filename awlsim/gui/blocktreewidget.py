@@ -30,6 +30,7 @@ class BlockTreeModel(QAbstractItemModel):
 	EnumGen.start
 	INDEXID_SRCS			= EnumGen.item
 	INDEXID_SRCS_AWL		= EnumGen.item
+	INDEXID_SRCS_FUP		= EnumGen.item
 	INDEXID_SRCS_SYMTAB		= EnumGen.item
 	INDEXID_SRCS_LIBSEL		= EnumGen.item
 	INDEXID_BLOCKS			= EnumGen.item
@@ -44,13 +45,14 @@ class BlockTreeModel(QAbstractItemModel):
 	INDEXID_BASE_MASK		= 0xFF0000
 	# ID bases for dynamic elements
 	INDEXID_SRCS_AWL_BASE		= 0x010000
-	INDEXID_SRCS_SYMTAB_BASE	= 0x020000
-	INDEXID_SRCS_LIBSEL_BASE	= 0x030000
-	INDEXID_BLOCKS_OBS_BASE		= 0x040000
-	INDEXID_BLOCKS_FCS_BASE		= 0x050000
-	INDEXID_BLOCKS_FBS_BASE		= 0x060000
-	INDEXID_BLOCKS_DBS_BASE		= 0x070000
-	INDEXID_HWMODS_BASE		= 0x080000
+	INDEXID_SRCS_FUP_BASE		= 0x020000
+	INDEXID_SRCS_SYMTAB_BASE	= 0x030000
+	INDEXID_SRCS_LIBSEL_BASE	= 0x040000
+	INDEXID_BLOCKS_OBS_BASE		= 0x050000
+	INDEXID_BLOCKS_FCS_BASE		= 0x060000
+	INDEXID_BLOCKS_FBS_BASE		= 0x070000
+	INDEXID_BLOCKS_DBS_BASE		= 0x080000
+	INDEXID_HWMODS_BASE		= 0x090000
 
 	row2id_toplevel = {
 		0	: INDEXID_SRCS,
@@ -61,8 +63,9 @@ class BlockTreeModel(QAbstractItemModel):
 
 	row2id_srcs = {
 		0	: INDEXID_SRCS_AWL,
-		1	: INDEXID_SRCS_SYMTAB,
-		2	: INDEXID_SRCS_LIBSEL,
+		1	: INDEXID_SRCS_FUP,
+		2	: INDEXID_SRCS_SYMTAB,
+		3	: INDEXID_SRCS_LIBSEL,
 	}
 	id2row_srcs = pivotDict(row2id_srcs)
 
@@ -85,6 +88,7 @@ class BlockTreeModel(QAbstractItemModel):
 		self.client = client
 
 		self.__awlSources = []		# List of AwlSource()s
+		self.__fupSources = []		# List of FupSource()s
 		self.__symTabSources = []	# List of SymTabSource()s
 		self.__symTabInfoList = []	# List of (SymTabSource(), SymbolTable())
 		self.__libSelections = []	# List of AwlLibEntrySelection()s
@@ -96,6 +100,9 @@ class BlockTreeModel(QAbstractItemModel):
 
 	def getAwlSource(self, indexNr):
 		return self.__awlSources[indexNr]
+
+	def getFupSource(self, indexNr):
+		return self.__fupSources[indexNr]
 
 	def getSymTabSource(self, indexNr):
 		return self.__symTabSources[indexNr]
@@ -150,6 +157,8 @@ class BlockTreeModel(QAbstractItemModel):
 	def handle_IDENTS(self, msg):
 		self.__updateData(self.__awlSources, msg.awlSources,
 				  self.idToIndex(self.INDEXID_SRCS_AWL))
+		self.__updateData(self.__fupSources, msg.fupSources,
+				  self.idToIndex(self.INDEXID_SRCS_FUP))
 		self.__updateData(self.__symTabSources, msg.symTabSources,
 				  self.idToIndex(self.INDEXID_SRCS_SYMTAB))
 		self.__updateData(self.__libSelections, msg.libSelections,
@@ -223,6 +232,8 @@ class BlockTreeModel(QAbstractItemModel):
 				return len(self.row2id_srcs)
 			elif parentId == self.INDEXID_SRCS_AWL:
 				return len(self.__awlSources)
+			elif parentId == self.INDEXID_SRCS_FUP:
+				return len(self.__fupSources)
 			elif parentId == self.INDEXID_SRCS_SYMTAB:
 				return len(self.__symTabSources)
 			elif parentId == self.INDEXID_SRCS_LIBSEL:
@@ -253,6 +264,9 @@ class BlockTreeModel(QAbstractItemModel):
 			elif parentId == self.INDEXID_SRCS_AWL:
 				return self.createIndex(row, column,
 					self.INDEXID_SRCS_AWL_BASE + row)
+			elif parentId == self.INDEXID_SRCS_FUP:
+				return self.createIndex(row, column,
+					self.INDEXID_SRCS_FUP_BASE + row)
 			elif parentId == self.INDEXID_SRCS_SYMTAB:
 				return self.createIndex(row, column,
 					self.INDEXID_SRCS_SYMTAB_BASE + row)
@@ -299,6 +313,8 @@ class BlockTreeModel(QAbstractItemModel):
 			return self.idToIndex(self.INDEXID_BLOCKS)
 		elif idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			return self.idToIndex(self.INDEXID_SRCS_AWL)
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			return self.idToIndex(self.INDEXID_SRCS_FUP)
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
 			return self.idToIndex(self.INDEXID_SRCS_SYMTAB)
 		elif idxIdBase == self.INDEXID_SRCS_LIBSEL_BASE:
@@ -321,6 +337,11 @@ class BlockTreeModel(QAbstractItemModel):
 			if index >= len(self.__awlSources):
 				return None
 			return self.__awlSources[index].name
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__fupSources):
+				return None
+			return self.__fupSources[index].name
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
 			index = idxId - idxIdBase
 			if index >= len(self.__symTabSources):
@@ -360,6 +381,7 @@ class BlockTreeModel(QAbstractItemModel):
 		names = {
 		  self.INDEXID_SRCS		: "Sources",
 		  self.INDEXID_SRCS_AWL		: "AWL/STL",
+		  self.INDEXID_SRCS_FUP		: "FUP/FBD",
 		  self.INDEXID_SRCS_SYMTAB	: "Symbols",
 		  self.INDEXID_SRCS_LIBSEL	: "Libraries",
 		  self.INDEXID_BLOCKS		: "Blocks",
@@ -408,6 +430,7 @@ class BlockTreeModel(QAbstractItemModel):
 		descs = {
 		  self.INDEXID_SRCS		: "Source files",
 		  self.INDEXID_SRCS_AWL		: "AWL/STL sources",
+		  self.INDEXID_SRCS_FUP		: "FUP/FBD sources",
 		  self.INDEXID_SRCS_SYMTAB	: "Symbol table sources",
 		  self.INDEXID_SRCS_LIBSEL	: "Library selections",
 		  self.INDEXID_BLOCKS		: "Compiled blocks",
@@ -425,6 +448,11 @@ class BlockTreeModel(QAbstractItemModel):
 			if index >= len(self.__awlSources):
 				return None
 			return self.__awlSources[index].identHashStr
+		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__fupSources):
+				return None
+			return self.__fupSources[index].identHashStr
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
 			index = idxId - idxIdBase
 			if index >= len(self.__symTabSources):
@@ -482,6 +510,9 @@ class BlockTreeModel(QAbstractItemModel):
 				elif idxId == self.INDEXID_SRCS_AWL or\
 				     idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 					return getIcon("textsource")
+				elif idxId == self.INDEXID_SRCS_FUP or\
+				     idxIdBase == self.INDEXID_SRCS_FUP_BASE:
+					return getIcon("fup")
 				elif idxId == self.INDEXID_SRCS_SYMTAB or\
 				     idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
 					return getIcon("tag")
@@ -567,6 +598,7 @@ class BlockTreeView(QTreeView):
 				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
 					self.__blockMenu.exec_(QCursor.pos())
 				elif idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
+				     idxIdBase == model.INDEXID_SRCS_FUP_BASE or\
 				     idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
 					self.__srcMenu.exec_(QCursor.pos())
 		finally:
@@ -588,6 +620,7 @@ class BlockTreeView(QTreeView):
 			   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
 				self.__removeBlock()
 			if idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
+			   idxIdBase == model.INDEXID_SRCS_FUP_BASE or\
 			   idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
 				self.__removeSource()
 
@@ -616,6 +649,8 @@ class BlockTreeView(QTreeView):
 
 		if idxIdBase == model.INDEXID_SRCS_AWL_BASE:
 			identHash = model.getAwlSource(indexNr).identHash
+		elif idxIdBase == model.INDEXID_SRCS_FUP_BASE:
+			identHash = model.getFupSource(indexNr).identHash
 		elif idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
 			identHash = model.getSymTabSource(indexNr).identHash
 		else:
