@@ -428,7 +428,8 @@ class FupCompiler(object):
 						       mnemonics=mnemonics)
 			self.symTab.merge(tab, overrideExisting=True)
 
-		self.awlSource = AwlSource(name=fupSource.name,
+		name = "%s (Compiled from FUP/FBD source)" % fupSource.name
+		self.awlSource = AwlSource(name=name,
 					   enabled=fupSource.enabled,
 					   filepath=fupSource.filepath)
 		if self.__parse():
