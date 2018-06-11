@@ -612,14 +612,19 @@ class AwlSimClient(object):
 	# Request the (source) ident hashes from the CPU.
 	# This method is asynchronous.
 	# The idents are returned via handle_IDENTS()
-	def requestIdents(self, reqAwlSources = False,
-			  reqSymTabSources = False,
-			  reqHwModules = False,
-			  reqLibSelections = False):
+	def requestIdents(self,
+			  reqAwlSources=False,
+			  reqFupSources=False,
+			  reqKopSources=False,
+			  reqSymTabSources=False,
+			  reqHwModules=False,
+			  reqLibSelections=False):
 		if not self.__transceiver:
 			return False
 		self.__send(AwlSimMessage_GET_IDENTS(
 			(AwlSimMessage_GET_IDENTS.GET_AWLSRCS if reqAwlSources else 0) |\
+			(AwlSimMessage_GET_IDENTS.GET_FUPSRCS if reqFupSources else 0) |\
+			(AwlSimMessage_GET_IDENTS.GET_KOPSRCS if reqKopSources else 0) |\
 			(AwlSimMessage_GET_IDENTS.GET_SYMTABSRCS if reqSymTabSources else 0) |\
 			(AwlSimMessage_GET_IDENTS.GET_HWMODS if reqHwModules else 0) |\
 			(AwlSimMessage_GET_IDENTS.GET_LIBSELS if reqLibSelections else 0)))

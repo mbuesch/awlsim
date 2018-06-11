@@ -502,15 +502,17 @@ class CpuWidget(QWidget):
 		client = self.getSimClient()
 		hasBlockTree = client.blockTreeModelActive()
 		try:
-			client.requestIdents(reqAwlSources = True,
-					     reqSymTabSources = True,
-					     reqHwModules = hasBlockTree,
-					     reqLibSelections = hasBlockTree)
+			client.requestIdents(reqAwlSources=True,
+					     reqFupSources=True,
+					     reqKopSources=True,
+					     reqSymTabSources=True,
+					     reqHwModules=hasBlockTree,
+					     reqLibSelections=hasBlockTree)
 			if hasBlockTree:
-				client.requestBlockInfo(reqOBInfo = True,
-							reqFCInfo = True,
-							reqFBInfo = True,
-							reqDBInfo = True)
+				client.requestBlockInfo(reqOBInfo=True,
+							reqFCInfo=True,
+							reqFBInfo=True,
+							reqDBInfo=True)
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
