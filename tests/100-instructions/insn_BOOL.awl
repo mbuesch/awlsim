@@ -574,6 +574,78 @@
 	__STWRST
 	U(
 		U	M 0.0
+	)
+	U(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	U(
+		U	M 0.1
+	)
+	U(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	U(
+		U	M 0.0
+	)
+	U(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	U(
+		U	M 0.1
+	)
+	U(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	UN(
+		U	M 0.1
+	)
+	UN(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	UN(
+		U	M 0.0
+	)
+	UN(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	UN(
+		U	M 0.1
+	)
+	UN(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	UN(
+		U	M 0.0
+	)
+	UN(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	U(
+		U	M 0.0
 		U	M 0.0
 	)
 	U(
@@ -708,6 +780,78 @@
 	__STWRST
 	O(
 		U	M 0.0
+	)
+	O(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	O(
+		U	M 0.1
+	)
+	O(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	O(
+		U	M 0.0
+	)
+	O(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	O(
+		U	M 0.1
+	)
+	O(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	ON(
+		U	M 0.1
+	)
+	ON(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	ON(
+		U	M 0.0
+	)
+	ON(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	ON(
+		U	M 0.1
+	)
+	ON(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	ON(
+		U	M 0.0
+	)
+	ON(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	O(
+		U	M 0.0
 		U	M 0.0
 	)
 	O(
@@ -839,6 +983,78 @@
 
 
 	// Check X-branch
+	__STWRST
+	X(
+		U	M 0.0
+	)
+	X(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	X(
+		U	M 0.1
+	)
+	X(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	X(
+		U	M 0.0
+	)
+	X(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	X(
+		U	M 0.1
+	)
+	X(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	XN(
+		U	M 0.1
+	)
+	XN(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	XN(
+		U	M 0.0
+	)
+	XN(
+		U	M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	XN(
+		U	M 0.1
+	)
+	XN(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	XN(
+		U	M 0.0
+	)
+	XN(
+		U	M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
 	__STWRST
 	X(
 		U	M 0.0
