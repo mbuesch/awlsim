@@ -102,6 +102,104 @@
 	__ASSERT==	__STW VKE,	0
 
 
+	// Check plain-O STW response to all OR, STA, VKE, /ER combinations.
+	L		2#0000
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0100
+
+	L		2#0001
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0100
+
+	L		2#0010
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0110
+
+	L		2#0011
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L		2#0100
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0100
+
+	L		2#0101
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0100
+
+	L		2#0110
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0110
+
+	L		2#0111
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L		2#1000
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0100
+
+	L		2#1001
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#1100
+
+	L		2#1010
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0110
+
+	L		2#1011
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L		2#1100
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0100
+
+	L		2#1101
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#1100
+
+	L		2#1110
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#0110
+
+	L		2#1111
+	T		STW
+	O
+	L		STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+
 	// Check U-O-U
 	__STWRST
 	U		M 0.1

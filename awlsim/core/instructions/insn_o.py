@@ -57,7 +57,7 @@ class AwlInsn_O(AwlInsn): #+cdef
 
 		s = self.cpu.statusWord
 		# UND vor ODER
-		s.OR, s.STA, s.NER = s.VKE, 1, 0
+		s.OR, s.STA, s.NER = ((s.VKE | s.OR) & s.NER), 1, (s.VKE & s.NER)
 
 #@cy	def run(self): #+cdef
 #@cy		if self.opCount:
