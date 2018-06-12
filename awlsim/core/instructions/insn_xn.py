@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,11 +39,8 @@ class AwlInsn_XN(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef _Bool STA
 
 		s = self.cpu.statusWord
-		s.STA = self.cpu.fetch(self.op0, self._widths_1)
-		if s.NER:
-			s.VKE ^= s.STA ^ 1
-		else:
-			s.VKE = s.STA ^ 1
-		s.OR, s.NER = 0, 1
+		STA = self.cpu.fetch(self.op0, self._widths_1)
+		s.OR, s.STA, s.VKE, s.NER = 0, STA, ((s.VKE & s.NER) ^ (STA ^ 1)), 1
