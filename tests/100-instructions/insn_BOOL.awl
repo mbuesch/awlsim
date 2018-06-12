@@ -102,7 +102,82 @@
 	__ASSERT==	__STW VKE,	0
 
 
+	// Check if "Erstabfrage / NER=0" is correctly handled.
+	__STWRST
+	CLR
+	U		M 0.0
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	CLR
+	UN		M 0.1
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	CLR
+	U(
+	U		M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	CLR
+	UN(
+	U		M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	SET
+	O		M 0.1
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	SET
+	ON		M 0.0
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	SET
+	O(
+	U		M 0.1
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	SET
+	ON(
+	U		M 0.0
+	)
+	__ASSERT==	__STW VKE,	0
+
+	__STWRST
+	SET
+	X		M 0.0
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	SET
+	XN		M 0.1
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	SET
+	X(
+	U		M 0.0
+	)
+	__ASSERT==	__STW VKE,	1
+
+	__STWRST
+	SET
+	XN(
+	U		M 0.1
+	)
+	__ASSERT==	__STW VKE,	1
+
+
 	// Check plain-O STW response to all OR, STA, VKE, /ER combinations.
+	__STWRST
 	L		2#0000
 	T		STW
 	O
