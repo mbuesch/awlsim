@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,9 +53,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		if pse.NER:
-			s.VKE &= pse.VKE
-		s.VKE |= pse.OR
+		s.VKE = ((pse.VKE | (pse.NER ^ 1)) & s.VKE) | pse.OR
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_UNB(self, pse): #@nocy
@@ -63,10 +61,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		s.VKE = s.VKE ^ 1
-		if pse.NER:
-			s.VKE &= pse.VKE
-		s.VKE |= pse.OR
+		s.VKE = ((pse.VKE | (pse.NER ^ 1)) & (s.VKE ^ 1) | pse.OR)
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_OB(self, pse): #@nocy
@@ -74,8 +69,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		if pse.NER:
-			s.VKE |= pse.VKE
+		s.VKE = (pse.VKE & pse.NER) | s.VKE
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_ONB(self, pse): #@nocy
@@ -83,9 +77,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		s.VKE = s.VKE ^ 1
-		if pse.NER:
-			s.VKE |= pse.VKE
+		s.VKE = (pse.VKE & pse.NER) | (s.VKE ^ 1)
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_XB(self, pse): #@nocy
@@ -93,8 +85,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		if pse.NER:
-			s.VKE ^= pse.VKE
+		s.VKE = (pse.VKE & pse.NER) ^ s.VKE
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	def __run_XNB(self, pse): #@nocy
@@ -102,9 +93,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord
-		s.VKE = s.VKE ^ 1
-		if pse.NER:
-			s.VKE ^= pse.VKE & 1
+		s.VKE = (pse.VKE & pse.NER) ^ (s.VKE ^ 1)
 		s.OR, s.STA, s.NER = pse.OR, 1, 1
 
 	__typeCallsDict = {				#@nocy
