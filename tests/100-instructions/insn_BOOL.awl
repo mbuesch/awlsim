@@ -1188,4 +1188,1553 @@
 	__ASSERT==	__STW VKE,	0
 
 
+	// Check U( STW response to all OR, STA, VKE, /ER combinations.
+	L	2#0000
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0001
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0011
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0101
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0111
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1001
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1010
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1011
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1100
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1101
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1110
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1111
+	T	STW
+	U(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#0000
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0001
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0011
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0100
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0101
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0111
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1000
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1001
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1010
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1011
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1100
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1101
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1110
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1111
+	T	STW
+	U(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+
+	// Check UN( STW response to all OR, STA, VKE, /ER combinations.
+	L	2#0000
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0001
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0011
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0100
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0101
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0111
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1000
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1001
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1010
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1011
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1100
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1101
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1110
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1111
+	T	STW
+	UN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#0000
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0001
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0011
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0101
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0111
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1001
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1010
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1011
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1100
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1101
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+	L	2#1110
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1111
+	T	STW
+	UN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#1111
+
+
+	// Check O( STW response to all OR, STA, VKE, /ER combinations.
+	L	2#0000
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0001
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0010
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0011
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0101
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0110
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0111
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1001
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1010
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1011
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1100
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1101
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1110
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1111
+	T	STW
+	O(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0000
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0001
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0011
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0101
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0111
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1001
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1010
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1011
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1100
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1101
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1110
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1111
+	T	STW
+	O(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+
+	// Check ON( STW response to all OR, STA, VKE, /ER combinations.
+	L	2#0000
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0001
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0011
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0101
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0111
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1001
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1010
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1011
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1100
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1101
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1110
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1111
+	T	STW
+	ON(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0000
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0001
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0010
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0011
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0101
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0110
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0111
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1001
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1010
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1011
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1100
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1101
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1110
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1111
+	T	STW
+	ON(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+
+	// Check X( STW response to all OR, STA, VKE, /ER combinations.
+	L	2#0000
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0001
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0010
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0011
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0100
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0101
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0110
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0111
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1000
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1001
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1010
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1011
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1100
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1101
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1110
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1111
+	T	STW
+	X(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0000
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0001
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0011
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0101
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0111
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1001
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1010
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1011
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1100
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1101
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1110
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1111
+	T	STW
+	X(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+
+	// Check XN( STW response to all OR, STA, VKE, /ER combinations.
+	L	2#0000
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0001
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0010
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0011
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0100
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0101
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0110
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0111
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1000
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1001
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1010
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1011
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1100
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1101
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1110
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1111
+	T	STW
+	XN(
+		U	M 0.0
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0000
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0001
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0010
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0011
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#0100
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0101
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0110
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#0111
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1000
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1001
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1010
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1011
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+	L	2#1100
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1101
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1110
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0111
+
+	L	2#1111
+	T	STW
+	XN(
+		U	M 0.1
+	)
+	L	STW
+	__ASSERT==	__ACCU 1,	2#0101
+
+
+
 	CALL SFC 46 // STOP CPU

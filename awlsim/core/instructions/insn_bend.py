@@ -51,18 +51,22 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 	def __run_UB(self, pse): #@nocy
 #@cy	cdef __run_UB(self, ParenStackElem pse):
 #@cy		cdef S7StatusWord s
+#@cy		cdef _Bool newOR
 
 		s = self.cpu.statusWord
-		s.VKE = ((pse.VKE | (pse.NER ^ 1)) & s.VKE) | pse.OR
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		newOR = pse.OR & pse.NER
+		s.VKE = ((pse.VKE | (pse.NER ^ 1)) & s.VKE) | newOR
+		s.OR, s.STA, s.NER = newOR, 1, 1
 
 	def __run_UNB(self, pse): #@nocy
 #@cy	cdef __run_UNB(self, ParenStackElem pse):
 #@cy		cdef S7StatusWord s
+#@cy		cdef _Bool newOR
 
 		s = self.cpu.statusWord
-		s.VKE = ((pse.VKE | (pse.NER ^ 1)) & (s.VKE ^ 1) | pse.OR)
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		newOR = pse.OR & pse.NER
+		s.VKE = ((pse.VKE | (pse.NER ^ 1)) & (s.VKE ^ 1)) | newOR
+		s.OR, s.STA, s.NER = newOR, 1, 1
 
 	def __run_OB(self, pse): #@nocy
 #@cy	cdef __run_OB(self, ParenStackElem pse):
@@ -70,7 +74,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 
 		s = self.cpu.statusWord
 		s.VKE = (pse.VKE & pse.NER) | s.VKE
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		s.OR, s.STA, s.NER = 0, 1, 1
 
 	def __run_ONB(self, pse): #@nocy
 #@cy	cdef __run_ONB(self, ParenStackElem pse):
@@ -78,7 +82,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 
 		s = self.cpu.statusWord
 		s.VKE = (pse.VKE & pse.NER) | (s.VKE ^ 1)
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		s.OR, s.STA, s.NER = 0, 1, 1
 
 	def __run_XB(self, pse): #@nocy
 #@cy	cdef __run_XB(self, ParenStackElem pse):
@@ -86,7 +90,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 
 		s = self.cpu.statusWord
 		s.VKE = (pse.VKE & pse.NER) ^ s.VKE
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		s.OR, s.STA, s.NER = 0, 1, 1
 
 	def __run_XNB(self, pse): #@nocy
 #@cy	cdef __run_XNB(self, ParenStackElem pse):
@@ -94,7 +98,7 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 
 		s = self.cpu.statusWord
 		s.VKE = (pse.VKE & pse.NER) ^ (s.VKE ^ 1)
-		s.OR, s.STA, s.NER = pse.OR, 1, 1
+		s.OR, s.STA, s.NER = 0, 1, 1
 
 	__typeCallsDict = {				#@nocy
 		AwlInsn.TYPE_UB		: __run_UB,	#@nocy
