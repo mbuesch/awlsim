@@ -39,8 +39,13 @@ class AwlInsn_UN(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef _Bool NER
 #@cy		cdef _Bool STA
+#@cy		cdef _Bool newOR
 
 		s = self.cpu.statusWord
 		STA = self.cpu.fetch(self.op0, self._widths_1)
-		s.STA, s.VKE, s.NER = STA, (((s.VKE | (s.NER ^ 1)) & (STA ^ 1)) | s.OR), 1
+		NER = s.NER
+		newOR = s.OR & NER
+		s.VKE = ((s.VKE | (NER ^ 1)) & (STA ^ 1)) | newOR
+		s.OR, s.STA, s.NER = newOR, STA, 1
