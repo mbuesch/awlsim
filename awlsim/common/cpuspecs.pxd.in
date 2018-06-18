@@ -9,3 +9,4 @@ cdef class S7CPUSpecs(object):
 	cdef public uint32_t nrInputs
 	cdef public uint32_t nrOutputs
 	cdef public uint32_t nrLocalbytes
+	cdef public uint32_t parenStackSize

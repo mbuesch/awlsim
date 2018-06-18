@@ -1,4 +1,5 @@
 from awlsim.core.cpu cimport *
+from awlsim.core.parenstack cimport *
 from awlsim.core.statusword cimport *
 from awlsim.core.operators cimport *
 

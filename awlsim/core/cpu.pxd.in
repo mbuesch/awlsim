@@ -95,7 +95,6 @@ cdef class S7CPU(object):
 	cdef _Bool mcrIsOn(self)
 	cdef mcrStackAppend(self, S7StatusWord statusWord)
 	cdef mcrStackPop(self)
-	cdef parenStackAppend(self, uint32_t insnType, S7StatusWord statusWord)
 
 	cpdef object fetch(self, AwlOperator operator, uint32_t allowedWidths)
 	cdef object __fetchIMM(self, AwlOperator operator, uint32_t allowedWidths)
@@ -188,10 +187,3 @@ cdef class S7CPU(object):
 	cdef makeCurrentDateAndTime(self, bytearray byteArray, uint32_t offset)
 
 	cdef __dumpLStackFrame(self, prefix, LStackFrame *frame)
-
-cdef class ParenStackElem(object):
-	cdef public S7CPU cpu
-	cdef public uint32_t insnType
-	cdef public _Bool NER
-	cdef public _Bool VKE
-	cdef public _Bool OR

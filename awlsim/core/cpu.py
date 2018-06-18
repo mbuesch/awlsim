@@ -63,27 +63,6 @@ from awlsim.awlcompiler.insntrans import *
 from awlsim.awlcompiler.optrans import *
 
 
-class ParenStackElem(object): #+cdef
-	"Parenthesis stack element"
-
-	def __init__(self, cpu, insnType, statusWord): #@nocy
-#@cy	def __cinit__(self, S7CPU cpu, uint32_t insnType, S7StatusWord statusWord):
-		self.cpu = cpu
-		self.insnType = insnType
-		self.NER = statusWord.NER
-		self.VKE = statusWord.VKE
-		self.OR = statusWord.OR
-
-	def __repr__(self):
-		mnemonics = self.cpu.getMnemonics()
-		type2name = {
-			S7CPUConfig.MNEMONICS_EN : AwlInsn.type2name_english,
-			S7CPUConfig.MNEMONICS_DE : AwlInsn.type2name_german,
-		}[mnemonics]
-		return '(insn="%s" VKE=%s OR=%d)' %\
-			(type2name[self.insnType],
-			 self.VKE, self.OR)
-
 class S7Prog(object):
 	"S7 CPU program management"
 
@@ -1433,15 +1412,6 @@ class S7CPU(object): #+cdef
 			self.mcrStack.pop()
 		except IndexError:
 			raise AwlSimError("MCR stack underflow")
-
-	def parenStackAppend(self, insnType, statusWord): #@nocy
-#@cy	cdef parenStackAppend(self, uint32_t insnType, S7StatusWord statusWord):
-#@cy		cdef CallStackElem cse
-
-		cse = self.callStackTop
-		cse.parenStack.append(ParenStackElem(self, insnType, statusWord))
-		if len(cse.parenStack) > 7:
-			raise AwlSimError("Parenthesis stack overflow")
 
 	def __translateFCNamedLocalOper(self, operator, store): #@nocy
 #@cy	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store):

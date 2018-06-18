@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU core feature specification
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim.common.compat import *
 
+from awlsim.common.util import *
 from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
@@ -39,6 +40,7 @@ class S7CPUSpecs(object): #+cdef
 	DEFAULT_NR_INPUTS	= 128
 	DEFAULT_NR_OUTPUTS	= 128
 	DEFAULT_NR_LOCALBYTES	= 1024
+	DEFAULT_PARENSTACK_SIZE	= 7
 
 	def __init__(self, cpu=None):
 		self.cpu = None
@@ -49,6 +51,7 @@ class S7CPUSpecs(object): #+cdef
 		self.setNrInputs(self.DEFAULT_NR_INPUTS)
 		self.setNrOutputs(self.DEFAULT_NR_OUTPUTS)
 		self.setNrLocalbytes(self.DEFAULT_NR_LOCALBYTES)
+		self.setParenStackSize(self.DEFAULT_PARENSTACK_SIZE)
 		self.cpu = cpu
 
 	def assignFrom(self, otherCpuSpecs):
@@ -59,6 +62,7 @@ class S7CPUSpecs(object): #+cdef
 		self.setNrInputs(otherCpuSpecs.nrInputs)
 		self.setNrOutputs(otherCpuSpecs.nrOutputs)
 		self.setNrLocalbytes(otherCpuSpecs.nrLocalbytes)
+		self.setParenStackSize(otherCpuSpecs.parenStackSize)
 
 	def setNrAccus(self, count):
 		if count not in (2, 4):
@@ -94,5 +98,10 @@ class S7CPUSpecs(object): #+cdef
 
 	def setNrLocalbytes(self, count):
 		self.nrLocalbytes = count
+		if self.cpu:
+			self.cpu.reallocate()
+
+	def setParenStackSize(self, count):
+		self.parenStackSize = clamp(count, 0, 0x7FFF)
 		if self.cpu:
 			self.cpu.reallocate()

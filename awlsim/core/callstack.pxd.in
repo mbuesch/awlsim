@@ -4,12 +4,13 @@ from awlsim.core.datablocks cimport *
 from awlsim.core.lstack cimport *
 from awlsim.core.memory cimport *
 from awlsim.core.parameters cimport *
+from awlsim.core.parenstack cimport *
 from awlsim.core.operators cimport *
 
 cdef class CallStackElem(object):
 	cdef public CallStackElem prevCse
 	cdef public S7CPU cpu
-	cdef public list parenStack
+	cdef public ParenStack parenStack
 	cdef public uint32_t ip
 	cdef public CodeBlock block
 	cdef public list insns

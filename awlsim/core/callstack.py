@@ -33,6 +33,7 @@ from awlsim.core.blocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.parameters import * #+cimport
+from awlsim.core.parenstack import * #+cimport
 from awlsim.core.util import *
 
 
@@ -487,7 +488,7 @@ def make_CallStackElem(cpu,						#@nocy
 	cse = CallStackElem()
 
 	cse.cpu = cpu
-	cse.parenStack = []
+	cse.parenStack = make_ParenStack(cpu)
 	cse.ip = 0
 	cse.block = block
 	cse.insns = block.insns

@@ -112,13 +112,13 @@ class AwlInsn_BEND(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef ParenStackElem pse
 
-		try:
-			pse = self.cpu.callStackTop.parenStack.pop()
-		except IndexError as e:
-			raise AwlSimError("Parenthesis stack underflow")
+		# Pop an entry off the parentheis stack.
+		pse = self.cpu.callStackTop.parenStack.pop()
 
+		# Handle the parenthesis-block-end (no-cython)
 		self.__typeCalls[pse.insnType](self, pse) #@nocy
 
+		# Handle the parenthesis-block-end (cython)
 #@cy		if pse.insnType == self.__type_UB:
 #@cy			self.__run_UB(pse)
 #@cy		elif pse.insnType == self.__type_UNB:

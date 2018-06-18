@@ -1,0 +1,20 @@
+from awlsim.core.cpu cimport *
+from awlsim.core.statusword cimport *
+from awlsim.common.cpuspecs cimport *
+
+cdef struct ParenStackElem:
+	uint8_t insnType
+	_Bool NER
+	_Bool VKE
+	_Bool OR
+
+cdef class ParenStack(object):
+	cdef public S7CPU cpu
+	cdef public uint32_t maxNrElements
+	cdef public uint32_t nrElements
+	cdef ParenStackElem *elements
+
+	cdef push(self, uint8_t insnType, S7StatusWord statusWord)
+	cdef ParenStackElem pop(self)
+
+cdef ParenStack make_ParenStack(S7CPU cpu)
