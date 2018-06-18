@@ -98,6 +98,8 @@ class LStackAllocator(object): #+cdef
 		except KeyError:				#@nocy
 			frame = LStackFrame()			#@nocy
 #@cy		frame = <LStackFrame *>PyMem_Malloc(sizeof(LStackFrame))
+#@cy		if frame == NULL:
+#@cy			raise AwlSimError("enterStackFrame: Out of memory")
 
 		frame.byteOffset = globAllocBytes
 		# Account the rounded-up bits to the new frame.
