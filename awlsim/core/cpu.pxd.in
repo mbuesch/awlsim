@@ -72,7 +72,6 @@ cdef class S7CPU(object):
 	cdef public int32_t relativeJump
 	cdef public CallStackElem callStackTop
 	cdef public uint32_t callStackDepth
-	cdef public uint32_t maxCallStackDepth
 	cdef public LStackAllocator activeLStack
 
 	cdef public uint32_t __insnCount

@@ -502,7 +502,6 @@ class S7CPU(object): #+cdef
 		self.conf = S7CPUConfig(self)
 		self.prog = S7Prog(self)
 		self.setCycleTimeLimit(5.0)
-		self.setMaxCallStackDepth(256)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
@@ -558,9 +557,6 @@ class S7CPU(object): #+cdef
 
 	def setRunTimeLimit(self, timeoutSeconds=-1.0):
 		self.__runtimeLimit = timeoutSeconds if timeoutSeconds >= 0.0 else -1.0
-
-	def setMaxCallStackDepth(self, newMaxDepth):
-		self.maxCallStackDepth = min(max(int(newMaxDepth), 1), 0xFFFFFFFF)
 
 	# Returns all user defined code blocks (OBs, FBs, FCs)
 	def allUserCodeBlocks(self):
@@ -1268,9 +1264,9 @@ class S7CPU(object): #+cdef
 #@cy		cdef uint32_t callStackDepth
 
 		callStackDepth = self.callStackDepth
-		if callStackDepth >= self.maxCallStackDepth:
+		if callStackDepth >= self.specs.callStackSize:
 			raise AwlSimError("Maximum CALL stack depth of %d CALLs exceed." % (
-				self.maxCallStackDepth))
+				self.specs.callStackSize))
 
 #@cy		if raw:
 #@cy			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:

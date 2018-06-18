@@ -41,6 +41,7 @@ class S7CPUSpecs(object): #+cdef
 	DEFAULT_NR_OUTPUTS	= 128
 	DEFAULT_NR_LOCALBYTES	= 1024
 	DEFAULT_PARENSTACK_SIZE	= 7
+	DEFAULT_CALLSTACK_SIZE	= 256
 
 	def __init__(self, cpu=None):
 		self.cpu = None
@@ -52,6 +53,7 @@ class S7CPUSpecs(object): #+cdef
 		self.setNrOutputs(self.DEFAULT_NR_OUTPUTS)
 		self.setNrLocalbytes(self.DEFAULT_NR_LOCALBYTES)
 		self.setParenStackSize(self.DEFAULT_PARENSTACK_SIZE)
+		self.setCallStackSize(self.DEFAULT_CALLSTACK_SIZE)
 		self.cpu = cpu
 
 	def assignFrom(self, otherCpuSpecs):
@@ -63,6 +65,7 @@ class S7CPUSpecs(object): #+cdef
 		self.setNrOutputs(otherCpuSpecs.nrOutputs)
 		self.setNrLocalbytes(otherCpuSpecs.nrLocalbytes)
 		self.setParenStackSize(otherCpuSpecs.parenStackSize)
+		self.setCallStackSize(otherCpuSpecs.callStackSize)
 
 	def setNrAccus(self, count):
 		if count not in (2, 4):
@@ -103,5 +106,10 @@ class S7CPUSpecs(object): #+cdef
 
 	def setParenStackSize(self, count):
 		self.parenStackSize = clamp(count, 0, 0x7FFF)
+		if self.cpu:
+			self.cpu.reallocate()
+
+	def setCallStackSize(self, count):
+		self.callStackSize = clamp(count, 1, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()

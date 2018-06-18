@@ -296,6 +296,8 @@ class ProjectFactory(XmlFactory):
 							S7CPUSpecs.DEFAULT_NR_LOCALBYTES)
 					parenStackSize = tag.getAttrInt("parenthesis_stack_size",
 							S7CPUSpecs.DEFAULT_PARENSTACK_SIZE)
+					callStackSize = tag.getAttrInt("call_stack_size",
+							S7CPUSpecs.DEFAULT_CALLSTACK_SIZE)
 					specs = project.getCpuSpecs()
 					specs.setNrAccus(nrAccus)
 					specs.setNrTimers(nrTimers)
@@ -305,6 +307,7 @@ class ProjectFactory(XmlFactory):
 					specs.setNrOutputs(nrOutputs)
 					specs.setNrLocalbytes(nrLocalbytes)
 					specs.setParenStackSize(parenStackSize)
+					specs.setCallStackSize(callStackSize)
 					self.inCpuSpecs = True
 					return
 				elif tag.name == "config":
@@ -481,6 +484,7 @@ class ProjectFactory(XmlFactory):
 					"nr_outputs"		: str(int(specs.nrOutputs)),
 					"nr_localbytes"		: str(int(specs.nrLocalbytes)),
 					"parenthesis_stack_size" : str(int(specs.parenStackSize)),
+					"call_stack_size"	: str(int(specs.callStackSize)),
 				 }),
 			self.Tag(name="config",
 				 comment="\nCPU core configuration",
