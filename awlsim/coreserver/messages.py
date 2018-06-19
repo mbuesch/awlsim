@@ -638,7 +638,9 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 					self.cpuspecs.nrInputs,
 					self.cpuspecs.nrOutputs,
 					self.cpuspecs.nrLocalbytes,
-					*( (0,) * 25 ) # padding
+					self.cpuspecs.parenStackSize,
+					self.cpuspecs.callStackSize,
+					*( (0,) * 23 ) # padding
 		)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
@@ -648,7 +650,8 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 			data = cls.plStruct.unpack(payload)
 			(nrAccus, nrTimers,
 			 nrCounters, nrFlags, nrInputs,
-			 nrOutputs, nrLocalbytes) = data[:7]
+			 nrOutputs, nrLocalbytes,
+			 parenStackSize, callStackSize) = data[:9]
 		except struct.error as e:
 			raise TransferError("CPUSPECS: Invalid data format")
 		cpuspecs = S7CPUSpecs()
@@ -659,6 +662,8 @@ class AwlSimMessage_CPUSPECS(AwlSimMessage):
 		cpuspecs.setNrInputs(nrInputs)
 		cpuspecs.setNrOutputs(nrOutputs)
 		cpuspecs.setNrLocalbytes(nrLocalbytes)
+		cpuspecs.setParenStackSize(parenStackSize)
+		cpuspecs.setCallStackSize(callStackSize)
 		return cls(cpuspecs)
 
 class AwlSimMessage_GET_CPUCONF(AwlSimMessage):
