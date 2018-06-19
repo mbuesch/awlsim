@@ -35,6 +35,7 @@ import functools
 import itertools
 from collections import deque
 import time
+from copy import copy, deepcopy
 
 
 __all__ = [
@@ -75,6 +76,8 @@ __all__ = [
 	"nopContext",
 	"RelPath",
 	"shortUUID",
+	"copy",
+	"deepcopy",
 ]
 
 
