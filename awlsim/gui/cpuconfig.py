@@ -140,7 +140,30 @@ class CpuConfigWidget(QWidget):
 		self.localbytesSpinBox.setToolTip(label.toolTip())
 		group.layout().addWidget(self.localbytesSpinBox, 6, 1)
 
-		self.layout().addWidget(group, 0, 0)
+		label = QLabel("Parenthesis stack (Klammerstack) size", self)
+		label.setToolTip(
+			"Set the depth of the parenthesis stack (Klammerstack) the\n"
+			"CPU will have per block invocation.")
+		group.layout().addWidget(label, 7, 0)
+		self.parenStackSpinBox = QSpinBox(self)
+		self.parenStackSpinBox.setMinimum(0)
+		self.parenStackSpinBox.setMaximum(0x7FFF)
+		self.parenStackSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.parenStackSpinBox, 7, 1)
+
+		label = QLabel("CALL stack size", self)
+		label.setToolTip(
+			"Set the depth of the CALL stack.\n"
+			"This is the number of nested CALLs that can be made\n"
+			"per OB invocation.")
+		group.layout().addWidget(label, 8, 0)
+		self.callStackSpinBox = QSpinBox(self)
+		self.callStackSpinBox.setMinimum(1)
+		self.callStackSpinBox.setMaximum(0x7FFFFFFF)
+		self.callStackSpinBox.setToolTip(label.toolTip())
+		group.layout().addWidget(self.callStackSpinBox, 8, 1)
+
+		self.layout().addWidget(group, 0, 0, 2, 1)
 
 		group = QGroupBox("Hardware configuration", self)
 		group.setLayout(QGridLayout())
@@ -161,7 +184,7 @@ class CpuConfigWidget(QWidget):
 			"by the system on entry into the OB.")
 		group.layout().addWidget(self.obTempCheckBox, 1, 0, 1, 2)
 
-		self.layout().addWidget(group, 1, 0)
+		self.layout().addWidget(group, 0, 1, 1, 1)
 
 		group = QGroupBox("AWL language", self)
 		group.setLayout(QGridLayout())
@@ -188,9 +211,10 @@ class CpuConfigWidget(QWidget):
 			"if such instructions are not used.")
 		group.layout().addWidget(self.extInsnsCheckBox, 1, 0, 1, 2)
 
-		self.layout().addWidget(group, 2, 0)
+		group.layout().setRowStretch(2, 1)
+		self.layout().addWidget(group, 1, 1, 1, 1)
 
-		self.layout().setRowStretch(3, 1)
+		self.layout().setRowStretch(2, 1)
 
 	def loadFromProject(self, project):
 		specs = project.getCpuSpecs()
@@ -205,6 +229,8 @@ class CpuConfigWidget(QWidget):
 		self.inputsSpinBox.setValue(specs.nrInputs)
 		self.outputsSpinBox.setValue(specs.nrOutputs)
 		self.localbytesSpinBox.setValue(specs.nrLocalbytes)
+		self.parenStackSpinBox.setValue(specs.parenStackSize)
+		self.callStackSpinBox.setValue(specs.callStackSize)
 
 		self.clockMemSpin.setValue(conf.clockMemByte)
 
@@ -234,6 +260,8 @@ class CpuConfigWidget(QWidget):
 		nrInputs = self.inputsSpinBox.value()
 		nrOutputs = self.outputsSpinBox.value()
 		nrLocalbytes = self.localbytesSpinBox.value()
+		parenStackSize = self.parenStackSpinBox.value()
+		callStackSize = self.callStackSpinBox.value()
 		clockMemByte = self.clockMemSpin.value()
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
@@ -245,6 +273,8 @@ class CpuConfigWidget(QWidget):
 		specs.setNrInputs(nrInputs)
 		specs.setNrOutputs(nrOutputs)
 		specs.setNrLocalbytes(nrLocalbytes)
+		specs.setParenStackSize(parenStackSize)
+		specs.setCallStackSize(callStackSize)
 		conf.setConfiguredMnemonics(mnemonics)
 		conf.setClockMemByte(clockMemByte)
 		project.setObTempPresetsEn(obTempEnabled)
