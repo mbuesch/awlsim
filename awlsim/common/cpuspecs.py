@@ -27,7 +27,9 @@ from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
 
-__all__ = [ "S7CPUSpecs", ]
+__all__ = [
+	"S7CPUSpecs",
+]
 
 
 class S7CPUSpecs(object): #+cdef
@@ -42,6 +44,19 @@ class S7CPUSpecs(object): #+cdef
 	DEFAULT_NR_LOCALBYTES	= 1024
 	DEFAULT_PARENSTACK_SIZE	= 7
 	DEFAULT_CALLSTACK_SIZE	= 256
+
+	__slots__ = (
+		"cpu",
+		"nrAccus",
+		"nrTimers",
+		"nrCounters",
+		"nrFlags",
+		"nrInputs",
+		"nrOutputs",
+		"nrLocalbytes",
+		"parenStackSize",
+		"callStackSize",
+	)
 
 	def __init__(self, cpu=None):
 		self.cpu = None
@@ -75,32 +90,32 @@ class S7CPUSpecs(object): #+cdef
 			self.cpu.reallocate()
 
 	def setNrTimers(self, count):
-		self.nrTimers = count
+		self.nrTimers = clamp(count, 0, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()
 
 	def setNrCounters(self, count):
-		self.nrCounters = count
+		self.nrCounters = clamp(count, 0, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()
 
 	def setNrFlags(self, count):
-		self.nrFlags = count
+		self.nrFlags = clamp(count, 0, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()
 
 	def setNrInputs(self, count):
-		self.nrInputs = count
+		self.nrInputs = clamp(count, 0, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()
 
 	def setNrOutputs(self, count):
-		self.nrOutputs = count
+		self.nrOutputs = clamp(count, 0, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()
 
 	def setNrLocalbytes(self, count):
-		self.nrLocalbytes = count
+		self.nrLocalbytes = clamp(count, 0, 0x7FFFFFFF)
 		if self.cpu:
 			self.cpu.reallocate()
 
