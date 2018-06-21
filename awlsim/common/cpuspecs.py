@@ -82,6 +82,15 @@ class S7CPUSpecs(object): #+cdef
 		self.setParenStackSize(otherCpuSpecs.parenStackSize)
 		self.setCallStackSize(otherCpuSpecs.callStackSize)
 
+	def __copy__(self):
+		new = self.__class__()
+		new.assignFrom(self)
+		new.cpu = self.cpu
+		return new
+
+	def __deepcopy__(self, memo):
+		raise NotImplementedError
+
 	def setNrAccus(self, count):
 		if count not in (2, 4):
 			raise AwlSimError("Invalid number of accus")
