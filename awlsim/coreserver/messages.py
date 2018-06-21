@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server messages
 #
-# Copyright 2013-2017 Michael Buesch <m@bues.ch>
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -680,7 +680,12 @@ class AwlSimMessage_CPUCONF(AwlSimMessage):
 	def toBytes(self):
 		pl = self.plStruct.pack(self.cpuconf.getConfiguredMnemonics(),
 					self.cpuconf.clockMemByte & 0xFFFFFFFF,
-					*( (0,) * 30 ) # padding
+					self.cpuconf.cycleTimeLimitUs & 0xFFFFFFFF,
+					(self.cpuconf.runTimeLimitUs >> 32) & 0xFFFFFFFF,
+					self.cpuconf.runTimeLimitUs & 0xFFFFFFFF,
+					1 if self.cpuconf.extInsnsEn else 0,
+					1 if self.cpuconf.obStartinfoEn else 0,
+					*( (0,) * 25 ) # padding
 		)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
@@ -688,12 +693,22 @@ class AwlSimMessage_CPUCONF(AwlSimMessage):
 	def fromBytes(cls, payload):
 		try:
 			data = cls.plStruct.unpack(payload)
-			(mnemonics, clockMemByte) = data[:2]
+			(mnemonics,
+			 clockMemByte,
+			 cycleTimeLimitUs,
+			 runTimeLimitUsHigh, runTimeLimitUsLow,
+			 extInsnsEn,
+			 obStartinfoEn) = data[:7]
 		except struct.error as e:
 			raise TransferError("CPUCONF: Invalid data format")
 		cpuconf = S7CPUConfig()
 		cpuconf.setConfiguredMnemonics(mnemonics)
 		cpuconf.setClockMemByte(-1 if clockMemByte > 0xFFFF else clockMemByte)
+		cpuconf.setCycleTimeLimitUs(cycleTimeLimitUs)
+		cpuconf.setRunTimeLimitUs(qwordToSignedPyInt((runTimeLimitUsHigh << 32) |
+							     runTimeLimitUsLow))
+		cpuconf.setExtInsnsEn(True if (extInsnsEn & 1) else False)
+		cpuconf.setOBStartinfoEn(True if (obStartinfoEn & 1) else False)
 		return cls(cpuconf)
 
 class AwlSimMessage_REQ_MEMORY(AwlSimMessage):

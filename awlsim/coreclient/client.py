@@ -668,20 +668,8 @@ class AwlSimClient(object):
 				return False
 		return True
 
-	def enableOBTempPresets(self, enable=True):
-		return self.__setOption("ob_temp_presets", int(bool(enable)))
-
-	def enableExtendedInsns(self, enable=True):
-		return self.__setOption("extended_insns", int(bool(enable)))
-
 	def setPeriodicDumpInterval(self, interval=0):
 		return self.__setOption("periodic_dump_int", int(interval))
-
-	def setCycleTimeLimit(self, seconds=5.0):
-		return self.__setOption("cycle_time_limit", float(seconds))
-
-	def setRunTimeLimit(self, seconds=0.0):
-		return self.__setOption("runtime_limit", float(seconds))
 
 	# Set instruction state dumping.
 	# fromLine, toLine is the range of AWL line numbers for which
@@ -744,8 +732,7 @@ class AwlSimClient(object):
 
 	def loadProject(self, project,
 			loadCpuSpecs=True, loadCpuConf=True,
-			loadTempPresets=True,
-			loadExtInsns=True, loadHwMods=True,
+			loadHwMods=True,
 			loadSymTabs=True, loadLibSelections=True,
 			loadSources=True,
 			loadFup=True, loadKop=True):
@@ -755,10 +742,6 @@ class AwlSimClient(object):
 			self.setCpuSpecs(project.getCpuSpecs())
 		if loadCpuConf:
 			self.setCpuConf(project.getCpuConf())
-		if loadTempPresets:
-			self.enableOBTempPresets(project.getObTempPresetsEn())
-		if loadExtInsns:
-			self.enableExtendedInsns(project.getExtInsnsEn())
 		if loadHwMods:
 			self.loadHardwareModules(project.getHwmodSettings().getLoadedModules())
 		if loadSymTabs:

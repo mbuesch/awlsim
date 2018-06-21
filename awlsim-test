@@ -3,7 +3,7 @@
 #
 # AWL simulator - Commandline testing interface
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ def usage():
 	print("Usage: awlsim-test [OPTIONS] <AWL-source or awlsim-project file>")
 	print("")
 	print("Options:")
-	print(" -Y|--cycle-limit SEC  Cycle time limit, in seconds (default 5.0)")
+	print(" -Y|--cycle-limit SEC  Cycle time limit, in seconds (default 1.0)")
 	print(" -M|--max-runtime SEC  CPU will be stopped after SEC seconds (default: off)")
 	print(" -2|--twoaccu          Force 2-accu mode")
 	print(" -4|--fouraccu         Force 4-accu mode")
@@ -203,6 +203,14 @@ def assignCpuConf(cpuConf, projectCpuConf):
 		cpuConf.setConfiguredMnemonics(opt_mnemonics)
 	if opt_clockMem is not None:
 		cpuConf.setClockMemByte(opt_clockMem)
+	if opt_cycletime is not None:
+		cpuConf.setCycleTimeLimitUs(int(round(opt_cycletime * 1000000.0)))
+	if opt_maxRuntime is not None:
+		cpuConf.setRunTimeLimitUs(int(round(opt_maxRuntime * 1000000.0)))
+	if opt_obtemp is not None:
+		cpuConf.setOBStartinfoEn(opt_obtemp)
+	if opt_extInsns is not None:
+		cpuConf.setExtInsnsEn(opt_extInsns)
 
 def run(inputFile):
 	s = None
@@ -283,15 +291,11 @@ def run(inputFile):
 		cpu = s.getCPU()
 		assignCpuSpecs(cpu.getSpecs(), project.getCpuSpecs())
 		assignCpuConf(cpu.getConf(), project.getCpuConf())
-		cpu.enableObTempPresets(project.getObTempPresetsEn() or opt_obtemp)
-		cpu.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
 		if not opt_noCpuDump:
 			if opt_speedStats:
 				cpu.setBlockExitCallback(cpuStatsCallback, cpu)
 			elif opt_loglevel >= Logging.LOG_INFO:
 				cpu.setBlockExitCallback(cpuDumpCallback, cpu)
-		cpu.setCycleTimeLimit(opt_cycletime)
-		cpu.setRunTimeLimit(opt_maxRuntime)
 
 		# Download the program
 		printInfo("Initializing CPU...")
@@ -391,10 +395,6 @@ def runWithServerBackend(inputFile):
 			client.setPeriodicDumpInterval(0)
 		else:
 			client.setPeriodicDumpInterval(300)
-		client.enableOBTempPresets(project.getObTempPresetsEn() or opt_obtemp)
-		client.enableExtendedInsns(project.getExtInsnsEn() or opt_extInsns)
-		client.setCycleTimeLimit(opt_cycletime)
-		client.setRunTimeLimit(opt_maxRuntime)
 		specs = client.getCpuSpecs()
 		assignCpuSpecs(specs, project.getCpuSpecs())
 		client.setCpuSpecs(specs)
@@ -407,8 +407,6 @@ def runWithServerBackend(inputFile):
 		printInfo("Initializing CPU...")
 		client.loadProject(project, loadCpuSpecs=False,
 				   loadCpuConf=False,
-				   loadTempPresets=False,
-				   loadExtInsns=False,
 				   loadHwMods=False)
 		client.setRunState(True)
 
@@ -468,13 +466,13 @@ def main():
 	global opt_spawnBackend
 	global opt_interpreter
 
-	opt_cycletime = 5.0
-	opt_maxRuntime = -1.0
+	opt_cycletime = None
+	opt_maxRuntime = None
 	opt_noCpuDump = False
 	opt_speedStats = False
 	opt_nrAccus = None
-	opt_extInsns = False
-	opt_obtemp = False
+	opt_extInsns = None
+	opt_obtemp = None
 	opt_clockMem = None
 	opt_mnemonics = None
 	opt_optimizers = "default"
@@ -606,13 +604,13 @@ def main():
 		if o in ("--list-sfc", "--list-sfc-verbose"):
 			print("The supported system functions (SFCs) are:")
 			from awlsim.core.systemblocks.tables import SFC_table
-			printSysblockInfo(SFC_table, "SFC", opt_extInsns,
+			printSysblockInfo(SFC_table, "SFC", bool(opt_extInsns),
 					  o.endswith("verbose"))
 			return ExitCodes.EXIT_OK
 		if o in ("--list-sfb", "--list-sfb-verbose"):
 			print("The supported system function blocks (SFBs) are:")
 			from awlsim.core.systemblocks.tables import SFB_table
-			printSysblockInfo(SFB_table, "SFB", opt_extInsns,
+			printSysblockInfo(SFB_table, "SFB", bool(opt_extInsns),
 					  o.endswith("verbose"))
 			return ExitCodes.EXIT_OK
 	if len(args) != 1 and not opt_hwinfos:

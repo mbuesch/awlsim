@@ -2,7 +2,7 @@
 #
 # AWL simulator - project V0 legacy format read support
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,8 +66,6 @@ class LegacyProjectParser(object):
 		libSelections = []
 		specs = S7CPUSpecs()
 		conf = S7CPUConfig()
-		obTempPresetsEn = False
-		extInsnsEn = False
 		guiSettings = GuiSettings()
 		linkSettings = CoreLinkSettings()
 		hwmodSettings = HwmodSettings()
@@ -149,9 +147,9 @@ class LegacyProjectParser(object):
 				clockMemByte = p.getint("CPU", "clock_memory_byte")
 				conf.setClockMemByte(clockMemByte)
 			if p.has_option("CPU", "ob_startinfo_enable"):
-				obTempPresetsEn = p.getboolean("CPU", "ob_startinfo_enable")
+				conf.setOBStartinfoEn(p.getboolean("CPU", "ob_startinfo_enable"))
 			if p.has_option("CPU", "ext_insns_enable"):
-				extInsnsEn = p.getboolean("CPU", "ext_insns_enable")
+				conf.setExtInsnsEn(p.getboolean("CPU", "ext_insns_enable"))
 
 			# FUP section
 			getSrcs(fupSources, "FUP", "fup", FupSource)
@@ -316,8 +314,6 @@ class LegacyProjectParser(object):
 				    libSelections = libSelections,
 				    cpuSpecs = specs,
 				    cpuConf = conf,
-				    obTempPresetsEn = obTempPresetsEn,
-				    extInsnsEn = extInsnsEn,
 				    guiSettings = guiSettings,
 				    coreLinkSettings = linkSettings,
 				    hwmodSettings = hwmodSettings)

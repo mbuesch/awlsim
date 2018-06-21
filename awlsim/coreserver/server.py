@@ -615,22 +615,6 @@ class AwlSimServer(object): #+cdef
 		self.loadedLibSelections.append(libSelection)
 		self.__updateProjectFile()
 
-	def cpuEnableObTempPresets(self, en):
-		self.__sim.cpu.enableObTempPresets(en)
-		self.__updateProjectFile()
-
-	def cpuEnableExtendedInsns(self, en):
-		self.__sim.cpu.enableExtendedInsns(en)
-		self.__updateProjectFile()
-
-	def cpuSetCycleTimeLimit(self, limitSeconds):
-		self.__sim.cpu.setCycleTimeLimit(limitSeconds)
-		self.__updateProjectFile()
-
-	def cpuSetRunTimeLimit(self, limitSeconds):
-		self.__sim.cpu.setRunTimeLimit(limitSeconds)
-		self.__updateProjectFile()
-
 	def cpuSetSpecs(self, cpuSpecs):
 		self.__sim.cpu.getSpecs().assignFrom(cpuSpecs)
 		self.__updateProjectFile()
@@ -765,10 +749,6 @@ class AwlSimServer(object): #+cdef
 
 		if msg.name == "loglevel":
 			Logging.setLoglevel(msg.getIntValue())
-		elif msg.name == "ob_temp_presets":
-			self.cpuEnableObTempPresets(msg.getBoolValue())
-		elif msg.name == "extended_insns":
-			self.cpuEnableExtendedInsns(msg.getBoolValue())
 		elif msg.name == "periodic_dump_int":
 			client.dumpInterval = msg.getIntValue()
 			if client.dumpInterval:
@@ -776,10 +756,6 @@ class AwlSimServer(object): #+cdef
 			else:
 				client.nextDump = None
 			self.__updateCpuCallbacks()
-		elif msg.name == "cycle_time_limit":
-			self.cpuSetCycleTimeLimit(msg.getFloatValue())
-		elif msg.name == "runtime_limit":
-			self.cpuSetRunTimeLimit(msg.getFloatValue())
 		else:
 			status = AwlSimMessage_REPLY.STAT_FAIL
 
@@ -1054,12 +1030,8 @@ class AwlSimServer(object): #+cdef
 
 		for modDesc in project.getHwmodSettings().getLoadedModules():
 			self.loadHardwareModule(modDesc)
-		self.cpuEnableObTempPresets(project.getObTempPresetsEn())
-		self.cpuEnableExtendedInsns(project.getExtInsnsEn())
 		self.cpuSetSpecs(project.getCpuSpecs())
 		self.cpuSetConf(project.getCpuConf())
-		#TODO set cycle time limit
-		#TODO set run time limit
 
 		for symSrc in project.getSymTabSources():
 			self.loadSymTabSource(symSrc)

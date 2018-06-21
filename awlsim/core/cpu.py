@@ -501,7 +501,7 @@ class S7CPU(object): #+cdef
 		self.specs = S7CPUSpecs(self)
 		self.conf = S7CPUConfig(self)
 		self.prog = S7Prog(self)
-		self.setCycleTimeLimit(5.0)
+		self.setCycleTimeLimit(1.0)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)

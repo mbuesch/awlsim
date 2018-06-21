@@ -2,7 +2,7 @@
 #
 # AWL simulator - project
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +39,12 @@ import os
 import sys
 
 
-__all__ = [ "GuiSettings", "CoreLinkSettings", "HwmodSettings", "Project", ]
+__all__ = [
+	"GuiSettings",
+	"CoreLinkSettings",
+	"HwmodSettings",
+	"Project",
+]
 
 
 class GuiSettingsFactory(XmlFactory):
@@ -313,15 +318,23 @@ class ProjectFactory(XmlFactory):
 				elif tag.name == "config":
 					clockMem = tag.getAttrInt("clock_memory_byte",
 								  S7CPUConfig.DEFAULT_CLOCKMEM)
-					obStartEn = tag.getAttrBool("ob_startinfo_enable", False)
 					mnemonics = tag.getAttrInt("mnemonics",
 								   S7CPUConfig.DEFAULT_MNEMONICS)
-					extInsnsEn = tag.getAttrBool("ext_insns_enable", False)
+					cycleTimeLimitUs = tag.getAttrInt("cycle_time_limit_us",
+							S7CPUConfig.DEFAULT_CYCLETIMELIMIT_US)
+					runTimeLimitUs = tag.getAttrInt("run_time_limit_us",
+							S7CPUConfig.DEFAULT_RUNTIMELIMIT_US)
+					obStartEn = tag.getAttrBool("ob_startinfo_enable",
+							S7CPUConfig.DEFAULT_OBSTARTINFO_EN)
+					extInsnsEn = tag.getAttrBool("ext_insns_enable",
+							S7CPUConfig.DEFAULT_EXTINSNS_EN)
 					conf = project.getCpuConf()
 					conf.setClockMemByte(clockMem)
 					conf.setConfiguredMnemonics(mnemonics)
-					project.setObTempPresetsEn(obStartEn)
-					project.setExtInsnsEn(extInsnsEn)
+					conf.setCycleTimeLimitUs(cycleTimeLimitUs)
+					conf.setRunTimeLimitUs(runTimeLimitUs)
+					conf.setExtInsnsEn(extInsnsEn)
+					conf.setOBStartinfoEn(obStartEn)
 					self.inCpuConf = True
 					return
 			elif self.inLangAwl:
@@ -489,10 +502,12 @@ class ProjectFactory(XmlFactory):
 			self.Tag(name="config",
 				 comment="\nCPU core configuration",
 				 attrs={
-					"ob_startinfo_enable"	: str(int(project.getObTempPresetsEn())),
-					"ext_insns_enable"	: str(int(project.getExtInsnsEn())),
+					"ob_startinfo_enable"	: str(int(bool(conf.obStartinfoEn))),
+					"ext_insns_enable"	: str(int(bool(conf.extInsnsEn))),
 					"clock_memory_byte"	: str(int(conf.clockMemByte)),
 					"mnemonics"		: str(int(conf.getConfiguredMnemonics())),
+					"cycle_time_limit_us"	: str(int(conf.cycleTimeLimitUs)),
+					"run_time_limit_us"	: str(int(conf.runTimeLimitUs)),
 				 })
 		]
 		childTags.append(
@@ -786,8 +801,6 @@ class Project(object):
 		     libSelections=None,
 		     cpuSpecs=None,
 		     cpuConf=None,
-		     obTempPresetsEn=False,
-		     extInsnsEn=False,
 		     guiSettings=None,
 		     coreLinkSettings=None,
 		     hwmodSettings=None):
@@ -801,8 +814,6 @@ class Project(object):
 		self.setLibSelections(libSelections)
 		self.setCpuSpecs(cpuSpecs)
 		self.setCpuConf(cpuConf)
-		self.setObTempPresetsEn(obTempPresetsEn)
-		self.setExtInsnsEn(extInsnsEn)
 		self.setGuiSettings(guiSettings)
 		self.setCoreLinkSettings(coreLinkSettings)
 		self.setHwmodSettings(hwmodSettings)
@@ -817,8 +828,6 @@ class Project(object):
 		self.setSymTabSources(None)
 		self.setLibSelections(None)
 		self.setCpuSpecs(None)
-		self.setObTempPresetsEn(False)
-		self.setExtInsnsEn(False)
 		self.setGuiSettings(None)
 		self.setCoreLinkSettings(None)
 		self.setHwmodSettings(None)
@@ -910,18 +919,6 @@ class Project(object):
 
 	def getCpuConf(self):
 		return self.cpuConf
-
-	def setObTempPresetsEn(self, obTempPresetsEn):
-		self.obTempPresetsEn = bool(obTempPresetsEn)
-
-	def getObTempPresetsEn(self):
-		return self.obTempPresetsEn
-
-	def setExtInsnsEn(self, extInsnsEn):
-		self.extInsnsEn = bool(extInsnsEn)
-
-	def getExtInsnsEn(self):
-		return self.extInsnsEn
 
 	def setGuiSettings(self, guiSettings):
 		self.guiSettings = guiSettings or GuiSettings()
