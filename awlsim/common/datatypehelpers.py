@@ -2,7 +2,7 @@
 #
 # AWL data types helper functions
 #
-# Copyright 2013-2017 Michael Buesch <m@bues.ch>
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ __all__ = [
 	"byteToSignedPyInt",
 	"wordToSignedPyInt",
 	"dwordToSignedPyInt",
+	"qwordToSignedPyInt",
 	"pyFloatToDWord",
 	"dwordToPyFloat",
 	"floatConst",
@@ -78,7 +79,7 @@ assert(swapEndianDWord(swapEndianDWord(0x12345678)) == 0x12345678)
 
 
 # Convert a S7 byte to a signed Python int.
-# This applies the two's complement, if the dword is negative
+# This applies the two's complement, if the byte is negative
 # so that the resulting Python int will have the correct sign.
 def byteToSignedPyInt(byte):						#@nocy
 	if byte & 0x80:							#@nocy
@@ -89,7 +90,7 @@ def byteToSignedPyInt(byte):						#@nocy
 
 
 # Convert a S7 word to a signed Python int.
-# This applies the two's complement, if the dword is negative
+# This applies the two's complement, if the word is negative
 # so that the resulting Python int will have the correct sign.
 def wordToSignedPyInt(word):						#@nocy
 	if word & 0x8000:						#@nocy
@@ -108,6 +109,16 @@ def dwordToSignedPyInt(dword):						#@nocy
 	return dword & 0xFFFFFFFF					#@nocy
 #cdef int32_t dwordToSignedPyInt(uint32_t dword):			#@cy
 #	return <int32_t>dword						#@cy
+
+# Convert a quad-word (64 bit) to a signed Python int.
+# This applies the two's complement, if the qword is negative
+# so that the resulting Python int will have the correct sign.
+def qwordToSignedPyInt(qword):						#@nocy
+	if qword & 0x8000000000000000:					#@nocy
+		return -((~qword + 1) & 0xFFFFFFFFFFFFFFFF)		#@nocy
+	return qword & 0xFFFFFFFFFFFFFFFF				#@nocy
+#cdef int64_t qwordToSignedPyInt(uint64_t qword):			#@cy
+#	return <int64_t>qword						#@cy
 
 
 # Convert a Python float to an S7 dword.

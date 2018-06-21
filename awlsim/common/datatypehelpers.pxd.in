@@ -4,6 +4,7 @@ cdef uint32_t swapEndianDWord(uint32_t dword)
 cdef int32_t byteToSignedPyInt(uint8_t byte)
 cdef int32_t wordToSignedPyInt(uint16_t word)
 cdef int32_t dwordToSignedPyInt(uint32_t dword)
+cdef int64_t qwordToSignedPyInt(uint64_t dword)
 
 cdef uint32_t pyFloatToDWord(double pyfl)
 cdef double dwordToPyFloat(uint32_t dword)
