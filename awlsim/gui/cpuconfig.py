@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU configuration widget
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -184,6 +184,19 @@ class CpuConfigWidget(QWidget):
 			"by the system on entry into the OB.")
 		group.layout().addWidget(self.obTempCheckBox, 1, 0, 1, 2)
 
+		label = QLabel("Cycle (OB 1) time limit", self)
+		label.setToolTip(
+			"Time limit of one cycle (OB 1) run, in milliseconds.")
+		group.layout().addWidget(label, 2, 0)
+		self.cycleTimeSpinBox = QDoubleSpinBox(self)
+		self.cycleTimeSpinBox.setToolTip(label.toolTip())
+		self.cycleTimeSpinBox.setSuffix(" ms")
+		self.cycleTimeSpinBox.setSingleStep(1.0)
+		self.cycleTimeSpinBox.setMinimum(1.0)
+		self.cycleTimeSpinBox.setMaximum(900000.0)
+		self.cycleTimeSpinBox.setDecimals(1)
+		group.layout().addWidget(self.cycleTimeSpinBox, 2, 1)
+
 		self.layout().addWidget(group, 0, 1, 1, 1)
 
 		group = QGroupBox("AWL language", self)
@@ -221,8 +234,7 @@ class CpuConfigWidget(QWidget):
 		conf = project.getCpuConf()
 
 		index = self.accuCombo.findData(specs.nrAccus)
-		assert(index >= 0)
-		self.accuCombo.setCurrentIndex(index)
+		self.accuCombo.setCurrentIndex(index if index >= 0 else 0)
 		self.timersSpinBox.setValue(specs.nrTimers)
 		self.countersSpinBox.setValue(specs.nrCounters)
 		self.flagsSpinBox.setValue(specs.nrFlags)
@@ -235,18 +247,13 @@ class CpuConfigWidget(QWidget):
 		self.clockMemSpin.setValue(conf.clockMemByte)
 
 		index = self.mnemonicsCombo.findData(conf.getConfiguredMnemonics())
-		assert(index >= 0)
-		self.mnemonicsCombo.setCurrentIndex(index)
+		self.mnemonicsCombo.setCurrentIndex(index if index >= 0 else 0)
 
 		self.obTempCheckBox.setCheckState(
-			Qt.Checked if project.getObTempPresetsEn() else\
-			Qt.Unchecked
-		)
-
+			Qt.Checked if conf.obStartinfoEn else Qt.Unchecked)
 		self.extInsnsCheckBox.setCheckState(
-			Qt.Checked if project.getExtInsnsEn() else\
-			Qt.Unchecked
-		)
+			Qt.Checked if conf.extInsnsEn else Qt.Unchecked)
+		self.cycleTimeSpinBox.setValue(conf.cycleTimeLimitUs / 1000.0)
 
 	def storeToProject(self, project):
 		specs = project.getCpuSpecs()
@@ -265,6 +272,7 @@ class CpuConfigWidget(QWidget):
 		clockMemByte = self.clockMemSpin.value()
 		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
+		cycleTimeLimit = self.cycleTimeSpinBox.value()
 
 		specs.setNrAccus(nrAccus)
 		specs.setNrTimers(nrTimers)
@@ -277,8 +285,9 @@ class CpuConfigWidget(QWidget):
 		specs.setCallStackSize(callStackSize)
 		conf.setConfiguredMnemonics(mnemonics)
 		conf.setClockMemByte(clockMemByte)
-		project.setObTempPresetsEn(obTempEnabled)
-		project.setExtInsnsEn(extInsnsEnabled)
+		conf.setOBStartinfoEn(obTempEnabled)
+		conf.setExtInsnsEn(extInsnsEnabled)
+		conf.setCycleTimeLimitUs(int(round(cycleTimeLimit * 1000.0)))
 
 		return True
 
