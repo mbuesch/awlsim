@@ -2,7 +2,7 @@
 #
 # AWL simulator - counters
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ class Counter(object): #+cdef
 
 	# Set (S) the counter to a value (accu1)
 	def set(self, VKE):
-		if ~self.prevVKE_S & VKE:
+		if (self.prevVKE_S ^ 1) & VKE:
 			self.setValueBCD(self.cpu.accu1.get())
 		self.prevVKE_S = VKE
 
@@ -86,7 +86,7 @@ class Counter(object): #+cdef
 
 	# Run the FR instruction
 	def run_FR(self, VKE):
-		if ~self.prevVKE_FR & VKE:
+		if (self.prevVKE_FR ^ 1) & VKE:
 			self.prevVKE_S = 0
 			self.prevVKE_ZV = 0
 			self.prevVKE_ZR = 0
@@ -94,14 +94,14 @@ class Counter(object): #+cdef
 
 	# Run the ZV instruction
 	def run_ZV(self, VKE):
-		if ~self.prevVKE_ZV & VKE:
+		if (self.prevVKE_ZV ^ 1) & VKE:
 			if self.counter < 999:
 				self.counter += 1
 		self.prevVKE_ZV = VKE
 
 	# Run the ZR instruction
 	def run_ZR(self, VKE):
-		if ~self.prevVKE_ZR & VKE:
+		if (self.prevVKE_ZR ^ 1) & VKE:
 			if self.counter > 0:
 				self.counter -= 1
 		self.prevVKE_ZR = VKE

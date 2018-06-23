@@ -2,7 +2,7 @@
 #
 # AWL simulator - timers
 #
-# Copyright 2012-2014 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -202,7 +202,7 @@ class Timer(object): #+cdef
 	def run_SV(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
 		s = self.cpu.statusWord
-		if s.VKE & ~self.prevVKE: # Pos edge
+		if s.VKE & (self.prevVKE ^ 1): # Pos edge
 			self.status = 1
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
@@ -221,17 +221,17 @@ class Timer(object): #+cdef
 	def run_SS(self, s5t):
 		self.deadlineCallback = self.__cb_setStatus
 		s = self.cpu.statusWord
-		if s.VKE & ~self.prevVKE: # Pos edge
+		if s.VKE & (self.prevVKE ^ 1): # Pos edge
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SA(self, s5t):
 		self.deadlineCallback = self.__cb_clearStatus
 		s = self.cpu.statusWord
-		if s.VKE & ~self.prevVKE: # Pos edge
+		if s.VKE & (self.prevVKE ^ 1): # Pos edge
 			self.__checkDeadline()
 			self.status, self.running = 1, False
-		if ~s.VKE & self.prevVKE: # Neg edge
+		if (s.VKE ^ 1) & self.prevVKE: # Neg edge
 			self.status = 1
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0

@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ class SFB1(SFB): #+cdef
 
 		# CD pos-edge detection
 		CD = self.fetchInterfaceFieldByName("CD")
-		CD_pos_edge = CD & ~self.fetchInterfaceFieldByName("CDO") & 1
+		CD_pos_edge = CD & (self.fetchInterfaceFieldByName("CDO") ^ 1) & 1
 		self.storeInterfaceFieldByName("CDO", CD)
 
 		CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("CV"))
