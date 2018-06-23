@@ -6,7 +6,7 @@ cdef class Timer(object):
 	cdef public uint32_t index
 	cdef public _Bool prevVKE
 	cdef public uint16_t timebase
-	cdef public object deadlineCallback
+	cdef public _Bool deadlineActionSetStatus
 	cdef public double deadline
 	cdef public double remaining
 	cdef public uint32_t status

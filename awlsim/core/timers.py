@@ -81,7 +81,7 @@ class Timer(object): #+cdef
 		"index",
 		"prevVKE",
 		"timebase",
-		"deadlineCallback",
+		"deadlineActionSetStatus",
 		"deadline",
 		"remaining",
 		"status",
@@ -93,7 +93,7 @@ class Timer(object): #+cdef
 		self.index = index
 		self.prevVKE = 0
 		self.timebase = self.TB_10MS
-		self.deadlineCallback = None
+		self.deadlineActionSetStatus = False
 		self.deadline = 0.0
 		self.remaining = 0.0
 		self.status = 0
@@ -188,7 +188,7 @@ class Timer(object): #+cdef
 		self.remaining = max(0.0, self.deadline - self.cpu.now)
 
 	def run_SI(self, s5t):
-		self.deadlineCallback = self.__cb_clearStatus
+		self.deadlineActionSetStatus = False
 		s = self.cpu.statusWord
 		if s.VKE:
 			if not self.prevVKE: # Pos edge
@@ -200,7 +200,7 @@ class Timer(object): #+cdef
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SV(self, s5t):
-		self.deadlineCallback = self.__cb_clearStatus
+		self.deadlineActionSetStatus = False
 		s = self.cpu.statusWord
 		if s.VKE & (self.prevVKE ^ 1): # Pos edge
 			self.status = 1
@@ -208,7 +208,7 @@ class Timer(object): #+cdef
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SE(self, s5t):
-		self.deadlineCallback = self.__cb_setStatus
+		self.deadlineActionSetStatus = True
 		s = self.cpu.statusWord
 		if s.VKE:
 			if not self.prevVKE: # Pos edge
@@ -219,14 +219,14 @@ class Timer(object): #+cdef
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SS(self, s5t):
-		self.deadlineCallback = self.__cb_setStatus
+		self.deadlineActionSetStatus = True
 		s = self.cpu.statusWord
 		if s.VKE & (self.prevVKE ^ 1): # Pos edge
 			self.__start(s5t)
 		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SA(self, s5t):
-		self.deadlineCallback = self.__cb_clearStatus
+		self.deadlineActionSetStatus = False
 		s = self.cpu.statusWord
 		if s.VKE & (self.prevVKE ^ 1): # Pos edge
 			self.__checkDeadline()
@@ -246,15 +246,10 @@ class Timer(object): #+cdef
 		if self.running:
 			self.__updateRemaining()
 			if self.remaining <= 0.0:
-				self.deadlineCallback()
-
-	# Deadline callback - set status
-	def __cb_setStatus(self):
-		self.running, self.status = False, 1
-
-	# Deadline callback - clear status
-	def __cb_clearStatus(self):
-		self.running, self.status = False, 0
+				if self.deadlineActionSetStatus:
+					self.running, self.status = False, 1
+				else:
+					self.running, self.status = False, 0
 
 def Timer_seconds_to_s5t(seconds): #+cdef
 	return Timer.seconds_to_s5t(seconds)
