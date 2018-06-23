@@ -1,4 +1,5 @@
 global-include *.pxd.in
+global-include *.pyx.in
 
 graft awlsim/gui/icons/icon-images
 graft debian

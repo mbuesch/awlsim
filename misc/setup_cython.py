@@ -259,11 +259,16 @@ def registerCythonModule(baseDir, sourceModName):
 			continue
 
 		for filename in filenames:
-			if not filename.endswith(".py"):
+			if filename.endswith(".py"):
+				fromSuffix = ".py"
+			elif filename.endswith(".pyx.in"):
+				fromSuffix = ".pyx.in"
+			else:
 				continue
-			baseName = filename[:-3] # Strip .py
 
-			fromPy = os.path.join(dirpath, baseName + ".py")
+			baseName = filename[:-len(fromSuffix)] # Strip .py/.pyx.in
+
+			fromPy = os.path.join(dirpath, baseName + fromSuffix)
 			fromPxd = os.path.join(dirpath, baseName + ".pxd.in")
 			toDir = os.path.join(patchDir, subpath)
 			toPyx = os.path.join(toDir, baseName + ".pyx")
