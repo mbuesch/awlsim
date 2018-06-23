@@ -1,0 +1,12 @@
+# Get all stdint types.
+from libc.stdint cimport *
+
+# Boolean type. The values 0 and 1 can be used.
+ctypedef bint		_Bool
+
+# Extended boolean type for use as return type from
+# functions that can raise exceptions.
+# The values 0 and 1 can be used.
+# An exception is encoded as special value ExBool_val.
+ctypedef signed int	ExBool_t
+cdef enum:		ExBool_val = -1

@@ -1,3 +1,5 @@
+from awlsim.common.cython_support cimport *
+
 cdef class __AwlOperatorTypesClass(object):
 	cdef public uint32_t _IMM_START
 	cdef public uint32_t IMM

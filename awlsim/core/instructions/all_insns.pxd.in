@@ -1,3 +1,4 @@
+from awlsim.common.cython_support cimport *
 from awlsim.core.instructions.insn_abs cimport *
 from awlsim.core.instructions.insn_acos cimport *
 from awlsim.core.instructions.insn_asin cimport *

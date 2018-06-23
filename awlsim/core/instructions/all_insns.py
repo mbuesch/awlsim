@@ -1,4 +1,5 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
+#from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
 from awlsim.core.instructions.insn_abs import * #@nocy

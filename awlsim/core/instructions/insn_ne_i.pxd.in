@@ -1,3 +1,4 @@
+from awlsim.common.cython_support cimport *
 from awlsim.core.instructions.main cimport *
 
 cdef class AwlInsn_NE_I(AwlInsn):

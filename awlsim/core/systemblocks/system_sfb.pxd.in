@@ -1,3 +1,4 @@
+from awlsim.common.cython_support cimport *
 from awlsim.core.systemblocks.system_sfb_m1 cimport *
 from awlsim.core.systemblocks.system_sfb_0 cimport *
 from awlsim.core.systemblocks.system_sfb_1 cimport *

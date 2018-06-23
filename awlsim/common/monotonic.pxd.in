@@ -1,3 +1,5 @@
+from awlsim.common.cython_support cimport *
+
 cdef class _MONOTONIC_RAW_factory(object):
 	cdef public object __id_CLOCK_MONOTONIC_RAW
 

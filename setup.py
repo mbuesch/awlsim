@@ -71,7 +71,7 @@ setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or
 setup_cython.profileEnabled = bool(getEnvInt("AWLSIM_PROFILE") > 0)
 
 
-def pyCythonPatchLine(line, basicOnly=False):
+def pyCythonPatchLine(line):
 	# Patch the import statements
 	line = re.sub(r'^(\s*from awlsim[0-9a-zA-Z_]*)\.([0-9a-zA-Z_\.]+) import', r'\1_cython.\2 import', line)
 	line = re.sub(r'^(\s*from awlsim[0-9a-zA-Z_]*)\.([0-9a-zA-Z_\.]+) cimport', r'\1_cython.\2 cimport', line)

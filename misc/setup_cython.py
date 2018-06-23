@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.9
+#   v1.10
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -83,10 +83,10 @@ def makeDummyFile(path):
 	with open(path, "wb") as fd:
 		fd.write("\n".encode("UTF-8"))
 
-def pyCythonPatchLine(line, basicOnly=False):
+def pyCythonPatchLine(line):
 	return line
 
-def pyCythonPatch(fromFile, toFile, basicOnly=False):
+def pyCythonPatch(fromFile, toFile):
 	print("cython-patch: patching file '%s' to '%s'" %\
 	      (fromFile, toFile))
 	tmpFile = toFile + ".TMP"
@@ -173,24 +173,10 @@ def pyCythonPatch(fromFile, toFile, basicOnly=False):
 				if "#@cy2" in stripLine:
 					line = "#" + line
 
-			if not basicOnly:
-				# Automagic types
-				line = re.sub(r'\b_Bool\b', "bint", line)
-				line = re.sub(r'\bExBool_t\b', "signed char", line)
-				line = re.sub(r'\bExBool_val\b', "-1", line)
-				line = re.sub(r'\bint8_t\b', "signed char", line)
-				line = re.sub(r'\buint8_t\b', "unsigned char", line)
-				line = re.sub(r'\bint16_t\b', "signed short", line)
-				line = re.sub(r'\buint16_t\b', "unsigned short", line)
-				line = re.sub(r'\bint32_t\b', "signed int", line)
-				line = re.sub(r'\buint32_t\b', "unsigned int", line)
-				line = re.sub(r'\bint64_t\b', "signed long long", line)
-				line = re.sub(r'\buint64_t\b', "unsigned long long", line)
+			# Remove compat stuff
+			line = line.replace("absolute_import,", "")
 
-				# Remove compat stuff
-				line = line.replace("absolute_import,", "")
-
-			line = pyCythonPatchLine(line, basicOnly)
+			line = pyCythonPatchLine(line)
 
 			outfd.write(line.encode("UTF-8"))
 		outfd.flush()
@@ -216,8 +202,7 @@ def patchCythonModules(buildDir):
 		if unit.baseName == "__init__":
 			# Copy and patch the package __init__.py
 			toPy = os.path.join(buildDir, *unit.cyModName.split(".")) + ".py"
-			pyCythonPatch(unit.fromPy, toPy,
-				      basicOnly=True)
+			pyCythonPatch(unit.fromPy, toPy)
 		else:
 			# Generate the .pyx
 			pyCythonPatch(unit.fromPy, unit.toPyx)

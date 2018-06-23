@@ -1,3 +1,5 @@
+from awlsim.common.cython_support cimport *
+
 cdef class AwlOffset(object):
 	cdef public int64_t byteOffset
 	cdef public int32_t bitOffset

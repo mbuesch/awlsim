@@ -1,3 +1,4 @@
+from awlsim.common.cython_support cimport *
 from awlsim.core.blocks cimport *
 
 cdef class AwlLibEntry(StaticCodeBlock):

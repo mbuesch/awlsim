@@ -1,3 +1,5 @@
+from awlsim.common.cython_support cimport *
+
 cdef class AbstractIO(object):
 	cdef public object pixtend
 	cdef public _Bool isV2

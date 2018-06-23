@@ -1,3 +1,5 @@
+from awlsim.common.cython_support cimport *
+
 cdef class S7StatusWord(object):
 	cdef _Bool NER
 	cdef _Bool VKE

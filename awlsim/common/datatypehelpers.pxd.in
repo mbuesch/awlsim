@@ -1,3 +1,5 @@
+from awlsim.common.cython_support cimport *
+
 cdef uint16_t swapEndianWord(uint16_t word)
 cdef uint32_t swapEndianDWord(uint32_t dword)
 
