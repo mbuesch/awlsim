@@ -1,6 +1,23 @@
 from awlsim.common.cython_support cimport *
 from awlsim.core.cpu cimport *
 
+cdef class TimerConstsClass(object):
+	cdef public uint8_t TB_10MS
+	cdef public uint8_t TB_100MS
+	cdef public uint8_t TB_1S
+	cdef public uint8_t TB_10S
+
+	cdef public uint8_t TB_SHIFT
+	cdef public uint8_t TB_MASK
+	cdef public uint16_t TB_MASK_S
+
+	cdef public uint16_t TB_10MS_S
+	cdef public uint16_t TB_100MS_S
+	cdef public uint16_t TB_1S_S
+	cdef public uint16_t TB_10S_S
+
+cdef TimerConstsClass TimerConsts
+
 cdef class Timer(object):
 	cdef public S7CPU cpu
 	cdef public uint32_t index
@@ -9,8 +26,29 @@ cdef class Timer(object):
 	cdef public _Bool deadlineActionSetStatus
 	cdef public double deadline
 	cdef public double remaining
-	cdef public uint32_t status
+	cdef public _Bool status
 	cdef public _Bool running
 
-cdef Timer_seconds_to_s5t(seconds)
-cdef Timer_s5t_to_seconds(s5t)
+	cdef _Bool get(self)
+	cdef void reset(self)
+	cdef setTimevalS5T(self, uint16_t s5t)
+	cdef uint32_t getTimevalBin(self) except? 0xFFFFFFFF
+	cdef uint16_t getTimevalS5T(self) except? 0xFFFF
+	cdef uint16_t getTimevalS5TwithBase(self) except? 0xFFFF
+	cdef double __getRemainingSeconds(self)
+	cdef void __updateRemaining(self)
+	cdef run_SI(self, uint16_t s5t)
+	cdef run_SV(self, uint16_t s5t)
+	cdef run_SE(self, uint16_t s5t)
+	cdef run_SS(self, uint16_t s5t)
+	cdef run_SA(self, uint16_t s5t)
+	cdef __start(self, uint16_t s5t)
+	cdef void __checkDeadline(self)
+
+cdef uint16_t _seconds_to_s5t_tb10ms(double seconds)
+cdef uint16_t _seconds_to_s5t_tb100ms(double seconds)
+cdef uint16_t _seconds_to_s5t_tb1s(double seconds)
+cdef uint16_t _seconds_to_s5t_tb10s(double seconds)
+
+cdef uint32_t Timer_seconds_to_s5t(double seconds) except? 0xFFFFFFFF
+cdef double Timer_s5t_to_seconds(uint16_t s5t) except? -1.0
