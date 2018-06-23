@@ -7,6 +7,8 @@ from awlsim.core.operators cimport *
 from awlsim.core.memory cimport *
 from awlsim.core.blocks cimport *
 from awlsim.core.datablocks cimport *
+from awlsim.core.timers cimport *
+from awlsim.core.counters cimport *
 from awlsim.common.cpuspecs cimport *
 
 
@@ -164,6 +166,8 @@ cdef class S7CPU(object):
 
 	cdef Accu getAccu(self, uint32_t index)
 	cdef Addressregister getAR(self, uint32_t index)
+	cdef Timer getTimer(self, uint32_t index)
+	cdef Counter getCounter(self, uint32_t index)
 
 	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? 0x7FFFFFFF
 	cdef jumpToLabel(self, uint32_t labelIndex)

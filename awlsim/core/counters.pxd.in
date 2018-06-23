@@ -8,4 +8,14 @@ cdef class Counter(object):
 	cdef public _Bool prevVKE_S
 	cdef public _Bool prevVKE_ZV
 	cdef public _Bool prevVKE_ZR
-	cdef public uint32_t counter
+	cdef public uint16_t counter
+
+	cdef _Bool get(self)
+	cdef uint16_t getValueBin(self)
+	cdef uint16_t getValueBCD(self)
+	cdef setValueBCD(self, uint16_t bcd)
+	cdef set(self, _Bool VKE)
+	cdef void reset(self)
+	cdef void run_FR(self, _Bool VKE)
+	cdef void run_ZV(self, _Bool VKE)
+	cdef void run_ZR(self, _Bool VKE)

@@ -51,22 +51,37 @@ class Counter(object): #+cdef
 		self.counter = 0
 
 	# Get the counter state (Q)
-	def get(self):
+	def get(self): #@nocy
+#@cy	cdef _Bool get(self):
 		return 1 if self.counter else 0
 
 	# Get the binary counter value (DUAL)
-	def getValueBin(self):
+	def getValueBin(self): #@nocy
+#@cy	cdef uint16_t getValueBin(self):
 		return self.counter
 
 	# Get the BCD counter value (DEZ)
-	def getValueBCD(self):
-		bcd = self.counter % 10
-		bcd |= ((self.counter // 10) % 10) << 4
-		bcd |= ((self.counter // 100) % 10) << 8
+	def getValueBCD(self): #@nocy
+#@cy	cdef uint16_t getValueBCD(self):
+#@cy		cdef uint16_t bcd
+
+		bcd = self.counter % 10				#@nocy
+		bcd |= ((self.counter // 10) % 10) << 4		#@nocy
+		bcd |= ((self.counter // 100) % 10) << 8	#@nocy
+
+#@cy		bcd = self.counter % 10u
+#@cy		bcd |= ((self.counter // 10u) % 10u) << 4u
+#@cy		bcd |= ((self.counter // 100u) % 10u) << 8u
+
 		return bcd
 
 	# Set the counter to a BCD value
-	def setValueBCD(self, bcd):
+	def setValueBCD(self, bcd): #@nocy
+#@cy	cdef setValueBCD(self, uint16_t bcd):
+#@cy		cdef uint16_t a
+#@cy		cdef uint16_t b
+#@cy		cdef uint16_t c
+
 		a, b, c = (bcd & 0xF),\
 			  ((bcd >> 4) & 0xF),\
 			  ((bcd >> 8) & 0xF)
@@ -75,17 +90,20 @@ class Counter(object): #+cdef
 		self.counter = a + (b * 10) + (c * 100)
 
 	# Set (S) the counter to a value (accu1)
-	def set(self, VKE):
+	def set(self, VKE): #@nocy
+#@cy	cdef set(self, _Bool VKE):
 		if (self.prevVKE_S ^ 1) & VKE:
 			self.setValueBCD(self.cpu.accu1.get())
 		self.prevVKE_S = VKE
 
 	# Reset (R) the counter
-	def reset(self):
+	def reset(self): #@nocy
+#@cy	cdef void reset(self):
 		self.counter = 0
 
 	# Run the FR instruction
-	def run_FR(self, VKE):
+	def run_FR(self, VKE): #@nocy
+#@cy	cdef void run_FR(self, _Bool VKE):
 		if (self.prevVKE_FR ^ 1) & VKE:
 			self.prevVKE_S = 0
 			self.prevVKE_ZV = 0
@@ -93,14 +111,16 @@ class Counter(object): #+cdef
 		self.prevVKE_FR = VKE
 
 	# Run the ZV instruction
-	def run_ZV(self, VKE):
+	def run_ZV(self, VKE): #@nocy
+#@cy	cdef void run_ZV(self, _Bool VKE):
 		if (self.prevVKE_ZV ^ 1) & VKE:
 			if self.counter < 999:
 				self.counter += 1
 		self.prevVKE_ZV = VKE
 
 	# Run the ZR instruction
-	def run_ZR(self, VKE):
+	def run_ZR(self, VKE): #@nocy
+#@cy	cdef void run_ZR(self, _Bool VKE):
 		if (self.prevVKE_ZR ^ 1) & VKE:
 			if self.counter > 0:
 				self.counter -= 1

@@ -1372,17 +1372,17 @@ class S7CPU(object): #+cdef
 			raise AwlSimError("Invalid AR offset")
 		return (self.ar1, self.ar2)[index - 1]
 
-	def getTimer(self, index):
-		try:
-			return self.timers[index]
-		except IndexError as e:
+	def getTimer(self, index): #@nocy
+#@cy	cdef Timer getTimer(self, uint32_t index):
+		if index >= len(self.timers):
 			raise AwlSimError("Fetched invalid timer %d" % index)
+		return self.timers[index]
 
-	def getCounter(self, index):
-		try:
-			return self.counters[index]
-		except IndexError as e:
+	def getCounter(self, index): #@nocy
+#@cy	cdef Counter getCounter(self, uint32_t index):
+		if index >= len(self.counters):
 			raise AwlSimError("Fetched invalid counter %d" % index)
+		return self.counters[index]
 
 	def getSpecs(self):
 		return self.specs
