@@ -5,7 +5,9 @@ After=network.target
 
 [Service]
 Type=simple
-TimeoutSec=300
+TimeoutSec=60
+Restart=on-failure
+RestartSec=100ms
 User=@USER@
 Group=@GROUP@
 Nice=-15
