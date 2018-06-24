@@ -74,7 +74,10 @@ class AwlSimClient(object):
 			serverExecutable=None,
 			listenHost=AwlSimServer.DEFAULT_HOST,
 			listenPort=AwlSimServer.DEFAULT_PORT,
-			frozenExecutableMagic=True):
+			frozenExecutableMagic=True,
+			commandMask=AwlSimServer.CMDMSK_DEFAULT,
+			projectFile=None,
+			projectWriteBack=False):
 		"""Spawn a new AwlSim-core server process.
 		interpreter -> The python interpreter to use. Must be either:
 			       - None: Use sys.executable as interpreter.
@@ -87,6 +90,12 @@ class AwlSimClient(object):
 		listenHost -> The hostname or IP address to listen on.
 		listenPort -> The port to listen on.
 			      This may be an iterable to try multiple ports.
+		frozenExecutableMagic -> If True and if running frozen executable,
+					 override serverExecutable.
+		commandMask -> Command mask for the server.
+		projectFile -> Project file for the server (if any).
+		projectWriteBack -> Enable write-back support for project (default off).
+
 		Returns the spawned process' PID."""
 
 		if self.serverProcess:
@@ -113,9 +122,12 @@ class AwlSimClient(object):
 						continue
 					try:
 						self.serverProcess = AwlSimServer.start(
-							listenHost = listenHost,
-							listenPort = port,
-							forkServerProcess = serverExe)
+							listenHost=listenHost,
+							listenPort=port,
+							forkServerProcess=serverExe,
+							commandMask=commandMask,
+							projectFile=projectFile,
+							projectWriteBack=projectWriteBack)
 					except AwlSimError as e:
 						if not isiterable(listenPort):
 							raise e
@@ -133,10 +145,13 @@ class AwlSimClient(object):
 					if not findExecutable(interp):
 						continue
 					try:
-						self.serverProcess = AwlSimServer.start(
-							listenHost = listenHost,
-							listenPort = port,
-							forkInterpreter = interp)
+						self.serverProcess=AwlSimServer.start(
+							listenHost=listenHost,
+							listenPort=port,
+							forkInterpreter=interp,
+							commandMask=commandMask,
+							projectFile=projectFile,
+							projectWriteBack=projectWriteBack)
 					except AwlSimError as e:
 						if not isiterable(listenPort):
 							raise e

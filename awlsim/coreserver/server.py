@@ -96,6 +96,7 @@ class AwlSimServer(object): #+cdef
 
 	# Command mask bits
 	CMDMSK_SHUTDOWN	= (1 << 0) # Allow shutdown command
+	CMDMSK_DEFAULT = CMDMSK_SHUTDOWN
 
 	@classmethod
 	def getaddrinfo(cls, host, port, family = None):
@@ -137,7 +138,7 @@ class AwlSimServer(object): #+cdef
 		  listenFamily=None,
 		  forkInterpreter=None,
 		  forkServerProcess=None,
-		  commandMask=CMDMSK_SHUTDOWN,
+		  commandMask=CMDMSK_DEFAULT,
 		  projectFile=None,
 		  projectWriteBack=False):
 		"""Start a new server.
@@ -481,19 +482,17 @@ class AwlSimServer(object): #+cdef
 			loadedModules = self.loadedHwModules[:]
 		)
 		project = Project(
-			projectFile = None,
-			awlSources = awlSources,
-			fupSources = fupSources,
-			kopSources = kopSources,
-			symTabSources = symTabSources,
-			libSelections = libSelections,
-			cpuSpecs = cpuSpecs,
-			cpuConf = cpuConf,
-			obTempPresetsEn = cpu.obTempPresetsEnabled(),
-			extInsnsEn = cpu.extendedInsnsEnabled(),
-			guiSettings = None,
-			coreLinkSettings = None,
-			hwmodSettings = hwmodSettings,
+			projectFile=None,
+			awlSources=awlSources,
+			fupSources=fupSources,
+			kopSources=kopSources,
+			symTabSources=symTabSources,
+			libSelections=libSelections,
+			cpuSpecs=cpuSpecs,
+			cpuConf=cpuConf,
+			guiSettings=None,
+			coreLinkSettings=None,
+			hwmodSettings=hwmodSettings,
 		)
 		return project
 
