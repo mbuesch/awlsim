@@ -32,9 +32,6 @@ FBD/FUP GUI only
 ----------------
 
 * Add feature: Exchange elements
-* Add feature: Duplicate diagrams
-* Add feature: Copy & paste elements
-* Add feature: Undo/redo
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: Support modifying wires by clicking onto them
 
