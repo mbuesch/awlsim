@@ -1265,6 +1265,7 @@ class AwlSimMessageTransceiver(object):
 		# Receive buffer
 		self.__resetRxBuf()
 
+		_SocketErrors = SocketErrors
 		try:
 			if isJython: #XXX Workaround
 				self.sock.setblocking(True)
@@ -1286,7 +1287,7 @@ class AwlSimMessageTransceiver(object):
 				self.sock.setsockopt(socket.IPPROTO_TCP,
 						     socket.TCP_NODELAY,
 						     1)
-		except SocketErrors as e:
+		except _SocketErrors as e:
 			self.shutdown()
 			raise AwlSimError("Failed to initialize socket: %s" % str(e))
 
@@ -1337,11 +1338,12 @@ class AwlSimMessageTransceiver(object):
 			self.sock.settimeout(timeout)
 			self.__timeout = timeout
 
+		_SocketErrors = SocketErrors
 		hdrLen, rxByteCnt = AwlSimMessage.HDR_LENGTH, self.rxByteCnt
 		if rxByteCnt < hdrLen:
 			try:
 				data = self.sock.recv(hdrLen - rxByteCnt)
-			except SocketErrors as e:
+			except _SocketErrors as e:
 				transferError = TransferError(None, parentException=e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None
@@ -1375,7 +1377,7 @@ class AwlSimMessageTransceiver(object):
 		if rxByteCnt < msgLen:
 			try:
 				data = self.sock.recv(msgLen - rxByteCnt)
-			except SocketErrors as e:
+			except _SocketErrors as e:
 				transferError = TransferError(None, parentException=e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None

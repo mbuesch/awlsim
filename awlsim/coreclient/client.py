@@ -209,6 +209,7 @@ class AwlSimClient(object):
 		startTime = monotonic_time()
 		readableSockaddr = host
 		sock, ok = None, False
+		_SocketErrors = SocketErrors
 		try:
 			family, socktype, sockaddr = netGetAddrInfo(host, port)
 			if family == AF_UNIX:
@@ -223,7 +224,7 @@ class AwlSimClient(object):
 						"to AwlSimServer %s" % readableSockaddr)
 				try:
 					sock.connect(sockaddr)
-				except SocketErrors as e:
+				except _SocketErrors as e:
 					if e.errno == errno.ECONNREFUSED or\
 					   e.errno == errno.ENOENT:
 						self.sleep(0.1)
@@ -236,7 +237,7 @@ class AwlSimClient(object):
 					raise
 				break
 			ok = True
-		except SocketErrors as e:
+		except _SocketErrors as e:
 			raise AwlSimError("Failed to connect to AwlSimServer %s: %s" %\
 				(readableSockaddr, str(e)))
 		finally:

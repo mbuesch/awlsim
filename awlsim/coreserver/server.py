@@ -1184,6 +1184,7 @@ class AwlSimServer(object): #+cdef
 
 		self.close()
 		sock, ok = None, False
+		_SocketErrors = SocketErrors
 		try:
 			if host:
 				family, socktype, sockaddr = netGetAddrInfo(
@@ -1213,7 +1214,7 @@ class AwlSimServer(object): #+cdef
 			sock.bind(sockaddr)
 			sock.listen(5)
 			ok = True
-		except SocketErrors as e:
+		except _SocketErrors as e:
 			raise AwlSimError("AwlSimServer: Failed to create server "
 				"socket: " + str(e))
 		finally:
@@ -1231,13 +1232,14 @@ class AwlSimServer(object): #+cdef
 		if not self.__socket:
 			raise AwlSimError("AwlSimServer: No server socket")
 
+		_SocketErrors = SocketErrors
 		try:
 			clientSock, addrInfo = self.__socket.accept()
 			if self.__unixSockPath:
 				peerInfoString = self.__unixSockPath
 			else:
 				peerInfoString = "[%s]:%d" % addrInfo[:2]
-		except SocketErrors as e:
+		except _SocketErrors as e:
 			transferError = TransferError(None, parentException = e)
 			if transferError.reason == transferError.REASON_BLOCKING:
 				return None
