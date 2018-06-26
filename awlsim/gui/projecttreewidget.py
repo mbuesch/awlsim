@@ -140,7 +140,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		anyChanged = False
 		for getSources, identHashes, idxId in (
 				(project.getAwlSources, awlIdentHashes, self.INDEXID_SRCS_AWL),
-#TODO				(project.getFupSources, fupIdentHashes, self.INDEXID_SRCS_FUP),
+				(project.getFupSources, fupIdentHashes, self.INDEXID_SRCS_FUP),
 				(project.getKopSources, kopIdentHashes, self.INDEXID_SRCS_KOP),
 				(project.getSymTabSources, symTabIdentHashes, self.INDEXID_SRCS_SYMTAB)):
 			anySourceChanged = False
