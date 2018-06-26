@@ -77,6 +77,7 @@ def netPortIsUnused(host, port):
 	"""Check if a port is not used.
 	"""
 	sock = None
+	_SocketErrors = SocketErrors
 	try:
 		family, socktype, sockaddr = netGetAddrInfo(host, port)
 		if family == AF_UNIX:
@@ -85,7 +86,7 @@ def netPortIsUnused(host, port):
 			return False
 		sock = socket.socket(family, socktype)
 		sock.bind(sockaddr)
-	except SocketErrors as e:
+	except _SocketErrors as e:
 		return False
 	finally:
 		if sock:
