@@ -536,7 +536,7 @@ class AwlSimServer(object): #+cdef
 					self.__sim.removeBlock(blockInfo,
 							       sanityChecks = False)
 				# Remove the source, if it's not gone already.
-				self.awlSourceContainer.removeByIdent(identHash)
+				self.awlSourceContainer.removeManager(srcMgr)
 				# Run static sanity checks now to ensure
 				# the CPU is still runnable.
 				self.__sim.staticSanityChecks()

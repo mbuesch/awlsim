@@ -475,15 +475,6 @@ class SourceContainer(object):
 			# Just ignore this.
 			pass
 
-	def removeByIdent(self, identHash):
-		"""Remove a SourceManager by identHash.
-		"""
-		sourceManager = self.getSourceManagerByIdent(identHash)
-		if sourceManager:
-			self.removeManager(sourceManager)
-			return True
-		return False
-
 	def clear(self):
 		"""Remove all managers from the container.
 		"""
