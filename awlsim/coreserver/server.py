@@ -245,6 +245,8 @@ class AwlSimServer(object): #+cdef
 
 		# Container of loaded and managed AwlSource()s
 		self.awlSourceContainer = SourceContainer()
+		# Container of loaded and managed FupSource()s
+		self.fupSourceContainer = SourceContainer()
 		# Container of loaded and managed SymTabSource()s
 		self.symTabSourceContainer = SourceContainer()
 		# List of tuples of loaded hardware modules (HwmodDescriptor instances)
@@ -472,7 +474,7 @@ class AwlSimServer(object): #+cdef
 	def __generateProject(self):
 		cpu = self.__sim.getCPU()
 		awlSources = self.awlSourceContainer.getSources()
-		fupSources = [] #TODO
+		fupSources = self.fupSourceContainer.getSources()
 		kopSources = [] #TODO
 		symTabSources = self.symTabSourceContainer.getSources()
 		libSelections = self.loadedLibSelections[:]
@@ -506,6 +508,7 @@ class AwlSimServer(object): #+cdef
 
 	def __resetSources(self):
 		self.awlSourceContainer.clear()
+		self.fupSourceContainer.clear()
 		self.symTabSourceContainer.clear()
 		self.loadedHwModules = []
 		self.loadedLibSelections = []
@@ -519,39 +522,43 @@ class AwlSimServer(object): #+cdef
 		self.__sim.reset()
 		self.__resetSources()
 
+	def __removeSource(self, sourceContainer, sourceManager):
+		# Remove all blocks that were created from this source.
+		for block in sourceManager.getBlocks():
+			if not isinstance(block, CodeBlock):
+				# This is not a compiled block.
+				continue
+			blockInfo = block.getBlockInfo()
+			if not blockInfo:
+				continue
+			self.__sim.removeBlock(blockInfo, sanityChecks=False)
+
+		#TODO remove symbols from CPU.
+
+		# Remove the source, if it's not gone already.
+		if sourceContainer:
+			sourceContainer.removeManager(sourceManager)
+
 	def removeSource(self, identHash):
-		ret = True
-		srcMgr = self.awlSourceContainer.getSourceManagerByIdent(identHash)
-		tabMgr = self.symTabSourceContainer.getSourceManagerByIdent(identHash)
+		ok = False
 		try:
-			if srcMgr:
-				# Remove all blocks that were created from this source.
-				for block in srcMgr.getBlocks():
-					if not isinstance(block, CodeBlock):
-						# This is not a compiled block.
-						continue
-					blockInfo = block.getBlockInfo()
-					if not blockInfo:
-						continue
-					self.__sim.removeBlock(blockInfo,
-							       sanityChecks = False)
-				# Remove the source, if it's not gone already.
-				self.awlSourceContainer.removeManager(srcMgr)
-				# Run static sanity checks now to ensure
-				# the CPU is still runnable.
-				self.__sim.staticSanityChecks()
-			elif tabMgr:
-				pass#TODO
-				ret = False
+			for sourceContainer in (self.awlSourceContainer,
+						self.fupSourceContainer,
+						self.symTabSourceContainer):
+				sourceManager = sourceContainer.getSourceManagerByIdent(identHash)
+				if sourceManager:
+					self.__removeSource(sourceContainer, sourceManager)
+					# Run static sanity checks now to ensure
+					# the CPU is still runnable.
+					self.__sim.staticSanityChecks()
+					ok = True
+					break
 		finally:
-			if ret:
+			if ok:
 				self.__updateProjectFile()
-		return ret
+		return ok
 
 	def loadAwlSource(self, awlSource):
-		parser = AwlParser()
-		parser.parseSource(awlSource)
-
 		srcManager = SourceManager(awlSource)
 
 		if awlSource.enabled:
@@ -560,14 +567,18 @@ class AwlSimServer(object): #+cdef
 			   (self.__state == self.STATE_STOP and\
 			    not self.__needOB10x):
 				needRebuild = True
+
+			parser = AwlParser()
+			parser.parseSource(awlSource)
 			self.__sim.load(parser.getParseTree(), needRebuild, srcManager)
 
 		self.awlSourceContainer.addManager(srcManager)
 		self.__updateProjectFile()
+		return srcManager
 
 	def loadFupSource(self, fupSource):
-		#TODO src manager
-		#TODO do not add to awlSourceContainer
+		srcManager = SourceManager(fupSource)
+
 		if fupSource.enabled:
 			compiler = FupCompiler()
 			#FIXME mnemonics auto detection might cause mismatching mnemonics w.r.t. the main blocks.
@@ -575,11 +586,16 @@ class AwlSimServer(object): #+cdef
 			awlSource = compiler.compile(fupSource=fupSource,
 						     symTabSources=symSrcs,
 						     mnemonics=self.__getMnemonics())
-			self.loadAwlSource(awlSource)
+			awlSrcManager = self.loadAwlSource(awlSource)
+
+		self.fupSourceContainer.addManager(srcManager)
+		self.__updateProjectFile()
+		return srcManager
 
 	def loadKopSource(self, kopSource):
 		if kopSource.enabled:
 			pass#TODO
+		return None
 
 	def loadSymTabSource(self, symTabSource):
 		srcManager = SourceManager(symTabSource)
@@ -594,6 +610,7 @@ class AwlSimServer(object): #+cdef
 
 		self.symTabSourceContainer.addManager(srcManager)
 		self.__updateProjectFile()
+		return srcManager
 
 	def loadHardwareModule(self, hwmodDesc):
 		hwmodName = hwmodDesc.getModuleName()
@@ -712,11 +729,23 @@ class AwlSimServer(object): #+cdef
 		self.loadLibraryBlock(msg.libSelection)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_GET_FUPSRC(self, client, msg):
+		printDebug("Received message: GET_FUPSRC")
+		fupSource = self.fupSourceContainer.getSourceByIdent(msg.identHash)
+		reply = AwlSimMessage_FUPSRC(fupSource)
+		client.transceiver.send(reply)
+
 	def __rx_FUPSRC(self, client, msg):
 		printDebug("Received message: FUPSRC")
 		status = AwlSimMessage_REPLY.STAT_OK
 		self.loadFupSource(msg.source)
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
+
+	def __rx_GET_KOPSRC(self, client, msg):
+		printDebug("Received message: GET_KOPSRC")
+		kopSource = self.kopSourceContainer.getSourceByIdent(msg.identHash)
+		reply = AwlSimMessage_KOPSRC(kopSource)
+		client.transceiver.send(reply)
 
 	def __rx_KOPSRC(self, client, msg):
 		printDebug("Received message: KOPSRC")
@@ -848,7 +877,7 @@ class AwlSimServer(object): #+cdef
 		if msg.getFlags & msg.GET_LIBSELS:
 			libSels = self.loadedLibSelections
 		if msg.getFlags & msg.GET_FUPSRCS:
-			pass#TODO
+			fupSrcs = self.fupSourceContainer.getSources()
 		if msg.getFlags & msg.GET_KOPSRCS:
 			pass#TODO
 		reply = AwlSimMessage_IDENTS(awlSrcs, symSrcs,
@@ -869,7 +898,9 @@ class AwlSimServer(object): #+cdef
 		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
 		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
 		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
+		AwlSimMessage.MSG_ID_GET_FUPSRC		: __rx_GET_FUPSRC,
 		AwlSimMessage.MSG_ID_FUPSRC		: __rx_FUPSRC,
+#		AwlSimMessage.MSG_ID_GET_KOPSRC		: __rx_GET_KOPSRC,
 #		AwlSimMessage.MSG_ID_KOPSRC		: __rx_KOPSRC,
 		AwlSimMessage.MSG_ID_BUILD		: __rx_BUILD,
 		AwlSimMessage.MSG_ID_REMOVESRC		: __rx_REMOVESRC,
@@ -1057,6 +1088,7 @@ class AwlSimServer(object): #+cdef
 			# The source name is not set, yet, but we have a source-ID.
 			# Try to get the name.
 			for sourceContainer in (self.awlSourceContainer,
+						self.fupSourceContainer,
 						self.symTabSourceContainer):
 				srcMgr = sourceContainer.getSourceManagerByIdent(sourceIdentHash)
 				if srcMgr and srcMgr.source:

@@ -106,9 +106,9 @@ class AwlSimMessage(object):
 	MSG_ID_SYMTABSRC	= EnumGen.item
 	MSG_ID_HWMOD		= EnumGen.item
 	MSG_ID_LIBSEL		= EnumGen.item
-	MSG_ID_GET_FUPSRC	= EnumGen.item		#TODO not implemented, yet
+	MSG_ID_GET_FUPSRC	= EnumGen.item
 	MSG_ID_FUPSRC		= EnumGen.item
-	MSG_ID_GET_KOPSRC	= EnumGen.item		#TODO not implemented, yet
+	MSG_ID_GET_KOPSRC	= EnumGen.item
 	MSG_ID_KOPSRC		= EnumGen.item
 	MSG_ID_BUILD		= EnumGen.itemAt(0x0170)
 	MSG_ID_REMOVESRC	= EnumGen.itemAt(0x0180)
