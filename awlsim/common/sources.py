@@ -421,13 +421,17 @@ class SymTabSource(GenericSource):
 class SourceManager(ObjRefManager):
 	"""Manages one source."""
 
-	def __init__(self, source, container = None):
+	def __init__(self, source, container=None):
 		"""source -> An AwlSource or SymTabSource instance.
 		container -> A SourceContainer instance or None.
 		"""
-		super(SourceManager, self).__init__(
-			name = lambda slf: "%s/%s" % (slf.source.name,
-						      slf.source.identHashStr))
+		def makeName(slf):
+			if not slf.source:
+				return "SourceManager"
+			return "%s/%s" % (slf.source.name,
+					  slf.source.identHashStr)
+		super(SourceManager, self).__init__(name=makeName)
+
 		self.source = source
 		self.container = container
 		if container:
