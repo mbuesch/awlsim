@@ -356,8 +356,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			self.haveBlockInfoMsg.connect(self.__blockTreeModel.handle_BLOCKINFO)
 			self.onlineData.symTabsUpdate.connect(self.__blockTreeModel.handle_symTabInfo)
 
-		return ObjRef.make("BlockTreeModel", self.__blockTreeModelManager,
-				   self.__blockTreeModel)
+		return ObjRef.make(name="BlockTreeModel",
+				   manager=self.__blockTreeModelManager,
+				   obj=self.__blockTreeModel)
 
 	def blockTreeModelActive(self):
 		"""Returns True, if there is at least one active ref to

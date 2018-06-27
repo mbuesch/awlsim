@@ -125,12 +125,19 @@ class RawAwlBlock(object):
 		}
 		self.sourceRef = None
 
-	def setSourceRef(self, sourceManagerOrRef, inheritRef = False):
+	def setSourceRef(self, sourceManagerOrRef, inheritRef=False):
+		if isinstance(sourceManagerOrRef, ObjRef):
+			manager = None
+			ref = sourceManagerOrRef
+		else:
+			manager = sourceManagerOrRef
+			ref = None
 		self.sourceRef = ObjRef.make(
-			name = lambda ref: str(ref.obj),
-			managerOrRef = sourceManagerOrRef,
-			obj = self,
-			inheritRef = inheritRef)
+			name=lambda ref: str(ref.obj),
+			manager=manager,
+			ref=ref,
+			obj=self,
+			inheritRef=inheritRef)
 
 	def destroySourceRef(self):
 		if self.sourceRef:

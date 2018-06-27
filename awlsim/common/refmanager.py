@@ -36,27 +36,30 @@ class ObjRef(object):
 	"""An object reference."""
 
 	@classmethod
-	def make(cls, name, managerOrRef, obj = None, inheritRef = False):
+	def make(cls, name,
+		 manager=None, ref=None, inheritRef=False,
+		 obj=None):
 		"""Make a new ObjRef instance.
 		name -> A name string (or callable returning a string).
-		managerOrRef -> An ObjRefManager instance or ObjRef instance.
+		manager -> An ObjRefManager instance.
+		ref -> An ObjRef instance.
+		inheritRef -> If False and ref is not None, a new ref is created.
+			      If True and ref is not None, the ref is inherited.
 		obj -> The object that is associated with this ref.
-		inheritRef -> If False, a new ref is created.
-			      If True and managerOrRef is an ObjRef, the ref is inherited.
 		"""
-		if managerOrRef is None:
+		if manager is not None and ref is not None:
+			raise RuntimeError
+		if manager is None and ref is None:
 			return None
-		elif isinstance(managerOrRef, ObjRefManager):
-			manager = managerOrRef
+
+		if manager is not None:
 			return cls(name, manager, obj)
-		elif isinstance(managerOrRef, ObjRef):
-			oldRef = managerOrRef
+		if ref is not None:
+			oldRef = ref
 			newRef = cls(name, oldRef.__manager, obj)
 			if inheritRef and oldRef.alive:
 				oldRef.destroy()
 			return newRef
-		else:
-			assert(0)
 
 	def __init__(self, name, manager, obj = None):
 		"""Contruct object reference.

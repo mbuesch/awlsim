@@ -2,7 +2,7 @@
 #
 # AWL simulator - blocks
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,12 +62,19 @@ class Block(object): #+cdef
 		self.sourceRef = None
 		self.__identHash = None
 
-	def setSourceRef(self, sourceManagerOrRef, inheritRef = False):
+	def setSourceRef(self, sourceManagerOrRef, inheritRef=False):
+		if isinstance(sourceManagerOrRef, ObjRef):
+			manager = None
+			ref = sourceManagerOrRef
+		else:
+			manager = sourceManagerOrRef
+			ref = None
 		self.sourceRef = ObjRef.make(
-			name = lambda ref: str(ref.obj),
-			managerOrRef = sourceManagerOrRef,
-			obj = self,
-			inheritRef = inheritRef)
+			name=lambda ref: str(ref.obj),
+			manager=manager,
+			ref=ref,
+			inheritRef=inheritRef,
+			obj=self)
 		self.__identHash = None
 
 	def destroySourceRef(self):
