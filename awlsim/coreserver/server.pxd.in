@@ -26,6 +26,7 @@ cdef class AwlSimServer(object):
 	cdef public list __selectRlist
 
 	cdef public object awlSourceContainer
+	cdef public object fupSourceContainer
 	cdef public object symTabSourceContainer
 	cdef public object loadedHwModules
 	cdef public object loadedLibSelections
