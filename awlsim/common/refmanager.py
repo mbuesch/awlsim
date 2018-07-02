@@ -33,7 +33,15 @@ __all__ = [
 
 
 class ObjRef(object):
-	"""An object reference."""
+	"""Object reference.
+	This represents a reference from 'obj' to the ObjRefManager 'manager'.
+	"""
+
+	__slots__ = (
+		"__name",
+		"__obj",
+		"__manager",
+	)
 
 	@classmethod
 	def make(cls, name=None,
@@ -123,9 +131,16 @@ class ObjRefManager(object):
 	The manager belongs to the object that actually is referenced.
 	"""
 
+	__slots__ = (
+		"__name",
+		"__oneDestroyedCallback",
+		"__allDestroyedCallback",
+		"__refs",
+	)
+
 	def __init__(self, name,
-		     oneDestroyedCallback = None,
-		     allDestroyedCallback = None):
+		     oneDestroyedCallback=None,
+		     allDestroyedCallback=None):
 		"""Contruct reference manager.
 		name: Informational name string or callable returing a string.
 		oneDestroyedCallback: Optional callback. Called, if one ref was destroyed.
