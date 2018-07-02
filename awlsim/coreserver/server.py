@@ -530,6 +530,15 @@ class AwlSimServer(object): #+cdef
 				continue
 			self.__sim.removeBlock(blockInfo, sanityChecks=False)
 
+		# Unref all related source managers.
+		for relatedSourceManager in sourceManager.getRelatedSourceManagers():
+			ref = relatedSourceManager.getRefForObj(sourceManager)
+			if ref:
+				ref.destroy()
+			ref = sourceManager.getRefForObj(relatedSourceManager)
+			if ref:
+				ref.destroy()
+
 		#TODO remove symbols from CPU.
 
 		# Remove the source, if it's not gone already.

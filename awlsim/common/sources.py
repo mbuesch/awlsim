@@ -466,6 +466,12 @@ class SourceManager(ObjRefManager):
 		return { ref.obj for ref in self.refs
 			 if isinstance(ref.obj, CodeBlock) }
 
+	def getRelatedSourceManagers(self):
+		"""Get all related source managers (e.g. sources created from sources).
+		"""
+		return { ref.obj for ref in self.refs
+			 if isinstance(ref.obj, self.__class__) }
+
 class SourceContainer(object):
 	"""Container for source managers."""
 
