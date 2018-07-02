@@ -173,6 +173,14 @@ class ObjRefManager(object):
 		"""
 		return frozenset(self.__refs)
 
+	def getRefForObj(self, obj):
+		"""Get the ObjRef() that is managed by this manager for 'obj'.
+		"""
+		for ref in self.__refs:
+			if ref.obj is obj:
+				return ref
+		return None
+
 	def _addRef(self, objRef):
 		self.__refs.add(objRef)
 
