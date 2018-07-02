@@ -2,7 +2,7 @@
 #
 # AWL simulator - source management
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ from awlsim.common.xmlfactory import *
 from awlsim.common.refmanager import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
-#from awlsim.core.blocks cimport CodeBlock #@cy
 
 import base64, binascii
 import hashlib
@@ -463,8 +462,18 @@ class SourceManager(ObjRefManager):
 		source managed here.
 		"""
 		from awlsim.core.blocks import CodeBlock #@nocy
+		#from awlsim.core.blocks cimport CodeBlock #@cy
 		return { ref.obj for ref in self.refs
 			 if isinstance(ref.obj, CodeBlock) }
+
+	def getDataBlocks(self):
+		"""Get all compiled DB()s that were created from the
+		source managed here.
+		"""
+		from awlsim.core.datablocks import DB #@nocy
+		#from awlsim.core.datablocks cimport DB #@cy
+		return { ref.obj for ref in self.refs
+			 if isinstance(ref.obj, DB) }
 
 	def getRelatedSourceManagers(self):
 		"""Get all related source managers (e.g. sources created from sources).
