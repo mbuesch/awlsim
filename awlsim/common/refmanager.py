@@ -2,7 +2,7 @@
 #
 # AWL simulator - object reference manager
 #
-# Copyright 2015 Michael Buesch <m@bues.ch>
+# Copyright 2015-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ class ObjRef(object):
 	"""An object reference."""
 
 	@classmethod
-	def make(cls, name,
+	def make(cls, name=None,
 		 manager=None, ref=None, inheritRef=False,
 		 obj=None):
 		"""Make a new ObjRef instance.
@@ -47,19 +47,24 @@ class ObjRef(object):
 			      If True and ref is not None, the ref is inherited.
 		obj -> The object that is associated with this ref.
 		"""
+		if name is None:
+			# Default name
+			name = lambda _self: ("ObjRef(manager=(%s), obj=(%s))" %
+					      (str(_self.manager), str(_self.obj)))
+
 		if manager is not None and ref is not None:
 			raise RuntimeError
-		if manager is None and ref is None:
-			return None
 
 		if manager is not None:
 			return cls(name, manager, obj)
-		if ref is not None:
+		elif ref is not None:
 			oldRef = ref
 			newRef = cls(name, oldRef.__manager, obj)
 			if inheritRef and oldRef.alive:
 				oldRef.destroy()
 			return newRef
+		else:
+			return None
 
 	def __init__(self, name, manager, obj = None):
 		"""Contruct object reference.
