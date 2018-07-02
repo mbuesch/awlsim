@@ -91,10 +91,12 @@ class ObjRef(object):
 		This removes the reference from the manager.
 		"""
 		if self.alive:
-			self.__manager.refDestroyed(self)
-			self.__name = None
-			self.__obj = None
-			self.__manager = None
+			try:
+				self.__manager.refDestroyed(self)
+			finally:
+				self.__name = None
+				self.__obj = None
+				self.__manager = None
 
 	@property
 	def name(self):
