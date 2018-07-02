@@ -594,6 +594,10 @@ class AwlSimServer(object): #+cdef
 						     mnemonics=self.__getMnemonics())
 			awlSrcManager = self.loadAwlSource(awlSource)
 
+			# Cross-reference the generated AWL source to the FUP source.
+			ObjRef.make(manager=srcManager, obj=awlSrcManager)
+			ObjRef.make(manager=awlSrcManager, obj=srcManager)
+
 		self.fupSourceContainer.addManager(srcManager)
 		self.__updateProjectFile()
 		return srcManager
