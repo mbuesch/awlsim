@@ -524,10 +524,7 @@ class AwlSimServer(object): #+cdef
 
 	def __removeSource(self, sourceContainer, sourceManager):
 		# Remove all blocks that were created from this source.
-		for block in sourceManager.getBlocks():
-			if not isinstance(block, CodeBlock):
-				# This is not a compiled block.
-				continue
+		for block in sourceManager.getCodeBlocks():
 			blockInfo = block.getBlockInfo()
 			if not blockInfo:
 				continue

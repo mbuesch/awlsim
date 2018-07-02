@@ -27,6 +27,7 @@ from awlsim.common.xmlfactory import *
 from awlsim.common.refmanager import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
+#from awlsim.core.blocks cimport CodeBlock #@cy
 
 import base64, binascii
 import hashlib
@@ -457,11 +458,13 @@ class SourceManager(ObjRefManager):
 		self.removeFromContainer()
 		self.source = None
 
-	def getBlocks(self):
-		"""Get the compiled blocks that were created from the
+	def getCodeBlocks(self):
+		"""Get all compiled CodeBlock()s that were created from the
 		source managed here.
 		"""
-		return { ref.obj for ref in self.refs }
+		from awlsim.core.blocks import CodeBlock #@nocy
+		return { ref.obj for ref in self.refs
+			 if isinstance(ref.obj, CodeBlock) }
 
 class SourceContainer(object):
 	"""Container for source managers."""
