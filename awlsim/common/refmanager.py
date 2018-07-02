@@ -169,9 +169,9 @@ class ObjRefManager(object):
 
 	@property
 	def refs(self):
-		"""Get a set of all references to this object.
+		"""Get a set of all references (ObjRef()s) to this object.
 		"""
-		return set(self.__refs)
+		return frozenset(self.__refs)
 
 	def _addRef(self, objRef):
 		self.__refs.add(objRef)
