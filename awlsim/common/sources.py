@@ -421,6 +421,11 @@ class SymTabSource(GenericSource):
 class SourceManager(ObjRefManager):
 	"""Manages one source."""
 
+	__slots__ = (
+		"source",
+		"container",
+	)
+
 	def __init__(self, source, container=None):
 		"""source -> An AwlSource or SymTabSource instance.
 		container -> A SourceContainer instance or None.
@@ -437,13 +442,20 @@ class SourceManager(ObjRefManager):
 		if container:
 			container.addManager(self)
 
+	def removeFromContainer(self):
+		"""Remove this source from the SourceContainer,
+		if it is inserted into one.
+		"""
+		if self.container:
+			self.container.removeManager(self)
+		self.container = None
+
 	def allRefsDestroyed(self):
 		"""Called, if all source references are destroyed.
 		"""
 		super(SourceManager, self).allRefsDestroyed()
-		if self.container:
-			self.container.removeManager(self)
-		self.source = self.container = None
+		self.removeFromContainer()
+		self.source = None
 
 	def getBlocks(self):
 		"""Get the compiled blocks that were created from the
@@ -453,6 +465,10 @@ class SourceManager(ObjRefManager):
 
 class SourceContainer(object):
 	"""Container for source managers."""
+
+	__slots__ = (
+		"__sourceManagers",
+	)
 
 	def __init__(self):
 		self.__sourceManagers = []
