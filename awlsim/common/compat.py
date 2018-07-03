@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2016 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -58,7 +58,6 @@ __all__ = [
 	"isalnum",
 	"isdecimal",
 	"compat_gcd",
-	"contextlib",
 	"dictItems",
 	"dictKeys",
 	"dictValues",
@@ -222,6 +221,17 @@ if not hasattr(contextlib, "suppress"):
 		def __exit__(self, exctype, excinst, exctb):
 			return exctype is not None and issubclass(exctype, self._excs)
 	contextlib.suppress = _suppress
+
+# contextlib.nullcontext compatibility
+if not hasattr(contextlib, "nullcontext"):
+	class _nullcontext(object):
+		def __init__(self, enter_result=None):
+			self.enter_result = enter_result
+		def __enter__(self):
+			return self.enter_result
+		def __exit__(self, *unused):
+			pass
+	contextlib.nullcontext = _nullcontext
 
 # Dict items(), keys(), values() compatibility.
 # Use Python3 behavior.

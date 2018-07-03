@@ -74,7 +74,6 @@ __all__ = [
 	"clamp",
 	"math_gcd",
 	"math_lcm",
-	"nopContext",
 	"RelPath",
 	"shortUUID",
 	"copy",
@@ -432,17 +431,6 @@ def math_gcd(*args):
 def math_lcm(*args):
 	return reduce(lambda x, y: x * y // math_gcd(x, y),
 		      args)
-
-class nopContextManager(object):
-	"""No-operation context manager.
-	"""
-
-	def __enter__(self):
-		return None
-
-	def __exit__(self, exctype, excinst, exctb):
-		return False
-nopContext = nopContextManager()
 
 class RelPath(object):
 	def __init__(self, relativeToDir):

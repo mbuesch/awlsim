@@ -2,7 +2,7 @@
 #
 # AWL simulator - Block type edit widget
 #
-# Copyright 2016 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -287,7 +287,7 @@ class BlockTypeWidget(QWidget):
 	def clear(self, noChangeSignals=False):
 		"""Clear content.
 		"""
-		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
+		with self.__changeSignalsBlocked if noChangeSignals else contextlib.nullcontext():
 			self.typeCombo.setCurrentIndex(0)
 			self.blockNameEdit.setText("FC 1")
 			self.dbEdit.clear()
@@ -295,7 +295,7 @@ class BlockTypeWidget(QWidget):
 	def setBlockTypeString(self, blockTypeString, noChangeSignals=False):
 		"""Set the block type.
 		"""
-		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
+		with self.__changeSignalsBlocked if noChangeSignals else contextlib.nullcontext():
 			index = self.typeCombo.findData(blockTypeString,
 							Qt.UserRole, Qt.MatchFixedString)
 			if index >= 0:
@@ -306,7 +306,7 @@ class BlockTypeWidget(QWidget):
 	def setBlockName(self, blockName, noChangeSignals=False):
 		"""Set the block name.
 		"""
-		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
+		with self.__changeSignalsBlocked if noChangeSignals else contextlib.nullcontext():
 			self.blockNameEdit.setText(blockName)
 
 	def addInstanceDB(self, dbName, noChangeSignals=False):
@@ -314,7 +314,7 @@ class BlockTypeWidget(QWidget):
 		"""
 		if not dbName.strip():
 			return False
-		with self.__changeSignalsBlocked if noChangeSignals else nopContext:
+		with self.__changeSignalsBlocked if noChangeSignals else contextlib.nullcontext():
 			typeStr = self.typeCombo.itemData(self.typeCombo.currentIndex())
 			if typeStr == "FB":
 				if self.dbEdit.text().strip():
