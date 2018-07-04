@@ -265,7 +265,7 @@ class FupWidget(QWidget):
 	def __updateSource(self):
 		# Generate XML
 		try:
-			xmlBytes = FupFactory(fupWidget=self).compose()
+			xmlBytes = FupFactory(fupWidget=self).compose(stripWs=True)
 		except FupFactory.Error as e:
 			raise AwlSimError("Failed to create FUP source: "
 				"%s" % str(e))
