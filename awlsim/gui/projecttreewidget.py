@@ -146,7 +146,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			anySourceChanged = False
 			for i, source in enumerate(getSources()):
 				# Update the match state in the source user data.
-				oldMatchState = source.userData.get("gui-cpu-idents-match")
+				oldMatchState = source.userData.get("gui-cpu-idents-match", None)
 				newMatchState = source.identHash in identHashes
 				source.userData["gui-cpu-idents-match"] = newMatchState
 
@@ -670,7 +670,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				if newSource is not None:
 					source.copyFrom(newSource,
 							copyUserData=False,
-							updateUserData=True)
+							updateUserData=False)
 				else:
 					ret = False
 
