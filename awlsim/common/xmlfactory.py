@@ -2,7 +2,7 @@
 #
 # XML factory - parser and composer
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,9 @@ import xml.etree.ElementTree
 import xml.sax.saxutils as saxutils
 
 
-__all__ = [ "XmlFactory", ]
+__all__ = [
+	"XmlFactory",
+]
 
 
 class _XmlFactoryBuilder(object):
@@ -322,7 +324,7 @@ class XmlFactory(object):
 					)
 		return ret
 
-	def compose(self, genXmlHeader=True, baseIndent=0, lineBreakStr="\n", attrLineBreak=False):
+	def compose(self, genXmlHeader=True, baseIndent=0, lineBreakStr="\n", attrLineBreak=False, stripWs=False):
 		self.builder = None
 		self.__genXmlHeader = genXmlHeader
 		self.__baseIndent = baseIndent
@@ -336,7 +338,10 @@ class XmlFactory(object):
 		lines.extend(self.__tags2text(self.composer_getTags(),
 					      self.__baseIndent))
 
-		return (lineBreakStr.join(lines) + lineBreakStr).encode(self.XML_ENCODING)
+		xmlStr = lineBreakStr.join(lines) + lineBreakStr
+		if stripWs:
+			xmlStr = xmlStr.strip()
+		return xmlStr.encode(self.XML_ENCODING)
 
 	def parser_switchTo(self, otherFactory):
 		self.builder.pushFactory(otherFactory)
