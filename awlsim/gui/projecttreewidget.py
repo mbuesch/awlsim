@@ -836,6 +836,23 @@ class ProjectTreeModel(QAbstractItemModel):
 			return None
 		return sources[itemNr]
 
+	def identHashToIndex(self, identHash):
+		"""Get the index that corresponds to an identHash.
+		Returns an invalid index, if no such item was found.
+		"""
+		project = self.getProject()
+		for getSources, parentIdxId in (
+				(project.getAwlSources, self.INDEXID_SRCS_AWL),
+				(project.getFupSources, self.INDEXID_SRCS_FUP),
+				(project.getKopSources, self.INDEXID_SRCS_KOP),
+				(project.getSymTabSources, self.INDEXID_SRCS_SYMTAB)):
+			for i, source in enumerate(getSources()):
+				if source.identHash == identHash:
+					parentIndex = self.idToIndex(parentIdxId)
+					if parentIndex.isValid():
+						return self.index(i, 0, parentIndex)
+		return QModelIndex()
+
 	def flags(self, index):
 		if not index.isValid():
 			return Qt.NoItemFlags
