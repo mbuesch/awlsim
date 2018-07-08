@@ -1015,6 +1015,13 @@ class State_Counter(_State_TimerCounter):
 		return text
 
 class State_Blocks(StateWindow):
+	"""CPU online block view.
+	"""
+
+	# Signal: Open an item.
+	#	Argument: identHash
+	openItem = Signal(object)
+
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("CPU online content (downloaded blocks)")
@@ -1027,6 +1034,8 @@ class State_Blocks(StateWindow):
 
 		self.setMinimumSize(450, 320)
 		self._updateSize()
+
+		self.blockTree.openItem.connect(self.openItem)
 
 	def closeEvent(self, ev):
 		self.__modelRef.destroy()

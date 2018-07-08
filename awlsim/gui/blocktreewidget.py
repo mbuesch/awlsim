@@ -559,6 +559,13 @@ class BlockTreeModel(QAbstractItemModel):
 		return None
 
 class BlockTreeView(QTreeView):
+	"""CPU block tree-view.
+	"""
+
+	# Signal: Open an item.
+	#	Argument: identHash
+	openItem = Signal(object)
+
 	def __init__(self, model, parent=None):
 		QTreeView.__init__(self, parent)
 		self.setModel(model)
@@ -580,6 +587,7 @@ class BlockTreeView(QTreeView):
 					 self.__removeSource)
 
 		self.pressed.connect(self.__mouseBtnPressed)
+		self.doubleClicked.connect(self.__mouseBtnDoubleClicked)
 
 	def __mouseBtnPressed(self, index):
 		buttons = QApplication.mouseButtons()
@@ -604,6 +612,29 @@ class BlockTreeView(QTreeView):
 					self.__srcMenu.exec_(QCursor.pos())
 		finally:
 			self.__currentIdxId = None
+
+	def __mouseBtnDoubleClicked(self, index):
+		model = self.model()
+		if not model:
+			return
+
+		if index.column() == model.COLUMN_NAME:
+			idxId = model.indexToId(self.currentIndex())
+			idxIdBase = idxId & model.INDEXID_BASE_MASK
+			indexNr = idxId - idxIdBase
+
+			identHash = None
+			if idxIdBase == model.INDEXID_SRCS_AWL_BASE:
+				identHash = model.getAwlSource(indexNr).identHash
+			elif idxIdBase == model.INDEXID_SRCS_FUP_BASE:
+				identHash = model.getFupSource(indexNr).identHash
+			elif idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
+				identHash = model.getSymTabSource(indexNr).identHash
+
+			if identHash is not None:
+				# Double-clicked on something.
+				# Try to open it.
+				self.openItem.emit(identHash)
 
 	def keyPressEvent(self, ev):
 		QTreeView.keyPressEvent(self, ev)

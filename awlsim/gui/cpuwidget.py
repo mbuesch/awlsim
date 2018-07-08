@@ -339,8 +339,10 @@ class CpuWidget(QWidget):
 		self.__addWindow(State_LCD(self.getSimClient(), self))
 
 	def newWin_Blocks(self):
-		self.__addWindow(State_Blocks(self.getSimClient(),
-					      self))
+		mdiWin = State_Blocks(self.getSimClient(), self)
+		self.__addWindow(mdiWin)
+		mdiWin.openItem.connect(
+			lambda identHash: self.mainWidget.openByIdentHash(identHash))
 
 	def __stateWinConfigChanged(self, stateWin):
 		self.__uploadMemReadAreas()
