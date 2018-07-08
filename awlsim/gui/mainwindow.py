@@ -469,6 +469,13 @@ class MainWidget(QWidget):
 	def findReplaceText(self):
 		self.editMdiArea.findReplaceText()
 
+	def openByIdentHash(self, identHash):
+		projectTreeModel = self.projectTreeModel
+		index = projectTreeModel.identHashToIndex(identHash)
+		if index.isValid():
+			return projectTreeModel.entryActivate(index, parentWidget=self)
+		return False
+
 class MainWindow(QMainWindow):
 	TITLE = "Awlsim PLC v%s" % VERSION_STRING
 
