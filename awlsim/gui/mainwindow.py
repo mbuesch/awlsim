@@ -719,6 +719,8 @@ class MainWindow(QMainWindow):
 			for w in self.editMdiArea.subWindowList():
 				if w is not active:
 					w.close()
+		def closeAll():
+			self.editMdiArea.closeAllSubWindows()
 		action = menu.addAction(getIcon("doc_close"),
 					"&Close active window",
 					closeActive)
@@ -726,6 +728,10 @@ class MainWindow(QMainWindow):
 		action = menu.addAction(getIcon("doc_close"),
 					"Close &all except active",
 					closeAllExceptActive)
+		action.setEnabled(bool(mdiSubWins))
+		action = menu.addAction(getIcon("doc_close"),
+					"Close a&ll",
+					closeAll)
 		action.setEnabled(bool(mdiSubWins))
 		menu.addSeparator()
 		menu.addAction(self.cpuDockWidget.toggleViewAction())
