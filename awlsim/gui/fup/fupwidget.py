@@ -126,6 +126,10 @@ class FupFactory(XmlFactory):
 		]
 		return tags
 
+	def compose(self, *args, **kwargs):
+		kwargs["stripWs"] = True
+		return super(self.__class__, self).compose(*args, **kwargs)
+
 class FupEditWidgetMenu(QMenu):
 	configOpt = Signal()
 	showAwlOpt = Signal()
@@ -265,7 +269,7 @@ class FupWidget(QWidget):
 	def __updateSource(self):
 		# Generate XML
 		try:
-			xmlBytes = FupFactory(fupWidget=self).compose(stripWs=True)
+			xmlBytes = FupFactory(fupWidget=self).compose()
 		except FupFactory.Error as e:
 			raise AwlSimError("Failed to create FUP source: "
 				"%s" % str(e))
