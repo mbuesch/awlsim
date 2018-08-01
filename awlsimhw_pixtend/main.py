@@ -692,6 +692,8 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 	def __tryConnect(self, boardType, timeout=5.0):
 		"""Try to connect to the PiXtend board.
 		"""
+#@cy		cdef double minPollIntV1
+#@cy		cdef double minPollIntV2
 
 		self.__prevSpiCount = 0
 
@@ -718,9 +720,15 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		# Get the configured poll interval
 		self.__pollInt = float(self.getParamValueByName("pollIntMs")) / 1000.0
-		if not self.__isV2 and self.__pollInt < 0.025:
+		minPollIntV1 = 0.025
+		minPollIntV2 = 0.0025
+		if not self.__isV2 and\
+		   not pyFloatEqual(self.__pollInt, minPollIntV1) and\
+		   self.__pollInt < minPollIntV1:
 			self.raiseException("pollIntMs is too low. It must be at least 25 ms.")
-		if self.__isV2 and self.__pollInt < 0.0025:
+		if self.__isV2 and\
+		   not pyFloatEqual(self.__pollInt, minPollIntV2) and\
+		   self.__pollInt < minPollIntV2:
 			self.raiseException("pollIntMs is too low. It must be at least 2.5 ms.")
 		self.__testMode = self.getParamValueByName("testMode")
 		if self.__testMode:
