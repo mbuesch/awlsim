@@ -28,6 +28,8 @@ import shutil
 import hashlib
 import re
 
+WORKER_MEM_BYTES	= 800 * 1024*1024
+WORKER_CPU_OVERCOMMIT	= 2
 
 parallelBuild = False
 profileEnabled = False
@@ -39,6 +41,14 @@ _Cython_Distutils_build_ext = None
 _cythonPossible = None
 _cythonBuildUnits = []
 
+
+def getSystemMemBytesCount():
+	if hasattr(os, "sysconf"):
+		try:
+			return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
+		except ValueError as e:
+			pass
+	return None
 
 def makedirs(path, mode=0o755):
 	try:
@@ -358,6 +368,8 @@ def cyBuildWrapper(arg):
 if cythonBuildPossible():
 	# Override Cython's build_ext class.
 	class CythonBuildExtension(_Cython_Distutils_build_ext):
+		class Error(Exception): pass
+
 		def build_extension(self, ext):
 			assert(not ext.name.endswith("__init__"))
 			_Cython_Distutils_build_ext.build_extension(self, ext)
@@ -372,11 +384,26 @@ if cythonBuildPossible():
 				# Run the parallel build, yay.
 				try:
 					self.check_extensions_list(self.extensions)
+
+					# Calculate the number of worker processes to use.
+					memBytes = getSystemMemBytesCount()
+					if memBytes is None:
+						raise self.Error("Unknown system memory size")
+					print("System memory detected: %d MB" % (memBytes // (1024*1024)))
+					memProcsMax = memBytes // WORKER_MEM_BYTES
+					if memProcsMax <= 0:
+						raise self.Error("Not enough system memory")
+					import multiprocessing
+					numProcs = min(multiprocessing.cpu_count() + WORKER_CPU_OVERCOMMIT,
+						       memProcsMax)
+
+					# Start the worker pool.
+					print("Building in parallel with %d workers." % numProcs)
 					from multiprocessing.pool import Pool
-					Pool().map(cyBuildWrapper,
-						   ((self, ext) for ext in self.extensions))
-				except OSError as e:
-					# This might happen in a restricted
+					Pool(numProcs).map(cyBuildWrapper,
+							   ((self, ext) for ext in self.extensions))
+				except (OSError, self.Error) as e:
+					# OSError might happen in a restricted
 					# environment like chroot.
 					print("WARNING: Parallel build "
 					      "disabled due to: %s" % str(e))
