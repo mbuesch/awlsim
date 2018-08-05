@@ -156,6 +156,34 @@ FUP - Funktionsplan - Function block diagram
 Awlsim supports programming in an S7-FUP like language. See [the FUP documentation](doc/fup/FUP.html) for more information about Awlsim's implementation of FUP.
 
 
+Building Awlsim
+---------------
+
+Awlsim can be run from the source directory in interpreted Python mode without building it. Just `cd` into the Awlsim source directory and execute the desired main executable (e.g. `./awlsim-gui` or `./awlsim-server` etc...).
+
+The accelerated Cython libraries can be built with the standard Python `./setup.py build` command.
+
+For convenience there also is a helper script `./maintenance/build.sh`, which will do everything right to build Awlsim. That can be used instead of calling setup.py directly.
+
+There also is `./maintenance/build-noopt.sh`. That builds Cython modules without optimization. The build is much faster, but the resulting Cython libraries will be much slower. This is useful for development. Do not use this for production.
+
+
+Building Debian / Raspbian / PiLC .deb packages
+-----------------------------------------------
+
+Installing or upgrading Awlsim on a Debian based system is easy.
+The `debuild` can be used to build the .deb packages. Just run the following commands to build all Awlsim .deb packages:
+
+<pre>
+cd path/to/awlsim                                 # Go to Awlsim source directory
+sudo ./maintenance/deb-dependencies-install.sh    # This installs all dependencies
+debuild -uc -us                                   # Build all Awlsim .deb packages
+sudo ./maintenance/deb-install.sh ..              # Install or upgrade all Awlsim .deb packages
+</pre>
+
+The .deb files will be put into the parent directory of the Awlsim source directory.
+
+
 Unit tests
 ----------
 
