@@ -183,6 +183,14 @@ sudo ./maintenance/deb-install.sh ..              # Install or upgrade all Awlsi
 
 The .deb files will be put into the parent directory of the Awlsim source directory.
 
+If you get the following build failure during build:
+
+`/usr/include/features.h:xxx:xx: fatal error: sys/cdefs.h: No such file or directory`
+
+this can be fixed by re-installing the libc development package:
+
+`sudo apt install --reinstall libc-dev`
+
 
 Unit tests
 ----------
