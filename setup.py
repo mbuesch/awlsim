@@ -9,10 +9,10 @@
 #	1:           Include all scripts; also those that aren't required on the platform.
 #
 #  AWLSIM_CYTHON_BUILD:
-#	0:           Do not build any Cython modules.
-#	1:           Build Cython modules.
-#	2:           Build Cython modules only, if setup.py is being executed by Python 2.
-#	3 (default): Build Cython modules only, if setup.py is being executed by Python 3.
+#	0 (default on non-Posix): Do not build any Cython modules.
+#	1:                        Build Cython modules.
+#	2:                        Build Cython modules only, if setup.py is being executed by Python 2.
+#	3 (default on Posix):     Build Cython modules only, if setup.py is being executed by Python 3.
 #
 #  AWLSIM_CYTHON_PARALLEL:
 #	0:           Do not use parallel compilation for Cython modules.
@@ -51,6 +51,7 @@ import setup_cython
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 isWindows = os.name.lower() in {"nt", "ce"}
+isPosix = os.name.lower() == "posix"
 
 
 def getEnvInt(name, default = 0):
@@ -64,7 +65,7 @@ def getEnvBool(name, default = False):
 
 
 fullBuild = getEnvBool("AWLSIM_FULL_BUILD")
-buildCython = getEnvInt("AWLSIM_CYTHON_BUILD", 3)
+buildCython = getEnvInt("AWLSIM_CYTHON_BUILD", 3 if isPosix else 0)
 buildCython = ((buildCython == 1) or (buildCython == sys.version_info[0]))
 setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
 				  getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])

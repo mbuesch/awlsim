@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.10
+#   v1.11
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -310,14 +310,6 @@ def cythonBuildPossible():
 
 	_cythonPossible = False
 
-	if os.name != "posix":
-		print("WARNING: Not building CYTHON modules on '%s' platform." %\
-		      os.name)
-		return False
-	if "bdist_wininst" in sys.argv:
-		print("WARNING: Omitting CYTHON modules while building "
-		      "Windows installer.")
-		return False
 	try:
 		import Cython.Compiler.Options
 		# Omit docstrings in cythoned modules.
