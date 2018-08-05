@@ -391,7 +391,7 @@ if cythonBuildPossible():
 						raise self.Error("Unknown system memory size")
 					print("System memory detected: %d MB" % (memBytes // (1024*1024)))
 					memProcsMax = memBytes // WORKER_MEM_BYTES
-					if memProcsMax <= 0:
+					if memProcsMax < 2:
 						raise self.Error("Not enough system memory")
 					import multiprocessing
 					numProcs = min(multiprocessing.cpu_count() + WORKER_CPU_OVERCOMMIT,
