@@ -43,6 +43,15 @@ _cythonBuildUnits = []
 
 
 def getSystemMemBytesCount():
+	try:
+		with open("/proc/meminfo", "rb") as fd:
+			for line in fd.read().decode("UTF-8", "ignore").splitlines():
+				if line.startswith("MemTotal:") and\
+				   line.endswith("kB"):
+					kB = int(line.split()[1], 10)
+					return kB * 1024
+	except (OSError, IndexError, ValueError, UnicodeError) as e:
+		pass
 	if hasattr(os, "sysconf"):
 		try:
 			return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
