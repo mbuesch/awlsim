@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,5 +47,6 @@ class SFC64(SFC): #+cdef
 
 		# Return a 31-bit millisecond representation of "now".
 		self.cpu.updateTimestamp()
-		self.storeInterfaceFieldByName("RET_VAL", self.cpu.now_TIME)
+		self.storeInterfaceFieldByName("RET_VAL",
+			make_AwlMemoryObject_fromScalar(self.cpu.now_TIME, 32))
 		s.BIE = 1

@@ -1,0 +1,18 @@
+from awlsim.common.cython_support cimport *
+
+from awlsim.core.cpu cimport *
+
+
+cdef class OBTempPresets(object):
+	cdef public int32_t obNumber
+	cdef public S7CPU cpu
+
+	cdef generate(self, uint8_t *localdata)
+
+cdef class OBTempPresets_dummy(OBTempPresets):
+	pass
+
+cdef class OB1TempPresets(OBTempPresets):
+	pass
+
+cdef dict OBTempPresets_table

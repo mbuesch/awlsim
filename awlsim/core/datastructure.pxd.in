@@ -26,5 +26,8 @@ cdef class AwlStructInstance(object):
 	cdef public AwlStruct _struct
 	cdef public AwlMemory memory
 
-	cdef object getFieldData(self, AwlStructField field, AwlOffset baseOffset)
-	cdef setFieldData(self, AwlStructField field, object value, AwlOffset baseOffset)
+	cdef AwlMemoryObject getFieldData(self, AwlStructField field, AwlOffset baseOffset) except NULL
+	cdef setFieldData(self, AwlStructField field, AwlMemoryObject memObj, AwlOffset baseOffset)
+
+	cdef AwlMemoryObject getFieldDataByName(self, object name) except NULL
+	cdef setFieldDataByName(self, object name, AwlMemoryObject memObj)

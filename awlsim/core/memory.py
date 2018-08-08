@@ -30,6 +30,9 @@ from awlsim.common.exceptions import *
 from awlsim.core.datatypes import *
 from awlsim.core.offset import * #+cimport
 
+#from libc.string cimport memcpy #@cy
+#from cpython.mem cimport PyMem_Malloc, PyMem_Free #@cy
+
 
 __all__ = [
 	"Pointer",
@@ -41,6 +44,13 @@ __all__ = [
 	"Accu",
 	"Addressregister",
 	"AwlMemory",
+	"AwlMemoryObject",
+	"make_AwlMemoryObject_fromBytes",
+	"make_AwlMemoryObject_fromScalar",
+	"make_AwlMemoryObject_fromGeneric",
+	"AwlMemoryObject_asScalar",
+	"AwlMemoryObject_asBytes",
+	"AwlMemoryObject_assertWidth",
 ]
 
 
@@ -628,17 +638,41 @@ class AwlMemory(object): #+cdef
 	"""Generic memory representation."""
 
 	__slots__ = (
-		"dataBytes",
-		"dataBytesLen",
+		"__dataBytes",
+		"__dataBytesLen",
 	)
 
 	def __init__(self, init=0):
 		self.setDataBytes(bytearray(0 if init is None else init))
 
-	def setDataBytes(self, dataBytes): #@nocy
-#@cy	cdef setDataBytes(self, bytearray dataBytes):
-		self.dataBytes = dataBytes
-		self.dataBytesLen = len(dataBytes)
+	def setDataBytes(self, dataBytes):		#@nocy
+		self.__dataBytes = dataBytes		#@nocy
+		self.__dataBytesLen = len(dataBytes)	#@nocy
+
+#@cy	cpdef setDataBytes(self, bytearray dataBytes):
+#@cy		self.__dataBytesLen = len(dataBytes)
+#@cy		PyMem_Free(self.__dataBytes)
+#@cy		self.__dataBytes = <uint8_t *>PyMem_Malloc(self.__dataBytesLen)
+#@cy		if not self.__dataBytes:
+#@cy			raise AwlSimError("AwlMemory.setDataBytes(): Out of memory.")
+#@cy		memcpy(self.__dataBytes, <uint8_t *>dataBytes, self.__dataBytesLen)
+
+	def getDataBytes(self):				#@nocy
+		return self.__dataBytes			#@nocy
+
+#@cy	cpdef bytearray getDataBytes(self):
+#@cy		cdef bytearray dataBytes
+#@cy		dataBytes = bytearray(self.__dataBytesLen)
+#@cy		memcpy(<char *>dataBytes, self.__dataBytes, self.__dataBytesLen)
+#@cy		return dataBytes
+
+	def getRawDataBytes(self):			#@nocy
+#@cy	cdef uint8_t * getRawDataBytes(self):
+		return self.__dataBytes
+
+#@cy	def __dealloc__(self):
+#@cy		PyMem_Free(self.__dataBytes)
+#@cy		self.__dataBytes = NULL
 
 	def __fetchError(self, offset, width): #@nocy
 #@cy	cdef __fetchError(self, AwlOffset offset, uint32_t width):
@@ -646,59 +680,37 @@ class AwlMemory(object): #+cdef
 				  str(offset)))
 
 	# Memory fetch operation.
-	# This method returns the data (bit, byte, word, dword, etc...) for
-	# a given memory region of this byte array.
+	# This method returns an AwlMemoryObject that contains the data
+	# (bit, byte, word, dword, etc...) for a given memory region.
 	# offset => An AwlOffset() that specifies the region to fetch from.
 	# width => An integer specifying the width (in bits) to fetch.
-	# Returns an int for small widths (<= 32 bits) and a memoryview
-	# for larger widths.
 	def fetch(self, offset, width): #@nocy
-#@cy	cdef object fetch(self, AwlOffset offset, uint32_t width):
+#@cy	cdef AwlMemoryObject fetch(self, AwlOffset offset, uint32_t width) except NULL:
 #@cy		cdef uint32_t byteOffset
-#@cy		cdef bytearray dataBytes
-#@cy		cdef uint64_t nrBytes
+#@cy		cdef const uint8_t *dataBytes
 #@cy		cdef uint64_t end
+#@cy		cdef uint8_t value
 
-		dataBytes = self.dataBytes
+		dataBytes = self.__dataBytes
 		byteOffset = offset.byteOffset
+
 		if width == 1:
-			if byteOffset >= self.dataBytesLen:
+			if byteOffset >= self.__dataBytesLen:
 				self.__fetchError(offset, width)
-			return (dataBytes[byteOffset] >> offset.bitOffset) & 1	#@nocy
-#@cy			return (<uint8_t>(dataBytes[byteOffset]) >> offset.bitOffset) & 1u
-		elif width == 8:
-			if byteOffset >= self.dataBytesLen:
-				self.__fetchError(offset, width)
-			return dataBytes[byteOffset] & 0xFF			#@nocy
-#@cy			return <uint8_t>(dataBytes[byteOffset])
-		elif width == 16:
-			if byteOffset + 1 >= self.dataBytesLen:
-				self.__fetchError(offset, width)
-			return (((dataBytes[byteOffset] << 8) |			#@nocy
-				 dataBytes[byteOffset + 1]) & 0xFFFF)		#@nocy
-#@cy			return (((<uint8_t>(dataBytes[byteOffset]) << 8) |
-#@cy			         <uint8_t>(dataBytes[byteOffset + 1])) & 0xFFFFu)
-		elif width == 32:
-			if byteOffset + 3 >= self.dataBytesLen:
-				self.__fetchError(offset, width)
-			return (((dataBytes[byteOffset] << 24) |		#@nocy
-				 (dataBytes[byteOffset + 1] << 16) |		#@nocy
-				 (dataBytes[byteOffset + 2] << 8) |		#@nocy
-				 dataBytes[byteOffset + 3]) & 0xFFFFFFFF)	#@nocy
-#@cy			return (((<uint8_t>(dataBytes[byteOffset]) << 24) |
-#@cy			         (<uint8_t>(dataBytes[byteOffset + 1]) << 16) |
-#@cy			         (<uint8_t>(dataBytes[byteOffset + 2]) << 8) |
-#@cy			         <uint8_t>(dataBytes[byteOffset + 3])) & 0xFFFFFFFFu)
+			value = dataBytes[byteOffset]
+			value = (value >> offset.bitOffset) & 1
+			return make_AwlMemoryObject_fromScalar(value, width) #@nocy
+#@cy			return make_AwlMemoryObject_fromCArray(&value, width)
 		else:
 			assert(not offset.bitOffset) #@nocy
-			nrBytes = intDivRoundUp(width, 8)
-			end = byteOffset + nrBytes
-			if end > self.dataBytesLen:
+			end = byteOffset + intDivRoundUp(width, 8)
+			if end > self.__dataBytesLen:
 				self.__fetchError(offset, width)
-			return dataBytes[byteOffset : end]
+			return make_AwlMemoryObject_fromBytes(dataBytes[byteOffset : end], width) #@nocy
+#@cy			return make_AwlMemoryObject_fromCArray(&dataBytes[byteOffset], width)
 
-	def __storeError(self, offset, width, value): #@nocy
-#@cy	cdef __storeError(self, AwlOffset offset, uint32_t width, object value):
+	def __storeError(self, offset, value): #@nocy
+#@cy	cdef __storeError(self, AwlOffset offset, AwlMemoryObject memObj):
 		raise AwlSimError("store: Operator offset '%s' out of range." % (
 				  str(offset)))
 
@@ -706,75 +718,208 @@ class AwlMemory(object): #+cdef
 	# This method stores data (bit, byte, word, dword, etc...) to
 	# a given memory region of this byte array.
 	# offset => An AwlOffset() that specifies the region to store to.
-	# width => An integer specifying the width (in bits) to store.
-	# value => The value to store.
-	#          May be an int, bytearray, bytes or compatible.
-	def store(self, offset, width, value): #@nocy
-#@cy	cdef store(self, AwlOffset offset, uint32_t width, object value):
+	# memObj => The AwlMemoryObject that contains the data to store.
+	def store(self, offset, memObj): #@nocy
+#@cy	cdef store(self, AwlOffset offset, AwlMemoryObject memObj):
 #@cy		cdef uint32_t byteOffset
-#@cy		cdef bytearray dataBytes
-#@cy		cdef uint64_t value_uint64
+#@cy		cdef uint32_t bitOffset
+#@cy		cdef uint32_t width
+#@cy		cdef uint8_t invMask
+#@cy		cdef uint8_t *toDataBytes
+#@cy		cdef const uint8_t *fromDataBytes
 #@cy		cdef uint64_t nrBytes
 #@cy		cdef uint64_t end
 
-		dataBytes = self.dataBytes
+		toDataBytes = self.__dataBytes
+		fromDataBytes = memObj.dataBytes
+		width = memObj.width
 		byteOffset = offset.byteOffset
-#@cy2		if isinstance(value, int) or isinstance(value, long):
-#@cy3		if isinstance(value, int):
-		if isInteger(value): #@nocy
-#@cy			value_uint64 = <uint64_t>(<int64_t>value)
-			if width == 1:
-				if byteOffset >= self.dataBytesLen:
-					self.__storeError(offset, width, value)
-				if value: #@nocy
-#@cy				if value_uint64:
-					dataBytes[byteOffset] |= 1 << offset.bitOffset
-				else:
-					dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
-			else:
-				if byteOffset + (width // 8 ) > self.dataBytesLen: #@nocy
-#@cy				if byteOffset + (width // 8u) > self.dataBytesLen:
-					self.__storeError(offset, width, value)
-				while width:
-					width -= 8
-					dataBytes[byteOffset] = (value >> width) & 0xFF #@nocy
-#@cy					dataBytes[byteOffset] = (value_uint64 >> width) & 0xFF
-					byteOffset += 1
+
+		if width == 1:
+			if byteOffset >= self.__dataBytesLen:
+				self.__storeError(offset, memObj)
+			bitOffset = offset.bitOffset
+			invMask = ~(1 << bitOffset) & 0xFF
+			toDataBytes[byteOffset] = (toDataBytes[byteOffset] & invMask) |\
+						  ((fromDataBytes[0] & 1) << bitOffset)
 		else:
-			if width == 1:
-				if byteOffset >= self.dataBytesLen:
-					self.__storeError(offset, width, value)
-				if value[0] & 1: #@nocy
-#@cy				if <uint8_t>(value[0]) & 1u:
-					dataBytes[byteOffset] |= 1 << offset.bitOffset
-				else:
-					dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
-			else:
-				nrBytes = intDivRoundUp(width, 8)
-				assert(nrBytes == len(value)) #@nocy
-				end = byteOffset + nrBytes
-				if end > self.dataBytesLen:
-					self.__storeError(offset, width, value)
-				dataBytes[byteOffset : end] = value
+			nrBytes = intDivRoundUp(width, 8)
+			assert(nrBytes == len(fromDataBytes)) #@nocy
+			end = byteOffset + nrBytes
+			if end > self.__dataBytesLen:
+				self.__storeError(offset, memObj)
+			toDataBytes[byteOffset : end] = fromDataBytes #@nocy
+#@cy			memcpy(&toDataBytes[byteOffset], fromDataBytes, nrBytes)
 
 	def __len__(self):
-		return self.dataBytesLen
+		return self.__dataBytesLen
 
 	def __bool__(self):				#@cy3
-		return bool(self.dataBytesLen)	#@cy3
+		return bool(self.__dataBytesLen)	#@cy3
 
 	def __nonzero__(self):				#@cy2
-		return bool(self.dataBytesLen)	#@cy2
+		return bool(self.__dataBytesLen)	#@cy2
 
 	def __repr__(self): #@nocov
 #@cy		cdef list ret
 #@cy		cdef uint64_t i
 
 		ret = [ 'AwlMemory(b"', ]
-		for i in range(self.dataBytesLen):
-			ret.append("\\x%02X" % self.dataBytes[i])
+		for i in range(self.__dataBytesLen):
+			ret.append("\\x%02X" % self.__dataBytes[i])
 		ret.append('")')
 		return "".join(ret)
 
 	def __str__(self): #@nocov
 		return self.__repr__()
+
+class AwlMemoryObject(object):						#@nocy
+	__slots__ = (							#@nocy
+		"width",	# int, width in bits			#@nocy
+		"dataBytes",	# bytearray				#@nocy
+	)								#@nocy
+
+#cdef AwlMemoryObjectStruct memObjPool[8] #@cy
+#cdef uint32_t memObjPoolIndex #@cy
+#cdef uint32_t memObjPoolIndexMask = ((sizeof(memObjPool) // sizeof(memObjPool[0])) - 1u) #@cy
+
+def make_AwlMemoryObject_fromBytes(dataBytes, width):			#@nocy
+	memObj = AwlMemoryObject()					#@nocy
+	memObj.dataBytes = dataBytes					#@nocy
+	memObj.width = width						#@nocy
+	return memObj							#@nocy
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromBytes(bytearray dataBytes, uint32_t width) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	memObj = alloc_AwlMemoryObject(width)
+#@cy	memcpy(memObj.dataBytes, <const char *>dataBytes, intDivRoundUp(width, 8))
+#@cy	return memObj
+
+def make_AwlMemoryObject_fromScalar(value, width):			#@nocy
+	assert(isInteger(value))					#@nocy
+	memObj = AwlMemoryObject()					#@nocy
+	memObj.dataBytes = dataBytes = bytearray(intDivRoundUp(width, 8)) #@nocy
+	memObj.width = width						#@nocy
+	if width == 1:							#@nocy
+		dataBytes[0] = 1 if value else 0			#@nocy
+	else:								#@nocy
+		byteOffset = 0						#@nocy
+		while width:						#@nocy
+			width -= 8					#@nocy
+			dataBytes[byteOffset] = (value >> width) & 0xFF	#@nocy
+			byteOffset += 1					#@nocy
+	return memObj							#@nocy
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar(int64_t value, uint32_t width) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(width)
+#@cy	dataBytes = memObj.dataBytes
+#@cy	if width == 1:
+#@cy		dataBytes[0] = 1 if value else 0
+#@cy	elif width == 16:
+#@cy		dataBytes[0] = <uint8_t>(<uint16_t>value >> 8)
+#@cy		dataBytes[1] = <uint8_t>value
+#@cy	elif width == 32:
+#@cy		dataBytes[0] = <uint8_t>(<uint32_t>value >> 24)
+#@cy		dataBytes[1] = <uint8_t>(<uint32_t>value >> 16)
+#@cy		dataBytes[2] = <uint8_t>(<uint32_t>value >> 8)
+#@cy		dataBytes[3] = <uint8_t>value
+#@cy	elif width == 8:
+#@cy		dataBytes[0] = <uint8_t>value
+#@cy	elif width == 24:
+#@cy		dataBytes[0] = <uint8_t>(<uint32_t>value >> 16)
+#@cy		dataBytes[1] = <uint8_t>(<uint32_t>value >> 8)
+#@cy		dataBytes[2] = <uint8_t>value
+#@cy	elif width == 48:
+#@cy		dataBytes[0] = <uint8_t>(<uint64_t>value >> 40)
+#@cy		dataBytes[1] = <uint8_t>(<uint64_t>value >> 32)
+#@cy		dataBytes[2] = <uint8_t>(<uint64_t>value >> 24)
+#@cy		dataBytes[3] = <uint8_t>(<uint64_t>value >> 16)
+#@cy		dataBytes[4] = <uint8_t>(<uint64_t>value >> 8)
+#@cy		dataBytes[5] = <uint8_t>value
+#@cy	else:
+#@cy		assert(0)
+#@cy	return memObj
+
+def make_AwlMemoryObject_fromGeneric(value, width): #@nocy
+#cdef AwlMemoryObject make_AwlMemoryObject_fromGeneric(object value, uint32_t width) except NULL: #@cy
+	if isInteger(value):
+		return make_AwlMemoryObject_fromScalar(value, width)
+	return make_AwlMemoryObject_fromBytes(value, width)
+
+def AwlMemoryObject_asScalar_failed(memObj): #@nocy #@nocov
+#cdef AwlMemoryObject_asScalar_failed(AwlMemoryObject memObj): #@cy
+	raise AwlSimError("Memory to scalar (int, real, bool, ...) conversion: "
+		"The memory object has an invalid width of %d bits. "
+		"Only 1, 8, 16, 24 or 32 bits object width are supported here." % (
+		memObj.width))
+
+def AwlMemoryObject_asScalar(memObj):				#@nocy
+	width = memObj.width					#@nocy
+	dataBytes = memObj.dataBytes				#@nocy
+	if width == 1:						#@nocy
+		return dataBytes[0] & 1				#@nocy
+	elif width == 16:					#@nocy
+		return (((dataBytes[0] << 8) |			#@nocy
+			 dataBytes[1]) & 0xFFFF)		#@nocy
+	elif width == 32:					#@nocy
+		return (((dataBytes[0] << 24) |			#@nocy
+			 (dataBytes[1] << 16) |			#@nocy
+			 (dataBytes[2] << 8) |			#@nocy
+			 dataBytes[3]) & 0xFFFFFFFF)		#@nocy
+	elif width == 8:					#@nocy
+		return dataBytes[0] & 0xFF			#@nocy
+	elif width == 24:					#@nocy
+		return (((dataBytes[0] << 16) |			#@nocy
+			 (dataBytes[1] << 8) |			#@nocy
+			 dataBytes[2]) & 0xFFFFFF)		#@nocy
+	AwlMemoryObject_asScalar_failed(memObj)			#@nocy #@nocov
+
+#cdef uint32_t AwlMemoryObject_asScalar(AwlMemoryObject memObj) except? 0x7FFFFFFF: #@cy
+#@cy	cdef uint32_t width
+#@cy	cdef uint8_t *dataBytes
+#@cy
+#@cy	width = memObj.width
+#@cy	dataBytes = memObj.dataBytes
+#@cy	if width == 1:
+#@cy		return <uint8_t>(dataBytes[0]) & 1u
+#@cy	elif width == 16:
+#@cy		return (((<uint8_t>(dataBytes[0]) << 8) |
+#@cy		         <uint8_t>(dataBytes[1])) & 0xFFFFu)
+#@cy	elif width == 32:
+#@cy		return (((<uint8_t>(dataBytes[0]) << 24) |
+#@cy		         (<uint8_t>(dataBytes[1]) << 16) |
+#@cy		         (<uint8_t>(dataBytes[2]) << 8) |
+#@cy		         <uint8_t>(dataBytes[3])) & 0xFFFFFFFFu)
+#@cy	elif width == 8:
+#@cy		return <uint8_t>(dataBytes[0])
+#@cy	elif width == 24:
+#@cy		return (((<uint8_t>(dataBytes[0]) << 16) |
+#@cy		         (<uint8_t>(dataBytes[1]) << 8) |
+#@cy		         <uint8_t>(dataBytes[2])) & 0xFFFFFFu)
+#@cy	AwlMemoryObject_asScalar_failed(memObj)
+
+def AwlMemoryObject_asBytes(memObj):				#@nocy
+	return memObj.dataBytes					#@nocy
+
+#cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj): #@cy
+#@cy	cdef bytearray dataBytes
+#@cy	cdef uint32_t nrBytes
+#@cy
+#@cy	nrBytes = intDivRoundUp(memObj.width, 8)
+#@cy	dataBytes = bytearray(nrBytes)
+#@cy	memcpy(<char *>dataBytes, memObj.dataBytes, nrBytes)
+#@cy	return dataBytes
+
+def AwlMemoryObject_assertWidth_failed(memObj, width): #@nocy #@nocov
+#cdef AwlMemoryObject_assertWidth_failed(AwlMemoryObject memObj, uint32_t width): #@cy
+	raise AwlSimBug("AwlMemoryObject width is not correct: "
+		"memObj.width=%d, expectedWidth=%d" % (
+		memObj.width, width))
+
+def AwlMemoryObject_assertWidth(memObj, expectedWidth):				#@nocy
+	if memObj.width != expectedWidth:					#@nocy
+		AwlMemoryObject_assertWidth_failed(memObj, expectedWidth)	#@nocy #@nocov

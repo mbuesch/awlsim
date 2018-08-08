@@ -173,7 +173,7 @@ class CallStackElem(object): #+cdef
 		else:
 			dbNumber = rvalueOp.offset.dbNumber
 		cpu.store(storeOper,
-			  max(0, dbNumber),
+			  make_AwlMemoryObject_fromScalar(max(0, dbNumber), 16),
 			  widthMaskAll)
 		storeOper.offset = loffset.addInt(2, 0)
 		storeOper.width = 32
@@ -189,7 +189,7 @@ class CallStackElem(object): #+cdef
 			raise AwlSimBug("FC_trans_dbpointerInVL: Invalid rValueOp area. "
 				"(area=%d, operType=%d)" % (area, rvalueOp.operType))
 		cpu.store(storeOper,
-			  area | rvalueOp.offset.toPointerValue(),
+			  make_AwlMemoryObject_fromScalar(area | rvalueOp.offset.toPointerValue(), 32),
 			  widthMaskAll)
 		# Return the operator for the DB pointer.
 		return make_AwlOperator(AwlOperatorTypes.MEM_VL,
@@ -485,6 +485,7 @@ def make_CallStackElem(cpu,						#@nocy
 #@cy	cdef AwlStructField structField
 #@cy	cdef AwlStructInstance structInstance
 #@cy	cdef uint32_t widthMaskAll
+#@cy	cdef AwlMemoryObject memObj
 
 	cse = CallStackElem()
 
@@ -528,8 +529,9 @@ def make_CallStackElem(cpu,						#@nocy
 					   structField.compound:
 						# Compound data type with IN_OUT decl.
 						# Make a DB-ptr to the actual data.
-						data = cse._FB_trans_dbpointer(
-								param, param.rvalueOp)
+						memObj = make_AwlMemoryObject_fromBytes(
+							cse._FB_trans_dbpointer(param, param.rvalueOp),
+							48)
 						# Get the DB-ptr struct field.
 						structField = structField.finalOverride
 					else:
@@ -539,12 +541,14 @@ def make_CallStackElem(cpu,						#@nocy
 						if structField.callByRef:
 							# Do not fetch. Type is passed 'by reference'.
 							# This is for TIMER, COUNTER, etc...
-							data = param.rvalueOp.resolve(True).offset.byteOffset
+							memObj = make_AwlMemoryObject_fromScalar(
+								param.rvalueOp.resolve(True).offset.byteOffset,
+								16)
 						else:
-							data = cpu.fetch(param.rvalueOp, widthMaskAll)
+							memObj = cpu.fetch(param.rvalueOp, widthMaskAll)
 					# Transfer data into DBI.
 					structInstance.setFieldData(structField,
-								    data,
+								    memObj,
 								    instanceBaseOffset)
 			cse._interfRefs = None
 		else:

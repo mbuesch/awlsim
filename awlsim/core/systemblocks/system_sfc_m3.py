@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ class SFCm3(SFC): #+cdef
 	}
 
 	def run(self): #+cpdef #@nocov
-		shutdownType = wordToSignedPyInt(self.fetchInterfaceFieldByName("SHUTDOWN_TYPE"))
+		shutdownType = wordToSignedPyInt(AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("SHUTDOWN_TYPE")))
 		if shutdownType == 1:
 			raise MaintenanceRequest(MaintenanceRequest.TYPE_SHUTDOWN,
 						 "SFC -3 shutdown request")

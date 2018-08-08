@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFBs
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,51 +61,67 @@ class SFB4(SFB): #+cdef
 		s = self.cpu.statusWord
 		s.BIE = 1
 
-		PT = dwordToSignedPyInt(self.fetchInterfaceFieldByName("PT"))
+		PT = dwordToSignedPyInt(AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("PT")))
 		if PT <= 0:
 			# Invalid PT. Abort and reset state.
 			# A PT of zero is used to reset the timer.
 			if PT == 0:
 				# S7 resets IN here, for whatever weird reason.
-				self.storeInterfaceFieldByName("IN", 0)
+				self.storeInterfaceFieldByName("IN",
+					make_AwlMemoryObject_fromScalar(0, 1))
 			else:
 				# Negative PT. This is an error.
 				s.BIE = 0
-			self.storeInterfaceFieldByName("Q", 0)
-			self.storeInterfaceFieldByName("ET", 0)
-			self.storeInterfaceFieldByName("STATE", 0)
+			self.storeInterfaceFieldByName("Q",
+				make_AwlMemoryObject_fromScalar(0, 1))
+			self.storeInterfaceFieldByName("ET",
+				make_AwlMemoryObject_fromScalar(0, 32))
+			self.storeInterfaceFieldByName("STATE",
+				make_AwlMemoryObject_fromScalar(0, 8))
 			return
 
 		# Get the current time, as S7-time value (31-bit milliseconds)
 		ATIME = self.cpu.now_TIME
 
-		STATE = self.fetchInterfaceFieldByName("STATE")
-		IN = self.fetchInterfaceFieldByName("IN")
+		STATE = AwlMemoryObject_asScalar(self.fetchInterfaceFieldByName("STATE"))
+		IN = AwlMemoryObject_asScalar(self.fetchInterfaceFieldByName("IN"))
 		if IN:
 			if not (STATE & (self.STATE_RUNNING | self.STATE_FINISHED)):
 				# IN is true and we are not running, yet.
 				# Start the timer.
-				self.storeInterfaceFieldByName("STIME", ATIME)
+				self.storeInterfaceFieldByName("STIME",
+					make_AwlMemoryObject_fromScalar(ATIME, 32))
 				STATE |= self.STATE_RUNNING
-				self.storeInterfaceFieldByName("STATE", STATE)
+				self.storeInterfaceFieldByName("STATE",
+					make_AwlMemoryObject_fromScalar(STATE, 8))
 		else:
 			# IN is false. Shut down everything.
 			STATE &= ~(self.STATE_FINISHED | self.STATE_RUNNING)
-			self.storeInterfaceFieldByName("STATE", STATE)
-			self.storeInterfaceFieldByName("ET", 0)
-			self.storeInterfaceFieldByName("Q", 0)
+			self.storeInterfaceFieldByName("STATE",
+				make_AwlMemoryObject_fromScalar(STATE, 8))
+			self.storeInterfaceFieldByName("ET",
+				make_AwlMemoryObject_fromScalar(0, 32))
+			self.storeInterfaceFieldByName("Q",
+				make_AwlMemoryObject_fromScalar(0, 1))
 		if STATE & self.STATE_RUNNING:
 			# The timer is running.
-			STIME = self.fetchInterfaceFieldByName("STIME")
-			self.storeInterfaceFieldByName("ATIME", ATIME)
+			STIME = AwlMemoryObject_asScalar(
+				self.fetchInterfaceFieldByName("STIME"))
+			self.storeInterfaceFieldByName("ATIME",
+				make_AwlMemoryObject_fromScalar(ATIME, 32))
 			ET = (ATIME - STIME) & 0x7FFFFFFF
 			if ET >= PT:
 				# Time elapsed.
 				ET = PT
-				self.storeInterfaceFieldByName("Q", 1)
+				self.storeInterfaceFieldByName("Q",
+					make_AwlMemoryObject_fromScalar(1, 1))
 				STATE &= ~self.STATE_RUNNING
 				STATE |= self.STATE_FINISHED
-				self.storeInterfaceFieldByName("STATE", STATE)
+				self.storeInterfaceFieldByName("STATE",
+					make_AwlMemoryObject_fromScalar(STATE, 8))
 			else:
-				self.storeInterfaceFieldByName("Q", 0)
-			self.storeInterfaceFieldByName("ET", ET)
+				self.storeInterfaceFieldByName("Q",
+					make_AwlMemoryObject_fromScalar(0, 1))
+			self.storeInterfaceFieldByName("ET",
+				make_AwlMemoryObject_fromScalar(ET, 32))

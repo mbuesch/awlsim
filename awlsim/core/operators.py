@@ -544,8 +544,9 @@ class AwlIndirectOp(AwlOperator): #+cdef
 						       AwlOperatorTypes.MEM_DI):
 				raise AwlSimError("Offset operator in indirect "
 					"access is not a valid memory offset.")
-			offsetValue = self.insn.cpu.fetch(offsetOper,
-							  AwlOperatorWidths.WIDTH_MASK_8_16_32)
+			offsetValue = AwlMemoryObject_asScalar(
+				self.insn.cpu.fetch(offsetOper,
+						    AwlOperatorWidths.WIDTH_MASK_8_16_32))
 			pointer = (self.area | (offsetValue & 0x0007FFFF)) #+suffix-u
 		else:
 			# Register-indirect access
@@ -553,9 +554,10 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				raise AwlSimError("Offset operator in "
 					"register-indirect access is not a "
 					"pointer immediate.")
-			offsetValue = self.insn.cpu.fetch(offsetOper,
-							  (AwlOperatorWidths.WIDTH_MASK_8_16_32 &
-							   0x0007FFFF)) #+suffix-u
+			offsetValue = AwlMemoryObject_asScalar(
+				self.insn.cpu.fetch(offsetOper,
+						    (AwlOperatorWidths.WIDTH_MASK_8_16_32 &
+						     0x0007FFFF))) #+suffix-u
 			if self.area == PointerConst.AREA_NONE_S:
 				# Area-spanning access
 				pointer = ((self.insn.cpu.getAR(self.addressRegister).get() +

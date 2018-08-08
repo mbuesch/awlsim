@@ -74,7 +74,7 @@ class DB(Block): #+cdef
 		self.structInstance = AwlStructInstance(self.struct)
 
 	def fetch(self, operator, baseOffset): #@nocy
-#@cy	cdef object fetch(self, AwlOperator operator, AwlOffset baseOffset):
+#@cy	cdef AwlMemoryObject fetch(self, AwlOperator operator, AwlOffset baseOffset) except NULL:
 		if self.permissions & self._PERM_READ:
 			if baseOffset is None:
 				return self.structInstance.memory.fetch(
@@ -86,19 +86,18 @@ class DB(Block): #+cdef
 						operator.width)
 		raise AwlSimError("Fetch from read protected DB %d" % self.index)
 
-	def store(self, operator, value, baseOffset): #@nocy
-#@cy	cdef store(self, AwlOperator operator, object value, AwlOffset baseOffset):
+	def store(self, operator, memObj, baseOffset): #@nocy
+#@cy	cdef store(self, AwlOperator operator, AwlMemoryObject memObj, AwlOffset baseOffset):
 		if self.permissions & self._PERM_WRITE:
+			AwlMemoryObject_assertWidth(memObj, operator.width)
 			if baseOffset is None:
 				self.structInstance.memory.store(
 						operator.offset,
-						operator.width,
-						value)
+						memObj)
 			else:
 				self.structInstance.memory.store(
 						baseOffset.add(operator.offset),
-						operator.width,
-						value)
+						memObj)
 		else:
 			raise AwlSimError("Store to write protected DB %d" % self.index)
 

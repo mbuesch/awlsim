@@ -56,20 +56,27 @@ class SFB0(SFB): #+cdef
 		s = self.cpu.statusWord
 
 		# CU pos-edge detection
-		CU = self.fetchInterfaceFieldByName("CU")
-		CU_pos_edge = CU & (self.fetchInterfaceFieldByName("CUO") ^ 1) & 1
-		self.storeInterfaceFieldByName("CUO", CU)
+		CU = AwlMemoryObject_asScalar(self.fetchInterfaceFieldByName("CU"))
+		CU_pos_edge = CU & (AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("CUO")) ^ 1) & 1
+		self.storeInterfaceFieldByName("CUO",
+			make_AwlMemoryObject_fromScalar(CU, 1))
 
-		CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("CV"))
-		if self.fetchInterfaceFieldByName("R"): # Counter reset
+		CV = wordToSignedPyInt(AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("CV")))
+		if AwlMemoryObject_asScalar(self.fetchInterfaceFieldByName("R")): # Counter reset
 			CV = 0
-			self.storeInterfaceFieldByName("CV", CV)
+			self.storeInterfaceFieldByName("CV",
+				make_AwlMemoryObject_fromScalar(CV, 16))
 		elif CU_pos_edge and CV < 32767: # Count up
 			CV += 1
-			self.storeInterfaceFieldByName("CV", CV)
+			self.storeInterfaceFieldByName("CV",
+				make_AwlMemoryObject_fromScalar(CV, 16))
 
 		# Update Q-status
-		PV = wordToSignedPyInt(self.fetchInterfaceFieldByName("PV"))
-		self.storeInterfaceFieldByName("Q", 1 if CV >= PV else 0)
+		PV = wordToSignedPyInt(AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("PV")))
+		self.storeInterfaceFieldByName("Q",
+			make_AwlMemoryObject_fromScalar(1 if CV >= PV else 0, 1))
 
 		s.BIE = 1

@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,8 @@ class AwlInsn_SLEEP(AwlInsn): #+cdef
 		self.assertOpCount(1)
 
 	def run(self): #+cdef
-		sleepMsecs = self.cpu.fetch(self.op0, self._widths_scalar)
+		sleepMsecs = AwlMemoryObject_asScalar(self.cpu.fetch(self.op0,
+								     self._widths_scalar))
 		sleepSecs = sleepMsecs / 1000.0
 
 		if sleepSecs >= self.cpu.cycleTimeLimit:

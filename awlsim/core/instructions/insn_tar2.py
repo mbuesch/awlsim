@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,9 +40,14 @@ class AwlInsn_TAR2(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef AwlOperator oper
 
 		if self.opCount:
-			self.cpu.store(self.op0, self.cpu.ar2.get(), self._widths_32)
+			oper = self.op0
+			self.cpu.store(oper,
+				       make_AwlMemoryObject_fromScalar(self.cpu.ar2.get(),
+								       oper.width),
+				       self._widths_32)
 		else:
 			self.cpu.accu2.copyFrom(self.cpu.accu1)
 			self.cpu.accu1.copyFrom(self.cpu.ar2)

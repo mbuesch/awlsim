@@ -62,24 +62,27 @@ class SFC21(SFC): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef S7StatusWord s
 #@cy		cdef int32_t operType
+#@cy		cdef AwlMemoryObject data
 
 		cpu = self.cpu
 		s = cpu.statusWord
 
 		# Get the inputs (BLK actually is declared as output though)
-		BVAL = self.fetchInterfaceFieldByName("BVAL")
-		BLK = self.fetchInterfaceFieldByName("BLK")
+		BVAL = AwlMemoryObject_asBytes(self.fetchInterfaceFieldByName("BVAL"))
+		BLK = AwlMemoryObject_asBytes(self.fetchInterfaceFieldByName("BLK"))
 
 		# Check ANY pointer S7 magic.
 		if BVAL[0] != ANYPointerConst.MAGIC:
 			s.BIE = 0
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_RAREA, 1))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_RAREA, 1), 16))
 			return
 		if BLK[0] != ANYPointerConst.MAGIC:
 			s.BIE = 0
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_WAREA, 3))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_WAREA, 3), 16))
 			return
 
 		# Get the repetition counts from the ANY pointers
@@ -94,7 +97,8 @@ class SFC21(SFC): #+cdef
 				raise KeyError
 		except KeyError:
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_RAREA, 1))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_RAREA, 1), 16))
 			s.BIE = 0
 			return
 		try:
@@ -104,7 +108,8 @@ class SFC21(SFC): #+cdef
 				raise KeyError
 		except KeyError:
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_WAREA, 3))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_WAREA, 3), 16))
 			s.BIE = 0
 			return
 
@@ -112,14 +117,16 @@ class SFC21(SFC): #+cdef
 		BVAL_len = BVAL_typeWidth * BVAL_repCount
 		if BVAL_len % 8:
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_RLEN, 1))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_RLEN, 1), 16))
 			s.BIE = 0
 			return
 		BVAL_len //= 8
 		BLK_len = BLK_typeWidth * BLK_repCount
 		if BLK_len % 8:
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_WLEN, 3))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_WLEN, 3), 16))
 			s.BIE = 0
 			return
 		BLK_len //= 8
@@ -143,7 +150,8 @@ class SFC21(SFC): #+cdef
 				cpu.openDB(BVAL_dbNr, False)
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
-					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 1))
+					make_AwlMemoryObject_fromScalar(
+						SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 1), 16))
 				s.BIE = 0
 				return
 		if BLK_ptrArea in {PointerConst.AREA_DB, PointerConst.AREA_DI}:
@@ -159,7 +167,8 @@ class SFC21(SFC): #+cdef
 				cpu.openDB(BLK_dbNr, True)
 			except (AwlSimError, KeyError) as e:
 				self.storeInterfaceFieldByName("RET_VAL",
-					SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 3))
+					make_AwlMemoryObject_fromScalar(
+						SystemErrCode.make(SystemErrCode.E_DBNOTEXIST, 3), 16))
 				s.BIE = 0
 				return
 
@@ -172,7 +181,8 @@ class SFC21(SFC): #+cdef
 		if BVAL_offset.bitOffset or operType < 0:
 			# BVAL data is not byte aligned or area is invalid.
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_RALIGN, 1))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_RALIGN, 1), 16))
 			s.BIE = 0
 			return
 		BVAL_fetchOper = make_AwlOperator(operType, 8, BVAL_offset, None)
@@ -183,7 +193,8 @@ class SFC21(SFC): #+cdef
 		if BLK_offset.bitOffset or operType < 0:
 			# BLK data is not byte aligned or area is invalid.
 			self.storeInterfaceFieldByName("RET_VAL",
-				SystemErrCode.make(SystemErrCode.E_WALIGN, 3))
+				make_AwlMemoryObject_fromScalar(
+					SystemErrCode.make(SystemErrCode.E_WALIGN, 3), 16))
 			s.BIE = 0
 			return
 		BLK_storeOper = make_AwlOperator(operType, 8, BLK_offset, None)
@@ -205,7 +216,8 @@ class SFC21(SFC): #+cdef
 						 AwlOperatorWidths.WIDTH_MASK_ALL)
 			except AwlSimError:
 				self.storeInterfaceFieldByName("RET_VAL",
-					SystemErrCode.make(SystemErrCode.E_RAREA, 1))
+					make_AwlMemoryObject_fromScalar(
+						SystemErrCode.make(SystemErrCode.E_RAREA, 1), 16))
 				s.BIE = 0
 				return
 			# Store the data to BLK
@@ -214,7 +226,8 @@ class SFC21(SFC): #+cdef
 					  AwlOperatorWidths.WIDTH_MASK_ALL)
 			except AwlSimError:
 				self.storeInterfaceFieldByName("RET_VAL",
-					SystemErrCode.make(SystemErrCode.E_WAREA, 3))
+					make_AwlMemoryObject_fromScalar(
+						SystemErrCode.make(SystemErrCode.E_WAREA, 3), 16))
 				s.BIE = 0
 				return
 			BVAL_offset.byteOffset += BVAL_fetchOper.width // 8
@@ -223,5 +236,6 @@ class SFC21(SFC): #+cdef
 			BLK_offset.byteOffset += BLK_storeOper.width // 8
 
 		# Everything is fine.
-		self.storeInterfaceFieldByName("RET_VAL", 0)
+		self.storeInterfaceFieldByName("RET_VAL",
+			make_AwlMemoryObject_fromScalar(0, 16))
 		s.BIE = 1

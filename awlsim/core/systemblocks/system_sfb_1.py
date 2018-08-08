@@ -56,19 +56,25 @@ class SFB1(SFB): #+cdef
 		s = self.cpu.statusWord
 
 		# CD pos-edge detection
-		CD = self.fetchInterfaceFieldByName("CD")
-		CD_pos_edge = CD & (self.fetchInterfaceFieldByName("CDO") ^ 1) & 1
-		self.storeInterfaceFieldByName("CDO", CD)
+		CD = AwlMemoryObject_asScalar(self.fetchInterfaceFieldByName("CD"))
+		CD_pos_edge = CD & (AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("CDO")) ^ 1) & 1
+		self.storeInterfaceFieldByName("CDO", make_AwlMemoryObject_fromScalar(CD, 1))
 
-		CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("CV"))
-		if self.fetchInterfaceFieldByName("LOAD"): # Counter load
-			CV = wordToSignedPyInt(self.fetchInterfaceFieldByName("PV"))
-			self.storeInterfaceFieldByName("CV", CV)
+		CV = wordToSignedPyInt(AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("CV")))
+		if AwlMemoryObject_asScalar(self.fetchInterfaceFieldByName("LOAD")): # Counter load
+			CV = wordToSignedPyInt(AwlMemoryObject_asScalar(
+				self.fetchInterfaceFieldByName("PV")))
+			self.storeInterfaceFieldByName("CV",
+				make_AwlMemoryObject_fromScalar(CV, 16))
 		elif CD_pos_edge and CV > -32768: # Count down
 			CV -= 1
-			self.storeInterfaceFieldByName("CV", CV)
+			self.storeInterfaceFieldByName("CV",
+				make_AwlMemoryObject_fromScalar(CV, 16))
 
 		# Update Q-status
-		self.storeInterfaceFieldByName("Q", 1 if CV <= 0 else 0)
+		self.storeInterfaceFieldByName("Q",
+			make_AwlMemoryObject_fromScalar(1 if CV <= 0 else 0, 1))
 
 		s.BIE = 1

@@ -1,5 +1,29 @@
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - Central memory abstraction
+#
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
 from awlsim.common.cython_support cimport *
+from awlsim.common.datatypehelpers cimport *
 from awlsim.core.offset cimport *
+
+from libc.string cimport memcpy
 
 
 cdef class GenericInteger(object):
@@ -107,14 +131,66 @@ cdef class Accu(GenericDWord):
 cdef class Addressregister(Pointer):
 	pass
 
-cdef class AwlMemory(object):
-	cdef public bytearray dataBytes
-	cdef public uint32_t dataBytesLen
+cdef struct AwlMemoryObjectStruct:
+	uint32_t width
+	uint8_t dataBytes[256]
 
-	cdef setDataBytes(self, bytearray dataBytes)
+ctypedef AwlMemoryObjectStruct * AwlMemoryObject
+
+cdef class AwlMemory(object):
+	cdef public uint8_t *__dataBytes
+	cdef public uint32_t __dataBytesLen
+
+	cpdef setDataBytes(self, bytearray dataBytes)
+	cpdef bytearray getDataBytes(self)
+	cdef uint8_t * getRawDataBytes(self)
 
 	cdef __fetchError(self, AwlOffset offset, uint32_t width)
-	cdef __storeError(self, AwlOffset offset, uint32_t width, object value)
+	cdef __storeError(self, AwlOffset offset, AwlMemoryObject memObj)
 
-	cdef object fetch(self, AwlOffset offset, uint32_t width)
-	cdef store(self, AwlOffset offset, uint32_t width, object value)
+	cdef AwlMemoryObject fetch(self, AwlOffset offset, uint32_t width) except NULL
+	cdef store(self, AwlOffset offset, AwlMemoryObject memObj)
+
+
+# Global ring buffer of in-flight AwlMemoryObjects.
+#TODO more description
+# The buffer size must be a power of two.
+cdef public AwlMemoryObjectStruct memObjPool[8]
+cdef public uint32_t memObjPoolIndex
+cdef public uint32_t memObjPoolIndexMask
+
+
+cdef inline AwlMemoryObject alloc_AwlMemoryObject(uint32_t width) except NULL:
+	cdef AwlMemoryObject memObj
+	global memObjPoolIndex
+
+	memObj = &memObjPool[memObjPoolIndex]
+	memObjPoolIndex = (memObjPoolIndex + 1) & memObjPoolIndexMask
+
+	memObj.width = width
+
+	return memObj
+
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromCArray(const uint8_t *dataBytes, uint32_t width) except NULL:
+	cdef AwlMemoryObject memObj
+
+	memObj = alloc_AwlMemoryObject(width)
+	memcpy(memObj.dataBytes, dataBytes, intDivRoundUp(width, 8))
+
+	return memObj
+
+cdef AwlMemoryObject make_AwlMemoryObject_fromBytes(bytearray dataBytes, uint32_t width) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar(int64_t value, uint32_t width) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromGeneric(object value, uint32_t width) except NULL
+
+
+cdef AwlMemoryObject_asScalar_failed(AwlMemoryObject memObj)
+cdef uint32_t AwlMemoryObject_asScalar(AwlMemoryObject memObj) except? 0x7FFFFFFF
+cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj)
+
+
+cdef AwlMemoryObject_assertWidth_failed(AwlMemoryObject memObj, uint32_t expectedWidth)
+cdef inline AwlMemoryObject_assertWidth(AwlMemoryObject memObj, uint32_t expectedWidth):
+	if memObj.width != expectedWidth:
+		AwlMemoryObject_assertWidth_failed(memObj, expectedWidth)

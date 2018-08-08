@@ -2,7 +2,7 @@
 #
 # AWL simulator - Organization Block temp variable presets
 #
-# Copyright 2012-2013 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ from awlsim.core.cpu import * #+cimport
 import math
 
 
-class OBTempPresets(object):
+class OBTempPresets(object): #+cdef
 	"""Abstract Organization Block temporary-variable presets handler."""
 
 	def __init__(self, obNumber, cpu):
@@ -45,25 +45,28 @@ class OBTempPresets(object):
 	# Write the TempPresets.
 	# localdata is the TEMP-data array.
 	# This method is to be overloaded in the subclass.
-	def generate(self, localdata):
+	def generate(self, localdata): #@nocy
+#@cy	cdef generate(self, uint8_t *localdata):
 		raise NotImplementedError
 
-class OBTempPresets_dummy(OBTempPresets):
+class OBTempPresets_dummy(OBTempPresets): #+cdef
 	"""Dummy-presets handler. This handler does nothing."""
 
 	def __init__(self, cpu):
 		OBTempPresets.__init__(self, -1, cpu)
 
-	def generate(self, localdata):
+	def generate(self, localdata): #@nocy
+#@cy	cdef generate(self, uint8_t *localdata):
 		pass
 
-class OB1TempPresets(OBTempPresets):
+class OB1TempPresets(OBTempPresets): #+cdef
 	"""OB 1 temp-presets handler."""
 
 	def __init__(self, cpu):
 		OBTempPresets.__init__(self, 1, cpu)
 
-	def generate(self, localdata):
+	def generate(self, localdata): #@nocy
+#@cy	cdef generate(self, uint8_t *localdata):
 #@cy		cdef S7CPU cpu
 
 		cpu, ceil = self.cpu, math.ceil
@@ -104,6 +107,6 @@ class OB1TempPresets(OBTempPresets):
 		except IndexError:
 			self.tempUnderflow()
 
-OBTempPresets_table = {
+OBTempPresets_table = { #+cdef-dict
 	1	: OB1TempPresets,
 }

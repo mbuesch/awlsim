@@ -101,56 +101,56 @@ cdef class S7CPU(object):
 	cdef mcrStackAppend(self, S7StatusWord statusWord)
 	cdef mcrStackPop(self)
 
-	cpdef object fetch(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchIMM(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchIMM_DT(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchIMM_PTR(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchIMM_STR(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchDBLG(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchDBNO(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchDILG(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchDINO(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchAR2(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_Z(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_NZ(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_POS(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_NEG(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_POSZ(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_NEGZ(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchSTW_UO(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchE(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchA(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchM(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchL(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchVL(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchDB(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchDI(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchPE(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchT(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchZ(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchNAMED_LOCAL(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchNAMED_DBVAR(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchINDIRECT(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchVirtACCU(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchVirtAR(self, AwlOperator operator, uint32_t allowedWidths)
-	cdef object __fetchVirtDBR(self, AwlOperator operator, uint32_t allowedWidths)
+	cdef AwlMemoryObject fetch(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchIMM(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchIMM_DT(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchIMM_PTR(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchIMM_STR(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchDBLG(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchDBNO(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchDILG(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchDINO(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchAR2(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_Z(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_NZ(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_POS(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_NEG(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_POSZ(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_NEGZ(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchSTW_UO(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchE(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchA(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchM(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchL(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchVL(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchDB(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchDI(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchPE(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchT(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchZ(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchNAMED_LOCAL(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchNAMED_DBVAR(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchINDIRECT(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchVirtACCU(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchVirtAR(self, AwlOperator operator, uint32_t allowedWidths) except NULL
+	cdef AwlMemoryObject __fetchVirtDBR(self, AwlOperator operator, uint32_t allowedWidths) except NULL
 
-	cpdef store(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeE(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeA(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeM(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeL(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeVL(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeDB(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeDI(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storePA(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeAR2(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeSTW(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeNAMED_LOCAL(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeNAMED_DBVAR(self, AwlOperator operator, object value, uint32_t allowedWidths)
-	cdef __storeINDIRECT(self, AwlOperator operator, object value, uint32_t allowedWidths)
+	cdef store(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeE(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeA(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeM(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeL(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeVL(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeDB(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeDI(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storePA(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeAR2(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeSTW(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeNAMED_LOCAL(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeNAMED_DBVAR(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
+	cdef __storeINDIRECT(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
 
 	cpdef bytearray fetchOutputRange(self, uint32_t byteOffset, uint32_t byteCount)
 	cpdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount)
@@ -191,6 +191,6 @@ cdef class S7CPU(object):
 
 	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store)
 
-	cdef makeCurrentDateAndTime(self, bytearray byteArray, uint32_t offset)
+	cdef makeCurrentDateAndTime(self, uint8_t *byteArray, uint32_t offset)
 
 	cdef __dumpLStackFrame(self, prefix, LStackFrame *frame)

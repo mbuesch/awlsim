@@ -106,11 +106,12 @@ class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef #@nocov
 				self.raiseException("Synthetic input error")
 
 		# Get the first input dword and write it back.
-		dword = self.sim.cpu.fetch(make_AwlOperator(AwlOperatorTypes.MEM_E,
+		dword = AwlMemoryObject_asScalar(
+			self.sim.cpu.fetch(make_AwlOperator(AwlOperatorTypes.MEM_E,
 							    32,
 							    make_AwlOffset(self.inputAddressBase, 0),
 							    None),
-					   AwlOperatorWidths.WIDTH_MASK_ALL)
+					   AwlOperatorWidths.WIDTH_MASK_32))
 		dwordBytes = bytearray( ( ((dword >> 24) & 0xFF),
 					  ((dword >> 16) & 0xFF),
 					  ((dword >> 8) & 0xFF),

@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,10 +39,12 @@ class AwlInsn_FEATURE(AwlInsn): #+cdef
 		self.assertOpCount((1, 2))
 
 	def run(self): #+cdef
-		target = self.cpu.fetch(self.op0, self._widths_scalar)
+		target = AwlMemoryObject_asScalar(self.cpu.fetch(self.op0,
+								 self._widths_scalar))
 		value = None
 		if self.opCount >= 2:
-			value = self.cpu.fetch(self.op1, self._widths_scalar)
+			value = AwlMemoryObject_asScalar(self.cpu.fetch(self.op1,
+									self._widths_scalar))
 
 		if target == 0:
 			# Set/get the number of accumulator registers.

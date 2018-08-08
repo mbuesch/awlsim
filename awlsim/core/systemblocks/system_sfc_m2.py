@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ class SFCm2(SFC): #+cdef
 	}
 
 	def run(self): #+cpdef #@nocov
-		rebootType = wordToSignedPyInt(self.fetchInterfaceFieldByName("REBOOT_TYPE"))
+		rebootType = wordToSignedPyInt(AwlMemoryObject_asScalar(
+			self.fetchInterfaceFieldByName("REBOOT_TYPE")))
 		if rebootType == 1:
 			raise MaintenanceRequest(MaintenanceRequest.TYPE_SOFTREBOOT,
 						 "SFC -2 soft reboot request")

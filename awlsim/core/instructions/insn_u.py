@@ -45,7 +45,8 @@ class AwlInsn_U(AwlInsn): #+cdef
 #@cy		cdef _Bool newOR
 
 		s = self.cpu.statusWord
-		STA = self.cpu.fetch(self.op0, self._widths_1)
+		STA = AwlMemoryObject_asScalar(self.cpu.fetch(self.op0,
+							      self._widths_1))
 		NER = s.NER
 		newOR = s.OR & NER
 		s.VKE = ((s.VKE | (NER ^ 1)) & STA) | newOR

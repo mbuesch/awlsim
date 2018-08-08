@@ -13,5 +13,5 @@ cdef class DB(Block):
 	cdef public AwlStruct __struct
 	cdef public AwlStructInstance structInstance
 
-	cdef object fetch(self, AwlOperator operator, AwlOffset baseOffset)
-	cdef store(self, AwlOperator operator, object value, AwlOffset baseOffset)
+	cdef AwlMemoryObject fetch(self, AwlOperator operator, AwlOffset baseOffset) except NULL
+	cdef store(self, AwlOperator operator, AwlMemoryObject memObj, AwlOffset baseOffset)

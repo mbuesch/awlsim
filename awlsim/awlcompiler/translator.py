@@ -203,6 +203,8 @@ class AwlTranslator(object):
 	# dataType: The AwlDataType for this field.
 	# initBytes: The initialization bytes for this field, or None.
 	def rawFieldTranslate(self, rawField):
+#@cy		cdef AwlMemoryObject memObj
+
 		# Get the field name
 		name = rawField.getIdentString()
 		# Get the field data type
@@ -230,7 +232,6 @@ class AwlTranslator(object):
 			# Translate the initialization values and
 			# put them into a bytearray.
 			initMem = AwlMemory(intDivRoundUp(dataType.width, 8))
-			initBytes = initMem.dataBytes
 			AwlDataType = _getAwlDataTypeClass()
 			if dataType.type == AwlDataType.TYPE_ARRAY:
 				for rawDataInit in rawField.defaultInits:
@@ -240,29 +241,44 @@ class AwlTranslator(object):
 					offset = make_AwlOffset_fromLongBitOffset(
 							linArrayIndex *
 							dataType.arrayElementType.width)
+					memObj = make_AwlMemoryObject_fromGeneric(
+							value,
+							dataType.arrayElementType.width)
 					try:
-						initMem.store(offset, dataType.arrayElementType.width,
-							      value)
+						initMem.store(offset, memObj)
 					except AwlSimError as e:
 						raise AwlSimError("Data field '%s' initialization "
 							"is out of range." % str(rawField))
 			else:
 				assert(len(rawField.defaultInits) == 1)
 				value = dataType.parseMatchingImmediate(rawField.defaultInits[0].valueTokens)
+				memObj = make_AwlMemoryObject_fromGeneric(
+						value, dataType.width)
 				try:
-					initMem.store(make_AwlOffset(0, 0), dataType.width, value)
+					initMem.store(make_AwlOffset(0, 0), memObj)
 				except AwlSimError as e:
 					raise AwlSimError("Data field '%s' initialization "
 						"is out of range." % str(rawField))
+			initBytes = initMem.getDataBytes()
 		else:
 			initBytes = None
 		return name, dataType, initBytes
 
 	# Initialize a DB (global or instance) data field from a raw data-init.
 	def __initDBField(self, db, dataType, rawDataInit):
+#@cy		cdef AwlStructInstance structInstance
+#@cy		cdef AwlMemoryObject memObj
+
 		fieldName = rawDataInit.getIdentString()
 		value = dataType.parseMatchingImmediate(rawDataInit.valueTokens)
-		db.structInstance.setFieldDataByName(fieldName, value)
+		if dataType.type == dataType.TYPE_ARRAY:
+			# This is a single-array-element initializer.
+			width = dataType.arrayElementType.width
+		else:
+			width = dataType.width
+		memObj = make_AwlMemoryObject_fromGeneric(value, width)
+		structInstance = db.structInstance
+		structInstance.setFieldDataByName(fieldName, memObj)
 
 	# Create a DB data field.
 	def __createDBField(self, db, rawDataField):

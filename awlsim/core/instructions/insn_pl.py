@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,12 +41,16 @@ class AwlInsn_PL(AwlInsn): #+cdef
 			raise AwlSimError("Immediate expected")
 
 	def run(self): #+cdef
+#@cy		cdef AwlOperator oper
+
 		oper = self.op0
 		if oper.width == 16:
-			self.cpu.accu1.setWord(self.cpu.accu1.getSignedWord() +\
-					       self.cpu.fetch(oper, self._widths_16))
+			self.cpu.accu1.setWord(
+				self.cpu.accu1.getSignedWord() +
+				AwlMemoryObject_asScalar(self.cpu.fetch(oper, self._widths_16)))
 		elif oper.width == 32:
-			self.cpu.accu1.setDWord(self.cpu.accu1.getSignedDWord() +\
-						self.cpu.fetch(oper, self._widths_32))
+			self.cpu.accu1.setDWord(
+				self.cpu.accu1.getSignedDWord() +
+				AwlMemoryObject_asScalar(self.cpu.fetch(oper, self._widths_32)))
 		else:
 			raise AwlSimError("Unexpected operator width")

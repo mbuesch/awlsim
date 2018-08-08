@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,10 +40,19 @@ class AwlInsn_ASSERT_EQ(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef AwlMemoryObject memObj0
+#@cy		cdef AwlMemoryObject memObj1
 
 		s = self.cpu.statusWord
-		val0 = self.cpu.fetch(self.op0, self._widths_all)
-		val1 = self.cpu.fetch(self.op1, self._widths_all)
+		memObj0 = self.cpu.fetch(self.op0, self._widths_all)
+		memObj1 = self.cpu.fetch(self.op1, self._widths_all)
+		if memObj0.width <= 32 and memObj1.width <= 32:
+			val0 = AwlMemoryObject_asScalar(memObj0)
+			val1 = AwlMemoryObject_asScalar(memObj1)
+		else:
+			val0 = AwlMemoryObject_asBytes(memObj0)
+			val1 = AwlMemoryObject_asBytes(memObj1)
+
 		if not (val0 == val1):
 			raise AwlSimError("Assertion failed")
 		s.NER = 0

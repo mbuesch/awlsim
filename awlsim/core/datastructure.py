@@ -284,10 +284,10 @@ class AwlStruct(object): #+cdef
 					if not initBytes:
 						raise ValueError
 					fieldInitMem = AwlMemory(intDivRoundUp(childType.width, 8))
-					fieldInitData = fieldInitMem.dataBytes
-					fieldInitMem.store(make_AwlOffset(0, 0), childType.width,
-							    initMem.fetch(initOffset,
-									  childType.width))
+					fieldInitMem.store(make_AwlOffset(0, 0),
+							   initMem.fetch(initOffset,
+									 childType.width))
+					fieldInitData = fieldInitMem.getDataBytes()
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
 				self.addField(cpu, str(childIdent), childType,
@@ -365,30 +365,32 @@ class AwlStructInstance(object): #+cdef
 			if not field.initBytes:
 				continue
 			try:
-				self.memory.store(field.offset, field.bitSize,
-						  field.initBytes)
+				self.memory.store(field.offset,
+					make_AwlMemoryObject_fromBytes(field.initBytes,
+								       field.bitSize))
 			except AwlSimError as e:
 				raise AwlSimError("Data structure field '%s' "
 					"initialization is out of range." %\
 					str(field))
 
 	def getFieldData(self, field, baseOffset): #@nocy
-#@cy	cdef object getFieldData(self, AwlStructField field, AwlOffset baseOffset):
+#@cy	cdef AwlMemoryObject getFieldData(self, AwlStructField field, AwlOffset baseOffset) except NULL:
 		if baseOffset is None:
 			return self.memory.fetch(field.offset, field.bitSize)
 		return self.memory.fetch(baseOffset.add(field.offset), field.bitSize)
 
-	def setFieldData(self, field, value, baseOffset): #@nocy
-#@cy	cdef setFieldData(self, AwlStructField field, object value, AwlOffset baseOffset):
+	def setFieldData(self, field, memObj, baseOffset): #@nocy
+#@cy	cdef setFieldData(self, AwlStructField field, AwlMemoryObject memObj, AwlOffset baseOffset):
+		AwlMemoryObject_assertWidth(memObj, field.bitSize)
 		if baseOffset is None:
-			self.memory.store(field.offset,
-					  field.bitSize, value)
+			self.memory.store(field.offset, memObj)
 		else:
-			self.memory.store(baseOffset.add(field.offset),
-					  field.bitSize, value)
+			self.memory.store(baseOffset.add(field.offset), memObj)
 
-	def getFieldDataByName(self, name):
+	def getFieldDataByName(self, name): #@nocy
+#@cy	cdef AwlMemoryObject getFieldDataByName(self, object name) except NULL:
 		return self.getFieldData(self._struct.getField(name), None)
 
-	def setFieldDataByName(self, name, value):
-		self.setFieldData(self._struct.getField(name), value, None)
+	def setFieldDataByName(self, name, memObj): #@nocy
+#@cy	cdef setFieldDataByName(self, object name, AwlMemoryObject memObj):
+		self.setFieldData(self._struct.getField(name), memObj, None)
