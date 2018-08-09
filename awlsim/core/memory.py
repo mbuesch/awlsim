@@ -732,7 +732,8 @@ class AwlMemory(object): #+cdef
 				else:
 					dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
 			else:
-				if byteOffset + (width // 8) > self.dataBytesLen:
+				if byteOffset + (width // 8 ) > self.dataBytesLen: #@nocy
+#@cy				if byteOffset + (width // 8u) > self.dataBytesLen:
 					self.__storeError(offset, width, value)
 				while width:
 					width -= 8
@@ -743,7 +744,8 @@ class AwlMemory(object): #+cdef
 			if width == 1:
 				if byteOffset >= self.dataBytesLen:
 					self.__storeError(offset, width, value)
-				if value[0] & 1:
+				if value[0] & 1: #@nocy
+#@cy				if <uint8_t>(value[0]) & 1u:
 					dataBytes[byteOffset] |= 1 << offset.bitOffset
 				else:
 					dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
