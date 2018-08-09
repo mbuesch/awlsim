@@ -2,7 +2,7 @@
 #
 # AWL data offset
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -100,25 +100,33 @@ class AwlOffset(object): #+cdef
 #@cy		return <int64_t>self.byteOffset * <int64_t>8 + <int64_t>self.bitOffset
 		return self.byteOffset * 8 + self.bitOffset	#@nocy
 
-	def __add__(self, other): #@nocy
-#@cy	def __add__(self, AwlOffset other):
-#@cy		cdef int64_t bitOffset
-#@cy		bitOffset = ((<int64_t>self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
-#@cy			     <int64_t>self.bitOffset + <int64_t>other.bitOffset)
+	def __add__(self, other):					#@nocy
 		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
 			     self.bitOffset + other.bitOffset)		#@nocy
-		return make_AwlOffset(bitOffset // 8, bitOffset % 8)
+		return make_AwlOffset(bitOffset // 8, bitOffset % 8)	#@nocy
 
-	def __iadd__(self, other): #@nocy
+#@cy	def __add__(self, AwlOffset other):
+#@cy		cdef AwlOffset _self
+#@cy		cdef int64_t bitOffset
+#@cy		_self = self
+#@cy		bitOffset = ((<int64_t>_self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
+#@cy			     <int64_t>_self.bitOffset + <int64_t>other.bitOffset)
+#@cy		return make_AwlOffset(bitOffset // 8u, bitOffset % 8u)
+
+	def __iadd__(self, other):					#@nocy
+		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
+			     self.bitOffset + other.bitOffset)		#@nocy
+		self.byteOffset = bitOffset // 8			#@nocy
+		self.bitOffset = bitOffset % 8				#@nocy
+		return self						#@nocy
+
 #@cy	def __iadd__(self, AwlOffset other):
 #@cy		cdef int64_t bitOffset
 #@cy		bitOffset = ((<int64_t>self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
 #@cy			     <int64_t>self.bitOffset + <int64_t>other.bitOffset)
-		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
-			     self.bitOffset + other.bitOffset)		#@nocy
-		self.byteOffset = bitOffset // 8
-		self.bitOffset = bitOffset % 8
-		return self
+#@cy		self.byteOffset = bitOffset // 8u
+#@cy		self.bitOffset = bitOffset % 8u
+#@cy		return self
 
 	# Round the offset to a multiple of 'byteBase' bytes.
 	# Returns an AwlOffset.
@@ -178,5 +186,6 @@ def make_AwlOffset_fromPointerValue(value, make_AwlOffset=make_AwlOffset): #@noc
 # make_AwlOffset_fromLongBitOffset() - Construct an AwlOffset from a bit offset.
 #
 def make_AwlOffset_fromLongBitOffset(bitOffset, make_AwlOffset=make_AwlOffset): #@nocy
-#cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset):	#@cy
-	return make_AwlOffset(bitOffset // 8, bitOffset % 8)
+	return make_AwlOffset(bitOffset // 8, bitOffset % 8)			#@nocy
+#cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset):		#@cy
+#	return make_AwlOffset(bitOffset // 8u, bitOffset % 8u)			#@cy
