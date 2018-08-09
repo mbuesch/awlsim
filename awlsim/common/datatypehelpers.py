@@ -231,10 +231,12 @@ assert(pyFloatToDWord(floatConst.nNaNFloat) == floatConst.nNaNDWord)
 # Round up integer 'n' to a multiple of integer 's'
 def roundUp(n, s):							#@nocy
 #cdef uint32_t roundUp(uint32_t n, uint32_t s):				#@cy
-	return ((n + s - 1) // s) * s
+	return ((n + s - 1 ) // s) * s					#@nocy
+#	return ((n + s - 1u) // s) * s					#@cy
 
 
 # Divide integer 'n' by 'd' and round up to the next integer
 def intDivRoundUp(n, d):						#@nocy
 #cdef uint32_t intDivRoundUp(uint32_t n, uint32_t d):			#@cy
-	return (n + d - 1) // d
+	return (n + d - 1 ) // d					#@nocy
+#	return (n + d - 1u) // d					#@cy
