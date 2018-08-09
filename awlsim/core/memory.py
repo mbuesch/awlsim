@@ -2,7 +2,7 @@
 #
 # AWL simulator - Central memory abstraction
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -629,10 +629,21 @@ class AwlMemory(object): #+cdef
 
 	__slots__ = (
 		"dataBytes",
+		"dataBytesLen",
 	)
 
 	def __init__(self, init=0):
-		self.dataBytes = bytearray(init)
+		self.setDataBytes(bytearray(0 if init is None else init))
+
+	def setDataBytes(self, dataBytes): #@nocy
+#@cy	cdef setDataBytes(self, bytearray dataBytes):
+		self.dataBytes = dataBytes
+		self.dataBytesLen = len(dataBytes)
+
+	def __fetchError(self, offset, width): #@nocy
+#@cy	cdef __fetchError(self, AwlOffset offset, uint32_t width):
+		raise AwlSimError("fetch: Operator offset '%s' out of range." % (
+				  str(offset)))
 
 	# Memory fetch operation.
 	# This method returns the data (bit, byte, word, dword, etc...) for
@@ -649,38 +660,47 @@ class AwlMemory(object): #+cdef
 #@cy		cdef uint64_t end
 
 		dataBytes = self.dataBytes
-		try:
-			byteOffset = offset.byteOffset
-			if width == 1:
-				return (dataBytes[byteOffset] >> offset.bitOffset) & 1	#@nocy
-#@cy				return (<uint8_t>(dataBytes[byteOffset]) >> offset.bitOffset) & 1u
-			elif width == 8:
-				return dataBytes[byteOffset] & 0xFF			#@nocy
-#@cy				return <uint8_t>(dataBytes[byteOffset])
-			elif width == 16:
-				return (((dataBytes[byteOffset] << 8) |			#@nocy
-				         dataBytes[byteOffset + 1]) & 0xFFFF)		#@nocy
-#@cy				return (((<uint8_t>(dataBytes[byteOffset]) << 8) |
-#@cy				         <uint8_t>(dataBytes[byteOffset + 1])) & 0xFFFFu)
-			elif width == 32:
-				return (((dataBytes[byteOffset] << 24) |		#@nocy
-				         (dataBytes[byteOffset + 1] << 16) |		#@nocy
-				         (dataBytes[byteOffset + 2] << 8) |		#@nocy
-				         dataBytes[byteOffset + 3]) & 0xFFFFFFFF)	#@nocy
-#@cy				return (((<uint8_t>(dataBytes[byteOffset]) << 24) |
-#@cy				         (<uint8_t>(dataBytes[byteOffset + 1]) << 16) |
-#@cy				         (<uint8_t>(dataBytes[byteOffset + 2]) << 8) |
-#@cy				         <uint8_t>(dataBytes[byteOffset + 3])) & 0xFFFFFFFFu)
-			else:
-				assert(not offset.bitOffset) #@nocy
-				nrBytes = intDivRoundUp(width, 8)
-				end = byteOffset + nrBytes
-				if end > len(dataBytes):
-					raise IndexError
-				return dataBytes[byteOffset : end]
-		except IndexError as e:
-			raise AwlSimError("fetch: Operator offset '%s' out of range" %\
-					  str(offset))
+		byteOffset = offset.byteOffset
+		if width == 1:
+			if byteOffset >= self.dataBytesLen:
+				self.__fetchError(offset, width)
+			return (dataBytes[byteOffset] >> offset.bitOffset) & 1	#@nocy
+#@cy			return (<uint8_t>(dataBytes[byteOffset]) >> offset.bitOffset) & 1u
+		elif width == 8:
+			if byteOffset >= self.dataBytesLen:
+				self.__fetchError(offset, width)
+			return dataBytes[byteOffset] & 0xFF			#@nocy
+#@cy			return <uint8_t>(dataBytes[byteOffset])
+		elif width == 16:
+			if byteOffset + 1 >= self.dataBytesLen:
+				self.__fetchError(offset, width)
+			return (((dataBytes[byteOffset] << 8) |			#@nocy
+				 dataBytes[byteOffset + 1]) & 0xFFFF)		#@nocy
+#@cy			return (((<uint8_t>(dataBytes[byteOffset]) << 8) |
+#@cy			         <uint8_t>(dataBytes[byteOffset + 1])) & 0xFFFFu)
+		elif width == 32:
+			if byteOffset + 3 >= self.dataBytesLen:
+				self.__fetchError(offset, width)
+			return (((dataBytes[byteOffset] << 24) |		#@nocy
+				 (dataBytes[byteOffset + 1] << 16) |		#@nocy
+				 (dataBytes[byteOffset + 2] << 8) |		#@nocy
+				 dataBytes[byteOffset + 3]) & 0xFFFFFFFF)	#@nocy
+#@cy			return (((<uint8_t>(dataBytes[byteOffset]) << 24) |
+#@cy			         (<uint8_t>(dataBytes[byteOffset + 1]) << 16) |
+#@cy			         (<uint8_t>(dataBytes[byteOffset + 2]) << 8) |
+#@cy			         <uint8_t>(dataBytes[byteOffset + 3])) & 0xFFFFFFFFu)
+		else:
+			assert(not offset.bitOffset) #@nocy
+			nrBytes = intDivRoundUp(width, 8)
+			end = byteOffset + nrBytes
+			if end > self.dataBytesLen:
+				self.__fetchError(offset, width)
+			return dataBytes[byteOffset : end]
+
+	def __storeError(self, offset, width, value): #@nocy
+#@cy	cdef __storeError(self, AwlOffset offset, uint32_t width, object value):
+		raise AwlSimError("store: Operator offset '%s' out of range." % (
+				  str(offset)))
 
 	# Memory store operation.
 	# This method stores data (bit, byte, word, dword, etc...) to
@@ -698,56 +718,58 @@ class AwlMemory(object): #+cdef
 #@cy		cdef uint64_t end
 
 		dataBytes = self.dataBytes
-		try:
-			byteOffset = offset.byteOffset
-#@cy2			if isinstance(value, int) or isinstance(value, long):
-#@cy3			if isinstance(value, int):
-			if isInteger(value): #@nocy
-#@cy				value_uint64 = <uint64_t>(<int64_t>value)
-				if width == 1:
-					if value: #@nocy
-#@cy					if value_uint64:
-						dataBytes[byteOffset] |= 1 << offset.bitOffset
-					else:
-						dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
+		byteOffset = offset.byteOffset
+#@cy2		if isinstance(value, int) or isinstance(value, long):
+#@cy3		if isinstance(value, int):
+		if isInteger(value): #@nocy
+#@cy			value_uint64 = <uint64_t>(<int64_t>value)
+			if width == 1:
+				if byteOffset >= self.dataBytesLen:
+					self.__storeError(offset, width, value)
+				if value: #@nocy
+#@cy				if value_uint64:
+					dataBytes[byteOffset] |= 1 << offset.bitOffset
 				else:
-					while width:
-						width -= 8
-						dataBytes[byteOffset] = (value >> width) & 0xFF #@nocy
-#@cy						dataBytes[byteOffset] = (value_uint64 >> width) & 0xFF
-						byteOffset += 1
+					dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
 			else:
-				if width == 1:
-					if value[0] & 1:
-						dataBytes[byteOffset] |= 1 << offset.bitOffset
-					else:
-						dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
+				if byteOffset + (width // 8) > self.dataBytesLen:
+					self.__storeError(offset, width, value)
+				while width:
+					width -= 8
+					dataBytes[byteOffset] = (value >> width) & 0xFF #@nocy
+#@cy					dataBytes[byteOffset] = (value_uint64 >> width) & 0xFF
+					byteOffset += 1
+		else:
+			if width == 1:
+				if byteOffset >= self.dataBytesLen:
+					self.__storeError(offset, width, value)
+				if value[0] & 1:
+					dataBytes[byteOffset] |= 1 << offset.bitOffset
 				else:
-					nrBytes = intDivRoundUp(width, 8)
-					assert(nrBytes == len(value)) #@nocy
-					end = byteOffset + nrBytes
-					if end > len(dataBytes):
-						raise IndexError
-					dataBytes[byteOffset : end] = value
-		except IndexError as e:
-			raise AwlSimError("store: Operator offset '%s' out of range" %\
-					  str(offset))
+					dataBytes[byteOffset] &= ~(1 << offset.bitOffset)
+			else:
+				nrBytes = intDivRoundUp(width, 8)
+				assert(nrBytes == len(value)) #@nocy
+				end = byteOffset + nrBytes
+				if end > self.dataBytesLen:
+					self.__storeError(offset, width, value)
+				dataBytes[byteOffset : end] = value
 
 	def __len__(self):
-		return len(self.dataBytes)
+		return self.dataBytesLen
 
-	def __bool__(self):			#@cy3
-		return bool(self.dataBytes)	#@cy3
+	def __bool__(self):				#@cy3
+		return bool(self.dataBytesLen)	#@cy3
 
-	def __nonzero__(self):			#@cy2
-		return bool(self.dataBytes)	#@cy2
+	def __nonzero__(self):				#@cy2
+		return bool(self.dataBytesLen)	#@cy2
 
 	def __repr__(self):
 #@cy		cdef list ret
 #@cy		cdef uint64_t i
 
 		ret = [ 'AwlMemory(b"', ]
-		for i in range(len(self.dataBytes)):
+		for i in range(self.dataBytesLen):
 			ret.append("\\x%02X" % self.dataBytes[i])
 		ret.append('")')
 		return "".join(ret)

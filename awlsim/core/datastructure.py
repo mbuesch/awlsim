@@ -2,7 +2,7 @@
 #
 # AWL simulator - data structs
 #
-# Copyright 2013-2015 Michael Buesch <m@bues.ch>
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -226,8 +226,7 @@ class AwlStruct(object): #+cdef
 	def addField(self, cpu, name, dataType, initBytes=None):
 		from awlsim.core.datatypes import AwlDataType
 
-		initMem = AwlMemory()
-		initMem.dataBytes = initBytes
+		initMem = AwlMemory(initBytes)
 
 		if dataType.type == dataType.TYPE_UDT_X:
 			# Add an UDT.

@@ -109,6 +109,12 @@ cdef class Addressregister(Pointer):
 
 cdef class AwlMemory(object):
 	cdef public bytearray dataBytes
+	cdef public uint32_t dataBytesLen
+
+	cdef setDataBytes(self, bytearray dataBytes)
+
+	cdef __fetchError(self, AwlOffset offset, uint32_t width)
+	cdef __storeError(self, AwlOffset offset, uint32_t width, object value)
 
 	cdef object fetch(self, AwlOffset offset, uint32_t width)
 	cdef store(self, AwlOffset offset, uint32_t width, object value)
