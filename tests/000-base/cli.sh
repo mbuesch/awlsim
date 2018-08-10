@@ -19,15 +19,6 @@ sh_test()
 	"$interpreter" ./awlsim-test --hardware-info dummy >/dev/null ||\
 		test_failed "Call to awlsim-test --hardware-info dummy failed"
 
-	"$interpreter" ./awlsim-test --list-sfc >/dev/null ||\
-		test_failed "Call to awlsim-test --list-sfc failed"
-	"$interpreter" ./awlsim-test --list-sfc-verbose >/dev/null ||\
-		test_failed "Call to awlsim-test --list-sfc-verbose failed"
-	"$interpreter" ./awlsim-test --list-sfb >/dev/null ||\
-		test_failed "Call to awlsim-test --list-sfb failed"
-	"$interpreter" ./awlsim-test --list-sfb-verbose >/dev/null ||\
-		test_failed "Call to awlsim-test --list-sfb-verbose failed"
-
 
 	# check awlsim-proupgrade executable
 	# (proupgrade uses GUI code, so only run in compatible environment)
