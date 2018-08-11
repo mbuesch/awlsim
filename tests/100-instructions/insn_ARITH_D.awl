@@ -263,6 +263,17 @@
 
 
 	__STWRST
+	L		L#-2147483648
+	L		L#-1
+	/D
+	__ASSERT==	__ACCU 1,	DW#16#80000000
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
 	L		L#100000
 	L		L#50000
 	MOD
