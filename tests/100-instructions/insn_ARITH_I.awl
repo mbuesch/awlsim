@@ -284,4 +284,15 @@
 	__ASSERT==	__STW OS,	0
 
 
+	__STWRST
+	L		-32768
+	L		-1
+	/I
+	__ASSERT==	__ACCU 1,	DW#16#00008000
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	CALL SFC 46 // STOP CPU
