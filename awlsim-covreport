@@ -27,10 +27,15 @@ import os
 import coverage as coverage_mod
 
 
-def coverageError(msg):
-	if sys.stderr:
-		sys.stderr.write(msg + "\n")
-		sys.stderr.flush()
+def usage(f=sys.stdout):
+	print("Awlsim code coverage report generator", file=f)
+	print("", file=f)
+	print("Usage: awlsim-covreport REPORTDIR DATASOURCE [DATASOURCE ...]", file=f)
+	print("", file=f)
+	print("REPORTDIR is the target directory where "
+	      "the HTML report will be written to.", file=f)
+	print("DATASOURCE is a Python coverage data file or a directory "
+	      "containing only coverage data files.", file=f)
 
 try:
 	covReport = sys.argv[1]
@@ -38,7 +43,7 @@ try:
 	if not covData:
 		raise IndexError
 except IndexError as e:
-	coverageError("Invalid arguments")
+	usage(f=sys.stderr)
 	sys.exit(1)
 
 dataPaths = []
@@ -55,6 +60,7 @@ try:
 	cov.load()
 	cov.html_report(directory=covReport)
 except coverage_mod.misc.CoverageException as e:
-	coverageError("Could not generate coverage report: " + str(e))
+	print("Could not generate coverage report: " + str(e),
+	      file=sys.stderr)
 	sys.exit(1)
 sys.exit(0)
