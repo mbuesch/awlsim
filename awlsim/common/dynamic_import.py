@@ -39,14 +39,14 @@ def importModule(moduleName):
 	import awlsim_loader.cython_helper as cython_helper
 	try:
 		import importlib
-	except ImportError as e:
+	except ImportError as e: #@nocov
 		importlib = None
 
 	if cython_helper.shouldUseCython(moduleName):
-		moduleName = cython_helper.cythonModuleName(moduleName)
+		moduleName = cython_helper.cythonModuleName(moduleName) #@nocov
 	if importlib:
 		mod = importlib.import_module(moduleName)
 	else:
-		mod = __import__(moduleName)
+		mod = __import__(moduleName) #@nocov
 
 	return mod

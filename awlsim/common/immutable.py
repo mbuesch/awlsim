@@ -30,11 +30,11 @@ __all__ = [
 
 
 __useDummy = False
-if isMicroPython:
+if isMicroPython: #@nocov
 	__useDummy = True
 
 
-if __useDummy:
+if __useDummy: #@nocov
 	class OptionalImmutable(object):
 		"""Optional instance write protection.
 		Dummy implementation.
@@ -74,14 +74,14 @@ else:
 			self._immutable = True
 
 		def __setattr__(self, name, value):
-			if self._immutable:
+			if self._immutable: #@nocov
 				raise AttributeError("Assignment to '%s' "
 					"of immutable %s." %\
 					(name, str(type(self))))
 			super(OptionalImmutable, self).__setattr__(name, value)
 
 		def __delattr__(self, name):
-			if self._immutable:
+			if self._immutable: #@nocov
 				raise AttributeError("Deletion of '%s' "
 					"from immutable %s." %\
 					(name, str(type(self))))

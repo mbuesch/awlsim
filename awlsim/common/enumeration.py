@@ -78,7 +78,7 @@ class MagicEnumerationGenerator(object):
 		self.__num = number + 1
 		return number
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "EnumGen(num = %s)" % str(self.__num)
 
 EnumGen = MagicEnumerationGenerator()

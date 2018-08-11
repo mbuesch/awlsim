@@ -65,12 +65,12 @@ __all__ = [
 
 
 # Convenient operating system identifiers
-if os.name == "java":
+if os.name == "java": #@nocov
 	import java.lang.System
 	__osName = java.lang.System.getProperty("os.name").lower()
 	osIsWindows = __osName.startswith("windows")
 	osIsPosix = not osIsWindows
-else:
+else: #@nocov
 	osIsWindows = os.name == "nt" or os.name == "ce"
 	osIsPosix = os.name == "posix"
 osIsLinux = osIsPosix and "linux" in sys.platform.lower()
@@ -111,108 +111,108 @@ isPy3Compat = sys.version_info[0] == 3
 isPy2Compat = sys.version_info[0] == 2
 
 # Python 2/3 helper selection
-def py23(py2, py3):
+def py23(py2, py3): #@nocov
 	if isPy3Compat:
 		return py3
 	if isPy2Compat:
 		return py2
-	raise Exception("Failed to detect Python version")
+	raise Exception("Failed to detect Python version") #@nocov
 
 # Python interpreter name, as string.
 if isCython:
-	pythonInterpreter = "Cython"
+	pythonInterpreter = "Cython"			#@nocov
 elif isPyPy:
-	pythonInterpreter = "PyPy"
+	pythonInterpreter = "PyPy"			#@nocov
 elif isJython:
-	pythonInterpreter = "Jython"
+	pythonInterpreter = "Jython"			#@nocov
 elif isIronPython:
-	pythonInterpreter = "IronPython"
+	pythonInterpreter = "IronPython"		#@nocov
 elif isMicroPython:
-	pythonInterpreter = "MicroPython"
+	pythonInterpreter = "MicroPython"		#@nocov
 elif isWinStandalone:
-	pythonInterpreter = "CPython (frozen)"
+	pythonInterpreter = "CPython (frozen)"		#@nocov
 else:
-	pythonInterpreter = "CPython"
+	pythonInterpreter = "CPython"			#@nocov
 
 # input() compatibility.
 # Force Python3 behavior
-if isPy2Compat:
+if isPy2Compat: #@nocov
 	input = raw_input
-else:
+else: #@nocov
 	input = input
 
 # range() compatibility.
 # Force Python3 behavior
-if isPy2Compat:
+if isPy2Compat: #@nocov
 	range = xrange
-else:
+else: #@nocov
 	range = range
 
 # reduce() compatibility.
 # Force Python2 behavior
-if isPy3Compat:
+if isPy3Compat: #@nocov
 	from functools import reduce
-else:
+else: #@nocov
 	reduce = reduce
 
 # queue compatibility
 # Force Python3 behavior
-if isPy2Compat:
+if isPy2Compat: #@nocov
 	import Queue as queue
-else:
+else: #@nocov
 	import queue
 
 # BlockingIOError dummy
-try:
+try: #@nocov
 	BlockingIOError
-except NameError:
+except NameError: #@nocov
 	class BlockingIOError(BaseException): pass
 BlockingIOError = BlockingIOError
 
 # ConnectionError dummy
-try:
+try: #@nocov
 	ConnectionError
-except NameError:
+except NameError: #@nocov
 	ConnectionError = OSError
 ConnectionError = ConnectionError
 
 # Import StringIO
-if isIronPython and isPy2Compat:
+if isIronPython and isPy2Compat: #@nocov
 	# Workaround for IronPython's buggy io.StringIO
 	from StringIO import StringIO
-else:
+else: #@nocov
 	from io import StringIO
 StringIO = StringIO
 from io import BytesIO
 
 # str.isalnum() compatibility
 # This defines a global function: isalnum(string) ==> bool
-if hasattr(str, "isalnum"):
+if hasattr(str, "isalnum"): #@nocov
 	isalnum = lambda s: s.isalnum()
-else:
+else: #@nocov
 	isalnum = lambda s: all(c.isalpha() or c.isdigit() for c in s)
 
 # str.isdecimal() compatibility
 # This defines a global function: isdecimal(string) ==> bool
-if hasattr(str, "isdecimal"):
+if hasattr(str, "isdecimal"): #@nocov
 	isdecimal = lambda s: s.isdecimal()
-else:
+else: #@nocov
 	isdecimal = lambda s: all(c in "0123456789" for c in s)
 
 # gcd() compatibility
 # This defines a global function: compat_gcd(a, b) ==> int
-if hasattr(math, "gcd"):
+if hasattr(math, "gcd"): #@nocov
 	compat_gcd = math.gcd
-elif hasattr(fractions, "gcd"):
+elif hasattr(fractions, "gcd"): #@nocov
 	compat_gcd = fractions.gcd
-else:
+else: #@nocov
 	def compat_gcd(a, b):
 		while b:
 			(a, b) = (b, a % b)
 		return a
 
 # contextlib.suppress compatibility
-if not hasattr(contextlib, "suppress"):
+if not hasattr(contextlib, "suppress"): #@nocov
 	class _suppress(object):
 		def __init__(self, *excs):
 			self._excs = excs
@@ -223,7 +223,7 @@ if not hasattr(contextlib, "suppress"):
 	contextlib.suppress = _suppress
 
 # contextlib.nullcontext compatibility
-if not hasattr(contextlib, "nullcontext"):
+if not hasattr(contextlib, "nullcontext"): #@nocov
 	class _nullcontext(object):
 		def __init__(self, enter_result=None):
 			self.enter_result = enter_result

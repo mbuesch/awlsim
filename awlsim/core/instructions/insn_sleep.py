@@ -45,7 +45,7 @@ class AwlInsn_SLEEP(AwlInsn): #+cdef
 		sleepSecs = sleepMsecs / 1000.0
 
 		if sleepSecs >= self.cpu.cycleTimeLimit:
-			raise AwlSimError("__SLEEP time exceed cycle time limit")
+			raise AwlSimError("__SLEEP time exceed cycle time limit") #@nocov
 
 		self.cpu.updateTimestamp()
 		start = self.cpu.now

@@ -244,7 +244,7 @@ class AwlParserError(AwlSimError):
 	def getReport(self, verbose=True):
 		return self.doGetReport("AWL parser error", verbose)
 
-class AwlSimBug(AwlSimError):
+class AwlSimBug(AwlSimError): #@nocov
 	"""AwlSim bug exception.
 	This will be raised in situations that represent an actual code bug.
 	"""
@@ -328,7 +328,7 @@ class __suppressAllExc(object):
 	def __enter__(self):
 		pass
 
-	def __exit__(self, exctype, excinst, exctb):
+	def __exit__(self, exctype, excinst, exctb): #@nocov
 		if exctype is None:
 			return False # no exception
 		if issubclass(exctype, (SyntaxError, NameError, AttributeError)):

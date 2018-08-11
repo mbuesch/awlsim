@@ -94,7 +94,7 @@ class S7CPUSpecs(object): #+cdef
 
 	def setNrAccus(self, count):
 		if count not in (2, 4):
-			raise AwlSimError("Invalid number of accus")
+			raise AwlSimError("Invalid number of accus") #@nocov
 		self.nrAccus = count
 		if self.cpu:
 			self.cpu.reallocate()

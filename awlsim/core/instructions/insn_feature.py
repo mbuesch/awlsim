@@ -55,4 +55,4 @@ class AwlInsn_FEATURE(AwlInsn): #+cdef
 				self.cpu.enableObTempPresets(value)
 			self.cpu.accu1.set(int(self.cpu.obTempPresetsEnabled()))
 		else:
-			raise AwlSimError("Unsupported __FEATURE target %d" % target)
+			raise AwlSimError("Unsupported __FEATURE target %d" % target) #@nocov

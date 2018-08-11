@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 
-class AwlDebug(object):
+class AwlDebug(object): #@nocov
 	@classmethod
 	def getMemoryLeaks(cls):
 		garbageCollector.collect()

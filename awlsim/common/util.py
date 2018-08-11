@@ -104,7 +104,7 @@ class Logging(object):
 				    cls.LOG_INFO,
 				    cls.LOG_VERBOSE,
 				    cls.LOG_DEBUG):
-			raise AwlSimError("Invalid log level '%d'" % loglevel)
+			raise AwlSimError("Invalid log level '%d'" % loglevel) #@nocov
 		cls.loglevel = loglevel
 
 	@classmethod
@@ -124,43 +124,43 @@ class Logging(object):
 				stream.flush()
 
 	@classmethod
-	def printDebug(cls, text):
+	def printDebug(cls, text): #@nocov
 		if cls.loglevel >= cls.LOG_DEBUG:
 			cls.__print(sys.stdout, text)
 
 	@classmethod
-	def printVerbose(cls, text):
+	def printVerbose(cls, text): #@nocov
 		if cls.loglevel >= cls.LOG_VERBOSE:
 			cls.__print(sys.stdout, text)
 
 	@classmethod
-	def printInfo(cls, text):
+	def printInfo(cls, text): #@nocov
 		if cls.loglevel >= cls.LOG_INFO:
 			cls.__print(sys.stdout, text)
 
 	@classmethod
-	def printWarning(cls, text):
+	def printWarning(cls, text): #@nocov
 		if cls.loglevel >= cls.LOG_WARNING:
 			cls.__print(sys.stderr, text)
 
 	@classmethod
-	def printError(cls, text):
+	def printError(cls, text): #@nocov
 		if cls.loglevel >= cls.LOG_ERROR:
 			cls.__print(sys.stderr, text)
 
-def printDebug(text):
+def printDebug(text): #@nocov
 	Logging.printDebug(text)
 
-def printVerbose(text):
+def printVerbose(text): #@nocov
 	Logging.printVerbose(text)
 
-def printInfo(text):
+def printInfo(text): #@nocov
 	Logging.printInfo(text)
 
-def printWarning(text):
+def printWarning(text): #@nocov
 	Logging.printWarning(text)
 
-def printError(text):
+def printError(text): #@nocov
 	Logging.printError(text)
 
 def fileExists(filename):
@@ -181,7 +181,7 @@ def safeFileRead(filename):
 		with open(filename, "rb") as fd:
 			data = fd.read()
 			fd.close()
-	except IOError as e:
+	except IOError as e: #@nocov
 		raise AwlSimError("Failed to read '%s': %s" %\
 			(filename, str(e)))
 	return data
@@ -199,13 +199,13 @@ def safeFileWrite(filename, data):
 			fd.write(data)
 			fd.flush()
 			fd.close()
-		if not osIsPosix:
+		if not osIsPosix: #@nocov
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.
 			with contextlib.suppress(OSError):
 				os.unlink(filename)
 		os.rename(tmpFile, filename)
-	except (IOError, OSError) as e:
+	except (IOError, OSError) as e: #@nocov
 		raise AwlSimError("Failed to write file:\n" + str(e))
 	finally:
 		with contextlib.suppress(IOError, OSError):
@@ -284,19 +284,19 @@ def toDosEol(string):
 	"""
 	return toUnixEol(string).replace("\n", "\r\n")
 
-def __isInteger_python2(value):
+def __isInteger_python2(value): #@nocov
 	return isinstance(value, (int, long))
 
-def __isInteger_python3(value):
+def __isInteger_python3(value): #@nocov
 	return isinstance(value, int)
 
 isInteger = py23(__isInteger_python2,
 		 __isInteger_python3)
 
-def __isString_python2(value):
+def __isString_python2(value): #@nocov
 	return isinstance(value, (unicode, str))
 
-def __isString_python3(value):
+def __isString_python3(value): #@nocov
 	return isinstance(value, str)
 
 isString = py23(__isString_python2,
@@ -375,7 +375,7 @@ def pivotDict(inDict):
 	outDict = {}
 	for key, value in dictItems(inDict):
 		if value in outDict:
-			raise KeyError("Ambiguous key in pivot dict")
+			raise KeyError("Ambiguous key in pivot dict") #@nocov
 		outDict[value] = key
 	return outDict
 
@@ -420,7 +420,7 @@ def clamp(value, minValue, maxValue):
 	ValueError is raised, if minValue is bigger than maxValue.
 	"""
 	if minValue > maxValue:
-		raise ValueError
+		raise ValueError #@nocov
 	return max(min(value, maxValue), minValue)
 
 # Get "Greatest Common Divisor"
