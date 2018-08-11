@@ -1116,10 +1116,10 @@ class S7CPU(object): #+cdef
 					self.__dateAndTimeWeekdayMap[dt.weekday()]
 
 	def getCurrentIP(self):
-		try:
-			return self.callStackTop.ip
-		except IndexError as e:
-			return None
+		cse = self.callStackTop
+		if cse is None:
+			return None #@nocov
+		return cse.ip
 
 	def getCurrentInsn(self):
 		try:
