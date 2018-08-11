@@ -82,6 +82,30 @@ BEGIN
 	__ASSERT==	__AR 2,		DW#16#84000038
 
 
+	// Test: +AR1/+AR2 with immediate pointer
+	LAR1		P#E 55.6
+	LAR2		P#A 99.7
+	__ASSERT==	__AR 1,		DW#16#810001BE
+	__ASSERT==	__AR 2,		DW#16#8200031F
+	+AR1		P#E 1.0
+	+AR2		P#A 0.1
+	__ASSERT==	__AR 1,		DW#16#810001C6
+	__ASSERT==	__AR 2,		DW#16#82000320
+
+
+	// Test: +AR1/+AR2 with accu
+	LAR1		P#E 55.1
+	LAR2		P#A 99.2
+	__ASSERT==	__AR 1,		DW#16#810001B9
+	__ASSERT==	__AR 2,		DW#16#8200031A
+	L		P#M 1.1
+	+AR1
+	L		P#M 0.2
+	+AR2
+	__ASSERT==	__AR 1,		DW#16#810001C2
+	__ASSERT==	__AR 2,		DW#16#8200031C
+
+
 	// Test: TAK
 	L		DW#16#01234567
 	L		DW#16#89ABCDEF
