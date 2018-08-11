@@ -339,7 +339,7 @@ setup_test_environment()
 	unset AWLSIM_AFFINITY
 
 	# Setup coverage tracing
-	if [ $opt_coverage -eq 0 ]; then
+	if [ $coverage_enabled -eq 0 ]; then
 		unset AWLSIM_COVERAGE
 	else
 		local coverage_data_file="$(maketemp "coverage_${test_name}" "$coverage_data_subdir")"
@@ -728,6 +728,16 @@ do_tests()
 		# Create an interpreter name suitable as path component
 		local interpreter_name="$(printf '%s' "$interpreter" | tr '/\\' _)"
 
+		# Check if we should enable coverage tracing
+		coverage_enabled=$opt_coverage
+		if [ $coverage_enabled -ne 0 ] &&\
+		   [ "$interpreter" = "pypy" -o "$interpreter" = "pypy3" ]; then
+			# Performance impact of coverage on PyPy is too big.
+			# Disable coverage to avoid test failures.
+			warnmsg "Disabling code coverage tracing (-c|--coverage) on PyPy due to bad performace."
+			coverage_enabled=0
+		fi
+
 		# Prepare code coverage directory
 		coverage_data_subdir="coverage-$interpreter_name"
 		mkdir -p "$tmp_dir/$coverage_data_subdir" || die "Failed to create coverage data dir"
@@ -789,7 +799,7 @@ do_tests()
 		check_job_failure && break
 
 		# Generate code coverage report
-		if [ $opt_coverage -ne 0 ]; then
+		if [ $coverage_enabled -ne 0 ]; then
 			# Wait for background jobs to finish
 			wait_for_all_background_jobs
 
