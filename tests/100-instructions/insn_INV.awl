@@ -53,6 +53,16 @@
 
 
 	__STWRST
+	L		0
+	NEGI
+	__ASSERT==	__ACCU 1,	DW#16#00000000
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
 	L		DW#16#0000F000
 	NEGD
 	__ASSERT==	__ACCU 1,	DW#16#FFFF1000
@@ -80,6 +90,16 @@
 	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		L#0
+	NEGD
+	__ASSERT==	__ACCU 1,	DW#16#00000000
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
 
 
 	CALL SFC 46 // STOP CPU
