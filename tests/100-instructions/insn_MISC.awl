@@ -66,6 +66,22 @@ BEGIN
 	__ASSERT==	__ACCU 1,	DW#16#87654321
 
 
+	// Test: LAR1/LAR2 with immediate pointer
+	LAR1		P#L 8.7
+	LAR2		P#L 7.1
+	__ASSERT==	__AR 1,		DW#16#86000047
+	__ASSERT==	__AR 2,		DW#16#86000039
+
+
+	// Test: LAR1/LAR2 with accu
+	L		P#DBX 8.6
+	LAR1
+	L		P#DBX 7.0
+	LAR2
+	__ASSERT==	__AR 1,		DW#16#84000046
+	__ASSERT==	__AR 2,		DW#16#84000038
+
+
 	// Test: TAK
 	L		DW#16#01234567
 	L		DW#16#89ABCDEF
