@@ -64,13 +64,27 @@ def coverageTryStart():
 					"submodules/*",
 					"tests/*",
 				]
-				coverageInstance = coverage_mod.Coverage(
-						data_file=covPath,
-						auto_data=True,
-						branch=False,
-						#check_preimported=True,
-						config_file=False,
-						omit=omit)
+				kwargs = {
+					"data_file"		: covPath,
+					"auto_data"		: True,
+					"branch"		: False,
+					"check_preimported"	: True,
+					"config_file"		: False,
+					"omit"			: omit,
+				}
+				for remove in ("", "check_preimported"):
+					if remove:
+						kwargs.pop(remove)
+					try:
+						coverageInstance = coverage_mod.Coverage(**kwargs)
+						break
+					except TypeError:
+						pass
+				else:
+					coverageError("Failed to initialize code "
+						"coverage tracing. It is unknown how to "
+						"instantiate Coverage correctly.")
+					sys.exit(1)
 				coverageInstance.start()
 			except coverage_mod.misc.CoverageException as e:
 				coverageError("Coverage tracing exception: " + str(e))
