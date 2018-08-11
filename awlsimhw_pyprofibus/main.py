@@ -93,7 +93,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			import pyprofibus
 			import pyprofibus.phy_serial, pyprofibus.phy_dummy
 			self.pyprofibus = pyprofibus
-		except (ImportError, RuntimeError) as e:
+		except (ImportError, RuntimeError) as e: #@nocov
 			self.raiseException("Failed to import PROFIBUS protocol stack "
 				"module 'pyprofibus':\n%s" % str(e))
 

@@ -213,7 +213,7 @@ class AwlLibEntry(StaticCodeBlock): #+cdef
 					    entryIndex = self.staticIndex,
 					    effectiveEntryIndex = self.index)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "AwlLibEntry %d" % self.index
 
 class AwlLibFC(AwlLibEntry): #+cdef
@@ -256,7 +256,7 @@ class AwlLibFC(AwlLibEntry): #+cdef
 				 blockIndex = self.index,
 				 identHash = self.identHash)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FC %d" % self.index
 
 class AwlLibFB(AwlLibEntry):
@@ -297,5 +297,5 @@ class AwlLibFB(AwlLibEntry):
 				 blockIndex = self.index,
 				 identHash = self.identHash)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FB %d" % self.index

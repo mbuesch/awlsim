@@ -190,7 +190,7 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 			try:
 				import hal as LinuxCNC_HAL
 				self.LinuxCNC_HAL = LinuxCNC_HAL
-			except ImportError as e:
+			except ImportError as e: #@nocov
 				self.raiseException("Failed to import LinuxCNC HAL module"
 					":\n%s" % str(e))
 

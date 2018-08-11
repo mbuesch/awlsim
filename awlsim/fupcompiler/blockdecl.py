@@ -241,8 +241,8 @@ class FupCompiler_BlockDecl(FupCompiler_BaseObj):
 
 		return awlLines
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FupCompiler_BlockDecl(compiler)"
 
-	def __str__(self):
+	def __str__(self): #@nocov
 		return "FUP-block-declaration"

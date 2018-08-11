@@ -67,12 +67,16 @@ try:
 	cov.exclude(r"raise RuntimeError")
 	cov.exclude(r"pass\s*#\s*TODO")
 	cov.exclude(r'raise AwlSimError\("Assertion failed"\)')
+	cov.exclude(r'except UnicodeError')
 	cov.exclude(r'if isPyPy')
 	cov.exclude(r'if isJython')
 	cov.exclude(r'if isIronPython')
 	cov.exclude(r'if isCython')
 	cov.exclude(r'if isMicroPython')
 	cov.exclude(r'if isWinStandalone')
+	cov.exclude(r'XmlFactory\.parser_beginTag\(self, tag\)')
+	cov.exclude(r'XmlFactory\.parser_endTag\(self, tag\)')
+	cov.exclude(r'XmlFactory\.parser_data\(self, data\)')
 
 	# Combine all data files
 	cov.combine(data_paths=dataPaths, strict=True)

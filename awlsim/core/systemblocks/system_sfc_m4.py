@@ -34,7 +34,7 @@ from awlsim.core.util import *
 class SFCm4(SFC): #+cdef
 	name = (-4, "__CLKRST", None)
 
-	def run(self): #+cpdef
+	def run(self): #+cpdef #@nocov
 #@cy		cdef S7StatusWord s
 
 		s = self.cpu.statusWord

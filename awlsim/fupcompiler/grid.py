@@ -201,8 +201,8 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		self.compileState = self.COMPILE_DONE
 		return insns
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FupCompiler_Grid(compiler)"
 
-	def __str__(self):
+	def __str__(self): #@nocov
 		return "FUP-grid"

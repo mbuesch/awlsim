@@ -493,8 +493,8 @@ class FupCompiler(object):
 		awlSource.sourceBytes = awlString.encode(AwlSource.ENCODING)
 		return awlSource
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FupCompiler()"
 
-	def __str__(self):
+	def __str__(self): #@nocov
 		return "FUP-compiler"

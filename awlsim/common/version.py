@@ -21,7 +21,7 @@ VERSION_EXTRA	= "-pre"
 
 
 
-if osIsWindows and VERSION_EXTRA:
+if osIsWindows and VERSION_EXTRA: #@nocov
 	# pywin32 does not like non-numbers in the version string.
 	# Convert the VERSION_EXTRA into a dot-number string.
 	VERSION_EXTRA = ".0000%d0000" % (crc32(VERSION_EXTRA.encode("UTF-8")) & 0xFFFF)

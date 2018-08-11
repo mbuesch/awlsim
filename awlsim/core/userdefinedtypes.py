@@ -50,7 +50,7 @@ class UDTField(object): #+cdef
 		self.dataType = dataType
 		self.initBytes = initBytes
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		if self.initBytes:
 			return "%s : %s := %s" %\
 				(self.name, str(self.dataType),
@@ -155,5 +155,5 @@ class UDT(Block): #+cdef
 				"one variable in '%s'" % str(self))
 		self.__structState = self.STRUCT_BUILT
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "UDT %d" % self.index

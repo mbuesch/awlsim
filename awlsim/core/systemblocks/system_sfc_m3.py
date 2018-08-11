@@ -41,7 +41,7 @@ class SFCm3(SFC): #+cdef
 		),
 	}
 
-	def run(self): #+cpdef
+	def run(self): #+cpdef #@nocov
 		shutdownType = wordToSignedPyInt(self.fetchInterfaceFieldByName("SHUTDOWN_TYPE"))
 		if shutdownType == 1:
 			raise MaintenanceRequest(MaintenanceRequest.TYPE_SHUTDOWN,

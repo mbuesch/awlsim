@@ -57,7 +57,7 @@ class _MONOTONIC_RAW_factory(object): #+cdef
 			b = self.monotonic_raw()
 			if b - a <= 0.0 or b - a > 1.0:
 				raise RuntimeError
-		except Exception as e:
+		except Exception as e: #@nocov
 			return False
 		return True
 
@@ -68,12 +68,12 @@ class _MONOTONIC_RAW_timemodule_factory(_MONOTONIC_RAW_factory): #+cdef
 	def probe(self):
 		if not hasattr(time, "clock_gettime") or\
 		   not hasattr(time, "CLOCK_MONOTONIC_RAW"):
-			return False
+			return False #@nocov
 
 		self.__clock_gettime = time.clock_gettime
 		self.__id_CLOCK_MONOTONIC_RAW = time.CLOCK_MONOTONIC_RAW
 
-		if not self._sanityCheck():
+		if not self._sanityCheck(): #@nocov
 			printWarning("CLOCK_MONOTONIC_RAW (time module) does not work "
 				     "correctly on this system. Falling "
 				     "back to an alternative.")
@@ -180,6 +180,6 @@ def monotonic_time(): #@nocy
 
 	try:
 		t = _prevMonotonicTime = _monotonicTimeHandler()
-	except Exception as e:
+	except Exception as e: #@nocov
 		t = _prevMonotonicTime
 	return t

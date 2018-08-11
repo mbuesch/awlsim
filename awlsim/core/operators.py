@@ -138,7 +138,7 @@ class AwlOperator(object): #+cdef
 		from awlsim.common.sources import AwlSource
 		try:
 			return self.immediateBytes.decode(AwlSource.COMPAT_ENCODING)
-		except UnicodeError as e:
+		except UnicodeError as e: #@nocov
 			raise AwlSimError("Invalid characters in operator (decode).")
 
 	@immediateStr.setter
@@ -146,7 +146,7 @@ class AwlOperator(object): #+cdef
 		from awlsim.common.sources import AwlSource
 		try:
 			self.immediateBytes = bytearray(newStr.encode(AwlSource.COMPAT_ENCODING))
-		except UnicodeError as e:
+		except UnicodeError as e: #@nocov
 			raise AwlSimError("Invalid characters in operator (encode).")
 
 	def setInsn(self, newInsn):
@@ -459,7 +459,7 @@ class AwlOperator(object): #+cdef
 			return "__UNSPEC"
 		try:
 			return self.type2str[self.operType]
-		except KeyError:
+		except KeyError: #@nocov
 			assert(0)
 
 #
@@ -596,24 +596,24 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				(self.width, str(directOffset)))
 		return make_AwlOperator(optype, self.width, directOffset, self.insn)
 
-	def __pointerError(self):
+	def __pointerError(self): #@nocov
 		# This is a programming error.
 		# The caller should resolve() the operator first.
 		raise AwlSimBug("Can not transform indirect operator "
 			"into a pointer. Resolve it first.")
 
 	def makePointer(self):
-		self.__pointerError()
+		self.__pointerError() #@nocov
 
 	def makePointerValue(self): #@nocy
 #@cy	cpdef uint32_t makePointerValue(self):
-		self.__pointerError()
+		self.__pointerError() #@nocov
 
 	def makeDBPointer(self):
-		self.__pointerError()
+		self.__pointerError() #@nocov
 
 	def makeANYPointer(self, areaShifted=None):
-		self.__pointerError()
+		self.__pointerError() #@nocov
 
 	def __repr__(self):
 		return "__INDIRECT" #TODO

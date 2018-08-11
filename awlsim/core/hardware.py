@@ -129,7 +129,7 @@ class AbstractHardwareInterface(object): #+cdef
 	def doStartup(self):
 		"""Actually initialize access to hardware.
 		Overload this method, if the hardware needs initialization"""
-		pass
+		pass #@nocov
 
 	def shutdown(self):
 		"""Shutdown access to the hardware."""
@@ -140,21 +140,21 @@ class AbstractHardwareInterface(object): #+cdef
 	def doShutdown(self):
 		"""Actually shutdown access to hardware.
 		Overload this method, if the hardware needs initialization"""
-		pass
+		pass #@nocov
 
 	def readInputs(self): #+cdef
 		"""Read all hardware input data and store it in the PAE.
 		The implementation is supposed to put the data directly
 		into the cpu memory.
 		Overload this method, if the hardware has inputs."""
-		pass
+		pass #@nocov
 
 	def writeOutputs(self): #+cdef
 		"""Write all hardware output data (read from PAA).
 		The implementation is supposed to read the data directly
 		from the cpu memory.
 		Overload this method, if the hardware has outputs."""
-		pass
+		pass #@nocov
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
@@ -166,7 +166,7 @@ class AbstractHardwareInterface(object): #+cdef
 		this hardware's range.
 		Overload this method, if the hardware has inputs and
 		supports direct peripheral access."""
-		return bytearray()
+		return bytearray() #@nocov
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
 #@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
@@ -179,9 +179,9 @@ class AbstractHardwareInterface(object): #+cdef
 		hardware's range.
 		Overload this method, if the hardware has outputs and
 		supports direct peripheral access."""
-		return False
+		return False #@nocov
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "HardwareInterface: %s" % self.name
 
 	def raiseException(self, errorText):

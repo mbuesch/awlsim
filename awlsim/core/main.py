@@ -2,7 +2,7 @@
 #
 # AWL simulator
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,12 +47,12 @@ def AwlSim_decorator_profiled(profileLevel):
 		@functools.wraps(func) #@nocy
 		def profiled_wrapper(self, *args, **kwargs):
 			if self._profileLevel >= profileLevel:
-				self._profileStart()
+				self._profileStart() #@nocov
 			try:
 				func(self, *args, **kwargs)
 			finally:
 				if self._profileLevel >= profileLevel:
-					self._profileStop()
+					self._profileStop() #@nocov
 		return profiled_wrapper
 	return profiled_decorator
 
@@ -87,7 +87,7 @@ class AwlSim(object): #+cdef
 	def getCPU(self):
 		return self.cpu
 
-	def __setProfiler(self, profileLevel):
+	def __setProfiler(self, profileLevel): #@nocov
 		self._profileLevel = profileLevel
 		if self._profileLevel <= 0:
 			return
@@ -110,13 +110,13 @@ class AwlSim(object): #+cdef
 
 		self.__profiler = self.__profileModule.Profile()
 
-	def _profileStart(self):
+	def _profileStart(self): #@nocov
 		self.__profiler.enable()
 
-	def _profileStop(self):
+	def _profileStop(self): #@nocov
 		self.__profiler.disable()
 
-	def getProfileStats(self):
+	def getProfileStats(self): #@nocov
 		if self._profileLevel <= 0:
 			return None
 
@@ -142,7 +142,7 @@ class AwlSim(object): #+cdef
 			raise e
 		else:
 			# Non-fatal. Just log an error.
-			printError(str(e))
+			printError(str(e)) #@nocov
 
 	@throwsAwlSimError
 	def __handleMaintenanceRequest(self, e):
@@ -158,7 +158,7 @@ class AwlSim(object): #+cdef
 				self.cpu.startup()
 			else:
 				assert(0)
-		except MaintenanceRequest as e:
+		except MaintenanceRequest as e: #@nocov
 			raise AwlSimError("Recursive maintenance request")
 
 	@profiled(2)
@@ -210,7 +210,7 @@ class AwlSim(object): #+cdef
 
 	def runCycle(self): #+cpdef
 		if self._profileLevel >= 1:
-			self._profileStart()
+			self._profileStart() #@nocov
 
 		try:
 			if self.__registeredHardwareCount:
@@ -224,7 +224,7 @@ class AwlSim(object): #+cdef
 			self.__handleMaintenanceRequest(e)
 
 		if self._profileLevel >= 1:
-			self._profileStop()
+			self._profileStop() #@nocov
 
 	@throwsAwlSimError
 	def shutdown(self):
@@ -233,7 +233,7 @@ class AwlSim(object): #+cdef
 		"""
 		self.unregisterAllHardware()
 		ps = self.getProfileStats()
-		if ps:
+		if ps: #@nocov
 			sys.stdout.write("\n\nAwlsim core profile stats "
 					 "(level %d) follow:\n" %\
 					 self._profileLevel)
@@ -358,5 +358,5 @@ class AwlSim(object): #+cdef
 			return False
 		return retOk
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return str(self.cpu)

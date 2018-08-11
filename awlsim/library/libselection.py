@@ -181,7 +181,7 @@ class AwlLibEntrySelection(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		asStr = ""
 		if self.getEntryIndex() != self.getEffectiveEntryIndex():
 			asStr = " (as %s %d)" % (self.getEntryTypeStr(),

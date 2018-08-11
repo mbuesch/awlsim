@@ -283,7 +283,7 @@ class CallStackElem(object): #+cdef
 		# Call the operator translation handler (Python)
 		try:							#@nocy
 			trans = self._FC_paramTrans[oper.operType]	#@nocy
-		except KeyError as e:					#@nocy
+		except KeyError as e:					#@nocy #@nocov
 			self._FCTransBug(param, oper)			#@nocy
 		return trans(self, param, oper)				#@nocy
 
@@ -378,7 +378,7 @@ class CallStackElem(object): #+cdef
 #@cy			oper = None
 #@cy		return oper
 
-	def _FCTransError(self, param, oper):
+	def _FCTransError(self, param, oper): #@nocov
 		raise AwlSimError("Do not know how to translate "
 			"FC parameter '%s' for call. The specified "
 			"actual-parameter is not allowed in this call." % (
@@ -450,7 +450,7 @@ class CallStackElem(object): #+cdef
 		# Unlink this call stack element from the previous one.
 		self.prevCse = None
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "CallStackElem of %s" % str(self.block)
 
 #
@@ -560,7 +560,7 @@ def make_CallStackElem(cpu,						#@nocy
 				# Call the operator translation handler (Python)
 				try:							#@nocy
 					trans = cse._FC_paramTrans[oper.operType]	#@nocy
-				except KeyError as e:					#@nocy
+				except KeyError as e:					#@nocy #@nocov
 					cse._FCTransError(param, oper)			#@nocy
 				cse._interfRefs[param.interfaceFieldIndex] = trans(	#@nocy
 						cse, param, oper)			#@nocy

@@ -348,7 +348,7 @@ class AwlInsn(object): #+cdef
 		"""Run the instruction.
 		The default implementation does nothing.
 		"""
-		pass
+		pass #@nocov
 
 	def _warnDeprecated(self, moreText=""):
 		lineNrStr = ""
@@ -377,7 +377,7 @@ class AwlInsn(object): #+cdef
 			type2name = AwlInsn.type2name_german
 		try:
 			name = type2name[self.insnType]
-		except KeyError:
+		except KeyError: #@nocov
 			name = "<unknown type %d>" % self.insnType
 		ret.append(name)
 		if self.ops:

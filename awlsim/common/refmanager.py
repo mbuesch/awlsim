@@ -125,7 +125,7 @@ class ObjRef(object):
 		"""
 		return self.__manager is not None
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return str(self.name)
 
 class ObjRefManager(object):
@@ -203,5 +203,5 @@ class ObjRefManager(object):
 		if self.__allDestroyedCallback:
 			self.__allDestroyedCallback()
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return str(self.name)

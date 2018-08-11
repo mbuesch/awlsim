@@ -322,14 +322,14 @@ class FupCompiler_Conn(FupCompiler_BaseObj):
 			target = self.loadInsnClass2Target[targetInsnClass]
 		return self.elem.compileConn(self, target, inverted)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FupCompiler_Conn(elem, pos=%d, dirIn=%s, dirOut=%s, "\
 					"wireId=%d, text=\"%s\", "\
 					"inverted=%s, virtual=%s)" % (
 			self.pos, self.dirIn, self.dirOut, self.wireId,
 			self.text, self.inverted, self.virtual)
 
-	def __str__(self):
+	def __str__(self): #@nocov
 		fields = []
 		if self.text:
 			fields.append('"%s"' % self.text)

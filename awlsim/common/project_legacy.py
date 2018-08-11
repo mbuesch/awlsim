@@ -32,10 +32,10 @@ from awlsim.common.exceptions import *
 
 from awlsim.library.libselection import *
 
-if isPy2Compat:
+if isPy2Compat: #@nocov
 	from ConfigParser import SafeConfigParser as _ConfigParser
 	from ConfigParser import Error as _ConfigParserError
-else:
+else: #@nocov
 	from configparser import ConfigParser as _ConfigParser
 	from configparser import Error as _ConfigParserError
 
@@ -73,9 +73,9 @@ class LegacyProjectParser(object):
 		try:
 			p = _ConfigParser()
 			textIO = StringIO(text)
-			if hasattr(p, "read_file"):
+			if hasattr(p, "read_file"): #@nocov
 				p.read_file(textIO, projectFile)
-			else:
+			else: #@nocov
 				p.readfp(textIO, projectFile)
 
 			# AWLSIM_PROJECT section

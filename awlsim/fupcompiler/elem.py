@@ -505,14 +505,14 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		return self.grid.compiler.newInsn_SRD(self, *args, **kwargs)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "FupCompiler_Elem(grid, x=%d, y=%d, elemType=%d, "\
 			"subType=%s, content=\"%s\", virtual=%s)" % (
 			self.x, self.y, self.elemType,
 			str(self.subType), self.content,
 			str(self.virtual))
 
-	def toStr(self, extra=()):
+	def toStr(self, extra=()): #@nocov
 		values = []
 		if self.x >= 0 and self.y >= 0:
 			values.append("x%d/y%d" % (

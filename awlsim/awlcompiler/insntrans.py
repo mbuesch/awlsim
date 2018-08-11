@@ -229,13 +229,13 @@ class AwlInsnTranslator(object):
 			if insnType is None or\
 			   (insnType >= AwlInsnTypes.TYPE_EXTENDED and\
 			    not extendedInsnsEnabled):
-				raise KeyError
+				raise KeyError #@nocov
 			insnClass = cls.type2class[insnType]
-		except KeyError:
+		except KeyError: #@nocov
 			raise AwlSimError("Cannot translate instruction: '%s'" %\
 				rawInsn.getName())
 		insn = insnClass(cpu, rawInsn)
 		if not extendedInsnsEnabled and\
 		   any(op.isExtended for op in insn.ops):
-			raise AwlSimError("Extended operands disabled")
+			raise AwlSimError("Extended operands disabled") #@nocov
 		return insn

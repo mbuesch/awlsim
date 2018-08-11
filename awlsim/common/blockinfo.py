@@ -75,7 +75,7 @@ class BlockInfo(object):
 	def __ne__(self, other):
 		return not self.__eq__(other)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "BlockInfo(%d, %d, '%s')" % (
 			self.blockType,
 			self.blockIndex,

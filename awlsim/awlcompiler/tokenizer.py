@@ -59,7 +59,7 @@ class RawAwlInsn(object):
 		self.name = None
 		self.ops = []
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		ret = []
 		if self.hasLabel():
 			ret.append(self.getLabel() + ':  ')
@@ -224,7 +224,7 @@ class RawAwlDataInit(object):
 	def getIdentString(self):
 		return ".".join(str(ident) for ident in self.identChain)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return self.getIdentString() + " := " + str(self.valueTokens)
 
 class RawAwlDataField(object):
@@ -275,7 +275,8 @@ class RawAwlDataField(object):
 					return field.getChild(identChain[1:])
 				return field
 		return None
-	def __repr__(self):
+
+	def __repr__(self): #@nocov
 		return self.getIdentString()
 
 class RawAwlDB(RawAwlBlock):

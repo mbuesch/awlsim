@@ -36,7 +36,7 @@ from awlsim.core.offset import * #+cimport
 from awlsim.core.cpu import * #+cimport
 
 
-class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef
+class HardwareInterface_Debug(AbstractHardwareInterface): #+cdef #@nocov
 	name		= "debug"
 	description	= "Debugging hardware module.\n"\
 			  "This can be used to inject faults into the system."

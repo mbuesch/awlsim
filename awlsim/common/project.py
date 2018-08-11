@@ -413,7 +413,7 @@ class ProjectFactory(XmlFactory):
 		else:
 			if tag.name == "awlsim_project":
 				version = tag.getAttrInt("format_version")
-				if version != self.FILE_FORMAT_VERSION:
+				if version != self.FILE_FORMAT_VERSION: #@nocov
 					raise self.Error("Unsupported .awlpro format version. "
 						"Got %d, but expected %d." % (
 						version, self.FILE_FORMAT_VERSION))
@@ -424,14 +424,14 @@ class ProjectFactory(XmlFactory):
 						createDate = datetime.datetime.strptime(
 							createDate, project.DATETIME_FMT)
 						project.setCreateDate(createDate)
-				except (ValueError, TypeError) as e:
+				except (ValueError, TypeError) as e: #@nocov
 					pass
 				try:
 					if modifyDate:
 						modifyDate = datetime.datetime.strptime(
 							modifyDate, project.DATETIME_FMT)
 						project.setModifyDate(modifyDate)
-				except (ValueError, TypeError) as e:
+				except (ValueError, TypeError) as e: #@nocov
 					pass
 				self.inProject = True
 				return
@@ -1052,7 +1052,7 @@ class Project(object):
 		for symSrc in self.symTabSources:
 			symSrc.writeFileBacking(compatReEncode=True)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		if self.projectFile:
 			return 'Project("%s")' % self.projectFile
 		return "Project(None)"

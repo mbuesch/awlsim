@@ -114,7 +114,7 @@ class AwlStructField(object): #+cdef
 			return self.override.getFinalOverride()
 		return self
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		s = "AwlStructField(\"%s\", P#%s, %s (%d bit), init=%s)" %\
 			(str(self.name),
 			 str(self.offset),
@@ -232,7 +232,7 @@ class AwlStruct(object): #+cdef
 			# Add an UDT.
 			try:
 				udt = cpu.udts[dataType.index]
-			except KeyError:
+			except KeyError: #@nocov
 				assert(0) # Should never happen
 			assert(not initBytes)
 			# Assign the struct to the UDT data type, if
@@ -342,7 +342,7 @@ class AwlStruct(object): #+cdef
 		except KeyError:
 			raise AwlSimError("Data structure field '%s' not found" % name)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "\n".join(str(field) for field in self.fields)
 
 class AwlStructInstance(object): #+cdef

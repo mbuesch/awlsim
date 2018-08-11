@@ -161,7 +161,7 @@ class S7StatusWord(object): #+cdef
 	def getByBitNumber(self, bitNumber):					#@nocy
 		try:								#@nocy
 			return self.__bitnr2getter[bitNumber](self)		#@nocy
-		except IndexError as e:						#@nocy
+		except IndexError as e:						#@nocy #@nocov
 			raise AwlSimError("Status word bit fetch '%d' "		#@nocy
 				"out of range" % bitNumber)			#@nocy
 
@@ -263,5 +263,5 @@ class S7StatusWord(object): #+cdef
 			ret.append("%s:%d" % (name, self.getByBitNumber(i)))
 		return '  '.join(ret)
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return self.getString(S7CPUConfig.MNEMONICS_DE)

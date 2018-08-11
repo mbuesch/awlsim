@@ -36,9 +36,9 @@ __all__ = [
 ]
 
 
-if hasattr(socket, "AF_UNIX"):
+if hasattr(socket, "AF_UNIX"): #@nocov
 	AF_UNIX = socket.AF_UNIX
-else:
+else: #@nocov
 	AF_UNIX = None
 
 SocketErrors = (socket.error if hasattr(socket, "error") else OSError,

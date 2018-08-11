@@ -529,11 +529,11 @@ class S7CPU(object): #+cdef
 			if hasattr(os, "sched_setaffinity"):
 				try:
 					os.sched_setaffinity(0, affinity)
-				except (OSError, ValueError) as e:
+				except (OSError, ValueError) as e: #@nocov
 					raise AwlSimError("Failed to set host CPU "
 						"affinity to %s: %s" % (
 						affinity, str(e)))
-			else:
+			else: #@nocov
 				printError("Cannot set CPU affinity "
 					   "on this version of Python. "
 					   "os.sched_setaffinity is not available.")
@@ -1125,9 +1125,9 @@ class S7CPU(object): #+cdef
 		try:
 			cse = self.callStackTop
 			if not cse:
-				return None
+				return None #@nocov
 			return cse.insns[cse.ip]
-		except IndexError as e:
+		except IndexError as e: #@nocov
 			return None
 
 	def labelIdxToRelJump(self, labelIndex): #@nocy
@@ -1362,26 +1362,26 @@ class S7CPU(object): #+cdef
 	def getAccu(self, index): #@nocy
 #@cy	cdef Accu getAccu(self, uint32_t index):
 		if index < 1 or index > self.specs.nrAccus:
-			raise AwlSimError("Invalid ACCU offset")
+			raise AwlSimError("Invalid ACCU offset") #@nocov
 		return (self.accu1, self.accu2,
 			self.accu3, self.accu4)[index - 1]
 
 	def getAR(self, index): #@nocy
 #@cy	cdef Addressregister getAR(self, uint32_t index):
 		if index < 1 or index > 2:
-			raise AwlSimError("Invalid AR offset")
+			raise AwlSimError("Invalid AR offset") #@nocov
 		return (self.ar1, self.ar2)[index - 1]
 
 	def getTimer(self, index): #@nocy
 #@cy	cdef Timer getTimer(self, uint32_t index):
 		if index >= len(self.timers):
-			raise AwlSimError("Fetched invalid timer %d" % index)
+			raise AwlSimError("Fetched invalid timer %d" % index) #@nocov
 		return self.timers[index]
 
 	def getCounter(self, index): #@nocy
 #@cy	cdef Counter getCounter(self, uint32_t index):
 		if index >= len(self.counters):
-			raise AwlSimError("Fetched invalid counter %d" % index)
+			raise AwlSimError("Fetched invalid counter %d" % index) #@nocov
 		return self.counters[index]
 
 	def getSpecs(self):
@@ -1512,7 +1512,7 @@ class S7CPU(object): #+cdef
 	def fetch(self, operator, allowedWidths):					#@nocy
 		try:									#@nocy
 			fetchMethod = self.__fetchTypeMethods[operator.operType]	#@nocy
-		except KeyError:							#@nocy
+		except KeyError:							#@nocy #@nocov
 			self.__invalidFetch(operator)					#@nocy
 		return fetchMethod(self, operator, allowedWidths)			#@nocy
 
@@ -1600,7 +1600,7 @@ class S7CPU(object): #+cdef
 #@cy			return self.__fetchVirtDBR(operator, allowedWidths)
 #@cy		self.__invalidFetch(operator)
 
-	def __invalidFetch(self, operator):
+	def __invalidFetch(self, operator): #@nocov
 		raise AwlSimError("Invalid fetch request: %s" % str(operator))
 
 	def __fetchWidthError(self, operator, allowedWidths):
@@ -1917,8 +1917,8 @@ class S7CPU(object): #+cdef
 	def __fetchNAMED_DBVAR(self, operator, allowedWidths): #@nocy
 #@cy	cdef object __fetchNAMED_DBVAR(self, AwlOperator operator, uint32_t allowedWidths):
 		# All legit accesses will have been translated to absolute addressing already
-		raise AwlSimError("Fully qualified load from DB variable "
-			"is not supported in this place.")
+		raise AwlSimError("Fully qualified load from DB variable "	#@nocov
+			"is not supported in this place.")			#@nocov
 
 	def __fetchINDIRECT(self, operator, allowedWidths): #@nocy
 #@cy	cdef object __fetchINDIRECT(self, AwlOperator operator, uint32_t allowedWidths):
@@ -2001,7 +2001,7 @@ class S7CPU(object): #+cdef
 	def store(self, operator, value, allowedWidths):				#@nocy
 		try:									#@nocy
 			storeMethod = self.__storeTypeMethods[operator.operType]	#@nocy
-		except KeyError:							#@nocy
+		except KeyError:							#@nocy #@nocov
 			self.__invalidStore(operator)					#@nocy
 		storeMethod(self, operator, value, allowedWidths)			#@nocy
 
@@ -2038,7 +2038,7 @@ class S7CPU(object): #+cdef
 #@cy		else:
 #@cy			self.__invalidStore(operator)
 
-	def __invalidStore(self, operator):
+	def __invalidStore(self, operator): #@nocov
 		raise AwlSimError("Invalid store request: %s" % str(operator))
 
 	def __storeWidthError(self, operator, allowedWidths):
@@ -2187,8 +2187,8 @@ class S7CPU(object): #+cdef
 	def __storeNAMED_DBVAR(self, operator, value, allowedWidths): #@nocy
 #@cy	cdef __storeNAMED_DBVAR(self, AwlOperator operator, object value, uint32_t allowedWidths):
 		# All legit accesses will have been translated to absolute addressing already
-		raise AwlSimError("Fully qualified store to DB variable "
-			"is not supported in this place.")
+		raise AwlSimError("Fully qualified store to DB variable "	#@nocov
+			"is not supported in this place.")			#@nocov
 
 	def __storeINDIRECT(self, operator, value, allowedWidths): #@nocy
 #@cy	cdef __storeINDIRECT(self, AwlOperator operator, object value, uint32_t allowedWidths):
@@ -2227,7 +2227,7 @@ class S7CPU(object): #+cdef
 					append(line)
 					line, count, first = [], 0, False
 				i += 1
-		except IndexError as e:
+		except IndexError as e: #@nocov
 			pass # memArray out of bounds access.
 		if count:
 			append(line)
@@ -2239,7 +2239,7 @@ class S7CPU(object): #+cdef
 			memory = self.activeLStack.memory
 			byteOffset = frame.byteOffset
 			allocBits = frame.allocBits
-		else:
+		else: #@nocov
 			memory, byteOffset, allocBits = None, 0, 0
 		lines = self.__dumpMem(prefix,
 				       memory,
@@ -2248,7 +2248,7 @@ class S7CPU(object): #+cdef
 		lines.extend( [ (" " * len(prefix)) + "--" ] * (4 - len(lines)) )
 		return lines
 
-	def dump(self, withTime=True):
+	def dump(self, withTime=True): #@nocov
 #@cy		cdef LStackFrame *frame
 
 		callStackTop = self.callStackTop
@@ -2334,7 +2334,7 @@ class S7CPU(object): #+cdef
 		return '\n'.join(ret)
 
 	@property
-	def insnPerSecondHR(self):
+	def insnPerSecondHR(self): #@nocov
 		"""Get a human readable instructions per seconds string.
 		"""
 		insnPerSecond = self.insnPerSecond
@@ -2349,7 +2349,7 @@ class S7CPU(object): #+cdef
 		return insnPerSecondStr
 
 	@property
-	def usPerInsnHR(self):
+	def usPerInsnHR(self): #@nocov
 		"""Get a human readable microseconds per instructions string.
 		"""
 		insnPerSecond = self.insnPerSecond
@@ -2359,5 +2359,5 @@ class S7CPU(object): #+cdef
 			usPerInsnStr = "-/-"
 		return usPerInsnStr
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return self.dump()

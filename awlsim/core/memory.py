@@ -766,7 +766,7 @@ class AwlMemory(object): #+cdef
 	def __nonzero__(self):				#@cy2
 		return bool(self.dataBytesLen)	#@cy2
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 #@cy		cdef list ret
 #@cy		cdef uint64_t i
 
@@ -776,5 +776,5 @@ class AwlMemory(object): #+cdef
 		ret.append('")')
 		return "".join(ret)
 
-	def __str__(self):
+	def __str__(self): #@nocov
 		return self.__repr__()

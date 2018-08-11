@@ -235,17 +235,17 @@ class XmlFactory(object):
 	def parser_close(self):
 		pass
 
-	def parser_beginTag(self, tag):
+	def parser_beginTag(self, tag): #@nocov
 		printWarning("[XML-parser - %s] Unhandled tag: <%s>" % (
 			     type(self).__name__, tag.name))
 
-	def parser_endTag(self, tag):
+	def parser_endTag(self, tag): #@nocov
 		printWarning("[XML-parser - %s] Unhandled tag: </%s>" % (
 			     type(self).__name__, tag.name))
 
 	def parser_data(self, data):
 		data = data.strip()
-		if data:
+		if data: #@nocov
 			printWarning("[XML-parser - %s] Unhandled data: %s" % (
 				     type(self).__name__, data))
 
@@ -351,7 +351,7 @@ class XmlFactory(object):
 
 	def parse(self, xmlText):
 		if not xmlText.decode(self.XML_ENCODING).strip():
-			return False
+			return False #@nocov
 		try:
 			builder = _XmlFactoryBuilder(self)
 			parser = xml.etree.ElementTree.XMLParser(target=builder)

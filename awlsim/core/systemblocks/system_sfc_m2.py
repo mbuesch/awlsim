@@ -41,7 +41,7 @@ class SFCm2(SFC): #+cdef
 		),
 	}
 
-	def run(self): #+cpdef
+	def run(self): #+cpdef #@nocov
 		rebootType = wordToSignedPyInt(self.fetchInterfaceFieldByName("REBOOT_TYPE"))
 		if rebootType == 1:
 			raise MaintenanceRequest(MaintenanceRequest.TYPE_SOFTREBOOT,

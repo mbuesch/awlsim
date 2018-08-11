@@ -95,7 +95,7 @@ class RpiGPIO_BitMapping(object):
 				 for bitOffset in range(8)
 				 if self.bit2bcm[bitOffset] is not None ]
 
-	def __repr__(self):
+	def __repr__(self): #@nocov
 		return "{ " +\
 			", ".join("%d: %s" % (i, str(self.bit2bcm[i]))
 				  for i in range(8)) +\
@@ -130,7 +130,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		try:
 			import RPi.GPIO as RPi_GPIO
 			self.__RPi_GPIO = RPi_GPIO
-		except ImportError as e:
+		except ImportError as e: #@nocov
 			self.raiseException("Failed to import Raspberry Pi GPIO "
 				"module 'RPi.GPIO': %s" % str(e))
 
@@ -138,7 +138,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		try:
 			RPi_GPIO.setmode(self.__RPi_GPIO.BCM)
 			RPi_GPIO.setwarnings(False)
-		except RuntimeError as e:
+		except RuntimeError as e: #@nocov
 			self.raiseException("Failed to init Raspberry Pi "
 				"GPIO library: %s" % str(e))
 
@@ -169,7 +169,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 					RPi_GPIO.setup(bcmNumber,
 						       gpioDir,
 						       initial = RPi_GPIO.LOW)
-			except RuntimeError as e:
+			except RuntimeError as e: #@nocov
 				self.raiseException("Failed to init Raspberry Pi "
 					"BCM%d: %s" % (bcmNumber, str(e)))
 		for bitMapping in dictValues(mapDict):
