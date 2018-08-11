@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# AWL simulator - Code coverage trace report generator
+#
+# Copyright 2018 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+from __future__ import division, absolute_import, print_function, unicode_literals
+
+import sys
+import os
+import coverage as coverage_mod
+
+
+def coverageError(msg):
+	if sys.stderr:
+		sys.stderr.write(msg + "\n")
+		sys.stderr.flush()
+
+try:
+	covReport = sys.argv[1]
+	covData = sys.argv[2:]
+	if not covData:
+		raise IndexError
+except IndexError as e:
+	coverageError("Invalid arguments")
+	sys.exit(1)
+
+dataPaths = []
+for item in covData:
+	if os.path.isdir(item):
+		for subItem in os.listdir(item):
+			dataPaths.append(os.path.join(item, subItem))
+	else:
+		dataPaths.append(item)
+
+try:
+	cov = coverage_mod.Coverage(config_file=False)
+	cov.combine(data_paths=dataPaths, strict=True)
+	cov.load()
+	cov.html_report(directory=covReport)
+except coverage_mod.misc.CoverageException as e:
+	coverageError("Could not generate coverage report: " + str(e))
+	sys.exit(1)
+sys.exit(0)

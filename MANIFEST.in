@@ -13,18 +13,19 @@ graft progs
 graft submodules
 graft tests
 
+include COMPATIBILITY.html
+include COMPATIBILITY.md
+include COPYING.txt
+include QUICK-START.html
+include QUICK-START.md
+include README.html
+include README.md
+include TODO.html
+include TODO.md
+include awlsim-covreport
 include awlsim/gui/icons/pic2py
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsimhw_pyprofibus.conf
-include COPYING.txt
-include COMPATIBILITY.md
-include COMPATIBILITY.html
-include QUICK-START.md
-include QUICK-START.html
-include README.md
-include README.html
-include TODO.md
-include TODO.html
 
 prune ./build
 prune build

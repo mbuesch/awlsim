@@ -8,7 +8,7 @@ __run_awlsim_linuxcnc_hal()
 	shift 3
 
 	export EXTRA_PYTHONPATH="$rootdir/libs/linuxcnc_fake_hal"
-	setup_test_environment "$interpreter"
+	setup_test_environment "$interpreter" "$awl_file" "${awl_file}.linuxcnc"
 	local interpreter="$RET"
 
 	FAKEHAL_HALFILE="${test_dir}/linuxcnc.hal" \

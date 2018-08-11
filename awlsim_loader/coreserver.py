@@ -1,5 +1,6 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import awlsim_loader.coverage_helper
 import awlsim_loader.cython_helper as __cython
 
 __importmod = "awlsim.coreserver.server"

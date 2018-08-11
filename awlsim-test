@@ -100,6 +100,7 @@ def usage():
 	print("")
 	print("  AWLSIM_AFFINITY      =0,2,...  Comma separated list of host CPU cores")
 	print("                                 to run on. Default: all cores.")
+	print("  AWLSIM_COVERAGE      =DATAFILE  Enable code coverage tracing.")
 
 def writeStdout(message):
 	if Logging.loglevel >= Logging.LOG_INFO:

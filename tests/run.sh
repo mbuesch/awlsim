@@ -41,12 +41,18 @@ die()
 	exit 1
 }
 
-# Create a temporary file. $1=name
+# Create a temporary file. $1=name, $2=subdir
 maketemp()
 {
 	local prefix="$1"
+	local subdir="$2"
 
-	mktemp --tmpdir="$tmp_dir" awlsim-test-${prefix}.XXXXXX
+	if [ -z "$subdir" ]; then
+		local subdir="."
+	else
+		mkdir -p "$tmp_dir/$subdir"
+	fi
+	mktemp --tmpdir="$tmp_dir" "${subdir}/awlsim-test-${prefix}.XXXXXX"
 }
 
 # $1=message
@@ -153,6 +159,22 @@ check_job_failure()
 	[ "0" != "$(du -s "$test_fail_file" | cut -f1)" ]
 }
 
+wait_for_all_background_jobs()
+{
+	is_parallel_run || return
+
+	infomsg "Waiting for background jobs..."
+	wait
+	# Print the fail information.
+	if check_job_failure; then
+		errormsg
+		errormsg "===== FAILURES in parallel run: ====="
+		cat "$test_fail_file" >&2
+		errormsg "====================================="
+		global_retval=1
+	fi
+}
+
 # $1=interpreter
 # Returns version on stdout as:  MAJOR MINOR PATCHLEVEL
 get_interpreter_version()
@@ -218,16 +240,19 @@ check_dos_text_encoding()
 	fi
 }
 
-# $1=interpreter [$2=tested_file]
+# $1=interpreter $2=tested_file [$3=test_name]
 setup_test_environment()
 {
 	local interpreter="$1"
 	local tested_file="$2"
+	local test_name="$3"
 
-	local use_cython=0
+	[ -z "$test_name" ] && local test_name="$tested_file"
+	local test_name="$(realpath -m --no-symlinks --relative-base="$rootdir" "$test_name" | tr '/\\' _)"
 
 	# Check if we want to run on Cython2/3 and set the environment
 	# for Cython2/3.
+	local use_cython=0
 	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ] ||\
 	   [ "$interpreter" = "python" -a "$AWLSIM_CYTHON" != "" ] ||\
 	   [ "$interpreter" = "python2" -a "$AWLSIM_CYTHON" != "" ]; then
@@ -312,6 +337,16 @@ setup_test_environment()
 
 	# Disable CPU affinity
 	unset AWLSIM_AFFINITY
+
+	# Setup coverage tracing
+	if [ $opt_coverage -eq 0 ]; then
+		unset AWLSIM_COVERAGE
+	else
+		local coverage_data_file="$(maketemp "coverage_${test_name}" "$coverage_data_subdir")"
+		rm "$coverage_data_file"
+
+		export AWLSIM_COVERAGE="$coverage_data_file"
+	fi
 
 	RET="$interpreter"
 }
@@ -690,6 +725,14 @@ do_tests()
 
 		cleanup_test_environment
 
+		# Create an interpreter name suitable as path component
+		local interpreter_name="$(printf '%s' "$interpreter" | tr '/\\' _)"
+
+		# Prepare code coverage directory
+		coverage_data_subdir="coverage-$interpreter_name"
+		mkdir -p "$tmp_dir/$coverage_data_subdir" || die "Failed to create coverage data dir"
+
+		# Basic interpreter setup. Build Cython modules.
 		if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
 			have_prog cython && have_prog python2 || {
 				warn_skipped "$interpreter"
@@ -744,22 +787,29 @@ do_tests()
 		infomsg
 
 		check_job_failure && break
+
+		# Generate code coverage report
+		if [ $opt_coverage -ne 0 ]; then
+			# Wait for background jobs to finish
+			wait_for_all_background_jobs
+
+			if [ $global_retval -eq 0 ]; then
+				infomsg "\nGenerating code coverage report..."
+				local reportbase="$rootdir/code-coverage-report"
+				local reportdir="$reportbase/awlsim-coverage-$interpreter_name"
+				rm -rf "$reportdir"
+				"$rootdir/awlsim-covreport" \
+					"$reportdir" \
+					"$tmp_dir/$coverage_data_subdir/" ||\
+					die "Failed to generate code coverage report."
+			fi
+		fi
+
 		[ -n "$opt_interpreter" ] && break
 	done
 
-	if is_parallel_run; then
-		# This is a parallel run. Wait for all jobs.
-		infomsg "Waiting for background jobs..."
-		wait
-		# Print the fail information.
-		if check_job_failure; then
-			errormsg
-			errormsg "===== FAILURES in parallel run: ====="
-			cat "$test_fail_file" >&2
-			errormsg "====================================="
-			global_retval=1
-		fi
-	fi
+	# Wait for background jobs to finish
+	wait_for_all_background_jobs
 
 	# Print summary
 	if [ $global_retval -eq 0 ]; then
@@ -806,6 +856,7 @@ show_help()
 	infomsg " -l|--loop COUNT               Number of test loops to execute."
 	infomsg "                               Default: 1"
 	infomsg "                               Set to 0 for infinite looping."
+	infomsg " -c|--coverage                 Enable code coverage tracing."
 }
 
 tmp_dir="/tmp/awlsim-test-$$"
@@ -830,6 +881,7 @@ opt_renice=
 opt_jobs=1
 opt_loglevel=2
 opt_loop=1
+opt_coverage=0
 
 while [ $# -ge 1 ]; do
 	[ "$(printf '%s' "$1" | cut -c1)" != "-" ] && break
@@ -879,6 +931,9 @@ while [ $# -ge 1 ]; do
 	-l|--loop)
 		shift
 		opt_loop="$1"
+		;;
+	-c|--coverage)
+		opt_coverage=1
 		;;
 	*)
 		errormsg "Unknown option: $1"
