@@ -351,7 +351,8 @@ class LibraryDialog(QDialog):
 			if blockCls.broken:
 				continue
 			number, name, desc = blockCls.name
-			if number < 0 and not self.project.getExtInsnsEn():
+			conf = self.project.getCpuConf()
+			if number < 0 and not conf.extInsnsEn:
 				continue
 
 			absName = "%s %d" % (prefix, number)
