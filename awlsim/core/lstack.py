@@ -59,7 +59,7 @@ class LStackAllocator(object): #+cdef
 #@cy	def __init__(self, uint32_t maxSize):
 		# maxSize -> max size of the L-stack, in bytes.
 
-		self.topFrame = None #@cy-NoneToNULL
+		self.topFrame = None #+NoneToNULL
 		self.resize(maxSize)
 
 	# Reset all allocations on the L-stack.
@@ -81,7 +81,7 @@ class LStackAllocator(object): #+cdef
 			oldFrame = frame
 			self.topFrame = frame = frame.prevFrame
 
-			oldFrame.prevFrame = None		#@cy-NoneToNULL
+			oldFrame.prevFrame = None		#+NoneToNULL
 			self.__frameFreeSet.add(oldFrame)	#@nocy
 #@cy			PyMem_Free(oldFrame)
 
@@ -124,7 +124,7 @@ class LStackAllocator(object): #+cdef
 		else:
 			self.topFrameOffset = make_AwlOffset(0, 0)
 
-		frame.prevFrame = None		#@cy-NoneToNULL
+		frame.prevFrame = None		#+NoneToNULL
 		self.__frameFreeSet.add(frame)	#@nocy
 #@cy		PyMem_Free(frame)
 
