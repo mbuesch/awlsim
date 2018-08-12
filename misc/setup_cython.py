@@ -96,7 +96,7 @@ def pyCythonPatch(fromFile, toFile):
 		for line in infd.read().decode("UTF-8").splitlines(True):
 			stripLine = line.strip()
 
-			if stripLine.endswith("#<no-cython-patch"):
+			if stripLine.endswith("#@no-cython-patch"):
 				outfd.write(line.encode("UTF-8"))
 				continue
 
@@ -106,8 +106,8 @@ def pyCythonPatch(fromFile, toFile):
 				line = re.sub(r'\bimport\b', "cimport", line)
 
 			# Convert None to NULL
-			if "#@cy-NoneToNULL" in stripLine:
-				line = line.replace("#@cy-NoneToNULL", "#")
+			if "#+NoneToNULL" in stripLine:
+				line = line.replace("#+NoneToNULL", "#")
 				line = re.sub(r'\bNone\b', "NULL", line)
 
 			# Uncomment all lines containing #@cy
