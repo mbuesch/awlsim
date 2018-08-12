@@ -82,44 +82,40 @@ assert(swapEndianDWord(swapEndianDWord(0x12345678)) == 0x12345678)
 # Convert a S7 byte to a signed Python int.
 # This applies the two's complement, if the byte is negative
 # so that the resulting Python int will have the correct sign.
+# The Cython variant of this function is defined in .pxd.in
 def byteToSignedPyInt(byte):						#@nocy
 	if byte & 0x80:							#@nocy
 		return -((~byte + 1) & 0xFF)				#@nocy
 	return byte & 0xFF						#@nocy
-#cdef int32_t byteToSignedPyInt(uint8_t byte):				#@cy
-#	return <int32_t>(<int8_t>byte)					#@cy
 
 
 # Convert a S7 word to a signed Python int.
 # This applies the two's complement, if the word is negative
 # so that the resulting Python int will have the correct sign.
+# The Cython variant of this function is defined in .pxd.in
 def wordToSignedPyInt(word):						#@nocy
 	if word & 0x8000:						#@nocy
 		return -((~word + 1) & 0xFFFF)				#@nocy
 	return word & 0xFFFF						#@nocy
-#cdef int32_t wordToSignedPyInt(uint16_t word):				#@cy
-#	return <int32_t>(<int16_t>word)					#@cy
 
 
 # Convert a S7 dword to a signed Python int.
 # This applies the two's complement, if the dword is negative
 # so that the resulting Python int will have the correct sign.
+# The Cython variant of this function is defined in .pxd.in
 def dwordToSignedPyInt(dword):						#@nocy
 	if dword & 0x80000000:						#@nocy
 		return -((~dword + 1) & 0xFFFFFFFF)			#@nocy
 	return dword & 0xFFFFFFFF					#@nocy
-#cdef int32_t dwordToSignedPyInt(uint32_t dword):			#@cy
-#	return <int32_t>dword						#@cy
 
 # Convert a quad-word (64 bit) to a signed Python int.
 # This applies the two's complement, if the qword is negative
 # so that the resulting Python int will have the correct sign.
+# The Cython variant of this function is defined in .pxd.in
 def qwordToSignedPyInt(qword):						#@nocy
 	if qword & 0x8000000000000000:					#@nocy
 		return -((~qword + 1) & 0xFFFFFFFFFFFFFFFF)		#@nocy
 	return qword & 0xFFFFFFFFFFFFFFFF				#@nocy
-#cdef int64_t qwordToSignedPyInt(uint64_t qword):			#@cy
-#	return <int64_t>qword						#@cy
 
 
 # Convert a Python float to an S7 dword.
@@ -186,26 +182,23 @@ floatConst = FloatConst() #+cdef-FloatConst
 
 
 # Check if dword is positive or negative NaN
+# The Cython variant of this function is defined in .pxd.in
 def isNaN(dword):							#@nocy
-#cdef _Bool isNaN(uint32_t dword):					#@cy
-	return (dword & 0x7FFFFFFF) > 0x7F800000
+	return (dword & 0x7FFFFFFF) > 0x7F800000			#@nocy
 
 
 # Check if a Python float is in the denormalized range.
+# The Cython variant of this function is defined in .pxd.in
 def isDenormalPyFloat(pyfl,						#@nocy
 		      __min=floatConst.minNormPosFloat32,		#@nocy
 		      __max=floatConst.maxNormNegFloat32):		#@nocy
 	return ((pyfl > 0.0 and pyfl < __min) or			#@nocy
 	        (pyfl < 0.0 and pyfl > __max))				#@nocy
-#cdef _Bool isDenormalPyFloat(double pyfl):				#@cy
-#	return ((pyfl > 0.0 and pyfl < floatConst.minNormPosFloat32) or	#@cy
-#	        (pyfl < 0.0 and pyfl > floatConst.maxNormNegFloat32))	#@cy
 
 
 # Check if two Python floats are equal.
 def pyFloatEqual(pyfl0, pyfl1):						#@nocy
-#cdef _Bool pyFloatEqual(double pyfl0, double pyfl1):			#@cy
-	return abs(pyfl0 - pyfl1) < 0.000001
+	return abs(pyfl0 - pyfl1) < 0.000001				#@nocy
 
 
 # Check if two Python floats or S7 dword are equal.
@@ -229,14 +222,12 @@ assert(pyFloatToDWord(floatConst.nNaNFloat) == floatConst.nNaNDWord)
 
 
 # Round up integer 'n' to a multiple of integer 's'
-def roundUp(n, s):							#@nocy
-#cdef uint32_t roundUp(uint32_t n, uint32_t s):				#@cy
-	return ((n + s - 1 ) // s) * s					#@nocy
-#	return ((n + s - 1u) // s) * s					#@cy
+# The Cython variant of this function is defined in .pxd.in
+def roundUp(n, s):				#@nocy
+	return ((n + s - 1) // s) * s		#@nocy
 
 
 # Divide integer 'n' by 'd' and round up to the next integer
-def intDivRoundUp(n, d):						#@nocy
-#cdef uint32_t intDivRoundUp(uint32_t n, uint32_t d):			#@cy
-	return (n + d - 1 ) // d					#@nocy
-#	return (n + d - 1u) // d					#@cy
+# The Cython variant of this function is defined in .pxd.in
+def intDivRoundUp(n, d):			#@nocy
+	return (n + d - 1) // d			#@nocy

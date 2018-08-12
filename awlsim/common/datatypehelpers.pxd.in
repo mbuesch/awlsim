@@ -1,12 +1,43 @@
+# -*- coding: utf-8 -*-
+#
+# AWL data types helper functions
+#
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
 from awlsim.common.cython_support cimport *
+
 
 cdef uint16_t swapEndianWord(uint16_t word)
 cdef uint32_t swapEndianDWord(uint32_t dword)
 
-cdef int32_t byteToSignedPyInt(uint8_t byte)
-cdef int32_t wordToSignedPyInt(uint16_t word)
-cdef int32_t dwordToSignedPyInt(uint32_t dword)
-cdef int64_t qwordToSignedPyInt(uint64_t dword)
+
+cdef inline int32_t byteToSignedPyInt(uint8_t byte):
+	return <int32_t>(<int8_t>byte)
+
+cdef inline int32_t wordToSignedPyInt(uint16_t word):
+	return <int32_t>(<int16_t>word)
+
+cdef inline int32_t dwordToSignedPyInt(uint32_t dword):
+	return <int32_t>dword
+
+cdef inline int64_t qwordToSignedPyInt(uint64_t qword):
+	return <int64_t>qword
+
 
 cdef uint32_t pyFloatToDWord(double pyfl)
 cdef double dwordToPyFloat(uint32_t dword)
@@ -37,9 +68,22 @@ cdef class FloatConst(object):
 
 cdef public FloatConst floatConst
 
-cdef _Bool isNaN(uint32_t dword)
-cdef _Bool isDenormalPyFloat(double pyfl)
-cdef _Bool pyFloatEqual(double pyfl0, double pyfl1)
+
+cdef inline _Bool isNaN(uint32_t dword):
+	return (dword & 0x7FFFFFFF) > 0x7F800000
+
+cdef inline _Bool isDenormalPyFloat(double pyfl):
+	return ((pyfl > 0.0 and pyfl < floatConst.minNormPosFloat32) or
+	        (pyfl < 0.0 and pyfl > floatConst.maxNormNegFloat32))
+
+cdef inline _Bool pyFloatEqual(double pyfl0, double pyfl1):
+	return abs(pyfl0 - pyfl1) < 0.000001
+
 cdef _Bool floatEqual(object fl0, object fl1)
-cdef uint32_t roundUp(uint32_t n, uint32_t s)
-cdef uint32_t intDivRoundUp(uint32_t n, uint32_t d)
+
+
+cdef inline uint32_t roundUp(uint32_t n, uint32_t s):
+	return ((n + s - 1u) // s) * s
+
+cdef inline uint32_t intDivRoundUp(uint32_t n, uint32_t d):
+	return (n + d - 1u) // d
