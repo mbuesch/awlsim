@@ -21,7 +21,7 @@ find . \( \
 	\( -name '*$py.class' \) \
        \) -delete
 
-rm -rf build dist release-archives .pybuild
+rm -rf build dist .pybuild
 rm -f MANIFEST
 
 rm -f *.html
