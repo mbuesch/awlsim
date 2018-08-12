@@ -2305,7 +2305,7 @@ class S7CPU(object): #+cdef
 				    " -> ..." if len(elems) > elemsMax else ""))
 			frame = self.activeLStack.topFrame
 			ret.extend(self.__dumpLStackFrame("      L:  ", frame))
-			frame = frame.prevFrame if frame else None #@cy-NoneToNULL
+			frame = frame.prevFrame if frame else None #+NoneToNULL
 			ret.extend(self.__dumpLStackFrame("     VL:  ", frame))
 		else:
 			ret.append("  Calls:  None")
