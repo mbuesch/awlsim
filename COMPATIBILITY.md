@@ -1,5 +1,4 @@
-Awlsim - STEP 7 compatibility
-=============================
+# Awlsim - STEP 7 compatibility
 
 The execution of AWL/STL programs by Awlsim is supposed to be fully compatible with the execution of compiled AWL/STL programs on the real Siemens S7 CPU. However, there currently are some known differences. These are listed below. Any undocumented difference between Awlsim and STEP 7 is considered to be a bug that should be reported.
 
@@ -14,8 +13,7 @@ The execution of AWL/STL programs by Awlsim is supposed to be fully compatible w
 * Undefined behavior is not emulated. For example: If reading uninitialized L-stack space in STEP 7 always yields a certain reproducible result, that does not mean that this AWL/STL code does the same thing in Awlsim. Reading uninitialized `TEMP`-memory is undefined.
 
 
-Awlsim extensions
-=================
+# Awlsim extensions
 
 Extensions are features that Awlsim supports, but STEP 7 does not support.
 

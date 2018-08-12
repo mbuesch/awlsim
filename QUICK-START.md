@@ -1,5 +1,4 @@
-Awlsim - Quick start tutorial
-=============================
+# Awlsim - Quick start tutorial
 
 
 Start the GUI by invoking `awlsim-gui` on Linux, `awlsim-win.cmd` on Windows or `awlsim.cmd` on Windows (Awlsim standalone package). The following screen will appear:

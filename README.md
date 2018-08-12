@@ -1,13 +1,11 @@
-Awlsim - S7 compatible Programmable Logic Controller (PLC/SPS)
-==============================================================
+# Awlsim - S7 compatible Programmable Logic Controller (PLC/SPS)
 
 Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports the automation languages AWL/STL and FUP/FBD. Awlsim itself is written in Python.
 
 The latest version of Awlsim can be downloaded at the [official Awlsim site](https://awlsim.de).
 
 
-Awlsim - Programmable Logic Controller (PLC/SPS)
-------------------------------------------------
+## Awlsim - Programmable Logic Controller (PLC/SPS)
 
 Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports the automation languages AWL/STL and FUP/FBD. Awlsim itself is written in Python. The speed of execution ranges from several ten thousand AWL/STL instructions per second on slow embedded machines to a couple of million instructions per second on faster computers.
 
@@ -16,20 +14,17 @@ AWL/STL programs on PLCs are used for automation of industrial processes. Howeve
 Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the Awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason Awlsim ships an extensive selftest suite. Missing features and differences between Awlsim and Step 7 are documented in the [COMPATIBILITY documentation](COMPATIBILITY.html) and [TODO documentation](TODO.html) files.
 
 
-Quick start tutorial
---------------------
+## Quick start tutorial
 
 See the [quick start tutorial](QUICK-START.html) for a simple example on how to use Awlsim in simulator mode. In simulator mode Awlsim can be run on any desktop PC. No special hardware is required.
 
 
-Example project
----------------
+## Example project
 
 If you don't know where to start, you can find an example project in the `examples` directory as `EXAMPLE.awlpro`. You can easily run this example in simulation mode without the need for special hardware.
 
 
-Git repository
---------------
+## Git repository
 
 The latest development version of Awlsim can be fetched with git:
 
@@ -45,8 +40,7 @@ After cloning the main repository the git submodules must also be fetched. The f
 </pre>
 
 
-Dependencies
-------------
+## Dependencies
 
 Awlsim depends on [Python](https://python.org) 3.4 or later or alternatively Python 2.7.
 
@@ -68,8 +62,7 @@ pip3 install --upgrade Cython
 </pre>
 
 
-Directory structure
--------------------
+## Directory structure
 
 The Awlsim Git repository and source archive `awlsim-x.yz.tar.bz2` contain lots of files and directories. Here is an overview of the main files and directories and their purpose:
 
@@ -95,6 +88,7 @@ These files and directories contain useful information about Awlsim.
   examples/                 : Various example projects and feature demonstrations.
   COMPATIBILITY.md|html     : S7 compatibility documentation.
   COPYING.txt               : Main license.
+  DEVELOPMENT.md|html       : How to enhance and develop Awlsim.
   QUICK-START.md|html       : Quick start tutorial.
   README.md|html            : Main README document.
   TODO.md|html              : TODO list.
@@ -150,14 +144,12 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 </pre>
 
 
-FUP - Funktionsplan - Function block diagram
---------------------------------------------
+## FUP - Funktionsplan - Function block diagram
 
 Awlsim supports programming in an S7-FUP like language. See [the FUP documentation](doc/fup/FUP.html) for more information about Awlsim's implementation of FUP.
 
 
-Building Awlsim
----------------
+## Building Awlsim
 
 Awlsim can be run from the source directory in interpreted Python mode without building it. Just `cd` into the Awlsim source directory and execute the desired main executable (e.g. `./awlsim-gui` or `./awlsim-server` etc...).
 
@@ -168,8 +160,7 @@ For convenience there also is a helper script `./maintenance/build.sh`, which wi
 There also is `./maintenance/build-noopt.sh`. That builds Cython modules without optimization. The build is much faster, but the resulting Cython libraries will be much slower. This is useful for development. Do not use this for production.
 
 
-Building Debian / Raspbian / PiLC .deb packages
------------------------------------------------
+## Building Debian / Raspbian / PiLC .deb packages
 
 Installing or upgrading Awlsim on a Debian based system is easy.
 The `debuild` can be used to build the .deb packages. Just run the following commands to build all Awlsim .deb packages:
@@ -192,15 +183,12 @@ this can be fixed by re-installing the libc development package:
 `sudo apt install --reinstall libc-dev`
 
 
-Unit tests
-----------
+## Development
 
-The unit test suite can be run with the invocation of the command `./tests/run.sh`. This will run all unit tests and show the results.
-Please see `./tests/run.sh --help` for more options.
+Information about Awlsim development can be found in [the Awlsim development documentation](DEVELOPMENT.html).
 
 
-License / Copyright
--------------------
+## License / Copyright
 
 Copyright (C) Michael Büsch / et al.
 

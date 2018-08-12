@@ -16,6 +16,8 @@ graft tests
 include COMPATIBILITY.html
 include COMPATIBILITY.md
 include COPYING.txt
+include DEVELOPMENT.html
+include DEVELOPMENT.md
 include QUICK-START.html
 include QUICK-START.md
 include README.html
