@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,13 +42,13 @@ class AwlInsn_BTD(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef uint32_t accu1
 #@cy		cdef uint32_t bcd
-#@cy		cdef uint8_t a
-#@cy		cdef uint8_t b
-#@cy		cdef uint8_t c
-#@cy		cdef uint8_t d
-#@cy		cdef uint8_t e
-#@cy		cdef uint8_t f
-#@cy		cdef uint8_t g
+#@cy		cdef uint32_t a
+#@cy		cdef uint32_t b
+#@cy		cdef uint32_t c
+#@cy		cdef uint32_t d
+#@cy		cdef uint32_t e
+#@cy		cdef uint32_t f
+#@cy		cdef uint32_t g
 #@cy		cdef uint32_t binval
 
 		accu1 = self.cpu.accu1.get()
@@ -60,9 +60,14 @@ class AwlInsn_BTD(AwlInsn): #+cdef
 		if bcd > 0x9999999 or a > 9 or b > 9 or c > 9 or\
 		   d > 9 or e > 9 or f > 9 or g > 9:
 			raise AwlSimError("Invalid BCD value")
-		binval = (a + (b * 10) + (c * 100) + (d * 1000) +\
-			  (e * 10000) + (f * 100000) +\
-			  (g * 1000000)) & 0xFFFFFFFF
-		if accu1 & 0x80000000:
-			binval = (-binval) & 0xFFFFFFFF
+		binval = (a + (b * 10) + (c * 100) + (d * 1000) +	#@nocy
+			  (e * 10000) + (f * 100000) +			#@nocy
+			  (g * 1000000)) & 0xFFFFFFFF			#@nocy
+#@cy		binval = (a + (b * 10u) + (c * 100u) + (d * 1000u) +
+#@cy			  (e * 10000u) + (f * 100000u) +
+#@cy			  (g * 1000000u)) & 0xFFFFFFFFu
+		if accu1 & 0x80000000:					#@nocy
+			binval = (-binval) & 0xFFFFFFFF			#@nocy
+#@cy		if accu1 & 0x80000000u:
+#@cy			binval = (-binval) & 0xFFFFFFFFu
 		self.cpu.accu1.set(binval)
