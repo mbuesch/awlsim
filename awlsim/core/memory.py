@@ -96,7 +96,7 @@ class GenericInteger(object): #+cdef
 #@cy		self.value = <uint32_t>value & self.mask
 
 	def setPyFloat(self, pyfl): #@nocy
-#@cy	cdef setPyFloat(self, pyfl):
+#@cy	cdef setPyFloat(self, double pyfl):
 		self.value = pyFloatToDWord(pyfl)
 
 	def get(self): #@nocy
@@ -131,7 +131,7 @@ class GenericInteger(object): #+cdef
 		return dwordToSignedPyInt(self.value)
 
 	def getPyFloat(self): #@nocy
-#@cy	cdef getPyFloat(self):
+#@cy	cdef double getPyFloat(self):
 		return dwordToPyFloat(self.value)
 
 	def setBit(self, bitNumber): #@nocy
