@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,15 +40,17 @@ class AwlInsn_TRUNC(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef double accu1Float
+#@cy		cdef int64_t accu1Int
 
 		s = self.cpu.statusWord
-		accu1 = self.cpu.accu1.getPyFloat()
-		try:
-			accu1 = int(accu1)
-			if accu1 > 2147483647 or accu1 < -2147483648: #@nocy
-#@cy			if accu1 > 2147483647LL or accu1 < -2147483648LL:
-				raise ValueError
-		except (ValueError, OverflowError) as e:
+		accu1Float = self.cpu.accu1.getPyFloat()
+		if -2147483648.0 <= accu1Float <= 2147483647.0: #+likely
+			accu1Int = int(accu1Float) #@nocy
+#@cy			accu1Int = <int64_t>accu1Float
+			if -2147483648 <= accu1Int <= 2147483647: #+likely #+suffix-LL
+				self.cpu.accu1.setDWord(accu1Int)
+			else:
+				s.OV, s.OS = 1, 1
+		else:
 			s.OV, s.OS = 1, 1
-			return
-		self.cpu.accu1.setDWord(accu1)
