@@ -55,6 +55,5 @@ class AwlInsn_MU_D(AwlInsn): #+cdef
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
-		if prod > 0x7FFFFFFF or prod < -2147483648: #@nocy
-#@cy		if prod > 0x7FFFFFFFLL or prod < -2147483648LL:
+		if prod > 0x7FFFFFFF or prod < -2147483648: #+suffix-LL
 			s.OV, s.OS = 1, 1
