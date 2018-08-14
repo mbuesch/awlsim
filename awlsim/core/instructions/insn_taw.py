@@ -44,5 +44,5 @@ class AwlInsn_TAW(AwlInsn): #+cdef
 
 		accu1 = self.cpu.accu1.get()
 		accu1 = ((accu1 & 0xFFFF0000) |			#+suffix-u
-			 (swapEndianWord(accu1) & 0xFFFF))	#+suffix-u
+			 (swapEndianWord(accu1 & 0xFFFF)))	#+suffix-u
 		self.cpu.accu1.set(accu1)
