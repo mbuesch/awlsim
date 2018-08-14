@@ -10,3 +10,8 @@ ctypedef bint		_Bool
 # An exception is encoded as special value ExBool_val.
 ctypedef signed int	ExBool_t
 cdef enum:		ExBool_val = -1
+
+# Make the Cython likely()/unlikely() condition macros accessible.
+cdef extern from *:
+	_Bool likely(_Bool)
+	_Bool unlikely(_Bool)

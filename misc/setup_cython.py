@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.11
+#   v1.13
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -180,6 +180,12 @@ def pyCythonPatch(fromFile, toFile):
 				# def -> cpdef
 
 				line = re.sub(r'\bdef\b', "cpdef", line)
+
+			# Add likely()/unlikely() to if-conditions.
+			for likely in ("likely", "unlikely"):
+				if "#+" + likely in stripLine:
+					line = re.sub(r'\bif\s(.*):', r'if ' + likely + r'(\1):', line)
+					break
 
 			# Comment all lines containing #@nocy
 			# or #@cyX for the not matching version.
