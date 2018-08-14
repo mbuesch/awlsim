@@ -187,6 +187,11 @@ def pyCythonPatch(fromFile, toFile):
 					line = re.sub(r'\bif\s(.*):', r'if ' + likely + r'(\1):', line)
 					break
 
+			# Add an "u" suffix to decimal and hexadecimal numbers.
+			if "#+suffix-u" in line:
+				line = re.sub(r'\b([0-9]+)\b', r'\1u', line)
+				line = re.sub(r'\b(0x[0-9a-fA-F]+)\b', r'\1u', line)
+
 			# Comment all lines containing #@nocy
 			# or #@cyX for the not matching version.
 			if "#@nocy" in stripLine:

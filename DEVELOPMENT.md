@@ -28,6 +28,7 @@ In order to support both compiling the Awlsim core with Cython and running the s
 * `#+cdef-foobar-bizz` : Same as `#+cdef`, but also add the additional words `foobar bizz` after `cdef`. Arbitrary words may be specified and the number of words is not limited. The dash `-` will be transformed into a space character.
 * `#+likely` : Mark an `if` condition as being likely to evaluate to True. This annotation can only be used in lines with an `if` statement. It helps the C compiler to generate better machine code.
 * `#+unlikely` : Mark an `if` condition as being unlikely to evaluate to True. This annotation can only be used in lines with an `if` statement. It helps the C compiler to generate better machine code.
+* `#+suffix-u` : Add an `u` suffix to all decimal and hexadecimal immediates in the line.
 
 To disable code coverage tracing an additional special comment is provided:
 
