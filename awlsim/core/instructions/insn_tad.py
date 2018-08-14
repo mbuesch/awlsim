@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
 from awlsim.core.instructions.main import * #+cimport
@@ -39,11 +40,4 @@ class AwlInsn_TAD(AwlInsn): #+cdef
 		self.assertOpCount(0)
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
-
-		accu1 = self.cpu.accu1.get()
-		accu1 = ((accu1 & 0xFF000000) >> 24) |\
-			((accu1 & 0x00FF0000) >> 8) |\
-			((accu1 & 0x0000FF00) << 8) |\
-			((accu1 & 0x000000FF) << 24)
-		self.cpu.accu1.set(accu1)
+		self.cpu.accu1.set(swapEndianDWord(self.cpu.accu1.get()))
