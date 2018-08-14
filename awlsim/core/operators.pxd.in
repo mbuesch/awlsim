@@ -15,7 +15,7 @@ cdef class AwlOperator(object):
 	cdef public Pointer pointer
 
 	cdef public _Bool isExtended
-	cdef public object labelIndex
+	cdef public uint32_t labelIndex
 	cdef public uint32_t interfaceIndex
 	cdef public _Bool compound
 	cdef public object dataType

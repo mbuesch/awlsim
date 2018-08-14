@@ -61,7 +61,7 @@ class AwlOperator(object): #+cdef
 	isExtended = False #@nocy
 
 	# Possible label index.
-	labelIndex = None #@nocy
+	labelIndex = 0xFFFFFFFF #@nocy
 
 	# Interface index number.
 	# May be set by the symbol resolver.
@@ -81,7 +81,7 @@ class AwlOperator(object): #+cdef
 #@cy		self.immediateBytes = None
 #@cy		self.pointer = None
 #@cy		self.isExtended = False
-#@cy		self.labelIndex = None
+#@cy		self.labelIndex = 0xFFFFFFFF
 #@cy		self.interfaceIndex = 0xFFFF
 #@cy		self.compound = False
 #@cy		self.dataType = None
