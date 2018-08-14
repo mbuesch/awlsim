@@ -178,6 +178,9 @@ class FloatConst(object): #+cdef
 		self.nNaNDWord = 0xFFFFFFFF
 		self.nNaNFloat = dwordToPyFloat(self.nNaNDWord)
 
+		# Compare threshold
+		self.epsilonFloat = 0.0000001
+
 floatConst = FloatConst() #+cdef-FloatConst
 
 
@@ -198,7 +201,7 @@ def isDenormalPyFloat(pyfl,						#@nocy
 
 # Check if two Python floats are equal.
 def pyFloatEqual(pyfl0, pyfl1):						#@nocy
-	return abs(pyfl0 - pyfl1) < 0.000001				#@nocy
+	return abs(pyfl0 - pyfl1) < floatConst.epsilonFloat		#@nocy
 
 
 # Check if two Python floats or S7 dword are equal.

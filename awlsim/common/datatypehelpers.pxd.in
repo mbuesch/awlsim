@@ -66,6 +66,8 @@ cdef class FloatConst(object):
 	cdef public uint32_t nNaNDWord
 	cdef public double nNaNFloat
 
+	cdef public double epsilonFloat
+
 cdef public FloatConst floatConst
 
 
@@ -77,7 +79,7 @@ cdef inline _Bool isDenormalPyFloat(double pyfl):
 	        (pyfl < 0.0 and pyfl > floatConst.maxNormNegFloat32))
 
 cdef inline _Bool pyFloatEqual(double pyfl0, double pyfl1):
-	return abs(pyfl0 - pyfl1) < 0.000001
+	return abs(pyfl0 - pyfl1) < floatConst.epsilonFloat
 
 cdef _Bool floatEqual(object fl0, object fl1)
 
