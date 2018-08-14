@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,8 +48,8 @@ class AwlInsn_PL_D(AwlInsn): #+cdef
 		_sum += self.cpu.accu1.getSignedDWord()
 		self.cpu.accu1.setDWord(_sum)
 		if self.cpu.is4accu:
-			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
-			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
+			self.cpu.accu2.copyFrom(self.cpu.accu3)
+			self.cpu.accu3.copyFrom(self.cpu.accu4)
 		accu1 = self.cpu.accu1.getSignedDWord()
 		if accu1 == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
