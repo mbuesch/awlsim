@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
-import math
+from math import cos #@nocy
+#from libc.math cimport cos #@cy
 
 
 class AwlInsn_COS(AwlInsn): #+cdef
@@ -45,9 +46,12 @@ class AwlInsn_COS(AwlInsn): #+cdef
 #@cy		cdef double accu1
 #@cy		cdef double extremum
 
-		accu1 = math.cos(self.cpu.accu1.getPyFloat())
-		for extremum in (-1.0, 0.0, 1.0):
-			if pyFloatEqual(accu1, extremum):
-				accu1 = extremum
+		accu1 = cos(self.cpu.accu1.getPyFloat())
+		if pyFloatEqual(accu1, -1.0):
+			accu1 = -1.0
+		elif pyFloatEqual(accu1, 1.0):
+			accu1 = 1.0
+		elif pyFloatEqual(accu1, 0.0):
+			accu1 = 0.0
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.statusWord.setForFloatingPoint(accu1)
