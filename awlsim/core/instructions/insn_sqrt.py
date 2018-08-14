@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
-import math
+from math import sqrt
+#from libc.math cimport sqrt #@cy
 
 
 class AwlInsn_SQRT(AwlInsn): #+cdef
@@ -45,11 +46,10 @@ class AwlInsn_SQRT(AwlInsn): #+cdef
 #@cy		cdef double accu1
 
 		accu1 = self.cpu.accu1.getPyFloat()
-		try:
-			accu1 = math.sqrt(accu1)
-		except ValueError:
-			self.cpu.accu1.setDWord(floatConst.pNaNDWord)
-			accu1 = floatConst.nNaNFloat
-		else:
+		if accu1 >= 0.0: #+likely
+			accu1 = sqrt(accu1)
 			self.cpu.accu1.setPyFloat(accu1)
+		else:
+			accu1 = floatConst.nNaNFloat
+			self.cpu.accu1.setDWord(floatConst.pNaNDWord)
 		self.cpu.statusWord.setForFloatingPoint(accu1)
