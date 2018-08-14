@@ -26,6 +26,8 @@ In order to support both compiling the Awlsim core with Cython and running the s
 * `#+cdef` : Add a `cdef` to this line. For functions or methods that means to change `def` into `cdef` in the function signature. For classes that means to change `class` to `cdef class`.
 * `#+cpdef` : Same as `#+cdef`, but add `cpdef` instead.
 * `#+cdef-foobar-bizz` : Same as `#+cdef`, but also add the additional words `foobar bizz` after `cdef`. Arbitrary words may be specified and the number of words is not limited. The dash `-` will be transformed into a space character.
+* `#+likely` : Mark an `if` condition as being likely to evaluate to True. This annotation can only be used in lines with an `if` statement. It helps the C compiler to generate better machine code.
+* `#+unlikely` : Mark an `if` condition as being unlikely to evaluate to True. This annotation can only be used in lines with an `if` statement. It helps the C compiler to generate better machine code.
 
 To disable code coverage tracing an additional special comment is provided:
 
