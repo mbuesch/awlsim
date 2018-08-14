@@ -986,6 +986,33 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: RND+(0.0)
+	__STWRST
+	L		0.0
+	RND+
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND+(0.1)
+	__STWRST
+	L		0.1
+	RND+
+	__ASSERT==	__ACCU 1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND+(0.5)
+	__STWRST
+	L		0.5
+	RND+
+	__ASSERT==	__ACCU 1,	1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
 	// Test: RND+(1.0)
 	__STWRST
 	L		1.0
@@ -1009,6 +1036,24 @@
 	L		2.5
 	RND+
 	__ASSERT==	__ACCU 1,	3
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND+(-0.1)
+	__STWRST
+	L		-0.1
+	RND+
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND+(-0.5)
+	__STWRST
+	L		-0.5
+	RND+
+	__ASSERT==	__ACCU 1,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 
@@ -1085,6 +1130,33 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: RND-(0.0)
+	__STWRST
+	L		0.0
+	RND-
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND-(0.1)
+	__STWRST
+	L		0.1
+	RND-
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND-(0.5)
+	__STWRST
+	L		0.5
+	RND-
+	__ASSERT==	__ACCU 1,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
 	// Test: RND-(1.0)
 	__STWRST
 	L		1.0
@@ -1108,6 +1180,24 @@
 	L		2.5
 	RND-
 	__ASSERT==	__ACCU 1,	2
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND-(-0.1)
+	__STWRST
+	L		-0.1
+	RND-
+	__ASSERT==	__ACCU 1,	L#-1
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: RND-(-0.5)
+	__STWRST
+	L		-0.5
+	RND-
+	__ASSERT==	__ACCU 1,	L#-1
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 
