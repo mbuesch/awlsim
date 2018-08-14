@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
+#from libc.stdlib cimport abs #@cy
+
 
 class AwlInsn_ITB(AwlInsn): #+cdef
 
@@ -43,19 +45,20 @@ class AwlInsn_ITB(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef uint32_t accu1
 #@cy		cdef int32_t binval
+#@cy		cdef uint32_t binvalabs
 #@cy		cdef uint16_t bcd
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.get()
 		binval, bcd = wordToSignedPyInt(accu1), 0
 		if binval < 0:
-			bcd |= 0xF000
-		binval = abs(binval)
-		if binval > 999:
+			bcd = 0xF000
+		binvalabs = abs(binval)
+		if binvalabs > 999:
 			s.OV, s.OS = 1, 1
 			return
-		bcd |= binval % 10
-		bcd |= ((binval // 10) % 10) << 4
-		bcd |= ((binval // 100) % 10) << 8
+		bcd |= binvalabs % 10			#+suffix-u
+		bcd |= ((binvalabs // 10) % 10) << 4	#+suffix-u
+		bcd |= ((binvalabs // 100) % 10) << 8	#+suffix-u
 		self.cpu.accu1.setWord(bcd)
 		s.OV = 0
