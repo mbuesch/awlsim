@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
+#from libc.stdlib cimport abs #@cy
+
 
 class AwlInsn_DI_I(AwlInsn): #+cdef
 
@@ -41,7 +43,9 @@ class AwlInsn_DI_I(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef int32_t accu1
+#@cy		cdef uint32_t accu1abs
 #@cy		cdef int32_t accu2
+#@cy		cdef uint32_t accu2abs
 #@cy		cdef int32_t quo
 #@cy		cdef int32_t mod
 
@@ -51,16 +55,18 @@ class AwlInsn_DI_I(AwlInsn): #+cdef
 		if self.cpu.is4accu:
 			self.cpu.accu2.setDWord(self.cpu.accu3.getDWord())
 			self.cpu.accu3.setDWord(self.cpu.accu4.getDWord())
-		try:
-			quo = abs(accu2) // abs(accu1)
-			if int(accu1 < 0) ^ int(accu2 < 0):
-				quo = -quo
-			mod = abs(accu2) % abs(accu1)
-			if accu2 < 0:
-				mod = -mod
-		except ZeroDivisionError:
+		accu1abs = abs(accu1)
+		accu2abs = abs(accu2)
+		if accu1abs == 0: #+unlikely
 			s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 			return
+		quo = accu2abs // accu1abs
+		if int(accu1 < 0) ^ int(accu2 < 0): #@nocy
+#@cy		if <uint32_t>(accu1 < 0) ^ <uint32_t>(accu2 < 0):
+			quo = -quo
+		mod = accu2abs % accu1abs
+		if accu2 < 0:
+			mod = -mod
 		self.cpu.accu1.setDWord(((mod & 0xFFFF) << 16) |\
 					(quo & 0xFFFF))
 		if quo == 0:
@@ -69,5 +75,5 @@ class AwlInsn_DI_I(AwlInsn): #+cdef
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
-		if quo > 0x7FFF:
+		if quo > 0x7FFF: #+unlikely
 			s.OV, s.OS = 1, 1
