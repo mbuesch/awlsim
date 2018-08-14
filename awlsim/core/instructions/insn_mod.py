@@ -29,6 +29,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
+#from libc.stdlib cimport abs #@cy
+
 
 class AwlInsn_MOD(AwlInsn): #+cdef
 
@@ -40,6 +42,11 @@ class AwlInsn_MOD(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t accu1
+#@cy		cdef int32_t accu2
+#@cy		cdef uint32_t accu1abs
+#@cy		cdef uint32_t accu2abs
+#@cy		cdef int32_t rem
 
 		s = self.cpu.statusWord
 		accu2, accu1 = self.cpu.accu2.getSignedDWord(),\
@@ -47,13 +54,14 @@ class AwlInsn_MOD(AwlInsn): #+cdef
 		if self.cpu.is4accu:
 			self.cpu.accu2.copyFrom(self.cpu.accu3)
 			self.cpu.accu3.copyFrom(self.cpu.accu4)
-		try:
-			rem = abs(accu2) % abs(accu1)
-			if accu2 < 0:
-				rem = -rem
-		except ZeroDivisionError:
+		accu1abs = abs(accu1)
+		accu2abs = abs(accu2)
+		if accu1abs == 0:
 			s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 			return
+		rem = accu2abs % accu1abs
+		if accu2 < 0:
+			rem = -rem
 		self.cpu.accu1.setDWord(rem)
 		if rem == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
