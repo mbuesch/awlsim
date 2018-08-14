@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,8 +42,8 @@ class AwlInsn_UW(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef uint32_t accu1
-#@cy		cdef uint32_t accu2
+#@cy		cdef uint16_t accu1
+#@cy		cdef uint16_t accu2
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getWord()
