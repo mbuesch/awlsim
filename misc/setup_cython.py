@@ -188,9 +188,14 @@ def pyCythonPatch(fromFile, toFile):
 					break
 
 			# Add an "u" suffix to decimal and hexadecimal numbers.
-			if "#+suffix-u" in line:
+			if "#+suffix-u" in line or "#+suffix-U" in line:
 				line = re.sub(r'\b([0-9]+)\b', r'\1u', line)
 				line = re.sub(r'\b(0x[0-9a-fA-F]+)\b', r'\1u', line)
+
+			# Add an "LL" suffix to decimal and hexadecimal numbers.
+			if "#+suffix-ll" in line or "#+suffix-LL" in line:
+				line = re.sub(r'\b(\-?[0-9]+)\b', r'\1LL', line)
+				line = re.sub(r'\b(0x[0-9a-fA-F]+)\b', r'\1LL', line)
 
 			# Comment all lines containing #@nocy
 			# or #@cyX for the not matching version.
