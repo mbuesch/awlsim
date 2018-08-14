@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,18 +43,22 @@ class AwlInsn_RNDP(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef double accu1
+#@cy		cdef int64_t rounded
+#@cy		cdef double roundedFloat
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getPyFloat()
-		try:
-			rounded = int(accu1)
-			if rounded >= 0 and\
-			   not pyFloatEqual(float(rounded), accu1):
-				rounded += 1
-			if accu1 > 2147483647 or accu1 < -2147483648: #@nocy
-#@cy			if accu1 > 2147483647LL or accu1 < -2147483648LL:
-				raise ValueError
-		except (ValueError, OverflowError) as e:
+		if -2147483648.0 <= accu1 <= 2147483647.0: #+likely
+			rounded = int(accu1) #@nocy
+#@cy			rounded = <int64_t>(accu1)
+			if accu1 >= 0.0:
+				roundedFloat = float(rounded) #@nocy
+#@cy				roundedFloat = <double>(rounded)
+				if pyFloatToDWord(roundedFloat) != pyFloatToDWord(accu1):
+					rounded += 1
+			if -2147483648 <= rounded <= 2147483647: #+likely #+suffix-LL
+				self.cpu.accu1.setDWord(rounded)
+			else:
+				s.OV, s.OS = 1, 1
+		else:
 			s.OV, s.OS = 1, 1
-			return
-		self.cpu.accu1.setDWord(rounded)
