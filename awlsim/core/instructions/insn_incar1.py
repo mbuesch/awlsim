@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,13 +44,14 @@ class AwlInsn_INCAR1(AwlInsn): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef S7CPU cpu
 #@cy		cdef uint32_t ar
+#@cy		cdef uint32_t opval
 
 		cpu = self.cpu
 		ar = cpu.ar1.get()
 		if self.opCount:
-			ar = (ar & 0xFF000000) |\
-			     (((ar & 0x00FFFFFF) + self.op0.pointer.toPointerValue()) & 0x00FFFFFF)
+			opval = self.op0.pointer.toPointerValue()
 		else:
-			ar = (ar & 0xFF000000) |\
-			     (((ar & 0x00FFFFFF) + cpu.accu1.getSignedWord()) & 0x00FFFFFF)
-		cpu.ar1.set(ar)
+			opval = cpu.accu1.getSignedWord() #@nocy
+#@cy			opval = <uint32_t>(<int32_t>cpu.accu1.getSignedWord())
+		cpu.ar1.set((ar & 0xFF000000) | #+suffix-u
+			    (((ar & 0x00FFFFFF) + opval) & 0x00FFFFFF)) #+suffix-u
