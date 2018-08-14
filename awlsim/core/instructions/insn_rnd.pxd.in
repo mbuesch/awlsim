@@ -2,7 +2,5 @@ from awlsim.common.cython_support cimport *
 from awlsim.core.instructions.main cimport *
 
 cdef class AwlInsn_RND(AwlInsn):
-	cdef _Bool __isPy2Compat
-
-	cdef __run_python2(self)
-	cdef __run_python3(self)
+	cdef double __0p5_plus_epsilon
+	cdef double __0p5_minus_epsilon
