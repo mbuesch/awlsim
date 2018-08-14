@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,15 +41,16 @@ class AwlInsn_NEGI(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef int32_t value
-#@cy		cdef int32_t accu1
+#@cy		cdef uint16_t valueTrunc
 
 		s = self.cpu.statusWord
 		value = -(self.cpu.accu1.getSignedWord())
 		self.cpu.accu1.setWord(value)
-		accu1 = self.cpu.accu1.getSignedWord()
-		if accu1 == 0:
+		valueTrunc = value & 0xFFFF #@nocy
+#@cy		valueTrunc = <uint16_t>value
+		if valueTrunc == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
-		elif accu1 < 0:
+		elif valueTrunc & 0x8000: #+suffix-u
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
