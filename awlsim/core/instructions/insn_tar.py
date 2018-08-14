@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,8 +39,8 @@ class AwlInsn_TAR(AwlInsn): #+cdef
 		self.assertOpCount(0)
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
+#@cy		cdef uint32_t oldAr1
 
 		oldAr1 = self.cpu.ar1.get()
-		self.cpu.ar1.set(self.cpu.ar2.get())
+		self.cpu.ar1.copyFrom(self.cpu.ar2)
 		self.cpu.ar2.set(oldAr1)
