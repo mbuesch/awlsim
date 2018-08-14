@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,29 +31,38 @@ from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
 import math
+from math import tan #@nocy
+#from libc.math cimport tan #@cy
 
 
 class AwlInsn_TAN(AwlInsn): #+cdef
 
-	__slots__ = ()
+	__slots__ = (
+		"__piHalf",
+		"__piHalfNeg",
+	)
 
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_TAN, rawInsn, **kwargs)
 		self.assertOpCount(0)
+		self.__piHalf = math.pi / 2
+		self.__piHalfNeg = -math.pi / 2
 
 	def run(self): #+cdef
 #@cy		cdef double accu1
-#@cy		cdef double extremum
 
 		accu1 = self.cpu.accu1.getPyFloat()
-		if pyFloatEqual(accu1, math.pi / 2):
+		if pyFloatEqual(accu1, self.__piHalf):
 			accu1 = floatConst.posInfFloat
-		elif pyFloatEqual(accu1, -math.pi / 2):
+		elif pyFloatEqual(accu1, self.__piHalfNeg):
 			accu1 = floatConst.negInfFloat
 		else:
-			accu1 = math.tan(accu1)
-			for extremum in (-1.0, 0.0, 1.0):
-				if pyFloatEqual(accu1, extremum):
-					accu1 = extremum
+			accu1 = tan(accu1)
+			if pyFloatEqual(accu1, -1.0):
+				accu1 = -1.0
+			elif pyFloatEqual(accu1, 0.0):
+				accu1 = 0.0
+			elif pyFloatEqual(accu1, 1.0):
+				accu1 = 1.0
 		self.cpu.accu1.setPyFloat(accu1)
 		self.cpu.statusWord.setForFloatingPoint(accu1)
