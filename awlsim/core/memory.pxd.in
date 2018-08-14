@@ -12,7 +12,7 @@ cdef class GenericInteger(object):
 	cdef void setByte(self, int64_t value)
 	cdef void setWord(self, int64_t value)
 	cdef void setDWord(self, int64_t value)
-	cdef setPyFloat(self, double pyfl)
+	cdef void setPyFloat(self, double pyfl)
 	cdef uint32_t get(self)
 	cdef uint8_t getByte(self)
 	cdef uint16_t getWord(self)
