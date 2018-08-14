@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
+#from libc.stdlib cimport abs #@cy
+
 
 class AwlInsn_DTB(AwlInsn): #+cdef
 
@@ -42,22 +44,23 @@ class AwlInsn_DTB(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef int32_t binval
+#@cy		cdef uint32_t binvalabs
 #@cy		cdef uint32_t bcd
 
 		s = self.cpu.statusWord
 		binval, bcd = dwordToSignedPyInt(self.cpu.accu1.get()), 0
 		if binval < 0:
-			bcd |= 0xF0000000
-		binval = abs(binval)
-		if binval > 9999999:
+			bcd = 0xF0000000
+		binvalabs = abs(binval)
+		if binvalabs > 9999999:
 			s.OV, s.OS = 1, 1
 			return
-		bcd |= binval % 10
-		bcd |= ((binval // 10) % 10) << 4
-		bcd |= ((binval // 100) % 10) << 8
-		bcd |= ((binval // 1000) % 10) << 12
-		bcd |= ((binval // 10000) % 10) << 16
-		bcd |= ((binval // 100000) % 10) << 20
-		bcd |= ((binval // 1000000) % 10) << 24
+		bcd |= binvalabs % 10				#+suffix-u
+		bcd |= ((binvalabs // 10) % 10) << 4		#+suffix-u
+		bcd |= ((binvalabs // 100) % 10) << 8		#+suffix-u
+		bcd |= ((binvalabs // 1000) % 10) << 12		#+suffix-u
+		bcd |= ((binvalabs // 10000) % 10) << 16	#+suffix-u
+		bcd |= ((binvalabs // 100000) % 10) << 20	#+suffix-u
+		bcd |= ((binvalabs // 1000000) % 10) << 24	#+suffix-u
 		self.cpu.accu1.set(bcd)
 		s.OV = 0
