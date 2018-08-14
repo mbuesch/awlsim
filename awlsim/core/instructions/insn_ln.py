@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
-import math
+from math import log #@nocy
+#from libc.math cimport log #@cy
 
 
 class AwlInsn_LN(AwlInsn): #+cdef
@@ -45,13 +46,10 @@ class AwlInsn_LN(AwlInsn): #+cdef
 #@cy		cdef double accu1
 
 		accu1 = self.cpu.accu1.getPyFloat()
-		try:
-			if accu1 == 0.0:
-				raise ValueError
-			accu1 = math.log(accu1)
-		except ValueError:
-			self.cpu.accu1.setDWord(floatConst.pNaNDWord)
-			accu1 = floatConst.nNaNFloat
-		else:
+		if accu1 > 0.0: #+likely
+			accu1 = log(accu1)
 			self.cpu.accu1.setPyFloat(accu1)
+		else:
+			accu1 = floatConst.nNaNFloat
+			self.cpu.accu1.setDWord(floatConst.pNaNDWord)
 		self.cpu.statusWord.setForFloatingPoint(accu1)
