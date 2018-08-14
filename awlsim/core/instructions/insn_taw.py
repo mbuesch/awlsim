@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 
 from awlsim.core.instructions.main import * #+cimport
@@ -39,10 +40,9 @@ class AwlInsn_TAW(AwlInsn): #+cdef
 		self.assertOpCount(0)
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
+#@cy		cdef uint32_t accu1
 
 		accu1 = self.cpu.accu1.get()
-		accu1 = (accu1 & 0xFFFF0000) |\
-			((accu1 & 0xFF) << 8) |\
-			((accu1 & 0xFF00) >> 8)
+		accu1 = ((accu1 & 0xFFFF0000) |			#+suffix-u
+			 (swapEndianWord(accu1) & 0xFFFF))	#+suffix-u
 		self.cpu.accu1.set(accu1)
