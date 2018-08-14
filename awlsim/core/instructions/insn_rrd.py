@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ class AwlInsn_RRD(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef uint32_t accu1
-#@cy		cdef int64_t count
+#@cy		cdef uint32_t count
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
@@ -53,8 +53,8 @@ class AwlInsn_RRD(AwlInsn): #+cdef
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
-		count = max(0, count % 32)
-		accu1 &= 0xFFFFFFFF
-		accu1 = ((accu1 >> count) | (accu1 << (32 - count))) & 0xFFFFFFFF
+		count &= 0x1F								#+suffix-u
+		accu1 &= 0xFFFFFFFF							#+suffix-u
+		accu1 = ((accu1 >> count) | (accu1 << (32 - count))) & 0xFFFFFFFF	#+suffix-u
 		self.cpu.accu1.set(accu1)
 		s.A0, s.A1, s.OV = 0, (accu1 >> 31) & 1, 0
