@@ -43,7 +43,7 @@ class AwlInsn_SLD(AwlInsn): #+cdef
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 #@cy		cdef uint64_t accu1
-#@cy		cdef int64_t count
+#@cy		cdef uint32_t count
 
 		s = self.cpu.statusWord
 		accu1 = self.cpu.accu1.getDWord()
@@ -53,7 +53,8 @@ class AwlInsn_SLD(AwlInsn): #+cdef
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
-		count = min(count, 32)
-		s.A1, s.A0, s.OV = (accu1 >> (32 - count)) & 1, 0, 0
+		if count > 32:
+			count = 32
+		s.A1, s.A0, s.OV = (accu1 >> (32 - count)) & 1, 0, 0	#+suffix-u
 		accu1 <<= count
 		self.cpu.accu1.setDWord(accu1)
