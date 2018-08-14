@@ -40,7 +40,7 @@ class AwlInsn_MI_D(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef int32_t accu1
+#@cy		cdef uint32_t diffTrunc
 #@cy		cdef int64_t diff
 
 		s = self.cpu.statusWord
@@ -50,10 +50,11 @@ class AwlInsn_MI_D(AwlInsn): #+cdef
 		if self.cpu.is4accu:
 			self.cpu.accu2.copyFrom(self.cpu.accu3)
 			self.cpu.accu3.copyFrom(self.cpu.accu4)
-		accu1 = self.cpu.accu1.getSignedDWord()
-		if accu1 == 0:
+		diffTrunc = diff & 0xFFFFFFFF #@nocy
+#@cy		diffTrunc = <uint32_t>diff
+		if diffTrunc == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
-		elif accu1 < 0:
+		elif diffTrunc & 0x80000000: #+suffix-u
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
