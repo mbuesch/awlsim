@@ -63,7 +63,12 @@ cdef inline int64_t qwordToSignedPyInt(uint64_t qword):
 
 
 cdef uint32_t pyFloatToDWord(double pyfl)
-cdef double dwordToPyFloat(uint32_t dword)
+
+cdef inline double dwordToPyFloat(uint32_t dword):
+	cdef float float32
+	float32 = (<float *>&dword)[0]
+	return <double>float32
+
 
 cdef class FloatConst(object):
 	cdef public uint32_t minNormPosFloat32DWord

@@ -26,7 +26,7 @@ from awlsim.common.compat import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
-import struct
+import struct #@nocy
 
 
 __all__ = [
@@ -48,11 +48,11 @@ __all__ = [
 ]
 
 
-__floatStruct = struct.Struct(str('>f'))
-__wordStruct = struct.Struct(str('>H'))
-__leWordStruct = struct.Struct(str('<H'))
-__dwordStruct = struct.Struct(str('>I'))
-__leDWordStruct = struct.Struct(str('<I'))
+__floatStruct = struct.Struct(str('>f'))				#@nocy
+__wordStruct = struct.Struct(str('>H'))					#@nocy
+__leWordStruct = struct.Struct(str('<H'))				#@nocy
+__dwordStruct = struct.Struct(str('>I'))				#@nocy
+__leDWordStruct = struct.Struct(str('<I'))				#@nocy
 
 
 # Swap the endianness of an S7 word.
@@ -123,7 +123,10 @@ def pyFloatToDWord(pyfl,						#@nocy
 	dword = __d.unpack(__f.pack(pyfl))[0]				#@nocy
 #cdef uint32_t pyFloatToDWord(double pyfl):				#@cy
 #	cdef uint32_t dword						#@cy
-#	dword = __dwordStruct.unpack(__floatStruct.pack(pyfl))[0]	#@cy
+#	cdef float float32						#@cy
+#									#@cy
+#	float32 = <float>pyfl;						#@cy
+#	dword = (<uint32_t *>&float32)[0]				#@cy
 	if isDenormalPyFloat(pyfl):
 		# Denormal floats are equal to zero on the S7 CPU.
 		# OV and OS flags are set in the StatusWord handler.
@@ -135,12 +138,11 @@ def pyFloatToDWord(pyfl,						#@nocy
 
 
 # Convert an S7 dword to a Python float.
+# The Cython variant of this function is defined in .pxd.in
 def dwordToPyFloat(dword,						#@nocy
 		   __f=__floatStruct,					#@nocy
 		   __d=__dwordStruct):					#@nocy
 	return __f.unpack(__d.pack(dword))[0]				#@nocy
-#cdef double dwordToPyFloat(uint32_t dword):				#@cy
-#	return __floatStruct.unpack(__dwordStruct.pack(dword))[0]	#@cy
 
 
 class FloatConst(object): #+cdef
