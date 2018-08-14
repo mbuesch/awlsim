@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ class AwlInsn_LOOP(AwlInsn): #+cdef
 #@cy		cdef uint16_t accu1l
 
 		s = self.cpu.statusWord
-		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF
+		accu1l = (self.cpu.accu1.getWord() - 1) & 0xFFFF #+suffix-u
 		self.cpu.accu1.setWord(accu1l)
 		if accu1l != 0:
 			self.cpu.jumpToLabel(self.op0.labelIndex)
