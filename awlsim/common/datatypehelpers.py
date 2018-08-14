@@ -56,24 +56,22 @@ __leDWordStruct = struct.Struct(str('<I'))
 
 
 # Swap the endianness of an S7 word.
+# The Cython variant of this function is defined in .pxd.in
 def swapEndianWord(word,						#@nocy
 		   __be=__wordStruct,					#@nocy
 		   __le=__leWordStruct):				#@nocy
 	return __le.unpack(__be.pack(word))[0]				#@nocy
-#cdef uint16_t swapEndianWord(uint16_t word):				#@cy
-#	return __leWordStruct.unpack(__wordStruct.pack(word))[0]	#@cy
 
 assert(swapEndianWord(0x1234) == 0x3412)
 assert(swapEndianWord(swapEndianWord(0x1234)) == 0x1234)
 
 
 # Swap the endianness of an S7 dword.
+# The Cython variant of this function is defined in .pxd.in
 def swapEndianDWord(dword,						#@nocy
 		   __be=__dwordStruct,					#@nocy
 		   __le=__leDWordStruct):				#@nocy
 	return __le.unpack(__be.pack(dword))[0]				#@nocy
-#cdef uint32_t swapEndianDWord(uint32_t dword):				#@cy
-#	return __leDWordStruct.unpack(__dwordStruct.pack(dword))[0]	#@cy
 
 assert(swapEndianDWord(0x12345678) == 0x78563412)
 assert(swapEndianDWord(swapEndianDWord(0x12345678)) == 0x12345678)
