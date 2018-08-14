@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,11 +40,13 @@ class AwlInsn_RRDA(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
+#@cy		cdef uint32_t oldA1
+#@cy		cdef uint32_t accu1
 
 		s = self.cpu.statusWord
-		oldA1 = s.A1 & 1
+		oldA1 = s.A1 & 1			#+suffix-u
 		accu1 = self.cpu.accu1.getDWord()
-		s.A0, s.A1, s.OV = 0, (accu1 & 1), 0
-		accu1 >>= 1
-		accu1 |= oldA1 << 31
+		s.A0, s.A1, s.OV = 0, (accu1 & 1), 0	#+suffix-u
+		accu1 >>= 1				#+suffix-u
+		accu1 |= oldA1 << 31			#+suffix-u
 		self.cpu.accu1.set(accu1)
