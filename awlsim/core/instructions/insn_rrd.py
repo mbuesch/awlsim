@@ -42,7 +42,7 @@ class AwlInsn_RRD(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef uint32_t accu1
+#@cy		cdef uint64_t accu1
 #@cy		cdef uint32_t count
 
 		s = self.cpu.statusWord
@@ -53,7 +53,8 @@ class AwlInsn_RRD(AwlInsn): #+cdef
 			count = self.cpu.accu2.getByte()
 		if count <= 0:
 			return
-		count &= 0x1F								#+suffix-u
+		if count > 32:
+			count = 32
 		accu1 &= 0xFFFFFFFF							#+suffix-u
 		accu1 = ((accu1 >> count) | (accu1 << (32 - count))) & 0xFFFFFFFF	#+suffix-u
 		self.cpu.accu1.set(accu1)
