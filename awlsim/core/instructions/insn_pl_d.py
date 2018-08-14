@@ -40,7 +40,7 @@ class AwlInsn_PL_D(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef int32_t accu1
+#@cy		cdef uint32_t sumTrunc
 #@cy		cdef int64_t _sum
 
 		s = self.cpu.statusWord
@@ -50,13 +50,13 @@ class AwlInsn_PL_D(AwlInsn): #+cdef
 		if self.cpu.is4accu:
 			self.cpu.accu2.copyFrom(self.cpu.accu3)
 			self.cpu.accu3.copyFrom(self.cpu.accu4)
-		accu1 = self.cpu.accu1.getSignedDWord()
-		if accu1 == 0:
+		sumTrunc = _sum & 0xFFFFFFFF #@nocy
+#@cy		sumTrunc = <uint32_t>_sum
+		if sumTrunc == 0:
 			s.A1, s.A0, s.OV = 0, 0, 0
-		elif accu1 < 0:
+		elif sumTrunc & 0x80000000: #+suffix-u
 			s.A1, s.A0, s.OV = 0, 1, 0
 		else:
 			s.A1, s.A0, s.OV = 1, 0, 0
-		if _sum > 0x7FFFFFFF or _sum < -2147483648: #@nocy
-#@cy		if _sum > 0x7FFFFFFFLL or _sum < -2147483648LL:
+		if _sum > 0x7FFFFFFF or _sum < -2147483648: #+suffix-LL
 			s.OV, s.OS = 1, 1
