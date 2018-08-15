@@ -41,6 +41,7 @@ cdef class S7CPU(object):
 	cdef public dict udts
 	cdef public dict dbs
 	cdef public dict obs
+	cdef public OB ob1
 	cdef public dict obTempPresetHandlers
 	cdef public dict fcs
 	cdef public dict fbs

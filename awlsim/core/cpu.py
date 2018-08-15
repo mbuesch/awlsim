@@ -345,6 +345,8 @@ class S7Prog(object):
 				presetHandlerClass = OBTempPresets_dummy
 			self.cpu.obTempPresetHandlers[obNumber] = presetHandlerClass(self.cpu)
 		self.pendingRawOBs = []
+		# Store a shortcut to OB1
+		self.cpu.ob1 = self.cpu.obs.get(1, None)
 
 		# Translate FBs
 		fbs = {}
@@ -956,7 +958,7 @@ class S7CPU(object): #+cdef
 #@cy		cdef uint32_t insnCount
 
 		# Run the actual OB1 code
-		self.__runOB(self.obs[1])
+		self.__runOB(self.ob1)
 
 		# Update timekeeping and statistics
 		self.updateTimestamp()
