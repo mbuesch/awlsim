@@ -91,10 +91,11 @@ class LStackAllocator(object): #+cdef
 #@cy	cdef void enterStackFrame(self):
 #@cy		cdef LStackFrame *frame
 #@cy		cdef uint32_t globAllocBits
+#@cy		cdef uint32_t prevAllocBits
 
 		prevAllocBits = self.globAllocBits
-		self.globAllocBits = globAllocBits = (((prevAllocBits + 7) >> 3) << 3)
-		globAllocBytes = globAllocBits // 8
+		self.globAllocBits = globAllocBits = (((prevAllocBits + 7) >> 3) << 3)	#+suffix-u
+		globAllocBytes = globAllocBits // 8					#+suffix-u
 
 		# Allocate a new stack frame.
 		try:						#@nocy
@@ -118,6 +119,7 @@ class LStackAllocator(object): #+cdef
 #@cy	cdef void exitStackFrame(self):
 #@cy		cdef LStackFrame *frame
 #@cy		cdef LStackFrame *topFrame
+#@cy		cdef uint32_t globAllocBits
 
 		frame = self.topFrame
 		topFrame = self.topFrame = frame.prevFrame
@@ -150,19 +152,19 @@ class LStackAllocator(object): #+cdef
 		roundBits = 0
 		if nrBits == 1:
 			# Bit-aligned allocation
-			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,
-						globAllocBits % 8)
+			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,	#+suffix-u
+						globAllocBits % 8)			#+suffix-u
 		else:
 			# Byte-aligned allocation
-			if globAllocBits & 7:
+			if globAllocBits & 7:						#+suffix-u
 				# Round up to the next byte boundary.
-				roundBits = 8 - (globAllocBits & 7)
+				roundBits = 8 - (globAllocBits & 7)			#+suffix-u
 				globAllocBits += roundBits
-			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,
+			offset = make_AwlOffset(globAllocBits // 8 - frame.byteOffset,	#+suffix-u
 						0)
 		globAllocBits += nrBits
 
-		if (((globAllocBits + 7) >> 3) << 3) >= self.maxAllocBits:
+		if (((globAllocBits + 7) >> 3) << 3) >= self.maxAllocBits:		#+suffix-u
 			raise AwlSimError(
 				"Cannot allocate another %d+%d bits on the L-stack. "
 				"The L-stack is exhausted. Maximum size = %d bits." % (
