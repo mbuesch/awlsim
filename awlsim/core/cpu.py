@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+#cimport cython #@cy
+
 import time
 import datetime
 import random
@@ -831,12 +833,16 @@ class S7CPU(object): #+cdef
 			self.cbScreenUpdate(self.cbScreenUpdateData)
 
 	def __runOB(self, block): #@nocy
+#@cy	@cython.boundscheck(False)
 #@cy	cdef __runOB(self, OB block):
 #@cy		cdef AwlInsn insn
 #@cy		cdef CallStackElem cse
 #@cy		cdef CallStackElem exitCse
 #@cy		cdef LStackAllocator activeLStack
 #@cy		cdef uint32_t insnCount
+
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
 
 		# Update timekeeping
 		self.updateTimestamp()
