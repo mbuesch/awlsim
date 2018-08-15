@@ -51,7 +51,7 @@ from awlsim.core.blocks import * #+cimport
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.userdefinedtypes import * #+cimport
 from awlsim.core.statusword import * #+cimport
-from awlsim.core.labels import *
+from awlsim.core.labels import * #+cimport
 from awlsim.core.timers import * #+cimport
 from awlsim.core.counters import * #+cimport
 from awlsim.core.callstack import * #+cimport
@@ -1145,6 +1145,7 @@ class S7CPU(object): #+cdef
 #@cy	@cython.boundscheck(False)
 #@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex):
 #@cy		cdef CallStackElem cse
+#@cy		cdef AwlLabel label
 
 		# Note: Bounds checking of the indexing operator [] is disabled
 		#       by @cython.boundscheck(False) in this method.

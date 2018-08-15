@@ -29,7 +29,7 @@ from awlsim.common.wordpacker import *
 from awlsim.common.exceptions import *
 
 from awlsim.core.blockinterface import *
-from awlsim.core.labels import *
+from awlsim.core.labels import * #+cimport
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.operatortypes import * #+cimport

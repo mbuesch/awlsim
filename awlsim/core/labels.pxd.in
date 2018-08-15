@@ -1,0 +1,8 @@
+from awlsim.common.cython_support cimport *
+
+from awlsim.core.instructions.main cimport *
+
+
+cdef class AwlLabel(object):
+	cdef public AwlInsn insn
+	cdef public object label
