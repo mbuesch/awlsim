@@ -960,54 +960,55 @@ class S7CPU(object): #+cdef
 
 		# Update timekeeping and statistics
 		self.updateTimestamp()
-		self.__cycleCount = (self.__cycleCount + 1) & 0x3FFFFFFF
+		self.__cycleCount = (self.__cycleCount + 1) & 0x3FFFFFFF #+suffix-u
 
 		# Evaluate speed measurement
 		elapsedTime = self.now - self.__speedMeasureStartTime
 		if elapsedTime >= 1.0:
 			# Calculate instruction and cycle counts.
-			cycleCount = (self.__cycleCount - self.__speedMeasureStartCycleCount) &\
-				     0x3FFFFFFF
-			insnCount = (self.__insnCount - self.__speedMeasureStartInsnCount) &\
-				    0x3FFFFFFF
+			cycleCount = ((self.__cycleCount - self.__speedMeasureStartCycleCount) &
+				      0x3FFFFFFF) #+suffix-u
+			insnCount = ((self.__insnCount - self.__speedMeasureStartInsnCount) &
+				     0x3FFFFFFF) #+suffix-u
 
-			# Get the average cycle time over the measurement period.
-			cycleTime = elapsedTime / cycleCount
+			if cycleCount > 0: #+likely
+				# Get the average cycle time over the measurement period.
+				cycleTime = elapsedTime / cycleCount
 
-			# Calculate and store maximum and minimum cycle time.
-			self.maxCycleTime = max(self.maxCycleTime, cycleTime)
-			self.minCycleTime = min(self.minCycleTime, cycleTime)
+				# Calculate and store maximum and minimum cycle time.
+				self.maxCycleTime = max(self.maxCycleTime, cycleTime)
+				self.minCycleTime = min(self.minCycleTime, cycleTime)
 
-			# Calculate and store moving average cycle time.
-			avgCycleTimes = self.__avgCycleTimes
-			avgCycleTimes.append(cycleTime)
-			avgCycleTimesSum = self.__avgCycleTimesSum
-			if self.__avgCycleTimesCount >= 3: # 3 samples
-				firstSample = avgCycleTimes.popleft()
-				avgCycleTimesSum -= firstSample
-				avgCycleTimesSum += cycleTime
-				self.avgCycleTime = avgCycleTime = avgCycleTimesSum / 3.0 # 3 samples
-			else:
-				avgCycleTimesSum += cycleTime
-				self.__avgCycleTimesCount += 1
-				self.avgCycleTime = avgCycleTime = 0.0
-			self.__avgCycleTimesSum = avgCycleTimesSum
+				# Calculate and store moving average cycle time.
+				avgCycleTimes = self.__avgCycleTimes
+				avgCycleTimes.append(cycleTime)
+				avgCycleTimesSum = self.__avgCycleTimesSum
+				if self.__avgCycleTimesCount >= 3: # 3 samples
+					firstSample = avgCycleTimes.popleft()
+					avgCycleTimesSum -= firstSample
+					avgCycleTimesSum += cycleTime
+					self.avgCycleTime = avgCycleTime = avgCycleTimesSum / 3.0 # 3 samples
+				else:
+					avgCycleTimesSum += cycleTime
+					self.__avgCycleTimesCount += 1
+					self.avgCycleTime = avgCycleTime = 0.0
+				self.__avgCycleTimesSum = avgCycleTimesSum
 
-			# Calculate instruction statistics.
-			self.avgInsnPerCycle = avgInsnPerCycle = insnCount / cycleCount
-			if avgInsnPerCycle > 0.0:
-				avgTimePerInsn = avgCycleTime / avgInsnPerCycle
-				if avgTimePerInsn > 0.0:
-					self.insnPerSecond = 1.0 / avgTimePerInsn
+				# Calculate instruction statistics.
+				self.avgInsnPerCycle = avgInsnPerCycle = insnCount / cycleCount
+				if avgInsnPerCycle > 0.0:
+					avgTimePerInsn = avgCycleTime / avgInsnPerCycle
+					if avgTimePerInsn > 0.0:
+						self.insnPerSecond = 1.0 / avgTimePerInsn
+					else:
+						self.insnPerSecond = 0.0
 				else:
 					self.insnPerSecond = 0.0
-			else:
-				self.insnPerSecond = 0.0
 
-			# Reset the counters
-			self.__speedMeasureStartTime = self.now
-			self.__speedMeasureStartInsnCount = self.__insnCount
-			self.__speedMeasureStartCycleCount = self.__cycleCount
+				# Reset the counters
+				self.__speedMeasureStartTime = self.now
+				self.__speedMeasureStartInsnCount = self.__insnCount
+				self.__speedMeasureStartCycleCount = self.__cycleCount
 
 		# Call the cycle exit callback, if any.
 		if self.cbCycleExit is not None:
