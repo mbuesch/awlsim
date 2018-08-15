@@ -170,9 +170,9 @@ cdef class S7CPU(object):
 	cdef Timer getTimer(self, uint32_t index)
 	cdef Counter getCounter(self, uint32_t index)
 
-	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? 0x7FFFFFFF
-	cdef jumpToLabel(self, uint32_t labelIndex)
-	cdef jumpRelative(self, int32_t insnOffset)
+	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex)
+	cdef void jumpToLabel(self, uint32_t labelIndex)
+	cdef void jumpRelative(self, int32_t insnOffset)
 
 	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper=*, tuple parameters=*, _Bool raw=*)
 	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters)

@@ -16,6 +16,7 @@ cdef class CodeBlock(Block):
 	cdef public list insns
 	cdef public uint32_t nrInsns
 	cdef public list labels
+	cdef public uint32_t nrLabels
 	cdef public object interface
 	cdef public uint32_t tempAllocation
 

@@ -1139,21 +1139,35 @@ class S7CPU(object): #+cdef
 		except IndexError as e: #@nocov
 			return None
 
+	# Translate a label index into a relative jump.
+	# labelIndex must be within the bounds of self.callStackTop.block.labels
 	def labelIdxToRelJump(self, labelIndex): #@nocy
-#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex) except? 0x7FFFFFFF:
+#@cy	@cython.boundscheck(False)
+#@cy	cdef int32_t labelIdxToRelJump(self, uint32_t labelIndex):
 #@cy		cdef CallStackElem cse
+
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
 
 		# Translate a label index into a relative IP offset.
 		cse = self.callStackTop
-		label = cse.block.labels[labelIndex]
-		return label.insn.ip - cse.ip
+		if labelIndex < cse.block.nrLabels: #+likely
+			label = cse.block.labels[labelIndex]
+			return label.insn.ip - cse.ip
 
+		# labelIndex is invalid.
+		# This is an error that must never happen.
+		raise AwlSimBug("labelIdxToRelJump: labelIndex out of range.") #@nocy
+#@cy		return 1
+
+	# Jump to a label.
+	# labelIndex must be within the bounds of self.callStackTop.block.labels
 	def jumpToLabel(self, labelIndex): #@nocy
-#@cy	cdef jumpToLabel(self, uint32_t labelIndex):
+#@cy	cdef void jumpToLabel(self, uint32_t labelIndex):
 		self.relativeJump = self.labelIdxToRelJump(labelIndex)
 
 	def jumpRelative(self, insnOffset): #@nocy
-#@cy	cdef jumpRelative(self, int32_t insnOffset):
+#@cy	cdef void jumpRelative(self, int32_t insnOffset):
 		self.relativeJump = insnOffset
 
 	def __call_FC(self, blockOper, dbOper, parameters): #@nocy

@@ -139,6 +139,7 @@ class CodeBlock(Block): #+cdef
 		self.insns = insns
 		self.nrInsns = len(insns)
 		self.labels = None
+		self.nrLabels = 0
 		self.interface = interface
 		self.tempAllocation = 0		# The number of allocated TEMP bytes
 		self.resolveLabels()
@@ -146,8 +147,10 @@ class CodeBlock(Block): #+cdef
 	def resolveLabels(self):
 		if self.insns:
 			self.labels = AwlLabel.resolveLabels(self.insns)
+			self.nrLabels = len(self.labels)
 		else:
 			self.labels = None
+			self.nrLabels = 0
 
 	def resolveSymbols(self):
 		pass
