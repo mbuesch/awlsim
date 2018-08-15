@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.13
+#   v1.14
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -313,8 +313,16 @@ def registerCythonModule(baseDir, sourceModName):
 						cyModName,
 						[toPyx],
 						cython_directives={
-							"profile" : profileEnabled,
-						}
+							# Enable profile hooks?
+							"profile"	: profileEnabled,
+							"linetrace"	: profileEnabled,
+							# Warn about unused variables?
+							"warn.unused"	: False,
+						},
+						define_macros=[
+							("CYTHON_TRACE",	str(int(profileEnabled))),
+							("CYTHON_TRACE_NOGIL",	str(int(profileEnabled))),
+						]
 					)
 				)
 
