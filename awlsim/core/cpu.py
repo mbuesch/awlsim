@@ -1362,7 +1362,7 @@ class S7CPU(object): #+cdef
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
 		cse = self.callStackTop
-		self.relativeJump = len(cse.insns) - cse.ip
+		self.relativeJump = cse.nrInsns - cse.ip
 
 	def openDB(self, dbNumber, openDI): #@nocy
 #@cy	cdef openDB(self, int32_t dbNumber, _Bool openDI):
@@ -1374,13 +1374,13 @@ class S7CPU(object): #+cdef
 			else:
 				self.dbRegister = self.db0
 		else:
-			try:
-				if openDI:
-					self.diRegister = self.dbs[dbNumber]
-				else:
-					self.dbRegister = self.dbs[dbNumber]
-			except KeyError:
+			db = self.dbs.get(dbNumber)
+			if db is None:
 				raise AwlSimError("Datablock %i does not exist" % dbNumber)
+			if openDI:
+				self.diRegister = db
+			else:
+				self.dbRegister = db
 
 	def run_AUF(self, dbOper): #@nocy
 #@cy	cdef run_AUF(self, AwlOperator dbOper):
