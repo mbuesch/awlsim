@@ -62,12 +62,16 @@ cdef inline int64_t qwordToSignedPyInt(uint64_t qword):
 	return <int64_t>qword
 
 
+cdef union _floatCastUnion:
+	float fvalue
+	uint32_t value32
+
 cdef uint32_t pyFloatToDWord(double pyfl)
 
 cdef inline double dwordToPyFloat(uint32_t dword):
-	cdef float float32
-	float32 = (<float *>&dword)[0]
-	return <double>float32
+	cdef _floatCastUnion u
+	u.value32 = dword
+	return <double>(u.fvalue)
 
 
 cdef class FloatConst(object):

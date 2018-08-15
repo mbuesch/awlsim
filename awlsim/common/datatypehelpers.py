@@ -122,11 +122,11 @@ def pyFloatToDWord(pyfl,						#@nocy
 		   __d=__dwordStruct):					#@nocy
 	dword = __d.unpack(__f.pack(pyfl))[0]				#@nocy
 #cdef uint32_t pyFloatToDWord(double pyfl):				#@cy
+#	cdef _floatCastUnion u						#@cy
 #	cdef uint32_t dword						#@cy
-#	cdef float float32						#@cy
 #									#@cy
-#	float32 = <float>pyfl;						#@cy
-#	dword = (<uint32_t *>&float32)[0]				#@cy
+#	u.fvalue = <float>pyfl;						#@cy
+#	dword = u.value32						#@cy
 	if isDenormalPyFloat(pyfl):
 		# Denormal floats are equal to zero on the S7 CPU.
 		# OV and OS flags are set in the StatusWord handler.
