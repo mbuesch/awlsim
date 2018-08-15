@@ -15,9 +15,9 @@ cdef class LStackAllocator(object):
 	cdef public topFrameOffset
 
 	cdef resize(self, uint32_t maxAllocBytes)
-	cdef reset(self)
+	cdef void reset(self)
 
-	cdef enterStackFrame(self)
-	cdef exitStackFrame(self)
+	cdef void enterStackFrame(self)
+	cdef void exitStackFrame(self)
 
 	cdef AwlOffset alloc(self, uint32_t nrBits)

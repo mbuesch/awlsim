@@ -31,6 +31,7 @@ from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 
+#from libc.stdlib cimport abort #@cy
 #from cpython.mem cimport PyMem_Malloc, PyMem_Free #@cy
 
 
@@ -70,7 +71,8 @@ class LStackAllocator(object): #+cdef
 		self.memory = AwlMemory(maxAllocBytes)
 		self.maxAllocBits = maxAllocBytes * 8
 
-	def reset(self): #+cdef
+	def reset(self): #@nocy
+#@cy	cdef void reset(self):
 #@cy		cdef LStackFrame *frame
 #@cy		cdef LStackFrame *oldFrame
 
@@ -85,7 +87,8 @@ class LStackAllocator(object): #+cdef
 			self.__frameFreeSet.add(oldFrame)	#@nocy
 #@cy			PyMem_Free(oldFrame)
 
-	def enterStackFrame(self): #+cdef
+	def enterStackFrame(self): #@nocy
+#@cy	cdef void enterStackFrame(self):
 #@cy		cdef LStackFrame *frame
 #@cy		cdef uint32_t globAllocBits
 
@@ -100,7 +103,8 @@ class LStackAllocator(object): #+cdef
 			frame = LStackFrame()			#@nocy
 #@cy		frame = <LStackFrame *>PyMem_Malloc(sizeof(LStackFrame))
 #@cy		if frame == NULL:
-#@cy			raise AwlSimError("enterStackFrame: Out of memory")
+#@cy			printError("enterStackFrame: Out of memory")
+#@cy			abort()
 
 		frame.byteOffset = globAllocBytes
 		# Account the rounded-up bits to the new frame.
@@ -110,7 +114,8 @@ class LStackAllocator(object): #+cdef
 		self.topFrame = frame
 		self.topFrameOffset = make_AwlOffset(globAllocBytes, 0)
 
-	def exitStackFrame(self): #+cdef
+	def exitStackFrame(self): #@nocy
+#@cy	cdef void exitStackFrame(self):
 #@cy		cdef LStackFrame *frame
 #@cy		cdef LStackFrame *topFrame
 
