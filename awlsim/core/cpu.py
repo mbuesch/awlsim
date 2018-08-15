@@ -44,6 +44,7 @@ from awlsim.library.libentry import *
 from awlsim.core.symbolparser import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.instructions.all_insns import * #+cimport
+from awlsim.core.systemblocks.systemblocks import * #+cimport
 from awlsim.core.systemblocks.tables import *
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
@@ -1173,17 +1174,22 @@ class S7CPU(object): #+cdef
 
 	def __call_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef FC fc
+
 		fc = self.fcs[blockOper.offset.byteOffset]
 		return make_CallStackElem(self, fc, None, None, parameters, False)
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef FC fc
+
 		fc = self.fcs[blockOper.offset.byteOffset]
 		return make_CallStackElem(self, fc, None, None, (), True)
 
 	def __call_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CallStackElem cse
+#@cy		cdef FB fb
 #@cy		cdef DB db
 
 		fb = self.fbs[blockOper.offset.byteOffset]
@@ -1194,22 +1200,29 @@ class S7CPU(object): #+cdef
 
 	def __call_RAW_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef FB fb
+
 		fb = self.fbs[blockOper.offset.byteOffset]
 		return make_CallStackElem(self, fb, self.diRegister, None, (), True)
 
 	def __call_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef SFC sfc
+
 		sfc = self.sfcs[blockOper.offset.byteOffset]
 		return make_CallStackElem(self, sfc, None, None, parameters, False)
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef SFC sfc
+
 		sfc = self.sfcs[blockOper.offset.byteOffset]
 		return make_CallStackElem(self, sfc, None, None, (), True)
 
 	def __call_SFB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CallStackElem cse
+#@cy		cdef SFB sfb
 #@cy		cdef DB db
 
 		sfb = self.sfbs[blockOper.offset.byteOffset]
@@ -1220,6 +1233,8 @@ class S7CPU(object): #+cdef
 
 	def __call_RAW_SFB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef SFB sfb
+
 		sfb = self.sfbs[blockOper.offset.byteOffset]
 		return make_CallStackElem(self, sfb, self.diRegister, None, (), True)
 
@@ -1248,6 +1263,10 @@ class S7CPU(object): #+cdef
 
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef AwlOffset base
+#@cy		cdef CallStackElem cse
+#@cy		cdef FB fb
+
 		fb = self.fbs[blockOper.offset.fbNumber]
 		base = make_AwlOffset_fromPointerValue(self.ar2.get()) + blockOper.offset
 		cse = make_CallStackElem(self, fb, self.diRegister, base, parameters, False)
@@ -1258,6 +1277,7 @@ class S7CPU(object): #+cdef
 #@cy	cdef CallStackElem __call_MULTI_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef AwlOffset base
 #@cy		cdef CallStackElem cse
+#@cy		cdef SFB sfb
 
 		sfb = self.sfbs[blockOper.offset.fbNumber]
 		base = make_AwlOffset_fromPointerValue(self.ar2.get()) + blockOper.offset
