@@ -1241,7 +1241,7 @@ class S7CPU(object): #+cdef
 	def __call_INDIRECT(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_INDIRECT(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 
-		blockOper = blockOper.resolve()
+		blockOper = blockOper.resolve(True)
 
 #@cy		if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
 #@cy			return self.__call_RAW_FC(blockOper, dbOper, parameters)
@@ -1387,7 +1387,7 @@ class S7CPU(object): #+cdef
 #@cy		cdef _Bool openDI
 #@cy		cdef uint32_t operType
 
-		dbOper = dbOper.resolve()
+		dbOper = dbOper.resolve(True)
 
 		operType = dbOper.operType
 		if operType == AwlOperatorTypes.BLKREF_DB:
@@ -1457,7 +1457,7 @@ class S7CPU(object): #+cdef
 	def __translateFCNamedLocalOper(self, operator, store): #@nocy
 #@cy	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store):
 #@cy		cdef uint32_t pointer
-#@cy		cdef uint32_t opType
+#@cy		cdef int32_t opType
 #@cy		cdef uint32_t dbNr
 #@cy		cdef AwlOperator interfOp
 #@cy		cdef AwlOperator dbPtrOp
@@ -1481,10 +1481,10 @@ class S7CPU(object): #+cdef
 			# (This is ok, if dbNr is 0, too)
 			self.openDB(dbNr, False)
 			# Make an operator from the DB-ptr.
-			try:
-				opType = AwlIndirectOpConst.area2optype_fetch[
-						pointer & PointerConst.AREA_MASK_S]
-			except KeyError:
+			opType = AwlIndirectOpConst.area2optype(
+					(pointer & PointerConst.AREA_MASK_S),
+					False)
+			if opType < 0: #+unlikely
 				raise AwlSimError("Corrupt DB pointer in compound "
 					"data type FC variable detected "
 					"(invalid area).", insn = operator.insn)

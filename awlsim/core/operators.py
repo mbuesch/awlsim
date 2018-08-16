@@ -2,7 +2,7 @@
 #
 # AWL simulator - operators
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ class AwlOperator(object): #+cdef
 	# Only set for resolved symbolic accesses.
 	dataType = None #@nocy
 
-#@cy	cdef _cy_init(self):
+#@cy	cdef void _cy_init(self):
 #@cy		self.immediate = 0
 #@cy		self.immediateBytes = None
 #@cy		self.pointer = None
@@ -87,7 +87,7 @@ class AwlOperator(object): #+cdef
 #@cy		self.dataType = None
 
 	def __eq__(self, other): #@nocy
-#@cy	cdef __eq(self, AwlOperator other):
+#@cy	cdef _Bool __eq(self, AwlOperator other):
 		return (self is other) or (\
 			isinstance(other, AwlOperator) and\
 			self.operType == other.operType and\
@@ -159,7 +159,7 @@ class AwlOperator(object): #+cdef
 		self.labelIndex = newLabelIndex
 
 	def isImmediate(self): #@nocy
-#@cy	cpdef _Bool isImmediate(self):
+#@cy	cdef _Bool isImmediate(self):
 		return self.operType > AwlOperatorTypes._IMM_START and\
 		       self.operType < AwlOperatorTypes._IMM_END
 
@@ -269,8 +269,8 @@ class AwlOperator(object): #+cdef
 				mismatch(dataType, self, self.width)
 
 	# Resolve this indirect operator to a direct operator.
-	def resolve(self, store=True): #@nocy
-#@cy	cpdef AwlOperator resolve(self, _Bool store=True):
+	def resolve(self, store): #@nocy
+#@cy	cdef AwlOperator resolve(self, _Bool store):
 		# This already is a direct operator.
 		if self.operType == AwlOperatorTypes.NAMED_LOCAL:
 			# This is a named-local access (#abc).
@@ -284,12 +284,11 @@ class AwlOperator(object): #+cdef
 
 	# Make an area-spanning pointer value (32 bit) to this memory area.
 	def makePointerValue(self): #@nocy
-#@cy	cpdef uint32_t makePointerValue(self):
-#@cy		cdef uint32_t area
+#@cy	cdef uint32_t makePointerValue(self):
+#@cy		cdef int64_t area
 
-		try:
-			area = AwlIndirectOpConst.optype2area[self.operType]
-		except KeyError as e:
+		area = AwlIndirectOpConst.optype2area(self.operType)
+		if area < 0 or area > 0xFFFFFFFF: #+suffix-u #+unlikely
 			raise AwlSimError("Could not transform operator '%s' "
 				"into a pointer." % str(self))
 		return area | self.offset.toPointerValue()
@@ -503,28 +502,21 @@ class AwlIndirectOp(AwlOperator): #+cdef
 
 	def assertType(self, types, lowerLimit=None, upperLimit=None):
 		types = toSet(types)
-		if not AwlIndirectOpConst.area2optype_fetch[self.area] in types and\
-		   not AwlIndirectOpConst.area2optype_store[self.area] in types:
-			self._raiseTypeError(AwlIndirectOpConst.area2optype_fetch[self.area], types)
+		if not AwlIndirectOpConst.area2optype(self.area, False) in types and\
+		   not AwlIndirectOpConst.area2optype(self.area, True) in types:
+			self._raiseTypeError(AwlIndirectOpConst.area2optype(self.area, False), types)
 		assert(lowerLimit is None)
 		assert(upperLimit is None)
 
-	# Possible offset oper types for indirect access
-	__possibleOffsetOperTypes = (AwlOperatorTypes.MEM_M,
-				     AwlOperatorTypes.MEM_L,
-				     AwlOperatorTypes.MEM_DB,
-				     AwlOperatorTypes.MEM_DI)
-
 	# Resolve this indirect operator to a direct operator.
-	def resolve(self, store=True): #@nocy
-#@cy	cpdef AwlOperator resolve(self, _Bool store=True):
+	def resolve(self, store): #@nocy
+#@cy	cdef AwlOperator resolve(self, _Bool store):
 #@cy		cdef _Bool bitwiseDirectOffset
 #@cy		cdef AwlOffset directOffset
 #@cy		cdef AwlOperator offsetOper
-#@cy		cdef set possibleWidths
 #@cy		cdef uint32_t offsetValue
 #@cy		cdef uint64_t pointer
-#@cy		cdef uint32_t optype
+#@cy		cdef int32_t optype
 
 		bitwiseDirectOffset = True
 		offsetOper = self.offsetOper
@@ -537,22 +529,24 @@ class AwlIndirectOp(AwlOperator): #+cdef
 					"address register.")
 			if self.area > PointerConst.AREA_MASK_S:
 				# Is extended area
-				possibleWidths = {8, 16, 32}
 				bitwiseDirectOffset = False
+				if offsetOper.width not in (8, 16, 32):
+					raise AwlSimError("Offset operator in indirect "
+						"access is not of 8, 16 or 32 bit width.")
 			else:
 				# Is standard area
-				possibleWidths = {32,}
-			if offsetOper.operType not in self.__possibleOffsetOperTypes:
+				if offsetOper.width != 32:
+					raise AwlSimError("Offset operator in indirect "
+						"access is not of 32 bit width.")
+			if offsetOper.operType not in (AwlOperatorTypes.MEM_M,
+						       AwlOperatorTypes.MEM_L,
+						       AwlOperatorTypes.MEM_DB,
+						       AwlOperatorTypes.MEM_DI):
 				raise AwlSimError("Offset operator in indirect "
 					"access is not a valid memory offset.")
-			if offsetOper.width not in possibleWidths:
-				print(offsetOper.width)
-				raise AwlSimError("Offset operator in indirect "
-					"access is not of %s bit width." %\
-					listToHumanStr(possibleWidths))
 			offsetValue = self.insn.cpu.fetch(offsetOper,
 							  AwlOperatorWidths.WIDTH_MASK_8_16_32)
-			pointer = (self.area | (offsetValue & 0x0007FFFF))
+			pointer = (self.area | (offsetValue & 0x0007FFFF)) #+suffix-u
 		else:
 			# Register-indirect access
 			if offsetOper.operType != AwlOperatorTypes.IMM_PTR:
@@ -560,26 +554,27 @@ class AwlIndirectOp(AwlOperator): #+cdef
 					"register-indirect access is not a "
 					"pointer immediate.")
 			offsetValue = self.insn.cpu.fetch(offsetOper,
-							  AwlOperatorWidths.WIDTH_MASK_8_16_32) &\
-							  0x0007FFFF
+							  (AwlOperatorWidths.WIDTH_MASK_8_16_32 &
+							   0x0007FFFF)) #+suffix-u
 			if self.area == PointerConst.AREA_NONE_S:
 				# Area-spanning access
-				pointer = (self.insn.cpu.getAR(self.addressRegister).get() +\
-					   offsetValue) & 0xFFFFFFFF
+				pointer = ((self.insn.cpu.getAR(self.addressRegister).get() +
+					    offsetValue) & 0xFFFFFFFF) #+suffix-u
 			else:
 				# Area-internal access
-				pointer = ((self.insn.cpu.getAR(self.addressRegister).get() +
-					    offsetValue) & 0x0007FFFF) |\
-					  self.area
+				pointer = (((self.insn.cpu.getAR(self.addressRegister).get() +
+					     offsetValue) & 0x0007FFFF) | #+suffix-u
+					   self.area)
 		# Create a direct operator
-		try:
-			if store:
-				optype = AwlIndirectOpConst.area2optype_store[
-						pointer & AwlIndirectOpConst.EXT_AREA_MASK_S]
-			else:
-				optype = AwlIndirectOpConst.area2optype_fetch[
-						pointer & AwlIndirectOpConst.EXT_AREA_MASK_S]
-		except KeyError:
+		if store:
+			optype = AwlIndirectOpConst.area2optype(
+					(pointer & AwlIndirectOpConst.EXT_AREA_MASK_S),
+					True)
+		else:
+			optype = AwlIndirectOpConst.area2optype(
+					(pointer & AwlIndirectOpConst.EXT_AREA_MASK_S),
+					False)
+		if optype < 0: #+unlikely
 			raise AwlSimError("Invalid area code (%X hex) in indirect addressing" %\
 				((pointer & AwlIndirectOpConst.EXT_AREA_MASK_S) >>\
 				 PointerConst.AREA_SHIFT))
@@ -588,7 +583,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 			directOffset = make_AwlOffset_fromPointerValue(pointer)
 		else:
 			# 'pointer' is a byte offset
-			directOffset = make_AwlOffset(pointer & 0x0000FFFF, 0)
+			directOffset = make_AwlOffset(pointer & 0x0000FFFF, 0) #+suffix-u
 		if self.width != 1 and directOffset.bitOffset:
 			raise AwlSimError("Bit offset (lowest three bits) in %d-bit "
 				"indirect addressing is not zero. "
@@ -606,7 +601,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		self.__pointerError() #@nocov
 
 	def makePointerValue(self): #@nocy
-#@cy	cpdef uint32_t makePointerValue(self):
+#@cy	cdef uint32_t makePointerValue(self):
 		self.__pointerError() #@nocov
 
 	def makeDBPointer(self):
@@ -631,7 +626,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 #                    AR_2 => This is a register-indirect access with AR2.
 # offsetOper -> This is the AwlOperator for the offset.
 #               For memory-indirect access, this must be an AwlOperator
-#               with "type in __possibleOffsetOperTypes".
+#               with type MEM_M, MEM_L, MEM_DB or MEM_DI.
 #               For register-indirect access, this must be an AwlOperator
 #               with "type==IMM_PTR".
 # insn -> The instruction this operator is used in. May be None.

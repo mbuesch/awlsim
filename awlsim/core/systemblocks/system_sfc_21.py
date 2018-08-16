@@ -2,7 +2,7 @@
 #
 # AWL simulator - SFCs
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ class SFC21(SFC): #+cdef
 	def run(self): #+cpdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef S7StatusWord s
+#@cy		cdef int32_t operType
 
 		cpu = self.cpu
 		s = cpu.statusWord
@@ -166,26 +167,26 @@ class SFC21(SFC): #+cdef
 		BVAL_begin = make_AwlOffset_fromPointerValue(BVAL_ptr.toPointerValue())
 		BVAL_offset = BVAL_begin.dup()
 		BVAL_end = BVAL_offset + make_AwlOffset(BVAL_len, 0)
-		if BVAL_offset.bitOffset:
-			# BVAL data is not byte aligned.
+		operType = AwlIndirectOpConst.area2optype((BVAL_ptrArea << PointerConst.AREA_SHIFT),
+							  False)
+		if BVAL_offset.bitOffset or operType < 0:
+			# BVAL data is not byte aligned or area is invalid.
 			self.storeInterfaceFieldByName("RET_VAL",
 				SystemErrCode.make(SystemErrCode.E_RALIGN, 1))
 			s.BIE = 0
 			return
-		BVAL_fetchOper = make_AwlOperator(
-			AwlIndirectOpConst.area2optype_fetch[BVAL_ptrArea << PointerConst.AREA_SHIFT],
-			8, BVAL_offset, None)
+		BVAL_fetchOper = make_AwlOperator(operType, 8, BVAL_offset, None)
 		BLK_offset = make_AwlOffset_fromPointerValue(BLK_ptr.toPointerValue())
 		BLK_end = BLK_offset + make_AwlOffset(BLK_len, 0)
-		if BLK_offset.bitOffset:
-			# BLK data is not byte aligned.
+		operType = AwlIndirectOpConst.area2optype((BLK_ptrArea << PointerConst.AREA_SHIFT),
+							  False)
+		if BLK_offset.bitOffset or operType < 0:
+			# BLK data is not byte aligned or area is invalid.
 			self.storeInterfaceFieldByName("RET_VAL",
 				SystemErrCode.make(SystemErrCode.E_WALIGN, 3))
 			s.BIE = 0
 			return
-		BLK_storeOper = make_AwlOperator(
-			AwlIndirectOpConst.area2optype_fetch[BLK_ptrArea << PointerConst.AREA_SHIFT],
-			8, BLK_offset, None)
+		BLK_storeOper = make_AwlOperator(operType, 8, BLK_offset, None)
 		while BLK_offset.byteOffset < BLK_end.byteOffset:
 			if BLK_offset.byteOffset + 4 <= BLK_end.byteOffset and\
 			   BVAL_offset.byteOffset + 4 <= BVAL_end.byteOffset:

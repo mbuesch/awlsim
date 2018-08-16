@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU call stack
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef AwlOffset loffset
 #@cy		cdef int32_t dbNumber
-#@cy		cdef uint64_t area
+#@cy		cdef int64_t area
 #@cy		cdef AwlOperator storeOper
 #@cy		cdef uint32_t widthMaskAll
 
@@ -180,7 +180,7 @@ class CallStackElem(object): #+cdef
 			  widthMaskAll)
 		storeOper.offset = loffset + make_AwlOffset(2, 0)
 		storeOper.width = 32
-		area = AwlIndirectOpConst.optype2area[rvalueOp.operType]
+		area = AwlIndirectOpConst.optype2area(rvalueOp.operType)
 		if area == PointerConst.AREA_L_S:
 			area = PointerConst.AREA_VL_S
 		elif area == PointerConst.AREA_VL_S:
@@ -188,6 +188,9 @@ class CallStackElem(object): #+cdef
 					  "to called FC")
 		elif area == PointerConst.AREA_DI_S:
 			area = PointerConst.AREA_DB_S
+		elif area < 0:
+			raise AwlSimBug("FC_trans_dbpointerInVL: Invalid rValueOp area. "
+				"(area=%d, operType=%d)" % (area, rvalueOp.operType))
 		cpu.store(storeOper,
 			  area | rvalueOp.offset.toPointerValue(),
 			  widthMaskAll)
@@ -539,7 +542,7 @@ def make_CallStackElem(cpu,						#@nocy
 						if structField.callByRef:
 							# Do not fetch. Type is passed 'by reference'.
 							# This is for TIMER, COUNTER, etc...
-							data = param.rvalueOp.resolve().offset.byteOffset
+							data = param.rvalueOp.resolve(True).offset.byteOffset
 						else:
 							data = cpu.fetch(param.rvalueOp, widthMaskAll)
 					# Transfer data into DBI.

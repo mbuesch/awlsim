@@ -35,6 +35,8 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 	__slots__ = ()
 
 	def staticSanityChecks(self):
+#@cy		cdef AwlParamAssign param
+
 		if self.opCount == 1:
 			# "CALL FC/SFC" or
 			# "CALL #MULTIINSTANCE" or

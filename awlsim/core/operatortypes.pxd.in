@@ -134,8 +134,7 @@ cdef class __AwlIndirectOpConstClass(object):
 	cdef public uint64_t EXT_AREA_BLKREF_FB_S
 	cdef public uint64_t EXT_AREA_BLKREF_FC_S
 
-	cdef public dict area2optype_fetch
-	cdef public dict area2optype_store
-	cdef public dict optype2area
+	cdef int32_t area2optype(self, uint64_t area, _Bool store)
+	cdef int64_t optype2area(self, uint32_t operType)
 
 cdef public __AwlIndirectOpConstClass AwlIndirectOpConst

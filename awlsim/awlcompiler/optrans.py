@@ -1,7 +1,7 @@
 #
 # AWL simulator - Operator translator
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -321,9 +321,8 @@ class AwlOpTranslator(object):
 						       offset=None,
 						       insn=opDesc.operator.insn)
 				offsetOp.pointer = offsetPtr
-				try:
-					area = AwlIndirectOpConst.optype2area[opDesc.operator.operType]
-				except KeyError:
+				area = AwlIndirectOpConst.optype2area(opDesc.operator.operType)
+				if area < 0:
 					raise AwlSimError("Invalid memory area type in "
 						"register indirect addressing operator")
 				indirectOp = make_AwlIndirectOp(area=area,
@@ -356,9 +355,8 @@ class AwlOpTranslator(object):
 				if offsetOp.operType == AwlOperatorTypes.INDIRECT:
 					raise AwlSimError("Only direct operators supported "
 						"inside of indirect operator brackets.")
-				try:
-					area = AwlIndirectOpConst.optype2area[opDesc.operator.operType]
-				except KeyError:
+				area = AwlIndirectOpConst.optype2area(opDesc.operator.operType)
+				if area < 0:
 					raise AwlSimError("Invalid memory area type in "
 						"indirect addressing operator")
 				if area == PointerConst.AREA_NONE_S:

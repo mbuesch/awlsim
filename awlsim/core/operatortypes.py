@@ -2,7 +2,7 @@
 #
 # AWL simulator - Operator types
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -278,34 +278,78 @@ class __AwlIndirectOpConstClass(object): #+cdef
 		self.EXT_AREA_BLKREF_FB_S	= self.EXT_AREA_BLKREF_FB << self.AREA_SHIFT
 		self.EXT_AREA_BLKREF_FC_S	= self.EXT_AREA_BLKREF_FC << self.AREA_SHIFT
 
-		# Map for converting area code to operator type for fetch operations
-		self.area2optype_fetch = {
-			self.AREA_P_S			: AwlOperatorTypes.MEM_PE,
-			self.AREA_E_S			: AwlOperatorTypes.MEM_E,
-			self.AREA_A_S			: AwlOperatorTypes.MEM_A,
-			self.AREA_M_S			: AwlOperatorTypes.MEM_M,
-			self.AREA_DB_S			: AwlOperatorTypes.MEM_DB,
-			self.AREA_DI_S			: AwlOperatorTypes.MEM_DI,
-			self.AREA_L_S			: AwlOperatorTypes.MEM_L,
-			self.AREA_VL_S			: AwlOperatorTypes.MEM_VL,
-			self.EXT_AREA_T_S		: AwlOperatorTypes.MEM_T,
-			self.EXT_AREA_Z_S		: AwlOperatorTypes.MEM_Z,
-			self.EXT_AREA_BLKREF_DB_S	: AwlOperatorTypes.BLKREF_DB,
-			self.EXT_AREA_BLKREF_DI_S	: AwlOperatorTypes.BLKREF_DI,
-			self.EXT_AREA_BLKREF_FB_S	: AwlOperatorTypes.BLKREF_FB,
-			self.EXT_AREA_BLKREF_FC_S	: AwlOperatorTypes.BLKREF_FC,
-		}
+	# Method for converting area code to operator type for store and fetch operations.
+	def area2optype(self, area, store): #@nocy
+#@cy	cdef int32_t area2optype(self, uint64_t area, _Bool store):
+		if area == self.AREA_M_S:
+			return AwlOperatorTypes.MEM_M
+		elif area == self.AREA_E_S:
+			return AwlOperatorTypes.MEM_E
+		elif area == self.AREA_A_S:
+			return AwlOperatorTypes.MEM_A
+		elif area == self.AREA_L_S:
+			return AwlOperatorTypes.MEM_L
+		elif area == self.AREA_VL_S:
+			return AwlOperatorTypes.MEM_VL
+		elif area == self.AREA_DB_S:
+			return AwlOperatorTypes.MEM_DB
+		elif area == self.AREA_DI_S:
+			return AwlOperatorTypes.MEM_DI
+		elif area == self.EXT_AREA_T_S:
+			return AwlOperatorTypes.MEM_T
+		elif area == self.EXT_AREA_Z_S:
+			return AwlOperatorTypes.MEM_Z
+		elif area == self.AREA_P_S:
+			if store:
+				return AwlOperatorTypes.MEM_PA
+			return AwlOperatorTypes.MEM_PE
+		elif area == self.EXT_AREA_BLKREF_DB_S:
+			return AwlOperatorTypes.BLKREF_DB
+		elif area == self.EXT_AREA_BLKREF_DI_S:
+			return AwlOperatorTypes.BLKREF_DI
+		elif area == self.EXT_AREA_BLKREF_FB_S:
+			return AwlOperatorTypes.BLKREF_FB
+		elif area == self.EXT_AREA_BLKREF_FC_S:
+			return AwlOperatorTypes.BLKREF_FC
+		return -1
 
-		# Map for converting area code to operator type for store operations
-		self.area2optype_store = self.area2optype_fetch.copy()
-		self.area2optype_store[self.AREA_P_S] = AwlOperatorTypes.MEM_PA
-
-		# Map for converting operator type to area code
-		self.optype2area = pivotDict(self.area2optype_fetch)
-		self.optype2area[AwlOperatorTypes.MEM_PA]	= self.AREA_P_S
-		self.optype2area[AwlOperatorTypes.MULTI_FB]	= self.AREA_DI_S
-		self.optype2area[AwlOperatorTypes.MULTI_SFB]	= self.AREA_DI_S
-		self.optype2area[AwlOperatorTypes.NAMED_DBVAR]	= self.AREA_DB_S
-		self.optype2area[AwlOperatorTypes.UNSPEC]	= self.AREA_NONE_S
+	# Method for converting operator type to area code
+	def optype2area(self, operType): #@nocy
+#@cy	cdef int64_t optype2area(self, uint32_t operType):
+		if operType == AwlOperatorTypes.MEM_M:
+			return self.AREA_M_S
+		elif operType == AwlOperatorTypes.MEM_E:
+			return self.AREA_E_S
+		elif operType == AwlOperatorTypes.MEM_A:
+			return self.AREA_A_S
+		elif operType == AwlOperatorTypes.MEM_L:
+			return self.AREA_L_S
+		elif operType == AwlOperatorTypes.MEM_VL:
+			return self.AREA_VL_S
+		elif operType == AwlOperatorTypes.MEM_DB or\
+		     operType == AwlOperatorTypes.NAMED_DBVAR:
+			return self.AREA_DB_S
+		elif operType == AwlOperatorTypes.MEM_DI or\
+		     operType == AwlOperatorTypes.MULTI_FB or\
+		     operType == AwlOperatorTypes.MULTI_SFB:
+			return self.AREA_DI_S
+		elif operType == AwlOperatorTypes.MEM_T:
+			return self.EXT_AREA_T_S
+		elif operType == AwlOperatorTypes.MEM_Z:
+			return self.EXT_AREA_Z_S
+		elif operType == AwlOperatorTypes.MEM_PE or\
+		     operType == AwlOperatorTypes.MEM_PA:
+			return self.AREA_P_S
+		elif operType == AwlOperatorTypes.BLKREF_DB:
+			return self.EXT_AREA_BLKREF_DB_S
+		elif operType == AwlOperatorTypes.BLKREF_DI:
+			return self.EXT_AREA_BLKREF_DI_S
+		elif operType == AwlOperatorTypes.BLKREF_FB:
+			return self.EXT_AREA_BLKREF_FB_S
+		elif operType == AwlOperatorTypes.BLKREF_FC:
+			return self.EXT_AREA_BLKREF_FC_S
+		elif operType == AwlOperatorTypes.UNSPEC:
+			return self.AREA_NONE_S
+		return -1
 
 AwlIndirectOpConst = __AwlIndirectOpConstClass() #+cdef-public-__AwlIndirectOpConstClass
