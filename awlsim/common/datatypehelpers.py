@@ -63,19 +63,12 @@ def swapEndianWord(word,						#@nocy
 		   __le=__leWordStruct):				#@nocy
 	return __le.unpack(__be.pack(word))[0]				#@nocy
 
-assert(swapEndianWord(0x1234) == 0x3412)
-assert(swapEndianWord(swapEndianWord(0x1234)) == 0x1234)
-
-
 # Swap the endianness of an S7 dword.
 # The Cython variant of this function is defined in .pxd.in
 def swapEndianDWord(dword,						#@nocy
 		   __be=__dwordStruct,					#@nocy
 		   __le=__leDWordStruct):				#@nocy
 	return __le.unpack(__be.pack(dword))[0]				#@nocy
-
-assert(swapEndianDWord(0x12345678) == 0x78563412)
-assert(swapEndianDWord(swapEndianDWord(0x12345678)) == 0x12345678)
 
 
 # Convert a S7 byte to a signed Python int.
@@ -213,16 +206,6 @@ def floatEqual(fl0, fl1):						#@nocy
 	if not isinstance(fl1, float):
 		fl1 = dwordToPyFloat(fl1)
 	return pyFloatEqual(fl0, fl1)
-
-
-# Constant value sanity checks.
-assert(pyFloatToDWord(floatConst.minNormPosFloat32) == floatConst.minNormPosFloat32DWord)
-assert(pyFloatToDWord(floatConst.minNormNegFloat32) == floatConst.minNormNegFloat32DWord)
-assert(pyFloatToDWord(floatConst.maxNormNegFloat32) == floatConst.maxNormNegFloat32DWord)
-assert(pyFloatToDWord(floatConst.maxNormPosFloat32) == floatConst.maxNormPosFloat32DWord)
-assert(pyFloatToDWord(floatConst.posInfFloat) == floatConst.posInfDWord)
-assert(pyFloatToDWord(floatConst.negInfFloat) == floatConst.negInfDWord)
-assert(pyFloatToDWord(floatConst.nNaNFloat) == floatConst.nNaNDWord)
 
 
 # Round up integer 'n' to a multiple of integer 's'
