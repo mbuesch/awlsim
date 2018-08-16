@@ -376,7 +376,7 @@ class AwlStructInstance(object): #+cdef
 #@cy	cdef object getFieldData(self, AwlStructField field, AwlOffset baseOffset):
 		if baseOffset is None:
 			return self.memory.fetch(field.offset, field.bitSize)
-		return self.memory.fetch(baseOffset + field.offset, field.bitSize)
+		return self.memory.fetch(baseOffset.add(field.offset), field.bitSize)
 
 	def setFieldData(self, field, value, baseOffset): #@nocy
 #@cy	cdef setFieldData(self, AwlStructField field, object value, AwlOffset baseOffset):
@@ -384,7 +384,7 @@ class AwlStructInstance(object): #+cdef
 			self.memory.store(field.offset,
 					  field.bitSize, value)
 		else:
-			self.memory.store(baseOffset + field.offset,
+			self.memory.store(baseOffset.add(field.offset),
 					  field.bitSize, value)
 
 	def getFieldDataByName(self, name):

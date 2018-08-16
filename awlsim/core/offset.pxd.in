@@ -1,5 +1,8 @@
 from awlsim.common.cython_support cimport *
 
+cimport cython
+
+
 cdef class AwlOffset(object):
 	cdef public int64_t byteOffset
 	cdef public int32_t bitOffset
@@ -17,6 +20,18 @@ cdef class AwlOffset(object):
 	cpdef uint32_t toPointerValue(self)
 	cpdef uint64_t toLongBitOffset(self)
 
+	cdef AwlOffset add(self, AwlOffset other)
+	cdef AwlOffset addInt(self, int64_t byteOffset, int32_t bitOffset)
+
+	cdef void iadd(self, AwlOffset other)
+	cdef void iaddInt(self, int64_t byteOffset, int32_t bitOffset)
+
 cdef AwlOffset make_AwlOffset(int64_t byteOffset, int32_t bitOffset)
-cdef AwlOffset make_AwlOffset_fromPointerValue(uint32_t value)
-cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset)
+
+cdef inline AwlOffset make_AwlOffset_fromPointerValue(uint32_t value):
+	return make_AwlOffset((value & 0x0007FFF8u) >> 3u,
+			      (value & 0x7u))
+
+@cython.cdivision(True)
+cdef inline AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset):
+	return make_AwlOffset(bitOffset // 8, bitOffset % 8)

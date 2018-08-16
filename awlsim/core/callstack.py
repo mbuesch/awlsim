@@ -178,7 +178,7 @@ class CallStackElem(object): #+cdef
 		cpu.store(storeOper,
 			  max(0, dbNumber),
 			  widthMaskAll)
-		storeOper.offset = loffset + make_AwlOffset(2, 0)
+		storeOper.offset = loffset.addInt(2, 0)
 		storeOper.width = 32
 		area = AwlIndirectOpConst.optype2area(rvalueOp.operType)
 		if area == PointerConst.AREA_L_S:

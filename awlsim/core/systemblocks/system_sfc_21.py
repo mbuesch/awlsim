@@ -166,7 +166,7 @@ class SFC21(SFC): #+cdef
 		# Copy the data.
 		BVAL_begin = make_AwlOffset_fromPointerValue(BVAL_ptr.toPointerValue())
 		BVAL_offset = BVAL_begin.dup()
-		BVAL_end = BVAL_offset + make_AwlOffset(BVAL_len, 0)
+		BVAL_end = BVAL_offset.addInt(BVAL_len, 0)
 		operType = AwlIndirectOpConst.area2optype((BVAL_ptrArea << PointerConst.AREA_SHIFT),
 							  False)
 		if BVAL_offset.bitOffset or operType < 0:
@@ -177,7 +177,7 @@ class SFC21(SFC): #+cdef
 			return
 		BVAL_fetchOper = make_AwlOperator(operType, 8, BVAL_offset, None)
 		BLK_offset = make_AwlOffset_fromPointerValue(BLK_ptr.toPointerValue())
-		BLK_end = BLK_offset + make_AwlOffset(BLK_len, 0)
+		BLK_end = BLK_offset.addInt(BLK_len, 0)
 		operType = AwlIndirectOpConst.area2optype((BLK_ptrArea << PointerConst.AREA_SHIFT),
 							  False)
 		if BLK_offset.bitOffset or operType < 0:

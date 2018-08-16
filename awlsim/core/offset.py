@@ -28,6 +28,8 @@ from awlsim.common.exceptions import *
 
 from awlsim.core.util import *
 
+#cimport cython #@cy
+
 
 __all__ = [ "AwlOffset",
 	    "make_AwlOffset",
@@ -100,33 +102,45 @@ class AwlOffset(object): #+cdef
 #@cy		return <int64_t>self.byteOffset * <int64_t>8 + <int64_t>self.bitOffset
 		return self.byteOffset * 8 + self.bitOffset	#@nocy
 
-	def __add__(self, other):					#@nocy
-		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
-			     self.bitOffset + other.bitOffset)		#@nocy
-		return make_AwlOffset(bitOffset // 8, bitOffset % 8)	#@nocy
+	def __add__(self, other): #@nocy
+#@cy	def __add__(AwlOffset self, AwlOffset other):
+		return self.add(other)
 
-#@cy	def __add__(self, AwlOffset other):
-#@cy		cdef AwlOffset _self
-#@cy		cdef int64_t bitOffset
-#@cy		_self = self
-#@cy		bitOffset = ((<int64_t>_self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
-#@cy			     <int64_t>_self.bitOffset + <int64_t>other.bitOffset)
-#@cy		return make_AwlOffset(bitOffset // 8u, bitOffset % 8u)
+	def add(self, other): #@nocy
+#@cy	cdef AwlOffset add(self, AwlOffset other):
+		return self.addInt(other.byteOffset, other.bitOffset)
 
-	def __iadd__(self, other):					#@nocy
-		bitOffset = ((self.byteOffset + other.byteOffset) * 8 +	#@nocy
-			     self.bitOffset + other.bitOffset)		#@nocy
-		self.byteOffset = bitOffset // 8			#@nocy
-		self.bitOffset = bitOffset % 8				#@nocy
-		return self						#@nocy
+	def addInt(self, byteOffset, bitOffset): #@nocy
+#@cy	@cython.cdivision(True)
+#@cy	cdef AwlOffset addInt(self, int64_t byteOffset, int32_t bitOffset):
+#@cy		cdef int64_t sumOffset
 
+		sumOffset = ((self.byteOffset + byteOffset) * 8 +	#@nocy
+			     self.bitOffset + bitOffset)		#@nocy
+#@cy		sumOffset = ((<int64_t>self.byteOffset + <int64_t>byteOffset) * <int64_t>8 +
+#@cy			     <int64_t>self.bitOffset + <int64_t>bitOffset)
+		return make_AwlOffset(sumOffset // 8, sumOffset % 8)
+
+	def __iadd__(self, other): #@nocy
 #@cy	def __iadd__(self, AwlOffset other):
-#@cy		cdef int64_t bitOffset
-#@cy		bitOffset = ((<int64_t>self.byteOffset + <int64_t>other.byteOffset) * <int64_t>8 +
-#@cy			     <int64_t>self.bitOffset + <int64_t>other.bitOffset)
-#@cy		self.byteOffset = bitOffset // 8u
-#@cy		self.bitOffset = bitOffset % 8u
-#@cy		return self
+		self.iadd(other)
+		return self
+
+	def iadd(self, other): #@nocy
+#@cy	cdef void iadd(self, AwlOffset other):
+		self.iaddInt(other.byteOffset, other.bitOffset)
+
+	def iaddInt(self, byteOffset, bitOffset): #@nocy
+#@cy	@cython.cdivision(True)
+#@cy	cdef void iaddInt(self, int64_t byteOffset, int32_t bitOffset):
+#@cy		cdef int64_t sumOffset
+
+		sumOffset = ((self.byteOffset + byteOffset) * 8 +	#@nocy
+			     self.bitOffset + bitOffset)		#@nocy
+#@cy		sumOffset = ((<int64_t>self.byteOffset + <int64_t>byteOffset) * <int64_t>8 +
+#@cy			     <int64_t>self.bitOffset + <int64_t>bitOffset)
+		self.byteOffset = sumOffset // 8
+		self.bitOffset = sumOffset % 8
 
 	# Round the offset to a multiple of 'byteBase' bytes.
 	# Returns an AwlOffset.
@@ -176,16 +190,15 @@ def make_AwlOffset(byteOffset, bitOffset, AwlOffset=AwlOffset):		#@nocy
 
 #
 # make_AwlOffset_fromPointerValue() - Construct an AwlOffset from a S7 pointer value.
+# The Cython variant of this function is defined in .pxd.in
 #
-def make_AwlOffset_fromPointerValue(value, make_AwlOffset=make_AwlOffset): #@nocy
-#cdef AwlOffset make_AwlOffset_fromPointerValue(uint32_t value):	#@cy
-	return make_AwlOffset((value & 0x0007FFF8) >> 3,
-			      (value & 0x7))
+def make_AwlOffset_fromPointerValue(value, make_AwlOffset=make_AwlOffset):	#@nocy
+	return make_AwlOffset((value & 0x0007FFF8) >> 3,			#@nocy
+			      (value & 0x7))					#@nocy
 
 #
 # make_AwlOffset_fromLongBitOffset() - Construct an AwlOffset from a bit offset.
+# The Cython variant of this function is defined in .pxd.in
 #
 def make_AwlOffset_fromLongBitOffset(bitOffset, make_AwlOffset=make_AwlOffset): #@nocy
 	return make_AwlOffset(bitOffset // 8, bitOffset % 8)			#@nocy
-#cdef AwlOffset make_AwlOffset_fromLongBitOffset(int64_t bitOffset):		#@cy
-#	return make_AwlOffset(bitOffset // 8u, bitOffset % 8u)			#@cy

@@ -2,7 +2,7 @@
 #
 # AWL simulator - datablocks
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ class DB(Block): #+cdef
 						operator.width)
 			else:
 				return self.structInstance.memory.fetch(
-						baseOffset + operator.offset,
+						baseOffset.add(operator.offset),
 						operator.width)
 		raise AwlSimError("Fetch from read protected DB %d" % self.index)
 
@@ -96,7 +96,7 @@ class DB(Block): #+cdef
 						value)
 			else:
 				self.structInstance.memory.store(
-						baseOffset + operator.offset,
+						baseOffset.add(operator.offset),
 						operator.width,
 						value)
 		else:

@@ -1506,7 +1506,7 @@ class S7CPU(object): #+cdef
 		# Add possible sub-offsets (ARRAY, STRUCT) to the offset.
 		subOffset = operator.offset.subOffset
 		if subOffset is not None:
-			finalOp.offset += subOffset
+			finalOp.offset.iadd(subOffset)
 		# Reparent the operator to the originating instruction.
 		# This is especially important for T and Z fetches due
 		# to their semantic dependency on the instruction being used.
@@ -1828,7 +1828,7 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, allowedWidths)
 
 		lstack = self.activeLStack
-		return lstack.memory.fetch(lstack.topFrameOffset + operator.offset,
+		return lstack.memory.fetch(lstack.topFrameOffset.add(operator.offset),
 					   operator.width)
 
 	def __fetchVL(self, operator, allowedWidths): #@nocy
@@ -2127,7 +2127,7 @@ class S7CPU(object): #+cdef
 			self.__storeWidthError(operator, allowedWidths)
 
 		lstack = self.activeLStack
-		lstack.memory.store(lstack.topFrameOffset + operator.offset,
+		lstack.memory.store(lstack.topFrameOffset.add(operator.offset),
 				    operator.width,
 				    value)
 
