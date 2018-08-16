@@ -1405,16 +1405,24 @@ class S7CPU(object): #+cdef
 
 	def getAccu(self, index): #@nocy
 #@cy	cdef Accu getAccu(self, uint32_t index):
-		if index < 1 or index > self.specs.nrAccus:
-			raise AwlSimError("Invalid ACCU offset") #@nocov
-		return (self.accu1, self.accu2,
-			self.accu3, self.accu4)[index - 1]
+		if index == 1:
+			return self.accu1
+		elif index == 2:
+			return self.accu2
+		if self.specs.nrAccus > 2:
+			if index == 3:
+				return self.accu3
+			elif index == 4:
+				return self.accu4
+		raise AwlSimError("Invalid ACCU offset") #@nocov
 
 	def getAR(self, index): #@nocy
 #@cy	cdef Addressregister getAR(self, uint32_t index):
-		if index < 1 or index > 2:
-			raise AwlSimError("Invalid AR offset") #@nocov
-		return (self.ar1, self.ar2)[index - 1]
+		if index == 1:
+			return self.ar1
+		elif index == 2:
+			return self.ar2
+		raise AwlSimError("Invalid AR offset") #@nocov
 
 	def getTimer(self, index): #@nocy
 #@cy	cdef Timer getTimer(self, uint32_t index):
@@ -1449,10 +1457,9 @@ class S7CPU(object): #+cdef
 			raise AwlSimError("MCR stack overflow")
 
 	def mcrStackPop(self): #+cdef
-		try:
-			self.mcrStack.pop()
-		except IndexError:
+		if not self.mcrStack:
 			raise AwlSimError("MCR stack underflow")
+		self.mcrStack.pop()
 
 	def __translateFCNamedLocalOper(self, operator, store): #@nocy
 #@cy	cdef AwlOperator __translateFCNamedLocalOper(self, AwlOperator operator, _Bool store):
