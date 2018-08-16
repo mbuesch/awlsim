@@ -1,5 +1,6 @@
 from awlsim.common.cython_support cimport *
 from awlsim.core.memory cimport *
+from awlsim.core.offset cimport *
 
 cdef struct LStackFrame:
 	uint32_t byteOffset
@@ -12,7 +13,7 @@ cdef class LStackAllocator(object):
 	cdef public uint32_t globAllocBits
 
 	cdef LStackFrame *topFrame
-	cdef public topFrameOffset
+	cdef public AwlOffset topFrameOffset
 
 	cdef resize(self, uint32_t maxAllocBytes)
 	cdef void reset(self)
