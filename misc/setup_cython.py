@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.14
+#   v1.15
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -322,6 +322,9 @@ def registerCythonModule(baseDir, sourceModName):
 						define_macros=[
 							("CYTHON_TRACE",	str(int(profileEnabled))),
 							("CYTHON_TRACE_NOGIL",	str(int(profileEnabled))),
+						],
+						extra_compile_args=[
+							"-Wno-maybe-uninitialized",
 						]
 					)
 				)
