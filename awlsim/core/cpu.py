@@ -1845,7 +1845,7 @@ class S7CPU(object): #+cdef
 		if not prevFrame:
 			raise AwlSimError("Fetch of parent localstack, "
 				"but no parent present.")
-		return lstack.memory.fetch(make_AwlOffset(prevFrame.byteOffset, 0) + operator.offset,
+		return lstack.memory.fetch(operator.offset.addInt(prevFrame.byteOffset, 0),
 					   operator.width)
 
 	def __fetchDB(self, operator, allowedWidths): #@nocy
@@ -2144,7 +2144,7 @@ class S7CPU(object): #+cdef
 		if not prevFrame:
 			raise AwlSimError("Store to parent localstack, "
 				"but no parent present.")
-		lstack.memory.store(make_AwlOffset(prevFrame.byteOffset, 0) + operator.offset,
+		lstack.memory.store(operator.offset.addInt(prevFrame.byteOffset, 0),
 				    operator.width,
 				    value)
 
