@@ -884,7 +884,7 @@ class S7CPU(object): #+cdef
 				cse.ip += self.relativeJump
 				cse = self.callStackTop
 				self.__insnCount = insnCount = (self.__insnCount + 1) & 0x3FFFFFFF
-				if not (insnCount & 0x3F):
+				if not (insnCount & self.__timestampUpdInterMask):
 					self.updateTimestamp()
 					if self.now - self.cycleStartTime > self.cycleTimeLimit:
 						self.__cycleTimeExceed()
@@ -955,8 +955,10 @@ class S7CPU(object): #+cdef
 #@cy		cdef double firstSample
 #@cy		cdef double avgInsnPerCycle
 #@cy		cdef double avgTimePerInsn
+#@cy		cdef double insnPerSecond
 #@cy		cdef uint32_t cycleCount
 #@cy		cdef uint32_t insnCount
+#@cy		cdef double newTimestampUpdInter
 
 		# Run the actual OB1 code
 		self.__runOB(self.ob1)
@@ -1002,11 +1004,25 @@ class S7CPU(object): #+cdef
 				if avgInsnPerCycle > 0.0:
 					avgTimePerInsn = avgCycleTime / avgInsnPerCycle
 					if avgTimePerInsn > 0.0:
-						self.insnPerSecond = 1.0 / avgTimePerInsn
+						self.insnPerSecond = insnPerSecond = 1.0 / avgTimePerInsn
 					else:
-						self.insnPerSecond = 0.0
+						self.insnPerSecond = insnPerSecond = 0.0
 				else:
-					self.insnPerSecond = 0.0
+					self.insnPerSecond = insnPerSecond = 0.0
+
+				# Re-calculate the timestamp update interval.
+				if insnPerSecond > 0.0:
+					# The desired timestamp update interval is at least once per millisecond.
+					# Reduce the calculated value by 10% to compensate for jitter.
+					newTimestampUpdInter = (insnPerSecond / 1000.0) * 0.9
+					# Get the average of the current and the new update interval
+					newTimestampUpdInter = (self.__timestampUpdInter + newTimestampUpdInter) / 2.0
+					# Limit the update interval
+					newTimestampUpdInter = min(max(newTimestampUpdInter, 32.0), 65536.0)
+					self.__timestampUpdInter = newTimestampUpdInter
+					# Calculate the instruction counter mask that triggers
+					# the call to updateTimestamp()
+					self.__timestampUpdInterMask = getMSB(int(newTimestampUpdInter)) - 1
 
 				# Reset the counters
 				self.__speedMeasureStartTime = self.now
@@ -1027,6 +1043,10 @@ class S7CPU(object): #+cdef
 
 	# Initialize time stamp.
 	def initializeTimestamp(self):
+		# Initialize the timestamp update interval to a small constant.
+		self.__timestampUpdInter = 64
+		self.__timestampUpdInterMask = getMSB(int(self.__timestampUpdInter)) - 1
+
 		# Initialize the time stamp so that it will
 		# overflow 31 bit millisecond count within
 		# 100 milliseconds after startup.
@@ -2368,6 +2388,10 @@ class S7CPU(object): #+cdef
 			   self.insnPerSecondHR,
 			   self.usPerInsnHR,
 			   self.avgInsnPerCycle))
+		if Logging.loglevel >= Logging.LOG_VERBOSE:
+			ret.append("   time:  update-interval: %.01f/0x%X" % (
+				   self.__timestampUpdInter,
+				   self.__timestampUpdInterMask))
 		avgCycleTime = self.avgCycleTime
 		minCycleTime = self.minCycleTime
 		maxCycleTime = self.maxCycleTime
