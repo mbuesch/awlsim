@@ -45,6 +45,7 @@ __all__ = [
 	"floatEqual",
 	"roundUp",
 	"intDivRoundUp",
+	"getMSB",
 ]
 
 
@@ -234,3 +235,15 @@ def roundUp(n, s):				#@nocy
 # The Cython variant of this function is defined in .pxd.in
 def intDivRoundUp(n, d):			#@nocy
 	return (n + d - 1) // d			#@nocy
+
+# Get the most significant bit set in a 32 bit integer
+# and return an integer with only that bit set.
+# If the value is bigger than 0xFFFFFFFF the behavior is undefined.
+def getMSB(value): #@nocy
+#cdef uint32_t getMSB(uint32_t value): #@cy
+	value |= value >> 1
+	value |= value >> 2
+	value |= value >> 4
+	value |= value >> 8
+	value |= value >> 16
+	return value ^ (value >> 1)

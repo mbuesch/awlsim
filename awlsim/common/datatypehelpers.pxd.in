@@ -121,3 +121,5 @@ cdef inline uint32_t roundUp(uint32_t n, uint32_t s):
 
 cdef inline uint32_t intDivRoundUp(uint32_t n, uint32_t d):
 	return (n + d - 1u) // d
+
+cdef uint32_t getMSB(uint32_t value)
