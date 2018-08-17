@@ -1,0 +1,12 @@
+from awlsim.common.cython_support cimport *
+
+
+cdef class MovingAvg(object):
+	cdef uint32_t __size
+	cdef double *__items
+	cdef uint32_t __nrItems
+	cdef uint32_t __beginPtr
+	cdef uint32_t __endPtr
+	cdef double __avgSum
+
+	cdef double calculate(self, double value)
