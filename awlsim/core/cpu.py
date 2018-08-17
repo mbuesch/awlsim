@@ -38,6 +38,7 @@ from awlsim.common.exceptions import *
 from awlsim.common.env import *
 from awlsim.common.version import *
 from awlsim.common.monotonic import * #+cimport
+from awlsim.common.movingavg import * #+cimport
 
 from awlsim.library.libentry import *
 
@@ -788,9 +789,7 @@ class S7CPU(object): #+cdef
 		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
-		self.__avgCycleTimes = deque()
-		self.__avgCycleTimesCount = 0
-		self.__avgCycleTimesSum = 0.0
+		self.__cycleTimeMovAvg = MovingAvg(3)
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
@@ -947,12 +946,10 @@ class S7CPU(object): #+cdef
 			self.__runOB(self.obs[100])
 
 	# Run one cycle of the user program
+#@cy	@cython.cdivision(True)
 	def runCycle(self): #+cdef
 #@cy		cdef double elapsedTime
 #@cy		cdef double cycleTime
-#@cy		cdef double avgCycleTime
-#@cy		cdef double avgCycleTimesSum
-#@cy		cdef double firstSample
 #@cy		cdef double avgInsnPerCycle
 #@cy		cdef double avgTimePerInsn
 #@cy		cdef double insnPerSecond
@@ -985,24 +982,12 @@ class S7CPU(object): #+cdef
 				self.minCycleTime = min(self.minCycleTime, cycleTime)
 
 				# Calculate and store moving average cycle time.
-				avgCycleTimes = self.__avgCycleTimes
-				avgCycleTimes.append(cycleTime)
-				avgCycleTimesSum = self.__avgCycleTimesSum
-				if self.__avgCycleTimesCount >= 3: # 3 samples
-					firstSample = avgCycleTimes.popleft()
-					avgCycleTimesSum -= firstSample
-					avgCycleTimesSum += cycleTime
-					self.avgCycleTime = avgCycleTime = avgCycleTimesSum / 3.0 # 3 samples
-				else:
-					avgCycleTimesSum += cycleTime
-					self.__avgCycleTimesCount += 1
-					self.avgCycleTime = avgCycleTime = 0.0
-				self.__avgCycleTimesSum = avgCycleTimesSum
+				self.avgCycleTime = self.__cycleTimeMovAvg.calculate(cycleTime)
 
 				# Calculate instruction statistics.
 				self.avgInsnPerCycle = avgInsnPerCycle = insnCount / cycleCount
 				if avgInsnPerCycle > 0.0:
-					avgTimePerInsn = avgCycleTime / avgInsnPerCycle
+					avgTimePerInsn = self.avgCycleTime / avgInsnPerCycle
 					if avgTimePerInsn > 0.0:
 						self.insnPerSecond = insnPerSecond = 1.0 / avgTimePerInsn
 					else:

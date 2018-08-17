@@ -1,4 +1,6 @@
 from awlsim.common.cython_support cimport *
+from awlsim.common.cpuspecs cimport *
+from awlsim.common.movingavg cimport *
 from awlsim.core.statusword cimport *
 from awlsim.core.callstack cimport *
 from awlsim.core.lstack cimport *
@@ -9,7 +11,6 @@ from awlsim.core.blocks cimport *
 from awlsim.core.datablocks cimport *
 from awlsim.core.timers cimport *
 from awlsim.core.counters cimport *
-from awlsim.common.cpuspecs cimport *
 
 
 cdef class S7CPU(object):
@@ -86,9 +87,7 @@ cdef class S7CPU(object):
 	cdef public double minCycleTime
 	cdef public double maxCycleTime
 	cdef public double avgCycleTime
-	cdef public object __avgCycleTimes
-	cdef public uint32_t __avgCycleTimesCount
-	cdef public double __avgCycleTimesSum
+	cdef public MovingAvg __cycleTimeMovAvg
 	cdef public double startupTime
 	cdef public double __speedMeasureStartTime
 	cdef public uint32_t __speedMeasureStartInsnCount
