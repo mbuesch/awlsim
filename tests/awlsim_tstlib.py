@@ -11,3 +11,6 @@ assert_ge = __nose.tools.assert_greater_equal
 assert_is = __nose.tools.assert_is
 assert_is_not = __nose.tools.assert_is_not
 assert_is_none = __nose.tools.assert_is_none
+assert_float_eq = __nose.tools.assert_almost_equal
+assert_float_ne = __nose.tools.assert_not_almost_equal
+assert_raises = __nose.tools.assert_raises
