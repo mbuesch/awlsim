@@ -1001,7 +1001,7 @@ class S7CPU(object): #+cdef
 					# Reduce the calculated value by 10% to compensate for jitter.
 					newTimestampUpdInter = (insnPerSecond / 1000.0) * 0.9
 					# Get the average of the current and the new update interval
-					newTimestampUpdInter = (self.__timestampUpdInter + newTimestampUpdInter) / 2.0
+					newTimestampUpdInter = self.__timestampUpdMovAvg.calculate(newTimestampUpdInter)
 					# Limit the update interval
 					newTimestampUpdInter = min(max(newTimestampUpdInter, 32.0), 65536.0)
 					self.__timestampUpdInter = newTimestampUpdInter
@@ -1029,6 +1029,7 @@ class S7CPU(object): #+cdef
 	# Initialize time stamp.
 	def initializeTimestamp(self):
 		# Initialize the timestamp update interval to a small constant.
+		self.__timestampUpdMovAvg = MovingAvg(9)
 		self.__timestampUpdInter = 64
 		self.__timestampUpdInterMask = getMSB(int(self.__timestampUpdInter)) - 1
 

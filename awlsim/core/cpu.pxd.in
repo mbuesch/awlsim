@@ -92,6 +92,7 @@ cdef class S7CPU(object):
 	cdef public double __speedMeasureStartTime
 	cdef public uint32_t __speedMeasureStartInsnCount
 	cdef public uint32_t __speedMeasureStartCycleCount
+	cdef public MovingAvg __timestampUpdMovAvg
 	cdef public double __timestampUpdInter
 	cdef public uint32_t __timestampUpdInterMask
 
