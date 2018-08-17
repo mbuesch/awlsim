@@ -1274,7 +1274,8 @@ class S7CPU(object): #+cdef
 #@cy		cdef CodeBlock fb
 
 		fb = self.fbs[blockOper.offset.fbNumber]
-		base = make_AwlOffset_fromPointerValue(self.ar2.get()) + blockOper.offset
+		base = make_AwlOffset_fromPointerValue(self.ar2.get())
+		base.iadd(blockOper.offset)
 		cse = make_CallStackElem(self, fb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
@@ -1286,7 +1287,8 @@ class S7CPU(object): #+cdef
 #@cy		cdef CodeBlock sfb
 
 		sfb = self.sfbs[blockOper.offset.fbNumber]
-		base = make_AwlOffset_fromPointerValue(self.ar2.get()) + blockOper.offset
+		base = make_AwlOffset_fromPointerValue(self.ar2.get())
+		base.iadd(blockOper.offset)
 		cse = make_CallStackElem(self, sfb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
 		return cse
