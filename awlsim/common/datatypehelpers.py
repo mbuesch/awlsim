@@ -140,6 +140,26 @@ def dwordToPyFloat(dword,						#@nocy
 
 
 class FloatConst(object): #+cdef
+	__slots__ = (
+		"minNormPosFloat32DWord",
+		"minNormPosFloat32",
+		"minNormNegFloat32DWord",
+		"minNormNegFloat32",
+		"maxNormNegFloat32DWord",
+		"maxNormNegFloat32",
+		"maxNormPosFloat32DWord",
+		"maxNormPosFloat32",
+		"posInfDWord",
+		"posInfFloat",
+		"negInfDWord",
+		"negInfFloat",
+		"pNaNDWord",
+		"nNaNDWord",
+		"nNaNFloat",
+		"negZeroDWord",
+		"epsilonFloat",
+	)
+
 	def __init__(self):
 		# The smallest normalized positive 32-bit float.
 		self.minNormPosFloat32DWord = 0x00000001
@@ -171,6 +191,9 @@ class FloatConst(object): #+cdef
 		# Negative NaN
 		self.nNaNDWord = 0xFFFFFFFF
 		self.nNaNFloat = dwordToPyFloat(self.nNaNDWord)
+
+		# Negative zero
+		self.negZeroDWord = 0x80000000
 
 		# Compare threshold
 		self.epsilonFloat = 0.0000001

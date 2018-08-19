@@ -98,6 +98,8 @@ cdef class FloatConst(object):
 	cdef public uint32_t nNaNDWord
 	cdef public double nNaNFloat
 
+	cdef public uint32_t negZeroDWord
+
 	cdef public double epsilonFloat
 
 cdef public FloatConst floatConst
