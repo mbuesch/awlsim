@@ -40,6 +40,7 @@ __all__ = [
 	"dwordToPyFloat",
 	"floatConst",
 	"isNaN",
+	"isInf",
 	"isDenormalPyFloat",
 	"pyFloatEqual",
 	"floatEqual",
@@ -206,6 +207,10 @@ floatConst = FloatConst() #+cdef-FloatConst
 def isNaN(dword):							#@nocy
 	return (dword & 0x7FFFFFFF) > 0x7F800000			#@nocy
 
+# Check if dword is positive or negative infinity.
+# The Cython variant of this function is defined in .pxd.in
+def isInf(dword):							#@nocy
+	return (dword & 0x7FFFFFFF) == 0x7F800000			#@nocy
 
 # Check if a Python float is in the denormalized range.
 # The Cython variant of this function is defined in .pxd.in

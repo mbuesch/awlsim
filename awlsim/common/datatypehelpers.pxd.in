@@ -106,7 +106,10 @@ cdef public FloatConst floatConst
 
 
 cdef inline _Bool isNaN(uint32_t dword):
-	return (dword & 0x7FFFFFFF) > 0x7F800000
+	return (dword & 0x7FFFFFFFu) > 0x7F800000u
+
+cdef inline _Bool isInf(uint32_t dword):
+	return (dword & 0x7FFFFFFFu) == 0x7F800000u
 
 cdef inline _Bool isDenormalPyFloat(double pyfl):
 	return ((pyfl > 0.0 and pyfl < floatConst.minNormPosFloat32) or
