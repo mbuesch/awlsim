@@ -25,6 +25,10 @@
 	T		MD 20
 
 
+	L		-0.0
+	__ASSERT==	__ACCU 1,	DW#16#80000000
+
+
 	// Run tests
 
 
@@ -65,6 +69,182 @@
 
 
 	__STWRST
+	L		__CNST_PINF
+	L		1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PINF
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PINF
+	L		-1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PINF
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NINF
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		-1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NINF
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PNAN
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		-1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PNAN
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NNAN
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		-1.0
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NNAN
+	+R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
 	L		1.0
 	L		1.0
 	-R
@@ -98,6 +278,182 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		__CNST_PINF
+	L		1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PINF
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PINF
+	L		-1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PINF
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NINF
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		-1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NINF
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PNAN
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		-1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PNAN
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NNAN
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		-1.0
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NNAN
+	-R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
 
 
 	__STWRST
@@ -137,6 +493,278 @@
 
 
 	__STWRST
+	L		__CNST_PINF
+	L		1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PINF
+	*R
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PINF
+	L		-1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PINF
+	*R
+	__ASSERT==	__ACCU 1,	-1.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NINF
+	*R
+	__ASSERT==	__ACCU 1,	-1.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		-1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NINF
+	*R
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PNAN
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		-1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PNAN
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NNAN
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		-1.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NNAN
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  Inf * 0.0 = NaN
+	__STWRST
+	L		__CNST_PINF
+	L		0.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  -Inf * 0.0 = NaN
+	__STWRST
+	L		__CNST_NINF
+	L		0.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  0.0 * Inf = NaN
+	__STWRST
+	L		0.0
+	L		__CNST_PINF
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  0.0 * -Inf = NaN
+	__STWRST
+	L		0.0
+	L		__CNST_NINF
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  Inf * -0.0 = NaN
+	__STWRST
+	L		__CNST_PINF
+	L		-0.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  -Inf * -0.0 = NaN
+	__STWRST
+	L		__CNST_NINF
+	L		-0.0
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  -0.0 * Inf = NaN
+	__STWRST
+	L		-0.0
+	L		__CNST_PINF
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test:  -0.0 * -Inf = NaN
+	__STWRST
+	L		-0.0
+	L		__CNST_NINF
+	*R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
 	L		3.0
 	L		2.0
 	/R
@@ -171,12 +799,98 @@
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 
-
-	// Test:  Inf * 0.0 = NaN
 	__STWRST
 	L		__CNST_PINF
-	L		0.0
-	*R
+	L		1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_PINF
+	/R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		__CNST_PINF
+	L		-1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PINF
+	/R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NINF
+	/R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		__CNST_NINF
+	L		-1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NINF
+	/R
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		1.0
+	/R
 	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
@@ -184,11 +898,76 @@
 	__ASSERT==	__STW OS,	1
 
 
-	// Test:  -Inf * 0.0 = NaN
 	__STWRST
-	L		__CNST_NINF
-	L		0.0
-	*R
+	L		1.0
+	L		__CNST_PNAN
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_PNAN
+	L		-1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_PNAN
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		1.0
+	L		__CNST_NNAN
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		__CNST_NNAN
+	L		-1.0
+	/R
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	__STWRST
+	L		-1.0
+	L		__CNST_NNAN
+	/R
 	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
@@ -232,13 +1011,24 @@
 	__ASSERT==	__STW OS,	1
 
 
-	// Test: -pos
+	// Test: -(0.0)
 	__STWRST
-	L		1.5
+	L		0.0
 	NEGR
-	__ASSERT==	__ACCU 1,	-1.5
+	__ASSERT==	__ACCU 1,	-0.0
 	__ASSERT==	__STW A1,	0
-	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: -(-0.0)
+	__STWRST
+	L		-0.0
+	NEGR
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
 
@@ -248,10 +1038,68 @@
 	L		-1.5
 	NEGR
 	__ASSERT==	__ACCU 1,	1.5
-	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: -(pInf)
+	__STWRST
+	L		__CNST_PINF
+	NEGR
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: -(nInf)
+	__STWRST
+	L		__CNST_NINF
+	NEGR
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: -(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	NEGR
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: -(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	NEGR
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: abs(0.0)
+	__STWRST
+	L		0.0
+	ABS
+	__ASSERT==	__ACCU 1,	0.0
+
+
+	// Test: abs(-0.0)
+	__STWRST
+	L		-0.0
+	ABS
+	__ASSERT==	__ACCU 1,	0.0
 
 
 	// Test: abs(pos)
@@ -266,6 +1114,55 @@
 	L		-1.5
 	ABS
 	__ASSERT==	__ACCU 1,	1.5
+
+
+	// Test: abs(pInf)
+	__STWRST
+	L		__CNST_PINF
+	ABS
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+
+
+	// Test: abs(nInf)
+	__STWRST
+	L		__CNST_NINF
+	ABS
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+
+
+	// Test: abs(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	ABS
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+
+
+	// Test: abs(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	ABS
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+
+
+	// Test: 0^2
+	__STWRST
+	L		0.0
+	SQR
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+	// Test: -0^2
+	__STWRST
+	L		-0.0
+	SQR
+	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
 
 
 	// Test: pos^2
@@ -288,6 +1185,50 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: pInf^2
+	__STWRST
+	L		__CNST_PINF
+	SQR
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: nInf^2
+	__STWRST
+	L		__CNST_NINF
+	SQR
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: pNaN^2
+	__STWRST
+	L		__CNST_PNAN
+	SQR
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: nNaN^2
+	__STWRST
+	L		__CNST_NNAN
+	SQR
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
 
 
 	// Test: sqrt(pos)
@@ -334,9 +1275,64 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: sqrt(pInf)
+	__STWRST
+	L		__CNST_PINF
+	SQRT
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: sqrt(nInf)
+	__STWRST
+	L		__CNST_NINF
+	SQRT
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: sqrt(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	SQRT
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: sqrt(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	SQRT
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: exp(0.0)
 	__STWRST
 	L		0.0
+	EXP
+	__ASSERT==	__ACCU 1,	1.0
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	0
+	__ASSERT==	__STW OS,	0
+
+
+	// Test: exp(-0.0)
+	__STWRST
+	L		-0.0
 	EXP
 	__ASSERT==	__ACCU 1,	1.0
 	__ASSERT==	__STW A1,	1
@@ -365,6 +1361,50 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: exp(pInf)
+	__STWRST
+	L		__CNST_PINF
+	EXP
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: exp(nInf)
+	__STWRST
+	L		__CNST_NINF
+	EXP
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: exp(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	EXP
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: exp(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	EXP
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
 
 
 	// Test: ln(0.0)
@@ -411,6 +1451,50 @@
 	__ASSERT==	__STW OS,	1
 
 
+	// Test: ln(pInf)
+	__STWRST
+	L		__CNST_PINF
+	LN
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: ln(nInf)
+	__STWRST
+	L		__CNST_NINF
+	LN
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: ln(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	LN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: ln(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	LN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: sin(0.0 deg)
 	__STWRST
 	L		0.0
@@ -426,7 +1510,7 @@
 	__STWRST
 	L		-0.0
 	SIN
-	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__ACCU 1,	-0.0
 	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
@@ -475,6 +1559,50 @@
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: sin(pInf)
+	__STWRST
+	L		__CNST_PINF
+	SIN
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: sin(nInf)
+	__STWRST
+	L		__CNST_NINF
+	SIN
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: sin(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	SIN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: sin(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	SIN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
 
 
 	// Test: cos(0.0 deg)
@@ -543,6 +1671,50 @@
 	__ASSERT==	__STW OS,	0
 
 
+	// Test: cos(pInf)
+	__STWRST
+	L		__CNST_PINF
+	COS
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: cos(nInf)
+	__STWRST
+	L		__CNST_NINF
+	COS
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: cos(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	COS
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: cos(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	COS
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: tan(0.0 deg)
 	__STWRST
 	L		0.0
@@ -558,7 +1730,7 @@
 	__STWRST
 	L		-0.0
 	TAN
-	__ASSERT==	__ACCU 1,	0.0
+	__ASSERT==	__ACCU 1,	-0.0
 	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	0
 	__ASSERT==	__STW OV,	0
@@ -631,6 +1803,50 @@
 	__ASSERT==	__STW OS,	0
 
 
+	// Test: tan(pInf)
+	__STWRST
+	L		__CNST_PINF
+	TAN
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: tan(nInf)
+	__STWRST
+	L		__CNST_NINF
+	TAN
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: tan(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	TAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: tan(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	TAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: asin(0.0)
 	__STWRST
 	L		0.0
@@ -664,7 +1880,7 @@
 	__ASSERT==	__STW OS,	0
 
 
-	// Test: sin(-1.0)
+	// Test: asin(-1.0)
 	__STWRST
 	L		-1.0
 	ASIN
@@ -673,6 +1889,50 @@
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: asin(pInf)
+	__STWRST
+	L		__CNST_PINF
+	ASIN
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: asin(nInf)
+	__STWRST
+	L		__CNST_NINF
+	ASIN
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: asin(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	ASIN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: asin(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	ASIN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
 
 
 	// Test: acos(1.0)
@@ -708,6 +1968,50 @@
 	__ASSERT==	__STW OS,	0
 
 
+	// Test: acos(pInf)
+	__STWRST
+	L		__CNST_PINF
+	ACOS
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: acos(nInf)
+	__STWRST
+	L		__CNST_NINF
+	ACOS
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: acos(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	ACOS
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: acos(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	ACOS
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
 	// Test: atan(0.0)
 	__STWRST
 	L		0.0
@@ -741,28 +2045,6 @@
 	__ASSERT==	__STW OS,	0
 
 
-	// Test: atan(inf)
-	__STWRST
-	L		DW#16#7F800000
-	ATAN
-	__ASSERT==	__ACCU 1,	MD 8	// PI/2
-	__ASSERT==	__STW A1,	1
-	__ASSERT==	__STW A0,	0
-	__ASSERT==	__STW OV,	0
-	__ASSERT==	__STW OS,	0
-
-
-	// Test: atan(-inf)
-	__STWRST
-	L		DW#16#FF800000
-	ATAN
-	__ASSERT==	__ACCU 1,	MD 12	// -PI/2
-	__ASSERT==	__STW A1,	0
-	__ASSERT==	__STW A0,	1
-	__ASSERT==	__STW OV,	0
-	__ASSERT==	__STW OS,	0
-
-
 	// Test: atan(-1.0)
 	__STWRST
 	L		-1.0
@@ -772,6 +2054,50 @@
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	0
 	__ASSERT==	__STW OS,	0
+
+
+	// Test: atan(pInf)
+	__STWRST
+	L		__CNST_PINF
+	ATAN
+	__ASSERT==	__ACCU 1,	__CNST_PINF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: atan(nInf)
+	__STWRST
+	L		__CNST_NINF
+	ATAN
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: atan(pNaN)
+	__STWRST
+	L		__CNST_PNAN
+	ATAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// Test: atan(nNaN)
+	__STWRST
+	L		__CNST_NNAN
+	ATAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
 
 
 	// Test: 1 -> 1.0
