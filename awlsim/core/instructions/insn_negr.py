@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,9 +39,4 @@ class AwlInsn_NEGR(AwlInsn): #+cdef
 		self.assertOpCount(0)
 
 	def run(self): #+cdef
-#@cy		cdef S7StatusWord s
-#@cy		cdef double accu1
-
-		accu1 = -(self.cpu.accu1.getPyFloat())
-		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.statusWord.setForFloatingPoint(accu1)
+		self.cpu.accu1.set(self.cpu.accu1.get() ^ 0x80000000) #+suffix-u

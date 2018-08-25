@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -40,12 +41,22 @@ class AwlInsn_MU_R(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef double accu1
-#@cy		cdef double accu2
+#@cy		cdef uint32_t accu1DWord
+#@cy		cdef uint32_t accu2DWord
 #@cy		cdef double prod
 
-		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
-			       self.cpu.accu1.getPyFloat()
-		prod = accu2 * accu1
-		self.cpu.accu1.setPyFloat(prod)
-		self.cpu.statusWord.setForFloatingPoint(prod)
+		s = self.cpu.statusWord
+		accu1DWord = self.cpu.accu1.get()
+		accu2DWord = self.cpu.accu2.get()
+		if isInf(accu1DWord) or isInf(accu2DWord):
+			if isPosNegZero(accu1DWord) or isPosNegZero(accu2DWord):
+				accu1DWord = floatConst.nNaNDWord
+			else:
+				accu1DWord = accu2DWord ^ (accu1DWord & 0x80000000) #+suffix-u
+			self.cpu.accu1.set(accu1DWord)
+			s.setForFloatingPoint(dwordToPyFloat(accu1DWord))
+			s.OV, s.OS = 1, 1
+		else:
+			prod = dwordToPyFloat(accu1DWord) * dwordToPyFloat(accu2DWord)
+			self.cpu.accu1.setPyFloat(prod)
+			s.setForFloatingPoint(prod)

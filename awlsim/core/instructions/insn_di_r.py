@@ -30,6 +30,8 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
+#import cython #@cy
+
 
 class AwlInsn_DI_R(AwlInsn): #+cdef
 
@@ -39,14 +41,21 @@ class AwlInsn_DI_R(AwlInsn): #+cdef
 		AwlInsn.__init__(self, cpu, AwlInsn.TYPE_DI_R, rawInsn, **kwargs)
 		self.assertOpCount(0)
 
+#@cy	@cython.cdivision(True)
 	def run(self): #+cdef
+#@cy		cdef uint32_t accu1DWord
+#@cy		cdef uint32_t accu2DWord
 #@cy		cdef double accu1
 #@cy		cdef double accu2
 #@cy		cdef double quo
 
-		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
-			       self.cpu.accu1.getPyFloat()
-		if accu1 != 0.0: #+likely
+		accu1DWord = self.cpu.accu1.get()
+		accu2DWord = self.cpu.accu2.get()
+		accu1 = dwordToPyFloat(accu1DWord)
+		accu2 = dwordToPyFloat(accu2DWord)
+		if isInf(accu1DWord):
+			quo = 0.0
+		elif accu1 != 0.0:
 			quo = accu2 / accu1
 		else:
 			if accu2 >= 0.0:

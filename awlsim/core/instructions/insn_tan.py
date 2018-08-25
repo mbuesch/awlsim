@@ -49,20 +49,33 @@ class AwlInsn_TAN(AwlInsn): #+cdef
 		self.__piHalfNeg = -math.pi / 2
 
 	def run(self): #+cdef
-#@cy		cdef double accu1
+#@cy		cdef double accu1Float
+#@cy		cdef uint32_t accu1DWord
 
-		accu1 = self.cpu.accu1.getPyFloat()
-		if pyFloatEqual(accu1, self.__piHalf):
-			accu1 = floatConst.posInfFloat
-		elif pyFloatEqual(accu1, self.__piHalfNeg):
-			accu1 = floatConst.negInfFloat
+		accu1DWord = self.cpu.accu1.get()
+		accu1Float = self.cpu.accu1.getPyFloat()
+		if isNaN(accu1DWord):
+			self.cpu.accu1.set(floatConst.pNaNDWord)
+			accu1Float = self.cpu.accu1.getPyFloat()
+		elif accu1DWord == floatConst.negInfDWord or\
+		     accu1DWord == floatConst.posInfDWord or\
+		     accu1DWord == floatConst.negZeroDWord:
+			pass
+		elif pyFloatEqual(accu1Float, self.__piHalf):
+			accu1Float = floatConst.posInfFloat
+			self.cpu.accu1.setPyFloat(accu1Float)
+		elif pyFloatEqual(accu1Float, self.__piHalfNeg):
+			accu1Float = floatConst.negInfFloat
+			self.cpu.accu1.setPyFloat(accu1Float)
 		else:
-			accu1 = tan(accu1)
-			if pyFloatEqual(accu1, -1.0):
-				accu1 = -1.0
-			elif pyFloatEqual(accu1, 0.0):
-				accu1 = 0.0
-			elif pyFloatEqual(accu1, 1.0):
-				accu1 = 1.0
-		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.statusWord.setForFloatingPoint(accu1)
+			accu1Float = tan(accu1Float)
+
+			if pyFloatEqual(accu1Float, -1.0):
+				accu1Float = -1.0
+			elif pyFloatEqual(accu1Float, 0.0):
+				accu1Float = 0.0
+			elif pyFloatEqual(accu1Float, 1.0):
+				accu1Float = 1.0
+
+			self.cpu.accu1.setPyFloat(accu1Float)
+		self.cpu.statusWord.setForFloatingPoint(accu1Float)

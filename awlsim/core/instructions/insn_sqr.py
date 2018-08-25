@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -39,9 +40,18 @@ class AwlInsn_SQR(AwlInsn): #+cdef
 		self.assertOpCount(0)
 
 	def run(self): #+cdef
-#@cy		cdef double accu1
+#@cy		cdef double accu1Float
+#@cy		cdef uint32_t accu1DWord
 
-		accu1 = self.cpu.accu1.getPyFloat()
-		accu1 **= 2
-		self.cpu.accu1.setPyFloat(accu1)
-		self.cpu.statusWord.setForFloatingPoint(accu1)
+		accu1DWord = self.cpu.accu1.get()
+		accu1Float = self.cpu.accu1.getPyFloat()
+		if isNaN(accu1DWord):
+			self.cpu.accu1.set(floatConst.pNaNDWord)
+			accu1Float = self.cpu.accu1.getPyFloat()
+		elif accu1DWord == floatConst.negInfDWord or\
+		     accu1DWord == floatConst.posInfDWord:
+			pass
+		else:
+			accu1Float **= 2
+			self.cpu.accu1.setPyFloat(accu1Float)
+		self.cpu.statusWord.setForFloatingPoint(accu1Float)
