@@ -111,6 +111,9 @@ cdef inline _Bool isNaN(uint32_t dword):
 cdef inline _Bool isInf(uint32_t dword):
 	return (dword & 0x7FFFFFFFu) == 0x7F800000u
 
+cdef inline _Bool isPosNegZero(uint32_t dword):
+	return (dword & 0x7FFFFFFFu) == 0u
+
 cdef inline _Bool isDenormalPyFloat(double pyfl):
 	return ((pyfl > 0.0 and pyfl < floatConst.minNormPosFloat32) or
 	        (pyfl < 0.0 and pyfl > floatConst.maxNormNegFloat32))
