@@ -25,6 +25,8 @@ from awlsim.core.offset cimport *
 
 from libc.string cimport memcpy
 
+cimport cython
+
 
 cdef class GenericInteger(object):
 	cdef public uint32_t value
@@ -153,19 +155,24 @@ cdef class AwlMemory(object):
 
 
 # Global ring buffer of in-flight AwlMemoryObjects.
-#TODO more description
-# The buffer size must be a power of two.
+# The allocation works round-robin and assumes short-lived use.
+# An object allocated from this pool must _not_ be used permanently.
+# It is only supposed to be used in the callchain to/from AwlMemory.
+# The pool and the objects are not thread safe. It is assumed that
+# only one thread allocates from the pool.
+# The pool size must be a power of two.
 cdef public AwlMemoryObjectStruct memObjPool[8]
-cdef public uint32_t memObjPoolIndex
-cdef public uint32_t memObjPoolIndexMask
+cdef public uint8_t memObjPoolIndex
 
 
+@cython.cdivision(True)
 cdef inline AwlMemoryObject alloc_AwlMemoryObject(uint32_t width) except NULL:
 	cdef AwlMemoryObject memObj
+	cdef uint8_t indexMask = (sizeof(memObjPool) // sizeof(memObjPool[0])) - 1u
 	global memObjPoolIndex
 
 	memObj = &memObjPool[memObjPoolIndex]
-	memObjPoolIndex = (memObjPoolIndex + 1) & memObjPoolIndexMask
+	memObjPoolIndex = (memObjPoolIndex + 1) & indexMask
 
 	memObj.width = width
 
@@ -226,5 +233,5 @@ cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj)
 
 cdef AwlMemoryObject_assertWidth_failed(AwlMemoryObject memObj, uint32_t expectedWidth)
 cdef inline AwlMemoryObject_assertWidth(AwlMemoryObject memObj, uint32_t expectedWidth):
-	if memObj.width != expectedWidth:
+	if unlikely(memObj.width != expectedWidth):
 		AwlMemoryObject_assertWidth_failed(memObj, expectedWidth)

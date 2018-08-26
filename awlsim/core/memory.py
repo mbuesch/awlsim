@@ -711,7 +711,7 @@ class AwlMemory(object): #+cdef
 		byteOffset = offset.byteOffset
 
 		if width == 1:
-			if byteOffset >= self.__dataBytesLen:
+			if byteOffset >= self.__dataBytesLen: #+unlikely
 				self.__fetchError(offset, width)
 			value = dataBytes[byteOffset]
 			return (constMemObj_1bit_1 if ((value >> offset.bitOffset) & 1) else #+suffix-u
@@ -719,7 +719,7 @@ class AwlMemory(object): #+cdef
 		else:
 			assert(not offset.bitOffset) #@nocy
 			end = byteOffset + intDivRoundUp(width, 8)
-			if end > self.__dataBytesLen:
+			if end > self.__dataBytesLen: #+unlikely
 				self.__fetchError(offset, width)
 			return make_AwlMemoryObject_fromBytes(dataBytes[byteOffset : end], width) #@nocy
 #@cy			return make_AwlMemoryObject_fromCArray(&dataBytes[byteOffset], width)
@@ -751,7 +751,7 @@ class AwlMemory(object): #+cdef
 		byteOffset = offset.byteOffset
 
 		if width == 1:
-			if byteOffset >= self.__dataBytesLen:
+			if byteOffset >= self.__dataBytesLen: #+unlikely
 				self.__storeError(offset, memObj)
 			bitOffset = offset.bitOffset
 			invMask = ~(1 << bitOffset) & 0xFF #+suffix-u
@@ -761,7 +761,7 @@ class AwlMemory(object): #+cdef
 			nrBytes = intDivRoundUp(width, 8)
 			assert(nrBytes == len(fromDataBytes)) #@nocy
 			end = byteOffset + nrBytes
-			if end > self.__dataBytesLen:
+			if end > self.__dataBytesLen: #+unlikely
 				self.__storeError(offset, memObj)
 			toDataBytes[byteOffset : end] = fromDataBytes #@nocy
 #@cy			memcpy(&toDataBytes[byteOffset], fromDataBytes, nrBytes)
@@ -795,8 +795,7 @@ class AwlMemoryObject(object):						#@nocy
 	)								#@nocy
 
 #cdef AwlMemoryObjectStruct memObjPool[8] #@cy
-#cdef uint32_t memObjPoolIndex #@cy
-#cdef uint32_t memObjPoolIndexMask = ((sizeof(memObjPool) // sizeof(memObjPool[0])) - 1u) #@cy
+#cdef uint8_t memObjPoolIndex #@cy
 
 def make_AwlMemoryObject_fromBytes(dataBytes, width):			#@nocy
 	memObj = AwlMemoryObject()					#@nocy
