@@ -49,5 +49,5 @@ class AwlInsn_ASSIGN(AwlInsn): #+cdef
 		else:
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
 		cpu.store(self.op0,
-			  make_AwlMemoryObject_fromScalar(s.STA, 1),
+			  constMemObj_1bit_1 if s.STA else constMemObj_1bit_0,
 			  self._widths_1)

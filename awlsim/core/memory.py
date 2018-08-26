@@ -47,8 +47,24 @@ __all__ = [
 	"AwlMemoryObject",
 	"make_AwlMemoryObject_fromBytes",
 	"make_AwlMemoryObject_fromScalar",
+	"make_AwlMemoryObject_fromScalar1",
+	"make_AwlMemoryObject_fromScalar8",
+	"make_AwlMemoryObject_fromScalar16",
+	"make_AwlMemoryObject_fromScalar24",
+	"make_AwlMemoryObject_fromScalar32",
+	"make_AwlMemoryObject_fromScalar48",
 	"make_AwlMemoryObject_fromGeneric",
+	"constMemObj_1bit_1",
+	"constMemObj_1bit_0",
+	"constMemObj_8bit_0",
+	"constMemObj_16bit_0",
+	"constMemObj_32bit_0",
 	"AwlMemoryObject_asScalar",
+	"AwlMemoryObject_asScalar1",
+	"AwlMemoryObject_asScalar8",
+	"AwlMemoryObject_asScalar16",
+	"AwlMemoryObject_asScalar24",
+	"AwlMemoryObject_asScalar32",
 	"AwlMemoryObject_asBytes",
 	"AwlMemoryObject_assertWidth",
 ]
@@ -698,9 +714,8 @@ class AwlMemory(object): #+cdef
 			if byteOffset >= self.__dataBytesLen:
 				self.__fetchError(offset, width)
 			value = dataBytes[byteOffset]
-			value = (value >> offset.bitOffset) & 1
-			return make_AwlMemoryObject_fromScalar(value, width) #@nocy
-#@cy			return make_AwlMemoryObject_fromCArray(&value, width)
+			return (constMemObj_1bit_1 if ((value >> offset.bitOffset) & 1) else #+suffix-u
+			        constMemObj_1bit_0)
 		else:
 			assert(not offset.bitOffset) #@nocy
 			end = byteOffset + intDivRoundUp(width, 8)
@@ -739,9 +754,9 @@ class AwlMemory(object): #+cdef
 			if byteOffset >= self.__dataBytesLen:
 				self.__storeError(offset, memObj)
 			bitOffset = offset.bitOffset
-			invMask = ~(1 << bitOffset) & 0xFF
-			toDataBytes[byteOffset] = (toDataBytes[byteOffset] & invMask) |\
-						  ((fromDataBytes[0] & 1) << bitOffset)
+			invMask = ~(1 << bitOffset) & 0xFF #+suffix-u
+			toDataBytes[byteOffset] = ((toDataBytes[byteOffset] & invMask) |
+						   ((fromDataBytes[0] & 1) << bitOffset)) #+suffix-u
 		else:
 			nrBytes = intDivRoundUp(width, 8)
 			assert(nrBytes == len(fromDataBytes)) #@nocy
@@ -810,38 +825,87 @@ def make_AwlMemoryObject_fromScalar(value, width):			#@nocy
 			byteOffset += 1					#@nocy
 	return memObj							#@nocy
 
+make_AwlMemoryObject_fromScalar1 = lambda v: make_AwlMemoryObject_fromScalar(v, 1)	#@nocy
+make_AwlMemoryObject_fromScalar8 = lambda v: make_AwlMemoryObject_fromScalar(v, 8)	#@nocy
+make_AwlMemoryObject_fromScalar16 = lambda v: make_AwlMemoryObject_fromScalar(v, 16)	#@nocy
+make_AwlMemoryObject_fromScalar24 = lambda v: make_AwlMemoryObject_fromScalar(v, 24)	#@nocy
+make_AwlMemoryObject_fromScalar32 = lambda v: make_AwlMemoryObject_fromScalar(v, 32)	#@nocy
+make_AwlMemoryObject_fromScalar48 = lambda v: make_AwlMemoryObject_fromScalar(v, 48)	#@nocy
+
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar(int64_t value, uint32_t width) except NULL: #@cy
-#@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
-#@cy	cdef uint8_t *dataBytes
-#@cy
-#@cy	memObj = alloc_AwlMemoryObject(width)
-#@cy	dataBytes = memObj.dataBytes
 #@cy	if width == 1:
-#@cy		dataBytes[0] = 1 if value else 0
+#@cy		return make_AwlMemoryObject_fromScalar1(value)
 #@cy	elif width == 16:
-#@cy		dataBytes[0] = <uint8_t>(<uint16_t>value >> 8)
-#@cy		dataBytes[1] = <uint8_t>value
+#@cy		return make_AwlMemoryObject_fromScalar16(value)
 #@cy	elif width == 32:
-#@cy		dataBytes[0] = <uint8_t>(<uint32_t>value >> 24)
-#@cy		dataBytes[1] = <uint8_t>(<uint32_t>value >> 16)
-#@cy		dataBytes[2] = <uint8_t>(<uint32_t>value >> 8)
-#@cy		dataBytes[3] = <uint8_t>value
+#@cy		return make_AwlMemoryObject_fromScalar32(value)
 #@cy	elif width == 8:
-#@cy		dataBytes[0] = <uint8_t>value
+#@cy		return make_AwlMemoryObject_fromScalar8(value)
 #@cy	elif width == 24:
-#@cy		dataBytes[0] = <uint8_t>(<uint32_t>value >> 16)
-#@cy		dataBytes[1] = <uint8_t>(<uint32_t>value >> 8)
-#@cy		dataBytes[2] = <uint8_t>value
+#@cy		return make_AwlMemoryObject_fromScalar24(value)
 #@cy	elif width == 48:
-#@cy		dataBytes[0] = <uint8_t>(<uint64_t>value >> 40)
-#@cy		dataBytes[1] = <uint8_t>(<uint64_t>value >> 32)
-#@cy		dataBytes[2] = <uint8_t>(<uint64_t>value >> 24)
-#@cy		dataBytes[3] = <uint8_t>(<uint64_t>value >> 16)
-#@cy		dataBytes[4] = <uint8_t>(<uint64_t>value >> 8)
-#@cy		dataBytes[5] = <uint8_t>value
+#@cy		return make_AwlMemoryObject_fromScalar48(value)
 #@cy	else:
 #@cy		assert(0)
+#@cy	return NULL
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar1(int64_t value) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(1)
+#@cy	memObj.dataBytes[0] = 1 if value else 0
+#@cy	return memObj
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar8(int64_t value) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(8)
+#@cy	memObj.dataBytes[0] = <uint8_t>value
+#@cy	return memObj
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar16(int64_t value) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(16)
+#@cy	memObj.dataBytes[0] = <uint8_t>(<uint16_t>value >> 8)
+#@cy	memObj.dataBytes[1] = <uint8_t>value
+#@cy	return memObj
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar24(int64_t value) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(24)
+#@cy	memObj.dataBytes[0] = <uint8_t>(<uint32_t>value >> 16)
+#@cy	memObj.dataBytes[1] = <uint8_t>(<uint32_t>value >> 8)
+#@cy	memObj.dataBytes[2] = <uint8_t>value
+#@cy	return memObj
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar32(int64_t value) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(32)
+#@cy	memObj.dataBytes[0] = <uint8_t>(<uint32_t>value >> 24)
+#@cy	memObj.dataBytes[1] = <uint8_t>(<uint32_t>value >> 16)
+#@cy	memObj.dataBytes[2] = <uint8_t>(<uint32_t>value >> 8)
+#@cy	memObj.dataBytes[3] = <uint8_t>value
+#@cy	return memObj
+
+#cdef AwlMemoryObject make_AwlMemoryObject_fromScalar48(int64_t value) except NULL: #@cy
+#@cy	cdef AwlMemoryObject memObj
+#@cy	cdef uint32_t byteOffset
+#@cy
+#@cy	memObj = alloc_AwlMemoryObject(48)
+#@cy	memObj.dataBytes[0] = <uint8_t>(<uint64_t>value >> 40)
+#@cy	memObj.dataBytes[1] = <uint8_t>(<uint64_t>value >> 32)
+#@cy	memObj.dataBytes[2] = <uint8_t>(<uint64_t>value >> 24)
+#@cy	memObj.dataBytes[3] = <uint8_t>(<uint64_t>value >> 16)
+#@cy	memObj.dataBytes[4] = <uint8_t>(<uint64_t>value >> 8)
+#@cy	memObj.dataBytes[5] = <uint8_t>value
 #@cy	return memObj
 
 def make_AwlMemoryObject_fromGeneric(value, width): #@nocy
@@ -849,6 +913,47 @@ def make_AwlMemoryObject_fromGeneric(value, width): #@nocy
 	if isInteger(value):
 		return make_AwlMemoryObject_fromScalar(value, width)
 	return make_AwlMemoryObject_fromBytes(value, width)
+
+
+#cdef AwlMemoryObjectStruct constMemObj_1bit_1_storage				#@cy
+#cdef AwlMemoryObject constMemObj_1bit_1 = &constMemObj_1bit_1_storage		#@cy
+constMemObj_1bit_1 = AwlMemoryObject()						#@nocy
+constMemObj_1bit_1.dataBytes = bytearray(1)					#@nocy
+constMemObj_1bit_1.width = 1
+constMemObj_1bit_1.dataBytes[0] = 1
+
+#cdef AwlMemoryObjectStruct constMemObj_1bit_0_storage				#@cy
+#cdef AwlMemoryObject constMemObj_1bit_0 = &constMemObj_1bit_0_storage		#@cy
+constMemObj_1bit_0 = AwlMemoryObject()						#@nocy
+constMemObj_1bit_0.dataBytes = bytearray(1)					#@nocy
+constMemObj_1bit_0.width = 1
+constMemObj_1bit_0.dataBytes[0] = 0
+
+#cdef AwlMemoryObjectStruct constMemObj_8bit_0_storage				#@cy
+#cdef AwlMemoryObject constMemObj_8bit_0 = &constMemObj_8bit_0_storage		#@cy
+constMemObj_8bit_0 = AwlMemoryObject()						#@nocy
+constMemObj_8bit_0.dataBytes = bytearray(1)					#@nocy
+constMemObj_8bit_0.width = 8
+constMemObj_8bit_0.dataBytes[0] = 0
+
+#cdef AwlMemoryObjectStruct constMemObj_16bit_0_storage				#@cy
+#cdef AwlMemoryObject constMemObj_16bit_0 = &constMemObj_16bit_0_storage	#@cy
+constMemObj_16bit_0 = AwlMemoryObject()						#@nocy
+constMemObj_16bit_0.dataBytes = bytearray(2)					#@nocy
+constMemObj_16bit_0.width = 16
+constMemObj_16bit_0.dataBytes[0] = 0
+constMemObj_16bit_0.dataBytes[1] = 0
+
+#cdef AwlMemoryObjectStruct constMemObj_32bit_0_storage				#@cy
+#cdef AwlMemoryObject constMemObj_32bit_0 = &constMemObj_32bit_0_storage	#@cy
+constMemObj_32bit_0 = AwlMemoryObject()						#@nocy
+constMemObj_32bit_0.dataBytes = bytearray(4)					#@nocy
+constMemObj_32bit_0.width = 32
+constMemObj_32bit_0.dataBytes[0] = 0
+constMemObj_32bit_0.dataBytes[1] = 0
+constMemObj_32bit_0.dataBytes[2] = 0
+constMemObj_32bit_0.dataBytes[3] = 0
+
 
 def AwlMemoryObject_asScalar_failed(memObj): #@nocy #@nocov
 #cdef AwlMemoryObject_asScalar_failed(AwlMemoryObject memObj): #@cy
@@ -859,47 +964,61 @@ def AwlMemoryObject_asScalar_failed(memObj): #@nocy #@nocov
 
 def AwlMemoryObject_asScalar(memObj):				#@nocy
 	width = memObj.width					#@nocy
-	dataBytes = memObj.dataBytes				#@nocy
 	if width == 1:						#@nocy
-		return dataBytes[0] & 1				#@nocy
+		return AwlMemoryObject_asScalar1(memObj)	#@nocy
 	elif width == 16:					#@nocy
-		return (((dataBytes[0] << 8) |			#@nocy
-			 dataBytes[1]) & 0xFFFF)		#@nocy
+		return AwlMemoryObject_asScalar16(memObj)	#@nocy
 	elif width == 32:					#@nocy
-		return (((dataBytes[0] << 24) |			#@nocy
-			 (dataBytes[1] << 16) |			#@nocy
-			 (dataBytes[2] << 8) |			#@nocy
-			 dataBytes[3]) & 0xFFFFFFFF)		#@nocy
+		return AwlMemoryObject_asScalar32(memObj)	#@nocy
 	elif width == 8:					#@nocy
-		return dataBytes[0] & 0xFF			#@nocy
+		return AwlMemoryObject_asScalar8(memObj)	#@nocy
 	elif width == 24:					#@nocy
-		return (((dataBytes[0] << 16) |			#@nocy
-			 (dataBytes[1] << 8) |			#@nocy
-			 dataBytes[2]) & 0xFFFFFF)		#@nocy
+		return AwlMemoryObject_asScalar24(memObj)	#@nocy
 	AwlMemoryObject_asScalar_failed(memObj)			#@nocy #@nocov
+
+def AwlMemoryObject_asScalar1(memObj):				#@nocy
+	assert(memObj.width == 1)				#@nocy
+	return memObj.dataBytes[0] & 1				#@nocy
+
+def AwlMemoryObject_asScalar8(memObj):				#@nocy
+	assert(memObj.width == 8)				#@nocy
+	return memObj.dataBytes[0] & 0xFF			#@nocy
+
+def AwlMemoryObject_asScalar16(memObj):				#@nocy
+	assert(memObj.width == 16)				#@nocy
+	dataBytes = memObj.dataBytes				#@nocy
+	return (((dataBytes[0] << 8) |				#@nocy
+		 dataBytes[1]) & 0xFFFF)			#@nocy
+
+def AwlMemoryObject_asScalar24(memObj):				#@nocy
+	assert(memObj.width == 24)				#@nocy
+	dataBytes = memObj.dataBytes				#@nocy
+	return (((dataBytes[0] << 16) |				#@nocy
+		 (dataBytes[1] << 8) |				#@nocy
+		 dataBytes[2]) & 0xFFFFFF)			#@nocy
+
+def AwlMemoryObject_asScalar32(memObj):				#@nocy
+	assert(memObj.width == 32)				#@nocy
+	dataBytes = memObj.dataBytes				#@nocy
+	return (((dataBytes[0] << 24) |				#@nocy
+		 (dataBytes[1] << 16) |				#@nocy
+		 (dataBytes[2] << 8) |				#@nocy
+		 dataBytes[3]) & 0xFFFFFFFF)			#@nocy
 
 #cdef uint32_t AwlMemoryObject_asScalar(AwlMemoryObject memObj) except? 0x7FFFFFFF: #@cy
 #@cy	cdef uint32_t width
-#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	width = memObj.width
-#@cy	dataBytes = memObj.dataBytes
 #@cy	if width == 1:
-#@cy		return <uint8_t>(dataBytes[0]) & 1u
+#@cy		return AwlMemoryObject_asScalar1(memObj)
 #@cy	elif width == 16:
-#@cy		return (((<uint8_t>(dataBytes[0]) << 8) |
-#@cy		         <uint8_t>(dataBytes[1])) & 0xFFFFu)
+#@cy		return AwlMemoryObject_asScalar16(memObj)
 #@cy	elif width == 32:
-#@cy		return (((<uint8_t>(dataBytes[0]) << 24) |
-#@cy		         (<uint8_t>(dataBytes[1]) << 16) |
-#@cy		         (<uint8_t>(dataBytes[2]) << 8) |
-#@cy		         <uint8_t>(dataBytes[3])) & 0xFFFFFFFFu)
+#@cy		return AwlMemoryObject_asScalar32(memObj)
 #@cy	elif width == 8:
-#@cy		return <uint8_t>(dataBytes[0])
+#@cy		return AwlMemoryObject_asScalar8(memObj)
 #@cy	elif width == 24:
-#@cy		return (((<uint8_t>(dataBytes[0]) << 16) |
-#@cy		         (<uint8_t>(dataBytes[1]) << 8) |
-#@cy		         <uint8_t>(dataBytes[2])) & 0xFFFFFFu)
+#@cy		return AwlMemoryObject_asScalar24(memObj)
 #@cy	AwlMemoryObject_asScalar_failed(memObj)
 
 def AwlMemoryObject_asBytes(memObj):				#@nocy

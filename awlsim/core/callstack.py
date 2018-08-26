@@ -173,7 +173,7 @@ class CallStackElem(object): #+cdef
 		else:
 			dbNumber = rvalueOp.offset.dbNumber
 		cpu.store(storeOper,
-			  make_AwlMemoryObject_fromScalar(max(0, dbNumber), 16),
+			  make_AwlMemoryObject_fromScalar16(max(0, dbNumber)),
 			  widthMaskAll)
 		storeOper.offset = loffset.addInt(2, 0)
 		storeOper.width = 32
@@ -189,7 +189,7 @@ class CallStackElem(object): #+cdef
 			raise AwlSimBug("FC_trans_dbpointerInVL: Invalid rValueOp area. "
 				"(area=%d, operType=%d)" % (area, rvalueOp.operType))
 		cpu.store(storeOper,
-			  make_AwlMemoryObject_fromScalar(area | rvalueOp.offset.toPointerValue(), 32),
+			  make_AwlMemoryObject_fromScalar32(area | rvalueOp.offset.toPointerValue()),
 			  widthMaskAll)
 		# Return the operator for the DB pointer.
 		return make_AwlOperator(AwlOperatorTypes.MEM_VL,
@@ -541,9 +541,8 @@ def make_CallStackElem(cpu,						#@nocy
 						if structField.callByRef:
 							# Do not fetch. Type is passed 'by reference'.
 							# This is for TIMER, COUNTER, etc...
-							memObj = make_AwlMemoryObject_fromScalar(
-								param.rvalueOp.resolve(True).offset.byteOffset,
-								16)
+							memObj = make_AwlMemoryObject_fromScalar16(
+								param.rvalueOp.resolve(True).offset.byteOffset)
 						else:
 							memObj = cpu.fetch(param.rvalueOp, widthMaskAll)
 					# Transfer data into DBI.

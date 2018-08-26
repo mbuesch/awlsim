@@ -902,7 +902,7 @@ class S7CPU(object): #+cdef
 			self.__clockMemCountLCM = math_lcm(2, 4, 5, 8, 10, 16, 20)
 			if self.__clockMemByteOffset is not None:
 				self.flags.store(self.__clockMemByteOffset,
-						 make_AwlMemoryObject_fromScalar(0, 8))
+						 constMemObj_8bit_0)
 
 	# Run startup code
 	def startup(self):
@@ -1072,7 +1072,7 @@ class S7CPU(object): #+cdef
 				if count >= self.__clockMemCountLCM:
 					self.__clockMemCount = 0
 				self.flags.store(self.__clockMemByteOffset,
-						 make_AwlMemoryObject_fromScalar(value, 8))
+						 make_AwlMemoryObject_fromScalar8(value))
 			except AwlSimError as e:
 				raise AwlSimError("Failed to generate clock "
 					"memory signal:\n" + str(e) +\
@@ -1705,7 +1705,7 @@ class S7CPU(object): #+cdef
 				for i in range(2, operator.width // 8):
 					value = (value << 8) | data[i]
 				if operator.width - 16 <= 0:
-					return make_AwlMemoryObject_fromScalar(0, 8)
+					return constMemObj_8bit_0
 				return make_AwlMemoryObject_fromScalar(value,
 								       operator.width - 16)
 
@@ -1763,13 +1763,11 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, allowedWidths)
 
 		if operator.width == 1:
-			return make_AwlMemoryObject_fromScalar(
-				self.statusWord.getByBitNumber(operator.offset.bitOffset),
-				operator.width)
+			return make_AwlMemoryObject_fromScalar1(
+				self.statusWord.getByBitNumber(operator.offset.bitOffset))
 		elif operator.width == 16:
-			return make_AwlMemoryObject_fromScalar(
-				self.statusWord.getWord(),
-				operator.width)
+			return make_AwlMemoryObject_fromScalar16(
+				self.statusWord.getWord())
 		else:
 			assert(0)
 
@@ -1967,10 +1965,10 @@ class S7CPU(object): #+cdef
 
 		timer = self.getTimer(operator.offset.byteOffset)
 		if insnType == AwlInsnTypes.TYPE_L:
-			return make_AwlMemoryObject_fromScalar(timer.getTimevalBin(), 16)
+			return make_AwlMemoryObject_fromScalar16(timer.getTimevalBin())
 		elif insnType == AwlInsnTypes.TYPE_LC:
-			return make_AwlMemoryObject_fromScalar(timer.getTimevalS5T(), 16)
-		return make_AwlMemoryObject_fromScalar(timer.get(), 1)
+			return make_AwlMemoryObject_fromScalar16(timer.getTimevalS5T())
+		return make_AwlMemoryObject_fromScalar1(timer.get())
 
 	def __fetchZ(self, operator, allowedWidths): #@nocy
 #@cy	cdef AwlMemoryObject __fetchZ(self, AwlOperator operator, uint32_t allowedWidths) except NULL:
@@ -1988,10 +1986,10 @@ class S7CPU(object): #+cdef
 
 		counter = self.getCounter(operator.offset.byteOffset)
 		if insnType == AwlInsnTypes.TYPE_L:
-			return make_AwlMemoryObject_fromScalar(counter.getValueBin(), 16)
+			return make_AwlMemoryObject_fromScalar16(counter.getValueBin())
 		elif insnType == AwlInsnTypes.TYPE_LC:
-			return make_AwlMemoryObject_fromScalar(counter.getValueBCD(), 16)
-		return make_AwlMemoryObject_fromScalar(counter.get(), 1)
+			return make_AwlMemoryObject_fromScalar16(counter.getValueBCD())
+		return make_AwlMemoryObject_fromScalar1(counter.get())
 
 	def __fetchNAMED_LOCAL(self, operator, allowedWidths): #@nocy
 #@cy	cdef AwlMemoryObject __fetchNAMED_LOCAL(self, AwlOperator operator, uint32_t allowedWidths) except NULL:
@@ -2002,9 +2000,8 @@ class S7CPU(object): #+cdef
 	def __fetchNAMED_LOCAL_PTR(self, operator, allowedWidths): #@nocy
 #@cy	cdef AwlMemoryObject __fetchNAMED_LOCAL_PTR(self, AwlOperator operator, uint32_t allowedWidths) except NULL:
 		assert(operator.offset.subOffset is None) #@nocy
-		return make_AwlMemoryObject_fromScalar(
-			self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue(),
-			32)
+		return make_AwlMemoryObject_fromScalar32(
+			self.callStackTop.getInterfIdxOper(operator.interfaceIndex).resolve(False).makePointerValue())
 
 	def __fetchNAMED_DBVAR(self, operator, allowedWidths): #@nocy
 #@cy	cdef AwlMemoryObject __fetchNAMED_DBVAR(self, AwlOperator operator, uint32_t allowedWidths) except NULL:
@@ -2054,7 +2051,7 @@ class S7CPU(object): #+cdef
 				"Must be 1 for DB-register or "
 				"2 for DI-register." %\
 				operator.offset.byteOffset)
-		return make_AwlMemoryObject_fromScalar(0, 16)
+		return constMemObj_16bit_0
 
 	__fetchTypeMethodsDict = {							#@nocy
 		AwlOperatorTypes.IMM			: __fetchIMM,			#@nocy

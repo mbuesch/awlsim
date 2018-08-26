@@ -50,8 +50,8 @@ class AwlInsn_O(AwlInsn): #+cdef
 #@cy		cdef _Bool STA
 
 		s = self.cpu.statusWord
-		STA = AwlMemoryObject_asScalar(self.cpu.fetch(self.op0,
-							      self._widths_1))
+		STA = AwlMemoryObject_asScalar1(self.cpu.fetch(self.op0,
+							       self._widths_1))
 		s.OR, s.STA, s.VKE, s.NER = 0, STA, ((s.VKE & s.NER) | STA), 1
 
 	def __run_noOps(self): #+cdef

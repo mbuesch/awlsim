@@ -43,10 +43,10 @@ class AwlInsn_FN(AwlInsn): #+cdef
 #@cy		cdef _Bool fm
 
 		s = self.cpu.statusWord
-		fm = AwlMemoryObject_asScalar(self.cpu.fetch(self.op0,
-							     self._widths_1))
+		fm = AwlMemoryObject_asScalar1(self.cpu.fetch(self.op0,
+							      self._widths_1))
 		self.cpu.store(self.op0,
-			       make_AwlMemoryObject_fromScalar(s.VKE, 1),
+			       constMemObj_1bit_1 if s.VKE else constMemObj_1bit_0,
 			       self._widths_1)
 		s.OR, s.STA, s.NER = 0, s.VKE, 1
 		s.VKE = (s.VKE ^ 1) & fm

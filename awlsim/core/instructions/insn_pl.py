@@ -47,10 +47,10 @@ class AwlInsn_PL(AwlInsn): #+cdef
 		if oper.width == 16:
 			self.cpu.accu1.setWord(
 				self.cpu.accu1.getSignedWord() +
-				AwlMemoryObject_asScalar(self.cpu.fetch(oper, self._widths_16)))
+				AwlMemoryObject_asScalar16(self.cpu.fetch(oper, self._widths_16)))
 		elif oper.width == 32:
 			self.cpu.accu1.setDWord(
 				self.cpu.accu1.getSignedDWord() +
-				AwlMemoryObject_asScalar(self.cpu.fetch(oper, self._widths_32)))
+				AwlMemoryObject_asScalar32(self.cpu.fetch(oper, self._widths_32)))
 		else:
 			raise AwlSimError("Unexpected operator width")

@@ -182,11 +182,45 @@ cdef inline AwlMemoryObject make_AwlMemoryObject_fromCArray(const uint8_t *dataB
 
 cdef AwlMemoryObject make_AwlMemoryObject_fromBytes(bytearray dataBytes, uint32_t width) except NULL
 cdef AwlMemoryObject make_AwlMemoryObject_fromScalar(int64_t value, uint32_t width) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar1(int64_t value) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar8(int64_t value) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar16(int64_t value) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar24(int64_t value) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar32(int64_t value) except NULL
+cdef AwlMemoryObject make_AwlMemoryObject_fromScalar48(int64_t value) except NULL
 cdef AwlMemoryObject make_AwlMemoryObject_fromGeneric(object value, uint32_t width) except NULL
+
+cdef public AwlMemoryObject constMemObj_1bit_1
+cdef public AwlMemoryObject constMemObj_1bit_0
+cdef public AwlMemoryObject constMemObj_8bit_0
+cdef public AwlMemoryObject constMemObj_16bit_0
+cdef public AwlMemoryObject constMemObj_32bit_0
 
 
 cdef AwlMemoryObject_asScalar_failed(AwlMemoryObject memObj)
 cdef uint32_t AwlMemoryObject_asScalar(AwlMemoryObject memObj) except? 0x7FFFFFFF
+
+cdef inline uint32_t AwlMemoryObject_asScalar1(AwlMemoryObject memObj):
+	return <uint8_t>(memObj.dataBytes[0]) & 1u
+
+cdef inline uint32_t AwlMemoryObject_asScalar8(AwlMemoryObject memObj):
+	return <uint8_t>(memObj.dataBytes[0])
+
+cdef inline uint32_t AwlMemoryObject_asScalar16(AwlMemoryObject memObj):
+	return (((<uint16_t>(memObj.dataBytes[0]) << 8) |
+	         <uint16_t>(memObj.dataBytes[1])) & 0xFFFFu)
+
+cdef inline uint32_t AwlMemoryObject_asScalar24(AwlMemoryObject memObj):
+	return (((<uint32_t>(memObj.dataBytes[0]) << 16) |
+	         (<uint32_t>(memObj.dataBytes[1]) << 8) |
+	         <uint32_t>(memObj.dataBytes[2])) & 0xFFFFFFu)
+
+cdef inline uint32_t AwlMemoryObject_asScalar32(AwlMemoryObject memObj):
+	return (((<uint32_t>(memObj.dataBytes[0]) << 24) |
+	         (<uint32_t>(memObj.dataBytes[1]) << 16) |
+	         (<uint32_t>(memObj.dataBytes[2]) << 8) |
+	         <uint32_t>(memObj.dataBytes[3])) & 0xFFFFFFFFu)
+
 cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj)
 
 

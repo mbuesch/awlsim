@@ -57,6 +57,6 @@ class AwlInsn_R(AwlInsn): #+cdef
 		else:
 			if s.VKE and (not cpu.mcrActive or cpu.mcrIsOn()):
 				cpu.store(oper,
-					  make_AwlMemoryObject_fromScalar(0, 1),
+					  constMemObj_1bit_0,
 					  self._widths_1)
 			s.OR, s.STA, s.NER = 0, s.VKE, 0
