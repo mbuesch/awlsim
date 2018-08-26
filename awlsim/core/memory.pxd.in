@@ -216,19 +216,14 @@ cdef inline uint32_t AwlMemoryObject_asScalar8(AwlMemoryObject memObj):
 	return <uint8_t>(memObj.dataBytes[0])
 
 cdef inline uint32_t AwlMemoryObject_asScalar16(AwlMemoryObject memObj):
-	return (((<uint16_t>(memObj.dataBytes[0]) << 8) |
-	         <uint16_t>(memObj.dataBytes[1])) & 0xFFFFu)
+	return be16toh((<uint16_t *>(&memObj.dataBytes[0]))[0])
 
 cdef inline uint32_t AwlMemoryObject_asScalar24(AwlMemoryObject memObj):
-	return (((<uint32_t>(memObj.dataBytes[0]) << 16) |
-	         (<uint32_t>(memObj.dataBytes[1]) << 8) |
-	         <uint32_t>(memObj.dataBytes[2])) & 0xFFFFFFu)
+	return ((<uint32_t>be16toh((<uint16_t *>(&memObj.dataBytes[0]))[0]) << 8) |
+	        <uint32_t>memObj.dataBytes[2])
 
 cdef inline uint32_t AwlMemoryObject_asScalar32(AwlMemoryObject memObj):
-	return (((<uint32_t>(memObj.dataBytes[0]) << 24) |
-	         (<uint32_t>(memObj.dataBytes[1]) << 16) |
-	         (<uint32_t>(memObj.dataBytes[2]) << 8) |
-	         <uint32_t>(memObj.dataBytes[3])) & 0xFFFFFFFFu)
+	return be32toh((<uint32_t *>(&memObj.dataBytes[0]))[0])
 
 cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj)
 
