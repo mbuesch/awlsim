@@ -68,17 +68,14 @@ class CallStackElem(object): #+cdef
 	# Get an FC interface operand by interface field index.
 	def getInterfIdxOper(self, interfaceFieldIndex): #@nocy
 #@cy	cpdef AwlOperator getInterfIdxOper(self, uint32_t interfaceFieldIndex):
-		try:
-#@cy			if self._interfRefs is None:
-#@cy				raise KeyError
-			return self._interfRefs[interfaceFieldIndex]
-		except (AttributeError, KeyError) as e:
+		if self._interfRefs is None: #+unlikely
 			# Huh, no interface ref? We might have been called via raw call.
 			raise AwlSimError("The block interface field could not "
 				"be found. This probably means that this function block "
 				"has been called with a raw call instruction like UC or CC, "
 				"but the function block has an interface. This is not "
 				"allowed in Awlsim.")
+		return self._interfRefs[interfaceFieldIndex]
 
 	# FB parameter translation:
 	# Translate FB DB-pointer variable.
@@ -549,6 +546,7 @@ def make_CallStackElem(cpu,						#@nocy
 					structInstance.setFieldData(structField,
 								    data,
 								    instanceBaseOffset)
+			cse._interfRefs = None
 		else:
 			# This is a call to an FC.
 			# Prepare the interface (IN/OUT/INOUT) references.
@@ -573,6 +571,8 @@ def make_CallStackElem(cpu,						#@nocy
 #@cy				if oper is None:
 #@cy					cse._FCTransError(param, oper)
 #@cy				cse._interfRefs[param.interfaceFieldIndex] = oper
+	else:
+		cse._interfRefs = None
 
 	# Prepare the localdata stack.
 	cpu.activeLStack.enterStackFrame()
