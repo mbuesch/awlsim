@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
@@ -59,8 +60,6 @@ __all__ = [
 	"bytesToHexStr",
 	"toUnixEol",
 	"toDosEol",
-	"isInteger",
-	"isString",
 	"strEqual",
 	"isiterable",
 	"getfirst",
@@ -283,24 +282,6 @@ def toDosEol(string):
 	no matter what line endings (mix) the input string is.
 	"""
 	return toUnixEol(string).replace("\n", "\r\n")
-
-def __isInteger_python2(value): #@nocov
-	return isinstance(value, (int, long))
-
-def __isInteger_python3(value): #@nocov
-	return isinstance(value, int)
-
-isInteger = py23(__isInteger_python2,
-		 __isInteger_python3)
-
-def __isString_python2(value): #@nocov
-	return isinstance(value, (unicode, str))
-
-def __isString_python3(value): #@nocov
-	return isinstance(value, str)
-
-isString = py23(__isString_python2,
-		__isString_python3)
 
 def strEqual(string0, string1, caseSensitive=True):
 	"""Compare string0 to string1.

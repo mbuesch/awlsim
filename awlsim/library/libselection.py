@@ -27,6 +27,7 @@ from awlsim.common.enumeration import *
 from awlsim.common.wordpacker import *
 from awlsim.common.xmlfactory import *
 from awlsim.common.util import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 import hashlib
 

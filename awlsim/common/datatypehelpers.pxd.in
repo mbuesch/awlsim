@@ -131,3 +131,12 @@ cdef inline uint32_t intDivRoundUp(uint32_t n, uint32_t d):
 	return (n + d - 1u) // d
 
 cdef uint32_t getMSB(uint32_t value)
+
+
+cdef inline _Bool isInteger(object value):
+#@cy3	return isinstance(value, int)
+#@cy2	return isinstance(value, (int, long))
+
+cdef inline _Bool isString(object value):
+#@cy3	return isinstance(value, str)
+#@cy2	return isinstance(value, (unicode, str))

@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
 from awlsim.common.util import *
+from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.xmlfactory import *
 
 from awlsim.awloptimizer.base import *

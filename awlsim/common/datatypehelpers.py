@@ -48,6 +48,8 @@ __all__ = [
 	"roundUp",
 	"intDivRoundUp",
 	"getMSB",
+	"isInteger",
+	"isString",
 ]
 
 
@@ -264,3 +266,21 @@ def getMSB(value): #@nocy
 	value |= value >> 8
 	value |= value >> 16
 	return value ^ (value >> 1)
+
+def __isInteger_python2(value):				#@nocy #@nocov
+	return isinstance(value, (int, long))		#@nocy
+
+def __isInteger_python3(value):				#@nocy #@nocov
+	return isinstance(value, int)			#@nocy
+
+isInteger = py23(__isInteger_python2,			#@nocy
+		 __isInteger_python3)			#@nocy
+
+def __isString_python2(value):				#@nocy #@nocov
+	return isinstance(value, (unicode, str))	#@nocy
+
+def __isString_python3(value):				#@nocy #@nocov
+	return isinstance(value, str)			#@nocy
+
+isString = py23(__isString_python2,			#@nocy
+		__isString_python3)			#@nocy
