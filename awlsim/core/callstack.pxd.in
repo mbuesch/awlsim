@@ -27,7 +27,7 @@ cdef class CallStackElem(object):
 
 	cpdef AwlOperator getInterfIdxOper(self, uint32_t interfaceFieldIndex)
 
-	cdef bytearray _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef uint64_t _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_direct(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_copyToVL(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_dbpointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp)

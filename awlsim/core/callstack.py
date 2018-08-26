@@ -82,22 +82,17 @@ class CallStackElem(object): #+cdef
 	# This is used for FB IN_OUT compound data type parameters.
 	# Returns the actual DB-pointer data. (Not an operator!)
 	def _FB_trans_dbpointer(self, param, rvalueOp): #@nocy
-#@cy	cdef bytearray _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp):
-#@cy		cdef uint32_t ptr
+#@cy	cdef uint64_t _FB_trans_dbpointer(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy		cdef uint64_t dbPtr
 #@cy		cdef int32_t dbNumber
-#@cy		cdef bytearray dbPtrData
 
-		dbPtrData = bytearray(6)
+		dbPtr = 0
 		dbNumber = rvalueOp.offset.dbNumber
 		if dbNumber >= 0:
-			dbPtrData[0] = (dbNumber >> 8) & 0xFF
-			dbPtrData[1] = dbNumber & 0xFF
-		ptr = rvalueOp.makePointerValue()
-		dbPtrData[2] = (ptr >> 24) & 0xFF
-		dbPtrData[3] = (ptr >> 16) & 0xFF
-		dbPtrData[4] = (ptr >> 8) & 0xFF
-		dbPtrData[5] = ptr & 0xFF
-		return dbPtrData
+			dbPtr = dbNumber
+			dbPtr <<= 32
+		dbPtr |= rvalueOp.makePointerValue()
+		return dbPtr
 
 	# FC parameter translation:
 	# Don't perform translation.
@@ -529,9 +524,8 @@ def make_CallStackElem(cpu,						#@nocy
 					   structField.compound:
 						# Compound data type with IN_OUT decl.
 						# Make a DB-ptr to the actual data.
-						memObj = make_AwlMemoryObject_fromBytes(
-							cse._FB_trans_dbpointer(param, param.rvalueOp),
-							48)
+						memObj = make_AwlMemoryObject_fromScalar48(
+							cse._FB_trans_dbpointer(param, param.rvalueOp))
 						# Get the DB-ptr struct field.
 						structField = structField.finalOverride
 					else:
