@@ -23,9 +23,10 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 import sys
+import random
 
 
-nrIterations = 100
+nrIterations = 10000
 if len(sys.argv) > 1:
 	try:
 		nrIterations = int(sys.argv[1])
@@ -36,176 +37,324 @@ if len(sys.argv) > 1:
 		sys.exit(1)
 
 
-insns = (
-	( "U",		"BOOL"),
-	( "UN",		"BOOL"),
-	( "O",		"BOOL"),
-	( "ON",		"BOOL"),
-	( "X",		"BOOL"),
-	( "XN",		"BOOL"),
-	( "U(",		""),
-	( "UN(",	""),
-	( "O(",		""),
-	( "ON(",	""),
-	( "X(",		""),
-	( "XN(",	""),
-	( ")",		""),
-	( ")",		""),
-	( ")",		""),
-	( ")",		""),
-	( ")",		""),
-	( ")",		""),
-	( "=",		"BOOL"),
-	( "R",		"BOOL"),
-	( "S",		"BOOL"),
-	( "NOT",	""),
-	( "SET",	""),
-	( "CLR",	""),
-	( "SAVE",	""),
-	( "FN",		"BOOL"),
-	( "FP",		"BOOL"),
-	( "==I",	""),
-	( "<>I",	""),
-	( ">I",		""),
-	( "<I",		""),
-	( ">=I",	""),
-	( "<=I",	""),
-	( "==D",	""),
-	( "<>D",	""),
-	( ">D",		""),
-	( "<D",		""),
-	( ">=D",	""),
-	( "<=D",	""),
-	( "==R",	""),
-	( "<>R",	""),
-	( ">R",		""),
-	( "<R",		""),
-	( ">=R",	""),
-	( "<=R",	""),
-	( "L",		"0"),
-	( "BTI",	""),
-	( "ITB",	""),
-	( "L",		"0"),
-	( "BTD",	""),
-	( "ITD",	""),
-	( "DTB",	""),
-	( "DTR",	""),
-	( "INVI",	""),
-	( "INVD",	""),
-	( "NEGI",	""),
-	( "NEGD",	""),
-	( "NEGR",	""),
-	( "TAW",	""),
-	( "TAD",	""),
-	( "RND",	""),
-	( "TRUNC",	""),
-	( "RND+",	""),
-	( "RND-",	""),
-	( "FR",		"COUNTER"),
-	( "L",		"WORD"),
-	( "LC",		"WORD"),
-	( "ZV",		"COUNTER"),
-	( "ZR",		"COUNTER"),
-	( "AUF",	"DB"),
-	( "TDB",	""),
-	( "SPA",	"LABEL"),
-	( "SPL",	"LABEL"),
-	( "SPB",	"LABEL"),
-	( "SPBN",	"LABEL"),
-	( "SPBB",	"LABEL"),
-	( "SPBNB",	"LABEL"),
-	( "SPBI",	"LABEL"),
-	( "SPBIN",	"LABEL"),
-	( "SPO",	"LABEL"),
-	( "SPS",	"LABEL"),
-	( "SPZ",	"LABEL"),
-	( "SPN",	"LABEL"),
-	( "SPP",	"LABEL"),
-	( "SPM",	"LABEL"),
-	( "SPPZ",	"LABEL"),
-	( "SPMZ",	"LABEL"),
-	( "SPU",	"LABEL"),
-	( "LOOP",	"LABEL"),
-	( "+I",		""),
-	( "-I",		""),
-	( "*I",		""),
-	( "/I",		""),
-	( "+",		"0"),
-	( "+D",		""),
-	( "-D",		""),
-	( "*D",		""),
-	( "/D",		""),
-	( "MOD",	""),
-	( "+R",		""),
-	( "-R",		""),
-	( "*R",		""),
-	( "/R",		""),
-	( "ABS",	""),
-	( "SQR",	""),
-	( "SQRT",	""),
-	( "EXP",	""),
-	( "LN",		""),
-	( "SIN",	""),
-	( "COS",	""),
-	( "TAN",	""),
-	( "ASIN",	""),
-	( "ACOS",	""),
-	( "ATAN",	""),
-	( "LAR1",	""),
-	( "LAR2",	""),
-	( "T",		"WORD"),
-	( "TAR",	""),
-	( "TAR1",	""),
-	( "TAR2",	""),
-	( "MCR(",	""),
-	( "MCRA",	""),
-	( "MCRD",	""),
-	( ")MCR",	""),
-	( "SSI",	""),
-	( "SSD",	""),
-	( "SLW",	""),
-	( "SRW",	""),
-	( "SLD",	""),
-	( "SRD",	""),
-	( "RLD",	""),
-	( "RRD",	""),
-	( "RLDA",	""),
-	( "RRDA",	""),
-	( "SI",		"TIMER"),
-	( "SV",		"TIMER"),
-	( "SE",		"TIMER"),
-	( "SS",		"TIMER"),
-	( "SA",		"TIMER"),
-	( "UW",		""),
-	( "OW",		""),
-	( "XOW",	""),
-	( "UD",		""),
-	( "OD",		""),
-	( "XOD",	""),
-	( "TAK",	""),
-	( "PUSH",	""),
-	( "POP",	""),
-	( "ENT",	""),
-	( "LEAVE",	""),
-	( "INC",	"0"),
-	( "DEC",	"0"),
-	( "+AR1",	""),
-	( "+AR2",	""),
-	( "BLD",	"0"),
-	( "NOP",	"0"),
-	( "CALL",	"FC 42"),
-	( "CALL",	"FC 42"),
-	( "CALL",	"FC 42"),
-	( "CALL",	"FC 42"),
-	( "CALL",	"FC 42"),
-	( "CALL",	"FB 45, DB 45"),
-	( "CALL",	"FB 45, DB 45"),
-	( "CALL",	"FB 45, DB 45"),
-	( "CALL",	"FB 45, DB 45"),
-	( "CALL",	"FB 45, DB 45"),
-	( "SET",	""),
-	( "CC",		"FC 43"),
-	( "UC",		"FC 44"),
+insnCollection = (
+	(
+		( "U",		"BOOL"),
+	), (
+		( "UN",		"BOOL"),
+	), (
+		( "O",		"BOOL"),
+	), (
+		( "ON",		"BOOL"),
+	), (
+		( "X",		"BOOL"),
+	), (
+		( "XN",		"BOOL"),
+	), (
+		( "U(",		""),
+		( ")",		""),
+	), (
+		( "UN(",	""),
+		( ")",		""),
+	), (
+		( "O(",		""),
+		( ")",		""),
+	), (
+		( "ON(",	""),
+		( ")",		""),
+	), (
+		( "X(",		""),
+		( ")",		""),
+	), (
+		( "XN(",	""),
+		( ")",		""),
+	), (
+		( "=",		"BOOL"),
+	), (
+		( "R",		"BOOL"),
+	), (
+		( "S",		"BOOL"),
+	), (
+		( "NOT",	""),
+	), (
+		( "SET",	""),
+	), (
+		( "CLR",	""),
+	), (
+		( "SAVE",	""),
+	), (
+		( "FN",		"BOOL"),
+	), (
+		( "FP",		"BOOL"),
+	), (
+		( "==I",	""),
+	), (
+		( "<>I",	""),
+	), (
+		( ">I",		""),
+	), (
+		( "<I",		""),
+	), (
+		( ">=I",	""),
+	), (
+		( "<=I",	""),
+	), (
+		( "==D",	""),
+	), (
+		( "<>D",	""),
+	), (
+		( ">D",		""),
+	), (
+		( "<D",		""),
+	), (
+		( ">=D",	""),
+	), (
+		( "<=D",	""),
+	), (
+		( "==R",	""),
+	), (
+		( "<>R",	""),
+	), (
+		( ">R",		""),
+	), (
+		( "<R",		""),
+	), (
+		( ">=R",	""),
+	), (
+		( "<=R",	""),
+	), (
+		( "L",		"0"),
+		( "BTI",	""),
+	), (
+		( "ITB",	""),
+	), (
+		( "L",		"0"),
+		( "BTD",	""),
+	), (
+		( "ITD",	""),
+	), (
+		( "DTB",	""),
+	), (
+		( "DTR",	""),
+	), (
+		( "INVI",	""),
+	), (
+		( "INVD",	""),
+	), (
+		( "NEGI",	""),
+	), (
+		( "NEGD",	""),
+	), (
+		( "NEGR",	""),
+	), (
+		( "TAW",	""),
+	), (
+		( "TAD",	""),
+	), (
+		( "RND",	""),
+	), (
+		( "TRUNC",	""),
+	), (
+		( "RND+",	""),
+	), (
+		( "RND-",	""),
+	), (
+		( "FR",		"COUNTER"),
+	), (
+		( "L",		"WORD"),
+	), (
+		( "LC",		"WORD"),
+	), (
+		( "ZV",		"COUNTER"),
+	), (
+		( "ZR",		"COUNTER"),
+	), (
+		( "AUF",	"DB"),
+	), (
+		( "TDB",	""),
+	), (
+		( "SPA",	"LABEL"),
+	), (
+		( "SPL",	"LABEL"),
+	), (
+		( "SPB",	"LABEL"),
+	), (
+		( "SPBN",	"LABEL"),
+	), (
+		( "SPBB",	"LABEL"),
+	), (
+		( "SPBNB",	"LABEL"),
+	), (
+		( "SPBI",	"LABEL"),
+	), (
+		( "SPBIN",	"LABEL"),
+	), (
+		( "SPO",	"LABEL"),
+	), (
+		( "SPS",	"LABEL"),
+	), (
+		( "SPZ",	"LABEL"),
+	), (
+		( "SPN",	"LABEL"),
+	), (
+		( "SPP",	"LABEL"),
+	), (
+		( "SPM",	"LABEL"),
+	), (
+		( "SPPZ",	"LABEL"),
+	), (
+		( "SPMZ",	"LABEL"),
+	), (
+		( "SPU",	"LABEL"),
+	), (
+		( "LOOP",	"LABEL"),
+	), (
+		( "+I",		""),
+	), (
+		( "-I",		""),
+	), (
+		( "*I",		""),
+	), (
+		( "/I",		""),
+	), (
+		( "+",		"0"),
+	), (
+		( "+D",		""),
+	), (
+		( "-D",		""),
+	), (
+		( "*D",		""),
+	), (
+		( "/D",		""),
+	), (
+		( "MOD",	""),
+	), (
+		( "+R",		""),
+	), (
+		( "-R",		""),
+	), (
+		( "*R",		""),
+	), (
+		( "/R",		""),
+	), (
+		( "ABS",	""),
+	), (
+		( "SQR",	""),
+	), (
+		( "SQRT",	""),
+	), (
+		( "EXP",	""),
+	), (
+		( "LN",		""),
+	), (
+		( "SIN",	""),
+	), (
+		( "COS",	""),
+	), (
+		( "TAN",	""),
+	), (
+		( "ASIN",	""),
+	), (
+		( "ACOS",	""),
+	), (
+		( "ATAN",	""),
+	), (
+		( "LAR1",	""),
+	), (
+		( "LAR2",	""),
+	), (
+		( "T",		"WORD"),
+	), (
+		( "TAR",	""),
+	), (
+		( "TAR1",	""),
+	), (
+		( "TAR2",	""),
+	), (
+		( "MCR(",	""),
+		( "MCRA",	""),
+		( "MCRD",	""),
+		( ")MCR",	""),
+	), (
+		( "SSI",	""),
+	), (
+		( "SSD",	""),
+	), (
+		( "SLW",	""),
+	), (
+		( "SRW",	""),
+	), (
+		( "SLD",	""),
+	), (
+		( "SRD",	""),
+	), (
+		( "RLD",	""),
+	), (
+		( "RRD",	""),
+	), (
+		( "RLDA",	""),
+	), (
+		( "RRDA",	""),
+	), (
+		( "L",		"0"),
+		( "SI",		"TIMER"),
+	), (
+		( "L",		"0"),
+		( "SV",		"TIMER"),
+	), (
+		( "L",		"0"),
+		( "SE",		"TIMER"),
+	), (
+		( "L",		"0"),
+		( "SS",		"TIMER"),
+	), (
+		( "L",		"0"),
+		( "SA",		"TIMER"),
+	), (
+		( "UW",		""),
+	), (
+		( "OW",		""),
+	), (
+		( "XOW",	""),
+	), (
+		( "UD",		""),
+	), (
+		( "OD",		""),
+	), (
+		( "XOD",	""),
+	), (
+		( "TAK",	""),
+	), (
+		( "PUSH",	""),
+	), (
+		( "POP",	""),
+	), (
+		( "ENT",	""),
+	), (
+		( "LEAVE",	""),
+	), (
+		( "INC",	"0"),
+	), (
+		( "DEC",	"0"),
+	), (
+		( "+AR1",	""),
+	), (
+		( "+AR2",	""),
+	), (
+		( "BLD",	"0"),
+	), (
+		( "NOP",	"0"),
+	), (
+		( "CALL",	"FC 42"),
+	), (
+		( "CALL",	"FB 45, DB 45"),
+	), (
+		( "SET",	""),
+	), (
+		( "CC",		"FC 43"),
+	), (
+		( "UC",		"FC 44"),
+	)
 )
 
 def getLabelName(index):
@@ -215,12 +364,15 @@ def getLabelName(index):
 		index //= 26
 	return "".join(ret)
 
+rnd = random.Random()
+rnd.seed(42)
+
 labelIndex = 0
 print("// nrIterations=%d" % nrIterations)
 print("ORGANIZATION_BLOCK OB 1")
 print("BEGIN")
 for i in range(nrIterations):
-	for insn, args in insns:
+	for insn, args in rnd.choice(insnCollection):
 		prefixStr = suffixStr = None
 		if args == "":
 			argsStr = ""
@@ -236,15 +388,17 @@ for i in range(nrIterations):
 			argsStr = "DB 42"
 		elif args == "LABEL":
 			labelName = getLabelName(labelIndex)
-			prefixStr = "L 0;\nCLR;"
+			prefixStr = "\tL 0;\n\tCLR;"
 			argsStr = labelName
-			suffixStr = "%s: NOP 0;" % labelName
+			suffixStr = "%s:\tNOP 0;" % labelName
 			labelIndex += 1
 		else:
 			argsStr = args
 		if prefixStr:
 			print(prefixStr)
-		print("\t%s %s;" % (insn, argsStr))
+		if argsStr:
+			argsStr = " " + argsStr
+		print("\t%s%s;" % (insn, argsStr))
 		if suffixStr:
 			print(suffixStr)
 print("END_ORGANIZATION_BLOCK")
@@ -258,7 +412,7 @@ print("END_DATA_BLOCK")
 
 print("\nFUNCTION FC 42 : VOID")
 print("BEGIN")
-print("\tBE")
+print("\tBE;")
 print("END_FUNCTION")
 
 print("\nFUNCTION FC 43 : VOID")
@@ -268,8 +422,8 @@ print("END_FUNCTION")
 
 print("\nFUNCTION FC 44 : VOID")
 print("BEGIN")
-print("\tSET")
-print("\tBEB")
+print("\tSET;")
+print("\tBEB;")
 print("END_FUNCTION")
 
 print("\nFUNCTION_BLOCK FB 45")
