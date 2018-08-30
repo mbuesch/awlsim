@@ -118,13 +118,21 @@ def qwordToSignedPyInt(qword):						#@nocy
 def pyFloatToDWord(pyfl,						#@nocy
 		   __f=__floatStruct,					#@nocy
 		   __d=__dwordStruct):					#@nocy
-	dword = __d.unpack(__f.pack(pyfl))[0]				#@nocy
 #cdef uint32_t pyFloatToDWord(double pyfl):				#@cy
 #	cdef _floatCastUnion u						#@cy
 #	cdef uint32_t dword						#@cy
-#									#@cy
+
+	try:								#@nocy
+		dword = __d.unpack(__f.pack(pyfl))[0]			#@nocy
+	except OverflowError:						#@nocy
+		if pyfl < 0.0:						#@nocy
+			dword = floatConst.minNormNegFloat32DWord	#@nocy
+		else:							#@nocy
+			dword = floatConst.maxNormPosFloat32DWord	#@nocy
+
 #	u.fvalue = <float>pyfl;						#@cy
 #	dword = u.value32						#@cy
+
 	if isDenormalPyFloat(pyfl):
 		# Denormal floats are equal to zero on the S7 CPU.
 		# OV and OS flags are set in the StatusWord handler.
