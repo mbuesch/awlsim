@@ -27,6 +27,7 @@ import random
 
 
 nrIterations = 10000
+rngSeed = 42
 if len(sys.argv) > 1:
 	try:
 		nrIterations = int(sys.argv[1])
@@ -34,6 +35,14 @@ if len(sys.argv) > 1:
 			raise ValueError
 	except ValueError:
 		print("Invalid number of iterations.", file=sys.stderr)
+		sys.exit(1)
+if len(sys.argv) > 2:
+	try:
+		rngSeed = int(sys.argv[2])
+		if rngSeed < 0 or rngSeed > 0xFFFFFFFF:
+			raise ValueError
+	except ValueError:
+		print("Invalid RNG seed.", file=sys.stderr)
 		sys.exit(1)
 
 
@@ -365,7 +374,7 @@ def getLabelName(index):
 	return "".join(ret)
 
 rnd = random.Random()
-rnd.seed(42)
+rnd.seed(rngSeed)
 
 labelIndex = 0
 print("// nrIterations=%d" % nrIterations)
