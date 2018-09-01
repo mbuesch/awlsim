@@ -991,6 +991,15 @@ class Project(object):
 		return project
 
 	@classmethod
+	def fromDataBytes(cls, dataBytes, projectFile=""):
+		try:
+			return cls.fromText(dataBytes.decode(cls.ENCODING), projectFile)
+		except UnicodeError as e:
+			raise AwlSimError("Project data: Failed to %s decode "
+				"project data: %s" % (
+				cls.ENCODING, str(e)))
+
+	@classmethod
 	def fromFile(cls, filename):
 		try:
 			return cls.fromText(safeFileRead(filename).decode(cls.ENCODING), filename)
@@ -1011,8 +1020,24 @@ class Project(object):
 			awlSrc = AwlSource.fromFile(name=filename,
 						    filepath=filename,
 						    compatReEncode=True)
-			project = Project(projectFile = None,
-					  awlSources = [ awlSrc, ])
+			project = Project(projectFile=None,
+					  awlSources=[ awlSrc, ])
+		return project
+
+	@classmethod
+	def fromProjectOrRawAwlData(cls, dataBytes):
+		"""Read project data (.awlpro) or raw AWL data (.awl)
+		and return a Project()."""
+
+		if Project.dataIsProject(dataBytes):
+			project = Project.fromDataBytes(dataBytes)
+		else:
+			# Make a fake project
+			awlSrc = AwlSource.fromBytes(name=None,
+						     sourceBytes=dataBytes,
+						     compatReEncode=True)
+			project = Project(projectFile=None,
+					  awlSources=[ awlSrc, ])
 		return project
 
 	def toText(self, projectFile=None):

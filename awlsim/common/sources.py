@@ -330,6 +330,16 @@ class GenericSource(object):
 		return source
 
 	@classmethod
+	def fromBytes(cls, name, sourceBytes, compatReEncode=False):
+		source = cls(name=name)
+		if compatReEncode:
+			sourceBytes = cls._compatReEncode(sourceBytes,
+							  cls.COMPAT_ENCODING,
+							  cls.ENCODING)
+		source.sourceBytes = sourceBytes
+		return source
+
+	@classmethod
 	def fromBase64(cls, name, b64):
 		try:
 			data = base64.b64decode(b64.encode("ascii"))
