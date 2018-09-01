@@ -182,6 +182,17 @@ def assignCpuConf(cpuConf, projectCpuConf):
 	if opt_extInsns is not None:
 		cpuConf.setExtInsnsEn(opt_extInsns)
 
+def readInputFile(inputFile):
+	if inputFile == "-":
+		if isPy2Compat:
+			dataBytes = sys.stdin.read()
+		else:
+			dataBytes = sys.stdin.buffer.read()
+		project = Project.fromProjectOrRawAwlData(dataBytes)
+	else:
+		project = Project.fromProjectOrRawAwlFile(inputFile)
+	return project
+
 def run(inputFile):
 	s = None
 	try:
@@ -189,7 +200,7 @@ def run(inputFile):
 			printInfo("*** Using accelerated CYTHON core "
 				  "(AWLSIM_CYTHON environment variable is set)")
 
-		project = Project.fromProjectOrRawAwlFile(inputFile)
+		project = readInputFile(inputFile)
 
 		printInfo("Parsing code...")
 		generatedAwlSrcs = []
@@ -310,7 +321,7 @@ def runWithServerBackend(inputFile):
 	client = None
 	tunnel = None
 	try:
-		project = Project.fromProjectOrRawAwlFile(inputFile)
+		project = readInputFile(inputFile)
 		linkSettings = project.getCoreLinkSettings()
 
 		if opt_spawnBackend:
