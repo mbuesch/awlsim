@@ -26,6 +26,14 @@ import sys
 import random
 
 
+def out(data):
+	print(data, end="\r\n")
+
+def error(msg):
+	print(msg, file=sys.stderr)
+	sys.exit(1)
+
+
 nrIterations = 10000
 rngSeed = 42
 if len(sys.argv) > 1:
@@ -34,16 +42,14 @@ if len(sys.argv) > 1:
 		if nrIterations < 0:
 			raise ValueError
 	except ValueError:
-		print("Invalid number of iterations.", file=sys.stderr)
-		sys.exit(1)
+		error("Invalid number of iterations.")
 if len(sys.argv) > 2:
 	try:
 		rngSeed = int(sys.argv[2])
 		if rngSeed < 0 or rngSeed > 0xFFFFFFFF:
 			raise ValueError
 	except ValueError:
-		print("Invalid RNG seed.", file=sys.stderr)
-		sys.exit(1)
+		error("Invalid RNG seed.")
 
 
 insnCollection = (
@@ -377,9 +383,9 @@ rnd = random.Random()
 rnd.seed(rngSeed)
 
 labelIndex = 0
-print("// nrIterations=%d" % nrIterations)
-print("ORGANIZATION_BLOCK OB 1")
-print("BEGIN")
+out("// nrIterations=%d" % nrIterations)
+out("ORGANIZATION_BLOCK OB 1")
+out("BEGIN")
 for i in range(nrIterations):
 	for insn, args in rnd.choice(insnCollection):
 		prefixStr = suffixStr = None
@@ -399,7 +405,7 @@ for i in range(nrIterations):
 			argsStr = "DB 42"
 		elif args == "LABEL":
 			labelName = getLabelName(labelIndex)
-			prefixStr = "\tL 0;\n\tCLR;"
+			prefixStr = "\tL 0;\r\n\tCLR;"
 			argsStr = labelName
 			suffixStr = "%s:\tNOP 0;" % labelName
 			labelIndex += 1
@@ -408,42 +414,42 @@ for i in range(nrIterations):
 		else:
 			argsStr = args
 		if prefixStr:
-			print(prefixStr)
+			out(prefixStr)
 		if argsStr:
 			argsStr = " " + argsStr
-		print("\t%s%s;" % (insn, argsStr))
+		out("\t%s%s;" % (insn, argsStr))
 		if suffixStr:
-			print(suffixStr)
-print("END_ORGANIZATION_BLOCK")
+			out(suffixStr)
+out("END_ORGANIZATION_BLOCK")
 
-print("\nDATA_BLOCK DB 42")
-print("\tSTRUCT")
-print("\t\tVAR : INT;")
-print("\tEND_STRUCT")
-print("BEGIN")
-print("END_DATA_BLOCK")
+out("\r\nDATA_BLOCK DB 42")
+out("\tSTRUCT")
+out("\t\tVAR : INT;")
+out("\tEND_STRUCT")
+out("BEGIN")
+out("END_DATA_BLOCK")
 
-print("\nFUNCTION FC 42 : VOID")
-print("BEGIN")
-print("\tBE;")
-print("END_FUNCTION")
+out("\r\nFUNCTION FC 42 : VOID")
+out("BEGIN")
+out("\tBE;")
+out("END_FUNCTION")
 
-print("\nFUNCTION FC 43 : VOID")
-print("BEGIN")
-print("\tBEA")
-print("END_FUNCTION")
+out("\r\nFUNCTION FC 43 : VOID")
+out("BEGIN")
+out("\tBEA")
+out("END_FUNCTION")
 
-print("\nFUNCTION FC 44 : VOID")
-print("BEGIN")
-print("\tSET;")
-print("\tBEB;")
-print("END_FUNCTION")
+out("\r\nFUNCTION FC 44 : VOID")
+out("BEGIN")
+out("\tSET;")
+out("\tBEB;")
+out("END_FUNCTION")
 
-print("\nFUNCTION_BLOCK FB 45")
-print("BEGIN")
-print("END_FUNCTION_BLOCK")
+out("\r\nFUNCTION_BLOCK FB 45")
+out("BEGIN")
+out("END_FUNCTION_BLOCK")
 
-print("\nDATA_BLOCK DB 45")
-print("\tFB 45")
-print("BEGIN")
-print("END_DATA_BLOCK")
+out("\r\nDATA_BLOCK DB 45")
+out("\tFB 45")
+out("BEGIN")
+out("END_DATA_BLOCK")
