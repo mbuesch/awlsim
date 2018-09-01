@@ -402,6 +402,7 @@ run_awl_test()
 			[ $expected_exit_code -eq 0 ] || local loglevel=0
 			local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
 			local max_runtime="$(get_conf "$awl" max_runtime -1)"
+			local accus="$(get_conf "$awl" accus 2)"
 			local dump_opt=
 			[ $loglevel -ge 3 ] && local dump_opt="--no-cpu-dump"
 
@@ -413,6 +414,7 @@ run_awl_test()
 				--cycle-limit "$cycle_limit" \
 				--max-runtime "$max_runtime" \
 				--optimizers "$optimizers" \
+				-"$accus" \
 				$dump_opt \
 				"$@" \
 				"$awl"
