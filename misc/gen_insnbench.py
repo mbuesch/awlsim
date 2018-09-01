@@ -161,7 +161,7 @@ insnCollection = (
 	), (
 		( "FR",		"COUNTER"),
 	), (
-		( "L",		"WORD"),
+		( "L",		"RANDOM_DWORD"),
 	), (
 		( "LC",		"WORD"),
 	), (
@@ -263,7 +263,7 @@ insnCollection = (
 	), (
 		( "LAR2",	""),
 	), (
-		( "T",		"WORD"),
+		( "T",		"DWORD"),
 	), (
 		( "TAR",	""),
 	), (
@@ -377,9 +377,11 @@ for i in range(nrIterations):
 		if args == "":
 			argsStr = ""
 		elif args == "BOOL":
-			argsStr = "M 42.4"
+			argsStr = "M 0.4"
 		elif args == "WORD":
-			argsStr = "MW 42"
+			argsStr = "MW 0"
+		elif args == "DWORD":
+			argsStr = "MD 0"
 		elif args == "TIMER":
 			argsStr = "T 42"
 		elif args == "COUNTER":
@@ -392,6 +394,8 @@ for i in range(nrIterations):
 			argsStr = labelName
 			suffixStr = "%s:\tNOP 0;" % labelName
 			labelIndex += 1
+		elif args == "RANDOM_DWORD":
+			argsStr = "DW#16#%08X" % rnd.randint(0, 0xFFFFFFFF)
 		else:
 			argsStr = args
 		if prefixStr:
