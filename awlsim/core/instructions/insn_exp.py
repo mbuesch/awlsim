@@ -54,6 +54,10 @@ class AwlInsn_EXP(AwlInsn): #+cdef
 		elif accu1DWord == floatConst.negInfDWord or\
 		     accu1DWord == floatConst.posInfDWord:
 			pass
+		elif (accu1DWord & 0x80000000) == 0 and accu1DWord > 0x42B00000: #+suffix-u
+			# 88.0 is the maximum
+			self.cpu.accu1.set(floatConst.posInfDWord)
+			accu1Float = self.cpu.accu1.getPyFloat()
 		else:
 			accu1Float = exp(accu1Float)
 			self.cpu.accu1.setPyFloat(accu1Float)
