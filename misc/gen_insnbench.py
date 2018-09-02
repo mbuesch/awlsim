@@ -24,32 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import sys
 import random
-
-
-def out(data):
-	print(data, end="\r\n")
-
-def error(msg):
-	print(msg, file=sys.stderr)
-	sys.exit(1)
-
-
-nrIterations = 10000
-rngSeed = 42
-if len(sys.argv) > 1:
-	try:
-		nrIterations = int(sys.argv[1])
-		if nrIterations < 0:
-			raise ValueError
-	except ValueError:
-		error("Invalid number of iterations.")
-if len(sys.argv) > 2:
-	try:
-		rngSeed = int(sys.argv[2])
-		if rngSeed < 0 or rngSeed > 0xFFFFFFFF:
-			raise ValueError
-	except ValueError:
-		error("Invalid RNG seed.")
+import getopt
 
 
 insnCollection = (
@@ -372,6 +347,19 @@ insnCollection = (
 	)
 )
 
+def out(data):
+	print(data, end="\r\n")
+
+def error(msg):
+	print(msg, file=sys.stderr)
+	sys.exit(1)
+
+def usage(f=sys.stdout):
+	print("gen_insnbench.py [OPTIONS]", file=f)
+	print("", file=f)
+	print(" -s|--seed SEED         Set the randomizer seed. Default: 42", file=f)
+	print(" -i|--iterations COUNT  Set the number of iterations. Default: 10000", file=f)
+
 def getLabelName(index):
 	ret = [None] * 4
 	for i in range(3, -1, -1):
@@ -379,77 +367,114 @@ def getLabelName(index):
 		index //= 26
 	return "".join(ret)
 
-rnd = random.Random()
-rnd.seed(rngSeed)
+def main():
+	nrIterations = 10000
+	rngSeed = 42
 
-labelIndex = 0
-out("// nrIterations=%d" % nrIterations)
-out("ORGANIZATION_BLOCK OB 1")
-out("BEGIN")
-for i in range(nrIterations):
-	for insn, args in rnd.choice(insnCollection):
-		prefixStr = suffixStr = None
-		if args == "":
-			argsStr = ""
-		elif args == "BOOL":
-			argsStr = "M 0.4"
-		elif args == "WORD":
-			argsStr = "MW 0"
-		elif args == "DWORD":
-			argsStr = "MD 0"
-		elif args == "TIMER":
-			argsStr = "T 42"
-		elif args == "COUNTER":
-			argsStr = "Z 42"
-		elif args == "DB":
-			argsStr = "DB 42"
-		elif args == "LABEL":
-			labelName = getLabelName(labelIndex)
-			prefixStr = "\tL 0;\r\n\tCLR;"
-			argsStr = labelName
-			suffixStr = "%s:\tNOP 0;" % labelName
-			labelIndex += 1
-		elif args == "RANDOM_DWORD":
-			argsStr = "DW#16#%08X" % rnd.randint(0, 0xFFFFFFFF)
-		else:
-			argsStr = args
-		if prefixStr:
-			out(prefixStr)
-		if argsStr:
-			argsStr = " " + argsStr
-		out("\t%s%s;" % (insn, argsStr))
-		if suffixStr:
-			out(suffixStr)
-out("END_ORGANIZATION_BLOCK")
+	try:
+		(opts, args) = getopt.getopt(sys.argv[1:],
+			"hs:i:",
+			[ "help", "seed=", "iterations=", ])
+	except getopt.GetoptError as e:
+		error(str(e))
+	for (o, v) in opts:
+		if o in ("-h", "--help"):
+			usage()
+			return 0
+		if o in ("-s", "--seed"):
+			try:
+				rngSeed = int(v)
+				if rngSeed < 0 or rngSeed > 0xFFFFFFFF:
+					raise ValueError
+			except ValueError:
+				error("Invalid RNG seed.")
+		if o in ("-i", "--iterations"):
+			try:
+				nrIterations = int(v)
+				if nrIterations < 0:
+					raise ValueError
+			except ValueError:
+				error("Invalid number of iterations.")
+	if args:
+		usage(f=sys.stderr)
+		return 1
 
-out("\r\nDATA_BLOCK DB 42")
-out("\tSTRUCT")
-out("\t\tVAR : INT;")
-out("\tEND_STRUCT")
-out("BEGIN")
-out("END_DATA_BLOCK")
+	rnd = random.Random()
+	rnd.seed(rngSeed)
 
-out("\r\nFUNCTION FC 42 : VOID")
-out("BEGIN")
-out("\tBE;")
-out("END_FUNCTION")
+	labelIndex = 0
+	out("// iterations=%d" % nrIterations)
+	out("// seed=%d" % rngSeed)
+	out("ORGANIZATION_BLOCK OB 1")
+	out("BEGIN")
+	for i in range(nrIterations):
+		for insn, args in rnd.choice(insnCollection):
+			prefixStr = suffixStr = None
+			if args == "":
+				argsStr = ""
+			elif args == "BOOL":
+				argsStr = "M 0.4"
+			elif args == "WORD":
+				argsStr = "MW 0"
+			elif args == "DWORD":
+				argsStr = "MD 0"
+			elif args == "TIMER":
+				argsStr = "T 42"
+			elif args == "COUNTER":
+				argsStr = "Z 42"
+			elif args == "DB":
+				argsStr = "DB 42"
+			elif args == "LABEL":
+				labelName = getLabelName(labelIndex)
+				prefixStr = "\tL 0;\r\n\tCLR;"
+				argsStr = labelName
+				suffixStr = "%s:\tNOP 0;" % labelName
+				labelIndex += 1
+			elif args == "RANDOM_DWORD":
+				argsStr = "DW#16#%08X" % rnd.randint(0, 0xFFFFFFFF)
+			else:
+				argsStr = args
+			if prefixStr:
+				out(prefixStr)
+			if argsStr:
+				argsStr = " " + argsStr
+			out("\t%s%s;" % (insn, argsStr))
+			if suffixStr:
+				out(suffixStr)
+	out("\tCALL SFC 46 // STOP CPU")
+	out("END_ORGANIZATION_BLOCK")
 
-out("\r\nFUNCTION FC 43 : VOID")
-out("BEGIN")
-out("\tBEA")
-out("END_FUNCTION")
+	out("\r\nDATA_BLOCK DB 42")
+	out("\tSTRUCT")
+	out("\t\tVAR : INT;")
+	out("\tEND_STRUCT")
+	out("BEGIN")
+	out("END_DATA_BLOCK")
 
-out("\r\nFUNCTION FC 44 : VOID")
-out("BEGIN")
-out("\tSET;")
-out("\tBEB;")
-out("END_FUNCTION")
+	out("\r\nFUNCTION FC 42 : VOID")
+	out("BEGIN")
+	out("\tBE;")
+	out("END_FUNCTION")
 
-out("\r\nFUNCTION_BLOCK FB 45")
-out("BEGIN")
-out("END_FUNCTION_BLOCK")
+	out("\r\nFUNCTION FC 43 : VOID")
+	out("BEGIN")
+	out("\tBEA")
+	out("END_FUNCTION")
 
-out("\r\nDATA_BLOCK DB 45")
-out("\tFB 45")
-out("BEGIN")
-out("END_DATA_BLOCK")
+	out("\r\nFUNCTION FC 44 : VOID")
+	out("BEGIN")
+	out("\tSET;")
+	out("\tBEB;")
+	out("END_FUNCTION")
+
+	out("\r\nFUNCTION_BLOCK FB 45")
+	out("BEGIN")
+	out("END_FUNCTION_BLOCK")
+
+	out("\r\nDATA_BLOCK DB 45")
+	out("\tFB 45")
+	out("BEGIN")
+	out("END_DATA_BLOCK")
+
+if __name__ == "__main__":
+	sys.exit(main())
