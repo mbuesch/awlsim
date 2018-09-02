@@ -850,52 +850,58 @@ make_AwlMemoryObject_fromScalar48 = lambda v: make_AwlMemoryObject_fromScalar(v,
 
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar1(int64_t value) except NULL: #@cy
 #@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	memObj = alloc_AwlMemoryObject(1)
-#@cy	memObj.dataBytes[0] = 1 if value else 0
+#@cy	dataBytes = &memObj.dataBytes[0]
+#@cy	dataBytes[0] = 1 if value else 0
 #@cy	return memObj
 
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar8(int64_t value) except NULL: #@cy
 #@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	memObj = alloc_AwlMemoryObject(8)
-#@cy	memObj.dataBytes[0] = <uint8_t>value
+#@cy	dataBytes = &memObj.dataBytes[0]
+#@cy	dataBytes[0] = <uint8_t>value
 #@cy	return memObj
 
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar16(int64_t value) except NULL: #@cy
 #@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	memObj = alloc_AwlMemoryObject(16)
-#@cy	(<uint16_t *>(&memObj.dataBytes[0]))[0] = htobe16(<uint16_t>value)
+#@cy	dataBytes = &memObj.dataBytes[0]
+#@cy	(<uint16_t *>dataBytes)[0] = htobe16(<uint16_t>value)
 #@cy	return memObj
 
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar24(int64_t value) except NULL: #@cy
 #@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	memObj = alloc_AwlMemoryObject(24)
-#@cy	(<uint16_t *>(&memObj.dataBytes[0]))[0] = htobe16(<uint16_t>(<uint32_t>value >> 8))
-#@cy	memObj.dataBytes[2] = <uint8_t>value
+#@cy	dataBytes = &memObj.dataBytes[0]
+#@cy	(<uint16_t *>dataBytes)[0] = htobe16(<uint16_t>(<uint32_t>value >> 8))
+#@cy	dataBytes[2] = <uint8_t>value
 #@cy	return memObj
 
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar32(int64_t value) except NULL: #@cy
 #@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	memObj = alloc_AwlMemoryObject(32)
-#@cy	(<uint32_t *>(&memObj.dataBytes[0]))[0] = htobe32(<uint32_t>value)
+#@cy	dataBytes = &memObj.dataBytes[0]
+#@cy	(<uint32_t *>dataBytes)[0] = htobe32(<uint32_t>value)
 #@cy	return memObj
 
 #cdef AwlMemoryObject make_AwlMemoryObject_fromScalar48(int64_t value) except NULL: #@cy
 #@cy	cdef AwlMemoryObject memObj
-#@cy	cdef uint32_t byteOffset
+#@cy	cdef uint8_t *dataBytes
 #@cy
 #@cy	memObj = alloc_AwlMemoryObject(48)
-#@cy	(<uint32_t *>(&memObj.dataBytes[0]))[0] = htobe32(<uint32_t>(<uint64_t>value >> 16))
-#@cy	(<uint16_t *>(&memObj.dataBytes[4]))[0] = htobe16(<uint16_t>value)
+#@cy	dataBytes = &memObj.dataBytes[0]
+#@cy	(<uint32_t *>dataBytes)[0] = htobe32(<uint32_t>(<uint64_t>value >> 16))
+#@cy	(<uint16_t *>dataBytes)[2] = htobe16(<uint16_t>value)
 #@cy	return memObj
 
 def make_AwlMemoryObject_fromGeneric(value, width): #@nocy

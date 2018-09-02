@@ -210,20 +210,30 @@ cdef AwlMemoryObject_asScalar_failed(AwlMemoryObject memObj)
 cdef uint32_t AwlMemoryObject_asScalar(AwlMemoryObject memObj) except? 0x7FFFFFFF
 
 cdef inline uint32_t AwlMemoryObject_asScalar1(AwlMemoryObject memObj):
-	return <uint8_t>(memObj.dataBytes[0]) & 1u
+	cdef const uint8_t *dataBytes
+	dataBytes = &memObj.dataBytes[0]
+	return <uint8_t>(dataBytes[0]) & 1u
 
 cdef inline uint32_t AwlMemoryObject_asScalar8(AwlMemoryObject memObj):
-	return <uint8_t>(memObj.dataBytes[0])
+	cdef const uint8_t *dataBytes
+	dataBytes = &memObj.dataBytes[0]
+	return <uint8_t>(dataBytes[0])
 
 cdef inline uint32_t AwlMemoryObject_asScalar16(AwlMemoryObject memObj):
-	return be16toh((<uint16_t *>(&memObj.dataBytes[0]))[0])
+	cdef const uint8_t *dataBytes
+	dataBytes = &memObj.dataBytes[0]
+	return be16toh((<uint16_t *>dataBytes)[0])
 
 cdef inline uint32_t AwlMemoryObject_asScalar24(AwlMemoryObject memObj):
-	return ((<uint32_t>be16toh((<uint16_t *>(&memObj.dataBytes[0]))[0]) << 8) |
-	        <uint32_t>memObj.dataBytes[2])
+	cdef const uint8_t *dataBytes
+	dataBytes = &memObj.dataBytes[0]
+	return ((<uint32_t>be16toh((<uint16_t *>dataBytes)[0]) << 8) |
+	        <uint32_t>dataBytes[2])
 
 cdef inline uint32_t AwlMemoryObject_asScalar32(AwlMemoryObject memObj):
-	return be32toh((<uint32_t *>(&memObj.dataBytes[0]))[0])
+	cdef const uint8_t *dataBytes
+	dataBytes = &memObj.dataBytes[0]
+	return be32toh((<uint32_t *>dataBytes)[0])
 
 cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj)
 
