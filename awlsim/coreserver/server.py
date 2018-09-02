@@ -51,6 +51,7 @@ import signal
 import socket
 import errno
 import time
+import multiprocessing
 
 
 class AwlSimClientInfo(object):
@@ -222,6 +223,7 @@ class AwlSimServer(object): #+cdef
 		return retval
 
 	def __init__(self):
+		self.__affinityEnabled = False
 		self.__emptyList = []
 		self.__startupDone = False
 		self.__state = -1
@@ -313,6 +315,28 @@ class AwlSimServer(object): #+cdef
 			     projectWriteBack = projectWriteBack)
 		self.run()
 
+	def __setAffinity(self, enable=True):
+		"""Set the host CPU affinity to that what is set by AWLSIM_AFFINITY
+		environment variable, if enable==True.
+		"""
+		self.__affinityEnabled = enable
+		affinity = AwlSimEnv.getAffinity()
+		if affinity:
+			if not enable:
+				# Disable CPU pinning.
+				affinity = list(range(multiprocessing.cpu_count()))
+			if hasattr(os, "sched_setaffinity"):
+				try:
+					os.sched_setaffinity(0, affinity)
+				except (OSError, ValueError) as e: #@nocov
+					raise AwlSimError("Failed to set host CPU "
+						"affinity to %s: %s" % (
+						affinity, str(e)))
+			else: #@nocov
+				printError("Cannot set CPU affinity "
+					   "on this version of Python. "
+					   "os.sched_setaffinity is not available.")
+
 	def getRunState(self):
 		return self.__state
 
@@ -332,9 +356,11 @@ class AwlSimServer(object): #+cdef
 		if runstate == self._STATE_INIT:
 			# We just entered initialization state.
 			printVerbose("Putting CPU into INIT state.")
+			self.__setAffinity(False)
 			self.__needOB10x = True
 		elif runstate == self.STATE_RUN:
 			# We just entered RUN state.
+			self.__setAffinity(True)
 			if self.__needOB10x:
 				printVerbose("CPU startup (OB 10x).")
 				self.__sim.startup()
@@ -343,10 +369,14 @@ class AwlSimServer(object): #+cdef
 		elif runstate == self.STATE_STOP:
 			# We just entered STOP state.
 			printVerbose("Putting CPU into STOP state.")
+			self.__setAffinity(False)
 		elif runstate == self.STATE_MAINTENANCE:
 			# We just entered MAINTENANCE state.
 			printVerbose("Putting CPU into MAINTENANCE state.")
+			self.__setAffinity(False)
 			self.__needOB10x = True
+		else:
+			self.__setAffinity(False)
 
 		self.__state = runstate
 		# Make a shortcut variable for RUN
@@ -633,12 +663,20 @@ class AwlSimServer(object): #+cdef
 		hwmodName = hwmodDesc.getModuleName()
 		printInfo("Loading hardware module '%s'..." % hwmodName)
 
+		# In case the hardware module spawns some threads make sure these
+		# do not inherit the host CPU affinity mask of the main thread.
+		affinity = self.__affinityEnabled
+		self.__setAffinity(False)
+
 		hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
 		self.__sim.registerHardwareClass(hwClass = hwClass,
 						 parameters = hwmodDesc.getParameters())
 
 		self.loadedHwModules.append(hwmodDesc)
 		self.__updateProjectFile()
+
+		# Re-enable host CPU affinity mask, if it was enabled.
+		self.__setAffinity(affinity)
 
 		printInfo("Hardware module '%s' loaded." % hwmodName)
 
