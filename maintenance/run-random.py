@@ -48,12 +48,14 @@ def process(seed):
 		info("Running with seed=%d ..." % seed)
 
 		procGen = subprocess.Popen(
-			[ os.path.join(awlsim_base, "misc", "gen_insnbench.py"),
+			[ sys.executable,
+			  os.path.join(awlsim_base, "misc", "gen_insnbench.py"),
 			  "--seed", str(seed), "--one-cycle" ],
 			stdout=subprocess.PIPE,
 			shell=False)
 		procAwlsim = subprocess.Popen(
-			[ os.path.join(awlsim_base, "awlsim-test"),
+			[ sys.executable,
+			  os.path.join(awlsim_base, "awlsim-test"),
 			  "-D", "-L1", "-4", "-" ],
 			stdin=procGen.stdout,
 			stdout=subprocess.PIPE,
