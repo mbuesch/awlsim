@@ -48,12 +48,12 @@ class AwlInsn_ACOS(AwlInsn): #+cdef
 
 		accu1DWord = self.cpu.accu1.get()
 		accu1Float = self.cpu.accu1.getPyFloat()
-		if isNaN(accu1DWord):
+		if accu1DWord == floatConst.negInfDWord or\
+		   accu1DWord == floatConst.posInfDWord:
+			pass
+		elif isNaN(accu1DWord) or accu1Float > 1.0 or accu1Float < -1.0:
 			self.cpu.accu1.set(floatConst.pNaNDWord)
 			accu1Float = self.cpu.accu1.getPyFloat()
-		elif accu1DWord == floatConst.negInfDWord or\
-		     accu1DWord == floatConst.posInfDWord:
-			pass
 		else:
 			accu1Float = acos(accu1Float)
 			self.cpu.accu1.setPyFloat(accu1Float)
