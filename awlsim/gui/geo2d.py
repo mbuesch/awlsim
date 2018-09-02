@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim_loader.common import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 
 __all__ = [ "Point2D", "Vect2D", "Inter2D", "LineSeg2D", ]
