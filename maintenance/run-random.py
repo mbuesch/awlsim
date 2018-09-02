@@ -25,7 +25,12 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import subprocess
 import multiprocessing
 import sys
+import os
 import getopt
+
+
+basedir = os.path.dirname(os.path.abspath(__file__))
+awlsim_base = os.path.join(basedir, "..")
 
 
 class Error(Exception): pass
@@ -41,11 +46,13 @@ def process(seed):
 		info("Running with seed=%d ..." % seed)
 
 		procGen = subprocess.Popen(
-			["./misc/gen_insnbench.py", "--seed", str(seed)],
+			[ os.path.join(awlsim_base, "misc", "gen_insnbench.py"),
+			  "--seed", str(seed), "--one-cycle" ],
 			stdout=subprocess.PIPE,
 			shell=False)
 		procAwlsim = subprocess.Popen(
-			["./awlsim-test", "-D", "-L1", "-4", "-"],
+			[ os.path.join(awlsim_base, "awlsim-test"),
+			  "-D", "-L1", "-4", "-" ],
 			stdin=procGen.stdout,
 			stdout=subprocess.PIPE,
 			shell=False)
