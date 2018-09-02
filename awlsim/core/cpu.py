@@ -1691,8 +1691,6 @@ class S7CPU(object): #+cdef
 	def __fetchIMM_STR(self, operator, allowedWidths): #@nocy
 #@cy	cdef AwlMemoryObject __fetchIMM_STR(self, AwlOperator operator, uint32_t allowedWidths) except NULL:
 #@cy		cdef uint32_t insnType
-#@cy		cdef uint32_t value
-#@cy		cdef int32_t i
 
 		if operator.width <= 48 and operator.insn is not None:
 			insnType = operator.insn.insnType
@@ -1700,14 +1698,10 @@ class S7CPU(object): #+cdef
 			   insnType >= AwlInsnTypes.TYPE_EXTENDED:
 				# This is a special 0-4 character fetch (L) that
 				# is transparently translated into an integer.
-				#TODO We can use make_AwlMemoryObject_fromBytes
-				value, data = 0, operator.immediateBytes
-				for i in range(2, operator.width // 8):
-					value = (value << 8) | data[i]
-				if operator.width - 16 <= 0:
+				if operator.width <= 16:
 					return constMemObj_8bit_0
-				return make_AwlMemoryObject_fromScalar(value,
-								       operator.width - 16)
+				return make_AwlMemoryObject_fromBytes(operator.immediateBytes[2:],
+								      operator.width - 16)
 
 		if not (makeAwlOperatorWidthMask(operator.width) & allowedWidths):
 			self.__fetchWidthError(operator, allowedWidths)
