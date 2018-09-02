@@ -372,6 +372,7 @@ def usage(f=sys.stdout):
 	print("", file=f)
 	print(" -s|--seed SEED         Set the randomizer seed. Default: 42", file=f)
 	print(" -i|--iterations COUNT  Set the number of iterations. Default: 10000", file=f)
+	print(" -o|--one-cycle         Generate CALL SFC 46 at the end of OB 1.", file=f)
 
 def getLabelName(index):
 	ret = [None] * 4
@@ -381,13 +382,14 @@ def getLabelName(index):
 	return "".join(ret)
 
 def main():
-	nrIterations = 10000
-	rngSeed = 42
+	opt_nrIterations = 10000
+	opt_rngSeed = 42
+	opt_oneCycle = False
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hs:i:",
-			[ "help", "seed=", "iterations=", ])
+			"hs:i:o",
+			[ "help", "seed=", "iterations=", "one-cycle", ])
 	except getopt.GetoptError as e:
 		error(str(e))
 	for (o, v) in opts:
@@ -396,32 +398,34 @@ def main():
 			return 0
 		if o in ("-s", "--seed"):
 			try:
-				rngSeed = int(v)
-				if rngSeed < 0 or rngSeed > 0xFFFFFFFF:
+				opt_rngSeed = int(v)
+				if opt_rngSeed < 0 or opt_rngSeed > 0xFFFFFFFF:
 					raise ValueError
 			except ValueError:
 				error("Invalid RNG seed.")
 		if o in ("-i", "--iterations"):
 			try:
-				nrIterations = int(v)
-				if nrIterations < 0:
+				opt_nrIterations = int(v)
+				if opt_nrIterations < 0:
 					raise ValueError
 			except ValueError:
 				error("Invalid number of iterations.")
+		if o in ("-o", "--one-cycle"):
+			opt_oneCycle = True
 	if args:
 		usage(f=sys.stderr)
 		return 1
 
-	rnd = random.Random()
-	rnd.seed(rngSeed)
+	rng = random.Random()
+	rng.seed(opt_rngSeed)
 
 	labelIndex = 0
-	out("// iterations=%d" % nrIterations)
-	out("// seed=%d" % rngSeed)
+	out("// iterations=%d" % opt_nrIterations)
+	out("// seed=%d" % opt_rngSeed)
 	out("ORGANIZATION_BLOCK OB 1")
 	out("BEGIN")
-	for i in range(nrIterations):
-		for insn, args in rnd.choice(insnCollection):
+	for i in range(opt_nrIterations):
+		for insn, args in rng.choice(insnCollection):
 			prefixStr = suffixStr = None
 			if args == "":
 				argsStr = ""
@@ -444,9 +448,9 @@ def main():
 				suffixStr = "%s:\tNOP 0;" % labelName
 				labelIndex += 1
 			elif args == "RANDOM_BOOL":
-				argsStr = "TRUE" if rnd.randint(0, 1) else "FALSE"
+				argsStr = "TRUE" if rng.randint(0, 1) else "FALSE"
 			elif args == "RANDOM_DWORD":
-				argsStr = "DW#16#%08X" % rnd.randint(0, 0xFFFFFFFF)
+				argsStr = "DW#16#%08X" % rng.randint(0, 0xFFFFFFFF)
 			else:
 				argsStr = args
 			if prefixStr:
@@ -456,7 +460,8 @@ def main():
 			out("\t%s%s;" % (insn, argsStr))
 			if suffixStr:
 				out(suffixStr)
-	out("\tCALL SFC 46 // STOP CPU")
+	if opt_oneCycle:
+		out("\tCALL SFC 46 // STOP CPU")
 	out("END_ORGANIZATION_BLOCK")
 
 	out("\r\nDATA_BLOCK DB 42")
