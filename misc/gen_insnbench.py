@@ -41,6 +41,18 @@ insnCollection = (
 	), (
 		( "XN",		"BOOL"),
 	), (
+		( "U",		"RANDOM_BOOL"),
+	), (
+		( "UN",		"RANDOM_BOOL"),
+	), (
+		( "O",		"RANDOM_BOOL"),
+	), (
+		( "ON",		"RANDOM_BOOL"),
+	), (
+		( "X",		"RANDOM_BOOL"),
+	), (
+		( "XN",		"RANDOM_BOOL"),
+	), (
 		( "U(",		""),
 		( ")",		""),
 	), (
@@ -431,6 +443,8 @@ def main():
 				argsStr = labelName
 				suffixStr = "%s:\tNOP 0;" % labelName
 				labelIndex += 1
+			elif args == "RANDOM_BOOL":
+				argsStr = "TRUE" if rnd.randint(0, 1) else "FALSE"
 			elif args == "RANDOM_DWORD":
 				argsStr = "DW#16#%08X" % rnd.randint(0, 0xFFFFFFFF)
 			else:
