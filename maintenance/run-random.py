@@ -42,6 +42,8 @@ def info(msg):
 	print(msg, file=sys.stdout)
 
 def process(seed):
+	procGen = None
+	procAwlsim = None
 	try:
 		info("Running with seed=%d ..." % seed)
 
@@ -64,6 +66,11 @@ def process(seed):
 			raise Error("Process exited with error.")
 	except KeyboardInterrupt:
 		raise Error("Aborted by user.")
+	finally:
+		for p in (procGen, procAwlsim):
+			if p:
+				p.terminate()
+				p.wait()
 
 def usage(f=sys.stdout):
 	print("run-random.py [OPTIONS]", file=f)
