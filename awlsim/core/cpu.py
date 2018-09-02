@@ -45,6 +45,7 @@ from awlsim.library.libentry import *
 from awlsim.core.symbolparser import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.instructions.all_insns import * #+cimport
+from awlsim.core.instructions.types import * #+cimport
 from awlsim.core.systemblocks.systemblocks import * #+cimport
 from awlsim.core.systemblocks.tables import *
 from awlsim.core.operatortypes import * #+cimport
@@ -590,7 +591,7 @@ class S7CPU(object): #+cdef
 		resolver = AwlSymResolver(self)
 
 		for insn in block.insns:
-			if insn.insnType != AwlInsn.TYPE_CALL:
+			if insn.insnType != AwlInsnTypes.TYPE_CALL:
 				continue
 
 			# Get the DB block, if any.
@@ -1697,8 +1698,8 @@ class S7CPU(object): #+cdef
 
 		if operator.width <= 48 and operator.insn is not None:
 			insnType = operator.insn.insnType
-			if insnType == AwlInsn.TYPE_L or\
-			   insnType >= AwlInsn.TYPE_EXTENDED:
+			if insnType == AwlInsnTypes.TYPE_L or\
+			   insnType >= AwlInsnTypes.TYPE_EXTENDED:
 				# This is a special 0-4 character fetch (L) that
 				# is transparently translated into an integer.
 				value, data = 0, operator.immediateBytes
@@ -1928,7 +1929,8 @@ class S7CPU(object): #+cdef
 #@cy		cdef uint32_t width
 
 		insnType = operator.insn.insnType
-		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
+		if insnType == AwlInsnTypes.TYPE_L or\
+		   insnType == AwlInsnTypes.TYPE_LC:
 			width = 32
 		else:
 			width = 1
@@ -1936,9 +1938,9 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, allowedWidths)
 
 		timer = self.getTimer(operator.offset.byteOffset)
-		if insnType == AwlInsn.TYPE_L:
+		if insnType == AwlInsnTypes.TYPE_L:
 			return timer.getTimevalBin()
-		elif insnType == AwlInsn.TYPE_LC:
+		elif insnType == AwlInsnTypes.TYPE_LC:
 			return timer.getTimevalS5T()
 		return timer.get()
 
@@ -1948,7 +1950,8 @@ class S7CPU(object): #+cdef
 #@cy		cdef uint32_t width
 
 		insnType = operator.insn.insnType
-		if insnType == AwlInsn.TYPE_L or insnType == AwlInsn.TYPE_LC:
+		if insnType == AwlInsnTypes.TYPE_L or\
+		   insnType == AwlInsnTypes.TYPE_LC:
 			width = 32
 		else:
 			width = 1
@@ -1956,9 +1959,9 @@ class S7CPU(object): #+cdef
 			self.__fetchWidthError(operator, allowedWidths)
 
 		counter = self.getCounter(operator.offset.byteOffset)
-		if insnType == AwlInsn.TYPE_L:
+		if insnType == AwlInsnTypes.TYPE_L:
 			return counter.getValueBin()
-		elif insnType == AwlInsn.TYPE_LC:
+		elif insnType == AwlInsnTypes.TYPE_LC:
 			return counter.getValueBCD()
 		return counter.get()
 
