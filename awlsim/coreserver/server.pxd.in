@@ -3,6 +3,7 @@ from awlsim.core.main cimport *
 
 cdef class AwlSimServer(object):
 	cdef public AwlSim __sim
+	cdef public _Bool __affinityEnabled
 	cdef public list __emptyList
 	cdef public _Bool __startupDone
 	cdef public int32_t __state
