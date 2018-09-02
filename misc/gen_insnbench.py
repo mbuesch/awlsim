@@ -165,6 +165,7 @@ insnCollection = (
 	), (
 		( "SPA",	"LABEL"),
 	), (
+		( "L",		"0"),
 		( "SPL",	"LABEL"),
 	), (
 		( "SPB",	"LABEL"),
