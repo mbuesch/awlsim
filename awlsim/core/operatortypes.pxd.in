@@ -71,6 +71,9 @@ cdef class __AwlOperatorTypesClass(object):
 cdef public __AwlOperatorTypesClass AwlOperatorTypes
 
 
+cdef inline uint32_t makeAwlOperatorWidthMask(uint32_t width):
+	return (1u << (width // 8u)) if (width <= 32u) else 0x10000u
+
 cdef class __AwlOperatorWidthsClass(object):
 	cdef public uint32_t WIDTH_MASK_1
 	cdef public uint32_t WIDTH_MASK_8
@@ -82,8 +85,6 @@ cdef class __AwlOperatorWidthsClass(object):
 	cdef public uint32_t WIDTH_MASK_8_16_32
 	cdef public uint32_t WIDTH_MASK_SCALAR
 	cdef public uint32_t WIDTH_MASK_ALL
-
-	cdef uint32_t makeMask(self, uint32_t width)
 
 cdef public __AwlOperatorWidthsClass AwlOperatorWidths
 

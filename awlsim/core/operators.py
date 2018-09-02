@@ -190,7 +190,7 @@ class AwlOperator(object): #+cdef
 				raise AwlSimError("Operator value too big",
 						  insn=self.insn)
 		if widths is not None:
-			if not (AwlOperatorWidths.makeMask(self.width) & widths):
+			if not (makeAwlOperatorWidthMask(self.width) & widths):
 				raise AwlSimError("Invalid operator width. "
 					"Got %d, but expected %s." % (
 					self.width,
