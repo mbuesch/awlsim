@@ -284,7 +284,7 @@ class AwlOperator(object): #+cdef
 
 	# Make an area-spanning pointer value (32 bit) to this memory area.
 	def makePointerValue(self): #@nocy
-#@cy	cdef uint32_t makePointerValue(self):
+#@cy	cdef uint32_t makePointerValue(self) except? 0xFFFFFFFF:
 #@cy		cdef int64_t area
 
 		area = AwlIndirectOpConst.optype2area(self.operType)
@@ -601,7 +601,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 		self.__pointerError() #@nocov
 
 	def makePointerValue(self): #@nocy
-#@cy	cdef uint32_t makePointerValue(self):
+#@cy	cdef uint32_t makePointerValue(self) except? 0xFFFFFFFF:
 		self.__pointerError() #@nocov
 
 	def makeDBPointer(self):

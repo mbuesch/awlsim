@@ -27,7 +27,7 @@ cdef class AwlOperator(object):
 	cpdef AwlOperator dup(self)
 	cdef _Bool isImmediate(self)
 	cdef AwlOperator resolve(self, _Bool store)
-	cdef uint32_t makePointerValue(self)
+	cdef uint32_t makePointerValue(self) except? 0xFFFFFFFF
 
 cdef AwlOperator make_AwlOperator(uint32_t operType, int32_t width,
 				   AwlOffset offset, AwlInsn insn)
@@ -39,7 +39,7 @@ cdef class AwlIndirectOp(AwlOperator):
 
 	cpdef AwlOperator dup(self)
 	cdef AwlOperator resolve(self, _Bool store)
-	cdef uint32_t makePointerValue(self)
+	cdef uint32_t makePointerValue(self) except? 0xFFFFFFFF
 
 cdef AwlIndirectOp make_AwlIndirectOp(uint64_t area,
 				      int32_t width,
