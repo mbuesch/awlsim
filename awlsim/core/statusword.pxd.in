@@ -18,3 +18,4 @@ cdef class S7StatusWord(object):
 	cdef void setWord(self, uint16_t word)
 	cdef dup(self)
 	cdef void setForFloatingPoint(self, double pyFloat)
+	cdef void setForFloatingPointDWord(self, uint32_t dword)

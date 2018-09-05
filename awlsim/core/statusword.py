@@ -226,26 +226,34 @@ class S7StatusWord(object): #+cdef
 
 	def setForFloatingPoint(self, pyFloat): #@nocy
 #@cy	cdef void setForFloatingPoint(self, double pyFloat):
-		dword = pyFloatToDWord(pyFloat)
-		dwordNoSign = dword & 0x7FFFFFFF
-		if isDenormalPyFloat(pyFloat) or\
-		   (dwordNoSign < 0x00800000 and dwordNoSign != 0):
+		if isDenormalPyFloat(pyFloat):
 			# denorm
 			self.A1, self.A0, self.OV, self.OS = 0, 0, 1, 1
-		elif dwordNoSign == 0:
+		else:
+			self.setForFloatingPointDWord(pyFloatToDWord(pyFloat))
+
+	def setForFloatingPointDWord(self, dword): #@nocy
+#@cy	cdef void setForFloatingPointDWord(self, uint32_t dword):
+#@cy		cdef uint32_t dwordNoSign
+
+		dwordNoSign = dword & 0x7FFFFFFF			#+suffix-u
+		if dwordNoSign == 0:					#+suffix-u
 			# zero
 			self.A1, self.A0, self.OV = 0, 0, 0
-		elif dwordNoSign >= 0x7F800000:
-			if dwordNoSign == 0x7F800000:
+		elif dwordNoSign < 0x00800000:				#+suffix-u
+			# denorm
+			self.A1, self.A0, self.OV, self.OS = 0, 0, 1, 1
+		elif dwordNoSign >= 0x7F800000:				#+suffix-u
+			if dwordNoSign == 0x7F800000:			#+suffix-u
 				# inf
-				if dword & 0x80000000:
+				if dword & 0x80000000:			#+suffix-u
 					self.A1, self.A0, self.OV, self.OS = 0, 1, 1, 1
 				else:
 					self.A1, self.A0, self.OV, self.OS = 1, 0, 1, 1
 			else:
 				# nan
 				self.A1, self.A0, self.OV, self.OS = 1, 1, 1, 1
-		elif dword & 0x80000000:
+		elif dword & 0x80000000:				#+suffix-u
 			# norm neg
 			self.A1, self.A0, self.OV = 0, 1, 0
 		else:
