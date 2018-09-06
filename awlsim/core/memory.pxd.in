@@ -181,6 +181,79 @@ cdef inline AwlMemoryObject alloc_AwlMemoryObject(uint32_t width) except NULL:
 	return memObj
 
 
+cdef inline  AwlMemoryObject make_AwlMemoryObject_fromScalar1(int64_t value) except NULL:
+	cdef AwlMemoryObject memObj
+	cdef uint8_t *dataBytes
+
+	memObj = alloc_AwlMemoryObject(1)
+	dataBytes = &memObj.dataBytes[0]
+	dataBytes[0] = 1 if value else 0
+	return memObj
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromScalar8(int64_t value) except NULL:
+	cdef AwlMemoryObject memObj
+	cdef uint8_t *dataBytes
+
+	memObj = alloc_AwlMemoryObject(8)
+	dataBytes = &memObj.dataBytes[0]
+	dataBytes[0] = <uint8_t>value
+	return memObj
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromScalar16(int64_t value) except NULL:
+	cdef AwlMemoryObject memObj
+	cdef uint8_t *dataBytes
+
+	memObj = alloc_AwlMemoryObject(16)
+	dataBytes = &memObj.dataBytes[0]
+	(<uint16_t *>dataBytes)[0] = htobe16(<uint16_t>value)
+	return memObj
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromScalar24(int64_t value) except NULL:
+	cdef AwlMemoryObject memObj
+	cdef uint8_t *dataBytes
+
+	memObj = alloc_AwlMemoryObject(24)
+	dataBytes = &memObj.dataBytes[0]
+	(<uint16_t *>dataBytes)[0] = htobe16(<uint16_t>(<uint32_t>value >> 8))
+	dataBytes[2] = <uint8_t>value
+	return memObj
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromScalar32(int64_t value) except NULL:
+	cdef AwlMemoryObject memObj
+	cdef uint8_t *dataBytes
+
+	memObj = alloc_AwlMemoryObject(32)
+	dataBytes = &memObj.dataBytes[0]
+	(<uint32_t *>dataBytes)[0] = htobe32(<uint32_t>value)
+	return memObj
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromScalar48(int64_t value) except NULL:
+	cdef AwlMemoryObject memObj
+	cdef uint8_t *dataBytes
+
+	memObj = alloc_AwlMemoryObject(48)
+	dataBytes = &memObj.dataBytes[0]
+	(<uint32_t *>dataBytes)[0] = htobe32(<uint32_t>(<uint64_t>value >> 16))
+	(<uint16_t *>dataBytes)[2] = htobe16(<uint16_t>value)
+	return memObj
+
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromScalar(int64_t value, uint32_t width) except NULL:
+	if width == 1:
+		return make_AwlMemoryObject_fromScalar1(value)
+	elif width == 16:
+		return make_AwlMemoryObject_fromScalar16(value)
+	elif width == 32:
+		return make_AwlMemoryObject_fromScalar32(value)
+	elif width == 8:
+		return make_AwlMemoryObject_fromScalar8(value)
+	elif width == 24:
+		return make_AwlMemoryObject_fromScalar24(value)
+	elif width == 48:
+		return make_AwlMemoryObject_fromScalar48(value)
+	else:
+		assert(0)
+	return NULL
+
 cdef inline AwlMemoryObject make_AwlMemoryObject_fromCArray(const uint8_t *dataBytes, uint32_t width) except NULL:
 	cdef AwlMemoryObject memObj
 
@@ -189,15 +262,15 @@ cdef inline AwlMemoryObject make_AwlMemoryObject_fromCArray(const uint8_t *dataB
 
 	return memObj
 
-cdef AwlMemoryObject make_AwlMemoryObject_fromBytes(bytearray dataBytes, uint32_t width) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar(int64_t value, uint32_t width) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar1(int64_t value) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar8(int64_t value) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar16(int64_t value) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar24(int64_t value) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar32(int64_t value) except NULL
-cdef AwlMemoryObject make_AwlMemoryObject_fromScalar48(int64_t value) except NULL
+cdef inline AwlMemoryObject make_AwlMemoryObject_fromBytes(bytearray dataBytes, uint32_t width) except NULL:
+	cdef AwlMemoryObject memObj
+
+	memObj = alloc_AwlMemoryObject(width)
+	memcpy(memObj.dataBytes, <const char *>dataBytes, intDivRoundUp(width, 8))
+	return memObj
+
 cdef AwlMemoryObject make_AwlMemoryObject_fromGeneric(object value, uint32_t width) except NULL
+
 
 cdef public AwlMemoryObject constMemObj_1bit_1
 cdef public AwlMemoryObject constMemObj_1bit_0
