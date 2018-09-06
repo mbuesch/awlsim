@@ -134,10 +134,10 @@ cdef class Addressregister(Pointer):
 	pass
 
 cdef struct AwlMemoryObjectStruct:
+	uint8_t dataBytes[256]
 	uint16_t width
 	uint8_t __padding0
 	uint8_t __padding1
-	uint8_t dataBytes[256]
 
 ctypedef AwlMemoryObjectStruct * AwlMemoryObject
 
