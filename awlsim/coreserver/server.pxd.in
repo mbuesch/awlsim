@@ -1,6 +1,9 @@
 from awlsim.common.cython_support cimport *
 from awlsim.core.main cimport *
 
+from posix.select cimport fd_set
+
+
 cdef class AwlSimServer(object):
 	cdef public AwlSim __sim
 	cdef public _Bool __affinityEnabled
@@ -21,10 +24,13 @@ cdef class AwlSimServer(object):
 	cdef public _Bool __projectWriteBack
 
 	cdef public object __socket
+	cdef public int __socketFileno
 	cdef public object __unixSockPath
 	cdef public dict __sock2client
 	cdef public list __clients
 	cdef public list __selectRlist
+	cdef fd_set __select_fdset
+	cdef int __select_fdset_size
 
 	cdef public object awlSourceContainer
 	cdef public object fupSourceContainer
@@ -37,4 +43,4 @@ cdef class AwlSimServer(object):
 
 	cdef __handleClientComm(self, client)
 	cdef __handleSocketComm(self, list sockList)
-	cdef __handleCommunication(self, object __select=*, type __Exception=*)
+	cdef __handleCommunication(self)

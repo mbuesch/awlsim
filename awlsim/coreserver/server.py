@@ -46,12 +46,15 @@ from awlsim.fupcompiler import *
 
 import sys
 import os
-import select
+import select as select_mod
 import signal
 import socket
 import errno
 import time
 import multiprocessing
+
+#from posix.select cimport FD_ZERO, FD_SET, FD_ISSET, select #@cy
+#from posix.time cimport timeval #@cy
 
 
 class AwlSimClientInfo(object):
@@ -60,6 +63,7 @@ class AwlSimClientInfo(object):
 	def __init__(self, sock, peerInfoString):
 		# Socket
 		self.socket = sock
+		self.fileno = self.socket.fileno()
 		self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
 
 		# Broken-flag. Set, if connection breaks.
@@ -239,6 +243,7 @@ class AwlSimServer(object): #+cdef
 		self.__haveAnyMemReadReq = False
 
 		self.__socket = None
+		self.__socketFileno = -1
 		self.__unixSockPath = None
 		self.__clients = []
 		self.__sock2client = {}
@@ -390,6 +395,15 @@ class AwlSimServer(object): #+cdef
 		rlist = [ self.__socket ]
 		rlist.extend(client.transceiver.sock for client in self.__clients)
 		self.__selectRlist = rlist
+
+#@cy		FD_ZERO(&self.__select_fdset)
+#@cy		FD_SET(self.__socketFileno, &self.__select_fdset)
+#@cy		self.__select_fdset_size = self.__socketFileno
+#@cy		for client in self.__clients:
+#@cy			FD_SET(client.fileno, &self.__select_fdset)
+#@cy			self.__select_fdset_size = max(self.__select_fdset_size,
+#@cy						       client.fileno)
+#@cy		self.__select_fdset_size += 1
 
 	def __sendCpuDump(self, constrained=True):
 		dumpText = self.__sim.cpu.dump(withTime=self.__running)
@@ -1012,43 +1026,68 @@ class AwlSimServer(object): #+cdef
 		for sock in sockList:
 			self.__handleClientComm(self.__sock2client[sock])
 
-	def __selectException(self, exception):
+	def __selectException(self):
 		raise AwlSimError("AwlSimServer: Communication error. "
 				  "'select' failed")
 
-	def __handleCommunication(self, __select=select.select, __Exception=Exception): #@nocy
-#@cy	cdef __handleCommunication(self, object __select=select.select, type __Exception=Exception):
+	def __handleCommunication(self, __select=select_mod.select, __Exception=Exception):	#@nocy
+		try:										#@nocy
+			rlist, wlist, xlist = __select(self.__selectRlist,			#@nocy
+						       self.__emptyList,			#@nocy
+						       self.__emptyList, 0.0)			#@nocy
+			if not rlist:								#@nocy
+				return								#@nocy
+		except __Exception:								#@nocy
+			self.__selectException()						#@nocy
+		self.__handleSocketComm(rlist)							#@nocy
+												#@nocy
+		# Check again to receive more data (with a small timeout).			#@nocy
+		while True:									#@nocy
+			try:									#@nocy
+				rlist, wlist, xlist = __select(self.__selectRlist,		#@nocy
+							       self.__emptyList,		#@nocy
+							       self.__emptyList, 0.01)		#@nocy
+				if not rlist:							#@nocy
+					return							#@nocy
+			except __Exception:							#@nocy
+				self.__selectException()					#@nocy
+			self.__handleSocketComm(rlist)						#@nocy
+
+#@cy	cdef __handleCommunication(self):
+#@cy		cdef fd_set rfds
+#@cy		cdef int ret
+#@cy		cdef timeval timeout
 #@cy		cdef list rlist
-#@cy		cdef list wlist
-#@cy		cdef list xlist
-
-		try:
-			rlist, wlist, xlist = __select(self.__selectRlist,
-						       self.__emptyList,
-						       self.__emptyList, 0.0)
-			if not rlist:
-				return
-		except __Exception as e:
-			self.__selectException(e)
-		self.__handleSocketComm(rlist)
-
-		# Check again to receive more data (with a small timeout).
-		while True:
-			try:
-				rlist, wlist, xlist = __select(self.__selectRlist,
-							       self.__emptyList,
-							       self.__emptyList, 0.01)
-				if not rlist:
-					return
-			except __Exception as e:
-				self.__selectException(e)
-			self.__handleSocketComm(rlist)
+#@cy
+#@cy		timeout.tv_sec = 0
+#@cy		timeout.tv_usec = 0
+#@cy		while True:
+#@cy			rfds = self.__select_fdset
+#@cy			ret = select(self.__select_fdset_size,
+#@cy				     &rfds, NULL, NULL,
+#@cy				     &timeout)
+#@cy			if likely(ret == 0):
+#@cy				return
+#@cy			if ret < 0:
+#@cy				self.__selectException()
+#@cy				return
+#@cy			rlist = [ client.socket
+#@cy				for client in self.__clients
+#@cy				if FD_ISSET(client.fileno, &rfds)
+#@cy			]
+#@cy			if FD_ISSET(self.__socketFileno, &rfds):
+#@cy				rlist.append(self.__socket)
+#@cy			self.__handleSocketComm(rlist)
+#@cy
+#@cy			# Check again to receive more data (with a small timeout).
+#@cy			timeout.tv_sec = 0
+#@cy			timeout.tv_usec = 10000
 
 	def __handleCommunicationBlocking(self):
 		try:
-			select.select(self.__selectRlist, [], [], None)
-		except Exception as e:
-			self.__selectException(e)
+			select_mod.select(self.__selectRlist, [], [], None)
+		except Exception:
+			self.__selectException()
 		self.__handleCommunication()
 
 	def __updateMemReadReqFlag(self):
@@ -1312,6 +1351,7 @@ class AwlSimServer(object): #+cdef
 				with suppressAllExc:
 					sock.close()
 		self.__socket = sock
+		self.__socketFileno = sock.fileno()
 
 	def __accept(self):
 		"""Accept a client connection.
@@ -1373,6 +1413,7 @@ class AwlSimServer(object): #+cdef
 			with suppressAllExc:
 				self.__socket.close()
 			self.__socket = None
+			self.__socketFileno = -1
 		if self.__unixSockPath:
 			with contextlib.suppress(OSError):
 				os.unlink(self.__unixSockPath)
