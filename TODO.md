@@ -20,7 +20,6 @@
 ## GUI
 
 * Add feature: Save window status (open MDI windows, positions, etc)
-* Add feature: Show UDTs in block tree
 * Add feature: LAD (KOP) editor
 
 ## FBD/FUP GUI only

@@ -2,7 +2,7 @@
 #
 # AWL simulator - Block tree widget
 #
-# Copyright 2015-2016 Michael Buesch <m@bues.ch>
+# Copyright 2015-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ class BlockTreeModel(QAbstractItemModel):
 	INDEXID_BLOCKS_FCS		= EnumGen.item
 	INDEXID_BLOCKS_FBS		= EnumGen.item
 	INDEXID_BLOCKS_DBS		= EnumGen.item
+	INDEXID_BLOCKS_UDTS		= EnumGen.item
 	INDEXID_HWMODS			= EnumGen.item
 	EnumGen.end
 
@@ -53,7 +54,8 @@ class BlockTreeModel(QAbstractItemModel):
 	INDEXID_BLOCKS_FCS_BASE		= 0x060000
 	INDEXID_BLOCKS_FBS_BASE		= 0x070000
 	INDEXID_BLOCKS_DBS_BASE		= 0x080000
-	INDEXID_HWMODS_BASE		= 0x090000
+	INDEXID_BLOCKS_UDTS_BASE	= 0x090000
+	INDEXID_HWMODS_BASE		= 0x0A0000
 
 	row2id_toplevel = {
 		0	: INDEXID_SRCS,
@@ -75,6 +77,7 @@ class BlockTreeModel(QAbstractItemModel):
 		1	: INDEXID_BLOCKS_FCS,
 		2	: INDEXID_BLOCKS_FBS,
 		3	: INDEXID_BLOCKS_DBS,
+		4	: INDEXID_BLOCKS_UDTS,
 	}
 	id2row_blocks = pivotDict(row2id_blocks)
 
@@ -97,6 +100,7 @@ class BlockTreeModel(QAbstractItemModel):
 		self.__fcInfos = []		# List of BlockInfo()s for FCs
 		self.__fbInfos = []		# List of BlockInfo()s for FBs
 		self.__dbInfos = []		# List of BlockInfo()s for DBs
+		self.__udtInfos = []		# List of BlockInfo()s for UDTs
 		self.__hwMods = []		# List of HwmodDescriptor()s
 
 	def getAwlSource(self, indexNr):
@@ -119,6 +123,9 @@ class BlockTreeModel(QAbstractItemModel):
 
 	def getDBBlockInfo(self, indexNr):
 		return self.__dbInfos[indexNr]
+
+	def getUDTBlockInfo(self, indexNr):
+		return self.__udtInfos[indexNr]
 
 	def __getSymbolsByType(self, dataType):
 		return itertools.chain.from_iterable(
@@ -188,6 +195,11 @@ class BlockTreeModel(QAbstractItemModel):
 		self.__updateData(self.__dbInfos, newBlockInfos,
 				  self.idToIndex(self.INDEXID_BLOCKS_DBS))
 
+		newBlockInfos = [ bi for bi in msg.blockInfos \
+				  if bi.blockType == bi.TYPE_UDT ]
+		self.__updateData(self.__udtInfos, newBlockInfos,
+				  self.idToIndex(self.INDEXID_BLOCKS_UDTS))
+
 	def handle_symTabInfo(self, symTabInfoList):
 		self.__symTabInfoList = symTabInfoList
 		#TODO we probably need to trigger row update here.
@@ -249,6 +261,8 @@ class BlockTreeModel(QAbstractItemModel):
 				return len(self.__fbInfos)
 			elif parentId == self.INDEXID_BLOCKS_DBS:
 				return len(self.__dbInfos)
+			elif parentId == self.INDEXID_BLOCKS_UDTS:
+				return len(self.__udtInfos)
 			elif parentId == self.INDEXID_HWMODS:
 				return len(self.__hwMods)
 		else:
@@ -288,6 +302,9 @@ class BlockTreeModel(QAbstractItemModel):
 			elif parentId == self.INDEXID_BLOCKS_DBS:
 				return self.createIndex(row, column,
 					self.INDEXID_BLOCKS_DBS_BASE + row)
+			elif parentId == self.INDEXID_BLOCKS_UDTS:
+				return self.createIndex(row, column,
+					self.INDEXID_BLOCKS_UDTS_BASE + row)
 			elif parentId == self.INDEXID_HWMODS:
 				return self.createIndex(row, column,
 					self.INDEXID_HWMODS_BASE + row)
@@ -328,6 +345,8 @@ class BlockTreeModel(QAbstractItemModel):
 			return self.idToIndex(self.INDEXID_BLOCKS_FBS)
 		elif idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
 			return self.idToIndex(self.INDEXID_BLOCKS_DBS)
+		elif idxIdBase == self.INDEXID_BLOCKS_UDTS_BASE:
+			return self.idToIndex(self.INDEXID_BLOCKS_UDTS)
 		elif idxIdBase == self.INDEXID_HWMODS_BASE:
 			return self.idToIndex(self.INDEXID_HWMODS)
 		return QModelIndex()
@@ -373,6 +392,11 @@ class BlockTreeModel(QAbstractItemModel):
 			if index >= len(self.__dbInfos):
 				return None
 			return self.__dbInfos[index].blockName
+		elif idxIdBase == self.INDEXID_BLOCKS_UDTS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__udtInfos):
+				return None
+			return self.__udtInfos[index].blockName
 		elif idxIdBase == self.INDEXID_HWMODS_BASE:
 			index = idxId - idxIdBase
 			if index >= len(self.__hwMods):
@@ -390,6 +414,7 @@ class BlockTreeModel(QAbstractItemModel):
 		  self.INDEXID_BLOCKS_FCS	: "FCs",
 		  self.INDEXID_BLOCKS_FBS	: "FBs",
 		  self.INDEXID_BLOCKS_DBS	: "DBs",
+		  self.INDEXID_BLOCKS_UDTS	: "UDTs",
 		  self.INDEXID_HWMODS		: "Hardware",
 		}
 		return names.get(idxId)
@@ -428,6 +453,10 @@ class BlockTreeModel(QAbstractItemModel):
 			dbInfo = self.__dbInfos[dbInfoIndex]
 			desc = self.__tryGetBlockSymName("DB %d" % dbInfo.blockIndex)
 			return desc or descs.get(dbInfo.blockIndex)
+		elif idxIdBase == self.INDEXID_BLOCKS_UDTS_BASE:
+			udtInfoIndex = idxId - idxIdBase
+			udtInfo = self.__udtInfos[udtInfoIndex]
+			return self.__tryGetBlockSymName("UDT %d" % udtInfo.blockIndex)
 		descs = {
 		  self.INDEXID_SRCS		: "Source files",
 		  self.INDEXID_SRCS_AWL		: "AWL/STL sources",
@@ -439,6 +468,7 @@ class BlockTreeModel(QAbstractItemModel):
 		  self.INDEXID_BLOCKS_FCS	: "Functions",
 		  self.INDEXID_BLOCKS_FBS	: "Function Blocks",
 		  self.INDEXID_BLOCKS_DBS	: "Data Blocks",
+		  self.INDEXID_BLOCKS_UDTS	: "User defined Data Types",
 		  self.INDEXID_HWMODS		: "Hardware modules",
 		}
 		return descs.get(idxId)
@@ -484,6 +514,11 @@ class BlockTreeModel(QAbstractItemModel):
 			if index >= len(self.__dbInfos):
 				return None
 			return self.__dbInfos[index].identHashStr
+		elif idxIdBase == self.INDEXID_BLOCKS_UDTS_BASE:
+			index = idxId - idxIdBase
+			if index >= len(self.__udtInfos):
+				return None
+			return self.__udtInfos[index].identHashStr
 		elif idxIdBase == self.INDEXID_HWMODS_BASE:
 			index = idxId - idxIdBase
 			if index >= len(self.__hwMods):
@@ -533,6 +568,9 @@ class BlockTreeModel(QAbstractItemModel):
 					return getIcon("plugin")
 				elif idxId == self.INDEXID_BLOCKS_DBS or\
 				     idxIdBase == self.INDEXID_BLOCKS_DBS_BASE:
+					return getIcon("datablock")
+				elif idxId == self.INDEXID_BLOCKS_UDTS or\
+				     idxIdBase == self.INDEXID_BLOCKS_UDTS_BASE:
 					return getIcon("datablock")
 				elif idxId == self.INDEXID_HWMODS or\
 				     idxIdBase == self.INDEXID_HWMODS_BASE:
@@ -604,7 +642,8 @@ class BlockTreeView(QTreeView):
 				if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
-				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
+				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE or\
+				   idxIdBase == model.INDEXID_BLOCKS_UDTS_BASE:
 					self.__blockMenu.exec_(QCursor.pos())
 				elif idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
 				     idxIdBase == model.INDEXID_SRCS_FUP_BASE or\
@@ -649,7 +688,8 @@ class BlockTreeView(QTreeView):
 			if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
-			   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
+			   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE or\
+			   idxIdBase == model.INDEXID_BLOCKS_UDTS_BASE:
 				self.__removeBlock()
 			if idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
 			   idxIdBase == model.INDEXID_SRCS_FUP_BASE or\
@@ -722,6 +762,8 @@ class BlockTreeView(QTreeView):
 			blockInfo = model.getFBBlockInfo(indexNr)
 		elif idxIdBase == model.INDEXID_BLOCKS_DBS_BASE:
 			blockInfo = model.getDBBlockInfo(indexNr)
+		elif idxIdBase == model.INDEXID_BLOCKS_UDTS_BASE:
+			blockInfo = model.getUDTBlockInfo(indexNr)
 		else:
 			return
 		try:

@@ -515,7 +515,8 @@ class CpuWidget(QWidget):
 				client.requestBlockInfo(reqOBInfo=True,
 							reqFCInfo=True,
 							reqFBInfo=True,
-							reqDBInfo=True)
+							reqDBInfo=True,
+							reqUDTInfo=True)
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
