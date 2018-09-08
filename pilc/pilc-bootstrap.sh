@@ -552,6 +552,7 @@ EOF
 		autoconf \
 		automake \
 		bc \
+		blt-dev \
 		build-essential \
 		bwidget \
 		clang \
@@ -568,14 +569,23 @@ EOF
 		i2c-tools \
 		irqbalance \
 		iw \
+		libbluetooth-dev \
 		libboost-python-dev \
+		libbz2-dev \
+		libdb-dev \
+		libgdbm-dev \
 		libgl1-mesa-dev \
-		libglu1-mesa-dev \
 		libglib2.0-dev \
+		libglu1-mesa-dev \
 		libgtk2.0-dev \
-		libncurses5-dev \
+		liblzma-dev \
 		libmodbus-dev \
-		libreadline-gplv2-dev \
+		libmpdec-dev \
+		libncurses5-dev \
+		libncursesw5-dev \
+		libreadline-dev \
+		libsqlite3-dev \
+		libssl-dev \
 		libtk-img \
 		libudev-dev \
 		libusb-1.0-0-dev \
@@ -583,9 +593,9 @@ EOF
 		locales \
 		nano \
 		ntp \
-		openssh-server \
 		openssh-blacklist \
 		openssh-blacklist-extra \
+		openssh-server \
 		parted \
 		pkg-config \
 		pypy \
@@ -610,22 +620,28 @@ EOF
 		python3-serial \
 		python3-setuptools \
 		python3-smbus \
+		python3-sphinx \
 		python3-spidev \
 		python3-tk \
+		quilt \
 		raspberrypi-bootloader \
 		raspi-config \
 		schedtool \
 		screen \
+		sharutils \
 		sudo \
 		systemd \
 		tcl-dev \
 		tclx \
+		texinfo \
+		time \
 		tk-dev \
 		tmux \
 		vim \
 		wireless-tools \
-		wpasupplicant ||\
-		die "apt-get install failed"
+		wpasupplicant \
+		xvfb \
+		|| die "apt-get install failed"
 cat <<EOF | debconf-set-selections
 debconf	debconf/frontend	select	Dialog
 locales	locales/default_environment_locale	select	en_US.UTF-8
