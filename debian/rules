@@ -5,6 +5,8 @@ export LC_ALL=C.UTF-8
 
 export PYBUILD_NAME=awlsim
 export PYBUILD_SYSTEM=distutils
+#export PYBUILD_INTERPRETERS=python{version} python{version}-dbg
+#export PYBUILD_VERSIONS=
 #export PYBUILD_DEBUG=1
 
 export PYBUILD_DESTDIR_python3=debian/destdir-py3-awlsim/
