@@ -181,7 +181,6 @@ get_interpreter_version()
 {
 	local interpreter="$1"
 
-	[ "$interpreter" = "cython" -o "$interpreter" = "cython2" ] && local interpreter=python2
 	[ "$interpreter" = "cython3" ] && local interpreter=python3
 
 	"$interpreter" -c 'import sys; print("%d %d %d" % sys.version_info[0:3]);' 2>/dev/null
@@ -197,8 +196,6 @@ interpreter_is_gui_compat()
 	[ "$interpreter" = "python" -o \
 	  "$interpreter" = "python2" -o \
 	  "$interpreter" = "python3" -o \
-	  "$interpreter" = "cython" -o \
-	  "$interpreter" = "cython2" -o \
 	  "$interpreter" = "cython3" ]
 }
 
@@ -250,27 +247,10 @@ setup_test_environment()
 	[ -z "$test_name" ] && local test_name="$tested_file"
 	local test_name="$(realpath -m --no-symlinks --relative-base="$rootdir" "$test_name" | tr '/\\' _)"
 
-	# Check if we want to run on Cython2/3 and set the environment
-	# for Cython2/3.
+	# Check if we want to run on Cython3 and set up the environment.
 	local use_cython=0
-	if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ] ||\
-	   [ "$interpreter" = "python" -a "$AWLSIM_CYTHON" != "" ] ||\
-	   [ "$interpreter" = "python2" -a "$AWLSIM_CYTHON" != "" ]; then
-		# We want to run the test using Cython2
-
-		local use_cython=2
-
-		for i in "$rootdir"/build/lib.linux-*-2.*; do
-			export PYTHONPATH="$i"
-			break
-		done
-		# Enforce cython module usage
-		export AWLSIM_CYTHON=2
-		# The actual interpreter is Python
-		local interpreter=python2
-
-	elif [ "$interpreter" = "cython3" ] ||\
-	     [ "$interpreter" = "python3" -a "$AWLSIM_CYTHON" != "" ]; then
+	if [ "$interpreter" = "cython3" ] ||\
+	   [ "$interpreter" = "python3" -a "$AWLSIM_CYTHON" != "" ]; then
 		# We want to run the test using Cython3
 
 		local use_cython=3
@@ -285,7 +265,7 @@ setup_test_environment()
 		local interpreter=python3
 
 	else
-		# Neither Cython2 nor Cython3
+		# Not Cython
 		export PYTHONPATH=
 		export AWLSIM_CYTHON=
 	fi
@@ -676,11 +656,6 @@ __build_cython()
 	return 0
 }
 
-build_cython2()
-{
-	__build_cython cython python2
-}
-
 build_cython3()
 {
 	__build_cython cython3 python3
@@ -712,16 +687,10 @@ do_tests()
 	find_executable nosetests3
 	local nosetests3="$RET"
 
-	local cython2_build_pid=
 	local cython3_build_pid=
 	if is_parallel_run; then
 		# Trigger the build jobs, if required.
 		local inter="$opt_interpreter $all_interp"
-		if printf '%s' "$inter" | grep -Eqwe 'cython|cython2'; then
-			wait_for_free_job_slot
-			build_cython2 &
-			local cython2_build_pid=$!
-		fi
 		if printf '%s' "$inter" | grep -qwe 'cython3'; then
 			wait_for_free_job_slot
 			build_cython3 &
@@ -752,17 +721,7 @@ do_tests()
 		mkdir -p "$tmp_dir/$coverage_data_subdir" || die "Failed to create coverage data dir"
 
 		# Basic interpreter setup. Build Cython modules.
-		if [ "$interpreter" = "cython" -o "$interpreter" = "cython2" ]; then
-			have_prog cython && have_prog python2 || {
-				warn_skipped "$interpreter"
-				[ -n "$opt_interpreter" ] && break || continue
-			}
-			if is_parallel_run; then
-				wait_for_job_pid $cython2_build_pid
-			else
-				build_cython2 || die "Cython2 build failed."
-			fi
-		elif [ "$interpreter" = "cython3" ]; then
+		if [ "$interpreter" = "cython3" ]; then
 			have_prog cython3 && have_prog python3 || {
 				warn_skipped "$interpreter"
 				[ -n "$opt_interpreter" ] && break || continue

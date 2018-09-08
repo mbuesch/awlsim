@@ -25,12 +25,10 @@ usage()
 	echo
 	echo " -h|--help     Show help"
 	echo " -v|--verbose  Verbose build"
-	echo " -f|--full     Full build; Cython2 and Cython3"
 	echo " -r|--rebuild  Clean the tree before starting build"
 }
 
 opt_verbose=0
-opt_full=0
 opt_rebuild=0
 while [ $# -ge 1 ]; do
 	case "$1" in
@@ -40,9 +38,6 @@ while [ $# -ge 1 ]; do
 		;;
 	-v|--verbose)
 		opt_verbose=1
-		;;
-	-f|--full)
-		opt_full=1
 		;;
 	-r|--rebuild)
 		opt_rebuild=1
@@ -77,19 +72,8 @@ if [ $opt_rebuild -ne 0 ]; then
 	"$basedir"/cleantree.sh || die "Failed to clean tree."
 fi
 export AWLSIM_CYTHON_BUILD=1
-if [ $opt_full -ne 0 ]; then
-	build Cython2 python2
-	python2_build_pid=$RET
-fi
 build Cython3 python3
 python3_build_pid=$RET
-
-if [ $opt_full -ne 0 ]; then
-	if ! wait $python2_build_pid; then
-		echo "Cython2 build FAILED!"
-		exit 1
-	fi
-fi
 if ! wait $python3_build_pid; then
 	echo "Cython3 build FAILED!"
 	exit 1
