@@ -7,7 +7,7 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2core</strong></big></big> (version 0.1.1)</font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2core</strong></big></big> (version 0.1.3)</font></td
 ><td align=right valign=bottom
 ><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/pi/pplv2/pixtendv2core/__init__.py">/home/pi/pplv2/pixtendv2core/__init__.py</a></font></td></tr></table>
     <p><tt>#&nbsp;coding=utf-8</tt></p>
@@ -364,7 +364,7 @@ True&nbsp;turns&nbsp;the&nbsp;LED&nbsp;off&nbsp;and&nbsp;False&nbsp;leave&nbsp;t
 :rtype:&nbsp;int</tt></dd>
 </dl>
 <dl><dt><strong>uc_state</strong></dt>
-<dd><tt>The&nbsp;UCSate&nbsp;byte&nbsp;from&nbsp;the&nbsp;microcontroller&nbsp;contains&nbsp;information&nbsp;of&nbsp;the&nbsp;following&nbsp;internal&nbsp;states:<br>
+<dd><tt>The&nbsp;UCState&nbsp;byte&nbsp;from&nbsp;the&nbsp;microcontroller&nbsp;contains&nbsp;information&nbsp;of&nbsp;the&nbsp;following&nbsp;internal&nbsp;states:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;0:&nbsp;Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp;The&nbsp;microcontroller&nbsp;is&nbsp;up&nbsp;and&nbsp;running,&nbsp;this&nbsp;is&nbsp;just&nbsp;a&nbsp;helper&nbsp;bit<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;4:&nbsp;Error0&nbsp;&nbsp;&nbsp;-&nbsp;Bit&nbsp;0&nbsp;of&nbsp;the&nbsp;4&nbsp;bit&nbsp;error&nbsp;number&nbsp;from&nbsp;the&nbsp;microcontroller.&nbsp;Together&nbsp;with&nbsp;the&nbsp;next&nbsp;3<br>
 &nbsp;&nbsp;&nbsp;&nbsp;Bit&nbsp;5:&nbsp;Error1&nbsp;&nbsp;&nbsp;-&nbsp;bits&nbsp;a&nbsp;4&nbsp;bit&nbsp;number&nbsp;can&nbsp;be&nbsp;formed&nbsp;which&nbsp;results&nbsp;in&nbsp;an&nbsp;error&nbsp;number&nbsp;which&nbsp;is<br>
@@ -468,6 +468,8 @@ Data and other attributes defined here:<br>
 
 <dl><dt><strong>ON</strong> = True</dl>
 
+<dl><dt><strong>PIXTENDV2L_MODEL</strong> = 76</dl>
+
 <dl><dt><strong>PIXTENDV2S_MODEL</strong> = 83</dl>
 
 <dl><dt><strong>PWM_MODE</strong> = 1</dl>
@@ -528,7 +530,7 @@ even&nbsp;via&nbsp;super()).</tt></dl>
     
 <tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><strong>__author__</strong> = 'Robin Turner'<br>
-<strong>__version__</strong> = '0.1.1'</td></tr></table><p>
+<strong>__version__</strong> = '0.1.3'</td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#7799ee">
 <td colspan=3 valign=bottom>&nbsp;<br>

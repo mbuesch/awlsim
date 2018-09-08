@@ -7,7 +7,7 @@
 # see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
 # Copyright (C) 2018 Robin Turner
-# Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
+# Qube Solutions GmbH, Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
 # Copyright (C) 2018 Michael Buesch
@@ -32,7 +32,7 @@ import spidev
 import threading
 
 __author__ = "Robin Turner"
-__version__ = "0.1.1"
+__version__ = "0.1.3"
 
 
 class PiXtendV2Core:
@@ -59,6 +59,7 @@ class PiXtendV2Core:
 
     # Definitions to make use of settings easier
     PIXTENDV2S_MODEL = 83
+    PIXTENDV2L_MODEL = 76
     ON = True
     OFF = False
     RS232 = 0
@@ -120,11 +121,16 @@ class PiXtendV2Core:
 
         if model == 0:
             raise RuntimeError("PiXtend V2 model parameter cannot be 0 (Zero), a valid model is needed")
-        if model != self.PIXTENDV2S_MODEL:
+        if model != self.PIXTENDV2S_MODEL and model != self.PIXTENDV2L_MODEL:
             raise RuntimeError("PiXtend V2 model parameter is not a valid model!")
-        if com_interval < 0.0025:
-            raise RuntimeError("PiXtend V2 communication interval (com_interval) is too short! \
-                The minimum value is 0.0025 seconds or 2.5 ms.")
+        if model == self.PIXTENDV2S_MODEL:
+            if com_interval < 0.0025:
+                raise RuntimeError("PiXtend V2 communication interval (com_interval) is too short! \
+                    The minimum value is 0.0025 seconds or 2.5 ms.")
+        if model == self.PIXTENDV2L_MODEL:
+            if com_interval < 0.005:
+                raise RuntimeError("PiXtend V2 communication interval (com_interval) is too short! \
+                    The minimum value is 0.005 seconds or 5 ms.")       
         if spi_speed < 100000 or spi_speed > 700000:
             raise RuntimeError("PiXtend V2 SPI speed cannot be lower than 100000 Hz or greater than 700000 Hz! \
                 Choose a fitting SPI speed value.")
@@ -309,21 +315,22 @@ class PiXtendV2Core:
             GPIO.cleanup()
         except:
             pass
-        
-        if self.__is_spi_open:
-            try:
-                self.__spi.close()
-            except:
-                pass
+
+        try:
+            self.__spi.close()
+        except:
+            pass
+
+        del self.__spi
         self.__spi = None
         self.__is_spi_open = False
-        
-        if self.__is_spi_dac_open:
-            try:
-                self.__spi_dac.close()
-            except:
-                pass
-        
+
+        try:
+            self.__spi_dac.close()
+        except:
+            pass
+
+        del self.__spi_dac
         self.__spi_dac = None
         self.__is_spi_dac_open = False
         self.__analog0_dac_value = 0
@@ -703,6 +710,17 @@ class PiXtendV2Core:
         return self._is_crc_header_error
 
     @property
+    def crc_header_in_error_counter(self):
+        """
+        Get the error counter of the CRC check performed on the incoming SPI data header.
+
+        :return: Current value
+        :rtype: int
+        """
+
+        return self._crc_header_in_errors
+        
+    @property
     def model_in_error(self):
         """
         Get the result of the comparison between the configured model, supplied by the child class through the init
@@ -758,7 +776,7 @@ class PiXtendV2Core:
         if self.test_bit(self._gpio_ctrl, gpio_dir) == 0 and self.test_bit(self._gpio_ctrl, gpio_temp) == 0:
             value = self.GPIO_INPUT
         if self.test_bit(self._gpio_ctrl, gpio_dir) == 1 and self.test_bit(self._gpio_ctrl, gpio_temp) == 0:
-            value = self.GPIO_INPUT
+            value = self.GPIO_OUTPUT
         if self.test_bit(self._gpio_ctrl, gpio_dir) == 0 and self.test_bit(self._gpio_ctrl, gpio_temp) == 1:
             if self.test_bit(self._gpio_dht11, gpio_dir):
                 value = self.GPIO_DHT11
@@ -1680,5 +1698,3 @@ class PiXtendV2Core:
             self.spi_transfers += 1
 
     # </editor-fold>
-
-# vim: ts=4 sw=4 expandtab

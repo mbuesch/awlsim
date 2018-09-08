@@ -29,22 +29,22 @@ __author__ = "Robin Turner"
 __version__ = "0.1.3"
 
 
-class PiXtendV2S(PiXtendV2Core):
+class PiXtendV2L(PiXtendV2Core):
     """
-    The PiXtendV2S class is based off of the PiXtendV2Core class, which provides basic and most common functions for
+    The PiXtendV2L class is based off of the PiXtendV2Core class, which provides basic and most common functions for
     PiXtend V2. This class must implement the abstract methods _unpack_spi_data and _pack_spi_data otherwise there
     can be no functioning data communication and no usable object at runtime.
     """
 
     # Class defines
-    _MAX_SPI_DATA = 67
-    _MAX_RETAIN_DATA = 32
+    _MAX_SPI_DATA = 111
+    _MAX_RETAIN_DATA = 64
     _SPI_DATA = [0] * _MAX_SPI_DATA
 
     def __init__(self, spi_speed=PiXtendV2Core.SPI_SPEED, com_interval=PiXtendV2Core.COM_INTERVAL_DEFAULT,
-                 model=PiXtendV2Core.PIXTENDV2S_MODEL):
+                 model=PiXtendV2Core.PIXTENDV2L_MODEL):
         """
-        Constructor of the PixtendV2S class. Create needed variables to store the settings and values for the PiXtend V2
+        Constructor of the PixtendV2L class. Create needed variables to store the settings and values for the PiXtend V2
         board which are transferred via SPI to the on-board microcontroller. The the core class (PiXtendV2Core) does
         not provide all needed variables and functions, only the basic and most common functions of the PiXtend V2
         system. This class has to build and supply the rest.
@@ -59,7 +59,12 @@ class PiXtendV2S(PiXtendV2Core):
         self._digital_in_debounce23 = 0
         self._digital_in_debounce45 = 0
         self._digital_in_debounce67 = 0
-        self._digital_out = 0
+        self._digital_in_debounce89 = 0
+        self._digital_in_debounce1011 = 0
+        self._digital_in_debounce1213 = 0
+        self._digital_in_debounce1415 = 0
+        self._digital_out0 = 0
+        self._digital_out1 = 0
         self._relay_out = 0
         self._pwm0_ctrl0 = 0
         self._pwm0_ctrl1 = 0
@@ -69,26 +74,37 @@ class PiXtendV2S(PiXtendV2Core):
         self._pwm1_ctrl1 = 0
         self._pwm1a = 0
         self._pwm1b = 0
+        self._pwm2_ctrl0 = 0
+        self._pwm2_ctrl1 = 0
+        self._pwm2a = 0
+        self._pwm2b = 0
         self._retain_data_out = [0] * self._MAX_RETAIN_DATA
 
         # Input data from uC -> RPi
-        self._digital_in = 0
+        self._digital_in0 = 0
+        self._digital_in1 = 0
         self._analog_in0 = 0
         self._analog_in1 = 0
+        self._analog_in2 = 0
+        self._analog_in3 = 0
+        self._analog_in4 = 0
+        self._analog_in5 = 0
         self._analog_in0_jumper_setting = True
         self._analog_in1_jumper_setting = True
+        self._analog_in2_jumper_setting = True
+        self._analog_in3_jumper_setting = True
         self._retain_data_in = [0] * self._MAX_RETAIN_DATA
 
         # Flag if the CRC check on the received SPI data resulted in error or if all data is usable.
         self._is_crc_data_in_error = False
         self._crc_data_errors = 0
 
-        super(PiXtendV2S, self).__init__(spi_speed, com_interval, model)
+        super(PiXtendV2L, self).__init__(spi_speed, com_interval, model)
 
     def close(self):
         """
         The 'close' function needs to be called to terminate the asynchronous SPI communication in the background and to
-        close the SPI driver. This function must be called before the PiXtendV2S object is destroyed in the program
+        close the SPI driver. This function must be called before the PiXtendV2L object is destroyed in the program
         it is used in.
         """
         self._close()
@@ -96,14 +112,14 @@ class PiXtendV2S(PiXtendV2Core):
     @property
     def crc_data_in_error(self):
         """
-        Get the error state of the CRC check performed on the incoming SPI data.
+        Get the error state of the CRC check performed on the SPI data
 
         :return: Current value, False means no error, True means the data is not correct, error
         :rtype: bool
         """
 
         return self._is_crc_data_in_error
-
+        
     @property
     def crc_data_in_error_counter(self):
         """
@@ -113,8 +129,8 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: int
         """
 
-        return self._crc_data_errors  
-        
+        return self._crc_data_errors         
+
     # <editor-fold desc="Region: RelayOut - Relays 0 - 3">
 
     @property
@@ -212,10 +228,10 @@ class PiXtendV2S(PiXtendV2Core):
 
     # </editor-fold>
 
-    # <editor-fold desc="Region: DigitalOut - Digital Outputs 0 - 3">
+    # <editor-fold desc="Region: DigitalOut - Digital Outputs 0 - 11">
 
     # **************************************************************************
-    # Digital Outputs on the PiXtend V2 -S- Board
+    # Digital Outputs on the PiXtend V2 -L- Board
     # **************************************************************************
 
     @property
@@ -227,7 +243,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_out, self.BIT_0) == 1
+        return self.test_bit(self._digital_out0, self.BIT_0) == 1
 
     @digital_out0.setter
     def digital_out0(self, value):
@@ -239,9 +255,9 @@ class PiXtendV2S(PiXtendV2Core):
 
         bit_num = self.BIT_0
         if value is self.OFF:
-            self._digital_out = self.clear_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
         if value is self.ON:
-            self._digital_out = self.set_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
 
     @property
     def digital_out1(self):
@@ -252,7 +268,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_out, self.BIT_1) == 1
+        return self.test_bit(self._digital_out0, self.BIT_1) == 1
 
     @digital_out1.setter
     def digital_out1(self, value):
@@ -264,9 +280,9 @@ class PiXtendV2S(PiXtendV2Core):
 
         bit_num = self.BIT_1
         if value is self.OFF:
-            self._digital_out = self.clear_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
         if value is self.ON:
-            self._digital_out = self.set_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
 
     @property
     def digital_out2(self):
@@ -277,7 +293,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_out, self.BIT_2) == 1
+        return self.test_bit(self._digital_out0, self.BIT_2) == 1
 
     @digital_out2.setter
     def digital_out2(self, value):
@@ -289,9 +305,9 @@ class PiXtendV2S(PiXtendV2Core):
 
         bit_num = self.BIT_2
         if value is self.OFF:
-            self._digital_out = self.clear_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
         if value is self.ON:
-            self._digital_out = self.set_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
 
     @property
     def digital_out3(self):
@@ -302,7 +318,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_out, self.BIT_3) == 1
+        return self.test_bit(self._digital_out0, self.BIT_3) == 1
 
     @digital_out3.setter
     def digital_out3(self, value):
@@ -314,16 +330,216 @@ class PiXtendV2S(PiXtendV2Core):
 
         bit_num = self.BIT_3
         if value is self.OFF:
-            self._digital_out = self.clear_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
         if value is self.ON:
-            self._digital_out = self.set_bit(self._digital_out, bit_num)
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
+
+    @property
+    def digital_out4(self):
+        """
+        Get or Set the state of digital output 4. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out0, self.BIT_4) == 1
+
+    @digital_out4.setter
+    def digital_out4(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_4
+        if value is self.OFF:
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
+        if value is self.ON:
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
+
+    @property
+    def digital_out5(self):
+        """
+        Get or Set the state of digital output 5. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out0, self.BIT_5) == 1
+
+    @digital_out5.setter
+    def digital_out5(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_5
+        if value is self.OFF:
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
+        if value is self.ON:
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
+
+    @property
+    def digital_out6(self):
+        """
+        Get or Set the state of digital output 6. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out0, self.BIT_6) == 1
+
+    @digital_out6.setter
+    def digital_out6(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_6
+        if value is self.OFF:
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
+        if value is self.ON:
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
+
+    @property
+    def digital_out7(self):
+        """
+        Get or Set the state of digital output 7. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out0, self.BIT_7) == 1
+
+    @digital_out7.setter
+    def digital_out7(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_7
+        if value is self.OFF:
+            self._digital_out0 = self.clear_bit(self._digital_out0, bit_num)
+        if value is self.ON:
+            self._digital_out0 = self.set_bit(self._digital_out0, bit_num)
+
+    @property
+    def digital_out8(self):
+        """
+        Get or Set the state of digital output 8. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out1, self.BIT_0) == 1
+
+    @digital_out8.setter
+    def digital_out8(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_0
+        if value is self.OFF:
+            self._digital_out1 = self.clear_bit(self._digital_out1, bit_num)
+        if value is self.ON:
+            self._digital_out1 = self.set_bit(self._digital_out1, bit_num)
+
+    @property
+    def digital_out9(self):
+        """
+        Get or Set the state of digital output 9. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out1, self.BIT_1) == 1
+
+    @digital_out9.setter
+    def digital_out9(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_1
+        if value is self.OFF:
+            self._digital_out1 = self.clear_bit(self._digital_out1, bit_num)
+        if value is self.ON:
+            self._digital_out1 = self.set_bit(self._digital_out1, bit_num)
+
+    @property
+    def digital_out10(self):
+        """
+        Get or Set the state of digital output 10. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out1, self.BIT_2) == 1
+
+    @digital_out10.setter
+    def digital_out10(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_2
+        if value is self.OFF:
+            self._digital_out1 = self.clear_bit(self._digital_out1, bit_num)
+        if value is self.ON:
+            self._digital_out1 = self.set_bit(self._digital_out1, bit_num)
+
+    @property
+    def digital_out11(self):
+        """
+        Get or Set the state of digital output 11. A value False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_out1, self.BIT_3) == 1
+
+    @digital_out11.setter
+    def digital_out11(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError(
+                "Value error!, Value " + str(value) + " not allowed! - Use only: False = off, True = on")
+
+        bit_num = self.BIT_3
+        if value is self.OFF:
+            self._digital_out1 = self.clear_bit(self._digital_out1, bit_num)
+        if value is self.ON:
+            self._digital_out1 = self.set_bit(self._digital_out1, bit_num)
 
     # </editor-fold>
 
-    # <editor-fold desc="Region: DigitalIn - Digital Inputs 0 - 7">
+    # <editor-fold desc="Region: DigitalIn - Digital Inputs 0 - 15">
 
     # **************************************************************************
-    # Digital Inputs on the PiXtend V2 -S- Board
+    # Digital Inputs on the PiXtend V2 -L- Board
     # **************************************************************************
 
     @property
@@ -335,7 +551,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_0) == 1
+        return self.test_bit(self._digital_in0, self.BIT_0) == 1
 
     @property
     def digital_in1(self):
@@ -346,7 +562,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_1) == 1
+        return self.test_bit(self._digital_in0, self.BIT_1) == 1
 
     @property
     def digital_in2(self):
@@ -357,7 +573,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_2) == 1
+        return self.test_bit(self._digital_in0, self.BIT_2) == 1
 
     @property
     def digital_in3(self):
@@ -368,7 +584,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_3) == 1
+        return self.test_bit(self._digital_in0, self.BIT_3) == 1
 
     @property
     def digital_in4(self):
@@ -379,7 +595,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_4) == 1
+        return self.test_bit(self._digital_in0, self.BIT_4) == 1
 
     @property
     def digital_in5(self):
@@ -390,7 +606,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_5) == 1
+        return self.test_bit(self._digital_in0, self.BIT_5) == 1
 
     @property
     def digital_in6(self):
@@ -401,7 +617,7 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_6) == 1
+        return self.test_bit(self._digital_in0, self.BIT_6) == 1
 
     @property
     def digital_in7(self):
@@ -412,11 +628,99 @@ class PiXtendV2S(PiXtendV2Core):
         :rtype: bool
         """
 
-        return self.test_bit(self._digital_in, self.BIT_7) == 1
+        return self.test_bit(self._digital_in0, self.BIT_7) == 1
+
+    @property
+    def digital_in8(self):
+        """
+        Get the state of digital input 8. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_0) == 1
+
+    @property
+    def digital_in9(self):
+        """
+        Get the state of digital input 9. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_1) == 1
+
+    @property
+    def digital_in10(self):
+        """
+        Get the state of digital input 10. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_2) == 1
+
+    @property
+    def digital_in11(self):
+        """
+        Get the state of digital input 11. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_3) == 1
+
+    @property
+    def digital_in12(self):
+        """
+        Get the state of digital input 12. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_4) == 1
+
+    @property
+    def digital_in13(self):
+        """
+        Get the state of digital input 13. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_5) == 1
+
+    @property
+    def digital_in14(self):
+        """
+        Get the state of digital input 14. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_6) == 1
+
+    @property
+    def digital_in15(self):
+        """
+        Get the state of digital input 15. A value of False means 'off' and a value of True means 'on'.
+
+        :return: Current value
+        :rtype: bool
+        """
+
+        return self.test_bit(self._digital_in1, self.BIT_7) == 1
 
     # </editor-fold>
 
-    # <editor-fold desc="Region: PWM0 and PWM1 - Control and Values">
+    # <editor-fold desc="Region: PWM0, PWM1 and PWM2 - Control and Values">
 
     # <editor-fold desc="Region: Servo Control ">
 
@@ -473,7 +777,7 @@ class PiXtendV2S(PiXtendV2Core):
     @property
     def servo2(self):
         """
-        Get or Set the value for PWM 1 channel A in Servo Mode. Possible values are 0 to 125.
+        Get or Set the value for PWM 1 channel A in Servo Mode. Possible values are 0 to 16000.
 
         :return: Current value
         :rtype: int
@@ -483,10 +787,10 @@ class PiXtendV2S(PiXtendV2Core):
 
     @servo2.setter
     def servo2(self, value):
-        if 0 <= value <= 125:
+        if 0 <= value <= 16000:
             pass
         else:
-            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 125")
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 16000")
 
         if (self.test_bit(self._pwm1_ctrl0, self.BIT_0) == 0) and (self.test_bit(self._pwm1_ctrl0, self.BIT_1) == 0):
             self._pwm1a = value
@@ -496,7 +800,7 @@ class PiXtendV2S(PiXtendV2Core):
     @property
     def servo3(self):
         """
-        Get or Set the value for PWM 1 channel B in Servo Mode. Possible values are 0 to 125.
+        Get or Set the value for PWM 1 channel B in Servo Mode. Possible values are 0 to 16000.
 
         :return: Current value
         :rtype: int
@@ -506,19 +810,65 @@ class PiXtendV2S(PiXtendV2Core):
 
     @servo3.setter
     def servo3(self, value):
-        if 0 <= value <= 125:
+        if 0 <= value <= 16000:
             pass
         else:
-            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 125")
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 16000")
 
         if (self.test_bit(self._pwm1_ctrl0, self.BIT_0) == 0) and (self.test_bit(self._pwm1_ctrl0, self.BIT_1) == 0):
             self._pwm1b = value
         else:
             raise ValueError("Mode error! Servo Mode was used, but PWM1 is not configured for Servo Mode!")
 
+    @property
+    def servo4(self):
+        """
+        Get or Set the value for PWM 2 channel A in Servo Mode. Possible values are 0 to 16000.
+
+        :return: Current value
+        :rtype: int
+        """
+
+        return self._pwm2a
+
+    @servo4.setter
+    def servo4(self, value):
+        if 0 <= value <= 16000:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 16000")
+
+        if (self.test_bit(self._pwm2_ctrl0, self.BIT_0) == 0) and (self.test_bit(self._pwm2_ctrl0, self.BIT_1) == 0):
+            self._pwm2a = value
+        else:
+            raise ValueError("Mode error! Servo Mode was used, but PWM2 is not configured for Servo Mode!")
+
+    @property
+    def servo5(self):
+        """
+        Get or Set the value for PWM 2 channel B in Servo Mode. Possible values are 0 to 16000.
+
+        :return: Current value
+        :rtype: int
+        """
+
+        return self._pwm2b
+
+    @servo5.setter
+    def servo5(self, value):
+        if 0 <= value <= 16000:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 16000")
+
+        if (self.test_bit(self._pwm2_ctrl0, self.BIT_0) == 0) and (self.test_bit(self._pwm2_ctrl0, self.BIT_1) == 0):
+            self._pwm2b = value
+        else:
+            raise ValueError("Mode error! Servo Mode was used, but PWM2 is not configured for Servo Mode!")
+
     # </editor-fold>
 
-    # <editor-fold desc="Region: PWM0Ctrl0, PWM0Ctrl1, PWM1Ctrl0 and PWM1Ctrl1">
+    # <editor-fold desc="Region: PWM0Ctrl0, PWM0Ctrl1, PWM1Ctrl0, PWM1Ctrl1, PWM2Ctrl0 and PWM2Ctrl1">
 
     @property
     def pwm0_ctrl0(self):
@@ -603,7 +953,7 @@ class PiXtendV2S(PiXtendV2Core):
         """
         Get or Set the PWM1Ctrl1 property. It is used to set the frequency for PWM1 channels A & B, but only if the
         selected PWM mode makes use of this value. See the software manual for more information on this topic.
-        The int value must be between 0 and 255 (8 bits).
+        The int value must be between 0 and 65535 (16 bits).
 
         :return: Current PWM1Ctrl1 value
         :rtype: int
@@ -612,22 +962,71 @@ class PiXtendV2S(PiXtendV2Core):
 
     @pwm1_ctrl1.setter
     def pwm1_ctrl1(self, value):
+        if 0 <= value <= 65535:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 65535.")
+        self._pwm1_ctrl1 = value
+
+    @property
+    def pwm2_ctrl0(self):
+        """
+        Get or Set the PWM2Ctrl0 property. This int value controls the configuration of PWM2 channel A & B.
+        This property has the following bits which control PWM2:
+        Bit 0 - Mode0
+        Bit 1 - Mode1
+        Bit 3 - EnableA
+        Bit 4 - EnableB
+        Bit 5 - Prescaler0
+        Bit 6 - Prescaler1
+        Bit 7 - Prescaler2
+
+        See the software manual for more details on this property and it's bits.
+        The int value must be between 0 and 255.
+
+        :return: Current PWM2Ctrl0 value.
+        :rtype: int
+        """
+        return self._pwm2_ctrl0
+
+    @pwm2_ctrl0.setter
+    def pwm2_ctrl0(self, value):
         if 0 <= value <= 255:
             pass
         else:
             raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 255.")
-        self._pwm1_ctrl1 = value
+        self._pwm2_ctrl0 = value
+
+    @property
+    def pwm2_ctrl1(self):
+        """
+        Get or Set the PWM2Ctrl1 property. It is used to set the frequency for PWM2 channels A & B, but only if the
+        selected PWM mode makes use of this value. See the software manual for more information on this topic.
+        The int value must be between 0 and 65535 (16 bits).
+
+        :return: Current PWM2Ctrl1 value
+        :rtype: int
+        """
+        return self._pwm2_ctrl1
+
+    @pwm2_ctrl1.setter
+    def pwm2_ctrl1(self, value):
+        if 0 <= value <= 65535:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 65535.")
+        self._pwm2_ctrl1 = value
 
     # </editor-fold>
 
-    # <editor-fold desc="Region: PWM0 Channel A & B and PWM1 Channel A & B values ">
+    # <editor-fold desc="Region: PWM0 Channel A & B, PWM1 Channel A & B values and PWM2 Channel A & B values ">
 
     @property
     def pwm0a(self):
         """
         Get or Set the value for PWM0 channel A. This property can be used to set the duty cycle of PWM0, however the
         exact usage depends on the PWM mode selected through the property pwm0_ctrl0. The value must be between
-        0 and 65535, more information on the usage of PWM with PiXtend V2 -S- can be found in the software manual.
+        0 and 65535, more information on the usage of PWM with PiXtend V2 -L- can be found in the software manual.
 
         :return: Current PWM0 channel A value
         :rtype: int
@@ -647,7 +1046,7 @@ class PiXtendV2S(PiXtendV2Core):
         """
         Get or Set the value for PWM0 channel B. This property can be used to set the duty cycle of PWM0, however the
         exact usage depends on the PWM mode selected through the property pwm0_ctrl0. The value must be between
-        0 and 65535, more information on the usage of PWM with PiXtend V2 -S- can be found in the software manual.
+        0 and 65535, more information on the usage of PWM with PiXtend V2 -L- can be found in the software manual.
 
         :return: Current PWM0 channel B value
         :rtype: int
@@ -667,7 +1066,7 @@ class PiXtendV2S(PiXtendV2Core):
         """
         Get or Set the value for PWM1 channel A. This property can be used to set the duty cycle of PWM1, however the
         exact usage depends on the PWM mode selected through the property pwm1_ctrl0. The value must be between
-        0 and 255, more information on the usage of PWM with PiXtend V2 -S- can be found in the software manual.
+        0 and 65535, more information on the usage of PWM with PiXtend V2 -L- can be found in the software manual.
 
         :return: Current PWM1 channel A value
         :rtype: int
@@ -676,10 +1075,10 @@ class PiXtendV2S(PiXtendV2Core):
 
     @pwm1a.setter
     def pwm1a(self, value):
-        if 0 <= value <= 255:
+        if 0 <= value <= 65535:
             pass
         else:
-            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 255.")
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 65535.")
         self._pwm1a = value
 
     @property
@@ -687,7 +1086,7 @@ class PiXtendV2S(PiXtendV2Core):
         """
         Get or Set the value for PWM1 channel B. This property can be used to set the duty cycle of PWM1, however the
         exact usage depends on the PWM mode selected through the property pwm1_ctrl0. The value must be between
-        0 and 255, more information on the usage of PWM with PiXtend V2 -S- can be found in the software manual.
+        0 and 65535, more information on the usage of PWM with PiXtend V2 -L- can be found in the software manual.
 
         :return: Current PWM1 channel B value
         :rtype: int
@@ -696,23 +1095,63 @@ class PiXtendV2S(PiXtendV2Core):
 
     @pwm1b.setter
     def pwm1b(self, value):
-        if 0 <= value <= 255:
+        if 0 <= value <= 65535:
             pass
         else:
-            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 255.")
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 65535.")
         self._pwm1b = value
 
-    # </editor-fold>
+    @property
+    def pwm2a(self):
+        """
+        Get or Set the value for PWM2 channel A. This property can be used to set the duty cycle of PWM2, however the
+        exact usage depends on the PWM mode selected through the property pwm2_ctrl0. The value must be between
+        0 and 65535, more information on the usage of PWM with PiXtend V2 -L- can be found in the software manual.
+
+        :return: Current PWM2 channel A value
+        :rtype: int
+        """
+        return self._pwm2a
+
+    @pwm2a.setter
+    def pwm2a(self, value):
+        if 0 <= value <= 65535:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 65535.")
+        self._pwm2a = value
+
+    @property
+    def pwm2b(self):
+        """
+        Get or Set the value for PWM2 channel B. This property can be used to set the duty cycle of PWM2, however the
+        exact usage depends on the PWM mode selected through the property pwm2_ctrl0. The value must be between
+        0 and 65535, more information on the usage of PWM with PiXtend V2 -L- can be found in the software manual.
+
+        :return: Current PWM2 channel B value
+        :rtype: int
+        """
+        return self._pwm2b
+
+    @pwm2b.setter
+    def pwm2b(self, value):
+        if 0 <= value <= 65535:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use a value from 0 to 65535.")
+        self._pwm2b = value
 
     # </editor-fold>
 
-    # <editor-fold desc="Region: AnalogIn0 and AnalogIn1 - Jumper setting ref 5V / 10 V">
+    # </editor-fold>
+
+    # <editor-fold desc="Region: AnalogIn0 - AnalogIn5 and Jumper setting ref 5V / 10 V">
 
     @property
     def jumper_setting_ai0(self):
         """
         Get or Set the 5 volts / 10 volts jumper setting, depending if the jumper was physically set on the
-        PiXtend V2 -S- board or not.
+        PiXtend V2 -L- board or not.
         The library needs to know this setting to perform correct calculations of the raw analog
         value of the analog input 0 when it is converted it's final float value.
 
@@ -737,7 +1176,7 @@ class PiXtendV2S(PiXtendV2Core):
     def jumper_setting_ai1(self):
         """
         Get or Set the 5 volts / 10 volts jumper setting, depending if the jumper was physically set on the
-        PiXtend V2 -S- board or not.
+        PiXtend V2 -L- board or not.
         The library needs to know this setting to perform correct calculations of the raw analog
         value of the analog input 1 when it is converted it's final float value.
 
@@ -757,6 +1196,56 @@ class PiXtendV2S(PiXtendV2Core):
                 True = 10 volts (default)")
 
         self._analog_in1_jumper_setting = value
+
+    @property
+    def jumper_setting_ai2(self):
+        """
+        Get or Set the 5 volts / 10 volts jumper setting, depending if the jumper was physically set on the
+        PiXtend V2 -L- board or not.
+        The library needs to know this setting to perform correct calculations of the raw analog
+        value of the analog input 2 when it is converted it's final float value.
+
+        The default setting is 10 volts (True), no jumper set.
+
+        :return: Current jumper setting
+        :rtype: bool
+        """
+        return self._analog_in2_jumper_setting
+
+    @jumper_setting_ai2.setter
+    def jumper_setting_ai2(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: False = 5 volts, \
+                True = 10 volts (default)")
+
+        self._analog_in2_jumper_setting = value
+
+    @property
+    def jumper_setting_ai3(self):
+        """
+        Get or Set the 5 volts / 10 volts jumper setting, depending if the jumper was physically set on the
+        PiXtend V2 -L- board or not.
+        The library needs to know this setting to perform correct calculations of the raw analog
+        value of the analog input 3 when it is converted it's final float value.
+
+        The default setting is 10 volts (True), no jumper set.
+
+        :return: Current jumper setting
+        :rtype: bool
+        """
+        return self._analog_in3_jumper_setting
+
+    @jumper_setting_ai3.setter
+    def jumper_setting_ai3(self, value):
+        if value is False or value is True:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: False = 5 volts, \
+                True = 10 volts (default)")
+
+        self._analog_in3_jumper_setting = value
 
     @property
     def analog_in0(self):
@@ -808,14 +1297,108 @@ class PiXtendV2S(PiXtendV2Core):
         """
         return self._analog_in1
 
+    @property
+    def analog_in2(self):
+        """
+        Get the value of analog input 2 as a float value converted to volts. The returned value is
+        based on the 5 volts / 10 volts jumper setting.
+
+        :return: Current value
+        :rtype: float
+        """
+        if self._analog_in2_jumper_setting is True:
+            value = self._analog_in2 * (10.0 / 1024)
+        else:
+            value = self._analog_in2 * (5.0 / 1024)
+        return value
+
+    @property
+    def analog_in2_raw(self):
+        """
+        Get the raw value of analog input 2.
+
+        :return: Current value
+        :rtype: int
+        """
+        return self._analog_in2
+
+    @property
+    def analog_in3(self):
+        """
+        Get the value of analog input 3 as a float value converted to volts. The returned value is
+        based on the 5 volts / 10 volts jumper setting.
+
+        :return: Current value
+        :rtype: float
+        """
+        if self._analog_in3_jumper_setting is True:
+            value = self._analog_in3 * (10.0 / 1024)
+        else:
+            value = self._analog_in3 * (5.0 / 1024)
+        return value
+
+    @property
+    def analog_in3_raw(self):
+        """
+        Get the raw value of analog input 3.
+
+        :return: Current value
+        :rtype: int
+        """
+        return self._analog_in3
+
+    @property
+    def analog_in4(self):
+        """
+        Get the value of analog input 4 as a float value converted to milliAmps.
+
+        :return: Current value
+        :rtype: float
+        """
+
+        value = self._analog_in4 * 0.020158400229358 
+        return value
+
+    @property
+    def analog_in4_raw(self):
+        """
+        Get the raw value of analog input 4.
+
+        :return: Current value
+        :rtype: int
+        """
+        return self._analog_in4
+
+    @property
+    def analog_in5(self):
+        """
+        Get the value of analog input 5 as a float value converted to milliAmps.
+
+        :return: Current value
+        :rtype: float
+        """
+
+        value = self._analog_in5 * 0.020158400229358 
+        return value
+
+    @property
+    def analog_in5_raw(self):
+        """
+        Get the raw value of analog input 5.
+
+        :return: Current value
+        :rtype: int
+        """
+        return self._analog_in5
+
     # </editor-fold>
 
-    # <editor-fold desc="Region: Retain Data - 32 bytes flash storage">
+    # <editor-fold desc="Region: Retain Data - 64 bytes flash storage">
 
     @property
     def retain_data_out(self):
         """
-        From RetainDataOut return a list of 32 int's, each list element has a value between 0 and 255 (byte value).
+        From RetainDataOut return a list of 64 int's, each list element has a value between 0 and 255 (byte value).
 
         :return: list[int]
         """
@@ -824,15 +1407,15 @@ class PiXtendV2S(PiXtendV2Core):
     @retain_data_out.setter
     def retain_data_out(self, value):
         """
-        RetainDataOut list consisting of 32 Bytes (int's), each int/byte cannot exceed the value of 255.
+        RetainDataOut list consisting of 64 Bytes (int's), each int/byte cannot exceed the value of 255.
 
         :type value: list[int]
         """
         if type(value) is not list:
-            raise ValueError("The passed value is not of type list! RetainDataOut needs to be of type list with 32 \
+            raise ValueError("The passed value is not of type list! RetainDataOut needs to be of type list with 64 \
                              elements each of type int and each element must have a value between 0 and 255.")
         if len(value) < self._MAX_RETAIN_DATA or len(value) > self._MAX_RETAIN_DATA:
-            raise ValueError("The retain data out property needs a list with exactly 32 elements of type int!")
+            raise ValueError("The retain data out property needs a list with exactly 64 elements of type int!")
         if not all(isinstance(i, int) for i in value):
             raise ValueError("Not all elements are of the same type! Only int is allowed.")
         for i in range(len(value)):
@@ -844,7 +1427,7 @@ class PiXtendV2S(PiXtendV2Core):
     @property
     def retain_data_in(self):
         """
-        From RetainDataIn return a list of 32 int's, each list element has a value between 0 and 255 (byte value).
+        From RetainDataIn return a list of 64 int's, each list element has a value between 0 and 255 (byte value).
         If the Retain functions was enabled, this list will contain the data previously stored in the microcontroller's
         flash memory. The values will remain there even if the Retain Enable flag is not set.
 
@@ -886,31 +1469,41 @@ class PiXtendV2S(PiXtendV2Core):
         self._is_crc_data_in_error = False
         # Assign the incoming SPI data bytes to the correct variables for further use.
         data_cnt = 9
-        self._digital_in = data[data_cnt]
+        self._digital_in0 = data[data_cnt]
         data_cnt += 1  # 10
-        self._analog_in0 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 11 / 10
-        data_cnt += 2  # 12
-        self._analog_in1 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 13 / 12
-        data_cnt += 2   # 14
-        self._gpio_in = data[data_cnt]
-        data_cnt += 1   # 15
-        self._temp0_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 16 / 15
-        data_cnt += 2   # 17
-        self._humid0_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 18 / 17
-        data_cnt += 2   # 19
-        self._temp1_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 20 / 19
-        data_cnt += 2   # 21
-        self._humid1_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 22 / 21
+        self._digital_in1 = data[data_cnt]
+        data_cnt += 1  # 11
+        self._analog_in0 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 12 / 11
+        data_cnt += 2  # 13
+        self._analog_in1 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 14 / 13
+        data_cnt += 2  # 15
+        self._analog_in2 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 16 / 15
+        data_cnt += 2  # 17
+        self._analog_in3 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 18 / 17
+        data_cnt += 2  # 19
+        self._analog_in4 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 20 / 19
+        data_cnt += 2  # 21
+        self._analog_in5 = (data[data_cnt + 1] << 8) + data[data_cnt]  # 22 / 21
         data_cnt += 2   # 23
-        self._temp2_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 24 / 23
-        data_cnt += 2   # 25
-        self._humid2_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 26 / 25
-        data_cnt += 2   # 27
-        self._temp3_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 28 / 27
-        data_cnt += 2   # 29
-        self._humid3_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 30 / 29
+        self._gpio_in = data[data_cnt]
+        data_cnt += 1   # 24
+        self._temp0_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 25 / 24
+        data_cnt += 2   # 26
+        self._humid0_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 27 / 26
+        data_cnt += 2   # 28
+        self._temp1_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 29 / 28
+        data_cnt += 2   # 30
+        self._humid1_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 31 / 30
+        data_cnt += 2   # 32
+        self._temp2_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 33 / 32
+        data_cnt += 2   # 34
+        self._humid2_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 35 / 34
+        data_cnt += 2   # 36
+        self._temp3_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 37 / 36
+        data_cnt += 2   # 38
+        self._humid3_raw_value = (data[data_cnt + 1] << 8) + data[data_cnt]  # 39 / 38
 
-        data_cnt = 32
+        data_cnt = 44
 
         for i in range(0, self._MAX_RETAIN_DATA, 1):
             data_cnt += 1
@@ -934,7 +1527,17 @@ class PiXtendV2S(PiXtendV2Core):
         data_cnt += 1
         self._SPI_DATA[data_cnt] = self._digital_in_debounce67
         data_cnt += 1
-        self._SPI_DATA[data_cnt] = self._digital_out
+        self._SPI_DATA[data_cnt] = self._digital_in_debounce89
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._digital_in_debounce1011
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._digital_in_debounce1213
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._digital_in_debounce1415
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._digital_out0
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._digital_out1
         data_cnt += 1
         self._SPI_DATA[data_cnt] = self._relay_out
         data_cnt += 1
@@ -973,6 +1576,20 @@ class PiXtendV2S(PiXtendV2Core):
         self._SPI_DATA[data_cnt] = self._pwm1b & 0xFF  # Low byte
         data_cnt += 1
         self._SPI_DATA[data_cnt] = (self._pwm1b >> 8) & 0xFF  # High byte
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._pwm2_ctrl0
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._pwm2_ctrl1 & 0xFF  # Low byte
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = (self._pwm2_ctrl1 >> 8) & 0xFF  # High byte
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._pwm2a & 0xFF  # Low byte
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = (self._pwm2a >> 8) & 0xFF  # High byte
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = self._pwm2b & 0xFF  # Low byte
+        data_cnt += 1
+        self._SPI_DATA[data_cnt] = (self._pwm2b >> 8) & 0xFF  # High byte
 
         for i in range(0, self._MAX_RETAIN_DATA, 1):
             data_cnt += 1
@@ -981,7 +1598,7 @@ class PiXtendV2S(PiXtendV2Core):
         # Calculate CRC16 Transmit Checksum
         crc_sum = 0xFFFF
 
-        for i in range(9, self._MAX_SPI_DATA-2, 1):
+        for i in range(9, self._MAX_SPI_DATA - 2, 1):
             crc_sum = self._calc_crc16(crc_sum, self._SPI_DATA[i])
 
         self._SPI_DATA[self._MAX_SPI_DATA-2] = crc_sum & 0xFF  # CRC Low Byte

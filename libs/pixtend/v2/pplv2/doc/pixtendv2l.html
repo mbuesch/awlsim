@@ -1,15 +1,15 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<html><head><title>Python: package pixtendv2s</title>
+<html><head><title>Python: package pixtendv2l</title>
 <meta charset="utf-8">
 </head><body bgcolor="#f0f0f8">
 
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2s</strong></big></big> (version 0.1.3)</font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2l</strong></big></big> (version 0.1.3)</font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/pi/pplv2/pixtendv2s/__init__.py">/home/pi/pplv2/pixtendv2s/__init__.py</a></font></td></tr></table>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/pi/pplv2/pixtendv2l/__init__.py">/home/pi/pplv2/pixtendv2l/__init__.py</a></font></td></tr></table>
     <p><tt>#&nbsp;coding=utf-8</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -29,7 +29,7 @@
 <dt><font face="helvetica, arial"><a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>(<a href="__builtin__.html#object">__builtin__.object</a>)
 </font></dt><dd>
 <dl>
-<dt><font face="helvetica, arial"><a href="pixtendv2s.html#PiXtendV2S">PiXtendV2S</a>
+<dt><font face="helvetica, arial"><a href="pixtendv2l.html#PiXtendV2L">PiXtendV2L</a>
 </font></dt></dl>
 </dd>
 </dl>
@@ -37,21 +37,21 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="PiXtendV2S">class <strong>PiXtendV2S</strong></a>(<a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>)</font></td></tr>
+<font color="#000000" face="helvetica, arial"><a name="PiXtendV2L">class <strong>PiXtendV2L</strong></a>(<a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>)</font></td></tr>
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>The&nbsp;<a href="#PiXtendV2S">PiXtendV2S</a>&nbsp;class&nbsp;is&nbsp;based&nbsp;off&nbsp;of&nbsp;the&nbsp;<a href="pixtendv2core.html#PiXtendV2Core">PiXtendV2Core</a>&nbsp;class,&nbsp;which&nbsp;provides&nbsp;basic&nbsp;and&nbsp;most&nbsp;common&nbsp;functions&nbsp;for<br>
+<td colspan=2><tt>The&nbsp;<a href="#PiXtendV2L">PiXtendV2L</a>&nbsp;class&nbsp;is&nbsp;based&nbsp;off&nbsp;of&nbsp;the&nbsp;<a href="pixtendv2core.html#PiXtendV2Core">PiXtendV2Core</a>&nbsp;class,&nbsp;which&nbsp;provides&nbsp;basic&nbsp;and&nbsp;most&nbsp;common&nbsp;functions&nbsp;for<br>
 PiXtend&nbsp;V2.&nbsp;This&nbsp;class&nbsp;must&nbsp;implement&nbsp;the&nbsp;abstract&nbsp;methods&nbsp;_unpack_spi_data&nbsp;and&nbsp;_pack_spi_data&nbsp;otherwise&nbsp;there<br>
 can&nbsp;be&nbsp;no&nbsp;functioning&nbsp;data&nbsp;communication&nbsp;and&nbsp;no&nbsp;usable&nbsp;object&nbsp;at&nbsp;runtime.<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%"><dl><dt>Method resolution order:</dt>
-<dd><a href="pixtendv2s.html#PiXtendV2S">PiXtendV2S</a></dd>
+<dd><a href="pixtendv2l.html#PiXtendV2L">PiXtendV2L</a></dd>
 <dd><a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a></dd>
 <dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
 </dl>
 <hr>
 Methods defined here:<br>
-<dl><dt><a name="PiXtendV2S-__init__"><strong>__init__</strong></a>(self, spi_speed<font color="#909090">=700000</font>, com_interval<font color="#909090">=0.03</font>, model<font color="#909090">=83</font>)</dt><dd><tt>Constructor&nbsp;of&nbsp;the&nbsp;PixtendV2S&nbsp;class.&nbsp;Create&nbsp;needed&nbsp;variables&nbsp;to&nbsp;store&nbsp;the&nbsp;settings&nbsp;and&nbsp;values&nbsp;for&nbsp;the&nbsp;PiXtend&nbsp;V2<br>
+<dl><dt><a name="PiXtendV2L-__init__"><strong>__init__</strong></a>(self, spi_speed<font color="#909090">=700000</font>, com_interval<font color="#909090">=0.03</font>, model<font color="#909090">=76</font>)</dt><dd><tt>Constructor&nbsp;of&nbsp;the&nbsp;PixtendV2L&nbsp;class.&nbsp;Create&nbsp;needed&nbsp;variables&nbsp;to&nbsp;store&nbsp;the&nbsp;settings&nbsp;and&nbsp;values&nbsp;for&nbsp;the&nbsp;PiXtend&nbsp;V2<br>
 board&nbsp;which&nbsp;are&nbsp;transferred&nbsp;via&nbsp;SPI&nbsp;to&nbsp;the&nbsp;on-board&nbsp;microcontroller.&nbsp;The&nbsp;the&nbsp;core&nbsp;class&nbsp;(<a href="pixtendv2core.html#PiXtendV2Core">PiXtendV2Core</a>)&nbsp;does<br>
 not&nbsp;provide&nbsp;all&nbsp;needed&nbsp;variables&nbsp;and&nbsp;functions,&nbsp;only&nbsp;the&nbsp;basic&nbsp;and&nbsp;most&nbsp;common&nbsp;functions&nbsp;of&nbsp;the&nbsp;PiXtend&nbsp;V2<br>
 system.&nbsp;This&nbsp;class&nbsp;has&nbsp;to&nbsp;build&nbsp;and&nbsp;supply&nbsp;the&nbsp;rest.<br>
@@ -60,8 +60,8 @@ system.&nbsp;This&nbsp;class&nbsp;has&nbsp;to&nbsp;build&nbsp;and&nbsp;supply&nb
 :param&nbsp;com_interval:&nbsp;float<br>
 :param&nbsp;model:&nbsp;int</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2S-close"><strong>close</strong></a>(self)</dt><dd><tt>The&nbsp;'close'&nbsp;function&nbsp;needs&nbsp;to&nbsp;be&nbsp;called&nbsp;to&nbsp;terminate&nbsp;the&nbsp;asynchronous&nbsp;SPI&nbsp;communication&nbsp;in&nbsp;the&nbsp;background&nbsp;and&nbsp;to<br>
-close&nbsp;the&nbsp;SPI&nbsp;driver.&nbsp;This&nbsp;function&nbsp;must&nbsp;be&nbsp;called&nbsp;before&nbsp;the&nbsp;<a href="#PiXtendV2S">PiXtendV2S</a>&nbsp;object&nbsp;is&nbsp;destroyed&nbsp;in&nbsp;the&nbsp;program<br>
+<dl><dt><a name="PiXtendV2L-close"><strong>close</strong></a>(self)</dt><dd><tt>The&nbsp;'close'&nbsp;function&nbsp;needs&nbsp;to&nbsp;be&nbsp;called&nbsp;to&nbsp;terminate&nbsp;the&nbsp;asynchronous&nbsp;SPI&nbsp;communication&nbsp;in&nbsp;the&nbsp;background&nbsp;and&nbsp;to<br>
+close&nbsp;the&nbsp;SPI&nbsp;driver.&nbsp;This&nbsp;function&nbsp;must&nbsp;be&nbsp;called&nbsp;before&nbsp;the&nbsp;<a href="#PiXtendV2L">PiXtendV2L</a>&nbsp;object&nbsp;is&nbsp;destroyed&nbsp;in&nbsp;the&nbsp;program<br>
 it&nbsp;is&nbsp;used&nbsp;in.</tt></dd></dl>
 
 <hr>
@@ -92,6 +92,56 @@ based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&n
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
 </dl>
+<dl><dt><strong>analog_in2</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;2&nbsp;as&nbsp;a&nbsp;float&nbsp;value&nbsp;converted&nbsp;to&nbsp;volts.&nbsp;The&nbsp;returned&nbsp;value&nbsp;is<br>
+based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>analog_in2_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;raw&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;2.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>analog_in3</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;3&nbsp;as&nbsp;a&nbsp;float&nbsp;value&nbsp;converted&nbsp;to&nbsp;volts.&nbsp;The&nbsp;returned&nbsp;value&nbsp;is<br>
+based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>analog_in3_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;raw&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;3.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>analog_in4</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;4&nbsp;as&nbsp;a&nbsp;float&nbsp;value&nbsp;converted&nbsp;to&nbsp;milliAmps.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>analog_in4_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;raw&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;4.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>analog_in5</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;5&nbsp;as&nbsp;a&nbsp;float&nbsp;value&nbsp;converted&nbsp;to&nbsp;milliAmps.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;float</tt></dd>
+</dl>
+<dl><dt><strong>analog_in5_raw</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;raw&nbsp;value&nbsp;of&nbsp;analog&nbsp;input&nbsp;5.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
 <dl><dt><strong>crc_data_in_error</strong></dt>
 <dd><tt>Get&nbsp;the&nbsp;error&nbsp;state&nbsp;of&nbsp;the&nbsp;CRC&nbsp;check&nbsp;performed&nbsp;on&nbsp;the&nbsp;SPI&nbsp;data<br>
 &nbsp;<br>
@@ -106,6 +156,42 @@ based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&n
 </dl>
 <dl><dt><strong>digital_in1</strong></dt>
 <dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;1.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in10</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;10.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in11</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;11.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in12</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;12.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in13</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;13.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in14</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;14.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in15</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;15.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;bool</tt></dd>
@@ -146,6 +232,18 @@ based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&n
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;bool</tt></dd>
 </dl>
+<dl><dt><strong>digital_in8</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;8.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_in9</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;input&nbsp;9.&nbsp;A&nbsp;value&nbsp;of&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
 <dl><dt><strong>digital_out0</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;0.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
 &nbsp;<br>
@@ -154,6 +252,18 @@ based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&n
 </dl>
 <dl><dt><strong>digital_out1</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;1.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out10</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;10.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out11</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;11.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;bool</tt></dd>
@@ -170,9 +280,45 @@ based&nbsp;on&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&n
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;bool</tt></dd>
 </dl>
+<dl><dt><strong>digital_out4</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;4.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out5</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;5.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out6</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;6.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out7</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;7.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out8</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;8.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>digital_out9</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;state&nbsp;of&nbsp;digital&nbsp;output&nbsp;9.&nbsp;A&nbsp;value&nbsp;False&nbsp;means&nbsp;'off'&nbsp;and&nbsp;a&nbsp;value&nbsp;of&nbsp;True&nbsp;means&nbsp;'on'.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
 <dl><dt><strong>jumper_setting_ai0</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting,&nbsp;depending&nbsp;if&nbsp;the&nbsp;jumper&nbsp;was&nbsp;physically&nbsp;set&nbsp;on&nbsp;the<br>
-PiXtend&nbsp;V2&nbsp;-S-&nbsp;board&nbsp;or&nbsp;not.<br>
+PiXtend&nbsp;V2&nbsp;-L-&nbsp;board&nbsp;or&nbsp;not.<br>
 The&nbsp;library&nbsp;needs&nbsp;to&nbsp;know&nbsp;this&nbsp;setting&nbsp;to&nbsp;perform&nbsp;correct&nbsp;calculations&nbsp;of&nbsp;the&nbsp;raw&nbsp;analog<br>
 value&nbsp;of&nbsp;the&nbsp;analog&nbsp;input&nbsp;0&nbsp;when&nbsp;it&nbsp;is&nbsp;converted&nbsp;it's&nbsp;final&nbsp;float&nbsp;value.<br>
 &nbsp;<br>
@@ -183,9 +329,31 @@ The&nbsp;default&nbsp;setting&nbsp;is&nbsp;10&nbsp;volts&nbsp;(True),&nbsp;no&nb
 </dl>
 <dl><dt><strong>jumper_setting_ai1</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting,&nbsp;depending&nbsp;if&nbsp;the&nbsp;jumper&nbsp;was&nbsp;physically&nbsp;set&nbsp;on&nbsp;the<br>
-PiXtend&nbsp;V2&nbsp;-S-&nbsp;board&nbsp;or&nbsp;not.<br>
+PiXtend&nbsp;V2&nbsp;-L-&nbsp;board&nbsp;or&nbsp;not.<br>
 The&nbsp;library&nbsp;needs&nbsp;to&nbsp;know&nbsp;this&nbsp;setting&nbsp;to&nbsp;perform&nbsp;correct&nbsp;calculations&nbsp;of&nbsp;the&nbsp;raw&nbsp;analog<br>
 value&nbsp;of&nbsp;the&nbsp;analog&nbsp;input&nbsp;1&nbsp;when&nbsp;it&nbsp;is&nbsp;converted&nbsp;it's&nbsp;final&nbsp;float&nbsp;value.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;setting&nbsp;is&nbsp;10&nbsp;volts&nbsp;(True),&nbsp;no&nbsp;jumper&nbsp;set.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;jumper&nbsp;setting<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>jumper_setting_ai2</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting,&nbsp;depending&nbsp;if&nbsp;the&nbsp;jumper&nbsp;was&nbsp;physically&nbsp;set&nbsp;on&nbsp;the<br>
+PiXtend&nbsp;V2&nbsp;-L-&nbsp;board&nbsp;or&nbsp;not.<br>
+The&nbsp;library&nbsp;needs&nbsp;to&nbsp;know&nbsp;this&nbsp;setting&nbsp;to&nbsp;perform&nbsp;correct&nbsp;calculations&nbsp;of&nbsp;the&nbsp;raw&nbsp;analog<br>
+value&nbsp;of&nbsp;the&nbsp;analog&nbsp;input&nbsp;2&nbsp;when&nbsp;it&nbsp;is&nbsp;converted&nbsp;it's&nbsp;final&nbsp;float&nbsp;value.<br>
+&nbsp;<br>
+The&nbsp;default&nbsp;setting&nbsp;is&nbsp;10&nbsp;volts&nbsp;(True),&nbsp;no&nbsp;jumper&nbsp;set.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;jumper&nbsp;setting<br>
+:rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>jumper_setting_ai3</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;5&nbsp;volts&nbsp;/&nbsp;10&nbsp;volts&nbsp;jumper&nbsp;setting,&nbsp;depending&nbsp;if&nbsp;the&nbsp;jumper&nbsp;was&nbsp;physically&nbsp;set&nbsp;on&nbsp;the<br>
+PiXtend&nbsp;V2&nbsp;-L-&nbsp;board&nbsp;or&nbsp;not.<br>
+The&nbsp;library&nbsp;needs&nbsp;to&nbsp;know&nbsp;this&nbsp;setting&nbsp;to&nbsp;perform&nbsp;correct&nbsp;calculations&nbsp;of&nbsp;the&nbsp;raw&nbsp;analog<br>
+value&nbsp;of&nbsp;the&nbsp;analog&nbsp;input&nbsp;3&nbsp;when&nbsp;it&nbsp;is&nbsp;converted&nbsp;it's&nbsp;final&nbsp;float&nbsp;value.<br>
 &nbsp;<br>
 The&nbsp;default&nbsp;setting&nbsp;is&nbsp;10&nbsp;volts&nbsp;(True),&nbsp;no&nbsp;jumper&nbsp;set.<br>
 &nbsp;<br>
@@ -220,7 +388,7 @@ The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;6553
 <dl><dt><strong>pwm0a</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM0&nbsp;channel&nbsp;A.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM0,&nbsp;however&nbsp;the<br>
 exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm0_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
-0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;PWM0&nbsp;channel&nbsp;A&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
@@ -228,7 +396,7 @@ exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&
 <dl><dt><strong>pwm0b</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM0&nbsp;channel&nbsp;B.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM0,&nbsp;however&nbsp;the<br>
 exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm0_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
-0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;PWM0&nbsp;channel&nbsp;B&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
@@ -253,7 +421,7 @@ The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255.
 <dl><dt><strong>pwm1_ctrl1</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM1Ctrl1&nbsp;property.&nbsp;It&nbsp;is&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;frequency&nbsp;for&nbsp;PWM1&nbsp;channels&nbsp;A&nbsp;&amp;&nbsp;B,&nbsp;but&nbsp;only&nbsp;if&nbsp;the<br>
 selected&nbsp;PWM&nbsp;mode&nbsp;makes&nbsp;use&nbsp;of&nbsp;this&nbsp;value.&nbsp;See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;this&nbsp;topic.<br>
-The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(8&nbsp;bits).<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;65535&nbsp;(16&nbsp;bits).<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;PWM1Ctrl1&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
@@ -261,7 +429,7 @@ The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255&
 <dl><dt><strong>pwm1a</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM1&nbsp;channel&nbsp;A.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM1,&nbsp;however&nbsp;the<br>
 exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm1_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
-0&nbsp;and&nbsp;255,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;PWM1&nbsp;channel&nbsp;A&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
@@ -269,9 +437,50 @@ exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&
 <dl><dt><strong>pwm1b</strong></dt>
 <dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM1&nbsp;channel&nbsp;B.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM1,&nbsp;however&nbsp;the<br>
 exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm1_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
-0&nbsp;and&nbsp;255,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-S-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;PWM1&nbsp;channel&nbsp;B&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm2_ctrl0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM2Ctrl0&nbsp;property.&nbsp;This&nbsp;int&nbsp;value&nbsp;controls&nbsp;the&nbsp;configuration&nbsp;of&nbsp;PWM2&nbsp;channel&nbsp;A&nbsp;&amp;&nbsp;B.<br>
+This&nbsp;property&nbsp;has&nbsp;the&nbsp;following&nbsp;bits&nbsp;which&nbsp;control&nbsp;PWM2:<br>
+Bit&nbsp;0&nbsp;-&nbsp;Mode0<br>
+Bit&nbsp;1&nbsp;-&nbsp;Mode1<br>
+Bit&nbsp;3&nbsp;-&nbsp;EnableA<br>
+Bit&nbsp;4&nbsp;-&nbsp;EnableB<br>
+Bit&nbsp;5&nbsp;-&nbsp;Prescaler0<br>
+Bit&nbsp;6&nbsp;-&nbsp;Prescaler1<br>
+Bit&nbsp;7&nbsp;-&nbsp;Prescaler2<br>
+&nbsp;<br>
+See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;details&nbsp;on&nbsp;this&nbsp;property&nbsp;and&nbsp;it's&nbsp;bits.<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;255.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM2Ctrl0&nbsp;value.<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm2_ctrl1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;PWM2Ctrl1&nbsp;property.&nbsp;It&nbsp;is&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;frequency&nbsp;for&nbsp;PWM2&nbsp;channels&nbsp;A&nbsp;&amp;&nbsp;B,&nbsp;but&nbsp;only&nbsp;if&nbsp;the<br>
+selected&nbsp;PWM&nbsp;mode&nbsp;makes&nbsp;use&nbsp;of&nbsp;this&nbsp;value.&nbsp;See&nbsp;the&nbsp;software&nbsp;manual&nbsp;for&nbsp;more&nbsp;information&nbsp;on&nbsp;this&nbsp;topic.<br>
+The&nbsp;int&nbsp;value&nbsp;must&nbsp;be&nbsp;between&nbsp;0&nbsp;and&nbsp;65535&nbsp;(16&nbsp;bits).<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM2Ctrl1&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm2a</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM2&nbsp;channel&nbsp;A.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM2,&nbsp;however&nbsp;the<br>
+exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm2_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM2&nbsp;channel&nbsp;A&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>pwm2b</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM2&nbsp;channel&nbsp;B.&nbsp;This&nbsp;property&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;set&nbsp;the&nbsp;duty&nbsp;cycle&nbsp;of&nbsp;PWM2,&nbsp;however&nbsp;the<br>
+exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&nbsp;through&nbsp;the&nbsp;property&nbsp;pwm2_ctrl0.&nbsp;The&nbsp;value&nbsp;must&nbsp;be&nbsp;between<br>
+0&nbsp;and&nbsp;65535,&nbsp;more&nbsp;information&nbsp;on&nbsp;the&nbsp;usage&nbsp;of&nbsp;PWM&nbsp;with&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;the&nbsp;software&nbsp;manual.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;PWM2&nbsp;channel&nbsp;B&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
 </dl>
 <dl><dt><strong>relay0</strong></dt>
@@ -299,14 +508,14 @@ exact&nbsp;usage&nbsp;depends&nbsp;on&nbsp;the&nbsp;PWM&nbsp;mode&nbsp;selected&
 :rtype:&nbsp;bool</tt></dd>
 </dl>
 <dl><dt><strong>retain_data_in</strong></dt>
-<dd><tt>From&nbsp;RetainDataIn&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;32&nbsp;int's,&nbsp;each&nbsp;list&nbsp;element&nbsp;has&nbsp;a&nbsp;value&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(byte&nbsp;value).<br>
+<dd><tt>From&nbsp;RetainDataIn&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;64&nbsp;int's,&nbsp;each&nbsp;list&nbsp;element&nbsp;has&nbsp;a&nbsp;value&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(byte&nbsp;value).<br>
 If&nbsp;the&nbsp;Retain&nbsp;functions&nbsp;was&nbsp;enabled,&nbsp;this&nbsp;list&nbsp;will&nbsp;contain&nbsp;the&nbsp;data&nbsp;previously&nbsp;stored&nbsp;in&nbsp;the&nbsp;microcontroller's<br>
 flash&nbsp;memory.&nbsp;The&nbsp;values&nbsp;will&nbsp;remain&nbsp;there&nbsp;even&nbsp;if&nbsp;the&nbsp;Retain&nbsp;Enable&nbsp;flag&nbsp;is&nbsp;not&nbsp;set.<br>
 &nbsp;<br>
 :return:&nbsp;list[int]</tt></dd>
 </dl>
 <dl><dt><strong>retain_data_out</strong></dt>
-<dd><tt>From&nbsp;RetainDataOut&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;32&nbsp;int's,&nbsp;each&nbsp;list&nbsp;element&nbsp;has&nbsp;a&nbsp;value&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(byte&nbsp;value).<br>
+<dd><tt>From&nbsp;RetainDataOut&nbsp;return&nbsp;a&nbsp;list&nbsp;of&nbsp;64&nbsp;int's,&nbsp;each&nbsp;list&nbsp;element&nbsp;has&nbsp;a&nbsp;value&nbsp;between&nbsp;0&nbsp;and&nbsp;255&nbsp;(byte&nbsp;value).<br>
 &nbsp;<br>
 :return:&nbsp;list[int]</tt></dd>
 </dl>
@@ -323,13 +532,25 @@ flash&nbsp;memory.&nbsp;The&nbsp;values&nbsp;will&nbsp;remain&nbsp;there&nbsp;ev
 :rtype:&nbsp;int</tt></dd>
 </dl>
 <dl><dt><strong>servo2</strong></dt>
-<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;1&nbsp;channel&nbsp;A&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;125.<br>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;1&nbsp;channel&nbsp;A&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;16000.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
 </dl>
 <dl><dt><strong>servo3</strong></dt>
-<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;1&nbsp;channel&nbsp;B&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;125.<br>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;1&nbsp;channel&nbsp;B&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;16000.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>servo4</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;2&nbsp;channel&nbsp;A&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;16000.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>servo5</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;for&nbsp;PWM&nbsp;2&nbsp;channel&nbsp;B&nbsp;in&nbsp;Servo&nbsp;Mode.&nbsp;Possible&nbsp;values&nbsp;are&nbsp;0&nbsp;to&nbsp;16000.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;value<br>
 :rtype:&nbsp;int</tt></dd>
@@ -340,9 +561,9 @@ Data and other attributes defined here:<br>
 
 <hr>
 Methods inherited from <a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>:<br>
-<dl><dt><a name="PiXtendV2S-__del__"><strong>__del__</strong></a>(self)</dt><dd><tt>Destructor&nbsp;of&nbsp;the&nbsp;Pixtend&nbsp;V2&nbsp;class.&nbsp;Delete&nbsp;objects.</tt></dd></dl>
+<dl><dt><a name="PiXtendV2L-__del__"><strong>__del__</strong></a>(self)</dt><dd><tt>Destructor&nbsp;of&nbsp;the&nbsp;Pixtend&nbsp;V2&nbsp;class.&nbsp;Delete&nbsp;objects.</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2S-set_dac_output"><strong>set_dac_output</strong></a>(self, dac_channel<font color="#909090">=0</font>, value<font color="#909090">=0</font>)</dt><dd><tt>Set&nbsp;the&nbsp;analog&nbsp;output&nbsp;value&nbsp;for&nbsp;the&nbsp;chosen&nbsp;DAC.&nbsp;The&nbsp;value&nbsp;0&nbsp;or&nbsp;constant&nbsp;DAC_A&nbsp;selects&nbsp;DAC&nbsp;A&nbsp;and&nbsp;the&nbsp;value&nbsp;1&nbsp;or<br>
+<dl><dt><a name="PiXtendV2L-set_dac_output"><strong>set_dac_output</strong></a>(self, dac_channel<font color="#909090">=0</font>, value<font color="#909090">=0</font>)</dt><dd><tt>Set&nbsp;the&nbsp;analog&nbsp;output&nbsp;value&nbsp;for&nbsp;the&nbsp;chosen&nbsp;DAC.&nbsp;The&nbsp;value&nbsp;0&nbsp;or&nbsp;constant&nbsp;DAC_A&nbsp;selects&nbsp;DAC&nbsp;A&nbsp;and&nbsp;the&nbsp;value&nbsp;1&nbsp;or<br>
 constant&nbsp;DAC_B&nbsp;selects&nbsp;DAC&nbsp;B.<br>
 Example:<br>
 Selecting&nbsp;and&nbsp;setting&nbsp;DAC&nbsp;A:<br>
@@ -357,28 +578,28 @@ p.set_dac_output&nbsp;(p.DAC_B,&nbsp;256)<br>
 
 <hr>
 Static methods inherited from <a href="pixtendv2core.html#PiXtendV2Core">pixtendv2core.PiXtendV2Core</a>:<br>
-<dl><dt><a name="PiXtendV2S-clear_bit"><strong>clear_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-clear_bit">clear_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;cleared,&nbsp;set&nbsp;to&nbsp;0.<br>
+<dl><dt><a name="PiXtendV2L-clear_bit"><strong>clear_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2L-clear_bit">clear_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;cleared,&nbsp;set&nbsp;to&nbsp;0.<br>
 &nbsp;<br>
 :param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;in&nbsp;which&nbsp;to&nbsp;clear&nbsp;one&nbsp;bit<br>
 :param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;clear<br>
 :return:&nbsp;Integer&nbsp;with&nbsp;bit&nbsp;cleared&nbsp;a&nbsp;'offset'<br>
 :rtype:&nbsp;int</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2S-set_bit"><strong>set_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-set_bit">set_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;set&nbsp;to&nbsp;1.<br>
+<dl><dt><a name="PiXtendV2L-set_bit"><strong>set_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2L-set_bit">set_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;set&nbsp;to&nbsp;1.<br>
 &nbsp;<br>
 :param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;in&nbsp;which&nbsp;to&nbsp;set&nbsp;one&nbsp;bit<br>
 :param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;set<br>
 :return:&nbsp;Integer&nbsp;with&nbsp;bit&nbsp;set&nbsp;at&nbsp;'offset'<br>
 :rtype:&nbsp;int</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2S-test_bit"><strong>test_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-test_bit">test_bit</a>()&nbsp;returns&nbsp;1,&nbsp;if&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;is&nbsp;one&nbsp;else&nbsp;0&nbsp;if&nbsp;the&nbsp;bit&nbsp;is&nbsp;not&nbsp;set.<br>
+<dl><dt><a name="PiXtendV2L-test_bit"><strong>test_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2L-test_bit">test_bit</a>()&nbsp;returns&nbsp;1,&nbsp;if&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;is&nbsp;one&nbsp;else&nbsp;0&nbsp;if&nbsp;the&nbsp;bit&nbsp;is&nbsp;not&nbsp;set.<br>
 &nbsp;<br>
 :param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;to&nbsp;test<br>
 :param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;test<br>
 :return:&nbsp;Integer&nbsp;based&nbsp;value&nbsp;of&nbsp;0&nbsp;if&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;is&nbsp;not&nbsp;set&nbsp;or&nbsp;1&nbsp;if&nbsp;bit&nbsp;is&nbsp;set<br>
 :rtype:&nbsp;int</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2S-toggle_bit"><strong>toggle_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2S-toggle_bit">toggle_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;inverted,&nbsp;0&nbsp;-&gt;&nbsp;1&nbsp;and&nbsp;1&nbsp;-&gt;&nbsp;0.<br>
+<dl><dt><a name="PiXtendV2L-toggle_bit"><strong>toggle_bit</strong></a>(int_type, offset)</dt><dd><tt><a href="#PiXtendV2L-toggle_bit">toggle_bit</a>()&nbsp;returns&nbsp;an&nbsp;integer&nbsp;with&nbsp;the&nbsp;bit&nbsp;at&nbsp;'offset'&nbsp;inverted,&nbsp;0&nbsp;-&gt;&nbsp;1&nbsp;and&nbsp;1&nbsp;-&gt;&nbsp;0.<br>
 &nbsp;<br>
 :param&nbsp;int&nbsp;int_type:&nbsp;Integer&nbsp;value&nbsp;to&nbsp;toggle&nbsp;one&nbsp;bit&nbsp;within<br>
 :param&nbsp;int&nbsp;offset:&nbsp;Offset&nbsp;value&nbsp;which&nbsp;bit&nbsp;to&nbsp;toggle<br>

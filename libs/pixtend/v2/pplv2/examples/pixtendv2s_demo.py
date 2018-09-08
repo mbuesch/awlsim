@@ -7,7 +7,7 @@
 # see <https://www.pixtend.de> or <https://www.pixtend.com>
 #
 # Copyright (C) 2018 Robin Turner
-# Qube Solutions UG (haftungsbeschränkt), Arbachtalstr. 6
+# Qube Solutions GmbH, Arbachtalstr. 6
 # 72800 Eningen, Germany
 #
 # This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import print_function
-# Import Pixtend V2 class
+# Import PiXtend V2 class
 from pixtendv2s import PiXtendV2S
 import time
 import sys
