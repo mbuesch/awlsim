@@ -556,7 +556,44 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 		# Build all PWM() objects for PWM1
 		self.__PWM1s = []
 		if self.__isV2:
-			pass#TODO
+			for i in range(self.NR_PWM1):
+				pwmName = "AB"[i]
+				oper = self.getParamValueByName("pwm1%s_addr" % pwmName)
+				if oper is None:
+					continue
+				bitOffset = oper.offset.toLongBitOffset()
+				pwm = PWM1(self.__pixtend, self.__isV2, i, bitOffset,
+					   not self.isInProcessImage(oper.offset, 16, True))
+				self.__PWM1s.append(pwm)
+				pwm.enabled = True
+				mode = self.getParamValueByName("pwm1_mode")
+				pwm.servoMode = (mode == HwParamDesc_pwmMode.MODE_SERVO)
+			# Handle pwm1_period parameter.
+			try:
+				maxPeriod = 255
+				oper = self.getParamValueByName("pwm1_period")
+				if not oper:
+					# Use default constant pwm1_period
+					PWM1Period(self.__pixtend, self.__isV2, 0, 0).setPWMPeriod(maxPeriod)
+				else:
+					if oper.operType == AwlOperatorTypes.IMM:
+						# Use custom constant pwm1_period
+						period = oper.immediate
+						if period < 0 or period > maxPeriod:
+							raise ValueError
+						PWM1Period(self.__pixtend, self.__isV2, 0, 0).setPWMPeriod(period)
+					elif oper.operType == AwlOperatorTypes.MEM_A and\
+					     oper.width == 16:
+						# Use custom dynamic pwm1_period
+						bitOffset = oper.offset.toLongBitOffset()
+						pwm = PWM1Period(self.__pixtend, self.__isV2, 0, bitOffset,
+								 not self.isInProcessImage(oper.offset, 16, True))
+						self.__PWM1s.append(pwm)
+						pwm.setPWMPeriod(0)
+					else:
+						raise ValueError
+			except ValueError as e:
+				self.raiseException("Unsupported 'pwm1_period' parameter value.")
 
 		# Build a list of all outputs
 		self.__allOutputs = []
@@ -687,7 +724,21 @@ class HardwareInterface_PiXtend(AbstractHardwareInterface): #+cdef
 
 		if self.__isV2:
 			# Configure global values of PWM1.
-			pass#TODO
+			try:
+				if self.__PWM1s:
+					PWM1.setServoMode(self.__pixtend,
+							  self.__PWM1s[0].servoMode)
+			except ValueError as e:
+				self.raiseException("Unsupported 'pwm1_mode' parameter value.")
+			try:
+				freqHz = self.getParamValueByName("pwm1_baseFreqHz")
+				if not self.__PWM1s:
+					freqHz = 0
+				PWM1Period.setBaseFreq(self.__pixtend, freqHz)
+			except ValueError as e:
+				self.raiseException("Unsupported 'pwm1_baseFreqHz' parameter value. "
+					"Supported values are: 16000000, 2000000, "
+					"500000, 250000, 125000, 62500, 15625, 0.")
 
 	def __tryConnect(self, boardType, timeout=5.0):
 		"""Try to connect to the PiXtend board.

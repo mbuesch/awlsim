@@ -886,15 +886,12 @@ class PWM1Period(AbstractWordIO): #+cdef
 			cs2, cs1, cs0 = csMap[freqHz]
 		except KeyError as e:
 			raise ValueError
-		if isV2:
-			ctrl0 = pixtend.pwm1_ctrl0
-			ctrl0 &= ~((1 << 5) | (1 << 6) | (1 << 7))
-			ctrl0 |= (cs0 << 5) | (cs1 << 6) | (cs2 << 7)
-			if freqHz == 0:
-				ctrl0 &= ~((1 << 3) | (1 << 4)) # Disable A and B
-			pixtend.pwm1_ctrl0 = ctrl0 & 0xFF
-		else:
-			assert(0)
+		ctrl0 = pixtend.pwm1_ctrl0
+		ctrl0 &= ~((1 << 5) | (1 << 6) | (1 << 7))
+		ctrl0 |= (cs0 << 5) | (cs1 << 6) | (cs2 << 7)
+		if freqHz == 0:
+			ctrl0 &= ~((1 << 3) | (1 << 4)) # Disable A and B
+		pixtend.pwm1_ctrl0 = ctrl0 & 0xFF
 
 class PWM1(AbstractWordIO): #+cdef
 	"""PiXtend PWM1 output I/O handler. (v2.x only)
@@ -939,14 +936,11 @@ class PWM1(AbstractWordIO): #+cdef
 
 	@staticmethod
 	def setServoMode(pixtend, enServoMode):
-		if isV2:
-			ctrl0 = pixtend.pwm1_ctrl0
-			ctrl0 &= ~((1 << 0) | (1 << 1))
-			if not enServoMode:
-				ctrl0 |= 1 << 0
-			pixtend.pwm1_ctrl0 = ctrl0
-		else:
-			assert(0)
+		ctrl0 = pixtend.pwm1_ctrl0
+		ctrl0 &= ~((1 << 0) | (1 << 1))
+		if not enServoMode:
+			ctrl0 |= 1 << 0
+		pixtend.pwm1_ctrl0 = ctrl0
 
 	def __doSetEnabled(self, enabled, bitNr):
 		self.enabled = enabled
