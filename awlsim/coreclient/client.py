@@ -650,17 +650,20 @@ class AwlSimClient(object):
 	# Request the compiled block info from the CPU.
 	# This method is asynchronous.
 	# The idents are returned via handle_BLOCKINFO()
-	def requestBlockInfo(self, reqOBInfo = False,
-			     reqFCInfo = False,
-			     reqFBInfo = False,
-			     reqDBInfo = False):
+	def requestBlockInfo(self,
+			     reqOBInfo=False,
+			     reqFCInfo=False,
+			     reqFBInfo=False,
+			     reqDBInfo=False,
+			     reqUDTInfo=False):
 		if not self.__transceiver:
 			return False
 		self.__send(AwlSimMessage_GET_BLOCKINFO(
-			(AwlSimMessage_GET_BLOCKINFO.GET_OB_INFO if reqOBInfo else 0) |\
-			(AwlSimMessage_GET_BLOCKINFO.GET_FC_INFO if reqFCInfo else 0) |\
-			(AwlSimMessage_GET_BLOCKINFO.GET_FB_INFO if reqFBInfo else 0) |\
-			(AwlSimMessage_GET_BLOCKINFO.GET_DB_INFO if reqDBInfo else 0)))
+			(AwlSimMessage_GET_BLOCKINFO.GET_OB_INFO if reqOBInfo else 0) |
+			(AwlSimMessage_GET_BLOCKINFO.GET_FC_INFO if reqFCInfo else 0) |
+			(AwlSimMessage_GET_BLOCKINFO.GET_FB_INFO if reqFBInfo else 0) |
+			(AwlSimMessage_GET_BLOCKINFO.GET_DB_INFO if reqDBInfo else 0) |
+			(AwlSimMessage_GET_BLOCKINFO.GET_UDT_INFO if reqUDTInfo else 0)))
 		return True
 
 	def __setOption(self, name, value, sync=True):

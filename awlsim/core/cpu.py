@@ -446,20 +446,26 @@ class S7Prog(object):
 		# Run some static sanity checks on the code
 		self.staticSanityChecks()
 
-	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
-			  getFBInfo = False, getDBInfo = False):
-		"""Returns a list of BlockInfo()."""
-
+	def getBlockInfos(self,
+			  getOBInfo=False,
+			  getFCInfo=False,
+			  getFBInfo=False,
+			  getDBInfo=False,
+			  getUDTInfo=False):
+		"""Returns a list of BlockInfo().
+		"""
 		blkInfos = []
 		for block in itertools.chain(
 				sorted(dictValues(self.cpu.obs) if getOBInfo else [],
-				       key = lambda blk: blk.index),
+				       key=lambda blk: blk.index),
 				sorted(dictValues(self.cpu.fcs) if getFCInfo else [],
-				       key = lambda blk: blk.index),
+				       key=lambda blk: blk.index),
 				sorted(dictValues(self.cpu.fbs) if getFBInfo else [],
-				       key = lambda blk: blk.index),
+				       key=lambda blk: blk.index),
 				sorted(dictValues(self.cpu.dbs) if getDBInfo else [],
-				       key = lambda blk: blk.index)):
+				       key=lambda blk: blk.index),
+				sorted(dictValues(self.cpu.udts) if getUDTInfo else [],
+				       key=lambda blk: blk.index)):
 			blkInfo = block.getBlockInfo()
 			assert(blkInfo)
 			blkInfos.append(blkInfo)
@@ -483,6 +489,8 @@ class S7Prog(object):
 						"write protected %s." % \
 						blockInfo.blockName)
 				block = self.cpu.dbs.pop(blockInfo.blockIndex)
+			elif blockInfo.blockType == BlockInfo.TYPE_UDT:
+				block = self.cpu.udts.pop(blockInfo.blockIndex)
 			else:
 				raise AwlSimError("Remove block: Unknown bock type %d." % \
 					blockInfo.blockType)
@@ -682,13 +690,18 @@ class S7CPU(object): #+cdef
 		if rebuild:
 			self.build()
 
-	def getBlockInfos(self, getOBInfo = False, getFCInfo = False,
-			  getFBInfo = False, getDBInfo = False):
+	def getBlockInfos(self,
+			  getOBInfo=False,
+			  getFCInfo=False,
+			  getFBInfo=False,
+			  getDBInfo=False,
+			  getUDTInfo=False):
 		"""Returns a list of BlockInfo()."""
-		return self.prog.getBlockInfos(getOBInfo = getOBInfo,
-					       getFCInfo = getFCInfo,
-					       getFBInfo = getFBInfo,
-					       getDBInfo = getDBInfo)
+		return self.prog.getBlockInfos(getOBInfo=getOBInfo,
+					       getFCInfo=getFCInfo,
+					       getFBInfo=getFBInfo,
+					       getDBInfo=getDBInfo,
+					       getUDTInfo=getUDTInfo)
 
 	def staticSanityChecks(self):
 		"""Run static error checks."""

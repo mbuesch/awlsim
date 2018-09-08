@@ -864,10 +864,11 @@ class AwlSimServer(object): #+cdef
 		printDebug("Received message: GET_BLOCKINFO")
 
 		blockInfos = self.__sim.cpu.getBlockInfos(
-			getOBInfo = bool(msg.getFlags & msg.GET_OB_INFO),
-			getFCInfo = bool(msg.getFlags & msg.GET_FC_INFO),
-			getFBInfo = bool(msg.getFlags & msg.GET_FB_INFO),
-			getDBInfo = bool(msg.getFlags & msg.GET_DB_INFO))
+			getOBInfo=bool(msg.getFlags & msg.GET_OB_INFO),
+			getFCInfo=bool(msg.getFlags & msg.GET_FC_INFO),
+			getFBInfo=bool(msg.getFlags & msg.GET_FB_INFO),
+			getDBInfo=bool(msg.getFlags & msg.GET_DB_INFO),
+			getUDTInfo=bool(msg.getFlags & msg.GET_UDT_INFO))
 		reply = AwlSimMessage_BLOCKINFO(blockInfos)
 		client.transceiver.send(reply)
 

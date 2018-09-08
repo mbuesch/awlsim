@@ -2,7 +2,7 @@
 #
 # AWL simulator - User defined data types (UDT)
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.blockinfo import *
 from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
@@ -154,6 +155,13 @@ class UDT(Block): #+cdef
 				"are not supported. Please declare at least "
 				"one variable in '%s'" % str(self))
 		self.__structState = self.STRUCT_BUILT
+
+	def getBlockInfo(self):
+		"""Get a BlockInfo instance for this block.
+		"""
+		return BlockInfo(blockType=BlockInfo.TYPE_UDT,
+				 blockIndex=self.index,
+				 identHash=self.identHash)
 
 	def __repr__(self): #@nocov
 		return "UDT %d" % self.index

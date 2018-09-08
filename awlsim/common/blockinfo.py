@@ -42,6 +42,7 @@ class BlockInfo(object):
 	TYPE_FC		= EnumGen.item
 	TYPE_FB		= EnumGen.item
 	TYPE_DB		= EnumGen.item
+	TYPE_UDT	= EnumGen.item
 	EnumGen.end
 
 	def __init__(self, blockType, blockIndex, identHash = None):
@@ -61,6 +62,7 @@ class BlockInfo(object):
 				self.TYPE_FC	: "FC",
 				self.TYPE_FB	: "FB",
 				self.TYPE_DB	: "DB",
+				self.TYPE_UDT	: "UDT",
 			}
 			blkName = type2name[self.blockType]
 		except KeyError as e:

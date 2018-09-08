@@ -1133,6 +1133,7 @@ class AwlSimMessage_GET_BLOCKINFO(AwlSimMessage):
 	GET_FC_INFO		= EnumGen.bitmask # Get FC info
 	GET_FB_INFO		= EnumGen.bitmask # Get FB info
 	GET_DB_INFO		= EnumGen.bitmask # Get DB info
+	GET_UDT_INFO		= EnumGen.bitmask # Get UDT info
 	EnumGen.end
 
 	# Payload header struct:
