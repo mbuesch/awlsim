@@ -97,15 +97,9 @@ goto copy_files
 echo === Copying additional files
 mkdir %licensedir%
 if ERRORLEVEL 1 goto error_copy
-copy examples\EXAMPLE.awlpro %distdir%\
+copy examples\*.awlpro %distdir%\
 if ERRORLEVEL 1 goto error_copy
-copy README.* %distdir%\
-if ERRORLEVEL 1 goto error_copy
-copy COMPATIBILITY.* %distdir%\
-if ERRORLEVEL 1 goto error_copy
-copy TODO.* %distdir%\
-if ERRORLEVEL 1 goto error_copy
-copy QUICK-START.* %distdir%\
+copy *.html %distdir%\
 if ERRORLEVEL 1 goto error_copy
 xcopy /E /I doc %distdir%\doc
 if ERRORLEVEL 1 goto error_copy
