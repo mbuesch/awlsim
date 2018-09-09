@@ -358,6 +358,9 @@ def registerCythonModule(baseDir, sourceModName):
 							("CYTHON_TRACE",	str(int(profileEnabled))),
 							("CYTHON_TRACE_NOGIL",	str(int(profileEnabled))),
 						],
+						include_dirs=[
+							os.path.join("libs", "cython_headers"),
+						],
 						extra_compile_args=extra_compile_args
 					)
 				)
