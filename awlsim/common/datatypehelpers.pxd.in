@@ -22,7 +22,8 @@
 from awlsim.common.cython_support cimport *
 
 
-cdef extern from "<endian.h>":
+cdef extern from "<endian.h>":		#@cy-posix
+cdef extern from "endian-win.h":	#@cy-win
 	enum: BYTE_ORDER
 	enum: LITTLE_ENDIAN
 	enum: BIG_ENDIAN
@@ -37,7 +38,8 @@ cdef extern from "<endian.h>":
 	uint32_t be32toh(uint32_t)
 	uint32_t le32toh(uint32_t)
 
-cdef extern from "<byteswap.h>":
+cdef extern from "<byteswap.h>":	#@cy-posix
+cdef extern from "byteswap-win.h":	#@cy-win
 	uint16_t bswap_16(uint16_t)
 	uint32_t bswap_32(uint32_t)
 
