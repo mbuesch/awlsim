@@ -80,21 +80,36 @@ def hashFile(path):
 	except ExpectedException as e:
 		return None
 
-def __fileopIfChanged(fromFile, toFile, fileop):
+def __fileopIfChanged(fromFile, toFile, fileops):
 	toFileHash = hashFile(toFile)
 	if toFileHash is not None:
 		fromFileHash = hashFile(fromFile)
 		if toFileHash == fromFileHash:
 			return False
 	makedirs(os.path.dirname(toFile))
-	fileop(fromFile, toFile)
+	for fileop in fileops:
+		fileop(fromFile, toFile)
 	return True
 
+def removeFile(filename):
+	try:
+		os.unlink(filename)
+	except OSError:
+		pass
+
 def copyIfChanged(fromFile, toFile):
-	return __fileopIfChanged(fromFile, toFile, shutil.copy2)
+	fileops = []
+	if _isWindows:
+		fileops.append(lambda _fromFile, _toFile: removeFile(_toFile))
+	fileops.append(shutil.copy2)
+	return __fileopIfChanged(fromFile, toFile, fileops)
 
 def moveIfChanged(fromFile, toFile):
-	return __fileopIfChanged(fromFile, toFile, os.rename)
+	fileops = []
+	if _isWindows:
+		fileops.append(lambda _fromFile, _toFile: removeFile(_toFile))
+	fileops.append(os.rename)
+	return __fileopIfChanged(fromFile, toFile, fileops)
 
 def makeDummyFile(path):
 	if os.path.isfile(path):
