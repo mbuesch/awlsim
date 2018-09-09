@@ -19,6 +19,8 @@ In order to support both compiling the Awlsim core with Cython and running the s
 * `#@cy` : Enable (un-comment) this line during Cython patching.
 * `#@cy2` : Enable (un-comment) this line during Cython patching, if compiling for Python 2.
 * `#@cy3` : Enable (un-comment) this line during Cython patching, if compiling for Python 3.
+* `#@cy-posix` : Enable (un-comment) this line during Cython patching, if compiling for a Posix platform.
+* `#@cy-win` : Enable (un-comment) this line during Cython patching, if compiling for a Windows platform.
 * `#@nocy` : Disable (comment) this line during Cython patching.
 * `#@no-cython-patch` : Do not touch this line during cython patching.
 * `#+NoneToNULL` : Transform all `None` keywords in this line into `NULL`.
