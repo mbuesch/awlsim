@@ -53,8 +53,8 @@ import errno
 import time
 import multiprocessing
 
-#from posix.select cimport FD_ZERO, FD_SET, FD_ISSET, select #@cy
-#from posix.time cimport timeval #@cy
+#from posix.select cimport FD_ZERO, FD_SET, FD_ISSET, select #@cy-posix
+#from posix.time cimport timeval #@cy-posix
 
 
 class AwlSimClientInfo(object):
@@ -63,7 +63,7 @@ class AwlSimClientInfo(object):
 	def __init__(self, sock, peerInfoString):
 		# Socket
 		self.socket = sock
-		self.fileno = self.socket.fileno()
+#		self.fileno = self.socket.fileno() #@cy-posix
 		self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
 
 		# Broken-flag. Set, if connection breaks.
@@ -243,7 +243,7 @@ class AwlSimServer(object): #+cdef
 		self.__haveAnyMemReadReq = False
 
 		self.__socket = None
-		self.__socketFileno = -1
+#		self.__socketFileno = -1 #@cy-posix
 		self.__unixSockPath = None
 		self.__clients = []
 		self.__sock2client = {}
@@ -396,14 +396,14 @@ class AwlSimServer(object): #+cdef
 		rlist.extend(client.transceiver.sock for client in self.__clients)
 		self.__selectRlist = rlist
 
-#@cy		FD_ZERO(&self.__select_fdset)
-#@cy		FD_SET(self.__socketFileno, &self.__select_fdset)
-#@cy		self.__select_fdset_size = self.__socketFileno
-#@cy		for client in self.__clients:
-#@cy			FD_SET(client.fileno, &self.__select_fdset)
-#@cy			self.__select_fdset_size = max(self.__select_fdset_size,
-#@cy						       client.fileno)
-#@cy		self.__select_fdset_size += 1
+#		FD_ZERO(&self.__select_fdset)						#@cy-posix
+#		FD_SET(self.__socketFileno, &self.__select_fdset)			#@cy-posix
+#		self.__select_fdset_size = self.__socketFileno				#@cy-posix
+#		for client in self.__clients:						#@cy-posix
+#			FD_SET(client.fileno, &self.__select_fdset)			#@cy-posix
+#			self.__select_fdset_size = max(self.__select_fdset_size,	#@cy-posix
+#						       client.fileno)			#@cy-posix
+#		self.__select_fdset_size += 1						#@cy-posix
 
 	def __sendCpuDump(self, constrained=True):
 		dumpText = self.__sim.cpu.dump(withTime=self.__running)
@@ -1031,58 +1031,61 @@ class AwlSimServer(object): #+cdef
 		raise AwlSimError("AwlSimServer: Communication error. "
 				  "'select' failed")
 
-	def __handleCommunication(self, __select=select_mod.select, __Exception=Exception):	#@nocy
-		try:										#@nocy
-			rlist, wlist, xlist = __select(self.__selectRlist,			#@nocy
-						       self.__emptyList,			#@nocy
-						       self.__emptyList, 0.0)			#@nocy
-			if not rlist:								#@nocy
-				return								#@nocy
-		except __Exception:								#@nocy
-			self.__selectException()						#@nocy
-		self.__handleSocketComm(rlist)							#@nocy
-												#@nocy
-		# Check again to receive more data (with a small timeout).			#@nocy
-		while True:									#@nocy
-			try:									#@nocy
-				rlist, wlist, xlist = __select(self.__selectRlist,		#@nocy
-							       self.__emptyList,		#@nocy
-							       self.__emptyList, 0.01)		#@nocy
-				if not rlist:							#@nocy
-					return							#@nocy
-			except __Exception:							#@nocy
-				self.__selectException()					#@nocy
-			self.__handleSocketComm(rlist)						#@nocy
+	def __handleCommunication(self, __select=select_mod.select, __Exception=Exception):
+		try:
+			rlist, wlist, xlist = __select(self.__selectRlist,
+						       self.__emptyList,
+						       self.__emptyList, 0.0)
+			if not rlist:
+				return
+		except __Exception:
+			self.__selectException()
+		self.__handleSocketComm(rlist)
 
-#@cy	cdef __handleCommunication(self):
-#@cy		cdef fd_set rfds
-#@cy		cdef int ret
-#@cy		cdef timeval timeout
-#@cy		cdef list rlist
-#@cy
-#@cy		timeout.tv_sec = 0
-#@cy		timeout.tv_usec = 0
-#@cy		while True:
-#@cy			rfds = self.__select_fdset
-#@cy			ret = select(self.__select_fdset_size,
-#@cy				     &rfds, NULL, NULL,
-#@cy				     &timeout)
-#@cy			if likely(ret == 0):
-#@cy				return
-#@cy			if ret < 0:
-#@cy				self.__selectException()
-#@cy				return
-#@cy			rlist = [ client.socket
-#@cy				for client in self.__clients
-#@cy				if FD_ISSET(client.fileno, &rfds)
-#@cy			]
-#@cy			if FD_ISSET(self.__socketFileno, &rfds):
-#@cy				rlist.append(self.__socket)
-#@cy			self.__handleSocketComm(rlist)
-#@cy
-#@cy			# Check again to receive more data (with a small timeout).
-#@cy			timeout.tv_sec = 0
-#@cy			timeout.tv_usec = 10000
+		# Check again to receive more data (with a small timeout).
+		while True:
+			try:
+				rlist, wlist, xlist = __select(self.__selectRlist,
+							       self.__emptyList,
+							       self.__emptyList, 0.01)
+				if not rlist:
+					return
+			except __Exception:
+				self.__selectException()
+			self.__handleSocketComm(rlist)
+
+	# Optimized version of __handleCommunication()
+	# that calls posix select directly.
+#	cdef __handleCommunicationPosix(self):				#@cy-posix
+#		cdef fd_set rfds					#@cy-posix
+#		cdef int ret						#@cy-posix
+#		cdef timeval timeout					#@cy-posix
+#		cdef list rlist						#@cy-posix
+#									#@cy-posix
+#		timeout.tv_sec = 0					#@cy-posix
+#		timeout.tv_usec = 0					#@cy-posix
+#		while True:						#@cy-posix
+#			rfds = self.__select_fdset			#@cy-posix
+#			ret = select(self.__select_fdset_size,		#@cy-posix
+#				     &rfds, NULL, NULL,			#@cy-posix
+#				     &timeout)				#@cy-posix
+#			if likely(ret == 0):				#@cy-posix
+#				return					#@cy-posix
+#			if ret < 0:					#@cy-posix
+#				self.__selectException()		#@cy-posix
+#				return					#@cy-posix
+#			rlist = [ client.socket				#@cy-posix
+#				for client in self.__clients		#@cy-posix
+#				if FD_ISSET(client.fileno, &rfds)	#@cy-posix
+#			]						#@cy-posix
+#			if FD_ISSET(self.__socketFileno, &rfds):	#@cy-posix
+#				rlist.append(self.__socket)		#@cy-posix
+#			self.__handleSocketComm(rlist)			#@cy-posix
+#									#@cy-posix
+#			# Check again to receive more data		#@cy-posix
+#			# (with a small timeout).			#@cy-posix
+#			timeout.tv_sec = 0				#@cy-posix
+#			timeout.tv_usec = 10000				#@cy-posix
 
 	def __handleCommunicationBlocking(self):
 		try:
@@ -1257,7 +1260,8 @@ class AwlSimServer(object): #+cdef
 						sim.runCycle()
 						if self.__haveAnyMemReadReq:
 							self.__handleMemReadReqs()
-						self.__handleCommunication()
+						self.__handleCommunication()		#@cy-win
+#						self.__handleCommunicationPosix()	#@cy-posix
 					continue
 
 			except (AwlSimError, AwlParserError) as e:
@@ -1352,7 +1356,7 @@ class AwlSimServer(object): #+cdef
 				with suppressAllExc:
 					sock.close()
 		self.__socket = sock
-		self.__socketFileno = sock.fileno()
+#		self.__socketFileno = sock.fileno() #@cy-posix
 
 	def __accept(self):
 		"""Accept a client connection.
@@ -1414,7 +1418,7 @@ class AwlSimServer(object): #+cdef
 			with suppressAllExc:
 				self.__socket.close()
 			self.__socket = None
-			self.__socketFileno = -1
+#			self.__socketFileno = -1 #@cy-posix
 		if self.__unixSockPath:
 			with contextlib.suppress(OSError):
 				os.unlink(self.__unixSockPath)
