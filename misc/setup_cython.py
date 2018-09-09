@@ -325,6 +325,9 @@ def registerCythonModule(baseDir, sourceModName):
 
 			if baseName != "__init__":
 				# Create a distutils Extension for the module
+				extra_compile_args = []
+				if not _isWindows:
+					extra_compile_args.append("-Wno-maybe-uninitialized")
 				ext_modules.append(
 					_Cython_Distutils_Extension(
 						cyModName,
@@ -340,9 +343,7 @@ def registerCythonModule(baseDir, sourceModName):
 							("CYTHON_TRACE",	str(int(profileEnabled))),
 							("CYTHON_TRACE_NOGIL",	str(int(profileEnabled))),
 						],
-						extra_compile_args=[
-							"-Wno-maybe-uninitialized",
-						]
+						extra_compile_args=extra_compile_args
 					)
 				)
 
