@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.15
+#   v1.16
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -40,6 +40,8 @@ CythonBuildExtension = None
 _Cython_Distutils_build_ext = None
 _cythonPossible = None
 _cythonBuildUnits = []
+_isWindows = os.name.lower() in {"nt", "ce"}
+_isPosix = os.name.lower() == "posix"
 
 
 def getSystemMemBytesCount():
@@ -137,16 +139,20 @@ def pyCythonPatch(fromFile, toFile):
 				if not line.endswith("\n"):
 					line += "\n"
 				return line
-			if "#@cy" in stripLine and\
-			   not "#@cy2" in stripLine and\
-			   not "#@cy3" in stripLine:
-				line = uncomment(line, "#@cy")
-			if sys.version_info[0] < 3:
-				if "#@cy2" in stripLine:
+			if "#@cy-posix" in stripLine:
+				if _isPosix:
+					line = uncomment(line, "#@cy-posix")
+			elif "#@cy-win" in stripLine:
+				if _isWindows:
+					line = uncomment(line, "#@cy-win")
+			elif "#@cy2" in stripLine:
+				if sys.version_info[0] < 3:
 					line = uncomment(line, "#@cy2")
-			else:
-				if "#@cy3" in stripLine:
+			elif "#@cy3" in stripLine:
+				if sys.version_info[0] >= 3:
 					line = uncomment(line, "#@cy3")
+			elif "#@cy" in stripLine:
+				line = uncomment(line, "#@cy")
 
 			# Sprinkle magic cdef/cpdef, as requested by #+cdef/#+cpdef
 			if "#+cdef-" in stripLine:
@@ -198,14 +204,25 @@ def pyCythonPatch(fromFile, toFile):
 				line = re.sub(r'\b(0x[0-9a-fA-F]+)\b', r'\1LL', line)
 
 			# Comment all lines containing #@nocy
-			# or #@cyX for the not matching version.
 			if "#@nocy" in stripLine:
 				line = "#" + line
+
+			# Comment all lines containing #@cyX
+			# for the not matching version.
 			if sys.version_info[0] < 3:
 				if "#@cy3" in stripLine:
 					line = "#" + line
 			else:
 				if "#@cy2" in stripLine:
+					line = "#" + line
+
+			# Comment all lines containing #@cy-posix/win
+			# for the not matching platform.
+			if _isPosix:
+				if "#@cy-win" in stripLine:
+					line = "#" + line
+			elif _isWindows:
+				if "#@cy-posix" in stripLine:
 					line = "#" + line
 
 			# Remove compat stuff
