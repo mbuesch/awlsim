@@ -28,6 +28,7 @@ if __name__ == "__main__":
 	import sys
 
 	__modname = "awlsim.coreserver.server"
+	__mod = None
 
 	if __cython.shouldUseCython(__modname):
 		__cymodname = __cython.cythonModuleName(__modname)
@@ -38,4 +39,6 @@ if __name__ == "__main__":
 	if not __cython.shouldUseCython(__modname):
 		exec("import %s as __mod" % __modname)
 
-	sys.exit(__mod.AwlSimServer._execute())
+	if __mod:
+		sys.exit(__mod.AwlSimServer._execute())
+	sys.exit(1)
