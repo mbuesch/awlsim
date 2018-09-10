@@ -25,6 +25,7 @@ set distdir=%project%-%winprefix%-standalone-%version%
 set sfxfile=%project%-%winprefix%-%version%.package.exe
 set bindirname=%project%-bin
 set bindir=%distdir%\%bindirname%
+set builddir=%bindir%\build
 set licensedirname=licenses
 set licensedir=%distdir%\%licensedirname%
 
@@ -45,11 +46,34 @@ goto error
 :framework_pyqt5
 echo Using PyQt5
 set excludes=PySide
-goto select_freezer
+goto select_buildcython
 
 :framework_pyside4
 echo Using PySide4
 set excludes=PyQt5
+goto select_buildcython
+
+
+:select_buildcython
+echo.
+echo Build optimized Cython modules?
+echo   1)  Do not build Cython modules (default)
+echo   2)  Build Cython modules
+set /p buildcython=Selection: 
+if "%buildcython%" == "" goto buildcython_no
+if "%buildcython%" == "1" goto buildcython_no
+if "%buildcython%" == "2" goto buildcython_yes
+echo "Error: Invalid selection"
+goto error
+
+:buildcython_yes
+echo Building Cython modules
+set AWLSIM_CYTHON_BUILD=1
+goto select_freezer
+
+:buildcython_no
+echo Not building Cython modules
+set AWLSIM_CYTHON_BUILD=0
 goto select_freezer
 
 
@@ -70,10 +94,11 @@ goto error
 set buildtype=1
 echo === Creating the cx_Freeze distribution
 call :prepare_env
-py setup.py build_exe ^
-	--build-exe=%bindir% ^
-	--excludes=%excludes% ^
-	--silent
+py setup.py ^
+	build ^
+	--build-base=%builddir% ^
+	build_exe ^
+	--build-exe=%bindir%
 if ERRORLEVEL 1 goto error_exe
 goto copy_files
 
@@ -95,6 +120,15 @@ goto copy_files
 
 :copy_files
 echo === Copying additional files
+if %AWLSIM_CYTHON_BUILD% NEQ 0 (
+	rem Copy Cython modules from builddir to bindir
+	for /D %%f in ( "%builddir%\lib*" ) do (
+		for /D %%i in ( "%%f\*_cython" ) do (
+			xcopy /E /I %%i %bindir%\lib\%%~ni
+			if ERRORLEVEL 1 goto error_copy
+		)
+	)
+)
 mkdir %licensedir%
 if ERRORLEVEL 1 goto error_copy
 copy examples\*.awlpro %distdir%\
@@ -121,11 +155,14 @@ if %buildtype% == 1 goto no_servermod_rename
 move %bindir%\server.exe %bindir%\awlsim-server-module.exe
 if ERRORLEVEL 1 goto error_copy
 :no_servermod_rename
+rd /S /Q %builddir%
+if ERRORLEVEL 1 goto error_copy
 
 
 echo === Generating startup wrapper
 set wrapper=%distdir%\%project%.cmd
 echo @set PATH=%bindirname%;%bindirname%\lib;%bindirname%\platforms;%bindirname%\imageformats;%%PATH%%> %wrapper%
+echo @set AWLSIM_CYTHON=1 >> %wrapper%
 echo @start %project%-bin\awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9>> %wrapper%
 if ERRORLEVEL 1 goto error_wrapper
 
