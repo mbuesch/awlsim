@@ -137,7 +137,7 @@ freezeExecutables = [ ("awlsim-gui", None, guiBase),
 		      ("awlsim-symtab", None, None),
 		      ("awlsim-proupgrade", None, None),
 		      ("awlsim-test", None, None),
-		      ("awlsim/coreserver/server.py", "awlsim-server-module", None), ]
+		      ("awlsim/coreserver/run.py", "awlsim-server-module", None), ]
 if py2exe:
 	extraKeywords["console"] = [ s for s, e, b in freezeExecutables ]
 if cx_Freeze:
