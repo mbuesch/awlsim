@@ -1433,8 +1433,3 @@ class AwlSimServer(object): #+cdef
 		printInfo("Received signal %d" % sig)
 		if sig in (signal.SIGTERM, signal.SIGINT):
 			self.setRunState(self.STATE_EXIT)
-
-if __name__ == "__main__":
-	# Run a server process.
-	# Parameters are passed via environment.
-	sys.exit(AwlSimServer._execute())

@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # AWL simulator - PLC core server
 #
-# Copyright 2013-2017 Michael Buesch <m@bues.ch>
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,12 +21,21 @@
 #
 
 from __future__ import division, absolute_import, print_function, unicode_literals
-#from awlsim.common.cython_support cimport * #@cy
-from awlsim.common.compat import *
-
 
 if __name__ == "__main__":
+	import awlsim_loader.coverage_helper
+	import awlsim_loader.cython_helper as __cython
 	import sys
-	from awlsim.common.dynamic_import import importModule
-	mod = importModule("awlsim.coreserver.server")
-	sys.exit(mod.AwlSimServer._execute())
+
+	__modname = "awlsim.coreserver.server"
+
+	if __cython.shouldUseCython(__modname):
+		__cymodname = __cython.cythonModuleName(__modname)
+		try:
+			exec("import %s as __mod" % __cymodname)
+		except ImportError as e:
+			__cython.cythonImportError(__cymodname, str(e))
+	if not __cython.shouldUseCython(__modname):
+		exec("import %s as __mod" % __modname)
+
+	sys.exit(__mod.AwlSimServer._execute())
