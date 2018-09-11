@@ -34,15 +34,9 @@ import warnings
 from distutils.core import setup
 from awlsim.common.version import VERSION_STRING
 try:
-	import py2exe
-except ImportError as e:
-	py2exe = None
-try:
-	if py2exe and "py2exe" in sys.argv:
-		raise ImportError
 	from cx_Freeze import setup, Executable
 	cx_Freeze = True
-except ImportError as e:
+except ImportError:
 	cx_Freeze = False
 
 sys.path.insert(0, "./misc")
@@ -128,30 +122,28 @@ hwmodules = [
 ]
 
 # Create freeze executable list.
-guiBase = None
-if isWindows:
-	guiBase = "Win32GUI"
-freezeExecutables = [ ("awlsim-gui", None, guiBase),
-		      ("awlsim-client", None, None),
-		      ("awlsim-server", None, None),
-		      ("awlsim-symtab", None, None),
-		      ("awlsim-proupgrade", None, None),
-		      ("awlsim-test", None, None),
-		      ("awlsim/coreserver/run.py", "awlsim-server-module", None), ]
-if py2exe:
-	extraKeywords["console"] = [ s for s, e, b in freezeExecutables ]
 if cx_Freeze:
+	guiBase = "Win32GUI" if isWindows else None
+	freezeExecutables = [
+		("awlsim-gui", None, guiBase),
+		("awlsim-client", None, None),
+		("awlsim-server", None, None),
+		("awlsim-symtab", None, None),
+		("awlsim-proupgrade", None, None),
+		("awlsim-test", None, None),
+		("awlsim/coreserver/run.py", "awlsim-server-module", None),
+	]
 	executables = []
 	for script, exe, base in freezeExecutables:
 		if exe:
 			if isWindows:
 				exe += ".exe"
-			executables.append(Executable(script = script,
-						      targetName = exe,
-						      base = base))
+			executables.append(Executable(script=script,
+						      targetName=exe,
+						      base=base))
 		else:
-			executables.append(Executable(script = script,
-						      base = base))
+			executables.append(Executable(script=script,
+						      base=base))
 	extraKeywords["executables"] = executables
 	extraKeywords["options"] = {
 			"build_exe" : {
