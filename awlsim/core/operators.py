@@ -329,7 +329,7 @@ class AwlOperator(object): #+cdef
 		if self.operType == AwlOperatorTypes.IMM_REAL:
 			return str(dwordToPyFloat(self.immediate))
 		elif self.operType == AwlOperatorTypes.IMM_S5T:
-			seconds = Timer.s5t_to_seconds(self.immediate)
+			seconds = Timer_s5t_to_seconds(self.immediate)
 			return "S5T#" + AwlDataType.formatTime(seconds)
 		elif self.operType == AwlOperatorTypes.IMM_TIME:
 			return "T#" + AwlDataType.formatTime(self.immediate / 1000.0)

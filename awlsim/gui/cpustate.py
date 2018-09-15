@@ -949,7 +949,7 @@ class State_Timer(_State_TimerCounter):
 		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
 		if fmt == "s5t":
 			try:
-				seconds = Timer.s5t_to_seconds(value)
+				seconds = Timer_s5t_to_seconds(value)
 				return "S5T#" + AwlDataType.formatTime(seconds, True)
 			except AwlSimError as e:
 				return ""
