@@ -211,9 +211,7 @@ class MemoryArea(object):
 			    self.length != len(self.data)):
 				raise ValueError
 			dword = WordPacker.fromBytes(self.data, self.length * 8, 0)
-			if dword > 0xFFFF:
-				raise ValueError
-			timer.setTimevalS5T(dword)
+			timer.setTimevalS5T(dword & 0xFFFF)
 		except (ValueError, AwlSimError) as e:
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Timer value error")
@@ -231,9 +229,7 @@ class MemoryArea(object):
 			    self.length != len(self.data)):
 				raise ValueError
 			dword = WordPacker.fromBytes(self.data, self.length * 8, 0)
-			if dword > 0xFFFF:
-				raise ValueError
-			counter.setValueBCD(dword)
+			counter.setValueBCD(dword & 0xFFFF)
 		except (ValueError, AwlSimError) as e:
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Counter value error")
