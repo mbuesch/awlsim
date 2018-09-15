@@ -40,6 +40,14 @@ class TestAwlSimClient(AwlSimClient):
 	def handle_CPUDUMP(self, dumpText):
 		emitCpuDump(dumpText)
 
+	def handle_MEMORY(self, memAreas):
+		for memArea in memAreas:
+			if memArea.flags & (memArea.FLG_ERR_READ |
+					    memArea.FLG_ERR_WRITE):
+				raise AwlSimError("awlsim-test: "
+					"Failed to access memory: %s" % (
+					str(memArea)))
+
 class ConsoleSSHTunnel(SSHTunnel):
 	def sshMessage(self, message, isDebug):
 		if opt_loglevel > Logging.LOG_INFO:
@@ -80,6 +88,8 @@ def usage():
 	print(" -b|--spawn-backend    Spawn a new backend server and connect to it")
 	if not isWinStandalone:
 		print(" -i|--interpreter EXE  Set the backend interpreter executable")
+	print(" -R|--mem-read AREA:OFFS:BITWIDTH       Memory read access.")
+	print(" -W|--mem-write AREA:OFFS:BITWIDTH:VAL  Memory write access.")
 	print("")
 	print("Loading hardware modules:")
 	print(" -H|--hardware NAME:PARAM=VAL:PARAM=VAL...")
@@ -199,6 +209,9 @@ def run(inputFile):
 		if cython_helper.shouldUseCython():
 			printInfo("*** Using accelerated CYTHON core "
 				  "(AWLSIM_CYTHON environment variable is set)")
+		if opt_memReads or opt_memWrites:
+			raise AwlSimError("awlsim-test --mem-read and --mem-write "
+				"are not supported in non-server-mode.")
 
 		project = readInputFile(inputFile)
 
@@ -394,10 +407,17 @@ def runWithServerBackend(inputFile):
 		# Run the client-side event loop
 		printInfo("[Initialization finished - Remote-CPU is executing user code]")
 		try:
+			if opt_memReads:
+				client.setMemoryReadRequests(memAreas=opt_memReads,
+							     repetitionPeriod=0.001,
+							     sync=False)
 			if not opt_noCpuDump:
 				clearConsole()
 			while True:
-				client.processMessages(None)
+				client.processMessages(timeout=0.05)
+				if opt_memWrites:
+					client.writeMemory(memAreas=opt_memWrites,
+							   sync=True)
 		finally:
 			if not opt_noCpuDump and opt_loglevel >= Logging.LOG_INFO:
 				clearConsole()
@@ -428,6 +448,73 @@ def __signalHandler(sig, frame):
 		# Raise SIGINT. It will shut down everything.
 		os.kill(os.getpid(), signal.SIGINT)
 
+def parseMemoryArea(memAreaStr, withData):
+	try:
+		def dataToBytes(value, length):
+			if not (0 <= value <= ((1 << length) - 1)):
+				raise ValueError
+			return WordPacker.toBytes(byteBuffer=bytearray(length // 8),
+						  bitWidth=length,
+						  value=value)
+
+		memAreaStr = memAreaStr.split(":")
+		start = index = length = 0
+		data = b''
+		memType = {
+			"E"	: MemoryArea.TYPE_E,
+			"A"	: MemoryArea.TYPE_A,
+			"M"	: MemoryArea.TYPE_M,
+			"L"	: MemoryArea.TYPE_L,
+			"DB"	: MemoryArea.TYPE_DB,
+			"T"	: MemoryArea.TYPE_T,
+			"Z"	: MemoryArea.TYPE_Z,
+			"STW"	: MemoryArea.TYPE_STW,
+		}[memAreaStr[0].upper().strip()]
+		if memType in { MemoryArea.TYPE_E,
+				MemoryArea.TYPE_A,
+				MemoryArea.TYPE_M,
+				MemoryArea.TYPE_L, }:
+			start = int(memAreaStr[1])
+			length = int(memAreaStr[2])
+			if (not (0 <= start <= 0xFFFF) or
+			    length not in (8, 16, 32)):
+				raise ValueError
+			if withData:
+				data = dataToBytes(int(memAreaStr[3]), length)
+		elif memType == MemoryArea.TYPE_DB:
+			index = int(memAreaStr[1])
+			start = int(memAreaStr[2])
+			length = int(memAreaStr[3])
+			if (not (0 <= start <= 0xFFFF) or
+			    not (0 <= index <= 0xFFFF) or
+			    length not in (8, 16, 32)):
+				raise ValueError
+			if withData:
+				data = dataToBytes(int(memAreaStr[4]), length)
+		elif memType in { MemoryArea.TYPE_T,
+				  MemoryArea.TYPE_Z, }:
+			index = int(memAreaStr[1])
+			length = 16
+			if not (0 <= index <= 0xFFFF):
+				raise ValueError
+			if withData:
+				data = dataToBytes(int(memAreaStr[2]), 16)
+		elif memType == MemoryArea.TYPE_STW:
+			length = 16
+			if withData:
+				data = dataToBytes(int(memAreaStr[1]), 16)
+		else:
+			assert(0)
+		return MemoryArea(memType=memType,
+				  flags=0,
+				  index=index,
+				  start=start,
+				  length=length // 8,
+				  data=data)
+	except (ValueError, IndexError, KeyError, AwlSimError) as e:
+		pass
+	return None
+
 def main():
 	global opt_cycletime
 	global opt_maxRuntime
@@ -446,6 +533,8 @@ def main():
 	global opt_connectTo
 	global opt_spawnBackend
 	global opt_interpreter
+	global opt_memReads
+	global opt_memWrites
 
 	opt_cycletime = None
 	opt_maxRuntime = None
@@ -464,16 +553,19 @@ def main():
 	opt_connectTo = False
 	opt_spawnBackend = False
 	opt_interpreter = None
+	opt_memReads = []
+	opt_memWrites = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hY:M:24qDSxt:T:m:O:H:I:P:L:cC:bi:",
+			"hY:M:24qDSxt:T:m:O:H:I:P:L:cC:bi:R:W:",
 			[ "help", "cycle-limit=", "max-runtime=", "twoaccu", "fouraccu",
 			  "quiet", "no-cpu-dump", "speed-stats", "extended-insns",
 			  "obtemp=", "clock-mem=", "mnemonics=", "optimizers=",
 			  "hardware=", "hardware-info=", "profile=",
 			  "loglevel=",
-			  "connect", "connect-to=", "spawn-backend", "interpreter=", ])
+			  "connect", "connect-to=", "spawn-backend", "interpreter=",
+			  "mem-read=", "mem-write=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -580,6 +672,18 @@ def main():
 				printError("-i|--interpreter not supported on win-standalone")
 				sys.exit(1)
 			opt_interpreter = v
+		if o in ("-R", "--mem-read"):
+			memArea = parseMemoryArea(v, withData=False)
+			if not memArea:
+				printError("-R|--mem-read invalid arguments.")
+				sys.exit(1)
+			opt_memReads.append(memArea)
+		if o in ("-W", "--mem-write"):
+			memArea = parseMemoryArea(v, withData=True)
+			if not memArea:
+				printError("-W|--mem-write invalid arguments.")
+				sys.exit(1)
+			opt_memWrites.append(memArea)
 	if len(args) != 1 and not opt_hwinfos:
 		usage()
 		return ExitCodes.EXIT_ERR_CMDLINE
