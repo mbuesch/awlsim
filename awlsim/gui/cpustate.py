@@ -571,11 +571,11 @@ class State_Mem(StateWindow):
 		addr = self.addrSpin.value()
 		nrBits = self.widthCombo.itemData(self.widthCombo.currentIndex())
 
-		return MemoryArea(memType = AbstractDisplayWidget.addrspace2memarea[self.addrSpace],
-				  flags = 0,
-				  index = dbIndex,
-				  start = addr,
-				  length = nrBits // 8)
+		return MemoryArea(memType=AbstractDisplayWidget.addrspace2memarea[self.addrSpace],
+				  flags=0,
+				  index=dbIndex,
+				  start=addr,
+				  length=(nrBits // 8))
 
 	def getMemoryAreas(self):
 		return ( self.__makeMemoryArea(), )
@@ -670,11 +670,11 @@ class State_LCD(StateWindow):
 		nrBits = self.widthCombo.itemData(self.widthCombo.currentIndex())
 		addr = self.addrSpin.value()
 
-		return MemoryArea(memType = MemoryArea.TYPE_A,
-				  flags = 0,
-				  index = 0,
-				  start = addr,
-				  length = nrBits // 8)
+		return MemoryArea(memType=MemoryArea.TYPE_A,
+				  flags=0,
+				  index=0,
+				  start=addr,
+				  length=(nrBits // 8))
 
 	def getMemoryAreas(self):
 		return ( self.__makeMemoryArea(), )
@@ -829,11 +829,11 @@ class _State_TimerCounter(StateWindow):
 
 	def __makeMemoryArea(self):
 		index = self.indexSpin.value()
-		return MemoryArea(memType = self.memAreaType,
-				  flags = 0,
-				  index = index,
-				  start = 0,
-				  length = 32)
+		return MemoryArea(memType=self.memAreaType,
+				  flags=0,
+				  index=index,
+				  start=0,
+				  length=4)
 
 	def getMemoryAreas(self):
 		return ( self.__makeMemoryArea(), )
