@@ -42,18 +42,18 @@ After cloning the main repository the git submodules must also be fetched. The f
 
 ## Dependencies
 
-Awlsim depends on [Python](https://python.org) 3.4 or later or alternatively Python 2.7.
+Awlsim depends on
 
-[PyQT 5](https://www.riverbankcomputing.com/software/pyqt/intro) or alternatively [PySide](https://wiki.qt.io/PySide)
+* [Python](https://python.org) 3.4 or later or alternatively Python 2.7
+* [PyQT 5](https://www.riverbankcomputing.com/software/pyqt/intro) or alternatively [PySide](https://wiki.qt.io/PySide)
+* [CFFI](http://cffi.readthedocs.org/)
 
 These packages can be installed with pip:
 
 <pre>
 pip3 install --upgrade PyQt5
-pip3 install --upgrade pyside
+pip3 install --upgrade cffi
 </pre>
-
-On Windows all Awlsim dependencies can be installed by double clicking the shipped installer script: *maintenance\win-install-dependencies.cmd*
 
 If building and using Awlsim with Cython acceleration is desired, Cython must also be installed:
 
@@ -61,6 +61,9 @@ If building and using Awlsim with Cython acceleration is desired, Cython must al
 pip3 install --upgrade Cython
 </pre>
 
+On Windows all Awlsim dependencies can be installed by double clicking the shipped installer script: *maintenance\win-install-dependencies.cmd*
+
+For Debian Linux users the script *maintenance/deb-dependencies-install.sh* installs all required and optional runtime and build dependencies.
 
 ## Directory structure
 
