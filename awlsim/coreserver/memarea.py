@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server memory area helpers
 #
-# Copyright 2013-2014 Michael Buesch <m@bues.ch>
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,8 +26,11 @@ from awlsim.common.compat import *
 from awlsim.common.enumeration import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
+from awlsim.common.wordpacker import *
 
-import struct
+from awlsim.core.cpu import * #+cimport
+from awlsim.core.memory import * #+cimport
+from awlsim.core.offset import * #+cimport
 
 
 class MemoryArea(object):
@@ -46,8 +49,6 @@ class MemoryArea(object):
 	# Possible flags
 	FLG_ERR_READ	= 0x01
 	FLG_ERR_WRITE	= 0x02
-
-	_dwordStruct = struct.Struct(str(">I"))
 
 	def __init__(self, memType, flags, index, start, length, data=b''):
 		self.memType = memType
@@ -71,41 +72,38 @@ class MemoryArea(object):
 		self.flags |= self.FLG_ERR_WRITE
 		raise exception
 
-	def __read_E(self, cpu):
-		dataBytes = cpu.inputs.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
+	def __memoryRead(self, memory): #@nocy
+#@cy	def __memoryRead(self, AwlMemory memory):
+#@cy		cdef AwlMemoryObject memObj
+
+		try:
+			if (not (0 <= self.start <= 0xFFFF) or
+			    self.length not in (1, 2, 4)):
+				raise ValueError
+			memObj = memory.fetch(make_AwlOffset(self.start, 0),
+					      self.length * 8)
+		except (AwlSimError, ValueError) as e:
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read range error")
 			)
-		self.data = dataBytes[self.start : end]
+		self.data = AwlMemoryObject_asBytes(memObj)[:]
+
+	def __read_E(self, cpu):
+		self.__memoryRead(cpu.inputs)
 
 	def __read_A(self, cpu):
-		dataBytes = cpu.outputs.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
-			self.__raiseReadErr(
-				AwlSimError("MemoryArea: Read range error")
-			)
-		self.data = dataBytes[self.start : end]
+		self.__memoryRead(cpu.outputs)
 
 	def __read_M(self, cpu):
-		dataBytes = cpu.flags.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
-			self.__raiseReadErr(
-				AwlSimError("MemoryArea: Read range error")
-			)
-		self.data = dataBytes[self.start : end]
+		self.__memoryRead(cpu.flags)
 
 	def __read_L(self, cpu):
-		dataBytes = cpu.callStackTop.localdata.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
+		#TODO use self.index to select which L-stack we want to access.
+		if not cpu.activeLStack:
 			self.__raiseReadErr(
-				AwlSimError("MemoryArea: Read range error")
+				AwlSimError("MemoryArea: No active L-stack")
 			)
-		self.data = dataBytes[self.start : end]
+		self.__memoryRead(cpu.activeLStack.memory)
 
 	def __read_DB(self, cpu):
 		try:
@@ -120,13 +118,7 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Read access to "
 				"read-protected DB %d" % self.index)
 			)
-		dataBytes = db.structInstance.memory.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
-			self.__raiseReadErr(
-				AwlSimError("MemoryArea: Read range error")
-			)
-		self.data = dataBytes[self.start : end]
+		self.__memoryRead(db.structInstance.memory)
 
 	def __read_T(self, cpu):
 		try:
@@ -136,7 +128,8 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Invalid timer index %d" % self.index)
 			)
 		v = (timer.get() << 31) | timer.getTimevalS5TwithBase()
-		self.data, self.length = self._dwordStruct.pack(v), 4
+		self.data = WordPacker.toBytes(bytearray(4), 32, 0, v)
+		self.length = 4
 
 	def __read_Z(self, cpu):
 		try:
@@ -146,7 +139,8 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Invalid counter index %d" % self.index)
 			)
 		v = (counter.get() << 31) | counter.getValueBCD()
-		self.data, self.length = self._dwordStruct.pack(v), 4
+		self.data = WordPacker.toBytes(bytearray(4), 32, 0, v)
+		self.length = 4
 
 	def __read_STW(self, cpu):
 		stw = cpu.statusWord.getWord()
@@ -163,32 +157,32 @@ class MemoryArea(object):
 		TYPE_STW	: __read_STW,
 	}
 
-	def __write_E(self, cpu):
-		dataBytes = cpu.inputs.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
+	def __memoryWrite(self, memory): #@nocy
+#@cy	def __memoryWrite(self, AwlMemory memory):
+#@cy		cdef AwlMemoryObject memObj
+
+		try:
+			if (not (0 <= self.start <= 0xFFFF) or
+			    self.length not in (1, 2, 4) or
+			    self.length != len(self.data)):
+				raise ValueError
+			memObj = make_AwlMemoryObject_fromBytes(self.data,
+								self.length * 8)
+			memory.store(make_AwlOffset(self.start, 0),
+				     memObj)
+		except (AwlSimError, ValueError) as e:
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Write range error")
 			)
-		dataBytes[self.start : end] = self.data
+
+	def __write_E(self, cpu):
+		self.__memoryWrite(cpu.inputs)
 
 	def __write_A(self, cpu):
-		dataBytes = cpu.outputs.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
-			self.__raiseWriteErr(
-				AwlSimError("MemoryArea: Write range error")
-			)
-		dataBytes[self.start : end] = self.data
+		self.__memoryWrite(cpu.outputs)
 
 	def __write_M(self, cpu):
-		dataBytes = cpu.flags.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
-			self.__raiseWriteErr(
-				AwlSimError("MemoryArea: Write range error")
-			)
-		dataBytes[self.start : end] = self.data
+		self.__memoryWrite(cpu.flags)
 
 	def __write_DB(self, cpu):
 		try:
@@ -203,13 +197,7 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Write access to "
 				"write-protected DB %d" % self.index)
 			)
-		dataBytes = db.structInstance.memory.dataBytes
-		end = self.start + self.length
-		if end > len(dataBytes):
-			self.__raiseWriteErr(
-				AwlSimError("MemoryArea: Write range error")
-			)
-		dataBytes[self.start : end] = self.data
+		self.__memoryWrite(db.structInstance.memory)
 
 	def __write_T(self, cpu):
 		try:
@@ -219,11 +207,14 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Invalid timer index %d" % self.index)
 			)
 		try:
-			(dword, ) = self._dwordStruct.unpack(self.data)
+			if (self.length not in (2, 4) or
+			    self.length != len(self.data)):
+				raise ValueError
+			dword = WordPacker.fromBytes(self.data, self.length * 8, 0)
 			if dword > 0xFFFF:
 				raise ValueError
 			timer.setTimevalS5T(dword)
-		except (struct.error, ValueError, AwlSimError) as e:
+		except (ValueError, AwlSimError) as e:
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Timer value error")
 			)
@@ -236,11 +227,14 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Invalid counter index %d" % self.index)
 			)
 		try:
-			(dword, ) = self._dwordStruct.unpack(self.data)
+			if (self.length not in (2, 4) or
+			    self.length != len(self.data)):
+				raise ValueError
+			dword = WordPacker.fromBytes(self.data, self.length * 8, 0)
 			if dword > 0xFFFF:
 				raise ValueError
 			counter.setValueBCD(dword)
-		except (struct.error, ValueError, AwlSimError) as e:
+		except (ValueError, AwlSimError) as e:
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Counter value error")
 			)
