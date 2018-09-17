@@ -1414,6 +1414,8 @@ class AwlSimServer(object): #+cdef
 
 		if self.__socket:
 			with suppressAllExc:
+				self.__socket.setblocking(False)
+			with suppressAllExc:
 				self.__socket.shutdown(socket.SHUT_RDWR)
 			with suppressAllExc:
 				self.__socket.close()
@@ -1426,8 +1428,10 @@ class AwlSimServer(object): #+cdef
 
 	def shutdown(self):
 		printInfo("Shutting down.")
-		self.close()
-		self.__sim.shutdown()
+		with suppressAllExc:
+			self.close()
+		with suppressAllExc:
+			self.__sim.shutdown()
 
 	def signalHandler(self, sig, frame):
 		printInfo("Received signal %d" % sig)
