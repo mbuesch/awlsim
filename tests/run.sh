@@ -523,7 +523,7 @@ run_nose_test()
 }
 
 # $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-test or testfile)
-__run_test()
+run_test()
 {
 	local interpreter="$1"
 	local testfile="$2"
@@ -565,15 +565,15 @@ __run_test()
 	fi
 }
 
-run_test()
+run_test_parallel()
 {
 	if is_parallel_run; then
 		# Run tests in parallel.
 		wait_for_free_job_slot
-		__run_test "$@" &
+		run_test "$@" &
 	else
 		# Run tests one-by-one.
-		__run_test "$@"
+		run_test "$@"
 	fi
 }
 
@@ -592,7 +592,7 @@ run_test_directory()
 		[ "$(echo -n "$entry" | tail -c7)" = ".awlpro" ] || continue
 		[ -e "$(dirname "$entry")/$(basename "$entry" .awlpro).sh" ] && continue
 
-		run_test "$interpreter" "$entry"
+		run_test_parallel "$interpreter" "$entry"
 		check_job_failure && return
 	done
 	# run .awl tests
@@ -602,21 +602,21 @@ run_test_directory()
 		[ -e "$(dirname "$entry")/$(basename "$entry" .awl).awlpro" ] && continue
 		[ -e "$(dirname "$entry")/$(basename "$entry" .awl).sh" ] && continue
 
-		run_test "$interpreter" "$entry"
+		run_test_parallel "$interpreter" "$entry"
 		check_job_failure && return
 	done
 	# run .sh tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c3)" = ".sh" ] || continue
-		run_test "$interpreter" "$entry"
+		run_test_parallel "$interpreter" "$entry"
 		check_job_failure && return
 	done
 	# run nose tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c3)" = ".py" ] || continue
-		run_test "$interpreter" "$entry"
+		run_test_parallel "$interpreter" "$entry"
 		check_job_failure && return
 	done
 	# Recurse into subdirectories
@@ -757,7 +757,7 @@ do_tests()
 				if [ -d "$opt" ]; then
 					run_test_directory "$interpreter" "$opt"
 				else
-					run_test "$interpreter" "$opt"
+					run_test_parallel "$interpreter" "$opt"
 				fi
 				check_job_failure && break
 			done
