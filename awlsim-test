@@ -436,10 +436,10 @@ def runWithServerBackend(inputFile):
 	except KeyboardInterrupt as e:
 		pass
 	finally:
-		if tunnel:
-			tunnel.shutdown()
 		if client:
 			client.shutdown()
+		if tunnel:
+			tunnel.shutdown()
 	return ExitCodes.EXIT_OK
 
 def __signalHandler(sig, frame):
