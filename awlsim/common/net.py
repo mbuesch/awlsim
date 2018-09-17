@@ -2,7 +2,7 @@
 #
 # AWL simulator - networking utility functions
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,6 +85,7 @@ def netPortIsUnused(host, port):
 				return True
 			return False
 		sock = socket.socket(family, socktype)
+		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.bind(sockaddr)
 	except _SocketErrors as e:
 		return False
