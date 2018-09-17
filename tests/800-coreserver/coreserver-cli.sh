@@ -7,10 +7,13 @@ sh_test()
 	infomsg
 	infomsg "--- Running coreserver tests"
 	cd "$rootdir" || die "Failed to change to rootdir '$rootdir'"
-	for testfile in 000-base/shutdown.awl; do
+
+	for testfile in 000-base/shutdown.awl \
+			000-base/EXAMPLE.awlpro; do
 		run_test "$interpreter" "$basedir/$testfile" \
 			--spawn-backend --interpreter "$interpreter" \
 			--connect-to localhost:$(get_port)
 	done
+
 	infomsg -n "--- Finished coreserver tests "
 }
