@@ -1305,6 +1305,8 @@ class AwlSimMessageTransceiver(object):
 	def shutdown(self):
 		if self.sock:
 			with suppressAllExc:
+				self.sock.setblocking(False)
+			with suppressAllExc:
 				self.sock.shutdown(socket.SHUT_RDWR)
 			with suppressAllExc:
 				self.sock.close()
