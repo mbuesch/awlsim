@@ -157,6 +157,16 @@ class MainWidget(QWidget):
 	def getCpuWidget(self):
 		return self.mainWindow.cpuWidget
 
+	def __updateCpuViewConfig(self):
+		"""Update the GuiCpuStateViewSettings objects in the project.
+		"""
+		settingsList = []
+
+		stateMdiArea = self.getCpuWidget().stateMdi
+		settingsList.append(stateMdiArea.getSettings())
+
+		self.getProject().getGuiSettings().setCpuStateViewSettingsList(settingsList)
+
 	def newFile(self, filename=None):
 		if isWinStandalone:
 			executableName = "awlsim-gui.exe"
@@ -211,6 +221,7 @@ class MainWidget(QWidget):
 			else:
 				assert(0)
 		self.getCpuWidget().goOffline()
+		self.getCpuWidget().stateMdi.reset()
 		if not fileExists(filename) and newIfNotExist:
 			# The file does not exist. We implicitly create it.
 			# The actual file will be created when the project is saved.
@@ -221,6 +232,12 @@ class MainWidget(QWidget):
 			isNewProject = False
 			try:
 				self.projectTreeModel.loadProjectFile(filename, self)
+				guiSettings = self.getProject().getGuiSettings()
+				for viewSettings in guiSettings.getCpuStateViewSettingsList():
+					# We currently only have one CPU state view.
+					# If the project has multiple viewSettings, all but the
+					# last one will be lost.
+					self.getCpuWidget().stateMdi.loadFromCpuStateViewSettings(viewSettings)
 			except AwlSimError as e:
 				QMessageBox.critical(self,
 					"Failed to load project file", str(e))
@@ -250,6 +267,7 @@ class MainWidget(QWidget):
 
 	def saveFile(self, filename):
 		try:
+			self.__updateCpuViewConfig()
 			res = self.projectTreeModel.saveProjectFile(filename, self)
 			if res == 0: # Failure
 				return False

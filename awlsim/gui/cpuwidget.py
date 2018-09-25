@@ -276,16 +276,19 @@ class CpuWidget(QWidget):
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
 		client.haveIdentsMsg.connect(self.__handleIdentsMsg)
 
-		self.stateMdi = StateMdiArea(self)
+		self.stateMdi = StateMdiArea(client=client, parent=self)
 		self.stateMdi.setViewMode(QMdiArea.SubWindowView)
 		self.stateMdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.stateMdi.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 		self.layout().addWidget(self.stateMdi, 0, 0)
 
-		self.state.stateChanged.connect(self.runStateChanged)
+		self.stateMdi.subWinAdded.connect(lambda w: self.__uploadMemReadAreas())
+		self.stateMdi.subWinClosed.connect(lambda w: self.__stateMdiWindowClosed(w))
+		self.stateMdi.configChanged.connect(lambda w: self.__uploadMemReadAreas())
+		self.stateMdi.openByIdentHash.connect(
+			lambda mdiWin, identHash: self.mainWidget.openByIdentHash(identHash))
 
-		self.newWin_Blocks()
-		self.newWin_CPU()
+		self.state.stateChanged.connect(self.runStateChanged)
 
 	def getProject(self):
 		return self.mainWidget.getProject()
@@ -296,56 +299,45 @@ class CpuWidget(QWidget):
 	def __stateMdiWindowClosed(self, mdiWin):
 		QTimer.singleShot(0, self.__uploadMemReadAreas)
 
-	def __addWindow(self, win):
-		mdiWin = StateMdiSubWindow(win)
-		mdiWin.closed.connect(self.__stateMdiWindowClosed)
-		self.stateMdi.addSubWindow(mdiWin, Qt.Window)
-		win.configChanged.connect(self.__stateWinConfigChanged)
-		win.show()
-		self.__uploadMemReadAreas()
-
 	def newWin_CPU(self):
-		self.__addWindow(State_CPU(self.getSimClient(), self))
+		win = State_CPU(self.getSimClient())
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_DB(self):
-		self.__addWindow(State_Mem(self.getSimClient(),
-					   AbstractDisplayWidget.ADDRSPACE_DB,
-					   self))
+		win = State_Mem(self.getSimClient(),
+				AbstractDisplayWidget.ADDRSPACE_DB)
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_E(self):
-		self.__addWindow(State_Mem(self.getSimClient(),
-					   AbstractDisplayWidget.ADDRSPACE_E,
-					   self))
+		win = State_Mem(self.getSimClient(),
+				AbstractDisplayWidget.ADDRSPACE_E)
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_A(self):
-		self.__addWindow(State_Mem(self.getSimClient(),
-					   AbstractDisplayWidget.ADDRSPACE_A,
-					   self))
+		win = State_Mem(self.getSimClient(),
+				AbstractDisplayWidget.ADDRSPACE_A)
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_M(self):
-		self.__addWindow(State_Mem(self.getSimClient(),
-					   AbstractDisplayWidget.ADDRSPACE_M,
-					   self))
+		win = State_Mem(self.getSimClient(),
+				AbstractDisplayWidget.ADDRSPACE_M)
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_T(self):
-		self.__addWindow(State_Timer(self.getSimClient(),
-					     self))
+		win = State_Timer(self.getSimClient())
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_Z(self):
-		self.__addWindow(State_Counter(self.getSimClient(),
-					       self))
+		win = State_Counter(self.getSimClient())
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_LCD(self):
-		self.__addWindow(State_LCD(self.getSimClient(), self))
+		win = State_LCD(self.getSimClient())
+		self.stateMdi.addCpuStateWindow(win)
 
 	def newWin_Blocks(self):
-		mdiWin = State_Blocks(self.getSimClient(), self)
-		self.__addWindow(mdiWin)
-		mdiWin.openItem.connect(
-			lambda identHash: self.mainWidget.openByIdentHash(identHash))
-
-	def __stateWinConfigChanged(self, stateWin):
-		self.__uploadMemReadAreas()
+		win = State_Blocks(self.getSimClient())
+		self.stateMdi.addCpuStateWindow(win)
 
 	# Upload the used memory area descriptors to the core.
 	def __uploadMemReadAreas(self):

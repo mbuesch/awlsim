@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU state widgets
 #
-# Copyright 2012-2015 Michael Buesch <m@bues.ch>
+# Copyright 2012-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,11 +32,28 @@ from awlsim.gui.util import *
 class StateWindow(QWidget):
 	# Window-close signal
 	closed = Signal(QWidget)
+
 	# Config-change (address, type, etc...) signal
 	configChanged = Signal(QWidget)
 
+	# Signal: Open an item.
+	#	Argument: identHash
+	openByIdentHash = Signal(object)
+
+	# Colors
 	COLOR_ACTIVE		= "#F0F000"
 	COLOR_LIGHTACTIVE	= "#FFFFC0"
+
+	# XML project file format window types.
+	# This is XML ABI.
+	EnumGen.start
+	WINTYPES_BLOCKS		= EnumGen.item
+	WINTYPES_CPUDUMP	= EnumGen.item
+	WINTYPES_MEM		= EnumGen.item
+	WINTYPES_LCD		= EnumGen.item
+	WINTYPES_TIMER		= EnumGen.item
+	WINTYPES_COUNTER	= EnumGen.item
+	EnumGen.end
 
 	def __init__(self, client, parent=None):
 		QWidget.__init__(self, parent)
@@ -46,6 +63,41 @@ class StateWindow(QWidget):
 		self.setWindowIcon(QIcon(pixmap))
 		self.__client = client
 		self.__forceMinimumSize = False
+
+	def getWindowConfigString(self):
+		"""Get the XML ABI config string of this window.
+		"""
+		return ""
+
+	@classmethod
+	def fromWindowConfigString(cls, client, winConfig):
+		"""Construct a new window from a window config string.
+		"""
+		return cls(client=client)
+
+	@classmethod
+	def makeConfigString(cls, configDict):
+		"""Build a config string from a config dict.
+		"""
+		configs = []
+		for k, v in sorted(dictItems(configDict),
+				   key=lambda items: items[0]):
+			configs.append("%s=%s" % (str(k), str(v)))
+		return ";".join(configs)
+
+	@classmethod
+	def parseConfigString(cls, configString):
+		"""Parse a config string and build a config dict from it.
+		"""
+		configDict = {}
+		for config in configString.split(";"):
+			idx = config.find("=")
+			if idx <= 0:
+				return None
+			k = config[:idx]
+			v = config[idx+1:]
+			configDict[k] = v
+		return configDict
 
 	def __updateSize(self):
 		try:
@@ -103,6 +155,8 @@ class StateWindow(QWidget):
 			assert(0)
 
 class State_CPU(StateWindow):
+	WINTYPE = StateWindow.WINTYPES_CPUDUMP # XML ABI window type
+
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("CPU overview")
@@ -122,12 +176,24 @@ class State_CPU(StateWindow):
 		self._updateSize()
 
 class AbstractDisplayWidget(QWidget):
+	"""Abstract memory widget.
+	"""
+
 	EnumGen.start
 	ADDRSPACE_E		= EnumGen.item
 	ADDRSPACE_A		= EnumGen.item
 	ADDRSPACE_M		= EnumGen.item
 	ADDRSPACE_DB		= EnumGen.item
 	EnumGen.end
+
+	# XMI ABI identifier
+	id2addrspace = {
+		"E"	: ADDRSPACE_E,
+		"A"	: ADDRSPACE_A,
+		"M"	: ADDRSPACE_M,
+		"DB"	: ADDRSPACE_DB,
+	}
+	addrspace2id = pivotDict(id2addrspace)
 
 	addrspace2name = {
 		ADDRSPACE_E	: ("I", "Inputs"),
@@ -424,6 +490,8 @@ class RealDisplayWidget(AbstractDisplayWidget):
 		self.line.setText(string)
 
 class State_Mem(StateWindow):
+	WINTYPE = StateWindow.WINTYPES_MEM # XML ABI window type
+
 	def __init__(self, client, addrSpace, parent=None):
 		StateWindow.__init__(self, client, parent)
 		if addrSpace == AbstractDisplayWidget.ADDRSPACE_E:
@@ -454,18 +522,18 @@ class State_Mem(StateWindow):
 		x += 1
 
 		self.widthCombo = QComboBox(self)
-		self.widthCombo.addItem("Byte", 8)
-		self.widthCombo.addItem("Word", 16)
-		self.widthCombo.addItem("DWord", 32)
+		self.widthCombo.addItem("Byte", 8)	# userData is XML ABI
+		self.widthCombo.addItem("Word", 16)	# userData is XML ABI
+		self.widthCombo.addItem("DWord", 32)	# userData is XML ABI
 		self.layout().addWidget(self.widthCombo, 0, x)
 		x += 1
 
 		self.fmtCombo = QComboBox(self)
-		self.fmtCombo.addItem("Checkboxes", "cb")
-		self.fmtCombo.addItem("Dual", "bin")
-		self.fmtCombo.addItem("Decimal", "dec")
-		self.fmtCombo.addItem("Hexadecimal", "hex")
-		self.fmtCombo.addItem("Real", "real")
+		self.fmtCombo.addItem("Checkboxes", "checkbox")	# userData is XML ABI
+		self.fmtCombo.addItem("Dual", "bin")		# userData is XML ABI
+		self.fmtCombo.addItem("Decimal", "dec")		# userData is XML ABI
+		self.fmtCombo.addItem("Hexadecimal", "hex")	# userData is XML ABI
+		self.fmtCombo.addItem("Real", "real")		# userData is XML ABI
 		self.layout().addWidget(self.fmtCombo, 0, x)
 		x += 1
 
@@ -483,6 +551,51 @@ class State_Mem(StateWindow):
 
 		self.__changeBlocked = Blocker()
 		self.rebuild()
+
+	def getWindowConfigString(self):
+		"""Get the XML ABI config string of this window.
+		"""
+		fmt = self.fmtCombo.itemData(self.fmtCombo.currentIndex())
+		assert(fmt in {"checkbox", "bin", "dec", "hex", "real"})
+		width = self.widthCombo.itemData(self.widthCombo.currentIndex())
+		assert(width in {8, 16, 32})
+		configDict = {
+			"addrspace"	: AbstractDisplayWidget.addrspace2id[self.addrSpace],
+			"addr"		: str(int(self.addrSpin.value())),
+			"width"		: str(int(width)),
+			"format"	: str(fmt),
+		}
+		if self.addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
+			configDict["db"] = str(int(self.dbSpin.value()))
+		return self.makeConfigString(configDict)
+
+	@classmethod
+	def fromWindowConfigString(cls, client, winConfig):
+		"""Construct a new window from a window config string.
+		"""
+		configDict = cls.parseConfigString(winConfig)
+		if configDict is None:
+			printWarning("Cannot parse State_Mem config string.")
+			return None
+		try:
+			addrSpaceId = configDict["addrspace"]
+			addrSpace = AbstractDisplayWidget.id2addrspace[addrSpaceId]
+
+			win = cls(client=client, addrSpace=addrSpace)
+
+			if addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
+				win.dbSpin.setValue(clamp(int(configDict["db"]), 0, 0xFFFF))
+			win.addrSpin.setValue(clamp(int(configDict["addr"]), 0, 0xFFFF))
+			idx = win.fmtCombo.findData(configDict["format"])
+			if idx >= 0:
+				win.fmtCombo.setCurrentIndex(idx)
+			idx = win.widthCombo.findData(int(configDict["width"]))
+			if idx >= 0:
+				win.widthCombo.setCurrentIndex(idx)
+		except (KeyError, IndexError, ValueError):
+			printWarning("Invalid State_Mem config string.")
+			return None
+		return win
 
 	def rebuild(self):
 		if self.contentWidget:
@@ -519,7 +632,7 @@ class State_Mem(StateWindow):
 		self.addrSpin.setPrefix(name + "  ")
 		self.setWindowTitle(longName)
 
-		if fmt == "cb":
+		if fmt == "checkbox":
 			self.contentWidget = BitDisplayWidget(self,
 							      self.addrSpace,
 							      addr, width, db, self)
@@ -607,6 +720,8 @@ class State_Mem(StateWindow):
 		return True
 
 class State_LCD(StateWindow):
+	WINTYPE = StateWindow.WINTYPES_LCD # XML ABI window type
+
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
 		self.setWindowTitle("LCD")
@@ -621,21 +736,21 @@ class State_LCD(StateWindow):
 		self.layout().addWidget(self.addrSpin, 0, 0)
 
 		self.widthCombo = QComboBox(self)
-		self.widthCombo.addItem("Byte", 8)
-		self.widthCombo.addItem("Word", 16)
-		self.widthCombo.addItem("DWord", 32)
+		self.widthCombo.addItem("Byte", 8)	# userData is XML ABI
+		self.widthCombo.addItem("Word", 16)	# userData is XML ABI
+		self.widthCombo.addItem("DWord", 32)	# userData is XML ABI
 		self.layout().addWidget(self.widthCombo, 0, 1)
 
 		self.endianCombo = QComboBox(self)
-		self.endianCombo.addItem("Big-endian", "be")
-		self.endianCombo.addItem("Little-endian", "le")
+		self.endianCombo.addItem("Big-endian", "be")	# userData is XML ABI
+		self.endianCombo.addItem("Little-endian", "le")	# userData is XML ABI
 		self.layout().addWidget(self.endianCombo, 1, 0)
 
 		self.fmtCombo = QComboBox(self)
-		self.fmtCombo.addItem("BCD", "bcd")
-		self.fmtCombo.addItem("Signed BCD", "signed-bcd")
-		self.fmtCombo.addItem("Binary", "bin")
-		self.fmtCombo.addItem("Signed binary", "signed-bin")
+		self.fmtCombo.addItem("BCD", "bcd")			# userData is XML ABI
+		self.fmtCombo.addItem("Signed BCD", "signed-bcd")	# userData is XML ABI
+		self.fmtCombo.addItem("Binary", "bin")			# userData is XML ABI
+		self.fmtCombo.addItem("Signed binary", "signed-bin")	# userData is XML ABI
 		self.layout().addWidget(self.fmtCombo, 1, 1)
 
 		self.lcd = QLCDNumber(self)
@@ -649,6 +764,49 @@ class State_LCD(StateWindow):
 
 		self.__changeBlocked = Blocker()
 		self.rebuild()
+
+	def getWindowConfigString(self):
+		"""Get the XML ABI config string of this window.
+		"""
+		fmt = self.fmtCombo.itemData(self.fmtCombo.currentIndex())
+		assert(fmt in {"bcd", "signed-bcd", "bin", "signed-bin"})
+		width = self.widthCombo.itemData(self.widthCombo.currentIndex())
+		assert(width in {8, 16, 32})
+		endian = self.endianCombo.itemData(self.endianCombo.currentIndex())
+		assert(endian in {"be", "le"})
+		configDict = {
+			"addr"		: str(int(self.addrSpin.value())),
+			"width"		: str(int(width)),
+			"format"	: str(fmt),
+			"endian"	: str(endian),
+		}
+		return self.makeConfigString(configDict)
+
+	@classmethod
+	def fromWindowConfigString(cls, client, winConfig):
+		"""Construct a new window from a window config string.
+		"""
+		configDict = cls.parseConfigString(winConfig)
+		if configDict is None:
+			printWarning("Cannot parse State_LCD config string.")
+			return None
+		try:
+			win = cls(client=client)
+
+			win.addrSpin.setValue(clamp(int(configDict["addr"]), 0, 0xFFFF))
+			idx = win.fmtCombo.findData(configDict["format"])
+			if idx >= 0:
+				win.fmtCombo.setCurrentIndex(idx)
+			idx = win.widthCombo.findData(int(configDict["width"]))
+			if idx >= 0:
+				win.widthCombo.setCurrentIndex(idx)
+			idx = win.endianCombo.findData(configDict["endian"])
+			if idx >= 0:
+				win.endianCombo.setCurrentIndex(idx)
+		except (KeyError, IndexError, ValueError):
+			printWarning("Invalid State_LCD config string.")
+			return None
+		return win
 
 	def getDataWidth(self):
 		index = self.widthCombo.currentIndex()
@@ -803,6 +961,36 @@ class _State_TimerCounter(StateWindow):
 		self.setMinimumWidth(310)
 		self.rebuild()
 
+	def getWindowConfigString(self):
+		"""Get the XML ABI config string of this window.
+		"""
+		fmt = self.formatCombo.itemData(self.formatCombo.currentIndex())
+		configDict = {
+			"index"		: str(int(self.indexSpin.value())),
+			"format"	: str(fmt),
+		}
+		return self.makeConfigString(configDict)
+
+	@classmethod
+	def fromWindowConfigString(cls, client, winConfig):
+		"""Construct a new window from a window config string.
+		"""
+		configDict = cls.parseConfigString(winConfig)
+		if configDict is None:
+			printWarning("Cannot parse State_TimerCounter config string.")
+			return None
+		try:
+			win = cls(client=client)
+
+			win.indexSpin.setValue(clamp(int(configDict["index"]), 0, 0xFFFF))
+			idx = win.formatCombo.findData(configDict["format"])
+			if idx >= 0:
+				win.formatCombo.setCurrentIndex(idx)
+		except (KeyError, IndexError, ValueError):
+			printWarning("Invalid State_TimerCounter config string.")
+			return None
+		return win
+
 	def reset(self):
 		self.__sendValue(0)
 
@@ -895,6 +1083,8 @@ class _State_TimerCounter(StateWindow):
 		self._writeCpuMemory((memArea,))
 
 class State_Timer(_State_TimerCounter):
+	WINTYPE = StateWindow.WINTYPES_TIMER # XML ABI window type
+
 	def __init__(self, client, parent=None):
 		_State_TimerCounter.__init__(self, client,
 					     MemoryArea.TYPE_T,
@@ -904,9 +1094,9 @@ class State_Timer(_State_TimerCounter):
 
 		self.indexSpin.setPrefix("T ")
 
-		self.formatCombo.addItem("Dual", "bin")
-		self.formatCombo.addItem("Hexadecimal", "hex")
-		self.formatCombo.addItem("S5Time", "s5t")
+		self.formatCombo.addItem("Dual", "bin")		# userData is XML ABI
+		self.formatCombo.addItem("Hexadecimal", "hex")	# userData is XML ABI
+		self.formatCombo.addItem("S5Time", "s5t")	# userData is XML ABI
 
 		self._updateSize(forceMinimum = True)
 
@@ -962,6 +1152,8 @@ class State_Timer(_State_TimerCounter):
 		return text
 
 class State_Counter(_State_TimerCounter):
+	WINTYPE = StateWindow.WINTYPES_COUNTER # XML ABI window type
+
 	def __init__(self, client, parent=None):
 		_State_TimerCounter.__init__(self, client,
 					     MemoryArea.TYPE_Z,
@@ -971,8 +1163,8 @@ class State_Counter(_State_TimerCounter):
 
 		self.indexSpin.setPrefix("C ")
 
-		self.formatCombo.addItem("BCD (counter)", "bcd")
-		self.formatCombo.addItem("Dual", "bin")
+		self.formatCombo.addItem("BCD (counter)", "bcd")	# userData is XML ABI
+		self.formatCombo.addItem("Dual", "bin")			# userData is XML ABI
 
 		self._updateSize(forceMinimum = True)
 
@@ -1018,9 +1210,7 @@ class State_Blocks(StateWindow):
 	"""CPU online block view.
 	"""
 
-	# Signal: Open an item.
-	#	Argument: identHash
-	openItem = Signal(object)
+	WINTYPE = StateWindow.WINTYPES_BLOCKS # XML ABI window type
 
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
@@ -1035,7 +1225,7 @@ class State_Blocks(StateWindow):
 		self.setMinimumSize(450, 320)
 		self._updateSize()
 
-		self.blockTree.openItem.connect(self.openItem)
+		self.blockTree.openItem.connect(self.openByIdentHash)
 
 	def closeEvent(self, ev):
 		self.__modelRef.destroy()
@@ -1043,9 +1233,99 @@ class State_Blocks(StateWindow):
 		StateWindow.closeEvent(self, ev)
 
 class StateMdiArea(QMdiArea):
-	pass
+	"""CPU state view MDI area.
+	"""
+
+	# MDI sub window has been added.
+	subWinAdded = Signal(QMdiSubWindow)
+
+	# MDI sub window has been closed.
+	subWinClosed = Signal(QMdiSubWindow)
+
+	# Config-change (address, type, etc...) signal of sub window.
+	configChanged = Signal(QMdiSubWindow)
+
+	# Signal: Open an item.
+	#	Argument: MDI sub window
+	#	Argument: identHash
+	openByIdentHash = Signal(QMdiSubWindow, object)
+
+	def __init__(self, client, parent=None):
+		"""client: AwlSimClient instance.
+		"""
+		QMdiArea.__init__(self, parent)
+		self.client = client
+
+	def addCpuStateWindow(self, stateWin):
+		"""Add a StateWindow instance to this MDI area.
+		This automatically creates the MDI window wrapper.
+		"""
+		mdiWin = StateMdiSubWindow(stateWin)
+		mdiWin.closed.connect(self.subWinClosed)
+		self.addSubWindow(mdiWin, Qt.Window)
+		stateWin.configChanged.connect(lambda w: self.configChanged.emit(mdiWin))
+		stateWin.openByIdentHash.connect(lambda h: self.openByIdentHash.emit(mdiWin, h))
+		stateWin.show()
+		self.subWinAdded.emit(mdiWin)
+		return mdiWin
+
+	def reset(self):
+		"""Close all MDI windows.
+		"""
+		self.closeAllSubWindows()
+
+	def loadFromCpuStateViewSettings(self, viewSettings):
+		"""Construct the area from GuiCpuStateViewSettings.
+		"""
+		self.reset()
+		for winSettings in viewSettings.getCpuStateWindowSettingsList():
+			winType = winSettings.getWindowType()
+			winConfig = winSettings.getWindowConfig()
+			winPosX = winSettings.getPosX()
+			winPosY = winSettings.getPosY()
+
+			if winType == StateWindow.WINTYPES_BLOCKS:
+				stateWin = State_Blocks.fromWindowConfigString(client=self.client,
+									       winConfig=winConfig)
+			elif winType == StateWindow.WINTYPES_CPUDUMP:
+				stateWin = State_CPU.fromWindowConfigString(client=self.client,
+									    winConfig=winConfig)
+			elif winType == StateWindow.WINTYPES_MEM:
+				stateWin = State_Mem.fromWindowConfigString(client=self.client,
+									    winConfig=winConfig)
+			elif winType == StateWindow.WINTYPES_LCD:
+				stateWin = State_LCD.fromWindowConfigString(client=self.client,
+									    winConfig=winConfig)
+			elif winType == StateWindow.WINTYPES_TIMER:
+				stateWin = State_Timer.fromWindowConfigString(client=self.client,
+									      winConfig=winConfig)
+			elif winType == StateWindow.WINTYPES_COUNTER:
+				stateWin = State_Counter.fromWindowConfigString(client=self.client,
+										winConfig=winConfig)
+			else:
+				printWarning("Unknown CPU state window type %d." % winType)
+				continue
+			if not stateWin:
+				continue
+
+			mdiWin = self.addCpuStateWindow(stateWin)
+			mdiWin.move(winPosX, winPosY)
+
+	def getSettings(self):
+		"""Get the GuiCpuStateViewSettings object for this CPU view.
+		"""
+		winSettings = []
+
+		for mdiSubWin in self.subWindowList():
+			winSettings.append(mdiSubWin.getWinSettings())
+
+		return GuiCpuStateViewSettings(
+			cpuStateWindowSettingsList=winSettings)
 
 class StateMdiSubWindow(QMdiSubWindow):
+	"""MDI window in CPU state view.
+	"""
+
 	closed = Signal(QMdiSubWindow)
 
 	def __init__(self, childWidget):
@@ -1057,3 +1337,13 @@ class StateMdiSubWindow(QMdiSubWindow):
 	def closeEvent(self, ev):
 		self.closed.emit(self)
 		QMdiSubWindow.closeEvent(self, ev)
+
+	def getWinSettings(self):
+		"""Get the GuiCpuStateWindowSettings object for this CPU view window.
+		"""
+		widget = self.widget()
+		return GuiCpuStateWindowSettings(
+			posX=self.x(),
+			posY=self.y(),
+			windowType=widget.WINTYPE,
+			windowConfig=widget.getWindowConfigString())
