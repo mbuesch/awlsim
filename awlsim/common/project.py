@@ -41,12 +41,91 @@ import sys
 
 
 __all__ = [
+	"GuiCpuStateWindowSettings",
+	"GuiCpuStateViewSettings",
 	"GuiSettings",
 	"CoreLinkSettings",
 	"HwmodSettings",
 	"Project",
 ]
 
+
+class GuiCpuStateWindowSettingsFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		cpuWinSettings = self.cpuWinSettings
+
+		if tag:
+			x = tag.getAttrInt("x", 0)
+			y = tag.getAttrInt("y", 0)
+			winType = tag.getAttrInt("type")
+			winConfig = tag.getAttr("config", "")
+			cpuWinSettings.setPosX(x)
+			cpuWinSettings.setPosY(y)
+			cpuWinSettings.setWindowType(winType)
+			cpuWinSettings.setWindowConfig(winConfig)
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "cpu_view_window":
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		cpuWinSettings = self.cpuWinSettings
+
+		return [
+			self.Tag(name="cpu_view_window",
+				 attrs={
+					"x" : str(int(cpuWinSettings.getPosX())),
+					"y" : str(int(cpuWinSettings.getPosY())),
+					"type" : str(cpuWinSettings.getWindowType()),
+					"config" : str(cpuWinSettings.getWindowConfig()),
+				 },
+				 emitEmptyAttrs=True),
+		]
+
+class GuiCpuStateViewSettingsFactory(XmlFactory):
+	def parser_open(self, tag=None):
+		XmlFactory.parser_open(self, tag)
+
+	def parser_beginTag(self, tag):
+		cpuViewSettings = self.cpuViewSettings
+
+		if tag.name == "cpu_view_window":
+			cpuWinSettings = GuiCpuStateWindowSettings()
+			self.parser_switchTo(cpuWinSettings.factory(
+				cpuWinSettings=cpuWinSettings))
+			lst = cpuViewSettings.getCpuStateWindowSettingsList()
+			lst.append(cpuWinSettings)
+			cpuViewSettings.setCpuStateWindowSettingsList(lst)
+			return
+		XmlFactory.parser_beginTag(self, tag)
+
+	def parser_endTag(self, tag):
+		if tag.name == "cpu_view":
+			self.parser_finish()
+			return
+		XmlFactory.parser_endTag(self, tag)
+
+	def composer_getTags(self):
+		cpuViewSettings = self.cpuViewSettings
+
+		childTags = []
+		for cpuWinSettings in cpuViewSettings.getCpuStateWindowSettingsList():
+			childTags.extend(cpuWinSettings.factory(
+				cpuWinSettings=cpuWinSettings).composer_getTags())
+
+		return [
+			self.Tag(name="cpu_view",
+				 comment="\nCPU state view layout",
+				 attrs={
+				 },
+				 tags=childTags),
+		]
 
 class GuiSettingsFactory(XmlFactory):
 	def parser_open(self, tag=None):
@@ -68,6 +147,14 @@ class GuiSettingsFactory(XmlFactory):
 					guiSettings.setEditorFont(font)
 				self.inEditor = True
 				return
+			elif tag.name == "cpu_view":
+				cpuViewSettings = GuiCpuStateViewSettings()
+				self.parser_switchTo(cpuViewSettings.factory(
+					cpuViewSettings=cpuViewSettings))
+				lst = guiSettings.getCpuStateViewSettingsList()
+				lst.append(cpuViewSettings)
+				guiSettings.setCpuStateViewSettingsList(lst)
+				return
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
@@ -87,12 +174,17 @@ class GuiSettingsFactory(XmlFactory):
 		childTags = []
 
 		childTags.append(self.Tag(name="editor",
+					  comment="AWL editor settings",
 					  attrs={
 			"autoindent"		: str(int(guiSettings.getEditorAutoIndentEn())),
 			"paste_autoindent"	: str(int(guiSettings.getEditorPasteIndentEn())),
 			"validation"		: str(int(guiSettings.getEditorValidationEn())),
 			"font"			: str(guiSettings.getEditorFont()),
 		}))
+
+		for cpuViewSettings in guiSettings.getCpuStateViewSettingsList():
+			childTags.extend(cpuViewSettings.factory(
+				cpuViewSettings=cpuViewSettings).composer_getTags())
 
 		tags = [
 			self.Tag(name="gui",
@@ -594,6 +686,56 @@ class ProjectFactory(XmlFactory):
 
 		return tags
 
+class GuiCpuStateWindowSettings(object):
+	factory = GuiCpuStateWindowSettingsFactory
+
+	def __init__(self,
+		     posX=0,
+		     posY=0,
+		     windowType=0,
+		     windowConfig=""):
+		self.setPosX(posX)
+		self.setPosY(posY)
+		self.setWindowType(windowType)
+		self.setWindowConfig(windowConfig)
+
+	def setPosX(self, posX):
+		self.posX = posX if posX >= 0 else 0
+
+	def getPosX(self):
+		return self.posX
+
+	def setPosY(self, posY):
+		self.posY = posY if posY >= 0 else 0
+
+	def getPosY(self):
+		return self.posY
+
+	def setWindowType(self, windowType):
+		self.windowType = windowType or 0
+
+	def getWindowType(self):
+		return self.windowType
+
+	def setWindowConfig(self, windowConfig):
+		self.windowConfig = windowConfig or ""
+
+	def getWindowConfig(self):
+		return self.windowConfig
+
+class GuiCpuStateViewSettings(object):
+	factory = GuiCpuStateViewSettingsFactory
+
+	def __init__(self,
+		     cpuStateWindowSettingsList=None):
+		self.setCpuStateWindowSettingsList(cpuStateWindowSettingsList)
+
+	def setCpuStateWindowSettingsList(self, cpuStateWindowSettingsList):
+		self.cpuStateWindowSettingsList = cpuStateWindowSettingsList or []
+
+	def getCpuStateWindowSettingsList(self):
+		return self.cpuStateWindowSettingsList
+
 class GuiSettings(object):
 	factory	= GuiSettingsFactory
 
@@ -601,11 +743,13 @@ class GuiSettings(object):
 		     editorAutoIndentEn=True,
 		     editorPasteIndentEn=True,
 		     editorValidationEn=True,
-		     editorFont=""):
+		     editorFont="",
+		     cpuStateViewSettingsList=None):
 		self.setEditorAutoIndentEn(editorAutoIndentEn)
 		self.setEditorPasteIndentEn(editorPasteIndentEn)
 		self.setEditorValidationEn(editorValidationEn)
 		self.setEditorFont(editorFont)
+		self.setCpuStateViewSettingsList(cpuStateViewSettingsList)
 
 	def setEditorAutoIndentEn(self, editorAutoIndentEn):
 		self.editorAutoIndentEn = bool(editorAutoIndentEn)
@@ -630,6 +774,12 @@ class GuiSettings(object):
 
 	def getEditorFont(self):
 		return self.editorFont
+
+	def setCpuStateViewSettingsList(self, cpuStateViewSettingsList):
+		self.cpuStateViewSettingsList = cpuStateViewSettingsList or []
+
+	def getCpuStateViewSettingsList(self):
+		return self.cpuStateViewSettingsList
 
 class CoreLinkSettings(object):
 	factory			= CoreLinkSettingsFactory
