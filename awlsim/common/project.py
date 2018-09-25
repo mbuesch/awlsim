@@ -700,13 +700,13 @@ class GuiCpuStateWindowSettings(object):
 		self.setWindowConfig(windowConfig)
 
 	def setPosX(self, posX):
-		self.posX = posX if posX >= 0 else 0
+		self.posX = posX
 
 	def getPosX(self):
 		return self.posX
 
 	def setPosY(self, posY):
-		self.posY = posY if posY >= 0 else 0
+		self.posY = posY
 
 	def getPosY(self):
 		return self.posY
