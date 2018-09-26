@@ -284,7 +284,9 @@ class CpuWidget(QWidget):
 
 		self.stateMdi.subWinAdded.connect(lambda w: self.__uploadMemReadAreas())
 		self.stateMdi.subWinClosed.connect(lambda w: self.__stateMdiWindowClosed(w))
-		self.stateMdi.configChanged.connect(lambda w: self.__uploadMemReadAreas())
+		self.stateMdi.settingsChanged.connect(lambda: self.__uploadMemReadAreas())
+		self.stateMdi.contentChanged.connect(
+			lambda: self.mainWidget.setDirty(self.mainWidget.DIRTY_SLIGHT))
 		self.stateMdi.openByIdentHash.connect(
 			lambda mdiWin, identHash: self.mainWidget.openByIdentHash(identHash))
 
@@ -793,8 +795,8 @@ class CpuWidget(QWidget):
 			else:
 				self.__stop()
 
-	def handleDirtyChange(self, dirty):
-		if dirty:
+	def handleDirtyChange(self, dirtyLevel):
+		if dirtyLevel == self.mainWidget.DIRTY_FULL:
 			self.reqOnlineDiagButtonState.emit(False)
 
 	def _onlineDiagToggled(self, onlineDiagBtnPressed):

@@ -1163,7 +1163,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			return title
 		return None
 
-	def __handleProjectDirtyChanged(self, dirty):
+	def __handleProjectDirtyChanged(self, dirtyLevel):
 		self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
 
 	def mimeData(self, indexes):

@@ -1243,7 +1243,10 @@ class StateMdiArea(QMdiArea):
 	subWinClosed = Signal(QMdiSubWindow)
 
 	# Config-change (address, type, etc...) signal of sub window.
-	configChanged = Signal(QMdiSubWindow)
+	settingsChanged = Signal()
+
+	# Content-change (config or window positions).
+	contentChanged = Signal()
 
 	# Signal: Open an item.
 	#	Argument: MDI sub window
@@ -1256,16 +1259,24 @@ class StateMdiArea(QMdiArea):
 		QMdiArea.__init__(self, parent)
 		self.client = client
 
+		self.subWinAdded.connect(lambda w: self.contentChanged.emit())
+		self.subWinClosed.connect(lambda w: self.contentChanged.emit())
+
 	def addCpuStateWindow(self, stateWin):
 		"""Add a StateWindow instance to this MDI area.
 		This automatically creates the MDI window wrapper.
 		"""
 		mdiWin = StateMdiSubWindow(stateWin)
 		mdiWin.closed.connect(self.subWinClosed)
+		mdiWin.moved.connect(lambda w: self.contentChanged.emit())
+
 		self.addSubWindow(mdiWin, Qt.Window)
-		stateWin.configChanged.connect(lambda w: self.configChanged.emit(mdiWin))
+
+		stateWin.configChanged.connect(lambda w: self.settingsChanged.emit())
+		stateWin.configChanged.connect(lambda w: self.contentChanged.emit())
 		stateWin.openByIdentHash.connect(lambda h: self.openByIdentHash.emit(mdiWin, h))
 		stateWin.show()
+
 		self.subWinAdded.emit(mdiWin)
 		return mdiWin
 
@@ -1327,6 +1338,7 @@ class StateMdiSubWindow(QMdiSubWindow):
 	"""
 
 	closed = Signal(QMdiSubWindow)
+	moved = Signal(QMdiSubWindow)
 
 	def __init__(self, childWidget):
 		QMdiSubWindow.__init__(self)
@@ -1337,6 +1349,10 @@ class StateMdiSubWindow(QMdiSubWindow):
 	def closeEvent(self, ev):
 		self.closed.emit(self)
 		QMdiSubWindow.closeEvent(self, ev)
+
+	def moveEvent(self, moveEvent):
+		QMdiSubWindow.moveEvent(self, moveEvent)
+		self.moved.emit(self)
 
 	def getWinSettings(self):
 		"""Get the GuiCpuStateWindowSettings object for this CPU view window.

@@ -95,7 +95,7 @@ class MainWidget(QWidget):
 	# Signal: Project loaded
 	projectLoaded = Signal(Project)
 	# Signal: Dirty-status changed
-	dirtyChanged = Signal(bool)
+	dirtyChanged = Signal(int)
 	# Signal: Source text focus changed
 	textFocusChanged = Signal(bool)
 	# Signal: UndoAvailable state changed
@@ -109,6 +109,13 @@ class MainWidget(QWidget):
 	# Signal: PasteAvailable state changed
 	pasteAvailableChanged = Signal(bool)
 
+	# Document dirty levels
+	EnumGen.start
+	DIRTY_NO	= EnumGen.item
+	DIRTY_SLIGHT	= EnumGen.item
+	DIRTY_FULL	= EnumGen.item
+	EnumGen.end
+
 	def __init__(self, mainWindow, parent=None):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout(self))
@@ -120,7 +127,7 @@ class MainWidget(QWidget):
 		self.layout().addWidget(self.editMdiArea, 0, 0)
 
 		self.filename = None
-		self.dirty = False
+		self.__dirtyLevel = self.DIRTY_NO
 
 		self.editMdiArea.sourceChanged.connect(self.somethingChanged)
 		self.editMdiArea.focusChanged.connect(self.textFocusChanged)
@@ -138,15 +145,20 @@ class MainWidget(QWidget):
 		return self.projectTreeModel.getProject()
 
 	def isDirty(self):
-		return self.dirty
+		return self.__dirtyLevel == self.DIRTY_FULL
 
-	def setDirty(self, dirty, force=False):
-		if dirty != self.dirty or force:
-			self.dirty = dirty
-			self.dirtyChanged.emit(self.dirty)
+	def setDirty(self, dirtyLevel=DIRTY_FULL, force=False):
+		if dirtyLevel != self.__dirtyLevel or force:
+			if (not force and
+			    self.__dirtyLevel == self.DIRTY_FULL and
+			    dirtyLevel == self.DIRTY_SLIGHT):
+				# Cannot go from full to slight.
+				return
+			self.__dirtyLevel = dirtyLevel
+			self.dirtyChanged.emit(self.__dirtyLevel)
 
 	def somethingChanged(self):
-		self.setDirty(True)
+		self.setDirty(self.DIRTY_FULL)
 
 	def getFilename(self):
 		return self.filename
@@ -196,7 +208,7 @@ class MainWidget(QWidget):
 			return
 
 	def loadFile(self, filename, newIfNotExist=False):
-		if self.dirty:
+		if self.isDirty():
 			res = QMessageBox.question(self,
 				"Unsaved project",
 				"The current project is modified and contains unsaved changes.\n "
@@ -244,9 +256,9 @@ class MainWidget(QWidget):
 				return False
 		self.filename = filename
 		if isNewProject or not self.getProject().getProjectFile():
-			self.setDirty(True, force=True)
+			self.setDirty(self.DIRTY_FULL, force=True)
 		else:
-			self.setDirty(False, force=True)
+			self.setDirty(self.DIRTY_NO, force=True)
 		self.projectLoaded.emit(self.getProject())
 		return True
 
@@ -278,7 +290,7 @@ class MainWidget(QWidget):
 				"Failed to write project file", str(e))
 			return False
 		self.filename = filename
-		self.setDirty(dirty = False, force = True)
+		self.setDirty(self.DIRTY_NO, force=True)
 		return True
 
 	def save(self, newFile=False):
@@ -509,6 +521,12 @@ class MainWindow(QMainWindow):
 
 		mainwnd = cls(initialAwlSource)
 		mainwnd.show()
+
+		if initialAwlSource and not mainwnd.mainWidget.isDirty():
+			# Revert back from DIRTY_SLIGHT to DIRTY_NO.
+			mainwnd.mainWidget.setDirty(mainwnd.mainWidget.DIRTY_NO,
+						    force=True)
+
 		return mainwnd
 
 	def __init__(self, awlSource=None, parent=None):
@@ -657,7 +675,7 @@ class MainWindow(QMainWindow):
 		self.menuBar().addMenu(menu)
 
 		self.__sourceTextHasFocus = False
-		self.__dirtyChanged(False)
+		self.__dirtyChanged(MainWidget.DIRTY_NO)
 		self.__textFocusChanged(False)
 		self.__undoAvailableChanged(False)
 		self.__redoAvailableChanged(False)
@@ -792,14 +810,14 @@ class MainWindow(QMainWindow):
 		cpuDockEn = self.cpuDockWidget.toggleViewAction().isChecked()
 		self.inspectTb.toggleViewAction().setEnabled(cpuDockEn)
 
-	def __dirtyChanged(self, isDirty):
-		self.saveAct.setEnabled(isDirty)
-		self.tbSaveAct.setEnabled(isDirty)
+	def __dirtyChanged(self, dirtyLevel):
+		self.saveAct.setEnabled(dirtyLevel != MainWidget.DIRTY_NO)
+		self.tbSaveAct.setEnabled(dirtyLevel != MainWidget.DIRTY_NO)
 
 		filename = self.mainWidget.getFilename()
 		if filename:
 			postfix = " -- " + os.path.basename(filename)
-			if isDirty:
+			if dirtyLevel == MainWidget.DIRTY_FULL:
 				postfix += "*"
 		else:
 			postfix = ""
