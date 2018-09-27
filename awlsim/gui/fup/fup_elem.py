@@ -131,6 +131,8 @@ class FupElem(FupBaseClass):
 		self._bgSelBrush = QBrush(QColor("#F2F25A"))
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
+		self._disablePen = QPen(QColor("#FF0000"))
+		self._disablePen.setWidth(3)
 
 	def getFont(self, size=8, bold=False):
 		return self.grid.getFont(size=size, bold=bold)
@@ -466,6 +468,19 @@ class FupElem(FupBaseClass):
 		"""Draw this element.
 		"""
 		pass
+
+	def _drawDisableMarker(self, painter):
+		"""If the element is disabled, draw the marker.
+		"""
+		if not self.enabled:
+			cellWidth = self.grid.cellPixWidth
+			cellHeight = self.grid.cellPixHeight
+			elemHeight = cellHeight * self.height
+			elemWidth = cellWidth * self.width
+
+			painter.setPen(self._disablePen)
+			painter.drawLine(0, 0, elemWidth, elemHeight)
+			painter.drawLine(0, elemHeight, elemWidth, 0)
 
 	def handleCustomAction(self, index):
 		"""Handle an element custom action.

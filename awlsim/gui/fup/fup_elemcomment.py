@@ -163,6 +163,9 @@ class FupElem_COMMENT(FupElem):
 			else:
 				self.partialContent = False
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 	# Overridden method. For documentation see base class.
 	def edit(self, parentWidget):
 		text, ok = QInputDialog.getMultiLineText(parentWidget,

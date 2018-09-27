@@ -305,6 +305,9 @@ class FupElem_SHIFT(FupElem):
 				 Qt.AlignVCenter | Qt.AlignHCenter,
 				 self.OP_SYM)
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableAddOutput(True)

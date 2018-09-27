@@ -210,6 +210,9 @@ class FupElem_CONV(FupElem):
 				 Qt.AlignHCenter | Qt.AlignVCenter,
 				 self.OP_SYM)
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableDisconnWire(conn is not None and conn.isConnected)

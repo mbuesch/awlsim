@@ -162,6 +162,9 @@ class FupElem_AWL(FupElem):
 					 Qt.AlignVCenter | Qt.AlignHCenter,
 					 "AWL")
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 	# Overridden method. For documentation see base class.
 	def edit(self, parentWidget):
 		dlg = EditDialog(parentWidget,

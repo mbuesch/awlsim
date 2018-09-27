@@ -259,6 +259,9 @@ class FupElem_MOVE(FupElem):
 				 Qt.AlignHCenter | Qt.AlignVCenter,
 				 "move")
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 	# Overridden method. For documentation see base class.
 	def prepareContextMenu(self, menu, area=None, conn=None):
 		menu.enableAddOutput(True)

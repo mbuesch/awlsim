@@ -282,6 +282,9 @@ class FupElem_ASSIGN(FupElem_OPERAND):
 			       else self._connOpenPen)
 		painter.drawLine(0, y, xpad, y)
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 class FupElem_LOAD(FupElem_OPERAND):
 	"""Load/read operand element"""
 
@@ -314,6 +317,9 @@ class FupElem_LOAD(FupElem_OPERAND):
 			       else self._connOpenPen)
 		painter.drawLine(cellWidth - xpad, y,
 				 cellWidth, y)
+
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
 
 class FupElem_EmbeddedOper(FupElem_OPERAND):
 	"""Embedded operand element.

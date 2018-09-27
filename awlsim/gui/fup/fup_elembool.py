@@ -347,6 +347,9 @@ class FupElem_BOOLEAN(FupElem):
 		if self.WITH_BODY_OPERATOR:
 			self.bodyOper.draw(painter)
 
+		# Draw disable-marker
+		self._drawDisableMarker(painter)
+
 	# Overridden method. For documentation see base class.
 	def edit(self, parentWidget):
 		if self.WITH_BODY_OPERATOR:
