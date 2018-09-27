@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Move box
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,9 +36,11 @@ class FupElem_MOVE_factory(FupElem_factory):
 		x = tag.getAttrInt("x")
 		y = tag.getAttrInt("y")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		self.elem = FupElem_MOVE(x=x, y=y,
 					 nrOutputs=0,
-					 uuid=uuid)
+					 uuid=uuid,
+					 enabled=enabled)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -59,18 +61,21 @@ class FupElem_MOVE_factory(FupElem_factory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		elem = self.elem
+
 		connTags = []
-		for inp in self.elem.inputs:
+		for inp in elem.inputs:
 			connTags.extend(inp.factory(conn=inp).composer_getTags())
-		for out in self.elem.outputs:
+		for out in elem.outputs:
 			connTags.extend(out.factory(conn=out).composer_getTags())
 		return [
 			self.Tag(name="element",
 				attrs={
 					"type" : "move",
-					"x" : str(self.elem.x),
-					"y" : str(self.elem.y),
-					"uuid" : str(self.elem.uuid),
+					"x" : str(elem.x),
+					"y" : str(elem.y),
+					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -84,8 +89,8 @@ class FupElem_MOVE(FupElem):
 
 	factory = FupElem_MOVE_factory
 
-	def __init__(self, x, y, nrOutputs=1, uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, nrOutputs=1, **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		self.inputs = [ FupConnIn(self), # EN
 				FupConnIn(self), # IN

@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Comment element class
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,9 +36,11 @@ class FupElem_COMMENT_factory(FupElem_factory):
 		y = tag.getAttrInt("y")
 		content = tag.getAttr("content", "")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		self.elem = FupElem_COMMENT(x=x, y=y,
 					    contentText=content,
-					    uuid=uuid)
+					    uuid=uuid,
+					    enabled=enabled)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -56,14 +58,17 @@ class FupElem_COMMENT_factory(FupElem_factory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		elem = self.elem
+
 		return [
 			self.Tag(name="element",
 				attrs={
 					"type" : "comment",
-					"x" : str(self.elem.x),
-					"y" : str(self.elem.y),
-					"content" : self.elem.contentText,
-					"uuid" : str(self.elem.uuid),
+					"x" : str(elem.x),
+					"y" : str(elem.y),
+					"content" : elem.contentText,
+					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				}
 			)
 		]
@@ -76,8 +81,8 @@ class FupElem_COMMENT(FupElem):
 
 	BODY_CORNER_RADIUS	= 4
 
-	def __init__(self, x, y, contentText="", uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, contentText="", **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
 		self._continuePen.setColor(QColor("#000000"))

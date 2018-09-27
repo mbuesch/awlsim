@@ -37,6 +37,7 @@ class FupElem_CUD_factory(FupElem_factory):
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		elemClass = {
 			FupElem_CUD.OP_SYM_NAME	: FupElem_CUD,
 			FupElem_CU.OP_SYM_NAME	: FupElem_CU,
@@ -49,7 +50,7 @@ class FupElem_CUD_factory(FupElem_factory):
 			raise self.Error("Counter subtype '%s' is not known "
 				"to the element parser." % (
 				subType))
-		self.elem = elemClass(x=x, y=y, uuid=uuid)
+		self.elem = elemClass(x=x, y=y, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
 		self.subelemsFakeGrid = None
 		XmlFactory.parser_open(self, tag)
@@ -117,6 +118,7 @@ class FupElem_CUD_factory(FupElem_factory):
 					"x" : str(elem.x),
 					"y" : str(elem.y),
 					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -146,8 +148,8 @@ class FupElem_CUD(FupElem):
 	WITH_Q		= True
 	WITH_ENO	= True
 
-	def __init__(self, x, y, uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		self.inputs = []
 		if self.WITH_EN:

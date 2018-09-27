@@ -37,6 +37,7 @@ class FupElem_CONV_factory(FupElem_factory):
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		elemClass = {
 			FupElem_CONV_BTI.OP_SYM_NAME : FupElem_CONV_BTI,
 			FupElem_CONV_ITB.OP_SYM_NAME : FupElem_CONV_ITB,
@@ -60,7 +61,7 @@ class FupElem_CONV_factory(FupElem_factory):
 			raise self.Error("Conversion subtype '%s' is not known "
 				"to the element parser." % (
 				subType))
-		self.elem = elemClass(x=x, y=y, uuid=uuid)
+		self.elem = elemClass(x=x, y=y, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -81,19 +82,22 @@ class FupElem_CONV_factory(FupElem_factory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		elem = self.elem
+
 		connTags = []
-		for inp in self.elem.inputs:
+		for inp in elem.inputs:
 			connTags.extend(inp.factory(conn=inp).composer_getTags())
-		for out in self.elem.outputs:
+		for out in elem.outputs:
 			connTags.extend(out.factory(conn=out).composer_getTags())
 		return [
 			self.Tag(name="element",
 				attrs={
 					"type" : "convert",
-					"subtype" : str(self.elem.OP_SYM_NAME),
-					"x" : str(self.elem.x),
-					"y" : str(self.elem.y),
-					"uuid" : str(self.elem.uuid),
+					"subtype" : str(elem.OP_SYM_NAME),
+					"x" : str(elem.x),
+					"y" : str(elem.y),
+					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -107,8 +111,8 @@ class FupElem_CONV(FupElem):
 
 	factory = FupElem_CONV_factory
 
-	def __init__(self, x, y, uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		self.inputs = [ FupConnIn(self, text="IN"), ]
 		self.outputs = [ FupConnOut(self, text="OUT0"), ]

@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Abstract base classes
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,6 +40,7 @@ class FupBaseClass(object):
 
 	__slots__ = (
 		"__uuid",
+		"enabled",
 	)
 
 	@classmethod
@@ -48,8 +49,9 @@ class FupBaseClass(object):
 		"""
 		return str(uuid.uuid4())
 
-	def __init__(self, uuid=None):
+	def __init__(self, uuid=None, enabled=True):
 		self.uuid = uuid
+		self.enabled = enabled
 
 	@property
 	def uuid(self):

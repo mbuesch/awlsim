@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Boolean element classes
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		elemClass = {
 			FupElem_AND.OP_SYM_NAME	: FupElem_AND,
 			FupElem_OR.OP_SYM_NAME	: FupElem_OR,
@@ -53,7 +54,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 				"to the element parser." % (
 				subType))
 		self.elem = elemClass(
-			x=x, y=y, nrInputs=0, uuid=uuid)
+			x=x, y=y, nrInputs=0, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
 		self.subelemsFakeGrid = None
 		XmlFactory.parser_open(self, tag)
@@ -128,6 +129,7 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 					"x" : str(elem.x),
 					"y" : str(elem.y),
 					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -148,8 +150,8 @@ class FupElem_BOOLEAN(FupElem):
 	OPTIONAL_CONNS		= set()
 	BLANK_CONNS		= { "Q", }
 
-	def __init__(self, x, y, nrInputs=2, uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, nrInputs=2, **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		if self.FIXED_INPUTS is None:
 			self.inputs = [ FupConnIn(self)

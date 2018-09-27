@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Compare element classes
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ class FupElem_CMP_factory(FupElem_factory):
 		y = tag.getAttrInt("y")
 		subType = tag.getAttr("subtype")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		elemClass = {
 			FupElem_CMP_EQ_I.OP_SYM_NAME	: FupElem_CMP_EQ_I,
 			FupElem_CMP_NE_I.OP_SYM_NAME	: FupElem_CMP_NE_I,
@@ -61,7 +62,7 @@ class FupElem_CMP_factory(FupElem_factory):
 			raise self.Error("Compare subtype '%s' is not known "
 				"to the element parser." % (
 				subType))
-		self.elem = elemClass(x=x, y=y, nrInputs=0, uuid=uuid)
+		self.elem = elemClass(x=x, y=y, nrInputs=0, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -98,6 +99,7 @@ class FupElem_CMP_factory(FupElem_factory):
 					"x" : str(elem.x),
 					"y" : str(elem.y),
 					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -115,8 +117,8 @@ class FupElem_CMP(FupElem):
 	OPTIONAL_CONNS		= { "EN", "ENO", }
 	BLANK_CONNS		= { "IN", "OUT", }
 
-	def __init__(self, x, y, nrInputs=2, nrOutputs=1, uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, nrInputs=2, nrOutputs=1, **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		self.inputs = [ FupConnIn(self, text=text)
 				for text in self.FIXED_INPUTS ]

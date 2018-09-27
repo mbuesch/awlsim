@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Operand element classes
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ class FupElem_OPERAND_factory(FupElem_factory):
 		subType = tag.getAttr("subtype")
 		content = tag.getAttr("content", "")
 		uuid = tag.getAttr("uuid", None)
+		enabled = tag.getAttrBool("enabled", True)
 		elemClass = {
 			FupElem_LOAD.OP_SYM_NAME : FupElem_LOAD,
 			FupElem_ASSIGN.OP_SYM_NAME : FupElem_ASSIGN,
@@ -48,7 +49,8 @@ class FupElem_OPERAND_factory(FupElem_factory):
 				subType))
 		self.elem = elemClass(x=x, y=y,
 			contentText=content,
-			uuid=uuid)
+			uuid=uuid,
+			enabled=enabled)
 		self.elem.grid = self.grid
 		XmlFactory.parser_open(self, tag)
 
@@ -69,20 +71,23 @@ class FupElem_OPERAND_factory(FupElem_factory):
 		XmlFactory.parser_endTag(self, tag)
 
 	def composer_getTags(self):
+		elem = self.elem
+
 		connTags = []
-		for inp in self.elem.inputs:
+		for inp in elem.inputs:
 			connTags.extend(inp.factory(conn=inp).composer_getTags())
-		for out in self.elem.outputs:
+		for out in elem.outputs:
 			connTags.extend(out.factory(conn=out).composer_getTags())
 		return [
 			self.Tag(name="element",
 				attrs={
 					"type" : "operand",
-					"subtype" : self.elem.OP_SYM_NAME,
-					"x" : str(self.elem.x),
-					"y" : str(self.elem.y),
-					"content" : self.elem.contentText,
-					"uuid" : str(self.elem.uuid),
+					"subtype" : elem.OP_SYM_NAME,
+					"x" : str(elem.x),
+					"y" : str(elem.y),
+					"content" : elem.contentText,
+					"uuid" : str(elem.uuid),
+					"enabled" : "0" if not elem.enabled else "",
 				},
 				tags=[
 					self.Tag(name="connections",
@@ -98,8 +103,8 @@ class FupElem_OPERAND(FupElem):
 	BODY_CORNER_RADIUS	= 2
 	EXPAND_WHEN_SELECTED	= True
 
-	def __init__(self, x, y, contentText="", uuid=None):
-		FupElem.__init__(self, x, y, uuid=uuid)
+	def __init__(self, x, y, contentText="", **kwargs):
+		FupElem.__init__(self, x, y, **kwargs)
 
 		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
 		self._continuePen.setColor(QColor("#000000"))
@@ -252,8 +257,8 @@ class FupElem_ASSIGN(FupElem_OPERAND):
 	OP_SYM		= "assign"
 	OP_SYM_NAME	= "assign"	# XML ABI name
 
-	def __init__(self, x, y, contentText="", uuid=None):
-		FupElem_OPERAND.__init__(self, x, y, contentText, uuid=uuid)
+	def __init__(self, x, y, contentText="", **kwargs):
+		FupElem_OPERAND.__init__(self, x, y, contentText, **kwargs)
 
 		self.inputs = [ FupConnIn(self) ]
 
@@ -283,8 +288,8 @@ class FupElem_LOAD(FupElem_OPERAND):
 	OP_SYM		= "load"
 	OP_SYM_NAME	= "load"	# XML ABI name
 
-	def __init__(self, x, y, contentText="", uuid=None):
-		FupElem_OPERAND.__init__(self, x, y, contentText, uuid=uuid)
+	def __init__(self, x, y, contentText="", **kwargs):
+		FupElem_OPERAND.__init__(self, x, y, contentText, **kwargs)
 
 		self.outputs = [ FupConnOut(self) ]
 
@@ -320,8 +325,8 @@ class FupElem_EmbeddedOper(FupElem_OPERAND):
 	OP_SYM_NAME		= "embedded"	# XML ABI name
 	EXPAND_WHEN_SELECTED	= False
 
-	def __init__(self, x=0, y=0, contentText="", parentElem=None, uuid=None):
-		FupElem_OPERAND.__init__(self, x, y, contentText, uuid=uuid)
+	def __init__(self, x=0, y=0, contentText="", parentElem=None, **kwargs):
+		FupElem_OPERAND.__init__(self, x, y, contentText, **kwargs)
 		self.parentElem = parentElem
 		self.__grid = None
 

@@ -101,8 +101,8 @@ class FupElem(FupBaseClass):
 	# Override this in the subclass, if required.
 	CUSTOM_ACTIONS = ()
 
-	def __init__(self, x, y, uuid=None):
-		FupBaseClass.__init__(self, uuid=uuid)
+	def __init__(self, x, y, **kwargs):
+		FupBaseClass.__init__(self, **kwargs)
 		self.x = x		# X position as grid coordinates
 		self.y = y		# Y position as grid coordinates
 		self.grid = None
