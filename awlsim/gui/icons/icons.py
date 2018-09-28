@@ -31,6 +31,7 @@ from awlsim.gui.icons.counter import *
 from awlsim.gui.icons.cpu import *
 from awlsim.gui.icons.cut import *
 from awlsim.gui.icons.datablock import *
+from awlsim.gui.icons.disable import *
 from awlsim.gui.icons.doc_close import *
 from awlsim.gui.icons.doc_delete import *
 from awlsim.gui.icons.doc_edit import *
@@ -40,6 +41,7 @@ from awlsim.gui.icons.doc_new import *
 from awlsim.gui.icons.down import *
 from awlsim.gui.icons.download import *
 from awlsim.gui.icons.download_one import *
+from awlsim.gui.icons.enable import *
 from awlsim.gui.icons.exit import *
 from awlsim.gui.icons.find import *
 from awlsim.gui.icons.findreplace import *
@@ -82,6 +84,7 @@ __icons = {
 	"cpu"		: icon_cpu,
 	"cut"		: icon_cut,
 	"datablock"	: icon_datablock,
+	"disable"	: icon_disable,
 	"doc_close"	: icon_doc_close,
 	"doc_delete"	: icon_doc_delete,
 	"doc_edit"	: icon_doc_edit,
@@ -91,6 +94,7 @@ __icons = {
 	"down"		: icon_down,
 	"download"	: icon_download,
 	"download_one"	: icon_download_one,
+	"enable"	: icon_enable,
 	"exit"		: icon_exit,
 	"find"		: icon_find,
 	"findreplace"	: icon_findreplace,

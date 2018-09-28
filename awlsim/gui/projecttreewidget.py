@@ -1371,10 +1371,12 @@ class SourceContextMenu(QMenu):
 				       self.__integrate)
 		self.addSeparator()
 		if withEnableButton:
-			self.addAction("E&nable '%s'" % itemName,
+			self.addAction(getIcon("enable"),
+				       "E&nable '%s'" % itemName,
 				       self.__enable)
 		if withDisableButton:
-			self.addAction("D&isable '%s'" % itemName,
+			self.addAction(getIcon("disable"),
+				       "D&isable '%s'" % itemName,
 				       self.__disable)
 
 	def __edit(self):
