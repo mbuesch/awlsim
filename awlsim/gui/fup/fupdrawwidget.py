@@ -41,6 +41,8 @@ class FupContextMenu(QMenu):
 	paste = Signal()
 	edit = Signal()
 	remove = Signal()
+	enable = Signal()
+	disable = Signal()
 	invertConn = Signal()
 	addInput = Signal()
 	addOutput = Signal()
@@ -70,6 +72,12 @@ class FupContextMenu(QMenu):
 						self.__paste)
 		self.__actDel = self.addAction(getIcon("doc_close"),
 					       "&Remove element", self.__del)
+		self.__actEnable = self.addAction(getIcon("enable"),
+						  "E&nable element",
+						  self.__enable)
+		self.__actDisable = self.addAction(getIcon("disable"),
+						   "&Disable element",
+						   self.__disable)
 		self.addSeparator()
 		self.__actInvertConn = self.addAction(getIcon("doc_edit"),
 						      "In&vert connection",
@@ -110,6 +118,12 @@ class FupContextMenu(QMenu):
 	def __del(self):
 		self.remove.emit()
 
+	def __enable(self):
+		self.enable.emit()
+
+	def __disable(self):
+		self.disable.emit()
+
 	def __invertConn(self):
 		self.invertConn.emit()
 
@@ -142,6 +156,12 @@ class FupContextMenu(QMenu):
 
 	def enableRemove(self, en=True):
 		self.__actDel.setVisible(en)
+
+	def enableEnable(self, en=True):
+		self.__actEnable.setVisible(en)
+
+	def enableDisable(self, en=True):
+		self.__actDisable.setVisible(en)
 
 	def enableInvertConn(self, en=True):
 		self.__actInvertConn.setVisible(en)
@@ -204,6 +224,8 @@ class FupDrawWidget(QWidget):
 
 		self.__contextMenu = FupContextMenu(self)
 		self.__contextMenu.remove.connect(self.removeElems)
+		self.__contextMenu.enable.connect(lambda: self.enableElems(enable=True))
+		self.__contextMenu.disable.connect(lambda: self.enableElems(enable=False))
 		self.__contextMenu.edit.connect(self.editElems)
 		self.__contextMenu.copy.connect(self.clipboardCopy)
 		self.__contextMenu.cut.connect(self.clipboardCut)
@@ -386,6 +408,14 @@ class FupDrawWidget(QWidget):
 			with self.__repaintBlocked:
 				for elem in elems.copy():
 					self.removeElem(elem)
+			self.__contentChanged()
+
+	def enableElems(self, elems=None, enable=True):
+		if self.__grid:
+			if not elems:
+				elems = self.__grid.selectedElems
+			for elem in elems:
+				elem.enabled = enable
 			self.__contentChanged()
 
 	def moveElem(self, elem, toGridX, toGridY,
@@ -713,6 +743,10 @@ class FupDrawWidget(QWidget):
 			self.__contextMenu.enableAddOutput(False)
 			self.__contextMenu.enableRemoveConn(False)
 			self.__contextMenu.enableDisconnWire(False)
+			self.__contextMenu.enableEnable(
+				any(not e.enabled for e in grid.selectedElems))
+			self.__contextMenu.enableDisable(
+				any(e.enabled for e in grid.selectedElems))
 			for i in range(self.__contextMenu.NR_CUSTOM):
 				self.__contextMenu.enableCustomAction(i, False)
 			if elem:
