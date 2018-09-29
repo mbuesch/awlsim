@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Operand element
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -125,20 +125,21 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 
 	@property
 	def operatorWidth(self):
-		if self.__operatorWidth is None:
-			if self._operator:
-				# Get the width of a possibly symbolic operator.
-				compiler = self.grid.compiler
-				width = compiler.getOperDataWidth(self._operator)
-				self.__operatorWidth = width
-				return width
-		else:
-			return self.__operatorWidth
+		if self.enabled:
+			if self.__operatorWidth is None:
+				if self._operator:
+					# Get the width of a possibly symbolic operator.
+					compiler = self.grid.compiler
+					width = compiler.getOperDataWidth(self._operator)
+					self.__operatorWidth = width
+					return width
+			else:
+				return self.__operatorWidth
 		# Unknown width
 		return 0
 
 	def getConnType(self, conn, preferVKE=False):
-		if conn in self.connections or conn is None:
+		if self.enabled and (conn in self.connections or conn is None):
 			self._translateContent()
 			operType = self._operator.operType
 			if operType == AwlOperatorTypes.SYMBOLIC:
@@ -159,6 +160,8 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		"""Compile this operator as the specified instruction.
 		This may be AwlInsn_U, AwlInsn_S or similar.
 		"""
+		if not self.enabled:
+			return []
 		insns = []
 
 		self._translateContent()
@@ -174,6 +177,8 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		return insns
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
+		if not self.enabled:
+			return []
 		self.compileState = self.COMPILE_RUNNING
 
 		insns = []
@@ -218,6 +223,8 @@ class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 					      **kwargs)
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		insns = []
 
 		# Translate the operator content
@@ -258,13 +265,22 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 
 	@property
 	def isCompileEntryPoint(self):
+		if not self.enabled:
+			return False
 		return True # This is a compilation entry point.
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		insns = []
 
 		# Get the element that is connected to this operator.
 		otherElem = self._getConnectedElem()
+
+		# If the connected element is disabled,
+		# do not compile this assignment either.
+		if not otherElem.enabled:
+			return []
 
 		# Translate the operator.
 		# Do this before compiling the connected element so that
@@ -301,6 +317,8 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		This does not check whether the operator actually is a boolean operator.
 		A list of instructions is returned.
 		"""
+		if not self.enabled:
+			return []
 		insns = []
 
 		# Create the ASSIGN instruction.
@@ -325,6 +343,8 @@ class FupCompiler_ElemOperAssign(FupCompiler_ElemOper):
 		This does not check whether the operator actually is a non-bool operator.
 		A list of instructions is returned.
 		"""
+		if not self.enabled:
+			return []
 		insns = []
 
 		# Create a transfer instruction.
@@ -348,6 +368,8 @@ class FupCompiler_ElemOperEmbedded(FupCompiler_ElemOper):
 					      **kwargs)
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		raise FupOperError("It's unknown how to compile "
 			"the embedded operand.",
 			self)

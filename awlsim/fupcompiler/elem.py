@@ -66,8 +66,9 @@ class FupCompiler_ElemFactory(XmlFactory):
 				subType = tag.getAttr("subtype", None)
 				content = tag.getAttr("content", None)
 				uuid = tag.getAttr("uuid", None)
+				enabled = tag.getAttrBool("enabled", True)
 				self.elem = FupCompiler_Elem.parse(self.grid,
-					x, y, elemType, subType, content, uuid)
+					x, y, elemType, subType, content, uuid, enabled)
 				if not self.elem:
 					raise self.Error("Failed to parse element "
 						"type '%s'%s at x=%d y=%d" % (
@@ -146,7 +147,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			      key=lambda e: (e.y << yShift) + e.x)
 
 	@classmethod
-	def parse(cls, grid, x, y, elemType, subType, content, uuid):
+	def parse(cls, grid, x, y, elemType, subType, content, uuid, enabled):
 		from awlsim.fupcompiler.elembool import FupCompiler_ElemBool
 		from awlsim.fupcompiler.elemoper import FupCompiler_ElemOper
 		from awlsim.fupcompiler.elemmove import FupCompiler_ElemMove
@@ -180,6 +181,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 						       subType=subType,
 						       content=content)
 				elem.uuid = uuid
+				elem.enabled = enabled
 				return elem
 		except KeyError:
 			pass
@@ -388,6 +390,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		The default implementation raises an exception.
 		Override this method, if required.
 		"""
+		if not self.enabled:
+			return []
 		raise FupElemError("It is not known how to "
 			"compile the connection %s of element %s. "
 			"That probably means it's not allowed to "
@@ -438,6 +442,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""Main element preprocessor entry point.
 		Do not override this. Override _doPreprocess instead.
 		"""
+		if not self.enabled:
+			return
 		self.compileState = self.COMPILE_PREPROCESSING
 
 		# Preprocess the elements connected to the in-connections first.
@@ -455,6 +461,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""Main element compiler entry point.
 		Do not override this. Override _doCompile instead.
 		"""
+		if not self.enabled:
+			return []
 		self.compileState = self.COMPILE_RUNNING
 		result = self._doCompile()
 		self.compileState = self.COMPILE_DONE
@@ -524,6 +532,8 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			content = self.content.strip().replace('\n', ' ').replace('\r', '')
 			values.append("'%s'" % content)
 		values.append(shortUUID(self.uuid))
+		if not self.enabled:
+			values.append("disabled")
 		values.extend(extra)
 		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
 

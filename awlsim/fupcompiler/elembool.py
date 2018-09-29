@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Boolean element
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -117,6 +117,8 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		return outConnections[0]
 
 	def _doCompileBool(self, insnClass):
+		if not self.enabled:
+			return []
 		insns = []
 		# Walk down each input connection of this element.
 		for conn in sorted(self.inConnections, key=lambda c: c.pos):
@@ -178,6 +180,8 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 		return insns
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
+		if not self.enabled:
+			return []
 		self._compileConn_checkTarget(conn, desiredTarget, inverted,
 					      targetExpectVKE=True,
 					      allowInversion=True)
@@ -270,6 +274,8 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 
 	@property
 	def isCompileEntryPoint(self):
+		if not self.enabled:
+			return False
 		# We are a compilation entry, if Q is not connected.
 		conn = self.getUniqueConnByText("Q", searchOutputs=True)
 		if not conn or not conn.isConnected:
@@ -277,6 +283,8 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 		return False
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		insns = []
 
 		bodyOper = self._getBodyOper()
@@ -298,6 +306,8 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 		return insns
 
 	def connIsOptional(self, conn):
+		if not self.enabled:
+			return True
 		return conn.hasText(self.OPTIONAL_CONNS)
 
 class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
@@ -323,6 +333,8 @@ class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	OPTIONAL_CONNS	= { "Q", }
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		# Enforce connection names.
 		# They might not be present in the project file.
 		if len(list(self.inConnections)) == 1:
@@ -359,6 +371,8 @@ class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
 					      **kwargs)
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		insns = []
 
 		bodyOper = self._getBodyOper()

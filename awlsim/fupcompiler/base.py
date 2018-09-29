@@ -99,11 +99,13 @@ class FupCompiler_BaseObj(object):
 	__slots__ = (
 		"__uuid",
 		"__compileState",
+		"enabled",
 	)
 
-	def __init__(self, uuid=None):
+	def __init__(self, uuid=None, enabled=True):
 		self.__compileState = self.COMPILE_IDLE
 		self.uuid = uuid
+		self.enabled = enabled
 
 	@property
 	def uuid(self):

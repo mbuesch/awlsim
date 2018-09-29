@@ -112,6 +112,12 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 					"Duplicate element UUID: %s" % elem.uuid)
 			self.uuids[elem.uuid] = elem
 
+	@property
+	def enabledElems(self):
+		"""Get all enabled elements.
+		"""
+		return filter(lambda elem: elem.enabled, self.elems)
+
 	def compile(self):
 		"""Compile this FUP grid to AWL.
 		Returns a list of instructions.
@@ -128,7 +134,8 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 			wire.clearConnections()
 		for elem in self.elems:
 			for conn in elem.connections:
-				if conn.wireId == conn.WIREID_NONE and not conn.isOptional:
+				if elem.enabled and\
+				   conn.wireId == conn.WIREID_NONE and not conn.isOptional:
 					raise FupGridError("Unconnected pin%s found "
 						"in FUP element %s." % (
 						(" \"%s\"" % conn.text) if conn.text else "",
@@ -159,7 +166,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 
 		def checkAllElemStates(checkState):
 			# Check if all elements have been processed.
-			for elem in self.elems:
+			for elem in self.enabledElems:
 				if elem.compileState != checkState and\
 				   not isinstance(elem, FupCompiler_ElemComment):
 					raise FupGridError("Found dangling element "
@@ -170,7 +177,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 
 		# Preprocess all elements.
 		# Find all assignment operators and walk the logic chain upwards.
-		for elem in FupCompiler_Elem.sorted(self.elems):
+		for elem in FupCompiler_Elem.sorted(self.enabledElems):
 			if elem.isCompileEntryPoint and elem.needPreprocess:
 				elem.preprocess()
 
@@ -178,7 +185,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 		checkAllElemStates(FupCompiler_Elem.COMPILE_PREPROCESSED)
 
 		# Check if inverted connections are only used on supported elements.
-		for elem in FupCompiler_Elem.sorted(self.elems):
+		for elem in FupCompiler_Elem.sorted(self.enabledElems):
 			for conn in elem.connections:
 				if conn.inverted and\
 				   conn.connType != conn.TYPE_VKE:
@@ -191,7 +198,7 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 
 		# Compile all elements.
 		# Find all assignment operators and walk the logic chain upwards.
-		for elem in FupCompiler_Elem.sorted(self.elems):
+		for elem in FupCompiler_Elem.sorted(self.enabledElems):
 			if elem.isCompileEntryPoint and elem.needCompile:
 				insns.extend(elem.compile())
 

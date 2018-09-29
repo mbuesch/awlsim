@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler - Compare operations
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -126,10 +126,12 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 					  **kwargs)
 
 	def connIsOptional(self, conn):
+		if not self.enabled:
+			return True
 		return conn.hasText({ "EN", "ENO", })
 
 	def getConnType(self, conn, preferVKE=False):
-		if conn in self.connections:
+		if self.enabled and conn in self.connections:
 			if conn.textMatch(r"(OUT\d+)|(EN)|(ENO)"):
 				return FupCompiler_Conn.TYPE_VKE
 			return FupCompiler_Conn.TYPE_ACCU
@@ -166,6 +168,8 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 				yield conn
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
+		if not self.enabled:
+			return []
 		insns = []
 		assert(conn in self.connections)
 
@@ -188,6 +192,8 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 		return insns
 
 	def _doPreprocess(self):
+		if not self.enabled:
+			return
 		# If the element connected to IN is not a LOAD operand, we must
 		# take its ENO into account.
 		# If we don't have a connection on EN, we implicitly connect
@@ -209,6 +215,8 @@ class FupCompiler_ElemCmp(FupCompiler_Elem):
 				boolElemClass=FupCompiler_ElemBoolAnd)
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		insns = []
 
 		conn_EN, conn_ENO = self.__getConnsEN()

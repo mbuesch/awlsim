@@ -89,11 +89,13 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 					  **kwargs)
 
 	def connIsOptional(self, conn):
+		if not self.enabled:
+			return True
 		return conn.hasText({ "EN", "ENO", "CU", "CD", "S", "PV", "R",
 				      "CV", "CVB", "Q", })
 
 	def getConnType(self, conn, preferVKE=False):
-		if conn in self.connections:
+		if self.enabled and conn in self.connections:
 			if conn.hasText({ "EN", "ENO", "CU", "CD", "S", "R", "Q", }):
 				return FupCompiler_Conn.TYPE_VKE
 			return FupCompiler_Conn.TYPE_ACCU
@@ -116,6 +118,8 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 		return subElem
 
 	def compileConn(self, conn, desiredTarget, inverted=False):
+		if not self.enabled:
+			return []
 		insns = []
 		assert(conn in self.connections)
 
@@ -152,6 +156,8 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 		return insns
 
 	def _doPreprocess(self):
+		if not self.enabled:
+			return
 		# If any element connected to any input is not a LOAD operand, we must
 		# take its ENO into account.
 		# If we don't have a connection on EN, we implicitly connect
@@ -187,6 +193,8 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 				boolElemClass=FupCompiler_ElemBoolAnd)
 
 	def _doCompile(self):
+		if not self.enabled:
+			return []
 		insns = []
 
 		# Get all inputs.
@@ -365,6 +373,8 @@ class FupCompiler_ElemCount(FupCompiler_Elem):
 
 	@property
 	def isCompileEntryPoint(self):
+		if not self.enabled:
+			return False
 		# We are a compilation entry, if no output is connected.
 		conn_CV = self.getUniqueConnByText("CV", searchOutputs=True)
 		conn_CVB = self.getUniqueConnByText("CVB", searchOutputs=True)
