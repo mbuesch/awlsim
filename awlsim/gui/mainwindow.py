@@ -533,6 +533,8 @@ class MainWindow(QMainWindow):
 		QMainWindow.__init__(self, parent)
 		self.setWindowIcon(getIcon("cpu"))
 
+		self.__profiler = None
+
 		self.mainWidget = MainWidget(self, self)
 		self.cpuDockWidget = CpuDockWidget(self.mainWidget, self)
 		self.treeDockWidget = ProjectTreeDockWidget(self.mainWidget, self)
@@ -672,6 +674,16 @@ class MainWindow(QMainWindow):
 		menu.addAction(getIcon("browser"), "Awlsim &homepage...", self.awlsimHomepage)
 		menu.addSeparator()
 		menu.addAction(getIcon("cpu"), "&About...", self.about)
+		menu.addSeparator()
+		self.__actProfileStart = menu.addAction(getIcon("enable"),
+							"Start profiling",
+							self.profileStart)
+		self.__actProfileStop = menu.addAction(getIcon("disable"),
+						       "Stop profiling",
+						       self.profileStop)
+		profEnabled = (AwlSimEnv.getProfileLevel() > 0)
+		self.__actProfileStart.setVisible(profEnabled)
+		self.__actProfileStop.setVisible(False)
 		self.menuBar().addMenu(menu)
 
 		self.__sourceTextHasFocus = False
@@ -886,6 +898,7 @@ class MainWindow(QMainWindow):
 		self.getSimClient().shutdown()
 		ev.accept()
 		QMainWindow.closeEvent(self, ev)
+		self.profileStop()
 
 	def keyPressEvent(self, ev):
 		if ev.matches(QKeySequence.Save):
@@ -925,3 +938,26 @@ class MainWindow(QMainWindow):
 			"with this program; if not, write to the Free Software Foundation, Inc., "
 			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." %\
 			(VERSION_STRING, AWLSIM_HOME_URL))
+
+	def profileStart(self):
+		if not self.__profiler:
+			try:
+				self.__profiler = Profiler()
+				self.__profiler.start()
+			except AwlSimError as e:
+				MessageBox.handleAwlSimError(self,
+					"Failed to start profiler.", e)
+				self.__profiler = None
+				return
+
+			self.__actProfileStart.setVisible(False)
+			self.__actProfileStop.setVisible(True)
+
+	def profileStop(self):
+		if self.__profiler:
+			self.__profiler.stop()
+			printInfo("GUI profiler dump:\n" + self.__profiler.getResult())
+			self.__profiler = None
+
+			self.__actProfileStart.setVisible(True)
+			self.__actProfileStop.setVisible(False)
