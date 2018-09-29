@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 from awlsim.common.project import *
 from awlsim.common.env import *
 from awlsim.common.exceptions import *
+from awlsim.common.profiler import *
 
 from awlsim.core.util import *
 from awlsim.core.cpu import * #+cimport
@@ -92,41 +93,18 @@ class AwlSim(object): #+cdef
 		if self._profileLevel <= 0:
 			return
 
-		try:
-			import cProfile as profileModule
-		except ImportError:
-			profileModule = None
-		self.__profileModule = profileModule
-		try:
-			import pstats as pstatsModule
-		except ImportError:
-			pstatsModule = None
-		self.__pstatsModule = pstatsModule
-
-		if not self.__profileModule or\
-		   not self.__pstatsModule:
-			raise AwlSimError("Failed to load cProfile/pstats modules. "
-				"Cannot enable profiling.")
-
-		self.__profiler = self.__profileModule.Profile()
+		self.__profiler = Profiler()
 
 	def _profileStart(self): #@nocov
-		self.__profiler.enable()
+		self.__profiler.start()
 
 	def _profileStop(self): #@nocov
-		self.__profiler.disable()
+		self.__profiler.stop()
 
 	def getProfileStats(self): #@nocov
 		if self._profileLevel <= 0:
 			return None
-
-		sio = StringIO()
-		ps = self.__pstatsModule.Stats(self.__profiler,
-					       stream = sio)
-		ps.sort_stats("time")
-		ps.print_stats()
-
-		return sio.getvalue()
+		return self.__profiler.getResult()
 
 	def _handleSimException(self, e, fatal = True):
 		"""Handle an exception and add some information
