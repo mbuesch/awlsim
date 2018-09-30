@@ -102,6 +102,9 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 			pass
 		return None
 
+	def removeWire(self, wire):
+		self.wires.pop(wire.idNum, None)
+
 	def addElem(self, elem):
 		self.elems.add(elem)
 		# Check and warn if we have a duplicate UUID.
@@ -153,6 +156,24 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 							self)
 					wire.addConn(conn)
 					conn.wire = wire
+
+		# Disconnect disabled elements from the wires.
+		# Disabled elements will be left dangling.
+		for wire in tuple(dictValues(self.wires)):
+			removedConn = False
+			for conn in frozenset(wire.connections):
+				if not conn.elem.enabled:
+					wire.removeConn(conn)
+					removedConn = True
+			if removedConn:
+				# If there is only one connection left, also remove that.
+				if len(wire.connections) == 1:
+					wire.removeConn(getany(wire.connections))
+				# If there are no connections left to this wire, remove the wire.
+				if len(wire.connections) == 0:
+					self.removeWire(wire)
+
+		# Wire sanity checks.
 		for wire in dictValues(self.wires):
 			if len(wire.connections) == 0:
 				raise FupGridError("Found unconnected wire %s" % (
