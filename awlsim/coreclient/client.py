@@ -67,6 +67,7 @@ class AwlSimClient(object):
 		self.serverProcessPort = None
 		self.__transceiver = None
 		self.__defaultTimeout = 3.0
+		self.__timeoutFactor = 3.0 if isPyPy else 1.0
 		self.__msgWaiters = []
 
 	def spawnServer(self,
@@ -203,8 +204,9 @@ class AwlSimClient(object):
 			    timeout=3.0):
 		"""Connect to a AwlSim-core server.
 		host -> The hostname or IP address to connect to.
-		port -> The port to connect to."""
-
+		port -> The port to connect to.
+		"""
+		timeout *= self.__timeoutFactor
 		self.__defaultTimeout = timeout
 		startTime = monotonic_time()
 		readableSockaddr = host
@@ -253,7 +255,7 @@ class AwlSimClient(object):
 		# Ping the server
 		try:
 			self.__transceiver.send(AwlSimMessage_PING())
-			msg = self.__transceiver.receive(timeout = timeout)
+			msg = self.__transceiver.receive(timeout=timeout)
 			if not msg:
 				raise AwlSimError("AwlSimClient: Server did not "
 					"respond to PING request.")
@@ -372,6 +374,8 @@ class AwlSimClient(object):
 	def processMessages(self, timeout=None):
 		if not self.__transceiver:
 			return False
+		if timeout is not None:
+			timeout *= self.__timeoutFactor
 		try:
 			msg = self.__transceiver.receive(timeout)
 		except TransferError as e:
@@ -423,8 +427,9 @@ class AwlSimClient(object):
 		try:
 			self.__send(txMsg)
 			now = monotonic_time()
-			end = now + (self.__defaultTimeout if waitTimeout is None\
-				     else waitTimeout)
+			timeout = self.__defaultTimeout if waitTimeout is None else waitTimeout
+			timeout *= self.__timeoutFactor
+			end = now + timeout
 			while now < end:
 				try:
 					if self.processMessages(0.1):
