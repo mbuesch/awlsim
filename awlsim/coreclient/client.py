@@ -67,7 +67,7 @@ class AwlSimClient(object):
 		self.serverProcessPort = None
 		self.__transceiver = None
 		self.__defaultTimeout = 3.0
-		self.__timeoutFactor = 3.0 if isPyPy else 1.0
+		self.__timeoutFactor = 2.0 if isPyPy else 1.0
 		self.__msgWaiters = []
 
 	def spawnServer(self,
@@ -206,8 +206,8 @@ class AwlSimClient(object):
 		host -> The hostname or IP address to connect to.
 		port -> The port to connect to.
 		"""
-		timeout *= self.__timeoutFactor
 		self.__defaultTimeout = timeout
+		timeout *= self.__timeoutFactor
 		startTime = monotonic_time()
 		readableSockaddr = host
 		sock, ok = None, False
