@@ -158,7 +158,7 @@ cdef class S7CPU(object):
 
 	cdef updateTimestamp(self)
 	cdef __cycleTimeExceed(self)
-	cdef __runTimeExceed(self)
+	cdef __checkRunTimeLimit(self)
 
 	cdef runCycle(self)
 	cdef __runOB(self, OB block)

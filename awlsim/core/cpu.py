@@ -874,6 +874,7 @@ class S7CPU(object): #+cdef
 		# Run the user program cycle
 		while cse is not None:
 			while cse.ip < cse.nrInsns:
+				# Fetch the next instruction and run it.
 				insn, self.relativeJump = cse.insns[cse.ip], 1
 				insn.run()
 				if self.cbPostInsn is not None:
@@ -881,10 +882,19 @@ class S7CPU(object): #+cdef
 				cse.ip += self.relativeJump
 				cse = self.callStackTop
 				self.__insnCount = insnCount = (self.__insnCount + 1) & 0x3FFFFFFF
+
+				# Check if a timekeeping update is required.
 				if not (insnCount & self.__timestampUpdInterMask):
 					self.updateTimestamp()
+
+					# Check if the cycle time is exceeded.
 					if self.now - self.cycleStartTime > self.cycleTimeLimit:
 						self.__cycleTimeExceed()
+
+					# Check if the runtime limit is enabled and exceeded.
+					if self.__runtimeLimit >= 0.0:
+						self.__checkRunTimeLimit()
+
 			if self.cbBlockExit is not None:
 				self.cbBlockExit(self.cbBlockExitData)
 			cse, exitCse = cse.prevCse, cse
@@ -892,6 +902,10 @@ class S7CPU(object): #+cdef
 			self.callStackDepth -= 1
 			exitCse.handleBlockExit()
 		assert(self.callStackDepth == 0) #@nocy
+
+		# Check if the runtime limit is enabled and exceeded.
+		if self.__runtimeLimit >= 0.0:
+			self.__checkRunTimeLimit()
 
 	def initClockMemState(self, force=False):
 		"""Reset/initialize the clock memory byte state.
@@ -1092,18 +1106,15 @@ class S7CPU(object): #+cdef
 					"\n\nThe configured clock memory byte "
 					"address might be invalid." )
 
-		# Check whether the runtime timeout exceeded
-		if self.__runtimeLimit >= 0.0:
-			if now - self.startupTime >= self.__runtimeLimit:
-				self.__runTimeExceed()
-
 	def __cycleTimeExceed(self): #+cdef
 		raise AwlSimError("Cycle time exceed %.3f seconds" % (
 				  self.cycleTimeLimit))
 
-	def __runTimeExceed(self): #+cdef
-		raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
-					 "CPU runtime timeout")
+	def __checkRunTimeLimit(self): #+cdef
+		if (self.__runtimeLimit >= 0.0 and
+		    self.now - self.startupTime >= self.__runtimeLimit):
+			raise MaintenanceRequest(MaintenanceRequest.TYPE_RTTIMEOUT,
+						 "CPU runtime timeout")
 
 	# Make a DATE_AND_TIME for the current wall-time and
 	# store it in byteArray, which is a bytearray or compatible.
