@@ -157,6 +157,27 @@ class FupCompiler_Grid(FupCompiler_BaseObj):
 					wire.addConn(conn)
 					conn.wire = wire
 
+		# Disable all load and assignment operators that
+		# are directly connected to disabled elements.
+		for elem in self.elems:
+			if elem.enabled:
+				continue
+			if elem.isType(FupCompiler_Elem.TYPE_OPERAND,
+				       FupCompiler_ElemOper.SUBTYPE_LOAD):
+				# Disabled load operands do not affect other elems.
+				continue
+			for conn in elem.connections:
+				for otherElem in conn.getConnectedElems(viaOut=True, viaIn=True):
+					if not otherElem.enabled:
+						continue
+					if not otherElem.isType(FupCompiler_Elem.TYPE_OPERAND,
+								(FupCompiler_ElemOper.SUBTYPE_LOAD,
+								 FupCompiler_ElemOper.SUBTYPE_ASSIGN)):
+						continue
+					# This is a load or assignment connected
+					# to a disabled element. Disable it, too.
+					otherElem.enabled = False
+
 		# Disconnect disabled elements from the wires.
 		# Disabled elements will be left dangling.
 		for wire in tuple(dictValues(self.wires)):
