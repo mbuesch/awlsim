@@ -31,6 +31,10 @@ from awlsim.common.wordpacker import *
 from awlsim.core.cpu import * #+cimport
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
+from awlsim.core.datablocks import * #+cimport
+from awlsim.core.timers import * #+cimport
+from awlsim.core.counters import * #+cimport
+from awlsim.core.statusword import * #+cimport
 
 
 class MemoryArea(object):
@@ -88,16 +92,20 @@ class MemoryArea(object):
 			)
 		self.data = AwlMemoryObject_asBytes(memObj)[:]
 
-	def __read_E(self, cpu):
+	def __read_E(self, cpu): #@nocy
+#@cy	def __read_E(self, S7CPU cpu):
 		self.__memoryRead(cpu.inputs)
 
-	def __read_A(self, cpu):
+	def __read_A(self, cpu): #@nocy
+#@cy	def __read_A(self, S7CPU cpu):
 		self.__memoryRead(cpu.outputs)
 
-	def __read_M(self, cpu):
+	def __read_M(self, cpu): #@nocy
+#@cy	def __read_M(self, S7CPU cpu):
 		self.__memoryRead(cpu.flags)
 
-	def __read_L(self, cpu):
+	def __read_L(self, cpu): #@nocy
+#@cy	def __read_L(self, S7CPU cpu):
 		#TODO use self.index to select which L-stack we want to access.
 		if not cpu.activeLStack:
 			self.__raiseReadErr(
@@ -105,7 +113,10 @@ class MemoryArea(object):
 			)
 		self.__memoryRead(cpu.activeLStack.memory)
 
-	def __read_DB(self, cpu):
+	def __read_DB(self, cpu): #@nocy
+#@cy	def __read_DB(self, S7CPU cpu):
+#@cy		cdef DB db
+
 		try:
 			db = cpu.dbs[self.index]
 		except KeyError:
@@ -120,7 +131,10 @@ class MemoryArea(object):
 			)
 		self.__memoryRead(db.structInstance.memory)
 
-	def __read_T(self, cpu):
+	def __read_T(self, cpu): #@nocy
+#@cy	def __read_T(self, S7CPU cpu):
+#@cy		cdef Timer timer
+
 		try:
 			timer = cpu.timers[self.index]
 		except IndexError as e:
@@ -131,7 +145,10 @@ class MemoryArea(object):
 		self.data = WordPacker.toBytes(bytearray(4), 32, 0, v)
 		self.length = 4
 
-	def __read_Z(self, cpu):
+	def __read_Z(self, cpu): #@nocy
+#@cy	def __read_Z(self, S7CPU cpu):
+#@cy		cdef Counter counter
+
 		try:
 			counter = cpu.counters[self.index]
 		except IndexError as e:
@@ -142,8 +159,12 @@ class MemoryArea(object):
 		self.data = WordPacker.toBytes(bytearray(4), 32, 0, v)
 		self.length = 4
 
-	def __read_STW(self, cpu):
-		stw = cpu.statusWord.getWord()
+	def __read_STW(self, cpu): #@nocy
+#@cy	def __read_STW(self, S7CPU cpu):
+#@cy		cdef S7StatusWord s
+
+		s = cpu.statusWord
+		stw = s.getWord()
 		self.data, self.length = bytearray(((stw >> 8) & 0xFF, stw & 0xFF)), 2
 
 	__readHandlers = {
@@ -175,16 +196,22 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Write range error")
 			)
 
-	def __write_E(self, cpu):
+	def __write_E(self, cpu): #@nocy
+#@cy	def __write_E(self, S7CPU cpu):
 		self.__memoryWrite(cpu.inputs)
 
-	def __write_A(self, cpu):
+	def __write_A(self, cpu): #@nocy
+#@cy	def __write_A(self, S7CPU cpu):
 		self.__memoryWrite(cpu.outputs)
 
-	def __write_M(self, cpu):
+	def __write_M(self, cpu): #@nocy
+#@cy	def __write_M(self, S7CPU cpu):
 		self.__memoryWrite(cpu.flags)
 
-	def __write_DB(self, cpu):
+	def __write_DB(self, cpu): #@nocy
+#@cy	def __write_DB(self, S7CPU cpu):
+#@cy		cdef DB db
+
 		try:
 			db = cpu.dbs[self.index]
 		except KeyError:
@@ -199,7 +226,10 @@ class MemoryArea(object):
 			)
 		self.__memoryWrite(db.structInstance.memory)
 
-	def __write_T(self, cpu):
+	def __write_T(self, cpu): #@nocy
+#@cy	def __write_T(self, S7CPU cpu):
+#@cy		cdef Timer timer
+
 		try:
 			timer = cpu.timers[self.index]
 		except IndexError as e:
@@ -217,7 +247,10 @@ class MemoryArea(object):
 				AwlSimError("MemoryArea: Timer value error")
 			)
 
-	def __write_Z(self, cpu):
+	def __write_Z(self, cpu): #@nocy
+#@cy	def __write_Z(self, S7CPU cpu):
+#@cy		cdef Counter counter
+
 		try:
 			counter = cpu.counters[self.index]
 		except IndexError as e:
