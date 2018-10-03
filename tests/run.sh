@@ -350,13 +350,14 @@ run_awl_test()
 	# By default run once with all optimizers enabled.
 	local optimizer_runs="$(get_conf "$awl" optimizer_runs all)"
 
-	local first=1
+	local first_opti=1
 	for optimizers in $optimizer_runs; do
-		[ $first -eq 0 ] && infomsg -n " / "
-		local first=0
+		[ $first_opti -eq 0 ] && infomsg -n " / "
+		local first_opti=0
 
 		local tries="$(get_conf "$awl" tries 1)"
 		[ $tries -lt 1 ] && local tries=1
+		local first_try=1
 
 		local ok=0
 		local exit_code=-1
@@ -365,6 +366,7 @@ run_awl_test()
 			local tries="$(expr "$tries" - 1)"
 
 			(
+				[ $first_try -ne 0 ] && adjust_niceness "$($SHELL -c 'echo $PPID')"
 				setup_test_environment "$interpreter" "$awl"
 				local actual_interpreter="$RET"
 
@@ -415,6 +417,7 @@ run_awl_test()
 
 				cleanup_test_environment
 			) && local ok=1
+			local first_try=0
 		done
 		if [ $ok -eq 0 ]; then
 			die # Test failed
@@ -445,6 +448,7 @@ run_sh_test()
 		. "$basedir/sh-test.defaults"
 		. "$sh_file"
 
+		adjust_niceness "$($SHELL -c 'echo $PPID')"
 		setup_test_environment "$interpreter" "$sh_file"
 		local interpreter="$RET"
 		local test_dir="$(dirname "$sh_file")"
@@ -500,6 +504,7 @@ run_nose_test()
 		EXTRA_PYTHONPATH="$rootdir/tests:$EXTRA_PYTHONPATH"
 
 		# Setup python environment
+		adjust_niceness "$($SHELL -c 'echo $PPID')"
 		setup_test_environment "$interpreter" "$test_case"
 		local interpreter="$RET"
 
@@ -927,17 +932,26 @@ if [ -z "$opt_loop" -o -n "$(printf '%s' "$opt_loop" | tr -d '[0-9]')" ] || [ $o
 	opt_loop=infinite
 fi
 
+
 do_renice()
 {
-	renice "$1" "$$" >/dev/null
+	local niceness="$1"
+	local pid="$2"
+
+	renice "$niceness" "$pid" >/dev/null
 }
 
-if [ -n "$opt_renice" ]; then
-	do_renice "$opt_renice" || die "Failed to renice"
-else
-	# Try to renice. Ignore failure.
-	do_renice 10
-fi
+adjust_niceness()
+{
+	local pid="$1"
+
+	if [ -n "$opt_renice" ]; then
+		do_renice "$opt_renice" "$pid" || die "Failed to renice"
+	else
+		# Try to renice. Ignore failure.
+		do_renice 10 "$pid"
+	fi
+}
 
 
 # Run the tests
