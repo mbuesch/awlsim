@@ -33,11 +33,11 @@ errormsg()
 
 die()
 {
-	errormsg "$*"
-
-	# We might be in a sub-job. So write to fail-file.
-	failfile_write "$*"
-
+	if [ -n "$*" ]; then
+		errormsg "$*"
+		# We might be in a sub-job. So write to fail-file.
+		failfile_write "$*"
+	fi
 	exit 1
 }
 
@@ -59,15 +59,7 @@ maketemp()
 test_failed()
 {
 	errormsg "=== TEST FAILED ==="
-
-	if [ $opt_softfail -eq 0 ]; then
-		die "$@"
-	else
-		failfile_write "$*"
-		errormsg "$*"
-		errormsg "^^^ TEST FAILED ^^^"
-		[ $global_retval -eq 0 ] && global_retval=1
-	fi
+	die "$@"
 }
 
 cleanup()
@@ -355,9 +347,6 @@ run_awl_test()
 	local awl="$2"
 	shift; shift
 
-	setup_test_environment "$interpreter" "$awl"
-	local actual_interpreter="$RET"
-
 	# By default run once with all optimizers enabled.
 	local optimizer_runs="$(get_conf "$awl" optimizer_runs all)"
 
@@ -373,60 +362,70 @@ run_awl_test()
 		local exit_code=-1
 		local expected_exit_code=-2
 		while [ $tries -gt 0 -a $ok -eq 0 ]; do
-			local ok=1
 			local tries="$(expr "$tries" - 1)"
-			local loglevel="$(get_conf "$awl" loglevel "$opt_loglevel")"
-			local expected_exit_code="$(get_conf "$awl" exit_code 0)"
-			[ $expected_exit_code -eq 0 ] || local loglevel=0
-			local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
-			local max_runtime="$(get_conf "$awl" max_runtime -1)"
-			local accus="$(get_conf "$awl" accus)"
-			if [ "$accus" = "2" ]; then
-				local accus=--twoaccu
-			elif [ "$accus" = "4" ]; then
-				local accus=--fouraccu
-			elif [ -n "$accus" ]; then
-				die "Invalid 'accus' value in .conf"
-			fi
-			local dump_opt=
-			[ $loglevel -ge 3 ] && local dump_opt="--no-cpu-dump"
 
-			"$actual_interpreter" "$rootdir/awlsim-test" \
-				--loglevel $loglevel \
-				--extended-insns \
-				--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
-				--cycle-limit "$cycle_limit" \
-				--max-runtime "$max_runtime" \
-				--optimizers "$optimizers" \
-				$accus \
-				$dump_opt \
-				"$@" \
-				"$awl"
-			local exit_code=$?
-			if [ $exit_code -ne $expected_exit_code ]; then
-				local ok=0
-				if [ $tries -gt 0 ]; then
-					infomsg "Test '$(basename "$awl")' FAILED, but retrying ($tries)..."
-					sleep 1
+			(
+				setup_test_environment "$interpreter" "$awl"
+				local actual_interpreter="$RET"
+
+				local loglevel="$(get_conf "$awl" loglevel "$opt_loglevel")"
+				local expected_exit_code="$(get_conf "$awl" exit_code 0)"
+				[ $expected_exit_code -eq 0 ] || local loglevel=0
+				local cycle_limit="$(get_conf "$awl" cycle_limit 60)"
+				local max_runtime="$(get_conf "$awl" max_runtime -1)"
+				local accus="$(get_conf "$awl" accus)"
+				if [ "$accus" = "2" ]; then
+					local accus=--twoaccu
+				elif [ "$accus" = "4" ]; then
+					local accus=--fouraccu
+				elif [ -n "$accus" ]; then
+					cleanup_test_environment
+					die "Invalid 'accus' value in .conf"
 				fi
-			fi
+				local dump_opt=
+				[ $loglevel -ge 3 ] && local dump_opt="--no-cpu-dump"
+
+				"$actual_interpreter" "$rootdir/awlsim-test" \
+					--loglevel $loglevel \
+					--extended-insns \
+					--hardware debug:inputAddressBase=7:outputAddressBase=8:dummyParam=True \
+					--cycle-limit "$cycle_limit" \
+					--max-runtime "$max_runtime" \
+					--optimizers "$optimizers" \
+					$accus \
+					$dump_opt \
+					"$@" \
+					"$awl"
+				local exit_code=$?
+				if [ $exit_code -ne $expected_exit_code ]; then
+					# Test failed
+					cleanup_test_environment
+					if [ $tries -gt 0 ]; then
+						infomsg "Test '$(basename "$awl")' FAILED, but retrying ($tries tries left)..."
+						sleep 1
+						die # Next try
+					else
+						test_failed "\nTest '$(basename "$awl")'   FAILED" \
+							"\nInterpreter        = $interpreter" \
+							"\nOptimizers         = $optimizers" \
+							"\nActual exit code   = $exit_code" \
+							"\nExpected exit code = $expected_exit_code"
+					fi
+				fi
+
+				cleanup_test_environment
+			) && local ok=1
 		done
 		if [ $ok -eq 0 ]; then
-			test_failed "\nTest '$(basename "$awl")'   FAILED" \
-				"\nInterpreter        = $interpreter" \
-				"\nOptimizers         = $optimizers" \
-				"\nActual exit code   = $exit_code" \
-				"\nExpected exit code = $expected_exit_code"
+			die # Test failed
 		fi
 		if is_parallel_run; then
-			[ $ok -ne 0 ] && infomsg "$(basename "$awl"): O=$optimizers -> OK"
+			infomsg "$(basename "$awl"): O=$optimizers -> OK"
 		else
-			[ $ok -ne 0 ] && infomsg -n "O=$optimizers -> OK"
+			infomsg -n "O=$optimizers -> OK"
 		fi
 	done
 	is_parallel_run || infomsg
-
-	cleanup_test_environment
 }
 
 # $1=interpreter $2=sh_file
@@ -440,18 +439,18 @@ run_sh_test()
 
 	[ "$(echo "$sh_file" | cut -c1)" = '/' ] || local sh_file="$(pwd)/$sh_file"
 
-	# Source the test file
-	. "$basedir/sh-test.defaults"
-	. "$sh_file"
-
 	# Run the test
 	(
-	 setup_test_environment "$interpreter" "$sh_file"
-	 local interpreter="$RET"
-	 local test_dir="$(dirname "$sh_file")"
-	 local test_name="$(basename "$sh_file" .sh)"
-	 sh_test "$interpreter" "$test_dir" "$test_name"
-	 cleanup_test_environment
+		# Source the test file
+		. "$basedir/sh-test.defaults"
+		. "$sh_file"
+
+		setup_test_environment "$interpreter" "$sh_file"
+		local interpreter="$RET"
+		local test_dir="$(dirname "$sh_file")"
+		local test_name="$(basename "$sh_file" .sh)"
+		sh_test "$interpreter" "$test_dir" "$test_name"
+		cleanup_test_environment
 	)
 	local result=$?
 
@@ -490,32 +489,35 @@ run_nose_test()
 	[ "$(echo "$test_case" | cut -c1)" = '/' ] ||\
 		local test_case="$(pwd)/$test_case"
 
-	# Add nose libraries to pypy environment
-	if [ "$(basename "$interpreter")" = "pypy" ]; then
-		local p='import sys; print(":".join(p for p in sys.path if p.startswith("/usr/")))'
-		EXTRA_PYTHONPATH="$("$interpreter" -c "$p"):$(python2 -c "$p"):$EXTRA_PYTHONPATH"
-	fi
-	# Add awlsim_tstlib.py to PYTHONPATH
-	EXTRA_PYTHONPATH="$rootdir/tests:$EXTRA_PYTHONPATH"
+	(
+		EXTRA_PYTHONPATH=
+		# Add nose libraries to pypy environment
+		if [ "$(basename "$interpreter")" = "pypy" ]; then
+			local p='import sys; print(":".join(p for p in sys.path if p.startswith("/usr/")))'
+			EXTRA_PYTHONPATH="$("$interpreter" -c "$p"):$(python2 -c "$p"):$EXTRA_PYTHONPATH"
+		fi
+		# Add awlsim_tstlib.py to PYTHONPATH
+		EXTRA_PYTHONPATH="$rootdir/tests:$EXTRA_PYTHONPATH"
 
-	# Setup python environment
-	setup_test_environment "$interpreter" "$test_case"
-	local interpreter="$RET"
+		# Setup python environment
+		setup_test_environment "$interpreter" "$test_case"
+		local interpreter="$RET"
 
-	# Run the nose test case
-	cd "$rootdir" || die "Failed to cd to rootdir."
-	local opts="--no-byte-compile --verbosity=2"
-	if [ -n "$AWLSIM_TEST_QUIET" ]; then
-		"$interpreter" "$nose" $opts "$test_case" >/dev/null 2>&1 ||\
-			die "Nose test case '$(basename "$test_case")' failed."
-	else
-		"$interpreter" "$nose" $opts "$test_case" ||\
-			die "Nose test case '$(basename "$test_case")' failed."
-	fi
+		# Run the nose test case
+		cd "$rootdir" || die "Failed to cd to rootdir."
+		local opts="--no-byte-compile --verbosity=2"
+		if [ -n "$AWLSIM_TEST_QUIET" ]; then
+			"$interpreter" "$nose" $opts "$test_case" >/dev/null 2>&1 ||\
+				die "Nose test case '$(basename "$test_case")' failed."
+		else
+			"$interpreter" "$nose" $opts "$test_case" ||\
+				die "Nose test case '$(basename "$test_case")' failed."
+		fi
 
-	infomsg "$(basename "$test_case"): OK"
+		infomsg "$(basename "$test_case"): OK"
 
-	cleanup_test_environment
+		cleanup_test_environment
+	) || die "'$(basename "$test_case")' FAILED"
 }
 
 # $1=interpreter $2=testfile(.awl/.sh) ($3ff additional options to awlsim-test or testfile)
@@ -816,7 +818,6 @@ show_help()
 	infomsg
 	infomsg "Options:"
 	infomsg " -i|--interpreter INTER        Use INTER as interpreter for the tests"
-	infomsg " -s|--softfail                 Do not abort on single test failures"
 	infomsg " -j|--jobs NR                  Set the number of jobs to run in parallel."
 	infomsg "                               0 means number-of-CPUs"
 	infomsg "                               Default: 1"
@@ -847,7 +848,6 @@ touch "${port_alloc_file}.lock"
 echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 
 opt_interpreter=
-opt_softfail=0
 opt_quick=0
 opt_nogui=0
 opt_extended=0
@@ -870,9 +870,6 @@ while [ $# -ge 1 ]; do
 		opt_interpreter="$1"
 		have_prog "$opt_interpreter" ||\
 			die "Interpreter '${opt_interpreter}' not found"
-		;;
-	-s|--softfail)
-		opt_softfail=1
 		;;
 	-j|--jobs)
 		shift
