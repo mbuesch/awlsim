@@ -15,5 +15,4 @@ exec apt install \
 	python3-nose \
 	python3-pyqt5 \
 	python3-pyside \
-	python3-serial \
-	time
+	python3-serial

@@ -366,8 +366,6 @@ run_awl_test()
 		[ $first -eq 0 ] && infomsg -n " / "
 		local first=0
 
-		local test_time_file="$(maketemp time)"
-
 		local tries="$(get_conf "$awl" tries 1)"
 		[ $tries -lt 1 ] && local tries=1
 
@@ -393,7 +391,6 @@ run_awl_test()
 			local dump_opt=
 			[ $loglevel -ge 3 ] && local dump_opt="--no-cpu-dump"
 
-			command time -o "$test_time_file" -f '%E' --quiet \
 			"$actual_interpreter" "$rootdir/awlsim-test" \
 				--loglevel $loglevel \
 				--extended-insns \
@@ -422,11 +419,10 @@ run_awl_test()
 				"\nExpected exit code = $expected_exit_code"
 		fi
 		if is_parallel_run; then
-			[ $ok -ne 0 ] && infomsg "$(basename "$awl"): O=$optimizers t=$(cat "$test_time_file") -> OK"
+			[ $ok -ne 0 ] && infomsg "$(basename "$awl"): O=$optimizers -> OK"
 		else
-			[ $ok -ne 0 ] && infomsg -n "O=$optimizers t=$(cat "$test_time_file") -> OK"
+			[ $ok -ne 0 ] && infomsg -n "O=$optimizers -> OK"
 		fi
-		rm "$test_time_file"
 	done
 	is_parallel_run || infomsg
 
