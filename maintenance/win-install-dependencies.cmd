@@ -7,9 +7,9 @@ for /D %%f in ( "C:\PYTHON*" ) do set PATH=!PATH!;%%f
 for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set PATH=!PATH!;%%f;%%f\Scripts
 
 
-rem call :install pywin32
-rem if ERRORLEVEL 1 exit /B 1
 call :install Cython
+if ERRORLEVEL 1 exit /B 1
+call :install PyQt5_sip
 if ERRORLEVEL 1 exit /B 1
 call :install PyQt5
 if ERRORLEVEL 1 exit /B 1
