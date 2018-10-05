@@ -121,7 +121,10 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 			return []
 		insns = []
 		# Walk down each input connection of this element.
+		nrConn = 0
 		for conn in sorted(self.inConnections, key=lambda c: c.pos):
+			if not conn.isConnected:
+				continue
 			# For each element that is connected to this element's
 			# input connection via its output connection.
 			otherConn = conn.getConnectedConn(getOutput=True)
@@ -146,6 +149,13 @@ class FupCompiler_ElemBool(FupCompiler_Elem):
 				insns.extend(otherConn.compileConn(targetInsnClass=insnClass,
 								   inverted=conn.inverted))
 				insns.append(self.newInsn(AwlInsn_BEND, parentFupConn=conn))
+			nrConn += 1
+		if nrConn < 1:
+			raise FupElemError("The boolean element '%s' has no "
+				"enabled connected inputs. At least one active input has to be "
+				"connected to a boolean element." % (
+				str(self)),
+				self)
 		outConn = self.getOutConn()
 		if outConn.inverted:
 			insns.append(self.newInsn(AwlInsn_NOT, parentFupConn=outConn))
@@ -205,6 +215,15 @@ class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_U)
 
+	def connIsOptional(self, conn):
+		if not self.enabled:
+			return True
+		if conn.dirIn:
+			# All inputs are optional.
+			# But at least one must be specified. That is checked in _doCompileBool().
+			return True
+		return Fialse
+
 class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean OR element.
 	"""
@@ -219,6 +238,15 @@ class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_O)
+
+	def connIsOptional(self, conn):
+		if not self.enabled:
+			return True
+		if conn.dirIn:
+			# All inputs are optional.
+			# But at least one must be specified. That is checked in _doCompileBool().
+			return True
+		return False
 
 class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean XOR element.
@@ -235,6 +263,15 @@ class FupCompiler_ElemBoolXor(FupCompiler_ElemBool):
 	def _doCompile(self):
 		return self._doCompileBool(AwlInsn_X)
 
+	def connIsOptional(self, conn):
+		if not self.enabled:
+			return True
+		if conn.dirIn:
+			# All inputs are optional.
+			# But at least one must be specified. That is checked in _doCompileBool().
+			return True
+		return False
+
 class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean SR element.
 	"""
@@ -244,7 +281,6 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 	HAVE_S		= True
 	HAVE_R		= True
 	HIGH_PRIO_R	= True
-	OPTIONAL_CONNS	= { "R", "Q", }
 
 	def __init__(self, grid, x, y, content, **kwargs):
 		FupCompiler_ElemBool.__init__(self, grid=grid, x=x, y=y,
@@ -306,9 +342,8 @@ class FupCompiler_ElemBoolSR(FupCompiler_ElemBool):
 		return insns
 
 	def connIsOptional(self, conn):
-		if not self.enabled:
-			return True
-		return conn.hasText(self.OPTIONAL_CONNS)
+		# R, S and Q are optional.
+		return True
 
 class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
 	"""FUP compiler - Boolean RS element.
@@ -319,7 +354,6 @@ class FupCompiler_ElemBoolRS(FupCompiler_ElemBoolSR):
 	HAVE_S		= True
 	HAVE_R		= True
 	HIGH_PRIO_R	= False
-	OPTIONAL_CONNS	= { "S", "Q", }
 
 class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	"""FUP compiler - Boolean S element.
@@ -330,7 +364,6 @@ class FupCompiler_ElemBoolS(FupCompiler_ElemBoolSR):
 	HAVE_S		= True
 	HAVE_R		= False
 	HIGH_PRIO_R	= False
-	OPTIONAL_CONNS	= { "Q", }
 
 	def _doCompile(self):
 		if not self.enabled:
@@ -354,7 +387,6 @@ class FupCompiler_ElemBoolR(FupCompiler_ElemBoolS):
 	HAVE_S		= False
 	HAVE_R		= True
 	HIGH_PRIO_R	= True
-	OPTIONAL_CONNS	= { "Q", }
 
 class FupCompiler_ElemBoolFP(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean FP element.
