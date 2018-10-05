@@ -1585,7 +1585,7 @@ class ProjectTreeView(QTreeView):
 		menu.import_.connect(handleImport)
 		menu.export.connect(handleExport)
 		menu.enable.connect(handleEnable)
-		menu.exec_(QCursor.pos())
+		menu.exec_(QCursor.pos() + QPoint(3, 3))
 
 	def __mouseBtnPressed(self, index):
 		model, buttons = self.model(), QApplication.mouseButtons()

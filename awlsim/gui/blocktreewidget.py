@@ -644,11 +644,11 @@ class BlockTreeView(QTreeView):
 				   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_UDTS_BASE:
-					self.__blockMenu.exec_(QCursor.pos())
+					self.__blockMenu.exec_(QCursor.pos() + QPoint(3, 3))
 				elif idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
 				     idxIdBase == model.INDEXID_SRCS_FUP_BASE or\
 				     idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
-					self.__srcMenu.exec_(QCursor.pos())
+					self.__srcMenu.exec_(QCursor.pos() + QPoint(3, 3))
 		finally:
 			self.__currentIdxId = None
 

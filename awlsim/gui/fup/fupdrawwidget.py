@@ -751,7 +751,7 @@ class FupDrawWidget(QWidget):
 				self.__contextMenu.enableCustomAction(i, False)
 			if elem:
 				elem.prepareContextMenu(self.__contextMenu, area, conn)
-			self.__contextMenu.exec_(self.mapToGlobal(event.pos()))
+			self.__contextMenu.exec_(self.mapToGlobal(event.pos()) + QPoint(3, 3))
 
 		if not event.isAccepted():
 			QWidget.mousePressEvent(self, event)
