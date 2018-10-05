@@ -272,9 +272,12 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 
 	def connIsOptional(self, conn):
 		"""Check if a connection is optional.
-		The default implementation always returns False.
+		The default implementation returns False, if the element is enabled.
+		The default implementation returns True, if the element is disabled.
 		"""
-		return False
+		if self.enabled:
+			return False
+		return True
 
 	def getConnType(self, conn, preferVKE=False):
 		"""Get the type of a connection.
