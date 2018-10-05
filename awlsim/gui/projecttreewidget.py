@@ -987,8 +987,11 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		def getSourceIcon(sourceList, okIconName):
 			if itemNr >= len(sourceList):
-				return False
-			return getSourceContainerIcon((sourceList[itemNr],), okIconName)
+				return None
+			source = sourceList[itemNr]
+			if not source.enabled:
+				return getIcon("disable")
+			return getSourceContainerIcon((source,), okIconName)
 
 		def getProgramContainerIcon(okIconName):
 			project = self.getProject()
