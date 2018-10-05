@@ -1341,46 +1341,44 @@ class SourceContextMenu(QMenu):
 
 		if withEditButton:
 			self.addAction(getIcon("doc_edit"),
-				       "&Edit '%s'..." % itemName, self.__edit)
+				       "&Edit...", self.__edit)
 		self.addSeparator()
 		if withAddButton:
 			self.addAction(getIcon("doc_new"),
-				       "&Add %s" % itemCategoryName, self.__add)
+				       "&Add new %s" % itemCategoryName, self.__add)
 		if withDeleteButton:
 			self.addAction(getIcon("doc_close"),
-				       "&Delete '%s'..." % itemName, self.__delete)
+				       "&Delete...", self.__delete)
 		if withRenameButton:
 			self.addAction(getIcon("doc_edit"),
-				       "&Rename '%s'..." % itemName, self.__rename)
+				       "&Rename...", self.__rename)
 		self.addSeparator()
 		if withCopyButton:
 			self.addAction(getIcon("copy"),
-				       "&Copy '%s'..." % itemName, self.__copy)
+				       "&Copy", self.__copy)
 		if withCutButton:
 			self.addAction(getIcon("cut"),
-				       "&Cut '%s'..." % itemName, self.__cut)
+				       "&Cut", self.__cut)
 		if withPasteButton:
 			self.addAction(getIcon("paste"),
-				       "&Paste '%s'..." % itemCategoryName, self.__paste)
+				       "&Paste", self.__paste)
 		self.addSeparator()
 		if withImportButton:
 			self.addAction(getIcon("doc_import"),
-				       "&Import %s..." % itemCategoryName, self.__import)
+				       "&Import...", self.__import)
 		if withExportButton:
 			self.addAction(getIcon("doc_export"),
-				       "&Export '%s'..." % itemName, self.__export)
+				       "&Export...", self.__export)
 		if withIntegrateButton:
 			self.addAction("&Integrate '%s' into project..." % itemName,
 				       self.__integrate)
 		self.addSeparator()
 		if withEnableButton:
 			self.addAction(getIcon("enable"),
-				       "E&nable '%s'" % itemName,
-				       self.__enable)
+				       "E&nable", self.__enable)
 		if withDisableButton:
 			self.addAction(getIcon("disable"),
-				       "D&isable '%s'" % itemName,
-				       self.__disable)
+				       "D&isable", self.__disable)
 
 	def __edit(self):
 		self.edit.emit()
