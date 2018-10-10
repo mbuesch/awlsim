@@ -199,6 +199,9 @@ class FupWidget(QWidget):
 
 	undoAvailableChanged = Signal(bool)
 	redoAvailableChanged = Signal(bool)
+	clipboardCopyAvailableChanged = Signal(bool)
+	clipboardCutAvailableChanged = Signal(bool)
+	clipboardPasteAvailableChanged = Signal(bool)
 
 	def __init__(self, parent, getSymTabSourcesFunc):
 		QWidget.__init__(self, parent)
@@ -225,6 +228,7 @@ class FupWidget(QWidget):
 
 		self.interf.contentChanged.connect(self.diagramChanged)
 		self.edit.draw.diagramChanged.connect(self.diagramChanged)
+		self.edit.draw.selectionChanged.connect(self.__handleSelectionChange)
 		self.edit.menu.configOpt.connect(self.__configureOptimizer)
 		self.edit.menu.showAwlOpt.connect(self.__compileAndShowAwlOpt)
 		self.edit.menu.showAwl.connect(self.__compileAndShowAwl)
@@ -370,3 +374,31 @@ class FupWidget(QWidget):
 	def redo(self):
 		self.__undoStack.redo()
 		return True
+
+	def clipboardCopyIsAvailable(self):
+		grid = self.edit.draw.grid
+		return bool(grid) and bool(grid.selectedElems)
+
+	def clipboardCopy(self):
+		return self.edit.draw.clipboardCopy()
+
+	def clipboardCutIsAvailable(self):
+		return self.clipboardCopyIsAvailable()
+
+	def clipboardCut(self):
+		return self.edit.draw.clipboardCut()
+
+	def clipboardPasteIsAvailable(self):
+		grid = self.edit.draw.grid
+		return bool(grid) and bool(grid.selectedCells)
+
+	def clipboardPaste(self, text=None):
+		if text:
+			return False
+		else:
+			return self.edit.draw.clipboardPaste()
+
+	def __handleSelectionChange(self, cellsAreSelected, elemsAreSelected, grid):
+		self.clipboardCopyAvailableChanged.emit(bool(elemsAreSelected))
+		self.clipboardCutAvailableChanged.emit(bool(elemsAreSelected))
+		self.clipboardPasteAvailableChanged.emit(bool(cellsAreSelected))

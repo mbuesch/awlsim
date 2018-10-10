@@ -723,6 +723,9 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		self.fupWidget.diagramChanged.connect(self.sourceChanged)
 		self.fupWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.fupWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
+		self.fupWidget.clipboardCopyAvailableChanged.connect(self.copyAvailableChanged)
+		self.fupWidget.clipboardCutAvailableChanged.connect(self.cutAvailableChanged)
+		self.fupWidget.clipboardPasteAvailableChanged.connect(self.pasteAvailableChanged)
 
 		self.updateTitle()
 
@@ -791,6 +794,24 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 
 	def redo(self):
 		return self.fupWidget.redo()
+
+	def cutIsAvailable(self):
+		return self.fupWidget.clipboardCutIsAvailable()
+
+	def cut(self):
+		return self.fupWidget.clipboardCut()
+
+	def copyIsAvailable(self):
+		return self.fupWidget.clipboardCopyIsAvailable()
+
+	def copy(self):
+		return self.fupWidget.clipboardCopy()
+
+	def pasteIsAvailable(self):
+		return self.fupWidget.clipboardPasteIsAvailable()
+
+	def paste(self, text=None):
+		return self.fupWidget.clipboardPaste(text)
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP

@@ -213,6 +213,12 @@ class FupDrawWidget(QWidget):
 	#	The parameters are the X/Y pixel coordinates.
 	moveTipChanged = Signal(int, int)
 
+	# Signal: Emitted, whenever the element or cell selection changes.
+	#	Parameter 0: Boolean, some cells are selected.
+	#	Parameter 1: Boolean, some elements are selected.
+	#	Parameter 2: The grid with the selections.
+	selectionChanged = Signal(bool, bool, FupGrid)
+
 	def __init__(self, parent, interfWidget):
 		"""parent => Parent QWidget().
 		interfWidget => AwlInterfWidget() instance
@@ -372,7 +378,15 @@ class FupDrawWidget(QWidget):
 	def __contentChanged(self):
 		self.__dynGridExpansion()
 		self.repaint()
+		self.__selectionChanged()
 		self.diagramChanged.emit()
+
+	def __selectionChanged(self):
+		grid = self.__grid
+		if grid:
+			self.selectionChanged.emit(bool(grid.selectedCells),
+						   bool(grid.selectedElems),
+						   grid)
 
 	@property
 	def grid(self):
@@ -713,6 +727,7 @@ class FupDrawWidget(QWidget):
 				self.__selectStartCell = (gridX, gridY)
 				self.__selectEndPix = None
 				eventHandled()
+			self.__selectionChanged()
 
 		# Handle middle button press
 		if event.button() == Qt.MidButton:
@@ -752,6 +767,7 @@ class FupDrawWidget(QWidget):
 			if elem:
 				elem.prepareContextMenu(self.__contextMenu, area, conn)
 			self.__contextMenu.exec_(self.mapToGlobal(event.pos()) + QPoint(3, 3))
+			self.__selectionChanged()
 
 		if not event.isAccepted():
 			QWidget.mousePressEvent(self, event)
@@ -775,6 +791,7 @@ class FupDrawWidget(QWidget):
 			self.__selectStartPix = None
 			self.__selectStartCell = None
 			self.__selectEndPix = None
+			self.__selectionChanged()
 			eventHandled()
 
 		# Handle end of element dragging
@@ -847,6 +864,7 @@ class FupDrawWidget(QWidget):
 			grid.selectElemsInRect(startGridX, startGridY,
 					       gridX, gridY, clear=clear)
 			self.selectTipChanged.emit(x, y)
+			self.__selectionChanged()
 			eventHandled()
 
 		# Handle element dragging
@@ -913,6 +931,7 @@ class FupDrawWidget(QWidget):
 		if not elem:
 			grid.selectCell(gridX, gridY)
 			grid.deselectAllElems()
+		self.__selectionChanged()
 
 		# Handle left button double click
 		if event.button() == Qt.LeftButton:
@@ -982,12 +1001,14 @@ class FupDrawWidget(QWidget):
 		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
 				event.matches(QKeySequence.Deselect)):
 			self.__grid.deselectAllElems()
+			self.__selectionChanged()
 			self.repaint()
 			event.accept()
 			return
 		elif event.matches(QKeySequence.SelectAll):
 			for elem in self.__grid.elems:
 				self.__grid.selectElem(elem)
+			self.__selectionChanged()
 			self.repaint()
 			event.accept()
 			return
