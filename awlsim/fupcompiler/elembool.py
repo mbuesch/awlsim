@@ -222,7 +222,7 @@ class FupCompiler_ElemBoolAnd(FupCompiler_ElemBool):
 			# All inputs are optional.
 			# But at least one must be specified. That is checked in _doCompileBool().
 			return True
-		return Fialse
+		return False
 
 class FupCompiler_ElemBoolOr(FupCompiler_ElemBool):
 	"""FUP compiler - Boolean OR element.
