@@ -30,6 +30,7 @@ from awlsim.gui.fup.fup_elembool import *
 from awlsim.gui.fup.fup_elemmove import *
 from awlsim.gui.fup.fup_elemconv import *
 from awlsim.gui.fup.fup_elemcount import *
+from awlsim.gui.fup.fup_elemtime import *
 from awlsim.gui.fup.fup_elemarith import *
 from awlsim.gui.fup.fup_elemshift import *
 from awlsim.gui.fup.fup_elemcmp import *
@@ -120,6 +121,24 @@ class FupElemContainerWidget(QTreeWidget):
 		itemCSO = FupElemItem("[CSo]  Counter set", "new", elemMimeType,
 				      self.elemToXml(FupElem_CSO(-1, -1)))
 		itemC.addChild(itemCSO)
+
+		# Timers
+		itemT = FupElemItemClass("Timers", "stdlib")
+		itemTSI = FupElemItem("[SP]  Pulse", "new", elemMimeType,
+				      self.elemToXml(FupElem_T_SI(-1, -1)))
+		itemT.addChild(itemTSI)
+		itemTSV = FupElemItem("[SE]  Extended pulse", "new", elemMimeType,
+				      self.elemToXml(FupElem_T_SV(-1, -1)))
+		itemT.addChild(itemTSV)
+		itemTSE = FupElemItem("[SD]  On-delay", "new", elemMimeType,
+				      self.elemToXml(FupElem_T_SE(-1, -1)))
+		itemT.addChild(itemTSE)
+		itemTSS = FupElemItem("[SS]  Extended on-delay", "new", elemMimeType,
+				      self.elemToXml(FupElem_T_SS(-1, -1)))
+		itemT.addChild(itemTSS)
+		itemTSA = FupElemItem("[SF]  Off-delay", "new", elemMimeType,
+				      self.elemToXml(FupElem_T_SA(-1, -1)))
+		itemT.addChild(itemTSA)
 
 		# Move and convert elements
 		itemMove = FupElemItemClass("Move / convert", "stdlib")
@@ -366,6 +385,7 @@ class FupElemContainerWidget(QTreeWidget):
 		itemBool.setExpanded(True)
 		self.addTopLevelItem(itemMove)
 		self.addTopLevelItem(itemC)
+		self.addTopLevelItem(itemT)
 		self.addTopLevelItem(itemArith)
 		itemArith.setExpanded(True)
 		self.addTopLevelItem(itemShift)

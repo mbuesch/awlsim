@@ -43,6 +43,7 @@ class FupElem_factory(XmlFactory):
 			from awlsim.gui.fup.fup_elemmove import FupElem_MOVE
 			from awlsim.gui.fup.fup_elemconv import FupElem_CONV
 			from awlsim.gui.fup.fup_elemcount import FupElem_CUD
+			from awlsim.gui.fup.fup_elemtime import FupElem_T
 			from awlsim.gui.fup.fup_elemarith import FupElem_ARITH
 			from awlsim.gui.fup.fup_elemshift import FupElem_SHIFT
 			from awlsim.gui.fup.fup_elemcmp import FupElem_CMP
@@ -56,6 +57,7 @@ class FupElem_factory(XmlFactory):
 				"move"		: FupElem_MOVE,
 				"convert"	: FupElem_CONV,
 				"counter"	: FupElem_CUD,
+				"timer"		: FupElem_T,
 				"arithmetic"	: FupElem_ARITH,
 				"shift"		: FupElem_SHIFT,
 				"compare"	: FupElem_CMP,
