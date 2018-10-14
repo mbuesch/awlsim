@@ -109,6 +109,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 	TYPE_MOVE		= EnumGen.item
 	TYPE_CONV		= EnumGen.item
 	TYPE_COUNT		= EnumGen.item
+	TYPE_TIME		= EnumGen.item
 	TYPE_ARITH		= EnumGen.item
 	TYPE_SHIFT		= EnumGen.item
 	TYPE_CMP		= EnumGen.item
@@ -122,6 +123,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"move"		: TYPE_MOVE,
 		"convert"	: TYPE_CONV,
 		"counter"	: TYPE_COUNT,
+		"timer"		: TYPE_TIME,
 		"arithmetic"	: TYPE_ARITH,
 		"shift"		: TYPE_SHIFT,
 		"compare"	: TYPE_CMP,
@@ -153,6 +155,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		from awlsim.fupcompiler.elemmove import FupCompiler_ElemMove
 		from awlsim.fupcompiler.elemconv import FupCompiler_ElemConv
 		from awlsim.fupcompiler.elemcount import FupCompiler_ElemCount
+		from awlsim.fupcompiler.elemtime import FupCompiler_ElemTime
 		from awlsim.fupcompiler.elemarith import FupCompiler_ElemArith
 		from awlsim.fupcompiler.elemshift import FupCompiler_ElemShift
 		from awlsim.fupcompiler.elemcmp import FupCompiler_ElemCmp
@@ -166,6 +169,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 				cls.TYPE_MOVE		: FupCompiler_ElemMove,
 				cls.TYPE_CONV		: FupCompiler_ElemConv,
 				cls.TYPE_COUNT		: FupCompiler_ElemCount,
+				cls.TYPE_TIME		: FupCompiler_ElemTime,
 				cls.TYPE_ARITH		: FupCompiler_ElemArith,
 				cls.TYPE_SHIFT		: FupCompiler_ElemShift,
 				cls.TYPE_CMP		: FupCompiler_ElemCmp,
