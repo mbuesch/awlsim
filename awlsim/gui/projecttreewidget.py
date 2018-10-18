@@ -29,6 +29,7 @@ from awlsim.library.libselection import AwlLibEntrySelection
 from awlsim.gui.cpuwidget import RunState
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
+from awlsim.gui.fup.fupwidget import FupFactory, FupWidget
 
 
 __all__ = [
@@ -785,6 +786,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			return 0
 		project = self.__project
 
+		# Check if there is any deprecated file-backing.
 		if (any(src.isFileBacked() for src in project.getAwlSources()) or\
 		    any(src.isFileBacked() for src in project.getSymTabSources())) and\
 		    not self.__warnedFileBacked:
@@ -797,11 +799,34 @@ class ProjectTreeModel(QAbstractItemModel):
 				"in the source menu.")
 			self.__warnedFileBacked = True
 
+		# Re-generate UUIDs, if we are saving to a new file.
+		if project.getProjectFile() != filename:
+			printInfo("Save-file name changed. "
+				  "Re-generating project file UUIDs.")
+			self.__regenAllUUIDs()
+
+		# Set the new file name and write to that file.
 		project.setProjectFile(filename)
 		project.toFile()
 		self.__isAdHocProject = False
 
 		return 1
+
+	def __regenAllUUIDs(self):
+		"""Re-generate all UUIDs in all sources.
+		"""
+		for source in self.__project.getFupSources():
+			# Parse the FUP source and regenerate all UUIDs.
+			fupWidget = FupWidget(None, None)
+			factory = FupFactory(fupWidget=fupWidget)
+			factory.parse(source.sourceBytes)
+			fupWidget.regenAllUUIDs()
+			source.sourceBytes = factory.compose()
+
+			# Update the source in the MDI window, if any.
+			mdiSubWin = source.userData.get("gui-edit-window")
+			if mdiSubWin:
+				mdiSubWin.setSource(source)
 
 	def idToIndex(self, idxId, column = 0):
 		for table in (self.id2row_toplevel,
