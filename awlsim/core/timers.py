@@ -147,7 +147,8 @@ class Timer(object): #+cdef
 	__slots__ = (
 		"cpu",
 		"index",
-		"prevVKE",
+		"prevVKE_S",
+		"prevVKE_FR",
 		"timebase",
 		"deadlineActionSetStatus",
 		"deadline",
@@ -159,7 +160,8 @@ class Timer(object): #+cdef
 	def __init__(self, cpu, index):
 		self.cpu = cpu
 		self.index = index
-		self.prevVKE = 0
+		self.prevVKE_S = 0
+		self.prevVKE_FR = 0
 		self.timebase = TimerConsts.TB_10MS
 		self.deadlineActionSetStatus = False
 		self.deadline = 0.0
@@ -236,6 +238,14 @@ class Timer(object): #+cdef
 #@cy	cdef void __updateRemaining(self):
 		self.remaining = max(0.0, self.deadline - self.cpu.now)
 
+	def run_FR(self): #+cdef
+#@cy		cdef S7StatusWord s
+
+		s = self.cpu.statusWord
+		if (self.prevVKE_FR ^ 1) & s.VKE:
+			self.prevVKE_S = 0
+		self.prevVKE_FR, s.OR, s.NER = s.VKE, 0, 0
+
 	def run_SI(self, s5t): #@nocy
 #@cy	cdef run_SI(self, uint16_t s5t):
 #@cy		cdef S7StatusWord s
@@ -243,13 +253,13 @@ class Timer(object): #+cdef
 		self.deadlineActionSetStatus = False
 		s = self.cpu.statusWord
 		if s.VKE:
-			if not self.prevVKE: # Pos edge
+			if not self.prevVKE_S: # Pos edge
 				self.status = 1
 				self.__start(s5t)
 		else:
 			self.__checkDeadline()
 			self.running, self.status = False, 0
-		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
+		self.prevVKE_S, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SV(self, s5t): #@nocy
 #@cy	cdef run_SV(self, uint16_t s5t):
@@ -257,10 +267,10 @@ class Timer(object): #+cdef
 
 		self.deadlineActionSetStatus = False
 		s = self.cpu.statusWord
-		if s.VKE & (self.prevVKE ^ 1): # Pos edge
+		if s.VKE & (self.prevVKE_S ^ 1): # Pos edge
 			self.status = 1
 			self.__start(s5t)
-		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
+		self.prevVKE_S, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SE(self, s5t): #@nocy
 #@cy	cdef run_SE(self, uint16_t s5t):
@@ -269,12 +279,12 @@ class Timer(object): #+cdef
 		self.deadlineActionSetStatus = True
 		s = self.cpu.statusWord
 		if s.VKE:
-			if not self.prevVKE: # Pos edge
+			if not self.prevVKE_S: # Pos edge
 				self.__start(s5t)
 		else:
 			self.__checkDeadline()
 			self.running, self.status = False, 0
-		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
+		self.prevVKE_S, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SS(self, s5t): #@nocy
 #@cy	cdef run_SS(self, uint16_t s5t):
@@ -282,9 +292,9 @@ class Timer(object): #+cdef
 
 		self.deadlineActionSetStatus = True
 		s = self.cpu.statusWord
-		if s.VKE & (self.prevVKE ^ 1): # Pos edge
+		if s.VKE & (self.prevVKE_S ^ 1): # Pos edge
 			self.__start(s5t)
-		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
+		self.prevVKE_S, s.OR, s.NER = s.VKE, 0, 0
 
 	def run_SA(self, s5t): #@nocy
 #@cy	cdef run_SA(self, uint16_t s5t):
@@ -292,13 +302,13 @@ class Timer(object): #+cdef
 
 		self.deadlineActionSetStatus = False
 		s = self.cpu.statusWord
-		if s.VKE & (self.prevVKE ^ 1): # Pos edge
+		if s.VKE & (self.prevVKE_S ^ 1): # Pos edge
 			self.__checkDeadline()
 			self.status, self.running = 1, False
-		if (s.VKE ^ 1) & self.prevVKE: # Neg edge
+		if (s.VKE ^ 1) & self.prevVKE_S: # Neg edge
 			self.status = 1
 			self.__start(s5t)
-		self.prevVKE, s.OR, s.NER = s.VKE, 0, 0
+		self.prevVKE_S, s.OR, s.NER = s.VKE, 0, 0
 
 	def __start(self, s5t): #@nocy
 #@cy	cdef __start(self, uint16_t s5t):

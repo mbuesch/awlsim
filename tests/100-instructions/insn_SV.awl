@@ -80,6 +80,79 @@ BEGIN
 	__ASSERT==	__ACCU 1,	0
 
 
+	// Test FR.
+	// Always run SV with VKE=1. The preceding FR shall trigger an edge detect in SV.
+	// Thus a re-trigger in SV shall happen -> timer shall not expire.
+	__STWRST
+	SET
+	L		W#16#0010
+	SV		T 11
+	__SLEEP		50
+	L		T 11
+	__ASSERT>=	__ACCU 1,	1
+	SET
+	FR		T 11
+	CLR
+	FR		T 11
+	SET
+	L		W#16#0010
+	SV		T 11
+	__SLEEP		50
+	L		T 11
+	__ASSERT>=	__ACCU 1,	1
+	SET
+	FR		T 11
+	CLR
+	FR		T 11
+	SET
+	L		W#16#0010
+	SV		T 11
+	__SLEEP		50
+	L		T 11
+	__ASSERT>=	__ACCU 1,	1
+	SET
+	FR		T 11
+	CLR
+	FR		T 11
+	SET
+	L		W#16#0010
+	SV		T 11
+	__SLEEP		50
+	L		T 11
+	__ASSERT>=	__ACCU 1,	1
+
+
+	// Test FR without FR edge (VKE at FR is always 1).
+	// Always run SV with VKE=1. The timer shall not be retriggerd.
+	__STWRST
+	SET
+	L		W#16#0010
+	SV		T 12
+	__SLEEP		50
+	L		T 12
+	__ASSERT>=	__ACCU 1,	1
+	SET
+	FR		T 12
+	SET
+	L		W#16#0010
+	SV		T 12
+	__SLEEP		50
+	SET
+	FR		T 12
+	SET
+	L		W#16#0010
+	SV		T 12
+	__SLEEP		50
+	SET
+	FR		T 12
+	SET
+	L		W#16#0010
+	SV		T 12
+	__SLEEP		50
+	L		T 12
+	__ASSERT==	__ACCU 1,	0
+
+
 	// Test timer parameter
 	AUF		DB 1
 	L		DBW 0

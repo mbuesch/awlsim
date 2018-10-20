@@ -21,7 +21,8 @@ cdef TimerConstsClass TimerConsts
 cdef class Timer(object):
 	cdef public S7CPU cpu
 	cdef public uint32_t index
-	cdef public _Bool prevVKE
+	cdef public _Bool prevVKE_S
+	cdef public _Bool prevVKE_FR
 	cdef public uint16_t timebase
 	cdef public _Bool deadlineActionSetStatus
 	cdef public double deadline
@@ -37,6 +38,7 @@ cdef class Timer(object):
 	cdef uint16_t getTimevalS5TwithBase(self) except? 0xFFFF
 	cdef double __getRemainingSeconds(self)
 	cdef void __updateRemaining(self)
+	cdef run_FR(self)
 	cdef run_SI(self, uint16_t s5t)
 	cdef run_SV(self, uint16_t s5t)
 	cdef run_SE(self, uint16_t s5t)
