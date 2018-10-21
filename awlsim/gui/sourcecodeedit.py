@@ -148,6 +148,61 @@ class SourceCodeEdit(QPlainTextEdit):
 				return
 			cursor.deleteChar()
 
+	def __doBlockComment(self):
+		"""Comment or uncomment the selected lines of text.
+		"""
+		try:
+			if self.isReadOnly():
+				return
+			cursor = self.textCursor()
+			if not cursor or cursor.isNull():
+				return
+
+			text = self.toPlainText()
+			origStart, origEnd = cursor.selectionStart(), cursor.selectionEnd()
+
+			# Extend the cursor to whole lines
+			cursor.setPosition(origStart, QTextCursor.MoveAnchor)
+			cursor.movePosition(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
+			cursor.setPosition(origEnd, QTextCursor.KeepAnchor)
+			cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+			self.setTextCursor(cursor)
+			adjustedStart, adjustedEnd = cursor.selectionStart(), cursor.selectionEnd()
+
+			selectedText = cursor.selectedText()
+			if not selectedText:
+				return
+			lines = selectedText.splitlines()
+			nrCommented = sum(1 if self._lineIsCommented(line) else 0
+					  for line in lines)
+
+			if nrCommented >= len(lines):
+				# Uncomment all lines
+				newText = "\n".join(self._uncommentLine(line)
+						    for line in lines)
+			else:
+				# Comment all lines
+				newText = "\n".join(self._commentLine(line)
+						    for line in lines)
+
+			# Replace the selected text
+			cursor.insertText(newText)
+			# Re-select the new text
+			cursor.setPosition(adjustedStart, QTextCursor.MoveAnchor)
+			cursor.setPosition(adjustedStart + len(newText), QTextCursor.KeepAnchor)
+			self.setTextCursor(cursor)
+		except NotImplementedError as e:
+			return
+
+	def _lineIsCommented(self, lineText):
+		raise NotImplementedError
+
+	def _commentLine(self, lineText):
+		raise NotImplementedError
+
+	def _uncommentLine(self, lineText):
+		raise NotImplementedError
+
 	def keyPressEvent(self, ev):
 		if ev.matches(QKeySequence.Find):
 			self.findText()
@@ -158,11 +213,19 @@ class SourceCodeEdit(QPlainTextEdit):
 			ev.accept()
 			return
 
+		key = ev.key()
+		mods = ev.modifiers()
+
+		if key == Qt.Key_Slash and (mods & Qt.ControlModifier):
+			self.__doBlockComment()
+			ev.accept()
+			return
+
 		QPlainTextEdit.keyPressEvent(self, ev)
 
-		if ev.key() in (Qt.Key_Return, Qt.Key_Enter):
+		if key in (Qt.Key_Return, Qt.Key_Enter):
 			self.__autoIndentHandleNewline()
-		elif ev.key() == Qt.Key_Delete:
+		elif key == Qt.Key_Delete:
 			self.__validate()
 
 	def wheelEvent(self, ev):
@@ -332,6 +395,8 @@ class SourceCodeEdit(QPlainTextEdit):
 		return super(SourceCodeEdit, self).event(ev)
 
 	def __findText(self, replace=False):
+		if self.isReadOnly() and replace:
+			return
 		dlg = self.getFindDialog()
 		if dlg:
 			dlg.hide()

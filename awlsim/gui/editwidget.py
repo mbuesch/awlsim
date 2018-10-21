@@ -27,6 +27,8 @@ from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 from awlsim.gui.sourcecodeedit import *
 
+import random
+
 
 class EditSubWidget(QWidget):
 	needRepaint = Signal(QPaintEvent)
@@ -354,6 +356,14 @@ class EditWidget(SourceCodeEdit):
 	__runAniNoDown = tuple(c.replace("x", " source NOT DOWNLOADED to CPU ")
 			       for c in __runAniTemplate)
 
+	__didYouKnow = (
+		"blocks of code can be commented or uncommented "
+		"by selecting it and then pressing Ctrl + /",
+
+		"pressing Ctrl and moving the mouse scroll wheel "
+		"resizes the text font",
+	)
+
 	def __init__(self, parent=None,
 		     readOnly=False,
 		     withHeader=True, withCpuStats=True):
@@ -417,6 +427,11 @@ class EditWidget(SourceCodeEdit):
 			self.cpuStatsWidget.wasScrolled.connect(self.__forwardWheelEvent)
 			self.cpuStatsWidget.contextMenuReq.connect(self.__cpuStatsContextMenuPopup)
 			self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
+
+		self.setPlaceholderText(
+			"Please enter your AWL program here...\n\n\n"
+			"Did you know\n" + random.choice(self.__didYouKnow)
+		)
 
 	def getSourceId(self):
 		return self.__source.identHash
@@ -867,6 +882,19 @@ class EditWidget(SourceCodeEdit):
 				self.setErraticLine(lineNr - 1, str(exception))
 				return
 		self.setErraticLine(None)
+
+	def _lineIsCommented(self, lineText):
+		return lineText.lstrip().startswith("//")
+
+	def _commentLine(self, lineText):
+		return "//" + lineText
+
+	def _uncommentLine(self, lineText):
+		if self._lineIsCommented(lineText):
+			idx = lineText.find("//")
+			if idx >= 0:
+				lineText = lineText[:idx] + lineText[idx+len("//"):]
+		return lineText
 
 class EditDialog(QDialog):
 	"""AWL/STL edit dialog."""
