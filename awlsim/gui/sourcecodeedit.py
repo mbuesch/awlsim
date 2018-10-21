@@ -158,7 +158,7 @@ class SourceCodeEdit(QPlainTextEdit):
 			if not cursor or cursor.isNull():
 				return
 
-			text = self.toPlainText()
+			text = str(self.toPlainText())
 			origStart, origEnd = cursor.selectionStart(), cursor.selectionEnd()
 
 			# Extend the cursor to whole lines
@@ -169,21 +169,30 @@ class SourceCodeEdit(QPlainTextEdit):
 			self.setTextCursor(cursor)
 			adjustedStart, adjustedEnd = cursor.selectionStart(), cursor.selectionEnd()
 
-			selectedText = cursor.selectedText()
-			if not selectedText:
-				return
-			lines = selectedText.splitlines()
-			nrCommented = sum(1 if self._lineIsCommented(line) else 0
-					  for line in lines)
+			selectedText = str(cursor.selectedText())
+			if selectedText:
+				lines = selectedText.splitlines()
+				if (adjustedEnd > adjustedStart and
+				    adjustedEnd > 0 and
+				    adjustedEnd <= len(text) and
+				    text[adjustedEnd - 1] in "\r\n" and
+				    (adjustedEnd == len(text) or text[adjustedEnd] in "\r\n")):
+					# Last empty line is not returned by selectedText()
+					# Explicitly add it.
+					lines.append("")
 
-			if nrCommented >= len(lines):
-				# Uncomment all lines
-				newText = "\n".join(self._uncommentLine(line)
-						    for line in lines)
+				nrCommented = sum(1 if self._lineIsCommented(line) else 0
+						  for line in lines)
+				if nrCommented >= len(lines) and lines:
+					# Uncomment all lines
+					newText = "\n".join(self._uncommentLine(line)
+							    for line in lines)
+				else:
+					# Comment all lines
+					newText = "\n".join(self._commentLine(line)
+							    for line in lines)
 			else:
-				# Comment all lines
-				newText = "\n".join(self._commentLine(line)
-						    for line in lines)
+				newText = self._commentLine("")
 
 			# Replace the selected text
 			cursor.insertText(newText)
