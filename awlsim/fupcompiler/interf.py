@@ -162,7 +162,7 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		if elem:
 			comment += " for %s" % str(elem)
 		field = FupCompiler_InterfField(
-			name=name or ("_FUP_COMP_temp_%d" % len(self.dynTempFields)),
+			name=name or ("_FUP_COMP_temp_%04X" % len(self.dynTempFields)),
 			typeStr=dataTypeName,
 			initValueStr="",
 			comment=comment,
