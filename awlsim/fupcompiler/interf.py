@@ -26,6 +26,8 @@ from awlsim.common.compat import *
 from awlsim.common.namevalidation import *
 from awlsim.common.xmlfactory import *
 
+from awlsim.core.datatypes import AwlDataType
+
 from awlsim.fupcompiler.base import *
 
 
@@ -94,10 +96,20 @@ class FupCompiler_InterfField(object):
 	def __init__(self, name="", typeStr="", initValueStr="", comment="", uuid=None, enableNameCheck=True):
 		self.name = name
 		self.typeStr = typeStr
+		try:
+			self.dataType = AwlDataType.makeByName(typeStr)
+		except AwlSimError as e:
+			self.dataType = None
 		self.initValueStr = initValueStr
 		self.comment = comment
 		self.uuid = uuid or "00000000-0000-0000-0000-000000000000"
 		self.enableNameCheck = enableNameCheck
+
+	@property
+	def typeWidth(self):
+		if self.dataType:
+			return self.dataType.width
+		return -1
 
 class FupCompiler_Interf(FupCompiler_BaseObj):
 	factory			= FupCompiler_InterfFactory
@@ -113,7 +125,8 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		self.outFields = []
 		self.inOutFields = []
 		self.statFields = []
-		self.tempFields = []
+		self.tempFields = []	# statically allocated TEMP
+		self.dynTempFields = []	# dynamically allocated TEMP
 		self.retValField = None
 
 	@property
@@ -123,6 +136,7 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 					     self.inOutFields,
 					     self.statFields,
 					     self.tempFields,
+					     self.dynTempFields,
 					     [ self.retValField ]):
 			if field:
 				yield field
@@ -148,13 +162,13 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		if elem:
 			comment += " for %s" % str(elem)
 		field = FupCompiler_InterfField(
-			name=name or ("_FUP_COMP_temp_%d" % len(self.tempFields)),
+			name=name or ("_FUP_COMP_temp_%d" % len(self.dynTempFields)),
 			typeStr=dataTypeName,
 			initValueStr="",
 			comment=comment,
 			uuid=None,
 			enableNameCheck=False)
-		self.tempFields.append(field)
+		self.dynTempFields.append(field)
 		return field.name
 
 	def __compileFields(self, declStr, fields):
@@ -198,7 +212,17 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		awlLines.extend(self.__compileFields("VAR_OUTPUT", self.outFields))
 		awlLines.extend(self.__compileFields("VAR_IN_OUT", self.inOutFields))
 		awlLines.extend(self.__compileFields("VAR", self.statFields))
-		awlLines.extend(self.__compileFields("VAR_TEMP", self.tempFields))
+
+		def dynTempSortKey(field):
+			# Primarily sort by type width.
+			# Secondarily sort by type name.
+			return "%03d_%s" % (field.typeWidth, field.name)
+
+		tempFields = list(self.tempFields)
+		tempFields.extend(sorted(self.dynTempFields,
+					 key=dynTempSortKey,
+					 reverse=True))
+		awlLines.extend(self.__compileFields("VAR_TEMP", tempFields))
 
 		self.compileState = self.COMPILE_DONE
 		return awlLines
