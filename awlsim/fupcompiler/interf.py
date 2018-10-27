@@ -216,7 +216,8 @@ class FupCompiler_Interf(FupCompiler_BaseObj):
 		def dynTempSortKey(field):
 			# Primarily sort by type width.
 			# Secondarily sort by type name.
-			return "%03d_%s" % (field.typeWidth, field.name)
+			return "%03d_%s" % (max(field.typeWidth, -1) + 1,
+					    field.name)
 
 		tempFields = list(self.tempFields)
 		tempFields.extend(sorted(self.dynTempFields,
