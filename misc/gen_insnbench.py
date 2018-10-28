@@ -375,11 +375,13 @@ def usage(f=sys.stdout):
 	print(" -o|--one-cycle         Generate CALL SFC 46 at the end of OB 1.", file=f)
 
 def getLabelName(index):
-	ret = [None] * 4
+	if index < 0 or index >= 26 ** 4:
+		raise ValueError("Label index out of range.")
+	labelChars = [None] * 4
 	for i in range(3, -1, -1):
-		ret[i] = chr(ord("A") + (index % 26))
+		labelChars[i] = chr(ord("A") + (index % 26))
 		index //= 26
-	return "".join(ret)
+	return "".join(labelChars)
 
 def main():
 	opt_nrIterations = 10000
@@ -442,7 +444,11 @@ def main():
 			elif args == "DB":
 				argsStr = "DB 42"
 			elif args == "LABEL":
-				labelName = getLabelName(labelIndex)
+				try:
+					labelName = getLabelName(labelIndex)
+				except ValueError as e:
+					error("Failed to generate jump label: %s\n"
+					      "The generated program is too big." % str(e))
 				prefixStr = "\tL 0;\r\n\tCLR;"
 				argsStr = labelName
 				suffixStr = "%s:\tNOP 0;" % labelName
