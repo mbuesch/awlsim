@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ from awlsim.core.operators import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.statusword import * #+cimport
 from awlsim.core.symbolparser import *
+from awlsim.core.labels import * #+cimport
 
 from awlsim.core.instructions.all_insns import * #+cimport
 from awlsim.core.instructions.parentinfo import *
@@ -158,14 +159,13 @@ class FupCompiler(object):
 		A label name string is returned.
 		The name does not include the final ':' character.
 		"""
-		labelMax = 0xFFF
 		labelCounter = self.__labelCounter
-		if labelCounter > labelMax:
-			raise FupCompilerError("Out of jump labels. "
-				"Cannot create more than %d labels." % (
-				labelMax))
 		self.__labelCounter += 1
-		return "L%03X" % labelCounter
+		try:
+			return AwlLabel.generateLabelName(labelCounter)
+		except ValueError as e:
+			raise FupCompilerError("Cannot generate jump label. %s "
+					       "The block program is too big." % str(e))
 
 	def newInsn(self, parentFupElem, insnClass, ops=[],
 		    labelStr=None, parentFupConn=None):
