@@ -82,3 +82,18 @@ class AwlLabel(object): #+cdef
 			if lbl.getLabelName() == label:
 				return i
 		return None
+
+	@classmethod
+	def generateLabelName(cls, index):
+		"""Generate a label name string.
+		The name does not include the final ':' character.
+		"""
+		maxIndex = (26 ** 4) - 1
+		if index < 0 or index > maxIndex:
+			raise ValueError("Label index %d out of range 0 - %d." % (
+					 index, maxIndex))
+		labelChars = [None] * 4
+		for i in range(3, -1, -1):
+			labelChars[i] = chr(ord("A") + (index % 26))
+			index //= 26
+		return "".join(labelChars)
