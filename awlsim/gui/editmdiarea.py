@@ -460,6 +460,13 @@ class EditMdiSubWindow(QMdiSubWindow):
 		self.closed.emit(self)
 		QMdiSubWindow.closeEvent(self, ev)
 
+	def wheelEvent(self, ev):
+		QMdiSubWindow.wheelEvent(self, ev)
+		# Always accept the wheel event.
+		# This avoids forwarding it to the parent MDI area,
+		# if the scroll happened in this MDI sub window.
+		ev.accept()
+
 	def updateTitle(self):
 		pass
 

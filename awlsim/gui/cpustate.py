@@ -1354,6 +1354,13 @@ class StateMdiSubWindow(QMdiSubWindow):
 		QMdiSubWindow.moveEvent(self, moveEvent)
 		self.moved.emit(self)
 
+	def wheelEvent(self, ev):
+		QMdiSubWindow.wheelEvent(self, ev)
+		# Always accept the wheel event.
+		# This avoids forwarding it to the parent MDI area,
+		# if the scroll happened in this MDI sub window.
+		ev.accept()
+
 	def getWinSettings(self):
 		"""Get the GuiCpuStateWindowSettings object for this CPU view window.
 		"""
