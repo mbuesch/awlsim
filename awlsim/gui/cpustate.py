@@ -28,6 +28,8 @@ from awlsim.gui.blocktreewidget import *
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
+from awlsim.core.timers import Timer_s5t_to_seconds
+
 
 class StateWindow(QWidget):
 	# Window-close signal
