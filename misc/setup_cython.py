@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.16
+#   v1.17
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -353,6 +353,8 @@ def registerCythonModule(baseDir, sourceModName):
 							"linetrace"	: profileEnabled,
 							# Warn about unused variables?
 							"warn.unused"	: False,
+							# Set language version
+							"language_level" : 2 if sys.version_info[0] < 3 else 3,
 						},
 						define_macros=[
 							("CYTHON_TRACE",	str(int(profileEnabled))),
