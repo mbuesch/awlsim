@@ -36,7 +36,7 @@ def shouldUseCython(modname=None):
 
 def cythonImportError(modname, message):
 	global __useCython
-	import sys
+	import sys, os
 
 	def perr(msg):
 		if sys.stderr:
@@ -49,7 +49,9 @@ def cythonImportError(modname, message):
 		     (modname, message))
 		__useCython = __USE_CYTHON_NO
 	elif __useCython in (__USE_CYTHON_FORCE, __USE_CYTHON_VERBOSE):
-		perr("ERROR: Failed to import awlsim CYTHON module '%s': %s\n"
+		perr("\n\nERROR: Failed to import awlsim CYTHON module '%s': %s\n\n"
+		     "Python interpreter: %s\n"
+		     "PYTHONPATH=\"%s\"\n\n"
 		     "Aborting.\n" %\
-		     (modname, message))
+		     (modname, message, sys.executable, os.environ.get("PYTHONPATH", "")))
 		sys.exit(1)
