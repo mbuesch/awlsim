@@ -7,7 +7,6 @@
 ## core
 
 * Improve performance (cython)
-* Blocks that are no longer linked to (created by) sources should be removed.
 * Single download of symtab causes a redefinition error.
 * Add feature: LAD (KOP) compiler
 
@@ -21,23 +20,22 @@
 
 * Add feature: LAD (KOP) editor
 * Add feature: find/replace for symbol table editor
-* Add feature: find/replace for FUP editor
 * Add feature: find/replace for library selection editor
 * Add feature: global find/replace
 * Add feature: Interface editor copy/paste
 * Add feature: Symbol table editor copy/paste
 * Add feature: Library selections editor copy/paste
+
+## FBD / FUP GUI
+
+* Rewrite wire drawing algorithm
+* Add feature: Support modifying wires by clicking onto them
 * Add feature: Make width (and height?) of operands selectable
-
-## FBD/FUP GUI only
-
 * Add feature: Exchange elements
 * Add feature: Live view of signal states (online diagnosis)
-* Add feature: Support modifying wires by clicking onto them
+* Add feature: find/replace for FUP editor
 
-## FBD/FUP compiler and GUI
+## FBD / FUP compiler
 
 * Fix evaluation order in case of multiple parallel assignments and other elements
-* Add feature: Add option to disable elements
-* Add element: Timers
 * Add element: CALL
