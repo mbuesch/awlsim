@@ -29,10 +29,10 @@ basedir="$basedir/.."
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
 DEFAULT_SUITE=stretch
 
-RPIGPIO_VERSION="0.6.3"
+RPIGPIO_VERSION="0.6.4"
 RPIGPIO_FILE="RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
-RPIGPIO_MIRROR="https://netcologne.dl.sourceforge.net/project/raspberry-gpio-python/$RPIGPIO_FILE"
-RPIGPIO_SHA256="9366ff36104a39368759929e71f0d8ad6a88553497b3064cbc40f4248806cc19"
+RPIGPIO_MIRROR="https://files.pythonhosted.org/packages/f0/19/89e634790eb10d64ca87ce5c01751e784a730cf102262205d815275e883a/$RPIGPIO_FILE"
+RPIGPIO_SHA256="065b5e3fa0a8873640564040275250a38e41225292b3a1d7c0c24850d2fbbce9"
 
 SPIDEV_VERSION="3.2"
 SPIDEV_FILE="spidev-$SPIDEV_VERSION.tar.gz"
