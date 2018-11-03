@@ -2,7 +2,7 @@
 #
 # AWL simulator - Python library importer
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,8 +42,10 @@ def importModule(moduleName):
 	except ImportError as e: #@nocov
 		importlib = None
 
-	if cython_helper.shouldUseCython(moduleName):
-		moduleName = cython_helper.cythonModuleName(moduleName) #@nocov
+	# If we are running in cython module,
+	# translate the moduleName to its cython name.
+#@cy	moduleName = cython_helper.cythonModuleName(moduleName)
+
 	if importlib:
 		mod = importlib.import_module(moduleName)
 	else:
