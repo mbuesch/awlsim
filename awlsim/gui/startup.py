@@ -105,12 +105,21 @@ def guiShutdownCleanup():
 		AwlValidator.shutdown()
 
 # Install a handler for unhandled exceptions.
-def __unhandledExceptionHook(type, value, traceback):
-	print("awlsim-gui: ABORTING due to unhandled exception:",
-	      file=sys.stderr)
-	__orig_excepthook(type, value, traceback)
+def __unhandledExceptionHook(etype, value, tb):
+	text = "awlsim-gui: ABORTING due to unhandled exception:"
+	print(text, file=sys.stderr)
+	__orig_excepthook(etype, value, tb)
 	# Try to clean up now.
 	guiShutdownCleanup()
+	# Try to show an error message box.
+	with suppressAllExc:
+		import traceback
+		QMessageBox.critical(
+			None,
+			"awlsim-gui: Unhandled exception",
+			text + "\n\n\n" + "".join(traceback.format_exception(etype, value, tb)),
+			QMessageBox.Ok,
+			QMessageBox.Ok)
 	# Call QCoreApplication.exit() so that we return from exec_()
 	qapp.exit(ExitCodes.EXIT_ERR_OTHER)
 __orig_excepthook = sys.excepthook
