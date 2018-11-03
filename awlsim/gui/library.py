@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI standard library window
 #
-# Copyright 2014 Michael Buesch <m@bues.ch>
+# Copyright 2014-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ from awlsim.gui.icons import *
 
 from awlsim.core.systemblocks.system_sfc import *
 from awlsim.core.systemblocks.system_sfb import *
+from awlsim.core.systemblocks.tables import SFC_table, SFB_table
 
 from awlsim.library.libentry import *
 from awlsim.library.libselection import *
