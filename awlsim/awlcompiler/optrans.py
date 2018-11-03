@@ -613,7 +613,7 @@ class AwlOpTranslator(object):
 		# Byte array immediate
 		immediate, fields = AwlDataType.tryParseImmediate_ByteArray(rawOps)
 		if immediate is not None:
-			size = 32 if fields == 9 else 16
+			size = 32 if fields == 10 else 16
 			oper = make_AwlOperator(AwlOperatorTypes.IMM, size, None, None)
 			oper.immediate = immediate
 			return OpDescriptor(oper, fields)
