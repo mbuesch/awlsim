@@ -1,0 +1,74 @@
+ORGANIZATION_BLOCK OB 1
+BEGIN
+
+	// Whitespace around call parameters should be non-significant.
+
+	CALL SFC 47 (
+		WT:= 0	, // INT
+	)
+	CALL SFC 47 (
+		WT :=0	, // INT
+	)
+	CALL SFC 47 (
+		WT:=0	, // INT
+	)
+	CALL SFC 47 (
+		WT:= 0	,
+	)
+	CALL SFC 47 (
+		WT :=0	,
+	)
+	CALL SFC 47 (
+		WT:=0	,
+	)
+	CALL SFC 47 (
+		WT:= 0,
+	)
+	CALL SFC 47 (
+		WT :=0,
+	)
+	CALL SFC 47 (
+		WT:=0,
+	)
+	CALL SFC 47 (
+		WT:= 0	// INT
+	)
+	CALL SFC 47 (
+		WT :=0	// INT
+	)
+	CALL SFC 47 (
+		WT:=0	// INT
+	)
+	CALL SFC 47 (
+		WT:= 0
+	)
+	CALL SFC 47 (
+		WT :=0
+	)
+	CALL SFC 47 (
+		WT:=0
+	)
+	CALL SFC 47 (
+		WT:= 0
+	)
+	CALL SFC 47 (
+		WT :=0
+	)
+	CALL SFC 47 (
+		WT:=0
+	)
+	CALL SFC 47 (
+		WT:=0)
+	CALL SFC 47 (WT:=0)
+	CALL SFC 47 (WT:=0,)
+	CALL SFC 47 (
+		WT:=0	,// INT
+	)
+	CALL SFC 47 (
+		WT:=0// INT
+	)
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
+
