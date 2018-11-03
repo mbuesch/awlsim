@@ -529,7 +529,6 @@ class ProjectTreeModel(QAbstractItemModel):
 		symbol: The Symbol() instance to add.
 		Returns True, if adding was successfull.
 		"""
-		assert(isinstance(symbol, Symbol))
 		project = self.getProject()
 		mnemonics = project.getCpuConf().getConfiguredMnemonics()
 		symTabSources = project.getSymTabSources()
@@ -601,7 +600,6 @@ class ProjectTreeModel(QAbstractItemModel):
 		libSelection: The AwlLibEntrySelection() to add.
 		Returns True, if adding was successfull.
 		"""
-		assert(isinstance(libSelection, AwlLibEntrySelection))
 		project = self.getProject()
 		libSelections = project.getLibSelections()
 
