@@ -549,8 +549,8 @@ class AwlParser(object):
 				   (c == '(' and not t.haveLabelToken()):
 					# Parenthesis begin
 					t.inParens = True
-					t.addCharacter(c)
 					t.finishCurToken()
+					t.addToken(c)
 					cont(); continue
 				if t.inParens and c == ')':
 					# Parenthesis end

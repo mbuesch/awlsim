@@ -547,15 +547,16 @@ class AwlDataType(OptionalImmutable):
 		value = None
 		if tokens is None:
 			value = 0
-		elif len(tokens) == 9:
+		elif len(tokens) == 10:
 			if typeId == self.TYPE_DWORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)
-		elif len(tokens) == 5:
+		elif len(tokens) == 6:
 			if typeId == self.TYPE_WORD:
 				value, fields = self.tryParseImmediate_ByteArray(
 							tokens)
-			elif typeId == self.TYPE_DT:
+		elif len(tokens) == 5:
+			if typeId == self.TYPE_DT:
 				value = self.tryParseImmediate_DT(tokens)
 			elif typeId == self.TYPE_TOD:
 				value = self.tryParseImmediate_TOD(tokens)
@@ -1144,30 +1145,29 @@ class AwlDataType(OptionalImmutable):
 
 	@classmethod
 	def tryParseImmediate_ByteArray(cls, tokens):
-		tokens = [ t.upper() for t in tokens ]
-		if not tokens[0].startswith("B#("):
+		if tokens[0].upper() != "B#" or tokens[1] != "(":
 			return None, None
 		try:
-			if len(tokens) >= 5 and\
-			   tokens[2] == ',' and\
-			   tokens[4] == ')':
-				fields = 5
-				a, b = int(tokens[1], 10),\
-				       int(tokens[3], 10)
+			if len(tokens) >= 6 and\
+			   tokens[3] == ',' and\
+			   tokens[5] == ')':
+				fields = 6
+				a, b = int(tokens[2], 10),\
+				       int(tokens[4], 10)
 				if a < 0 or a > 0xFF or\
 				   b < 0 or b > 0xFF:
 					raise ValueError
 				immediate = (a << 8) | b
-			elif len(tokens) >= 9 and\
-			     tokens[2] == ',' and\
-			     tokens[4] == ',' and\
-			     tokens[6] == ',' and\
-			     tokens[8] == ')':
-				fields = 9
-				a, b, c, d = int(tokens[1], 10),\
-					     int(tokens[3], 10),\
-					     int(tokens[5], 10),\
-					     int(tokens[7], 10)
+			elif len(tokens) >= 10 and\
+			     tokens[3] == ',' and\
+			     tokens[5] == ',' and\
+			     tokens[7] == ',' and\
+			     tokens[9] == ')':
+				fields = 10
+				a, b, c, d = int(tokens[2], 10),\
+					     int(tokens[4], 10),\
+					     int(tokens[6], 10),\
+					     int(tokens[8], 10)
 				if a < 0 or a > 0xFF or\
 				   b < 0 or b > 0xFF or\
 				   c < 0 or c > 0xFF or\
