@@ -370,7 +370,6 @@ class MainWidget(QWidget):
 		libSelection: The AwlLibEntrySelection() instance.
 		Returns True, if the selection has successfully been added.
 		"""
-		assert(isinstance(libSelection, AwlLibEntrySelection))
 		return self.projectTreeModel.libSelectionAdd(libSelection,
 							     parentWidget=self)
 
