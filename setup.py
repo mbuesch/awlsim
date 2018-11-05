@@ -17,32 +17,37 @@
 #  AWLSIM_CYTHON_PARALLEL:
 #	0:           Do not use parallel compilation for Cython modules.
 #	1 (default): Invoke multiple compilers in parallel (faster on multicore).
-#	2:           Invole multiple compilers only, if setup.py is being executed by Python 2.
-#	3:           Invole multiple compilers only, if setup.py is being executed by Python 3.
+#	2:           Invoke multiple compilers only, if setup.py is being executed by Python 2.
+#	3:           Invoke multiple compilers only, if setup.py is being executed by Python 3.
 #
 #  AWLSIM_PROFILE:
 #	0 (default): Do not enable profiling support in compiled Cython modules.
 #	1:           Enable profiling support in compiled Cython modules.
 #
 
-from __future__ import print_function
+from __future__ import division, absolute_import, print_function, unicode_literals
 
-import sys
-import os
+import sys, os
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Add the basedir and basedir/misc to PYTHONPATH before
+# we try to import awlsim.common.version and setup_cython.
+for base in (os.getcwd(), basedir):
+	sys.path.insert(0, os.path.join(base, "misc"))
+	sys.path.insert(0, base)
+
 import re
 import warnings
 from distutils.core import setup
-from awlsim.common.version import VERSION_STRING
 try:
 	from cx_Freeze import setup, Executable
 	cx_Freeze = True
 except ImportError:
 	cx_Freeze = False
 
-sys.path.insert(0, "./misc")
+from awlsim.common.version import VERSION_STRING
 import setup_cython
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 isWindows = os.name.lower() in {"nt", "ce"}
 isPosix = os.name.lower() == "posix"
