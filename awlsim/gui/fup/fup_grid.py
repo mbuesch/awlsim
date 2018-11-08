@@ -133,28 +133,6 @@ class FupGrid(FupBaseClass):
 	# Infinite width/height
 	INFINITE = -1
 
-	class CollLines(object):
-		"""Collision cache line descriptor.
-		This is used for describing drawn wires and
-		detecting collisions among them.
-		"""
-
-		def __init__(self, lineSegments, wire=None, elem=None):
-			"""lineSeg => Tuple of LineSeg2D() line segments.
-			wire => FupWire() that this line belongs to, if any.
-			elem => FupElem() that this line belongs to, if any.
-			"""
-			self.lineSegments = lineSegments
-			self.wire = wire
-			self.elem = elem
-
-		def dup(self):
-			"""Make a shallow copy of this Line.
-			"""
-			return self.__class__(self.lineSegments,
-					      self.wire,
-					      self.elem)
-
 	def __init__(self, drawWidget, width, height, uuid=None):
 		"""drawWidget => FupDrawWidget() instance.
 		width => The grid width.
@@ -179,7 +157,7 @@ class FupGrid(FupBaseClass):
 
 		self.optSettingsCont = AwlOptimizerSettingsContainer()
 
-		self.collisionCacheClear()
+		self.wireGrid = FupWireGrid(self)
 
 	def getFont(self, size=8, bold=False):
 		if self.__drawWidget:
@@ -200,20 +178,7 @@ class FupGrid(FupBaseClass):
 		self.__elemsByUUID = {}
 		self.selectedCells.clear()
 		self.selectedElems.clear()
-		self.collisionCacheClear()
-
-	def collisionCacheClear(self):
-		"""Clear the collision cache of drawn lines.
-		"""
-		# __collCacheLines is a list of FupGrid.CollLines() instances.
-		self.__collCacheLines = []
-
-	def collisionCacheAdd(self, line):
-		"""Add a line entry to the collision cache.
-		line => A FupGrid.CollLines() instance
-		"""
-		assert(isinstance(line, self.CollLines))
-		self.__collCacheLines.append(line)
+		self.wireGrid.clear()
 
 	def resize(self, width, height):
 		"""Resize the grid.
@@ -262,10 +227,7 @@ class FupGrid(FupBaseClass):
 		"""
 		with contextlib.suppress(KeyError):
 			self.wires.remove(wire)
-		# Remove CollLines()s that belong to 'wire' from the collision cache.
-		self.__collCacheLines = [ line for line in self.__collCacheLines
-					  if line.wire is None or\
-					     line.wire is not wire ]
+		self.wireGrid.clear()
 
 	def getWireById(self, wireIdNum):
 		"""Get a wire by its idNum.
@@ -303,6 +265,7 @@ class FupGrid(FupBaseClass):
 			wire.idNum = i + idNumOffset
 
 	def checkWireLine(self, painter, excludeWires, lineSeg):
+		#TODO remove me
 		"""Checks if a wire line would be drawable and does not collide
 		with another wire line.
 		excludeWires => Iterable if FupWire()s to exclude from the check.
@@ -321,6 +284,7 @@ class FupGrid(FupBaseClass):
 		return collisions
 
 	def drawWireLine(self, painter, wire, lineSeg):
+		#TODO remove me
 		"""Draw a wire line on 'painter'.
 		wire => The FupWire() this line segment belongs to.
 		lineSeg => The LineSeg2D() that describes the line to draw.
@@ -405,10 +369,7 @@ class FupGrid(FupBaseClass):
 		elem.breakConnections()
 		with contextlib.suppress(ValueError):
 			self.selectedElems.remove(elem)
-		# Remove CollLines()s that belong to 'elem' from the collision cache.
-		self.__collCacheLines = [ line for line in self.__collCacheLines
-					  if line.elem is None or\
-					     line.elem is not elem ]
+		self.wireGrid.clear()
 
 	def moveElemTo(self, elem, toX, toY,
 		       relativeCoords=False,
@@ -604,3 +565,353 @@ class FupGrid(FupBaseClass):
 			elem.regenAllUUIDs()
 		for wire in self.wires:
 			wire.uuid = None # regenerate
+
+class FupWireGrid(object):
+	"""Wire-subgrid.
+	"""
+
+	__slots__ = (
+		"fupGrid",
+		"__wireGrid",
+	)
+
+	# Width and height factors of the wire sub-grid.
+	WIREGRID_FACTORS = (5, 1)
+
+	def __init__(self, fupGrid):
+		self.fupGrid = fupGrid	# The main parent FUP grid
+		self.clear()
+
+	@property
+	def width(self):
+		"""Number of wire-sub-grid cells, in X direction.
+		"""
+		return self.fupGrid.width * self.WIREGRID_FACTORS[0]
+
+	@property
+	def height(self):
+		"""Number of wire-sub-grid cells, in Y direction.
+		"""
+		return self.fupGrid.height * self.WIREGRID_FACTORS[1]
+
+	@property
+	def cellPixWidth(self):
+		return self.fupGrid.cellPixWidth // self.WIREGRID_FACTORS[0]
+
+	@property
+	def cellPixHeight(self):
+		return self.fupGrid.cellPixHeight // self.WIREGRID_FACTORS[1]
+
+	def clear(self):
+		"""Clear the wire grid.
+		"""
+		# The wire grid dict is a dict of FupWireGridCell objects
+		# with a tuple (x, y) as key, which holds the wire grid coordinates.
+		self.__wireGrid = {}
+
+	def pixToWireGridCoords(self, pixCoordX, pixCoordY):
+		"""Convert pixel coordinates to wire grid coordinates.
+		"""
+		return (pixCoordX // self.cellPixWidth,
+			pixCoordY // self.cellPixHeight)
+
+	def hasCell(self, x, y):
+		"""Check if a given cell at wire grid coordinates (x, y) exists.
+		"""
+		return (x, y) in self.__wireGrid
+
+	def getCell(self, x, y, create=False):
+		"""Get a FupWireGridCell object at wire grid coordinates (x, y).
+		"""
+		try:
+			cell = self.__wireGrid[(x, y)]
+		except KeyError as e:
+			if not create:
+				return None
+			cell = FupWireGridCell(x=x, y=y, wireGrid=self)
+			self.__wireGrid[(x, y)] = cell
+		return cell
+
+	def __fillBlockers(self, fupGridX, fupGridY):
+		xStart = fupGridX * self.WIREGRID_FACTORS[0]
+		yStart = fupGridY * self.WIREGRID_FACTORS[1]
+
+		for wireGridX in range(xStart, xStart + self.WIREGRID_FACTORS[0]):
+			for wireGridY in range(yStart, yStart + self.WIREGRID_FACTORS[1]):
+				cell = self.getCell(wireGridX, wireGridY, create=True)
+				cell.wire = FupWireGridCell.PSEUDO_WIRE
+
+
+	def __buildPath(self, wire, fromX, fromY, toX, toY):
+		modifiedCells = set()
+
+		if fromX > toX:
+			return False, modifiedCells
+
+		# Get the first cell and add a junction towards the output connection.
+		cell = self.getCell(fromX, fromY, create=True)
+		cell.addJunctionWest()
+		modifiedCells.add(cell)
+
+		yInc = 1 if toY > fromY else (-1 if toY < fromY else 0)
+		x, y = fromX, fromY
+
+		#TODO check for element collisions
+
+		if fromY != toY:
+			cell.addJunctionVertical(yInc)
+
+			# Search for an x position where we can do the vertical line.
+			while True:
+				cell = self.getCell(x, y, create=True)
+				cell.addJunctionWest()
+				modifiedCells.add(cell)
+
+				nextCell = self.getCell(x, y + yInc, create=True)
+				if not nextCell.wire or nextCell.wire == wire:
+					break
+				cell.addJunctionEast()
+				x += 1
+				if x > toX:
+					# We're too far.
+					return False, modifiedCells
+			x, y = nextCell.x, nextCell.y
+
+			# Actually do the vertical line.
+			while True:
+				cell = self.getCell(x, y, create=True)
+				if cell.wire and cell.wire != wire:
+					pass#TODO err
+				cell.addJunctionVertical(-yInc)
+				modifiedCells.add(cell)
+				if y == toY:
+					break
+				cell.addJunctionVertical(yInc)
+				y += yInc
+
+		# Do the horizontal line.
+		first = True
+		while True:
+			cell = self.getCell(x, y, create=True)
+			if cell.wire and cell.wire != wire:
+				pass#TODO err
+			if not first:
+				cell.addJunctionWest()
+			cell.addJunctionEast()
+			modifiedCells.add(cell)
+			if x == toX:
+				break
+			x += 1
+			first = False
+
+		return True, modifiedCells
+
+	def build(self):
+		"""Build the wire grid.
+		"""
+		# Fill the wire grid with blocker cells where elements are.
+		for elem in self.fupGrid.elems:
+			for fupGridX in range(elem.x, elem.x + elem.width):
+				for fupGridY in range(elem.y, elem.y + elem.height):
+					self.__fillBlockers(fupGridX, fupGridY)
+
+		# Build the wire grid from all wires.
+		for wire in sorted(self.fupGrid.wires, key=lambda w: w.idNum):
+			outConnPixX, outConnPixY = wire.outConn.pixCoords
+			outConnX, outConnY = self.pixToWireGridCoords(outConnPixX, outConnPixY)
+
+			for inConn in wire.connections:
+				if inConn is wire.outConn:
+					continue
+				assert(inConn.IN)
+
+				# Draw the wire from out to in.
+
+				inConnPixX, inConnPixY = inConn.pixCoords
+				inConnX, inConnY = self.pixToWireGridCoords(inConnPixX, inConnPixY)
+
+				ok, modifiedCells = self.__buildPath(wire,
+								     outConnX + 1, outConnY,
+								     inConnX - 1, inConnY)
+				if ok:
+					for cell in modifiedCells:
+						cell.commit()
+				else:
+					for cell in modifiedCells:
+						cell.reset()
+					pass#TODO
+
+	def draw(self, painter):
+		"""Draw all wires.
+		"""
+		for cell in dictValues(self.__wireGrid):
+			cell.draw(painter)
+
+class FupWireGridCell(object):
+	"""Wire-grid cell.
+	"""
+
+	__slots__ = (
+		"x",
+		"y",
+		"wireGrid",
+		"wire",
+		"junctions",
+		"junctionsTemp",
+		"hAlign",
+		"vAlign",
+	)
+
+	EnumGen.start
+	JUNCTION_NORTH_BIT	= EnumGen.item
+	JUNCTION_EAST_BIT	= EnumGen.item
+	JUNCTION_SOUTH_BIT	= EnumGen.item
+	JUNCTION_WEST_BIT	= EnumGen.item
+	EnumGen.end
+
+	JUNCTION_NORTH		= 1 << JUNCTION_NORTH_BIT
+	JUNCTION_EAST		= 1 << JUNCTION_EAST_BIT
+	JUNCTION_SOUTH		= 1 << JUNCTION_SOUTH_BIT
+	JUNCTION_WEST		= 1 << JUNCTION_WEST_BIT
+
+	EnumGen.start
+	HALIGN_WEST		= EnumGen.item
+	HALIGN_CENTER		= EnumGen.item
+	HALIGN_EAST		= EnumGen.item
+	EnumGen.end
+
+	EnumGen.start
+	VALIGN_NORTH		= EnumGen.item
+	VALIGN_CENTER		= EnumGen.item
+	VALIGN_SOUTH		= EnumGen.item
+	EnumGen.end
+
+	BRANCH_DIA		= 4
+
+	PSEUDO_WIRE		= FupWire(grid=None)
+
+	def __init__(self,
+		     x=0,
+		     y=0,
+		     wireGrid=None,
+		     wire=None,
+		     junctions=0,
+		     hAlign=HALIGN_CENTER,
+		     vAlign=VALIGN_CENTER):
+		self.x = x
+		self.y = y
+		self.wireGrid = wireGrid
+		self.wire = wire
+		self.junctions = junctions
+		self.junctionsTemp = junctions
+		self.hAlign = hAlign
+		self.vAlign = vAlign
+
+	def addJunctionNorth(self):
+		self.junctionsTemp |= self.JUNCTION_NORTH
+
+	def addJunctionEast(self):
+		self.junctionsTemp |= self.JUNCTION_EAST
+
+	def addJunctionVertical(self, direction):
+		if direction > 0:
+			self.addJunctionSouth()
+		elif direction < 0:
+			self.addJunctionNorth()
+
+	def addJunctionSouth(self):
+		self.junctionsTemp |= self.JUNCTION_SOUTH
+
+	def addJunctionWest(self):
+		self.junctionsTemp |= self.JUNCTION_WEST
+
+	def addJunctionHorizontal(self, direction):
+		if direction > 0:
+			self.addJunctionEast()
+		elif direction < 0:
+			self.addJunctionWest()
+
+	def setHAlign(self, hAlign):
+		self.hAlign = hAlign
+
+	def setVAlign(self, vAlign):
+		self.vAlign = vAlign
+
+	def commit(self):
+		self.junctions = self.junctionsTemp
+
+	def reset(self):
+		self.junctionsTemp = self.junctions
+
+	@property
+	def nrJunctions(self):
+		return (((self.junctions >> self.JUNCTION_NORTH_BIT) & 1) +
+			((self.junctions >> self.JUNCTION_EAST_BIT) & 1) +
+			((self.junctions >> self.JUNCTION_SOUTH_BIT) & 1) +
+			((self.junctions >> self.JUNCTION_WEST_BIT) & 1))
+
+	def draw(self, painter):
+		wireGrid = self.wireGrid
+		if not wireGrid:
+			return
+
+		cellPixWidth = wireGrid.cellPixWidth
+		cellPixHeight = wireGrid.cellPixHeight
+		xPix = cellPixWidth * self.x
+		yPix = cellPixHeight * self.y
+
+		wirePen = QPen(QColor("#000000"))
+		wirePen.setWidth(2)
+		painter.setPen(wirePen)
+
+		# Draw horizontal wire segments.
+		if self.junctions & (self.JUNCTION_WEST | self.JUNCTION_EAST):
+			if self.junctions & self.JUNCTION_WEST:
+				xStart = xPix
+			else:
+				xStart = xPix + cellPixWidth // 2
+			if self.junctions & self.JUNCTION_EAST:
+				xEnd = xPix + cellPixWidth
+			else:
+				xEnd = xPix + cellPixWidth // 2
+
+			if self.vAlign == self.VALIGN_NORTH:
+				y = yPix
+			elif self.vAlign == self.VALIGN_CENTER:
+				y = yPix + cellPixHeight // 2
+			else: # VALIGN_SOUTH
+				y = yPix + cellPixHeight
+
+			painter.drawLine(xStart, y, xEnd, y)
+
+		# Draw vertical wire segments.
+		if self.junctions & (self.JUNCTION_NORTH | self.JUNCTION_SOUTH):
+			if self.junctions & self.JUNCTION_NORTH:
+				yStart = yPix
+			else:
+				yStart = yPix + cellPixHeight // 2
+			if self.junctions & self.JUNCTION_SOUTH:
+				yEnd = yPix + cellPixHeight
+			else:
+				yEnd = yPix + cellPixHeight // 2
+
+			if self.hAlign == self.HALIGN_WEST:
+				x = xPix
+			elif self.hAlign == self.HALIGN_CENTER:
+				x = xPix + cellPixWidth // 2
+			else: # HALIGN_EAST
+				x = xPix + cellPixWidth
+
+			painter.drawLine(x, yStart, x, yEnd)
+
+		# Draw the branch circle, if required.
+		if self.nrJunctions > 2:
+			wireBranchPen = QPen(QColor("#000000"))
+			wireBranchPen.setWidth(1)
+			wireBranchBrush = QBrush(QColor("#000000"))
+			painter.setPen(wireBranchPen)
+			painter.setBrush(wireBranchBrush)
+			branchR, branchD = self.BRANCH_DIA // 2, self.BRANCH_DIA
+			#TODO alignment
+			painter.drawEllipse(x - branchR, y - branchR,
+					    branchD, branchD)

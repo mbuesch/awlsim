@@ -333,6 +333,7 @@ class FupDrawWidget(QWidget):
 		"""
 		self.__zoom = clamp(self.__zoom, self.MIN_ZOOM, self.MAX_ZOOM)
 
+		# Re-calculate the cell pixel sizes
 		self.__cellWidth = int(round(self.GRID_PIX_BASE[0] * self.__zoom))
 		self.__cellHeight = int(round(self.GRID_PIX_BASE[1] * self.__zoom))
 
@@ -515,8 +516,9 @@ class FupDrawWidget(QWidget):
 		if not grid:
 			return
 
-		# Build a new collision cache.
-		grid.collisionCacheClear()
+		# Rebuild the wire sub-grid.
+		grid.wireGrid.clear()
+		grid.wireGrid.build()
 
 		size = self.size()
 		width, height = size.width(), size.height()
@@ -576,15 +578,14 @@ class FupDrawWidget(QWidget):
 				isForeground = elem.selected or elem.expanded
 				if wantForeground == isForeground:
 					elem.draw(p)
-				if wantCollisions:
-					grid.collisionCacheAdd(elem.getCollisionLines(p))
+#TODO				if wantCollisions:
+#					grid.collisionCacheAdd(elem.getCollisionLines(p))
 			p.translate(-prevX, -prevY)
 		# Draw background elements
 		drawElems(False, True)
 
 		# Draw the connection wires
-		for wire in grid.wires:
-			wire.draw(p)
+		grid.wireGrid.draw(p)
 
 		# Draw foreground elements (selected/expanded)
 		drawElems(True, False)
