@@ -368,11 +368,11 @@ class FupElem(FupBaseClass):
 			cellPixHeight = self.grid.cellPixHeight
 			cellPixWidth = self.grid.cellPixWidth
 			if conn.IN:
-				xPix = (x * cellPixWidth) + conn.drawOffset
+				xPix = (x * cellPixWidth) + conn.anchorOffset
 				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
 				return xPix, yPix
 			elif conn.OUT:
-				xPix = (x * cellPixWidth) + cellPixWidth - conn.drawOffset
+				xPix = (x * cellPixWidth) + cellPixWidth - conn.anchorOffset
 				yPix = (y * cellPixHeight) + (cellPixHeight // 2)
 				return xPix, yPix
 		raise IndexError
@@ -415,7 +415,7 @@ class FupElem(FupBaseClass):
 		return 0
 
 	@property
-	def _connDrawOffset(self):
+	def _connAnchorOffset(self):
 		"""The connection offset in X direction.
 		"""
 		return int(round(self._xpadding * 0.5))

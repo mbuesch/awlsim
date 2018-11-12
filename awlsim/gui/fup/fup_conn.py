@@ -126,9 +126,17 @@ class FupConn(FupBaseClass):
 	def drawOffset(self):
 		"""Get the draw offset; in X direction.
 		"""
+		if not self.isConnected:
+			return self.anchorOffset
+		return 0
+
+	@property
+	def anchorOffset(self):
+		"""Get the anchor offset; in X direction.
+		"""
 		elem = self.elem
 		if elem:
-			return elem._connDrawOffset
+			return elem._connAnchorOffset
 		return 0
 
 	@property
