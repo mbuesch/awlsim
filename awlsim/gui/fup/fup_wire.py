@@ -78,24 +78,26 @@ class FupWire(FupBaseClass):
 
 	def __init__(self, grid, idNum=None, uuid=None):
 		FupBaseClass.__init__(self, uuid=uuid)
+
 		self.grid = grid
-		self.connections = set()	# The connections this wire is connected to
-		self.outConn = None		# The out-connection this is connected to
+		if grid:
+			self.connections = set() # The connections this wire is connected to
+			self.outConn = None	 # The out-connection this is connected to
 
-		if idNum is None:
-			idNum = grid.getUnusedWireIdNum()
-		self.idNum = idNum		# The ID number of this wire
-		grid.addWire(self)
+			if idNum is None:
+				idNum = grid.getUnusedWireIdNum()
+			self.idNum = idNum		# The ID number of this wire
+			grid.addWire(self)
 
-		self.__wirePen = QPen(QColor("#000000"))
-		self.__wirePen.setWidth(2)
-		self.__wireCollidingPen = QPen(QColor("#C02020"))
-		self.__wireCollidingPen.setWidth(2)
-		self.__wireBranchPen = QPen(QColor("#000000"))
-		self.__wireBranchPen.setWidth(1)
-		self.__wireBranchBrush = QBrush(QColor("#000000"))
+			self.__wirePen = QPen(QColor("#000000"))
+			self.__wirePen.setWidth(2)
+			self.__wireCollidingPen = QPen(QColor("#C02020"))
+			self.__wireCollidingPen.setWidth(2)
+			self.__wireBranchPen = QPen(QColor("#000000"))
+			self.__wireBranchPen.setWidth(1)
+			self.__wireBranchBrush = QBrush(QColor("#000000"))
 
-		self.checkCollisions()
+			self.checkCollisions()
 
 	def checkCollisions(self):
 		"""Mark the wire as must-check-collisions.
