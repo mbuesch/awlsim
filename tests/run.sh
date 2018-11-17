@@ -484,9 +484,11 @@ run_nose_test()
 	local interp_ver="$(get_interpreter_version "$interpreter")"
 	local interp_major="$(echo "$interp_ver" | cut -d' ' -f 1)"
 	if [ "$interp_major" = "2" ]; then
-		local nose="$nosetests"
+		find_executable nosetests
+		local nose="$RET"
 	else
-		local nose="$nosetests3"
+		find_executable nosetests3
+		local nose="$RET"
 	fi
 
 	# Resolve relative path
@@ -680,11 +682,6 @@ do_tests()
 			die "The options --quick and --extended are mutually exclusive."
 		fi
 	fi
-
-	find_executable nosetests
-	local nosetests="$RET"
-	find_executable nosetests3
-	local nosetests3="$RET"
 
 	local cython3_build_pid=
 	if is_parallel_run; then
