@@ -14,5 +14,7 @@ exec apt install \
 	python3-dev \
 	python3-nose \
 	python3-pyqt5 \
-	python3-pyside \
+	python3-pyside2.qtcore \
+	python3-pyside2.qtgui \
+	python3-pyside2.qtwidgets \
 	python3-serial

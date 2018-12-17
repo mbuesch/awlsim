@@ -974,10 +974,7 @@ class FupDrawWidget(QWidget):
 	def wheelEvent(self, ev):
 		if ev.modifiers() & Qt.ControlModifier:
 			# Ctrl + Scroll-wheel: Zoom
-			if isQt4:
-				numDegrees = ev.delta() / 8
-			else:
-				numDegrees = ev.angleDelta().y() / 8
+			numDegrees = ev.angleDelta().y() / 8
 			numSteps = numDegrees / 15
 
 			self.__wheelSteps += numSteps
@@ -998,8 +995,8 @@ class FupDrawWidget(QWidget):
 			self.removeElems()
 			event.accept()
 			return
-		elif isQt5 and (event.matches(QKeySequence.Cancel) or\
-				event.matches(QKeySequence.Deselect)):
+		elif (event.matches(QKeySequence.Cancel) or
+		      event.matches(QKeySequence.Deselect)):
 			self.__grid.deselectAllElems()
 			self.__selectionChanged()
 			self.repaint()
@@ -1121,8 +1118,7 @@ class FupDrawWidget(QWidget):
 		if not mime.hasFormat("application/x-awlsim-xml-fup-elem"):
 			return ignore()
 		mimeData = mime.data("application/x-awlsim-xml-fup-elem")
-		if isQt4:
-			mimeData = mimeData.data() # QByteArray to bytes/str
+		mimeData = mimeData.data() # QByteArray to bytes/str
 		mimeData = bytearray(mimeData)
 		if not mimeData:
 			return ignore()

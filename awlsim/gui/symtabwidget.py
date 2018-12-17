@@ -198,10 +198,7 @@ class SymTabView(QTableView):
 	def __init__(self, parent=None):
 		QTableView.__init__(self, parent)
 
-		if isQt4:
-			self.verticalHeader().setMovable(True)
-		else:
-			self.verticalHeader().setSectionsMovable(True)
+		self.verticalHeader().setSectionsMovable(True)
 		self.verticalHeader().sectionMoved.connect(self.__rowMoved)
 
 		self.pressed.connect(self.__handleMousePress)

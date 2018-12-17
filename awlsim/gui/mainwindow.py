@@ -263,11 +263,7 @@ class MainWidget(QWidget):
 		return True
 
 	def load(self):
-		if isPyQt and isQt4:
-			getOpenFileName = QFileDialog.getOpenFileNameAndFilter
-		else:
-			getOpenFileName = QFileDialog.getOpenFileName
-		fn, fil = getOpenFileName(self,
+		fn, fil = QFileDialog.getOpenFileName(self,
 			"Open project", "",
 			"Awlsim project or AWL/STL source (*.awlpro *.awl);;"
 			"Awlsim project (*.awlpro);;"
@@ -295,11 +291,7 @@ class MainWidget(QWidget):
 
 	def save(self, newFile=False):
 		if newFile or not self.filename:
-			if isPyQt and isQt4:
-				getSaveFileName = QFileDialog.getSaveFileNameAndFilter
-			else:
-				getSaveFileName = QFileDialog.getSaveFileName
-			fn, fil = getSaveFileName(self,
+			fn, fil = QFileDialog.getSaveFileName(self,
 				"Awlsim project save as", "",
 				"Awlsim project (*.awlpro)",
 				"*.awlpro")

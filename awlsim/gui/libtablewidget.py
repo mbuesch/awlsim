@@ -242,10 +242,7 @@ class LibTableView(QTableView):
 			model = LibTableModel()
 		self.setModel(model)
 
-		if isQt4:
-			self.verticalHeader().setMovable(True)
-		else:
-			self.verticalHeader().setSectionsMovable(True)
+		self.verticalHeader().setSectionsMovable(True)
 		self.verticalHeader().sectionMoved.connect(self.__rowMoved)
 
 		self.pressed.connect(self.__handleMousePress)
