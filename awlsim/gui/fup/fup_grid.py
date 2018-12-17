@@ -641,70 +641,108 @@ class FupWireGrid(object):
 				cell = self.getCell(wireGridX, wireGridY, create=True)
 				cell.wire = FupWireGridCell.PSEUDO_WIRE
 
+	def __doBuildPath(self):
+		pass#TODO
+		return True
 
 	def __buildPath(self, wire, fromX, fromY, toX, toY):
-		modifiedCells = set()
+		collection = FupWireGridCellCollection()
 
 		if fromX > toX:
-			return False, modifiedCells
+			return False
 
 		# Get the first cell and add a junction towards the output connection.
 		cell = self.getCell(fromX, fromY, create=True)
 		cell.addJunctionWest()
-		modifiedCells.add(cell)
+		collection.add(cell)
 
 		yInc = 1 if toY > fromY else (-1 if toY < fromY else 0)
 		x, y = fromX, fromY
 
-		#TODO check for element collisions
+		if fromX == toX:
+			#TODO: The wire will overlap with the target elem. That is Ok.
 
-		if fromY != toY:
-			cell.addJunctionVertical(yInc)
-
-			# Search for an x position where we can do the vertical line.
-			while True:
-				cell = self.getCell(x, y, create=True)
-				cell.addJunctionWest()
-				modifiedCells.add(cell)
-
-				nextCell = self.getCell(x, y + yInc, create=True)
-				if not nextCell.wire or nextCell.wire == wire:
-					break
-				cell.addJunctionEast()
-				x += 1
-				if x > toX:
-					# We're too far.
-					return False, modifiedCells
-			x, y = nextCell.x, nextCell.y
-
-			# Actually do the vertical line.
-			while True:
-				cell = self.getCell(x, y, create=True)
-				if cell.wire and cell.wire != wire:
-					pass#TODO err
-				cell.addJunctionVertical(-yInc)
-				modifiedCells.add(cell)
-				if y == toY:
-					break
+			if fromY != toY:
+				cell.setHAlign(cell.HALIGN_WEST)
 				cell.addJunctionVertical(yInc)
+
 				y += yInc
+				while True:
+					cell = self.getCell(x, y, create=True)
+					#TODO check coll
 
-		# Do the horizontal line.
-		first = True
-		while True:
-			cell = self.getCell(x, y, create=True)
-			if cell.wire and cell.wire != wire:
-				pass#TODO err
-			if not first:
-				cell.addJunctionWest()
-			cell.addJunctionEast()
-			modifiedCells.add(cell)
-			if x == toX:
-				break
-			x += 1
-			first = False
+					cell.setHAlign(cell.HALIGN_WEST)
+					cell.addJunctionVertical(-yInc)
+					pass#TODO
+					if y == toY:
+						break
+					cell.addJunctionVertical(yInc)
+					y += yInc
+		else:
+			startX = x
+			while True:
+				collection.pushSnapshot()
+				ok = self.__doBuildPath()
+				if ok:
+					break
+				collection.popSnapshot()
+				if startX == toX:
+					return False
+				startX += 1
 
-		return True, modifiedCells
+#		if fromY != toY:
+#			cell.addJunctionVertical(yInc)
+#
+#			# Search for an x position where we can do the vertical line.
+#			while True:
+#				cell = self.getCell(x, y, create=True)
+#				cell.addJunctionWest()
+#				collection.add(cell)
+#
+#				nextCell = self.getCell(x, y + yInc, create=True)
+#				if not nextCell.wire or nextCell.wire == wire:
+#					break
+#				cell.addJunctionEast()
+#				x += 1
+#				if x > toX:
+#					# We're too far.
+#					collection.popAllSnapshots()
+#					return False
+#			x, y = nextCell.x, nextCell.y
+#
+#			# Actually do the vertical line.
+#			while True:
+#				cell = self.getCell(x, y, create=True)
+#				if cell.wire and cell.wire != wire:
+#					# Collision
+#					collection.popAllSnapshots()
+#					return False
+#				cell.addJunctionVertical(-yInc)
+#				collection.add(cell)
+#				if y == toY:
+#					break
+#				cell.addJunctionVertical(yInc)
+#				y += yInc
+#
+#		# Do the horizontal line.
+#		first = True
+#		while True:
+#			cell = self.getCell(x, y, create=True)
+#			if cell.wire and cell.wire != wire:
+#				# Collision
+#				collection.popAllSnapshots()
+#				return False
+#			if not first:
+#				cell.addJunctionWest()
+#			cell.addJunctionEast()
+#			collection.add(cell)
+#			if x == toX:
+#				break
+#			x += 1
+#			first = False
+
+		collection.clearAllSnapshots()
+		return True
 
 	def build(self):
 		"""Build the wire grid.
@@ -730,15 +768,10 @@ class FupWireGrid(object):
 				inConnPixX, inConnPixY = inConn.pixCoords
 				inConnX, inConnY = self.pixToWireGridCoords(inConnPixX, inConnPixY)
 
-				ok, modifiedCells = self.__buildPath(wire,
-								     outConnX + 1, outConnY,
-								     inConnX - 1, inConnY)
-				if ok:
-					for cell in modifiedCells:
-						cell.commit()
-				else:
-					for cell in modifiedCells:
-						cell.reset()
+				ok = self.__buildPath(wire,
+						      outConnX + 1, outConnY,
+						      inConnX, inConnY)
+				if not ok:
 					pass#TODO
 
 	def draw(self, painter):
@@ -757,9 +790,9 @@ class FupWireGridCell(object):
 		"wireGrid",
 		"wire",
 		"junctions",
-		"junctionsTemp",
 		"hAlign",
 		"vAlign",
+		"snapshots",
 	)
 
 	EnumGen.start
@@ -803,15 +836,53 @@ class FupWireGridCell(object):
 		self.wireGrid = wireGrid
 		self.wire = wire
 		self.junctions = junctions
-		self.junctionsTemp = junctions
 		self.hAlign = hAlign
 		self.vAlign = vAlign
+		self.snapshots = deque()
+
+	def pushSnapshot(self):
+		self.snapshots.append(copy(self))
+
+	def popSnapshot(self):
+		try:
+			otherCell = self.snapshots.pop()
+		except IndexError as e:
+			return
+		self.assign(otherCell)
+
+	def popAllSnapshots(self):
+		try:
+			otherCell = self.snapshots.popleft()
+		except IndexError as e:
+			return
+		self.assign(otherCell)
+		self.clearSnapshots()
+
+	def clearSnapshots(self):
+		self.snapshots.clear()
+
+	def assign(self, other):
+		self.x = other.x
+		self.y = other.y
+		self.wireGrid = other.wireGrid
+		self.wire = other.wire
+		self.junctions = other.junctions
+		self.hAlign = other.hAlign
+		self.vAlign = other.vAlign
+
+	def __copy__(self):
+		newCell = self.__class__()
+		newCell.assign(self)
+		return newCell
+
+	def __deepcopy__(self, memo):
+		raise NotImplementedError
 
 	def addJunctionNorth(self):
-		self.junctionsTemp |= self.JUNCTION_NORTH
+		self.junctions |= self.JUNCTION_NORTH
 
 	def addJunctionEast(self):
-		self.junctionsTemp |= self.JUNCTION_EAST
+		self.junctions |= self.JUNCTION_EAST
 
 	def addJunctionVertical(self, direction):
 		if direction > 0:
@@ -820,10 +891,10 @@ class FupWireGridCell(object):
 			self.addJunctionNorth()
 
 	def addJunctionSouth(self):
-		self.junctionsTemp |= self.JUNCTION_SOUTH
+		self.junctions |= self.JUNCTION_SOUTH
 
 	def addJunctionWest(self):
-		self.junctionsTemp |= self.JUNCTION_WEST
+		self.junctions |= self.JUNCTION_WEST
 
 	def addJunctionHorizontal(self, direction):
 		if direction > 0:
@@ -836,12 +907,6 @@ class FupWireGridCell(object):
 
 	def setVAlign(self, vAlign):
 		self.vAlign = vAlign
-
-	def commit(self):
-		self.junctions = self.junctionsTemp
-
-	def reset(self):
-		self.junctionsTemp = self.junctions
 
 	@property
 	def nrJunctions(self):
@@ -866,14 +931,21 @@ class FupWireGridCell(object):
 
 		# Draw horizontal wire segments.
 		if self.junctions & (self.JUNCTION_WEST | self.JUNCTION_EAST):
+			#TODO also check hAlign here
 			if self.junctions & self.JUNCTION_WEST:
 				xStart = xPix
 			else:
-				xStart = xPix + cellPixWidth // 2
+				if self.hAlign != self.HALIGN_EAST:
+					xStart = xPix + cellPixWidth // 2
+				else:
+					xStart = xPix + cellPixWidth
 			if self.junctions & self.JUNCTION_EAST:
 				xEnd = xPix + cellPixWidth
 			else:
-				xEnd = xPix + cellPixWidth // 2
+				if self.hAlign != self.HALIGN_WEST:
+					xEnd = xPix + cellPixWidth // 2
+				else:
+					xEnd = xPix
 
 			if self.vAlign == self.VALIGN_NORTH:
 				y = yPix
@@ -915,3 +987,26 @@ class FupWireGridCell(object):
 			#TODO alignment
 			painter.drawEllipse(x - branchR, y - branchR,
 					    branchD, branchD)
+
+class FupWireGridCellCollection(object):
+	def __init__(self):
+		self.cells = set()
+
+	def add(self, cell):
+		self.cells.add(cell)
+
+	def pushSnapshot(self):
+		for cell in self.cells:
+			cell.pushSnapshot()
+
+	def popSnapshot(self):
+		for cell in self.cells:
+			cell.popSnapshot()
+
+	def popAllSnapshots(self):
+		for cell in self.cells:
+			cell.popAllSnapshots()
+
+	def clearAllSnapshots(self):
+		for cell in self.cells:
+			cell.clearSnapshots()
