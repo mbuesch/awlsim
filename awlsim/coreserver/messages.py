@@ -1409,6 +1409,6 @@ class AwlSimMessageTransceiver(object):
 	def __resetRxBuf(self):
 		self.rxBuffers = []
 		self.rxByteCnt = 0
-		self.msgId = None
-		self.seq = None
-		self.payloadLen = None
+		self.msgId = 0
+		self.seq = 0
+		self.payloadLen = 0
