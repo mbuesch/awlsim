@@ -26,6 +26,8 @@ from awlsim.common.compat import *
 from awlsim.gui.util import *
 from awlsim.common.blocker import *
 
+import datetime
+
 
 __all__ = [
 	"FupUndoStack",
