@@ -25,7 +25,8 @@
 #	1:           Enable profiling support in compiled Cython modules.
 #
 
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import division, absolute_import, print_function
+# Avoid __future__.unicode_literals. It breaks on pypy2.
 
 import sys, os
 basedir = os.path.abspath(os.path.dirname(__file__))
