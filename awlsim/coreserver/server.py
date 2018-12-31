@@ -369,8 +369,8 @@ class AwlSimServer(object): #+cdef
 			if self.__needOB10x:
 				printVerbose("CPU startup (OB 10x).")
 				self.__sim.startup()
-				self.__setAffinity(True)
 				self.__needOB10x = False
+			self.__setAffinity(True)
 			printVerbose("Putting CPU into RUN state.")
 		elif runstate == self.STATE_STOP:
 			# We just entered STOP state.
