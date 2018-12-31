@@ -42,18 +42,25 @@ def findExecutable(executable):
 	return distutils.spawn.find_executable(executable)
 
 class PopenWrapper(object):
-	def __init__(self, argv, env, stdio = False):
+	def __init__(self, argv, env, stdio=False, hideWindow=False):
 		if isIronPython:
 			self.__pid = os.spawnve(os.P_NOWAIT,
 						argv[0], argv, dict(env))
 		else:
+			if osIsWindows and hideWindow:
+				startupinfo = subprocess.STARTUPINFO()
+				startupinfo.dwFlags = subprocess.STARTF_USESHOWWINDOW
+				startupinfo.wShowWindow = subprocess.SW_HIDE
+			else:
+				startupinfo = None
 			self.__proc = subprocess.Popen(
 				argv,
-				env = dict(env),
-				shell = False,
-				stdin = subprocess.PIPE if stdio else None,
-				stdout = subprocess.PIPE if stdio else None,
-				stderr = subprocess.PIPE if stdio else None
+				env=dict(env),
+				shell=False,
+				stdin=subprocess.PIPE if stdio else None,
+				stdout=subprocess.PIPE if stdio else None,
+				stderr=subprocess.PIPE if stdio else None,
+				startupinfo=startupinfo
 			)
 
 	def terminate(self):

@@ -177,7 +177,8 @@ class AwlSimServer(object): #+cdef
 						  forkServerProcess)
 			try:
 				serverProcess = PopenWrapper([proc],
-							     env = env)
+							     env=env,
+							     hideWindow=True)
 			except OSError as e:
 				raise AwlSimError("Failed to run executable '%s': %s" %(
 						  forkServerProcess, str(e)))
@@ -192,7 +193,8 @@ class AwlSimServer(object): #+cdef
 			try:
 				serverProcess = PopenWrapper(
 					[interp, "-m", "awlsim.coreserver.run"],
-					env = env)
+					env=env,
+					hideWindow=True)
 			except OSError as e:
 				raise AwlSimError("Failed to run interpreter '%s': %s" %(
 						  forkInterpreter, str(e)))
