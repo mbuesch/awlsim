@@ -150,6 +150,7 @@ class CallStackElem(object): #+cdef
 #@cy		cdef AwlOffset loffset
 #@cy		cdef int32_t dbNumber
 #@cy		cdef int64_t area
+#@cy		cdef uint64_t area_u64
 #@cy		cdef AwlOperator storeOper
 #@cy		cdef uint32_t widthMaskAll
 
@@ -173,18 +174,19 @@ class CallStackElem(object): #+cdef
 		storeOper.offset = loffset.addInt(2, 0)
 		storeOper.width = 32
 		area = AwlIndirectOpConst.optype2area(rvalueOp.operType)
-		if area == PointerConst.AREA_L_S:
-			area = PointerConst.AREA_VL_S
-		elif area == PointerConst.AREA_VL_S:
-			raise AwlSimError("Cannot forward VL-parameter "
-					  "to called FC")
-		elif area == PointerConst.AREA_DI_S:
-			area = PointerConst.AREA_DB_S
-		elif area < 0:
+		if area < 0: #+unlikely
 			raise AwlSimBug("FC_trans_dbpointerInVL: Invalid rValueOp area. "
 				"(area=%d, operType=%d)" % (area, rvalueOp.operType))
+		area_u64 = area
+		if area_u64 == PointerConst.AREA_L_S:
+			area_u64 = PointerConst.AREA_VL_S
+		elif area_u64 == PointerConst.AREA_VL_S: #+unlikely
+			raise AwlSimError("Cannot forward VL-parameter "
+					  "to called FC")
+		elif area_u64 == PointerConst.AREA_DI_S:
+			area_u64 = PointerConst.AREA_DB_S
 		cpu.store(storeOper,
-			  make_AwlMemoryObject_fromScalar32(area | rvalueOp.offset.toPointerValue()),
+			  make_AwlMemoryObject_fromScalar32(area_u64 | rvalueOp.offset.toPointerValue()),
 			  widthMaskAll)
 		# Return the operator for the DB pointer.
 		return make_AwlOperator(AwlOperatorTypes.MEM_VL,

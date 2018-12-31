@@ -290,6 +290,8 @@ class AwlOpTranslator(object):
 		self.__mnemonics2constOperTab = self.__getConstOperTable()
 
 	def __translateIndirectAddressing(self, opDesc, rawOps):
+#@cy		cdef uint64_t area_u64
+
 		# rawOps starts _after_ the opening bracket '['
 		try:
 			if rawOps[0].upper() in ("AR1", "AR2"):
@@ -359,15 +361,16 @@ class AwlOpTranslator(object):
 				if area < 0:
 					raise AwlSimError("Invalid memory area type in "
 						"indirect addressing operator")
-				if area == PointerConst.AREA_NONE_S:
+				area_u64 = area
+				if area_u64 == PointerConst.AREA_NONE_S:
 					raise AwlSimError("No memory area code specified in "
 						"indirect addressing operator")
-				if area in (AwlIndirectOpConst.EXT_AREA_T_S,
-					    AwlIndirectOpConst.EXT_AREA_Z_S,
-					    AwlIndirectOpConst.EXT_AREA_BLKREF_DB_S,
-					    AwlIndirectOpConst.EXT_AREA_BLKREF_DI_S,
-					    AwlIndirectOpConst.EXT_AREA_BLKREF_FC_S,
-					    AwlIndirectOpConst.EXT_AREA_BLKREF_FB_S):
+				if area_u64 in (AwlIndirectOpConst.EXT_AREA_T_S,
+						AwlIndirectOpConst.EXT_AREA_Z_S,
+						AwlIndirectOpConst.EXT_AREA_BLKREF_DB_S,
+						AwlIndirectOpConst.EXT_AREA_BLKREF_DI_S,
+						AwlIndirectOpConst.EXT_AREA_BLKREF_FC_S,
+						AwlIndirectOpConst.EXT_AREA_BLKREF_FB_S):
 					expectedOffsetOpWidth = 16
 				else:
 					expectedOffsetOpWidth = 32
