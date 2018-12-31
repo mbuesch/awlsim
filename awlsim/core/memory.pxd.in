@@ -176,7 +176,7 @@ cdef inline AwlMemoryObject alloc_AwlMemoryObject(uint32_t width) except NULL:
 	memObj = &memObjPool[memObjPoolIndex]
 	memObjPoolIndex = (memObjPoolIndex + 1) & indexMask
 
-	memObj.width = width
+	memObj.width = <uint16_t>width
 
 	return memObj
 
@@ -295,18 +295,18 @@ cdef inline uint32_t AwlMemoryObject_asScalar8(AwlMemoryObject memObj):
 cdef inline uint32_t AwlMemoryObject_asScalar16(AwlMemoryObject memObj):
 	cdef const uint8_t *dataBytes
 	dataBytes = &memObj.dataBytes[0]
-	return be16toh((<uint16_t *>dataBytes)[0])
+	return be16toh((<const uint16_t *>dataBytes)[0])
 
 cdef inline uint32_t AwlMemoryObject_asScalar24(AwlMemoryObject memObj):
 	cdef const uint8_t *dataBytes
 	dataBytes = &memObj.dataBytes[0]
-	return ((<uint32_t>be16toh((<uint16_t *>dataBytes)[0]) << 8) |
+	return ((<uint32_t>be16toh((<const uint16_t *>dataBytes)[0]) << 8) |
 	        <uint32_t>dataBytes[2])
 
 cdef inline uint32_t AwlMemoryObject_asScalar32(AwlMemoryObject memObj):
 	cdef const uint8_t *dataBytes
 	dataBytes = &memObj.dataBytes[0]
-	return be32toh((<uint32_t *>dataBytes)[0])
+	return be32toh((<const uint32_t *>dataBytes)[0])
 
 cdef bytearray AwlMemoryObject_asBytes(AwlMemoryObject memObj)
 
