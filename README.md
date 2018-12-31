@@ -152,6 +152,44 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 Awlsim supports programming in an S7-FUP like language. See [the FUP documentation](doc/fup/FUP.html) for more information about Awlsim's implementation of FUP.
 
 
+## Environment variables
+
+The following environment variables control Awlsim's basic behavior:
+
+* `AWLSIM_GUI`<br />
+  `=auto`    Automatically select the best GUI framework (default)<br />
+  `=pyside`  Use PySide as GUI framework.<br />
+  `=pyqt`    Use PyQt as GUI framework.<br />
+
+* `AWLSIM_CYTHON`<br />
+  `=0`  Do not attempt to use Cython core (default)<br />
+  `=1`  Attempt to use Cython core, but fall back to Python<br />
+  `=2`  Enforce Cython core<br />
+
+* `AWLSIM_SCHED`<br />
+  `=default`   Do not change the scheduling policy. Keep the policy that was assigned to Awlsim by the operating system. (default)<br />
+  `=normal`    Use the normal non-realtime OS scheduling.<br />
+  `=fifo`      Use FIFO realtime scheduling (`SCHED_FIFO`).<br />
+  `=rr`        Use Round-robin realtime scheduling (`SCHED_RR`).<br />
+  `=deadline`  Use Deadline realtime scheduling (`SCHED_DEADLINE`).<br />
+  `=realtime`  Use a realtime scheduling algorithm that performs best in most situations. The actual algorithm selection might change between Awlsim releases.<br />
+
+* `AWLSIM_PRIO`<br />
+  `=default`  Do not change the priority (default).<br />
+  `=1-99`     Set the scheduling priority. The meaning of the priority depends on the operating system and the selected scheduling algorithm. See `AWLSIM_SCHED`.<br />
+
+* `AWLSIM_AFFINITY`<br />
+  `=0,2,...`  Comma separated list of host CPU cores to run on. Default: all cores.<br />
+
+* `AWLSIM_PROFILE`<br />
+  `=0`  Disable profiling (default)<br />
+  `=1`  Enable core cycle profiling<br />
+  `=2`  Enable full core profiling (including startup)<br />
+
+* `AWLSIM_COVERAGE`<br />
+  `=DATAFILE`  Enable code coverage tracing.<br />
+
+
 ## Building Awlsim
 
 Awlsim can be run from the source directory in interpreted Python mode without building it. Just `cd` into the Awlsim source directory and execute the desired main executable (e.g. `./awlsim-gui` or `./awlsim-server` etc...).

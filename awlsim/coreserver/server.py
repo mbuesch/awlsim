@@ -228,6 +228,8 @@ class AwlSimServer(object): #+cdef
 
 	def __init__(self):
 		self.__affinityEnabled = False
+		self.__rtSchedEnabled = False
+		self.__os_sched_yield = getattr(os, "sched_yield", None)
 		self.__emptyList = []
 		self.__startupDone = False
 		self.__state = -1
@@ -333,14 +335,102 @@ class AwlSimServer(object): #+cdef
 			if hasattr(os, "sched_setaffinity"):
 				try:
 					os.sched_setaffinity(0, affinity)
+					printVerbose("Set host CPU scheduling "
+						     "affinity to %s." % str(affinity))
 				except (OSError, ValueError) as e: #@nocov
 					raise AwlSimError("Failed to set host CPU "
 						"affinity to %s: %s" % (
 						affinity, str(e)))
 			else: #@nocov
-				printError("Cannot set CPU affinity "
-					   "on this version of Python. "
+				printError("Cannot set CPU affinity. "
 					   "os.sched_setaffinity is not available.")
+
+	def __setSched(self, allowRtPolicy=True):
+		"""Set the scheduling policy and priority to what is set by
+		AWLSIM_SCHED and AWLSIM_PRIO environment variable, if enable==True.
+		"""
+		self.__rtSchedEnabled = False
+
+		sched = AwlSimEnv.getSched()
+		if (sched is not None and
+		    sched != AwlSimEnv.SCHED_DEFAULT):
+			if not allowRtPolicy:
+				sched = AwlSimEnv.SCHED_NORMAL
+			policy = None
+			if sched == AwlSimEnv.SCHED_NORMAL:
+				policy = getattr(os, "SCHED_OTHER", None)
+				isRealtime = False
+			elif sched == AwlSimEnv.SCHED_FIFO:
+				policy = getattr(os, "SCHED_FIFO", None)
+				isRealtime = True
+			elif sched == AwlSimEnv.SCHED_RR:
+				policy = getattr(os, "SCHED_RR", None)
+				isRealtime = True
+			elif sched == AwlSimEnv.SCHED_DEADLINE:
+				policy = getattr(os, "SCHED_DEADLINE", None)
+				isRealtime = True
+				policy = None #TODO we also need to set the deadline scheduling parameters.
+			if policy is None: #@nocov
+				raise AwlSimError("Host CPU scheduling policy "
+					"'%s' is not supported by the system. "
+					"Please change the AWLSIM_SCHED "
+					"environment variable." % sched)
+			if hasattr(os, "sched_setscheduler"):
+				try:
+					minPrio = getattr(os, "sched_get_priority_min",
+							  lambda p: 1)(policy)
+					param = os.sched_param(minPrio)
+					os.sched_setscheduler(0, policy, param)
+					self.__rtSchedEnabled = isRealtime
+					printVerbose("Set host CPU scheduling "
+						     "policy to '%s'." % sched)
+				except (OSError, ValueError) as e: #@nocov
+					raise AwlSimError("Failed to set host CPU "
+						"scheduling policy to %s: %s" % (
+						sched, str(e)))
+			else: #@nocov
+				printError("Cannot set CPU scheduling policy. "
+					   "os.sched_setscheduler is not available.")
+
+		prio = AwlSimEnv.getPrio()
+		if prio is not None and allowRtPolicy:
+			if (hasattr(os, "sched_getscheduler") and
+			    hasattr(os, "sched_setparam")):
+				try:
+					policy = os.sched_getscheduler(0)
+					minPrio = getattr(os, "sched_get_priority_min",
+							  lambda p: 1)(policy)
+					maxPrio = getattr(os, "sched_get_priority_max",
+							  lambda p: 99)(policy)
+					prio = clamp(prio, minPrio, maxPrio)
+					param = os.sched_param(prio)
+					os.sched_setparam(0, param)
+					printVerbose("Set host CPU scheduling "
+						     "priority to %d." % prio)
+				except (OSError, ValueError) as e: #@nocov
+					raise AwlSimError("Failed to set host CPU "
+						"scheduling priority to %d: %s" % (
+						prio, str(e)))
+			else: #@nocov
+				printError("Cannot set CPU scheduling priority. "
+					   "os.sched_setparam/os.sched_getscheduler "
+					   "is not available.")
+
+	def __yieldHostCPU(self): #@nocy
+#@cy	cdef void __yieldHostCPU(self):
+		if not self.__rtSchedEnabled:
+			return
+
+		# On Posix + Cython call the system sched_yield directly.
+#		with nogil:			#@cy-posix
+#			sched_yield()		#@cy-posix
+#		return				#@cy-posix
+
+		# Otherwise try to call sched_yield from the os module,
+		# if it is available.
+		if self.__os_sched_yield:	#@nocy
+			self.__os_sched_yield()	#@nocy
+		return				#@nocy
 
 	def getRunState(self):
 		return self.__state
@@ -361,10 +451,12 @@ class AwlSimServer(object): #+cdef
 		if runstate == self._STATE_INIT:
 			# We just entered initialization state.
 			printVerbose("Putting CPU into INIT state.")
+			self.__setSched(False)
 			self.__setAffinity(False)
 			self.__needOB10x = True
 		elif runstate == self.STATE_RUN:
 			# We just entered RUN state.
+			self.__setSched(True)
 			self.__setAffinity(False)
 			if self.__needOB10x:
 				printVerbose("CPU startup (OB 10x).")
@@ -375,13 +467,16 @@ class AwlSimServer(object): #+cdef
 		elif runstate == self.STATE_STOP:
 			# We just entered STOP state.
 			printVerbose("Putting CPU into STOP state.")
+			self.__setSched(False)
 			self.__setAffinity(False)
 		elif runstate == self.STATE_MAINTENANCE:
 			# We just entered MAINTENANCE state.
 			printVerbose("Putting CPU into MAINTENANCE state.")
+			self.__setSched(False)
 			self.__setAffinity(False)
 			self.__needOB10x = True
 		else:
+			self.__setSched(False)
 			self.__setAffinity(False)
 
 		self.__state = runstate
@@ -1262,6 +1357,7 @@ class AwlSimServer(object): #+cdef
 							self.__handleMemReadReqs()
 						self.__handleCommunication()		#@cy-win
 #						self.__handleCommunicationPosix()	#@cy-posix
+						self.__yieldHostCPU()
 					continue
 
 			except (AwlSimError, AwlParserError) as e:

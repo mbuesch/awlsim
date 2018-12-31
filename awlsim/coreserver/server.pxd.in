@@ -3,10 +3,14 @@ from awlsim.core.main cimport *
 
 #from posix.select cimport fd_set	#@cy-posix
 
+#cdef extern from "<sched.h>":		#@cy-posix
+#	int sched_yield() nogil		#@cy-posix
 
 cdef class AwlSimServer(object):
 	cdef public AwlSim __sim
 	cdef public _Bool __affinityEnabled
+	cdef public _Bool __rtSchedEnabled
+	cdef public object __os_sched_yield
 	cdef public list __emptyList
 	cdef public _Bool __startupDone
 	cdef public int32_t __state
@@ -44,3 +48,5 @@ cdef class AwlSimServer(object):
 	cdef __handleClientComm(self, client)
 	cdef __handleSocketComm(self, list sockList)
 #	cdef __handleCommunicationPosix(self) #@cy-posix
+
+	cdef void __yieldHostCPU(self)

@@ -2,7 +2,7 @@
 #
 # AWL simulator - Environment variables
 #
-# Copyright 2017 Michael Buesch <m@bues.ch>
+# Copyright 2017-2018 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -103,3 +103,41 @@ class AwlSimEnv(object):
 		except ValueError as e:
 			affinity = []
 		return affinity
+
+	SCHED_DEFAULT	= "default"	# Do not change the scheduling policy
+	SCHED_NORMAL	= "normal"	# Use non-realtime scheduling policy
+	SCHED_FIFO	= "fifo"	# Use SCHED_FIFO realtime scheduling policy
+	SCHED_RR	= "rr"		# Use SCHED_RR realtime scheduling policy
+	SCHED_DEADLINE	= "deadline"	# Use SCHED_DEADLINE realtime scheduling policy
+
+	@classmethod
+	def getSched(cls):
+		"""Get AWLSIM_SCHED.
+		Returns one of the SCHED_... constants.
+		Returns None, if AWLSIM_SCHED has an invalid value.
+		"""
+		schedStr = cls.__getVar("SCHED", "").lower().strip()
+		if schedStr == cls.SCHED_DEFAULT:
+			return cls.SCHED_DEFAULT
+		if schedStr == cls.SCHED_NORMAL or schedStr == "other":
+			return cls.SCHED_NORMAL
+		if schedStr == cls.SCHED_FIFO or schedStr == "realtime":
+			return cls.SCHED_FIFO
+		if schedStr == cls.SCHED_RR:
+			return cls.SCHED_RR
+		if schedStr == cls.SCHED_DEADLINE:
+			return cls.SCHED_DEADLINE
+		return None
+
+	@classmethod
+	def getPrio(cls):
+		"""Get AWLSIM_PRIO.
+		Returns the scheduling priority as an integer or None.
+		"""
+		prioStr = cls.__getVar("PRIO", "").lower().strip()
+		if prioStr != "default":
+			try:
+				return int(prioStr)
+			except ValueError as e:
+				pass
+		return None
