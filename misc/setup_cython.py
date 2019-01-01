@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.17
+#   v1.18
 #
 #   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
 #
@@ -342,7 +342,15 @@ def registerCythonModule(baseDir, sourceModName):
 				# Create a distutils Extension for the module
 				extra_compile_args = []
 				if not _isWindows:
+					extra_compile_args.append("-Wall")
+					extra_compile_args.append("-Wextra")
+					#extra_compile_args.append("-Wcast-qual")
+					extra_compile_args.append("-Wlogical-op")
+					extra_compile_args.append("-Wpointer-arith")
+					extra_compile_args.append("-Wundef")
+					extra_compile_args.append("-Wno-cast-function-type")
 					extra_compile_args.append("-Wno-maybe-uninitialized")
+					extra_compile_args.append("-Wno-type-limits")
 				ext_modules.append(
 					_Cython_Distutils_Extension(
 						cyModName,
