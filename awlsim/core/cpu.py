@@ -2232,9 +2232,8 @@ class S7CPU(object): #+cdef
 		if dbNumber < 0:
 			db = self.dbRegister
 		else:
-			try:
-				db = self.dbs[dbNumber]
-			except KeyError:
+			db = self.dbs.get(dbNumber)
+			if db is None:
 				raise AwlSimError("Store to DB %d, but DB "
 					"does not exist" % dbNumber)
 		db.store(operator, memObj, None)
