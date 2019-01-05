@@ -1374,9 +1374,12 @@ class S7CPU(object): #+cdef
 		newCse.prevCse = self.callStackTop
 		self.callStackTop, self.callStackDepth = newCse, callStackDepth + 1
 
-	def run_BE(self): #+cdef
+	def run_BE(self): #@nocy
+#@cy	cdef void run_BE(self):
 #@cy		cdef S7StatusWord s
 #@cy		cdef CallStackElem cse
+
+		# This method is declared void and thus must not raise an exception.
 
 		s = self.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
@@ -1419,8 +1422,10 @@ class S7CPU(object): #+cdef
 
 		self.openDB(dbOper.offset.byteOffset, openDI)
 
-	def run_TDB(self): #+cdef
-		# Swap global and instance DB
+	def run_TDB(self): #@nocy
+#@cy	cdef void run_TDB(self):
+		# Swap global and instance DB.
+		# This method is declared void and thus must not raise an exception.
 		self.diRegister, self.dbRegister = self.dbRegister, self.diRegister
 
 	def getAccu(self, index): #@nocy
