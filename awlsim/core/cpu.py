@@ -1261,23 +1261,28 @@ class S7CPU(object): #+cdef
 
 		blockOper = blockOper.resolve(True)
 
-#@cy		if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
-#@cy			return self.__call_RAW_FC(blockOper, dbOper, parameters)
-#@cy		elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
-#@cy			return self.__call_RAW_FB(blockOper, dbOper, parameters)
-#@cy		elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
-#@cy			return self.__call_RAW_SFC(blockOper, dbOper, parameters)
-#@cy		elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
-#@cy			return self.__call_RAW_SFB(blockOper, dbOper, parameters)
-#@cy		else:
-#@cy			raise AwlSimError("Invalid CALL operand")
+		try:
+			# Call the call helper and pass the resolved operands.
+			# The call to the call helper might raise a KeyError,
+			# if the block does not exist.
 
-		callHelper = self.__rawCallHelpers[blockOper.operType]			#@nocy
-		try:									#@nocy
+#@cy			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
+#@cy				return self.__call_RAW_FC(blockOper, dbOper, parameters)
+#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
+#@cy				return self.__call_RAW_FB(blockOper, dbOper, parameters)
+#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
+#@cy				return self.__call_RAW_SFC(blockOper, dbOper, parameters)
+#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
+#@cy				return self.__call_RAW_SFB(blockOper, dbOper, parameters)
+#@cy			else:
+#@cy				raise AwlSimError("Invalid CALL operand")
+
+			callHelper = self.__rawCallHelpers[blockOper.operType]		#@nocy
 			return callHelper(self, blockOper, dbOper, parameters)		#@nocy
-		except KeyError as e:							#@nocy
-			raise AwlSimError("Code block %d not found in indirect call" %(	#@nocy
-					  blockOper.offset.byteOffset))			#@nocy
+
+		except KeyError as e:
+			raise AwlSimError("Code block %d not found in indirect call" % (
+					  blockOper.offset.byteOffset))
 
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
