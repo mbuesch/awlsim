@@ -2,7 +2,7 @@
 #
 # AWL simulator - source management
 #
-# Copyright 2014-2018 Michael Buesch <m@bues.ch>
+# Copyright 2014-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ class SourceFactory(XmlFactory):
 		name = tag.getAttr("name", source.SRCTYPE)
 		filename = tag.getAttr("file", "")
 		enabled = tag.getAttrBool("enabled", True)
+		volatile = tag.getAttrBool("volatile", False)
 		if source.SRCTYPE_ID != srcType:
 			raise self.Error("SourceFactory: Got unexpected "
 				"source type %d instead of %d." % (
@@ -67,6 +68,7 @@ class SourceFactory(XmlFactory):
 			source.filepath = ""
 		source.name = name
 		source.enabled = enabled
+		source.volatile = volatile
 		self.__haveSourceTag = True
 
 	def parser_beginTag(self, tag):
@@ -141,6 +143,7 @@ class SourceFactory(XmlFactory):
 					"file"		: str(filename),
 					"name"		: str(source.name),
 					"enabled"	: "1" if source.enabled else "0",
+					"volatile"	: "1" if source.volatile else "",
 				 },
 				 data=data,
 				 tags=childTags,
@@ -164,7 +167,8 @@ class GenericSource(object):
 		     enabled=True,
 		     filepath="",
 		     sourceBytes=b"",
-		     userData={}):
+		     userData={},
+		     volatile=False):
 		"""Initialize a source code object.
 		name: Name string of the source.
 		enabled: True, if the source is active.
@@ -174,12 +178,16 @@ class GenericSource(object):
 		          The source code object will not touch this data.
 			  This data will _not_ be transferred to the core server.
 			  This data does _not_ contribute to the identHash.
+		volatile: Optional flag: This source is volatile.
+			  Such sources will not be stored in the core server project.
+			  This flag does _not_ contribute to the identHash.
 		"""
 		self.name = name
 		self.enabled = enabled
 		self.filepath = filepath
 		self.sourceBytes = sourceBytes
 		self.userData = userData.copy()
+		self.volatile = volatile
 
 		self.__identHash = None
 
@@ -200,6 +208,14 @@ class GenericSource(object):
 	def enabled(self, enabled):
 		self.__enabled = bool(enabled)
 		self.__identHash = None
+
+	@property
+	def volatile(self):
+		return self.__volatile
+
+	@volatile.setter
+	def volatile(self, volatile):
+		self.__volatile = bool(volatile)
 
 	@property
 	def filepath(self):
@@ -358,7 +374,8 @@ class GenericSource(object):
 				      enabled=self.enabled,
 				      filepath=self.filepath,
 				      sourceBytes=self.sourceBytes[:],
-				      userData=self.userData)
+				      userData=self.userData,
+				      volatile=self.volatile)
 
 	def copyFrom(self, other,
 		     copyName=True,
@@ -366,7 +383,8 @@ class GenericSource(object):
 		     copyFilepath=True,
 		     copySourceBytes=True,
 		     copyUserData=True,
-		     updateUserData=False):
+		     updateUserData=False,
+		     copyVolatile=True):
 		"""Copy the content of another source into this one.
 		"""
 		if copyName:
@@ -381,6 +399,8 @@ class GenericSource(object):
 			self.userData = other.userData.copy()
 		if updateUserData:
 			self.userData.update(other.userData)
+		if copyVolatile:
+			self.volatile = other.volatile
 
 	def __eq__(self, other):
 		return self.identHash == other.identHash
@@ -389,11 +409,12 @@ class GenericSource(object):
 		return not self.__eq__(other)
 
 	def __repr__(self):
-		return "%s%s %s%s %s" % (
+		return "%s%s %s%s%s %s" % (
 			self.SRCTYPE,
 			"" if self.isFileBacked() else " project",
 			self.name,
 			"" if self.enabled else " (DISABLED)",
+			" (VOLATILE)" if self.volatile else "",
 			self.identHashStr)
 
 class AwlSource(GenericSource):
