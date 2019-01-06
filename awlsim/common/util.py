@@ -201,7 +201,7 @@ def safeFileWrite(filename, data):
 		if not osIsPosix: #@nocov
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.
-			with contextlib.suppress(OSError):
+			with contextlib.suppress(IOError, OSError):
 				os.unlink(filename)
 		os.rename(tmpFile, filename)
 	except (IOError, OSError) as e: #@nocov
