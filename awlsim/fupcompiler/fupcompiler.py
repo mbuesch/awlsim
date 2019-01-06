@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP compiler
 #
-# Copyright 2016-2018 Michael Buesch <m@bues.ch>
+# Copyright 2016-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -432,7 +432,8 @@ class FupCompiler(object):
 		name = "%s (Compiled from FUP/FBD source)" % fupSource.name
 		self.awlSource = AwlSource(name=name,
 					   enabled=fupSource.enabled,
-					   filepath=fupSource.filepath)
+					   filepath=fupSource.filepath,
+					   volatile=True)
 		if self.__parse():
 			self.__compileBlockDecl()
 			insns = self.__compileGrids()
@@ -489,7 +490,8 @@ class FupCompiler(object):
 			awlLines.append("\t)")
 
 		awlString = "\r\n".join(awlLines)
-		awlSource = AwlSource(name=("CALL " + self.fupSource.name))
+		awlSource = AwlSource(name=("CALL " + self.fupSource.name),
+				      volatile=True)
 		awlSource.sourceBytes = awlString.encode(AwlSource.ENCODING)
 		return awlSource
 
