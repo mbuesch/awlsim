@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server
 #
-# Copyright 2013-2018 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -616,10 +616,16 @@ class AwlSimServer(object): #+cdef
 
 	def __generateProject(self):
 		cpu = self.__sim.getCPU()
-		awlSources = self.awlSourceContainer.getSources()
-		fupSources = self.fupSourceContainer.getSources()
+		awlSources = [ source
+			       for source in self.awlSourceContainer.getSources()
+			       if not source.volatile ]
+		fupSources = [ source
+			       for source in self.fupSourceContainer.getSources()
+			       if not source.volatile ]
 		kopSources = [] #TODO
-		symTabSources = self.symTabSourceContainer.getSources()
+		symTabSources = [ source
+				  for source in self.symTabSourceContainer.getSources()
+				  if not source.volatile ]
 		libSelections = self.loadedLibSelections[:]
 		cpuSpecs = cpu.getSpecs() # (Note: not a deep-copy)
 		cpuConf = cpu.getConf() # (Note: not a deep-copy)
@@ -1242,16 +1248,33 @@ class AwlSimServer(object): #+cdef
 		if not project:
 			return
 
-		if isString(project):
-			if fileExists(project) == False and writeBack:
-				# The project file does not exist.
-				# Create an empty one.
-				printInfo("Creating empty project at '%s'" %\
-					  project)
-				empty = Project(project)
-				empty.toFile()
-			project = Project.fromProjectOrRawAwlFile(project)
 		printDebug("Loading project '%s'" % str(project))
+		if isString(project):
+			projectFile = project
+
+			if writeBack:
+				# If the project file exists and it has zero size
+				# then delete the file.
+				if fileExists(projectFile):
+					with contextlib.suppress(IOError, OSError):
+						if not os.path.getsize(projectFile):
+							os.unlink(projectFile)
+							printInfo("Purged empty project "
+								  "file at '%s'." % projectFile)
+				if not fileExists(projectFile):
+					# The project file does not exist.
+					# Create an empty one.
+					printInfo("Creating empty project at '%s'" % (
+						  projectFile))
+					empty = Project(projectFile)
+					empty.toFile()
+			# Load the project data.
+			try:
+				project = Project.fromFile(projectFile)
+			except AwlSimError as e:
+				raise AwlSimError("AwlSimServer: "
+						  "Failed to load project file '%s':\n%s" % (
+						  projectFile, e.message))
 
 		self.__resetAll()
 
