@@ -642,6 +642,8 @@ EOF
 		wpasupplicant \
 		xvfb \
 		|| die "apt-get install failed"
+
+	info "Configuring some packages..."
 cat <<EOF | debconf-set-selections
 debconf	debconf/frontend	select	Dialog
 locales	locales/default_environment_locale	select	en_US.UTF-8
@@ -649,10 +651,21 @@ EOF
 	[ $? -eq 0 ] || die "Failed to configure debconf settings"
 	dpkg-reconfigure -u locales ||\
 		die "Failed to reconfigure locales"
+
+	info "Removing unnecessary packages..."
+	apt-get -y purge \
+		at \
+		exim4-daemon-light \
+		triggerhappy \
+		|| die "apt-get purge failed"
+
+	info "Cleaning apt..."
+	apt-get -y autoremove --purge ||\
+		die "apt-get autoremove failed"
 	apt-get -y clean ||\
 		die "apt-get clean failed"
 
-	# Build python modules
+	info "Building Python modules..."
 	build_rpigpio
 	build_spidev
 	build_ppl
