@@ -498,7 +498,7 @@ proc		/proc			proc		auto,defaults		0 0
 debugfs		/sys/kernel/debug	debugfs		auto,defaults		0 0
 configfs	/config			configfs	auto,defaults		0 0
 tmpfs		/tmp			tmpfs		auto,mode=1777		0 0
-/dev/mmcblk0p2	/			ext4		auto,noatime,errors=remount-ro	0 1
+/dev/mmcblk0p2	/			ext4		auto,noatime,data=journal,errors=remount-ro	0 1
 /dev/mmcblk0p1	/boot			vfat		auto,noatime		0 0
 EOF
 
@@ -979,7 +979,7 @@ pilc_bootstrap_third_stage()
 
 	info "Configuring boot..."
 	cat > "$opt_target_dir/boot/cmdline.txt" <<EOF
-dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 elevator=deadline isolcpus=2,3 rcu_nocbs=2,3 nohz_full=2,3 fsck.repair=yes net.ifnames=0 rootwait quiet
+dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=data=journal elevator=deadline isolcpus=2,3 rcu_nocbs=2,3 nohz_full=2,3 fsck.repair=yes net.ifnames=0 rootwait quiet
 EOF
 	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
 	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
