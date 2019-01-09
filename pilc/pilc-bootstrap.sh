@@ -626,6 +626,7 @@ EOF
 		quilt \
 		raspberrypi-bootloader \
 		raspi-config \
+		rng-tools \
 		schedtool \
 		screen \
 		sharutils \
@@ -683,7 +684,7 @@ EOF
 
 	info "Creating /etc/rc.local..."
 	cat > /etc/rc.local <<EOF
-#!/bin/sh -e
+#!/bin/sh
 #
 # rc.local
 #
@@ -695,24 +696,30 @@ EOF
 # bits.
 #
 
+set +e
+
+export PATH=/bin:/usr/bin:/sbin:/usr/sbin
+export LC_ALL=C LANGUAGE=C LANG=C
+
 # Re-generate ssh keys, if requested.
 if [ -e /etc/ssh/ssh_create_keys ]; then
-	/bin/rm -f /etc/ssh/ssh_host_*_key*
-	LC_ALL=C LANGUAGE=C LANG=C /usr/sbin/dpkg-reconfigure openssh-server
-	/bin/rm /etc/ssh/sshd_not_to_be_run
-	/bin/rm /etc/ssh/ssh_create_keys
-	/etc/init.d/ssh start
+	rm -f /etc/ssh/ssh_host_*_key*
+	if dpkg-reconfigure openssh-server; then
+		rm -f /etc/ssh/ssh_create_keys
+		rm -f /etc/ssh/sshd_not_to_be_run
+		systemctl start ssh
+	fi
 fi
 
 # Workaround firmware issue leaving i2c0 in an non-ALT0 state.
 for i in 28 29; do
-	/bin/echo \$i > /sys/class/gpio/export
-	/bin/echo in > /sys/class/gpio/gpio\${i}/direction
+	echo \$i > /sys/class/gpio/export
+	echo in > /sys/class/gpio/gpio\${i}/direction
 done
 
 # Add /dev/ttyS0 link for convenience.
 if ! [ -e /dev/ttyS0 ]; then
-	/bin/ln -s /dev/ttyAMA0 /dev/ttyS0
+	ln -s /dev/ttyAMA0 /dev/ttyS0
 fi
 
 exit 0
