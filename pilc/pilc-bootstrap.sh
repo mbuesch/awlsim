@@ -2,7 +2,7 @@
 #
 # PiLC bootstrap
 #
-# Copyright 2016-2018 Michael Buesch <m@bues.ch>
+# Copyright 2016-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -393,9 +393,11 @@ pilc_bootstrap_first_stage()
 			die "Failed to copy qemu binary."
 	fi
 
-	info "Copying PiLC bootstrap script..."
+	info "Copying PiLC bootstrap script and templates..."
 	cp "$basedir/pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
 		die "Failed to copy bootstrap script."
+	cp -r "$basedir/pilc/templates" "$opt_target_dir/tmp/" ||\
+		die "Failed to copy PiLC templates"
 
 	info "Checking out awlsim..."
 	local awlsim_dir="$opt_target_dir/tmp/awlsim"
@@ -686,14 +688,24 @@ EOF
 	build_ppl2
 
 	info "Removing ssh keys..."
+	cp /tmp/templates/regenerate_ssh_host_keys.sh \
+		/etc/ssh/regenerate_ssh_host_keys.sh ||\
+		die "Failed to copy regenerate_ssh_host_keys.sh"
+	chmod 755 /etc/ssh/regenerate_ssh_host_keys.sh ||\
+		die "Failed to chmod regenerate_ssh_host_keys.sh"
+	cp /tmp/templates/regenerate_ssh_host_keys.service \
+		/lib/systemd/system/regenerate_ssh_host_keys.service ||\
+		die "Failed to copy regenerate_ssh_host_keys.service"
+	systemctl enable regenerate_ssh_host_keys.service ||\
+		die "Failed to enable regenerate_ssh_host_keys.service"
+	systemctl disable ssh.service ||\
+		die "Failed to disable ssh.service"
 	if [ -e "$(first /etc/ssh/ssh_host_*_key*)" ]; then
 		rm /etc/ssh/ssh_host_*_key* ||\
 			die "Failed to remove ssh keys."
 	fi
 	echo 1 > /etc/ssh/sshd_not_to_be_run ||\
 		die "Failed to create /etc/ssh/sshd_not_to_be_run"
-	echo 1 > /etc/ssh/ssh_create_keys ||\
-		die "Failed to create /etc/ssh/ssh_create_keys"
 
 	info "Creating /etc/rc.local..."
 	cat > /etc/rc.local <<EOF
@@ -713,16 +725,6 @@ set +e
 
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin
 export LC_ALL=C LANGUAGE=C LANG=C
-
-# Re-generate ssh keys, if requested.
-if [ -e /etc/ssh/ssh_create_keys ]; then
-	rm -f /etc/ssh/ssh_host_*_key*
-	if dpkg-reconfigure openssh-server; then
-		rm -f /etc/ssh/ssh_create_keys
-		rm -f /etc/ssh/sshd_not_to_be_run
-		systemctl start ssh
-	fi
-fi
 
 # Workaround firmware issue leaving i2c0 in an non-ALT0 state.
 for i in 28 29; do
@@ -892,7 +894,7 @@ EOF
 		    -e 's|@PROJECT@|/etc/awlsim-server.awlpro|g' \
 		    -e "s|@PYTHON@|/usr/bin/python$pyver|g" \
 		    -e "s|@PYTHON_SITE@|$site|g" >\
-		    /etc/systemd/system/awlsim-server.service ||\
+		    /lib/systemd/system/awlsim-server.service ||\
 		    die "Failed to create awlsim-server.service"
 		systemctl enable awlsim-server.service ||\
 			die "Failed to enable awlsim-server-service"

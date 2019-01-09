@@ -1,0 +1,11 @@
+[Unit]
+Description=Regenerate SSH host keys
+After=syslog.target local-fs.target
+Before=ssh.service
+
+[Service]
+Type=forking
+ExecStart=/bin/sh /etc/ssh/regenerate_ssh_host_keys.sh
+
+[Install]
+WantedBy=multi-user.target
