@@ -669,6 +669,16 @@ EOF
 	apt-get $apt_opts clean ||\
 		die "apt-get clean failed"
 
+	info "Disabling some services..."
+	systemctl disable apt-daily.service ||\
+		die "Failed to disable apt-daily.service"
+	systemctl disable apt-daily.timer ||\
+		die "Failed to disable apt-daily.timer"
+	systemctl disable apt-daily-upgrade.timer ||\
+		die "Failed to disable apt-daily-upgrade.timer"
+	systemctl disable rsync.service ||\
+		die "Failed to disable rsync.service"
+
 	info "Building Python modules..."
 	build_rpigpio
 	build_spidev
