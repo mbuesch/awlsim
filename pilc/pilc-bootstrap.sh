@@ -541,13 +541,14 @@ EOF
 	[ $? -eq 0 ] || die "Failed to configure debconf settings"
 	apt-key add /usr/share/keyrings/raspbian.archive.public.key.gpg ||\
 		die "apt-key add failed"
-	apt-get -y update ||\
+	local apt_opts="-y -o Acquire::Retries=3"
+	apt-get $apt_opts update ||\
 		die "apt-get update failed"
-	apt-get -y dist-upgrade ||\
+	apt-get $apt_opts dist-upgrade ||\
 		die "apt-get dist-upgrade failed"
 
 	info "Installing packages..."
-	apt-get -y install \
+	apt-get $apt_opts install \
 		aptitude \
 		autoconf \
 		automake \
@@ -654,16 +655,16 @@ EOF
 		die "Failed to reconfigure locales"
 
 	info "Removing unnecessary packages..."
-	apt-get -y purge \
+	apt-get $apt_opts purge \
 		at \
 		exim4-daemon-light \
 		triggerhappy \
 		|| die "apt-get purge failed"
 
 	info "Cleaning apt..."
-	apt-get -y autoremove --purge ||\
+	apt-get $apt_opts autoremove --purge ||\
 		die "apt-get autoremove failed"
-	apt-get -y clean ||\
+	apt-get $apt_opts clean ||\
 		die "apt-get clean failed"
 
 	info "Building Python modules..."
