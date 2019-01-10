@@ -544,6 +544,8 @@ EOF
 	local apt_opts="-y -o Acquire::Retries=3"
 	apt-get $apt_opts update ||\
 		die "apt-get update failed"
+	apt-get $apt_opts install apt-transport-https ||\
+		die "apt-get install apt-transport-https failed"
 	apt-get $apt_opts dist-upgrade ||\
 		die "apt-get dist-upgrade failed"
 
