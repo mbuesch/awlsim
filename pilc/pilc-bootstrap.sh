@@ -838,7 +838,7 @@ EOF
 	fi
 
 	info "Stopping processes..."
-	for i in dbus ssh atd irqbalance; do
+	for i in dbus ssh irqbalance; do
 		/etc/init.d/$i stop
 	done
 }
