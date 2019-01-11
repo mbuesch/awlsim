@@ -1,0 +1,6 @@
+proc		/proc			proc		auto,defaults		0 0
+debugfs		/sys/kernel/debug	debugfs		auto,defaults		0 0
+configfs	/config			configfs	auto,defaults		0 0
+tmpfs		/tmp			tmpfs		auto,mode=1777		0 0
+/dev/mmcblk0p2	/			ext4		auto,noatime,data=journal,errors=remount-ro	0 1
+/dev/mmcblk0p1	/boot			vfat		auto,noatime		0 0

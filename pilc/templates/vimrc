@@ -1,0 +1,5 @@
+set nocompatible
+set autoindent
+syntax enable
+set backspace=indent,start
+set number

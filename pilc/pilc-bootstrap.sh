@@ -139,86 +139,6 @@ write_image()
 		die "Failed to write image."
 }
 
-boot_config_file()
-{
-	cat <<EOF
-# For more options and information see
-# http://www.raspberrypi.org/documentation/configuration/config-txt.md
-# Some settings may impact device functionality. See link above for details
-
-# uncomment if you get no picture on HDMI for a default "safe" mode
-#hdmi_safe=1
-
-# uncomment this if your display has a black border of unused pixels visible
-# and your display can output without overscan
-#disable_overscan=1
-
-# uncomment the following to adjust overscan. Use positive numbers if console
-# goes off screen, and negative if there is too much border
-#overscan_left=16
-#overscan_right=16
-#overscan_top=16
-#overscan_bottom=16
-
-# uncomment to force a console size. By default it will be display's size minus
-# overscan.
-#framebuffer_width=1280
-#framebuffer_height=720
-
-# uncomment if hdmi display is not detected and composite is being output
-#hdmi_force_hotplug=1
-
-# uncomment to force a specific HDMI mode (this will force VGA)
-#hdmi_group=1
-#hdmi_mode=1
-
-# uncomment to force a HDMI mode rather than DVI. This can make audio work in
-# DMT (computer monitor) modes
-#hdmi_drive=2
-
-# uncomment to increase signal to HDMI, if you have interference, blanking, or
-# no display
-#config_hdmi_boost=4
-
-# uncomment for composite PAL
-#sdtv_mode=2
-
-# GPU memory
-gpu_mem=16
-
-#uncomment to overclock the arm. 700 MHz is the default.
-#arm_freq=800
-
-# Uncomment some or all of these to enable the optional hardware interfaces
-dtparam=i2c_arm=on
-dtparam=i2c_vc=on
-#dtparam=i2s=on
-dtparam=spi=on
-
-# I2C-1 baud rate 100 kHz
-dtparam=i2c1_baudrate=100000
-
-# Enable DS1307 real time clock
-dtoverlay=i2c-rtc,ds1307
-
-# Uncomment this to enable the lirc-rpi module
-#dtoverlay=lirc-rpi
-
-# Additional overlays and parameters are documented /boot/overlays/README
-
-# Enable audio (loads snd_bcm2835)
-dtparam=audio=on
-EOF
-}
-
-policy_rcd_file()
-{
-	cat <<EOF
-#!/bin/sh
-exit 101
-EOF
-}
-
 download()
 {
 	local target="$1"
@@ -359,12 +279,12 @@ pilc_bootstrap_first_stage()
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
 		debootstrap --arch="$opt_arch" --foreign --verbose \
-			--keyring="$basedir/pilc/raspbian.public.key.gpg" \
+			--keyring="$basedir_pilc/raspbian.public.key.gpg" \
 			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
 			|| die "debootstrap failed"
 		mkdir -p "$opt_target_dir/usr/share/keyrings" ||\
 			die "Failed to create keyrings dir."
-		cp "$basedir/pilc/raspbian.archive.public.key.gpg" \
+		cp "$basedir_pilc/raspbian.archive.public.key.gpg" \
 		   "$opt_target_dir/usr/share/keyrings/" ||\
 			die "Failed to copy raspbian.archive.public.key.gpg."
 		cp /usr/share/keyrings/debian-archive-keyring.gpg \
@@ -375,7 +295,7 @@ pilc_bootstrap_first_stage()
 		die "Target directory '$opt_target_dir' does not exist."
 
 	# Avoid the start of daemons during second stage.
-	policy_rcd_file > "$opt_target_dir/usr/sbin/policy-rc.d" ||\
+	cp "$basedir_pilc/templates/policy-rc.d" "$opt_target_dir/usr/sbin/policy-rc.d" ||\
 		die "Failed to create policy-rc.d"
 	chmod 755 "$opt_target_dir/usr/sbin/policy-rc.d" ||\
 		die "Failed to chmod policy-rc.d"
@@ -394,9 +314,9 @@ pilc_bootstrap_first_stage()
 	fi
 
 	info "Copying PiLC bootstrap script and templates..."
-	cp "$basedir/pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
+	cp "$basedir_pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
 		die "Failed to copy bootstrap script."
-	cp -r "$basedir/pilc/templates" "$opt_target_dir/tmp/" ||\
+	cp -r "$basedir_pilc/templates" "$opt_target_dir/tmp/" ||\
 		die "Failed to copy PiLC templates"
 
 	info "Checking out awlsim..."
@@ -495,14 +415,8 @@ EOF
 	info "Creating /etc/fstab"
 	mkdir -p /config ||\
 		die "Failed to create /config"
-	cat > /etc/fstab <<EOF
-proc		/proc			proc		auto,defaults		0 0
-debugfs		/sys/kernel/debug	debugfs		auto,defaults		0 0
-configfs	/config			configfs	auto,defaults		0 0
-tmpfs		/tmp			tmpfs		auto,mode=1777		0 0
-/dev/mmcblk0p2	/			ext4		auto,noatime,data=journal,errors=remount-ro	0 1
-/dev/mmcblk0p1	/boot			vfat		auto,noatime		0 0
-EOF
+	cp /tmp/templates/fstab /etc/fstab ||\
+		die "Failed to create fstab"
 
 	info "Writing misc /etc stuff..."
 	echo "PiLC" > /etc/hostname ||\
@@ -534,13 +448,8 @@ EOF
 		die "Failed to set os-release BUG_REPORT_URL."
 
 	info "Updating packages..."
-cat <<EOF | debconf-set-selections
-debconf	debconf/priority	select	high
-debconf	debconf/frontend	select	Noninteractive
-locales	locales/locales_to_be_generated	multiselect	en_US.UTF-8 UTF-8
-locales	locales/default_environment_locale	select	None
-EOF
-	[ $? -eq 0 ] || die "Failed to configure debconf settings"
+	cat /tmp/templates/debconf-set-selections-preinstall.conf | debconf-set-selections ||\
+		die "Failed to configure debconf settings"
 	apt-key add /usr/share/keyrings/raspbian.archive.public.key.gpg ||\
 		die "apt-key add failed"
 	local apt_opts="-y -o Acquire::Retries=3"
@@ -649,21 +558,18 @@ EOF
 		xvfb \
 		|| die "apt-get install failed"
 
-	info "Configuring some packages..."
-cat <<EOF | debconf-set-selections
-debconf	debconf/frontend	select	Dialog
-locales	locales/default_environment_locale	select	en_US.UTF-8
-EOF
-	[ $? -eq 0 ] || die "Failed to configure debconf settings"
-	dpkg-reconfigure -u locales ||\
-		die "Failed to reconfigure locales"
-
 	info "Removing unnecessary packages..."
 	apt-get $apt_opts purge \
 		at \
 		exim4-daemon-light \
 		triggerhappy \
 		|| die "apt-get purge failed"
+
+	info "Configuring some packages..."
+	cat /tmp/templates/debconf-set-selections-postinstall.conf | debconf-set-selections ||\
+		die "Failed to configure debconf settings"
+	dpkg-reconfigure -u locales ||\
+		die "Failed to reconfigure locales"
 
 	info "Cleaning apt..."
 	apt-get $apt_opts autoremove --purge ||\
@@ -708,45 +614,14 @@ EOF
 		die "Failed to create /etc/ssh/sshd_not_to_be_run"
 
 	info "Creating /etc/rc.local..."
-	cat > /etc/rc.local <<EOF
-#!/bin/sh
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-
-set +e
-
-export PATH=/bin:/usr/bin:/sbin:/usr/sbin
-export LC_ALL=C LANGUAGE=C LANG=C
-
-# Workaround firmware issue leaving i2c0 in an non-ALT0 state.
-for i in 28 29; do
-	echo \$i > /sys/class/gpio/export
-	echo in > /sys/class/gpio/gpio\${i}/direction
-done
-
-# Add /dev/ttyS0 link for convenience.
-if ! [ -e /dev/ttyS0 ]; then
-	ln -s /dev/ttyAMA0 /dev/ttyS0
-fi
-
-exit 0
-EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/rc.local"
-	chmod 755 /etc/rc.local || die "Failed to chmod /etc/rc.local"
+	cp /tmp/templates/rc.local /etc/rc.local ||\
+		die "Failed to create /etc/rc.local"
+	chmod 755 /etc/rc.local ||\
+		die "Failed to chmod /etc/rc.local"
 
 	info "Creating /etc/modules-load.d/i2c.conf..."
-	cat > /etc/modules-load.d/i2c.conf <<EOF
-i2c_dev
-EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/modules-load.d/i2c.conf"
+	cp /tmp/templates/modules-load-i2c.conf /etc/modules-load.d/i2c.conf ||\
+		die "Failed to create /etc/modules-load.d/i2c.conf"
 
 	info "Creating users/groups..."
 	userdel -f pi
@@ -761,26 +636,15 @@ EOF
 		die "Failed to create user pi."
 	printf 'raspberry\nraspberry\n' | passwd pi ||\
 		die "Failed to set 'pi' password."
-	echo 'pi ALL=(ALL:ALL) ALL' > "/etc/sudoers.d/00-pi" ||\
+	cp /tmp/templates/sudoers-pi /etc/sudoers.d/00-pi ||\
 		die "Failed to create /etc/sudoers.d/00-pi"
 
 	info "Initializing home directory..."
 	mkdir -p /home/pi/.vim || die "Failed to mkdir /home/pi/.vim"
-	cat > /home/pi/.vim/vimrc <<EOF
-set nocompatible
-set autoindent
-syntax enable
-set backspace=indent,start
-set number
-EOF
-	[ $? -eq 0 ] || die "Failed to create /home/pi/.vim/vimrc"
-	cat > /home/pi/.tmux.conf <<EOF
-# Default new panes and windows to be opened in the current panes path
-bind-key c new-window -c "#{pane_current_path}"
-bind-key % split-window -h -c "#{pane_current_path}"
-bind-key "\"" split-window -c "#{pane_current_path}"
-EOF
-	[ $? -eq 0 ] || die "Failed to create /home/pi/.tmux.conf"
+	cp /tmp/templates/vimrc /home/pi/.vim/vimrc ||\
+		die "Failed to create /home/pi/.vim/vimrc"
+	cp /tmp/templates/tmux.conf /home/pi/.tmux.conf ||\
+		die "Failed to create /home/pi/.tmux.conf"
 
 	info "Building awlsim..."
 	(
@@ -1000,11 +864,9 @@ pilc_bootstrap_third_stage()
 	rm -rf "$opt_target_dir"/tmp/*
 
 	info "Configuring boot..."
-	cat > "$opt_target_dir/boot/cmdline.txt" <<EOF
-dwc_otg.lpm_enable=0 console=tty1 root=/dev/mmcblk0p2 rootfstype=ext4 rootflags=data=journal elevator=deadline isolcpus=2,3 rcu_nocbs=2,3 nohz_full=2,3 fsck.repair=yes net.ifnames=0 rootwait quiet
-EOF
-	[ $? -eq 0 ] || die "Failed to create /boot/cmdline.txt"
-	boot_config_file > "$opt_target_dir/boot/config.txt" ||\
+	cp "$basedir_pilc/templates/boot_cmdline.txt" "$opt_target_dir/boot/cmdline.txt" ||\
+		die "Failed to create /boot/cmdline.txt"
+	cp "$basedir_pilc/templates/boot_config.txt" "$opt_target_dir/boot/config.txt" ||\
 		die "Failed to create /boot/config.txt"
 	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi)"
 	if [ -e "$img" ]; then
@@ -1166,6 +1028,9 @@ usage()
 # canonicalize basedir
 basedir="$(readlink -e "$basedir")"
 [ -n "$basedir" ] || die "Failed to canonicalize base directory."
+
+# Directory containing the PiLC bootstrapping files.
+basedir_pilc="$basedir/pilc"
 
 # Mountpoints. Will be umounted on cleanup.
 mp_shm=
