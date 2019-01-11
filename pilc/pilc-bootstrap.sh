@@ -122,6 +122,9 @@ write_image()
 	local image="$1"
 	local dev="$2"
 
+	[ -b "$dev" ] || die "$dev is not a block device"
+	mount | grep -q "$dev" && die "$dev is mounted. Refusing to write to it!"
+
 	if have_program blkdiscard; then
 		info "Discarding $dev ..."
 		blkdiscard "$dev" ||\
@@ -131,9 +134,6 @@ write_image()
 	fi
 
 	info "Writing $image to $dev ..."
-
-	[ -b "$dev" ] || die "$dev is not a block device"
-	mount | grep -q "$dev" && die "$dev is mounted. Refusing to write to it!"
 
 	dd if="$image" of="$dev" bs=32M status=progress ||\
 		die "Failed to write image."
