@@ -52,6 +52,7 @@ import socket
 import errno
 import time
 import multiprocessing
+import gc
 
 #from posix.select cimport FD_ZERO, FD_SET, FD_ISSET, select #@cy-posix
 #from posix.time cimport timeval #@cy-posix
@@ -232,6 +233,9 @@ class AwlSimServer(object): #+cdef
 		self.__affinityEnabled = False
 		self.__rtSchedEnabled = False
 		self.__os_sched_yield = getattr(os, "sched_yield", None)
+		self.__gc_enable = gc.enable
+		self.__gc_disable = gc.disable
+		self.__gc_collect = gc.collect
 		self.__emptyList = []
 		self.__startupDone = False
 		self.__state = -1
@@ -418,21 +422,36 @@ class AwlSimServer(object): #+cdef
 					   "os.sched_setparam/os.sched_getscheduler "
 					   "is not available.")
 
+		# On realtime scheduling switch to manual garbage collection.
+		if self.__rtSchedEnabled:
+			self.__gc_disable()
+		else:
+			self.__gc_enable()
+
 	def __yieldHostCPU(self): #@nocy
 #@cy	cdef void __yieldHostCPU(self):
-		if not self.__rtSchedEnabled:
-			return
 
-		# On Posix + Cython call the system sched_yield directly.
-#		with nogil:			#@cy-posix
-#			sched_yield()		#@cy-posix
-#		return				#@cy-posix
+		# Run a garbage collection now to maintain realtime requirements.
+		self.__gc_collect()
 
-		# Otherwise try to call sched_yield from the os module,
-		# if it is available.
-		if self.__os_sched_yield:	#@nocy
-			self.__os_sched_yield()	#@nocy
-		return				#@nocy
+		if self.__rtSchedEnabled:
+			# We are running under realtime scheduling conditions.
+			# We should yield now.
+
+			# Re-enable to garbage collector.
+			self.__gc_enable()
+
+			# On Posix + Cython call the system sched_yield directly.
+#			with nogil:			#@cy-posix
+#				sched_yield()		#@cy-posix
+
+			# Otherwise try to call sched_yield from the os module,
+			# if it is available.
+			if self.__os_sched_yield:	#@nocy
+				self.__os_sched_yield()	#@nocy
+
+			# Disable to garbage collector.
+			self.__gc_disable()
 
 	def getRunState(self):
 		return self.__state
