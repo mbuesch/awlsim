@@ -2,7 +2,7 @@
 #
 # AWL simulator - Raspberry Pi GPIO hardware interface
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ from awlsim.core.offset import * #+cimport
 from awlsim.core.cpu import * #+cimport
 
 import re
+
+#cimport cython #@cy
 
 
 class HwParamDesc_IOMap(HwParamDesc):
@@ -77,28 +79,46 @@ class HwParamDesc_QMap(HwParamDesc_IOMap):
 	def __init__(self):
 		HwParamDesc_IOMap.__init__(self, mem = "Q")
 
-class RpiGPIO_BitMapping(object):
+class RpiGPIO_BitMapping(object): #+cdef
 	"""Awlsim -> RaspiGPIO memory bit mapping.
 	"""
 
+	__slots__ = (
+		"__bit2bcm",
+		"bitOffsets",
+		"bcmNumbers",
+		"currentOutputValues",
+		"size",
+	)
+
 	def __init__(self):
 		# Bit number to BCM GPIO number map.
-		self.bit2bcm = [ None, ] * 8
-		self.mapList = []
+		self.__bit2bcm = {}
+		self.bitOffsets = [None] * 8 #@nocy
+		self.bcmNumbers = [None] * 8 #@nocy
+		self.currentOutputValues = [None] * 8 #@nocy
 
 	def setBit(self, bitOffset, bcmNumber):
 		assert(bitOffset >= 0 and bitOffset <= 7)
-		self.bit2bcm[bitOffset] = bcmNumber
+		self.__bit2bcm[bitOffset] = bcmNumber
 
 	def build(self):
-		self.mapList = [ (bitOffset, self.bit2bcm[bitOffset])
-				 for bitOffset in range(8)
-				 if self.bit2bcm[bitOffset] is not None ]
+		self.bitOffsets = [None] * 8 #@nocy
+		self.bcmNumbers = [None] * 8 #@nocy
+		self.currentOutputValues = [None] * 8 #@nocy
+		self.size = 0
+		for bitOffset, bcmNumber in sorted(dictItems(self.__bit2bcm),
+						   key=lambda x: x[0]):
+			self.bitOffsets[self.size] = bitOffset
+			self.bcmNumbers[self.size] = bcmNumber
+			self.currentOutputValues[self.size] = 0xFF # Neither 0 nor 1
+			self.size += 1
 
 	def __repr__(self): #@nocov
 		return "{ " +\
-			", ".join("%d: %s" % (i, str(self.bit2bcm[i]))
-				  for i in range(8)) +\
+			", ".join("%d: %s" % (bitOffset, str(bcmNumber))
+				  for bitOffset, bcmNumber in sorted(dictItems(self.__bit2bcm),
+								     key=lambda x: x[0])) +\
 		       " }"
 
 class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
@@ -134,6 +154,10 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 			self.raiseException("Failed to import Raspberry Pi GPIO "
 				"module 'RPi.GPIO': %s" % str(e))
 
+		# Copy shortcuts to Raspberry Pi GPIO module
+		self.__RPi_GPIO_input = self.__RPi_GPIO.input
+		self.__RPi_GPIO_output = self.__RPi_GPIO.output
+
 		# Initialize the GPIO library
 		try:
 			RPi_GPIO.setmode(self.__RPi_GPIO.BCM)
@@ -143,12 +167,14 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 				"GPIO library: %s" % str(e))
 
 		# Build the memory mappings
-		self.__inputMap, self.__inputList = self.__mapGPIO(
+		self.__inputByteOffsetList, self.__inputBitMappingList = self.__mapGPIO(
 				inputs, HwParamDesc_IMap._nameRe, RPi_GPIO.IN,
 				self.inputAddressBase)
-		self.__outputMap, self.__outputList = self.__mapGPIO(
+		self.__inputListSize = len(self.__inputByteOffsetList)
+		self.__outputByteOffsetList, self.__outputBitMappingList = self.__mapGPIO(
 				outputs, HwParamDesc_QMap._nameRe, RPi_GPIO.OUT,
 				self.outputAddressBase)
+		self.__outputListSize = len(self.__outputByteOffsetList)
 
 	def __mapGPIO(self, configs, nameRegEx, gpioDir, byteBaseOffset):
 		mapDict = {}
@@ -172,48 +198,71 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 			except RuntimeError as e: #@nocov
 				self.raiseException("Failed to init Raspberry Pi "
 					"BCM%d: %s" % (bcmNumber, str(e)))
+
 		for bitMapping in dictValues(mapDict):
 			bitMapping.build()
-		mapList = list(sorted(
-			[ (byteOffset, bitMapping)
-			  for byteOffset, bitMapping in dictItems(mapDict) ],
-			key = lambda _tuple: _tuple[0]
-		))
-		return mapDict, mapList
+
+		byteOffsetList = []
+		bitMappingList = []
+		for byteOffset, bitMapping in sorted(dictItems(mapDict),
+						     key=lambda x: x[0]):
+			byteOffsetList.append(byteOffset)
+			bitMappingList.append(bitMapping)
+		return byteOffsetList, bitMappingList
 
 	def doShutdown(self):
 		pass # Do nothing
 
+#@cy	@cython.boundscheck(False)
 	def readInputs(self): #+cdef
 #@cy		cdef S7CPU cpu
 #@cy		cdef uint8_t inByte
+#@cy		cdef RpiGPIO_BitMapping bitMapping
 #@cy		cdef uint32_t byteOffset
-#@cy		cdef uint32_t bitOffset
 #@cy		cdef bytearray tmpBytes
+#@cy		cdef uint32_t i
+#@cy		cdef uint32_t j
 
-		RPi_GPIO = self.__RPi_GPIO
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		RPi_GPIO_input = self.__RPi_GPIO_input
 		tmpBytes = self.__tmpStoreBytes
 		cpu = self.sim.cpu
-		for byteOffset, bitMapping in self.__inputList:
+		for i in range(self.__inputListSize):
+			byteOffset = self.__inputByteOffsetList[i]
+			bitMapping = self.__inputBitMappingList[i]
 			inByte = 0
-			for bitOffset, bcmNumber in bitMapping.mapList:
-				if RPi_GPIO.input(bcmNumber):
-					inByte |= 1 << bitOffset
+			for j in range(bitMapping.size):
+				if RPi_GPIO_input(bitMapping.bcmNumbers[j]):
+					inByte |= 1 << bitMapping.bitOffsets[j] #+suffix-u
 			tmpBytes[0] = inByte
 			self.sim.cpu.storeInputRange(byteOffset, tmpBytes)
 
+#@cy	@cython.boundscheck(False)
 	def writeOutputs(self): #+cdef
 #@cy		cdef S7CPU cpu
+#@cy		cdef RpiGPIO_BitMapping bitMapping
 #@cy		cdef uint32_t byteOffset
-#@cy		cdef uint32_t bitOffset
+#@cy		cdef uint8_t outByte
+#@cy		cdef uint8_t newValue
+#@cy		cdef uint32_t i
+#@cy		cdef uint32_t j
 
-		RPi_GPIO = self.__RPi_GPIO
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		RPi_GPIO_output = self.__RPi_GPIO_output
 		cpu = self.sim.cpu
-		for byteOffset, bitMapping in self.__outputList:
+		for i in range(self.__outputListSize):
+			byteOffset = self.__outputByteOffsetList[i]
+			bitMapping = self.__outputBitMappingList[i]
 			outByte = cpu.fetchOutputRange(byteOffset, 1)[0]
-			for bitOffset, bcmNumber in bitMapping.mapList:
-				RPi_GPIO.output(bcmNumber,
-						outByte & (1 << bitOffset))
+			for j in range(bitMapping.size):
+				newValue = (outByte >> bitMapping.bitOffsets[j]) & 1 #+suffix-u
+				if newValue != bitMapping.currentOutputValues[j]:
+					RPi_GPIO_output(bitMapping.bcmNumbers[j], newValue)
+					bitMapping.currentOutputValues[j] = newValue
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):

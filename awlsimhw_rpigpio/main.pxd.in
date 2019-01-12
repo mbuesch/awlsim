@@ -1,12 +1,25 @@
 from awlsim.common.cython_support cimport *
 from awlsim.core.hardware cimport *
 
+cdef class RpiGPIO_BitMapping(object):
+	cdef public dict __bit2bcm
+	cdef public uint8_t bitOffsets[8]
+	cdef public uint32_t bcmNumbers[8]
+	cdef public uint8_t currentOutputValues[8]
+	cdef public uint8_t size
+
 cdef class RpiGPIO_HwInterface(AbstractHardwareInterface):
 	cdef public object __RPi_GPIO
-	cdef public dict __inputMap
-	cdef public dict __outputMap
-	cdef public list __inputList
-	cdef public list __outputList
+	cdef public object __RPi_GPIO_input
+	cdef public object __RPi_GPIO_output
+
+	cdef public list __inputByteOffsetList
+	cdef public list __inputBitMappingList
+	cdef public uint32_t __inputListSize
+
+	cdef public list __outputByteOffsetList
+	cdef public list __outputBitMappingList
+	cdef public uint32_t __outputListSize
 	cdef public bytearray __tmpStoreBytes
 
 	cdef readInputs(self)
