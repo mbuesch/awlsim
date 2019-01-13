@@ -189,6 +189,21 @@ The following environment variables control Awlsim's basic behavior:
 * `AWLSIM_COVERAGE`<br />
   `=DATAFILE`  Enable code coverage tracing.<br />
 
+* `AWLSIM_GCMODE`<br />
+  `=realtime`  Enable manual garbage collection, if realtime scheduling is enabled. (default)<br />
+  `=auto`      Always use automatic garbage collection.<br />
+  `=manual`    Always use manual garbage collection.<br />
+
+* `AWLSIM_GCTHRES`<br />
+  `=700,1,1`<br />
+  A comma separated string with up to 3 integers.<br />
+  Each integer corresponding to the Python garbage collector generation 0 to 2 thresholds for manual garbage collection.<br />
+  A threshold value of 0 disables garbage collection. (not recommended)<br />
+
+* `AWLSIM_GCCYCLE`<br />
+  `=64`<br />
+  The number of OB1 cycles it takes to trigger a manual garbage collection.<br />
+
 
 ## Building Awlsim
 

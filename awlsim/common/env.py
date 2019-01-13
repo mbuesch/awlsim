@@ -2,7 +2,7 @@
 #
 # AWL simulator - Environment variables
 #
-# Copyright 2017-2018 Michael Buesch <m@bues.ch>
+# Copyright 2017-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
 import os
+import gc
 
 
 __all__ = [
@@ -141,3 +142,55 @@ class AwlSimEnv(object):
 			except ValueError as e:
 				pass
 		return None
+
+	GCMODE_RT	= "realtime"	# Manual GC, if realtime scheduling
+	GCMODE_AUTO	= "auto"	# Automatic GC
+	GCMODE_MANUAL	= "manual"	# Manual GC
+
+	@classmethod
+	def getGcMode(cls):
+		"""Get AWLSIM_GCMODE.
+		Returns one of the GCMODE_... constants.
+		"""
+		gcModeStr = cls.__getVar("GCMODE", "").lower().strip()
+		if gcModeStr == cls.GCMODE_RT:
+			return cls.GCMODE_RT
+		if gcModeStr == cls.GCMODE_AUTO:
+			return cls.GCMODE_AUTO
+		if gcModeStr == cls.GCMODE_MANUAL:
+			return cls.GCMODE_MANUAL
+		return cls.GCMODE_RT
+
+	@classmethod
+	def getGcThreshold(cls, generation):
+		"""Get AWLSIM_GCTHRES.
+		AWLSIM_GCTHRES is a comma separated string with up to 3 integers.
+		Each integer corresponding to the generation 0 to 2 thresholds.
+		Returns the garbage collector threshold for the selected generation.
+		"""
+		thresStr = cls.__getVar("GCTHRES", "")
+		thres = thresStr.split(",")
+		assert(generation in (0, 1, 2))
+		try:
+			return clamp(int(thres[generation]),
+				     0, 0x7FFFFFFF)
+		except (ValueError, IndexError) as e:
+			if generation == 0:
+				gc_get_threshold = getattr(gc, "get_threshold", None)
+				if gc_get_threshold:
+					return gc_get_threshold()[0]
+				return 700
+			return 1
+
+	@classmethod
+	def getGcCycle(cls):
+		"""Get AWLSIM_GCCYCLE.
+		AWLSIM_GCCYCLE is the number of OB1 cycles it takes to trigger
+		a manual garbage collection.
+		Returns an integer.
+		"""
+		cycStr = cls.__getVar("GCCYCLE", "")
+		try:
+			return clamp(int(cycStr), 1, 0xFFFF)
+		except ValueError as e:
+			return 64
