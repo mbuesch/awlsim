@@ -233,9 +233,14 @@ class AwlSimServer(object): #+cdef
 		self.__affinityEnabled = False
 		self.__rtSchedEnabled = False
 		self.__os_sched_yield = getattr(os, "sched_yield", None)
-		self.__gc_enable = gc.enable
-		self.__gc_disable = gc.disable
-		self.__gc_collect = gc.collect
+		self.__gcManual = False
+		self.__gcTriggerCounter = 0
+		self.__gcTriggerThreshold = AwlSimEnv.getGcCycle()
+		self.__gcGen0Threshold = AwlSimEnv.getGcThreshold(0)
+		self.__gcGen1Threshold = AwlSimEnv.getGcThreshold(1)
+		self.__gcGen2Threshold = AwlSimEnv.getGcThreshold(2)
+		self.__gc_collect = getattr(gc, "collect", None)
+		self.__gc_get_count = getattr(gc, "get_count", None)
 		self.__emptyList = []
 		self.__startupDone = False
 		self.__state = -1
@@ -422,24 +427,38 @@ class AwlSimServer(object): #+cdef
 					   "os.sched_setparam/os.sched_getscheduler "
 					   "is not available.")
 
-		# On realtime scheduling switch to manual garbage collection.
-		if self.__rtSchedEnabled:
-			self.__gc_disable()
-		else:
-			self.__gc_enable()
-
 	def __yieldHostCPU(self): #@nocy
 #@cy	cdef void __yieldHostCPU(self):
+#@cy		cdef uint16_t trig
+#@cy		cdef int32_t gen0
+#@cy		cdef int32_t thres0
+#@cy		cdef int32_t gen1
+#@cy		cdef int32_t thres1
+#@cy		cdef int32_t gen2
+#@cy		cdef int32_t thres2
 
-		# Run a garbage collection now to maintain realtime requirements.
-		self.__gc_collect()
+		# If automatic garbage collection is disabled,
+		# run a manual collection now.
+		if self.__gcManual:
+			trig = (self.__gcTriggerCounter + 1) & 0xFFFF #+suffix-u
+			if trig >= self.__gcTriggerThreshold:
+				trig = 0
+				assert(not gc.isenabled()) #@nocy
+				gen0, gen1, gen2 = self.__gc_get_count()
+				thres0 = self.__gcGen0Threshold
+				thres1 = self.__gcGen1Threshold
+				thres2 = self.__gcGen2Threshold
+				if gen2 >= thres2 and thres2 > 0:
+					self.__gc_collect(2)
+				elif gen1 >= thres1 and thres1 > 0:
+					self.__gc_collect(1)
+				elif gen0 >= thres0 and thres0 > 0:
+					self.__gc_collect(0)
+			self.__gcTriggerCounter = trig
 
 		if self.__rtSchedEnabled:
 			# We are running under realtime scheduling conditions.
 			# We should yield now.
-
-			# Re-enable to garbage collector.
-			self.__gc_enable()
 
 			# On Posix + Cython call the system sched_yield directly.
 #			with nogil:			#@cy-posix
@@ -449,9 +468,6 @@ class AwlSimServer(object): #+cdef
 			# if it is available.
 			if self.__os_sched_yield:	#@nocy
 				self.__os_sched_yield()	#@nocy
-
-			# Disable to garbage collector.
-			self.__gc_disable()
 
 	def getRunState(self):
 		return self.__state
@@ -499,6 +515,30 @@ class AwlSimServer(object): #+cdef
 		else:
 			self.__setSched(False)
 			self.__setAffinity(False)
+
+		# Select garbage collection mode.
+		if self.__gc_collect and self.__gc_get_count:
+			# If we are in RUN state with realtime scheduling,
+			# use manual garbage collection.
+			gcMode = AwlSimEnv.getGcMode()
+			wantManual = (gcMode == AwlSimEnv.GCMODE_MANUAL or
+				      (gcMode == AwlSimEnv.GCMODE_RT and
+				       self.__rtSchedEnabled))
+			if runstate == self.STATE_RUN and wantManual:
+				# Manual GC
+				gc.disable()
+				self.__gcManual = True
+				self.__gcTriggerCounter = 0
+				printVerbose("Switched to MANUAL garbage collection.")
+			else:
+				# Automatic GC
+				gc.enable()
+				self.__gcManual = False
+				printVerbose("Switched to AUTO garbage collection.")
+		else:
+			# Manual GC control is not available.
+			self.__gcManual = False
+			printVerbose("Switched to AUTO garbage collection.")
 
 		self.__state = runstate
 		# Make a shortcut variable for RUN

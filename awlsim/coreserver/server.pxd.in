@@ -11,9 +11,14 @@ cdef class AwlSimServer(object):
 	cdef public _Bool __affinityEnabled
 	cdef public _Bool __rtSchedEnabled
 	cdef public object __os_sched_yield
-	cdef public object __gc_enable
-	cdef public object __gc_disable
+	cdef public _Bool __gcManual
+	cdef public uint16_t __gcTriggerCounter
+	cdef public uint16_t __gcTriggerThreshold
+	cdef public int32_t __gcGen0Threshold
+	cdef public int32_t __gcGen1Threshold
+	cdef public int32_t __gcGen2Threshold
 	cdef public object __gc_collect
+	cdef public object __gc_get_count
 	cdef public list __emptyList
 	cdef public _Bool __startupDone
 	cdef public int32_t __state
