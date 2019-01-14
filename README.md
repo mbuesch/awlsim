@@ -24,6 +24,11 @@ See the [quick start tutorial](QUICK-START.html) for a simple example on how to 
 If you don't know where to start, you can find an example project in the `examples` directory as `EXAMPLE.awlpro`. You can easily run this example in simulation mode without the need for special hardware.
 
 
+## PiLC - The Raspberry Pi PLC
+
+If you want to use PiLC, please also see the [PiLC documentation](PILC.html).
+
+
 ## Git repository
 
 The latest development version of Awlsim can be fetched with git:
