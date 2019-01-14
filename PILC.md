@@ -38,6 +38,22 @@ There is no need to set up anything else. The PiLC image is pre-configured so th
    <a href="doc/pic/pilc/connection2.png"><img src="doc/pic/pilc/connection2.png" alt="awlsim-gui" /></a>
 
 
+## Connection failure
+
+If the connection fails with the following error message, it might be due to a failed SSH authentication:<br />
+<a href="doc/pic/pilc/connection3.png"><img src="doc/pic/pilc/connection3.png" alt="awlsim-gui" /></a>
+
+This will happen, if you re-install PiLC on the Raspberry Pi.<br />
+Re-installing PiLC generates new SSH keys and therefore causes subsequent authentications to fail.
+
+To fix this delete the SSH authentication (`known_hosts` entry) on the PC (*not* on the Raspberry Pi).
+If you are using OpenSSH/Linux on the PC, enter the following command into a command prompt:
+
+`ssh-keygen -R 192.168.0.10`
+
+Replace `192.168.0.10` with the IP address of your Raspberry Pi.
+
+
 ## How do I get my PLC program onto PiLC?
 
 Just connect to PiLC (see previous chapter) and click the `download` button in the Awlsim GUI. This will transfer the program over to the PiLC.<br />
