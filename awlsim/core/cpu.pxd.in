@@ -152,9 +152,12 @@ cdef class S7CPU(object):
 	cdef __storeNAMED_DBVAR(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
 	cdef __storeINDIRECT(self, AwlOperator operator, AwlMemoryObject memObj, uint32_t allowedWidths)
 
-	cpdef bytearray fetchOutputRange(self, uint32_t byteOffset, uint32_t byteCount)
-	cpdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount)
-	cpdef storeInputRange(self, uint32_t byteOffset, bytearray data)
+	cdef bytearray fetchOutputRange(self, uint32_t byteOffset, uint32_t byteCount)
+	cdef uint8_t fetchOutputByte(self, uint32_t byteOffset)
+	cdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount)
+	cdef uint8_t fetchInputByte(self, uint32_t byteOffset)
+	cdef storeInputRange(self, uint32_t byteOffset, bytearray data)
+	cdef storeInputByte(self, uint32_t byteOffset, uint8_t data)
 
 	cdef updateTimestamp(self)
 	cdef __cycleTimeExceed(self)

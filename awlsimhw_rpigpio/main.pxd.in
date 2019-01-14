@@ -20,7 +20,6 @@ cdef class RpiGPIO_HwInterface(AbstractHardwareInterface):
 	cdef public list __outputByteOffsetList
 	cdef public list __outputBitMappingList
 	cdef public uint32_t __outputListSize
-	cdef public bytearray __tmpStoreBytes
 
 	cdef readInputs(self)
 	cdef writeOutputs(self)

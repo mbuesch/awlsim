@@ -1553,14 +1553,24 @@ class S7CPU(object): #+cdef
 	# Returns a bytearray.
 	# This raises an AwlSimError, if the access if out of range.
 	def fetchOutputRange(self, byteOffset, byteCount): #@nocy
-#@cy	cpdef bytearray fetchOutputRange(self, uint32_t byteOffset, uint32_t byteCount):
-		if byteOffset + byteCount > len(self.outputs): #@nocy
-#@cy		if <uint64_t>byteOffset + <uint64_t>byteCount > <uint64_t>len(self.outputs):
+#@cy	cdef bytearray fetchOutputRange(self, uint32_t byteOffset, uint32_t byteCount):
+		if byteOffset + byteCount > self.specs.nrOutputs: #@nocy
+#@cy		if <uint64_t>byteOffset + <uint64_t>byteCount > <uint64_t>self.specs.nrOutputs:
 			raise AwlSimError("Fetch from output process image region "
 				"is out of range "
 				"(imageSize=%d, fetchOffset=%d, fetchSize=%d)." % (
-				len(self.outputs), byteOffset, byteCount))
+				self.specs.nrOutputs, byteOffset, byteCount))
 		return self.outputs.getRawDataBytes()[byteOffset : byteOffset + byteCount]
+
+	# Same as fetchOutputRange(), but fetches only a single byte.
+	def fetchOutputByte(self, byteOffset): #@nocy
+#@cy	cdef uint8_t fetchOutputByte(self, uint32_t byteOffset):
+		if byteOffset >= self.specs.nrOutputs:
+			raise AwlSimError("Fetch of output process image byte "
+				"is out of range "
+				"(imageSize=%d, fetchOffset=%d)." % (
+				self.specs.nrOutputs, byteOffset))
+		return self.outputs.getRawDataBytes()[byteOffset]
 
 	# Fetch a range in the 'input' memory area.
 	# 'byteOffset' is the byte offset into the input area.
@@ -1568,34 +1578,54 @@ class S7CPU(object): #+cdef
 	# Returns a bytearray.
 	# This raises an AwlSimError, if the access if out of range.
 	def fetchInputRange(self, byteOffset, byteCount): #@nocy
-#@cy	cpdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount):
-		if byteOffset + byteCount > len(self.inputs): #@nocy
-#@cy		if <uint64_t>byteOffset + <uint64_t>byteCount > <uint64_t>len(self.inputs):
+#@cy	cdef bytearray fetchInputRange(self, uint32_t byteOffset, uint32_t byteCount):
+		if byteOffset + byteCount > self.specs.nrInputs: #@nocy
+#@cy		if <uint64_t>byteOffset + <uint64_t>byteCount > <uint64_t>self.specs.nrInputs:
 			raise AwlSimError("Fetch from input process image region "
 				"is out of range "
 				"(imageSize=%d, fetchOffset=%d, fetchSize=%d)." % (
-				len(self.inputs), byteOffset, byteCount))
+				self.specs.nrInputs, byteOffset, byteCount))
 		return self.inputs.getRawDataBytes()[byteOffset : byteOffset + byteCount]
+
+	# Same as fetchInputRange(), but fetches only a single byte.
+	def fetchInputByte(self, byteOffset): #@nocy
+#@cy	cdef uint8_t fetchInputByte(self, uint32_t byteOffset):
+		if byteOffset >= self.specs.nrInputs:
+			raise AwlSimError("Fetch of input process image byte "
+				"is out of range "
+				"(imageSize=%d, fetchOffset=%d)." % (
+				self.specs.nrInputs, byteOffset))
+		return self.inputs.getRawDataBytes()[byteOffset]
 
 	# Store a range in the 'input' memory area.
 	# 'byteOffset' is the byte offset into the input area.
 	# 'data' is a bytearray.
 	# This raises an AwlSimError, if the access if out of range.
 	def storeInputRange(self, byteOffset, data): #@nocy
-#@cy	cpdef storeInputRange(self, uint32_t byteOffset, bytearray data):
+#@cy	cdef storeInputRange(self, uint32_t byteOffset, bytearray data):
 #@cy		cdef uint32_t dataLen
 #@cy		cdef uint8_t *dataBytes
 
 		dataLen = len(data)
-		if byteOffset + dataLen > len(self.inputs): #@nocy
-#@cy		if <uint64_t>byteOffset + <uint64_t>dataLen > <uint64_t>len(self.inputs):
+		if byteOffset + dataLen > self.specs.nrInputs: #@nocy
+#@cy		if <uint64_t>byteOffset + <uint64_t>dataLen > <uint64_t>self.specs.nrInputs:
 			raise AwlSimError("Store to input process image region "
 				"is out of range "
 				"(imageSize=%d, storeOffset=%d, storeSize=%d)." % (
-				len(self.inputs), byteOffset, dataLen))
+				self.specs.nrInputs, byteOffset, dataLen))
 		dataBytes = self.inputs.getRawDataBytes()
 		dataBytes[byteOffset : byteOffset + dataLen] = data #@nocy
 #@cy		memcpy(&dataBytes[byteOffset], <const char *>data, dataLen)
+
+	# Same as storeInputRange(), but stores only a single byte.
+	def storeInputByte(self, byteOffset, data): #@nocy
+#@cy	cdef storeInputByte(self, uint32_t byteOffset, uint8_t data):
+		if byteOffset >= self.specs.nrInputs:
+			raise AwlSimError("Store to input process image byte "
+				"is out of range "
+				"(imageSize=%d, storeOffset=%d)." % (
+				self.specs.nrInputs, byteOffset))
+		dataBytes = self.inputs.getRawDataBytes()[byteOffset] = data
 
 	def fetch(self, operator, allowedWidths):					#@nocy
 		try:									#@nocy

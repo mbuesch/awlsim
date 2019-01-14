@@ -137,7 +137,6 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		AbstractHardwareInterface.__init__(self,
 						   sim = sim,
 						   parameters = parameters)
-		self.__tmpStoreBytes = bytearray(1)
 
 	def doStartup(self):
 		"""Startup the hardware module.
@@ -219,7 +218,6 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 #@cy		cdef uint8_t inByte
 #@cy		cdef RpiGPIO_BitMapping bitMapping
 #@cy		cdef uint32_t byteOffset
-#@cy		cdef bytearray tmpBytes
 #@cy		cdef uint32_t i
 #@cy		cdef uint32_t j
 
@@ -227,7 +225,6 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		#       by @cython.boundscheck(False) in this method.
 
 		RPi_GPIO_input = self.__RPi_GPIO_input
-		tmpBytes = self.__tmpStoreBytes
 		cpu = self.sim.cpu
 		for i in range(self.__inputListSize):
 			byteOffset = self.__inputByteOffsetList[i]
@@ -236,8 +233,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 			for j in range(bitMapping.size):
 				if RPi_GPIO_input(bitMapping.bcmNumbers[j]):
 					inByte |= 1 << bitMapping.bitOffsets[j] #+suffix-u
-			tmpBytes[0] = inByte
-			self.sim.cpu.storeInputRange(byteOffset, tmpBytes)
+			self.sim.cpu.storeInputByte(byteOffset, inByte)
 
 #@cy	@cython.boundscheck(False)
 	def writeOutputs(self): #+cdef
@@ -257,7 +253,7 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		for i in range(self.__outputListSize):
 			byteOffset = self.__outputByteOffsetList[i]
 			bitMapping = self.__outputBitMappingList[i]
-			outByte = cpu.fetchOutputRange(byteOffset, 1)[0]
+			outByte = cpu.fetchOutputByte(byteOffset)
 			for j in range(bitMapping.size):
 				newValue = (outByte >> bitMapping.bitOffsets[j]) & 1 #+suffix-u
 				if newValue != bitMapping.currentOutputValues[j]:
