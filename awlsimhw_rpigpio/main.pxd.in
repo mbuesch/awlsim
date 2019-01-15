@@ -4,7 +4,7 @@ from awlsim.core.hardware cimport *
 cdef class RpiGPIO_BitMapping(object):
 	cdef public dict __bit2bcm
 	cdef public uint8_t bitOffsets[8]
-	cdef public uint32_t bcmNumbers[8]
+	cdef public list bcmNumbers
 	cdef public uint8_t currentOutputValues[8]
 	cdef public uint8_t size
 

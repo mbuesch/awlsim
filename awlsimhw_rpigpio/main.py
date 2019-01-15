@@ -95,7 +95,7 @@ class RpiGPIO_BitMapping(object): #+cdef
 		# Bit number to BCM GPIO number map.
 		self.__bit2bcm = {}
 		self.bitOffsets = [None] * 8 #@nocy
-		self.bcmNumbers = [None] * 8 #@nocy
+		self.bcmNumbers = [None] * 8
 		self.currentOutputValues = [None] * 8 #@nocy
 
 	def setBit(self, bitOffset, bcmNumber):
@@ -104,7 +104,7 @@ class RpiGPIO_BitMapping(object): #+cdef
 
 	def build(self):
 		self.bitOffsets = [None] * 8 #@nocy
-		self.bcmNumbers = [None] * 8 #@nocy
+		self.bcmNumbers = [None] * 8
 		self.currentOutputValues = [None] * 8 #@nocy
 		self.size = 0
 		for bitOffset, bcmNumber in sorted(dictItems(self.__bit2bcm),
@@ -214,7 +214,6 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 
 #@cy	@cython.boundscheck(False)
 	def readInputs(self): #+cdef
-#@cy		cdef S7CPU cpu
 #@cy		cdef uint8_t inByte
 #@cy		cdef RpiGPIO_BitMapping bitMapping
 #@cy		cdef uint32_t byteOffset
@@ -224,20 +223,17 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		# Note: Bounds checking of the indexing operator [] is disabled
 		#       by @cython.boundscheck(False) in this method.
 
-		RPi_GPIO_input = self.__RPi_GPIO_input
-		cpu = self.sim.cpu
 		for i in range(self.__inputListSize):
 			byteOffset = self.__inputByteOffsetList[i]
 			bitMapping = self.__inputBitMappingList[i]
 			inByte = 0
 			for j in range(bitMapping.size):
-				if RPi_GPIO_input(bitMapping.bcmNumbers[j]):
+				if self.__RPi_GPIO_input(bitMapping.bcmNumbers[j]):
 					inByte |= 1 << bitMapping.bitOffsets[j] #+suffix-u
 			self.sim.cpu.storeInputByte(byteOffset, inByte)
 
 #@cy	@cython.boundscheck(False)
 	def writeOutputs(self): #+cdef
-#@cy		cdef S7CPU cpu
 #@cy		cdef RpiGPIO_BitMapping bitMapping
 #@cy		cdef uint32_t byteOffset
 #@cy		cdef uint8_t outByte
@@ -248,43 +244,90 @@ class RpiGPIO_HwInterface(AbstractHardwareInterface): #+cdef
 		# Note: Bounds checking of the indexing operator [] is disabled
 		#       by @cython.boundscheck(False) in this method.
 
-		RPi_GPIO_output = self.__RPi_GPIO_output
-		cpu = self.sim.cpu
 		for i in range(self.__outputListSize):
 			byteOffset = self.__outputByteOffsetList[i]
 			bitMapping = self.__outputBitMappingList[i]
-			outByte = cpu.fetchOutputByte(byteOffset)
+			outByte = self.sim.cpu.fetchOutputByte(byteOffset)
 			for j in range(bitMapping.size):
 				newValue = (outByte >> bitMapping.bitOffsets[j]) & 1 #+suffix-u
 				if newValue != bitMapping.currentOutputValues[j]:
-					RPi_GPIO_output(bitMapping.bcmNumbers[j], newValue)
+					self.__RPi_GPIO_output(bitMapping.bcmNumbers[j], newValue)
 					bitMapping.currentOutputValues[j] = newValue
 
+#@cy	@cython.boundscheck(False)
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
 #@cy		cdef uint32_t nrBytes
+#@cy		cdef uint32_t accessEndOffset
+#@cy		cdef RpiGPIO_BitMapping bitMapping
+#@cy		cdef uint32_t byteOffset
+#@cy		cdef uint32_t dataOffset
+#@cy		cdef uint8_t inByte
+#@cy		cdef uint32_t i
+#@cy		cdef uint32_t j
+#@cy		cdef bytearray retData
+
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
 
 		if accessOffset < self.inputAddressBase:
 			return None
 
-		RPi_GPIO = self.__RPi_GPIO
-		nrBytes = accessWidth // 8
-		pass#TODO
+		nrBytes = accessWidth // 8			#+suffix-u
+		accessEndOffset = accessOffset + (nrBytes - 1)	#+suffix-u
 
-		return bytearray()
+		retData = bytearray(nrBytes)
+		for i in range(self.__inputListSize):
+			byteOffset = self.__inputByteOffsetList[i]
+			if not (accessOffset <= byteOffset <= accessEndOffset):
+				continue
+			bitMapping = self.__inputBitMappingList[i]
+			inByte = 0
+			for j in range(bitMapping.size):
+				if self.__RPi_GPIO_input(bitMapping.bcmNumbers[j]):
+					inByte |= 1 << bitMapping.bitOffsets[j] #+suffix-u
+			dataOffset = byteOffset - accessOffset
+			retData[dataOffset] = inByte
+		return retData
 
+#@cy	@cython.boundscheck(False)
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
 #@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
 #@cy		cdef uint32_t nrBytes
+#@cy		cdef uint32_t accessEndOffset
+#@cy		cdef RpiGPIO_BitMapping bitMapping
+#@cy		cdef uint32_t byteOffset
+#@cy		cdef uint32_t dataOffset
+#@cy		cdef uint8_t outByte
+#@cy		cdef uint8_t newValue
+#@cy		cdef uint32_t i
+#@cy		cdef uint32_t j
+#@cy		cdef _Bool wroteAny
+
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
 
 		if accessOffset < self.outputAddressBase:
 			return False
 
-		RPi_GPIO = self.__RPi_GPIO
-		nrBytes = accessWidth // 8
-		pass#TODO
+		nrBytes = accessWidth // 8			#+suffix-u
+		accessEndOffset = accessOffset + (nrBytes - 1)	#+suffix-u
+		wroteAny = False
 
-		return True
+		for i in range(self.__outputListSize):
+			byteOffset = self.__outputByteOffsetList[i]
+			if not (accessOffset <= byteOffset <= accessEndOffset):
+				continue
+			bitMapping = self.__outputBitMappingList[i]
+			dataOffset = byteOffset - accessOffset
+			outByte = data[dataOffset]
+			for j in range(bitMapping.size):
+				newValue = (outByte >> bitMapping.bitOffsets[j]) & 1 #+suffix-u
+				if newValue != bitMapping.currentOutputValues[j]:
+					self.__RPi_GPIO_output(bitMapping.bcmNumbers[j], newValue)
+					bitMapping.currentOutputValues[j] = newValue
+			wroteAny = True
+		return wroteAny
 
 # Module entry point
 HardwareInterface = RpiGPIO_HwInterface
