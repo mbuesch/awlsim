@@ -2,7 +2,7 @@
 #
 # AWL simulator
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@ from awlsim.core.hardware import * #+cimport
 from awlsim.core.hardware_loader import *
 
 import sys
+
+#cimport cython #@cy
 
 
 __all__ = [
@@ -272,25 +274,37 @@ class AwlSim(object): #+cdef
 				# Always fatal in startup.
 				self._handleSimException(e, fatal = True)
 
+#@cy	@cython.boundscheck(False)
 	def __readHwInputs(self): #+cdef
 		"""Read all hardware module inputs.
 		"""
 #@cy		cdef AbstractHardwareInterface hw
+#@cy		cdef uint32_t i
 
-		for hw in self.__registeredHardware:
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		for i in range(self.__registeredHardwareCount):
 			try:
+				hw = self.__registeredHardware[i]
 				hw.readInputs()
 			except AwlSimError as e:
 				self._handleSimException(e,
 					fatal = self._fatalHwErrors)
 
+#@cy	@cython.boundscheck(False)
 	def __writeHwOutputs(self): #+cdef
 		"""Write all hardware module outputs.
 		"""
 #@cy		cdef AbstractHardwareInterface hw
+#@cy		cdef uint32_t i
 
-		for hw in self.__registeredHardware:
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		for i in range(self.__registeredHardwareCount):
 			try:
+				hw = self.__registeredHardware[i]
 				hw.writeOutputs()
 			except AwlSimError as e:
 				self._handleSimException(e,
