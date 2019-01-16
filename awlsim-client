@@ -3,7 +3,7 @@
 #
 # AWL simulator - Client interface
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,39 @@ import getopt
 from awlsim_loader.common import *
 from awlsim_loader.coreclient import *
 
+
+def printCpuStats(cpuStatsMsg):
+	if not cpuStatsMsg:
+		print("Failed to fetch CPU statistics.")
+		return
+
+	if cpuStatsMsg.insnPerSecond > 0.0:
+		insnPerSecondStr = floatToHumanReadable(cpuStatsMsg.insnPerSecond)
+		usPerInsnStr = "%.03f" % ((1.0 / cpuStatsMsg.insnPerSecond) * 1000000.0)
+	else:
+		insnPerSecondStr = "-/-"
+		usPerInsnStr = "-/-"
+
+	if (cpuStatsMsg.avgCycleTime <= 0.0 or
+	    cpuStatsMsg.minCycleTime <= 0.0 or
+	    cpuStatsMsg.maxCycleTime <= 0.0):
+		avgCycleTimeStr = minCycleTimeStr = maxCycleTimeStr = "-/-"
+	else:
+		if cpuStatsMsg.avgCycleTime == 0.0:
+			avgCycleTimeStr = "-/-"
+		else:
+			avgCycleTimeStr = "%.03f" % (cpuStatsMsg.avgCycleTime * 1000.0)
+		minCycleTimeStr = "%.03f" % (cpuStatsMsg.minCycleTime * 1000.0)
+		maxCycleTimeStr = "%.03f" % (cpuStatsMsg.maxCycleTime * 1000.0)
+
+	if cpuStatsMsg.running:
+		print("CPU RUN: %.01f s" % cpuStatsMsg.uptime)
+	else:
+		print("CPU STOP")
+	print("    OB1:  avg: %s ms  min: %s ms  max: %s ms" % (
+	      avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr))
+	print("  Speed:  %s stmt/s (= %s us/stmt)  %.01f stmt/cycle" % (
+	      insnPerSecondStr, usPerInsnStr, cpuStatsMsg.insnPerCycle))
 
 class TextInterfaceAwlSimClient(AwlSimClient):
 	pass
@@ -54,6 +87,7 @@ def usage():
 	print("")
 	print("Actions to be performed on the server:")
 	print(" -r|--runstate RUN/STOP       Set the run state of the CPU.")
+	print(" -S|--stats                   Fetch and display CPU statistics.")
 
 def main():
 	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
@@ -63,9 +97,9 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hcC:t:L:r:",
+			"hcC:t:L:r:S",
 			[ "help", "connect", "connect-to=", "timeout=", "loglevel=",
-			  "runstate=", ])
+			  "runstate=", "stats", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -106,6 +140,8 @@ def main():
 			else:
 				printError("-r|--runstate: Invalid run state")
 				sys.exit(1)
+		if o in ("-S", "--stats"):
+			actions.append(("stats", None))
 	if args:
 		usage()
 		return ExitCodes.EXIT_ERR_CMDLINE
@@ -125,6 +161,8 @@ def main():
 		for action, actionValue in actions:
 			if action == "runstate":
 				client.setRunState(actionValue)
+			elif action == "stats":
+				printCpuStats(client.getCpuStats(sync=True))
 			else:
 				assert(0)
 	except AwlSimError as e:
