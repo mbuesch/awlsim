@@ -2495,15 +2495,9 @@ class S7CPU(object): #+cdef
 		"""Get a human readable instructions per seconds string.
 		"""
 		insnPerSecond = self.insnPerSecond
-		if insnPerSecond >= 1000000.0:
-			insnPerSecondStr = "%.02f M" % (insnPerSecond / 1000000.0)
-		elif insnPerSecond >= 1000.0:
-			insnPerSecondStr = "%.02f k" % (insnPerSecond / 1000.0)
-		elif insnPerSecond > 0.0:
-			insnPerSecondStr = "%.02f" % insnPerSecond
-		else:
-			insnPerSecondStr = "-/-"
-		return insnPerSecondStr
+		if insnPerSecond > 0.0:
+			return floatToHumanReadable(insnPerSecond)
+		return "-/-"
 
 	@property
 	def usPerInsnHR(self): #@nocov

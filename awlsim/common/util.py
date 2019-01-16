@@ -77,6 +77,7 @@ __all__ = [
 	"shortUUID",
 	"copy",
 	"deepcopy",
+	"floatToHumanReadable",
 ]
 
 
@@ -448,3 +449,14 @@ def shortUUID(uuidStr):
 	   uuidStr[23] == '-':
 		uuidStr = uuidStr[0:8] + ".." + uuidStr[-6:-1]
 	return uuidStr
+
+def floatToHumanReadable(f):
+	f = float(f)
+	fAbs = abs(f)
+	if fAbs >= 1000000.0:
+		fStr = "%.02f M" % (f / 1000000.0)
+	elif fAbs >= 1000.0:
+		fStr = "%.02f k" % (f / 1000.0)
+	else:
+		fStr = "%.02f" % f
+	return fStr
