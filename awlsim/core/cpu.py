@@ -785,7 +785,7 @@ class S7CPU(object): #+cdef
 		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
-		self.__cycleTimeMovAvg = MovingAvg(3)
+		self.__cycleTimeMovAvg = MovingAvg(9)
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
 		self.__speedMeasureStartCycleCount = 0
