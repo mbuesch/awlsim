@@ -623,15 +623,11 @@ class AwlSimServer(object): #+cdef
 
 	def __printCpuStats(self):
 		cpu = self.__sim.cpu
-		if cpu.insnPerSecond:
-			usPerInsn = "%.03f" % ((1.0 / cpu.insnPerSecond) * 1000000)
-		else:
-			usPerInsn = "-/-"
 		printVerbose("[CPU] "
-			"%d stmt/s (= %s us/stmt); %.01f stmt/cycle" %\
-			(int(round(cpu.insnPerSecond)),
-			 usPerInsn,
-			 cpu.avgInsnPerCycle))
+			     "%s stmt/s (= %s us/stmt); %.01f stmt/cycle" % (
+			     cpu.insnPerSecondHR,
+			     cpu.usPerInsnHR,
+			     cpu.avgInsnPerCycle))
 
 	def __cpuCycleExitCallback(self, userData):
 		# Reset instruction dump serial number
