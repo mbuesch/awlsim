@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server messages
 #
-# Copyright 2013-2018 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -133,6 +133,8 @@ class AwlSimMessage(object):
 	MSG_ID_MEMORY		= EnumGen.item
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
 	MSG_ID_INSNSTATE	= EnumGen.item
+	MSG_ID_GET_CPUSTATS	= EnumGen.item
+	MSG_ID_CPUSTATS		= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -598,8 +600,114 @@ class AwlSimMessage_CPUDUMP(AwlSimMessage):
 			raise TransferError("CPUDUMP: Unicode error")
 		return cls(dumpText)
 
+class AwlSimMessage_GET_CPUSTATS(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_GET_CPUSTATS
+
+class AwlSimMessage_CPUSTATS(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_CPUSTATS
+
+	# Payload struct:
+	#	flags (32 bit)
+	#	unused (32 bit)
+	#	uptime in milliseconds (64 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	insnPerSecond *1 (32 bit)
+	#	insnPerCycle *1000 (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	avgCycleTime in microseconds (32 bit)
+	#	minCycleTime in microseconds (32 bit)
+	#	maxCycleTime in microseconds (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	#	unused (32 bit)
+	plStruct = struct.Struct(str(">IIQIIIIIIIIIIIIIIIIIIIIIIIIIIII"))
+
+	FLG_RUN = 0x00000001
+
+	def __init__(self,
+		     running,
+		     uptime,
+		     insnPerSecond,
+		     insnPerCycle,
+		     avgCycleTime,
+		     minCycleTime,
+		     maxCycleTime):
+		self.running = running
+		self.uptime = uptime
+		self.insnPerSecond = insnPerSecond
+		self.insnPerCycle = insnPerCycle
+		self.avgCycleTime = avgCycleTime
+		self.minCycleTime = minCycleTime
+		self.maxCycleTime = maxCycleTime
+
+	def toBytes(self):
+		try:
+			flags = self.FLG_RUN if self.running else 0
+			pl = self.plStruct.pack(
+				flags,
+				0,
+				clamp(int(round(self.uptime * 1000.0)),
+				      0, 0xFFFFFFFFFFFFFFFF),
+				0, 0, 0, 0,
+				clamp(int(round(self.insnPerSecond)),
+				      0, 0xFFFFFFFF),
+				clamp(int(round(self.insnPerCycle * 1000.0)),
+				      0, 0xFFFFFFFF),
+				0, 0, 0, 0, 0, 0,
+				clamp(int(round(self.avgCycleTime * 1000000.0)),
+				      0, 0xFFFFFFFF),
+				clamp(int(round(self.minCycleTime * 1000000.0)),
+				      0, 0xFFFFFFFF),
+				clamp(int(round(self.maxCycleTime * 1000000.0)),
+				      0, 0xFFFFFFFF),
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+			)
+			return AwlSimMessage.toBytes(self, len(pl)) + pl
+		except ValueError:
+			raise TransferError("CPUSTATS: Data format error")
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			flags, _,\
+			uptime,\
+			_, _, _, _,\
+			insnPerSecond, insnPerCycle,\
+			_, _, _, _, _, _,\
+			avgCycleTime, minCycleTime, maxCycleTime,\
+			_, _, _, _, _, _, _, _, _, _, _, _, _ =\
+				cls.plStruct.unpack_from(payload, 0)
+		except (ValueError, struct.error) as e:
+			raise TransferError("CPUSTATS: Data format error")
+		return cls(running=bool(flags & cls.FLG_RUN),
+			   uptime=(float(uptime) / 1000.0),
+			   insnPerSecond=(float(insnPerSecond)),
+			   insnPerCycle=(float(insnPerCycle) / 1000.0),
+			   avgCycleTime=(float(avgCycleTime) / 1000000.0),
+			   minCycleTime=(float(minCycleTime) / 1000000.0),
+			   maxCycleTime=(float(maxCycleTime) / 1000000.0))
+
 class AwlSimMessage_MAINTREQ(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_MAINTREQ
+
 
 	plStruct = struct.Struct(str(">H"))
 
@@ -1247,6 +1355,8 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
 		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
+		AwlSimMessage.MSG_ID_GET_CPUSTATS	: AwlSimMessage_GET_CPUSTATS,
+		AwlSimMessage.MSG_ID_CPUSTATS		: AwlSimMessage_CPUSTATS,
 	}
 
 	DEFAULT_TX_BUF_SIZE	= 1024 * 100

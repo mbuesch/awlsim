@@ -1114,6 +1114,20 @@ class AwlSimServer(object): #+cdef
 					     fupSrcs, kopSrcs)
 		client.transceiver.send(reply)
 
+	def __rx_GET_CPUSTATS(self, client, msg):
+		printDebug("Received message: GET_CPUSTATS")
+		cpu = self.__sim.cpu
+		reply = AwlSimMessage_CPUSTATS(
+			running=self.__running,
+			uptime=((cpu.now - cpu.startupTime) if self.__running else 0.0),
+			insnPerSecond=cpu.insnPerSecond,
+			insnPerCycle=cpu.avgInsnPerCycle,
+			avgCycleTime=cpu.avgCycleTime,
+			minCycleTime=cpu.minCycleTime,
+			maxCycleTime=cpu.maxCycleTime
+		)
+		client.transceiver.send(reply)
+
 	__msgRxHandlers = {
 		AwlSimMessage.MSG_ID_PING		: __rx_PING,
 		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
@@ -1144,6 +1158,7 @@ class AwlSimServer(object): #+cdef
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: __rx_GET_IDENTS,
+		AwlSimMessage.MSG_ID_GET_CPUSTATS	: __rx_GET_CPUSTATS,
 	}
 
 	def __clientCommTransferError(self, exception, client):

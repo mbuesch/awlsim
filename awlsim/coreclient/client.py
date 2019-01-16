@@ -2,7 +2,7 @@
 #
 # AWL simulator - PLC core server client
 #
-# Copyright 2013-2017 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -318,6 +318,12 @@ class AwlSimClient(object):
 	def __rx_CPUDUMP(self, msg):
 		self.handle_CPUDUMP(msg.dumpText)
 
+	def handle_CPUSTATS(self, msg):
+		pass # Don't do anything by default
+
+	def __rx_CPUSTATS(self, msg):
+		self.handle_CPUSTATS(msg)
+
 	def __rx_MAINTREQ(self, msg):
 		raise msg.maintRequest
 
@@ -363,6 +369,7 @@ class AwlSimClient(object):
 		AwlSimMessage.MSG_ID_CPUCONF		: __rx_NOP,
 		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_NOP,
 		AwlSimMessage.MSG_ID_CPUDUMP		: __rx_CPUDUMP,
+		AwlSimMessage.MSG_ID_CPUSTATS		: __rx_CPUSTATS,
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE		: __rx_INSNSTATE,
 	}
@@ -815,6 +822,23 @@ class AwlSimClient(object):
 			if status != AwlSimMessage_REPLY.STAT_OK:
 				raise AwlSimError("AwlSimClient: Failed to write "
 					"to memory")
+		else:
+			self.__send(msg)
+		return True
+
+	def getCpuStats(self, sync=False):
+		"""Get CPU statistics.
+		This returns AwlSimMessage_CPUSTATS, if sync=True.
+		Otherwise handle_CPUSTATS() is called upon reception of cpustats.
+		Returns None, if an error occurred.
+		"""
+		if not self.__transceiver:
+			return None
+		msg = AwlSimMessage_GET_CPUSTATS()
+		if sync:
+			rxMsg = self.__sendAndWait(msg,
+				lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSTATS)
+			return rxMsg
 		else:
 			self.__send(msg)
 		return True
