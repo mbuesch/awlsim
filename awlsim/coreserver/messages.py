@@ -610,14 +610,13 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 	#	flags (32 bit)
 	#	unused (32 bit)
 	#	uptime in milliseconds (64 bit)
+	#	runtime in milliseconds (64 bit)
 	#	unused (32 bit)
 	#	unused (32 bit)
 	#	unused (32 bit)
 	#	unused (32 bit)
 	#	insnPerSecond *1 (32 bit)
 	#	insnPerCycle *1000 (32 bit)
-	#	unused (32 bit)
-	#	unused (32 bit)
 	#	unused (32 bit)
 	#	unused (32 bit)
 	#	unused (32 bit)
@@ -638,25 +637,27 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 	#	unused (32 bit)
 	#	unused (32 bit)
 	#	unused (32 bit)
-	plStruct = struct.Struct(str(">IIQIIIIIIIIIIIIIIIIIIIIIIIIIIII"))
+	plStruct = struct.Struct(str(">IIQQIIIIIIIIIIIIIIIIIIIIIIIIII"))
 
 	FLG_RUN = 0x00000001
 
 	def __init__(self,
 		     running,
 		     uptime,
+		     runtime,
 		     insnPerSecond,
 		     insnPerCycle,
 		     avgCycleTime,
 		     minCycleTime,
 		     maxCycleTime):
-		self.running = running
-		self.uptime = uptime
-		self.insnPerSecond = insnPerSecond
-		self.insnPerCycle = insnPerCycle
-		self.avgCycleTime = avgCycleTime
-		self.minCycleTime = minCycleTime
-		self.maxCycleTime = maxCycleTime
+		self.running = bool(running)
+		self.uptime = float(uptime)
+		self.runtime = float(runtime)
+		self.insnPerSecond = float(insnPerSecond)
+		self.insnPerCycle = float(insnPerCycle)
+		self.avgCycleTime = float(avgCycleTime)
+		self.minCycleTime = float(minCycleTime)
+		self.maxCycleTime = float(maxCycleTime)
 
 	def toBytes(self):
 		try:
@@ -666,12 +667,14 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 				0,
 				clamp(int(round(self.uptime * 1000.0)),
 				      0, 0xFFFFFFFFFFFFFFFF),
+				clamp(int(round(self.runtime * 1000.0)),
+				      0, 0xFFFFFFFFFFFFFFFF),
 				0, 0, 0, 0,
 				clamp(int(round(self.insnPerSecond)),
 				      0, 0xFFFFFFFF),
 				clamp(int(round(self.insnPerCycle * 1000.0)),
 				      0, 0xFFFFFFFF),
-				0, 0, 0, 0, 0, 0,
+				0, 0, 0, 0,
 				clamp(int(round(self.avgCycleTime * 1000000.0)),
 				      0, 0xFFFFFFFF),
 				clamp(int(round(self.minCycleTime * 1000000.0)),
@@ -688,10 +691,10 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 	def fromBytes(cls, payload):
 		try:
 			flags, _,\
-			uptime,\
+			uptime, runtime,\
 			_, _, _, _,\
 			insnPerSecond, insnPerCycle,\
-			_, _, _, _, _, _,\
+			_, _, _, _,\
 			avgCycleTime, minCycleTime, maxCycleTime,\
 			_, _, _, _, _, _, _, _, _, _, _, _, _ =\
 				cls.plStruct.unpack_from(payload, 0)
@@ -699,6 +702,7 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 			raise TransferError("CPUSTATS: Data format error")
 		return cls(running=bool(flags & cls.FLG_RUN),
 			   uptime=(float(uptime) / 1000.0),
+			   runtime=(float(runtime) / 1000.0),
 			   insnPerSecond=(float(insnPerSecond)),
 			   insnPerCycle=(float(insnPerCycle) / 1000.0),
 			   avgCycleTime=(float(avgCycleTime) / 1000000.0),
@@ -707,7 +711,6 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 
 class AwlSimMessage_MAINTREQ(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_MAINTREQ
-
 
 	plStruct = struct.Struct(str(">H"))
 

@@ -1119,7 +1119,8 @@ class AwlSimServer(object): #+cdef
 		cpu = self.__sim.cpu
 		reply = AwlSimMessage_CPUSTATS(
 			running=self.__running,
-			uptime=((cpu.now - cpu.startupTime) if self.__running else 0.0),
+			uptime=0.0, #TODO
+			runtime=((cpu.now - cpu.startupTime) if self.__running else 0.0),
 			insnPerSecond=cpu.insnPerSecond,
 			insnPerCycle=cpu.avgInsnPerCycle,
 			avgCycleTime=cpu.avgCycleTime,

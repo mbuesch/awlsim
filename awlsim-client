@@ -54,7 +54,7 @@ def printCpuStats(cpuStatsMsg):
 		maxCycleTimeStr = "%.03f" % (cpuStatsMsg.maxCycleTime * 1000.0)
 
 	if cpuStatsMsg.running:
-		print("CPU RUN: %.01f s" % cpuStatsMsg.uptime)
+		print("CPU RUN: %.01f s" % cpuStatsMsg.runtime)
 	else:
 		print("CPU STOP")
 	print("    OB1:  avg: %s ms  min: %s ms  max: %s ms" % (
