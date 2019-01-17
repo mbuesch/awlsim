@@ -7,6 +7,8 @@ from awlsim.core.main cimport *
 #	int sched_yield() nogil		#@cy-posix
 
 cdef class AwlSimServer(object):
+	cdef public double __initTimeStamp
+	cdef public double __startupTimeStamp
 	cdef public AwlSim __sim
 	cdef public _Bool __affinityEnabled
 	cdef public _Bool __rtSchedEnabled

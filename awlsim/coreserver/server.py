@@ -230,6 +230,8 @@ class AwlSimServer(object): #+cdef
 		return retval
 
 	def __init__(self):
+		self.__initTimeStamp = monotonic_time()
+		self.__startupTimeStamp = self.__initTimeStamp
 		self.__affinityEnabled = False
 		self.__rtSchedEnabled = False
 		self.__os_sched_yield = getattr(os, "sched_yield", None)
@@ -495,6 +497,7 @@ class AwlSimServer(object): #+cdef
 			# We just entered RUN state.
 			self.__setSched(True)
 			self.__setAffinity(False)
+			self.__startupTimeStamp = monotonic_time()
 			if self.__needOB10x:
 				printVerbose("CPU startup (OB 10x).")
 				self.__sim.startup()
@@ -1117,10 +1120,13 @@ class AwlSimServer(object): #+cdef
 	def __rx_GET_CPUSTATS(self, client, msg):
 		printDebug("Received message: GET_CPUSTATS")
 		cpu = self.__sim.cpu
+		now = monotonic_time()
+		uptime = now - self.__initTimeStamp
+		runtime = (now - self.__startupTimeStamp) if self.__running else 0.0
 		reply = AwlSimMessage_CPUSTATS(
 			running=self.__running,
-			uptime=0.0, #TODO
-			runtime=((cpu.now - cpu.startupTime) if self.__running else 0.0),
+			uptime=uptime,
+			runtime=runtime,
 			insnPerSecond=cpu.insnPerSecond,
 			insnPerCycle=cpu.avgInsnPerCycle,
 			avgCycleTime=cpu.avgCycleTime,
