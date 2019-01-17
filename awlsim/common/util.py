@@ -2,7 +2,7 @@
 #
 # AWL simulator - common utility functions
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -94,7 +94,12 @@ class Logging(object):
 	loglevel = LOG_INFO
 	prefix = ""
 
-	startupTime = time.time()
+	_getNow = getattr(time, "monotonic", time.time)
+	_startupTime = _getNow()
+
+	@classmethod
+	def _getUptime(cls):
+		return cls._getNow() - cls._startupTime
 
 	@classmethod
 	def setLoglevel(cls, loglevel):
@@ -117,8 +122,7 @@ class Logging(object):
 			if stream:
 				if cls.prefix:
 					stream.write(cls.prefix)
-				now = time.time() - cls.startupTime
-				stream.write("[%.3f] " % now)
+				stream.write("[%.3f] " % cls._getUptime())
 				stream.write(text)
 				stream.write("\n")
 				stream.flush()
