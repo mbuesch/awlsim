@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI simulator client access
 #
-# Copyright 2014-2016 Michael Buesch <m@bues.ch>
+# Copyright 2014-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -157,6 +157,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Parameter: The dump text.
 	haveCpuDump = Signal(str)
 
+	# CPU-stats signal.
+	# Parameter: AwlSimMessage_CPUSTATE instance.
+	haveCpuStats = Signal(AwlSimMessage_CPUSTATS)
+
 	# Instruction dump signal.
 	# Parameter: AwlSimMessage_INSNSTATE instance.
 	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
@@ -205,6 +209,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	# Override cpudump handler
 	def handle_CPUDUMP(self, dumpText):
 		self.haveCpuDump.emit(dumpText)
+
+	# Override cpustate handler
+	def handle_CPUSTATS(self, msg):
+		self.haveCpuStats.emit(msg)
 
 	# Override memory update handler
 	def handle_MEMORY(self, memAreas):

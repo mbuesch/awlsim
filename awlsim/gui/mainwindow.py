@@ -128,6 +128,13 @@ class MainWidget(QWidget):
 
 		self.filename = None
 		self.__dirtyLevel = self.DIRTY_NO
+		self.__cpuRunState = RunState()
+		self.__insnPerSecond = 0.0
+		self.__avgCycleTime = 0.0
+		self.__minCycleTime = 0.0
+		self.__maxCycleTime = 0.0
+
+		self.__updateStatusBar()
 
 		self.editMdiArea.sourceChanged.connect(self.somethingChanged)
 		self.editMdiArea.focusChanged.connect(self.textFocusChanged)
@@ -497,6 +504,58 @@ class MainWidget(QWidget):
 			return projectTreeModel.entryActivate(index, parentWidget=self)
 		return False
 
+	def handleCpuRunStateChange(self, cpuRunState):
+		"""CPU RunState changed.
+		"""
+		self.__cpuRunState = cpuRunState
+		self.__updateStatusBar()
+
+	def handleCpuStats(self, statsMsg):
+		"""Received new AwlSimMessage_CPUSTATS.
+		"""
+		self.__insnPerSecond = statsMsg.insnPerSecond
+		self.__avgCycleTime = statsMsg.avgCycleTime
+		self.__minCycleTime = statsMsg.minCycleTime
+		self.__maxCycleTime = statsMsg.maxCycleTime
+		self.__updateStatusBar()
+
+	def __updateStatusBar(self):
+		"""Update the main window status bar.
+		"""
+		status = []
+
+		if self.__cpuRunState == RunState.STATE_OFFLINE:
+			status.append("CPU: offline")
+		elif self.__cpuRunState == RunState.STATE_ONLINE:
+			status.append("CPU: online / STOP")
+		elif self.__cpuRunState == RunState.STATE_LOAD:
+			status.append("CPU: loading")
+		elif self.__cpuRunState == RunState.STATE_RUN:
+			status.append("CPU: RUN")
+		elif self.__cpuRunState == RunState.STATE_EXCEPTION:
+			status.append("CPU: EXCEPTION")
+
+		if self.__cpuRunState == RunState.STATE_RUN:
+			if self.__insnPerSecond > 0.0:
+				usPerInsnStr = "%.02f" % ((1.0 / self.__insnPerSecond) * 1000000.0)
+				status.append("%s stmt/s (%s µs/stmt)" % (
+					      floatToHumanReadable(self.__insnPerSecond),
+					      usPerInsnStr))
+
+			if (self.__avgCycleTime > 0.0 and
+			    self.__minCycleTime > 0.0 and
+			    self.__maxCycleTime > 0.0):
+				avgCycleTimeStr = "%.02f" % (self.__avgCycleTime * 1000.0)
+				minCycleTimeStr = "%.02f" % (self.__minCycleTime * 1000.0)
+				maxCycleTimeStr = "%.02f" % (self.__maxCycleTime * 1000.0)
+				status.append("OB1: avg: %s ms  min: %s ms  max: %s ms" % (
+					      avgCycleTimeStr,
+					      minCycleTimeStr,
+					      maxCycleTimeStr))
+
+		statusBar = self.mainWindow.statusBar()
+		statusBar.showMessage("  --  ".join(status))
+
 class MainWindow(QMainWindow):
 	TITLE = "Awlsim PLC v%s" % VERSION_STRING
 
@@ -525,6 +584,8 @@ class MainWindow(QMainWindow):
 		self.setWindowIcon(getIcon("cpu"))
 
 		self.__profiler = None
+
+		self.setStatusBar(QStatusBar(self))
 
 		self.mainWidget = MainWidget(self, self)
 		self.cpuDockWidget = CpuDockWidget(self.mainWidget, self)
@@ -705,6 +766,8 @@ class MainWindow(QMainWindow):
 		self.cpuWidget.haveIdentsMsg.connect(self.projectTreeModel.handleIdentsMsg)
 		self.cpuWidget.runStateChanged.connect(self.editMdiArea.setCpuRunState)
 		self.cpuWidget.runStateChanged.connect(self.projectTreeModel.setCpuRunState)
+		self.cpuWidget.runStateChanged.connect(self.mainWidget.handleCpuRunStateChange)
+		self.cpuWidget.haveCpuStats.connect(self.mainWidget.handleCpuStats)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
 

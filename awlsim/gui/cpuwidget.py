@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU widget
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -240,6 +240,9 @@ class CpuWidget(QWidget):
 	haveInsnDump = Signal(AwlSimMessage_INSNSTATE)
 	# Signal: Have a new ident hashes message
 	haveIdentsMsg = Signal(AwlSimMessage_IDENTS)
+	# CPU-stats signal.
+	# Parameter: AwlSimMessage_CPUSTATE instance.
+	haveCpuStats = Signal(AwlSimMessage_CPUSTATS)
 
 	# Signal: Request a new run button state.
 	reqRunButtonState = Signal(bool)
@@ -272,6 +275,7 @@ class CpuWidget(QWidget):
 		client = self.getSimClient()
 		client.haveException.connect(self.__handleCpuException)
 		client.haveCpuDump.connect(self.__handleCpuDump)
+		client.haveCpuStats.connect(self.haveCpuStats)
 		client.haveInsnDump.connect(self.haveInsnDump)
 		client.haveMemoryUpdate.connect(self.__handleMemoryUpdate)
 		client.haveIdentsMsg.connect(self.__handleIdentsMsg)
@@ -511,6 +515,7 @@ class CpuWidget(QWidget):
 							reqFBInfo=True,
 							reqDBInfo=True,
 							reqUDTInfo=True)
+			client.getCpuStats()
 		except AwlSimError as e:
 			self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,

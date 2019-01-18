@@ -1176,16 +1176,6 @@ class ProjectTreeModel(QAbstractItemModel):
 				title = "Project"
 			if self.mainWidget.isDirty():
 				title += "*"
-			if self.__cpuRunState == RunState.STATE_OFFLINE:
-				title += " (CPU: offline)"
-			elif self.__cpuRunState == RunState.STATE_ONLINE:
-				title += " (CPU: online / STOP)"
-			elif self.__cpuRunState == RunState.STATE_LOAD:
-				title += " (CPU: loading)"
-			elif self.__cpuRunState == RunState.STATE_RUN:
-				title += " (CPU: RUN)"
-			elif self.__cpuRunState == RunState.STATE_EXCEPTION:
-				title += " (CPU: EXCEPTION)"
 			return title
 		return None
 
