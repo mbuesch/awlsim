@@ -113,6 +113,10 @@ class Logging(object):
 		cls.loglevel = loglevel
 
 	@classmethod
+	def getLogLevel(cls):
+		return cls.loglevel
+
+	@classmethod
 	def setPrefix(cls, prefix):
 		cls.prefix = prefix
 

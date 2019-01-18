@@ -48,12 +48,6 @@ class TestAwlSimClient(AwlSimClient):
 					"Failed to access memory: %s" % (
 					str(memArea)))
 
-class ConsoleSSHTunnel(SSHTunnel):
-	def sshMessage(self, message, isDebug):
-		if opt_loglevel > Logging.LOG_INFO:
-			isDebug = False
-		super(ConsoleSSHTunnel, self).sshMessage(message, isDebug)
-
 def usage():
 	print("awlsim version %s" % VERSION_STRING)
 	print("")
@@ -354,13 +348,13 @@ def runWithServerBackend(inputFile):
 			localPort = linkSettings.getTunnelLocalPort()
 			if localPort == linkSettings.TUNNEL_LOCPORT_AUTO:
 				localPort = None
-			tunnel = ConsoleSSHTunnel(
-				remoteHost = host,
-				remotePort = port,
-				localPort = localPort,
-				sshUser = linkSettings.getSSHUser(),
-				sshPort = linkSettings.getSSHPort(),
-				sshExecutable = linkSettings.getSSHExecutable(),
+			tunnel = SSHTunnel(
+				remoteHost=host,
+				remotePort=port,
+				localPort=localPort,
+				sshUser=linkSettings.getSSHUser(),
+				sshPort=linkSettings.getSSHPort(),
+				sshExecutable=linkSettings.getSSHExecutable(),
 			)
 			host, port = tunnel.connect()
 

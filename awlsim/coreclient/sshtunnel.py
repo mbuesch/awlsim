@@ -2,7 +2,7 @@
 #
 # AWL simulator - SSH tunnel helper
 #
-# Copyright 2016-2017 Michael Buesch <m@bues.ch>
+# Copyright 2016-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ import os
 import select
 import signal
 import time
+import getpass
 
 
 class SSHTunnel(object):
@@ -267,14 +268,14 @@ class SSHTunnel(object):
 	def sshMessage(self, message, isDebug):
 		"""Print a SSH log message.
 		"""
-		if not isDebug:
+		if not isDebug or Logging.getLogLevel() > Logging.LOG_INFO:
 			printInfo("[SSH]:  %s" % message)
 
 	def getPassphrase(self, prompt):
 		"""Get a password from the user.
 		"""
 		try:
-			return input(prompt).encode("UTF-8", "ignore")
+			return getpass.getpass(prompt).encode("UTF-8", "ignore")
 		except UnicodeError:
 			return b""
 
