@@ -46,10 +46,7 @@ def printCpuStats(cpuStatsMsg):
 	    cpuStatsMsg.maxCycleTime <= 0.0):
 		avgCycleTimeStr = minCycleTimeStr = maxCycleTimeStr = "-/-"
 	else:
-		if cpuStatsMsg.avgCycleTime == 0.0:
-			avgCycleTimeStr = "-/-"
-		else:
-			avgCycleTimeStr = "%.03f" % (cpuStatsMsg.avgCycleTime * 1000.0)
+		avgCycleTimeStr = "%.03f" % (cpuStatsMsg.avgCycleTime * 1000.0)
 		minCycleTimeStr = "%.03f" % (cpuStatsMsg.minCycleTime * 1000.0)
 		maxCycleTimeStr = "%.03f" % (cpuStatsMsg.maxCycleTime * 1000.0)
 
