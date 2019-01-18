@@ -73,11 +73,9 @@ def usage():
 	print("Usage: awlsim-client [OPTIONS] <ACTIONS>")
 	print("")
 	print("Options:")
-	print(" -C|--connect-to HOST[:PORT]  Connect to the server at HOST:PORT")
-	print("                              Defaults to %s:%d" %\
-		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
-	print(" -c|--connect                 Connect to default %s:%d" %\
-		  (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
+	print(" -c|--connect HOST[:PORT]     Connect to the server at HOST:PORT")
+	print("                              Defaults to %s:%d" % (
+	      AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT))
 	print(" -t|--timeout 10.0            Set the connection timeout (default 10 s)")
 	print(" -L|--loglevel LVL            Set the client log level:")
 	print("                              0: Log nothing")
@@ -87,6 +85,15 @@ def usage():
 	print("                              4: Verbose logging")
 	print("                              5: Extremely verbose logging")
 	print("")
+	print(" -s|--ssh-tunnel              Establish the connection via SSH tunnel.")
+	print(" --ssh-user %s                SSH user. Default: %s" % (
+	      SSHTunnel.SSH_DEFAULT_USER, SSHTunnel.SSH_DEFAULT_USER))
+	print(" --ssh-port %s                SSH port. Default: %s" % (
+	      SSHTunnel.SSH_PORT, SSHTunnel.SSH_PORT))
+	print(" --ssh-localport auto         SSH localport number or 'auto'.")
+	print(" --ssh-exe %s                SSH client executable path. Default: %s" % (
+	      SSHTunnel.SSH_DEFAULT_EXECUTABLE, SSHTunnel.SSH_DEFAULT_EXECUTABLE))
+	print("")
 	print("Actions to be performed on the server:")
 	print(" -r|--runstate RUN/STOP       Set the run state of the CPU.")
 	print(" -S|--stats                   Fetch and display CPU statistics.")
@@ -95,12 +102,18 @@ def main():
 	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
 	opt_timeout = 10.0
 	opt_loglevel = Logging.LOG_WARNING
+	opt_sshTunnel = False
+	opt_sshUser = SSHTunnel.SSH_DEFAULT_USER
+	opt_sshPort = SSHTunnel.SSH_PORT
+	opt_sshLocalPort = None
+	opt_sshExe = SSHTunnel.SSH_DEFAULT_EXECUTABLE
 	actions = []
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hcC:t:L:r:S",
-			[ "help", "connect", "connect-to=", "timeout=", "loglevel=",
+			"hc:t:L:sr:S",
+			[ "help", "connect=", "timeout=", "loglevel=",
+			  "ssh-tunnel", "ssh-user=", "ssh-port=", "ssh-localport=", "ssh-exe=",
 			  "runstate=", "stats", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -111,9 +124,6 @@ def main():
 			usage()
 			return ExitCodes.EXIT_OK
 		if o in ("-c", "--connect"):
-			opt_connect = (AwlSimServer.DEFAULT_HOST,
-				       AwlSimServer.DEFAULT_PORT)
-		if o in ("-C", "--connect-to"):
 			try:
 				host, port = parseNetAddress(v)
 				if port is None:
@@ -134,6 +144,27 @@ def main():
 			except ValueError:
 				printError("-L|--loglevel: Invalid log level")
 				sys.exit(1)
+		if o in ("-s", "--ssh-tunnel"):
+			opt_sshTunnel = True
+		if o == "--ssh-user":
+			opt_sshUser = v
+		if o == "--ssh-port":
+			try:
+				opt_sshPort = int(v)
+			except ValueError:
+				printError("--ssh-port: Invalid port number")
+				sys.exit(1)
+		if o == "--ssh-localport":
+			try:
+				if v.lower().strip() == "auto":
+					opt_sshLocalPort = None
+				else:
+					opt_sshLocalPort = int(v)
+			except ValueError:
+				printError("--ssh-localport: Invalid port number")
+				sys.exit(1)
+		if o == "--ssh-exe":
+			opt_sshExe = v
 		if o in ("-r", "--runstate"):
 			if v.upper().strip() in ("RUN", "1", "START"):
 				actions.append(("runstate", True))
@@ -155,10 +186,24 @@ def main():
 	try:
 		Logging.setLoglevel(opt_loglevel)
 
+		host, port = opt_connect
+
+		if opt_sshTunnel:
+			printInfo("Establishing SSH tunnel...")
+			tunnel = SSHTunnel(
+				remoteHost=host,
+				remotePort=port,
+				localPort=opt_sshLocalPort,
+				sshUser=opt_sshUser,
+				sshPort=opt_sshPort,
+				sshExecutable=opt_sshExe,
+			)
+			host, port = tunnel.connect()
+
 		client = TextInterfaceAwlSimClient()
-		client.connectToServer(host = opt_connect[0],
-				       port = opt_connect[1],
-				       timeout = opt_timeout)
+		client.connectToServer(host=host,
+				       port=port,
+				       timeout=opt_timeout)
 
 		for action, actionValue in actions:
 			if action == "runstate":
