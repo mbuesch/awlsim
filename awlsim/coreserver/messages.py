@@ -78,16 +78,24 @@ class TransferError(Exception):
 
 class AwlSimMessage(object):
 	# Header format:
-	#	Magic (16 bit)
-	#	Message ID (16 bit)
-	#	Sequence count (16 bit)
-	#	Reserved (16 bit)
-	#	Payload length (32 bit)
-	#	Payload (optional)
-	hdrStruct = struct.Struct(str(">HHHHI"))
+	#	Magic		(16 bit)
+	#	Message ID	(16 bit)
+	#	Flags		(16 bit)
+	#	Sequence count	(16 bit)
+	#	Reply to ID	(16 bit)
+	#	Reply to seq	(16 bit)
+	#	Reserved	(32 bit)
+	#	Reserved	(32 bit)
+	#	Reserved	(32 bit)
+	#	Reserved	(32 bit)
+	#	Payload length	(32 bit)
+	#	Payload		(optional)
+	hdrStruct = struct.Struct(str(">HHHHHHIIIII"))
 
-	HDR_MAGIC		= 0x5718
+	HDR_MAGIC		= 0x5719
 	HDR_LENGTH		= hdrStruct.size
+
+	HDR_FLAG_REPLY		= 0x0001
 
 	# Message IDs:
 	EnumGen.start
@@ -129,15 +137,25 @@ class AwlSimMessage(object):
 	MSG_ID_RUNSTATE		= EnumGen.item
 	MSG_ID_GET_CPUDUMP	= EnumGen.item		#TODO not implemented, yet
 	MSG_ID_CPUDUMP		= EnumGen.item
+	MSG_ID_GET_CPUSTATS	= EnumGen.item
+	MSG_ID_CPUSTATS		= EnumGen.item
 	MSG_ID_REQ_MEMORY	= EnumGen.item
 	MSG_ID_MEMORY		= EnumGen.item
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
 	MSG_ID_INSNSTATE	= EnumGen.item
-	MSG_ID_GET_CPUSTATS	= EnumGen.item
-	MSG_ID_CPUSTATS		= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
+
+	def setReplyTo(self, otherMsg):
+		if otherMsg:
+			self.replyToId = otherMsg.msgId
+			self.replyToSeq = otherMsg.seq
+			self.flags |= self.HDR_FLAG_REPLY
+		else:
+			self.replyToId = 0
+			self.replyToSeq = 0
+			self.flags &= ~self.HDR_FLAG_REPLY
 
 	@classmethod
 	def packString(cls, string):
@@ -182,12 +200,21 @@ class AwlSimMessage(object):
 	# Default values for instance attributes:
 	msgId = None	# MSG_ID_...
 	seq = 0		# Sequence number.
+	flags = 0	# HDR_FLAG_...
+	replyToId = 0	# Reply to msgId
+	replyToSeq = 0	# Reply to seq
 
 	def toBytes(self, payloadLength=0):
 		return self.hdrStruct.pack(self.HDR_MAGIC,
 					   self.msgId,
+					   self.flags,
 					   self.seq,
-					   0,
+					   self.replyToId,
+					   self.replyToSeq,
+					   0, # reserved
+					   0, # reserved
+					   0, # reserved
+					   0, # reserved
 					   payloadLength)
 
 	@classmethod
@@ -202,31 +229,31 @@ class AwlSimMessage_REPLY(AwlSimMessage):
 	STAT_FAIL	= EnumGen.item
 	EnumGen.end
 
-	plStruct = struct.Struct(str(">HHH"))
+	plStruct = struct.Struct(str(">HHHHHHHH"))
 
 	@classmethod
-	def make(cls, inReplyToMsg, status):
-		return cls(inReplyToMsg.msgId, inReplyToMsg.seq, status)
+	def make(cls, replyToMsg, status):
+		msg = cls(status)
+		msg.setReplyTo(replyToMsg)
+		return msg
 
-	def __init__(self, inReplyToId, inReplyToSeq, status):
-		self.inReplyToId = inReplyToId
-		self.inReplyToSeq = inReplyToSeq
+	def __init__(self, status):
 		self.status = status
 
 	def toBytes(self):
-		pl = self.plStruct.pack(self.inReplyToId,
-					self.inReplyToSeq,
-					self.status)
+		pl = self.plStruct.pack(self.status, 0, 0, 0,
+					0, 0, 0, 0)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
 	@classmethod
 	def fromBytes(cls, payload):
 		try:
-			inReplyToId, inReplyToSeq, status =\
+			status, _, _, _,\
+			_, _, _, _ =\
 				cls.plStruct.unpack(payload)
 		except struct.error as e:
 			raise TransferError("REPLY: Invalid data format")
-		return cls(inReplyToId, inReplyToSeq, status)
+		return cls(status)
 
 class AwlSimMessage_PING(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_PING
@@ -1475,7 +1502,8 @@ class AwlSimMessageTransceiver(object):
 			if rxByteCnt < hdrLen:
 				return None
 			try:
-				magic, self.msgId, self.seq, _reserved, self.payloadLen =\
+				magic, self.msgId, self.flags, self.seq,\
+				self.replyToId, self.replyToSeq, _, _, _, _, self.payloadLen =\
 					AwlSimMessage.hdrStruct.unpack(b"".join(self.rxBuffers))
 				self.rxBuffers = [] # Discard raw header bytes.
 			except struct.error as e:
@@ -1516,6 +1544,9 @@ class AwlSimMessageTransceiver(object):
 			raise AwlSimError("Received unknown message: %s" % msgId)
 		msg = cls.fromBytes(b"".join(self.rxBuffers))
 		msg.seq = self.seq
+		msg.flags = self.flags
+		msg.replyToId = self.replyToId
+		msg.replyToSeq = self.replyToSeq
 		self.__resetRxBuf()
 		return msg
 
@@ -1523,5 +1554,8 @@ class AwlSimMessageTransceiver(object):
 		self.rxBuffers = []
 		self.rxByteCnt = 0
 		self.msgId = 0
+		self.flags = 0
 		self.seq = 0
+		self.replyToId = 0
+		self.replyToSeq = 0
 		self.payloadLen = 0
