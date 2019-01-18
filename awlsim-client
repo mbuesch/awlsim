@@ -86,6 +86,8 @@ def usage():
 	print("                              5: Extremely verbose logging")
 	print("")
 	print(" -s|--ssh-tunnel              Establish the connection via SSH tunnel.")
+	print(" -P|--ssh-passphrase XYZ      Use XYZ as SSH passphrase.")
+	print("                              Default: Ask user.")
 	print(" --ssh-user %s                SSH user. Default: %s" % (
 	      SSHTunnel.SSH_DEFAULT_USER, SSHTunnel.SSH_DEFAULT_USER))
 	print(" --ssh-port %s                SSH port. Default: %s" % (
@@ -103,6 +105,7 @@ def main():
 	opt_timeout = 10.0
 	opt_loglevel = Logging.LOG_WARNING
 	opt_sshTunnel = False
+	opt_sshPassphrase = None
 	opt_sshUser = SSHTunnel.SSH_DEFAULT_USER
 	opt_sshPort = SSHTunnel.SSH_PORT
 	opt_sshLocalPort = None
@@ -111,9 +114,9 @@ def main():
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hc:t:L:sr:S",
+			"hc:t:L:sP:r:S",
 			[ "help", "connect=", "timeout=", "loglevel=",
-			  "ssh-tunnel", "ssh-user=", "ssh-port=", "ssh-localport=", "ssh-exe=",
+			  "ssh-tunnel", "ssh-passphrase=", "ssh-user=", "ssh-port=", "ssh-localport=", "ssh-exe=",
 			  "runstate=", "stats", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -146,6 +149,8 @@ def main():
 				sys.exit(1)
 		if o in ("-s", "--ssh-tunnel"):
 			opt_sshTunnel = True
+		if o in ("-P", "--ssh-passphrase"):
+			opt_sshPassphrase = v
 		if o == "--ssh-user":
 			opt_sshUser = v
 		if o == "--ssh-port":
@@ -197,6 +202,7 @@ def main():
 				sshUser=opt_sshUser,
 				sshPort=opt_sshPort,
 				sshExecutable=opt_sshExe,
+				sshPassphrase=opt_sshPassphrase
 			)
 			host, port = tunnel.connect()
 

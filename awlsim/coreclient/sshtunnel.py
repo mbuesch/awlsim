@@ -29,6 +29,7 @@ from awlsim.common.env import *
 from awlsim.common.util import *
 from awlsim.common.subprocess_wrapper import *
 from awlsim.common.monotonic import * #+cimport
+from awlsim.common.datatypehelpers import * #+cimport
 
 if not osIsWindows:
 	import pty
@@ -53,7 +54,8 @@ class SSHTunnel(object):
 		     sshUser=SSH_DEFAULT_USER,
 		     localPort=None,
 		     sshExecutable=SSH_DEFAULT_EXECUTABLE,
-		     sshPort=SSH_PORT):
+		     sshPort=SSH_PORT,
+		     sshPassphrase=None):
 		"""Create an SSH tunnel.
 		"""
 		if osIsWindows:
@@ -66,6 +68,7 @@ class SSHTunnel(object):
 		self.localPort = localPort
 		self.sshExecutable = sshExecutable
 		self.sshPort = sshPort
+		self.sshPassphrase = sshPassphrase
 		self.__sshPid = None
 		self.__sshProc = None
 
@@ -93,7 +96,7 @@ class SSHTunnel(object):
 			env = AwlSimEnv.clearLang(AwlSimEnv.getEnv())
 			if osIsWindows and "plink" in self.sshExecutable.lower():
 				# Run plink.exe (PuTTY)
-				pw = self.getPassphrase("%s's Password:" % self.remoteHost)
+				pw = self.__getPassphrase("%s's Password:" % self.remoteHost)
 				argv = [ self.sshExecutable,
 					"-ssh",
 					"-pw", None,
@@ -232,7 +235,7 @@ class SSHTunnel(object):
 						# Second try.
 						raise AwlSimError("SSH tunnel passphrase "
 							"was not accepted.")
-					passphrase = self.getPassphrase(line)
+					passphrase = self.__getPassphrase(line)
 					if passphrase is None:
 						raise AwlSimError("SSH tunnel connection "
 							"requires a passphrase, but "
@@ -271,13 +274,24 @@ class SSHTunnel(object):
 		if not isDebug or Logging.getLogLevel() > Logging.LOG_INFO:
 			printInfo("[SSH]:  %s" % message)
 
+	def __getPassphrase(self, prompt):
+		"""Get a password.
+		"""
+		try:
+			if self.sshPassphrase is None:
+				passphrase = self.getPassphrase(prompt)
+			else:
+				passphrase = self.sshPassphrase
+			if isString(passphrase):
+				passphrase = passphrase.encode("UTF-8", "ignore")
+			return passphrase
+		except UnicodeError:
+			return b""
+
 	def getPassphrase(self, prompt):
 		"""Get a password from the user.
 		"""
-		try:
-			return getpass.getpass(prompt).encode("UTF-8", "ignore")
-		except UnicodeError:
-			return b""
+		return getpass.getpass(prompt)
 
 	def hostAuth(self, prompt):
 		"""Get the user answer to the host authentication question.
