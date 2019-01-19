@@ -1195,31 +1195,31 @@ class AwlSimServer(object): #+cdef
 
 	def __clientCommTransferError(self, exception, client):
 		if exception.reason == exception.REASON_REMOTEDIED:
-			printInfo("Client '%s' disconnected" %\
-				  client.transceiver.peerInfoString)
+			printInfo("Client '%s' disconnected" % (
+				  client.transceiver.peerInfoString))
 		else:
 			printInfo("Client '%s' data "
-				"transfer error:\n%s" %\
-				(client.transceiver.peerInfoString,
-				 str(exception)))
+				  "transfer error:\n%s" % (
+				  client.transceiver.peerInfoString,
+				  str(exception)))
 		self.__clientRemove(client)
 
 	def __handleClientComm(self, client): #+cdef
 		try:
 			msg = client.transceiver.receive(0.0)
-		except TransferError as e:
-			self.__clientCommTransferError(e, client)
-			return
-		if not msg:
-			return
-		try:
+			if not msg:
+				return
+			if msg.msgId not in self.__msgRxHandlers:
+				printInfo("Received unsupported "
+					  "message 0x%02X" % msg.msgId)
+				return
 			handler = self.__msgRxHandlers[msg.msgId]
-		except KeyError:
-			printInfo("Received unsupported "
-				"message 0x%02X" % msg.msgId)
-			return
-		try:
 			handler(self, client, msg)
+		except AwlSimError as e:
+			# Communication error. Just log it.
+			# We don't forward this error to the main loop.
+			printError(e.getReport())
+			return
 		except TransferError as e:
 			self.__clientCommTransferError(e, client)
 			return
