@@ -2,7 +2,7 @@
 #
 # AWL simulator - Exceptions
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -58,6 +58,9 @@ class AwlSimError(Exception):
 		self.sourceId = sourceId
 		self.sourceName = sourceName
 		self.seenByUser = False
+
+	def getMessage(self):
+		return self.message
 
 	def setCpu(self, cpu):
 		self.cpu = cpu
