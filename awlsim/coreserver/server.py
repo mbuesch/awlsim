@@ -1155,6 +1155,7 @@ class AwlSimServer(object): #+cdef
 		AwlSimMessage.MSG_ID_BUILD		: __rx_BUILD,
 		AwlSimMessage.MSG_ID_REMOVESRC		: __rx_REMOVESRC,
 		AwlSimMessage.MSG_ID_REMOVEBLK		: __rx_REMOVEBLK,
+#		AwlSimMessage.MSG_ID_GET_OPT		: __rx_GET_OPT,
 		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
 		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: __rx_GET_BLOCKINFO,
 		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
@@ -1165,6 +1166,7 @@ class AwlSimServer(object): #+cdef
 		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
 		AwlSimMessage.MSG_ID_GET_IDENTS		: __rx_GET_IDENTS,
+#		AwlSimMessage.MSG_ID_GET_CPUDUMP	: __rx_GET_CPUDUMP,
 		AwlSimMessage.MSG_ID_GET_CPUSTATS	: __rx_GET_CPUSTATS,
 	}
 
@@ -1463,6 +1465,10 @@ class AwlSimServer(object): #+cdef
 					continue
 
 			except (AwlSimError, AwlParserError) as e:
+				printVerbose("Main loop exception: %s" % (
+					     e.getMessage()))
+
+				# Stop the CPU
 				self.setRunState(self.STATE_STOP)
 				# Schedule a CPU restart/rebuild.
 				self.__needOB10x = True
@@ -1485,6 +1491,8 @@ class AwlSimServer(object): #+cdef
 							client.broken = True
 					self.__removeBrokenClients()
 			except MaintenanceRequest as e:
+				printVerbose("Main loop maintenance request: %d" % (
+					     e.requestType))
 				# Put the CPU into maintenance mode.
 				# This will halt the CPU until a client
 				# or the server sets it into RUN or STOP again.
