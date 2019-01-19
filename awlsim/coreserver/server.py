@@ -1113,7 +1113,7 @@ class AwlSimServer(object): #+cdef
 			_range = range(msg.fromLine, msg.toLine + 1)
 			client.insnStateDump_enabledLines[msg.sourceId] = _range
 		if not client.insnStateDump_enabledLines:
-			self.insnStateDump_msgs = []
+			client.insnStateDump_msgs = []
 		self.__updateCpuCallbacks()
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
