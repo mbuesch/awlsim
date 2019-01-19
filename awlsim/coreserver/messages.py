@@ -1600,8 +1600,10 @@ class AwlSimMessageTransceiver(object):
 		self.__debugEnabled = Logging.getLogLevel() >= Logging.LOG_VERBOSE
 		self.__debugTime = monotonic_time()
 		self.__debugTx = 0
+		self.__debugTxBlobs = 0
 		self.__debugTxLen = 0
 		self.__debugRx = 0
+		self.__debugRxBlobs = 0
 		self.__debugRxLen = 0
 
 		# Transmit status
@@ -1662,12 +1664,14 @@ class AwlSimMessageTransceiver(object):
 					     socket.TCP_CORK,
 					     1 if cork else 0)
 
-	def __dump(self, prefix, timeDiff, nrMsg, nrBytes):
+	def __dump(self, prefix, timeDiff, nrMsg, nrBlobs, nrBytes):
 		bytePerSec = nrBytes / timeDiff
+		blobPerSec = nrBlobs / timeDiff
 		msgPerSec = nrMsg / timeDiff
-		printVerbose("%s:  %s msg/s  %s bytes/s" % (
+		printVerbose("%s:  %s msg/s  %s blobs/s  %s bytes/s" % (
 			     prefix,
 			     floatToHumanReadable(msgPerSec, binary=False),
+			     floatToHumanReadable(blobPerSec, binary=False),
 			     floatToHumanReadable(bytePerSec, binary=True)))
 
 	def __dumpStats(self):
@@ -1675,32 +1679,53 @@ class AwlSimMessageTransceiver(object):
 		timeDiff = now - self.__debugTime
 		if timeDiff >= 5.0:
 			self.__debugTime = now
-			self.__dump("TX", timeDiff, self.__debugTx, self.__debugTxLen)
-			self.__debugTx = self.__debugTxLen = 0
-			self.__dump("RX", timeDiff, self.__debugRx, self.__debugRxLen)
-			self.__debugRx = self.__debugRxLen = 0
+			self.__dump("TX", timeDiff, self.__debugTx,
+				    self.__debugTxBlobs, self.__debugTxLen)
+			self.__debugTx = self.__debugTxBlobs = self.__debugTxLen = 0
+			self.__dump("RX", timeDiff, self.__debugRx,
+				    self.__debugRxBlobs, self.__debugRxLen)
+			self.__debugRx = self.__debugRxBlobs = self.__debugRxLen = 0
 
-	def __accountTx(self, msgLen):
-		self.__debugTx += 1
-		self.__debugTxLen += msgLen
+	def __accountTx(self, nrMsg, nrBlobs, dataLen):
+		self.__debugTx += nrMsg
+		self.__debugTxBlobs += nrBlobs
+		self.__debugTxLen += dataLen
 		self.__dumpStats()
 
-	def __accountRx(self, msgLen):
-		self.__debugRx += 1
-		self.__debugRxLen += msgLen
+	def __accountRx(self, nrMsg, nrBlobs, dataLen):
+		self.__debugRx += nrMsg
+		self.__debugRxBlobs += nrBlobs
+		self.__debugRxLen += dataLen
 		self.__dumpStats()
+
+	def __setMsgTxSeq(self, msg):
+		msg.seq = self.txSeqCount
+		self.txSeqCount = (self.txSeqCount + 1) & 0xFFFF
 
 	def send(self, msg, timeout=None):
 		if timeout != self.__timeout:
 			self.sock.settimeout(timeout)
 			self.__timeout = timeout
 
-		msg.seq = self.txSeqCount
-		self.txSeqCount = (self.txSeqCount + 1) & 0xFFFF
+		if not msg:
+			return
+		if isinstance(msg, list):
+			dataList = []
+			for oneMsg in msg:
+				self.__setMsgTxSeq(oneMsg)
+				dataList.append(oneMsg.toBytes())
+			data = memoryview(b"".join(dataList))
+			nrMsg = len(msg)
+		else:
+			self.__setMsgTxSeq(msg)
+			data = memoryview(msg.toBytes())
+			nrMsg = 1
 
-		offset, data = 0, memoryview(msg.toBytes())
-		datalen, sock, _SocketErrors = len(data), self.sock, SocketErrors
-		while offset < datalen:
+		offset = 0
+		dataLen = len(data)
+		sock = self.sock
+		_SocketErrors = SocketErrors
+		while offset < dataLen:
 			try:
 				offset += sock.send(data[offset : ])
 			except _SocketErrors as e:
@@ -1708,7 +1733,7 @@ class AwlSimMessageTransceiver(object):
 				if transferError.reason != TransferError.REASON_BLOCKING:
 					raise transferError
 		if self.__debugEnabled:
-			self.__accountTx(datalen)
+			self.__accountTx(nrMsg, 1, dataLen)
 
 	def receive(self, timeout=0.0):
 		if timeout != self.__timeout:
@@ -1783,7 +1808,7 @@ class AwlSimMessageTransceiver(object):
 		msg.replyToSeq = self.replyToSeq
 		self.__resetRxBuf()
 		if self.__debugEnabled:
-			self.__accountRx(msgLen)
+			self.__accountRx(1, 1, msgLen)
 		return msg
 
 	def __resetRxBuf(self):
