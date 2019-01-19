@@ -162,6 +162,13 @@ class AwlSimMessage(object):
 			self.replyToSeq = 0
 			self.hdrFlags &= ~self.HDR_FLAG_REPLY
 
+	def isReplyTo(self, otherMsg):
+		if otherMsg:
+			return (((self.hdrFlags & self.HDR_FLAG_REPLY) != 0) and
+				(self.replyToId == otherMsg.msgId) and
+				(self.replyToSeq == otherMsg.seq))
+		return False
+
 	@classmethod
 	def packString(cls, string):
 		try:

@@ -878,7 +878,9 @@ class AwlSimServer(object): #+cdef
 
 	def __rx_PING(self, client, msg):
 		printDebug("Received message: PING")
-		client.transceiver.send(AwlSimMessage_PONG())
+		reply = AwlSimMessage_PONG()
+		reply.setReplyTo(msg)
+		client.transceiver.send(reply)
 
 	def __rx_PONG(self, client, msg):
 		printInfo("Received message: PONG")
@@ -922,12 +924,14 @@ class AwlSimServer(object): #+cdef
 			if self.__state == self.STATE_RUN else\
 			AwlSimMessage_RUNSTATE.STATE_STOP
 		)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_GET_AWLSRC(self, client, msg):
 		printDebug("Received message: GET_AWLSRC")
 		awlSource = self.awlSourceContainer.getSourceByIdent(msg.identHash)
 		reply = AwlSimMessage_AWLSRC(awlSource)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_AWLSRC(self, client, msg):
@@ -940,6 +944,7 @@ class AwlSimServer(object): #+cdef
 		printDebug("Received message: GET_SYMTABSRC")
 		symTabSource = self.symTabSourceContainer.getSourceByIdent(msg.identHash)
 		reply = AwlSimMessage_SYMTABSRC(symTabSource)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_SYMTABSRC(self, client, msg):
@@ -964,6 +969,7 @@ class AwlSimServer(object): #+cdef
 		printDebug("Received message: GET_FUPSRC")
 		fupSource = self.fupSourceContainer.getSourceByIdent(msg.identHash)
 		reply = AwlSimMessage_FUPSRC(fupSource)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_FUPSRC(self, client, msg):
@@ -976,6 +982,7 @@ class AwlSimServer(object): #+cdef
 		printDebug("Received message: GET_KOPSRC")
 		kopSource = self.kopSourceContainer.getSourceByIdent(msg.identHash)
 		reply = AwlSimMessage_KOPSRC(kopSource)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_KOPSRC(self, client, msg):
@@ -1031,11 +1038,13 @@ class AwlSimServer(object): #+cdef
 			getDBInfo=bool(msg.getFlags & msg.GET_DB_INFO),
 			getUDTInfo=bool(msg.getFlags & msg.GET_UDT_INFO))
 		reply = AwlSimMessage_BLOCKINFO(blockInfos)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_GET_CPUSPECS(self, client, msg):
 		printDebug("Received message: GET_CPUSPECS")
 		reply = AwlSimMessage_CPUSPECS(self.__sim.cpu.getSpecs())
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_CPUSPECS(self, client, msg):
@@ -1047,6 +1056,7 @@ class AwlSimServer(object): #+cdef
 	def __rx_GET_CPUCONF(self, client, msg):
 		printDebug("Received message: GET_CPUCONF")
 		reply = AwlSimMessage_CPUCONF(self.__sim.cpu.getConf())
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_CPUCONF(self, client, msg):
@@ -1063,8 +1073,7 @@ class AwlSimServer(object): #+cdef
 		self.__updateMemReadReqFlag()
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(
-				msg, AwlSimMessage_REPLY.STAT_OK)
-			)
+				msg, AwlSimMessage_REPLY.STAT_OK))
 
 	def __rx_MEMORY(self, client, msg):
 		printDebug("Received message: MEMORY")
@@ -1115,6 +1124,7 @@ class AwlSimServer(object): #+cdef
 		reply = AwlSimMessage_IDENTS(awlSrcs, symSrcs,
 					     hwMods, libSels,
 					     fupSrcs, kopSrcs)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	def __rx_GET_CPUSTATS(self, client, msg):
@@ -1133,6 +1143,7 @@ class AwlSimServer(object): #+cdef
 			minCycleTime=cpu.minCycleTime,
 			maxCycleTime=cpu.maxCycleTime
 		)
+		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
 	__msgRxHandlers = {

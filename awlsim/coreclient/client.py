@@ -453,10 +453,8 @@ class AwlSimClient(object):
 	def __sendAndWaitFor_REPLY(self, msg, timeout=None,
 				   ignoreMaintenanceRequests=False):
 		def checkRxMsg(rxMsg):
-			return rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and\
-			       (rxMsg.hdrFlags & AwlSimMessage.HDR_FLAG_REPLY) and\
-			       rxMsg.replyToId == msg.msgId and\
-			       rxMsg.replyToSeq == msg.seq
+			return (rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and
+				rxMsg.isReplyTo(msg))
 		return self.__sendAndWait(msg, checkRxMsg, timeout,
 					  ignoreMaintenanceRequests).status
 
@@ -489,7 +487,8 @@ class AwlSimClient(object):
 			return False
 		msg = AwlSimMessage_GET_RUNSTATE()
 		rxMsg = self.__sendAndWait(msg,
-			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_RUNSTATE)
+			lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_RUNSTATE and
+				       rxMsg.isReplyTo(msg)))
 		if rxMsg.runState == AwlSimMessage_RUNSTATE.STATE_RUN:
 			return True
 		return False
@@ -500,7 +499,8 @@ class AwlSimClient(object):
 		msg = AwlSimMessage_GET_AWLSRC(identHash)
 		if sync:
 			rxMsg = self.__sendAndWait(msg,
-				lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_AWLSRC)
+				lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_AWLSRC and
+					       rxMsg.isReplyTo(msg)))
 			return rxMsg.source
 		else:
 			self.__send(msg)
@@ -563,7 +563,8 @@ class AwlSimClient(object):
 		msg = AwlSimMessage_GET_SYMTABSRC(identHash)
 		if sync:
 			rxMsg = self.__sendAndWait(msg,
-				lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_SYMTABSRC)
+				lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_SYMTABSRC and
+					       rxMsg.isReplyTo(msg)))
 			return rxMsg.source
 		else:
 			self.__send(msg)
@@ -734,7 +735,8 @@ class AwlSimClient(object):
 			return None
 		msg = AwlSimMessage_GET_CPUSPECS()
 		rxMsg = self.__sendAndWait(msg,
-			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSPECS)
+			lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSPECS and
+				       rxMsg.isReplyTo(msg)))
 		return rxMsg.cpuspecs
 
 	def setCpuSpecs(self, cpuspecs):
@@ -751,7 +753,8 @@ class AwlSimClient(object):
 			return None
 		msg = AwlSimMessage_GET_CPUCONF()
 		rxMsg = self.__sendAndWait(msg,
-			lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUCONF)
+			lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_CPUCONF and
+				       rxMsg.isReplyTo(msg)))
 		return rxMsg.cpuconf
 
 	def setCpuConf(self, cpuconf):
@@ -838,7 +841,8 @@ class AwlSimClient(object):
 		msg = AwlSimMessage_GET_CPUSTATS()
 		if sync:
 			rxMsg = self.__sendAndWait(msg,
-				lambda rxMsg: rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSTATS)
+				lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_CPUSTATS,
+					       rxMsg.isReplyTo(msg)))
 			return rxMsg
 		else:
 			self.__send(msg)
