@@ -454,6 +454,7 @@ class AwlSimClient(object):
 				   ignoreMaintenanceRequests=False):
 		def checkRxMsg(rxMsg):
 			return rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and\
+			       (rxMsg.hdrFlags & AwlSimMessage.HDR_FLAG_REPLY) and\
 			       rxMsg.replyToId == msg.msgId and\
 			       rxMsg.replyToSeq == msg.seq
 		return self.__sendAndWait(msg, checkRxMsg, timeout,
