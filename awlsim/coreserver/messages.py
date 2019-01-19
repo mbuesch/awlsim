@@ -32,6 +32,7 @@ from awlsim.common.blockinfo import *
 from awlsim.common.net import *
 from awlsim.common.sources import *
 from awlsim.common.exceptions import *
+from awlsim.common.monotonic import * #+cimport
 
 from awlsim.coreserver.memarea import *
 
@@ -1596,6 +1597,13 @@ class AwlSimMessageTransceiver(object):
 		self.__haveCork = hasattr(socket, "TCP_CORK")
 		self.__haveCork = False #XXX disabled
 
+		self.__debugEnabled = Logging.getLogLevel() >= Logging.LOG_VERBOSE
+		self.__debugTime = monotonic_time()
+		self.__debugTx = 0
+		self.__debugTxLen = 0
+		self.__debugRx = 0
+		self.__debugRxLen = 0
+
 		# Transmit status
 		self.txSeqCount = 0
 
@@ -1654,6 +1662,34 @@ class AwlSimMessageTransceiver(object):
 					     socket.TCP_CORK,
 					     1 if cork else 0)
 
+	def __dump(self, prefix, timeDiff, nrMsg, nrBytes):
+		bytePerSec = nrBytes / timeDiff
+		msgPerSec = nrMsg / timeDiff
+		printVerbose("%s:  %s msg/s  %s bytes/s" % (
+			     prefix,
+			     floatToHumanReadable(msgPerSec, binary=False),
+			     floatToHumanReadable(bytePerSec, binary=True)))
+
+	def __dumpStats(self):
+		now = monotonic_time()
+		timeDiff = now - self.__debugTime
+		if timeDiff >= 5.0:
+			self.__debugTime = now
+			self.__dump("TX", timeDiff, self.__debugTx, self.__debugTxLen)
+			self.__debugTx = self.__debugTxLen = 0
+			self.__dump("RX", timeDiff, self.__debugRx, self.__debugRxLen)
+			self.__debugRx = self.__debugRxLen = 0
+
+	def __accountTx(self, msgLen):
+		self.__debugTx += 1
+		self.__debugTxLen += msgLen
+		self.__dumpStats()
+
+	def __accountRx(self, msgLen):
+		self.__debugRx += 1
+		self.__debugRxLen += msgLen
+		self.__dumpStats()
+
 	def send(self, msg, timeout=None):
 		if timeout != self.__timeout:
 			self.sock.settimeout(timeout)
@@ -1671,6 +1707,8 @@ class AwlSimMessageTransceiver(object):
 				transferError = TransferError(None, parentException=e)
 				if transferError.reason != TransferError.REASON_BLOCKING:
 					raise transferError
+		if self.__debugEnabled:
+			self.__accountTx(datalen)
 
 	def receive(self, timeout=0.0):
 		if timeout != self.__timeout:
@@ -1744,6 +1782,8 @@ class AwlSimMessageTransceiver(object):
 		msg.replyToId = self.replyToId
 		msg.replyToSeq = self.replyToSeq
 		self.__resetRxBuf()
+		if self.__debugEnabled:
+			self.__accountRx(msgLen)
 		return msg
 
 	def __resetRxBuf(self):
