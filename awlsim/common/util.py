@@ -458,13 +458,27 @@ def shortUUID(uuidStr):
 		uuidStr = uuidStr[0:8] + ".." + uuidStr[-6:-1]
 	return uuidStr
 
-def floatToHumanReadable(f):
+def floatToHumanReadable(f, binary=False):
+	"""Convert a float to a human readable string.
+	"""
 	f = float(f)
 	fAbs = abs(f)
-	if fAbs >= 1000000.0:
-		fStr = "%.02f M" % (f / 1000000.0)
-	elif fAbs >= 1000.0:
-		fStr = "%.02f k" % (f / 1000.0)
+	if binary:
+		divs = (
+			(1024.0 ** 3, "Gi"),
+			(1024.0 ** 2, "Mi"),
+			(1024.0 ** 1, "Ki"),
+		)
+	else:
+		divs = (
+			(1000.0 ** 3, "G"),
+			(1000.0 ** 2, "M"),
+			(1000.0 ** 1, "k"),
+		)
+	for div, pfx in divs:
+		if fAbs >= div:
+			fStr = "%.02f %s" % (f / div, pfx)
+			break
 	else:
 		fStr = "%.02f" % f
 	return fStr
