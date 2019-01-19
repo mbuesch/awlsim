@@ -13,7 +13,7 @@ Group=@GROUP@
 Nice=-15
 
 ExecStart=@PYTHON@ @PREFIX@/bin/awlsim-server -l localhost -4 -w @PROJECT@
-ExecStartPost=-@PYTHON@ @PREFIX@/bin/awlsim-client -C localhost -r RUN
+ExecStartPost=-@PYTHON@ @PREFIX@/bin/awlsim-client -c localhost -r RUN
 
 Environment=PYTHONPATH=@PYTHON_SITE@ PYTHONHASHSEED=0 PYTHONOPTIMIZE=2 PYTHONDONTWRITEBYTECODE=1 AWLSIM_CYTHON=1 AWLSIM_SCHED=realtime AWLSIM_PRIO=50 AWLSIM_AFFINITY=-1
 
