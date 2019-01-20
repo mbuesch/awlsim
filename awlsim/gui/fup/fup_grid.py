@@ -25,6 +25,8 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.awloptimizer.awloptimizer import *
+
 from awlsim.gui.geo2d import *
 from awlsim.gui.fup.fup_base import *
 from awlsim.gui.fup.fup_wire import *

@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI utility functions
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import awlsim_loader.cython_helper as cython_helper
 from awlsim.common.monotonic import monotonic_time #+cimport
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.profiler import *
+from awlsim.core.datatypes import AwlDataType
 
 import sys
 import traceback
