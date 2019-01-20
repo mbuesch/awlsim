@@ -72,6 +72,8 @@ class EditMdiArea(QMdiArea):
 		QMdiArea.__init__(self, parent=mainWidget)
 		self.mainWidget = mainWidget
 
+		self.__onlineDiagMdiSubWin = None
+
 		# Init the editor find dialog.
 		SourceCodeEdit.initFindDialog(self)
 
@@ -267,12 +269,14 @@ class EditMdiArea(QMdiArea):
 
 		# Enable the active sub window, if possible.
 		if activeMdiSubWin and activeMdiSubWin.ONLINE_DIAG:
+			self.__onlineDiagMdiSubWin = activeMdiSubWin
 			if self.__onlineDiagEnabled:
 				activeMdiSubWin.enableOnlineDiag(True)
 			source = activeMdiSubWin.getSource()
 			fromLine, toLine = activeMdiSubWin.getVisibleLineRange()
 			self.visibleLinesChanged.emit(source, fromLine, toLine)
 		else:
+			self.__onlineDiagMdiSubWin = None
 			self.visibleLinesChanged.emit(None, -1, -1)
 
 	def __handleVisibleLinesChanged(self, mdiSubWin, source, visibleFromLine, visibleToLine):
@@ -285,7 +289,7 @@ class EditMdiArea(QMdiArea):
 		self.__refreshOnlineDiagState()
 
 	def handleInsnDump(self, insnDumpMsg):
-		mdiSubWin = self.activeOpenSubWindow
+		mdiSubWin = self.__onlineDiagMdiSubWin
 		if mdiSubWin:
 			mdiSubWin.handleInsnDump(insnDumpMsg)
 
