@@ -825,6 +825,8 @@ class CpuWidget(QWidget):
 					client.setInsnStateDump(enable=True,
 								sourceId=identHash,
 								fromLine=fromLine, toLine=toLine,
+								userData=42,
+								ob1Div=1,
 								sync=False)
 					self.__onlineDiagIdentHash = identHash
 					self.__onlineDiagFromLine = fromLine

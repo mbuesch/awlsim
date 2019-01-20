@@ -33,6 +33,8 @@ from awlsim.coreclient.sshtunnel import *
 from awlsim.coreclient.util import *
 
 from awlsim.coreserver.server import *
+from awlsim.coreserver.messages import *
+from awlsim.coreserver.memarea import *
 
 import sys
 import socket
@@ -709,19 +711,24 @@ class AwlSimClient(object):
 	# fromLine, toLine is the range of AWL line numbers for which
 	# dumping is enabled.
 	def setInsnStateDump(self, enable=True,
-			     sourceId=0, fromLine=1, toLine=0x7FFFFFFF,
+			     sourceId=b"", fromLine=1, toLine=0x7FFFFFFF,
+			     ob1Div=1,
+			     userData=0,
 			     sync=True):
 		if not self.__transceiver:
 			return None
 		msg = AwlSimMessage_INSNSTATE_CONFIG(
-			flags = 0,
-			sourceId = sourceId,
-			fromLine = fromLine,
-			toLine = toLine)
+			flags=0,
+			sourceId=sourceId,
+			fromLine=fromLine,
+			toLine=toLine,
+			ob1Div=ob1Div,
+			userData=userData)
 		if enable:
 			msg.flags |= msg.FLG_CLEAR
+			msg.flags |= msg.FLG_SET
 		else:
-			msg.flags |= msg.FLG_CLEAR_ONLY
+			msg.flags |= msg.FLG_CLEAR
 		if sync:
 			msg.flags |= msg.FLG_SYNC
 			status = self.__sendAndWaitFor_REPLY(msg)

@@ -58,6 +58,25 @@ import gc
 #from posix.time cimport timeval #@cy-posix
 
 
+__all__ = [
+	"AwlSimServer",
+]
+
+
+class InsnStateDump(object):
+	"""Instruction dump state."""
+
+	def __init__(self):
+		# AWL line numbers that a dump is requested for.
+		self.enabledLines = set()
+		# Reply message queue.
+		self.msgs = []
+		# OB1 divider
+		self.ob1Div = 1
+		self.ob1Count = 0
+		# Opaque user data
+		self.userData = 0
+
 class AwlSimClientInfo(object):
 	"""Client information."""
 
@@ -74,11 +93,11 @@ class AwlSimClientInfo(object):
 		self.dumpInterval = 0
 		self.nextDump = 0
 
-		# Instruction state dump: Enabled lines.
-		# dict key: AWL source ID number.
-		# dict values: range() of AWL line numbers.
-		self.insnStateDump_enabledLines = {}
-		self.insnStateDump_msgs = []
+		# Instruction state dump state.
+		# dict key: AWL source ID.
+		# dict value: InsnStateDump()
+		self.insnStateDump = {}
+		self.insnStateDumpEnabled = False
 
 		# Memory read requests
 		self.memReadRequestMsg = None
@@ -488,7 +507,8 @@ class AwlSimServer(object): #+cdef
 			# Reset instruction state dump.
 			self.__insnSerial = 0
 			for client in self.__clients:
-				client.insnStateDump_msgs = []
+				for insnStateDump in dictValues(client.insnStateDump):
+					insnStateDump.msgs = []
 
 		if runstate == self._STATE_INIT:
 			# We just entered initialization state.
@@ -598,29 +618,32 @@ class AwlSimServer(object): #+cdef
 		cpu = self.__sim.cpu
 		sourceId = insn.getSourceId()
 		lineNr = insn.getLineNr()
-		msg = None
 		for client in self.__clients:
-			_range = client.insnStateDump_enabledLines.get(sourceId, None)
-			if not _range:
+			if not client.insnStateDumpEnabled:
 				continue
-			if lineNr not in _range:
+			if not sourceId in client.insnStateDump:
 				continue
-			if not msg:
-				msg = AwlSimMessage_INSNSTATE(
-					sourceId,
-					lineNr & 0xFFFFFFFF,
-					self.__insnSerial,
-					0,
-					cpu.statusWord.getWord(),
-					cpu.accu1.get(),
-					cpu.accu2.get(),
-					cpu.accu3.get(),
-					cpu.accu4.get(),
-					cpu.ar1.get(),
-					cpu.ar2.get(),
-					cpu.dbRegister.index & 0xFFFF,
-					cpu.diRegister.index & 0xFFFF)
-			client.insnStateDump_msgs.append(msg)
+			insnStateDump = client.insnStateDump[sourceId]
+			if lineNr not in insnStateDump.enabledLines:
+				continue
+			if insnStateDump.ob1Count < insnStateDump.ob1Div - 1:
+				continue
+			msg = AwlSimMessage_INSNSTATE(
+				sourceId,
+				lineNr & 0xFFFFFFFF,
+				self.__insnSerial,
+				0, # flags
+				cpu.statusWord.getWord(),
+				cpu.accu1.get(),
+				cpu.accu2.get(),
+				cpu.accu3.get(),
+				cpu.accu4.get(),
+				cpu.ar1.get(),
+				cpu.ar2.get(),
+				cpu.dbRegister.index & 0xFFFF,
+				cpu.diRegister.index & 0xFFFF,
+				insnStateDump.userData)
+			insnStateDump.msgs.append(msg)
 		self.__insnSerial += 1
 
 	def __printCpuStats(self):
@@ -635,15 +658,26 @@ class AwlSimServer(object): #+cdef
 		# Send instruction dump messages.
 		broken = False
 		for client in self.__clients:
-			msgs = client.insnStateDump_msgs
-			if msgs:
-				try:
-					client.transceiver.send(msgs)
-				except TransferError as e:
-					client.broken = broken = True
-				client.insnStateDump_msgs = []
+			if client.insnStateDumpEnabled:
+				# Collect all messages for all sources.
+				msgs = []
+				for insnStateDump in dictValues(client.insnStateDump):
+					msgs.extend(insnStateDump.msgs)
+					insnStateDump.msgs = []
+
+					# Update OB1 cycle counter/divider.
+					insnStateDump.ob1Count += 1
+					if insnStateDump.ob1Count >= insnStateDump.ob1Div:
+						insnStateDump.ob1Count = 0
+				# Send all messages to the client.
+				if msgs:
+					try:
+						client.transceiver.send(msgs)
+					except TransferError as e:
+						client.broken = broken = True
 		if broken:
 			self.__removeBrokenClients()
+		# The next cycle shall start with serial 0.
 		self.__insnSerial = 0
 
 		# Print CPU stats, if requested.
@@ -664,15 +698,15 @@ class AwlSimServer(object): #+cdef
 			self.__sim.cpu.setBlockExitCallback(None)
 
 	def __updateCpuPostInsnCallback(self):
-		if any(c.insnStateDump_enabledLines for c in self.__clients):
+		if any(c.insnStateDumpEnabled for c in self.__clients):
 			self.__sim.cpu.setPostInsnCallback(self.__cpuPostInsnCallback, None)
 		else:
 			self.__sim.cpu.setPostInsnCallback(None)
 
 	def __updateCpuCycleExitCallback(self):
-		if any(c.insnStateDump_enabledLines for c in self.__clients) or\
-		   Logging.loglevel >= Logging.LOG_VERBOSE or\
-		   self.__cycleExitHook:
+		if (any(c.insnStateDumpEnabled for c in self.__clients) or
+		    Logging.loglevel >= Logging.LOG_VERBOSE or
+		    self.__cycleExitHook):
 			self.__sim.cpu.setCycleExitCallback(self.__cpuCycleExitCallback, None)
 		else:
 			self.__sim.cpu.setCycleExitCallback(None)
@@ -1107,14 +1141,62 @@ class AwlSimServer(object): #+cdef
 	def __rx_INSNSTATE_CONFIG(self, client, msg):
 		printDebug("Received message: INSNSTATE_CONFIG")
 		status = AwlSimMessage_REPLY.STAT_OK
-		if msg.flags & (msg.FLG_CLEAR | msg.FLG_CLEAR_ONLY):
-			client.insnStateDump_enabledLines = {}
-		if not (msg.flags & msg.FLG_CLEAR_ONLY):
-			_range = range(msg.fromLine, msg.toLine + 1)
-			client.insnStateDump_enabledLines[msg.sourceId] = _range
-		if not client.insnStateDump_enabledLines:
-			client.insnStateDump_msgs = []
+
+		if msg.flags & msg.FLG_CLEAR:
+			# Clear dump requests on this client.
+			if msg.sourceId:
+				# Only for the selected source.
+				if msg.sourceId in client.insnStateDump:
+					del client.insnStateDump[msg.sourceId]
+			else:
+				# Clear all.
+				client.insnStateDump = {}
+
+		if msg.flags & msg.FLG_SET:
+			if msg.sourceId:
+				# Get the dump request structure or create a new one.
+				if msg.sourceId in client.insnStateDump:
+					insnStateDump = client.insnStateDump[msg.sourceId]
+				else:
+					insnStateDump = InsnStateDump()
+					client.insnStateDump[msg.sourceId] = insnStateDump
+
+				# Add the new lines to the enabled-lines set.
+				fromLine = msg.fromLine
+				toLine = msg.toLine
+				if fromLine >= 0 and toLine >= 0 and toLine >= fromLine:
+					maxLines = max(100000 - len(insnStateDump.enabledLines), 0)
+					if toLine - fromLine > maxLines:
+						toLine = fromLine + maxLines
+					rangeSet = set(range(fromLine, toLine + 1))
+				else:
+					rangeSet = set()
+				insnStateDump.enabledLines |= rangeSet
+
+				# Clear message queue.
+				if not insnStateDump.enabledLines:
+					insnStateDump.msgs = []
+
+				# Store OB1 divider.
+				insnStateDump.ob1Div = clamp(msg.ob1Div, 1, 1024 * 16)
+				# Store opaque user data.
+				insnStateDump.userData = msg.userData
+			else:
+				status = AwlSimMessage_REPLY.STAT_FAIL
+
+		# Set the client-wide enable-flag, if any dump is enabled.
+		if any(bool(insnStateDump.enabledLines)
+		       for insnStateDump in dictValues(client.insnStateDump)):
+			client.insnStateDumpEnabled = True
+			printVerbose("Instruction state dumping enabled")
+		else:
+			client.insnStateDumpEnabled = False
+			printVerbose("Instruction state dumping disabled")
+
+		# Setup or remove the CPU callbacks.
 		self.__updateCpuCallbacks()
+
+		# Send reply to the client.
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
