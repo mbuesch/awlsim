@@ -3,7 +3,7 @@
 #
 # AWL simulator - Run random AWL program
 #
-# Copyright 2018 Michael Buesch <m@bues.ch>
+# Copyright 2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ def process(seed):
 
 		procGen = subprocess.Popen(
 			[ sys.executable,
-			  os.path.join(awlsim_base, "misc", "gen_insnbench.py"),
+			  os.path.join(awlsim_base, "maintenance", "benchmark", "generate_benchmark.py"),
 			  "--seed", str(seed), "--one-cycle" ],
 			stdout=subprocess.PIPE,
 			shell=False)
