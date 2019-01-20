@@ -263,6 +263,9 @@ class CpuWidget(QWidget):
 		self.__onlineBtnPressed = False
 		self.__runBtnPressed = False
 		self.__onlineDiagBtnPressed = False
+		self.__onlineDiagIdentHash = None
+		self.__onlineDiagFromLine = None
+		self.__onlineDiagToLine = None
 
 		self.__coreMsgTimer = QTimer(self)
 		self.__coreMsgTimer.setSingleShot(False)
@@ -815,12 +818,23 @@ class CpuWidget(QWidget):
 		try:
 			client = self.getSimClient()
 			if self.__onlineDiagBtnPressed and source:
-				client.setInsnStateDump(enable=True,
-							sourceId=source.identHash,
-							fromLine=fromLine, toLine=toLine,
-							sync=False)
+				identHash = source.identHash
+				if (self.__onlineDiagIdentHash != identHash or
+				    self.__onlineDiagFromLine != fromLine or
+				    self.__onlineDiagToLine != toLine):
+					client.setInsnStateDump(enable=True,
+								sourceId=identHash,
+								fromLine=fromLine, toLine=toLine,
+								sync=False)
+					self.__onlineDiagIdentHash = identHash
+					self.__onlineDiagFromLine = fromLine
+					self.__onlineDiagToLine = toLine
 			else:
-				client.setInsnStateDump(enable=False, sync=False)
+				if self.__onlineDiagIdentHash:
+					client.setInsnStateDump(enable=False, sync=False)
+					self.__onlineDiagIdentHash = None
+					self.__onlineDiagFromLine = None
+					self.__onlineDiagToLine = None
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
 				"Failed to setup instruction dumping", e)
