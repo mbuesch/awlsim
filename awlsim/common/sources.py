@@ -28,6 +28,9 @@ from awlsim.common.refmanager import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
 
+#from awlsim.core.blocks cimport CodeBlock #@cy
+#from awlsim.core.datablocks cimport DB #@cy
+
 import base64, binascii
 import hashlib
 
@@ -493,7 +496,6 @@ class SourceManager(ObjRefManager):
 		source managed here.
 		"""
 		from awlsim.core.blocks import CodeBlock #@nocy
-		#from awlsim.core.blocks cimport CodeBlock #@cy
 		return { ref.obj for ref in self.refs
 			 if isinstance(ref.obj, CodeBlock) }
 
@@ -502,7 +504,6 @@ class SourceManager(ObjRefManager):
 		source managed here.
 		"""
 		from awlsim.core.datablocks import DB #@nocy
-		#from awlsim.core.datablocks cimport DB #@cy
 		return { ref.obj for ref in self.refs
 			 if isinstance(ref.obj, DB) }
 
