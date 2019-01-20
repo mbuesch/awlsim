@@ -575,10 +575,19 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.validateDocument.connect(
 			lambda editWidget: self.validateDocument.emit())
 
+		self.windowStateChanged.connect(self.__handleWindowStateChange)
+
 		self.updateTitle()
 
 	def sizeHint(self):
 		return QSize(600, 500)
+
+	def resizeEvent(self, ev):
+		EditMdiSubWindow.resizeEvent(self, ev)
+		self.__emitVisibleLinesSignal()
+
+	def __handleWindowStateChange(self, oldState, newState):
+		self.__emitVisibleLinesSignal()
 
 	def updateTitle(self):
 		title = ""
