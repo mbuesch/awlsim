@@ -428,7 +428,6 @@ class _AwlSimMessage_source(AwlSimMessage):
 	#	reserved (32 bit)
 	#	reserved (32 bit)
 	#	sourceName (string)
-	#	sourceFilePath (string)
 	#	sourceBytes (bytes)
 	plStruct = struct.Struct(str(">IIIIIIII"))
 
@@ -438,6 +437,13 @@ class _AwlSimMessage_source(AwlSimMessage):
 	def __init__(self, source):
 		if not source:
 			source = self.sourceClass()
+		# If the source it file-backed, integrate it.
+		# Otherwise the source data will not be sent.
+		if source.isFileBacked():
+			source = source.dup()
+			source.forceNonFileBacked(source.name)
+		else:
+			source = source.dup()
 		self.source = source
 
 	def toBytes(self):
@@ -449,7 +455,6 @@ class _AwlSimMessage_source(AwlSimMessage):
 				flags |= self.FLAG_VOLATILE
 			pl = self.plStruct.pack(flags, 0, 0, 0, 0, 0, 0, 0) +\
 				self.packString(self.source.name) +\
-				self.packString(self.source.filepath) +\
 				self.packBytes(self.source.sourceBytes)
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
 		except ValueError:
@@ -464,15 +469,12 @@ class _AwlSimMessage_source(AwlSimMessage):
 			offset += cls.plStruct.size
 			name, cnt = cls.unpackString(payload, offset)
 			offset += cnt
-			filepath, cnt = cls.unpackString(payload, offset)
-			offset += cnt
 			sourceBytes, cnt = cls.unpackBytes(payload, offset)
 		except (ValueError, struct.error) as e:
 			raise TransferError("SOURCE: Data format error")
 		return cls(cls.sourceClass(name=name,
 					   enabled=(flags & cls.FLAG_ENABLED),
 					   volatile=(flags & cls.FLAG_VOLATILE),
-					   filepath=filepath,
 					   sourceBytes=sourceBytes))
 
 class AwlSimMessage_GET_SYMTABSRC(_AwlSimMessage_GET_source):
