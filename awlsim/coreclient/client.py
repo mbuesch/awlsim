@@ -429,14 +429,16 @@ class AwlSimClient(object):
 				 str(e), str(e.errno)))
 
 	def __sendAndWait(self, txMsg, checkRxMsg,
-			  waitTimeout=None,
+			  minTimeout=None,
 			  ignoreMaintenanceRequests=False):
 		waiter = MsgWaiter(checkRxMsg)
 		self.__msgWaiters.append(waiter)
 		try:
 			self.__send(txMsg)
 			now = monotonic_time()
-			timeout = self.__defaultTimeout if waitTimeout is None else waitTimeout
+			timeout = self.__defaultTimeout
+			if minTimeout is not None:
+				timeout = max(timeout, minTimeout)
 			timeout *= self.__timeoutFactor
 			end = now + timeout
 			while now < end:
@@ -452,13 +454,17 @@ class AwlSimClient(object):
 		finally:
 			self.__msgWaiters.remove(waiter)
 
-	def __sendAndWaitFor_REPLY(self, msg, timeout=None,
+	def __sendAndWaitFor_REPLY(self, msg,
+				   minTimeout=None,
 				   ignoreMaintenanceRequests=False):
 		def checkRxMsg(rxMsg):
 			return (rxMsg.msgId == AwlSimMessage.MSG_ID_REPLY and
 				rxMsg.isReplyTo(msg))
-		return self.__sendAndWait(msg, checkRxMsg, timeout,
-					  ignoreMaintenanceRequests).status
+		waiter = self.__sendAndWait(txMsg=msg,
+					    checkRxMsg=checkRxMsg,
+					    minTimeout=minTimeout,
+					    ignoreMaintenanceRequests=ignoreMaintenanceRequests)
+		return waiter.status
 
 	def reset(self):
 		if not self.__transceiver:
@@ -514,7 +520,7 @@ class AwlSimClient(object):
 		msg = AwlSimMessage_AWLSRC(awlSource)
 		self.__transceiver.txCork(True)
 		try:
-			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+			status = self.__sendAndWaitFor_REPLY(msg, minTimeout=10.0)
 		finally:
 			self.__transceiver.txCork(False)
 		if status != AwlSimMessage_REPLY.STAT_OK:
@@ -527,7 +533,7 @@ class AwlSimClient(object):
 		msg = AwlSimMessage_FUPSRC(fupSource)
 		self.__transceiver.txCork(True)
 		try:
-			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+			status = self.__sendAndWaitFor_REPLY(msg, minTimeout=10.0)
 		finally:
 			self.__transceiver.txCork(False)
 		if status != AwlSimMessage_REPLY.STAT_OK:
@@ -540,7 +546,7 @@ class AwlSimClient(object):
 		msg = AwlSimMessage_KOPSRC(kopSource)
 		self.__transceiver.txCork(True)
 		try:
-			status = self.__sendAndWaitFor_REPLY(msg, 10.0)
+			status = self.__sendAndWaitFor_REPLY(msg, minTimeout=10.0)
 		finally:
 			self.__transceiver.txCork(False)
 		if status != AwlSimMessage_REPLY.STAT_OK:
