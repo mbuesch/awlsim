@@ -433,9 +433,6 @@ class EditWidget(SourceCodeEdit):
 			"Did you know\n" + random.choice(self.__didYouKnow)
 		)
 
-	def getSourceId(self):
-		return self.__source.identHash
-
 	def shutdown(self):
 		pass
 
@@ -480,6 +477,9 @@ class EditWidget(SourceCodeEdit):
 		if self.__needSourceUpdate:
 			self.__updateSource()
 		return self.__source
+
+	def getSourceId(self):
+		return self.getSource().identHash
 
 	def setSettings(self, guiSettings):
 		self.enableAutoIndent(guiSettings.getEditorAutoIndentEn())
@@ -646,7 +646,7 @@ class EditWidget(SourceCodeEdit):
 		if self.__runState == RunState.STATE_RUN:
 			cpuHashes = [ s.identHash for s in identsMsg.awlSources ]
 			self.__setSourceMatchesCpuSource(
-				self.getSource().identHash in cpuHashes)
+				self.getSourceId() in cpuHashes)
 		else:
 			# The CPU is not in RUN state.
 			# We don't make a big deal out of code mismatch.
