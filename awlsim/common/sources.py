@@ -193,6 +193,7 @@ class GenericSource(object):
 		self.volatile = volatile
 
 		self.__identHash = None
+		self.__identHashForced = False
 
 	@property
 	def name(self):
@@ -202,6 +203,7 @@ class GenericSource(object):
 	def name(self, newName):
 		self.__name = newName
 		self.__identHash = None
+		self.__identHashForced = False
 
 	@property
 	def enabled(self):
@@ -211,6 +213,7 @@ class GenericSource(object):
 	def enabled(self, enabled):
 		self.__enabled = bool(enabled)
 		self.__identHash = None
+		self.__identHashForced = False
 
 	@property
 	def volatile(self):
@@ -227,7 +230,6 @@ class GenericSource(object):
 	@filepath.setter
 	def filepath(self, newFilepath):
 		self.__filepath = newFilepath
-		self.__identHash = None
 
 	@property
 	def sourceBytes(self):
@@ -242,6 +244,7 @@ class GenericSource(object):
 		"""
 		self.__sourceBytes = newSourceBytes
 		self.__identHash = None
+		self.__identHashForced = False
 
 	@property
 	def compatSourceBytes(self):
@@ -295,6 +298,7 @@ class GenericSource(object):
 	def identHash(self, identHash):
 		# Force the ident hash.
 		self.__identHash = identHash
+		self.__identHashForced = True
 
 	@property
 	def identHashStr(self):
@@ -368,12 +372,16 @@ class GenericSource(object):
 	def dup(self):
 		"""Duplicate this source. Returns a copy.
 		"""
-		return self.__class__(name=self.name,
-				      enabled=self.enabled,
-				      filepath=self.filepath,
-				      sourceBytes=self.sourceBytes[:],
-				      userData=self.userData,
-				      volatile=self.volatile)
+		new = self.__class__(name=self.name,
+				     enabled=self.enabled,
+				     filepath=self.filepath,
+				     sourceBytes=self.sourceBytes[:],
+				     userData=self.userData,
+				     volatile=self.volatile)
+		if self.__identHashForced:
+			# identHash has been forced. Copy that, too.
+			new.identHash = self.identHash
+		return new
 
 	def copyFrom(self, other,
 		     copyName=True,
