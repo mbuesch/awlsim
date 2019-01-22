@@ -287,11 +287,6 @@ class GenericSource(object):
 				bd.append(b'1')
 				bd.append(self.name.encode(self.ENCODING, "ignore"))
 			bd.append(b'1' if self.enabled else b'0')
-			if self.filepath:
-				bd.append(b'1')
-				bd.append(self.filepath.encode(self.ENCODING, "ignore"))
-			else:
-				bd.append(b'0')
 			bd.append(self.sourceBytes)
 			identHash = self.__identHash = self.IDENT_HASH(b'|'.join(bd)).digest()
 		return identHash
