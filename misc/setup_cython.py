@@ -341,6 +341,7 @@ def registerCythonModule(baseDir, sourceModName):
 			if baseName != "__init__":
 				# Create a distutils Extension for the module
 				extra_compile_args = []
+				extra_link_args = []
 				if not _isWindows:
 					extra_compile_args.append("-Wall")
 					extra_compile_args.append("-Wextra")
@@ -351,6 +352,10 @@ def registerCythonModule(baseDir, sourceModName):
 					extra_compile_args.append("-Wno-cast-function-type")
 					extra_compile_args.append("-Wno-maybe-uninitialized")
 					extra_compile_args.append("-Wno-type-limits")
+					if not profileEnabled:
+						# Disable all debugging symbols.
+						extra_compile_args.append("-g0")
+						extra_link_args.append("-Wl,--strip-all")
 				ext_modules.append(
 					_Cython_Distutils_Extension(
 						cyModName,
@@ -371,7 +376,8 @@ def registerCythonModule(baseDir, sourceModName):
 						include_dirs=[
 							os.path.join("libs", "cython_headers"),
 						],
-						extra_compile_args=extra_compile_args
+						extra_compile_args=extra_compile_args,
+						extra_link_args=extra_link_args
 					)
 				)
 
