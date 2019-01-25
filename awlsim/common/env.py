@@ -103,7 +103,7 @@ class AwlSimEnv(object):
 				affinity.append(cpuIndex)
 		except ValueError as e:
 			affinity = []
-		return affinity
+		return sorted(set(affinity))
 
 	SCHED_DEFAULT	= "default"	# Do not change the scheduling policy
 	SCHED_NORMAL	= "normal"	# Use non-realtime scheduling policy
