@@ -252,7 +252,6 @@ class AwlSimServer(object): #+cdef
 	def __init__(self):
 		self.__initTimeStamp = monotonic_time()
 		self.__startupTimeStamp = self.__initTimeStamp
-		self.__affinityEnabled = False
 		self.__rtSchedEnabled = False
 		self.__os_sched_yield = getattr(os, "sched_yield", None)
 		self.__gcManual = False
@@ -269,6 +268,10 @@ class AwlSimServer(object): #+cdef
 		self.__needOB10x = True
 		self.__projectFile = None
 		self.__projectWriteBack = False
+
+		self.__setupAffinitySets()
+		self.__setAffinity(core=True)
+
 		self.setRunState(self._STATE_INIT)
 
 		self.__nextStats = 0
@@ -355,28 +358,50 @@ class AwlSimServer(object): #+cdef
 			     projectWriteBack = projectWriteBack)
 		self.run()
 
-	def __setAffinity(self, enable=True):
-		"""Set the host CPU affinity to that what is set by AWLSIM_AFFINITY
-		environment variable, if enable==True.
+	def __setupAffinitySets(self):
+		"""Get the affinity settings and create the actual sets.
 		"""
-		self.__affinityEnabled = enable
-		affinity = AwlSimEnv.getAffinity()
-		if affinity:
-			if not enable:
-				# Disable CPU pinning.
-				affinity = list(range(multiprocessing.cpu_count()))
-			if hasattr(os, "sched_setaffinity"):
-				try:
-					os.sched_setaffinity(0, affinity)
-					printVerbose("Set host CPU scheduling "
-						     "affinity to %s." % str(affinity))
-				except (OSError, ValueError) as e: #@nocov
-					raise AwlSimError("Failed to set host CPU "
-						"affinity to %s: %s" % (
-						affinity, str(e)))
-			else: #@nocov
-				printError("Cannot set CPU affinity. "
-					   "os.sched_setaffinity is not available.")
+		affinityList = AwlSimEnv.getAffinity()
+		if affinityList:
+			# Let the Awlsim core run on the highest numbered CPU.
+			# Let the peripherals run on all other cores in the set,
+			# if there are more than one.
+			rawList = sorted(affinityList, reverse=True)
+			self.__affinitySetCore = frozenset(rawList[0:1])
+			self.__affinitySetPeripheral = self.__affinitySetCore
+			if len(rawList) > 1:
+				self.__affinitySetPeripheral = frozenset(rawList[1:])
+			printVerbose("Core host-CPU affinity mask: CPU %s" % (
+				     listToHumanStr(self.__affinitySetCore, lastSep="and")))
+			printVerbose("Peripheral host-CPU affinity mask: CPU %s" % (
+				     listToHumanStr(self.__affinitySetPeripheral, lastSep="and")))
+		else:
+			# Disable CPU pinning.
+			self.__affinitySetCore = None
+			self.__affinitySetPeripheral = None
+
+	def __setAffinity(self, core=True):
+		"""Set the host CPU affinity for core or perihperal use.
+		"""
+		if not self.__affinitySetCore:
+			return
+		if hasattr(os, "sched_setaffinity"):
+			try:
+				if core:
+					affinity = self.__affinitySetCore
+				else:
+					affinity = self.__affinitySetPeripheral
+				printVerbose("Setting host-CPU scheduling "
+					     "affinity for %s to host CPU %s." % (
+					     "CORE" if core else "PERIPHERAL",
+					     listToHumanStr(affinity, lastSep="and")))
+				os.sched_setaffinity(0, affinity)
+			except (OSError, ValueError) as e: #@nocov
+				raise AwlSimError("Failed to set host CPU "
+						  "affinity: %s" % str(e))
+		else: #@nocov
+			printError("Cannot set CPU affinity. "
+				   "os.sched_setaffinity is not available.")
 
 	def __setSched(self, allowRtPolicy=True):
 		"""Set the scheduling policy and priority to what is set by
@@ -514,33 +539,27 @@ class AwlSimServer(object): #+cdef
 			# We just entered initialization state.
 			printVerbose("Putting CPU into INIT state.")
 			self.__setSched(False)
-			self.__setAffinity(False)
 			self.__needOB10x = True
 		elif runstate == self.STATE_RUN:
 			# We just entered RUN state.
 			self.__setSched(True)
-			self.__setAffinity(False)
 			self.__startupTimeStamp = monotonic_time()
 			if self.__needOB10x:
 				printVerbose("CPU startup (OB 10x).")
 				self.__sim.startup()
 				self.__needOB10x = False
-			self.__setAffinity(True)
 			printVerbose("Putting CPU into RUN state.")
 		elif runstate == self.STATE_STOP:
 			# We just entered STOP state.
 			printVerbose("Putting CPU into STOP state.")
 			self.__setSched(False)
-			self.__setAffinity(False)
 		elif runstate == self.STATE_MAINTENANCE:
 			# We just entered MAINTENANCE state.
 			printVerbose("Putting CPU into MAINTENANCE state.")
 			self.__setSched(False)
-			self.__setAffinity(False)
 			self.__needOB10x = True
 		else:
 			self.__setSched(False)
-			self.__setAffinity(False)
 
 		# Select garbage collection mode.
 		if self.__gc_collect and self.__gc_get_count:
@@ -884,21 +903,19 @@ class AwlSimServer(object): #+cdef
 		printInfo("Loading hardware module '%s'..." % hwmodName)
 
 		# In case the hardware module spawns some threads make sure these
-		# do not inherit the host CPU affinity mask of the main thread.
-		affinity = self.__affinityEnabled
-		self.__setAffinity(False)
+		# inherit the affinity set for peripherals.
+		self.__setAffinity(core=False)
+		try:
+			hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
+			self.__sim.registerHardwareClass(hwClass=hwClass,
+							 parameters=hwmodDesc.getParameters())
 
-		hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
-		self.__sim.registerHardwareClass(hwClass = hwClass,
-						 parameters = hwmodDesc.getParameters())
-
-		self.loadedHwModules.append(hwmodDesc)
-		self.__updateProjectFile()
-
-		# Re-enable host CPU affinity mask, if it was enabled.
-		self.__setAffinity(affinity)
-
-		printInfo("Hardware module '%s' loaded." % hwmodName)
+			self.loadedHwModules.append(hwmodDesc)
+			self.__updateProjectFile()
+			printInfo("Hardware module '%s' loaded." % hwmodName)
+		finally:
+			# Go back to core affinity mask.
+			self.__setAffinity(core=True)
 
 	def loadLibraryBlock(self, libSelection):
 		self.setRunState(self.STATE_STOP)

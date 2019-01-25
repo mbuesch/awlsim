@@ -10,7 +10,8 @@ cdef class AwlSimServer(object):
 	cdef public double __initTimeStamp
 	cdef public double __startupTimeStamp
 	cdef public AwlSim __sim
-	cdef public _Bool __affinityEnabled
+	cdef public frozenset __affinitySetCore
+	cdef public frozenset __affinitySetPeripheral
 	cdef public _Bool __rtSchedEnabled
 	cdef public object __os_sched_yield
 	cdef public _Bool __gcManual
