@@ -3,7 +3,7 @@
 #
 # AWL simulator - Server interface
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@ def usage():
 	print(" -6|--force-ipv6         Force the use of IPv6.")
 	print(" -B|--background         Fork a background process")
 	print(" -w|--rw-project         Enable project file writing")
+	print(" -S|--allow-shutdown     Allow remote system shutdown")
 	print(" -L|--loglevel LVL       Set the log level:")
 	print("                         0: Log nothing")
 	print("                         1: Log errors")
@@ -68,13 +69,14 @@ def main():
 	opt_listen = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
 	opt_family = None
 	opt_background = False
+	opt_allowShutdown = False
 	opt_loglevel = Logging.LOG_INFO
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hl:46BwL:",
+			"hl:46BwSL:",
 			[ "help", "listen=", "force-ipv4", "force-ipv6",
-			  "background", "rw-project",
+			  "background", "rw-project", "allow-shutdown",
 			  "loglevel=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
@@ -104,6 +106,8 @@ def main():
 			opt_background = True
 		if o in ("-w", "--rw-project"):
 			opt_rwProject = True
+		if o in ("-S", "--allow-shutdown"):
+			opt_allowShutdown = True
 		if o in ("-L", "--loglevel"):
 			try:
 				opt_loglevel = int(v)
@@ -119,16 +123,21 @@ def main():
 	exitCode = ExitCodes.EXIT_OK
 	try:
 		Logging.setLoglevel(opt_loglevel)
+
+		commandMask = 0
+		if opt_allowShutdown:
+			commandMask |= AwlSimServer.CMDMSK_SHUTDOWN
+
 		if opt_background:
 			interpreter = sys.executable
 			assert(interpreter)
-			serverProcess = AwlSimServer.start(listenHost = opt_listen[0],
-							   listenPort = opt_listen[1],
-							   listenFamily = opt_family,
-							   forkInterpreter = interpreter,
-							   commandMask = 0,
-							   projectFile = opt_project,
-							   projectWriteBack = opt_rwProject)
+			serverProcess = AwlSimServer.start(listenHost=opt_listen[0],
+							   listenPort=opt_listen[1],
+							   listenFamily=opt_family,
+							   forkInterpreter=interpreter,
+							   commandMask=commandMask,
+							   projectFile=opt_project,
+							   projectWriteBack=opt_rwProject)
 			printInfo("Started awlsim server process (PID: %d)" %\
 				  serverProcess.pid)
 		else:
@@ -136,13 +145,13 @@ def main():
 				printInfo("*** Using accelerated CYTHON core "
 					  "(AWLSIM_CYTHON environment variable is set)")
 
-			exitCode = AwlSimServer.start(listenHost = opt_listen[0],
-						      listenPort = opt_listen[1],
-						      listenFamily = opt_family,
-						      forkInterpreter = None,
-						      commandMask = 0,
-						      projectFile = opt_project,
-						      projectWriteBack = opt_rwProject)
+			exitCode = AwlSimServer.start(listenHost=opt_listen[0],
+						      listenPort=opt_listen[1],
+						      listenFamily=opt_family,
+						      forkInterpreter=None,
+						      commandMask=commandMask,
+						      projectFile=opt_project,
+						      projectWriteBack=opt_rwProject)
 	except AwlSimError as e:
 		printError(e.getReport())
 		return ExitCodes.EXIT_ERR_SIM

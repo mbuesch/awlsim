@@ -96,6 +96,8 @@ def usage():
 	print("Actions to be performed on the server:")
 	print(" -r|--runstate RUN/STOP       Set the run state of the CPU.")
 	print(" -S|--stats                   Fetch and display CPU statistics.")
+	print(" --shutdown                   Shutdown the core server system.")
+	print(" --reboot                     Reboot the core server system.")
 
 def main():
 	opt_connect = (AwlSimServer.DEFAULT_HOST, AwlSimServer.DEFAULT_PORT)
@@ -114,7 +116,7 @@ def main():
 			"hc:t:L:sP:r:S",
 			[ "help", "connect=", "timeout=", "loglevel=",
 			  "ssh-tunnel", "ssh-passphrase=", "ssh-user=", "ssh-port=", "ssh-localport=", "ssh-exe=",
-			  "runstate=", "stats", ])
+			  "runstate=", "stats", "shutdown", "reboot", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -177,6 +179,10 @@ def main():
 				sys.exit(1)
 		if o in ("-S", "--stats"):
 			actions.append(("stats", None))
+		if o == "--shutdown":
+			actions.append(("shutdown", None))
+		if o == "--reboot":
+			actions.append(("reboot", None))
 	if args:
 		usage()
 		return ExitCodes.EXIT_ERR_CMDLINE
@@ -213,6 +219,10 @@ def main():
 				client.setRunState(actionValue)
 			elif action == "stats":
 				printCpuStats(client.getCpuStats(sync=True))
+			elif action == "shutdown":
+				client.shutdownCoreServerSystem()
+			elif action == "reboot":
+				client.rebootCoreServerSystem()
 			else:
 				assert(0)
 	except AwlSimError as e:

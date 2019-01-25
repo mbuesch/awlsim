@@ -277,8 +277,77 @@ class AwlSimMessage_PONG(AwlSimMessage):
 class AwlSimMessage_RESET(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_RESET
 
+	# Payload struct:
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+
+	plStruct = struct.Struct(str(">IIIIIIII"))
+
+	def __init__(self):
+		pass
+
+	def toBytes(self):
+		pl = self.plStruct.pack(0, 0, 0, 0, 0, 0, 0, 0)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			_, _, _, _, _, _, _, _ =\
+				cls.plStruct.unpack(payload)
+		except struct.error as e:
+			raise TransferError("RESET: Invalid data format")
+		return cls()
+
 class AwlSimMessage_SHUTDOWN(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_SHUTDOWN
+
+	EnumGen.start
+	SHUTDOWN_CORE		= EnumGen.item
+	SHUTDOWN_SYSTEM_HALT	= EnumGen.item
+	SHUTDOWN_SYSTEM_REBOOT	= EnumGen.item
+	EnumGen.end
+
+	SHUTDOWN_MAGIC = 0x7B8F
+
+	# Payload struct:
+	#	magic number		(16 bit)
+	#	shutdownType		(16 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+
+	plStruct = struct.Struct(str(">HHIIIIIII"))
+
+	def __init__(self, shutdownType):
+		self.shutdownType = shutdownType & 0xFFFF
+
+	def toBytes(self):
+		pl = self.plStruct.pack(self.SHUTDOWN_MAGIC,
+					self.shutdownType,
+					0, 0, 0, 0, 0, 0, 0)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			magic, shutdownType, _, _, _, _, _, _, _ =\
+				cls.plStruct.unpack(payload)
+			if magic != cls.SHUTDOWN_MAGIC:
+				raise TransferError("SHUTDOWN: Incorrect magic number")
+		except struct.error as e:
+			raise TransferError("SHUTDOWN: Invalid data format")
+		return cls(shutdownType)
 
 class AwlSimMessage_RUNSTATE(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_RUNSTATE
@@ -287,6 +356,17 @@ class AwlSimMessage_RUNSTATE(AwlSimMessage):
 	STATE_STOP	= EnumGen.item
 	STATE_RUN	= EnumGen.item
 	EnumGen.end
+
+	# Payload struct:
+	#	runState		(16 bit)
+	#	reserved		(16 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
+	#	reserved		(32 bit)
 
 	plStruct = struct.Struct(str(">HHIIIIIII"))
 
@@ -620,7 +700,7 @@ class AwlSimMessage_LIBSEL(AwlSimMessage):
 class AwlSimMessage_BUILD(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_BUILD
 
-	plStruct = struct.Struct(str(">16x"))
+	plStruct = struct.Struct(str(">32x"))
 
 	def toBytes(self):
 		try:

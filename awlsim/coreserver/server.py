@@ -956,9 +956,32 @@ class AwlSimServer(object): #+cdef
 		printDebug("Received message: SHUTDOWN")
 		status = AwlSimMessage_REPLY.STAT_FAIL
 		if self.__commandMask & AwlSimServer.CMDMSK_SHUTDOWN:
-			printInfo("Exiting due to shutdown command")
-			self.setRunState(self.STATE_EXIT)
-			status = AwlSimMessage_REPLY.STAT_OK
+			if msg.shutdownType == msg.SHUTDOWN_CORE:
+				printInfo("Exiting due to shutdown command")
+				self.setRunState(self.STATE_EXIT)
+				status = AwlSimMessage_REPLY.STAT_OK
+			elif msg.shutdownType == msg.SHUTDOWN_SYSTEM_HALT:
+				if osIsLinux:
+					printInfo("Halting system due to shutdown command")
+					self.setRunState(self.STATE_EXIT)
+					process = PopenWrapper(["/sbin/shutdown"],
+							       AwlSimEnv.getEnv())
+					process.wait()
+					status = AwlSimMessage_REPLY.STAT_OK
+				else:
+					printError("Halting system is not supported.")
+			elif msg.shutdownType == msg.SHUTDOWN_SYSTEM_REBOOT:
+				if osIsLinux:
+					printInfo("Rebooting system due to shutdown command")
+					self.setRunState(self.STATE_EXIT)
+					process = PopenWrapper(["/sbin/reboot"],
+							       AwlSimEnv.getEnv())
+					process.wait()
+					status = AwlSimMessage_REPLY.STAT_OK
+				else:
+					printError("Rebooting system is not supported.")
+			else:
+				printError("Unknown shutdown command")
 		client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
 	def __rx_RUNSTATE(self, client, msg):

@@ -188,9 +188,7 @@ class AwlSimClient(object):
 
 		if self.__transceiver:
 			with contextlib.suppress(AwlSimError, MaintenanceRequest):
-				msg = AwlSimMessage_SHUTDOWN()
-				status = self.__sendAndWaitFor_REPLY(msg)
-				if status != AwlSimMessage_REPLY.STAT_OK:
+				if not self.shutdownCoreServer():
 					printError("AwlSimClient: Failed to shut "
 						"down server via message")
 
@@ -859,4 +857,31 @@ class AwlSimClient(object):
 			return rxMsg
 		else:
 			self.__send(msg)
+		return True
+
+	def shutdownCoreServer(self):
+		"""Shut down the core server.
+		"""
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_SHUTDOWN(AwlSimMessage_SHUTDOWN.SHUTDOWN_CORE)
+		status = self.__sendAndWaitFor_REPLY(msg)
+		return status == AwlSimMessage_REPLY.STAT_OK
+
+	def shutdownCoreServerSystem(self):
+		"""Shut down the core server and the system it runs on.
+		"""
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_SHUTDOWN(AwlSimMessage_SHUTDOWN.SHUTDOWN_SYSTEM_HALT)
+		self.__send(msg)
+		return True
+
+	def rebootCoreServerSystem(self):
+		"""Reboot the core server and the system it runs on.
+		"""
+		if not self.__transceiver:
+			return False
+		msg = AwlSimMessage_SHUTDOWN(AwlSimMessage_SHUTDOWN.SHUTDOWN_SYSTEM_REBOOT)
+		self.__send(msg)
 		return True
