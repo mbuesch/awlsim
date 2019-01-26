@@ -41,6 +41,46 @@ from awlsim.gui.runstate import *
 from awlsim.gui.toolbars import *
 
 
+class LoadProgressDialog(QDialog):
+	def __init__(self, parent=None):
+		QDialog.__init__(self, parent)
+		self.setLayout(QGridLayout())
+		self.setContentsMargins(30, 30, 30, 30)
+		self.setWindowModality(Qt.ApplicationModal)
+		self.__isShown = False
+		self.__icon = QLabel(self)
+		self.layout().addWidget(self.__icon, 0, 0)
+		self.layout().setColumnMinimumWidth(1, 60)
+		self.__text = QLabel(self)
+		self.layout().addWidget(self.__text, 0, 2)
+
+	def closeEvent(self, ev):
+		if self.__isShown:
+			ev.ignore()
+			return
+		QDialog.closeEvent(self, ev)
+
+	def showProgress(self):
+		self.__isShown = True
+		self.show()
+		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents, 50)
+
+	def hideProgress(self):
+		self.__isShown = False
+		self.hide()
+		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents, 50)
+
+	def setCpuRunState(self, cpuRunState):
+		if cpuRunState.state == cpuRunState.STATE_LOAD:
+			self.setWindowTitle("Awlsim - Downloading...")
+			self.__icon.setPixmap(getIcon("download").pixmap(64, 64))
+			self.__text.setText("Downloading project to CPU.\n\n"
+					    "Please be patient.\n"
+					    "This might take a few seconds.")
+			self.showProgress()
+		else:
+			self.hideProgress()
+
 class CpuDockWidget(QDockWidget):
 	def __init__(self, mainWidget, parent=None):
 		QDockWidget.__init__(self, "", parent)
@@ -511,6 +551,7 @@ class MainWidget(QWidget):
 		"""
 		self.__cpuRunState = cpuRunState
 		self.__updateStatusBar()
+		self.mainWindow.loadProgressDialog.setCpuRunState(cpuRunState)
 
 	def handleCpuStats(self, statsMsg):
 		"""Received new AwlSimMessage_CPUSTATS.
@@ -740,6 +781,8 @@ class MainWindow(QMainWindow):
 		self.__actProfileStop.setVisible(False)
 		self.menuBar().addMenu(menu)
 
+		self.__loadProgressDialog = LoadProgressDialog(self)
+
 		self.__sourceTextHasFocus = False
 		self.__dirtyChanged(MainWidget.DIRTY_NO)
 		self.__textFocusChanged(False)
@@ -777,6 +820,10 @@ class MainWindow(QMainWindow):
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
 
 		self.__restoreState()
+
+	@property
+	def loadProgressDialog(self):
+		return self.__loadProgressDialog
 
 	@property
 	def editMdiArea(self):
