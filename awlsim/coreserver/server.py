@@ -546,6 +546,18 @@ class AwlSimServer(object): #+cdef
 			self.__startupTimeStamp = monotonic_time()
 			if self.__needOB10x:
 				printVerbose("CPU startup (OB 10x).")
+
+				# In case the hardware module spawns some threads make sure these
+				# inherit the affinity set for peripherals.
+				self.__setAffinity(core=False)
+				try:
+					# Start the hardware modules.
+					self.__sim.hardwareStartup()
+				finally:
+					# Go back to core affinity mask.
+					self.__setAffinity(core=True)
+
+				# Run the CPU statup and the CPU statup OBs.
 				self.__sim.startup()
 				self.__needOB10x = False
 			printVerbose("Putting CPU into RUN state.")
@@ -899,13 +911,13 @@ class AwlSimServer(object): #+cdef
 		return srcManager
 
 	def loadHardwareModule(self, hwmodDesc):
-		hwmodName = hwmodDesc.getModuleName()
-		printInfo("Loading hardware module '%s'..." % hwmodName)
-
 		# In case the hardware module spawns some threads make sure these
 		# inherit the affinity set for peripherals.
 		self.__setAffinity(core=False)
 		try:
+			hwmodName = hwmodDesc.getModuleName()
+			printInfo("Loading hardware module '%s'..." % hwmodName)
+
 			hwClass = self.__sim.loadHardwareModule(hwmodDesc.getModuleName())
 			self.__sim.registerHardwareClass(hwClass=hwClass,
 							 parameters=hwmodDesc.getParameters())
