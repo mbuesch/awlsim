@@ -2,7 +2,7 @@
 #
 # AWL simulator - Profiler support
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ class Profiler(object):
 		"__profileModule",
 		"__pstatsModule",
 		"__profiler",
+		"__enableCount",
 	)
 
 	def __init__(self):
@@ -57,12 +58,17 @@ class Profiler(object):
 				"Cannot enable profiling.")
 
 		self.__profiler = self.__profileModule.Profile()
+		self.__enableCount = 0
 
 	def start(self):
-		self.__profiler.enable()
+		if self.__enableCount <= 0:
+			self.__profiler.enable()
+		self.__enableCount += 1
 
 	def stop(self):
-		self.__profiler.disable()
+		self.__enableCount = max(self.__enableCount - 1, 0)
+		if self.__enableCount <= 0:
+			self.__profiler.disable()
 
 	def getResult(self):
 		sio = StringIO()
