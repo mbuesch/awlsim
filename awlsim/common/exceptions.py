@@ -58,6 +58,7 @@ class AwlSimError(Exception):
 		self.sourceId = sourceId
 		self.sourceName = sourceName
 		self.seenByUser = False
+		self.reportOnly = False
 
 	def getMessage(self):
 		return self.message
@@ -227,6 +228,12 @@ class AwlSimError(Exception):
 
 	def setSeenByUser(self, seen=True):
 		self.seenByUser = seen
+
+	def getReportOnlyFlag(self):
+		return self.reportOnly
+
+	def setReportOnlyFlag(self, reportOnly):
+		self.reportOnly = reportOnly
 
 	def __repr__(self):
 		return self.getReport()

@@ -1292,39 +1292,43 @@ class AwlSimServer(object): #+cdef
 		reply.setReplyTo(msg)
 		client.transceiver.send(reply)
 
+	# Message receive control flags.
+	RXFLG_NONE	= 0		# No flags
+	RXFLG_EXFATAL	= 1 << 0	# AwlSimError exceptions are fatal
+
 	__msgRxHandlers = {
-		AwlSimMessage.MSG_ID_PING		: __rx_PING,
-		AwlSimMessage.MSG_ID_PONG		: __rx_PONG,
-		AwlSimMessage.MSG_ID_RESET		: __rx_RESET,
-		AwlSimMessage.MSG_ID_SHUTDOWN		: __rx_SHUTDOWN,
-		AwlSimMessage.MSG_ID_RUNSTATE		: __rx_RUNSTATE,
-		AwlSimMessage.MSG_ID_GET_RUNSTATE	: __rx_GET_RUNSTATE,
-		AwlSimMessage.MSG_ID_GET_AWLSRC		: __rx_GET_AWLSRC,
-		AwlSimMessage.MSG_ID_AWLSRC		: __rx_AWLSRC,
-		AwlSimMessage.MSG_ID_GET_SYMTABSRC	: __rx_GET_SYMTABSRC,
-		AwlSimMessage.MSG_ID_SYMTABSRC		: __rx_SYMTABSRC,
-		AwlSimMessage.MSG_ID_HWMOD		: __rx_HWMOD,
-		AwlSimMessage.MSG_ID_LIBSEL		: __rx_LIBSEL,
-		AwlSimMessage.MSG_ID_GET_FUPSRC		: __rx_GET_FUPSRC,
-		AwlSimMessage.MSG_ID_FUPSRC		: __rx_FUPSRC,
-#		AwlSimMessage.MSG_ID_GET_KOPSRC		: __rx_GET_KOPSRC,
-#		AwlSimMessage.MSG_ID_KOPSRC		: __rx_KOPSRC,
-		AwlSimMessage.MSG_ID_BUILD		: __rx_BUILD,
-		AwlSimMessage.MSG_ID_REMOVESRC		: __rx_REMOVESRC,
-		AwlSimMessage.MSG_ID_REMOVEBLK		: __rx_REMOVEBLK,
-#		AwlSimMessage.MSG_ID_GET_OPT		: __rx_GET_OPT,
-		AwlSimMessage.MSG_ID_OPT		: __rx_OPT,
-		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: __rx_GET_BLOCKINFO,
-		AwlSimMessage.MSG_ID_GET_CPUSPECS	: __rx_GET_CPUSPECS,
-		AwlSimMessage.MSG_ID_CPUSPECS		: __rx_CPUSPECS,
-		AwlSimMessage.MSG_ID_GET_CPUCONF	: __rx_GET_CPUCONF,
-		AwlSimMessage.MSG_ID_CPUCONF		: __rx_CPUCONF,
-		AwlSimMessage.MSG_ID_REQ_MEMORY		: __rx_REQ_MEMORY,
-		AwlSimMessage.MSG_ID_MEMORY		: __rx_MEMORY,
-		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: __rx_INSNSTATE_CONFIG,
-		AwlSimMessage.MSG_ID_GET_IDENTS		: __rx_GET_IDENTS,
-#		AwlSimMessage.MSG_ID_GET_CPUDUMP	: __rx_GET_CPUDUMP,
-		AwlSimMessage.MSG_ID_GET_CPUSTATS	: __rx_GET_CPUSTATS,
+		AwlSimMessage.MSG_ID_PING		: (__rx_PING,		RXFLG_NONE),
+		AwlSimMessage.MSG_ID_PONG		: (__rx_PONG,		RXFLG_NONE),
+		AwlSimMessage.MSG_ID_RESET		: (__rx_RESET,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_SHUTDOWN		: (__rx_SHUTDOWN,	RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_RUNSTATE		: (__rx_RUNSTATE,	RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_GET_RUNSTATE	: (__rx_GET_RUNSTATE,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_GET_AWLSRC		: (__rx_GET_AWLSRC,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_AWLSRC		: (__rx_AWLSRC,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_GET_SYMTABSRC	: (__rx_GET_SYMTABSRC,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_SYMTABSRC		: (__rx_SYMTABSRC,	RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_HWMOD		: (__rx_HWMOD,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_LIBSEL		: (__rx_LIBSEL,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_GET_FUPSRC		: (__rx_GET_FUPSRC,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_FUPSRC		: (__rx_FUPSRC,		RXFLG_EXFATAL),
+#		AwlSimMessage.MSG_ID_GET_KOPSRC		: (__rx_GET_KOPSRC,	RXFLG_NONE),
+#		AwlSimMessage.MSG_ID_KOPSRC		: (__rx_KOPSRC,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_BUILD		: (__rx_BUILD,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_REMOVESRC		: (__rx_REMOVESRC,	RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_REMOVEBLK		: (__rx_REMOVEBLK,	RXFLG_EXFATAL),
+#		AwlSimMessage.MSG_ID_GET_OPT		: (__rx_GET_OPT,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_OPT		: (__rx_OPT,		RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_GET_BLOCKINFO	: (__rx_GET_BLOCKINFO,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_GET_CPUSPECS	: (__rx_GET_CPUSPECS,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_CPUSPECS		: (__rx_CPUSPECS,	RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_GET_CPUCONF	: (__rx_GET_CPUCONF,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_CPUCONF		: (__rx_CPUCONF,	RXFLG_EXFATAL),
+		AwlSimMessage.MSG_ID_REQ_MEMORY		: (__rx_REQ_MEMORY,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_MEMORY		: (__rx_MEMORY,		RXFLG_NONE),
+		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: (__rx_INSNSTATE_CONFIG, RXFLG_NONE),
+		AwlSimMessage.MSG_ID_GET_IDENTS		: (__rx_GET_IDENTS,	RXFLG_NONE),
+#		AwlSimMessage.MSG_ID_GET_CPUDUMP	: (__rx_GET_CPUDUMP,	RXFLG_NONE),
+		AwlSimMessage.MSG_ID_GET_CPUSTATS	: (__rx_GET_CPUSTATS,	RXFLG_NONE),
 	}
 
 	def __clientCommTransferError(self, exception, client):
@@ -1339,6 +1343,7 @@ class AwlSimServer(object): #+cdef
 		self.__clientRemove(client)
 
 	def __handleClientComm(self, client): #+cdef
+		flags = self.RXFLG_EXFATAL
 		try:
 			msg = client.transceiver.receive(0.0)
 			if not msg:
@@ -1347,13 +1352,13 @@ class AwlSimServer(object): #+cdef
 				printInfo("Received unsupported "
 					  "message 0x%02X" % msg.msgId)
 				return
-			handler = self.__msgRxHandlers[msg.msgId]
+			handler, flags = self.__msgRxHandlers[msg.msgId]
 			handler(self, client, msg)
 		except AwlSimError as e:
-			# Communication error. Just log it.
-			# We don't forward this error to the main loop.
-			printError(e.getReport())
-			return
+			if not (flags & self.RXFLG_EXFATAL):
+				# Just report this nonfatal exception.
+				e.setReportOnlyFlag(True)
+			raise e
 		except TransferError as e:
 			self.__clientCommTransferError(e, client)
 			return
@@ -1625,17 +1630,21 @@ class AwlSimServer(object): #+cdef
 				printVerbose("Main loop exception: %s" % (
 					     e.getMessage()))
 
-				# Stop the CPU
-				self.setRunState(self.STATE_STOP)
-				# Schedule a CPU restart/rebuild.
-				self.__needOB10x = True
+				if not e.getReportOnlyFlag():
+					# Stop the CPU
+					self.setRunState(self.STATE_STOP)
+					# Schedule a CPU restart/rebuild.
+					self.__needOB10x = True
 
 				# Try to add more information to the exception.
 				self.__extendAwlSimError(e)
 
 				if self.__handleExceptionServerside:
 					# Let the server handle the exception
-					raise e
+					if e.getReportOnlyFlag():
+						printError(e.getReport())
+					else:
+						raise e
 				else:
 					# Send the exception to all clients.
 					msg = AwlSimMessage_EXCEPTION(e)
