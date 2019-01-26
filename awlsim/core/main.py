@@ -80,6 +80,7 @@ class AwlSim(object): #+cdef
 	def __init__(self):
 		self.__registeredHardware = []
 		self.__registeredHardwareCount = 0
+		self.__hwStartupRequired = True
 		self._fatalHwErrors = True
 		self.cpu = S7CPU()
 		self.cpu.setPeripheralReadCallback(self.__peripheralReadCallback)
@@ -180,7 +181,13 @@ class AwlSim(object): #+cdef
 	@profiled(2)
 	@throwsAwlSimError
 	def startup(self):
-		self.__hwStartup()
+		# Startup the hardware modules, if required.
+		if self.__hwStartupRequired:
+			self.hardwareStartup()
+		# Next time we need a startup again.
+		self.__hwStartupRequired = True
+
+		# Startup the CPU core.
 		try:
 			self.__readHwInputs()
 			self.cpu.startup()
@@ -240,6 +247,7 @@ class AwlSim(object): #+cdef
 		if hwClassInst.getParamValueByName("enabled"):
 			self.__registeredHardware.append(hwClassInst)
 			self.__registeredHardwareCount = len(self.__registeredHardware)
+			self.__hwStartupRequired = True
 
 	def registerHardwareClass(self, hwClass, parameters={}):
 		"""Register a new hardware interface class.
@@ -259,7 +267,9 @@ class AwlSim(object): #+cdef
 
 		return HwModLoader.loadModule(name).getInterface()
 
-	def __hwStartup(self):
+	@profiled(2)
+	@throwsAwlSimError
+	def hardwareStartup(self):
 		"""Startup all attached hardware modules.
 		"""
 
@@ -272,7 +282,8 @@ class AwlSim(object): #+cdef
 				hw.startup()
 			except AwlSimError as e:
 				# Always fatal in startup.
-				self._handleSimException(e, fatal = True)
+				self._handleSimException(e, fatal=True)
+		self.__hwStartupRequired = False
 
 #@cy	@cython.boundscheck(False)
 	def __readHwInputs(self): #+cdef

@@ -6,6 +6,7 @@ cdef class AwlSim(object):
 	cdef public _Bool _fatalHwErrors
 	cdef public list __registeredHardware
 	cdef public uint32_t __registeredHardwareCount
+	cdef public _Bool __hwStartupRequired
 
 	cdef public int32_t _profileLevel
 	cdef public object __profileModule
