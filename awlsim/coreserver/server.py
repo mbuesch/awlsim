@@ -403,9 +403,13 @@ class AwlSimServer(object): #+cdef
 			printError("Cannot set CPU affinity. "
 				   "os.sched_setaffinity is not available.")
 
-	def __setSched(self, allowRtPolicy=True):
+	def __setSched(self, allowRtPolicy=False, peripheral=False):
 		"""Set the scheduling policy and priority to what is set by
-		AWLSIM_SCHED and AWLSIM_PRIO environment variable, if enable==True.
+		AWLSIM_SCHED and AWLSIM_PRIO environment variable.
+		If allowRtPolicy is False, then don't allow any realtime policy
+		and fall back to non-realtime.
+		If peripheral is True, then don't allow policies unsuitable for
+		peripheral threads. Fall back to sane alternatives.
 		"""
 		self.__rtSchedEnabled = False
 
@@ -413,19 +417,31 @@ class AwlSimServer(object): #+cdef
 		if (sched is not None and
 		    sched != AwlSimEnv.SCHED_DEFAULT):
 			if not allowRtPolicy:
+				# Realtime is not allowed.
+				# Fall back to NORMAL.
 				sched = AwlSimEnv.SCHED_NORMAL
 			policy = None
 			if sched == AwlSimEnv.SCHED_NORMAL:
 				policy = getattr(os, "SCHED_OTHER", None)
 				isRealtime = False
 			elif sched == AwlSimEnv.SCHED_FIFO:
-				policy = getattr(os, "SCHED_FIFO", None)
+				if peripheral:
+					# No FIFO for peripheral threads.
+					# Use RR instead.
+					policy = getattr(os, "SCHED_RR", None)
+				else:
+					policy = getattr(os, "SCHED_FIFO", None)
 				isRealtime = True
 			elif sched == AwlSimEnv.SCHED_RR:
 				policy = getattr(os, "SCHED_RR", None)
 				isRealtime = True
 			elif sched == AwlSimEnv.SCHED_DEADLINE:
-				policy = getattr(os, "SCHED_DEADLINE", None)
+				if peripheral:
+					# No DEADLINE for peripheral threads.
+					# Use RR instead.
+					policy = getattr(os, "SCHED_RR", None)
+				else:
+					policy = getattr(os, "SCHED_DEADLINE", None)
 				isRealtime = True
 				policy = None #TODO we also need to set the deadline scheduling parameters.
 			if policy is None: #@nocov
@@ -527,79 +543,94 @@ class AwlSimServer(object): #+cdef
 			# We are exiting. Cannot set another state.
 			return
 
-		if runstate == self.STATE_RUN or\
-		   runstate == self.STATE_STOP:
-			# Reset instruction state dump.
-			self.__insnSerial = 0
-			for client in self.__clients:
-				for insnStateDump in dictValues(client.insnStateDump):
-					insnStateDump.msgs = []
+		try:
+			if runstate == self.STATE_RUN or\
+			   runstate == self.STATE_STOP:
+				# Reset instruction state dump.
+				self.__insnSerial = 0
+				for client in self.__clients:
+					for insnStateDump in dictValues(client.insnStateDump):
+						insnStateDump.msgs = []
 
-		if runstate == self._STATE_INIT:
-			# We just entered initialization state.
-			printVerbose("Putting CPU into INIT state.")
-			self.__setSched(False)
-			self.__needOB10x = True
-		elif runstate == self.STATE_RUN:
-			# We just entered RUN state.
-			self.__setSched(True)
-			self.__startupTimeStamp = monotonic_time()
-			if self.__needOB10x:
-				printVerbose("CPU startup (OB 10x).")
+			if runstate == self._STATE_INIT:
+				# We just entered initialization state.
+				printVerbose("Putting CPU into INIT state.")
+				self.__setSched(allowRtPolicy=False)
+				self.__needOB10x = True
+			elif runstate == self.STATE_RUN:
+				# We just entered RUN state.
+				self.__startupTimeStamp = monotonic_time()
+				if self.__needOB10x:
+					printVerbose("CPU startup (OB 10x).")
 
-				# In case the hardware module spawns some threads make sure these
-				# inherit the affinity set for peripherals.
-				self.__setAffinity(core=False)
-				try:
-					# Start the hardware modules.
-					self.__sim.hardwareStartup()
-				finally:
-					# Go back to core affinity mask.
-					self.__setAffinity(core=True)
+					# In case the hardware module spawns some threads make sure these
+					# inherit the affinity set and sched policy for peripherals.
+					self.__setAffinity(core=False)
+					self.__setSched(allowRtPolicy=True,
+							peripheral=True)
+					try:
+						# Start the hardware modules.
+						self.__sim.hardwareStartup()
+					finally:
+						# Go back to core affinity mask and sched policy.
+						self.__setAffinity(core=True)
+						self.__setSched(allowRtPolicy=True,
+								peripheral=False)
 
-				# Run the CPU statup and the CPU statup OBs.
-				self.__sim.startup()
-				self.__needOB10x = False
-			printVerbose("Putting CPU into RUN state.")
-		elif runstate == self.STATE_STOP:
-			# We just entered STOP state.
-			printVerbose("Putting CPU into STOP state.")
-			self.__setSched(False)
-		elif runstate == self.STATE_MAINTENANCE:
-			# We just entered MAINTENANCE state.
-			printVerbose("Putting CPU into MAINTENANCE state.")
-			self.__setSched(False)
-			self.__needOB10x = True
-		else:
-			self.__setSched(False)
-
-		# Select garbage collection mode.
-		if self.__gc_collect and self.__gc_get_count:
-			# If we are in RUN state with realtime scheduling,
-			# use manual garbage collection.
-			gcMode = AwlSimEnv.getGcMode()
-			wantManual = (gcMode == AwlSimEnv.GCMODE_MANUAL or
-				      (gcMode == AwlSimEnv.GCMODE_RT and
-				       self.__rtSchedEnabled))
-			if runstate == self.STATE_RUN and wantManual:
-				# Manual GC
-				gc.disable()
-				self.__gcManual = True
-				self.__gcTriggerCounter = 0
-				printVerbose("Switched to MANUAL garbage collection.")
+					# Run the CPU statup and the CPU statup OBs.
+					self.__sim.startup()
+					self.__needOB10x = False
+				else:
+					# Set core sched policy.
+					self.__setSched(allowRtPolicy=True,
+							peripheral=False)
+				printVerbose("Putting CPU into RUN state.")
+			elif runstate == self.STATE_STOP:
+				# We just entered STOP state.
+				printVerbose("Putting CPU into STOP state.")
+				self.__setSched(allowRtPolicy=False)
+			elif runstate == self.STATE_MAINTENANCE:
+				# We just entered MAINTENANCE state.
+				self.__setSched(allowRtPolicy=False)
+				self.__needOB10x = True
 			else:
-				# Automatic GC
-				gc.enable()
+				self.__setSched(allowRtPolicy=False)
+
+
+			# Select garbage collection mode.
+			if self.__gc_collect and self.__gc_get_count:
+				# If we are in RUN state with realtime scheduling,
+				# use manual garbage collection.
+				gcMode = AwlSimEnv.getGcMode()
+				wantManual = (gcMode == AwlSimEnv.GCMODE_MANUAL or
+					      (gcMode == AwlSimEnv.GCMODE_RT and
+					       self.__rtSchedEnabled))
+				if runstate == self.STATE_RUN and wantManual:
+					# Manual GC
+					gc.disable()
+					self.__gcManual = True
+					self.__gcTriggerCounter = 0
+					printVerbose("Switched to MANUAL garbage collection.")
+				else:
+					# Automatic GC
+					gc.enable()
+					self.__gcManual = False
+					printVerbose("Switched to AUTO garbage collection.")
+			else:
+				# Manual GC control is not available.
 				self.__gcManual = False
 				printVerbose("Switched to AUTO garbage collection.")
-		else:
-			# Manual GC control is not available.
-			self.__gcManual = False
-			printVerbose("Switched to AUTO garbage collection.")
 
-		self.__state = runstate
-		# Make a shortcut variable for RUN
-		self.__running = bool(runstate == self.STATE_RUN)
+
+			self.__state = runstate
+			# Make a shortcut variable for RUN
+			self.__running = bool(runstate == self.STATE_RUN)
+
+		except Exception as e:
+			# An exception occurred. Go back to normal scheduling.
+			with suppressAllExc:
+				self.__setSched(allowRtPolicy=False)
+			raise e
 
 	def __getMnemonics(self):
 		return self.__sim.cpu.getConf().getMnemonics()
