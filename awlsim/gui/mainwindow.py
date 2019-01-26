@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI main window
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@ from awlsim.gui.icons import *
 from awlsim.gui.templatedialog import *
 from awlsim.gui.library import *
 from awlsim.gui.runstate import *
+from awlsim.gui.toolbars import *
 
 
 class CpuDockWidget(QDockWidget):
