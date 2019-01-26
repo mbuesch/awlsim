@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 from awlsim.gui.sourcecodeedit import *
+from awlsim.gui.runstate import *
 
 import random
 

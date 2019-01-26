@@ -32,6 +32,7 @@ from awlsim.gui.fup.fupwidget import FupWidget
 from awlsim.gui.sourcecodeedit import SourceCodeEdit
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
+from awlsim.gui.runstate import *
 
 
 __all__ = [

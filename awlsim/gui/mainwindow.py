@@ -37,6 +37,7 @@ from awlsim.gui.hwmodconfig import *
 from awlsim.gui.icons import *
 from awlsim.gui.templatedialog import *
 from awlsim.gui.library import *
+from awlsim.gui.runstate import *
 
 
 class CpuDockWidget(QDockWidget):

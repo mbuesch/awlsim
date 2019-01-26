@@ -29,6 +29,7 @@ from awlsim.library.libselection import AwlLibEntrySelection
 from awlsim.gui.cpuwidget import RunState
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
+from awlsim.gui.runstate import *
 from awlsim.gui.fup.fupwidget import FupFactory, FupWidget
 
 
