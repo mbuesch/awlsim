@@ -361,6 +361,12 @@ insnCollection = (
 		( "CC",		"FC 43"),
 	), (
 		( "UC",		"FC 44"),
+	), (
+		# Write some values to the HW module.
+		( "L",		"MW 50"),
+		( "+",		"1"),
+		( "T",		"MW 50"),
+		( "T",		"AW 0" )
 	)
 )
 
