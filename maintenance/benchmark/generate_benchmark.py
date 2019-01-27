@@ -349,7 +349,11 @@ insnCollection = (
 		( "NOP",	"0"),
 	), (
 		( "CALL",	"FC 42"),
+		( "CALL",	"FC 42"),
+		( "CALL",	"FC 42"),
 	), (
+		( "CALL",	"FB 45, DB 45"),
+		( "CALL",	"FB 45, DB 45"),
 		( "CALL",	"FB 45, DB 45"),
 	), (
 		( "SET",	""),
