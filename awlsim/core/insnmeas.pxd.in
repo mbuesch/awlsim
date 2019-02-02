@@ -1,0 +1,18 @@
+from awlsim.common.cython_support cimport *
+from awlsim.core.instructions.main cimport *
+
+
+cdef class InsnMeasData(object):
+	cdef public _Bool running
+	cdef public _Bool measured
+	cdef public double measStart
+	cdef public double cumRt
+	cdef public uint32_t count
+	cdef public double minRt
+	cdef public double maxRt
+
+cdef class InsnMeas(object):
+	cdef public object __perf_counter
+	cdef public list __data
+
+	cdef void meas(self, _Bool begin, uint32_t insnType)

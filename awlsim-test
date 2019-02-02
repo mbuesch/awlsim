@@ -68,6 +68,7 @@ def usage():
 	print("                         default:     Keep project settings (default)")
 	print("                         all:         Enable all optimizers")
 	print("                         off:         Disable all optimizers")
+	print(" --insn-meas OUTFILE   Detailed instruction timing measurements")
 	print(" -L|--loglevel LVL     Set the log level:")
 	print("                       0: Log nothing")
 	print("                       1: Log errors")
@@ -187,6 +188,7 @@ def readInputFile(inputFile):
 	return project
 
 def run(inputFile):
+	insnMeas = None
 	s = None
 	try:
 		if cython_helper.shouldUseCython():
@@ -279,6 +281,10 @@ def run(inputFile):
 			s.loadLibraryBlock(libSel)
 		for parseTree in parseTrees:
 			s.load(parseTree)
+		s.build()
+
+		if opt_insnMeas:
+			insnMeas = cpu.setupInsnMeas()
 
 		# Run the program
 		s.startup()
@@ -296,7 +302,16 @@ def run(inputFile):
 		printError(e.getReport())
 		return ExitCodes.EXIT_ERR_SIM
 	except KeyboardInterrupt as e:
-		pass
+		if insnMeas:
+			if insnMeas.haveAnyMeasurements:
+				if opt_insnMeas == "-":
+					insnMeas.dump()
+				else:
+					with open(opt_insnMeas, "wb") as fd:
+						fd.write(insnMeas.dumpCSV().encode("UTF-8"))
+			else:
+				printError("Instruction timing measurement: Not enough samples.")
+				return ExitCodes.EXIT_ERR_OTHER
 	except MaintenanceRequest as e:
 		if e.requestType in (MaintenanceRequest.TYPE_SHUTDOWN,
 				     MaintenanceRequest.TYPE_STOP,
@@ -505,6 +520,7 @@ def main():
 	global opt_clockMem
 	global opt_mnemonics
 	global opt_optimizers
+	global opt_insnMeas
 	global opt_hwmods
 	global opt_hwinfos
 	global opt_loglevel
@@ -524,6 +540,7 @@ def main():
 	opt_clockMem = None
 	opt_mnemonics = None
 	opt_optimizers = "default"
+	opt_insnMeas = None
 	opt_hwmods = []
 	opt_hwinfos = []
 	opt_loglevel = Logging.LOG_INFO
@@ -543,7 +560,8 @@ def main():
 			  "hardware=", "hardware-info=", "profile=",
 			  "loglevel=",
 			  "connect", "connect-to=", "spawn-backend", "interpreter=",
-			  "mem-read=", "mem-write=", ])
+			  "mem-read=", "mem-write=",
+			  "insn-meas=", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -600,6 +618,8 @@ def main():
 			except (ValueError, IndexError) as e:
 				printError("-O|--optimizers: Invalid optimization mode")
 				sys.exit(1)
+		if o == "--insn-meas":
+			opt_insnMeas = v
 		if o in ("-H", "--hardware"):
 			try:
 				v = v.split(':')

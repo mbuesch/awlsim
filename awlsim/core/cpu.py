@@ -62,6 +62,7 @@ from awlsim.core.lstack import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.obtemp import * #+cimport
 from awlsim.core.util import *
+from awlsim.core.insnmeas import * #+cimport
 
 from awlsim.awlcompiler.tokenizer import *
 from awlsim.awlcompiler.translator import *
@@ -513,6 +514,7 @@ class S7CPU(object): #+cdef
 		self.__callHelpers = self.__callHelpersDict		#@nocy
 		self.__rawCallHelpers = self.__rawCallHelpersDict	#@nocy
 
+		self.__insnMeas = None
 		self.__clockMemByteOffset = None
 		self.specs = S7CPUSpecs(self)
 		self.conf = S7CPUConfig(self)
@@ -792,6 +794,11 @@ class S7CPU(object): #+cdef
 
 		self.initializeTimestamp()
 
+	def setupInsnMeas(self):
+		if not self.__insnMeas:
+			self.__insnMeas = InsnMeas()
+		return self.__insnMeas
+
 	def setCycleExitCallback(self, cb, data=None):
 		self.cbCycleExit = cb
 		self.cbCycleExitData = data
@@ -839,6 +846,9 @@ class S7CPU(object): #+cdef
 #@cy		cdef LStackAllocator activeLStack
 #@cy		cdef uint32_t insnCount
 #@cy		cdef OBTempPresets presetHandler
+#@cy		cdef _Bool insnMeasEnabled
+#@cy		cdef _Bool postInsnCbEnabled
+#@cy		cdef _Bool blockExitCbEnabled
 
 		# Note: Bounds checking of the indexing operator [] is disabled
 		#       by @cython.boundscheck(False) in this method.
@@ -871,17 +881,30 @@ class S7CPU(object): #+cdef
 			presetHandler = self.obTempPresetHandlers[block.index]
 			presetHandler.generate(activeLStack.memory.getRawDataBytes())
 
+		insnMeasEnabled = self.__insnMeas is not None
+		postInsnCbEnabled = self.cbPostInsn is not None
+		blockExitCbEnabled = self.cbBlockExit is not None
+
 		# Run the user program cycle
 		while cse is not None:
 			while cse.ip < cse.nrInsns:
-				# Fetch the next instruction and run it.
-				insn, self.relativeJump = cse.insns[cse.ip], 1
-				insn.run()
-				if self.cbPostInsn is not None:
+				# Fetch the next instruction.
+				insn = cse.insns[cse.ip]
+				self.relativeJump = 1
+
+				# Execute the instruction.
+				if insnMeasEnabled: #+unlikely
+					self.__insnMeas.meas(True, insn.insnType)
+					insn.run()
+					self.__insnMeas.meas(False, insn.insnType)
+				else:
+					insn.run()
+				if postInsnCbEnabled: #+unlikely
 					self.cbPostInsn(cse, self.cbPostInsnData)
+
 				cse.ip += self.relativeJump
 				cse = self.callStackTop
-				self.__insnCount = insnCount = (self.__insnCount + 1) & 0x3FFFFFFF
+				self.__insnCount = insnCount = (self.__insnCount + 1) & 0x3FFFFFFF #+suffix-u
 
 				# Check if a timekeeping update is required.
 				if not (insnCount & self.__timestampUpdInterMask):
@@ -895,7 +918,7 @@ class S7CPU(object): #+cdef
 					if self.__runtimeLimit >= 0.0:
 						self.__checkRunTimeLimit()
 
-			if self.cbBlockExit is not None:
+			if blockExitCbEnabled: #+unlikely
 				self.cbBlockExit(self.cbBlockExitData)
 			cse, exitCse = cse.prevCse, cse
 			self.callStackTop = cse

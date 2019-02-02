@@ -2,7 +2,7 @@
 #
 # AWL simulator - Instruction types
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -205,6 +205,8 @@ class __AwlInsnTypesClass(object): #+cdef
 		# Special instructions for internal usage
 		self.TYPE_GENERIC_CALL	= EnumGen.item	# No mnemonic
 		self.TYPE_INLINE_AWL	= EnumGen.item	# No mnemonic
+		# Last element: Number of instruction types
+		self.NR_TYPES		= EnumGen.item
 		EnumGen.end
 
 		self.name2type_german = {

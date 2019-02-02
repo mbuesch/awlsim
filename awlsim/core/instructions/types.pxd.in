@@ -170,6 +170,8 @@ cdef class __AwlInsnTypesClass(object):
 	cdef public uint32_t TYPE_GENERIC_CALL
 	cdef public uint32_t TYPE_INLINE_AWL
 
+	cdef public uint32_t NR_TYPES
+
 	cdef public dict name2type_german
 	cdef public dict name2type_english
 	cdef public dict type2name_german
