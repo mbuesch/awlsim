@@ -244,7 +244,8 @@ class AwlOperator(object): #+cdef
 						"must be only one single character "
 						"long.")
 			else:
-				if self.isImmediate():
+				if (self.isImmediate() and
+				    self.operType != AwlOperatorTypes.IMM):
 					raise AwlSimError("Invalid immediate '%s'"
 						"for CHAR data type." %\
 						str(self))
