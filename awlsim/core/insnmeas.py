@@ -78,13 +78,18 @@ class InsnMeas(object): #+cdef
 		for i in range(AwlInsnTypes.NR_TYPES + 1):
 			self.__data[i] = InsnMeasData()
 
-		printInfo("Running instruction measurement offset calibration...")
-		for i in range(2000000):
+		self.__runOffsetCal()
+
+	def __runOffsetCal(self):
+		calTime = 3.0
+		printInfo("Running instruction measurement "
+			  "offset calibration (takes %.1f s)..." % (calTime))
+		calEnd = monotonic_time() + calTime
+		while monotonic_time() < calEnd:
 			self.meas(True, AwlInsnTypes.NR_TYPES)
 			self.meas(False, AwlInsnTypes.NR_TYPES)
-		measData = self.__data[AwlInsnTypes.NR_TYPES]
-		printInfo("Instruction measurement cal offset = %f us" % (
-			  measData.avgRt * 1000000.0))
+		printInfo("Instruction measurement cal offset = %.3f us" % (
+			  self.__calOffset * 1.0e6))
 
 	def meas(self, begin, insnType): #@nocy
 #@cy	cdef void meas(self, _Bool begin, uint32_t insnType):
