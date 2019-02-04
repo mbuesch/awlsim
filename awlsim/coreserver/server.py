@@ -1283,6 +1283,32 @@ class AwlSimServer(object): #+cdef
 		if msg.flags & msg.FLG_SYNC:
 			client.transceiver.send(AwlSimMessage_REPLY.make(msg, status))
 
+	def __rx_MEAS_CONFIG(self, client, msg):
+		printDebug("Received message: MEAS_CONFIG")
+		replyFlags = 0
+		replyStr = ""
+		insnMeas = None
+		if msg.flags & msg.FLG_ENABLE:
+			printDebug("Enabling instruction time measurements")
+			insnMeas = self.__sim.cpu.setupInsnMeas(True)
+			if not insnMeas:
+				replyFlags |= AwlSimMessage_MEAS.FLG_FAIL
+		else:
+			printDebug("Disabling instruction time measurements")
+			insnMeas = self.__sim.cpu.setupInsnMeas(False)
+		if msg.flags & msg.FLG_GETMEAS:
+			if insnMeas:
+				if msg.flags & msg.FLG_CSV:
+					replyStr = insnMeas.dumpCSV()
+				else:
+					replyStr = insnMeas.dump()
+				if replyStr:
+					replyFlags |= AwlSimMessage_MEAS.FLG_HAVEDATA
+		reply = AwlSimMessage_MEAS(flags=replyFlags,
+					   reportStr=replyStr)
+		reply.setReplyTo(msg)
+		client.transceiver.send(reply)
+
 	def __rx_GET_IDENTS(self, client, msg):
 		printDebug("Received message: GET_IDENTS")
 		awlSrcs = symSrcs = hwMods = libSels = fupSrcs = kopSrcs = ()
@@ -1357,6 +1383,7 @@ class AwlSimServer(object): #+cdef
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: (__rx_REQ_MEMORY,	RXFLG_NONE),
 		AwlSimMessage.MSG_ID_MEMORY		: (__rx_MEMORY,		RXFLG_NONE),
 		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: (__rx_INSNSTATE_CONFIG, RXFLG_NONE),
+		AwlSimMessage.MSG_ID_MEAS_CONFIG	: (__rx_MEAS_CONFIG,	RXFLG_NONE),
 		AwlSimMessage.MSG_ID_GET_IDENTS		: (__rx_GET_IDENTS,	RXFLG_NONE),
 #		AwlSimMessage.MSG_ID_GET_CPUDUMP	: (__rx_GET_CPUDUMP,	RXFLG_NONE),
 		AwlSimMessage.MSG_ID_GET_CPUSTATS	: (__rx_GET_CPUSTATS,	RXFLG_NONE),

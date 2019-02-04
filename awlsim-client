@@ -96,6 +96,8 @@ def usage():
 	print("Actions to be performed on the server:")
 	print(" -r|--runstate RUN/STOP       Set the run state of the CPU.")
 	print(" -S|--stats                   Fetch and display CPU statistics.")
+	print(" --meas-start                 Start instruction time measurements.")
+	print(" --meas-stop                  Stop instruction time measurements.")
 	print(" --shutdown                   Shutdown the core server system.")
 	print(" --reboot                     Reboot the core server system.")
 
@@ -116,7 +118,7 @@ def main():
 			"hc:t:L:sP:r:S",
 			[ "help", "connect=", "timeout=", "loglevel=",
 			  "ssh-tunnel", "ssh-passphrase=", "ssh-user=", "ssh-port=", "ssh-localport=", "ssh-exe=",
-			  "runstate=", "stats", "shutdown", "reboot", ])
+			  "runstate=", "stats", "meas-start", "meas-stop", "shutdown", "reboot", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -179,6 +181,10 @@ def main():
 				sys.exit(1)
 		if o in ("-S", "--stats"):
 			actions.append(("stats", None))
+		if o == "--meas-start":
+			actions.append(("meas-start", None))
+		if o == "--meas-stop":
+			actions.append(("meas-stop", None))
 		if o == "--shutdown":
 			actions.append(("shutdown", None))
 		if o == "--reboot":
@@ -219,6 +225,16 @@ def main():
 				client.setRunState(actionValue)
 			elif action == "stats":
 				printCpuStats(client.getCpuStats(sync=True))
+			elif action == "meas-start":
+				if not client.measStart():
+					printError("Failed to start measurements.")
+			elif action == "meas-stop":
+				reportData = client.measStop()
+				if reportData:
+					sys.stdout.write(reportData)
+					sys.stdout.flush()
+				else:
+					printError("Measurement failed. No data.")
 			elif action == "shutdown":
 				client.shutdownCoreServerSystem()
 			elif action == "reboot":

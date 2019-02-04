@@ -859,6 +859,45 @@ class AwlSimClient(object):
 			self.__send(msg)
 		return True
 
+	def measStart(self, sync=True):
+		"""Start instruction time measurements.
+		"""
+		if not self.__transceiver:
+			return None
+		msg = AwlSimMessage_MEAS_CONFIG(
+			flags=AwlSimMessage_MEAS_CONFIG.FLG_ENABLE)
+		if sync:
+			rxMsg = self.__sendAndWait(msg,
+				lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_MEAS,
+					       rxMsg.isReplyTo(msg)))
+			if rxMsg.flags & AwlSimMessage_MEAS.FLG_FAIL:
+				return False
+		else:
+			self.__send(msg)
+		return True
+
+	def measStop(self, csv=True, sync=True):
+		"""Stop instruction time measurements and
+		return the measurement report data string, if any.
+		"""
+		if not self.__transceiver:
+			return None
+		msg = AwlSimMessage_MEAS_CONFIG(
+			flags=AwlSimMessage_MEAS_CONFIG.FLG_GETMEAS)
+		if csv:
+			msg.flags |= AwlSimMessage_MEAS_CONFIG.FLG_CSV
+		if sync:
+			rxMsg = self.__sendAndWait(msg,
+				lambda rxMsg: (rxMsg.msgId == AwlSimMessage.MSG_ID_MEAS,
+					       rxMsg.isReplyTo(msg)))
+			if ((rxMsg.flags & AwlSimMessage_MEAS.FLG_FAIL) or
+			    not (rxMsg.flags & AwlSimMessage_MEAS.FLG_HAVEDATA)):
+				return ""
+			return rxMsg.reportStr
+		else:
+			self.__send(msg)
+		return ""
+
 	def shutdownCoreServer(self):
 		"""Shut down the core server.
 		"""

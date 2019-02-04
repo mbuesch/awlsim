@@ -794,10 +794,15 @@ class S7CPU(object): #+cdef
 
 		self.initializeTimestamp()
 
-	def setupInsnMeas(self):
-		if not self.__insnMeas:
-			self.__insnMeas = InsnMeas()
-		return self.__insnMeas
+	def setupInsnMeas(self, enable=True):
+		if enable:
+			if not self.__insnMeas:
+				self.__insnMeas = InsnMeas()
+			insnMeas = self.__insnMeas
+		else:
+			insnMeas = self.__insnMeas
+			self.__insnMeas = None
+		return insnMeas
 
 	def setCycleExitCallback(self, cb, data=None):
 		self.cbCycleExit = cb

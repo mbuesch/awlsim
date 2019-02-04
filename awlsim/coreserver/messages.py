@@ -149,6 +149,8 @@ class AwlSimMessage(object):
 	MSG_ID_MEMORY		= EnumGen.item
 	MSG_ID_INSNSTATE_CONFIG	= EnumGen.item
 	MSG_ID_INSNSTATE	= EnumGen.item
+	MSG_ID_MEAS_CONFIG	= EnumGen.item
+	MSG_ID_MEAS		= EnumGen.item
 	EnumGen.end
 
 	_bytesLenStruct = struct.Struct(str(">I"))
@@ -1299,6 +1301,101 @@ class AwlSimMessage_INSNSTATE_CONFIG(AwlSimMessage):
 			raise TransferError("INSNSTATE_CONFIG: Invalid data format")
 		return cls(flags, sourceId, fromLine, toLine, ob1Div, userData)
 
+class AwlSimMessage_MEAS(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_MEAS
+
+	# Payload data struct:
+	#	Flags (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	measurement report data (string)
+	plDataStruct = struct.Struct(str(">IIIIIIIIIIIIIIII"))
+
+	# Flags:
+	FLG_HAVEDATA		= 1 << 0
+	FLG_FAIL		= 1 << 1
+
+	def __init__(self, flags, reportStr):
+		self.flags = flags & 0xFFFFFFFF
+		self.reportStr = reportStr
+
+	def toBytes(self):
+		pl = self.plDataStruct.pack(self.flags,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		pl += self.packString(self.reportStr)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			offset = 0
+			flags, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _ =\
+				cls.plDataStruct.unpack_from(payload, offset)
+			offset += cls.plDataStruct.size
+			reportStr, offset = cls.unpackString(payload, offset)
+		except (struct.error, IndexError) as e:
+			raise TransferError("MEAS: Invalid data format")
+		return cls(flags, reportStr)
+
+class AwlSimMessage_MEAS_CONFIG(AwlSimMessage):
+	msgId = AwlSimMessage.MSG_ID_MEAS_CONFIG
+
+	# Payload data struct:
+	#	Flags (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	#	reserved (32 bit)
+	plDataStruct = struct.Struct(str(">IIIIIIIIIIIIIIII"))
+
+	# Flags:
+	FLG_ENABLE		= 1 << 0
+	FLG_GETMEAS		= 1 << 1
+	FLG_CSV			= 1 << 2
+
+	def __init__(self, flags):
+		self.flags = flags & 0xFFFFFFFF
+
+	def toBytes(self):
+		pl = self.plDataStruct.pack(
+			self.flags,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+		return AwlSimMessage.toBytes(self, len(pl)) + pl
+
+	@classmethod
+	def fromBytes(cls, payload):
+		try:
+			flags, _, _, _,\
+			_, _, _, _, _, _, _, _, _, _, _, _ =\
+				cls.plDataStruct.unpack_from(payload, 0)
+		except (struct.error, IndexError) as e:
+			raise TransferError("MEAS_CONFIG: Invalid data format")
+		return cls(flags)
+
 class AwlSimMessage_REMOVESRC(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_REMOVESRC
 
@@ -1674,10 +1771,12 @@ class AwlSimMessageTransceiver(object):
 		AwlSimMessage.MSG_ID_CPUDUMP		: AwlSimMessage_CPUDUMP,
 		AwlSimMessage.MSG_ID_REQ_MEMORY		: AwlSimMessage_REQ_MEMORY,
 		AwlSimMessage.MSG_ID_MEMORY		: AwlSimMessage_MEMORY,
-		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
-		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
 		AwlSimMessage.MSG_ID_GET_CPUSTATS	: AwlSimMessage_GET_CPUSTATS,
 		AwlSimMessage.MSG_ID_CPUSTATS		: AwlSimMessage_CPUSTATS,
+		AwlSimMessage.MSG_ID_INSNSTATE_CONFIG	: AwlSimMessage_INSNSTATE_CONFIG,
+		AwlSimMessage.MSG_ID_INSNSTATE		: AwlSimMessage_INSNSTATE,
+		AwlSimMessage.MSG_ID_MEAS_CONFIG	: AwlSimMessage_MEAS_CONFIG,
+		AwlSimMessage.MSG_ID_MEAS		: AwlSimMessage_MEAS,
 	}
 
 	DEFAULT_TX_BUF_SIZE	= 1024 * 100

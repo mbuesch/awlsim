@@ -305,7 +305,7 @@ def run(inputFile):
 		if insnMeas:
 			if insnMeas.haveAnyMeasurements:
 				if opt_insnMeas == "-":
-					insnMeas.dump()
+					writeStdout(insnMeas.dump())
 				else:
 					with open(opt_insnMeas, "wb") as fd:
 						fd.write(insnMeas.dumpCSV().encode("UTF-8"))

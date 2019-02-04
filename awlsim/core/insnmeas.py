@@ -127,11 +127,12 @@ class InsnMeas(object): #+cdef
 	def dump(self):
 		if not self.haveAnyMeasurements:
 			return
-		printInfo("")
-		printInfo("Instruction time measurements:")
+		ret = []
+		ret.append("Instruction time measurements:")
 		for insnType, measData in self.__allMeasData:
 			name = AwlInsnTypes.type2name_german[insnType]
-			printInfo(measData.dump(name))
+			ret.append(measData.dump(name))
+		return "\n".join(ret) + "\n"
 
 	def dumpCSV(self):
 		if not self.haveAnyMeasurements:
@@ -149,4 +150,4 @@ class InsnMeas(object): #+cdef
 				measData.minRt * 1.0e6,
 				measData.maxRt * 1.0e6,
 				measData.avgRt * 1.0e6))
-		return "\n".join(ret)
+		return "\n".join(ret) + "\n"
