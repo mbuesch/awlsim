@@ -1355,9 +1355,8 @@ class S7CPU(object): #+cdef
 		AwlOperatorTypes.INDIRECT	: __call_INDIRECT,	#@nocy
 	}							#@nocy
 
-	def run_CALL(self, blockOper, dbOper=None, parameters=(), raw=False): #@nocy
-#@cy	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper=None,
-#@cy		     tuple parameters=(), _Bool raw=False):
+	def run_CALL(self, blockOper, dbOper, parameters, raw): #@nocy
+#@cy	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters, _Bool raw):
 #@cy		cdef CallStackElem newCse
 #@cy		cdef uint32_t callStackDepth
 
@@ -1405,20 +1404,19 @@ class S7CPU(object): #+cdef
 		newCse = callHelper(self, blockOper, dbOper, parameters)		#@nocy
 
 		newCse.prevCse = self.callStackTop
-		self.callStackTop, self.callStackDepth = newCse, callStackDepth + 1
+		self.callStackTop = newCse
+		self.callStackDepth = callStackDepth + 1 #+suffix-u
 
 	def run_BE(self): #@nocy
 #@cy	cdef void run_BE(self):
 #@cy		cdef S7StatusWord s
-#@cy		cdef CallStackElem cse
 
 		# This method is declared void and thus must not raise an exception.
 
 		s = self.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
 		# Jump beyond end of block
-		cse = self.callStackTop
-		self.relativeJump = cse.nrInsns - cse.ip
+		self.relativeJump = self.callStackTop.nrInsns - self.callStackTop.ip
 
 	def openDB(self, dbNumber, openDI): #@nocy
 #@cy	cdef openDB(self, int32_t dbNumber, _Bool openDI):

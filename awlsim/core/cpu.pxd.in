@@ -181,7 +181,7 @@ cdef class S7CPU(object):
 	cdef void jumpToLabel(self, uint32_t labelIndex)
 	cdef void jumpRelative(self, int32_t insnOffset)
 
-	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper=*, tuple parameters=*, _Bool raw=*)
+	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters, _Bool raw)
 	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters)
 	cdef CallStackElem __call_RAW_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters)
 	cdef CallStackElem __call_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters)
