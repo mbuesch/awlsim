@@ -1,8 +1,8 @@
 #
 #   Cython patcher
-#   v1.18
+#   v1.19
 #
-#   Copyright (C) 2012-2018 Michael Buesch <m@bues.ch>
+#   Copyright (C) 2012-2019 Michael Buesch <m@bues.ch>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ WORKER_CPU_OVERCOMMIT	= 2
 
 parallelBuild = False
 profileEnabled = False
+debugEnabled = False
 ext_modules = []
 CythonBuildExtension = None
 
@@ -352,7 +353,15 @@ def registerCythonModule(baseDir, sourceModName):
 					extra_compile_args.append("-Wno-cast-function-type")
 					extra_compile_args.append("-Wno-maybe-uninitialized")
 					extra_compile_args.append("-Wno-type-limits")
-					if not profileEnabled:
+					if debugEnabled:
+						# Enable debugging and UBSAN.
+						extra_compile_args.append("-g3")
+						extra_compile_args.append("-fsanitize=undefined")
+						extra_compile_args.append("-fsanitize=float-divide-by-zero")
+						extra_compile_args.append("-fsanitize=float-cast-overflow")
+						extra_compile_args.append("-fno-sanitize-recover")
+						extra_link_args.append("-lubsan")
+					else:
 						# Disable all debugging symbols.
 						extra_compile_args.append("-g0")
 						extra_link_args.append("-Wl,--strip-all")

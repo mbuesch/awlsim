@@ -210,6 +210,35 @@ The following environment variables control Awlsim's basic behavior:
   The number of OB1 cycles it takes to trigger a manual garbage collection.<br />
 
 
+## Environment variables during build (setup.py)
+
+The following environment variables control Awlsim's build (setup.py) behavior:
+
+* `AWLSIM_FULL_BUILD`<br />
+  `=0`  Do not include scripts that are not necessary on this platform. (default)<br />
+  `=1`  Include all scripts; also those that aren't required on the platform.<br />
+
+* `AWLSIM_CYTHON_BUILD`<br />
+  `=0`  Do not build any Cython modules. (default on non-Posix)<br />
+  `=1`  Build Cython modules.<br />
+  `=2`  Build Cython modules only, if setup.py is being executed by Python 2.<br />
+  `=3`  Build Cython modules only, if setup.py is being executed by Python 3. (default on Posix)<br />
+
+* `AWLSIM_CYTHON_PARALLEL`<br />
+  `=0`  Do not use parallel compilation for Cython modules.<br />
+  `=1`  Invoke multiple compilers in parallel (faster on multicore). (default)<br />
+  `=2`  Invoke multiple compilers only, if setup.py is being executed by Python 2.<br />
+  `=3`  Invoke multiple compilers only, if setup.py is being executed by Python 3.<br />
+
+* `AWLSIM_PROFILE`<br />
+  `=0`  Do not enable profiling support in compiled Cython modules. (default)<br />
+  `=1`  Enable profiling support in compiled Cython modules.<br />
+
+* `AWLSIM_DEBUG_BUILD`<br />
+  `=0`  Do not enable debugging support in compiled Cython modules. (default)<br />
+  `=1`  Enable debugging support in compiled Cython modules.<br />
+
+
 ## Building Awlsim
 
 Awlsim can be run from the source directory in interpreted Python mode without building it. Just `cd` into the Awlsim source directory and execute the desired main executable (e.g. `./awlsim-gui` or `./awlsim-server` etc...).

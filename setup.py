@@ -24,6 +24,10 @@
 #	0 (default): Do not enable profiling support in compiled Cython modules.
 #	1:           Enable profiling support in compiled Cython modules.
 #
+#  AWLSIM_DEBUG_BUILD:
+#	0 (default): Do not enable debugging support in compiled Cython modules.
+#	1:           Enable debugging support in compiled Cython modules.
+#
 
 from __future__ import division, absolute_import, print_function
 # Avoid __future__.unicode_literals. It breaks on pypy2.
@@ -70,6 +74,7 @@ buildCython = ((buildCython == 1) or (buildCython == sys.version_info[0]))
 setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
 				  getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])
 setup_cython.profileEnabled = bool(getEnvInt("AWLSIM_PROFILE") > 0)
+setup_cython.debugEnabled = bool(getEnvInt("AWLSIM_DEBUG_BUILD") > 0)
 
 
 def pyCythonPatchLine(line):
