@@ -2,7 +2,7 @@
 #
 # AWL simulator - instructions
 #
-# Copyright 2012-2017 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -171,38 +171,21 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 
 class AwlInsn_CALL(AwlInsn_AbstractCall): #+cdef
 
-	__slots__ = (
-		"run",
-	)
+	__slots__ = ()
 
 	def __init__(self, cpu, rawInsn=None, **kwargs):
 		AwlInsn_AbstractCall.__init__(self, cpu, AwlInsn.TYPE_CALL, rawInsn, **kwargs)
 		self.assertOpCount((1, 2))
 
-		if self.opCount == 1:			#@nocy
-			self.run = self.__run_CALL_FC	#@nocy
-		else:					#@nocy
-			self.run = self.__run_CALL_FB	#@nocy
-
-	def __run_CALL_FC(self): #+cdef
+	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
 
-		self.cpu.run_CALL(self.op0, None, self.params, False)
+		if self.opCount == 1:
+			self.cpu.run_CALL(self.op0, None, self.params, False)
+		else:
+			self.cpu.run_CALL(self.op0, self.op1, self.params, False)
 		s = self.cpu.statusWord
 		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
-
-	def __run_CALL_FB(self): #+cdef
-#@cy		cdef S7StatusWord s
-
-		self.cpu.run_CALL(self.op0, self.op1, self.params, False)
-		s = self.cpu.statusWord
-		s.OS, s.OR, s.STA, s.NER = 0, 0, 1, 0
-
-#@cy	cdef run(self):
-#@cy		if self.opCount == 1:
-#@cy			self.__run_CALL_FC()
-#@cy		else:
-#@cy			self.__run_CALL_FB()
 
 class AwlInsn_CC(AwlInsn_AbstractCall): #+cdef
 
