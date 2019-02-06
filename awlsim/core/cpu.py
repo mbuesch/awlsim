@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -511,8 +511,6 @@ class S7CPU(object): #+cdef
 
 		self.__fetchTypeMethods = self.__fetchTypeMethodsDict	#@nocy
 		self.__storeTypeMethods = self.__storeTypeMethodsDict	#@nocy
-		self.__callHelpers = self.__callHelpersDict		#@nocy
-		self.__rawCallHelpers = self.__rawCallHelpersDict	#@nocy
 
 		self.__insnMeas = None
 		self.__clockMemByteOffset = None
@@ -1286,28 +1284,25 @@ class S7CPU(object): #+cdef
 
 	def __call_INDIRECT(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_INDIRECT(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef uint32_t operType
 
 		blockOper = blockOper.resolve(True)
-
+		operType = blockOper.operType
 		try:
 			# Call the call helper and pass the resolved operands.
 			# The call to the call helper might raise a KeyError,
 			# if the block does not exist.
 
-#@cy			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
-#@cy				return self.__call_RAW_FC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
-#@cy				return self.__call_RAW_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
-#@cy				return self.__call_RAW_SFC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
-#@cy				return self.__call_RAW_SFB(blockOper, dbOper, parameters)
-#@cy			else:
-#@cy				raise AwlSimError("Invalid CALL operand")
-
-			callHelper = self.__rawCallHelpers[blockOper.operType]		#@nocy
-			return callHelper(self, blockOper, dbOper, parameters)		#@nocy
-
+			if operType == AwlOperatorTypes.BLKREF_FC:
+				return self.__call_RAW_FC(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_FB:
+				return self.__call_RAW_FB(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_SFC:
+				return self.__call_RAW_SFC(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_SFB:
+				return self.__call_RAW_SFB(blockOper, dbOper, parameters)
+			else:
+				raise AwlSimError("Invalid CALL operand")
 		except KeyError as e:
 			raise AwlSimError("Code block %d not found in indirect call" % (
 					  blockOper.offset.byteOffset))
@@ -1338,70 +1333,46 @@ class S7CPU(object): #+cdef
 		self.dbRegister = self.diRegister
 		return cse
 
-	__callHelpersDict = {					#@nocy
-		AwlOperatorTypes.BLKREF_FC	: __call_FC,		#@nocy
-		AwlOperatorTypes.BLKREF_FB	: __call_FB,		#@nocy
-		AwlOperatorTypes.BLKREF_SFC	: __call_SFC,		#@nocy
-		AwlOperatorTypes.BLKREF_SFB	: __call_SFB,		#@nocy
-		AwlOperatorTypes.MULTI_FB	: __call_MULTI_FB,	#@nocy
-		AwlOperatorTypes.MULTI_SFB	: __call_MULTI_SFB,	#@nocy
-	}							#@nocy
-
-	__rawCallHelpersDict = {				#@nocy
-		AwlOperatorTypes.BLKREF_FC	: __call_RAW_FC,	#@nocy
-		AwlOperatorTypes.BLKREF_FB	: __call_RAW_FB,	#@nocy
-		AwlOperatorTypes.BLKREF_SFC	: __call_RAW_SFC,	#@nocy
-		AwlOperatorTypes.BLKREF_SFB	: __call_RAW_SFB,	#@nocy
-		AwlOperatorTypes.INDIRECT	: __call_INDIRECT,	#@nocy
-	}							#@nocy
-
 	def run_CALL(self, blockOper, dbOper, parameters, raw): #@nocy
 #@cy	cdef run_CALL(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters, _Bool raw):
 #@cy		cdef CallStackElem newCse
 #@cy		cdef uint32_t callStackDepth
+#@cy		cdef uint32_t operType
 
 		callStackDepth = self.callStackDepth
 		if callStackDepth >= self.specs.callStackSize:
 			raise AwlSimError("Maximum CALL stack depth of %d CALLs exceed." % (
 				self.specs.callStackSize))
 
-#@cy		if raw:
-#@cy			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
-#@cy				newCse = self.__call_RAW_FC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
-#@cy				newCse = self.__call_RAW_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
-#@cy				newCse = self.__call_RAW_SFC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
-#@cy				newCse = self.__call_RAW_SFB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.INDIRECT:
-#@cy				newCse = self.__call_INDIRECT(blockOper, dbOper, parameters)
-#@cy			else:
-#@cy				raise AwlSimError("Invalid CALL operand")
-#@cy		else:
-#@cy			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
-#@cy				newCse = self.__call_FC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_FB:
-#@cy				newCse = self.__call_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
-#@cy				newCse = self.__call_SFC(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
-#@cy				newCse = self.__call_SFB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.MULTI_FB:
-#@cy				newCse = self.__call_MULTI_FB(blockOper, dbOper, parameters)
-#@cy			elif blockOper.operType == AwlOperatorTypes.MULTI_SFB:
-#@cy				newCse = self.__call_MULTI_SFB(blockOper, dbOper, parameters)
-#@cy			else:
-#@cy				raise AwlSimError("Invalid CALL operand")
-
-		try:									#@nocy
-			if raw:								#@nocy
-				callHelper = self.__rawCallHelpers[blockOper.operType]	#@nocy
-			else:								#@nocy
-				callHelper = self.__callHelpers[blockOper.operType]	#@nocy
-		except KeyError:							#@nocy
-			raise AwlSimError("Invalid CALL operand")			#@nocy
-		newCse = callHelper(self, blockOper, dbOper, parameters)		#@nocy
+		operType = blockOper.operType
+		if raw: #+unlikely
+			if operType == AwlOperatorTypes.BLKREF_FC:
+				newCse = self.__call_RAW_FC(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_FB:
+				newCse = self.__call_RAW_FB(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_SFC:
+				newCse = self.__call_RAW_SFC(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_SFB:
+				newCse = self.__call_RAW_SFB(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.INDIRECT:
+				newCse = self.__call_INDIRECT(blockOper, dbOper, parameters)
+			else:
+				raise AwlSimError("Invalid CALL operand")
+		else:
+			if operType == AwlOperatorTypes.BLKREF_FC:
+				newCse = self.__call_FC(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_FB:
+				newCse = self.__call_FB(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_SFC:
+				newCse = self.__call_SFC(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.BLKREF_SFB:
+				newCse = self.__call_SFB(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.MULTI_FB:
+				newCse = self.__call_MULTI_FB(blockOper, dbOper, parameters)
+			elif operType == AwlOperatorTypes.MULTI_SFB:
+				newCse = self.__call_MULTI_SFB(blockOper, dbOper, parameters)
+			else:
+				raise AwlSimError("Invalid CALL operand")
 
 		newCse.prevCse = self.callStackTop
 		self.callStackTop = newCse
