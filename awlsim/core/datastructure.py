@@ -31,6 +31,8 @@ from awlsim.core.identifier import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 
+#from awlsim.core.cpu cimport * #@cy
+
 
 __all__ = [
 	"AwlStructField",
@@ -224,15 +226,17 @@ class AwlStruct(object): #+cdef
 		return baseField
 
 	def addField(self, cpu, name, dataType, initBytes=None):
+#@cy		cdef S7CPU _cpu
+
 		from awlsim.core.datatypes import AwlDataType
 
+		_cpu = cpu
 		initMem = AwlMemory(initBytes)
 
 		if dataType.type == dataType.TYPE_UDT_X:
 			# Add an UDT.
-			try:
-				udt = cpu.udts[dataType.index]
-			except KeyError: #@nocov
+			udt = _cpu.getUDT(dataType.index)
+			if not udt: #@nocov
 				assert(0) # Should never happen
 			assert(not initBytes)
 			# Assign the struct to the UDT data type, if
@@ -290,14 +294,14 @@ class AwlStruct(object): #+cdef
 					fieldInitData = fieldInitMem.getDataBytes()
 				except (AwlSimError, ValueError) as e:
 					fieldInitData = None
-				self.addField(cpu, str(childIdent), childType,
+				self.addField(_cpu, str(childIdent), childType,
 					      fieldInitData)
 				initOffset += make_AwlOffset_fromLongBitOffset(childType.width)
 				childIdent.advanceToNextArrayElement(dataType.arrayDimensions)
 				if childType.width > 8 and\
 				   intDivRoundUp(childType.width, 8) % 2 != 0:
 					# Align each element to 2-byte-boundary, if word or bigger.
-					self.addField(cpu, None, AwlDataType.makeByName("BYTE"))
+					self.addField(_cpu, None, AwlDataType.makeByName("BYTE"))
 			# Add a zero-length array-end guard field,
 			# to enforce alignment of following fields.
 			self.addDummyField()

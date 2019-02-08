@@ -117,9 +117,8 @@ class MemoryArea(object):
 #@cy	def __read_DB(self, S7CPU cpu):
 #@cy		cdef DB db
 
-		try:
-			db = cpu.dbs[self.index]
-		except KeyError:
+		db = cpu.getDB(self.index)
+		if not db:
 			self.__raiseReadErr(
 				AwlSimError("MemoryArea: Read access to "
 				"nonexistent DB %d" % self.index)
@@ -212,9 +211,8 @@ class MemoryArea(object):
 #@cy	def __write_DB(self, S7CPU cpu):
 #@cy		cdef DB db
 
-		try:
-			db = cpu.dbs[self.index]
-		except KeyError:
+		db = cpu.getDB(self.index)
+		if not db:
 			self.__raiseWriteErr(
 				AwlSimError("MemoryArea: Write access to "
 				"nonexistent DB %d" % self.index)

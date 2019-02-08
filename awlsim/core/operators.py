@@ -196,9 +196,11 @@ class AwlOperator(object): #+cdef
 					self.width,
 					listToHumanStr(AwlOperatorWidths.maskToList(widths))))
 
-	def checkDataTypeCompat(self, cpu, dataType):
+	def checkDataTypeCompat(self, _cpu, dataType):
+#@cy		cdef S7CPU cpu
 		from awlsim.core.datatypes import AwlDataType
 
+		cpu = _cpu
 		assert(isinstance(dataType, AwlDataType))
 
 		if self.operType in (AwlOperatorTypes.NAMED_LOCAL,
@@ -216,11 +218,8 @@ class AwlOperator(object): #+cdef
 				(str(dataType), dataType.width, str(oper), operWidth))
 
 		if dataType.type == AwlDataType.TYPE_UDT_X:
-			try:
-				udt = cpu.udts[dataType.index]
-				if udt._struct.getSize() * 8 != self.width:
-					raise ValueError
-			except (KeyError, ValueError) as e:
+			udt = cpu.getUDT(dataType.index)
+			if not udt or udt._struct.getSize() * 8 != self.width:
 				mismatch(dataType, self, self.width)
 		elif dataType.type in {AwlDataType.TYPE_POINTER,
 				       AwlDataType.TYPE_ANY}:

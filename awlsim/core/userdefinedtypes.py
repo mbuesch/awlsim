@@ -31,6 +31,8 @@ from awlsim.core.util import *
 from awlsim.core.blocks import * #+cimport
 from awlsim.core.datastructure import * #+cimport
 
+#from awlsim.core.cpu cimport * #@cy
+
 from awlsim.awlcompiler.translator import *
 
 
@@ -100,18 +102,20 @@ class UDT(Block): #+cdef
 		self.fields.append(field)
 		self.fieldNameMap[field.name] = field
 
-	def __buildField(self, cpu, field):
+	def __buildField(self, _cpu, field):
+#@cy		cdef S7CPU cpu
+
 		from awlsim.core.datatypes import AwlDataType
 
+		cpu = _cpu
 		if field.dataType.width < 0:
 			# The size of the field is unknown, yet.
 			# Try to resolve it.
 			if field.dataType.type == AwlDataType.TYPE_UDT_X:
 				# This UDT embeds another UDT.
 				# Get the embedded UDT and build it.
-				try:
-					udt = cpu.udts[field.dataType.index]
-				except KeyError:
+				udt = cpu.getUDT(field.dataType.index)
+				if not udt:
 					raise AwlSimError("The '%s' embeds "
 						"a 'UDT %d', which does not "
 						"exist." %\

@@ -89,6 +89,8 @@ class S7Prog(object):
 		self.reset()
 
 	def reset(self):
+		self.sfcsInitialized = False
+		self.sfbsInitialized = False
 		for rawBlock in itertools.chain(self.pendingRawDBs,
 						self.pendingRawFBs,
 						self.pendingRawFCs,
@@ -183,6 +185,9 @@ class S7Prog(object):
 		conf.setDetectedMnemonics(detected)
 
 	def __loadLibraries(self):
+#@cy		cdef S7CPU cpu
+
+		cpu = self.cpu
 		for libSelection in self.pendingLibSelections:
 			# Get the block class from the library.
 			libEntryCls = AwlLib.getEntryBySelection(libSelection)
@@ -196,25 +201,25 @@ class S7Prog(object):
 			# Create and translate the block
 			translator = AwlTranslator(self.cpu)
 			if libEntryCls._isFC:
-				block = libEntryCls(index = effIndex)
-				if block.index in self.cpu.fcs and\
-				   not self.cpu.fcs[block.index].isLibraryBlock:
+				block = libEntryCls(index=effIndex)
+				existingFC = cpu.getFC(block.index)
+				if existingFC and existingFC.isLibraryBlock:
 					raise AwlSimError("Error while loading library "
 						"block FC %d: Block FC %d is already "
 						"loaded as user defined block." %\
 						(block.index, block.index))
 				block = translator.translateLibraryCodeBlock(block)
-				self.cpu.fcs[block.index] = block
+				cpu.addFC(block)
 			elif libEntryCls._isFB:
-				block = libEntryCls(index = effIndex)
-				if block.index in self.cpu.fbs and\
-				   not self.cpu.fbs[block.index].isLibraryBlock:
+				block = libEntryCls(index=effIndex)
+				existingFB = cpu.getFB(block.index)
+				if existingFB and existingFB.isLibraryBlock:
 					raise AwlSimError("Error while loading library "
 						"block FB %d: Block FB %d is already "
 						"loaded as user defined block." %\
 						(block.index, block.index))
 				block = translator.translateLibraryCodeBlock(block)
-				self.cpu.fbs[block.index] = block
+				cpu.addFB(block)
 			else:
 				assert(0)
 		self.pendingLibSelections = []
@@ -289,21 +294,28 @@ class S7Prog(object):
 
 	# Run static error checks
 	def staticSanityChecks(self):
+#@cy		cdef S7CPU cpu
+
+		cpu = self.cpu
+
 		# The main cycle expects OB 1 to be present.
-		if 1 not in self.cpu.obs:
+		if not cpu.getOB(1):
 			raise AwlSimError("OB 1 is not present in the CPU.")
 		# Run the user code checks.
-		for block in self.cpu.allUserCodeBlocks():
+		for block in cpu.allUserCodeBlocks():
 			self.__staticSanityChecks_block(block)
 
 	def build(self):
 		"""Translate the loaded sources into their executable forms.
 		"""
+#@cy		cdef S7CPU cpu
 
 		from awlsim.core.datatypes import AwlDataType
 
-		translator = AwlTranslator(self.cpu)
-		resolver = AwlSymResolver(self.cpu)
+		cpu = self.cpu
+
+		translator = AwlTranslator(cpu)
+		resolver = AwlSymResolver(cpu)
 
 		self.__loadLibraries()
 
@@ -320,15 +332,16 @@ class S7Prog(object):
 					"UDT %d." % udtNumber)
 			rawUDT.index = udtNumber
 			udt = UDT.makeFromRaw(rawUDT)
-			if udtNumber in self.cpu.udts:
-				self.cpu.udts[udtNumber].destroySourceRef()
+			existingUDT = cpu.getUDT(udtNumber)
+			if existingUDT:
+				existingUDT.destroySourceRef()
 			udts[udtNumber] = udt
-			self.cpu.udts[udtNumber] = udt
+			cpu.addUDT(udt)
 		self.pendingRawUDTs = []
 
 		# Build all UDTs (Resolve sizes of all fields)
 		for udt in dictValues(udts):
-			udt.buildDataStructure(self.cpu)
+			udt.buildDataStructure(cpu)
 
 		# Translate OBs
 		obs = {}
@@ -340,19 +353,18 @@ class S7Prog(object):
 					"OB %d." % obNumber)
 			rawOB.index = obNumber
 			ob = translator.translateCodeBlock(rawOB, OB)
-			if obNumber in self.cpu.obs:
-				self.cpu.obs[obNumber].destroySourceRef()
+			existingOB = cpu.getOB(obNumber)
+			if existingOB:
+				existingOB.destroySourceRef()
 			obs[obNumber] = ob
-			self.cpu.obs[obNumber] = ob
+			cpu.addOB(ob)
 			# Create the TEMP-preset handler table
 			try:
 				presetHandlerClass = OBTempPresets_table[obNumber]
 			except KeyError:
 				presetHandlerClass = OBTempPresets_dummy
-			self.cpu.obTempPresetHandlers[obNumber] = presetHandlerClass(self.cpu)
+			cpu.obTempPresetHandlers[obNumber] = presetHandlerClass(cpu)
 		self.pendingRawOBs = []
-		# Store a shortcut to OB1
-		self.cpu.ob1 = self.cpu.obs.get(1, None)
 
 		# Translate FBs
 		fbs = {}
@@ -362,19 +374,19 @@ class S7Prog(object):
 			if fbNumber in fbs:
 				raise AwlSimError("Multiple definitions of "\
 					"FB %d." % fbNumber)
-			if fbNumber in self.cpu.fbs and\
-			   self.cpu.fbs[fbNumber].isLibraryBlock:
+			existingFB = cpu.getFB(fbNumber)
+			if existingFB and existingFB.isLibraryBlock:
 				raise AwlSimError("Multiple definitions of FB %d.\n"
 					"FB %d is already defined by an "
 					"imported library block (%s)." % (
 					fbNumber, fbNumber,
-					self.cpu.fbs[fbNumber].libraryName))
+					existingFB.libraryName))
 			rawFB.index = fbNumber
 			fb = translator.translateCodeBlock(rawFB, FB)
-			if fbNumber in self.cpu.fbs:
-				self.cpu.fbs[fbNumber].destroySourceRef()
+			if existingFB:
+				existingFB.destroySourceRef()
 			fbs[fbNumber] = fb
-			self.cpu.fbs[fbNumber] = fb
+			cpu.addFB(fb)
 		self.pendingRawFBs = []
 
 		# Translate FCs
@@ -385,40 +397,42 @@ class S7Prog(object):
 			if fcNumber in fcs:
 				raise AwlSimError("Multiple definitions of "\
 					"FC %d." % fcNumber)
-			if fcNumber in self.cpu.fcs and\
-			   self.cpu.fcs[fcNumber].isLibraryBlock:
+			existingFC = cpu.getFC(fcNumber)
+			if existingFC and existingFC.isLibraryBlock:
 				raise AwlSimError("Multiple definitions of FC %d.\n"
 					"FC %d is already defined by an "
 					"imported library block (%s)." % (
 					fcNumber, fcNumber,
-					self.cpu.fcs[fcNumber].libraryName))
+					existingFC.libraryName))
 			rawFC.index = fcNumber
 			fc = translator.translateCodeBlock(rawFC, FC)
-			if fcNumber in self.cpu.fcs:
-				self.cpu.fcs[fcNumber].destroySourceRef()
+			if existingFC:
+				existingFC.destroySourceRef()
 			fcs[fcNumber] = fc
-			self.cpu.fcs[fcNumber] = fc
+			cpu.addFC(fc)
 		self.pendingRawFCs = []
 
-		if not self.cpu.sfbs:
+		if not self.sfbsInitialized:
 			# Create the SFB tables
 			for sfbNumber in dictKeys(SFB_table):
-				if sfbNumber < 0 and not self.cpu.extendedInsnsEnabled():
+				if sfbNumber < 0 and not cpu.extendedInsnsEnabled():
 					continue
-				sfb = SFB_table[sfbNumber](self.cpu)
-				self.cpu.sfbs[sfbNumber] = sfb
+				sfb = SFB_table[sfbNumber](cpu)
+				cpu.addSFB(sfb)
+			self.sfbsInitialized = True
 
-		if not self.cpu.sfcs:
+		if not self.sfcsInitialized:
 			# Create the SFC tables
 			for sfcNumber in dictKeys(SFC_table):
-				if sfcNumber < 0 and not self.cpu.extendedInsnsEnabled():
+				if sfcNumber < 0 and not cpu.extendedInsnsEnabled():
 					continue
-				sfc = SFC_table[sfcNumber](self.cpu)
-				self.cpu.sfcs[sfcNumber] = sfc
+				sfc = SFC_table[sfcNumber](cpu)
+				cpu.addSFC(sfc)
+			self.sfcsInitialized = True
 
 		# Build the data structures of code blocks.
-		for block in self.cpu.allCodeBlocks():
-			block.interface.buildDataStructure(self.cpu)
+		for block in cpu.allCodeBlocks():
+			block.interface.buildDataStructure(cpu)
 
 		# Translate DBs
 		dbs = {}
@@ -432,10 +446,11 @@ class S7Prog(object):
 					"DB %d." % dbNumber)
 			rawDB.index = dbNumber
 			db = translator.translateDB(rawDB)
-			if dbNumber in self.cpu.dbs:
-				self.cpu.dbs[dbNumber].destroySourceRef()
+			existingDB = cpu.getDB(dbNumber)
+			if existingDB:
+				existingDB.destroySourceRef()
 			dbs[dbNumber] = db
-			self.cpu.dbs[dbNumber] = db
+			cpu.addDB(db)
 		self.pendingRawDBs = []
 
 		# Resolve symbolic instructions and operators
@@ -457,15 +472,15 @@ class S7Prog(object):
 		"""
 		blkInfos = []
 		for block in itertools.chain(
-				sorted(dictValues(self.cpu.obs) if getOBInfo else [],
+				sorted(self.cpu.allOBs() if getOBInfo else [],
 				       key=lambda blk: blk.index),
-				sorted(dictValues(self.cpu.fcs) if getFCInfo else [],
+				sorted(self.cpu.allFCs() if getFCInfo else [],
 				       key=lambda blk: blk.index),
-				sorted(dictValues(self.cpu.fbs) if getFBInfo else [],
+				sorted(self.cpu.allFBs() if getFBInfo else [],
 				       key=lambda blk: blk.index),
-				sorted(dictValues(self.cpu.dbs) if getDBInfo else [],
+				sorted(self.cpu.allDBs() if getDBInfo else [],
 				       key=lambda blk: blk.index),
-				sorted(dictValues(self.cpu.udts) if getUDTInfo else [],
+				sorted(self.cpu.allUDTs() if getUDTInfo else [],
 				       key=lambda blk: blk.index)):
 			blkInfo = block.getBlockInfo()
 			assert(blkInfo)
@@ -475,30 +490,29 @@ class S7Prog(object):
 	def removeBlock(self, blockInfo, sanityChecks = True):
 		"""Remove a block from the CPU.
 		"""
-		try:
-			if blockInfo.blockType == BlockInfo.TYPE_OB:
-				block = self.cpu.obs.pop(blockInfo.blockIndex)
-				self.cpu.obTempPresetHandlers.pop(blockInfo.blockIndex)
-			elif blockInfo.blockType == BlockInfo.TYPE_FC:
-				block = self.cpu.fcs.pop(blockInfo.blockIndex)
-			elif blockInfo.blockType == BlockInfo.TYPE_FB:
-				block = self.cpu.fbs.pop(blockInfo.blockIndex)
-			elif blockInfo.blockType == BlockInfo.TYPE_DB:
-				block = self.cpu.dbs[blockInfo.blockIndex]
-				if (block.permissions & DB.PERM_WRITE) == 0:
-					raise AwlSimError("Remove block: Cannot delete "
-						"write protected %s." % \
-						blockInfo.blockName)
-				block = self.cpu.dbs.pop(blockInfo.blockIndex)
-			elif blockInfo.blockType == BlockInfo.TYPE_UDT:
-				block = self.cpu.udts.pop(blockInfo.blockIndex)
-			else:
-				raise AwlSimError("Remove block: Unknown bock type %d." % \
-					blockInfo.blockType)
-			block.destroySourceRef()
-		except KeyError as e:
+		if blockInfo.blockType == BlockInfo.TYPE_OB:
+			block = self.cpu.removeOB(blockInfo.blockIndex)
+			self.cpu.obTempPresetHandlers.pop(blockInfo.blockIndex)
+		elif blockInfo.blockType == BlockInfo.TYPE_FC:
+			block = self.cpu.removeFC(blockInfo.blockIndex)
+		elif blockInfo.blockType == BlockInfo.TYPE_FB:
+			block = self.cpu.removeFB(blockInfo.blockIndex)
+		elif blockInfo.blockType == BlockInfo.TYPE_DB:
+			block = self.cpu.getDB(blockInfo.blockIndex)
+			if block and (block.permissions & DB.PERM_WRITE) == 0:
+				raise AwlSimError("Remove block: Cannot delete "
+					"write protected %s." % \
+					blockInfo.blockName)
+			block = self.cpu.removeDB(blockInfo.blockIndex)
+		elif blockInfo.blockType == BlockInfo.TYPE_UDT:
+			block = self.cpu.removeUDT(blockInfo.blockIndex)
+		else:
+			raise AwlSimError("Remove block: Unknown bock type %d." % \
+				blockInfo.blockType)
+		if not block:
 			raise AwlSimError("Remove block: Block %s not found." % \
 				blockInfo.blockName)
+		block.destroySourceRef()
 		if sanityChecks:
 			# Re-run sanity checks to detect missing blocks.
 			self.staticSanityChecks()
@@ -524,16 +538,230 @@ class S7CPU(object): #+cdef
 		self.setPeripheralReadCallback(None)
 		self.setPeripheralWriteCallback(None)
 		self.setScreenUpdateCallback(None)
-		self.udts = {}
-		self.dbs = {}
-		self.obs = {}
-		self.fcs = {}
-		self.fbs = {}
 		self.activeLStack = None
+		self.__resetBlockAllocs()
 		self.reset()
 		self.enableExtendedInsns(False)
 		self.enableObTempPresets(False)
 		self.__dateAndTimeWeekdayMap = AwlDataType.dateAndTimeWeekdayMap
+
+	@classmethod
+	def __addBlock(cls, blockList, block):
+		index = block.index
+		if index < 0 or index > 0xFFFF:
+			raise AwlSimError("Invalid block index. "
+					  "Cannot load %s %d to CPU." % (
+					  block.BLOCKTYPESTR, index))
+		if index >= len(blockList):
+			# Re-allocate block list.
+			newLen = getMSB(index) << 1
+			blockList.extend([None] * (newLen - len(blockList)))
+			assert(len(blockList) == newLen)
+		blockList[index] = block
+		return len(blockList)
+
+	def addUDT(self, udt):
+		"""Add a UDT block to the CPU.
+		"""
+		self.__udtsAlloc = self.__addBlock(self.__udts, udt)
+
+	def addDB(self, db):
+		"""Add a DB block to the CPU.
+		"""
+		self.__dbsAlloc = self.__addBlock(self.__dbs, db)
+
+	def addOB(self, ob):
+		"""Add an OB block to the CPU.
+		"""
+		self.__obsAlloc = self.__addBlock(self.__obs, ob)
+		if ob.index == 1:
+			self.__ob1 = ob
+
+	def addFC(self, fc):
+		"""Add an FC block to the CPU.
+		"""
+		self.__fcsAlloc = self.__addBlock(self.__fcs, fc)
+
+	def addFB(self, fb):
+		"""Add an FB block to the CPU.
+		"""
+		self.__fbsAlloc = self.__addBlock(self.__fbs, fb)
+
+	def addSFC(self, sfc):
+		"""Add an SFC block to the CPU.
+		"""
+		if sfc.index >= 0:
+			self.__sfcsAlloc = self.__addBlock(self.__sfcs, sfc)
+		else:
+			self.__sfcsExtended[sfc.index] = sfc
+
+	def addSFB(self, sfb):
+		"""Add an SFB block to the CPU.
+		"""
+		if sfb.index >= 0:
+			self.__sfbsAlloc = self.__addBlock(self.__sfbs, sfb)
+		else:
+			self.__sfbsExtended[sfb.index] = sfb
+
+	def getUDT(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef UDT getUDT(self, uint16_t index):
+		"""Get a UDT block.
+		"""
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		if index < self.__udtsAlloc: #+likely
+			return self.__udts[index]
+		return None
+
+	def getDB(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef DB getDB(self, uint16_t index):
+		"""Get a DB block.
+		"""
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		if index < self.__dbsAlloc: #+likely
+			return self.__dbs[index]
+		return None
+
+	def getOB(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef CodeBlock getOB(self, uint16_t index):
+		"""Get an OB block.
+		"""
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		if index < self.__obsAlloc: #+likely
+			return self.__obs[index]
+		return None
+
+	def getFC(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef CodeBlock getFC(self, uint16_t index):
+		"""Get an FC block.
+		"""
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		if index < self.__fcsAlloc: #+likely
+			return self.__fcs[index]
+		return None
+
+	def getFB(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef CodeBlock getFB(self, uint16_t index):
+		"""Get an FB block.
+		"""
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		if index < self.__fbsAlloc: #+likely
+			return self.__fbs[index]
+		return None
+
+	def getSFC(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef CodeBlock getSFC(self, int32_t index):
+		"""Get an SFC block.
+		"""
+#@cy		cdef int32_t sfcsAlloc
+#@cy		cdef uint16_t indexU16
+
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		sfcsAlloc = self.__sfcsAlloc
+		if index >= 0 and index < sfcsAlloc: #+likely
+			indexU16 = index
+			return self.__sfcs[indexU16]
+		if index < 0:
+			return self.__sfcsExtended.get(index, None)
+		return None
+
+	def getSFB(self, index): #@nocy
+#@cy	@cython.boundscheck(False)
+#@cy	cdef CodeBlock getSFB(self, int32_t index):
+		"""Get an SFC block.
+		"""
+#@cy		cdef int32_t sfbsAlloc
+#@cy		cdef uint16_t indexU16
+
+		# Note: Bounds checking of the indexing operator [] is disabled
+		#       by @cython.boundscheck(False) in this method.
+
+		sfbsAlloc = self.__sfbsAlloc
+		if index >= 0 and index < sfbsAlloc: #+likely
+			indexU16 = index
+			return self.__sfbs[indexU16]
+		if index < 0:
+			return self.__sfbsExtended.get(index, None)
+		return None
+
+	def removeUDT(self, index):
+		"""Remove a UDT block from the CPU.
+		"""
+		udt = self.getUDT(index)
+		if udt:
+			self.__udts[index] = None
+		return udt
+
+	def removeDB(self, index):
+		"""Remove a DB block from the CPU.
+		"""
+		db = self.getDB(index)
+		if db:
+			self.__dbs[index] = None
+		return db
+
+	def removeOB(self, index):
+		"""Remove an OB block from the CPU.
+		"""
+		ob = self.getOB(index)
+		if ob:
+			self.__obs[index] = None
+		return ob
+
+	def removeFC(self, index):
+		"""Remove an FC block from the CPU.
+		"""
+		fc = self.getFC(index)
+		if fc:
+			self.__fcs[index] = None
+		return fc
+
+	def removeFB(self, index):
+		"""Remove an FB block from the CPU.
+		"""
+		fb = self.getFB(index)
+		if fb:
+			self.__fbs[index] = None
+		return fb
+
+	def removeSFC(self, index):
+		"""Remove an SFC block from the CPU.
+		"""
+		sfc = self.getSFC(index)
+		if sfc:
+			if index >= 0:
+				self.__sfcs[index] = None
+			else:
+				self.__sfcsExtended.pop(index, None)
+		return sfc
+
+	def removeSFB(self, index):
+		"""Remove an SFB block from the CPU.
+		"""
+		sfb = self.getSFB(index)
+		if sfb:
+			if index >= 0:
+				self.__sfbs[index] = None
+			else:
+				self.__sfbsExtended.pop(index, None)
+		return sfb
 
 	def getMnemonics(self):
 		return self.conf.getMnemonics()
@@ -556,17 +784,61 @@ class S7CPU(object): #+cdef
 	def setRunTimeLimit(self, timeoutSeconds=-1.0):
 		self.__runtimeLimit = timeoutSeconds if timeoutSeconds >= 0.0 else -1.0
 
+	# Returns all OBs.
+	def allOBs(self):
+		for ob in self.__obs:
+			if ob:
+				yield ob
+
+	# Returns all FBs.
+	def allFBs(self):
+		for fb in self.__fbs:
+			if fb:
+				yield fb
+
+	# Returns all SFBs.
+	def allSFBs(self):
+		for sfb in itertools.chain(self.__sfbs,
+					   dictValues(self.__sfbsExtended)):
+			if sfb:
+				yield sfb
+
+	# Returns all FCs.
+	def allFCs(self):
+		for fc in self.__fcs:
+			if fc:
+				yield fc
+
+	# Returns all SFCs.
+	def allSFCs(self):
+		for sfc in itertools.chain(self.__sfcs,
+					   dictValues(self.__sfcsExtended)):
+			if sfc:
+				yield sfc
+
+	# Returns all DBs.
+	def allDBs(self):
+		for db in self.__dbs:
+			if db:
+				yield db
+
+	# Returns all UDTs.
+	def allUDTs(self):
+		for udt in self.__udts:
+			if udt:
+				yield udt
+
 	# Returns all user defined code blocks (OBs, FBs, FCs)
 	def allUserCodeBlocks(self):
-		for block in itertools.chain(dictValues(self.obs),
-					     dictValues(self.fbs),
-					     dictValues(self.fcs)):
+		for block in itertools.chain(self.allOBs(),
+					     self.allFBs(),
+					     self.allFCs()):
 			yield block
 
 	# Returns all system code blocks (SFBs, SFCs)
 	def allSystemCodeBlocks(self):
-		for block in itertools.chain(dictValues(self.sfbs),
-					     dictValues(self.sfcs)):
+		for block in itertools.chain(self.allSFBs(),
+					     self.allSFCs()):
 			yield block
 
 	# Returns all user defined code blocks (OBs, FBs, FCs, SFBs, SFCs)
@@ -596,14 +868,13 @@ class S7CPU(object): #+cdef
 							dataBlockOp.offset.identChain.getString())
 					dataBlockOp = symbol.operator.dup()
 				dataBlockIndex = dataBlockOp.offset.byteOffset
-				try:
-					if dataBlockOp.operType == AwlOperatorTypes.BLKREF_DB:
-						dataBlock = self.dbs[dataBlockIndex]
-					else:
-						raise AwlSimError("Data block operand "
-							"in CALL is not a DB.",
-							insn=insn)
-				except KeyError as e:
+				if dataBlockOp.operType == AwlOperatorTypes.BLKREF_DB:
+					dataBlock = self.getDB(dataBlockIndex)
+				else:
+					raise AwlSimError("Data block operand "
+						"in CALL is not a DB.",
+						insn=insn)
+				if not dataBlock:
 					raise AwlSimError("Data block '%s' referenced "
 						"in CALL does not exist." %\
 						str(dataBlockOp),
@@ -627,23 +898,23 @@ class S7CPU(object): #+cdef
 				codeBlockIndex = codeBlockOp.offset.fbNumber
 			else:
 				codeBlockIndex = codeBlockOp.offset.byteOffset
-			try:
-				if codeBlockOp.operType == AwlOperatorTypes.BLKREF_FC:
-					codeBlock = self.fcs[codeBlockIndex]
-				elif codeBlockOp.operType in {AwlOperatorTypes.BLKREF_FB,
-							      AwlOperatorTypes.MULTI_FB}:
-					codeBlock = self.fbs[codeBlockIndex]
-				elif codeBlockOp.operType == AwlOperatorTypes.BLKREF_SFC:
-					codeBlock = self.sfcs[codeBlockIndex]
-				elif codeBlockOp.operType in {AwlOperatorTypes.BLKREF_SFB,
-							      AwlOperatorTypes.MULTI_SFB}:
-					codeBlock = self.sfbs[codeBlockIndex]
-				else:
-					raise AwlSimError("Code block operand "
-						"in CALL is not a valid code block "
-						"(FB, FC, SFB or SFC).",
-						insn=insn)
-			except KeyError as e:
+
+			if codeBlockOp.operType == AwlOperatorTypes.BLKREF_FC:
+				codeBlock = self.getFC(codeBlockIndex)
+			elif codeBlockOp.operType in {AwlOperatorTypes.BLKREF_FB,
+						      AwlOperatorTypes.MULTI_FB}:
+				codeBlock = self.getFB(codeBlockIndex)
+			elif codeBlockOp.operType == AwlOperatorTypes.BLKREF_SFC:
+				codeBlock = self.getSFC(codeBlockIndex)
+			elif codeBlockOp.operType in {AwlOperatorTypes.BLKREF_SFB,
+						      AwlOperatorTypes.MULTI_SFB}:
+				codeBlock = self.getSFB(codeBlockIndex)
+			else:
+				raise AwlSimError("Code block operand "
+					"in CALL is not a valid code block "
+					"(FB, FC, SFB or SFC).",
+					insn=insn)
+			if not codeBlock:
 				raise AwlSimError("Code block '%s' referenced in "
 					"CALL does not exist." %\
 					str(codeBlockOp),
@@ -730,40 +1001,54 @@ class S7CPU(object): #+cdef
 			self.inputs = AwlMemory(self.specs.nrInputs)
 		if force or self.specs.nrOutputs != len(self.outputs):
 			self.outputs = AwlMemory(self.specs.nrOutputs)
-		for ob in dictValues(self.obs):
+		for ob in self.allOBs():
 			if force or self.specs.nrLocalbytes * 8 != ob.lstack.maxAllocBits:
 				ob.lstack.resize(self.specs.nrLocalbytes)
 
+	def __resetBlockAllocs(self):
+		defaultAlloc = 0x100
+		self.__udtsAlloc = defaultAlloc
+		self.__dbsAlloc = defaultAlloc
+		self.__obsAlloc = defaultAlloc
+		self.__fcsAlloc = defaultAlloc
+		self.__fbsAlloc = defaultAlloc
+		self.__sfcsAlloc = defaultAlloc
+		self.__sfbsAlloc = defaultAlloc
+		self.__udts = [None] * self.__udtsAlloc
+		self.__dbs = [None] * self.__dbsAlloc
+		self.__obs = [None] * self.__obsAlloc
+		self.__fcs = [None] * self.__fcsAlloc
+		self.__fbs = [None] * self.__fbsAlloc
+		self.__sfcs = [None] * self.__sfcsAlloc
+		self.__sfbs = [None] * self.__sfbsAlloc
+		self.__sfcsExtended = {}
+		self.__sfbsExtended = {}
+
 	def reset(self):
 		self.prog.reset()
-		for block in itertools.chain(dictValues(self.udts),
-					     dictValues(self.dbs),
-					     dictValues(self.obs),
-					     dictValues(self.fcs),
-					     dictValues(self.fbs)):
-			block.destroySourceRef()
-		self.udts = {} # UDTs
-		self.dbs = { # DBs
-			0 : DB(0, permissions = 0), # read/write-protected system-DB
-		}
-		self.obs = { # OBs
-			1 : OB([], 1), # Empty OB1
-		}
+		for block in itertools.chain(self.__udts,
+					     self.__dbs,
+					     self.__obs,
+					     self.__fcs,
+					     self.__fbs):
+			if block:
+				block.destroySourceRef()
+		self.__resetBlockAllocs()
+
+		self.addDB(DB(0, permissions = 0)) # read/write-protected system-DB
+		self.addOB(OB([], 1)) # Empty OB1
+
 		self.obTempPresetHandlers = {
 			# OB TEMP-preset handlers
 			1 : OBTempPresets_table[1](self), # Default OB1 handler
 			# This table is extended as OBs are loaded.
 		}
-		self.fcs = {} # User FCs
-		self.fbs = {} # User FBs
-		self.sfcs = {} # System SFCs
-		self.sfbs = {} # System SFBs
 
 		self.is4accu = False
 		self.reallocate(force=True)
 		self.ar1 = Addressregister()
 		self.ar2 = Addressregister()
-		self.db0 = self.dbs[0]
+		self.db0 = self.getDB(0)
 		self.dbRegister = self.db0
 		self.diRegister = self.db0
 		self.callStackTop = None
@@ -971,18 +1256,20 @@ class S7CPU(object): #+cdef
 		self.initClockMemState(force=True)
 
 		# Run startup OB
-		if 102 in self.obs and self.is4accu:
+		ob102 = self.getOB(102)
+		ob100 = self.getOB(100)
+		if ob102 and self.is4accu:
 			# Cold start.
 			# This is only done on 4xx-series CPUs.
-			self.__runOB(self.obs[102])
-		elif 100 in self.obs:
+			self.__runOB(ob102)
+		elif ob100:
 			# Warm start.
 			# This really is a cold start, because remanent
 			# resources were reset. However we could not execute
 			# OB 102, so this is a fallback.
 			# This is not 100% compliant with real CPUs, but it probably
 			# is sane behavior.
-			self.__runOB(self.obs[100])
+			self.__runOB(ob100)
 
 	# Run one cycle of the user program
 #@cy	@cython.cdivision(True)
@@ -997,7 +1284,7 @@ class S7CPU(object): #+cdef
 #@cy		cdef double newTimestampUpdInter
 
 		# Run the actual OB1 code
-		self.__runOB(self.ob1)
+		self.__runOB(self.__ob1)
 
 		# Update timekeeping and statistics
 		self.updateTimestamp()
@@ -1219,15 +1506,25 @@ class S7CPU(object): #+cdef
 	def __call_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CodeBlock fc
+#@cy		cdef uint16_t fcNumber
 
-		fc = self.fcs[blockOper.offset.byteOffset]
+		fcNumber = blockOper.offset.byteOffset
+		fc = self.getFC(fcNumber)
+		if fc is None: #+unlikely
+			return None
+
 		return make_CallStackElem(self, fc, None, None, parameters, False)
 
 	def __call_RAW_FC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CodeBlock fc
+#@cy		cdef uint16_t fcNumber
 
-		fc = self.fcs[blockOper.offset.byteOffset]
+		fcNumber = blockOper.offset.byteOffset
+		fc = self.getFC(fcNumber)
+		if fc is None: #+unlikely
+			return None
+
 		return make_CallStackElem(self, fc, None, None, (), True)
 
 	def __call_FB(self, blockOper, dbOper, parameters): #@nocy
@@ -1235,32 +1532,57 @@ class S7CPU(object): #+cdef
 #@cy		cdef CallStackElem cse
 #@cy		cdef CodeBlock fb
 #@cy		cdef DB db
+#@cy		cdef uint16_t fbNumber
+#@cy		cdef uint16_t dbNumber
 
-		fb = self.fbs[blockOper.offset.byteOffset]
-		db = self.dbs[dbOper.offset.byteOffset]
+		fbNumber = blockOper.offset.byteOffset
+		fb = self.getFB(fbNumber)
+		if fb is None: #+unlikely
+			return None
+		dbNumber = dbOper.offset.byteOffset
+		db = self.getDB(dbNumber)
+		if db is None: #+unlikely
+			return None
+
 		cse = make_CallStackElem(self, fb, db, make_AwlOffset(0, 0), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
+
 		return cse
 
 	def __call_RAW_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CodeBlock fb
+#@cy		cdef uint16_t fbNumber
 
-		fb = self.fbs[blockOper.offset.byteOffset]
+		fbNumber = blockOper.offset.byteOffset
+		fb = self.getFB(fbNumber)
+		if fb is None: #+unlikely
+			return None
+
 		return make_CallStackElem(self, fb, self.diRegister, None, (), True)
 
 	def __call_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CodeBlock sfc
+#@cy		cdef int32_t sfcNumber
 
-		sfc = self.sfcs[blockOper.offset.byteOffset]
+		sfcNumber = blockOper.offset.byteOffset
+		sfc = self.getSFC(sfcNumber)
+		if sfc is None: #+unlikely
+			return None
+
 		return make_CallStackElem(self, sfc, None, None, parameters, False)
 
 	def __call_RAW_SFC(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFC(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CodeBlock sfc
+#@cy		cdef int32_t sfcNumber
 
-		sfc = self.sfcs[blockOper.offset.byteOffset]
+		sfcNumber = blockOper.offset.byteOffset
+		sfc = self.getSFC(sfcNumber)
+		if sfc is None: #+unlikely
+			return None
+
 		return make_CallStackElem(self, sfc, None, None, (), True)
 
 	def __call_SFB(self, blockOper, dbOper, parameters): #@nocy
@@ -1268,56 +1590,75 @@ class S7CPU(object): #+cdef
 #@cy		cdef CallStackElem cse
 #@cy		cdef CodeBlock sfb
 #@cy		cdef DB db
+#@cy		cdef int32_t sfbNumber
+#@cy		cdef uint16_t dbNumber
 
-		sfb = self.sfbs[blockOper.offset.byteOffset]
-		db = self.dbs[dbOper.offset.byteOffset]
+		sfbNumber = blockOper.offset.byteOffset
+		sfb = self.getSFB(sfbNumber)
+		if sfb is None: #+unlikely
+			return None
+		dbNumber = dbOper.offset.byteOffset
+		db = self.getDB(dbNumber)
+		if db is None: #+unlikely
+			return None
+
 		cse = make_CallStackElem(self, sfb, db, make_AwlOffset(0, 0), parameters, False)
 		self.dbRegister, self.diRegister = self.diRegister, db
+
 		return cse
 
 	def __call_RAW_SFB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_RAW_SFB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef CodeBlock sfb
+#@cy		cdef int32_t sfbNumber
 
-		sfb = self.sfbs[blockOper.offset.byteOffset]
+		sfbNumber = blockOper.offset.byteOffset
+		sfb = self.getSFB(sfbNumber)
+		if sfb is None: #+unlikely
+			return None
+
 		return make_CallStackElem(self, sfb, self.diRegister, None, (), True)
 
 	def __call_INDIRECT(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_INDIRECT(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
+#@cy		cdef CallStackElem cse
 #@cy		cdef uint32_t operType
 
 		blockOper = blockOper.resolve(True)
 		operType = blockOper.operType
-		try:
-			# Call the call helper and pass the resolved operands.
-			# The call to the call helper might raise a KeyError,
-			# if the block does not exist.
 
-			if operType == AwlOperatorTypes.BLKREF_FC:
-				return self.__call_RAW_FC(blockOper, dbOper, parameters)
-			elif operType == AwlOperatorTypes.BLKREF_FB:
-				return self.__call_RAW_FB(blockOper, dbOper, parameters)
-			elif operType == AwlOperatorTypes.BLKREF_SFC:
-				return self.__call_RAW_SFC(blockOper, dbOper, parameters)
-			elif operType == AwlOperatorTypes.BLKREF_SFB:
-				return self.__call_RAW_SFB(blockOper, dbOper, parameters)
-			else:
-				raise AwlSimError("Invalid CALL operand")
-		except KeyError as e:
+		if operType == AwlOperatorTypes.BLKREF_FC:
+			cse = self.__call_RAW_FC(blockOper, dbOper, parameters)
+		elif operType == AwlOperatorTypes.BLKREF_FB:
+			cse = self.__call_RAW_FB(blockOper, dbOper, parameters)
+		elif operType == AwlOperatorTypes.BLKREF_SFC:
+			cse = self.__call_RAW_SFC(blockOper, dbOper, parameters)
+		elif operType == AwlOperatorTypes.BLKREF_SFB:
+			cse = self.__call_RAW_SFB(blockOper, dbOper, parameters)
+		else:
+			raise AwlSimError("Invalid CALL operand")
+		if cse is None:
 			raise AwlSimError("Code block %d not found in indirect call" % (
 					  blockOper.offset.byteOffset))
+		return cse
 
 	def __call_MULTI_FB(self, blockOper, dbOper, parameters): #@nocy
 #@cy	cdef CallStackElem __call_MULTI_FB(self, AwlOperator blockOper, AwlOperator dbOper, tuple parameters):
 #@cy		cdef AwlOffset base
 #@cy		cdef CallStackElem cse
 #@cy		cdef CodeBlock fb
+#@cy		cdef uint16_t fbNumber
 
-		fb = self.fbs[blockOper.offset.fbNumber]
+		fbNumber = blockOper.offset.fbNumber
+		fb = self.getFB(fbNumber)
+		if fb is None: #+unlikely
+			return None
+
 		base = make_AwlOffset_fromPointerValue(self.ar2.get())
 		base.iadd(blockOper.offset)
 		cse = make_CallStackElem(self, fb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
+
 		return cse
 
 	def __call_MULTI_SFB(self, blockOper, dbOper, parameters): #@nocy
@@ -1325,12 +1666,18 @@ class S7CPU(object): #+cdef
 #@cy		cdef AwlOffset base
 #@cy		cdef CallStackElem cse
 #@cy		cdef CodeBlock sfb
+#@cy		cdef int32_t sfbNumber
 
-		sfb = self.sfbs[blockOper.offset.fbNumber]
+		sfbNumber = blockOper.offset.fbNumber
+		sfb = self.getSFB(sfbNumber)
+		if sfb is None: #+unlikely
+			return None
+
 		base = make_AwlOffset_fromPointerValue(self.ar2.get())
 		base.iadd(blockOper.offset)
 		cse = make_CallStackElem(self, sfb, self.diRegister, base, parameters, False)
 		self.dbRegister = self.diRegister
+
 		return cse
 
 	def run_CALL(self, blockOper, dbOper, parameters, raw): #@nocy
@@ -1373,6 +1720,7 @@ class S7CPU(object): #+cdef
 				newCse = self.__call_MULTI_SFB(blockOper, dbOper, parameters)
 			else:
 				raise AwlSimError("Invalid CALL operand")
+		#TODO newCse cannot be None here
 
 		newCse.prevCse = self.callStackTop
 		self.callStackTop = newCse
@@ -1399,7 +1747,7 @@ class S7CPU(object): #+cdef
 			else:
 				self.dbRegister = self.db0
 		else:
-			db = self.dbs.get(dbNumber)
+			db = self.getDB(dbNumber)
 			if db is None:
 				raise AwlSimError("Datablock %i does not exist" % dbNumber)
 			if openDI:
@@ -2264,7 +2612,7 @@ class S7CPU(object): #+cdef
 		if dbNumber < 0:
 			db = self.dbRegister
 		else:
-			db = self.dbs.get(dbNumber)
+			db = self.getDB(dbNumber)
 			if db is None:
 				raise AwlSimError("Store to DB %d, but DB "
 					"does not exist" % dbNumber)

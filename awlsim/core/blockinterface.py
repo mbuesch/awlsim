@@ -233,8 +233,11 @@ class BlockInterface(object):
 					structField.name, structField.offset,
 					"POINTER")
 
-	def __resolveMultiInstanceField(self, cpu, field):
+	def __resolveMultiInstanceField(self, _cpu, field):
+#@cy		cdef S7CPU cpu
+
 		from awlsim.core.datatypes import AwlDataType
+		cpu = _cpu
 
 		if field.dataType.type != AwlDataType.TYPE_FB_X and\
 		   field.dataType.type != AwlDataType.TYPE_SFB_X:
@@ -246,12 +249,11 @@ class BlockInterface(object):
 
 		# This is a multi-instance element.
 		# Get the FB that is embedded as multi-instance.
-		try:
-			if field.dataType.type == AwlDataType.TYPE_SFB_X:
-				multiFB = cpu.sfbs[field.dataType.index]
-			else:
-				multiFB = cpu.fbs[field.dataType.index]
-		except KeyError:
+		if field.dataType.type == AwlDataType.TYPE_SFB_X:
+			multiFB = cpu.getSFB(field.dataType.index)
+		else:
+			multiFB = cpu.getFB(field.dataType.index)
+		if not multiFB:
 			raise AwlSimError("The function block '%s' of the "
 				"embedded multi-instance '%s' "
 				"does not exist." %\

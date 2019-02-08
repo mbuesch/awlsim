@@ -314,6 +314,8 @@ class AwlTranslator(object):
 		return db
 
 	def __translateInstanceDB(self, rawDB):
+#@cy		cdef S7CPU cpu
+
 		if rawDB.fields:
 			raise AwlSimError("DB %d is an "
 				"instance DB, but it also "
@@ -337,12 +339,12 @@ class AwlTranslator(object):
 			isSFB = sym.type.type == AwlDataType.TYPE_SFB_X
 
 		# Get the FB/SFB code block
-		try:
-			if isSFB:
-				fb = self.cpu.sfbs[fbNumber]
-			else:
-				fb = self.cpu.fbs[fbNumber]
-		except KeyError:
+		cpu = self.cpu
+		if isSFB:
+			fb = cpu.getSFB(fbNumber)
+		else:
+			fb = cpu.getFB(fbNumber)
+		if not fb:
 			raise AwlSimError("Instance DB %d references %s, "
 				"but %s does not exist." %\
 				(rawDB.index, fbStr, fbStr))
@@ -520,6 +522,8 @@ class AwlSymResolver(object):
 	# to array variables are supported.
 	def resolveNamedLocal(self, block, insn, oper,
 			      pointer=False, allowWholeArrayAccess=False):
+#@cy		cdef S7CPU cpu
+
 		# Check whether we need to do something.
 		# Otherwise just return the source operator.
 		if pointer:
@@ -530,6 +534,7 @@ class AwlSymResolver(object):
 				return oper
 
 		AwlDataType = _getAwlDataTypeClass()
+		cpu = self.cpu
 
 		# Walk the ident chain to accumulate the sub-offsets
 		# for the ARRAY accesses.
@@ -562,9 +567,8 @@ class AwlSymResolver(object):
 			# Assign the struct to the UDT data type, if
 			# not already done so.
 			if dataType.type == AwlDataType.TYPE_UDT_X:
-				try:
-					udt = self.cpu.udts[dataType.index]
-				except KeyError as e:
+				udt = cpu.getUDT(dataType.index)
+				if not udt:
 					raise AwlSimError("UDT %d not found on CPU" %\
 						dataType.index)
 				assert(dataType._struct is None or
@@ -682,10 +686,12 @@ class AwlSymResolver(object):
 
 	# Get offset and width of a DB field.
 	def __dbVarToOffset(self, dbNumber, identChain, allowWholeArrayAccess=True):
+#@cy		cdef S7CPU cpu
+
 		# Get the DB
-		try:
-			db = self.cpu.dbs[dbNumber]
-		except KeyError as e:
+		cpu = self.cpu
+		db = cpu.getDB(dbNumber)
+		if not db:
 			raise AwlSimError("DB %d specified in fully qualified "
 				"operator does not exist." % dbNumber)
 

@@ -8,10 +8,12 @@ from awlsim.core.offset cimport *
 from awlsim.core.operators cimport *
 from awlsim.core.memory cimport *
 from awlsim.core.blocks cimport *
+from awlsim.core.userdefinedtypes cimport *
 from awlsim.core.datablocks cimport *
 from awlsim.core.timers cimport *
 from awlsim.core.counters cimport *
 from awlsim.core.insnmeas cimport *
+from awlsim.core.systemblocks.systemblocks cimport *
 
 
 cdef class S7CPU(object):
@@ -40,15 +42,24 @@ cdef class S7CPU(object):
 	cdef public _Bool __extendedInsnsEnabled
 	cdef public dict __dateAndTimeWeekdayMap
 
-	cdef public dict udts
-	cdef public dict dbs
-	cdef public dict obs
-	cdef public OB ob1
+	cdef public list __udts
+	cdef public list __dbs
+	cdef public list __obs
+	cdef public OB __ob1
 	cdef public dict obTempPresetHandlers
-	cdef public dict fcs
-	cdef public dict fbs
-	cdef public dict sfcs
-	cdef public dict sfbs
+	cdef public list __fcs
+	cdef public list __fbs
+	cdef public list __sfcs
+	cdef public dict __sfcsExtended
+	cdef public list __sfbs
+	cdef public dict __sfbsExtended
+	cdef public uint32_t __udtsAlloc
+	cdef public uint32_t __dbsAlloc
+	cdef public uint32_t __obsAlloc
+	cdef public uint32_t __fcsAlloc
+	cdef public uint32_t __fbsAlloc
+	cdef public uint32_t __sfcsAlloc
+	cdef public uint32_t __sfbsAlloc
 
 	cdef public S7StatusWord statusWord
 	cdef public _Bool is4accu
@@ -97,6 +108,14 @@ cdef class S7CPU(object):
 	cdef public double __timestampUpdInter
 	cdef public uint32_t __timestampUpdInterMask
 	cdef public InsnMeas __insnMeas
+
+	cdef UDT getUDT(self, uint16_t index)
+	cdef DB getDB(self, uint16_t index)
+	cdef CodeBlock getOB(self, uint16_t index)
+	cdef CodeBlock getFC(self, uint16_t index)
+	cdef CodeBlock getFB(self, uint16_t index)
+	cdef CodeBlock getSFC(self, int32_t index)
+	cdef CodeBlock getSFB(self, int32_t index)
 
 	cdef void setMcrActive(self, _Bool active)
 	cdef _Bool mcrIsOn(self)

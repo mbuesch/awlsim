@@ -44,15 +44,13 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			blockOper = self.op0
 
 			if blockOper.operType == AwlOperatorTypes.BLKREF_FC:
-				try:
-					codeBlock = self.cpu.fcs[blockOper.offset.byteOffset]
-				except KeyError as e:
+				codeBlock = self.cpu.getFC(blockOper.offset.byteOffset)
+				if not codeBlock:
 					raise AwlSimError("Called FC not found",
 						rawInsn=self.getRawInsn())
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFC:
-				try:
-					codeBlock = self.cpu.sfcs[blockOper.offset.byteOffset]
-				except KeyError as e:
+				codeBlock = self.cpu.getSFC(blockOper.offset.byteOffset)
+				if not codeBlock:
 					raise AwlSimError("SFC %d not implemented, yet" %\
 						blockOper.offset.byteOffset,
 						rawInsn=self.getRawInsn())
@@ -61,9 +59,8 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					raise AwlSimError("Missing DB in function "
 						"block call",
 						rawInsn=self.getRawInsn())
-				try:
-					codeBlock = self.cpu.fbs[blockOper.offset.byteOffset]
-				except KeyError as e:
+				codeBlock = self.cpu.getFB(blockOper.offset.byteOffset)
+				if not codeBlock:
 					raise AwlSimError("Called FB not found",
 						rawInsn=self.getRawInsn())
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
@@ -71,9 +68,8 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					raise AwlSimError("Missing DB in system function "
 						"block call",
 						rawInsn=self.getRawInsn())
-				try:
-					codeBlock = self.cpu.sfbs[blockOper.offset.byteOffset]
-				except KeyError as e:
+				codeBlock = self.cpu.getSFB(blockOper.offset.byteOffset)
+				if not codeBlock:
 					raise AwlSimError("SFB %d not implemented, yet" %\
 						blockOper.offset.byteOffset,
 						rawInsn=self.getRawInsn())
@@ -83,9 +79,13 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 			elif blockOper.operType in (AwlOperatorTypes.MULTI_FB, AwlOperatorTypes.MULTI_SFB):
 				# Multi instance call (like CALL #FOO)
 				if blockOper.operType == AwlOperatorTypes.MULTI_FB:
-					codeBlock = self.cpu.fbs[blockOper.offset.fbNumber]
+					codeBlock = self.cpu.getFB(blockOper.offset.fbNumber)
+					if not codeBlock:
+						pass#TODO
 				else:
-					codeBlock = self.cpu.sfbs[blockOper.offset.fbNumber]
+					codeBlock = self.cpu.getSFB(blockOper.offset.fbNumber)
+					if not codeBlock:
+						pass#TODO
 			else:
 				raise AwlSimError("Invalid CALL operand",
 					rawInsn=self.getRawInsn())
@@ -109,9 +109,8 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 				raise AwlSimError("Second CALL operand is "
 					"not a DB operand.",
 					rawInsn=self.getRawInsn())
-			try:
-				db = self.cpu.dbs[dbOper.offset.byteOffset]
-			except KeyError as e:
+			db = self.cpu.getDB(dbOper.offset.byteOffset)
+			if not db:
 				raise AwlSimError("DB used in FB call not found",
 					rawInsn=self.getRawInsn())
 			if not db.isInstanceDB():
@@ -120,17 +119,15 @@ class AwlInsn_AbstractCall(AwlInsn): #+cdef
 					rawInsn=self.getRawInsn())
 
 			if blockOper.operType == AwlOperatorTypes.BLKREF_FB:
-				try:
-					fb = self.cpu.fbs[blockOper.offset.byteOffset]
-				except KeyError as e:
+				fb = self.cpu.getFB(blockOper.offset.byteOffset)
+				if not fb:
 					raise AwlSimError("Called FB not found",
 						rawInsn=self.getRawInsn())
 				# TODO check if this is an FB-DB
 				pass#TODO
 			elif blockOper.operType == AwlOperatorTypes.BLKREF_SFB:
-				try:
-					fb = self.cpu.sfbs[blockOper.offset.byteOffset]
-				except KeyError as e:
+				fb = self.cpu.getSFB(blockOper.offset.byteOffset)
+				if not fb:
 					raise AwlSimError("SFB %d not implemented, yet" %\
 						blockOper.offset.byteOffset,
 						rawInsn=self.getRawInsn())

@@ -144,7 +144,9 @@ class SFC21(SFC): #+cdef
 			BVAL_ptr.setArea(PointerConst.AREA_DB)
 			BVAL_ptrArea = BVAL_ptr.getArea()
 			try:
-				db = cpu.dbs[BVAL_dbNr]
+				db = cpu.getDB(BVAL_dbNr)
+				if not db:
+					raise KeyError
 				if (db.permissions & db.PERM_READ) == 0:
 					raise KeyError
 				cpu.openDB(BVAL_dbNr, False)
@@ -161,7 +163,9 @@ class SFC21(SFC): #+cdef
 			BLK_ptr.setArea(PointerConst.AREA_DI)
 			BLK_ptrArea = BLK_ptr.getArea()
 			try:
-				db = cpu.dbs[BLK_dbNr]
+				db = cpu.getDB(BLK_dbNr)
+				if not db:
+					raise KeyError
 				if (db.permissions & db.PERM_WRITE) == 0:
 					raise KeyError
 				cpu.openDB(BLK_dbNr, True)
