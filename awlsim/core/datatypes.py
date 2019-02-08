@@ -328,7 +328,8 @@ class AwlDataType(OptionalImmutable):
 			if len(nameTokens) < 2:
 				raise AwlSimError("Invalid '%s' block data type" %\
 					nameTokens[0])
-			blockNumber = cls.tryParseImmediate_INT(nameTokens[1])
+			blockNumber = cls.tryParseImmediate_INT(nameTokens[1],
+								maxLim=0xFFFF)
 			if blockNumber is None:
 				raise AwlSimError("Invalid '%s' block data type "\
 					"index" % nameTokens[0])
@@ -563,19 +564,29 @@ class AwlDataType(OptionalImmutable):
 		elif len(tokens) == 2:
 			if typeId == self.TYPE_TIMER:
 				if tokens[0].upper() == "T":
-					value = self.tryParseImmediate_INT(tokens[1])
+					value = self.tryParseImmediate_INT(tokens[1],
+									   minLim=0,
+									   maxLim=0xFFFF)
 			elif typeId == self.TYPE_COUNTER:
 				if tokens[0].upper() in ("C", "Z"):
-					value = self.tryParseImmediate_INT(tokens[1])
+					value = self.tryParseImmediate_INT(tokens[1],
+									   minLim=0,
+									   maxLim=0xFFFF)
 			elif typeId == self.TYPE_BLOCK_DB:
 				if tokens[0].upper() == "DB":
-					value = self.tryParseImmediate_INT(tokens[1])
+					value = self.tryParseImmediate_INT(tokens[1],
+									   minLim=0,
+									   maxLim=0xFFFF)
 			elif typeId == self.TYPE_BLOCK_FB:
 				if tokens[0].upper() == "FB":
-					value = self.tryParseImmediate_INT(tokens[1])
+					value = self.tryParseImmediate_INT(tokens[1],
+									   minLim=0,
+									   maxLim=0xFFFF)
 			elif typeId == self.TYPE_BLOCK_FC:
 				if tokens[0].upper() == "FC":
-					value = self.tryParseImmediate_INT(tokens[1])
+					value = self.tryParseImmediate_INT(tokens[1],
+									   minLim=0,
+									   maxLim=0xFFFF)
 		elif len(tokens) == 1:
 			if typeId == self.TYPE_BOOL:
 				value = self.tryParseImmediate_BOOL(
@@ -672,10 +683,10 @@ class AwlDataType(OptionalImmutable):
 		return None
 
 	@classmethod
-	def tryParseImmediate_INT(cls, token):
+	def tryParseImmediate_INT(cls, token, minLim=-32768, maxLim=32767):
 		try:
 			immediate = int(token, 10)
-			if immediate > 32767 or immediate < -32768:
+			if immediate > maxLim or immediate < minLim:
 				raise AwlSimError("16-bit immediate overflow")
 		except ValueError:
 			return None
@@ -688,8 +699,7 @@ class AwlDataType(OptionalImmutable):
 			return None
 		try:
 			immediate = int(token[2:], 10)
-			if immediate > 2147483647 or immediate < -2147483648: #@nocy
-#@cy			if immediate > 2147483647LL or immediate < -2147483648LL:
+			if immediate > 2147483647 or immediate < -2147483648: #+suffix-LL
 				raise AwlSimError("32-bit immediate overflow")
 			immediate &= 0xFFFFFFFF
 		except ValueError as e:
