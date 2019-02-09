@@ -42,7 +42,7 @@ class AwlOffset(object): #+cdef
 	"""Memory area offset
 	"""
 
-	# A DB-number for fully qualified access, or None.
+	# A DB-number for fully qualified access, or -1.
 	dbNumber = -1 #@nocy
 
 	# A symbolic DB-name for fully qualified access, or None.
@@ -54,8 +54,8 @@ class AwlOffset(object): #+cdef
 	# For global symbols the chain only has one element.
 	identChain = None #@nocy
 
-	# A (S)FB-number for multi-instance calls, or None.
-	fbNumber = None #@nocy
+	# A (S)FB-number for multi-instance calls, or -1.
+	fbNumber = -1 #@nocy
 
 	# Additional sub-offset that is added to this offset, or None.
 	# This is used for arrays and structs.
@@ -182,9 +182,10 @@ def make_AwlOffset(byteOffset, bitOffset, AwlOffset=AwlOffset):		#@nocy
 #@cy	offset.dbNumber = -1
 #@cy	offset.dbName = None
 #@cy	offset.identChain = None
-#@cy	offset.fbNumber = None
+#@cy	offset.fbNumber = -1
 #@cy	offset.subOffset = None
-	offset.byteOffset, offset.bitOffset = byteOffset, bitOffset
+	offset.byteOffset = byteOffset
+	offset.bitOffset = bitOffset
 
 	return offset
 

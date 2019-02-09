@@ -10,7 +10,7 @@ cdef class AwlOffset(object):
 	cdef public int32_t dbNumber
 	cdef public object dbName
 	cdef public object identChain
-	cdef public object fbNumber
+	cdef public int32_t fbNumber
 	cdef public AwlOffset subOffset
 
 	cpdef __eq(self, object other)

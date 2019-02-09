@@ -1720,7 +1720,9 @@ class S7CPU(object): #+cdef
 				newCse = self.__call_MULTI_SFB(blockOper, dbOper, parameters)
 			else:
 				raise AwlSimError("Invalid CALL operand")
-		#TODO newCse cannot be None here
+		if newCse is None:
+			# This shall never happen.
+			raise AwlSimBug("CALL failed to construct call stack element.")
 
 		newCse.prevCse = self.callStackTop
 		self.callStackTop = newCse
