@@ -28,6 +28,7 @@ from awlsim.common.monotonic import monotonic_time #+cimport
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.profiler import *
 from awlsim.core.datatypes import AwlDataType
+from awlsim.core.symbolparser import SymbolTable, Symbol, SymTabParser
 
 import sys
 import traceback
