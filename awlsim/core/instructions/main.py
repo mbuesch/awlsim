@@ -26,12 +26,12 @@ from awlsim.common.compat import *
 from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.instructions.types import * #+cimport
 from awlsim.core.instructions.parentinfo import *
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
-from awlsim.core.util import *
 
 from awlsim.awlcompiler.optrans import *
 

@@ -27,8 +27,8 @@ from awlsim.common.project import *
 from awlsim.common.env import *
 from awlsim.common.exceptions import *
 from awlsim.common.profiler import *
+from awlsim.common.util import *
 
-from awlsim.core.util import *
 from awlsim.core.cpu import * #+cimport
 from awlsim.core.hardware import * #+cimport
 from awlsim.core.hardware_loader import *

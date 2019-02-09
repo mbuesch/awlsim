@@ -24,11 +24,11 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.systemblocks.systemblocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.datatypes import *
-from awlsim.core.util import *
 
 
 class SFC64(SFC): #+cdef

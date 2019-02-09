@@ -25,9 +25,9 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.statusword import * #+cimport
-from awlsim.core.util import *
 
 # Get the C round() function. This is different from the Python3 round().
 #from libc.math cimport round #@cy

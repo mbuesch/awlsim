@@ -32,9 +32,10 @@ import re
 from awlsim.common.cpuspecs import * #+cimport
 from awlsim.common.cpuconfig import *
 from awlsim.common.datatypehelpers import * #+cimport
+from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.operators import * #+cimport
-from awlsim.core.util import *
 from awlsim.core.parameters import * #+cimport
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport

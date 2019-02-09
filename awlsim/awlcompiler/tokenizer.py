@@ -23,7 +23,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
-import sys
 import re
 
 from awlsim.common.enumeration import *
@@ -31,11 +30,11 @@ from awlsim.common.project import *
 from awlsim.common.refmanager import *
 from awlsim.common.namevalidation import *
 from awlsim.common.sources import AwlSource
+from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
-from awlsim.core.util import *
 from awlsim.core.datatypes import *
-from awlsim.core.memory import * #@nocy
-#from awlsim.core.memory cimport * #@cy
+from awlsim.core.memory import * #+cimport
 from awlsim.core.identifier import *
 
 

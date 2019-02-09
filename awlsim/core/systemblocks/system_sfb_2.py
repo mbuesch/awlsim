@@ -25,11 +25,11 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.systemblocks.systemblocks import * #+cimport
 from awlsim.core.blockinterface import *
 from awlsim.core.datatypes import *
-from awlsim.core.util import *
 
 
 class SFB2(SFB): #+cdef

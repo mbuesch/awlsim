@@ -27,6 +27,7 @@ from awlsim.common.refmanager import *
 from awlsim.common.blockinfo import *
 from awlsim.common.wordpacker import *
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.blockinterface import *
 from awlsim.core.labels import * #+cimport
@@ -34,7 +35,6 @@ from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
-from awlsim.core.util import *
 from awlsim.core.offset import * #+cimport
 from awlsim.core.lstack import * #+cimport
 

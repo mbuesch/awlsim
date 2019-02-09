@@ -27,8 +27,8 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.immutable import *
 from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
-from awlsim.core.util import *
 from awlsim.core.timers import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.identifier import *

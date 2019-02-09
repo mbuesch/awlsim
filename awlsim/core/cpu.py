@@ -61,7 +61,6 @@ from awlsim.core.callstack import * #+cimport
 from awlsim.core.lstack import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.obtemp import * #+cimport
-from awlsim.core.util import *
 from awlsim.core.insnmeas import * #+cimport
 
 from awlsim.awlcompiler.tokenizer import *

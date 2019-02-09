@@ -25,10 +25,10 @@ from awlsim.common.compat import *
 
 from awlsim.common.sources import AwlSource
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
-from awlsim.core.util import *
 
 
 class AwlLabel(object): #+cdef

@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport
@@ -35,7 +36,6 @@ from awlsim.core.blockinterface import *
 from awlsim.core.datablocks import * #+cimport
 from awlsim.core.parameters import * #+cimport
 from awlsim.core.parenstack import * #+cimport
-from awlsim.core.util import *
 
 
 __all__ = [

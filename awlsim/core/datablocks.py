@@ -26,8 +26,8 @@ from awlsim.common.compat import *
 from awlsim.common.blockinfo import *
 from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
+from awlsim.common.util import *
 
-from awlsim.core.util import *
 from awlsim.core.operators import * #+cimport
 from awlsim.core.datatypes import *
 from awlsim.core.memory import * #+cimport

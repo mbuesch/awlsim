@@ -25,8 +25,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
-
-from awlsim.core.util import *
+from awlsim.common.util import *
 
 #cimport cython #@cy
 
