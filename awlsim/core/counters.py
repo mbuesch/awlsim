@@ -2,7 +2,7 @@
 #
 # AWL simulator - counters
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,13 +65,9 @@ class Counter(object): #+cdef
 #@cy	cdef uint16_t getValueBCD(self):
 #@cy		cdef uint16_t bcd
 
-		bcd = self.counter % 10				#@nocy
-		bcd |= ((self.counter // 10) % 10) << 4		#@nocy
-		bcd |= ((self.counter // 100) % 10) << 8	#@nocy
-
-#@cy		bcd = self.counter % 10u
-#@cy		bcd |= ((self.counter // 10u) % 10u) << 4u
-#@cy		bcd |= ((self.counter // 100u) % 10u) << 8u
+		bcd = self.counter % 10				#+suffix-u
+		bcd |= ((self.counter // 10) % 10) << 4		#+suffix-u
+		bcd |= ((self.counter // 100) % 10) << 8	#+suffix-u
 
 		return bcd
 
