@@ -520,6 +520,7 @@ class AwlSimServer(object): #+cdef
 			self.__gcTriggerCounter = trig
 
 		if self.__rtSchedEnabled:
+#			pass				#@cy-win
 			# We are running under realtime scheduling conditions.
 			# We should yield now.
 
