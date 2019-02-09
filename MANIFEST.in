@@ -19,6 +19,8 @@ include COMPATIBILITY.md
 include COPYING.txt
 include DEVELOPMENT.html
 include DEVELOPMENT.md
+include PILC.html
+include PILC.md
 include QUICK-START.html
 include QUICK-START.md
 include README.html
