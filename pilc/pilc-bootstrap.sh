@@ -540,6 +540,7 @@ EOF
 		quilt \
 		raspberrypi-bootloader \
 		raspi-config \
+		raspi-copies-and-fills \
 		rng-tools \
 		schedtool \
 		screen \
