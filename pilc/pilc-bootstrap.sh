@@ -541,6 +541,7 @@ EOF
 		raspberrypi-bootloader \
 		raspi-config \
 		raspi-copies-and-fills \
+		raspi-gpio \
 		rng-tools \
 		schedtool \
 		screen \
