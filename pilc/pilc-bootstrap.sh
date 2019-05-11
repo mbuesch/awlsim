@@ -903,6 +903,14 @@ pilc_bootstrap_third_stage()
 
 	# Create images.
 	if [ "$opt_img" -ne 0 ]; then
+		# Calculate image size.
+		local imgsize_b="$(expr "$opt_imgsize" \* 1000 \* 1000 \* 1000)"
+		local imgsize_mib="$(expr "$imgsize_b" \/ 1024 \/ 1024)"
+		# Reduce the size to make sure it fits every SD card.
+		local imgsize_mib_red="$(expr \( "$imgsize_mib" \* 98 \) \/ 100)"
+		[ -n "$imgsize_mib_red" ] || die "Failed to calculate image size"
+		info "SD image size = $imgsize_mib_red MiB"
+
 		info "Creating boot image..."
 		mkfs.vfat -F 32 -i 7771B0BB -n boot -C "$bootimgfile" \
 			$(expr \( 64 \* 1024 \) - \( 4 \* 1024 \) ) ||\
@@ -920,7 +928,7 @@ pilc_bootstrap_third_stage()
 			die "Failed to remove boot partition mount point."
 
 		info "Creating root image..."
-		mkfs.ext4 "$rootimgfile" $(expr \( 4000 - 64 \) \* 1024 ) ||\
+		mkfs.ext4 "$rootimgfile" $(expr \( "$imgsize_mib_red" - 64 \) \* 1024 ) ||\
 			die "Failed to create root filesystem."
 		mkdir "$mp_rootimgfile" ||\
 			die "Failed to make root partition mount point."
@@ -941,7 +949,7 @@ pilc_bootstrap_third_stage()
 			die "Failed to remove root partition mount point."
 
 		info "Creating image '$imgfile'..."
-		dd if=/dev/zero of="$imgfile" bs=1M count=4000 conv=sparse ||\
+		dd if=/dev/zero of="$imgfile" bs=1M count="$imgsize_mib_red" conv=sparse ||\
 			die "Failed to create image file."
 		parted "$imgfile" <<EOF
 		    unit b
@@ -1000,8 +1008,11 @@ usage()
 	echo " --qemu-bin|-Q PATH      Select qemu-user-static binary."
 	echo "                         Default: $default_qemu"
 	echo
-	echo " --img-suffix|-s SUFFIX  Image file suffix."
+	echo " --img-suffix|-X SUFFIX  Image file suffix."
 	echo "                         Default: $default_imgsuffix"
+	echo
+	echo " --img-size|-S SIZEGB    Image file size, in Gigabytes (base 1000)."
+	echo "                         Default: $default_imgsize"
 	echo
 	echo " --no-img|-I             Do not create an image."
 	echo "                         Default: Create image."
@@ -1055,6 +1066,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_arch="armhf"
 	default_qemu="/usr/bin/qemu-arm-static"
 	default_imgsuffix="-$(date '+%Y%m%d')"
+	default_imgsize=4
 	default_img=1
 	default_zimg=1
 	default_writedev=
@@ -1070,6 +1082,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
 	opt_imgsuffix="$default_imgsuffix"
+	opt_imgsize="$default_imgsize"
 	opt_img="$default_img"
 	opt_zimg="$default_zimg"
 	opt_writedev="$default_writedev"
@@ -1111,9 +1124,14 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 		--skip-debootstrap2|-2)
 			opt_skip_debootstrap2=1
 			;;
-		--img-suffix|-s)
+		--img-suffix|-X)
 			shift
 			opt_imgsuffix="$1"
+			;;
+		--img-size|-S)
+			shift
+			opt_imgsize="$(expr "$1" \* 1)"
+			[ -n "$opt_imgsize" ] || die "--img-size|-S is invalid"
 			;;
 		--no-zimg|-Z)
 			opt_zimg=0
