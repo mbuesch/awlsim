@@ -84,7 +84,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			self.master.destroy()
 		self.master = None
 		self.phy = None
-		self.cachedInputs = [None] * 0x7F
+		self.cachedInputs = [None] * (0x7F + 1)
 
 	def doStartup(self):
 		# Import the PROFIBUS hardware access modules
@@ -128,7 +128,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			self.master.initialize()
 
 			self.slaveList = self.master.getSlaveList()
-			self.cachedInputs = [None] * 0x7F
+			self.cachedInputs = [None] * (0x7F + 1)
 
 		except self.pyprofibus.PhyError as e:
 			self.raiseException("Profibus-PHY error: %s" % str(e))
