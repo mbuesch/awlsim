@@ -84,7 +84,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			self.master.destroy()
 		self.master = None
 		self.phy = None
-		self.cachedInputs = []
+		self.cachedInputs = [None] * 0x7F
 
 	def doStartup(self):
 		# Import the PROFIBUS hardware access modules
@@ -128,7 +128,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			self.master.initialize()
 
 			self.slaveList = self.master.getSlaveList()
-			self.cachedInputs = [None] * len(self.slaveList)
+			self.cachedInputs = [None] * 0x7F
 
 		except self.pyprofibus.PhyError as e:
 			self.raiseException("Profibus-PHY error: %s" % str(e))
@@ -150,13 +150,12 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 		address = self.inputAddressBase
 		for slave in self.slaveList:
 			# Get the cached slave-data
-			if not self.cachedInputs:
-				break
-			inputSize = slave._awlsimSlaveConf.inputSize
-			inData = self.cachedInputs.pop(0)
-			if not inData:
+			inData = self.cachedInputs[slave.slaveAddr]
+			if inData is None:
 				continue
+			self.cachedInputs[slave.slaveAddr] = None
 			inData = bytearray(inData)
+			inputSize = slave._awlsimSlaveConf.inputSize
 			if len(inData) > inputSize:
 				inData = inData[0:inputSize]
 			if len(inData) < inputSize:
@@ -164,7 +163,6 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			self.sim.cpu.storeInputRange(address, inData)
 			# Adjust the address base for the next slave.
 			address += inputSize
-		assert(not self.cachedInputs)
 
 	def writeOutputs(self): #+cdef
 		try:
@@ -174,12 +172,17 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 				outputSize = slave._awlsimSlaveConf.outputSize
 				outData = self.sim.cpu.fetchOutputRange(address,
 						outputSize)
-				# Send it to the slave and request the input data.
-				inData = self.master.runSlave(slave, outData)
-				# Cache the input data for the readInputs() call.
-				self.cachedInputs.append(inData)
+				# Write the output data to the pyprofibus subsystem.
+				slave.setOutData(outData)
 				# Adjust the address base for the next slave.
 				address += outputSize
+			# Run the pyprofibus master state machine.
+			slave = self.master.run()
+			if slave:
+				# Get the input data from the pyprofibus subsystem.
+				inData = slave.getInData()
+				# Cache the input data for the readInputs() call.
+				self.cachedInputs[slave.slaveAddr] = inData
 		except self.pyprofibus.ProfibusError as e:
 			self.raiseException("Hardware error: %s" % str(e))
 
