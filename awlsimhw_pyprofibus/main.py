@@ -2,7 +2,7 @@
 #
 # AWL simulator - PyProfibus hardware interface
 #
-# Copyright 2013-2017 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -62,28 +62,18 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 					0x00))
 
 		for slaveConf in self.__conf.slaveConfs:
-			desc = self.pyprofibus.DpSlaveDesc(
-				identNumber = slaveConf.gsd.getIdentNumber(),
-				slaveAddr = slaveConf.addr)
-			desc.setCfgDataElements(slaveConf.gsd.getCfgDataElements())
+			slaveDesc = slaveConf.makeDpSlaveDesc()
 			if slaveConf.gsd.isDPV1():
-				desc.setUserPrmData(slaveConf.gsd.getUserPrmData(
-						dp1PrmMask = dp1PrmMask,
-						dp1PrmSet = dp1PrmSet))
-			else:
-				desc.setUserPrmData(slaveConf.gsd.getUserPrmData())
-			desc.setSyncMode(bool(slaveConf.syncMode))
-			desc.setFreezeMode(bool(slaveConf.freezeMode))
-			desc.setGroupMask(int(slaveConf.groupMask))
-			desc.setWatchdog(int(slaveConf.watchdogMs))
-			desc._awlsimSlaveConf = slaveConf
-			self.master.addSlave(desc)
+				slaveDesc.setUserPrmData(slaveConf.gsd.getUserPrmData(
+						dp1PrmMask=dp1PrmMask,
+						dp1PrmSet=dp1PrmSet))
+			slaveDesc._awlsimSlaveConf = slaveConf
+			self.master.addSlave(slaveDesc)
 
 	def __cleanup(self):
 		if self.master:
 			self.master.destroy()
 		self.master = None
-		self.phy = None
 		self.cachedInputs = [None] * (0x7F + 1)
 
 	def doStartup(self):
@@ -91,39 +81,17 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 		# and keep references to it.
 		try:
 			import pyprofibus
-			import pyprofibus.phy_serial, pyprofibus.phy_dummy
 			self.pyprofibus = pyprofibus
 		except (ImportError, RuntimeError) as e: #@nocov
 			self.raiseException("Failed to import PROFIBUS protocol stack "
 				"module 'pyprofibus':\n%s" % str(e))
 
 		# Initialize the DPM
-		self.phy = None
 		self.master = None
 		try:
 			self.__conf = self.pyprofibus.PbConf.fromFile(
 					self.getParamValueByName("config"))
-
-			phyType = self.__conf.phyType.lower().strip()
-			if phyType == "serial":
-				self.phy = self.pyprofibus.phy_serial.CpPhySerial(
-						debug = (self.__conf.debug >= 2),
-						port = self.__conf.phyDev)
-			elif phyType == "dummy_slave":
-				self.phy = self.pyprofibus.phy_dummy.CpPhyDummySlave(
-						debug = (self.__conf.debug >= 2))
-			else:
-				self.raiseException("Invalid phyType parameter value")
-			self.phy.setConfig(baudrate = self.__conf.phyBaud)
-
-			if self.__conf.dpMasterClass == 1:
-				DPM_cls = self.pyprofibus.DPM1
-			else:
-				DPM_cls = self.pyprofibus.DPM2
-			self.master = DPM_cls(phy = self.phy,
-					      masterAddr = self.__conf.dpMasterAddr,
-					      debug = (self.__conf.debug >= 1))
-
+			self.master = self.__conf.makeDPM()
 			self.__setupSlaves()
 			self.master.initialize()
 
