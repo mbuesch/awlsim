@@ -103,6 +103,7 @@ class _MONOTONIC_RAW_CFFI_factory(_MONOTONIC_RAW_factory): #+cdef
 		self.__id_CLOCK_MONOTONIC_RAW = 4
 
 		self.__ffi = FFI()
+		# Use getattr to avoid Cython cdef compile error.
 		getattr(self.__ffi, "cdef")("""
 			typedef int clockid_t;
 			struct timespec {
