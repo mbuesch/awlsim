@@ -435,7 +435,6 @@ EOF
 		build-essential \
 		bwidget \
 		console-setup \
-		cython \
 		cython3 \
 		dbus \
 		debconf-utils \
