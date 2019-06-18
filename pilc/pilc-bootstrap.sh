@@ -29,16 +29,6 @@ basedir="$basedir/.."
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
 DEFAULT_SUITE=stretch
 
-RPIGPIO_VERSION="0.6.4"
-RPIGPIO_FILE="RPi.GPIO-$RPIGPIO_VERSION.tar.gz"
-RPIGPIO_MIRROR="https://files.pythonhosted.org/packages/f0/19/89e634790eb10d64ca87ce5c01751e784a730cf102262205d815275e883a/$RPIGPIO_FILE"
-RPIGPIO_SHA256="065b5e3fa0a8873640564040275250a38e41225292b3a1d7c0c24850d2fbbce9"
-
-SPIDEV_VERSION="3.2"
-SPIDEV_FILE="spidev-$SPIDEV_VERSION.tar.gz"
-SPIDEV_MIRROR="https://pypi.python.org/packages/36/83/73748b6e1819b57d8e1df8090200195cdae33aaa22a49a91ded16785eedd/$SPIDEV_FILE"
-SPIDEV_SHA256="09d2b5122f0dd79910713a11f9a0020f71537224bf829916def4fffc0ea59456"
-
 PPL_VERSION="0.1.1"
 PPL_FILE="ppl_v$PPL_VERSION.zip"
 PPL_MIRROR="./libs/pixtend/v1/ppl/$PPL_FILE"
@@ -210,32 +200,10 @@ build_pythonpack()
 		die "Failed to remove $name build files."
 }
 
-build_rpigpio()
-{
-	local archive="$RPIGPIO_FILE"
-	for python in pypy; do
-		build_pythonpack "$python" "RPi.GPIO-$RPIGPIO_VERSION" \
-				 "$archive" "RPi.GPIO-$RPIGPIO_VERSION" 0
-	done
-	rm "/tmp/$archive" ||\
-		die "Failed to remove /tmp/$archive."
-}
-
-build_spidev()
-{
-	local archive="$SPIDEV_FILE"
-	for python in pypy; do
-		build_pythonpack "$python" "spidev-$SPIDEV_VERSION" \
-				 "$archive" "spidev-$SPIDEV_VERSION" 0
-	done
-	rm "/tmp/$archive" ||\
-		die "Failed to remove /tmp/$archive."
-}
-
 build_ppl()
 {
 	local archive="$PPL_FILE"
-	for python in python python3 pypy; do
+	for python in python python3; do
 		build_pythonpack "$python" "ppl-$PPL_VERSION" \
 				 "$archive" "ppl-$PPL_VERSION" 1
 	done
@@ -246,7 +214,7 @@ build_ppl()
 build_ppl2()
 {
 	local archive="$PPL2_FILE"
-	for python in python python3 pypy; do
+	for python in python python3; do
 		build_pythonpack "$python" "ppl2-$PPL2_VERSION" \
 				 "$archive" "ppl2-$PPL2_VERSION" 1
 	done
@@ -340,8 +308,6 @@ pilc_bootstrap_first_stage()
 	) || die
 
 	# Fetch packages
-	download "$opt_target_dir/tmp/$RPIGPIO_FILE" "$RPIGPIO_MIRROR" "$RPIGPIO_SHA256"
-	download "$opt_target_dir/tmp/$SPIDEV_FILE" "$SPIDEV_MIRROR" "$SPIDEV_SHA256"
 	download "$opt_target_dir/tmp/$PPL_FILE" "$PPL_MIRROR" "$PPL_SHA256"
 	download "$opt_target_dir/tmp/$PPL2_FILE" "$PPL2_MIRROR" "$PPL2_SHA256"
 
@@ -512,9 +478,6 @@ EOF
 		openssh-server \
 		parted \
 		pkg-config \
-		pypy \
-		pypy-dev \
-		pypy-setuptools \
 		python \
 		python-all-dev \
 		python-cairo \
@@ -590,8 +553,6 @@ EOF
 		die "Failed to disable rsync.service"
 
 	info "Building Python modules..."
-	build_rpigpio
-	build_spidev
 	build_ppl
 	build_ppl2
 
@@ -673,8 +634,6 @@ EOF
 		# Core
 		dpkg -i ../python3-awlsim_*.deb ||\
 			die "Failed to install python3-awlsim"
-		dpkg -i ../pypy-awlsim_*.deb ||\
-			die "Failed to install pypy-awlsim"
 		if [ $opt_cython -ne 0 ]; then
 			dpkg -i ../cython3-awlsim_*.deb ||\
 				die "Failed to install cython3-awlsim"
@@ -682,8 +641,6 @@ EOF
 		# hardware: dummy
 		dpkg -i ../python3-awlsimhw-dummy_*.deb ||\
 			die "Failed to install python3-awlsimhw-dummy"
-		dpkg -i ../pypy-awlsimhw-dummy_*.deb ||\
-			die "Failed to install pypy-awlsimhw-dummy"
 		if [ $opt_cython -ne 0 ]; then
 			dpkg -i ../cython3-awlsimhw-dummy_*.deb ||\
 				die "Failed to install cython3-awlsimhw-dummy"
@@ -698,8 +655,6 @@ EOF
 		# hardware: profibus
 		dpkg -i ../python3-awlsimhw-profibus_*.deb ||\
 			die "Failed to install python3-awlsimhw-profibus"
-		dpkg -i ../pypy-awlsimhw-profibus_*.deb ||\
-			die "Failed to install pypy-awlsimhw-profibus"
 		if [ $opt_cython -ne 0 ]; then
 			dpkg -i ../cython3-awlsimhw-profibus_*.deb ||\
 				die "Failed to install cython3-awlsimhw-profibus"
@@ -707,8 +662,6 @@ EOF
 		# hardware: RPi GPIO
 		dpkg -i ../python3-awlsimhw-rpigpio_*.deb ||\
 			die "Failed to install python3-awlsimhw-rpigpio"
-		dpkg -i ../pypy-awlsimhw-rpigpio_*.deb ||\
-			die "Failed to install pypy-awlsimhw-rpigpio"
 		if [ $opt_cython -ne 0 ]; then
 			dpkg -i ../cython3-awlsimhw-rpigpio_*.deb ||\
 				die "Failed to install cython3-awlsimhw-rpigpio"
@@ -716,8 +669,6 @@ EOF
 		# hardware: PiXtend
 		dpkg -i ../python3-awlsimhw-pixtend_*.deb ||\
 			die "Failed to install python3-awlsimhw-pixtend"
-		dpkg -i ../pypy-awlsimhw-pixtend_*.deb ||\
-			die "Failed to install pypy-awlsimhw-pixtend"
 		if [ $opt_cython -ne 0 ]; then
 			dpkg -i ../cython3-awlsimhw-pixtend_*.deb ||\
 				die "Failed to install cython3-awlsimhw-pixtend"
@@ -780,8 +731,6 @@ EOF
 		info "Installing pyprofibus..."
 		dpkg -i ../python3-pyprofibus_*.deb ||\
 			die "Failed to install python3-pyprofibus"
-		dpkg -i ../pypy-pyprofibus_*.deb ||\
-			die "Failed to install pypy-pyprofibus"
 		dpkg -i ../profisniff_*.deb ||\
 			die "Failed to install profisniff"
 		dpkg -i ../gsdparser_*.deb ||\
