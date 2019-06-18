@@ -475,17 +475,6 @@ EOF
 		openssh-server \
 		parted \
 		pkg-config \
-		python \
-		python-all-dev \
-		python-cairo \
-		python-dev \
-		python-gtk2 \
-		python-rpi.gpio \
-		python-serial \
-		python-setuptools \
-		python-smbus \
-		python-spidev \
-		python-tk \
 		python3 \
 		python3-all-dev \
 		python3-cairo \
