@@ -342,7 +342,6 @@ pilc_bootstrap_second_stage()
 	fi
 	export CFLAGS="-O3 -march=$march -mfpu=vfp -mfloat-abi=hard -pipe"
 	export CXXFLAGS="$CFLAGS"
-#	export CC=clang LINKCC=clang LDSHARED="clang -shared" CXX=clang++
 
 	# debootstrap second stage.
 	if [ $opt_skip_debootstrap2 -eq 0 ]; then
@@ -435,7 +434,6 @@ EOF
 		blt-dev \
 		build-essential \
 		bwidget \
-		clang \
 		console-setup \
 		cython \
 		cython3 \
