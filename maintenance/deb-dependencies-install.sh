@@ -12,7 +12,6 @@ exec apt install \
 	python3-cffi \
 	python3-coverage \
 	python3-dev \
-	python3-nose \
 	python3-pyqt5 \
 	python3-pyside2.qtcore \
 	python3-pyside2.qtgui \

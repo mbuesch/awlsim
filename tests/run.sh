@@ -467,58 +467,47 @@ run_sh_test()
 }
 
 # $1=interpreter $2=test_file
-run_nose_test()
+run_pyunit_test()
 {
 	local interpreter="$1"
 	local test_case="$2"
 	shift; shift
 
 	[ -z "$test_case" ] &&\
-		die "Nose test case is missing"
+		die "Python unittest test case is missing"
 	[ -d "$test_case" ] &&\
-		die "Nose test case '$test_case' must not be a directory"
+		die "Python unittest test case '$test_case' must not be a directory"
 	[ -x "$test_case" ] &&\
-		die "Nose test case '$test_case' must NOT be executable"
-
-	# Select nosetests or nosetests3
-	local interp_ver="$(get_interpreter_version "$interpreter")"
-	local interp_major="$(echo "$interp_ver" | cut -d' ' -f 1)"
-	if [ "$interp_major" = "2" ]; then
-		find_executable nosetests
-		local nose="$RET"
-	else
-		find_executable nosetests3
-		local nose="$RET"
-	fi
+		die "Python unittest test case '$test_case' must NOT be executable"
 
 	# Resolve relative path
 	[ "$(echo "$test_case" | cut -c1)" = '/' ] ||\
 		local test_case="$(pwd)/$test_case"
 
 	(
-		EXTRA_PYTHONPATH=
-		# Add nose libraries to pypy environment
-		if [ "$(basename "$interpreter")" = "pypy" ]; then
-			local p='import sys; print(":".join(p for p in sys.path if p.startswith("/usr/")))'
-			EXTRA_PYTHONPATH="$("$interpreter" -c "$p"):$(python2 -c "$p"):$EXTRA_PYTHONPATH"
-		fi
 		# Add awlsim_tstlib.py to PYTHONPATH
-		EXTRA_PYTHONPATH="$rootdir/tests:$EXTRA_PYTHONPATH"
+		EXTRA_PYTHONPATH="$rootdir:$rootdir/tests:$EXTRA_PYTHONPATH"
 
 		# Setup python environment
 		adjust_niceness "$($SHELL -c 'echo $PPID')"
 		setup_test_environment "$interpreter" "$test_case"
 		local interpreter="$RET"
 
-		# Run the nose test case
-		cd "$rootdir" || die "Failed to cd to rootdir."
-		local opts="--no-byte-compile --verbosity=2"
+		export PYTHONDONTWRITEBYTECODE=1
+
+		# Run the Python unittest test case
+		cd "$(dirname "$test_case")" || die "Failed to cd to test directory."
+
+		# Convert test name to module name (for python2)
+		local test_case="$(basename "$test_case" .py)"
+
+		# Run it.
 		if [ -n "$AWLSIM_TEST_QUIET" ]; then
-			"$interpreter" "$nose" $opts "$test_case" >/dev/null 2>&1 ||\
-				die "Nose test case '$(basename "$test_case")' failed."
+			"$interpreter" -m unittest "$test_case" >/dev/null 2>&1 ||\
+				die "Python unittest test case '$(basename "$test_case")' failed."
 		else
-			"$interpreter" "$nose" $opts "$test_case" ||\
-				die "Nose test case '$(basename "$test_case")' failed."
+			"$interpreter" -m unittest "$test_case" ||\
+				die "Python unittest test case '$(basename "$test_case")' failed."
 		fi
 
 		infomsg "$(basename "$test_case"): OK"
@@ -559,7 +548,7 @@ run_test()
 		elif [ "$(echo -n "$testfile" | tail -c3)" = ".sh" ]; then
 			run_sh_test "$interpreter" "$testfile" "$@"
 		elif [ "$(echo -n "$testfile" | tail -c3)" = ".py" ]; then
-			run_nose_test "$interpreter" "$testfile" "$@"
+			run_pyunit_test "$interpreter" "$testfile" "$@"
 		else
 			die "Test file type of '$testfile' not recognized"
 		fi
@@ -617,7 +606,7 @@ run_test_directory()
 		run_test_parallel "$interpreter" "$entry"
 		check_job_failure && return
 	done
-	# run nose tests
+	# run .py unittest tests
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c3)" = ".py" ] || continue
