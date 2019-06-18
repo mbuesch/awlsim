@@ -143,6 +143,26 @@ class AwlSimEnv(object):
 				pass
 		return None
 
+	MLOCK_OFF	= 0
+	MLOCK_ALL	= 1
+	MLOCK_FORCEALL	= 2
+
+	@classmethod
+	def getMLock(cls):
+		"""Get AWLSIM_MLOCK.
+		Returns one of the MLOCK_... constants.
+		"""
+		mlockStr = cls.__getVar("MLOCK", "0").lower().strip()
+		try:
+			mlock = int(mlockStr)
+			if mlock not in {cls.MLOCK_OFF,
+					 cls.MLOCK_ALL,
+					 cls.MLOCK_FORCEALL}:
+				raise ValueError
+		except ValueError as e:
+			return cls.MLOCK_OFF
+		return mlock
+
 	GCMODE_RT	= "realtime"	# Manual GC, if realtime scheduling
 	GCMODE_AUTO	= "auto"	# Automatic GC
 	GCMODE_MANUAL	= "manual"	# Manual GC

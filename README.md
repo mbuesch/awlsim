@@ -186,6 +186,11 @@ The following environment variables control Awlsim's basic behavior:
 * `AWLSIM_AFFINITY`<br />
   `=0,2,...`  Comma separated list of host CPU cores to run on. Default: all cores.<br />
 
+* `AWLSIM_MLOCK`<br />
+  `=0`  Do not try to mlockall. See man 2 mlockall. (default).<br />
+  `=1`  Try to mlockall all current and future memory. See man 2 mlockall.<br />
+  `=2`  mlockall all current and future memory. Abort on failure. See man 2 mlockall.<br />
+
 * `AWLSIM_PROFILE`<br />
   `=0`  Disable profiling (default)<br />
   `=1`  Enable core cycle profiling<br />

@@ -33,6 +33,7 @@ from awlsim.common.util import *
 from awlsim.common.exceptions import *
 from awlsim.common.monotonic import * #+cimport
 from awlsim.common.datatypehelpers import * #+cimport
+from awlsim.common.mlock import *
 
 from awlsim.core.main import * #+cimport
 from awlsim.core.symbolparser import *
@@ -489,6 +490,13 @@ class AwlSimServer(object): #+cdef
 				printError("Cannot set CPU scheduling priority. "
 					   "os.sched_setparam/os.sched_getscheduler "
 					   "is not available.")
+
+		self.__setMLock(allowRtPolicy)
+
+	def __setMLock(self, allowMLock):
+		"""Lock all memory, if required.
+		"""
+		AwlSimMLock.lockMemory(allowMLock)
 
 	def __yieldHostCPU(self): #@nocy
 #@cy	cdef void __yieldHostCPU(self):

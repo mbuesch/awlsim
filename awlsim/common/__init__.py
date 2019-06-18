@@ -8,6 +8,7 @@ from awlsim.common.enumeration import *
 from awlsim.common.env import *
 from awlsim.common.exceptions import *
 from awlsim.common.immutable import *
+from awlsim.common.mlock import *
 from awlsim.common.net import *
 from awlsim.common.project import *
 from awlsim.common.sources import *
