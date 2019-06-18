@@ -203,7 +203,7 @@ build_pythonpack()
 build_ppl()
 {
 	local archive="$PPL_FILE"
-	for python in python python3; do
+	for python in python3; do
 		build_pythonpack "$python" "ppl-$PPL_VERSION" \
 				 "$archive" "ppl-$PPL_VERSION" 1
 	done
@@ -214,7 +214,7 @@ build_ppl()
 build_ppl2()
 {
 	local archive="$PPL2_FILE"
-	for python in python python3; do
+	for python in python3; do
 		build_pythonpack "$python" "ppl2-$PPL2_VERSION" \
 				 "$archive" "ppl2-$PPL2_VERSION" 1
 	done
