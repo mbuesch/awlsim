@@ -618,11 +618,20 @@ EOF
 			# Disable cython
 			sed -i -e '/Package: cython/,/^$/ d' \
 				debian/control ||\
-				die "Failed to patch control file"
+				die "Failed to patch control file (cython)"
 			sed -i -e 's/export AWLSIM_CYTHON_BUILD=1/export AWLSIM_CYTHON_BUILD=0/' \
 				debian/rules ||\
-				die "Failed to patch rules file"
+				die "Failed to patch rules file (cython)"
 		fi
+		# Disable pypy
+		sed -i -e '/Package: pypy/,/^$/ d' -e '/^\s*pypy.*$/ d'\
+			debian/control ||\
+			die "Failed to patch control file (pypy)"
+		sed -i -e 's/,pypy//' \
+			debian/rules ||\
+			die "Failed to patch rules file (pypy)"
+
+		# Build the packages.
 		debuild -uc -us -b -d || die "debuild failed"
 		info "Built awlsim files:"
 		ls .. || die "Failed to list results"
@@ -721,6 +730,17 @@ EOF
 	(
 		cd /tmp/awlsim/pyprofibus ||\
 			die "Failed to cd"
+		if [ $opt_cython -eq 0 ]; then
+			# Disable cython
+			sed -i -e '/Package: cython/,/^$/ d' \
+				debian/control ||\
+				die "Failed to patch control file (cython)"
+			sed -i -e 's/export PYPROFIBUS_CYTHON_BUILD=1/export PYPROFIBUS_CYTHON_BUILD=0/' \
+				debian/rules ||\
+				die "Failed to patch rules file (cython)"
+		fi
+
+		# Build the packages.
 		debuild -uc -us -b -d || die "debuild failed"
 		info "Built pyprofibus files:"
 		ls .. || die "Failed to list results"
