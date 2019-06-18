@@ -625,6 +625,10 @@ EOF
 	cp /tmp/templates/modules-load-i2c.conf /etc/modules-load.d/i2c.conf ||\
 		die "Failed to create /etc/modules-load.d/i2c.conf"
 
+	info "Creating /etc/security/limits.d/pilc-limits.conf..."
+	cp /tmp/templates/pilc-limits.conf /etc/security/limits.d/pilc-limits.conf ||\
+		die "Failed to create pilc-limits.conf"
+
 	info "Creating users/groups..."
 	userdel -f pi
 	groupdel pi
