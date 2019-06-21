@@ -658,25 +658,24 @@ __build_cython()
 		return 1
 	}
 
-	local old_dir="$(pwd)"
-
-	infomsg "=== Building awlsim $cython modules with $python"
-	cd "$rootdir" || die "cd to $rootdir failed"
-	CFLAGS="-O0" CPPFLAGS= CXXFLAGS="-O0" LDFLAGS= \
-		AWLSIM_CYTHON_BUILD=1 \
-		AWLSIM_CYTHON_PARALLEL=1 \
+	(
+		infomsg "=== Building awlsim $cython modules with $python"
+		cd "$rootdir" || die "cd to $rootdir failed"
+		CFLAGS="-O0" CPPFLAGS= CXXFLAGS="-O0" LDFLAGS= \
+			AWLSIM_CYTHON_BUILD=1 \
+			AWLSIM_CYTHON_PARALLEL=1 \
+			nice -n 5 \
+			"$python" ./setup.py build >/dev/null ||\
+			die "'$python ./setup.py build' failed"
+	)
+	(
+		infomsg "=== Building awlsim $cython test cases with $python"
+		cd "$rootdir/tests" || die "cd to $rootdir/tests failed"
+		rm -rf build || die "Failed to clean test cases build"
 		nice -n 5 \
-		"$python" ./setup.py build >/dev/null ||\
-		die "'$python ./setup.py build' failed"
-
-	infomsg "=== Building awlsim $cython test cases with $python"
-	cd "$rootdir/tests" || die "cd to $rootdir/tests failed"
-	rm -rf build || die "Failed to clean test cases build"
-	nice -n 5 \
-		"$python" ./setup-cython-tests.py build >/dev/null ||\
-		die "'$python ./setup-cython-tests.py build' failed"
-
-	cd "$old_dir" || die "Failed to go back to old directory."
+			"$python" ./setup-cython-tests.py build >/dev/null ||\
+			die "'$python ./setup-cython-tests.py build' failed"
+	)
 	return 0
 }
 
@@ -699,17 +698,6 @@ do_tests()
 		local all_interp="python3 python2"
 		if [ $opt_extended -ne 0 ]; then
 			die "The options --quick and --extended are mutually exclusive."
-		fi
-	fi
-
-	local cython3_build_pid=
-	if is_parallel_run; then
-		# Trigger the build jobs, if required.
-		local inter="$opt_interpreter $all_interp"
-		if printf '%s' "$inter" | grep -qwe 'cython3'; then
-			wait_for_free_job_slot
-			build_cython3 &
-			local cython3_build_pid=$!
 		fi
 	fi
 
@@ -741,11 +729,8 @@ do_tests()
 				warn_skipped "$interpreter"
 				[ -n "$opt_interpreter" ] && break || continue
 			}
-			if is_parallel_run; then
-				wait_for_job_pid $cython3_build_pid
-			else
-				build_cython3 || die "Cython3 build failed."
-			fi
+			wait_for_all_background_jobs
+			build_cython3 || die "Cython3 build failed."
 		else
 			have_prog "$interpreter" || {
 				warn_skipped "$interpreter"
