@@ -1,6 +1,6 @@
 #
 #   Cython patcher
-#   v1.19
+#   v1.20
 #
 #   Copyright (C) 2012-2019 Michael Buesch <m@bues.ch>
 #
@@ -31,12 +31,18 @@ import re
 WORKER_MEM_BYTES	= 800 * 1024*1024
 WORKER_CPU_OVERCOMMIT	= 2
 
+setupFileName = "setup.py"
 parallelBuild = False
 profileEnabled = False
 debugEnabled = False
 ext_modules = []
 CythonBuildExtension = None
 
+patchDirName = "cython_patched.%s-%s-%d.%d" % (
+		platform.system().lower(),
+		platform.machine().lower(),
+		sys.version_info[0],
+		sys.version_info[1])
 
 _Cython_Distutils_build_ext = None
 _cythonPossible = None
@@ -284,15 +290,10 @@ def registerCythonModule(baseDir, sourceModName):
 
 	modDir = os.path.join(baseDir, sourceModName)
 	# Make path to the cython patch-build-dir
-	patchDir = os.path.join(baseDir, "build",
-		"cython_patched.%s-%s-%d.%d" %\
-		(platform.system().lower(),
-		 platform.machine().lower(),
-		 sys.version_info[0], sys.version_info[1]),
-		"%s_cython" % sourceModName
-	)
+	patchDir = os.path.join(baseDir, "build", patchDirName,
+				("%s_cython" % sourceModName))
 
-	if not os.path.exists(os.path.join(baseDir, "setup.py")) or\
+	if not os.path.exists(os.path.join(baseDir, setupFileName)) or\
 	   not os.path.exists(modDir) or\
 	   not os.path.isdir(modDir):
 		raise Exception("Wrong directory. "
@@ -390,9 +391,9 @@ def registerCythonModule(baseDir, sourceModName):
 					)
 				)
 
-def registerCythonModules():
-	baseDir = os.curdir # Base directory, where setup.py lives.
-
+def registerCythonModules(baseDir=None):
+	if baseDir is None:
+		baseDir = os.curdir
 	for filename in os.listdir(baseDir):
 		if os.path.isdir(os.path.join(baseDir, filename)) and\
 		   os.path.exists(os.path.join(baseDir, filename, "__init__.py")) and\
