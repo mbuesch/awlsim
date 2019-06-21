@@ -1,7 +1,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim_tstlib import *
+initTest(__file__)
 
-from awlsim.common.movingavg import *
+from awlsim.common.movingavg import * #+cimport
 from awlsim.common.exceptions import *
 
 

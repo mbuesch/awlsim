@@ -27,6 +27,8 @@ rm -f MANIFEST
 rm -f *.html
 find ./doc -name '*.html' -delete
 
+rm -rf tests/build
+find ./tests -name '__init__.py' -delete
 
 rm -f debian/files \
       debian/*.debhelper \

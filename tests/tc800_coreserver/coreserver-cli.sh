@@ -8,15 +8,15 @@ sh_test()
 	infomsg "--- Running coreserver tests"
 	cd "$rootdir" || die "Failed to change to rootdir '$rootdir'"
 
-	for testfile in 000-base/shutdown.awl \
-			000-base/EXAMPLE.awlpro; do
+	for testfile in tc000_base/shutdown.awl \
+			tc000_base/EXAMPLE.awlpro; do
 		run_test "$interpreter" "$basedir/$testfile" \
 			--spawn-backend --interpreter "$interpreter" \
 			--connect-to localhost:$(get_port)
 	done
 
 	infomsg "----- Testing MemoryArea accesses"
-	run_test "$interpreter" "$basedir/000-base/EXAMPLE.awlpro" \
+	run_test "$interpreter" "$basedir/tc000_base/EXAMPLE.awlpro" \
 		--spawn-backend --interpreter "$interpreter" \
 		--connect-to localhost:$(get_port) \
 		--mem-read E:1:8 --mem-read A:2:16 --mem-read M:3:32 \

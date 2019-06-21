@@ -26,7 +26,7 @@ sh_test()
 	if interpreter_is_gui_compat "$interpreter"; then
 
 		local tmp_project="$(maketemp project)"
-		cat "$basedir"/000-base/EXAMPLE.awlpro > "$tmp_project" ||\
+		cat "$basedir"/tc000_base/EXAMPLE.awlpro > "$tmp_project" ||\
 			test_failed "Copying of EXAMPLE.awlpro failed"
 
 		"$interpreter" ./awlsim-proupgrade -h >/dev/null ||\

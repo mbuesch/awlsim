@@ -490,13 +490,26 @@ run_pyunit_test()
 
 		# Setup python environment
 		adjust_niceness "$($SHELL -c 'echo $PPID')"
+		local orig_interpreter="$interpreter"
 		setup_test_environment "$interpreter" "$test_case"
 		local interpreter="$RET"
 
 		export PYTHONDONTWRITEBYTECODE=1
 
-		# Run the Python unittest test case
-		cd "$(dirname "$test_case")" || die "Failed to cd to test directory."
+		if [ "$orig_interpreter" = "cython3" ] && ! [ -e "$(dirname "$test_case")/no_cython" ]; then
+			# Get the relative test case path starting in 'tests' directory.
+			local relpath="$(realpath -m --no-symlinks --relative-base="$rootdir/tests" "$test_case")"
+			# Patch the module name to Cython name (append _cython).
+			local patch_re='s/(tc[0-9][0-9][0-9]_[0-9a-zA-Z]*)/\1_cython/'
+			local relpath_cython="$(printf "%s" "$relpath" | sed -Ee "$patch_re")"
+			# Get the relative directory of the test case.
+			local reldir_cython="$(dirname "$relpath_cython")"
+			# Go to the unittest subdir to run the Cython unittest.
+			cd "$rootdir/tests/build/"lib.*-3.*"/$reldir_cython" || die "Failed to cd to test directory."
+		else
+			# Go to the unittest subdir to run the Python unittest.
+			cd "$(dirname "$test_case")" || die "Failed to cd to test directory."
+		fi
 
 		# Convert test name to module name (for python2)
 		local test_case="$(basename "$test_case" .py)"
@@ -525,8 +538,10 @@ run_test()
 
 	# Don't run ourself
 	[ "$(basename "$testfile")" = "run.sh" ] && return
-	# Don't run the test helper library
+	# Don't run artifacts that aren't actual test cases.
 	[ "$(basename "$testfile")" = "awlsim_tstlib.py" ] && return
+	[ "$(basename "$testfile")" = "setup-cython-tests.py" ] && return
+	[ "$(basename "$testfile")" = "__init__.py" ] && return
 
 	local disabled="$(get_conf "$testfile" disabled)"
 	if [ -z "$disabled" ]; then
@@ -577,6 +592,8 @@ run_test_directory()
 	local interpreter="$1"
 	local directory="$2"
 
+	[ "$(basename "$directory")" = "build" ] && return
+
 	local prettydir="$(realpath -m --no-symlinks --relative-base="$rootdir" "$directory")/"
 
 	infomsg ">>> entering $prettydir"
@@ -610,6 +627,7 @@ run_test_directory()
 	for entry in "$directory"/*; do
 		[ -d "$entry" ] && continue
 		[ "$(echo -n "$entry" | tail -c3)" = ".py" ] || continue
+		[ "$entry" = "__init__.py" ] && continue
 		run_test_parallel "$interpreter" "$entry"
 		check_job_failure && return
 	done
@@ -639,14 +657,26 @@ __build_cython()
 		warnmsg "=== WARNING: Cannot build $cython modules"
 		return 1
 	}
-	cd "$rootdir" || die "cd to $rootdir failed"
+
+	local old_dir="$(pwd)"
+
 	infomsg "=== Building awlsim $cython modules with $python"
+	cd "$rootdir" || die "cd to $rootdir failed"
 	CFLAGS="-O0" CPPFLAGS= CXXFLAGS="-O0" LDFLAGS= \
 		AWLSIM_CYTHON_BUILD=1 \
 		AWLSIM_CYTHON_PARALLEL=1 \
 		nice -n 5 \
 		"$python" ./setup.py build >/dev/null ||\
 		die "'$python ./setup.py build' failed"
+
+	infomsg "=== Building awlsim $cython test cases with $python"
+	cd "$rootdir/tests" || die "cd to $rootdir/tests failed"
+	rm -rf build || die "Failed to clean test cases build"
+	nice -n 5 \
+		"$python" ./setup-cython-tests.py build >/dev/null ||\
+		die "'$python ./setup-cython-tests.py build' failed"
+
+	cd "$old_dir" || die "Failed to go back to old directory."
 	return 0
 }
 

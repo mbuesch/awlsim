@@ -1,7 +1,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim_tstlib import *
+initTest(__file__)
 
-from awlsim.core.labels import *
+from awlsim.core.labels import * #+cimport
 
 
 class Test_AwlLabels(TestCase):

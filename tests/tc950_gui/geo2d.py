@@ -1,5 +1,6 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 from awlsim_tstlib import *
+initTest(__file__)
 
 from awlsim.gui.geo2d import *
 

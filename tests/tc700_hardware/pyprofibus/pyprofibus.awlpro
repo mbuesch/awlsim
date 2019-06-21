@@ -72,7 +72,7 @@
 		<module name="pyprofibus">
 			<params>
 				<param name="config"
-				       value="tests/700-hardware/pyprofibus/pyprofibus.conf" />
+				       value="tests/tc700_hardware/pyprofibus/pyprofibus.conf" />
 				<param name="inputAddressBase"
 				       value="8" />
 				<param name="outputAddressBase"
