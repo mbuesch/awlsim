@@ -700,6 +700,11 @@ EOF
 
 		#TODO run the testsuite
 
+		# Install configuration
+		mkdir -p /etc/awlsim || die "Failed to create /etc/awlsim"
+		cp awlsimhw_pyprofibus.conf /etc/awlsim/ ||\
+			die "Failed to copy awlsimhw_pyprofibus.conf"
+
 		#TODO install unit via package
 		info "Installing awlsim service unit..."
 		local awlsim_prefix=/usr
@@ -709,7 +714,8 @@ EOF
 		sed -e 's|@USER@|root|g' \
 		    -e 's|@GROUP@|root|g' \
 		    -e "s|@PREFIX@|$awlsim_prefix|g" \
-		    -e 's|@PROJECT@|/etc/awlsim-server.awlpro|g' \
+		    -e 's|@WORKING_DIRECTORY@|/etc/awlsim|g' \
+		    -e 's|@PROJECT@|/etc/awlsim/awlsim-server.awlpro|g' \
 		    -e "s|@PYTHON@|/usr/bin/python$pyver|g" \
 		    -e "s|@PYTHON_SITE@|$site|g" >\
 		    /lib/systemd/system/awlsim-server.service ||\

@@ -10,6 +10,7 @@ Restart=on-failure
 RestartSec=100ms
 User=@USER@
 Group=@GROUP@
+WorkingDirectory=@WORKING_DIRECTORY@
 Nice=-15
 
 ExecStart=@PYTHON@ @PREFIX@/bin/awlsim-server -l localhost -4 -S -w @PROJECT@
