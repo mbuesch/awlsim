@@ -667,7 +667,8 @@ __build_cython()
 			nice -n 5 \
 			"$python" ./setup.py build >/dev/null ||\
 			die "'$python ./setup.py build' failed"
-	)
+	) || die
+
 	(
 		infomsg "=== Building awlsim $cython test cases with $python"
 		cd "$rootdir/tests" || die "cd to $rootdir/tests failed"
@@ -675,7 +676,8 @@ __build_cython()
 		nice -n 5 \
 			"$python" ./setup-cython-tests.py build >/dev/null ||\
 			die "'$python ./setup-cython-tests.py build' failed"
-	)
+	) || die
+
 	return 0
 }
 
