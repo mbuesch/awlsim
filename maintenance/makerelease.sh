@@ -92,7 +92,7 @@ hook_doc_archives()
 			. "$doc_dir" ||\
 			die "Failed to copy documentation."
 		cd "$tmpdir" || die "Failed to cd '$tmpdir'"
-		tar cjf "$archive_dir"/$doc_name.tar.bz2 \
+		tar cJf "$archive_dir"/$doc_name.tar.xz \
 			"$doc_name" ||\
 			die "Failed to create doc archive."
 	) || die
@@ -103,5 +103,5 @@ export AWLSIM_CYTHON_BUILD=1
 export AWLSIM_CYTHON_PARALLEL=1
 
 project=awlsim
-default_archives=py-sdist-bz2
+default_archives=py-sdist-xz
 makerelease "$@"
