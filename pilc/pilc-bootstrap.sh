@@ -430,10 +430,7 @@ EOF
 		aptitude \
 		autoconf \
 		automake \
-		bc \
-		blt-dev \
 		build-essential \
-		bwidget \
 		console-setup \
 		cython3 \
 		dbus \
@@ -446,48 +443,21 @@ EOF
 		i2c-tools \
 		irqbalance \
 		iw \
-		libbluetooth-dev \
-		libboost-python-dev \
-		libbz2-dev \
-		libdb-dev \
-		libgdbm-dev \
-		libgl1-mesa-dev \
-		libglib2.0-dev \
-		libglu1-mesa-dev \
-		libgtk2.0-dev \
-		liblzma-dev \
-		libmodbus-dev \
-		libmpdec-dev \
-		libncurses5-dev \
-		libncursesw5-dev \
-		libreadline-dev \
-		libsqlite3-dev \
-		libssl-dev \
-		libtk-img \
-		libudev-dev \
-		libusb-1.0-0-dev \
-		libxmu-dev \
 		locales \
 		nano \
 		ntp \
-		openssh-blacklist \
-		openssh-blacklist-extra \
 		openssh-server \
 		parted \
 		pkg-config \
 		python3 \
 		python3-all-dev \
-		python3-cairo \
 		python3-cffi \
 		python3-coverage \
 		python3-dev \
 		python3-rpi.gpio \
 		python3-serial \
 		python3-setuptools \
-		python3-smbus \
-		python3-sphinx \
 		python3-spidev \
-		python3-tk \
 		quilt \
 		raspberrypi-bootloader \
 		raspi-config \
@@ -496,19 +466,12 @@ EOF
 		rng-tools \
 		schedtool \
 		screen \
-		sharutils \
 		sudo \
 		systemd \
-		tcl-dev \
-		tclx \
-		texinfo \
-		time \
-		tk-dev \
 		tmux \
 		vim \
 		wireless-tools \
 		wpasupplicant \
-		xvfb \
 		|| die "apt-get install failed"
 
 	info "Removing unnecessary packages..."
