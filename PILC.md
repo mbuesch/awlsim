@@ -60,3 +60,9 @@ Just connect to PiLC (see previous chapter) and click the `download` button in t
 <a href="doc/pic/pilc/download.png"><img src="doc/pic/pilc/download.png" alt="awlsim-gui" /></a>
 
 If the PiLC is not in RUN state, click the RUN button to start the program.
+
+
+## Where does Awlsim store its state on the Raspberry Pi?
+
+The Awlsim working directory is `/etc/awlsim/`<br />
+The loaded project and other configuration files are stored there.
