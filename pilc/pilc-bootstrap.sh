@@ -27,7 +27,7 @@ basedir="$basedir/.."
 
 
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
-DEFAULT_SUITE=stretch
+DEFAULT_SUITE=buster
 
 PPL_VERSION="0.1.1"
 PPL_FILE="ppl_v$PPL_VERSION.zip"
@@ -350,6 +350,9 @@ pilc_bootstrap_second_stage()
 			die "Debootstrap second stage failed."
 	fi
 
+	info "Disabling raspi-copies-and-fills..."
+	rm -f /etc/ld.so.preload || die "Failed to disable raspi-copies-and-fills"
+
 	info "Mounting /proc..."
 	mkdir -p /proc ||\
 		die "Failed to create /proc mountpoint."
@@ -420,8 +423,10 @@ EOF
 	local apt_opts="-y -o Acquire::Retries=3"
 	apt-get $apt_opts update ||\
 		die "apt-get update failed"
+	info "Installing apt-transport-https..."
 	apt-get $apt_opts install apt-transport-https ||\
 		die "apt-get install apt-transport-https failed"
+	info "Upgrading system..."
 	apt-get $apt_opts dist-upgrade ||\
 		die "apt-get dist-upgrade failed"
 
@@ -443,6 +448,7 @@ EOF
 		i2c-tools \
 		irqbalance \
 		iw \
+		libraspberrypi-dev \
 		locales \
 		nano \
 		ntp \
@@ -460,8 +466,8 @@ EOF
 		python3-spidev \
 		quilt \
 		raspberrypi-bootloader \
+		raspberrypi-sys-mods \
 		raspi-config \
-		raspi-copies-and-fills \
 		raspi-gpio \
 		rng-tools \
 		schedtool \
@@ -554,8 +560,6 @@ EOF
 		die "Failed to create user pi."
 	printf 'raspberry\nraspberry\n' | passwd pi ||\
 		die "Failed to set 'pi' password."
-	cp /tmp/templates/sudoers-pi /etc/sudoers.d/00-pi ||\
-		die "Failed to create /etc/sudoers.d/00-pi"
 
 	info "Initializing home directory..."
 	mkdir -p /home/pi/.vim || die "Failed to mkdir /home/pi/.vim"
@@ -768,6 +772,11 @@ EOF
 		rm /usr/sbin/policy-rc.d ||\
 			die "Failed to remove policy-rc.d"
 	fi
+
+	# Install this last. It won't work correctly in the qemu environment.
+	info "Installing raspi-copies-and-fills..."
+	apt-get $apt_opts install --reinstall raspi-copies-and-fills ||\
+		die "apt-get install failed"
 
 	info "Stopping processes..."
 	for i in dbus ssh irqbalance; do
