@@ -87,7 +87,7 @@ class AwlStructField(object): #+cdef
 		self.callByRef = bool(dataType.type in AwlDataType.callByRefTypes)
 
 		if self.initBytes is not None:
-			assert(len(self.initBytes) == self.byteSize)
+			assert(len_u32(self.initBytes) == self.byteSize)
 
 	def __eq__(self, other): #@nocy
 #@cy	cdef __eq(self, other):

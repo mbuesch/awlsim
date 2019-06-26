@@ -2,7 +2,7 @@
 #
 # AWL data types helper functions
 #
-# Copyright 2013-2018 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,6 +50,10 @@ __all__ = [
 	"getMSB",
 	"isInteger",
 	"isString",
+	"len_u32",
+	"len_s32",
+	"u32_to_s32",
+	"s32_to_u32",
 ]
 
 
@@ -292,3 +296,23 @@ def __isString_python3(value):				#@nocy #@nocov
 
 isString = py23(__isString_python2,			#@nocy
 		__isString_python3)			#@nocy
+
+# Get the len() of obj and restrict to uint32_t.
+# The Cython variant of this function is defined in .pxd.in
+def len_u32(obj):					#@nocy
+	return min(len(obj), 0xFFFFFFFF)		#@nocy
+
+# Get the len() of obj and restrict to int32_t.
+# The Cython variant of this function is defined in .pxd.in
+def len_s32(obj):					#@nocy
+	return min(len(obj), 0x7FFFFFFF)		#@nocy
+
+# Restrict an int32_t to uint32_t range.
+# The Cython variant of this function is defined in .pxd.in
+def u32_to_s32(value):					#@nocy
+	return min(value, 0x7FFFFFFF)			#@nocy
+
+# Restrict an uint32_t to int32_t range.
+# The Cython variant of this function is defined in .pxd.in
+def s32_to_u32(value):					#@nocy
+	return max(value, 0)				#@nocy

@@ -286,7 +286,7 @@ class AwlInsn(object): #+cdef
 		"""Check whether we have the required operator count.
 		counts is a list/set/int of possible counts.
 		"""
-		assert(self.opCount == len(self.ops))
+		assert(self.opCount == len_u32(self.ops))
 		counts = toList(counts)
 		if self.opCount not in counts:
 			raise AwlSimError("Invalid number of operators. "

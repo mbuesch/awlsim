@@ -988,17 +988,17 @@ class S7CPU(object): #+cdef
 			self.accu1, self.accu2, self.accu3, self.accu4 =\
 				Accu(), Accu(), Accu(), Accu()
 			self.is4accu = (self.specs.nrAccus == 4)
-		if force or self.specs.nrTimers != len(self.timers):
+		if force or self.specs.nrTimers != len_u32(self.timers):
 			self.timers = [ Timer(self, i)
 					for i in range(self.specs.nrTimers) ]
-		if force or self.specs.nrCounters != len(self.counters):
+		if force or self.specs.nrCounters != len_u32(self.counters):
 			self.counters = [ Counter(self, i)
 					  for i in range(self.specs.nrCounters) ]
-		if force or self.specs.nrFlags != len(self.flags):
+		if force or self.specs.nrFlags != len_u32(self.flags):
 			self.flags = AwlMemory(self.specs.nrFlags)
-		if force or self.specs.nrInputs != len(self.inputs):
+		if force or self.specs.nrInputs != len_u32(self.inputs):
 			self.inputs = AwlMemory(self.specs.nrInputs)
-		if force or self.specs.nrOutputs != len(self.outputs):
+		if force or self.specs.nrOutputs != len_u32(self.outputs):
 			self.outputs = AwlMemory(self.specs.nrOutputs)
 		for ob in self.allOBs():
 			if force or self.specs.nrLocalbytes * 8 != ob.lstack.maxAllocBits:
@@ -1013,13 +1013,13 @@ class S7CPU(object): #+cdef
 		self.__fbsAlloc = defaultAlloc
 		self.__sfcsAlloc = defaultAlloc
 		self.__sfbsAlloc = defaultAlloc
-		self.__udts = [None] * self.__udtsAlloc
-		self.__dbs = [None] * self.__dbsAlloc
-		self.__obs = [None] * self.__obsAlloc
-		self.__fcs = [None] * self.__fcsAlloc
-		self.__fbs = [None] * self.__fbsAlloc
-		self.__sfcs = [None] * self.__sfcsAlloc
-		self.__sfbs = [None] * self.__sfbsAlloc
+		self.__udts = [None] * u32_to_s32(self.__udtsAlloc)
+		self.__dbs = [None] * u32_to_s32(self.__dbsAlloc)
+		self.__obs = [None] * u32_to_s32(self.__obsAlloc)
+		self.__fcs = [None] * u32_to_s32(self.__fcsAlloc)
+		self.__fbs = [None] * u32_to_s32(self.__fbsAlloc)
+		self.__sfcs = [None] * u32_to_s32(self.__sfcsAlloc)
+		self.__sfbs = [None] * u32_to_s32(self.__sfbsAlloc)
 		self.__sfcsExtended = {}
 		self.__sfbsExtended = {}
 
@@ -1802,13 +1802,13 @@ class S7CPU(object): #+cdef
 
 	def getTimer(self, index): #@nocy
 #@cy	cdef Timer getTimer(self, uint32_t index):
-		if index >= len(self.timers):
+		if index >= len_u32(self.timers):
 			raise AwlSimError("Fetched invalid timer %d" % index) #@nocov
 		return self.timers[index]
 
 	def getCounter(self, index): #@nocy
 #@cy	cdef Counter getCounter(self, uint32_t index):
-		if index >= len(self.counters):
+		if index >= len_u32(self.counters):
 			raise AwlSimError("Fetched invalid counter %d" % index) #@nocov
 		return self.counters[index]
 
@@ -2743,7 +2743,7 @@ class S7CPU(object): #+cdef
 		lines = self.__dumpMem(prefix,
 				       memory,
 				       byteOffset,
-				       min(64, intDivRoundUp(allocBits, 8)))
+				       min(64, intDivRoundUp(allocBits, 8))) #+suffix-u
 		lines.extend( [ (" " * len(prefix)) + "--" ] * (4 - len(lines)) )
 		return lines
 
@@ -2778,15 +2778,15 @@ class S7CPU(object): #+cdef
 		ret.append("     AR:  " + "  ".join(ars))
 		ret.extend(self.__dumpMem("      M:  ",
 					  self.flags, 0,
-					  min(64, specs.nrFlags)))
+					  min(64, specs.nrFlags))) #+suffix-u
 		prefix = "      I:  " if isEnglish else "      E:  "
 		ret.extend(self.__dumpMem(prefix,
 					  self.inputs, 0,
-					  min(64, specs.nrInputs)))
+					  min(64, specs.nrInputs))) #+suffix-u
 		prefix = "      Q:  " if isEnglish else "      A:  "
 		ret.extend(self.__dumpMem(prefix,
 					  self.outputs, 0,
-					  min(64, specs.nrOutputs)))
+					  min(64, specs.nrOutputs))) #+suffix-u
 		pstack = str(callStackTop.parenStack) if callStackTop.parenStack else "--"
 		ret.append(" PStack:  " + pstack)
 		ret.append("  DBreg:  %s  %s" % (str(self.dbRegister),

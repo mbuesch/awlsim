@@ -2,7 +2,7 @@
 #
 # AWL data types helper functions
 #
-# Copyright 2013-2018 Michael Buesch <m@bues.ch>
+# Copyright 2013-2019 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -142,3 +142,15 @@ cdef inline _Bool isInteger(object value):
 cdef inline _Bool isString(object value):
 #@cy3	return isinstance(value, str)
 #@cy2	return isinstance(value, (unicode, str))
+
+cdef inline uint32_t len_u32(object obj):
+	return <uint32_t>(min(len(obj), <object>0xFFFFFFFFu))
+
+cdef inline int32_t len_s32(object obj):
+	return <int32_t>(min(len(obj), <object>0x7FFFFFFFu))
+
+cdef inline int32_t u32_to_s32(uint32_t value):
+	return <int32_t>(min(value, 0x7FFFFFFFu))
+
+cdef inline uint32_t s32_to_u32(int32_t value):
+	return <uint32_t>(max(value, 0))
