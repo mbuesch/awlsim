@@ -855,9 +855,10 @@ pilc_bootstrap_third_stage()
 			die "Failed to mount root partition."
 		rsync -aHAX --inplace \
 			--exclude='boot/*' \
-			--exclude='proc/*' \
-			--exclude='sys/*' \
 			--exclude='dev/shm/*' \
+			--exclude='proc/*' \
+			--exclude='run/*' \
+			--exclude='sys/*' \
 			--exclude='tmp/*' \
 			--exclude="$(basename "$opt_qemu")" \
 			"$opt_target_dir/" "$mp_rootimgfile/" ||\
