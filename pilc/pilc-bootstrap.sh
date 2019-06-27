@@ -341,8 +341,11 @@ pilc_bootstrap_second_stage()
 	elif [ "$opt_rpiver" = "2" ]; then
 		info "Optimizing for RPi 2.x or later"
 		local march="armv7-a"
-	else
+	elif [ "$opt_rpiver" = "3" ]; then
 		info "Optimizing for RPi 3.x or later"
+		local march="armv8-a"
+	else
+		info "Optimizing for RPi 4.x or later"
 		local march="armv8-a"
 	fi
 	export CFLAGS="-O3 -march=$march -mfpu=vfp -mfloat-abi=hard -pipe"
@@ -966,7 +969,7 @@ usage()
 	echo "                         --no-cython --no-zimg"
 	echo
 	echo " --rpiver|-R VERSION     Minimum Raspberry Pi version to build for."
-	echo "                         Can be either 0, 1, 2 or 3."
+	echo "                         Can be either 0, 1, 2, 3, 4."
 	echo "                         0 and 1 are equivalent."
 	echo "                         Default: 1"
 }
@@ -1092,7 +1095,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			[ "$opt_rpiver" = "0" -o\
 			  "$opt_rpiver" = "1" -o\
 			  "$opt_rpiver" = "2" -o\
-			  "$opt_rpiver" = "3" ] || die "Invalid --rpiver|-R"
+			  "$opt_rpiver" = "3" -o\
+			  "$opt_rpiver" = "4" ] || die "Invalid --rpiver|-R"
 			;;
 		*)
 			opt_target_dir="$*"
