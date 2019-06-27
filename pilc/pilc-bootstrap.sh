@@ -809,26 +809,6 @@ pilc_bootstrap_third_stage()
 		die "Failed to create /boot/cmdline.txt"
 	cp "$basedir_pilc/templates/boot_config.txt" "$opt_target_dir/boot/config.txt" ||\
 		die "Failed to create /boot/config.txt"
-	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi)"
-	if [ -e "$img" ]; then
-		mv "$img" "$opt_target_dir/boot/kernel.img" ||\
-			die "Failed to create kernel.img"
-	fi
-	local img="$(first "$opt_target_dir/boot/"initrd.img-*-rpi)"
-	if [ -e "$img" ]; then
-		mv "$img" "$opt_target_dir/boot/initrd.img" ||\
-			die "Failed to create initrd.img"
-	fi
-	local img="$(first "$opt_target_dir/boot/"vmlinuz-*-rpi2)"
-	if [ -e "$img" ]; then
-		mv "$img" "$opt_target_dir/boot/kernel7.img" ||\
-			die "Failed to create kernel7.img"
-	fi
-	local img="$(first "$opt_target_dir/boot/"initrd.img-*-rpi2)"
-	if [ -e "$img" ]; then
-		mv "$img" "$opt_target_dir/boot/initrd7.img" ||\
-			die "Failed to create initrd7.img"
-	fi
 
 	# Prepare image paths.
 	local imgfile="${opt_target_dir}${opt_imgsuffix}.img"
