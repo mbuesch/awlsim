@@ -107,6 +107,11 @@ cleanup()
 	done
 }
 
+do_install()
+{
+	install "$@" || die "FAILED: $*"
+}
+
 write_image()
 {
 	local image="$1"
@@ -250,23 +255,22 @@ pilc_bootstrap_first_stage()
 			--keyring="$basedir_pilc/raspbian.public.key.gpg" \
 			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
 			|| die "debootstrap failed"
-		mkdir -p "$opt_target_dir/usr/share/keyrings" ||\
-			die "Failed to create keyrings dir."
-		cp "$basedir_pilc/raspbian.archive.public.key.gpg" \
-		   "$opt_target_dir/usr/share/keyrings/" ||\
-			die "Failed to copy raspbian.archive.public.key.gpg."
-		cp /usr/share/keyrings/debian-archive-keyring.gpg \
-		   "$opt_target_dir/usr/share/keyrings/debian-archive-keyring.gpg" ||\
-			die "Failed to copy debian-archive-keyring.gpg."
+		do_install -d -o root -g root -m 755 \
+			"$opt_target_dir/usr/share/keyrings"
+		do_install -o root -g root -m 644 \
+			"$basedir_pilc/raspbian.archive.public.key.gpg" \
+			"$opt_target_dir/usr/share/keyrings/"
+		do_install -o root -g root -m 644 \
+			/usr/share/keyrings/debian-archive-keyring.gpg \
+			"$opt_target_dir/usr/share/keyrings/"
 	fi
 	[ -d "$opt_target_dir" ] ||\
 		die "Target directory '$opt_target_dir' does not exist."
 
 	# Avoid the start of daemons during second stage.
-	cp "$basedir_pilc/templates/policy-rc.d" "$opt_target_dir/usr/sbin/policy-rc.d" ||\
-		die "Failed to create policy-rc.d"
-	chmod 755 "$opt_target_dir/usr/sbin/policy-rc.d" ||\
-		die "Failed to chmod policy-rc.d"
+	do_install -o root -g root -m 755 \
+		"$basedir_pilc/templates/policy-rc.d" \
+		"$opt_target_dir/usr/sbin/"
 
 	info "Cleaning tmp..."
 	rm -rf "$opt_target_dir"/tmp/*
@@ -275,15 +279,16 @@ pilc_bootstrap_first_stage()
 	local qemu_bin="$opt_target_dir/$opt_qemu"
 	if ! [ -x "$qemu_bin" ]; then
 		info "Copying qemu binary from '$opt_qemu' to '$qemu_bin'..."
-		mkdir -p "$(dirname "$qemu_bin")" ||\
-			die "Failed to make qemu base directory."
-		cp "$opt_qemu" "$qemu_bin" ||\
-			die "Failed to copy qemu binary."
+		do_install -d -o root -g root -m 755 \
+			"$(dirname "$qemu_bin")"
+		do_install -T -o root -g root -m 755 \
+			"$opt_qemu" "$qemu_bin"
 	fi
 
 	info "Copying PiLC bootstrap script and templates..."
-	cp "$basedir_pilc/pilc-bootstrap.sh" "$opt_target_dir/" ||\
-		die "Failed to copy bootstrap script."
+	do_install -o root -g root -m 755 \
+		"$basedir_pilc/pilc-bootstrap.sh" \
+		"$opt_target_dir/"
 	cp -r "$basedir_pilc/templates" "$opt_target_dir/tmp/" ||\
 		die "Failed to copy PiLC templates"
 
@@ -291,7 +296,7 @@ pilc_bootstrap_first_stage()
 	local awlsim_dir="$opt_target_dir/tmp/awlsim"
 	local checkout_dir="$awlsim_dir/src"
 	rm -rf "$awlsim_dir"
-	mkdir -p "$awlsim_dir" || die "mkdir failed"
+	do_install -d -o root -g root -m 755 "$awlsim_dir"
 	git clone --no-checkout "$basedir/.git" "$checkout_dir" ||\
 		die "Failed to clone"
 	(
@@ -354,20 +359,17 @@ pilc_bootstrap_second_stage()
 	rm -f /etc/ld.so.preload || die "Failed to disable raspi-copies-and-fills"
 
 	info "Mounting /proc..."
-	mkdir -p /proc ||\
-		die "Failed to create /proc mountpoint."
+	do_install -d -o root -g root -m 755 /proc
 	mount -t proc proc /proc ||\
 		die "Mounting /proc failed."
 
 	info "Mounting /sys..."
-	mkdir -p /sys ||\
-		die "Failed to create /sys mountpoint."
+	do_install -d -o root -g root -m 755 /sys
 	mount -t sysfs sysfs /sys ||\
 		die "Mounting /sys failed."
 
 	info "Mounting /dev/shm..."
-	mkdir -p /dev/shm ||\
-		die "Failed to create /dev/shm mountpoint."
+	do_install -d -o root -g root -m 755 /dev/shm
 	mount -t tmpfs tmpfs /dev/shm ||\
 		die "Mounting /dev/shm failed."
 
@@ -381,10 +383,10 @@ EOF
 		die "Failed to set apt.conf.d"
 
 	info "Creating /etc/fstab"
-	mkdir -p /config ||\
-		die "Failed to create /config"
-	cp /tmp/templates/fstab /etc/fstab ||\
-		die "Failed to create fstab"
+	do_install -d -o root -g root -m 755 /config
+	do_install -T -o root -g root -m 644 \
+		/tmp/templates/fstab \
+		/etc/fstab
 
 	info "Writing misc /etc stuff..."
 	echo "PiLC" > /etc/hostname ||\
@@ -514,14 +516,12 @@ EOF
 	build_ppl2
 
 	info "Removing ssh keys..."
-	cp /tmp/templates/regenerate_ssh_host_keys.sh \
-		/etc/ssh/regenerate_ssh_host_keys.sh ||\
-		die "Failed to copy regenerate_ssh_host_keys.sh"
-	chmod 755 /etc/ssh/regenerate_ssh_host_keys.sh ||\
-		die "Failed to chmod regenerate_ssh_host_keys.sh"
-	cp /tmp/templates/regenerate_ssh_host_keys.service \
-		/lib/systemd/system/regenerate_ssh_host_keys.service ||\
-		die "Failed to copy regenerate_ssh_host_keys.service"
+	do_install -o root -g root -m 755 \
+		/tmp/templates/regenerate_ssh_host_keys.sh \
+		/etc/ssh/
+	do_install -o root -g root -m 644 \
+		/tmp/templates/regenerate_ssh_host_keys.service \
+		/lib/systemd/system/
 	systemctl enable regenerate_ssh_host_keys.service ||\
 		die "Failed to enable regenerate_ssh_host_keys.service"
 	systemctl disable ssh.service ||\
@@ -534,18 +534,19 @@ EOF
 		die "Failed to create /etc/ssh/sshd_not_to_be_run"
 
 	info "Creating /etc/rc.local..."
-	cp /tmp/templates/rc.local /etc/rc.local ||\
-		die "Failed to create /etc/rc.local"
-	chmod 755 /etc/rc.local ||\
-		die "Failed to chmod /etc/rc.local"
+	do_install -o root -g root -m 755 \
+		/tmp/templates/rc.local \
+		/etc/
 
 	info "Creating /etc/modules-load.d/i2c.conf..."
-	cp /tmp/templates/modules-load-i2c.conf /etc/modules-load.d/i2c.conf ||\
-		die "Failed to create /etc/modules-load.d/i2c.conf"
+	do_install -T -o root -g root -m 644 \
+		/tmp/templates/modules-load-i2c.conf \
+		/etc/modules-load.d/i2c.conf
 
 	info "Creating /etc/security/limits.d/pilc-limits.conf..."
-	cp /tmp/templates/pilc-limits.conf /etc/security/limits.d/pilc-limits.conf ||\
-		die "Failed to create pilc-limits.conf"
+	do_install -o root -g root -m 644 \
+		/tmp/templates/pilc-limits.conf \
+		/etc/security/limits.d/
 
 	info "Creating users/groups..."
 	userdel -f pi
@@ -562,11 +563,13 @@ EOF
 		die "Failed to set 'pi' password."
 
 	info "Initializing home directory..."
-	mkdir -p /home/pi/.vim || die "Failed to mkdir /home/pi/.vim"
-	cp /tmp/templates/vimrc /home/pi/.vim/vimrc ||\
-		die "Failed to create /home/pi/.vim/vimrc"
-	cp /tmp/templates/tmux.conf /home/pi/.tmux.conf ||\
-		die "Failed to create /home/pi/.tmux.conf"
+	do_install -d -o pi -g pi -m 755 /home/pi/.vim
+	do_install -o pi -g pi -m 644 \
+		/tmp/templates/vimrc \
+		/home/pi/.vim/
+	do_install -T -o pi -g pi -m 644 \
+		/tmp/templates/tmux.conf \
+		/home/pi/.tmux.conf
 
 	info "Building awlsim..."
 	(
@@ -650,27 +653,33 @@ EOF
 			die "Failed to install awlsim-proupgrade"
 		# Copy debs
 		rm -rf /home/pi/deb/awlsim
-		mkdir -p /home/pi/deb/awlsim ||\
-			die "mkdir /home/pi/deb/awlsim failed"
-		cp ../*awlsim*.deb ../*awlsim*.buildinfo ../*awlsim*.changes \
-			/home/pi/deb/awlsim/ ||\
-			die "Failed to copy awlsim debs"
+		do_install -d -o pi -g pi -m 755 /home/pi/deb/awlsim
+		do_install -o pi -g pi -m 644 \
+			../*awlsim*.deb \
+			../*awlsim*.buildinfo \
+			../*awlsim*.changes \
+			/home/pi/deb/awlsim/
 		# Copy examples
-		cp examples/EXAMPLE.awlpro /home/pi/generic-example.awlpro ||\
-			die "Failed to copy EXAMPLE.awlpro."
-		cp examples/raspberrypi-gpio.awlpro /home/pi/raspberrypi-gpio-example.awlpro ||\
-			die "Failed to copy raspberrypi-gpio.awlpro."
-		cp examples/raspberrypi-profibus.awlpro /home/pi/raspberrypi-profibus-example.awlpro ||\
-			die "Failed to copy raspberrypi-profibus.awlpro."
-		cp examples/raspberrypi-pixtend.awlpro /home/pi/raspberrypi-pixtend-example.awlpro ||\
-			die "Failed to copy raspberrypi-pixtend.awlpro."
+		do_install -T -o pi -g pi -m 644 \
+			examples/EXAMPLE.awlpro \
+			/home/pi/generic-example.awlpro
+		do_install -T -o pi -g pi -m 644 \
+			examples/raspberrypi-gpio.awlpro \
+			/home/pi/raspberrypi-gpio-example.awlpro
+		do_install -T -o pi -g pi -m 644 \
+			examples/raspberrypi-profibus.awlpro \
+			/home/pi/raspberrypi-profibus-example.awlpro
+		do_install -T -o pi -g pi -m 644 \
+			examples/raspberrypi-pixtend.awlpro \
+			/home/pi/raspberrypi-pixtend-example.awlpro
 
 		#TODO run the testsuite
 
 		# Install configuration
-		mkdir -p /etc/awlsim || die "Failed to create /etc/awlsim"
-		cp awlsimhw_pyprofibus.conf /etc/awlsim/ ||\
-			die "Failed to copy awlsimhw_pyprofibus.conf"
+		do_install -d -o root -g root -m 755 /etc/awlsim
+		do_install -o root -g root -m 644 \
+			awlsimhw_pyprofibus.conf \
+			/etc/awlsim/
 
 		#TODO install unit via package
 		info "Installing awlsim service unit..."
@@ -719,12 +728,14 @@ EOF
 
 		# Copy debs
 		rm -rf /home/pi/deb/pyprofibus
-		mkdir -p /home/pi/deb/pyprofibus ||\
-			die "mkdir /home/pi/deb/pyprofibus failed"
-		cp ../*pyprofibus*.deb ../*pyprofibus*.buildinfo ../*pyprofibus*.changes \
-			../profisniff_*.deb ../gsdparser_*.deb \
-			/home/pi/deb/pyprofibus/ ||\
-			die "Failed to copy pyprofibus debs"
+		do_install -d -o pi -g pi -m 755 /home/pi/deb/pyprofibus
+		do_install -o pi -g pi -m 644 \
+			../*pyprofibus*.deb \
+			../*pyprofibus*.buildinfo \
+			../*pyprofibus*.changes \
+			../profisniff_*.deb \
+			../gsdparser_*.deb \
+			/home/pi/deb/pyprofibus/
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
@@ -805,10 +816,12 @@ pilc_bootstrap_third_stage()
 	rm -rf "$opt_target_dir"/tmp/*
 
 	info "Configuring boot..."
-	cp "$basedir_pilc/templates/boot_cmdline.txt" "$opt_target_dir/boot/cmdline.txt" ||\
-		die "Failed to create /boot/cmdline.txt"
-	cp "$basedir_pilc/templates/boot_config.txt" "$opt_target_dir/boot/config.txt" ||\
-		die "Failed to create /boot/config.txt"
+	do_install -T -o root -g root -m 644 \
+		"$basedir_pilc/templates/boot_cmdline.txt" \
+		"$opt_target_dir/boot/cmdline.txt"
+	do_install -T -o root -g root -m 644 \
+		"$basedir_pilc/templates/boot_config.txt" \
+		"$opt_target_dir/boot/config.txt"
 
 	# Prepare image paths.
 	local imgfile="${opt_target_dir}${opt_imgsuffix}.img"
