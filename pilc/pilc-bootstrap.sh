@@ -29,6 +29,8 @@ basedir="$basedir/.."
 MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
 DEFAULT_SUITE=buster
 
+DEBIAN_ARCHIVE_KEYRING="/usr/share/keyrings/debian-archive-keyring.gpg"
+
 PPL_VERSION="0.1.1"
 PPL_FILE="ppl_v$PPL_VERSION.zip"
 PPL_MIRROR="./libs/pixtend/v1/ppl/$PPL_FILE"
@@ -234,17 +236,22 @@ pilc_bootstrap_first_stage()
 	[ "$(id -u)" = "0" ] || die "Permission denied. Must be root."
 
 	# Check host tools (first/third stage).
+	assert_program 7z
+	assert_program chroot
+	assert_program dd
 	assert_program debootstrap
 	assert_program git
-	assert_program chroot
-	assert_program rsync
-	assert_program parted
-	assert_program mkfs.vfat
+	assert_program install
 	assert_program mkfs.ext4
-	assert_program 7z
+	assert_program mkfs.vfat
+	assert_program parted
+	assert_program rsync
+	assert_program tar
 	assert_program tar
 	assert_program unzip
-	assert_program install
+	assert_program wget
+	[ -e "$DEBIAN_ARCHIVE_KEYRING" ] ||\
+		die "$DEBIAN_ARCHIVE_KEYRING not found. Please install debian-archive-keyring."
 	[ -x "$opt_qemu" ] ||\
 		die "The qemu binary '$opt_qemu' is not executable."
 
@@ -261,7 +268,7 @@ pilc_bootstrap_first_stage()
 			"$basedir_pilc/raspbian.archive.public.key.gpg" \
 			"$opt_target_dir/usr/share/keyrings/"
 		do_install -o root -g root -m 644 \
-			/usr/share/keyrings/debian-archive-keyring.gpg \
+			"$DEBIAN_ARCHIVE_KEYRING" \
 			"$opt_target_dir/usr/share/keyrings/"
 	fi
 	[ -d "$opt_target_dir" ] ||\
