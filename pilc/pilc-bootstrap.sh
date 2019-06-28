@@ -336,19 +336,27 @@ pilc_bootstrap_second_stage()
 	export LANGUAGE=C
 	export LANG=C
 	if [ "$opt_rpiver" = "1" -o "$opt_rpiver" = "0" ]; then
-		info "Optimizing for RPi 1.x, zero(w) or later"
-		local march="armv6kz"
+		info "Optimizing for RPi 1, zero(w)"
+		local march="-march=armv6kz"
+		local mtune="-mtune=arm1176jzf-s"
 	elif [ "$opt_rpiver" = "2" ]; then
-		info "Optimizing for RPi 2.x or later"
-		local march="armv7-a"
+		info "Optimizing for RPi 2"
+		local march="-march=armv7-a"
+		local mtune="-mtune=cortex-a7"
 	elif [ "$opt_rpiver" = "3" ]; then
-		info "Optimizing for RPi 3.x or later"
-		local march="armv8-a"
+		info "Optimizing for RPi 3"
+		local march="-march=armv8-a"
+		local mtune="-mtune=cortex-a53"
+	elif [ "$opt_rpiver" = "4" ]; then
+		info "Optimizing for RPi 4"
+		local march="-march=armv8-a"
+		local mtune="-mtune=cortex-a72"
 	else
-		info "Optimizing for RPi 4.x or later"
-		local march="armv8-a"
+		info "Optimizing for generic RPi"
+		local march="-march=armv6kz"
+		local mtune=
 	fi
-	export CFLAGS="-O3 -march=$march -mfpu=vfp -mfloat-abi=hard -pipe"
+	export CFLAGS="-O3 $march $mtune -mfpu=vfp -mfloat-abi=hard -pipe"
 	export CXXFLAGS="$CFLAGS"
 
 	# debootstrap second stage.
@@ -968,10 +976,11 @@ usage()
 	echo " --quick|-q              Quick build. This is a shortcut for:"
 	echo "                         --no-cython --no-zimg"
 	echo
-	echo " --rpiver|-R VERSION     Minimum Raspberry Pi version to build for."
-	echo "                         Can be either 0, 1, 2, 3, 4."
+	echo " --rpiver|-R VERSION     Raspberry Pi version to build for."
+	echo "                         Can be either 0, 1, 2, 3, 4 or generic"
 	echo "                         0 and 1 are equivalent."
-	echo "                         Default: 1"
+	echo "                         generic runs on any Raspberry Pi 0-4."
+	echo "                         Default: generic"
 }
 
 # canonicalize basedir
@@ -1007,7 +1016,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	default_zimg=1
 	default_writedev=
 	default_writeonly=0
-	default_rpiver=1
+	default_rpiver="generic"
 
 	opt_target_dir=
 	opt_branch="$default_branch"
@@ -1092,7 +1101,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 		--rpiver|-R)
 			shift
 			opt_rpiver="$1"
-			[ "$opt_rpiver" = "0" -o\
+			[ "$opt_rpiver" = "generic" -o\
+			  "$opt_rpiver" = "0" -o\
 			  "$opt_rpiver" = "1" -o\
 			  "$opt_rpiver" = "2" -o\
 			  "$opt_rpiver" = "3" -o\
