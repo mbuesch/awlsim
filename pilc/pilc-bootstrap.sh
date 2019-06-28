@@ -111,7 +111,7 @@ cleanup()
 
 do_install()
 {
-	install "$@" || die "FAILED: $*"
+	install "$@" || die "Failed install $*"
 }
 
 write_image()
