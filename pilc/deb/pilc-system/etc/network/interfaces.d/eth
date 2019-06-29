@@ -1,0 +1,3 @@
+allow-hotplug /eth*=eth
+iface eth inet dhcp
+iface eth inet6 auto

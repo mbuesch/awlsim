@@ -298,6 +298,8 @@ pilc_bootstrap_first_stage()
 		"$opt_target_dir/"
 	cp -r "$basedir_pilc/templates" "$opt_target_dir/tmp/" ||\
 		die "Failed to copy PiLC templates"
+	cp -r "$basedir_pilc/deb" "$opt_target_dir/tmp/" ||\
+		die "Failed to copy PiLC deb packages"
 
 	info "Checking out awlsim..."
 	local awlsim_dir="$opt_target_dir/tmp/awlsim"
@@ -529,10 +531,6 @@ EOF
 	systemctl disable rsync.service ||\
 		die "Failed to disable rsync.service"
 
-	info "Building Python modules..."
-	build_ppl
-	build_ppl2
-
 	info "Removing ssh keys..."
 	do_install -o root -g root -m 755 \
 		/tmp/templates/regenerate_ssh_host_keys.sh \
@@ -555,16 +553,6 @@ EOF
 	do_install -o root -g root -m 755 \
 		/tmp/templates/rc.local \
 		/etc/
-
-	info "Creating /etc/modules-load.d/i2c.conf..."
-	do_install -T -o root -g root -m 644 \
-		/tmp/templates/modules-load-i2c.conf \
-		/etc/modules-load.d/i2c.conf
-
-	info "Creating /etc/security/limits.d/pilc-limits.conf..."
-	do_install -o root -g root -m 644 \
-		/tmp/templates/pilc-limits.conf \
-		/etc/security/limits.d/
 
 	info "Creating users/groups..."
 	userdel -f pi
@@ -589,10 +577,26 @@ EOF
 		/tmp/templates/tmux.conf \
 		/home/pi/.tmux.conf
 
+	info "Building and installing PiLC system package..."
+	(
+		cd /tmp/deb/pilc-system || die "Failed to cd to pilc-system"
+		debuild -uc -us -b -d || die "debuild failed"
+		dpkg -i ../pilc-system_*.deb || die "Failed to install pilc-system"
+		# Copy debs
+		rm -rf /home/pi/deb/pilc-system
+		do_install -d -o pi -g pi -m 755 /home/pi/deb/pilc-system
+		do_install -o pi -g pi -m 644 \
+			../*pilc-system*.deb \
+			/home/pi/deb/pilc-system/
+	) || die
+
+	info "Building Python modules..."
+	build_ppl
+	build_ppl2
+
 	info "Building awlsim..."
 	(
-		cd /tmp/awlsim/src ||\
-			die "Failed to cd"
+		cd /tmp/awlsim/src || die "Failed to cd"
 		if [ $opt_cython -eq 0 ]; then
 			# Disable cython
 			sed -i -e '/Package: cython/,/^$/ d' \
@@ -674,8 +678,6 @@ EOF
 		do_install -d -o pi -g pi -m 755 /home/pi/deb/awlsim
 		do_install -o pi -g pi -m 644 \
 			../*awlsim*.deb \
-			../*awlsim*.buildinfo \
-			../*awlsim*.changes \
 			/home/pi/deb/awlsim/
 		# Copy examples
 		do_install -T -o pi -g pi -m 644 \
@@ -749,49 +751,12 @@ EOF
 		do_install -d -o pi -g pi -m 755 /home/pi/deb/pyprofibus
 		do_install -o pi -g pi -m 644 \
 			../*pyprofibus*.deb \
-			../*pyprofibus*.buildinfo \
-			../*pyprofibus*.changes \
 			../profisniff_*.deb \
 			../gsdparser_*.deb \
 			/home/pi/deb/pyprofibus/
 	) || die
 	rm -r /tmp/awlsim ||\
 		die "Failed to remove awlsim checkout."
-
-	info "Configuring network..."
-	cat > /etc/network/interfaces.d/lo <<EOF
-auto lo
-iface lo inet loopback
-EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/lo"
-	cat > /etc/network/interfaces.d/enx <<EOF
-allow-hotplug /enx*=enx
-iface enx inet dhcp
-iface enx inet6 auto
-EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/enx"
-	cat > /etc/network/interfaces.d/eth <<EOF
-allow-hotplug /eth*=eth
-iface eth inet dhcp
-iface eth inet6 auto
-EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth"
-	for i in $(seq 0 9); do
-		cat > /etc/network/interfaces.d/eth$i <<EOF
-allow-hotplug eth$i
-iface eth$i inet dhcp
-iface eth$i inet6 auto
-EOF
-		[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/eth$i"
-	done
-	cat > /etc/network/interfaces.d/wlan0 <<EOF
-#allow-hotplug wlan0
-#iface wlan0 inet dhcp
-#	wpa-ssid 'enter your SSID here'
-#	wpa-psk 'enter your pre-shared-key (PSK) here'
-#iface wlan0 inet6 auto
-EOF
-	[ $? -eq 0 ] || die "Failed to create /etc/network/interfaces.d/wlan0"
 
 	info "Updating home directory permissions..."
 	chown -R pi:pi /home/pi || die "Failed to change /home/pi permissions."

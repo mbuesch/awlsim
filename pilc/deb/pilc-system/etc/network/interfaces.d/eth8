@@ -1,0 +1,3 @@
+allow-hotplug eth8
+iface eth8 inet dhcp
+iface eth8 inet6 auto
