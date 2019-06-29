@@ -5,7 +5,7 @@ Before=ssh.service
 
 [Service]
 Type=forking
-ExecStart=/bin/sh /etc/ssh/regenerate_ssh_host_keys.sh
+ExecStart=/bin/sh /etc/ssh/pilc_regenerate_ssh_host_keys.sh
 
 [Install]
 WantedBy=multi-user.target

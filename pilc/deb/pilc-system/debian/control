@@ -8,6 +8,6 @@ Homepage: https://bues.ch/a/pilc
 
 Package: pilc-system
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, raspberrypi-sys-mods, raspberrypi-net-mods, openssh-server
 Description: PiLC system files
  System files for the PiLC.

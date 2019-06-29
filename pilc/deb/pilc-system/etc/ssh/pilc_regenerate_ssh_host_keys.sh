@@ -15,12 +15,12 @@ if [ "$1" = "SECOND_STAGE" ]; then
 		systemctl enable ssh
 		systemctl start ssh
 		echo "Disabling regeneration trigger..."
-		systemctl disable regenerate_ssh_host_keys
+		systemctl disable pilc_regenerate_ssh_host_keys
 		echo "Done."
 	else
 		echo "FAILED to regenerate SSH keys."
 	fi
 else
-	nohup sh /etc/ssh/regenerate_ssh_host_keys.sh SECOND_STAGE >/var/log/regenerate_ssh_host_keys.log 2>&1 &
+	nohup sh /etc/ssh/pilc_regenerate_ssh_host_keys.sh SECOND_STAGE >/var/log/pilc_regenerate_ssh_host_keys.log 2>&1 &
 fi
 exit 0

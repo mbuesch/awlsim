@@ -488,6 +488,7 @@ EOF
 		python3-spidev \
 		quilt \
 		raspberrypi-bootloader \
+		raspberrypi-net-mods \
 		raspberrypi-sys-mods \
 		raspi-config \
 		raspi-gpio \
@@ -530,24 +531,6 @@ EOF
 		die "Failed to disable apt-daily-upgrade.timer"
 	systemctl disable rsync.service ||\
 		die "Failed to disable rsync.service"
-
-	info "Removing ssh keys..."
-	do_install -o root -g root -m 755 \
-		/tmp/templates/regenerate_ssh_host_keys.sh \
-		/etc/ssh/
-	do_install -o root -g root -m 644 \
-		/tmp/templates/regenerate_ssh_host_keys.service \
-		/lib/systemd/system/
-	systemctl enable regenerate_ssh_host_keys.service ||\
-		die "Failed to enable regenerate_ssh_host_keys.service"
-	systemctl disable ssh.service ||\
-		die "Failed to disable ssh.service"
-	if [ -e "$(first /etc/ssh/ssh_host_*_key*)" ]; then
-		rm /etc/ssh/ssh_host_*_key* ||\
-			die "Failed to remove ssh keys."
-	fi
-	echo 1 > /etc/ssh/sshd_not_to_be_run ||\
-		die "Failed to create /etc/ssh/sshd_not_to_be_run"
 
 	info "Creating /etc/rc.local..."
 	do_install -o root -g root -m 755 \
