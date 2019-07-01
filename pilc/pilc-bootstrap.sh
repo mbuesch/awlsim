@@ -811,7 +811,7 @@ pilc_bootstrap_third_stage()
 
 		info "Creating boot image..."
 		mkfs.vfat -F 32 -i 7771B0BB -n boot -C "$bootimgfile" \
-			$(expr \( 64 \* 1024 \) - \( 4 \* 1024 \) ) ||\
+			$(expr \( 256 \* 1024 \) ) ||\
 			die "Failed to create boot partition file system."
 		mkdir "$mp_bootimgfile" ||\
 			die "Failed to make boot partition mount point."
@@ -826,7 +826,7 @@ pilc_bootstrap_third_stage()
 			die "Failed to remove boot partition mount point."
 
 		info "Creating root image..."
-		mkfs.ext4 "$rootimgfile" $(expr \( "$imgsize_mib_red" - 64 \) \* 1024 ) ||\
+		mkfs.ext4 "$rootimgfile" $(expr \( "$imgsize_mib_red" - \( 256 + 4 + 4 \) \) \* 1024 ) ||\
 			die "Failed to create root filesystem."
 		mkdir "$mp_rootimgfile" ||\
 			die "Failed to make root partition mount point."
@@ -853,8 +853,8 @@ pilc_bootstrap_third_stage()
 		parted "$imgfile" <<EOF
 		    unit b
 		    mklabel msdos
-		    mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr 64 \* 1024 \* 1024 - 1)
-		    mkpart primary ext4 $(expr 64 \* 1024 \* 1024) 100%
+		    mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr \( 256 + 4 \) \* 1024 \* 1024)
+		    mkpart primary ext4 $(expr \( 256 + 4 + 4 \) \* 1024 \* 1024) 100%
 EOF
 		[ $? -eq 0 ] || die "Failed to create partitions."
 
@@ -867,7 +867,7 @@ EOF
 
 		info "Integrating root image..."
 		dd if="$rootimgfile" of="$imgfile"\
-			seek=64 bs=1M conv=notrunc,sparse ||\
+			seek="$(expr 256 + 4 + 4)" bs=1M conv=notrunc,sparse ||\
 			die "Failed to integrate root partition."
 		rm "$rootimgfile" ||\
 			die "Failed to delete root partition image."
