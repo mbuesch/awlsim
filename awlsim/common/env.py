@@ -82,6 +82,14 @@ class AwlSimEnv(object):
 		return cls.__getVar("GUI", "auto").lower()
 
 	@classmethod
+	def __getCpuCount(cls):
+		try:
+			import multiprocessing
+			return multiprocessing.cpu_count()
+		except ImportError as e:
+			return 1
+
+	@classmethod
 	def getAffinity(cls):
 		"""Get AWLSIM_AFFINITY.
 		Returns a list of host CPU indices or an empty list,
@@ -93,11 +101,7 @@ class AwlSimEnv(object):
 			for cpuIndex in affinityStr.split(","):
 				cpuIndex = int(cpuIndex)
 				if cpuIndex < 0:
-					try:
-						import multiprocessing
-						cpuIndex = multiprocessing.cpu_count() + cpuIndex
-					except ImportError as e:
-						pass
+					cpuIndex = cls.__getCpuCount() + cpuIndex
 				if cpuIndex < 0:
 					cpuIndex = 0
 				affinity.append(cpuIndex)
@@ -118,15 +122,27 @@ class AwlSimEnv(object):
 		Returns None, if AWLSIM_SCHED has an invalid value.
 		"""
 		schedStr = cls.__getVar("SCHED", "").lower().strip()
+
+		ifMulticore = False
+		if schedStr.endswith("-if-multicore"):
+			schedStr = schedStr[:-len("-if-multicore")]
+			ifMulticore = True
+
 		if schedStr == cls.SCHED_DEFAULT:
 			return cls.SCHED_DEFAULT
 		if schedStr == cls.SCHED_NORMAL or schedStr == "other":
 			return cls.SCHED_NORMAL
 		if schedStr == cls.SCHED_FIFO or schedStr == "realtime":
+			if cls.__getCpuCount() <= 1 and ifMulticore:
+				return cls.SCHED_NORMAL
 			return cls.SCHED_FIFO
 		if schedStr == cls.SCHED_RR:
+			if cls.__getCpuCount() <= 1 and ifMulticore:
+				return cls.SCHED_NORMAL
 			return cls.SCHED_RR
 		if schedStr == cls.SCHED_DEADLINE:
+			if cls.__getCpuCount() <= 1 and ifMulticore:
+				return cls.SCHED_NORMAL
 			return cls.SCHED_DEADLINE
 		return None
 

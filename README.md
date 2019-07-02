@@ -179,6 +179,8 @@ The following environment variables control Awlsim's basic behavior:
   `=deadline`  Use Deadline realtime scheduling (`SCHED_DEADLINE`).<br />
   `=realtime`  Use a realtime scheduling algorithm that performs best in most situations. The actual algorithm selection might change between Awlsim releases.<br />
 
+  The suffix `-if-multicore` can be appended to the options `fifo`, `rr`, `deadline` and `realtime`. That will trigger a fall back to `normal`, if the system is single-core (has only one CPU).
+
 * `AWLSIM_PRIO`<br />
   `=default`  Do not change the priority (default).<br />
   `=1-99`     Set the scheduling priority. The meaning of the priority depends on the operating system and the selected scheduling algorithm. See `AWLSIM_SCHED`.<br />
