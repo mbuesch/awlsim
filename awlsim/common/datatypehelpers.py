@@ -51,9 +51,17 @@ __all__ = [
 	"isInteger",
 	"isString",
 	"len_u32",
+	"len_u16",
+	"len_u8",
 	"len_s32",
+	"len_s16",
+	"len_s8",
 	"u32_to_s32",
+	"u32_to_s16",
+	"u32_to_s8",
 	"s32_to_u32",
+	"s32_to_u16",
+	"s32_to_u8",
 ]
 
 
@@ -302,17 +310,57 @@ isString = py23(__isString_python2,			#@nocy
 def len_u32(obj):					#@nocy
 	return min(len(obj), 0xFFFFFFFF)		#@nocy
 
+# Get the len() of obj and restrict to uint16_t.
+# The Cython variant of this function is defined in .pxd.in
+def len_u16(obj):					#@nocy
+	return min(len(obj), 0xFFFF)			#@nocy
+
+# Get the len() of obj and restrict to uint8_t.
+# The Cython variant of this function is defined in .pxd.in
+def len_u8(obj):					#@nocy
+	return min(len(obj), 0xFF)			#@nocy
+
 # Get the len() of obj and restrict to int32_t.
 # The Cython variant of this function is defined in .pxd.in
 def len_s32(obj):					#@nocy
 	return min(len(obj), 0x7FFFFFFF)		#@nocy
 
-# Restrict an int32_t to uint32_t range.
+# Get the len() of obj and restrict to int16_t.
+# The Cython variant of this function is defined in .pxd.in
+def len_s16(obj):					#@nocy
+	return min(len(obj), 0x7FFF)			#@nocy
+
+# Get the len() of obj and restrict to int8_t.
+# The Cython variant of this function is defined in .pxd.in
+def len_s8(obj):					#@nocy
+	return min(len(obj), 0x7F)			#@nocy
+
+# Restrict an uint32_t to int32_t range.
 # The Cython variant of this function is defined in .pxd.in
 def u32_to_s32(value):					#@nocy
 	return min(value, 0x7FFFFFFF)			#@nocy
 
-# Restrict an uint32_t to int32_t range.
+# Restrict an uint32_t to int16_t range.
+# The Cython variant of this function is defined in .pxd.in
+def u32_to_s16(value):					#@nocy
+	return min(value, 0x7FFF)			#@nocy
+
+# Restrict an uint32_t to int8_t range.
+# The Cython variant of this function is defined in .pxd.in
+def u32_to_s8(value):					#@nocy
+	return min(value, 0x7F)				#@nocy
+
+# Restrict an int32_t to uint32_t range.
 # The Cython variant of this function is defined in .pxd.in
 def s32_to_u32(value):					#@nocy
-	return max(value, 0)				#@nocy
+	return min(max(value, 0), 0x7FFFFFFF)		#@nocy
+
+# Restrict an int32_t to uint16_t range.
+# The Cython variant of this function is defined in .pxd.in
+def s32_to_u16(value):					#@nocy
+	return min(max(value, 0), 0xFFFF)		#@nocy
+
+# Restrict an int32_t to uint8_t range.
+# The Cython variant of this function is defined in .pxd.in
+def s32_to_u8(value):					#@nocy
+	return min(max(value, 0), 0xFF)			#@nocy

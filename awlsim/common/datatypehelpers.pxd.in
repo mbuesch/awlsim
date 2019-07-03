@@ -146,11 +146,35 @@ cdef inline _Bool isString(object value):
 cdef inline uint32_t len_u32(object obj):
 	return <uint32_t>(min(len(obj), <object>0xFFFFFFFFu))
 
+cdef inline uint16_t len_u16(object obj):
+	return <uint16_t>(min(len(obj), <object>0xFFFFu))
+
+cdef inline uint8_t len_u8(object obj):
+	return <uint8_t>(min(len(obj), <object>0xFFu))
+
 cdef inline int32_t len_s32(object obj):
 	return <int32_t>(min(len(obj), <object>0x7FFFFFFFu))
+
+cdef inline int16_t len_s16(object obj):
+	return <int16_t>(min(len(obj), <object>0x7FFFu))
+
+cdef inline int8_t len_s8(object obj):
+	return <int8_t>(min(len(obj), <object>0x7Fu))
 
 cdef inline int32_t u32_to_s32(uint32_t value):
 	return <int32_t>(min(value, 0x7FFFFFFFu))
 
+cdef inline int16_t u32_to_s16(uint32_t value):
+	return <int16_t>(min(value, 0x7FFFu))
+
+cdef inline int8_t u32_to_s8(uint32_t value):
+	return <int8_t>(min(value, 0x7Fu))
+
 cdef inline uint32_t s32_to_u32(int32_t value):
 	return <uint32_t>(max(value, 0))
+
+cdef inline uint16_t s32_to_u16(int32_t value):
+	return <uint16_t>(min(max(value, 0), 0xFFFF))
+
+cdef inline uint8_t s32_to_u8(int32_t value):
+	return <uint8_t>(min(max(value, 0), 0xFF))
