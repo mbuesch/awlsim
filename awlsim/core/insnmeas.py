@@ -74,7 +74,7 @@ class InsnMeas(object): #+cdef
 	def __init__(self):
 		self.__perf_counter = time.perf_counter
 
-		self.__data = [None] * u32_to_s32(AwlInsnTypes.NR_TYPES + 1) #+suffix-u
+		self.__data = [None] * u32_to_s16(AwlInsnTypes.NR_TYPES + 1) #+suffix-u
 		for i in range(AwlInsnTypes.NR_TYPES + 1):
 			self.__data[i] = InsnMeasData()
 
