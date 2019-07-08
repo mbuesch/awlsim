@@ -1,0 +1,22 @@
+[Unit]
+Description=Awlsim PLC core server
+After=syslog.target
+After=network.target
+
+[Service]
+Type=simple
+TimeoutSec=60
+Restart=on-failure
+RestartSec=100ms
+User=root
+Group=root
+WorkingDirectory=/etc/awlsim
+Nice=-15
+
+ExecStart=/usr/bin/python3 /usr/bin/awlsim-server -l localhost -4 -S -w /etc/awlsim/awlsim-server.awlpro
+ExecStartPost=-/usr/bin/python3 /usr/bin/awlsim-client -c localhost -r RUN
+
+Environment=PYTHONPATH=/usr/lib/python3/dist-packages PYTHONHASHSEED=0 PYTHONOPTIMIZE=1 PYTHONDONTWRITEBYTECODE=1 AWLSIM_CYTHON=1 AWLSIM_SCHED= AWLSIM_PRIO= AWLSIM_AFFINITY= AWLSIM_MLOCK=
+
+[Install]
+WantedBy=multi-user.target

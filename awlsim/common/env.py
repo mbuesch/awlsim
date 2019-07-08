@@ -168,7 +168,9 @@ class AwlSimEnv(object):
 		"""Get AWLSIM_MLOCK.
 		Returns one of the MLOCK_... constants.
 		"""
-		mlockStr = cls.__getVar("MLOCK", "0").lower().strip()
+		mlockStr = cls.__getVar("MLOCK", "").lower().strip()
+		if not mlockStr:
+			mlockStr = cls.MLOCK_OFF
 		try:
 			mlock = int(mlockStr)
 			if mlock not in {cls.MLOCK_OFF,

@@ -143,7 +143,7 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 
 ### Misc
 <pre>
-.  awlsim-server.service.in  : Systemd unit template for awlsim-server.
+.  awlsim-server.service     : Systemd unit for awlsim-server.
 .  debian/                   : Debian packaging support.
 .  maintenance/              : Maintainer scripts.
 .  misc/                     : Miscellaneous scripts and files.

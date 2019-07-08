@@ -28,6 +28,7 @@ include README.md
 include TODO.html
 include TODO.md
 include awlsim-covreport
+include awlsim-server.service
 include awlsim/gui/icons/pic2py
 include awlsimhw_linuxcnc/awlsim.hal
 include awlsimhw_pyprofibus.conf

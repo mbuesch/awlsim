@@ -1,1 +1,4 @@
 debian/destdir-py3-awlsim/usr/bin/awlsim-server usr/bin
+debian/etc_awlsim/README.md etc/awlsim
+awlsimhw_pyprofibus.conf etc/awlsim
+awlsim-server.service lib/systemd/system

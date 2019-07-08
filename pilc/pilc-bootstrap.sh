@@ -597,6 +597,14 @@ EOF
 			debian/rules ||\
 			die "Failed to patch rules file (pypy)"
 
+		# Update the systemd service file.
+		sed -i -e 's|AWLSIM_SCHED=|AWLSIM_SCHED=realtime-if-multicore|g' \
+		       -e 's|AWLSIM_PRIO=|AWLSIM_PRIO=50|g' \
+		       -e 's|AWLSIM_AFFINITY=|AWLSIM_AFFINITY=-1,-2,-3|g' \
+		       -e 's|AWLSIM_MLOCK=|AWLSIM_MLOCK=1|g' \
+		       awlsim-server.service ||\
+		       die "Failed to patch awlsim-server.service"
+
 		# Build the packages.
 		debuild -uc -us -b -d || die "debuild failed"
 		info "Built awlsim files:"
@@ -675,32 +683,6 @@ EOF
 		do_install -T -o pi -g pi -m 644 \
 			examples/raspberrypi-pixtend.awlpro \
 			/home/pi/raspberrypi-pixtend-example.awlpro
-
-		#TODO run the testsuite
-
-		# Install configuration
-		do_install -d -o root -g root -m 755 /etc/awlsim
-		do_install -o root -g root -m 644 \
-			awlsimhw_pyprofibus.conf \
-			/etc/awlsim/
-
-		#TODO install unit via package
-		info "Installing awlsim service unit..."
-		local awlsim_prefix=/usr
-		local pyver=3
-		local site="$awlsim_prefix/lib/python$pyver/dist-packages"
-		cat awlsim-server.service.in |\
-		sed -e 's|@USER@|root|g' \
-		    -e 's|@GROUP@|root|g' \
-		    -e "s|@PREFIX@|$awlsim_prefix|g" \
-		    -e 's|@WORKING_DIRECTORY@|/etc/awlsim|g' \
-		    -e 's|@PROJECT@|/etc/awlsim/awlsim-server.awlpro|g' \
-		    -e "s|@PYTHON@|/usr/bin/python$pyver|g" \
-		    -e "s|@PYTHON_SITE@|$site|g" >\
-		    /lib/systemd/system/awlsim-server.service ||\
-		    die "Failed to create awlsim-server.service"
-		systemctl enable awlsim-server.service ||\
-			die "Failed to enable awlsim-server-service"
 	) || die
 	info "Building pyprofibus..."
 	(
