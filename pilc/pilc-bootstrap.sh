@@ -456,8 +456,6 @@ EOF
 	info "Installing packages..."
 	apt-get $apt_opts install \
 		aptitude \
-		autoconf \
-		automake \
 		build-essential \
 		console-setup \
 		cython3 \
@@ -487,7 +485,6 @@ EOF
 		python3-serial \
 		python3-setuptools \
 		python3-spidev \
-		quilt \
 		raspberrypi-bootloader \
 		raspberrypi-net-mods \
 		raspberrypi-sys-mods \
@@ -495,7 +492,6 @@ EOF
 		raspi-gpio \
 		rng-tools \
 		schedtool \
-		screen \
 		sudo \
 		systemd \
 		tmux \
