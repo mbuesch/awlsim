@@ -26,7 +26,8 @@ basedir="$(dirname "$0")"
 basedir="$basedir/.."
 
 
-MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
+#MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
+MAIN_MIRROR="http://mirror1.hs-esslingen.de/pub/Mirrors/archive.raspbian.org/raspbian/"
 DEFAULT_SUITE=buster
 
 DEBIAN_ARCHIVE_KEYRING="/usr/share/keyrings/debian-archive-keyring.gpg"
