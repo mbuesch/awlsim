@@ -830,10 +830,10 @@ pilc_bootstrap_third_stage()
 		dd if=/dev/zero of="$imgfile" bs=1M count="$imgsize_mib_red" conv=sparse ||\
 			die "Failed to create image file."
 		parted "$imgfile" <<EOF
-		    unit b
-		    mklabel msdos
-		    mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr \( 256 + 4 \) \* 1024 \* 1024)
-		    mkpart primary ext4 $(expr \( 256 + 4 + 4 \) \* 1024 \* 1024) 100%
+unit b
+mklabel msdos
+mkpart primary fat32 $(expr 4 \* 1024 \* 1024) $(expr \( 256 + 4 \) \* 1024 \* 1024)
+mkpart primary ext4 $(expr \( 256 + 4 + 4 \) \* 1024 \* 1024) 100%
 EOF
 		[ $? -eq 0 ] || die "Failed to create partitions."
 
