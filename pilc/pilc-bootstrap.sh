@@ -475,11 +475,9 @@ EOF
 		ntp \
 		openssh-server \
 		parted \
-		pkg-config \
 		python3 \
-		python3-all-dev \
+		python3-dev \
 		python3-cffi \
-		python3-coverage \
 		python3-dev \
 		python3-rpi.gpio \
 		python3-serial \
