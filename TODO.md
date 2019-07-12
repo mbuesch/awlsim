@@ -2,6 +2,8 @@
 
 ## S7 compatibility
 
+* Add feature: Missing SFCs/SFBs
+* Add feature: Missing library FCs/FBs
 * Add feature: Parsing of attributes
 
 ## core
