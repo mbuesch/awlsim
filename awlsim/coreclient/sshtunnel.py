@@ -38,6 +38,7 @@ import select
 import signal
 import time
 import getpass
+import re
 
 
 class SSHTunnel(object):
@@ -205,7 +206,7 @@ class SSHTunnel(object):
 
 	PROMPT_PW	= "'s Password:"
 	PROMPT_AUTH	= "The authenticity of host "
-	PROMPT_YESNO	= " (yes/no)?"
+	PROMPT_YESNO	= re.compile(r".*\s\(\[?yes\]?/\[?no\]?(/[\[\]\w\s\d_\-]+)?\)\s*\?\s*")
 	AUTH_FINISH	= "Authenticated to "
 
 	def __handshake(self, ptyMasterFd, timeout):
@@ -249,7 +250,8 @@ class SSHTunnel(object):
 				if self.PROMPT_AUTH.lower() in lineLow:
 					authReq.append(line)
 					continue
-				if self.PROMPT_YESNO.lower() in lineLow and authReq:
+				if (self.PROMPT_YESNO.match(lineLow, re.IGNORECASE) and
+				    authReq):
 					ok = self.hostAuth("\n".join(authReq))
 					if not ok:
 						raise AwlSimError("SSH tunnel host "
