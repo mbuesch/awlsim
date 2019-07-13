@@ -462,6 +462,7 @@ EOF
 		cython3 \
 		dbus \
 		debconf-utils \
+		debsums \
 		devscripts \
 		fdisk \
 		firmware-brcm80211 \
