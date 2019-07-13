@@ -28,8 +28,9 @@ from awlsim.coreclient.sshtunnel import *
 
 def sleepWithEventLoop(seconds, excludeInput=True):
 	end = monotonic_time() + seconds
-	eventFlags = QEventLoop.AllEvents |\
-		(QEventLoop.ExcludeUserInputEvents if excludeInput else 0)
+	eventFlags = QEventLoop.AllEvents
+	if excludeInput:
+		eventFlags |= QEventLoop.ExcludeUserInputEvents
 	while monotonic_time() < end:
 		QApplication.processEvents(eventFlags, 10)
 		QThread.msleep(10)
