@@ -456,6 +456,7 @@ EOF
 	info "Installing packages..."
 	apt-get $apt_opts install \
 		aptitude \
+		bash \
 		build-essential \
 		console-setup \
 		cython3 \
