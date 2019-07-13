@@ -213,7 +213,8 @@ class SSHTunnel(object):
 		timeoutEnd = monotonic_time() + (timeout or 0)
 		sentPw, authReq, finished = False, [], False
 		while not finished:
-			self.sleep(0.1)
+			if not self.sleep(0.1):
+				raise AwlSimError("Establishing SSH tunnel cancelled.")
 			if timeout and monotonic_time() >= timeoutEnd:
 				raise AwlSimError("Timeout establishing SSH tunnel.")
 			fromSsh = self.__read(ptyMasterFd)
@@ -267,8 +268,11 @@ class SSHTunnel(object):
 
 	def sleep(self, seconds):
 		"""Sleep for a number of seconds.
+		Returns True, if everything is Ok.
+		Returns False, if the connection operation shall be cancelled.
 		"""
 		time.sleep(seconds)
+		return True
 
 	def sshMessage(self, message, isDebug):
 		"""Print a SSH log message.

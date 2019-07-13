@@ -40,6 +40,8 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 	"""
 
 	def __init__(self, parent, *args, **kwargs):
+		self.__cancelRequest = False
+
 		QDialog.__init__(self, parent)
 		SSHTunnel.__init__(self, *args, **kwargs)
 
@@ -53,10 +55,16 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 
 		self.resize(750, 180)
 
+	def closeEvent(self, ev):
+		self.__cancelRequest = True
+		QDialog.closeEvent(self, ev)
+
 	def sleep(self, seconds):
-		sleepWithEventLoop(seconds, excludeInput=True)
+		sleepWithEventLoop(seconds, excludeInput=False)
+		return not self.__cancelRequest
 
 	def connect(self):
+		self.__cancelRequest = False
 		self.hide()
 		self.setWindowModality(Qt.ApplicationModal)
 		self.show()
