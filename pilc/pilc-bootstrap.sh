@@ -462,9 +462,9 @@ EOF
 		dbus \
 		debconf-utils \
 		devscripts \
+		fdisk \
 		firmware-brcm80211 \
 		git \
-		gnu-fdisk \
 		htop \
 		i2c-tools \
 		irqbalance \
@@ -476,8 +476,8 @@ EOF
 		openssh-server \
 		parted \
 		python3 \
-		python3-dev \
 		python3-cffi \
+		python3-dev \
 		python3-dev \
 		python3-rpi.gpio \
 		python3-serial \
