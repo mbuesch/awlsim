@@ -30,7 +30,10 @@ basedir="$basedir/.."
 MAIN_MIRROR="http://mirror1.hs-esslingen.de/pub/Mirrors/archive.raspbian.org/raspbian/"
 DEFAULT_SUITE=buster
 
-DEBIAN_ARCHIVE_KEYRING="/usr/share/keyrings/debian-archive-keyring.gpg"
+KEYRING_VERSION="20120528.2"
+KEYRING_BASEURL="$MAIN_MIRROR/pool/main/r/raspbian-archive-keyring"
+KEYRING_TGZ_FILE="raspbian-archive-keyring_${KEYRING_VERSION}.tar.gz"
+KEYRING_TGZ_SHA256="fdf50f775b60901a2783f21a6362e2bf5ee6203983e884940b163faa1293c002"
 
 PPL_VERSION="0.1.1"
 PPL_FILE="ppl_v$PPL_VERSION.zip"
@@ -242,35 +245,43 @@ pilc_bootstrap_first_stage()
 	assert_program dd
 	assert_program debootstrap
 	assert_program git
+	assert_program gpg
 	assert_program install
 	assert_program mkfs.ext4
 	assert_program mkfs.vfat
 	assert_program parted
 	assert_program rsync
 	assert_program tar
-	assert_program tar
 	assert_program unzip
 	assert_program wget
-	[ -e "$DEBIAN_ARCHIVE_KEYRING" ] ||\
-		die "$DEBIAN_ARCHIVE_KEYRING not found. Please install debian-archive-keyring."
 	[ -x "$opt_qemu" ] ||\
 		die "The qemu binary '$opt_qemu' is not executable."
+
+	info "Cleaning tmp..."
+	rm -rf "$opt_target_dir"/tmp/*
+	do_install -d -o root -g root -m 1777 "$opt_target_dir/tmp"
+
+	info "Downloading and extracting keys..."
+	do_install -o root -g root -m 644 \
+		"$basedir_pilc/CF8A1AF502A2AA2D763BAE7E82B129927FA3303E.gpg" \
+		"$opt_target_dir/tmp/"
+	download "$opt_target_dir/tmp/$KEYRING_TGZ_FILE" \
+		 "$KEYRING_BASEURL/$KEYRING_TGZ_FILE" \
+		 "$KEYRING_TGZ_SHA256"
+	tar -C "$opt_target_dir/tmp" -x -f "$opt_target_dir/tmp/$KEYRING_TGZ_FILE" ||\
+		die "Failed to extract keys."
+	local raspbian_asc="$opt_target_dir/tmp/raspbian-archive-keyring-$KEYRING_VERSION/raspbian.public.key"
+	local raspbian_gpg="$raspbian_asc.gpg"
+	gpg --dearmor < "$raspbian_asc" > "$raspbian_gpg" ||\
+		die "Failed to convert key."
 
 	# debootstrap first stage.
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
 		debootstrap --arch="$opt_arch" --foreign --verbose \
-			--keyring="$basedir_pilc/raspbian.public.key.gpg" \
+			--keyring="$raspbian_gpg" \
 			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
 			|| die "debootstrap failed"
-		do_install -d -o root -g root -m 755 \
-			"$opt_target_dir/usr/share/keyrings"
-		do_install -o root -g root -m 644 \
-			"$basedir_pilc/raspbian.archive.public.key.gpg" \
-			"$opt_target_dir/usr/share/keyrings/"
-		do_install -o root -g root -m 644 \
-			"$DEBIAN_ARCHIVE_KEYRING" \
-			"$opt_target_dir/usr/share/keyrings/"
 	fi
 	[ -d "$opt_target_dir" ] ||\
 		die "Target directory '$opt_target_dir' does not exist."
@@ -279,9 +290,6 @@ pilc_bootstrap_first_stage()
 	do_install -o root -g root -m 755 \
 		"$basedir_pilc/templates/policy-rc.d" \
 		"$opt_target_dir/usr/sbin/"
-
-	info "Cleaning tmp..."
-	rm -rf "$opt_target_dir"/tmp/*
 
 	# Copy qemu.
 	local qemu_bin="$opt_target_dir/$opt_qemu"
@@ -323,8 +331,12 @@ pilc_bootstrap_first_stage()
 	) || die
 
 	# Fetch packages
-	download "$opt_target_dir/tmp/$PPL_FILE" "$PPL_MIRROR" "$PPL_SHA256"
-	download "$opt_target_dir/tmp/$PPL2_FILE" "$PPL2_MIRROR" "$PPL2_SHA256"
+	download "$opt_target_dir/tmp/$PPL_FILE" \
+		 "$PPL_MIRROR" \
+		 "$PPL_SHA256"
+	download "$opt_target_dir/tmp/$PPL2_FILE" \
+		 "$PPL2_MIRROR" \
+		 "$PPL2_SHA256"
 
 	# Second stage will mount a few filesystems.
 	# Keep track to umount them in cleanup.
@@ -395,7 +407,7 @@ pilc_bootstrap_second_stage()
 		die "Mounting /dev/shm failed."
 
 	info "Writing apt configuration..."
-cat > /etc/apt/sources.list <<EOF
+	cat > /etc/apt/sources.list <<EOF
 deb $MAIN_MIRROR $opt_suite main firmware rpi
 deb http://archive.raspberrypi.org/debian/ $opt_suite main ui
 EOF
@@ -438,17 +450,22 @@ EOF
 		/etc/os-release ||\
 		die "Failed to set os-release BUG_REPORT_URL."
 
-	info "Updating packages..."
+	info "Updating package list..."
 	cat /tmp/templates/debconf-set-selections-preinstall.conf | debconf-set-selections ||\
 		die "Failed to configure debconf settings"
-	apt-key add /usr/share/keyrings/raspbian.archive.public.key.gpg ||\
+	apt-key add /tmp/CF8A1AF502A2AA2D763BAE7E82B129927FA3303E.gpg ||\
 		die "apt-key add failed"
 	local apt_opts="-y -o Acquire::Retries=3"
 	apt-get $apt_opts update ||\
 		die "apt-get update failed"
-	info "Installing apt-transport-https..."
 	apt-get $apt_opts install apt-transport-https ||\
 		die "apt-get install apt-transport-https failed"
+	apt-get $apt_opts install \
+		debian-keyring \
+		raspberrypi-archive-keyring \
+		raspbian-archive-keyring \
+		|| die "apt-get install keyrings failed"
+
 	info "Upgrading system..."
 	apt-get $apt_opts dist-upgrade ||\
 		die "apt-get dist-upgrade failed"
