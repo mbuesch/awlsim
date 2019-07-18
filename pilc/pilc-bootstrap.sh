@@ -465,7 +465,14 @@ EOF
 		debsums \
 		devscripts \
 		fdisk \
+		firmware-atheros \
 		firmware-brcm80211 \
+		firmware-libertas \
+		firmware-linux \
+		firmware-linux-free \
+		firmware-linux-nonfree \
+		firmware-misc-nonfree \
+		firmware-realtek \
 		git \
 		htop \
 		i2c-tools \
