@@ -495,7 +495,6 @@ EOF
 		i2c-tools \
 		irqbalance \
 		iw \
-		libraspberrypi-dev \
 		locales \
 		nano \
 		ntp \
@@ -504,16 +503,9 @@ EOF
 		python3 \
 		python3-cffi \
 		python3-dev \
-		python3-dev \
-		python3-rpi.gpio \
 		python3-serial \
 		python3-setuptools \
 		python3-spidev \
-		raspberrypi-bootloader \
-		raspberrypi-net-mods \
-		raspberrypi-sys-mods \
-		raspi-config \
-		raspi-gpio \
 		rng-tools \
 		schedtool \
 		sudo \
@@ -524,34 +516,9 @@ EOF
 		wpasupplicant \
 		|| die "apt-get install failed"
 
-	info "Removing unnecessary packages..."
-	apt-get $apt_opts purge \
-		at \
-		exim4-daemon-light \
-		triggerhappy \
-		|| die "apt-get purge failed"
-
-	info "Configuring some packages..."
-	cat /tmp/templates/debconf-set-selections-postinstall.conf | debconf-set-selections ||\
-		die "Failed to configure debconf settings"
+	info "Configuring locales..."
 	dpkg-reconfigure -u locales ||\
 		die "Failed to reconfigure locales"
-
-	info "Cleaning apt..."
-	apt-get $apt_opts autoremove --purge ||\
-		die "apt-get autoremove failed"
-	apt-get $apt_opts clean ||\
-		die "apt-get clean failed"
-
-	info "Disabling some services..."
-	systemctl disable apt-daily.service ||\
-		die "Failed to disable apt-daily.service"
-	systemctl disable apt-daily.timer ||\
-		die "Failed to disable apt-daily.timer"
-	systemctl disable apt-daily-upgrade.timer ||\
-		die "Failed to disable apt-daily-upgrade.timer"
-	systemctl disable rsync.service ||\
-		die "Failed to disable rsync.service"
 
 	info "Creating /etc/rc.local..."
 	do_install -o root -g root -m 755 \
@@ -580,6 +547,44 @@ EOF
 	do_install -T -o pi -g pi -m 644 \
 		/tmp/templates/tmux.conf \
 		/home/pi/.tmux.conf
+
+	info "Installing raspbian packages..."
+	apt-get $apt_opts install \
+		libraspberrypi-dev \
+		raspberrypi-bootloader \
+		raspberrypi-net-mods \
+		raspberrypi-sys-mods \
+		python3-rpi.gpio \
+		raspi-config \
+		raspi-gpio \
+		|| die "apt-get install failed"
+
+	info "Running debconf-set-selections..."
+	cat /tmp/templates/debconf-set-selections-postinstall.conf | debconf-set-selections ||\
+		die "Failed to configure debconf settings"
+
+	info "Removing unnecessary packages..."
+	apt-get $apt_opts purge \
+		at \
+		exim4-daemon-light \
+		triggerhappy \
+		|| die "apt-get purge failed"
+
+	info "Cleaning apt..."
+	apt-get $apt_opts autoremove --purge ||\
+		die "apt-get autoremove failed"
+	apt-get $apt_opts clean ||\
+		die "apt-get clean failed"
+
+	info "Disabling some services..."
+	systemctl disable apt-daily.service ||\
+		die "Failed to disable apt-daily.service"
+	systemctl disable apt-daily.timer ||\
+		die "Failed to disable apt-daily.timer"
+	systemctl disable apt-daily-upgrade.timer ||\
+		die "Failed to disable apt-daily-upgrade.timer"
+	systemctl disable rsync.service ||\
+		die "Failed to disable rsync.service"
 
 	info "Building and installing PiLC system package..."
 	(
