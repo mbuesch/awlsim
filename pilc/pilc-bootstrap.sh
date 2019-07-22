@@ -550,11 +550,13 @@ EOF
 
 	info "Installing raspbian packages..."
 	apt-get $apt_opts install \
+		libraspberrypi-bin \
 		libraspberrypi-dev \
+		libraspberrypi-doc \
+		python3-rpi.gpio \
 		raspberrypi-bootloader \
 		raspberrypi-net-mods \
 		raspberrypi-sys-mods \
-		python3-rpi.gpio \
 		raspi-config \
 		raspi-gpio \
 		|| die "apt-get install failed"
