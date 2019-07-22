@@ -482,6 +482,7 @@ EOF
 		debconf-utils \
 		debsums \
 		devscripts \
+		ethtool \
 		fdisk \
 		firmware-atheros \
 		firmware-brcm80211 \
@@ -560,6 +561,7 @@ EOF
 		raspberrypi-sys-mods \
 		raspi-config \
 		raspi-gpio \
+		raspinfo \
 		|| die "apt-get install failed"
 
 	info "Running debconf-set-selections..."
