@@ -27,7 +27,8 @@ basedir="$basedir/.."
 
 
 #MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
-MAIN_MIRROR="http://mirror1.hs-esslingen.de/pub/Mirrors/archive.raspbian.org/raspbian/"
+#MAIN_MIRROR="http://mirror1.hs-esslingen.de/pub/Mirrors/archive.raspbian.org/raspbian/"
+MAIN_MIRROR="http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/"
 DEFAULT_SUITE=buster
 
 KEYRING_VERSION="20120528.2"
