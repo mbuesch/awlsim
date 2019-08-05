@@ -252,6 +252,7 @@ pilc_bootstrap_first_stage()
 	assert_program mkfs.vfat
 	assert_program parted
 	assert_program rsync
+	assert_program setarch
 	assert_program tar
 	assert_program unzip
 	assert_program wget
@@ -279,7 +280,8 @@ pilc_bootstrap_first_stage()
 	# debootstrap first stage.
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
-		debootstrap --arch="$opt_arch" --foreign --verbose \
+		setarch linux32 \
+			debootstrap --arch="$opt_arch" --foreign --verbose \
 			--components="main,contrib,non-free" \
 			--keyring="$raspbian_gpg" \
 			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
@@ -1118,7 +1120,8 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_writeonly
 	export opt_rpiver
 	export __PILC_BOOTSTRAP_SECOND_STAGE__=1
-	chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
+	setarch linux32 \
+		chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
 		die "Chroot failed."
 
 	# Run third stage.
