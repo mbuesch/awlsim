@@ -570,7 +570,6 @@ EOF
 
 	info "Removing unnecessary packages..."
 	apt-get $apt_opts purge \
-		at \
 		exim4-daemon-light \
 		triggerhappy \
 		|| die "apt-get purge failed"
