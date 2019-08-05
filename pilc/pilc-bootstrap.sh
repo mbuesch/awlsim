@@ -280,6 +280,7 @@ pilc_bootstrap_first_stage()
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
 		debootstrap --arch="$opt_arch" --foreign --verbose \
+			--components="main,contrib,non-free" \
 			--keyring="$raspbian_gpg" \
 			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
 			|| die "debootstrap failed"
@@ -409,7 +410,7 @@ pilc_bootstrap_second_stage()
 
 	info "Writing apt configuration..."
 	cat > /etc/apt/sources.list <<EOF
-deb $MAIN_MIRROR $opt_suite main firmware rpi
+deb $MAIN_MIRROR $opt_suite main contrib non-free rpi firmware
 deb http://archive.raspberrypi.org/debian/ $opt_suite main ui
 EOF
 	[ $? -eq 0 ] || die "Failed to set sources.list"
