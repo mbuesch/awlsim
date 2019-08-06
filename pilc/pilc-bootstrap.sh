@@ -607,6 +607,12 @@ EOF
 			/home/pi/deb/pilc-system/
 	) || die
 
+	info "Updating /etc/hosts..."
+	if ! grep -qe pilc /etc/hosts; then
+		printf '\n127.0.0.1\tpilc\n' >> /etc/hosts ||\
+			die "Failed to update /etc/hosts"
+	fi
+
 	info "Building Python modules..."
 	build_ppl
 	build_ppl2
