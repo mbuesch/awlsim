@@ -1,3 +1,0 @@
-allow-hotplug eth2
-iface eth2 inet dhcp
-iface eth2 inet6 auto

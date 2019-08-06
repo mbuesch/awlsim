@@ -1,3 +1,0 @@
-allow-hotplug /enx*=enx
-iface enx inet dhcp
-iface enx inet6 auto
