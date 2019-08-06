@@ -4,7 +4,7 @@ After=syslog.target local-fs.target
 Before=pilc_regenerate_ssh_host_keys.service
 
 [Service]
-Type=forking
+Type=exec
 ExecStart=/bin/sh /usr/sbin/pilc-resize-rootfs
 
 [Install]
