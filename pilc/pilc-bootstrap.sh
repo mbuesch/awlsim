@@ -403,18 +403,15 @@ pilc_bootstrap_second_stage()
 
 	info "Mounting /proc..."
 	do_install -d -o root -g root -m 755 /proc
-	mount -t proc proc /proc ||\
-		die "Mounting /proc failed."
+	mount -t proc proc /proc || die "Mounting /proc failed."
 
 	info "Mounting /sys..."
 	do_install -d -o root -g root -m 755 /sys
-	mount -t sysfs sysfs /sys ||\
-		die "Mounting /sys failed."
+	mount -t sysfs sysfs /sys || die "Mounting /sys failed."
 
 	info "Mounting /dev/shm..."
 	do_install -d -o root -g root -m 755 /dev/shm
-	mount -t tmpfs tmpfs /dev/shm ||\
-		die "Mounting /dev/shm failed."
+	mount -t tmpfs tmpfs /dev/shm || die "Mounting /dev/shm failed."
 
 	info "Writing apt configuration..."
 	cat > /etc/apt/sources.list <<EOF
@@ -432,8 +429,7 @@ EOF
 		/etc/fstab
 
 	info "Writing misc /etc stuff..."
-	echo "PiLC" > /etc/hostname ||\
-		die "Failed to set hostname"
+	echo "pilc" > /etc/hostname || die "Failed to set hostname"
 	printf 'PiLC GNU/Linux (based on Raspbian) \\n \\l\n\n' > /etc/issue ||\
 		die "Failed to create /etc/issue"
 	printf 'PiLC GNU/Linux (based on Raspbian)\n' > /etc/issue.net ||\
@@ -649,8 +645,6 @@ EOF
 
 		# Build the packages.
 		debuild -uc -us -b -d || die "debuild failed"
-		info "Built awlsim files:"
-		ls .. || die "Failed to list results"
 
 		info "Installing awlsim..."
 		# Core
@@ -742,8 +736,6 @@ EOF
 
 		# Build the packages.
 		debuild -uc -us -b -d || die "debuild failed"
-		info "Built pyprofibus files:"
-		ls .. || die "Failed to list results"
 
 		info "Installing pyprofibus..."
 		dpkg -i ../python3-pyprofibus_*.deb ||\
