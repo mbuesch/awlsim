@@ -527,6 +527,13 @@ EOF
 	dpkg-reconfigure -u locales ||\
 		die "Failed to reconfigure locales"
 
+	info "Configuring console..."
+	sed -i -e 's|CHARMAP=.*|CHARMAP="UTF-8"|' \
+		-e 's|FONTFACE=.*|FONTFACE=""|' \
+		-e 's|FONTSIZE=.*|FONTSIZE=""|' \
+		/etc/default/console-setup ||\
+		die "Failed to edit /etc/default/console-setup"
+
 	info "Creating /etc/rc.local..."
 	do_install -o root -g root -m 755 \
 		/tmp/templates/rc.local \
