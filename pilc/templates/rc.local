@@ -15,9 +15,8 @@ set +e
 export PATH=/bin:/usr/bin:/sbin:/usr/sbin
 export LC_ALL=C LANGUAGE=C LANG=C
 
-# Add /dev/ttyS0 link for convenience.
-if ! [ -e /dev/ttyS0 ]; then
-	ln -s /dev/ttyAMA0 /dev/ttyS0
-fi
+
+
+
 
 exit 0
