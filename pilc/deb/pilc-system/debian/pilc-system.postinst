@@ -31,6 +31,8 @@ case "$1" in
 		rm /etc/ssh/ssh_host_*_key*
 	fi
 	echo 1 > /etc/ssh/sshd_not_to_be_run
+
+	systemctl enable pilc_resize_rootfs.service
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+/bin/echo "Resizing root filesystem..."
+/bin/echo "THE SYSTEM WILL REBOOT IN A FEW SECONDS"
+
+/usr/bin/raspi-config --expand-rootfs
+/bin/systemctl mask pilc_resize_rootfs.service
+/bin/systemctl reboot
+
+exit 0

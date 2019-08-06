@@ -1,0 +1,11 @@
+[Unit]
+Description=Resize rootfs once
+After=syslog.target local-fs.target
+Before=pilc_regenerate_ssh_host_keys.service
+
+[Service]
+Type=forking
+ExecStart=/bin/sh /usr/sbin/pilc-resize-rootfs
+
+[Install]
+WantedBy=multi-user.target
