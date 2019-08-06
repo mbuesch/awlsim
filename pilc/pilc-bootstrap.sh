@@ -119,6 +119,12 @@ do_install()
 	install "$@" || die "Failed install $*"
 }
 
+do_systemctl()
+{
+	info "systemctl $*"
+	systemctl "$@" || die "Failed to systemctl $*"
+}
+
 write_image()
 {
 	local image="$1"
@@ -572,12 +578,6 @@ EOF
 	cat /tmp/templates/debconf-set-selections-postinstall.conf | debconf-set-selections ||\
 		die "Failed to configure debconf settings"
 
-	info "Removing unnecessary packages..."
-	apt-get $apt_opts purge \
-		exim4-daemon-light \
-		triggerhappy \
-		|| die "apt-get purge failed"
-
 	info "Cleaning apt..."
 	apt-get $apt_opts autoremove --purge ||\
 		die "apt-get autoremove failed"
@@ -585,14 +585,16 @@ EOF
 		die "apt-get clean failed"
 
 	info "Disabling some services..."
-	systemctl disable apt-daily.service ||\
-		die "Failed to disable apt-daily.service"
-	systemctl disable apt-daily.timer ||\
-		die "Failed to disable apt-daily.timer"
-	systemctl disable apt-daily-upgrade.timer ||\
-		die "Failed to disable apt-daily-upgrade.timer"
-	systemctl disable rsync.service ||\
-		die "Failed to disable rsync.service"
+	do_systemctl mask apt-daily.service
+	do_systemctl mask apt-daily.timer
+	do_systemctl mask apt-daily-upgrade.timer
+	do_systemctl mask rsync.service
+	do_systemctl mask exim4.service
+	do_systemctl mask triggerhappy.service
+	do_systemctl mask triggerhappy.socket
+	do_systemctl mask alsa-state.service
+	do_systemctl mask alsa-restore.service
+	do_systemctl mask alsa-utils.service
 
 	info "Building and installing PiLC system package..."
 	(
