@@ -560,6 +560,7 @@ EOF
 		libraspberrypi-doc \
 		python3-rpi.gpio \
 		raspberrypi-bootloader \
+		raspberrypi-kernel \
 		raspberrypi-net-mods \
 		raspberrypi-sys-mods \
 		raspi-config \
