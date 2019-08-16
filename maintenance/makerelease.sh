@@ -28,7 +28,7 @@ hook_get_version()
 hook_post_checkout()
 {
 	info "Pulling in git submodules"
-	git submodule update --init submodules/pyprofibus
+	git submodule update --init --recursive
 
 	info "Removing version control files"
 	default_hook_post_checkout "$@"
