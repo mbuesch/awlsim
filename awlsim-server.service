@@ -1,6 +1,5 @@
 [Unit]
 Description=Awlsim PLC core server
-After=syslog.target
 After=network.target
 
 [Service]
