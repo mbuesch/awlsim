@@ -2,7 +2,7 @@
 #
 # PiLC bootstrap
 #
-# Copyright 2016-2019 Michael Buesch <m@bues.ch>
+# Copyright 2016-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -575,6 +575,8 @@ EOF
 		raspi-config \
 		raspi-gpio \
 		raspinfo \
+		rpi-eeprom \
+		rpi-eeprom-images \
 		|| die "apt-get install failed"
 
 	info "Running debconf-set-selections..."
