@@ -241,3 +241,13 @@ dictKeys = py23(lambda d: d.viewkeys(),
 		lambda d: d.keys())
 dictValues = py23(lambda d: d.viewvalues(),
 		  lambda d: d.values())
+
+if isMicroPython: #@nocov
+	import select
+	if not hasattr(select, "select"):
+		select.select = None # Dummy
+
+	try:
+		IOError
+	except NameError:
+		IOError = OSError

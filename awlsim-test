@@ -110,7 +110,8 @@ def usage():
 def writeStdout(message):
 	if Logging.loglevel >= Logging.LOG_INFO:
 		sys.stdout.write(message)
-		sys.stdout.flush()
+		if not isMicroPython:
+			sys.stdout.flush()
 
 nextScreenUpdate = 0.0
 lastDump = ""

@@ -37,10 +37,13 @@ def importModule(moduleName):
 	May raise importError."""
 
 	import awlsim_loader.cython_helper as cython_helper
-	try:
-		import importlib
-	except ImportError as e: #@nocov
+	if isMicroPython:
 		importlib = None
+	else:
+		try:
+			import importlib
+		except ImportError as e: #@nocov
+			importlib = None
 
 	# If we are running in cython module,
 	# translate the moduleName to its cython name.

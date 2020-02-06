@@ -129,7 +129,8 @@ class Logging(object):
 				stream.write("[%.3f] " % cls._getUptime())
 				stream.write(text)
 				stream.write("\n")
-				stream.flush()
+				if not isMicroPython:
+					stream.flush()
 
 	@classmethod
 	def printDebug(cls, text): #@nocov
@@ -188,7 +189,6 @@ def safeFileRead(filename):
 	try:
 		with open(filename, "rb") as fd:
 			data = fd.read()
-			fd.close()
 	except IOError as e: #@nocov
 		raise AwlSimError("Failed to read '%s': %s" %\
 			(filename, str(e)))
@@ -206,7 +206,6 @@ def safeFileWrite(filename, data):
 		with open(tmpFile, "wb") as fd:
 			fd.write(data)
 			fd.flush()
-			fd.close()
 		if not osIsPosix: #@nocov
 			# Can't use safe rename on non-POSIX.
 			# Must unlink first.

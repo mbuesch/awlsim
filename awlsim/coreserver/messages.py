@@ -702,11 +702,11 @@ class AwlSimMessage_LIBSEL(AwlSimMessage):
 class AwlSimMessage_BUILD(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_BUILD
 
-	plStruct = struct.Struct(str(">32x"))
+	plStruct = struct.Struct(str(">8I"))
 
 	def toBytes(self):
 		try:
-			pl = self.plStruct.pack()
+			pl = self.plStruct.pack(0, 0, 0, 0, 0, 0, 0, 0)
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
 		except (ValueError, struct.error) as e:
 			raise TransferError("BUILD: Invalid data format")
@@ -1536,14 +1536,14 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 	#	reserved (32 bit)
 	#	reserved (32 bit)
 	#	reserved (32 bit)
-	plHdrStruct = struct.Struct(str(">6I40x"))
+	plHdrStruct = struct.Struct(str(">16I"))
 
 	# Payload module header struct:
 	#	Number of parameters (32 bit)
 	#	reserved (32 bit)
 	#	reserved (32 bit)
 	#	reserved (32 bit)
-	plModStruct = struct.Struct(str(">I12x"))
+	plModStruct = struct.Struct(str(">4I"))
 
 	# awlSources: List of AwlSource()s
 	# symTabSources: List of SymTabSource()s
@@ -1563,7 +1563,9 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 						  len(self.hwMods),
 						  len(self.libSelections),
 						  len(self.fupSources),
-						  len(self.kopSources)) ]
+						  len(self.kopSources),
+						  0, 0, 0, 0, 0,
+						  0, 0, 0, 0, 0) ]
 		def addSrcs(srcs):
 			for src in srcs:
 				payload.append(self.packString(src.name))
@@ -1573,7 +1575,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 		addSrcs(self.symTabSources)
 		for hwmodDesc in self.hwMods:
 			params = hwmodDesc.getParameters()
-			payload.append(self.plModStruct.pack(len(params)))
+			payload.append(self.plModStruct.pack(len(params), 0, 0, 0))
 			payload.append(self.packString(hwmodDesc.getModuleName()))
 			for pName, pVal in dictItems(params):
 				payload.append(self.packString(pName))
@@ -1595,7 +1597,8 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 			fupSources = []
 			kopSources = []
 			offset = 0
-			nrAwl, nrSym, nrHw, nrLib, nrFup, nrKop = cls.plHdrStruct.unpack_from(
+			nrAwl, nrSym, nrHw, nrLib, nrFup, nrKop,\
+			_, _, _, _, _, _, _, _, _, _ = cls.plHdrStruct.unpack_from(
 								payload, offset)
 			offset += cls.plHdrStruct.size
 			def unpackSrcs(srcClass, sourcesList, count, offset):
@@ -1613,7 +1616,7 @@ class AwlSimMessage_IDENTS(AwlSimMessage):
 			offset = unpackSrcs(AwlSource, awlSources, nrAwl, offset)
 			offset = unpackSrcs(SymTabSource, symTabSources, nrSym, offset)
 			for i in range(nrHw):
-				(nrParam, ) = cls.plModStruct.unpack_from(
+				nrParam, _, _, _ = cls.plModStruct.unpack_from(
 						payload, offset)
 				offset += cls.plModStruct.size
 				modName, count = cls.unpackString(payload, offset)
