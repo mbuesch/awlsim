@@ -1,5 +1,10 @@
 from xml.sax.saxutils import unescape
 
+__all__ = [ "ParseError", "XMLParser", ]
+
+def unescapeattr(d):
+	return unescape(d.replace("&#9;", "\t").replace("&#13;", "\r").replace("&#10;", "\n"))
+
 class ParseError(Exception):
 	pass
 
@@ -78,7 +83,7 @@ class XMLParser(object):
 			if tag and tag.state == "attrdata":
 				if c == tag.attrQuote:
 					tag.state = "taghead"
-					tag.attrs["".join(tag.attrName)] = "".join(tag.attrData)
+					tag.attrs["".join(tag.attrName)] = unescapeattr("".join(tag.attrData))
 					tag.attrName = []
 					tag.attrData = []
 				else:
