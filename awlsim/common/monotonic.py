@@ -95,9 +95,10 @@ class _MONOTONIC_RAW_CFFI_factory(_MONOTONIC_RAW_factory): #+cdef
 		try:
 			from cffi import FFI
 		except ImportError as e:
-			printWarning("Failed to import CFFI: %s\n"
-				     "Cannot use CLOCK_MONOTONIC_RAW via CFFI." % (
-				     str(e)))
+			if not isMicroPython:
+				printWarning("Failed to import CFFI: %s\n"
+					     "Cannot use CLOCK_MONOTONIC_RAW via CFFI." % (
+					     str(e)))
 			return False
 
 		self.__id_CLOCK_MONOTONIC_RAW = 4
