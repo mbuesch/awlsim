@@ -61,6 +61,7 @@ __all__ = [
 	"dictItems",
 	"dictKeys",
 	"dictValues",
+	"bit_length",
 ]
 
 
@@ -251,3 +252,15 @@ if isMicroPython: #@nocov
 		IOError
 	except NameError:
 		IOError = OSError
+
+# Python 2 compat: log2
+if not hasattr(math, "log2"):
+	math.log2 = lambda x: math.log(x, 2)
+
+# int.bit_length substitute
+# Micropython doesn't have int.bit_length.
+def bit_length(value):
+	assert isinstance(value, (int, long) if isPy2Compat else int)
+	if hasattr(value, "bit_length"):
+		return value.bit_length()
+	return int(math.ceil(math.log2(value)))

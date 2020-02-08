@@ -142,7 +142,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		"""
 		elems = tuple(elems)
 		try:
-			yShift = max(e.x for e in elems).bit_length()
+			yShift = bit_length(max(e.x for e in elems))
 		except ValueError:
 			return []
 		return sorted(elems,
