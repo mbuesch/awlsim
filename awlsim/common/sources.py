@@ -165,6 +165,17 @@ class GenericSource(object):
 
 	factory		= SourceFactory
 
+	if isMicroPython:
+		latin1Trans = {
+			b"\xE4" : "ä",
+			b"\xC4" : "Ä",
+			b"\xF6" : "ö",
+			b"\xD6" : "Ö",
+			b"\xFC" : "ü",
+			b"\xDC" : "Ü",
+			b"\xDF" : "ß",
+		}
+
 	def __init__(self,
 		     name="",
 		     enabled=True,
@@ -273,8 +284,12 @@ class GenericSource(object):
 				sourceString = sourceBytes.decode(fromEncoding, "ignore")
 				sourceBytes = sourceString.encode(toEncoding, "ignore")
 		except UnicodeError as e:
-			raise AwlSimError("Failed to re-encode source code "
-				"from %s to %s." % (fromEncoding, toEncoding))
+			if isMicroPython:
+				for b, c in dictItems(cls.latin1Trans):
+					sourceBytes = sourceBytes.replace(b, c.encode(toEncoding))
+			else:
+				raise AwlSimError("Failed to re-encode source code "
+					"from %s to %s." % (fromEncoding, toEncoding))
 		return sourceBytes
 
 	@property

@@ -836,7 +836,16 @@ class AwlDataType(OptionalImmutable):
 			# Strings are supposed to be traditional
 			# "latin1" encoding compatible and the resulting
 			# bytes are "latin1" encoded bytes.
-			data = token.encode(AwlSource.COMPAT_ENCODING)
+			if isMicroPython:
+				trans = pivotDict(AwlSource.latin1Trans)
+				data = bytearray()
+				for c in token:
+					if c in trans:
+						data += trans[c]
+					else:
+						data += c.encode(AwlSource.COMPAT_ENCODING)
+			else:
+				data = token.encode(AwlSource.COMPAT_ENCODING)
 			data = bytearray(data)
 			if len(data) != len(token):
 				raise ValueError
