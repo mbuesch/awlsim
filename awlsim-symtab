@@ -93,7 +93,9 @@ def main():
 
 	try:
 		if opt_infile == "-":
-			if isPy2Compat:
+			if isMicroPython:
+				inDataBytes = sys.stdin.read().encode(SymTabSource.COMPAT_ENCODING)
+			elif isPy2Compat:
 				inDataBytes = sys.stdin.read()
 			else:
 				inDataBytes = sys.stdin.buffer.read()
@@ -133,7 +135,9 @@ def main():
 				"%s" % (encoding, str(e)))
 
 		if opt_outfile == "-":
-			if isPy2Compat:
+			if isMicroPython:
+				sys.stdout.write(outDataBytes.decode(SymTabSource.COMPAT_ENCODING))
+			elif isPy2Compat:
 				sys.stdout.write(outDataBytes)
 				sys.stdout.flush()
 			else:
