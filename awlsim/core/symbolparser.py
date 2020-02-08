@@ -542,6 +542,8 @@ class SymTabParser_CSV(SymTabParser):
 				       dialect="awlsim_symtab")
 		for i, row in enumerate(csvReader):
 			lineNr = i + 1
+			if len(row) == 0:
+				continue # Empty line
 			if len(row) != 4:
 				raise AwlSimError("Wrong record count in "
 					"line %d. Expected 4, but got %d records." %\
