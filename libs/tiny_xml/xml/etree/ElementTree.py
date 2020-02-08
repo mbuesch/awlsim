@@ -1,3 +1,5 @@
+from xml.sax.saxutils import unescape
+
 class ParseError(Exception):
 	pass
 
@@ -11,6 +13,7 @@ class XMLParser(object):
 			self.attrs = {}
 			self.attrName = []
 			self.attrData = []
+			self.attrQuote = '"'
 			self.end = False
 
 			self.skip = skip
@@ -32,7 +35,7 @@ class XMLParser(object):
 
 			if tag and tag.end:
 				if tag.state not in ("comment", "head", "cdata"):
-					self.target.data("".join(tag.data))
+					self.target.data(unescape("".join(tag.data)))
 					self.target.end(tag.name)
 				tree.pop()
 				prevTag = tree[-1] if tree else None
@@ -60,6 +63,12 @@ class XMLParser(object):
 				continue
 			if tag and tag.state == "attrname":
 				if c == "=":
+					if text.startswith('="', i):
+						tag.attrQuote = '"'
+					elif text.startswith("='", i):
+						tag.attrQuote = "'"
+					else:
+						raise ParseError("Invalid attribute quoting.")
 					tag.skip = 1 # skip quote
 					tag.state = "attrdata"
 					tag.attrData = []
@@ -67,7 +76,7 @@ class XMLParser(object):
 					tag.attrName.append(c)
 				continue
 			if tag and tag.state == "attrdata":
-				if c == '"':
+				if c == tag.attrQuote:
 					tag.state = "taghead"
 					tag.attrs["".join(tag.attrName)] = "".join(tag.attrData)
 					tag.attrName = []
