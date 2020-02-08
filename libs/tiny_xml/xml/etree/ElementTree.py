@@ -16,7 +16,8 @@ class XMLParser(object):
 			self.skip = skip
 			self.state = state
 
-	def __init__(self, target):
+	def __init__(self, html=0, target=None, encoding=None):
+		assert target, "'target' must be provided. Standard TreeBuilder currently not implemented."
 		self.target = target
 
 	def feed(self, text):
