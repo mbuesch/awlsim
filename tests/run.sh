@@ -256,6 +256,11 @@ setup_test_environment()
 		# The actual interpreter is Python
 		local interpreter=python3
 
+	elif [ "$interpreter" = "micropython" ]; then
+		# We want to run the test using Micropython
+
+		local interpreter="$rootdir/maintenance/micropython-wrapper.sh"
+
 	else
 		# Not Cython
 		export PYTHONPATH=
