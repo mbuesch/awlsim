@@ -28,6 +28,7 @@ import time
 import fractions
 import math
 import contextlib
+import functools
 
 
 __all__ = [
@@ -264,3 +265,18 @@ def bit_length(value):
 	if hasattr(value, "bit_length"):
 		return value.bit_length()
 	return int(math.ceil(math.log2(value)))
+
+# functools.cmp_to_key substitute
+# Micropython doesn't have functools.cmp_to_key.
+if not hasattr(functools, "cmp_to_key"):
+	def cmp_to_key(f):
+		class Key(object):
+			__hash__ = None
+			def __init__(s, x): s.x = x
+			def __eq__(s, o): return f(s.x, o.x) == 0
+			def __lt__(s, o): return f(s.x, o.x) < 0
+			def __ge__(s, o): return f(s.x, o.x) >= 0
+			def __gt__(s, o): return f(s.x, o.x) > 0
+			def __le__(s, o): return f(s.x, o.x) <= 0
+		return Key
+	functools.cmp_to_key = cmp_to_key
