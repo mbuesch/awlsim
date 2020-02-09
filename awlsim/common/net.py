@@ -93,7 +93,8 @@ def netPortIsUnused(host, port):
 	finally:
 		if sock:
 			with suppressAllExc:
-				sock.shutdown(socket.SHUT_RDWR)
+				if hasattr(sock, "shutdown"):
+					sock.shutdown(socket.SHUT_RDWR)
 			with suppressAllExc:
 				sock.close()
 	return True

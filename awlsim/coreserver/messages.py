@@ -1849,7 +1849,8 @@ class AwlSimMessageTransceiver(object):
 			with suppressAllExc:
 				self.sock.setblocking(False)
 			with suppressAllExc:
-				self.sock.shutdown(socket.SHUT_RDWR)
+				if hasattr(self.sock, "shutdown"):
+					self.sock.shutdown(socket.SHUT_RDWR)
 			with suppressAllExc:
 				self.sock.close()
 			self.sock = None

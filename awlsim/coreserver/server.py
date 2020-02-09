@@ -1791,7 +1791,8 @@ class AwlSimServer(object): #+cdef
 		finally:
 			if not ok and sock:
 				with suppressAllExc:
-					sock.shutdown(socket.SHUT_RDWR)
+					if hasattr(sock, "shutdown"):
+						sock.shutdown(socket.SHUT_RDWR)
 				with suppressAllExc:
 					sock.close()
 		self.__socket = sock
@@ -1855,7 +1856,8 @@ class AwlSimServer(object): #+cdef
 			with suppressAllExc:
 				self.__socket.setblocking(False)
 			with suppressAllExc:
-				self.__socket.shutdown(socket.SHUT_RDWR)
+				if hasattr(self.__socket, "shutdown"):
+					self.__socket.shutdown(socket.SHUT_RDWR)
 			with suppressAllExc:
 				self.__socket.close()
 			self.__socket = None
