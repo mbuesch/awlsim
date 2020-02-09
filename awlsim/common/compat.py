@@ -29,6 +29,7 @@ import fractions
 import math
 import contextlib
 import functools
+import socket
 
 
 __all__ = [
@@ -280,3 +281,8 @@ if not hasattr(functools, "cmp_to_key"):
 			def __le__(s, o): return f(s.x, o.x) <= 0
 		return Key
 	functools.cmp_to_key = cmp_to_key
+
+# socket.AF_UNSPEC substitute
+# Micropython doesn't have socket.AF_UNSPEC.
+if not hasattr(socket, "AF_UNSPEC"): #@nocov
+	socket.AF_UNSPEC = 0
