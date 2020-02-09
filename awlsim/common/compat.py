@@ -2,7 +2,7 @@
 #
 # AWL simulator - utility functions
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import sys
 import os
-import os.path
+import os.path # micropython needs explicit import of os.path
 import time
 import fractions
 import math

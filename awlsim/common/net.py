@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
 import socket
+import os
 
 
 __all__ = [
@@ -81,7 +82,7 @@ def netPortIsUnused(host, port):
 	try:
 		family, socktype, sockaddr = netGetAddrInfo(host, port)
 		if family == AF_UNIX:
-			if fileExists(sockaddr) == False:
+			if not os.path.exists(sockaddr):
 				return True
 			return False
 		sock = socket.socket(family, socktype)

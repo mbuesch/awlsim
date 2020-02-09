@@ -28,8 +28,6 @@ from awlsim.common.enumeration import *
 from awlsim.common.exceptions import *
 
 import sys
-import os
-import errno
 import random
 import base64
 import binascii
@@ -50,7 +48,6 @@ __all__ = [
 	"printInfo",
 	"printWarning",
 	"printError",
-	"fileExists",
 	"safeFileRead",
 	"safeFileWrite",
 	"strPartitionFull",
@@ -171,19 +168,6 @@ def printWarning(text): #@nocov
 
 def printError(text): #@nocov
 	Logging.printError(text)
-
-def fileExists(filename):
-	"""Returns True, if the file exists.
-	Returns False, if the file does not exist.
-	Returns None, if another error occurred.
-	"""
-	try:
-		os.stat(filename)
-	except OSError as e:
-		if e.errno == errno.ENOENT:
-			return False
-		return None
-	return True
 
 def safeFileRead(filename):
 	try:

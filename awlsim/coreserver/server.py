@@ -1563,13 +1563,13 @@ class AwlSimServer(object): #+cdef
 			if writeBack:
 				# If the project file exists and it has zero size
 				# then delete the file.
-				if fileExists(projectFile):
+				if os.path.exists(projectFile):
 					with contextlib.suppress(IOError, OSError):
 						if not os.path.getsize(projectFile):
 							os.unlink(projectFile)
 							printInfo("Purged empty project "
 								  "file at '%s'." % projectFile)
-				if not fileExists(projectFile):
+				if not os.path.exists(projectFile):
 					# The project file does not exist.
 					# Create an empty one.
 					printInfo("Creating empty project at '%s'" % (

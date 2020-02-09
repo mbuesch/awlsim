@@ -283,7 +283,7 @@ class MainWidget(QWidget):
 				assert(0)
 		self.getCpuWidget().goOffline()
 		self.getCpuWidget().stateMdi.reset()
-		if not fileExists(filename) and newIfNotExist:
+		if not os.path.exists(filename) and newIfNotExist:
 			# The file does not exist. We implicitly create it.
 			# The actual file will be created when the project is saved.
 			isNewProject = True

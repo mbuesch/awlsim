@@ -41,7 +41,7 @@ class LinuxCNC_NotRunning(Exception):
 def watchdogHook(_unused = None):
 	# Check whether LinuxCNC is running.
 	for lockname in ("/tmp/linuxcnc.lock", "/tmp/emc.lock"):
-		if fileExists(lockname):
+		if os.path.exists(lockname):
 			return True
 	if not opt_watchdog:
 		# The check is disabled. Return success.
