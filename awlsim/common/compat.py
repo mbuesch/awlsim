@@ -55,6 +55,7 @@ __all__ = [
 	"reduce",
 	"queue",
 	"BlockingIOError",
+	"IOError",
 	"ConnectionError",
 	"StringIO",
 	"isalnum",
@@ -172,6 +173,13 @@ except NameError: #@nocov
 	class BlockingIOError(BaseException): pass
 BlockingIOError = BlockingIOError
 
+# IOError dummy
+try: #@nocov
+	IOError
+except NameError: #@nocov
+	IOError = OSError
+IOError = IOError
+
 # ConnectionError dummy
 try: #@nocov
 	ConnectionError
@@ -250,18 +258,14 @@ if isMicroPython: #@nocov
 	if not hasattr(select, "select"):
 		select.select = None # Dummy
 
-	try:
-		IOError
-	except NameError:
-		IOError = OSError
 
 # Python 2 compat: log2
-if not hasattr(math, "log2"):
+if not hasattr(math, "log2"): #@nocov
 	math.log2 = lambda x: math.log(x, 2)
 
 # int.bit_length substitute
 # Micropython doesn't have int.bit_length.
-def bit_length(value):
+def bit_length(value): #@nocov
 	assert isinstance(value, (int, long) if isPy2Compat else int)
 	if hasattr(value, "bit_length"):
 		return value.bit_length()
@@ -269,7 +273,7 @@ def bit_length(value):
 
 # functools.cmp_to_key substitute
 # Micropython doesn't have functools.cmp_to_key.
-if not hasattr(functools, "cmp_to_key"):
+if not hasattr(functools, "cmp_to_key"): #@nocov
 	def cmp_to_key(f):
 		class Key(object):
 			__hash__ = None
