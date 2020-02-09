@@ -30,6 +30,7 @@ import math
 import contextlib
 import functools
 import socket
+import select
 
 
 __all__ = [
@@ -253,11 +254,10 @@ dictKeys = py23(lambda d: d.viewkeys(),
 dictValues = py23(lambda d: d.viewvalues(),
 		  lambda d: d.values())
 
-if isMicroPython: #@nocov
-	import select
-	if not hasattr(select, "select"):
-		select.select = None # Dummy
-
+# select.select substitute
+# Micropython doesn't have select.select.
+if not hasattr(select, "select"): #@nocov
+	select.select = None # Dummy
 
 # Python 2 compat: log2
 if not hasattr(math, "log2"): #@nocov
