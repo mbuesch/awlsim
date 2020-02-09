@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-if isIronPython:
+if isIronPython or isMicroPython:
 	import os
 	import signal
 else:
@@ -43,7 +43,13 @@ def findExecutable(executable):
 
 class PopenWrapper(object):
 	def __init__(self, argv, env, stdio=False, hideWindow=False):
-		if isIronPython:
+		if isMicroPython:
+			pid = os.fork()
+			if not pid: # child
+				os.execvpe(argv[0], argv, env)
+			else: # parent
+				self.__pid = pid
+		elif isIronPython:
 			self.__pid = os.spawnve(os.P_NOWAIT,
 						argv[0], argv, dict(env))
 		else:
@@ -64,7 +70,7 @@ class PopenWrapper(object):
 			)
 
 	def terminate(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			try:
 				os.kill(self.__pid, signal.SIGTERM)
 			except ValueError:
@@ -73,41 +79,41 @@ class PopenWrapper(object):
 			self.__proc.terminate()
 
 	def wait(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			pass#TODO
 		else:
 			self.__proc.wait()
 
 	def poll(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			raise NotImplementedError()
 		return self.__proc.poll()
 
 	def communicate(self, input = None):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			raise NotImplementedError()
 		return self.__proc.communicate(input)
 
 	@property
 	def stdin(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			raise NotImplementedError()
 		return self.__proc.stdin
 
 	@property
 	def stdout(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			raise NotImplementedError()
 		return self.__proc.stdout
 
 	@property
 	def stderr(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			raise NotImplementedError()
 		return self.__proc.stderr
 
 	@property
 	def returncode(self):
-		if isIronPython:
+		if isIronPython or isMicroPython:
 			raise NotImplementedError()
 		return self.__proc.returncode
