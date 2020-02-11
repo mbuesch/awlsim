@@ -59,7 +59,7 @@ def netGetAddrInfo(host, port, family = None):
 						   socket.AF_INET,
 						   socktype)[0]
 		except socket.gaierror as e:
-			if e.errno == socket.EAI_ADDRFAMILY:
+			if excErrno(e) == socket.EAI_ADDRFAMILY:
 				# Also try IPv6
 				family, socktype, proto, canonname, sockaddr =\
 					socket.getaddrinfo(host, port,

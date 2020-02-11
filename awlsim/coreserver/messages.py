@@ -53,9 +53,8 @@ class TransferError(Exception):
 	def __init__(self, text, parentException=None, reason=None):
 		if not text and parentException:
 			text = str(parentException)
-		if hasattr(parentException, "errno"):
-			_errno = parentException.errno
-		else:
+		_errno = excErrno(parentException)
+		if _errno == -1:
 			_errno = errno.ECONNREFUSED
 		if reason is None:
 			if parentException:

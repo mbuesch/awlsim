@@ -21,16 +21,17 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 
-import sys
+import contextlib
+import fractions
+import functools
+import math
 import os
 import os.path # micropython needs explicit import of os.path
-import time
-import fractions
-import math
-import contextlib
-import functools
-import socket
+import re
 import select
+import socket
+import sys
+import time
 
 
 __all__ = [
@@ -66,6 +67,7 @@ __all__ = [
 	"dictKeys",
 	"dictValues",
 	"bit_length",
+	"excErrno",
 ]
 
 
@@ -290,3 +292,14 @@ if not hasattr(functools, "cmp_to_key"): #@nocov
 # Micropython doesn't have socket.AF_UNSPEC.
 if not hasattr(socket, "AF_UNSPEC"): #@nocov
 	socket.AF_UNSPEC = 0
+
+# OSError.errno substitute
+# Micropython doesn't have OSError.errno.
+def excErrno(exc):
+	if hasattr(exc, "errno"):
+		return exc.errno
+	if isMicroPython and isinstance(exc, OSError):
+		m = re.match(r"\[Errno (\d+)\]", str(exc))
+		if m:
+			return int(m.group(1))
+	return -1

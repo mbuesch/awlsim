@@ -227,8 +227,8 @@ class AwlSimClient(object):
 				try:
 					sock.connect(sockaddr)
 				except _SocketErrors as e:
-					if e.errno == errno.ECONNREFUSED or\
-					   e.errno == errno.ENOENT:
+					if (excErrno(e) == errno.ECONNREFUSED or
+					    excErrno(e) == errno.ENOENT):
 						self.sleep(0.1)
 						continue
 					if isJython and\
@@ -392,7 +392,7 @@ class AwlSimClient(object):
 			raise AwlSimError("AwlSimClient: "
 				"I/O error in connection to server '%s':\n"
 				"%s (errno = %s)" %\
-				(self.__transceiver.peerInfoString, str(e), str(e.errno)))
+				(self.__transceiver.peerInfoString, str(e), str(excErrno(e))))
 		except TransferError as e:
 			raise AwlSimError("AwlSimClient: "
 				"Connection to server '%s' died. "
@@ -425,7 +425,7 @@ class AwlSimClient(object):
 				"Send error in connection to server '%s':\n"
 				"%s (errno = %s)" %\
 				(self.__transceiver.peerInfoString,
-				 str(e), str(e.errno)))
+				 str(e), str(excErrno(e))))
 
 	def __sendAndWait(self, txMsg, checkRxMsg,
 			  minTimeout=None,
