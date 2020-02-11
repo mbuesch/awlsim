@@ -2,7 +2,7 @@
 #
 # AWL simulator - Hardware module descriptors
 #
-# Copyright 2014-2017 Michael Buesch <m@bues.ch>
+# Copyright 2014-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -159,7 +159,9 @@ class HwmodDescriptor(object):
 	def setParameterValue(self, name, value):
 		"""Set the value of a parameter.
 		"""
-		self.parameters[name] = value or ""
+		if value is None:
+			value = ""
+		self.parameters[name] = value
 		self.__identHash = None
 
 	def removeParameter(self, name):
@@ -189,7 +191,7 @@ class HwmodDescriptor(object):
 			for pName, pValue in sorted(dictItems(self.parameters),
 						    key = lambda item: item[0]):
 				h.update(pName.encode("utf-8", "ignore"))
-				h.update(pValue.encode("utf-8", "ignore"))
+				h.update(str(pValue).encode("utf-8", "ignore"))
 			self.__identHash = h.digest()
 		return self.__identHash
 

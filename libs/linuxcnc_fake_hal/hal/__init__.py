@@ -195,3 +195,6 @@ class component(object):
 		pin = self.__pins[k]
 		assert(pin.halDir in (HAL_OUT, HAL_IO))
 		pin.setHalData(v)
+
+	def __len__(self):
+		return len(self.__pins) + len(self.__params)
