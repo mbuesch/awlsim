@@ -697,7 +697,7 @@ do_tests()
 	cleanup_test_environment
 
 	if [ $opt_quick -eq 0 ]; then
-		local all_interp="python3 python2 pypy3 pypy cython3"
+		local all_interp="python3 python2 pypy3 cython3"
 		if [ $opt_extended -ne 0 ]; then
 			local all_interp="$all_interp jython"
 		fi
