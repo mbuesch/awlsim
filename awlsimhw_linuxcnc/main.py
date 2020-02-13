@@ -2,7 +2,7 @@
 #
 # AWL simulator - LinuxCNC HAL interface
 #
-# Copyright 2013-2017 Michael Buesch <m@bues.ch>
+# Copyright 2013-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -166,9 +166,6 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 			  "http://www.machinekit.io/"
 
 	paramDescs = [
-		HwParamDesc_pyobject("hal",
-				     description = "LinuxCNC HAL instance object",
-				     mandatory = True),
 		HwParamDesc_int("inputSize",
 				description = "Input area size",
 				defaultValue = 32,
@@ -186,16 +183,13 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 		self.linuxCNC_initialized = False
 
 	def doStartup(self):
-		if not self.linuxCNC_initialized:
-			try:
-				import hal as LinuxCNC_HAL
-				self.LinuxCNC_HAL = LinuxCNC_HAL
-			except ImportError as e: #@nocov
-				self.raiseException("Failed to import LinuxCNC HAL module"
-					":\n%s" % str(e))
+		global linuxCNCHalComponent
+		global linuxCNCHalComponentReady
 
-			# Get the LinuxCNC-HAL-component object
-			self.hal = self.getParamValueByName("hal")
+		if not self.linuxCNC_initialized:
+			if linuxCNCHalComponent is None:
+				self.raiseException("LinuxCNC HAL component not set.")
+			self.halComponent = linuxCNCHalComponent
 
 			# Get parameters
 			self.inputSize = self.getParamValueByName("inputSize")
@@ -204,7 +198,9 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 			self.__configDone = False
 
 			# Signal LinuxCNC that we are ready.
-			self.hal.ready()
+			if not linuxCNCHalComponentReady:
+				self.halComponent.ready()
+				linuxCNCHalComponentReady = True
 
 			self.linuxCNC_initialized = True
 
@@ -217,44 +213,44 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 		for address in range(addressBase, addressBase + size):
 			offset = address - addressBase
 			for bitNr in range(8):
-				if self.hal["%s.bit.%d.%d.active" % (baseName, address, bitNr)]:
-					tab.append(SigBit(self.hal,
+				if self.halComponent["%s.bit.%d.%d.active" % (baseName, address, bitNr)]:
+					tab.append(SigBit(self.halComponent,
 							  "%s.bit.%d.%d" % (baseName, address, bitNr),
 							  offset, bitNr))
-			if self.hal["%s.u8.%d.active" % (baseName, address)]:
-				tab.append(SigU8(self.hal,
+			if self.halComponent["%s.u8.%d.active" % (baseName, address)]:
+				tab.append(SigU8(self.halComponent,
 						 "%s.u8.%d" % (baseName, address),
 						 offset))
 			if address % 2:
 				continue
 			if size - offset < 2:
 				continue
-			if self.hal["%s.u16.%d.active" % (baseName, address)]:
-				tab.append(SigU16(self.hal,
+			if self.halComponent["%s.u16.%d.active" % (baseName, address)]:
+				tab.append(SigU16(self.halComponent,
 						  "%s.u16.%d" % (baseName, address),
 						  offset))
-			if self.hal["%s.s16.%d.active" % (baseName, address)]:
-				tab.append(SigS16(self.hal,
+			if self.halComponent["%s.s16.%d.active" % (baseName, address)]:
+				tab.append(SigS16(self.halComponent,
 						  "%s.s16.%d" % (baseName, address),
 						  offset))
 			if size - offset < 4:
 				continue
-			if self.hal["%s.u31.%d.active" % (baseName, address)]:
-				tab.append(SigU31(self.hal,
+			if self.halComponent["%s.u31.%d.active" % (baseName, address)]:
+				tab.append(SigU31(self.halComponent,
 						  "%s.u31.%d" % (baseName, address),
 						  offset))
-			if self.hal["%s.s32.%d.active" % (baseName, address)]:
-				tab.append(SigS32(self.hal,
+			if self.halComponent["%s.s32.%d.active" % (baseName, address)]:
+				tab.append(SigS32(self.halComponent,
 						  "%s.s32.%d" % (baseName, address),
 						  offset))
-			if self.hal["%s.float.%d.active" % (baseName, address)]:
-				tab.append(SigFloat(self.hal,
+			if self.halComponent["%s.float.%d.active" % (baseName, address)]:
+				tab.append(SigFloat(self.halComponent,
 						    "%s.float.%d" % (baseName, address),
 						    offset))
 		return tab
 
 	def __tryBuildConfig(self):
-		if not self.hal["config.ready"]:
+		if not self.halComponent["config.ready"]:
 			return
 
 		self.__activeInputs = self.__buildTable("input",
@@ -297,6 +293,21 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 #@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
 		pass#TODO
 		return False
+
+# LinuxCNC HAL component singleton.
+linuxCNCHalComponent = None
+linuxCNCHalComponentReady = False
+
+def setLinuxCNCHalComponentSingleton(newHalComponent):
+	global linuxCNCHalComponent
+	global linuxCNCHalComponentReady
+	if linuxCNCHalComponent is not None:
+		printWarning("linuxCNCHalComponent is already set to "
+			     "%s (new = %s)" % (
+			     str(linuxCNCHalComponent),
+			     str(newHalComponent)))
+	linuxCNCHalComponent = newHalComponent
+	linuxCNCHalComponentReady = False
 
 # Module entry point
 HardwareInterface = HardwareInterface_LinuxCNC

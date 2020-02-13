@@ -3,7 +3,7 @@
 #
 # AWL simulator - LinuxCNC HAL module
 #
-# Copyright 2013-2016 Michael Buesch <m@bues.ch>
+# Copyright 2013-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import time
 import getopt
 
 from awlsim_loader.common import *
+from awlsim_loader.core import *
 from awlsim_loader.coreserver import *
 from awlsim_loader.coreclient import *
 
@@ -293,6 +294,7 @@ def main():
 		# Read the project.
 		project = Project.fromProjectOrRawAwlFile(projectFile)
 		hwmodSettings = project.getHwmodSettings()
+
 		# Get the 'linuxcnc' hardware module descriptor.
 		linuxcncHwmodDesc = None
 		for modDesc in hwmodSettings.getLoadedModules():
@@ -312,8 +314,6 @@ def main():
 					     "Loading module nevertheless.")
 			modDesc = HwmodDescriptor(moduleName = "linuxcnc",
 						  parameters = {
-				"hal"			: None,
-				"removeOnReset"		: "0",
 				"inputAddressBase"	: "0",
 				"outputAddressBase"	: "0",
 				"inputSize"		: "32",
@@ -322,8 +322,6 @@ def main():
 			hwmodSettings.addLoadedModule(modDesc)
 			linuxcncHwmodDesc = modDesc
 		# Override hardware module parameters, if required.
-		linuxcncHwmodDesc.setParameterValue("hal", hal)
-		linuxcncHwmodDesc.setParameterValue("removeOnReset", "0")
 		if opt_inputBase is not None:
 			linuxcncHwmodDesc.setParameterValue("inputAddressBase",
 							    str(opt_inputBase))
@@ -353,6 +351,11 @@ def main():
 			      inputSize = inputSize,
 			      outputBase = outputBase,
 			      outputSize = outputSize)
+
+		# Pass the hal component singleton to the Awlsim hw module.
+		loader = HwModLoader.loadModule("linuxcnc")
+		mod = loader.getModule()
+		mod.setLinuxCNCHalComponentSingleton(hal)
 
 		# Configure the core and the core server.
 		server = AwlSimServer()

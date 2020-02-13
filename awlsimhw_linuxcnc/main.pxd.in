@@ -4,7 +4,7 @@ from awlsim.core.hardware cimport *
 cdef class HardwareInterface_LinuxCNC(AbstractHardwareInterface):
 	cdef public _Bool linuxCNC_initialized
 	cdef public object LinuxCNC_HAL
-	cdef public object hal
+	cdef public object halComponent
 	cdef public uint32_t inputSize
 	cdef public uint32_t outputSize
 	cdef public _Bool __configDone
