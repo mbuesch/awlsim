@@ -52,8 +52,8 @@ class HwModLoader(object):
 
 	@classmethod
 	def loadModule(cls, name):
-		"""Load a hardware module."""
-
+		"""Load a hardware module.
+		"""
 		# Module name sanity check
 		try:
 			if not name.strip():
@@ -85,9 +85,14 @@ class HwModLoader(object):
 				(name, importName, str(e)))
 		return cls(name, importName, mod)
 
-	def getInterface(self):
-		"""Get the HardwareInterface class."""
+	def getModule(self):
+		"""Get the loaded module.
+		"""
+		return self.mod
 
+	def getInterface(self):
+		"""Get the HardwareInterface class.
+		"""
 		hwClassName = "HardwareInterface"
 		hwClass = getattr(self.mod, hwClassName, None)
 		if not hwClass:

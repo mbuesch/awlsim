@@ -4,3 +4,4 @@ from awlsim.common.compat import *
 from awlsim.core.main import *
 from awlsim.core.cpu import *
 from awlsim.core.hardware import *
+from awlsim.core.hardware_loader import *
