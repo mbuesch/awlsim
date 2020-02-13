@@ -199,10 +199,10 @@ class AbstractHardwareInterface(object): #+cdef
 				if desc.match(name):
 					break
 			else:
-				self.paramErrorHandler(name,
-					"Invalid parameter. The parameter '%s' is "
-					"unknown to the '%s' hardware module." %\
-					(name, self.name))
+				printWarning("Invalid parameter. The parameter '%s' is "
+					     "unknown to the '%s' hardware module." % (
+					     name, self.name))
+				continue
 			try:
 				parsedValue = desc.parse(value)
 			except HwParamDesc.ParseError as e:
