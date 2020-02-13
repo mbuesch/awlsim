@@ -36,7 +36,6 @@ import re
 
 
 __all__ = [ "HwParamDesc",
-	    "HwParamDesc_pyobject",
 	    "HwParamDesc_str",
 	    "HwParamDesc_int",
 	    "HwParamDesc_float",
@@ -94,18 +93,6 @@ class HwParamDesc(object):
 		The parameter must not be 'mandatory', if this method is overridden.
 		"""
 		return self.name == matchName
-
-class HwParamDesc_pyobject(HwParamDesc):
-	"""Generic object parameter descriptor."""
-
-	typeStr = "PyObject"
-	userEditable = False
-
-	def __init__(self, name, **kwargs):
-		HwParamDesc.__init__(self, name, **kwargs)
-
-	def parse(self, value):
-		return value
 
 class HwParamDesc_str(HwParamDesc):
 	"""String hardware parameter descriptor."""
