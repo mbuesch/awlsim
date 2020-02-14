@@ -346,11 +346,11 @@ def main():
 			printError("ERROR: 'linuxcnc' module hardware parameter "
 				   "value error.")
 			return 1
-		createHalPins(hal = hal,
-			      inputBase = inputBase,
-			      inputSize = inputSize,
-			      outputBase = outputBase,
-			      outputSize = outputSize)
+		createHalPins(hal=hal,
+			      inputBase=inputBase,
+			      inputSize=inputSize,
+			      outputBase=outputBase,
+			      outputSize=outputSize)
 
 		# Pass the hal component singleton to the Awlsim hw module.
 		loader = HwModLoader.loadModule("linuxcnc")
@@ -359,9 +359,9 @@ def main():
 
 		# Configure the core and the core server.
 		server = AwlSimServer()
-		for modDesc in hwmodSettings.getLoadedModules():
-			server.loadHardwareModule(modDesc)
-		server.cpuSetSpecs(project.getCpuSpecs())
+		server.loadProject(project)
+
+		# Override CPUConf, if required.
 		conf = copy(project.getCpuConf())
 		if opt_maxRuntime is not None:
 			conf.setRunTimeLimitUs(int(round(opt_maxRuntime * 1000000.0)))
@@ -369,27 +369,15 @@ def main():
 			conf.setExtInsnsEn(opt_extInsns)
 		server.cpuSetConf(conf)
 
-		# Load the program
-		for symSrc in project.getSymTabSources():
-			server.loadSymTabSource(symSrc)
-		for libSel in project.getLibSelections():
-			server.loadLibraryBlock(libSel)
-		for awlSrc in project.getAwlSources():
-			server.loadAwlSource(awlSrc)
-		for fupSrc in project.getFupSources():
-			server.loadFupSource(fupSrc)
-		for kopSrc in project.getKopSources():
-			server.loadKopSource(kopSrc)
-
 		# Set the Linux-CNC watchdog as cycle exit hook.
 		server.setCycleExitHook(watchdogHook)
 
 		# Run the server
 		printInfo("Starting interpreter core...")
-		server.startup(host = opt_listen[0],
-			       port = opt_listen[1],
-			       handleExceptionServerside = True,
-			       handleMaintenanceServerside = True)
+		server.startup(host=opt_listen[0],
+			       port=opt_listen[1],
+			       handleExceptionServerside=True,
+			       handleMaintenanceServerside=True)
 		server.setRunState(server.STATE_RUN)
 		lastExceptionTime = None
 		while True:
