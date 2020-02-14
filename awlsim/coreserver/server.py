@@ -1550,7 +1550,11 @@ class AwlSimServer(object): #+cdef
 		if broken:
 			self.__removeBrokenClients()
 
-	def __loadProject(self, project, writeBack):
+	def loadProject(self, project, writeBack=False):
+		"""Load a project.
+		project: Path to the project, or Project instance.
+		writeBack: Enable write access to the project file.
+		"""
 		self.__projectFile = None
 		self.__projectWriteBack = False
 		if not project:
@@ -1647,7 +1651,7 @@ class AwlSimServer(object): #+cdef
 		self.__handleExceptionServerside = handleExceptionServerside
 		self.__handleMaintenanceServerside = handleMaintenanceServerside
 
-		self.__loadProject(project, projectWriteBack)
+		self.loadProject(project, projectWriteBack)
 
 		self.__listen(host, port, family)
 		self.__rebuildSelectReadList()
