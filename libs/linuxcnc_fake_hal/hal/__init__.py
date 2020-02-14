@@ -35,6 +35,9 @@ HAL_RO		= 64
 HAL_RW		= 192
 
 
+class error(Exception):
+	pass
+
 class _Pin(object):
 	def __init__(self, halName, halType, halDir):
 		assert(halType in (HAL_BIT, HAL_FLOAT, HAL_S32, HAL_U32))
@@ -180,13 +183,15 @@ class component(object):
 		self.__ready = True
 
 	def __getitem__(self, k):
-		assert(self.__ready)
 		try:
 			pin = self.__pins[k]
 			assert(pin.halDir in (HAL_IN, HAL_IO))
 			return pin.halData
 		except KeyError:
-			param = self.__params[k]
+			try:
+				param = self.__params[k]
+			except KeyError:
+				raise AttributeError
 			assert(param.halDir in (HAL_RW, HAL_RO))
 			return param.halData
 

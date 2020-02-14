@@ -51,74 +51,6 @@ def watchdogHook(_unused = None):
 		   "(Use '--watchdog off' to disable this check.)")
 	raise LinuxCNC_NotRunning()
 
-# Create the LinuxCNC HAL pins
-def createHalPins(hal,
-		  inputBase, inputSize,
-		  outputBase, outputSize):
-	HAL_BIT, HAL_U32, HAL_S32, HAL_FLOAT = \
-		LinuxCNC_HAL.HAL_BIT, LinuxCNC_HAL.HAL_U32, \
-		LinuxCNC_HAL.HAL_S32, LinuxCNC_HAL.HAL_FLOAT
-	HAL_IN, HAL_OUT, HAL_RO, HAL_RW = \
-		LinuxCNC_HAL.HAL_IN, LinuxCNC_HAL.HAL_OUT, \
-		LinuxCNC_HAL.HAL_RO, LinuxCNC_HAL.HAL_RW
-
-	printInfo("Mapped AWL/STL input area:  P#E %d.0 BYTE %d" %\
-		  (inputBase, inputSize))
-	printInfo("Mapped AWL/STL output area:  P#A %d.0 BYTE %d" %\
-		  (outputBase, outputSize))
-
-	# Create the input pins
-	for i in range(inputBase, inputBase + inputSize):
-		offset = i - inputBase
-		for bit in range(8):
-			hal.newpin("input.bit.%d.%d" % (i, bit), HAL_BIT, HAL_IN)
-			hal.newparam("input.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
-		hal.newpin("input.u8.%d" % i, HAL_U32, HAL_IN)
-		hal.newparam("input.u8.%d.active" % i, HAL_BIT, HAL_RW)
-		if i % 2:
-			continue
-		if inputSize - offset < 2:
-			continue
-		hal.newpin("input.u16.%d" % i, HAL_U32, HAL_IN)
-		hal.newparam("input.u16.%d.active" % i, HAL_BIT, HAL_RW)
-		hal.newpin("input.s16.%d" % i, HAL_S32, HAL_IN)
-		hal.newparam("input.s16.%d.active" % i, HAL_BIT, HAL_RW)
-		if inputSize - offset < 4:
-			continue
-		hal.newpin("input.u31.%d" % i, HAL_U32, HAL_IN)
-		hal.newparam("input.u31.%d.active" % i, HAL_BIT, HAL_RW)
-		hal.newpin("input.s32.%d" % i, HAL_S32, HAL_IN)
-		hal.newparam("input.s32.%d.active" % i, HAL_BIT, HAL_RW)
-		hal.newpin("input.float.%d" % i, HAL_FLOAT, HAL_IN)
-		hal.newparam("input.float.%d.active" % i, HAL_BIT, HAL_RW)
-
-	# Create the output pins
-	for i in range(outputBase, outputBase + outputSize):
-		offset = i - outputBase
-		for bit in range(8):
-			hal.newpin("output.bit.%d.%d" % (i, bit), HAL_BIT, HAL_OUT)
-			hal.newparam("output.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
-		hal.newpin("output.u8.%d" % i, HAL_U32, HAL_OUT)
-		hal.newparam("output.u8.%d.active" % i, HAL_BIT, HAL_RW)
-		if i % 2:
-			continue
-		if outputSize - offset < 2:
-			continue
-		hal.newpin("output.u16.%d" % i, HAL_U32, HAL_OUT)
-		hal.newparam("output.u16.%d.active" % i, HAL_BIT, HAL_RW)
-		hal.newpin("output.s16.%d" % i, HAL_S32, HAL_OUT)
-		hal.newparam("output.s16.%d.active" % i, HAL_BIT, HAL_RW)
-		if outputSize - offset < 4:
-			continue
-		hal.newpin("output.u31.%d" % i, HAL_U32, HAL_OUT)
-		hal.newparam("output.u31.%d.active" % i, HAL_BIT, HAL_RW)
-		hal.newpin("output.s32.%d" % i, HAL_S32, HAL_OUT)
-		hal.newparam("output.s32.%d.active" % i, HAL_BIT, HAL_RW)
-		hal.newpin("output.float.%d" % i, HAL_FLOAT, HAL_OUT)
-		hal.newparam("output.float.%d.active" % i, HAL_BIT, HAL_RW)
-
-	hal.newparam("config.ready", HAL_BIT, HAL_RW)
-
 def usage():
 	print("awlsim-linuxcnc-hal version %s" % VERSION_STRING)
 	print("")
@@ -160,8 +92,6 @@ def usage():
 	print("  examples/linuxcnc-demo/linuxcnc-demo.hal")
 
 def main():
-	global LinuxCNC_HAL
-
 	global opt_inputSize
 	global opt_inputBase
 	global opt_outputSize
@@ -289,7 +219,7 @@ def main():
 			return 1
 
 		# Create the LinuxCNC HAL component.
-		hal = LinuxCNC_HAL.component("awlsim")
+		halComponent = LinuxCNC_HAL.component("awlsim")
 
 		# Read the project.
 		project = Project.fromProjectOrRawAwlFile(projectFile)
@@ -335,27 +265,10 @@ def main():
 			linuxcncHwmodDesc.setParameterValue("outputSize",
 							    str(opt_outputSize))
 
-		# Create the HAL pins, as requested.
-		try:
-			modDesc = linuxcncHwmodDesc
-			inputBase = int(modDesc.getParameter("inputAddressBase"))
-			inputSize = int(modDesc.getParameter("inputSize"))
-			outputBase = int(modDesc.getParameter("outputAddressBase"))
-			outputSize = int(modDesc.getParameter("outputSize"))
-		except ValueError:
-			printError("ERROR: 'linuxcnc' module hardware parameter "
-				   "value error.")
-			return 1
-		createHalPins(hal=hal,
-			      inputBase=inputBase,
-			      inputSize=inputSize,
-			      outputBase=outputBase,
-			      outputSize=outputSize)
-
 		# Pass the hal component singleton to the Awlsim hw module.
 		loader = HwModLoader.loadModule("linuxcnc")
 		mod = loader.getModule()
-		mod.setLinuxCNCHalComponentSingleton(hal)
+		mod.setLinuxCNCHalComponentSingleton(LinuxCNC_HAL, halComponent)
 
 		# Configure the core and the core server.
 		server = AwlSimServer()

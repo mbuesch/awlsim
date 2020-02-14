@@ -182,6 +182,93 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 						   parameters = parameters)
 		self.linuxCNC_initialized = False
 
+	def __createHalPins(self):
+		"""Create the LinuxCNC HAL pins.
+		"""
+		HAL_BIT, HAL_U32, HAL_S32, HAL_FLOAT = (
+			linuxCNCHal.HAL_BIT, linuxCNCHal.HAL_U32,
+			linuxCNCHal.HAL_S32, linuxCNCHal.HAL_FLOAT)
+		HAL_IN, HAL_OUT, HAL_RO, HAL_RW = (
+			linuxCNCHal.HAL_IN, linuxCNCHal.HAL_OUT,
+			linuxCNCHal.HAL_RO, linuxCNCHal.HAL_RW)
+
+		def newpin(name, *args):
+			try:
+				try:
+					self.halComponent[name]
+				except AttributeError:
+					self.halComponent.newpin(name, *args)
+			except linuxCNCHal.error as e:
+				printWarning("Failed to create HAL pin '%s'. "
+					     "Please restart LinuxCNC." % name)
+
+		def newparam(name, *args):
+			try:
+				try:
+					self.halComponent[name]
+				except AttributeError:
+					self.halComponent.newparam(name, *args)
+			except linuxCNCHal.error as e:
+				printWarning("Failed to create HAL param '%s'. "
+					     "Please restart LinuxCNC." % name)
+
+		printInfo("Mapped AWL/STL input area:  P#E %d.0 BYTE %d" %\
+			  (self.inputAddressBase, self.inputSize))
+		printInfo("Mapped AWL/STL output area:  P#A %d.0 BYTE %d" %\
+			  (self.outputAddressBase, self.outputSize))
+
+		# Create the input pins
+		for i in range(self.inputAddressBase, self.inputAddressBase + self.inputSize):
+			offset = i - self.inputAddressBase
+			for bit in range(8):
+				newpin("input.bit.%d.%d" % (i, bit), HAL_BIT, HAL_IN)
+				newparam("input.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
+			newpin("input.u8.%d" % i, HAL_U32, HAL_IN)
+			newparam("input.u8.%d.active" % i, HAL_BIT, HAL_RW)
+			if i % 2:
+				continue
+			if self.inputSize - offset < 2:
+				continue
+			newpin("input.u16.%d" % i, HAL_U32, HAL_IN)
+			newparam("input.u16.%d.active" % i, HAL_BIT, HAL_RW)
+			newpin("input.s16.%d" % i, HAL_S32, HAL_IN)
+			newparam("input.s16.%d.active" % i, HAL_BIT, HAL_RW)
+			if self.inputSize - offset < 4:
+				continue
+			newpin("input.u31.%d" % i, HAL_U32, HAL_IN)
+			newparam("input.u31.%d.active" % i, HAL_BIT, HAL_RW)
+			newpin("input.s32.%d" % i, HAL_S32, HAL_IN)
+			newparam("input.s32.%d.active" % i, HAL_BIT, HAL_RW)
+			newpin("input.float.%d" % i, HAL_FLOAT, HAL_IN)
+			newparam("input.float.%d.active" % i, HAL_BIT, HAL_RW)
+
+		# Create the output pins
+		for i in range(self.outputAddressBase, self.outputAddressBase + self.outputSize):
+			offset = i - self.outputAddressBase
+			for bit in range(8):
+				newpin("output.bit.%d.%d" % (i, bit), HAL_BIT, HAL_OUT)
+				newparam("output.bit.%d.%d.active" % (i, bit), HAL_BIT, HAL_RW)
+			newpin("output.u8.%d" % i, HAL_U32, HAL_OUT)
+			newparam("output.u8.%d.active" % i, HAL_BIT, HAL_RW)
+			if i % 2:
+				continue
+			if self.outputSize - offset < 2:
+				continue
+			newpin("output.u16.%d" % i, HAL_U32, HAL_OUT)
+			newparam("output.u16.%d.active" % i, HAL_BIT, HAL_RW)
+			newpin("output.s16.%d" % i, HAL_S32, HAL_OUT)
+			newparam("output.s16.%d.active" % i, HAL_BIT, HAL_RW)
+			if self.outputSize - offset < 4:
+				continue
+			newpin("output.u31.%d" % i, HAL_U32, HAL_OUT)
+			newparam("output.u31.%d.active" % i, HAL_BIT, HAL_RW)
+			newpin("output.s32.%d" % i, HAL_S32, HAL_OUT)
+			newparam("output.s32.%d.active" % i, HAL_BIT, HAL_RW)
+			newpin("output.float.%d" % i, HAL_FLOAT, HAL_OUT)
+			newparam("output.float.%d.active" % i, HAL_BIT, HAL_RW)
+
+		newparam("config.ready", HAL_BIT, HAL_RW)
+
 	def doStartup(self):
 		global linuxCNCHalComponent
 		global linuxCNCHalComponentReady
@@ -194,6 +281,8 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 			# Get parameters
 			self.inputSize = self.getParamValueByName("inputSize")
 			self.outputSize = self.getParamValueByName("outputSize")
+
+			self.__createHalPins()
 
 			self.__configDone = False
 
@@ -209,15 +298,24 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 
 #TODO find overlappings
 	def __buildTable(self, baseName, addressBase, size):
+		def isActive(name):
+			activeName = "%s.active" % name
+			try:
+				return self.halComponent[activeName]
+			except AttributeError:
+				printWarning("Pin '%s' cannot be used without restart. "
+					     "Please restart LinuxCNC." % name)
+				return False
+
 		tab = []
 		for address in range(addressBase, addressBase + size):
 			offset = address - addressBase
 			for bitNr in range(8):
-				if self.halComponent["%s.bit.%d.%d.active" % (baseName, address, bitNr)]:
+				if isActive("%s.bit.%d.%d" % (baseName, address, bitNr)):
 					tab.append(SigBit(self.halComponent,
 							  "%s.bit.%d.%d" % (baseName, address, bitNr),
 							  offset, bitNr))
-			if self.halComponent["%s.u8.%d.active" % (baseName, address)]:
+			if isActive("%s.u8.%d" % (baseName, address)):
 				tab.append(SigU8(self.halComponent,
 						 "%s.u8.%d" % (baseName, address),
 						 offset))
@@ -225,25 +323,25 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 				continue
 			if size - offset < 2:
 				continue
-			if self.halComponent["%s.u16.%d.active" % (baseName, address)]:
+			if isActive("%s.u16.%d" % (baseName, address)):
 				tab.append(SigU16(self.halComponent,
 						  "%s.u16.%d" % (baseName, address),
 						  offset))
-			if self.halComponent["%s.s16.%d.active" % (baseName, address)]:
+			if isActive("%s.s16.%d" % (baseName, address)):
 				tab.append(SigS16(self.halComponent,
 						  "%s.s16.%d" % (baseName, address),
 						  offset))
 			if size - offset < 4:
 				continue
-			if self.halComponent["%s.u31.%d.active" % (baseName, address)]:
+			if isActive("%s.u31.%d" % (baseName, address)):
 				tab.append(SigU31(self.halComponent,
 						  "%s.u31.%d" % (baseName, address),
 						  offset))
-			if self.halComponent["%s.s32.%d.active" % (baseName, address)]:
+			if isActive("%s.s32.%d" % (baseName, address)):
 				tab.append(SigS32(self.halComponent,
 						  "%s.s32.%d" % (baseName, address),
 						  offset))
-			if self.halComponent["%s.float.%d.active" % (baseName, address)]:
+			if isActive("%s.float.%d" % (baseName, address)):
 				tab.append(SigFloat(self.halComponent,
 						    "%s.float.%d" % (baseName, address),
 						    offset))
@@ -295,10 +393,12 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 		return False
 
 # LinuxCNC HAL component singleton.
+linuxCNCHal = None
 linuxCNCHalComponent = None
 linuxCNCHalComponentReady = False
 
-def setLinuxCNCHalComponentSingleton(newHalComponent):
+def setLinuxCNCHalComponentSingleton(newHal, newHalComponent):
+	global linuxCNCHal
 	global linuxCNCHalComponent
 	global linuxCNCHalComponentReady
 	if linuxCNCHalComponent is not None:
@@ -306,6 +406,7 @@ def setLinuxCNCHalComponentSingleton(newHalComponent):
 			     "%s (new = %s)" % (
 			     str(linuxCNCHalComponent),
 			     str(newHalComponent)))
+	linuxCNCHal = newHal
 	linuxCNCHalComponent = newHalComponent
 	linuxCNCHalComponentReady = False
 
