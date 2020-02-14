@@ -15,7 +15,7 @@ fi
 cd "$awlsim_base"
 find . -name '*.awlpro' \
 	-a -type f \
-	-a \! -path '*/tests/*-legacy/*' \
+	-a \! -path '*/tests/*legacy/*' \
 	-a \! -path '*/submodules/*' \
 	-a \! -path '*/.*/*' \
 	-exec ./awlsim-proupgrade --loglevel 3 '{}' \;
