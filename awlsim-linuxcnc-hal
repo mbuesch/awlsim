@@ -36,6 +36,20 @@ from awlsim_loader.coreclient import *
 class LinuxCNC_NotRunning(Exception):
 	pass
 
+def linuxCNCTriggerEStop():
+	# Try to trigger LinuxCNC emergency stop.
+	global linuxcnc_mod
+	if linuxcnc_mod is not None:
+		try:
+			cmd = linuxcnc_mod.command()
+			cmd.state(linuxcnc_mod.STATE_ESTOP)
+			cmd.wait_complete()
+		except Exception as e:
+			print("ERROR: Failed to trigger LinuxCNC E-Stop: %s" % str(e),
+			      file=sys.stderr)
+		else:
+			print("Triggered LinuxCNC E-Stop")
+
 # Check presence of LinuxCNC.
 # Returns normally, if LinuxCNC is detected.
 # Raises LinuxCNC_NotRunning, if LinuxCNC is not detected.
@@ -92,6 +106,9 @@ def usage():
 	print("  examples/linuxcnc-demo/linuxcnc-demo.hal")
 
 def main():
+	global linuxcnc_mod
+	linuxcnc_mod = None
+
 	global opt_inputSize
 	global opt_inputBase
 	global opt_outputSize
@@ -217,6 +234,12 @@ def main():
 			printError("Failed to import LinuxCNC HAL "
 				   "module: %s" % str(e))
 			return 1
+		try:
+			import linuxcnc as linuxcnc_mod
+		except ImportError as e:
+			printError("Failed to import LinuxCNC "
+				   "module: %s" % str(e))
+			return 1
 
 		# Create the LinuxCNC HAL component.
 		halComponent = LinuxCNC_HAL.component("awlsim")
@@ -297,6 +320,7 @@ def main():
 			try:
 				server.run()
 			except (AwlParserError, AwlSimError) as e:
+				linuxCNCTriggerEStop()
 				now = time.time()
 				if lastExceptionTime is not None and\
 				   now - lastExceptionTime < 1.0:
@@ -332,6 +356,7 @@ def main():
 				   e.requestType)
 			result = ExitCodes.EXIT_ERR_SIM
 	finally:
+		linuxCNCTriggerEStop()
 		if server:
 			server.shutdown()
 	printInfo("LinuxCNC HAL module shutdown.")
