@@ -9,7 +9,9 @@ cdef class HardwareInterface_LinuxCNC(AbstractHardwareInterface):
 	cdef public uint32_t outputSize
 	cdef public _Bool __configDone
 	cdef public list __activeInputs
+	cdef public dict __activeInputsAddr2Sig
 	cdef public list __activeOutputs
+	cdef public dict __activeOutputsAddr2Sig
 
 	cdef readInputs(self)
 	cdef writeOutputs(self)

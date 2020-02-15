@@ -37,149 +37,139 @@ from awlsim.core.offset import * #+cimport
 from awlsim.core.cpu import * #+cimport
 
 
-class SigBit(object):
-	def __init__(self, hal, halName, byteOffset, bitOffset):
+class Sig(object):
+	def __init__(self, hal, halName, address, offset):
 		self.hal = hal
 		self.halName = halName
-		self.byteOffset = byteOffset
+		self.address = address
+		self.offset = offset
+
+	def __str__(self):
+		return "awlsim.%s" % self.halName
+
+class SigBit(Sig):
+	width = 1
+
+	def __init__(self, hal, halName, address, offset, bitOffset):
+		Sig.__init__(self, hal, halName, address, offset)
 		self.bitOffset = bitOffset
 		self.setMask = 1 << bitOffset
-		self.clrMask = ~(1 << bitOffset)
+		self.clrMask = (1 << bitOffset) ^ 0xFF
 
-	def readInput(self, destBuf):
+	def readInput(self, destBuf, toOffset):
 		if self.hal[self.halName]:
-			destBuf[self.byteOffset] |= self.setMask
+			destBuf[toOffset] |= self.setMask
 		else:
-			destBuf[self.byteOffset] &= self.clrMask
+			destBuf[toOffset] &= self.clrMask
 
-	def writeOutput(self, srcBuf):
-		self.hal[self.halName] = (srcBuf[self.byteOffset] >> self.bitOffset) & 1
+	def writeOutput(self, srcBuf, fromOffset):
+		self.hal[self.halName] = (srcBuf[fromOffset] >> self.bitOffset) & 1
 
-class SigU8(object):
-	def __init__(self, hal, halName, offset):
-		self.hal = hal
-		self.halName = halName
-		self.offset = offset
+class SigU8(Sig):
+	width = 8
 
-	def readInput(self, destBuf):
-		destBuf[self.offset] = self.hal[self.halName] & 0xFF
+	def readInput(self, destBuf, toOffset):
+		destBuf[toOffset] = self.hal[self.halName] & 0xFF
 
-	def writeOutput(self, srcBuf):
-		self.hal[self.halName] = srcBuf[self.offset] & 0xFF
+	def writeOutput(self, srcBuf, fromOffset):
+		self.hal[self.halName] = srcBuf[fromOffset] & 0xFF
 
-class SigU16(object):
-	def __init__(self, hal, halName, offset):
-		self.hal = hal
-		self.halName = halName
-		self.offset = offset
+class SigU16(Sig):
+	width = 16
 
-	def readInput(self, destBuf):
+	def readInput(self, destBuf, toOffset):
 		word = self.hal[self.halName] & 0xFFFF
-		destBuf[self.offset] = (word >> 8) & 0xFF
-		destBuf[self.offset + 1] = word & 0xFF
+		destBuf[toOffset] = (word >> 8) & 0xFF
+		destBuf[toOffset + 1] = word & 0xFF
 
-	def writeOutput(self, srcBuf):
-		word = (srcBuf[self.offset] << 8) |\
-		       srcBuf[self.offset + 1]
+	def writeOutput(self, srcBuf, fromOffset):
+		word = ((srcBuf[fromOffset] << 8) |
+			srcBuf[fromOffset + 1])
 		self.hal[self.halName] = word & 0xFFFF
 
-class SigS16(object):
-	def __init__(self, hal, halName, offset):
-		self.hal = hal
-		self.halName = halName
-		self.offset = offset
+class SigS16(Sig):
+	width = 16
 
-	def readInput(self, destBuf):
+	def readInput(self, destBuf, toOffset):
 		word = self.hal[self.halName] & 0xFFFF
-		destBuf[self.offset] = (word >> 8) & 0xFF
-		destBuf[self.offset + 1] = word & 0xFF
+		destBuf[toOffset] = (word >> 8) & 0xFF
+		destBuf[toOffset + 1] = word & 0xFF
 
-	def writeOutput(self, srcBuf):
-		word = (srcBuf[self.offset] << 8) |\
-		       srcBuf[self.offset + 1]
+	def writeOutput(self, srcBuf, fromOffset):
+		word = ((srcBuf[fromOffset] << 8) |
+			srcBuf[fromOffset + 1])
 		self.hal[self.halName] = wordToSignedPyInt(word)
 
-class SigU31(object):
-	def __init__(self, hal, halName, offset):
-		self.hal = hal
-		self.halName = halName
-		self.offset = offset
+class SigU31(Sig):
+	width = 32 # U31 memory width is 32 bit
 
-	def readInput(self, destBuf):
+	def readInput(self, destBuf, toOffset):
 		dword = self.hal[self.halName] & 0x7FFFFFFF
-		destBuf[self.offset] = (dword >> 24) & 0xFF
-		destBuf[self.offset + 1] = (dword >> 16) & 0xFF
-		destBuf[self.offset + 2] = (dword >> 8) & 0xFF
-		destBuf[self.offset + 3] = dword & 0xFF
+		destBuf[toOffset] = (dword >> 24) & 0xFF
+		destBuf[toOffset + 1] = (dword >> 16) & 0xFF
+		destBuf[toOffset + 2] = (dword >> 8) & 0xFF
+		destBuf[toOffset + 3] = dword & 0xFF
 
-	def writeOutput(self, srcBuf):
-		dword = (srcBuf[self.offset] << 24) |\
-		        (srcBuf[self.offset + 1] << 16) |\
-		        (srcBuf[self.offset + 2] << 8) |\
-		        srcBuf[self.offset + 3]
+	def writeOutput(self, srcBuf, fromOffset):
+		dword = ((srcBuf[fromOffset] << 24) |
+			 (srcBuf[fromOffset + 1] << 16) |
+			 (srcBuf[fromOffset + 2] << 8) |
+			 srcBuf[fromOffset + 3])
 		self.hal[self.halName] = dword & 0x7FFFFFFF
 
-class SigS32(object):
-	def __init__(self, hal, halName, offset):
-		self.hal = hal
-		self.halName = halName
-		self.offset = offset
+class SigS32(Sig):
+	width = 32
 
-	def readInput(self, destBuf):
+	def readInput(self, destBuf, toOffset):
 		dword = self.hal[self.halName] & 0xFFFFFFFF
-		destBuf[self.offset] = (dword >> 24) & 0xFF
-		destBuf[self.offset + 1] = (dword >> 16) & 0xFF
-		destBuf[self.offset + 2] = (dword >> 8) & 0xFF
-		destBuf[self.offset + 3] = dword & 0xFF
+		destBuf[toOffset] = (dword >> 24) & 0xFF
+		destBuf[toOffset + 1] = (dword >> 16) & 0xFF
+		destBuf[toOffset + 2] = (dword >> 8) & 0xFF
+		destBuf[toOffset + 3] = dword & 0xFF
 
-	def writeOutput(self, srcBuf):
-		dword = (srcBuf[self.offset] << 24) |\
-		        (srcBuf[self.offset + 1] << 16) |\
-		        (srcBuf[self.offset + 2] << 8) |\
-		        srcBuf[self.offset + 3]
+	def writeOutput(self, srcBuf, fromOffset):
+		dword = ((srcBuf[fromOffset] << 24) |
+			 (srcBuf[fromOffset + 1] << 16) |
+			 (srcBuf[fromOffset + 2] << 8) |
+			 srcBuf[fromOffset + 3])
 		self.hal[self.halName] = dwordToSignedPyInt(dword)
 
-class SigFloat(object):
-	def __init__(self, hal, halName, offset):
-		self.hal = hal
-		self.halName = halName
-		self.offset = offset
+class SigFloat(Sig):
+	width = 32
 
-	def readInput(self, destBuf):
+	def readInput(self, destBuf, toOffset):
 		dword = pyFloatToDWord(self.hal[self.halName])
-		destBuf[self.offset] = (dword >> 24) & 0xFF
-		destBuf[self.offset + 1] = (dword >> 16) & 0xFF
-		destBuf[self.offset + 2] = (dword >> 8) & 0xFF
-		destBuf[self.offset + 3] = dword & 0xFF
+		destBuf[toOffset] = (dword >> 24) & 0xFF
+		destBuf[toOffset + 1] = (dword >> 16) & 0xFF
+		destBuf[toOffset + 2] = (dword >> 8) & 0xFF
+		destBuf[toOffset + 3] = dword & 0xFF
 
-	def writeOutput(self, srcBuf):
-		dword = (srcBuf[self.offset] << 24) |\
-		        (srcBuf[self.offset + 1] << 16) |\
-		        (srcBuf[self.offset + 2] << 8) |\
-		        srcBuf[self.offset + 3]
+	def writeOutput(self, srcBuf, fromOffset):
+		dword = ((srcBuf[fromOffset] << 24) |
+			 (srcBuf[fromOffset + 1] << 16) |
+			 (srcBuf[fromOffset + 2] << 8) |
+			 srcBuf[fromOffset + 3])
 		self.hal[self.halName] = dwordToPyFloat(dword)
 
 class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 	name		= "LinuxCNC"
-	description	= "LinuxCNC and MachineKit hardware support.\n"\
-			  "http://linuxcnc.org/\n"\
-			  "http://www.machinekit.io/"
+	description	= "LinuxCNC hardware support.\nhttp://linuxcnc.org/"
 
 	paramDescs = [
 		HwParamDesc_int("inputSize",
-				description = "Input area size",
-				defaultValue = 32,
-				mandatory = True),
+				description="Input area size",
+				defaultValue=32,
+				mandatory=True),
 		HwParamDesc_int("outputSize",
-				description = "Output area size",
-				defaultValue = 32,
-				mandatory = True),
+				description="Output area size",
+				defaultValue=32,
+				mandatory=True),
 	]
 
 	def __init__(self, sim, parameters={}):
 		AbstractHardwareInterface.__init__(self,
-						   sim = sim,
-						   parameters = parameters)
+						   sim=sim,
+						   parameters=parameters)
 		self.linuxCNC_initialized = False
 
 	def __createHalPins(self):
@@ -211,11 +201,6 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 			except linuxCNCHal.error as e:
 				printWarning("Failed to create HAL param '%s'. "
 					     "Please restart LinuxCNC." % name)
-
-		printInfo("Mapped AWL/STL input area:  P#E %d.0 BYTE %d" %\
-			  (self.inputAddressBase, self.inputSize))
-		printInfo("Mapped AWL/STL output area:  P#A %d.0 BYTE %d" %\
-			  (self.outputAddressBase, self.outputSize))
 
 		# Create the input pins
 		for i in range(self.inputAddressBase, self.inputAddressBase + self.inputSize):
@@ -269,6 +254,11 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 
 		newparam("config.ready", HAL_BIT, HAL_RW)
 
+		printInfo("Mapped AWL/STL input area:  P#E %d.0 BYTE %d" % (
+			  self.inputAddressBase, self.inputSize))
+		printInfo("Mapped AWL/STL output area:  P#A %d.0 BYTE %d" % (
+			  self.outputAddressBase, self.outputSize))
+
 	def doStartup(self):
 		global linuxCNCHalComponent
 		global linuxCNCHalComponentReady
@@ -298,6 +288,9 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 
 #TODO find overlappings
 	def __buildTable(self, baseName, addressBase, size):
+		tab = []
+		addr2sig = {}
+
 		def isActive(name):
 			activeName = "%s.active" % name
 			try:
@@ -307,70 +300,77 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 					     "Please restart LinuxCNC." % name)
 				return False
 
-		tab = []
+		def add(sig):
+			tab.append(sig)
+			if not isinstance(sig, SigBit):
+				addr2sig[sig.address] = sig
+			printInfo("Active HAL pin: %s" % str(sig))
+
 		for address in range(addressBase, addressBase + size):
 			offset = address - addressBase
 			for bitNr in range(8):
 				if isActive("%s.bit.%d.%d" % (baseName, address, bitNr)):
-					tab.append(SigBit(self.halComponent,
-							  "%s.bit.%d.%d" % (baseName, address, bitNr),
-							  offset, bitNr))
+					add(SigBit(self.halComponent,
+						   "%s.bit.%d.%d" % (baseName, address, bitNr),
+						   address, offset, bitNr))
 			if isActive("%s.u8.%d" % (baseName, address)):
-				tab.append(SigU8(self.halComponent,
-						 "%s.u8.%d" % (baseName, address),
-						 offset))
+				add(SigU8(self.halComponent,
+					  "%s.u8.%d" % (baseName, address),
+					  address, offset))
 			if address % 2:
 				continue
 			if size - offset < 2:
 				continue
 			if isActive("%s.u16.%d" % (baseName, address)):
-				tab.append(SigU16(self.halComponent,
-						  "%s.u16.%d" % (baseName, address),
-						  offset))
+				add(SigU16(self.halComponent,
+					   "%s.u16.%d" % (baseName, address),
+					   address, offset))
 			if isActive("%s.s16.%d" % (baseName, address)):
-				tab.append(SigS16(self.halComponent,
-						  "%s.s16.%d" % (baseName, address),
-						  offset))
+				add(SigS16(self.halComponent,
+					   "%s.s16.%d" % (baseName, address),
+					   address, offset))
 			if size - offset < 4:
 				continue
 			if isActive("%s.u31.%d" % (baseName, address)):
-				tab.append(SigU31(self.halComponent,
-						  "%s.u31.%d" % (baseName, address),
-						  offset))
+				add(SigU31(self.halComponent,
+					   "%s.u31.%d" % (baseName, address),
+					   address, offset))
 			if isActive("%s.s32.%d" % (baseName, address)):
-				tab.append(SigS32(self.halComponent,
-						  "%s.s32.%d" % (baseName, address),
-						  offset))
+				add(SigS32(self.halComponent,
+					   "%s.s32.%d" % (baseName, address),
+					   address, offset))
 			if isActive("%s.float.%d" % (baseName, address)):
-				tab.append(SigFloat(self.halComponent,
-						    "%s.float.%d" % (baseName, address),
-						    offset))
-		return tab
+				add(SigFloat(self.halComponent,
+					     "%s.float.%d" % (baseName, address),
+					     address, offset))
+		return tab, addr2sig
 
 	def __tryBuildConfig(self):
 		if not self.halComponent["config.ready"]:
-			return
+			return False
 
-		self.__activeInputs = self.__buildTable("input",
-			self.inputAddressBase, self.inputSize)
-		#TODO dump the input table
+		self.__activeInputs, self.__activeInputsAddr2Sig = self.__buildTable(
+			"input",
+			self.inputAddressBase,
+			self.inputSize)
 
-		self.__activeOutputs = self.__buildTable("output",
-			self.outputAddressBase, self.outputSize)
-		#TODO dump the input table
+		self.__activeOutputs, self.__activeOutputsAddr2Sig = self.__buildTable(
+			"output",
+			self.outputAddressBase,
+			self.outputSize)
 
 		self.__configDone = True
 		printInfo("HAL configuration done")
+		return True
 
 	def readInputs(self): #+cdef
 		if not self.__configDone:
-			self.__tryBuildConfig()
-			if not self.__configDone:
+			if not self.__tryBuildConfig():
 				return
 
 		data = bytearray(self.inputSize)
-		for desc in self.__activeInputs:
-			desc.readInput(data)
+		for sig in self.__activeInputs:
+			sig.readInput(data, sig.offset)
 		self.sim.cpu.storeInputRange(self.inputAddressBase, data)
 
 	def writeOutputs(self): #+cdef
@@ -379,18 +379,47 @@ class HardwareInterface_LinuxCNC(AbstractHardwareInterface): #+cdef
 
 		data = self.sim.cpu.fetchOutputRange(self.outputAddressBase,
 						     self.outputSize)
-		for desc in self.__activeOutputs:
-			desc.writeOutput(data)
+		for sig in self.__activeOutputs:
+			sig.writeOutput(data, sig.offset)
 
 	def directReadInput(self, accessWidth, accessOffset): #@nocy
 #@cy	cdef bytearray directReadInput(self, uint32_t accessWidth, uint32_t accessOffset):
-		pass#TODO
-		return bytearray()
+		if not self.__configDone:
+			if not self.__tryBuildConfig():
+				return bytearray()
+
+		try:
+			sig = self.__activeInputsAddr2Sig[accessOffset]
+		except KeyError as e:
+			return bytearray()
+		if accessWidth != sig.width:
+			self.raiseException("Directly accessing input at I %d.0 "
+				"with width %d bit, but only %d bit wide "
+				"accesses are supported." % (
+				accessOffset, accessWidth, sig.width))
+
+		data = bytearray(accessWidth // 8)
+		sig.readInput(data, 0)
+		return data
 
 	def directWriteOutput(self, accessWidth, accessOffset, data): #@nocy
 #@cy	cdef ExBool_t directWriteOutput(self, uint32_t accessWidth, uint32_t accessOffset, bytearray data) except ExBool_val:
-		pass#TODO
-		return False
+		if not self.__configDone:
+			if not self.__tryBuildConfig():
+				return False
+
+		try:
+			sig = self.__activeOutputsAddr2Sig[accessOffset]
+		except KeyError as e:
+			return False
+		if accessWidth != sig.width:
+			self.raiseException("Directly accessing output at Q %d.0 "
+				"with width %d bit, but only %d bit wide "
+				"accesses are supported." % (
+				accessOffset, accessWidth, sig.width))
+
+		sig.writeOutput(data, 0)
+		return True
 
 # LinuxCNC HAL component singleton.
 linuxCNCHal = None
