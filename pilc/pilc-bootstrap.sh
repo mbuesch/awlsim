@@ -287,7 +287,7 @@ pilc_bootstrap_first_stage()
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
 		setarch linux32 \
-			debootstrap --arch="$opt_arch" --foreign --verbose \
+			debootstrap --arch="$opt_arch" --foreign \
 			--components="main,contrib,non-free" \
 			--keyring="$raspbian_gpg" \
 			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
