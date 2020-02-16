@@ -1,0 +1,10 @@
+from awlsim.common.cython_support cimport *
+
+
+cdef class LPFilter(object):
+	cdef double __div
+	cdef double __state
+	cdef double __initial
+
+	cdef void reset(self)
+	cdef double run(self, double value)
