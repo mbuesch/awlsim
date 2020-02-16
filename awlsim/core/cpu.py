@@ -783,11 +783,14 @@ class S7CPU(object): #+cdef
 
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
-		self.__cycleTimeTargetLimited = min(self.__cycleTimeTarget, self.cycleTimeLimit)
+		self.__calcCycleTimeTargetLimited()
 
 	def setCycleTimeTarget(self, newTarget):
 		self.__cycleTimeTarget = float(newTarget)
-		self.__cycleTimeTargetLimited = min(self.__cycleTimeTarget, self.cycleTimeLimit)
+		self.__calcCycleTimeTargetLimited()
+
+	def __calcCycleTimeTargetLimited(self):
+		self.__cycleTimeTargetLimited = min(self.__cycleTimeTarget, self.cycleTimeLimit / 2.0)
 
 	def setRunTimeLimit(self, timeoutSeconds=-1.0):
 		self.__runtimeLimit = timeoutSeconds if timeoutSeconds >= 0.0 else -1.0
