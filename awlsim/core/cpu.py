@@ -1307,7 +1307,7 @@ class S7CPU(object): #+cdef
 
 		# Evaluate speed measurement
 		elapsedTime = self.now - self.__speedMeasureStartTime
-		if elapsedTime >= 1.0:
+		if elapsedTime >= 0.2:
 			# Calculate instruction and cycle counts.
 			cycleCount = ((self.__cycleCount - self.__speedMeasureStartCycleCount) &
 				      0x3FFFFFFF) #+suffix-u
