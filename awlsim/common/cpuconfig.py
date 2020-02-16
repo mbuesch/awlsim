@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU core configuration
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ class S7CPUConfig(object):
 		"__detectedMnemonics",
 		"clockMemByte",
 		"cycleTimeLimitUs",
+		"cycleTimeTargetUs",
 		"runTimeLimitUs",
 		"extInsnsEn",
 		"obStartinfoEn",
@@ -59,6 +60,7 @@ class S7CPUConfig(object):
 	DEFAULT_MNEMONICS		= MNEMONICS_AUTO
 	DEFAULT_CLOCKMEM		= -1
 	DEFAULT_CYCLETIMELIMIT_US	= 1 * 1000 * 1000
+	DEFAULT_CYCLETIMETARGET_US	= 0
 	DEFAULT_RUNTIMELIMIT_US		= -1
 	DEFAULT_EXTINSNS_EN		= False
 	DEFAULT_OBSTARTINFO_EN		= False
@@ -68,6 +70,7 @@ class S7CPUConfig(object):
 		self.setConfiguredMnemonics(self.DEFAULT_MNEMONICS)
 		self.setClockMemByte(self.DEFAULT_CLOCKMEM)
 		self.setCycleTimeLimitUs(self.DEFAULT_CYCLETIMELIMIT_US)
+		self.setCycleTimeTargetUs(self.DEFAULT_CYCLETIMETARGET_US)
 		self.setRunTimeLimitUs(self.DEFAULT_RUNTIMELIMIT_US)
 		self.setExtInsnsEn(self.DEFAULT_EXTINSNS_EN)
 		self.setOBStartinfoEn(self.DEFAULT_OBSTARTINFO_EN)
@@ -77,6 +80,7 @@ class S7CPUConfig(object):
 		self.setConfiguredMnemonics(otherCpuConfig.getConfiguredMnemonics())
 		self.setClockMemByte(otherCpuConfig.clockMemByte)
 		self.setCycleTimeLimitUs(otherCpuConfig.cycleTimeLimitUs)
+		self.setCycleTimeTargetUs(otherCpuConfig.cycleTimeTargetUs)
 		self.setRunTimeLimitUs(otherCpuConfig.runTimeLimitUs)
 		self.setExtInsnsEn(otherCpuConfig.extInsnsEn)
 		self.setOBStartinfoEn(otherCpuConfig.obStartinfoEn)
@@ -119,6 +123,12 @@ class S7CPUConfig(object):
 		if self.cpu:
 			seconds = float(microseconds) / 1000000.0
 			self.cpu.setCycleTimeLimit(seconds)
+
+	def setCycleTimeTargetUs(self, microseconds):
+		self.cycleTimeTargetUs = clamp(microseconds, 0, 0x7FFFFFFF)
+		if self.cpu:
+			seconds = float(microseconds) / 1000000.0
+			self.cpu.setCycleTimeTarget(seconds)
 
 	def setRunTimeLimitUs(self, microseconds):
 		self.runTimeLimitUs = clamp(microseconds, -1, 0x7FFFFFFF)

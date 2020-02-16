@@ -2,7 +2,7 @@
 #
 # AWL simulator - CPU
 #
-# Copyright 2012-2019 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ from awlsim.common.env import *
 from awlsim.common.version import *
 from awlsim.common.monotonic import * #+cimport
 from awlsim.common.movingavg import * #+cimport
+from awlsim.common.lpfilter import * #+cimport
 
 from awlsim.library.libentry import *
 
@@ -525,12 +526,15 @@ class S7CPU(object): #+cdef
 		self.__fetchTypeMethods = self.__fetchTypeMethodsDict	#@nocy
 		self.__storeTypeMethods = self.__storeTypeMethodsDict	#@nocy
 
+		self.__sleep = time.sleep
 		self.__insnMeas = None
 		self.__clockMemByteOffset = None
 		self.specs = S7CPUSpecs(self)
 		self.conf = S7CPUConfig(self)
 		self.prog = S7Prog(self)
+		self.__cycleTimeTarget = 0.0
 		self.setCycleTimeLimit(1.0)
+		self.setCycleTimeTarget(self.__cycleTimeTarget)
 		self.setCycleExitCallback(None)
 		self.setBlockExitCallback(None)
 		self.setPostInsnCallback(None)
@@ -779,6 +783,11 @@ class S7CPU(object): #+cdef
 
 	def setCycleTimeLimit(self, newLimit):
 		self.cycleTimeLimit = float(newLimit)
+		self.__cycleTimeTargetLimited = min(self.__cycleTimeTarget, self.cycleTimeLimit)
+
+	def setCycleTimeTarget(self, newTarget):
+		self.__cycleTimeTarget = float(newTarget)
+		self.__cycleTimeTargetLimited = min(self.__cycleTimeTarget, self.cycleTimeLimit)
 
 	def setRunTimeLimit(self, timeoutSeconds=-1.0):
 		self.__runtimeLimit = timeoutSeconds if timeoutSeconds >= 0.0 else -1.0
@@ -1069,6 +1078,8 @@ class S7CPU(object): #+cdef
 		self.minCycleTime = 86400.0
 		self.maxCycleTime = 0.0
 		self.avgCycleTime = 0.0
+		self.padCycleTime = 0.0
+		self.__padCycleTimeFilt = LPFilter(6)
 		self.__cycleTimeMovAvg = MovingAvg(9)
 		self.__speedMeasureStartTime = 0
 		self.__speedMeasureStartInsnCount = 0
@@ -1275,6 +1286,8 @@ class S7CPU(object): #+cdef
 	def runCycle(self): #+cdef
 #@cy		cdef double elapsedTime
 #@cy		cdef double cycleTime
+#@cy		cdef double padCycleTime
+#@cy		cdef double cycleTimeDiff
 #@cy		cdef double avgInsnPerCycle
 #@cy		cdef double avgTimePerInsn
 #@cy		cdef double insnPerSecond
@@ -1309,6 +1322,16 @@ class S7CPU(object): #+cdef
 				# Calculate and store moving average cycle time.
 				self.avgCycleTime = self.__cycleTimeMovAvg.calculate(cycleTime)
 
+				# Calculate the cycle time padding, if enabled.
+				padCycleTime = 0.0
+				if self.__cycleTimeTargetLimited > 0.0:
+					cycleTimeDiff = self.__cycleTimeTargetLimited - cycleTime
+					padCycleTime = self.__padCycleTimeFilt.run(self.padCycleTime + cycleTimeDiff)
+					if padCycleTime < 0.0:
+						padCycleTime = 0.0
+						self.__padCycleTimeFilt.reset()
+				self.padCycleTime = padCycleTime
+
 				# Calculate instruction statistics.
 				self.avgInsnPerCycle = avgInsnPerCycle = insnCount / cycleCount
 				if avgInsnPerCycle > 0.0:
@@ -1338,6 +1361,9 @@ class S7CPU(object): #+cdef
 				self.__speedMeasureStartTime = self.now
 				self.__speedMeasureStartInsnCount = self.__insnCount
 				self.__speedMeasureStartCycleCount = self.__cycleCount
+
+		if self.padCycleTime > 0.0:
+			self.__sleep(self.padCycleTime)
 
 		# Call the cycle exit callback, if any.
 		if self.cbCycleExit is not None:
@@ -2823,17 +2849,19 @@ class S7CPU(object): #+cdef
 		avgCycleTime = self.avgCycleTime
 		minCycleTime = self.minCycleTime
 		maxCycleTime = self.maxCycleTime
+		padCycleTime = self.padCycleTime
 		if maxCycleTime == 0.0:
-			avgCycleTimeStr = minCycleTimeStr = maxCycleTimeStr = "-/-"
+			avgCycleTimeStr = minCycleTimeStr = maxCycleTimeStr = padCycleTimeStr = "-/-"
 		else:
 			if avgCycleTime == 0.0:
 				avgCycleTimeStr = "-/-"
 			else:
-				avgCycleTimeStr = "%.03f" % (self.avgCycleTime * 1000.0)
-			minCycleTimeStr = "%.03f" % (self.minCycleTime * 1000.0)
-			maxCycleTimeStr = "%.03f" % (self.maxCycleTime * 1000.0)
-		ret.append("    OB1:  avg: %s ms  min: %s ms  max: %s ms" % (
-			   avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr))
+				avgCycleTimeStr = "%.03f" % (avgCycleTime * 1000.0)
+			minCycleTimeStr = "%.03f" % (minCycleTime * 1000.0)
+			maxCycleTimeStr = "%.03f" % (maxCycleTime * 1000.0)
+			padCycleTimeStr = "%.03f" % (padCycleTime * 1000.0)
+		ret.append("    OB1:  avg: %s ms  min: %s ms  max: %s ms  pad: %s ms" % (
+			   avgCycleTimeStr, minCycleTimeStr, maxCycleTimeStr, padCycleTimeStr))
 		return '\n'.join(ret)
 
 	@property

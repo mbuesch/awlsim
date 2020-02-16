@@ -835,7 +835,7 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 	#	avgCycleTime in microseconds (32 bit)
 	#	minCycleTime in microseconds (32 bit)
 	#	maxCycleTime in microseconds (32 bit)
-	#	reserved (32 bit)
+	#	padCycleTime in microseconds (32 bit)
 	#	reserved (32 bit)
 	#	reserved (32 bit)
 	#	reserved (32 bit)
@@ -860,7 +860,8 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 		     insnPerCycle,
 		     avgCycleTime,
 		     minCycleTime,
-		     maxCycleTime):
+		     maxCycleTime,
+		     padCycleTime):
 		self.running = bool(running)
 		self.uptime = float(uptime)
 		self.runtime = float(runtime)
@@ -869,6 +870,7 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 		self.avgCycleTime = float(avgCycleTime)
 		self.minCycleTime = float(minCycleTime)
 		self.maxCycleTime = float(maxCycleTime)
+		self.padCycleTime = float(padCycleTime)
 
 	def toBytes(self):
 		try:
@@ -892,7 +894,9 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 				      0, 0xFFFFFFFF),
 				clamp(int(round(self.maxCycleTime * 1000000.0)),
 				      0, 0xFFFFFFFF),
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+				clamp(int(round(self.padCycleTime * 1000000.0)),
+				      0, 0xFFFFFFFF),
+				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 			)
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
 		except ValueError:
@@ -906,8 +910,8 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 			_, _, _, _,\
 			insnPerSecond, insnPerCycle,\
 			_, _, _, _,\
-			avgCycleTime, minCycleTime, maxCycleTime,\
-			_, _, _, _, _, _, _, _, _, _, _, _, _ =\
+			avgCycleTime, minCycleTime, maxCycleTime, padCycleTime,\
+			_, _, _, _, _, _, _, _, _, _, _, _ =\
 				cls.plStruct.unpack_from(payload, 0)
 		except (ValueError, struct.error) as e:
 			raise TransferError("CPUSTATS: Data format error")
@@ -918,7 +922,8 @@ class AwlSimMessage_CPUSTATS(AwlSimMessage):
 			   insnPerCycle=(float(insnPerCycle) / 1000.0),
 			   avgCycleTime=(float(avgCycleTime) / 1000000.0),
 			   minCycleTime=(float(minCycleTime) / 1000000.0),
-			   maxCycleTime=(float(maxCycleTime) / 1000000.0))
+			   maxCycleTime=(float(maxCycleTime) / 1000000.0),
+			   padCycleTime=(float(padCycleTime) / 1000000.0))
 
 class AwlSimMessage_MAINTREQ(AwlSimMessage):
 	msgId = AwlSimMessage.MSG_ID_MAINTREQ
@@ -1010,7 +1015,8 @@ class AwlSimMessage_CPUCONF(AwlSimMessage):
 					self.cpuconf.runTimeLimitUs & 0xFFFFFFFF,
 					1 if self.cpuconf.extInsnsEn else 0,
 					1 if self.cpuconf.obStartinfoEn else 0,
-					*( (0,) * 25 ) # padding
+					self.cpuconf.cycleTimeTargetUs & 0xFFFFFFFF,
+					*( (0,) * 24 ) # padding
 		)
 		return AwlSimMessage.toBytes(self, len(pl)) + pl
 
@@ -1023,13 +1029,16 @@ class AwlSimMessage_CPUCONF(AwlSimMessage):
 			 cycleTimeLimitUs,
 			 runTimeLimitUsHigh, runTimeLimitUsLow,
 			 extInsnsEn,
-			 obStartinfoEn) = data[:7]
+			 obStartinfoEn,
+			 cycleTimeTargetUs,
+			) = data[:8]
 		except struct.error as e:
 			raise TransferError("CPUCONF: Invalid data format")
 		cpuconf = S7CPUConfig()
 		cpuconf.setConfiguredMnemonics(mnemonics)
 		cpuconf.setClockMemByte(-1 if clockMemByte > 0xFFFF else clockMemByte)
 		cpuconf.setCycleTimeLimitUs(cycleTimeLimitUs)
+		cpuconf.setCycleTimeTargetUs(cycleTimeTargetUs)
 		cpuconf.setRunTimeLimitUs(qwordToSignedPyInt((runTimeLimitUsHigh << 32) |
 							     runTimeLimitUsLow))
 		cpuconf.setExtInsnsEn(True if (extInsnsEn & 1) else False)

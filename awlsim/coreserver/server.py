@@ -1353,7 +1353,8 @@ class AwlSimServer(object): #+cdef
 			insnPerCycle=cpu.avgInsnPerCycle,
 			avgCycleTime=cpu.avgCycleTime,
 			minCycleTime=cpu.minCycleTime,
-			maxCycleTime=cpu.maxCycleTime
+			maxCycleTime=cpu.maxCycleTime,
+			padCycleTime=cpu.padCycleTime,
 		)
 		reply.setReplyTo(msg)
 		client.transceiver.send(reply)

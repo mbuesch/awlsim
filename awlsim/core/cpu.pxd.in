@@ -1,6 +1,7 @@
 from awlsim.common.cython_support cimport *
 from awlsim.common.cpuspecs cimport *
 from awlsim.common.movingavg cimport *
+from awlsim.common.lpfilter cimport *
 from awlsim.core.statusword cimport *
 from awlsim.core.callstack cimport *
 from awlsim.core.lstack cimport *
@@ -37,6 +38,8 @@ cdef class S7CPU(object):
 	cdef public object conf
 	cdef public object prog
 	cdef public double cycleTimeLimit
+	cdef public double __cycleTimeTarget
+	cdef public double __cycleTimeTargetLimited
 	cdef public double __runtimeLimit
 	cdef public _Bool __obTempPresetsEnabled
 	cdef public _Bool __extendedInsnsEnabled
@@ -99,6 +102,8 @@ cdef class S7CPU(object):
 	cdef public double minCycleTime
 	cdef public double maxCycleTime
 	cdef public double avgCycleTime
+	cdef public double padCycleTime
+	cdef public LPFilter __padCycleTimeFilt
 	cdef public MovingAvg __cycleTimeMovAvg
 	cdef public double startupTime
 	cdef public double __speedMeasureStartTime
@@ -108,6 +113,7 @@ cdef class S7CPU(object):
 	cdef public double __timestampUpdInter
 	cdef public uint32_t __timestampUpdInterMask
 	cdef public InsnMeas __insnMeas
+	cdef public object __sleep
 
 	cdef UDT getUDT(self, uint16_t index)
 	cdef DB getDB(self, uint16_t index)

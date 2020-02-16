@@ -415,6 +415,8 @@ class ProjectFactory(XmlFactory):
 								   S7CPUConfig.DEFAULT_MNEMONICS)
 					cycleTimeLimitUs = tag.getAttrInt("cycle_time_limit_us",
 							S7CPUConfig.DEFAULT_CYCLETIMELIMIT_US)
+					cycleTimeTargetUs = tag.getAttrInt("cycle_time_target_us",
+							S7CPUConfig.DEFAULT_CYCLETIMETARGET_US)
 					runTimeLimitUs = tag.getAttrInt("run_time_limit_us",
 							S7CPUConfig.DEFAULT_RUNTIMELIMIT_US)
 					obStartEn = tag.getAttrBool("ob_startinfo_enable",
@@ -425,6 +427,7 @@ class ProjectFactory(XmlFactory):
 					conf.setClockMemByte(clockMem)
 					conf.setConfiguredMnemonics(mnemonics)
 					conf.setCycleTimeLimitUs(cycleTimeLimitUs)
+					conf.setCycleTimeTargetUs(cycleTimeTargetUs)
 					conf.setRunTimeLimitUs(runTimeLimitUs)
 					conf.setExtInsnsEn(extInsnsEn)
 					conf.setOBStartinfoEn(obStartEn)
@@ -600,6 +603,7 @@ class ProjectFactory(XmlFactory):
 					"clock_memory_byte"	: str(int(conf.clockMemByte)),
 					"mnemonics"		: str(int(conf.getConfiguredMnemonics())),
 					"cycle_time_limit_us"	: str(int(conf.cycleTimeLimitUs)),
+					"cycle_time_target_us"	: str(int(conf.cycleTimeTargetUs)),
 					"run_time_limit_us"	: str(int(conf.runTimeLimitUs)),
 				 })
 		]

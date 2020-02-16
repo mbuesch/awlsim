@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI main window
 #
-# Copyright 2012-2019 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -175,6 +175,7 @@ class MainWidget(QWidget):
 		self.__avgCycleTime = 0.0
 		self.__minCycleTime = 0.0
 		self.__maxCycleTime = 0.0
+		self.__padCycleTime = 0.0
 
 		self.__updateStatusBar()
 
@@ -560,6 +561,7 @@ class MainWidget(QWidget):
 		self.__avgCycleTime = statsMsg.avgCycleTime
 		self.__minCycleTime = statsMsg.minCycleTime
 		self.__maxCycleTime = statsMsg.maxCycleTime
+		self.__padCycleTime = statsMsg.padCycleTime
 		self.__updateStatusBar()
 
 	def __updateStatusBar(self):
@@ -588,13 +590,15 @@ class MainWidget(QWidget):
 			if (self.__avgCycleTime > 0.0 and
 			    self.__minCycleTime > 0.0 and
 			    self.__maxCycleTime > 0.0):
-				avgCycleTimeStr = "%.02f" % (self.__avgCycleTime * 1000.0)
-				minCycleTimeStr = "%.02f" % (self.__minCycleTime * 1000.0)
-				maxCycleTimeStr = "%.02f" % (self.__maxCycleTime * 1000.0)
-				status.append("OB1: avg: %s ms  min: %s ms  max: %s ms" % (
+				avgCycleTimeStr = "%.01f" % (self.__avgCycleTime * 1000.0)
+				minCycleTimeStr = "%.01f" % (self.__minCycleTime * 1000.0)
+				maxCycleTimeStr = "%.01f" % (self.__maxCycleTime * 1000.0)
+				padCycleTimeStr = "%.01f" % (self.__padCycleTime * 1000.0)
+				status.append("OB1: avg: %s ms  min: %s ms  max: %s ms  padding: %s ms" % (
 					      avgCycleTimeStr,
 					      minCycleTimeStr,
-					      maxCycleTimeStr))
+					      maxCycleTimeStr,
+					      padCycleTimeStr))
 
 		statusBar = self.mainWindow.statusBar()
 		statusBar.showMessage("  --  ".join(status))
