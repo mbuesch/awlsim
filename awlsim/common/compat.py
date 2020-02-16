@@ -265,6 +265,10 @@ if not hasattr(select, "select"): #@nocov
 if not hasattr(math, "log2"): #@nocov
 	math.log2 = lambda x: math.log(x, 2)
 
+# Python 2 compat: isfinite
+if not hasattr(math, "isfinite"): #@nocov
+	math.isfinite = lambda x: not math.isnan(x) and not math.isinf(x)
+
 # int.bit_length substitute
 # Micropython doesn't have int.bit_length.
 def bit_length(value): #@nocov
