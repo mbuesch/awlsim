@@ -205,6 +205,7 @@ class AwlSim(object): #+cdef
 			self.cpu.runCycle()
 			if self.__registeredHardwareCount:
 				self.__writeHwOutputs()
+			self.cpu.sleepCyclePadding()
 		except AwlSimError as e:
 			self._handleSimException(e)
 		except MaintenanceRequest as e:

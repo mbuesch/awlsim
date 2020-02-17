@@ -1365,12 +1365,14 @@ class S7CPU(object): #+cdef
 				self.__speedMeasureStartInsnCount = self.__insnCount
 				self.__speedMeasureStartCycleCount = self.__cycleCount
 
-		if self.padCycleTime > 0.0:
-			self.__sleep(self.padCycleTime)
-
 		# Call the cycle exit callback, if any.
 		if self.cbCycleExit is not None:
 			self.cbCycleExit(self.cbCycleExitData)
+
+	# Sleep for the cycle padding duration, if required.
+	def sleepCyclePadding(self): #+cdef
+		if self.padCycleTime > 0.0:
+			self.__sleep(self.padCycleTime)
 
 	# Returns 'self.now' as 31 bit millisecond representation.
 	# That is data type 'TIME'.
