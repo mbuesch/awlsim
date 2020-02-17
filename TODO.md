@@ -27,6 +27,7 @@
 * Add feature: Interface editor copy/paste
 * Add feature: Symbol table editor copy/paste
 * Add feature: Library selections editor copy/paste
+* Add feature: Validation before download. Don't download, if validation fails. (Issue #22)
 
 ## FBD / FUP GUI
 
@@ -36,6 +37,7 @@
 * Add feature: Exchange elements
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: find/replace for FUP editor
+* Add feature: Mark elements that (might) have caused a compiler error. This probably needs changes to the FUP and AWL compilers, too. (Issue #22)
 
 ## FBD / FUP compiler
 
