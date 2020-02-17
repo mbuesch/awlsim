@@ -2,7 +2,7 @@
 #
 # AWL simulator - Code validator
 #
-# Copyright 2014-2018 Michael Buesch <m@bues.ch>
+# Copyright 2014-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ class AwlValidator(object):
 	__globalInstance = None
 
 	_PORT_RANGE	= range(30000, 32000)
-	_EXIT_THREAD	= -1
+	_EXIT_THREAD	= object()
 
 	@classmethod
 	def startup(cls):
