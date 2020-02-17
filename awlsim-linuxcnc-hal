@@ -24,13 +24,14 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import sys
 import os
-import time
 import getopt
 
 from awlsim_loader.common import *
 from awlsim_loader.core import *
 from awlsim_loader.coreserver import *
 from awlsim_loader.coreclient import *
+
+from awlsim.common.monotonic import monotonic_time
 
 
 class LinuxCNC_NotRunning(Exception):
@@ -312,24 +313,29 @@ def main():
 		printInfo("Starting interpreter core...")
 		server.startup(host=opt_listen[0],
 			       port=opt_listen[1],
-			       handleExceptionServerside=True,
+			       raiseExceptionsFromRun=True,
 			       handleMaintenanceServerside=True)
 		server.setRunState(server.STATE_RUN)
-		lastExceptionTime = None
+		lastExceptionTime = monotonic_time() - 1.0
+		exceptionCount = 0
 		while True:
 			try:
 				server.run()
 			except (AwlParserError, AwlSimError) as e:
 				linuxCNCTriggerEStop()
-				now = time.time()
-				if lastExceptionTime is not None and\
-				   now - lastExceptionTime < 1.0:
-					# The last fault is less than one second
-					# in the past. Raise a fatal exception.
+				now = monotonic_time()
+				if now - lastExceptionTime < 1.0:
+					# The last fault is less than one second ago.
+					exceptionCount += 1
+				else:
+					exceptionCount = 0
+				lastExceptionTime = now
+				if exceptionCount >= 10:
+					# Many exceptions happened in a row.
+					# Raise a fatal exception.
 					printError("Fatal fault detected")
 					raise e
 				else:
-					lastExceptionTime = now
 					# Non-fatal fault.
 					# Ensure the CPU is stopped and enter
 					# the run loop again.

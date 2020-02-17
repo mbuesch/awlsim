@@ -29,7 +29,7 @@ cdef class AwlSimServer(object):
 	cdef public _Bool __needOB10x
 	cdef public double __nextStats
 	cdef public uint32_t __commandMask
-	cdef public _Bool __handleExceptionServerside
+	cdef public _Bool __raiseExceptionsFromRun
 	cdef public _Bool __handleMaintenanceServerside
 	cdef public _Bool __haveAnyMemReadReq
 	cdef public object memReadRequestMsg

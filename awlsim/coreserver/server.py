@@ -277,7 +277,7 @@ class AwlSimServer(object): #+cdef
 
 		self.__nextStats = 0
 		self.__commandMask = 0
-		self.__handleExceptionServerside = False
+		self.__raiseExceptionsFromRun = False
 		self.__handleMaintenanceServerside = False
 		self.__haveAnyMemReadReq = False
 
@@ -1628,17 +1628,17 @@ class AwlSimServer(object): #+cdef
 					e.setSourceName(srcMgr.source.name)
 					break
 
-	def startup(self, host, port, family = None,
-		    commandMask = 0,
-		    handleExceptionServerside = False,
-		    handleMaintenanceServerside = False,
-		    project = None,
-		    projectWriteBack = False):
+	def startup(self, host, port, family=None,
+		    commandMask=0,
+		    raiseExceptionsFromRun=False,
+		    handleMaintenanceServerside=False,
+		    project=None,
+		    projectWriteBack=False):
 		"""Start the server on 'host':'port'.
 		family -> Address family. Either None or one of socket.AF_...
 		commanMask -> Mask of allowed commands (CMDMSK_...).
-		handleExceptionServerside -> Flag whether to raise AwlSimError()
-		                             exceptions on the server only.
+		raiseExceptionsFromRun -> Flag whether to raise AwlSimError()
+					  from the run() method and let the caller handle them.
 		handleMaintenanceServerside -> Flag whether to raise maintenance
 		                               request exceptions on the server only.
 		project -> If this is a .awlpro path string or Project(), it uses the data
@@ -1649,7 +1649,7 @@ class AwlSimServer(object): #+cdef
 
 		assert(not self.__startupDone)
 		self.__commandMask = commandMask
-		self.__handleExceptionServerside = handleExceptionServerside
+		self.__raiseExceptionsFromRun = raiseExceptionsFromRun
 		self.__handleMaintenanceServerside = handleMaintenanceServerside
 
 		self.loadProject(project, projectWriteBack)
@@ -1711,23 +1711,23 @@ class AwlSimServer(object): #+cdef
 				# Try to add more information to the exception.
 				self.__extendAwlSimError(e)
 
-				if self.__handleExceptionServerside:
-					# Let the server handle the exception
+				# Send the exception to all clients.
+				msg = AwlSimMessage_EXCEPTION(e)
+				for client in self.__clients:
+					try:
+						client.transceiver.send(msg)
+					except TransferError as e:
+						printError("Failed to forward "
+							   "exception to client.")
+						client.broken = True
+				self.__removeBrokenClients()
+
+				if self.__raiseExceptionsFromRun:
 					if e.getReportOnlyFlag():
 						printError(e.getReport())
 					else:
+						# Let the caller handle the exception
 						raise e
-				else:
-					# Send the exception to all clients.
-					msg = AwlSimMessage_EXCEPTION(e)
-					for client in self.__clients:
-						try:
-							client.transceiver.send(msg)
-						except TransferError as e:
-							printError("Failed to forward "
-								   "exception to client.")
-							client.broken = True
-					self.__removeBrokenClients()
 			except MaintenanceRequest as e:
 				printVerbose("Main loop maintenance request: %d" % (
 					     e.requestType))
