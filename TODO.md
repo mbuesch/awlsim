@@ -21,23 +21,27 @@
 ## GUI
 
 * Add feature: LAD (KOP) editor
+* Add feature: Global find/replace
 * Add feature: find/replace for symbol table editor
 * Add feature: find/replace for library selection editor
-* Add feature: global find/replace
-* Add feature: Interface editor copy/paste
-* Add feature: Symbol table editor copy/paste
+* Add feature: Symbol table editor and interface editor: Copy/paste
+* Add feature: Symbol table editor and interface editor: Context menu (right click).
+* Add feature: Symbol table editor and interface editor: Data type auto completion. (Issue #23)
+* Add feature: Symbol table editor and interface editor: Name suggestions based on existing names. (Issue #23)
 * Add feature: Library selections editor copy/paste
 * Add feature: Validation before download. Don't download, if validation fails. (Issue #22)
 
 ## FBD / FUP GUI
 
 * Rewrite wire drawing algorithm
+* Improve performance in big diagrams
 * Add feature: Support modifying wires by clicking onto them
 * Add feature: Make width (and height?) of operands selectable
 * Add feature: Exchange elements
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: find/replace for FUP editor
 * Add feature: Mark elements that (might) have caused a compiler error. This probably needs changes to the FUP and AWL compilers, too. (Issue #22)
+* Add feature: Auto completion for operands (Issue #23)
 
 ## FBD / FUP compiler
 
