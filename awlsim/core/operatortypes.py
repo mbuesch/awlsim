@@ -174,9 +174,9 @@ class __AwlOperatorTypesClass(object): #+cdef
 			self.INDIRECT		: "INDIRECT",
 			self.UNSPEC		: "UNSPEC",
 
-			self.VIRT_ACCU		: "ACCU",
-			self.VIRT_AR		: "AR",
-			self.VIRT_DBR		: "DBR",
+			self.VIRT_ACCU		: "__ACCU",
+			self.VIRT_AR		: "__AR",
+			self.VIRT_DBR		: "__DBR",
 		}
 
 AwlOperatorTypes = __AwlOperatorTypesClass() #+cdef-public-__AwlOperatorTypesClass
