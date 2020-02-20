@@ -2,7 +2,7 @@
 #
 # AWL simulator - project
 #
-# Copyright 2014-2018 Michael Buesch <m@bues.ch>
+# Copyright 2014-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -129,13 +129,19 @@ class GuiCpuStateViewSettingsFactory(XmlFactory):
 
 class GuiSettingsFactory(XmlFactory):
 	def parser_open(self, tag=None):
+		self.inCore = False
 		self.inEditor = False
 		XmlFactory.parser_open(self, tag)
 
 	def parser_beginTag(self, tag):
 		guiSettings = self.guiSettings
 		if not self.inEditor:
-			if tag.name == "editor":
+			if tag.name == "core":
+				preDownloadValidation = tag.getAttrBool("pre_download_validation", True)
+				guiSettings.setPreDownloadValidationEn(preDownloadValidation)
+				self.inCore = True
+				return
+			elif tag.name == "editor":
 				autoIndent = tag.getAttrBool("autoindent", True)
 				pasteAutoIndent = tag.getAttrBool("paste_autoindent", True)
 				validation = tag.getAttrBool("validation", True)
@@ -162,6 +168,10 @@ class GuiSettingsFactory(XmlFactory):
 			if tag.name == "editor":
 				self.inEditor = False
 				return
+		elif self.inCore:
+			if tag.name == "core":
+				self.inCore = False
+				return
 		else:
 			if tag.name == "gui":
 				self.parser_finish()
@@ -173,8 +183,14 @@ class GuiSettingsFactory(XmlFactory):
 
 		childTags = []
 
+		childTags.append(self.Tag(name="core",
+					  comment="Core interaction settings",
+					  attrs={
+			"pre_download_validation" : str(int(guiSettings.getPreDownloadValidationEn())),
+		}))
+
 		childTags.append(self.Tag(name="editor",
-					  comment="AWL editor settings",
+					  comment="\nAWL editor settings",
 					  attrs={
 			"autoindent"		: str(int(guiSettings.getEditorAutoIndentEn())),
 			"paste_autoindent"	: str(int(guiSettings.getEditorPasteIndentEn())),
@@ -748,12 +764,14 @@ class GuiSettings(object):
 		     editorPasteIndentEn=True,
 		     editorValidationEn=True,
 		     editorFont="",
-		     cpuStateViewSettingsList=None):
+		     cpuStateViewSettingsList=None,
+		     preDownloadValidationEn=True):
 		self.setEditorAutoIndentEn(editorAutoIndentEn)
 		self.setEditorPasteIndentEn(editorPasteIndentEn)
 		self.setEditorValidationEn(editorValidationEn)
 		self.setEditorFont(editorFont)
 		self.setCpuStateViewSettingsList(cpuStateViewSettingsList)
+		self.setPreDownloadValidationEn(preDownloadValidationEn)
 
 	def setEditorAutoIndentEn(self, editorAutoIndentEn):
 		self.editorAutoIndentEn = bool(editorAutoIndentEn)
@@ -784,6 +802,12 @@ class GuiSettings(object):
 
 	def getCpuStateViewSettingsList(self):
 		return self.cpuStateViewSettingsList
+
+	def setPreDownloadValidationEn(self, preDownloadValidationEn):
+		self.preDownloadValidationEn = bool(preDownloadValidationEn)
+
+	def getPreDownloadValidationEn(self):
+		return self.preDownloadValidationEn
 
 class CoreLinkSettings(object):
 	factory			= CoreLinkSettingsFactory
