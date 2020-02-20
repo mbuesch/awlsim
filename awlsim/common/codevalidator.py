@@ -25,10 +25,12 @@ from awlsim.common.compat import *
 
 from awlsim.common.util import *
 from awlsim.common.exceptions import *
+from awlsim.common.monotonic import * #+cimport
 
 from awlsim.coreclient.client import *
 
 import threading
+import time
 
 
 __all__ = [
@@ -44,6 +46,7 @@ class AwlValidator(object):
 
 	_PORT_RANGE	= range(30000, 32000)
 	_EXIT_THREAD	= object()
+	TIMEOUT		= object()
 
 	@classmethod
 	def startup(cls):
@@ -175,6 +178,48 @@ class AwlValidator(object):
 				      fupSources, kopSources)
 			self.__running = True
 			self.__condition.notify_all()
+
+	def __waitSync(self, timeout, sleepFunc):
+		exception = None
+		running = True
+		end = monotonic_time() + timeout
+		while monotonic_time() < end:
+			running, exception = self.getState()
+			if not running:
+				break
+			sleepFunc(0.1)
+		return running, exception
+
+	def validateSync(self, project,
+			 symTabSources=None, libSelections=None, awlSources=None,
+			 fupSources=None, kopSources=None,
+			 sync=False,
+			 timeout=5.0,
+			 sleepFunc=time.sleep):
+		"""Synchronous validation. Wait for completion.
+		Returns the exception, None or TIMEOUT.
+		"""
+		if not project:
+			return None
+
+		# Wait for currently running job, if any.
+		running, exception = self.__waitSync(timeout, sleepFunc)
+		if running:
+			return self.TIMEOUT
+
+		# Start new job.
+		self.validate(project=project,
+			      symTabSources=symTabSources,
+			      libSelections=libSelections,
+			      awlSources=awlSources,
+			      fupSources=fupSources,
+			      kopSources=kopSources)
+
+		# Wait for the job.
+		running, exception = self.__waitSync(timeout, sleepFunc)
+		if running:
+			return self.TIMEOUT
+		return exception
 
 	def getState(self):
 		"""Get the validation result.
