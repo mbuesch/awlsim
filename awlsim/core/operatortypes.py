@@ -2,7 +2,7 @@
 #
 # AWL simulator - Operator types
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -113,6 +113,7 @@ class __AwlOperatorTypesClass(object): #+cdef
 
 		# Type to string map
 		self.type2str = {
+			self._IMM_START		: "_IMM_START",
 			self.IMM		: "IMMEDIATE",
 			self.IMM_REAL		: "REAL",
 			self.IMM_S5T		: "S5T",
@@ -121,6 +122,8 @@ class __AwlOperatorTypesClass(object): #+cdef
 			self.IMM_TOD		: "TOD",
 			self.IMM_DT		: "DT",
 			self.IMM_PTR		: "P#",
+			self.IMM_STR		: "STRING",
+			self._IMM_END		: "_IMM_END",
 
 			self.MEM_E		: "E",
 			self.MEM_A		: "A",
@@ -134,12 +137,6 @@ class __AwlOperatorTypesClass(object): #+cdef
 			self.MEM_PA		: "PA",
 			self.MEM_PE		: "PE",
 
-			self.MEM_DBLG		: "DBLG",
-			self.MEM_DBNO		: "DBNO",
-			self.MEM_DILG		: "DILG",
-			self.MEM_DINO		: "DINO",
-			self.MEM_AR2		: "AR2",
-
 			self.MEM_STW		: "STW",
 			self.MEM_STW_Z		: "==0",
 			self.MEM_STW_NZ		: "<>0",
@@ -149,7 +146,12 @@ class __AwlOperatorTypesClass(object): #+cdef
 			self.MEM_STW_NEGZ	: "<=0",
 			self.MEM_STW_UO		: "UO",
 
-			self.LBL_REF		: "LABEL",
+			self.MEM_DBLG		: "DBLG",
+			self.MEM_DBNO		: "DBNO",
+			self.MEM_DILG		: "DILG",
+			self.MEM_DINO		: "DINO",
+
+			self.MEM_AR2		: "AR2",
 
 			self.BLKREF_FC		: "BLOCK_FC",
 			self.BLKREF_SFC		: "BLOCK_SFC",
@@ -160,12 +162,21 @@ class __AwlOperatorTypesClass(object): #+cdef
 			self.BLKREF_DI		: "BLOCK_DI",
 			self.BLKREF_OB		: "BLOCK_OB",
 			self.BLKREF_VAT		: "BLOCK_VAT",
+			self.MULTI_FB		: "MULTI_FB",
+			self.MULTI_SFB		: "MULTI_SFB",
 
-			self.INDIRECT		: "__INDIRECT",
+			self.LBL_REF		: "LABEL",
+			self.SYMBOLIC		: "SYMBOLIC",
+			self.NAMED_LOCAL	: "NAMED_LOCAL",
+			self.NAMED_LOCAL_PTR	: "NAMED_LOCAL_PTR",
+			self.NAMED_DBVAR	: "NAMED_DBVAR",
 
-			self.VIRT_ACCU		: "__ACCU",
-			self.VIRT_AR		: "__AR",
-			self.VIRT_DBR		: "__DBR",
+			self.INDIRECT		: "INDIRECT",
+			self.UNSPEC		: "UNSPEC",
+
+			self.VIRT_ACCU		: "ACCU",
+			self.VIRT_AR		: "AR",
+			self.VIRT_DBR		: "DBR",
 		}
 
 AwlOperatorTypes = __AwlOperatorTypesClass() #+cdef-public-__AwlOperatorTypesClass
