@@ -164,7 +164,7 @@ class CpuConfigWidget(QWidget):
 		self.callStackSpinBox.setToolTip(label.toolTip())
 		group.layout().addWidget(self.callStackSpinBox, 8, 1)
 
-		self.layout().addWidget(group, 0, 0, 2, 1)
+		self.layout().addWidget(group, 0, 0, 3, 1)
 
 		group = QGroupBox("Hardware configuration", self)
 		group.setLayout(QGridLayout())
@@ -251,11 +251,24 @@ class CpuConfigWidget(QWidget):
 		group.layout().setRowStretch(2, 1)
 		self.layout().addWidget(group, 1, 1, 1, 1)
 
+		group = QGroupBox("Program", self)
+		group.setLayout(QGridLayout())
+
+		self.preDownloadValidationCheckBox = QCheckBox(
+			"Enable pre-download program validation", self)
+		self.preDownloadValidationCheckBox.setToolTip(
+			"Validate program before downloading it to the CPU.\n"
+			"This may catch certain program errors before download.")
+		group.layout().addWidget(self.preDownloadValidationCheckBox, 0, 0, 1, 1)
+
+		self.layout().addWidget(group, 2, 1, 1, 1)
+
 		self.layout().setRowStretch(2, 1)
 
 	def loadFromProject(self, project):
 		specs = project.getCpuSpecs()
 		conf = project.getCpuConf()
+		guiSettings = project.getGuiSettings()
 
 		index = self.accuCombo.findData(specs.nrAccus)
 		self.accuCombo.setCurrentIndex(index if index >= 0 else 0)
@@ -280,9 +293,13 @@ class CpuConfigWidget(QWidget):
 		self.cycleTimeSpinBox.setValue(conf.cycleTimeLimitUs / 1000.0)
 		self.cycleTimeTargetSpinBox.setValue(conf.cycleTimeTargetUs / 1000.0)
 
+		self.preDownloadValidationCheckBox.setCheckState(
+			Qt.Checked if guiSettings.getPreDownloadValidationEn() else Qt.Unchecked)
+
 	def storeToProject(self, project):
 		specs = project.getCpuSpecs()
 		conf = project.getCpuConf()
+		guiSettings = project.getGuiSettings()
 
 		mnemonics = self.mnemonicsCombo.itemData(self.mnemonicsCombo.currentIndex())
 		nrAccus = self.accuCombo.itemData(self.accuCombo.currentIndex())
@@ -299,6 +316,7 @@ class CpuConfigWidget(QWidget):
 		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
 		cycleTimeLimit = self.cycleTimeSpinBox.value()
 		cycleTimeTarget = self.cycleTimeTargetSpinBox.value()
+		preDownloadValidation = self.preDownloadValidationCheckBox.checkState() == Qt.Checked
 
 		specs.setNrAccus(nrAccus)
 		specs.setNrTimers(nrTimers)
@@ -315,6 +333,7 @@ class CpuConfigWidget(QWidget):
 		conf.setExtInsnsEn(extInsnsEnabled)
 		conf.setCycleTimeLimitUs(int(round(cycleTimeLimit * 1000.0)))
 		conf.setCycleTimeTargetUs(int(round(cycleTimeTarget * 1000.0)))
+		guiSettings.setPreDownloadValidationEn(preDownloadValidation)
 
 		return True
 
