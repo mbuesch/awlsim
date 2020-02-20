@@ -29,7 +29,6 @@
 * Add feature: Symbol table editor and interface editor: Data type auto completion. (Issue #23)
 * Add feature: Symbol table editor and interface editor: Name suggestions based on existing names. (Issue #23)
 * Add feature: Library selections editor copy/paste
-* Add feature: Validation before download. Don't download, if validation fails. (Issue #22)
 
 ## FBD / FUP GUI
 

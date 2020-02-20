@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU widget
 #
-# Copyright 2012-2019 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
+
+from awlsim.common.codevalidator import *
 
 from awlsim.gui.util import *
 from awlsim.gui.cpustate import *
@@ -442,6 +444,31 @@ class CpuWidget(QWidget):
 	def goOffline(self):
 		self.reqOnlineButtonState.emit(False)
 
+	def __validatePreDownload(self, project):
+		guiSettings = project.getGuiSettings()
+		if not guiSettings.getPreDownloadValidationEn():
+			return True
+
+		printInfo("Validating project before downloading...")
+		validator = AwlValidator.get()
+		exception = validator.validateSync(project=project,
+						   sleepFunc=sleepWithEventLoop)
+		if exception is validator.TIMEOUT:
+			printError("Project validation failed. Loading anyway...")
+		elif exception is not None:
+			res = MessageBox.handleAwlSimError(self,
+				"\nPre-download validation of the project failed.\n"
+				"Continuing the download may bring the CPU to STOP.\n\n"
+				"Do you want to continue or cancel "
+				"downloading the project to the CPU?",
+				exception,
+				okButton=False,
+				continueButton=True,
+				cancelButton=True)
+			if res != MessageBox.Accepted:
+				return False
+		return True
+
 	# Reset/clear the CPU and upload all sources.
 	def download(self):
 		# Make sure we are online.
@@ -453,6 +480,13 @@ class CpuWidget(QWidget):
 		project = self.getProject()
 		try:
 			self.state.setState(RunState.STATE_LOAD)
+
+			if not self.__validatePreDownload(project):
+				if self.__runBtnPressed:
+					self.state.setState(RunState.STATE_RUN)
+				else:
+					self.state.setState(RunState.STATE_ONLINE)
+				return False
 
 			client.setRunState(False)
 			client.reset()
