@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI utility functions
 #
-# Copyright 2012-2019 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,8 +89,15 @@ def handleFatalException(parentWidget=None):
 
 
 class MessageBox(QDialog):
-	def __init__(self, parent, title, text,
-		     verboseText=None, icon=QMessageBox.Critical):
+	def __init__(self,
+		     parent,
+		     title,
+		     text,
+		     verboseText=None,
+		     icon=QMessageBox.Critical,
+		     okButton=True,
+		     continueButton=False,
+		     cancelButton=False):
 		QDialog.__init__(self, parent)
 		self.setLayout(QGridLayout())
 		self.setWindowTitle(title)
@@ -113,12 +120,26 @@ class MessageBox(QDialog):
 		else:
 			self.verboseCheckBox = None
 
-		self.okButton = QPushButton("&Ok", self)
-		self.layout().addWidget(self.okButton, 2, 1)
+		buttonsLayout = QHBoxLayout()
+		if okButton:
+			self.okButton = QPushButton("&Ok", self)
+			buttonsLayout.addWidget(self.okButton)
+		if continueButton:
+			self.continueButton = QPushButton("C&ontinue", self)
+			buttonsLayout.addWidget(self.continueButton)
+		if cancelButton:
+			self.cancelButton = QPushButton("&Cancel", self)
+			buttonsLayout.addWidget(self.cancelButton)
+		self.layout().addLayout(buttonsLayout, 2, 1)
 
 		self.__updateText()
 
-		self.okButton.released.connect(self.accept)
+		if okButton:
+			self.okButton.released.connect(self.accept)
+		if continueButton:
+			self.continueButton.released.connect(self.accept)
+		if cancelButton:
+			self.cancelButton.released.connect(self.reject)
 		if self.verboseCheckBox:
 			self.verboseCheckBox.stateChanged.connect(self.__updateText)
 
@@ -130,29 +151,31 @@ class MessageBox(QDialog):
 			self.textBox.setText(self.text)
 
 	@classmethod
-	def error(cls, parent, text, verboseText=None):
-		dlg = cls(parent = parent,
-			  title = "Awlsim - Error",
-			  text = text,
-			  verboseText = verboseText,
-			  icon = QMessageBox.Critical)
+	def error(cls, parent, text, verboseText=None, **kwargs):
+		dlg = cls(parent=parent,
+			  title="Awlsim - Error",
+			  text=text,
+			  verboseText=verboseText,
+			  icon=QMessageBox.Critical,
+			  **kwargs)
 		res = dlg.exec_()
 		dlg.deleteLater()
 		return res
 
 	@classmethod
-	def warning(cls, parent, text, verboseText=None):
-		dlg = cls(parent = parent,
-			  title = "Awlsim - Warning",
-			  text = text,
-			  verboseText = verboseText,
-			  icon = QMessageBox.Warning)
+	def warning(cls, parent, text, verboseText=None, **kwargs):
+		dlg = cls(parent=parent,
+			  title="Awlsim - Warning",
+			  text=text,
+			  verboseText=verboseText,
+			  icon=QMessageBox.Warning,
+			  **kwargs)
 		res = dlg.exec_()
 		dlg.deleteLater()
 		return res
 
 	@classmethod
-	def handleAwlSimError(cls, parent, description, exception):
+	def handleAwlSimError(cls, parent, description, exception, **kwargs):
 		if exception.getSeenByUser():
 			return cls.Accepted
 		exception.setSeenByUser()
@@ -164,10 +187,14 @@ class MessageBox(QDialog):
 			text += "\n\n"
 			text += exception.getReport(verbose)
 			return text
-		return cls.error(parent, maketext(False), maketext(True))
+		return cls.error(parent=parent,
+				 text=maketext(False),
+				 verboseText=maketext(True),
+				 **kwargs)
 
 	@classmethod
-	def handleAwlParserError(cls, parent, exception):
-		return cls.handleAwlSimError(parent = parent,
-					     description = None,
-					     exception = exception)
+	def handleAwlParserError(cls, parent, exception, **kwargs):
+		return cls.handleAwlSimError(parent=parent,
+					     description=None,
+					     exception=exception,
+					     **kwargs)
