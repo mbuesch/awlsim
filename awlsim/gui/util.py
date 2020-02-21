@@ -174,9 +174,11 @@ class MessageBox(QDialog):
 		dlg.deleteLater()
 		return res
 
+	awlSimErrorBlocked = Blocker()
+
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception, **kwargs):
-		if exception.getSeenByUser():
+		if exception.getSeenByUser() or cls.awlSimErrorBlocked:
 			return cls.Accepted
 		exception.setSeenByUser()
 		def maketext(verbose):
