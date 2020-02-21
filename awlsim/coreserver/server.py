@@ -568,6 +568,15 @@ class AwlSimServer(object): #+cdef
 				self.__needOB10x = True
 			elif runstate == self.STATE_RUN:
 				# We just entered RUN state.
+
+				try:
+					if self.__projectToBeLoaded:
+						self.__doLoadProject()
+				except AwlSimError as e:
+					# Try our best to get something running.
+					printError("Entering RUN mode although "
+						   "project loading failed.")
+
 				self.__startupTimeStamp = monotonic_time()
 				if self.__needOB10x:
 					printVerbose("CPU startup (OB 10x).")
@@ -1551,64 +1560,81 @@ class AwlSimServer(object): #+cdef
 		if broken:
 			self.__removeBrokenClients()
 
-	def loadProject(self, project, writeBack=False):
+	def __loadProject(self, project, writeBack=False):
 		"""Load a project.
 		project: Path to the project, or Project instance.
 		writeBack: Enable write access to the project file.
 		"""
+		self.setRunState(self.STATE_STOP)
+
+		self.__projectFile = None
+		self.__projectWriteBack = writeBack and bool(project)
+		self.__projectToBeLoaded = project
+
+	def __doLoadProject(self):
+		project = self.__projectToBeLoaded
+		writeBack = self.__projectWriteBack
+		self.__projectToBeLoaded = None
 		self.__projectFile = None
 		self.__projectWriteBack = False
+
 		if not project:
 			return
 
-		printDebug("Loading project '%s'" % str(project))
-		if isString(project):
-			projectFile = project
-
-			if writeBack:
-				# If the project file exists and it has zero size
-				# then delete the file.
-				if os.path.exists(projectFile):
-					with contextlib.suppress(IOError, OSError):
-						if not os.path.getsize(projectFile):
-							os.unlink(projectFile)
-							printInfo("Purged empty project "
-								  "file at '%s'." % projectFile)
-				if not os.path.exists(projectFile):
-					# The project file does not exist.
-					# Create an empty one.
-					printInfo("Creating empty project at '%s'" % (
-						  projectFile))
-					empty = Project(projectFile)
-					empty.toFile()
-			# Load the project data.
-			try:
-				project = Project.fromFile(projectFile)
-			except AwlSimError as e:
-				raise AwlSimError("AwlSimServer: "
-						  "Failed to load project file '%s':\n%s" % (
-						  projectFile, e.message))
-
-		self.__resetAll()
-
-		for modDesc in project.getHwmodSettings().getLoadedModules():
-			self.loadHardwareModule(modDesc)
-		self.cpuSetSpecs(project.getCpuSpecs())
-		self.cpuSetConf(project.getCpuConf())
-
-		for symSrc in project.getSymTabSources():
-			self.loadSymTabSource(symSrc)
-		for libSel in project.getLibSelections():
-			self.loadLibraryBlock(libSel)
-		for awlSrc in project.getAwlSources():
-			self.loadAwlSource(awlSrc)
-		for fupSrc in project.getFupSources():
-			self.loadFupSource(fupSrc)
-		for kopSrc in project.getKopSources():
-			self.loadKopSource(kopSrc)
-
-		self.__projectFile = project.getProjectFile()
+		self.__projectFile = project if isString(project) else project.getProjectFile()
 		self.__projectWriteBack = writeBack
+
+		printDebug("Loading project '%s'" % str(project))
+		try:
+			if isString(project):
+				projectFile = project
+
+				if writeBack:
+					# If the project file exists and it has zero size
+					# then delete the file.
+					if os.path.exists(projectFile):
+						with contextlib.suppress(IOError, OSError):
+							if not os.path.getsize(projectFile):
+								os.unlink(projectFile)
+								printInfo("Purged empty project "
+									  "file at '%s'." % projectFile)
+					if not os.path.exists(projectFile):
+						# The project file does not exist.
+						# Create an empty one.
+						printInfo("Creating empty project at '%s'" % (
+							  projectFile))
+						empty = Project(projectFile)
+						empty.toFile()
+				# Load the project data.
+				try:
+					project = Project.fromFile(projectFile)
+				except AwlSimError as e:
+					raise AwlSimError("AwlSimServer: "
+							  "Failed to load project file '%s':\n%s" % (
+							  projectFile, e.message))
+
+			self.__resetAll()
+
+			for modDesc in project.getHwmodSettings().getLoadedModules():
+				self.loadHardwareModule(modDesc)
+			self.cpuSetSpecs(project.getCpuSpecs())
+			self.cpuSetConf(project.getCpuConf())
+
+			for symSrc in project.getSymTabSources():
+				self.loadSymTabSource(symSrc)
+			for libSel in project.getLibSelections():
+				self.loadLibraryBlock(libSel)
+			for awlSrc in project.getAwlSources():
+				self.loadAwlSource(awlSrc)
+			for fupSrc in project.getFupSources():
+				self.loadFupSource(fupSrc)
+			for kopSrc in project.getKopSources():
+				self.loadKopSource(kopSrc)
+		except (AwlSimError, AwlParserError, MaintenanceRequest, TransferError) as e:
+			# Don't reset here.
+			# Keep the partially loaded content.
+			printError("Failed to load project: " + str(e))
+			raise e
 
 	def __extendAwlSimError(self, e):
 		"""Try to add more useful information to an exception.
@@ -1652,7 +1678,7 @@ class AwlSimServer(object): #+cdef
 		self.__raiseExceptionsFromRun = raiseExceptionsFromRun
 		self.__handleMaintenanceServerside = handleMaintenanceServerside
 
-		self.loadProject(project, projectWriteBack)
+		self.__loadProject(project, projectWriteBack)
 
 		self.__listen(host, port, family)
 		self.__rebuildSelectReadList()
@@ -1678,6 +1704,9 @@ class AwlSimServer(object): #+cdef
 		while self.__state != self.STATE_EXIT:
 			try:
 				sim = self.__sim
+
+				if self.__projectToBeLoaded:
+					self.__doLoadProject()
 
 				if self.__state in {self.STATE_STOP,
 						    self.STATE_MAINTENANCE}:

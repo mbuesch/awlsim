@@ -289,33 +289,31 @@ def main():
 			linuxcncHwmodDesc.setParameterValue("outputSize",
 							    str(opt_outputSize))
 
+		# Override CPUConf, if required.
+		conf = project.getCpuConf()
+		if opt_maxRuntime is not None:
+			conf.setRunTimeLimitUs(int(round(opt_maxRuntime * 1000000.0)))
+		if opt_extInsns is not None:
+			conf.setExtInsnsEn(opt_extInsns)
+
 		# Pass the hal component singleton to the Awlsim hw module.
 		loader = HwModLoader.loadModule("linuxcnc")
 		mod = loader.getModule()
 		mod.setLinuxCNCHalComponentSingleton(LinuxCNC_HAL, halComponent)
 
-		# Configure the core and the core server.
 		server = AwlSimServer()
-		server.loadProject(project)
-
-		# Override CPUConf, if required.
-		conf = copy(project.getCpuConf())
-		if opt_maxRuntime is not None:
-			conf.setRunTimeLimitUs(int(round(opt_maxRuntime * 1000000.0)))
-		if opt_extInsns is not None:
-			conf.setExtInsnsEn(opt_extInsns)
-		server.cpuSetConf(conf)
-
-		# Set the Linux-CNC watchdog as cycle exit hook.
 		server.setCycleExitHook(watchdogHook)
-
-		# Run the server
-		printInfo("Starting interpreter core...")
+		printInfo("Starting core server...")
 		server.startup(host=opt_listen[0],
 			       port=opt_listen[1],
+			       project=project,
 			       raiseExceptionsFromRun=True,
 			       handleMaintenanceServerside=True)
-		server.setRunState(server.STATE_RUN)
+		try:
+			server.setRunState(server.STATE_RUN)
+		except AwlSimError as e:
+			printError("Failed to go to RUN state.")
+			# Continue to main loop.
 		lastExceptionTime = monotonic_time() - 1.0
 		exceptionCount = 0
 		while True:

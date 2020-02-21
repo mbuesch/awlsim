@@ -37,6 +37,7 @@ cdef class AwlSimServer(object):
 
 	cdef public object __projectFile
 	cdef public _Bool __projectWriteBack
+	cdef public object __projectToBeLoaded
 
 	cdef public object __socket
 #	cdef public int __socketFileno	#@cy-posix
