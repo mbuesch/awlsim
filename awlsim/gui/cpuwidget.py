@@ -168,7 +168,8 @@ class CpuWidget(QWidget):
 						     sync = True)
 			client.setPeriodicDumpInterval(300 if wantDump else 0)
 		except AwlSimError as e:
-			self.state.setState(RunState.STATE_EXCEPTION)
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Error in awlsim core", e)
 			return False
@@ -254,10 +255,12 @@ class CpuWidget(QWidget):
 			# Put the GUI into RUN mode.
 			self.state.setState(RunState.STATE_RUN)
 		except AwlSimError as e:
-			self.state.setState(RunState.STATE_EXCEPTION)
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Could not start CPU", e)
-			self.stop()
+			with MessageBox.awlSimErrorBlocked:
+				self.stop()
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 
@@ -269,11 +272,13 @@ class CpuWidget(QWidget):
 			while client.processMessages(0.02):
 				pass
 		except AwlSimError as e:
-			self.state.setState(RunState.STATE_EXCEPTION)
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Core server error", e)
-			self.stop()
-			self.__stopCoreMessageHandler()
+			with MessageBox.awlSimErrorBlocked:
+				self.stop()
+				self.__stopCoreMessageHandler()
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 		except Exception:
@@ -324,11 +329,13 @@ class CpuWidget(QWidget):
 							reqUDTInfo=True)
 			client.getCpuStats()
 		except AwlSimError as e:
-			self.state.setState(RunState.STATE_EXCEPTION)
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Core server error", e)
-			self.stop()
-			self.__stopCoreMessageHandler()
+			with MessageBox.awlSimErrorBlocked:
+				self.stop()
+				self.__stopCoreMessageHandler()
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
 		except Exception:
@@ -410,7 +417,8 @@ class CpuWidget(QWidget):
 				client.setMode_OFFLINE()
 			MessageBox.handleAwlSimError(self,
 				"Error while trying to connect to CPU", e)
-			self.goOffline()
+			with MessageBox.awlSimErrorBlocked:
+				self.goOffline()
 			return
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
@@ -501,8 +509,9 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
-			self.state.setState(RunState.STATE_ONLINE)
-			self.stop()
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_ONLINE)
+				self.stop()
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)
 			return False
@@ -589,8 +598,9 @@ class CpuWidget(QWidget):
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
-			self.state.setState(RunState.STATE_ONLINE)
-			self.stop()
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_ONLINE)
+				self.stop()
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code (single source)", e)
 			return False
