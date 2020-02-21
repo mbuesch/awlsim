@@ -504,8 +504,9 @@ class CpuWidget(QWidget):
 
 			self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
-			self.state.setState(RunState.STATE_ONLINE)
-			self.stop()
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_ONLINE)
+				self.stop()
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
@@ -593,8 +594,9 @@ class CpuWidget(QWidget):
 			else:
 				self.state.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
-			self.state.setState(RunState.STATE_ONLINE)
-			self.stop()
+			with MessageBox.awlSimErrorBlocked:
+				self.state.setState(RunState.STATE_ONLINE)
+				self.stop()
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
