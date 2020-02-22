@@ -397,8 +397,8 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	# Payload struct:
 	#	flags			(32 bit)
 	#	lineNr			(32 bit)
-	#	reserved		(32 bit)
-	#	reserved		(32 bit)
+	#	coordinate X		(32 bit)
+	#	coordinate Y		(32 bit)
 	#	reserved		(32 bit)
 	#	reserved		(32 bit)
 	#	reserved		(32 bit)
@@ -421,7 +421,10 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 			e = self.exception
 			lineNr = e.getLineNr()
 			lineNr = 0xFFFFFFFF if lineNr is None else lineNr
-			pl = self.plStruct.pack(0, lineNr, 0, 0, 0, 0, 0, 0, 0, 0) +\
+			coordinates = e.getCoordinates()
+			x = clamp(coordinates[0], -1, 0x7FFFFFFF) & 0xFFFFFFFF
+			y = clamp(coordinates[1], -1, 0x7FFFFFFF) & 0xFFFFFFFF
+			pl = self.plStruct.pack(0, lineNr, x, y, 0, 0, 0, 0, 0, 0) +\
 			     self.packString(e.EXC_TYPE) +\
 			     self.packString(e.getSourceName() or "") +\
 			     self.packBytes(e.getSourceId() or "") +\
@@ -436,7 +439,7 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	def fromBytes(cls, payload):
 		try:
 			offset = 0
-			flags, lineNr, _, _, _, _, _, _, _, _ =\
+			flags, lineNr, x, y, _, _, _, _, _, _ =\
 				cls.plStruct.unpack_from(payload, offset)
 			offset += cls.plStruct.size
 			excType, count = cls.unpackString(payload, offset)
@@ -452,13 +455,18 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 			verboseText, count = cls.unpackString(payload, offset)
 		except ValueError:
 			raise TransferError("EXCEPTION: Encoding error")
-		e = FrozenAwlSimError(excType = excType,
-				      errorText = text,
-				      verboseErrorText = verboseText)
+		coordinates = (
+			-1 if x == 0xFFFFFFFF else x,
+			-1 if y == 0xFFFFFFFF else y,
+		)
+		e = FrozenAwlSimError(excType=excType,
+				      errorText=text,
+				      verboseErrorText=verboseText)
 		e.setLineNr(lineNr if lineNr < 0xFFFFFFFF else None)
 		e.setSourceName(sourceName)
 		e.setSourceId(sourceId)
 		e.setFailingInsnStr(failingInsnStr)
+		e.setCoordinates(coordinates)
 		return cls(e)
 
 class _AwlSimMessage_GET_source(AwlSimMessage):

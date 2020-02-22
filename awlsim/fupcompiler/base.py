@@ -33,12 +33,23 @@ class FupCompilerError(AwlSimError):
 	"""
 
 	def __init__(self, message, fupObj=None):
+		from awlsim.fupcompiler.elem import FupCompiler_Elem
+
+		coordinates = (-1, -1)
 		if fupObj:
 			fupObjStr = str(fupObj).strip()
 			if fupObjStr:
-				message += "\n\nThe reporting FUP/FBD element is:\n"\
+				message += "\n\n\nThe reporting FUP/FBD element is:\n"\
 					   "%s" % fupObjStr
-		AwlSimError.__init__(self, message)
+			if isinstance(fupObj, FupCompiler_Elem):
+				coordinates = (fupObj.x, fupObj.y)
+			elif isinstance(fupObj, FupCompiler_Conn):
+				elem = fupObj.elem
+				if elem:
+					coordinates = (elem.x, elem.y)
+		AwlSimError.__init__(self,
+				     message=message,
+				     coordinates=coordinates)
 		self.fupObj = fupObj
 
 class FupInterfError(FupCompilerError):

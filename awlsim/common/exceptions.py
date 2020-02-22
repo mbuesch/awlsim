@@ -2,7 +2,7 @@
 #
 # AWL simulator - Exceptions
 #
-# Copyright 2012-2019 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 from awlsim.common.enumeration import *
 
 import binascii
+from copy import copy, deepcopy
 
 
 __all__ = [
@@ -47,16 +48,19 @@ class AwlSimError(Exception):
 
 	def __init__(self, message, cpu=None,
 		     rawInsn=None, insn=None, lineNr=None,
-		     sourceId=None, sourceName=None):
+		     sourceId=None, sourceName=None,
+		     coordinates=(-1, -1)):
 		super(AwlSimError, self).__init__(self, message)
 		self.message = message
 		self.cpu = cpu
 		self.rawInsn = rawInsn
-		self.failingInsnStr = None
 		self.insn = insn
 		self.lineNr = lineNr
 		self.sourceId = sourceId
 		self.sourceName = sourceName
+		self.coordinates = coordinates
+
+		self.failingInsnStr = None
 		self.seenByUser = False
 		self.reportOnly = False
 
@@ -125,6 +129,12 @@ class AwlSimError(Exception):
 
 	def getSourceName(self):
 		return self.sourceName
+
+	def setCoordinates(self, coordinates):
+		self.coordinates = coordinates
+
+	def getCoordinates(self):
+		return deepcopy(self.coordinates)
 
 	def setLineNr(self, lineNr):
 		self.lineNr = lineNr
@@ -200,9 +210,18 @@ class AwlSimError(Exception):
 		if lineNr is not None:
 			lineStr = "\n  at line %d" % lineNr
 
+		# Format the coordinate string.
+		coordStr = ""
+		coord = self.getCoordinates()
+		if coord[0] >= 0 and coord[1] >= 0:
+			coordStr = "\n  at coordinates X=%d, Y=%d" % (
+				coord[0] + 1,
+				coord[1] + 1)
+
 		# Append file and line information to report.
-		if fileStr or lineStr:
-			ret.append("Error%s%s:\n\n" % (fileStr, lineStr))
+		if fileStr or lineStr or coordStr:
+			ret.append("Error%s%s%s:\n\n" % (
+				   fileStr, lineStr, coordStr))
 
 		# Append instruction information to report.
 		insnStr = self.getFailingInsnStr()
