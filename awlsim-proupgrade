@@ -3,7 +3,7 @@
 #
 # AWL simulator - Project file upgrade utility
 #
-# Copyright 2017-2018 Michael Buesch <m@bues.ch>
+# Copyright 2017-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ def usage():
 	print("")
 	print("This utility re-writes a project file using the latest file format version.")
 	print("")
-	print("Usage: awlsim-proupgrade [OPTIONS] PROJECTFILE.awlpro")
+	print("Usage: awlsim-proupgrade [OPTIONS] PROJECTFILE.awlpro ...")
 	print("")
 	print("Options:")
 	print(" -u|--gen-uuids               Regenerate all UUIDs.")
@@ -74,34 +74,35 @@ def main():
 			except ValueError:
 				printError("-L|--loglevel: Invalid log level")
 				sys.exit(1)
-	if len(args) != 1:
+	if len(args) < 1:
 		usage()
 		return ExitCodes.EXIT_ERR_CMDLINE
-	projectFile = args[0]
+	projectFiles = args
 
 	try:
 		Logging.setLoglevel(opt_loglevel)
 
-		# Parse the project file and write it back immediately.
-		# The read will parse old formats, too.
-		# The write will write using the latest format.
-		printInfo("Upgrading file format of: %s" % projectFile)
+		for projectFile in projectFiles:
+			# Parse the project file and write it back immediately.
+			# The read will parse old formats, too.
+			# The write will write using the latest format.
+			printInfo("Upgrading file format of: %s" % projectFile)
 
-		project = Project.fromFile(projectFile)
+			project = Project.fromFile(projectFile)
 
-		for fupSource in project.getFupSources():
-			fupWidget = FupWidget(None, None)
-			factory = FupFactory(fupWidget=fupWidget)
-			factory.parse(fupSource.sourceBytes)
-			if opt_genUUIDs:
-				# Re-generate all UUIDs.
-				fupWidget.regenAllUUIDs()
-			fupSource.sourceBytes = factory.compose()
+			for fupSource in project.getFupSources():
+				fupWidget = FupWidget(None, None)
+				factory = FupFactory(fupWidget=fupWidget)
+				factory.parse(fupSource.sourceBytes)
+				if opt_genUUIDs:
+					# Re-generate all UUIDs.
+					fupWidget.regenAllUUIDs()
+				fupSource.sourceBytes = factory.compose()
 
-		for kopSource in project.getKopSources():
-			pass#TODO
+			for kopSource in project.getKopSources():
+				pass#TODO
 
-		project.toFile()
+			project.toFile()
 
 	except AwlSimError as e:
 		printError(e.getReport())
