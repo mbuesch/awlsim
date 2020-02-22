@@ -17,6 +17,9 @@
 #  --nice NICE		: Renice the process. -20 <= NICE <= 19.
 #			  Default: Do not renice.
 #
+#  --rw-project         : Enable project file writing after download of new program.
+#                         Default: Do not write to the project file.
+#
 #  Last argument	: The Awlsim AWL/STL project to load and run.
 #
 loadusr -Wn awlsim awlsim-linuxcnc-hal --listen localhost:4151 linuxcnc-demo.awlpro

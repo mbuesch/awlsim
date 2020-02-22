@@ -72,6 +72,9 @@ def usage():
 	print("Usage: awlsim-linuxcnc-hal [OPTIONS] PROJECT.awlpro")
 	print("")
 	print("Options:")
+	print(" -w|--rw-project         Enable project file writing after download of new program.")
+	print("                         Default: Do not write to the project file.")
+	print("")
 	print(" -i|--input-size SIZE    The input area size, in bytes.")
 	print("                         Overrides input-size from project file.")
 	print(" -I|--input-base BASE    The AWL/STL input address base.")
@@ -120,6 +123,7 @@ def main():
 	global opt_watchdog
 	global opt_maxRuntime
 	global opt_extInsns
+	global opt_rwProject
 
 	opt_inputSize = None
 	opt_inputBase = None
@@ -131,15 +135,17 @@ def main():
 	opt_watchdog = True
 	opt_maxRuntime = None
 	opt_extInsns = None
+	opt_rwProject = False
 
 	try:
 		(opts, args) = getopt.getopt(sys.argv[1:],
-			"hi:I:o:O:l:L:N:W:M:x",
+			"hi:I:o:O:l:L:N:W:M:xw",
 			[ "help", "input-size=", "input-base=",
 			  "output-size=", "output-base=",
 			  "listen=",
 			  "loglevel=", "nice=",
-			  "watchdog=", "max-runtime=", "extended-insns", ])
+			  "watchdog=", "max-runtime=", "extended-insns",
+			  "rw-project", ])
 	except getopt.GetoptError as e:
 		printError(str(e))
 		usage()
@@ -208,6 +214,8 @@ def main():
 				return 1
 		if o in ("-x", "--extended-insns"):
 			opt_extInsns = True
+		if o in ("-w", "--rw-project"):
+			opt_rwProject = True
 	if len(args) != 1:
 		usage()
 		return 1
@@ -307,6 +315,7 @@ def main():
 		server.startup(host=opt_listen[0],
 			       port=opt_listen[1],
 			       project=project,
+			       projectWriteBack=opt_rwProject,
 			       raiseExceptionsFromRun=True,
 			       handleMaintenanceServerside=True)
 		try:
