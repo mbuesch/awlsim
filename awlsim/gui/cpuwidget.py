@@ -563,6 +563,13 @@ class CpuWidget(QWidget):
 		try:
 			self.state.setState(RunState.STATE_LOAD)
 
+			if not self.__validatePreDownload(project):
+				if self.__runBtnPressed:
+					self.state.setState(RunState.STATE_RUN)
+				else:
+					self.state.setState(RunState.STATE_ONLINE)
+				return False
+
 			if mdiSubWin.TYPE == mdiSubWin.TYPE_AWL:
 				printVerbose("Single AWL download: %s/%s" %\
 					(source.name,
