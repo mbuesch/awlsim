@@ -86,6 +86,7 @@ class EditMdiArea(QMdiArea):
 		self.resetArea()
 
 		self.subWindowActivated.connect(self.__handleSubWindowActivated)
+		self.getSimClient().haveException.connect(self.__handleAwlSimError)
 
 	def getMainWidget(self):
 		return self.mainWidget
@@ -95,6 +96,9 @@ class EditMdiArea(QMdiArea):
 
 	def getProject(self):
 		return self.getProjectTreeModel().getProject()
+
+	def getSimClient(self):
+		return self.getMainWidget().getSimClient()
 
 	@property
 	def activeOpenSubWindow(self):
@@ -116,6 +120,10 @@ class EditMdiArea(QMdiArea):
 			mdiSubWin.forceClose()
 			del mdiSubWin
 		self._guiSettings = GuiSettings()
+
+	def __handleAwlSimError(self, e):
+		for mdiSubWin in self.subWindowList():
+			mdiSubWin.handleAwlSimError(e)
 
 	def __handleSubWindowActivated(self, mdiSubWin):
 		"""An MDI sub window has just been activated.
@@ -305,6 +313,10 @@ class EditMdiArea(QMdiArea):
 		self.__cpuRunState = runState
 		for mdiSubWin in self.subWindowList():
 			mdiSubWin.setCpuRunState(runState)
+			if runState in (RunState.STATE_LOAD,
+					RunState.STATE_RUN):
+				# Clear all errors.
+				mdiSubWin.handleAwlSimError(None)
 
 	def undoIsAvailable(self):
 		mdiSubWin = self.activeOpenSubWindow
@@ -552,6 +564,9 @@ class EditMdiSubWindow(QMdiSubWindow):
 		pass
 
 	def handleIdentsMsg(self, identsMsg):
+		pass
+
+	def handleAwlSimError(self, e):
 		pass
 
 	def setCpuRunState(self, runState):
@@ -833,6 +848,9 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 
 	def paste(self, text=None):
 		return self.fupWidget.clipboardPaste(text)
+
+	def handleAwlSimError(self, e):
+		self.fupWidget.handleAwlSimError(e)
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP

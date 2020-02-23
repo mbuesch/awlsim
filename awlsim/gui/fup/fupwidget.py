@@ -402,3 +402,8 @@ class FupWidget(QWidget):
 		self.clipboardCopyAvailableChanged.emit(bool(elemsAreSelected))
 		self.clipboardCutAvailableChanged.emit(bool(elemsAreSelected))
 		self.clipboardPasteAvailableChanged.emit(bool(cellsAreSelected))
+
+	def handleAwlSimError(self, e):
+		if (e is None or
+		    e.getSourceId() == self.getSource().identHash):
+			self.edit.draw.handleAwlSimError(e)

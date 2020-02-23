@@ -245,6 +245,7 @@ class FupDrawWidget(QWidget):
 
 		self.__bgBrush = QBrush(QColor("#F5F5F5"))
 		self.__bgSelBrush = QBrush(QColor("#F2F25A"))
+		self.__bgErrBrush = QBrush(QColor("#FF0000"))
 		self.__gridPen = QPen(QColor("#E0E0E0"))
 		self.__gridPen.setWidth(1)
 		self.__lightTextPen = QColor("#808080")
@@ -561,6 +562,16 @@ class FupDrawWidget(QWidget):
 		p.setPen(Qt.NoPen)
 		r = 5
 		for gridX, gridY in grid.selectedCells:
+			p.drawRoundedRect(gridX * cellWidth + 1,
+					  gridY * cellHeight + 1,
+					  cellWidth - 1, cellHeight - 1,
+					  r, r)
+
+		# Draw the erroneous cells.
+		p.setBrush(self.__bgErrBrush)
+		p.setPen(Qt.NoPen)
+		r = 5
+		for gridX, gridY in grid.erroneousCells:
 			p.drawRoundedRect(gridX * cellWidth + 1,
 					  gridY * cellHeight + 1,
 					  cellWidth - 1, cellHeight - 1,
@@ -1268,3 +1279,24 @@ class FupDrawWidget(QWidget):
 				"Please select another position in the grid.")
 		self.__contentChanged()
 		return True
+
+	def handleAwlSimError(self, e):
+		"""Handle an AwlSimError.
+		This tries to make exception root cause visible in the diagram.
+		If e is None, then reset all error markers.
+		"""
+		grid = self.__grid
+		if not grid:
+			return
+		if e:
+			grid.clearAllCellErrors()
+			coordinates = e.getCoordinates()
+			if coordinates:
+				grid.setCellError(x=coordinates[0],
+						  y=coordinates[1])
+			self.__contentChanged()
+		else:
+			# No error. Clear all marked cells.
+			if grid.haveErroneousCells():
+				grid.clearAllCellErrors()
+				self.__contentChanged()

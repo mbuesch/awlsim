@@ -171,6 +171,7 @@ class FupGrid(FupBaseClass):
 		self.wires = set()		# The FupConnIn/Out()s in this grid
 
 		self.selectedCells = set()	# Set of tuples (gridX, gridY) of selected cells
+		self.erroneousCells = set()	# Set of tuples (gridX, gridY) of erroneous cells
 		self.selectedElems = set()	# Set of selected elements in this grid
 		self.expandedElems = set()	# Set of expanded elements in this grid
 		self.clickedElem = None		# The recently clicked element in this grid
@@ -199,6 +200,7 @@ class FupGrid(FupBaseClass):
 		self.elems = []
 		self.__elemsByUUID = {}
 		self.selectedCells.clear()
+		self.erroneousCells.clear()
 		self.selectedElems.clear()
 		self.collisionCacheClear()
 
@@ -535,6 +537,22 @@ class FupGrid(FupBaseClass):
 		"""Check if a cell is selected.
 		"""
 		return (x, y) in self.selectedCells
+
+	def setCellError(self, x, y):
+		"""Add one cell to the set of erroneous cells.
+		"""
+		if x >= 0 and y >= 0:
+			self.erroneousCells.add((x, y))
+
+	def clearAllCellErrors(self):
+		"""Clear all error markers.
+		"""
+		self.erroneousCells.clear()
+
+	def haveErroneousCells(self):
+		"""Check if any error marker exists.
+		"""
+		return bool(self.erroneousCells)
 
 	def merge(self, otherGrid,
 		  offsetX=0, offsetY=0,

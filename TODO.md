@@ -39,7 +39,6 @@
 * Add feature: Exchange elements
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: find/replace for FUP editor
-* Add feature: Mark elements that (might) have caused a compiler error. This probably needs changes to the FUP and AWL compilers, too. (Issue #22)
 * Add feature: Auto completion for operands (Issue #23)
 
 ## FBD / FUP compiler
