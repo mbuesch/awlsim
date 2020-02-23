@@ -121,6 +121,30 @@ class ProjectTreeModel(QAbstractItemModel):
 		"""
 		return self.mainWidget.editMdiArea
 
+	def handleAwlSimError(self, exception):
+		"""An AwlSimError occurred (due to normal operation or validation).
+		"""
+		anyChanged = False
+		project = self.getProject()
+		for source in project.getAllSources():
+			# Set error flag on corresponding source.
+			if exception and exception.getSourceId() == source.identHash:
+				# Set error flag.
+				if not source.userData.get("gui-erroneous", False):
+					anyChanged = True
+				source.userData["gui-erroneous"] = True
+			else:
+				# Clear error flag.
+				if source.userData.get("gui-erroneous", False):
+					anyChanged = True
+				source.userData["gui-erroneous"] = False
+
+		# Mark the program container as changed.
+		if anyChanged:
+			index = self.idToIndex(self.INDEXID_SRCS)
+			roles = (Qt.DecorationRole, Qt.ToolTipRole)
+			self.dataChanged.emit(index, index, roles)
+
 	def handleIdentsMsg(self, identsMsg):
 		"""Handle a new identifier message from AwlSimClient().
 		identsMsg: AwlSimMessage_IDENTS() instance.
@@ -1000,12 +1024,16 @@ class ProjectTreeModel(QAbstractItemModel):
 		"""
 
 		def getSourceContainerIcon(sourceList, okIconName):
+			# If there is an error in the source, show error icon.
 			# If the identHash of any source does not match what's on the CPU,
 			# use a warning icon. But only do that, if the CPU is
 			# in RUN state.
-			if self.__cpuRunState == RunState.STATE_RUN and\
-			   any(not source.userData.get("gui-cpu-idents-match", True)
+			if any(source.userData.get("gui-erroneous", False)
 			       for source in sourceList):
+				return getIcon("exit")
+			elif (self.__cpuRunState == RunState.STATE_RUN and
+			      any(not source.userData.get("gui-cpu-idents-match", True)
+				  for source in sourceList)):
 				return getIcon("warning")
 			return getIcon(okIconName)
 
@@ -1070,9 +1098,14 @@ class ProjectTreeModel(QAbstractItemModel):
 		"""
 
 		def getSourceContainerTip(sourceList, okToolTip):
+			# If there is an error in the source, show error tool tip.
 			# If the identHash of any source does not match what's on the CPU,
 			# use a warning tool tip. But only do that, if the CPU is
 			# in RUN state.
+			if any(source.userData.get("gui-erroneous", False)
+			       for source in sourceList):
+				return "ERROR: There is an error in the source file.\n"\
+				       "Please open it to fix the problem."
 			if self.__cpuRunState == RunState.STATE_RUN and\
 			   any(not source.userData.get("gui-cpu-idents-match", True)
 			       for source in sourceList):

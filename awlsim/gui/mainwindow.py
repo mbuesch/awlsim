@@ -809,6 +809,8 @@ class MainWindow(QMainWindow):
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
 		self.editMdiArea.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
+		self.validatorSched.haveValidationResult.connect(self.projectTreeModel.handleAwlSimError)
+		self.getSimClient().haveException.connect(self.projectTreeModel.handleAwlSimError)
 		self.cpuWidget.onlineDiagChanged.connect(self.editMdiArea.enableOnlineDiag)
 		self.cpuWidget.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
 		self.cpuWidget.haveIdentsMsg.connect(self.editMdiArea.handleIdentsMsg)
@@ -836,6 +838,10 @@ class MainWindow(QMainWindow):
 	@property
 	def projectTreeModel(self):
 		return self.treeDockWidget.projectTreeModel
+
+	@property
+	def validatorSched(self):
+		return self.editMdiArea.getValidatorSched()
 
 	@property
 	def cpuWidget(self):
