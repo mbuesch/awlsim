@@ -411,6 +411,7 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 	#	failing insn string	(string)
 	#	message			(string)
 	#	verboseMsg		(string)
+	#	element UUID		(string)
 	plStruct = struct.Struct(str(">IIIIIIIIII"))
 
 	def __init__(self, exception):
@@ -430,7 +431,8 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 			     self.packBytes(e.getSourceId() or "") +\
 			     self.packString(e.getFailingInsnStr()) +\
 			     self.packString(e.getReport(verbose = False)) +\
-			     self.packString(e.getReport(verbose = True))
+			     self.packString(e.getReport(verbose = True)) +\
+			     self.packString(e.getElemUUID())
 			return AwlSimMessage.toBytes(self, len(pl)) + pl
 		except ValueError:
 			raise TransferError("EXCEPTION: Encoding error")
@@ -453,6 +455,11 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 			text, count = cls.unpackString(payload, offset)
 			offset += count
 			verboseText, count = cls.unpackString(payload, offset)
+			offset += count
+			if len(payload) > offset:
+				elemUUID, count = cls.unpackString(payload, offset)
+			else:
+				elemUUID = None
 		except ValueError:
 			raise TransferError("EXCEPTION: Encoding error")
 		coordinates = (
@@ -467,6 +474,7 @@ class AwlSimMessage_EXCEPTION(AwlSimMessage):
 		e.setSourceId(sourceId)
 		e.setFailingInsnStr(failingInsnStr)
 		e.setCoordinates(coordinates)
+		e.setElemUUID(elemUUID)
 		return cls(e)
 
 class _AwlSimMessage_GET_source(AwlSimMessage):

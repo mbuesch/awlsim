@@ -49,7 +49,8 @@ class AwlSimError(Exception):
 	def __init__(self, message, cpu=None,
 		     rawInsn=None, insn=None, lineNr=None,
 		     sourceId=None, sourceName=None,
-		     coordinates=(-1, -1)):
+		     coordinates=(-1, -1),
+		     elemUUID=None):
 		super(AwlSimError, self).__init__(self, message)
 		self.message = message
 		self.cpu = cpu
@@ -59,6 +60,7 @@ class AwlSimError(Exception):
 		self.sourceId = sourceId
 		self.sourceName = sourceName
 		self.coordinates = coordinates
+		self.elemUUID = elemUUID
 
 		self.failingInsnStr = None
 		self.seenByUser = False
@@ -135,6 +137,12 @@ class AwlSimError(Exception):
 
 	def getCoordinates(self):
 		return deepcopy(self.coordinates)
+
+	def setElemUUID(self, elemUUID):
+		self.elemUUID = elemUUID
+
+	def getElemUUID(self):
+		return self.elemUUID
 
 	def setLineNr(self, lineNr):
 		self.lineNr = lineNr

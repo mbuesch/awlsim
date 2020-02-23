@@ -151,6 +151,9 @@ class FupCompiler(object):
 		self.optimizerSettingsContainer = None
 		self.__labelCounter = 0		# Current label name counter
 
+	def getFupSource(self):
+		return self.fupSource
+
 	def getAwlSource(self):
 		return self.awlSource
 
