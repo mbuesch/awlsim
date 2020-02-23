@@ -183,8 +183,9 @@ class CpuWidget(QWidget):
 		# Set our state to exception/stopped.
 		# This will stop the CPU, if it wasn't already stopped.
 		# Subsequent exception handlers might do additional steps.
-		self.state.setState(RunState.STATE_EXCEPTION)
-		self.stop()
+		with MessageBox.awlSimErrorBlocked:
+			self.state.setState(RunState.STATE_EXCEPTION)
+			self.stop()
 
 	def __handleCpuDump(self, dumpText):
 		for mdiWin in self.stateMdi.subWindowList():
