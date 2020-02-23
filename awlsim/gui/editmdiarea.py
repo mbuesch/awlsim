@@ -23,8 +23,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
-from awlsim.common.codevalidator import *
-
 from awlsim.gui.editwidget import EditWidget
 from awlsim.gui.symtabwidget import SymTabView
 from awlsim.gui.libtablewidget import LibTableView
@@ -33,6 +31,7 @@ from awlsim.gui.sourcecodeedit import SourceCodeEdit
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 from awlsim.gui.runstate import *
+from awlsim.gui.validatorsched import *
 
 
 __all__ = [
@@ -75,6 +74,9 @@ class EditMdiArea(QMdiArea):
 
 		self.__onlineDiagMdiSubWin = None
 
+		self.__validatorSched = GuiValidatorSched()
+		self.__validatorSched.haveValidationResult.connect(self.__handleDocumentValidationResult)
+
 		# Init the editor find dialog.
 		SourceCodeEdit.initFindDialog(self)
 
@@ -99,6 +101,9 @@ class EditMdiArea(QMdiArea):
 
 	def getSimClient(self):
 		return self.getMainWidget().getSimClient()
+
+	def getValidatorSched(self):
+		return self.__validatorSched
 
 	@property
 	def activeOpenSubWindow(self):
@@ -133,7 +138,7 @@ class EditMdiArea(QMdiArea):
 		self.__handleSubWinCopyAvailChanged(mdiSubWin)
 		self.__handleSubWinCutAvailChanged(mdiSubWin)
 		self.__handleSubWinPasteAvailChanged(mdiSubWin)
-		self.__handleDocumentValidation()
+		self.__validatorSched.startAsyncValidation(self.getProject())
 		self.__refreshOnlineDiagState()
 		self.__setFindDialogReference(mdiSubWin)
 
@@ -192,11 +197,12 @@ class EditMdiArea(QMdiArea):
 		mdiSubWin.pasteAvailableChanged.connect(
 			lambda pasteAvail: self.__handleSubWinPasteAvailChanged(mdiSubWin))
 		mdiSubWin.resizeFont.connect(self.__handleSourceCodeFontResize)
-		mdiSubWin.validateDocument.connect(self.__handleDocumentValidation)
+		mdiSubWin.validateDocument.connect(
+			lambda: self.__validatorSched.startAsyncValidation(self.getProject()))
 		mdiSubWin.visibleLinesChanged.connect(self.__handleVisibleLinesChanged)
 
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
-		QTimer.singleShot(0, self.__handleDocumentValidation)
+		self.__validatorSched.startAsyncValidation(self.getProject())
 		mdiSubWin.setCpuRunState(self.__cpuRunState)
 
 		return mdiSubWin
@@ -238,25 +244,6 @@ class EditMdiArea(QMdiArea):
 		self.setGuiSettings(project.getGuiSettings())
 
 		self.sourceChanged.emit()
-
-	def __handleDocumentValidation(self):
-		"""Handle a background document validation request.
-		"""
-		validator = AwlValidator.get()
-		if validator:
-			project = self.getProject()
-			validator.validate(project=project)
-			QTimer.singleShot(100, self.__checkDocumentValidationResult)
-
-	def __checkDocumentValidationResult(self):
-		"""Poll the background source code validation result.
-		"""
-		validator = AwlValidator.get()
-		if validator:
-			running, exception = validator.getState()
-			self.__handleDocumentValidationResult(exception)
-			if running:
-				QTimer.singleShot(100, self.__checkDocumentValidationResult)
 
 	def __handleDocumentValidationResult(self, exception):
 		"""Handle a background source code validator exception.
@@ -551,9 +538,6 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def setGuiSettings(self, guiSettings):
 		pass
 
-	def handleDocumentValidationResult(self, exception):
-		pass
-
 	def enableOnlineDiag(self, enabled):
 		return False
 
@@ -566,8 +550,11 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def handleIdentsMsg(self, identsMsg):
 		pass
 
-	def handleAwlSimError(self, e):
+	def handleAwlSimError(self, exception):
 		pass
+
+	def handleDocumentValidationResult(self, exception):
+		self.handleAwlSimError(exception)
 
 	def setCpuRunState(self, runState):
 		pass
@@ -712,7 +699,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def setGuiSettings(self, guiSettings):
 		self.editWidget.setSettings(guiSettings)
 
-	def handleDocumentValidationResult(self, exception):
+	def handleAwlSimError(self, exception):
 		self.editWidget.handleValidationResult(exception)
 
 	def enableOnlineDiag(self, enabled):
@@ -849,8 +836,8 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 	def paste(self, text=None):
 		return self.fupWidget.clipboardPaste(text)
 
-	def handleAwlSimError(self, e):
-		self.fupWidget.handleAwlSimError(e)
+	def handleAwlSimError(self, exception):
+		self.fupWidget.handleAwlSimError(exception)
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP

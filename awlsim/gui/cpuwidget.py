@@ -23,8 +23,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
-from awlsim.common.codevalidator import *
-
 from awlsim.gui.util import *
 from awlsim.gui.cpustate import *
 from awlsim.gui.awlsimclient import *
@@ -108,6 +106,9 @@ class CpuWidget(QWidget):
 
 	def getSimClient(self):
 		return self.mainWidget.getSimClient()
+
+	def getEditMdiArea(self):
+		return self.mainWidget.editMdiArea
 
 	def __stateMdiWindowClosed(self, mdiWin):
 		QTimer.singleShot(0, self.__uploadMemReadAreas)
@@ -459,10 +460,9 @@ class CpuWidget(QWidget):
 			return True
 
 		printInfo("Validating project before downloading...")
-		validator = AwlValidator.get()
-		exception = validator.validateSync(project=project,
-						   sleepFunc=sleepWithEventLoop)
-		if exception is validator.TIMEOUT:
+		valSched = self.getEditMdiArea().getValidatorSched()
+		exception = valSched.syncValidation(project)
+		if exception is valSched.TIMEOUT:
 			printError("Project validation failed. Loading anyway...")
 		elif exception is not None:
 			res = MessageBox.handleAwlSimError(self,
@@ -533,8 +533,7 @@ class CpuWidget(QWidget):
 
 	# Download the current source.
 	def downloadSingle(self):
-		editMdiArea = self.mainWidget.editMdiArea
-		mdiSubWin = editMdiArea.activeOpenSubWindow
+		mdiSubWin = self.getEditMdiArea().activeOpenSubWindow
 		source = libSelections = None
 		if mdiSubWin:
 			if mdiSubWin.TYPE in {mdiSubWin.TYPE_AWL,
