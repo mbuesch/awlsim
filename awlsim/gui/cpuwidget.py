@@ -29,6 +29,7 @@ from awlsim.gui.awlsimclient import *
 from awlsim.gui.icons import *
 from awlsim.gui.linkconfig import *
 from awlsim.gui.runstate import *
+from awlsim.gui.validatorsched import *
 
 
 class CpuWidget(QWidget):
@@ -460,7 +461,7 @@ class CpuWidget(QWidget):
 			return True
 
 		printInfo("Validating project before downloading...")
-		valSched = self.getEditMdiArea().getValidatorSched()
+		valSched = GuiValidatorSched.get()
 		exception = valSched.syncValidation(project)
 		if exception is valSched.TIMEOUT:
 			printError("Project validation failed. Loading anyway...")

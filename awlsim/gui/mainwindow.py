@@ -39,6 +39,7 @@ from awlsim.gui.templatedialog import *
 from awlsim.gui.library import *
 from awlsim.gui.runstate import *
 from awlsim.gui.toolbars import *
+from awlsim.gui.validatorsched import *
 
 
 class LoadProgressDialog(QDialog):
@@ -809,7 +810,7 @@ class MainWindow(QMainWindow):
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
 		self.editMdiArea.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
-		self.validatorSched.haveValidationResult.connect(self.projectTreeModel.handleAwlSimError)
+		GuiValidatorSched.get().haveValidationResult.connect(self.projectTreeModel.handleAwlSimError)
 		self.getSimClient().haveException.connect(self.projectTreeModel.handleAwlSimError)
 		self.cpuWidget.onlineDiagChanged.connect(self.editMdiArea.enableOnlineDiag)
 		self.cpuWidget.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
@@ -838,10 +839,6 @@ class MainWindow(QMainWindow):
 	@property
 	def projectTreeModel(self):
 		return self.treeDockWidget.projectTreeModel
-
-	@property
-	def validatorSched(self):
-		return self.editMdiArea.getValidatorSched()
 
 	@property
 	def cpuWidget(self):

@@ -74,8 +74,8 @@ class EditMdiArea(QMdiArea):
 
 		self.__onlineDiagMdiSubWin = None
 
-		self.__validatorSched = GuiValidatorSched()
-		self.__validatorSched.haveValidationResult.connect(self.__handleDocumentValidationResult)
+		GuiValidatorSched.get().haveValidationResult.connect(
+			self.__handleDocumentValidationResult)
 
 		# Init the editor find dialog.
 		SourceCodeEdit.initFindDialog(self)
@@ -101,9 +101,6 @@ class EditMdiArea(QMdiArea):
 
 	def getSimClient(self):
 		return self.getMainWidget().getSimClient()
-
-	def getValidatorSched(self):
-		return self.__validatorSched
 
 	@property
 	def activeOpenSubWindow(self):
@@ -138,7 +135,8 @@ class EditMdiArea(QMdiArea):
 		self.__handleSubWinCopyAvailChanged(mdiSubWin)
 		self.__handleSubWinCutAvailChanged(mdiSubWin)
 		self.__handleSubWinPasteAvailChanged(mdiSubWin)
-		self.__validatorSched.startAsyncValidation(self.getProject())
+		GuiValidatorSched.get().startAsyncValidation(self.getProject,
+							     delaySec=0.5)
 		self.__refreshOnlineDiagState()
 		self.__setFindDialogReference(mdiSubWin)
 
@@ -198,11 +196,13 @@ class EditMdiArea(QMdiArea):
 			lambda pasteAvail: self.__handleSubWinPasteAvailChanged(mdiSubWin))
 		mdiSubWin.resizeFont.connect(self.__handleSourceCodeFontResize)
 		mdiSubWin.validateDocument.connect(
-			lambda: self.__validatorSched.startAsyncValidation(self.getProject()))
+			lambda delaySec: GuiValidatorSched.get().startAsyncValidation(project=self.getProject,
+										      delaySec=delaySec))
 		mdiSubWin.visibleLinesChanged.connect(self.__handleVisibleLinesChanged)
 
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
-		self.__validatorSched.startAsyncValidation(self.getProject())
+		GuiValidatorSched.get().startAsyncValidation(project=self.getProject,
+							     delaySec=0.5)
 		mdiSubWin.setCpuRunState(self.__cpuRunState)
 
 		return mdiSubWin
@@ -422,7 +422,8 @@ class EditMdiSubWindow(QMdiSubWindow):
 
 	# Signal: Validation request.
 	#	  A code validation should take place.
-	validateDocument = Signal()
+	#	  Parameter: Number of seconds to delay before validation start.
+	validateDocument = Signal(float)
 
 	# Signal: The visible AWL line range changed
 	#         Parameters are: EditMdiSubWindow, AwlSource, visibleFromLine, visibleToLine
@@ -580,7 +581,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		self.editWidget.copyAvailable.connect(self.cutAvailableChanged)
 		self.editWidget.resizeFont.connect(self.resizeFont)
 		self.editWidget.validateDocument.connect(
-			lambda editWidget: self.validateDocument.emit())
+			lambda editWidget: self.validateDocument.emit(0.0))
 
 		self.windowStateChanged.connect(self.__handleWindowStateChange)
 
@@ -744,6 +745,7 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		self.setWidget(self.fupWidget)
 
 		self.fupWidget.diagramChanged.connect(self.sourceChanged)
+		self.fupWidget.diagramChanged.connect(self.__handleDiagramChanged)
 		self.fupWidget.undoAvailableChanged.connect(self.undoAvailableChanged)
 		self.fupWidget.redoAvailableChanged.connect(self.redoAvailableChanged)
 		self.fupWidget.clipboardCopyAvailableChanged.connect(self.copyAvailableChanged)
@@ -838,6 +840,9 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 
 	def handleAwlSimError(self, exception):
 		self.fupWidget.handleAwlSimError(exception)
+
+	def __handleDiagramChanged(self):
+		self.validateDocument.emit(0.5)
 
 class KopEditMdiSubWindow(EditMdiSubWindow):
 	TYPE = EditMdiSubWindow.TYPE_KOP
