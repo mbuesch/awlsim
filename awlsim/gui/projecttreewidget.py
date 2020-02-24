@@ -2,7 +2,7 @@
 #
 # AWL simulator - Project tree widget
 #
-# Copyright 2017-2018 Michael Buesch <m@bues.ch>
+# Copyright 2017-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ from awlsim.gui.util import *
 from awlsim.gui.icons import *
 from awlsim.gui.runstate import *
 from awlsim.gui.fup.fupwidget import FupFactory, FupWidget
+from awlsim.gui.validatorsched import *
 
 
 __all__ = [
@@ -782,6 +783,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			# Try to load it.
 			self.__loadPlainAwlSourceFile(filename, parentWidget)
 		self.projectLoaded.emit()
+		GuiValidatorSched.get().startAsyncValidation(self.getProject)
 
 	def saveProjectFile(self, filename, parentWidget):
 		if self.__isAdHocProject:
