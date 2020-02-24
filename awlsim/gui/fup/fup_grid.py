@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Grid classes
 #
-# Copyright 2016-2018 Michael Buesch <m@bues.ch>
+# Copyright 2016-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -538,16 +538,25 @@ class FupGrid(FupBaseClass):
 		"""
 		return (x, y) in self.selectedCells
 
-	def setCellError(self, x, y):
-		"""Add one cell to the set of erroneous cells.
+	def setCellError(self, x, y, error=True):
+		"""Add (or remove) one cell to the set of erroneous cells.
 		"""
 		if x >= 0 and y >= 0:
-			self.erroneousCells.add((x, y))
+			if error:
+				self.erroneousCells.add((x, y))
+			else:
+				with contextlib.suppress(KeyError):
+					self.erroneousCells.remove((x, y))
 
 	def clearAllCellErrors(self):
 		"""Clear all error markers.
 		"""
 		self.erroneousCells.clear()
+
+	def cellHasError(self, x, y):
+		"""Check if a cell is marked as erroneous.
+		"""
+		return (x, y) in self.erroneousCells
 
 	def haveErroneousCells(self):
 		"""Check if any error marker exists.

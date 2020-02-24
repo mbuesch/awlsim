@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP draw widget
 #
-# Copyright 2016-2018 Michael Buesch <m@bues.ch>
+# Copyright 2016-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ from awlsim.common.compat import *
 
 from awlsim.common.xmlfactory import *
 
+from awlsim.gui.validatorsched import *
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 from awlsim.gui.fup.fup_grid import *
@@ -376,7 +377,9 @@ class FupDrawWidget(QWidget):
 		if not self.__repaintBlocked:
 			QWidget.repaint(self)
 
-	def __contentChanged(self):
+	def __contentChanged(self, clearErrors=True):
+		if clearErrors:
+			self.__grid.clearAllCellErrors()
 		self.__dynGridExpansion()
 		self.repaint()
 		self.__selectionChanged()
@@ -1289,14 +1292,17 @@ class FupDrawWidget(QWidget):
 		if not grid:
 			return
 		if e:
-			grid.clearAllCellErrors()
-			coordinates = e.getCoordinates()
-			if coordinates:
-				grid.setCellError(x=coordinates[0],
-						  y=coordinates[1])
-			self.__contentChanged()
+			coord = e.getCoordinates()
+			if coord:
+				x, y = coord[0], coord[1]
+				hadError = grid.cellHasError(x, y)
+				grid.setCellError(x, y, False)
+				otherError = grid.haveErroneousCells()
+				grid.clearAllCellErrors()
+				grid.setCellError(x, y)
+				if not hadError or otherError:
+					self.__contentChanged(clearErrors=False)
 		else:
 			# No error. Clear all marked cells.
 			if grid.haveErroneousCells():
-				grid.clearAllCellErrors()
-				self.__contentChanged()
+				self.__contentChanged(clearErrors=True)
