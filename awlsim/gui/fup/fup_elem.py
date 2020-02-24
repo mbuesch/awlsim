@@ -133,8 +133,8 @@ class FupElem(FupBaseClass):
 		self._bgSelBrush = QBrush(QColor("#F2F25A"))
 		self._textPen = QPen(QColor("#000000"))
 		self._textPen.setWidth(0)
-		self._disablePen = QPen(QColor("#FF0000"))
-		self._disablePen.setWidth(3)
+		self._disablePen = QPen(QColor("#BF0000"))
+		self._disablePen.setWidth(1)
 
 	def getFont(self, size=8, bold=False):
 		return self.grid.getFont(size=size, bold=bold)
