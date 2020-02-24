@@ -45,6 +45,15 @@ class GuiValidatorSched(QObject):
 	# Or an instance of AwlSimError.
 	haveValidationResult = Signal(object)
 
+	__singleton = None
+
+	@classmethod
+	def get(cls):
+		instance = cls.__singleton
+		if instance is None:
+			cls.__singleton = instance = cls()
+		return instance
+
 	def __init__(self):
 		QObject.__init__(self)
 
@@ -62,6 +71,8 @@ class GuiValidatorSched(QObject):
 	def startAsyncValidation(self, project, delaySec=0.0):
 		"""Start an asynchronous background document validation.
 		"""
+		printVerbose("Requesting asynchronous validation "
+			     "(delay = %.1f s)" % delaySec)
 		self.__project = project
 		self.__startTimer.start(int(round(delaySec * 1000.0)))
 
@@ -69,9 +80,18 @@ class GuiValidatorSched(QObject):
 		project, self.__project = self.__project, None
 		if project is None:
 			return
+
+		# Get the actual project.
+		if callable(project):
+			project = project()
+
+		if not project.getGuiSettings().getEditorValidationEn():
+			return # Validation disabled.
+
 		validator = AwlValidator.get()
 		if not validator:
 			return
+		printVerbose("Starting asynchronous validation.")
 		validator.validate(project=project)
 		self.__pollTimer.start()
 
@@ -82,6 +102,9 @@ class GuiValidatorSched(QObject):
 		if not validator:
 			return
 		running, exception = validator.getState()
+		if not running:
+			printVerbose("Finished asynchronous validation: %s" % (
+				     "Not Ok" if exception else "Ok"))
 		self.haveValidationResult.emit(exception)
 		if running:
 			self.__pollTimer.start()
@@ -99,6 +122,11 @@ class GuiValidatorSched(QObject):
 		self.__startTimer.stop()
 		exception = validator.validateSync(project=project,
 						   sleepFunc=sleepWithEventLoop)
-		if exception is not self.TIMEOUT:
+		if exception is self.TIMEOUT:
+			printVerbose("Synchronous validation timeout.")
+		else:
+			printVerbose("Finished synchronous validation: %s" % (
+				     "Not Ok" if exception else "Ok"))
 			self.haveValidationResult.emit(exception)
+
 		return exception
