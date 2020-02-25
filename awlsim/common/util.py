@@ -438,7 +438,7 @@ def shortUUID(uuidStr):
 	   uuidStr[13] == '-' and\
 	   uuidStr[18] == '-' and\
 	   uuidStr[23] == '-':
-		uuidStr = uuidStr[0:8] + ".." + uuidStr[-6:-1]
+		uuidStr = uuidStr[0:4] + "." + uuidStr[-3:-1]
 	return uuidStr
 
 def floatToHumanReadable(f, binary=False):
