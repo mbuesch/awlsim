@@ -89,6 +89,7 @@ class FupCompiler_ElemFactory(XmlFactory):
 							e.grid = self.grid
 							e.x += self.elem.x
 							e.y += self.elem.y
+							e.parentElem = self.elem
 						self.subelemsFakeGrid = None
 					self.grid.addElem(self.elem)
 				self.inElem = False
@@ -204,6 +205,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		self.connections = set()		# FupCompiler_Conn
 		self.virtual = bool(virtual)		# Flag: Virtual element
 		self.subElems = set()			# Set of sub-elements (if any)
+		self.parentElem = None			# The parent element (if any)
 
 		# This dict contains the values of the connections,
 		# if this element has already been compiled.
