@@ -373,3 +373,13 @@ class FupCompiler_ElemOperEmbedded(FupCompiler_ElemOper):
 		raise FupOperError("It's unknown how to compile "
 			"the embedded operand.",
 			self)
+
+	def __repr__(self):
+		if self.parentElem:
+			return repr(self.parentElem)
+		return FupCompiler_ElemOper.__repr__(self)
+
+	def __str__(self):
+		if self.parentElem:
+			return str(self.parentElem)
+		return FupCompiler_ElemOper.__str__(self)
