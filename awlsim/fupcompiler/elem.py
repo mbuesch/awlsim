@@ -87,6 +87,8 @@ class FupCompiler_ElemFactory(XmlFactory):
 						self.elem.subElems = self.subelemsFakeGrid.elems.copy()
 						for e in self.elem.subElems:
 							e.grid = self.grid
+							e.x += self.elem.x
+							e.y += self.elem.y
 						self.subelemsFakeGrid = None
 					self.grid.addElem(self.elem)
 				self.inElem = False
