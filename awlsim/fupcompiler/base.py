@@ -34,6 +34,7 @@ class FupCompilerError(AwlSimError):
 
 	def __init__(self, message, fupObj=None):
 		from awlsim.fupcompiler.elem import FupCompiler_Elem
+		from awlsim.fupcompiler.conn import FupCompiler_Conn
 
 		coordinates = (-1, -1)
 		sourceId = None
