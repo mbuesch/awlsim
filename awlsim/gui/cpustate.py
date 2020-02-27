@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI CPU state widgets
 #
-# Copyright 2012-2018 Michael Buesch <m@bues.ch>
+# Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,14 @@ from awlsim.gui.util import *
 
 from awlsim.core.timers import Timer_s5t_to_seconds
 
+
+class SpinBox_NoScroll(QSpinBox):
+	def wheelEvent(self, ev):
+		ev.ignore()
+
+class ComboBox_NoScroll(QComboBox):
+	def wheelEvent(self, ev):
+		ev.ignore()
 
 class StateWindow(QWidget):
 	# Window-close signal
@@ -510,27 +518,27 @@ class State_Mem(StateWindow):
 		x = 0
 
 		if addrSpace == AbstractDisplayWidget.ADDRSPACE_DB:
-			self.dbSpin = QSpinBox(self)
+			self.dbSpin = SpinBox_NoScroll(self)
 			self.dbSpin.setPrefix("DB ")
 			self.dbSpin.setMinimum(0)
 			self.dbSpin.setMaximum(0xFFFF)
 			self.layout().addWidget(self.dbSpin, 0, x)
 			x += 1
 
-		self.addrSpin = QSpinBox(self)
+		self.addrSpin = SpinBox_NoScroll(self)
 		self.addrSpin.setMinimum(0)
 		self.addrSpin.setMaximum(0xFFFF)
 		self.layout().addWidget(self.addrSpin, 0, x)
 		x += 1
 
-		self.widthCombo = QComboBox(self)
+		self.widthCombo = ComboBox_NoScroll(self)
 		self.widthCombo.addItem("Byte", 8)	# userData is XML ABI
 		self.widthCombo.addItem("Word", 16)	# userData is XML ABI
 		self.widthCombo.addItem("DWord", 32)	# userData is XML ABI
 		self.layout().addWidget(self.widthCombo, 0, x)
 		x += 1
 
-		self.fmtCombo = QComboBox(self)
+		self.fmtCombo = ComboBox_NoScroll(self)
 		self.fmtCombo.addItem("Checkboxes", "checkbox")	# userData is XML ABI
 		self.fmtCombo.addItem("Dual", "bin")		# userData is XML ABI
 		self.fmtCombo.addItem("Decimal", "dec")		# userData is XML ABI
@@ -731,24 +739,24 @@ class State_LCD(StateWindow):
 
 		self.displayedValue = 0
 
-		self.addrSpin = QSpinBox(self)
+		self.addrSpin = SpinBox_NoScroll(self)
 		self.addrSpin.setPrefix("Q ")
 		self.addrSpin.setMinimum(0)
 		self.addrSpin.setMaximum(0xFFFF)
 		self.layout().addWidget(self.addrSpin, 0, 0)
 
-		self.widthCombo = QComboBox(self)
+		self.widthCombo = ComboBox_NoScroll(self)
 		self.widthCombo.addItem("Byte", 8)	# userData is XML ABI
 		self.widthCombo.addItem("Word", 16)	# userData is XML ABI
 		self.widthCombo.addItem("DWord", 32)	# userData is XML ABI
 		self.layout().addWidget(self.widthCombo, 0, 1)
 
-		self.endianCombo = QComboBox(self)
+		self.endianCombo = ComboBox_NoScroll(self)
 		self.endianCombo.addItem("Big-endian", "be")	# userData is XML ABI
 		self.endianCombo.addItem("Little-endian", "le")	# userData is XML ABI
 		self.layout().addWidget(self.endianCombo, 1, 0)
 
-		self.fmtCombo = QComboBox(self)
+		self.fmtCombo = ComboBox_NoScroll(self)
 		self.fmtCombo.addItem("BCD", "bcd")			# userData is XML ABI
 		self.fmtCombo.addItem("Signed BCD", "signed-bcd")	# userData is XML ABI
 		self.fmtCombo.addItem("Binary", "bin")			# userData is XML ABI
@@ -933,12 +941,12 @@ class _State_TimerCounter(StateWindow):
 		StateWindow.__init__(self, client, parent)
 		self.memAreaType = memAreaType
 
-		self.indexSpin = QSpinBox(self)
+		self.indexSpin = SpinBox_NoScroll(self)
 		self.indexSpin.setMinimum(0)
 		self.indexSpin.setMaximum(0xFFFF)
 		self.layout().addWidget(self.indexSpin, 0, 0)
 
-		self.formatCombo = QComboBox(self)
+		self.formatCombo = ComboBox_NoScroll(self)
 		self.layout().addWidget(self.formatCombo, 0, 1)
 
 		hbox = QHBoxLayout()
