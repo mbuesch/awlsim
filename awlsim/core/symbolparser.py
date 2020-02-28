@@ -2,7 +2,7 @@
 #
 # AWL simulator - symbol table parser
 #
-# Copyright 2014-2018 Michael Buesch <m@bues.ch>
+# Copyright 2014-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,12 +27,14 @@ from awlsim.common.datatypehelpers import * #+cimport
 from awlsim.common.exceptions import *
 from awlsim.common.cpuconfig import *
 from awlsim.common.util import *
+from awlsim.common.immutable import *
 
 from awlsim.core.memory import * #+cimport
 
 from awlsim.awlcompiler.optrans import *
 
 import csv
+import functools
 
 
 __all__ = [
@@ -54,7 +56,7 @@ class AwlsimSymTabCSVDialect(csv.Dialect):
 	escapechar = None
 csv.register_dialect("awlsim_symtab", AwlsimSymTabCSVDialect)
 
-class Symbol(object):
+class Symbol(OptionalImmutable):
 	"""One symbol.
 	"""
 
@@ -253,12 +255,17 @@ class Symbol(object):
 	def __repr__(self):
 		return self.toReadableCSV()
 
-class SymbolTable(object):
+class SymbolTable(OptionalImmutable):
 	"""Parsed symbol table.
 	"""
 
 	def __init__(self):
 		self.clear()
+
+	def setImmutable(self):
+		for symbol in self.__symbolsList:
+			symbol.setImmutable()
+		OptionalImmutable.setImmutable(self)
 
 	def clear(self):
 		self.__symbolsList = []
@@ -380,6 +387,13 @@ class SymbolTable(object):
 		for symbol in other.__symbolsList:
 			self.add(symbol, overrideExisting)
 
+@functools.lru_cache(maxsize=128)
+def _SymTabParser_parseTextCached(*args, **kwargs):
+	symTab = SymTabParser.parseText(*args, **kwargs)
+	# Do not allow changes to cached object.
+	symTab.setImmutable()
+	return symTab
+
 class SymTabParser(object):
 	"""Abstract symbol table parser.
 	"""
@@ -390,12 +404,18 @@ class SymTabParser(object):
 	def parseSource(cls, source,
 			autodetectFormat=True,
 			mnemonics=S7CPUConfig.MNEMONICS_AUTO):
+		"""Parse a symbol table source and
+		return the corresponding SymbolTable instance.
+		"""
 		return cls.parseText(source.sourceText, autodetectFormat, mnemonics)
 
 	@classmethod
 	def parseText(cls, sourceText,
 		      autodetectFormat=True,
 		      mnemonics=S7CPUConfig.MNEMONICS_AUTO):
+		"""Parse a symbol table source text and
+		return the corresponding SymbolTable instance.
+		"""
 		try:
 			if not sourceText.strip():
 				return SymbolTable()
@@ -423,6 +443,20 @@ class SymTabParser(object):
 		except UnicodeError as e:
 			raise AwlSimError("Encoding error while trying to decode "
 				"symbol table.")
+
+	@classmethod
+	def parseTextCached(cls, sourceText,
+			    autodetectFormat=True,
+			    mnemonics=S7CPUConfig.MNEMONICS_AUTO):
+		"""Parse a symbol table source text and
+		return the corresponding immutable (read-only) SymbolTable instance.
+		Add the SymbolTable instance to a cache.
+		"""
+		# Cython throws an exception, if @classmethod is combined with @lru_cache.
+		# Use pure function with @lru_cache decorator:
+		return _SymTabParser_parseTextCached(sourceText,
+						     autodetectFormat,
+						     mnemonics)
 
 	@classmethod
 	def _probe(cls, sourceText):
