@@ -2,7 +2,7 @@
 #
 # AWL simulator - FUP - Operand element classes
 #
-# Copyright 2016-2018 Michael Buesch <m@bues.ch>
+# Copyright 2016-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
 from awlsim.gui.fup.fup_elem import *
+from awlsim.gui.opereditwidget import *
 
 
 class FupElem_OPERAND_factory(FupElem_factory):
@@ -219,22 +220,14 @@ class FupElem_OPERAND(FupElem):
 
 	# Overridden method. For documentation see base class.
 	def edit(self, parentWidget):
-		text, ok = QInputDialog.getText(parentWidget,
-			"Change operand",
-			"Change operand",
-			QLineEdit.Normal,
-			self.contentText)
-		if ok:
-			# Try to find the field in the interface and use the
-			# actual interface field name. But only do this, if
-			# the name does not start with a space. This way the user
-			# can disable this automatic matching.
-			if not text.startswith(" "):
-				field = self.grid.interfDef.findByName(text)
-				if field:
-					# Found it. Use the actual name.
-					text = "#" + field.name
-			self.contentText = text
+		if not self.grid:
+			return False
+		dlg = OperEditDialog(parent=parentWidget,
+				     interfDef=self.grid.interfDef,
+				     symTabSources=self.grid.symTabSources,
+				     text=self.contentText)
+		if dlg.exec_() == dlg.Accepted:
+			self.contentText = dlg.getText()
 			return True
 		return False
 

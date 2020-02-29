@@ -1015,36 +1015,44 @@ class FupDrawWidget(QWidget):
 		QWidget.wheelEvent(self, ev)
 
 	def keyPressEvent(self, event):
-		if event.matches(QKeySequence.Delete):
-			self.removeElems()
-			event.accept()
-			return
-		elif (event.matches(QKeySequence.Cancel) or
-		      event.matches(QKeySequence.Deselect)):
-			self.__grid.deselectAllElems()
-			self.__selectionChanged()
-			self.repaint()
-			event.accept()
-			return
-		elif event.matches(QKeySequence.SelectAll):
-			for elem in self.__grid.elems:
-				self.__grid.selectElem(elem)
-			self.__selectionChanged()
-			self.repaint()
-			event.accept()
-			return
-		elif event.matches(QKeySequence.Copy):
-			self.clipboardCopy()
-			event.accept()
-			return
-		elif event.matches(QKeySequence.Cut):
-			self.clipboardCut()
-			event.accept()
-			return
-		elif event.matches(QKeySequence.Paste):
-			self.clipboardPaste()
-			event.accept()
-			return
+		grid = self.__grid
+		if grid:
+			if event.matches(QKeySequence.Delete):
+				self.removeElems()
+				event.accept()
+				return
+			elif (event.matches(QKeySequence.Cancel) or
+			      event.matches(QKeySequence.Deselect)):
+				self.__grid.deselectAllElems()
+				self.__selectionChanged()
+				self.repaint()
+				event.accept()
+				return
+			elif event.matches(QKeySequence.SelectAll):
+				for elem in self.__grid.elems:
+					self.__grid.selectElem(elem)
+				self.__selectionChanged()
+				self.repaint()
+				event.accept()
+				return
+			elif event.matches(QKeySequence.Copy):
+				self.clipboardCopy()
+				event.accept()
+				return
+			elif event.matches(QKeySequence.Cut):
+				self.clipboardCut()
+				event.accept()
+				return
+			elif event.matches(QKeySequence.Paste):
+				self.clipboardPaste()
+				event.accept()
+				return
+
+			if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+				if len(grid.selectedElems) == 1:
+					self.editElems()
+					event.accept()
+					return
 
 		QWidget.keyPressEvent(self, event)
 

@@ -39,7 +39,6 @@
 * Add feature: Exchange elements
 * Add feature: Live view of signal states (online diagnosis)
 * Add feature: find/replace for FUP editor
-* Add feature: Auto completion for operands (Issue #23)
 
 ## FBD / FUP compiler
 
