@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AWL simulator - utility functions
+# AWL simulator - Python interpreter compatibility
 #
 # Copyright 2012-2020 Michael Buesch <m@bues.ch>
 #
@@ -291,6 +291,17 @@ if not hasattr(functools, "cmp_to_key"): #@nocov
 			def __le__(s, o): return f(s.x, o.x) <= 0
 		return Key
 	functools.cmp_to_key = cmp_to_key
+
+# functools.lru_cache substitute
+# Python2 does not have functools.lru_cache.
+if not hasattr(functools, "lru_cache"): #@nocov
+	def _no_lru_cache(*a, **k):
+		def decorator(f):
+			def wrapper(*aa, **kk):
+				return f(*aa, **kk)
+			return wrapper
+		return decorator
+	functools.lru_cache = _no_lru_cache
 
 # socket.AF_UNSPEC substitute
 # Micropython doesn't have socket.AF_UNSPEC.
