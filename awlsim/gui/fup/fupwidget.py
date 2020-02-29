@@ -154,7 +154,10 @@ class FupEditWidgetMenu(QMenu):
 			       lambda: self.genCall.emit())
 
 class FupEditWidget(QWidget):
-	def __init__(self, parent, interfWidget):
+	def __init__(self,
+		     parent,
+		     interfWidget,
+		     getSymTabSourcesFunc):
 		QWidget.__init__(self, parent)
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
@@ -176,7 +179,9 @@ class FupEditWidget(QWidget):
 
 		self.__splitter.addWidget(self.__leftWidget)
 
-		self.draw = FupDrawWidget(self, interfWidget)
+		self.draw = FupDrawWidget(parent=self,
+					  interfWidget=interfWidget,
+					  getSymTabSourcesFunc=getSymTabSourcesFunc)
 
 		self.__drawScroll = QScrollArea(self)
 		self.__drawScroll.setWidget(self.draw)
@@ -221,7 +226,9 @@ class FupWidget(QWidget):
 		self.interf = AwlInterfWidget(self)
 		self.splitter.addWidget(self.interf)
 
-		self.edit = FupEditWidget(self, self.interf)
+		self.edit = FupEditWidget(parent=self,
+					  interfWidget=self.interf,
+					  getSymTabSourcesFunc=getSymTabSourcesFunc)
 		self.splitter.addWidget(self.edit)
 
 		self.layout().addWidget(self.splitter, 0, 0)

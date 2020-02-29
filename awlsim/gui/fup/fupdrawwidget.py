@@ -220,13 +220,15 @@ class FupDrawWidget(QWidget):
 	#	Parameter 2: The grid with the selections.
 	selectionChanged = Signal(bool, bool, FupGrid)
 
-	def __init__(self, parent, interfWidget):
+	def __init__(self, parent, interfWidget, getSymTabSourcesFunc):
 		"""parent => Parent QWidget().
-		interfWidget => AwlInterfWidget() instance
+		interfWidget => AwlInterfWidget() instance.
+		getSymTabSourcesFunc => Function to get SymTabSource list.
 		"""
 		QWidget.__init__(self, parent)
 
 		self.__interfWidget = interfWidget
+		self.__getSymTabSourcesFunc = getSymTabSourcesFunc
 		self.__repaintBlocked = Blocker()
 
 		self.__contextMenu = FupContextMenu(self)
@@ -309,6 +311,14 @@ class FupDrawWidget(QWidget):
 		"""Get the block interface definition (AwlInterfDef() instance).
 		"""
 		return self.__interfWidget.interfDef
+
+	@property
+	def symTabSources(self):
+		"""Get a list of SymTabSource()s.
+		"""
+		if self.__getSymTabSourcesFunc:
+			return self.__getSymTabSourcesFunc()
+		return []
 
 	def getFont(self, size=8, bold=False, scale=True):
 		"""Get a font.

@@ -245,6 +245,14 @@ class FupGrid(FupBaseClass):
 			return self.__drawWidget.interfDef
 		return None
 
+	@property
+	def symTabSources(self):
+		"""Get a list of SymTabSource()s.
+		"""
+		if self.__drawWidget:
+			return self.__drawWidget.symTabSources
+		return []
+
 	def getUnusedWireIdNum(self):
 		"""Get an unused wire idNum.
 		"""
