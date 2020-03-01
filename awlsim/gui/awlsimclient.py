@@ -21,6 +21,7 @@
 
 from awlsim.gui.util import *
 from awlsim.gui.blocktreewidget import *
+from awlsim.gui.runstate import *
 
 from awlsim.coreclient.client import *
 from awlsim.coreclient.sshtunnel import *
@@ -193,11 +194,13 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	MODE_FORK	= EnumGen.item # Online to a newly forked core
 	EnumGen.end
 
-	def __init__(self):
+	def __init__(self, mainWidget):
+		self.__mainWidget = mainWidget
 		QObject.__init__(self)
 		AwlSimClient.__init__(self)
 
-		self.onlineData = OnlineData(self)
+		self.__runState = RunState()
+		self.__onlineData = OnlineData(self)
 
 		self.__setMode(self.MODE_OFFLINE)
 
@@ -233,7 +236,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 
 	# Override ident hashes handler
 	def handle_IDENTS(self, msg):
-		self.onlineData.handle_IDENTS(msg)
+		self.__onlineData.handle_IDENTS(msg)
 		self.haveIdentsMsg.emit(msg)
 
 	# Override block info handler
@@ -248,7 +251,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.__host = host
 		self.__port = port
 		self.__tunnel = tunnel
-		self.onlineData.reset()
+		self.__onlineData.reset()
 
 	def shutdown(self):
 		# Shutdown the client.
@@ -371,7 +374,7 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 			# Connect block tree message handlers
 			self.haveIdentsMsg.connect(self.__blockTreeModel.handle_IDENTS)
 			self.haveBlockInfoMsg.connect(self.__blockTreeModel.handle_BLOCKINFO)
-			self.onlineData.symTabsUpdate.connect(self.__blockTreeModel.handle_symTabInfo)
+			self.__onlineData.symTabsUpdate.connect(self.__blockTreeModel.handle_symTabInfo)
 
 		return ObjRef.make(name="BlockTreeModel",
 				   manager=self.__blockTreeModelManager,
@@ -389,3 +392,9 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		# The last block tree model reference died. Destroy it.
 		self.__blockTreeModelManager = None
 		self.__blockTreeModel = None
+
+	@property
+	def runState(self):
+		"""Get the central RunState().
+		"""
+		return self.__runState

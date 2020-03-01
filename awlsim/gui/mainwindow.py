@@ -164,7 +164,7 @@ class MainWidget(QWidget):
 		self.setLayout(QGridLayout(self))
 		self.mainWindow = mainWindow
 
-		self.simClient = GuiAwlSimClient()
+		self.simClient = GuiAwlSimClient(self)
 
 		self.editMdiArea = EditMdiArea(self)
 		self.layout().addWidget(self.editMdiArea, 0, 0)
@@ -797,6 +797,8 @@ class MainWindow(QMainWindow):
 		self.__cutAvailableChanged(False)
 		self.__pasteAvailableChanged(False)
 
+		client = self.getSimClient()
+
 		self.mainWidget.projectLoaded.connect(self.__handleProjectLoaded)
 		self.mainWidget.dirtyChanged.connect(self.__dirtyChanged)
 		self.mainWidget.textFocusChanged.connect(self.__textFocusChanged)
@@ -811,17 +813,17 @@ class MainWindow(QMainWindow):
 		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
 		self.editMdiArea.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
 		GuiValidatorSched.get().haveValidationResult.connect(self.projectTreeModel.handleAwlSimError)
-		self.getSimClient().haveException.connect(self.projectTreeModel.handleAwlSimError)
 		self.cpuWidget.onlineDiagChanged.connect(self.editMdiArea.enableOnlineDiag)
 		self.cpuWidget.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
 		self.cpuWidget.haveIdentsMsg.connect(self.editMdiArea.handleIdentsMsg)
 		self.cpuWidget.haveIdentsMsg.connect(self.projectTreeModel.handleIdentsMsg)
-		self.cpuWidget.runStateChanged.connect(self.editMdiArea.setCpuRunState)
-		self.cpuWidget.runStateChanged.connect(self.projectTreeModel.setCpuRunState)
-		self.cpuWidget.runStateChanged.connect(self.mainWidget.handleCpuRunStateChange)
 		self.cpuWidget.haveCpuStats.connect(self.mainWidget.handleCpuStats)
 		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
+		client.haveException.connect(self.projectTreeModel.handleAwlSimError)
+		client.runState.stateChanged.connect(self.editMdiArea.setCpuRunState)
+		client.runState.stateChanged.connect(self.projectTreeModel.setCpuRunState)
+		client.runState.stateChanged.connect(self.mainWidget.handleCpuRunStateChange)
 
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)

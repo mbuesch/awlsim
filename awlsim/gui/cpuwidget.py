@@ -33,8 +33,6 @@ from awlsim.gui.validatorsched import *
 
 
 class CpuWidget(QWidget):
-	# Signal: The CPU run-state changed
-	runStateChanged = Signal(RunState)
 	# Signal: The online-diag state changed
 	onlineDiagChanged = Signal(bool)
 	# Signal: Some configuration value changed
@@ -60,7 +58,6 @@ class CpuWidget(QWidget):
 		self.layout().setContentsMargins(QMargins(7, 0, 0, 0))
 
 		self.mainWidget = mainWidget
-		self.state = RunState()
 		self.__runStateChangeBlocked = Blocker()
 
 		self.__onlineBtnPressed = False
@@ -99,8 +96,6 @@ class CpuWidget(QWidget):
 			lambda: self.mainWidget.setDirty(self.mainWidget.DIRTY_SLIGHT))
 		self.stateMdi.openByIdentHash.connect(
 			lambda mdiWin, identHash: self.mainWidget.openByIdentHash(identHash))
-
-		self.state.stateChanged.connect(self.runStateChanged)
 
 	def getProject(self):
 		return self.mainWidget.getProject()
@@ -171,7 +166,7 @@ class CpuWidget(QWidget):
 			client.setPeriodicDumpInterval(300 if wantDump else 0)
 		except AwlSimError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_EXCEPTION)
+				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Error in awlsim core", e)
 			return False
@@ -186,7 +181,8 @@ class CpuWidget(QWidget):
 		# This will stop the CPU, if it wasn't already stopped.
 		# Subsequent exception handlers might do additional steps.
 		with MessageBox.awlSimErrorBlocked:
-			self.state.setState(RunState.STATE_EXCEPTION)
+			client = self.getSimClient()
+			client.runState.setState(RunState.STATE_EXCEPTION)
 			self.stop()
 
 	def __handleCpuDump(self, dumpText):
@@ -256,10 +252,10 @@ class CpuWidget(QWidget):
 			self.__startCoreMessageHandler()
 
 			# Put the GUI into RUN mode.
-			self.state.setState(RunState.STATE_RUN)
+			client.runState.setState(RunState.STATE_RUN)
 		except AwlSimError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_EXCEPTION)
+				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Could not start CPU", e)
 			with MessageBox.awlSimErrorBlocked:
@@ -276,7 +272,7 @@ class CpuWidget(QWidget):
 				pass
 		except AwlSimError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_EXCEPTION)
+				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Core server error", e)
 			with MessageBox.awlSimErrorBlocked:
@@ -333,7 +329,7 @@ class CpuWidget(QWidget):
 			client.getCpuStats()
 		except AwlSimError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_EXCEPTION)
+				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
 				"Core server error", e)
 			with MessageBox.awlSimErrorBlocked:
@@ -351,12 +347,13 @@ class CpuWidget(QWidget):
 		self.haveIdentsMsg.emit(identsMsg)
 
 	def __stop(self):
+		client = self.getSimClient()
+
 		# Make sure the button is released.
 		with self.__runStateChangeBlocked:
 			self.stop()
 
 		if self.isOnline():
-			client = self.getSimClient()
 			try:
 				client.setRunState(False)
 			except AwlSimError as e:
@@ -366,7 +363,7 @@ class CpuWidget(QWidget):
 		# Re-Start the message handler.
 		self.__startCoreMessageHandler()
 
-		self.state.setState(RunState.STATE_ONLINE)
+		client.runState.setState(RunState.STATE_ONLINE)
 
 	def stop(self):
 		self.reqRunButtonState.emit(False)
@@ -398,12 +395,12 @@ class CpuWidget(QWidget):
 			else:
 				client.setMode_ONLINE(self, linkConfig)
 
-			self.state.setCoreDetails(
+			client.runState.setCoreDetails(
 				spawned = linkConfig.getSpawnLocalEn(),
 				host = linkConfig.getConnectHost(),
 				port = linkConfig.getConnectPort(),
 				haveTunnel = (linkConfig.getTunnel() == linkConfig.TUNNEL_SSH))
-			self.state.setState(RunState.STATE_ONLINE)
+			client.runState.setState(RunState.STATE_ONLINE)
 
 			if client.getRunState():
 				# The core is already running.
@@ -436,7 +433,7 @@ class CpuWidget(QWidget):
 		# Release the stop-button.
 		# This will _not_ stop the CPU, as we're offline already.
 		self.stop()
-		self.state.setState(RunState.STATE_OFFLINE)
+		client.runState.setState(RunState.STATE_OFFLINE)
 		self.__stopCoreMessageHandler()
 
 	def _onlineToggled(self, onlineBtnPressed):
@@ -489,13 +486,13 @@ class CpuWidget(QWidget):
 		client = self.getSimClient()
 		project = self.getProject()
 		try:
-			self.state.setState(RunState.STATE_LOAD)
+			client.runState.setState(RunState.STATE_LOAD)
 
 			if not self.__validatePreDownload(project):
 				if self.__runBtnPressed:
-					self.state.setState(RunState.STATE_RUN)
+					client.runState.setState(RunState.STATE_RUN)
 				else:
-					self.state.setState(RunState.STATE_ONLINE)
+					client.runState.setState(RunState.STATE_ONLINE)
 				return False
 
 			client.setRunState(False)
@@ -504,16 +501,16 @@ class CpuWidget(QWidget):
 			client.loadProject(project)
 			client.build()
 
-			self.state.setState(RunState.STATE_ONLINE)
+			client.runState.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_ONLINE)
+				client.runState.setState(RunState.STATE_ONLINE)
 				self.stop()
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_ONLINE)
+				client.runState.setState(RunState.STATE_ONLINE)
 				self.stop()
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code", e)
@@ -562,13 +559,13 @@ class CpuWidget(QWidget):
 		client = self.getSimClient()
 		project = self.getProject()
 		try:
-			self.state.setState(RunState.STATE_LOAD)
+			client.runState.setState(RunState.STATE_LOAD)
 
 			if not self.__validatePreDownload(project):
 				if self.__runBtnPressed:
-					self.state.setState(RunState.STATE_RUN)
+					client.runState.setState(RunState.STATE_RUN)
 				else:
-					self.state.setState(RunState.STATE_ONLINE)
+					client.runState.setState(RunState.STATE_ONLINE)
 				return False
 
 			if mdiSubWin.TYPE == mdiSubWin.TYPE_AWL:
@@ -598,18 +595,18 @@ class CpuWidget(QWidget):
 				assert(0)
 
 			if self.__runBtnPressed:
-				self.state.setState(RunState.STATE_RUN)
+				client.runState.setState(RunState.STATE_RUN)
 			else:
-				self.state.setState(RunState.STATE_ONLINE)
+				client.runState.setState(RunState.STATE_ONLINE)
 		except AwlParserError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_ONLINE)
+				client.runState.setState(RunState.STATE_ONLINE)
 				self.stop()
 			MessageBox.handleAwlParserError(self, e)
 			return False
 		except AwlSimError as e:
 			with MessageBox.awlSimErrorBlocked:
-				self.state.setState(RunState.STATE_ONLINE)
+				client.runState.setState(RunState.STATE_ONLINE)
 				self.stop()
 			MessageBox.handleAwlSimError(self,
 				"Error while loading code (single source)", e)
