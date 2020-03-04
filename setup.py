@@ -41,6 +41,7 @@ for base in (os.getcwd(), basedir):
 	sys.path.insert(0, os.path.join(base, "misc"))
 	sys.path.insert(0, base)
 
+import polib
 import re
 import warnings
 from distutils.core import setup
@@ -168,6 +169,26 @@ warnings.filterwarnings("ignore", r".*'long_description_content_type'.*")
 with open(os.path.join(basedir, "README.md"), "rb") as fd:
 	readmeText = fd.read().decode("UTF-8")
 
+def create_mo_files():
+    data_files = []
+    localedir = 'awlsim/locales'
+    po_dirs = [localedir + '/' + l + '/LC_MESSAGES/'
+               for l in next(os.walk(localedir))[1]]
+    for d in po_dirs:
+        mo_files = []
+        po_files = [f
+                    for f in next(os.walk(d))[2]
+                    if os.path.splitext(f)[1] == '.po']
+        for po_file in po_files:
+            filename, extension = os.path.splitext(po_file)
+            mo_file = filename + '.mo'
+            pf = polib.pofile(os.path.join(d, po_file))
+            pf.save_as_mofile(os.path.join(d, mo_file))
+
+            mo_files.append(d + mo_file)
+        data_files.append((d, mo_files))
+    return data_files
+
 setup(	name		= "awlsim",
 	version		= VERSION_STRING,
 	description	= "S7 compatible Programmable Logic Controller PLC/SPS (AWL, STL, FUP, FBD)",
@@ -231,5 +252,6 @@ setup(	name		= "awlsim",
 	],
 	long_description=readmeText,
 	long_description_content_type="text/markdown",
+	data_files=create_mo_files(),
 	**extraKeywords
 )

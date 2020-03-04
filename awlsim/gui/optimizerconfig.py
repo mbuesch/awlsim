@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.configdialog import *
 
 from awlsim.awloptimizer.awloptimizer import *
@@ -41,45 +43,45 @@ class OptimizerConfigWidget(QWidget):
 
 		self.settingsContainer = settingsContainer
 
-		label = QLabel("Available optimizers:")
+		label = QLabel(_("Available optimizers:"))
 		self.layout().addWidget(label, 0, 0)
 		self.availOptList = QListWidget(self)
 		self.layout().addWidget(self.availOptList, 1, 0, 2, 1)
 		self.otherOpt = QLineEdit(self)
-		self.otherOpt.setToolTip("Enter a custom optimizer here.\n"
+		self.otherOpt.setToolTip(_("Enter a custom optimizer here.\n"
 					 "A wrong name will cause a build error "
-					 "on the target CPU.")
+					 "on the target CPU."))
 		self.layout().addWidget(self.otherOpt, 3, 0)
 
 		vbox = QVBoxLayout()
 		self.addButton = QPushButton(self)
 		self.addButton.setIcon(getIcon("next"))
-		self.addButton.setToolTip("Enable the selected optimizer.")
+		self.addButton.setToolTip(_("Enable the selected optimizer."))
 		vbox.addWidget(self.addButton)
 		self.delButton = QPushButton(self)
 		self.delButton.setIcon(getIcon("previous"))
-		self.delButton.setToolTip("Disable the selected optimizer.")
+		self.delButton.setToolTip(_("Disable the selected optimizer."))
 		vbox.addWidget(self.delButton)
 		self.layout().addLayout(vbox, 0, 1, 4, 1)
 
-		label = QLabel("Enabled optimizers:")
+		label = QLabel(_("Enabled optimizers:"))
 		self.layout().addWidget(label, 0, 2)
 		self.enOptList = QListWidget(self)
 		self.layout().addWidget(self.enOptList, 1, 2)
-		self.allEnCheckBox = QCheckBox("Enable &all available optimizers (recommended)", self)
+		self.allEnCheckBox = QCheckBox(_("Enable &all available optimizers (recommended)"), self)
 		self.allEnCheckBox.setToolTip(
-			"If this box is ticked all available optimizers\n"
+			_("If this box is ticked all available optimizers\n"
 			"will be enabled.\n"
-			"This is recommended.")
+			"This is recommended."))
 		self.allEnCheckBox.setCheckState(Qt.Checked
 						 if settingsContainer.allEnable
 						 else Qt.Unchecked)
 		self.layout().addWidget(self.allEnCheckBox, 2, 2)
-		self.globalEnCheckBox = QCheckBox("&Run enabled optimizers (recommended)", self)
+		self.globalEnCheckBox = QCheckBox(_("&Run enabled optimizers (recommended)"), self)
 		self.globalEnCheckBox.setToolTip(
-			"If this box is not ticked, none of the \n"
+			_("If this box is not ticked, none of the \n"
 			"enabled optimizers will actually be \n"
-			"executed.")
+			"executed."))
 		self.globalEnCheckBox.setCheckState(Qt.Checked
 						    if settingsContainer.globalEnable
 						    else Qt.Unchecked)
@@ -130,9 +132,9 @@ class OptimizerConfigWidget(QWidget):
 			)
 		else:
 			icon = getIcon("exit")
-			tip = "WARNING: This optimizer is not known to Awlsim.\n"\
+			tip = _("WARNING: This optimizer is not known to Awlsim.\n"\
 			      "It might cause a build error on the "\
-			      "target CPU!"
+			      "target CPU!")
 		item = QListWidgetItem(icon, name)
 		item.setToolTip(tip)
 		item.setData(Qt.UserRole, userData)
@@ -189,7 +191,7 @@ class OptimizerConfigDialog(AbstractConfigDialog):
 		AbstractConfigDialog.__init__(self,
 			project=None,
 			iconName="prefs",
-			title="AWL optimizer setup",
+			title=_("AWL optimizer setup"),
 			centralWidget=OptimizerConfigWidget(settingsContainer),
 			parent=parent)
 		self.resize(400, 400)

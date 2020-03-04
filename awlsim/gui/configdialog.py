@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
 
@@ -59,10 +61,10 @@ class AbstractConfigDialog(QDialog):
 
 		self.layout().addWidget(centralWidget, 1, 0, 1, 4)
 
-		self.acceptButton = QPushButton("&Accept", self)
+		self.acceptButton = QPushButton(_("&Accept"), self)
 		self.layout().addWidget(self.acceptButton, 2, 0, 1, 3)
 
-		self.cancelButton = QPushButton("&Cancel", self)
+		self.cancelButton = QPushButton(_("&Cancel"), self)
 		self.layout().addWidget(self.cancelButton, 2, 3, 1, 1)
 
 		self.loadFromProject()

@@ -19,6 +19,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+from __future__ import division, absolute_import, print_function, unicode_literals
+#from awlsim.common.cython_support cimport * #@cy
+from awlsim.common.compat import *
+
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.blocktreewidget import *
 from awlsim.gui.runstate import *
@@ -47,7 +53,7 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 		SSHTunnel.__init__(self, *args, **kwargs)
 
 		self.setLayout(QGridLayout())
-		self.setWindowTitle("Establishing SSH tunnel...")
+		self.setWindowTitle(_("Establishing SSH tunnel..."))
 
 		self.log = QPlainTextEdit(self)
 		self.log.setFont(getDefaultFixedFont())
@@ -73,8 +79,8 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 			result = SSHTunnel.connect(self, timeout=None)
 		except AwlSimError as e:
 			QMessageBox.critical(self,
-				"Failed to establish SSH tunnel",
-				"Failed to establish SSH tunnel:\n\n%s" % str(e))
+				_("Failed to establish SSH tunnel"),
+				_("Failed to establish SSH tunnel:\n\n{}",str(e)))
 			e.setSeenByUser()
 			raise e
 		finally:
@@ -93,8 +99,8 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 		"""Get a password from the user.
 		"""
 		pw, ok = QInputDialog.getText(self,
-			"Please enter SSH password",
-			"Please enter SSH password for '%s@%s':" %(
+			_("Please enter SSH password"),
+			_("Please enter SSH password for '{}@{}':",
 				self.sshUser, self.remoteHost),
 			QLineEdit.Password)
 		if not ok:
@@ -109,7 +115,7 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 		This function returns a boolean.
 		"""
 		res = QMessageBox.question(self,
-			"Confirm host authenticity?",
+			_("Confirm host authenticity?"),
 			prompt,
 			QMessageBox.Yes | QMessageBox.No,
 			QMessageBox.No)

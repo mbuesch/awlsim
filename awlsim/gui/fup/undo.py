@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.common.blocker import *
 
@@ -43,7 +45,7 @@ class FupFullSourceUndoCommand(QUndoCommand):
 		self.blocked = Blocker()
 
 		text = datetime.datetime.now().strftime(
-			"[%Y-%m-%d %H:%M:%S.%f] FUP diagram change")
+			"[%Y-%m-%d %H:%M:%S.%f] ")+_("FUP diagram change")
 		self.setText(text)
 
 	def id(self):
@@ -69,7 +71,7 @@ class FupFullSourceUndoCommand(QUndoCommand):
 				self.__stack.setActiveSource(source)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(fupWidget,
-				"Failed to %s a FUP/FBD change" % actionName, e)
+				_("Failed to {} a FUP/FBD change" , actionName), e)
 
 	def undo(self):
 		"""Undo this change.

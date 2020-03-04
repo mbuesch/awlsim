@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 
 
@@ -35,15 +37,15 @@ class FindReplaceDialog(QDialog):
 
 		self.__textEdit = None
 
-		label = QLabel("Find:", self)
+		label = QLabel(_("Find:"), self)
 		self.layout().addWidget(label, 0, 0)
 		self.findText = QLineEdit(self)
 		self.layout().addWidget(self.findText, 0, 1)
 
-		self.regEx = QCheckBox("Regular &expression", self)
+		self.regEx = QCheckBox(_("Regular &expression"), self)
 		self.layout().addWidget(self.regEx, 1, 1)
 
-		self.replaceTextLabel = QLabel("Replace with:", self)
+		self.replaceTextLabel = QLabel(_("Replace with:"), self)
 		self.layout().addWidget(self.replaceTextLabel, 2, 0)
 		self.replaceText = QLineEdit(self)
 		self.layout().addWidget(self.replaceText, 2, 1)
@@ -52,12 +54,12 @@ class FindReplaceDialog(QDialog):
 
 		group = QGroupBox(self)
 		group.setLayout(QVBoxLayout())
-		self.fromCursor = QCheckBox("From &cursor", self)
+		self.fromCursor = QCheckBox(_("From &cursor"), self)
 		self.fromCursor.setCheckState(Qt.Checked)
 		group.layout().addWidget(self.fromCursor)
-		self.dirUp = QRadioButton("&Up", self)
+		self.dirUp = QRadioButton(_("&Up"), self)
 		group.layout().addWidget(self.dirUp)
-		self.dirDown = QRadioButton("&Down", self)
+		self.dirDown = QRadioButton(_("&Down"), self)
 		self.dirDown.setChecked(True)
 		group.layout().addWidget(self.dirDown)
 		group.layout().addStretch()
@@ -65,9 +67,9 @@ class FindReplaceDialog(QDialog):
 
 		group = QGroupBox(self)
 		group.setLayout(QVBoxLayout())
-		self.caseSensitive = QCheckBox("Case &sensitive", self)
+		self.caseSensitive = QCheckBox(_("Case &sensitive"), self)
 		group.layout().addWidget(self.caseSensitive)
-		self.wholeWords = QCheckBox("&Whole words only", self)
+		self.wholeWords = QCheckBox(_("&Whole words only"), self)
 		group.layout().addWidget(self.wholeWords)
 		group.layout().addStretch()
 		optsLayout.addWidget(group)
@@ -82,13 +84,13 @@ class FindReplaceDialog(QDialog):
 		self.findButton = QPushButton(self)
 		buttonsLayout.addWidget(self.findButton)
 
-		self.replaceButton = QPushButton("&Replace", self)
+		self.replaceButton = QPushButton(_("&Replace"), self)
 		buttonsLayout.addWidget(self.replaceButton)
 
-		self.replaceAllButton = QPushButton("Replace &all", self)
+		self.replaceAllButton = QPushButton(_("Replace &all"), self)
 		buttonsLayout.addWidget(self.replaceAllButton)
 
-		self.closeButton = QPushButton("C&lose", self)
+		self.closeButton = QPushButton(_("C&lose"), self)
 		buttonsLayout.addWidget(self.closeButton)
 
 		buttonsLayout.addStretch()
@@ -113,13 +115,13 @@ class FindReplaceDialog(QDialog):
 
 	def setReplaceMode(self, replaceMode=True):
 		if replaceMode:
-			self.setWindowTitle("Find and replace text")
+			self.setWindowTitle(_("Find and replace text"))
 			self.replaceTextLabel.show()
 			self.replaceText.show()
 			self.replaceButton.show()
 			self.replaceAllButton.show()
 		else:
-			self.setWindowTitle("Find text")
+			self.setWindowTitle(_("Find text"))
 			self.replaceTextLabel.hide()
 			self.replaceText.hide()
 			self.replaceButton.hide()
@@ -176,8 +178,8 @@ class FindReplaceDialog(QDialog):
 				textCursor = self.__textEdit.textCursor()
 				textCursor.setPosition(0)
 				self.__textEdit.setTextCursor(textCursor)
-			self.statusLabel.setText("Reached end of document. "
-						 "Text not found.")
+			self.statusLabel.setText(_("Reached end of document. "
+						 "Text not found."))
 
 	def __handleReplace(self):
 		self.statusLabel.clear()
@@ -207,14 +209,14 @@ class FindReplaceDialog(QDialog):
 			if not self.__textEdit.textCursor().hasSelection():
 				break
 		if count == 1:
-			self.statusLabel.setText("1 occurrence replaced.")
+			self.statusLabel.setText(_("1 occurrence replaced."))
 		elif count > 1:
-			self.statusLabel.setText("%d occurrences replaced." % count)
+			self.statusLabel.setText(_("{} occurrences replaced." , count))
 		else:
-			self.statusLabel.setText("Reached end of document. "
-						 "Text not found.")
+			self.statusLabel.setText(_("Reached end of document. "
+						 "Text not found."))
 
 	def __handleFromCursorChange(self, state):
 		self.dirUp.setEnabled(state == Qt.Checked)
 		self.dirDown.setEnabled(state == Qt.Checked)
-		self.findButton.setText("&Find next" if state == Qt.Checked else "&Find")
+		self.findButton.setText(_("&Find next") if state == Qt.Checked else _("&Find"))

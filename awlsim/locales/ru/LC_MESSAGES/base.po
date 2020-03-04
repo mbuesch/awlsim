@@ -1,0 +1,3310 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: awlsim 0.73\n"
+"POT-Creation-Date: 2020-03-23 15:57+0200\n"
+"PO-Revision-Date: 2020-03-23 16:58+0200\n"
+"Last-Translator: \n"
+"Language-Team: uncle-yura <uncle-yura@tuta.io>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.11\n"
+"X-Poedit-Basepath: ../../..\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: gui/awlsimclient.py:56
+msgid "Establishing SSH tunnel..."
+msgstr "Создание туннеля SSH..."
+
+#: gui/awlsimclient.py:82
+msgid "Failed to establish SSH tunnel"
+msgstr "Не удалось создать SSH туннель"
+
+#: gui/awlsimclient.py:83
+msgid ""
+"Failed to establish SSH tunnel:\n"
+"\n"
+"{}"
+msgstr ""
+"Не удалось создать SSH туннель:\n"
+"\n"
+"{}"
+
+#: gui/awlsimclient.py:102
+msgid "Please enter SSH password"
+msgstr "Введите пароль SSH"
+
+#: gui/awlsimclient.py:103
+msgid "Please enter SSH password for '{}@{}':"
+msgstr "Введите пароль SSH для '{}@{}':"
+
+#: gui/awlsimclient.py:118
+msgid "Confirm host authenticity?"
+msgstr "Подтвердить подлинность хоста?"
+
+#: gui/blocktreewidget.py:409
+msgid "Sources"
+msgstr "Исходники"
+
+#: gui/blocktreewidget.py:410
+msgid "AWL/STL"
+msgstr "AWL/STL"
+
+#: gui/blocktreewidget.py:411
+msgid "FUP/FBD"
+msgstr "FUP/FBD"
+
+#: gui/blocktreewidget.py:412 gui/projecttreewidget.py:1017
+msgid "Symbols"
+msgstr "Символы"
+
+#: gui/blocktreewidget.py:413
+msgid "Libraries"
+msgstr "Библиотеки"
+
+#: gui/blocktreewidget.py:414
+msgid "Blocks"
+msgstr "Блоки"
+
+#: gui/blocktreewidget.py:415
+msgid "OBs"
+msgstr "OB-и"
+
+#: gui/blocktreewidget.py:416
+msgid "FCs"
+msgstr "FC-и"
+
+#: gui/blocktreewidget.py:417
+msgid "FBs"
+msgstr "FB-и"
+
+#: gui/blocktreewidget.py:418
+msgid "DBs"
+msgstr "DB-и"
+
+#: gui/blocktreewidget.py:419
+msgid "UDTs"
+msgstr "UDT-и"
+
+#: gui/blocktreewidget.py:420 gui/projecttreewidget.py:1021
+msgid "Hardware"
+msgstr "Оборудование"
+
+#: gui/blocktreewidget.py:434
+msgid "Main cycle: \"CYCL_EXC\""
+msgstr "Основной цикл: \"CYCL_EXC\""
+
+#: gui/blocktreewidget.py:435
+msgid "Warm start: \"COMPLETE RESTART\""
+msgstr "Теплый старт: \"COMPLETE RESTART\""
+
+#: gui/blocktreewidget.py:436
+msgid "Restart: \"RESTART\""
+msgstr "Перезапуск: \"RESTART\""
+
+#: gui/blocktreewidget.py:437
+msgid "Cold restart: \"COLD RESTART\""
+msgstr "Холодный перезапуск: \"COLD RESTART\""
+
+#: gui/blocktreewidget.py:463
+msgid "Source files"
+msgstr "Исходные файлы"
+
+#: gui/blocktreewidget.py:464
+msgid "AWL/STL sources"
+msgstr "AWL/STL исходники"
+
+#: gui/blocktreewidget.py:465
+msgid "FUP/FBD sources"
+msgstr "FUP/FBD исходники"
+
+#: gui/blocktreewidget.py:466
+msgid "Symbol table sources"
+msgstr "Исходники таблиц символов"
+
+#: gui/blocktreewidget.py:467 gui/editmdiarea.py:942
+#: gui/projecttreewidget.py:1018
+msgid "Library selections"
+msgstr "Выбор библиотеки"
+
+#: gui/blocktreewidget.py:468
+msgid "Compiled blocks"
+msgstr "Скомпилированные блоки"
+
+#: gui/blocktreewidget.py:469
+msgid "Organization Blocks"
+msgstr "Организационные блоки"
+
+#: gui/blocktreewidget.py:470
+msgid "Functions"
+msgstr "Функции"
+
+#: gui/blocktreewidget.py:471
+msgid "Function Blocks"
+msgstr "Функционные блоки"
+
+#: gui/blocktreewidget.py:472
+msgid "Data Blocks"
+msgstr "Блоки данных"
+
+#: gui/blocktreewidget.py:473
+msgid "User defined Data Types"
+msgstr "Пользовательские типы данных"
+
+#: gui/blocktreewidget.py:474
+msgid "Hardware modules"
+msgstr "Модули оборудования"
+
+#: gui/blocktreewidget.py:595
+msgid "Block name"
+msgstr "Имя блока"
+
+#: gui/blocktreewidget.py:596
+msgid "Symbol / description"
+msgstr "Символ / описание"
+
+#: gui/blocktreewidget.py:597
+msgid "Unique identification hash"
+msgstr "Уникальный хэш идентификации"
+
+#: gui/blocktreewidget.py:622
+msgid "&Remove block from CPU..."
+msgstr "&Удалить блок из ЦП..."
+
+#: gui/blocktreewidget.py:626
+msgid "&Remove source from CPU..."
+msgstr "&Удалить исходный код из ЦП..."
+
+#: gui/blocktreewidget.py:708 gui/projecttreewidget.py:335
+msgid "Remove selected source?"
+msgstr "Удалить выбранный исходник?"
+
+#: gui/blocktreewidget.py:709
+msgid ""
+"Remove the selected source from the CPU?\n"
+"This will also remove all associated compiled blocks from the CPU."
+msgstr ""
+"Удалить выбранный исходник из ЦП?\n"
+"Это также удалит все связанные блоки из ЦП."
+
+#: gui/blocktreewidget.py:736
+msgid "An error occurred while removing a source"
+msgstr "Произошла ошибка при удалении исходника"
+
+#: gui/blocktreewidget.py:745
+msgid "Remove selected block?"
+msgstr "Удалить выбранный блок?"
+
+#: gui/blocktreewidget.py:746
+msgid "Remove the selected block from the CPU?"
+msgstr "Удалить выбранный блок из ЦП?"
+
+#: gui/blocktreewidget.py:775
+msgid "An error occurred while removing a block"
+msgstr "Произошла ошибка при удалении блока"
+
+#: gui/configdialog.py:64
+msgid "&Accept"
+msgstr "&Принять"
+
+#: gui/configdialog.py:67 gui/opereditwidget.py:270 gui/util.py:133
+msgid "&Cancel"
+msgstr "&Отмена"
+
+#: gui/cpuconfig.py:66
+msgid "Hardware resource specification"
+msgstr "Спецификация оборудования"
+
+#: gui/cpuconfig.py:69
+msgid "Number of accumulator registers"
+msgstr "Количество регистров аккумуляторов"
+
+#: gui/cpuconfig.py:71
+msgid ""
+"Select the number of ACCU registers the CPU will have.\n"
+"Note that this selection influences the semantics of some\n"
+"arithmetic instructions such as +I,-I,*I,/I and others."
+msgstr ""
+"Выберите количество регистров ACCU, которое будет иметь ЦП.\n"
+"Обратите внимание, что этот выбор влияет на семантику некоторых\n"
+"арифметических инструкций, таких как +I,-I,*I,/I и другие."
+
+#: gui/cpuconfig.py:76
+msgid "2 accus"
+msgstr "2 акк."
+
+#: gui/cpuconfig.py:77
+msgid "4 accus"
+msgstr "4 акк."
+
+#: gui/cpuconfig.py:81
+msgid "Number of S7 timers"
+msgstr "Количество таймеров S7"
+
+#: gui/cpuconfig.py:83
+msgid ""
+"Set the number of S7 timers the CPU will have.\n"
+"This does only influence the number of S7 timers.\n"
+"There will always be an unlimited amount of IEC timers."
+msgstr ""
+"Установите количество таймеров S7, которые будет иметь ЦП.\n"
+"Это влияет только на количество таймеров S7.\n"
+"Всегда будет неограниченное количество таймеров IEC."
+
+#: gui/cpuconfig.py:93
+msgid "Number of S7 counters"
+msgstr "Количество счетчиков S7"
+
+#: gui/cpuconfig.py:95
+msgid ""
+"Set the number of S7 counters the CPU will have.\n"
+"This does only influence the number of S7 counters.\n"
+"There will always be an unlimited amount of IEC counters."
+msgstr ""
+"Установите количество счетчиков S7, которое будет иметь ЦП.\n"
+"Это влияет только на количество счетчиков S7.\n"
+"Всегда будет неограниченное количество счётчиков IEC."
+
+#: gui/cpuconfig.py:105
+msgid "Number flag (Merker) memory bytes"
+msgstr "Количество байт памяти флагов (Merker)"
+
+#: gui/cpuconfig.py:107
+msgid "Set the number flag (Merker) memory bytes the CPU will have."
+msgstr ""
+"Установите количество байт памяти флагов (Merker), которые будет иметь ЦП."
+
+#: gui/cpuconfig.py:115
+msgid "Number process image input bytes"
+msgstr "Количество входных байтов процесса"
+
+#: gui/cpuconfig.py:117
+msgid "Set the number process image input memory bytes the CPU will have."
+msgstr "Установите количество входных байтов памяти, которые будет иметь ЦП."
+
+#: gui/cpuconfig.py:125
+msgid "Number process image output bytes"
+msgstr "Количество выходных байтов процесса"
+
+#: gui/cpuconfig.py:127
+msgid "Set the number process image output memory bytes the CPU will have."
+msgstr "Установите количество выходных байтов памяти, которые будет иметь ЦП."
+
+#: gui/cpuconfig.py:135
+msgid "Number local stack memory (TEMP) bytes"
+msgstr "Количество байт локальной памяти стека (TEMP)"
+
+#: gui/cpuconfig.py:137
+msgid ""
+"Set the number local stack memory (TEMP) bytes the\n"
+"CPU will have per organization block invocation."
+msgstr ""
+"Установка количества байт локальной памяти стека (TEMP), которые ЦП\n"
+"будет иметь для каждого вызова блока организации."
+
+#: gui/cpuconfig.py:146
+msgid "Parenthesis stack (Klammerstack) size"
+msgstr "Размер родительского стека (Klammerstack)"
+
+#: gui/cpuconfig.py:148
+msgid ""
+"Set the depth of the parenthesis stack (Klammerstack) the\n"
+"CPU will have per block invocation."
+msgstr ""
+"Установите глубину родительского стека (Klammerstack),\n"
+"которую ЦП будет иметь на каждый блок вызова."
+
+#: gui/cpuconfig.py:157
+msgid "CALL stack size"
+msgstr "Размер стека CALL"
+
+#: gui/cpuconfig.py:159
+msgid ""
+"Set the depth of the CALL stack.\n"
+"This is the number of nested CALLs that can be made\n"
+"per OB invocation."
+msgstr ""
+"Установите глубину стека CALL.\n"
+"Это количество вложенных вызовов, которое может быть сделано\n"
+"за вызов OB."
+
+#: gui/cpuconfig.py:171
+msgid "Hardware configuration"
+msgstr "Конфигурация оборудования"
+
+#: gui/cpuconfig.py:174
+msgid "Clock memory byte (Taktmerker)"
+msgstr "Память часов (Taktmerker)"
+
+#: gui/cpuconfig.py:176
+msgid "Select an M byte for use as clock memory byte (Taktmerker)."
+msgstr ""
+"Выберите M байт для использования в качестве байта памяти часов (Taktmerker)."
+
+#: gui/cpuconfig.py:182
+msgid "Enable writing of OB &TEMP entry-variables"
+msgstr "Включить запись переменных OB и TEMP"
+
+#: gui/cpuconfig.py:185
+msgid ""
+"If this box is not checked the entry variables in the\n"
+"ORGANIZATION_BLOCK's TEMP region will not be filled\n"
+"by the system on entry into the OB."
+msgstr ""
+"Если этот флажок не отмечен, то переменные в зоне\n"
+"ORGANIZATION_BLOCK's TEMP не будут заполнены\n"
+"системой при входе в OB."
+
+#: gui/cpuconfig.py:190
+msgid "Cycle (OB 1) time limit"
+msgstr "Ограничение времени (OB 1)"
+
+#: gui/cpuconfig.py:192
+msgid ""
+"Time limit of one cycle (OB 1) run, in milliseconds.\n"
+"The CPU goes into exceptional state (STOP), if the\n"
+"cycle time limit is exceeded."
+msgstr ""
+"Ограничение времени одного цикла (OB 1) в миллисекундах.\n"
+"ЦП переходит в состояние остановки (STOP), если лимит времени цикла\n"
+"превышен."
+
+#: gui/cpuconfig.py:205
+msgid "Cycle (OB 1) time minimum"
+msgstr "Минимальное время (OB 1)"
+
+#: gui/cpuconfig.py:207
+msgid ""
+"Cycle time minimum target of one cycle (OB 1) run, in milliseconds.\n"
+"If this value is bigger than zero, then the CPU increases\n"
+"the cycle time to approximately this value.\n"
+"It does so by sleeping at the end of the cycle (OB 1).\n"
+"This decreases power consumption.\n"
+"But it also increases the OB 1 latency to the specified time.\n"
+"If the actual cycle time needed for calculations is bigger\n"
+"than this value, no sleep will happen.\n"
+"A value in the region of 10 ms is recommended."
+msgstr ""
+"Минимальное целевое время цикла одного цикла (OB 1) в миллисекундах.\n"
+"Если это значение больше нуля, то ЦП увеличивает\n"
+"время цикла примерно до этого значения.\n"
+"Это делается путем засыпания ЦП в конце цикла (OB 1).\n"
+"Это снижает энергопотребление.\n"
+"Но это также увеличивает задержку OB 1 до указанного времени.\n"
+"Если фактическое время цикла, необходимое для расчетов, больше\n"
+"чем это значение, засыпание не произойдет.\n"
+"Рекомендуется значение в области 10 мс."
+
+#: gui/cpuconfig.py:228
+msgid "AWL language"
+msgstr "Язык AWL"
+
+#: gui/cpuconfig.py:231
+msgid "Mnemonics language"
+msgstr "Язык мнемоники"
+
+#: gui/cpuconfig.py:233
+msgid ""
+"Select the AWL/STL mnemonics type.\n"
+"This may be either German or International (English).\n"
+"Automatic will try to guess the mnemonics from the AWL/STL\n"
+"code. Note that this might fail, though."
+msgstr ""
+"Выберите тип мнемоники AWL/STL.\n"
+"Это может быть немецкая или международная (на английская).\n"
+"Автоматика может попробовать угадать мнемонику из кода AWL/STL.\n"
+"Однако, заметьте, что это может привести к сбою."
+
+#: gui/cpuconfig.py:239
+msgid "Automatic"
+msgstr "Автоматически"
+
+#: gui/cpuconfig.py:240
+msgid "English"
+msgstr "Английская"
+
+#: gui/cpuconfig.py:241
+msgid "German"
+msgstr "Немецкая"
+
+#: gui/cpuconfig.py:245
+msgid "Enable e&xtended non-standard instructions"
+msgstr "Включить н&естандартные инструкции"
+
+#: gui/cpuconfig.py:248
+msgid ""
+"Enable special Awlsim specific AWL/STL instructions that are not available\n"
+"in the standard S7 language. Enabling this option is harmless even\n"
+"if such instructions are not used."
+msgstr ""
+"Включить специальные инструкции Awlsim для AWL/STL, которые не доступны\n"
+"в стандартном языке S7. Включение этой опции является безвредным, даже, \n"
+"если такие инструкции не используются."
+
+#: gui/cpuconfig.py:256 gui/projecttreewidget.py:1013
+msgid "Program"
+msgstr "Программа"
+
+#: gui/cpuconfig.py:260
+msgid "Enable pre-download program validation"
+msgstr "Включить предзагрузочную проверку программы"
+
+#: gui/cpuconfig.py:262
+msgid ""
+"Validate program before downloading it to the CPU.\n"
+"This may catch certain program errors before download."
+msgstr ""
+"Проверить программу перед загрузкой на ЦП.\n"
+"Это может помочь найти некоторые ошибки в программе перед загрузкой."
+
+#: gui/cpuconfig.py:347
+msgid "CPU setup"
+msgstr "Настройка ЦП"
+
+#: gui/cpustate.py:163
+msgid "Failed to write to memory"
+msgstr "Не удалось записать в память"
+
+#: gui/cpustate.py:174
+msgid "CPU overview"
+msgstr "Обзор ЦП"
+
+#: gui/cpustate.py:183
+msgid ""
+"No CPU status available.\n"
+"Please put the CPU into RUN mode."
+msgstr ""
+"Статус ЦП недоступен.\n"
+"Пожалуйста, переведите ЦП в режим РАБОТА."
+
+#: gui/cpustate.py:211
+msgid "Inputs"
+msgstr "Входа"
+
+#: gui/cpustate.py:212
+msgid "Outputs"
+msgstr "Выхода"
+
+#: gui/cpustate.py:213
+msgid "Flags"
+msgstr "Флаги"
+
+#: gui/cpustate.py:214
+msgid "Data block"
+msgstr "Блок данных"
+
+#: gui/cpustate.py:468
+msgid "invalid address"
+msgstr "недопустимый адрес"
+
+#: gui/cpustate.py:501
+msgid "Not DWORD"
+msgstr "Не DWORD"
+
+#: gui/cpustate.py:537 gui/cpustate.py:751
+msgid "Byte"
+msgstr "Byte"
+
+#: gui/cpustate.py:538 gui/cpustate.py:752
+msgid "Word"
+msgstr "Word"
+
+#: gui/cpustate.py:539 gui/cpustate.py:753
+msgid "DWord"
+msgstr "DWord"
+
+#: gui/cpustate.py:544
+msgid "Checkboxes"
+msgstr "Флажки"
+
+#: gui/cpustate.py:545 gui/cpustate.py:1109 gui/cpustate.py:1179
+msgid "Dual"
+msgstr "Двойной"
+
+#: gui/cpustate.py:546
+msgid "Decimal"
+msgstr "Десятичный"
+
+#: gui/cpustate.py:547 gui/cpustate.py:1110
+msgid "Hexadecimal"
+msgstr "Шестнадцатиричный"
+
+#: gui/cpustate.py:548
+msgid "Real"
+msgstr "Вещественный"
+
+#: gui/cpustate.py:608
+msgid "Invalid State_Mem config string."
+msgstr "Недопустимая строка конфигурации State_Mem."
+
+#: gui/cpustate.py:757
+msgid "Big-endian"
+msgstr "Big-endian"
+
+#: gui/cpustate.py:758
+msgid "Little-endian"
+msgstr "Little-endian"
+
+#: gui/cpustate.py:762 gui/fup/fupelemcontainerwidget.py:199
+msgid "BCD"
+msgstr "BCD"
+
+#: gui/cpustate.py:763
+msgid "Signed BCD"
+msgstr "Знаковый BCD"
+
+#: gui/cpustate.py:764
+msgid "Binary"
+msgstr "Двоичный"
+
+#: gui/cpustate.py:765
+msgid "Signed binary"
+msgstr "Знаковый двоичный"
+
+#: gui/cpustate.py:803
+msgid "Cannot parse State_LCD config string."
+msgstr "Не удалось пропарсить строку State_LCD."
+
+#: gui/cpustate.py:819
+msgid "Invalid State_LCD config string."
+msgstr "Неправильная строка конфигурации State_LCD."
+
+#: gui/cpustate.py:1002
+msgid "Invalid State_TimerCounter config string."
+msgstr "Неправильная строка конфигурации State_TimerCounter."
+
+#: gui/cpustate.py:1104
+msgid "Timer"
+msgstr "Таймер"
+
+#: gui/cpustate.py:1111
+msgid "S5Time"
+msgstr "S5Time"
+
+#: gui/cpustate.py:1173
+msgid "Counter"
+msgstr "Счетчик"
+
+#: gui/cpustate.py:1178
+msgid "BCD (counter)"
+msgstr "BCD (счетчик)"
+
+#: gui/cpustate.py:1229
+msgid "CPU online content (downloaded blocks)"
+msgstr "Содержимое ЦП (загруженные блоки)"
+
+#: gui/cpustate.py:1329
+msgid "Unknown CPU state window type {}."
+msgstr "Неизвестный тип окна состояния ЦП {}."
+
+#: gui/cpuwidget.py:173
+msgid "Error in awlsim core"
+msgstr "Ошибка awlsim ядра"
+
+#: gui/cpuwidget.py:206
+msgid "Shut down application?"
+msgstr "Закрыть приложение?"
+
+#: gui/cpuwidget.py:207
+msgid ""
+"The core server requested an application shutdown.\n"
+"Do you want to close Awlsim GUI?"
+msgstr ""
+"Основной сервер запросил выключение приложения.\n"
+"Вы хотите закрыть Awlsim GUI?"
+
+#: gui/cpuwidget.py:213
+msgid "Shutting down, as requested by server..."
+msgstr "Завершение работы по запросу сервера..."
+
+#: gui/cpuwidget.py:223
+msgid "Unknown maintenance request {}"
+msgstr "Неизвестный запрос на обслуживание {}"
+
+#: gui/cpuwidget.py:262
+msgid "Could not start CPU"
+msgstr "Не удалось запустить ЦП"
+
+#: gui/cpuwidget.py:279 gui/cpuwidget.py:336
+msgid "Core server error"
+msgstr "Ошибка основного сервера"
+
+#: gui/cpuwidget.py:363
+msgid "Could not stop CPU"
+msgstr "Не удалось остановить ЦП"
+
+#: gui/cpuwidget.py:421
+msgid "Error while trying to connect to CPU"
+msgstr "Ошибка при попытке соединения с ЦП"
+
+#: gui/cpuwidget.py:434
+msgid "Error while trying to disconnect from CPU"
+msgstr "Ошибка при попытке отключения от ЦП"
+
+#: gui/cpuwidget.py:462
+msgid "Validating project before downloading..."
+msgstr "Проверка проекта перед загрузкой..."
+
+#: gui/cpuwidget.py:466
+msgid "Project validation failed. Loading anyway..."
+msgstr "Проверка проекта не удалась. Загрузка в любом случае..."
+
+#: gui/cpuwidget.py:469
+msgid ""
+"\n"
+"Pre-download validation of the project failed.\n"
+"Continuing the download may bring the CPU to STOP.\n"
+"\n"
+"Do you want to continue or cancel downloading the project to the CPU?"
+msgstr ""
+"\n"
+"Не удалось выполнить проверку проекта перед загрузкой.\n"
+"Дальнейшая загрузка может привести остановке ЦП.\n"
+"\n"
+"Вы хотите продолжить или отменить загрузку проекта на ЦП?"
+
+#: gui/cpuwidget.py:518
+msgid "Error while loading code"
+msgstr "Ошибка при загрузке кода"
+
+#: gui/cpuwidget.py:550
+msgid "No source selected."
+msgstr "Исходник не выбран."
+
+#: gui/cpuwidget.py:551
+msgid ""
+"Cannot download a single source.\n"
+"No source has been opened in the edit area."
+msgstr ""
+"Не удается загрузить отдельный исходник.\n"
+"В области редактирования не было открыто ни одного исходника."
+
+#: gui/cpuwidget.py:574
+msgid "Single AWL download: {}/{}"
+msgstr "Отдельная загрузка AWL: {}/{}"
+
+#: gui/cpuwidget.py:579
+msgid "Single FUP download: {}/{}"
+msgstr "Отдельная загрузка FUP: {}/{}"
+
+#: gui/cpuwidget.py:584
+msgid "Single KOP download: {}/{}"
+msgstr "Отдельная загрузка KOP: {}/{}"
+
+#: gui/cpuwidget.py:589
+msgid "Single sym download: {}/{}"
+msgstr "Отдельная загрузка SYM: {}/{}"
+
+#: gui/cpuwidget.py:594
+msgid "Single libSelections download."
+msgstr "Загрузка отдельной libSelect."
+
+#: gui/cpuwidget.py:614
+msgid "Error while loading code (single source)"
+msgstr "Ошибка при загрузке кода (один исходник)"
+
+#: gui/cpuwidget.py:642
+msgid "Error while reseting CPU"
+msgstr "Ошибка при сбросе ЦП"
+
+#: gui/cpuwidget.py:697
+msgid "Failed to setup instruction dumping"
+msgstr "Не удалось настроить дамп инструкций"
+
+#: gui/editmdiarea.py:457
+msgid "Failed to refresh project"
+msgstr "Не удалось обновить проект"
+
+#: gui/editmdiarea.py:458
+msgid ""
+"Failed to refresh project data.\n"
+"Not closing the editor window to avoid loss of data."
+msgstr ""
+"Не удалось обновить данные проекта.\n"
+"Не закрывайте окно редактора, чтобы избежать потери данных."
+
+#: gui/editmdiarea.py:607 gui/editmdiarea.py:767 gui/editmdiarea.py:883
+msgid " (DISABLED)"
+msgstr " (ЗАБЛОКИРОВАННО)"
+
+#: gui/editmdiarea.py:622
+msgid "Import AWL/STL source"
+msgstr "Импорт исходника AWL/STL"
+
+#: gui/editmdiarea.py:623
+msgid "AWL source (*.awl);;All files (*)"
+msgstr "Исходный код AWL (*.awl);;Все файлы (*)"
+
+#: gui/editmdiarea.py:637
+msgid "AWL/STL source export"
+msgstr "Экспорт AWL/STL исходника"
+
+#: gui/editmdiarea.py:638
+msgid "AWL/STL source file (*.awl)"
+msgstr "Исходник AWL/STL (*.awl)"
+
+#: gui/editmdiarea.py:782
+msgid "Import FUP/FBD XML source"
+msgstr "Импорт исходника FUP/FBD"
+
+#: gui/editmdiarea.py:783
+msgid "FUP/FBD XML source (*.fupxml);;All files (*)"
+msgstr "Исходник XML-код FUP/FBD (*.fupxml);;Все файлы (*)"
+
+#: gui/editmdiarea.py:797
+msgid "fup/fbd xml source export"
+msgstr "Экспорт fup/fbd xml исходника"
+
+#: gui/editmdiarea.py:798
+msgid "fup/fbd xml source file (*.fupxml)"
+msgstr "fup/fbd исходный файл xml (*.fupxml)"
+
+#: gui/editmdiarea.py:809 gui/editmdiarea.py:925
+msgid "Failed to export source"
+msgstr "Не удалось экспортировать исходник"
+
+#: gui/editmdiarea.py:882
+msgid " (Symbol-table)"
+msgstr " (Символьная таблица)"
+
+#: gui/editmdiarea.py:898
+msgid "Import symbol table"
+msgstr "Импорт таблицы символов"
+
+#: gui/editmdiarea.py:899
+msgid "Symbol table file (*.asc);;All files (*)"
+msgstr "Файл таблицы символов (*.asc);;Все файлы (*)"
+
+#: gui/editmdiarea.py:913
+msgid "symbol table export"
+msgstr "Экспорт таблицы символов"
+
+#: gui/editmdiarea.py:914
+msgid "symbol table file (*.asc)"
+msgstr "файл таблицы символов (*.asc)"
+
+#: gui/editwidget.py:221
+msgid "Online items"
+msgstr "Элементы онлайн"
+
+#: gui/editwidget.py:222
+msgid "Status bit: /FC (/ER)"
+msgstr "Бит статуса: /FC (/ER)"
+
+#: gui/editwidget.py:225
+msgid "Status bit: RLO (VKE)"
+msgstr "Бит статуса: RLO (VKE)"
+
+#: gui/editwidget.py:228
+msgid "Status bit: STA"
+msgstr "Бит статуса: STA"
+
+#: gui/editwidget.py:231
+msgid "Status bit: OR"
+msgstr "Бит статуса: OR"
+
+#: gui/editwidget.py:234
+msgid "Status bit: OS"
+msgstr "Бит статуса: OS"
+
+#: gui/editwidget.py:237
+msgid "Status bit: OV"
+msgstr "Бит статуса: OV"
+
+#: gui/editwidget.py:240
+msgid "Status bit: CC0 (A0)"
+msgstr "Бит статуса: CC0 (A0)"
+
+#: gui/editwidget.py:243
+msgid "Status bit: CC1 (A1)"
+msgstr "Бит статуса: CC1 (A1)"
+
+#: gui/editwidget.py:246
+msgid "Status bit: BR (BIE)"
+msgstr "Бит статуса: BR (BIE)"
+
+#: gui/editwidget.py:249
+msgid "Full status word"
+msgstr "Полное слово статуса"
+
+#: gui/editwidget.py:252
+msgid "Accu 1"
+msgstr "Accu 1"
+
+#: gui/editwidget.py:255
+msgid "Accu 2"
+msgstr "Accu 2"
+
+#: gui/editwidget.py:258
+msgid "Accu 3"
+msgstr "Accu 3"
+
+#: gui/editwidget.py:261
+msgid "Accu 4"
+msgstr "Accu 4"
+
+#: gui/editwidget.py:264
+msgid "AR 1"
+msgstr "AR 1"
+
+#: gui/editwidget.py:267
+msgid "AR 2"
+msgstr "AR 2"
+
+#: gui/editwidget.py:270
+msgid "DB register"
+msgstr "DB регистр"
+
+#: gui/editwidget.py:273
+msgid "DI register"
+msgstr "DI регистр"
+
+#: gui/editwidget.py:435
+msgid ""
+"Please enter your AWL program here...\n"
+"\n"
+"\n"
+"Did you know\n"
+msgstr ""
+"Пожалуйста, введите здесь вашу программу AWL...\n"
+"\n"
+"\n"
+"Знаете ли вы\n"
+
+#: gui/editwidget.py:451 gui/editwidget.py:470
+msgid ""
+"The AWL/STL code contains non-{}-characters. These were ignored and stripped "
+"from the code."
+msgstr ""
+"Код AWL/STL содержит не-{}-символы. Они были проигнорированы и удалены из "
+"кода."
+
+#: gui/editwidget.py:765
+msgid "OFFLINE"
+msgstr "ОФЛАЙН"
+
+#: gui/editwidget.py:766
+msgid "Online (CPU stopped)"
+msgstr "Онлайн (ЦП остановлен)"
+
+#: gui/editwidget.py:767
+msgid "DOWNLOADING program. Please wait."
+msgstr "ЗАГРУЗКА программы. Пожалуйста, подождите."
+
+#: gui/editwidget.py:768
+msgid "ERROR. CPU halted."
+msgstr "ОШИБКА. ЦП остановлен."
+
+#: gui/finddialog.py:40
+msgid "Find:"
+msgstr "Найти:"
+
+#: gui/finddialog.py:45
+msgid "Regular &expression"
+msgstr "Регулярное &выражение"
+
+#: gui/finddialog.py:48
+msgid "Replace with:"
+msgstr "Заменить на:"
+
+#: gui/finddialog.py:57
+msgid "From &cursor"
+msgstr "От &курсора"
+
+#: gui/finddialog.py:60
+msgid "&Up"
+msgstr "&Вверх"
+
+#: gui/finddialog.py:62
+msgid "&Down"
+msgstr "&Вниз"
+
+#: gui/finddialog.py:70
+msgid "Case &sensitive"
+msgstr "Учитывать &регистр"
+
+#: gui/finddialog.py:72
+msgid "&Whole words only"
+msgstr "&Только слова целиком"
+
+#: gui/finddialog.py:87
+msgid "&Replace"
+msgstr "&Заменить"
+
+#: gui/finddialog.py:90
+msgid "Replace &all"
+msgstr "Заменить &все"
+
+#: gui/finddialog.py:93
+msgid "C&lose"
+msgstr "З&акрыть"
+
+#: gui/finddialog.py:118
+msgid "Find and replace text"
+msgstr "Найти и заменить текст"
+
+#: gui/finddialog.py:124
+msgid "Find text"
+msgstr "Найти текст"
+
+#: gui/finddialog.py:181 gui/finddialog.py:216
+msgid "Reached end of document. Text not found."
+msgstr "Достигнут конец документа. Текст не найден."
+
+#: gui/finddialog.py:212
+msgid "1 occurrence replaced."
+msgstr "1 вхождение заменено."
+
+#: gui/finddialog.py:214
+msgid "{} occurrences replaced."
+msgstr "{} вхождений заменено."
+
+#: gui/finddialog.py:222
+msgid "&Find next"
+msgstr "&Найти далее"
+
+#: gui/finddialog.py:222
+msgid "&Find"
+msgstr "&Найти"
+
+#: gui/fup/fup_conn.py:51
+msgid "Invalid <connection> pos."
+msgstr "Неправильная поз. <connection>."
+
+#: gui/fup/fup_conn.py:77
+msgid "Invalid <connection>"
+msgstr "Неправильное <connection>"
+
+#: gui/fup/fup_conn.py:89
+msgid "<element> connections are incomplete."
+msgstr "<element> не все соединено."
+
+#: gui/fup/fup_elemarith.py:59
+msgid "Arithmetic subtype '{}' is not known to the element parser."
+msgstr "Подтип арифметики '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemarith.py:76 gui/fup/fup_elemawl.py:59
+#: gui/fup/fup_elemcmp.py:81 gui/fup/fup_elemcomment.py:56
+#: gui/fup/fup_elemconv.py:80 gui/fup/fup_elemmove.py:59
+#: gui/fup/fup_elemoperand.py:70 gui/fup/fup_elemtime.py:96
+msgid "<element> caused a grid collision."
+msgstr "<element> вызвал коллизии в таблице."
+
+#: gui/fup/fup_elembool.py:55
+msgid "Boolean subtype '{}' is not known to the element parser."
+msgstr "Двоичный подтип '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elembool.py:71
+msgid "Found multiple <subelements> tags inside of boolean <element>."
+msgstr "Найдено несколько <subelements> тегов внутри двоичного <element>."
+
+#: gui/fup/fup_elembool.py:91
+msgid ""
+"Exactly one subelement of type 'embedded operand' is required in boolean "
+"<element>."
+msgstr ""
+"Только один подэлемент типа 'встроенный операнд' требуется в логическом "
+"<element>."
+
+#: gui/fup/fup_elembool.py:101
+msgid "<subelements> is not supported for {}."
+msgstr "<subelements> не поддерживается для {}."
+
+#: gui/fup/fup_elemcmp.py:64
+msgid "Compare subtype '{}' is not known to the element parser."
+msgstr "Подтип сравнения '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemcomment.py:174
+msgid "Change comment"
+msgstr "Изменить комментарий"
+
+#: gui/fup/fup_elemcomment.py:175 gui/interfedit/interftabmodel.py:590
+#: gui/interfedit/interftabmodel.py:606 gui/symtabwidget.py:116
+msgid "Comment"
+msgstr "Комментарий"
+
+#: gui/fup/fup_elemconv.py:63
+msgid "Conversion subtype '{}' is not known to the element parser."
+msgstr "Подтип преобразования '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemcount.py:52
+msgid "Counter subtype '{}' is not known to the element parser."
+msgstr "Подтип счетчика '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemcount.py:67
+msgid "Found multiple <subelements> tags inside of counter <element>."
+msgstr "Найдено несколько <subelements> тегов внутри счетчика <element>."
+
+#: gui/fup/fup_elemcount.py:86
+msgid ""
+"Exactly one subelement of type 'embedded operand' is required in counter "
+"<element>."
+msgstr ""
+"Точно один подэлемент типа 'встроенный операнд' требуется в счётчике "
+"<element>."
+
+#: gui/fup/fup_elemoperand.py:50
+msgid "Operand subtype '{}' is not known to the element parser."
+msgstr "Подтип операнда '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemshift.py:54
+msgid "Shift subtype '{}' is not known to the element parser."
+msgstr "Подтип сдвига '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemshift.py:329
+msgid "Add LOB (Last shifted Out Bit) output"
+msgstr "Добавить выход LOB (выход последнего сдвига)"
+
+#: gui/fup/fup_elemtime.py:51
+msgid "Timer subtype '{}' is not known to the element parser."
+msgstr "Подтип таймера '{}' не известен парсеру элементов."
+
+#: gui/fup/fup_elemtime.py:66
+msgid "Found multiple <subelements> tags inside of timer <element>."
+msgstr "Найдено несколько <subelements> тегов внутри таймера <element>."
+
+#: gui/fup/fup_elemtime.py:85
+msgid ""
+"Exactly one subelement of type 'embedded operand' is required in timer "
+"<element>."
+msgstr ""
+"Точно один подэлемент типа 'встроенный операнд' требуется в таймере "
+"<element>."
+
+#: gui/fup/fup_grid.py:397
+msgid "FUP element {} duplicate UUID. Generating new UUID."
+msgstr "Элемент FUP {} дублирует UUID. Создается новый UUID."
+
+#: gui/fup/fup_wire.py:47
+msgid "<wire id={}> does already exist."
+msgstr "<wire id={}> уже существует."
+
+#: gui/fup/fupdrawwidget.py:65
+msgid "&Edit element..."
+msgstr "&Изменить элемент..."
+
+#: gui/fup/fupdrawwidget.py:68
+msgid "&Copy element(s)..."
+msgstr "&Копировать элемент(ы)..."
+
+#: gui/fup/fupdrawwidget.py:71
+msgid "C&ut element(s)..."
+msgstr "В&ырезать элемент(ы)..."
+
+#: gui/fup/fupdrawwidget.py:74
+msgid "&Paste element(s)..."
+msgstr "&Вставить элемент(ы)..."
+
+#: gui/fup/fupdrawwidget.py:77
+msgid "&Remove element"
+msgstr "&Удалить элемент"
+
+#: gui/fup/fupdrawwidget.py:79
+msgid "E&nable element"
+msgstr "В&ключить элемент"
+
+#: gui/fup/fupdrawwidget.py:82
+msgid "&Disable element"
+msgstr "&Отключить элемент"
+
+#: gui/fup/fupdrawwidget.py:86
+msgid "In&vert connection"
+msgstr "Ин&вертировать соединение"
+
+#: gui/fup/fupdrawwidget.py:89
+msgid "Add input &connection"
+msgstr "Добавить &входное подключение"
+
+#: gui/fup/fupdrawwidget.py:92
+msgid "Add &output connection"
+msgstr "Добавить &выходное подключение"
+
+#: gui/fup/fupdrawwidget.py:95
+msgid "Remove &connection"
+msgstr "Удалить &соединение"
+
+#: gui/fup/fupdrawwidget.py:98
+msgid "&Disconnect wire"
+msgstr "&Отсоединить провод"
+
+#: gui/fup/fupdrawwidget.py:1109
+msgid "__mimeDataToGrid: Failed to parse MIME data: {}"
+msgstr "__mimeDataToGrid: Не удалось разобрать данные MIME: {}"
+
+#: gui/fup/fupdrawwidget.py:1123
+msgid "__mimeDataToGrid: Failed to relocate elements."
+msgstr "__mimeDataToGrid: Не удалось переместить элементы."
+
+#: gui/fup/fupdrawwidget.py:1207
+msgid ""
+"Unexpected exception in FupDrawWidget.dragEnterEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Непредвиденное исключение в FupDrawWidget.dragEnterEvent(): {}\n"
+"\n"
+"{}"
+
+#: gui/fup/fupdrawwidget.py:1216
+msgid ""
+"Unexpected exception in FupDrawWidget.dragLeaveEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Непредвиденное исключение в FupDrawWidget.dragLeaveEvent(): {}\n"
+"\n"
+"{"
+
+#: gui/fup/fupdrawwidget.py:1225
+msgid ""
+"Unexpected exception in FupDrawWidget.dragMoveEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Непредвиденное исключение в FupDrawWidget.dragMoveEvent(): {}\n"
+"\n"
+"{}"
+
+#: gui/fup/fupdrawwidget.py:1234
+msgid ""
+"Unexpected exception in FupDrawWidget.dropEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Непредвиденное исключение в FupDrawWidget.dropEvent(): {}\n"
+"\n"
+"{"
+
+#: gui/fup/fupdrawwidget.py:1300
+msgid "Paste of FUP grid failed"
+msgstr "Не удалось вставить сетку FUP"
+
+#: gui/fup/fupdrawwidget.py:1301
+msgid ""
+"The FUP grid cannot be pasted here, because elements collide.\n"
+"Please select another position in the grid."
+msgstr ""
+"Сетка FUP не может быть вставлена здесь, так как элементы конфликтуют.\n"
+"Пожалуйста, выберите другую позицию в сетке."
+
+#: gui/fup/fupelemcontainerwidget.py:73
+msgid "[...]  Comment"
+msgstr "[...]  Комментарий"
+
+#: gui/fup/fupelemcontainerwidget.py:77
+msgid "Boolean"
+msgstr "Двоичный"
+
+#: gui/fup/fupelemcontainerwidget.py:78
+msgid "[&]  and"
+msgstr "[&] и"
+
+#: gui/fup/fupelemcontainerwidget.py:81
+msgid "[>=1]  or"
+msgstr "[>=1] или"
+
+#: gui/fup/fupelemcontainerwidget.py:84
+msgid "[X]  xor"
+msgstr "[X]  искл. или"
+
+#: gui/fup/fupelemcontainerwidget.py:87
+msgid "[S]  set"
+msgstr "[S] установить"
+
+#: gui/fup/fupelemcontainerwidget.py:90
+msgid "[R]  reset"
+msgstr "[R]  сброс"
+
+#: gui/fup/fupelemcontainerwidget.py:93
+msgid "[SR]  SR flip-flop"
+msgstr "[SR]  SR тригер"
+
+#: gui/fup/fupelemcontainerwidget.py:96
+msgid "[RS]  RS flip-flop"
+msgstr "[RS]  RS тригер"
+
+#: gui/fup/fupelemcontainerwidget.py:99
+msgid "[FP]  positive edge"
+msgstr "[FP]  восходящий фронт"
+
+#: gui/fup/fupelemcontainerwidget.py:102
+msgid "[FN]  negative edge"
+msgstr "[FN]  спадающий фронт"
+
+#: gui/fup/fupelemcontainerwidget.py:107
+msgid "Counters"
+msgstr "Счетчики"
+
+#: gui/fup/fupelemcontainerwidget.py:108
+msgid "[CUD]  Counter"
+msgstr "[CUD]  Счетчик"
+
+#: gui/fup/fupelemcontainerwidget.py:111
+msgid "[CU]  Counter up"
+msgstr "[CU]  Счетчик вверх"
+
+#: gui/fup/fupelemcontainerwidget.py:114
+msgid "[CUo]  Counter up-only"
+msgstr "[CUo]  Счетчик только вверх"
+
+#: gui/fup/fupelemcontainerwidget.py:117
+msgid "[CD]  Counter down"
+msgstr "[CD]  Счетчик вниз"
+
+#: gui/fup/fupelemcontainerwidget.py:120
+msgid "[CDo]  Counter down-only"
+msgstr "[CDo]  Счетчик только вниз"
+
+#: gui/fup/fupelemcontainerwidget.py:123
+msgid "[CSo]  Counter set"
+msgstr "[CSo]  Счетчик установлен"
+
+#: gui/fup/fupelemcontainerwidget.py:128
+msgid "Timers"
+msgstr "Таймеры"
+
+#: gui/fup/fupelemcontainerwidget.py:129
+msgid "[SP]  Pulse"
+msgstr "[SP]  Импульс"
+
+#: gui/fup/fupelemcontainerwidget.py:132
+msgid "[SE]  Extended pulse"
+msgstr "[SE]  Увеличенный импульс"
+
+#: gui/fup/fupelemcontainerwidget.py:135
+msgid "[SD]  On-delay"
+msgstr "[SD]  Задержка вкл."
+
+#: gui/fup/fupelemcontainerwidget.py:138
+msgid "[SS]  Extended on-delay"
+msgstr "[SS]  Увелич. задержка вкл."
+
+#: gui/fup/fupelemcontainerwidget.py:141
+msgid "[SF]  Off-delay"
+msgstr "[SF]  Задержка выкл."
+
+#: gui/fup/fupelemcontainerwidget.py:146
+msgid "Move / convert"
+msgstr "Переместить / преобразовать"
+
+#: gui/fup/fupelemcontainerwidget.py:147
+msgid "[L]  load"
+msgstr "[L]  загрузка"
+
+#: gui/fup/fupelemcontainerwidget.py:150
+msgid "[=]  assign"
+msgstr "[=] присвоить"
+
+#: gui/fup/fupelemcontainerwidget.py:153
+msgid "-[=]-  move box"
+msgstr "-[=]- перемещение"
+
+#: gui/fup/fupelemcontainerwidget.py:158
+msgid "INT / DINT"
+msgstr "INT / DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:159
+msgid "[I->D]  INT to DINT"
+msgstr "[I->D] INT в DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:162
+msgid "[neg I]  negate INT"
+msgstr "[neg I]  отрицательный INT"
+
+#: gui/fup/fupelemcontainerwidget.py:165
+msgid "[neg D]  negate DINT"
+msgstr "[neg D]  отрицательный DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:168
+msgid "[inv I]  bitwise invert INT"
+msgstr "[inv I] побитное инверт. INT"
+
+#: gui/fup/fupelemcontainerwidget.py:171
+msgid "[inv D]  bitwise invert DINT"
+msgstr "[inv D] побитное инверт. DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:177 gui/fup/fupelemcontainerwidget.py:258
+#: gui/fup/fupelemcontainerwidget.py:345
+msgid "REAL"
+msgstr "REAL"
+
+#: gui/fup/fupelemcontainerwidget.py:178
+msgid "[D->R]  DINT to REAL"
+msgstr "[D->R]  DINT в REAL"
+
+#: gui/fup/fupelemcontainerwidget.py:181
+msgid "[neg R]  negate REAL"
+msgstr "[neg R]  отрицательный REAL"
+
+#: gui/fup/fupelemcontainerwidget.py:184
+msgid "[round]  round REAL"
+msgstr "[round]  округлить REAL"
+
+#: gui/fup/fupelemcontainerwidget.py:187
+msgid "[trunc]  truncate REAL"
+msgstr "[trunc]  усечь REAL"
+
+#: gui/fup/fupelemcontainerwidget.py:190
+msgid "[round+]  round REAL to pos."
+msgstr "[round+]  округл. REAL до поз."
+
+#: gui/fup/fupelemcontainerwidget.py:193
+msgid "[round-]  round REAL to neg."
+msgstr "[round-]  округл. REAL до нег."
+
+#: gui/fup/fupelemcontainerwidget.py:200
+msgid "[BCD->I]  BCD to INT"
+msgstr "[BCD->I] BCD в INT"
+
+#: gui/fup/fupelemcontainerwidget.py:203
+msgid "[BCD->D]  BCD to DINT"
+msgstr "[BCD->D] BCD в DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:206
+msgid "[I->BCD]  INT to BCD"
+msgstr "[I->BCD]  INT в BCD"
+
+#: gui/fup/fupelemcontainerwidget.py:209
+msgid "[D->BCD]  DINT to BCD"
+msgstr "[D->BCD]  DINT в BCD"
+
+#: gui/fup/fupelemcontainerwidget.py:215
+msgid "Byte order"
+msgstr "Порядок байтов"
+
+#: gui/fup/fupelemcontainerwidget.py:216
+msgid "[swap W]  swap WORD order"
+msgstr "[swap W]  обмен байт WORD"
+
+#: gui/fup/fupelemcontainerwidget.py:219
+msgid "[swap D]  swap DWORD order"
+msgstr "[swap D]  обмен байт DWORD"
+
+#: gui/fup/fupelemcontainerwidget.py:225 gui/fup/fupelemcontainerwidget.py:303
+msgid "INT"
+msgstr "INT"
+
+#: gui/fup/fupelemcontainerwidget.py:226
+msgid "[+I]  INT addition"
+msgstr "[+I]  INT добавление"
+
+#: gui/fup/fupelemcontainerwidget.py:229
+msgid "[-I]  INT subtraction"
+msgstr "[-I]  INT вычитание"
+
+#: gui/fup/fupelemcontainerwidget.py:232
+msgid "[*I]  INT multiplication"
+msgstr "[*I]  INT умножение"
+
+#: gui/fup/fupelemcontainerwidget.py:235
+msgid "[/I]  INT division"
+msgstr "[/I]  INT деление"
+
+#: gui/fup/fupelemcontainerwidget.py:240 gui/fup/fupelemcontainerwidget.py:324
+msgid "DINT"
+msgstr "DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:241
+msgid "[+D]  DINT addition"
+msgstr "[+D]  DINT добавление"
+
+#: gui/fup/fupelemcontainerwidget.py:244
+msgid "[-D]  DINT subtraction"
+msgstr "[-D]  DINT вычитание"
+
+#: gui/fup/fupelemcontainerwidget.py:247
+msgid "[*D]  DINT multiplication"
+msgstr "[*D]  DINT умножение"
+
+#: gui/fup/fupelemcontainerwidget.py:250
+msgid "[/D]  DINT division"
+msgstr "[/D]  DINT деление"
+
+#: gui/fup/fupelemcontainerwidget.py:253
+msgid "[MOD]  DINT modulo"
+msgstr "[MOD]  DINT модуль"
+
+#: gui/fup/fupelemcontainerwidget.py:259
+msgid "[+R]  REAL addition"
+msgstr "[+R]  REAL добавление"
+
+#: gui/fup/fupelemcontainerwidget.py:262
+msgid "[-R]  REAL subtraction"
+msgstr "[-R]  REAL вычитание"
+
+#: gui/fup/fupelemcontainerwidget.py:265
+msgid "[*R]  REAL multiplication"
+msgstr "[*R]  REAL умножение"
+
+#: gui/fup/fupelemcontainerwidget.py:268
+msgid "[/R]  REAL division"
+msgstr "[/R]  REAL деление"
+
+#: gui/fup/fupelemcontainerwidget.py:273
+msgid "WORD / INT"
+msgstr "WORD / INT"
+
+#: gui/fup/fupelemcontainerwidget.py:274
+msgid "[SSI >>]  Signed INT right shift"
+msgstr "[SSI >>>] Знак. INT сдвиг вправо"
+
+#: gui/fup/fupelemcontainerwidget.py:277
+msgid "[SRW >>]  WORD right shift"
+msgstr "[SRW >>]  WORD сдвиг вправо"
+
+#: gui/fup/fupelemcontainerwidget.py:280
+msgid "[SLW <<]  WORD left shift"
+msgstr "[SLW <<]  WORD сдвиг влево"
+
+#: gui/fup/fupelemcontainerwidget.py:285
+msgid "DWORD / DINT"
+msgstr "DWORD / DINT"
+
+#: gui/fup/fupelemcontainerwidget.py:286
+msgid "[SSD >>]  Signed DINT right shift"
+msgstr "[SSD >>>] Знак. DINT сдвиг вправо"
+
+#: gui/fup/fupelemcontainerwidget.py:289
+msgid "[SRD >>]  DWORD right shift"
+msgstr "[SRD >>]  DWORD сдвиг вправо"
+
+#: gui/fup/fupelemcontainerwidget.py:292
+msgid "[SLD <<]  DWORD left shift"
+msgstr "[SLD <<]  DWORD сдвиг влево"
+
+#: gui/fup/fupelemcontainerwidget.py:295
+msgid "[RLD <<]  DWORD rotate left"
+msgstr "[RLD <<]  DWORD оборот влево"
+
+#: gui/fup/fupelemcontainerwidget.py:298
+msgid "[RRD <<]  DWORD rotate right"
+msgstr "[RRD <<]  DWORD оборот вправо"
+
+#: gui/fup/fupelemcontainerwidget.py:304
+msgid "[==I]  INT equal"
+msgstr "[==I] INT равен"
+
+#: gui/fup/fupelemcontainerwidget.py:307
+msgid "[<>I]  INT not equal"
+msgstr "[<>I] INT не равен"
+
+#: gui/fup/fupelemcontainerwidget.py:310
+msgid "[>I]  INT greater than"
+msgstr "[>I] INT больше"
+
+#: gui/fup/fupelemcontainerwidget.py:313
+msgid "[<I]  INT less than"
+msgstr "[<I] INT меньше"
+
+#: gui/fup/fupelemcontainerwidget.py:316
+msgid "[>=I]  INT greater or equal"
+msgstr "[>=I] INT больше или равно"
+
+#: gui/fup/fupelemcontainerwidget.py:319
+msgid "[<=I]  INT less or equal"
+msgstr "[<=I] ИНТ меньше или равно"
+
+#: gui/fup/fupelemcontainerwidget.py:325
+msgid "[==D]  DINT equal"
+msgstr "[==D]  DINT равен"
+
+#: gui/fup/fupelemcontainerwidget.py:328
+msgid "[<>D]  DINT not equal"
+msgstr "[<>D] DINT не равен"
+
+#: gui/fup/fupelemcontainerwidget.py:331
+msgid "[>D]  DINT greater than"
+msgstr "[>D]  DINT больше"
+
+#: gui/fup/fupelemcontainerwidget.py:334
+msgid "[<D]  DINT less than"
+msgstr "[<D]  DINT меньше"
+
+#: gui/fup/fupelemcontainerwidget.py:337
+msgid "[>=D]  DINT greater or equal"
+msgstr "[>=D]  DINT больше или равно"
+
+#: gui/fup/fupelemcontainerwidget.py:340
+msgid "[<=D]  DINT less or equal"
+msgstr "[<=D]  DINT меньше или равно"
+
+#: gui/fup/fupelemcontainerwidget.py:346
+msgid "[==R]  REAL equal"
+msgstr "[==R]  REAL равен"
+
+#: gui/fup/fupelemcontainerwidget.py:349
+msgid "[<>R]  REAL not equal"
+msgstr "[<>R] REAL не равен"
+
+#: gui/fup/fupelemcontainerwidget.py:352
+msgid "[>R]  REAL greater than"
+msgstr "[>R]  REAL больше"
+
+#: gui/fup/fupelemcontainerwidget.py:355
+msgid "[<R]  REAL less than"
+msgstr "[<R]  REAL меньше"
+
+#: gui/fup/fupelemcontainerwidget.py:358
+msgid "[>=R]  REAL greater or equal"
+msgstr "[>=R] REAL больше или равно"
+
+#: gui/fup/fupelemcontainerwidget.py:361
+msgid "[<=R]  REAL less or equal"
+msgstr "[<=R] REAL меньше или равно"
+
+#: gui/fup/fupelemcontainerwidget.py:367
+msgid "[AWL]  Inline AWL code"
+msgstr "[AWL]  Встроенный код AWL"
+
+#: gui/fup/fupelemcontainerwidget.py:372
+msgid "Arithmetic"
+msgstr "Арифметика"
+
+#: gui/fup/fupelemcontainerwidget.py:376
+msgid "Shift"
+msgstr "Сдвиг"
+
+#: gui/fup/fupelemcontainerwidget.py:379
+msgid "Compare"
+msgstr "Сравнение"
+
+#: gui/fup/fupwidget.py:79
+msgid "Unsupported FUP version. Got {}, but expected {}."
+msgstr "Неподдерживаемая версия FUP. {}, но ожидалось {}."
+
+#: gui/fup/fupwidget.py:122
+msgid "Awlsim FUP/FBD source generated by awlsim-{}"
+msgstr "Awlsim FUP/FBD исходник созданный awlsim-{}"
+
+#: gui/fup/fupwidget.py:145
+msgid "Configure &optimizer..."
+msgstr "Настроить &оптимизатор..."
+
+#: gui/fup/fupwidget.py:147
+msgid "Show AWL code (DE, optimized)..."
+msgstr "Показать AWL код (DE, оптимизировано)..."
+
+#: gui/fup/fupwidget.py:149
+msgid "Show AWL code (DE)..."
+msgstr "Показать AWL код (DE)..."
+
+#: gui/fup/fupwidget.py:151
+msgid "Show STL code (EN, optimized)..."
+msgstr "Показать STL код (EN, оптимизировано)..."
+
+#: gui/fup/fupwidget.py:153
+msgid "Show STL code (EN)..."
+msgstr "Показать STL код (EN)..."
+
+#: gui/fup/fupwidget.py:155
+msgid "Generate CALL template..."
+msgstr "Создать шаблон CALL..."
+
+#: gui/fup/fupwidget.py:178
+msgid "FUP/FBD compiler..."
+msgstr "FUP/FBD компилятор..."
+
+#: gui/fup/fupwidget.py:287
+msgid "Failed to create FUP source: {}"
+msgstr "Не удалось создать исходный код FUP: {}"
+
+#: gui/fup/fupwidget.py:290
+msgid "Composed FUP XML:"
+msgstr "Составленный FUP XML:"
+
+#: gui/fup/fupwidget.py:309
+msgid "Parsing FUP XML:"
+msgstr "Парсинг FUP XML:"
+
+#: gui/fup/fupwidget.py:315
+msgid "Failed to parse FUP source: {}"
+msgstr "Не удалось разобрать исходный код FUP: {}"
+
+#: gui/fup/fupwidget.py:345
+msgid "FUP compiler error"
+msgstr "Ошибка компилятора FUP"
+
+#: gui/fup/fupwidget.py:349
+msgid "FUP/FBD CALL template - {}"
+msgstr "Шаблон FUP/FBD CALL - {}"
+
+#: gui/fup/fupwidget.py:352
+msgid "Compiled FUP/FBD diagram - {}"
+msgstr "Скомпилированная диаграмма FUP/FBD - {}"
+
+#: gui/fup/undo.py:48
+msgid "FUP diagram change"
+msgstr "Изменение диаграммы FUP"
+
+#: gui/fup/undo.py:74
+msgid "Failed to {} a FUP/FBD change"
+msgstr "Не удалось {} FUP/FBD изменения"
+
+#: gui/guiconfig.py:38
+msgid "Source code editor"
+msgstr "Редактор исходного кода"
+
+#: gui/guiconfig.py:41
+msgid "&Auto indentation"
+msgstr "&Авто отступ"
+
+#: gui/guiconfig.py:43
+msgid ""
+"Automatically indent AWL/STL code as it is entered\n"
+"into the editor area."
+msgstr ""
+"Автоматически делать отступы AWL/STL кода, когда он вводится\n"
+"в область редактора."
+
+#: gui/guiconfig.py:47
+msgid "Clipboard &paste auto indentation"
+msgstr "Авто отступ для &вставки из буфера"
+
+#: gui/guiconfig.py:50
+msgid ""
+"Automatically indent AWL/STL code as it is pasted\n"
+"into the editor area."
+msgstr ""
+"Автоматически делать отступы AWL/STL кода при вставке его\n"
+"в область редактора."
+
+#: gui/guiconfig.py:54
+msgid "Live code &validation"
+msgstr "&Проверка кода в фоновом режиме"
+
+#: gui/guiconfig.py:56
+msgid ""
+"Enable automatic compilation and verification of the\n"
+"AWL/STL code as it is entered into the editor.\n"
+"The verification completely runs in the background."
+msgstr ""
+"Включить автоматическую компиляцию и проверку\n"
+"AWL/STL кода, когда он вводится в редактор.\n"
+"Проверка полностью работает в фоновом режиме."
+
+#: gui/guiconfig.py:66
+msgid "Select the AWL/STL editor font."
+msgstr "Выберите шрифт редактора AWL/STL."
+
+#: gui/guiconfig.py:68
+msgid "&Select..."
+msgstr "&Выбрать..."
+
+#: gui/guiconfig.py:82
+msgid "Font: {}, {} pt"
+msgstr "Шрифт: {}, {} пт"
+
+#: gui/guiconfig.py:88
+msgid "Editor font"
+msgstr "Шрифт редактора"
+
+#: gui/guiconfig.py:135
+msgid "User interface setup"
+msgstr "Настройка интерфейса"
+
+#: gui/hwmodconfig.py:120
+msgid ""
+"Hardware parameters [{}]: Replacing parameter '{}' with fully compatible "
+"parameter '{}'."
+msgstr ""
+"Параметры оборудования [{}]: Замена параметра '{}' полностью совместимым "
+"параметром '{}'."
+
+#: gui/hwmodconfig.py:210
+msgid ""
+"{}\n"
+"Default value: {}"
+msgstr ""
+"{}\n"
+"Значение по умолчанию: {}"
+
+#: gui/hwmodconfig.py:214
+msgid "The parameter's name"
+msgstr "Имя параметра"
+
+#: gui/hwmodconfig.py:217
+msgid "New parameter name"
+msgstr "Имя нового параметра"
+
+#: gui/hwmodconfig.py:224
+msgid "Parameter"
+msgstr "Параметр"
+
+#: gui/hwmodconfig.py:224
+msgid "Value"
+msgstr "Значение"
+
+#: gui/hwmodconfig.py:228 gui/libtablewidget.py:163
+msgid "new"
+msgstr "новый"
+
+#: gui/hwmodconfig.py:329
+msgid "Available modules:"
+msgstr "Доступные модули:"
+
+#: gui/hwmodconfig.py:336
+msgid ""
+"Name of another module to add.\n"
+"Note: Typos in the module name will result in errors on CPU startup."
+msgstr ""
+"Имя модуля для добавления.\n"
+"Примечание: Опечатка в имени модуля приведет к ошибке при запуске ЦП."
+
+#: gui/hwmodconfig.py:345
+msgid ""
+"Add the selected module to the project\n"
+"and mark it for download to the CPU."
+msgstr ""
+"Добавить выбранный модуль в проект\n"
+"и отметить его для загрузки на ЦП."
+
+#: gui/hwmodconfig.py:350
+msgid ""
+"Remove the selected module from the project\n"
+"and mark it for removal from the CPU."
+msgstr ""
+"Удалить выбранный модуль из проекта\n"
+"и пометить его для удаления из ЦП."
+
+#: gui/hwmodconfig.py:355
+msgid "Loaded modules:"
+msgstr "Загруженные модули:"
+
+#: gui/hwmodconfig.py:365
+msgid ""
+"Move the selected loaded module up.\n"
+"Modules are executed in order from top to bottom."
+msgstr ""
+"Переместить выбранный загруженный модуль вверх.\n"
+"Модули выполняются по порядку сверху вниз."
+
+#: gui/hwmodconfig.py:370
+msgid ""
+"Move the selected loaded module down.\n"
+"Modules are executed in order from top to bottom."
+msgstr ""
+"Переместить выбранный загруженный модуль вниз.\n"
+"Модули выполняются по порядку сверху вниз."
+
+#: gui/hwmodconfig.py:375
+msgid "Module parameters:"
+msgstr "Параметры модуля:"
+
+#: gui/hwmodconfig.py:542
+msgid "Hardware module setup"
+msgstr "Настройка аппаратного модуля"
+
+#: gui/interfedit/blocktypewidget.py:202
+msgid "Block type: Function (FC)"
+msgstr "Тип блока: Функция (FC)"
+
+#: gui/interfedit/blocktypewidget.py:203
+msgid "Block type: Function block (FB)"
+msgstr "Тип блока: Функциональный блок (FB)"
+
+#: gui/interfedit/blocktypewidget.py:204
+msgid "Block type: Organization block (OB)"
+msgstr "Тип блока: Организационный блок (OB)"
+
+#: gui/interfedit/blocktypewidget.py:211
+msgid ""
+"Enter the block name here.\n"
+"\n"
+"This can be an absolute block name like\n"
+"  FB 42   or   FC 42   or   OB 100\n"
+"or a symbolic block name like\n"
+"  \"My function block\"\n"
+"(The symbolic name must be present in the symbol table.)"
+msgstr ""
+"Введите имя блока.\n"
+"\n"
+"Это может быть абсолютное имя блока, как\n"
+"  FB 42 или FC 42 или OB 100\n"
+"или символьное имя блока, как\n"
+"  \"Мой блок функции\"\n"
+"(Символьное имя должно присутствовать в таблице символов.)"
+
+#: gui/interfedit/blocktypewidget.py:219
+msgid "DIs:"
+msgstr "DI-и:"
+
+#: gui/interfedit/blocktypewidget.py:224
+msgid ""
+"Enter the instance DBs to create here.\n"
+"\n"
+"If this field is left empty, no DB will be generated.\n"
+"One DB or a comma separated list of DBs to create can be specified.\n"
+"\n"
+"For example:\n"
+"  DB 42\n"
+"or\n"
+"  DB 42, DB 43, DB 44\n"
+"or a symbolic block name like\n"
+"  \"First data block\", \"Second data block\"\n"
+"(The symbolic name must be present in the symbol table.)"
+msgstr ""
+"Введите здесь имя DB для создания.\n"
+"\n"
+"Если это поле оставлено пустым, то база данных не будет создана.\n"
+"Можно указать одну DB или разделенный запятыми список DB для создания.\n"
+"\n"
+"Например:\n"
+"  DB 42\n"
+"или\n"
+"  DB 42, DB 43, DB 44\n"
+"или символьное имя блока, как\n"
+"  \"Первый блок данных\", \"Второй блок данных\"\n"
+"(Символьное имя должно присутствовать в таблице символов.)"
+
+#: gui/interfedit/interftabmodel.py:570
+msgid "Create a new INPUT field here..."
+msgstr "Создать новое поле INPUT..."
+
+#: gui/interfedit/interftabmodel.py:572
+msgid "Create a new OUTPUT field here..."
+msgstr "Создать новое поле OUTPUT..."
+
+#: gui/interfedit/interftabmodel.py:574
+msgid "Create a new IN_OUT field here..."
+msgstr "Создать новое поле IN_OUT..."
+
+#: gui/interfedit/interftabmodel.py:576
+msgid "Create a new STAT field here..."
+msgstr "Создать новое поле STAT..."
+
+#: gui/interfedit/interftabmodel.py:578
+msgid "Create a new TEMP field here..."
+msgstr "Создать новое поле TEMP..."
+
+#: gui/interfedit/interftabmodel.py:582
+msgid "Function (FC) return value."
+msgstr "Значение возврата функции (FC)."
+
+#: gui/interfedit/interftabmodel.py:584
+msgid "The interface field name."
+msgstr "Имя интерфейса."
+
+#: gui/interfedit/interftabmodel.py:586
+msgid ""
+"The interface field data type.\n"
+"For example: BOOL  or  INT"
+msgstr ""
+"Тип данных интерфейса.\n"
+"Например: BOOL или INT"
+
+#: gui/interfedit/interftabmodel.py:588
+msgid "The initial value in the associated DB."
+msgstr "Начальное значение в связанной DB."
+
+#: gui/interfedit/interftabmodel.py:600
+msgid "Interface field name"
+msgstr "Имя интерфейса"
+
+#: gui/interfedit/interftabmodel.py:602 gui/symtabwidget.py:116
+msgid "Data type"
+msgstr "Тип данных"
+
+#: gui/interfedit/interftabmodel.py:604
+msgid "Init value"
+msgstr "Начальное значение"
+
+#: gui/interfedit/interfwidget.py:72
+msgid "Change block type?"
+msgstr "Изменить тип блока?"
+
+#: gui/interfedit/interfwidget.py:73
+msgid ""
+"The block interface table is not empty.\n"
+"Changing the block type might delete interface fields.\n"
+"\n"
+"Change block type anyway?"
+msgstr ""
+"Таблица интерфейса не пуста.\n"
+"Изменение типа блока может удалить поля интерфейса.\n"
+"\n"
+"Все равно изменить тип блока?"
+
+#: gui/library.py:214
+msgid "Paste library code body?"
+msgstr "Вставить код библиотеки?"
+
+#: gui/library.py:215
+msgid ""
+"Warning: It is not recommended to paste library code into the project "
+"sources. You should instead just import the library (via library selection "
+"table) and CALL the imported function.\n"
+"\n"
+"See the 'CALL \"{}\"' or 'CALL {}' buttons.\n"
+"\n"
+"Do you want to paste the code nevertheless?"
+msgstr ""
+"Предупреждение: Не рекомендуется вставлять код библиотеки в исходники "
+"проекта. Вместо этого вы должны просто импортировать библиотеку (через выбор "
+"библиотеки) и вызвать (CALL) импортируемую функцию.\n"
+"\n"
+"Смотрите кнопки 'CALL \"{}\"' или 'CALL {}'.\n"
+"\n"
+"Вы хотите вставить код?"
+
+#: gui/library.py:273
+msgid "AWL/STL - Standard library"
+msgstr "AWL/STL - Стандартная библиотека"
+
+#: gui/library.py:287
+msgid "System functions (SFC)"
+msgstr "Системные функции (SFC)"
+
+#: gui/library.py:288
+msgid "System function blocks (SFB)"
+msgstr "Блоки системных функций (SFB)"
+
+#: gui/library.py:293
+msgid "Library error"
+msgstr "Ошибка библиотеки"
+
+#: gui/libtablewidget.py:118
+msgid "Library or block not found!"
+msgstr "Библиотека или блок не найдены!"
+
+#: gui/libtablewidget.py:142
+msgid ""
+"The name of the library.\n"
+"(The name is case insensitive.)"
+msgstr ""
+"Имя библиотеки.\n"
+"(Имя без учета регистра)"
+
+#: gui/libtablewidget.py:144
+msgid ""
+"The name of the block from the library to include.\n"
+"For example:  FC 10  or  FB 42"
+msgstr ""
+"Имя блока из библиотеки для включения.\n"
+"Например: FC 10 или FB 42"
+
+#: gui/libtablewidget.py:147
+msgid ""
+"The local name of the block.\n"
+"The block can be CALLed by this name from within the user program.\n"
+"For example:  FC 110  or  FB 142"
+msgstr ""
+"Локальное имя блока.\n"
+"Блок может быть вызван этим именем внутри пользовательской программы.\n"
+"Например: FC 110 или FB 142"
+
+#: gui/libtablewidget.py:159
+msgid "Library"
+msgstr "Библиотека"
+
+#: gui/libtablewidget.py:159
+msgid "Library block"
+msgstr "Блок библиотеки"
+
+#: gui/libtablewidget.py:160
+msgid "Use as block"
+msgstr "Использовать как блок"
+
+#: gui/libtablewidget.py:160
+msgid "Description"
+msgstr "Описание"
+
+#: gui/libtablewidget.py:180
+msgid "Invalid block selection: {}"
+msgstr "Недопустимый выбор блока: {}"
+
+#: gui/libtablewidget.py:213
+msgid "Effective block type does not match the library's block type '{}'."
+msgstr "Этот тип блока не соответствует типу блока библиотеки '{}'."
+
+#: gui/libtablewidget.py:223
+msgid "Invalid library information"
+msgstr "Некорректная информация о библиотеке"
+
+#: gui/linkconfig.py:40
+msgid ""
+"A semicolon (;) separated list of Python interpreters used to run the "
+"simulator core.\n"
+"The list is tried first to last element, until one working interpreter is "
+"found.\n"
+"\n"
+"The special value $CURRENT is the interpreter that is used to run the "
+"frontend.\n"
+"The special value $DEFAULT will expand to this list:\n"
+"    {}\n"
+"\n"
+"---> If you are unsure, leave this as $DEFAULT <---"
+msgstr ""
+"Разделенный точкой с запятой (;) список интерпретаторов Python для запуска "
+"ядра симулятора.\n"
+"Сначала попытается запустить с последнего элемента до тех пор, пока не будет "
+"найден один рабочий интерпретатор.\n"
+"\n"
+"Особое значение $CURRENT - это интерпретатор, используемый для запуска "
+"интерфейса.\n"
+"Особое значение $DEFAULT разворачивается в этот список:\n"
+"    {}\n"
+"\n"
+"---> Если вы не уверены, оставить это как $DEFAULT<---"
+
+#: gui/linkconfig.py:50
+msgid "Python interpreter list:"
+msgstr "Список интерпретаторов Python:"
+
+#: gui/linkconfig.py:59
+msgid ""
+"Spawn the new simulator core server on any port within this range.\n"
+"\n"
+"---> If you are unsure, do not change the defaults. <---"
+msgstr ""
+"Создать новый сервер симулятора на любом порту в этом диапазоне.\n"
+"\n"
+"---> Если вы не уверены, не изменяйте значения по умолчанию. <---"
+
+#: gui/linkconfig.py:62
+msgid "Port range:"
+msgstr "Диапазон портов:"
+
+#: gui/linkconfig.py:67
+msgid "from "
+msgstr "от "
+
+#: gui/linkconfig.py:72
+msgid "to "
+msgstr "до "
+
+#: gui/linkconfig.py:94
+msgid "The SSH login user name of the remote server."
+msgstr "SSH имя пользователя для удаленного сервера."
+
+#: gui/linkconfig.py:95
+msgid "SSH login user:"
+msgstr "SSH логин:"
+
+#: gui/linkconfig.py:103
+msgid ""
+"Port number of the remote SSH server.\n"
+"Leave this as {} unless you know what you are doing."
+msgstr ""
+"Порт удаленного SSH сервера.\n"
+"Оставьте это как {}, если не знаете, что вы делаете."
+
+#: gui/linkconfig.py:106
+msgid "SSH port:"
+msgstr "Порт SSH:"
+
+#: gui/linkconfig.py:116
+msgid ""
+"The local SSH client executable.\n"
+"This can be the full path to the SSH client program."
+msgstr ""
+"Файл локального клиента SSH.\n"
+"Это может быть полный путь к клиентской программе SSH."
+
+#: gui/linkconfig.py:127
+msgid ""
+"Port number of the local tunnel end.\n"
+"It is recommended to use automatic port selection."
+msgstr ""
+"Конечный порт локального туннеля.\n"
+"Рекомендуется использовать автоматический выбор портов."
+
+#: gui/linkconfig.py:129
+msgid "Local port:"
+msgstr "Локальный порт:"
+
+#: gui/linkconfig.py:139
+msgid "auto"
+msgstr "авто"
+
+#: gui/linkconfig.py:155
+msgid "The host name or IP address of the core server to connect to."
+msgstr "Имя хоста или IP-адрес основного сервера для подключения."
+
+#: gui/linkconfig.py:157
+msgid "Core server host:"
+msgstr "Хост основного сервера:"
+
+#: gui/linkconfig.py:164
+msgid "The port number of the core server to connect to."
+msgstr "Порт основного сервера для подключения."
+
+#: gui/linkconfig.py:166
+msgid "Core server port:"
+msgstr "Порт основного сервера:"
+
+#: gui/linkconfig.py:174
+msgid "Connection timeout."
+msgstr "Время ожидания соединения истекло."
+
+#: gui/linkconfig.py:175
+msgid "Timeout:"
+msgstr "Время ожидания:"
+
+#: gui/linkconfig.py:186
+msgid ""
+"Establish an SSH tunnel to the core server and connect via this tunnel.\n"
+"SSH is a secure and encrypted way to connect to a server."
+msgstr ""
+"Установить SSH туннель к основному серверу и соединиться через этот "
+"туннель.\n"
+"SSH - это безопасный и зашифрованный способ подключения к серверу."
+
+#: gui/linkconfig.py:190
+msgid "via SSH t&unnel"
+msgstr "через т&уннель SSH"
+
+#: gui/linkconfig.py:211
+msgid "Operation mode"
+msgstr "Режим работы"
+
+#: gui/linkconfig.py:213
+msgid "Start a &simulator core"
+msgstr "Запустить ядро &симулятора"
+
+#: gui/linkconfig.py:214
+msgid ""
+"This will start a simulator core on-the-fly in the background.\n"
+"\n"
+"---> If you don't know what to do, select this. <---"
+msgstr ""
+"Это запустит ядро симулятора на в фоновом режиме.\n"
+"\n"
+"---> Если вы не знаете, что делать, выберите это. <---"
+
+#: gui/linkconfig.py:219
+msgid "Connect to an &external core"
+msgstr "Подключиться к &внешнему ядру"
+
+#: gui/linkconfig.py:220
+msgid ""
+"Connect to an already running core server.\n"
+"This server may be running locally or somewhere else on the (trusted) "
+"network."
+msgstr ""
+"Подключиться к уже запущенному основному серверу.\n"
+"Этот сервер может работать локально или где-нибудь в (доверенной) сети."
+
+#: gui/linkconfig.py:226
+msgid "Show advanced &options"
+msgstr "Показать &дополнительные опции"
+
+#: gui/linkconfig.py:227
+msgid ""
+"Show expert simulator core options.\n"
+"\n"
+"You should not normally need to change any of these.\n"
+"Changing them might break the execution of the simulator core."
+msgstr ""
+"Показать дополнительные параметры симулятора.\n"
+"\n"
+"Вам обычно не нужно изменять ни один из них.\n"
+"Изменение их может нарушить выполнение ядра симулятора."
+
+#: gui/linkconfig.py:243
+msgid "Always as&k"
+msgstr "Всегда &спрашивать"
+
+#: gui/linkconfig.py:246
+msgid "Always open this dialog when trying to connect to a CPU."
+msgstr "Всегда открывать это окно при попытке подключиться к ЦП."
+
+#: gui/linkconfig.py:398
+msgid "Server connection setup"
+msgstr "Настройка соединения с сервером"
+
+#: gui/mainwindow.py:78
+msgid "Awlsim - Downloading..."
+msgstr "Awlsim - Загрузка..."
+
+#: gui/mainwindow.py:80
+msgid ""
+"Downloading project to CPU.\n"
+"\n"
+"Please be patient.\n"
+"This might take a few seconds."
+msgstr ""
+"Загрузка проекта на ЦП.\n"
+"\n"
+"Пожалуйста, будьте терпеливы.\n"
+"Это может занять несколько секунд."
+
+#: gui/mainwindow.py:112
+msgid "{}CPU view"
+msgstr "{}ЦП обзор"
+
+#: gui/mainwindow.py:137
+msgid "{}Project"
+msgstr "{}Проект"
+
+#: gui/mainwindow.py:243
+msgid "Failed to find '{}'"
+msgstr "Не удалось найти '{}'"
+
+#: gui/mainwindow.py:244
+msgid ""
+"Could not spawn a new instance.\n"
+"Failed to find '{}'"
+msgstr ""
+"Не удалось создать новый экземпляр.\n"
+"Не удалось найти '{}'"
+
+#: gui/mainwindow.py:257
+msgid "Failed to execute '{}'"
+msgstr "Не удалось выполнить '{}'"
+
+#: gui/mainwindow.py:258
+msgid ""
+"Could not spawn a new instance.\n"
+"{}Failed to execute '{}'"
+msgstr ""
+"Не удалось создать новый экземпляр.\n"
+"{}Не удалось выполнить '{}'"
+
+#: gui/mainwindow.py:266
+msgid "Unsaved project"
+msgstr "Несохранённый проект"
+
+#: gui/mainwindow.py:267
+msgid ""
+"The current project is modified and contains unsaved changes.\n"
+" Do you want to:\n"
+"- Save the project, close it and open the new project\n"
+"- Open the new project in a new instance or\n"
+"- Discard the changes and open the new project\n"
+"- Cancel the operation"
+msgstr ""
+"Текущий проект изменен и содержит несохраненные изменения.\n"
+" Вы хотите:\n"
+"- Сохранить проект, закрыть и открыть новый проект\n"
+"- Открыть новый проект в новом экземпляре или\n"
+"- Отменить изменения и открыть новый проект\n"
+"- Отменить операцию"
+
+#: gui/mainwindow.py:383
+msgid "Please select AWL/STL source"
+msgstr "Выберите исходник AWL/STL"
+
+#: gui/mainwindow.py:384
+msgid ""
+"Can not paste text.\n"
+"\n"
+"Please move the text cursor to the place in the AWL/STL code where you want "
+"to paste to."
+msgstr ""
+"Невозможно вставить текст.\n"
+"\n"
+"Пожалуйста, переместите курсор на место в коде AWL/STL, куда вы хотите "
+"вставить."
+
+#: gui/mainwindow.py:576
+msgid "CPU: offline"
+msgstr "ЦП: оффлайн"
+
+#: gui/mainwindow.py:578
+msgid "CPU: online / STOP"
+msgstr "ЦП: онлайн / СТОП"
+
+#: gui/mainwindow.py:580
+msgid "CPU: loading"
+msgstr "ЦП: загрузка"
+
+#: gui/mainwindow.py:582
+msgid "CPU: RUN"
+msgstr "ЦП: РАБОТА"
+
+#: gui/mainwindow.py:584
+msgid "CPU: EXCEPTION"
+msgstr "ЦП: ОШИБКА"
+
+#: gui/mainwindow.py:589
+msgid "{} stmt/s ({} µs/stmt)"
+msgstr "{} ст/с ({} мкс/ст)"
+
+#: gui/mainwindow.py:600
+msgid "OB1: avg: {} ms  min: {} ms  max: {} ms  padding: {} ms"
+msgstr "OB1: срд: {} мс  мин: {} мс  макс: {} мс  пауза: {} мс"
+
+#: gui/mainwindow.py:610
+msgid "Awlsim PLC v{}"
+msgstr "Awlsim PLC v{}"
+
+#: gui/mainwindow.py:652
+msgid "Main tool bar"
+msgstr "Главная панель инструментов"
+
+#: gui/mainwindow.py:654
+msgid "New project"
+msgstr "Новый проект"
+
+#: gui/mainwindow.py:656
+msgid "Open project"
+msgstr "Открыть проект"
+
+#: gui/mainwindow.py:658
+msgid "Save project"
+msgstr "Сохранить проект"
+
+#: gui/mainwindow.py:661
+msgid "Undo last edit"
+msgstr "Отменить последнюю правку"
+
+#: gui/mainwindow.py:663
+msgid "Redo"
+msgstr "Повтор"
+
+#: gui/mainwindow.py:666
+msgid "Cut"
+msgstr "Вырезать"
+
+#: gui/mainwindow.py:668
+msgid "Copy"
+msgstr "Копировать"
+
+#: gui/mainwindow.py:670
+msgid "Paste"
+msgstr "Вставить"
+
+#: gui/mainwindow.py:673
+msgid "Find..."
+msgstr "Найти..."
+
+#: gui/mainwindow.py:676
+msgid "Find and replace..."
+msgstr "Найти и заменить..."
+
+#: gui/mainwindow.py:679
+msgid "Standard library"
+msgstr "Стандартная библиотека"
+
+#: gui/mainwindow.py:681
+msgid ""
+"Standard library.\n"
+"(Please click into the AWL/STL source code\n"
+"at the place where to paste the library call)"
+msgstr ""
+"Стандартная библиотека.\n"
+"(Пожалуйста, нажмите в исходный код AWL/STL\n"
+"на месте вставки библиотечного вызова)"
+
+#: gui/mainwindow.py:696
+msgid "&File"
+msgstr "&Файл"
+
+#: gui/mainwindow.py:697
+msgid "&New project"
+msgstr "&Новый проект"
+
+#: gui/mainwindow.py:699
+msgid "&Open project..."
+msgstr "&Открыть проект..."
+
+#: gui/mainwindow.py:701
+msgid "&Save project"
+msgstr "&Сохранить проект"
+
+#: gui/mainwindow.py:703
+msgid "&Save project as..."
+msgstr "&Сохранить проект как..."
+
+#: gui/mainwindow.py:706
+msgid "&Exit..."
+msgstr "&Выход..."
+
+#: gui/mainwindow.py:709
+msgid "&Edit"
+msgstr "&Изменить"
+
+#: gui/mainwindow.py:710
+msgid "&Undo"
+msgstr "&Отмена"
+
+#: gui/mainwindow.py:712
+msgid "&Redo"
+msgstr "&Повтор"
+
+#: gui/mainwindow.py:715 gui/projecttreewidget.py:1412
+msgid "&Cut"
+msgstr "&Вырезать"
+
+#: gui/mainwindow.py:717 gui/projecttreewidget.py:1409
+msgid "&Copy"
+msgstr "&Копировать"
+
+#: gui/mainwindow.py:719
+msgid "&Paste"
+msgstr "&Вставить"
+
+#: gui/mainwindow.py:722
+msgid "&Find..."
+msgstr "&Найти..."
+
+#: gui/mainwindow.py:725
+msgid "Find and r&eplace..."
+msgstr "Найти и з&аменить..."
+
+#: gui/mainwindow.py:729
+msgid "&Library"
+msgstr "&Библиотека"
+
+#: gui/mainwindow.py:730
+msgid "Insert &OB template..."
+msgstr "Вставить шаблон &OB..."
+
+#: gui/mainwindow.py:732
+msgid "Insert F&C template..."
+msgstr "Вставить шаблон F&C..."
+
+#: gui/mainwindow.py:734
+msgid "Insert F&B template..."
+msgstr "Вставить шаблон F&B..."
+
+#: gui/mainwindow.py:736
+msgid "Insert &instance-DB template..."
+msgstr "Вставить шаблон &экземпляр-DB..."
+
+#: gui/mainwindow.py:738
+msgid "Insert &DB template..."
+msgstr "Вставить шаблон &DB..."
+
+#: gui/mainwindow.py:740
+msgid "Insert &UDT template..."
+msgstr "Вставить шаблон &UDT..."
+
+#: gui/mainwindow.py:743
+msgid "Insert FC C&ALL template..."
+msgstr "Вставить шаблон FC C&ALL..."
+
+#: gui/mainwindow.py:745
+msgid "Insert FB CA&LL template..."
+msgstr "Вставить шаблон FB CA&LL..."
+
+#: gui/mainwindow.py:748
+msgid "&Standard library..."
+msgstr "&Стандартная библиотека..."
+
+#: gui/mainwindow.py:752
+msgid "&CPU"
+msgstr "&ЦП"
+
+#: gui/mainwindow.py:771
+msgid "&Window"
+msgstr "&Окно"
+
+#: gui/mainwindow.py:775
+msgid "&Help"
+msgstr "&Помощь"
+
+#: gui/mainwindow.py:776
+msgid "Awlsim &homepage..."
+msgstr "Awlsim &домашняя страница..."
+
+#: gui/mainwindow.py:778
+msgid "&About..."
+msgstr "&О программе..."
+
+#: gui/mainwindow.py:781
+msgid "Start profiling"
+msgstr "Начать профилирование"
+
+#: gui/mainwindow.py:784
+msgid "Stop profiling"
+msgstr "Остановить профили"
+
+#: gui/mainwindow.py:894
+msgid "&Close active window"
+msgstr "&Закрыть активное окно"
+
+#: gui/mainwindow.py:898
+msgid "Close &all except active"
+msgstr "Закрыть &все кроме активных"
+
+#: gui/mainwindow.py:902
+msgid "Close a&ll"
+msgstr "Закрыть в&се"
+
+#: gui/mainwindow.py:999
+msgid "Unsaved AWL/STL code"
+msgstr "Несохраненный AWL/STL код"
+
+#: gui/mainwindow.py:1000
+msgid ""
+"The editor contains unsaved AWL/STL code.\n"
+"AWL/STL code will be lost by exiting without saving."
+msgstr ""
+"Редактор содержит несохраненный AWL/STL код.\n"
+"AWL/STL код будет потерян при выходе без сохранения."
+
+#: gui/mainwindow.py:1033
+msgid "About Awlsim PLC"
+msgstr "О Awlsim PLC"
+
+#: gui/mainwindow.py:1062
+msgid "Failed to start profiler."
+msgstr "Не удалось запустить профилер."
+
+#: gui/mainwindow.py:1072
+msgid "GUI profiler dump:\n"
+msgstr "Дамп профиляра GUI:\n"
+
+#: gui/opereditwidget.py:65
+msgid "Failed to parse symbol table: {}"
+msgstr "Ошибка анализа таблицы символов: {}"
+
+#: gui/opereditwidget.py:267 gui/util.py:127
+msgid "&Ok"
+msgstr "&Ок"
+
+#: gui/optimizerconfig.py:46
+msgid "Available optimizers:"
+msgstr "Доступные оптимизаторы:"
+
+#: gui/optimizerconfig.py:51
+msgid ""
+"Enter a custom optimizer here.\n"
+"A wrong name will cause a build error on the target CPU."
+msgstr ""
+"Введите здесь пользовательский оптимизатор.\n"
+"Неправильное имя приведет к ошибке сборки на целевом ЦП."
+
+#: gui/optimizerconfig.py:59
+msgid "Enable the selected optimizer."
+msgstr "Включить выбранный оптимизатор."
+
+#: gui/optimizerconfig.py:63
+msgid "Disable the selected optimizer."
+msgstr "Отключить выбранный оптимизатор."
+
+#: gui/optimizerconfig.py:67
+msgid "Enabled optimizers:"
+msgstr "Включенные оптимизаторы:"
+
+#: gui/optimizerconfig.py:71
+msgid "Enable &all available optimizers (recommended)"
+msgstr "Включить &все доступные оптимизаторы (рекомендуется)"
+
+#: gui/optimizerconfig.py:73
+msgid ""
+"If this box is ticked all available optimizers\n"
+"will be enabled.\n"
+"This is recommended."
+msgstr ""
+"Если этот флажок отмечен, то будут включены\n"
+"все доступные оптимизаторы.\n"
+"Это рекомендуется."
+
+#: gui/optimizerconfig.py:80
+msgid "&Run enabled optimizers (recommended)"
+msgstr "&Запустить включенные оптимизаторы (рекомендуется)"
+
+#: gui/optimizerconfig.py:82
+msgid ""
+"If this box is not ticked, none of the \n"
+"enabled optimizers will actually be \n"
+"executed."
+msgstr ""
+"Если этот флажок не отмечен, то ни\n"
+"один из включенных оптимизаторов \n"
+"фактически не будет запущен."
+
+#: gui/optimizerconfig.py:135
+msgid ""
+"WARNING: This optimizer is not known to Awlsim.\n"
+"It might cause a build error on the target CPU!"
+msgstr ""
+"ВНИМАНИЕ: Этот оптимизатор не известен Awlsim.\n"
+"Это может вызвать ошибку сборки на целевом ЦП!"
+
+#: gui/optimizerconfig.py:194
+msgid "AWL optimizer setup"
+msgstr "Настройка оптимизатора AWL"
+
+#: gui/projecttreewidget.py:336
+msgid ""
+"Remove the selected source '{}' from the project?\n"
+"This can't be undone.\n"
+msgstr ""
+"Удалить выбранный исходник '{}' из проекта?\n"
+"Это не может быть отменено.\n"
+
+#: gui/projecttreewidget.py:379
+msgid ">>> New source <<<"
+msgstr ">>> Новый исходник <<<"
+
+#: gui/projecttreewidget.py:404 gui/projecttreewidget.py:405
+msgid "Name for {} source"
+msgstr "Имя исходника {}"
+
+#: gui/projecttreewidget.py:571 gui/projecttreewidget.py:608
+msgid "Failed to parse symbol table"
+msgstr "Не удалось проанализировать таблицу символов"
+
+#: gui/projecttreewidget.py:591
+msgid "Select symbol table"
+msgstr "Выберите таблицу символов"
+
+#: gui/projecttreewidget.py:592
+msgid ""
+"Please select the symbol table where to add the symbol to:\n"
+"{}  \"{}\""
+msgstr ""
+"Пожалуйста, выберите таблицу символов, где следует добавить символ:\n"
+"{} \"{}\""
+
+#: gui/projecttreewidget.py:616
+msgid "Failed to update symbol table"
+msgstr "Не удалось обновить таблицу символов"
+
+#: gui/projecttreewidget.py:774
+msgid "Opened plain AWL/STL file"
+msgstr "Открыт обычный AWL/STL файл"
+
+#: gui/projecttreewidget.py:775
+msgid ""
+"The plain AWL/STL source file \n"
+"'{}'\n"
+" has sucessfully been opened.\n"
+"\n"
+"If you click on 'save', you will be asked to create a project file for this "
+"source."
+msgstr ""
+"Файл исходного кода AWL/STL \n"
+"'{}'\n"
+" успешно открыт.\n"
+"\n"
+"Если вы нажмете на 'Сохранить', вам будет предложено создать файл проекта "
+"для этого исходника."
+
+#: gui/projecttreewidget.py:799
+msgid "Create Awlsim project file?"
+msgstr "Создать файл проекта Awlsim?"
+
+#: gui/projecttreewidget.py:800
+msgid ""
+"The current project was created ad-hoc from a plain AWL/STL file.\n"
+"Can not save without creating a project file.\n"
+"\n"
+"Do you want to create a project file?"
+msgstr ""
+"Текущий проект был создан на основе обычного AWL/STL файла.\n"
+"Не могу сохранить без создания файла проекта.\n"
+"\n"
+"Вы хотите создать файл проекта?"
+
+#: gui/projecttreewidget.py:821
+msgid "Project contains external sources"
+msgstr "Проект содержит внешние исходники"
+
+#: gui/projecttreewidget.py:822
+msgid ""
+"The project contains external sources.\n"
+"It is strongly recommended to integrate external sources into the project.\n"
+"Click on 'integrate source into project' in the source menu."
+msgstr ""
+"Проект содержит внешние исходники.\n"
+"Настоятельно рекомендуется интегрировать в проект внешние исходники.\n"
+"Нажмите на 'интегрировать исходник в проект' в меню исходника."
+
+#: gui/projecttreewidget.py:831
+msgid "Save-file name changed. Re-generating project file UUIDs."
+msgstr "Имя файла сохранения изменено. Повторное создание файла UUID проекта."
+
+#: gui/projecttreewidget.py:1014
+msgid "AWL / STL"
+msgstr "AWL / STL"
+
+#: gui/projecttreewidget.py:1015
+msgid "FUP / FBD"
+msgstr "FUP / FBD"
+
+#: gui/projecttreewidget.py:1016
+msgid "KOP / LAD"
+msgstr "KOP / LAD"
+
+#: gui/projecttreewidget.py:1019
+msgid "CPU"
+msgstr "ЦП"
+
+#: gui/projecttreewidget.py:1020
+msgid "Connection"
+msgstr "Соединение"
+
+#: gui/projecttreewidget.py:1022
+msgid "Editor settings"
+msgstr "Настройки редактора"
+
+#: gui/projecttreewidget.py:1111
+msgid ""
+"ERROR: There is an error in the source file.\n"
+"Please open it to fix the problem."
+msgstr ""
+"ОШИБКА: Ошибка в исходном файле.\n"
+"Пожалуйста, откройте его, чтобы исправить проблему."
+
+#: gui/projecttreewidget.py:1116
+msgid ""
+"WARNING: The source contained in the project\n"
+"does not match the source on the CPU.\n"
+"That means the CPU is currenly running an outdated program.\n"
+"Please re-download the sources to the CPU\n"
+"by clicking the download button in the tool bar."
+msgstr ""
+"ВНИМАНИЕ: Исходник, содержащийся в проекте\n"
+"не соответствует исходному коду ЦП.\n"
+"Это означает, что процессор в настоящее время работает с \n"
+"устаревшей программой. Пожалуйста, перезагрузите исходные\n"
+"тексты в ЦП, нажав на кнопку загрузки в панели инструментов."
+
+#: gui/projecttreewidget.py:1127
+msgid ""
+"\n"
+"Source hash: {}..."
+msgstr ""
+"\n"
+"Хэш исходника: {}..."
+
+#: gui/projecttreewidget.py:1144
+msgid "Right click here to add new AWL source."
+msgstr "Щелкните правой кнопкой мыши здесь, чтобы добавить новый исходник AWL."
+
+#: gui/projecttreewidget.py:1147
+msgid "Double click here to edit this AWL source."
+msgstr "Дважды нажмите здесь, чтобы отредактировать этот исходник AWL."
+
+#: gui/projecttreewidget.py:1150
+msgid "Right click here to add new FUP source."
+msgstr "Щелкните правой кнопкой мыши здесь, чтобы добавить новый исходник FUP."
+
+#: gui/projecttreewidget.py:1153
+msgid "Double click here to edit this FUP diagram."
+msgstr "Дважды нажмите здесь, чтобы изменить эту диаграмму FUP."
+
+#: gui/projecttreewidget.py:1156
+msgid "Right click here to add new KOP source."
+msgstr "Щелкните правой кнопкой мыши здесь, чтобы добавить новый исходник KOP."
+
+#: gui/projecttreewidget.py:1159
+msgid "Double click here to edit this KOP diagram."
+msgstr "Дважды нажмите здесь, чтобы изменить эту диаграмму KOP."
+
+#: gui/projecttreewidget.py:1162
+msgid "Right click here to add new symbol table."
+msgstr ""
+"Нажмите правой кнопкой мыши здесь, чтобы добавить новую таблицу символов."
+
+#: gui/projecttreewidget.py:1165
+msgid "Double click here to edit this symbol table."
+msgstr "Дважды нажмите здесь, чтобы отредактировать таблицу символов."
+
+#: gui/projecttreewidget.py:1167
+msgid "Double click here to edit system library selections."
+msgstr "Дважды нажмите здесь, чтобы изменить выбор системных библиотек."
+
+#: gui/projecttreewidget.py:1169
+msgid "Double click here to edit CPU settings."
+msgstr "Дважды нажмите здесь, чтобы изменить настройки ЦП."
+
+#: gui/projecttreewidget.py:1171
+msgid "Double click here to edit core server connection settings."
+msgstr "Дважды нажмите здесь, чтобы изменить настройки соединения с сервером."
+
+#: gui/projecttreewidget.py:1173
+msgid "Double click here to edit hardware module settings."
+msgstr "Дважды нажмите здесь, чтобы изменить настройки оборудования."
+
+#: gui/projecttreewidget.py:1175
+msgid "Double click here to edit GUI settings."
+msgstr "Дважды нажмите здесь, чтобы изменить настройки GUI."
+
+#: gui/projecttreewidget.py:1324
+msgid " (Copy)"
+msgstr " (Копия)"
+
+#: gui/projecttreewidget.py:1395
+msgid "&Edit..."
+msgstr "&Изменить..."
+
+#: gui/projecttreewidget.py:1399
+msgid "&Add new {}"
+msgstr "&Добавить новый {}"
+
+#: gui/projecttreewidget.py:1402
+msgid "&Delete..."
+msgstr "&Удалить..."
+
+#: gui/projecttreewidget.py:1405
+msgid "&Rename..."
+msgstr "&Переименовать..."
+
+#: gui/projecttreewidget.py:1419
+msgid "&Import..."
+msgstr "&Импорт..."
+
+#: gui/projecttreewidget.py:1422
+msgid "&Export..."
+msgstr "&Экспорт..."
+
+#: gui/projecttreewidget.py:1424
+msgid "&Integrate '{}' into project..."
+msgstr "&Интегрировать '{}' в проект..."
+
+#: gui/projecttreewidget.py:1429
+msgid "E&nable"
+msgstr "В&ключить"
+
+#: gui/projecttreewidget.py:1432
+msgid "D&isable"
+msgstr "В&ыключить"
+
+#: gui/projecttreewidget.py:1463
+msgid "Integrate current {}"
+msgstr "Интегрировать текущий {}"
+
+#: gui/projecttreewidget.py:1464
+msgid ""
+"The current {} is stored in an external file.\n"
+"Do you want to integrate this file info the awlsim project file (.awlpro)?"
+msgstr ""
+"Текущий {} хранится во внешнем файле.\n"
+"Вы хотите интегрировать этот файл в файл проекта awlsim (.awlpro)?"
+
+#: gui/projecttreewidget.py:1515
+msgid "AWL source"
+msgstr "AWL исходник"
+
+#: gui/projecttreewidget.py:1516
+msgid "FUP source"
+msgstr "FUP исходник"
+
+#: gui/projecttreewidget.py:1517
+msgid "KOP source"
+msgstr "KOP исходник"
+
+#: gui/projecttreewidget.py:1518
+msgid "Symbol Table"
+msgstr "Символьная таблица"
+
+#: gui/projecttreewidget.py:1588
+msgid "Clipboard paste failed"
+msgstr "Не удалось вставить из буфера обмена"
+
+#: gui/projecttreewidget.py:1589
+msgid "The clipboard does not seem to contain data that can be pasted here."
+msgstr "Буфер обмена не содержит данных, которые могут быть вставлены здесь."
+
+#: gui/qt_bindings.py:35
+msgid "awlsim-gui ERROR: {}"
+msgstr "awlsim-gui ОШИБКА: {}"
+
+#: gui/qt_bindings.py:38
+msgid "Press enter to exit."
+msgstr "Нажмите Enter для выхода."
+
+#: gui/qt_bindings.py:49
+msgid ""
+"Deprecated QString API detected.\n"
+"Awlsim does not support PyQt QString v1 API.\n"
+"---> Please use PySide2 or a newer PyQt5. <---"
+msgstr ""
+"Обнаружен устаревший QString API.\n"
+"Awlsim не поддерживает PyQt QString v1 API.\n"
+"---> Пожалуйста, используйте PySide2 или более новый PyQt5. <---"
+
+#: gui/qt_bindings.py:90
+msgid ""
+"Failed to import PySide2 modules:\n"
+" {}"
+msgstr ""
+"Не удалось импортировать модули PySide2:\n"
+"{}"
+
+#: gui/qt_bindings.py:97
+msgid ""
+"Failed to import PyQt5 modules:\n"
+" {}"
+msgstr ""
+"Не удалось импортировать модули PyQt5:\n"
+"{}"
+
+#: gui/qt_bindings.py:100
+msgid ""
+"Unknown GUI framework '{}' requested.\n"
+"Please fix the AWLSIM_GUI environment variable."
+msgstr ""
+"Запрошен неизвестный GUI фреймворк '{}'.\n"
+"Исправьте переменную окружения AWLSIM_GUI."
+
+#: gui/startup.py:37
+msgid "awlsim-gui version {}"
+msgstr "awlsim-gui версия {}"
+
+#: gui/startup.py:39
+msgid "Usage: awlsim-gui [OPTIONS] [PROJECT.awlpro]"
+msgstr "Использование: awlsim-gui [OPTIONS] [PROJECT.awlpro]"
+
+#: gui/startup.py:41
+msgid "Options:"
+msgstr "Параметры:"
+
+#: gui/startup.py:42
+msgid " -h|--help             Print this help text"
+msgstr " -h|--help Печать этого текста справки"
+
+#: gui/startup.py:43
+msgid " -L|--loglevel LVL     Set the log level:"
+msgstr " -L|--loglevel LVL     Установить уровень журнала:"
+
+#: gui/startup.py:44
+msgid "                       0: Log nothing"
+msgstr "                       0: Нет журнала"
+
+#: gui/startup.py:45
+msgid "                       1: Log errors"
+msgstr "                       1: Записывать ошибки"
+
+#: gui/startup.py:46
+msgid "                       2: Log errors and warnings"
+msgstr "                       2: Записывать ошибки и предупреждения"
+
+#: gui/startup.py:47
+msgid ""
+"                       3: Log errors, warnings and info messages (default)"
+msgstr ""
+"                       3: Записывать ошибки, предупреждения и информационные "
+"сообщения (по умолчанию)"
+
+#: gui/startup.py:48
+msgid "                       4: Verbose logging"
+msgstr "                       4: Подробный журнал"
+
+#: gui/startup.py:49
+msgid "                       5: Extremely verbose logging"
+msgstr "                       5: Чрезвычайно подробное ведение журнала"
+
+#: gui/startup.py:50
+msgid " -l|--lang             Set locale"
+msgstr " -l|--lang             Установить язык"
+
+#: gui/startup.py:52
+msgid "Environment variables:"
+msgstr "Переменные окружения:"
+
+#: gui/startup.py:53
+msgid " AWLSIM_GUI            Select the GUI framework (default 'auto')"
+msgstr ""
+" AWLSIM_GUI            Выбрать графический интерфейс (по умолчанию 'auto')"
+
+#: gui/startup.py:54
+msgid "                       Can be either of:"
+msgstr "                       Может быть любым из:"
+
+#: gui/startup.py:55
+msgid "                       auto: Autodetect"
+msgstr "                       auto: Автоопределение"
+
+#: gui/startup.py:56
+msgid "                       pyside: Use PySide 4"
+msgstr "                       pyside: Использовать PySide 4"
+
+#: gui/startup.py:57
+msgid "                       pyqt4: Use PyQt 4"
+msgstr "                       pyqt4: Использовать PyQt 4"
+
+#: gui/startup.py:58
+msgid "                       pyqt5: Use PyQt 5"
+msgstr "                       pyqt5: Использовать PyQt 5"
+
+#: gui/startup.py:80
+msgid "-L|--loglevel: Invalid log level"
+msgstr "-L|--loglevel: Недопустимый уровень журнала"
+
+#: gui/startup.py:100
+msgid "Using {} GUI framework"
+msgstr "Использование {} GUI фреймворка"
+
+#: gui/startup.py:117
+msgid "awlsim-gui: ABORTING due to unhandled exception:"
+msgstr "awlsim-gui: ОШИБКА из-за необработанного исключения:"
+
+#: gui/startup.py:127
+msgid "awlsim-gui: Unhandled exception"
+msgstr "awlsim-gui: Необработанное исключение"
+
+#: gui/symtabwidget.py:38
+msgid "Unnamed symbol table"
+msgstr "Таблица символов без названия"
+
+#: gui/symtabwidget.py:105
+msgid ""
+"The symbol name.\n"
+"(The name is case insensitive.)"
+msgstr ""
+"Имя символа.\n"
+"(Имя не чувствительно к регистру.)"
+
+#: gui/symtabwidget.py:106
+msgid ""
+"The symbol address.\n"
+"For example:  M 0.0  or  QW 0"
+msgstr ""
+"Адрес символа.\n"
+"Например: M 0.0 или QW 0"
+
+#: gui/symtabwidget.py:107
+msgid ""
+"The symbol data type.\n"
+"For example: BOOL  or  INT"
+msgstr ""
+"Тип данных символа.\n"
+"Например: BOOL или INT"
+
+#: gui/symtabwidget.py:116
+msgid "Symbol"
+msgstr "Символ"
+
+#: gui/symtabwidget.py:116
+msgid "Address"
+msgstr "Адрес"
+
+#: gui/symtabwidget.py:158
+msgid "Invalid symbol information"
+msgstr "Недопустимая информация о символе"
+
+#: gui/symtabwidget.py:191
+msgid "Could not parse symbol table information"
+msgstr "Не удалось проанализировать информацию о таблице символов"
+
+#: gui/templatedialog.py:42
+msgid "Awlsim - Insert {} template"
+msgstr "Awlsim - Вставить шаблон {}"
+
+#: gui/templatedialog.py:49
+msgid "Insert {} template"
+msgstr "Вставить {} шаблон"
+
+#: gui/templatedialog.py:58 gui/templatedialog.py:68
+msgid "{} number:"
+msgstr "{} номер:"
+
+#: gui/templatedialog.py:77
+msgid "Generate &verbose code"
+msgstr "Генерировать &подробный код"
+
+#: gui/templatedialog.py:83
+msgid "&Paste code"
+msgstr "&Вставить код"
+
+#: gui/toolbars.py:49
+msgid "Go offline"
+msgstr "Отключиться"
+
+#: gui/toolbars.py:51
+msgid "Go online (Connect to a CPU)"
+msgstr "Подключиться (к ЦП)"
+
+#: gui/toolbars.py:64
+msgid "Stop CPU (STOP mode)"
+msgstr "Остановить ЦП (режим СТОП)"
+
+#: gui/toolbars.py:67
+msgid "Start CPU (RUN mode)"
+msgstr "Запустить ЦП (режим РАБОТА)"
+
+#: gui/toolbars.py:81
+msgid "Disable online diagnosis"
+msgstr "Отключить диагностику онлайн"
+
+#: gui/toolbars.py:83
+msgid "Enable online diagnosis"
+msgstr "Включить диагностику онлайн"
+
+#: gui/toolbars.py:89
+msgid "CPU inspection tool bar"
+msgstr "Панель проверки ЦП"
+
+#: gui/toolbars.py:92
+msgid "Add inspection: Online blocks"
+msgstr "Добавить обзор: онлайн-блоки"
+
+#: gui/toolbars.py:96
+msgid "Add inspection: Input memory (I / E)"
+msgstr "Добавить обзор: Память ввода (I / E)"
+
+#: gui/toolbars.py:100
+msgid "Add inspection: Output memory (Q / A)"
+msgstr "Добавить обзор: Память вывода (Q / A)"
+
+#: gui/toolbars.py:104
+msgid "Add inspection: Flag memory (M)"
+msgstr "Добавить обзор: Память флагов (M)"
+
+#: gui/toolbars.py:108
+msgid "Add inspection: Data block (DB)"
+msgstr "Добавить обзор: Блок данных (DB)"
+
+#: gui/toolbars.py:112
+msgid "Add inspection: Timer (T)"
+msgstr "Добавить обзор: Таймер (Т)"
+
+#: gui/toolbars.py:116
+msgid "Add inspection: Counter (C / Z)"
+msgstr "Добавить обзор: Счетчик (C / Z)"
+
+#: gui/toolbars.py:120
+msgid "Add inspection: CPU overview"
+msgstr "Добавить обзор: ЦП"
+
+#: gui/toolbars.py:124
+msgid "Add inspection: LCD"
+msgstr "Добавить обзор: LCD"
+
+#: gui/toolbars.py:143
+msgid "CPU control tool bar"
+msgstr "Панель управления ЦП"
+
+#: gui/toolbars.py:148
+msgid "Reset the CPU"
+msgstr "Сброс ЦП"
+
+#: gui/toolbars.py:152
+msgid "Download all sources to CPU"
+msgstr "Загрузить все исходные коды в ЦП"
+
+#: gui/toolbars.py:156
+msgid "Download single source to CPU"
+msgstr "Загрузить отдельный исходник в ЦП"
+
+#: gui/util.py:41
+msgid "Running awlsim-gui on the PyPy or Jython interpreter is not supported."
+msgstr "Запуск awlsim-gui на PyPy или Jython интерпретаторе не поддерживается."
+
+#: gui/util.py:42
+msgid "Please use CPython 2.7 or CPython 3.x"
+msgstr "Используйте CPython 2.7 или CPython 3.x"
+
+#: gui/util.py:46
+msgid ""
+"*** Using accelerated CYTHON core (AWLSIM_CYTHON environment variable is set)"
+msgstr ""
+"*** Используется ускоренное ядро CYTHON (переменная окружения AWLSIM_CYTHON "
+"установлена)"
+
+#: gui/util.py:81
+msgid "Fatal exception:\n"
+msgstr "Неустранимая ошибка:\n"
+
+#: gui/util.py:84
+msgid "A fatal exception occurred"
+msgstr "Произошла критическая ошибка"
+
+#: gui/util.py:85
+msgid ""
+"<pre>A fatal exception occurred:\n"
+"\n"
+"{}\n"
+"\n"
+"Awlsim will be terminated.</pre>"
+msgstr ""
+"<pre>Произошла критическая ошибка:\n"
+"\n"
+"{}\n"
+"\n"
+"Awlsim будет завершен.</pre>"
+
+#: gui/util.py:120
+msgid "Show verbose information"
+msgstr "Показать подробную информацию"
+
+#: gui/util.py:130
+msgid "C&ontinue"
+msgstr "П&родолжить"
+
+#: gui/util.py:187
+msgid "An exception occurred:"
+msgstr "Произошла критическая ошибка:"
+
+#: gui/validatorsched.py:76
+msgid "Requesting asynchronous validation (delay = {:.1f} s)"
+msgstr "Запрос асинхронной проверки (задержка = {:.1f} с)"
+
+#: gui/validatorsched.py:96
+msgid "Starting asynchronous validation."
+msgstr "Запуск асинхронной проверки."
+
+#: gui/validatorsched.py:109 gui/validatorsched.py:131
+msgid "Not Ok"
+msgstr "Не ОК"
+
+#: gui/validatorsched.py:109 gui/validatorsched.py:131
+msgid "Ok"
+msgstr "Ок"
+
+#: gui/validatorsched.py:108
+msgid "Finished asynchronous validation: {}"
+msgstr "Завершена асинхронная проверка {}"
+
+#: gui/validatorsched.py:128
+msgid "Synchronous validation timeout."
+msgstr "Время синхронной проверки истекло."
+
+#: gui/validatorsched.py:130
+msgid "Finished synchronous validation: {}"
+msgstr "Завершена синхронная проверка: {}"
+
+#~ msgid "Using locale: {}"
+#~ msgstr "Использование языка: {}"
+
+#~ msgid ""
+#~ "Awlsim PLC version {}\n"
+#~ "\n"
+#~ "Copyright 2012-2019 Michael Büsch <m@bues.ch>\n"
+#~ "\n"
+#~ "Project home:  {}\n"
+#~ "\n"
+#~ "\n"
+#~ "This program is free software; you can redistribute it and/or modify it "
+#~ "under the terms of the GNU General Public License as published by the "
+#~ "Free Software Foundation; either version 2 of the License, or (at your "
+#~ "option) any later version.\n"
+#~ "\n"
+#~ "This program is distributed in the hope that it will be useful, but "
+#~ "WITHOUT ANY WARRANTY; without even the implied warranty of "
+#~ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General "
+#~ "Public License for more details.\n"
+#~ "\n"
+#~ "You should have received a copy of the GNU General Public License along "
+#~ "with this program; if not, write to the Free Software Foundation, Inc., "
+#~ "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA."
+#~ msgstr ""
+#~ "Awlsim PLC версия {}\n"
+#~ "\n"
+#~ "Copyright 2012-2019 Michael Büsch <m@bues.ch>\n"
+#~ "\n"
+#~ "Домашняя страница:  {}\n"
+#~ "\n"
+#~ "\n"
+#~ "This program is free software; you can redistribute it and/or modify it "
+#~ "under the terms of the GNU General Public License as published by the "
+#~ "Free Software Foundation; either version 2 of the License, or (at your "
+#~ "option) any later version.\n"
+#~ "\n"
+#~ "This program is distributed in the hope that it will be useful, but "
+#~ "WITHOUT ANY WARRANTY; without even the implied warranty of "
+#~ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General "
+#~ "Public License for more details.\n"
+#~ "\n"
+#~ "You should have received a copy of the GNU General Public License along "
+#~ "with this program; if not, write to the Free Software Foundation, Inc., "
+#~ "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA."
+
+#~ msgid "awlsim-gui version %s"
+#~ msgstr "awlsim-gui версия %s"
+
+#~ msgid "Using %s GUI framework"
+#~ msgstr "Использование фреймворка %s GUI"
+
+#~ msgid "Using sasggs"
+#~ msgstr "ывфвфвфв"

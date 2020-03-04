@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -47,8 +49,8 @@ class FupElem_CUD_factory(FupElem_factory):
 			FupElem_CSO.OP_SYM_NAME	: FupElem_CSO,
 		}.get(subType)
 		if not elemClass:
-			raise self.Error("Counter subtype '%s' is not known "
-				"to the element parser." % (
+			raise self.Error(_("Counter subtype '{}' is not known "
+				"to the element parser." ,
 				subType))
 		self.elem = elemClass(x=x, y=y, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
@@ -62,8 +64,8 @@ class FupElem_CUD_factory(FupElem_factory):
 		if tag.name == "subelements":
 			from awlsim.gui.fup.fup_grid import FupGrid
 			if self.subelemsFakeGrid:
-				raise self.Error("Found multiple <subelements> tags "
-					"inside of counter <element>.")
+				raise self.Error(_("Found multiple <subelements> tags "
+					"inside of counter <element>."))
 			self.subelemsFakeGrid = FupGrid(drawWidget=None,
 							width=FupGrid.INFINITE,
 							height=FupGrid.INFINITE)
@@ -81,9 +83,9 @@ class FupElem_CUD_factory(FupElem_factory):
 			   len(self.subelemsFakeGrid.elems) != 1 or\
 			   not isinstance(self.subelemsFakeGrid.elems[0],
 					  FupElem_EmbeddedOper):
-				raise self.Error("Exactly one subelement of type "
+				raise self.Error(_("Exactly one subelement of type "
 					"'embedded operand' is required in "
-					"counter <element>.")
+					"counter <element>."))
 			subelements = self.subelemsFakeGrid.elems
 			if subelements:
 				elem.bodyOper = subelements[0]

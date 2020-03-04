@@ -26,6 +26,8 @@ from awlsim.common.compat import *
 import sys
 import os
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.editmdiarea import *
 from awlsim.gui.projecttreewidget import *
@@ -73,11 +75,11 @@ class LoadProgressDialog(QDialog):
 
 	def setCpuRunState(self, cpuRunState):
 		if cpuRunState.state == cpuRunState.STATE_LOAD:
-			self.setWindowTitle("Awlsim - Downloading...")
+			self.setWindowTitle(_("Awlsim - Downloading..."))
 			self.__icon.setPixmap(getIcon("download").pixmap(64, 64))
-			self.__text.setText("Downloading project to CPU.\n\n"
+			self.__text.setText(_("Downloading project to CPU.\n\n"
 					    "Please be patient.\n"
-					    "This might take a few seconds.")
+					    "This might take a few seconds."))
 			self.showProgress()
 		else:
 			self.hideProgress()
@@ -107,7 +109,7 @@ class CpuDockWidget(QDockWidget):
 		prefix = ""
 		if floating:
 			prefix = "%s - " % self.mainWidget.mainWindow.TITLE
-		self.setWindowTitle("%sCPU view" % prefix)
+		self.setWindowTitle(_("{}CPU view",prefix))
 
 class ProjectTreeDockWidget(QDockWidget):
 	def __init__(self, mainWidget, parent=None):
@@ -132,7 +134,7 @@ class ProjectTreeDockWidget(QDockWidget):
 		prefix = ""
 		if floating:
 			prefix = "%s - " % self.mainWidget.mainWindow.TITLE
-		self.setWindowTitle("%sProject" % prefix)
+		self.setWindowTitle(_("{}Project",prefix))
 
 class MainWidget(QWidget):
 	# Signal: Project loaded
@@ -238,9 +240,9 @@ class MainWidget(QWidget):
 		executable = findExecutable(executableName)
 		if not executable:
 			QMessageBox.critical(self,
-				"Failed to find '%s'" % executableName,
-				"Could not spawn a new instance.\n"
-				"Failed to find '%s'" % executableName)
+				_("Failed to find '{}'",executableName),
+				_("Could not spawn a new instance.\n"
+				"Failed to find '{}'",executableName))
 			return
 		if isWinStandalone:
 			argv = [ executable, ]
@@ -252,22 +254,22 @@ class MainWidget(QWidget):
 			PopenWrapper(argv, env=AwlSimEnv.getEnv())
 		except OSError as e:
 			QMessageBox.critical(self,
-				"Failed to execute '%s'" % executableName,
-				"Could not spawn a new instance.\n%s"
-				"Failed to execute '%s'" % (
+				_("Failed to execute '{}'",executableName),
+				_("Could not spawn a new instance.\n{}"
+				"Failed to execute '{}'",
 				str(e), executableName))
 			return
 
 	def loadFile(self, filename, newIfNotExist=False):
 		if self.isDirty():
 			res = QMessageBox.question(self,
-				"Unsaved project",
-				"The current project is modified and contains unsaved changes.\n "
+				_("Unsaved project"),
+				_("The current project is modified and contains unsaved changes.\n "
 				"Do you want to:\n"
 				"- Save the project, close it and open the new project\n"
 				"- Open the new project in a new instance or\n"
 				"- Discard the changes and open the new project\n"
-				"- Cancel the operation",
+				"- Cancel the operation"),
 				QMessageBox.Save | QMessageBox.Discard |\
 				QMessageBox.Open | QMessageBox.Cancel,
 				QMessageBox.Open)
@@ -378,10 +380,10 @@ class MainWidget(QWidget):
 	def __pasteAwlText(self, text):
 		if not self.editMdiArea.paste(text):
 			QMessageBox.information(self,
-				"Please select AWL/STL source",
-				"Can not paste text.\n\n"
+				_("Please select AWL/STL source"),
+				_("Can not paste text.\n\n"
 				"Please move the text cursor to the place "
-				"in the AWL/STL code where you want to paste to.")
+				"in the AWL/STL code where you want to paste to."))
 			return False
 		return True
 
@@ -571,20 +573,20 @@ class MainWidget(QWidget):
 		status = []
 
 		if self.__cpuRunState == RunState.STATE_OFFLINE:
-			status.append("CPU: offline")
+			status.append(_("CPU: offline"))
 		elif self.__cpuRunState == RunState.STATE_ONLINE:
-			status.append("CPU: online / STOP")
+			status.append(_("CPU: online / STOP"))
 		elif self.__cpuRunState == RunState.STATE_LOAD:
-			status.append("CPU: loading")
+			status.append(_("CPU: loading"))
 		elif self.__cpuRunState == RunState.STATE_RUN:
-			status.append("CPU: RUN")
+			status.append(_("CPU: RUN"))
 		elif self.__cpuRunState == RunState.STATE_EXCEPTION:
-			status.append("CPU: EXCEPTION")
+			status.append(_("CPU: EXCEPTION"))
 
 		if self.__cpuRunState == RunState.STATE_RUN:
 			if self.__insnPerSecond > 0.0:
 				usPerInsnStr = "%.02f" % ((1.0 / self.__insnPerSecond) * 1000000.0)
-				status.append("%s stmt/s (%s µs/stmt)" % (
+				status.append(_("{} stmt/s ({} µs/stmt)",
 					      floatToHumanReadable(self.__insnPerSecond),
 					      usPerInsnStr))
 
@@ -595,7 +597,7 @@ class MainWidget(QWidget):
 				minCycleTimeStr = "%.01f" % (self.__minCycleTime * 1000.0)
 				maxCycleTimeStr = "%.01f" % (self.__maxCycleTime * 1000.0)
 				padCycleTimeStr = "%.01f" % (self.__padCycleTime * 1000.0)
-				status.append("OB1: avg: %s ms  min: %s ms  max: %s ms  padding: %s ms" % (
+				status.append(_("OB1: avg: {} ms  min: {} ms  max: {} ms  padding: {} ms",
 					      avgCycleTimeStr,
 					      minCycleTimeStr,
 					      maxCycleTimeStr,
@@ -605,7 +607,7 @@ class MainWidget(QWidget):
 		statusBar.showMessage("  --  ".join(status))
 
 class MainWindow(QMainWindow):
-	TITLE = "Awlsim PLC v%s" % VERSION_STRING
+	TITLE = _("Awlsim PLC v{}",VERSION_STRING)
 
 	@classmethod
 	def start(cls,
@@ -647,38 +649,38 @@ class MainWindow(QMainWindow):
 
 		self.tb = QToolBar(self)
 		self.tb.setObjectName("Main QToolBar")
-		self.tb.setWindowTitle("Main tool bar")
+		self.tb.setWindowTitle(_("Main tool bar"))
 		self.tb.toggleViewAction().setIcon(getIcon("prefs"))
-		self.tb.addAction(getIcon("new"), "New project",
+		self.tb.addAction(getIcon("new"), _("New project"),
 				  self.mainWidget.newFile)
-		self.tb.addAction(getIcon("open"), "Open project",
+		self.tb.addAction(getIcon("open"), _("Open project"),
 				  self.mainWidget.load)
-		self.tbSaveAct = self.tb.addAction(getIcon("save"), "Save project",
+		self.tbSaveAct = self.tb.addAction(getIcon("save"), _("Save project"),
 						   self.mainWidget.save)
 		self.tb.addSeparator()
-		self.tbUndoAct = self.tb.addAction(getIcon("undo"), "Undo last edit",
+		self.tbUndoAct = self.tb.addAction(getIcon("undo"), _("Undo last edit"),
 						   self.mainWidget.undo)
-		self.tbRedoAct = self.tb.addAction(getIcon("redo"), "Redo",
+		self.tbRedoAct = self.tb.addAction(getIcon("redo"), _("Redo"),
 						   self.mainWidget.redo)
 		self.tb.addSeparator()
-		self.tbCutAct = self.tb.addAction(getIcon("cut"), "Cut",
+		self.tbCutAct = self.tb.addAction(getIcon("cut"), _("Cut"),
 						  self.mainWidget.cut)
-		self.tbCopyAct = self.tb.addAction(getIcon("copy"), "Copy",
+		self.tbCopyAct = self.tb.addAction(getIcon("copy"), _("Copy"),
 						   self.mainWidget.copy)
-		self.tbPasteAct = self.tb.addAction(getIcon("paste"), "Paste",
+		self.tbPasteAct = self.tb.addAction(getIcon("paste"), _("Paste"),
 						    self.mainWidget.paste)
 		self.tb.addSeparator()
-		self.tbFindAct = self.tb.addAction(getIcon("find"), "Find...",
+		self.tbFindAct = self.tb.addAction(getIcon("find"), _("Find..."),
 						   self.mainWidget.findText)
 		self.tbFindReplaceAct = self.tb.addAction(getIcon("findreplace"),
-							  "Find and replace...",
+							  _("Find and replace..."),
 							  self.mainWidget.findReplaceText)
 		self.tb.addSeparator()
-		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), "Standard library",
+		self.tbLibAct = self.tb.addAction(getIcon("stdlib"), _("Standard library"),
 						  self.mainWidget.openLibrary)
-		self.tbLibAct.setToolTip("Standard library.\n"
+		self.tbLibAct.setToolTip(_("Standard library.\n"
 					 "(Please click into the AWL/STL source code\n"
-					 "at the place where to paste the library call)")
+					 "at the place where to paste the library call)"))
 		self.addToolBar(Qt.TopToolBarArea, self.tb)
 
 		self.ctrlTb = CpuControlToolBar(self)
@@ -691,63 +693,63 @@ class MainWindow(QMainWindow):
 
 		self.setMenuBar(QMenuBar(self))
 
-		menu = QMenu("&File", self)
-		menu.addAction(getIcon("new"), "&New project",
+		menu = QMenu(_("&File"), self)
+		menu.addAction(getIcon("new"), _("&New project"),
 			       self.mainWidget.newFile)
-		menu.addAction(getIcon("open"), "&Open project...",
+		menu.addAction(getIcon("open"), _("&Open project..."),
 			       self.mainWidget.load)
-		self.saveAct = menu.addAction(getIcon("save"), "&Save project",
+		self.saveAct = menu.addAction(getIcon("save"), _("&Save project"),
 					      self.mainWidget.save)
-		menu.addAction(getIcon("save"), "&Save project as...",
+		menu.addAction(getIcon("save"), _("&Save project as..."),
 			       lambda: self.mainWidget.save(True))
 		menu.addSeparator()
-		menu.addAction(getIcon("exit"), "&Exit...", self.close)
+		menu.addAction(getIcon("exit"), _("&Exit..."), self.close)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&Edit", self)
-		self.undoAct = menu.addAction(getIcon("undo"), "&Undo",
+		menu = QMenu(_("&Edit"), self)
+		self.undoAct = menu.addAction(getIcon("undo"), _("&Undo"),
 					      self.mainWidget.undo)
-		self.redoAct = menu.addAction(getIcon("redo"), "&Redo",
+		self.redoAct = menu.addAction(getIcon("redo"), _("&Redo"),
 					      self.mainWidget.redo)
 		menu.addSeparator()
-		self.cutAct = menu.addAction(getIcon("cut"), "&Cut",
+		self.cutAct = menu.addAction(getIcon("cut"), _("&Cut"),
 					     self.mainWidget.cut)
-		self.copyAct = menu.addAction(getIcon("copy"), "&Copy",
+		self.copyAct = menu.addAction(getIcon("copy"), _("&Copy"),
 					      self.mainWidget.copy)
-		self.pasteAct = menu.addAction(getIcon("paste"), "&Paste",
+		self.pasteAct = menu.addAction(getIcon("paste"), _("&Paste"),
 					       self.mainWidget.paste)
 		menu.addSeparator()
-		self.findAct = menu.addAction(getIcon("find"), "&Find...",
+		self.findAct = menu.addAction(getIcon("find"), _("&Find..."),
 					      self.mainWidget.findText)
 		self.findReplaceAct = menu.addAction(getIcon("findreplace"),
-						     "Find and r&eplace...",
+						     _("Find and r&eplace..."),
 						     self.mainWidget.findReplaceText)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&Library", self)
-		menu.addAction(getIcon("textsource"), "Insert &OB template...",
+		menu = QMenu(_("&Library"), self)
+		menu.addAction(getIcon("textsource"), _("Insert &OB template..."),
 			       self.mainWidget.insertOB)
-		menu.addAction(getIcon("textsource"), "Insert F&C template...",
+		menu.addAction(getIcon("textsource"), _("Insert F&C template..."),
 			       self.mainWidget.insertFC)
-		menu.addAction(getIcon("textsource"), "Insert F&B template...",
+		menu.addAction(getIcon("textsource"), _("Insert F&B template..."),
 			       self.mainWidget.insertFB)
-		menu.addAction(getIcon("textsource"), "Insert &instance-DB template...",
+		menu.addAction(getIcon("textsource"), _("Insert &instance-DB template..."),
 			       self.mainWidget.insertInstanceDB)
-		menu.addAction(getIcon("textsource"), "Insert &DB template...",
+		menu.addAction(getIcon("textsource"), _("Insert &DB template..."),
 			       self.mainWidget.insertGlobalDB)
-		menu.addAction(getIcon("textsource"), "Insert &UDT template...",
+		menu.addAction(getIcon("textsource"), _("Insert &UDT template..."),
 			       self.mainWidget.insertUDT)
 		menu.addSeparator()
-		menu.addAction(getIcon("textsource"), "Insert FC C&ALL template...",
+		menu.addAction(getIcon("textsource"), _("Insert FC C&ALL template..."),
 			       self.mainWidget.insertFCcall)
-		menu.addAction(getIcon("textsource"), "Insert FB CA&LL template...",
+		menu.addAction(getIcon("textsource"), _("Insert FB CA&LL template..."),
 			       self.mainWidget.insertFBcall)
 		menu.addSeparator()
-		self.libAct = menu.addAction(getIcon("stdlib"), "&Standard library...",
+		self.libAct = menu.addAction(getIcon("stdlib"), _("&Standard library..."),
 					     self.mainWidget.openLibrary)
 		self.menuBar().addMenu(menu)
 
-		menu = QMenu("&CPU", self)
+		menu = QMenu(_("&CPU"), self)
 		menu.addAction(self.ctrlTb.onlineAction)
 		menu.addAction(self.ctrlTb.resetAction)
 		menu.addAction(self.ctrlTb.downloadAction)
@@ -766,20 +768,20 @@ class MainWindow(QMainWindow):
 		menu.addAction(self.inspectTb.lcdAction)
 		self.menuBar().addMenu(menu)
 
-		self.__windowMenu = QMenu("&Window", self)
+		self.__windowMenu = QMenu(_("&Window"), self)
 		self.menuBar().addMenu(self.__windowMenu)
 		self.__windowMenu.aboutToShow.connect(self.__buildWindowMenu)
 
-		menu = QMenu("&Help", self)
-		menu.addAction(getIcon("browser"), "Awlsim &homepage...", self.awlsimHomepage)
+		menu = QMenu(_("&Help"), self)
+		menu.addAction(getIcon("browser"), _("Awlsim &homepage..."), self.awlsimHomepage)
 		menu.addSeparator()
-		menu.addAction(getIcon("cpu"), "&About...", self.about)
+		menu.addAction(getIcon("cpu"), _("&About..."), self.about)
 		menu.addSeparator()
 		self.__actProfileStart = menu.addAction(getIcon("enable"),
-							"Start profiling",
+							_("Start profiling"),
 							self.profileStart)
 		self.__actProfileStop = menu.addAction(getIcon("disable"),
-						       "Stop profiling",
+						       _("Stop profiling"),
 						       self.profileStop)
 		profEnabled = (AwlSimEnv.getProfileLevel() > 0)
 		self.__actProfileStart.setVisible(profEnabled)
@@ -889,15 +891,15 @@ class MainWindow(QMainWindow):
 		def closeAll():
 			self.editMdiArea.closeAllSubWindows()
 		action = menu.addAction(getIcon("doc_close"),
-					"&Close active window",
+					_("&Close active window"),
 					closeActive)
 		action.setEnabled(bool(mdiSubWins))
 		action = menu.addAction(getIcon("doc_close"),
-					"Close &all except active",
+					_("Close &all except active"),
 					closeAllExceptActive)
 		action.setEnabled(bool(mdiSubWins))
 		action = menu.addAction(getIcon("doc_close"),
-					"Close a&ll",
+					_("Close a&ll"),
 					closeAll)
 		action.setEnabled(bool(mdiSubWins))
 		menu.addSeparator()
@@ -994,9 +996,9 @@ class MainWindow(QMainWindow):
 	def closeEvent(self, ev):
 		if self.mainWidget.isDirty():
 			res = QMessageBox.question(self,
-				"Unsaved AWL/STL code",
-				"The editor contains unsaved AWL/STL code.\n"
-				"AWL/STL code will be lost by exiting without saving.",
+				_("Unsaved AWL/STL code"),
+				_("The editor contains unsaved AWL/STL code.\n"
+				"AWL/STL code will be lost by exiting without saving."),
 				QMessageBox.Discard | QMessageBox.Save | QMessageBox.Cancel,
 				QMessageBox.Cancel)
 			if res == QMessageBox.Save:
@@ -1028,12 +1030,12 @@ class MainWindow(QMainWindow):
 		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.StrictMode))
 
 	def about(self):
-		QMessageBox.about(self, "About Awlsim PLC",
-			"Awlsim PLC version %s\n"
+		QMessageBox.about(self, _("About Awlsim PLC"),
+			"Awlsim PLC version {}\n"
 			"\n"
 			"Copyright 2012-2019 Michael Büsch <m@bues.ch>\n"
 			"\n"
-			"Project home:  %s\n"
+			"Project home:  {}\n"
 			"\n"
 			"\n"
 			"This program is free software; you can redistribute it and/or modify "
@@ -1048,8 +1050,7 @@ class MainWindow(QMainWindow):
 			"\n"
 			"You should have received a copy of the GNU General Public License along "
 			"with this program; if not, write to the Free Software Foundation, Inc., "
-			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA." %\
-			(VERSION_STRING, AWLSIM_HOME_URL))
+			"51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.".format(VERSION_STRING, AWLSIM_HOME_URL))
 
 	def profileStart(self):
 		if not self.__profiler:
@@ -1058,7 +1059,7 @@ class MainWindow(QMainWindow):
 				self.__profiler.start()
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(self,
-					"Failed to start profiler.", e)
+					_("Failed to start profiler."), e)
 				self.__profiler = None
 				return
 
@@ -1068,7 +1069,7 @@ class MainWindow(QMainWindow):
 	def profileStop(self):
 		if self.__profiler:
 			self.__profiler.stop()
-			printInfo("GUI profiler dump:\n" + self.__profiler.getResult())
+			printInfo(_("GUI profiler dump:\n") + self.__profiler.getResult())
 			self.__profiler = None
 
 			self.__actProfileStart.setVisible(True)

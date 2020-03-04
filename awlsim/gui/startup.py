@@ -23,48 +23,48 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 #from awlsim.common.cython_support cimport * #@cy
 
+from awlsim.common.locale import _
+
 # Import awlsim modules (compat first)
 from awlsim.common.compat import *
 from awlsim.common import *
 from awlsim.common.codevalidator import *
 from awlsim.common.exceptions import *
-from awlsim.gui.mainwindow import *
 
 import getopt
 
-
 def usage():
-	print("awlsim-gui version %s" % VERSION_STRING)
+	print(_("awlsim-gui version {}",VERSION_STRING))
 	print("")
-	print("Usage: awlsim-gui [OPTIONS] [PROJECT.awlpro]")
+	print(_("Usage: awlsim-gui [OPTIONS] [PROJECT.awlpro]"))
 	print("")
-	print("Options:")
-	print(" -h|--help             Print this help text")
-	print(" -L|--loglevel LVL     Set the log level:")
-	print("                       0: Log nothing")
-	print("                       1: Log errors")
-	print("                       2: Log errors and warnings")
-	print("                       3: Log errors, warnings and info messages (default)")
-	print("                       4: Verbose logging")
-	print("                       5: Extremely verbose logging")
+	print(_("Options:"))
+	print(_(" -h|--help             Print this help text"))
+	print(_(" -L|--loglevel LVL     Set the log level:"))
+	print(_("                       0: Log nothing"))
+	print(_("                       1: Log errors"))
+	print(_("                       2: Log errors and warnings"))
+	print(_("                       3: Log errors, warnings and info messages (default)"))
+	print(_("                       4: Verbose logging"))
+	print(_("                       5: Extremely verbose logging"))
+	print(_(" -l|--lang             Set locale"))
 	print("")
-	print("Environment variables:")
-	print(" AWLSIM_GUI            Select the GUI framework (default 'auto')")
-	print("                       Can be either of:")
-	print("                       auto: Autodetect")
-	print("                       pyside: Use PySide 4")
-	print("                       pyqt4: Use PyQt 4")
-	print("                       pyqt5: Use PyQt 5")
-
-qapp = QApplication(sys.argv)
+	print(_("Environment variables:"))
+	print(_(" AWLSIM_GUI            Select the GUI framework (default 'auto')"))
+	print(_("                       Can be either of:"))
+	print(_("                       auto: Autodetect"))
+	print(_("                       pyside: Use PySide 4"))
+	print(_("                       pyqt4: Use PyQt 4"))
+	print(_("                       pyqt5: Use PyQt 5"))
 
 opt_awlSource = None
 opt_loglevel = Logging.LOG_INFO
+opt_lang = None
 
 try:
 	(opts, args) = getopt.getopt(sys.argv[1:],
-		"hL:",
-		[ "help", "loglevel=", ])
+		"hL:l:",
+		[ "help", "loglevel=", "lang="])
 except getopt.GetoptError as e:
 	printError(str(e))
 	usage()
@@ -74,11 +74,14 @@ for (o, v) in opts:
 		usage()
 		sys.exit(ExitCodes.EXIT_OK)
 	if o in ("-L", "--loglevel"):
-		try:
+		try:	
 			opt_loglevel = int(v)
 		except ValueError:
-			printError("-L|--loglevel: Invalid log level")
+			printError(_("-L|--loglevel: Invalid log level"))
 			sys.exit(ExitCodes.EXIT_ERR_CMDLINE)
+	if o in ("-l", "--lang"):
+		opt_lang = str(v)
+
 if args:
 	if len(args) == 1:
 		opt_awlSource = args[0]
@@ -88,8 +91,13 @@ if args:
 
 Logging.setPrefix("awlsim-gui: ")
 Logging.setLoglevel(opt_loglevel)
+_.setup(opt_lang)
 
-printInfo("Using %s GUI framework" % getGuiFrameworkName())
+from awlsim.gui.mainwindow import *
+
+qapp = QApplication(sys.argv)
+
+printInfo(_('Using {} GUI framework',getGuiFrameworkName()) )
 
 # Create the main window.
 mainwnd = MainWindow.start(initialAwlSource = opt_awlSource)
@@ -106,7 +114,7 @@ def guiShutdownCleanup():
 
 # Install a handler for unhandled exceptions.
 def __unhandledExceptionHook(etype, value, tb):
-	text = "awlsim-gui: ABORTING due to unhandled exception:"
+	text = _("awlsim-gui: ABORTING due to unhandled exception:")
 	print(text, file=sys.stderr)
 	__orig_excepthook(etype, value, tb)
 	# Try to clean up now.
@@ -116,7 +124,7 @@ def __unhandledExceptionHook(etype, value, tb):
 		import traceback
 		QMessageBox.critical(
 			None,
-			"awlsim-gui: Unhandled exception",
+			_("awlsim-gui: Unhandled exception"),
 			text + "\n\n\n" + "".join(traceback.format_exception(etype, value, tb)),
 			QMessageBox.Ok,
 			QMessageBox.Ok)

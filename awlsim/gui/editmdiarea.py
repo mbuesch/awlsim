@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.editwidget import EditWidget
 from awlsim.gui.symtabwidget import SymTabView
 from awlsim.gui.libtablewidget import LibTableView
@@ -452,10 +454,10 @@ class EditMdiSubWindow(QMdiSubWindow):
 			if not refreshOk and not self.__forceClose:
 				# Refresh failed.
 				QMessageBox.critical(self,
-					"Failed to refresh project",
-					"Failed to refresh project data.\n"
+					_("Failed to refresh project"),
+					_("Failed to refresh project data.\n"
 					"Not closing the editor window "
-					"to avoid loss of data.")
+					"to avoid loss of data."))
 				# Do not close the sub window.
 				ev.ignore()
 				return
@@ -602,7 +604,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 		source = self.editWidget.getSource()
 		if source:
 			title = source.name + " (AWL)" +\
-				("" if source.enabled else " (DISABLED)")
+				("" if source.enabled else _(" (DISABLED)"))
 		self.setWindowTitle(title)
 		self.setWindowIcon(getIcon("textsource"))
 
@@ -617,9 +619,9 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def importSource(self, fileName=None):
 		if not fileName:
 			fileName, filt = QFileDialog.getOpenFileName(self,
-				"Import AWL/STL source", "",
-				"AWL source (*.awl);;"
-				"All files (*)")
+				_("Import AWL/STL source"), "",
+				_("AWL source (*.awl);;"
+				"All files (*)"))
 			if not fileName:
 				return False
 		source = self.getSource().fromFile(name=os.path.basename(fileName),
@@ -632,8 +634,8 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def exportSource(self, fileName=None):
 		if not fileName:
 			fileName, filt = QFileDialog.getSaveFileName(self,
-				"AWL/STL source export", "",
-				"AWL/STL source file (*.awl)",
+				_("AWL/STL source export"), "",
+				_("AWL/STL source file (*.awl)"),
 				"*.awl")
 			if not fileName:
 				return False
@@ -762,7 +764,7 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 		source = self.fupWidget.getSource()
 		if source:
 			title = source.name + " (FUP)" +\
-				("" if source.enabled else " (DISABLED)")
+				("" if source.enabled else _(" (DISABLED)"))
 		self.setWindowTitle(title)
 		self.setWindowIcon(getIcon("fup"))
 
@@ -777,9 +779,9 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 	def importSource(self, fileName=None):
 		if not fileName:
 			fileName, filt = QFileDialog.getOpenFileName(self,
-				"Import FUP/FBD XML source", "",
-				"FUP/FBD XML source (*.fupxml);;"
-				"All files (*)")
+				_("Import FUP/FBD XML source"), "",
+				_("FUP/FBD XML source (*.fupxml);;"
+				"All files (*)"))
 			if not fileName:
 				return False
 		source = self.getSource().fromFile(name=os.path.basename(fileName),
@@ -792,8 +794,8 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 	def exportSource(self, fileName=None):
 		if not fileName:
 			fileName, filt = QFileDialog.getSaveFileName(self,
-				"fup/fbd xml source export", "",
-				"fup/fbd xml source file (*.fupxml)",
+				_("fup/fbd xml source export"), "",
+				_("fup/fbd xml source file (*.fupxml)"),
 				"*.fupxml")
 			if not fileName:
 				return False
@@ -804,7 +806,7 @@ class FupEditMdiSubWindow(EditMdiSubWindow):
 				      self.getSource().compatSourceBytes)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"Failed to export source", e)
+				_("Failed to export source"), e)
 			return False
 		return True
 
@@ -877,8 +879,8 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 		if model:
 			source = model.getSource()
 			if source:
-				title = source.name + " (Symbol-table)" +\
-					("" if source.enabled else " (DISABLED)")
+				title = source.name + _(" (Symbol-table)") +\
+					("" if source.enabled else _(" (DISABLED)"))
 		self.setWindowTitle(title)
 		self.setWindowIcon(getIcon("tag"))
 
@@ -893,9 +895,9 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 	def importSource(self, fileName=None):
 		if not fileName:
 			fileName, filt = QFileDialog.getOpenFileName(self,
-				"Import symbol table", "",
-				"Symbol table file (*.asc);;"
-				"All files (*)")
+				_("Import symbol table"), "",
+				_("Symbol table file (*.asc);;"
+				"All files (*)"))
 			if not fileName:
 				return False
 		source = self.getSource().fromFile(name=os.path.basename(fileName),
@@ -908,8 +910,8 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 	def exportSource(self, fileName=None):
 		if not fileName:
 			fileName, filt = QFileDialog.getSaveFileName(self,
-				"symbol table export", "",
-				"symbol table file (*.asc)",
+				_("symbol table export"), "",
+				_("symbol table file (*.asc)"),
 				"*.asc")
 			if not fileName:
 				return False
@@ -920,7 +922,7 @@ class SymTabEditMdiSubWindow(EditMdiSubWindow):
 				      self.getSource().compatSourceBytes)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"Failed to export source", e)
+				_("Failed to export source"), e)
 			return False
 		return True
 
@@ -937,7 +939,7 @@ class LibSelEditMdiSubWindow(EditMdiSubWindow):
 		self.libTabView.focusChanged.connect(self.focusChanged)
 		self.libTabView.model().contentChanged.connect(self.sourceChanged)
 
-		self.setWindowTitle("Library selections")
+		self.setWindowTitle(_("Library selections"))
 		self.setWindowIcon(getIcon("stdlib"))
 
 	def sizeHint(self):

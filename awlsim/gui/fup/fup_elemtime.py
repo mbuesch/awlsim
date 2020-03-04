@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -46,8 +48,8 @@ class FupElem_T_factory(FupElem_factory):
 			FupElem_T_SA.OP_SYM_NAME	: FupElem_T_SA,
 		}.get(subType)
 		if not elemClass:
-			raise self.Error("Timer subtype '%s' is not known "
-				"to the element parser." % (
+			raise self.Error(_("Timer subtype '{}' is not known "
+				"to the element parser." ,
 				subType))
 		self.elem = elemClass(x=x, y=y, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
@@ -61,8 +63,8 @@ class FupElem_T_factory(FupElem_factory):
 		if tag.name == "subelements":
 			from awlsim.gui.fup.fup_grid import FupGrid
 			if self.subelemsFakeGrid:
-				raise self.Error("Found multiple <subelements> tags "
-					"inside of timer <element>.")
+				raise self.Error(_("Found multiple <subelements> tags "
+					"inside of timer <element>."))
 			self.subelemsFakeGrid = FupGrid(drawWidget=None,
 							width=FupGrid.INFINITE,
 							height=FupGrid.INFINITE)
@@ -80,9 +82,9 @@ class FupElem_T_factory(FupElem_factory):
 			   len(self.subelemsFakeGrid.elems) != 1 or\
 			   not isinstance(self.subelemsFakeGrid.elems[0],
 					  FupElem_EmbeddedOper):
-				raise self.Error("Exactly one subelement of type "
+				raise self.Error(_("Exactly one subelement of type "
 					"'embedded operand' is required in "
-					"timer <element>.")
+					"timer <element>."))
 			subelements = self.subelemsFakeGrid.elems
 			if subelements:
 				elem.bodyOper = subelements[0]
@@ -91,8 +93,8 @@ class FupElem_T_factory(FupElem_factory):
 
 			# Insert the element into the grid.
 			if not self.grid.placeElem(elem):
-				raise self.Error("<element> caused "
-					"a grid collision.")
+				raise self.Error(_("<element> caused "
+					"a grid collision."))
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)

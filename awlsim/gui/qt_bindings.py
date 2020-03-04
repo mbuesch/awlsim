@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common import *
 
 import sys
@@ -30,10 +32,10 @@ import os
 
 
 def __frameworkError(msg):
-	printError("awlsim-gui ERROR: " + msg)
+	printError(_("awlsim-gui ERROR: {}" , msg))
 	try:
 		if osIsWindows:
-			input("Press enter to exit.")
+			input(_("Press enter to exit."))
 	except (KeyboardInterrupt, Exception) as e:
 		pass
 	sys.exit(1)
@@ -44,9 +46,9 @@ def __testQStringAPI(scope, silent=False):
 		# QString exists. This is v1 API.
 		if silent:
 			return False
-		__frameworkError("Deprecated QString API detected.\n"
+		__frameworkError(_("Deprecated QString API detected.\n"
 				 "Awlsim does not support PyQt QString v1 API.\n"
-				 "---> Please use PySide2 or a newer PyQt5. <---")
+				 "---> Please use PySide2 or a newer PyQt5. <---"))
 	return True
 
 def __autodetectGuiFramework():
@@ -85,19 +87,19 @@ if __guiFramework == "pyside2":
 		from PySide2.QtGui import *
 		from PySide2.QtWidgets import *
 	except ImportError as e:
-		__frameworkError("Failed to import PySide2 modules:\n" + str(e))
+		__frameworkError(_("Failed to import PySide2 modules:\n {}" , str(e)))
 elif __guiFramework == "pyqt5":
 	try:
 		from PyQt5.QtCore import *
 		from PyQt5.QtGui import *
 		from PyQt5.QtWidgets import *
 	except ImportError as e:
-		__frameworkError("Failed to import PyQt5 modules:\n" + str(e))
+		__frameworkError(_("Failed to import PyQt5 modules:\n {}" , str(e)))
 	__testQStringAPI(globals())
 else:
-	__frameworkError("Unknown GUI framework '%s' requested.\n"
-			 "Please fix the AWLSIM_GUI environment variable." %\
-			 __guiFramework)
+	__frameworkError(_("Unknown GUI framework '{}' requested.\n"
+			 "Please fix the AWLSIM_GUI environment variable.",
+			 __guiFramework))
 
 def getGuiFrameworkName():
 	return __guiFramework

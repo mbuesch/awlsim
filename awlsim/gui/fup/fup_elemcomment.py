@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -51,8 +53,8 @@ class FupElem_COMMENT_factory(FupElem_factory):
 		if tag.name == "element":
 			# Insert the element into the grid.
 			if not self.grid.placeElem(self.elem):
-				raise self.Error("<element> caused "
-					"a grid collision.")
+				raise self.Error(_("<element> caused "
+					"a grid collision."))
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)
@@ -169,8 +171,8 @@ class FupElem_COMMENT(FupElem):
 	# Overridden method. For documentation see base class.
 	def edit(self, parentWidget):
 		text, ok = QInputDialog.getMultiLineText(parentWidget,
-			"Change comment",
-			"Comment",
+			_("Change comment"),
+			_("Comment"),
 			self.contentText)
 		if ok:
 			self.contentText = text

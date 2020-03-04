@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
 
@@ -33,27 +35,27 @@ class GuiConfigWidget(QWidget):
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
 
-		self.editGroup = QGroupBox("Source code editor")
+		self.editGroup = QGroupBox(_("Source code editor"))
 		self.editGroup.setLayout(QVBoxLayout())
 
-		self.editAutoIndent = QCheckBox("&Auto indentation", self)
+		self.editAutoIndent = QCheckBox(_("&Auto indentation"), self)
 		self.editAutoIndent.setToolTip(
-			"Automatically indent AWL/STL code as it is entered\n"
-			"into the editor area.")
+			_("Automatically indent AWL/STL code as it is entered\n"
+			"into the editor area."))
 		self.editGroup.layout().addWidget(self.editAutoIndent)
 
-		self.pasteIndent = QCheckBox("Clipboard &paste "
-			"auto indentation", self)
+		self.pasteIndent = QCheckBox(_("Clipboard &paste "
+			"auto indentation"), self)
 		self.pasteIndent.setToolTip(
-			"Automatically indent AWL/STL code as it is pasted\n"
-			"into the editor area.")
+			_("Automatically indent AWL/STL code as it is pasted\n"
+			"into the editor area."))
 		self.editGroup.layout().addWidget(self.pasteIndent)
 
-		self.editValidate = QCheckBox("Live code &validation", self)
+		self.editValidate = QCheckBox(_("Live code &validation"), self)
 		self.editValidate.setToolTip(
-			"Enable automatic compilation and verification of the\n"
+			_("Enable automatic compilation and verification of the\n"
 			"AWL/STL code as it is entered into the editor.\n"
-			"The verification completely runs in the background.")
+			"The verification completely runs in the background."))
 		self.editGroup.layout().addWidget(self.editValidate)
 
 		hbox = QHBoxLayout()
@@ -61,9 +63,9 @@ class GuiConfigWidget(QWidget):
 		self.editFontLabel.setFrameShape(QFrame.Panel)
 		self.editFontLabel.setFrameShadow(QFrame.Sunken)
 		self.editFontLabel.setToolTip(
-			"Select the AWL/STL editor font.")
+			_("Select the AWL/STL editor font."))
 		hbox.addWidget(self.editFontLabel)
-		self.editFontButton = QPushButton("&Select...", self)
+		self.editFontButton = QPushButton(_("&Select..."), self)
 		self.editFontButton.setToolTip(self.editFontLabel.toolTip())
 		hbox.addWidget(self.editFontButton)
 		self.__editFont = getDefaultFixedFont()
@@ -77,13 +79,13 @@ class GuiConfigWidget(QWidget):
 		self.editFontButton.released.connect(self.__openEditFontDialog)
 
 	def __updateEditFontLabel(self):
-		self.editFontLabel.setText("Font: %s, %d pt" %\
-					   (self.__editFont.family(),
+		self.editFontLabel.setText(_("Font: {}, {} pt" ,
+					   self.__editFont.family(),
 					    self.__editFont.pointSize()))
 		self.editFontLabel.setFont(self.__editFont)
 
 	def __openEditFontDialog(self):
-		font, ok = QFontDialog.getFont(self.__editFont, self, "Editor font")
+		font, ok = QFontDialog.getFont(self.__editFont, self, _("Editor font"))
 		if ok:
 			self.__editFont = font
 			self.__updateEditFontLabel()
@@ -130,7 +132,7 @@ class GuiConfigDialog(AbstractConfigDialog):
 		AbstractConfigDialog.__init__(self,
 			project = project,
 			iconName = "prefs",
-			title = "User interface setup",
+			title = _("User interface setup"),
 			centralWidget = GuiConfigWidget(),
 			parent = parent)
 

@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.interfedit.interftabwidget import *
 from awlsim.gui.interfedit.blocktypewidget import *
@@ -67,10 +69,10 @@ class AwlInterfWidget(QWidget):
 		blockTypeStr, blockName, instanceDBs = self.blockTypeEdit.get()
 		if not self.interfView.isEmpty():
 			ret = QMessageBox.warning(self,
-				"Change block type?",
-				"The block interface table is not empty.\n"
+				_("Change block type?"),
+				_("The block interface table is not empty.\n"
 				"Changing the block type might delete interface fields.\n\n"
-				"Change block type anyway?",
+				"Change block type anyway?"),
 				QMessageBox.Yes | QMessageBox.No,
 				QMessageBox.No)
 			if ret != QMessageBox.Yes:

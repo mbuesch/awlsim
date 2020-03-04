@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -50,8 +52,8 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 			FupElem_FN.OP_SYM_NAME	: FupElem_FN,
 		}.get(subType)
 		if not elemClass:
-			raise self.Error("Boolean subtype '%s' is not known "
-				"to the element parser." % (
+			raise self.Error(_("Boolean subtype '{}' is not known "
+				"to the element parser." ,
 				subType))
 		self.elem = elemClass(
 			x=x, y=y, nrInputs=0, uuid=uuid, enabled=enabled)
@@ -66,8 +68,8 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 		if tag.name == "subelements":
 			from awlsim.gui.fup.fup_grid import FupGrid
 			if self.subelemsFakeGrid:
-				raise self.Error("Found multiple <subelements> tags "
-					"inside of boolean <element>.")
+				raise self.Error(_("Found multiple <subelements> tags "
+					"inside of boolean <element>."))
 			self.subelemsFakeGrid = FupGrid(drawWidget=None,
 							width=FupGrid.INFINITE,
 							height=FupGrid.INFINITE)
@@ -86,9 +88,9 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 				   len(self.subelemsFakeGrid.elems) != 1 or\
 				   not isinstance(self.subelemsFakeGrid.elems[0],
 						  FupElem_EmbeddedOper):
-					raise self.Error("Exactly one subelement of type "
+					raise self.Error(_("Exactly one subelement of type "
 						"'embedded operand' is required in "
-						"boolean <element>.")
+						"boolean <element>."))
 				subelements = self.subelemsFakeGrid.elems
 				if subelements:
 					elem.bodyOper = subelements[0]
@@ -96,8 +98,8 @@ class FupElem_BOOLEAN_factory(FupElem_factory):
 					elem.bodyOper.grid = None
 			else:
 				if self.subelemsFakeGrid:
-					raise self.Error("<subelements> is not "
-						"supported for %s." % (
+					raise self.Error(_("<subelements> is not "
+						"supported for {}." ,
 						str(self.elem)))
 			# Insert the element into the grid.
 			if not self.grid.placeElem(elem):

@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 
 
@@ -33,7 +35,7 @@ class SymTabModel(QAbstractTableModel):
 	def __init__(self, symTab):
 		QAbstractTableModel.__init__(self)
 		self.symTab = symTab
-		self.__source = SymTabSource("Unnamed symbol table")
+		self.__source = SymTabSource(_("Unnamed symbol table"))
 		self.__needSourceUpdate = True
 
 	def emitSourceChanged(self):
@@ -100,9 +102,9 @@ class SymTabModel(QAbstractTableModel):
 				return QBrush(QColor("black"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			return (
-				"The symbol name.\n(The name is case insensitive.)",
-				"The symbol address.\nFor example:  M 0.0  or  QW 0",
-				"The symbol data type.\nFor example: BOOL  or  INT",
+				_("The symbol name.\n(The name is case insensitive.)"),
+				_("The symbol address.\nFor example:  M 0.0  or  QW 0"),
+				_("The symbol data type.\nFor example: BOOL  or  INT"),
 				"",
 			)[column]
 		return None
@@ -111,7 +113,7 @@ class SymTabModel(QAbstractTableModel):
 		if role != Qt.DisplayRole:
 			return None
 		if orientation == Qt.Horizontal:
-			return ("Symbol", "Address", "Data type", "Comment")[section]
+			return (_("Symbol"), _("Address"), _("Data type"), _("Comment"))[section]
 		else:
 			if section >= len(self.symTab):
 				return "new"
@@ -153,7 +155,7 @@ class SymTabModel(QAbstractTableModel):
 					sym.setComment(value.strip())
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(None,
-					"Invalid symbol information", e)
+					_("Invalid symbol information"), e)
 				return False
 			self.emitSourceChanged()
 			return True
@@ -186,7 +188,7 @@ class SymTabModel(QAbstractTableModel):
 			self.symTab = SymTabParser.parseText(newSource.sourceText)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(None,
-				"Could not parse symbol table information", e)
+				_("Could not parse symbol table information"), e)
 		finally:
 			self.endResetModel()
 			self.__needSourceUpdate = True

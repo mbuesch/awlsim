@@ -1,0 +1,4010 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: awlsim 0.73\n"
+"POT-Creation-Date: 2020-03-20 12:40+0200\n"
+"PO-Revision-Date: 2020-03-20 13:12+0200\n"
+"Last-Translator: \n"
+"Language-Team: uncle-yura <uncle-yura@tuta.io>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.11\n"
+"X-Poedit-Basepath: ../../..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: awlsim/gui/awlsimclient.py:56
+#: build/lib.linux-x86_64-3.5/awlsim/gui/awlsimclient.py:56
+msgid "Establishing SSH tunnel..."
+msgstr "Establishing SSH tunnel..."
+
+#: awlsim/gui/awlsimclient.py:82
+#: build/lib.linux-x86_64-3.5/awlsim/gui/awlsimclient.py:82
+msgid "Failed to establish SSH tunnel"
+msgstr "Failed to establish SSH tunnel"
+
+#: awlsim/gui/awlsimclient.py:83
+#: build/lib.linux-x86_64-3.5/awlsim/gui/awlsimclient.py:83
+msgid ""
+"Failed to establish SSH tunnel:\n"
+"\n"
+"{}"
+msgstr ""
+"Failed to establish SSH tunnel:\n"
+"\n"
+"{}"
+
+#: awlsim/gui/awlsimclient.py:102
+#: build/lib.linux-x86_64-3.5/awlsim/gui/awlsimclient.py:102
+msgid "Please enter SSH password"
+msgstr "Please enter SSH password"
+
+#: awlsim/gui/awlsimclient.py:103
+#: build/lib.linux-x86_64-3.5/awlsim/gui/awlsimclient.py:103
+msgid "Please enter SSH password for '{}@{}':"
+msgstr "Please enter SSH password for '{}@{}':"
+
+#: awlsim/gui/awlsimclient.py:118
+#: build/lib.linux-x86_64-3.5/awlsim/gui/awlsimclient.py:118
+msgid "Confirm host authenticity?"
+msgstr "Confirm host authenticity?"
+
+#: awlsim/gui/blocktreewidget.py:409
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:409
+msgid "Sources"
+msgstr "Sources"
+
+#: awlsim/gui/blocktreewidget.py:410
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:410
+msgid "AWL/STL"
+msgstr "AWL/STL"
+
+#: awlsim/gui/blocktreewidget.py:411
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:411
+msgid "FUP/FBD"
+msgstr "FUP/FBD"
+
+#: awlsim/gui/blocktreewidget.py:412 awlsim/gui/projecttreewidget.py:1017
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:412
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1017
+msgid "Symbols"
+msgstr "Symbols"
+
+#: awlsim/gui/blocktreewidget.py:413
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:413
+msgid "Libraries"
+msgstr "Libraries"
+
+#: awlsim/gui/blocktreewidget.py:414
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:414
+msgid "Blocks"
+msgstr "Blocks"
+
+#: awlsim/gui/blocktreewidget.py:415
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:415
+msgid "OBs"
+msgstr "OBs"
+
+#: awlsim/gui/blocktreewidget.py:416
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:416
+msgid "FCs"
+msgstr "FCs"
+
+#: awlsim/gui/blocktreewidget.py:417
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:417
+msgid "FBs"
+msgstr "FBs"
+
+#: awlsim/gui/blocktreewidget.py:418
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:418
+msgid "DBs"
+msgstr "DBs"
+
+#: awlsim/gui/blocktreewidget.py:419
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:419
+msgid "UDTs"
+msgstr "UDTs"
+
+#: awlsim/gui/blocktreewidget.py:420 awlsim/gui/projecttreewidget.py:1021
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:420
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1021
+msgid "Hardware"
+msgstr "Hardware"
+
+#: awlsim/gui/blocktreewidget.py:434
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:434
+msgid "Main cycle: \"CYCL_EXC\""
+msgstr "Main cycle: \"CYCL_EXC\""
+
+#: awlsim/gui/blocktreewidget.py:435
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:435
+msgid "Warm start: \"COMPLETE RESTART\""
+msgstr "Warm start: \"COMPLETE RESTART\""
+
+#: awlsim/gui/blocktreewidget.py:436
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:436
+msgid "Restart: \"RESTART\""
+msgstr "Restart: \"RESTART\""
+
+#: awlsim/gui/blocktreewidget.py:437
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:437
+msgid "Cold restart: \"COLD RESTART\""
+msgstr "Cold restart: \"COLD RESTART\""
+
+#: awlsim/gui/blocktreewidget.py:463
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:463
+msgid "Source files"
+msgstr "Source files"
+
+#: awlsim/gui/blocktreewidget.py:464
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:464
+msgid "AWL/STL sources"
+msgstr "AWL/STL sources"
+
+#: awlsim/gui/blocktreewidget.py:465
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:465
+msgid "FUP/FBD sources"
+msgstr "FUP/FBD sources"
+
+#: awlsim/gui/blocktreewidget.py:466
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:466
+msgid "Symbol table sources"
+msgstr "Symbol table sources"
+
+#: awlsim/gui/blocktreewidget.py:467 awlsim/gui/editmdiarea.py:942
+#: awlsim/gui/projecttreewidget.py:1018
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:467
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:942
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1018
+msgid "Library selections"
+msgstr "Library selections"
+
+#: awlsim/gui/blocktreewidget.py:468
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:468
+msgid "Compiled blocks"
+msgstr "Compiled blocks"
+
+#: awlsim/gui/blocktreewidget.py:469
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:469
+msgid "Organization Blocks"
+msgstr "Organization Blocks"
+
+#: awlsim/gui/blocktreewidget.py:470
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:470
+msgid "Functions"
+msgstr "Functions"
+
+#: awlsim/gui/blocktreewidget.py:471
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:471
+msgid "Function Blocks"
+msgstr "Function Blocks"
+
+#: awlsim/gui/blocktreewidget.py:472
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:472
+msgid "Data Blocks"
+msgstr "Data Blocks"
+
+#: awlsim/gui/blocktreewidget.py:473
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:473
+msgid "User defined Data Types"
+msgstr "User defined Data Types"
+
+#: awlsim/gui/blocktreewidget.py:474
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:474
+msgid "Hardware modules"
+msgstr "Hardware modules"
+
+#: awlsim/gui/blocktreewidget.py:595
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:595
+msgid "Block name"
+msgstr "Block name"
+
+#: awlsim/gui/blocktreewidget.py:596
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:596
+msgid "Symbol / description"
+msgstr "Symbol / description"
+
+#: awlsim/gui/blocktreewidget.py:597
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:597
+msgid "Unique identification hash"
+msgstr "Unique identification hash"
+
+#: awlsim/gui/blocktreewidget.py:622
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:622
+msgid "&Remove block from CPU..."
+msgstr "&Remove block from CPU..."
+
+#: awlsim/gui/blocktreewidget.py:626
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:626
+msgid "&Remove source from CPU..."
+msgstr "&Remove source from CPU..."
+
+#: awlsim/gui/blocktreewidget.py:708 awlsim/gui/projecttreewidget.py:335
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:708
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:335
+msgid "Remove selected source?"
+msgstr "Remove selected source?"
+
+#: awlsim/gui/blocktreewidget.py:709
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:709
+msgid ""
+"Remove the selected source from the CPU?\n"
+"This will also remove all associated compiled blocks from the CPU."
+msgstr ""
+"Remove the selected source from the CPU?\n"
+"This will also remove all associated compiled blocks from the CPU."
+
+#: awlsim/gui/blocktreewidget.py:736
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:736
+msgid "An error occurred while removing a source"
+msgstr "An error occurred while removing a source"
+
+#: awlsim/gui/blocktreewidget.py:745
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:745
+msgid "Remove selected block?"
+msgstr "Remove selected block?"
+
+#: awlsim/gui/blocktreewidget.py:746
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:746
+msgid "Remove the selected block from the CPU?"
+msgstr "Remove the selected block from the CPU?"
+
+#: awlsim/gui/blocktreewidget.py:775
+#: build/lib.linux-x86_64-3.5/awlsim/gui/blocktreewidget.py:775
+msgid "An error occurred while removing a block"
+msgstr "An error occurred while removing a block"
+
+#: awlsim/gui/configdialog.py:64
+#: build/lib.linux-x86_64-3.5/awlsim/gui/configdialog.py:64
+msgid "&Accept"
+msgstr "&Accept"
+
+#: awlsim/gui/configdialog.py:67 awlsim/gui/opereditwidget.py:270
+#: awlsim/gui/util.py:133
+#: build/lib.linux-x86_64-3.5/awlsim/gui/configdialog.py:67
+#: build/lib.linux-x86_64-3.5/awlsim/gui/opereditwidget.py:270
+#: build/lib.linux-x86_64-3.5/awlsim/gui/util.py:133
+msgid "&Cancel"
+msgstr "&Cancel"
+
+#: awlsim/gui/cpuconfig.py:66
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:66
+msgid "Hardware resource specification"
+msgstr "Hardware resource specification"
+
+#: awlsim/gui/cpuconfig.py:69
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:69
+msgid "Number of accumulator registers"
+msgstr "Number of accumulator registers"
+
+#: awlsim/gui/cpuconfig.py:71
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:71
+msgid ""
+"Select the number of ACCU registers the CPU will have.\n"
+"Note that this selection influences the semantics of some\n"
+"arithmetic instructions such as +I,-I,*I,/I and others."
+msgstr ""
+"Select the number of ACCU registers the CPU will have.\n"
+"Note that this selection influences the semantics of some\n"
+"arithmetic instructions such as +I,-I,*I,/I and others."
+
+#: awlsim/gui/cpuconfig.py:76
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:76
+msgid "2 accus"
+msgstr "2 accus"
+
+#: awlsim/gui/cpuconfig.py:77
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:77
+msgid "4 accus"
+msgstr "4 accus"
+
+#: awlsim/gui/cpuconfig.py:81
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:81
+msgid "Number of S7 timers"
+msgstr "Number of S7 timers"
+
+#: awlsim/gui/cpuconfig.py:83
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:83
+msgid ""
+"Set the number of S7 timers the CPU will have.\n"
+"This does only influence the number of S7 timers.\n"
+"There will always be an unlimited amount of IEC timers."
+msgstr ""
+"Set the number of S7 timers the CPU will have.\n"
+"This does only influence the number of S7 timers.\n"
+"There will always be an unlimited amount of IEC timers."
+
+#: awlsim/gui/cpuconfig.py:93
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:93
+msgid "Number of S7 counters"
+msgstr "Number of S7 counters"
+
+#: awlsim/gui/cpuconfig.py:95
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:95
+msgid ""
+"Set the number of S7 counters the CPU will have.\n"
+"This does only influence the number of S7 counters.\n"
+"There will always be an unlimited amount of IEC counters."
+msgstr ""
+"Set the number of S7 counters the CPU will have.\n"
+"This does only influence the number of S7 counters.\n"
+"There will always be an unlimited amount of IEC counters."
+
+#: awlsim/gui/cpuconfig.py:105
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:105
+msgid "Number flag (Merker) memory bytes"
+msgstr "Number flag (Merker) memory bytes"
+
+#: awlsim/gui/cpuconfig.py:107
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:107
+msgid "Set the number flag (Merker) memory bytes the CPU will have."
+msgstr "Set the number flag (Merker) memory bytes the CPU will have."
+
+#: awlsim/gui/cpuconfig.py:115
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:115
+msgid "Number process image input bytes"
+msgstr "Number process image input bytes"
+
+#: awlsim/gui/cpuconfig.py:117
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:117
+msgid "Set the number process image input memory bytes the CPU will have."
+msgstr "Set the number process image input memory bytes the CPU will have."
+
+#: awlsim/gui/cpuconfig.py:125
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:125
+msgid "Number process image output bytes"
+msgstr "Number process image output bytes"
+
+#: awlsim/gui/cpuconfig.py:127
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:127
+msgid "Set the number process image output memory bytes the CPU will have."
+msgstr "Set the number process image output memory bytes the CPU will have."
+
+#: awlsim/gui/cpuconfig.py:135
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:135
+msgid "Number local stack memory (TEMP) bytes"
+msgstr "Number local stack memory (TEMP) bytes"
+
+#: awlsim/gui/cpuconfig.py:137
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:137
+msgid ""
+"Set the number local stack memory (TEMP) bytes the\n"
+"CPU will have per organization block invocation."
+msgstr ""
+"Set the number local stack memory (TEMP) bytes the\n"
+"CPU will have per organization block invocation."
+
+#: awlsim/gui/cpuconfig.py:146
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:146
+msgid "Parenthesis stack (Klammerstack) size"
+msgstr "Parenthesis stack (Klammerstack) size"
+
+#: awlsim/gui/cpuconfig.py:148
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:148
+msgid ""
+"Set the depth of the parenthesis stack (Klammerstack) the\n"
+"CPU will have per block invocation."
+msgstr ""
+"Set the depth of the parenthesis stack (Klammerstack) the\n"
+"CPU will have per block invocation."
+
+#: awlsim/gui/cpuconfig.py:157
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:157
+msgid "CALL stack size"
+msgstr "CALL stack size"
+
+#: awlsim/gui/cpuconfig.py:159
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:159
+msgid ""
+"Set the depth of the CALL stack.\n"
+"This is the number of nested CALLs that can be made\n"
+"per OB invocation."
+msgstr ""
+"Set the depth of the CALL stack.\n"
+"This is the number of nested CALLs that can be made\n"
+"per OB invocation."
+
+#: awlsim/gui/cpuconfig.py:171
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:171
+msgid "Hardware configuration"
+msgstr "Hardware configuration"
+
+#: awlsim/gui/cpuconfig.py:174
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:174
+msgid "Clock memory byte (Taktmerker)"
+msgstr "Clock memory byte (Taktmerker)"
+
+#: awlsim/gui/cpuconfig.py:176
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:176
+msgid "Select an M byte for use as clock memory byte (Taktmerker)."
+msgstr "Select an M byte for use as clock memory byte (Taktmerker)."
+
+#: awlsim/gui/cpuconfig.py:182
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:182
+msgid "Enable writing of OB &TEMP entry-variables"
+msgstr "Enable writing of OB &TEMP entry-variables"
+
+#: awlsim/gui/cpuconfig.py:185
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:185
+msgid ""
+"If this box is not checked the entry variables in the\n"
+"ORGANIZATION_BLOCK's TEMP region will not be filled\n"
+"by the system on entry into the OB."
+msgstr ""
+"If this box is not checked the entry variables in the\n"
+"ORGANIZATION_BLOCK's TEMP region will not be filled\n"
+"by the system on entry into the OB."
+
+#: awlsim/gui/cpuconfig.py:190
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:190
+msgid "Cycle (OB 1) time limit"
+msgstr "Cycle (OB 1) time limit"
+
+#: awlsim/gui/cpuconfig.py:192
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:192
+msgid ""
+"Time limit of one cycle (OB 1) run, in milliseconds.\n"
+"The CPU goes into exceptional state (STOP), if the\n"
+"cycle time limit is exceeded."
+msgstr ""
+"Time limit of one cycle (OB 1) run, in milliseconds.\n"
+"The CPU goes into exceptional state (STOP), if the\n"
+"cycle time limit is exceeded."
+
+#: awlsim/gui/cpuconfig.py:205
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:205
+msgid "Cycle (OB 1) time minimum"
+msgstr "Cycle (OB 1) time minimum"
+
+#: awlsim/gui/cpuconfig.py:207
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:207
+msgid ""
+"Cycle time minimum target of one cycle (OB 1) run, in milliseconds.\n"
+"If this value is bigger than zero, then the CPU increases\n"
+"the cycle time to approximately this value.\n"
+"It does so by sleeping at the end of the cycle (OB 1).\n"
+"This decreases power consumption.\n"
+"But it also increases the OB 1 latency to the specified time.\n"
+"If the actual cycle time needed for calculations is bigger\n"
+"than this value, no sleep will happen.\n"
+"A value in the region of 10 ms is recommended."
+msgstr ""
+"Cycle time minimum target of one cycle (OB 1) run, in milliseconds.\n"
+"If this value is bigger than zero, then the CPU increases\n"
+"the cycle time to approximately this value.\n"
+"It does so by sleeping at the end of the cycle (OB 1).\n"
+"This decreases power consumption.\n"
+"But it also increases the OB 1 latency to the specified time.\n"
+"If the actual cycle time needed for calculations is bigger\n"
+"than this value, no sleep will happen.\n"
+"A value in the region of 10 ms is recommended."
+
+#: awlsim/gui/cpuconfig.py:228
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:228
+msgid "AWL language"
+msgstr "AWL language"
+
+#: awlsim/gui/cpuconfig.py:231
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:231
+msgid "Mnemonics language"
+msgstr "Mnemonics language"
+
+#: awlsim/gui/cpuconfig.py:233
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:233
+msgid ""
+"Select the AWL/STL mnemonics type.\n"
+"This may be either German or International (English).\n"
+"Automatic will try to guess the mnemonics from the AWL/STL\n"
+"code. Note that this might fail, though."
+msgstr ""
+"Select the AWL/STL mnemonics type.\n"
+"This may be either German or International (English).\n"
+"Automatic will try to guess the mnemonics from the AWL/STL\n"
+"code. Note that this might fail, though."
+
+#: awlsim/gui/cpuconfig.py:239
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:239
+msgid "Automatic"
+msgstr "Automatic"
+
+#: awlsim/gui/cpuconfig.py:240
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:240
+msgid "English"
+msgstr "English"
+
+#: awlsim/gui/cpuconfig.py:241
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:241
+msgid "German"
+msgstr "German"
+
+#: awlsim/gui/cpuconfig.py:245
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:245
+msgid "Enable e&xtended non-standard instructions"
+msgstr "Enable e&xtended non-standard instructions"
+
+#: awlsim/gui/cpuconfig.py:248
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:248
+msgid ""
+"Enable special Awlsim specific AWL/STL instructions that are not available\n"
+"in the standard S7 language. Enabling this option is harmless even\n"
+"if such instructions are not used."
+msgstr ""
+"Enable special Awlsim specific AWL/STL instructions that are not available\n"
+"in the standard S7 language. Enabling this option is harmless even\n"
+"if such instructions are not used."
+
+#: awlsim/gui/cpuconfig.py:256 awlsim/gui/projecttreewidget.py:1013
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:256
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1013
+msgid "Program"
+msgstr "Program"
+
+#: awlsim/gui/cpuconfig.py:260
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:260
+msgid "Enable pre-download program validation"
+msgstr "Enable pre-download program validation"
+
+#: awlsim/gui/cpuconfig.py:262
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:262
+msgid ""
+"Validate program before downloading it to the CPU.\n"
+"This may catch certain program errors before download."
+msgstr ""
+"Validate program before downloading it to the CPU.\n"
+"This may catch certain program errors before download."
+
+#: awlsim/gui/cpuconfig.py:347
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuconfig.py:347
+msgid "CPU setup"
+msgstr "CPU setup"
+
+#: awlsim/gui/cpustate.py:163
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:163
+msgid "Failed to write to memory"
+msgstr "Failed to write to memory"
+
+#: awlsim/gui/cpustate.py:174
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:174
+msgid "CPU overview"
+msgstr "CPU overview"
+
+#: awlsim/gui/cpustate.py:183
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:183
+msgid ""
+"No CPU status available.\n"
+"Please put the CPU into RUN mode."
+msgstr ""
+"No CPU status available.\n"
+"Please put the CPU into RUN mode."
+
+#: awlsim/gui/cpustate.py:211
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:211
+msgid "Inputs"
+msgstr "Inputs"
+
+#: awlsim/gui/cpustate.py:212
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:212
+msgid "Outputs"
+msgstr "Outputs"
+
+#: awlsim/gui/cpustate.py:213
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:213
+msgid "Flags"
+msgstr "Flags"
+
+#: awlsim/gui/cpustate.py:214
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:214
+msgid "Data block"
+msgstr "Data block"
+
+#: awlsim/gui/cpustate.py:468
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:468
+msgid "invalid address"
+msgstr "invalid address"
+
+#: awlsim/gui/cpustate.py:501
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:501
+msgid "Not DWORD"
+msgstr "Not DWORD"
+
+#: awlsim/gui/cpustate.py:537 awlsim/gui/cpustate.py:751
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:537
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:751
+msgid "Byte"
+msgstr "Byte"
+
+#: awlsim/gui/cpustate.py:538 awlsim/gui/cpustate.py:752
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:538
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:752
+msgid "Word"
+msgstr "Word"
+
+#: awlsim/gui/cpustate.py:539 awlsim/gui/cpustate.py:753
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:539
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:753
+msgid "DWord"
+msgstr "DWord"
+
+#: awlsim/gui/cpustate.py:544
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:544
+msgid "Checkboxes"
+msgstr "Checkboxes"
+
+#: awlsim/gui/cpustate.py:545 awlsim/gui/cpustate.py:1109
+#: awlsim/gui/cpustate.py:1179
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:545
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1109
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1179
+msgid "Dual"
+msgstr "Dual"
+
+#: awlsim/gui/cpustate.py:546
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:546
+msgid "Decimal"
+msgstr "Decimal"
+
+#: awlsim/gui/cpustate.py:547 awlsim/gui/cpustate.py:1110
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:547
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1110
+msgid "Hexadecimal"
+msgstr "Hexadecimal"
+
+#: awlsim/gui/cpustate.py:548
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:548
+msgid "Real"
+msgstr "Real"
+
+#: awlsim/gui/cpustate.py:608
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:608
+msgid "Invalid State_Mem config string."
+msgstr "Invalid State_Mem config string."
+
+#: awlsim/gui/cpustate.py:757
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:757
+msgid "Big-endian"
+msgstr "Big-endian"
+
+#: awlsim/gui/cpustate.py:758
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:758
+msgid "Little-endian"
+msgstr "Little-endian"
+
+#: awlsim/gui/cpustate.py:762 awlsim/gui/fup/fupelemcontainerwidget.py:199
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:762
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:199
+msgid "BCD"
+msgstr "BCD"
+
+#: awlsim/gui/cpustate.py:763
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:763
+msgid "Signed BCD"
+msgstr "Signed BCD"
+
+#: awlsim/gui/cpustate.py:764
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:764
+msgid "Binary"
+msgstr "Binary"
+
+#: awlsim/gui/cpustate.py:765
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:765
+msgid "Signed binary"
+msgstr "Signed binary"
+
+#: awlsim/gui/cpustate.py:803
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:803
+msgid "Cannot parse State_LCD config string."
+msgstr "Cannot parse State_LCD config string."
+
+#: awlsim/gui/cpustate.py:819
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:819
+msgid "Invalid State_LCD config string."
+msgstr "Invalid State_LCD config string."
+
+#: awlsim/gui/cpustate.py:1002
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1002
+msgid "Invalid State_TimerCounter config string."
+msgstr "Invalid State_TimerCounter config string."
+
+#: awlsim/gui/cpustate.py:1104
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1104
+msgid "Timer"
+msgstr "Timer"
+
+#: awlsim/gui/cpustate.py:1111
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1111
+msgid "S5Time"
+msgstr "S5Time"
+
+#: awlsim/gui/cpustate.py:1173
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1173
+msgid "Counter"
+msgstr "Counter"
+
+#: awlsim/gui/cpustate.py:1178
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1178
+msgid "BCD (counter)"
+msgstr "BCD (counter)"
+
+#: awlsim/gui/cpustate.py:1229
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1229
+msgid "CPU online content (downloaded blocks)"
+msgstr "CPU online content (downloaded blocks)"
+
+#: awlsim/gui/cpustate.py:1329
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpustate.py:1329
+msgid "Unknown CPU state window type {}."
+msgstr "Unknown CPU state window type {}."
+
+#: awlsim/gui/cpuwidget.py:173
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:173
+msgid "Error in awlsim core"
+msgstr "Error in awlsim core"
+
+#: awlsim/gui/cpuwidget.py:206
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:206
+msgid "Shut down application?"
+msgstr "Shut down application?"
+
+#: awlsim/gui/cpuwidget.py:207
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:207
+msgid ""
+"The core server requested an application shutdown.\n"
+"Do you want to close Awlsim GUI?"
+msgstr ""
+"The core server requested an application shutdown.\n"
+"Do you want to close Awlsim GUI?"
+
+#: awlsim/gui/cpuwidget.py:213
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:213
+msgid "Shutting down, as requested by server..."
+msgstr "Shutting down, as requested by server..."
+
+#: awlsim/gui/cpuwidget.py:223
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:223
+msgid "Unknown maintenance request {}"
+msgstr "Unknown maintenance request {}"
+
+#: awlsim/gui/cpuwidget.py:262
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:262
+msgid "Could not start CPU"
+msgstr "Could not start CPU"
+
+#: awlsim/gui/cpuwidget.py:279 awlsim/gui/cpuwidget.py:336
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:279
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:336
+msgid "Core server error"
+msgstr "Core server error"
+
+#: awlsim/gui/cpuwidget.py:363
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:363
+msgid "Could not stop CPU"
+msgstr "Could not stop CPU"
+
+#: awlsim/gui/cpuwidget.py:421
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:421
+msgid "Error while trying to connect to CPU"
+msgstr "Error while trying to connect to CPU"
+
+#: awlsim/gui/cpuwidget.py:434
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:434
+msgid "Error while trying to disconnect from CPU"
+msgstr "Error while trying to disconnect from CPU"
+
+#: awlsim/gui/cpuwidget.py:462
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:462
+msgid "Validating project before downloading..."
+msgstr "Validating project before downloading..."
+
+#: awlsim/gui/cpuwidget.py:466
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:466
+msgid "Project validation failed. Loading anyway..."
+msgstr "Project validation failed. Loading anyway..."
+
+#: awlsim/gui/cpuwidget.py:469
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:469
+msgid ""
+"\n"
+"Pre-download validation of the project failed.\n"
+"Continuing the download may bring the CPU to STOP.\n"
+"\n"
+"Do you want to continue or cancel downloading the project to the CPU?"
+msgstr ""
+"\n"
+"Pre-download validation of the project failed.\n"
+"Continuing the download may bring the CPU to STOP.\n"
+"\n"
+"Do you want to continue or cancel downloading the project to the CPU?"
+
+#: awlsim/gui/cpuwidget.py:518
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:518
+msgid "Error while loading code"
+msgstr "Error while loading code"
+
+#: awlsim/gui/cpuwidget.py:550
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:550
+msgid "No source selected."
+msgstr "No source selected."
+
+#: awlsim/gui/cpuwidget.py:551
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:551
+msgid ""
+"Cannot download a single source.\n"
+"No source has been opened in the edit area."
+msgstr ""
+"Cannot download a single source.\n"
+"No source has been opened in the edit area."
+
+#: awlsim/gui/cpuwidget.py:574
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:574
+msgid "Single AWL download: {}/{}"
+msgstr "Single AWL download: {}/{}"
+
+#: awlsim/gui/cpuwidget.py:579
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:579
+msgid "Single FUP download: {}/{}"
+msgstr "Single FUP download: {}/{}"
+
+#: awlsim/gui/cpuwidget.py:584
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:584
+msgid "Single KOP download: {}/{}"
+msgstr "Single KOP download: {}/{}"
+
+#: awlsim/gui/cpuwidget.py:589
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:589
+msgid "Single sym download: {}/{}"
+msgstr "Single sym download: {}/{}"
+
+#: awlsim/gui/cpuwidget.py:594
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:594
+msgid "Single libSelections download."
+msgstr "Single libSelections download."
+
+#: awlsim/gui/cpuwidget.py:614
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:614
+msgid "Error while loading code (single source)"
+msgstr "Error while loading code (single source)"
+
+#: awlsim/gui/cpuwidget.py:642
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:642
+msgid "Error while reseting CPU"
+msgstr "Error while reseting CPU"
+
+#: awlsim/gui/cpuwidget.py:697
+#: build/lib.linux-x86_64-3.5/awlsim/gui/cpuwidget.py:697
+msgid "Failed to setup instruction dumping"
+msgstr "Failed to setup instruction dumping"
+
+#: awlsim/gui/editmdiarea.py:457
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:457
+msgid "Failed to refresh project"
+msgstr "Failed to refresh project"
+
+#: awlsim/gui/editmdiarea.py:458
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:458
+msgid ""
+"Failed to refresh project data.\n"
+"Not closing the editor window to avoid loss of data."
+msgstr ""
+"Failed to refresh project data.\n"
+"Not closing the editor window to avoid loss of data."
+
+#: awlsim/gui/editmdiarea.py:607 awlsim/gui/editmdiarea.py:767
+#: awlsim/gui/editmdiarea.py:883
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:607
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:767
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:883
+msgid " (DISABLED)"
+msgstr " (DISABLED)"
+
+#: awlsim/gui/editmdiarea.py:622
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:622
+msgid "Import AWL/STL source"
+msgstr "Import AWL/STL source"
+
+#: awlsim/gui/editmdiarea.py:623
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:623
+msgid "AWL source (*.awl);;All files (*)"
+msgstr "AWL source (*.awl);;All files (*)"
+
+#: awlsim/gui/editmdiarea.py:637
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:637
+msgid "AWL/STL source export"
+msgstr "AWL/STL source export"
+
+#: awlsim/gui/editmdiarea.py:638
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:638
+msgid "AWL/STL source file (*.awl)"
+msgstr "AWL/STL source file (*.awl)"
+
+#: awlsim/gui/editmdiarea.py:782
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:782
+msgid "Import FUP/FBD XML source"
+msgstr "Import FUP/FBD XML source"
+
+#: awlsim/gui/editmdiarea.py:783
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:783
+msgid "FUP/FBD XML source (*.fupxml);;All files (*)"
+msgstr "FUP/FBD XML source (*.fupxml);;All files (*)"
+
+#: awlsim/gui/editmdiarea.py:797
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:797
+msgid "fup/fbd xml source export"
+msgstr "fup/fbd xml source export"
+
+#: awlsim/gui/editmdiarea.py:798
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:798
+msgid "fup/fbd xml source file (*.fupxml)"
+msgstr "fup/fbd xml source file (*.fupxml)"
+
+#: awlsim/gui/editmdiarea.py:809 awlsim/gui/editmdiarea.py:925
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:809
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:925
+msgid "Failed to export source"
+msgstr "Failed to export source"
+
+#: awlsim/gui/editmdiarea.py:882
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:882
+msgid " (Symbol-table)"
+msgstr " (Symbol-table)"
+
+#: awlsim/gui/editmdiarea.py:898
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:898
+msgid "Import symbol table"
+msgstr "Import symbol table"
+
+#: awlsim/gui/editmdiarea.py:899
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:899
+msgid "Symbol table file (*.asc);;All files (*)"
+msgstr "Symbol table file (*.asc);;All files (*)"
+
+#: awlsim/gui/editmdiarea.py:913
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:913
+msgid "symbol table export"
+msgstr "symbol table export"
+
+#: awlsim/gui/editmdiarea.py:914
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editmdiarea.py:914
+msgid "symbol table file (*.asc)"
+msgstr "symbol table file (*.asc)"
+
+#: awlsim/gui/editwidget.py:221
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:221
+msgid "Online items"
+msgstr "Online items"
+
+#: awlsim/gui/editwidget.py:222
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:222
+msgid "Status bit: /FC (/ER)"
+msgstr "Status bit: /FC (/ER)"
+
+#: awlsim/gui/editwidget.py:225
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:225
+msgid "Status bit: RLO (VKE)"
+msgstr "Status bit: RLO (VKE)"
+
+#: awlsim/gui/editwidget.py:228
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:228
+msgid "Status bit: STA"
+msgstr "Status bit: STA"
+
+#: awlsim/gui/editwidget.py:231
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:231
+msgid "Status bit: OR"
+msgstr "Status bit: OR"
+
+#: awlsim/gui/editwidget.py:234
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:234
+msgid "Status bit: OS"
+msgstr "Status bit: OS"
+
+#: awlsim/gui/editwidget.py:237
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:237
+msgid "Status bit: OV"
+msgstr "Status bit: OV"
+
+#: awlsim/gui/editwidget.py:240
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:240
+msgid "Status bit: CC0 (A0)"
+msgstr "Status bit: CC0 (A0)"
+
+#: awlsim/gui/editwidget.py:243
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:243
+msgid "Status bit: CC1 (A1)"
+msgstr "Status bit: CC1 (A1)"
+
+#: awlsim/gui/editwidget.py:246
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:246
+msgid "Status bit: BR (BIE)"
+msgstr "Status bit: BR (BIE)"
+
+#: awlsim/gui/editwidget.py:249
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:249
+msgid "Full status word"
+msgstr "Full status word"
+
+#: awlsim/gui/editwidget.py:252
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:252
+msgid "Accu 1"
+msgstr "Accu 1"
+
+#: awlsim/gui/editwidget.py:255
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:255
+msgid "Accu 2"
+msgstr "Accu 2"
+
+#: awlsim/gui/editwidget.py:258
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:258
+msgid "Accu 3"
+msgstr "Accu 3"
+
+#: awlsim/gui/editwidget.py:261
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:261
+msgid "Accu 4"
+msgstr "Accu 4"
+
+#: awlsim/gui/editwidget.py:264
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:264
+msgid "AR 1"
+msgstr "AR 1"
+
+#: awlsim/gui/editwidget.py:267
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:267
+msgid "AR 2"
+msgstr "AR 2"
+
+#: awlsim/gui/editwidget.py:270
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:270
+msgid "DB register"
+msgstr "DB register"
+
+#: awlsim/gui/editwidget.py:273
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:273
+msgid "DI register"
+msgstr "DI register"
+
+#: awlsim/gui/editwidget.py:435
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:435
+msgid ""
+"Please enter your AWL program here...\n"
+"\n"
+"\n"
+"Did you know\n"
+msgstr ""
+"Please enter your AWL program here...\n"
+"\n"
+"\n"
+"Did you know\n"
+
+#: awlsim/gui/editwidget.py:451 awlsim/gui/editwidget.py:470
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:451
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:470
+msgid ""
+"The AWL/STL code contains non-{}-characters. These were ignored and stripped "
+"from the code."
+msgstr ""
+"The AWL/STL code contains non-{}-characters. These were ignored and stripped "
+"from the code."
+
+#: awlsim/gui/editwidget.py:765
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:765
+msgid "OFFLINE"
+msgstr "OFFLINE"
+
+#: awlsim/gui/editwidget.py:766
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:766
+msgid "Online (CPU stopped)"
+msgstr "Online (CPU stopped)"
+
+#: awlsim/gui/editwidget.py:767
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:767
+msgid "DOWNLOADING program. Please wait."
+msgstr "DOWNLOADING program. Please wait."
+
+#: awlsim/gui/editwidget.py:768
+#: build/lib.linux-x86_64-3.5/awlsim/gui/editwidget.py:768
+msgid "ERROR. CPU halted."
+msgstr "ERROR. CPU halted."
+
+#: awlsim/gui/finddialog.py:40
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:40
+msgid "Find:"
+msgstr "Find:"
+
+#: awlsim/gui/finddialog.py:45
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:45
+msgid "Regular &expression"
+msgstr "Regular &expression"
+
+#: awlsim/gui/finddialog.py:48
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:48
+msgid "Replace with:"
+msgstr "Replace with:"
+
+#: awlsim/gui/finddialog.py:57
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:57
+msgid "From &cursor"
+msgstr "From &cursor"
+
+#: awlsim/gui/finddialog.py:60
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:60
+msgid "&Up"
+msgstr "&Up"
+
+#: awlsim/gui/finddialog.py:62
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:62
+msgid "&Down"
+msgstr "&Down"
+
+#: awlsim/gui/finddialog.py:70
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:70
+msgid "Case &sensitive"
+msgstr "Case &sensitive"
+
+#: awlsim/gui/finddialog.py:72
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:72
+msgid "&Whole words only"
+msgstr "&Whole words only"
+
+#: awlsim/gui/finddialog.py:87
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:87
+msgid "&Replace"
+msgstr "&Replace"
+
+#: awlsim/gui/finddialog.py:90
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:90
+msgid "Replace &all"
+msgstr "Replace &all"
+
+#: awlsim/gui/finddialog.py:93
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:93
+msgid "C&lose"
+msgstr "C&lose"
+
+#: awlsim/gui/finddialog.py:118
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:118
+msgid "Find and replace text"
+msgstr "Find and replace text"
+
+#: awlsim/gui/finddialog.py:124
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:124
+msgid "Find text"
+msgstr "Find text"
+
+#: awlsim/gui/finddialog.py:181 awlsim/gui/finddialog.py:216
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:181
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:216
+msgid "Reached end of document. Text not found."
+msgstr "Reached end of document. Text not found."
+
+#: awlsim/gui/finddialog.py:212
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:212
+msgid "1 occurrence replaced."
+msgstr "1 occurrence replaced."
+
+#: awlsim/gui/finddialog.py:214
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:214
+msgid "{} occurrences replaced."
+msgstr "{} occurrences replaced."
+
+#: awlsim/gui/finddialog.py:222
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:222
+msgid "&Find next"
+msgstr "&Find next"
+
+#: awlsim/gui/finddialog.py:222
+#: build/lib.linux-x86_64-3.5/awlsim/gui/finddialog.py:222
+msgid "&Find"
+msgstr "&Find"
+
+#: awlsim/gui/fup/fup_conn.py:51
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_conn.py:51
+msgid "Invalid <connection> pos."
+msgstr "Invalid <connection> pos."
+
+#: awlsim/gui/fup/fup_conn.py:77
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_conn.py:77
+msgid "Invalid <connection>"
+msgstr "Invalid <connection>"
+
+#: awlsim/gui/fup/fup_conn.py:89
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_conn.py:89
+msgid "<element> connections are incomplete."
+msgstr "<element> connections are incomplete."
+
+#: awlsim/gui/fup/fup_elemarith.py:59
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemarith.py:59
+msgid "Arithmetic subtype '{}' is not known to the element parser."
+msgstr "Arithmetic subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemarith.py:76 awlsim/gui/fup/fup_elemawl.py:59
+#: awlsim/gui/fup/fup_elemcmp.py:81 awlsim/gui/fup/fup_elemcomment.py:56
+#: awlsim/gui/fup/fup_elemconv.py:80 awlsim/gui/fup/fup_elemmove.py:59
+#: awlsim/gui/fup/fup_elemoperand.py:70 awlsim/gui/fup/fup_elemtime.py:96
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemarith.py:76
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemawl.py:59
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcmp.py:81
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcomment.py:56
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemconv.py:80
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemmove.py:59
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemoperand.py:70
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemtime.py:96
+msgid "<element> caused a grid collision."
+msgstr "<element> caused a grid collision."
+
+#: awlsim/gui/fup/fup_elembool.py:55
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elembool.py:55
+msgid "Boolean subtype '{}' is not known to the element parser."
+msgstr "Boolean subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elembool.py:71
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elembool.py:71
+msgid "Found multiple <subelements> tags inside of boolean <element>."
+msgstr "Found multiple <subelements> tags inside of boolean <element>."
+
+#: awlsim/gui/fup/fup_elembool.py:91
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elembool.py:91
+msgid ""
+"Exactly one subelement of type 'embedded operand' is required in boolean "
+"<element>."
+msgstr ""
+"Exactly one subelement of type 'embedded operand' is required in boolean "
+"<element>."
+
+#: awlsim/gui/fup/fup_elembool.py:101
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elembool.py:101
+msgid "<subelements> is not supported for {}."
+msgstr "<subelements> is not supported for {}."
+
+#: awlsim/gui/fup/fup_elemcmp.py:64
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcmp.py:64
+msgid "Compare subtype '{}' is not known to the element parser."
+msgstr "Compare subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemcomment.py:174
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcomment.py:174
+msgid "Change comment"
+msgstr "Change comment"
+
+#: awlsim/gui/fup/fup_elemcomment.py:175
+#: awlsim/gui/interfedit/interftabmodel.py:590
+#: awlsim/gui/interfedit/interftabmodel.py:606 awlsim/gui/symtabwidget.py:116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcomment.py:175
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:590
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:606
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:116
+msgid "Comment"
+msgstr "Comment"
+
+#: awlsim/gui/fup/fup_elemconv.py:63
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemconv.py:63
+msgid "Conversion subtype '{}' is not known to the element parser."
+msgstr "Conversion subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemcount.py:52
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcount.py:52
+msgid "Counter subtype '{}' is not known to the element parser."
+msgstr "Counter subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemcount.py:67
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcount.py:67
+msgid "Found multiple <subelements> tags inside of counter <element>."
+msgstr "Found multiple <subelements> tags inside of counter <element>."
+
+#: awlsim/gui/fup/fup_elemcount.py:86
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemcount.py:86
+msgid ""
+"Exactly one subelement of type 'embedded operand' is required in counter "
+"<element>."
+msgstr ""
+"Exactly one subelement of type 'embedded operand' is required in counter "
+"<element>."
+
+#: awlsim/gui/fup/fup_elemoperand.py:50
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemoperand.py:50
+msgid "Operand subtype '{}' is not known to the element parser."
+msgstr "Operand subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemshift.py:54
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemshift.py:54
+msgid "Shift subtype '{}' is not known to the element parser."
+msgstr "Shift subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemshift.py:329
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemshift.py:329
+msgid "Add LOB (Last shifted Out Bit) output"
+msgstr "Add LOB (Last shifted Out Bit) output"
+
+#: awlsim/gui/fup/fup_elemtime.py:51
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemtime.py:51
+msgid "Timer subtype '{}' is not known to the element parser."
+msgstr "Timer subtype '{}' is not known to the element parser."
+
+#: awlsim/gui/fup/fup_elemtime.py:66
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemtime.py:66
+msgid "Found multiple <subelements> tags inside of timer <element>."
+msgstr "Found multiple <subelements> tags inside of timer <element>."
+
+#: awlsim/gui/fup/fup_elemtime.py:85
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_elemtime.py:85
+msgid ""
+"Exactly one subelement of type 'embedded operand' is required in timer "
+"<element>."
+msgstr ""
+"Exactly one subelement of type 'embedded operand' is required in timer "
+"<element>."
+
+#: awlsim/gui/fup/fup_grid.py:397
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_grid.py:397
+msgid "FUP element {} duplicate UUID. Generating new UUID."
+msgstr "FUP element {} duplicate UUID. Generating new UUID."
+
+#: awlsim/gui/fup/fup_wire.py:47
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fup_wire.py:47
+msgid "<wire id={}> does already exist."
+msgstr "<wire id={}> does already exist."
+
+#: awlsim/gui/fup/fupdrawwidget.py:65
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:65
+msgid "&Edit element..."
+msgstr "&Edit element..."
+
+#: awlsim/gui/fup/fupdrawwidget.py:68
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:68
+msgid "&Copy element(s)..."
+msgstr "&Copy element(s)..."
+
+#: awlsim/gui/fup/fupdrawwidget.py:71
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:71
+msgid "C&ut element(s)..."
+msgstr "C&ut element(s)..."
+
+#: awlsim/gui/fup/fupdrawwidget.py:74
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:74
+msgid "&Paste element(s)..."
+msgstr "&Paste element(s)..."
+
+#: awlsim/gui/fup/fupdrawwidget.py:77
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:77
+msgid "&Remove element"
+msgstr "&Remove element"
+
+#: awlsim/gui/fup/fupdrawwidget.py:79
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:79
+msgid "E&nable element"
+msgstr "E&nable element"
+
+#: awlsim/gui/fup/fupdrawwidget.py:82
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:82
+msgid "&Disable element"
+msgstr "&Disable element"
+
+#: awlsim/gui/fup/fupdrawwidget.py:86
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:86
+msgid "In&vert connection"
+msgstr "In&vert connection"
+
+#: awlsim/gui/fup/fupdrawwidget.py:89
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:89
+msgid "Add input &connection"
+msgstr "Add input &connection"
+
+#: awlsim/gui/fup/fupdrawwidget.py:92
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:92
+msgid "Add &output connection"
+msgstr "Add &output connection"
+
+#: awlsim/gui/fup/fupdrawwidget.py:95
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:95
+msgid "Remove &connection"
+msgstr "Remove &connection"
+
+#: awlsim/gui/fup/fupdrawwidget.py:98
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:98
+msgid "&Disconnect wire"
+msgstr "&Disconnect wire"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1109
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1109
+msgid "__mimeDataToGrid: Failed to parse MIME data: {}"
+msgstr "__mimeDataToGrid: Failed to parse MIME data: {}"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1123
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1123
+msgid "__mimeDataToGrid: Failed to relocate elements."
+msgstr "__mimeDataToGrid: Failed to relocate elements."
+
+#: awlsim/gui/fup/fupdrawwidget.py:1207
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1207
+msgid ""
+"Unexpected exception in FupDrawWidget.dragEnterEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Unexpected exception in FupDrawWidget.dragEnterEvent(): {}\n"
+"\n"
+"{}"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1216
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1216
+msgid ""
+"Unexpected exception in FupDrawWidget.dragLeaveEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Unexpected exception in FupDrawWidget.dragLeaveEvent(): {}\n"
+"\n"
+"{}"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1225
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1225
+msgid ""
+"Unexpected exception in FupDrawWidget.dragMoveEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Unexpected exception in FupDrawWidget.dragMoveEvent(): {}\n"
+"\n"
+"{}"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1234
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1234
+msgid ""
+"Unexpected exception in FupDrawWidget.dropEvent(): {}\n"
+"\n"
+"{}"
+msgstr ""
+"Unexpected exception in FupDrawWidget.dropEvent(): {}\n"
+"\n"
+"{}"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1300
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1300
+msgid "Paste of FUP grid failed"
+msgstr "Paste of FUP grid failed"
+
+#: awlsim/gui/fup/fupdrawwidget.py:1301
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupdrawwidget.py:1301
+msgid ""
+"The FUP grid cannot be pasted here, because elements collide.\n"
+"Please select another position in the grid."
+msgstr ""
+"The FUP grid cannot be pasted here, because elements collide.\n"
+"Please select another position in the grid."
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:73
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:73
+msgid "[...]  Comment"
+msgstr "[...]  Comment"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:77
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:77
+msgid "Boolean"
+msgstr "Boolean"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:78
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:78
+msgid "[&]  and"
+msgstr "[&]  and"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:81
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:81
+msgid "[>=1]  or"
+msgstr "[>=1]  or"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:84
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:84
+msgid "[X]  xor"
+msgstr "[X]  xor"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:87
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:87
+msgid "[S]  set"
+msgstr "[S]  set"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:90
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:90
+msgid "[R]  reset"
+msgstr "[R]  reset"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:93
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:93
+msgid "[SR]  SR flip-flop"
+msgstr "[SR]  SR flip-flop"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:96
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:96
+msgid "[RS]  RS flip-flop"
+msgstr "[RS]  RS flip-flop"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:99
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:99
+msgid "[FP]  positive edge"
+msgstr "[FP]  positive edge"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:102
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:102
+msgid "[FN]  negative edge"
+msgstr "[FN]  negative edge"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:107
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:107
+msgid "Counters"
+msgstr "Counters"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:108
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:108
+msgid "[CUD]  Counter"
+msgstr "[CUD]  Counter"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:111
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:111
+msgid "[CU]  Counter up"
+msgstr "[CU]  Counter up"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:114
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:114
+msgid "[CUo]  Counter up-only"
+msgstr "[CUo]  Counter up-only"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:117
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:117
+msgid "[CD]  Counter down"
+msgstr "[CD]  Counter down"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:120
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:120
+msgid "[CDo]  Counter down-only"
+msgstr "[CDo]  Counter down-only"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:123
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:123
+msgid "[CSo]  Counter set"
+msgstr "[CSo]  Counter set"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:128
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:128
+msgid "Timers"
+msgstr "Timers"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:129
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:129
+msgid "[SP]  Pulse"
+msgstr "[SP]  Pulse"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:132
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:132
+msgid "[SE]  Extended pulse"
+msgstr "[SE]  Extended pulse"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:135
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:135
+msgid "[SD]  On-delay"
+msgstr "[SD]  On-delay"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:138
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:138
+msgid "[SS]  Extended on-delay"
+msgstr "[SS]  Extended on-delay"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:141
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:141
+msgid "[SF]  Off-delay"
+msgstr "[SF]  Off-delay"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:146
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:146
+msgid "Move / convert"
+msgstr "Move / convert"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:147
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:147
+msgid "[L]  load"
+msgstr "[L]  load"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:150
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:150
+msgid "[=]  assign"
+msgstr "[=]  assign"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:153
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:153
+msgid "-[=]-  move box"
+msgstr "-[=]-  move box"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:158
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:158
+msgid "INT / DINT"
+msgstr "INT / DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:159
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:159
+msgid "[I->D]  INT to DINT"
+msgstr "[I->D]  INT to DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:162
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:162
+msgid "[neg I]  negate INT"
+msgstr "[neg I]  negate INT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:165
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:165
+msgid "[neg D]  negate DINT"
+msgstr "[neg D]  negate DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:168
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:168
+msgid "[inv I]  bitwise invert INT"
+msgstr "[inv I]  bitwise invert INT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:171
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:171
+msgid "[inv D]  bitwise invert DINT"
+msgstr "[inv D]  bitwise invert DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:177
+#: awlsim/gui/fup/fupelemcontainerwidget.py:258
+#: awlsim/gui/fup/fupelemcontainerwidget.py:345
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:177
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:258
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:345
+msgid "REAL"
+msgstr "REAL"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:178
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:178
+msgid "[D->R]  DINT to REAL"
+msgstr "[D->R]  DINT to REAL"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:181
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:181
+msgid "[neg R]  negate REAL"
+msgstr "[neg R]  negate REAL"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:184
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:184
+msgid "[round]  round REAL"
+msgstr "[round]  round REAL"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:187
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:187
+msgid "[trunc]  truncate REAL"
+msgstr "[trunc]  truncate REAL"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:190
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:190
+msgid "[round+]  round REAL to pos."
+msgstr "[round+]  round REAL to pos."
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:193
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:193
+msgid "[round-]  round REAL to neg."
+msgstr "[round-]  round REAL to neg."
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:200
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:200
+msgid "[BCD->I]  BCD to INT"
+msgstr "[BCD->I]  BCD to INT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:203
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:203
+msgid "[BCD->D]  BCD to DINT"
+msgstr "[BCD->D]  BCD to DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:206
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:206
+msgid "[I->BCD]  INT to BCD"
+msgstr "[I->BCD]  INT to BCD"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:209
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:209
+msgid "[D->BCD]  DINT to BCD"
+msgstr "[D->BCD]  DINT to BCD"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:215
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:215
+msgid "Byte order"
+msgstr "Byte order"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:216
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:216
+msgid "[swap W]  swap WORD order"
+msgstr "[swap W]  swap WORD order"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:219
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:219
+msgid "[swap D]  swap DWORD order"
+msgstr "[swap D]  swap DWORD order"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:225
+#: awlsim/gui/fup/fupelemcontainerwidget.py:303
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:225
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:303
+msgid "INT"
+msgstr "INT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:226
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:226
+msgid "[+I]  INT addition"
+msgstr "[+I]  INT addition"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:229
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:229
+msgid "[-I]  INT subtraction"
+msgstr "[-I]  INT subtraction"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:232
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:232
+msgid "[*I]  INT multiplication"
+msgstr "[*I]  INT multiplication"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:235
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:235
+msgid "[/I]  INT division"
+msgstr "[/I]  INT division"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:240
+#: awlsim/gui/fup/fupelemcontainerwidget.py:324
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:240
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:324
+msgid "DINT"
+msgstr "DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:241
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:241
+msgid "[+D]  DINT addition"
+msgstr "[+D]  DINT addition"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:244
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:244
+msgid "[-D]  DINT subtraction"
+msgstr "[-D]  DINT subtraction"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:247
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:247
+msgid "[*D]  DINT multiplication"
+msgstr "[*D]  DINT multiplication"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:250
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:250
+msgid "[/D]  DINT division"
+msgstr "[/D]  DINT division"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:253
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:253
+msgid "[MOD]  DINT modulo"
+msgstr "[MOD]  DINT modulo"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:259
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:259
+msgid "[+R]  REAL addition"
+msgstr "[+R]  REAL addition"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:262
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:262
+msgid "[-R]  REAL subtraction"
+msgstr "[-R]  REAL subtraction"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:265
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:265
+msgid "[*R]  REAL multiplication"
+msgstr "[*R]  REAL multiplication"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:268
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:268
+msgid "[/R]  REAL division"
+msgstr "[/R]  REAL division"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:273
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:273
+msgid "WORD / INT"
+msgstr "WORD / INT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:274
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:274
+msgid "[SSI >>]  Signed INT right shift"
+msgstr "[SSI >>]  Signed INT right shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:277
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:277
+msgid "[SRW >>]  WORD right shift"
+msgstr "[SRW >>]  WORD right shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:280
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:280
+msgid "[SLW <<]  WORD left shift"
+msgstr "[SLW <<]  WORD left shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:285
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:285
+msgid "DWORD / DINT"
+msgstr "DWORD / DINT"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:286
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:286
+msgid "[SSD >>]  Signed DINT right shift"
+msgstr "[SSD >>]  Signed DINT right shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:289
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:289
+msgid "[SRD >>]  DWORD right shift"
+msgstr "[SRD >>]  DWORD right shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:292
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:292
+msgid "[SLD <<]  DWORD left shift"
+msgstr "[SLD <<]  DWORD left shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:295
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:295
+msgid "[RLD <<]  DWORD rotate left"
+msgstr "[RLD <<]  DWORD rotate left"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:298
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:298
+msgid "[RRD <<]  DWORD rotate right"
+msgstr "[RRD <<]  DWORD rotate right"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:304
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:304
+msgid "[==I]  INT equal"
+msgstr "[==I]  INT equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:307
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:307
+msgid "[<>I]  INT not equal"
+msgstr "[<>I]  INT not equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:310
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:310
+msgid "[>I]  INT greater than"
+msgstr "[>I]  INT greater than"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:313
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:313
+msgid "[<I]  INT less than"
+msgstr "[<I]  INT less than"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:316
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:316
+msgid "[>=I]  INT greater or equal"
+msgstr "[>=I]  INT greater or equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:319
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:319
+msgid "[<=I]  INT less or equal"
+msgstr "[<=I]  INT less or equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:325
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:325
+msgid "[==D]  DINT equal"
+msgstr "[==D]  DINT equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:328
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:328
+msgid "[<>D]  DINT not equal"
+msgstr "[<>D]  DINT not equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:331
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:331
+msgid "[>D]  DINT greater than"
+msgstr "[>D]  DINT greater than"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:334
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:334
+msgid "[<D]  DINT less than"
+msgstr "[<D]  DINT less than"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:337
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:337
+msgid "[>=D]  DINT greater or equal"
+msgstr "[>=D]  DINT greater or equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:340
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:340
+msgid "[<=D]  DINT less or equal"
+msgstr "[<=D]  DINT less or equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:346
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:346
+msgid "[==R]  REAL equal"
+msgstr "[==R]  REAL equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:349
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:349
+msgid "[<>R]  REAL not equal"
+msgstr "[<>R]  REAL not equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:352
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:352
+msgid "[>R]  REAL greater than"
+msgstr "[>R]  REAL greater than"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:355
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:355
+msgid "[<R]  REAL less than"
+msgstr "[<R]  REAL less than"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:358
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:358
+msgid "[>=R]  REAL greater or equal"
+msgstr "[>=R]  REAL greater or equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:361
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:361
+msgid "[<=R]  REAL less or equal"
+msgstr "[<=R]  REAL less or equal"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:367
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:367
+msgid "[AWL]  Inline AWL code"
+msgstr "[AWL]  Inline AWL code"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:372
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:372
+msgid "Arithmetic"
+msgstr "Arithmetic"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:376
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:376
+msgid "Shift"
+msgstr "Shift"
+
+#: awlsim/gui/fup/fupelemcontainerwidget.py:379
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupelemcontainerwidget.py:379
+msgid "Compare"
+msgstr "Compare"
+
+#: awlsim/gui/fup/fupwidget.py:79
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:79
+msgid "Unsupported FUP version. Got {}, but expected {}."
+msgstr "Unsupported FUP version. Got {}, but expected {}."
+
+#: awlsim/gui/fup/fupwidget.py:122
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:122
+msgid "Awlsim FUP/FBD source generated by awlsim-{}"
+msgstr "Awlsim FUP/FBD source generated by awlsim-{}"
+
+#: awlsim/gui/fup/fupwidget.py:145
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:145
+msgid "Configure &optimizer..."
+msgstr "Configure &optimizer..."
+
+#: awlsim/gui/fup/fupwidget.py:147
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:147
+msgid "Show AWL code (DE, optimized)..."
+msgstr "Show AWL code (DE, optimized)..."
+
+#: awlsim/gui/fup/fupwidget.py:149
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:149
+msgid "Show AWL code (DE)..."
+msgstr "Show AWL code (DE)..."
+
+#: awlsim/gui/fup/fupwidget.py:151
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:151
+msgid "Show STL code (EN, optimized)..."
+msgstr "Show STL code (EN, optimized)..."
+
+#: awlsim/gui/fup/fupwidget.py:153
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:153
+msgid "Show STL code (EN)..."
+msgstr "Show STL code (EN)..."
+
+#: awlsim/gui/fup/fupwidget.py:155
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:155
+msgid "Generate CALL template..."
+msgstr "Generate CALL template..."
+
+#: awlsim/gui/fup/fupwidget.py:178
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:178
+msgid "FUP/FBD compiler..."
+msgstr "FUP/FBD compiler..."
+
+#: awlsim/gui/fup/fupwidget.py:287
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:287
+msgid "Failed to create FUP source: {}"
+msgstr "Failed to create FUP source: {}"
+
+#: awlsim/gui/fup/fupwidget.py:290
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:290
+msgid "Composed FUP XML:"
+msgstr "Composed FUP XML:"
+
+#: awlsim/gui/fup/fupwidget.py:309
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:309
+msgid "Parsing FUP XML:"
+msgstr "Parsing FUP XML:"
+
+#: awlsim/gui/fup/fupwidget.py:315
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:315
+msgid "Failed to parse FUP source: {}"
+msgstr "Failed to parse FUP source: {}"
+
+#: awlsim/gui/fup/fupwidget.py:345
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:345
+msgid "FUP compiler error"
+msgstr "FUP compiler error"
+
+#: awlsim/gui/fup/fupwidget.py:349
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:349
+msgid "FUP/FBD CALL template - {}"
+msgstr "FUP/FBD CALL template - {}"
+
+#: awlsim/gui/fup/fupwidget.py:352
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/fupwidget.py:352
+msgid "Compiled FUP/FBD diagram - {}"
+msgstr "Compiled FUP/FBD diagram - {}"
+
+#: awlsim/gui/fup/undo.py:48
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/undo.py:48
+msgid "FUP diagram change"
+msgstr "FUP diagram change"
+
+#: awlsim/gui/fup/undo.py:74
+#: build/lib.linux-x86_64-3.5/awlsim/gui/fup/undo.py:74
+msgid "Failed to {} a FUP/FBD change"
+msgstr "Failed to {} a FUP/FBD change"
+
+#: awlsim/gui/guiconfig.py:38
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:38
+msgid "Source code editor"
+msgstr "Source code editor"
+
+#: awlsim/gui/guiconfig.py:41
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:41
+msgid "&Auto indentation"
+msgstr "&Auto indentation"
+
+#: awlsim/gui/guiconfig.py:43
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:43
+msgid ""
+"Automatically indent AWL/STL code as it is entered\n"
+"into the editor area."
+msgstr ""
+"Automatically indent AWL/STL code as it is entered\n"
+"into the editor area."
+
+#: awlsim/gui/guiconfig.py:47
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:47
+msgid "Clipboard &paste auto indentation"
+msgstr "Clipboard &paste auto indentation"
+
+#: awlsim/gui/guiconfig.py:50
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:50
+msgid ""
+"Automatically indent AWL/STL code as it is pasted\n"
+"into the editor area."
+msgstr ""
+"Automatically indent AWL/STL code as it is pasted\n"
+"into the editor area."
+
+#: awlsim/gui/guiconfig.py:54
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:54
+msgid "Live code &validation"
+msgstr "Live code &validation"
+
+#: awlsim/gui/guiconfig.py:56
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:56
+msgid ""
+"Enable automatic compilation and verification of the\n"
+"AWL/STL code as it is entered into the editor.\n"
+"The verification completely runs in the background."
+msgstr ""
+"Enable automatic compilation and verification of the\n"
+"AWL/STL code as it is entered into the editor.\n"
+"The verification completely runs in the background."
+
+#: awlsim/gui/guiconfig.py:66
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:66
+msgid "Select the AWL/STL editor font."
+msgstr "Select the AWL/STL editor font."
+
+#: awlsim/gui/guiconfig.py:68
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:68
+msgid "&Select..."
+msgstr "&Select..."
+
+#: awlsim/gui/guiconfig.py:82
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:82
+msgid "Font: {}, {} pt"
+msgstr "Font: {}, {} pt"
+
+#: awlsim/gui/guiconfig.py:88
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:88
+msgid "Editor font"
+msgstr "Editor font"
+
+#: awlsim/gui/guiconfig.py:135
+#: build/lib.linux-x86_64-3.5/awlsim/gui/guiconfig.py:135
+msgid "User interface setup"
+msgstr "User interface setup"
+
+#: awlsim/gui/hwmodconfig.py:120
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:120
+msgid ""
+"Hardware parameters [{}]: Replacing parameter '{}' with fully compatible "
+"parameter '{}'."
+msgstr ""
+"Hardware parameters [{}]: Replacing parameter '{}' with fully compatible "
+"parameter '{}'."
+
+#: awlsim/gui/hwmodconfig.py:210
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:210
+msgid ""
+"{}\n"
+"Default value: {}"
+msgstr ""
+"{}\n"
+"Default value: {}"
+
+#: awlsim/gui/hwmodconfig.py:214
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:214
+msgid "The parameter's name"
+msgstr "The parameter's name"
+
+#: awlsim/gui/hwmodconfig.py:217
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:217
+msgid "New parameter name"
+msgstr "New parameter name"
+
+#: awlsim/gui/hwmodconfig.py:224
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:224
+msgid "Parameter"
+msgstr "Parameter"
+
+#: awlsim/gui/hwmodconfig.py:224
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:224
+msgid "Value"
+msgstr "Value"
+
+#: awlsim/gui/hwmodconfig.py:228 awlsim/gui/libtablewidget.py:163
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:228
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:163
+msgid "new"
+msgstr "new"
+
+#: awlsim/gui/hwmodconfig.py:329
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:329
+msgid "Available modules:"
+msgstr "Available modules:"
+
+#: awlsim/gui/hwmodconfig.py:336
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:336
+msgid ""
+"Name of another module to add.\n"
+"Note: Typos in the module name will result in errors on CPU startup."
+msgstr ""
+"Name of another module to add.\n"
+"Note: Typos in the module name will result in errors on CPU startup."
+
+#: awlsim/gui/hwmodconfig.py:345
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:345
+msgid ""
+"Add the selected module to the project\n"
+"and mark it for download to the CPU."
+msgstr ""
+"Add the selected module to the project\n"
+"and mark it for download to the CPU."
+
+#: awlsim/gui/hwmodconfig.py:350
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:350
+msgid ""
+"Remove the selected module from the project\n"
+"and mark it for removal from the CPU."
+msgstr ""
+"Remove the selected module from the project\n"
+"and mark it for removal from the CPU."
+
+#: awlsim/gui/hwmodconfig.py:355
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:355
+msgid "Loaded modules:"
+msgstr "Loaded modules:"
+
+#: awlsim/gui/hwmodconfig.py:365
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:365
+msgid ""
+"Move the selected loaded module up.\n"
+"Modules are executed in order from top to bottom."
+msgstr ""
+"Move the selected loaded module up.\n"
+"Modules are executed in order from top to bottom."
+
+#: awlsim/gui/hwmodconfig.py:370
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:370
+msgid ""
+"Move the selected loaded module down.\n"
+"Modules are executed in order from top to bottom."
+msgstr ""
+"Move the selected loaded module down.\n"
+"Modules are executed in order from top to bottom."
+
+#: awlsim/gui/hwmodconfig.py:375
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:375
+msgid "Module parameters:"
+msgstr "Module parameters:"
+
+#: awlsim/gui/hwmodconfig.py:542
+#: build/lib.linux-x86_64-3.5/awlsim/gui/hwmodconfig.py:542
+msgid "Hardware module setup"
+msgstr "Hardware module setup"
+
+#: awlsim/gui/interfedit/blocktypewidget.py:202
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/blocktypewidget.py:202
+msgid "Block type: Function (FC)"
+msgstr "Block type: Function (FC)"
+
+#: awlsim/gui/interfedit/blocktypewidget.py:203
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/blocktypewidget.py:203
+msgid "Block type: Function block (FB)"
+msgstr "Block type: Function block (FB)"
+
+#: awlsim/gui/interfedit/blocktypewidget.py:204
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/blocktypewidget.py:204
+msgid "Block type: Organization block (OB)"
+msgstr "Block type: Organization block (OB)"
+
+#: awlsim/gui/interfedit/blocktypewidget.py:211
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/blocktypewidget.py:211
+msgid ""
+"Enter the block name here.\n"
+"\n"
+"This can be an absolute block name like\n"
+"  FB 42   or   FC 42   or   OB 100\n"
+"or a symbolic block name like\n"
+"  \"My function block\"\n"
+"(The symbolic name must be present in the symbol table.)"
+msgstr ""
+"Enter the block name here.\n"
+"\n"
+"This can be an absolute block name like\n"
+"  FB 42   or   FC 42   or   OB 100\n"
+"or a symbolic block name like\n"
+"  \"My function block\"\n"
+"(The symbolic name must be present in the symbol table.)"
+
+#: awlsim/gui/interfedit/blocktypewidget.py:219
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/blocktypewidget.py:219
+msgid "DIs:"
+msgstr "DIs:"
+
+#: awlsim/gui/interfedit/blocktypewidget.py:224
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/blocktypewidget.py:224
+msgid ""
+"Enter the instance DBs to create here.\n"
+"\n"
+"If this field is left empty, no DB will be generated.\n"
+"One DB or a comma separated list of DBs to create can be specified.\n"
+"\n"
+"For example:\n"
+"  DB 42\n"
+"or\n"
+"  DB 42, DB 43, DB 44\n"
+"or a symbolic block name like\n"
+"  \"First data block\", \"Second data block\"\n"
+"(The symbolic name must be present in the symbol table.)"
+msgstr ""
+"Enter the instance DBs to create here.\n"
+"\n"
+"If this field is left empty, no DB will be generated.\n"
+"One DB or a comma separated list of DBs to create can be specified.\n"
+"\n"
+"For example:\n"
+"  DB 42\n"
+"or\n"
+"  DB 42, DB 43, DB 44\n"
+"or a symbolic block name like\n"
+"  \"First data block\", \"Second data block\"\n"
+"(The symbolic name must be present in the symbol table.)"
+
+#: awlsim/gui/interfedit/interftabmodel.py:570
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:570
+msgid "Create a new INPUT field here..."
+msgstr "Create a new INPUT field here..."
+
+#: awlsim/gui/interfedit/interftabmodel.py:572
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:572
+msgid "Create a new OUTPUT field here..."
+msgstr "Create a new OUTPUT field here..."
+
+#: awlsim/gui/interfedit/interftabmodel.py:574
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:574
+msgid "Create a new IN_OUT field here..."
+msgstr "Create a new IN_OUT field here..."
+
+#: awlsim/gui/interfedit/interftabmodel.py:576
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:576
+msgid "Create a new STAT field here..."
+msgstr "Create a new STAT field here..."
+
+#: awlsim/gui/interfedit/interftabmodel.py:578
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:578
+msgid "Create a new TEMP field here..."
+msgstr "Create a new TEMP field here..."
+
+#: awlsim/gui/interfedit/interftabmodel.py:582
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:582
+msgid "Function (FC) return value."
+msgstr "Function (FC) return value."
+
+#: awlsim/gui/interfedit/interftabmodel.py:584
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:584
+msgid "The interface field name."
+msgstr "The interface field name."
+
+#: awlsim/gui/interfedit/interftabmodel.py:586
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:586
+msgid ""
+"The interface field data type.\n"
+"For example: BOOL  or  INT"
+msgstr ""
+"The interface field data type.\n"
+"For example: BOOL  or  INT"
+
+#: awlsim/gui/interfedit/interftabmodel.py:588
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:588
+msgid "The initial value in the associated DB."
+msgstr "The initial value in the associated DB."
+
+#: awlsim/gui/interfedit/interftabmodel.py:600
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:600
+msgid "Interface field name"
+msgstr "Interface field name"
+
+#: awlsim/gui/interfedit/interftabmodel.py:602 awlsim/gui/symtabwidget.py:116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:602
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:116
+msgid "Data type"
+msgstr "Data type"
+
+#: awlsim/gui/interfedit/interftabmodel.py:604
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interftabmodel.py:604
+msgid "Init value"
+msgstr "Init value"
+
+#: awlsim/gui/interfedit/interfwidget.py:72
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interfwidget.py:72
+msgid "Change block type?"
+msgstr "Change block type?"
+
+#: awlsim/gui/interfedit/interfwidget.py:73
+#: build/lib.linux-x86_64-3.5/awlsim/gui/interfedit/interfwidget.py:73
+msgid ""
+"The block interface table is not empty.\n"
+"Changing the block type might delete interface fields.\n"
+"\n"
+"Change block type anyway?"
+msgstr ""
+"The block interface table is not empty.\n"
+"Changing the block type might delete interface fields.\n"
+"\n"
+"Change block type anyway?"
+
+#: awlsim/gui/library.py:214
+#: build/lib.linux-x86_64-3.5/awlsim/gui/library.py:214
+msgid "Paste library code body?"
+msgstr "Paste library code body?"
+
+#: awlsim/gui/library.py:215
+#: build/lib.linux-x86_64-3.5/awlsim/gui/library.py:215
+msgid ""
+"Warning: It is not recommended to paste library code into the project "
+"sources. You should instead just import the library (via library selection "
+"table) and CALL the imported function.\n"
+"\n"
+"See the 'CALL \"{}\"' or 'CALL {}' buttons.\n"
+"\n"
+"Do you want to paste the code nevertheless?"
+msgstr ""
+"Warning: It is not recommended to paste library code into the project "
+"sources. You should instead just import the library (via library selection "
+"table) and CALL the imported function.\n"
+"\n"
+"See the 'CALL \"{}\"' or 'CALL {}' buttons.\n"
+"\n"
+"Do you want to paste the code nevertheless?"
+
+#: awlsim/gui/library.py:273
+#: build/lib.linux-x86_64-3.5/awlsim/gui/library.py:273
+msgid "AWL/STL - Standard library"
+msgstr "AWL/STL - Standard library"
+
+#: awlsim/gui/library.py:287
+#: build/lib.linux-x86_64-3.5/awlsim/gui/library.py:287
+msgid "System functions (SFC)"
+msgstr "System functions (SFC)"
+
+#: awlsim/gui/library.py:288
+#: build/lib.linux-x86_64-3.5/awlsim/gui/library.py:288
+msgid "System function blocks (SFB)"
+msgstr "System function blocks (SFB)"
+
+#: awlsim/gui/library.py:293
+#: build/lib.linux-x86_64-3.5/awlsim/gui/library.py:293
+msgid "Library error"
+msgstr "Library error"
+
+#: awlsim/gui/libtablewidget.py:118
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:118
+msgid "Library or block not found!"
+msgstr "Library or block not found!"
+
+#: awlsim/gui/libtablewidget.py:142
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:142
+msgid ""
+"The name of the library.\n"
+"(The name is case insensitive.)"
+msgstr ""
+"The name of the library.\n"
+"(The name is case insensitive.)"
+
+#: awlsim/gui/libtablewidget.py:144
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:144
+msgid ""
+"The name of the block from the library to include.\n"
+"For example:  FC 10  or  FB 42"
+msgstr ""
+"The name of the block from the library to include.\n"
+"For example:  FC 10  or  FB 42"
+
+#: awlsim/gui/libtablewidget.py:147
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:147
+msgid ""
+"The local name of the block.\n"
+"The block can be CALLed by this name from within the user program.\n"
+"For example:  FC 110  or  FB 142"
+msgstr ""
+"The local name of the block.\n"
+"The block can be CALLed by this name from within the user program.\n"
+"For example:  FC 110  or  FB 142"
+
+#: awlsim/gui/libtablewidget.py:159
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:159
+msgid "Library"
+msgstr "Library"
+
+#: awlsim/gui/libtablewidget.py:159
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:159
+msgid "Library block"
+msgstr "Library block"
+
+#: awlsim/gui/libtablewidget.py:160
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:160
+msgid "Use as block"
+msgstr "Use as block"
+
+#: awlsim/gui/libtablewidget.py:160
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:160
+msgid "Description"
+msgstr "Description"
+
+#: awlsim/gui/libtablewidget.py:180
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:180
+msgid "Invalid block selection: {}"
+msgstr "Invalid block selection: {}"
+
+#: awlsim/gui/libtablewidget.py:213
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:213
+msgid "Effective block type does not match the library's block type '{}'."
+msgstr "Effective block type does not match the library's block type '{}'."
+
+#: awlsim/gui/libtablewidget.py:223
+#: build/lib.linux-x86_64-3.5/awlsim/gui/libtablewidget.py:223
+msgid "Invalid library information"
+msgstr "Invalid library information"
+
+#: awlsim/gui/linkconfig.py:40
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:40
+msgid ""
+"A semicolon (;) separated list of Python interpreters used to run the "
+"simulator core.\n"
+"The list is tried first to last element, until one working interpreter is "
+"found.\n"
+"\n"
+"The special value $CURRENT is the interpreter that is used to run the "
+"frontend.\n"
+"The special value $DEFAULT will expand to this list:\n"
+"    {}\n"
+"\n"
+"---> If you are unsure, leave this as $DEFAULT <---"
+msgstr ""
+"A semicolon (;) separated list of Python interpreters used to run the "
+"simulator core.\n"
+"The list is tried first to last element, until one working interpreter is "
+"found.\n"
+"\n"
+"The special value $CURRENT is the interpreter that is used to run the "
+"frontend.\n"
+"The special value $DEFAULT will expand to this list:\n"
+"    {}\n"
+"\n"
+"---> If you are unsure, leave this as $DEFAULT <---"
+
+#: awlsim/gui/linkconfig.py:50
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:50
+msgid "Python interpreter list:"
+msgstr "Python interpreter list:"
+
+#: awlsim/gui/linkconfig.py:59
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:59
+msgid ""
+"Spawn the new simulator core server on any port within this range.\n"
+"\n"
+"---> If you are unsure, do not change the defaults. <---"
+msgstr ""
+"Spawn the new simulator core server on any port within this range.\n"
+"\n"
+"---> If you are unsure, do not change the defaults. <---"
+
+#: awlsim/gui/linkconfig.py:62
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:62
+msgid "Port range:"
+msgstr "Port range:"
+
+#: awlsim/gui/linkconfig.py:67
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:67
+msgid "from "
+msgstr "from "
+
+#: awlsim/gui/linkconfig.py:72
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:72
+msgid "to "
+msgstr "to "
+
+#: awlsim/gui/linkconfig.py:94
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:94
+msgid "The SSH login user name of the remote server."
+msgstr "The SSH login user name of the remote server."
+
+#: awlsim/gui/linkconfig.py:95
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:95
+msgid "SSH login user:"
+msgstr "SSH login user:"
+
+#: awlsim/gui/linkconfig.py:103
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:103
+msgid ""
+"Port number of the remote SSH server.\n"
+"Leave this as {} unless you know what you are doing."
+msgstr ""
+"Port number of the remote SSH server.\n"
+"Leave this as {} unless you know what you are doing."
+
+#: awlsim/gui/linkconfig.py:106
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:106
+msgid "SSH port:"
+msgstr "SSH port:"
+
+#: awlsim/gui/linkconfig.py:116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:116
+msgid ""
+"The local SSH client executable.\n"
+"This can be the full path to the SSH client program."
+msgstr ""
+"The local SSH client executable.\n"
+"This can be the full path to the SSH client program."
+
+#: awlsim/gui/linkconfig.py:127
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:127
+msgid ""
+"Port number of the local tunnel end.\n"
+"It is recommended to use automatic port selection."
+msgstr ""
+"Port number of the local tunnel end.\n"
+"It is recommended to use automatic port selection."
+
+#: awlsim/gui/linkconfig.py:129
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:129
+msgid "Local port:"
+msgstr "Local port:"
+
+#: awlsim/gui/linkconfig.py:139
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:139
+msgid "auto"
+msgstr "auto"
+
+#: awlsim/gui/linkconfig.py:155
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:155
+msgid "The host name or IP address of the core server to connect to."
+msgstr "The host name or IP address of the core server to connect to."
+
+#: awlsim/gui/linkconfig.py:157
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:157
+msgid "Core server host:"
+msgstr "Core server host:"
+
+#: awlsim/gui/linkconfig.py:164
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:164
+msgid "The port number of the core server to connect to."
+msgstr "The port number of the core server to connect to."
+
+#: awlsim/gui/linkconfig.py:166
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:166
+msgid "Core server port:"
+msgstr "Core server port:"
+
+#: awlsim/gui/linkconfig.py:174
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:174
+msgid "Connection timeout."
+msgstr "Connection timeout."
+
+#: awlsim/gui/linkconfig.py:175
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:175
+msgid "Timeout:"
+msgstr "Timeout:"
+
+#: awlsim/gui/linkconfig.py:186
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:186
+msgid ""
+"Establish an SSH tunnel to the core server and connect via this tunnel.\n"
+"SSH is a secure and encrypted way to connect to a server."
+msgstr ""
+"Establish an SSH tunnel to the core server and connect via this tunnel.\n"
+"SSH is a secure and encrypted way to connect to a server."
+
+#: awlsim/gui/linkconfig.py:190
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:190
+msgid "via SSH t&unnel"
+msgstr "via SSH t&unnel"
+
+#: awlsim/gui/linkconfig.py:211
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:211
+msgid "Operation mode"
+msgstr "Operation mode"
+
+#: awlsim/gui/linkconfig.py:213
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:213
+msgid "Start a &simulator core"
+msgstr "Start a &simulator core"
+
+#: awlsim/gui/linkconfig.py:214
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:214
+msgid ""
+"This will start a simulator core on-the-fly in the background.\n"
+"\n"
+"---> If you don't know what to do, select this. <---"
+msgstr ""
+"This will start a simulator core on-the-fly in the background.\n"
+"\n"
+"---> If you don't know what to do, select this. <---"
+
+#: awlsim/gui/linkconfig.py:219
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:219
+msgid "Connect to an &external core"
+msgstr "Connect to an &external core"
+
+#: awlsim/gui/linkconfig.py:220
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:220
+msgid ""
+"Connect to an already running core server.\n"
+"This server may be running locally or somewhere else on the (trusted) "
+"network."
+msgstr ""
+"Connect to an already running core server.\n"
+"This server may be running locally or somewhere else on the (trusted) "
+"network."
+
+#: awlsim/gui/linkconfig.py:226
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:226
+msgid "Show advanced &options"
+msgstr "Show advanced &options"
+
+#: awlsim/gui/linkconfig.py:227
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:227
+msgid ""
+"Show expert simulator core options.\n"
+"\n"
+"You should not normally need to change any of these.\n"
+"Changing them might break the execution of the simulator core."
+msgstr ""
+"Show expert simulator core options.\n"
+"\n"
+"You should not normally need to change any of these.\n"
+"Changing them might break the execution of the simulator core."
+
+#: awlsim/gui/linkconfig.py:243
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:243
+msgid "Always as&k"
+msgstr "Always as&k"
+
+#: awlsim/gui/linkconfig.py:246
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:246
+msgid "Always open this dialog when trying to connect to a CPU."
+msgstr "Always open this dialog when trying to connect to a CPU."
+
+#: awlsim/gui/linkconfig.py:398
+#: build/lib.linux-x86_64-3.5/awlsim/gui/linkconfig.py:398
+msgid "Server connection setup"
+msgstr "Server connection setup"
+
+#: awlsim/gui/mainwindow.py:78
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:78
+msgid "Awlsim - Downloading..."
+msgstr "Awlsim - Downloading..."
+
+#: awlsim/gui/mainwindow.py:80
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:80
+msgid ""
+"Downloading project to CPU.\n"
+"\n"
+"Please be patient.\n"
+"This might take a few seconds."
+msgstr ""
+"Downloading project to CPU.\n"
+"\n"
+"Please be patient.\n"
+"This might take a few seconds."
+
+#: awlsim/gui/mainwindow.py:112
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:112
+msgid "{}CPU view"
+msgstr "{}CPU view"
+
+#: awlsim/gui/mainwindow.py:137
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:137
+msgid "{}Project"
+msgstr "{}Project"
+
+#: awlsim/gui/mainwindow.py:243
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:243
+msgid "Failed to find '{}'"
+msgstr "Failed to find '{}'"
+
+#: awlsim/gui/mainwindow.py:244
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:244
+msgid ""
+"Could not spawn a new instance.\n"
+"Failed to find '{}'"
+msgstr ""
+"Could not spawn a new instance.\n"
+"Failed to find '{}'"
+
+#: awlsim/gui/mainwindow.py:257
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:257
+msgid "Failed to execute '{}'"
+msgstr "Failed to execute '{}'"
+
+#: awlsim/gui/mainwindow.py:258
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:258
+msgid ""
+"Could not spawn a new instance.\n"
+"{}Failed to execute '{}'"
+msgstr ""
+"Could not spawn a new instance.\n"
+"{}Failed to execute '{}'"
+
+#: awlsim/gui/mainwindow.py:266
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:266
+msgid "Unsaved project"
+msgstr "Unsaved project"
+
+#: awlsim/gui/mainwindow.py:267
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:267
+msgid ""
+"The current project is modified and contains unsaved changes.\n"
+" Do you want to:\n"
+"- Save the project, close it and open the new project\n"
+"- Open the new project in a new instance or\n"
+"- Discard the changes and open the new project\n"
+"- Cancel the operation"
+msgstr ""
+"The current project is modified and contains unsaved changes.\n"
+" Do you want to:\n"
+"- Save the project, close it and open the new project\n"
+"- Open the new project in a new instance or\n"
+"- Discard the changes and open the new project\n"
+"- Cancel the operation"
+
+#: awlsim/gui/mainwindow.py:383
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:383
+msgid "Please select AWL/STL source"
+msgstr "Please select AWL/STL source"
+
+#: awlsim/gui/mainwindow.py:384
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:384
+msgid ""
+"Can not paste text.\n"
+"\n"
+"Please move the text cursor to the place in the AWL/STL code where you want "
+"to paste to."
+msgstr ""
+"Can not paste text.\n"
+"\n"
+"Please move the text cursor to the place in the AWL/STL code where you want "
+"to paste to."
+
+#: awlsim/gui/mainwindow.py:576
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:576
+msgid "CPU: offline"
+msgstr "CPU: offline"
+
+#: awlsim/gui/mainwindow.py:578
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:578
+msgid "CPU: online / STOP"
+msgstr "CPU: online / STOP"
+
+#: awlsim/gui/mainwindow.py:580
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:580
+msgid "CPU: loading"
+msgstr "CPU: loading"
+
+#: awlsim/gui/mainwindow.py:582
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:582
+msgid "CPU: RUN"
+msgstr "CPU: RUN"
+
+#: awlsim/gui/mainwindow.py:584
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:584
+msgid "CPU: EXCEPTION"
+msgstr "CPU: EXCEPTION"
+
+#: awlsim/gui/mainwindow.py:589
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:589
+msgid "{} stmt/s ({} µs/stmt)"
+msgstr "{} stmt/s ({} µs/stmt)"
+
+#: awlsim/gui/mainwindow.py:600
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:600
+msgid "OB1: avg: {} ms  min: {} ms  max: {} ms  padding: {} ms"
+msgstr "OB1: avg: {} ms  min: {} ms  max: {} ms  padding: {} ms"
+
+#: awlsim/gui/mainwindow.py:610
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:610
+msgid "Awlsim PLC v{}"
+msgstr "Awlsim PLC v{}"
+
+#: awlsim/gui/mainwindow.py:652
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:652
+msgid "Main tool bar"
+msgstr "Main tool bar"
+
+#: awlsim/gui/mainwindow.py:654
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:654
+msgid "New project"
+msgstr "New project"
+
+#: awlsim/gui/mainwindow.py:656
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:656
+msgid "Open project"
+msgstr "Open project"
+
+#: awlsim/gui/mainwindow.py:658
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:658
+msgid "Save project"
+msgstr "Save project"
+
+#: awlsim/gui/mainwindow.py:661
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:661
+msgid "Undo last edit"
+msgstr "Undo last edit"
+
+#: awlsim/gui/mainwindow.py:663
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:663
+msgid "Redo"
+msgstr "Redo"
+
+#: awlsim/gui/mainwindow.py:666
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:666
+msgid "Cut"
+msgstr "Cut"
+
+#: awlsim/gui/mainwindow.py:668
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:668
+msgid "Copy"
+msgstr "Copy"
+
+#: awlsim/gui/mainwindow.py:670
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:670
+msgid "Paste"
+msgstr "Paste"
+
+#: awlsim/gui/mainwindow.py:673
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:673
+msgid "Find..."
+msgstr "Find..."
+
+#: awlsim/gui/mainwindow.py:676
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:676
+msgid "Find and replace..."
+msgstr "Find and replace..."
+
+#: awlsim/gui/mainwindow.py:679
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:679
+msgid "Standard library"
+msgstr "Standard library"
+
+#: awlsim/gui/mainwindow.py:681
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:681
+msgid ""
+"Standard library.\n"
+"(Please click into the AWL/STL source code\n"
+"at the place where to paste the library call)"
+msgstr ""
+"Standard library.\n"
+"(Please click into the AWL/STL source code\n"
+"at the place where to paste the library call)"
+
+#: awlsim/gui/mainwindow.py:696
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:696
+msgid "&File"
+msgstr "&File"
+
+#: awlsim/gui/mainwindow.py:697
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:697
+msgid "&New project"
+msgstr "&New project"
+
+#: awlsim/gui/mainwindow.py:699
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:699
+msgid "&Open project..."
+msgstr "&Open project..."
+
+#: awlsim/gui/mainwindow.py:701
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:701
+msgid "&Save project"
+msgstr "&Save project"
+
+#: awlsim/gui/mainwindow.py:703
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:703
+msgid "&Save project as..."
+msgstr "&Save project as..."
+
+#: awlsim/gui/mainwindow.py:706
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:706
+msgid "&Exit..."
+msgstr "&Exit..."
+
+#: awlsim/gui/mainwindow.py:709
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:709
+msgid "&Edit"
+msgstr "&Edit"
+
+#: awlsim/gui/mainwindow.py:710
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:710
+msgid "&Undo"
+msgstr "&Undo"
+
+#: awlsim/gui/mainwindow.py:712
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:712
+msgid "&Redo"
+msgstr "&Redo"
+
+#: awlsim/gui/mainwindow.py:715 awlsim/gui/projecttreewidget.py:1412
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:715
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1412
+msgid "&Cut"
+msgstr "&Cut"
+
+#: awlsim/gui/mainwindow.py:717 awlsim/gui/projecttreewidget.py:1409
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:717
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1409
+msgid "&Copy"
+msgstr "&Copy"
+
+#: awlsim/gui/mainwindow.py:719
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:719
+msgid "&Paste"
+msgstr "&Paste"
+
+#: awlsim/gui/mainwindow.py:722
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:722
+msgid "&Find..."
+msgstr "&Find..."
+
+#: awlsim/gui/mainwindow.py:725
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:725
+msgid "Find and r&eplace..."
+msgstr "Find and r&eplace..."
+
+#: awlsim/gui/mainwindow.py:729
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:729
+msgid "&Library"
+msgstr "&Library"
+
+#: awlsim/gui/mainwindow.py:730
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:730
+msgid "Insert &OB template..."
+msgstr "Insert &OB template..."
+
+#: awlsim/gui/mainwindow.py:732
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:732
+msgid "Insert F&C template..."
+msgstr "Insert F&C template..."
+
+#: awlsim/gui/mainwindow.py:734
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:734
+msgid "Insert F&B template..."
+msgstr "Insert F&B template..."
+
+#: awlsim/gui/mainwindow.py:736
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:736
+msgid "Insert &instance-DB template..."
+msgstr "Insert &instance-DB template..."
+
+#: awlsim/gui/mainwindow.py:738
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:738
+msgid "Insert &DB template..."
+msgstr "Insert &DB template..."
+
+#: awlsim/gui/mainwindow.py:740
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:740
+msgid "Insert &UDT template..."
+msgstr "Insert &UDT template..."
+
+#: awlsim/gui/mainwindow.py:743
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:743
+msgid "Insert FC C&ALL template..."
+msgstr "Insert FC C&ALL template..."
+
+#: awlsim/gui/mainwindow.py:745
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:745
+msgid "Insert FB CA&LL template..."
+msgstr "Insert FB CA&LL template..."
+
+#: awlsim/gui/mainwindow.py:748
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:748
+msgid "&Standard library..."
+msgstr "&Standard library..."
+
+#: awlsim/gui/mainwindow.py:752
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:752
+msgid "&CPU"
+msgstr "&CPU"
+
+#: awlsim/gui/mainwindow.py:771
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:771
+msgid "&Window"
+msgstr "&Window"
+
+#: awlsim/gui/mainwindow.py:775
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:775
+msgid "&Help"
+msgstr "&Help"
+
+#: awlsim/gui/mainwindow.py:776
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:776
+msgid "Awlsim &homepage..."
+msgstr "Awlsim &homepage..."
+
+#: awlsim/gui/mainwindow.py:778
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:778
+msgid "&About..."
+msgstr "&About..."
+
+#: awlsim/gui/mainwindow.py:781
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:781
+msgid "Start profiling"
+msgstr "Start profiling"
+
+#: awlsim/gui/mainwindow.py:784
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:784
+msgid "Stop profiling"
+msgstr "Stop profiling"
+
+#: awlsim/gui/mainwindow.py:894
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:894
+msgid "&Close active window"
+msgstr "&Close active window"
+
+#: awlsim/gui/mainwindow.py:898
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:898
+msgid "Close &all except active"
+msgstr "Close &all except active"
+
+#: awlsim/gui/mainwindow.py:902
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:902
+msgid "Close a&ll"
+msgstr "Close a&ll"
+
+#: awlsim/gui/mainwindow.py:999
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:999
+msgid "Unsaved AWL/STL code"
+msgstr "Unsaved AWL/STL code"
+
+#: awlsim/gui/mainwindow.py:1000
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:1000
+msgid ""
+"The editor contains unsaved AWL/STL code.\n"
+"AWL/STL code will be lost by exiting without saving."
+msgstr ""
+"The editor contains unsaved AWL/STL code.\n"
+"AWL/STL code will be lost by exiting without saving."
+
+#: awlsim/gui/mainwindow.py:1033
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:1033
+msgid "About Awlsim PLC"
+msgstr "About Awlsim PLC"
+
+#: awlsim/gui/mainwindow.py:1062
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:1062
+msgid "Failed to start profiler."
+msgstr "Failed to start profiler."
+
+#: awlsim/gui/mainwindow.py:1072
+#: build/lib.linux-x86_64-3.5/awlsim/gui/mainwindow.py:1072
+msgid "GUI profiler dump:\n"
+msgstr "GUI profiler dump:\n"
+
+#: awlsim/gui/opereditwidget.py:65
+#: build/lib.linux-x86_64-3.5/awlsim/gui/opereditwidget.py:65
+msgid "Failed to parse symbol table: {}"
+msgstr "Failed to parse symbol table: {}"
+
+#: awlsim/gui/opereditwidget.py:267 awlsim/gui/util.py:127
+#: build/lib.linux-x86_64-3.5/awlsim/gui/opereditwidget.py:267
+#: build/lib.linux-x86_64-3.5/awlsim/gui/util.py:127
+msgid "&Ok"
+msgstr "&Ok"
+
+#: awlsim/gui/optimizerconfig.py:46
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:46
+msgid "Available optimizers:"
+msgstr "Available optimizers:"
+
+#: awlsim/gui/optimizerconfig.py:51
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:51
+msgid ""
+"Enter a custom optimizer here.\n"
+"A wrong name will cause a build error on the target CPU."
+msgstr ""
+"Enter a custom optimizer here.\n"
+"A wrong name will cause a build error on the target CPU."
+
+#: awlsim/gui/optimizerconfig.py:59
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:59
+msgid "Enable the selected optimizer."
+msgstr "Enable the selected optimizer."
+
+#: awlsim/gui/optimizerconfig.py:63
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:63
+msgid "Disable the selected optimizer."
+msgstr "Disable the selected optimizer."
+
+#: awlsim/gui/optimizerconfig.py:67
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:67
+msgid "Enabled optimizers:"
+msgstr "Enabled optimizers:"
+
+#: awlsim/gui/optimizerconfig.py:71
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:71
+msgid "Enable &all available optimizers (recommended)"
+msgstr "Enable &all available optimizers (recommended)"
+
+#: awlsim/gui/optimizerconfig.py:73
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:73
+msgid ""
+"If this box is ticked all available optimizers\n"
+"will be enabled.\n"
+"This is recommended."
+msgstr ""
+"If this box is ticked all available optimizers\n"
+"will be enabled.\n"
+"This is recommended."
+
+#: awlsim/gui/optimizerconfig.py:80
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:80
+msgid "&Run enabled optimizers (recommended)"
+msgstr "&Run enabled optimizers (recommended)"
+
+#: awlsim/gui/optimizerconfig.py:82
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:82
+msgid ""
+"If this box is not ticked, none of the \n"
+"enabled optimizers will actually be \n"
+"executed."
+msgstr ""
+"If this box is not ticked, none of the \n"
+"enabled optimizers will actually be \n"
+"executed."
+
+#: awlsim/gui/optimizerconfig.py:135
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:135
+msgid ""
+"WARNING: This optimizer is not known to Awlsim.\n"
+"It might cause a build error on the target CPU!"
+msgstr ""
+"WARNING: This optimizer is not known to Awlsim.\n"
+"It might cause a build error on the target CPU!"
+
+#: awlsim/gui/optimizerconfig.py:194
+#: build/lib.linux-x86_64-3.5/awlsim/gui/optimizerconfig.py:194
+msgid "AWL optimizer setup"
+msgstr "AWL optimizer setup"
+
+#: awlsim/gui/projecttreewidget.py:336
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:336
+msgid ""
+"Remove the selected source '{}' from the project?\n"
+"This can't be undone.\n"
+msgstr ""
+"Remove the selected source '{}' from the project?\n"
+"This can't be undone.\n"
+
+#: awlsim/gui/projecttreewidget.py:379
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:379
+msgid ">>> New source <<<"
+msgstr ">>> New source <<<"
+
+#: awlsim/gui/projecttreewidget.py:404 awlsim/gui/projecttreewidget.py:405
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:404
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:405
+msgid "Name for {} source"
+msgstr "Name for {} source"
+
+#: awlsim/gui/projecttreewidget.py:571 awlsim/gui/projecttreewidget.py:608
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:571
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:608
+msgid "Failed to parse symbol table"
+msgstr "Failed to parse symbol table"
+
+#: awlsim/gui/projecttreewidget.py:591
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:591
+msgid "Select symbol table"
+msgstr "Select symbol table"
+
+#: awlsim/gui/projecttreewidget.py:592
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:592
+msgid ""
+"Please select the symbol table where to add the symbol to:\n"
+"{}  \"{}\""
+msgstr ""
+"Please select the symbol table where to add the symbol to:\n"
+"{}  \"{}\""
+
+#: awlsim/gui/projecttreewidget.py:616
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:616
+msgid "Failed to update symbol table"
+msgstr "Failed to update symbol table"
+
+#: awlsim/gui/projecttreewidget.py:774
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:774
+msgid "Opened plain AWL/STL file"
+msgstr "Opened plain AWL/STL file"
+
+#: awlsim/gui/projecttreewidget.py:775
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:775
+msgid ""
+"The plain AWL/STL source file \n"
+"'{}'\n"
+" has sucessfully been opened.\n"
+"\n"
+"If you click on 'save', you will be asked to create a project file for this "
+"source."
+msgstr ""
+"The plain AWL/STL source file \n"
+"'{}'\n"
+" has sucessfully been opened.\n"
+"\n"
+"If you click on 'save', you will be asked to create a project file for this "
+"source."
+
+#: awlsim/gui/projecttreewidget.py:799
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:799
+msgid "Create Awlsim project file?"
+msgstr "Create Awlsim project file?"
+
+#: awlsim/gui/projecttreewidget.py:800
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:800
+msgid ""
+"The current project was created ad-hoc from a plain AWL/STL file.\n"
+"Can not save without creating a project file.\n"
+"\n"
+"Do you want to create a project file?"
+msgstr ""
+"The current project was created ad-hoc from a plain AWL/STL file.\n"
+"Can not save without creating a project file.\n"
+"\n"
+"Do you want to create a project file?"
+
+#: awlsim/gui/projecttreewidget.py:821
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:821
+msgid "Project contains external sources"
+msgstr "Project contains external sources"
+
+#: awlsim/gui/projecttreewidget.py:822
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:822
+msgid ""
+"The project contains external sources.\n"
+"It is strongly recommended to integrate external sources into the project.\n"
+"Click on 'integrate source into project' in the source menu."
+msgstr ""
+"The project contains external sources.\n"
+"It is strongly recommended to integrate external sources into the project.\n"
+"Click on 'integrate source into project' in the source menu."
+
+#: awlsim/gui/projecttreewidget.py:831
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:831
+msgid "Save-file name changed. Re-generating project file UUIDs."
+msgstr "Save-file name changed. Re-generating project file UUIDs."
+
+#: awlsim/gui/projecttreewidget.py:1014
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1014
+msgid "AWL / STL"
+msgstr "AWL / STL"
+
+#: awlsim/gui/projecttreewidget.py:1015
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1015
+msgid "FUP / FBD"
+msgstr "FUP / FBD"
+
+#: awlsim/gui/projecttreewidget.py:1016
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1016
+msgid "KOP / LAD"
+msgstr "KOP / LAD"
+
+#: awlsim/gui/projecttreewidget.py:1019
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1019
+msgid "CPU"
+msgstr "CPU"
+
+#: awlsim/gui/projecttreewidget.py:1020
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1020
+msgid "Connection"
+msgstr "Connection"
+
+#: awlsim/gui/projecttreewidget.py:1022
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1022
+msgid "Editor settings"
+msgstr "Editor settings"
+
+#: awlsim/gui/projecttreewidget.py:1111
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1111
+msgid ""
+"ERROR: There is an error in the source file.\n"
+"Please open it to fix the problem."
+msgstr ""
+"ERROR: There is an error in the source file.\n"
+"Please open it to fix the problem."
+
+#: awlsim/gui/projecttreewidget.py:1116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1116
+msgid ""
+"WARNING: The source contained in the project\n"
+"does not match the source on the CPU.\n"
+"That means the CPU is currenly running an outdated program.\n"
+"Please re-download the sources to the CPU\n"
+"by clicking the download button in the tool bar."
+msgstr ""
+"WARNING: The source contained in the project\n"
+"does not match the source on the CPU.\n"
+"That means the CPU is currenly running an outdated program.\n"
+"Please re-download the sources to the CPU\n"
+"by clicking the download button in the tool bar."
+
+#: awlsim/gui/projecttreewidget.py:1127
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1127
+msgid ""
+"\n"
+"Source hash: {}..."
+msgstr ""
+"\n"
+"Source hash: {}..."
+
+#: awlsim/gui/projecttreewidget.py:1144
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1144
+msgid "Right click here to add new AWL source."
+msgstr "Right click here to add new AWL source."
+
+#: awlsim/gui/projecttreewidget.py:1147
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1147
+msgid "Double click here to edit this AWL source."
+msgstr "Double click here to edit this AWL source."
+
+#: awlsim/gui/projecttreewidget.py:1150
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1150
+msgid "Right click here to add new FUP source."
+msgstr "Right click here to add new FUP source."
+
+#: awlsim/gui/projecttreewidget.py:1153
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1153
+msgid "Double click here to edit this FUP diagram."
+msgstr "Double click here to edit this FUP diagram."
+
+#: awlsim/gui/projecttreewidget.py:1156
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1156
+msgid "Right click here to add new KOP source."
+msgstr "Right click here to add new KOP source."
+
+#: awlsim/gui/projecttreewidget.py:1159
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1159
+msgid "Double click here to edit this KOP diagram."
+msgstr "Double click here to edit this KOP diagram."
+
+#: awlsim/gui/projecttreewidget.py:1162
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1162
+msgid "Right click here to add new symbol table."
+msgstr "Right click here to add new symbol table."
+
+#: awlsim/gui/projecttreewidget.py:1165
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1165
+msgid "Double click here to edit this symbol table."
+msgstr "Double click here to edit this symbol table."
+
+#: awlsim/gui/projecttreewidget.py:1167
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1167
+msgid "Double click here to edit system library selections."
+msgstr "Double click here to edit system library selections."
+
+#: awlsim/gui/projecttreewidget.py:1169
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1169
+msgid "Double click here to edit CPU settings."
+msgstr "Double click here to edit CPU settings."
+
+#: awlsim/gui/projecttreewidget.py:1171
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1171
+msgid "Double click here to edit core server connection settings."
+msgstr "Double click here to edit core server connection settings."
+
+#: awlsim/gui/projecttreewidget.py:1173
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1173
+msgid "Double click here to edit hardware module settings."
+msgstr "Double click here to edit hardware module settings."
+
+#: awlsim/gui/projecttreewidget.py:1175
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1175
+msgid "Double click here to edit GUI settings."
+msgstr "Double click here to edit GUI settings."
+
+#: awlsim/gui/projecttreewidget.py:1324
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1324
+msgid " (Copy)"
+msgstr " (Copy)"
+
+#: awlsim/gui/projecttreewidget.py:1395
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1395
+msgid "&Edit..."
+msgstr "&Edit..."
+
+#: awlsim/gui/projecttreewidget.py:1399
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1399
+msgid "&Add new {}"
+msgstr "&Add new {}"
+
+#: awlsim/gui/projecttreewidget.py:1402
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1402
+msgid "&Delete..."
+msgstr "&Delete..."
+
+#: awlsim/gui/projecttreewidget.py:1405
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1405
+msgid "&Rename..."
+msgstr "&Rename..."
+
+#: awlsim/gui/projecttreewidget.py:1419
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1419
+msgid "&Import..."
+msgstr "&Import..."
+
+#: awlsim/gui/projecttreewidget.py:1422
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1422
+msgid "&Export..."
+msgstr "&Export..."
+
+#: awlsim/gui/projecttreewidget.py:1424
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1424
+msgid "&Integrate '{}' into project..."
+msgstr "&Integrate '{}' into project..."
+
+#: awlsim/gui/projecttreewidget.py:1429
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1429
+msgid "E&nable"
+msgstr "E&nable"
+
+#: awlsim/gui/projecttreewidget.py:1432
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1432
+msgid "D&isable"
+msgstr "D&isable"
+
+#: awlsim/gui/projecttreewidget.py:1463
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1463
+msgid "Integrate current {}"
+msgstr "Integrate current {}"
+
+#: awlsim/gui/projecttreewidget.py:1464
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1464
+msgid ""
+"The current {} is stored in an external file.\n"
+"Do you want to integrate this file info the awlsim project file (.awlpro)?"
+msgstr ""
+"The current {} is stored in an external file.\n"
+"Do you want to integrate this file info the awlsim project file (.awlpro)?"
+
+#: awlsim/gui/projecttreewidget.py:1515
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1515
+msgid "AWL source"
+msgstr "AWL source"
+
+#: awlsim/gui/projecttreewidget.py:1516
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1516
+msgid "FUP source"
+msgstr "FUP source"
+
+#: awlsim/gui/projecttreewidget.py:1517
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1517
+msgid "KOP source"
+msgstr "KOP source"
+
+#: awlsim/gui/projecttreewidget.py:1518
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1518
+msgid "Symbol Table"
+msgstr "Symbol Table"
+
+#: awlsim/gui/projecttreewidget.py:1588
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1588
+msgid "Clipboard paste failed"
+msgstr "Clipboard paste failed"
+
+#: awlsim/gui/projecttreewidget.py:1589
+#: build/lib.linux-x86_64-3.5/awlsim/gui/projecttreewidget.py:1589
+msgid "The clipboard does not seem to contain data that can be pasted here."
+msgstr "The clipboard does not seem to contain data that can be pasted here."
+
+#: awlsim/gui/qt_bindings.py:35
+#: build/lib.linux-x86_64-3.5/awlsim/gui/qt_bindings.py:35
+msgid "awlsim-gui ERROR: {}"
+msgstr "awlsim-gui ERROR: {}"
+
+#: awlsim/gui/qt_bindings.py:38
+#: build/lib.linux-x86_64-3.5/awlsim/gui/qt_bindings.py:38
+msgid "Press enter to exit."
+msgstr "Press enter to exit."
+
+#: awlsim/gui/qt_bindings.py:49
+#: build/lib.linux-x86_64-3.5/awlsim/gui/qt_bindings.py:49
+msgid ""
+"Deprecated QString API detected.\n"
+"Awlsim does not support PyQt QString v1 API.\n"
+"---> Please use PySide2 or a newer PyQt5. <---"
+msgstr ""
+"Deprecated QString API detected.\n"
+"Awlsim does not support PyQt QString v1 API.\n"
+"---> Please use PySide2 or a newer PyQt5. <---"
+
+#: awlsim/gui/qt_bindings.py:90
+#: build/lib.linux-x86_64-3.5/awlsim/gui/qt_bindings.py:90
+msgid ""
+"Failed to import PySide2 modules:\n"
+" {}"
+msgstr ""
+"Failed to import PySide2 modules:\n"
+" {}"
+
+#: awlsim/gui/qt_bindings.py:97
+#: build/lib.linux-x86_64-3.5/awlsim/gui/qt_bindings.py:97
+msgid ""
+"Failed to import PyQt5 modules:\n"
+" {}"
+msgstr ""
+"Failed to import PyQt5 modules:\n"
+" {}"
+
+#: awlsim/gui/qt_bindings.py:100
+#: build/lib.linux-x86_64-3.5/awlsim/gui/qt_bindings.py:100
+msgid ""
+"Unknown GUI framework '{}' requested.\n"
+"Please fix the AWLSIM_GUI environment variable."
+msgstr ""
+"Unknown GUI framework '{}' requested.\n"
+"Please fix the AWLSIM_GUI environment variable."
+
+#: awlsim/gui/startup.py:37 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:37
+msgid "awlsim-gui version {}"
+msgstr "awlsim-gui version {}"
+
+#: awlsim/gui/startup.py:39 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:39
+msgid "Usage: awlsim-gui [OPTIONS] [PROJECT.awlpro]"
+msgstr "Usage: awlsim-gui [OPTIONS] [PROJECT.awlpro]"
+
+#: awlsim/gui/startup.py:41 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:41
+msgid "Options:"
+msgstr "Options:"
+
+#: awlsim/gui/startup.py:42 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:42
+msgid " -h|--help             Print this help text"
+msgstr " -h|--help             Print this help text"
+
+#: awlsim/gui/startup.py:43 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:43
+msgid " -L|--loglevel LVL     Set the log level:"
+msgstr " -L|--loglevel LVL     Set the log level:"
+
+#: awlsim/gui/startup.py:44 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:44
+msgid "                       0: Log nothing"
+msgstr "                       0: Log nothing"
+
+#: awlsim/gui/startup.py:45 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:45
+msgid "                       1: Log errors"
+msgstr "                       1: Log errors"
+
+#: awlsim/gui/startup.py:46 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:46
+msgid "                       2: Log errors and warnings"
+msgstr "                       2: Log errors and warnings"
+
+#: awlsim/gui/startup.py:47 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:47
+msgid ""
+"                       3: Log errors, warnings and info messages (default)"
+msgstr ""
+"                       3: Log errors, warnings and info messages (default)"
+
+#: awlsim/gui/startup.py:48 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:48
+msgid "                       4: Verbose logging"
+msgstr "                       4: Verbose logging"
+
+#: awlsim/gui/startup.py:49 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:49
+msgid "                       5: Extremely verbose logging"
+msgstr "                       5: Extremely verbose logging"
+
+#: awlsim/gui/startup.py:50 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:50
+msgid " -l|--lang             Set locale"
+msgstr " -l|--lang             Set locale"
+
+#: awlsim/gui/startup.py:52 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:52
+msgid "Environment variables:"
+msgstr "Environment variables:"
+
+#: awlsim/gui/startup.py:53 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:53
+msgid " AWLSIM_GUI            Select the GUI framework (default 'auto')"
+msgstr " AWLSIM_GUI            Select the GUI framework (default 'auto')"
+
+#: awlsim/gui/startup.py:54 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:54
+msgid "                       Can be either of:"
+msgstr "                       Can be either of:"
+
+#: awlsim/gui/startup.py:55 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:55
+msgid "                       auto: Autodetect"
+msgstr "                       auto: Autodetect"
+
+#: awlsim/gui/startup.py:56 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:56
+msgid "                       pyside: Use PySide 4"
+msgstr "                       pyside: Use PySide 4"
+
+#: awlsim/gui/startup.py:57 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:57
+msgid "                       pyqt4: Use PyQt 4"
+msgstr "                       pyqt4: Use PyQt 4"
+
+#: awlsim/gui/startup.py:58 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:58
+msgid "                       pyqt5: Use PyQt 5"
+msgstr "                       pyqt5: Use PyQt 5"
+
+#: awlsim/gui/startup.py:80 build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:80
+msgid "-L|--loglevel: Invalid log level"
+msgstr "-L|--loglevel: Invalid log level"
+
+#: awlsim/gui/startup.py:100
+#: build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:100
+msgid "Using {} GUI framework"
+msgstr "Using {} GUI framework"
+
+#: awlsim/gui/startup.py:117
+#: build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:117
+msgid "awlsim-gui: ABORTING due to unhandled exception:"
+msgstr "awlsim-gui: ABORTING due to unhandled exception:"
+
+#: awlsim/gui/startup.py:127
+#: build/lib.linux-x86_64-3.5/awlsim/gui/startup.py:127
+msgid "awlsim-gui: Unhandled exception"
+msgstr "awlsim-gui: Unhandled exception"
+
+#: awlsim/gui/symtabwidget.py:38
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:38
+msgid "Unnamed symbol table"
+msgstr "Unnamed symbol table"
+
+#: awlsim/gui/symtabwidget.py:105
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:105
+msgid ""
+"The symbol name.\n"
+"(The name is case insensitive.)"
+msgstr ""
+"The symbol name.\n"
+"(The name is case insensitive.)"
+
+#: awlsim/gui/symtabwidget.py:106
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:106
+msgid ""
+"The symbol address.\n"
+"For example:  M 0.0  or  QW 0"
+msgstr ""
+"The symbol address.\n"
+"For example:  M 0.0  or  QW 0"
+
+#: awlsim/gui/symtabwidget.py:107
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:107
+msgid ""
+"The symbol data type.\n"
+"For example: BOOL  or  INT"
+msgstr ""
+"The symbol data type.\n"
+"For example: BOOL  or  INT"
+
+#: awlsim/gui/symtabwidget.py:116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:116
+msgid "Symbol"
+msgstr "Symbol"
+
+#: awlsim/gui/symtabwidget.py:116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:116
+msgid "Address"
+msgstr "Address"
+
+#: awlsim/gui/symtabwidget.py:158
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:158
+msgid "Invalid symbol information"
+msgstr "Invalid symbol information"
+
+#: awlsim/gui/symtabwidget.py:191
+#: build/lib.linux-x86_64-3.5/awlsim/gui/symtabwidget.py:191
+msgid "Could not parse symbol table information"
+msgstr "Could not parse symbol table information"
+
+#: awlsim/gui/templatedialog.py:42
+#: build/lib.linux-x86_64-3.5/awlsim/gui/templatedialog.py:42
+msgid "Awlsim - Insert {} template"
+msgstr "Awlsim - Insert {} template"
+
+#: awlsim/gui/templatedialog.py:49
+#: build/lib.linux-x86_64-3.5/awlsim/gui/templatedialog.py:49
+msgid "Insert {} template"
+msgstr "Insert {} template"
+
+#: awlsim/gui/templatedialog.py:58 awlsim/gui/templatedialog.py:68
+#: build/lib.linux-x86_64-3.5/awlsim/gui/templatedialog.py:58
+#: build/lib.linux-x86_64-3.5/awlsim/gui/templatedialog.py:68
+msgid "{} number:"
+msgstr "{} number:"
+
+#: awlsim/gui/templatedialog.py:77
+#: build/lib.linux-x86_64-3.5/awlsim/gui/templatedialog.py:77
+msgid "Generate &verbose code"
+msgstr "Generate &verbose code"
+
+#: awlsim/gui/templatedialog.py:83
+#: build/lib.linux-x86_64-3.5/awlsim/gui/templatedialog.py:83
+msgid "&Paste code"
+msgstr "&Paste code"
+
+#: awlsim/gui/toolbars.py:49
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:49
+msgid "Go offline"
+msgstr "Go offline"
+
+#: awlsim/gui/toolbars.py:51
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:51
+msgid "Go online (Connect to a CPU)"
+msgstr "Go online (Connect to a CPU)"
+
+#: awlsim/gui/toolbars.py:64
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:64
+msgid "Stop CPU (STOP mode)"
+msgstr "Stop CPU (STOP mode)"
+
+#: awlsim/gui/toolbars.py:67
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:67
+msgid "Start CPU (RUN mode)"
+msgstr "Start CPU (RUN mode)"
+
+#: awlsim/gui/toolbars.py:81
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:81
+msgid "Disable online diagnosis"
+msgstr "Disable online diagnosis"
+
+#: awlsim/gui/toolbars.py:83
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:83
+msgid "Enable online diagnosis"
+msgstr "Enable online diagnosis"
+
+#: awlsim/gui/toolbars.py:89
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:89
+msgid "CPU inspection tool bar"
+msgstr "CPU inspection tool bar"
+
+#: awlsim/gui/toolbars.py:92
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:92
+msgid "Add inspection: Online blocks"
+msgstr "Add inspection: Online blocks"
+
+#: awlsim/gui/toolbars.py:96
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:96
+msgid "Add inspection: Input memory (I / E)"
+msgstr "Add inspection: Input memory (I / E)"
+
+#: awlsim/gui/toolbars.py:100
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:100
+msgid "Add inspection: Output memory (Q / A)"
+msgstr "Add inspection: Output memory (Q / A)"
+
+#: awlsim/gui/toolbars.py:104
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:104
+msgid "Add inspection: Flag memory (M)"
+msgstr "Add inspection: Flag memory (M)"
+
+#: awlsim/gui/toolbars.py:108
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:108
+msgid "Add inspection: Data block (DB)"
+msgstr "Add inspection: Data block (DB)"
+
+#: awlsim/gui/toolbars.py:112
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:112
+msgid "Add inspection: Timer (T)"
+msgstr "Add inspection: Timer (T)"
+
+#: awlsim/gui/toolbars.py:116
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:116
+msgid "Add inspection: Counter (C / Z)"
+msgstr "Add inspection: Counter (C / Z)"
+
+#: awlsim/gui/toolbars.py:120
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:120
+msgid "Add inspection: CPU overview"
+msgstr "Add inspection: CPU overview"
+
+#: awlsim/gui/toolbars.py:124
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:124
+msgid "Add inspection: LCD"
+msgstr "Add inspection: LCD"
+
+#: awlsim/gui/toolbars.py:143
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:143
+msgid "CPU control tool bar"
+msgstr "CPU control tool bar"
+
+#: awlsim/gui/toolbars.py:148
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:148
+msgid "Reset the CPU"
+msgstr "Reset the CPU"
+
+#: awlsim/gui/toolbars.py:152
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:152
+msgid "Download all sources to CPU"
+msgstr "Download all sources to CPU"
+
+#: awlsim/gui/toolbars.py:156
+#: build/lib.linux-x86_64-3.5/awlsim/gui/toolbars.py:156
+msgid "Download single source to CPU"
+msgstr "Download single source to CPU"
+
+#: awlsim/gui/util.py:41 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:41
+msgid "Running awlsim-gui on the PyPy or Jython interpreter is not supported."
+msgstr "Running awlsim-gui on the PyPy or Jython interpreter is not supported."
+
+#: awlsim/gui/util.py:42 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:42
+msgid "Please use CPython 2.7 or CPython 3.x"
+msgstr "Please use CPython 2.7 or CPython 3.x"
+
+#: awlsim/gui/util.py:46 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:46
+msgid ""
+"*** Using accelerated CYTHON core (AWLSIM_CYTHON environment variable is set)"
+msgstr ""
+"*** Using accelerated CYTHON core (AWLSIM_CYTHON environment variable is set)"
+
+#: awlsim/gui/util.py:81 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:81
+msgid "Fatal exception:\n"
+msgstr "Fatal exception:\n"
+
+#: awlsim/gui/util.py:84 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:84
+msgid "A fatal exception occurred"
+msgstr "A fatal exception occurred"
+
+#: awlsim/gui/util.py:85 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:85
+msgid ""
+"<pre>A fatal exception occurred:\n"
+"\n"
+"{}\n"
+"\n"
+"Awlsim will be terminated.</pre>"
+msgstr ""
+"<pre>A fatal exception occurred:\n"
+"\n"
+"{}\n"
+"\n"
+"Awlsim will be terminated.</pre>"
+
+#: awlsim/gui/util.py:120 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:120
+msgid "Show verbose information"
+msgstr "Show verbose information"
+
+#: awlsim/gui/util.py:130 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:130
+msgid "C&ontinue"
+msgstr "C&ontinue"
+
+#: awlsim/gui/util.py:187 build/lib.linux-x86_64-3.5/awlsim/gui/util.py:187
+msgid "An exception occurred:"
+msgstr "An exception occurred:"
+
+#: awlsim/gui/validatorsched.py:76
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:76
+msgid "Requesting asynchronous validation (delay = {:.1f} s)"
+msgstr "Requesting asynchronous validation (delay = {:.1f} s)"
+
+#: awlsim/gui/validatorsched.py:96
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:96
+msgid "Starting asynchronous validation."
+msgstr "Starting asynchronous validation."
+
+#: awlsim/gui/validatorsched.py:109 awlsim/gui/validatorsched.py:131
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:109
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:131
+msgid "Not Ok"
+msgstr "Not Ok"
+
+#: awlsim/gui/validatorsched.py:109 awlsim/gui/validatorsched.py:131
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:109
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:131
+msgid "Ok"
+msgstr "Ok"
+
+#: awlsim/gui/validatorsched.py:108
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:108
+msgid "Finished asynchronous validation: {}"
+msgstr "Finished asynchronous validation: {}"
+
+#: awlsim/gui/validatorsched.py:128
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:128
+msgid "Synchronous validation timeout."
+msgstr "Synchronous validation timeout."
+
+#: awlsim/gui/validatorsched.py:130
+#: build/lib.linux-x86_64-3.5/awlsim/gui/validatorsched.py:130
+msgid "Finished synchronous validation: {}"
+msgstr "Finished synchronous validation: {}"
+
+#~ msgid "Unknown maintenance request {:d}"
+#~ msgstr "Невідомий запит обслуговування {:d}"
+
+#~ msgid "{:d} occurrences replaced."
+#~ msgstr "Замінено {:d} входжень."
+
+#~ msgid "Font: {}, {:d} pt"
+#~ msgstr "Шрифт: {}, {:d} пт"
+
+#~ msgid ""
+#~ "Port number of the remote SSH server.\n"
+#~ "Leave this as {:d} unless you know what you are doing."
+#~ msgstr ""
+#~ "Номер порту віддаленого SSH сервера.\n"
+#~ "Залиште це як {: d}, якщо ви не знаєте, що робите."
+
+#~ msgid "Using locale: {}"
+#~ msgstr "Використання мови: {}"
+
+#~ msgid ""
+#~ "Awlsim PLC version {}\n"
+#~ "\n"
+#~ "Copyright 2012-2019 Michael Büsch <m@bues.ch>\n"
+#~ "\n"
+#~ "Project home:  {}\n"
+#~ "\n"
+#~ "\n"
+#~ "This program is free software; you can redistribute it and/or modify it "
+#~ "under the terms of the GNU General Public License as published by the "
+#~ "Free Software Foundation; either version 2 of the License, or (at your "
+#~ "option) any later version.\n"
+#~ "\n"
+#~ "This program is distributed in the hope that it will be useful, but "
+#~ "WITHOUT ANY WARRANTY; without even the implied warranty of "
+#~ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General "
+#~ "Public License for more details.\n"
+#~ "\n"
+#~ "You should have received a copy of the GNU General Public License along "
+#~ "with this program; if not, write to the Free Software Foundation, Inc., "
+#~ "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA."
+#~ msgstr ""
+#~ "Awlsim PLC версія {}\n"
+#~ "\n"
+#~ "Copyright 2012-2019 Michael Büsch <m@bues.ch>\n"
+#~ "\n"
+#~ "Домашня сторінка:  {}\n"
+#~ "\n"
+#~ "\n"
+#~ "This program is free software; you can redistribute it and/or modify it "
+#~ "under the terms of the GNU General Public License as published by the "
+#~ "Free Software Foundation; either version 2 of the License, or (at your "
+#~ "option) any later version.\n"
+#~ "\n"
+#~ "This program is distributed in the hope that it will be useful, but "
+#~ "WITHOUT ANY WARRANTY; without even the implied warranty of "
+#~ "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General "
+#~ "Public License for more details.\n"
+#~ "\n"
+#~ "You should have received a copy of the GNU General Public License along "
+#~ "with this program; if not, write to the Free Software Foundation, Inc., "
+#~ "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA."

@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
 
@@ -404,18 +406,18 @@ class BlockTreeModel(QAbstractItemModel):
 			return self.__hwMods[index].getModuleName()
 
 		names = {
-		  self.INDEXID_SRCS		: "Sources",
-		  self.INDEXID_SRCS_AWL		: "AWL/STL",
-		  self.INDEXID_SRCS_FUP		: "FUP/FBD",
-		  self.INDEXID_SRCS_SYMTAB	: "Symbols",
-		  self.INDEXID_SRCS_LIBSEL	: "Libraries",
-		  self.INDEXID_BLOCKS		: "Blocks",
-		  self.INDEXID_BLOCKS_OBS	: "OBs",
-		  self.INDEXID_BLOCKS_FCS	: "FCs",
-		  self.INDEXID_BLOCKS_FBS	: "FBs",
-		  self.INDEXID_BLOCKS_DBS	: "DBs",
-		  self.INDEXID_BLOCKS_UDTS	: "UDTs",
-		  self.INDEXID_HWMODS		: "Hardware",
+		  self.INDEXID_SRCS		: _("Sources"),
+		  self.INDEXID_SRCS_AWL		: _("AWL/STL"),
+		  self.INDEXID_SRCS_FUP		: _("FUP/FBD"),
+		  self.INDEXID_SRCS_SYMTAB	: _("Symbols"),
+		  self.INDEXID_SRCS_LIBSEL	: _("Libraries"),
+		  self.INDEXID_BLOCKS		: _("Blocks"),
+		  self.INDEXID_BLOCKS_OBS	: _("OBs"),
+		  self.INDEXID_BLOCKS_FCS	: _("FCs"),
+		  self.INDEXID_BLOCKS_FBS	: _("FBs"),
+		  self.INDEXID_BLOCKS_DBS	: _("DBs"),
+		  self.INDEXID_BLOCKS_UDTS	: _("UDTs"),
+		  self.INDEXID_HWMODS		: _("Hardware"),
 		}
 		return names.get(idxId)
 
@@ -429,10 +431,10 @@ class BlockTreeModel(QAbstractItemModel):
 		if idxIdBase == self.INDEXID_BLOCKS_OBS_BASE:
 			obInfoIndex = idxId - idxIdBase
 			descs = {
-				1	: "Main cycle: \"CYCL_EXC\"",
-				100	: "Warm start: \"COMPLETE RESTART\"",
-				101	: "Restart: \"RESTART\"",
-				102	: "Cold restart: \"COLD RESTART\"",
+				1	: _("Main cycle: \"CYCL_EXC\""),
+				100	: _("Warm start: \"COMPLETE RESTART\""),
+				101	: _("Restart: \"RESTART\""),
+				102	: _("Cold restart: \"COLD RESTART\""),
 			}
 			obInfo = self.__obInfos[obInfoIndex]
 			desc = self.__tryGetBlockSymName("OB %d" % obInfo.blockIndex)
@@ -458,18 +460,18 @@ class BlockTreeModel(QAbstractItemModel):
 			udtInfo = self.__udtInfos[udtInfoIndex]
 			return self.__tryGetBlockSymName("UDT %d" % udtInfo.blockIndex)
 		descs = {
-		  self.INDEXID_SRCS		: "Source files",
-		  self.INDEXID_SRCS_AWL		: "AWL/STL sources",
-		  self.INDEXID_SRCS_FUP		: "FUP/FBD sources",
-		  self.INDEXID_SRCS_SYMTAB	: "Symbol table sources",
-		  self.INDEXID_SRCS_LIBSEL	: "Library selections",
-		  self.INDEXID_BLOCKS		: "Compiled blocks",
-		  self.INDEXID_BLOCKS_OBS	: "Organization Blocks",
-		  self.INDEXID_BLOCKS_FCS	: "Functions",
-		  self.INDEXID_BLOCKS_FBS	: "Function Blocks",
-		  self.INDEXID_BLOCKS_DBS	: "Data Blocks",
-		  self.INDEXID_BLOCKS_UDTS	: "User defined Data Types",
-		  self.INDEXID_HWMODS		: "Hardware modules",
+		  self.INDEXID_SRCS		: _("Source files"),
+		  self.INDEXID_SRCS_AWL		: _("AWL/STL sources"),
+		  self.INDEXID_SRCS_FUP		: _("FUP/FBD sources"),
+		  self.INDEXID_SRCS_SYMTAB	: _("Symbol table sources"),
+		  self.INDEXID_SRCS_LIBSEL	: _("Library selections"),
+		  self.INDEXID_BLOCKS		: _("Compiled blocks"),
+		  self.INDEXID_BLOCKS_OBS	: _("Organization Blocks"),
+		  self.INDEXID_BLOCKS_FCS	: _("Functions"),
+		  self.INDEXID_BLOCKS_FBS	: _("Function Blocks"),
+		  self.INDEXID_BLOCKS_DBS	: _("Data Blocks"),
+		  self.INDEXID_BLOCKS_UDTS	: _("User defined Data Types"),
+		  self.INDEXID_HWMODS		: _("Hardware modules"),
 		}
 		return descs.get(idxId)
 
@@ -590,9 +592,9 @@ class BlockTreeModel(QAbstractItemModel):
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
 		if role == Qt.DisplayRole:
 			return (
-				"Block name",
-				"Symbol / description",
-				"Unique identification hash",
+				_("Block name"),
+				_("Symbol / description"),
+				_("Unique identification hash"),
 			)[section]
 		return None
 
@@ -617,11 +619,11 @@ class BlockTreeView(QTreeView):
 		self.__currentIdxId = None
 
 		self.__blockMenu = QMenu(self)
-		self.__blockMenu.addAction("&Remove block from CPU...",
+		self.__blockMenu.addAction(_("&Remove block from CPU..."),
 					   self.__removeBlock)
 
 		self.__srcMenu = QMenu(self)
-		self.__srcMenu.addAction("&Remove source from CPU...",
+		self.__srcMenu.addAction(_("&Remove source from CPU..."),
 					 self.__removeSource)
 
 		self.pressed.connect(self.__mouseBtnPressed)
@@ -703,10 +705,10 @@ class BlockTreeView(QTreeView):
 		client = model.client
 
 		res = QMessageBox.question(self,
-			"Remove selected source?",
-			"Remove the selected source from the CPU?\n"
+			_("Remove selected source?"),
+			_("Remove the selected source from the CPU?\n"
 			"This will also remove all associated compiled "
-			"blocks from the CPU.",
+			"blocks from the CPU."),
 			QMessageBox.Yes | QMessageBox.No,
 			QMessageBox.Yes)
 		if res != QMessageBox.Yes:
@@ -731,7 +733,7 @@ class BlockTreeView(QTreeView):
 			client.removeSource(identHash)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"An error occurred while removing a source", e)
+				_("An error occurred while removing a source"), e)
 
 	def __removeBlock(self):
 		model = self.model()
@@ -740,8 +742,8 @@ class BlockTreeView(QTreeView):
 		client = model.client
 
 		res = QMessageBox.question(self,
-			"Remove selected block?",
-			"Remove the selected block from the CPU?",
+			_("Remove selected block?"),
+			_("Remove the selected block from the CPU?"),
 			QMessageBox.Yes | QMessageBox.No,
 			QMessageBox.Yes)
 		if res != QMessageBox.Yes:
@@ -770,4 +772,4 @@ class BlockTreeView(QTreeView):
 			client.removeBlock(blockInfo)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"An error occurred while removing a block", e)
+				_("An error occurred while removing a block"), e)

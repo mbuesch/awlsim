@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 
 import itertools
@@ -60,7 +62,7 @@ class OperCompletionWidget(QWidget):
 				for source in (symTabSources or [])
 			]
 		except AwlSimError as e:
-			printError("Failed to parse symbol table: %s" % str(e))
+			printError(_("Failed to parse symbol table: {}" , str(e)))
 			self.__symTabs = []
 
 		self.__list = QListWidget(self)
@@ -262,10 +264,10 @@ class OperEditDialog(QDialog):
 					     text=text)
 		self.layout().addWidget(self.__edit, 1, 0, 1, 2)
 
-		self.__okButton = QPushButton("&Ok", self)
+		self.__okButton = QPushButton(_("&Ok"), self)
 		self.layout().addWidget(self.__okButton, 2, 0)
 
-		self.__cancelButton = QPushButton("&Cancel", self)
+		self.__cancelButton = QPushButton(_("&Cancel"), self)
 		self.layout().addWidget(self.__cancelButton, 2, 1)
 
 		self.__edit.cancel.connect(self.reject)

@@ -16,4 +16,5 @@ exec apt install \
 	python3-pyside2.qtcore \
 	python3-pyside2.qtgui \
 	python3-pyside2.qtwidgets \
-	python3-serial
+	python3-serial \
+	python3-polib

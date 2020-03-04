@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
 
@@ -209,13 +211,13 @@ class LibActionWidget(GenericActionWidget):
 
 	def __pasteCodeWarning(self):
 		res = QMessageBox.warning(self,
-			"Paste library code body?",
-			"Warning: It is not recommended to paste library "
+			_("Paste library code body?"),
+			_("Warning: It is not recommended to paste library "
 			"code into the project sources. You should instead "
 			"just import the library (via library selection table) "
 			"and CALL the imported function.\n\n"
-			"See the 'CALL \"%s\"' or 'CALL %s' buttons.\n\n"
-			"Do you want to paste the code nevertheless?" % (
+			"See the 'CALL \"{}\"' or 'CALL {}' buttons.\n\n"
+			"Do you want to paste the code nevertheless?" , 
 			self.libEntryCls.symbolName, self.blockName),
 			QMessageBox.Yes | QMessageBox.No,
 			QMessageBox.No)
@@ -268,7 +270,7 @@ class LibraryDialog(QDialog):
 	def __init__(self, project, parent=None):
 		QDialog.__init__(self, parent)
 		self.setLayout(QGridLayout())
-		self.setWindowTitle("AWL/STL - Standard library")
+		self.setWindowTitle(_("AWL/STL - Standard library"))
 		self.setWindowIcon(getIcon("stdlib"))
 
 		self.project = project
@@ -282,13 +284,13 @@ class LibraryDialog(QDialog):
 		self.__nr2entry = {}
 
 		self.libList = QListWidget(self)
-		QListWidgetItem("System functions (SFC)", self.libList, self.ITEM_SFC)
-		QListWidgetItem("System function blocks (SFB)", self.libList, self.ITEM_SFB)
+		QListWidgetItem(_("System functions (SFC)"), self.libList, self.ITEM_SFC)
+		QListWidgetItem(_("System function blocks (SFB)"), self.libList, self.ITEM_SFB)
 		for i, libName in enumerate(("IEC",)):
 			try:
 				lib = AwlLib.getByName(libName)
 			except AwlSimError as e:
-				MessageBox.handleAwlSimError(self, "Library error", e)
+				MessageBox.handleAwlSimError(self, _("Library error"), e)
 				continue
 			self.__nr2lib[self.ITEM_LIB_BASE + i] = lib
 			QListWidgetItem(lib.description, self.libList,

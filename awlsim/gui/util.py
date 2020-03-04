@@ -30,6 +30,8 @@ from awlsim.common.profiler import *
 from awlsim.core.datatypes import AwlDataType
 from awlsim.core.symbolparser import SymbolTable, Symbol, SymTabParser
 
+from awlsim.common.locale import _
+
 import sys
 import traceback
 import xml.sax.saxutils as saxutils
@@ -39,13 +41,13 @@ if isPy2Compat:
 
 if isPyPy or isJython:
 	# PySide does not work on PyPy or Jython, yet.
-	printError("Running awlsim-gui on the PyPy or Jython interpreter is not supported.")
-	printError("Please use CPython 2.7 or CPython 3.x")
+	printError(_("Running awlsim-gui on the PyPy or Jython interpreter is not supported."))
+	printError(_("Please use CPython 2.7 or CPython 3.x"))
 	sys.exit(1)
 
 if cython_helper.shouldUseCython():
-	print("*** Using accelerated CYTHON core "
-	      "(AWLSIM_CYTHON environment variable is set)")
+	print(_("*** Using accelerated CYTHON core "
+	      "(AWLSIM_CYTHON environment variable is set)"))
 
 from awlsim.gui.qt_bindings import *
 
@@ -79,15 +81,15 @@ def getErrorColor():
 
 def handleFatalException(parentWidget=None):
 	text = str(traceback.format_exc())
-	print("Fatal exception:\n", text)
+	print(_("Fatal exception:\n"), text)
 	text = saxutils.escape(text)
 	QMessageBox.critical(parentWidget,
-		"A fatal exception occurred",
-		"<pre>"
+		_("A fatal exception occurred"),
+		_("<pre>"
 		"A fatal exception occurred:\n\n"
-		"%s\n\n"
+		"{}\n\n"
 		"Awlsim will be terminated."
-		"</pre>" % text)
+		"</pre>" , text))
 	sys.exit(1)
 
 
@@ -118,20 +120,20 @@ class MessageBox(QDialog):
 		self.layout().addWidget(self.textBox, 0, 0, 1, 3)
 
 		if self.verboseText:
-			self.verboseCheckBox = QCheckBox("Show verbose information", self)
+			self.verboseCheckBox = QCheckBox(_("Show verbose information"), self)
 			self.layout().addWidget(self.verboseCheckBox, 1, 0, 1, 3)
 		else:
 			self.verboseCheckBox = None
 
 		buttonsLayout = QHBoxLayout()
 		if okButton:
-			self.okButton = QPushButton("&Ok", self)
+			self.okButton = QPushButton(_("&Ok"), self)
 			buttonsLayout.addWidget(self.okButton)
 		if continueButton:
-			self.continueButton = QPushButton("C&ontinue", self)
+			self.continueButton = QPushButton(_("C&ontinue"), self)
 			buttonsLayout.addWidget(self.continueButton)
 		if cancelButton:
-			self.cancelButton = QPushButton("&Cancel", self)
+			self.cancelButton = QPushButton(_("&Cancel"), self)
 			buttonsLayout.addWidget(self.cancelButton)
 		self.layout().addLayout(buttonsLayout, 2, 1)
 
@@ -185,7 +187,7 @@ class MessageBox(QDialog):
 			return cls.Accepted
 		exception.setSeenByUser()
 		def maketext(verbose):
-			text = "An exception occurred:"
+			text = _("An exception occurred:")
 			if description:
 				text += "\n"
 				text += "  " + description + "."

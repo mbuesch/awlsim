@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.templates import *
 
 from awlsim.gui.util import *
@@ -37,14 +39,14 @@ class TemplateDialog(QDialog):
 		if not verboseBlockName:
 			verboseBlockName = blockName
 
-		self.setWindowTitle("Awlsim - Insert %s template" %\
-				    verboseBlockName)
+		self.setWindowTitle(_("Awlsim - Insert {} template" ,
+				    verboseBlockName))
 
 		hbox = QHBoxLayout()
 		label = QLabel(self)
 		label.setPixmap(getIcon("textsource").pixmap(QSize(48, 48)))
 		hbox.addWidget(label)
-		label = QLabel("Insert %s template" % verboseBlockName, self)
+		label = QLabel(_("Insert {} template" , verboseBlockName), self)
 		font = label.font()
 		font.setPointSize(max(12, font.pointSize()))
 		label.setFont(font)
@@ -53,7 +55,7 @@ class TemplateDialog(QDialog):
 		hbox.addStretch()
 		self.layout().addLayout(hbox, 0, 0, 1, 2)
 
-		label = QLabel("%s number:" % verboseBlockName, self)
+		label = QLabel(_("{} number:" , verboseBlockName), self)
 		self.layout().addWidget(label, 1, 0)
 		self.blockNr = QSpinBox(self)
 		self.blockNr.setMinimum(1)
@@ -63,7 +65,7 @@ class TemplateDialog(QDialog):
 		self.layout().addWidget(self.blockNr, 1, 1)
 
 		if extra:
-			label = QLabel("%s number:" % extra, self)
+			label = QLabel(_("{} number:" , extra), self)
 			self.layout().addWidget(label, 2, 0)
 			self.extraNr = QSpinBox(self)
 			self.extraNr.setMinimum(1)
@@ -72,13 +74,13 @@ class TemplateDialog(QDialog):
 			self.extraNr.setPrefix(extra + " ")
 			self.layout().addWidget(self.extraNr, 2, 1)
 
-		self.verbose = QCheckBox("Generate &verbose code", self)
+		self.verbose = QCheckBox(_("Generate &verbose code"), self)
 		self.verbose.setCheckState(Qt.Checked)
 		self.layout().addWidget(self.verbose, 3, 0, 1, 2)
 
 		self.layout().setRowStretch(4, 1)
 
-		self.okButton = QPushButton("&Paste code", self)
+		self.okButton = QPushButton(_("&Paste code"), self)
 		self.layout().addWidget(self.okButton, 5, 0, 1, 2)
 
 		self.okButton.released.connect(self.accept)

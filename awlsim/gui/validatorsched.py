@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.codevalidator import *
 
 from awlsim.gui.util import *
@@ -71,8 +73,8 @@ class GuiValidatorSched(QObject):
 	def startAsyncValidation(self, project, delaySec=0.0):
 		"""Start an asynchronous background document validation.
 		"""
-		printVerbose("Requesting asynchronous validation "
-			     "(delay = %.1f s)" % delaySec)
+		printVerbose(_("Requesting asynchronous validation "
+			     "(delay = {:.1f} s)" , delaySec))
 		self.__project = project
 		self.__startTimer.start(int(round(delaySec * 1000.0)))
 
@@ -91,7 +93,7 @@ class GuiValidatorSched(QObject):
 		validator = AwlValidator.get()
 		if not validator:
 			return
-		printVerbose("Starting asynchronous validation.")
+		printVerbose(_("Starting asynchronous validation."))
 		validator.validate(project=project)
 		self.__pollTimer.start()
 
@@ -103,8 +105,8 @@ class GuiValidatorSched(QObject):
 			return
 		running, exception = validator.getState()
 		if not running:
-			printVerbose("Finished asynchronous validation: %s" % (
-				     "Not Ok" if exception else "Ok"))
+			printVerbose(_("Finished asynchronous validation: {}" , (
+				     _("Not Ok") if exception else _("Ok"))))
 		self.haveValidationResult.emit(exception)
 		if running:
 			self.__pollTimer.start()
@@ -123,10 +125,10 @@ class GuiValidatorSched(QObject):
 		exception = validator.validateSync(project=project,
 						   sleepFunc=sleepWithEventLoop)
 		if exception is self.TIMEOUT:
-			printVerbose("Synchronous validation timeout.")
+			printVerbose(_("Synchronous validation timeout."))
 		else:
-			printVerbose("Finished synchronous validation: %s" % (
-				     "Not Ok" if exception else "Ok"))
+			printVerbose(_("Finished synchronous validation: {}" , (
+				     _("Not Ok") if exception else _("Ok"))))
 			self.haveValidationResult.emit(exception)
 
 		return exception

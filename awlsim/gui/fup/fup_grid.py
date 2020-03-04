@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.awloptimizer.awloptimizer import *
@@ -392,8 +394,8 @@ class FupGrid(FupBaseClass):
 		# Check if we already have this UUID.
 		# A bug in old Awlsim versions generated duplicate UUIDs.
 		if self.getElemByUUID(elem.uuid):
-			printWarning("FUP element %s duplicate UUID. "
-				"Generating new UUID." % elem)
+			printWarning(_("FUP element {} duplicate UUID. "
+				"Generating new UUID." , elem))
 			elem.regenAllUUIDs()
 		# Check if we have a collision.
 		if not self.canPlaceElem(elem):

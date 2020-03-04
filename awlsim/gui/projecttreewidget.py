@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.core.symbolparser import SymTabParser, Symbol
 from awlsim.library.libselection import AwlLibEntrySelection
 
@@ -330,10 +332,10 @@ class ProjectTreeModel(QAbstractItemModel):
 		source = sourceList[itemNr]
 		if not force:
 			res = QMessageBox.question(parentWidget or self.mainWidget,
-				"Remove selected source?",
-				"Remove the selected source '%s' from the project?\n"
-				"This can't be undone.\n" % (
-				source.name),
+				_("Remove selected source?"),
+				_("Remove the selected source '{}' from the project?\n"
+				"This can't be undone.\n" , (
+				source.name)),
 				QMessageBox.Yes | QMessageBox.No,
 				QMessageBox.Yes)
 			if res != QMessageBox.Yes:
@@ -374,7 +376,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			return None
 
 		if not source.name:
-			source.name = ">>> New source <<<"
+			source.name = _(">>> New source <<<")
 
 		getter, setter = self.sourceGetter(idxIdBase)
 		parentIndex = self.idToIndex(parentIdxId)
@@ -399,8 +401,8 @@ class ProjectTreeModel(QAbstractItemModel):
 			source = sources[itemNr]
 			if newName is None:
 				newName, ok = QInputDialog.getText(parentWidget,
-					"Name for %s source" % source.SRCTYPE,
-					"Name for %s source" % source.SRCTYPE,
+					_("Name for {} source" , source.SRCTYPE),
+					_("Name for {} source" , source.SRCTYPE),
 					QLineEdit.Normal,
 					source.name)
 				if not ok:
@@ -566,7 +568,7 @@ class ProjectTreeModel(QAbstractItemModel):
 								  mnemonics=mnemonics)
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(parentWidget,
-					"Failed to parse symbol table", e)
+					_("Failed to parse symbol table"), e)
 			if symbol in symTab:
 				# We already have this symbol.
 				#TODO modify it, if needed
@@ -586,11 +588,11 @@ class ProjectTreeModel(QAbstractItemModel):
 				for i, symTabSource in enumerate(symTabSources)
 			]
 			entry, ok = QInputDialog.getItem(parentWidget,
-				"Select symbol table",
-				"Please select the symbol table "\
+				_("Select symbol table"),
+				_("Please select the symbol table "\
 				"where to add the symbol to:"
-				"\n%s  \"%s\"" %\
-				(symbol.getOperatorString(), symbol.getName()),
+				"\n{}  \"{}\"" ,
+				symbol.getOperatorString(), symbol.getName()),
 				entries, 0, False)
 			if not ok or not entry:
 				return False
@@ -603,7 +605,7 @@ class ProjectTreeModel(QAbstractItemModel):
 							  mnemonics=mnemonics)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(parentWidget,
-				"Failed to parse symbol table", e)
+				_("Failed to parse symbol table"), e)
 		symTab.add(symbol, True)
 
 		# Update the sym tab source.
@@ -611,7 +613,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			symTab.toSource(symTabSource)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(parentWidget,
-				"Failed to update symbol table", e)
+				_("Failed to update symbol table"), e)
 
 		# If an MDI edit window is open for this source, update it.
 		mdiSubWin = symTabSource.userData.get("gui-edit-window")
@@ -769,11 +771,11 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.__loadProject(project)
 		self.__isAdHocProject = True
 		QMessageBox.information(parentWidget,
-			"Opened plain AWL/STL file",
-			"The plain AWL/STL source file \n'%s'\n has sucessfully "
+			_("Opened plain AWL/STL file"),
+			_("The plain AWL/STL source file \n'{}'\n has sucessfully "
 			"been opened.\n\n"
 			"If you click on 'save', you will be asked to create "
-			"a project file for this source." % filename)
+			"a project file for this source." , filename))
 
 	def loadProjectFile(self, filename, parentWidget):
 		if Project.fileIsProject(filename):
@@ -794,11 +796,11 @@ class ProjectTreeModel(QAbstractItemModel):
 				# a plain AWL file. Do not overwrite the AWL file.
 				# Ask the user to create an .awlpro file.
 				res = QMessageBox.question(parentWidget,
-					"Create Awlsim project file?",
-					"The current project was created ad-hoc from a "
+					_("Create Awlsim project file?"),
+					_("The current project was created ad-hoc from a "
 					"plain AWL/STL file.\n"
 					"Can not save without creating a project file.\n\n"
-					"Do you want to create a project file?",
+					"Do you want to create a project file?"),
 					QMessageBox.Yes, QMessageBox.No)
 				if res != QMessageBox.Yes:
 					return 0
@@ -816,18 +818,18 @@ class ProjectTreeModel(QAbstractItemModel):
 		    any(src.isFileBacked() for src in project.getSymTabSources())) and\
 		    not self.__warnedFileBacked:
 			QMessageBox.information(parentWidget,
-				"Project contains external sources",
-				"The project contains external sources.\n"
+				_("Project contains external sources"),
+				_("The project contains external sources.\n"
 				"It is strongly recommended to integrate "
 				"external sources into the project.\n"
 				"Click on 'integrate source into project' "
-				"in the source menu.")
+				"in the source menu."))
 			self.__warnedFileBacked = True
 
 		# Re-generate UUIDs, if we are saving to a new file.
 		if project.getProjectFile() != filename:
-			printInfo("Save-file name changed. "
-				  "Re-generating project file UUIDs.")
+			printInfo(_("Save-file name changed. "
+				  "Re-generating project file UUIDs."))
 			self.__regenAllUUIDs()
 
 		# Set the new file name and write to that file.
@@ -1008,16 +1010,16 @@ class ProjectTreeModel(QAbstractItemModel):
 			return name
 
 		names = {
-		  self.INDEXID_SRCS		: "Program",
-		  self.INDEXID_SRCS_AWL		: "AWL / STL",
-		  self.INDEXID_SRCS_FUP		: "FUP / FBD",
-		  self.INDEXID_SRCS_KOP		: "KOP / LAD",
-		  self.INDEXID_SRCS_SYMTAB	: "Symbols",
-		  self.INDEXID_SRCS_LIBSEL	: "Library selections",
-		  self.INDEXID_CPU		: "CPU",
-		  self.INDEXID_CONN		: "Connection",
-		  self.INDEXID_HW		: "Hardware",
-		  self.INDEXID_GUICONF		: "Editor settings",
+		  self.INDEXID_SRCS		: _("Program"),
+		  self.INDEXID_SRCS_AWL		: _("AWL / STL"),
+		  self.INDEXID_SRCS_FUP		: _("FUP / FBD"),
+		  self.INDEXID_SRCS_KOP		: _("KOP / LAD"),
+		  self.INDEXID_SRCS_SYMTAB	: _("Symbols"),
+		  self.INDEXID_SRCS_LIBSEL	: _("Library selections"),
+		  self.INDEXID_CPU		: _("CPU"),
+		  self.INDEXID_CONN		: _("Connection"),
+		  self.INDEXID_HW		: _("Hardware"),
+		  self.INDEXID_GUICONF		: _("Editor settings"),
 		}
 		return names.get(idxId)
 
@@ -1106,23 +1108,23 @@ class ProjectTreeModel(QAbstractItemModel):
 			# in RUN state.
 			if any(source.userData.get("gui-erroneous", False)
 			       for source in sourceList):
-				return "ERROR: There is an error in the source file.\n"\
-				       "Please open it to fix the problem."
+				return _("ERROR: There is an error in the source file.\n"\
+				       "Please open it to fix the problem.")
 			if self.__cpuRunState == RunState.STATE_RUN and\
 			   any(not source.userData.get("gui-cpu-idents-match", True)
 			       for source in sourceList):
-				return "WARNING: The source contained in the project\n"\
+				return _("WARNING: The source contained in the project\n"\
 				       "does not match the source on the CPU.\n"\
 				       "That means the CPU is currenly running an outdated program.\n"\
 				       "Please re-download the sources to the CPU\n"\
-				       "by clicking the download button in the tool bar."
+				       "by clicking the download button in the tool bar.")
 			return okToolTip
 
 		def getSourceTip(sourceList, okToolTip):
 			if itemNr >= len(sourceList):
 				return False
 			source = sourceList[itemNr]
-			okToolTip += "\nSource hash: %s..." % source.identHashStr[:10]
+			okToolTip += _("\nSource hash: {}..." , source.identHashStr[:10])
 			return getSourceContainerTip((source,), okToolTip)
 
 		def getProgramContainerTip(okToolTip):
@@ -1139,38 +1141,38 @@ class ProjectTreeModel(QAbstractItemModel):
 			return getProgramContainerTip(None)
 		elif idxId == self.INDEXID_SRCS_AWL:
 			return getSourceContainerTip(self.getProject().getAwlSources(),
-				"Right click here to add new AWL source.")
+				_("Right click here to add new AWL source."))
 		elif idxIdBase == self.INDEXID_SRCS_AWL_BASE:
 			return getSourceTip(self.getProject().getAwlSources(),
-				"Double click here to edit this AWL source.")
+				_("Double click here to edit this AWL source."))
 		elif idxId == self.INDEXID_SRCS_FUP:
 			return getSourceContainerTip(self.getProject().getFupSources(),
-				"Right click here to add new FUP source.")
+				_("Right click here to add new FUP source."))
 		elif idxIdBase == self.INDEXID_SRCS_FUP_BASE:
 			return getSourceTip(self.getProject().getFupSources(),
-				"Double click here to edit this FUP diagram.")
+				_("Double click here to edit this FUP diagram."))
 		elif idxId == self.INDEXID_SRCS_KOP:
 			return getSourceContainerTip(self.getProject().getKopSources(),
-				"Right click here to add new KOP source.")
+				_("Right click here to add new KOP source."))
 		elif idxIdBase == self.INDEXID_SRCS_KOP_BASE:
 			return getSourceTip(self.getProject().getKopSources(),
-				"Double click here to edit this KOP diagram.")
+				_("Double click here to edit this KOP diagram."))
 		elif idxId == self.INDEXID_SRCS_SYMTAB:
 			return getSourceContainerTip(self.getProject().getSymTabSources(),
-				"Right click here to add new symbol table.")
+				_("Right click here to add new symbol table."))
 		elif idxIdBase == self.INDEXID_SRCS_SYMTAB_BASE:
 			return getSourceTip(self.getProject().getSymTabSources(),
-				"Double click here to edit this symbol table.")
+				_("Double click here to edit this symbol table."))
 		elif idxId == self.INDEXID_SRCS_LIBSEL:
-			return "Double click here to edit system library selections."
+			return _("Double click here to edit system library selections.")
 		elif idxId == self.INDEXID_CPU:
-			return "Double click here to edit CPU settings."
+			return _("Double click here to edit CPU settings.")
 		elif idxId == self.INDEXID_CONN:
-			return "Double click here to edit core server connection settings."
+			return _("Double click here to edit core server connection settings.")
 		elif idxId == self.INDEXID_HW:
-			return "Double click here to edit hardware module settings."
+			return _("Double click here to edit hardware module settings.")
 		elif idxId == self.INDEXID_GUICONF:
-			return "Double click here to edit GUI settings."
+			return _("Double click here to edit GUI settings.")
 		return None
 
 	def data(self, index, role=Qt.DisplayRole):
@@ -1319,7 +1321,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			return None
 
 		if action == Qt.CopyAction:
-			source.name += " (Copy)"
+			source.name += _(" (Copy)")
 
 		# Insert the new element
 		return self.entryAdd(idxIdBase=self.id2childBase[parentIdxId],
@@ -1390,44 +1392,44 @@ class SourceContextMenu(QMenu):
 
 		if withEditButton:
 			self.addAction(getIcon("doc_edit"),
-				       "&Edit...", self.__edit)
+				       _("&Edit..."), self.__edit)
 		self.addSeparator()
 		if withAddButton:
 			self.addAction(getIcon("doc_new"),
-				       "&Add new %s" % itemCategoryName, self.__add)
+				       _("&Add new {}" , itemCategoryName), self.__add)
 		if withDeleteButton:
 			self.addAction(getIcon("doc_close"),
-				       "&Delete...", self.__delete)
+				       _("&Delete..."), self.__delete)
 		if withRenameButton:
 			self.addAction(getIcon("doc_edit"),
-				       "&Rename...", self.__rename)
+				       _("&Rename..."), self.__rename)
 		self.addSeparator()
 		if withCopyButton:
 			self.addAction(getIcon("copy"),
-				       "&Copy", self.__copy)
+				       _("&Copy"), self.__copy)
 		if withCutButton:
 			self.addAction(getIcon("cut"),
-				       "&Cut", self.__cut)
+				       _("&Cut"), self.__cut)
 		if withPasteButton:
 			self.addAction(getIcon("paste"),
 				       "&Paste", self.__paste)
 		self.addSeparator()
 		if withImportButton:
 			self.addAction(getIcon("doc_import"),
-				       "&Import...", self.__import)
+				       _("&Import..."), self.__import)
 		if withExportButton:
 			self.addAction(getIcon("doc_export"),
-				       "&Export...", self.__export)
+				       _("&Export..."), self.__export)
 		if withIntegrateButton:
-			self.addAction("&Integrate '%s' into project..." % itemName,
+			self.addAction(_("&Integrate '{}' into project..." , itemName),
 				       self.__integrate)
 		self.addSeparator()
 		if withEnableButton:
 			self.addAction(getIcon("enable"),
-				       "E&nable", self.__enable)
+				       _("E&nable"), self.__enable)
 		if withDisableButton:
 			self.addAction(getIcon("disable"),
-				       "D&isable", self.__disable)
+				       _("D&isable"), self.__disable)
 
 	def __edit(self):
 		self.edit.emit()
@@ -1458,11 +1460,11 @@ class SourceContextMenu(QMenu):
 
 	def __integrate(self):
 		res = QMessageBox.question(self,
-			"Integrate current %s" % self.itemName,
-			"The current %s is stored in an external file.\n"
+			_("Integrate current {}" % self.itemName),
+			_("The current {} is stored in an external file.\n"
 			"Do you want to integrate this file info "
-			"the awlsim project file (.awlpro)?" %\
-			self.itemName,
+			"the awlsim project file (.awlpro)?" ,
+			self.itemName),
 			QMessageBox.Yes, QMessageBox.No)
 		if res == QMessageBox.Yes:
 			self.integrate.emit()
@@ -1510,10 +1512,10 @@ class ProjectTreeView(QTreeView):
 			self.expand(model.idToIndex(model.INDEXID_SRCS_FUP))
 
 	baseToCatName = {
-		ProjectTreeModel.INDEXID_SRCS_AWL_BASE		: "AWL source",
-		ProjectTreeModel.INDEXID_SRCS_FUP_BASE		: "FUP source",
-		ProjectTreeModel.INDEXID_SRCS_KOP_BASE		: "KOP source",
-		ProjectTreeModel.INDEXID_SRCS_SYMTAB_BASE	: "Symbol Table",
+		ProjectTreeModel.INDEXID_SRCS_AWL_BASE		: _("AWL source"),
+		ProjectTreeModel.INDEXID_SRCS_FUP_BASE		: _("FUP source"),
+		ProjectTreeModel.INDEXID_SRCS_KOP_BASE		: _("KOP source"),
+		ProjectTreeModel.INDEXID_SRCS_SYMTAB_BASE	: _("Symbol Table"),
 	}
 	idToCatName = {
 		ProjectTreeModel.INDEXID_SRCS_AWL	: baseToCatName[ProjectTreeModel.INDEXID_SRCS_AWL_BASE],
@@ -1583,9 +1585,9 @@ class ProjectTreeView(QTreeView):
 				self.setCurrentIndex(pastedIndex)
 			else:
 				QMessageBox.critical(self,
-					"Clipboard paste failed",
-					"The clipboard does not seem to contain data "
-					"that can be pasted here.")
+					_("Clipboard paste failed"),
+					_("The clipboard does not seem to contain data "
+					"that can be pasted here."))
 
 		# Source-integrate handler
 		def handleIntegrate():

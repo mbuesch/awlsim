@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
 from awlsim.gui.awlsimclient import *
@@ -35,17 +37,17 @@ class _SpawnConfigWidget(QGroupBox):
 		QGroupBox.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
-		toolTip = "A semicolon (;) separated list of Python "\
+		toolTip = _("A semicolon (;) separated list of Python "\
 			  "interpreters used to run the simulator core.\n"\
 			  "The list is tried first to last element, until "\
 			  "one working interpreter is found.\n\n"\
 			  "The special value $CURRENT is the "\
 			  "interpreter that is used to run the frontend.\n"\
 			  "The special value $DEFAULT will expand to this list:\n"\
-			  "    %s\n\n"\
-			  "---> If you are unsure, leave this as $DEFAULT <---" %\
-			  CoreLinkSettings.DEFAULT_INTERPRETERS
-		label = QLabel("Python interpreter list:", self)
+			  "    {}\n\n"\
+			  "---> If you are unsure, leave this as $DEFAULT <---" ,
+			  CoreLinkSettings.DEFAULT_INTERPRETERS)
+		label = QLabel(_("Python interpreter list:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 0, 0)
 		self.interpreterList = QLineEdit(self)
@@ -54,20 +56,20 @@ class _SpawnConfigWidget(QGroupBox):
 		self.interpreterList.setToolTip(toolTip)
 		self.layout().addWidget(self.interpreterList, 0, 1)
 
-		toolTip = "Spawn the new simulator core server "\
+		toolTip = _("Spawn the new simulator core server "\
 			  "on any port within this range.\n\n"\
-			  "---> If you are unsure, do not change the defaults. <---"
-		label = QLabel("Port range:", self)
+			  "---> If you are unsure, do not change the defaults. <---")
+		label = QLabel(_("Port range:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 1, 0)
 		hbox = QHBoxLayout()
 		self.portRangeStart = QSpinBox(self)
-		self.portRangeStart.setPrefix("from ")
+		self.portRangeStart.setPrefix(_("from "))
 		self.portRangeStart.setRange(0, 0xFFFF)
 		self.portRangeStart.setToolTip(toolTip)
 		hbox.addWidget(self.portRangeStart)
 		self.portRangeEnd = QSpinBox(self)
-		self.portRangeEnd.setPrefix("to ")
+		self.portRangeEnd.setPrefix(_("to "))
 		self.portRangeEnd.setRange(0, 0xFFFF)
 		self.portRangeEnd.setToolTip(toolTip)
 		hbox.addWidget(self.portRangeEnd)
@@ -89,8 +91,8 @@ class _SSHConfigWidget(QGroupBox):
 		QGroupBox.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
-		toolTip = "The SSH login user name of the remote server."
-		label = QLabel("SSH login user:", self)
+		toolTip = _("The SSH login user name of the remote server.")
+		label = QLabel(_("SSH login user:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 0, 0)
 		self.user = QLineEdit(self)
@@ -98,10 +100,10 @@ class _SSHConfigWidget(QGroupBox):
 		self.user.setText(SSHTunnel.SSH_DEFAULT_USER)
 		self.layout().addWidget(self.user, 0, 1)
 
-		toolTip = "Port number of the remote SSH server.\n"\
-			  "Leave this as %d unless you know what "\
-			  "you are doing." % SSHTunnel.SSH_PORT
-		label = QLabel("SSH port:", self)
+		toolTip = _("Port number of the remote SSH server.\n"\
+			  "Leave this as {} unless you know what "\
+			  "you are doing." , SSHTunnel.SSH_PORT)
+		label = QLabel(_("SSH port:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 1, 0)
 		self.sshPort = QSpinBox(self)
@@ -111,9 +113,9 @@ class _SSHConfigWidget(QGroupBox):
 		self.sshPort.setToolTip(toolTip)
 		self.layout().addWidget(self.sshPort, 1, 1)
 
-		toolTip = "The local SSH client executable.\n"\
+		toolTip = _("The local SSH client executable.\n"\
 			  "This can be the full path to the "\
-			  "SSH client program."
+			  "SSH client program.")
 		label = QLabel("SSH client executable:", self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 2, 0)
@@ -122,9 +124,9 @@ class _SSHConfigWidget(QGroupBox):
 		self.sshExecutable.setText(SSHTunnel.SSH_DEFAULT_EXECUTABLE)
 		self.layout().addWidget(self.sshExecutable, 2, 1)
 
-		toolTip = "Port number of the local tunnel end.\n"\
-			  "It is recommended to use automatic port selection."
-		label = QLabel("Local port:", self)
+		toolTip = _("Port number of the local tunnel end.\n"\
+			  "It is recommended to use automatic port selection.")
+		label = QLabel(_("Local port:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 3, 0)
 		hbox = QHBoxLayout()
@@ -134,7 +136,7 @@ class _SSHConfigWidget(QGroupBox):
 		self.localPort.setValue(SSHTunnel.SSH_LOCAL_PORT_START)
 		self.localPort.setToolTip(toolTip)
 		hbox.addWidget(self.localPort)
-		self.localPortAuto = QCheckBox("auto", self)
+		self.localPortAuto = QCheckBox(_("auto"), self)
 		self.localPortAuto.setToolTip(toolTip)
 		hbox.addWidget(self.localPortAuto)
 		self.layout().addLayout(hbox, 3, 1)
@@ -150,18 +152,18 @@ class _ConnectConfigWidget(QGroupBox):
 		QGroupBox.__init__(self, parent)
 		self.setLayout(QGridLayout())
 
-		toolTip = "The host name or IP address of the core "\
-			  "server to connect to."
-		label = QLabel("Core server host:", self)
+		toolTip = _("The host name or IP address of the core "\
+			  "server to connect to.")
+		label = QLabel(_("Core server host:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 0, 0)
 		self.host = QLineEdit(self)
 		self.host.setToolTip(toolTip)
 		self.layout().addWidget(self.host, 0, 1)
 
-		toolTip = "The port number of the core server to "\
-			  "connect to."
-		label = QLabel("Core server port:", self)
+		toolTip = _("The port number of the core server to "\
+			  "connect to.")
+		label = QLabel(_("Core server port:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 1, 0)
 		self.port = QSpinBox(self)
@@ -169,8 +171,8 @@ class _ConnectConfigWidget(QGroupBox):
 		self.port.setToolTip(toolTip)
 		self.layout().addWidget(self.port, 1, 1)
 
-		toolTip = "Connection timeout."
-		label = QLabel("Timeout:", self)
+		toolTip = _("Connection timeout.")
+		label = QLabel(_("Timeout:"), self)
 		label.setToolTip(toolTip)
 		self.layout().addWidget(label, 2, 0)
 		self.timeout = QDoubleSpinBox(self)
@@ -181,11 +183,11 @@ class _ConnectConfigWidget(QGroupBox):
 		self.timeout.setToolTip(toolTip)
 		self.layout().addWidget(self.timeout, 2, 1)
 
-		toolTip = "Establish an SSH tunnel to the core server "\
+		toolTip = _("Establish an SSH tunnel to the core server "\
 			  "and connect via this tunnel.\n"\
 			  "SSH is a secure and encrypted way to connect "\
-			  "to a server."
-		self.sshTunnel = QCheckBox("via SSH t&unnel", self)
+			  "to a server.")
+		self.sshTunnel = QCheckBox(_("via SSH t&unnel"), self)
 		self.sshTunnel.setToolTip(toolTip)
 		self.layout().addWidget(self.sshTunnel, 3, 0, 1, 2)
 		self.sshConfig = _SSHConfigWidget(self)
@@ -206,26 +208,26 @@ class LinkConfigWidget(QWidget):
 		self.setLayout(QGridLayout())
 		self.layout().setContentsMargins(QMargins())
 
-		group = QGroupBox("Operation mode", self)
+		group = QGroupBox(_("Operation mode"), self)
 		group.setLayout(QVBoxLayout())
-		self.spawnRadio = QRadioButton("Start a &simulator core", group)
-		self.spawnRadio.setToolTip("This will start a simulator core "
+		self.spawnRadio = QRadioButton(_("Start a &simulator core"), group)
+		self.spawnRadio.setToolTip(_("This will start a simulator core "
 					   "on-the-fly in the background.\n\n"
-					   "---> If you don't know what to do, select this. <---")
+					   "---> If you don't know what to do, select this. <---"))
 		self.spawnRadio.setChecked(True)
 		group.layout().addWidget(self.spawnRadio)
-		self.connRadio = QRadioButton("Connect to an &external core", group)
-		self.connRadio.setToolTip("Connect to an already running core server.\n"
+		self.connRadio = QRadioButton(_("Connect to an &external core"), group)
+		self.connRadio.setToolTip(_("Connect to an already running core server.\n"
 					  "This server may be running locally or "
-					  "somewhere else on the (trusted) network.")
+					  "somewhere else on the (trusted) network."))
 		group.layout().addWidget(self.connRadio)
 		self.layout().addWidget(group, 0, 0, 1, 2)
 
-		self.advanced = QCheckBox("Show advanced &options", self)
-		self.advanced.setToolTip("Show expert simulator core options.\n\n"
+		self.advanced = QCheckBox(_("Show advanced &options"), self)
+		self.advanced.setToolTip(_("Show expert simulator core options.\n\n"
 					 "You should not normally need to change any of these.\n"
 					 "Changing them might break the execution "
-					 "of the simulator core.")
+					 "of the simulator core."))
 		self.advanced.setCheckState(Qt.Unchecked)
 		self.layout().addWidget(self.advanced, 1, 0, 1, 2)
 
@@ -238,11 +240,11 @@ class LinkConfigWidget(QWidget):
 
 		self.layout().setRowStretch(4, 1)
 
-		self.askCheckBox = QCheckBox("Always as&k", self)
+		self.askCheckBox = QCheckBox(_("Always as&k"), self)
 		self.askCheckBox.setCheckState(Qt.Checked if
 			self.askWhenConnecting() else Qt.Unchecked)
-		self.askCheckBox.setToolTip("Always open this dialog when "
-					    "trying to connect to a CPU.")
+		self.askCheckBox.setToolTip(_("Always open this dialog when "
+					    "trying to connect to a CPU."))
 		self.layout().addWidget(self.askCheckBox, 5, 0, 1, 2)
 
 		self.__advancedChanged(self.advanced.checkState())
@@ -393,7 +395,7 @@ class LinkConfigDialog(AbstractConfigDialog):
 		AbstractConfigDialog.__init__(self,
 			project = project,
 			iconName = "network",
-			title = "Server connection setup",
+			title = _("Server connection setup"),
 			centralWidget = LinkConfigWidget(),
 			parent = parent)
 		self.resize(400, 400)

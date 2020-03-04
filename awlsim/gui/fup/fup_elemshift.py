@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -49,8 +51,8 @@ class FupElem_SHIFT_factory(FupElem_factory):
 			FupElem_RRD.OP_SYM_NAME	: FupElem_RRD,
 		}.get(subType)
 		if not elemClass:
-			raise self.Error("Shift subtype '%s' is not known "
-				"to the element parser." % (
+			raise self.Error(_("Shift subtype '{}' is not known "
+				"to the element parser." ,
 				subType))
 		self.elem = elemClass(x=x, y=y, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
@@ -324,7 +326,7 @@ class FupElem_SHIFT(FupElem):
 		if not conn or conn.OUT:
 			existing = set(c.text.upper() for c in self.outputs)
 			if "LOB" not in existing:
-				menu.enableCustomAction(0, True, text="Add LOB (Last shifted Out Bit) output")
+				menu.enableCustomAction(0, True, text=_("Add LOB (Last shifted Out Bit) output"))
 
 	def __addStateOutput(self, name):
 		return self.addConn(FupConnOut(text=name))

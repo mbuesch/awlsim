@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.util import *
@@ -197,29 +199,29 @@ class BlockTypeWidget(QWidget):
 		self.__changeSignalsBlocked = Blocker()
 
 		self.typeCombo = QComboBox(self)
-		self.typeCombo.addItem("Block type: Function (FC)", "FC")
-		self.typeCombo.addItem("Block type: Function block (FB)", "FB")
-		self.typeCombo.addItem("Block type: Organization block (OB)", "OB")
+		self.typeCombo.addItem(_("Block type: Function (FC)"), "FC")
+		self.typeCombo.addItem(_("Block type: Function block (FB)"), "FB")
+		self.typeCombo.addItem(_("Block type: Organization block (OB)"), "OB")
 		self.layout().addWidget(self.typeCombo, 0, 0)
 
 		self.__prevTypeStr = "FC"
 
 		self.blockNameEdit = QLineEdit(self)
 		self.blockNameEdit.setToolTip(
-			"Enter the block name here.\n\n"
+			_("Enter the block name here.\n\n"
 			"This can be an absolute block name like\n"
 			"  FB 42   or   FC 42   or   OB 100\n"
 			"or a symbolic block name like\n"
 			"  \"My function block\"\n"
-			"(The symbolic name must be present in the symbol table.)")
+			"(The symbolic name must be present in the symbol table.)"))
 		self.layout().addWidget(self.blockNameEdit, 0, 1)
 
-		self.dbEditLabel = QLabel("DIs:", self)
+		self.dbEditLabel = QLabel(_("DIs:"), self)
 		self.layout().addWidget(self.dbEditLabel, 0, 2)
 
 		self.dbEdit = QLineEdit(self)
 		self.dbEdit.setToolTip(
-			"Enter the instance DBs to create here.\n\n"
+			_("Enter the instance DBs to create here.\n\n"
 			"If this field is left empty, no DB will be generated.\n"
 			"One DB or a comma separated list of DBs to create can be specified.\n\n"
 			"For example:\n"
@@ -228,7 +230,7 @@ class BlockTypeWidget(QWidget):
 			"  DB 42, DB 43, DB 44\n"
 			"or a symbolic block name like\n"
 			"  \"First data block\", \"Second data block\"\n"
-			"(The symbolic name must be present in the symbol table.)")
+			"(The symbolic name must be present in the symbol table.)"))
 		self.dbEditLabel.setToolTip(self.dbEdit.toolTip())
 		self.dbEdit.setValidator(BlockListValidator(self.dbEdit,
 							    ("DB", "DI")))

@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.icons import *
 from awlsim.gui.util import *
 
@@ -44,9 +46,9 @@ class OnlineSelectAction(QAction):
 
 	def __handleToggle(self, checked):
 		if checked:
-			self.setText("Go offline")
+			self.setText(_("Go offline"))
 		else:
-			self.setText("Go online (Connect to a CPU)")
+			self.setText(_("Go online (Connect to a CPU)"))
 
 class RunSelectAction(QAction):
 	def __init__(self, parent):
@@ -59,10 +61,10 @@ class RunSelectAction(QAction):
 
 	def __handleToggle(self, checked):
 		if checked:
-			self.setText("Stop CPU (STOP mode)")
+			self.setText(_("Stop CPU (STOP mode)"))
 			self.setIcon(getIcon("stop"))
 		else:
-			self.setText("Start CPU (RUN mode)")
+			self.setText(_("Start CPU (RUN mode)"))
 			self.setIcon(getIcon("run"))
 
 class DiagSelectAction(QAction):
@@ -76,50 +78,50 @@ class DiagSelectAction(QAction):
 
 	def __handleToggle(self, checked):
 		if checked:
-			self.setText("Disable online diagnosis")
+			self.setText(_("Disable online diagnosis"))
 		else:
-			self.setText("Enable online diagnosis")
+			self.setText(_("Enable online diagnosis"))
 
 class CpuInspectToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
 		self.setObjectName("CpuInspectToolBar")
-		self.setWindowTitle("CPU inspection tool bar")
+		self.setWindowTitle(_("CPU inspection tool bar"))
 
 		self.blocksAction = QAction(getIcon("plugin"),
-					    "Add inspection: Online blocks",
+					    _("Add inspection: Online blocks"),
 					    self)
 		self.addAction(self.blocksAction)
 		self.inputsAction = QAction(getIcon("inputs"),
-					    "Add inspection: Input memory (I / E)",
+					    _("Add inspection: Input memory (I / E)"),
 					    self)
 		self.addAction(self.inputsAction)
 		self.outputsAction = QAction(getIcon("outputs"),
-					     "Add inspection: Output memory (Q / A)",
+					     _("Add inspection: Output memory (Q / A)"),
 					     self)
 		self.addAction(self.outputsAction)
 		self.flagsAction = QAction(getIcon("flags"),
-					   "Add inspection: Flag memory (M)",
+					   _("Add inspection: Flag memory (M)"),
 					   self)
 		self.addAction(self.flagsAction)
 		self.dbAction = QAction(getIcon("datablock"),
-					"Add inspection: Data block (DB)",
+					_("Add inspection: Data block (DB)"),
 					self)
 		self.addAction(self.dbAction)
 		self.timerAction = QAction(getIcon("timer"),
-					   "Add inspection: Timer (T)",
+					   _("Add inspection: Timer (T)"),
 					   self)
 		self.addAction(self.timerAction)
 		self.counterAction = QAction(getIcon("counter"),
-					     "Add inspection: Counter (C / Z)",
+					     _("Add inspection: Counter (C / Z)"),
 					     self)
 		self.addAction(self.counterAction)
 		self.cpuAction = QAction(getIcon("cpu"),
-					 "Add inspection: CPU overview",
+					 _("Add inspection: CPU overview"),
 					 self)
 		self.addAction(self.cpuAction)
 		self.lcdAction = QAction(getIcon("lcd"),
-					 "Add inspection: LCD",
+					 _("Add inspection: LCD"),
 					 self)
 		self.addAction(self.lcdAction)
 
@@ -138,20 +140,20 @@ class CpuControlToolBar(QToolBar):
 	def __init__(self, parent=None):
 		QToolBar.__init__(self, parent)
 		self.setObjectName("CpuControlToolBar")
-		self.setWindowTitle("CPU control tool bar")
+		self.setWindowTitle(_("CPU control tool bar"))
 
 		self.onlineAction = OnlineSelectAction(self)
 		self.addAction(self.onlineAction)
 		self.resetAction = QAction(getIcon("doc_delete"),
-					   "Reset the CPU",
+					   _("Reset the CPU"),
 					   self)
 		self.addAction(self.resetAction)
 		self.downloadAction = QAction(getIcon("download"),
-					      "Download all sources to CPU",
+					      _("Download all sources to CPU"),
 					      self)
 		self.addAction(self.downloadAction)
 		self.downloadSingleAction = QAction(getIcon("download_one"),
-						    "Download single source to CPU",
+						    _("Download single source to CPU"),
 						    self)
 		self.addAction(self.downloadSingleAction)
 		self.runAction = RunSelectAction(self)

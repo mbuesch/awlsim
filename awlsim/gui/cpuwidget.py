@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.cpustate import *
 from awlsim.gui.awlsimclient import *
@@ -168,7 +170,7 @@ class CpuWidget(QWidget):
 			with MessageBox.awlSimErrorBlocked:
 				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Error in awlsim core", e)
+				_("Error in awlsim core"), e)
 			return False
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
@@ -201,14 +203,14 @@ class CpuWidget(QWidget):
 
 		if maintRequest.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
 			res = QMessageBox.question(self,
-				"Shut down application?",
-				"The core server requested an "
+				_("Shut down application?"),
+				_("The core server requested an "
 				"application shutdown.\n"
-				"Do you want to close Awlsim GUI?",
+				"Do you want to close Awlsim GUI?"),
 				QMessageBox.Yes | QMessageBox.No,
 				QMessageBox.No)
 			if res == QMessageBox.Yes:
-				print("Shutting down, as requested by server...")
+				print(_("Shutting down, as requested by server..."))
 				client.shutdown()
 				QApplication.exit(0)
 			else:
@@ -218,8 +220,8 @@ class CpuWidget(QWidget):
 		     maintRequest.requestType == MaintenanceRequest.TYPE_RTTIMEOUT:
 			self.stop()
 		else:
-			print("Unknown maintenance request %d" %\
-			      maintRequest.requestType)
+			print(_("Unknown maintenance request {}" ,
+			      maintRequest.requestType))
 			self.stop()
 
 	def __run(self, goOnlineFirst=True):
@@ -257,7 +259,7 @@ class CpuWidget(QWidget):
 			with MessageBox.awlSimErrorBlocked:
 				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Could not start CPU", e)
+				_("Could not start CPU"), e)
 			with MessageBox.awlSimErrorBlocked:
 				self.stop()
 		except MaintenanceRequest as e:
@@ -274,7 +276,7 @@ class CpuWidget(QWidget):
 			with MessageBox.awlSimErrorBlocked:
 				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Core server error", e)
+				_("Core server error"), e)
 			with MessageBox.awlSimErrorBlocked:
 				self.stop()
 				self.__stopCoreMessageHandler()
@@ -331,7 +333,7 @@ class CpuWidget(QWidget):
 			with MessageBox.awlSimErrorBlocked:
 				client.runState.setState(RunState.STATE_EXCEPTION)
 			MessageBox.handleAwlSimError(self,
-				"Core server error", e)
+				_("Core server error"), e)
 			with MessageBox.awlSimErrorBlocked:
 				self.stop()
 				self.__stopCoreMessageHandler()
@@ -358,7 +360,7 @@ class CpuWidget(QWidget):
 				client.setRunState(False)
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(self,
-					"Could not stop CPU", e)
+					_("Could not stop CPU"), e)
 
 		# Re-Start the message handler.
 		self.__startCoreMessageHandler()
@@ -416,7 +418,7 @@ class CpuWidget(QWidget):
 			with suppressAllExc:
 				client.setMode_OFFLINE()
 			MessageBox.handleAwlSimError(self,
-				"Error while trying to connect to CPU", e)
+				_("Error while trying to connect to CPU"), e)
 			with MessageBox.awlSimErrorBlocked:
 				self.goOffline()
 			return
@@ -429,7 +431,7 @@ class CpuWidget(QWidget):
 			client.setMode_OFFLINE()
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"Error while trying to disconnect from CPU", e)
+				_("Error while trying to disconnect from CPU"), e)
 		# Release the stop-button.
 		# This will _not_ stop the CPU, as we're offline already.
 		self.stop()
@@ -457,17 +459,17 @@ class CpuWidget(QWidget):
 		if not guiSettings.getPreDownloadValidationEn():
 			return True
 
-		printInfo("Validating project before downloading...")
+		printInfo(_("Validating project before downloading..."))
 		valSched = GuiValidatorSched.get()
 		exception = valSched.syncValidation(project)
 		if exception is valSched.TIMEOUT:
-			printError("Project validation failed. Loading anyway...")
+			printError(_("Project validation failed. Loading anyway..."))
 		elif exception is not None:
 			res = MessageBox.handleAwlSimError(self,
-				"\nPre-download validation of the project failed.\n"
+				_("\nPre-download validation of the project failed.\n"
 				"Continuing the download may bring the CPU to STOP.\n\n"
 				"Do you want to continue or cancel "
-				"downloading the project to the CPU?",
+				"downloading the project to the CPU?"),
 				exception,
 				okButton=False,
 				continueButton=True,
@@ -513,7 +515,7 @@ class CpuWidget(QWidget):
 				client.runState.setState(RunState.STATE_ONLINE)
 				self.stop()
 			MessageBox.handleAwlSimError(self,
-				"Error while loading code", e)
+				_("Error while loading code"), e)
 			return False
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
@@ -545,9 +547,9 @@ class CpuWidget(QWidget):
 				assert(0)
 		if not mdiSubWin or (not source and not libSelections):
 			QMessageBox.critical(self,
-				"No source selected.",
-				"Cannot download a single source.\n"
-				"No source has been opened in the edit area.",
+				_("No source selected."),
+				_("Cannot download a single source.\n"
+				"No source has been opened in the edit area."),
 				QMessageBox.Ok)
 			return False
 
@@ -569,27 +571,27 @@ class CpuWidget(QWidget):
 				return False
 
 			if mdiSubWin.TYPE == mdiSubWin.TYPE_AWL:
-				printVerbose("Single AWL download: %s/%s" %\
-					(source.name,
+				printVerbose(_("Single AWL download: {}/{}" ,
+					source.name,
 					 source.identHashStr))
 				client.loadAwlSource(source)
 			elif mdiSubWin.TYPE == mdiSubWin.TYPE_FUP:
-				printVerbose("Single FUP download: %s/%s" %\
-					(source.name,
+				printVerbose(_("Single FUP download: {}/{}" ,
+					source.name,
 					 source.identHashStr))
 				client.loadFupSource(source)
 			elif mdiSubWin.TYPE == mdiSubWin.TYPE_KOP:
-				printVerbose("Single KOP download: %s/%s" %\
-					(source.name,
+				printVerbose(_("Single KOP download: {}/{}" ,
+					source.name,
 					 source.identHashStr))
 				client.loadKopSource(source)
 			elif mdiSubWin.TYPE == mdiSubWin.TYPE_SYMTAB:
-				printVerbose("Single sym download: %s/%s" %\
-					(source.name,
+				printVerbose(_("Single sym download: {}/{}" ,
+					source.name,
 					 source.identHashStr))
 				client.loadSymTabSource(source)
 			elif mdiSubWin.TYPE == mdiSubWin.TYPE_LIBSEL:
-				printVerbose("Single libSelections download.")
+				printVerbose(_("Single libSelections download."))
 				client.loadLibraryBlocks(libSelections)
 			else:
 				assert(0)
@@ -609,7 +611,7 @@ class CpuWidget(QWidget):
 				client.runState.setState(RunState.STATE_ONLINE)
 				self.stop()
 			MessageBox.handleAwlSimError(self,
-				"Error while loading code (single source)", e)
+				_("Error while loading code (single source)"), e)
 			return False
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
@@ -637,7 +639,7 @@ class CpuWidget(QWidget):
 			return False
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"Error while reseting CPU", e)
+				_("Error while reseting CPU"), e)
 			return False
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)
@@ -692,7 +694,7 @@ class CpuWidget(QWidget):
 					self.__onlineDiagToLine = None
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"Failed to setup instruction dumping", e)
+				_("Failed to setup instruction dumping"), e)
 			return
 		except MaintenanceRequest as e:
 			self.__handleMaintenance(e)

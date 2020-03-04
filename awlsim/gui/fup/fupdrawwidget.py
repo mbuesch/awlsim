@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.validatorsched import *
@@ -60,40 +62,40 @@ class FupContextMenu(QMenu):
 		self.gridY = 0
 
 		self.__actEdit = self.addAction(getIcon("doc_edit"),
-						"&Edit element...",
+						_("&Edit element..."),
 						self.__edit)
 		self.__actCopy = self.addAction(getIcon("copy"),
-						"&Copy element(s)...",
+						_("&Copy element(s)..."),
 						self.__copy)
 		self.__actCut = self.addAction(getIcon("cut"),
-					       "C&ut element(s)...",
+					       _("C&ut element(s)..."),
 					       self.__cut)
 		self.__actPaste = self.addAction(getIcon("paste"),
-						"&Paste element(s)...",
+						_("&Paste element(s)..."),
 						self.__paste)
 		self.__actDel = self.addAction(getIcon("doc_close"),
-					       "&Remove element", self.__del)
+					       _("&Remove element"), self.__del)
 		self.__actEnable = self.addAction(getIcon("enable"),
-						  "E&nable element",
+						  _("E&nable element"),
 						  self.__enable)
 		self.__actDisable = self.addAction(getIcon("disable"),
-						   "&Disable element",
+						   _("&Disable element"),
 						   self.__disable)
 		self.addSeparator()
 		self.__actInvertConn = self.addAction(getIcon("doc_edit"),
-						      "In&vert connection",
+						      _("In&vert connection"),
 						      self.__invertConn)
 		self.__actAddInp = self.addAction(getIcon("new"),
-						  "Add input &connection",
+						  _("Add input &connection"),
 						  self.__addInput)
 		self.__actAddOut = self.addAction(getIcon("new"),
-						  "Add &output connection",
+						  _("Add &output connection"),
 						  self.__addOutput)
 		self.__actDelConn = self.addAction(getIcon("doc_close"),
-						   "Remove &connection",
+						   _("Remove &connection"),
 						   self.__delConn)
 		self.__actDisconnWire = self.addAction(getIcon("doc_close"),
-						       "&Disconnect wire",
+						       _("&Disconnect wire"),
 						       self.__disconnWire)
 		self.addSeparator()
 		self.__actCustom = []
@@ -1104,8 +1106,8 @@ class FupDrawWidget(QWidget):
 			factory = FupGrid_factory(grid=grid)
 			factory.parse(mimeDataBytes)
 		except XmlFactory.Error as e:
-			printWarning("__mimeDataToGrid: Failed to parse MIME data: "
-				"%s" % str(e))
+			printWarning(_("__mimeDataToGrid: Failed to parse MIME data: "
+				"{}" , str(e)))
 			return None
 
 		# Move elements to the top left corner of the grid.
@@ -1118,8 +1120,8 @@ class FupDrawWidget(QWidget):
 					       -topLeftY,
 					       relativeCoords=True,
 					       excludeCheckElems=elems):
-				printWarning("__mimeDataToGrid: Failed to "
-					"relocate elements.")
+				printWarning(_("__mimeDataToGrid: Failed to "
+					"relocate elements."))
 				return None
 		return grid
 
@@ -1202,36 +1204,36 @@ class FupDrawWidget(QWidget):
 			self.__drop(event, checkOnly=True)
 			event.accept()
 		except Exception as e:
-			printError("Unexpected exception in "
+			printError(_("Unexpected exception in "
 				"FupDrawWidget.dragEnterEvent(): "
-				"%s\n\n%s" % (
+				"{}\n\n{}" ,
 				str(e), traceback.format_exc()))
 
 	def dragLeaveEvent(self, event):
 		try:
 			event.accept()
 		except Exception as e:
-			printError("Unexpected exception in "
+			printError(_("Unexpected exception in "
 				"FupDrawWidget.dragLeaveEvent(): "
-				"%s\n\n%s" % (
+				"{}\n\n{}" ,
 				str(e), traceback.format_exc()))
 
 	def dragMoveEvent(self, event):
 		try:
 			self.__drop(event, checkOnly=True)
 		except Exception as e:
-			printError("Unexpected exception in "
+			printError(_("Unexpected exception in "
 				"FupDrawWidget.dragMoveEvent(): "
-				"%s\n\n%s" % (
+				"{}\n\n{}" ,
 				str(e), traceback.format_exc()))
 
 	def dropEvent(self, event):
 		try:
 			self.__drop(event)
 		except Exception as e:
-			printError("Unexpected exception in "
+			printError(_("Unexpected exception in "
 				"FupDrawWidget.dropEvent(): "
-				"%s\n\n%s" % (
+				"{}\n\n{}" ,
 				str(e), traceback.format_exc()))
 
 	def clipboardCopy(self):
@@ -1295,9 +1297,9 @@ class FupDrawWidget(QWidget):
 		grid.regenAllUUIDs()
 		if not self.__grid.merge(grid, offsetX=offsetX, offsetY=offsetY):
 			QMessageBox.critical(self,
-				"Paste of FUP grid failed",
-				"The FUP grid cannot be pasted here, because elements collide.\n"
-				"Please select another position in the grid.")
+				_("Paste of FUP grid failed"),
+				_("The FUP grid cannot be pasted here, because elements collide.\n"
+				"Please select another position in the grid."))
 		self.__contentChanged()
 		return True
 

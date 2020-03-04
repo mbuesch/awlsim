@@ -21,3 +21,5 @@ __pycache__/
 
 /awlsim_cython
 /pyprofibus
+
+*.mo

@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 from awlsim.gui.cpuwidget import *
 from awlsim.gui.sourcecodeedit import *
@@ -216,59 +218,59 @@ class CpuStatsContextMenu(QMenu):
 	def __init__(self, parent=None):
 		QMenu.__init__(self, parent)
 
-		itemsMenu = QMenu("Online items", self)
-		self.__action_NER = CheckAction("Status bit: /FC (/ER)",
+		itemsMenu = QMenu(_("Online items"), self)
+		self.__action_NER = CheckAction(_("Status bit: /FC (/ER)"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_NER)
-		self.__action_VKE = CheckAction("Status bit: RLO (VKE)",
+		self.__action_VKE = CheckAction(_("Status bit: RLO (VKE)"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_VKE)
-		self.__action_STA = CheckAction("Status bit: STA",
+		self.__action_STA = CheckAction(_("Status bit: STA"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_STA)
-		self.__action_OR = CheckAction("Status bit: OR",
+		self.__action_OR = CheckAction(_("Status bit: OR"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_OR)
-		self.__action_OS = CheckAction("Status bit: OS",
+		self.__action_OS = CheckAction(_("Status bit: OS"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_OS)
-		self.__action_OV = CheckAction("Status bit: OV",
+		self.__action_OV = CheckAction(_("Status bit: OV"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_OV)
-		self.__action_A0 = CheckAction("Status bit: CC0 (A0)",
+		self.__action_A0 = CheckAction(_("Status bit: CC0 (A0)"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_A0)
-		self.__action_A1 = CheckAction("Status bit: CC1 (A1)",
+		self.__action_A1 = CheckAction(_("Status bit: CC1 (A1)"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_A1)
-		self.__action_BIE = CheckAction("Status bit: BR (BIE)",
+		self.__action_BIE = CheckAction(_("Status bit: BR (BIE)"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_BIE)
-		self.__action_STW = CheckAction("Full status word",
+		self.__action_STW = CheckAction(_("Full status word"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_STW)
-		self.__action_accu1 = CheckAction("Accu 1",
+		self.__action_accu1 = CheckAction(_("Accu 1"),
 						  self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_accu1)
-		self.__action_accu2 = CheckAction("Accu 2",
+		self.__action_accu2 = CheckAction(_("Accu 2"),
 						  self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_accu2)
-		self.__action_accu3 = CheckAction("Accu 3",
+		self.__action_accu3 = CheckAction(_("Accu 3"),
 						  self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_accu3)
-		self.__action_accu4 = CheckAction("Accu 4",
+		self.__action_accu4 = CheckAction(_("Accu 4"),
 						  self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_accu4)
-		self.__action_ar1 = CheckAction("AR 1",
+		self.__action_ar1 = CheckAction(_("AR 1"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_ar1)
-		self.__action_ar2 = CheckAction("AR 2",
+		self.__action_ar2 = CheckAction(_("AR 2"),
 						self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_ar2)
-		self.__action_db = CheckAction("DB register",
+		self.__action_db = CheckAction(_("DB register"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_db)
-		self.__action_di = CheckAction("DI register",
+		self.__action_di = CheckAction(_("DI register"),
 					       self.__actionToggled, self)
 		itemsMenu.addAction(self.__action_di)
 		self.addMenu(itemsMenu)
@@ -430,8 +432,8 @@ class EditWidget(SourceCodeEdit):
 			self.__cpuStatsMenu.closed.connect(self.__cpuStatsContextMenuClosed)
 
 		self.setPlaceholderText(
-			"Please enter your AWL program here...\n\n\n"
-			"Did you know\n" + random.choice(self.__didYouKnow)
+			_("Please enter your AWL program here...\n\n\n"
+			"Did you know\n") + random.choice(self.__didYouKnow)
 		)
 
 	def shutdown(self):
@@ -446,9 +448,9 @@ class EditWidget(SourceCodeEdit):
 				sourceText = sourceBytes.decode(AwlSource.ENCODING,
 								errors="strict")
 			except UnicodeError:
-				MessageBox.error(self, "The AWL/STL code contains "
-					"non-%s-characters. These were ignored and stripped "
-					"from the code." % AwlSource.ENCODING)
+				MessageBox.error(self, _("The AWL/STL code contains "
+					"non-{}-characters. These were ignored and stripped "
+					"from the code." , AwlSource.ENCODING))
 				sourceText = sourceBytes.decode(AwlSource.ENCODING,
 								errors="ignore")
 			self.setPlainText(sourceText)
@@ -465,9 +467,9 @@ class EditWidget(SourceCodeEdit):
 							errors="strict")
 			self.__source.sourceBytes = sourceBytes
 		except UnicodeError:
-			MessageBox.error(self, "The AWL/STL code contains "
-				"non-%s-characters. These were ignored and stripped "
-				"from the code." % AwlSource.ENCODING)
+			MessageBox.error(self, _("The AWL/STL code contains "
+				"non-{}-characters. These were ignored and stripped "
+				"from the code." , AwlSource.ENCODING))
 			sourceBytes = sourceText.encode(AwlSource.ENCODING,
 							errors="ignore")
 			self.__source.sourceBytes = sourceBytes
@@ -760,10 +762,10 @@ class EditWidget(SourceCodeEdit):
 		self.focusChanged.emit(False)
 
 	__runStateToText = {
-		RunState.STATE_OFFLINE		: "OFFLINE",
-		RunState.STATE_ONLINE		: "Online (CPU stopped)",
-		RunState.STATE_LOAD		: "DOWNLOADING program. Please wait.",
-		RunState.STATE_EXCEPTION	: "ERROR. CPU halted.",
+		RunState.STATE_OFFLINE		: _("OFFLINE"),
+		RunState.STATE_ONLINE		: _("Online (CPU stopped)"),
+		RunState.STATE_LOAD		: _("DOWNLOADING program. Please wait."),
+		RunState.STATE_EXCEPTION	: _("ERROR. CPU halted."),
 	}
 
 	def __repaintHeaderWidget(self, ev):

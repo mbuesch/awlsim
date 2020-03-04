@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -59,8 +61,8 @@ class FupElem_CMP_factory(FupElem_factory):
 			FupElem_CMP_LE_R.OP_SYM_NAME	: FupElem_CMP_LE_R,
 		}.get(subType)
 		if not elemClass:
-			raise self.Error("Compare subtype '%s' is not known "
-				"to the element parser." % (
+			raise self.Error(_("Compare subtype '{}' is not known "
+				"to the element parser." ,
 				subType))
 		self.elem = elemClass(x=x, y=y, nrInputs=0, uuid=uuid, enabled=enabled)
 		self.elem.grid = self.grid
@@ -76,8 +78,8 @@ class FupElem_CMP_factory(FupElem_factory):
 		if tag.name == "element":
 			# Insert the element into the grid.
 			if not self.grid.placeElem(self.elem):
-				raise self.Error("<element> caused "
-					"a grid collision.")
+				raise self.Error(_("<element> caused "
+					"a grid collision."))
 			self.parser_finish()
 			return
 		XmlFactory.parser_endTag(self, tag)

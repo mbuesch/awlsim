@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.util import *
 
 from awlsim.library.libentry import *
@@ -113,7 +115,7 @@ class LibTableModel(QAbstractTableModel):
 				try:
 					libEntCls = AwlLib.getEntryBySelection(sel)
 				except AwlSimError as e:
-					return "Library or block not found!"
+					return _("Library or block not found!")
 				return "\"%s\" - %s" % (
 					libEntCls.symbolName,
 					libEntCls.description,
@@ -137,14 +139,14 @@ class LibTableModel(QAbstractTableModel):
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			return (
 				# Library name
-				"The name of the library.\n(The name is case insensitive.)",
+				_("The name of the library.\n(The name is case insensitive.)"),
 				# Block name
-				"The name of the block from the library to include.\n"\
-				"For example:  FC 10  or  FB 42",
+				_("The name of the block from the library to include.\n"\
+				"For example:  FC 10  or  FB 42"),
 				# Effective block name
-				"The local name of the block.\nThe block can be CALLed "
+				_("The local name of the block.\nThe block can be CALLed "
 				"by this name from within the user program.\n"\
-				"For example:  FC 110  or  FB 142",
+				"For example:  FC 110  or  FB 142"),
 				# Description
 				"",
 			)[column]
@@ -154,11 +156,11 @@ class LibTableModel(QAbstractTableModel):
 		if role != Qt.DisplayRole:
 			return None
 		if orientation == Qt.Horizontal:
-			return ("Library", "Library block",
-				"Use as block", "Description")[section]
+			return (_("Library"), _("Library block"),
+				_("Use as block"), _("Description"))[section]
 		else:
 			if section >= len(self.libSelections):
-				return "new"
+				return _("new")
 			return "%d" % (section + 1)
 
 	def __strToTypeIndex(self, string):
@@ -175,8 +177,8 @@ class LibTableModel(QAbstractTableModel):
 				raise ValueError
 			return eType, index
 		except ValueError:
-			raise AwlSimError("Invalid block selection: %s" %\
-				string)
+			raise AwlSimError(_("Invalid block selection: {}" ,
+				string))
 
 	def setData(self, index, value, role=Qt.EditRole):
 		if not index:
@@ -208,17 +210,17 @@ class LibTableModel(QAbstractTableModel):
 					eType, index = self.__strToTypeIndex(value)
 					if sel.getEntryType() != sel.TYPE_UNKNOWN and\
 					   eType != sel.getEntryType():
-						raise AwlSimError("Effective block type "
+						raise AwlSimError(_("Effective block type "
 							"does not match the library's "
-							"block type '%s'." %\
-							sel.getEntryTypeStr())
+							"block type '{}'." ,
+							sel.getEntryTypeStr()))
 					sel.setEntryType(eType)
 					sel.setEffectiveEntryIndex(index)
 				else:
 					assert(0)
 			except AwlSimError as e:
 				MessageBox.handleAwlSimError(None,
-					"Invalid library information", e)
+					_("Invalid library information"), e)
 				return False
 			self.contentChanged.emit()
 			return True

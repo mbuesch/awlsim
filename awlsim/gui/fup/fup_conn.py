@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.fup.fup_base import *
@@ -46,7 +48,7 @@ class FupConn_factory(XmlFactory):
 				inverted = tag.getAttrBool("inverted", False)
 				uuid = tag.getAttr("uuid", None)
 				if pos < 0 or pos > 0xFFFF:
-					raise self.Error("Invalid <connection> pos.")
+					raise self.Error(_("Invalid <connection> pos."))
 				wire = self.elem.grid.getWireById(wireId)
 				try:
 					if dirIn and not dirOut:
@@ -72,7 +74,7 @@ class FupConn_factory(XmlFactory):
 						conn.text = text
 						return
 				except ValueError:
-					raise self.Error("Invalid <connection>")
+					raise self.Error(_("Invalid <connection>"))
 		XmlFactory.parser_beginTag(self, tag)
 
 	def parser_endTag(self, tag):
@@ -84,8 +86,8 @@ class FupConn_factory(XmlFactory):
 			if tag.name == "connections":
 				if not all(self.elem.inputs) or\
 				   not all(self.elem.outputs):
-					raise self.Error("<element> connections "
-						"are incomplete.")
+					raise self.Error(_("<element> connections "
+						"are incomplete."))
 				self.parser_finish()
 				return
 		XmlFactory.parser_endTag(self, tag)

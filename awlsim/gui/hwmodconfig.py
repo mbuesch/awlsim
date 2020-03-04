@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.configdialog import *
 from awlsim.gui.util import *
 
@@ -115,8 +117,8 @@ class HwmodParamModel(QAbstractTableModel):
 			if destValue:
 				# The replacement parameter is already used.
 				continue
-			printInfo("Hardware parameters [%s]: Replacing parameter '%s' "
-				  "with fully compatible parameter '%s'." % (
+			printInfo(_("Hardware parameters [{}]: Replacing parameter '{}' "
+				  "with fully compatible parameter '{}'." , 
 				  self.modDesc.getModuleName(),
 				  paramDesc.name,
 				  paramDesc.compatReplacement))
@@ -205,25 +207,25 @@ class HwmodParamModel(QAbstractTableModel):
 				paramDesc = self.__getParamDesc(params[row][0])
 				if column in (0, 1):
 					if paramDesc and paramDesc.description:
-						text = "%s\nDefault value: %s" % (
+						text = _("{}\nDefault value: {}" , (
 							paramDesc.description,
-							paramDesc.defaultValueStr)
+							paramDesc.defaultValueStr))
 						return text
-					return "The parameter's name"
+					return _("The parameter's name")
 			else:
 				if column == 0:
-					return "New parameter name"
+					return _("New parameter name")
 		return None
 
 	def headerData(self, section, orientation, role=Qt.DisplayRole):
 		if role != Qt.DisplayRole:
 			return None
 		if orientation == Qt.Horizontal:
-			return ("Parameter", "Value")[section]
+			return (_("Parameter"), _("Value"))[section]
 		else:
 			params = self.__params
 			if section >= len(params):
-				return "new"
+				return _("new")
 			return "%d" % (section + 1)
 
 	def setData(self, index, value, role=Qt.EditRole):
@@ -324,33 +326,33 @@ class HwmodConfigWidget(QWidget):
 		group = QGroupBox(self)
 		group.setLayout(QGridLayout())
 
-		label = QLabel("Available modules:", self)
+		label = QLabel(_("Available modules:"), self)
 		group.layout().addWidget(label, 0, 0)
 		self.availList = QListWidget(self)
 		self.availList.setMaximumWidth(180)
 		self.availList.setSelectionMode(QListWidget.SingleSelection)
 		group.layout().addWidget(self.availList, 1, 0)
 		self.manualModName = QLineEdit(self)
-		self.manualModName.setToolTip("Name of another module to add.\n"
+		self.manualModName.setToolTip(_("Name of another module to add.\n"
 			"Note: Typos in the module name will result in "
-			"errors on CPU startup.")
+			"errors on CPU startup."))
 		self.manualModName.setMaximumWidth(180)
 		group.layout().addWidget(self.manualModName, 2, 0)
 
 		vbox = QVBoxLayout()
 		self.addButton = QPushButton(self)
 		self.addButton.setIcon(getIcon("next"))
-		self.addButton.setToolTip("Add the selected module to the "
-			"project\nand mark it for download to the CPU.")
+		self.addButton.setToolTip(_("Add the selected module to the "
+			"project\nand mark it for download to the CPU."))
 		vbox.addWidget(self.addButton)
 		self.delButton = QPushButton(self)
 		self.delButton.setIcon(getIcon("previous"))
-		self.delButton.setToolTip("Remove the selected module from "
-			"the project\nand mark it for removal from the CPU.")
+		self.delButton.setToolTip(_("Remove the selected module from "
+			"the project\nand mark it for removal from the CPU."))
 		vbox.addWidget(self.delButton)
 		group.layout().addLayout(vbox, 0, 1, 3, 1)
 
-		label = QLabel("Loaded modules:", self)
+		label = QLabel(_("Loaded modules:"), self)
 		group.layout().addWidget(label, 0, 2)
 		self.loadedList = QListWidget(self)
 		self.loadedList.setMaximumWidth(180)
@@ -360,17 +362,17 @@ class HwmodConfigWidget(QWidget):
 		vbox = QVBoxLayout()
 		self.upButton = QPushButton(self)
 		self.upButton.setIcon(getIcon("up"))
-		self.upButton.setToolTip("Move the selected loaded module up.\n"
-			"Modules are executed in order from top to bottom.")
+		self.upButton.setToolTip(_("Move the selected loaded module up.\n"
+			"Modules are executed in order from top to bottom."))
 		vbox.addWidget(self.upButton)
 		self.downButton = QPushButton(self)
 		self.downButton.setIcon(getIcon("down"))
-		self.downButton.setToolTip("Move the selected loaded module down.\n"
-			"Modules are executed in order from top to bottom.")
+		self.downButton.setToolTip(_("Move the selected loaded module down.\n"
+			"Modules are executed in order from top to bottom."))
 		vbox.addWidget(self.downButton)
 		group.layout().addLayout(vbox, 0, 3, 3, 1)
 
-		self.paramViewLabel = QLabel("Module parameters:", self)
+		self.paramViewLabel = QLabel(_("Module parameters:"), self)
 		group.layout().addWidget(self.paramViewLabel, 0, 4)
 		vbox = QVBoxLayout()
 		self.paramView = HwmodParamView(None, self)
@@ -537,7 +539,7 @@ class HwmodConfigDialog(AbstractConfigDialog):
 		AbstractConfigDialog.__init__(self,
 			project = project,
 			iconName = "hwmod",
-			title = "Hardware module setup",
+			title = _("Hardware module setup"),
 			centralWidget = HwmodConfigWidget(),
 			parent = parent)
 

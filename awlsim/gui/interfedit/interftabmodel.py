@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.core.datatypes import *
@@ -565,27 +567,27 @@ class AwlInterfaceModel(AbstractTableModel):
 				return QBrush(QColor("black"))
 		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
 			if self.__isRow_newIN(row):
-				return "Create a new INPUT field here..."
+				return _("Create a new INPUT field here...")
 			elif self.__isRow_newOUT(row):
-				return "Create a new OUTPUT field here..."
+				return _("Create a new OUTPUT field here...")
 			elif self.__isRow_newINOUT(row):
-				return "Create a new IN_OUT field here..."
+				return _("Create a new IN_OUT field here...")
 			elif self.__isRow_newSTAT(row):
-				return "Create a new STAT field here..."
+				return _("Create a new STAT field here...")
 			elif self.__isRow_newTEMP(row):
-				return "Create a new TEMP field here..."
+				return _("Create a new TEMP field here...")
 			else:
 				if self.__isColumn_name(column):
 					if self.__isRow_RETVAL(row):
-						return "Function (FC) return value."
+						return _("Function (FC) return value.")
 					else:
-						return "The interface field name."
+						return _("The interface field name.")
 				elif self.__isColumn_type(column):
-					return "The interface field data type.\nFor example: BOOL  or  INT"
+					return _("The interface field data type.\nFor example: BOOL  or  INT")
 				elif self.__isColumn_initValue(column):
-					return "The initial value in the associated DB."
+					return _("The initial value in the associated DB.")
 				elif self.__isColumn_comment(column):
-					return "Comment"
+					return _("Comment")
 			assert(0)
 		return None
 
@@ -595,13 +597,13 @@ class AwlInterfaceModel(AbstractTableModel):
 		if orientation == Qt.Horizontal:
 			column = section
 			if self.__isColumn_name(column):
-				return "Interface field name"
+				return _("Interface field name")
 			elif self.__isColumn_type(column):
-				return "Data type"
+				return _("Data type")
 			elif self.__isColumn_initValue(column):
-				return "Init value"
+				return _("Init value")
 			elif self.__isColumn_comment(column):
-				return "Comment"
+				return _("Comment")
 			assert(0)
 		else:
 			row = section

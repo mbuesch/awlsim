@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.common.xmlfactory import *
 
 from awlsim.gui.geo2d import *
@@ -42,8 +44,8 @@ class FupWire_factory(XmlFactory):
 				idNum = tag.getAttrInt("id")
 				uuid = tag.getAttr("uuid", None)
 				if idNum in (w.idNum for w in self.grid.wires):
-					raise self.Error("<wire id=%d> does "
-						"already exist." % idNum)
+					raise self.Error(_("<wire id={}> does "
+						"already exist." , idNum))
 				# Create wire and add it to the grid.
 				FupWire(grid=self.grid, idNum=idNum, uuid=uuid)
 				return

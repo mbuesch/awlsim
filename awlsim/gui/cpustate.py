@@ -23,6 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
+from awlsim.common.locale import _
+
 from awlsim.gui.valuelineedit import *
 from awlsim.gui.blocktreewidget import *
 from awlsim.gui.icons import *
@@ -158,7 +160,7 @@ class StateWindow(QWidget):
 			self.__client.writeMemory(memAreas, sync = False)
 		except AwlSimError as e:
 			MessageBox.handleAwlSimError(self,
-				"Failed to write to memory", e)
+				_("Failed to write to memory"), e)
 		except MaintenanceRequest as e:
 			# writeMemory is asynchronous.
 			# So this should not happen.
@@ -169,7 +171,7 @@ class State_CPU(StateWindow):
 
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
-		self.setWindowTitle("CPU overview")
+		self.setWindowTitle(_("CPU overview"))
 		self.setWindowIcon(getIcon("cpu"))
 
 		self.label = QLabel(self)
@@ -178,8 +180,8 @@ class State_CPU(StateWindow):
 						   Qt.TextSelectableByKeyboard)
 		self.layout().addWidget(self.label, 0, 0)
 
-		self.label.setText("No CPU status available.\n"
-				   "Please put the CPU into RUN mode.")
+		self.label.setText(_("No CPU status available.\n"
+				   "Please put the CPU into RUN mode."))
 
 	def setDumpText(self, text):
 		self.label.setText(text)
@@ -206,10 +208,10 @@ class AbstractDisplayWidget(QWidget):
 	addrspace2id = pivotDict(id2addrspace)
 
 	addrspace2name = {
-		ADDRSPACE_E	: ("I", "Inputs"),
-		ADDRSPACE_A	: ("Q", "Outputs"),
-		ADDRSPACE_M	: ("M", "Flags"),
-		ADDRSPACE_DB	: ("DB", "Data block"),
+		ADDRSPACE_E	: ("I", _("Inputs")),
+		ADDRSPACE_A	: ("Q", _("Outputs")),
+		ADDRSPACE_M	: ("M", _("Flags")),
+		ADDRSPACE_DB	: ("DB", _("Data block")),
 	}
 
 	addrspace2memarea = {
@@ -463,7 +465,7 @@ class RealDisplayWidget(AbstractDisplayWidget):
 
 	def clear(self):
 		AbstractDisplayWidget.clear(self)
-		self.line.setText("invalid address")
+		self.line.setText(_("invalid address"))
 
 	def __convertValue(self, textValue):
 		try:
@@ -496,7 +498,7 @@ class RealDisplayWidget(AbstractDisplayWidget):
 		if self.width == 32:
 			string = str(dwordToPyFloat(value))
 		else:
-			string = "Not DWORD"
+			string = _("Not DWORD")
 		self.line.setText(string)
 
 class State_Mem(StateWindow):
@@ -532,18 +534,18 @@ class State_Mem(StateWindow):
 		x += 1
 
 		self.widthCombo = ComboBox_NoScroll(self)
-		self.widthCombo.addItem("Byte", 8)	# userData is XML ABI
-		self.widthCombo.addItem("Word", 16)	# userData is XML ABI
-		self.widthCombo.addItem("DWord", 32)	# userData is XML ABI
+		self.widthCombo.addItem(_("Byte"), 8)	# userData is XML ABI
+		self.widthCombo.addItem(_("Word"), 16)	# userData is XML ABI
+		self.widthCombo.addItem(_("DWord"), 32)	# userData is XML ABI
 		self.layout().addWidget(self.widthCombo, 0, x)
 		x += 1
 
 		self.fmtCombo = ComboBox_NoScroll(self)
-		self.fmtCombo.addItem("Checkboxes", "checkbox")	# userData is XML ABI
-		self.fmtCombo.addItem("Dual", "bin")		# userData is XML ABI
-		self.fmtCombo.addItem("Decimal", "dec")		# userData is XML ABI
-		self.fmtCombo.addItem("Hexadecimal", "hex")	# userData is XML ABI
-		self.fmtCombo.addItem("Real", "real")		# userData is XML ABI
+		self.fmtCombo.addItem(_("Checkboxes"), "checkbox")	# userData is XML ABI
+		self.fmtCombo.addItem(_("Dual"), "bin")		# userData is XML ABI
+		self.fmtCombo.addItem(_("Decimal"), "dec")		# userData is XML ABI
+		self.fmtCombo.addItem(_("Hexadecimal"), "hex")	# userData is XML ABI
+		self.fmtCombo.addItem(_("Real"), "real")		# userData is XML ABI
 		self.layout().addWidget(self.fmtCombo, 0, x)
 		x += 1
 
@@ -603,7 +605,7 @@ class State_Mem(StateWindow):
 			if idx >= 0:
 				win.widthCombo.setCurrentIndex(idx)
 		except (KeyError, IndexError, ValueError):
-			printWarning("Invalid State_Mem config string.")
+			printWarning(_("Invalid State_Mem config string."))
 			return None
 		return win
 
@@ -746,21 +748,21 @@ class State_LCD(StateWindow):
 		self.layout().addWidget(self.addrSpin, 0, 0)
 
 		self.widthCombo = ComboBox_NoScroll(self)
-		self.widthCombo.addItem("Byte", 8)	# userData is XML ABI
-		self.widthCombo.addItem("Word", 16)	# userData is XML ABI
-		self.widthCombo.addItem("DWord", 32)	# userData is XML ABI
+		self.widthCombo.addItem(_("Byte"), 8)	# userData is XML ABI
+		self.widthCombo.addItem(_("Word"), 16)	# userData is XML ABI
+		self.widthCombo.addItem(_("DWord"), 32)	# userData is XML ABI
 		self.layout().addWidget(self.widthCombo, 0, 1)
 
 		self.endianCombo = ComboBox_NoScroll(self)
-		self.endianCombo.addItem("Big-endian", "be")	# userData is XML ABI
-		self.endianCombo.addItem("Little-endian", "le")	# userData is XML ABI
+		self.endianCombo.addItem(_("Big-endian"), "be")	# userData is XML ABI
+		self.endianCombo.addItem(_("Little-endian"), "le")	# userData is XML ABI
 		self.layout().addWidget(self.endianCombo, 1, 0)
 
 		self.fmtCombo = ComboBox_NoScroll(self)
-		self.fmtCombo.addItem("BCD", "bcd")			# userData is XML ABI
-		self.fmtCombo.addItem("Signed BCD", "signed-bcd")	# userData is XML ABI
-		self.fmtCombo.addItem("Binary", "bin")			# userData is XML ABI
-		self.fmtCombo.addItem("Signed binary", "signed-bin")	# userData is XML ABI
+		self.fmtCombo.addItem(_("BCD"), "bcd")			# userData is XML ABI
+		self.fmtCombo.addItem(_("Signed BCD"), "signed-bcd")	# userData is XML ABI
+		self.fmtCombo.addItem(_("Binary"), "bin")			# userData is XML ABI
+		self.fmtCombo.addItem(_("Signed binary"), "signed-bin")	# userData is XML ABI
 		self.layout().addWidget(self.fmtCombo, 1, 1)
 
 		self.lcd = QLCDNumber(self)
@@ -798,7 +800,7 @@ class State_LCD(StateWindow):
 		"""
 		configDict = cls.parseConfigString(winConfig)
 		if configDict is None:
-			printWarning("Cannot parse State_LCD config string.")
+			printWarning(_("Cannot parse State_LCD config string."))
 			return None
 		try:
 			win = cls(client=client)
@@ -814,7 +816,7 @@ class State_LCD(StateWindow):
 			if idx >= 0:
 				win.endianCombo.setCurrentIndex(idx)
 		except (KeyError, IndexError, ValueError):
-			printWarning("Invalid State_LCD config string.")
+			printWarning(_("Invalid State_LCD config string."))
 			return None
 		return win
 
@@ -997,7 +999,7 @@ class _State_TimerCounter(StateWindow):
 			if idx >= 0:
 				win.formatCombo.setCurrentIndex(idx)
 		except (KeyError, IndexError, ValueError):
-			printWarning("Invalid State_TimerCounter config string.")
+			printWarning(_("Invalid State_TimerCounter config string."))
 			return None
 		return win
 
@@ -1099,14 +1101,14 @@ class State_Timer(_State_TimerCounter):
 		_State_TimerCounter.__init__(self, client,
 					     MemoryArea.TYPE_T,
 					     parent)
-		self.setWindowTitle("Timer")
+		self.setWindowTitle(_("Timer"))
 		self.setWindowIcon(getIcon("timer"))
 
 		self.indexSpin.setPrefix("T ")
 
-		self.formatCombo.addItem("Dual", "bin")		# userData is XML ABI
-		self.formatCombo.addItem("Hexadecimal", "hex")	# userData is XML ABI
-		self.formatCombo.addItem("S5Time", "s5t")	# userData is XML ABI
+		self.formatCombo.addItem(_("Dual"), "bin")		# userData is XML ABI
+		self.formatCombo.addItem(_("Hexadecimal"), "hex")	# userData is XML ABI
+		self.formatCombo.addItem(_("S5Time"), "s5t")	# userData is XML ABI
 
 		self._updateSize(forceMinimum = True)
 
@@ -1168,13 +1170,13 @@ class State_Counter(_State_TimerCounter):
 		_State_TimerCounter.__init__(self, client,
 					     MemoryArea.TYPE_Z,
 					     parent)
-		self.setWindowTitle("Counter")
+		self.setWindowTitle(_("Counter"))
 		self.setWindowIcon(getIcon("counter"))
 
 		self.indexSpin.setPrefix("C ")
 
-		self.formatCombo.addItem("BCD (counter)", "bcd")	# userData is XML ABI
-		self.formatCombo.addItem("Dual", "bin")			# userData is XML ABI
+		self.formatCombo.addItem(_("BCD (counter)"), "bcd")	# userData is XML ABI
+		self.formatCombo.addItem(_("Dual"), "bin")			# userData is XML ABI
 
 		self._updateSize(forceMinimum = True)
 
@@ -1224,7 +1226,7 @@ class State_Blocks(StateWindow):
 
 	def __init__(self, client, parent=None):
 		StateWindow.__init__(self, client, parent)
-		self.setWindowTitle("CPU online content (downloaded blocks)")
+		self.setWindowTitle(_("CPU online content (downloaded blocks)"))
 		self.setWindowIcon(getIcon("plugin"))
 
 		self.__modelRef = client.getBlockTreeModelRef()
@@ -1324,7 +1326,7 @@ class StateMdiArea(QMdiArea):
 				stateWin = State_Counter.fromWindowConfigString(client=self.client,
 										winConfig=winConfig)
 			else:
-				printWarning("Unknown CPU state window type %d." % winType)
+				printWarning(_("Unknown CPU state window type {}." , winType))
 				continue
 			if not stateWin:
 				continue
