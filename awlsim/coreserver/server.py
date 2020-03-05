@@ -1509,11 +1509,18 @@ class AwlSimServer(object): #+cdef
 #			timeout.tv_usec = 10000				#@cy-posix
 
 	def __handleCommunicationBlocking(self):
+		handleComm = False
 		try:
-			select_mod.select(self.__selectRlist, [], [], None)
+			# Use blocking select(), but with a timeout.
+			# This gives us the chance to exit the main loop,
+			# if we got shutdown due to a signal.
+			handleComm = any(select_mod.select(
+				self.__selectRlist, [], [], 0.2))
 		except Exception:
 			self.__selectException()
-		self.__handleCommunication()
+		if handleComm:
+			self.__handleCommunication()
+		return handleComm
 
 	def __updateMemReadReqFlag(self):
 		self.__haveAnyMemReadReq = bool(any(bool(c.memReadRequestMsg)
@@ -1710,11 +1717,13 @@ class AwlSimServer(object): #+cdef
 
 				if self.__state in {self.STATE_STOP,
 						    self.STATE_MAINTENANCE}:
+					handleComm = True
 					while self.__state in {self.STATE_STOP,
 							       self.STATE_MAINTENANCE}:
-						self.__sendCpuDump(constrained=False)
-						self.__handleMemReadReqs(constrained=False)
-						self.__handleCommunicationBlocking()
+						if handleComm:
+							self.__sendCpuDump(constrained=False)
+							self.__handleMemReadReqs(constrained=False)
+						handleComm = self.__handleCommunicationBlocking()
 					continue
 
 				if self.__state == self.STATE_RUN:
