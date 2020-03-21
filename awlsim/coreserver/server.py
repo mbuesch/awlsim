@@ -1025,7 +1025,7 @@ class AwlSimServer(object): #+cdef
 				if osIsLinux:
 					printInfo("Halting system due to shutdown command")
 					self.setRunState(self.STATE_EXIT)
-					process = PopenWrapper(["/sbin/shutdown"],
+					process = PopenWrapper(["/sbin/poweroff"],
 							       AwlSimEnv.getEnv())
 					process.wait()
 					status = AwlSimMessage_REPLY.STAT_OK
