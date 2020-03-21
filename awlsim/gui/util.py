@@ -34,6 +34,9 @@ import sys
 import traceback
 import xml.sax.saxutils as saxutils
 
+if isPy2Compat:
+	printWarning("WARNING: Python 2.x is not supported by awlsim-gui.")
+
 if isPyPy or isJython:
 	# PySide does not work on PyPy or Jython, yet.
 	printError("Running awlsim-gui on the PyPy or Jython interpreter is not supported.")
