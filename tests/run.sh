@@ -829,9 +829,8 @@ show_help()
 	infomsg " -i|--interpreter INTER        Use INTER as interpreter for the tests"
 	infomsg " -j|--jobs NR                  Set the number of jobs to run in parallel."
 	infomsg "                               0 means number-of-CPUs"
-	infomsg "                               Default: 1"
+	infomsg "                               Default: 0"
 	infomsg " -q|--quick                    Only run python2 and python3 tests"
-	infomsg " -qq                           Shortcut for: -q -j 0"
 	infomsg " -g|--no-gui                   Avoid tests that need GUI libraries"
 	infomsg " -x|--extended                 Run tests on additional interpreters"
 	infomsg " -n|--renice NICENESS          Renice by NICENESS. Defaults to 10."
@@ -861,7 +860,7 @@ opt_quick=0
 opt_nogui=0
 opt_extended=0
 opt_renice=
-opt_jobs=1
+opt_jobs=0
 opt_loglevel=2
 opt_loop=1
 opt_coverage=0
@@ -886,10 +885,6 @@ while [ $# -ge 1 ]; do
 		;;
 	-q|--quick)
 		opt_quick=1
-		;;
-	-qq)
-		opt_quick=1
-		opt_jobs=0
 		;;
 	-g|--no-gui)
 		opt_nogui=1
