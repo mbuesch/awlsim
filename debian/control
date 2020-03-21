@@ -6,8 +6,6 @@ Build-Depends: dh-python,
                cython3,
                python3-all-dev (>= 3.4.2-2),
                python3-setuptools,
-               pypy,
-               pypy-setuptools,
                debhelper (>= 9)
 Standards-Version: 3.9.8
 X-Python3-Version: >= 3.4
@@ -139,55 +137,6 @@ Depends: python3-awlsim,
          ${python3:Depends},
          ${shlibs:Depends}
 Description: S7 AWL/STL Soft-PLC PiXtend hardware module (Python 3)
- Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
-
-
-Package: pypy-awlsim
-Architecture: any
-Depends: ${misc:Depends},
-         ${pypy:Depends},
-         ${shlibs:Depends}
-Description: S7 AWL/STL Soft-PLC core libraries (PyPy 2)
- Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
-
-
-Package: pypy-awlsimhw-dummy
-Architecture: any
-Depends: pypy-awlsim,
-         ${misc:Depends},
-         ${pypy:Depends},
-         ${shlibs:Depends}
-Description: S7 AWL/STL Soft-PLC dummy hardware module (PyPy 2)
- Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
-
-
-Package: pypy-awlsimhw-profibus
-Architecture: any
-Depends: pypy-awlsim,
-         ${misc:Depends},
-         ${pypy:Depends},
-         ${shlibs:Depends}
-Description: S7 AWL/STL Soft-PLC PROFIBUS-DP hardware module (PyPy 2)
- Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
-
-
-Package: pypy-awlsimhw-rpigpio
-Architecture: any
-Depends: pypy-awlsim,
-         ${misc:Depends},
-         ${pypy:Depends},
-         ${shlibs:Depends}
-Description: S7 AWL/STL Soft-PLC Raspberry Pi hardware module (PyPy 2)
- Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
-
-
-Package: pypy-awlsimhw-pixtend
-Architecture: any
-Depends: pypy-awlsim,
-         ${misc:Depends},
-         ${pypy:Depends},
-         ${shlibs:Depends}
-Description: S7 AWL/STL Soft-PLC PiXtend hardware module (PyPy 2)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.
 
 

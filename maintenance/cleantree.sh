@@ -62,11 +62,6 @@ rm -rf debian/destdir-* \
        debian/cython3-awlsimhw-profibus \
        debian/cython3-awlsimhw-rpigpio \
        debian/cython3-awlsimhw-pixtend \
-       debian/pypy-awlsim \
-       debian/pypy-awlsimhw-dummy \
-       debian/pypy-awlsimhw-profibus \
-       debian/pypy-awlsimhw-rpigpio \
-       debian/pypy-awlsimhw-pixtend \
        debian/awlsim-client \
        debian/awlsim-server \
        debian/awlsim-symtab \

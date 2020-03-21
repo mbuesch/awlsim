@@ -636,13 +636,6 @@ EOF
 				debian/rules ||\
 				die "Failed to patch rules file (cython)"
 		fi
-		# Disable pypy
-		sed -i -e '/Package: pypy/,/^$/ d' -e '/^\s*pypy.*$/ d'\
-			debian/control ||\
-			die "Failed to patch control file (pypy)"
-		sed -i -e 's/,pypy//' \
-			debian/rules ||\
-			die "Failed to patch rules file (pypy)"
 
 		# Update the systemd service file.
 		sed -i -e 's|AWLSIM_SCHED=|AWLSIM_SCHED=realtime-if-multicore|g' \
