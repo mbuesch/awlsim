@@ -812,7 +812,7 @@ class GuiSettings(object):
 class CoreLinkSettings(object):
 	factory			= CoreLinkSettingsFactory
 
-	DEFAULT_INTERPRETERS	= "pypy3; pypy; $CURRENT; python3; python2; python; py"
+	DEFAULT_INTERPRETERS	= "pypy3; $CURRENT; python3; py"
 	DEFAULT_INTERP		= "$DEFAULT"
 
 	SPAWN_PORT_BASE		= 4151 + 32
