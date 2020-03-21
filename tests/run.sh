@@ -185,9 +185,7 @@ interpreter_is_gui_compat()
 	local interpreter="$1"
 
 	[ $opt_nogui -eq 0 ] &&\
-	[ "$interpreter" = "python" -o \
-	  "$interpreter" = "python2" -o \
-	  "$interpreter" = "python3" -o \
+	[ "$interpreter" = "python3" -o \
 	  "$interpreter" = "cython3" ]
 }
 
