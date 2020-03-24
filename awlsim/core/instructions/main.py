@@ -399,7 +399,7 @@ class AwlInsn(object): #+cdef
 			if self.commentStr:
 				text += self.commentStr
 				if self.parentInfo:
-					text += "    "
+					text += " "
 			if self.parentInfo:
 				text += str(self.parentInfo)
 		return text
