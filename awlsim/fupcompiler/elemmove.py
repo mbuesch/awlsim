@@ -38,7 +38,7 @@ class FupCompiler_ElemMove(FupCompiler_Elem):
 	"""FUP compiler - Move box.
 	"""
 
-	ELEM_NAME = "MOVEBOX"
+	ELEM_NAME = "MOVE"
 
 	@classmethod
 	def parse(cls, grid, x, y, subType, content):
