@@ -193,17 +193,16 @@ class FupCompiler_ElemOper(FupCompiler_Elem):
 		return insns
 
 	def __str__(self):
-		extra = []
+		pre = ""
 		if len(self.connections) == 1:
 			conn = getany(self.connections)
-			elems = list(conn.getConnectedElems(viaOut=conn.dirIn,
-							    viaIn=conn.dirOut))
-			if elems:
-				text = []
-				for elem in elems:
-					text.append(elem.toStr())
-				extra.append("for " + " and ".join(text))
-		return self.toStr(extra=extra)
+			texts = ( elem.toStr()
+				  for elem in conn.getConnectedElems(viaOut=conn.dirIn,
+								     viaIn=conn.dirOut) )
+			pre = " and ".join(texts)
+			if pre:
+				pre = pre + " "
+		return self.toStr(pre=pre)
 
 class FupCompiler_ElemOperLoad(FupCompiler_ElemOper):
 	"""FUP compiler - Operand LOAD element.
