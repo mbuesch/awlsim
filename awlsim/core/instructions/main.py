@@ -344,6 +344,9 @@ class AwlInsn(object): #+cdef
 			return -1
 		return self.parentInfo.rawInsn.getLineNr()
 
+	def getParentInfo(self):
+		return self.parentInfo
+
 	def run(self): #+cdef
 		"""Run the instruction.
 		The default implementation does nothing.

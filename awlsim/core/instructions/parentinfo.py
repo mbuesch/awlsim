@@ -98,4 +98,4 @@ class AwlInsnParentInfo(object):
 							 self.connIndex))
 			else:
 				fields.append(connTypeStr)
-		return "parent=(%s)" % ", ".join(fields)
+		return "p=(%s)" % ", ".join(fields)
