@@ -531,7 +531,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 			str(self.subType), self.content,
 			str(self.virtual))
 
-	def toStr(self, extra=()): #@nocov
+	def toStr(self, pre="", extra=(), post=""): #@nocov
 		values = []
 		if self.x >= 0 and self.y >= 0:
 			values.append("x%d/y%d" % (
@@ -546,7 +546,7 @@ class FupCompiler_Elem(FupCompiler_BaseObj):
 		if not self.enabled:
 			values.append("disabled")
 		values.extend(extra)
-		return "%s(%s)" % (self.ELEM_NAME, ", ".join(values))
+		return "%s%s(%s)%s" % (pre, self.ELEM_NAME, ", ".join(values), post)
 
 	def __str__(self):
 		return self.toStr()
