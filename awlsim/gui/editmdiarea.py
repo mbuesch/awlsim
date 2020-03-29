@@ -117,7 +117,7 @@ class EditMdiArea(QMdiArea):
 		"""Close all MDI sub windows and clear all state.
 		"""
 		self.__onlineDiagEnabled = False
-		self.__cpuRunState = None
+		self.__guiRunState = None
 		for mdiSubWin in list(self.subWindowList()):
 			mdiSubWin.forceClose()
 			del mdiSubWin
@@ -203,7 +203,7 @@ class EditMdiArea(QMdiArea):
 		self.__handleSubWinFocusChanged(mdiSubWin, True)
 		GuiValidatorSched.get().startAsyncValidation(project=self.getProject,
 							     delaySec=0.5)
-		mdiSubWin.setCpuRunState(self.__cpuRunState)
+		mdiSubWin.setGuiRunState(self.__guiRunState)
 
 		return mdiSubWin
 
@@ -293,15 +293,15 @@ class EditMdiArea(QMdiArea):
 		for mdiSubWin in self.subWindowList():
 			mdiSubWin.handleIdentsMsg(identsMsg)
 
-	def setCpuRunState(self, runState):
+	def setGuiRunState(self, runState):
 		"""Update the CPU run state.
-		runState is a RunState instance.
+		runState is a GuiRunState instance.
 		"""
-		self.__cpuRunState = runState
+		self.__guiRunState = runState
 		for mdiSubWin in self.subWindowList():
-			mdiSubWin.setCpuRunState(runState)
-			if runState in (RunState.STATE_LOAD,
-					RunState.STATE_RUN):
+			mdiSubWin.setGuiRunState(runState)
+			if runState in (GuiRunState.STATE_LOAD,
+					GuiRunState.STATE_RUN):
 				# Clear all errors.
 				mdiSubWin.handleAwlSimError(None)
 
@@ -557,7 +557,7 @@ class EditMdiSubWindow(QMdiSubWindow):
 	def handleDocumentValidationResult(self, exception):
 		self.handleAwlSimError(exception)
 
-	def setCpuRunState(self, runState):
+	def setGuiRunState(self, runState):
 		pass
 
 class AwlEditMdiSubWindow(EditMdiSubWindow):
@@ -723,7 +723,7 @@ class AwlEditMdiSubWindow(EditMdiSubWindow):
 	def handleIdentsMsg(self, identsMsg):
 		self.editWidget.handleIdentsMsg(identsMsg)
 
-	def setCpuRunState(self, runState):
+	def setGuiRunState(self, runState):
 		if runState is not None:
 			self.editWidget.runStateChanged(runState)
 

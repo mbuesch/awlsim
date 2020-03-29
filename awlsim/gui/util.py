@@ -73,6 +73,18 @@ def getDefaultFixedFont(pointSize=11, bold=False):
 	font.setBold(bold)
 	return font
 
+def sleepWithEventLoop(seconds, excludeInput=True):
+	"""Sleep for 'seconds', but run the Qt event loop to refresh the GUI.
+	excludeInput: Do not process user input events.
+	"""
+	end = monotonic_time() + seconds
+	eventFlags = QEventLoop.AllEvents
+	if excludeInput:
+		eventFlags |= QEventLoop.ExcludeUserInputEvents
+	while monotonic_time() < end:
+		QApplication.processEvents(eventFlags, 10)
+		QThread.msleep(10)
+
 # Color used for errors
 def getErrorColor():
 	return QColor("#FFC0C0")

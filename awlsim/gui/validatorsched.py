@@ -26,7 +26,6 @@ from awlsim.common.compat import *
 from awlsim.common.codevalidator import *
 
 from awlsim.gui.util import *
-from awlsim.gui.awlsimclient import *
 
 
 __all__ = [

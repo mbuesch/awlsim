@@ -27,11 +27,11 @@ from awlsim.gui.util import *
 
 
 __all__ = [
-	"RunState",
+	"GuiRunState",
 ]
 
 
-class RunState(QObject):
+class GuiRunState(QObject):
 	# Signal: Emitted, if the state changed.
 	# The parameter is 'self'.
 	stateChanged = Signal(QObject)
@@ -69,13 +69,34 @@ class RunState(QObject):
 		self.__emitStateChanged()
 
 	def __eq__(self, other):
-		if isinstance(self, RunState) and\
-		   isinstance(other, RunState):
-			return self.state == other.state
-		if isinstance(self, RunState) and\
-		   isInteger(other):
-			return self.state == other
+		if isinstance(self, self.__class__):
+			if isinstance(other, self.__class__):
+				return self.state == other.state
+			if isInteger(other):
+				return self.state == other
 		raise RuntimeError
 
 	def __ne__(self, other):
 		return not self.__eq__(other)
+
+	def __ge__(self, other):
+		if isinstance(self, self.__class__):
+			if isinstance(other, self.__class__):
+				return self.state >= other.state
+			if isInteger(other):
+				return self.state >= other
+		raise RuntimeError
+
+	def __lt__(self, other):
+		return not self.__ge__(other)
+
+	def __le__(self, other):
+		if isinstance(self, self.__class__):
+			if isinstance(other, self.__class__):
+				return self.state <= other.state
+			if isInteger(other):
+				return self.state <= other
+		raise RuntimeError
+
+	def __gt__(self, other):
+		return not self.__le__(other)
