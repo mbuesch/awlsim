@@ -308,6 +308,11 @@ if not hasattr(functools, "lru_cache"): #@nocov
 if not hasattr(socket, "AF_UNSPEC"): #@nocov
 	socket.AF_UNSPEC = 0
 
+# socket.timeout substitute
+# Micropython doesn't have socket.timeout.
+if not hasattr(socket, "timeout"): #@nocov
+	socket.timeout = OSError
+
 # OSError.errno substitute
 # Micropython doesn't have OSError.errno.
 def excErrno(exc):
