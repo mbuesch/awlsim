@@ -1,8 +1,8 @@
 #
 #   Cython patcher
-#   v1.20
+#   v1.21
 #
-#   Copyright (C) 2012-2019 Michael Buesch <m@bues.ch>
+#   Copyright (C) 2012-2020 Michael Buesch <m@bues.ch>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -77,14 +77,10 @@ def makedirs(path, mode=0o755):
 		raise e
 
 def hashFile(path):
-	if sys.version_info[0] < 3:
-		ExpectedException = IOError
-	else:
-		ExpectedException = FileNotFoundError
 	try:
 		with open(path, "rb") as fd:
 			return hashlib.sha1(fd.read()).hexdigest()
-	except ExpectedException as e:
+	except FileNotFoundError as e:
 		return None
 
 def __fileopIfChanged(fromFile, toFile, fileops):
@@ -167,12 +163,6 @@ def pyCythonPatch(fromFile, toFile):
 			elif "#@cy-win" in stripLine:
 				if _isWindows:
 					line = uncomment(line, "#@cy-win")
-			elif "#@cy2" in stripLine:
-				if sys.version_info[0] < 3:
-					line = uncomment(line, "#@cy2")
-			elif "#@cy3" in stripLine:
-				if sys.version_info[0] >= 3:
-					line = uncomment(line, "#@cy3")
 			elif "#@cy" in stripLine:
 				line = uncomment(line, "#@cy")
 
@@ -228,15 +218,6 @@ def pyCythonPatch(fromFile, toFile):
 			# Comment all lines containing #@nocy
 			if "#@nocy" in stripLine:
 				line = "#" + line
-
-			# Comment all lines containing #@cyX
-			# for the not matching version.
-			if sys.version_info[0] < 3:
-				if "#@cy3" in stripLine:
-					line = "#" + line
-			else:
-				if "#@cy2" in stripLine:
-					line = "#" + line
 
 			# Comment all lines containing #@cy-posix/win
 			# for the not matching platform.
@@ -377,7 +358,7 @@ def registerCythonModule(baseDir, sourceModName):
 							# Warn about unused variables?
 							"warn.unused"	: False,
 							# Set language version
-							"language_level" : 2 if sys.version_info[0] < 3 else 3,
+							"language_level" : 3,
 						},
 						define_macros=[
 							("CYTHON_TRACE",	str(int(profileEnabled))),
@@ -408,6 +389,11 @@ def cythonBuildPossible():
 
 	_cythonPossible = False
 
+	if sys.version_info[0] < 3:
+		print("WARNING: Could not build the CYTHON modules: "
+		      "Cython 2 not supported. Please use Cython 3.")
+		return False
+
 	try:
 		import Cython.Compiler.Options
 		# Omit docstrings in cythoned modules.
@@ -430,19 +416,6 @@ def cythonBuildPossible():
 
 	_cythonPossible = True
 	return True
-
-if sys.version_info[0] < 3:
-	# Cython2 build libraries need method pickling
-	# for parallel build.
-	def unpickle_method(fname, obj, cls):
-		# Ignore MRO. We don't seem to inherit methods.
-		return cls.__dict__[fname].__get__(obj, cls)
-	def pickle_method(m):
-		return unpickle_method, (m.im_func.__name__,
-					 m.im_self,
-					 m.im_class)
-	import copy_reg, types
-	copy_reg.pickle(types.MethodType, pickle_method, unpickle_method)
 
 def cyBuildWrapper(arg):
 	# This function does the same thing as the for-loop-body

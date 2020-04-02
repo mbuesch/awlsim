@@ -17,8 +17,6 @@ To run a code statement coverage trace during unit testing the option `./tests/r
 In order to support both compiling the Awlsim core with Cython and running the same code in a plain Python interpreter without compilation, a method to patch the files is required. The setup.py scrips patch each .py source file and create a .pyx file before starting Cython compilation. The Cython patching mechanism rewrites all `import`s to import the compiled Cython modules instead of the plain Python modules. In addition to that some special comments are provided as hint to the Cython patcher:
 
 * `#@cy` : Enable (un-comment) this line during Cython patching.
-* `#@cy2` : Enable (un-comment) this line during Cython patching, if compiling for Python 2.
-* `#@cy3` : Enable (un-comment) this line during Cython patching, if compiling for Python 3.
 * `#@cy-posix` : Enable (un-comment) this line during Cython patching, if compiling for a Posix platform.
 * `#@cy-win` : Enable (un-comment) this line during Cython patching, if compiling for a Windows platform.
 * `#@nocy` : Disable (comment) this line during Cython patching.

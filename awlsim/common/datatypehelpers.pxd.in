@@ -136,12 +136,10 @@ cdef uint32_t getMSB(uint32_t value)
 
 
 cdef inline _Bool isInteger(object value):
-#@cy3	return isinstance(value, int)
-#@cy2	return isinstance(value, (int, long))
+	return isinstance(value, int)
 
 cdef inline _Bool isString(object value):
-#@cy3	return isinstance(value, str)
-#@cy2	return isinstance(value, (unicode, str))
+	return isinstance(value, str)
 
 cdef inline uint32_t len_u32(object obj):
 	return <uint32_t>(min(len(obj), <object>0xFFFFFFFFu))

@@ -10,15 +10,11 @@
 #
 #  AWLSIM_CYTHON_BUILD:
 #	0 (default on non-Posix): Do not build any Cython modules.
-#	1:                        Build Cython modules.
-#	2:                        Build Cython modules only, if setup.py is being executed by Python 2.
-#	3 (default on Posix):     Build Cython modules only, if setup.py is being executed by Python 3.
+#	1 (default on Posix):     Build Cython modules.
 #
 #  AWLSIM_CYTHON_PARALLEL:
 #	0:           Do not use parallel compilation for Cython modules.
 #	1 (default): Invoke multiple compilers in parallel (faster on multicore).
-#	2:           Invoke multiple compilers only, if setup.py is being executed by Python 2.
-#	3:           Invoke multiple compilers only, if setup.py is being executed by Python 3.
 #
 #  AWLSIM_PROFILE:
 #	0 (default): Do not enable profiling support in compiled Cython modules.
@@ -65,16 +61,14 @@ def getEnvInt(name, default = 0):
 		return default
 
 def getEnvBool(name, default = False):
-	return bool(getEnvInt(name, 1 if default else 0))
+	return getEnvInt(name, 1 if default else 0) > 0
 
 
 fullBuild = getEnvBool("AWLSIM_FULL_BUILD")
-buildCython = getEnvInt("AWLSIM_CYTHON_BUILD", 3 if isPosix else 0)
-buildCython = ((buildCython == 1) or (buildCython == sys.version_info[0]))
-setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
-				  getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])
-setup_cython.profileEnabled = bool(getEnvInt("AWLSIM_PROFILE") > 0)
-setup_cython.debugEnabled = bool(getEnvInt("AWLSIM_DEBUG_BUILD") > 0)
+buildCython = getEnvBool("AWLSIM_CYTHON_BUILD", True if isPosix else False)
+setup_cython.parallelBuild = getEnvBool("AWLSIM_CYTHON_PARALLEL", True)
+setup_cython.profileEnabled = getEnvBool("AWLSIM_PROFILE")
+setup_cython.debugEnabled = getEnvBool("AWLSIM_DEBUG_BUILD")
 
 
 def pyCythonPatchLine(line):
