@@ -61,17 +61,17 @@ class TransferError(Exception):
 				# Try to find out whether this was an exception due
 				# to blocking IO (on a nonblocking socket).
 				# This varies between Python versions, argh.
-				if isinstance(parentException, socket.timeout) or\
-				   isinstance(parentException, BlockingIOError) or\
-				   _errno == errno.EAGAIN or\
-				   _errno == errno.EWOULDBLOCK or\
-				   _errno == errno.EINTR:
+				if (isinstance(parentException, socket.timeout) or
+				    isinstance(parentException, BlockingIOError) or
+				    _errno == errno.EAGAIN or
+				    _errno == errno.EWOULDBLOCK or
+				    _errno == errno.EINTR):
 					reason = self.REASON_BLOCKING
 				else:
 					reason = self.REASON_UNKNOWN
 			else:
 				reason = self.REASON_UNKNOWN
-		Exception.__init__(self, text)
+		super(TransferError, self).__init__(text)
 		self.parent = parentException
 		self.reason = reason
 		self.errno = _errno
@@ -1950,7 +1950,7 @@ class AwlSimMessageTransceiver(object):
 			try:
 				offset += sock.send(data[offset : ])
 			except _SocketErrors as e:
-				transferError = TransferError(None, parentException=e)
+				transferError = TransferError(None, e)
 				if transferError.reason != TransferError.REASON_BLOCKING:
 					raise transferError
 		if self.__debugEnabled:
@@ -1967,7 +1967,7 @@ class AwlSimMessageTransceiver(object):
 			try:
 				data = self.sock.recv(hdrLen - rxByteCnt)
 			except _SocketErrors as e:
-				transferError = TransferError(None, parentException=e)
+				transferError = TransferError(None, e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None
 				self.__resetRxBuf()
@@ -1975,8 +1975,8 @@ class AwlSimMessageTransceiver(object):
 			if not data:
 				# The remote end closed the connection
 				self.__resetRxBuf()
-				raise TransferError(None,
-					reason=TransferError.REASON_REMOTEDIED)
+				raise TransferError(None, None,
+						    TransferError.REASON_REMOTEDIED)
 			self.rxBuffers.append(data)
 			self.rxByteCnt = rxByteCnt = rxByteCnt + len(data)
 			if rxByteCnt < hdrLen:
@@ -2002,7 +2002,7 @@ class AwlSimMessageTransceiver(object):
 			try:
 				data = self.sock.recv(msgLen - rxByteCnt)
 			except _SocketErrors as e:
-				transferError = TransferError(None, parentException=e)
+				transferError = TransferError(None, e)
 				if transferError.reason == TransferError.REASON_BLOCKING:
 					return None
 				self.__resetRxBuf()
@@ -2010,8 +2010,8 @@ class AwlSimMessageTransceiver(object):
 			if not data:
 				# The remote end closed the connection
 				self.__resetRxBuf()
-				raise TransferError(None,
-					reason=TransferError.REASON_REMOTEDIED)
+				raise TransferError(None, None,
+						    TransferError.REASON_REMOTEDIED)
 			self.rxBuffers.append(data)
 			self.rxByteCnt = rxByteCnt = rxByteCnt + len(data)
 			if rxByteCnt < msgLen:
