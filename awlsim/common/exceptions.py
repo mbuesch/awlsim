@@ -51,7 +51,7 @@ class AwlSimError(Exception):
 		     sourceId=None, sourceName=None,
 		     coordinates=(-1, -1),
 		     elemUUID=None):
-		super(AwlSimError, self).__init__(self, message)
+		super(AwlSimError, self).__init__(message)
 		self.message = message
 		self.cpu = cpu
 		self.rawInsn = rawInsn
@@ -329,7 +329,7 @@ class MaintenanceRequest(Exception):
 	EnumGen.end
 
 	def __init__(self, requestType, message=""):
-		super(MaintenanceRequest, self).__init__(self, message)
+		super(MaintenanceRequest, self).__init__(message)
 		self.requestType = requestType
 		self.message = message
 
