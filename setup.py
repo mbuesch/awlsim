@@ -10,15 +10,11 @@
 #
 #  AWLSIM_CYTHON_BUILD:
 #	0 (default on non-Posix): Do not build any Cython modules.
-#	1:                        Build Cython modules.
-#	2:                        Build Cython modules only, if setup.py is being executed by Python 2.
-#	3 (default on Posix):     Build Cython modules only, if setup.py is being executed by Python 3.
+#	1 (default on Posix):     Build Cython modules.
 #
 #  AWLSIM_CYTHON_PARALLEL:
 #	0:           Do not use parallel compilation for Cython modules.
 #	1 (default): Invoke multiple compilers in parallel (faster on multicore).
-#	2:           Invoke multiple compilers only, if setup.py is being executed by Python 2.
-#	3:           Invoke multiple compilers only, if setup.py is being executed by Python 3.
 #
 #  AWLSIM_PROFILE:
 #	0 (default): Do not enable profiling support in compiled Cython modules.
@@ -66,16 +62,14 @@ def getEnvInt(name, default = 0):
 		return default
 
 def getEnvBool(name, default = False):
-	return bool(getEnvInt(name, 1 if default else 0))
+	return getEnvInt(name, 1 if default else 0) > 0
 
 
 fullBuild = getEnvBool("AWLSIM_FULL_BUILD")
-buildCython = getEnvInt("AWLSIM_CYTHON_BUILD", 3 if isPosix else 0)
-buildCython = ((buildCython == 1) or (buildCython == sys.version_info[0]))
-setup_cython.parallelBuild = bool(getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == 1 or\
-				  getEnvInt("AWLSIM_CYTHON_PARALLEL", 1) == sys.version_info[0])
-setup_cython.profileEnabled = bool(getEnvInt("AWLSIM_PROFILE") > 0)
-setup_cython.debugEnabled = bool(getEnvInt("AWLSIM_DEBUG_BUILD") > 0)
+buildCython = getEnvBool("AWLSIM_CYTHON_BUILD", True if isPosix else False)
+setup_cython.parallelBuild = getEnvBool("AWLSIM_CYTHON_PARALLEL", True)
+setup_cython.profileEnabled = getEnvBool("AWLSIM_PROFILE")
+setup_cython.debugEnabled = getEnvBool("AWLSIM_DEBUG_BUILD")
 
 
 def pyCythonPatchLine(line):
@@ -170,24 +164,20 @@ with open(os.path.join(basedir, "README.md"), "rb") as fd:
 	readmeText = fd.read().decode("UTF-8")
 
 def create_mo_files():
-    data_files = []
-    localedir = 'awlsim/locales'
-    po_dirs = [localedir + '/' + l + '/LC_MESSAGES/'
-               for l in next(os.walk(localedir))[1]]
+    package_files = []
+    po_dirs = [os.path.join('locales',l,'LC_MESSAGES')
+               for l in next(os.walk(os.path.join("awlsim","locales")))[1]]
     for d in po_dirs:
-        mo_files = []
         po_files = [f
-                    for f in next(os.walk(d))[2]
-                    if os.path.splitext(f)[1] == '.po']
+                    for f in next(os.walk(os.path.join("awlsim",d)))[2]
+                    if os.path.splitext(f)[1] == '.po']  
         for po_file in po_files:
             filename, extension = os.path.splitext(po_file)
             mo_file = filename + '.mo'
-            pf = polib.pofile(os.path.join(d, po_file))
-            pf.save_as_mofile(os.path.join(d, mo_file))
-
-            mo_files.append(d + mo_file)
-        data_files.append((d, mo_files))
-    return data_files
+            pf = polib.pofile(os.path.join("awlsim",d, po_file))
+            pf.save_as_mofile(os.path.join("awlsim",d, mo_file))
+            package_files.append(os.path.join(d, mo_file))
+    return package_files
 
 setup(	name		= "awlsim",
 	version		= VERSION_STRING,
@@ -215,6 +205,9 @@ setup(	name		= "awlsim",
 			    "awlsim/library",
 			    "awlsim/library/iec",
 			  ] + hwmodules,
+    package_dir = {'awlsim': 'awlsim'},
+    package_data = {
+        'awlsim': [] + create_mo_files(),},
 	scripts		= scripts,
 	cmdclass	= cmdclass,
 	ext_modules	= ext_modules,
@@ -252,6 +245,6 @@ setup(	name		= "awlsim",
 	],
 	long_description=readmeText,
 	long_description_content_type="text/markdown",
-	data_files=create_mo_files(),
+#	data_files=create_mo_files(),
 	**extraKeywords
 )

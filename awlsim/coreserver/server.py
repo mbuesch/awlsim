@@ -84,7 +84,7 @@ class AwlSimClientInfo(object):
 	def __init__(self, sock, peerInfoString):
 		# Socket
 		self.socket = sock
-#		self.fileno = self.socket.fileno() #@cy-posix
+		self.fileno = sock.fileno()
 		self.transceiver = AwlSimMessageTransceiver(sock, peerInfoString)
 
 		# Broken-flag. Set, if connection breaks.
@@ -1446,7 +1446,7 @@ class AwlSimServer(object): #+cdef
 			sockList.remove(self.__socket)
 			self.__accept()
 		for sock in sockList:
-			self.__handleClientComm(self.__sock2client[sock])
+			self.__handleClientComm(self.__sock2client[sock.fileno()])
 
 	def __selectException(self):
 		raise AwlSimError("AwlSimServer: Communication error. "
@@ -1856,7 +1856,7 @@ class AwlSimServer(object): #+cdef
 			else:
 				peerInfoString = "[%s]:%d" % addrInfo[:2]
 		except _SocketErrors as e:
-			transferError = TransferError(None, parentException = e)
+			transferError = TransferError(None, e)
 			if transferError.reason == transferError.REASON_BLOCKING:
 				return None
 			raise AwlSimError("AwlSimServer: accept() failed: %s" % str(e))
@@ -1869,12 +1869,12 @@ class AwlSimServer(object): #+cdef
 
 	def __clientAdd(self, client):
 		self.__clients.append(client)
-		self.__sock2client[client.socket] = client
+		self.__sock2client[client.fileno] = client
 		self.__rebuildSelectReadList()
 
 	def __clientRemove(self, client):
 		self.__clients.remove(client)
-		self.__sock2client.pop(client.socket)
+		self.__sock2client.pop(client.fileno)
 		self.__rebuildSelectReadList()
 		self.__updateCpuCallbacks()
 		self.__updateMemReadReqFlag()

@@ -399,7 +399,7 @@ class EditWidget(SourceCodeEdit):
 		self.__needSourceUpdate = True
 		self.__sourceMatchesCpuSource = False
 
-		self.__runState = RunState()
+		self.__runState = GuiRunState()
 		self.__nextHdrUpdate = 0
 		self.__hdrAniStat = 0
 
@@ -497,10 +497,10 @@ class EditWidget(SourceCodeEdit):
 
 	def runStateChanged(self, newState):
 		self.__runState = newState
-		if newState == RunState.STATE_LOAD:
+		if newState == GuiRunState.STATE_LOAD:
 			self.resetCpuStats()
 			self.__setSourceMatchesCpuSource(True)
-		if newState == RunState.STATE_RUN:
+		if newState == GuiRunState.STATE_RUN:
 			self.__setSourceMatchesCpuSource(
 				self.__sourceMatchesCpuSource, force = True)
 			self.__runAniTimer.start(200)
@@ -625,7 +625,7 @@ class EditWidget(SourceCodeEdit):
 			self.__cpuStatsStamp += 1
 
 	def __pruneInvisibleCpuStats(self):
-		if self.__runState == RunState.STATE_OFFLINE:
+		if self.__runState == GuiRunState.STATE_OFFLINE:
 			return
 		firstLine, lastLine = self.getVisibleLineRange()
 		for line, stats in dictItems(self.__lineCpuStats):
@@ -646,7 +646,7 @@ class EditWidget(SourceCodeEdit):
 				self.headerWidget.update()
 
 	def handleIdentsMsg(self, identsMsg):
-		if self.__runState == RunState.STATE_RUN:
+		if self.__runState == GuiRunState.STATE_RUN:
 			cpuHashes = [ s.identHash for s in identsMsg.awlSources ]
 			self.__setSourceMatchesCpuSource(
 				self.getSourceId() in cpuHashes)
@@ -762,10 +762,10 @@ class EditWidget(SourceCodeEdit):
 		self.focusChanged.emit(False)
 
 	__runStateToText = {
-		RunState.STATE_OFFLINE		: _("OFFLINE"),
-		RunState.STATE_ONLINE		: _("Online (CPU stopped)"),
-		RunState.STATE_LOAD		: _("DOWNLOADING program. Please wait."),
-		RunState.STATE_EXCEPTION	: _("ERROR. CPU halted."),
+		GuiRunState.STATE_OFFLINE		: "OFFLINE",
+		GuiRunState.STATE_ONLINE		: "Online (CPU stopped)",
+		GuiRunState.STATE_LOAD		: "DOWNLOADING program. Please wait.",
+		GuiRunState.STATE_EXCEPTION	: "ERROR. CPU halted.",
 	}
 
 	def __repaintHeaderWidget(self, ev):
@@ -773,7 +773,7 @@ class EditWidget(SourceCodeEdit):
 			return
 		p = self.headerWidget.getPainter()
 		if not self.__sourceMatchesCpuSource and\
-		   self.__runState == RunState.STATE_RUN:
+		   self.__runState == GuiRunState.STATE_RUN:
 			p.fillRect(ev.rect(), getErrorColor())
 		else:
 			p.fillRect(ev.rect(), Qt.lightGray)
@@ -796,7 +796,7 @@ class EditWidget(SourceCodeEdit):
 				self.__runState.port,
 				" via SSH" if\
 				self.__runState.haveTunnel else ""), ]
-		if self.__runState == RunState.STATE_RUN:
+		if self.__runState == GuiRunState.STATE_RUN:
 			if self.__sourceMatchesCpuSource:
 				runText.append(self.__runAni[self.__hdrAniStat])
 			else:
@@ -872,7 +872,7 @@ class EditWidget(SourceCodeEdit):
 		self.__needSourceUpdate = True
 		self.codeChanged.emit()
 		self.resetCpuStats()
-		if self.__runState != RunState.STATE_RUN:
+		if self.__runState != GuiRunState.STATE_RUN:
 			# The CPU is not in RUN state.
 			# We don't make a big deal out of code mismatch, even
 			# if the code most likely _does_ mismatch after this edit.

@@ -21,7 +21,19 @@
 
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import sys
 from awlsim_loader.common import *
+
+if isPy2Compat:
+	printError("ERROR: Python 2.x is not supported by awlsim-gui. "
+		   "Please use Python 3.")
+	sys.exit(1)
+
+if isPyPy or isJython:
+	printError("ERROR: Running awlsim-gui on the PyPy or Jython interpreter is not supported. "
+		   "Please use Python 3.")
+	sys.exit(1)
+
 from awlsim_loader.coreclient import *
 import awlsim_loader.cython_helper as cython_helper
 from awlsim.common.monotonic import monotonic_time #+cimport
@@ -32,18 +44,8 @@ from awlsim.core.symbolparser import SymbolTable, Symbol, SymTabParser
 
 from awlsim.common.locale import _
 
-import sys
 import traceback
 import xml.sax.saxutils as saxutils
-
-if isPy2Compat:
-	printWarning("WARNING: Python 2.x is not supported by awlsim-gui.")
-
-if isPyPy or isJython:
-	# PySide does not work on PyPy or Jython, yet.
-	printError(_("Running awlsim-gui on the PyPy or Jython interpreter is not supported."))
-	printError(_("Please use CPython 2.7 or CPython 3.x"))
-	sys.exit(1)
 
 if cython_helper.shouldUseCython():
 	print(_("*** Using accelerated CYTHON core "
@@ -74,6 +76,18 @@ def getDefaultFixedFont(pointSize=11, bold=False):
 	font.setWeight(QFont.Normal)
 	font.setBold(bold)
 	return font
+
+def sleepWithEventLoop(seconds, excludeInput=True):
+	"""Sleep for 'seconds', but run the Qt event loop to refresh the GUI.
+	excludeInput: Do not process user input events.
+	"""
+	end = monotonic_time() + seconds
+	eventFlags = QEventLoop.AllEvents
+	if excludeInput:
+		eventFlags |= QEventLoop.ExcludeUserInputEvents
+	while monotonic_time() < end:
+		QApplication.processEvents(eventFlags, 10)
+		QThread.msleep(10)
 
 # Color used for errors
 def getErrorColor():

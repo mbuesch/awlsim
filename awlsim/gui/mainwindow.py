@@ -73,9 +73,9 @@ class LoadProgressDialog(QDialog):
 		self.hide()
 		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents, 50)
 
-	def setCpuRunState(self, cpuRunState):
-		if cpuRunState.state == cpuRunState.STATE_LOAD:
-			self.setWindowTitle(_("Awlsim - Downloading..."))
+	def setGuiRunState(self, guiRunState):
+		if guiRunState.state == GuiRunState.STATE_LOAD:
+			self.setWindowTitle("Awlsim - Downloading...")
 			self.__icon.setPixmap(getIcon("download").pixmap(64, 64))
 			self.__text.setText(_("Downloading project to CPU.\n\n"
 					    "Please be patient.\n"
@@ -166,14 +166,14 @@ class MainWidget(QWidget):
 		self.setLayout(QGridLayout(self))
 		self.mainWindow = mainWindow
 
-		self.simClient = GuiAwlSimClient(self)
+		self.simClient = GuiAwlSimClient(mainWindow)
 
 		self.editMdiArea = EditMdiArea(self)
 		self.layout().addWidget(self.editMdiArea, 0, 0)
 
 		self.filename = None
 		self.__dirtyLevel = self.DIRTY_NO
-		self.__cpuRunState = RunState()
+		self.__guiRunState = GuiRunState()
 		self.__insnPerSecond = 0.0
 		self.__avgCycleTime = 0.0
 		self.__minCycleTime = 0.0
@@ -285,7 +285,7 @@ class MainWidget(QWidget):
 				return
 			else:
 				assert(0)
-		self.getCpuWidget().goOffline()
+		self.getSimClient().action_goOffline()
 		self.getCpuWidget().stateMdi.reset()
 		if not os.path.exists(filename) and newIfNotExist:
 			# The file does not exist. We implicitly create it.
@@ -550,12 +550,12 @@ class MainWidget(QWidget):
 			return projectTreeModel.entryActivate(index, parentWidget=self)
 		return False
 
-	def handleCpuRunStateChange(self, cpuRunState):
+	def handleGuiRunStateChange(self, guiRunState):
 		"""CPU RunState changed.
 		"""
-		self.__cpuRunState = cpuRunState
+		self.__guiRunState = guiRunState
 		self.__updateStatusBar()
-		self.mainWindow.loadProgressDialog.setCpuRunState(cpuRunState)
+		self.mainWindow.loadProgressDialog.setGuiRunState(guiRunState)
 
 	def handleCpuStats(self, statsMsg):
 		"""Received new AwlSimMessage_CPUSTATS.
@@ -572,18 +572,18 @@ class MainWidget(QWidget):
 		"""
 		status = []
 
-		if self.__cpuRunState == RunState.STATE_OFFLINE:
-			status.append(_("CPU: offline"))
-		elif self.__cpuRunState == RunState.STATE_ONLINE:
-			status.append(_("CPU: online / STOP"))
-		elif self.__cpuRunState == RunState.STATE_LOAD:
-			status.append(_("CPU: loading"))
-		elif self.__cpuRunState == RunState.STATE_RUN:
-			status.append(_("CPU: RUN"))
-		elif self.__cpuRunState == RunState.STATE_EXCEPTION:
-			status.append(_("CPU: EXCEPTION"))
+		if self.__guiRunState == GuiRunState.STATE_OFFLINE:
+			status.append("CPU: offline")
+		elif self.__guiRunState == GuiRunState.STATE_ONLINE:
+			status.append("CPU: online / STOP")
+		elif self.__guiRunState == GuiRunState.STATE_LOAD:
+			status.append("CPU: loading")
+		elif self.__guiRunState == GuiRunState.STATE_RUN:
+			status.append("CPU: RUN")
+		elif self.__guiRunState == GuiRunState.STATE_EXCEPTION:
+			status.append("CPU: EXCEPTION")
 
-		if self.__cpuRunState == RunState.STATE_RUN:
+		if self.__guiRunState == GuiRunState.STATE_RUN:
 			if self.__insnPerSecond > 0.0:
 				usPerInsnStr = "%.02f" % ((1.0 / self.__insnPerSecond) * 1000000.0)
 				status.append(_("{} stmt/s ({} µs/stmt)",
@@ -810,22 +810,17 @@ class MainWindow(QMainWindow):
 		self.mainWidget.cutAvailableChanged.connect(self.__cutAvailableChanged)
 		self.mainWidget.pasteAvailableChanged.connect(self.__pasteAvailableChanged)
 		self.cpuDockWidget.toggleViewAction().toggled.connect(self.__cpuDockToggled)
-		self.ctrlTb.connectToCpuWidget(self.cpuWidget)
 		self.inspectTb.connectToCpuWidget(self.cpuWidget)
-		self.mainWidget.dirtyChanged.connect(self.cpuWidget.handleDirtyChange)
-		self.editMdiArea.visibleLinesChanged.connect(self.cpuWidget.updateVisibleLineRange)
 		GuiValidatorSched.get().haveValidationResult.connect(self.projectTreeModel.handleAwlSimError)
-		self.cpuWidget.onlineDiagChanged.connect(self.editMdiArea.enableOnlineDiag)
-		self.cpuWidget.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
-		self.cpuWidget.haveIdentsMsg.connect(self.editMdiArea.handleIdentsMsg)
-		self.cpuWidget.haveIdentsMsg.connect(self.projectTreeModel.handleIdentsMsg)
-		self.cpuWidget.haveCpuStats.connect(self.mainWidget.handleCpuStats)
-		self.cpuWidget.configChanged.connect(self.mainWidget.somethingChanged)
 		self.projectTreeModel.projectContentChanged.connect(self.mainWidget.somethingChanged)
+		client.haveCpuStats.connect(self.mainWidget.handleCpuStats)
+		client.haveIdentsMsg.connect(self.projectTreeModel.handleIdentsMsg)
 		client.haveException.connect(self.projectTreeModel.handleAwlSimError)
-		client.runState.stateChanged.connect(self.editMdiArea.setCpuRunState)
-		client.runState.stateChanged.connect(self.projectTreeModel.setCpuRunState)
-		client.runState.stateChanged.connect(self.mainWidget.handleCpuRunStateChange)
+		client.haveIdentsMsg.connect(self.editMdiArea.handleIdentsMsg)
+		client.haveInsnDump.connect(self.editMdiArea.handleInsnDump)
+		client.guiRunState.stateChanged.connect(self.editMdiArea.setGuiRunState)
+		client.guiRunState.stateChanged.connect(self.projectTreeModel.setGuiRunState)
+		client.guiRunState.stateChanged.connect(self.mainWidget.handleGuiRunStateChange)
 
 		if awlSource:
 			self.mainWidget.loadFile(awlSource, newIfNotExist=True)
@@ -1033,7 +1028,7 @@ class MainWindow(QMainWindow):
 		QMessageBox.about(self, _("About Awlsim PLC"),
 			"Awlsim PLC version {}\n"
 			"\n"
-			"Copyright 2012-2019 Michael Büsch <m@bues.ch>\n"
+			"Copyright 2012-2020 Michael Büsch <m@bues.ch>\n"
 			"\n"
 			"Project home:  {}\n"
 			"\n"

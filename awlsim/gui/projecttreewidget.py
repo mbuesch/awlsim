@@ -28,7 +28,7 @@ from awlsim.common.locale import _
 from awlsim.core.symbolparser import SymTabParser, Symbol
 from awlsim.library.libselection import AwlLibEntrySelection
 
-from awlsim.gui.cpuwidget import RunState
+from awlsim.gui.cpuwidget import GuiRunState
 from awlsim.gui.util import *
 from awlsim.gui.icons import *
 from awlsim.gui.runstate import *
@@ -144,6 +144,7 @@ class ProjectTreeModel(QAbstractItemModel):
 
 		# Mark the program container as changed.
 		if anyChanged:
+			#FIXME this doesn't always work correctly. Do we need to mark all sub-items as changed?
 			index = self.idToIndex(self.INDEXID_SRCS)
 			roles = (Qt.DecorationRole, Qt.ToolTipRole)
 			self.dataChanged.emit(index, index, roles)
@@ -196,13 +197,13 @@ class ProjectTreeModel(QAbstractItemModel):
 			index = self.idToIndex(self.INDEXID_SRCS)
 			self.dataChanged.emit(index, index, roles)
 
-	def setCpuRunState(self, cpuRunState):
+	def setGuiRunState(self, guiRunState):
 		"""Handle a CPU run state change.
-		cpuRunState: RunState() instance.
+		guiRunState: GuiRunState() instance.
 		"""
 
 		# Store the run state object.
-		self.__cpuRunState = cpuRunState
+		self.__guiRunState = guiRunState
 
 		# Emit the dataChanged signal for all sources
 		# and all parent source containers.
@@ -732,7 +733,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		self.__libSelMdiSubWin = None
 		self.__isAdHocProject = False
 		self.__warnedFileBacked = False
-		self.__cpuRunState = RunState()
+		self.__guiRunState = GuiRunState()
 		self.handleIdentsMsg(None)
 
 	def reset(self, project=None):
@@ -1035,7 +1036,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			if any(source.userData.get("gui-erroneous", False)
 			       for source in sourceList):
 				return getIcon("exit")
-			elif (self.__cpuRunState == RunState.STATE_RUN and
+			elif (self.__guiRunState == GuiRunState.STATE_RUN and
 			      any(not source.userData.get("gui-cpu-idents-match", True)
 				  for source in sourceList)):
 				return getIcon("warning")
@@ -1108,9 +1109,9 @@ class ProjectTreeModel(QAbstractItemModel):
 			# in RUN state.
 			if any(source.userData.get("gui-erroneous", False)
 			       for source in sourceList):
-				return _("ERROR: There is an error in the source file.\n"\
-				       "Please open it to fix the problem.")
-			if self.__cpuRunState == RunState.STATE_RUN and\
+				return "ERROR: There is an error in the source file.\n"\
+				       "Please open it to fix the problem."
+			if self.__guiRunState == GuiRunState.STATE_RUN and\
 			   any(not source.userData.get("gui-cpu-idents-match", True)
 			       for source in sourceList):
 				return _("WARNING: The source contained in the project\n"\

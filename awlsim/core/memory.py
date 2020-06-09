@@ -769,11 +769,11 @@ class AwlMemory(object): #+cdef
 	def __len__(self):
 		return self.__dataBytesLen
 
-	def __bool__(self):				#@cy3
-		return bool(self.__dataBytesLen)	#@cy3
+	def __bool__(self):
+		return bool(self.__dataBytesLen)
 
-	def __nonzero__(self):				#@cy2
-		return bool(self.__dataBytesLen)	#@cy2
+	def __nonzero__(self):				#@nocy
+		return bool(self.__dataBytesLen)	#@nocy
 
 	def __repr__(self): #@nocov
 #@cy		cdef list ret

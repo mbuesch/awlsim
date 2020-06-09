@@ -28,7 +28,6 @@ from awlsim.common.locale import _
 from awlsim.common.codevalidator import *
 
 from awlsim.gui.util import *
-from awlsim.gui.awlsimclient import *
 
 
 __all__ = [

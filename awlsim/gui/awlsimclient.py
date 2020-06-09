@@ -2,7 +2,7 @@
 #
 # AWL simulator - GUI simulator client access
 #
-# Copyright 2014-2019 Michael Buesch <m@bues.ch>
+# Copyright 2014-2020 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,19 +28,12 @@ from awlsim.common.locale import _
 from awlsim.gui.util import *
 from awlsim.gui.blocktreewidget import *
 from awlsim.gui.runstate import *
+from awlsim.gui.linkconfig import *
+from awlsim.gui.validatorsched import *
 
 from awlsim.coreclient.client import *
 from awlsim.coreclient.sshtunnel import *
 
-
-def sleepWithEventLoop(seconds, excludeInput=True):
-	end = monotonic_time() + seconds
-	eventFlags = QEventLoop.AllEvents
-	if excludeInput:
-		eventFlags |= QEventLoop.ExcludeUserInputEvents
-	while monotonic_time() < end:
-		QApplication.processEvents(eventFlags, 10)
-		QThread.msleep(10)
 
 class GuiSSHTunnel(SSHTunnel, QDialog):
 	"""SSH tunnel helper with GUI.
@@ -165,7 +158,11 @@ class OnlineData(QObject):
 		self.__symTabCache = newSymTabCache
 		self.symTabsUpdate.emit(symTabList)
 
-class GuiAwlSimClient(AwlSimClient, QObject):
+class GuiAwlSimClient_LowLevel(AwlSimClient, QObject):
+	"""AwlSimClient for GUI.
+	Low level part.
+	"""
+
 	# CPU exception signal.
 	haveException = Signal(AwlSimError)
 
@@ -200,12 +197,10 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 	MODE_FORK	= EnumGen.item # Online to a newly forked core
 	EnumGen.end
 
-	def __init__(self, mainWidget):
-		self.__mainWidget = mainWidget
+	def __init__(self):
 		QObject.__init__(self)
 		AwlSimClient.__init__(self)
 
-		self.__runState = RunState()
 		self.__onlineData = OnlineData(self)
 
 		self.__setMode(self.MODE_OFFLINE)
@@ -399,8 +394,496 @@ class GuiAwlSimClient(AwlSimClient, QObject):
 		self.__blockTreeModelManager = None
 		self.__blockTreeModel = None
 
+class GuiAwlSimClient(GuiAwlSimClient_LowLevel):
+	"""AwlSimClient for GUI.
+	High level part.
+	"""
+
+	def __init__(self, mainWidget):
+		self.__mainWindow = mainWidget
+		GuiAwlSimClient_LowLevel.__init__(self)
+
+		self.__actionGoOnlineBlocked = Blocker()
+		self.__actionGoOfflineBlocked = Blocker()
+		self.__actionDownloadBlocked = Blocker()
+		self.__actionDownloadSingleBlocked = Blocker()
+		self.__actionResetCpuBlocked = Blocker()
+		self.__actionGoRunBlocked = Blocker()
+		self.__actionGoStopBlocked = Blocker()
+
+		self.__guiRunState = GuiRunState()
+
+		self.__coreMsgTimer = QTimer(self)
+		self.__coreMsgTimer.setSingleShot(False)
+		self.__coreMsgTimer.timeout.connect(self.__processCoreMessages)
+
+		self.__corePeriodicTimer = QTimer(self)
+		self.__corePeriodicTimer.setSingleShot(False)
+		self.__corePeriodicTimer.timeout.connect(self.__periodicCoreWork)
+
+		self.haveException.connect(self.__handleCpuException)
+
 	@property
-	def runState(self):
-		"""Get the central RunState().
+	def guiRunState(self):
+		"""Get the central GuiRunState().
 		"""
-		return self.__runState
+		return self.__guiRunState
+
+	def getProject(self):
+		"""Get the active Project().
+		"""
+		return self.__mainWindow.getProject()
+
+	def getEditMdiArea(self):
+		return self.__mainWindow.mainWidget.editMdiArea
+
+	# Periodic timer for core message handling.
+	def __processCoreMessages(self):
+		try:
+			# Receive messages, until we hit a timeout
+			while self.processMessages(0.02):
+				pass
+		except AwlSimError as e:
+			with MessageBox.awlSimErrorBlocked:
+				self.guiRunState.setState(GuiRunState.STATE_EXCEPTION)
+			MessageBox.handleAwlSimError(self.__mainWindow,
+				"Core server error", e)
+			with MessageBox.awlSimErrorBlocked:
+				self.action_goStop()
+				self.__stopCoreMessageHandler()
+		except MaintenanceRequest as e:
+			self.handleMaintenance(e)
+		except Exception:
+			with suppressAllExc:
+				self.setRunState(False)
+			with suppressAllExc:
+				self.shutdown()
+			handleFatalException(self.__mainWindow)
+
+	def __startCoreMessageHandler(self):
+		self.__stopCoreMessageHandler()
+
+		# Check if the CPU is in RUN mode.
+		inRunMode = False
+		with suppressAllExc:
+			inRunMode = self.getRunState()
+
+		# Start the main message fetcher.
+		self.__coreMsgTimer.start(0 if inRunMode else 50)
+
+		# Start the periodic core work handler.
+		self.__periodicCoreWork()
+		self.__corePeriodicTimer.start(1000 if inRunMode else 300)
+
+	def __stopCoreMessageHandler(self):
+		# Stop the periodic core work handler.
+		self.__corePeriodicTimer.stop()
+
+		# Stop the main message fetcher.
+		self.__coreMsgTimer.stop()
+
+	def __periodicCoreWork(self):
+		"""Periodic timer for core status work.
+		"""
+		hasBlockTree = self.blockTreeModelActive()
+		try:
+			self.requestIdents(reqAwlSources=True,
+					   reqFupSources=True,
+					   reqKopSources=True,
+					   reqSymTabSources=True,
+					   reqHwModules=hasBlockTree,
+					   reqLibSelections=hasBlockTree)
+			if hasBlockTree:
+				self.requestBlockInfo(reqOBInfo=True,
+						      reqFCInfo=True,
+						      reqFBInfo=True,
+						      reqDBInfo=True,
+						      reqUDTInfo=True)
+			self.getCpuStats()
+		except AwlSimError as e:
+			with MessageBox.awlSimErrorBlocked:
+				self.guiRunState.setState(GuiRunState.STATE_EXCEPTION)
+			MessageBox.handleAwlSimError(self.__mainWindow,
+				"Core server error", e)
+			with MessageBox.awlSimErrorBlocked:
+				self.action_goStop()
+				self.__stopCoreMessageHandler()
+		except MaintenanceRequest as e:
+			self.handleMaintenance(e)
+		except Exception:
+			with suppressAllExc:
+				self.setRunState(False)
+			with suppressAllExc:
+				self.shutdown()
+			handleFatalException(self.__mainWindow)
+
+	def handleMaintenance(self, maintRequest):
+		"""Handle a maintenance request exception.
+		"""
+		if maintRequest.requestType == MaintenanceRequest.TYPE_SHUTDOWN:
+			res = QMessageBox.question(self.__mainWindow,
+				"Shut down application?",
+				"The core server requested an "
+				"application shutdown.\n"
+				"Do you want to close Awlsim GUI?",
+				QMessageBox.Yes | QMessageBox.No,
+				QMessageBox.No)
+			if res == QMessageBox.Yes:
+				print("Shutting down, as requested by server...")
+				self.shutdown()
+				QApplication.exit(0)
+			else:
+				self.action_goStop()
+				self.action_goOffline()
+		elif (maintRequest.requestType == MaintenanceRequest.TYPE_STOP or
+		      maintRequest.requestType == MaintenanceRequest.TYPE_RTTIMEOUT):
+			self.action_goStop()
+		else:
+			print("Unknown maintenance request %d" % (
+			      maintRequest.requestType))
+			self.action_goStop()
+
+	def __validatePreDownload(self, project):
+		guiSettings = project.getGuiSettings()
+		if not guiSettings.getPreDownloadValidationEn():
+			return True
+
+		printInfo("Validating project before downloading...")
+		valSched = GuiValidatorSched.get()
+		exception = valSched.syncValidation(project)
+		if exception is valSched.TIMEOUT:
+			printError("Project validation timeout. Loading anyway...")
+		elif exception is not None:
+			res = MessageBox.handleAwlSimError(self.__mainWindow,
+				"\nPre-download validation of the project failed.\n"
+				"Continuing the download may bring the CPU to STOP.\n\n"
+				"Do you want to continue or cancel "
+				"downloading the project to the CPU?",
+				exception,
+				okButton=False,
+				continueButton=True,
+				cancelButton=True)
+			if res != MessageBox.Accepted:
+				return False
+		return True
+
+	def action_goOnline(self):
+		"""Connect to a core server.
+		"""
+		if self.__actionGoOnlineBlocked:
+			return True
+		with self.__actionGoOnlineBlocked:
+
+			if self.guiRunState != GuiRunState.STATE_OFFLINE:
+				return True
+
+			project = self.getProject()
+
+			if LinkConfigWidget.askWhenConnecting():
+				dlg = LinkConfigDialog(project, self.__mainWindow)
+				dlg.settingsChanged.connect(self.__mainWindow.mainWidget.somethingChanged)
+				if dlg.exec_() != LinkConfigDialog.Accepted:
+					dlg.deleteLater()
+					self.action_goOffline()
+					return False
+				dlg.deleteLater()
+
+			linkConfig = project.getCoreLinkSettings()
+			try:
+				if linkConfig.getSpawnLocalEn():
+					portRange = linkConfig.getSpawnLocalPortRange()
+					interp = linkConfig.getSpawnLocalInterpreterList()
+					self.setMode_FORK(portRange=portRange,
+							  interpreterList=interp)
+					host = port = None
+				else:
+					self.setMode_ONLINE(self, linkConfig)
+
+				self.guiRunState.setCoreDetails(
+					spawned=linkConfig.getSpawnLocalEn(),
+					host=linkConfig.getConnectHost(),
+					port=linkConfig.getConnectPort(),
+					haveTunnel=(linkConfig.getTunnel() == linkConfig.TUNNEL_SSH))
+				self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+
+				if self.getRunState():
+					# The core is already running.
+					# Set the GUI to run state, too.
+					self.guiRunState.setState(GuiRunState.STATE_RUN)
+
+				# Re-Start the message handler.
+				self.__startCoreMessageHandler()
+
+			except AwlSimError as e:
+				with suppressAllExc:
+					self.__stopCoreMessageHandler()
+				with suppressAllExc:
+					self.setMode_OFFLINE()
+				MessageBox.handleAwlSimError(self.__mainWindow,
+					"Error while trying to connect to CPU", e)
+				with MessageBox.awlSimErrorBlocked:
+					self.action_goOffline()
+				return False
+			except MaintenanceRequest as e:
+				self.handleMaintenance(e)
+
+			return True
+
+	def action_goOffline(self):
+		"""Disconnect from the core server.
+		"""
+		if self.__actionGoOfflineBlocked:
+			return True
+		with self.__actionGoOfflineBlocked:
+
+			if self.guiRunState == GuiRunState.STATE_OFFLINE:
+				return True
+
+			try:
+				self.setMode_OFFLINE()
+			except AwlSimError as e:
+				MessageBox.handleAwlSimError(self.__mainWindow,
+					"Error while trying to disconnect from CPU", e)
+
+			self.guiRunState.setState(GuiRunState.STATE_OFFLINE)
+			self.__stopCoreMessageHandler()
+
+			return True
+
+	# Reset/clear the CPU and upload all sources.
+	def action_download(self):
+		if self.__actionDownloadBlocked:
+			return True
+		with self.__actionDownloadBlocked:
+
+			prevGuiRunState = self.guiRunState.state
+
+			# Make sure we are online.
+			self.action_goOnline()
+			if self.guiRunState < GuiRunState.STATE_ONLINE:
+				return False
+
+			project = self.getProject()
+			try:
+				self.guiRunState.setState(GuiRunState.STATE_LOAD)
+
+				if not self.__validatePreDownload(project):
+					self.guiRunState.setState(prevGuiRunState)
+					return False
+
+				self.setRunState(False)
+				self.reset()
+
+				self.loadProject(project)
+				self.build()
+
+				self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+			except AwlParserError as e:
+				with MessageBox.awlSimErrorBlocked:
+					self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+					self.action_goStop()
+				MessageBox.handleAwlParserError(self, e)
+				return False
+			except AwlSimError as e:
+				with MessageBox.awlSimErrorBlocked:
+					self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+					self.action_goStop()
+				MessageBox.handleAwlSimError(self.__mainWindow,
+					"Error while loading code", e)
+				return False
+			except MaintenanceRequest as e:
+				self.handleMaintenance(e)
+				return False
+			except Exception:
+				with suppressAllExc:
+					self.shutdown()
+				handleFatalException(self.__mainWindow)
+
+			# If we were RUNning before download, put
+			# the CPU into RUN state again.
+			if prevGuiRunState >= GuiRunState.STATE_RUN:
+				self.action_goRun()
+
+			return True
+
+	# Download the current source.
+	def action_downloadSingle(self):
+		if self.__actionDownloadSingleBlocked:
+			return True
+		with self.__actionDownloadSingleBlocked:
+
+			prevGuiRunState = self.guiRunState.state
+
+			mdiSubWin = self.getEditMdiArea().activeOpenSubWindow
+			source = libSelections = None
+			if mdiSubWin:
+				if mdiSubWin.TYPE in (mdiSubWin.TYPE_AWL,
+						      mdiSubWin.TYPE_FUP,
+						      mdiSubWin.TYPE_KOP,
+						      mdiSubWin.TYPE_SYMTAB,):
+					source = mdiSubWin.getSource()
+				elif mdiSubWin.TYPE == mdiSubWin.TYPE_LIBSEL:
+					libSelections = mdiSubWin.getLibSelections()
+				else:
+					assert(0)
+			if not mdiSubWin or (not source and not libSelections):
+				QMessageBox.critical(self.__mainWindow,
+					"No source selected.",
+					"Cannot download a single source.\n"
+					"No source has been opened in the edit area.",
+					QMessageBox.Ok)
+				return False
+
+			# Make sure we are online.
+			self.action_goOnline()
+			if self.guiRunState < GuiRunState.STATE_ONLINE:
+				return False
+
+			project = self.getProject()
+			try:
+				self.guiRunState.setState(GuiRunState.STATE_LOAD)
+
+				if not self.__validatePreDownload(project):
+					self.guiRunState.setState(prevGuiRunState)
+					return False
+
+				if mdiSubWin.TYPE == mdiSubWin.TYPE_AWL:
+					printVerbose("Single AWL download: %s/%s" %\
+						(source.name,
+						 source.identHashStr))
+					self.loadAwlSource(source)
+				elif mdiSubWin.TYPE == mdiSubWin.TYPE_FUP:
+					printVerbose("Single FUP download: %s/%s" %\
+						(source.name,
+						 source.identHashStr))
+					self.loadFupSource(source)
+				elif mdiSubWin.TYPE == mdiSubWin.TYPE_KOP:
+					printVerbose("Single KOP download: %s/%s" %\
+						(source.name,
+						 source.identHashStr))
+					self.loadKopSource(source)
+				elif mdiSubWin.TYPE == mdiSubWin.TYPE_SYMTAB:
+					printVerbose("Single sym download: %s/%s" %\
+						(source.name,
+						 source.identHashStr))
+					self.loadSymTabSource(source)
+				elif mdiSubWin.TYPE == mdiSubWin.TYPE_LIBSEL:
+					printVerbose("Single libSelections download.")
+					self.loadLibraryBlocks(libSelections)
+				else:
+					assert(0)
+
+				self.guiRunState.setState(prevGuiRunState)
+			except AwlParserError as e:
+				with MessageBox.awlSimErrorBlocked:
+					self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+					self.action_goStop()
+				MessageBox.handleAwlParserError(self.__mainWindow, e)
+				return False
+			except AwlSimError as e:
+				with MessageBox.awlSimErrorBlocked:
+					self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+					self.action_goStop()
+				MessageBox.handleAwlSimError(self.__mainWindow,
+					"Error while loading code (single source)", e)
+				return False
+			except MaintenanceRequest as e:
+				self.handleMaintenance(e)
+				return False
+			except Exception:
+				with suppressAllExc:
+					self.shutdown()
+				handleFatalException(self.__mainWindow)
+			return True
+
+	def action_resetCpu(self):
+		"""Reset the CPU.
+		"""
+		if self.__actionResetCpuBlocked:
+			return True
+		with self.__actionResetCpuBlocked:
+
+			# Make sure we are online.
+			self.action_goOnline()
+			if self.guiRunState < GuiRunState.STATE_ONLINE:
+				return False
+
+			try:
+				self.setRunState(False)
+				self.reset()
+			except AwlParserError as e:
+				MessageBox.handleAwlParserError(self.__mainWindow, e)
+				return False
+			except AwlSimError as e:
+				MessageBox.handleAwlSimError(self.__mainWindow,
+					"Error while reseting CPU", e)
+				return False
+			except MaintenanceRequest as e:
+				self.handleMaintenance(e)
+				return False
+			except Exception:
+				with suppressAllExc:
+					self.shutdown()
+				handleFatalException(self.__mainWindow)
+
+			return True
+
+	def action_goRun(self):
+		if self.__actionGoRunBlocked:
+			return True
+		with self.__actionGoRunBlocked:
+
+			self.action_goOnline()
+			if self.guiRunState < GuiRunState.STATE_ONLINE:
+				self.action_goStop()
+				return False
+
+			# Put the CPU and the GUI into RUN state.
+			try:
+				# Put CPU into RUN mode, if it's not already there.
+				self.setRunState(True)
+
+				# Put the GUI into RUN mode.
+				self.guiRunState.setState(GuiRunState.STATE_RUN)
+
+				# Re-Start the message handler.
+				self.__startCoreMessageHandler()
+			except AwlSimError as e:
+				with MessageBox.awlSimErrorBlocked:
+					self.guiRunState.setState(GuiRunState.STATE_EXCEPTION)
+				MessageBox.handleAwlSimError(self.__mainWindow,
+					"Could not start CPU", e)
+				with MessageBox.awlSimErrorBlocked:
+					self.action_goStop()
+			except MaintenanceRequest as e:
+				self.handleMaintenance(e)
+
+			return True
+
+	def action_goStop(self):
+		if self.__actionGoStopBlocked:
+			return True
+		with self.__actionGoStopBlocked:
+
+			if self.guiRunState >= GuiRunState.STATE_ONLINE:
+				try:
+					self.setRunState(False)
+				except AwlSimError as e:
+					MessageBox.handleAwlSimError(self.__mainWindow,
+						"Could not stop CPU", e)
+
+			self.guiRunState.setState(GuiRunState.STATE_ONLINE)
+
+			# Re-Start the message handler.
+			self.__startCoreMessageHandler()
+
+			return True
+
+	def __handleCpuException(self, exception):
+		# The CPU is in an exception state.
+		# Set our state to exception/stopped.
+		# This will stop the CPU, if it wasn't already stopped.
+		# Subsequent exception handlers might do additional steps.
+		with MessageBox.awlSimErrorBlocked:
+			self.guiRunState.setState(GuiRunState.STATE_EXCEPTION)
+			self.action_goStop()
