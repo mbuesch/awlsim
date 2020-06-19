@@ -857,6 +857,8 @@ jobs_tmp_file="$(maketemp jobs)"
 touch "${port_alloc_file}.lock"
 echo 4096 > "$port_alloc_file" || die "Failed to initialize port file"
 
+have_prog file || die "Program 'file' not found."
+
 opt_interpreter=
 opt_quick=0
 opt_nogui=0
