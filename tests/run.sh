@@ -842,7 +842,11 @@ show_help()
 
 tmp_dir="/tmp/awlsim-test-$$"
 rm -rf "$tmp_dir" >/dev/null 2>&1
-mkdir -p "$tmp_dir" || die "Failed to create temp dir '$tmp_dir'"
+if ! mkdir -p "$tmp_dir" >/dev/null 2>&1; then
+	tmp_dir="$basedir/.tmp/awlsim-test-$$"
+	rm -rf "$tmp_dir" >/dev/null 2>&1
+	mkdir -p "$tmp_dir" || die "Failed to create temp dir '$tmp_dir'"
+fi
 
 trap cleanup_and_exit INT TERM
 trap cleanup EXIT
