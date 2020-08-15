@@ -135,7 +135,7 @@ write_image()
 
 	if have_program blkdiscard; then
 		info "Discarding $dev ..."
-		blkdiscard "$dev" ||\
+		blkdiscard -f "$dev" ||\
 			error "blkdiscard failed."
 	else
 		warning "Skipping discard. blkdiscard not installed."
