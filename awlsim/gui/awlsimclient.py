@@ -591,7 +591,7 @@ class GuiAwlSimClient(GuiAwlSimClient_LowLevel):
 							  interpreterList=interp)
 					host = port = None
 				else:
-					self.setMode_ONLINE(self, linkConfig)
+					self.setMode_ONLINE(self.__mainWindow, linkConfig)
 
 				self.guiRunState.setCoreDetails(
 					spawned=linkConfig.getSpawnLocalEn(),
