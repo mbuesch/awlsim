@@ -26,13 +26,14 @@ basedir="$(dirname "$0")"
 basedir="$basedir/.."
 
 
-MAIN_MIRROR="http://mirrordirector.raspbian.org/raspbian/"
-#MAIN_MIRROR="http://mirror1.hs-esslingen.de/pub/Mirrors/archive.raspbian.org/raspbian/"
-#MAIN_MIRROR="http://ftp.gwdg.de/pub/linux/debian/raspbian/raspbian/"
 DEFAULT_SUITE=buster
+MAIN_MIRROR_32="http://mirrordirector.raspbian.org/raspbian/"
+MAIN_MIRROR_ARCHIVE="http://archive.raspberrypi.org/debian/"
+MAIN_MIRROR_64="http://deb.debian.org/debian/"
+MAIN_MIRROR_64_SECURITY="http://deb.debian.org/debian-security/"
 
 KEYRING_VERSION="20120528.2"
-KEYRING_BASEURL="$MAIN_MIRROR/pool/main/r/raspbian-archive-keyring"
+KEYRING_BASEURL="$MAIN_MIRROR_32/pool/main/r/raspbian-archive-keyring"
 KEYRING_TGZ_FILE="raspbian-archive-keyring_${KEYRING_VERSION}.tar.gz"
 KEYRING_TGZ_SHA256="fdf50f775b60901a2783f21a6362e2bf5ee6203983e884940b163faa1293c002"
 
@@ -273,24 +274,35 @@ pilc_bootstrap_first_stage()
 	do_install -o root -g root -m 644 \
 		"$basedir_pilc/CF8A1AF502A2AA2D763BAE7E82B129927FA3303E.gpg" \
 		"$opt_target_dir/tmp/"
-	download "$opt_target_dir/tmp/$KEYRING_TGZ_FILE" \
-		 "$KEYRING_BASEURL/$KEYRING_TGZ_FILE" \
-		 "$KEYRING_TGZ_SHA256"
-	tar -C "$opt_target_dir/tmp" -x -f "$opt_target_dir/tmp/$KEYRING_TGZ_FILE" ||\
-		die "Failed to extract keys."
-	local raspbian_asc="$opt_target_dir/tmp/raspbian-archive-keyring-$KEYRING_VERSION/raspbian.public.key"
-	local raspbian_gpg="$raspbian_asc.gpg"
-	gpg --dearmor < "$raspbian_asc" > "$raspbian_gpg" ||\
-		die "Failed to convert key."
+	if [ $opt_bit -eq 32 ]; then
+		download "$opt_target_dir/tmp/$KEYRING_TGZ_FILE" \
+			 "$KEYRING_BASEURL/$KEYRING_TGZ_FILE" \
+			 "$KEYRING_TGZ_SHA256"
+		tar -C "$opt_target_dir/tmp" -x -f "$opt_target_dir/tmp/$KEYRING_TGZ_FILE" ||\
+			die "Failed to extract keys."
+		local raspbian_asc="$opt_target_dir/tmp/raspbian-archive-keyring-$KEYRING_VERSION/raspbian.public.key"
+		local raspbian_gpg="$raspbian_asc.gpg"
+		gpg --dearmor < "$raspbian_asc" > "$raspbian_gpg" ||\
+			die "Failed to convert key."
+	fi
 
 	# debootstrap first stage.
 	if [ $opt_skip_debootstrap1 -eq 0 ]; then
 		info "Running debootstrap first stage..."
-		setarch linux32 \
-			debootstrap --arch="$opt_arch" --foreign \
+		if [ $opt_bit -eq 32 ]; then
+			local arch="armhf"
+			local keyopt="--keyring=$raspbian_gpg"
+			local mirror="$MAIN_MIRROR_32"
+		else
+			local arch="arm64"
+			local keyopt=
+			local mirror="$MAIN_MIRROR_64"
+		fi
+		setarch "linux$opt_bit" \
+			debootstrap --arch="$arch" --foreign \
 			--components="main,contrib,non-free" \
-			--keyring="$raspbian_gpg" \
-			"$opt_suite" "$opt_target_dir" "$MAIN_MIRROR" \
+			$keyopt \
+			"$opt_suite" "$opt_target_dir" "$mirror" \
 			|| die "debootstrap failed"
 	fi
 	[ -d "$opt_target_dir" ] ||\
@@ -358,7 +370,7 @@ pilc_bootstrap_first_stage()
 
 pilc_bootstrap_second_stage()
 {
-	info "Running second stage ($opt_arch)..."
+	info "Running second stage..."
 
 	[ -x /pilc-bootstrap.sh ] ||\
 		die "Second stage does not contain the bootstrap script."
@@ -385,10 +397,16 @@ pilc_bootstrap_second_stage()
 		local mtune="-mtune=cortex-a72"
 	else
 		info "Optimizing for generic RPi"
-		local march="-march=armv6kz"
-		local mtune=
+		if [ $opt_bit -eq 32 ]; then
+			local march="-march=armv6kz"
+			local mtune=
+		else
+			local march="-march=armv8-a"
+			local mtune=
+		fi
 	fi
-	export CFLAGS="-O3 $march $mtune -mfpu=vfp -mfloat-abi=hard -pipe"
+	export CFLAGS="-O3 $march $mtune -pipe"
+	[ $opt_bit -eq 32 ] && export CFLAGS="$CFLAGS -mfpu=vfp -mfloat-abi=hard"
 	export CXXFLAGS="$CFLAGS"
 
 	# debootstrap second stage.
@@ -398,8 +416,10 @@ pilc_bootstrap_second_stage()
 			die "Debootstrap second stage failed."
 	fi
 
-	info "Disabling raspi-copies-and-fills..."
-	rm -f /etc/ld.so.preload || die "Failed to disable raspi-copies-and-fills"
+	if [ $opt_bit -eq 32 ]; then
+		info "Disabling raspi-copies-and-fills..."
+		rm -f /etc/ld.so.preload || die "Failed to disable raspi-copies-and-fills"
+	fi
 
 	info "Mounting /proc..."
 	do_install -d -o root -g root -m 755 /proc
@@ -412,15 +432,6 @@ pilc_bootstrap_second_stage()
 	info "Mounting /dev/shm..."
 	do_install -d -o root -g root -m 755 /dev/shm
 	mount -t tmpfs tmpfs /dev/shm || die "Mounting /dev/shm failed."
-
-	info "Writing apt configuration..."
-	cat > /etc/apt/sources.list <<EOF
-deb $MAIN_MIRROR $opt_suite main contrib non-free rpi firmware
-deb http://archive.raspberrypi.org/debian/ $opt_suite main ui
-EOF
-	[ $? -eq 0 ] || die "Failed to set sources.list"
-	echo 'Acquire { Languages "none"; };' > /etc/apt/apt.conf.d/99no-translations ||\
-		die "Failed to set apt.conf.d"
 
 	info "Creating /etc/fstab"
 	do_install -d -o root -g root -m 755 /config
@@ -456,21 +467,58 @@ EOF
 		/etc/os-release ||\
 		die "Failed to set os-release BUG_REPORT_URL."
 
-	info "Updating package list..."
+	info "Writing apt configuration..."
+	local apt_opts="-y -o Acquire::Retries=3"
+	if [ $opt_bit -eq 32 ]; then
+		cat > /etc/apt/sources.list <<EOF
+deb $MAIN_MIRROR_32 $opt_suite main contrib non-free rpi firmware
+#deb-src $MAIN_MIRROR_32 $opt_suite main contrib non-free rpi firmware
+EOF
+		[ $? -eq 0 ] || die "Failed to set sources.list"
+	else
+		cat > /etc/apt/sources.list <<EOF
+deb $MAIN_MIRROR_64 $opt_suite main contrib non-free
+#deb-src $MAIN_MIRROR_64 $opt_suite main contrib non-free
+deb $MAIN_MIRROR_64_SECURITY $opt_suite/updates main contrib non-free
+#deb-src $MAIN_MIRROR_64_SECURITY $opt_suite/updates main contrib non-free
+deb $MAIN_MIRROR_64 $opt_suite-updates main contrib non-free
+#deb-src $MAIN_MIRROR_64 $opt_suite-updates main contrib non-free
+EOF
+		[ $? -eq 0 ] || die "Failed to set sources.list"
+		dpkg --add-architecture armhf ||\
+			die "dpkg --add-architecture failed"
+	fi
+	echo 'Acquire { Languages "none"; };' > /etc/apt/apt.conf.d/99no-translations ||\
+		die "Failed to set apt.conf.d"
 	cat /tmp/templates/debconf-set-selections-preinstall.conf | debconf-set-selections ||\
 		die "Failed to configure debconf settings"
-	apt-key add /tmp/CF8A1AF502A2AA2D763BAE7E82B129927FA3303E.gpg ||\
-		die "apt-key add failed"
-	local apt_opts="-y -o Acquire::Retries=3"
 	apt-get $apt_opts update ||\
 		die "apt-get update failed"
 	apt-get $apt_opts install apt-transport-https ||\
 		die "apt-get install apt-transport-https failed"
 	apt-get $apt_opts install \
+		gnupg2 \
 		debian-keyring \
-		raspberrypi-archive-keyring \
-		raspbian-archive-keyring \
 		|| die "apt-get install keyrings failed"
+	cat >> /etc/apt/sources.list <<EOF
+deb $MAIN_MIRROR_ARCHIVE $opt_suite main ui
+#deb-src $MAIN_MIRROR_ARCHIVE $opt_suite main ui
+EOF
+	[ $? -eq 0 ] || die "Failed to update sources.list"
+	apt-key add /tmp/CF8A1AF502A2AA2D763BAE7E82B129927FA3303E.gpg ||\
+		die "apt-key add failed"
+	apt-get $apt_opts update ||\
+		die "apt-get update failed"
+	if [ $opt_bit -eq 32 ]; then
+		apt-get $apt_opts install \
+			raspberrypi-archive-keyring \
+			raspbian-archive-keyring \
+			|| die "apt-get install archive-keyrings failed"
+	else
+		apt-get $apt_opts install \
+			raspberrypi-archive-keyring \
+			|| die "apt-get install archive-keyrings failed"
+	fi
 
 	info "Upgrading system..."
 	apt-get $apt_opts dist-upgrade ||\
@@ -768,10 +816,12 @@ EOF
 			die "Failed to remove policy-rc.d"
 	fi
 
-	# Install this last. It won't work correctly in the qemu environment.
-	info "Installing raspi-copies-and-fills..."
-	apt-get $apt_opts install --reinstall raspi-copies-and-fills ||\
-		die "apt-get install failed"
+	if [ $opt_bit -eq 32 ]; then
+		# Install this last. It won't work correctly in the qemu environment.
+		info "Installing raspi-copies-and-fills..."
+		apt-get $apt_opts install --reinstall raspi-copies-and-fills ||\
+			die "apt-get install failed"
+	fi
 
 	info "Stopping processes..."
 	for i in dbus ssh irqbalance; do
@@ -806,6 +856,11 @@ pilc_bootstrap_third_stage()
 	do_install -T -o root -g root -m 644 \
 		"$basedir_pilc/templates/boot_config.txt" \
 		"$opt_target_dir/boot/config.txt"
+	if [ $opt_bit -eq 64 ]; then
+		sed -i -e 's/arm_64bit=0/arm_64bit=1/g' \
+			"$opt_target_dir/boot/config.txt" ||\
+			die "Failed to set arm_64bit=1"
+	fi
 
 	# Prepare image paths.
 	local imgfile="${opt_target_dir}${opt_imgsuffix}.img"
@@ -919,8 +974,8 @@ usage()
 	echo " --suite|-s SUITE        Select the suite."
 	echo "                         Default: $default_suite"
 	echo
-	echo " --arch|-a ARCH          Select the default arch."
-	echo "                         Default: $default_arch"
+	echo " --bit|-B BIT            Build 32 bit or 64 bit image."
+	echo "                         Default: $default_bit"
 	echo
 	echo " --qemu-bin|-Q PATH      Select qemu-user-static binary."
 	echo "                         Default: $default_qemu"
@@ -981,7 +1036,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 
 	default_branch="master"
 	default_suite="$DEFAULT_SUITE"
-	default_arch="armhf"
+	default_bit=32
 	default_qemu="/usr/bin/qemu-arm-static"
 	default_imgsuffix="-$(date '+%Y%m%d')"
 	default_imgsize=4
@@ -995,7 +1050,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	opt_branch="$default_branch"
 	opt_cython=1
 	opt_suite="$default_suite"
-	opt_arch="$default_arch"
+	opt_bit="$default_bit"
 	opt_qemu="$default_qemu"
 	opt_skip_debootstrap1=0
 	opt_skip_debootstrap2=0
@@ -1026,10 +1081,10 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 			opt_suite="$1"
 			[ -n "$opt_suite" ] || die "No suite given"
 			;;
-		--arch|-a)
+		--bit|-B)
 			shift
-			opt_arch="$1"
-			[ -n "$opt_arch" ] || die "No arch given"
+			opt_bit="$1"
+			[ "$opt_bit" = "32" -o "$opt_bit" = "64" ] || die "Invalid --bit. Must be 32 or 64."
 			;;
 		--qemu-bin|-Q)
 			shift
@@ -1094,6 +1149,9 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	[ -n "$opt_target_dir" ] || die "Failed to resolve target dir."
 	[ -d "$opt_target_dir" -o ! -e "$opt_target_dir" ] ||\
 		die "$opt_target_dir is not a directory"
+	if [ "$opt_rpiver" = "2" -o "$opt_rpiver" = "1" -o "$opt_rpiver" = "0" ]; then
+		[ $opt_bit -eq 32 ] || die "Option --bit must be 32 for RPi zero, 1 or 2."
+	fi
 
 	trap cleanup EXIT
 
@@ -1112,7 +1170,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_branch
 	export opt_cython
 	export opt_suite
-	export opt_arch
+	export opt_bit
 	export opt_qemu
 	export opt_skip_debootstrap1
 	export opt_skip_debootstrap2
@@ -1123,7 +1181,7 @@ if [ -z "$__PILC_BOOTSTRAP_SECOND_STAGE__" ]; then
 	export opt_writeonly
 	export opt_rpiver
 	export __PILC_BOOTSTRAP_SECOND_STAGE__=1
-	setarch linux32 \
+	setarch "linux$opt_bit" \
 		chroot "$opt_target_dir" "/pilc-bootstrap.sh" ||\
 		die "Chroot failed."
 
