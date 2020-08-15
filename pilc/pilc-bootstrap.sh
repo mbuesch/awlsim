@@ -430,9 +430,9 @@ EOF
 
 	info "Writing misc /etc stuff..."
 	echo "pilc" > /etc/hostname || die "Failed to set hostname"
-	printf 'PiLC GNU/Linux (based on Raspbian) \\n \\l\n\n' > /etc/issue ||\
+	printf 'PiLC GNU/Linux (based on Raspberry Pi OS) \\n \\l\n\n' > /etc/issue ||\
 		die "Failed to create /etc/issue"
-	printf 'PiLC GNU/Linux (based on Raspbian)\n' > /etc/issue.net ||\
+	printf 'PiLC GNU/Linux (based on Raspberry Pi OS)\n' > /etc/issue.net ||\
 		die "Failed to create /etc/issue.net"
 	sed -i -e 's|PRETTY_NAME=.*|PRETTY_NAME="PiLC"|' \
 		/etc/os-release ||\
@@ -443,7 +443,7 @@ EOF
 	sed -i -e 's|ID=.*|ID=pilc|' \
 		/etc/os-release ||\
 		die "Failed to set os-release ID."
-	sed -i -e 's|ID_LIKE=.*|ID_LIKE=raspbian|' \
+	sed -i -e 's|ID_LIKE=.*|ID_LIKE=debian|' \
 		/etc/os-release ||\
 		die "Failed to set os-release ID_LIKE."
 	sed -i -e 's|HOME_URL=.*|HOME_URL="https://bues.ch/a/pilc"|' \
@@ -562,7 +562,7 @@ EOF
 		/tmp/templates/tmux.conf \
 		/home/pi/.tmux.conf
 
-	info "Installing raspbian packages..."
+	info "Installing Raspberry Pi OS packages..."
 	apt-get $apt_opts install \
 		libraspberrypi-bin \
 		libraspberrypi-dev \
