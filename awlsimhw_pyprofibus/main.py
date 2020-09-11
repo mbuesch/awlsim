@@ -67,7 +67,6 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 				slaveDesc.setUserPrmData(slaveConf.gsd.getUserPrmData(
 						dp1PrmMask=dp1PrmMask,
 						dp1PrmSet=dp1PrmSet))
-			slaveDesc._awlsimSlaveConf = slaveConf
 			self.master.addSlave(slaveDesc)
 
 	def __cleanup(self):
@@ -123,7 +122,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 				continue
 			self.cachedInputs[slave.slaveAddr] = None
 			inData = bytearray(inData)
-			inputSize = slave._awlsimSlaveConf.inputSize
+			inputSize = slave.slaveConf.inputSize
 			if len(inData) > inputSize:
 				inData = inData[0:inputSize]
 			if len(inData) < inputSize:
@@ -137,7 +136,7 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			address = self.outputAddressBase
 			for slave in self.slaveList:
 				# Get the output data from the CPU
-				outputSize = slave._awlsimSlaveConf.outputSize
+				outputSize = slave.slaveConf.outputSize
 				outData = self.sim.cpu.fetchOutputRange(address,
 						outputSize)
 				# Write the output data to the pyprofibus subsystem.
