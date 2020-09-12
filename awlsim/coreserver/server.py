@@ -1868,6 +1868,8 @@ class AwlSimServer(object): #+cdef
 		return client
 
 	def __clientAdd(self, client):
+		if client.fileno in self.__sock2client:
+			self.__clientRemove(self.__sock2client[client.fileno])
 		self.__clients.append(client)
 		self.__sock2client[client.fileno] = client
 		self.__rebuildSelectReadList()
