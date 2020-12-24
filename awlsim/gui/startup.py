@@ -52,9 +52,8 @@ def usage():
 	print(" AWLSIM_GUI            Select the GUI framework (default 'auto')")
 	print("                       Can be either of:")
 	print("                       auto: Autodetect")
-	print("                       pyside: Use PySide 4")
-	print("                       pyqt4: Use PyQt 4")
-	print("                       pyqt5: Use PyQt 5")
+	print("                       pyside: Use PySide")
+	print("                       pyqt: Use PyQt")
 
 qapp = QApplication(sys.argv)
 
