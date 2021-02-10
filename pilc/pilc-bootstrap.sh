@@ -635,6 +635,7 @@ EOF
 			rm "$file" || die "Failed to rm $file"
 		fi
 		touch "$file" || die "Failed to touch $file"
+		chmod 444 "$file" || die "Failed to chmod 444 $file"
 	done
 	for file in /etc/apt/*.gpg~; do
 		if [ -e "$file" ]; then
