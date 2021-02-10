@@ -627,6 +627,24 @@ EOF
 		rpi-eeprom-images \
 		|| die "apt-get install failed"
 
+	info "Removing unnecessary keys and repos..."
+	for file in /etc/apt/trusted.gpg.d/microsoft.gpg \
+		    /etc/apt/sources.list.d/vscode.list; do
+		info "Replacing $file with dummy..."
+		if [ -e "$file" ]; then
+			rm "$file" || die "Failed to rm $file"
+		fi
+		touch "$file" || die "Failed to touch $file"
+	done
+	for file in /etc/apt/*.gpg~; do
+		if [ -e "$file" ]; then
+			info "Removing $file..."
+			rm "$file" || die "Failed to rm $file"
+		fi
+	done
+	apt-get $apt_opts update ||\
+		die "apt-get update failed"
+
 	info "Running debconf-set-selections..."
 	cat /tmp/templates/debconf-set-selections-postinstall.conf | debconf-set-selections ||\
 		die "Failed to configure debconf settings"
