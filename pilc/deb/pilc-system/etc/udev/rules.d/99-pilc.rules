@@ -1,1 +1,0 @@
-KERNEL=="ttyAMA[01]", SYMLINK+="ttyS%n"

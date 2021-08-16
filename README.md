@@ -24,11 +24,6 @@ See the [quick start tutorial](QUICK-START.html) for a simple example on how to 
 If you don't know where to start, you can find an example project in the `examples` directory as `EXAMPLE.awlpro`. You can easily run this example in simulation mode without the need for special hardware.
 
 
-## PiLC - The Raspberry Pi PLC
-
-If you want to use PiLC, please also see the [PiLC documentation](PILC.html).
-
-
 ## Git repository
 
 The latest development version of Awlsim can be fetched with git:
@@ -147,7 +142,6 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 .  debian/                   : Debian packaging support.
 .  maintenance/              : Maintainer scripts.
 .  misc/                     : Miscellaneous scripts and files.
-.  pilc/                     : PiLC distribution build scripts.
 .  setup.py                  : Python package build script. This also builds the Cython modules.
 </pre>
 
@@ -251,6 +245,11 @@ The accelerated Cython libraries can be built with the standard Python `./setup.
 For convenience there also is a helper script `./maintenance/build.sh`, which will do everything right to build Awlsim. That can be used instead of calling setup.py directly.
 
 There also is `./maintenance/build-noopt.sh`. That builds Cython modules without optimization. The build is much faster, but the resulting Cython libraries will be much slower. This is useful for development. Do not use this for production.
+
+
+## PiLC - The Raspberry Pi PLC
+
+If you want to use PiLC, please also see the [PiLC documentation](https://bues.ch/a/pilc).
 
 
 ## Building Debian / Raspbian / PiLC .deb packages

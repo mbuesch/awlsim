@@ -9,7 +9,6 @@ graft examples
 graft libs
 graft maintenance
 graft misc
-graft pilc
 graft progs
 graft submodules
 graft tests
@@ -19,8 +18,6 @@ include COMPATIBILITY.md
 include COPYING.txt
 include DEVELOPMENT.html
 include DEVELOPMENT.md
-include PILC.html
-include PILC.md
 include QUICK-START.html
 include QUICK-START.md
 include README.html
