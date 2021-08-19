@@ -1,27 +1,45 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-# This file is part of the PiXtend(R) Project.
-#
-# For more information about PiXtend(R) and this program,
-# see <https://www.pixtend.de> or <https://www.pixtend.com>
-#
-# Copyright (C) 2018 Robin Turner
-# Qube Solutions GmbH, Arbachtalstr. 6
-# 72800 Eningen, Germany
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# MIT License
+# 
+# Copyright (C) 2021 Kontron Electronics GmbH <support@pixtend.de>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+# 
+# For further details see LICENSE.txt.
+
+# -----------------------------------------------------------------------------
+# Attention:
+# The PiXtend Python Library v2 (PPLv2) was developed as a Python 
+# library / module to make use of the inheritance functionality of Python.
+# However, since the library must access the hardware based SPI bus on the
+# Raspberry Pi only ONE single instance of the PiXtendV2S or PiXtendV2L
+# class per PiXtend is allowed! The PPLv2 as well as the SPI bus is not 
+# capable of aggregating (multiplexing) multiple instances of either
+# PiXtend class. Please keep this in mind when developing your application.
+# We suggest building one central program which creates the PiXtend object
+# and all other programs, functions, threads use inter-process communication
+# with the main program to send data to the PiXtend board to manipulate the
+# analog and/or digital outputs or to get information from the inputs.
+# -----------------------------------------------------------------------------
 
 from __future__ import print_function
 # Import Pixtend V2 -S- class
@@ -163,6 +181,34 @@ if p is not None:
             for i in range(0, 13, 1):
                 sys.stdout.write("\x1b[A")
 
+        # Catch errors and if an error is caught, leave the program
+        except IOError as e:
+            # Print out the caught error and leave program
+            print ("I/O error({0}): {1}".format(e.errno, e.strerror))
+            p.close()
+            time.sleep(0.25)
+            del p
+            p = None
+            break
+            
+        except ValueError as ve:
+            # Print out the caught error and leave program
+            print ("Value error({0}): {1}".format(ve.errno, ve.strerror))
+            p.close()
+            time.sleep(0.25)
+            del p
+            p = None
+            break
+
+        except RuntimeError as re:
+            # Print out the caught error and leave program
+            print ("Runtime error({0}): {1}".format(re.errno, re.strerror))
+            p.close()
+            time.sleep(0.25)
+            del p
+            p = None
+            break 
+
         except KeyboardInterrupt:
             # Keyboard interrupt caught, Ctrl + C, now clean up and leave program
             client.loop_stop()
@@ -179,12 +225,14 @@ if p is not None:
             p.relay1 = p.OFF
             p.relay2 = p.OFF
             p.relay3 = p.OFF
+            time.sleep(0.25)
             # We must call the close() function to end the communication with the
             # PiXtend V2 -S- microcontroller, this way no error is thrown and we
             # can start this program again right away.
             p.close()
             # We have to wait for the communication to end
             time.sleep(0.25)
+            del p
             p = None
             break
 else:

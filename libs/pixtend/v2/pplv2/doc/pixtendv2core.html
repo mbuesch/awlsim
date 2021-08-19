@@ -7,9 +7,9 @@
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
 <tr bgcolor="#7799ee">
 <td valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2core</strong></big></big> (version 0.1.3)</font></td
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>pixtendv2core</strong></big></big> (version 0.1.4)</font></td
 ><td align=right valign=bottom
-><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/pi/pplv2/pixtendv2core/__init__.py">/home/pi/pplv2/pixtendv2core/__init__.py</a></font></td></tr></table>
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/local/lib/python2.7/dist-packages/pixtendlibv2-0.1.4-py2.7.egg/pixtendv2core/__init__.py">/usr/local/lib/python2.7/dist-packages/pixtendlibv2-0.1.4-py2.7.egg/pixtendv2core/__init__.py</a></font></td></tr></table>
     <p><tt>#&nbsp;coding=utf-8</tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -52,15 +52,18 @@ SPI&nbsp;protocol&nbsp;specification&nbsp;of&nbsp;the&nbsp;PiXtend&nbsp;V2&nbsp;
 <td width="100%">Methods defined here:<br>
 <dl><dt><a name="PiXtendV2Core-__del__"><strong>__del__</strong></a>(self)</dt><dd><tt>Destructor&nbsp;of&nbsp;the&nbsp;Pixtend&nbsp;V2&nbsp;class.&nbsp;Delete&nbsp;objects.</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2Core-__init__"><strong>__init__</strong></a>(self, spi_speed<font color="#909090">=700000</font>, com_interval<font color="#909090">=0.03</font>, model<font color="#909090">=0</font>)</dt><dd><tt>Constructor&nbsp;of&nbsp;the&nbsp;PixtendV2&nbsp;base&nbsp;class.&nbsp;Setup&nbsp;SPI&nbsp;communication,&nbsp;base&nbsp;variables&nbsp;and&nbsp;start<br>
+<dl><dt><a name="PiXtendV2Core-__init__"><strong>__init__</strong></a>(self, spi_speed<font color="#909090">=700000</font>, com_interval<font color="#909090">=0.03</font>, model<font color="#909090">=0</font>, disable_dac<font color="#909090">=False</font>)</dt><dd><tt>Constructor&nbsp;of&nbsp;the&nbsp;PixtendV2&nbsp;base&nbsp;class.&nbsp;Setup&nbsp;SPI&nbsp;communication,&nbsp;base&nbsp;variables&nbsp;and&nbsp;start<br>
 the&nbsp;cyclic&nbsp;communication&nbsp;using&nbsp;a&nbsp;timer&nbsp;from&nbsp;the&nbsp;threading&nbsp;module.<br>
 &nbsp;<br>
-:param&nbsp;spi_speed:&nbsp;int<br>
-:param&nbsp;com_interval:&nbsp;float<br>
-:param&nbsp;model:&nbsp;int</tt></dd></dl>
+:param&nbsp;int&nbsp;spi_speed:&nbsp;SPI&nbsp;communication&nbsp;speed,&nbsp;default&nbsp;is&nbsp;700000<br>
+:param&nbsp;float&nbsp;com_interval:&nbsp;Cycle&nbsp;time&nbsp;of&nbsp;the&nbsp;communication,&nbsp;how&nbsp;often&nbsp;is&nbsp;data&nbsp;exchanged&nbsp;between&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Raspberry&nbsp;Pi&nbsp;and&nbsp;the&nbsp;microcontroller&nbsp;on&nbsp;the&nbsp;PiXtend&nbsp;board,&nbsp;default&nbsp;is&nbsp;30&nbsp;ms<br>
+:param&nbsp;int&nbsp;model:&nbsp;The&nbsp;model&nbsp;number&nbsp;of&nbsp;the&nbsp;PiXtend&nbsp;board&nbsp;which&nbsp;is&nbsp;used.&nbsp;S&nbsp;=&nbsp;83&nbsp;and&nbsp;L&nbsp;=&nbsp;76<br>
+:param&nbsp;bool&nbsp;disable_dac:&nbsp;The&nbsp;DAC&nbsp;(analog&nbsp;output)&nbsp;can&nbsp;be&nbsp;disabled&nbsp;to&nbsp;allow&nbsp;the&nbsp;use&nbsp;of&nbsp;the&nbsp;CAN-Bus&nbsp;on&nbsp;the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PiXtend&nbsp;V2&nbsp;-L-&nbsp;board</tt></dd></dl>
 
-<dl><dt><a name="PiXtendV2Core-set_dac_output"><strong>set_dac_output</strong></a>(self, dac_channel<font color="#909090">=0</font>, value<font color="#909090">=0</font>)</dt><dd><tt>Set&nbsp;the&nbsp;analog&nbsp;output&nbsp;value&nbsp;for&nbsp;the&nbsp;chosen&nbsp;DAC.&nbsp;The&nbsp;value&nbsp;0&nbsp;or&nbsp;constant&nbsp;DAC_A&nbsp;selects&nbsp;DAC&nbsp;A&nbsp;and&nbsp;the&nbsp;value&nbsp;1&nbsp;or<br>
-constant&nbsp;DAC_B&nbsp;selects&nbsp;DAC&nbsp;B.<br>
+<dl><dt><a name="PiXtendV2Core-set_dac_output"><strong>set_dac_output</strong></a>(self, dac_channel<font color="#909090">=0</font>, value<font color="#909090">=0</font>)</dt><dd><tt>Set&nbsp;the&nbsp;analog&nbsp;output&nbsp;value&nbsp;for&nbsp;the&nbsp;chosen&nbsp;DAC.&nbsp;The&nbsp;value&nbsp;0&nbsp;or&nbsp;constant&nbsp;DAC_A&nbsp;selects&nbsp;DAC&nbsp;A&nbsp;which&nbsp;is<br>
+"Analog&nbsp;Out&nbsp;0"&nbsp;and&nbsp;the&nbsp;value&nbsp;1&nbsp;or&nbsp;constant&nbsp;DAC_B&nbsp;selects&nbsp;DAC&nbsp;B&nbsp;which&nbsp;is&nbsp;"Analog&nbsp;Out&nbsp;1".<br>
 Example:<br>
 Selecting&nbsp;and&nbsp;setting&nbsp;DAC&nbsp;A:<br>
 p.set_dac_output&nbsp;(p.DAC_A,&nbsp;512)<br>
@@ -110,12 +113,44 @@ Data descriptors defined here:<br>
 <dl><dt><strong>__weakref__</strong></dt>
 <dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
 </dl>
+<dl><dt><strong>analog_out0</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;Digital&nbsp;Analog&nbsp;Converter&nbsp;(DAC)&nbsp;for&nbsp;Analog&nbsp;Output&nbsp;0.<br>
+This&nbsp;function&nbsp;wraps&nbsp;the&nbsp;'set_dac_output'&nbsp;function,&nbsp;this&nbsp;way&nbsp;only&nbsp;one&nbsp;value&nbsp;has<br>
+to&nbsp;be&nbsp;provided,&nbsp;the&nbsp;DAC&nbsp;selection&nbsp;is&nbsp;automatic.<br>
+Value&nbsp;range&nbsp;0..1023&nbsp;for&nbsp;0V&nbsp;to&nbsp;10V.<br>
+&nbsp;<br>
+Example:<br>
+p.analog_out0&nbsp;=&nbsp;512<br>
+myvalue&nbsp;=&nbsp;p.analog_out0<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
+<dl><dt><strong>analog_out1</strong></dt>
+<dd><tt>Get&nbsp;or&nbsp;Set&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;Digital&nbsp;Analog&nbsp;Converter&nbsp;(DAC)&nbsp;for&nbsp;Analog&nbsp;Output&nbsp;1.<br>
+This&nbsp;function&nbsp;wraps&nbsp;the&nbsp;'set_dac_output'&nbsp;function,&nbsp;this&nbsp;way&nbsp;only&nbsp;one&nbsp;value&nbsp;has<br>
+to&nbsp;be&nbsp;provided,&nbsp;the&nbsp;DAC&nbsp;selection&nbsp;is&nbsp;automatic.<br>
+Value&nbsp;range&nbsp;0..1023&nbsp;for&nbsp;0V&nbsp;to&nbsp;10V.<br>
+&nbsp;<br>
+Example:<br>
+p.analog_out1&nbsp;=&nbsp;255&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+myvalue&nbsp;=&nbsp;p.analog_out1<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
+</dl>
 <dl><dt><strong>crc_header_in_error</strong></dt>
 <dd><tt>Get&nbsp;the&nbsp;error&nbsp;state&nbsp;of&nbsp;the&nbsp;CRC&nbsp;check&nbsp;performed&nbsp;on&nbsp;the&nbsp;SPI&nbsp;data&nbsp;header.&nbsp;If&nbsp;the&nbsp;CRC&nbsp;comparision&nbsp;is&nbsp;wrong<br>
 the&nbsp;value&nbsp;will&nbsp;be&nbsp;True,&nbsp;if&nbsp;the&nbsp;header&nbsp;of&nbsp;the&nbsp;SPI&nbsp;data&nbsp;is&nbsp;correct,&nbsp;the&nbsp;value&nbsp;will&nbsp;be&nbsp;False.<br>
 &nbsp;<br>
 :return:&nbsp;Current&nbsp;value,&nbsp;False&nbsp;means&nbsp;no&nbsp;error,&nbsp;True&nbsp;means&nbsp;the&nbsp;header&nbsp;is&nbsp;not&nbsp;correct,&nbsp;error<br>
 :rtype:&nbsp;bool</tt></dd>
+</dl>
+<dl><dt><strong>crc_header_in_error_counter</strong></dt>
+<dd><tt>Get&nbsp;the&nbsp;error&nbsp;counter&nbsp;of&nbsp;the&nbsp;CRC&nbsp;check&nbsp;performed&nbsp;on&nbsp;the&nbsp;incoming&nbsp;SPI&nbsp;data&nbsp;header.<br>
+&nbsp;<br>
+:return:&nbsp;Current&nbsp;value<br>
+:rtype:&nbsp;int</tt></dd>
 </dl>
 <dl><dt><strong>firmware</strong></dt>
 <dd><tt>Get&nbsp;the&nbsp;microcontroller's&nbsp;firmware&nbsp;version.<br>
@@ -530,7 +565,7 @@ even&nbsp;via&nbsp;super()).</tt></dl>
     
 <tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><strong>__author__</strong> = 'Robin Turner'<br>
-<strong>__version__</strong> = '0.1.3'</td></tr></table><p>
+<strong>__version__</strong> = '0.1.4'</td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#7799ee">
 <td colspan=3 valign=bottom>&nbsp;<br>

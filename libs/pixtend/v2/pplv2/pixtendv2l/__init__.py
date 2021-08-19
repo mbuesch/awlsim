@@ -1,32 +1,50 @@
 #!/usr/bin/python
 # coding=utf-8
 
-# This file is part of the PiXtend(R) Project.
-#
-# For more information about PiXtend(R) and this program,
-# see <https://www.pixtend.de> or <https://www.pixtend.com>
-#
-# Copyright (C) 2018 Robin Turner
-# Qube Solutions GmbH, Arbachtalstr. 6
-# 72800 Eningen, Germany
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# MIT License
+# 
+# Copyright (C) 2021 Kontron Electronics GmbH <support@pixtend.de>
+# 
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+# 
+# For further details see LICENSE.txt.
+
+# -----------------------------------------------------------------------------
+# Attention:
+# The PiXtend Python Library v2 (PPLv2) was developed as a Python 
+# library / module to make use of the inheritance functionality of Python.
+# However, since the library must access the hardware based SPI bus on the
+# Raspberry Pi only ONE single instance of the PiXtendV2S or PiXtendV2L
+# class per PiXtend is allowed! The PPLv2 as well as the SPI bus is not 
+# capable of aggregating (multiplexing) multiple instances of either
+# PiXtend class. Please keep this in mind when developing your application.
+# We suggest building one central program which creates the PiXtend object
+# and all other programs, functions, threads use inter-process communication
+# with the main program to send data to the PiXtend board to manipulate the
+# analog and/or digital outputs or to get information from the inputs.
+# -----------------------------------------------------------------------------
 
 from pixtendv2core import PiXtendV2Core
 
 __author__ = "Robin Turner"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 
 class PiXtendV2L(PiXtendV2Core):
@@ -34,6 +52,11 @@ class PiXtendV2L(PiXtendV2Core):
     The PiXtendV2L class is based off of the PiXtendV2Core class, which provides basic and most common functions for
     PiXtend V2. This class must implement the abstract methods _unpack_spi_data and _pack_spi_data otherwise there
     can be no functioning data communication and no usable object at runtime.
+    
+    Notice:
+    Only ONE single instance of this class is allowed per Raspberry Pi. Do not create multiple objects in the
+    same or a different program. This will lead to inconsistent states of the PiXtend board used. The PPLv2 and the
+    SPI Bus of the Raspberry Pi cannot handle multiple instances or objects.    
     """
 
     # Class defines
@@ -42,16 +65,19 @@ class PiXtendV2L(PiXtendV2Core):
     _SPI_DATA = [0] * _MAX_SPI_DATA
 
     def __init__(self, spi_speed=PiXtendV2Core.SPI_SPEED, com_interval=PiXtendV2Core.COM_INTERVAL_DEFAULT,
-                 model=PiXtendV2Core.PIXTENDV2L_MODEL):
+                 model=PiXtendV2Core.PIXTENDV2L_MODEL, disable_dac=False):
         """
         Constructor of the PixtendV2L class. Create needed variables to store the settings and values for the PiXtend V2
         board which are transferred via SPI to the on-board microcontroller. The the core class (PiXtendV2Core) does
         not provide all needed variables and functions, only the basic and most common functions of the PiXtend V2
         system. This class has to build and supply the rest.
 
-        :param spi_speed: int
-        :param com_interval: float
-        :param model: int
+        :param int spi_speed: SPI communication speed, default is 700000
+        :param float com_interval: Cycle time of the communication, how often is data exchanged between the
+                                   Raspberry Pi and the microcontroller on the PiXtend board, default is 30 ms
+        :param int model: The model number of the PiXtend board which is used. S = 83 and L = 76
+        :param bool disable_dac: The DAC (analog output) can be disabled to allow the use of the CAN-Bus on the
+                                 PiXtend V2 -L- board
         """
 
         # Output data from RPi -> uC
@@ -99,7 +125,7 @@ class PiXtendV2L(PiXtendV2Core):
         self._is_crc_data_in_error = False
         self._crc_data_errors = 0
 
-        super(PiXtendV2L, self).__init__(spi_speed, com_interval, model)
+        super(PiXtendV2L, self).__init__(spi_speed, com_interval, model, disable_dac)
 
     def close(self):
         """

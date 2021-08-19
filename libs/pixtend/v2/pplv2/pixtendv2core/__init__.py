@@ -1,29 +1,46 @@
 #!/usr/bin/python
 # coding=utf-8
 
-# This file is part of the PiXtend(R) Project.
-#
-# For more information about PiXtend(R) and this program,
-# see <https://www.pixtend.de> or <https://www.pixtend.com>
-#
-# Copyright (C) 2018 Robin Turner
-# Qube Solutions GmbH, Arbachtalstr. 6
-# 72800 Eningen, Germany
-#
+# MIT License
+# 
+# Copyright (C) 2021 Kontron Electronics GmbH <support@pixtend.de>
 # Copyright (C) 2018 Michael Buesch
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+# 
+# For further details see LICENSE.txt.
+
+# -----------------------------------------------------------------------------
+# Attention:
+# The PiXtend Python Library v2 (PPLv2) was developed as a Python 
+# library / module to make use of the inheritance functionality of Python.
+# However, since the library must access the hardware based SPI bus on the
+# Raspberry Pi only ONE single instance of the PiXtendV2S or PiXtendV2L
+# class per PiXtend is allowed! The PPLv2 as well as the SPI bus is not 
+# capable of aggregating (multiplexing) multiple instances of either
+# PiXtend class. Please keep this in mind when developing your application.
+# We suggest building one central program which creates the PiXtend object
+# and all other programs, functions, threads use inter-process communication
+# with the main program to send data to the PiXtend board to manipulate the
+# analog and/or digital outputs or to get information from the inputs.
+# -----------------------------------------------------------------------------
 
 import RPi.GPIO as GPIO
 from abc import ABCMeta, abstractmethod
@@ -32,7 +49,7 @@ import spidev
 import threading
 
 __author__ = "Robin Turner"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 
 class PiXtendV2Core:
@@ -109,18 +126,21 @@ class PiXtendV2Core:
 
     # </editor-fold>
 
-    def __init__(self, spi_speed=SPI_SPEED, com_interval=COM_INTERVAL_DEFAULT, model=0):
+    def __init__(self, spi_speed=SPI_SPEED, com_interval=COM_INTERVAL_DEFAULT, model=0, disable_dac=False):
         """
         Constructor of the PixtendV2 base class. Setup SPI communication, base variables and start
         the cyclic communication using a timer from the threading module.
 
-        :param spi_speed: int
-        :param com_interval: float
-        :param model: int
+        :param int spi_speed: SPI communication speed, default is 700000
+        :param float com_interval: Cycle time of the communication, how often is data exchanged between the
+                                   Raspberry Pi and the microcontroller on the PiXtend board, default is 30 ms
+        :param int model: The model number of the PiXtend board which is used. S = 83 and L = 76
+        :param bool disable_dac: The DAC (analog output) can be disabled to allow the use of the CAN-Bus on the
+                                 PiXtend V2 -L- board
         """
 
         if model == 0:
-            raise RuntimeError("PiXtend V2 model parameter cannot be 0 (Zero), a valid model is needed")
+            raise RuntimeError("PiXtend V2 model parameter cannot be 0 (Zero), a valid model number is needed")
         if model != self.PIXTENDV2S_MODEL and model != self.PIXTENDV2L_MODEL:
             raise RuntimeError("PiXtend V2 model parameter is not a valid model!")
         if model == self.PIXTENDV2S_MODEL:
@@ -198,12 +218,16 @@ class PiXtendV2Core:
         # Activate SPI Enable, allow communication
         GPIO.output(self.SPI_ENABLE_PIN, True)
         # Turn microcontroller reset pin off
-        GPIO.output(self.MC_RESET_PIN, False)        
-        
+        GPIO.output(self.MC_RESET_PIN, False)
+
         # Open SPI Master 0 with CS 0 for communication with the microcontroller
         self._open(0, 0, self.__spi_speed)
-        # Open SPI Master 0 with CS 1 for communication with the DAC
-        self._open_dac(0, 1, self.__spi_speed)
+
+        # Check if we need the DAC or if it has been disabled, to make way for the CAN-Bus
+        self.__disable_dac = disable_dac
+        if not self.__disable_dac:
+            # Open SPI Master 0 with CS 1 for communication with the DAC
+            self._open_dac(0, 1, self.__spi_speed)
 
         # Start the endless communication loop to send and receive data from the PiXtend V2's microcontroller
         # at the given interval. This is done automatically. The user should only need to call the _loop_stop()
@@ -326,7 +350,8 @@ class PiXtendV2Core:
         self.__is_spi_open = False
 
         try:
-            self.__spi_dac.close()
+            if not self.__disable_dac:
+                self.__spi_dac.close()
         except:
             pass
 
@@ -1369,6 +1394,10 @@ class PiXtendV2Core:
         :raises IOError: If SPI bus has already been opened
         """
 
+        # Check if we are allowed to use the DAC
+        if self.__disable_dac:
+            raise IOError("The DAC cannot be used, it has been disabled!", "Method _open_dac was called!")
+
         self.__spi_channel = spi_channel
         self.__spi_cs = spi_cs
         self.__spi_speed = spi_speed
@@ -1385,10 +1414,13 @@ class PiXtendV2Core:
 
         # Open SPI bus
         if not self.__is_spi_dac_open:
-            self.__spi_dac = spidev.SpiDev(self.__spi_channel, self.__spi_cs)
-            self.__spi_dac.open(self.__spi_channel, self.__spi_cs)
-            self.__spi_dac.max_speed_hz = self.__spi_speed
-            self.__is_spi_dac_open = True
+            try:
+                self.__spi_dac = spidev.SpiDev(self.__spi_channel, self.__spi_cs)
+                self.__spi_dac.open(self.__spi_channel, self.__spi_cs)
+                self.__spi_dac.max_speed_hz = self.__spi_speed
+                self.__is_spi_dac_open = True
+            except:
+                raise IOError("Could not open SPI 0 CS 1, no DAC available!")
         else:
             raise IOError("SPI 0 CS 1 already opened!!!")
 
@@ -1400,6 +1432,10 @@ class PiXtendV2Core:
         :param int value0: First byte for the DAC
         :param int value1: Second byte for the DAC
         """
+
+        # Check if we are allowed to use the DAC
+        if self.__disable_dac:
+            raise IOError("The DAC cannot be used, it has been disabled!", "Method _transfer_spi_dac_data was called!")
 
         # Build data list to send to the DAC.
         to_send = [value0, value1]
@@ -1415,8 +1451,8 @@ class PiXtendV2Core:
 
     def set_dac_output(self, dac_channel=DAC_A, value=0):
         """
-        Set the analog output value for the chosen DAC. The value 0 or constant DAC_A selects DAC A and the value 1 or
-        constant DAC_B selects DAC B.
+        Set the analog output value for the chosen DAC. The value 0 or constant DAC_A selects DAC A which is
+        "Analog Out 0" and the value 1 or constant DAC_B selects DAC B which is "Analog Out 1".
         Example:
         Selecting and setting DAC A:
         p.set_dac_output (p.DAC_A, 512)
@@ -1428,6 +1464,10 @@ class PiXtendV2Core:
         :param int value: Output value for the chosen DAC.
         :raises ValueError: If value is smaller then 0 or larger then 1023
         """
+
+        # Check if we are allowed to use the DAC
+        if self.__disable_dac:
+            raise IOError("The DAC cannot be used, it has been disabled!", "Method set_dac_output was called!")
 
         if 0 <= dac_channel <= 1:
             pass
@@ -1472,6 +1512,63 @@ class PiXtendV2Core:
 
         # Send the 2 bytes to the DAC via SPI
         self._transfer_spi_dac_data(c, f)
+
+
+    @property
+    def analog_out0(self):
+        """
+        Get or Set the value of the Digital Analog Converter (DAC) for Analog Output 0.
+        This function wraps the 'set_dac_output' function, this way only one value has
+        to be provided, the DAC selection is automatic.
+        Value range 0..1023 for 0V to 10V.
+
+        Example:
+        p.analog_out0 = 512
+        myvalue = p.analog_out0
+
+        :return: Current value
+        :rtype: int
+        """
+
+        return self.__analog0_dac_value
+
+    @analog_out0.setter
+    def analog_out0(self, value):
+        if 0 <= value <= 1023:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: 10bit values max. 1023")
+
+        self.__analog0_dac_value = value
+        self.set_dac_output (self.DAC_A, self.__analog0_dac_value)
+        
+    @property
+    def analog_out1(self):
+        """
+        Get or Set the value of the Digital Analog Converter (DAC) for Analog Output 1.
+        This function wraps the 'set_dac_output' function, this way only one value has
+        to be provided, the DAC selection is automatic.
+        Value range 0..1023 for 0V to 10V.
+
+        Example:
+        p.analog_out1 = 255        
+        myvalue = p.analog_out1
+
+        :return: Current value
+        :rtype: int
+        """
+
+        return self.__analog1_dac_value
+
+    @analog_out1.setter
+    def analog_out1(self, value):
+        if 0 <= value <= 1023:
+            pass
+        else:
+            raise ValueError("Value error!, Value " + str(value) + " not allowed! - Use only: 10bit values max. 1023")
+
+        self.__analog1_dac_value = value
+        self.set_dac_output (self.DAC_B, self.__analog1_dac_value)
 
     # </editor-fold>
 
