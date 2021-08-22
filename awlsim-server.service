@@ -10,7 +10,7 @@ RestartSec=100ms
 User=root
 Group=root
 WorkingDirectory=/etc/awlsim
-Nice=-15
+Nice=-5
 
 ExecStart=/usr/bin/python3 /usr/bin/awlsim-server -l localhost -4 -S -w /etc/awlsim/awlsim-server.awlpro
 ExecStartPost=-/usr/bin/python3 /usr/bin/awlsim-client -c localhost -r RUN
