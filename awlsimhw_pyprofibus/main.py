@@ -2,7 +2,7 @@
 #
 # AWL simulator - PyProfibus hardware interface
 #
-# Copyright 2013-2019 Michael Buesch <m@bues.ch>
+# Copyright 2013-2021 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -121,33 +121,28 @@ class HardwareInterface_PyProfibus(AbstractHardwareInterface): #+cdef
 			if inData is None:
 				continue
 			self.cachedInputs[slave.slaveAddr] = None
-			inData = bytearray(inData)
-			inputSize = slave.slaveConf.inputSize
-			if len(inData) > inputSize:
-				inData = inData[0:inputSize]
-			if len(inData) < inputSize:
-				inData += b'\0' * (inputSize - len(inData))
-			self.sim.cpu.storeInputRange(address, inData)
+			outputSize = slave.slaveConf.outputSize
+			assert len(inData) == outputSize
+			self.sim.cpu.storeInputRange(address, bytearray(inData))
 			# Adjust the address base for the next slave.
-			address += inputSize
+			address += outputSize
 
 	def writeOutputs(self): #+cdef
 		try:
 			address = self.outputAddressBase
 			for slave in self.slaveList:
 				# Get the output data from the CPU
-				outputSize = slave.slaveConf.outputSize
-				outData = self.sim.cpu.fetchOutputRange(address,
-						outputSize)
+				inputSize = slave.slaveConf.inputSize
+				outData = self.sim.cpu.fetchOutputRange(address, inputSize)
 				# Write the output data to the pyprofibus subsystem.
-				slave.setOutData(outData)
+				slave.setMasterOutData(outData)
 				# Adjust the address base for the next slave.
-				address += outputSize
+				address += inputSize
 			# Run the pyprofibus master state machine.
 			slave = self.master.run()
 			if slave:
 				# Get the input data from the pyprofibus subsystem.
-				inData = slave.getInData()
+				inData = slave.getMasterInData()
 				# Cache the input data for the readInputs() call.
 				self.cachedInputs[slave.slaveAddr] = inData
 		except self.pyprofibus.ProfibusError as e:
