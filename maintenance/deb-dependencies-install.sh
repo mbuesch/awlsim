@@ -5,9 +5,8 @@ exec apt install \
 	cython3 \
 	devscripts \
 	git \
-	pypy \
-	pypy-coverage \
-	pypy-dev \
+	pypy3 \
+	pypy3-dev \
 	python3 \
 	python3-cffi \
 	python3-coverage \
