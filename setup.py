@@ -39,7 +39,7 @@ for base in (os.getcwd(), basedir):
 
 import re
 import warnings
-from distutils.core import setup
+from setuptools import setup
 try:
 	from cx_Freeze import setup, Executable
 	cx_Freeze = True

@@ -24,7 +24,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 for base in (os.getcwd(), basedir):
 	sys.path.insert(0, os.path.join(base, "..", "misc"))
 	sys.path.insert(0, base)
-from distutils.core import setup
+from setuptools import setup
 import setup_cython
 
 

@@ -2,7 +2,7 @@
 #
 # subprocess wrapper
 #
-# Copyright 2014-2016 Michael Buesch <m@bues.ch>
+# Copyright 2014-2022 Michael Buesch <m@bues.ch>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,23 +23,45 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
-import distutils.spawn
-
 
 __all__ = [
 	"findExecutable",
 	"PopenWrapper",
 ]
 
+import os
+import os.path # Required for Micropython
+import signal
 
-if isIronPython or isMicroPython:
-	import os
-	import signal
-else:
+if not isIronPython and not isMicroPython:
 	import subprocess
 
 def findExecutable(executable):
-	return distutils.spawn.find_executable(executable)
+	if executable:
+		try:
+			import shutil
+			return shutil.which(executable)
+		except ImportError:
+			pass
+
+		try:
+			import distutils.spawn
+			return distutils.spawn.find_executable(executable)
+		except ImportError:
+			pass
+
+		if executable.startswith(os.path.sep):
+			if (os.access(executable, os.X_OK) and
+			    not os.path.isdir(executable)):
+				return executable
+		else:
+			path = os.getenv("PATH", "")
+			for p in path.split(";" if osIsWindows else ":"):
+				fullpath = os.path.join(p, executable)
+				if (os.access(fullpath, os.X_OK) and
+				    not os.path.isdir(fullpath)):
+					return fullpath
+	return None
 
 class PopenWrapper(object):
 	def __init__(self, argv, env, stdio=False, hideWindow=False):
