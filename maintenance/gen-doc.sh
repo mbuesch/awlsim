@@ -27,7 +27,7 @@ gen()
 
 	echo "<!DOCTYPE html><html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"></head><body>" > "$html" ||\
 		die "Failed to generate"
-	markdown "$md" >> "$html" ||\
+	python3 -c "from readme_renderer.markdown import render; print(render(open('$md', 'r').read()))" >> "$html" ||\
 		die "Failed to generate"
 	echo "</body></html>" >> "$html" ||\
 		die "Failed to generate"
