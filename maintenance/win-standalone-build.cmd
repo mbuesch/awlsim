@@ -2,7 +2,7 @@
 rem
 rem AWL simulator - Windows frozen package build script
 rem
-rem Copyright 2012-2018 Michael Buesch <m@bues.ch>
+rem Copyright 2012-2022 Michael Buesch <m@bues.ch>
 rem
 rem This program is free software; you can redistribute it and/or modify
 rem it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ echo Building standalone Windows executable for %project%-%version%
 call :select_buildcython
 call :prepare_env
 call :build_cxfreeze
+call :build_doc
 call :copy_cython_modules_stage1
 call :build_cxfreeze_exe
 call :copy_cython_modules_stage2
@@ -117,6 +118,19 @@ exit /B 0
     exit /B 0
 
 
+:build_doc
+    for %%i in (*.md) do (
+        echo Generating %%~ni.html from %%i ...
+        echo ^<!DOCTYPE html^>^<html^>^<head^>^<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"^>^</head^>^<body^> > %%~ni.html
+        if ERRORLEVEL 1 goto error_doc
+        py -c "from readme_renderer.markdown import render; print(render(open('"%%i"', 'r').read()))" >> %%~ni.html
+        if ERRORLEVEL 1 goto error_doc
+        echo ^</body^>^</html^> >> %%~ni.html
+        if ERRORLEVEL 1 goto error_doc
+    )
+    exit /B 0
+
+
 :build_cxfreeze_exe
     echo === Building the cx_Freeze distribution executables
     py setup.py build_exe --build-exe=%bindir%
@@ -171,9 +185,15 @@ exit /B 0
     copy COPYING.txt %licensedir%\AWLSIM-LICENSE.txt
     if ERRORLEVEL 1 goto error_copy
     for /D %%f in ( "progs\putty\*" ) do (
-        copy %%f\putty\PUTTY.EXE %bindir%\
+        7z e -y -o%%f %%f\putty.zip PUTTY.EXE PLINK.EXE
         if ERRORLEVEL 1 goto error_copy
-        copy %%f\putty\PLINK.EXE %bindir%\
+        copy %%f\PUTTY.EXE %bindir%\
+        if ERRORLEVEL 1 goto error_copy
+        del %%f\PUTTY.EXE
+        if ERRORLEVEL 1 goto error_copy
+        copy %%f\PLINK.EXE %bindir%\
+        if ERRORLEVEL 1 goto error_copy
+        del %%f\PLINK.EXE
         if ERRORLEVEL 1 goto error_copy
         copy %%f\LICENCE %licensedir%\PUTTY-LICENSE.txt
         if ERRORLEVEL 1 goto error_copy
@@ -214,6 +234,10 @@ goto error
 
 :error_exe
 echo FAILED to build exe
+goto error
+
+:error_doc
+echo FAILED to build documentation
 goto error
 
 :error_copy

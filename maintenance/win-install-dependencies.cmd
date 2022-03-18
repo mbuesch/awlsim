@@ -19,7 +19,10 @@ call :install PyQt5
 if ERRORLEVEL 1 exit /B 1
 call :install cx_Freeze
 if ERRORLEVEL 1 exit /B 1
-
+call :install readme_renderer
+if ERRORLEVEL 1 exit /B 1
+call :install readme_renderer[md]
+if ERRORLEVEL 1 exit /B 1
 
 echo ---
 echo finished successfully
