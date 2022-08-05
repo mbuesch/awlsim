@@ -15,12 +15,12 @@ Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports 
 
 AWL/STL programs on PLCs are used for automation of industrial processes. However Awlsim is very flexible, so it can be used for other purposes beyond industrial applications, too. Awlsim aims to be compatible with the industry standard S7 software on the AWL/STL level.
 
-Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the Awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason Awlsim ships an extensive selftest suite. Missing features and differences between Awlsim and Step 7 are documented in the [COMPATIBILITY documentation](COMPATIBILITY.html) and [TODO documentation](TODO.html) files.
+Awlsim can emulate CPUs with two and four accumulator registers (S7-3xx and S7-4xx). Compatibility to S7 hardware is a task taken seriously by the Awlsim project. We want to be as close as possible to the real PLC hardware with our AWL/STL code execution. For this reason Awlsim ships an extensive selftest suite. Missing features and differences between Awlsim and Step 7 are documented in the [COMPATIBILITY documentation](COMPATIBILITY.md) and [TODO documentation](TODO.md) files.
 
 
 ## Quick start tutorial
 
-See the [quick start tutorial](QUICK-START.html) for a simple example on how to use Awlsim in simulator mode. In simulator mode Awlsim can be run on any desktop PC. No special hardware is required.
+See the [quick start tutorial](QUICK-START.md) for a simple example on how to use Awlsim in simulator mode. In simulator mode Awlsim can be run on any desktop PC. No special hardware is required.
 
 
 ## Example project
@@ -152,7 +152,7 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 
 ## FUP - Funktionsplan - Function block diagram
 
-Awlsim supports programming in an S7-FUP like language. See [the FUP documentation](doc/fup/FUP.html) for more information about Awlsim's implementation of FUP.
+Awlsim supports programming in an S7-FUP like language. See [the FUP documentation](doc/fup/FUP.md) for more information about Awlsim's implementation of FUP.
 
 
 ## Environment variables
@@ -281,7 +281,7 @@ this can be fixed by re-installing the libc development package:
 
 ## Development
 
-Information about Awlsim development can be found in [the Awlsim development documentation](DEVELOPMENT.html).
+Information about Awlsim development can be found in [the Awlsim development documentation](DEVELOPMENT.md).
 
 
 ## License / Copyright
