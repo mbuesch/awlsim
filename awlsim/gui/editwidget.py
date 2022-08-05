@@ -517,7 +517,7 @@ class EditWidget(SourceCodeEdit):
 		while block.isValid() and\
 		      block.isVisible() and\
 		      top <= self.viewport().rect().bottom():
-			yield (block.blockNumber() + 1, top)
+			yield (int(block.blockNumber() + 1), int(top))
 			block = block.next()
 			top = bottom
 			bottom = top + self.blockBoundingRect(block).height()
@@ -836,7 +836,7 @@ class EditWidget(SourceCodeEdit):
 		p.setPen(Qt.black)
 
 		for lineNr, yOffset in self.__eachVisibleLine():
-			p.drawText(-5, int(yOffset),
+			p.drawText(-5, yOffset,
 				   self.lineNumWidget.width(),
 				   self.__charHeight,
 				   Qt.AlignRight,
