@@ -4,6 +4,10 @@ Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports 
 
 The latest version of Awlsim can be downloaded at the [official Awlsim site](https://awlsim.de).
 
+[Main git repository](https://bues.ch/cgit/awlsim.git/)
+
+[Github / issue tracking / pull requests](https://github.com/mbuesch/awlsim)
+
 
 ## Awlsim - Programmable Logic Controller (PLC/SPS)
 
