@@ -836,7 +836,7 @@ class EditWidget(SourceCodeEdit):
 		p.setPen(Qt.black)
 
 		for lineNr, yOffset in self.__eachVisibleLine():
-			p.drawText(-5, yOffset,
+			p.drawText(-5, int(yOffset),
 				   self.lineNumWidget.width(),
 				   self.__charHeight,
 				   Qt.AlignRight,
