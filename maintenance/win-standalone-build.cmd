@@ -118,16 +118,30 @@ exit /B 0
     exit /B 0
 
 
+:build_one_doc
+    echo Generating %~2.html from %~1 ...
+    echo ^<!DOCTYPE html^>^<html^>^<head^>^<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"^>^</head^>^<body^> > %~2.html
+    if ERRORLEVEL 1 goto error_doc
+    py -c "import re; print(re.subn(r'\.md\)', '.html)', open('"%~1"', 'r').read())[0])" >> %~2.md.tmp
+    if ERRORLEVEL 1 goto error_doc
+    py -c "from readme_renderer.markdown import render; print(render(open('"%~2.md.tmp"', 'r').read()))" >> %~2.html
+    if ERRORLEVEL 1 goto error_doc
+    del %~2.md.tmp
+    if ERRORLEVEL 1 goto error_doc
+    echo ^</body^>^</html^> >> %~2.html
+    if ERRORLEVEL 1 goto error_doc
+    exit /B 0
+
 :build_doc
     for %%i in (*.md) do (
-        echo Generating %%~ni.html from %%i ...
-        echo ^<!DOCTYPE html^>^<html^>^<head^>^<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"^>^</head^>^<body^> > %%~ni.html
-        if ERRORLEVEL 1 goto error_doc
-        py -c "from readme_renderer.markdown import render; print(render(open('"%%i"', 'r').read()))" >> %%~ni.html
-        if ERRORLEVEL 1 goto error_doc
-        echo ^</body^>^</html^> >> %%~ni.html
-        if ERRORLEVEL 1 goto error_doc
+        call :build_one_doc %%i, %%~ni
     )
+    pushd doc\fup
+    if ERRORLEVEL 1 goto error_doc
+    for %%i in (*.md) do (
+        call :build_one_doc %%i, %%~ni
+    )
+    popd
     exit /B 0
 
 
