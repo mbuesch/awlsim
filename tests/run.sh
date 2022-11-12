@@ -245,7 +245,7 @@ setup_test_environment()
 
 		local use_cython=3
 
-		for i in "$rootdir"/build/lib.linux-*-3.*; do
+		for i in "$rootdir"/build/lib.linux-*-3*; do
 			export PYTHONPATH="$i"
 			break
 		done
@@ -508,7 +508,7 @@ run_pyunit_test()
 			# Get the relative directory of the test case.
 			local reldir_cython="$(dirname "$relpath_cython")"
 			# Go to the unittest subdir to run the Cython unittest.
-			cd "$rootdir/tests/build/"lib.*-3.*"/$reldir_cython" || die "Failed to cd to test directory."
+			cd "$rootdir/tests/build/"lib.linux-*-3*"/$reldir_cython" || die "Failed to cd to test directory."
 		else
 			# Go to the unittest subdir to run the Python unittest.
 			cd "$(dirname "$test_case")" || die "Failed to cd to test directory."
