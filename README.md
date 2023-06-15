@@ -2,7 +2,7 @@
 
 Awlsim is a free Step 7 compatible Programmable Logic Controller, that supports the automation languages AWL/STL and FUP/FBD. Awlsim itself is written in Python.
 
-The latest version of Awlsim can be downloaded at the [official Awlsim site](https://awlsim.de).
+The latest version of Awlsim can be downloaded at the [official Awlsim site](https://bues.ch/a/awlsim).
 
 [Main git repository](https://bues.ch/cgit/awlsim.git/)
 
