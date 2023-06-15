@@ -144,7 +144,7 @@ if cx_Freeze:
 			if isWindows:
 				exe += ".exe"
 			executables.append(Executable(script=script,
-						      targetName=exe,
+						      target_name=exe,
 						      base=base))
 		else:
 			executables.append(Executable(script=script,
