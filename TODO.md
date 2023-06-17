@@ -5,6 +5,7 @@
 * Add feature: Missing SFCs/SFBs
 * Add feature: Missing library FCs/FBs
 * Add feature: Parsing of attributes
+* Add feature: Support for interrupt OBs
 
 ## core
 
