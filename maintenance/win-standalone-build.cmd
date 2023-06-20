@@ -43,7 +43,7 @@ set sfxfile=%project%-%winprefix%-%version%.package.exe
 set bindirname=%project%-bin
 set bindir=%distdir%\%bindirname%
 set libcythontmpdir=%distdir%\lib_cython.tmp
-set builddir=%bindir%\build
+set builddir=build
 set licensedirname=licenses
 set licensedir=%distdir%\%licensedirname%
 
@@ -80,7 +80,7 @@ exit /B 0
     echo Build optimized Cython modules?
     echo   1)  Do not build Cython modules (default)
     echo   2)  Build Cython modules
-    set /p buildcython=Selection: 
+    set /p buildcython=Selection:
     if "%buildcython%" == "" goto buildcython_no
     if "%buildcython%" == "1" goto buildcython_no
     if "%buildcython%" == "2" goto buildcython_yes
@@ -100,7 +100,7 @@ exit /B 0
 
 :prepare_env
     echo === Preparing distribution environment
-    rd /S /Q build 2>NUL
+    rd /S /Q %builddir% 2>NUL
     rd /S /Q %distdir% 2>NUL
     del %sfxfile% 2>NUL
     timeout /T 2 /NOBREAK >NUL
@@ -113,7 +113,7 @@ exit /B 0
 
 :build_cxfreeze
     echo === Building the cx_Freeze distribution
-    py setup.py build --build-base=%builddir%
+    py setup.py build
     if ERRORLEVEL 1 goto error_exe
     exit /B 0
 
@@ -170,7 +170,7 @@ exit /B 0
 
 :copy_cython_modules_stage2
     if %AWLSIM_CYTHON_BUILD% NEQ 0 (
-        echo === Copying Cython modules from builddir to bindir ...
+        echo === Copying Cython modules from temporary dir to bindir ...
         for /D %%i in ( "%libcythontmpdir%\*" ) do (
             echo === Copying %%i to %bindir%\lib\%%~ni ...
             xcopy /E /I %%i %bindir%\lib\%%~ni
