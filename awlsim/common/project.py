@@ -1019,7 +1019,7 @@ class Project(object):
 
 	def setCreateDate(self, createDate):
 		if createDate is None:
-			createDate = datetime.datetime.utcnow()
+			createDate = datetime.datetime.now(datetime.timezone.utc)
 		self.createDate = createDate
 
 	def getCreateDate(self):
@@ -1029,7 +1029,7 @@ class Project(object):
 		if modifyDate is None:
 			modifyDate = self.getCreateDate()
 		if modifyDate is None:
-			modifyDate = datetime.datetime.utcnow()
+			modifyDate = datetime.datetime.now(datetime.timezone.utc)
 		self.modifyDate = modifyDate
 
 	def getModifyDate(self):
@@ -1223,7 +1223,7 @@ class Project(object):
 			projectFile = self.projectFile
 		self.projectDir = os.path.dirname(projectFile)
 
-		self.setModifyDate(datetime.datetime.utcnow())
+		self.setModifyDate(datetime.datetime.now(datetime.timezone.utc))
 
 		try:
 			factory = self.factory(project=self)

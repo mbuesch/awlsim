@@ -55,11 +55,6 @@ class datetime(object):
 	@classmethod
 	def now(cls, tz=None):
 		#TODO
-		return cls.utcnow()
-
-	@classmethod
-	def utcnow(cls):
-		#TODO
 		return cls()
 
 	@classmethod
