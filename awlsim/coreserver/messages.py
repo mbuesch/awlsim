@@ -548,7 +548,7 @@ class _AwlSimMessage_source(AwlSimMessage):
 			flags = 0
 			if self.source.enabled:
 				flags |= self.FLAG_ENABLED
-			if self.source.volatile:
+			if self.source.volatile_:
 				flags |= self.FLAG_VOLATILE
 			pl = self.plStruct.pack(flags, 0, 0, 0, 0, 0, 0, 0) +\
 				self.packString(self.source.name) +\
@@ -571,7 +571,7 @@ class _AwlSimMessage_source(AwlSimMessage):
 			raise TransferError("SOURCE: Data format error")
 		return cls(cls.sourceClass(name=name,
 					   enabled=(flags & cls.FLAG_ENABLED),
-					   volatile=(flags & cls.FLAG_VOLATILE),
+					   volatile_=(flags & cls.FLAG_VOLATILE),
 					   sourceBytes=sourceBytes))
 
 class AwlSimMessage_GET_SYMTABSRC(_AwlSimMessage_GET_source):

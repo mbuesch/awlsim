@@ -13,7 +13,7 @@ if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
 fi
 
 cd "$awlsim_base"
-for path in ./build/lib.*-*-3.*; do
+for path in ./build/lib.*-*-3*; do
 	export PYTHONPATH="$path/:$PYTHONPATH"
 done
 export PYTHONPATH=".:$PYTHONPATH"

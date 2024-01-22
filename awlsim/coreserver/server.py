@@ -800,14 +800,14 @@ class AwlSimServer(object): #+cdef
 		cpu = self.__sim.getCPU()
 		awlSources = [ source
 			       for source in self.awlSourceContainer.getSources()
-			       if not source.volatile ]
+			       if not source.volatile_ ]
 		fupSources = [ source
 			       for source in self.fupSourceContainer.getSources()
-			       if not source.volatile ]
+			       if not source.volatile_ ]
 		kopSources = [] #TODO
 		symTabSources = [ source
 				  for source in self.symTabSourceContainer.getSources()
-				  if not source.volatile ]
+				  if not source.volatile_ ]
 		libSelections = self.loadedLibSelections[:]
 		cpuSpecs = cpu.getSpecs() # (Note: not a deep-copy)
 		cpuConf = cpu.getConf() # (Note: not a deep-copy)

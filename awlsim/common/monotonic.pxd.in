@@ -1,12 +1,14 @@
 from awlsim.common.cython_support cimport *
 
 cdef class _MONOTONIC_RAW_factory(object):
-	cdef public object __id_CLOCK_MONOTONIC_RAW
+	pass
 
 cdef class _MONOTONIC_RAW_timemodule_factory(_MONOTONIC_RAW_factory):
+	cdef public object __id_CLOCK_MONOTONIC_RAW
 	cdef public object __clock_gettime
 
 cdef class _MONOTONIC_RAW_CFFI_factory(_MONOTONIC_RAW_factory):
+	cdef public object __id_CLOCK_MONOTONIC_RAW
 	cdef public object __c
 	cdef public object __ts
 	cdef public object __ffi

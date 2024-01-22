@@ -439,7 +439,7 @@ class FupCompiler(object):
 		self.awlSource = AwlSource(name=name,
 					   enabled=fupSource.enabled,
 					   filepath=fupSource.filepath,
-					   volatile=True)
+					   volatile_=True)
 		if self.__parse():
 			self.__compileBlockDecl()
 			insns = self.__compileGrids()
@@ -497,7 +497,7 @@ class FupCompiler(object):
 
 		awlString = "\r\n".join(awlLines)
 		awlSource = AwlSource(name=("CALL " + self.fupSource.name),
-				      volatile=True)
+				      volatile_=True)
 		awlSource.sourceBytes = awlString.encode(AwlSource.ENCODING)
 		return awlSource
 

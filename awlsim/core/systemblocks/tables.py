@@ -23,8 +23,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 #from awlsim.common.cython_support cimport * #@cy
 from awlsim.common.compat import *
 
-from awlsim.core.systemblocks.system_sfc import _SFC_table #+cimport
-from awlsim.core.systemblocks.system_sfb import _SFB_table #+cimport
+from awlsim.core.systemblocks.system_sfc import * #+cimport
+from awlsim.core.systemblocks.system_sfb import * #+cimport
 
 __all__ = [
 	"SFC_table",

@@ -1026,7 +1026,7 @@ class MainWindow(QMainWindow):
 		QMessageBox.about(self, "About Awlsim PLC",
 			"Awlsim PLC version %s\n"
 			"\n"
-			"Copyright 2012-2022 Michael Büsch <m@bues.ch>\n"
+			"Copyright 2012-2024 Michael Büsch <m@bues.ch>\n"
 			"\n"
 			"Project home:  %s\n"
 			"\n"
