@@ -4,12 +4,12 @@ Section: python
 Priority: optional
 Build-Depends: dh-python,
                cython3,
-               python3-all-dev (>= 3.4.2-2),
+               python3-dev (>= 3.7),
                python3-setuptools,
-               debhelper (>= 9)
-Standards-Version: 3.9.8
-X-Python3-Version: >= 3.4
-Vcs-Git: git://git.bues.ch/awlsim.git
+               debhelper (>= 10)
+Standards-Version: 4.5.1
+X-Python3-Version: >= 3.7
+Vcs-Git: https://git.bues.ch/git/awlsim.git
 Vcs-Browser: https://bues.ch/cgit/awlsim.git/
 Homepage: https://bues.ch/a/awlsim
 
