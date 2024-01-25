@@ -7,6 +7,10 @@ for /D %%f in ( "C:\PYTHON*" ) do set PATH=!PATH!;%%f
 for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set PATH=!PATH!;%%f;%%f\Scripts
 
 
+call :install pip
+if ERRORLEVEL 1 exit /B 1
+call :install setuptools
+if ERRORLEVEL 1 exit /B 1
 call :install wheel
 if ERRORLEVEL 1 exit /B 1
 call :install pywin32
@@ -32,7 +36,7 @@ exit /B 0
 
 :install
 	echo Installing %1 ...
-	pip3 install --upgrade %1
+	python -m pip install --upgrade %1
 	if ERRORLEVEL 1 (
 		echo FAILED to install %1
 		pause

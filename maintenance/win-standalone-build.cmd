@@ -2,7 +2,7 @@
 rem
 rem AWL simulator - Windows frozen package build script
 rem
-rem Copyright 2012-2022 Michael Buesch <m@bues.ch>
+rem Copyright 2012-2024 Michael Buesch <m@bues.ch>
 rem
 rem This program is free software; you can redistribute it and/or modify
 rem it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ exit /B 0
 
 
 :detect_version
-    py -c "from awlsim.common.version import VERSION_STRING; print(VERSION_STRING)" > version.txt
+    python -c "from awlsim.common.version import VERSION_STRING; print(VERSION_STRING)" > version.txt
     if ERRORLEVEL 1 goto error_version
     set /p version= < version.txt
     del version.txt
@@ -113,7 +113,7 @@ exit /B 0
 
 :build_cxfreeze
     echo === Building the cx_Freeze distribution
-    py setup.py build
+    python setup.py build
     if ERRORLEVEL 1 goto error_exe
     exit /B 0
 
@@ -122,9 +122,9 @@ exit /B 0
     echo Generating %~2.html from %~1 ...
     echo ^<!DOCTYPE html^>^<html^>^<head^>^<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\"^>^</head^>^<body^> > %~2.html
     if ERRORLEVEL 1 goto error_doc
-    py -c "import re; print(re.subn(r'\.md\)', '.html)', open('"%~1"', 'r').read())[0])" >> %~2.md.tmp
+    python -c "import re; print(re.subn(r'\.md\)', '.html)', open('"%~1"', 'r').read())[0])" >> %~2.md.tmp
     if ERRORLEVEL 1 goto error_doc
-    py -c "from readme_renderer.markdown import render; print(render(open('"%~2.md.tmp"', 'r').read()))" >> %~2.html
+    python -c "from readme_renderer.markdown import render; print(render(open('"%~2.md.tmp"', 'r').read()))" >> %~2.html
     if ERRORLEVEL 1 goto error_doc
     del %~2.md.tmp
     if ERRORLEVEL 1 goto error_doc
@@ -147,7 +147,7 @@ exit /B 0
 
 :build_cxfreeze_exe
     echo === Building the cx_Freeze distribution executables
-    py setup.py build_exe --build-exe=%bindir%
+    python setup.py build_exe --build-exe=%bindir%
     if ERRORLEVEL 1 goto error_exe
     exit /B 0
 
