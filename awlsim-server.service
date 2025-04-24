@@ -1,6 +1,7 @@
 [Unit]
 Description=Awlsim PLC core server
 After=network.target
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
