@@ -335,6 +335,8 @@ def registerCythonModule(baseDir, sourceModName):
 					extra_compile_args.append("-Wno-maybe-uninitialized")
 					extra_compile_args.append("-Wno-type-limits")
 					extra_compile_args.append("-Wno-unused-parameter")
+					extra_compile_args.append("-Wno-unused-function")
+					extra_compile_args.append("-Wno-unused-variable")
 					if debugEnabled:
 						# Enable debugging and UBSAN.
 						extra_compile_args.append("-g3")
