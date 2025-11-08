@@ -363,6 +363,7 @@ def registerCythonModule(baseDir, sourceModName):
 							"language_level" : 3,
 						},
 						define_macros=[
+							("CYTHON_PROFILE",	str(int(profileEnabled))),
 							("CYTHON_TRACE",	str(int(profileEnabled))),
 							("CYTHON_TRACE_NOGIL",	str(int(profileEnabled))),
 						],
