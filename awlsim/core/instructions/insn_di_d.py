@@ -29,8 +29,6 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
-#from libc.stdlib cimport abs #@cy
-
 
 class AwlInsn_DI_D(AwlInsn): #+cdef
 
@@ -42,10 +40,10 @@ class AwlInsn_DI_D(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef int32_t accu1
-#@cy		cdef uint32_t accu1abs
-#@cy		cdef int32_t accu2
-#@cy		cdef uint32_t accu2abs
+#@cy		cdef int64_t accu1
+#@cy		cdef uint64_t accu1abs
+#@cy		cdef int64_t accu2
+#@cy		cdef uint64_t accu2abs
 #@cy		cdef int64_t quo
 
 		s = self.cpu.statusWord
@@ -54,8 +52,14 @@ class AwlInsn_DI_D(AwlInsn): #+cdef
 		if self.cpu.is4accu:
 			self.cpu.accu2.copyFrom(self.cpu.accu3)
 			self.cpu.accu3.copyFrom(self.cpu.accu4)
-		accu1abs = abs(accu1)
-		accu2abs = abs(accu2)
+		if accu1 >= 0:
+			accu1abs = accu1
+		else:
+			accu1abs = -accu1
+		if accu2 >= 0:
+			accu2abs = accu2
+		else:
+			accu2abs = -accu2
 		if accu1abs == 0: #+unlikely
 			s.A1, s.A0, s.OV, s.OS = 1, 1, 1, 1
 			return
