@@ -30,8 +30,6 @@ from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
 
-#from libc.stdlib cimport abs #@cy
-
 
 class AwlInsn_DTB(AwlInsn): #+cdef
 
@@ -43,15 +41,18 @@ class AwlInsn_DTB(AwlInsn): #+cdef
 
 	def run(self): #+cdef
 #@cy		cdef S7StatusWord s
-#@cy		cdef int32_t binval
-#@cy		cdef uint32_t binvalabs
+#@cy		cdef int64_t binval
+#@cy		cdef uint64_t binvalabs
 #@cy		cdef uint32_t bcd
 
 		s = self.cpu.statusWord
 		binval, bcd = dwordToSignedPyInt(self.cpu.accu1.get()), 0
 		if binval < 0:
 			bcd = 0xF0000000
-		binvalabs = abs(binval)
+		if binval >= 0:
+			binvalabs = binval
+		else:
+			binvalabs = -binval
 		if binvalabs > 9999999:
 			s.OV, s.OS = 1, 1
 			return
