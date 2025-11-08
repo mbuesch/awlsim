@@ -272,7 +272,7 @@ if not hasattr(math, "isfinite"): #@nocov
 # int.bit_length substitute
 # Micropython doesn't have int.bit_length.
 def bit_length(value): #@nocov
-	assert isinstance(value, (int, long) if isPy2Compat else int)
+	assert isinstance(value, (int, long) if isPy2Compat else int) #@nocy
 	if hasattr(value, "bit_length"):
 		return value.bit_length()
 	return int(math.ceil(math.log2(value)))
