@@ -174,8 +174,8 @@ class State_CPU(StateWindow):
 
 		self.label = QLabel(self)
 		self.label.setFont(getDefaultFixedFont(10))
-		self.label.setTextInteractionFlags(Qt.TextSelectableByMouse |
-						   Qt.TextSelectableByKeyboard)
+		self.label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse |
+						   Qt.TextInteractionFlag.TextSelectableByKeyboard)
 		self.layout().addWidget(self.label, 0, 0)
 
 		self.label.setText("No CPU status available.\n"
@@ -248,11 +248,11 @@ class AbstractDisplayWidget(QWidget):
 	def _showValueValidity(self, valid):
 		if valid:
 			pal = self.palette()
-			pal.setColor(QPalette.Text, Qt.black)
+			pal.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
 			self.setPalette(pal)
 		else:
 			pal = self.palette()
-			pal.setColor(QPalette.Text, Qt.red)
+			pal.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.red)
 			self.setPalette(pal)
 
 class BitDisplayWidget(AbstractDisplayWidget):
@@ -272,7 +272,7 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		y = 0
 		for i in range(self.width - 1, -1, -1):
 			frame = QFrame(self)
-			frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
+			frame.setFrameStyle(QFrame.Shape.Panel | QFrame.Shadow.Raised)
 			frame.setLineWidth(2)
 			frame.setLayout(QHBoxLayout())
 			frame.setAutoFillBackground(True)
@@ -292,14 +292,14 @@ class BitDisplayWidget(AbstractDisplayWidget):
 			frame.layout().addWidget(cb)
 			self.cbs[i] = cb
 
-			self.__cbOrigColor = cb.palette().color(QPalette.Base)
-			self.__pbOrigColor = pb.palette().color(QPalette.Button)
-			self.__frOrigColor = frame.palette().color(QPalette.Window)
+			self.__cbOrigColor = cb.palette().color(QPalette.ColorRole.Base)
+			self.__pbOrigColor = pb.palette().color(QPalette.ColorRole.Button)
+			self.__frOrigColor = frame.palette().color(QPalette.ColorRole.Window)
 
-			cb.stateChanged.connect(self.changed)
-			cb.stateChanged.connect(
+			cb.checkStateChanged.connect(self.changed)
+			cb.checkStateChanged.connect(
 				lambda state, i=i: self.__updateColors(i, state))
-			self.__updateColors(i, Qt.Unchecked)
+			self.__updateColors(i, Qt.CheckState.Unchecked)
 
 			self.layout().addWidget(frame, y, (self.width - i - 1) % 8)
 			if i and i % 8 == 0:
@@ -312,7 +312,7 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		palCb = cb.palette()
 		palPb = pb.palette()
 		palFr = fr.palette()
-		if newState == Qt.Checked:
+		if newState == Qt.CheckState.Checked:
 			cbColor = self.__cbActColor
 			pbColor = self.__pbActColor
 			frColor = self.__frActColor
@@ -320,10 +320,10 @@ class BitDisplayWidget(AbstractDisplayWidget):
 			cbColor = self.__cbOrigColor
 			pbColor = self.__pbOrigColor
 			frColor = self.__frOrigColor
-		if palCb.color(QPalette.Base) != cbColor:
-			palCb.setColor(QPalette.Base, cbColor)
-			palPb.setColor(QPalette.Button, pbColor)
-			palFr.setColor(QPalette.Window, frColor)
+		if palCb.color(QPalette.ColorRole.Base) != cbColor:
+			palCb.setColor(QPalette.ColorRole.Base, cbColor)
+			palPb.setColor(QPalette.ColorRole.Button, pbColor)
+			palFr.setColor(QPalette.ColorRole.Window, frColor)
 			cb.setPalette(palCb)
 			pb.setPalette(palPb)
 			fr.setPalette(palFr)
@@ -335,15 +335,15 @@ class BitDisplayWidget(AbstractDisplayWidget):
 				continue
 			self.prevButtonStates[bitNr] = pressed
 
-			if self.cbs[bitNr].checkState() == Qt.Checked:
-				self.cbs[bitNr].setCheckState(Qt.Unchecked)
+			if self.cbs[bitNr].checkState() == Qt.CheckState.Checked:
+				self.cbs[bitNr].setCheckState(Qt.CheckState.Unchecked)
 			else:
-				self.cbs[bitNr].setCheckState(Qt.Checked)
+				self.cbs[bitNr].setCheckState(Qt.CheckState.Checked)
 
 	def get(self):
 		value = 0
 		for bitNr, cb in dictItems(self.cbs):
-			if cb.checkState() == Qt.Checked:
+			if cb.checkState() == Qt.CheckState.Checked:
 				value |= (1 << bitNr)
 		return value
 
@@ -351,9 +351,9 @@ class BitDisplayWidget(AbstractDisplayWidget):
 		bitBase = ((self.width // 8) - 1 - offset) * 8
 		for bitNr in range(bitBase, bitBase + 8):
 			if value & 1:
-				self.cbs[bitNr].setCheckState(Qt.Checked)
+				self.cbs[bitNr].setCheckState(Qt.CheckState.Checked)
 			else:
-				self.cbs[bitNr].setCheckState(Qt.Unchecked)
+				self.cbs[bitNr].setCheckState(Qt.CheckState.Unchecked)
 			value >>= 1
 
 class NumberDisplayWidget(AbstractDisplayWidget):
@@ -391,8 +391,8 @@ class NumberDisplayWidget(AbstractDisplayWidget):
 
 	def __validateInput(self, inputString, pos):
 		if self.__convertValue(inputString) is None:
-			return QValidator.Intermediate
-		return QValidator.Acceptable
+			return QValidator.State.Intermediate
+		return QValidator.State.Acceptable
 
 	def get(self):
 		value = self.__convertValue(self.line.text())
@@ -474,8 +474,8 @@ class RealDisplayWidget(AbstractDisplayWidget):
 
 	def __validateInput(self, inputString, pos):
 		if self.__convertValue(inputString) is None:
-			return QValidator.Intermediate
-		return QValidator.Acceptable
+			return QValidator.State.Intermediate
+		return QValidator.State.Acceptable
 
 	def get(self):
 		value = self.__convertValue(self.line.text())
@@ -953,7 +953,7 @@ class _State_TimerCounter(StateWindow):
 		self.valueEdit = ValueLineEdit(self.__validateInput, self)
 		hbox.addWidget(self.valueEdit)
 		self.statusLabel = QLabel(self)
-		self.__statusLabelOrigColor = self.statusLabel.palette().color(QPalette.Window)
+		self.__statusLabelOrigColor = self.statusLabel.palette().color(QPalette.ColorRole.Window)
 		self.__statusLabelActColor = QColor(StateWindow.COLOR_ACTIVE)
 		hbox.addWidget(self.statusLabel)
 		self.resetButton = QPushButton("R", self)
@@ -1013,8 +1013,8 @@ class _State_TimerCounter(StateWindow):
 		else:
 			color = self.__statusLabelActColor
 			fill = True
-		if pal.color(QPalette.Window) != color:
-			pal.setColor(QPalette.Window, color)
+		if pal.color(QPalette.ColorRole.Window) != color:
+			pal.setColor(QPalette.ColorRole.Window, color)
 			self.statusLabel.setAutoFillBackground(fill)
 			self.statusLabel.setPalette(pal)
 
@@ -1075,8 +1075,8 @@ class _State_TimerCounter(StateWindow):
 
 	def __validateInput(self, inputString, pos):
 		if self.textToValue(inputString) is None:
-			return QValidator.Intermediate
-		return QValidator.Acceptable
+			return QValidator.State.Intermediate
+		return QValidator.State.Acceptable
 
 	def __newValueEntered(self, newText):
 		if self.__changeBlocked:
@@ -1280,7 +1280,7 @@ class StateMdiArea(QMdiArea):
 		mdiWin.closed.connect(self.subWinClosed)
 		mdiWin.moved.connect(lambda w: self.contentChanged.emit())
 
-		self.addSubWindow(mdiWin, Qt.Window)
+		self.addSubWindow(mdiWin, Qt.WindowType.Window)
 
 		stateWin.configChanged.connect(lambda w: self.settingsChanged.emit())
 		stateWin.configChanged.connect(lambda w: self.contentChanged.emit())
@@ -1354,7 +1354,7 @@ class StateMdiSubWindow(QMdiSubWindow):
 		QMdiSubWindow.__init__(self)
 		self.setWidget(childWidget)
 		childWidget.setParent(self)
-		self.setAttribute(Qt.WA_DeleteOnClose)
+		self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
 	def closeEvent(self, ev):
 		self.closed.emit(self)

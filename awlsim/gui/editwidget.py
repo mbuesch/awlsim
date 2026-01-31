@@ -54,7 +54,7 @@ class EditSubWidget(QWidget):
 
 	def contextMenuEvent(self, ev):
 		QWidget.contextMenuEvent(self, ev)
-		self.contextMenuReq.emit(ev.globalPos())
+		self.contextMenuReq.emit(ev.globalPosition().toPoint())
 
 class HeaderSubWidget(EditSubWidget):
 	def __init__(self, editWidget):
@@ -376,10 +376,10 @@ class EditWidget(SourceCodeEdit):
 		self.__runAniTimer.setSingleShot(False)
 		self.__runAniTimer.timeout.connect(self.__runAnimation)
 
-		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.setLineWrapMode(SourceCodeEdit.NoWrap)
-		self.setTabStopWidth(self.tabStopWidth() // 2)
+		self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+		self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+		self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+		self.setTabStopDistance(self.tabStopDistance() // 2)
 
 		if withHeader:
 			self.headerWidget = HeaderSubWidget(self)
@@ -490,7 +490,7 @@ class EditWidget(SourceCodeEdit):
 		fontString = guiSettings.getEditorFont()
 		if fontString:
 			font.fromString(fontString)
-			font.setStyleHint(QFont.Courier)
+			font.setStyleHint(QFont.StyleHint.Courier)
 		self.__updateFont(font)
 
 	def runStateChanged(self, newState):
@@ -540,7 +540,7 @@ class EditWidget(SourceCodeEdit):
 
 		# Reformat the existing text
 		cursor = self.textCursor()
-		cursor.select(QTextCursor.Document)
+		cursor.select(QTextCursor.SelectionType.Document)
 		fmt = cursor.charFormat()
 		fmt.setFont(font)
 		cursor.setCharFormat(fmt)
@@ -559,7 +559,7 @@ class EditWidget(SourceCodeEdit):
 
 		# Cache metrics
 		self.__charHeight = self.fontMetrics().height()
-		self.setTabStopWidth(self.fontMetrics().width("X") * 8)
+		self.setTabStopDistance(self.fontMetrics().horizontalAdvance("X") * 8)
 
 	def enableCpuStats(self, enabled=True, force=False):
 		if not self.cpuStatsWidget:
@@ -661,13 +661,13 @@ class EditWidget(SourceCodeEdit):
 		while bcnt > 9:
 			digi, bcnt = digi + 1, bcnt // 10
 		metr = self.lineNumWidget.fontMetrics()
-		return 5 + 5 + metr.width("_" * digi)
+		return 5 + 5 + metr.horizontalAdvance("_" * digi)
 
 	def cpuStatsWidgetWidth(self):
 		if not self.__cpuStatsEnabled:
 			return 0
 		metr = self.cpuStatsWidget.fontMetrics()
-		return 5 + 5 + metr.width(self.cpuStatsWidget.getBanner(self.__cpuStatsMask).replace(" ", "_"))
+		return 5 + 5 + metr.horizontalAdvance(self.cpuStatsWidget.getBanner(self.__cpuStatsMask).replace(" ", "_"))
 
 	def headerHeight(self):
 		if self.headerWidget:
@@ -774,7 +774,7 @@ class EditWidget(SourceCodeEdit):
 		   self.__runState == GuiRunState.STATE_RUN:
 			p.fillRect(ev.rect(), getErrorColor())
 		else:
-			p.fillRect(ev.rect(), Qt.lightGray)
+			p.fillRect(ev.rect(), Qt.GlobalColor.lightGray)
 
 		if self.__cpuStatsEnabled:
 			# Map the CPU-stats start point to header widget
@@ -804,7 +804,7 @@ class EditWidget(SourceCodeEdit):
 
 		# Limit the text length to the available space.
 		metr = self.headerWidget.fontMetrics()
-		maxNrChars = textMaxPixels // metr.width('_')
+		maxNrChars = textMaxPixels // metr.horizontalAdvance('_')
 		runText = "".join(runText)
 		if len(runText) > maxNrChars:
 			runText = runText[ : max(0, maxNrChars - 3)]
@@ -814,32 +814,32 @@ class EditWidget(SourceCodeEdit):
 		p.setPen(QPen(QColor("black")))
 
 		p.drawText(5, 5,
-			   metr.width(runText.replace(" ", "_")),
+			   metr.horizontalAdvance(runText.replace(" ", "_")),
 			   self.headerWidget.height(),
-			   Qt.AlignLeft,
+			   Qt.AlignmentFlag.AlignLeft,
 			   runText)
 
 		if self.__cpuStatsEnabled:
 			p.drawText(cpuStatsPt.x() + 5, 5,
 				   self.headerWidget.width() - cpuStatsPt.x() - 5,
 				   self.headerWidget.height(),
-				   Qt.AlignLeft,
+				   Qt.AlignmentFlag.AlignLeft,
 				   self.cpuStatsWidget.getBanner(self.__cpuStatsMask))
 
 	def __repaintLineNumWidget(self, ev):
 		p = self.lineNumWidget.getPainter()
 		rect = ev.rect()
-		p.fillRect(rect, Qt.lightGray)
+		p.fillRect(rect, Qt.GlobalColor.lightGray)
 		rect.setLeft(rect.left() + rect.width() - 3)
 		rect.setWidth(3)
-		p.fillRect(rect, Qt.white)
-		p.setPen(Qt.black)
+		p.fillRect(rect, Qt.GlobalColor.white)
+		p.setPen(Qt.GlobalColor.black)
 
 		for lineNr, yOffset in self.__eachVisibleLine():
 			p.drawText(-5, yOffset,
 				   self.lineNumWidget.width(),
 				   self.__charHeight,
-				   Qt.AlignRight,
+				   Qt.AlignmentFlag.AlignRight,
 				   str(lineNr))
 
 	def __repaintCpuStatsWidget(self, ev):
@@ -847,21 +847,21 @@ class EditWidget(SourceCodeEdit):
 			return
 		p = self.cpuStatsWidget.getPainter()
 		rect = ev.rect()
-		p.fillRect(rect, Qt.lightGray)
+		p.fillRect(rect, Qt.GlobalColor.lightGray)
 		rect.setWidth(3)
-		p.fillRect(rect, Qt.white)
+		p.fillRect(rect, Qt.GlobalColor.white)
 
 		for lineNr, yOffset in self.__eachVisibleLine():
 			statsEnt = self.__lineCpuStats.get(lineNr)
 			if statsEnt:
 				if statsEnt.obsolete:
-					p.setPen(Qt.darkGray)
+					p.setPen(Qt.GlobalColor.darkGray)
 				else:
-					p.setPen(Qt.black)
+					p.setPen(Qt.GlobalColor.black)
 				p.drawText(5, yOffset,
 					   self.cpuStatsWidget.width(),
 					   self.__charHeight,
-					   Qt.AlignLeft,
+					   Qt.AlignmentFlag.AlignLeft,
 					   statsEnt.getText(self.__cpuStatsMask))
 
 	def __textChanged(self):

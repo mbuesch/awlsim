@@ -254,7 +254,7 @@ class FupElem_T(FupElem):
 			y = (cellIdx * cellHeight)
 			painter.drawText(x, y,
 					 elemWidth, cellHeight,
-					 Qt.AlignLeft | Qt.AlignVCenter,
+					 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
 					 conn.text)
 
 		# Draw outputs
@@ -271,7 +271,7 @@ class FupElem_T(FupElem):
 			y = (cellIdx * cellHeight)
 			painter.drawText(x, y,
 					 elemWidth - xpad - 2, cellHeight,
-					 Qt.AlignRight | Qt.AlignVCenter,
+					 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
 					 conn.text)
 			cellIdx -= 1
 
@@ -281,7 +281,7 @@ class FupElem_T(FupElem):
 			       else self._outlinePen)
 		painter.drawText(0, cellHeight,
 				 elemWidth, cellHeight,
-				 Qt.AlignHCenter | Qt.AlignVCenter,
+				 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
 				 self.OP_SYM)
 
 		# Draw body operator

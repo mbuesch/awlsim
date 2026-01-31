@@ -411,7 +411,7 @@ class FupElemContainerWidget(QTreeWidget):
 		drag.setHotSpot(QPoint(pixmap.width() // 2,
 				       pixmap.height() // 2))
 		drag.setPixmap(pixmap)
-		drag.exec_(Qt.CopyAction)
+		drag.exec(Qt.DropAction.CopyAction)
 
 	def handleItemDoubleClick(self, item, column):
 		if not isinstance(item, FupElemItem):

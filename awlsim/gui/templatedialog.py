@@ -48,7 +48,7 @@ class TemplateDialog(QDialog):
 		font = label.font()
 		font.setPointSize(max(12, font.pointSize()))
 		label.setFont(font)
-		label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+		label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
 		hbox.addWidget(label)
 		hbox.addStretch()
 		self.layout().addLayout(hbox, 0, 0, 1, 2)
@@ -73,7 +73,7 @@ class TemplateDialog(QDialog):
 			self.layout().addWidget(self.extraNr, 2, 1)
 
 		self.verbose = QCheckBox("Generate &verbose code", self)
-		self.verbose.setCheckState(Qt.Checked)
+		self.verbose.setCheckState(Qt.CheckState.Checked)
 		self.layout().addWidget(self.verbose, 3, 0, 1, 2)
 
 		self.layout().setRowStretch(4, 1)
@@ -90,7 +90,7 @@ class TemplateDialog(QDialog):
 		return self.extraNr.value()
 
 	def getVerbose(self):
-		return self.verbose.checkState() == Qt.Checked
+		return self.verbose.checkState() == Qt.CheckState.Checked
 
 	@classmethod
 	def make_OB(cls, parent=None):

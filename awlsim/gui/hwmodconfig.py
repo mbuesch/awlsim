@@ -164,11 +164,11 @@ class HwmodParamModel(QAbstractTableModel):
 	def columnCount(self, parent=QModelIndex()):
 		return 2
 
-	def data(self, index, role=Qt.DisplayRole):
+	def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 		if not index:
 			return None
 		row, column = index.row(), index.column()
-		if role in (Qt.DisplayRole, Qt.EditRole):
+		if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
 			params = self.__params
 			if row >= len(params):
 				return None
@@ -183,23 +183,23 @@ class HwmodParamModel(QAbstractTableModel):
 				if params[row][1] is None:
 					return ""
 				return params[row][1]
-		elif role in {Qt.BackgroundRole,
-			      Qt.ForegroundRole}:
+		elif role in {Qt.ItemDataRole.BackgroundRole,
+			      Qt.ItemDataRole.ForegroundRole}:
 			params = self.__params
 			if row < len(params):
 				paramDesc = self.__getParamDesc(params[row][0])
 				if paramDesc and not paramDesc.userEditable:
 					# Not user editable
-					if role == Qt.BackgroundRole:
+					if role == Qt.ItemDataRole.BackgroundRole:
 						return QBrush(QColor("darkgrey"))
 					return QBrush(QColor("black"))
 				if column == 0:
 					if paramDesc:
 						# This is a standard parameter.
-						if role == Qt.BackgroundRole:
+						if role == Qt.ItemDataRole.BackgroundRole:
 							return QBrush(QColor("lightgrey"))
 						return QBrush(QColor("black"))
-		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
+		elif role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.WhatsThisRole):
 			params = self.__params
 			if row < len(params):
 				paramDesc = self.__getParamDesc(params[row][0])
@@ -215,10 +215,10 @@ class HwmodParamModel(QAbstractTableModel):
 					return "New parameter name"
 		return None
 
-	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		if role != Qt.DisplayRole:
+	def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+		if role != Qt.ItemDataRole.DisplayRole:
 			return None
-		if orientation == Qt.Horizontal:
+		if orientation == Qt.Orientation.Horizontal:
 			return ("Parameter", "Value")[section]
 		else:
 			params = self.__params
@@ -226,11 +226,11 @@ class HwmodParamModel(QAbstractTableModel):
 				return "new"
 			return "%d" % (section + 1)
 
-	def setData(self, index, value, role=Qt.EditRole):
+	def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
 		if not index:
 			return False
 		row, column = index.row(), index.column()
-		if role == Qt.EditRole:
+		if role == Qt.ItemDataRole.EditRole:
 			if not self.modDesc:
 				return False
 			params = self.__params
@@ -271,17 +271,17 @@ class HwmodParamModel(QAbstractTableModel):
 
 	def flags(self, index):
 		if not index:
-			return Qt.ItemIsEnabled
+			return Qt.ItemFlag.ItemIsEnabled
 		row, column = index.row(), index.column()
 		params = self.__params
 		if row < len(params):
 			paramDesc = self.__getParamDesc(params[row][0])
 			if paramDesc and not paramDesc.userEditable:
-				return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+				return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 		else:
 			if column != 0:
-				return Qt.ItemIsEnabled
-		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+				return Qt.ItemFlag.ItemIsEnabled
+		return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
 
 class HwmodParamView(QTableView):
 	def __init__(self, model=None, parent=None):
@@ -306,7 +306,7 @@ class HwmodParamView(QTableView):
 	def keyPressEvent(self, ev):
 		QTableView.keyPressEvent(self, ev)
 
-		if ev.key() == Qt.Key_Delete:
+		if ev.key() == Qt.Key.Key_Delete:
 			self.deleteEntry()
 
 	def setHwmod(self, modDesc):
@@ -328,7 +328,7 @@ class HwmodConfigWidget(QWidget):
 		group.layout().addWidget(label, 0, 0)
 		self.availList = QListWidget(self)
 		self.availList.setMaximumWidth(180)
-		self.availList.setSelectionMode(QListWidget.SingleSelection)
+		self.availList.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 		group.layout().addWidget(self.availList, 1, 0)
 		self.manualModName = QLineEdit(self)
 		self.manualModName.setToolTip("Name of another module to add.\n"
@@ -354,7 +354,7 @@ class HwmodConfigWidget(QWidget):
 		group.layout().addWidget(label, 0, 2)
 		self.loadedList = QListWidget(self)
 		self.loadedList.setMaximumWidth(180)
-		self.loadedList.setSelectionMode(QListWidget.SingleSelection)
+		self.loadedList.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 		group.layout().addWidget(self.loadedList, 1, 2, 2, 1)
 
 		vbox = QVBoxLayout()
@@ -420,7 +420,7 @@ class HwmodConfigWidget(QWidget):
 			with self.__modSelectChangeBlocked:
 				self.availList.setCurrentItem(None)
 				self.manualModName.setText("")
-			self.paramView.setHwmod(cur.data(Qt.UserRole))
+			self.paramView.setHwmod(cur.data(Qt.ItemDataRole.UserRole))
 			curRow = self.loadedList.row(cur)
 		else:
 			self.paramView.setHwmod(None)
@@ -437,7 +437,7 @@ class HwmodConfigWidget(QWidget):
 		interface = HwmodParamModel.getModuleInterface(modDesc.getModuleName())
 
 		item = QListWidgetItem(modDesc.getModuleName())
-		item.setData(Qt.UserRole, modDesc)
+		item.setData(Qt.ItemDataRole.UserRole, modDesc)
 		if interface:
 			desc = interface.description
 			if desc:
@@ -453,7 +453,7 @@ class HwmodConfigWidget(QWidget):
 			item = self.availList.currentItem()
 			if not item:
 				return
-			modDesc = item.data(Qt.UserRole).dup()
+			modDesc = item.data(Qt.ItemDataRole.UserRole).dup()
 
 		item = self.__makeLoadedListItem(modDesc)
 		self.loadedList.addItem(item)
@@ -464,7 +464,7 @@ class HwmodConfigWidget(QWidget):
 		if not item:
 			return
 		item = self.loadedList.takeItem(self.loadedList.row(item))
-		modDesc = item.data(Qt.UserRole)
+		modDesc = item.data(Qt.ItemDataRole.UserRole)
 		self.__loadedModDescs.remove(modDesc)
 		self.__handleLoadedSelectChange(self.loadedList.currentItem(), None)
 
@@ -511,7 +511,7 @@ class HwmodConfigWidget(QWidget):
 			interface = HwmodParamModel.getModuleInterface(modName)
 			modDesc = HwmodDescriptor(moduleName=modName,
 						  parameters={})
-			item.setData(Qt.UserRole, modDesc)
+			item.setData(Qt.ItemDataRole.UserRole, modDesc)
 			if interface:
 				desc = interface.description
 				if desc:

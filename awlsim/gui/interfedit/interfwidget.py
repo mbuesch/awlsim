@@ -71,9 +71,9 @@ class AwlInterfWidget(QWidget):
 				"The block interface table is not empty.\n"
 				"Changing the block type might delete interface fields.\n\n"
 				"Change block type anyway?",
-				QMessageBox.Yes | QMessageBox.No,
-				QMessageBox.No)
-			if ret != QMessageBox.Yes:
+				QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+				QMessageBox.StandardButton.No)
+			if ret != QMessageBox.StandardButton.Yes:
 				# Revert the change
 				with self.__changeSignalBlocked:
 					self.blockTypeEdit.revertTypeChange()

@@ -290,7 +290,7 @@ class FupDrawWidget(QWidget):
 
 		self.__handleZoomChange(showZoomLevel=False)
 
-		self.setFocusPolicy(Qt.FocusPolicy(Qt.ClickFocus | Qt.WheelFocus | Qt.StrongFocus))
+		self.setFocusPolicy(Qt.FocusPolicy(Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.WheelFocus | Qt.FocusPolicy.StrongFocus))
 		self.setMouseTracking(True)
 		self.setAcceptDrops(True)
 
@@ -547,13 +547,13 @@ class FupDrawWidget(QWidget):
 		for x in range(0, width, self.__cellWidth):
 			p.drawLine(x, 0, x, height)
 			p.drawText(x, -5, self.__cellWidth, self.__cellHeight,
-				   Qt.AlignCenter | Qt.AlignTop,
+				   Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop,
 				   str((x // self.__cellWidth) + 1))
 		# horizontal lines
 		for y in range(0, height, self.__cellHeight):
 			p.drawLine(0, y, width, y)
 			p.drawText(5, y, self.__cellWidth, self.__cellHeight,
-				   Qt.AlignLeft | Qt.AlignVCenter,
+				   Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
 				   str((y // self.__cellHeight) + 1))
 
 		# Draw the help text, if the grid is empty.
@@ -562,7 +562,7 @@ class FupDrawWidget(QWidget):
 			p.setFont(self.getFont(9))
 			x, y = self.__cellWidth + 5, self.__cellHeight * 2 - 5
 			p.drawText(x, y, width - x, height - y,
-				   Qt.AlignLeft | Qt.AlignTop,
+				   Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop,
 				   "Hints:\n"
 				   "* To add elements drag&drop them from the FUP/FBD library to the grid\n"
 				   "* Left-drag to connect inputs and outputs\n"
@@ -572,7 +572,7 @@ class FupDrawWidget(QWidget):
 
 		# Draw the selected cells.
 		p.setBrush(self.__bgSelBrush)
-		p.setPen(Qt.NoPen)
+		p.setPen(Qt.PenStyle.NoPen)
 		r = 5
 		for gridX, gridY in grid.selectedCells:
 			p.drawRoundedRect(gridX * cellWidth + 1,
@@ -582,7 +582,7 @@ class FupDrawWidget(QWidget):
 
 		# Draw the erroneous cells.
 		p.setBrush(self.__bgErrBrush)
-		p.setPen(Qt.NoPen)
+		p.setPen(Qt.PenStyle.NoPen)
 		r = 5
 		for gridX, gridY in grid.erroneousCells:
 			p.drawRoundedRect(gridX * cellWidth + 1,
@@ -637,7 +637,7 @@ class FupDrawWidget(QWidget):
 			yAbs1 = max(self.__selectStartPix[1], self.__selectEndPix[1])
 			selWidth, selHeight = xAbs1 - xAbs0, yAbs1 - yAbs0
 			r = 2
-			p.setBrush(Qt.NoBrush)
+			p.setBrush(Qt.BrushStyle.NoBrush)
 			p.setPen(self.__selRectPen)
 			p.drawRoundedRect(xAbs0, yAbs0,
 					  selWidth, selHeight,
@@ -649,7 +649,7 @@ class FupDrawWidget(QWidget):
 			p.setBrush(self.__bgSelBrush)
 			p.setPen(self.__textPen)
 			p.setFont(self.getFont(14, bold=True, scale=False))
-			textFlags = Qt.AlignLeft | Qt.AlignTop
+			textFlags = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
 			text = "Zoom: %d%%" % int(round((self.zoom * 100.0)))
 			rect = p.boundingRect(xAbs, yAbs, width - xAbs, height - yAbs,
 					      textFlags, text)
@@ -697,7 +697,7 @@ class FupDrawWidget(QWidget):
 		return elem, conn, area, gridX, gridY, elemRelX, elemRelY
 
 	def mousePressEvent(self, event):
-		x, y = event.x(), event.y()
+		x, y = int(event.position().x()), int(event.position().y())
 		self.__mousePos = (x, y)
 		grid = self.__grid
 		modifiers = QGuiApplication.keyboardModifiers()
@@ -717,7 +717,7 @@ class FupDrawWidget(QWidget):
 		grid.clickedArea = area
 
 		# Handle left button press
-		if event.button() == Qt.LeftButton:
+		if event.button() == Qt.MouseButton.LeftButton:
 			if elem:
 				# Clear the cell selection
 				grid.deselectAllCells()
@@ -728,7 +728,7 @@ class FupDrawWidget(QWidget):
 					self.__dragStart = (gridX, gridY)
 					if not elem.selected:
 						# Select this element.
-						if not (modifiers & Qt.ControlModifier):
+						if not (modifiers & Qt.KeyboardModifier.ControlModifier):
 							grid.deselectAllElems()
 						grid.selectElem(elem)
 						eventHandled()
@@ -745,7 +745,7 @@ class FupDrawWidget(QWidget):
 					if not grid.selectedElems:
 						grid.selectCell(gridX, gridY)
 				# Start a multi-selection
-				if not (modifiers & Qt.ControlModifier):
+				if not (modifiers & Qt.KeyboardModifier.ControlModifier):
 					grid.deselectAllElems()
 				self.__selectStartPix = (x, y)
 				self.__selectStartCell = (gridX, gridY)
@@ -754,12 +754,12 @@ class FupDrawWidget(QWidget):
 			self.__selectionChanged()
 
 		# Handle middle button press
-		if event.button() == Qt.MidButton:
+		if event.button() == Qt.MouseButton.MiddleButton:
 			self.disconnectConn(conn)
 			eventHandled()
 
 		# Handle right button press
-		if event.button() == Qt.RightButton:
+		if event.button() == Qt.MouseButton.RightButton:
 			# If clicked on a cell, select it and deselect all elements.
 			grid.deselectAllCells()
 			if not elem:
@@ -767,7 +767,7 @@ class FupDrawWidget(QWidget):
 				grid.deselectAllElems()
 			# Select the clicked element.
 			if elem and not elem.selected:
-				if not (modifiers & Qt.ControlModifier):
+				if not (modifiers & Qt.KeyboardModifier.ControlModifier):
 					grid.deselectAllElems()
 			grid.selectElem(elem)
 			eventHandled()
@@ -790,14 +790,14 @@ class FupDrawWidget(QWidget):
 				self.__contextMenu.enableCustomAction(i, False)
 			if elem:
 				elem.prepareContextMenu(self.__contextMenu, area, conn)
-			self.__contextMenu.exec_(self.mapToGlobal(event.pos()) + QPoint(3, 3))
+			self.__contextMenu.exec(self.mapToGlobal(event.position().toPoint()) + QPoint(3, 3))
 			self.__selectionChanged()
 
 		if not event.isAccepted():
 			QWidget.mousePressEvent(self, event)
 
 	def mouseReleaseEvent(self, event):
-		x, y = event.x(), event.y()
+		x, y = int(event.position().x()), int(event.position().y())
 		self.__mousePos = (x, y)
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		grid = self.__grid
@@ -856,7 +856,7 @@ class FupDrawWidget(QWidget):
 			QWidget.mouseReleaseEvent(self, event)
 
 	def mouseMoveEvent(self, event):
-		x, y = event.x(), event.y()
+		x, y = int(event.position().x()), int(event.position().y())
 		self.__mousePos = (x, y)
 		modifiers = QGuiApplication.keyboardModifiers()
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
@@ -867,7 +867,7 @@ class FupDrawWidget(QWidget):
 			self.repaint()
 
 		# Temporarily expand elements on mouse-over
-		if event.buttons() == Qt.NoButton:
+		if event.buttons() == Qt.MouseButton.NoButton:
 			chg = 0
 			if elem and area in {FupElem.AREA_BODY,
 					     FupElem.AREA_BODYOPER}:
@@ -884,7 +884,7 @@ class FupDrawWidget(QWidget):
 			self.__selectEndPix = (x, y)
 			# Mark all elements within the rectangle as selected.
 			startGridX, startGridY = self.posToGridCoords(*self.__selectStartPix)
-			clear = not (modifiers & Qt.ControlModifier)
+			clear = not (modifiers & Qt.KeyboardModifier.ControlModifier)
 			grid.selectElemsInRect(startGridX, startGridY,
 					       gridX, gridY, clear=clear)
 			self.selectTipChanged.emit(x, y)
@@ -937,7 +937,7 @@ class FupDrawWidget(QWidget):
 			QWidget.mouseMoveEvent(self, event)
 
 	def mouseDoubleClickEvent(self, event):
-		x, y = event.x(), event.y()
+		x, y = int(event.position().x()), int(event.position().y())
 		self.__mousePos = (x, y)
 		elem, conn, area, gridX, gridY, elemRelX, elemRelY = self.posToElem(x, y)
 		grid = self.__grid
@@ -958,7 +958,7 @@ class FupDrawWidget(QWidget):
 		self.__selectionChanged()
 
 		# Handle left button double click
-		if event.button() == Qt.LeftButton:
+		if event.button() == Qt.MouseButton.LeftButton:
 			if elem:
 				if conn and not conn.isConnected:
 					# Double click on an unconnected IN or OUT connection
@@ -996,7 +996,7 @@ class FupDrawWidget(QWidget):
 			QWidget.mouseDoubleClickEvent(self, event)
 
 	def wheelEvent(self, ev):
-		if ev.modifiers() & Qt.ControlModifier:
+		if ev.modifiers() & Qt.KeyboardModifier.ControlModifier:
 			# Ctrl + Scroll-wheel: Zoom
 			numDegrees = ev.angleDelta().y() / 8
 			numSteps = numDegrees / 15
@@ -1017,38 +1017,38 @@ class FupDrawWidget(QWidget):
 	def keyPressEvent(self, event):
 		grid = self.__grid
 		if grid:
-			if event.matches(QKeySequence.Delete):
+			if event.matches(QKeySequence.StandardKey.Delete):
 				self.removeElems()
 				event.accept()
 				return
-			elif (event.matches(QKeySequence.Cancel) or
-			      event.matches(QKeySequence.Deselect)):
+			elif (event.matches(QKeySequence.StandardKey.Cancel) or
+			      event.matches(QKeySequence.StandardKey.Deselect)):
 				self.__grid.deselectAllElems()
 				self.__selectionChanged()
 				self.repaint()
 				event.accept()
 				return
-			elif event.matches(QKeySequence.SelectAll):
+			elif event.matches(QKeySequence.StandardKey.SelectAll):
 				for elem in self.__grid.elems:
 					self.__grid.selectElem(elem)
 				self.__selectionChanged()
 				self.repaint()
 				event.accept()
 				return
-			elif event.matches(QKeySequence.Copy):
+			elif event.matches(QKeySequence.StandardKey.Copy):
 				self.clipboardCopy()
 				event.accept()
 				return
-			elif event.matches(QKeySequence.Cut):
+			elif event.matches(QKeySequence.StandardKey.Cut):
 				self.clipboardCut()
 				event.accept()
 				return
-			elif event.matches(QKeySequence.Paste):
+			elif event.matches(QKeySequence.StandardKey.Paste):
 				self.clipboardPaste()
 				event.accept()
 				return
 
-			if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+			if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
 				if len(grid.selectedElems) == 1:
 					self.editElems()
 					event.accept()
@@ -1142,7 +1142,7 @@ class FupDrawWidget(QWidget):
 			return ignore()
 
 		# Convert the event position to the grid coordinates.
-		pos = event.pos()
+		pos = event.position().toPoint()
 		gridX, gridY = self.posToGridCoords(pos.x(), pos.y())
 
 		# Get the MIME data from the event.
@@ -1193,7 +1193,7 @@ class FupDrawWidget(QWidget):
 			for newElem in newElements:
 				if not self.addElem(newElem):
 					return ignore(gridX, gridY)
-			self.setFocus(Qt.OtherFocusReason)
+			self.setFocus(Qt.FocusReason.OtherFocusReason)
 
 		return accept(gridX, gridY)
 
@@ -1250,9 +1250,9 @@ class FupDrawWidget(QWidget):
 		clipboard = QGuiApplication.clipboard()
 		if not clipboard:
 			return False
-		clipboard.setMimeData(mimeData, QClipboard.Clipboard)
+		clipboard.setMimeData(mimeData, QClipboard.Mode.Clipboard)
 		if clipboard.supportsSelection():
-			clipboard.setMimeData(mimeData, QClipboard.Selection)
+			clipboard.setMimeData(mimeData, QClipboard.Mode.Selection)
 		return True
 
 	def clipboardCut(self):

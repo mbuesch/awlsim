@@ -58,8 +58,8 @@ class GuiConfigWidget(QWidget):
 
 		hbox = QHBoxLayout()
 		self.editFontLabel = QLabel(self)
-		self.editFontLabel.setFrameShape(QFrame.Panel)
-		self.editFontLabel.setFrameShadow(QFrame.Sunken)
+		self.editFontLabel.setFrameShape(QFrame.Shape.Panel)
+		self.editFontLabel.setFrameShadow(QFrame.Shadow.Sunken)
 		self.editFontLabel.setToolTip(
 			"Select the AWL/STL editor font.")
 		hbox.addWidget(self.editFontLabel)
@@ -92,30 +92,30 @@ class GuiConfigWidget(QWidget):
 		guiSettings = project.getGuiSettings()
 
 		self.editAutoIndent.setCheckState(
-			Qt.Checked if guiSettings.getEditorAutoIndentEn() else\
-			Qt.Unchecked
+			Qt.CheckState.Checked if guiSettings.getEditorAutoIndentEn() else\
+			Qt.CheckState.Unchecked
 		)
 
 		self.pasteIndent.setCheckState(
-			Qt.Checked if guiSettings.getEditorPasteIndentEn() else\
-			Qt.Unchecked
+			Qt.CheckState.Checked if guiSettings.getEditorPasteIndentEn() else\
+			Qt.CheckState.Unchecked
 		)
 
 		self.editValidate.setCheckState(
-			Qt.Checked if guiSettings.getEditorValidationEn() else\
-			Qt.Unchecked
+			Qt.CheckState.Checked if guiSettings.getEditorValidationEn() else\
+			Qt.CheckState.Unchecked
 		)
 
 		fontStr = guiSettings.getEditorFont()
 		if fontStr:
 			self.__editFont.fromString(fontStr)
-			self.__editFont.setStyleHint(QFont.Courier)
+			self.__editFont.setStyleHint(QFont.StyleHint.Courier)
 		self.__updateEditFontLabel()
 
 	def storeToProject(self, project):
-		autoIndentEn = self.editAutoIndent.checkState() == Qt.Checked
-		pasteIndentEn = self.pasteIndent.checkState() == Qt.Checked
-		validationEn = self.editValidate.checkState() == Qt.Checked
+		autoIndentEn = self.editAutoIndent.checkState() == Qt.CheckState.Checked
+		pasteIndentEn = self.pasteIndent.checkState() == Qt.CheckState.Checked
+		validationEn = self.editValidate.checkState() == Qt.CheckState.Checked
 
 		guiSettings = project.getGuiSettings()
 		guiSettings.setEditorAutoIndentEn(autoIndentEn)

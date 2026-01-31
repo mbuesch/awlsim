@@ -49,13 +49,13 @@ After cloning the main repository the git submodules must also be fetched. The f
 Awlsim depends on
 
 * [Python](https://python.org) 3.4 or later (or alternatively Python 2.7)
-* [PyQT 5](https://www.riverbankcomputing.com/software/pyqt/intro) or alternatively [PySide 2](https://wiki.qt.io/Qt_for_Python)
+* [PyQt 6](https://www.riverbankcomputing.com/software/pyqt/) or alternatively [PySide 6](https://wiki.qt.io/Qt_for_Python)
 * [CFFI](http://cffi.readthedocs.org/)
 
 These packages can be installed with pip:
 
 <pre>
-pip3 install --upgrade PyQt5
+pip3 install --upgrade PyQt6
 pip3 install --upgrade cffi
 </pre>
 

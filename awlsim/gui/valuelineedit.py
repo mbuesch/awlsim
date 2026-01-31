@@ -45,7 +45,7 @@ class ValueLineEdit(QLineEdit):
 	def __init__(self, validatorCallback=None, parent=None):
 		QLineEdit.__init__(self, parent)
 
-		self.setAlignment(Qt.AlignRight)
+		self.setAlignment(Qt.AlignmentFlag.AlignRight)
 		if validatorCallback:
 			self.__validatorCallback = validatorCallback
 			self.setValidator(ValidatorCallback(self.__validator, self))
@@ -62,15 +62,15 @@ class ValueLineEdit(QLineEdit):
 		pal = self.palette()
 		if self.isEnabledTo(None):
 			if self.__editing:
-				pal.setColor(QPalette.Base, QColor("#FFFFC0"))
+				pal.setColor(QPalette.ColorRole.Base, QColor("#FFFFC0"))
 			else:
-				pal.setColor(QPalette.Base, Qt.white)
+				pal.setColor(QPalette.ColorRole.Base, Qt.GlobalColor.white)
 		else:
-			pal.setColor(QPalette.Base, pal.color(QPalette.Window))
+			pal.setColor(QPalette.ColorRole.Base, pal.color(QPalette.ColorRole.Window))
 		if validInput:
-			pal.setColor(QPalette.Text, Qt.black)
+			pal.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
 		else:
-			pal.setColor(QPalette.Text, Qt.red)
+			pal.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.red)
 		self.setPalette(pal)
 
 	def changeEvent(self, ev):
@@ -80,7 +80,7 @@ class ValueLineEdit(QLineEdit):
 
 	def __validator(self, inputString, pos):
 		res = self.__validatorCallback(inputString, pos)
-		self.__setColors(res == QValidator.Acceptable)
+		self.__setColors(res == QValidator.State.Acceptable)
 		return res
 
 	def __handleReturnPressed(self):
@@ -106,16 +106,16 @@ class ValueLineEdit(QLineEdit):
 		QLineEdit.mousePressEvent(self, ev)
 		if self.__editing:
 			return
-		if ev.button() & (Qt.LeftButton |
-				  Qt.MidButton |
-				  Qt.RightButton):
+		if ev.button() & (Qt.MouseButton.LeftButton |
+				  Qt.MouseButton.MiddleButton |
+				  Qt.MouseButton.RightButton):
 			self.__editing = True
 			self.setReadOnly(False)
 			self.__setColors(True)
 
 	def keyPressEvent(self, ev):
 		QLineEdit.keyPressEvent(self, ev)
-		if ev.key() == Qt.Key_Escape:
+		if ev.key() == Qt.Key.Key_Escape:
 			self.__cancelEdit()
 
 	def text(self):

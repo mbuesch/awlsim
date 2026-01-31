@@ -60,7 +60,7 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 	def connect(self):
 		self.__cancelRequest = False
 		self.hide()
-		self.setWindowModality(Qt.ApplicationModal)
+		self.setWindowModality(Qt.WindowModality.ApplicationModal)
 		self.show()
 		try:
 			result = SSHTunnel.connect(self, timeout=None)
@@ -89,7 +89,7 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 			"Please enter SSH password",
 			"Please enter SSH password for '%s@%s':" %(
 				self.sshUser, self.remoteHost),
-			QLineEdit.Password)
+			QLineEdit.EchoMode.Password)
 		if not ok:
 			return None
 		try:
@@ -104,9 +104,9 @@ class GuiSSHTunnel(SSHTunnel, QDialog):
 		res = QMessageBox.question(self,
 			"Confirm host authenticity?",
 			prompt,
-			QMessageBox.Yes | QMessageBox.No,
-			QMessageBox.No)
-		return res == QMessageBox.Yes
+			QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+			QMessageBox.StandardButton.No)
+		return res == QMessageBox.StandardButton.Yes
 
 class OnlineData(QObject):
 	"""Container for data retrieved from the server.
@@ -520,9 +520,9 @@ class GuiAwlSimClient(GuiAwlSimClient_LowLevel):
 				"The core server requested an "
 				"application shutdown.\n"
 				"Do you want to close Awlsim GUI?",
-				QMessageBox.Yes | QMessageBox.No,
-				QMessageBox.No)
-			if res == QMessageBox.Yes:
+				QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+				QMessageBox.StandardButton.No)
+			if res == QMessageBox.StandardButton.Yes:
 				print("Shutting down, as requested by server...")
 				self.shutdown()
 				QApplication.exit(0)
@@ -557,7 +557,7 @@ class GuiAwlSimClient(GuiAwlSimClient_LowLevel):
 				okButton=False,
 				continueButton=True,
 				cancelButton=True)
-			if res != MessageBox.Accepted:
+			if res != QDialog.DialogCode.Accepted:
 				return False
 		return True
 
@@ -576,7 +576,7 @@ class GuiAwlSimClient(GuiAwlSimClient_LowLevel):
 			if LinkConfigWidget.askWhenConnecting():
 				dlg = LinkConfigDialog(project, self.__mainWindow)
 				dlg.settingsChanged.connect(self.__mainWindow.mainWidget.somethingChanged)
-				if dlg.exec_() != LinkConfigDialog.Accepted:
+				if dlg.exec() != QDialog.DialogCode.Accepted:
 					dlg.deleteLater()
 					self.action_goOffline()
 					return False
@@ -725,7 +725,7 @@ class GuiAwlSimClient(GuiAwlSimClient_LowLevel):
 					"No source selected.",
 					"Cannot download a single source.\n"
 					"No source has been opened in the edit area.",
-					QMessageBox.Ok)
+					QMessageBox.StandardButton.Ok)
 				return False
 
 			# Make sure we are online.

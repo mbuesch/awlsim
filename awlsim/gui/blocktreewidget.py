@@ -218,7 +218,7 @@ class BlockTreeModel(QAbstractItemModel):
 
 	def flags(self, index):
 		if not index.isValid():
-			return Qt.NoItemFlags
+			return Qt.ItemFlag.NoItemFlags
 
 		idxId = self.indexToId(index)
 		idxIdBase = idxId & self.INDEXID_BASE_MASK
@@ -228,12 +228,12 @@ class BlockTreeModel(QAbstractItemModel):
 				# We set the 'editable' flag for the ident column.
 				# However it not really is editable (see setData).
 				# We just do this to make the ident easily copy-able.
-				return Qt.ItemIsEnabled |\
-				       Qt.ItemIsSelectable |\
-				       Qt.ItemIsEditable
+				return Qt.ItemFlag.ItemIsEnabled |\
+				       Qt.ItemFlag.ItemIsSelectable |\
+				       Qt.ItemFlag.ItemIsEditable
 
-		return Qt.ItemIsEnabled |\
-		       Qt.ItemIsSelectable
+		return Qt.ItemFlag.ItemIsEnabled |\
+		       Qt.ItemFlag.ItemIsSelectable
 
 	def columnCount(self, parentIndex=QModelIndex()):
 		return 3
@@ -526,12 +526,12 @@ class BlockTreeModel(QAbstractItemModel):
 			return self.__hwMods[index].getIdentHashStr()
 		return None
 
-	def data(self, index, role=Qt.DisplayRole):
+	def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 		column = index.column()
 		idxId = self.indexToId(index)
 		idxIdBase = idxId & self.INDEXID_BASE_MASK
 
-		if role in (Qt.DisplayRole, Qt.EditRole):
+		if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
 			if column == self.COLUMN_NAME:
 				return self.__data_columnName(index, idxId, idxIdBase)
 			if column == self.COLUMN_DESC:
@@ -539,7 +539,7 @@ class BlockTreeModel(QAbstractItemModel):
 			if column == self.COLUMN_IDENT:
 				return self.__data_columnIdent(index, idxId, idxIdBase)
 
-		elif role == Qt.DecorationRole:
+		elif role == Qt.ItemDataRole.DecorationRole:
 			if column == self.COLUMN_NAME:
 				if idxId == self.INDEXID_SRCS:
 					return getIcon("textsource")
@@ -577,18 +577,18 @@ class BlockTreeModel(QAbstractItemModel):
 					return getIcon("hwmod")
 		return None
 
-	def setData(self, index, value, role=Qt.EditRole):
+	def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
 		if not index.isValid():
 			return False
-		if role != Qt.EditRole:
+		if role != Qt.ItemDataRole.EditRole:
 			return False
 		if index.column() == self.COLUMN_IDENT:
 			# We never allow edit of the ident hash.
 			return False
 		return QAbstractItemModel.setData(self, index, value, role)
 
-	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		if role == Qt.DisplayRole:
+	def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+		if role == Qt.ItemDataRole.DisplayRole:
 			return (
 				"Block name",
 				"Symbol / description",
@@ -638,17 +638,17 @@ class BlockTreeView(QTreeView):
 			idxIdBase = idxId & model.INDEXID_BASE_MASK
 			self.__currentIdxId = idxId
 
-			if buttons & Qt.RightButton:
+			if buttons & Qt.MouseButton.RightButton:
 				if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_DBS_BASE or\
 				   idxIdBase == model.INDEXID_BLOCKS_UDTS_BASE:
-					self.__blockMenu.exec_(QCursor.pos() + QPoint(3, 3))
+					self.__blockMenu.exec(QCursor.pos() + QPoint(3, 3))
 				elif idxIdBase == model.INDEXID_SRCS_AWL_BASE or\
 				     idxIdBase == model.INDEXID_SRCS_FUP_BASE or\
 				     idxIdBase == model.INDEXID_SRCS_SYMTAB_BASE:
-					self.__srcMenu.exec_(QCursor.pos() + QPoint(3, 3))
+					self.__srcMenu.exec(QCursor.pos() + QPoint(3, 3))
 		finally:
 			self.__currentIdxId = None
 
@@ -684,7 +684,7 @@ class BlockTreeView(QTreeView):
 		idxId = model.indexToId(self.currentIndex())
 		idxIdBase = idxId & model.INDEXID_BASE_MASK
 
-		if ev.key() == Qt.Key_Delete:
+		if ev.key() == Qt.Key.Key_Delete:
 			if idxIdBase == model.INDEXID_BLOCKS_OBS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FCS_BASE or\
 			   idxIdBase == model.INDEXID_BLOCKS_FBS_BASE or\
@@ -707,9 +707,9 @@ class BlockTreeView(QTreeView):
 			"Remove the selected source from the CPU?\n"
 			"This will also remove all associated compiled "
 			"blocks from the CPU.",
-			QMessageBox.Yes | QMessageBox.No,
-			QMessageBox.Yes)
-		if res != QMessageBox.Yes:
+			QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+			QMessageBox.StandardButton.Yes)
+		if res != QMessageBox.StandardButton.Yes:
 			return
 
 		if self.__currentIdxId is None:
@@ -742,9 +742,9 @@ class BlockTreeView(QTreeView):
 		res = QMessageBox.question(self,
 			"Remove selected block?",
 			"Remove the selected block from the CPU?",
-			QMessageBox.Yes | QMessageBox.No,
-			QMessageBox.Yes)
-		if res != QMessageBox.Yes:
+			QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+			QMessageBox.StandardButton.Yes)
+		if res != QMessageBox.StandardButton.Yes:
 			return
 
 		if self.__currentIdxId is None:

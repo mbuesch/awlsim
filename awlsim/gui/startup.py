@@ -117,14 +117,14 @@ def __unhandledExceptionHook(etype, value, tb):
 			None,
 			"awlsim-gui: Unhandled exception",
 			text + "\n\n\n" + "".join(traceback.format_exception(etype, value, tb)),
-			QMessageBox.Ok,
-			QMessageBox.Ok)
-	# Call QCoreApplication.exit() so that we return from exec_()
+			QMessageBox.StandardButton.Ok,
+			QMessageBox.StandardButton.Ok)
+	# Call QCoreApplication.exit() so that we return from exec()
 	qapp.exit(ExitCodes.EXIT_ERR_OTHER)
 __orig_excepthook = sys.excepthook
 sys.excepthook = __unhandledExceptionHook
 
 # Run the main loop.
-res = qapp.exec_()
+res = qapp.exec()
 guiShutdownCleanup()
 sys.exit(res)

@@ -38,32 +38,20 @@ def __frameworkError(msg):
 		pass
 	sys.exit(1)
 
-def __testQStringAPI(scope, silent=False):
-	# Test for QString v2 API
-	if "QString" in scope:
-		# QString exists. This is v1 API.
-		if silent:
-			return False
-		__frameworkError("Deprecated QString API detected.\n"
-				 "Awlsim does not support PyQt QString v1 API.\n"
-				 "---> Please use PySide2 or a newer PyQt5. <---")
-	return True
-
 def __autodetectGuiFramework():
 	urls = {
-		"pyside" : "http://www.pyside.org/",
-		"pyqt"   : "http://www.riverbankcomputing.com/software/pyqt/download5",
+		"pyside" : "https://wiki.qt.io/Qt_for_Python",
+		"pyqt"   : "https://www.riverbankcomputing.com/software/pyqt/",
 	}
 	with contextlib.suppress(ImportError):
-		import PyQt5.QtCore as __pyQtCore
-		if __testQStringAPI(dir(__pyQtCore), True):
-			return "pyqt5"
+		import PyQt6.QtCore as __pyQtCore
+		return "pyqt6"
 	with contextlib.suppress(ImportError):
-		import PySide2.QtCore as __pySideCore
-		return "pyside2"
-	__frameworkError("Neither PySide nor PyQt found.\n"
-			 "PLEASE INSTALL PySide2 (%s)\n"
-			 "            or PyQt5 (%s)" %\
+		import PySide6.QtCore as __pySideCore
+		return "pyside6"
+	__frameworkError("Neither PySide6 nor PyQt6 found.\n"
+			 "PLEASE INSTALL PySide6 (%s)\n"
+			 "            or PyQt6 (%s)" %\
 			 (urls["pyside"],
 			  urls["pyqt"]))
 
@@ -74,26 +62,25 @@ __guiFramework = AwlSimEnv.getGuiFramework()
 if __guiFramework == "auto":
 	__guiFramework = __autodetectGuiFramework()
 if __guiFramework == "pyside":
-	__guiFramework = "pyside2"
+	__guiFramework = "pyside6"
 if __guiFramework == "pyqt":
-	__guiFramework = "pyqt5"
+	__guiFramework = "pyqt6"
 
 # Load the Qt modules
-if __guiFramework == "pyside2":
+if __guiFramework == "pyside6":
 	try:
-		from PySide2.QtCore import *
-		from PySide2.QtGui import *
-		from PySide2.QtWidgets import *
+		from PySide6.QtCore import *
+		from PySide6.QtGui import *
+		from PySide6.QtWidgets import *
 	except ImportError as e:
-		__frameworkError("Failed to import PySide2 modules:\n" + str(e))
-elif __guiFramework == "pyqt5":
+		__frameworkError("Failed to import PySide6 modules:\n" + str(e))
+elif __guiFramework == "pyqt6":
 	try:
-		from PyQt5.QtCore import *
-		from PyQt5.QtGui import *
-		from PyQt5.QtWidgets import *
+		from PyQt6.QtCore import *
+		from PyQt6.QtGui import *
+		from PyQt6.QtWidgets import *
 	except ImportError as e:
-		__frameworkError("Failed to import PyQt5 modules:\n" + str(e))
-	__testQStringAPI(globals())
+		__frameworkError("Failed to import PyQt6 modules:\n" + str(e))
 else:
 	__frameworkError("Unknown GUI framework '%s' requested.\n"
 			 "Please fix the AWLSIM_GUI environment variable." %\

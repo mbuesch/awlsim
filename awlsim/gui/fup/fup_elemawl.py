@@ -132,7 +132,7 @@ class FupElem_AWL(FupElem):
 			bodyRect = QRect(2 * xpad, 2 * ypad,
 					 elemWidth - 4 * xpad, elemHeight - 4 * ypad)
 			textRect = bodyRect
-			textFlags = Qt.AlignLeft | Qt.AlignTop
+			textFlags = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
 			if expanded:
 				textMaxRect = bodyRect.translated(0, 0)
 				textMaxRect.setHeight(grid.height * cellHeight)
@@ -159,7 +159,7 @@ class FupElem_AWL(FupElem):
 			painter.setFont(self.getFont(16, bold=True))
 			painter.drawText(0, 0,
 					 elemWidth, elemHeight,
-					 Qt.AlignVCenter | Qt.AlignHCenter,
+					 Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter,
 					 "AWL")
 
 		# Draw disable-marker
@@ -175,7 +175,7 @@ class FupElem_AWL(FupElem):
 					AwlSource.ENCODING,
 					"ignore"))
 		dlg.edit.setSource(source)
-		if dlg.exec_() == QDialog.Accepted:
+		if dlg.exec() == QDialog.DialogCode.Accepted:
 			source = dlg.edit.getSource()
 			self.contentText = source.sourceText
 			return True

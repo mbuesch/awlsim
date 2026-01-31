@@ -115,7 +115,7 @@ class FupElem(FupBaseClass):
 		self.expanded = False	# Content view expansion active
 
 		lineWidth = 2
-		self._noPen = QPen(Qt.NoPen)
+		self._noPen = QPen(Qt.PenStyle.NoPen)
 		self._noPen.setWidth(0)
 		self._outlinePen = QPen(QColor("#000000"))
 		self._outlinePen.setWidth(lineWidth)

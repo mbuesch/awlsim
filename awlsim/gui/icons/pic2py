@@ -2,9 +2,18 @@
 
 import sys
 import base64
-from PySide.QtCore import *
-from PySide.QtGui import *
-from PySide.QtSvg import *
+try:
+	from PyQt6.QtCore import *
+	from PyQt6.QtGui import *
+	from PyQt6.QtWidgets import *
+	from PyQt6.QtSvg import *
+	print("Using PyQt6.")
+except ImportError:
+	from PySide6.QtCore import *
+	from PySide6.QtGui import *
+	from PySide6.QtWidgets import *
+	from PySide6.QtSvg import *
+	print("Using PySide6.")
 
 qapp = QApplication(sys.argv)
 
@@ -13,7 +22,7 @@ outFile = sys.argv[2]
 
 if inFile.lower().endswith(".svg"):
 	render = QSvgRenderer(inFile)
-	img = QImage(48, 48, QImage.Format_ARGB32)
+	img = QImage(48, 48, QImage.Format.Format_ARGB32)
 	img.fill(QColor(0, 0, 0, 0))
 	painter = QPainter()
 	painter.begin(img)
@@ -24,7 +33,7 @@ else:
 
 ba = QByteArray()
 buf = QBuffer(ba)
-buf.open(QIODevice.WriteOnly)
+buf.open(QIODevice.OpenModeFlag.WriteOnly)
 img.save(buf, "PNG")
 imgB64 = base64.b64encode(ba.data())
 fd = open(outFile, "wb")

@@ -265,7 +265,7 @@ class FupElem_SHIFT(FupElem):
 				y = (cellIdx * cellHeight)
 				painter.drawText(x, y,
 						 elemWidth - xpad - 2, cellHeight,
-						 Qt.AlignLeft | Qt.AlignVCenter,
+						 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
 						 conn.text)
 
 		# Draw outputs
@@ -291,7 +291,7 @@ class FupElem_SHIFT(FupElem):
 				y = (cellIdx * cellHeight)
 				painter.drawText(x, y,
 						 elemWidth - xpad - 2, cellHeight,
-						 Qt.AlignRight | Qt.AlignVCenter,
+						 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
 						 conn.text)
 
 		# Draw symbol text
@@ -302,7 +302,7 @@ class FupElem_SHIFT(FupElem):
 		painter.setFont(self.getFont(12, bold=True))
 		painter.drawText(0, 0,
 				 elemWidth, elemHeight,
-				 Qt.AlignVCenter | Qt.AlignHCenter,
+				 Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter,
 				 self.OP_SYM)
 
 		# Draw disable-marker

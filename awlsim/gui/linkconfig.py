@@ -139,11 +139,11 @@ class _SSHConfigWidget(QGroupBox):
 		hbox.addWidget(self.localPortAuto)
 		self.layout().addLayout(hbox, 3, 1)
 
-		self.localPortAuto.stateChanged.connect(self.__localPortAutoChanged)
-		self.localPortAuto.setCheckState(Qt.Checked)
+		self.localPortAuto.checkStateChanged.connect(self.__localPortAutoChanged)
+		self.localPortAuto.setCheckState(Qt.CheckState.Checked)
 
 	def __localPortAutoChanged(self, newState):
-		self.localPort.setEnabled(newState != Qt.Checked)
+		self.localPort.setEnabled(newState != Qt.CheckState.Checked)
 
 class _ConnectConfigWidget(QGroupBox):
 	def __init__(self, parent=None):
@@ -192,10 +192,10 @@ class _ConnectConfigWidget(QGroupBox):
 		self.sshConfig.hide()
 		self.layout().addWidget(self.sshConfig, 4, 0, 1, 2)
 
-		self.sshTunnel.stateChanged.connect(self.__sshChanged)
+		self.sshTunnel.checkStateChanged.connect(self.__sshChanged)
 
 	def __sshChanged(self, newState):
-		if newState == Qt.Checked:
+		if newState == Qt.CheckState.Checked:
 			self.sshConfig.show()
 		else:
 			self.sshConfig.hide()
@@ -226,7 +226,7 @@ class LinkConfigWidget(QWidget):
 					 "You should not normally need to change any of these.\n"
 					 "Changing them might break the execution "
 					 "of the simulator core.")
-		self.advanced.setCheckState(Qt.Unchecked)
+		self.advanced.setCheckState(Qt.CheckState.Unchecked)
 		self.layout().addWidget(self.advanced, 1, 0, 1, 2)
 
 		self.spawnConfig = _SpawnConfigWidget(self)
@@ -239,18 +239,18 @@ class LinkConfigWidget(QWidget):
 		self.layout().setRowStretch(4, 1)
 
 		self.askCheckBox = QCheckBox("Always as&k", self)
-		self.askCheckBox.setCheckState(Qt.Checked if
-			self.askWhenConnecting() else Qt.Unchecked)
+		self.askCheckBox.setCheckState(Qt.CheckState.Checked if
+			self.askWhenConnecting() else Qt.CheckState.Unchecked)
 		self.askCheckBox.setToolTip("Always open this dialog when "
 					    "trying to connect to a CPU.")
 		self.layout().addWidget(self.askCheckBox, 5, 0, 1, 2)
 
 		self.__advancedChanged(self.advanced.checkState())
 
-		self.advanced.stateChanged.connect(self.__advancedChanged)
+		self.advanced.checkStateChanged.connect(self.__advancedChanged)
 		self.spawnRadio.toggled.connect(self.__spawnToggled)
 		self.connRadio.toggled.connect(self.__connToggled)
-		self.askCheckBox.stateChanged.connect(self.__askChanged)
+		self.askCheckBox.checkStateChanged.connect(self.__askChanged)
 
 	@classmethod
 	def askWhenConnecting(cls):
@@ -261,7 +261,7 @@ class LinkConfigWidget(QWidget):
 			return True
 
 	def __advancedChanged(self, newState):
-		if newState == Qt.Checked:
+		if newState == Qt.CheckState.Checked:
 			self.spawnConfig.show()
 		else:
 			self.spawnConfig.hide()
@@ -269,14 +269,14 @@ class LinkConfigWidget(QWidget):
 	def __askChanged(self, newState):
 		settings = QSettings()
 		settings.setValue("connect_ask_details",
-				  1 if newState == Qt.Checked else 0)
+				  1 if newState == Qt.CheckState.Checked else 0)
 
 	def __spawnToggled(self, state):
 		if state:
 			self.advanced.show()
 		else:
 			self.advanced.hide()
-		if state and self.advanced.checkState() == Qt.Checked:
+		if state and self.advanced.checkState() == Qt.CheckState.Checked:
 			self.spawnConfig.show()
 		else:
 			self.spawnConfig.hide()
@@ -308,9 +308,9 @@ class LinkConfigWidget(QWidget):
 		self.connConfig.timeout.setValue(
 			linkSettings.getConnectTimeoutMs() / 1000.0)
 		self.connConfig.sshTunnel.setCheckState(
-			Qt.Checked if
+			Qt.CheckState.Checked if
 			(linkSettings.getTunnel() == linkSettings.TUNNEL_SSH)
-			else Qt.Unchecked)
+			else Qt.CheckState.Unchecked)
 
 		sshConfig = self.connConfig.sshConfig
 		sshConfig.user.setText(linkSettings.getSSHUser())
@@ -318,9 +318,9 @@ class LinkConfigWidget(QWidget):
 		sshConfig.sshExecutable.setText(linkSettings.getSSHExecutable())
 		localPort = linkSettings.getTunnelLocalPort()
 		sshConfig.localPortAuto.setCheckState(
-			Qt.Checked if
+			Qt.CheckState.Checked if
 			(localPort == linkSettings.TUNNEL_LOCPORT_AUTO)
-			else Qt.Unchecked)
+			else Qt.CheckState.Unchecked)
 		sshConfig.localPort.setValue(
 			localPort if
 			(localPort != linkSettings.TUNNEL_LOCPORT_AUTO)
@@ -357,7 +357,7 @@ class LinkConfigWidget(QWidget):
 			linkSettings.setConnectTimeoutMs(timeout)
 			changed = True
 		tunnel = linkSettings.TUNNEL_SSH\
-			 if (self.connConfig.sshTunnel.checkState() == Qt.Checked)\
+			 if (self.connConfig.sshTunnel.checkState() == Qt.CheckState.Checked)\
 			 else linkSettings.TUNNEL_NONE
 		if tunnel != linkSettings.getTunnel():
 			linkSettings.setTunnel(tunnel)
@@ -376,7 +376,7 @@ class LinkConfigWidget(QWidget):
 		if sshExecutable != linkSettings.getSSHExecutable():
 			linkSettings.setSSHExecutable(sshExecutable)
 			changed = True
-		if sshConfig.localPortAuto.checkState() == Qt.Checked:
+		if sshConfig.localPortAuto.checkState() == Qt.CheckState.Checked:
 			if linkSettings.getTunnelLocalPort() != linkSettings.TUNNEL_LOCPORT_AUTO:
 				linkSettings.setTunnelLocalPort(linkSettings.TUNNEL_LOCPORT_AUTO)
 				changed = True

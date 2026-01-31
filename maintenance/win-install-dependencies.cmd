@@ -17,9 +17,9 @@ call :install pywin32
 if ERRORLEVEL 1 exit /B 1
 call :install Cython
 if ERRORLEVEL 1 exit /B 1
-call :install PyQt5_sip
+call :install PyQt6
 if ERRORLEVEL 1 exit /B 1
-call :install PyQt5
+call :install PySide6
 if ERRORLEVEL 1 exit /B 1
 call :install cx_Freeze
 if ERRORLEVEL 1 exit /B 1

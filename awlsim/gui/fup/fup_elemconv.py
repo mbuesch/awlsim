@@ -207,7 +207,7 @@ class FupElem_CONV(FupElem):
 			       else self._outlinePen)
 		painter.drawText(0, 0,
 				 elemWidth, cellHeight,
-				 Qt.AlignHCenter | Qt.AlignVCenter,
+				 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
 				 self.OP_SYM)
 
 		# Draw disable-marker

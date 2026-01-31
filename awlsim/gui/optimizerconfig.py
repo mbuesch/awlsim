@@ -71,18 +71,18 @@ class OptimizerConfigWidget(QWidget):
 			"If this box is ticked all available optimizers\n"
 			"will be enabled.\n"
 			"This is recommended.")
-		self.allEnCheckBox.setCheckState(Qt.Checked
+		self.allEnCheckBox.setCheckState(Qt.CheckState.Checked
 						 if settingsContainer.allEnable
-						 else Qt.Unchecked)
+						 else Qt.CheckState.Unchecked)
 		self.layout().addWidget(self.allEnCheckBox, 2, 2)
 		self.globalEnCheckBox = QCheckBox("&Run enabled optimizers (recommended)", self)
 		self.globalEnCheckBox.setToolTip(
 			"If this box is not ticked, none of the \n"
 			"enabled optimizers will actually be \n"
 			"executed.")
-		self.globalEnCheckBox.setCheckState(Qt.Checked
+		self.globalEnCheckBox.setCheckState(Qt.CheckState.Checked
 						    if settingsContainer.globalEnable
-						    else Qt.Unchecked)
+						    else Qt.CheckState.Unchecked)
 		self.layout().addWidget(self.globalEnCheckBox, 3, 2)
 
 		enOptSettings = list(sorted(dictValues(self.settingsContainer.settingsDict),
@@ -107,8 +107,8 @@ class OptimizerConfigWidget(QWidget):
 
 		self.addButton.released.connect(self.__handleAdd)
 		self.delButton.released.connect(self.__handleDel)
-		self.allEnCheckBox.stateChanged.connect(self.__handleAllEnChange)
-		self.globalEnCheckBox.stateChanged.connect(self.__handleGlobalEnChange)
+		self.allEnCheckBox.checkStateChanged.connect(self.__handleAllEnChange)
+		self.globalEnCheckBox.checkStateChanged.connect(self.__handleGlobalEnChange)
 
 	@classmethod
 	def __getOptClass(cls, name):
@@ -135,7 +135,7 @@ class OptimizerConfigWidget(QWidget):
 			      "target CPU!"
 		item = QListWidgetItem(icon, name)
 		item.setToolTip(tip)
-		item.setData(Qt.UserRole, userData)
+		item.setData(Qt.ItemDataRole.UserRole, userData)
 		return item
 
 	def __handleAdd(self):
@@ -148,7 +148,7 @@ class OptimizerConfigWidget(QWidget):
 			fromItem = self.availOptList.currentItem()
 			if not fromItem:
 				return
-			optClass = fromItem.data(Qt.UserRole)
+			optClass = fromItem.data(Qt.ItemDataRole.UserRole)
 			optName = optClass.NAME
 		optSetting = AwlOptimizerSettings(
 				name=optName,
@@ -165,7 +165,7 @@ class OptimizerConfigWidget(QWidget):
 		if not item:
 			return
 		item = self.enOptList.takeItem(self.enOptList.row(item))
-		optSetting = item.data(Qt.UserRole)
+		optSetting = item.data(Qt.ItemDataRole.UserRole)
 		optClass = self.__getOptClass(optSetting.name)
 		if optClass:
 			newItem = self.__mkListEntry(optClass.NAME, optClass)
@@ -173,7 +173,7 @@ class OptimizerConfigWidget(QWidget):
 		self.settingsContainer.remove(optSetting)
 
 	def __handleAllEnChange(self, state):
-		en = bool(state == Qt.Checked)
+		en = bool(state == Qt.CheckState.Checked)
 		self.settingsContainer.allEnable = en
 		self.availOptList.setEnabled(not en)
 		self.otherOpt.setEnabled(not en)
@@ -182,7 +182,7 @@ class OptimizerConfigWidget(QWidget):
 		self.delButton.setEnabled(not en)
 
 	def __handleGlobalEnChange(self, state):
-		self.settingsContainer.globalEnable = bool(state == Qt.Checked)
+		self.settingsContainer.globalEnable = bool(state == Qt.CheckState.Checked)
 
 class OptimizerConfigDialog(AbstractConfigDialog):
 	def __init__(self, settingsContainer, parent=None):
