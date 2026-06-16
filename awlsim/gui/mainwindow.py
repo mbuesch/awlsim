@@ -47,7 +47,7 @@ class LoadProgressDialog(QDialog):
 		QDialog.__init__(self, parent)
 		self.setLayout(QGridLayout())
 		self.setContentsMargins(30, 30, 30, 30)
-		self.setWindowModality(Qt.ApplicationModal)
+		self.setWindowModality(Qt.WindowModality.ApplicationModal)
 		self.__isShown = False
 		self.__icon = QLabel(self)
 		self.layout().addWidget(self.__icon, 0, 0)
@@ -64,12 +64,12 @@ class LoadProgressDialog(QDialog):
 	def showProgress(self):
 		self.__isShown = True
 		self.show()
-		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents, 50)
+		QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents, 50)
 
 	def hideProgress(self):
 		self.__isShown = False
 		self.hide()
-		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents, 50)
+		QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents, 50)
 
 	def setGuiRunState(self, guiRunState):
 		if guiRunState.state == GuiRunState.STATE_LOAD:
@@ -89,10 +89,10 @@ class CpuDockWidget(QDockWidget):
 		self.setObjectName("CpuDockWidget")
 		self.toggleViewAction().setIcon(getIcon("cpu"))
 
-		self.setFeatures(QDockWidget.DockWidgetMovable |
-				 QDockWidget.DockWidgetFloatable |
-				 QDockWidget.DockWidgetClosable)
-		self.setAllowedAreas(Qt.AllDockWidgetAreas)
+		self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable |
+				 QDockWidget.DockWidgetFeature.DockWidgetFloatable |
+				 QDockWidget.DockWidgetFeature.DockWidgetClosable)
+		self.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
 
 		self.setWidget(CpuWidget(mainWidget))
 
@@ -116,9 +116,9 @@ class ProjectTreeDockWidget(QDockWidget):
 		self.setObjectName("ProjectTreeDockWidget")
 		self.toggleViewAction().setIcon(getIcon("doc_edit"))
 
-		self.setFeatures(QDockWidget.DockWidgetMovable |
-				 QDockWidget.DockWidgetFloatable)
-		self.setAllowedAreas(Qt.AllDockWidgetAreas)
+		self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable |
+				 QDockWidget.DockWidgetFeature.DockWidgetFloatable)
+		self.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
 
 		self.projectTreeModel = ProjectTreeModel(mainWidget=mainWidget)
 		self.projectTreeView = ProjectTreeView(model=self.projectTreeModel,
@@ -268,18 +268,18 @@ class MainWidget(QWidget):
 				"- Open the new project in a new instance or\n"
 				"- Discard the changes and open the new project\n"
 				"- Cancel the operation",
-				QMessageBox.Save | QMessageBox.Discard |\
-				QMessageBox.Open | QMessageBox.Cancel,
-				QMessageBox.Open)
-			if res == QMessageBox.Save:
+				QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard |\
+				QMessageBox.StandardButton.Open | QMessageBox.StandardButton.Cancel,
+				QMessageBox.StandardButton.Open)
+			if res == QMessageBox.StandardButton.Save:
 				if not self.save():
 					return
-			elif res == QMessageBox.Discard:
+			elif res == QMessageBox.StandardButton.Discard:
 				pass
-			elif res == QMessageBox.Open:
+			elif res == QMessageBox.StandardButton.Open:
 				self.newFile(filename)
 				return
-			elif res == QMessageBox.Cancel:
+			elif res == QMessageBox.StandardButton.Cancel:
 				return
 			else:
 				assert(0)
@@ -357,23 +357,23 @@ class MainWidget(QWidget):
 	def guiConfig(self):
 		dlg = GuiConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
-		if dlg.exec_() == dlg.Accepted:
+		if dlg.exec() == QDialog.DialogCode.Accepted:
 			self.editMdiArea.setGuiSettings(self.getProject().getGuiSettings())
 
 	def linkConfig(self):
 		dlg = LinkConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
-		dlg.exec_()
+		dlg.exec()
 
 	def cpuConfig(self):
 		dlg = CpuConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
-		dlg.exec_()
+		dlg.exec()
 
 	def hwmodConfig(self):
 		dlg = HwmodConfigDialog(self.getProject(), self)
 		dlg.settingsChanged.connect(self.somethingChanged)
-		dlg.exec_()
+		dlg.exec()
 
 	def __pasteAwlText(self, text):
 		if not self.editMdiArea.paste(text):
@@ -419,7 +419,7 @@ class MainWidget(QWidget):
 	def insertOB(self):
 		dlg = TemplateDialog.make_OB(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getOB(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
@@ -429,7 +429,7 @@ class MainWidget(QWidget):
 	def insertFC(self):
 		dlg = TemplateDialog.make_FC(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getFC(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
@@ -439,7 +439,7 @@ class MainWidget(QWidget):
 	def insertFB(self):
 		dlg = TemplateDialog.make_FB(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getFB(dlg.getBlockNumber(),
 							    dlg.getVerbose()))
@@ -449,7 +449,7 @@ class MainWidget(QWidget):
 	def insertInstanceDB(self):
 		dlg = TemplateDialog.make_instanceDB(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getInstanceDB(dlg.getBlockNumber(),
 								    dlg.getExtraNumber(),
@@ -460,7 +460,7 @@ class MainWidget(QWidget):
 	def insertGlobalDB(self):
 		dlg = TemplateDialog.make_globalDB(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getGlobalDB(dlg.getBlockNumber(),
 								  dlg.getVerbose()))
@@ -470,7 +470,7 @@ class MainWidget(QWidget):
 	def insertUDT(self):
 		dlg = TemplateDialog.make_UDT(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getUDT(dlg.getBlockNumber(),
 							     dlg.getVerbose()))
@@ -480,7 +480,7 @@ class MainWidget(QWidget):
 	def insertFCcall(self):
 		dlg = TemplateDialog.make_FCcall(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getFCcall(dlg.getBlockNumber(),
 								dlg.getVerbose()))
@@ -490,7 +490,7 @@ class MainWidget(QWidget):
 	def insertFBcall(self):
 		dlg = TemplateDialog.make_FBcall(self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			self.__pasteAwlText(Templates.getFBcall(dlg.getBlockNumber(),
 								dlg.getExtraNumber(),
@@ -501,7 +501,7 @@ class MainWidget(QWidget):
 	def openLibrary(self):
 		dlg = LibraryDialog(self.getProject(), self)
 		def dialogFinished(result):
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				return
 			if dlg.pasteText:
 				# Paste the code.
@@ -641,9 +641,9 @@ class MainWindow(QMainWindow):
 
 		self.setCentralWidget(self.mainWidget)
 
-		self.setDockOptions(self.dockOptions() | QMainWindow.AllowTabbedDocks)
-		self.addDockWidget(Qt.LeftDockWidgetArea, self.treeDockWidget)
-		self.addDockWidget(Qt.BottomDockWidgetArea, self.cpuDockWidget)
+		self.setDockOptions(self.dockOptions() | QMainWindow.DockOption.AllowTabbedDocks)
+		self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.treeDockWidget)
+		self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.cpuDockWidget)
 
 		self.tb = QToolBar(self)
 		self.tb.setObjectName("Main QToolBar")
@@ -679,15 +679,15 @@ class MainWindow(QMainWindow):
 		self.tbLibAct.setToolTip("Standard library.\n"
 					 "(Please click into the AWL/STL source code\n"
 					 "at the place where to paste the library call)")
-		self.addToolBar(Qt.TopToolBarArea, self.tb)
+		self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.tb)
 
 		self.ctrlTb = CpuControlToolBar(self)
 		self.ctrlTb.toggleViewAction().setIcon(getIcon("prefs"))
-		self.addToolBar(Qt.LeftToolBarArea, self.ctrlTb)
+		self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.ctrlTb)
 
 		self.inspectTb = CpuInspectToolBar(self)
 		self.inspectTb.toggleViewAction().setIcon(getIcon("prefs"))
-		self.addToolBar(Qt.LeftToolBarArea, self.inspectTb)
+		self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.inspectTb)
 
 		self.setMenuBar(QMenuBar(self))
 
@@ -992,13 +992,13 @@ class MainWindow(QMainWindow):
 				"Unsaved AWL/STL code",
 				"The editor contains unsaved AWL/STL code.\n"
 				"AWL/STL code will be lost by exiting without saving.",
-				QMessageBox.Discard | QMessageBox.Save | QMessageBox.Cancel,
-				QMessageBox.Cancel)
-			if res == QMessageBox.Save:
+				QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel,
+				QMessageBox.StandardButton.Cancel)
+			if res == QMessageBox.StandardButton.Save:
 				if not self.mainWidget.save():
 					ev.ignore()
 					return
-			elif res == QMessageBox.Cancel:
+			elif res == QMessageBox.StandardButton.Cancel:
 				ev.ignore()
 				return
 		self.__saveState()
@@ -1008,11 +1008,11 @@ class MainWindow(QMainWindow):
 		self.profileStop()
 
 	def keyPressEvent(self, ev):
-		if ev.matches(QKeySequence.Save):
+		if ev.matches(QKeySequence.StandardKey.Save):
 			self.mainWidget.save(False)
 			ev.accept()
 			return
-		elif ev.matches(QKeySequence.SaveAs):
+		elif ev.matches(QKeySequence.StandardKey.SaveAs):
 			self.mainWidget.save(True)
 			ev.accept()
 			return
@@ -1020,7 +1020,7 @@ class MainWindow(QMainWindow):
 		QMainWindow.keyPressEvent(self, ev)
 
 	def awlsimHomepage(self):
-		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.StrictMode))
+		QDesktopServices.openUrl(QUrl(AWLSIM_HOME_URL, QUrl.ParsingMode.StrictMode))
 
 	def about(self):
 		QMessageBox.about(self, "About Awlsim PLC",

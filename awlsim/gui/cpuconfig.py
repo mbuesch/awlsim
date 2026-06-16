@@ -287,14 +287,14 @@ class CpuConfigWidget(QWidget):
 		self.mnemonicsCombo.setCurrentIndex(index if index >= 0 else 0)
 
 		self.obTempCheckBox.setCheckState(
-			Qt.Checked if conf.obStartinfoEn else Qt.Unchecked)
+			Qt.CheckState.Checked if conf.obStartinfoEn else Qt.CheckState.Unchecked)
 		self.extInsnsCheckBox.setCheckState(
-			Qt.Checked if conf.extInsnsEn else Qt.Unchecked)
+			Qt.CheckState.Checked if conf.extInsnsEn else Qt.CheckState.Unchecked)
 		self.cycleTimeSpinBox.setValue(conf.cycleTimeLimitUs / 1000.0)
 		self.cycleTimeTargetSpinBox.setValue(conf.cycleTimeTargetUs / 1000.0)
 
 		self.preDownloadValidationCheckBox.setCheckState(
-			Qt.Checked if guiSettings.getPreDownloadValidationEn() else Qt.Unchecked)
+			Qt.CheckState.Checked if guiSettings.getPreDownloadValidationEn() else Qt.CheckState.Unchecked)
 
 	def storeToProject(self, project):
 		specs = project.getCpuSpecs()
@@ -312,11 +312,11 @@ class CpuConfigWidget(QWidget):
 		parenStackSize = self.parenStackSpinBox.value()
 		callStackSize = self.callStackSpinBox.value()
 		clockMemByte = self.clockMemSpin.value()
-		obTempEnabled = self.obTempCheckBox.checkState() == Qt.Checked
-		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.Checked
+		obTempEnabled = self.obTempCheckBox.checkState() == Qt.CheckState.Checked
+		extInsnsEnabled = self.extInsnsCheckBox.checkState() == Qt.CheckState.Checked
 		cycleTimeLimit = self.cycleTimeSpinBox.value()
 		cycleTimeTarget = self.cycleTimeTargetSpinBox.value()
-		preDownloadValidation = self.preDownloadValidationCheckBox.checkState() == Qt.Checked
+		preDownloadValidation = self.preDownloadValidationCheckBox.checkState() == Qt.CheckState.Checked
 
 		specs.setNrAccus(nrAccus)
 		specs.setNrTimers(nrTimers)

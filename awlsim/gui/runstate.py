@@ -51,7 +51,7 @@ class GuiRunState(QObject):
 
 	def __emitStateChanged(self):
 		self.stateChanged.emit(self)
-		QApplication.processEvents(QEventLoop.ExcludeUserInputEvents,
+		QApplication.processEvents(QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents,
 					   50)
 
 	def setState(self, newState):

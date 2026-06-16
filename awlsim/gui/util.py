@@ -69,10 +69,10 @@ def intToDualString(value, bitWidth):
 # Get the default fixed font
 def getDefaultFixedFont(pointSize=11, bold=False):
 	font = QFont()
-	font.setStyleHint(QFont.Courier)
+	font.setStyleHint(QFont.StyleHint.Courier)
 	font.setFamily("Courier")
 	font.setPointSize(pointSize)
-	font.setWeight(QFont.Normal)
+	font.setWeight(QFont.Weight.Normal)
 	font.setBold(bold)
 	return font
 
@@ -81,9 +81,9 @@ def sleepWithEventLoop(seconds, excludeInput=True):
 	excludeInput: Do not process user input events.
 	"""
 	end = monotonic_time() + seconds
-	eventFlags = QEventLoop.AllEvents
+	eventFlags = QEventLoop.ProcessEventsFlag.AllEvents
 	if excludeInput:
-		eventFlags |= QEventLoop.ExcludeUserInputEvents
+		eventFlags |= QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents
 	while monotonic_time() < end:
 		QApplication.processEvents(eventFlags, 10)
 		QThread.msleep(10)
@@ -112,7 +112,7 @@ class MessageBox(QDialog):
 		     title,
 		     text,
 		     verboseText=None,
-		     icon=QMessageBox.Critical,
+		     icon=QMessageBox.Icon.Critical,
 		     okButton=True,
 		     continueButton=False,
 		     cancelButton=False):
@@ -126,10 +126,10 @@ class MessageBox(QDialog):
 			self.verboseText = "<pre>" + saxutils.escape(verboseText) + "\n</pre>"
 
 		self.textBox = QLabel(self)
-		self.textBox.setTextInteractionFlags(Qt.TextSelectableByMouse |\
-						     Qt.TextSelectableByKeyboard |\
-						     Qt.LinksAccessibleByMouse |\
-						     Qt.LinksAccessibleByKeyboard)
+		self.textBox.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse |\
+						     Qt.TextInteractionFlag.TextSelectableByKeyboard |\
+						     Qt.TextInteractionFlag.LinksAccessibleByMouse |\
+						     Qt.TextInteractionFlag.LinksAccessibleByKeyboard)
 		self.layout().addWidget(self.textBox, 0, 0, 1, 3)
 
 		if self.verboseText:
@@ -163,7 +163,7 @@ class MessageBox(QDialog):
 
 	def __updateText(self):
 		if self.verboseCheckBox and\
-		   self.verboseCheckBox.checkState() == Qt.Checked:
+		   self.verboseCheckBox.checkState() == Qt.CheckState.Checked:
 			self.textBox.setText(self.verboseText)
 		else:
 			self.textBox.setText(self.text)
@@ -174,9 +174,9 @@ class MessageBox(QDialog):
 			  title="Awlsim - Error",
 			  text=text,
 			  verboseText=verboseText,
-			  icon=QMessageBox.Critical,
+			  icon=QMessageBox.Icon.Critical,
 			  **kwargs)
-		res = dlg.exec_()
+		res = dlg.exec()
 		dlg.deleteLater()
 		return res
 
@@ -186,9 +186,9 @@ class MessageBox(QDialog):
 			  title="Awlsim - Warning",
 			  text=text,
 			  verboseText=verboseText,
-			  icon=QMessageBox.Warning,
+			  icon=QMessageBox.Icon.Warning,
 			  **kwargs)
-		res = dlg.exec_()
+		res = dlg.exec()
 		dlg.deleteLater()
 		return res
 
@@ -197,7 +197,7 @@ class MessageBox(QDialog):
 	@classmethod
 	def handleAwlSimError(cls, parent, description, exception, **kwargs):
 		if exception.getSeenByUser() or cls.awlSimErrorBlocked:
-			return cls.Accepted
+			return QDialog.DialogCode.Accepted
 		exception.setSeenByUser()
 		def maketext(verbose):
 			text = "An exception occurred:"

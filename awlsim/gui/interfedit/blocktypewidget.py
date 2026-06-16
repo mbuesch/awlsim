@@ -101,8 +101,8 @@ class BlockValidator(QValidator):
 		QValidator.__init__(self)
 		self.lineEdit = lineEdit
 		if lineEdit:
-			self.defaultBgColor = lineEdit.palette().color(QPalette.Base)
-			self.defaultFgColor = lineEdit.palette().color(QPalette.Text)
+			self.defaultBgColor = lineEdit.palette().color(QPalette.ColorRole.Base)
+			self.defaultFgColor = lineEdit.palette().color(QPalette.ColorRole.Text)
 		self.blockTypes = blockTypes or ()
 
 	def doFixup(self, input):
@@ -150,16 +150,16 @@ class BlockValidator(QValidator):
 		if self.lineEdit:
 			palette = self.lineEdit.palette()
 			if valid:
-				palette.setColor(QPalette.Base, self.defaultBgColor)
-				palette.setColor(QPalette.Text, self.defaultFgColor)
+				palette.setColor(QPalette.ColorRole.Base, self.defaultBgColor)
+				palette.setColor(QPalette.ColorRole.Text, self.defaultFgColor)
 			else:
-				palette.setColor(QPalette.Base, getErrorColor())
-				palette.setColor(QPalette.Text, QColor("black"))
+				palette.setColor(QPalette.ColorRole.Base, getErrorColor())
+				palette.setColor(QPalette.ColorRole.Text, QColor("black"))
 			self.lineEdit.setPalette(palette)
 
-		state = self.Acceptable
+		state = QValidator.State.Acceptable
 		if input != fixedInput:
-			state = self.Intermediate
+			state = QValidator.State.Intermediate
 		return state, input, pos
 
 class BlockListValidator(BlockValidator):
@@ -261,7 +261,7 @@ class BlockTypeWidget(QWidget):
 		"""Revert type change. Can only be called from typeChanged signal.
 		"""
 		index = self.typeCombo.findData(self.__prevTypeStr,
-						Qt.UserRole, Qt.MatchFixedString)
+						Qt.ItemDataRole.UserRole, Qt.MatchFlag.MatchFixedString)
 		if index >= 0:
 			self.typeCombo.setCurrentIndex(index)
 
@@ -297,7 +297,7 @@ class BlockTypeWidget(QWidget):
 		"""
 		with self.__changeSignalsBlocked if noChangeSignals else contextlib.nullcontext():
 			index = self.typeCombo.findData(blockTypeString,
-							Qt.UserRole, Qt.MatchFixedString)
+							Qt.ItemDataRole.UserRole, Qt.MatchFlag.MatchFixedString)
 			if index >= 0:
 				self.typeCombo.setCurrentIndex(index)
 				return True

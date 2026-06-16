@@ -217,9 +217,9 @@ class LibActionWidget(GenericActionWidget):
 			"See the 'CALL \"%s\"' or 'CALL %s' buttons.\n\n"
 			"Do you want to paste the code nevertheless?" % (
 			self.libEntryCls.symbolName, self.blockName),
-			QMessageBox.Yes | QMessageBox.No,
-			QMessageBox.No)
-		return res == QMessageBox.Yes
+			QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+			QMessageBox.StandardButton.No)
+		return res == QMessageBox.StandardButton.Yes
 
 	def __pasteCode(self):
 		if not self.__pasteCodeWarning():
@@ -259,11 +259,11 @@ class LibActionWidget(GenericActionWidget):
 		self.__pasteCallSym()
 
 class LibraryDialog(QDialog):
-	ITEM_SFC	= QListWidgetItem.UserType + 0
-	ITEM_SFB	= QListWidgetItem.UserType + 1
-	ITEM_LIB_BASE	= QListWidgetItem.UserType + 100
+	ITEM_SFC	= QListWidgetItem.ItemType.UserType + 0
+	ITEM_SFB	= QListWidgetItem.ItemType.UserType + 1
+	ITEM_LIB_BASE	= QListWidgetItem.ItemType.UserType + 100
 
-	BLOCK_OFFSET	= QListWidgetItem.UserType + 0xFFFF
+	BLOCK_OFFSET	= QListWidgetItem.ItemType.UserType + 0xFFFF
 
 	def __init__(self, project, parent=None):
 		QDialog.__init__(self, parent)
@@ -300,7 +300,7 @@ class LibraryDialog(QDialog):
 		self.layout().addWidget(self.libElemList, 0, 1, 3, 1)
 
 		self.iconLabel = QLabel(self)
-		self.iconLabel.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+		self.iconLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 		self.iconLabel.setPixmap(getIcon("stdlib").pixmap(QSize(64, 64)))
 		self.layout().addWidget(self.iconLabel, 0, 2)
 

@@ -86,13 +86,13 @@ class AwlInterfaceView(QTableView):
 
 	def __handleMousePress(self, index):
 		btns = QApplication.mouseButtons()
-		if btns & Qt.RightButton:
+		if btns & Qt.MouseButton.RightButton:
 			pass#TODO context menu
 
 	def keyPressEvent(self, ev):
 		QTableView.keyPressEvent(self, ev)
 
-		if ev.key() == Qt.Key_Delete:
+		if ev.key() == Qt.Key.Key_Delete:
 			self.deleteRows()
 
 	def focusInEvent(self, ev):

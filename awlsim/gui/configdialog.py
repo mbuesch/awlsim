@@ -49,7 +49,7 @@ class AbstractConfigDialog(QDialog):
 		font = label.font()
 		font.setPointSize(max(13, font.pointSize()))
 		label.setFont(font)
-		label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+		label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
 		grid.addWidget(label, 0, 1)
 		# Try to center the text, regardless of the icon.
 		grid.setColumnStretch(0, 1)

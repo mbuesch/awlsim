@@ -144,7 +144,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		if anyChanged:
 			#FIXME this doesn't always work correctly. Do we need to mark all sub-items as changed?
 			index = self.idToIndex(self.INDEXID_SRCS)
-			roles = (Qt.DecorationRole, Qt.ToolTipRole)
+			roles = (Qt.ItemDataRole.DecorationRole, Qt.ItemDataRole.ToolTipRole)
 			self.dataChanged.emit(index, index, roles)
 
 	def handleIdentsMsg(self, identsMsg):
@@ -164,7 +164,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		# Iterate over all sources in the project and check if the
 		# identHash matches what's in the CPU.
 		project = self.getProject()
-		roles = (Qt.DecorationRole, Qt.ToolTipRole)
+		roles = (Qt.ItemDataRole.DecorationRole, Qt.ItemDataRole.ToolTipRole)
 		anyChanged = False
 		for getSources, identHashes, idxId in (
 				(project.getAwlSources, awlIdentHashes, self.INDEXID_SRCS_AWL),
@@ -206,7 +206,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		# Emit the dataChanged signal for all sources
 		# and all parent source containers.
 		project = self.getProject()
-		roles = (Qt.DecorationRole, Qt.ToolTipRole)
+		roles = (Qt.ItemDataRole.DecorationRole, Qt.ItemDataRole.ToolTipRole)
 		for getSources, idxId in (
 				(project.getAwlSources, self.INDEXID_SRCS_AWL),
 				(project.getFupSources, self.INDEXID_SRCS_FUP),
@@ -220,7 +220,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				self.dataChanged.emit(parentIndex, parentIndex, roles)
 		index = self.idToIndex(self.INDEXID_SRCS)
 		self.dataChanged.emit(index, index, roles)
-		self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
+		self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, 0)
 
 	def entryActivate(self, index, parentWidget=None):
 		if not index or not index.isValid():
@@ -335,9 +335,9 @@ class ProjectTreeModel(QAbstractItemModel):
 				"Remove the selected source '%s' from the project?\n"
 				"This can't be undone.\n" % (
 				source.name),
-				QMessageBox.Yes | QMessageBox.No,
-				QMessageBox.Yes)
-			if res != QMessageBox.Yes:
+				QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+				QMessageBox.StandardButton.Yes)
+			if res != QMessageBox.StandardButton.Yes:
 				return False
 
 		self.beginRemoveRows(index.parent(), itemNr, itemNr)
@@ -402,7 +402,7 @@ class ProjectTreeModel(QAbstractItemModel):
 				newName, ok = QInputDialog.getText(parentWidget,
 					"Name for %s source" % source.SRCTYPE,
 					"Name for %s source" % source.SRCTYPE,
-					QLineEdit.Normal,
+					QLineEdit.EchoMode.Normal,
 					source.name)
 				if not ok:
 					newName = None
@@ -417,7 +417,7 @@ class ProjectTreeModel(QAbstractItemModel):
 					mdiSubWin.getSource().name = newName
 					mdiSubWin.updateTitle()
 
-				self.dataChanged.emit(index, index, (Qt.EditRole,))
+				self.dataChanged.emit(index, index, (Qt.ItemDataRole.EditRole,))
 				return True
 		return False
 
@@ -515,9 +515,9 @@ class ProjectTreeModel(QAbstractItemModel):
 		clipboard = QGuiApplication.clipboard()
 		if not clipboard:
 			return False
-		clipboard.setMimeData(mimeData, QClipboard.Clipboard)
+		clipboard.setMimeData(mimeData, QClipboard.Mode.Clipboard)
 		if clipboard.supportsSelection():
-			clipboard.setMimeData(mimeData, QClipboard.Selection)
+			clipboard.setMimeData(mimeData, QClipboard.Mode.Selection)
 		return True
 
 	def entryClipboardCut(self, index, parentWidget=None):
@@ -536,7 +536,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		clipboard = QGuiApplication.clipboard()
 		if not clipboard:
 			return None
-		mimeData = clipboard.mimeData(QClipboard.Clipboard)
+		mimeData = clipboard.mimeData(QClipboard.Mode.Clipboard)
 		if not mimeData:
 			return None
 
@@ -549,7 +549,7 @@ class ProjectTreeModel(QAbstractItemModel):
 			row = parentIndex.row() + 1
 			parentIndex = self.parent(parentIndex)
 
-		return self.__dropMimeData(mimeData, Qt.CopyAction, row, 0, parentIndex)
+		return self.__dropMimeData(mimeData, Qt.DropAction.CopyAction, row, 0, parentIndex)
 
 	def symbolAdd(self, symbol, parentWidget=None):
 		"""Try to add the symbol to a symbol table.
@@ -672,8 +672,8 @@ class ProjectTreeModel(QAbstractItemModel):
 	def __handleDataChanged(self, topLeftIndex, bottomRightIndex, roles=()):
 		# Handle the self.dataChanged signal.
 		if not roles or\
-		   Qt.EditRole in roles or\
-		   Qt.DisplayRole in roles:
+		   Qt.ItemDataRole.EditRole in roles or\
+		   Qt.ItemDataRole.DisplayRole in roles:
 			self.__projectContentChanged()
 
 	def __projectContentChanged(self):
@@ -800,8 +800,8 @@ class ProjectTreeModel(QAbstractItemModel):
 					"plain AWL/STL file.\n"
 					"Can not save without creating a project file.\n\n"
 					"Do you want to create a project file?",
-					QMessageBox.Yes, QMessageBox.No)
-				if res != QMessageBox.Yes:
+					QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+				if res != QMessageBox.StandardButton.Yes:
 					return 0
 				# The user has to choose a new project file name.
 				# Signal this to our caller.
@@ -906,30 +906,30 @@ class ProjectTreeModel(QAbstractItemModel):
 
 	def flags(self, index):
 		if not index.isValid():
-			return Qt.NoItemFlags
+			return Qt.ItemFlag.NoItemFlags
 
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 
-		flags = Qt.ItemIsEnabled
+		flags = Qt.ItemFlag.ItemIsEnabled
 		if idxIdBase in {self.INDEXID_SRCS_AWL_BASE,
 				 self.INDEXID_SRCS_FUP_BASE,
 				 self.INDEXID_SRCS_KOP_BASE,
 				 self.INDEXID_SRCS_SYMTAB_BASE,}:
-			flags |= Qt.ItemIsEditable |\
-				 Qt.ItemIsDragEnabled |\
-				 Qt.ItemIsSelectable
+			flags |= Qt.ItemFlag.ItemIsEditable |\
+				 Qt.ItemFlag.ItemIsDragEnabled |\
+				 Qt.ItemFlag.ItemIsSelectable
 		if idxId in {self.INDEXID_SRCS_AWL,
 			     self.INDEXID_SRCS_FUP,
 			     self.INDEXID_SRCS_KOP,
 			     self.INDEXID_SRCS_SYMTAB,}:
-			flags |= Qt.ItemIsDropEnabled
+			flags |= Qt.ItemFlag.ItemIsDropEnabled
 		return flags
 
 	def supportedDragActions(self):
-		return Qt.CopyAction | Qt.MoveAction
+		return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
 
 	def supportedDropActions(self):
-		return Qt.CopyAction | Qt.MoveAction
+		return Qt.DropAction.CopyAction | Qt.DropAction.MoveAction
 
 	def columnCount(self, parentIndex=QModelIndex()):
 		return 1
@@ -1003,7 +1003,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		source = self.indexToSource(index)
 		if source:
 			name = source.name
-			if role != Qt.EditRole:
+			if role != Qt.ItemDataRole.EditRole:
 				if not source.enabled:
 					name += " (DISABLED)"
 			return name
@@ -1174,37 +1174,37 @@ class ProjectTreeModel(QAbstractItemModel):
 			return "Double click here to edit GUI settings."
 		return None
 
-	def data(self, index, role=Qt.DisplayRole):
+	def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 		column = index.column()
 		idxIdBase, idxId, itemNr = self.indexToId(index)
 
-		if role in (Qt.DisplayRole, Qt.EditRole):
+		if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
 			if column == self.COLUMN_NAME:
 				return self.__data_columnName(role, index, idxId, idxIdBase, itemNr)
-		elif role == Qt.DecorationRole:
+		elif role == Qt.ItemDataRole.DecorationRole:
 			if column == self.COLUMN_NAME:
 				return self.__data_icon(role, index, idxId, idxIdBase, itemNr)
-		elif role == Qt.ToolTipRole:
+		elif role == Qt.ItemDataRole.ToolTipRole:
 			if column == self.COLUMN_NAME:
 				return self.__data_toolTip(role, index, idxId, idxIdBase, itemNr)
 		return None
 
-	def setData(self, index, value, role=Qt.EditRole):
+	def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
 		if not index or not index.isValid():
 			return False
 
-		if role == Qt.EditRole:
+		if role == Qt.ItemDataRole.EditRole:
 			if not self.entryRename(index, newName=value):
 				return False
 		else:
 			return False
 		return True
 
-	def setHeaderData(self, section, orientation, value, role=Qt.EditRole):
+	def setHeaderData(self, section, orientation, value, role=Qt.ItemDataRole.EditRole):
 		return False
 
-	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		if role == Qt.DisplayRole:
+	def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+		if role == Qt.ItemDataRole.DisplayRole:
 			project = self.getProject()
 			filename = project.getProjectFile()
 			if filename:
@@ -1217,7 +1217,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		return None
 
 	def __handleProjectDirtyChanged(self, dirtyLevel):
-		self.headerDataChanged.emit(Qt.Horizontal, 0, 0)
+		self.headerDataChanged.emit(Qt.Orientation.Horizontal, 0, 0)
 
 	def mimeData(self, indexes):
 		if not indexes:
@@ -1283,7 +1283,7 @@ class ProjectTreeModel(QAbstractItemModel):
 	def canDropMimeData(self, mimeData, action, row, column, parentIndex):
 		if not parentIndex.isValid():
 			return False
-		if action not in {Qt.MoveAction, Qt.CopyAction}:
+		if action not in {Qt.DropAction.MoveAction, Qt.DropAction.CopyAction}:
 			return False
 		expectedMimeFormat = self.__getExpectedMimeFormat(parentIndex)
 		if not expectedMimeFormat:
@@ -1319,7 +1319,7 @@ class ProjectTreeModel(QAbstractItemModel):
 		except XmlFactory.Error as e:
 			return None
 
-		if action == Qt.CopyAction:
+		if action == Qt.DropAction.CopyAction:
 			source.name += " (Copy)"
 
 		# Insert the new element
@@ -1464,8 +1464,8 @@ class SourceContextMenu(QMenu):
 			"Do you want to integrate this file info "
 			"the awlsim project file (.awlpro)?" %\
 			self.itemName,
-			QMessageBox.Yes, QMessageBox.No)
-		if res == QMessageBox.Yes:
+			QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No)
+		if res == QMessageBox.StandardButton.Yes:
 			self.integrate.emit()
 
 	def __enable(self):
@@ -1479,13 +1479,13 @@ class ProjectTreeView(QTreeView):
 		QTreeView.__init__(self, parent)
 		self.setModel(model)
 
-		self.setSelectionMode(QAbstractItemView.SingleSelection)
+		self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
 		# Disable double-click-edit
-		self.setEditTriggers(self.editTriggers() & ~QTreeView.DoubleClicked)
+		self.setEditTriggers(self.editTriggers() & ~QAbstractItemView.EditTrigger.DoubleClicked)
 
-		self.setDragDropMode(QAbstractItemView.DragDrop)
-		self.setDefaultDropAction(Qt.MoveAction)
+		self.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
+		self.setDefaultDropAction(Qt.DropAction.MoveAction)
 		self.setAcceptDrops(True)
 		self.setDragEnabled(True)
 		self.setDropIndicatorShown(True)
@@ -1635,7 +1635,7 @@ class ProjectTreeView(QTreeView):
 		menu.import_.connect(handleImport)
 		menu.export.connect(handleExport)
 		menu.enable.connect(handleEnable)
-		menu.exec_(QCursor.pos() + QPoint(3, 3))
+		menu.exec(QCursor.pos() + QPoint(3, 3))
 
 	def __mouseBtnPressed(self, index):
 		model, buttons = self.model(), QApplication.mouseButtons()
@@ -1644,7 +1644,7 @@ class ProjectTreeView(QTreeView):
 		try:
 			self.__currentIndex = index
 
-			if buttons & Qt.RightButton:
+			if buttons & Qt.MouseButton.RightButton:
 				idxIdBase, idxId, itemNr = model.indexToId(index)
 
 				# Open the context menu.
@@ -1683,13 +1683,13 @@ class ProjectTreeView(QTreeView):
 		model = self.model()
 		if model:
 			index = self.currentIndex()
-			if ev.matches(QKeySequence.Delete):
+			if ev.matches(QKeySequence.StandardKey.Delete):
 				model.entryDelete(index, parentWidget=self)
-			elif ev.matches(QKeySequence.Copy):
+			elif ev.matches(QKeySequence.StandardKey.Copy):
 				model.entryClipboardCopy(index, parentWidget=self)
-			elif ev.matches(QKeySequence.Cut):
+			elif ev.matches(QKeySequence.StandardKey.Cut):
 				model.entryClipboardCut(index, parentWidget=self)
-			elif ev.matches(QKeySequence.Paste):
+			elif ev.matches(QKeySequence.StandardKey.Paste):
 				pastedIndex = model.entryClipboardPaste(index, parentWidget=self)
 				if pastedIndex:
 					self.expand(index)

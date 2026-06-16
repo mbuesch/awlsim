@@ -108,7 +108,7 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.__validate()
 
 	def __getLineIndent(self, cursor):
-		cursor.select(QTextCursor.LineUnderCursor)
+		cursor.select(QTextCursor.SelectionType.LineUnderCursor)
 		line = cursor.selectedText()
 		if not line:
 			return ""
@@ -125,8 +125,8 @@ class SourceCodeEdit(QPlainTextEdit):
 			return
 		# Move cursor to previous line and get its indent string.
 		cursor = self.textCursor()
-		if not cursor.movePosition(QTextCursor.Up,
-					   QTextCursor.MoveAnchor, 1):
+		if not cursor.movePosition(QTextCursor.MoveOperation.Up,
+					   QTextCursor.MoveMode.MoveAnchor, 1):
 			return
 		indentStr = self.__getLineIndent(cursor)
 		# Insert the indent string into the current line
@@ -135,15 +135,15 @@ class SourceCodeEdit(QPlainTextEdit):
 		self.setTextCursor(cursor)
 		# Remove any old indent (righthand of the cursor)
 		cursor = self.textCursor()
-		if not cursor.movePosition(QTextCursor.EndOfLine,
-					   QTextCursor.KeepAnchor, 1):
+		if not cursor.movePosition(QTextCursor.MoveOperation.EndOfLine,
+					   QTextCursor.MoveMode.KeepAnchor, 1):
 			return
 		selText = cursor.selectedText()
 		stripCount = len(selText) - len(selText.lstrip())
 		if stripCount > 0:
 			cursor = self.textCursor()
-			if not cursor.movePosition(QTextCursor.Right,
-						   QTextCursor.KeepAnchor,
+			if not cursor.movePosition(QTextCursor.MoveOperation.Right,
+						   QTextCursor.MoveMode.KeepAnchor,
 						   stripCount):
 				return
 			cursor.deleteChar()
@@ -162,10 +162,10 @@ class SourceCodeEdit(QPlainTextEdit):
 			origStart, origEnd = cursor.selectionStart(), cursor.selectionEnd()
 
 			# Extend the cursor to whole lines
-			cursor.setPosition(origStart, QTextCursor.MoveAnchor)
-			cursor.movePosition(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
-			cursor.setPosition(origEnd, QTextCursor.KeepAnchor)
-			cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+			cursor.setPosition(origStart, QTextCursor.MoveMode.MoveAnchor)
+			cursor.movePosition(QTextCursor.MoveOperation.StartOfLine, QTextCursor.MoveMode.MoveAnchor)
+			cursor.setPosition(origEnd, QTextCursor.MoveMode.KeepAnchor)
+			cursor.movePosition(QTextCursor.MoveOperation.EndOfLine, QTextCursor.MoveMode.KeepAnchor)
 			self.setTextCursor(cursor)
 			adjustedStart, adjustedEnd = cursor.selectionStart(), cursor.selectionEnd()
 
@@ -197,8 +197,8 @@ class SourceCodeEdit(QPlainTextEdit):
 			# Replace the selected text
 			cursor.insertText(newText)
 			# Re-select the new text
-			cursor.setPosition(adjustedStart, QTextCursor.MoveAnchor)
-			cursor.setPosition(adjustedStart + len(newText), QTextCursor.KeepAnchor)
+			cursor.setPosition(adjustedStart, QTextCursor.MoveMode.MoveAnchor)
+			cursor.setPosition(adjustedStart + len(newText), QTextCursor.MoveMode.KeepAnchor)
 			self.setTextCursor(cursor)
 		except NotImplementedError as e:
 			return
@@ -213,11 +213,11 @@ class SourceCodeEdit(QPlainTextEdit):
 		raise NotImplementedError
 
 	def keyPressEvent(self, ev):
-		if ev.matches(QKeySequence.Find):
+		if ev.matches(QKeySequence.StandardKey.Find):
 			self.findText()
 			ev.accept()
 			return
-		elif ev.matches(QKeySequence.Replace):
+		elif ev.matches(QKeySequence.StandardKey.Replace):
 			self.findReplaceText()
 			ev.accept()
 			return
@@ -225,20 +225,20 @@ class SourceCodeEdit(QPlainTextEdit):
 		key = ev.key()
 		mods = ev.modifiers()
 
-		if key == Qt.Key_Slash and (mods & Qt.ControlModifier):
+		if key == Qt.Key.Key_Slash and (mods & Qt.KeyboardModifier.ControlModifier):
 			self.__doBlockComment()
 			ev.accept()
 			return
 
 		QPlainTextEdit.keyPressEvent(self, ev)
 
-		if key in (Qt.Key_Return, Qt.Key_Enter):
+		if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
 			self.__autoIndentHandleNewline()
-		elif key == Qt.Key_Delete:
+		elif key == Qt.Key.Key_Delete:
 			self.__validate()
 
 	def wheelEvent(self, ev):
-		if ev.modifiers() & Qt.ControlModifier:
+		if ev.modifiers() & Qt.KeyboardModifier.ControlModifier:
 			# Ctrl + Scroll-wheel: Font resizing
 			numDegrees = ev.angleDelta().y() / 8
 			numSteps = numDegrees / 15
@@ -320,11 +320,11 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	@staticmethod
 	def __makeTextCursorLineSel(cursor, lineNr):
-		cursor.movePosition(QTextCursor.Start,
-				    QTextCursor.MoveAnchor, 1)
-		cursor.movePosition(QTextCursor.Down,
-				    QTextCursor.MoveAnchor, lineNr)
-		cursor.select(QTextCursor.LineUnderCursor)
+		cursor.movePosition(QTextCursor.MoveOperation.Start,
+				    QTextCursor.MoveMode.MoveAnchor, 1)
+		cursor.movePosition(QTextCursor.MoveOperation.Down,
+				    QTextCursor.MoveMode.MoveAnchor, lineNr)
+		cursor.select(QTextCursor.SelectionType.LineUnderCursor)
 		return cursor
 
 	def __validate(self):
@@ -391,12 +391,13 @@ class SourceCodeEdit(QPlainTextEdit):
 
 	def __toolTipEvent(self, ev):
 		cursor = self.cursorForPosition(ev.pos())
+		globalPos = ev.globalPos()
 		if not self.__tryShowValidateErrToolTip(cursor.blockNumber(),
-							ev.globalPos()):
+							 globalPos):
 			QToolTip.hideText()
 
 	def event(self, ev):
-		if ev.type() == QEvent.ToolTip:
+		if ev.type() == QEvent.Type.ToolTip:
 			self.__toolTipEvent(ev)
 		return super(SourceCodeEdit, self).event(ev)
 

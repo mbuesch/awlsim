@@ -47,9 +47,9 @@ class CpuWidget(QWidget):
 		client.guiRunState.stateChanged.connect(self.__handleGuiRunStateChange)
 
 		self.stateMdi = StateMdiArea(client=client, parent=self)
-		self.stateMdi.setViewMode(QMdiArea.SubWindowView)
-		self.stateMdi.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.stateMdi.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.stateMdi.setViewMode(QMdiArea.ViewMode.SubWindowView)
+		self.stateMdi.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+		self.stateMdi.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 		self.layout().addWidget(self.stateMdi, 0, 0)
 
 		self.stateMdi.subWinAdded.connect(

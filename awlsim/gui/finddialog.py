@@ -53,7 +53,7 @@ class FindReplaceDialog(QDialog):
 		group = QGroupBox(self)
 		group.setLayout(QVBoxLayout())
 		self.fromCursor = QCheckBox("From &cursor", self)
-		self.fromCursor.setCheckState(Qt.Checked)
+		self.fromCursor.setCheckState(Qt.CheckState.Checked)
 		group.layout().addWidget(self.fromCursor)
 		self.dirUp = QRadioButton("&Up", self)
 		group.layout().addWidget(self.dirUp)
@@ -103,7 +103,7 @@ class FindReplaceDialog(QDialog):
 		self.findButton.released.connect(self.__handleFind)
 		self.replaceButton.released.connect(self.__handleReplace)
 		self.replaceAllButton.released.connect(self.__handleReplaceAll)
-		self.fromCursor.stateChanged.connect(self.__handleFromCursorChange)
+		self.fromCursor.checkStateChanged.connect(self.__handleFromCursorChange)
 
 	def show(self):
 		QDialog.show(self)
@@ -140,14 +140,14 @@ class FindReplaceDialog(QDialog):
 		if not self.__textEdit:
 			return
 
-		findFlags = QTextDocument.FindFlags()
+		findFlags = QTextDocument.FindFlag(0)
 		if not self.fromCursor.isChecked() and\
 		   self.dirUp.isChecked():
-			findFlags |= QTextDocument.FindBackward
+			findFlags |= QTextDocument.FindFlag.FindBackward
 		if self.caseSensitive.isChecked():
-			findFlags |= QTextDocument.FindCaseSensitively
+			findFlags |= QTextDocument.FindFlag.FindCaseSensitively
 		if self.wholeWords.isChecked():
-			findFlags |= QTextDocument.FindWholeWords
+			findFlags |= QTextDocument.FindFlag.FindWholeWords
 
 		if not self.fromCursor.isChecked():
 			# Move the cursor to the start of the document.
@@ -155,12 +155,11 @@ class FindReplaceDialog(QDialog):
 
 		found = False
 		if self.regEx.isChecked():
-			# Find regular expression.
-			re = QRegExp(self.findText.text(),
-				     Qt.CaseSensitive if self.caseSensitive.isChecked() else\
-				     Qt.CaseInsensitive)
-			# QPlainTextEdit.find(QRegExp) is >= Qt 5.3.
-			# So use the QTextDocument's find instead.
+			# Find regular expression using QRegularExpression (Qt6)
+			re = QRegularExpression(self.findText.text())
+			# Set case-insensitivity if requested.
+			if not self.caseSensitive.isChecked():
+				re.setPatternOptions(QRegularExpression.PatternOption.CaseInsensitiveOption)
 			textCursor = self.__textEdit.document().find(re,
 					self.__textEdit.textCursor(), findFlags)
 			if not textCursor.isNull():
@@ -215,6 +214,6 @@ class FindReplaceDialog(QDialog):
 						 "Text not found.")
 
 	def __handleFromCursorChange(self, state):
-		self.dirUp.setEnabled(state == Qt.Checked)
-		self.dirDown.setEnabled(state == Qt.Checked)
-		self.findButton.setText("&Find next" if state == Qt.Checked else "&Find")
+		self.dirUp.setEnabled(state == Qt.CheckState.Checked)
+		self.dirDown.setEnabled(state == Qt.CheckState.Checked)
+		self.findButton.setText("&Find next" if state == Qt.CheckState.Checked else "&Find")

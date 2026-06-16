@@ -71,11 +71,11 @@ class OperCompletionWidget(QWidget):
 		self.__list.itemDoubleClicked.connect(self.__handleItemDoubleClicked)
 
 	def __handleCurrentItemChanged(self, cur, prev):
-		self.newSelection.emit(cur.data(Qt.UserRole) if cur else "")
+		self.newSelection.emit(cur.data(Qt.ItemDataRole.UserRole) if cur else "")
 
 	def __handleItemDoubleClicked(self, item):
 		if item:
-			self.newSelectionFinal.emit(item.data(Qt.UserRole))
+			self.newSelectionFinal.emit(item.data(Qt.ItemDataRole.UserRole))
 
 	def setFilterText(self, filterText):
 		self.__filterText = filterText.strip()
@@ -114,7 +114,7 @@ class OperCompletionWidget(QWidget):
 				itemDesc.append(sep)
 				itemDesc.append(commentText)
 			item = QListWidgetItem("".join(itemDesc))
-			item.setData(Qt.UserRole, symName)
+			item.setData(Qt.ItemDataRole.UserRole, symName)
 			self.__list.addItem(item)
 
 		for field in sorted(self.__interfDef.allFields,
@@ -184,29 +184,29 @@ class OperEditWidget(QWidget):
 		self.__completion.newSelectionFinal.connect(self.__handleNewCompletionAndAccept)
 
 	def keyPressEvent(self, event):
-		if event.matches(QKeySequence.Cancel):
+		if event.matches(QKeySequence.StandardKey.Cancel):
 			self.cancel.emit()
 			event.accept()
 			return
 
 		key = event.key()
-		if key in (Qt.Key_Enter, Qt.Key_Return):
+		if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
 			self.accept.emit()
 			event.accept()
 			return
-		elif key == Qt.Key_Up:
+		elif key == Qt.Key.Key_Up:
 			self.__completion.moveSelection(-1)
 			event.accept()
 			return
-		elif key == Qt.Key_Down:
+		elif key == Qt.Key.Key_Down:
 			self.__completion.moveSelection(1)
 			event.accept()
 			return
-		elif key == Qt.Key_PageUp:
+		elif key == Qt.Key.Key_PageUp:
 			self.__completion.moveSelection(-5)
 			event.accept()
 			return
-		elif key == Qt.Key_PageDown:
+		elif key == Qt.Key.Key_PageDown:
 			self.__completion.moveSelection(5)
 			event.accept()
 			return

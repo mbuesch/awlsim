@@ -80,11 +80,11 @@ Description: S7 AWL/STL Soft-PLC PiXtend hardware module (Cython 3)
 Package: python3-awlsim-gui
 Architecture: any
 Depends: python3-awlsim,
-         python3-pyside,
+         python3-pyside6,
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
-Suggests: python3-pyqt5,
+Suggests: python3-pyqt6,
           cython-awlsim
 Description: S7 AWL/STL Soft-PLC gui libraries (Python 3)
  Awlsim is a free Step 7 compatible AWL/STL Soft-PLC written in Python.

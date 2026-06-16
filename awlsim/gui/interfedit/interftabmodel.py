@@ -529,11 +529,11 @@ class AwlInterfaceModel(AbstractTableModel):
 	def columnCount(self, parent=QModelIndex()):
 		return 1 + 1 + (1 if self.haveInitValue else 0) + 1
 
-	def data(self, index, role=Qt.DisplayRole):
+	def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 		if not index:
 			return None
 		row, column = index.row(), index.column()
-		if role in (Qt.DisplayRole, Qt.EditRole):
+		if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
 			field = self.__row2field(row)
 			if field:
 				if self.__isColumn_name(column):
@@ -545,25 +545,25 @@ class AwlInterfaceModel(AbstractTableModel):
 				if self.__isColumn_comment(column):
 					return field.comment
 				assert(0)
-		elif role in {Qt.BackgroundRole,
-			      Qt.ForegroundRole}:
+		elif role in {Qt.ItemDataRole.BackgroundRole,
+			      Qt.ItemDataRole.ForegroundRole}:
 			field = self.__row2field(row)
 			if field:
 				if (self.__isRow_RETVAL(row) and self.__isColumn_name(column)) or\
 				   (self.__isRow_TEMP(row) and self.__isColumn_initValue(column)):
-					if role == Qt.BackgroundRole:
+					if role == Qt.ItemDataRole.BackgroundRole:
 						return QBrush(QColor("#C0C0C0"))
 					return QBrush(QColor("black"))
 				if not field.isValid() and\
 				   not self.__isColumn_comment(column):
-					if role == Qt.BackgroundRole:
+					if role == Qt.ItemDataRole.BackgroundRole:
 						return QBrush(QColor("red"))
 					return QBrush(QColor("black"))
 			else:
-				if role == Qt.BackgroundRole:
+				if role == Qt.ItemDataRole.BackgroundRole:
 					return QBrush(QColor("#E0E0E0"))
 				return QBrush(QColor("black"))
-		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
+		elif role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.WhatsThisRole):
 			if self.__isRow_newIN(row):
 				return "Create a new INPUT field here..."
 			elif self.__isRow_newOUT(row):
@@ -589,10 +589,10 @@ class AwlInterfaceModel(AbstractTableModel):
 			assert(0)
 		return None
 
-	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		if role != Qt.DisplayRole:
+	def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+		if role != Qt.ItemDataRole.DisplayRole:
 			return None
-		if orientation == Qt.Horizontal:
+		if orientation == Qt.Orientation.Horizontal:
 			column = section
 			if self.__isColumn_name(column):
 				return "Interface field name"
@@ -635,10 +635,10 @@ class AwlInterfaceModel(AbstractTableModel):
 				return "RET_VAL"
 			assert(0)
 
-	def setData(self, index, value, role=Qt.EditRole):
+	def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
 		if not index:
 			return False
-		if role == Qt.EditRole:
+		if role == Qt.ItemDataRole.EditRole:
 			row, column = index.row(), index.column()
 
 			# Handle NEW field creation
@@ -712,9 +712,9 @@ class AwlInterfaceModel(AbstractTableModel):
 
 	def flags(self, index):
 		if not index:
-			return Qt.ItemIsEnabled
+			return Qt.ItemFlag.ItemIsEnabled
 		row, column = index.row(), index.column()
 		if (self.__isRow_RETVAL(row) and self.__isColumn_name(column)) or\
 		   (self.__isRow_TEMP(row) and self.__isColumn_initValue(column)):
-			return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+			return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+		return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable

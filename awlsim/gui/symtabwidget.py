@@ -75,11 +75,11 @@ class SymTabModel(QAbstractTableModel):
 	def columnCount(self, parent=QModelIndex()):
 		return 4
 
-	def data(self, index, role=Qt.DisplayRole):
+	def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 		if not index:
 			return None
 		row, column = index.row(), index.column()
-		if role in (Qt.DisplayRole, Qt.EditRole):
+		if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
 			if row >= len(self.symTab):
 				return None
 			sym = self.symTab[row]
@@ -91,14 +91,14 @@ class SymTabModel(QAbstractTableModel):
 				return sym.getTypeString()
 			else:
 				return sym.getComment()
-		elif role in {Qt.BackgroundRole,
-			      Qt.ForegroundRole}:
+		elif role in {Qt.ItemDataRole.BackgroundRole,
+			      Qt.ItemDataRole.ForegroundRole}:
 			if row < len(self.symTab) and\
 			   not self.symTab[row].isValid():
-				if role == Qt.BackgroundRole:
+				if role == Qt.ItemDataRole.BackgroundRole:
 					return QBrush(QColor("red"))
 				return QBrush(QColor("black"))
-		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
+		elif role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.WhatsThisRole):
 			return (
 				"The symbol name.\n(The name is case insensitive.)",
 				"The symbol address.\nFor example:  M 0.0  or  QW 0",
@@ -107,20 +107,20 @@ class SymTabModel(QAbstractTableModel):
 			)[column]
 		return None
 
-	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		if role != Qt.DisplayRole:
+	def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+		if role != Qt.ItemDataRole.DisplayRole:
 			return None
-		if orientation == Qt.Horizontal:
+		if orientation == Qt.Orientation.Horizontal:
 			return ("Symbol", "Address", "Data type", "Comment")[section]
 		else:
 			if section >= len(self.symTab):
 				return "new"
 			return "%d" % (section + 1)
 
-	def setData(self, index, value, role=Qt.EditRole):
+	def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
 		if not index:
 			return False
-		if role == Qt.EditRole:
+		if role == Qt.ItemDataRole.EditRole:
 			row, column = index.row(), index.column()
 			if row >= len(self.symTab):
 				nameBase = name = "__new_symbol_%d" % len(self.symTab)
@@ -161,8 +161,8 @@ class SymTabModel(QAbstractTableModel):
 
 	def flags(self, index):
 		if not index:
-			return Qt.ItemIsEnabled
-		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+			return Qt.ItemFlag.ItemIsEnabled
+		return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
 
 	def getSource(self):
 		if self.__needSourceUpdate:
@@ -233,11 +233,11 @@ class SymTabView(QTableView):
 
 	def __handleMousePress(self, index):
 		btns = QApplication.mouseButtons()
-		if btns & Qt.RightButton:
+		if btns & Qt.MouseButton.RightButton:
 			pass#TODO context menu
 
 	def keyPressEvent(self, ev):
-		if ev.matches(QKeySequence.Delete):
+		if ev.matches(QKeySequence.StandardKey.Delete):
 			self.deleteSyms()
 			ev.accept()
 			return

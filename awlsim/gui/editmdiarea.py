@@ -80,9 +80,9 @@ class EditMdiArea(QMdiArea):
 		# Init the editor find dialog.
 		SourceCodeEdit.initFindDialog(self)
 
-		self.setViewMode(QMdiArea.SubWindowView)
-		self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+		self.setViewMode(QMdiArea.ViewMode.SubWindowView)
+		self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+		self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 		self.setTabsClosable(True)
 		self.setTabsMovable(True)
 		self.resetArea()
@@ -235,7 +235,7 @@ class EditMdiArea(QMdiArea):
 		fontStr = project.getGuiSettings().getEditorFont()
 		if fontStr:
 			font.fromString(fontStr)
-			font.setStyleHint(QFont.Courier)
+			font.setStyleHint(QFont.StyleHint.Courier)
 		font.setPointSize(font.pointSize() + increment)
 		if (increment > 0 and font.pointSize() > 72) or\
 		   (increment < 0 and font.pointSize() < 6):
@@ -433,7 +433,7 @@ class EditMdiSubWindow(QMdiSubWindow):
 		self.__forceClose = False
 		self.__isClosing = False
 		QMdiSubWindow.__init__(self)
-		self.setAttribute(Qt.WA_DeleteOnClose)
+		self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
 	def setWidget(self, childWidget):
 		QMdiSubWindow.setWidget(self, childWidget)

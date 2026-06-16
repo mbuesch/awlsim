@@ -226,7 +226,7 @@ class FupElem_MOVE(FupElem):
 			y = (cellIdx * cellHeight)
 			painter.drawText(x, y,
 					 elemWidth, cellHeight,
-					 Qt.AlignLeft | Qt.AlignVCenter,
+					 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
 					 conn.text)
 
 		# Draw outputs
@@ -247,7 +247,7 @@ class FupElem_MOVE(FupElem):
 			y = (cellIdx * cellHeight)
 			painter.drawText(x, y,
 					 elemWidth - xpad - 2, cellHeight,
-					 Qt.AlignRight | Qt.AlignVCenter,
+					 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
 					 conn.text)
 
 		# Draw element descriptor text
@@ -256,7 +256,7 @@ class FupElem_MOVE(FupElem):
 			       else self._outlinePen)
 		painter.drawText(0, 0,
 				 elemWidth, cellHeight,
-				 Qt.AlignHCenter | Qt.AlignVCenter,
+				 Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
 				 "move")
 
 		# Draw disable-marker

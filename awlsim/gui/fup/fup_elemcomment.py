@@ -84,7 +84,7 @@ class FupElem_COMMENT(FupElem):
 	def __init__(self, x, y, contentText="", **kwargs):
 		FupElem.__init__(self, x, y, **kwargs)
 
-		self._continuePen = QPen(QBrush(), 1, Qt.DotLine)
+		self._continuePen = QPen(QBrush(), 1, Qt.PenStyle.DotLine)
 		self._continuePen.setColor(QColor("#000000"))
 
 		self._bgBrush = QBrush(QColor("#FFFFE0"))
@@ -134,14 +134,14 @@ class FupElem_COMMENT(FupElem):
 			painter.setFont(self.getFont(8))
 			painter.setPen(self._textPen)
 			if expanded:
-				textFlags = Qt.TextWrapAnywhere | Qt.AlignLeft | Qt.AlignTop
+				textFlags = Qt.TextFlag.TextWrapAnywhere | Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
 				textMaxRect = bodyRect.translated(0, 0)
 				textMaxRect.setHeight(grid.height * cellHeight)
 				textMaxRect.setWidth(grid.width * cellWidth)
 				textRect = painter.boundingRect(textMaxRect, textFlags, text)
 				actTextRect = textRect
 			else:
-				textFlags = Qt.TextWrapAnywhere | Qt.AlignHCenter | Qt.AlignTop
+				textFlags = Qt.TextFlag.TextWrapAnywhere | Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
 				textRect = bodyRect
 				actTextRect = painter.boundingRect(bodyRect, textFlags, text)
 			if expanded:

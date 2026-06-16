@@ -87,11 +87,11 @@ class LibTableModel(QAbstractTableModel):
 	def columnCount(self, parent=QModelIndex()):
 		return 4
 
-	def data(self, index, role=Qt.DisplayRole):
+	def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 		if not index:
 			return None
 		row, column = index.row(), index.column()
-		if role in (Qt.DisplayRole, Qt.EditRole):
+		if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
 			if row >= len(self.libSelections):
 				return None
 			sel = self.libSelections[row]
@@ -120,21 +120,21 @@ class LibTableModel(QAbstractTableModel):
 				)
 			else:
 				assert(0)
-		elif role in {Qt.BackgroundRole,
-			      Qt.ForegroundRole}:
+		elif role in {Qt.ItemDataRole.BackgroundRole,
+			      Qt.ItemDataRole.ForegroundRole}:
 			if row < len(self.libSelections):
 				sel = self.libSelections[row]
 				if not sel.isValid():
-					if role == Qt.BackgroundRole:
+					if role == Qt.ItemDataRole.BackgroundRole:
 						return QBrush(QColor("red"))
 					return QBrush(QColor("black"))
 				try:
 					AwlLib.getEntryBySelection(sel)
 				except AwlSimError as e:
-					if role == Qt.BackgroundRole:
+					if role == Qt.ItemDataRole.BackgroundRole:
 						return QBrush(QColor("orange"))
 					return QBrush(QColor("black"))
-		elif role in (Qt.ToolTipRole, Qt.WhatsThisRole):
+		elif role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.WhatsThisRole):
 			return (
 				# Library name
 				"The name of the library.\n(The name is case insensitive.)",
@@ -150,10 +150,10 @@ class LibTableModel(QAbstractTableModel):
 			)[column]
 		return None
 
-	def headerData(self, section, orientation, role=Qt.DisplayRole):
-		if role != Qt.DisplayRole:
+	def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+		if role != Qt.ItemDataRole.DisplayRole:
 			return None
-		if orientation == Qt.Horizontal:
+		if orientation == Qt.Orientation.Horizontal:
 			return ("Library", "Library block",
 				"Use as block", "Description")[section]
 		else:
@@ -178,10 +178,10 @@ class LibTableModel(QAbstractTableModel):
 			raise AwlSimError("Invalid block selection: %s" %\
 				string)
 
-	def setData(self, index, value, role=Qt.EditRole):
+	def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
 		if not index:
 			return False
-		if role == Qt.EditRole:
+		if role == Qt.ItemDataRole.EditRole:
 			row, column = index.row(), index.column()
 			if row >= len(self.libSelections):
 				sel = AwlLibEntrySelection()
@@ -226,10 +226,10 @@ class LibTableModel(QAbstractTableModel):
 
 	def flags(self, index):
 		if not index:
-			return Qt.ItemIsEnabled
+			return Qt.ItemFlag.ItemIsEnabled
 		if index.column() >= 3:
-			return Qt.ItemIsEnabled
-		return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+			return Qt.ItemFlag.ItemIsEnabled
+		return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
 
 class LibTableView(QTableView):
 	# Signal: Keyboard focus in/out event.
@@ -288,11 +288,11 @@ class LibTableView(QTableView):
 
 	def __handleMousePress(self, index):
 		btns = QApplication.mouseButtons()
-		if btns & Qt.RightButton:
+		if btns & Qt.MouseButton.RightButton:
 			pass#TODO context menu
 
 	def keyPressEvent(self, ev):
-		if ev.matches(QKeySequence.Delete):
+		if ev.matches(QKeySequence.StandardKey.Delete):
 			self.deleteEntries()
 			ev.accept()
 			return

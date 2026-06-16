@@ -221,7 +221,7 @@ class FupWidget(QWidget):
 		self.__source = FupSource(name = "Diagram 1")
 		self.__needSourceUpdate = True
 
-		self.splitter = QSplitter(Qt.Vertical)
+		self.splitter = QSplitter(Qt.Orientation.Vertical)
 
 		self.interf = AwlInterfWidget(self)
 		self.splitter.addWidget(self.interf)
@@ -321,7 +321,7 @@ class FupWidget(QWidget):
 		dlg = OptimizerConfigDialog(
 				settingsContainer=grid.optSettingsCont.dup(),
 				parent=self)
-		if dlg.exec_() == QDialog.Accepted:
+		if dlg.exec() == QDialog.DialogCode.Accepted:
 			grid.optSettingsCont = dlg.getSettingsContainer()
 			self.diagramChanged.emit()
 
