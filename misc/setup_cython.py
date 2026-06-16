@@ -420,16 +420,6 @@ def cythonBuildPossible():
 	_cythonPossible = True
 	return True
 
-def cyBuildWrapper(arg):
-	# This function does the same thing as the for-loop-body
-	# inside of Cython's build_ext.build_extensions() method.
-	# It is called via multiprocessing to build extensions
-	# in parallel.
-	# Note that this might break, if Cython's build_extensions()
-	# is changed and stuff is added to its for loop. Meh.
-	self, ext = arg
-	ext.sources = self.cython_sources(ext.sources, ext)
-	self.build_extension(ext)
 
 if cythonBuildPossible():
 	# Override Cython's build_ext class.
@@ -443,18 +433,14 @@ if cythonBuildPossible():
 		def build_extensions(self):
 			global parallelBuild
 
-			# First patch the files, the run the build
+			# First patch the files, then run the build
 			patchCythonModules(self.build_lib)
 
-			# FIXME: Parallel build currently does not work on Cython 3.x
-			parallelBuild = False
-
 			if parallelBuild:
-				# Run the parallel build, yay.
+				# Run the parallel build using the setuptools/distutils
+				# built-in parallel support (self.parallel)
 				try:
-					self.check_extensions_list(self.extensions)
-
-					# Calculate the number of worker processes to use.
+					# Calculate the number of worker threads to use.
 					memBytes = getSystemMemBytesCount()
 					if memBytes is None:
 						raise self.Error("Unknown system memory size")
@@ -466,17 +452,11 @@ if cythonBuildPossible():
 					numProcs = min(multiprocessing.cpu_count() + WORKER_CPU_OVERCOMMIT,
 						       memProcsMax)
 
-					# Start the worker pool.
 					print("Building in parallel with %d workers." % numProcs)
-					from multiprocessing.pool import Pool
-					Pool(numProcs).map(cyBuildWrapper,
-							   ((self, ext) for ext in self.extensions))
+					self.parallel = numProcs
 				except (OSError, self.Error) as e:
 					# OSError might happen in a restricted
 					# environment like chroot.
-					print("WARNING: Parallel build "
-					      "disabled due to: %s" % str(e))
+					print("WARNING: Parallel build disabled due to: %s" % str(e))
 					parallelBuild = False
-			if not parallelBuild:
-				# Run the normal non-parallel build.
-				_Cython_Distutils_build_ext.build_extensions(self)
+			_Cython_Distutils_build_ext.build_extensions(self)
