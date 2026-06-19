@@ -4,6 +4,7 @@ from awlsim.core.systemblocks.system_sfc_m3 cimport *
 from awlsim.core.systemblocks.system_sfc_m2 cimport *
 from awlsim.core.systemblocks.system_sfc_m1 cimport *
 from awlsim.core.systemblocks.system_sfc_21 cimport *
+from awlsim.core.systemblocks.system_sfc_24 cimport *
 from awlsim.core.systemblocks.system_sfc_46 cimport *
 from awlsim.core.systemblocks.system_sfc_47 cimport *
 from awlsim.core.systemblocks.system_sfc_64 cimport *

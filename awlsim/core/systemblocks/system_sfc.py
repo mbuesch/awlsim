@@ -28,6 +28,7 @@ from awlsim.core.systemblocks.system_sfc_m3 import * #+cimport
 from awlsim.core.systemblocks.system_sfc_m2 import * #+cimport
 from awlsim.core.systemblocks.system_sfc_m1 import * #+cimport
 from awlsim.core.systemblocks.system_sfc_21 import * #+cimport
+from awlsim.core.systemblocks.system_sfc_24 import * #+cimport
 from awlsim.core.systemblocks.system_sfc_46 import * #+cimport
 from awlsim.core.systemblocks.system_sfc_47 import * #+cimport
 from awlsim.core.systemblocks.system_sfc_64 import * #+cimport
@@ -43,6 +44,7 @@ _SFC_table = { #+cdef-dict
 	-1	: SFCm1,	# __SFC_NOP
 
 	21	: SFC21,	# FILL
+	24	: SFC24,	# TEST_DB
 	46	: SFC46,	# STP
 	47	: SFC47,	# WAIT
 	64	: SFC64,	# TIME_TCK
