@@ -3,6 +3,9 @@ from awlsim_tstlib import *
 initTest(__file__)
 
 from awlsim.common.datatypehelpers import * #+cimport
+from awlsim.common.datatypehelpers import pyDateTimeToS7DateAndTimeBytes
+
+import datetime
 
 
 class Test_DataTypeHelpers(TestCase):
@@ -36,3 +39,8 @@ class Test_DataTypeHelpers(TestCase):
 			self.assertEqual(getMSB(mask1), (1 << (31 - i)) >> 1)
 			mask0 >>= 1
 			mask1 >>= 1
+
+	def test_pyDateTimeToS7DateAndTimeBytes(self):
+		dt = datetime.datetime(1998, 2, 3, 16, 17, 20, 211987)
+		self.assertEqual(pyDateTimeToS7DateAndTimeBytes(dt),
+			bytearray((0x98, 0x02, 0x03, 0x16, 0x17, 0x20, 0x21, 0x13)))
