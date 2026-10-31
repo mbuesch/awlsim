@@ -222,7 +222,8 @@ exit /B 0
 :gen_startup_wrapper
     echo === Generating startup wrapper
     set wrapper=%distdir%\%project%.cmd
-    echo @set PATH=%bindirname%;%bindirname%\lib;%bindirname%\platforms;%bindirname%\imageformats;%%PATH%% > %wrapper%
+    echo @set PATH=%bindirname%;%bindirname%\lib;%bindirname%\lib\PyQt6\Qt6\bin;%bindirname%\lib\PySide6;%%PATH%% > %wrapper%
+    echo @if exist "%%~dp0%bindirname%\lib\PyQt6\plugins" ^(set "QT_PLUGIN_PATH=%%~dp0%bindirname%\lib\PyQt6\plugins"^) else set "QT_PLUGIN_PATH=%%~dp0%bindirname%\lib\PySide6\plugins" >> %wrapper%
     echo @set AWLSIM_CYTHON=%AWLSIM_CYTHON_BUILD% >> %wrapper%
     echo @start %project%-bin\awlsim-gui.exe %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9 >> %wrapper%
     if ERRORLEVEL 1 goto error_wrapper
