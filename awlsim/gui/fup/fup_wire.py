@@ -75,6 +75,7 @@ class FupWire(FupBaseClass):
 	factory = FupWire_factory
 
 	BRANCH_DIA = 4
+	MAX_CHANNEL_COLS = 8 # Max number of grid columns to search for a free vertical wire channel
 
 	def __init__(self, grid, idNum=None, uuid=None):
 		FupBaseClass.__init__(self, uuid=uuid)
@@ -99,12 +100,69 @@ class FupWire(FupBaseClass):
 
 			self.checkCollisions()
 
+	def __invalidateAll(self):
+		"""Other wires' channel choice depends on this wire. Re-route all.
+		"""
+		if self.grid:
+			self.grid.checkWireCollisions()
+		self.checkCollisions()
+
 	def checkCollisions(self):
 		"""Mark the wire as must-check-collisions.
 		The collision check will be done at the next re-draw.
 		"""
 		self.__checkCollisions = True
 		self.__hasCollision = False
+		self.__channelX = None
+
+	@staticmethod
+	def __goesDown(yAbs0, inCoords):
+		return sum(y for x, y in inCoords) / len(inCoords) >= yAbs0
+
+	def __channelCandidates(self, xAbs0, inCoords):
+		"""Get a list of candidate X coordinates for the vertical
+		wire channel, ordered by preference.
+		"""
+		cellPixWidth = self.grid.cellPixWidth
+		x0 = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
+		maxX = max([x0] + [ xAbs1 for xAbs1, yAbs1 in inCoords ])
+		# Stagger the channels of all outputs of the same element, so that
+		# the vertical segments do not cross the horizontal stubs of the
+		# neighbouring outputs: Wires going down: upper outputs use the
+		# rightmost channels. Wires going up: lower outputs do.
+		# Shifts are to the right only.
+		step = max(2, cellPixWidth // self.MAX_CHANNEL_COLS)
+		base = 0
+		elem = self.outConn.elem
+		if elem is not None and inCoords:
+			yAbs0 = self.outConn.pixCoords[1]
+			goesDown = self.__goesDown(yAbs0, inCoords)
+			base = 0
+			for other in elem.outputs:
+				wire = other.wire if other is not None else None
+				if wire is None or wire is self or wire.outConn is not other:
+					continue
+				otherY = other.pixCoords[1]
+				otherCoords = [ c.pixCoords for c in wire.connections
+						if c is not other ]
+				if not otherCoords or\
+				   wire.__goesDown(otherY, otherCoords) != goesDown:
+					continue
+				if (goesDown and otherY > yAbs0) or\
+				   (not goesDown and otherY < yAbs0):
+					base += 1
+			base *= step
+		shifts = (base, base + step, base + 2 * step)
+		candidates = []
+		col = 0
+		while col < self.MAX_CHANNEL_COLS and\
+		      (col == 0 or x0 + col * cellPixWidth <= maxX):
+			for s in shifts:
+				x = x0 + col * cellPixWidth + s
+				if x >= xAbs0:
+					candidates.append(x)
+			col += 1
+		return candidates
 
 	def connect(self, conn):
 		"""Add a connection to this wire.
@@ -120,7 +178,7 @@ class FupWire(FupBaseClass):
 		conn.wire = self
 		if conn.OUT:
 			self.outConn = conn
-		self.checkCollisions()
+		self.__invalidateAll()
 
 	def disconnectAll(self):
 		"""Disconenct all connections.
@@ -130,7 +188,7 @@ class FupWire(FupBaseClass):
 		self.connections.clear()
 		self.outConn = None
 		self.grid.removeWire(self)
-		self.checkCollisions()
+		self.__invalidateAll()
 
 	def disconnect(self, conn):
 		"""Disconnect a connection from this wire.
@@ -145,7 +203,7 @@ class FupWire(FupBaseClass):
 			self.disconnectAll()
 		if not self.connections and not self.outConn:
 			self.grid.removeWire(self)
-		self.checkCollisions()
+		self.__invalidateAll()
 
 	class DrawInfo(object):
 		usesDirect = False
@@ -175,23 +233,45 @@ class FupWire(FupBaseClass):
 		# Calculate the coordinates of all wire lines.
 		cellPixWidth = self.grid.cellPixWidth
 		xAbs0, yAbs0 = self.outConn.pixCoords
-		x = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
-		segStart = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
-		wireLines = [] # List of DrawInfo()s
-		for inConn in self.connections:
-			if inConn is self.outConn:
-				continue
-			assert(inConn.IN)
+		inConns = [ c for c in self.connections if c is not self.outConn ]
+		assert(all(c.IN for c in inConns))
+		inCoords = [ c.pixCoords for c in inConns ]
 
-			# Construct line segments to draw the wire from out to in.
+		def buildLines(x):
+			"""Construct the wire from out to all ins
+			with the vertical channel at X coordinate 'x'.
+			"""
+			segStart = LineSeg2D.fromCoords(xAbs0, yAbs0, x, yAbs0)
+			wireLines = []
+			for xAbs1, yAbs1 in inCoords:
+				seg0 = LineSeg2D.fromCoords(x, yAbs0, x, yAbs1)
+				seg1 = LineSeg2D.fromCoords(x, yAbs1, xAbs1, yAbs1)
+				segDirect = LineSeg2D.fromCoords(x, yAbs0, xAbs1, yAbs1)
+				wireLines.append(self.DrawInfo((seg0, seg1), segDirect))
+			return segStart, wireLines
 
-			xAbs1, yAbs1 = inConn.pixCoords
-
-			seg0 = LineSeg2D.fromCoords(x, yAbs0, x, yAbs1)
-			seg1 = LineSeg2D.fromCoords(x, yAbs1, xAbs1, yAbs1)
-			segDirect = LineSeg2D.fromCoords(x, yAbs0, xAbs1, yAbs1)
-
-			wireLines.append(self.DrawInfo((seg0, seg1), segDirect))
+		# Check for wire collisions, if requested.
+		# Collision avoidance: Try several candidate X positions for the
+		# vertical channel and use the first one without collisions.
+		# The result is stored for future re-draws.
+		if self.__checkCollisions:
+			excludeWires = {self}
+			self.__channelX = None
+			for x in self.__channelCandidates(xAbs0, inCoords):
+				segStart, wireLines = buildLines(x)
+				if not any(grid.checkWireLine(painter, excludeWires, seg)
+					   for seg in [segStart] + [
+						seg for drawInfo in wireLines
+						for seg in drawInfo.segments ]):
+					self.__channelX = x
+					break
+			self.__hasCollision = self.__channelX is None
+			if self.__hasCollision:
+				self.__channelX = self.__channelCandidates(
+					xAbs0, inCoords)[0]
+			self.__checkCollisions = False
+		x = self.__channelX
+		segStart, wireLines = buildLines(x)
 
 		def drawBranch(x, y):
 			painter.setPen(self.__wireBranchPen)
@@ -201,19 +281,6 @@ class FupWire(FupBaseClass):
 		def drawSeg(seg, pen=self.__wirePen):
 			painter.setPen(pen)
 			grid.drawWireLine(painter, self, seg)
-
-		# Check for wire collisions, if requested.
-		# Store the result for future re-draws.
-		if self.__checkCollisions:
-			hasCollision = 0
-			excludeWires = {self}
-			for drawInfo in wireLines:
-				hasCollision |= int(any(
-					grid.checkWireLine(painter, excludeWires, seg)
-					for seg in drawInfo.segments
-				))
-			self.__hasCollision = bool(hasCollision)
-			self.__checkCollisions = False
 
 		# Draw wire from output to all inputs
 		drawSeg(segStart)
