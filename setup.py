@@ -41,11 +41,14 @@ import re
 import warnings
 import setuptools
 from setuptools import setup
-try:
-	from cx_Freeze import setup, Executable
-	cx_Freeze = True
-except ImportError:
-	cx_Freeze = False
+cx_Freeze = False
+# cx_Freeze replaces the wheel/egg-info commands. Only use it for freeze builds.
+if {"build", "build_exe", "install_exe"} & set(sys.argv[1:]):
+	try:
+		from cx_Freeze import setup, Executable
+		cx_Freeze = True
+	except ImportError:
+		pass
 
 from awlsim.common.version import VERSION_STRING
 import setup_cython
