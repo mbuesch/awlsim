@@ -301,10 +301,20 @@ class AwlTranslator(object):
 		# Assign data structure initializations.
 		for field, init in rawDB.allFieldInits():
 			if not field:
-				raise AwlSimError(
-					"DB %d assigns field '%s', "
-					"but does not declare it." %\
-					(rawDB.index, init.getIdentString()))
+				# The field is not declared directly in the DB.
+				# It might be a member of a UDT
+				# (e.g. "VAR_UDT.MEMBER" or "ARR_UDT[2].MEMBER").
+				# Look it up in the expanded data structure,
+				# like it is done for instance DBs.
+				name = init.getIdentString()
+				structField = db.struct.name2field.get(name)
+				if structField is None:
+					raise AwlSimError(
+						"DB %d assigns field '%s', "
+						"but does not declare it." %\
+						(rawDB.index, name))
+				self.__initDBField(db, structField.dataType, init)
+				continue
 			assert(field.getIdentChain() == init.identChain)
 			AwlDataType = _getAwlDataTypeClass()
 			dtype = self.__rawFieldToDataType(field)

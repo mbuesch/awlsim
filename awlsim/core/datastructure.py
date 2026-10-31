@@ -247,6 +247,22 @@ class AwlStruct(object): #+cdef
 			# Merge the UDT struct with this struct.
 			return self.merge(udt._struct, name, dataType)
 
+		if dataType.type == dataType.TYPE_ARRAY and\
+		   dataType.arrayElementType.type == dataType.TYPE_UDT_X:
+			# This is an ARRAY of UDT.
+			# Assign the UDT struct to the array element data type,
+			# if not already done so. Otherwise the element width
+			# (and therefore the array width) is undefined.
+			elemType = dataType.arrayElementType
+			udt = _cpu.getUDT(elemType.index)
+			if not udt:
+				raise AwlSimError("Data structure field '%s' is an "
+					"ARRAY of UDT %d, but UDT %d does not exist." %\
+					(name, elemType.index, elemType.index))
+			assert(elemType._struct is None or
+			       elemType._struct is udt._struct)
+			elemType.setStruct(udt._struct)
+
 		if dataType.width < 0:
 			raise AwlSimError("Width of data structure field '%s : %s' "
 				"is undefined. This probably means that its data "
