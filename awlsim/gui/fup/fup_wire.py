@@ -126,6 +126,11 @@ class FupWire(FupBaseClass):
 		cellPixWidth = self.grid.cellPixWidth
 		x0 = (xAbs0 // cellPixWidth) * cellPixWidth + cellPixWidth
 		maxX = max([x0] + [ xAbs1 for xAbs1, yAbs1 in inCoords ])
+		minInX = min([ xAbs1 for xAbs1, yAbs1 in inCoords ] or [x0])
+		if all(yAbs1 == self.outConn.pixCoords[1]
+		       for xAbs1, yAbs1 in inCoords):
+			# Straight wire. There is no vertical segment to move.
+			return [x0]
 		# Stagger the channels of all outputs of the same element, so that
 		# the vertical segments do not cross the horizontal stubs of the
 		# neighbouring outputs: Wires going down: upper outputs use the
@@ -162,7 +167,10 @@ class FupWire(FupBaseClass):
 				if x >= xAbs0:
 					candidates.append(x)
 			col += 1
-		return candidates
+		# Never put the channel behind the nearest input.
+		# That would make the wire run backwards.
+		fitting = [ x for x in candidates if x <= minInX ]
+		return fitting or [x0]
 
 	def connect(self, conn):
 		"""Add a connection to this wire.
@@ -262,7 +270,8 @@ class FupWire(FupBaseClass):
 				if not any(grid.checkWireLine(painter, excludeWires, seg)
 					   for seg in [segStart] + [
 						seg for drawInfo in wireLines
-						for seg in drawInfo.segments ]):
+						for seg in drawInfo.segments ]
+					   if seg):
 					self.__channelX = x
 					break
 			self.__hasCollision = self.__channelX is None
