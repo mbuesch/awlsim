@@ -54,7 +54,7 @@ class EditSubWidget(QWidget):
 
 	def contextMenuEvent(self, ev):
 		QWidget.contextMenuEvent(self, ev)
-		self.contextMenuReq.emit(ev.globalPosition().toPoint())
+		self.contextMenuReq.emit(ev.globalPos())
 
 class HeaderSubWidget(EditSubWidget):
 	def __init__(self, editWidget):
