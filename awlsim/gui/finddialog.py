@@ -141,8 +141,8 @@ class FindReplaceDialog(QDialog):
 			return
 
 		findFlags = QTextDocument.FindFlag(0)
-		if not self.fromCursor.isChecked() and\
-		   self.dirUp.isChecked():
+		backward = self.fromCursor.isChecked() and self.dirUp.isChecked()
+		if backward:
 			findFlags |= QTextDocument.FindFlag.FindBackward
 		if self.caseSensitive.isChecked():
 			findFlags |= QTextDocument.FindFlag.FindCaseSensitively
@@ -172,9 +172,8 @@ class FindReplaceDialog(QDialog):
 		if not found:
 			if self.fromCursor.isChecked():
 				# The next find should start at the beginning.
-				textCursor = self.__textEdit.textCursor()
-				textCursor.setPosition(0)
-				self.__textEdit.setTextCursor(textCursor)
+				self.__moveCursor(self.__textEdit.document().characterCount() - 1
+						  if backward else 0)
 			self.statusLabel.setText("Reached end of document. "
 						 "Text not found.")
 
