@@ -129,7 +129,7 @@ hwmodules = [
 
 # Create freeze executable list.
 if cx_Freeze:
-	guiBase = "Win32GUI" if isWindows else None
+	guiBase = "gui" if isWindows else None
 	freezeExecutables = [
 		("awlsim-gui", None, guiBase),
 		("awlsim-client", None, None),
