@@ -217,7 +217,6 @@ if cx_Freeze or setuptoolsMajorVersion < 61:
 			"Operating System :: POSIX :: Linux",
 			"Programming Language :: Cython",
 			"Programming Language :: Python",
-			"Programming Language :: Python :: 2.7",
 			"Programming Language :: Python :: 3",
 			"Programming Language :: Python :: Implementation :: CPython",
 			"Programming Language :: Python :: Implementation :: PyPy",
