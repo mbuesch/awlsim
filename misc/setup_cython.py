@@ -30,7 +30,7 @@ import re
 WORKER_MEM_BYTES	= 800 * 1024*1024
 WORKER_CPU_OVERCOMMIT	= 2
 
-setupFileName = "setup.py"
+setupFileName = "pyproject.toml"
 parallelBuild = False
 profileEnabled = False
 debugEnabled = False
@@ -277,7 +277,7 @@ def registerCythonModule(baseDir, sourceModName):
 	   not os.path.exists(modDir) or\
 	   not os.path.isdir(modDir):
 		raise Exception("Wrong directory. "
-			"Execute setup.py from within the main directory.")
+			"Execute the build from within the project directory.")
 
 	# Walk the module
 	for dirpath, dirnames, filenames in os.walk(modDir):

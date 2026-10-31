@@ -11,10 +11,13 @@ exec apt install \
 	python3-cffi \
 	python3-coverage \
 	python3-dev \
+	python3-pip \
 	python3-pyqt6 \
 	python3-pyqt6.qtsvg \
 	python3-pyside6.qtcore \
 	python3-pyside6.qtgui \
 	python3-pyside6.qtwidgets \
 	python3-pyside6.qtsvg \
-	python3-serial
+	python3-serial \
+	python3-setuptools \
+	python3-wheel

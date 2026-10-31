@@ -7,7 +7,7 @@ awlsim_base="$basedir/.."
 
 set -e
 
-if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
+if ! [ -x "$awlsim_base/awlsim-test" -a -f "$awlsim_base/pyproject.toml" ]; then
 	echo "basedir sanity check failed"
 	exit 1
 fi
@@ -21,7 +21,7 @@ find . \( \
 	\( -name '*$py.class' \) \
        \) -delete
 
-rm -rf build dist .pybuild
+rm -rf build dist .pybuild *.egg-info
 rm -f MANIFEST
 
 rm -f *.html

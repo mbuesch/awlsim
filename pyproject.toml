@@ -1,0 +1,102 @@
+[build-system]
+# setuptools<61.2 cannot handle dynamic fields that are provided by setup.py.
+requires = [
+    "setuptools>=61.2; python_version >= '3.7'",
+    "setuptools>=40.8; python_version < '3.7'",
+    "wheel",
+    "Cython>=0.29.36; python_version >= '3.3'",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "awlsim"
+# license: Provided by setup.py. SPDX license expressions need setuptools>=77
+#          and the license table is deprecated.
+# version: Provided by [tool.setuptools.dynamic].
+dynamic = ["license", "version"]
+description = "S7 compatible Programmable Logic Controller PLC/SPS (AWL, STL, FUP, FBD)"
+readme = "README.md"
+requires-python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+authors = [
+    { name = "Michael Buesch", email = "m@bues.ch" },
+]
+keywords = [
+    "AWL",
+    "STL",
+    "FUP",
+    "FBD",
+    "SPS",
+    "PLC",
+    "emulator",
+    "simulator",
+    "Step-7",
+    "Siemens",
+    "PROFIBUS",
+    "LinuxCNC",
+    "PiXtend",
+    "RaspberryPi",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: Win32 (MS Windows)",
+    "Environment :: X11 Applications",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Manufacturing",
+    "Intended Audience :: Science/Research",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Cython",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Education",
+    "Topic :: Home Automation",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Interpreters",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Emulators",
+]
+
+[project.urls]
+Homepage = "https://bues.ch/a/awlsim"
+
+# The script files, the Cython extension modules and the build_ext command
+# are provided by setup.py.
+[tool.setuptools]
+include-package-data = false
+packages = [
+    "awlsim",
+    "awlsim_loader",
+    "awlsim.common",
+    "awlsim.core",
+    "awlsim.core.instructions",
+    "awlsim.core.systemblocks",
+    "awlsim.coreclient",
+    "awlsim.coreserver",
+    "awlsim.awlcompiler",
+    "awlsim.awloptimizer",
+    "awlsim.fupcompiler",
+    "awlsim.gui",
+    "awlsim.gui.fup",
+    "awlsim.gui.icons",
+    "awlsim.gui.interfedit",
+    "awlsim.library",
+    "awlsim.library.iec",
+    "awlsimhw_debug",
+    "awlsimhw_dummy",
+    "awlsimhw_linuxcnc",
+    "awlsimhw_pyprofibus",
+    "awlsimhw_rpigpio",
+    "awlsimhw_pixtend",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "awlsim.common.version.VERSION_STRING" }

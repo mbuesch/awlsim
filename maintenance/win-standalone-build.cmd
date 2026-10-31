@@ -113,6 +113,7 @@ exit /B 0
 
 :build_cxfreeze
     echo === Building the cx_Freeze distribution
+    rem cx_Freeze still requires the legacy setup.py build command.
     python setup.py build
     if ERRORLEVEL 1 goto error_exe
     exit /B 0
@@ -147,6 +148,7 @@ exit /B 0
 
 :build_cxfreeze_exe
     echo === Building the cx_Freeze distribution executables
+    rem cx_Freeze still requires the legacy setup.py build_exe command.
     python setup.py build_exe --build-exe=%bindir%
     if ERRORLEVEL 1 goto error_exe
     exit /B 0

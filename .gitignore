@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 *.pyo
 *$py.class
+*.egg-info/
 
 *.swp
 

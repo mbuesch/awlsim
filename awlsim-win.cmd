@@ -13,6 +13,7 @@ for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set P
 
 
 rem Set Cython paths
+rem FIXME for pyproject.toml
 if not exist %awlsim_base%\build goto no_cython
 for /D %%f in ( "%awlsim_base%\build\lib.*-3.*" ) do set PYTHONPATH=%%f\;!PYTHONPATH!
 set PYTHONPATH=.;%PYTHONPATH%

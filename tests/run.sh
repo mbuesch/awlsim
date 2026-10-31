@@ -668,8 +668,9 @@ __build_cython()
 			AWLSIM_CYTHON_BUILD=1 \
 			AWLSIM_CYTHON_PARALLEL=1 \
 			nice -n 5 \
-			"$python" ./setup.py build >/dev/null ||\
-			die "'$python ./setup.py build' failed"
+			"$python" -m pip wheel --no-deps --no-build-isolation \
+				--wheel-dir dist . >/dev/null ||\
+			die "'$python -m pip wheel' failed"
 	) || die
 
 	(

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 #
-# Awlsim setup.py Python build script.
+# Awlsim build hooks for Cython and cx_Freeze.
 #
-# These environment variables affect the setup.py build:
+# These environment variables affect the build:
 #
 #  AWLSIM_FULL_BUILD:
 #	0 (default): Do not include scripts that are not necessary on this platform.
@@ -39,6 +39,7 @@ for base in (os.getcwd(), basedir):
 
 import re
 import warnings
+import setuptools
 from setuptools import setup
 try:
 	from cx_Freeze import setup, Executable
@@ -156,73 +157,82 @@ if cx_Freeze:
 			}
 		}
 
-warnings.filterwarnings("ignore", r".*'python_requires'.*")
-warnings.filterwarnings("ignore", r".*'long_description_content_type'.*")
+setupKeywords = {
+	"license": "GNU General Public License v2 or later",
+	"scripts": scripts,
+	"cmdclass": cmdclass,
+	"ext_modules": ext_modules,
+}
 
-with open(os.path.join(basedir, "README.md"), "rb") as fd:
-	readmeText = fd.read().decode("UTF-8")
+# Keep direct setup.py use working with Python and setuptools versions that
+# predate PEP 621, as well as cx_Freeze's setup() implementation.
+# The metadata below duplicates pyproject.toml. Keep both in sync.
+setuptoolsMajorVersion = int(re.match(r"^(\d+)", setuptools.__version__).group(1))
+if cx_Freeze or setuptoolsMajorVersion < 61:
+	warnings.filterwarnings("ignore", r".*'python_requires'.*")
+	warnings.filterwarnings("ignore", r".*'long_description_content_type'.*")
+	with open(os.path.join(basedir, "README.md"), "rb") as fd:
+		readmeText = fd.read().decode("UTF-8")
+	setupKeywords.update({
+		"name": "awlsim",
+		"version": VERSION_STRING,
+		"description": "S7 compatible Programmable Logic Controller PLC/SPS (AWL, STL, FUP, FBD)",
+		"author": "Michael Buesch",
+		"author_email": "m@bues.ch",
+		"url": "https://bues.ch/a/awlsim",
+		"python_requires": ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*",
+		"packages": [
+			"awlsim",
+			"awlsim_loader",
+			"awlsim/common",
+			"awlsim/core",
+			"awlsim/core/instructions",
+			"awlsim/core/systemblocks",
+			"awlsim/coreclient",
+			"awlsim/coreserver",
+			"awlsim/awlcompiler",
+			"awlsim/awloptimizer",
+			"awlsim/fupcompiler",
+			"awlsim/gui",
+			"awlsim/gui/fup",
+			"awlsim/gui/icons",
+			"awlsim/gui/interfedit",
+			"awlsim/library",
+			"awlsim/library/iec",
+		] + hwmodules,
+		"keywords": "AWL STL FUP FBD SPS PLC emulator simulator "
+			    "Step-7 Siemens PROFIBUS LinuxCNC PiXtend RaspberryPi",
+		"classifiers": [
+			"Development Status :: 4 - Beta",
+			"Environment :: Console",
+			"Environment :: Win32 (MS Windows)",
+			"Environment :: X11 Applications",
+			"Intended Audience :: Developers",
+			"Intended Audience :: Education",
+			"Intended Audience :: Information Technology",
+			"Intended Audience :: Manufacturing",
+			"Intended Audience :: Science/Research",
+			"Operating System :: Microsoft :: Windows",
+			"Operating System :: POSIX",
+			"Operating System :: POSIX :: Linux",
+			"Programming Language :: Cython",
+			"Programming Language :: Python",
+			"Programming Language :: Python :: 2.7",
+			"Programming Language :: Python :: 3",
+			"Programming Language :: Python :: Implementation :: CPython",
+			"Programming Language :: Python :: Implementation :: PyPy",
+			"Topic :: Education",
+			"Topic :: Home Automation",
+			"Topic :: Scientific/Engineering",
+			"Topic :: Software Development",
+			"Topic :: Software Development :: Interpreters",
+			"Topic :: Software Development :: Embedded Systems",
+			"Topic :: Software Development :: Testing",
+			"Topic :: System :: Emulators",
+		],
+		"long_description": readmeText,
+		"long_description_content_type": "text/markdown",
+	})
+setupKeywords.update(extraKeywords)
 
-setup(	name		= "awlsim",
-	version		= VERSION_STRING,
-	description	= "S7 compatible Programmable Logic Controller PLC/SPS (AWL, STL, FUP, FBD)",
-	license		= "GNU General Public License v2 or later",
-	author		= "Michael Buesch",
-	author_email	= "m@bues.ch",
-	url		= "https://bues.ch/a/awlsim",
-	python_requires = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*",
-	packages	= [ "awlsim",
-			    "awlsim_loader",
-			    "awlsim/common",
-			    "awlsim/core",
-			    "awlsim/core/instructions",
-			    "awlsim/core/systemblocks",
-			    "awlsim/coreclient",
-			    "awlsim/coreserver",
-			    "awlsim/awlcompiler",
-			    "awlsim/awloptimizer",
-			    "awlsim/fupcompiler",
-			    "awlsim/gui",
-			    "awlsim/gui/fup",
-			    "awlsim/gui/icons",
-			    "awlsim/gui/interfedit",
-			    "awlsim/library",
-			    "awlsim/library/iec",
-			  ] + hwmodules,
-	scripts		= scripts,
-	cmdclass	= cmdclass,
-	ext_modules	= ext_modules,
-	keywords	= "AWL STL FUP FBD SPS PLC emulator simulator "
-			  "Step-7 Siemens PROFIBUS "
-			  "LinuxCNC PiXtend RaspberryPi",
-	classifiers	= [
-		"Development Status :: 4 - Beta",
-		"Environment :: Console",
-		"Environment :: Win32 (MS Windows)",
-		"Environment :: X11 Applications",
-		"Intended Audience :: Developers",
-		"Intended Audience :: Education",
-		"Intended Audience :: Information Technology",
-		"Intended Audience :: Manufacturing",
-		"Intended Audience :: Science/Research",
-		"Operating System :: Microsoft :: Windows",
-		"Operating System :: POSIX",
-		"Operating System :: POSIX :: Linux",
-		"Programming Language :: Cython",
-		"Programming Language :: Python",
-		"Programming Language :: Python :: 2.7",
-		"Programming Language :: Python :: 3",
-		"Programming Language :: Python :: Implementation :: CPython",
-		"Programming Language :: Python :: Implementation :: PyPy",
-		"Topic :: Education",
-		"Topic :: Home Automation",
-		"Topic :: Scientific/Engineering",
-		"Topic :: Software Development",
-		"Topic :: Software Development :: Interpreters",
-		"Topic :: Software Development :: Embedded Systems",
-		"Topic :: Software Development :: Testing",
-		"Topic :: System :: Emulators",
-	],
-	long_description=readmeText,
-	long_description_content_type="text/markdown",
-	**extraKeywords
-)
+setup(**setupKeywords)

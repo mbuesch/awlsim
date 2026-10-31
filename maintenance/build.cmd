@@ -12,7 +12,7 @@ for /D %%f in ( "%USERPROFILE%\AppData\Local\Programs\Python\Python*" ) do set P
 cd %awlsim_base%
 if ERRORLEVEL 1 goto error_cd
 set AWLSIM_CYTHON_BUILD=1
-py -3 setup.py build
+py -3 -m pip wheel --no-deps --no-build-isolation --wheel-dir dist .
 if ERRORLEVEL 1 goto error_build
 
 

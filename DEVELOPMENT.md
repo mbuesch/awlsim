@@ -14,7 +14,7 @@ To run a code statement coverage trace during unit testing the option `./tests/r
 
 ## Special annotations in the source code
 
-In order to support both compiling the Awlsim core with Cython and running the same code in a plain Python interpreter without compilation, a method to patch the files is required. The setup.py scrips patch each .py source file and create a .pyx file before starting Cython compilation. The Cython patching mechanism rewrites all `import`s to import the compiled Cython modules instead of the plain Python modules. In addition to that some special comments are provided as hint to the Cython patcher:
+In order to support both compiling the Awlsim core with Cython and running the same code in a plain Python interpreter without compilation, a method to patch the files is required. The build hook patches each .py source file and creates a .pyx file before starting Cython compilation. The Cython patching mechanism rewrites all `import`s to import the compiled Cython modules instead of the plain Python modules. In addition to that some special comments are provided as hint to the Cython patcher:
 
 * `#@cy` : Enable (un-comment) this line during Cython patching.
 * `#@cy-posix` : Enable (un-comment) this line during Cython patching, if compiling for a Posix platform.
@@ -34,4 +34,3 @@ In order to support both compiling the Awlsim core with Cython and running the s
 To disable code coverage tracing an additional special comment is provided:
 
 * `#@nocov` : This excludes the line from Python `coverage` tracing.
-

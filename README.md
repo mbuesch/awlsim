@@ -65,6 +65,12 @@ If building and using Awlsim with Cython acceleration is desired, Cython must al
 pip3 install --upgrade Cython
 </pre>
 
+Awlsim is built with `pip wheel`:
+
+<pre>
+pip3 install --upgrade setuptools wheel
+</pre>
+
 On Windows all Awlsim dependencies can be installed by double clicking the shipped installer script: *maintenance\win-install-dependencies.cmd*
 
 For Debian Linux users the script *maintenance/deb-dependencies-install.sh* installs all required and optional runtime and build dependencies.
@@ -146,7 +152,8 @@ The hardware modules are the glue between the Awlsim core and the real world. Th
 .  debian/                   : Debian packaging support.
 .  maintenance/              : Maintainer scripts.
 .  misc/                     : Miscellaneous scripts and files.
-.  setup.py                  : Python package build script. This also builds the Cython modules.
+.  pyproject.toml            : Python package metadata and build requirements.
+.  setup.py                  : Compatibility build script and Cython/cx_Freeze build hooks.
 </pre>
 
 
@@ -215,9 +222,9 @@ The following environment variables control Awlsim's basic behavior:
   The number of OB1 cycles it takes to trigger a manual garbage collection.<br />
 
 
-## Environment variables during build (setup.py)
+## Environment variables during the build
 
-The following environment variables control Awlsim's build (setup.py) behavior:
+The following environment variables control Awlsim's build:
 
 * `AWLSIM_FULL_BUILD`<br />
   `=0`  Do not include scripts that are not necessary on this platform. (default)<br />
@@ -244,9 +251,15 @@ The following environment variables control Awlsim's build (setup.py) behavior:
 
 Awlsim can be run from the source directory in interpreted Python mode without building it. Just `cd` into the Awlsim source directory and execute the desired main executable (e.g. `./awlsim-gui` or `./awlsim-server` etc...).
 
-The accelerated Cython libraries can be built with the standard Python `./setup.py build` command.
+The accelerated Cython libraries can be built with the PEP 517 wheel command:
 
-For convenience there also is a helper script `./maintenance/build.sh`, which will do everything right to build Awlsim. That can be used instead of calling setup.py directly.
+<pre>
+AWLSIM_CYTHON_BUILD=1 python3 -m pip wheel --no-deps --wheel-dir dist .
+</pre>
+
+The wheel is stored in the `dist` directory.
+
+For convenience there also is a helper script `./maintenance/build.sh`, which will do everything right to build Awlsim. It uses the installed Cython instead of an isolated build environment.
 
 There also is `./maintenance/build-noopt.sh`. That builds Cython modules without optimization. The build is much faster, but the resulting Cython libraries will be much slower. This is useful for development. Do not use this for production.
 

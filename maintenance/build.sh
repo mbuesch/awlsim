@@ -7,7 +7,7 @@ awlsim_base="$basedir/.."
 
 set -e
 
-if ! [ -x "$awlsim_base/awlsim-test" -a -x "$awlsim_base/setup.py" ]; then
+if ! [ -x "$awlsim_base/awlsim-test" -a -f "$awlsim_base/pyproject.toml" ]; then
 	echo "basedir sanity check failed"
 	exit 1
 fi
@@ -49,7 +49,16 @@ done
 
 do_build()
 {
-	nice -n 10 "$1" ./setup.py build &
+	local pip_verbose=
+	if [ $opt_verbose -ne 0 ]; then
+		# Without -v pip hides the output of the build.
+		pip_verbose="-v"
+	fi
+
+	nice -n 10 "$1" -m pip wheel $pip_verbose \
+		--no-deps \
+		--no-build-isolation \
+		--wheel-dir dist . &
 	RET=$!
 }
 
