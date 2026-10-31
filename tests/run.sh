@@ -696,12 +696,12 @@ do_tests()
 	cleanup_test_environment
 
 	if [ $opt_quick -eq 0 ]; then
-		local all_interp="python3 python2 cython3 pypy3"
+		local all_interp="python3 cython3 pypy3"
 		if [ $opt_extended -ne 0 ]; then
 			local all_interp="$all_interp jython"
 		fi
 	else
-		local all_interp="python3 python2"
+		local all_interp="python3"
 		if [ $opt_extended -ne 0 ]; then
 			die "The options --quick and --extended are mutually exclusive."
 		fi
@@ -829,7 +829,7 @@ show_help()
 	infomsg " -j|--jobs NR                  Set the number of jobs to run in parallel."
 	infomsg "                               0 means number-of-CPUs"
 	infomsg "                               Default: 0"
-	infomsg " -q|--quick                    Only run python2 and python3 tests"
+	infomsg " -q|--quick                    Only run python3 tests"
 	infomsg " -g|--no-gui                   Avoid tests that need GUI libraries"
 	infomsg " -x|--extended                 Run tests on additional interpreters"
 	infomsg " -n|--renice NICENESS          Renice by NICENESS. Defaults to 10."
