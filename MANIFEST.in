@@ -13,6 +13,7 @@ graft progs
 graft submodules
 graft tests
 
+include AGENTS.md
 include COMPATIBILITY.html
 include COMPATIBILITY.md
 include COPYING.txt
