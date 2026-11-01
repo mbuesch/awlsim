@@ -1,0 +1,41 @@
+// The status word at the start of an OB is 16#0004 (STA = 1, all other
+// bits 0, BR = 0), in OB 100 and in OB 1 on every cycle.
+// Measured on PLCSIM S7-300: L STW as the first instruction gives 16#0004
+// in OB 100 after STOP -> RUN and in OB 1 after several cycles.
+
+ORGANIZATION_BLOCK OB 100
+BEGIN
+	L		STW
+	__ASSERT==	__ACCU 1,	W#16#0004
+	L		0
+	T		MW 0
+	// Leave status bits set; OB 1 must not see them.
+	SET
+	SAVE
+	L		1.0
+	L		0.0
+	/R
+END_ORGANIZATION_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	L		STW
+	__ASSERT==	__ACCU 1,	W#16#0004
+
+	// Leave status bits set; the next cycle must not see them.
+	SET
+	SAVE
+	L		1.0
+	L		0.0
+	/R
+
+	L		MW 0
+	+		1
+	T		MW 0
+	L		3
+	>=I
+	SPBN	end
+	CALL SFC 46 // STOP CPU
+end:	NOP		0
+END_ORGANIZATION_BLOCK
