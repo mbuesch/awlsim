@@ -1,0 +1,40 @@
+name: Build and test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  main:
+    name: Main
+    strategy:
+      matrix:
+        os:
+          - name: linux
+            version: ubuntu-latest
+          #- name: windows
+          #  version: windows-latest
+    runs-on: ${{ matrix.os.version }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      # Install dependencies
+      - if: matrix.os.name == 'linux'
+        run: |
+          sudo apt update
+          sudo ./maintenance/deb-dependencies-install.sh
+
+      # Build
+      - if: matrix.os.name == 'linux'
+        run: ./maintenance/build-noopt.sh
+
+      # Run test suite
+      - if: matrix.os.name == 'linux'
+        run: ./tests/run.sh
+
+# vim: ts=2 sw=2 expandtab
