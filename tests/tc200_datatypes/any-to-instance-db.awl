@@ -1,0 +1,141 @@
+// ANY parameters of system blocks with instance data (FB static) actual.
+// The ANY must have area DB (84h) and the number of the open instance DB.
+
+FUNCTION FC 900 : VOID
+	VAR_INPUT
+		Src		: ANY;
+	END_VAR
+	VAR_OUTPUT
+		AnyArea		: BYTE;
+		AnyDB		: WORD;
+	END_VAR
+BEGIN
+	L		P##Src
+	LAR1
+	L		B [AR1, P#6.0]
+	T		#AnyArea
+	L		W [AR1, P#4.0]
+	T		#AnyDB
+END_FUNCTION
+
+
+FUNCTION_BLOCK FB 901
+	VAR_INPUT
+		Src		: ANY;
+	END_VAR
+	VAR_OUTPUT
+		AnyArea		: BYTE;
+		AnyDB		: WORD;
+	END_VAR
+BEGIN
+	L		P##Src
+	LAR1
+	L		B [AR1, P#6.0]
+	T		#AnyArea
+	L		W [AR1, P#4.0]
+	T		#AnyDB
+END_FUNCTION_BLOCK
+
+
+FUNCTION_BLOCK FB 900
+	VAR
+		Arr		: ARRAY [1..8] OF BYTE;
+		FillVal		: BYTE;
+		RetVal		: INT;
+		Pad		: ARRAY [1..3] OF BYTE;
+		AnyArea		: BYTE;
+		AnyDB		: WORD;
+		Inst		: FB 901;
+	END_VAR
+BEGIN
+	// SFC 21 (FILL) with an FB static as BLK.
+	L		B#16#5A
+	T		#FillVal
+	CALL		SFC 21 (
+		BVAL	:= #FillVal,
+		RET_VAL	:= #RetVal,
+		BLK	:= #Arr,
+	)
+	L		#RetVal
+	__ASSERT==	__ACCU 1,	0
+	L		#Arr[1]
+	__ASSERT==	__ACCU 1,	B#16#5A
+	L		#Arr[8]
+	__ASSERT==	__ACCU 1,	B#16#5A
+
+	// FC with an ANY parameter.
+	CALL		FC 900 (
+		Src	:= #Arr,
+		AnyArea	:= #AnyArea,
+		AnyDB	:= #AnyDB,
+	)
+	L		#AnyArea
+	__ASSERT==	__ACCU 1,	B#16#84
+	L		#AnyDB
+	L		DINO
+	==I
+	__ASSERT==	__STW VKE,	1
+
+	// Multi-instance FB with an ANY parameter.
+	L		0
+	T		#AnyArea
+	T		#AnyDB
+	CALL		#Inst (
+		Src	:= #Arr,
+		AnyArea	:= #AnyArea,
+		AnyDB	:= #AnyDB,
+	)
+	L		#AnyArea
+	__ASSERT==	__ACCU 1,	B#16#84
+	L		#AnyDB
+	L		DINO
+	==I
+	__ASSERT==	__STW VKE,	1
+END_FUNCTION_BLOCK
+
+
+// Multi-instance: FB 900 at a non-zero offset in an instance DB.
+FUNCTION_BLOCK FB 902
+	VAR
+		Pad		: ARRAY [1..6] OF BYTE;
+		Inner		: FB 900;
+		Pad2		: ARRAY [1..2] OF BYTE;
+	END_VAR
+BEGIN
+	CALL		#Inner
+	L		#Pad[6]
+	__ASSERT==	__ACCU 1,	0
+	L		#Pad2[1]
+	__ASSERT==	__ACCU 1,	0
+END_FUNCTION_BLOCK
+
+
+DATA_BLOCK DB 902
+	FB 902
+BEGIN
+END_DATA_BLOCK
+
+
+DATA_BLOCK DB 900
+	FB 900
+BEGIN
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL		FB 900, DB 900
+	__ASSERT==	DINO,		0
+	L		DB900.DBB 0
+	__ASSERT==	__ACCU 1,	B#16#5A
+	L		DB900.DBB 7
+	__ASSERT==	__ACCU 1,	B#16#5A
+
+	CALL		FB 902, DB 902
+	L		DB902.DBB 6
+	__ASSERT==	__ACCU 1,	B#16#5A
+	L		DB902.DBB 13
+	__ASSERT==	__ACCU 1,	B#16#5A
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK

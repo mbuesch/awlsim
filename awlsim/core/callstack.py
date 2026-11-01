@@ -27,6 +27,7 @@ from awlsim.common.exceptions import *
 from awlsim.common.util import *
 
 from awlsim.core.datatypes import *
+import awlsim.core.datatypes as datatypes
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -93,6 +94,56 @@ class CallStackElem(object): #+cdef
 			dbPtr <<= 32
 		dbPtr |= rvalueOp.makePointerValue()
 		return dbPtr
+
+	# Build the ANY-pointer (80 bit) for an instance data r-value
+	# (MEM_DI, e.g. an FB static) passed to an ANY parameter.
+	# The pointer gets area DB and the number of the open DI,
+	# as an S7 CPU passes it (checked on PLCSIM by passing an
+	# FB static to an FC ANY parameter: area 84h, DB = instance DB).
+	# Includes the multi-instance base offset (AR2), if called from an FB.
+	# Returns the ANY-pointer data bytes.
+	def _trans_anyPointerFromDI(self, rvalueOp): #@nocy
+#@cy	cdef bytearray _trans_anyPointerFromDI(self, AwlOperator rvalueOp):
+#@cy		cdef S7CPU cpu
+#@cy		cdef ANYPointer pointer
+#@cy		cdef uint32_t ptrValue
+
+		cpu = self.cpu
+		pointer = rvalueOp.makeANYPointer(PointerConst.AREA_DB_S)
+		ptrValue = pointer.toPointerValue()
+		if cpu.callStackTop and cpu.callStackTop.block.isFB:
+			# Add the multi-instance base offset.
+			ptrValue = (ptrValue & PointerConst.AREA_MASK_S) |\
+				   (((ptrValue & 0x00FFFFFF) +
+				     (cpu.ar2.get() & 0x00FFFFFF)) & 0x00FFFFFF)
+			pointer.setDWord(ptrValue)
+		pointer.dbNr = cpu.diRegister.index
+		return pointer.toANYPointerValue()
+
+	# FC parameter translation:
+	# Store an ANY-pointer to an instance data r-value in the
+	# caller's L-stack (VL).
+	# Returns the translated rvalueOp.
+	def _FC_trans_anyPointerInVL(self, param, rvalueOp): #@nocy
+#@cy	cdef AwlOperator _FC_trans_anyPointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp):
+#@cy		cdef S7CPU cpu
+#@cy		cdef AwlOffset loffset
+#@cy		cdef AwlOperator storeOper
+
+		cpu = self.cpu
+		loffset = cpu.activeLStack.alloc(80) # 80 bits
+		storeOper = make_AwlOperator(AwlOperatorTypes.MEM_L,
+					80,
+					loffset,
+					rvalueOp.insn)
+		cpu.store(storeOper,
+			  make_AwlMemoryObject_fromBytes(
+				self._trans_anyPointerFromDI(rvalueOp), 80),
+			  AwlOperatorWidths.WIDTH_MASK_ALL)
+		return make_AwlOperator(AwlOperatorTypes.MEM_VL,
+				   80,
+				   loffset,
+				   rvalueOp.insn)
 
 	# FC parameter translation:
 	# Don't perform translation.
@@ -257,6 +308,10 @@ class CallStackElem(object): #+cdef
 	def _FC_trans_MEM_DI(self, param, rvalueOp): #@nocy
 #@cy	cdef AwlOperator _FC_trans_MEM_DI(self, AwlParamAssign param, AwlOperator rvalueOp):
 		# A parameter is forwarded from an FB to an FC
+		if param.lValueDataType is not None and\
+		   param.lValueDataType.type == datatypes.AwlDataType.TYPE_ANY:
+			# Instance data to an ANY parameter.
+			return self._FC_trans_anyPointerInVL(param, rvalueOp)
 		if rvalueOp.compound:
 			# rvalue is a compound data type.
 			# Create a DB-pointer to it in VL.
@@ -534,7 +589,15 @@ def make_CallStackElem(cpu,						#@nocy
 						# Non-compound (basic) data type or
 						# not IN_OUT declaration.
 						# Get the actual data.
-						if structField.callByRef:
+						if param.lValueDataType is not None and\
+						   param.lValueDataType.type == datatypes.AwlDataType.TYPE_ANY and\
+						   param.rvalueOp.operType == AwlOperatorTypes.MEM_DI:
+							# Instance data to an ANY parameter.
+							# Build the ANY pointer in the caller's
+							# context (DI, AR2 still the caller's).
+							memObj = make_AwlMemoryObject_fromBytes(
+								cse._trans_anyPointerFromDI(param.rvalueOp), 80)
+						elif structField.callByRef:
 							# Do not fetch. Type is passed 'by reference'.
 							# This is for TIMER, COUNTER, etc...
 							memObj = make_AwlMemoryObject_fromScalar16(

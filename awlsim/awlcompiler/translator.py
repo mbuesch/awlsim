@@ -433,6 +433,12 @@ class AwlTranslator(object):
 				# The operator will be translated from MEM_L to MEM_VL
 				# at call time.
 				assert(param.rvalueOp.width == 80)
+			elif param.rvalueOp.operType == AwlOperatorTypes.MEM_DI:
+				# r-value is instance data (e.g. an FB static).
+				# The instance DB number is only known at call time.
+				# The ANY pointer is built by the call stack then,
+				# with area DB and the number of the open DI.
+				return
 			else:
 				# Translate the r-value to ANY.
 				try:

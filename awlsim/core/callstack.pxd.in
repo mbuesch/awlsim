@@ -31,6 +31,8 @@ cdef class CallStackElem(object):
 	cdef AwlOperator _FC_trans_direct(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_copyToVL(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_dbpointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp)
+	cdef bytearray _trans_anyPointerFromDI(self, AwlOperator rvalueOp)
+	cdef AwlOperator _FC_trans_anyPointerInVL(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_copyToVLWithDBPtr(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_MEM_L(self, AwlParamAssign param, AwlOperator rvalueOp)
 	cdef AwlOperator _FC_trans_MEM_DB(self, AwlParamAssign param, AwlOperator rvalueOp, _Bool copyToVL=*)
