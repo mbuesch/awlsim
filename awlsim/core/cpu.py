@@ -1173,6 +1173,9 @@ class S7CPU(object): #+cdef
 		self.ar1.reset()
 		self.ar2.reset()
 		self.statusWord.reset()
+		# Every OB starts with STW = 16#0004: STA = 1, all other bits 0.
+		# Measured on PLCSIM S7-300 for OB 1 and OB 100.
+		self.statusWord.STA = 1
 
 		self.callStackTop, self.callStackDepth = None, 1
 		cse = self.callStackTop = make_CallStackElem(self, block, None, None, (), True)
