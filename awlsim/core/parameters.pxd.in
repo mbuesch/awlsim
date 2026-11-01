@@ -10,6 +10,7 @@ cdef class AwlParamAssign(object):
 	cdef public _Bool isInbound
 	cdef public _Bool isOutbound
 	cdef public object lValueDataType
+	cdef public _Bool lValueIsAnyPtr
 	cdef public AwlStructField lValueStructField
 	cdef public int32_t interfaceFieldIndex
 

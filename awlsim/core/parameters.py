@@ -26,6 +26,7 @@ from awlsim.common.compat import *
 from awlsim.common.exceptions import *
 from awlsim.common.util import *
 
+import awlsim.core.datatypes as datatypes
 from awlsim.core.datastructure import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
 from awlsim.core.operators import * #+cimport
@@ -81,6 +82,10 @@ class AwlParamAssign(object): #+cdef
 		# with a call to setInterface()
 		self.lValueDataType = None
 
+		# lValueIsAnyPtr is True, if the lValueDataType is
+		# an ANY pointer (TYPE_ANY).
+		self.lValueIsAnyPtr = False
+
 		# lValueStructField attribute is the AwlStructField corresponding
 		# to this parameter's l-value.
 		# This element is assigned later in the translation phase
@@ -116,6 +121,7 @@ class AwlParamAssign(object): #+cdef
 		self.isInbound = self.__isInbound()
 		self.isOutbound = self.__isOutbound()
 		self.lValueDataType = self.__lValueDataType()
+		self.lValueIsAnyPtr = self.__lValueIsAnyPtr()
 		self.lValueStructField = self.__lValueStructField()
 		self.interfaceFieldIndex = self.__interfaceFieldIndex()
 
@@ -138,6 +144,10 @@ class AwlParamAssign(object): #+cdef
 	def __lValueDataType(self):
 		# Get the l-value data type
 		return self.interface.getFieldByName(self.lvalueName).dataType
+
+	def __lValueIsAnyPtr(self):
+		return self.lValueDataType is not None and\
+		       self.lValueDataType.type == datatypes.AwlDataType.TYPE_ANY
 
 	def __lValueStructField(self):
 		# Find the l-value struct field

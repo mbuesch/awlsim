@@ -27,7 +27,6 @@ from awlsim.common.exceptions import *
 from awlsim.common.util import *
 
 from awlsim.core.datatypes import *
-import awlsim.core.datatypes as datatypes
 from awlsim.core.memory import * #+cimport
 from awlsim.core.offset import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -308,8 +307,7 @@ class CallStackElem(object): #+cdef
 	def _FC_trans_MEM_DI(self, param, rvalueOp): #@nocy
 #@cy	cdef AwlOperator _FC_trans_MEM_DI(self, AwlParamAssign param, AwlOperator rvalueOp):
 		# A parameter is forwarded from an FB to an FC
-		if param.lValueDataType is not None and\
-		   param.lValueDataType.type == datatypes.AwlDataType.TYPE_ANY:
+		if param.lValueIsAnyPtr:
 			# Instance data to an ANY parameter.
 			return self._FC_trans_anyPointerInVL(param, rvalueOp)
 		if rvalueOp.compound:
@@ -589,8 +587,7 @@ def make_CallStackElem(cpu,						#@nocy
 						# Non-compound (basic) data type or
 						# not IN_OUT declaration.
 						# Get the actual data.
-						if param.lValueDataType is not None and\
-						   param.lValueDataType.type == datatypes.AwlDataType.TYPE_ANY and\
+						if param.lValueIsAnyPtr and\
 						   param.rvalueOp.operType == AwlOperatorTypes.MEM_DI:
 							# Instance data to an ANY parameter.
 							# Build the ANY pointer in the caller's
