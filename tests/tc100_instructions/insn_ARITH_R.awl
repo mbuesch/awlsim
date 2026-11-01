@@ -160,7 +160,7 @@
 	L		__CNST_PNAN
 	L		1.0
 	+R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -171,7 +171,7 @@
 	L		1.0
 	L		__CNST_PNAN
 	+R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -182,7 +182,7 @@
 	L		__CNST_PNAN
 	L		-1.0
 	+R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -193,7 +193,7 @@
 	L		-1.0
 	L		__CNST_PNAN
 	+R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -372,7 +372,7 @@
 	L		__CNST_PNAN
 	L		1.0
 	-R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -383,7 +383,7 @@
 	L		1.0
 	L		__CNST_PNAN
 	-R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -394,7 +394,7 @@
 	L		__CNST_PNAN
 	L		-1.0
 	-R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -405,7 +405,7 @@
 	L		-1.0
 	L		__CNST_PNAN
 	-R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -584,7 +584,7 @@
 	L		__CNST_PNAN
 	L		1.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -595,7 +595,7 @@
 	L		1.0
 	L		__CNST_PNAN
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -606,7 +606,7 @@
 	L		__CNST_PNAN
 	L		-1.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -617,7 +617,7 @@
 	L		-1.0
 	L		__CNST_PNAN
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -673,7 +673,7 @@
 	L		__CNST_PINF
 	L		0.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -685,7 +685,7 @@
 	L		__CNST_NINF
 	L		0.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -697,7 +697,7 @@
 	L		0.0
 	L		__CNST_PINF
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -709,7 +709,7 @@
 	L		0.0
 	L		__CNST_NINF
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -721,7 +721,7 @@
 	L		__CNST_PINF
 	L		-0.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -733,7 +733,7 @@
 	L		__CNST_NINF
 	L		-0.0
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -745,7 +745,7 @@
 	L		-0.0
 	L		__CNST_PINF
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -757,7 +757,7 @@
 	L		-0.0
 	L		__CNST_NINF
 	*R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -891,7 +891,7 @@
 	L		__CNST_PNAN
 	L		1.0
 	/R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -902,7 +902,7 @@
 	L		1.0
 	L		__CNST_PNAN
 	/R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -913,7 +913,7 @@
 	L		__CNST_PNAN
 	L		-1.0
 	/R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -924,7 +924,7 @@
 	L		-1.0
 	L		__CNST_PNAN
 	/R
-	__ASSERT==	__ACCU 1,	__CNST_NNAN
+	__ASSERT==	__ACCU 1,	__CNST_PNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1224,7 +1224,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	SQR
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1257,7 +1257,7 @@
 	__STWRST
 	L		-0.5
 	SQRT
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1268,7 +1268,7 @@
 	__STWRST
 	L		-1.5
 	SQRT
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1312,7 +1312,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	SQRT
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1422,7 +1422,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	EXP
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1433,8 +1433,8 @@
 	__STWRST
 	L		0.0
 	LN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
-	__ASSERT==	__STW A1,	1
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
@@ -1444,8 +1444,8 @@
 	__STWRST
 	L		-0.0
 	LN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
-	__ASSERT==	__STW A1,	1
+	__ASSERT==	__ACCU 1,	__CNST_NINF
+	__ASSERT==	__STW A1,	0
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
@@ -1466,7 +1466,7 @@
 	__STWRST
 	L		-1.5
 	LN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1510,7 +1510,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	LN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1917,7 +1917,7 @@
 	__STWRST
 	L		1.1
 	ASIN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1928,7 +1928,7 @@
 	__STWRST
 	L		-1.1
 	ASIN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -1972,7 +1972,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	ASIN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -2016,7 +2016,7 @@
 	__STWRST
 	L		1.1
 	ACOS
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -2027,7 +2027,7 @@
 	__STWRST
 	L		-1.1
 	ACOS
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -2071,7 +2071,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	ACOS
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -2159,7 +2159,7 @@
 	__STWRST
 	L		__CNST_NNAN
 	ATAN
-	__ASSERT==	__ACCU 1,	__CNST_PNAN
+	__ASSERT==	__ACCU 1,	__CNST_NNAN
 	__ASSERT==	__STW A1,	1
 	__ASSERT==	__STW A0,	1
 	__ASSERT==	__STW OV,	1
@@ -2664,6 +2664,241 @@
 	__ASSERT==	__ACCU 1,	__CNST_PINF
 	__ASSERT==	__STW OV,	1
 	__ASSERT==	__STW OS,	1
+
+
+	// PLCSIM S7-300 (clean OB 1): the 0.0/0.0 chain.
+	// 0.0/0.0 = 16#FFC00000, the NaN then passes through *R, +R and RND.
+	__STWRST
+	L		0.0
+	L		0.0
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		0.0
+	*R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	L		0.0
+	+R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	__STWRST
+	RND
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	T		MW 400
+	__ASSERT==	MW 400,		W#16#0000
+
+	// -0.0/0.0 is the same NaN.
+	__STWRST
+	L		-0.0
+	L		0.0
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+
+
+	// PLCSIM S7-300 (clean OB 1), NaN and INF cases.
+	// NaN - 0.0 passes the NaN through
+	__STWRST
+	L		DW#16#FFC00000
+	L		0.0
+	-R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// NaN + NaN: ACCU 1's NaN wins
+	__STWRST
+	L		DW#16#FFC00001
+	L		DW#16#FFC00002
+	+R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00002
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// 16#7FFFFFFF + 0.0 passes through
+	__STWRST
+	L		DW#16#7FFFFFFF
+	L		0.0
+	+R
+	__ASSERT==	__ACCU 1,	DW#16#7FFFFFFF
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// INF * 0.0
+	__STWRST
+	L		DW#16#7F800000
+	L		0.0
+	*R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// SQRT(-1.0)
+	__STWRST
+	L		-1.0
+	SQRT
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// 1.0 / 0.0 = +INF
+	__STWRST
+	L		1.0
+	L		0.0
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#7F800000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// -1.0 / 0.0 = -INF
+	__STWRST
+	L		-1.0
+	L		0.0
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#FF800000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// INF - INF
+	__STWRST
+	L		DW#16#7F800000
+	L		DW#16#7F800000
+	-R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+
+
+	// PLCSIM S7-300 (clean OB 1, 2026-11-01): REAL functions.
+	// INF / INF
+	__STWRST
+	L		DW#16#7F800000
+	L		DW#16#7F800000
+	/R
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// SQRT of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	SQRT
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// ASIN of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	ASIN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// ACOS of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	ACOS
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// ATAN of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	ATAN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// LN of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	LN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// EXP of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	EXP
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// SQR of a NaN passes it through
+	__STWRST
+	L		DW#16#FFC00000
+	SQR
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// SIN of a NaN = 16#7FFFFFFF
+	__STWRST
+	L		DW#16#FFC00000
+	SIN
+	__ASSERT==	__ACCU 1,	DW#16#7FFFFFFF
+	// COS of a NaN = 16#7FFFFFFF
+	__STWRST
+	L		DW#16#FFC00000
+	COS
+	__ASSERT==	__ACCU 1,	DW#16#7FFFFFFF
+	// TAN of a NaN = 16#7FFFFFFF
+	__STWRST
+	L		DW#16#FFC00000
+	TAN
+	__ASSERT==	__ACCU 1,	DW#16#7FFFFFFF
+	// ABS of a NaN clears the sign
+	__STWRST
+	L		DW#16#FFC00000
+	ABS
+	__ASSERT==	__ACCU 1,	DW#16#7FC00000
+	// LN(0.0) = -INF
+	__STWRST
+	L		0.0
+	LN
+	__ASSERT==	__ACCU 1,	DW#16#FF800000
+	__ASSERT==	__STW A1,	0
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// LN(-1.0)
+	__STWRST
+	L		-1.0
+	LN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	1
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// ASIN(2.0)
+	__STWRST
+	L		2.0
+	ASIN
+	__ASSERT==	__ACCU 1,	DW#16#FFC00000
+	// EXP(100.0) = +INF
+	__STWRST
+	L		100.0
+	EXP
+	__ASSERT==	__ACCU 1,	DW#16#7F800000
+	__ASSERT==	__STW A1,	1
+	__ASSERT==	__STW A0,	0
+	__ASSERT==	__STW OV,	1
+	__ASSERT==	__STW OS,	1
+	// SQR(INF)
+	__STWRST
+	L		DW#16#7F800000
+	SQR
+	__ASSERT==	__ACCU 1,	DW#16#7F800000
+	// ABS(-INF)
+	__STWRST
+	L		DW#16#FF800000
+	ABS
+	__ASSERT==	__ACCU 1,	DW#16#7F800000
 
 
 	CALL SFC 46 // STOP CPU

@@ -24,6 +24,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from awlsim.common.compat import *
 
 from awlsim.common.exceptions import *
+from awlsim.common.datatypehelpers import * #+cimport
 
 from awlsim.core.instructions.main import * #+cimport
 from awlsim.core.operatortypes import * #+cimport
@@ -43,9 +44,25 @@ class AwlInsn_MI_R(AwlInsn): #+cdef
 #@cy		cdef double accu1
 #@cy		cdef double accu2
 #@cy		cdef double diff
+#@cy		cdef uint32_t accu1DWord
+#@cy		cdef uint32_t accu2DWord
 
 		accu2, accu1 = self.cpu.accu2.getPyFloat(),\
 			       self.cpu.accu1.getPyFloat()
 		diff = accu2 - accu1
+		if diff != diff:
+			# The result is NaN.
+			# A NaN operand passes through unchanged; if both are NaN,
+			# ACCU 1's NaN wins. Measured on PLCSIM S7-300.
+			accu2DWord = self.cpu.accu2.get()
+			accu1DWord = self.cpu.accu1.get()
+			if isNaN(accu1DWord):
+				accu2DWord = accu1DWord
+			elif not isNaN(accu2DWord):
+				# INF - -INF style invalid result = 16#FFC00000 (PLCSIM S7-300).
+				accu2DWord = floatConst.invalidNaNDWord
+			self.cpu.accu1.set(accu2DWord)
+			self.cpu.statusWord.setForFloatingPointDWord(accu2DWord)
+			return
 		self.cpu.accu1.setPyFloat(diff)
 		self.cpu.statusWord.setForFloatingPoint(diff)

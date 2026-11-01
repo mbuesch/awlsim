@@ -51,8 +51,12 @@ class AwlInsn_ACOS(AwlInsn): #+cdef
 		if accu1DWord == floatConst.negInfDWord or\
 		   accu1DWord == floatConst.posInfDWord:
 			pass
-		elif isNaN(accu1DWord) or accu1Float > 1.0 or accu1Float < -1.0:
-			self.cpu.accu1.set(floatConst.pNaNDWord)
+		elif isNaN(accu1DWord):
+			# A NaN passes through unchanged (PLCSIM S7-300).
+			pass
+		elif accu1Float > 1.0 or accu1Float < -1.0:
+			# Out of range = 16#FFC00000 (PLCSIM S7-300: ASIN(2.0)).
+			self.cpu.accu1.set(floatConst.invalidNaNDWord)
 			accu1Float = self.cpu.accu1.getPyFloat()
 		else:
 			accu1Float = acos(accu1Float)
