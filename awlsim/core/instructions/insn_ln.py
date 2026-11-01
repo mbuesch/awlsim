@@ -49,14 +49,20 @@ class AwlInsn_LN(AwlInsn): #+cdef
 		accu1DWord = self.cpu.accu1.get()
 		accu1Float = self.cpu.accu1.getPyFloat()
 		if isNaN(accu1DWord):
-			self.cpu.accu1.set(floatConst.pNaNDWord)
-			accu1Float = self.cpu.accu1.getPyFloat()
+			# A NaN passes through unchanged (PLCSIM S7-300).
+			pass
 		elif accu1DWord == floatConst.negInfDWord or\
 		     accu1DWord == floatConst.posInfDWord:
 			pass
-		elif accu1Float <= 0.0:
-			accu1Float = floatConst.nNaNFloat
-			self.cpu.accu1.set(floatConst.pNaNDWord)
+		elif accu1Float == 0.0:
+			# LN(+-0.0) = -INF (PLCSIM S7-300).
+			accu1Float = floatConst.negInfFloat
+			self.cpu.accu1.set(floatConst.negInfDWord)
+		elif accu1Float < 0.0:
+			# LN of a negative number = 16#FFC00000 (PLCSIM S7-300).
+			self.cpu.accu1.set(floatConst.invalidNaNDWord)
+			self.cpu.statusWord.setForFloatingPointDWord(floatConst.invalidNaNDWord)
+			return
 		else:
 			accu1Float = log(accu1Float)
 			self.cpu.accu1.setPyFloat(accu1Float)

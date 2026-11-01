@@ -49,8 +49,8 @@ class AwlInsn_EXP(AwlInsn): #+cdef
 		accu1DWord = self.cpu.accu1.get()
 		accu1Float = self.cpu.accu1.getPyFloat()
 		if isNaN(accu1DWord):
-			self.cpu.accu1.set(floatConst.pNaNDWord)
-			accu1Float = self.cpu.accu1.getPyFloat()
+			# A NaN passes through unchanged (PLCSIM S7-300).
+			pass
 		elif accu1DWord == floatConst.negInfDWord or\
 		     accu1DWord == floatConst.posInfDWord:
 			pass

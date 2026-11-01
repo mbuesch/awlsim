@@ -48,9 +48,18 @@ class AwlInsn_MU_R(AwlInsn): #+cdef
 		s = self.cpu.statusWord
 		accu1DWord = self.cpu.accu1.get()
 		accu2DWord = self.cpu.accu2.get()
+		# A NaN operand passes through unchanged; if both are NaN,
+		# ACCU 1's NaN wins. Measured on PLCSIM S7-300.
+		if isNaN(accu1DWord) or isNaN(accu2DWord):
+			if isNaN(accu1DWord):
+				accu2DWord = accu1DWord
+			self.cpu.accu1.set(accu2DWord)
+			s.setForFloatingPointDWord(accu2DWord)
+			return
 		if isInf(accu1DWord) or isInf(accu2DWord):
 			if isPosNegZero(accu1DWord) or isPosNegZero(accu2DWord):
-				accu1DWord = floatConst.nNaNDWord
+				# INF * 0.0 = 16#FFC00000 (PLCSIM S7-300).
+				accu1DWord = floatConst.invalidNaNDWord
 			else:
 				accu1DWord = accu2DWord ^ (accu1DWord & 0x80000000) #+suffix-u
 			self.cpu.accu1.set(accu1DWord)

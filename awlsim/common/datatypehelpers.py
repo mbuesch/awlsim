@@ -180,6 +180,7 @@ class FloatConst(object): #+cdef
 		"pNaNDWord",
 		"nNaNDWord",
 		"nNaNFloat",
+		"invalidNaNDWord",
 		"negZeroDWord",
 		"epsilonFloat",
 	)
@@ -215,6 +216,9 @@ class FloatConst(object): #+cdef
 		# Negative NaN
 		self.nNaNDWord = 0xFFFFFFFF
 		self.nNaNFloat = dwordToPyFloat(self.nNaNDWord)
+
+		# NaN result of an invalid REAL operation (S7 CPU)
+		self.invalidNaNDWord = 0xFFC00000
 
 		# Negative zero
 		self.negZeroDWord = 0x80000000
