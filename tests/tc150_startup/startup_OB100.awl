@@ -20,6 +20,8 @@ BEGIN
 	L		1.0
 	L		0.0
 	/R
+	L		STW
+	__ASSERT<>	__ACCU 1,	0
 END_ORGANIZATION_BLOCK
 
 
@@ -44,6 +46,8 @@ BEGIN
 	L		1.0
 	L		0.0
 	/R
+	L		STW
+	__ASSERT<>	__ACCU 1,	0
 
 	// Stop after a couple of cycles.
 	L		MW 4
