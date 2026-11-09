@@ -126,8 +126,7 @@ class LStackAllocator(object): #+cdef
 
 		self.globAllocBits = globAllocBits = self.globAllocBits - frame.allocBits
 		if topFrame:
-			self.topFrameOffset = make_AwlOffset_fromLongBitOffset(
-					globAllocBits - topFrame.allocBits)
+			self.topFrameOffset = make_AwlOffset(topFrame.byteOffset, 0)
 		else:
 			self.topFrameOffset = make_AwlOffset(0, 0)
 

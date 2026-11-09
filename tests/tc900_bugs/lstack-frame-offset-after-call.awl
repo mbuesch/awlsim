@@ -1,0 +1,63 @@
+DATA_BLOCK DB 1
+	STRUCT
+		B0	: BOOL;
+	END_STRUCT;
+BEGIN
+END_DATA_BLOCK
+
+
+FUNCTION FC 3 : VOID
+BEGIN
+	NOP		0
+END_FUNCTION
+
+
+FUNCTION FC 2 : VOID
+VAR_IN_OUT
+	X	: BOOL;
+END_VAR
+VAR_TEMP
+	T0	: BOOL;
+	T1	: BOOL;
+	W	: INT;
+END_VAR
+BEGIN
+	SET
+	=		#T0
+	CLR
+	=		#T1
+	L		1234
+	T		#W
+
+	// This nested call must not move FC 2's L stack frame.
+	CALL	FC 3
+
+	__STWRST
+	U		#T0
+	__ASSERT==	__STW VKE,	1
+	__STWRST
+	U		#T1
+	__ASSERT==	__STW VKE,	0
+	__STWRST
+	L		#W
+	__ASSERT==	__ACCU 1,	1234
+END_FUNCTION
+
+
+FUNCTION FC 1 : VOID
+BEGIN
+	// The fully qualified BOOL actual is copied to a single bit
+	// on the L stack. So FC 2's frame is entered while the L stack
+	// allocation is not on a byte boundary.
+	CALL	FC 2 (
+		X	:= DB1.DBX 0.0,
+	)
+END_FUNCTION
+
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL	FC 1
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
