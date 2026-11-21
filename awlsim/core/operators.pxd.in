@@ -14,6 +14,7 @@ cdef class AwlOperator(object):
 	cdef public bytearray immediateBytes
 	cdef public Pointer pointer
 
+	cdef public _Bool absoluteDiOffset
 	cdef public _Bool isExtended
 	cdef public uint32_t labelIndex
 	cdef public uint32_t interfaceIndex

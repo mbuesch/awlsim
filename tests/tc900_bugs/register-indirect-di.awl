@@ -1,0 +1,51 @@
+FUNCTION_BLOCK FB 1
+VAR_INPUT
+	source : DWORD;
+	guard : DWORD;
+END_VAR
+VAR_TEMP
+	saved : DWORD;
+	scratch : BYTE;
+END_VAR
+BEGIN
+	TAR2	#saved
+	L	P##source
+	LAR1
+	L	P##scratch
+	LAR2
+
+	// AR1 selects DI byte 0 while AR2 points at local byte 4.
+	L	B [AR1,P#0.0]
+	T	LB [AR2,P#0.0]
+	L	#scratch
+	__ASSERT==	__ACCU 1, B#16#11
+	L	W#16#5678
+	T	W [AR1,P#2.0]
+
+	// Use AR2 itself as the explicit register. Its offset counts once.
+	LAR2	P#DIX 4.0
+	L	DIB [AR2,P#1.0]
+	__ASSERT==	__ACCU 1, B#16#B2
+	L	B#16#99
+	T	DIB [AR2,P#1.0]
+
+	LAR2	#saved
+	L	#source
+	__ASSERT==	__ACCU 1, DW#16#11225678
+	L	#guard
+	__ASSERT==	__ACCU 1, DW#16#A199C3D4
+END_FUNCTION_BLOCK
+
+DATA_BLOCK DB 1
+FB 1
+BEGIN
+END_DATA_BLOCK
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	CALL	FB 1, DB 1 (
+		source := DW#16#11223344,
+		guard := DW#16#A1B2C3D4,
+	)
+	CALL	SFC 46
+END_ORGANIZATION_BLOCK

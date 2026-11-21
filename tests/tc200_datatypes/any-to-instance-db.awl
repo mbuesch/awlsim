@@ -28,7 +28,13 @@ FUNCTION_BLOCK FB 901
 		AnyDB		: WORD;
 	END_VAR
 BEGIN
+	// P##Src is relative to FB 901. Add the multi-instance offset
+	// before reading the descriptor through AR1. Keep the DI area code.
+	TAR2
+	L		DW#16#00FFFFFF
+	UD
 	L		P##Src
+	+D
 	LAR1
 	L		B [AR1, P#6.0]
 	T		#AnyArea
