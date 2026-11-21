@@ -2337,7 +2337,7 @@ class S7CPU(object): #+cdef
 		if not (makeAwlOperatorWidthMask(operator.width) & allowedWidths):
 			self.__fetchWidthError(operator, allowedWidths)
 
-		if self.callStackTop.block.isFB:
+		if self.callStackTop.block.isFB and not operator.absoluteDiOffset:
 			# Fetch the data using the multi-instance base offset from AR2.
 			return self.diRegister.fetch(operator,
 						     make_AwlOffset_fromPointerValue(self.ar2.get()))
@@ -2655,7 +2655,7 @@ class S7CPU(object): #+cdef
 		if not (makeAwlOperatorWidthMask(operator.width) & allowedWidths):
 			self.__storeWidthError(operator, allowedWidths)
 
-		if self.callStackTop.block.isFB:
+		if self.callStackTop.block.isFB and not operator.absoluteDiOffset:
 			# Store the data using the multi-instance base offset from AR2.
 			self.diRegister.store(operator, memObj,
 					      make_AwlOffset_fromPointerValue(self.ar2.get()))

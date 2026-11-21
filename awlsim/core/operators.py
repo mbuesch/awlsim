@@ -57,6 +57,9 @@ class AwlOperator(object): #+cdef
 	# Only used for IMM_PTR type.
 	pointer = None #@nocy
 
+	# The DI offset was calculated by explicit register-indirect addressing.
+	absoluteDiOffset = False #@nocy
+
 	# Extended-operator flag.
 	isExtended = False #@nocy
 
@@ -80,6 +83,7 @@ class AwlOperator(object): #+cdef
 #@cy		self.immediate = 0
 #@cy		self.immediateBytes = None
 #@cy		self.pointer = None
+#@cy		self.absoluteDiOffset = False
 #@cy		self.isExtended = False
 #@cy		self.labelIndex = 0xFFFFFFFF
 #@cy		self.interfaceIndex = 0xFFFF
@@ -93,6 +97,7 @@ class AwlOperator(object): #+cdef
 			self.operType == other.operType and\
 			self.width == other.width and\
 			self.offset == other.offset and\
+			self.absoluteDiOffset == other.absoluteDiOffset and\
 			self.immediate == other.immediate and\
 			self.immediateBytes == other.immediateBytes and\
 			self.pointer == other.pointer and\
@@ -128,6 +133,7 @@ class AwlOperator(object): #+cdef
 			oper.immediateBytes = None
 		else:
 			oper.immediateBytes = bytearray(self.immediateBytes)
+		oper.absoluteDiOffset = self.absoluteDiOffset
 		oper.isExtended = self.isExtended
 		oper.labelIndex = self.labelIndex
 		oper.interfaceIndex = self.interfaceIndex
@@ -513,6 +519,7 @@ class AwlIndirectOp(AwlOperator): #+cdef
 #@cy	cdef AwlOperator resolve(self, _Bool store):
 #@cy		cdef _Bool bitwiseDirectOffset
 #@cy		cdef AwlOffset directOffset
+#@cy		cdef AwlOperator directOper
 #@cy		cdef AwlOperator offsetOper
 #@cy		cdef uint32_t offsetValue
 #@cy		cdef uint64_t pointer
@@ -591,7 +598,11 @@ class AwlIndirectOp(AwlOperator): #+cdef
 				"indirect addressing is not zero. "
 				"(Computed offset is: %s)" %\
 				(self.width, str(directOffset)))
-		return make_AwlOperator(optype, self.width, directOffset, self.insn)
+		directOper = make_AwlOperator(optype, self.width, directOffset, self.insn)
+		if optype == AwlOperatorTypes.MEM_DI and\
+		   self.addressRegister != AwlIndirectOpConst.AR_NONE:
+			directOper.absoluteDiOffset = True
+		return directOper
 
 	def __pointerError(self): #@nocov
 		# This is a programming error.
