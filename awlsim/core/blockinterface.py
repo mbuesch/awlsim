@@ -59,16 +59,18 @@ class BlockInterfaceField(object):
 	__slots__ = (
 		"name",
 		"__dataType",
+		"initBytes",
 		"fieldType",
 		"fieldIndex",
 	)
 
-	def __init__(self, name, dataType):
+	def __init__(self, name, dataType, initBytes=None):
 		# name -> The name string of the field, as defined
 		#         in the block interface definition.
 		# dataType -> AwlDataType instance or a type name string.
 		self.name = name
 		self.__dataType = dataType
+		self.initBytes = initBytes
 		self.fieldType = self.FTYPE_UNKNOWN	# set later
 		self.fieldIndex = None			# set later
 
@@ -215,12 +217,12 @@ class BlockInterface(object):
 			# Align to word boundary.
 			structField = struct.addFieldAligned(cpu,
 							field.name,
-							field.dataType, 2)
+							field.dataType, 2, field.initBytes)
 		else:
 			# Align naturally.
 			structField = struct.addFieldNaturallyAligned(cpu,
 							field.name,
-							field.dataType)
+							field.dataType, field.initBytes)
 		if self.hasInstanceDB and\
 		   field.fieldType == field.FTYPE_INOUT and\
 		   field.dataType.compound:

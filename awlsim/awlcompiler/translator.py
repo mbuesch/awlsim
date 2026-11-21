@@ -93,7 +93,8 @@ class AwlTranslator(object):
 			raise AwlSimError("Data type '%s' not allowed in block interface" %\
 				str(dataType))
 		field = BlockInterfaceField(name = name,
-					    dataType = dataType)
+					    dataType = dataType,
+					    initBytes = initBytes if not dataType.compound else None)
 		return field
 
 	def translateLibraryCodeBlock(self, block):

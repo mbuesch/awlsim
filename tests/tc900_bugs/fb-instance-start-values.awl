@@ -1,0 +1,60 @@
+FUNCTION_BLOCK FB 1
+VAR_INPUT
+	timeout : TIME := T#5S;
+END_VAR
+VAR
+	firstBit : BOOL := TRUE;
+	secondBit : BOOL := FALSE;
+	thirdBit : BOOL := TRUE;
+END_VAR
+BEGIN
+	L	#timeout
+	T	MD 0
+	__STWRST
+	U	#firstBit
+	UN	#secondBit
+	U	#thirdBit
+	=	M 4.0
+END_FUNCTION_BLOCK
+
+DATA_BLOCK DB 1
+FB 1
+BEGIN
+END_DATA_BLOCK
+
+DATA_BLOCK DB 2
+FB 1
+BEGIN
+	timeout := T#0MS;
+END_DATA_BLOCK
+
+ORGANIZATION_BLOCK OB 1
+BEGIN
+	// An omitted input starts at the value declared in the FB.
+	CALL	FB 1, DB 1
+	L	MD 0
+	__ASSERT==	__ACCU 1, L#5000
+	__STWRST
+	U	M 4.0
+	__ASSERT==	__STW VKE, 1
+
+	// A connected input replaces it and the next call retains it.
+	CALL	FB 1, DB 1 (
+		timeout := T#2S300MS,
+	)
+	L	MD 0
+	__ASSERT==	__ACCU 1, L#2300
+	CALL	FB 1, DB 1
+	L	MD 0
+	__ASSERT==	__ACCU 1, L#2300
+
+	// An explicit zero in another DB overrides the FB declaration.
+	CALL	FB 1, DB 2
+	L	MD 0
+	__ASSERT==	__ACCU 1, L#0
+	CALL	FB 1, DB 1
+	L	MD 0
+	__ASSERT==	__ACCU 1, L#2300
+
+	CALL	SFC 46
+END_ORGANIZATION_BLOCK
