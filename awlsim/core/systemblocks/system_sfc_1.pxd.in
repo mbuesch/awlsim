@@ -1,0 +1,5 @@
+from awlsim.common.cython_support cimport *
+from awlsim.core.systemblocks.systemblocks cimport *
+
+cdef class SFC1(SFC):
+	cpdef run(self)

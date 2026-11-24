@@ -62,6 +62,7 @@ __all__ = [
 	"s32_to_u32",
 	"s32_to_u16",
 	"s32_to_u8",
+	"pyDateTimeToS7DateAndTimeBytes",
 ]
 
 
@@ -161,6 +162,30 @@ def dwordToPyFloat(dword,						#@nocy
 		   __f=__floatStruct,					#@nocy
 		   __d=__dwordStruct):					#@nocy
 	return __f.unpack(__d.pack(dword))[0]				#@nocy
+
+
+_pyWeekdayToS7DateTimeWeekday = (2, 3, 4, 5, 6, 7, 1)
+
+def __byteToBcd(byte):
+	return (byte % 10) | (((byte // 10) % 10) << 4)
+
+def pyDateTimeToS7DateAndTimeBytes(dt):
+	year = dt.year % 100
+	msec = dt.microsecond // 1000
+	msec = ((msec % 10) |
+		(((msec // 10) % 10) << 4) |
+		(((msec // 100) % 10) << 8))
+	weekday = _pyWeekdayToS7DateTimeWeekday[dt.weekday()]
+	return bytearray((
+		__byteToBcd(year),
+		__byteToBcd(dt.month),
+		__byteToBcd(dt.day),
+		__byteToBcd(dt.hour),
+		__byteToBcd(dt.minute),
+		__byteToBcd(dt.second),
+		(msec >> 4) & 0xFF,
+		((msec & 0xF) << 4) | weekday,
+	))
 
 
 class FloatConst(object): #+cdef
