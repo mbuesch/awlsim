@@ -1,0 +1,65 @@
+DATA_BLOCK DB 1
+STRUCT
+	W1	: WORD;
+	W2	: WORD;
+	W3	: WORD;
+END_STRUCT;
+BEGIN
+END_DATA_BLOCK
+
+
+ORGANIZATION_BLOCK OB 1
+	VAR_TEMP
+		RET_TMP		: INT;
+		LEN_TMP		: WORD;
+		WP_TMP		: BOOL;
+	END_VAR
+BEGIN
+	// Test SFC 24: TEST_DB
+	// Returns DB length and write-protect status.
+	// RET_VAL = 0x0000 OK, 0x80A1 DB_NUMBER 0/out-of-range, 0x80B1 DB
+	// not loaded, 0x80B2 DB UNLINKED (not modeled by awlsim).
+
+
+	// Case 1: DB 1 exists with three WORDs (6 bytes) - expect OK
+	CALL		SFC 24 (
+		DB_NUMBER	:= W#16#0001,
+		RET_VAL		:= #RET_TMP,
+		DB_LENGTH	:= #LEN_TMP,
+		WRITE_PROT	:= #WP_TMP,
+	)
+	__ASSERT==	__STW BIE,	1
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#0000
+	L		#LEN_TMP
+	__ASSERT==	__ACCU 1,	W#16#0006
+	U		#WP_TMP
+	__ASSERT==	__STW VKE,	0
+
+
+	// Case 2: DB_NUMBER = 0 - expect 0x80A1
+	CALL		SFC 24 (
+		DB_NUMBER	:= W#16#0000,
+		RET_VAL		:= #RET_TMP,
+		DB_LENGTH	:= #LEN_TMP,
+		WRITE_PROT	:= #WP_TMP,
+	)
+	__ASSERT==	__STW BIE,	0
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#80A1
+
+
+	// Case 3: DB 99 not loaded - expect 0x80B1
+	CALL		SFC 24 (
+		DB_NUMBER	:= W#16#0063,
+		RET_VAL		:= #RET_TMP,
+		DB_LENGTH	:= #LEN_TMP,
+		WRITE_PROT	:= #WP_TMP,
+	)
+	__ASSERT==	__STW BIE,	0
+	L		#RET_TMP
+	__ASSERT==	__ACCU 1,	W#16#80B1
+
+
+	CALL SFC 46 // STOP CPU
+END_ORGANIZATION_BLOCK
